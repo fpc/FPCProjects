@@ -726,6 +726,7 @@ procedure TXCanvas.DoDrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
 var
   SourceRect: TRect;
   Image: XLib.PXImage;
+  ConvertFormat: TGfxPixelFormat;
 begin
   ASSERT(AImage.InheritsFrom(TXImage));
   {$IFDEF Debug}
@@ -747,9 +748,18 @@ begin
     FlipMonoImageBits(ASourceRect, TXImage(AImage).Data,
       TXImage(AImage).Stride, 0, 0, Image^.data, Image^.bytes_per_line)
   else
+  begin
+    ConvertFormat := PixelFormat;
+    { !!!: The following is a workaround: At least the XFree86 X server for
+      ATI graphics adapters uses 32 bit padding per pixel for 24 bpp
+      images...?!? To be checked: Is this always the case or only for ATI? }
+    if ConvertFormat.FormatType = ftRGB24 then
+      ConvertFormat.FormatType := ftRGB32;
+
     ConvertImage(ASourceRect, AImage.PixelFormat, AImage.Palette,
       TXImage(AImage).Data, TXImage(AImage).Stride,
-      0, 0, PixelFormat, Image^.data, Image^.bytes_per_line);
+      0, 0, ConvertFormat, Image^.data, Image^.bytes_per_line);
+  end;
 
   XPutImage(DisplayHandle, Handle, GC,
     Image, 0, 0, ADestPos.x, ADestPos.y, AImage.Width, AImage.Height);
@@ -783,9 +793,13 @@ constructor TXWindowCanvas.Create(AColormap: TColormap; ADisplay: TXDisplay;
   AXDrawable: X.TDrawable; ADefaultFont: PXFontStruct);
 var
   Attr: XLib.TXWindowAttributes;
+  Depth: Integer;
 begin
   inherited Create(AColormap, ADisplay, AXDrawable, ADefaultFont);
+
   XGetWindowAttributes(DisplayHandle, Handle, @Attr);
+  FVisual := Attr.Visual;
+
   case Attr.Depth of
     1: PixelFormat.FormatType := ftMono;
     4: PixelFormat.FormatType := ftPal4;
@@ -797,9 +811,7 @@ begin
       raise EX11Error.CreateFmt(SWindowUnsupportedPixelFormat, [Attr.Depth]);
   end;
 
-  FVisual := Attr.Visual;
-
-  if Attr.Depth >= 16 then
+  if Depth >= 16 then
   begin
     PixelFormat.RedMask := Visual^.red_mask;
     PixelFormat.GreenMask := Visual^.green_mask;
@@ -1050,6 +1062,7 @@ begin
 	  ''' for unknown window');
     end;
   end;
+  DoBreakRun := False;
 end;
 
 procedure TXDisplay.BreakRun;
@@ -1806,6 +1819,11 @@ end.
 
 {
   $Log$
+  Revision 1.11  2001/05/09 19:02:18  sg
+  * Workaround for some ATI graphic adapters which work at 24 bpp
+    (NOTE: This workaround _might_ break fpGFX on other adapters. We'll
+    just have to test fpGFX on as many different adapters as possible.)
+
   Revision 1.10  2001/02/14 23:07:47  sg
   * Switched to use TSize and TPoint whereever possible
 
