@@ -1,0 +1,633 @@
+diff -u -p -r origdb/breakpoint.c gdb/breakpoint.c
+--- origdb/breakpoint.c	2002-09-16 10:23:54.000000000 +0200
++++ gdb/breakpoint.c	2002-09-16 10:34:18.000000000 +0200
+@@ -1437,6 +1449,42 @@ breakpoint_init_inferior (enum inf_conte
+ 
+   ALL_BREAKPOINTS_SAFE (b, temp)
+   {
++        /* Disabled, does not work correctly
++	if ((b->type == bp_hardware_watchpoint
++	       || b->type == bp_watchpoint
++	       || b->type == bp_access_watchpoint
++	       || b->type == bp_read_watchpoint)
++	     && (context == inf_exited))
++	 {
++	  if (b->val)
++	    value_free (b->val);
++	  b->val = NULL;
++         } */
++        if ((((REMOVE_HARDWARE_BREAKPOINT_AT_EXIT)
++		&& b->type == bp_hardware_breakpoint)
++	       ||((REMOVE_HARDWARE_WATCHPOINT_AT_EXIT)
++		  && (b->type == bp_hardware_watchpoint
++		      || b->type == bp_access_watchpoint
++	              || b->type == bp_read_watchpoint)))
++                   && b->inserted
++		   && context == inf_exited)
++   	 remove_breakpoint (b, mark_uninserted);
++
++	/* Also disabled
++	if (b->type == bp_hardware_watchpoint
++	       || b->type == bp_watchpoint
++	       || b->type == bp_access_watchpoint
++	       || b->type == bp_read_watchpoint)
++	{
++	  struct value * val;
++	  struct value * mark = value_mark (); 
++	  val = evaluate_expression (b->exp);
++	  release_value (val);
++	  if (VALUE_LAZY (val))
++	   value_fetch_lazy (val);
++	  b->val = val;
++	  value_free_to_mark (mark);
++	 } */
+     b->inserted = 0;
+ 
+     switch (b->type)
+@@ -6892,8 +6940,9 @@ breakpoint_re_set_one (PTR bint)
+ 	    xfree (b->cond);
+ 	  b->cond = parse_exp_1 (&s, (struct block *) 0, 0);
+ 	}
+-      if (b->enable_state == bp_enabled)
+-	mention (b);
++      /* Generates lot of noise
++	if (b->enable_state == bp_enabled)
++	mention (b); */
+       value_free_to_mark (mark);
+       break;
+     case bp_catch_catch:
+diff -u -p -r origdb/i386-tdep.c gdb/i386-tdep.c
+--- origdb/i386-tdep.c	2002-09-16 10:24:39.000000000 +0200
++++ gdb/i386-tdep.c	2002-09-16 10:34:18.000000000 +0200
+@@ -690,6 +690,8 @@ i386_skip_prologue (int pc)
+ {
+   unsigned char op;
+   int i;
++  CORE_ADDR last_push_esi_pos = 0;
++
+   static unsigned char pic_pat[6] =
+   { 0xe8, 0, 0, 0, 0,		/* call   0x0 */
+     0x5b,			/* popl   %ebx */
+@@ -709,7 +711,9 @@ i386_skip_prologue (int pc)
+       /* Break if not `pushl' instrunction.  */
+       if (op < 0x50 || op > 0x57)
+ 	break;
+-      codestream_get ();
++      if (op == 0x56)
++	last_push_esi_pos = codestream_tell ();
++      codestream_get();
+     }
+ 
+   /* The native cc on SVR4 in -K PIC mode inserts the following code
+@@ -765,7 +769,10 @@ i386_skip_prologue (int pc)
+ 
+   i386_follow_jump ();
+ 
+-  return (codestream_tell ());
++  if (codestream_tell () == last_push_esi_pos + 1)
++    return (last_push_esi_pos);
++  else
++    return (codestream_tell ());
+ }
+ 
+ void
+diff -u -p -r origdb/p-exp.y gdb/p-exp.y
+--- origdb/p-exp.y	2002-09-16 10:24:52.000000000 +0200
++++ gdb/p-exp.y	2002-09-16 10:34:18.000000000 +0200
+@@ -50,7 +50,7 @@ Foundation, Inc., 59 Temple Place - Suit
+ #include "gdb_string.h"
+ #include <ctype.h>
+ #include "expression.h"
+-#include "value.h"
++#include "value.h" 
+ #include "parser-defs.h"
+ #include "language.h"
+ #include "p-lang.h"
+@@ -151,9 +151,14 @@ static char * uptok (char *, int);
+ /* YYSTYPE gets defined by %union */
+ static int
+ parse_number (char *, int, int, YYSTYPE *);
++
++static struct type * current_type;
++static void push_current_type ();
++static void pop_current_type ();
++static int search_field;
+ %}
+ 
+-%type <voidval> exp exp1 type_exp start variable qualified_name
++%type <voidval> exp exp1 type_exp start normal_start variable qualified_name
+ %type <tval> type typebase
+ /* %type <bval> block */
+ 
+@@ -171,7 +176,8 @@ parse_number (char *, int, int, YYSTYPE 
+    Contexts where this distinction is not important can use the
+    nonterminal "name", which matches either NAME or TYPENAME.  */
+ 
+-%token <sval> STRING
++%token <sval> STRING 
++%token <sval> FIELDNAME
+ %token <ssym> NAME /* BLOCKNAME defined below to give it higher precedence. */
+ %token <tsym> TYPENAME
+ %type <sval> name
+@@ -212,6 +218,7 @@ parse_number (char *, int, int, YYSTYPE 
+ %left '*' '/'
+ %right UNARY INCREMENT DECREMENT
+ %right ARROW '.' '[' '('
++%right '^'
+ %token <ssym> BLOCKNAME
+ %type <bval> block
+ %left COLONCOLON
+@@ -219,15 +226,21 @@ parse_number (char *, int, int, YYSTYPE 
+ 
+ %%
+ 
+-start   :	exp1
++start   :	{ current_type = NULL;
++		  search_field = 0;
++		}
++		normal_start;
++
++normal_start	:
++		exp1
+ 	|	type_exp
+ 	;
+ 
+ type_exp:	type
+ 			{ write_exp_elt_opcode(OP_TYPE);
+ 			  write_exp_elt_type($1);
+-			  write_exp_elt_opcode(OP_TYPE);}
+-	;
++			  write_exp_elt_opcode(OP_TYPE);
++			  current_type = $1; } ;
+ 
+ /* Expressions, including the comma operator.  */
+ exp1	:	exp
+@@ -237,11 +250,14 @@ exp1	:	exp
+ 
+ /* Expressions, not including the comma operator.  */
+ exp	:	exp '^'   %prec UNARY
+-			{ write_exp_elt_opcode (UNOP_IND); }
+-
+-exp	:	'@' exp    %prec UNARY
+-			{ write_exp_elt_opcode (UNOP_ADDR); }
+-
++			{ write_exp_elt_opcode (UNOP_IND);
++			  if (current_type) 
++			    current_type = TYPE_TARGET_TYPE (current_type); }
++	;
++exp	:	'@' exp    %prec UNARY { write_exp_elt_opcode (UNOP_ADDR); 
++			  if (current_type)
++			    current_type = TYPE_POINTER_TYPE (current_type); }
++	;
+ exp	:	'-' exp    %prec UNARY
+ 			{ write_exp_elt_opcode (UNOP_NEG); }
+ 	;
+@@ -258,24 +274,55 @@ exp	:	DECREMENT  '(' exp ')'   %prec UNA
+ 			{ write_exp_elt_opcode (UNOP_PREDECREMENT); }
+ 	;
+ 
+-exp	:	exp '.' name
++exp	:	exp '.' { search_field = 1; } 
++		FIELDNAME 
++		/* name */
+ 			{ write_exp_elt_opcode (STRUCTOP_STRUCT);
+-			  write_exp_string ($3);
+-			  write_exp_elt_opcode (STRUCTOP_STRUCT); }
+-	;
+-
+-exp	:	exp '[' exp1 ']'
+-			{ write_exp_elt_opcode (BINOP_SUBSCRIPT); }
+-	;
++			  write_exp_string ($4); 
++			  write_exp_elt_opcode (STRUCTOP_STRUCT);
++			  search_field = 0; 
++			  if (current_type)
++			    { while (TYPE_CODE (current_type) == TYPE_CODE_PTR)
++				current_type = TYPE_TARGET_TYPE (current_type);
++			      current_type = lookup_struct_elt_type (
++				current_type, $4.ptr, false); };
++			 } ; 
++exp	:	exp '['
++			/* We need to save the current_type value */
++			{ char *arrayname; 
++			  int arrayfieldindex;
++			  arrayfieldindex = is_pascal_string_type (
++				current_type, NULL, NULL,
++				NULL, NULL, &arrayname); 
++			  if (arrayfieldindex) 
++			    {
++			      struct stoken stringsval;
++			      stringsval.ptr = alloca (strlen (arrayname) + 1);
++			      stringsval.length = strlen (arrayname);
++			      strcpy (stringsval.ptr, arrayname);
++			      current_type = TYPE_FIELD_TYPE (current_type,
++				arrayfieldindex - 1); 
++			      write_exp_elt_opcode (STRUCTOP_STRUCT);
++			      write_exp_string (stringsval); 
++			      write_exp_elt_opcode (STRUCTOP_STRUCT);
++			    }
++			  push_current_type ();  }
++		exp1 ']'
++			{ pop_current_type ();
++			  write_exp_elt_opcode (BINOP_SUBSCRIPT);
++			  if (current_type)
++			    current_type = TYPE_TARGET_TYPE (current_type); }
+ 
+ exp	:	exp '('
+ 			/* This is to save the value of arglist_len
+ 			   being accumulated by an outer function call.  */
+-			{ start_arglist (); }
++			{ push_current_type ();
++			  start_arglist (); }
+ 		arglist ')'	%prec ARROW
+ 			{ write_exp_elt_opcode (OP_FUNCALL);
+ 			  write_exp_elt_longcst ((LONGEST) end_arglist ());
+-			  write_exp_elt_opcode (OP_FUNCALL); }
++			  write_exp_elt_opcode (OP_FUNCALL); 
++			  pop_current_type (); }
+ 	;
+ 
+ arglist	:
+@@ -288,7 +335,8 @@ arglist	:
+ exp	:	type '(' exp ')' %prec UNARY
+ 			{ write_exp_elt_opcode (UNOP_CAST);
+ 			  write_exp_elt_type ($1);
+-			  write_exp_elt_opcode (UNOP_CAST); }
++			  write_exp_elt_opcode (UNOP_CAST); 
++			  current_type = $1; }
+ 	;
+ 
+ exp	:	'(' exp1 ')'
+@@ -567,9 +615,11 @@ variable:	name_not_typename
+ 			      write_exp_elt_block (NULL);
+ 			      write_exp_elt_sym (sym);
+ 			      write_exp_elt_opcode (OP_VAR_VALUE);
+-			    }
++			      current_type = sym->type; }
+ 			  else if ($1.is_a_field_of_this)
+ 			    {
++			      struct value * this_val;
++			      struct type * this_type;
+ 			      /* Object pascal: it hangs off of `this'.  Must
+ 			         not inadvertently convert from a method call
+ 				 to data ref.  */
+@@ -581,6 +631,18 @@ variable:	name_not_typename
+ 			      write_exp_elt_opcode (STRUCTOP_PTR);
+ 			      write_exp_string ($1.stoken);
+ 			      write_exp_elt_opcode (STRUCTOP_PTR);
++			      /* we need type of this */
++			      this_val = value_of_this (0); 
++			      if (this_val)
++				this_type = this_val->type;
++			      else
++				this_type = NULL;
++			      if (this_type)
++				current_type = lookup_struct_elt_type (
++				  this_type,
++				  $1.stoken.ptr, false);
++			      else
++				current_type = NULL; 
+ 			    }
+ 			  else
+ 			    {
+@@ -881,6 +943,36 @@ parse_number (p, len, parsed_float, puti
+    return INT;
+ }
+ 
++
++struct type_push
++{
++  struct type *stored;
++  struct type_push *next;
++};
++
++static struct type_push *tp_top = NULL;
++
++static void push_current_type ()
++{
++  struct type_push *tpnew;
++  tpnew = (struct type_push *) malloc (sizeof (struct type_push));
++  tpnew->next = tp_top;
++  tpnew->stored = current_type;
++  current_type = NULL;
++  tp_top = tpnew; 
++}
++
++static void pop_current_type ()
++{
++  struct type_push *tp = tp_top;
++  if (tp)
++    {
++      current_type = tp->stored;
++      tp_top = tp->next;
++      xfree (tp);
++    }
++}
++
+ struct token
+ {
+   char *operator;
+@@ -907,8 +999,8 @@ static const struct token tokentab2[] =
+     {"<>", NOTEQUAL, BINOP_END},
+     {"<=", LEQ, BINOP_END},
+     {">=", GEQ, BINOP_END},
+-    {":=", ASSIGN, BINOP_END}
+-  };
++    {":=", ASSIGN, BINOP_END},
++    {"::", COLONCOLON, BINOP_END} };
+ 
+ /* Allocate uppercased var */
+ /* make an uppercased copy of tokstart */
+@@ -1147,6 +1239,7 @@ yylex ()
+ 	  {
+ 	    tempbuf = (char *) realloc (tempbuf, tempbufsize += 64);
+ 	  }
++
+ 	switch (*tokptr)
+ 	  {
+ 	  case '\0':
+@@ -1293,33 +1386,47 @@ yylex ()
+     char *tmp = copy_name (yylval.sval);
+     struct symbol *sym;
+     int is_a_field_of_this = 0;
++    int is_a_field = 0;
+     int hextype;
+ 
+-    sym = lookup_symbol (tmp, expression_context_block,
+-			 VAR_NAMESPACE,
+-			 &is_a_field_of_this,
+-			 (struct symtab **) NULL);
++
++    if (search_field && current_type)
++      is_a_field = (lookup_struct_elt_type (current_type, tmp, 1) != NULL);	
++    if (is_a_field)
++      sym = NULL;
++    else
++      sym = lookup_symbol (tmp, expression_context_block,
++			   VAR_NAMESPACE,
++			   &is_a_field_of_this,
++			   (struct symtab **) NULL);
++
+     /* second chance uppercased (as Free Pascal does).  */
+-    if (!sym && !is_a_field_of_this)
++    if (!sym && !is_a_field_of_this && !is_a_field)
+       {
+        for (i = 0; i <= namelen; i++)
+          {
+            if ((tmp[i] >= 'a' && tmp[i] <= 'z'))
+              tmp[i] -= ('a'-'A');
+          }
+-       sym = lookup_symbol (tmp, expression_context_block,
++       if (search_field && current_type)
++	 is_a_field = (lookup_struct_elt_type (current_type, tmp, 1) != NULL);	
++       if (is_a_field)
++	 sym = NULL;
++       else
++	 sym = lookup_symbol (tmp, expression_context_block,
+                         VAR_NAMESPACE,
+                         &is_a_field_of_this,
+                         (struct symtab **) NULL);
+-       if (sym || is_a_field_of_this)
++       if (sym || is_a_field_of_this || is_a_field)
+          for (i = 0; i <= namelen; i++)
+            {
+              if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
+                tokstart[i] -= ('a'-'A');
+            }
+       }
++
+     /* Third chance Capitalized (as GPC does).  */
+-    if (!sym && !is_a_field_of_this)
++    if (!sym && !is_a_field_of_this && !is_a_field)
+       {
+        for (i = 0; i <= namelen; i++)
+          {
+@@ -1332,11 +1439,17 @@ yylex ()
+            if ((tmp[i] >= 'A' && tmp[i] <= 'Z'))
+              tmp[i] -= ('A'-'a');
+           }
+-       sym = lookup_symbol (tmp, expression_context_block,
++
++       if (search_field && current_type)
++	 is_a_field = (lookup_struct_elt_type (current_type, tmp, 1) != NULL);	
++       if (is_a_field)
++	 sym = NULL;
++       else
++	 sym = lookup_symbol (tmp, expression_context_block,
+                          VAR_NAMESPACE,
+                          &is_a_field_of_this,
+                          (struct symtab **) NULL);
+-        if (sym || is_a_field_of_this)
++       if (sym || is_a_field_of_this || is_a_field)
+           for (i = 0; i <= namelen; i++)
+             {
+               if (i == 0)
+@@ -1349,6 +1462,26 @@ yylex ()
+                   tokstart[i] -= ('A'-'a');
+             }
+       }
++
++    if (is_a_field)
++      {
++	tempbuf = (char *) realloc (tempbuf, namelen + 1);
++	strncpy (tempbuf, tokstart, namelen); tempbuf [namelen] = 0;
++	yylval.sval.ptr = tempbuf;
++	yylval.sval.length = namelen; 
++	return FIELDNAME;
++      } 
++
++    /* if not found uppercase the whole.  */
++    if (!sym && !is_a_field_of_this)
++      {
++       for (i = 0; i <= namelen; i++)
++         {
++           if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
++              tokstart[i] -= ('a'-'A');
++          }
++      }
++
+     /* Call lookup_symtab, not lookup_partial_symtab, in case there are
+        no psymtabs (coff, xcoff, or some future change to blow away the
+        psymtabs once once symbols are read).  */
+@@ -1477,8 +1610,7 @@ yylex ()
+   }
+ }
+ 
+-void
+-yyerror (msg)
++void yyerror (msg)
+      char *msg;
+ {
+   error ("A %s in expression, near `%s'.", (msg ? msg : "error"), lexptr);
+diff -u -p -r origdb/p-lang.c gdb/p-lang.c
+--- origdb/p-lang.c	2002-09-16 10:24:52.000000000 +0200
++++ gdb/p-lang.c	2002-09-16 10:34:18.000000000 +0200
+@@ -44,7 +44,8 @@ extern void _initialize_pascal_language 
+    but this does not happen for Free Pascal nor for GPC.  */
+ int
+ is_pascal_string_type (struct type *type,int *length_pos,
+-                       int * length_size, int *string_pos, int *char_size)
++                       int *length_size, int *string_pos, int *char_size,
++		       char **arrayname)
+ {
+   if (TYPE_CODE (type) == TYPE_CODE_STRUCT)
+     {
+@@ -54,11 +55,17 @@ is_pascal_string_type (struct type *type
+           && strcmp (TYPE_FIELDS (type)[0].name, "length") == 0 
+           && strcmp (TYPE_FIELDS (type)[1].name, "st") == 0)
+         {
+-          *length_pos = TYPE_FIELD_BITPOS (type, 0) / TARGET_CHAR_BIT;
+-          *length_size = TYPE_FIELD_TYPE (type, 0)->length;
+-          *string_pos = TYPE_FIELD_BITPOS (type, 1) / TARGET_CHAR_BIT;
+-          *char_size = 1;
+-          return 1;
++          if (length_pos)
++	    *length_pos = TYPE_FIELD_BITPOS (type, 0) / TARGET_CHAR_BIT;
++          if (length_size)
++	    *length_size = TYPE_FIELD_TYPE (type, 0)->length;
++          if (string_pos)
++	    *string_pos = TYPE_FIELD_BITPOS (type, 1) / TARGET_CHAR_BIT;
++          if (char_size)
++	    *char_size = 1;
++ 	  if (arrayname)
++	    *arrayname = TYPE_FIELDS (type)[1].name;
++         return 2;
+         };
+       /* GNU pascal strings.  */
+       /* Three fields: Capacity, length and schema$ or _p_schema.  */
+@@ -66,12 +73,18 @@ is_pascal_string_type (struct type *type
+           && strcmp (TYPE_FIELDS (type)[0].name, "Capacity") == 0
+           && strcmp (TYPE_FIELDS (type)[1].name, "length") == 0)
+         {
+-          *length_pos = TYPE_FIELD_BITPOS (type, 1) / TARGET_CHAR_BIT;
+-          *length_size = TYPE_FIELD_TYPE (type, 1)->length;
+-          *string_pos = TYPE_FIELD_BITPOS (type, 2) / TARGET_CHAR_BIT;
++          if (length_pos)
++	    *length_pos = TYPE_FIELD_BITPOS (type, 1) / TARGET_CHAR_BIT;
++          if (length_size)
++	    *length_size = TYPE_FIELD_TYPE (type, 1)->length;
++          if (string_pos)
++	    *string_pos = TYPE_FIELD_BITPOS (type, 2) / TARGET_CHAR_BIT;
+           /* FIXME: how can I detect wide chars in GPC ?? */
+-          *char_size = 1;
+-          return 1;
++          if (char_size)
++	    *char_size = 1;
++ 	  if (arrayname)
++	    *arrayname = TYPE_FIELDS (type)[1].name;
++         return 2;
+         };
+     }
+   return 0;
+@@ -280,7 +293,7 @@ pascal_create_fundamental_type (struct o
+ 			0, "void", objfile);
+       break;
+     case FT_CHAR:
+-      type = init_type (TYPE_CODE_INT,
++      type = init_type (TYPE_CODE_CHAR,
+ 			TARGET_CHAR_BIT / TARGET_CHAR_BIT,
+ 			0, "char", objfile);
+       break;
+diff -u -p -r origdb/p-lang.h gdb/p-lang.h
+--- origdb/p-lang.h	2002-09-16 10:24:52.000000000 +0200
++++ gdb/p-lang.h	2002-09-16 10:34:18.000000000 +0200
+@@ -38,7 +38,8 @@ extern void pascal_type_print_method_arg
+ 
+ /* These are in p-lang.c: */
+ 
+-extern int is_pascal_string_type (struct type *, int *, int *, int *, int*);
++extern int 
++  is_pascal_string_type (struct type *, int *, int *, int *, int *, char **);
+ 
+ extern void pascal_printchar (int, struct ui_file *);
+ 
+diff -u -p -r origdb/p-valprint.c gdb/p-valprint.c
+--- origdb/p-valprint.c	2002-09-16 10:24:52.000000000 +0200
++++ gdb/p-valprint.c	2002-09-16 10:34:18.000000000 +0200
+@@ -191,7 +191,7 @@ pascal_val_print (struct type *type, cha
+ 	     Pascal strings are mapped to records
+ 	     with lowercase names PM  */
+           if (is_pascal_string_type (elttype, &length_pos,
+-                                     &length_size, &string_pos, &char_size)
++                                     &length_size, &string_pos, &char_size, NULL)
+ 	      && addr != 0)
+ 	    {
+ 	      ULONGEST string_length;
+@@ -320,7 +320,7 @@ pascal_val_print (struct type *type, cha
+       else
+ 	{
+           if (is_pascal_string_type (type, &length_pos, &length_size,
+-                                     &string_pos, &char_size))
++                                     &string_pos, &char_size, NULL))
+ 	    {
+ 	      len = extract_unsigned_integer (valaddr + embedded_offset + length_pos, length_size);
+ 	      LA_PRINT_STRING (stream, valaddr + embedded_offset + string_pos, len, char_size, 0);
+diff -u -p -r origdb/top.c gdb/top.c
+--- origdb/top.c	2002-09-16 10:25:37.000000000 +0200
++++ gdb/top.c	2002-09-16 10:34:18.000000000 +0200
+@@ -1325,7 +1325,7 @@ print_gdb_version (struct ui_file *strea
+      program to parse, and is just canonical program name and version
+      number, which starts after last space. */
+ 
+-  fprintf_filtered (stream, "GNU gdb %s\n", version);
++  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
+ 
+   /* Second line is a copyright notice. */
+ 
+diff -u -p -r origdb/win32-nat.c gdb/win32-nat.c
+--- origdb/win32-nat.c	2002-09-16 10:25:41.000000000 +0200
++++ gdb/win32-nat.c	2002-09-16 10:34:18.000000000 +0200
+@@ -81,6 +81,13 @@ static unsigned dr[8];
+ static int debug_registers_changed = 0;
+ static int debug_registers_used = 0;
+ 
++#ifdef HAVE_SSE_REGS
++#define CONTEXT_DEBUGGER_DR CONTEXT_DEBUGGER | CONTEXT_DEBUG_REGISTERS \
++	| CONTEXT_EXTENDED_REGISTERS
++#else
++#define CONTEXT_DEBUGGER_DR CONTEXT_DEBUGGER | CONTEXT_DEBUG_REGISTERS
++#endif
++
+ /* The string sent by cygwin when it processes a signal.
+    FIXME: This should be in a cygwin include file. */
+ #define CYGWIN_SIGNAL_STRING "cygwin: signal"
+@@ -286,6 +293,22 @@ child_add_thread (DWORD id, HANDLE h)
+   th->h = h;
+   th->next = thread_head.next;
+   thread_head.next = th;
++  /* Set the debug registers for the new thread in they are used.  */
++  if (debug_registers_used)
++    {
++      /* Only change the value of the debug registers.  */
++      th->context.ContextFlags = CONTEXT_DEBUG_REGISTERS;
++      CHECK (GetThreadContext (th->h, &th->context));
++      th->context.Dr0 = dr[0];
++      th->context.Dr1 = dr[1];
++      th->context.Dr2 = dr[2];
++      th->context.Dr3 = dr[3];
++      /* th->context.Dr6 = dr[6];
++      FIXME: should we set dr6 also ?? */
++      th->context.Dr7 = dr[7];
++      CHECK (SetThreadContext (th->h, &th->context));
++      th->context.ContextFlags = 0;
++    }
+   add_thread (pid_to_ptid (id));
+   /* Set the debug registers for the new thread in they are used.  */
+   if (debug_registers_used)
+@@ -1717,6 +1740,16 @@ child_resume (ptid_t ptid, int step, enu
+   th = thread_rec (current_event.dwThreadId, FALSE);
+   if (th)
+     {
++      if (debug_registers_changed)
++        {
++          th->context.Dr0 = dr[0];
++          th->context.Dr1 = dr[1];
++          th->context.Dr2 = dr[2];
++          th->context.Dr3 = dr[3];
++          /* th->context.Dr6 = dr[6];
++           FIXME: should we set dr6 also ?? */
++          th->context.Dr7 = dr[7];
++        }
+       if (step)
+ 	{
+ 	  /* Single step by setting t bit */
