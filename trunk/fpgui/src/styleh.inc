@@ -23,11 +23,15 @@
   TArrowDirection = (arrowUp, arrowDown, arrowLeft, arrowRight);
 
   TStyle = class
+  protected
+    UIColorCache: array[0..$18] of TGfxColor;
   public
     constructor Create(ADisplay: TGfxDisplay); virtual;
     // Colors
+    procedure UpdateUIColorCache;
     function GetGUIColor(Color: TColor): TGfxColor; virtual; abstract;
-    function MapGUIColor(Canvas: TGfxCanvas; Color: TColor): TGfxPixel; 
+
+    function GetUIColor(AColor: TColor): TGfxColor;
     procedure SetUIColor(Canvas: TGfxCanvas; Color: TColor);
 
     // General
@@ -148,6 +152,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

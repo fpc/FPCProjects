@@ -26,6 +26,7 @@ begin
 
   FCanExpandWidth := True;
   FCanExpandHeight := True;
+  FCursor := crArrow;
   FWindowType := wtWindow;
 
   if not Assigned(FStyle) then
@@ -35,6 +36,8 @@ end;
 
 destructor TCustomForm.Destroy;
 begin
+  if Assigned(OnDestroy) then
+    OnDestroy(Self);
   if Assigned(FWnd) then
     FWnd.Free;
   Application.FForms.Remove(Self);
@@ -77,14 +80,17 @@ begin
   end;
 end;
 
-procedure TCustomForm.WidgetCoords(AWidget: TWidget; var OutX, OutY: Integer);
+function TCustomForm.WidgetCoords(AWidget: TWidget): TPoint;
 begin
-  OutX := 0;
-  OutY := 0;
+  Result.x := 0;
+  Result.y := 0;
   while AWidget <> Self do
   begin
-    Inc(OutX, AWidget.Left);
-    Inc(OutY, AWidget.Top);
+    with AWidget.Parent.ClientToWidget(Point(AWidget.Left, AWidget.Top)) do
+    begin
+      Inc(Result.x, x);
+      Inc(Result.y, y);
+    end;
     AWidget := AWidget.Parent;
   end;
 end;
@@ -231,8 +237,11 @@ begin
       FocusedWidget.EvFocusChanged;
     end;
     FFocusedWidget := AWidget;
-    Include(FFocusedWidget.WidgetState, wsHasFocus);
-    FocusedWidget.EvFocusChanged;
+    if Assigned(FocusedWidget) then
+    begin
+      Include(FFocusedWidget.WidgetState, wsHasFocus);
+      FocusedWidget.EvFocusChanged;
+    end;
   end;
 end;
 
@@ -313,7 +322,7 @@ end;
 procedure TCustomForm.WndMouseEnter(Sender: TObject; Shift: TShiftState; x, y: Integer);
 begin
   if wsEnabled in WidgetState then
-    SendEvent(TMouseEnterEventObj.Create(Self, Shift, x, y));
+    DoMouseEnter(Shift, x, y);
 end;
 
 procedure TCustomForm.WndMouseLeave(Sender: TObject);
@@ -342,32 +351,46 @@ begin
     MouseCaptureWidget.SendEvent(
      TMouseMovedEventObj.Create(Self, Shift, x - dx, y - dy));
   end else}
+
+  procedure SendMouseEvents(Widget: TWidget; ax, ay: Integer);
+  var
+    LeaveCheckEvent: TMouseLeaveCheckEventObj;
+  begin
+    LeaveCheckEvent := TMouseLeaveCheckEventObj.Create(Self, Shift, ax, ay);
+    LeaveCheckEvent.AddRef;
+    Widget.SendEvent(LeaveCheckEvent);
+    Widget.SendEvent(TMouseMoveEventObj.Create(Self, Shift, ax, ay));
+    if (LeaveCheckEvent.NewCursor <> crDefault) and
+      (LeaveCheckEvent.NewCursor <> Wnd.Cursor) then
+      Wnd.Cursor := LeaveCheckEvent.NewCursor;
+    LeaveCheckEvent.Free;
+  end;
+
 var
-  dx, dy: Integer;
+  Pt: TPoint;
 begin
   if wsEnabled in WidgetState then
     if Assigned(MouseCaptureWidget) then
     begin
-      WidgetCoords(MouseCaptureWidget, dx, dy);
-      MouseCaptureWidget.SendEvent(
-        TMouseMoveEventObj.Create(Self, Shift, x - dx, y - dy));
+      Pt := WidgetCoords(MouseCaptureWidget);
+      SendMouseEvents(MouseCaptureWidget, x - Pt.x, y - Pt.y);
       if not Assigned(MouseCaptureWidget) then
-	SendEvent(TMouseMoveEventObj.Create(Self, Shift, x, y));
+	SendMouseEvents(Self, x, y);
     end else
-      SendEvent(TMouseMoveEventObj.Create(Self, Shift, x, y));
+      SendMouseEvents(Self, x, y);
 end;
 
 procedure TCustomForm.WndMousePressed(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; x, y: Integer);
 var
-  dx, dy: Integer;
+  Pt: TPoint;
 begin
   if wsEnabled in WidgetState then
     if Assigned(MouseCaptureWidget) then
     begin
-      WidgetCoords(MouseCaptureWidget, dx, dy);
+      Pt := WidgetCoords(MouseCaptureWidget);
       MouseCaptureWidget.SendEvent(
-        TMousePressedEventObj.Create(Self, Button, Shift, x - dx, y - dy));
+        TMousePressedEventObj.Create(Self, Button, Shift, x - Pt.x, y - Pt.y));
       if not Assigned(MouseCaptureWidget) then
 	SendEvent(TMouseMoveEventObj.Create(Self, Shift, x, y));
     end else
@@ -377,14 +400,14 @@ end;
 procedure TCustomForm.WndMouseReleased(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; x, y: Integer);
 var
-  dx, dy: Integer;
+  Pt: TPoint;
 begin
   if wsEnabled in WidgetState then
     if Assigned(MouseCaptureWidget) then
     begin
-      WidgetCoords(MouseCaptureWidget, dx, dy);
+      Pt := WidgetCoords(MouseCaptureWidget);
       MouseCaptureWidget.SendEvent(
-        TMouseReleasedEventObj.Create(Self, Button, Shift, x - dx, y - dy));
+        TMouseReleasedEventObj.Create(Self, Button, Shift, x - Pt.x, y - Pt.y));
       if not Assigned(MouseCaptureWidget) then
 	SendEvent(TMouseMoveEventObj.Create(Self, Shift, x, y));
     end else
@@ -437,6 +460,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.4  2001/01/18 15:37:27  sg
   * Added support for the different TGfxWindow window types
 

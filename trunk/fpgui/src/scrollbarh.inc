@@ -42,6 +42,7 @@
     // Helpers
     function GetButtonSize: Integer;
     function ClipPosition(APosition: Integer): Integer;
+    procedure UpdateBar;
   protected
     function ProcessEvent(Event: TEventObj): Boolean; override;
     function DistributeEvent(Event: TEventObj): Boolean; override;
@@ -81,6 +82,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

@@ -20,7 +20,8 @@
   private
     function EvResize(Event: TResizeEventObj): Boolean;
     procedure ButtonClick(Sender: TObject);
-    procedure ListDeactivate(Sender: TObject);
+    procedure DropDownDeactivate(Sender: TObject);
+    procedure DropDownDestroy(Sender: TObject);
   protected
     FButton: TGenericButton;
     FDropDown: TCustomForm;
@@ -43,6 +44,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:11  sg
   *** empty log message ***
 

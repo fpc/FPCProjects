@@ -30,6 +30,7 @@
     procedure EvRecalcLayout; override;
     procedure EvTextChanged; override;
     property CanExpandWidth default True;
+    property Cursor default crIBeam;
     property PasswordChar: Char read FPasswordChar write SetPasswordChar default #0;
     property CursorPos: Integer read FCursorPos write SetCursorPos;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -49,6 +50,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

@@ -61,7 +61,7 @@ begin
   Canvas.IntersectClipRect(Rect(Borders.Left, Borders.Top,
     Width - Borders.Right, Height - Borders.Bottom));
 
-  Canvas.SetColor(Style.MapGUIColor(Canvas, clBtnText));
+  Canvas.SetColor(Style.GetUIColor(clBtnText));
   x := (Width - Canvas.TextWidth(Text)) div 2;
   y := (Height - Canvas.FontCellHeight) div 2;
   if (wsClicked in WidgetState) and (wsMouseInside in WidgetState) then
@@ -90,6 +90,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:19  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:11  sg
   *** empty log message ***
 

@@ -65,7 +65,7 @@ type
   protected
     ButtonPos, ButtonSize: Integer;
     IsDraggingButton, PrevAreaPressed, NextAreaPressed: Boolean;
-    ButtonMovePos: Integer;
+    DragStartMousePos, DragStartButtonPos, ButtonMoveSavedPosition: Integer;
     procedure Paint(Canvas: TGfxCanvas); override;
     function ProcessEvent(Event: TEventObj): Boolean; override;
     procedure EvRecalcLayout; override;
@@ -80,7 +80,6 @@ constructor TScrollBarSlider.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   WidgetStyle := WidgetStyle + [wsCaptureMouse, wsClickable, wsOpaque];
-  ButtonMovePos := -1;
 end;
 
 procedure TScrollBarSlider.UpdateBar;
@@ -111,19 +110,6 @@ begin
     end;
     Redraw;
   end;
-
-  with TCustomScrollBar(Owner) do
-    if Embedded and
-      (Parent.WidgetState * [wsGetsVisible, wsIsVisible] <> []) then
-    begin
-      if (Max <= Min) or ((PageSize > 0) and (PageSize > Max - Min)) then
-	Hide
-      else if WidgetState * [wsGetsVisible, wsIsVisible] = [] then
-      begin
-	Show;
-	UpdateBar;
-      end;
-    end;
 end;
 
 procedure TScrollBarSlider.Paint(Canvas: TGfxCanvas);
@@ -131,6 +117,7 @@ var
   Size: Integer;
   r: TRect;
   StartPos, EndPos: PInteger;
+  Color2: TColor;
 begin
   ASSERT(Owner is TCustomScrollBar);
   inherited Paint(Canvas);
@@ -154,9 +141,11 @@ begin
   if ButtonPos > 0 then
   begin
     if PrevAreaPressed then
-      Style.SetUIColor(Canvas, cl3DShadow)
+      Color2 := cl3DDkShadow
     else
-      Style.SetUIColor(Canvas, clScrollBar);
+      Color2 := cl3DLight;
+    Canvas.SetColor(GetAvgColor(Style.GetUIColor(clScrollBar),
+        Style.GetUIColor(Color2)));
     StartPos^ := 0;
     EndPos^ := ButtonPos;
     Canvas.FillRect(r);
@@ -164,9 +153,11 @@ begin
   if ButtonPos + ButtonSize < Size then
   begin
     if NextAreaPressed then
-      Style.SetUIColor(Canvas, cl3DShadow)
+      Color2 := cl3DDkShadow
     else
-      Style.SetUIColor(Canvas, clScrollBar);
+      Color2 := cl3DLight;
+    Canvas.SetColor(GetAvgColor(Style.GetUIColor(clScrollBar),
+        Style.GetUIColor(Color2)));
     StartPos^ := ButtonPos + ButtonSize;
     EndPos^ := Size;
     Canvas.FillRect(r);
@@ -224,13 +215,16 @@ begin
   end else
   begin
     IsDraggingButton := True;
-    ButtonMovePos := Pos;
+    DragStartMousePos := Pos;
+    DragStartButtonPos := ButtonPos;
   end;
   Result := True;
 end;
 
 function TScrollBarSlider.EvMouseReleased(
   Event: TMouseReleasedEventObj): Boolean;
+var
+  NewPosition: Integer;
 begin
   Result := inherited ProcessEvent(Event);	// For mouse grabbing support
 
@@ -240,7 +234,16 @@ begin
   if IsDraggingButton then
   begin
     IsDraggingButton := False;
-    TCustomScrollBar(Owner).Position := CalcPosition;
+    NewPosition := CalcPosition;
+    if NewPosition <> TCustomScrollBar(Owner).Position then
+    begin
+      if Assigned(TCustomScrollBar(Owner).OnScroll) then
+        TCustomScrollBar(Owner).OnScroll(Owner, NewPosition);
+      TCustomScrollBar(Owner).FPosition := NewPosition;
+    end;
+    if (NewPosition <> ButtonMoveSavedPosition) and
+      Assigned(TCustomScrollBar(Owner).OnChange) then
+      TCustomScrollBar(Owner).OnChange(Self);
     UpdateBar;
   end else if PrevAreaPressed then
   begin
@@ -260,19 +263,27 @@ var
 begin
   if IsDraggingButton then
   begin
-    if TCustomScrollBar(Owner).Orientation = Horizontal then
+    if wsMouseInside in WidgetState then
+      if TCustomScrollBar(Owner).Orientation = Horizontal then
+      begin
+        Pos := Event.MouseX;
+        Size := Width;
+      end else
+      begin
+        Pos := Event.MouseY;
+        Size := Height;
+      end
+    else
     begin
-      Pos := Event.MouseX;
-      Size := Width;
-    end else
-    begin
-      Pos := Event.MouseY;
-      Size := Height;
+      Pos := DragStartMousePos;
+      if TCustomScrollBar(Owner).Orientation = Horizontal then
+        Size := Width
+      else
+        Size := Height;
     end;
 
-    ButtonPos := ClipMinMax(ButtonPos + Pos - ButtonMovePos,
-      0, Size - ButtonSize - 1);
-    ButtonMovePos := Pos;
+    ButtonPos := ClipMinMax(DragStartButtonPos + Pos - DragStartMousePos,
+      0, Size - ButtonSize);
     VirtualPos := CalcPosition;
 
     if VirtualPos <> TCustomScrollBar(Owner).Position then
@@ -456,6 +467,8 @@ begin
       Slider.SetBounds(Left, Top + ButtonUp.DefH,
         Right - Left, Bottom - Top - ButtonUp.DefH - ButtonDown.DefH);
     end;
+
+  UpdateBar;
 end;
 
 procedure TCustomScrollBar.EvRecalcLayout;
@@ -500,6 +513,69 @@ begin
   LineDown;
 end;
 
+procedure TCustomScrollBar.SetOrientation(AOrientation: TOrientation);
+begin
+  if AOrientation <> Orientation then
+  begin
+    FOrientation := AOrientation;
+    if Orientation = Horizontal then
+    begin
+      TScrollBarButton(ButtonUp).Direction := arrowLeft;
+      TScrollBarButton(ButtonDown).Direction := arrowRight;
+    end else
+    begin
+      TScrollBarButton(ButtonUp).Direction := arrowUp;
+      TScrollBarButton(ButtonDown).Direction := arrowDown;
+    end;
+  end;
+end;
+
+procedure TCustomScrollBar.SetMin(AMin: Integer);
+begin
+  if AMin <> Min then
+  begin
+    FMin := AMin;
+    Position := Position;	// Do range clipping
+    UpdateBar;
+  end;
+end;
+
+procedure TCustomScrollBar.SetMax(AMax: Integer);
+begin
+  if AMax <> Max then
+  begin
+    FMax := AMax;
+    Position := Position;	// Do range clipping
+    UpdateBar;
+  end;
+end;
+
+procedure TCustomScrollBar.SetPageSize(APageSize: Integer);
+begin
+  if APageSize <> PageSize then
+  begin
+    FPageSize := APageSize;
+    Position := Position;	// Do range clipping
+    UpdateBar;
+  end;
+end;
+
+procedure TCustomScrollBar.SetPosition(APosition: Integer);
+begin
+  APosition := ClipPosition(APosition);
+
+  if (APosition <> Position) and Assigned(OnScroll) then
+    OnScroll(Self, APosition);
+
+  if APosition <> Position then
+  begin
+    FPosition := APosition;
+    UpdateBar;
+    if Assigned(OnChange) then
+      OnChange(Self);
+  end;
+end;
+
 function TCustomScrollBar.GetButtonSize: Integer;
 var
   Size: Integer;
@@ -535,72 +611,19 @@ begin
     Result := Min;
 end;
 
-procedure TCustomScrollBar.SetOrientation(AOrientation: TOrientation);
+procedure TCustomScrollBar.UpdateBar;
 begin
-  if AOrientation <> Orientation then
-  begin
-    FOrientation := AOrientation;
-    if Orientation = Horizontal then
-    begin
-      TScrollBarButton(ButtonUp).Direction := arrowLeft;
-      TScrollBarButton(ButtonDown).Direction := arrowRight;
-    end else
-    begin
-      TScrollBarButton(ButtonUp).Direction := arrowUp;
-      TScrollBarButton(ButtonDown).Direction := arrowDown;
-    end;
-  end;
-end;
-
-procedure TCustomScrollBar.SetMin(AMin: Integer);
-begin
-  if AMin <> Min then
-  begin
-    FMin := AMin;
-    Position := Position;	// Do range clipping
-    TScrollBarSlider(Slider).UpdateBar;
-  end;
-end;
-
-procedure TCustomScrollBar.SetMax(AMax: Integer);
-begin
-  if AMax <> Max then
-  begin
-    FMax := AMax;
-    Position := Position;	// Do range clipping
-    TScrollBarSlider(Slider).UpdateBar;
-  end;
-end;
-
-procedure TCustomScrollBar.SetPageSize(APageSize: Integer);
-begin
-  if APageSize <> PageSize then
-  begin
-    FPageSize := APageSize;
-    Position := Position;	// Do range clipping
-    TScrollBarSlider(Slider).UpdateBar;
-  end;
-end;
-
-procedure TCustomScrollBar.SetPosition(APosition: Integer);
-begin
-  APosition := ClipPosition(APosition);
-
-  if (APosition <> Position) and Assigned(OnScroll) then
-    OnScroll(Self, APosition);
-
-  if APosition <> Position then
-  begin
-    FPosition := APosition;
-    TScrollBarSlider(Slider).UpdateBar;
-    if Assigned(OnChange) then
-      OnChange(Self);
-  end;
+  if Embedded then
+    Visible := (Max > Min) and ((PageSize = 0) or (PageSize <= Max - Min));
+  TScrollBarSlider(Slider).UpdateBar;
 end;
 
 
 {
   $Log$
+  Revision 1.4  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.3  2001/01/11 23:30:12  sg
   *** empty log message ***
 

@@ -24,7 +24,7 @@ procedure TCustomLabel.Paint(Canvas: TGfxCanvas);
 var
   x: Integer;
 begin
-  Canvas.SetColor(Style.MapGUIColor(Canvas, clBtnText));
+  Canvas.SetColor(Style.GetUIColor(clWindowText));
   case Alignment of
     taLeftJustify: x := 0;
     taCenter: x := (Width - Canvas.TextWidth(Text)) div 2;
@@ -57,6 +57,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

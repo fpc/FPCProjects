@@ -23,7 +23,7 @@
 constructor TCustomRadioButton.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  WidgetStyle := WidgetStyle + [wsCaptureMouse, wsClickable, wsOpaque];
+  WidgetStyle := WidgetStyle + [wsCaptureMouse, wsClickable];
 end;
 
 procedure TCustomRadioButton.Click;
@@ -56,7 +56,7 @@ begin
     Include(Flags, cbIsChecked);
 
   Style.DrawRadioButton(Canvas, Rect(0, 0, Width, Height), LabelRect, Flags);
-  Style.SetUIColor(Canvas, clBtnText);
+  Canvas.SetColor(Style.GetUIColor(clWindowText));
   Style.DrawText(Canvas, LabelRect.Left, LabelRect.Top, Text, WidgetState);
 end;
 
@@ -91,6 +91,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Scrolling support declarations
@@ -18,21 +18,29 @@
 
   TScrollingSupport = class
   private
-    FClientRect: TRect;
     Parent: TWidget;
-    HorzScrollBar, VertScrollBar: TCustomScrollBar;
+    FBorders: TRect;
+    FClientRect: TRect;
+    FHorzScrollBar, FVertScrollBar: TScrollBar;
+    FOnClientRectChange: TNotifyEvent;
     function EvMouseWheel(Event: TMouseWheelEventObj): Boolean;
   public
     constructor Create(AParent: TWidget);
     destructor Destroy; override;
     function ProcessEvent(Event: TEventObj): Boolean;
     function DistributeEvent(Event: TEventObj): Boolean;
+    function SendToChild(AChild: TWidget; Event: TEventObj): Boolean;
     procedure EvRecalcLayout;
+    function CalcClientSize(AHorzBarVisible, AVertBarVisible: Boolean): TSize;
 
     procedure DefHorzScrollHandler(Sender: TObject; var APosition: Integer);
     procedure DefVertScrollHandler(Sender: TObject; var APosition: Integer);
 
+    property Borders: TRect read FBorders;
     property ClientRect: TRect read FClientRect;
+    property HorzScrollBar: TScrollBar read FHorzScrollBar;
+    property VertScrollBar: TScrollBar read FVertScrollBar;
+    property OnClientRectChange: TNotifyEvent read FOnClientRectChange write FOnClientRectChange;
   end;
 
 
@@ -55,6 +63,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/17 21:36:55  sg
   * Scrolling improvements
 

@@ -18,9 +18,13 @@
 
   TCustomListBox = class(TWidget)
   private
+    FHotTrack: Boolean;
     FItems: TStrings;
     FItemIndex: Integer;
     function EvMousePressed(Event: TMousePressedEventObj): Boolean;
+    function EvMouseReleased(Event: TMouseReleasedEventObj): Boolean;
+    function EvMouseMoved(Event: TMouseMoveEventObj): Boolean;
+    function ProcessMouseEvent(Event: TMouseEventObj): Boolean;
   protected
     ScrollingSupport: TScrollingSupport;
     FMaxItemWidth: Integer;
@@ -39,6 +43,7 @@
 
     property CanExpandWidth default True;
     property CanExpandHeight default True;
+    property HotTrack: Boolean read FHotTrack write FHotTrack default False;
     property ItemIndex: Integer read FItemIndex default -1;
   public
     constructor Create(AOwner: TComponent); override;
@@ -48,13 +53,20 @@
 
   TListBox = class(TCustomListBox)
   published
+    // TWidget properties
+    property OnClick;
     property Enabled;
+    // TCustomListBox properties
+    property HotTrack;
     property Items;
   end;
 
 
 {
   $Log$
+  Revision 1.4  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.3  2001/01/17 21:36:55  sg
   * Scrolling improvements
 

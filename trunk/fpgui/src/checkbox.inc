@@ -55,7 +55,7 @@ begin
     Include(Flags, cbIsChecked);
 
   Style.DrawCheckbox(Canvas, Rect(0, 0, Width, Height), LabelRect, Flags);
-  Style.SetUIColor(Canvas, clBtnText);
+  Canvas.SetColor(Style.GetUIColor(clWindowText));
   Style.DrawText(Canvas, LabelRect.Left, LabelRect.Top, Text, WidgetState);
 end;
 
@@ -78,6 +78,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/02/09 20:50:19  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.1  2000/12/23 23:20:14  sg
   * First public CVS version...
 

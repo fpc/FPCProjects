@@ -154,6 +154,14 @@ begin
     Result := ScrollingSupport.ProcessEvent(Event) or
       EvMousePressed(TMousePressedEventObj(Event)) or
       inherited ProcessEvent(Event)
+  else if Event.InheritsFrom(TMouseReleasedEventObj) then
+    Result := ScrollingSupport.ProcessEvent(Event) or
+      EvMouseReleased(TMouseReleasedEventObj(Event)) or
+      inherited ProcessEvent(Event)
+  else if Event.InheritsFrom(TMouseMoveEventObj) then
+    Result := ScrollingSupport.ProcessEvent(Event) or
+      EvMouseMoved(TMouseMoveEventObj(Event)) or
+      inherited ProcessEvent(Event)
   else
   begin
     Result := ScrollingSupport.ProcessEvent(Event) or
@@ -235,14 +243,39 @@ end;
 // private methods
 
 function TCustomListBox.EvMousePressed(Event: TMousePressedEventObj): Boolean;
+begin
+  if HotTrack then
+    Result := False
+  else if Event.Button = mbLeft then
+    Result := ProcessMouseEvent(Event)
+  else
+    Result := False;
+end;
+
+function TCustomListBox.EvMouseReleased(Event: TMouseReleasedEventObj): Boolean;
+begin
+  if HotTrack and (Event.Button = mbLeft) then
+    Result := ProcessMouseEvent(Event)
+  else
+    Result := False;
+end;
+
+function TCustomListBox.EvMouseMoved(Event: TMouseMoveEventObj): Boolean;
+begin
+  if HotTrack then
+    Result := ProcessMouseEvent(Event)
+  else
+    Result := False;
+end;
+
+function TCustomListBox.ProcessMouseEvent(Event: TMouseEventObj): Boolean;
 var
   Index: Integer;
 begin
-  if (Event.Button <> mbLeft) or
-    (Event.MouseX < ScrollingSupport.ClientRect.Left) or
-    (Event.MouseY < ScrollingSupport.ClientRect.Top) or
-    (Event.MouseX >= ScrollingSupport.ClientRect.Right) or
-    (Event.MouseY >= ScrollingSupport.ClientRect.Bottom) then
+  if (Event.MouseX < ScrollingSupport.ClientRect.Left) or
+     (Event.MouseY < ScrollingSupport.ClientRect.Top) or
+     (Event.MouseX >= ScrollingSupport.ClientRect.Right) or
+     (Event.MouseY >= ScrollingSupport.ClientRect.Bottom) then
   begin
     Result := False;
     exit;
@@ -250,18 +283,29 @@ begin
 
   Index := (Event.MouseY - ScrollingSupport.ClientRect.Top +
     ScrollingSupport.VertScrollBar.Position) div ItemHeight;
-  if (Index >= 0) and (Index < Items.Count) and (Index <> ItemIndex) then
+  if (Index >= 0) and (Index < Items.Count) and ((Index <> ItemIndex) or
+    (HotTrack and Event.InheritsFrom(TMouseReleasedEventObj))) then
   begin
     RedrawItem(ItemIndex);
     FItemIndex := Index;
     RedrawItem(ItemIndex);
+    if (not Event.InheritsFrom(TMouseMoveEventObj)) and Assigned(OnClick) then
+      OnClick(Self);
   end;
+
+{ !!!: Re-include this for correct focus handling. But at the moment a focus
+  change results in a complete widget redraw, which is not very brilliant. }
+//  inherited ProcessEvent(Event);
+
   Result := True;
 end;
 
 
 {
   $Log$
+  Revision 1.5  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.4  2001/01/17 21:36:55  sg
   * Scrolling improvements
 

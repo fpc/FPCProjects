@@ -23,16 +23,31 @@
 constructor TStyle.Create(ADisplay: TGfxDisplay);
 begin
   inherited Create;
+  UpdateUIColorCache;
 end;
 
-function TStyle.MapGUIColor(Canvas: TGfxCanvas; Color: TColor): TGfxPixel;
+procedure TStyle.UpdateUIColorCache;
+var
+  i: TColor;
 begin
-  Result := Canvas.MapColor(GetGUIColor(Color));
+  for i := 0 to $18 do
+    UIColorCache[i] := GetGUIColor(TColor(i + clScrollBar));
+end;
+
+function TStyle.GetUIColor(AColor: TColor): TGfxColor;
+begin
+  if (AColor >= clScrollBar) and (AColor <= clScrollBar + $18) then
+    Result := UIColorCache[TColor(AColor - clScrollBar)]
+  else
+    Result := colBlack;
 end;
 
 procedure TStyle.SetUIColor(Canvas: TGfxCanvas; Color: TColor);
 begin
-  Canvas.SetColor(MapGUIColor(Canvas, Color));
+  if (Color >= clScrollBar) and (Color <= clScrollBar + $18) then
+    Canvas.SetColor(UIColorCache[TColor(Color - clScrollBar)])
+  else
+    Canvas.SetColor(colBlack);
 end;
 
 
@@ -43,13 +58,19 @@ end;
 const
   rgbaWhite: TGfxColor = (Red: $ffff; Green: $ffff; Blue: $ffff; Alpha: 0);
   rgbaDkWhite: TGfxColor = (Red: $e000; Green: $e000; Blue: $e000; Alpha: 0);
-  rgbaLtLtGray: TGfxColor = (Red: $d800; Green: $d800; Blue: $d800; Alpha: 0);
   rgbaLtGray: TGfxColor = (Red: $c000; Green: $c000; Blue: $c000; Alpha: 0);
   rgbaGray: TGfxColor = (Red: $8000; Green: $8000; Blue: $8000; Alpha: 0);
   rgbaBlack: TGfxColor = (Red: $0000; Green: $0000; Blue: $0000; Alpha: 0);
   rgbaBlue: TGfxColor = (Red: $0000; Green: $0000; Blue: $ffff; Alpha: 0);
   rgbaDkBlue: TGfxColor = (Red: $0000; Green: $0000; Blue: $8000; Alpha: 0);
   rgbaLtYellow: TGfxColor = (Red: $ffff; Green: $ffff; Blue: $e100; Alpha: 0);
+
+
+{$IFDEF Win32}
+  {$INCLUDE win32/defstyle.inc}
+{$ENDIF}
+
+{$INCLUDE defimpl/defstyle.inc}
 
 
 constructor TDefaultStyle.Create(ADisplay: TGfxDisplay);
@@ -112,20 +133,13 @@ begin
   inherited Create(ADisplay);
 
   PalData[0] := colMagenta;
-  PalData[1] := colBlack;
-  PalData[2] := rgbaGray;
-  PalData[3] := rgbaLtGray;
-  PalData[4] := rgbaLtLtGray;
-  PalData[5] := colWhite;
-  PalData[6] := GetGUIColor(clWindowText);
-  PalData[7] := GetGUIColor(clWindow);
-
-{  PalData[1] := GetGUIColor(cl3DDkShadow);
+  PalData[1] := GetGUIColor(cl3DDkShadow);
   PalData[2] := GetGUIColor(cl3DShadow);
   PalData[3] := GetGUIColor(cl3DFace);
-  PalData[4] := GetGUIColor(cl3DHighlight);
-  PalData[5] := GetGUIColor(clWindow);
-  PalData[6] := GetGUIColor(clWindowText);}
+  PalData[4] := GetGUIColor(cl3DLight);
+  PalData[5] := GetGUIColor(cl3DHighlight);
+  PalData[6] := GetGUIColor(clWindowText);
+  PalData[7] := GetGUIColor(clWindow);
 
   { The image canvas contains 3 horizontal stripes:
     - y=0..11: Radio button images (5x 12x12 pixel)
@@ -197,17 +211,6 @@ begin
   end;
 end;
 
-procedure TDefaultStyle.DrawFocusRect(Canvas: TGfxCanvas; const ARect: TRect);
-begin
-  // !!!: Disabled as long a a certain nVidia X-Server has bugs with this...
-{  Canvas.SetColor(Canvas.MapColor(rgbaBlack));
-  Canvas.SetLineStyle(lsDot);
-  Canvas.DrawRect(ARect);
-  Canvas.SetLineStyle(lsSolid);}
-  Canvas.SetColor(Canvas.MapColor(rgbaGray));
-  Canvas.DrawRect(ARect);
-end;
-
 procedure TDefaultStyle.DrawSunkenOuterBorder(Canvas: TGfxCanvas;
   const ARect: TRect);
 begin
@@ -222,32 +225,7 @@ begin
 end;
 
 
-// theme engine implementation
-
-function TDefaultStyle.GetGUIColor(Color: TColor): TGfxColor;
-begin
-  case Color of
-//    clScrollBar: Result := rgbaLtGray;
-    clScrollBar: Result := rgbaLtLtGray;
-    clMenu: Result := rgbaLtGray;
-    clWindow: Result := rgbaWhite;
-    clMenuText: Result := rgbaBlack;
-    clWindowText: Result := rgbaBlack;
-    clAppWorkSpace: Result := rgbaGray;
-    clHighlight: Result := rgbaDkBlue;
-    clHighlightText: Result := rgbaWhite;
-    cl3DFace: Result := rgbaLtGray;
-    cl3DShadow: Result := rgbaGray;
-    clGrayText: Result := rgbaGray;
-    clBtnText: Result := rgbaBlack;
-    cl3DHighlight: Result := rgbaWhite;
-    cl3DDkShadow: Result := rgbaBlack;
-    cl3DLight: Result := rgbaDkWhite;
-    clInfoText: Result := rgbaBlack;
-    clInfoBk: Result := rgbaLtYellow;
-    else Result := rgbaWhite;
-  end;
-end;
+// style engine implementation
 
 procedure TDefaultStyle.DrawText(Canvas: TGfxCanvas; x, y: Integer;
   const AText: String; State: TWidgetState);
@@ -389,7 +367,7 @@ begin
       Left, TopLine,
       Left + 8, TopLine]);
 
-  Canvas.SetColor(Canvas.MapColor(rgbaBlack));
+  SetUIColor(Canvas, clWindowText);
   DrawText(Canvas, ARect.Left + 9, ARect.Top, ALabel, WidgetState);
 end;
 
@@ -453,8 +431,6 @@ procedure TDefaultStyle.DrawRadioButton(Canvas: TGfxCanvas;
 var
   Index, BtnY: Integer;
 begin
-  SetUIColor(Canvas, cl3DFace);
-  Canvas.FillRect(ARect);
   with ARect do
   begin
     BtnY := Top + (Bottom - Top - 12) div 2;
@@ -571,6 +547,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

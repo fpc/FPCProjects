@@ -20,9 +20,11 @@
   private
     FFocusedWidget: TWidget;
     FMouseCaptureWidget: TWidget;
+    FLastSetCursor: TGfxCursor;
     FWnd: TGfxWindow;
     FWindowType: TGfxWindowType;
     FOnCreate: TNotifyEvent;
+    FOnDestroy: TNotifyEvent;
     FOnActivate: TNotifyEvent;
     FOnDeactivate: TNotifyEvent;
     // Event handling
@@ -56,7 +58,7 @@
     FIsActive, FResizedByUser, FPositionSpecified: Boolean;
     procedure Loaded; override;
     procedure Paint(Canvas: TGfxCanvas); override;
-    procedure WidgetCoords(AWidget: TWidget; var OutX, OutY: Integer);
+    function WidgetCoords(AWidget: TWidget): TPoint;
     function ProcessEvent(Event: TEventObj): Boolean; override;
     procedure EvRecalcLayout; override;
     procedure EvTextChanged; override;
@@ -66,9 +68,11 @@
 
     property CanExpandWidth default True;
     property CanExpandHeight default True;
+    property Cursor default crArrow;
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
     property WindowType: TGfxWindowType read FWindowType write FWindowType default wtWindow;
     property OnCreate: TNotifyEvent read FOnCreate write FOnCreate;
+    property OnDestroy: TNotifyEvent read FOnDestroy write FOnDestroy;
     property OnActivate: TNotifyEvent read FOnActivate write FOnActivate;
     property OnDeactivate: TNotifyEvent read FOnDeactivate write FOnDeactivate;
   public
@@ -95,6 +99,9 @@
 
 {
   $Log$
+  Revision 1.4  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.3  2001/01/18 15:37:27  sg
   * Added support for the different TGfxWindow window types
 

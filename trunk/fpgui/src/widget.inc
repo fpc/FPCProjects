@@ -78,18 +78,24 @@ begin
 end;
 
 function TPaintEventObj.SendToChild(AChild: TWidget): Boolean;
+var
+  ClientPos: TPoint;
 begin
   if wsIsVisible in AChild.WidgetState then
   begin
     Canvas.SaveState;
-    if Canvas.IntersectClipRect(Rect(AChild.Left, AChild.Top,
-      AChild.Left + AChild.Width, AChild.Top + AChild.Height)) then
-    begin
-      Canvas.AppendTranslation(AChild.Left, AChild.Top);
-      Result := inherited SendToChild(AChild);
-    end else
-      Result := False;
-    Canvas.RestoreState;
+    try
+      if Canvas.IntersectClipRect(Rect(AChild.Left, AChild.Top,
+        AChild.Left + AChild.Width, AChild.Top + AChild.Height)) then
+      begin
+        ClientPos := AChild.ClientToWidget(Point(AChild.Left, AChild.Top));
+        Canvas.AppendTranslation(ClientPos.x, ClientPos.y);
+        Result := inherited SendToChild(AChild);
+      end else
+        Result := False;
+    finally
+      Canvas.RestoreState;
+    end;
   end else
     Result := False;
 end;
@@ -111,9 +117,10 @@ end;
 function TMouseEventObj.SendToChild(AChild: TWidget): Boolean;
 var
   OldX, OldY: Integer;
+  ClientPos: TPoint;
 begin
-  if (wsEnabled in AChild.WidgetState) and
-    ((AChild = AChild.FindForm.MouseCaptureWidget) or
+  if (AChild.WidgetState * [wsEnabled, wsIsVisible] = [wsEnabled, wsIsVisible])
+    and ((AChild = AChild.FindForm.MouseCaptureWidget) or
     ((MouseX >= AChild.Left) and (MouseY >= AChild.Top) and
     (MouseX < AChild.Left + AChild.Width) and
     (MouseY < AChild.Top + AChild.Height))) then
@@ -121,8 +128,9 @@ begin
     // Store the old values, as they might get modified during AChild.SendEvent!
     OldX := MouseX;
     OldY := MouseY;
-    MouseX := OldX - AChild.Left;
-    MouseY := OldY - AChild.Top;
+    ClientPos := AChild.WidgetToClient(Point(MouseX, MouseY));
+    MouseX := ClientPos.x - AChild.Left;
+    MouseY := ClientPos.y - AChild.Top;
     Result := inherited SendToChild(AChild);
     MouseX := OldX;
     MouseY := OldY;
@@ -139,19 +147,19 @@ end;
 
 function TMouseMoveEventObj.SendToChild(AChild: TWidget): Boolean;
 begin
-  if (AChild = AChild.FindForm.MouseCaptureWidget) or
-    ((MouseX >= AChild.Left) and (MouseY >= AChild.Top) and
-    (MouseX < AChild.Left + AChild.Width) and
-    (MouseY < AChild.Top + AChild.Height)) then
+  if AChild.WidgetState * [wsEnabled, wsIsVisible] = [wsEnabled, wsIsVisible]
+    then
   begin
-    if not (wsMouseInside in AChild.WidgetState) then
-      AChild.SendEvent(TMouseEnterEventObj.Create(Self, Shift,
-        MouseX - AChild.Left, MouseY - AChild.Top));
+    if ({(AChild = AChild.FindForm.MouseCaptureWidget) or}
+      ((MouseX >= AChild.Left) and (MouseY >= AChild.Top) and
+      (MouseX < AChild.Left + AChild.Width) and
+      (MouseY < AChild.Top + AChild.Height))) and not
+      (wsMouseInside in AChild.WidgetState) then
+        AChild.DoMouseEnter(Shift, MouseX - AChild.Left, MouseY - AChild.Top);
+
+    Result := inherited SendToChild(AChild);
   end else
-    if wsMouseInside in AChild.WidgetState then
-      AChild.SendEvent(TMouseLeaveEventObj.Create(Self));
-    
-  Result := inherited SendToChild(AChild);
+    Result := False;
 end;
 
 function TMouseLeaveEventObj.SendToChild(AChild: TWidget): Boolean;
@@ -160,6 +168,20 @@ begin
     Result := inherited SendToChild(AChild)
   else
     Result := False;
+end;
+
+function TMouseLeaveCheckEventObj.SendToChild(AChild: TWidget): Boolean;
+begin
+{  if AChild = AChild.FindForm.MouseCaptureWidget then
+    WriteLn('CapturedWidget: Leave check for ', MouseX, ' / ', MouseY);
+  if {(AChild <> AChild.FindForm.MouseCaptureWidget) and}
+    ((MouseX < AChild.Left) or (MouseY < AChild.Top) or
+    (MouseX >= AChild.Left + AChild.Width) or
+    (MouseY >= AChild.Top + AChild.Height)) and
+    (wsMouseInside in AChild.WidgetState) then
+      AChild.SendEvent(TMouseLeaveEventObj.Create(Self));}
+
+  Result := inherited SendToChild(AChild);
 end;
 
 constructor TMouseWheelEventObj.Create(ASender: TObject; AShift: TShiftState;
@@ -181,6 +203,7 @@ begin
   FCanExpandWidth := False;
   FCanExpandHeight := False;
   FEnabled := True;
+  FVisible := True;
 end;
 
 destructor TWidget.Destroy;
@@ -243,10 +266,23 @@ begin
   end;
 end;
 
+function TWidget.WidgetToClient(const APoint: TPoint): TPoint;
+begin
+  // as default, the outer rectangle is identical to the client rectangle
+  Result := APoint;
+end;
+
+function TWidget.ClientToWidget(const APoint: TPoint): TPoint;
+begin
+  // as default, the outer rectangle is identical to the client rectangle
+  Result := APoint;
+end;
+
 function TWidget.ClientToScreen(const APoint: TPoint): TPoint;
 begin
   Result.x := APoint.x + Left;
   Result.y := APoint.y + Top;
+  Result := ClientToWidget(Result);
   if Assigned(Parent) then
     Result := Parent.ClientToScreen(Result);
 end;
@@ -318,6 +354,7 @@ end;
 
 procedure TWidget.Show;
 begin
+  FVisible := True;
   if WidgetState * [wsGetsVisible, wsIsVisible] = [] then
   begin
     LAYOUTTRACE('TWidget.Show for %s:%s', [Name, ClassName]);
@@ -333,14 +370,17 @@ end;
 
 procedure TWidget.Hide;
 begin
-  if wsIsVisible in WidgetState then
+  FVisible := False;
+  if WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
   begin
     LAYOUTTRACE('TWidget.Hide for %s:%s', [Name, ClassName]);
     WidgetState := WidgetState - [wsGetsVisible, wsIsVisible];
     SendEvent(TVisibilityChangeEventObj.Create(Self));
-    Parent.Update;
-  end else
-    Exclude(WidgetState, wsGetsVisible);
+    if wsIsUpdating in Parent.WidgetState then
+      Parent.SendEvent(TUpdateEventObj.Create(Self))
+    else
+      Parent.Update;
+  end;
 end;
 
 procedure TWidget.Redraw;
@@ -351,67 +391,142 @@ end;
 procedure TWidget.Redraw(const ARect: TRect);
 var
   x, y: Integer;
-  Widget: TWidget;
+  Form: TCustomForm;
+  WidgetPos, FormPos: TPoint;
 begin
   if not (wsIsVisible in WidgetState) then
     exit;
 
-  x := ARect.Left;
-  y := ARect.Top;
-  Widget := Self;
-  while not (Widget is TCustomForm) do
-  begin
-    Inc(x, Widget.Left);
-    Inc(y, Widget.Top);
-    Widget := Widget.parent;
-  end;
-  TCustomForm(Widget).Wnd.Invalidate(Rect(x, y,
-    x + ARect.Right - ARect.Left, y + ARect.Bottom - ARect.Top));
+  Form := FindForm;
+  WidgetPos := ClientToScreen(Point(0, 0));
+  FormPos := Form.ClientToScreen(Point(0, 0));
+
+  x := ARect.Left + WidgetPos.x - FormPos.x;
+  y := ARect.Top + WidgetPos.y - FormPos.y;
+  Form.Wnd.Invalidate(
+    Rect(x, y, x + ARect.Right - ARect.Left, y + ARect.Bottom - ARect.Top));
 end;
 
 procedure TWidget.Scroll(const ARect: TRect; DeltaX, DeltaY: Integer);
 var
-  r: TRect;
+  r, r2, ClipRect: TRect;
   Widget: TWidget;
+  Form: TCustomForm;
+  Canvas: TGfxCanvas;
 begin
   if not (wsIsVisible in WidgetState) then
     exit;
 
-  r := ARect;
+  Form := FindForm;
 
+  { !!!: Better do real DirtyList correction, which might improve performance
+    a lot in some situations }
+  Form.Wnd.PaintInvalidRegion;
+
+  r.Left := ARect.Left;
+  r.Top := ARect.Top;
   Widget := Self;
-  while not (Widget is TCustomForm) do
-  begin
-    Inc(r.Left, Widget.Left);
-    Inc(r.Top, Widget.Top);
-    Inc(r.Right, Widget.Left);
-    Inc(r.Bottom, Widget.Top);
-    Widget := Widget.parent;
-  end;
+  Canvas := Form.Wnd.Canvas;
+  Canvas.SaveState;
+  try
+    while Widget <> Form do
+    begin
+      ClipRect.TopLeft := Form.WidgetCoords(Widget);
+      ClipRect.Right := ClipRect.Left + Widget.Width;
+      ClipRect.Bottom := ClipRect.Top + Widget.Height;
+      Canvas.IntersectClipRect(ClipRect);
 
-  TCustomForm(Widget).Wnd.Canvas.CopyRect(TCustomForm(Widget).Wnd.Canvas, r,
-    r.Left + DeltaX, r.Top + DeltaY);
+      with Widget.ClientToWidget(Point(0, 0)) do
+      begin
+        Inc(r.Left, Widget.Left + x);
+        Inc(r.Top, Widget.Top + y);
+      end;
+      Widget := Widget.Parent;
+    end;
+
+    r.Right := r.Left + ARect.Right - ARect.Left;
+    r.Bottom := r.Top + ARect.Bottom - ARect.Top;
+
+    ClipRect := Canvas.GetClipRect;
+
+    { Perform a quick clipping against the ClipRect - this might reduce
+      the number of pixels which get copied }
+    if r.Left < ClipRect.Left then
+      r.Left := ClipRect.Left;
+    if r.Left + DeltaX < ClipRect.Left then
+      r.Left := ClipRect.Left - DeltaX;
+    if r.Top < ClipRect.Top then
+      r.Top := ClipRect.Top;
+    if r.Top + DeltaY < ClipRect.Top then
+      r.Top := ClipRect.Top - DeltaY;
+    if r.Right > ClipRect.Right then
+      r.Right := ClipRect.Right;
+    if r.Right + DeltaX > ClipRect.Right then
+      r.Right := ClipRect.Right - DeltaX;
+    if r.Bottom > ClipRect.Bottom then
+      r.Bottom := ClipRect.Bottom;
+    if r.Bottom + DeltaY > ClipRect.Bottom then
+      r.Bottom := ClipRect.Bottom - DeltaY;
+
+    Canvas.CopyRect(Canvas, r, r.Left + DeltaX, r.Top + DeltaY);
+  finally
+    Canvas.RestoreState;
+  end;
 
 
   // Redraw the areas which has been scrolled in
 
+  with Form.WidgetCoords(Self) do
+  begin
+    Dec(ClipRect.Left, x);
+    Dec(ClipRect.Top, y);
+    Dec(ClipRect.Right, x);
+    Dec(ClipRect.Bottom, y);
+  end;
+
   if DeltaX <> 0 then
   begin
     r := ARect;
-    if DeltaX < 0 then	// Scrolling to the right size
-      r.Left := r.Right + DeltaX
-    else			// Scrolling to the left size
+    if DeltaX < 0 then		// Scrolling to the left size
+    begin
+      r.Left := r.Right + DeltaX;
+      if r.Right > ClipRect.Right then
+      begin
+        Dec(r.Left, r.Right - ClipRect.Right);
+	r.Right := ClipRect.Right;
+      end;
+    end else			// Scrolling to the right size
+    begin
       r.Right := r.Left + DeltaX;
+      if r.Left < ClipRect.Left then
+      begin
+        Inc(r.Right, ClipRect.Left - r.Left);
+	r.Left := ClipRect.Left;
+      end;
+    end;
     Redraw(r);
   end;
 
   if DeltaY <> 0 then
   begin
     r := ARect;
-    if DeltaY < 0 then	// Scrolling downwards
-      r.Top := r.Bottom + DeltaY
-    else			// Scrolling upwards
+    if DeltaY < 0 then		// Scrolling upwards
+    begin
+      r.Top := r.Bottom + DeltaY;
+      if r.Bottom > ClipRect.Bottom then
+      begin
+        Dec(r.Top, r.Bottom - ClipRect.Bottom);
+	r.Bottom := ClipRect.Bottom;
+      end;
+    end else			// Scrolling downwards
+    begin
       r.Bottom := r.Top + DeltaY;
+      if r.Top < ClipRect.Top then
+      begin
+        Inc(r.Bottom, ClipRect.Top - r.Top);
+	r.Top := ClipRect.Top;
+      end;
+    end;
     Redraw(r);
   end;
 end;
@@ -445,7 +560,7 @@ end;
 
 procedure TWidget.SetParentComponent(AParent: TComponent);
 begin
-  if AParent.InheritsFrom(TContainerWidget) then
+  if AParent is TContainerWidget then
     SetParent(TContainerWidget(AParent));
 end;
 
@@ -456,6 +571,14 @@ begin
     FEnabled := AEnabled;
     SendEvent(TEnabledChangeEventObj.Create(Self));
   end;
+end;
+
+procedure TWidget.SetVisible(AVisible: Boolean);
+begin
+  if AVisible then
+    Show
+  else
+    Hide;
 end;
 
 procedure TWidget.EvFocusChanged;
@@ -605,6 +728,19 @@ begin
   Redraw;
 end;
 
+function TWidget.DoMouseEnter(AShift: TShiftState;
+  AMouseX, AMouseY: Integer): Boolean;
+var
+  Event: TMouseEnterEventObj;
+begin
+  Event := TMouseEnterEventObj.Create(Self, AShift, AMouseX, AMouseY);
+  Event.AddRef;
+  Result := SendEvent(Event);
+  if Event.NewCursor <> crDefault then
+    FindForm.Wnd.Cursor := Event.NewCursor;
+  Event.Free;
+end;
+
 function TWidget.GetStyle: TStyle;
 var
   Widget: TWidget;
@@ -629,6 +765,7 @@ function TWidget.ProcessEvent(Event: TEventObj): Boolean;
 var
   Canvas: TGfxCanvas;
   Matrix: TGfxMatrix;
+  ClientPos: TPoint;
   PreparationEvent: TPreparePaintEventObj;
 begin
   // Handle events which must be processed before the children get them
@@ -637,6 +774,8 @@ begin
   else if Event.InheritsFrom(TVisibilityChangeEventObj) then
     Result := EvVisibilityChange(TVisibilityChangeEventObj(Event)) or
       DistributeEvent(Event)
+  else if Event.InheritsFrom(TMouseEnterEventObj) then
+    Result := EvMouseEnter(TMouseEnterEventObj(Event)) or DistributeEvent(Event)
   else if Event.InheritsFrom(TPreparePaintEventObj) then
   begin
     Canvas := TPreparePaintEventObj(Event).Canvas;
@@ -647,7 +786,8 @@ begin
     end else
     begin
       Matrix := Canvas.Matrix;
-      Canvas.AppendTranslation(Left, Top);
+      ClientPos := ClientToWidget(Point(Left, Top));
+      Canvas.AppendTranslation(ClientPos.x, ClientPos.y);
       Result := DistributeEvent(Event);
       Canvas.Matrix := Matrix;
     end;
@@ -672,10 +812,10 @@ begin
 	Result := EvMousePressed(TMousePressedEventObj(Event))
       else if Event.InheritsFrom(TMouseReleasedEventObj) then
 	Result := EvMouseReleased(TMouseReleasedEventObj(Event))
-      else if Event.InheritsFrom(TMouseEnterEventObj) then
-	Result := EvMouseEnter(TMouseEnterEventObj(Event))
       else if Event.InheritsFrom(TMouseLeaveEventObj) then
 	Result := EvMouseLeave(TMouseLeaveEventObj(Event))
+      else if Event.InheritsFrom(TMouseLeaveCheckEventObj) then
+	Result := EvMouseLeaveCheck(TMouseLeaveCheckEventObj(Event))
   end;
 end;
 
@@ -762,6 +902,8 @@ begin
   end else if (not NewState) and (wsEnabled in WidgetState) then
   begin
     Exclude(WidgetState, wsEnabled);
+    if wsHasFocus in WidgetState then
+      FindForm.FocusedWidget := nil;
     Redraw;
     Result := DistributeEvent(Event);
   end else
@@ -772,11 +914,11 @@ function TWidget.EvVisibilityChange(Event: TVisibilityChangeEventObj): Boolean;
 begin
   if (Event.Sender <> Self) and Assigned(Parent) then
   begin
-    if wsGetsVisible in Parent.WidgetState then
+    if Visible and (wsGetsVisible in Parent.WidgetState) then
       Include(WidgetState, wsGetsVisible)
     else
       Exclude(WidgetState, wsGetsVisible);
-    if wsIsVisible in Parent.WidgetState then
+    if Visible and (wsIsVisible in Parent.WidgetState) then
       Include(WidgetState, wsIsVisible)
     else
       Exclude(WidgetState, wsIsVisible);
@@ -827,10 +969,13 @@ end;
 function TWidget.EvMouseEnter(Event: TMouseEnterEventObj): Boolean;
 begin
   Include(WidgetState, wsMouseInside);
+  if Cursor <> crDefault then
+    Event.NewCursor := Cursor;
   if (wsClickable in WidgetStyle) and (wsClicked in WidgetState) and
     (wsEnabled in WidgetState) then
     Redraw;
   Result := False;
+  // WriteLn('Mouse entered ', Name, ':', ClassName, '. New cursor: ', Ord(Event.NewCursor));
 end;
 
 function TWidget.EvMouseLeave(Event: TMouseLeaveEventObj): Boolean;
@@ -840,11 +985,35 @@ begin
     (wsEnabled in WidgetState) then
     Redraw;
   Result := False;
+  // WriteLn('Mouse left ', Name, ':', ClassName);
+end;
+
+function TWidget.EvMouseLeaveCheck(Event: TMouseLeaveCheckEventObj): Boolean;
+begin
+  if ((Event.MouseX < 0) or (Event.MouseY < 0) or
+    (Event.MouseX >= Width) or (Event.MouseY >= Height)) then
+  begin
+    if wsMouseInside in WidgetState then
+      SendEvent(TMouseLeaveEventObj.Create(Self))
+  end else if (FindForm.MouseCaptureWidget = Self) and
+    not (wsMouseInside in WidgetState) then
+    SendEvent(TMouseEnterEventObj.Create(Self, Event.Shift,
+      Event.MouseX, Event.MouseY));
+
+  if (wsMouseInside in WidgetState) and (Event.NewCursor = crDefault) and
+    (Cursor <> crDefault) then
+  begin
+    Event.NewCursor := Cursor;
+  end;
+  Result := False;
 end;
 
 
 {
   $Log$
+  Revision 1.5  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.4  2001/01/18 15:38:40  sg
   * Serveral loops now stop when they found a TCustomForm as widget parent
     instead of checking for NIL - this is necessary to support parented

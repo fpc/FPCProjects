@@ -109,11 +109,20 @@
   end;
 
 
-  TMouseEnterEventObj = class(TMouseEventObj);
+  TMouseEnterEventObj = class(TMouseEventObj)
+  public
+    NewCursor: TGfxCursor;
+  end;
 
   TMouseLeaveEventObj = class(TEventObj)
   public
     function SendToChild(AChild: TWidget): Boolean; override;
+  end;
+
+  TMouseLeaveCheckEventObj = class(TMouseEventObj)
+  public
+    function SendToChild(AChild: TWidget): Boolean; override;
+    NewCursor: TGfxCursor;
   end;
 
 
@@ -148,6 +157,7 @@
     // Property access
     procedure SetParent(AParent: TWidget);
     procedure SetEnabled(AEnabled: Boolean);
+    procedure SetVisible(AVisible: Boolean);
     // Event handling
     function EvUpdate(Event: TUpdateEventObj): Boolean;
     function EvEnabledChange(Event: TEnabledChangeEventObj): Boolean;
@@ -156,12 +166,15 @@
     function EvMouseReleased(Event: TMouseReleasedEventObj): Boolean;
     function EvMouseEnter(Event: TMouseEnterEventObj): Boolean;
     function EvMouseLeave(Event: TMouseLeaveEventObj): Boolean;
+    function EvMouseLeaveCheck(Event: TMouseLeaveCheckEventObj): Boolean;
   protected
+    FCursor: TGfxCursor;
     FText: String;
     FStyle: TStyle;
     FCanExpandHeight: Boolean;
     FCanExpandWidth: Boolean;
     FEnabled: Boolean;
+    FVisible: Boolean;
     DefW, DefH, MinW, MinH, MaxW, MaxH: Integer;
     WidgetStyle: TWidgetStyle;
     WidgetState: TWidgetState;
@@ -179,6 +192,9 @@
     procedure EvKeyChar(KeyChar: Char); dynamic;
     procedure EvRecalcLayout; dynamic;		// Recalc sizes
     procedure EvTextChanged; dynamic;
+
+    function DoMouseEnter(AShift: TShiftState; AMouseX, AMouseY: Integer): Boolean;
+
     // Properties
     function GetStyle: TStyle;
     procedure SetCanExpandWidth(allow: Boolean);
@@ -186,6 +202,7 @@
     procedure SetText(const AText: String);
     property CanExpandWidth: Boolean read FCanExpandWidth write SetCanExpandWidth default False;
     property CanExpandHeight: Boolean read FCanExpandHeight write SetCanExpandHeight default False;
+    property Cursor: TGfxCursor read FCursor write FCursor default crDefault;
     property Text: String read FText write SetText;
     property OnClick: TNotifyEvent read FOnClick write FOnClick;
   public
@@ -195,6 +212,8 @@
     function FindForm: TCustomForm;
     procedure SetEmbeddedParent(AParent: TWidget);
     procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+    function WidgetToClient(const APoint: TPoint): TPoint; virtual;
+    function ClientToWidget(const APoint: TPoint): TPoint; virtual;
     function ClientToScreen(const APoint: TPoint): TPoint; virtual;
     procedure Update;
     procedure RecalcLayout;
@@ -209,14 +228,20 @@
     property Top: Integer read FTop;
     property Width: Integer read FWidth;
     property Height: Integer read FHeight;
+    property OptimalWidth: Integer read DefW;
+    property OptimalHeight: Integer read DefH;
     property ClientRect: TRect read FClientRect;
     property Style: TStyle read GetStyle;
     property Enabled: Boolean read FEnabled write SetEnabled default True;
+    property Visible: Boolean read FVisible write SetVisible default True;
   end;
 
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

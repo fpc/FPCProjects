@@ -28,6 +28,9 @@ unit fpGUI;
 interface
 
 uses
+{$IFDEF Win32}
+  Windows, GFX_GDI,
+{$ENDIF}
   SysUtils, Classes, DOM,
   GFXBase, GFXImpl;
 
@@ -156,6 +159,7 @@ implementation
 
 uses XMLRead {!!!:, XMLStreaming};
 
+
 const
   // !!!: Only here until FCL has been switched to Resourcestrings
   SListIndexError = 'List index exceeds bounds (%d)';
@@ -268,6 +272,9 @@ end.
 
 {
   $Log$
+  Revision 1.4  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.3  2001/01/11 23:30:12  sg
   *** empty log message ***
 

@@ -84,6 +84,10 @@ begin
     y2 := Bottom;
   end;
 
+  { Initialize these for the case that the cell drawing loop won't get
+    executed at all: }
+  CellRect.Left := 0;
+  CellRect.Right := 0;
 
   // Draw the cells
 
@@ -535,6 +539,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.4  2001/01/17 21:36:55  sg
   * Scrolling improvements
 

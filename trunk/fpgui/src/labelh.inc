@@ -18,11 +18,11 @@
 
   TCustomLabel = class(TWidget)
   private
-    procedure EvRecalcLayout; override;
     procedure SetAlignment(AAlignment: TAlignment);
   protected
     FAlignment: TAlignment;
     procedure Paint(Canvas: TGfxCanvas); override;
+    procedure EvRecalcLayout; override;
     property Alignment: TAlignment read FAlignment write SetAlignment;
   end;
 
@@ -37,6 +37,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

@@ -115,34 +115,39 @@ var
   l: TCustomListBox;
   i: Integer;
 begin
-  if Assigned(FDropDown) then
-    ListDeactivate(nil)
-  else
-  begin
-    FDropDown := TCustomForm.Create(Self);
-    FDropDown.WindowType := wtBorderlessPopup;
-    FDropDown.SetEmbeddedParent(FindForm);
-    FDropDown.SetPosition(ClientToScreen(Point(0, Height)));
-    FDropDown.OnDeactivate := @ListDeactivate;
+  FDropDown := TCustomForm.Create(Self);
+  FDropDown.WindowType := wtBorderlessPopup;
+  FDropDown.SetEmbeddedParent(FindForm);
+  FDropDown.SetPosition(ClientToScreen(Point(0, Height)));
+  FDropDown.OnDeactivate := @DropDownDeactivate;
+  FDropDown.OnDestroy := @DropDownDestroy;
 
-    l := TCustomListBox.Create(FDropDown);
-    for i := 1 to 20 do
-      l.Items.Add(Format('Item #%d...', [i]));
-    l.Parent := FDropDown;
+  l := TCustomListBox.Create(FDropDown);
+  for i := 1 to 20 do
+    l.Items.Add(Format('Item #%d...', [i]));
+  l.Parent := FDropDown;
+  l.HotTrack := True;
+  l.OnClick := @DropDownDeactivate;
 
-    FDropDown.Show;
-  end;
+  FDropDown.Show;
 end;
 
-procedure TCustomComboBox.ListDeactivate(Sender: TObject);
+procedure TCustomComboBox.DropDownDeactivate(Sender: TObject);
 begin
-  FDropDown.Free;
+  FDropDown.Close;
+end;
+
+procedure TCustomComboBox.DropDownDestroy(Sender: TObject);
+begin
   FDropDown := nil;
 end;
 
 
 {
   $Log$
+  Revision 1.4  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.3  2001/01/18 15:36:48  sg
   * The drop-down window is now parented
 

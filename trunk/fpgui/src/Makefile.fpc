@@ -6,6 +6,10 @@
 units=fpgui
 dirs=db
 
+[dirs]
+incdir=defimpl
+#incdir_win32=win32
+
 [require]
 options=-S2h
 packages=fcl fpgfx
@@ -16,5 +20,4 @@ packages=fcl fpgfx
 [install]
 subdir=
 
-[dirs]
 fpcdir=../../../..

@@ -25,6 +25,7 @@ begin
   inherited Create(AOwner);
   WidgetStyle := WidgetStyle + [wsCaptureMouse, wsClickable, wsOpaque];
   FCanExpandWidth := True;
+  FCursor := crIBeam;
 end;
 
 procedure TCustomEdit.Paint(Canvas: TGfxCanvas);
@@ -42,9 +43,9 @@ begin
     exit;
 
   if wsEnabled in WidgetState then
-    Style.SetUIColor(Canvas, clBtnText)
+    Canvas.SetColor(Style.GetUIColor(clWindowText))
   else
-    Style.SetUIColor(Canvas, clGrayText);
+    Canvas.SetColor(Style.GetUIColor(clGrayText));
 
   if PasswordChar = #0 then
     s := PChar(Text)
@@ -151,6 +152,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2001/02/09 20:50:20  sg
+  * The usual bunch of improvements and bug fixes...
+
   Revision 1.3  2001/01/11 23:30:12  sg
   *** empty log message ***
 
