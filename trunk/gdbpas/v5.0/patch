@@ -7002,20 +7002,15 @@ diff -urN origdb/valarith.c gdb/valarith.c
                break;
 
 diff -urN origdb/valops.c gdb/valops.c
---- origdb/valops.c     Sun Apr  9 15:02:10 2000
-+++ gdb/valops.c	Fri Dec  1 10:30:30 2000
-@@ -515,8 +515,13 @@
- {
-   CORE_ADDR addr = VALUE_ADDRESS (val) + VALUE_OFFSET (val);
-   int length = TYPE_LENGTH (VALUE_ENCLOSING_TYPE (val));
--
-   struct type *type = VALUE_TYPE (val);
-+  /* In some case the enclosing type end up smaller as the
-+     type at least for pascal */
-+  int blength = TYPE_LENGTH (type);
-+  if (blength > length)
-+    length = blength;
-+
-   if (GDB_TARGET_IS_D10V
-       && TYPE_CODE (type) == TYPE_CODE_PTR
-       && TYPE_TARGET_TYPE (type)
+--- origdb/valops.c	Sun Apr  9 14:02:10 2000
++++ gdb/valops.c	Fri Dec  1 14:55:34 2000
+@@ -315,7 +315,8 @@
+ 	         type of the source as a superclass.  If so, we'll need to
+ 	         offset the pointer rather than just change its type.
+ 	         FIXME: This fails silently with virtual inheritance.  */
+-	      if (TYPE_NAME (t2) != NULL)
++	      if (TYPE_NAME (t2) != NULL
++	          && current_language->la_language != language_pascal)
+ 		{
+ 		  v = search_struct_field (type_name_no_tag (t2),
+ 				       value_zero (t1, not_lval), 0, t1, 1);
