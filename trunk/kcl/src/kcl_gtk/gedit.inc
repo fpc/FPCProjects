@@ -55,7 +55,7 @@ end;
 function TEdit.GetText : String;
 
 begin
-  Writeln ('In edit.gettext');
+//  Writeln ('In edit.gettext');
   if Assigned(FHandle) then
     FText:=strpas(gtk_entry_get_text(PGtkEntry(FHandle)));
   Result:=Inherited Gettext;
@@ -64,6 +64,9 @@ end;
 
 {
   $Log$
+  Revision 1.9  2000/02/25 13:27:20  michael
+  + removed debug statement
+
   Revision 1.8  2000/02/25 13:26:10  michael
   + Added gettext read for tedit.text
 
