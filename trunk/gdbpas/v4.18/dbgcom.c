@@ -34,6 +34,10 @@ static char *id = __libdbg_ident_string;
 #define CLOSE_UNREGISTERED_FILES
 #define SAVE_FP
 
+#ifdef DONT_CLOSE_FILES
+#undef CLOSE_UNREGISTERED_FILES
+#endif
+
 /* debug splitted into 3 parts */
 /* #define DEBUG_ALL_DBGCOM  */
 
