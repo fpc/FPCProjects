@@ -449,6 +449,129 @@ diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
 +  init_fpc_ops ();
 +  register_cp_abi (fpc_abi_ops);
 +}
+diff -u -p -r -N -x Entries origdb/gdbarch.c gdb/gdbarch.c
+--- origdb/gdbarch.c	2003-02-14 16:44:49.000000000 +0100
++++ gdb/gdbarch.c	2003-02-14 16:46:33.000000000 +0100
+@@ -137,6 +137,7 @@ struct gdbarch
+   int float_bit;
+   int double_bit;
+   int long_double_bit;
++  int long_double_bit_alternate;
+   int ptr_bit;
+   int addr_bit;
+   int bfd_vma_bit;
+@@ -305,6 +306,7 @@ struct gdbarch startup_gdbarch =
+   0,
+   0,
+   0,
++  0,
+   -1,
+   -1,
+   -1,
+@@ -468,6 +470,7 @@ gdbarch_alloc (const struct gdbarch_info
+   current_gdbarch->float_bit = 4*TARGET_CHAR_BIT;
+   current_gdbarch->double_bit = 8*TARGET_CHAR_BIT;
+   current_gdbarch->long_double_bit = 8*TARGET_CHAR_BIT;
++  current_gdbarch->long_double_bit_alternate = 0;
+   current_gdbarch->ptr_bit = TARGET_INT_BIT;
+   current_gdbarch->bfd_vma_bit = TARGET_ARCHITECTURE->bits_per_address;
+   current_gdbarch->char_signed = -1;
+@@ -597,6 +600,7 @@ verify_gdbarch (struct gdbarch *gdbarch)
+   /* Skip verify of float_bit, invalid_p == 0 */
+   /* Skip verify of double_bit, invalid_p == 0 */
+   /* Skip verify of long_double_bit, invalid_p == 0 */
++  /* Skip verify of long_double_bit_alternate, invalid_p == 0 */
+   /* Skip verify of ptr_bit, invalid_p == 0 */
+   if (gdbarch->addr_bit == 0)
+     gdbarch->addr_bit = TARGET_PTR_BIT;
+@@ -2072,6 +2076,14 @@ gdbarch_dump (struct gdbarch *gdbarch, s
+                       "gdbarch_dump: TARGET_LONG_DOUBLE_BIT = %d\n",
+                       TARGET_LONG_DOUBLE_BIT);
+ #endif
++#ifdef TARGET_LONG_DOUBLE_BIT_ALTERNATE
++  fprintf_unfiltered (file,
++                      "gdbarch_dump: TARGET_LONG_DOUBLE_BIT_ALTERNATE # %s\n",
++                      XSTRING (TARGET_LONG_DOUBLE_BIT_ALTERNATE));
++  fprintf_unfiltered (file,
++                      "gdbarch_dump: TARGET_LONG_DOUBLE_BIT_ALTERNATE = %d\n",
++                      TARGET_LONG_DOUBLE_BIT_ALTERNATE);
++#endif
+ #ifdef TARGET_LONG_DOUBLE_FORMAT
+   fprintf_unfiltered (file,
+                       "gdbarch_dump: TARGET_LONG_DOUBLE_FORMAT # %s\n",
+@@ -2374,6 +2386,23 @@ set_gdbarch_long_double_bit (struct gdba
+ }
+
+ int
++gdbarch_long_double_bit_alternate (struct gdbarch *gdbarch)
++{
++  gdb_assert (gdbarch != NULL);
++  /* Skip verify of long_double_bit_alternate, invalid_p == 0 */
++  if (gdbarch_debug >= 2)
++    fprintf_unfiltered (gdb_stdlog, "gdbarch_long_double_bit_alternate called\n");
++  return gdbarch->long_double_bit_alternate;
++}
++
++void
++set_gdbarch_long_double_bit_alternate (struct gdbarch *gdbarch,
++                                       int long_double_bit_alternate)
++{
++  gdbarch->long_double_bit_alternate = long_double_bit_alternate;
++}
++
++int
+ gdbarch_ptr_bit (struct gdbarch *gdbarch)
+ {
+   gdb_assert (gdbarch != NULL);
+diff -u -p -r -N -x Entries origdb/gdbarch.h gdb/gdbarch.h
+--- origdb/gdbarch.h	2003-02-14 16:44:49.000000000 +0100
++++ gdb/gdbarch.h	2003-02-14 16:46:33.000000000 +0100
+@@ -240,6 +240,24 @@ extern void set_gdbarch_long_double_bit
+    ptr_bit is the size of a pointer on the target */
+
+ /* Default (value) for non- multi-arch platforms. */
++/* Alternate number of bits in a long double for the target machine. */
++
++/* Default (value) for non- multi-arch platforms. */
++#if (!GDB_MULTI_ARCH) && !defined (TARGET_LONG_DOUBLE_BIT_ALTERNATE)
++#define TARGET_LONG_DOUBLE_BIT_ALTERNATE (8*TARGET_CHAR_BIT)
++#endif
++
++extern int gdbarch_long_double_bit_alternate (struct gdbarch *gdbarch);
++extern void set_gdbarch_long_double_bit_alternate (struct gdbarch *gdbarch, int long_double_bit_alternate);
++#if (GDB_MULTI_ARCH > GDB_MULTI_ARCH_PARTIAL) && defined (TARGET_LONG_DOUBLE_BIT_ALTERNATE)
++#error "Non multi-arch definition of TARGET_LONG_DOUBLE_BIT_ALTERNATE"
++#endif
++#if GDB_MULTI_ARCH
++#if (GDB_MULTI_ARCH > GDB_MULTI_ARCH_PARTIAL) || !defined (TARGET_LONG_DOUBLE_BIT_ALTERNATE)
++#define TARGET_LONG_DOUBLE_BIT_ALTERNATE (gdbarch_long_double_bit_alternate (current_gdbarch))
++#endif
++#endif
++
+ #if (!GDB_MULTI_ARCH) && !defined (TARGET_PTR_BIT)
+ #define TARGET_PTR_BIT (TARGET_INT_BIT)
+ #endif
+@@ -2207,7 +2225,7 @@ extern void set_gdbarch_addr_bits_remove
+ #endif
+ #endif
+
+-/* It is not at all clear why SMASH_TEXT_ADDRESS is not folded into
++/* It is not at all clear why SMASH_TEXT_ADDRESS is not folded into
+    ADDR_BITS_REMOVE. */
+
+ /* Default (function) for non- multi-arch platforms. */
+diff -u -p -r -N -x Entries origdb/gdbarch.sh gdb/gdbarch.sh
+--- origdb/gdbarch.sh	2003-02-14 16:44:49.000000000 +0100
++++ gdb/gdbarch.sh	2003-02-14 16:46:33.000000000 +0100
+@@ -400,6 +400,8 @@ v::TARGET_FLOAT_BIT:int:float_bit::::8 *
+ v::TARGET_DOUBLE_BIT:int:double_bit::::8 * sizeof (double):8*TARGET_CHAR_BIT::0
+ # Number of bits in a long double for the target machine.
+ v::TARGET_LONG_DOUBLE_BIT:int:long_double_bit::::8 * sizeof (long double):8*TARGET_CHAR_BIT::0
++# Alternate number of bits in a long double for the target machine.
++v:2:TARGET_LONG_DOUBLE_BIT_ALTERNATE:int:long_double_bit_alternate::::0:0::0
+ # For most targets, a pointer on the target and its representation as an
+ # address in GDB have the same size and "look the same".  For such a
+ # target, you need only set TARGET_PTR_BIT / ptr_bit and TARGET_ADDR_BIT
 diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
 --- origdb/i386-tdep.c	Mon Aug 26 20:35:25 2002
 +++ gdb/i386-tdep.c	Thu Dec 12 15:47:04 2002
@@ -484,6 +607,14 @@ diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
  }
 
  /* Use the program counter to determine the contents and size of a
+@@ -1464,6 +1471,7 @@ i386_gdbarch_init (struct gdbarch_info i
+      bits, a `long double' actually takes up 96, probably to enforce
+      alignment.  */
+   set_gdbarch_long_double_bit (gdbarch, 96);
++  set_gdbarch_long_double_bit_alternate (gdbarch, 80);
+
+   /* NOTE: tm-i386aix.h, tm-i386bsd.h, tm-i386os9k.h, tm-ptx.h,
+      tm-symmetry.h currently override this.  Sigh.  */
 diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
 --- origdb/minsyms.c	Thu Jul 11 22:46:19 2002
 +++ gdb/minsyms.c	Thu Dec 12 15:47:04 2002
@@ -496,7 +627,7 @@ diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
 +		switch_to_cp_abi ("fpc");
 +		break;
 +	      }
-+	
++
  	    if (name[0] == '_' && name[1] == 'Z')
  	      {
  		switch_to_cp_abi ("gnu-v3");
