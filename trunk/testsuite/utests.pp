@@ -47,8 +47,8 @@ implementation
 Const
   DefDatabase = 'TESTSUITE';
   DefHost     = '';
-  DefDBUser   = 'michael'; // fill this in when compiling.
-  DefPassword = 'geen'; // fill this in, too.
+  DefDBUser   = ''; // fill this in when compiling.
+  DefPassword = ''; // fill this in, too.
 
 Procedure TTestSuite.DoRun;
 
@@ -448,7 +448,6 @@ begin
       end
     else
       Write('No data for test run with ID: '+FRunID);
-
     end;
 end;
 
