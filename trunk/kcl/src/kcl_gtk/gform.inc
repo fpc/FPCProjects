@@ -30,7 +30,8 @@ begin
     AForm.FWidth := alloc^.width;
     AForm.FHeight := alloc^.height;
     if Assigned(AForm.FContent) then
-      AForm.FContent.SetSize(AForm.FWidth, AForm.FHeight);
+      AForm.FContent.SetSize(AForm.FWidth - 2 * AForm.FBorderWidth,
+        AForm.FHeight - 2 * AForm.FBorderWidth);
   end;
 end;
 
@@ -105,6 +106,7 @@ begin
   if not Assigned(FHandle) then    // -> derived class can create their own form
     FHandle := gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_policy(PGtkWindow(FHandle), 1, 1, 0);
+  gtk_container_set_border_width(PGtkContainer(FHandle), FBorderWidth);
 
   gtk_window_add_accel_group(PGtkWindow(FHandle), priv.AccelGroup);
 
@@ -138,12 +140,9 @@ procedure TCustomForm.ApplySize;
 begin
   if Assigned(FHandle) then
     gtk_window_set_default_size(PGtkWindow(FHandle), FWidth, FHeight);
-
-  if Assigned(FContent) then begin
-    if Assigned(FContent.FHandle) then
-      gtk_widget_set_uposition(FContent.FHandle, FBorderWidth, FBorderWidth);
+  //WriteLn('Form: ', FWidth, ' x ', FHeight);
+  if Assigned(FContent) then
     FContent.SetSize(FWidth - 2 * FBorderWidth, FHeight - 2 * FBorderWidth);
-  end;
 end;
 
 constructor TCustomForm.Create(AOwner: TComponent);
@@ -184,6 +183,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/18 18:22:39  sg
+  * Fixed resizing when a border is set (BorderWidth > 0)
+
   Revision 1.5  2000/02/17 22:28:06  sg
   * Improved behaviour on form closing
   * Added BorderWidth property
