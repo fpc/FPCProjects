@@ -9,6 +9,12 @@ uses
   SDLi386Utils,
   SFont;
 
+procedure putstring(p:psdl_surface;x,y:integer;s:pchar);
+
+begin
+ sfont_write(p,x,y,s);
+end;
+
 const
   Screen_Width = 640;
   Screen_Height = 480;
@@ -595,7 +601,7 @@ begin
   Screen := SDL_SetVideoMode( Screen_Width, Screen_Height, Screen_BPP, video_flags );
   Font := SDL_LoadBMP( 'images/24p_copperplate_blue.bmp' );
   Font := SDL_DisplayFormat( Font );
-  InitFont( Font );
+  sfont_InitFont( Font );
   PutPixel_Test;
   NewPutPixel_Test;
   AddPixel_Test;
@@ -612,3 +618,9 @@ begin
   SDL_Quit;
 end.
 
+{
+ $Log$
+ Revision 1.2  2004/04/03 20:23:46  marco
+  * fixes for Jedi SDL 1.0
+
+}
