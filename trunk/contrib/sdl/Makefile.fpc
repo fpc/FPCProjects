@@ -9,7 +9,12 @@ packages=
 [target]
 dirs=
 units= sdl opengl12 sdli386utils sdlutils sdlstreams smpeg sdl_mixer \ 
-	sdl_image sfont sdlmonofonts sdlsprites
+	sdl_image sfont sdlmonofonts sdlsprites logger fmod fmoddyn \
+	fmoderrors fmodpresets fmodtypes geometry gl glext glu glut \
+	glx logger moduleloader sdl_cpuinfo sdl_net sdl_sound sdl_ttf \
+	sdlfilter sdlinput sdlwindow tcputils odeimport
+
+rsts= opengl12
 
 exampledirs=demo2d demo3d
 
