@@ -19,61 +19,71 @@
 // ===================================================================
 
 
+procedure TApplication.Notification(AComponent: TComponent;
+  Operation: TOperation);
+begin
+  inherited Notification(AComponent, Operation);
+  // Terminate if the last form is being destroyed
+  if (Operation = opRemove) and (ComponentCount = 1) then
+    Terminate;
+end;
+
 destructor TApplication.Destroy;
 begin
-  if Assigned(gToolTips) then
-    gtk_widget_destroy(PGtkWidget(gToolTips));
-  if Assigned(FForms) then
-    FForms.Free;
+  inherited Destroy;
 end;
 
 procedure TApplication.Initialize;
 begin
-  FForms := TList.Create;
   gtk_init(@argc, @argv);
-  gToolTips := gtk_tooltips_new();
+  gToolTips := gtk_tooltips_new;
 end;
 
 procedure TApplication.CreateForm(InstanceClass: TComponentClass; var Reference);
 type
-  PForm = ^TGenericForm;
+  PForm = ^TCustomForm;
 var
   form: PForm;
 begin
-  ASSERT(Assigned(FForms), 'TApplication.CreateForm: Forms = nil; missing call to "Initialize" in application?');
   form := @Reference;
-  form^ := TGenericForm(InstanceClass.Create(nil));
-  FForms.Add(form^);
+  form^ := TCustomForm(InstanceClass.Create(Self));
   if Assigned(ReadFormProc) then
     ReadFormProc(form^);
   form^.FinishCreation;
 end;
 
-procedure TApplication.AddForm(AForm: TGenericForm);
+procedure TApplication.AddForm(AForm: TCustomForm);
 begin
-  ASSERT(Assigned(FForms), 'TApplication.AddForm: Forms = nil; missing call to "Initialize" in application?');
-  FForms.Add(AForm);
   AForm.FinishCreation;
 end;
 
 procedure TApplication.Run;
 var
   i: Integer;
+  form: TCustomForm;
 begin
-  ASSERT(Assigned(FForms), 'TApplication.Run: Forms = nil; missing call to "Initialize" in application?');
-  for i := 0 to FForms.Count - 1 do
-    TForm(FForms.Items[i]).FinishCreation;
+  for i := 0 to ComponentCount - 1 do
+    if Components[i].InheritsFrom(TWidget) then
+      TWidget(Components[i]).FinishCreation;
+  IsRunning := True;
   gtk_main;
+  IsRunning := False;
 end;
 
 procedure TApplication.Terminate;
 begin
-  gtk_main_quit;
+  if IsRunning then
+    gtk_main_quit;
 end;
 
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:39:27  sg
+  * TGenericForm has been changed to TCustomForm
+  * Changed the form management to prevent memory leaks and for correct
+    handling of closed forms
+
   Revision 1.3  2000/01/24 00:30:55  sg
   * Extended copyright to year 2000...
   * Modifications to reflect the changed definition of TWidgetHandle
