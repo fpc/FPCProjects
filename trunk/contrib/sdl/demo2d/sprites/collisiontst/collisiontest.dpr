@@ -72,8 +72,10 @@ const
 
 type
   TMySprite = class(TSprite)
+   private
     xi, yi: integer;
     PreviouslyCollided: boolean;
+   public
     constructor Create;
     procedure Move; override;
     procedure CollisionTest;
