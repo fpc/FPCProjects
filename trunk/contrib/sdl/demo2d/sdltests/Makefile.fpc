@@ -1,0 +1,29 @@
+[target]
+programs=testalpha testgamma testjoystick
+
+[require]
+packages=x11
+
+[compiler]
+includedir=../../include
+unitdir=../../basesdl
+
+[clean]
+#units=tictactoe
+
+#[install]
+#fpcpackage=y
+
+#[default]
+#fpcdir=../../../..
+
+[rules]
+testalpha: testalpha.dpr
+	$(COMPILER) testalpha.dpr
+
+testgamma: testgamma.dpr
+	$(COMPILER) testgamma.dpr
+
+testjoystick: testjoystick.dpr
+	$(COMPILER) testjoystick.dpr
+
