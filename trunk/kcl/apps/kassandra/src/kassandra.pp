@@ -35,11 +35,17 @@ resourcestring
   menuSaveWorkspace = 'Save workspace';
   menuSaveWorkspaceAs = 'Save workspace as...';
   menuOpenRecentFile = 'Open recent file';
+  menuOpenRecentWorkspace = 'Open recent workspace';
   menuExit = 'E&xit';
+  menuEdit = '&Edit';
+  menuEditCut = '&Cut';
+  menuEditCopy = 'C&opy';
+  menuEditPaste = '&Paste';
   menuView = '&View';
   menuViewOutput = '&Output window';
   menuOptions = '&Options';
   menuGeneralOptions = '&General options...';
+  menuHelp = '&Help';
 
   dlgGlobalOptions = 'Global Options';
 
@@ -53,25 +59,39 @@ const
 type
 
   TMainForm = class(TForm)
-  protected
     Layout: TDockingLayout;
     Views: TViewManager;
     StatusBar: TStatusBar;
     OutputSplitter: TSplitter;
     CompilerOutput: TKCLSHWidget;
-    Config: TXMLConfig;
-    NonameCounter: Integer;
-    RecentFiles: array[0..RECENTFILECOUNT-1] of String;
+    ImageList: TImageList;
+
+    // Commands
+    Commands: TCommandList;
+    FileMenuCmd, FileNewCmd, FileOpenCmd, FileSaveCmd, FileSaveAsCmd,
+      FileCloseCmd, FileWorkspaceOpenCmd, FileWorkspaceSaveCmd,
+      FileWorkspaceSaveAsCmd, FileRecentFilesMenuCmd,
+      FileRecentWorkspacesMenuCmd, FileExitCmd,
+      EditMenuCmd, EditCutCmd, EditCopyCmd, EditPasteCmd,
+      ViewMenuCmd, ViewOutputCmd,
+      HelpMenuCmd, HelpAboutCmd: TCommand;
 
     // Menu bar
     MenuBar: TMenuBar;
-    RecentFileMenu: TMenu;
-    SaveFileItem, SaveFileAsItem, CloseFileItem,
-      OpenWorkspaceItem, SaveWorkspaceItem, SaveWorkspaceAsItem: TMenuItem;
+    RecentFilesMenu, RecentWorkspacesMenu: TMenu;
+
+    // Tool bar
+    Toolbar: TToolBar;
+    SearchEdit: TEdit;
+
+  protected
+    Config: TXMLConfig;
+    NonameCounter: Integer;
+    RecentFiles: array[0..RECENTFILECOUNT-1] of String;
     RecentFileItems: array[0..RECENTFILECOUNT-1] of TMenuItem;
 
     procedure CreateMenuBar;
-    procedure UpdateRecentFiles;
+    procedure OnViewsChanged;
   public
     constructor Create;
     destructor  Destroy; override;
@@ -79,21 +99,29 @@ type
     procedure SaveConfig;
     procedure OpenFileByName(AFileName: String);
 
-    procedure FileMenu(Sender: TObject);
-    procedure FileNew(Sender: TObject);
-    procedure FileOpen(Sender: TObject);
-    procedure FileSave(Sender: TObject);
-    procedure FileSaveAs(Sender: TObject);
-    procedure FileClose(Sender: TObject);
-    procedure FileQuit(Sender: TObject);
-    procedure ViewToggleOutputWindow(Sender: TObject);
-    procedure Options(Sender: TObject);
+    procedure OnFileNewCmd(Sender: TObject);
+    procedure OnFileOpenCmd(Sender: TObject);
+    procedure OnFileSaveCmd(Sender: TObject);
+    procedure OnFileSaveAsCmd(Sender: TObject);
+    procedure OnFileCloseCmd(Sender: TObject);
+    procedure OnFileExitCmd(Sender: TObject);
+    procedure OnViewToggleOutputWindowCmd(Sender: TObject);
+    procedure OnViewOptionsCmd(Sender: TObject);
   end;
 
 
 constructor TMainForm.Create;
+
+  function AddToolButton(command: TCommand): TToolButton;
+  begin
+    Result := ToolBar.AddButton(Self);
+    Result.Command := command;
+  end;
+
 var
   i: Integer;
+  sep: TToolButton;
+  bmp: TBitmap;
 begin
   inherited Create(nil);
 
@@ -108,9 +136,9 @@ begin
   SetDefaultSize(
     Config.GetValue('MainWindow/PosAndSize/Width', 600),
     Config.GetValue('MainWindow/PosAndSize/Height', 400));
+
   Text := Application.Title + '  (Version: ' + {$I %date%} + ' ' + {$I %time%} +
     ' ' + {$I %user%} + ')';
-
 
   // Create basic layout object
   Layout := TDockingLayout.Create(Self);
@@ -135,14 +163,67 @@ begin
   OutputSplitter.Pane2 := CompilerOutput;
   Layout.AddWidget(OutputSplitter, dmClient);
 
+  // Create image list used for the command list
+  ImageList := TImageList.Create(Self);
+  ImageList.Name := 'ImageList';
+  bmp := TBitmap.Create;
+  bmp.LoadFromFile('toolbar.bmp');
+  ImageList.AddMasked(bmp, colMagenta);
+
+  // Create command list
+  Commands := TCommandList.Create(Self);
+  Commands.Images := ImageList;
+  FileMenuCmd := Commands.Add(Self, 'FileMenuCmd', menuFile, '', -1, nil);
+  FileNewCmd := Commands.Add(Self, 'FileNewCmd', menuNewFile, '<control>N', 0, @OnFileNewCmd);
+  FileOpenCmd := Commands.Add(Self, 'FileOpenCmd', menuOpenFile, '<control>O', 1, @OnFileOpenCmd);
+  FileSaveCmd := Commands.Add(Self, 'FileSaveCmd', menuSaveFile, '<control>S', 2, @OnFileSaveCmd);
+  FileSaveAsCmd := Commands.Add(Self, 'FileSaveAsCmd', menuSaveFileAs, '<control><shift>S', -1, @OnFileSaveAsCmd);
+  FileCloseCmd := Commands.Add(Self, 'FileCloseCmd', menuCloseFile, '<control>F4', -1, @OnFileCloseCmd);
+  FileWorkspaceOpenCmd := Commands.Add(Self, 'FileWorkspaceOpenCmd', menuOpenWorkspace, '', -1, nil);
+  FileWorkspaceSaveCmd := Commands.Add(Self, 'FileWorkspaceSaveCmd', menuSaveWorkspace, '', -1, nil);
+  FileWorkspaceSaveAsCmd := Commands.Add(Self, 'FileWorkspaceSaveAsCmd', menuSaveWorkspaceAs, '', -1, nil);
+  FileRecentFilesMenuCmd := Commands.Add(Self, 'FileRecentFilesMenuCmd', menuOpenRecentFile, '', -1, nil);
+  FileRecentWorkspacesMenuCmd := Commands.Add(Self, 'FileRecentWorkspacesMenuCmd', menuOpenRecentWorkspace, '', -1, nil);
+  FileExitCmd := Commands.Add(Self, 'FileExitCmd', menuExit, '<alt>X', -1, @OnFileExitCmd);
+  EditMenuCmd := Commands.Add(Self, 'EditMenuCmd', menuEdit, '', -1, nil);
+  EditCutCmd := Commands.Add(Self, 'EditCutCmd', menuEditCut, '<control>X', 3, nil);
+  EditCopyCmd := Commands.Add(Self, 'EditCopyCmd', menuEditCopy, '<control>C', 4, nil);
+  EditPasteCmd := Commands.Add(Self, 'EditPasteCmd', menuEditPaste, '<control>V', 5, nil);
+  ViewMenuCmd := Commands.Add(Self, 'ViewMenuCmd', menuView, '', -1, nil);
+  ViewOutputCmd := Commands.Add(Self, 'ViewOutputCmd', menuViewOutput, '', -1, @OnViewToggleOutputWindowCmd); ViewOutputCmd.Checked := True;
+  HelpMenuCmd := Commands.Add(Self, 'HelpMenuCmd', menuHelp, '', -1, nil);
+  HelpAboutCmd := Commands.Add(Self, 'HelpAboutCmd', '<HelpAbout>', 'F1', 7, nil);
+
   // Create menu bar
   CreateMenuBar;
+
+  // Create tool bar
+  ToolBar := TToolBar.Create(Self);
+  ToolBar.Name := 'ToolBar';
+  Layout.AddWidget(ToolBar, dmTop);
+
+  AddToolButton(FileNewCmd);
+  AddToolButton(FileOpenCmd);
+  AddToolButton(FileSaveCmd);
+  sep := ToolBar.AddButton(Self); sep.Style := tbsSeparator;
+  AddToolButton(EditCutCmd);
+  AddToolButton(EditCopyCmd);
+  AddToolButton(EditPasteCmd);
+  sep := ToolBar.AddButton(Self); sep.Style := tbsSeparator;
+  SearchEdit := TEdit.Create(Self);
+  SearchEdit.Name := 'SearchEdit';
+  SearchEdit.Text := 'QuickSearch...';
+  ToolBar.AddChildWidget(SearchEdit);
+  sep := ToolBar.AddButton(Self); sep.Style := tbsSeparator;
+  AddToolButton(HelpAboutCmd);
 
   // Create status bar
   StatusBar := TStatusBar.Create(Self);
   StatusBar.Name := 'StatusBar';
   StatusBar.Text := strReady;
   Layout.AddWidget(StatusBar, dmBottom);
+
+  OnViewsChanged;
 end;
 
 destructor TMainForm.Destroy;
@@ -152,6 +233,14 @@ begin
 end;
 
 procedure TMainForm.CreateMenuBar;
+
+  function AddItem(menu: TMenu; command: TCommand): TMenuItem;
+  begin
+    Result := TMenuItem.Create(Self);
+    Result.Command := command;
+    menu.AddItem(Result);
+  end;
+
 var
   menu: TMenu;
   item: TMenuItem;
@@ -162,98 +251,58 @@ begin
 
   // Add file menu
   menu := TMenu.Create(Self);
-  menu.Name := 'FileMenu';	// ###
-  menu.Text := menuFile;
-  menu.OnClick := @FileMenu;
+  menu.Command := FileMenuCmd;
   MenuBar.AddItem(menu);
-  item := TMenuItem.Create(Self);
-    item.Name := 'NewFileItem';	// ###
-    item.Text := menuNewFile;
-    item.OnClick := @FileNew;
-    menu.AddItem(item);
-  item := TMenuItem.Create(Self);
-    item.Name := 'OpenFileItem';	// ###
-    item.Text := menuOpenFile;
-    item.OnClick := @FileOpen;
-    menu.AddItem(item);
-  SaveFileItem := TMenuItem.Create(Self);
-    SaveFileItem.Name := 'SaveFileItem';
-    SaveFileItem.Text := menuSaveFile;
-    SaveFileItem.OnClick := @FileSave;
-    menu.AddItem(SaveFileItem);
-  SaveFileAsItem := TMenuItem.Create(Self);
-    SaveFileAsItem.Name := 'SaveFileAsItem';
-    SaveFileAsItem.Text := menuSaveFileAs;
-    SaveFileAsItem.OnClick := @FileSaveAs;
-    menu.AddItem(SaveFileAsItem);
-  CloseFileItem := TMenuItem.Create(Self);
-    CloseFileItem.Name := 'CloseFileItem';
-    CloseFileItem.Text := menuCloseFile;
-    CloseFileItem.OnClick := @FileClose;
-    menu.AddItem(CloseFileItem);
-  item := TMenuItem.Create(Self);
-    item.Name := 'FileSepItem1';	// ###
-    item.Text := '-';
-    menu.AddItem(item);
-  OpenWorkspaceItem := TMenuItem.Create(Self);
-    OpenWorkspaceItem.Name := 'OpenWorkspaceItem';
-    OpenWorkspaceItem.Text := menuOpenWorkspace;
-    OpenWorkspaceItem.Gray := True;
-    menu.AddItem(OpenWorkspaceItem);
-  SaveWorkspaceItem := TMenuItem.Create(Self);
-    SaveWorkspaceItem.Name := 'SaveWorkspaceItem';
-    SaveWorkspaceItem.Text := menuSaveWorkspace;
-    SaveWorkspaceItem.Gray := True;
-    menu.AddItem(SaveWorkspaceItem);
-  SaveWorkspaceAsItem := TMenuItem.Create(Self);
-    SaveWorkspaceAsItem.Name := 'SaveWorkspaceAsItem';
-    SaveWorkspaceAsItem.Text := menuSaveWorkspaceAs;
-    SaveWorkspaceAsItem.Gray := True;
-    menu.AddItem(SaveWorkspaceAsItem);
-  item := TMenuItem.Create(Self);
-    item.Name := 'FileSepItem2';	// ###
-    item.Text := '-';
-    menu.AddItem(item);
-  RecentFileMenu := TMenu.Create(Self);
-    RecentFileMenu.Name := 'RecentFileMenu';
-    RecentFileMenu.Text := menuOpenRecentFile;
-    RecentFileMenu.Gray := True;
-    menu.AddItem(RecentFileMenu);
-  item := TMenuItem.Create(Self);
-    item.Name := 'FileSepItem3';	// ###
-    item.Text := '-';
-    menu.AddItem(item);
-  item := TMenuItem.Create(Self);
-    item.Name := 'ExitItem';	// ###
-    item.Text := menuExit;
-    item.OnClick := @FileQuit;
-    menu.AddItem(item);
+  AddItem(menu, FileNewCmd);
+  AddItem(menu, FileOpenCmd);
+  AddItem(menu, FileSaveCmd);
+  AddItem(menu, FileSaveAsCmd);
+  AddItem(menu, FileCloseCmd);
+  item := TMenuItem.Create(Self); item.Style := misSeparator; menu.AddItem(item);
+  AddItem(menu, FileWorkspaceOpenCmd);
+  AddItem(menu, FileWorkspaceSaveCmd);
+  AddItem(menu, FileWorkspaceSaveAsCmd);
+  item := TMenuItem.Create(Self); item.Style := misSeparator; menu.AddItem(item);
+  RecentFilesMenu := TMenu.Create(Self);
+  RecentFilesMenu.Name := 'RecentFilesMenu';
+  RecentFilesMenu.Command := FileRecentFilesMenuCmd;
+  menu.AddItem(RecentFilesMenu);
+  RecentWorkspacesMenu := TMenu.Create(Self);
+  RecentWorkspacesMenu.Name := 'RecentWorkspacesMenu';
+  RecentWorkspacesMenu.Command := FileRecentWorkspacesMenuCmd;
+  menu.AddItem(RecentWorkspacesMenu);
+  item := TMenuItem.Create(Self); item.Style := misSeparator; menu.AddItem(item);
+  AddItem(menu, FileExitCmd);
 
   menu := TMenu.Create(Self);
-  menu.Name := 'ViewMenu';	// ###
-  menu.Text := menuView;
+  menu.Command := EditMenuCmd;
   MenuBar.AddItem(menu);
-  item := TMenuItem.Create(Self);
-    item.Name := 'ViewOutputItem';	// ###
-    item.Text := menuViewOutput;
-    item.OnClick := @ViewToggleOutputWindow;
-    menu.AddItem(item);
+  AddItem(menu, EditCutCmd);
+  AddItem(menu, EditCopyCmd);
+  AddItem(menu, EditPasteCmd);
 
-{ Deactivated until all dialog and widget classes are working!
   menu := TMenu.Create(Self);
-  menu.Text := menuOptions;
+  menu.Command := ViewMenuCmd;
   MenuBar.AddItem(menu);
-  item := TMenuItem.Create(Self);
-    item.Text := menuGeneralOptions;
-    item.OnClick := @Options;
-    menu.AddItem(item);
-}
+  item := AddItem(menu, ViewOutputCmd); item.Style := misCheck;
 
-  UpdateRecentFiles;
+  menu := TMenu.Create(Self);
+  menu.Command := HelpMenuCmd;
+  MenuBar.AddItem(menu);
 end;
 
-procedure TMainForm.UpdateRecentFiles;
+procedure TMainForm.OnViewsChanged;
+var
+  HasViews: Boolean;
 begin
+  HasViews := Views.Count > 0;
+  FileSaveCmd.Enabled := HasViews;
+  FileSaveAsCmd.Enabled := HasViews;
+  FileCloseCmd.Enabled := HasViews;
+  EditCutCmd.Enabled := HasViews;
+  EditCopyCmd.Enabled := HasViews;
+  EditPasteCmd.Enabled := HasViews;
+  SearchEdit.Enabled := HasViews;
 end;
 
 procedure TMainForm.SaveConfig;
@@ -285,19 +334,10 @@ begin
 
   view.FileName := AFileName;
   Views.CurPageIndex := Views.AddView(view);
+  OnViewsChanged;
 end;
 
-procedure TMainForm.FileMenu(Sender: TObject);
-var
-  NoViews: Boolean;
-begin
-  NoViews := Views.Count = 0;
-  SaveFileItem.Gray := NoViews;
-  SaveFileAsItem.Gray := NoViews;
-  CloseFileItem.Gray := NoViews;
-end;
-
-procedure TMainForm.FileNew(Sender: TObject);
+procedure TMainForm.OnFileNewCmd(Sender: TObject);
 var
   view: TSHTextView;
 begin
@@ -306,9 +346,10 @@ begin
   view.HasDefaultName := True;
   Inc(NonameCounter);
   Views.CurPageIndex := Views.AddView(view);
+  OnViewsChanged;
 end;
 
-procedure TMainForm.FileOpen(Sender: TObject);
+procedure TMainForm.OnFileOpenCmd(Sender: TObject);
 var
   FileDlg: TFileDialog;
 begin
@@ -318,19 +359,19 @@ begin
   FileDlg.Free;
 end;
 
-procedure TMainForm.FileSave(Sender: TObject);
+procedure TMainForm.OnFileSaveCmd(Sender: TObject);
 var
   View: TGenericView;
 begin
   if Views.CurPageIndex < 0 then exit;
   View := Views.GetView(Views.CurPageIndex);
   if View.HasDefaultName then
-    FileSaveAs(Sender)
+    OnFileSaveAsCmd(Sender)
   else
     View.Save;
 end;
 
-procedure TMainForm.FileSaveAs(Sender: TObject);
+procedure TMainForm.OnFileSaveAsCmd(Sender: TObject);
 var
   View: TGenericView;
   FileDlg: TFileDialog;
@@ -347,21 +388,22 @@ begin
   end;
 end;
 
-procedure TMainForm.FileClose(Sender: TObject);
+procedure TMainForm.OnFileCloseCmd(Sender: TObject);
 var
   index: Integer;
 begin
   index := Views.CurPageIndex;
   if index < 0 then exit;
   Views.CloseView(index);
+  OnViewsChanged;
 end;
 
-procedure TMainForm.FileQuit(Sender: TObject);
+procedure TMainForm.OnFileExitCmd(Sender: TObject);
 begin
   Application.Terminate;
 end;
 
-procedure TMainForm.ViewToggleOutputWindow(Sender: TObject);
+procedure TMainForm.OnViewToggleOutputWindowCmd(Sender: TObject);
 begin
   if Assigned(OutputSplitter.Pane2) then
     OutputSplitter.Pane2 := nil
@@ -369,7 +411,7 @@ begin
     OutputSplitter.Pane2 := CompilerOutput;
 end;
 
-procedure TMainForm.Options(Sender: TObject);
+procedure TMainForm.OnViewOptionsCmd(Sender: TObject);
 {###var
   dlg: TStdBtnDialog;
   dl: TDockingLayout;
@@ -422,6 +464,11 @@ end.
 
 {
   $Log$
+  Revision 1.4  2000/01/24 00:33:10  sg
+  * All possible menu commands are now TCommand's; the menu bar creation has
+    been adapted accordingly
+  * Added a nice toolbar ;)
+
   Revision 1.3  2000/01/06 23:05:07  sg
   * Menu items now use "&" to mark the accelerator key
 
