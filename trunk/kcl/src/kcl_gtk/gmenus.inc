@@ -18,9 +18,20 @@
 //   Implementation of menu related classes for GTK+
 // ===================================================================
 
+// -------------------------------------------------------------------
+//   TMenuItem
+// -------------------------------------------------------------------
+
 constructor TMenuItem.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+end;
+
+destructor TMenuItem.Destroy;
+begin
+  if Assigned(FCommand) then
+    FCommand.RemoveEventFilter(TCmdChangeEventObj, @CommandChangeFilter);
+  inherited Destroy;
 end;
 
 procedure TMenuItem_Activate(GtkItem: PGtkMenuItem; item: TMenuItem); cdecl;
@@ -85,7 +96,7 @@ begin
       if Assigned(imglist) and (FCommand.FImageIndex >= 0)
         and (FCommand.FImageIndex < imglist.priv.Count) then begin
         icon := PImageListItem(imglist.priv.Items[FCommand.FImageIndex]);
-        priv.Pixmap := gtk_pixmap_new(icon^.Image, icon^.Mask);
+        priv.Pixmap := gtk_pixmap_new(icon^.ImageCanvas.pixmap, icon^.Mask);
         gtk_widget_show(priv.Pixmap);
         gtk_packer_add(PGtkPacker(priv.Packer), priv.Pixmap, GTK_SIDE_LEFT, GTK_ANCHOR_W,
 	  0, 0, 0, 0, 0, 0);
@@ -111,11 +122,11 @@ begin
     if accel <> GDK_VoidSymbol then
       if FParent.InheritsFrom(TMenuBar) then begin
         form := TMenuBar(FParent);
-        while Assigned(form) and not form.InheritsFrom(TGenericForm) do
+        while Assigned(form) and not form.InheritsFrom(TCustomForm) do
           form := form.FParent;
         if Assigned(form) then
           gtk_widget_add_accelerator(priv.Item, 'activate_item',
-            TGenericForm(form).priv.AccelGroup,
+            TCustomForm(form).priv.AccelGroup,
             accel, GDK_MOD1_MASK, GTK_ACCEL_LOCKED)
       end else
         if FParent.InheritsFrom(TMenu) then
@@ -130,7 +141,7 @@ begin
         menu := TMenuItem(menu.FParent);
       // 'menu' must be a TMenuBar now; now search our form
       form := TMenuBar(menu.FParent);
-      while Assigned(form) and not form.InheritsFrom(TGenericForm) do
+      while Assigned(form) and not form.InheritsFrom(TCustomForm) do
         form := form.FParent;
       if Assigned(form) then begin
         priv.AccelLabel := gtk_label_new(PChar(ShortcutDisplayName(FCommand.FShortCut)));
@@ -166,6 +177,10 @@ begin
 end;
 
 
+// -------------------------------------------------------------------
+//   TMenu
+// -------------------------------------------------------------------
+
 procedure TMenu.OnFinishCreation;
 var
   i: Integer;
@@ -186,6 +201,7 @@ begin
     gtk_widget_show(item.priv.item);
   end;
   gtk_widget_show(priv.submenu);
+  gtk_widget_show(priv.item);
 end;
 
 procedure TMenu.AddItem(AItem: TMenuItem);
@@ -198,6 +214,11 @@ begin
   end;
 end;
 
+
+// -------------------------------------------------------------------
+//   TMenuBar
+// -------------------------------------------------------------------
+
 procedure TMenuBar.AddItem(AItem: TMenuItem);
 begin
   AItem.FParent := Self;
@@ -205,6 +226,7 @@ begin
   if Assigned(FHandle) then begin
     AItem.OnFinishCreation;
     gtk_menu_bar_append(PGtkMenuBar(FHandle), AItem.priv.item);
+    RecalcLayout;
   end;
 end;
 
@@ -214,20 +236,38 @@ var
   item: TMenuItem;
 begin
   FHandle := gtk_menu_bar_new;
+  inherited OnFinishCreation;
 
   for i := 0 to FItems.Count - 1 do begin
     item := TMenuItem(FItems.Items[i]);
     item.OnFinishCreation;
     gtk_menu_bar_append(PGtkMenuBar(FHandle), Item.priv.item);
-    gtk_widget_show(item.priv.item);
   end;
 
-  inherited OnFinishCreation;
+  RecalcLayout;
+end;
+
+procedure TMenuBar.DoRecalcLayout;
+begin
+  inherited DoRecalcLayout;
+  //WriteLn(Format('TMenuBar.DoRecalcLayout: Min=%dx%d, Def=%dx%d', [MinW, MinH, DefW, DefH]));
+  if DefH <= 1 then begin
+    DefH := 20;
+    if DefW <= 1 then DefW := 50;
+  end else begin
+    MinW := MinH * 4;
+    DefW := MinH;
+    DefH := MinH;
+  end;
 end;
 
 
 {
   $Log$
+  Revision 1.6  2000/02/10 18:44:54  sg
+  * Event filters are removed correctly now
+  * Added layout calculation to TMenuBar
+
   Revision 1.5  2000/01/24 18:37:07  sg
   * Moved the declaration of gtk_check_menu_item_new to the proper location,
     fpc/packages/gtk/gtk/gtkcheckmenuitem.pp
