@@ -10,7 +10,7 @@ rst=kassandra
 
 [require]
 toolkit=$(KCLGUI)
-packages=fcl
+packages=fcl gtk
 components=kclshedit
 
 
