@@ -133,7 +133,7 @@ type
     FVertAlign: TVertAlign;
     FOrientation: TBoxOrientation;
     FSpacing: Integer;
-
+    procedure SetOrientation(AOrientation: TBoxOrientation);
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure ApplySize; override;
@@ -143,13 +143,16 @@ type
   published
     property HorzAlign: THorzAlign read FHorzAlign write FHorzAlign default horzFixed;
     property VertAlign: TVertAlign read FVertAlign write FVertAlign default vertFixed;
-    property Orientation: TBoxOrientation read FOrientation write FOrientation default boxHorz;
+    property Orientation: TBoxOrientation read FOrientation write SetOrientation default boxHorz;
     property Spacing: Integer read FSpacing write FSpacing;
   end;
 
 
 {
   $Log$
+  Revision 1.6  2000/02/18 22:18:19  sg
+  * Added TBoxLayout.SetOrientation
+
   Revision 1.5  2000/02/18 18:20:30  sg
   * Added "DoRecalcLayout" for TFixedLayout
 
