@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -12,6 +12,7 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
+
 
 // ===================================================================
 //   TWidget Implementation
@@ -60,9 +61,18 @@ begin
   FVisible := AVisible;
   if FCreationState >= wcsCreationInProgress then
     if AVisible then
-      gtk_widget_show(Handle.Widget)
+      gtk_widget_show(FHandle)
     else
-      gtk_widget_hide(Handle.Widget);
+      gtk_widget_hide(FHandle);
+end;
+
+procedure TWidget.SetEnabled(AEnabled: Boolean);
+begin
+  if AEnabled <> FEnabled then begin
+    FEnabled := AEnabled;
+    if Assigned(FHandle) then
+      gtk_widget_set_sensitive(FHandle, FEnabled);
+  end;
 end;
 
 procedure TWidget.SetText(const AText: String);
@@ -90,6 +100,10 @@ begin
   FCreationState := wcsCreationInProgress;
 
   OnFinishCreation;
+  ASSERT(Assigned(FHandle));
+
+  gtk_widget_set_sensitive(FHandle, FEnabled);
+
   if not (sizeAuto in FSizeFlags) then
     OnMinMaxSizeChanged;
 
@@ -101,37 +115,37 @@ procedure TWidget.OnFinishCreation;
 var
   SizeReq: TGtkRequisition;
 begin
-  ASSERT(Assigned(Handle.Widget));
+  ASSERT(Assigned(FHandle));
 
   if sizeAuto in FSizeFlags then begin
     // Get default size of widget from GTK
-    gtk_widget_size_request(Handle.Widget, @SizeReq);
+    gtk_widget_size_request(FHandle, @SizeReq);
     FWidth := SizeReq.Width;
     FHeight := SizeReq.Height;
   end;
 
   if sizeFixed in FSizeFlags then
-    gtk_widget_set_usize(Handle.Widget, FWidth, FHeight);
+    gtk_widget_set_usize(FHandle, FWidth, FHeight);
 
-  gtk_signal_connect_after(PGtkObject(Handle.Widget), 'size-allocate',
+  gtk_signal_connect_after(PGtkObject(FHandle), 'size-allocate',
     GTK_SIGNAL_FUNC(@TWidget_SizeAllocate), Self);
 
   OnSetSize;
 
   if FShowHint then begin
     // WriteLn(IntToHex(LongInt(Self), 8), ' Setting Tooltip for ', ClassName, ': ', FHint);
-    gtk_tooltips_set_tip(gToolTips, Handle.Widget, PChar(FHint), PChar(FHint));
+    gtk_tooltips_set_tip(gToolTips, FHandle, PChar(FHint), PChar(FHint));
   end;
 
   if FVisible then
-    gtk_widget_show(Handle.Widget);
+    gtk_widget_show(FHandle);
 
   FCreationState := wcsCreationDone;
 
   // GTK-connect all signals
-  gtk_signal_connect(PGtkObject(Handle.Widget), 'focus-in-event',
+  gtk_signal_connect(PGtkObject(FHandle), 'focus-in-event',
     GTK_SIGNAL_FUNC(@TWidget_FocusInEvent), self);
-  gtk_signal_connect(PGtkObject(Handle.Widget), 'focus-out-event',
+  gtk_signal_connect(PGtkObject(FHandle), 'focus-out-event',
     GTK_SIGNAL_FUNC(@TWidget_FocusOutEvent), self);
 end;
 
@@ -139,16 +153,16 @@ procedure TWidget.OnRecalcLayout; begin end;
 
 procedure TWidget.OnSetSize;
 begin
-  ASSERT(Assigned(Handle.Widget));
+  ASSERT(Assigned(FHandle));
 
-  PGtkObject(Handle.Widget)^.flags := PGtkObject(Handle.Widget)^.flags and not
+  PGtkObject(FHandle)^.flags := PGtkObject(FHandle)^.flags and not
     Ord(GTK_VISIBLE);
 
-  Handle.Widget^.allocation.Width := FWidth;
-  Handle.Widget^.allocation.Height := FHeight;
-  gtk_widget_set_usize(Handle.Widget, FWidth, FHeight);
+  FHandle^.allocation.Width := FWidth;
+  FHandle^.allocation.Height := FHeight;
+  gtk_widget_set_usize(FHandle, FWidth, FHeight);
 
-  PGtkObject(Handle.Widget)^.flags := PGtkObject(Handle.Widget)^.flags or
+  PGtkObject(FHandle)^.flags := PGtkObject(FHandle)^.flags or
     Ord(GTK_VISIBLE);
 end;
 
@@ -172,12 +186,12 @@ procedure TWidget.OnMinMaxSizeChanged;
 var
   geom: TGdkGeometry;
 begin
-  if Assigned(Handle.Widget) and Assigned(Handle.Widget^.window) then begin
+  if Assigned(FHandle) and Assigned(FHandle^.window) then begin
     geom.min_width := FMinWidth;
     geom.min_height := FMinHeight;
     geom.max_width := FMaxWidth;
     geom.max_height := FMaxHeight;
-    gdk_window_set_geometry_hints(Handle.Widget^.window, @geom,
+    gdk_window_set_geometry_hints(FHandle^.window, @geom,
       GDK_HINT_MIN_SIZE or GDK_HINT_MAX_SIZE);
   end;
 end;
@@ -192,6 +206,7 @@ begin
   inherited Create(AOwner);
 
   FVisible := True;
+  FEnabled := True;
   FSizeFlags := [sizeAuto];
   FMinWidth := 0;
   FMinHeight := 0;
@@ -201,22 +216,21 @@ end;
 
 destructor TWidget.Destroy;
 begin
-  if Assigned(Handle.Widget) then
-    gtk_widget_destroy(Handle.Widget);
+  if Assigned(FHandle) then
+    gtk_widget_destroy(FHandle);
 end;
 
 procedure TWidget.SetFocus;
 begin
-  if Assigned(Handle.Widget) then begin
+  if Assigned(FHandle) then
     gtk_window_set_focus(
-      PGtkWindow(gtk_widget_get_toplevel(Handle.Widget)), Handle.Widget);
-  end;
+      PGtkWindow(gtk_widget_get_toplevel(FHandle)), FHandle);
 end;
 
 function TWidget.HasFocus: Boolean;
 begin
-  if Assigned(Handle.Widget) then
-    Result := GTK_WIDGET_HAS_FOCUS(Handle.Widget)
+  if Assigned(FHandle) then
+    Result := GTK_WIDGET_HAS_FOCUS(FHandle)
   else
     Result := False;
 end;
@@ -249,20 +263,20 @@ end;
 
 procedure TWidget.Redraw;
 begin
-  if Assigned(Handle.Widget) then
-    gtk_widget_queue_draw(Handle.Widget);
+  if Assigned(FHandle) then
+    gtk_widget_queue_draw(FHandle);
 end;
 
 procedure TWidget.Redraw(const Rect: TRect);
 var
   r: TGdkRectangle;
 begin
-  if Assigned(Handle.Widget) then begin
+  if Assigned(FHandle) then begin
     r.x := Rect.Left;
     r.y := Rect.Top;
     r.Width := Rect.Right - Rect.Left + 1;
     r.Height := Rect.Bottom - Rect.Top + 1;
-    gtk_widget_draw(Handle.Widget, @r);
+    gtk_widget_draw(FHandle, @r);
   end;
 end;
 
@@ -270,19 +284,22 @@ procedure TWidget.Redraw(ax, ay, aw, ah: Integer);
 var
   r: TGdkRectangle;
 begin
-  if Assigned(Handle.Widget) then begin
+  if Assigned(FHandle) then begin
     r.x := ax;
     r.y := ay;
     r.Width := aw;
     r.Height := ah;
-    gtk_widget_draw(Handle.Widget, @r);
+    gtk_widget_draw(FHandle, @r);
   end;
 end;
 
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:29  sg
-  Initial revision
+  Revision 1.2  2000/01/24 00:28:42  sg
+  * Added "Enabled" property
+
+  Revision 1.1.1.1  1999/12/30 21:33:29  sg
+  Initial import
 
 }
