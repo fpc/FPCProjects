@@ -1,0 +1,7 @@
+system
+windows
+sysutils
+classes
+dos
+objpas
+activex
