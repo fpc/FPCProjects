@@ -13,6 +13,10 @@ Main diffs to official release source are:
 
 + try to find field names on the fly in pascal parser.
 
+* disabled gnu-v3 abi detection
+as it led problems when trying to dereference 
+pointers to objects.
+
 + hardware register support for win32-nat target
 which enables hardware watchpoints
 (note that this has usual i386 debug register size

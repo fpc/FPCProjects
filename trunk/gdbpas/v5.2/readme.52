@@ -20,6 +20,9 @@ limitation contrary to my older hardware support
 that was based on page memory protection,
 but that also had several problems).
 
+* disabled gnu-v3 abi detection as it 
+made impossible to dereference a pointer to an object.
+
 WARNING: this is experimental and possibly buggy:
 + SSE support for win32 by compiling with -DHAVE_CONTEXT_EXTENDED_REGISTERS
 This should enable to see the xmm regs, but will possibly result

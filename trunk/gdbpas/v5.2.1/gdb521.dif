@@ -611,3 +611,36 @@ diff -u -p -r origdb/win32-nat.c gdb/win32-nat.c
        if (step)
  	{
  	  /* Single step by setting t bit */
+diff -u -p -r origdb/minsyms.c gdb/minsyms.c
+--- origdb/minsyms.c	Mon Sep 16 11:41:24 2002
++++ gdb/minsyms.c	Wed Sep 18 11:48:31 2002
+@@ -950,12 +950,14 @@ install_minimal_symbols (struct objfile 
+       objfile->minimal_symbol_count = mcount;
+       objfile->msymbols = msymbols;
+ 
+-      /* Try to guess the appropriate C++ ABI by looking at the names 
+-	 of the minimal symbols in the table.  */
++      /* Try to guess the appropriate C++ ABI by looking at the names
++	 of the minimal symbols in the table.
++         Disabled for Free Pascal because posix variable
++         ZONE_NAMES is wrongly recognized
++
+       {
+ 	int i;
+-
+-	for (i = 0; i < mcount; i++)
++        for (i = 0; i < mcount; i++)
+ 	  {
+ 	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
+ 	    if (name[0] == '_' && name[1] == 'Z')
+@@ -964,8 +966,8 @@ install_minimal_symbols (struct objfile 
+ 		break;
+ 	      }
+ 	  }
+-      }
+-      
++      } */
++
+       /* Now walk through all the minimal symbols, selecting the newly added
+          ones and attempting to cache their C++ demangled names. */
+       for (; mcount-- > 0; msymbols++)
