@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -15,13 +15,14 @@
 
 
 // ===================================================================
-//   Drawing/Painting Stuff
+//   Graphics Support (Drawing, Bitmaps...)
 // ===================================================================
 
 type
 
   PRect = ^TRect;
   TColor = LongWord;
+  TBitmap = class;
 
 const
   colBlack       = $000000;
@@ -46,6 +47,10 @@ const
   colDefault     = $ffffffff;
 
 type
+
+// -------------------------------------------------------------------
+//   TFont
+// -------------------------------------------------------------------
 
   TFont = class(TPersistent)
   protected
@@ -75,6 +80,10 @@ type
   end;
 
 
+// -------------------------------------------------------------------
+//   TCanvas
+// -------------------------------------------------------------------
+
   TCanvas = class
   protected
     FHandle: TCanvas_Handle;
@@ -93,12 +102,46 @@ type
     procedure FillRect(const rect: TRect);
     procedure FillRect(ax, ay, aw, ah: Integer);
     procedure Text(x, y: Integer; const AText: String);
+    procedure DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap);
+    procedure DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
+      ASourceW, ASourceH: Integer);
+    procedure DrawBitmap(ADestX, ADestY: Integer;
+      ABitmap: TBitmap; ASourceX, ASourceY, ASourceW, ASourceH: Integer);
+  end;
+
+
+// -------------------------------------------------------------------
+//   TBitmap
+// -------------------------------------------------------------------
+
+  TBitmap = class
+  protected
+    FWidth, FHeight, FBitsPerPixel: Integer;
+    FStride: LongWord;
+    FData: Pointer;
+    FDataChanged: Boolean;
+    function GetRGB(x, y: Integer): TColor;
+  public
+    destructor Destroy; override;
+    procedure LoadFromFile(const AFilename: String);
+    procedure LoadFromStream(AStream: TStream);
+
+    property Width: Integer read FWidth;
+    property Height: Integer read FHeight;
+    property BitsPerPixel: Integer read FBitsPerPixel;
+    property Stride: LongWord read FStride;
+    property DataChanged: Boolean read FDataChanged write FDataChanged;
+    property Data: Pointer read FData;
+    property RGB[x, y: Integer]: TColor read GetRGB;
   end;
 
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:17  sg
-  Initial revision
+  Revision 1.2  2000/01/24 00:09:41  sg
+  * Added TBitmap and bitmap drawing support to TCanvas
+
+  Revision 1.1.1.1  1999/12/30 21:33:17  sg
+  Initial import
 
 }
