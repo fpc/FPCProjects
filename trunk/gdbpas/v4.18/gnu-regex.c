@@ -4,7 +4,7 @@
    internationalization features.)
    Copyright (C) 1993, 94, 95, 96, 97, 98 Free Software Foundation, Inc.
 
-   NOTE: The canonical source of this file is maintained with the 
+   NOTE: The canonical source of this file is maintained with the
    GNU C Library.  Bugs can be reported to bug-glibc@prep.ai.mit.edu.
 
    This program is free software; you can redistribute it and/or modify it
@@ -18,7 +18,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* AIX requires this to be the first thing in the file. */
@@ -5474,6 +5474,7 @@ weak_alias (__re_compile_pattern, re_compile_pattern)
 
 /* BSD has one and only one pattern buffer.  */
 static struct re_pattern_buffer re_comp_buf;
+static RE_TRANSLATE_TYPE case_insensitive_buffer;
 
 char *
 #ifdef _LIBC
@@ -5534,39 +5535,59 @@ re_exec (s)
     0 <= re_search (&re_comp_buf, s, len, 0, len, (struct re_registers *) 0);
 }
 
+/* allocates a unique translation buffer for insensitive search */
+/* FIXME this buffer is never disposed */
+
+static int create_case_insensitive_translate_buffer ()
+{
+  int i;
+  case_insensitive_buffer = (RE_TRANSLATE_TYPE) malloc (CHAR_SET_SIZE
+				      * sizeof (*(RE_TRANSLATE_TYPE)0));
+  if (case_insensitive_buffer == NULL)
+    return (int) REG_ESPACE;
+
+  /* Map uppercase characters to corresponding lowercase ones.  */
+  for (i = 0; i < CHAR_SET_SIZE; i++)
+    case_insensitive_buffer[i] = ISLOWER (i) ? toupper (i) : i;
+  return 0;
+}
+
 int
 re_iexec (s,insensitive)
     char *s;
     int insensitive;
 {
+  RE_TRANSLATE_TYPE store_translate;
   struct re_pattern_buffer  private_preg;
   const int len = strlen (s);
+  int res;
   if (insensitive)
     {
       unsigned i;
-      if (re_comp_buf.translate)
-        free(re_comp_buf.translate);
-      re_comp_buf.translate
-  	      = (RE_TRANSLATE_TYPE) malloc (CHAR_SET_SIZE
-				      * sizeof (*(RE_TRANSLATE_TYPE)0));
-      if (re_comp_buf.translate == NULL)
-        return (int) REG_ESPACE;
+      if (!case_insensitive_buffer)
+        {
+          int res = create_case_insensitive_translate_buffer();
+          if (res)
+            return res;
+        }
+      store_translate = re_comp_buf.translate;
+      re_comp_buf.translate = case_insensitive_buffer;
 
-      /* Map uppercase characters to corresponding lowercase ones.  */
-      for (i = 0; i < CHAR_SET_SIZE; i++)
-        re_comp_buf.translate[i] = ISLOWER (i) ? toupper (i) : i;
       for (i = 0; i < len; i++)
         if (ISLOWER(s[i]))
           s[i] = toupper (s[i]);
     }
   else
     {
-      if (re_comp_buf.translate)
-        free(re_comp_buf.translate);
-      re_comp_buf.translate = NULL;
+      store_translate = re_comp_buf.translate;
+      re_comp_buf.translate = case_insensitive_buffer;
+
     }
+  res = re_search (&re_comp_buf, s, len, 0, len, (struct re_registers *) 0);
+
+  re_comp_buf.translate = store_translate;
   return
-    0 <= re_search (&re_comp_buf, s, len, 0, len, (struct re_registers *) 0);
+     0 <= res;
 }
 
 #endif /* _REGEX_RE_COMP */
