@@ -545,3 +545,24 @@ diff -u -p -r -N -x Entries origdb/top.c gdb/top.c
  
    /* Second line is a copyright notice. */
  
+diff -u -p -r -N -x Entries origdb/gdbserver/linux-m68k-low.c gdb/gdbserver/linux-m68k-low.c
+--- origdb/gdbserver/linux-m68k-low.c	2002-04-10 00:44:43.000000000 +0200
++++ gdb/gdbserver/linux-m68k-low.c	2002-12-13 09:58:17.000000000 +0100
+@@ -26,7 +26,7 @@
+ #include <sys/reg.h>
+ #endif
+ 
+-#define m68k_num_regs 31
++#define m68k_num_regs 29 
+ 
+ /* This table must line up with REGISTER_NAMES in tm-m68k.h */
+ static int m68k_regmap[] =
+diff -u -p -r -N -x Entries origdb/regformats/reg-m68k.dat gdb/regformats/reg-m68k.dat
+--- origdb/regformats/reg-m68k.dat	2002-02-01 23:05:28.000000000 +0100
++++ gdb/regformats/reg-m68k.dat	2002-12-13 09:57:33.000000000 +0100
+@@ -31,5 +31,3 @@ expedite:sp,fp,pc
+ 32:fpcontrol
+ 32:fpstatus
+ 32:fpiaddr
+-32:fpcode
+-32:fpflags
