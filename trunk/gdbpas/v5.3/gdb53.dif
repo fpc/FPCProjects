@@ -1,6 +1,6 @@
 diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
 --- origdb/Makefile.in	Mon Nov 25 23:05:38 2002
-+++ gdb/Makefile.in	Thu Dec 12 15:37:25 2002
++++ gdb/Makefile.in	Thu Dec 12 15:47:04 2002
 @@ -561,7 +561,7 @@ SFILES = ada-exp.y ada-lang.c ada-typepr
  	ui-file.h ui-file.c \
  	frame.c doublest.c \
@@ -30,7 +30,7 @@ diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
  	$(regcache_h) $(gdb_assert_h)
 diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
 --- origdb/fpc-abi.c	Thu Jan  1 01:00:00 1970
-+++ gdb/fpc-abi.c	Thu Dec 12 15:37:26 2002
++++ gdb/fpc-abi.c	Thu Dec 12 15:48:28 2002
 @@ -0,0 +1,408 @@
 +/* Abstraction of FPC abi.
 +   Contributed by Pierre Muller  <muller@ics.u-strasbg.fr>
@@ -63,7 +63,7 @@ diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
 +#include "demangle.h"
 +#include "cp-abi.h"
 +
-+/* #include <ctype.h> */
++#include <ctype.h>
 +
 +struct cp_abi_ops fpc_abi_ops;
 +
@@ -442,7 +442,7 @@ diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
 +}
 diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
 --- origdb/i386-tdep.c	Mon Aug 26 20:35:25 2002
-+++ gdb/i386-tdep.c	Thu Dec 12 15:37:26 2002
++++ gdb/i386-tdep.c	Thu Dec 12 15:47:04 2002
 @@ -708,6 +708,8 @@ i386_skip_prologue (CORE_ADDR pc)
  {
    unsigned char op;
@@ -477,7 +477,7 @@ diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
  /* Use the program counter to determine the contents and size of a
 diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
 --- origdb/minsyms.c	Thu Jul 11 22:46:19 2002
-+++ gdb/minsyms.c	Thu Dec 12 15:37:26 2002
++++ gdb/minsyms.c	Thu Dec 12 15:47:04 2002
 @@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile 
  	for (i = 0; i < mcount; i++)
  	  {
@@ -493,7 +493,7 @@ diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
  		switch_to_cp_abi ("gnu-v3");
 diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
 --- origdb/p-exp.y	Wed Nov 13 16:44:16 2002
-+++ gdb/p-exp.y	Thu Dec 12 15:42:54 2002
++++ gdb/p-exp.y	Thu Dec 12 15:47:04 2002
 @@ -294,7 +294,9 @@ exp	:	exp '.' { search_field = 1; } 
  				current_type = TYPE_TARGET_TYPE (current_type);
  			      current_type = lookup_struct_elt_type (
@@ -535,7 +535,7 @@ diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
         psymtabs once once symbols are read).  */
 diff -u -p -r -N -x Entries origdb/top.c gdb/top.c
 --- origdb/top.c	Sat Sep 28 17:10:32 2002
-+++ gdb/top.c	Thu Dec 12 15:37:26 2002
++++ gdb/top.c	Thu Dec 12 15:47:04 2002
 @@ -1353,7 +1353,7 @@ print_gdb_version (struct ui_file *strea
       program to parse, and is just canonical program name and version
       number, which starts after last space. */
