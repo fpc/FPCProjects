@@ -66,6 +66,13 @@ begin
     DefH := 100;
   end;
 
+  Inc(MinW, FBorderWidth * 2);
+  Inc(MinH, FBorderWidth * 2);
+  Inc(MaxW, FBorderWidth * 2);
+  Inc(MaxH, FBorderWidth * 2);
+  Inc(DefW, FBorderWidth * 2);
+  Inc(DefH, FBorderWidth * 2);
+
   if FWidth = 0 then
     if FDefaultWidth <= 0 then
       FWidth := DefW
@@ -80,6 +87,11 @@ begin
 
   ApplySize;	// Start top-down layouting
   ApplyMinMaxSize;
+end;
+
+function TCustomForm.IsRadioGroup: Boolean;
+begin
+  Result := True;
 end;
 
 function TCustomForm.CanClose: Boolean;
@@ -99,6 +111,10 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/02/17 22:20:02  sg
+  * DoRecalcLayout now consideres BorderWidth
+  * Added IsRadioGroup
+
   Revision 1.1  2000/02/10 18:51:59  sg
   * First implementation; most methods have been moved from the GTK target
     implementation to this file.
