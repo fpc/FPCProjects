@@ -79,15 +79,8 @@ begin
 end;
 
 procedure TSHTextView.Save;
-var
-  f: Text;
-  i: Integer;
 begin
-  AssignFile(f, FFileName);
-  Rewrite(f);
-  for i := 0 to Editor.Doc.LineCount - 1 do
-    WriteLn(f, Editor.Doc.LineText[i]);
-  Close(f);
+  FDoc.SaveToFile(FFileName);
   inherited Save;
 end;
 
@@ -138,6 +131,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:26:19  sg
+  * Files are now saved with TTextDocument.SaveToFile
+
   Revision 1.2  2000/01/05 19:27:26  sg
   * Support for view manager
   * Widgets now set their owner correctly
