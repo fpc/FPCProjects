@@ -18,17 +18,23 @@
 //   Button widgets implementation for GTK+
 // ===================================================================
 
-procedure TGenericButton_Clicked(GtkButton: PGtkButton;
-  button: TGenericButton); cdecl;
+// -------------------------------------------------------------------
+//   TButtonControl
+// -------------------------------------------------------------------
+
+function TButtonControl.ProcessEvent(Event: TEventObj): Boolean;
 begin
-  button.DoClick;
+  if Event.ClassType = TTextChangedEventObj then
+    if HandleAllocated then
+      gtk_label_set_text(PGtkLabel(PGtkBin(FHandle)^.child), PChar(FText));
+
+  Result := inherited ProcessEvent(Event);
 end;
 
 
 // -------------------------------------------------------------------
 //   TButton
 // -------------------------------------------------------------------
-
 
 procedure TButton_OnMap(GtkButton: PGtkButton; button: TButton); cdecl;
 begin
@@ -51,8 +57,7 @@ begin
 
   inherited OnFinishCreation;
 
-  gtk_signal_connect(PGtkObject(FHandle), 'clicked',
-    GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
+  gtk_signal_connect(PGtkObject(FHandle), 'clicked', GTK_SIGNAL_FUNC(@TWinControl_Clicked), self);
 
   gtk_signal_connect(PGtkObject(FHandle), 'map',
     GTK_SIGNAL_FUNC(@TButton_OnMap), self);
@@ -64,19 +69,14 @@ begin
   DefH := MinH + 4;
 end;
 
-procedure TButton.SetText(const AText: String);
-begin
-  if Assigned(FHandle) then
-    gtk_label_set_text(PGtkLabel(PGtkBin(FHandle)^.child), PChar(AText));
-  inherited SetText(AText);
-end;
+
 
 
 // -------------------------------------------------------------------
 //   TImageButton
 // -------------------------------------------------------------------
 
-procedure TImageButton.OnFinishCreation;
+{procedure TImageButton.OnFinishCreation;
 var
   item: PImageListItem;
   pixmap: PGtkWidget;
@@ -86,14 +86,14 @@ begin
   FHandle := gtk_button_new;
   // Get the GtkImage from the ImageList and use it as child for the button
   item := PImageListItem(FImageList.priv.Items[FImageIndex]);
-  pixmap := gtk_pixmap_new(item^.ImageCanvas.pixmap, item^.Mask);
+  pixmap := gtk_pixmap_new(item^.ImageCanvas.Handle, item^.Mask);
   gtk_container_add(PGtkContainer(FHandle), PGtkWidget(pixmap));
 
   inherited OnFinishCreation;
   gtk_signal_connect(PGtkObject(FHandle), 'clicked',
     GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
   gtk_widget_show(pixmap);
-end;
+end;}
 
 
 // -------------------------------------------------------------------
@@ -102,7 +102,7 @@ end;
 //      the state 'cbGrayed' is currently not supported. ### (sg)
 // -------------------------------------------------------------------
 
-function TCheckBox.GetState: TCheckBoxState;
+function TCustomCheckBox.GetState: TCheckBoxState;
 begin
   if gtk_toggle_button_get_active(PGtkToggleButton(FHandle)) then
     Result := cbChecked
@@ -110,28 +110,26 @@ begin
     Result := cbUnchecked;
 end;
 
-procedure TCheckBox.SetState(AState: TCheckBoxState);
+procedure TCustomCheckBox.SetState(AState: TCheckBoxState);
 begin
   gtk_toggle_button_set_active(PGtkToggleButton(FHandle),
     AState = cbChecked);
 end;
 
-function TCheckBox.GetChecked : Boolean;
-
+function TCustomCheckBox.GetChecked: Boolean;
 begin
-    Result := (State=cbChecked);
+    Result := (State = cbChecked);
 end;
 
-procedure TCheckBox.SetChecked(Value : Boolean);
-
+procedure TCustomCheckBox.SetChecked(Value: Boolean);
 begin
-  If Value then
+  if Value then
     State := cbChecked
   else
     State := cbUnchecked;
 end;
 
-procedure TCheckBox.OnFinishCreation;
+procedure TCustomCheckBox.OnFinishCreation;
 var
   lbl: PGtkWidget;
 begin
@@ -144,20 +142,13 @@ begin
 
   inherited OnFinishCreation;
 
-  gtk_signal_connect(PGtkObject(FHandle), 'toggled',
-    GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
+  gtk_signal_connect(PGtkObject(FHandle), 'toggled', GTK_SIGNAL_FUNC(@TWinControl_Clicked), self);
 end;
 
-procedure TCheckBox.DoRecalcLayout;
+
+procedure TCustomCheckBox.DoRecalcLayout;
 begin
   MaxH := DefH;
-end;
-
-procedure TCheckBox.SetText(const AText: String);
-begin
-  if Assigned(FHandle) then
-    gtk_label_set_text(PGtkLabel(PGtkBin(FHandle)^.child), PChar(AText));
-  inherited SetText(AText);
 end;
 
 
@@ -179,28 +170,29 @@ end;
 
 procedure TRadioButton.OnFinishCreation;
 
-  function FindOtherRadioButton(p: TWidget): PGtkRadioButton;
+  function FindOtherRadioButton(p: TWinControl): PGtkRadioButton;
   var
     i: Integer;
     r: PGtkRadioButton;
   begin
-    if (p <> Self) and (p is TRadioButton) then
+    {if (p <> Self) and (p is TRadioButton) then
       Result := PGtkRadioButton(p.FHandle)
     else begin
-      for i := 0 to p.WidgetCount - 1 do begin
-        if p.Widgets[i].IsRadioGroup then continue;
-	r := FindOtherRadioButton(p.Widgets[i]);
+      for i := 0 to p.ControlCount - 1 do begin
+        if p.Controls[i].IsRadioGroup then continue;
+	r := FindOtherRadioButton(p.Controls[i]);
 	if Assigned(r) then begin
 	  Result := r;
 	  exit;
 	end;
       end;
       Result := nil;
-    end;
+    end;}
+    Result := nil;
   end;
 
 var
-  p: TWidget;
+  p: TWinControl;
   other: PGtkRadioButton;
   lbl: PGtkWidget;
 begin
@@ -210,7 +202,7 @@ begin
   while Assigned(p) do begin
     other := FindOtherRadioButton(p);
     if Assigned(other) or p.IsRadioGroup then break;
-    p := p.FParent;
+    p := p.Parent;
   end;
 
   FHandle := gtk_radio_button_new_from_widget(other);
@@ -222,8 +214,7 @@ begin
 
   inherited OnFinishCreation;
 
-  gtk_signal_connect(PGtkObject(FHandle), 'toggled',
-    GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
+  gtk_signal_connect(PGtkObject(FHandle), 'toggled', GTK_SIGNAL_FUNC(@TWinControl_Clicked), self);
 end;
 
 procedure TRadioButton.DoRecalcLayout;
@@ -231,16 +222,13 @@ begin
   MaxH := DefH;
 end;
 
-procedure TRadioButton.SetText(const AText: String);
-begin
-  if Assigned(FHandle) then
-    gtk_label_set_text(PGtkLabel(PGtkBin(FHandle)^.child), PChar(AText));
-  inherited SetText(AText);
-end;
-
 
 {
   $Log$
+  Revision 1.13  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.12  2000/03/01 22:25:41  michael
   inc/hwidgets.inc
 

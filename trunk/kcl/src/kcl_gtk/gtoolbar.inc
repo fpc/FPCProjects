@@ -96,7 +96,7 @@ procedure TToolBar.InternalAddItem(AItem: TKCLComponent);
 var
   ToolTip, Shortcut: String;
   pToolTip: PChar;
-  widget: TWidget;
+  control: TControl;
   btn: TToolButton;
   cmd: TCommand;
   image: PImageListItem;
@@ -116,7 +116,7 @@ begin
           and (cmd.FImageIndex < cmd.FCommandList.FImages.priv.count) then begin
 	  // Create pixmap for the icon on the button
           image := PImageListItem(cmd.FCommandList.FImages.priv.Items[cmd.FImageIndex]);
-          pixmap := gtk_pixmap_new(image^.ImageCanvas.pixmap, image^.Mask);
+          pixmap := gtk_pixmap_new(image^.ImageCanvas.Handle, image^.Mask);
 	end;
 	ToolTip := StripUnderlines(cmd.FText);
 	if Length(cmd.FShortCut) > 0 then
@@ -147,14 +147,14 @@ begin
 
   end else begin
 
-    ASSERT(AItem.InheritsFrom(TWidget));
-    widget := TWidget(AItem);
+    ASSERT(AItem.InheritsFrom(TControl));
+    control := TControl(AItem);
 
-    widget.FinishCreation;
+    {!!!: control.HandleNeeded;
 
     ToolTip := widget.FHint;
     gtk_toolbar_append_element(priv.ToolBar, GTK_TOOLBAR_CHILD_WIDGET,
-      widget.FHandle, nil, nil, nil, nil, nil, nil);
+      widget.FHandle, nil, nil, nil, nil, nil, nil);}
   end;
 end;
 
@@ -187,6 +187,10 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.4  2000/02/24 13:39:32  sg
   * More layout fixes...
 

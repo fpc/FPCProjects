@@ -27,28 +27,28 @@ type
 
   TLayoutItem = class(TCollectionItem)
   public
-    Widget: TWidget;
+    Control: TControl;
   end;
 
-  TWidgetArrayInfo = record
+  TControlArrayInfo = record
     min, def, max: Integer;
     MinFlag, MaxFlag: Boolean;
   end;
 
-  TWidgetArrayInfoArray = array[0..(1 shl 30) div SizeOf(TWidgetArrayInfo) - 1] of TWidgetArrayInfo;
-  PWidgetArrayInfoArray = ^TWidgetArrayInfoArray;
+  TControlArrayInfoArray = array[0..(1 shl 30) div SizeOf(TControlArrayInfo) - 1] of TControlArrayInfo;
+  PControlArrayInfoArray = ^TControlArrayInfoArray;
 
 
 
-  TLayout = class(TWidget)
+  TLayout = class(TWinControl)
   protected
-    FWidgets: TCollection;
+    FControls: TCollection;
     FBorderSpacing: Integer;
     IsRecalcingLayout: Boolean;
 
-    function  GetWidgetCount: Integer; override;
-    function  GetWidgets(AIndex: Integer): TWidget; override;
-    procedure AddFixedChild(AChild: TWidget);
+    function  GetControlCount: Integer; override;
+    function  GetControls(AIndex: Integer): TControl; override;
+    procedure AddFixedChild(AChild: TControl);
     procedure OnFinishCreation; override;
     property BorderSpacing: Integer read FBorderSpacing write FBorderSpacing;
   public
@@ -73,8 +73,8 @@ type
     procedure LayoutChildren; override;
   published
     constructor Create(AOwner: TComponent); override;
-    procedure AddWidget(AWidget: TWidget; ALeft, ATop: Integer);
-    procedure MoveWidget(AWidget: TWidget; ALeft, ATop: Integer);
+    procedure AddControl(AControl: TControl; ALeft, ATop: Integer);
+    procedure MoveControl(AControl: TControl; ALeft, ATop: Integer);
   end;
 
 
@@ -97,8 +97,8 @@ type
     procedure LayoutChildren; override;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure AddWidget(AWidget: TWidget; ADockingMode: TDockingMode);
-    procedure AddWidget(AWidget: TWidget; ALeft, ATop: Integer);
+    procedure AddControl(AControl: TControl; ADockingMode: TDockingMode);
+    procedure AddControl(AControl: TControl; ALeft, ATop: Integer);
   end;
 
 
@@ -120,7 +120,7 @@ type
     procedure SetColSpacing(AColSpacing: Integer);
     procedure SetRowSpacing(ARowSpacing: Integer);
   protected
-    procedure InitSizeInfos(var ColInfos, RowInfos: PWidgetArrayInfoArray);
+    procedure InitSizeInfos(var ColInfos, RowInfos: PControlArrayInfoArray);
 
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
@@ -132,8 +132,8 @@ type
     property RowSpacing: Integer read FRowSpacing write SetRowSpacing default 4;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure AddWidget(AWidget: TWidget; x, y, w, h: Integer);
-    procedure MoveWidget(AWidget: TWidget; x, y, w, h: Integer);
+    procedure AddControl(AControl: TControl; x, y, w, h: Integer);
+    procedure MoveControl(AControl: TControl; x, y, w, h: Integer);
   end;
 
   TGridLayout = class(TCustomGridLayout)
@@ -168,7 +168,7 @@ type
     property Spacing: Integer read FSpacing write FSpacing default 4;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure AddWidget(AWidget: TWidget);
+    procedure AddControl(AControl: TControl);
   end;
 
   TBoxLayout = class(TCustomBoxLayout)
@@ -183,6 +183,10 @@ type
 
 {
   $Log$
+  Revision 1.10  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.9  2000/03/14 11:48:47  sg
   * More improvements and fixes
 

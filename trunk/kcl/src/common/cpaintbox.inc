@@ -22,7 +22,7 @@
 //   TCustomPaintBox
 // -------------------------------------------------------------------
 
-procedure TCustomPaintBox.DoPaint(ACanvas: TCanvas; const ARect: TRect);
+{procedure TCustomPaintBox.DoPaint(ACanvas: TCanvas; const ARect: TRect);
 begin
   if CallEventFilters(TPaintEventObj.Create(Self, ACanvas, ARect)) then
     if Assigned(FOnPaint) then
@@ -67,11 +67,15 @@ end;
 constructor TCustomPaintBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-end;
+end;}
 
 
 {
   $Log$
+  Revision 1.5  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.4  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

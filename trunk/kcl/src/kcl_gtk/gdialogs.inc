@@ -19,103 +19,67 @@
 // ===================================================================
 
 // -------------------------------------------------------------------
-//   TCustomDialog
+//   TStandardDialog
 // -------------------------------------------------------------------
 
-procedure TCustomDialog.Ok(AObj: TObject);
-begin
-end;
-
-procedure TCustomDialog.Cancel(AObj: TObject);
-begin
-end;
-
-procedure TCustomDialog.OnFinishCreation;
-begin
-  FHandle := gtk_window_new(GTK_WINDOW_DIALOG);
-  inherited OnFinishCreation;
-end;
-
-procedure TCustomDialog.DoClose;
-begin
-  gtk_widget_destroy(FHandle);
-  FHandle := nil;
-  gtk_main_quit;
-end;
-
-constructor TCustomDialog.Create(AOwner: TComponent);
+constructor TStandardDialog.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FButtons := [mbOk, mbCancel];
+  FBorderWidth := 4;
 end;
 
-function TCustomDialog.Run: Boolean;
-begin
-  FinishCreation;
-  gtk_main;
-  Result := False;
-end;
-
-
-// -------------------------------------------------------------------
-//   TStdBtnDialog
-// -------------------------------------------------------------------
-
-constructor TStdBtnDialog.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FButtons := [btnOk, btnCancel];
-  FBorderWidth := 8;
-end;
-
-procedure TStdBtnDialog.SetButtons(AButtons: TStdDlgButtons);
+procedure TStandardDialog.SetButtons(AButtons: TMsgDlgButtons);
 begin
   FButtons := AButtons;
 end;
 
-procedure TStdBtnDialog.StdBtnClicked(Sender: TObject);
+procedure TStandardDialog.StdBtnClicked(Sender: TObject);
 begin
-  FResultWidget := TWidget(Sender);
   Close;
 end;
 
-procedure TStdBtnDialog.OnFinishCreation;
+procedure TStandardDialog.OnFinishCreation;
 
   function AddBtn(AText: String; ADefault: Boolean): TButton;
   begin
     Result := TButton.Create(Self);
     Result.Text := AText;
-//    Result.Default := ADefault;
+    Result.Default := ADefault;
     Result.OnClick := @StdBtnClicked;
-    BtnLayout.AddWidget(Result);
+    BtnLayout.AddControl(Result);
   end;
 
 begin
   MainLayout := TBoxLayout.Create(Self);
   MainLayout.Orientation := boxVert;
-  MainLayout.Spacing := 8;
 
   if Assigned(FDlgContent) then
-    MainLayout.AddWidget(FDlgContent);
+    MainLayout.AddControl(FDlgContent);
 
-  Separator := TSeparator.Create(Self);
-  MainLayout.AddWidget(Separator);
+{!!!:  Separator := TSeparator.Create(Self);
+  MainLayout.AddControl(Separator);}
 
   BtnLayout := TBoxLayout.Create(Self);
   BtnLayout.Orientation := boxHorz;
   BtnLayout.HorzAlign := horzRight;
   BtnLayout.VertAlign := vertCenter;
   BtnLayout.CanExpandHeight := False;
-  BtnLayout.Spacing := 8;
 
-  if btnOk in FButtons then AddBtn(btnText_OK, True);
-  if btnYes in FButtons then AddBtn(btnText_Yes, False);
-  if btnNo in FButtons then AddBtn(btnText_No, False);
-  if btnCancel in FButtons then AddBtn(btnText_Cancel, False);
-  if btnAbort in FButtons then AddBtn(btnText_Abort, False);
-  if btnApply in FButtons then AddBtn(btnText_Apply, False);
-  if btnHelp in FButtons then AddBtn(btnText_Help, False);
+  if mbYes      in FButtons then AddBtn(mbText_Yes, False);
+  if mbNo       in FButtons then AddBtn(mbText_No, False);
+  if mbOk       in FButtons then AddBtn(mbText_OK, True);
+  if mbCancel   in FButtons then AddBtn(mbText_Cancel, False);
+  if mbApply    in FButtons then AddBtn(mbText_Apply, False);
+  if mbAbort    in FButtons then AddBtn(mbText_Abort, False);
+  if mbRetry    in FButtons then AddBtn(mbText_Retry, False);
+  if mbIgnore   in FButtons then AddBtn(mbText_Ignore, False);
+  if mbAll      in FButtons then AddBtn(mbText_All, False);
+  if mbNoToAll  in FButtons then AddBtn(mbText_NoToAll, False);
+  if mbYesToAll in FButtons then AddBtn(mbText_YesToAll, False);
+  if mbHelp     in FButtons then AddBtn(mbText_Help, False);
 
-  MainLayout.AddWidget(BtnLayout);
+  MainLayout.AddControl(BtnLayout);
 
   inherited SetContent(MainLayout);
   inherited OnFinishCreation;
@@ -129,9 +93,9 @@ end;
 procedure FileDialog_OK(GtkWidget: PGtkWidget; dlg: TFileDialog); cdecl;
 begin
   dlg.ResultCode := True;
-  dlg.FFilename := gtk_file_selection_get_filename(
+{!!!:  dlg.FFilename := gtk_file_selection_get_filename(
     PGtkFileSelection(dlg.FHandle));
-  gtk_widget_destroy(dlg.FHandle);
+  gtk_widget_destroy(dlg.FHandle);}
 end;
 
 procedure FileDialog_Destroy(GtkWidget: PGtkWidget; dlg: TFileDialog); cdecl;
@@ -142,7 +106,7 @@ end;
 procedure TFileDialog.OnFinishCreation;
 begin
   // Special OnFinishCreation handling!
-  FHandle := gtk_file_selection_new(PChar(dlgText_FileDialog));
+{!!!:  FHandle := gtk_file_selection_new(PChar(dlgText_FileDialog));
 
   gtk_window_set_modal(PGtkWindow(FHandle), True);
 
@@ -157,22 +121,26 @@ begin
     PGtkObject(PGtkFileSelection(FHandle)^.cancel_button),
     'clicked', GTK_SIGNAL_FUNC(@gtk_widget_destroy), PGtkObject(FHandle));
 
-  FCreationState := wcsCreationDone;
+  FCreationState := wcsCreationDone;}
 end;
 
 function TFileDialog.Run: Boolean;
 begin
-  FinishCreation;
+{!!!:  HandleNeeded;
   gtk_widget_show(FHandle);
   FFilename := '';
   gtk_main;
   FHandle := nil;		// The GTK widget has already been destroyed!
-  Result := ResultCode;
+  Result := ResultCode;}
 end;
 
 
 {
   $Log$
+  Revision 1.7  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.6  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

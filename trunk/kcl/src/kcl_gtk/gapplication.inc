@@ -36,8 +36,7 @@ begin
   FOnIdle := AOnIdle;
 end;
 
-procedure TApplication.Notification(AComponent: TComponent;
-  Operation: TOperation);
+procedure TApplication.Notification(AComponent: TComponent; Operation: TOperation);
 begin
   inherited Notification(AComponent, Operation);
   // Terminate if the last form is being destroyed
@@ -66,12 +65,12 @@ begin
   form^ := TCustomForm(InstanceClass.Create(Self));
   if Assigned(ReadFormProc) then
     ReadFormProc(form^);
-  form^.FinishCreation;
+  form^.HandleNeeded;
 end;
 
 procedure TApplication.AddForm(AForm: TCustomForm);
 begin
-  AForm.FinishCreation;
+  AForm.HandleNeeded;
 end;
 
 procedure TApplication.Run;
@@ -80,8 +79,8 @@ var
   form: TCustomForm;
 begin
   for i := 0 to ComponentCount - 1 do
-    if Components[i].InheritsFrom(TWidget) then
-      TWidget(Components[i]).FinishCreation;
+    if Components[i].InheritsFrom(TWinControl) then
+      TWinControl(Components[i]).HandleNeeded;
   IsRunning := True;
   SetOnIdle(FOnIdle);
 
@@ -98,6 +97,10 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.5  2000/02/17 22:26:13  sg
   * Implemented support for idle handler
 

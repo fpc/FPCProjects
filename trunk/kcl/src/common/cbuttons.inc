@@ -18,16 +18,13 @@
 //   Common implementation of TxxxButton methods
 // ===================================================================
 
-procedure TGenericButton.DoClick;
-begin
-  if CallEventFilters(TClickEventObj.Create(Self)) then
-    if Assigned(FOnClick) then
-      FOnClick(Self);
-end;
-
 
 {
   $Log$
+  Revision 1.2  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.1  2000/01/24 00:14:28  sg
   * First version
 

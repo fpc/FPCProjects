@@ -42,7 +42,7 @@ begin
   else
     SetLength(FText, 0);
 
-  if Assigned(FHandle) then
+  if HandleAllocated then
     gtk_entry_set_text(PGtkEntry(PGtkCombo(FHandle)^.entry), PChar(FText));
 end;
 
@@ -58,7 +58,8 @@ begin
   list := nil;
   for i := 0 to FItems.Count - 1 do
     list := g_list_append(list, PChar(FItems[i]));
-  gtk_combo_set_popdown_strings(PGtkCombo(FHandle), list);
+  if Assigned(list) then
+    gtk_combo_set_popdown_strings(PGtkCombo(FHandle), list);
 
   gtk_entry_set_text(PGtkEntry(PGtkCombo(FHandle)^.entry), PChar(FText));
 
@@ -74,16 +75,20 @@ begin
   MaxH := DefH;
 end;
 
-procedure TCustomComboBox.SetText(const AText: String);
+
+function TCustomComboBox.ProcessEvent(Event: TEventObj): Boolean;
 begin
-  if Assigned(FHandle) then
-    gtk_entry_set_text(PGtkEntry(PGtkCombo(FHandle)^.entry), PChar(AText));
-  inherited SetText(AText);
+  if Event.ClassType = TTextChangedEventObj then
+    if HandleAllocated then
+      gtk_entry_set_text(PGtkEntry(PGtkCombo(FHandle)^.entry), PChar(FText));
+
+  Result := inherited ProcessEvent(Event);
 end;
+
 
 procedure TCustomComboBox.Clear;
 begin
-  if Assigned(FHandle) then
+  if HandleAllocated then
     gtk_combo_set_popdown_strings(PGtkCombo(FHandle), nil);
   FItems.Clear;
 end;
@@ -91,6 +96,10 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.4  2000/02/24 13:39:32  sg
   * More layout fixes...
 

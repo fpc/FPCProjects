@@ -55,7 +55,7 @@ end;
 
 function TNotebook.GetCurPage: TNotebookPage;
 begin
-  if Assigned(FHandle) then
+  if HandleAllocated then
     Result := TNotebookPage(FPages.Items
       [gtk_notebook_get_current_page(PGtkNotebook(FHandle))])
   else
@@ -64,7 +64,7 @@ end;
 
 function TNotebook.GetPageIndex: Integer;
 begin
-  if Assigned(FHandle) then
+  if HandleAllocated then
     Result := gtk_notebook_get_current_page(PGtkNotebook(FHandle))
   else
     Result := -1;
@@ -87,7 +87,7 @@ begin
     pg := TNotebookPage(FPages.Items[i]);
     pg.priv.BorderWidget := gtk_hbox_new(False, 0);
 
-    pg.Content.FinishCreation;
+    pg.Content.HandleNeeded;
     gtk_box_pack_start(PGtkBox(pg.priv.BorderWidget), pg.Content.FHandle, True, True, 0);
     gtk_container_set_border_width(PGtkContainer(pg.priv.BorderWidget), pg.BorderWidth);
     gtk_widget_show(pg.priv.BorderWidget);
@@ -161,8 +161,8 @@ begin
   NewPage.FContent := AWidget;
   NewPage.FNotebook := Self;
 
-  if Assigned(FHandle) then begin
-    AWidget.FinishCreation;
+  if HandleAllocated then begin
+    AWidget.HandleNeeded;
     NewPage.priv.LabelWidget := gtk_label_new('');
     TNotebookPage_SetText(NewPage, NewPage.Text);
     gtk_notebook_append_page(PGtkNotebook(FHandle), AWidget.FHandle, NewPage.priv.LabelWidget);
@@ -180,6 +180,10 @@ end;
 
 {
   $Log$
+  Revision 1.8  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.7  2000/02/24 13:39:32  sg
   * More layout fixes...
 

@@ -39,13 +39,17 @@ end;
 
 
 
-constructor TKeyEventObj.Create(ASender: TObject; AKey: Char;
-  AKeyCode: LongWord; AShift: TShiftState);
+constructor TKeyEventObj.Create(ASender: TObject; AKey: Word; AShift: TShiftState);
 begin
   inherited Create(ASender);
   Key := AKey;
-  KeyCode := AKeyCode;
   Shift := AShift;
+end;
+
+constructor TKeyPressEventObj.Create(ASender: TObject; AKey: Word);
+begin
+  inherited Create(ASender);
+  Key := AKey;
 end;
 
 constructor TMouseEventObj.Create(ASender: TObject; AButton: TMouseButton;
@@ -81,9 +85,32 @@ begin
   ChangeType := AChangeType;
 end;
 
+constructor TDrawItemEventObj.Create(AControl: TWinControl;
+  AIndex, ALeft, ATop, ARight, ABottom: Integer; AState: TOwnerDrawState);
+begin
+  inherited Create(AControl);
+  FIndex := AIndex;
+  FLeft := ALeft;
+  FTop := ATop;
+  FRight := ARight;
+  FBottom := ABottom;
+  FState := AState;
+end;
+
+constructor TMeasureItemEventObj.Create(AControl: TWinControl; AIndex, AHeight: Integer);
+begin
+  inherited Create(AControl);
+  FIndex := AIndex;
+  FHeight := AHeight;
+end;
+
 
 {
   $Log$
+  Revision 1.5  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.4  2000/02/10 18:28:20  sg
   * Added reference counting
 

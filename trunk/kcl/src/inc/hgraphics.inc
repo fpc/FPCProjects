@@ -21,62 +21,110 @@
 type
 
   PRect = ^TRect;
-  TColor = LongWord;
+  TColor = type LongInt;
   TBitmap = class;
 
-const
-  colBlack       = $000000;
-  colDarkBlue    = $000080;
-  colBlue        = $0000ff;
-  colDarkGreen   = $008000;
-  colGreen       = $00ff00;
-  colDarkCyan    = $008080;
-  colCyan        = $00ffff;
-  colBrown       = $800000;
-  colRed         = $ff0000;
-  colDarkMagenta = $800080;
-  colMagenta     = $ff00ff;
-  colDarkYellow  = $808000;
-  colYellow      = $ffff00;
-  colGray        = $808080;
-  colGrey        = colGray;
-  colLightGray   = $c0c0c0;
-  colLightGrey   = colLightGray;
-  colWhite       = $ffffff;
 
-  colDefault     = $ffffffff;
+const
+
+  clBlack   = TColor(  $000000);
+  clMaroon  = TColor(  $000080);
+  clGreen   = TColor(  $008000);
+  clOlive   = TColor(  $008080);
+  clNavy    = TColor(  $800000);
+  clPurple  = TColor(  $800080);
+  clTeal    = TColor(  $808000);
+  clGray    = TColor(  $808080);	// identical to clDkGray
+  clSilver  = TColor(  $c0c0c0);	// identical to clLtGray
+  clRed     = TColor(  $0000ff);
+  clLime    = TColor(  $00ff00);
+  clYellow  = TColor(  $00ffff);
+  clBlue    = TColor(  $ff0000);
+  clFuchsia = TColor(  $ff00ff);
+  clAqua    = TColor(  $ffff00);
+  clLtGray  = TColor(  $c0c0c0);
+  clDkGray  = TColor(  $808080);
+  clWhite   = TColor(  $ffffff);
+  clNone    = TColor($1fffffff);
+  clDefault = TColor($20000000);
+
 
 type
+
+// -------------------------------------------------------------------
+//   TGraphicsObject
+// -------------------------------------------------------------------
+
+  {We use an extended TGraphicsObject in KCL for a simple reason: Under Win32,
+   all canvasses have an underlying device context, and all graphic objects use
+   the according Win32 graphics objects (TFont uses a HFont etc.). But this is
+   not true for other platforms, where a canvas for e.g. printing may be a
+   totally different canvas than those used for displaying graphics on the
+   screen. Therefore KCL uses abstract graphics objects, and each distinct
+   canvas implementation has to care about managing, caching etc. for itself.
+   For this we need a small extension to TGraphicsObject: A list of notifiers;
+   each notifier is called whenever a property of the object changes or when the
+   object is being destroyed. They are used by canvas implementations to keep
+   track of all changes, in order to enable them to change or free internally
+   allocated resources.}
+
+
+  TGraphicsObject = class;
+  TGraphicsObjectOperation = (goaChanged, goaDeleted);
+  TGraphicsObjectNotify = procedure(Sender: TGraphicsObject;
+    AOperation: TGraphicsObjectOperation; UserData: TObject) of object;
+
+  TGraphicsObject = class(TPersistent)
+  private
+    FOnChange: TNotifyEvent;
+    NotifierList: TList;
+  protected
+    Modified: Boolean;
+    procedure Changed; dynamic;
+  public
+    destructor Destroy; override;
+    procedure AddNotifier(ANotifier: TGraphicsObjectNotify; UserData: TObject);
+    procedure RemoveNotifier(ANotifier: TGraphicsObjectNotify);
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+  end;
+
 
 // -------------------------------------------------------------------
 //   TFont
 // -------------------------------------------------------------------
 
-  TFont = class(TPersistent)
-  protected
-    FHandle: TFont_private;
-    Modified: Boolean;		// Set if font needs to be regenerated
-    FFontName: String;
-    FWidth, FHeight: Single;
-    FBold, FItalics: Boolean;
-    procedure FSetFontName(const AFontName: String);
-    procedure FSetWidth(AWidth: Single);
-    procedure FSetHeight(AHeight: Single);
-    procedure FSetBold(AIsBold: Boolean);
-    procedure FSetItalics(AIsItalics: Boolean);
+  TFontPitch = (fpDefault, fpVariable, fpFixed);
+  TFontName = type String;
+
+  TFontStyle = (fsBold, fsItalic, fsUnderline, fsStrikeOut);
+  TFontStyles = set of TFontStyle;
+
+  TFont = class(TGraphicsObject)
+  private
+    // FCharset: TFontCharset;
+    FColor: TColor;
+    FHeight: Integer;
+    FName: TFontName;
+    FPitch: TFontPitch;
+    FSize: Integer;
+    FStyle: TFontStyles;
+    // procedure SetCharset(ACharset: TFontCharset);
+    procedure SetColor(AColor: TColor);
+    procedure SetHeight(AHeight: Integer);
+    procedure SetName(const AName: TFontName);
+    procedure SetPitch(APitch: TFontPitch);
+    procedure SetSize(ASize: Integer);
+    procedure SetStyle(AStyle: TFontStyles);
   public
-    constructor Create;
-    destructor Destroy; override;
-    procedure Allocate;
-    function  GetTextWidth(const s: String): Integer;
-    function  GetTextHeight(const s: String): Integer;
-    property  Handle: TFont_private read FHandle;
+    procedure Assign(Source: TPersistent); override;
   published
-    property FontName: String read FFontName write FSetFontName;
-    property Width: Single read FWidth write FSetWidth;
-    property Height: Single read FHeight write FSetHeight;
-    property Bold: Boolean read FBold write FSetBold default False;
-    property Italics: Boolean read FItalics write FSetItalics default False;
+    // property Charset: TFontCharset read FCharset write SetCharset;
+    property Color: TColor read FColor write SetColor;
+    property Height: Integer read FHeight write SetHeight;
+    property Name: TFontName read FName write SetName;
+    property Pitch: TFontPitch read FPitch write SetPitch;
+    property Size: Integer read FSize write SetSize;
+    property Style: TFontStyles read FStyle write SetStyle;
   end;
 
 
@@ -84,30 +132,42 @@ type
 //   TCanvas
 // -------------------------------------------------------------------
 
+  TCanvasStates = (csHandleValid, csFontValid, csPenValid, csBrushValid);
+  TCanvasState = set of TCanvasStates;
+
   TCanvas = class
   protected
-    FHandle: TCanvas_Handle;
-    priv: TCanvas_private;
     FColor: TColor;
     FFont: TFont;
-    procedure SetColor(AColor: TColor);
-    procedure SetFont(AFont: TFont);
-    constructor Create;
+
+    procedure SetColor(AColor: TColor); virtual; abstract;
+    procedure SetFont(AFont: TFont); virtual; abstract;
+
+    procedure RequiredState(ReqState: TCanvasState); virtual; abstract;
   public
-    property Handle: TCanvas_Handle read FHandle;
     property Color: TColor read FColor write SetColor;
     property Font: TFont read FFont write SetFont;
 
-    procedure Line(x1, y1, x2, y2: Integer);
-    procedure FillRect(const rect: TRect);
+    procedure MoveTo(x, y: Integer); virtual; abstract;
+    procedure LineTo(x, y: Integer); virtual; abstract;
+    procedure FillRect(const rect: TRect); virtual; abstract;
+    procedure Text(x, y: Integer; const AText: String); virtual; abstract;
+    procedure CopyRect(dx, dy, dw, dh, sx, sy: Integer); virtual; abstract;
+    procedure DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
+      ASourceX, ASourceY, ASourceW, ASourceH: Integer); virtual; abstract;
+
+    function TextWidth(const AText: String): Integer; virtual; abstract;
+    function TextHeight(const AText: String): Integer; virtual; abstract;
+
+    // Comfort functions
     procedure FillRect(ax, ay, aw, ah: Integer);
-    procedure Text(x, y: Integer; const AText: String);
-    procedure CopyRect(dx, dy, dw, dh, sx, sy: Integer);
     procedure DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap);
     procedure DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
       ASourceW, ASourceH: Integer);
-    procedure DrawBitmap(ADestX, ADestY: Integer;
-      ABitmap: TBitmap; ASourceX, ASourceY, ASourceW, ASourceH: Integer);
+
+    // Special extensions: Drawing of basic controls
+    procedure DrawButton(AControl: TWinControl; const ARect: TRect; IsPressed, IsGrayed: Boolean;
+      AAlign: TAlignment; const AText: String); virtual; abstract;
   end;
 
 
@@ -139,6 +199,10 @@ type
 
 {
   $Log$
+  Revision 1.4  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.3  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

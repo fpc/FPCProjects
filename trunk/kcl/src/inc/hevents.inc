@@ -34,7 +34,7 @@ type
 
 {$M+}
   TEventObj = class
-  protected
+  private
     RefCount: LongInt;
     FSender: TObject;
   public
@@ -51,21 +51,27 @@ type
 //   Keyboard
 // -------------------------------------------------------------------
 
-  TKeyEvent = function(Sender: TObject; Key: Char; KeyCode: LongWord;
-    Shift: TShiftState): Boolean of object;
+  TKeyEvent = function(Sender: TObject; var Key: Word; Shift: TShiftState): Boolean of object;
+  TKeyPressEvent = procedure(Sender: TObject; var Key: Word) of object;
 
   TKeyEventObj = class(TEventObj)
   private
-    FKey: Char;
-    FKeyCode: LongWord;
+    FKey: Word;
     FShift: TShiftState;
   public
-    constructor Create(ASender: TObject; AKey: Char; AKeyCode: LongWord;
-      AShift: TShiftState);
+    constructor Create(ASender: TObject; AKey: Word; AShift: TShiftState);
   published
-    property Key: Char read FKey write FKey;
-    property KeyCode: LongWord read FKeyCode write FKeyCode;
+    property Key: Word read FKey write FKey;
     property Shift: TShiftState read FShift write FShift;
+  end;
+
+  TKeyPressEventObj = class(TEventObj)
+  private
+    FKey: Word;
+  public
+    constructor Create(ASender: TObject; AKey: Word);
+  published
+    property Key: Word read FKey write FKey;
   end;
 
 
@@ -82,7 +88,7 @@ type
     Shift: TShiftState; MouseX, MouseY: Integer) of object;
 
   TMouseEventObj = class(TEventObj)
-  protected
+  private
     FButton: TMouseButton;
     FShift: TShiftState;
     FMouseX, FMouseY: Integer;
@@ -104,7 +110,7 @@ type
     MouseX, MouseY: Integer) of object;
 
   TMouseMoveEventObj = class(TEventObj)
-  protected
+  private
     FShift: TShiftState;
     FMouseX, FMouseY: Integer;
   public
@@ -127,7 +133,7 @@ type
     const ARect: TRect) of object;
 
   TPaintEventObj = class(TEventObj)
-  protected
+  private
     FCanvas: TCanvas;
     FRect: TRect;
   public
@@ -151,7 +157,7 @@ type
   TCmdChangeType = (cctEnabled);
 
   TCmdChangeEventObj = class(TEventObj)
-  protected
+  private
     FChangeType: TCmdChangeType;
   public
     constructor Create(ASender: TCommand; AChangeType: TCmdChangeType);
@@ -160,8 +166,53 @@ type
   end;
 
 
+// -------------------------------------------------------------------
+//   Owner drawing
+// -------------------------------------------------------------------
+
+  TOwnerDrawState = set of (odSelected, odGrayed, odDisabled, odChecked, odFocused);
+
+  TDrawItemEvent = procedure(Control: TWinControl; Index: Integer; Rect: TRect;
+    State: TOwnerDrawState) of object;
+
+  TDrawItemEventObj = class(TEventObj)
+  private
+    FIndex: Integer;
+    FLeft, FTop, FRight, FBottom: Integer;
+    FState: TOwnerDrawState;
+  public
+    constructor Create(AControl: TWinControl; AIndex, ALeft, ATop, ARight, ABottom: Integer;
+      AState: TOwnerDrawState);
+  published
+    property Index: Integer read FIndex write FIndex;
+    property Left: Integer read FLeft write FLeft;
+    property Top: Integer read FTop write FTop;
+    property Right: Integer read FRight write FRight;
+    property Bottom: Integer read FBottom write FBottom;
+  end;
+
+
+  TMeasureItemEvent = procedure(Control: TWinControl; Index: Integer;
+    var Height: Integer) of object;
+
+  TMeasureItemEventObj = class(TEventObj)
+  private
+    FIndex: Integer;
+    FHeight: Integer;
+  public
+    constructor Create(AControl: TWinControl; AIndex, AHeight: Integer);
+  published
+    property Index: Integer read FIndex write FIndex;
+    property Height: Integer read FHeight write FHeight;
+  end;
+
+
 {
   $Log$
+  Revision 1.5  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.4  2000/02/10 18:33:57  sg
   * Added reference counting (AddRef, Release)
 

@@ -18,7 +18,7 @@
 //   Common implementation for TNotebook methods
 // ===================================================================
 
-constructor TNotebook.Create(AOwner: TComponent);
+{constructor TNotebook.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FPages := TCollection.Create(TNotebookPage);
@@ -33,11 +33,15 @@ end;
 function TNotebook.GetPages(AIndex: Integer): TNotebookPage;
 begin
   Result := TNotebookPage(FPages.Items[AIndex]);
-end;
+end;}
 
 
 {
   $Log$
+  Revision 1.3  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.2  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

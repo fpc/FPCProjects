@@ -23,7 +23,8 @@
 {$INCLUDE ctimer.inc}
 {$INCLUDE cgraphics.inc}
 {$INCLUDE ccommands.inc}
-{$INCLUDE cwidget.inc}
+{$INCLUDE ccontrols.inc}
+{$INCLUDE cstdctrls.inc}
 {$INCLUDE cform.inc}
 {$INCLUDE clayouts.inc}
 {$INCLUDE cmenus.inc}
@@ -36,6 +37,7 @@
 {$INCLUDE cstatusbar.inc}
 {$INCLUDE csplitter.inc}
 {$INCLUDE ctoolbar.inc}
+{$INCLUDE cgrids.inc}
 
 
 procedure Register;
@@ -43,9 +45,9 @@ var
   InvComponents: array[0..1] of TComponentClass;
   BaseComponents: array[0..17] of TComponentClass;
   LayoutComponents: array[0..3] of TComponentClass;
-  DialogComponents: array[0..2] of TComponentClass;
+  DialogComponents: array[0..0] of TComponentClass;
 begin
-  InvComponents[0] := TForm;
+{  InvComponents[0] := TForm;
   InvComponents[1] := TMenuItem;
   RegisterNoIcon(InvComponents);
 
@@ -75,15 +77,17 @@ begin
   LayoutComponents[3]  := TBoxLayout;
   RegisterComponents('Layouts', LayoutComponents);
 
-  DialogComponents[0]  := TDialog;
-  DialogComponents[1]  := TStdBtnDialog;
-  DialogComponents[2]  := TFileDialog;
-  RegisterComponents('Dialogs', DialogComponents);
+  DialogComponents[0]  := TStandardDialog;
+  RegisterComponents('Dialogs', DialogComponents);}
 end;
 
 
 {
   $Log$
+  Revision 1.6  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.5  2000/02/17 22:19:13  sg
   * Added cgroupbox.inc, clistbox.inc, ccombobox.inc
 

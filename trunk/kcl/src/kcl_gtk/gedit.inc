@@ -18,7 +18,7 @@
 //   Edit widget implementation for GTK+
 // ===================================================================
 
-procedure TEdit.OnFinishCreation;
+procedure TCustomEdit.OnFinishCreation;
 begin
   if FMultiLine then begin
     FHandle := gtk_text_new(nil, nil);
@@ -31,7 +31,7 @@ begin
   inherited OnFinishCreation;
 end;
 
-procedure TEdit.DoRecalcLayout;
+procedure TCustomEdit.DoRecalcLayout;
 begin
   if FDefaultWidth > 0 then begin
     MinW := FDefaultWidth;	// ### not correct; only until TToolBar can size a TEdit correctly
@@ -45,25 +45,33 @@ begin
     MaxH := DefH;
 end;
 
-procedure TEdit.SetText(const AText: String);
+
+function TCustomEdit.ProcessEvent(Event: TEventObj): Boolean;
 begin
-  if Assigned(FHandle) then
-    gtk_entry_set_text(PGtkEntry(FHandle), PChar(AText));
-  inherited SetText(AText);
+  if Event.ClassType = TTextChangedEventObj then
+    if HandleAllocated then
+      gtk_entry_set_text(PGtkEntry(FHandle), PChar(FText));
+
+  Result := inherited ProcessEvent(Event);
 end;
 
-function TEdit.GetText : String;
 
+function TCustomEdit.GetText: String;
 begin
-//  Writeln ('In edit.gettext');
-  if Assigned(FHandle) then
-    FText:=strpas(gtk_entry_get_text(PGtkEntry(FHandle)));
-  Result:=Inherited Gettext;
+  if HandleAllocated then begin
+    FText := StrPas(gtk_entry_get_text(PGtkEntry(FHandle)));
+    Result := FText;
+  end else
+    Result := inherited Gettext;
 end;
 
 
 {
   $Log$
+  Revision 1.10  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.9  2000/02/25 13:27:20  michael
   + removed debug statement
 

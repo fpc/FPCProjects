@@ -18,12 +18,12 @@
 //   Label widget implementation for GTK+
 // ===================================================================
 
-procedure TCustomLabel.SetAlignment(AAlignment: TAlignment);
+{procedure TCustomLabel.SetAlignment(AAlignment: TAlignment);
 var
   x: Single;
 begin
   FAlignment := AAlignment;
-  if Assigned(FHandle) then begin
+  if HandleAllocated then begin
     case FAlignment of
       taLeftJustify : x := 0;
       taRightJustify: x := 1.0;
@@ -47,14 +47,18 @@ end;
 
 procedure TCustomLabel.SetText(const AText: String);
 begin
-  if Assigned(FHandle) then
+  if HandleAllocated then
     gtk_label_parse_uline(PGtkLabel(FHandle), PChar(ConvertUnderlines(AText)));
   inherited SetText(AText);
-end;
+end;}
 
 
 {
   $Log$
+  Revision 1.6  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.5  2000/02/24 14:56:16  sg
   * Implemented "Alignment" property
   * TCustomLabel now supports "&" in "Text" property to mark shortcuts

@@ -19,13 +19,138 @@
 // ===================================================================
 
 // -------------------------------------------------------------------
+//   TGraphicsObject
+// -------------------------------------------------------------------
+
+procedure TGraphicsObject.Changed;
+begin
+  Modified := True;
+  if Assigned(FOnChange) then
+    FOnChange(Self);
+end;
+
+
+destructor TGraphicsObject.Destroy;
+begin
+  inherited Destroy;
+end;
+
+
+procedure TGraphicsObject.AddNotifier(ANotifier: TGraphicsObjectNotify; UserData: TObject);
+begin
+end;
+
+
+procedure TGraphicsObject.RemoveNotifier(ANotifier: TGraphicsObjectNotify);
+begin
+end;
+
+
+// -------------------------------------------------------------------
+//   TFont
+// -------------------------------------------------------------------
+
+// procedure TFont.SetCharset(ACharset: TFontCharset);
+
+
+procedure TFont.SetColor(AColor: TColor);
+begin
+  if AColor <> FColor then begin
+    FColor := AColor;
+    Changed;
+  end;
+end;
+
+
+procedure TFont.SetHeight(AHeight: Integer);
+begin
+  if AHeight <> FHeight then begin
+    FHeight := AHeight;
+    Changed;
+  end;
+end;
+
+
+procedure TFont.SetName(const AName: TFontName);
+begin
+  if AName <> FName then begin
+    FName := AName;
+    Changed;
+  end;
+end;
+
+
+procedure TFont.SetPitch(APitch: TFontPitch);
+begin
+  if APitch <> FPitch then begin
+    FPitch := APitch;
+    Changed;
+  end;
+end;
+
+
+procedure TFont.SetSize(ASize: Integer);
+begin
+  if ASize <> FSize then begin
+    FSize := ASize;
+    Changed;
+  end;
+end;
+
+
+procedure TFont.SetStyle(AStyle: TFontStyles);
+begin
+  if AStyle <> FStyle then begin
+    FStyle := AStyle;
+    Changed;
+  end;
+end;
+
+
+procedure TFont.Assign(Source: TPersistent);
+var
+  f: TFont;
+begin
+  if Source.InheritsFrom(TFont) then begin
+    f := TFont(Source);
+    if {(FCharset <> f.Charset) or} (FColor <> f.Color) or
+       (FHeight <> f.Height) or (FName <> f.Name) or (FPitch <> f.Pitch) or
+       (FSize <> f.Size) or (FStyle <> f.Style) then begin
+      // FCharset := f.Charset;
+      FColor := f.Color;
+      FHeight := f.Height;
+      FName := f.Name;
+      FPitch := f.Pitch;
+      FSize := f.Size;
+      FStyle := f.Style;
+      Changed;
+    end;
+  end else
+    inherited Assign(Source);
+end;
+
+
+// -------------------------------------------------------------------
 //   TCanvas
 // -------------------------------------------------------------------
+
+procedure TCanvas.FillRect(ax, ay, aw, ah: Integer);
+var
+  rect: TRect;
+begin
+  rect.Left := ax;
+  rect.Top := ay;
+  rect.Right := ax + aw;
+  rect.Bottom := ay + ah;
+  FillRect(rect);
+end;
+
 
 procedure TCanvas.DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap);
 begin
   DrawBitmap(ADestX, ADestY, ABitmap, 0, 0, ABitmap.FWidth, ABitmap.FHeight);
 end;
+
 
 procedure TCanvas.DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
   ASourceW, ASourceH: Integer);
@@ -39,6 +164,7 @@ end;
 // -------------------------------------------------------------------
 
 type
+
   TBitmapFileHeader = packed record
     bfType1, bfType2: Char;	// 'BM' (the original declaration uses a Word!)
     bfSize: LongWord;
@@ -148,6 +274,10 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.1  2000/01/24 00:13:57  sg
   * First version
 

@@ -32,40 +32,29 @@ function TCustomForm_OnDelete(GtkWidget: PGtkWidget; ev: PGdkEvent;
   AForm: TCustomForm): Boolean; cdecl;
 begin
   Result := False;
-  if not (csDestroying in AForm.ComponentState) then begin
-    if not AForm.CanClose then exit;
-
-    // Save the last used window position!
-    gdk_window_get_root_origin(AForm.FHandle^.window, @AForm.FPositionX, @AForm.FPositionY);
-
-    if Assigned(AForm.OnClose) then
-      AForm.OnClose(AForm);
-
-    AForm.DoClose;
-  end;
-  Result := True;
+  AForm.Close;
 end;
 
 
-procedure TCustomForm.SetContent(AContent: TWidget);
+procedure TCustomForm.SetContent(AContent: TControl);
 begin
   FContent := AContent;
-  FContent.FParent := Self;
+  FContent.Parent := Self;
 
-  if Assigned(FHandle) and Assigned(FContent) and Assigned(FContent.FHandle) then
-    gtk_container_add(PGtkContainer(FHandle), FContent.FHandle);
+{!!!:  if HandleAllocated and Assigned(FContent) and FContent.HandleAllocated then
+    gtk_container_add(PGtkContainer(FHandle), FContent.FHandle);}
 end;
 
 function TCustomForm.GetPositionX: Integer;
 begin
-  if Assigned(FHandle) and Assigned(FHandle^.window) then
+  if HandleAllocated and Assigned(FHandle^.window) then
     gdk_window_get_position(FHandle^.window, @FPositionX, @FPositionY);
   Result := FPositionX;
 end;
 
 function TCustomForm.GetPositionY: Integer;
 begin
-  if Assigned(FHandle) and Assigned(FHandle^.window) then
+  if HandleAllocated and Assigned(FHandle^.window) then
     gdk_window_get_position(FHandle^.window, @FPositionX, @FPositionY);
   Result := FPositionY;
 end;
@@ -74,7 +63,7 @@ procedure TCustomForm.ApplyMinMaxSize;
 var
   geometry: TGdkGeometry;
 begin
-  ASSERT(Assigned(FHandle));
+  ASSERT(HandleAllocated);
   geometry.min_width := MinW;
   geometry.min_height := MinH;
   geometry.max_width := MaxW;
@@ -83,30 +72,21 @@ begin
     @geometry, GDK_HINT_MIN_SIZE or GDK_HINT_Max_SIZE);
 end;
 
-procedure TCustomForm.DoClose;
-begin
-  if FShowModal then
-    gtk_main_quit;
-  // Self.Free;
-end;
-
 procedure TCustomForm.OnFinishCreation;
 begin
-  if not Assigned(FHandle) then    // -> derived class can create their own form
-    FHandle := gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  if not HandleAllocated then    // -> derived class can create their own form
+    if fsModal in FFormState then
+      FHandle := gtk_window_new(GTK_WINDOW_DIALOG)
+    else
+      FHandle := gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
   gtk_window_set_policy(PGtkWindow(FHandle), 1, 1, 0);
   gtk_container_set_border_width(PGtkContainer(FHandle), FBorderWidth);
 
   gtk_window_add_accel_group(PGtkWindow(FHandle), priv.AccelGroup);
 
-  if Assigned(FContent) then begin
-    FContent.FinishCreation;
-    if Assigned(FContent.FHandle) then
-      gtk_container_add(PGtkContainer(FHandle), FContent.FHandle);
-  end;
-  
-  gtk_window_set_modal(PGtkWindow(FHandle), FShowModal);
+  if Assigned(FContent) and FContent.InheritsFrom(TWinControl) then
+    TWinControl(FContent).HandleNeeded;
   
   inherited OnFinishCreation;
 
@@ -128,7 +108,10 @@ end;
 
 constructor TCustomForm.Create(AOwner: TComponent);
 begin
+  FFormState := [fsCreating];
+
   inherited Create(AOwner);
+
 
   FDefaultWidth := -1;
   FDefaultHeight := -1;
@@ -136,25 +119,55 @@ begin
   FPositionY := -1;
 
   priv.AccelGroup := gtk_accel_group_new;
-end;
 
-procedure TCustomForm.DoShow;
-begin
-  gtk_widget_show(FHandle);
-  if FShowModal then
-    gtk_main;
+  if Assigned(FOnCreate) then
+    FOnCreate(Self);
+
+  FFormState := [];
 end;
 
 procedure TCustomForm.Close;
+var
+  CloseAction: TCloseAction;
 begin
-  if CanClose then
-    DoClose;
+  if (not (csDestroying in ComponentState)) and CloseQuery then begin
+    // Save the last used window position!
+    gdk_window_get_root_origin(FHandle^.window, @FPositionX, @FPositionY);
+
+    if Assigned(OnClose) then begin
+      CloseAction := caFree;
+      OnClose(Self, CloseAction);
+    end;
+    if fsModal in FFormState then
+      gtk_main_quit
+    else
+      Self.Free;
+  end;
+end;
+
+procedure TCustomForm.Show;
+begin
+  HandleNeeded;
+  Include(FFormState, fsVisible);
+  gtk_widget_show(FHandle);
+end;
+
+function TCustomForm.ShowModal: Integer;
+begin
+  Include(FFormState, fsModal);
+  HandleNeeded;
+  Include(FFormState, fsVisible);
+  gtk_window_set_modal(PGtkWindow(FHandle), True);
+  gtk_widget_show(FHandle);
+  gtk_main;
+  Result := FModalResult;
 end;
 
 procedure TCustomForm.SetPosition(x, y: Integer);
 begin
-  if Assigned(FHandle) and Assigned(FHandle^.window) then
-    gdk_window_move(FHandle^.window, x, y)
+  if HandleAllocated and Assigned(FHandle^.window) then
+//    gdk_window_move(FHandle^.window, x, y)
+    gtk_widget_set_uposition(FHandle, x, y)
   else begin
     FPositionX := x;
     FPositionY := y;
@@ -164,6 +177,10 @@ end;
 
 {
   $Log$
+  Revision 1.11  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.10  2000/02/25 12:44:29  michael
   + ShowModal support finished
 
@@ -183,18 +200,4 @@ end;
   Revision 1.5  2000/02/17 22:28:06  sg
   * Improved behaviour on form closing
   * Added BorderWidth property
-
-  Revision 1.4  2000/02/10 18:41:23  sg
-  * Adapted to new TCustomForm and TForm interfaces
-
-  Revision 1.3  2000/01/24 00:30:55  sg
-  * Extended copyright to year 2000...
-  * Modifications to reflect the changed definition of TWidgetHandle
-
-  Revision 1.2  2000/01/06 23:01:14  sg
-  * Added Accelerator Group creation to TGenericForm
-
-  Revision 1.1.1.1  1999/12/30 21:33:25  sg
-  Initial import
-
 }

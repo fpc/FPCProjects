@@ -39,15 +39,15 @@ type
 
   TScrollBoxRange = class(TGtkAdjRange)
   protected
-    ScrollBox: TScrollBox;
-    constructor Create(AScrollBox: TScrollBox);
+    ScrollBox: TCustomScrollBox;
+    constructor Create(AScrollBox: TCustomScrollBox);
     procedure SetMaxValue(NewMaxValue: Integer); override;
   end;
 
   TScrollersRange = class(TGtkAdjRange)
   protected
-    Scrollers: TScrollers;
-    constructor Create(AScrollers: TScrollers);
+    Scrollers: TCustomScrollers;
+    constructor Create(AScrollers: TCustomScrollers);
     procedure SetPageSize(NewPageSize: Integer); override;
     procedure SetMaxValue(NewMaxValue: Integer); override;
   end;
@@ -106,7 +106,7 @@ begin
 end;
 
 
-constructor TScrollBoxRange.Create(AScrollBox: TScrollBox);
+constructor TScrollBoxRange.Create(AScrollBox: TCustomScrollBox);
 begin
   inherited Create;
   ScrollBox := AScrollBox;
@@ -116,12 +116,12 @@ procedure TScrollBoxRange.SetMaxValue(NewMaxValue: Integer);
 begin
   inherited SetMaxValue(NewMaxValue);
   if ScrollBox.FCreationState = wcsCreationDone then
-    if Assigned(ScrollBox.FContent) and Assigned(ScrollBox.FContent.FHandle) then
+    if Assigned(ScrollBox.FContent) and ScrollBox.FContent.HandleAllocated then
       gtk_widget_set_usize(ScrollBox.FContent.FHandle,
         ScrollBox.HorzRange.MaxValue, ScrollBox.VertRange.MaxValue);
 end;
 
-constructor TScrollersRange.Create(AScrollers: TScrollers);
+constructor TScrollersRange.Create(AScrollers: TCustomScrollers);
 begin
   inherited Create;
   Scrollers := AScrollers;
@@ -131,7 +131,7 @@ procedure TScrollersRange.SetPageSize(NewPageSize: Integer);
 begin
   if NewPageSize <> FPageSize then begin
     inherited SetPageSize(NewPageSize);
-    if Assigned(Scrollers.FHandle) then
+    if Scrollers.HandleAllocated then
       Scrollers.LayoutChildren;
   end;
 end;
@@ -140,42 +140,42 @@ procedure TScrollersRange.SetMaxValue(NewMaxValue: Integer);
 begin
   if NewMaxValue <> adj^.upper then begin
     inherited SetMaxValue(NewMaxValue);
-    if Assigned(Scrollers.FHandle) then
+    if Scrollers.HandleAllocated then
       Scrollers.LayoutChildren;
   end;
 end;
 
 
 // -------------------------------------------------------------------
-//   TScrollBox
+//   TCustomScrollBox
 // -------------------------------------------------------------------
 
-constructor TScrollBox.Create(AOwner: TComponent);
+constructor TCustomScrollBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FHorzRange := TScrollBoxRange.Create(Self);
   FVertRange := TScrollBoxRange.Create(Self);
 end;
 
-destructor TScrollBox.Destroy;
+destructor TCustomScrollBox.Destroy;
 begin
   FHorzRange.Free;
   FVertRange.Free;
   inherited Destroy;
 end;
 
-procedure TScrollBox.SetContent(AContent: TWidget);
+procedure TCustomScrollBox.SetContent(AContent: TWidget);
 begin
   FContent := AContent;
   FContent.FParent := Self;
-//  if Assigned(FHandle) then
+//  if HandleAllocated then
 //    TScrollBox_SetupContent(Self);
 end;
 
-procedure TScrollBox.OnFinishCreation;
+procedure TCustomScrollBox.OnFinishCreation;
 begin
   if Assigned(FContent) then
-    FContent.FinishCreation;
+    FContent.HandleNeeded;
 
   FHandle := gtk_scrolled_window_new(TGtkAdjRange(FHorzRange).adj, TGtkAdjRange(FVertRange).adj);
   gtk_scrolled_window_set_policy(PGtkScrolledWindow(FHandle),
@@ -193,13 +193,13 @@ begin
   end;
 end;
 
-procedure TScrollBox.DoRecalcLayout;
+procedure TCustomScrollBox.DoRecalcLayout;
 var
   BorderSize: Integer;
 begin
   MaxW := InfiniteSize;
   MaxH := InfiniteSize;
-  if Assigned(FContent.FHandle) then begin
+  if FContent.HandleAllocated then begin
     //BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width; ###
     BorderSize := 2;
     MinW := 2 * BorderSize;
@@ -211,33 +211,33 @@ end;
 
 
 // -------------------------------------------------------------------
-//   TScrollers
+//   TCustomScrollers
 // -------------------------------------------------------------------
 
-constructor TScrollers.Create(AOwner: TComponent);
+constructor TCustomScrollers.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FHorzRange := TScrollersRange.Create(Self);
   FVertRange := TScrollersRange.Create(Self);
 end;
 
-destructor TScrollers.Destroy;
+destructor TCustomScrollers.Destroy;
 begin
   FHorzRange.Free;
   FVertRange.Free;
   inherited Destroy;
 end;
 
-procedure TScrollers.SetContent(AContent: TWidget);
+procedure TCustomScrollers.SetContent(AContent: TWidget);
 begin
   FContent := AContent;
   FContent.FParent := Self;
 end;
 
-procedure TScrollers.OnFinishCreation;
+procedure TCustomScrollers.OnFinishCreation;
 begin
   if Assigned(FContent) then
-    FContent.FinishCreation;
+    FContent.HandleNeeded;
 
   FHandle := gtk_fixed_new;
 
@@ -246,7 +246,7 @@ begin
   gtk_fixed_put(PGtkFixed(FHandle), priv.Frame, 0, 0);
   gtk_widget_show(priv.Frame);
 
-  if Assigned(FContent) and Assigned(FContent.FHandle) then
+  if Assigned(FContent) and FContent.HandleAllocated then
     gtk_container_add(PGtkContainer(priv.Frame), FContent.FHandle);
 
   priv.HorzScrollbar := gtk_hscrollbar_new(TGtkAdjRange(FHorzRange).adj);
@@ -258,13 +258,13 @@ begin
   inherited OnFinishCreation;
 end;
 
-procedure TScrollers.DoRecalcLayout;
+procedure TCustomScrollers.DoRecalcLayout;
 var
   BorderSize: Integer;
 begin
   MaxW := InfiniteSize;
   MaxH := InfiniteSize;
-  if Assigned(FContent.FHandle) then begin
+  if FContent.HandleAllocated then begin
     //BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width; ###
     BorderSize := 2;
     MinW := 2 * BorderSize;
@@ -274,7 +274,7 @@ begin
   end;
 end;
 
-procedure TScrollers.LayoutChildren;
+procedure TCustomScrollers.LayoutChildren;
 var
   HorzBarAlloc, VertBarAlloc, FrameAlloc: TGtkAllocation;
 begin
@@ -361,6 +361,10 @@ end;
 
 {
   $Log$
+  Revision 1.9  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.8  2000/02/24 13:39:32  sg
   * More layout fixes...
 

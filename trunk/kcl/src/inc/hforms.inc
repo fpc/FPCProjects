@@ -24,47 +24,52 @@ type
 //   TCustomForm
 // -------------------------------------------------------------------
 
-  TCustomForm = class(TWidget)
-  protected
-    FShowModal : Boolean;
-    FModalResult : Integer;
-    priv: TGenericForm_private;
-    LastMinW, LastMinH, LastMaxW, LastMaxH: Integer;
-    FContent: TWidget;
-    FBorderWidth, FDefaultWidth, FDefaultHeight, FPositionX, FPositionY: Integer;
-    FOnClose: TNotifyEvent;
+  TCloseAction = (caNone, caHide, caFree, caMinimize);
+  TCloseEvent = procedure(Sender: TObject; var AAction: TCloseAction) of object;
 
-    procedure SetContent(AContent: TWidget);
-    procedure SetDefaultWidth(AWidth: Integer);
+  TFormState = set of (fsCreating, fsVisible, fsShowing, fsModal);
+  TModalResult = type Integer;
+
+  TCustomForm = class(TWinControl)
+  private
+    LastMinW, LastMinH, LastMaxW, LastMaxH: Integer;
+    FContent: TControl;
+    FModalResult: TModalResult;
+    FBorderWidth, FDefaultWidth, FDefaultHeight, FPositionX, FPositionY: Integer;
+    FOnClose: TCloseEvent;
+    FOnCreate: TNotifyEvent;
+    procedure SetContent(AContent: TControl);
     procedure SetDefaultHeight(AHeight: Integer);
+    procedure SetDefaultWidth(AWidth: Integer);
+    procedure SetModalResult(AResult: TModalResult);
     function  GetPositionX: Integer;
     function  GetPositionY: Integer;
     procedure SetPositionX(x: Integer);
     procedure SetPositionY(y: Integer);
+  protected
+    priv: TGenericForm_private;
+    FFormState: TFormState;
     procedure ApplyMinMaxSize;
-    procedure DoClose; dynamic;
-    procedure DoShow;Virtual;
-    
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure LayoutChildren; override;
-    property  Content: TWidget read FContent write SetContent;
     property  BorderWidth: Integer read FBorderWidth write FBorderWidth;
-    property  DefaultWidth: Integer read FDefaultWidth write SetDefaultWidth default -1;
+    property  Content: TControl read FContent write SetContent;
     property  DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default -1;
-    property  OnClose: TNotifyEvent read FOnClose;
-
+    property  DefaultWidth: Integer read FDefaultWidth write SetDefaultWidth default -1;
+    property  OnClose: TCloseEvent read FOnClose write FOnClose;
+    property  OnCreate: TNotifyEvent read FOnCreate write FOnCreate;
   public
     constructor Create(AOwner: TComponent); override;
-    function  IsRadioGroup: Boolean; override;
-    function  CanClose: Boolean; virtual;
-    procedure Show;
-    Function  ShowModal : Integer;
     procedure Close;
+    function  CloseQuery: Boolean; virtual;
+    function  IsRadioGroup: Boolean; override;
     procedure SetDefaultSize(AWidth, AHeight: Integer);
     procedure SetPosition(x, y: Integer);
-
-    property  ModalResult : Integer Read FModalResult Write FModalResult;
+    procedure Show;
+    function  ShowModal: Integer; virtual;
+    property  FormState: TFormState;
+    property  ModalResult: TModalResult read FModalResult write SetModalResult;
     property  PositionX: Integer read GetPositionX write SetPositionX default -1;
     property  PositionY: Integer read GetPositionY write SetPositionY default -1;
   end;
@@ -76,19 +81,23 @@ type
 
   TForm = class(TCustomForm)
   published
-    property Text;
-    property Content;
     property BorderWidth;
+    property Content;
     property DefaultWidth;
     property DefaultHeight;
     property PositionX;
     property PositionY;
+    property Text;
     property OnClose;
   end;
 
 
 {
   $Log$
+  Revision 1.8  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.7  2000/02/25 11:40:28  michael
   + Added Checked reader to TRadioButton
   + Started support for ShowModal
@@ -104,14 +113,4 @@ type
   * Renamed TGenericForm to TCustomForm, to make this more VCL-like
   * Added new properties for accessing the position and the default size
     of a form
-
-  Revision 1.3  2000/01/24 00:08:49  sg
-  * Extended copyright to year 2000...
-
-  Revision 1.2  2000/01/06 22:58:10  sg
-  * Added "priv" field to TGenericForm
-
-  Revision 1.1.1.1  1999/12/30 21:33:19  sg
-  Initial import
-
 }

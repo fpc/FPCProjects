@@ -54,7 +54,7 @@ end;
 procedure TImageList.AddMasked(AImage: TBitmap; AMaskColor: TColor);
 var
   x, mw, mx, my: Integer;
-  ImgCanvas: TGdkPixmapCanvas;
+  ImgCanvas: TPixmapCanvas;
   MaskData, p: PChar;
   b: Byte;
   item: PImageListItem;
@@ -62,7 +62,7 @@ begin
   BitmapWndNeeded;
   x := 0;
   while x < AImage.Width do begin
-    ImgCanvas := TGdkPixmapCanvas.Create(gBitmapWnd^.window, FWidth, FHeight, -1);
+    ImgCanvas := TPixmapCanvas.Create(gBitmapWnd^.window, FWidth, FHeight, -1);
     ImgCanvas.DrawBitmap(0, 0, AImage, x, 0, FWidth, FHeight);
     mw := (FWidth + 7) and not 7;
     GetMem(MaskData, mw * FHeight);
@@ -92,6 +92,10 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.2  2000/02/10 18:43:40  sg
   * Fixed memory leaks
 

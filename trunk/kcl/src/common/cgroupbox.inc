@@ -18,7 +18,7 @@
 //   Common implementation of TCustomGroupBox methods
 // ===================================================================
 
-function TCustomGroupBox.GetWidgetCount: Integer;
+function TCustomGroupBox.GetControlCount: Integer;
 begin
   if Assigned(FContent) then
     Result := 1
@@ -26,7 +26,7 @@ begin
     Result := 0;
 end;
 
-function TCustomGroupBox.GetWidgets(AIndex: Integer): TWidget;
+function TCustomGroupBox.GetControls(AIndex: Integer): TControl;
 begin
   ASSERT((AIndex = 0) and Assigned(FContent));
   Result := FContent
@@ -40,6 +40,10 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.2  2000/02/22 14:35:29  sg
   * Removed common constructor
 

@@ -58,10 +58,12 @@ begin
   WriteLn('### TToolBar.GetChildren not implemented yet');
 end;
 
+
 procedure TToolBar.Notification(AComponent: TComponent; AOperation: TOperation);
 begin
   // ### check if a child widget has been removed
 end;
+
 
 constructor TToolBar.Create(AOwner: TComponent);
 begin
@@ -69,22 +71,13 @@ begin
   Items := TList.Create;
 end;
 
-function TToolBar.AddChildWidget(AWidget: TWidget): Boolean;
-begin
-  Items.Add(AWidget);
-  Result := True;
-end;
-
-procedure TToolBar.RemoveChildWidget(AWidget: TWidget);
-begin
-  WriteLn('### TToolBar.RemoveChildWidget not implemented yet');
-end;
 
 function TToolBar.AddButton(AOwner: TComponent): TToolButton;
 begin
   Result := TToolButton.Create(AOwner);
   Items.Add(Result);
 end;
+
 
 function TToolBar.CalcItemsWidth: Integer;
 begin
@@ -95,6 +88,10 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.2  2000/02/10 18:31:14  sg
   * TToolBar.Destroy is now a target-dependent method
 

@@ -19,78 +19,202 @@
 // ===================================================================
 
 // -------------------------------------------------------------------
-//   TCanvas and derived classes
+//   TGdkFontManager
 // -------------------------------------------------------------------
 
-constructor TCanvas.Create;
+type
+
+  TGdkFontData = class
+    Font: TFont;
+    Handle: PGdkFont;
+    // Charset: TFontCharset;
+    Height: Integer;
+    Name: TFontName;
+    Pitch: TFontPitch;
+    Style: TFontStyles;
+  end;
+
+
+  TGdkFontManager = class
+  private
+    Fonts: TList;		// Array of TGdkFontData objects
+    procedure FontNotify(Sender: TGraphicsObject;
+      AOperation: TGraphicsObjectOperation; UserData: TObject);
+  public
+    RefCount: Integer;		// Used only by [Need|Release]GdkFontManager!
+    destructor Destroy; override;
+    procedure AddFont(AFont: TFont; AGdkFont: PGdkFont);
+    function  GetGdkFont(AFont: TFont): PGdkFont;
+  end;
+
+
+procedure TGdkFontManager.FontNotify(Sender: TGraphicsObject;
+  AOperation: TGraphicsObjectOperation; UserData: TObject);
 begin
+end;
+
+
+destructor TGdkFontManager.Destroy;
+var
+  font: TGdkFontData;
+  i: Integer;
+begin
+  if Assigned(Fonts) then begin
+    for i := 0 to Fonts.Count - 1 do begin
+      font := TGdkFontData(Fonts[i]);
+      font.Font.RemoveNotifier(@FontNotify);
+      font.Free;
+    end;
+    Fonts.Free;
+  end;
+  inherited Destroy;
+end;
+
+
+procedure TGdkFontManager.AddFont(AFont: TFont; AGdkFont: PGdkFont);
+var
+  font: TGdkFontData;
+begin
+  font := TGdkFontData.Create;
+  
+  Fonts.Add(font);
+end;
+
+
+function TGdkFontManager.GetGdkFont(AFont: TFont): PGdkFont;
+var
+  font: TGdkFontData;
+
+  procedure CreateGdkFont;
+  var
+    lfd: String;    // Logical font descriptor
+  begin
+    lfd := '-*-';
+    if font.Name = '' then
+      lfd := lfd + '*'
+    else
+      lfd := lfd + font.Name;
+    lfd := lfd + '-';
+    if fsBold in font.Style then
+      lfd := lfd + 'bold'
+    else
+      lfd := lfd + 'medium';
+    lfd := lfd + '-';
+    if fsItalic in font.Style then
+      lfd := lfd + 'i'
+    else
+      lfd := lfd + 'r';
+    lfd := lfd + '-normal--' + IntToStr(font.Height) + '-*-*-*-*-*-iso8859-1';
+// !!!:    font.GdkFont := gdk_font_load(PChar(lfd));
+  end;
+
+var
+  i: Integer;
+begin
+  // Is AFont already in our list?
+  if Assigned(Fonts) then
+    for i := 0 to Fonts.Count - 1 do begin
+      font := TGdkFontData(Fonts[i]);
+      if font.Font = AFont then begin
+        // Check if the font has been modified since we created the GDK font
+{!!!:        if (not Assigned(font.GdkFont) or ({(font.Charset <> AFont.Charset) or}
+	   (font.Height <> AFont.Height) or (font.Pitch <> AFont.Pitch) or
+	   (font.Style <> AFont.Style) or (font.Name <> AFont.Name)) then begin
+	  if Assigned(priv.GdkFont) then
+  	    gdk_font_unref(priv.GdkFont);
+	  CreateGdkFont;
+	end;
+        Result := font.GdkFont;}
+	exit;
+      end;
+    end;
+
+
+  // Apparently not, if we got here...
+
+  if not Assigned(Fonts) then
+    Fonts := TList.Create;
+
+  font := TGdkFontData.Create;
+  font.Font := AFont;
+  // font.Charset := AFont.Charset;
+  font.Height := AFont.Height;
+  font.Name := AFont.Name;
+  font.Pitch := AFont.Pitch;
+  font.Style := AFont.Style;
+  Fonts.Add(font);
+  CreateGdkFont;
+  // !!!:  Result := font.GdkFont;
+end;
+
+
+var
+
+  GdkFontManager: TGdkFontManager;
+
+
+procedure NeedGdkFontManager;
+begin
+  if not Assigned(GdkFontManager) then
+  begin
+    GdkFontManager := TGdkFontManager.Create;
+    GdkFontManager.RefCount := 1;
+  end else
+    Inc(GdkFontManager.RefCount);
+end;
+
+
+procedure ReleaseGdkFontManager;
+begin
+  Dec(GdkFontManager.RefCount);
+  if GdkFontManager.RefCount = 0 then begin
+    GdkFontManager.Free;
+    GdkFontManager := nil;
+  end;
+end;
+
+
+// -------------------------------------------------------------------
+//   TControlCanvas
+// -------------------------------------------------------------------
+
+{procedure TControlCanvas.SetFont(AFont: TFont);
+begin
+  FFont.Assign(AFont);
+end;}
+
+
+constructor TControlCanvas.Create(AHandle: TControlCanvasHandle);
+begin
+  FHandle := AHandle;
+  priv.GC := gdk_gc_new(FHandle);
+  NeedGdkFontManager;
+//  FFont := TMyGdkFont.Create;
   inherited Create;
 end;
 
 
-type
-
-  TGdkCanvas = class(TCanvas)
-    constructor Create(GdkWindow: PGdkWindow);
-    constructor Create(AWidget: TWidget);
-    destructor  Destroy; override;
-  end;
-
-  TGdkExposeCanvas = class(TGdkCanvas)
-    constructor Create(AWidget: TWidget);
-  end;
-
-  TGdkPixmapCanvas = class(TGdkCanvas)
-    pixmap: PGdkPixmap;		// Same value as FHandle
-    constructor Create(GdkWindow: PGdkWindow; w, h, ColorDepth: Integer);
-    destructor Destroy; override;
-  end;
-
-
-constructor TGdkCanvas.Create(GdkWindow: PGdkWindow);
+constructor TControlCanvas.Create(AControl: TControl);
 begin
-  FHandle := GdkWindow;
-  priv.GC := gdk_gc_new(FHandle);
+{  Create(gtk_widget_get_parent_window(AWidget.FHandle));
+  gdk_gc_copy(priv.GC, PGtkStyle(AWidget.FHandle^.thestyle)^.
+    fg_gc[AWidget.FHandle^.state]);
+  priv.GdkFont := PGtkStyle(AWidget.FHandle^.thestyle)^.font;
+  gdk_font_ref(priv.GdkFont);
+  FFont.FHeight := priv.GdkFont^.ascent + priv.GdkFont^.descent;}
 end;
 
-destructor TGdkCanvas.Destroy;
+
+destructor TControlCanvas.Destroy;
 begin
+  FFont.Free;
+  ReleaseGdkFontManager;
   gdk_gc_destroy(priv.GC);
   inherited Destroy;
 end;
 
 
-constructor TGdkCanvas.Create(AWidget: TWidget);
-begin
-  FHandle := gtk_widget_get_parent_window(AWidget.FHandle);
-  priv.GC := gdk_gc_new(FHandle);
-end;
-
-
-constructor TGdkExposeCanvas.Create(AWidget: TWidget);
-begin
-  FHandle := AWidget.FHandle^.window;
-  priv.GC := gdk_gc_new(FHandle);
-  gdk_gc_copy(priv.GC, PGtkStyle(AWidget.FHandle^.thestyle)^.
-    fg_gc[AWidget.FHandle^.state]);
-end;
-
-
-constructor TGdkPixmapCanvas.Create(GdkWindow: PGdkWindow;
-  w, h, ColorDepth: Integer);
-begin
-  pixmap := gdk_pixmap_new(GdkWindow, w, h, ColorDepth);
-  inherited Create(pixmap);
-end;
-
-destructor TGdkPixmapCanvas.Destroy;
-begin
-  gdk_pixmap_unref(pixmap);
-  inherited Destroy;
-end;
-
-
-procedure TCanvas.SetColor(AColor: TColor);
+procedure TControlCanvas.SetColor(AColor: TColor);
 var
   c: TGdkColor;
 begin
@@ -107,56 +231,56 @@ begin
   end;    
 end;
 
-procedure TCanvas.SetFont(AFont: TFont);
+
+procedure TControlCanvas.RequiredState(ReqState: TCanvasState);
 begin
-  FFont := AFont;
+  if csFontValid in ReqState then begin
+    if FFont.Modified or not Assigned(priv.GdkFont) then begin
+      FFont.Modified := False;
+    end;
+  end;
 end;
 
-procedure TCanvas.Line(x1, y1, x2, y2: Integer);
+
+procedure TControlCanvas.MoveTo(x, y: Integer);
 begin
-  gdk_draw_line(PGdkDrawable(FHandle), priv.GC, x1, y1, x2, y2);
+  priv.PenX := x;
+  priv.PenY := y;
 end;
 
-procedure TCanvas.FillRect(const rect: TRect);
+
+procedure TControlCanvas.LineTo(x, y: Integer);
+begin
+  gdk_draw_line(PGdkDrawable(FHandle), priv.GC, priv.PenX, priv.PenY, x, y);
+  priv.PenX := x;
+  priv.PenY := y;
+end;
+
+
+procedure TControlCanvas.FillRect(const rect: TRect);
 begin
   gdk_draw_rectangle(PGdkDrawable(FHandle), priv.GC, 1,
     rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
 end;
 
-procedure TCanvas.FillRect(ax, ay, aw, ah: Integer);
+
+procedure TControlCanvas.Text(x, y: Integer; const AText: String);
 begin
-  gdk_draw_rectangle(PGdkDrawable(FHandle), priv.GC, 1, ax, ay, aw, ah);
-end;
-
-procedure TCanvas.Text(x, y: Integer; const AText: String);
-var
-  ReleaseFont: Boolean;
-begin
-  if AText = '' then exit;
-
-  if Assigned(FFont) then
-    ReleaseFont := False
-  else begin
-    ReleaseFont := True;
-    FFont := TFont.Create;
-  end;
-
-  FFont.Allocate;
-  gdk_draw_text(PGdkDrawable(FHandle), FFont.Handle.GdkFont, priv.GC,
-    x, y + Trunc(FFont.FHeight), PChar(AText), Length(AText));
-
-  if ReleaseFont then begin
-    FFont.Free;
-    FFont := nil;
+  if Length(AText) > 0 then begin
+    RequiredState([csHandleValid, csFontValid]);
+    gdk_draw_text(PGdkDrawable(FHandle), priv.GdkFont, priv.GC,
+      x, y + Trunc(FFont.FHeight), PChar(AText), Length(AText));
   end;
 end;
 
-procedure TCanvas.CopyRect(dx, dy, dw, dh, sx, sy: Integer);
+
+procedure TControlCanvas.CopyRect(dx, dy, dw, dh, sx, sy: Integer);
 begin
   gdk_window_copy_area(FHandle, priv.GC, dx, dy, FHandle, sx, sy, dw, dh);
 end;
 
-procedure TCanvas.DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
+
+procedure TControlCanvas.DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
   ASourceX, ASourceY, ASourceW, ASourceH: Integer);
 var
   p: Pointer;
@@ -188,103 +312,73 @@ begin
 end;
 
 
-// -------------------------------------------------------------------
-//   TFont
-// -------------------------------------------------------------------
-
-constructor TFont.Create;
+function TControlCanvas.TextWidth(const AText: String): Integer;
 begin
-  Modified := True;
-  FHeight := 12;
+  RequiredState([csFontValid]);
+  if Length(AText) = 1 then
+    Result := gdk_char_width(priv.GdkFont, AText[1])
+  else
+    Result := gdk_text_width(priv.GdkFont, PChar(AText), Length(AText));
 end;
 
-destructor TFont.Destroy;
+
+function TControlCanvas.TextHeight(const AText: String): Integer;
 begin
-  if Assigned(Handle.GdkFont) then
-    gdk_font_unref(Handle.GdkFont);
-  inherited Destroy;
+  RequiredState([csFontValid]);
+  if Length(AText) = 1 then
+    Result := gdk_char_height(priv.GdkFont, AText[1])
+  else
+    Result := gdk_text_height(priv.GdkFont, PChar(AText), Length(AText));
 end;
 
-procedure TFont.FSetFontName(const AFontName: String);
-begin
-  if AFontName <> FFontName then begin
-    FFontName := AFontName;
-    Modified := True;
-  end;
-end;
 
-procedure TFont.FSetWidth(AWidth: Single);
-begin
-  if AWidth <> FWidth then begin
-    FWidth := AWidth;
-    Modified := True;
-  end;
-end;
-
-procedure TFont.FSetHeight(AHeight: Single);
-begin
-  if AHeight <> FHeight then begin
-    FHeight := AHeight;
-    Modified := True;
-  end;
-end;
-
-procedure TFont.FSetBold(AIsBold: Boolean);
-begin
-  if AIsBold <> FBold then begin
-    FBold := AIsBold;
-    Modified := True;
-  end;
-end;
-
-procedure TFont.FSetItalics(AIsItalics: Boolean);
-begin
-  if AIsItalics <> FItalics then begin
-    FItalics := AIsItalics;
-    Modified := True;
-  end;
-end;
-
-procedure TFont.Allocate;
+procedure TControlCanvas.DrawButton(AControl: TWinControl; const ARect: TRect;
+  IsPressed, IsGrayed: Boolean; AAlign: TAlignment; const AText: String);
 var
-  lfd: String;    // Logical font descriptor
+  state: TGtkStateType;
+  area: TGdkRectangle;
+  WidgetFont: PGdkFont;
+  x, y: Integer;
 begin
-  if not Modified then exit;
-  lfd := '-*-';
-  if FFontName = '' then lfd := lfd + '*'
-  else lfd := lfd + FFontName;
-  lfd := lfd + '-';
-  if FBold then lfd := lfd + 'bold'
-  else lfd := lfd + 'medium';
-  lfd := lfd + '-';
-  if FItalics then lfd := lfd + 'i'
-  else lfd := lfd + 'r';
-  lfd := lfd + '-normal--' + IntToStr(Trunc(FHeight)) + '-*-*-*-*-*-iso8859-1';
-  Handle.GdkFont := gdk_font_load(PChar(lfd));
-  Modified := False;
+  if IsPressed then
+    state := GTK_STATE_SELECTED
+  else
+    state := 0;
+  if IsGrayed then
+    state := state or GTK_STATE_INSENSITIVE;
+
+  area.x := ARect.Left;
+  area.y := ARect.Top;
+  area.width := ARect.Right - ARect.Left;
+  area.height := ARect.Bottom - ARect.Top;
+
+  gtk_paint_box(PGtkStyle(AControl.FHandle^.thestyle), FHandle, state, GTK_SHADOW_OUT,
+    @area, AControl.FHandle, 'button',
+    ARect.Left, ARect.Top, ARect.Right - ARect.Left, ARect.Bottom - ARect.Top);
+
+  WidgetFont := PGtkStyle(AControl.FHandle^.thestyle)^.font;
+  x := ARect.Left + (area.width - gdk_text_width(WidgetFont, PChar(AText), Length(AText))) div 2;
+  y := ARect.Top + (area.height + Trunc(WidgetFont^.ascent + WidgetFont^.descent)) div 2;
+  gdk_draw_text(PGdkDrawable(FHandle), WidgetFont, priv.GC, x, y, PChar(AText), Length(AText));
 end;
 
-function TFont.GetTextWidth(const s: String): Integer;
-begin
-  Allocate;
-  if Length(s) = 1 then
-    Result := gdk_char_width(Handle.GdkFont, s[1])
-  else
-    Result := gdk_text_width(Handle.GdkFont, PChar(s), Length(s));
-end;
 
-function TFont.GetTextHeight(const s: String): Integer;
+// -------------------------------------------------------------------
+//   TPixmapCanvas  (private KCL/Gtk class)
+// -------------------------------------------------------------------
+
+constructor TPixmapCanvas.Create(GdkWindow: PGdkWindow; w, h, ColorDepth: Integer);
 begin
-  Allocate;
-  if Length(s) = 1 then
-    Result := gdk_char_height(Handle.GdkFont, s[1])
-  else
-    Result := gdk_text_height(Handle.GdkFont, PChar(s), Length(s));
+  inherited Create(gdk_pixmap_new(GdkWindow, w, h, ColorDepth));
 end;
 
 
 {
   $Log$
+  Revision 1.5  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.4  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

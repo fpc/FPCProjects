@@ -18,72 +18,55 @@
 //   Dialog Box Classes
 // ===================================================================
 
+// -------------------------------------------------------------------
+//   Message and standard dialogs
+// -------------------------------------------------------------------
+
 type
 
-  TGenericDialog = class(TCustomForm)
-  public
-    function Run: Boolean; virtual; abstract;
-  end;
-
-
-  TCustomDialog = class(TGenericDialog)
-  protected
-    FOnOk, FOnCancel: TNotifyEvent;
-    FResultWidget: TWidget;
-
-    procedure Ok(AObj: TObject);
-    procedure Cancel(AObj: TObject);
-    procedure OnFinishCreation; override;
-    procedure DoClose; override;
-  public
-    constructor Create(AOwner: TComponent); override;
-    function Run: Boolean; override;
-    property ResultWidget: TWidget read FResultWidget;
-  end;
-
-
-  TDialog = class(TCustomDialog)
-  published
-    property Text;
-    property Content;
-    property BorderWidth;
-  end;
-
-
-  TStdDlgButtons =
-    set of (btnOK, btnCancel, btnAbort, btnApply, btnYes, btnNo, btnHelp);
+  TMsgDlgBtn = (mbYes, mbNo, mbOK, mbCancel, mbApply, mbAbort, mbRetry,
+    mbIgnore, mbAll, mbNoToAll, mbYesToAll, mbHelp);
+  TMsgDlgButtons = set of TMsgDlgBtn;
 
 resourcestring
-  btnText_Ok = 'Ok';
-  btnText_Cancel = 'Cancel';
-  btnText_Abort = 'Abort';
-  btnText_Apply = 'Apply';
-  btnText_Yes = 'Yes';
-  btnText_No = 'No';
-  btnText_Help = 'Help';
+  mbText_Yes = 'Yes';
+  mbText_No = 'No';
+  mbText_Ok = 'Ok';
+  mbText_Cancel = 'Cancel';
+  mbText_Apply = 'Apply';
+  mbText_Abort = 'Abort';
+  mbText_Retry = 'Retry';
+  mbText_Ignore = 'Ignore';
+  mbText_All = 'All';
+  mbText_NoToAll = 'No to all';
+  mbText_YesToAll = 'Yes to all';
+  mbText_Help = 'Help';
 
   dlgText_FileDialog = 'Select file';
 
 type
 
-  TStdBtnDialog = class(TCustomDialog)
+  TStandardDialog = class(TCustomForm)
   protected
-    FButtons: TStdDlgButtons;
-    FDlgContent: TWidget;
+    FButtons: TMsgDlgButtons;
+    FDlgContent: TControl;
     MainLayout, BtnLayout: TBoxLayout;
-    Separator: TSeparator;
-    procedure SetButtons(AButtons: TStdDlgButtons);
+    // !!!: Separator: TSeparator;
+    procedure SetButtons(AButtons: TMsgDlgButtons);
     procedure StdBtnClicked(Sender: TObject);
     procedure OnFinishCreation; override;
   public
     constructor Create(AOwner: TComponent); override;
-    property Buttons: TStdDlgButtons read FButtons write SetButtons
-      default [btnOk, btnCancel];
-    property Content: TWidget read FDlgContent write FDlgContent;
+    property Buttons: TMsgDlgButtons read FButtons write SetButtons default [mbOk, mbCancel];
+    property Content: TControl read FDlgContent write FDlgContent;
   end;
 
 
-  TFileDialog = class(TWidget)
+// -------------------------------------------------------------------
+//   Common dialogs
+// -------------------------------------------------------------------
+
+  TFileDialog = class(TWinControl)
   protected
     ResultCode: Boolean;
 
@@ -98,6 +81,10 @@ type
 
 {
   $Log$
+  Revision 1.4  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.3  2000/02/17 22:21:56  sg
   * Added TCustomDialog
   * Several improvements...

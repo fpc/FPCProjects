@@ -38,6 +38,12 @@ begin
   end;
 end;
 
+procedure TCustomForm.SetModalResult(AResult: TModalResult);
+begin
+  FModalResult := AResult;
+  Close;
+end;
+
 procedure TCustomForm.SetPositionX(x: Integer);
 begin
    SetPosition(x, GetPositionY);
@@ -103,7 +109,7 @@ begin
   Result := True;
 end;
 
-function TCustomForm.CanClose: Boolean;
+function TCustomForm.CloseQuery: Boolean;
 begin
   Result := True;
 end;
@@ -117,25 +123,13 @@ begin
   end;
 end;
 
-procedure TCustomForm.Show;
-begin
-  FShowModal:=False;
-  FinishCreation;
-  ASSERT(Assigned(FHandle));
-  DoShow;
-end;
-
-function TCustomForm.Showmodal : Integer;
-begin
-  FShowModal:=True;
-  FinishCreation;
-  ASSERT(Assigned(FHandle));
-  DoShow;
-  result:=FModalResult;
-end;
 
 {
   $Log$
+  Revision 1.6  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.5  2000/02/25 11:40:28  michael
   + Added Checked reader to TRadioButton
   + Started support for ShowModal

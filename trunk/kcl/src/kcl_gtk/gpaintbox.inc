@@ -22,7 +22,7 @@ procedure TPaintBox_Expose(GtkWidget: PGtkWidget; event: PGdkEventExpose;
   PaintBox: TPaintBox); cdecl;
 var
   rect: TRect;
-  Canvas: TCanvas;
+  Canvas: TControlCanvas;
 begin
   if Assigned(GtkWidget) and Assigned(PaintBox.OnPaint) and
     (PaintBox.FCreationState = wcsCreationDone) and
@@ -33,7 +33,7 @@ begin
     rect.Right := rect.Left + event^.area.width;
     rect.Bottom := rect.Top + event^.area.height;
 
-    Canvas := TGdkExposeCanvas.Create(PaintBox);
+    Canvas := TWidgetCanvas.Create(PaintBox);
     gdk_gc_set_clip_rectangle(Canvas.priv.gc, @event^.area);
     PaintBox.DoPaint(Canvas, rect);
     Canvas.Free;
@@ -185,7 +185,7 @@ end;
 
 procedure TCustomPaintBox.OnFinishCreation;
 begin
-  if not Assigned(FHandle) then
+  if not HandleAllocated then
     FHandle := gtk_drawing_area_new;
 
   gtk_signal_connect_after(PGtkObject(FHandle), 'expose_event',
@@ -208,11 +208,6 @@ begin
   inherited OnFinishCreation;
 end;
 
-function TCustomPaintBox.CreateCanvas: TCanvas;
-begin
-  ASSERT(Assigned(FHandle));
-  Result := TGdkCanvas.Create(FHandle^.window);
-end;
 
 procedure TCustomPaintBox.ScrollBy(dx, dy: Integer; DoClear: Boolean);
 var
@@ -235,7 +230,7 @@ begin
     DestY := -dy;
   end;
 
-  canvas := CreateCanvas;
+  canvas := TWidgetCanvas.Create(Self);
   canvas.CopyRect(DestX, DestY, FWidth - Abs(dx), FHeight - Abs(dy), SourceX, SourceY);
   canvas.Free;
 
@@ -252,6 +247,10 @@ end;
 
 {
   $Log$
+  Revision 1.7  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.6  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

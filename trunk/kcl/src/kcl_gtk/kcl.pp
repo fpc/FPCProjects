@@ -27,7 +27,7 @@ unit KCL;
 
 interface
 
-uses Classes, GLib, GDK, GTK;
+uses SysUtils, Classes, GLib, GDK, GTK;
 
 const
 
@@ -37,18 +37,17 @@ type
 
   TTimerHandle = LongWord;
 
-
-  TGdkPixmapCanvas = class;
+  TControlCanvas = class;
 
   PImageListItem = ^TImageListItem;
   TImageListItem = record
-    ImageCanvas: TGdkPixmapCanvas;
+    ImageCanvas: TControlCanvas;
     Mask: PGdkPixmap;
   end;
 
   TImageList_private = TList;	// List of elements of type PImageListItem
 
-  TWidgetHandle = PGtkWidget;
+  TWinControlHandle = PGtkWidget;
 
   TApplication_private = record
     IdleHandle: Integer;
@@ -72,13 +71,12 @@ type
   THorzScrollBar_private = PGtkAdjustment;
   TVertScrollBar_private = PGtkAdjustment;
 
-  TFont_private = record
-    GdkFont: PGdkFont;
-  end;
-
-  TCanvas_handle = PGdkWindow;
-  TCanvas_private = record
-    GC: PGdkGC;
+  TControlCanvasHandle = PGdkDrawable;
+  TControlCanvas_private = record
+    GC: PGdkGC;			// The underlying graphics context
+    GdkFont: PGdkFont;		// The currently set GDK font
+    FontManagerUsed: Boolean;
+    PenX, PenY: Integer;	// Last pen position (for MoveTo/LineTo)
   end;
 
   TBitmap_private = record
@@ -98,7 +96,7 @@ type
     HorzScrollbar, VertScrollbar: PGtkWidget;	// PGtkHScrollbar, PGtkVScrollbar
   end;
 
-  TNotebookPage_private = record
+  TPage_private = record
     LabelWidget: PGtkWidget;
     BorderWidget: PGtkWidget;
   end;
@@ -117,9 +115,18 @@ type
 
 implementation
 
-uses SysUtils, TypInfo;
+uses TypInfo;
+
+type
+
+  TPixmapCanvas = class(TControlCanvas)
+  public
+    constructor Create(GdkWindow: PGdkWindow; w, h, ColorDepth: Integer);
+  end;
+
 
 var
+
   gToolTips: PGtkToolTips;
   gBitmapWnd: PGtkWidget;
   gBitmapGC: PGdkGC;
@@ -197,20 +204,20 @@ end;
 {$INCLUDE gmenus.inc}
 {$INCLUDE gimagelist.inc}
 
-// Widgets:
-{$INCLUDE gwidget.inc}
+// Controls:
+{$INCLUDE gcontrols.inc}
 {$INCLUDE glabel.inc}
 {$INCLUDE gedit.inc}
-{$INCLUDE gseparator.inc}
+//{$INCLUDE gseparator.inc}
 {$INCLUDE gbuttons.inc}
 {$INCLUDE ggroupbox.inc}
 {$INCLUDE glistbox.inc}
 {$INCLUDE gcombobox.inc}
-{$INCLUDE gcolumnlist.inc}
+//{$INCLUDE gcolumnlist.inc}
 {$INCLUDE gtreeview.inc}
-{$INCLUDE gscroll.inc}
-{$INCLUDE gpaintbox.inc}
-{$INCLUDE gnotebook.inc}
+//{$INCLUDE gscroll.inc}
+//{$INCLUDE gpaintbox.inc}
+//{$INCLUDE gnotebook.inc}
 {$INCLUDE gstatusbar.inc}
 {$INCLUDE gsplitter.inc}
 {$INCLUDE gtoolbar.inc}
@@ -218,6 +225,7 @@ end;
 
 initialization
   Application := TApplication.Create(nil);
+  Application.Name := 'Application';
 finalization
   if Assigned(GlobalClipboard) then
     GlobalClipboard.Free;
@@ -227,6 +235,10 @@ end.
 
 {
   $Log$
+  Revision 1.10  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.9  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

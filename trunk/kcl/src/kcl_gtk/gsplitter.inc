@@ -70,41 +70,41 @@ begin
 end;}
 
 procedure TSplitter_Pane_SizeAllocate(widget: PGtkWidget; alloc: PGtkAllocation;
-  AWidget: TWidget); cdecl;
+  AControl: TControl); cdecl;
 begin
-  if (AWidget.FWidth <> alloc^.width) or (AWidget.FHeight <> alloc^.height) then begin
-    AWidget.FWidth := alloc^.width;
-    AWidget.FHeight := alloc^.height;
-    AWidget.LayoutChildren;
+  if (AControl.FWidth <> alloc^.width) or (AControl.FHeight <> alloc^.height) then begin
+    AControl.FWidth := alloc^.width;
+    AControl.FHeight := alloc^.height;
+    // !!!: AControl.LayoutChildren;
   end;
 end;
 
 
 
-procedure TSplitter.SetPane1(APane1: TWidget);
+procedure TSplitter.SetPane1(APane1: TControl);
 begin
   FPane1 := APane1;
   if Assigned(FPane1) then
     FPane1.FParent := Self;
   if FCreationState >= wcsCreationInProgress then begin
     if Assigned(FPane1) then begin
-      FPane1.FinishCreation;
+      {!!!: FPane1.HandleNeeded;
       gtk_paned_pack1(PGtkPaned(FHandle), FPane1.FHandle,
-        FResizePolicy <> srFixedPane1, True);
+        FResizePolicy <> srFixedPane1, True);}
     end; // ### else
   end;
 end;
 
-procedure TSplitter.SetPane2(APane2: TWidget);
+procedure TSplitter.SetPane2(APane2: TControl);
 begin
   FPane2 := APane2;
   if Assigned(FPane2) then
     FPane2.FParent := Self;
   if FCreationState >= wcsCreationInProgress then begin
     if Assigned(FPane2) then begin
-      FPane2.FinishCreation;
+      {!!!: FPane2.HandleNeeded;
       gtk_paned_pack2(PGtkPaned(FHandle), FPane2.FHandle,
-        FResizePolicy <> srFixedPane2, True);
+        FResizePolicy <> srFixedPane2, True);}
     end; // ### else
   end;
 end;
@@ -143,16 +143,16 @@ begin
 
   if Assigned(FPane1) then begin
     SetPane1(FPane1);
-    if Assigned(FPane1.FHandle) then
+    {!!!: if FPane1.HandleAllocated then
       gtk_signal_connect(PGtkObject(FPane1.FHandle), 'size_allocate',
-        GTK_SIGNAL_FUNC(@TSplitter_Pane_SizeAllocate), FPane1);
+        GTK_SIGNAL_FUNC(@TSplitter_Pane_SizeAllocate), FPane1);}
   end;
 
   if Assigned(FPane2) then begin
     SetPane2(FPane2);
-    if Assigned(FPane2.FHandle) then
+    {!!!: if FPane2.HandleAllocated then
       gtk_signal_connect(PGtkObject(FPane2.FHandle), 'size_allocate',
-        GTK_SIGNAL_FUNC(@TSplitter_Pane_SizeAllocate), FPane2);
+        GTK_SIGNAL_FUNC(@TSplitter_Pane_SizeAllocate), FPane2);}
   end;
 
   inherited OnFinishCreation;
@@ -210,6 +210,10 @@ end;
 
 {
   $Log$
+  Revision 1.7  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.6  2000/02/24 13:39:32  sg
   * More layout fixes...
 

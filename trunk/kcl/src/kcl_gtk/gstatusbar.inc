@@ -28,22 +28,31 @@ end;
 procedure TStatusBar.DoRecalcLayout;
 begin
   MinW := DefH;
+//  DefW := DefH * 4;		### Modifying DefW here will lead to some strange layouting problems?!? (sg)
+  MaxW := InfiniteSize;
   MaxH := DefH;
-  DefW := DefH * 4;
 end;
 
-procedure TStatusBar.SetText(const AText: String);
+
+function TStatusBar.ProcessEvent(Event: TEventObj): Boolean;
 begin
-  FText := AText;
-  if Assigned(FHandle) then begin
-    gtk_statusbar_pop(PGtkStatusbar(FHandle), 1);
-    gtk_statusbar_push(PGtkStatusbar(FHandle), 1, PChar(FText));
-  end;
+  if Event.ClassType = TTextChangedEventObj then
+    if HandleAllocated then
+    begin
+      gtk_statusbar_pop(PGtkStatusbar(FHandle), 1);
+      gtk_statusbar_push(PGtkStatusbar(FHandle), 1, PChar(FText));
+    end;
+
+  Result := inherited ProcessEvent(Event);
 end;
 
 
 {
   $Log$
+  Revision 1.6  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.5  2000/02/24 13:39:32  sg
   * More layout fixes...
 

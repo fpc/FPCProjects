@@ -60,7 +60,7 @@ procedure TMenuItem.OnFinishCreation;
 var
   s: String;
   i, LeftIndent: Integer;
-  form: TWidget;
+  form: TWinControl;
   menu: TMenuItem;
   icon: PImageListItem;
   imglist: TImageList;
@@ -96,7 +96,7 @@ begin
       if Assigned(imglist) and (FCommand.FImageIndex >= 0)
         and (FCommand.FImageIndex < imglist.priv.Count) then begin
         icon := PImageListItem(imglist.priv.Items[FCommand.FImageIndex]);
-        priv.Pixmap := gtk_pixmap_new(icon^.ImageCanvas.pixmap, icon^.Mask);
+        priv.Pixmap := gtk_pixmap_new(icon^.ImageCanvas.Handle, icon^.Mask);
         gtk_widget_show(priv.Pixmap);
         gtk_packer_add(PGtkPacker(priv.Packer), priv.Pixmap, GTK_SIDE_LEFT, GTK_ANCHOR_W,
 	  0, 0, 0, 0, 0, 0);
@@ -223,7 +223,7 @@ procedure TMenuBar.AddItem(AItem: TMenuItem);
 begin
   AItem.FParent := Self;
   FItems.Add(AItem);
-  if Assigned(FHandle) then begin
+  if HandleAllocated then begin
     AItem.OnFinishCreation;
     gtk_menu_bar_append(PGtkMenuBar(FHandle), AItem.priv.item);
     RecalcLayout;
@@ -263,6 +263,10 @@ end;
 
 {
   $Log$
+  Revision 1.8  2000/03/19 00:29:31  sg
+  * Huge shift towards more VCL compatiblity (NOTE: Many widgets/controls
+    are not working correctly at the moment!)
+
   Revision 1.7  2000/02/24 13:39:32  sg
   * More layout fixes...
 
