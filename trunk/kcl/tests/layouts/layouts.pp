@@ -313,28 +313,23 @@ begin
       FlipButton.Text := 'Vertical';
       FlipButton.OnCLick:=@FlipOrientation;
   Layout.AddWidget(FlipButton,dmBottom);
-  writeln ('Creating box layout');
   BoxLayout:=TBoxLayout.Create(Self);
     BoxLayout.Name := 'Box';
     BoxLayout.Orientation := boxHorz;
     BoxLayout.VertAlign := vertFill;
     BoxLayout.Spacing := 4;
-    writeln ('Creating button 1');
     Button1 := TButton.Create(Self);
       Button1.Name := 'Button1';
       Button1.Text := 'Button 1';
     BoxLayout.AddWidget(Button1);
-    writeln ('Creating button 2');
     Button2 := TButton.Create(Self);
       Button2.Name := 'Button2';
       Button2.Text := 'Button 2';
     BoxLayout.AddWidget(Button2);
-    writeln ('Creating button 3');
     Button3 := TButton.Create(Self);
       Button3.Name := 'Button3';
       Button3.Text := 'Button 3';
     BoxLayout.AddWidget(Button3);
-  Writeln ('Adding boxlayout to main layout');
   Layout.AddWidget(BoxLayout,dmClient);
   Content := Layout;
 end;
@@ -347,11 +342,13 @@ begin
       begin
       Orientation := boxVert;
       HorzAlign := HorzFill;
+      VertAlign := vertFixed;
       FlipButton.Text:='Horizontal';
       end
     else
       begin
       Orientation := BoxHorz;
+      HorzAlign := horzFixed;
       vertAlign:=VertFill;
       FlipButton.text:='Vertical';
       end;
@@ -374,6 +371,9 @@ end.
 
 {
   $Log$
+  Revision 1.5  2000/02/18 22:20:57  sg
+  * Fixed alignment settings when the box layout demo changes its orientation
+
   Revision 1.4  2000/02/18 21:08:39  michael
   + Added box layout
 
