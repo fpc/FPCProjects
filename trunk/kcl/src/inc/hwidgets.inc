@@ -64,6 +64,7 @@ type
   TButton = class(TGenericButton)
   protected
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
   published
     property Text;
   end;
@@ -103,17 +104,17 @@ type
 
   TListBox = class(TWidget)
   private
-    FItemGtkWidgets    : PGtkWidgetsArray;
-    FItemGtkWidgetsCnt : integer;
-    function  GetItemGtkWidget(index: integer): PGtkWidget;
-    procedure SetItemGtkWidget(index: integer; widget: PGtkWidget);
+    FItemGtkWidgets: PGtkWidgetsArray;
+    FItemGtkWidgetsCnt: Integer;
+    function  GetItemGtkWidget(index: Integer): PGtkWidget;
+    procedure SetItemGtkWidget(index: Integer; widget: PGtkWidget);
     property ItemGtkWidgets[Index: Integer]: PGtkWidget read GetItemGtkWidget write SetItemGtkWidget;
   protected
     FItems: TStrings;
     procedure OnFinishCreation; override;
   public
     constructor Create(AOwner: TComponent); override;
-    destructor  Destroy; override;
+    destructor Destroy; override;
     procedure SetItems(AItems: TStrings);
     procedure AddItem(AString: string);
     procedure Clear;
@@ -146,6 +147,8 @@ type
   TTreeView = class(TWidget)
   protected
     procedure OnFinishCreation; override;
+  public
+    constructor Create(AOwner: TComponent); override;
   end;
 
 
@@ -190,20 +193,20 @@ type
 
   TScrollBox = class(TWidget)
   protected
+    priv: TScrollBox_private;
     FHorzRange, FVertRange: TRange;
     FContent: TWidget;
 
     procedure OnFinishCreation; override;
-    procedure OnRecalcLayout; override;
-    procedure OnSetSize; override;
-    procedure OnSizeChanged; override;
+    procedure DoRecalcLayout; override;
     procedure SetContent(AContent: TWidget); virtual;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
   published
-    property  Content: TWidget read FContent write SetContent;
-    property  HorzRange: TRange read FHorzRange;
-    property  VertRange: TRange read FVertRange;
+    property Content: TWidget read FContent write SetContent;
+    property HorzRange: TRange read FHorzRange;
+    property VertRange: TRange read FVertRange;
   end;
 
 
@@ -219,7 +222,6 @@ type
     FOnMouseButtonUp: TMouseEvent;
     FOnMouseMove: TMouseMoveEvent;
     procedure OnFinishCreation; override;
-    procedure OnSetSize; override;
   public
     function  CreateCanvas: TCanvas;
     procedure DoPaint(ACanvas: TCanvas; const ARect: TRect);
@@ -240,6 +242,8 @@ type
   end;
 
   TPaintBox = class(TCustomPaintBox)
+  public
+    constructor Create(AOwner: TComponent); override;
   published
     property OnPaint;
     property OnKey;
@@ -282,18 +286,17 @@ type
     function  GetCurPageIndex: Integer;
     procedure SetCurPageIndex(AIndex: Integer);
     procedure OnFinishCreation; override;
-    procedure OnSizeChanged; override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     function  AddPage(AText: String; AChild: TWidget): Integer;
     procedure RemovePage(AIndex: Integer); virtual;
     property  Page[AIndex: Integer]: TNotebookPage read GetPage;
     property  CurPage: TNotebookPage read GetCurPage;
   published
     property Pages: TCollection read FPages;
-    property  CurPageIndex: Integer read GetCurPageIndex write SetCurPageIndex;
-    property  OnPageChange: TPageChangeEvent read FOnPageChange
-      write FOnPageChange;
+    property CurPageIndex: Integer read GetCurPageIndex write SetCurPageIndex;
+    property OnPageChange: TPageChangeEvent read FOnPageChange write FOnPageChange;
   end;
 
 
@@ -304,6 +307,9 @@ type
   TStatusBar = class(TWidget)
   protected
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
+  public
+    constructor Create(AOwner: TComponent); override;
   published
     property Text;
   end;
@@ -321,11 +327,17 @@ type
     FPane1, FPane2: TWidget;
     FOrientation: TSplitterOrientation;
     FResizePolicy: TSplitterResizePolicy;
+    FSplitterPos, NextPos: Integer;
     procedure SetPane1(APane1: TWidget);
     procedure SetPane2(APane2: TWidget);
     procedure SetOrientation(AOrientation: TSplitterOrientation);
     procedure SetResizePolicy(APolicy: TSplitterResizePolicy);
+    procedure SetSplitterPos(ASplitterPos: Integer);
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
+    procedure ApplySize; override;
+  public
+    constructor Create(AOwner: TComponent); override;
   published
     property Pane1: TWidget read FPane1 write SetPane1;
     property Pane2: TWidget read FPane2 write SetPane2;
@@ -333,6 +345,7 @@ type
       read FOrientation write SetOrientation default soHorizontal;
     property ResizePolicy: TSplitterResizePolicy
       read FResizePolicy write SetResizePolicy default srProportional;
+    property SplitterPos: Integer read FSplitterPos write SetSplitterPos default -1;
   end;
 
 
@@ -374,6 +387,7 @@ type
     procedure Notification(AComponent: TComponent;
       AOperation: TOperation); override;
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
 
     function  CommandChangeFilter(AEvent: TEventObj): Boolean;
     procedure InternalAddItem(AItem: TKCLComponent);
@@ -389,6 +403,9 @@ type
 
 {
   $Log$
+  Revision 1.5  2000/02/10 18:38:32  sg
+  * Some widgets need their own DoRecalcLayout
+
   Revision 1.4  2000/01/24 00:08:04  sg
   * Added property "MultiLine" to TEdit
   * Added TImageButton
