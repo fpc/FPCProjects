@@ -213,24 +213,35 @@ diff -r -u -N origdb/i386bsd-nat.c gdb/i386bsd-nat.c
  }
  
 diff -r -u -N origdb/p-exp.y gdb/p-exp.y
---- origdb/p-exp.y	Wed Jan 23 12:37:54 2002
-+++ gdb/p-exp.y	Wed Jan 23 13:02:04 2002
-@@ -1318,7 +1318,7 @@
+--- origdb/p-exp.y	Thu Jan 24 09:20:03 2002
++++ gdb/p-exp.y	Thu Mar 28 17:12:09 2002
+@@ -1300,7 +1300,7 @@
+ 			 &is_a_field_of_this,
+ 			 (struct symtab **) NULL);
+     /* second chance uppercased (as Free Pascal does).  */
+-    if (!sym)
++    if (!sym && !is_a_field_of_this)
+       {
+        for (i = 0; i <= namelen; i++)
+          {
+@@ -1318,8 +1318,8 @@
                 tokstart[i] -= ('a'-'A');
             }
        }
 -    /* Third chance Capitalized (as GPC does).  */
+-    if (!sym)
 +     /* Third chance Capitalized (as GPC does).  */
-     if (!sym)
++    if (!sym && !is_a_field_of_this)
        {
         for (i = 0; i <= namelen; i++)
+          {
 @@ -1349,7 +1349,17 @@
                    tokstart[i] -= ('A'-'a');
              }
        }
 -    /* Call lookup_symtab, not lookup_partial_symtab, in case there are
 +     /* Finally, uppercase for Free Pascal.  */
-+    if (!sym)
++    if (!sym && !is_a_field_of_this)
 +      {
 +         for (i = 0; i <= namelen; i++)
 +           {
