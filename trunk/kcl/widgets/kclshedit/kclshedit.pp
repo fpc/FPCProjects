@@ -51,6 +51,7 @@ type
     SHStyleCount: Integer;              // # of currently registered styles
     shWhitespace: Integer;
 
+    Timer: TTimer;
     PaintBox: TPaintBox;
     HorzScroll, VertScroll: Integer;	// Current scrolling offsets
     FLeftIndent: Integer;		// Left indent (border) in pixel (!)
@@ -67,7 +68,10 @@ type
     CursorVisible: Boolean;
     MouseSelStartX, MouseSelStartY: Integer;
 
+    procedure LineInserted(Sender: TSHTextEdit; Line: Integer);
+    procedure LineRemoved(Sender: TSHTextEdit; Line: Integer);
     procedure ScrollerChange(Sender: TObject);
+    procedure TimerTick(Sender: TObject);
     procedure PaintBoxPaint(Sender: TObject; ACanvas: TCanvas; const rect: TRect);
     function  KeyPressed(Sender: TObject; key: Char; KeyCode: LongWord;
       ShiftState: TShiftState): Boolean;
@@ -79,6 +83,7 @@ type
     procedure PaintboxFocusOut(Sender: TObject);
 
     procedure DoRecalcLayout; override;
+    procedure ApplySize; override;
     procedure SetMinHorzVisible(AChars: Integer);
     procedure SetMinVertVisible(AChars: Integer);
     procedure SetDefHorzVisible(AChars: Integer);
@@ -118,7 +123,7 @@ type
     destructor Destroy; override;
     procedure SetupEditor(ADoc: TTextDoc; AEditClass: TSHTextEditClass);
 
-    function  AddSHStyle(AName: String; AColor, ABackground: LongWord;
+    function  AddSHStyle(const AName: String; AColor, ABackground: LongWord;
       AStyle: TSHFontStyle): Integer;
 
     property Document: TTextDoc read FDoc;
@@ -230,6 +235,7 @@ destructor TKCLSHWidget.Destroy;
 var
   i: Integer;
 begin
+  Timer.Free;
   FEditor.Free;
 
   for i := 0 to 3 do
@@ -301,13 +307,79 @@ begin
 
   HorzRange.OnValueChange := @ScrollerChange;
   VertRange.OnValueChange := @ScrollerChange;
+
+  FEditor.OnLineInsert := @LineInserted;
+  FEditor.OnLineRemove := @LineRemoved;
+
+  Timer := TTimer.Create(Self);
+  Timer.Name := 'Timer';
+  Timer.Interval := 55;
+//  Timer.OnTimer := @TimerTick;
+  Timer.Enabled := False;
+end;
+
+
+procedure TKCLSHWidget.LineInserted(Sender: TSHTextEdit; Line: Integer);
+var
+  lcanvas: TCanvas;
+begin
+  if not Assigned(PaintBox.Handle) then exit;
+  lcanvas := PaintBox.CreateCanvas;
+  lcanvas.CopyRect(0, (Line + 1) * CharH - VertScroll, PaintBox.Width, PaintBox.Height,
+    0, Line * CharH - VertScroll);
+  lcanvas.Free;
+end;
+
+procedure TKCLSHWidget.LineRemoved(Sender: TSHTextEdit; Line: Integer);
+var
+  lcanvas: TCanvas;
+  sy, dy, h: Integer;
+begin
+  if (not Assigned(PaintBox.Handle)) or (Line * CharH > VertScroll + PaintBox.Height) then
+    exit;
+
+  sy := (Line + 1) * CharH - VertScroll;
+  dy := Line * CharH - VertScroll;
+  h := PaintBox.Height;
+  if sy + h > PaintBox.Height then
+    h := PaintBox.Height - sy;
+  if dy + h > PaintBox.Height then
+    h := PaintBox.Height - dy;
+
+  lcanvas := PaintBox.CreateCanvas;
+  lcanvas.CopyRect(0, dy, PaintBox.Width, h, 0, sy);
+  lcanvas.Free;
+  PaintBox.Redraw(0, PaintBox.Height - CharH, PaintBox.Width, CharH, True);
 end;
 
 procedure TKCLSHWidget.ScrollerChange(Sender: TObject);
+var
+  OldHorz, OldVert: Integer;
 begin
-  PaintBox.ScrollBy(HorzRange.CurValue - HorzScroll, VertRange.CurValue - VertScroll, False);
+  OldHorz := HorzScroll;
+  OldVert := VertScroll;
   HorzScroll := HorzRange.CurValue;
   VertScroll := VertRange.CurValue;
+  PaintBox.ScrollBy(HorzScroll - OldHorz, VertScroll - OldVert, False);
+end;
+
+procedure TKCLSHWidget.TimerTick(Sender: TObject);
+var
+  dx, dy: Integer;
+begin
+  if HorzScroll <> HorzRange.CurValue then begin
+    dx := (HorzRange.CurValue - HorzScroll) * 3 div 4;
+    Inc(HorzScroll, dx);
+  end else
+    dx := 0;
+  if VertScroll <> VertRange.CurValue then begin
+    dy := (VertRange.CurValue - VertScroll) * 3 div 4;
+    Inc(VertScroll, dy);
+  end else
+    dy := 0;
+
+  if (dx <> 0) or (dy <> 0) then
+    PaintBox.ScrollBy(dx, dy, False);
 end;
 
 procedure TKCLSHWidget.PaintBoxPaint(Sender: TObject; ACanvas: TCanvas;
@@ -324,7 +396,7 @@ begin
   if DrawVBar then begin
     // Draw vertical lines
     px := FLeftIndent - 4 - HorzScroll;
-    if rect.Left < px then begin
+    if rect.Left <= px then begin
       Canvas.Color := colBlack;
       Canvas.Line(px, rect.Top, px, rect.Bottom);
       Canvas.Color := colGray;
@@ -337,16 +409,18 @@ begin
     // Erase left bar
     r := rect;
     r.Left := 0;
-    r.Right := FLeftIndent - 7;
-    Canvas.Color := colLightGray;
-    Canvas.FillRect(r);
-    r.Left := FLeftIndent - 3;
-    r.Right := FLeftIndent;
+    r.Right := FLeftIndent - 7 - HorzScroll;
+    if r.Right >= r.Left then begin
+      Canvas.Color := colLightGray;
+      Canvas.FillRect(r);
+    end;
+    r.Left := FLeftIndent - 3 - HorzScroll;
+    r.Right := FLeftIndent - HorzScroll;
     Canvas.Color := SHStyles^[shWhitespace].Background;
     Canvas.FillRect(r);
   end else begin
     Canvas.Color := SHStyles^[shWhitespace].Background;
-    Canvas.FillRect(0, rect.Top, FLeftIndent, rect.Bottom - rect.Top + 1);
+    Canvas.FillRect(0, rect.Top, FLeftIndent - HorzScroll, rect.Bottom - rect.Top + 1);
   end;
 
   // Draw text
@@ -355,14 +429,13 @@ begin
   Inc(r.Top, VertScroll);
   Inc(r.Right, HorzScroll);
   Inc(r.Bottom, VertScroll);
-
   x := (r.Left - FLeftIndent) div CharW;
   y := r.Top div CharH;
   FEditor.DrawContent(x, y, (r.Right - FLeftIndent + CharW + 1) div CharW - x,
     (r.Bottom + CharH - 1) div CharH - y);
 
   if FDefMaxTextWidth > 0 then begin
-    px := FLeftIndent + FDefMaxTextWidth * CharW;
+    px := FLeftIndent + FDefMaxTextWidth * CharW - HorzScroll;
     Canvas.Color := colGray;
     Canvas.Line(px, rect.Top, px, rect.Bottom);
   end;
@@ -428,7 +501,7 @@ begin
 end;
 
 
-function TKCLSHWidget.AddSHStyle(AName: String; AColor, ABackground: LongWord;
+function TKCLSHWidget.AddSHStyle(const AName: String; AColor, ABackground: LongWord;
   AStyle: TSHFontStyle): Integer;
 begin
   ReAllocMem(SHStyles, SizeOf(TSHStyle) * (SHStyleCount + 1));
@@ -445,16 +518,30 @@ procedure TKCLSHWidget.InvalidateRect(x, y, w, h: Integer);
 begin
 //WriteLn('  Invalidate ', x, '/', y, ', ', w, 'x', h);
   PaintBox.Redraw(FLeftIndent + x * CharW - HorzScroll, y * CharH - VertScroll,
-    w * CharW, h * CharH, False);
+    w * CharW, h * CharH, True);
 end;
 
 procedure TKCLSHWidget.ClearRect(x, y, w, h: Integer);
+var
+  DestroyCanvas: Boolean;
 begin
-  ASSERT(Assigned(Canvas));
 //WriteLn('ClearRect: ', x, '/', y, ', ', w, 'x', h);
+
+  if Assigned(Canvas) then
+    DestroyCanvas := False
+  else begin
+    DestroyCanvas := True;
+    Canvas := PaintBox.CreateCanvas;
+  end;
+
   Canvas.Color := SHStyles^[shWhitespace].Background;
   Canvas.FillRect(FLeftIndent + x * CharW - HorzScroll,
     y * CharH - VertScroll, w * CharW, h * CharH);
+
+  if DestroyCanvas then begin
+    Canvas.Free;
+    Canvas := nil;
+  end;
 end;
 
 procedure TKCLSHWidget.DrawTextLine(x1, x2, y: Integer; s: PChar);
@@ -465,10 +552,8 @@ var
   procedure DoErase;
   begin
     Canvas.Color := CurColor;
-    if CurX1 < x1 then
-      CurX1 := x1;
     if CurX2 >= x1 then
-      if (x1 < FDefMaxTextWidth) and (CurX2 >= FDefMaxTextWidth) then begin
+      if (CurX1 < FDefMaxTextWidth) and (CurX2 >= FDefMaxTextWidth) then begin
         // Prevent flickering of the vertical text limiter line :-)
         Canvas.FillRect(CurX1 * CharW + FLeftIndent - HorzScroll, y * CharH - VertScroll,
 	  (FDefMaxTextWidth - CurX1) * CharW, CharH);
@@ -492,7 +577,7 @@ begin
   hs := s;
   CurColor := SHStyles^[shWhitespace].Background;
 
-  CurX1 := 0;
+  CurX1 := x1;
   CurX2 := -1;
   while (hs[0] <> #0) and (CurX2 <= x2) do begin
     case hs[0] of
@@ -501,7 +586,7 @@ begin
           if NewColor = colDefault then
             NewColor := SHStyles^[shWhitespace].Background;
           if NewColor <> CurColor then begin
-            DoErase;
+	      DoErase;
             CurColor := NewColor;
           end;
           Inc(hs, 2);
@@ -588,7 +673,7 @@ end;
 
 function TKCLSHWidget.GetVertPos: Integer;
 begin
-  Result := VertScroll div CharH;
+  Result := (VertScroll + CharH - 1) div CharH;
 end;
 
 procedure TKCLSHWidget.SetVertPos(y: Integer);
@@ -656,6 +741,13 @@ begin
   DefH := FDefVertVisible * CharH;
 end;
 
+procedure TKCLSHWidget.ApplySize;
+begin
+  inherited ApplySize;
+  HorzRange.PageSize := PaintBox.Width;
+  VertRange.PageSize := PaintBox.Height;
+end;
+
 procedure TKCLSHWidget.SetMinHorzVisible(AChars: Integer);
 begin
   FMinHorzVisible := AChars;
@@ -686,6 +778,9 @@ end.
 
 {
   $Log$
+  Revision 1.7  2000/02/22 14:43:46  sg
+  * Lot of fixes, works now perfectly flicker-free
+
   Revision 1.6  2000/02/19 19:10:00  sg
   * KCLSHEdit is now flicker-free :-)  (the base class of TKCLSHEdit changed
     from TScrollBox to TScrollers)
