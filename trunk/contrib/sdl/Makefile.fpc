@@ -11,8 +11,14 @@ dirs=
 units= sdl opengl12 sdli386utils sdlutils sdlstreams smpeg sdl_mixer \ 
 	sdl_image sfont sdlmonofonts sdlsprites logger fmod fmoddyn \
 	fmoderrors fmodpresets fmodtypes geometry gl glext glu glut \
-	glx logger moduleloader sdl_cpuinfo sdl_net sdl_sound sdl_ttf \
+	logger moduleloader sdl_cpuinfo sdl_net sdl_sound sdl_ttf \
 	sdlfilter sdlinput sdlwindow tcputils odeimport
+
+units_freebsd=glx
+units_linux=glx
+units_darwin=glx
+units_netbsd=glx
+units_openbsd=glx
 
 rsts= opengl12
 
