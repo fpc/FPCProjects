@@ -22,9 +22,6 @@
 //   GTK signal handlers
 // -------------------------------------------------------------------
 
-var
-  gNeedSizeRequest: Boolean;
-
 procedure TWidget_Destroy(GtkWidget: PGtkWidget; Widget: TWidget); cdecl;
 begin
   ASSERT(Assigned(Widget));
@@ -51,16 +48,14 @@ end;
 procedure TWidget_SizeRequest(widget: PGtkWidget; req: PGtkRequisition;
   AWidget: TWidget); cdecl;
 begin
-  if not gNeedSizeRequest then begin
-    req^.Width := AWidget.MinW;
-    req^.Height := AWidget.MinH;
-  end;
+  req^.Width := AWidget.MinW;
+  req^.Height := AWidget.MinH;
 end;
 
 procedure TWidget_SizeAllocate(widget: PGtkWidget; alloc: PGtkAllocation;
   AWidget: TWidget); cdecl;
 begin
-//  WriteLn('Size allocated for ', AWidget.ClassName, ': ', alloc^.Width, 'x', alloc^.Height);
+  //WriteLn('Size allocated for ', AWidget.ClassName, ': ', alloc^.Width, 'x', alloc^.Height);
 end;
 
 
@@ -138,9 +133,10 @@ var
   SizeReq: TGtkRequisition;
 begin
   ASSERT(Assigned(FHandle));
-  gNeedSizeRequest := True;
-  gtk_widget_size_request(FHandle, @SizeReq);
-  gNeedSizeRequest := False;
+
+  PGtkWidgetClass(gtk_type_class(GTK_OBJECT_TYPE(PGtkObject(FHandle))))^.
+    size_request(FHandle, @SizeReq);
+
   DefW := SizeReq.Width;
   DefH := SizeReq.Height;
   MinW := DefW;
@@ -151,7 +147,8 @@ end;
 
 procedure TWidget.ApplySize;
 begin
-  if Assigned(FHandle) then
+  if Assigned(FHandle) and ((FWidth <> FHandle^.allocation.width)
+    or (FHeight <> FHandle^.allocation.height)) then
     gtk_widget_set_usize(FHandle, FWidth, FHeight);
 end;
 
@@ -225,6 +222,10 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/18 18:29:56  sg
+  * Default size requests are now done directly by calling the GTK widget's
+    size_request method instead of calling gtk_widget_size_request.
+
   Revision 1.4  2000/02/17 22:31:09  sg
   * When the widget text has changed, RecalcLayout is now called
 
