@@ -10,6 +10,8 @@ unit ConSrv1S;
 
 interface
 
+{$i icsdef.inc}
+
 uses
   Windows, SysUtils, Messages, Classes, WSocket, WinSock, ConSrv1C;
 
