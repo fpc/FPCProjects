@@ -18,6 +18,10 @@
 //   TTreeView widget implementation for GTK
 // ===================================================================
 
+constructor TTreeView.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+end;
 
 procedure TTreeView.OnFinishCreation;
 begin
@@ -28,6 +32,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:48:27  sg
+  * Added TTreeView.Create
+
   Revision 1.2  2000/01/24 00:30:55  sg
   * Extended copyright to year 2000...
   * Modifications to reflect the changed definition of TWidgetHandle
