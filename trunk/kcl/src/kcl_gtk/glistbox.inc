@@ -15,100 +15,90 @@
 
 
 // ===================================================================
-//   TListBox implementation for GTK+
+//   TCustomListBox implementation for GTK+
 // ===================================================================
 
-constructor TListBox.Create(AOwner: TComponent);
+function TCustomListBox_ButtonPressEvent(GtkWidget: PGtkWidget; event: PGdkEventButton;
+  ListBox: TCustomListBox): Integer; cdecl;
 begin
-  inherited Create(AOwner);
-  FItems:=TStringList.Create;
+  if (event^.thetype = GDK_2BUTTON_PRESS) and Assigned(ListBox.FOnDblClick) then
+    ListBox.FOnDblClick(ListBox);
+  Result := 1;
 end;
 
 
-destructor TListBox.Destroy;
-begin
-  if FItemGtkWidgetsCnt>0 then
-   Freemem(FItemGtkWidgets);
-  inherited Destroy;
-end;
-
-
-procedure TListBox.OnFinishCreation;
+function TCustomListBox.GetItemIndex: Integer;
 var
-  i : integer;
+  list, cur: PGList;
+  i: Integer;
 begin
-  FHandle := gtk_list_new;
-  for i := 0 to FItems.Count - 1 do
-   begin
-     ItemGtkWidgets[i] := gtk_list_item_new_with_label(pchar(FItems[i]));
-     gtk_container_add(PGtkContainer(FHandle), ItemGtkWidgets[i]);
-     gtk_widget_show(ItemGtkWidgets[i]);
-   end;
-  inherited OnFinishCreation;
-end;
-
-
-function TListBox.GetItemGtkWidget(index: integer): PGtkWidget;
-begin
-  if index<FItemGtkWidgetsCnt then
-   Result:=FItemGtkWidgets^[index]
-  else
-   Result:=nil;
-end;
-
-
-procedure TListBox.SetItemGtkWidget(index: integer;widget: PGtkWidget);
-begin
-  if index>=FItemGtkWidgetsCnt then
-   begin
-     inc(FItemGtkWidgetsCnt,16);
-     ReAllocMem(FItemGtkWidgets,sizeof(widget)*FItemGtkWidgetsCnt);
-   end;
-  FItemGtkWidgets^[index]:=widget;
-end;
-
-
-procedure TListBox.SetItems(AItems: TStrings);
-var
-  i: integer;
-begin
-  FItems.Assign(AItems);
-  if Assigned(FHandle) then
-    for i := 0 to FItems.Count - 1 do begin
-      ItemGtkWidgets[i] := gtk_list_item_new_with_label(pchar(FItems[i]));
-      gtk_container_add(PGtkContainer(FHandle), ItemGtkWidgets[i]);
-      gtk_widget_show(ItemGtkWidgets[i]);
+  if Assigned(priv.list) then begin
+    list := gtk_container_children(PGtkContainer(priv.list));
+    cur := list;
+    i := 0;
+    while Assigned(cur) do begin
+      if GTK_WIDGET_HAS_FOCUS(PGtkWidget(cur^.data)) then begin
+        Result := i;
+	exit;
+      end;
+      Inc(i);
+      cur := g_list_next(cur);
     end;
-end;
-
-
-procedure TListBox.AddItem(AString: string);
-var
-  i : integer;
-begin
-  FItems.Add(AString);
-  if Assigned(FHandle) then begin
-    i := FItems.Count - 1;
-    ItemGtkWidgets[i] := gtk_list_item_new_with_label(PChar(FItems[i]));
-    gtk_container_add(PGtkContainer(FHandle), ItemGtkWidgets[i]);
-    gtk_widget_show(ItemGtkWidgets[i]);
   end;
+  Result := -1;
 end;
 
-
-procedure TListBox.Clear;
+procedure TCustomListBox.OnFinishCreation;
 var
   i: integer;
+  item: PGtkWidget;
 begin
-  if Assigned(FHandle) then
-    for i := 0 to FItems.Count - 1 do
-      gtk_container_remove(PGtkContainer(FHandle), ItemGtkWidgets[i]);
-  FItemGtkWidgetsCnt:=0;
-  FreeMem(FItemGtkWidgets);
+  FHandle := gtk_scrolled_window_new(nil, nil);
+  gtk_scrolled_window_set_policy(PGtkScrolledWindow(FHandle),
+    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+  priv.list := gtk_list_new;
+
+  for i := 0 to FItems.Count - 1 do begin
+    item := gtk_list_item_new_with_label(PChar(FItems[i]));
+    gtk_widget_show(item);
+    gtk_container_add(PGtkContainer(priv.list), item);
+  end;
+
+  gtk_scrolled_window_add_with_viewport(PGtkScrolledWindow(FHandle), priv.list);
+  gtk_widget_show(priv.list);
+  inherited OnFinishCreation;
+
+  gtk_signal_connect_after(PGtkObject(priv.list), 'button_press_event',
+    GTK_SIGNAL_FUNC(@TCustomListBox_ButtonPressEvent), Self);
 end;
+
+procedure TCustomListBox.DoRecalcLayout;
+begin
+  DefW := 16;
+  DefH := 16;
+end;
+
+procedure TCustomListBox.Clear;
+var
+  list: PGList;
+begin
+  if Assigned(priv.list) then begin
+    list := gtk_container_children(PGtkContainer(priv.list));
+    gtk_list_remove_items(PGtkList(priv.list), list);
+    g_list_free(list);
+  end;
+  FItems.Clear;
+end;
+
 
 {
   $Log$
+  Revision 1.3  2000/02/17 22:30:12  sg
+  * Major rewrite to get more VCL-like and to get platform-independent
+  * TListBox now creates a scrolling window with a GTK listbox inside. GTK's
+    default listbox widget does not support scrolling.
+
   Revision 1.2  2000/01/24 00:30:55  sg
   * Extended copyright to year 2000...
   * Modifications to reflect the changed definition of TWidgetHandle
