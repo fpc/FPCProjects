@@ -27,7 +27,7 @@ unit KCL;
 
 interface
 
-uses Classes, GDK, GTK;
+uses Classes, GLib, GDK, GTK;
 
 const
 
@@ -49,6 +49,10 @@ type
   TImageList_private = TList;	// List of elements of type PImageListItem
 
   TWidgetHandle = PGtkWidget;
+
+  TApplication_private = record
+    IdleHandle: Integer;
+  end;
 
   TGenericForm_private = record
     AccelGroup: PGtkAccelGroup;
@@ -79,6 +83,10 @@ type
 
   TBitmap_private = record
     Data, ConvData: Pointer;
+  end;
+
+  TCustomListBox_private = record
+    list: PGtkWidget;	// the 'real' listbox widget. FHandle is a GtkScrolledWindow!
   end;
 
   TScrollBox_private = record
@@ -187,8 +195,11 @@ end;
 {$INCLUDE gwidget.inc}
 {$INCLUDE glabel.inc}
 {$INCLUDE gedit.inc}
+{$INCLUDE gseparator.inc}
 {$INCLUDE gbuttons.inc}
+{$INCLUDE ggroupbox.inc}
 {$INCLUDE glistbox.inc}
+{$INCLUDE gcombobox.inc}
 {$INCLUDE gcolumnlist.inc}
 {$INCLUDE gtreeview.inc}
 {$INCLUDE gscroll.inc}
@@ -211,6 +222,9 @@ end.
 
 {
   $Log$
+  Revision 1.7  2000/02/17 22:31:37  sg
+  * Added gseparator.inc, gcombobox.inc, ggroupbox.inc
+
   Revision 1.6  2000/02/10 18:49:22  sg
   * The global clipboard object is now freed on KCL exit
 
