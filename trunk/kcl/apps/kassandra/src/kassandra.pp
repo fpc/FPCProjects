@@ -19,7 +19,7 @@
 program Kassandra;
 uses
   DOS, SysUtils, Classes,			// system units
-  XMLCfg, GetText,				// FPC helper units
+  XMLCfg, GetText, Process, Async_IO,		// FPC helper units / FCL
   SHEdit, doc_text, sh_pas, sh_xml,		// SHEdit & friends
   KCL, KCLSHEdit,				// KCL units
   ViewMan, Vw_SHText;				// Kassandra units
@@ -41,6 +41,8 @@ resourcestring
   menuEditCut = '&Cut';
   menuEditCopy = 'C&opy';
   menuEditPaste = '&Paste';
+  menuCompiler = '&Compiler';
+  menuCompilerCompile = '&Compile';
   menuView = '&View';
   menuViewOutput = '&Output window';
   menuOptions = '&Options';
@@ -50,7 +52,6 @@ resourcestring
   dlgGlobalOptions = 'Global Options';
 
   strReady = 'Ready';
-  strCompilerOutput = 'Compiler output will go here';
 
 const
 
@@ -63,7 +64,7 @@ type
     Views: TViewManager;
     StatusBar: TStatusBar;
     OutputSplitter: TSplitter;
-    CompilerOutput: TKCLSHWidget;
+    CompilerOutputWnd: TKCLSHWidget;
     ImageList: TImageList;
 
     // Commands
@@ -74,6 +75,7 @@ type
       FileRecentWorkspacesMenuCmd, FileExitCmd,
       EditMenuCmd, EditCutCmd, EditCopyCmd, EditPasteCmd,
       ViewMenuCmd, ViewOutputCmd, ViewOptionsCmd,
+      CompilerMenuCmd, CompilerCompileCmd,
       HelpMenuCmd, HelpAboutCmd: TCommand;
 
     // Menu bar
@@ -86,17 +88,25 @@ type
 
   protected
     Config: TXMLConfig;
-    NonameCounter: Integer;
+    NonameCounter, ExternalToolsRunning: Integer;
     RecentFiles: array[0..RECENTFILECOUNT-1] of String;
     RecentFileItems: array[0..RECENTFILECOUNT-1] of TMenuItem;
+    AsyncIOManager: TAsyncIOManager;
+    CompilerProcess: TProcess;
+    CompilerOutput: TAsyncStreamLineReader;
 
     procedure CreateMenuBar;
-    procedure OnViewsChanged;
+    procedure ViewsChanged;
+    procedure IdleHandler(Sender: TObject);
+    procedure AsyncTimeout(Sender: TObject);
+    procedure CompilerOutputLineAvailable(const line: String);
   public
     constructor Create(AOwner: TComponent); override;
     destructor  Destroy; override;
-
     procedure SaveConfig;
+    procedure StartExternalToolUsage;
+    procedure StopExternalToolUsage;
+
     procedure OpenFileByName(AFileName: String);
 
     procedure OnFileNewCmd(Sender: TObject);
@@ -107,6 +117,7 @@ type
     procedure OnFileExitCmd(Sender: TObject);
     procedure OnViewToggleOutputWindowCmd(Sender: TObject);
     procedure OnViewOptionsCmd(Sender: TObject);
+    procedure CompilerCompileExecute(Sender: TObject);
   end;
 
 
@@ -152,17 +163,17 @@ begin
   Views.Name := 'Views';
 
   // Create compiler output window
-  CompilerOutput := TKCLSHWidget.Create(Self);
-  CompilerOutput.Name := 'CompilerOutput';
-  CompilerOutput.SetupEditor(TTextDoc.Create, TSHTextEdit);
-  CompilerOutput.Document.AddLine(strCompilerOutput);
+  CompilerOutputWnd := TKCLSHWidget.Create(Self);
+  CompilerOutputWnd.Name := 'CompilerOutputWnd';
+  CompilerOutputWnd.SetupEditor(TTextDoc.Create, TSHTextEdit);
+  CompilerOutputWnd.Document.AddLine('');
 
   // Create splitter which contains views and compiler output
   OutputSplitter := TSplitter.Create(Self);
   OutputSplitter.Name := 'OutputSplitter';
   OutputSplitter.ResizePolicy := srFixedPane2;
   OutputSplitter.Pane1 := Views;
-  OutputSplitter.Pane2 := CompilerOutput;
+  OutputSplitter.Pane2 := CompilerOutputWnd;
   Layout.AddWidget(OutputSplitter, dmClient);
 
   // Create image list used for the command list
@@ -195,6 +206,8 @@ begin
   ViewMenuCmd := Commands.Add(Self, 'ViewMenuCmd', menuView, '', -1, nil);
   ViewOutputCmd := Commands.Add(Self, 'ViewOutputCmd', menuViewOutput, '', -1, nil{@OnViewToggleOutputWindowCmd}); ViewOutputCmd.Checked := True;
   ViewOptionsCmd := Commands.Add(Self, 'ViewOptionsCmd', menuOptions, '', -1, @OnViewOptionsCmd);
+  CompilerMenuCmd := Commands.Add(Self, 'CompilerMenuCmd', menuCompiler, '', -1, nil);
+  CompilerCompileCmd := Commands.Add(Self, 'CompilerCompileCmd', menuCompilerCompile, '', -1, @CompilerCompileExecute);
   HelpMenuCmd := Commands.Add(Self, 'HelpMenuCmd', menuHelp, '', -1, nil);
   HelpAboutCmd := Commands.Add(Self, 'HelpAboutCmd', '<HelpAbout>', 'F1', 7, nil);
 
@@ -217,6 +230,7 @@ begin
   SearchEdit := TEdit.Create(Self);
   SearchEdit.Name := 'SearchEdit';
   SearchEdit.Text := 'QuickSearch...';
+  SearchEdit.DefaultWidth := 100;
   ToolBar.AddChildWidget(SearchEdit);
   sep := ToolBar.AddButton(Self); sep.Style := tbsSeparator;
   AddToolButton(HelpAboutCmd);
@@ -227,11 +241,14 @@ begin
   StatusBar.Text := strReady;
   Layout.AddWidget(StatusBar, dmBottom);
 
-  OnViewsChanged;
+  ViewsChanged;
 end;
 
 destructor TMainForm.Destroy;
 begin
+  CompilerProcess.Free;
+  CompilerOutput.Free;
+  AsyncIOManager.Free;
   SaveConfig;
   Config.Free;
   inherited Destroy;
@@ -293,11 +310,16 @@ begin
   AddItem(menu, ViewOptionsCmd);
 
   menu := TMenu.Create(Self);
+  menu.Command := CompilerMenuCmd;
+  MenuBar.AddItem(menu);
+  AddItem(menu, CompilerCompileCmd);
+
+  menu := TMenu.Create(Self);
   menu.Command := HelpMenuCmd;
   MenuBar.AddItem(menu);
 end;
 
-procedure TMainForm.OnViewsChanged;
+procedure TMainForm.ViewsChanged;
 var
   HasViews: Boolean;
 begin
@@ -318,6 +340,37 @@ begin
   Config.SetValue('MainWindow/PosAndSize/Width', Width);
   Config.SetValue('MainWindow/PosAndSize/Height', Height);
   Config.Flush;
+end;
+
+procedure TMainForm.StartExternalToolUsage;
+begin
+  if ExternalToolsRunning = 0 then begin
+    AsyncIOManager := TAsyncIOManager.Create;
+    AsyncIOManager.SetTimeoutHandler(@AsyncTimeout, nil);
+    AsyncIOManager.Timeout := 10;
+    Application.OnIdle := @IdleHandler;
+  end;
+  Inc(ExternalToolsRunning);
+end;
+
+procedure TMainForm.StopExternalToolUsage;
+begin
+  Dec(ExternalToolsRunning);
+  if ExternalToolsRunning = 0 then begin
+    Application.OnIdle := nil;
+    AsyncIOManager.Free;
+    AsyncIOManager := nil;
+  end;
+end;
+
+procedure TMainForm.IdleHandler(Sender: TObject);
+begin
+  AsyncIOManager.Run;
+end;
+
+procedure TMainForm.AsyncTimeout(Sender: TObject);
+begin
+  AsyncIOManager.BreakRun;
 end;
 
 procedure TMainForm.OpenFileByName(AFileName: String);
@@ -342,7 +395,7 @@ begin
 
   view.FileName := AFileName;
   Views.CurPageIndex := Views.AddView(view);
-  OnViewsChanged;
+  ViewsChanged;
 end;
 
 procedure TMainForm.OnFileNewCmd(Sender: TObject);
@@ -357,7 +410,7 @@ begin
   view.HasDefaultName := True;
   Inc(NonameCounter);
   Views.CurPageIndex := Views.AddView(view);
-  OnViewsChanged;
+  ViewsChanged;
 end;
 
 procedure TMainForm.OnFileOpenCmd(Sender: TObject);
@@ -406,7 +459,7 @@ begin
   index := Views.CurPageIndex;
   if index < 0 then exit;
   Views.CloseView(index);
-  OnViewsChanged;
+  ViewsChanged;
 end;
 
 procedure TMainForm.OnFileExitCmd(Sender: TObject);
@@ -419,47 +472,65 @@ begin
   if Assigned(OutputSplitter.Pane2) then
     OutputSplitter.Pane2 := nil
   else
-    OutputSplitter.Pane2 := CompilerOutput;
+    OutputSplitter.Pane2 := CompilerOutputWnd;
 end;
 
 procedure TMainForm.OnViewOptionsCmd(Sender: TObject);
 var
   dlg: TStdBtnDialog;
-  dl: TDockingLayout;
   l: TLabel;
-  buttons: TGridLayout;
-  OkButton: TButton;
 begin
-  dlg := TStdBtnDialog.Create(nil);
-//  dlg.Buttons := [btnOK, btnCancel];
+  dlg := TStdBtnDialog.Create(Self);
+  dlg.Buttons := [btnOK, btnCancel];
   dlg.Text := dlgGlobalOptions;
-{  dl := TDockingLayout.Create(dlg);
-//  dl.AddWidget(TKCLSHEditConfig.Create(nil), dmClient);
 
   l := TLabel.Create(dlg);
-  l.Text := 'The editor config is only temporarily here';
-  dl.AddWidget(l, dmTop);
+  l.Text := 'This will be the configuration dialog...';
 
-  OkButton := TButton.Create(dlg);
-  OkButton.Text := 'OK';
-
-  buttons := TGridLayout.Create(dlg);
-  buttons.Rows := 1;
-  buttons.Columns := 3;
-  buttons.AddWidget(OkButton, 0, 0, 1, 1);
-
-  dl.AddWidget(buttons, dmBottom);
-
-  dlg.Content := dl;}
+  dlg.Content := l;
   dlg.Run;
   dlg.Free;
+end;
+
+procedure TMainForm.CompilerCompileExecute(Sender: TObject);
+begin
+  with CompilerOutputWnd do begin
+    Document.Clear;
+    Document.AddLine('');
+    Editor.CursorX := 0;
+    Editor.CursorY := 1;
+  end;
+  StartExternalToolUsage;
+  CompilerProcess := TProcess.Create('/usr/bin/make clean all', [poUsePipes, poStderrToOutPut]);
+  CompilerProcess.Execute;
+  CompilerOutput := TAsyncStreamLineReader.Create(AsyncIOManager, CompilerProcess.Output);
+  CompilerOutput.OnLine := @CompilerOutputLineAvailable;
+end;
+
+procedure TMainForm.CompilerOutputLineAvailable(const line: String);
+var
+  TrackCursor: Boolean;
+  LineCount: Integer;
+begin
+  LineCount := CompilerOutputWnd.Document.LineCount;
+  if (CompilerOutputWnd.Editor.CursorX = 0) and ((CompilerOutputWnd.Editor.CursorY = LineCount) or
+     (LineCount = 0)) then
+    TrackCursor := True;
+
+  CompilerOutputWnd.Document.InsertLine(LineCount - 1, line);
+
+  if TrackCursor then begin
+    CompilerOutputWnd.Editor.CursorX := 0;
+    CompilerOutputWnd.Editor.CursorY := LineCount + 1;
+    CompilerOutputWnd.Editor.AdjustRangeToCursor;
+  end;
 end;
 
 
 var
   MainForm: TMainForm;
 begin
-//  gettext.TranslateResourceStrings('intl/kassandra.%s.mo');
+  gettext.TranslateResourceStrings('intl/kassandra.%s.mo');
 
   Application.Initialize;
   Application.Title := 'Kassandra IDE';
@@ -473,6 +544,13 @@ end.
 
 {
   $Log$
+  Revision 1.6  2000/02/17 22:42:09  sg
+  * Re-enabled the dummy configuration dialog
+  * Re-enabled gettext (memory leaks have been fixed)
+  * Added an idle handler & the possibility to do a "make clean all" in
+    the current directory, the output will be displayed in the window
+    docked at the bottom of the main window...
+
   Revision 1.5  2000/02/10 18:23:44  sg
   * The position of the main window is now stored
   * Gettext disabled due to some memory leak problems in the RTL
