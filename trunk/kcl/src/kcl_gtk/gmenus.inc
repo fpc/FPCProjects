@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -14,107 +14,160 @@
 }
 
 
+// ===================================================================
+//   Implementation of menu related classes for GTK+
+// ===================================================================
+
 constructor TMenuItem.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 end;
 
-procedure TMenuItem.SetText(const AText: String);
-begin
-  FText := AText;
-end;
-
-procedure TMenuItem.SetGray(AGray: Boolean);
-begin
-  if AGray <> FGray then begin
-    FGray := AGray;
-    if Assigned(FHandle.Item) then begin
-      if FGray then
-        gtk_widget_set_state(FHandle.item, GTK_STATE_INSENSITIVE)
-      else
-        gtk_widget_set_sensitive(FHandle.Item, True);
-    end;
-  end;
-end;
-
 procedure TMenuItem_Activate(GtkItem: PGtkMenuItem; item: TMenuItem); cdecl;
 begin
-  item.DoClick;
+  if Assigned(item.FCommand) then
+    item.FCommand.Execute(item);
+end;
+
+function  gtk_check_menu_item_new : PGtkWidget;cdecl;external 'gtk' name 'gtk_check_menu_item_new'; 
+
+
+function TMenuItem.CommandChangeFilter(AEvent: TEventObj): Boolean;
+var
+  cmd: TCommand;
+begin
+  if AEvent.InheritsFrom(TCmdChangeEventObj) then begin
+    ASSERT(AEvent.Sender.InheritsFrom(TCommand));
+    ASSERT(TCmdChangeEventObj(AEvent).Sender.InheritsFrom(TCommand));
+    cmd := TCommand(TCmdChangeEventObj(AEvent).Sender);
+    case TCmdChangeEventObj(AEvent).ChangeType of
+      cctEnabled:
+	gtk_widget_set_sensitive(FHandle, cmd.FEnabled);
+    end;
+  end;
+  Result := True;
 end;
 
 procedure TMenuItem.OnFinishCreation;
 var
   s: String;
-  i: Integer;
-  lbl: PGtkWidget;
-  accel: LongWord;
-  mods: TGdkModifierType;
+  i, LeftIndent: Integer;
   form: TWidget;
   menu: TMenuItem;
+  icon: PImageListItem;
+  imglist: TImageList;
+  accel: LongWord;
+  mods: TGdkModifierType;
+  w: PGtkWidget;
+  sensitive: Boolean;
 begin
-  if FText = '-' then
-    FHandle.Item := gtk_menu_item_new
-  else begin
-    // Replace all "&" in FText with "_" (the underline character in GTK)
-    s := FText;
-    for i := 1 to Length(s) do
-      if s[i] = '&' then
-        s[i] := '_';
+  case FStyle of
+    misDefault, misSeparator:
+      priv.Item := gtk_menu_item_new;
+    misCheck: begin
+        priv.Item := gtk_check_menu_item_new;
+	gtk_check_menu_item_set_show_toggle(PGtkCheckMenuItem(priv.Item), True);
+      end;
+    else ASSERT(False);
+  end;
+  FHandle := priv.Item;
 
-    FHandle.Item := gtk_menu_item_new;
-    lbl := gtk_accel_label_new('');		// NIL won't work!
-    gtk_misc_set_alignment(PGtkMisc(lbl), 0.0, 0.5);
-    gtk_container_add(PGtkContainer(FHandle.Item), lbl);
-    gtk_accel_label_set_accel_widget(PGtkAccelLabel(lbl), FHandle.Item);
+  if FStyle <> misSeparator then begin
+    if Assigned(FCommand) then
+      s := ConvertUnderlines(FCommand.FText)
+    else
+      SetLength(s, 0);
 
-    accel := gtk_label_parse_uline(PGtkLabel(lbl), PChar(s));
-    if accel <> GDK_VoidSymbol then
-      if FParent.InheritsFrom(TMenuBar) then begin
-        form := TMenuBar(FParent);
-	while Assigned(form) and not form.InheritsFrom(TGenericForm) do
-	  form := form.FParent;
-	if Assigned(form) then
-          gtk_widget_add_accelerator(FHandle.Item, 'activate',
-	    TGenericForm(form).priv.AccelGroup,
-	    accel, GDK_MOD1_MASK, GTK_ACCEL_LOCKED)
-      end else if FParent.InheritsFrom(TMenu) then
-        gtk_widget_add_accelerator(FHandle.Item, 'activate',
-	  gtk_menu_ensure_uline_accel_group(PGtkMenu(TMenu(FParent).
-	  FHandle.SubMenu)), accel, 0, GTK_ACCEL_LOCKED);
+    priv.Packer := gtk_packer_new;
+    gtk_widget_show(priv.Packer);
+    gtk_container_add(PGtkContainer(priv.Item), priv.Packer);
 
-    if Length(FShortCut) > 0 then begin
-      menu := Self;
-      while Assigned(menu.FParent) and menu.FParent.InheritsFrom(TMenuItem) do
-        menu := TMenuItem(menu.FParent);
-      // 'menu' must be a TMenuBar now
-      form := TMenuBar(menu.FParent);
-      while Assigned(form) and not form.InheritsFrom(TGenericForm) do
-	form := form.FParent;
-      if Assigned(form) then begin
-        gtk_accelerator_parse(PChar(FShortCut), @accel, @mods);
-        gtk_widget_add_accelerator(FHandle.Item, 'activate',
-	  TGenericForm(form).priv.AccelGroup,
-	  accel, mods, GTK_ACCEL_VISIBLE);
+    icon := nil;
+    if Assigned(FCommand) and Assigned(FCommand.FCommandList) then begin
+      imglist := FCommand.FCommandList.FImages;
+      if Assigned(imglist) and (FCommand.FImageIndex >= 0)
+        and (FCommand.FImageIndex < imglist.priv.Count) then begin
+        icon := PImageListItem(imglist.priv.Items[FCommand.FImageIndex]);
+        priv.Pixmap := gtk_pixmap_new(icon^.Image, icon^.Mask);
+        gtk_widget_show(priv.Pixmap);
+        gtk_packer_add(PGtkPacker(priv.Packer), priv.Pixmap, GTK_SIDE_LEFT, GTK_ANCHOR_W,
+	  0, 0, 0, 0, 0, 0);
       end;
     end;
 
-    gtk_widget_show(lbl);
-  end;
+    if not Assigned(icon) then
+      if FParent.InheritsFrom(TMenuBar) then
+        LeftIndent := 0
+      else
+        LeftIndent := 16 + 31	// ### use maximum icon width in menu instead of 31
+    else
+      LeftIndent := 16;
 
-  if FGray then
-    gtk_widget_set_state(FHandle.Item, GTK_STATE_INSENSITIVE);
+    priv.TextLabel := gtk_label_new('');
 
-  gtk_signal_connect(PGtkObject(FHandle.Item), 'activate',
-    GTK_SIGNAL_FUNC(@TMenuItem_Activate), Self);
+    accel := gtk_label_parse_uline(PGtkLabel(priv.TextLabel), PChar(s));
+
+    gtk_widget_show(PGtkWidget(priv.TextLabel));
+    gtk_packer_add(PGtkPacker(priv.Packer), PGtkWidget(priv.TextLabel),
+      GTK_SIDE_LEFT, GTK_ANCHOR_W, 0, 0, LeftIndent, 0, 0, 0);
+
+    if accel <> GDK_VoidSymbol then
+      if FParent.InheritsFrom(TMenuBar) then begin
+        form := TMenuBar(FParent);
+        while Assigned(form) and not form.InheritsFrom(TGenericForm) do
+          form := form.FParent;
+        if Assigned(form) then
+          gtk_widget_add_accelerator(priv.Item, 'activate_item',
+            TGenericForm(form).priv.AccelGroup,
+            accel, GDK_MOD1_MASK, GTK_ACCEL_LOCKED)
+      end else
+        if FParent.InheritsFrom(TMenu) then
+          gtk_widget_add_accelerator(priv.Item, 'activate_item',
+            gtk_menu_ensure_uline_accel_group(PGtkMenu(TMenu(FParent).
+            priv.SubMenu)), accel, 0, GTK_ACCEL_LOCKED);
+
+
+    if Assigned(FCommand) and (Length(FCommand.FShortCut) > 0) then begin
+      menu := Self;
+      while Assigned(menu.FParent) and menu.FParent.InheritsFrom(TMenuItem) do
+        menu := TMenuItem(menu.FParent);
+      // 'menu' must be a TMenuBar now; now search our form
+      form := TMenuBar(menu.FParent);
+      while Assigned(form) and not form.InheritsFrom(TGenericForm) do
+        form := form.FParent;
+      if Assigned(form) then begin
+        priv.AccelLabel := gtk_label_new(PChar(ShortcutDisplayName(FCommand.FShortCut)));
+	gtk_widget_show(priv.AccelLabel);
+        gtk_packer_add(PGtkPacker(priv.Packer), PGtkWidget(priv.AccelLabel),
+          GTK_SIDE_RIGHT, GTK_ANCHOR_E, 0, 0, 8, 0, 0, 0);
+      end;
+    end;
+
+    if (FStyle = misCheck) and Assigned(FCommand) and FCommand.Checked then
+      gtk_check_menu_item_set_active(PGtkCheckMenuItem(priv.Item), True);
+
+    gtk_signal_connect(PGtkObject(priv.Item), 'activate',
+      GTK_SIGNAL_FUNC(@TMenuItem_Activate), Self);
+
+    // Set up an event filter for automatic updates of this menu item
+    if Assigned(FCommand) then
+      FCommand.AddEventFilter(TCmdChangeEventObj, @CommandChangeFilter);
+
+    sensitive := True;
+    if Assigned(FCommand) and (not FCommand.FEnabled) then
+      sensitive := False
+    else if Self.InheritsFrom(TMenu) then begin
+      if TMenu(Self).FItems.Count = 0 then
+        sensitive := False;
+    end else
+      if not Assigned(FCommand.FOnExecute) then
+        sensitive := False;
+  end else		// if FStyle <> misSeparator then begin
+    sensitive := False;
+
+  gtk_widget_set_sensitive(FHandle, sensitive);
 end;
 
-
-
-constructor TMenu.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FItems := TCollection.Create(TMenuItemInfo);
-end;
 
 procedure TMenu.OnFinishCreation;
 var
@@ -122,46 +175,39 @@ var
   item: TMenuItem;
 begin
   inherited OnFinishCreation;
-  FHandle.submenu := gtk_menu_new;
-  gtk_menu_item_set_submenu(PGtkMenuItem(FHandle.item), FHandle.submenu);
+  priv.submenu := gtk_menu_new;
+  gtk_menu_item_set_submenu(PGtkMenuItem(priv.item), priv.submenu);
+
+  MenuPriv.TearoffItem := gtk_tearoff_menu_item_new;
+  gtk_widget_show(MenuPriv.TearoffItem);
+  gtk_menu_append(PGtkMenu(priv.submenu), MenuPriv.TearoffItem);
+
   for i := 0 to FItems.Count - 1 do begin
-    item := TMenuItemInfo(FItems.Items[i]).Item;
+    item := TMenuItem(FItems.Items[i]);
     item.OnFinishCreation;
-    gtk_menu_append(PGtkMenu(FHandle.submenu), item.FHandle.item);
-    gtk_widget_show(item.FHandle.item);
+    gtk_menu_append(PGtkMenu(priv.submenu), item.priv.item);
+    gtk_widget_show(item.priv.item);
   end;
-  gtk_widget_show(FHandle.submenu);
+  gtk_widget_show(priv.submenu);
 end;
 
 procedure TMenu.AddItem(AItem: TMenuItem);
-var
-  NewItem: TMenuItemInfo;
 begin
   AItem.FParent := Self;
-  NewItem := TMenuItemInfo(FItems.Add);
-  NewItem.Item := AItem;
-  if Assigned(FHandle.submenu) then begin
-    gtk_menu_append(PGtkMenu(FHandle.submenu), AItem.FHandle.item);
-    gtk_widget_show(AItem.FHandle.item);
+  FItems.Add(AItem);
+  if Assigned(priv.submenu) then begin
+    gtk_menu_append(PGtkMenu(priv.submenu), AItem.priv.item);
+    gtk_widget_show(AItem.priv.item);
   end;
 end;
 
-constructor TMenuBar.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FItems := TCollection.Create(TMenuItemInfo);
-end;
-
 procedure TMenuBar.AddItem(AItem: TMenuItem);
-var
-  NewItem: TMenuItemInfo;
 begin
   AItem.FParent := Self;
-  NewItem := TMenuItemInfo(FItems.Add);
-  NewItem.Item := AItem;
-  if Assigned(Handle.Widget) then begin
+  FItems.Add(AItem);
+  if Assigned(FHandle) then begin
     AItem.OnFinishCreation;
-    gtk_menu_bar_append(PGtkMenuBar(Handle.Widget), AItem.FHandle.item);
+    gtk_menu_bar_append(PGtkMenuBar(FHandle), AItem.priv.item);
   end;
 end;
 
@@ -170,13 +216,13 @@ var
   i: Integer;
   item: TMenuItem;
 begin
-  Handle.Widget := gtk_menu_bar_new;
+  FHandle := gtk_menu_bar_new;
 
   for i := 0 to FItems.Count - 1 do begin
-    item := TMenuItemInfo(FItems.Items[i]).Item;
+    item := TMenuItem(FItems.Items[i]);
     item.OnFinishCreation;
-    gtk_menu_bar_append(PGtkMenuBar(Handle.Widget), Item.FHandle.item);
-    gtk_widget_show(item.FHandle.item);
+    gtk_menu_bar_append(PGtkMenuBar(FHandle), Item.priv.item);
+    gtk_widget_show(item.priv.item);
   end;
 
   inherited OnFinishCreation;
@@ -185,6 +231,10 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/01/24 00:25:25  sg
+  * Major reimplementation to support TCommand, including support for
+    displaying an icon left to a menu item; corrected shortcut handling
+
   Revision 1.3  2000/01/07 22:49:47  sg
   * Added full shortcut support for menu items
 
