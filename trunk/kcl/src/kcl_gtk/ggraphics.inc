@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -13,6 +13,14 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
 
+
+// ===================================================================
+//   Graphics support implementation for GTK+
+// ===================================================================
+
+// -------------------------------------------------------------------
+//   TCanvas and derived classes
+// -------------------------------------------------------------------
 
 constructor TCanvas.Create;
 begin
@@ -32,6 +40,12 @@ type
     constructor Create(AWidget: TWidget);
   end;
 
+  TGdkPixmapCanvas = class(TGdkCanvas)
+    pixmap: PGdkPixmap;		// Same value as FHandle
+    constructor Create(GdkWindow: PGdkWindow; w, h, ColorDepth: Integer);
+    destructor Destroy; override;
+  end;
+
 
 constructor TGdkCanvas.Create(GdkWindow: PGdkWindow);
 begin
@@ -47,20 +61,32 @@ end;
 
 constructor TGdkCanvas.Create(AWidget: TWidget);
 begin
-  FHandle := gtk_widget_get_parent_window(AWidget.Handle.Widget);
+  FHandle := gtk_widget_get_parent_window(AWidget.FHandle);
   priv.GC := gdk_gc_new(FHandle);
 end;
 
 
 constructor TGdkExposeCanvas.Create(AWidget: TWidget);
 begin
-  FHandle := AWidget.Handle.Widget^.window;
+  FHandle := AWidget.FHandle^.window;
   priv.GC := gdk_gc_new(FHandle);
-  gdk_gc_copy(priv.GC, PGtkStyle(AWidget.Handle.Widget^.thestyle)^.
-    fg_gc[AWidget.Handle.Widget^.state]);
+  gdk_gc_copy(priv.GC, PGtkStyle(AWidget.FHandle^.thestyle)^.
+    fg_gc[AWidget.FHandle^.state]);
 end;
 
 
+constructor TGdkPixmapCanvas.Create(GdkWindow: PGdkWindow;
+  w, h, ColorDepth: Integer);
+begin
+  pixmap := gdk_pixmap_new(GdkWindow, w, h, ColorDepth);
+  inherited Create(pixmap);
+end;
+
+destructor TGdkPixmapCanvas.Destroy;
+begin
+  inherited Destroy;
+  gdk_pixmap_unref(pixmap);
+end;
 
 
 procedure TCanvas.SetColor(AColor: TColor);
@@ -124,7 +150,41 @@ begin
   end;
 end;
 
+procedure TCanvas.DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
+  ASourceX, ASourceY, ASourceW, ASourceH: Integer);
+var
+  p: Pointer;
+begin
+  ASSERT(Assigned(ABitmap.FData));
+  GdkRGBNeeded;
+  if ASourceX + ASourceW > ABitmap.FWidth then
+    ASourceW := ABitmap.FWidth - ASourceX;
+  if ASourceY + ASourceH > ABitmap.FHeight then
+    ASourceH := ABitmap.FHeight - ASourceY;
+  if (ASourceW <= 0) or (ASourceH <= 0) then exit;
 
+  case ABitmap.FBitsPerPixel of
+    // 1, 4, 8: Draw indexed ###
+    24: begin
+      // ### COMPILER BUG!!! The following 3 lines cannot be written as a simple addition!!!
+      p := ABitmap.FData;
+      Inc(p, ASourceY * ABitmap.FStride);
+      Inc(p, ASourceX * 3);
+      gdk_draw_rgb_image(PGdkDrawable(FHandle), priv.GC,
+        ADestX, ADestY, ASourceW, ASourceH,
+	GDK_RGB_DITHER_NORMAL,
+	p,
+	ABitmap.FStride);
+      end;
+    // 32: ###
+    else ASSERT(False);
+  end;
+end;
+
+
+// -------------------------------------------------------------------
+//   TFont
+// -------------------------------------------------------------------
 
 constructor TFont.Create;
 begin
@@ -218,7 +278,10 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:24  sg
-  Initial revision
+  Revision 1.2  2000/01/24 00:23:53  sg
+  * Added bitmap drawing methods to TCanvas
+
+  Revision 1.1.1.1  1999/12/30 21:33:24  sg
+  Initial import
 
 }
