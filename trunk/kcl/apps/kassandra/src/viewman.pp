@@ -173,7 +173,7 @@ begin
       s := '&' + IntToStr(View.PageNumber) + ' ' + GetViewTitle(View);
       if View.IsModified then
         s := s + ' *';
-      TNotebookPage(Page[PageInfo.PgIndex]).Text := s;
+      Pages[PageInfo.PgIndex].Text := s;
       break;
     end;
   end;
@@ -231,6 +231,9 @@ end.
 
 {
   $Log$
+  Revision 1.4  2000/02/19 19:08:07  sg
+  * Adapted to changes in KCL
+
   Revision 1.3  2000/02/10 18:25:18  sg
   * Changed method names (removed "F" at start)
   * Added destructor to remove memory leaks...

@@ -394,7 +394,7 @@ begin
     view := TSHTextView.Create(Views, doc);
 
   view.FileName := AFileName;
-  Views.CurPageIndex := Views.AddView(view);
+  Views.PageIndex := Views.AddView(view);
   ViewsChanged;
 end;
 
@@ -409,7 +409,7 @@ begin
   view.FileName := 'noname' + IntToStr(NonameCounter) + '.pp';
   view.HasDefaultName := True;
   Inc(NonameCounter);
-  Views.CurPageIndex := Views.AddView(view);
+  Views.PageIndex := Views.AddView(view);
   ViewsChanged;
 end;
 
@@ -427,8 +427,8 @@ procedure TMainForm.OnFileSaveCmd(Sender: TObject);
 var
   View: TGenericView;
 begin
-  if Views.CurPageIndex < 0 then exit;
-  View := Views.GetView(Views.CurPageIndex);
+  if Views.PageIndex < 0 then exit;
+  View := Views.GetView(Views.PageIndex);
   if View.HasDefaultName then
     OnFileSaveAsCmd(Sender)
   else
@@ -440,8 +440,8 @@ var
   View: TGenericView;
   FileDlg: TFileDialog;
 begin
-  if Views.CurPageIndex < 0 then exit;
-  View := Views.GetView(Views.CurPageIndex);
+  if Views.PageIndex < 0 then exit;
+  View := Views.GetView(Views.PageIndex);
 
   FileDlg := TFileDialog.Create(nil);
   FileDlg.FileName := View.FileName;
@@ -456,7 +456,7 @@ procedure TMainForm.OnFileCloseCmd(Sender: TObject);
 var
   index: Integer;
 begin
-  index := Views.CurPageIndex;
+  index := Views.PageIndex;
   if index < 0 then exit;
   Views.CloseView(index);
   ViewsChanged;
@@ -521,7 +521,7 @@ begin
 
   if TrackCursor then begin
     CompilerOutputWnd.Editor.CursorX := 0;
-    CompilerOutputWnd.Editor.CursorY := LineCount + 1;
+    CompilerOutputWnd.Editor.CursorY := LineCount;
     CompilerOutputWnd.Editor.AdjustRangeToCursor;
   end;
 end;
@@ -544,6 +544,9 @@ end.
 
 {
   $Log$
+  Revision 1.7  2000/02/19 19:08:07  sg
+  * Adapted to changes in KCL
+
   Revision 1.6  2000/02/17 22:42:09  sg
   * Re-enabled the dummy configuration dialog
   * Re-enabled gettext (memory leaks have been fixed)
