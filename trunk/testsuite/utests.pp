@@ -229,19 +229,19 @@ begin
       CellStart;
         Write('Operating system:');
       CellNext;
-        ComboBoxFromQuery('TESTOS','SELECT TO_ID,TO_NAME FROM TESTOS',FOS);
+        ComboBoxFromQuery('TESTOS','SELECT TO_ID,TO_NAME FROM TESTOS ORDER BY TO_NAME',FOS);
       CellEnd;
     RowNext;
       CellStart;
         Write('Processor:');
       CellNext;
-        ComboBoxFromQuery('TESTCPU','SELECT TC_ID,TC_NAME FROM TESTCPU',FCPU);
+        ComboBoxFromQuery('TESTCPU','SELECT TC_ID,TC_NAME FROM TESTCPU ORDER BY TC_NAME',FCPU);
       CellEnd;
     RowNext;
       CellStart;
         Write('Version');
       CellNext;
-        ComboBoxFromQuery('TESTVERSION','SELECT TV_ID,TV_VERSION FROM TESTVERSION',FVERSION);
+        ComboBoxFromQuery('TESTVERSION','SELECT TV_ID,TV_VERSION FROM TESTVERSION ORDER BY TV_VERSION DESC',FVERSION);
       CellEnd;
     RowNext;
       CellStart;
@@ -363,14 +363,14 @@ Var
 
 begin
    S:='';
-   If (FCPU<>'') then
+   If (FCPU<>'') and (FCPU<>'0') then
      S:=S+' AND (TU_CPU_FK='+FCPU+')';
-   If (FVersion<>'') then
+   If (FVersion<>'') and (FVersion<>'0')  then
      S:=S+' AND (TU_VERSION_FK='+FVERSION+')';
-   if (FOS<>'') then
+   if (FOS<>'') and (FOS<>'0') then
      S:=S+' AND (TU_OS_FK='+FOS+')';
    If (Round(FDate)<>0) then
-     S:=S+' AND (TU_DATE="'+FormatDateTime('YYYY/MM/DD',FDate)+'")'
+     S:=S+' AND (TU_DATE>="'+FormatDateTime('YYYY/MM/DD',FDate)+'")'
    else
      S:=S+' AND (TU_DATE>="'+FormatDateTime('YYYY/MM/DD',Date-FTESTLASTDAYS)+'")';
    If FOnlyFailed then
