@@ -67,10 +67,9 @@ type
   end;
 
   TBoxForm = Class(TForm)
-    Layout : TDockingLayout;
-    BoxLayout : TBoxLayout;
-    Button1,Button2,Button3,FlipButton : TButton;
-    procedure FlipOrientation (Sender : TObject);
+    Layout, BoxLayout: TBoxLayout;
+    Button1, Button2, Button3, FlipButton: TButton;
+    procedure FlipOrientation(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -89,7 +88,6 @@ begin
   Box := TBoxLayout.Create(Self);
     Box.Name := 'Box';
     Box.Orientation := boxVert;
-    Box.HorzAlign := horzFill;
     Box.Spacing := 8;
     Caption := TLabel.Create(Self);
       Caption.Name := 'Caption';
@@ -274,7 +272,6 @@ begin
       Button1.Name := 'TopLeft';
       Button1.Text := 'Top Left';
     Layout.AddWidget(Button1, 0, 0, 1, 1);
-
     Button2 := TButton.Create(Self);
       Button2.Name := 'TopRight';
       Button2.Text := 'Top Right';
@@ -282,6 +279,8 @@ begin
     Button3 := TButton.Create(Self);
       Button3.Name := 'CenterCenter';
       Button3.Text := 'Center Center';
+      Button3.CanExpandWidth := False;
+      Button3.CanExpandHeight := False;
     Layout.AddWidget(Button3, 1,1,1,1);
     Button4 := TButton.Create(Self);
       Button4.Name := 'BottomLeft';
@@ -305,18 +304,13 @@ begin
   Text := 'Box Layout';
   BorderWidth := 8;
 
-  writeln ('Creating main layout');
-  Layout := TDockingLayout.Create(Self);
+  Layout := TBoxLayout.Create(Self);
     Layout.Name := 'Layout';
-  FlipButton := TButton.Create(Self);
-      FlipButton.Name := 'FlipButton';
-      FlipButton.Text := 'Vertical';
-      FlipButton.OnCLick:=@FlipOrientation;
-  Layout.AddWidget(FlipButton,dmBottom);
+    Layout.Orientation := boxVert;
+    Layout.Spacing := 8;
   BoxLayout:=TBoxLayout.Create(Self);
     BoxLayout.Name := 'Box';
     BoxLayout.Orientation := boxHorz;
-    BoxLayout.VertAlign := vertFill;
     BoxLayout.Spacing := 4;
     Button1 := TButton.Create(Self);
       Button1.Name := 'Button1';
@@ -330,7 +324,13 @@ begin
       Button3.Name := 'Button3';
       Button3.Text := 'Button 3';
     BoxLayout.AddWidget(Button3);
-  Layout.AddWidget(BoxLayout,dmClient);
+  Layout.AddWidget(BoxLayout);
+  FlipButton := TButton.Create(Self);
+    FlipButton.Name := 'FlipButton';
+    FlipButton.Text := 'Switch to vertical';
+    FlipButton.OnCLick:=@FlipOrientation;
+  Layout.AddWidget(FlipButton);
+
   Content := Layout;
 end;
 
@@ -341,16 +341,12 @@ begin
     If Orientation = boxHorz then
       begin
       Orientation := boxVert;
-      HorzAlign := HorzFill;
-      VertAlign := vertFixed;
-      FlipButton.Text:='Horizontal';
+      FlipButton.Text:='Switch to horizontal';
       end
     else
       begin
       Orientation := BoxHorz;
-      HorzAlign := horzFixed;
-      vertAlign:=VertFill;
-      FlipButton.text:='Vertical';
+      FlipButton.text:='Switch to vertical';
       end;
 end;
 
@@ -371,6 +367,9 @@ end.
 
 {
   $Log$
+  Revision 1.6  2000/02/22 14:43:08  sg
+  * Some fixes & better testing of TGridLayout
+
   Revision 1.5  2000/02/18 22:20:57  sg
   * Fixed alignment settings when the box layout demo changes its orientation
 
