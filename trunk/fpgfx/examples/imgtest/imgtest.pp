@@ -45,8 +45,8 @@ begin
   Window := ADisplay.CreateWindow;
   Window.Title := 'fpGFX Bitmap Test';
   Window.OnPaint := @Paint;
-  Window.SetSize(256, 256);
-  Window.SetMinMaxSize(256, 256, 256, 256);
+  Window.SetClientSize(256, 256);
+  Window.SetMinMaxClientSize(256, 256, 256, 256);
   Window.Show;
 
   Image := Display.CreateImage(256, 256, PixelFormatRGB32);

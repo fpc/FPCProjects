@@ -46,8 +46,8 @@ begin
   Window.OnPaint := @Paint;
   Window.Canvas.SetFont(Font);
   TextSize := Window.Canvas.TextExtent(HelloWorldString);
-  Window.SetSize((TextSize.cx * 3) div 2, TextSize.cy * 2);
-  Window.SetMinMaxSize(TextSize.cx, TextSize.cy, 0, 0);
+  Window.SetClientSize((TextSize.cx * 3) div 2, TextSize.cy * 2);
+  Window.SetMinMaxClientSize(TextSize.cx, TextSize.cy, 0, 0);
   Window.Show;
 end;
 
@@ -78,12 +78,12 @@ begin
   end;
 
   Window.Canvas.SetColor(Window.Canvas.MapColor(colBlack));
-  Window.Canvas.TextOut((Window.Width - TextSize.cx) div 2 + 1,
-    (Window.Height - TextSize.cy) div 2 + 1, HelloWorldString);
+  Window.Canvas.TextOut((Window.ClientWidth - TextSize.cx) div 2 + 1,
+    (Window.ClientHeight - TextSize.cy) div 2 + 1, HelloWorldString);
 
   Window.Canvas.SetColor(Window.Canvas.MapColor(colWhite));
-  Window.Canvas.TextOut((Window.Width - TextSize.cx) div 2 - 1,
-    (Window.Height - TextSize.cy) div 2 - 1, HelloWorldString);
+  Window.Canvas.TextOut((Window.ClientWidth - TextSize.cx) div 2 - 1,
+    (Window.ClientHeight - TextSize.cy) div 2 - 1, HelloWorldString);
 end;
 
 var

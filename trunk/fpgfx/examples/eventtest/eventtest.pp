@@ -37,7 +37,7 @@ constructor TMainWindow.Create(ADisplay: TDefDisplay);
 begin
   inherited Create;
   FWindow := ADisplay.CreateWindow;
-  FWindow.SetSize(500, 100);
+  FWindow.SetClientSize(500, 100);
   FWindow.Title := 'fpGFX Event Test example';
   FWindow.OnKeyPressed := @KeyPressed;
   FWindow.OnKeyReleased := @KeyReleased;
