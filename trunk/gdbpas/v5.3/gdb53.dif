@@ -1,24 +1,24 @@
 diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
---- origdb/Makefile.in	2002-11-13 10:55:34.000000000 +0100
-+++ gdb/Makefile.in	2002-11-13 10:18:08.000000000 +0100
+--- origdb/Makefile.in	Mon Nov 25 23:05:38 2002
++++ gdb/Makefile.in	Thu Dec 12 15:37:25 2002
 @@ -561,7 +561,7 @@ SFILES = ada-exp.y ada-lang.c ada-typepr
  	ui-file.h ui-file.c \
  	frame.c doublest.c \
  	builtin-regs.c std-regs.c \
 -	gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
 +	fpc-abi.c gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
-
+ 
  LINTFILES = $(SFILES) $(YYFILES) $(CONFIG_SRCS) init.c
-
+ 
 @@ -846,7 +846,7 @@ COMMON_OBS = version.o blockframe.o brea
  	nlmread.o serial.o mdebugread.o top.o utils.o \
  	ui-file.o \
  	frame.o doublest.o \
 -	gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
 +	fpc-abi.o gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
-
+ 
  OBS = $(COMMON_OBS) $(ANNOTATE_OBS)
-
+ 
 @@ -1661,6 +1661,8 @@ findvar.o: findvar.c $(defs_h) $(symtab_
  fork-child.o: fork-child.c $(defs_h) $(gdb_string_h) $(frame_h) \
  	$(inferior_h) $(target_h) $(gdb_wait_h) $(gdb_vfork_h) $(gdbcore_h) \
@@ -29,8 +29,8 @@ diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
  frame.o: frame.c $(defs_h) $(frame_h) $(target_h) $(value_h) $(inferior_h) \
  	$(regcache_h) $(gdb_assert_h)
 diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
---- origdb/fpc-abi.c	1970-01-01 01:00:00.000000000 +0100
-+++ gdb/fpc-abi.c	2002-11-05 12:03:34.000000000 +0100
+--- origdb/fpc-abi.c	Thu Jan  1 01:00:00 1970
++++ gdb/fpc-abi.c	Thu Dec 12 15:37:26 2002
 @@ -0,0 +1,408 @@
 +/* Abstraction of FPC abi.
 +   Contributed by Pierre Muller  <muller@ics.u-strasbg.fr>
@@ -441,8 +441,8 @@ diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
 +  register_cp_abi (fpc_abi_ops);
 +}
 diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
---- origdb/i386-tdep.c	2002-09-16 16:34:08.000000000 +0200
-+++ gdb/i386-tdep.c	2002-09-16 16:35:42.000000000 +0200
+--- origdb/i386-tdep.c	Mon Aug 26 20:35:25 2002
++++ gdb/i386-tdep.c	Thu Dec 12 15:37:26 2002
 @@ -708,6 +708,8 @@ i386_skip_prologue (CORE_ADDR pc)
  {
    unsigned char op;
@@ -461,24 +461,24 @@ diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
 +	last_push_esi_pos = codestream_tell ();
 +      codestream_get();
      }
-
+ 
    /* The native cc on SVR4 in -K PIC mode inserts the following code
 @@ -783,7 +787,10 @@ i386_skip_prologue (CORE_ADDR pc)
-
+ 
    i386_follow_jump ();
-
+ 
 -  return (codestream_tell ());
 +  if (codestream_tell () == last_push_esi_pos + 1)
 +    return (last_push_esi_pos);
 +  else
 +    return (codestream_tell ());
  }
-
+ 
  /* Use the program counter to determine the contents and size of a
 diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
---- origdb/minsyms.c	2002-09-16 16:34:08.000000000 +0200
-+++ gdb/minsyms.c	2002-11-05 12:04:00.000000000 +0100
-@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile
+--- origdb/minsyms.c	Thu Jul 11 22:46:19 2002
++++ gdb/minsyms.c	Thu Dec 12 15:37:26 2002
+@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile 
  	for (i = 0; i < mcount; i++)
  	  {
  	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
@@ -492,54 +492,56 @@ diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
  	      {
  		switch_to_cp_abi ("gnu-v3");
 diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
---- origdb/p-exp.y	2002-11-13 16:44:42.000000000 +0100
-+++ gdb/p-exp.y	2002-11-13 10:20:10.000000000 +0100
-@@ -294,7 +294,8 @@ exp	:	exp '.' { search_field = 1; }
+--- origdb/p-exp.y	Wed Nov 13 16:44:16 2002
++++ gdb/p-exp.y	Thu Dec 12 15:42:54 2002
+@@ -294,7 +294,9 @@ exp	:	exp '.' { search_field = 1; } 
  				current_type = TYPE_TARGET_TYPE (current_type);
  			      current_type = lookup_struct_elt_type (
  				current_type, $4.ptr, false); };
--			 } ;
+-			 } ; 
 +			 }
 +	;
++
  exp	:	exp '['
  			/* We need to save the current_type value */
- 			{ char *arrayname;
-@@ -322,8 +323,7 @@ exp	:	exp '['
+ 			{ char *arrayname; 
+@@ -322,8 +324,7 @@ exp	:	exp '['
  			    current_type = TYPE_TARGET_TYPE (current_type); }
  	;
-
+ 
 -exp	:	exp '('
 -			/* This is to save the value of arglist_len
 +exp	:	exp '(' /* This is to save the value of arglist_len
  			   being accumulated by an outer function call.  */
  			{ push_current_type ();
  			  start_arglist (); }
-@@ -1479,6 +1479,16 @@ yylex ()
- 	yylval.sval.length = namelen;
+@@ -1479,6 +1480,17 @@ yylex ()
+ 	yylval.sval.length = namelen; 
  	return FIELDNAME;
-       }
+       } 
++
 +    /* if not found uppercase the whole.  */
 +    if (!sym && !is_a_field_of_this)
 +      {
-+       for (i = 0; i <= namelen; i++)
-+         {
-+           if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
-+              tokstart[i] -= ('a'-'A');
-+          }
++	for (i = 0; i <= namelen; i++)
++	  {
++	    if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
++	      tokstart[i] -= ('a'-'A');
++	  }
 +      }
 +
      /* Call lookup_symtab, not lookup_partial_symtab, in case there are
         no psymtabs (coff, xcoff, or some future change to blow away the
         psymtabs once once symbols are read).  */
 diff -u -p -r -N -x Entries origdb/top.c gdb/top.c
---- origdb/top.c	2002-10-07 14:50:54.000000000 +0200
-+++ gdb/top.c	2002-10-07 14:47:52.000000000 +0200
+--- origdb/top.c	Sat Sep 28 17:10:32 2002
++++ gdb/top.c	Thu Dec 12 15:37:26 2002
 @@ -1353,7 +1353,7 @@ print_gdb_version (struct ui_file *strea
       program to parse, and is just canonical program name and version
       number, which starts after last space. */
-
+ 
 -  fprintf_filtered (stream, "GNU gdb %s\n", version);
 +  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
-
+ 
    /* Second line is a copyright notice. */
-
+ 
