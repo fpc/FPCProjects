@@ -114,14 +114,6 @@ else
 override FPCDIR=wrong
 endif
 ifeq ($(FPCDIR),wrong)
-override FPCDIR=../../../../fixbranch
-ifeq ($(wildcard $(FPCDIR)/rtl),)
-ifeq ($(wildcard $(FPCDIR)/units),)
-override FPCDIR=wrong
-endif
-endif
-endif
-ifeq ($(FPCDIR),wrong)
 ifdef inUnix
 override FPCDIR=/usr/local/lib/fpc/$(FPC_VERSION)
 ifeq ($(wildcard $(FPCDIR)/units),)
@@ -154,7 +146,7 @@ UNITSDIR:=$(wildcard $(FPCDIR)/units/$(OS_TARGET))
 endif
 PACKAGESDIR:=$(wildcard $(FPCDIR) $(FPCDIR)/packages)
 override PACKAGE_NAME=fpgfx_x11
-override PACKAGE_VERSION=1.0.5
+override PACKAGE_VERSION=0.2
 override TARGET_UNITS+=gfx_x11 gfximpl
 override INSTALL_FPCPACKAGE=y
 override COMPILER_OPTIONS+=-S2h
@@ -655,54 +647,8 @@ ifeq ($(OS_TARGET),linux)
 REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_PASZLIB=1
 REQUIRE_PACKAGES_INET=1
-REQUIRE_PACKAGES_FCL=1
 REQUIRE_PACKAGES_MYSQL=1
 REQUIRE_PACKAGES_IBASE=1
-endif
-ifeq ($(OS_TARGET),go32v2)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),win32)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-REQUIRE_PACKAGES_MYSQL=1
-REQUIRE_PACKAGES_IBASE=1
-endif
-ifeq ($(OS_TARGET),os2)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),freebsd)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_INET=1
-REQUIRE_PACKAGES_FCL=1
-REQUIRE_PACKAGES_MYSQL=1
-REQUIRE_PACKAGES_IBASE=1
-endif
-ifeq ($(OS_TARGET),beos)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),netbsd)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_INET=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),amiga)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),atari)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
 REQUIRE_PACKAGES_FCL=1
 endif
 ifdef REQUIRE_PACKAGES_RTL
@@ -786,33 +732,6 @@ ifdef UNITDIR_INET
 override COMPILER_UNITDIR+=$(UNITDIR_INET)
 endif
 endif
-ifdef REQUIRE_PACKAGES_FCL
-PACKAGEDIR_FCL:=$(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /fcl/Makefile.fpc,$(PACKAGESDIR)))))
-ifneq ($(PACKAGEDIR_FCL),)
-PACKAGEDIR_FCL:=$(firstword $(PACKAGEDIR_FCL))
-ifeq ($(wildcard $(PACKAGEDIR_FCL)/$(FPCMADE)),)
-override COMPILEPACKAGES+=package_fcl
-package_fcl:
-	$(MAKE) -C $(PACKAGEDIR_FCL) all
-endif
-ifneq ($(wildcard $(PACKAGEDIR_FCL)/$(OS_TARGET)),)
-UNITDIR_FCL=$(PACKAGEDIR_FCL)/$(OS_TARGET)
-else
-UNITDIR_FCL=$(PACKAGEDIR_FCL)
-endif
-else
-PACKAGEDIR_FCL=
-UNITDIR_FCL:=$(subst /Package.fpc,,$(strip $(wildcard $(addsuffix /fcl/Package.fpc,$(UNITSDIR)))))
-ifneq ($(UNITDIR_FCL),)
-UNITDIR_FCL:=$(firstword $(UNITDIR_FCL))
-else
-UNITDIR_FCL=
-endif
-endif
-ifdef UNITDIR_FCL
-override COMPILER_UNITDIR+=$(UNITDIR_FCL)
-endif
-endif
 ifdef REQUIRE_PACKAGES_MYSQL
 PACKAGEDIR_MYSQL:=$(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /mysql/Makefile.fpc,$(PACKAGESDIR)))))
 ifneq ($(PACKAGEDIR_MYSQL),)
@@ -867,7 +786,34 @@ ifdef UNITDIR_IBASE
 override COMPILER_UNITDIR+=$(UNITDIR_IBASE)
 endif
 endif
-.PHONY: package_rtl package_paszlib package_inet package_fcl package_mysql package_ibase
+ifdef REQUIRE_PACKAGES_FCL
+PACKAGEDIR_FCL:=$(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /fcl/Makefile.fpc,$(PACKAGESDIR)))))
+ifneq ($(PACKAGEDIR_FCL),)
+PACKAGEDIR_FCL:=$(firstword $(PACKAGEDIR_FCL))
+ifeq ($(wildcard $(PACKAGEDIR_FCL)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_fcl
+package_fcl:
+	$(MAKE) -C $(PACKAGEDIR_FCL) all
+endif
+ifneq ($(wildcard $(PACKAGEDIR_FCL)/$(OS_TARGET)),)
+UNITDIR_FCL=$(PACKAGEDIR_FCL)/$(OS_TARGET)
+else
+UNITDIR_FCL=$(PACKAGEDIR_FCL)
+endif
+else
+PACKAGEDIR_FCL=
+UNITDIR_FCL:=$(subst /Package.fpc,,$(strip $(wildcard $(addsuffix /fcl/Package.fpc,$(UNITSDIR)))))
+ifneq ($(UNITDIR_FCL),)
+UNITDIR_FCL:=$(firstword $(UNITDIR_FCL))
+else
+UNITDIR_FCL=
+endif
+endif
+ifdef UNITDIR_FCL
+override COMPILER_UNITDIR+=$(UNITDIR_FCL)
+endif
+endif
+.PHONY: package_rtl package_paszlib package_inet package_mysql package_ibase package_fcl
 ifndef NOCPUDEF
 override FPCOPTDEF=$(CPU_TARGET)
 endif

@@ -4,7 +4,7 @@
 
 [package]
 name=fpgfx
-version=1.0.5
+version=0.2
 
 [require]
 packages=fcl
@@ -24,6 +24,3 @@ options=-S2h
 
 [install]
 fpcpackage=y
-
-[default]
-fpcdir=../../../fixbranch

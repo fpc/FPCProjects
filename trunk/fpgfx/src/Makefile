@@ -114,14 +114,6 @@ else
 override FPCDIR=wrong
 endif
 ifeq ($(FPCDIR),wrong)
-override FPCDIR=../../../fixbranch
-ifeq ($(wildcard $(FPCDIR)/rtl),)
-ifeq ($(wildcard $(FPCDIR)/units),)
-override FPCDIR=wrong
-endif
-endif
-endif
-ifeq ($(FPCDIR),wrong)
 ifdef inUnix
 override FPCDIR=/usr/local/lib/fpc/$(FPC_VERSION)
 ifeq ($(wildcard $(FPCDIR)/units),)
@@ -154,17 +146,8 @@ UNITSDIR:=$(wildcard $(FPCDIR)/units/$(OS_TARGET))
 endif
 PACKAGESDIR:=$(wildcard $(FPCDIR) $(FPCDIR)/packages)
 override PACKAGE_NAME=fpgfx
-override PACKAGE_VERSION=1.0.5
+override PACKAGE_VERSION=0.2
 ifeq ($(OS_TARGET),linux)
-override TARGET_DIRS+=x11
-endif
-ifeq ($(OS_TARGET),win32)
-override TARGET_DIRS+=win32gdi
-endif
-ifeq ($(OS_TARGET),freebsd)
-override TARGET_DIRS+=x11
-endif
-ifeq ($(OS_TARGET),netbsd)
 override TARGET_DIRS+=x11
 endif
 override TARGET_UNITS+=gfxbase geldirty gelimage
@@ -669,54 +652,8 @@ ifeq ($(OS_TARGET),linux)
 REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_PASZLIB=1
 REQUIRE_PACKAGES_INET=1
-REQUIRE_PACKAGES_FCL=1
 REQUIRE_PACKAGES_MYSQL=1
 REQUIRE_PACKAGES_IBASE=1
-endif
-ifeq ($(OS_TARGET),go32v2)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),win32)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-REQUIRE_PACKAGES_MYSQL=1
-REQUIRE_PACKAGES_IBASE=1
-endif
-ifeq ($(OS_TARGET),os2)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),freebsd)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_INET=1
-REQUIRE_PACKAGES_FCL=1
-REQUIRE_PACKAGES_MYSQL=1
-REQUIRE_PACKAGES_IBASE=1
-endif
-ifeq ($(OS_TARGET),beos)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),netbsd)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_INET=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),amiga)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
-REQUIRE_PACKAGES_FCL=1
-endif
-ifeq ($(OS_TARGET),atari)
-REQUIRE_PACKAGES_RTL=1
-REQUIRE_PACKAGES_PASZLIB=1
 REQUIRE_PACKAGES_FCL=1
 endif
 ifdef REQUIRE_PACKAGES_RTL
@@ -800,33 +737,6 @@ ifdef UNITDIR_INET
 override COMPILER_UNITDIR+=$(UNITDIR_INET)
 endif
 endif
-ifdef REQUIRE_PACKAGES_FCL
-PACKAGEDIR_FCL:=$(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /fcl/Makefile.fpc,$(PACKAGESDIR)))))
-ifneq ($(PACKAGEDIR_FCL),)
-PACKAGEDIR_FCL:=$(firstword $(PACKAGEDIR_FCL))
-ifeq ($(wildcard $(PACKAGEDIR_FCL)/$(FPCMADE)),)
-override COMPILEPACKAGES+=package_fcl
-package_fcl:
-	$(MAKE) -C $(PACKAGEDIR_FCL) all
-endif
-ifneq ($(wildcard $(PACKAGEDIR_FCL)/$(OS_TARGET)),)
-UNITDIR_FCL=$(PACKAGEDIR_FCL)/$(OS_TARGET)
-else
-UNITDIR_FCL=$(PACKAGEDIR_FCL)
-endif
-else
-PACKAGEDIR_FCL=
-UNITDIR_FCL:=$(subst /Package.fpc,,$(strip $(wildcard $(addsuffix /fcl/Package.fpc,$(UNITSDIR)))))
-ifneq ($(UNITDIR_FCL),)
-UNITDIR_FCL:=$(firstword $(UNITDIR_FCL))
-else
-UNITDIR_FCL=
-endif
-endif
-ifdef UNITDIR_FCL
-override COMPILER_UNITDIR+=$(UNITDIR_FCL)
-endif
-endif
 ifdef REQUIRE_PACKAGES_MYSQL
 PACKAGEDIR_MYSQL:=$(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /mysql/Makefile.fpc,$(PACKAGESDIR)))))
 ifneq ($(PACKAGEDIR_MYSQL),)
@@ -881,7 +791,34 @@ ifdef UNITDIR_IBASE
 override COMPILER_UNITDIR+=$(UNITDIR_IBASE)
 endif
 endif
-.PHONY: package_rtl package_paszlib package_inet package_fcl package_mysql package_ibase
+ifdef REQUIRE_PACKAGES_FCL
+PACKAGEDIR_FCL:=$(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /fcl/Makefile.fpc,$(PACKAGESDIR)))))
+ifneq ($(PACKAGEDIR_FCL),)
+PACKAGEDIR_FCL:=$(firstword $(PACKAGEDIR_FCL))
+ifeq ($(wildcard $(PACKAGEDIR_FCL)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_fcl
+package_fcl:
+	$(MAKE) -C $(PACKAGEDIR_FCL) all
+endif
+ifneq ($(wildcard $(PACKAGEDIR_FCL)/$(OS_TARGET)),)
+UNITDIR_FCL=$(PACKAGEDIR_FCL)/$(OS_TARGET)
+else
+UNITDIR_FCL=$(PACKAGEDIR_FCL)
+endif
+else
+PACKAGEDIR_FCL=
+UNITDIR_FCL:=$(subst /Package.fpc,,$(strip $(wildcard $(addsuffix /fcl/Package.fpc,$(UNITSDIR)))))
+ifneq ($(UNITDIR_FCL),)
+UNITDIR_FCL:=$(firstword $(UNITDIR_FCL))
+else
+UNITDIR_FCL=
+endif
+endif
+ifdef UNITDIR_FCL
+override COMPILER_UNITDIR+=$(UNITDIR_FCL)
+endif
+endif
+.PHONY: package_rtl package_paszlib package_inet package_mysql package_ibase package_fcl
 ifndef NOCPUDEF
 override FPCOPTDEF=$(CPU_TARGET)
 endif
@@ -1306,15 +1243,6 @@ fpc_info:
 ifeq ($(OS_TARGET),linux)
 TARGET_DIRS_X11=1
 endif
-ifeq ($(OS_TARGET),win32)
-TARGET_DIRS_WIN32GDI=1
-endif
-ifeq ($(OS_TARGET),freebsd)
-TARGET_DIRS_X11=1
-endif
-ifeq ($(OS_TARGET),netbsd)
-TARGET_DIRS_X11=1
-endif
 ifdef TARGET_DIRS_X11
 x11_all:
 	$(MAKE) -C x11 all
@@ -1353,45 +1281,6 @@ x11_info:
 x11:
 	$(MAKE) -C x11 all
 .PHONY: x11_all x11_debug x11_smart x11_examples x11_shared x11_install x11_sourceinstall x11_exampleinstall x11_distinstall x11_zipinstall x11_zipsourceinstall x11_zipexampleinstall x11_zipdistinstall x11_clean x11_distclean x11_cleanall x11_info x11
-endif
-ifdef TARGET_DIRS_WIN32GDI
-win32gdi_all:
-	$(MAKE) -C win32gdi all
-win32gdi_debug:
-	$(MAKE) -C win32gdi debug
-win32gdi_smart:
-	$(MAKE) -C win32gdi smart
-win32gdi_examples:
-	$(MAKE) -C win32gdi examples
-win32gdi_shared:
-	$(MAKE) -C win32gdi shared
-win32gdi_install:
-	$(MAKE) -C win32gdi install
-win32gdi_sourceinstall:
-	$(MAKE) -C win32gdi sourceinstall
-win32gdi_exampleinstall:
-	$(MAKE) -C win32gdi exampleinstall
-win32gdi_distinstall:
-	$(MAKE) -C win32gdi distinstall
-win32gdi_zipinstall:
-	$(MAKE) -C win32gdi zipinstall
-win32gdi_zipsourceinstall:
-	$(MAKE) -C win32gdi zipsourceinstall
-win32gdi_zipexampleinstall:
-	$(MAKE) -C win32gdi zipexampleinstall
-win32gdi_zipdistinstall:
-	$(MAKE) -C win32gdi zipdistinstall
-win32gdi_clean:
-	$(MAKE) -C win32gdi clean
-win32gdi_distclean:
-	$(MAKE) -C win32gdi distclean
-win32gdi_cleanall:
-	$(MAKE) -C win32gdi cleanall
-win32gdi_info:
-	$(MAKE) -C win32gdi info
-win32gdi:
-	$(MAKE) -C win32gdi all
-.PHONY: win32gdi_all win32gdi_debug win32gdi_smart win32gdi_examples win32gdi_shared win32gdi_install win32gdi_sourceinstall win32gdi_exampleinstall win32gdi_distinstall win32gdi_zipinstall win32gdi_zipsourceinstall win32gdi_zipexampleinstall win32gdi_zipdistinstall win32gdi_clean win32gdi_distclean win32gdi_cleanall win32gdi_info win32gdi
 endif
 all: fpc_all $(addsuffix _all,$(TARGET_DIRS))
 debug: fpc_debug

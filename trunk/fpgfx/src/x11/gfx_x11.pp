@@ -301,6 +301,9 @@ implementation
 
 uses GELImage;
 
+resourcestring
+  SFontCreationFailed = 'Could not create font with descriptor "%s"';
+
 
 // -------------------------------------------------------------------
 //   TXFont
@@ -311,6 +314,8 @@ begin
   inherited Create;
   FDisplayHandle := ADisplayHandle;
   FFontStruct := XLoadQueryFont(DisplayHandle, PChar(Descriptor));
+  if not Assigned(FFontStruct) then
+    raise EX11Error.CreateFmt(SFontCreationFailed, [Descriptor]);
 end;
 
 destructor TXFont.Destroy;
@@ -1819,6 +1824,10 @@ end.
 
 {
   $Log$
+  Revision 1.12  2001/11/22 16:47:27  sg
+  * Removed any reference to the FPC base directory
+  * Set version to 0.2 instead of 1.0.5
+
   Revision 1.11  2001/05/09 19:02:18  sg
   * Workaround for some ATI graphic adapters which work at 24 bpp
     (NOTE: This workaround _might_ break fpGFX on other adapters. We'll
