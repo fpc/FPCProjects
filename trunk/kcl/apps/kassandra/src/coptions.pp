@@ -22,9 +22,11 @@ ResourceString
   // names of tabs.
   STabLinker = '&Linker';
   STabDirectories = '&Directories';
-  STabCompilerMessages = 'Compiler &Messages';
-  STabSyntax = '&Pascal Syntax';
+  STabCompilerMessages = '&Messages';
+  STabSyntax = '&Syntax';
   STabCode = 'Generated Code'  ;
+  STabGeneral = 'General';
+  
   // Directory items
   SSearchPaths = 'Search paths';
   SUnitSearchPath = 'Units';
@@ -66,6 +68,10 @@ ResourceString
   SSyntaxMacros = 'Allow macros';
   SSyntaxConst = 'Constructor name must be init';
   SSyntaxStatic = 'Allow static keyword in objects';
+  SSYntaxAsmStyle = 'Assembler reading style';
+  SSyntaxAsmAtt    = 'AT&T';
+  SSyntaxAsmIntel  = 'Intel';
+  SSyntaxAsmDirect = 'Direct';
   // Code options
   // general code options.
   SCodeOptions = 'Code options';
@@ -92,8 +98,42 @@ ResourceString
   SCodePentiumPro = 'Pentium Pro/II/c6x86/K6';
   SCodeProcType = 'Processor type';
   // Linker options
-  SLinkDynlib = 'Create dynamic library';
-  SLinkSmartLink = 'Create Smartlinked units';
+  SLinkMakeDynlib = 'Create dynamic library';
+  SLinkMakeSmartLink = 'Create Smartlinked units';
+  SLinkLinkSmart = 'smartlinked';
+  SLinkLinkStatic = 'statically linked';
+  SLinkLinkDynamic = 'dynamically linked';
+  SLinkLinkerOptions = 'Extra options for linker';
+  SLinkOmitLinking = 'Omit linking stage';
+  SLinkUseClib = 'Link to C library';
+  SLinkStripSymbols = 'Strip unused symbols';
+  SLinkType = 'Units to use';
+  SlinkOPtions = 'Linker options';
+    
+  // general options
+  SGeneralCheckUnitName = 'Omit unit name check';
+  SGeneralSystemUNit = 'Compile system unit';
+  SGeneralBuild = 'Build all units';
+  SGeneralNoConfig = 'Skip general config file';
+  SGeneralPipes = 'Use pipes';
+  SGeneralBrowserInfo = 'Generate browser info';
+  SGeneralLocalBrowserINfo = 'Generate local symbol info';
+  SGeneralScript = 'Generate script';
+  SGeneralDefines = 'Define symbols';
+  SGeneralUnDefines = 'UndefineSymbols';
+  SGeneralDebugInfo = 'Include Debug info';
+  SGeneralDebugOptions = 'Debug options';
+  SGeneralProfile = 'Include profile code';
+  SGeneralgsym = 'Use gsym';
+  SGeneraldbx = 'use dbx';
+  SGeneralHeaptrace = 'Include heap tracing';
+  SGeneralLineInfo = 'Extended backtrace info';
+  SGeneralCheckPointers = 'USe pinter checks';
+  SGeneralKeepAsm = 'Keep assembler file';
+  SGeneralAsmInfo = 'Extra assembler info';
+  SGeneralAsmListSource = 'Source lines';
+  SGeneralAsmListRegAlloc = 'Register allocation';
+  SGeneralAsmListTempAlloc = 'Temporary allocations';
   
 Type
     TFileEdit = TEdit; // change to TCombobox when implementing histories
@@ -131,11 +171,15 @@ Type
        FGeneralGroup,
        FOnOffGroup : TGroupBox;
        // Syntax options
-       GBSYntaxMode : TGroupBox;
+       RBSyntaxAsmAtt, 
+       RBSyntaxAsmIntel,
+       RBSyntaxAsmDirect,
        RBSyntaxFPC ,
        RBSyntaxDelphi ,
        RBSyntaxTP ,
        RBSyntaxObjfpc : TRadioButton;
+       GBSyntaxMode,
+       GBSyntaxAsmStyle,
        GBSyntaxOther : TgroupBox;
        CBSyntaxCOperators ,
        CBSyntaxAllowGoto ,
@@ -165,6 +209,42 @@ Type
        RBCodePentium ,
        RBCodePentiumPro : TRadioButton;
        GBProcType : TGroupBox;   
+       // Linker options
+       CBLinkMakeDynlib,
+       CBLinkMakeSmartLink, 
+       CBLinkLinkerOptions ,
+       CBLinkOmitLinking ,
+       CBLinkUseClib ,
+       CBLinkStripSymbols : TCheckBox;
+       RBLinkLinkSmart ,
+       RBLinkLinkStatic ,
+       RBLinkLinkDynamic : TRadioButton;
+       ELinkLinkerOptions : TEdit;
+       GBLinkOptions : TGroupBox;
+       // general page.
+       CBGeneralCheckUnitName ,
+       CBGeneralSystemUNit ,
+       CBGeneralBuild ,
+       CBGeneralNoConfig ,
+       CBGeneralPipes ,
+       CBGeneralBrowserInfo ,
+       CBGeneralLocalBrowserINfo ,
+       CBGeneralScript ,
+       CBGeneralDebugInfo ,
+       CBGeneralProfile ,
+       CBGeneralgsym ,
+       CBGeneraldbx ,
+       CBGeneralHeaptrace ,
+       CBGeneralLineInfo ,
+       CBGeneralCheckPointers ,
+       CBGeneralKeepAsm ,
+       CBGeneralAsmListSource ,
+       CBGeneralAsmListRegAlloc ,
+       CBGeneralAsmListTempAlloc : TCheckBox;
+       EGeneralDefines ,
+       EGeneralUnDefines : TEdit;
+       GBGeneralAsmInfo ,
+       GBGeneralDebugOptions : TGroupBox;
        
        // Buttons
        OKButton,
@@ -173,6 +253,8 @@ Type
        Function CreateVerbosityPage : TWidget;
        Function CreateSyntaxPage : TWidget;
        Function CreateCodePAge : TWidget;
+       Function CreateLinkerPage : TWidget;
+       Function CreateGeneralPage : TWidget;
        Function CreateButtons : TWidget;
        Procedure OnOkClick (Sender : TObject);
        Procedure OnEnableOptimizationsClick (Sender : TObject);
@@ -205,6 +287,8 @@ begin
   MainLayout.Orientation:=BoxVert;
   MainLayout.Spacing:=8;
   FOptionPanes:=TNoteBook.Create(Self);
+  Page:=FOptionPanes.AddPage(STabGeneral,CreateGeneralPage);
+  FOptionPanes.Pages[page].BorderWidth := 8;
   Page:=FOptionPanes.AddPage(STabDirectories,CreateDirectoryPage);
   FOptionPanes.Pages[page].BorderWidth := 8;
   Page:=FOptionPanes.AddPage(STabCompilerMessages,CreateVerbosityPage);
@@ -212,6 +296,8 @@ begin
   Page:=FOptionPanes.AddPage(STabSyntax,CreateSyntaxPage);
   FOptionPanes.Pages[page].BorderWidth := 8;
   Page:=FOptionPanes.AddPage(STabCode,CreateCodePage);
+  FOptionPanes.Pages[page].BorderWidth := 8;
+  Page:=FOptionPanes.AddPage(STabLinker,CreateLinkerPage);
   FOptionPanes.Pages[page].BorderWidth := 8;
   FoptionPanes.FinishCreation;
 //  Content:=FoptionPanes;
@@ -246,7 +332,6 @@ begin
     SameSizeCells:=False;
     // Unit Search path
     FUnitSearchPath:=TFileEdit.Create(Self);
-    FunitSearchPath.SetSize(200,25);
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SUnitSearchPath;
     ALabel.CanExpandWidth := False;
@@ -499,7 +584,7 @@ Var
 begin
   OnOff:=Not ((Sender as TCheckBox).State=cbChecked);
   CBShowAll.State:=cbUnchecked;
-  SetVerbosities(OnOff);
+  SetVerbosities(False);
   FGeneralGroup.Enabled:=OnOff;
 //  Writeln('Verbosity off');
 end;
@@ -519,7 +604,7 @@ end;
 
 Function TCompilerOptionsForm.CreateSyntaxPage : TWidget;
 
-var Layout : TGridLayout;
+var Layout1,Layout2 : TBoxLayout;
 
 begin
   // Syntax options
@@ -536,6 +621,18 @@ begin
   RBSyntaxDelphi.Name := 'SSyntaxDelphi';
   RBSyntaxTP.Name := 'SSyntaxTP';
   RBSyntaxObjFPC.Name := 'SSyntaxObjFPC';
+  RBSyntaxAsmAtt := TRadioButton.Create(Self); 
+  RBSyntaxAsmIntel := TRadioButton.Create(Self);
+  RBSyntaxAsmDirect := TRadioButton.Create(Self);
+  GBSyntaxAsmStyle := TGroupBox.Create(Self);
+  RBSyntaxAsmAtt.Name := 'RBSyntaxAsmAtt'; 
+  RBSyntaxAsmIntel.Name := 'RBSyntaxAsmIntel';
+  RBSyntaxAsmDirect.Name := 'RBSyntaxAsmDirect';
+  GBSyntaxAsmStyle.Name := 'GBSyntaxAsmStyle';
+  RBSyntaxAsmAtt.Text := SSyntaxAsmAtt; 
+  RBSyntaxAsmIntel.Text := SSyntaxAsmIntel;
+  RBSyntaxAsmDirect.Text := SSyntaxAsmDirect;
+  GBSyntaxAsmStyle.Text := SSyntaxAsmStyle;
   with GBSyntaxMode do 
     begin
     Name:='SyntaxMode';
@@ -545,6 +642,8 @@ begin
       begin
       Name:='ModeLayout';
       Orientation:=boxVert;
+      VertALign:=VertFill;
+//      Spacing:=6;
       AddWidget(RBSyntaxFPC);
       AddWidget(RBSyntaxTP);
       AddWidget(RBSyntaxObjFPC);
@@ -583,15 +682,38 @@ begin
       AddWidget(CBSyntaxStatic);
       end;
     end;  
-  Layout:=TGridLayout.Create(Self);
-  With Layout do
+  With GBSyntaxAsmStyle do 
     begin
-    Name:='SyntaxLayout1';
-    Rows:=1;
-    Columns:=2;
-    HorzSpacing:=8;
-    AddWidget(GBSyntaxMode,0,0,1,1);
-    AddWidget(GBSyntaxOther,1,0,1,1);
+    Content:=TBoxLayout.Create(Self);
+    With Content as TBoxLayout Do
+      begin
+      Orientation:=BoxVert;
+      Spacing:=8;
+      HorzAlign:=HorzLeft;
+      AddWidget(RBSyntaxAsmAtt);
+      AddWidget(RBSyntaxAsmIntel);
+      AddWidget(RBSyntaxAsmDirect);
+      end;
+    end;  
+  Layout1:=TBoxLayout.Create(Self);
+  With Layout1 do
+    begin
+    Name:='SyntaxLayoutTop';
+    Orientation:=boxHorz;
+    VertAlign:=VertFill;
+    HorzAlign:=HorzFill;
+    Spacing:=8;
+    AddWidget(GBSyntaxMode);
+    AddWidget(GBSyntaxOther);
+    end;
+  Layout2:=TBoxLayout.Create(Self);
+  With Layout2 do
+    begin
+    Name:='SyntaxLayoutBottom';
+    Orientation:=BoxHorz;
+    HorzAlign:=horzLeft;
+    Spacing:=8;
+    AddWidget(GBSyntaxAsmStyle);
     end;
   Result:=TBoxLAyout.Create(Self);
   With Result as TBoxLAyout do
@@ -599,7 +721,9 @@ begin
     NAme:='SyntaxLAyout';
     Orientation:=boxVert;
     VertAlign:=vertTop;
-    AddWidget(Layout);
+    Spacing:=8;
+    AddWidget(Layout1);
+    AddWidget(Layout2);
     end;
 end;
 
@@ -835,6 +959,311 @@ Procedure TCompilerOptionsForm.OnSetProcessorOnClick (Sender : TObject);
 
 begin
   GBProcType.Enabled:=((Sender as TCheckBox).State=cbChecked)
+end;
+
+Function TCompilerOptionsForm.CreateLinkerPage : TWidget;
+
+Var 
+  ALabel  : TLabel;
+  Layout : TBoxLayout;
+  GB : TGroupBox;
+  
+begin
+  CBLinkMakeDynlib := TCheckBox.Create(Self);
+  CBLinkMakeSmartLink := TCheckBox.Create(Self); 
+  CBLinkLinkerOptions  := TCheckBox.Create(Self);
+  CBLinkOmitLinking  := TCheckBox.Create(Self);
+  CBLinkUseClib  := TCheckBox.Create(Self);
+  CBLinkStripSymbols := TCheckBox.Create(Self);
+  RBLinkLinkDynamic := TRadioButton.Create(Self);
+  RBLinkLinkSmart  := TRadioButton.Create(Self);
+  RBLinkLinkStatic  := TRadioButton.Create(Self);
+  ELinkLinkerOptions := TEdit.Create(Self);
+  GBLinkOptions := TGroupBox.Create(Self);
+  // text
+  CBLinkMakeDynlib.Text := SLinkMakeDynlib;
+  CBLinkMakeSmartLink.Text := SLinkMakeSmartLink; 
+  CBLinkLinkerOptions.Text := SLinkLinkerOptions ;
+  CBLinkOmitLinking.Text := SLinkOmitLinking ;
+  CBLinkUseClib.Text := SLinkUseClib ;
+  CBLinkStripSymbols.Text := SLinkStripSymbols;
+  RBLinkLinkSmart.Text := SLinkLinkSmart ;
+  RBLinkLinkStatic.Text := SLinkLinkStatic ;
+  RBLinkLinkDynamic.Text := SLinkLinkDynamic;
+  GBLinkOptions.Text := SLinkOptions;
+  // Names  
+  CBLinkMakeDynlib.Name := 'CBLinkMakeDynlib';
+  CBLinkMakeSmartLink.Name := 'CBLinkMakeSmartLink'; 
+  CBLinkLinkerOptions.Name := 'CBLinkLinkerOptions';
+  CBLinkOmitLinking.Name := 'CBLinkOmitLinking';
+  CBLinkUseClib.Name := 'CBLinkUseClib';
+  CBLinkStripSymbols.Name := 'CBLinkStripSymbols';
+  RBLinkLinkSmart.Name := 'RBLinkLinkSmart';
+  RBLinkLinkStatic.Name := 'RBLinkLinkStatic';
+  RBLinkLinkDynamic.Name := 'RBLinkLinkDynamic';
+  ELinkLinkerOptions.Name := 'ELinkLinkerOptions';
+  GBLinkOptions.Name := 'GBLinkOptions';
+  
+  // Start layout.
+  Layout:=TBoxLayout.Create(Self);
+  With Layout do
+    begin
+    Orientation:=boxHorz;
+    horzAlign:=HorzFill;
+    Spacing:=8;
+    ALabel:=TLabel.Create(Self);
+    ALabel.Text:=SLinkLinkerOptions;
+    Alabel.CanExpandWidth:=False;
+    AddWidget(Alabel);
+    AddWidget(ELinkLinkerOptions);
+    end;
+  GB :=TGroupBox.Create(Self);
+  With GB Do
+    begin
+    Text:=SLinkType;
+    Content:=TBoxLayout.Create(Self);
+    With Content as TBoxLAyout do
+      begin
+      Orientation:=BoxVert;
+      AddWidget(RBLinkLinkStatic);
+      AddWidget(RBLinkLinkSmart);
+      AddWidget(RBLinkLinkDynamic);
+      end; 
+    end;  
+  With GBLinkOptions do
+    begin
+    Content:=TBoxLayout.Create(Self);
+    With (Content As TBoxLAyout) do
+      begin
+      Orientation:=BoxVert;
+      HorzAlign:=HorzFill;
+      VertAlign:=VertTop;
+      Spacing:=8;
+      AddWidget(CBLinkStripSymbols);
+      AddWidget(CBLinkMakeDynlib);
+      AddWidget(CBLinkMakeSmartLink);
+      AddWidget(Layout);
+      AddWidget(GB)
+      end;
+    end;
+  Result:=TBoxLayout.Create(Self);  
+  With Result as TBoxLayout do 
+    begin
+    Orientation:=boxVert;
+    VertAlign:=VertTop;
+    HorzAlign:=HorzFill;
+    Spacing:=8;
+    AddWidget(CBLinkOmitLinking);
+    AddWidget(GBLinkOptions);
+    end;
+end;
+
+Function TCompilerOptionsForm.CreateGeneralPage : TWidget;
+
+Var Layout1,Layout2,Layout3 : TBoxLayout;
+    ALAbel : TLabel;
+    
+begin
+  // general page.
+  CBGeneralCheckUnitName := TCheckBox.Create(Self);
+  CBGeneralSystemUNit := TCheckBox.Create(Self);
+  CBGeneralBuild := TCheckBox.Create(Self);
+  CBGeneralNoConfig := TCheckBox.Create(Self);
+  CBGeneralPipes := TCheckBox.Create(Self);
+  CBGeneralBrowserInfo := TCheckBox.Create(Self);
+  CBGeneralLocalBrowserINfo := TCheckBox.Create(Self);
+  CBGeneralScript := TCheckBox.Create(Self);
+  CBGeneralDebugInfo := TCheckBox.Create(Self);
+  CBGeneralProfile := TCheckBox.Create(Self);
+  CBGeneralgsym := TCheckBox.Create(Self);
+  CBGeneraldbx := TCheckBox.Create(Self);
+  CBGeneralHeaptrace := TCheckBox.Create(Self);
+  CBGeneralLineInfo := TCheckBox.Create(Self);
+  CBGeneralCheckPointers := TCheckBox.Create(Self);
+  CBGeneralKeepAsm := TCheckBox.Create(Self);
+  CBGeneralAsmListSource := TCheckBox.Create(Self);
+  CBGeneralAsmListRegAlloc := TCheckBox.Create(Self);
+  CBGeneralAsmListTempAlloc := TCheckBox.Create(Self);
+  EGeneralDefines := TEdit.Create(Self);
+  EGeneralUnDefines := TEdit.Create(Self);
+  GBGeneralAsmInfo := TGroupBox.Create(Self);
+  GBGeneralDebugOptions := TGroupBox.Create(Self);
+
+  // Names
+  // Writeln('Starting names');
+  
+  CBGeneralCheckUnitName.Name := 'SGeneralCheckUnitName';
+  CBGeneralSystemUNit.Name := 'SGeneralSystemUNit';
+  CBGeneralBuild.Name := 'SGeneralBuild';
+  CBGeneralNoConfig.Name := 'SGeneralNoConfig';
+  CBGeneralPipes.Name := 'SGeneralPipes';
+  CBGeneralBrowserInfo.Name := 'SGeneralBrowserInfo';
+  CBGeneralLocalBrowserINfo.Name := 'SGeneralLocalBrowserINfo';
+  CBGeneralScript.Name := 'SGeneralScript';
+  CBGeneralDebugInfo.Name := 'SGeneralDebugInfo';
+  CBGeneralProfile.Name := 'SGeneralProfile';
+  CBGeneralgsym.Name := 'SGeneralgsym';
+  CBGeneraldbx.Name := 'SGeneraldbx';
+  CBGeneralHeaptrace.Name := 'SGeneralHeaptrace';
+  CBGeneralLineInfo.Name := 'SGeneralLineInfo';
+  CBGeneralCheckPointers.Name := 'SGeneralCheckPointers';
+  CBGeneralKeepAsm.Name := 'SGeneralKeepAsm';
+  CBGeneralAsmListSource.Name := 'SGeneralAsmListSource';
+  CBGeneralAsmListRegAlloc.Name := 'SGeneralAsmListRegAlloc';
+  CBGeneralAsmListTempAlloc.Name := 'SGeneralAsmListTempAlloc';
+  EGeneralDefines.Name := 'SGeneralDefines';
+  EGeneralUnDefines.Name := 'SGeneralUnDefines'; 
+  GBGeneralAsmInfo.Name := 'SGeneralAsmInfo';
+  GBGeneralDebugOptions.Name := 'SGeneralDebugOptions';
+
+  // Texts
+  // Writeln('Starting text');
+
+  CBGeneralCheckUnitName.text := SGeneralCheckUnitName;
+  CBGeneralSystemUNit.text := SGeneralSystemUNit;
+  CBGeneralBuild.text := SGeneralBuild;
+  CBGeneralNoConfig.text := SGeneralNoConfig;
+  CBGeneralPipes.text := SGeneralPipes;
+  CBGeneralBrowserInfo.text := SGeneralBrowserInfo;
+  CBGeneralLocalBrowserINfo.text := SGeneralLocalBrowserINfo;
+  CBGeneralScript.text := SGeneralScript;
+  CBGeneralDebugInfo.text := SGeneralDebugInfo;
+  CBGeneralProfile.text := SGeneralProfile;
+  CBGeneralgsym.text := SGeneralgsym;
+  CBGeneraldbx.text := SGeneraldbx;
+  CBGeneralHeaptrace.text := SGeneralHeaptrace;
+  CBGeneralLineInfo.text := SGeneralLineInfo;
+  CBGeneralCheckPointers.text := SGeneralCheckPointers;
+  CBGeneralKeepAsm.text := SGeneralKeepAsm;
+  CBGeneralAsmListSource.text := SGeneralAsmListSource;
+  CBGeneralAsmListRegAlloc.text := SGeneralAsmListRegAlloc;
+  CBGeneralAsmListTempAlloc.text := SGeneralAsmListTempAlloc;
+  GBGeneralAsmInfo.text := SGeneralAsmInfo;
+  GBGeneralDebugOptions.text := SGeneralDebugOptions;
+
+  // Writeln('Starting layout');
+  
+  // Layout.
+  Result:=TBoxLAyout.Create(Self);
+  With Result as TBoxLayout do
+    begin
+    Orientation:=BoxVert;
+    HorzAlign:=HorzFill;
+    Spacing:=8;
+    end;
+  Layout1:=TBoxLayout.Create(Self);
+  With Layout1 do
+    begin
+    Orientation:=boxVert;
+    AddWidget(CBGeneralBuild);
+    AddWidget(CBGeneralPipes);
+    AddWidget(CBGeneralNoConfig);
+    AddWidget(CBGeneralScript);
+    end;
+  Layout2:=TBoxLayout.Create(Self);
+  With Layout2 do
+    begin
+    Orientation:=boxVert;
+    AddWidget(CBGeneralSystemUnit);
+    AddWidget(CBGeneralCheckUnitName);
+    AddWidget(CBgeneralBrowserInfo);
+    AddWidget(CBgeneralLocalBrowserInfo);
+    end;
+  Layout3:=TBoxLayout.Create(Self);
+  With Layout3 do
+    begin
+    Orientation:=BoxHorz;
+    HorzAlign:=HorzFill;
+    Spacing:=8;
+    AddWidget(Layout1);
+    AddWidget(Layout2);
+    end;
+  (Result as TBoxLayout).AddWidget(Layout3);
+  // Writeln('Adding edits');
+  // Add 2 edits.  
+  Layout1:=TBoxLayout.Create(Self);
+  With Layout1 do
+    begin
+    Orientation:=boxHorz;
+    horzAlign:=HorzFill;
+    Spacing:=8;
+    ALabel:=TLabel.Create(Self);
+    ALabel.Text:=SGeneralDefines;
+    Alabel.CanExpandWidth:=False;
+    AddWidget(Alabel);
+    AddWidget(EGeneralDefines);
+    end;
+  (Result as TBoxLayout).AddWidget(Layout1);
+  Layout1:=TBoxLayout.Create(Self);
+  With Layout1 do
+    begin
+    Orientation:=boxHorz;
+    horzAlign:=HorzFill;
+    Spacing:=8;
+    ALabel:=TLabel.Create(Self);
+    ALabel.Text:=SGeneralUnDefines;
+    Alabel.CanExpandWidth:=False;
+    AddWidget(Alabel);
+    AddWidget(EGeneralUnDefines);
+    end;
+  (Result as TBoxLayout).AddWidget(Layout1);
+  // Debug info
+  // Writeln('Adding debug info');
+  With GBGeneralDebugOptions do
+    begin
+    Content:=TBoxLayout.Create(Self);
+    With Content as TBoxLAyout do
+      begin
+      Orientation:=BoxVert;
+      HorzAlign:=HorzLeft;
+      AddWidget(CBGeneralHeapTrace);
+      AddWidget(CBGeneralLineInfo);
+      AddWidget(CBGeneralCheckPointers);
+      AddWidget(CBGeneralgsym);
+      AddWidget(CBGeneraldbx);
+      end;
+    end;
+  Layout1:=TBoxLayout.Create(Self);
+  With Layout1 do
+    begin
+    Orientation:=boxVert;
+    AddWidget(CBGeneralDebugInfo);
+    AddWidget(GBGeneralDebugoptions);
+    end;
+  // Profile and asm info
+//  // Writeln('Adding profie and asm  info');
+  With GBGeneralAsmInfo do
+    begin
+    Content:=TBoxLayout.Create(Self);
+    With Content as TBoxLAyout do
+      begin
+      Orientation:=BoxVert;
+      HorzAlign:=HorzLeft;
+      AddWidget(CBGeneralAsmListSource);
+      AddWidget(CBGeneralAsmListRegAlloc);
+      AddWidget(CBGeneralAsmListTempAlloc);
+      end;
+    end;  
+  Layout2:=TBoxLayout.Create(Self);
+  With Layout2 do
+    begin
+    Orientation:=boxVert;
+    HorzAlign:=HorzLeft;
+    AddWidget(CBGeneralProfile);
+    AddWidget(CBGeneralKeepAsm);
+    AddWidget(GBGeneralAsmInfo);
+    end;
+  Layout3:=TBoxLayout.Create(Self);
+  With Layout3 do
+    begin
+    Orientation:=BoxHorz;
+    HorzAlign:=HorzFill;
+    Spacing:=8;
+    AddWidget(Layout1);
+    AddWidget(Layout2);
+    end;
+  (Result as TBoxLayout).AddWidget(Layout3);
+  // Writeln('Finished');
 end;
 
 Procedure TCompilerOptionsForm.OnOkClick (Sender : TObject);
