@@ -21,7 +21,7 @@
     FFocusedWidget: TWidget;
     FMouseCaptureWidget: TWidget;
     FWnd: TGfxWindow;
-    FFrameType: Boolean;
+    FWindowType: TGfxWindowType;
     FOnCreate: TNotifyEvent;
     FOnActivate: TNotifyEvent;
     FOnDeactivate: TNotifyEvent;
@@ -67,7 +67,7 @@
     property CanExpandWidth default True;
     property CanExpandHeight default True;
     property BorderWidth: Integer read FBorderWidth write FBorderWidth;
-    property FrameType: Boolean read FFrameType write FFrameType;
+    property WindowType: TGfxWindowType read FWindowType write FWindowType default wtWindow;
     property OnCreate: TNotifyEvent read FOnCreate write FOnCreate;
     property OnActivate: TNotifyEvent read FOnActivate write FOnActivate;
     property OnDeactivate: TNotifyEvent read FOnDeactivate write FOnDeactivate;
@@ -87,7 +87,7 @@
   published
     property Enabled;
     property BorderWidth;
-    property FrameType;
+    property WindowType;
     property Text;
     property OnCreate;
   end;
@@ -95,6 +95,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/01/18 15:37:27  sg
+  * Added support for the different TGfxWindow window types
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

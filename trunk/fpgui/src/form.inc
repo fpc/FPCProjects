@@ -26,7 +26,7 @@ begin
 
   FCanExpandWidth := True;
   FCanExpandHeight := True;
-  FFrameType := True;
+  FWindowType := wtWindow;
 
   if not Assigned(FStyle) then
     FStyle := Application.DefaultStyle;
@@ -138,8 +138,14 @@ end;
 // other protected methods
 
 procedure TCustomForm.CreateWnd;
+var
+  ParentWnd: TGfxWindow;
 begin
-  FWnd := Application.Display.DefaultScreen.CreateWindow(FrameType);
+  if Parent is TCustomForm then
+    ParentWnd := TCustomForm(Parent).Wnd
+  else
+    ParentWnd := nil;
+  FWnd := Application.Display.DefaultScreen.CreateWindow(ParentWnd, WindowType);
   if FPositionSpecified then
     Wnd.SetPosition(Left, Top);
   Wnd.OnClose := @WndClose;
@@ -431,6 +437,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2001/01/18 15:37:27  sg
+  * Added support for the different TGfxWindow window types
+
   Revision 1.3  2001/01/11 23:30:12  sg
   *** empty log message ***
 
