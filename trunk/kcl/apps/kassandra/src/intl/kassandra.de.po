@@ -22,6 +22,18 @@ msgstr "Sichere Datei als..."
 msgid "Close file"
 msgstr "Schliesse Datei"
 
+#: kassandra:menuopenworkspace
+msgid "Open workspace..."
+msgstr "Öffne Arbeitsbereich..."
+
+#: kassandra:menusaveworkspace
+msgid "Save workspace"
+msgstr "Sichere Arbeitsbereich"
+
+#: kassandra:menusaveworkspaceas
+msgid "Save workspace as..."
+msgstr "Sichere Arbeitsbereich als..."
+
 #: kassandra:menuopenrecentfile
 msgid "Open recent file"
 msgstr "Öffne zuletztbenutze Datei"
