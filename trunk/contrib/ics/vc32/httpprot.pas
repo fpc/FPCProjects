@@ -248,6 +248,8 @@ unit HttpProt;
 
 interface
 
+{$i icsdef.inc}
+
 {$B-}           { Enable partial boolean evaluation   }
 {$T-}           { Untyped pointers                    }
 {$X+}           { Enable extended syntax              }
@@ -263,7 +265,7 @@ interface
 {$ENDIF}
 
 uses
-    WinProcs, WinTypes, Messages, SysUtils, Classes,
+    {$ifdef usewindows} Windows,{$else} WinProcs, WinTypes,{$endif} Messages, SysUtils, Classes,
     {$IFNDEF NOFORMS}
     Forms, Controls,
     {$ENDIF}
