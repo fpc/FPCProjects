@@ -1,0 +1,24 @@
+[package]
+name=decal
+version=0.01
+
+[require]
+packages=
+
+[target]
+dirs=
+units= mwfixedrecsort decal superstream randomtesting decalsamples decalio
+
+programs=regressdecal.dpr
+
+[compiler]
+
+[install]
+basedir=.
+
+[prerules]
+decalio: decal superstream
+decalsamples: decal randomtesting
+decaltesting: decal decalsamples
+decal: mwfixedrecsort
+randomtesting: decal

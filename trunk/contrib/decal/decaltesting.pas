@@ -1,7 +1,9 @@
 unit DeCALTesting;
 
-interface
+{ $Id$}
 
+interface
+{$i decalh.inc}
 uses DeCAL;
 
 const
@@ -117,3 +119,10 @@ end;
 
 end.
 
+{
+  $Log$
+  Revision 1.2  2004/04/12 10:23:21  marco
+   * regressdecal now has output
+
+
+}

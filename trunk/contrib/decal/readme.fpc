@@ -1,17 +1,30 @@
 
-Decal compiled under FPC 1,1 after a few bugfixes to FPC. (1.1 from oct 8,
-2003 or later)
+$Id$
+
+This directory contains the STL rapid prototyping package Decal, compiled
+under FPC 1,1 after a few bugfixes to FPC. (1.1 from oct 8, 2003 or later)
 
 Changes to decal made while importing were very minor:
 - the D6 compability fix, USE'ing the variants unit in the body of the 
-   decal unit
+   decal unit. (Maybe Delphi5 should also define delphi4?)
 - Adding {$IFDEF FPC} {$DEFINE DELPHI5} somewhere.
 
 More fixes will be done as time goes by, which can be logged below (or
-use the CVS logs)
+use the CVS logs). 
 
-All fixes accepted for this directory are placed under LGPL/MPL dual license
+All fixes accepted for this directory are placed under LGPL/MPL dual
+license, since the package is originally MPL, and FPC tries to keep as much
+as possible LGPL too.
+
+Documentation is available on the original site.
 
 2004-04-02 Did some changes to get it compiling under FPC/Unix
+2004-04-12 Added one ^ somewhere, and the tests run. The trick is to find
+	   the place where to add the ^ btw ;-) (function JenkinshasString
+	   in decal.pas)
 
 Marco van de Voort
+
+$Log$
+Revision 1.3  2004/04/12 10:23:21  marco
+ * regressdecal now has output

@@ -1,4 +1,6 @@
 {**
+{$Id$}
+
 	SuperStream is copyright (c) 2000 Ross Judson.<P>
 
   The contents of this file are subject to the Mozilla Public License
@@ -1947,3 +1949,9 @@ initialization
 finalization
 	Term;
 end.
+{
+  $Log$
+  Revision 1.3  2004/04/12 10:23:21  marco
+   * regressdecal now has output
+
+}

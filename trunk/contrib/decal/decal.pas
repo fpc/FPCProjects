@@ -1,5 +1,7 @@
 {**
 
+ $Id$
+
 	Copyright (c) 2000 Ross Judson<P>
 
 	DeCAL is licensed under the terms of the Mozilla Public License.  <P>
@@ -1666,7 +1668,7 @@ type
 		procedure iflagChange(var iterator : DIterator; oldflags : DIteratorFlags); override;
 
 		procedure Setup;
-		function HashObj(const obj : DObject) : Integer;
+		function HashObj(const obj : DObject) : longword;
 		function RecoverSecondaryIterator(const baseIter : DIterator) : DIterator;
 
 		function BucketSequence(idx : Integer) : DSequence;
@@ -3151,11 +3153,11 @@ type
 	free the container, and set the pointer to nil. }
 	procedure FreeAndClear(var container);
 
-	function JenkinsHashInteger(v : DeCALDWORD) : Integer;
-	function JenkinsHashBuffer(const buffer; length : Integer; initVal : Integer) : Integer;
-	function JenkinsHashString(const s : String) : Integer;
-	function JenkinsHashSingle(s : Single) : Integer;
-	function JenkinsHashDouble(d : Double) : Integer;
+	function JenkinsHashInteger(v : DeCALDWORD) : longword;
+	function JenkinsHashBuffer(const buffer; length : Integer; initVal : Integer) :longword;
+	function JenkinsHashString(const s : String) : longword;
+	function JenkinsHashSingle(s : Single) : longword;
+	function JenkinsHashDouble(d : Double) : longword;
 
 	{** Make sure a DObject is empty.  Does not clear out the previous contents.
 	Call this when you're creating a DObject (like on the stack) and you're not
@@ -3731,7 +3733,7 @@ end;
 //
 // We special case this one for speed.
 //
-function JenkinsHashInteger(v : DeCALDWORD) : Integer;
+function JenkinsHashInteger(v : DeCALDWORD) : longword;
 const golden = $9e3779b9;
 var value, a,b,c : DeCALDWORD;
 begin
@@ -3754,7 +3756,7 @@ begin
 
 end;
 
-function JenkinsHashBuffer(const buffer; length : Integer; initVal : Integer) : Integer;
+function JenkinsHashBuffer(const buffer; length : Integer; initVal : Integer) : longword;
 const golden = $9e3779b9;
 type
 	TByteArray = array[0..MaxInt-1] of Byte;
@@ -3813,7 +3815,7 @@ begin
 	result := abs(c);
 end;
 
-function JenkinsHashWrapper(ptr : Pointer; const buffer; length : Integer) : Integer;
+function JenkinsHashWrapper(ptr : Pointer; const buffer; length : Integer) :longword;
 begin
 	result := JenkinsHashBuffer(buffer, length, 0);
 end;
@@ -3821,7 +3823,7 @@ end;
 var
 	NullStringHash : Integer = 0;
 
-function JenkinsHashString(const s : String) : Integer;
+function JenkinsHashString(const s : String) : longword;
 begin
 	if Length(s) > 0 then
 		result := JenkinsHashBuffer(PChar(s)^, Length(s), 0)
@@ -3829,13 +3831,13 @@ begin
   	result := JenkinsHashInteger(NullStringHash);
 end;
 
-function JenkinsHashSingle(s : Single) : Integer;
+function JenkinsHashSingle(s : Single) : longword;
 type PInteger = ^Integer;
 begin
 	result := JenkinsHashInteger(PInteger(@s)^);
 end;
 
-function JenkinsHashDouble(d : Double) : Integer;
+function JenkinsHashDouble(d : Double) : longword;
 begin
 	result := JenkinsHashBuffer(PChar(@d)^, sizeof(double), 0);
 end;
@@ -8308,7 +8310,7 @@ begin
     end;
 end;
 
-function DInternalHash.HashObj(const obj : DObject) : Integer;
+function DInternalHash.HashObj(const obj : DObject) : longword;
 var loc : PChar;
     len : Integer;
 begin
@@ -11186,3 +11188,9 @@ finalization
 	Cleanup;
 end.
 
+{
+ $Log$
+ Revision 1.3  2004/04/12 10:23:21  marco
+  * regressdecal now has output
+
+}

@@ -1,3 +1,7 @@
+{$Id$
+
+see readme.fpc for license info}
+
 unit DeCALSamples;
 {$i decalh.inc}
 interface

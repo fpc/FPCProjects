@@ -1,5 +1,11 @@
+
+{$Id$}
+
 program RegressSDL;
+{$mode delphi}
+{$goto on}
 {$i decalh.inc}
+
 uses
   SysUtils,
   DeCALIO in 'DeCALIO.pas',
@@ -10,7 +16,7 @@ uses
   DeCALTesting in 'DeCALTesting.pas',
   mwFixedRecSort in 'mwFixedRecSort.pas';
 
-var
+const
 	AssociativeClasses : array [1..8] of DAssociativeClass =
   (DMap, DMultiMap, DSet, DMultiSet, DHashMap, DMultiHashMap, DHashSet, DMultiHashSet);
 
@@ -116,11 +122,18 @@ end;
 
 procedure Go;
 begin
-	// TestDriver;
-//	TestSequential;
-//	TestAssociative;
+ TestDriver;
+ TestSequential;
+ TestAssociative;
 end;
 
 begin
 	Go;
 end.
+
+{
+   $Log$
+   Revision 1.3  2004/04/12 10:23:21  marco
+    * regressdecal now has output
+
+}

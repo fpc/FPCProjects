@@ -1,4 +1,7 @@
-{** This unit is a nice demonstration of how DeCAL's generic programming works.
+{
+$Id$
+
+** This unit is a nice demonstration of how DeCAL's generic programming works.
 Note that there are only two IO procedures in this unit, and they will
 successfully do IO for ALL the DeCAL data structures.  Everything in DeCAL boils
 down to either a sequence or a map, so we provide those two and let the
@@ -187,3 +190,10 @@ initialization
 finalization
 	Term;
 end.
+
+{
+ $Log$
+ Revision 1.3  2004/04/12 10:23:21  marco
+  * regressdecal now has output
+
+}

@@ -43,6 +43,7 @@
  BOMB!
 {$ELSE}
 {$mode Delphi}
+{$goto on}
 {$DEFINE DELPHI5}
 {$ifdef Unix}
   {$define UseSysthrds}
@@ -68,6 +69,9 @@
 
 {
    $Log$
+   Revision 1.2  2004/04/12 10:23:21  marco
+    * regressdecal now has output
+
    Revision 1.1  2004/04/03 19:59:22  marco
     * some unix compiling fixes.
 

@@ -1,3 +1,6 @@
+
+{$Id$}
+
 unit RandomTesting;
 {$i decalh.inc}
 interface
@@ -453,7 +456,7 @@ begin
   	begin
 	   	map.putPair([puts[i], puts[i]]);
 
-      AssignFile(t, 'c:\redblack\delphi\put' + IntToStr(i - 1) + '.txt');
+      AssignFile(t, 'redblack' + DirectorySeparator+'put' + IntToStr(i - 1) + '.txt');
       Rewrite(t);
 
 			iter := map.start;
@@ -473,7 +476,7 @@ begin
 	for i := Low(removes) to High(removes) do
   	begin
 	   	map.remove([removes[i]]);
-      AssignFile(t, 'c:\redblack\delphi\remove' + IntToStr(i - 1) + '.txt');
+      AssignFile(t, 'redblack' + DirectorySeparator+'remove' + IntToStr(i - 1) + '.txt');
       Rewrite(t);
 
 			iter := map.start;
@@ -522,3 +525,10 @@ begin
 end;
 
 end.
+
+{
+  $Log$
+  Revision 1.3  2004/04/12 10:23:21  marco
+   * regressdecal now has output
+
+}

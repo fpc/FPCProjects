@@ -20,6 +20,8 @@
 	Share your Code
  +--------------------------------------------------------------------------+}
 
+{$Id$}
+
 unit mwFixedRecSort;
 
 interface
@@ -1000,3 +1002,9 @@ end;  { Destroy }
 
 end.
 
+{
+  $Log$
+  Revision 1.3  2004/04/12 10:23:21  marco
+   * regressdecal now has output
+
+}
