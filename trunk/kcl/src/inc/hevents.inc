@@ -35,9 +35,12 @@ type
 {$M+}
   TEventObj = class
   protected
+    RefCount: LongInt;
     FSender: TObject;
   public
     constructor Create(ASender: TObject);
+    procedure AddRef;
+    procedure Release;
   published
     property Sender: TObject read FSender write FSender;
   end;
@@ -159,6 +162,9 @@ type
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:33:57  sg
+  * Added reference counting (AddRef, Release)
+
   Revision 1.3  2000/01/24 00:04:34  sg
   * TKeyEvent is now a function
   * Added event objects for TCommand
