@@ -53,11 +53,15 @@ destructor TTimer.Destroy;
 begin
   FEnabled := False;
   Update;
+  inherited Destroy;
 end;
 
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:30:26  sg
+  * TTimer.Destroy now calls its inherited destructor
+
   Revision 1.2  2000/01/24 00:21:29  sg
   * Extended copyright to year 2000...
 
