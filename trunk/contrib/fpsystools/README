@@ -1,0 +1,89 @@
+
+Project notes
+
+ Conversion of TurboPower SysTools for Kylix Version 1.01 to FPC/Lazarus
+ By Tom Lisjac <vlx@users.sourceforge.net> http://theseus.sf.net
+ Initial conversion started on 12-6-2003
+ 
+ Status
+ 
+ As of 17-6-2003, most of the units compile and many are probably working.
+ I've flagged any changes I've made with a ////TL tag. If there were issues,
+ I added one or more ! to TL. You can grep through the code and selectively
+ list these areas using the tags. Serious, functionality breaking problems
+ have two or more !!.
+ 
+ Out of over the 50,000+ lines of code in the library there are about 130
+ instances of serious errors that need to be fixed... and these probably
+ comprise a set of about a dozen types. Once these are solved, the solution
+ can be applied to others in it's class.
+ 
+ Unfortunately there is also a lot of inline assembly language where register
+ parameter passing conventions were used. This isn't compatible with FPC and
+ the code needs to be fixed or, for portability, replaced with pure Pascal.
+ 
+ After the obvious errors are fixed, testing will be needed. Fortunately the
+ TurboPower release contained some test routines that should be a big help  
+ 
+ What was and wasn't converted
+ 
+ I converted all the units from the 1.01 release except 2... which were
+ the barcode or StSystem units. The barcode I/O seemed to have printing and
+ QT dependencies that I didn't think were resolvable with a reasonable
+ amount of effort. The system unit had a LOT of problems compiling and
+ didn't seem to offer anything that wasn't already done better in the 
+ existing FPC Linux unit.
+ 
+ The astronomical units were a joy... nice, generic Pascal that, with one
+ exception, compiled perfectly as a whole with no changes required.
+ 
+ I also added a patterns unit that I found in the Delphi version of systools
+ but wasn't included in the Kylix package.
+ 
+ Changes for FPC
+ 
+ Most of the common changes that were needed for FPC conversion were:
+ 
+   - Prefixing function parameters with an "@"
+   - Commenting out the critical section code... there were ifdefs around them
+     but I didn't try to use them. This needs to be revisited and updated in
+     the next pass.
+   - FPC claimed duplicate IDs in a lot of method declarations that Delphi/Kylix
+     obviously didn't worry about. I approached this, for better or worse, by
+     adding a 1 suffix to the identifier in the declarations... and then fixing
+     up the implementations. All are flagged for and should be reviewed.
+   - The Libc unit was changed to Linux in all cases
+   
+ Help Wanted!
+ 
+ All the inline assembler needs to be reviewed and fixed... or replaced with a
+ Pascal implementation. The base units are the most heavily infested with
+ inline code... but you can find all the units involved by doing a:
+ 
+ grep '////TL!' | grep asm
+ 
+ All the serious errors I couldn't fix with confidence can be found with:
+ 
+ grep '////TL!!' *.pas
+ 
+ Technical review and checks for syntatic and symantec correctness need to
+ be performed on all flagged items. Currently there are 130 of these. You can
+ find them by doing a:
+ 
+ grep '////TL!' *.pas  
+
+ Technical review is needed of the changes I felt confident about but still
+ may be wrong! There are currently 248 of these. You can find them by doing a:
+ 
+ grep '////TL' *.pas
+ 
+ There is a testsystools project that will open all the files and compile
+ all the units.
+ 
+ Please send me any questions or comments... especially if you have a fix or
+ insight into something I couldn't fix. I'm planning to do a lot more FPC
+ code conversion and I'd like to get better at it as quickly as possible! :)
+ 
+ Tom Lisjac
+ vlx@users.sourceforge.net
+ 

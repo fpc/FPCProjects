@@ -1,0 +1,626 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="2"/>
+    <General>
+      <ProjectType Value="Application"/>
+      <MainUnit Value="0"/>
+      <ActiveEditorIndexAtStart Value="53"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=""/>
+      <Title Value="testsystools"/>
+    </General>
+    <JumpHistory Count="0" HistoryIndex="-1"/>
+    <Units Count="60">
+      <Unit0>
+        <CursorPos X="60" Y="12"/>
+        <EditorIndex Value="38"/>
+        <Filename Value="testsystools.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="testsystools"/>
+        <UsageCount Value="52"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="2" Y="10"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="unit1.pas"/>
+        <ComponentName Value="Form1"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <ResourceFilename Value="unit1.lrs"/>
+        <TopLine Value="1"/>
+        <UnitName Value="unit1"/>
+        <UsageCount Value="52"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="45" Y="1254"/>
+        <EditorIndex Value="52"/>
+        <Filename Value="stbase.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1234"/>
+        <UnitName Value="StBase"/>
+        <UsageCount Value="52"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="1" Y="1"/>
+        <EditorIndex Value="37"/>
+        <Filename Value="stconst.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StConst"/>
+        <UsageCount Value="26"/>
+      </Unit3>
+      <Unit4>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="51"/>
+        <Filename Value="stcrc.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StCRC"/>
+        <UsageCount Value="52"/>
+      </Unit4>
+      <Unit5>
+        <CursorPos X="11" Y="37"/>
+        <EditorIndex Value="50"/>
+        <Filename Value="stdate.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="17"/>
+        <UnitName Value="StDate"/>
+        <UsageCount Value="52"/>
+      </Unit5>
+      <Unit6>
+        <CursorPos X="11" Y="1094"/>
+        <EditorIndex Value="14"/>
+        <Filename Value="stdatest.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1053"/>
+        <UnitName Value="StDateSt"/>
+        <UsageCount Value="52"/>
+      </Unit6>
+      <Unit7>
+        <CursorPos X="82" Y="36"/>
+        <EditorIndex Value="36"/>
+        <Filename Value="ststr.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="ststr"/>
+        <UsageCount Value="26"/>
+        <Bookmarks Count="1">
+          <Item0 X="19" Y="3010" ID="0"/>
+        </Bookmarks>
+      </Unit7>
+      <Unit8>
+        <CursorPos X="10" Y="996"/>
+        <EditorIndex Value="49"/>
+        <Filename Value="stdict.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="954"/>
+        <UnitName Value="StDict"/>
+        <UsageCount Value="46"/>
+      </Unit8>
+      <Unit9>
+        <CursorPos X="10" Y="1061"/>
+        <EditorIndex Value="48"/>
+        <Filename Value="stlist.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1020"/>
+        <UnitName Value="StList"/>
+        <UsageCount Value="46"/>
+      </Unit9>
+      <Unit10>
+        <CursorPos X="10" Y="572"/>
+        <EditorIndex Value="47"/>
+        <Filename Value="stregex.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="552"/>
+        <UnitName Value="StRegEx"/>
+        <UsageCount Value="46"/>
+      </Unit10>
+      <Unit11>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="15"/>
+        <Filename Value="ststrms.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="13"/>
+        <UnitName Value="StStrms"/>
+        <UsageCount Value="46"/>
+      </Unit11>
+      <Unit12>
+        <CursorPos X="15" Y="452"/>
+        <EditorIndex Value="16"/>
+        <Filename Value="sttohtml.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="431"/>
+        <UnitName Value="StToHTML"/>
+        <UsageCount Value="45"/>
+      </Unit12>
+      <Unit13>
+        <CursorPos X="11" Y="37"/>
+        <EditorIndex Value="17"/>
+        <Filename Value="stutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="17"/>
+        <UnitName Value="StUtils"/>
+        <UsageCount Value="45"/>
+      </Unit13>
+      <Unit14>
+        <CursorPos X="10" Y="829"/>
+        <EditorIndex Value="18"/>
+        <Filename Value="stbits.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="787"/>
+        <UnitName Value="StBits"/>
+        <UsageCount Value="45"/>
+      </Unit14>
+      <Unit15>
+        <CursorPos X="21" Y="576"/>
+        <EditorIndex Value="19"/>
+        <Filename Value="stvarr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="858"/>
+        <UnitName Value="StVArr"/>
+        <UsageCount Value="45"/>
+      </Unit15>
+      <Unit16>
+        <CursorPos X="10" Y="503"/>
+        <EditorIndex Value="20"/>
+        <Filename Value="stptrns.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="469"/>
+        <UnitName Value="StPtrns"/>
+        <UsageCount Value="44"/>
+      </Unit16>
+      <Unit17>
+        <CursorPos X="10" Y="947"/>
+        <EditorIndex Value="21"/>
+        <Filename Value="sttree.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="905"/>
+        <UnitName Value="StTree"/>
+        <UsageCount Value="44"/>
+      </Unit17>
+      <Unit18>
+        <CursorPos X="11" Y="37"/>
+        <EditorIndex Value="22"/>
+        <Filename Value="stbcd.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="17"/>
+        <UnitName Value="StBCD"/>
+        <UsageCount Value="44"/>
+      </Unit18>
+      <Unit19>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="23"/>
+        <Filename Value="stmath.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="14"/>
+        <UnitName Value="StMath"/>
+        <UsageCount Value="43"/>
+      </Unit19>
+      <Unit20>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="24"/>
+        <Filename Value="sttext.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="14"/>
+        <UnitName Value="StText"/>
+        <UsageCount Value="43"/>
+      </Unit20>
+      <Unit21>
+        <CursorPos X="44" Y="27"/>
+        <EditorIndex Value="1"/>
+        <Filename Value="stexpr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StExpr"/>
+        <UsageCount Value="27"/>
+      </Unit21>
+      <Unit22>
+        <CursorPos X="2" Y="159"/>
+        <EditorIndex Value="35"/>
+        <Filename Value="/usr/share/fpcsrc/rtl/objpas/sysstrh.inc"/>
+        <Loaded Value="True"/>
+        <TopLine Value="146"/>
+        <UsageCount Value="22"/>
+      </Unit22>
+      <Unit23>
+        <CursorPos X="12" Y="757"/>
+        <EditorIndex Value="25"/>
+        <Filename Value="stsort.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="737"/>
+        <UnitName Value="StSort"/>
+        <UsageCount Value="43"/>
+      </Unit23>
+      <Unit24>
+        <CursorPos X="10" Y="220"/>
+        <EditorIndex Value="26"/>
+        <Filename Value="sthash.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="200"/>
+        <UnitName Value="StHASH"/>
+        <UsageCount Value="43"/>
+      </Unit24>
+      <Unit25>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="46"/>
+        <Filename Value="stdque.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="13"/>
+        <UnitName Value="StDQue"/>
+        <UsageCount Value="43"/>
+      </Unit25>
+      <Unit26>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="45"/>
+        <Filename Value="stfin.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StFIN"/>
+        <UsageCount Value="42"/>
+      </Unit26>
+      <Unit27>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="44"/>
+        <Filename Value="stnvbits.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVBits"/>
+        <UsageCount Value="42"/>
+      </Unit27>
+      <Unit28>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="43"/>
+        <Filename Value="stnvcont.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVCont"/>
+        <UsageCount Value="42"/>
+      </Unit28>
+      <Unit29>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="42"/>
+        <Filename Value="stnvlist.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVList"/>
+        <UsageCount Value="42"/>
+      </Unit29>
+      <Unit30>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="41"/>
+        <Filename Value="stnvdq.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVDQ"/>
+        <UsageCount Value="42"/>
+      </Unit30>
+      <Unit31>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="40"/>
+        <Filename Value="stnvlmat.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="12"/>
+        <UnitName Value="StNVLMat"/>
+        <UsageCount Value="42"/>
+      </Unit31>
+      <Unit32>
+        <CursorPos X="32" Y="1435"/>
+        <EditorIndex Value="34"/>
+        <Filename Value="stlarr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1408"/>
+        <UnitName Value="StLArr"/>
+        <UsageCount Value="42"/>
+      </Unit32>
+      <Unit33>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="39"/>
+        <Filename Value="stnvtree.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVTree"/>
+        <UsageCount Value="41"/>
+      </Unit33>
+      <Unit34>
+        <CursorPos X="10" Y="745"/>
+        <EditorIndex Value="27"/>
+        <Filename Value="stpqueue.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="703"/>
+        <UnitName Value="StPQueue"/>
+        <UsageCount Value="41"/>
+      </Unit34>
+      <Unit35>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="28"/>
+        <Filename Value="ststat.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StStat"/>
+        <UsageCount Value="41"/>
+      </Unit35>
+      <Unit36>
+        <CursorPos X="8" Y="1425"/>
+        <EditorIndex Value="29"/>
+        <Filename Value="stostr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="168"/>
+        <UnitName Value="StOStr"/>
+        <UsageCount Value="41"/>
+      </Unit36>
+      <Unit37>
+        <CursorPos X="37" Y="3"/>
+        <Filename Value="stsystem"/>
+        <SyntaxHighlighter Value="None"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="18"/>
+      </Unit37>
+      <Unit38>
+        <CursorPos X="12" Y="118"/>
+        <Filename Value="stsystem.pas"/>
+        <TopLine Value="23"/>
+        <UnitName Value="StSystem"/>
+        <UsageCount Value="18"/>
+      </Unit38>
+      <Unit39>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="30"/>
+        <Filename Value="stnvscol.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVSCol"/>
+        <UsageCount Value="41"/>
+      </Unit39>
+      <Unit40>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="31"/>
+        <Filename Value="stnvcoll.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVColl"/>
+        <UsageCount Value="40"/>
+      </Unit40>
+      <Unit41>
+        <CursorPos X="1" Y="36"/>
+        <EditorIndex Value="32"/>
+        <Filename Value="stnvlary.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVLAry"/>
+        <UsageCount Value="40"/>
+      </Unit41>
+      <Unit42>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="33"/>
+        <Filename Value="stnvdict.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNVDict"/>
+        <UsageCount Value="40"/>
+      </Unit42>
+      <Unit43>
+        <CursorPos X="27" Y="56"/>
+        <Filename Value="stbarc.pas"/>
+        <TopLine Value="36"/>
+        <UnitName Value="StBarC"/>
+        <UsageCount Value="18"/>
+      </Unit43>
+      <Unit44>
+        <CursorPos X="5" Y="5"/>
+        <Filename Value="/home/unihighlight/Component Source/SynUniReg.pas"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="8"/>
+      </Unit44>
+      <Unit45>
+        <CursorPos X="1" Y="24"/>
+        <Filename Value="/root/lazarus/components/synedit/synunireg.pas"/>
+        <TopLine Value="1"/>
+        <UnitName Value="SynUniReg"/>
+        <UsageCount Value="8"/>
+      </Unit45>
+      <Unit46>
+        <CursorPos X="21" Y="420"/>
+        <Filename Value="/usr/share/fpcsrc/fcl/inc/classesh.inc"/>
+        <TopLine Value="400"/>
+        <UsageCount Value="16"/>
+      </Unit46>
+      <Unit47>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="2"/>
+        <Filename Value="stastro.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="4"/>
+        <UnitName Value="StAstro"/>
+        <UsageCount Value="25"/>
+      </Unit47>
+      <Unit48>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="4"/>
+        <Filename Value="stastrop.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StAstroP"/>
+        <UsageCount Value="21"/>
+      </Unit48>
+      <Unit49>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="3"/>
+        <Filename Value="stmerc.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StMerc"/>
+        <UsageCount Value="21"/>
+      </Unit49>
+      <Unit50>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="13"/>
+        <Filename Value="stvenus.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StVenus"/>
+        <UsageCount Value="21"/>
+      </Unit50>
+      <Unit51>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="12"/>
+        <Filename Value="stmars.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StMars"/>
+        <UsageCount Value="21"/>
+      </Unit51>
+      <Unit52>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="11"/>
+        <Filename Value="stjup.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StJup"/>
+        <UsageCount Value="21"/>
+      </Unit52>
+      <Unit53>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="10"/>
+        <Filename Value="stsaturn.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StSaturn"/>
+        <UsageCount Value="21"/>
+      </Unit53>
+      <Unit54>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="8"/>
+        <Filename Value="stneptun.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StNeptun"/>
+        <UsageCount Value="21"/>
+      </Unit54>
+      <Unit55>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="9"/>
+        <Filename Value="sturanus.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StUranus"/>
+        <UsageCount Value="21"/>
+      </Unit55>
+      <Unit56>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="5"/>
+        <Filename Value="stpluto.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StPluto"/>
+        <UsageCount Value="21"/>
+      </Unit56>
+      <Unit57>
+        <CursorPos X="46" Y="36"/>
+        <EditorIndex Value="6"/>
+        <Filename Value="steclpse.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StEclpse"/>
+        <UsageCount Value="21"/>
+      </Unit57>
+      <Unit58>
+        <CursorPos X="1" Y="40"/>
+        <EditorIndex Value="7"/>
+        <Filename Value="stjupsat.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="StJupsat"/>
+        <UsageCount Value="21"/>
+      </Unit58>
+      <Unit59>
+        <CursorPos X="18" Y="73"/>
+        <EditorIndex Value="53"/>
+        <Filename Value="streglin.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="48"/>
+        <UnitName Value="StRegLin"/>
+        <UsageCount Value="20"/>
+      </Unit59>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="1">
+      <Item1>
+        <PackageName Value="LCL"/>
+        <MinVersion Major="1" Valid="True"/>
+      </Item1>
+    </RequiredPackages>
+  </ProjectOptions>
+  <CompilerOptions>
+    <SearchPaths>
+      <IncludeFiles Value="/home/fpcsystools"/>
+      <OtherUnitFiles Value="/home/fpcsystools"/>
+      <LCLWidgetType Value="gtk"/>
+      <SrcPath Value="$(LazarusDir)/lcl;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)"/>
+    </SearchPaths>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+</CONFIG>

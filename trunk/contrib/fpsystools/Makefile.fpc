@@ -1,0 +1,26 @@
+#
+#   Makefile.fpc for MySql bindings
+#
+
+[package]
+name=fpsystools
+version=1.1
+
+[target]
+units=stastro stastrop stbase stbcd stbits stcoll stconst stcrc stdate \
+      stdatest stdict stdque steclpse stexpr stfin sthash stjup \
+      stjupsat stlarr stlist stmars stmath stmerc stneptun stnvbits \
+      stnvcoll stnvcont stnvdict stnvdq stnvlary stnvlist stnvlmat \
+      stnvscol stnvtree stostr stpluto stpqueue stptrns stregex \
+      streglin stsaturn stsort ststat ststr ststrms sttext sttohtml \
+      sttree sturanus stutils stvarr stvenus 
+
+[require]
+libc=n
+
+[install]
+fpcpackage=n
+
+[default]
+fpcdir=../../fixbranch
+
