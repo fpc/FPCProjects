@@ -53,7 +53,7 @@ begin
     if Assigned(AForm.OnClose) then
       AForm.OnClose(AForm);
 
-    AForm.Free;
+    AForm.DoClose;
   end;
   Result := True;
 end;
@@ -95,6 +95,11 @@ begin
     @geometry, GDK_HINT_MIN_SIZE or GDK_HINT_Max_SIZE);
 end;
 
+procedure TCustomForm.DoClose;
+begin
+  Self.Free;
+end;
+
 procedure TCustomForm.OnFinishCreation;
 begin
   if not Assigned(FHandle) then    // -> derived class can create their own form
@@ -113,13 +118,17 @@ begin
 
   RecalcLayout;
 
+  if Length(FText) = 0 then
+    gtk_window_set_title(PGtkWindow(FHandle), PChar(Application.Title))
+  else
+    gtk_window_set_title(PGtkWindow(FHandle), PChar(FText));
+
   gtk_signal_connect(PGtkObject(FHandle), 'size_allocate',
     GTK_SIGNAL_FUNC(@TCustomForm_SizeAllocate), Self);
 
   gtk_signal_connect(PGtkObject(FHandle), 'map_event',
     GTK_SIGNAL_FUNC(@TCustomForm_OnMap), Self);
 
-  gtk_window_set_title(PGtkWindow(FHandle), PChar(FText));
   gtk_signal_connect(PGtkObject(FHandle), 'delete-event',
     GTK_SIGNAL_FUNC(@TCustomForm_OnDelete), Self);
   ApplySize;
@@ -129,8 +138,12 @@ procedure TCustomForm.ApplySize;
 begin
   if Assigned(FHandle) then
     gtk_window_set_default_size(PGtkWindow(FHandle), FWidth, FHeight);
-  if Assigned(FContent) then
-    FContent.SetSize(FWidth, FHeight);
+
+  if Assigned(FContent) then begin
+    if Assigned(FContent.FHandle) then
+      gtk_widget_set_uposition(FContent.FHandle, FBorderWidth, FBorderWidth);
+    FContent.SetSize(FWidth - 2 * FBorderWidth, FHeight - 2 * FBorderWidth);
+  end;
 end;
 
 constructor TCustomForm.Create(AOwner: TComponent);
@@ -147,13 +160,15 @@ end;
 
 procedure TCustomForm.Show;
 begin
+  FinishCreation;
   ASSERT(Assigned(FHandle));
   gtk_widget_show(FHandle);
 end;
 
 procedure TCustomForm.Close;
 begin
-  // ###
+  if CanClose then
+    DoClose;
 end;
 
 procedure TCustomForm.SetPosition(x, y: Integer);
@@ -169,6 +184,10 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/17 22:28:06  sg
+  * Improved behaviour on form closing
+  * Added BorderWidth property
+
   Revision 1.4  2000/02/10 18:41:23  sg
   * Adapted to new TCustomForm and TForm interfaces
 
