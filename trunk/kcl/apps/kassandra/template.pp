@@ -3,7 +3,7 @@
   Id:$
 
     Kassandra  -  Multiplatform Integrated Development Environment
-    Copyright (C) 1999  Sebastian Guenther (sg@freepascal.org)
+    Copyright (C) 1999 - 2000  Sebastian Guenther (sg@freepascal.org)
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
