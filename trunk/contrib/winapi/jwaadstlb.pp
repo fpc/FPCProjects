@@ -101,7 +101,7 @@ uses Windows, ActiveX, Classes {$ifndef NOVCL} , Graphics, OleServer, OleCtrls, 
                             Version: integer
                             end;
 
-             TOleServer = Class(TPersistent)
+             TOleServer = Class(TComponent)  // for registercomponents to work
                            private
                             ServerData : ^TServerData;
                            public
@@ -6314,6 +6314,7 @@ implementation
 
 uses ComObj;
 
+
 {$ifdef FPC} // dummy
 function CreateComObject(ID: TGUID): IUnknown; //empty
 
@@ -6324,6 +6325,25 @@ function CreateRemoteComObject(w:widestring; ID: TGUID): IUnknown; //empty
 
 begin
 end;
+
+function  tOleServer.GetServer:IUnknown;
+begin
+end;
+
+procedure tOleServer.InitServerData;
+begin
+end;
+constructor tOleServer.Create(AOwner: TComponent);
+begin
+end;
+Procedure tOleServer.Connect;
+begin
+end;
+procedure tOleServer.Disconnect;
+begin
+end;
+
+
 {$endif}
 
 class function CoPropertyEntry.Create: IADsPropertyEntry;
