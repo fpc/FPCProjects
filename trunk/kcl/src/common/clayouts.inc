@@ -92,7 +92,26 @@ begin
     item := TFixedItem(FWidgets.Items[i]);
     item.Widget.FinishCreation;
     PutChild(item.Widget, item.Left, item.Top);
+    item.Widget.SetSize(item.Widget.DefW, item.Widget.DefH);
   end;
+end;
+
+procedure TFixedLayout.DoRecalcLayout;
+var
+  i: Integer;
+  item: TFixedItem;
+begin
+  if FWidgets.Count = 0 then begin
+    DefW := 50;
+    DefH := 50;
+  end else
+    for i := 0 to FWidgets.Count - 1 do begin
+      item := TFixedItem(FWidgets.Items[i]);
+      DefW := Max(DefW, item.Left + item.Widget.DefW);
+      DefH := Max(DefH, item.Top + item.Widget.DefH);
+    end;
+  MaxW := InfiniteSize;
+  MaxH := InfiniteSize;
 end;
 
 
@@ -306,14 +325,14 @@ end;
 procedure TGridLayout.OnFinishCreation;
 var
   i: Integer;
-  item: TGridItem;
 begin
+  for i := 0 to FWidgets.Count - 1 do
+    TGridItem(FWidgets.Items[i]).Widget.FinishCreation;
+
   inherited OnFinishCreation;
-  for i := 0 to FWidgets.Count - 1 do begin
-    item := TGridItem(FWidgets.Items[i]);
-    item.Widget.FinishCreation;
-    PutChild(item.Widget, 0, 0);
-  end;
+
+  for i := 0 to FWidgets.Count - 1 do
+    PutChild(TGridItem(FWidgets.Items[i]).Widget, 0, 0);
 end;
 
 procedure TGridLayout.DoRecalcLayout;
@@ -492,21 +511,26 @@ begin
     end;
   end;
 
-  if FHorzAlign = horzFixed then
+  if FHorzAlign = horzFixed then begin
+    MinW := DefW;
     MaxW := DefW;
-  if FVertAlign = vertFixed then
+  end;
+  if FVertAlign = vertFixed then begin
+    MinH := DefH;
     MaxH := DefH;
+  end;
 end;
 
 procedure TBoxLayout.ApplySize;
-{FWidth and FHeight are the real size of this layout object. But as all
- "ApplySize" calls had a preceding "DoRecalcLayout", we can use the
- calculated values of DefW/DefH, MinW/MinH and MaxW/MaxH here!}
 var
   i, x, y, w, h: Integer;
   item: TLayoutItem;
 begin
   inherited ApplySize;
+
+  // Only recalc the layout of _this_ widget:
+  DoRecalcLayout;
+
   case FHorzAlign of
     horzCenter: x := (FWidth - DefW) div 2;
     horzRight:  x := FWidth - DefW;
@@ -539,6 +563,10 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/18 18:20:01  sg
+  * TFixedLayout works again
+  * Fixed layouting of TBoxLayout and TGridLayout
+
   Revision 1.4  2000/02/17 22:20:35  sg
   * Adapted TGridLayout and TBoxLayout to new layouting algorithm
 
