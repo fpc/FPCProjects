@@ -21,6 +21,7 @@
   TGenericForm = class(TWidget)
   protected
     FOnClose: TNotifyEvent;
+    priv: TGenericForm_private;
   public
     constructor Create(AOwner: TComponent); override;
     function  CanClose: Boolean; virtual;
@@ -48,7 +49,10 @@
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:19  sg
-  Initial revision
+  Revision 1.2  2000/01/06 22:58:10  sg
+  * Added "priv" field to TGenericForm
+
+  Revision 1.1.1.1  1999/12/30 21:33:19  sg
+  Initial import
 
 }
