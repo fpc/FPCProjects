@@ -23,6 +23,8 @@ destructor TApplication.Destroy;
 begin
   if Assigned(gToolTips) then
     gtk_widget_destroy(PGtkWidget(gToolTips));
+  if Assigned(FForms) then
+    FForms.Free;
 end;
 
 procedure TApplication.Initialize;
@@ -38,6 +40,7 @@ type
 var
   form: PForm;
 begin
+  ASSERT(Assigned(FForms), 'TApplication.CreateForm: Forms = nil; missing call to "Initialize" in application?');
   form := @Reference;
   form^ := TGenericForm(InstanceClass.Create(nil));
   FForms.Add(form^);
@@ -48,6 +51,7 @@ end;
 
 procedure TApplication.AddForm(AForm: TGenericForm);
 begin
+  ASSERT(Assigned(FForms), 'TApplication.AddForm: Forms = nil; missing call to "Initialize" in application?');
   FForms.Add(AForm);
   AForm.FinishCreation;
 end;
@@ -56,6 +60,7 @@ procedure TApplication.Run;
 var
   i: Integer;
 begin
+  ASSERT(Assigned(FForms), 'TApplication.Run: Forms = nil; missing call to "Initialize" in application?');
   for i := 0 to FForms.Count - 1 do
     TForm(FForms.Items[i]).FinishCreation;
   gtk_main;
@@ -69,7 +74,13 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:45  sg
-  Initial revision
+  Revision 1.2  1999/12/31 19:19:36  sg
+  * Added ASSERTions
+  ! Problem regarding memory leaks: Forms added with "CreateForm" instead of
+    "AddForm" won't be freed automatically. We should make a decision if we
+    support "AddForm" or "CreateForm", supporting both is nonsense.
+
+  Revision 1.1.1.1  1999/12/30 21:33:45  sg
+  Initial import
 
 }
