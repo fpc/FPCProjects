@@ -1,24 +1,24 @@
 diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
---- origdb/Makefile.in	Mon Nov 25 23:05:38 2002
-+++ gdb/Makefile.in	Thu Dec 12 15:47:04 2002
+--- origdb/Makefile.in	2002-11-25 23:05:38.000000000 +0100
++++ gdb/Makefile.in	2002-12-13 10:41:50.000000000 +0100
 @@ -561,7 +561,7 @@ SFILES = ada-exp.y ada-lang.c ada-typepr
  	ui-file.h ui-file.c \
  	frame.c doublest.c \
  	builtin-regs.c std-regs.c \
 -	gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
 +	fpc-abi.c gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
- 
+
  LINTFILES = $(SFILES) $(YYFILES) $(CONFIG_SRCS) init.c
- 
+
 @@ -846,7 +846,7 @@ COMMON_OBS = version.o blockframe.o brea
  	nlmread.o serial.o mdebugread.o top.o utils.o \
  	ui-file.o \
  	frame.o doublest.o \
 -	gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
 +	fpc-abi.o gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
- 
+
  OBS = $(COMMON_OBS) $(ANNOTATE_OBS)
- 
+
 @@ -1661,6 +1661,8 @@ findvar.o: findvar.c $(defs_h) $(symtab_
  fork-child.o: fork-child.c $(defs_h) $(gdb_string_h) $(frame_h) \
  	$(inferior_h) $(target_h) $(gdb_wait_h) $(gdb_vfork_h) $(gdbcore_h) \
@@ -28,6 +28,15 @@ diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
  # OBSOLETE fr30-tdep.o: fr30-tdep.c
  frame.o: frame.c $(defs_h) $(frame_h) $(target_h) $(value_h) $(inferior_h) \
  	$(regcache_h) $(gdb_assert_h)
+@@ -1846,6 +1848,8 @@ m68k-tdep.o: m68k-tdep.c $(defs_h) $(fra
+ m68klinux-nat.o: m68klinux-nat.c $(defs_h) $(frame_h) $(inferior_h) \
+ 	$(language_h) $(gdbcore_h) $(regcache_h) $(gdb_stat_h) \
+ 	$(floatformat_h) $(target_h) $(gregset_h)
++m68klinux-tdep.o: m68klinux-tdep.c $(defs_h) $(gdbcore_h) $(frame_h) \
++	$(target_h)
+ m68knbsd-nat.o: m68knbsd-nat.c $(defs_h) $(inferior_h) $(gdbcore_h) \
+ 	$(regcache_h)
+ m68knbsd-tdep.o: m68knbsd-tdep.c $(defs_h) $(gdbtypes_h) $(regcache_h)
 diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
 --- origdb/fpc-abi.c	Thu Jan  1 01:00:00 1970
 +++ gdb/fpc-abi.c	Thu Dec 12 15:48:28 2002
@@ -461,24 +470,24 @@ diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
 +	last_push_esi_pos = codestream_tell ();
 +      codestream_get();
      }
- 
+
    /* The native cc on SVR4 in -K PIC mode inserts the following code
 @@ -783,7 +787,10 @@ i386_skip_prologue (CORE_ADDR pc)
- 
+
    i386_follow_jump ();
- 
+
 -  return (codestream_tell ());
 +  if (codestream_tell () == last_push_esi_pos + 1)
 +    return (last_push_esi_pos);
 +  else
 +    return (codestream_tell ());
  }
- 
+
  /* Use the program counter to determine the contents and size of a
 diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
 --- origdb/minsyms.c	Thu Jul 11 22:46:19 2002
 +++ gdb/minsyms.c	Thu Dec 12 15:47:04 2002
-@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile 
+@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile
  	for (i = 0; i < mcount; i++)
  	  {
  	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
@@ -494,21 +503,21 @@ diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
 diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
 --- origdb/p-exp.y	Wed Nov 13 16:44:16 2002
 +++ gdb/p-exp.y	Thu Dec 12 15:47:04 2002
-@@ -294,7 +294,9 @@ exp	:	exp '.' { search_field = 1; } 
+@@ -294,7 +294,9 @@ exp	:	exp '.' { search_field = 1; }
  				current_type = TYPE_TARGET_TYPE (current_type);
  			      current_type = lookup_struct_elt_type (
  				current_type, $4.ptr, false); };
--			 } ; 
+-			 } ;
 +			 }
 +	;
 +
  exp	:	exp '['
  			/* We need to save the current_type value */
- 			{ char *arrayname; 
+ 			{ char *arrayname;
 @@ -322,8 +324,7 @@ exp	:	exp '['
  			    current_type = TYPE_TARGET_TYPE (current_type); }
  	;
- 
+
 -exp	:	exp '('
 -			/* This is to save the value of arglist_len
 +exp	:	exp '(' /* This is to save the value of arglist_len
@@ -516,9 +525,9 @@ diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
  			{ push_current_type ();
  			  start_arglist (); }
 @@ -1479,6 +1480,17 @@ yylex ()
- 	yylval.sval.length = namelen; 
+ 	yylval.sval.length = namelen;
  	return FIELDNAME;
-       } 
+       }
 +
 +    /* if not found uppercase the whole.  */
 +    if (!sym && !is_a_field_of_this)
@@ -539,22 +548,22 @@ diff -u -p -r -N -x Entries origdb/top.c gdb/top.c
 @@ -1353,7 +1353,7 @@ print_gdb_version (struct ui_file *strea
       program to parse, and is just canonical program name and version
       number, which starts after last space. */
- 
+
 -  fprintf_filtered (stream, "GNU gdb %s\n", version);
 +  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
- 
+
    /* Second line is a copyright notice. */
- 
+
 diff -u -p -r -N -x Entries origdb/gdbserver/linux-m68k-low.c gdb/gdbserver/linux-m68k-low.c
 --- origdb/gdbserver/linux-m68k-low.c	2002-04-10 00:44:43.000000000 +0200
 +++ gdb/gdbserver/linux-m68k-low.c	2002-12-13 09:58:17.000000000 +0100
 @@ -26,7 +26,7 @@
  #include <sys/reg.h>
  #endif
- 
+
 -#define m68k_num_regs 31
-+#define m68k_num_regs 29 
- 
++#define m68k_num_regs 29
+
  /* This table must line up with REGISTER_NAMES in tm-m68k.h */
  static int m68k_regmap[] =
 diff -u -p -r -N -x Entries origdb/regformats/reg-m68k.dat gdb/regformats/reg-m68k.dat
@@ -566,3 +575,248 @@ diff -u -p -r -N -x Entries origdb/regformats/reg-m68k.dat gdb/regformats/reg-m6
  32:fpiaddr
 -32:fpcode
 -32:fpflags
+diff -u -p -r -N -x Entries origdb/config/m68k/linux.mt gdb/config/m68k/linux.mt
+--- origdb/config/m68k/linux.mt	2001-03-10 07:17:22.000000000 +0100
++++ gdb/config/m68k/linux.mt	2002-12-13 10:55:03.000000000 +0100
+@@ -1,3 +1,3 @@
+ # Target: Motorola m68k with a.out and ELF
+-TDEPFILES= m68k-tdep.o solib.o solib-svr4.o solib-legacy.o
++TDEPFILES= m68k-tdep.o m68klinux-tdep.o solib.o solib-svr4.o solib-legacy.o
+ TM_FILE= tm-linux.h
+diff -u -p -r -N -x Entries origdb/m68klinux-nat.c gdb/m68klinux-nat.c
+--- origdb/m68klinux-nat.c	2002-07-11 15:50:49.000000000 +0200
++++ gdb/m68klinux-nat.c	2002-12-13 10:53:59.000000000 +0100
+@@ -594,102 +594,7 @@ kernel_u_size (void)
+   return (sizeof (struct user));
+ }
+ 
+-/* Check whether insn1 and insn2 are parts of a signal trampoline.  */
+
+-#define IS_SIGTRAMP(insn1, insn2)					\
+-  (/* addaw #20,sp; moveq #119,d0; trap #0 */				\
+-   (insn1 == 0xdefc0014 && insn2 == 0x70774e40)				\
+-   /* moveq #119,d0; trap #0 */						\
+-   || insn1 == 0x70774e40)
+-
+-#define IS_RT_SIGTRAMP(insn1, insn2)					\
+-  (/* movel #173,d0; trap #0 */						\
+-   (insn1 == 0x203c0000 && insn2 == 0x00ad4e40)				\
+-   /* moveq #82,d0; notb d0; trap #0 */					\
+-   || (insn1 == 0x70524600 && (insn2 >> 16) == 0x4e40))
+-
+-/* Return non-zero if PC points into the signal trampoline.  For the sake
+-   of m68k_linux_frame_saved_pc we also distinguish between non-RT and RT
+-   signal trampolines.  */
+-
+-int
+-m68k_linux_in_sigtramp (CORE_ADDR pc)
+-{
+-  CORE_ADDR sp;
+-  char buf[12];
+-  unsigned long insn0, insn1, insn2;
+-
+-  if (read_memory_nobpt (pc - 4, buf, sizeof (buf)))
+-    return 0;
+-  insn1 = extract_unsigned_integer (buf + 4, 4);
+-  insn2 = extract_unsigned_integer (buf + 8, 4);
+-  if (IS_SIGTRAMP (insn1, insn2))
+-    return 1;
+-  if (IS_RT_SIGTRAMP (insn1, insn2))
+-    return 2;
+-
+-  insn0 = extract_unsigned_integer (buf, 4);
+-  if (IS_SIGTRAMP (insn0, insn1))
+-    return 1;
+-  if (IS_RT_SIGTRAMP (insn0, insn1))
+-    return 2;
+-
+-  insn0 = (insn0 << 16) | (insn1 >> 16);
+-  insn1 = (insn1 << 16) | (insn2 >> 16);
+-  if (IS_SIGTRAMP (insn0, insn1))
+-    return 1;
+-  if (IS_RT_SIGTRAMP (insn0, insn1))
+-    return 2;
+-
+-  return 0;
+-}
+-
+-/* Offset to saved PC in sigcontext, from <asm/sigcontext.h>.  */
+-#define SIGCONTEXT_PC_OFFSET 26
+-
+-/* Offset to saved PC in ucontext, from <asm/ucontext.h>.  */
+-#define UCONTEXT_PC_OFFSET 88
+-
+-/* Get saved user PC for sigtramp from sigcontext or ucontext.  */
+-
+-static CORE_ADDR
+-m68k_linux_sigtramp_saved_pc (struct frame_info *frame)
+-{
+-  CORE_ADDR sigcontext_addr;
+-  char buf[TARGET_PTR_BIT / TARGET_CHAR_BIT];
+-  int ptrbytes = TARGET_PTR_BIT / TARGET_CHAR_BIT;
+-  int sigcontext_offs = (2 * TARGET_INT_BIT) / TARGET_CHAR_BIT;
+-
+-  /* Get sigcontext address, it is the third parameter on the stack.  */
+-  if (frame->next)
+-    sigcontext_addr = read_memory_integer (FRAME_ARGS_ADDRESS (frame->next)
+-					   + FRAME_ARGS_SKIP
+-					   + sigcontext_offs,
+-					   ptrbytes);
+-  else
+-    sigcontext_addr = read_memory_integer (read_register (SP_REGNUM)
+-					   + sigcontext_offs,
+-					   ptrbytes);
+-
+-  /* Don't cause a memory_error when accessing sigcontext in case the
+-     stack layout has changed or the stack is corrupt.  */
+-  if (m68k_linux_in_sigtramp (frame->pc) == 2)
+-    target_read_memory (sigcontext_addr + UCONTEXT_PC_OFFSET, buf, ptrbytes);
+-  else
+-    target_read_memory (sigcontext_addr + SIGCONTEXT_PC_OFFSET, buf, ptrbytes);
+-  return extract_unsigned_integer (buf, ptrbytes);
+-}
+-
+-/* Return the saved program counter for FRAME.  */
+-
+-CORE_ADDR
+-m68k_linux_frame_saved_pc (struct frame_info *frame)
+-{
+-  if (frame->signal_handler_caller)
+-    return m68k_linux_sigtramp_saved_pc (frame);
+-
+-  return read_memory_integer (frame->frame + 4, 4);
+-}
+ 
+ /* Register that we are able to handle GNU/Linux ELF core file
+    formats.  */
+diff -u -p -r -N -x Entries origdb/m68klinux-tdep.c gdb/m68klinux-tdep.c
+--- origdb/m68klinux-tdep.c	1970-01-01 01:00:00.000000000 +0100
++++ gdb/m68klinux-tdep.c	2002-12-13 10:54:15.000000000 +0100
+@@ -0,0 +1,127 @@
++/* Motorola m68k target-dependent support for GNU/Linux.
++
++   Copyright 1996, 1998, 2000, 2001, 2002 Free Software Foundation,
++   Inc.
++
++   This file is part of GDB.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2 of the License, or
++   (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software
++   Foundation, Inc., 59 Temple Place - Suite 330,
++   Boston, MA 02111-1307, USA.  */
++
++#include "defs.h"
++#include "gdbcore.h"
++#include "frame.h"
++#include "target.h"
++
++
++
++/* Check whether insn1 and insn2 are parts of a signal trampoline.  */
++
++#define IS_SIGTRAMP(insn1, insn2)					\
++  (/* addaw #20,sp; moveq #119,d0; trap #0 */				\
++   (insn1 == 0xdefc0014 && insn2 == 0x70774e40)				\
++   /* moveq #119,d0; trap #0 */						\
++   || insn1 == 0x70774e40)
++
++#define IS_RT_SIGTRAMP(insn1, insn2)					\
++  (/* movel #173,d0; trap #0 */						\
++   (insn1 == 0x203c0000 && insn2 == 0x00ad4e40)				\
++   /* moveq #82,d0; notb d0; trap #0 */					\
++   || (insn1 == 0x70524600 && (insn2 >> 16) == 0x4e40))
++
++/* Return non-zero if PC points into the signal trampoline.  For the sake
++   of m68k_linux_frame_saved_pc we also distinguish between non-RT and RT
++   signal trampolines.  */
++
++int
++m68k_linux_in_sigtramp (CORE_ADDR pc)
++{
++  CORE_ADDR sp;
++  char buf[12];
++  unsigned long insn0, insn1, insn2;
++
++  if (read_memory_nobpt (pc - 4, buf, sizeof (buf)))
++    return 0;
++  insn1 = extract_unsigned_integer (buf + 4, 4);
++  insn2 = extract_unsigned_integer (buf + 8, 4);
++  if (IS_SIGTRAMP (insn1, insn2))
++    return 1;
++  if (IS_RT_SIGTRAMP (insn1, insn2))
++    return 2;
++
++  insn0 = extract_unsigned_integer (buf, 4);
++  if (IS_SIGTRAMP (insn0, insn1))
++    return 1;
++  if (IS_RT_SIGTRAMP (insn0, insn1))
++    return 2;
++
++  insn0 = (insn0 << 16) | (insn1 >> 16);
++  insn1 = (insn1 << 16) | (insn2 >> 16);
++  if (IS_SIGTRAMP (insn0, insn1))
++    return 1;
++  if (IS_RT_SIGTRAMP (insn0, insn1))
++    return 2;
++
++  return 0;
++}
++
++/* Offset to saved PC in sigcontext, from <asm/sigcontext.h>.  */
++#define SIGCONTEXT_PC_OFFSET 26
++
++/* Offset to saved PC in ucontext, from <asm/ucontext.h>.  */
++#define UCONTEXT_PC_OFFSET 88
++
++/* Get saved user PC for sigtramp from sigcontext or ucontext.  */
++
++static CORE_ADDR
++m68k_linux_sigtramp_saved_pc (struct frame_info *frame)
++{
++  CORE_ADDR sigcontext_addr;
++  char buf[TARGET_PTR_BIT / TARGET_CHAR_BIT];
++  int ptrbytes = TARGET_PTR_BIT / TARGET_CHAR_BIT;
++  int sigcontext_offs = (2 * TARGET_INT_BIT) / TARGET_CHAR_BIT;
++
++  /* Get sigcontext address, it is the third parameter on the stack.  */
++  if (frame->next)
++    sigcontext_addr = read_memory_integer (FRAME_ARGS_ADDRESS (frame->next)
++					   + FRAME_ARGS_SKIP
++					   + sigcontext_offs,
++					   ptrbytes);
++  else
++    sigcontext_addr = read_memory_integer (read_register (SP_REGNUM)
++					   + sigcontext_offs,
++					   ptrbytes);
++
++  /* Don't cause a memory_error when accessing sigcontext in case the
++     stack layout has changed or the stack is corrupt.  */
++  if (m68k_linux_in_sigtramp (frame->pc) == 2)
++    target_read_memory (sigcontext_addr + UCONTEXT_PC_OFFSET, buf, ptrbytes);
++  else
++    target_read_memory (sigcontext_addr + SIGCONTEXT_PC_OFFSET, buf, ptrbytes);
++  return extract_unsigned_integer (buf, ptrbytes);
++}
++
++/* Return the saved program counter for FRAME.  */
++
++CORE_ADDR
++m68k_linux_frame_saved_pc (struct frame_info *frame)
++{
++  if (frame->signal_handler_caller)
++    return m68k_linux_sigtramp_saved_pc (frame);
++
++  return read_memory_integer (frame->frame + 4, 4);
++}
++
++
