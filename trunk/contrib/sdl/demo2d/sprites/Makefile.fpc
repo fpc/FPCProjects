@@ -1,0 +1,32 @@
+[target]
+programs=collisiontest  shooting ztest
+#oxygene
+[require]
+packages=x11
+
+[compiler]
+includedir=../../include
+unitdir=../../basesdl
+
+[clean]
+#units=tictactoe
+
+#[install]
+#fpcpackage=y
+
+#[default]
+#fpcdir=../../../..
+
+[rules]
+#maintest pixeltest rotatesurface wormhole
+
+collisiontest: collisiontst/collisiontest.dpr
+	$(COMPILER) collisiontst/collisiontest.dpr
+
+shooting: shootingdem/shooting.dpr
+	$(COMPILER) shootingdem/shooting.dpr
+
+ztest: ztestdem/ztest.dpr
+	$(COMPILER) ztestdem/ztest.dpr
+
+
