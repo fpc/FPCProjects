@@ -248,7 +248,6 @@ uses
   ;
 
 {$ifdef Unix}  
-{$ifndef Linux}
 Type
   UInt     = BaseUnix.cUint;
   xid      = txid;   
@@ -267,7 +266,6 @@ Type
    tagPALETTEENTRY = PALETTEENTRY;
    TPALETTEENTRY = PALETTEENTRY; 
    PPALETTEENTRY = ^PALETTEENTRY;
-{$endif}
 {$endif}
 
 type
