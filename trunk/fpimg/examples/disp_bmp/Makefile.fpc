@@ -1,0 +1,10 @@
+#
+#   Makefile.fpc for fpImg example "disp_bmp"
+#
+
+[targets]
+programs=disp_bmp
+
+[require]
+options=-S2h
+packages=fcl fpgfx

@@ -1,0 +1,6 @@
+#
+#   Makefile.fpc for fpImg base tree
+#
+
+[targets]
+dirs=src examples
