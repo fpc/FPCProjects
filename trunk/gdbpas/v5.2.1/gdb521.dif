@@ -1,3 +1,33 @@
+diff -r -u -p -x Entries -N origdb/Makefile.in gdb/Makefile.in
+--- origdb/Makefile.in	2002-09-16 09:17:50.000000000 +0200
++++ gdb/Makefile.in	2002-10-21 17:40:48.000000000 +0200
+@@ -548,7 +548,7 @@ SFILES = ax-general.c ax-gdb.c bcache.c
+ 	tui/tui-file.h tui/tui-file.c tui/tui-out.c tui/tui-hooks.c \
+ 	ui-file.h ui-file.c \
+ 	frame.c doublest.c \
+-	gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
++	fpc-abi.c gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
+
+ LINTFILES = $(SFILES) $(YYFILES) $(CONFIG_SRCS) init.c
+
+@@ -722,7 +722,7 @@ COMMON_OBS = version.o blockframe.o brea
+ 	nlmread.o serial.o mdebugread.o os9kread.o top.o utils.o \
+ 	ui-file.o \
+ 	frame.o doublest.o \
+-	gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
++	fpc-abi.o gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
+
+ OBS = $(COMMON_OBS) $(ANNOTATE_OBS)
+
+@@ -1695,6 +1695,8 @@ p-valprint.o: p-valprint.c p-lang.h $(de
+ m68hc11-tdep.o: m68hc11-tdep.c $(defs_h) $(frame_h) $(symtab_h) $(value_h) \
+ 	$(gdbcore_h) gdb_string.h
+
++fpc-abi.o: fpc-abi.c $(defs_h) $(gdb_string_h) $(symtab_h) \
++	$(gdbtypes_h) $(value_h) $(demangle_h) $(cp_abi_h)
+ m68k-tdep.o: m68k-tdep.c $(defs_h) $(frame_h) $(symtab_h) $(value_h) \
+ 	$(gdbcore_h) $(gdb_string_h) $(regcache_h)
+
 diff -u -p -r origdb/breakpoint.c gdb/breakpoint.c
 --- origdb/breakpoint.c	Mon Sep 16 11:41:25 2002
 +++ gdb/breakpoint.c	Mon Sep 16 12:08:29 2002
@@ -17,7 +47,7 @@ diff -u -p -r origdb/breakpoint.c gdb/breakpoint.c
 +	if (VALUE_LAZY (val))
 +	  value_fetch_lazy (val);
 +	b->val = val;
-+      } 
++      }
 +    if (b->type != bp_watchpoint
  	&& b->type != bp_hardware_watchpoint
  	&& b->type != bp_read_watchpoint
@@ -26,7 +56,7 @@ diff -u -p -r origdb/breakpoint.c gdb/breakpoint.c
  	/* Likewise for watchpoints on local expressions.  */
  	if (b->exp_valid_block != NULL)
  	  delete_breakpoint (b);
-+	if (context == inf_starting) 
++	if (context == inf_starting)
 +	  {
 +	    /* Reset val field to force reread of starting value in insert_breakpoints.  */
 +	    if (b->val)
@@ -36,6 +66,418 @@ diff -u -p -r origdb/breakpoint.c gdb/breakpoint.c
  	break;
        default:
  	/* Likewise for exception catchpoints in dynamic-linked
+diff -r -u -p -x Entries -N origdb/fpc-abi.c gdb/fpc-abi.c
+--- origdb/fpc-abi.c	1970-01-01 01:00:00.000000000 +0100
++++ gdb/fpc-abi.c	2002-10-21 17:36:40.000000000 +0200
+@@ -0,0 +1,408 @@
++/* Abstraction of FPC abi.
++   Contributed by Pierre Muller  <muller@ics.u-strasbg.fr>
++   Copyright 2001 Free Software Foundation, Inc.
++
++   This file is part of GDB.
++
++   This program is free software; you can redistribute it and/or
++   modify
++   it under the terms of the GNU General Public License as published
++   by
++   the Free Software Foundation; either version 2 of the License, or
++   (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software
++   Foundation, Inc., 59 Temple Place - Suite 330,
++   Boston, MA 02111-1307, USA.  */
++
++#include "defs.h"
++#include "gdb_string.h"
++#include "symtab.h"
++#include "gdbtypes.h"
++#include "value.h"
++#include "demangle.h"
++#include "cp-abi.h"
++
++#include <ctype.h>
++
++struct cp_abi_ops fpc_abi_ops;
++
++static int vb_match (struct type *, int, struct type *);
++int fpc_baseclass_offset (struct type *type, int index, char *valaddr,
++			    CORE_ADDR address);
++
++static enum dtor_kinds
++fpc_is_destructor_name (const char *name)
++{
++  if ((name[0] == '_' && is_cplus_marker (name[1]) && name[2] == '_')
++      || strncmp (name, "__dt__", 6) == 0)
++    return complete_object_dtor;
++  else
++    return 0;
++}
++
++static enum ctor_kinds
++fpc_is_constructor_name (const char *name)
++{
++  if ((name[0] == '_' && name[1] == '_'
++       && (isdigit (name[2]) || strchr ("Qt", name[2])))
++      || strncmp (name, "__ct__", 6) == 0)
++    return complete_object_ctor;
++  else
++    return 0;
++}
++
++static int
++fpc_is_vtable_name (const char *name)
++{
++  return ((name)[0] == 'V'
++	  && (name)[1] == 'M' && (name)[2] == 'T'
++	  && (name)[3] == '_');
++}
++
++static int
++fpc_is_operator_name (const char *name)
++{
++  return strncmp (name, "operator", 8) == 0;
++}
++
++
++/* Return a virtual function as a value.
++   ARG1 is the object which provides the virtual function
++   table pointer.  *ARG1P is side-effected in calling this function.
++   F is the list of member functions which contains the desired virtual
++   function.
++   J is an index into F which provides the desired virtual function.
++
++   TYPE is the type in which F is located.  */
++static struct value *
++fpc_virtual_fn_field (struct value **arg1p, struct fn_field * f, int j,
++			struct type * type, int offset)
++{
++  struct value *arg1 = *arg1p;
++  struct type *type1 = check_typedef (VALUE_TYPE (arg1));
++
++
++  struct type *entry_type;
++  /* First, get the virtual function table pointer.  That comes
++     with a strange type, so cast it to type `pointer to long' (which
++     should serve just fine as a function type).  Then, index into
++     the table, and convert final value to appropriate function type.  */
++  struct value *entry;
++  struct value *vfn;
++  struct value *vtbl;
++  struct value *vi = value_from_longest (builtin_type_int,
++				     (LONGEST) TYPE_FN_FIELD_VOFFSET (f, j));
++  struct type *fcontext = TYPE_FN_FIELD_FCONTEXT (f, j);
++  struct type *context;
++  if (fcontext == NULL)
++    /* We don't have an fcontext (e.g. the program was compiled with
++       g++ version 1).  Try to get the vtbl from the TYPE_VPTR_BASETYPE.
++       This won't work right for multiple inheritance, but at least we
++       should do as well as GDB 3.x did.  */
++    fcontext = TYPE_VPTR_BASETYPE (type);
++  context = lookup_pointer_type (fcontext);
++  /* Now context is a pointer to the basetype containing the vtbl.  */
++  if (TYPE_TARGET_TYPE (context) != type1)
++    {
++      struct value *tmp = value_cast (context, value_addr (arg1));
++      arg1 = value_ind (tmp);
++      type1 = check_typedef (VALUE_TYPE (arg1));
++    }
++
++  context = type1;
++  /* Now context is the basetype containing the vtbl.  */
++
++  /* This type may have been defined before its virtual function table
++     was.  If so, fill in the virtual function table entry for the
++     type now.  */
++  if (TYPE_VPTR_FIELDNO (context) < 0)
++    fill_in_vptr_fieldno (context);
++
++  /* The virtual function table is now an array of structures
++     which have the form { int16 offset, delta; void *pfn; }.  */
++  vtbl = value_primitive_field (arg1, 0, TYPE_VPTR_FIELDNO (context),
++				TYPE_VPTR_BASETYPE (context));
++
++  /* With older versions of g++, the vtbl field pointed to an array
++     of structures.  Nowadays it points directly to the structure. */
++  if (TYPE_CODE (VALUE_TYPE (vtbl)) == TYPE_CODE_PTR
++      && TYPE_CODE (TYPE_TARGET_TYPE (VALUE_TYPE (vtbl))) == TYPE_CODE_ARRAY)
++    {
++      /* Handle the case where the vtbl field points to an
++         array of structures. */
++      vtbl = value_ind (vtbl);
++
++      /* Index into the virtual function table.  This is hard-coded because
++         looking up a field is not cheap, and it may be important to save
++         time, e.g. if the user has set a conditional breakpoint calling
++         a virtual function.  */
++      entry = value_subscript (vtbl, vi);
++    }
++  else
++    {
++      /* Handle the case where the vtbl field points directly to a structure. */
++      vtbl = value_add (vtbl, vi);
++      entry = value_ind (vtbl);
++    }
++
++  entry_type = check_typedef (VALUE_TYPE (entry));
++
++  if (TYPE_CODE (entry_type) == TYPE_CODE_STRUCT)
++    {
++      /* Move the `this' pointer according to the virtual function table. */
++      VALUE_OFFSET (arg1) += value_as_long (value_field (entry, 0));
++
++      if (!VALUE_LAZY (arg1))
++	{
++	  VALUE_LAZY (arg1) = 1;
++	  value_fetch_lazy (arg1);
++	}
++
++      vfn = value_field (entry, 2);
++    }
++  else if (TYPE_CODE (entry_type) == TYPE_CODE_PTR)
++    vfn = entry;
++  else
++    error ("I'm confused:  virtual function table has bad type");
++  /* Reinstantiate the function pointer with the correct type.  */
++  VALUE_TYPE (vfn) = lookup_pointer_type (TYPE_FN_FIELD_TYPE (f, j));
++
++  *arg1p = arg1;
++  return vfn;
++}
++
++
++struct type *
++fpc_value_rtti_type (struct value *v, int *full, int *top, int *using_enc)
++{
++  struct type *known_type;
++  struct type *rtti_type;
++  CORE_ADDR coreptr;
++  struct value *vp;
++  long top_offset = 0;
++  char rtti_type_name[256];
++  CORE_ADDR vtbl;
++  struct minimal_symbol *minsym;
++  struct symbol *sym;
++  char *demangled_name;
++  char *mangled_name;
++  struct type *btype;
++
++  if (full)
++    *full = 0;
++  if (top)
++    *top = -1;
++  if (using_enc)
++    *using_enc = 0;
++
++  /* Get declared type */
++  known_type = VALUE_TYPE (v);
++  CHECK_TYPEDEF (known_type);
++  /* RTTI works only or class objects */
++  if (TYPE_CODE (known_type) != TYPE_CODE_CLASS)
++    return NULL;
++
++  /* Plan on this changing in the future as i get around to setting
++     the vtables properly for G++ compiled stuff.  Also, I'll be using
++     the type info functions, which are always right.  Deal with it
++     until then.  */
++
++  /* If the type has no vptr fieldno, try to get it filled in */
++  if (TYPE_VPTR_FIELDNO(known_type) < 0)
++    fill_in_vptr_fieldno(known_type);
++
++  /* If we still can't find one, give up */
++  if (TYPE_VPTR_FIELDNO(known_type) < 0)
++    return NULL;
++
++  /* Make sure our basetype and known type match, otherwise, cast
++     so we can get at the vtable properly.
++  */
++  btype = TYPE_VPTR_BASETYPE (known_type);
++  CHECK_TYPEDEF (btype);
++  if (btype != known_type )
++    {
++      v = value_cast (btype, v);
++      if (using_enc)
++        *using_enc=1;
++    }
++  /*
++    We can't use value_ind here, because it would want to use RTTI, and
++    we'd waste a bunch of time figuring out we already know the type.
++    Besides, we don't care about the type, just the actual pointer
++  */
++  if (VALUE_ADDRESS (value_field (v, TYPE_VPTR_FIELDNO (known_type))) == 0)
++    return NULL;
++
++  vtbl=value_as_address(value_ind(value_field(v,TYPE_VPTR_FIELDNO(known_type))));
++
++  /* Try to find a symbol that is the vtable */
++  minsym=lookup_minimal_symbol_by_pc(vtbl);
++  if (minsym==NULL
++      || (mangled_name=SYMBOL_NAME(minsym))==NULL
++      || !is_vtable_name (mangled_name))
++    return NULL;
++
++  /* If we just skip the prefix, we get screwed by namespaces */
++  if (strchr (mangled_name, '$'))
++    {
++      demangled_name = strchr (mangled_name, '$') + 2;
++    }
++  else
++    demangled_name = mangled_name;
++  /* Lookup the type for the name */
++  rtti_type=lookup_typename(demangled_name, (struct block *)0,1);
++
++  if (rtti_type==NULL)
++    return NULL;
++
++  if (TYPE_N_BASECLASSES(rtti_type) > 1 &&  full && (*full) != 1)
++    {
++      if (top)
++        *top=TYPE_BASECLASS_BITPOS(rtti_type,TYPE_VPTR_FIELDNO(rtti_type))/8;
++      if (top && ((*top) >0))
++        {
++          if (TYPE_LENGTH(rtti_type) > TYPE_LENGTH(known_type))
++            {
++              if (full)
++                *full=0;
++            }
++          else
++            {
++              if (full)
++                *full=1;
++            }
++        }
++    }
++  else
++    {
++      if (full)
++        *full=1;
++    }
++
++  return rtti_type;
++}
++
++/* Return true if the INDEXth field of TYPE is a virtual baseclass
++   pointer which is for the base class whose type is BASECLASS.  */
++
++static int
++vb_match (struct type *type, int index, struct type *basetype)
++{
++  struct type *fieldtype;
++  char *name = TYPE_FIELD_NAME (type, index);
++  char *field_class_name = NULL;
++
++  if (*name != '_')
++    return 0;
++  /* gcc 2.4 uses _vb$.  */
++  if (name[1] == 'v' && name[2] == 'b' && is_cplus_marker (name[3]))
++    field_class_name = name + 4;
++  /* gcc 2.5 will use __vb_.  */
++  if (name[1] == '_' && name[2] == 'v' && name[3] == 'b' && name[4] == '_')
++    field_class_name = name + 5;
++
++  if (field_class_name == NULL)
++    /* This field is not a virtual base class pointer.  */
++    return 0;
++
++  /* It's a virtual baseclass pointer, now we just need to find out whether
++     it is for this baseclass.  */
++  fieldtype = TYPE_FIELD_TYPE (type, index);
++  if (fieldtype == NULL
++      || TYPE_CODE (fieldtype) != TYPE_CODE_PTR)
++    /* "Can't happen".  */
++    return 0;
++
++  /* What we check for is that either the types are equal (needed for
++     nameless types) or have the same name.  This is ugly, and a more
++     elegant solution should be devised (which would probably just push
++     the ugliness into symbol reading unless we change the stabs format).  */
++  if (TYPE_TARGET_TYPE (fieldtype) == basetype)
++    return 1;
++
++  if (TYPE_NAME (basetype) != NULL
++      && TYPE_NAME (TYPE_TARGET_TYPE (fieldtype)) != NULL
++      && STREQ (TYPE_NAME (basetype),
++		TYPE_NAME (TYPE_TARGET_TYPE (fieldtype))))
++    return 1;
++  return 0;
++}
++
++/* Compute the offset of the baseclass which is
++   the INDEXth baseclass of class TYPE,
++   for value at VALADDR (in host) at ADDRESS (in target).
++   The result is the offset of the baseclass value relative
++   to (the address of)(ARG) + OFFSET.
++
++   -1 is returned on error. */
++
++int
++fpc_baseclass_offset (struct type *type, int index, char *valaddr,
++		  CORE_ADDR address)
++{
++  struct type *basetype = TYPE_BASECLASS (type, index);
++
++  if (BASETYPE_VIA_VIRTUAL (type, index))
++    {
++      /* Must hunt for the pointer to this virtual baseclass.  */
++      register int i, len = TYPE_NFIELDS (type);
++      register int n_baseclasses = TYPE_N_BASECLASSES (type);
++
++      /* First look for the virtual baseclass pointer
++         in the fields.  */
++      for (i = n_baseclasses; i < len; i++)
++	{
++	  if (vb_match (type, i, basetype))
++	    {
++	      CORE_ADDR addr
++	      = unpack_pointer (TYPE_FIELD_TYPE (type, i),
++				valaddr + (TYPE_FIELD_BITPOS (type, i) / 8));
++
++	      return addr - (LONGEST) address;
++	    }
++	}
++      /* Not in the fields, so try looking through the baseclasses.  */
++      for (i = index + 1; i < n_baseclasses; i++)
++	{
++	  int boffset =
++	  baseclass_offset (type, i, valaddr, address);
++	  if (boffset)
++	    return boffset;
++	}
++      /* Not found.  */
++      return -1;
++    }
++
++  /* Baseclass is easily computed.  */
++  return TYPE_BASECLASS_BITPOS (type, index) / 8;
++}
++
++static void
++init_fpc_ops (void)
++{
++  fpc_abi_ops.shortname = "fpc";
++  fpc_abi_ops.longname = "Free Pascal ABI";
++  fpc_abi_ops.doc = "Free Pascal v1.0 ABI";
++  fpc_abi_ops.is_destructor_name = fpc_is_destructor_name;
++  fpc_abi_ops.is_constructor_name = fpc_is_constructor_name;
++  fpc_abi_ops.is_vtable_name = fpc_is_vtable_name;
++  fpc_abi_ops.is_operator_name = fpc_is_operator_name;
++  fpc_abi_ops.virtual_fn_field = fpc_virtual_fn_field;
++  fpc_abi_ops.rtti_type = fpc_value_rtti_type;
++  fpc_abi_ops.baseclass_offset = fpc_baseclass_offset;
++}
++
++void
++_initialize_fpc_abi (void)
++{
++  init_fpc_ops ();
++  register_cp_abi (fpc_abi_ops);
++}
 diff -u -p -r origdb/i386-tdep.c gdb/i386-tdep.c
 --- origdb/i386-tdep.c	Mon Sep 16 11:41:12 2002
 +++ gdb/i386-tdep.c	Mon Sep 16 12:08:46 2002
@@ -57,20 +499,35 @@ diff -u -p -r origdb/i386-tdep.c gdb/i386-tdep.c
 +	last_push_esi_pos = codestream_tell ();
 +      codestream_get();
      }
- 
+
    /* The native cc on SVR4 in -K PIC mode inserts the following code
 @@ -765,7 +769,10 @@ i386_skip_prologue (int pc)
- 
+
    i386_follow_jump ();
- 
+
 -  return (codestream_tell ());
 +  if (codestream_tell () == last_push_esi_pos + 1)
 +    return (last_push_esi_pos);
 +  else
 +    return (codestream_tell ());
  }
- 
+
  void
+diff -r -u -p -x Entries -N origdb/minsyms.c gdb/minsyms.c
+--- origdb/minsyms.c	2002-09-16 09:17:51.000000000 +0200
++++ gdb/minsyms.c	2002-10-21 17:45:02.000000000 +0200
+@@ -958,6 +958,11 @@ install_minimal_symbols (struct objfile
+ 	for (i = 0; i < mcount; i++)
+ 	  {
+ 	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
++	    if (strcmp (name, "fpc_compiled") == 0)
++	      {
++		switch_to_cp_abi ("fpc");
++		break;
++	      }
+ 	    if (name[0] == '_' && name[1] == 'Z')
+ 	      {
+ 		switch_to_cp_abi ("gnu-v3");
 diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 --- origdb/p-exp.y	Mon Sep 16 11:41:07 2002
 +++ gdb/p-exp.y	Mon Sep 16 12:08:46 2002
@@ -79,7 +536,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
  #include <ctype.h>
  #include "expression.h"
 -#include "value.h"
-+#include "value.h" 
++#include "value.h"
  #include "parser-defs.h"
  #include "language.h"
  #include "p-lang.h"
@@ -93,23 +550,23 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 +static void pop_current_type ();
 +static int search_field;
  %}
- 
+
 -%type <voidval> exp exp1 type_exp start variable qualified_name
 +%type <voidval> exp exp1 type_exp start normal_start variable qualified_name
  %type <tval> type typebase
  /* %type <bval> block */
- 
-@@ -171,7 +176,8 @@ parse_number (char *, int, int, YYSTYPE 
+
+@@ -171,7 +176,8 @@ parse_number (char *, int, int, YYSTYPE
     Contexts where this distinction is not important can use the
     nonterminal "name", which matches either NAME or TYPENAME.  */
- 
+
 -%token <sval> STRING
-+%token <sval> STRING 
++%token <sval> STRING
 +%token <sval> FIELDNAME
  %token <ssym> NAME /* BLOCKNAME defined below to give it higher precedence. */
  %token <tsym> TYPENAME
  %type <sval> name
-@@ -212,6 +218,7 @@ parse_number (char *, int, int, YYSTYPE 
+@@ -212,6 +218,7 @@ parse_number (char *, int, int, YYSTYPE
  %left '*' '/'
  %right UNARY INCREMENT DECREMENT
  %right ARROW '.' '[' '('
@@ -117,10 +574,10 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
  %token <ssym> BLOCKNAME
  %type <bval> block
  %left COLONCOLON
-@@ -219,15 +226,21 @@ parse_number (char *, int, int, YYSTYPE 
+@@ -219,15 +226,21 @@ parse_number (char *, int, int, YYSTYPE
  
  %%
- 
+
 -start   :	exp1
 +start   :	{ current_type = NULL;
 +		  search_field = 0;
@@ -131,7 +588,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 +		exp1
  	|	type_exp
  	;
- 
+
  type_exp:	type
  			{ write_exp_elt_opcode(OP_TYPE);
  			  write_exp_elt_type($1);
@@ -139,11 +596,11 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 -	;
 +			  write_exp_elt_opcode(OP_TYPE);
 +			  current_type = $1; } ;
- 
+
  /* Expressions, including the comma operator.  */
  exp1	:	exp
 @@ -237,11 +250,14 @@ exp1	:	exp
- 
+
  /* Expressions, not including the comma operator.  */
  exp	:	exp '^'   %prec UNARY
 -			{ write_exp_elt_opcode (UNOP_IND); }
@@ -152,10 +609,10 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 -			{ write_exp_elt_opcode (UNOP_ADDR); }
 -
 +			{ write_exp_elt_opcode (UNOP_IND);
-+			  if (current_type) 
++			  if (current_type)
 +			    current_type = TYPE_TARGET_TYPE (current_type); }
 +	;
-+exp	:	'@' exp    %prec UNARY { write_exp_elt_opcode (UNOP_ADDR); 
++exp	:	'@' exp    %prec UNARY { write_exp_elt_opcode (UNOP_ADDR);
 +			  if (current_type)
 +			    current_type = TYPE_POINTER_TYPE (current_type); }
 +	;
@@ -165,10 +622,10 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 @@ -258,24 +274,55 @@ exp	:	DECREMENT  '(' exp ')'   %prec UNA
  			{ write_exp_elt_opcode (UNOP_PREDECREMENT); }
  	;
- 
+
 -exp	:	exp '.' name
-+exp	:	exp '.' { search_field = 1; } 
-+		FIELDNAME 
++exp	:	exp '.' { search_field = 1; }
++		FIELDNAME
 +		/* name */
  			{ write_exp_elt_opcode (STRUCTOP_STRUCT);
 -			  write_exp_string ($3);
@@ -178,32 +635,32 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 -exp	:	exp '[' exp1 ']'
 -			{ write_exp_elt_opcode (BINOP_SUBSCRIPT); }
 -	;
-+			  write_exp_string ($4); 
++			  write_exp_string ($4);
 +			  write_exp_elt_opcode (STRUCTOP_STRUCT);
-+			  search_field = 0; 
++			  search_field = 0;
 +			  if (current_type)
 +			    { while (TYPE_CODE (current_type) == TYPE_CODE_PTR)
 +				current_type = TYPE_TARGET_TYPE (current_type);
 +			      current_type = lookup_struct_elt_type (
 +				current_type, $4.ptr, false); };
-+			 } ; 
++			 } ;
 +exp	:	exp '['
 +			/* We need to save the current_type value */
-+			{ char *arrayname; 
++			{ char *arrayname;
 +			  int arrayfieldindex;
 +			  arrayfieldindex = is_pascal_string_type (
 +				current_type, NULL, NULL,
-+				NULL, NULL, &arrayname); 
-+			  if (arrayfieldindex) 
++				NULL, NULL, &arrayname);
++			  if (arrayfieldindex)
 +			    {
 +			      struct stoken stringsval;
 +			      stringsval.ptr = alloca (strlen (arrayname) + 1);
 +			      stringsval.length = strlen (arrayname);
 +			      strcpy (stringsval.ptr, arrayname);
 +			      current_type = TYPE_FIELD_TYPE (current_type,
-+				arrayfieldindex - 1); 
++				arrayfieldindex - 1);
 +			      write_exp_elt_opcode (STRUCTOP_STRUCT);
-+			      write_exp_string (stringsval); 
++			      write_exp_string (stringsval);
 +			      write_exp_elt_opcode (STRUCTOP_STRUCT);
 +			    }
 +			  push_current_type ();  }
@@ -212,7 +669,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 +			  write_exp_elt_opcode (BINOP_SUBSCRIPT);
 +			  if (current_type)
 +			    current_type = TYPE_TARGET_TYPE (current_type); }
- 
+
  exp	:	exp '('
  			/* This is to save the value of arglist_len
  			   being accumulated by an outer function call.  */
@@ -223,20 +680,20 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
  			{ write_exp_elt_opcode (OP_FUNCALL);
  			  write_exp_elt_longcst ((LONGEST) end_arglist ());
 -			  write_exp_elt_opcode (OP_FUNCALL); }
-+			  write_exp_elt_opcode (OP_FUNCALL); 
++			  write_exp_elt_opcode (OP_FUNCALL);
 +			  pop_current_type (); }
  	;
- 
+
  arglist	:
 @@ -288,7 +335,8 @@ arglist	:
  exp	:	type '(' exp ')' %prec UNARY
  			{ write_exp_elt_opcode (UNOP_CAST);
  			  write_exp_elt_type ($1);
 -			  write_exp_elt_opcode (UNOP_CAST); }
-+			  write_exp_elt_opcode (UNOP_CAST); 
++			  write_exp_elt_opcode (UNOP_CAST);
 +			  current_type = $1; }
  	;
- 
+
  exp	:	'(' exp1 ')'
 @@ -567,9 +615,11 @@ variable:	name_not_typename
  			      write_exp_elt_block (NULL);
@@ -256,7 +713,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
  			      write_exp_string ($1.stoken);
  			      write_exp_elt_opcode (STRUCTOP_PTR);
 +			      /* we need type of this */
-+			      this_val = value_of_this (0); 
++			      this_val = value_of_this (0);
 +			      if (this_val)
 +				this_type = this_val->type;
 +			      else
@@ -266,14 +723,14 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 +				  this_type,
 +				  $1.stoken.ptr, false);
 +			      else
-+				current_type = NULL; 
++				current_type = NULL;
  			    }
  			  else
  			    {
 @@ -881,6 +943,36 @@ parse_number (p, len, parsed_float, puti
     return INT;
  }
- 
+
 +
 +struct type_push
 +{
@@ -290,7 +747,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 +  tpnew->next = tp_top;
 +  tpnew->stored = current_type;
 +  current_type = NULL;
-+  tp_top = tpnew; 
++  tp_top = tpnew;
 +}
 +
 +static void pop_current_type ()
@@ -315,7 +772,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 -  };
 +    {":=", ASSIGN, BINOP_END},
 +    {"::", COLONCOLON, BINOP_END} };
- 
+
  /* Allocate uppercased var */
  /* make an uppercased copy of tokstart */
 @@ -1147,6 +1239,7 @@ yylex ()
@@ -332,7 +789,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
      int is_a_field_of_this = 0;
 +    int is_a_field = 0;
      int hextype;
- 
+
 -    sym = lookup_symbol (tmp, expression_context_block,
 -			 VAR_NAMESPACE,
 -			 &is_a_field_of_this,
@@ -412,9 +869,9 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 +	tempbuf = (char *) realloc (tempbuf, namelen + 1);
 +	strncpy (tempbuf, tokstart, namelen); tempbuf [namelen] = 0;
 +	yylval.sval.ptr = tempbuf;
-+	yylval.sval.length = namelen; 
++	yylval.sval.length = namelen;
 +	return FIELDNAME;
-+      } 
++      }
 +
 +    /* if not found uppercase the whole.  */
 +    if (!sym && !is_a_field_of_this)
@@ -432,7 +889,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 @@ -1477,8 +1610,7 @@ yylex ()
    }
  }
- 
+
 -void
 -yyerror (msg)
 +void yyerror (msg)
@@ -442,7 +899,7 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
 diff -u -p -r origdb/p-lang.c gdb/p-lang.c
 --- origdb/p-lang.c	Mon Sep 16 11:41:26 2002
 +++ gdb/p-lang.c	Mon Sep 16 12:08:46 2002
-@@ -44,7 +44,8 @@ extern void _initialize_pascal_language 
+@@ -44,7 +44,8 @@ extern void _initialize_pascal_language
     but this does not happen for Free Pascal nor for GPC.  */
  int
  is_pascal_string_type (struct type *type,int *length_pos,
@@ -453,7 +910,7 @@ diff -u -p -r origdb/p-lang.c gdb/p-lang.c
    if (TYPE_CODE (type) == TYPE_CODE_STRUCT)
      {
 @@ -54,11 +55,17 @@ is_pascal_string_type (struct type *type
-           && strcmp (TYPE_FIELDS (type)[0].name, "length") == 0 
+           && strcmp (TYPE_FIELDS (type)[0].name, "length") == 0
            && strcmp (TYPE_FIELDS (type)[1].name, "st") == 0)
          {
 -          *length_pos = TYPE_FIELD_BITPOS (type, 0) / TARGET_CHAR_BIT;
@@ -512,15 +969,15 @@ diff -u -p -r origdb/p-lang.h gdb/p-lang.h
 --- origdb/p-lang.h	Mon Sep 16 11:41:26 2002
 +++ gdb/p-lang.h	Mon Sep 16 12:08:46 2002
 @@ -38,7 +38,8 @@ extern void pascal_type_print_method_arg
- 
+
  /* These are in p-lang.c: */
- 
+
 -extern int is_pascal_string_type (struct type *, int *, int *, int *, int*);
-+extern int 
++extern int
 +  is_pascal_string_type (struct type *, int *, int *, int *, int *, char **);
- 
+
  extern void pascal_printchar (int, struct ui_file *);
- 
+
 diff -u -p -r origdb/p-valprint.c gdb/p-valprint.c
 --- origdb/p-valprint.c	Mon Sep 16 11:41:12 2002
 +++ gdb/p-valprint.c	Mon Sep 16 12:08:46 2002
@@ -548,19 +1005,19 @@ diff -u -p -r origdb/top.c gdb/top.c
 @@ -1325,7 +1325,7 @@ print_gdb_version (struct ui_file *strea
       program to parse, and is just canonical program name and version
       number, which starts after last space. */
- 
+
 -  fprintf_filtered (stream, "GNU gdb %s\n", version);
 +  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
- 
+
    /* Second line is a copyright notice. */
- 
+
 diff -u -p -r origdb/win32-nat.c gdb/win32-nat.c
 --- origdb/win32-nat.c	Mon Sep 16 11:41:09 2002
 +++ gdb/win32-nat.c	Mon Sep 16 12:08:46 2002
 @@ -81,6 +81,13 @@ static unsigned dr[8];
  static int debug_registers_changed = 0;
  static int debug_registers_used = 0;
- 
+
 +#ifdef HAVE_SSE_REGS
 +#define CONTEXT_DEBUGGER_DR CONTEXT_DEBUGGER | CONTEXT_DEBUG_REGISTERS \
 +	| CONTEXT_EXTENDED_REGISTERS
@@ -611,36 +1068,3 @@ diff -u -p -r origdb/win32-nat.c gdb/win32-nat.c
        if (step)
  	{
  	  /* Single step by setting t bit */
-diff -u -p -r origdb/minsyms.c gdb/minsyms.c
---- origdb/minsyms.c	Mon Sep 16 11:41:24 2002
-+++ gdb/minsyms.c	Wed Sep 18 11:48:31 2002
-@@ -950,12 +950,14 @@ install_minimal_symbols (struct objfile 
-       objfile->minimal_symbol_count = mcount;
-       objfile->msymbols = msymbols;
- 
--      /* Try to guess the appropriate C++ ABI by looking at the names 
--	 of the minimal symbols in the table.  */
-+      /* Try to guess the appropriate C++ ABI by looking at the names
-+	 of the minimal symbols in the table.
-+         Disabled for Free Pascal because posix variable
-+         ZONE_NAMES is wrongly recognized
-+
-       {
- 	int i;
--
--	for (i = 0; i < mcount; i++)
-+        for (i = 0; i < mcount; i++)
- 	  {
- 	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
- 	    if (name[0] == '_' && name[1] == 'Z')
-@@ -964,8 +966,8 @@ install_minimal_symbols (struct objfile 
- 		break;
- 	      }
- 	  }
--      }
--      
-+      } */
-+
-       /* Now walk through all the minimal symbols, selecting the newly added
-          ones and attempting to cache their C++ demangled names. */
-       for (; mcount-- > 0; msymbols++)
