@@ -88,11 +88,18 @@ begin
   begin
     NextEntry := Entry^.Next;
     with Entry^.Rect do
-      if (AWindow = Entry^.Window) and
-        (ARect.Left >= Left) and (ARect.Top >= Top) and
-        (ARect.Right <= Right) and (ARect.Bottom <= Bottom) then
-	// Rectangle is already contained in dirt list -> do nothing
-	exit;
+      if AWindow = Entry^.Window then
+        if (ARect.Left >= Left) and (ARect.Top >= Top) and
+          (ARect.Right <= Right) and (ARect.Bottom <= Bottom) then
+	  // Rectangle is already contained in dirt list -> do nothing
+	  exit
+	else if (Left >= ARect.Left) and (Top >= ARect.Top) and
+	  (Right <= ARect.Right) and (Bottom <= ARect.Bottom) then
+	begin
+	  // The new rectangle contains the currently checked rectangle
+	  Entry^.Rect := ARect;
+	  exit;
+	end;
     Entry := NextEntry;
   end;
 
@@ -185,6 +192,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2001/02/09 20:44:04  sg
+  * More optimisations
+
   Revision 1.1  2001/01/17 21:27:51  sg
   * Renamed unit gfximage to gelimage
   * Added unit geldirty
