@@ -1011,6 +1011,17 @@ diff -u -p -r origdb/top.c gdb/top.c
 
    /* Second line is a copyright notice. */
 
+diff -u -p -r origdb/values.c gdb/values.c
+--- origdb/values.c	2002-09-16 11:43:59.000000000 +0200
++++ gdb/values.c	2002-11-05 15:56:15.000000000 +0100
+@@ -863,6 +863,7 @@ value_change_enclosing_type (struct valu
+       
+       new_val = (struct value *) xrealloc (val, sizeof (struct value) + TYPE_LENGTH (new_encl_type));
+       
++      VALUE_ENCLOSING_TYPE (val) = new_encl_type;
+       /* We have to make sure this ends up in the same place in the value
+ 	 chain as the original copy, so it's clean-up behavior is the same. 
+ 	 If the value has been released, this is a waste of time, but there
 diff -u -p -r origdb/win32-nat.c gdb/win32-nat.c
 --- origdb/win32-nat.c	Mon Sep 16 11:41:09 2002
 +++ gdb/win32-nat.c	Mon Sep 16 12:08:46 2002
