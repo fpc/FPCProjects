@@ -15,3 +15,7 @@ subdir=kcl
 [dirs]
 fpcdir=../../..
 incdir=../inc ../common
+
+
+[rules]
+kcl$(PPUEXT): $(wildcard *.inc) $(wildcard ../inc/*.inc) kcl.pp

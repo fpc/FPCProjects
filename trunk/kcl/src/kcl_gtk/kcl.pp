@@ -41,7 +41,7 @@ type
       case Byte of
         0: (Form: PGtkWindow);
         1: (Widget: PGtkWidget);
-	2: (Layout: PGtkLayout);
+        2: (Layout: PGtkLayout);
       end;
 
   TGenericForm_private = record
@@ -97,6 +97,7 @@ var
 {$INCLUDE glabel.inc}
 {$INCLUDE gedit.inc}
 {$INCLUDE gbutton.inc}
+{$INCLUDE glistbox.inc}
 {$INCLUDE gcolumnlist.inc}
 {$INCLUDE gtreeview.inc}
 {$INCLUDE gscroll.inc}
@@ -113,6 +114,9 @@ end.
 
 {
   $Log$
+  Revision 1.4  2000/01/10 09:54:11  peter
+    * listbox added
+
   Revision 1.3  2000/01/06 23:04:11  sg
   * Added TGenericForm_private; its only use until now is the support of
     an attached AccelGroup (for the underlined menu accelerators; full

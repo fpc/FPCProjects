@@ -17,7 +17,7 @@
 // ===================================================================
 //   Widgets
 //
-//	Note: TWidget declaration is in hguibase.inc
+//      Note: TWidget declaration is in hguibase.inc
 // ===================================================================
 
 // -------------------------------------------------------------------
@@ -75,6 +75,34 @@
     property State: TCheckBoxState
       read GetState write SetState default cbUnchecked;
     property Text;
+  end;
+
+
+// -------------------------------------------------------------------
+//   TListBox
+// -------------------------------------------------------------------
+
+  PGtkWidgetsArray = ^TGtkWidgetsArray;
+  TGtkWidgetsArray = array[0..maxint] of PGtkWidget;
+
+  TListBox = class(TWidget)
+  private
+    FItemGtkWidgets    : PGtkWidgetsArray;
+    FItemGtkWidgetsCnt : integer;
+    function  GetItemGtkWidget(index: integer): PGtkWidget;
+    procedure SetItemGtkWidget(index: integer; widget: PGtkWidget);
+    property ItemGtkWidgets[Index: Integer]: PGtkWidget read GetItemGtkWidget write SetItemGtkWidget;
+  protected
+    FItems: TStrings;
+    procedure OnFinishCreation; override;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor  Destroy; override;
+    procedure SetItems(AItems: TStrings);
+    procedure AddItem(AString: string);
+    procedure Clear;
+  published
+    property Items: TStrings read FItems write FItems;
   end;
 
 
@@ -289,6 +317,9 @@
 
 {
   $Log$
+  Revision 1.3  2000/01/10 09:54:11  peter
+    * listbox added
+
   Revision 1.2  2000/01/05 19:15:58  sg
   * Moved all published properties of TCustomPaintBox to TPaintBox
 
