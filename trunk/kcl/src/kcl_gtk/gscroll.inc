@@ -114,55 +114,56 @@ begin
   FVertRange := TGtkScrollboxRange.Create(Self);
 end;
 
-procedure TScrollBox_SetupContent(sb: TScrollBox);
+destructor TScrollBox.Destroy;
 begin
-  sb.FContent.FinishCreation;
-  gtk_scrolled_window_add_with_viewport(PGtkScrolledWindow(sb.FHandle),
-      sb.FContent.FHandle);
-  sb.RecalcLayout;
+  FHorzRange.Free;
+  FVertRange.Free;
+  inherited Destroy;
 end;
 
 procedure TScrollBox.SetContent(AContent: TWidget);
 begin
   FContent := AContent;
   FContent.FParent := Self;
-  if Assigned(FHandle) then
-    TScrollBox_SetupContent(Self);
+//  if Assigned(FHandle) then
+//    TScrollBox_SetupContent(Self);
 end;
 
 procedure TScrollBox.OnFinishCreation;
 begin
-  FHandle := gtk_scrolled_window_new(
-    TGtkAdjRange(FHorzRange).adj, TGtkAdjRange(FVertRange).adj);
+  if Assigned(FContent) then
+    FContent.FinishCreation;
 
+  FHandle := gtk_scrolled_window_new(TGtkAdjRange(FHorzRange).adj, TGtkAdjRange(FVertRange).adj);
   gtk_scrolled_window_set_policy(PGtkScrolledWindow(FHandle),
     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+  priv.viewport := gtk_viewport_new(TGtkAdjRange(FHorzRange).adj, TGtkAdjRange(FVertRange).adj);
+  gtk_widget_show(priv.viewport);
+  gtk_container_add(PGtkContainer(FHandle), priv.viewport);
 
   inherited OnFinishCreation;
 
   if Assigned(FContent) then begin
-    TScrollBox_SetupContent(Self);
-    ASSERT(Assigned(FContent.FHandle));
-    gtk_widget_set_usize(FContent.FHandle,
-      FHorzRange.MaxValue, FVertRange.MaxValue);
+    gtk_container_add(PGtkContainer(priv.viewport), FContent.FHandle);
+    gtk_widget_set_usize(FContent.FHandle, FHorzRange.MaxValue, FVertRange.MaxValue);
   end;
 end;
 
-procedure TScrollBox.OnRecalcLayout;
+procedure TScrollBox.DoRecalcLayout;
+var
+  BorderSize: Integer;
 begin
-  if Assigned(FContent.FHandle) then
-    gtk_widget_set_usize(FContent.FHandle,
-      FContent.Width, FContent.Height);
-end;
-
-procedure TScrollBox.OnSetSize;
-begin
-  inherited OnSetSize;
-end;
-
-procedure TScrollBox.OnSizeChanged;
-begin
-  inherited OnSizeChanged;
+  MaxW := InfiniteSize;
+  MaxH := InfiniteSize;
+  if Assigned(FContent.FHandle) then begin
+    //BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width; ###
+    BorderSize := 2;
+    MinW := 2 * BorderSize;
+    MinH := 2 * BorderSize;
+    DefW := FContent.Width + MinW;
+    DefH := FContent.Height + MinH;
+  end;
 end;
 
 
@@ -200,6 +201,10 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:47:00  sg
+  * Fixed memory leaks
+  * Added layout calculation to TScrollBox
+
   Revision 1.3  2000/01/24 00:30:55  sg
   * Extended copyright to year 2000...
   * Modifications to reflect the changed definition of TWidgetHandle
