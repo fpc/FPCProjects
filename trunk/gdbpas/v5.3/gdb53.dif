@@ -1,24 +1,24 @@
 diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
---- origdb/Makefile.in	2002-11-25 23:05:38.000000000 +0100
-+++ gdb/Makefile.in	2002-12-13 10:41:50.000000000 +0100
+--- origdb/Makefile.in	Mon Nov 25 23:05:38 2002
++++ gdb/Makefile.in	Mon Feb 17 00:18:16 2003
 @@ -561,7 +561,7 @@ SFILES = ada-exp.y ada-lang.c ada-typepr
  	ui-file.h ui-file.c \
  	frame.c doublest.c \
  	builtin-regs.c std-regs.c \
 -	gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
 +	fpc-abi.c gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
-
+ 
  LINTFILES = $(SFILES) $(YYFILES) $(CONFIG_SRCS) init.c
-
+ 
 @@ -846,7 +846,7 @@ COMMON_OBS = version.o blockframe.o brea
  	nlmread.o serial.o mdebugread.o top.o utils.o \
  	ui-file.o \
  	frame.o doublest.o \
 -	gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
 +	fpc-abi.o gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
-
+ 
  OBS = $(COMMON_OBS) $(ANNOTATE_OBS)
-
+ 
 @@ -1661,6 +1661,8 @@ findvar.o: findvar.c $(defs_h) $(symtab_
  fork-child.o: fork-child.c $(defs_h) $(gdb_string_h) $(frame_h) \
  	$(inferior_h) $(target_h) $(gdb_wait_h) $(gdb_vfork_h) $(gdbcore_h) \
@@ -37,9 +37,29 @@ diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
  m68knbsd-nat.o: m68knbsd-nat.c $(defs_h) $(inferior_h) $(gdbcore_h) \
  	$(regcache_h)
  m68knbsd-tdep.o: m68knbsd-tdep.c $(defs_h) $(gdbtypes_h) $(regcache_h)
+diff -u -p -r -N -x Entries origdb/config/m68k/linux.mt gdb/config/m68k/linux.mt
+--- origdb/config/m68k/linux.mt	Sat Mar 10 07:17:22 2001
++++ gdb/config/m68k/linux.mt	Mon Feb 17 00:18:16 2003
+@@ -1,3 +1,3 @@
+ # Target: Motorola m68k with a.out and ELF
+-TDEPFILES= m68k-tdep.o solib.o solib-svr4.o solib-legacy.o
++TDEPFILES= m68k-tdep.o m68klinux-tdep.o solib.o solib-svr4.o solib-legacy.o
+ TM_FILE= tm-linux.h
+diff -u -p -r -N -x Entries origdb/doublest.c gdb/doublest.c
+--- origdb/doublest.c	Fri Aug  9 02:45:10 2002
++++ gdb/doublest.c	Mon Feb 17 00:35:03 2003
+@@ -631,6 +631,8 @@ floatformat_from_length (int len)
+     return TARGET_DOUBLE_FORMAT;
+   else if (len * TARGET_CHAR_BIT == TARGET_LONG_DOUBLE_BIT)
+     return TARGET_LONG_DOUBLE_FORMAT;
++  else if (len * TARGET_CHAR_BIT == TARGET_LONG_DOUBLE_BIT_ALTERNATE)
++    return TARGET_LONG_DOUBLE_FORMAT;
+ 
+   return NULL;
+ }
 diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
 --- origdb/fpc-abi.c	Thu Jan  1 01:00:00 1970
-+++ gdb/fpc-abi.c	Thu Dec 12 15:48:28 2002
++++ gdb/fpc-abi.c	Mon Feb 17 00:18:16 2003
 @@ -0,0 +1,408 @@
 +/* Abstraction of FPC abi.
 +   Contributed by Pierre Muller  <muller@ics.u-strasbg.fr>
@@ -450,8 +470,8 @@ diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
 +  register_cp_abi (fpc_abi_ops);
 +}
 diff -u -p -r -N -x Entries origdb/gdbarch.c gdb/gdbarch.c
---- origdb/gdbarch.c	2003-02-14 16:44:49.000000000 +0100
-+++ gdb/gdbarch.c	2003-02-14 16:46:33.000000000 +0100
+--- origdb/gdbarch.c	Sat Aug 24 02:21:34 2002
++++ gdb/gdbarch.c	Mon Feb 17 00:18:16 2003
 @@ -137,6 +137,7 @@ struct gdbarch
    int float_bit;
    int double_bit;
@@ -499,10 +519,13 @@ diff -u -p -r -N -x Entries origdb/gdbarch.c gdb/gdbarch.c
  #ifdef TARGET_LONG_DOUBLE_FORMAT
    fprintf_unfiltered (file,
                        "gdbarch_dump: TARGET_LONG_DOUBLE_FORMAT # %s\n",
-@@ -2374,6 +2386,23 @@ set_gdbarch_long_double_bit (struct gdba
- }
-
- int
+@@ -2371,6 +2383,23 @@ set_gdbarch_long_double_bit (struct gdba
+                              int long_double_bit)
+ {
+   gdbarch->long_double_bit = long_double_bit;
++}
++
++int
 +gdbarch_long_double_bit_alternate (struct gdbarch *gdbarch)
 +{
 +  gdb_assert (gdbarch != NULL);
@@ -517,18 +540,15 @@ diff -u -p -r -N -x Entries origdb/gdbarch.c gdb/gdbarch.c
 +                                       int long_double_bit_alternate)
 +{
 +  gdbarch->long_double_bit_alternate = long_double_bit_alternate;
-+}
-+
-+int
- gdbarch_ptr_bit (struct gdbarch *gdbarch)
- {
-   gdb_assert (gdbarch != NULL);
+ }
+ 
+ int
 diff -u -p -r -N -x Entries origdb/gdbarch.h gdb/gdbarch.h
---- origdb/gdbarch.h	2003-02-14 16:44:49.000000000 +0100
-+++ gdb/gdbarch.h	2003-02-14 16:46:33.000000000 +0100
-@@ -240,6 +240,24 @@ extern void set_gdbarch_long_double_bit
+--- origdb/gdbarch.h	Sat Aug 24 02:21:34 2002
++++ gdb/gdbarch.h	Mon Feb 17 00:18:16 2003
+@@ -240,6 +240,24 @@ extern void set_gdbarch_long_double_bit 
     ptr_bit is the size of a pointer on the target */
-
+ 
  /* Default (value) for non- multi-arch platforms. */
 +/* Alternate number of bits in a long double for the target machine. */
 +
@@ -551,18 +571,9 @@ diff -u -p -r -N -x Entries origdb/gdbarch.h gdb/gdbarch.h
  #if (!GDB_MULTI_ARCH) && !defined (TARGET_PTR_BIT)
  #define TARGET_PTR_BIT (TARGET_INT_BIT)
  #endif
-@@ -2207,7 +2225,7 @@ extern void set_gdbarch_addr_bits_remove
- #endif
- #endif
-
--/* It is not at all clear why SMASH_TEXT_ADDRESS is not folded into
-+/* It is not at all clear why SMASH_TEXT_ADDRESS is not folded into
-    ADDR_BITS_REMOVE. */
-
- /* Default (function) for non- multi-arch platforms. */
 diff -u -p -r -N -x Entries origdb/gdbarch.sh gdb/gdbarch.sh
---- origdb/gdbarch.sh	2003-02-14 16:44:49.000000000 +0100
-+++ gdb/gdbarch.sh	2003-02-14 16:46:33.000000000 +0100
+--- origdb/gdbarch.sh	Wed Nov 20 01:43:57 2002
++++ gdb/gdbarch.sh	Mon Feb 17 00:18:16 2003
 @@ -400,6 +400,8 @@ v::TARGET_FLOAT_BIT:int:float_bit::::8 *
  v::TARGET_DOUBLE_BIT:int:double_bit::::8 * sizeof (double):8*TARGET_CHAR_BIT::0
  # Number of bits in a long double for the target machine.
@@ -572,9 +583,21 @@ diff -u -p -r -N -x Entries origdb/gdbarch.sh gdb/gdbarch.sh
  # For most targets, a pointer on the target and its representation as an
  # address in GDB have the same size and "look the same".  For such a
  # target, you need only set TARGET_PTR_BIT / ptr_bit and TARGET_ADDR_BIT
+diff -u -p -r -N -x Entries origdb/gdbserver/linux-m68k-low.c gdb/gdbserver/linux-m68k-low.c
+--- origdb/gdbserver/linux-m68k-low.c	Wed Apr 10 00:44:43 2002
++++ gdb/gdbserver/linux-m68k-low.c	Mon Feb 17 00:18:16 2003
+@@ -26,7 +26,7 @@
+ #include <sys/reg.h>
+ #endif
+ 
+-#define m68k_num_regs 31
++#define m68k_num_regs 29
+ 
+ /* This table must line up with REGISTER_NAMES in tm-m68k.h */
+ static int m68k_regmap[] =
 diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
 --- origdb/i386-tdep.c	Mon Aug 26 20:35:25 2002
-+++ gdb/i386-tdep.c	Thu Dec 12 15:47:04 2002
++++ gdb/i386-tdep.c	Mon Feb 17 00:18:16 2003
 @@ -708,6 +708,8 @@ i386_skip_prologue (CORE_ADDR pc)
  {
    unsigned char op;
@@ -593,136 +616,37 @@ diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
 +	last_push_esi_pos = codestream_tell ();
 +      codestream_get();
      }
-
+ 
    /* The native cc on SVR4 in -K PIC mode inserts the following code
 @@ -783,7 +787,10 @@ i386_skip_prologue (CORE_ADDR pc)
-
+ 
    i386_follow_jump ();
-
+ 
 -  return (codestream_tell ());
 +  if (codestream_tell () == last_push_esi_pos + 1)
 +    return (last_push_esi_pos);
 +  else
 +    return (codestream_tell ());
  }
-
+ 
  /* Use the program counter to determine the contents and size of a
 @@ -1464,6 +1471,7 @@ i386_gdbarch_init (struct gdbarch_info i
       bits, a `long double' actually takes up 96, probably to enforce
       alignment.  */
    set_gdbarch_long_double_bit (gdbarch, 96);
 +  set_gdbarch_long_double_bit_alternate (gdbarch, 80);
-
+ 
    /* NOTE: tm-i386aix.h, tm-i386bsd.h, tm-i386os9k.h, tm-ptx.h,
       tm-symmetry.h currently override this.  Sigh.  */
-diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
---- origdb/minsyms.c	Thu Jul 11 22:46:19 2002
-+++ gdb/minsyms.c	Thu Dec 12 15:47:04 2002
-@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile
- 	for (i = 0; i < mcount; i++)
- 	  {
- 	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
-+	    if (strcmp (name, "fpc_compiled") == 0)
-+	      {
-+		switch_to_cp_abi ("fpc");
-+		break;
-+	      }
-+
- 	    if (name[0] == '_' && name[1] == 'Z')
- 	      {
- 		switch_to_cp_abi ("gnu-v3");
-diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
---- origdb/p-exp.y	Wed Nov 13 16:44:16 2002
-+++ gdb/p-exp.y	Thu Dec 12 15:47:04 2002
-@@ -294,7 +294,9 @@ exp	:	exp '.' { search_field = 1; }
- 				current_type = TYPE_TARGET_TYPE (current_type);
- 			      current_type = lookup_struct_elt_type (
- 				current_type, $4.ptr, false); };
--			 } ;
-+			 }
-+	;
-+
- exp	:	exp '['
- 			/* We need to save the current_type value */
- 			{ char *arrayname;
-@@ -322,8 +324,7 @@ exp	:	exp '['
- 			    current_type = TYPE_TARGET_TYPE (current_type); }
- 	;
-
--exp	:	exp '('
--			/* This is to save the value of arglist_len
-+exp	:	exp '(' /* This is to save the value of arglist_len
- 			   being accumulated by an outer function call.  */
- 			{ push_current_type ();
- 			  start_arglist (); }
-@@ -1479,6 +1480,17 @@ yylex ()
- 	yylval.sval.length = namelen;
- 	return FIELDNAME;
-       }
-+
-+    /* if not found uppercase the whole.  */
-+    if (!sym && !is_a_field_of_this)
-+      {
-+	for (i = 0; i <= namelen; i++)
-+	  {
-+	    if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
-+	      tokstart[i] -= ('a'-'A');
-+	  }
-+      }
-+
-     /* Call lookup_symtab, not lookup_partial_symtab, in case there are
-        no psymtabs (coff, xcoff, or some future change to blow away the
-        psymtabs once once symbols are read).  */
-diff -u -p -r -N -x Entries origdb/top.c gdb/top.c
---- origdb/top.c	Sat Sep 28 17:10:32 2002
-+++ gdb/top.c	Thu Dec 12 15:47:04 2002
-@@ -1353,7 +1353,7 @@ print_gdb_version (struct ui_file *strea
-      program to parse, and is just canonical program name and version
-      number, which starts after last space. */
-
--  fprintf_filtered (stream, "GNU gdb %s\n", version);
-+  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
-
-   /* Second line is a copyright notice. */
-
-diff -u -p -r -N -x Entries origdb/gdbserver/linux-m68k-low.c gdb/gdbserver/linux-m68k-low.c
---- origdb/gdbserver/linux-m68k-low.c	2002-04-10 00:44:43.000000000 +0200
-+++ gdb/gdbserver/linux-m68k-low.c	2002-12-13 09:58:17.000000000 +0100
-@@ -26,7 +26,7 @@
- #include <sys/reg.h>
- #endif
-
--#define m68k_num_regs 31
-+#define m68k_num_regs 29
-
- /* This table must line up with REGISTER_NAMES in tm-m68k.h */
- static int m68k_regmap[] =
-diff -u -p -r -N -x Entries origdb/regformats/reg-m68k.dat gdb/regformats/reg-m68k.dat
---- origdb/regformats/reg-m68k.dat	2002-02-01 23:05:28.000000000 +0100
-+++ gdb/regformats/reg-m68k.dat	2002-12-13 09:57:33.000000000 +0100
-@@ -31,5 +31,3 @@ expedite:sp,fp,pc
- 32:fpcontrol
- 32:fpstatus
- 32:fpiaddr
--32:fpcode
--32:fpflags
-diff -u -p -r -N -x Entries origdb/config/m68k/linux.mt gdb/config/m68k/linux.mt
---- origdb/config/m68k/linux.mt	2001-03-10 07:17:22.000000000 +0100
-+++ gdb/config/m68k/linux.mt	2002-12-13 10:55:03.000000000 +0100
-@@ -1,3 +1,3 @@
- # Target: Motorola m68k with a.out and ELF
--TDEPFILES= m68k-tdep.o solib.o solib-svr4.o solib-legacy.o
-+TDEPFILES= m68k-tdep.o m68klinux-tdep.o solib.o solib-svr4.o solib-legacy.o
- TM_FILE= tm-linux.h
 diff -u -p -r -N -x Entries origdb/m68klinux-nat.c gdb/m68klinux-nat.c
---- origdb/m68klinux-nat.c	2002-07-11 15:50:49.000000000 +0200
-+++ gdb/m68klinux-nat.c	2002-12-13 10:53:59.000000000 +0100
+--- origdb/m68klinux-nat.c	Thu Jul 11 15:50:49 2002
++++ gdb/m68klinux-nat.c	Mon Feb 17 00:18:16 2003
 @@ -594,102 +594,7 @@ kernel_u_size (void)
    return (sizeof (struct user));
  }
  
 -/* Check whether insn1 and insn2 are parts of a signal trampoline.  */
-
+ 
 -#define IS_SIGTRAMP(insn1, insn2)					\
 -  (/* addaw #20,sp; moveq #119,d0; trap #0 */				\
 -   (insn1 == 0xdefc0014 && insn2 == 0x70774e40)				\
@@ -821,8 +745,8 @@ diff -u -p -r -N -x Entries origdb/m68klinux-nat.c gdb/m68klinux-nat.c
  /* Register that we are able to handle GNU/Linux ELF core file
     formats.  */
 diff -u -p -r -N -x Entries origdb/m68klinux-tdep.c gdb/m68klinux-tdep.c
---- origdb/m68klinux-tdep.c	1970-01-01 01:00:00.000000000 +0100
-+++ gdb/m68klinux-tdep.c	2002-12-13 10:54:15.000000000 +0100
+--- origdb/m68klinux-tdep.c	Thu Jan  1 01:00:00 1970
++++ gdb/m68klinux-tdep.c	Mon Feb 17 00:18:16 2003
 @@ -0,0 +1,127 @@
 +/* Motorola m68k target-dependent support for GNU/Linux.
 +
@@ -951,3 +875,82 @@ diff -u -p -r -N -x Entries origdb/m68klinux-tdep.c gdb/m68klinux-tdep.c
 +}
 +
 +
+diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
+--- origdb/minsyms.c	Thu Jul 11 22:46:19 2002
++++ gdb/minsyms.c	Mon Feb 17 00:18:16 2003
+@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile 
+ 	for (i = 0; i < mcount; i++)
+ 	  {
+ 	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
++	    if (strcmp (name, "fpc_compiled") == 0)
++	      {
++		switch_to_cp_abi ("fpc");
++		break;
++	      }
++
+ 	    if (name[0] == '_' && name[1] == 'Z')
+ 	      {
+ 		switch_to_cp_abi ("gnu-v3");
+diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
+--- origdb/p-exp.y	Wed Nov 13 16:44:16 2002
++++ gdb/p-exp.y	Mon Feb 17 00:20:48 2003
+@@ -294,7 +294,9 @@ exp	:	exp '.' { search_field = 1; } 
+ 				current_type = TYPE_TARGET_TYPE (current_type);
+ 			      current_type = lookup_struct_elt_type (
+ 				current_type, $4.ptr, false); };
+-			 } ; 
++			 }
++	;
++ 
+ exp	:	exp '['
+ 			/* We need to save the current_type value */
+ 			{ char *arrayname; 
+@@ -322,8 +324,7 @@ exp	:	exp '['
+ 			    current_type = TYPE_TARGET_TYPE (current_type); }
+ 	;
+ 
+-exp	:	exp '('
+-			/* This is to save the value of arglist_len
++exp	:	exp '(' /* This is to save the value of arglist_len
+ 			   being accumulated by an outer function call.  */
+ 			{ push_current_type ();
+ 			  start_arglist (); }
+@@ -1479,6 +1480,17 @@ yylex ()
+ 	yylval.sval.length = namelen; 
+ 	return FIELDNAME;
+       } 
++
++    /* if not found uppercase the whole.  */
++    if (!sym && !is_a_field_of_this)
++      {
++	for (i = 0; i <= namelen; i++)
++	  {
++	    if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
++	      tokstart[i] -= ('a'-'A');
++	  }
++      }
++
+     /* Call lookup_symtab, not lookup_partial_symtab, in case there are
+        no psymtabs (coff, xcoff, or some future change to blow away the
+        psymtabs once once symbols are read).  */
+diff -u -p -r -N -x Entries origdb/regformats/reg-m68k.dat gdb/regformats/reg-m68k.dat
+--- origdb/regformats/reg-m68k.dat	Fri Feb  1 23:05:28 2002
++++ gdb/regformats/reg-m68k.dat	Mon Feb 17 00:18:16 2003
+@@ -31,5 +31,3 @@ expedite:sp,fp,pc
+ 32:fpcontrol
+ 32:fpstatus
+ 32:fpiaddr
+-32:fpcode
+-32:fpflags
+diff -u -p -r -N -x Entries origdb/top.c gdb/top.c
+--- origdb/top.c	Sat Sep 28 17:10:32 2002
++++ gdb/top.c	Mon Feb 17 00:18:16 2003
+@@ -1353,7 +1353,7 @@ print_gdb_version (struct ui_file *strea
+      program to parse, and is just canonical program name and version
+      number, which starts after last space. */
+ 
+-  fprintf_filtered (stream, "GNU gdb %s\n", version);
++  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
+ 
+   /* Second line is a copyright notice. */
+ 
