@@ -27,6 +27,7 @@ type
   TCustomForm = class(TWidget)
   protected
     priv: TGenericForm_private;
+    LastMinW, LastMinH, LastMaxW, LastMaxH: Integer;
     FContent: TWidget;
     FBorderWidth, FDefaultWidth, FDefaultHeight, FPositionX, FPositionY: Integer;
     FOnClose: TNotifyEvent;
@@ -42,8 +43,8 @@ type
     procedure DoClose; dynamic;
 
     procedure OnFinishCreation; override;
-    procedure ApplySize; override;
     procedure DoRecalcLayout; override;
+    procedure LayoutChildren; override;
     property  Content: TWidget read FContent write SetContent;
     property  BorderWidth: Integer read FBorderWidth write FBorderWidth;
     property  DefaultWidth: Integer read FDefaultWidth write SetDefaultWidth default -1;
@@ -83,6 +84,9 @@ type
 
 {
   $Log$
+  Revision 1.6  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.5  2000/02/17 22:23:01  sg
   * Changed the visibility of some TCustomForm properties to get more VCL-like
   * Added "IsRadioGroup" (needed for TRadioButton under GTK)

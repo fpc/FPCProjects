@@ -22,22 +22,6 @@
 //   TCustomForm
 // -------------------------------------------------------------------
 
-procedure TCustomForm_ConfigureEvent(widget: PGtkWidget; event: PGdkEventConfigure;
-  AForm: TCustomForm); cdecl;
-begin
-  if (event^.width < AForm.MinW) or (event^.height < AForm.MinH) then begin
-    //WriteLn('  MinW = ', AForm.MinW, '  MinH = ', AForm.MinH);
-    AForm.SetSize(Max(event^.width, AForm.MinW), Max(event^.height, AForm.MinH));
-    exit;
-  end;
-  if (AForm.FWidth <> event^.width) or (AForm.FHeight <> event^.height) then begin
-    AForm.FWidth := event^.width;
-    AForm.FHeight := event^.height;
-    if Assigned(AForm.FContent) then
-      AForm.ApplySize;
-  end;
-end;
-
 procedure TCustomForm_OnMap(GtkWidget: PGtkWidget; ev: PGdkEvent; AForm: TCustomForm); cdecl;
 begin
   if (AForm.FPositionX >= 0) and (AForm.FPositionY >= 0) then
@@ -108,6 +92,7 @@ procedure TCustomForm.OnFinishCreation;
 begin
   if not Assigned(FHandle) then    // -> derived class can create their own form
     FHandle := gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
   gtk_window_set_policy(PGtkWindow(FHandle), 1, 1, 0);
   gtk_container_set_border_width(PGtkContainer(FHandle), FBorderWidth);
 
@@ -121,33 +106,20 @@ begin
 
   inherited OnFinishCreation;
 
-  DoRecalcLayout;
-
   if Length(FText) = 0 then
     gtk_window_set_title(PGtkWindow(FHandle), PChar(Application.Title))
   else
     gtk_window_set_title(PGtkWindow(FHandle), PChar(FText));
-
-  gtk_signal_connect(PGtkObject(FHandle), 'configure_event',
-    GTK_SIGNAL_FUNC(@TCustomForm_ConfigureEvent), Self);
 
   gtk_signal_connect(PGtkObject(FHandle), 'map_event',
     GTK_SIGNAL_FUNC(@TCustomForm_OnMap), Self);
 
   gtk_signal_connect(PGtkObject(FHandle), 'delete-event',
     GTK_SIGNAL_FUNC(@TCustomForm_OnDelete), Self);
-
-  ApplySize;
-  ApplyMinMaxSize;
 end;
 
-procedure TCustomForm.ApplySize;
+procedure TCustomForm.LayoutChildren;
 begin
-  if Assigned(FHandle) then
-    gtk_window_set_default_size(PGtkWindow(FHandle), FWidth, FHeight);
-  //WriteLn('Form: ', FWidth, ' x ', FHeight);
-  if Assigned(FContent) then
-    FContent.SetSize(FWidth - 2 * FBorderWidth, FHeight - 2 * FBorderWidth);
 end;
 
 constructor TCustomForm.Create(AOwner: TComponent);
@@ -188,6 +160,9 @@ end;
 
 {
   $Log$
+  Revision 1.8  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.7  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

@@ -45,7 +45,7 @@ type
 
     function  GetWidgetCount: Integer; override;
     function  GetWidgets(AIndex: Integer): TWidget; override;
-    procedure PutChild(AChild: TWidget; ax, ay: LongInt);	// Initial
+    procedure AddFixedChild(AChild: TWidget);
     procedure OnFinishCreation; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -66,6 +66,7 @@ type
   protected
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
+    procedure LayoutChildren; override;
   published
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; ALeft, ATop: LongInt);
@@ -89,7 +90,7 @@ type
   protected
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
-    procedure ApplySize; override;
+    procedure LayoutChildren; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; ADockingMode: TDockingMode);
@@ -118,7 +119,7 @@ type
 
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
-    procedure ApplySize; override;
+    procedure LayoutChildren; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; x, y, w, h: LongInt);
@@ -147,7 +148,7 @@ type
     procedure SetOrientation(AOrientation: TBoxOrientation);
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
-    procedure ApplySize; override;
+    procedure LayoutChildren; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget);
@@ -161,6 +162,9 @@ type
 
 {
   $Log$
+  Revision 1.8  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.7  2000/02/22 14:37:49  sg
   * Removed horzFixed and vertFixed
 

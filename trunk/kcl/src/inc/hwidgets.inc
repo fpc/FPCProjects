@@ -149,7 +149,7 @@ type
     function  GetWidgetCount: Integer; override;
     function  GetWidgets(AIndex: Integer): TWidget; override;
     procedure DoRecalcLayout; override;
-    procedure ApplySize; override;
+    procedure LayoutChildren; override;
     procedure OnFinishCreation; override;
     procedure SetText(const AText: String); override;
     property  Content: TWidget read FContent write FContent;
@@ -336,7 +336,7 @@ type
     priv: TScrollers_private;
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
-    procedure ApplySize; override;
+    procedure LayoutChildren; override;
     procedure SetContent(AContent: TWidget); override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -428,7 +428,7 @@ type
     procedure SetPageIndex(AIndex: Integer);
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
-    procedure ApplySize; override;
+    procedure LayoutChildren; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -480,7 +480,7 @@ type
     procedure SetSplitterPos(ASplitterPos: Integer);
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
-    procedure ApplySize; override;
+    procedure LayoutChildren; override;
   public
     constructor Create(AOwner: TComponent); override;
   published
@@ -548,6 +548,9 @@ type
 
 {
   $Log$
+  Revision 1.11  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.10  2000/02/22 14:39:03  sg
   * Made "CanExpandWidth" and "CanExpandHeight" properties available via
     'published' where appropiate

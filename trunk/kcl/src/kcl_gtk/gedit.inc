@@ -33,7 +33,6 @@ end;
 
 procedure TEdit.DoRecalcLayout;
 begin
-  inherited DoRecalcLayout;
   if FDefaultWidth > 0 then begin
     MinW := FDefaultWidth;	// ### not correct; only until TToolBar can size a TEdit correctly
     DefW := FDefaultWidth;
@@ -56,6 +55,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.5  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

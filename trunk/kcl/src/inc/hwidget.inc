@@ -65,7 +65,7 @@ type
 
     procedure OnFinishCreation; virtual;
     procedure DoRecalcLayout; virtual;
-    procedure ApplySize; virtual;	// apply current size (FWidth and FHeight); adjust children
+    procedure LayoutChildren; virtual;
 
     property CanExpandWidth: Boolean read FCanExpandWidth write SetCanExpandWidth default True;
     property CanExpandHeight: Boolean read FCanExpandHeight write SetCanExpandHeight default True;
@@ -84,8 +84,7 @@ type
      wcsCreationDone.}
     procedure FinishCreation;
     procedure RecalcLayout;		// called at initialization or by a child
-    procedure SetSize(AWidth, AHeight: Integer);
-    procedure SetPosition(x, y: Integer);
+    procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
 
     procedure BlockDrawing;
     procedure UnblockDrawing;
@@ -123,6 +122,9 @@ type
 
 {
   $Log$
+  Revision 1.7  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.6  2000/02/22 14:38:19  sg
   * Added CanExpandWidth and CanExpandHeight
   * SetSize, SetPosition and RecalcLayout now are public

@@ -48,8 +48,6 @@ var
   font: PGdkFont;
   BorderSize, xthickness, ythickness: Integer;
 begin
-  inherited DoRecalcLayout;
-
   font := PGtkStyle(PGtkBin(FHandle)^.child^.thestyle)^.font;
 
   BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width;
@@ -124,7 +122,6 @@ end;
 
 procedure TCheckBox.DoRecalcLayout;
 begin
-  inherited DoRecalcLayout;
   MaxH := DefH;
 end;
 
@@ -186,7 +183,6 @@ end;
 
 procedure TRadioButton.DoRecalcLayout;
 begin
-  inherited DoRecalcLayout;
   MaxH := DefH;
 end;
 
@@ -200,6 +196,9 @@ end;
 
 {
   $Log$
+  Revision 1.8  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.7  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

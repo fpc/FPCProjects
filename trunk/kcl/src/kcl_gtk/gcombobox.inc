@@ -69,16 +69,8 @@ begin
 end;
 
 procedure TCustomComboBox.DoRecalcLayout;
-var
-  ButtonReq: TGtkRequisition;
 begin
-  inherited DoRecalcLayout;
-
-  PGtkWidgetClass(gtk_type_class(GTK_OBJECT_TYPE(PGtkObject(PGtkCombo(FHandle)^.button))))^.
-    size_request(PGtkCombo(FHandle)^.button, @ButtonReq);
-
-  MinW := ButtonReq.Width + 20;
-  DefW := ButtonReq.Width + 80;
+  MinW := MinH;
   MaxH := DefH;
 end;
 
@@ -99,6 +91,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.3  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

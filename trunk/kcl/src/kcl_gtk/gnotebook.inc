@@ -115,8 +115,10 @@ begin
   FrameBorders.Top := 0;
   FrameBorders.Bottom := ythick;
 
-  MaxW := InfiniteSize;
-  MaxH := InfiniteSize;
+  MinW := 0;
+  MinH := 0;
+  DefW := 0;
+  DefH := 0;
 
   for i := 0 to FPages.Count - 1 do begin
     pg := TNotebookPage(FPages.Items[i]);
@@ -144,19 +146,8 @@ begin
   Inc(DefH, FrameBorders.Top + FrameBorders.Bottom);
 end;
 
-procedure TNotebook.ApplySize;
-var
-  i: Integer;
-  pg: TNotebookPage;
+procedure TNotebook.LayoutChildren;
 begin
-  inherited ApplySize;
-
-  for i := 0 to FPages.Count - 1 do begin
-    pg := TNotebookPage(FPages.Items[i]);
-    pg.Content.SetSize(
-      FWidth - (FrameBorders.Left + FrameBorders.Right + 2 * pg.BorderWidth),
-      FHeight - (FrameBorders.Top + FrameBorders.Bottom + 2 * pg.BorderWidth));
-  end;
 end;
 
 function TNotebook.AddPage(AText: String; AWidget: TWidget): Integer;
@@ -189,6 +180,9 @@ end;
 
 {
   $Log$
+  Revision 1.7  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.6  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

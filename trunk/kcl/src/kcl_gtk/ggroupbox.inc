@@ -80,18 +80,8 @@ begin
   MaxH := Min(InfiniteSize, MaxH + ContentMaxH);
 end;
 
-procedure TCustomGroupBox.ApplySize;
-var
-  BorderWidth: Integer;
+procedure TCustomGroupBox.LayoutChildren;
 begin
-  inherited ApplySize;
-  if Assigned(FContent) then begin
-    BorderWidth := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width;
-    FContent.SetSize(
-      FWidth - (BorderWidth + PGtkStyle(FHandle^.thestyle)^.klass^.xthickness * 2),
-      FHeight - (BorderWidth + PGtkFrame(FHandle)^.label_height +
-        PGtkStyle(FHandle^.thestyle)^.klass^.ythickness));
-  end;
 end;
 
 procedure TCustomGroupBox.SetText(const AText: String);
@@ -104,6 +94,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.3  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

@@ -26,7 +26,7 @@ procedure TCustomForm.SetDefaultWidth(AWidth: Integer);
 begin
   if FDefaultWidth <> AWidth then begin
     FDefaultWidth := AWidth;
-    ApplySize;
+    RecalcLayout;
   end;
 end;
 
@@ -34,7 +34,7 @@ procedure TCustomForm.SetDefaultHeight(AHeight: Integer);
 begin
   if FDefaultHeight <> AHeight then begin
     FDefaultHeight := AHeight;
-    ApplySize;
+    RecalcLayout;
   end;
 end;
 
@@ -76,17 +76,24 @@ begin
   if FWidth = 0 then
     if FDefaultWidth <= 0 then
       FWidth := DefW
-    else
+    else begin
       FWidth := ClipMinMax(FDefaultWidth, MinW, MaxW);
+      DefW := FWidth;
+    end;
 
   if FHeight = 0 then
     if FDefaultHeight <= 0 then
       FHeight := DefH
-    else
+    else begin
       FHeight := ClipMinMax(FDefaultHeight, MinH, MaxH);
+      DefH := FHeight;
+    end;
 
-  if FCreationState = wcsCreationDone then begin
-    ApplySize;	// Start top-down layouting
+  if (LastMinW <> MinW) or (LastMinH <> MinH) or (LastMaxW <> MaxW) or (LastMaxH <> MaxH) then begin
+    LastMinW := MinW;
+    LastMinH := MinH;
+    LastMaxW := MaxW;
+    LastMaxH := MaxH;
     ApplyMinMaxSize;
   end;
 end;
@@ -106,13 +113,16 @@ begin
   if (FDefaultWidth <> AWidth) or (FDefaultHeight <> AHeight) then begin
     FDefaultWidth := AWidth;
     FDefaultHeight := AHeight;
-    ApplySize;
+    RecalcLayout;
   end;
 end;
 
 
 {
   $Log$
+  Revision 1.4  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.3  2000/02/22 14:35:06  sg
   * In DoRecalcLayout: "ApplySize" and "ApplyMinMaxSize" are only called
     after the creation of the form

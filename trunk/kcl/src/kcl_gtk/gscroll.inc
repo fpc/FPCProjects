@@ -44,6 +44,13 @@ type
     procedure SetMaxValue(NewMaxValue: Integer); override;
   end;
 
+  TScrollersRange = class(TGtkAdjRange)
+  protected
+    Scrollers: TScrollers;
+    constructor Create(AScrollers: TScrollers);
+    procedure SetPageSize(NewPageSize: Integer); override;
+    procedure SetMaxValue(NewMaxValue: Integer); override;
+  end;
 
 
 procedure TGtkAdjRange_ValueChanged(adj: PGtkAdjustment; range: TGtkAdjRange); cdecl;
@@ -112,6 +119,30 @@ begin
     if Assigned(ScrollBox.FContent) and Assigned(ScrollBox.FContent.FHandle) then
       gtk_widget_set_usize(ScrollBox.FContent.FHandle,
         ScrollBox.HorzRange.MaxValue, ScrollBox.VertRange.MaxValue);
+end;
+
+constructor TScrollersRange.Create(AScrollers: TScrollers);
+begin
+  inherited Create;
+  Scrollers := AScrollers;
+end;
+
+procedure TScrollersRange.SetPageSize(NewPageSize: Integer);
+begin
+  if NewPageSize <> FPageSize then begin
+    inherited SetPageSize(NewPageSize);
+    if Assigned(Scrollers.FHandle) then
+      Scrollers.LayoutChildren;
+  end;
+end;
+
+procedure TScrollersRange.SetMaxValue(NewMaxValue: Integer);
+begin
+  if NewMaxValue <> adj^.upper then begin
+    inherited SetMaxValue(NewMaxValue);
+    if Assigned(Scrollers.FHandle) then
+      Scrollers.LayoutChildren;
+  end;
 end;
 
 
@@ -186,8 +217,8 @@ end;
 constructor TScrollers.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FHorzRange := TGtkAdjRange.Create;
-  FVertRange := TGtkAdjRange.Create;
+  FHorzRange := TScrollersRange.Create(Self);
+  FVertRange := TScrollersRange.Create(Self);
 end;
 
 destructor TScrollers.Destroy;
@@ -220,11 +251,9 @@ begin
 
   priv.HorzScrollbar := gtk_hscrollbar_new(TGtkAdjRange(FHorzRange).adj);
   gtk_fixed_put(PGtkFixed(FHandle), priv.HorzScrollbar, 0, 0);
-  gtk_widget_show(priv.HorzScrollbar);
 
   priv.VertScrollbar := gtk_vscrollbar_new(TGtkAdjRange(FVertRange).adj);
   gtk_fixed_put(PGtkFixed(FHandle), priv.VertScrollbar, 0, 0);
-  gtk_widget_show(priv.VertScrollbar);
 
   inherited OnFinishCreation;
 end;
@@ -245,25 +274,56 @@ begin
   end;
 end;
 
-procedure TScrollers.ApplySize;
+procedure TScrollers.LayoutChildren;
 var
-  HorzBarSize, VertBarSize: TGtkRequisition;
+  HorzBarAlloc, VertBarAlloc, FrameAlloc: TGtkAllocation;
 begin
-  inherited ApplySize;
+  // Relayout the both scroll bars
+  HorzBarAlloc := priv.HorzScrollbar^.allocation;
+  VertBarAlloc := priv.VertScrollbar^.allocation;
 
-  gtk_widget_size_request(priv.HorzScrollbar, @HorzBarSize);
-  gtk_widget_size_request(priv.VertScrollbar, @VertBarSize);
+  if FHorzRange.PageSize >= FHorzRange.MaxValue then
+    HorzBarAlloc.Height := 0;
 
-  gtk_widget_set_usize(priv.HorzScrollbar, FWidth - VertBarSize.Width, HorzBarSize.Height);
-  gtk_widget_set_usize(priv.VertScrollbar, VertBarSize.Width, FHeight - HorzBarSize.Height);
-  gtk_widget_set_usize(priv.Frame, FWidth - VertBarSize.Width, FHeight - HorzBarSize.Height);
-  gtk_fixed_move(PGtkFixed(FHandle), priv.HorzScrollbar, 0, FHeight - HorzBarSize.Height);
-  gtk_fixed_move(PGtkFixed(FHandle), priv.VertScrollbar, FWidth - VertBarSize.Width, 0);
+  if FVertRange.PageSize >= FVertRange.MaxValue then
+    VertBarAlloc.Width := 0;
 
-  if Assigned(FContent) then
-    FContent.SetSize(
-      FWidth - VertBarSize.Width - PGtkStyle(priv.Frame^.thestyle)^.klass^.xthickness * 2,
-      FHeight - HorzBarSize.Height - PGtkStyle(priv.Frame^.thestyle)^.klass^.ythickness * 2);
+  HorzBarAlloc.y := FHeight - HorzBarAlloc.Height;
+  if FWidth > VertBarAlloc.Width then
+    HorzBarAlloc.Width := FWidth - VertBarAlloc.Width;
+  VertBarAlloc.x := FWidth - VertBarAlloc.Width;
+  if FHeight > HorzBarAlloc.Height then
+    VertBarAlloc.Height := FHeight - HorzBarAlloc.Height;
+
+  if HorzBarAlloc.Height > 0 then begin
+    gtk_widget_size_allocate(priv.HorzScrollbar, @HorzBarAlloc);
+    gtk_widget_show(priv.HorzScrollbar);
+  end else
+    gtk_widget_hide(priv.HorzScrollbar);
+
+  if VertBarAlloc.Width > 0 then begin
+    gtk_widget_size_allocate(priv.VertScrollbar, @VertBarAlloc);
+    gtk_widget_show(priv.VertScrollbar);
+  end else
+    gtk_widget_hide(priv.VertScrollbar);
+
+
+  // Relayout the frame
+  FrameAlloc.x := 0;
+  FrameAlloc.y := 0;
+  FrameAlloc.Width := VertBarAlloc.Width + PGtkStyle(priv.Frame^.thestyle)^.klass^.xthickness * 2;
+  if FWidth > FrameAlloc.Width then
+    FrameAlloc.Width := FWidth - FrameAlloc.Width
+  else
+    FrameAlloc.Width := 1;
+
+  FrameAlloc.Height := HorzBarAlloc.Height + PGtkStyle(priv.Frame^.thestyle)^.klass^.ythickness * 2;
+  if FHeight > FrameAlloc.Height then
+    FrameAlloc.Height := FHeight - FrameAlloc.Height
+  else
+    FrameAlloc.Height := 1;
+
+  gtk_widget_size_allocate(priv.Frame, @FrameAlloc);
 end;
 
 
@@ -301,6 +361,9 @@ end;
 
 {
   $Log$
+  Revision 1.8  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.7  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

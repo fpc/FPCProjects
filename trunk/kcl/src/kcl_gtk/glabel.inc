@@ -28,9 +28,6 @@ end;
 
 procedure TLabel.DoRecalcLayout;
 begin
-  inherited DoRecalcLayout;
-  DefW := gdk_string_width(PGtkStyle(FHandle^.thestyle)^.font, PChar(FText));
-  MinW := DefW;
 end;
 
 procedure TLabel.SetText(const AText: String);
@@ -43,6 +40,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.3  2000/02/17 22:28:36  sg
   * Implemented "DoRecalcLayout"
   * Label text can now be changed after creation

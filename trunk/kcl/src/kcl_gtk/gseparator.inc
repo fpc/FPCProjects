@@ -26,13 +26,15 @@ end;
 
 procedure TSeparator.DoRecalcLayout;
 begin
-  inherited DoRecalcLayout;
   MaxH := DefH;
 end;
 
 
 {
   $Log$
+  Revision 1.3  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.2  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

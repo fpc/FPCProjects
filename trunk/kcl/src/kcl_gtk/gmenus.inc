@@ -249,7 +249,6 @@ end;
 
 procedure TMenuBar.DoRecalcLayout;
 begin
-  inherited DoRecalcLayout;
   //WriteLn(Format('TMenuBar.DoRecalcLayout: Min=%dx%d, Def=%dx%d', [MinW, MinH, DefW, DefH]));
   if DefH <= 1 then begin
     DefH := 20;
@@ -264,6 +263,9 @@ end;
 
 {
   $Log$
+  Revision 1.7  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.6  2000/02/10 18:44:54  sg
   * Event filters are removed correctly now
   * Added layout calculation to TMenuBar

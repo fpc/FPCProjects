@@ -27,9 +27,7 @@ end;
 
 procedure TStatusBar.DoRecalcLayout;
 begin
-  inherited DoRecalcLayout;
   MinW := DefH;
-  MaxW := InfiniteSize;
   MaxH := DefH;
   DefW := DefH * 4;
 end;
@@ -46,6 +44,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.4  2000/02/17 22:30:34  sg
   * The statusbar text now can be changed after creation
 

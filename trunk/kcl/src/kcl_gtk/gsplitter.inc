@@ -75,7 +75,7 @@ begin
   if (AWidget.FWidth <> alloc^.width) or (AWidget.FHeight <> alloc^.height) then begin
     AWidget.FWidth := alloc^.width;
     AWidget.FHeight := alloc^.height;
-    AWidget.ApplySize;
+    AWidget.LayoutChildren;
   end;
 end;
 
@@ -198,49 +198,21 @@ begin
     gtk_paned_set_position(PGtkPaned(FHandle), FSplitterPos);
   end;
 
-WriteLn('TSplitter.ApplySize: ', FPane1.DefW, ' x ', FPane1.DefH,
+WriteLn('TSplitter.DoRecalcLayout: ', FPane1.DefW, ' x ', FPane1.DefH,
   ' | Self: ', FWidth, 'x', FHeight, ', SplitterPos=', FSplitterPos);}
 
 end;
 
-procedure TSplitter.ApplySize;
-var
-  BorderSize, GutterSize{, NewPos}: Integer;
+procedure TSplitter.LayoutChildren;
 begin
-{  gLastSplitterInfosValid := True;
-  gLastSplitterPos := PGtkPaned(FHandle)^.child1_size;
-  gLastSplitterSize := FHeight;}
-
-  BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width;
-  GutterSize := PGtkPaned(FHandle)^.gutter_size;
-
-{
-  if FSplitterPos = -1 then begin
-    if Assigned(FPane1) then
-      if FOrientation = soHorizontal then
-        NewPos := FHeight - BorderSize - GutterSize - FPane2.DefH
-      else
-        NewPos := FPane1.DefW;
-    gtk_paned_set_position(PGtkPaned(FHandle), FSplitterPos);
-  end;
-
-WriteLn('TSplitter.ApplySize: ', FPane1.DefW, ' x ', FPane1.DefH,
-  ' | Self: ', FWidth, 'x', FHeight, ', SplitterPos=', FSplitterPos);
-
-//  
-}
-  inherited ApplySize;
-
-  if Assigned(FPane1) then
-    FPane1.SetSize(FWidth, PGtkPaned(FHandle)^.child1_size);
-
-  if Assigned(FPane2) then
-    FPane2.SetSize(FWidth, FHeight - PGtkPaned(FHandle)^.child1_size - BorderSize * 2 - GutterSize);
 end;
 
 
 {
   $Log$
+  Revision 1.6  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.5  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

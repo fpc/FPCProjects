@@ -48,14 +48,40 @@ end;
 procedure TWidget_SizeRequest(widget: PGtkWidget; req: PGtkRequisition;
   AWidget: TWidget); cdecl;
 begin
-  req^.Width := AWidget.MinW;
-  req^.Height := AWidget.MinH;
+  with AWidget do begin
+    //WriteLn('Size request for ', AWidget.ClassName);
+
+    MinW := req^.Width;
+    MinH := req^.Height;
+    DefW := req^.Width;
+    DefH := req^.Height;
+    MaxW := InfiniteSize;
+    MaxH := InfiniteSize;
+
+    DoRecalcLayout;
+
+    if MinW = 0 then MinW := 1;
+    if MinH = 0 then MinH := 1;
+    if DefW < MinW then DefW := MinW;
+    if DefH < MinH then DefH := MinH;
+
+    if (not FCanExpandWidth) or (MaxW < DefW) then
+      MaxW := DefW;
+    if (not FCanExpandHeight) or (MaxH < DefH) then
+      MaxH := DefH;
+
+    req^.Width := DefW;
+    req^.Height := DefH;
+  end;
 end;
 
 procedure TWidget_SizeAllocate(widget: PGtkWidget; alloc: PGtkAllocation;
   AWidget: TWidget); cdecl;
 begin
   //WriteLn('Size allocated for ', AWidget.ClassName, ': ', alloc^.Width, 'x', alloc^.Height);
+  AWidget.FWidth := alloc^.Width;
+  AWidget.FHeight := alloc^.Height;
+  AWidget.LayoutChildren;
 end;
 
 
@@ -110,7 +136,7 @@ begin
   gtk_signal_connect(PGtkObject(FHandle), 'size_request',
     GTK_SIGNAL_FUNC(@TWidget_SizeRequest), Self);
 
-  gtk_signal_connect_after(PGtkObject(FHandle), 'size_allocate',
+  gtk_signal_connect(PGtkObject(FHandle), 'size_allocate',
     GTK_SIGNAL_FUNC(@TWidget_SizeAllocate), Self);
 
   if FShowHint then
@@ -127,27 +153,11 @@ begin
 end;
 
 procedure TWidget.DoRecalcLayout;
-var
-  SizeReq: TGtkRequisition;
 begin
-  ASSERT(Assigned(FHandle));
-
-  PGtkWidgetClass(gtk_type_class(GTK_OBJECT_TYPE(PGtkObject(FHandle))))^.
-    size_request(FHandle, @SizeReq);
-
-  DefW := SizeReq.Width;
-  DefH := SizeReq.Height;
-  MinW := DefW;
-  MinH := DefH;
-  MaxW := InfiniteSize;
-  MaxH := InfiniteSize;
 end;
 
-procedure TWidget.ApplySize;
+procedure TWidget.LayoutChildren;
 begin
-  if Assigned(FHandle) and ((FWidth <> FHandle^.allocation.width)
-    or (FHeight <> FHandle^.allocation.height)) then
-    gtk_widget_set_usize(FHandle, FWidth, FHeight);
 end;
 
 
@@ -172,10 +182,23 @@ begin
   inherited Destroy;
 end;
 
-procedure TWidget.SetPosition(x, y: Integer);
+procedure TWidget.RecalcLayout;
 begin
-  if Assigned(FHandle) then
-    gtk_widget_set_uposition(FHandle, x, y);
+  if not Assigned(FHandle) then exit;
+  gtk_widget_queue_resize(FHandle);
+end;
+
+procedure TWidget.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+var
+  alloc: TGtkAllocation;
+begin
+  if not Assigned(FHandle) then exit;
+  alloc.x := ALeft;
+  alloc.y := ATop;
+  alloc.width := Max(1, AWidth);
+  alloc.height := Max(1, AHeight);
+  FHandle^.allocation := alloc;
+  gtk_widget_size_allocate(FHandle, @alloc);
 end;
 
 procedure TWidget.Redraw(AtOnce: Boolean);
@@ -233,6 +256,9 @@ end;
 
 {
   $Log$
+  Revision 1.8  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.7  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 

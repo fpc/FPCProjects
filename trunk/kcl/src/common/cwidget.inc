@@ -54,43 +54,6 @@ begin
   Result := 0;
 end;
 
-procedure TWidget.SetSize(AWidth, AHeight: Integer);
-begin
-  FWidth := AWidth;
-  FHeight := AHeight;
-  ApplySize;
-end;
-
-procedure TWidget.RecalcLayout;
-var
-  SizeReq: TGtkRequisition;
-begin
-  if not Assigned(FHandle) then exit;
-  MinW := 0;
-  MinH := 0;
-  MaxW := 0;
-  MaxH := 0;
-  DefW := 0;
-  DefH := 0;
-
-  DoRecalcLayout;
-
-  FCreationState := wcsCreationDone;
-
-  if MinW = 0 then MinW := 1;
-  if MinH = 0 then MinH := 1;
-  if DefW < MinW then DefW := MinW;
-  if DefH < MinH then DefH := MinH;
-
-  if (not FCanExpandWidth) or (MaxW < DefW) then
-    MaxW := DefW;
-  if (not FCanExpandHeight) or (MaxH < DefH) then
-    MaxH := DefH;
-
-  if Assigned(FParent) and (FParent.FCreationState = wcsCreationDone) then
-    FParent.RecalcLayout;
-end;
-
 procedure TWidget.SetVisible(AVisible: Boolean);
 begin
   if AVisible = FVisible then exit;
@@ -120,7 +83,7 @@ end;
 
 procedure TWidget.FinishCreation;
 begin
-  if FCreationState = wcsCreationDone then exit;
+  if FCreationState >= wcsCreationInProgress then exit;
 
   if Assigned(FParent) and (FParent.FCreationState < wcsCreationInProgress) then begin
     ASSERT(False);
@@ -131,6 +94,8 @@ begin
 
   // Start the real widget creation:
   OnFinishCreation;
+
+  FCreationState := wcsCreationDone;
 
   if FVisible then
     Show;
@@ -166,6 +131,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.5  2000/02/22 14:37:13  sg
   * Added stuff for CanExpandWidth and CanExpandHeight properties
 

@@ -180,7 +180,6 @@ end;
 
 procedure TToolBar.DoRecalcLayout;
 begin
-  inherited DoRecalcLayout;
   DefW := MinH;
   MinW := MinH * 4;
 end;
@@ -188,6 +187,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/24 13:39:32  sg
+  * More layout fixes...
+
   Revision 1.3  2000/02/22 14:40:32  sg
   * More layout fixes; minor improvements
 
