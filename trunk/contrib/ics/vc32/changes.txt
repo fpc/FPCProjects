@@ -1,17 +1,16 @@
-
 This is a FPC work copy of ICS, with slightly rearranged directories for
 easier CVSing.
 
 All copyrights of Francois Piette are retained. The FPC contribution is
-merely some compability fixes and release engineering.
-
+merely some compability fixes and release engineering. FPC contributions
+are fully licensed back to Francois, to make inclusion on his own terms
+easy (which are roughly BSD license). If you don't agree with this,
+don't send patches.
 
 ICS
-
-
-
-Used FPC compiler: 1.1.x development series 26 august or later.
+Used FPC compiler: 1.1.x development series 5 sept or later.
                 (this includes 2.0 beta's)
+
 
 Changes:
 
@@ -31,8 +30,11 @@ The ICS package central vc32 dir has 4 types of units:
 As said category 1 and 2 only need the "general" fixes, and a few "per unit"
  fixes.
 
-Category 3 also, but needs some work done to hack up a dummy forms unit,
-        will also need to fix.
+Category 3 can be fixed, but the solution differs for units and programs:
+There is no substitute for application object use in units yet.
+- units: See pop3client and ftpsrv how it is fixed (local (de)allocatehwnd
+         methods that call twsocket's)
+- demoes: use Francois' new conapp unit.
 
 Category 4 Maybe (partially?) portable to lazarus in a year time, but I
          don't touch them for now.
