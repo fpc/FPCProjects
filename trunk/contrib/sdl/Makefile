@@ -207,7 +207,7 @@ override PACKAGE_VERSION=0.01
 sdlutils: sdl
 sdli386utils: sdl
 sdlstreams: sdl sdlutils
-override TARGET_UNITS+=sdl opengl12 sdli386utils sdlutils sdlstreams smpeg sdl_mixer sdl_image sfont
+override TARGET_UNITS+=sdl opengl12 sdli386utils sdlutils sdlstreams smpeg sdl_mixer sdl_image sfont sdlmonofonts
 override TARGET_EXAMPLEDIRS+=demo2d demo3d
 override INSTALL_BASEDIR=.
 override COMPILER_INCLUDEDIR+=basesdl include

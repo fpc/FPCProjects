@@ -8,7 +8,7 @@ packages=
 
 [target]
 dirs=
-units= sdl opengl12 sdli386utils sdlutils sdlstreams smpeg sdl_mixer sdl_image sfont
+units= sdl opengl12 sdli386utils sdlutils sdlstreams smpeg sdl_mixer sdl_image sfont sdlmonofonts
 
 exampledirs=demo2d demo3d
 
