@@ -64,6 +64,7 @@ type
     Matrix: TGfxMatrix;
     Region: TRegion;
     Color: TGfxPixel;
+    Font: TGfxFont;
   end;
 
   TXCanvas = class(TGfxCanvas)
@@ -79,6 +80,7 @@ type
     FStateStackpointer: PXCanvasState;
     FColormap: TColormap;
     FCurColor: TGfxPixel;
+    FFont: TGfxFont;
     procedure Resized(NewWidth, NewHeight: Integer);
   public
     constructor Create(AColormap: TColormap; ADisplay: TXDisplay;
@@ -93,7 +95,7 @@ type
     function UnionClipRect(const ARect: TRect): Boolean; override;
     function GetClipRect: TRect; override;
     function MapColor(const AColor: TGfxColor): TGfxPixel; override;
-    procedure SetColor(AColor: TGfxPixel); override;
+    procedure SetColor_(AColor: TGfxPixel); override;
     procedure SetFont(AFont: TGfxFont); override;
     procedure SetLineStyle(ALineStyle: TGfxLineStyle); override;
 
@@ -223,9 +225,9 @@ type
     FHandle: X.TWindow;
     FDisplay: TXDisplay;
     FParent: TGfxWindow;
-    FWindowType: TGfxWindowType;
     FComposeStatus: TXComposeStatus;
     FComposeBuffer: String[32];
+    FCurCursorHandle: X.TCursor;
     function StartComposing(const Event: TXKeyEvent): TKeySym;
     procedure EndComposing;
     procedure KeyPressed(var Event: TXKeyPressedEvent); message X.KeyPress;
@@ -248,6 +250,7 @@ type
     CanMaximize: Boolean;
     function GetTitle: String; override;
     procedure SetTitle(const ATitle: String); override;
+    procedure DoSetCursor; override;
     function ConvertShiftState(AState: Cardinal): TShiftState;
     function KeySymToKeycode(KeySym: TKeySym): Word;
     procedure UpdateMotifWMHints;
@@ -266,6 +269,7 @@ type
       AMaxWidth, AMaxHeight: Integer); override;
     procedure Show; override;
     procedure Invalidate(const ARect: TRect); override;
+    procedure PaintInvalidRegion; override;
     procedure CaptureMouse; override;
     procedure ReleaseMouse; override;
 
@@ -371,6 +375,7 @@ begin
   XUnionRegion(Region, NewRegion, NewRegion);
   FRegion := NewRegion;
   SavedState^.Color := FCurColor;
+  SavedState^.Font := FFont;
   FStateStackpointer := SavedState;
 end;
 
@@ -386,7 +391,8 @@ begin
   FRegion := SavedState^.Region;
   XSetRegion(DisplayHandle, GC, Region);
 
-  SetColor(SavedState^.Color);
+  SetColor_(SavedState^.Color);
+  SetFont(SavedState^.Font);
 
   Dispose(SavedState);
 end;
@@ -490,7 +496,7 @@ begin
   Result := Color.Pixel;
 end;
 
-procedure TXCanvas.SetColor(AColor: TGfxPixel);
+procedure TXCanvas.SetColor_(AColor: TGfxPixel);
 begin
   if AColor <> FCurColor then
   begin
@@ -501,7 +507,12 @@ end;
 
 procedure TXCanvas.SetFont(AFont: TGfxFont);
 begin
-  if AFont = nil then
+  if AFont = FFont then
+    exit;
+
+  FFont := AFont;
+
+  if not Assigned(AFont) then
   begin
     if FFontStruct = FDefaultFont then
       exit;
@@ -590,7 +601,8 @@ var
 begin
   Transform(Rect.Left, Rect.Top, x1, y1);
   Transform(Rect.Right, Rect.Bottom, x2, y2);
-  XDrawRectangle(DisplayHandle, Handle, GC, x1, y1, x2 - x1 - 1, y2 - y1 - 1);
+  if (Rect.Right > Rect.Left) and (Rect.Bottom > Rect.Top) then
+    XDrawRectangle(DisplayHandle, Handle, GC, x1, y1, x2 - x1 - 1, y2 - y1 - 1);
 end;
 
 procedure TXCanvas.FillRect(const Rect: TRect);
@@ -672,6 +684,7 @@ begin
 
   if (ASource <> Self) and (ASource.PixelFormat.FormatType = ftMono) then
   begin
+    // !!!: This case will probably be removed completely very soon
     RealHeight := ASourceRect.Bottom - ASourceRect.Top;
     if ADestY + RealHeight > Height then
       RealHeight := Height - ADestY;
@@ -679,7 +692,9 @@ begin
     XSetClipOrigin(DisplayHandle, GC, ADestX, ADestY);
     XFillRectangle(DisplayHandle, Handle, GC, ADestX, ADestY,
       ASource.Width, RealHeight);
-    XSetClipMask(DisplayHandle, GC, 0);
+    // Restore old clipping settings
+    XSetClipOrigin(DisplayHandle, GC, 0, 0);
+    XSetRegion(DisplayHandle, GC, Region);
   end else
     XCopyArea(DisplayHandle, TXCanvas(ASource).Handle, Handle, GC,
       ASourceRect.Left, ASourceRect.Top, ASourceRect.Right - ASourceRect.Left,
@@ -689,7 +704,8 @@ end;
 procedure TXCanvas.MaskedCopyRect(ASource, AMask: TGfxCanvas;
   const ASourceRect: TRect; AMaskX, AMaskY, ADestX, ADestY: Integer);
 var
-  SourceLeft, SourceTop, SourceRight, SourceBottom: Integer;
+  SourceLeft, SourceTop, SourceRight, SourceBottom,
+    RectWidth, RectHeight: Integer;
 begin
   if not ASource.InheritsFrom(TXCanvas) then
     raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
@@ -698,18 +714,60 @@ begin
     raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
       [AMask.ClassName, Self.ClassName]);
 
-  ASource.Transform(ASourceRect.Left, ASourceRect.Top, SourceLeft, SourceTop);
-  ASource.Transform(ASourceRect.Right, ASourceRect.Bottom,
-    SourceRight, SourceBottom);
+  SourceLeft := ASourceRect.Left;
+  SourceTop := ASourceRect.Top;
+  SourceRight := ASourceRect.Right;
+  SourceBottom := ASourceRect.Bottom;
+  RectWidth := SourceRight - SourceLeft;
+  RectHeight := SourceBottom - SourceTop;
+
+  { !!!: Attention! The current implementation only clips to the ClipRect,
+    i.e. the outer bounds of the current clipping region. In other words, the
+    result is only correct for a simple rectangle clipping region. }
+  with GetClipRect do
+  begin
+    if (ADestX + RectWidth <= Left) or (ADestY + RectHeight <= Top) then
+      exit;
+
+    if ADestX < Left then
+    begin
+      Inc(AMaskX, Left - ADestX);
+      Inc(SourceLeft, Left - ADestX);
+      ADestX := Left;
+    end;
+    if ADestY < Top then
+    begin
+      Inc(AMaskY, Top - ADestY);
+      Inc(SourceTop, Top - ADestY);
+      ADestY := Top;
+    end;
+
+    if (ADestX >= Right) or (ADestY >= Bottom) then
+      exit;
+
+    if ADestX + RectWidth > Right then
+      RectWidth := Right - ADestX;
+    if ADestY + RectHeight > Bottom then
+      RectHeight := Bottom - ADestY;
+  end;
+
+  if (RectWidth <= 0) or (RectHeight <= 0) then
+    exit;
+
+  ASource.Transform(SourceLeft, SourceTop, SourceLeft, SourceTop);
+  ASource.Transform(SourceRight, SourceBottom, SourceRight, SourceBottom);
   AMask.Transform(AMaskX, AMaskY, AMaskX, AMaskY);
   Transform(ADestX, ADestY, ADestX, ADestY);
 
   XSetClipMask(DisplayHandle, GC, TXCanvas(AMask).Handle);
-  XSetClipOrigin(DisplayHandle, GC, ADestX, ADestY);
+  XSetClipOrigin(DisplayHandle, GC, ADestX - AMaskX, ADestY - AMaskY);
+
   XCopyArea(DisplayHandle, TXCanvas(ASource).Handle, Handle, GC,
-    SourceLeft, SourceTop, SourceRight - SourceLeft,
-    SourceBottom - SourceTop, ADestX, ADestY);
-  XSetClipMask(DisplayHandle, GC, 0);
+    SourceLeft, SourceTop, RectWidth, RectHeight, ADestX, ADestY);
+
+  // Restore old clipping settings
+  XSetClipOrigin(DisplayHandle, GC, 0, 0);
+  XSetRegion(DisplayHandle, GC, Region);
 end;
 
 
@@ -1126,6 +1184,7 @@ var
 begin
   inherited Create;
 
+  FWindowType := AWindowType;
   FScreen := AScreen;
   FDisplay := TXDisplay(Screen.Display);
   FParent := AParent;
@@ -1212,6 +1271,9 @@ begin
 
   Display.FindWindowByXID(Handle)^.GfxWindow := nil;
 
+  if FCurCursorHandle <> 0 then
+    XFreeCursor(DisplayHandle, FCurCursorHandle);
+
   inherited Destroy;
 end;
 
@@ -1280,7 +1342,8 @@ var
   Supplied: LongInt;
   SizeHints: PXSizeHints;
 begin
-  CanMaximize := (AMaxWidth > AMinWidth) or (AMaxHeight > AMinHeight);
+  CanMaximize := (AMaxWidth = 0) or (AMaxHeight = 0) or
+    (AMaxWidth > AMinWidth) or (AMaxHeight > AMinHeight);
   UpdateMotifWMHints;
 
   SizeHints := XAllocSizeHints;
@@ -1324,6 +1387,11 @@ begin
   Display.DirtyList.AddRect(Self, ARect);
 end;
 
+procedure TXWindow.PaintInvalidRegion;
+begin
+  Display.DirtyList.PaintQueueForWindow(Self);
+end;
+
 procedure TXWindow.CaptureMouse;
 begin
   XGrabPointer(DisplayHandle, Handle, False, ButtonPressMask or
@@ -1356,6 +1424,34 @@ end;
 procedure TXWindow.SetTitle(const ATitle: String);
 begin
   XStoreName(DisplayHandle, Handle, PChar(ATitle));
+end;
+
+procedure TXWindow.DoSetCursor;
+const
+  CursorTable: array[TGfxCursor] of Integer = (
+    -1,			// crDefault
+    -2,			// crNone	!!!: not implemented
+    -1,			// crArrow
+    34,			// crCross
+    152,		// crIBeam
+    52,			// crSize
+    116,		// crSizeNS
+    108,		// crSizeWE
+    114,		// crUpArrow
+    150,		// crHourGlass
+    0,			// crNoDrop
+    92);		// crHelp
+var
+  ID: Integer;
+begin
+  if FCurCursorHandle <> 0 then
+    XFreeCursor(DisplayHandle, FCurCursorHandle);
+  ID := CursorTable[Cursor];
+  if ID = -1 then
+    FCurCursorHandle := 0
+  else
+    FCurCursorHandle := XCreateFontCursor(DisplayHandle, ID);
+  XDefineCursor(DisplayHandle, Handle, FCurCursorHandle);
 end;
 
 function TXWindow.ConvertShiftState(AState: Cardinal): TShiftState;
@@ -1566,20 +1662,41 @@ begin
 end;
 
 procedure TXWindow.ButtonPressed(var Event: TXButtonPressedEvent);
+var
+  Sum: Integer;
+  NewEvent: TXEvent;
 begin
   case Event.Button of
     Button1..Button3:
       if Assigned(OnMousePressed) then
         OnMousePressed(Self, ButtonTable[Event.Button],
           ConvertShiftState(Event.State), Event.x, Event.y);
-    Button4:
-      if Assigned(OnMouseWheel) then
-        OnMouseWheel(Self, ConvertShiftState(Event.State),
-	  -1, Event.x, Event.y);
-    Button5:
-      if Assigned(OnMouseWheel) then
-        OnMouseWheel(Self, ConvertShiftState(Event.State),
-	  1, Event.x, Event.y);
+    Button4, Button5:		// Mouse wheel message
+      begin
+        if Event.Button = Button4 then
+          Sum := -1
+        else
+          Sum := 1;
+
+	// Check for other mouse wheel messages in the queue
+	while XCheckTypedWindowEvent(DisplayHandle, Handle,
+	  X.ButtonPress, @NewEvent) do
+	begin
+	  if NewEvent.xbutton.Button = 4 then
+	    Dec(Sum)
+	  else if NewEvent.xbutton.Button = 5 then
+	    Inc(Sum)
+	  else
+	  begin
+	    XPutBackEvent(DisplayHandle, @NewEvent);
+	    break;
+	  end;
+	end;
+
+        if Assigned(OnMouseWheel) then
+          OnMouseWheel(Self, ConvertShiftState(Event.State),
+	    Sum, Event.x, Event.y);
+      end;
   end;
 end;
 
@@ -1738,6 +1855,11 @@ end.
 
 {
   $Log$
+  Revision 1.9  2001/02/09 20:47:25  sg
+  * Better mouse wheel support
+  * Implemented new fpGFX interface methods (DefaultFontNames, cursors...)
+  * Minor bugfixes
+
   Revision 1.8  2001/01/18 15:00:14  sg
   * Added TGfxWindowType and implemented support for it
 
