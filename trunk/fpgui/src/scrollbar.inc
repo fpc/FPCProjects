@@ -252,14 +252,11 @@ begin
       Size := Height;
     end;
 
-    Inc(ButtonPos, Pos - ButtonMovePos);
-    if ButtonPos < 0 then
-      ButtonPos := 0;
-    if ButtonPos >= Size - ButtonSize then
-      ButtonPos := Size - ButtonSize - 1;
+    ButtonPos := ClipMinMax(ButtonPos + Pos - ButtonMovePos,
+      0, Size - ButtonSize - 1);
     ButtonMovePos := Pos;
-
     VirtualPos := CalcPosition;
+
     if VirtualPos <> TCustomScrollBar(Owner).Position then
     begin
       if Assigned(TCustomScrollBar(Owner).OnScroll) then
@@ -508,7 +505,7 @@ begin
     else
       Size := Slider.Height;
     Result := fpGUI.Max(Style.GetScrollBarBtnMinSize,
-      PageSize * Size div (Max - Min + 1));
+      PageSize * Size div fpGUI.Max(1, Max - Min + 1));
     if Result > Size then
       Result := Size;
   end;
@@ -567,6 +564,10 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/12/24 13:18:12  sg
+  * Some small fixes (improved speed, and better scrollbar handling where
+    appropiate)
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

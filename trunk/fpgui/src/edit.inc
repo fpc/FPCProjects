@@ -35,8 +35,11 @@ begin
   Borders := Style.GetEditBoxBorders;
 
   Style.DrawEditBox(Canvas, Rect(0, 0, Width, Height));
-  Canvas.IntersectClipRect(Rect(Borders.Left + 1, Borders.Top + 1,
-    Width - Borders.Right - 1, Height - Borders.Bottom - 1));
+
+  if not Canvas.IntersectClipRect(Rect(Borders.Left + 1, Borders.Top + 1,
+    Width - Borders.Right - 1, Height - Borders.Bottom - 1)) then
+    exit;
+
   if wsEnabled in WidgetState then
     Style.SetUIColor(Canvas, clBtnText)
   else
@@ -147,6 +150,10 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/12/24 13:18:12  sg
+  * Some small fixes (improved speed, and better scrollbar handling where
+    appropiate)
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

@@ -68,23 +68,17 @@ var
   CellRect: TRect;
   state: TGridDrawState;
 begin
-{ !!!:  with Canvas.ClipRect do
-  begin
-    x1 := Left;
-    y1 := Top;
-    x2 := Right - 1;
-    y2 := Bottom - 1;
-  end;}
-  with ScrollingSupport.ClientRect do
+  if not Canvas.IntersectClipRect(ScrollingSupport.ClientRect) then
+    exit;
+
+  with Canvas.GetClipRect do
   begin
     x1 := Left;
     y1 := Top;
     x2 := Right - 1;
     y2 := Bottom - 1;
   end;
-  WriteLn(Format('TCustomGrid.Paint(%d/%d - %d/%d)', [x1, y1, x2, y2]));
-
-  Canvas.IntersectClipRect(ScrollingSupport.ClientRect);
+  // WriteLn(Format('TCustomGrid.Paint(%d/%d - %d/%d)', [x1, y1, x2, y2]));
 
   // Draw column grid
 
@@ -138,10 +132,11 @@ begin
 	  CellRect.Top := ys + 1;
 	  CellRect.Right := xs + ColWidths[x];
 	  CellRect.Bottom := ys + ThisRowHeight;
-	  Canvas.FillRect(CellRect);
 	  state := [];
 	  if (x < FixedCols) or (y < FixedRows) then
-	    Include(state, gdFixed);
+	    Include(state, gdFixed)
+	  else
+	    Canvas.FillRect(CellRect);
 	  Canvas.SaveState;
 	  Style.SetUIColor(Canvas, clWindowText);
 	  DrawCell(Canvas, x, y, CellRect, state);
@@ -162,6 +157,15 @@ function TCustomGrid.ProcessEvent(Event: TEventObj): Boolean;
 begin
   Result := ScrollingSupport.ProcessEvent(Event) or
     inherited ProcessEvent(Event);
+  if Event.InheritsFrom(TResizeEventObj) then
+  begin
+    ScrollingSupport.HorzScrollBar.PageSize :=
+      ScrollingSupport.ClientRect.Right -
+      ScrollingSupport.ClientRect.Left;
+    ScrollingSupport.VertScrollBar.PageSize :=
+      ScrollingSupport.ClientRect.Bottom -
+      ScrollingSupport.ClientRect.Top;
+  end;
 end;
 
 function TCustomGrid.DistributeEvent(Event: TEventObj): Boolean;
@@ -182,7 +186,7 @@ begin
   FGridWidth := 0;
   for i := 0 to ColCount - 1 do
     Inc(FGridWidth, ColWidths[i]);
-  // HorzRange.MaxValue := FGridWidth;
+  ScrollingSupport.HorzScrollBar.Max := FGridWidth - 1;
 end;
 
 procedure TCustomGrid.RowHeightsChanged;
@@ -192,10 +196,10 @@ begin
   FGridHeight := 0;
   for i := 0 to RowCount - 1 do
     Inc(FGridHeight, RowHeights[i]);
-  // VertRange.MaxValue := FGridHeight;
+  ScrollingSupport.VertScrollBar.Max := FGridHeight - 1;
 end;
 
-procedure TCustomGrid.SizeChanged(OldColCount, OldRowCount: Longint);
+procedure TCustomGrid.SizeChanged(OldColCount, OldRowCount: Integer);
 begin
   // This dynamic method is only used for descendants of TCustomGrid
 end;
@@ -333,7 +337,7 @@ begin
   if (ACol >= 0) and (ARow >= 0) and (ACol < ColCount) and (ARow < RowCount) then
     Result := CellStrings^[ARow * ColCount + ACol]
   else
-    Result := '';
+    SetLength(Result, 0);
 end;
 
 procedure TStringGrid.SetCells(ACol, ARow: Integer; const AValue: String);
@@ -342,10 +346,16 @@ begin
     CellStrings^[ARow * ColCount + ACol] := AValue;
 end;
 
-procedure TStringGrid.SizeChanged(OldColCount, OldRowCount: Longint);
+procedure TStringGrid.SizeChanged(OldColCount, OldRowCount: Integer);
+var
+  Count: Integer;
 begin
   inherited SizeChanged(OldColCount, OldRowCount);
   ReallocMem(CellStrings, ColCount * RowCount * SizeOf(AnsiString));
+  Count := ColCount * RowCount - OldColCount * OldRowCount;
+  if Count > 0 then
+    FillChar(CellStrings^[OldColCount * OldRowCount],
+      Count * SizeOf(AnsiString), #0);
 end;
 
 procedure TStringGrid.DrawCell(ACanvas: TGfxCanvas; ACol, ARow: Integer;
@@ -385,6 +395,10 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/12/24 13:18:12  sg
+  * Some small fixes (improved speed, and better scrollbar handling where
+    appropiate)
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

@@ -71,10 +71,13 @@ var
   i, StartIndex, EndIndex: Integer;
 begin
   inherited Paint(Canvas);
+
+  if not Canvas.IntersectClipRect(ScrollingSupport.ClientRect) then
+    exit;
+
   Style.SetUIColor(Canvas, clWindow);
   Canvas.FillRect(ScrollingSupport.ClientRect);
   Style.SetUIColor(Canvas, clWindowText);
-  Canvas.IntersectClipRect(ScrollingSupport.ClientRect);
 
   with ScrollingSupport.VertScrollBar do
   begin
@@ -127,7 +130,7 @@ end;
 
 procedure TCustomListBox.UpdateScrollBars;
 begin
-  ScrollingSupport.VertScrollBar.Max := Items.Count * ItemHeight;
+  ScrollingSupport.VertScrollBar.Max := Items.Count * ItemHeight - 1;
 end;
 
 procedure TCustomListBox.VertScrollBarScroll(Sender: TObject;
@@ -139,6 +142,10 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/12/24 13:18:12  sg
+  * Some small fixes (improved speed, and better scrollbar handling where
+    appropiate)
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

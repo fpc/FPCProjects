@@ -353,12 +353,7 @@ begin
   LAYOUTTRACE('TCustomForm.WndPaint for %s:%s (%d/%d-%d/%d)',
     [Name, ClassName, ARect.Left, ARect.Top, ARect.Right, ARect.Bottom]);
   if wsIsVisible in WidgetState then
-  begin
-    Wnd.Canvas.SaveState;
-    Wnd.Canvas.IntersectClipRect(ARect);
     SendEvent(TPaintEventObj.Create(Self, Wnd.Canvas));
-    Wnd.Canvas.RestoreState;
-  end;
 end;
 
 procedure TCustomForm.WndResize(Sender: TObject);
@@ -386,6 +381,10 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/12/24 13:18:12  sg
+  * Some small fixes (improved speed, and better scrollbar handling where
+    appropiate)
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

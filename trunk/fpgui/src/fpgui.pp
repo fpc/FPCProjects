@@ -187,8 +187,11 @@ begin
   if val < min then
     Result := min
   else if val > max then
-    Result := max
-  else
+  begin
+    Result := max;
+    if Result < min then
+      Result := min;
+  end else
     Result := val;
 end;
 
@@ -264,6 +267,10 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/12/24 13:18:12  sg
+  * Some small fixes (improved speed, and better scrollbar handling where
+    appropiate)
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

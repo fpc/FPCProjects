@@ -61,7 +61,7 @@
      
  AState: TGridDrawState); virtual; abstract;
     procedure RowHeightsChanged; dynamic;
-    procedure SizeChanged(OldColCount, OldRowCount: Longint); dynamic;
+    procedure SizeChanged(OldColCount, OldRowCount: Integer); dynamic;
     property ColCount: Integer read FColCount write SetColCount default 5;
     property RowCount: Integer read FRowCount write SetRowCount default 5;
     property FixedCols: Integer read FFixedCols write FFixedCols default 1;
@@ -83,7 +83,7 @@
 // -------------------------------------------------------------------
 
   TDrawCellEvent = procedure(Sender: TObject; ACanvas: TGfxCanvas;
-    ACol, ARow: Longint; Rect: TRect; State: TGridDrawState) of object;
+    ACol, ARow: Integer; Rect: TRect; State: TGridDrawState) of object;
 
 
   TDrawGrid = class(TCustomGrid)
@@ -123,7 +123,7 @@
   protected
     //function GetEditText(ACol, ARow: Integer): String; override;
     //procedure SetEditText(ACol, ARow: Integer; const AValue: String); override;
-    procedure SizeChanged(OldColCount, OldRowCount: Longint); override;
+    procedure SizeChanged(OldColCount, OldRowCount: Integer); override;
     //procedure ColumnMoved(AFrom, ATo: Integer); override;
     //procedure RowMoved(AFrom, ATo: Integer); override;
     procedure DrawCell(ACanvas: TGfxCanvas; ACol, ARow: Integer;
@@ -141,6 +141,10 @@
 
 {
   $Log$
+  Revision 1.2  2000/12/24 13:18:12  sg
+  * Some small fixes (improved speed, and better scrollbar handling where
+    appropiate)
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 
