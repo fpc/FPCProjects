@@ -29,10 +29,10 @@ type
     IsRecalcingLayout: Boolean;
     procedure PutChild(AChild: TWidget; ax, ay: LongInt);	// Initial
     procedure MoveChild(AChild: TWidget; ax, ay: LongInt);	// After init
-    procedure SetChildSize(AChild: TWidget; AWidth, AHeight: LongInt);
-    procedure OnSizeChanged; override;
+    procedure OnFinishCreation; override;
   public
-    procedure FinishCreation; override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
   published
     property Widgets: TCollection read FWidgets;
   end;
@@ -55,7 +55,6 @@ type
   TFixedLayout = class(TLayout)
   protected
     procedure OnFinishCreation; override;
-    procedure OnRecalcLayout; override;
   published
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; ALeft, ATop: LongInt);
@@ -82,7 +81,8 @@ type
   TDockingLayout = class(TLayout)
   protected
     procedure OnFinishCreation; override;
-    procedure OnRecalcLayout; override;
+    procedure DoRecalcLayout; override;
+    procedure ApplySize; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; ADockingMode: TDockingMode);
@@ -113,7 +113,7 @@ type
     procedure FSetSameSizeCells(ASameSize: Boolean);
 
     procedure OnFinishCreation; override;
-    procedure OnRecalcLayout; override;
+//    procedure OnRecalcLayout; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; x, y, w, h: LongInt);
@@ -144,7 +144,7 @@ type
     FVertAlign: TVertAlign;
     FOrientation: TBoxOrientation;
     procedure OnFinishCreation; override;
-    procedure OnRecalcLayout; override;
+//    procedure OnRecalcLayout; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget);
@@ -157,6 +157,9 @@ type
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:35:55  sg
+  * Adapted to new layouting methods
+
   Revision 1.2  2000/01/24 00:08:49  sg
   * Extended copyright to year 2000...
 
