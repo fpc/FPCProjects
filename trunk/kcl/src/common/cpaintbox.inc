@@ -18,6 +18,10 @@
 //   Common implementation for some methods of T(Custom)PaintBox
 // ===================================================================
 
+// -------------------------------------------------------------------
+//   TCustomPaintBox
+// -------------------------------------------------------------------
+
 procedure TCustomPaintBox.DoPaint(ACanvas: TCanvas; const ARect: TRect);
 begin
   if CallEventFilters(TPaintEventObj.Create(Self, ACanvas, ARect)) then
@@ -61,8 +65,21 @@ begin
 end;
 
 
+// -------------------------------------------------------------------
+//   TPaintBox
+// -------------------------------------------------------------------
+
+constructor TPaintBox.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+end;
+
+
 {
   $Log$
+  Revision 1.3  2000/02/10 18:29:38  sg
+  * Added TPaintBox.Create
+
   Revision 1.2  2000/01/24 00:20:43  sg
   * Changed "DoKey" to function; it now returns if the event has been handled
     successfully or not
