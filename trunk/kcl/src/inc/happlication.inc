@@ -26,11 +26,15 @@ type
 
   TApplication = class(TKCLComponent)
   protected
+    priv: TApplication_private;
     FTitle: String;
     FReadFormProc: TReadFormProc;
+    FOnIdle: TNotifyEvent;
     IsRunning: Boolean;
-    procedure Notification(AComponent: TComponent;
-      Operation: TOperation); override;
+
+    procedure SetOnIdle(AOnIdle: TNotifyEvent);
+    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+
   public
     destructor Destroy; override;
     procedure Initialize;
@@ -41,11 +45,15 @@ type
 
     property Title: String read FTitle write FTitle;
     property ReadFormProc: TReadFormProc read FReadFormProc write FReadFormProc;
+    property OnIdle: TNotifyEvent read FOnIdle write SetOnIdle;
   end;
 
 
 {
   $Log$
+  Revision 1.4  2000/02/17 22:21:32  sg
+  * Support for idle handler added
+
   Revision 1.3  2000/02/10 18:32:25  sg
   * TGenericForm is now called TCustomForm
 
