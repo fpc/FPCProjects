@@ -15,7 +15,7 @@
 
 
 // ===================================================================
-//   ScrollWindow widget implementation for GTK+
+//   Scroll widgets implementations for GTK+
 // ===================================================================
 
 // -------------------------------------------------------------------
@@ -36,9 +36,10 @@ type
     constructor Create;
   end;
 
-  TGtkScrollboxRange = class(TGtkAdjRange)
-    ScrollBox: TScrollBox;
-    constructor Create(AScrollBox: TScrollBox);
+  TAbstractWidgetRange = class(TGtkAdjRange)
+  protected
+    ScrollBox: TAbstractScrollingWidget;
+    constructor Create(AScrollBox: TAbstractScrollingWidget);
     procedure SetMaxValue(NewMaxValue: Integer); override;
   end;
 
@@ -86,13 +87,13 @@ begin
 end;
 
 
-constructor TGtkScrollboxRange.Create(AScrollBox: TScrollBox);
+constructor TAbstractWidgetRange.Create(AScrollBox: TAbstractScrollingWidget);
 begin
   inherited Create;
   ScrollBox := AScrollBox;
 end;
 
-procedure TGtkScrollboxRange.SetMaxValue(NewMaxValue: Integer);
+procedure TAbstractWidgetRange.SetMaxValue(NewMaxValue: Integer);
 begin
   inherited SetMaxValue(NewMaxValue);
   if ScrollBox.FCreationState = wcsCreationDone then
@@ -110,8 +111,8 @@ end;
 constructor TScrollBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FHorzRange := TGtkScrollboxRange.Create(Self);
-  FVertRange := TGtkScrollboxRange.Create(Self);
+  FHorzRange := TAbstractWidgetRange.Create(Self);
+  FVertRange := TAbstractWidgetRange.Create(Self);
 end;
 
 destructor TScrollBox.Destroy;
@@ -168,6 +169,95 @@ end;
 
 
 // -------------------------------------------------------------------
+//   TScrollers
+// -------------------------------------------------------------------
+
+constructor TScrollers.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FHorzRange := TAbstractWidgetRange.Create(Self);
+  FVertRange := TAbstractWidgetRange.Create(Self);
+end;
+
+destructor TScrollers.Destroy;
+begin
+  FHorzRange.Free;
+  FVertRange.Free;
+  inherited Destroy;
+end;
+
+procedure TScrollers.SetContent(AContent: TWidget);
+begin
+  FContent := AContent;
+  FContent.FParent := Self;
+end;
+
+procedure TScrollers.OnFinishCreation;
+begin
+  if Assigned(FContent) then
+    FContent.FinishCreation;
+
+  FHandle := gtk_fixed_new;
+
+  priv.Frame := gtk_frame_new(nil);
+  gtk_frame_set_shadow_type(PGtkFrame(priv.Frame), GTK_SHADOW_IN);
+  gtk_fixed_put(PGtkFixed(FHandle), priv.Frame, 0, 0);
+  gtk_widget_show(priv.Frame);
+
+  if Assigned(FContent) and Assigned(FContent.FHandle) then begin
+    gtk_container_add(PGtkContainer(priv.Frame), FContent.FHandle);
+  end;
+
+  priv.HorzScrollbar := gtk_hscrollbar_new(TGtkAdjRange(FHorzRange).adj);
+  gtk_fixed_put(PGtkFixed(FHandle), priv.HorzScrollbar, 0, 0);
+  gtk_widget_show(priv.HorzScrollbar);
+
+  priv.VertScrollbar := gtk_vscrollbar_new(TGtkAdjRange(FVertRange).adj);
+  gtk_fixed_put(PGtkFixed(FHandle), priv.VertScrollbar, 0, 0);
+  gtk_widget_show(priv.VertScrollbar);
+
+  inherited OnFinishCreation;
+end;
+
+procedure TScrollers.DoRecalcLayout;
+var
+  BorderSize: Integer;
+begin
+  MaxW := InfiniteSize;
+  MaxH := InfiniteSize;
+  if Assigned(FContent.FHandle) then begin
+    //BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width; ###
+    BorderSize := 2;
+    MinW := 2 * BorderSize;
+    MinH := 2 * BorderSize;
+    DefW := FContent.DefW + MinW;
+    DefH := FContent.DefH + MinH;
+  end;
+end;
+
+procedure TScrollers.ApplySize;
+var
+  HorzBarSize, VertBarSize: TGtkRequisition;
+begin
+  inherited ApplySize;
+  WriteLn('TScrollers.ApplySize ', FWidth, ' x ', FHeight);
+
+  PGtkWidgetClass(gtk_type_class(GTK_OBJECT_TYPE(PGtkObject(priv.HorzScrollbar))))^.
+    size_request(FHandle, @HorzBarSize);
+
+  PGtkWidgetClass(gtk_type_class(GTK_OBJECT_TYPE(PGtkObject(priv.VertScrollbar))))^.
+    size_request(FHandle, @VertBarSize);
+
+  gtk_widget_set_usize(priv.HorzScrollbar, FWidth - VertBarSize.Width, VertBarSize.Height);
+  gtk_widget_set_usize(priv.VertScrollbar, HorzBarSize.Width, FHeight - HorzBarSize.Height);
+  gtk_widget_set_usize(priv.Frame, FWidth - VertBarSize.Width, FHeight - HorzBarSize.Height);
+
+  gtk_fixed_move(PGtkFixed(FHandle), priv.HorzScrollbar, 0, FHeight - HorzBarSize.Height);
+  gtk_fixed_move(PGtkFixed(FHandle), priv.VertScrollbar, FWidth - VertBarSize.Width, 0);
+end;
+
+
+// -------------------------------------------------------------------
 //   THorzScrollBar and TVertScrollBar
 // -------------------------------------------------------------------
 
@@ -201,6 +291,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/18 18:28:35  sg
+  * Started TScrollers
+
   Revision 1.4  2000/02/10 18:47:00  sg
   * Fixed memory leaks
   * Added layout calculation to TScrollBox
