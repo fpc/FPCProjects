@@ -18,10 +18,15 @@
 //   TLayout
 // -------------------------------------------------------------------
 
-procedure TLayout.OnSizeChanged;
+constructor TLayout.Create(AOwner: TComponent);
 begin
-  if CreationState >= wcsCreationInProgress then
-    RecalcLayout;
+  inherited Create(AOwner);
+end;
+
+destructor TLayout.Destroy;
+begin
+  FWidgets.Free;
+  inherited Destroy;
 end;
 
 
@@ -63,7 +68,7 @@ begin
       exit;
     end;
   end;
-  ASSERT(false, 'TFixedLayout.MoveWidget: Widget not found');
+  ASSERT(False, 'TFixedLayout.MoveWidget: Widget not found');
 end;
 
 procedure TFixedLayout.OnFinishCreation;
@@ -71,16 +76,13 @@ var
   i: Integer;
   item: TFixedItem;
 begin
+  inherited OnFinishCreation;
+
   for i := 0 to FWidgets.Count - 1 do begin
     item := TFixedItem(FWidgets.Items[i]);
     item.Widget.FinishCreation;
     PutChild(item.Widget, item.Left, item.Top);
   end;
-  inherited OnFinishCreation;
-end;
-
-procedure TFixedLayout.OnRecalcLayout;
-begin
 end;
 
 
@@ -104,6 +106,140 @@ begin
     item := TDockingItem(FWidgets.Items[i]);
     item.Widget.FinishCreation;
     PutChild(item.Widget, 0, 0);
+  end;
+end;
+
+procedure TDockingLayout.DoRecalcLayout;
+var
+  i: Integer;
+  item: TDockingItem;
+  w, cw: TWidget;
+begin
+  if FWidgets.Count = 0 then begin
+    DefW := 200;
+    DefH := 200;
+    exit;
+  end;
+
+  // Find the client widget (widget with DockingMode "dmClient")
+  cw := nil;
+  for i := 0 to FWidgets.Count - 1 do begin
+    item := TDockingItem(FWidgets.Items[i]);
+    if item.DockingMode = dmClient then begin
+      cw := item.Widget;
+      break;
+    end;
+  end;
+
+  if Assigned(cw) then begin
+    MinW := cw.MinW;
+    MinH := cw.MinH;
+    MaxW := cw.MaxW;
+    MaxH := cw.MaxH;
+    DefW := cw.DefW;
+    DefH := cw.DefH;
+  end else begin
+    DefW := 200;
+    DefH := 200;
+    MaxW := InfiniteSize;
+    MaxH := InfiniteSize;
+  end;
+
+  for i := 0 to FWidgets.Count - 1 do begin
+    item := TDockingItem(FWidgets.Items[i]);
+    w := item.Widget;
+    case item.DockingMode of
+      dmTop, dmBottom: begin
+          if MinW < w.MinW then MinW := w.MinW;
+	  Inc(MinH, w.MinH);
+	  if MaxW < w.MaxW then MaxW := w.MaxW;
+	  if MaxH < InfiniteSize then
+	    Inc(MaxH, w.MaxH);
+	  if DefW < w.DefW then DefW := w.DefW;
+	  Inc(DefH, w.DefH);
+        end;
+      dmLeft, dmRight: begin
+	  Inc(MinW, w.MinW);
+          if MinH < w.MinH then MinH := w.MinH;
+	  if MaxW < InfiniteSize then
+	    Inc(MaxW, w.MaxW);
+	  if MaxH < w.MaxH then MaxH := w.MaxH;
+	  Inc(DefW, w.DefW);
+	  if DefH < w.DefH then DefH := w.DefH;
+        end;
+    end;
+  end;
+end;
+
+procedure TDockingLayout.ApplySize;
+  function Max(i1, i2: LongInt): LongInt;
+  begin
+    if i1 >= i2 then Result := i1
+    else Result := i2;
+  end;
+var
+  clx, cly, clw, clh: LongInt;   // Client rectangle
+  ClientWidget: TWidget;
+  i, WidgetW, WidgetH: LongInt;
+  item: TDockingItem;
+begin
+  clx := 0;
+  cly := 0;
+  clw := FWidth;
+  clh := FHeight;
+  //WriteLn('=> DockingLayout.ApplySize ', FWidth, ' x ', FHeight);
+  if (clw = 0) or (clh = 0) then exit;
+
+  // Process all attached widgets
+  ClientWidget := nil;
+  for i := 0 to FWidgets.Count - 1 do begin
+    item := TDockingItem(FWidgets.Items[i]);
+    case item.DockingMode of
+      dmLeft: begin
+	  WidgetW := item.Widget.DefW;
+	  WidgetH := clh;
+	  item.Left := clx;
+	  item.Top := cly;
+	  Inc(clx, WidgetW);
+	  Dec(clw, WidgetW);
+        end;
+      dmTop: begin
+	  WidgetW := clw;
+	  WidgetH := item.Widget.DefH;
+	  item.Left := clx;
+	  item.Top := cly;
+	  Inc(cly, WidgetH);
+	  Dec(clh, WidgetH);
+        end;
+      dmRight: begin
+	  WidgetW := item.Widget.DefW;
+	  WidgetH := clh;
+	  item.Left := clx + clw - WidgetW;
+          item.Top := cly;
+	  Dec(clw, WidgetW);
+        end;
+      dmBottom: begin
+	  WidgetH := item.Widget.DefH;
+	  WidgetW := clw;
+	  item.Left := clx;
+	  item.Top := cly + clh - WidgetH;
+	  Dec(clh, WidgetH);
+        end;
+      dmClient: begin
+          ASSERT(not Assigned(ClientWidget),
+	    'DockingLayout owns multiple widgets with docking mode dmClient!');
+	  ClientWidget := item.Widget;
+        end;
+    end;
+    if item.DockingMode <> dmClient then begin
+      if item.DockingMode <> dmUndocked then
+        item.Widget.SetSize(WidgetW, WidgetH);
+      MoveChild(item.Widget, item.Left, item.Top);
+    end;
+  end;
+  if Assigned(ClientWidget) then begin
+    MoveChild(ClientWidget, clx, cly);
+    ClientWidget.SetSize(clw, clh);
   end;
 end;
 
@@ -137,83 +273,6 @@ begin
   end;
 end;
 
-procedure TDockingLayout.OnRecalcLayout;
-  function Max(i1, i2: LongInt): LongInt;
-  begin
-    if i1 >= i2 then Result := i1
-    else Result := i2;
-  end;
-var
-  clx, cly, clw, clh: LongInt;   // Client rectangle
-  ClientWidget: TWidget;
-  i, WidgetW, WidgetH: LongInt;
-  item: TDockingItem;
-begin
-  clx := 0;
-  cly := 0;
-  clw := Width;
-  clh := Height;
-
-  if (clw = 0) or (clh = 0) then exit;
-
-  // Process all attached widgets
-  ClientWidget := nil;
-  for i := 0 to FWidgets.Count - 1 do begin
-    item := TDockingItem(FWidgets.Items[i]);
-    case item.DockingMode of
-      dmLeft: begin
-	  item.Left := clx;
-	  item.Top := cly;
-	  WidgetW := item.Widget.Width;
-	  WidgetH := clh;
-	  item.Widget.CheckSize(WidgetW, WidgetH);
-	  Inc(clx, WidgetW);
-	  Dec(clw, WidgetW);
-        end;
-      dmTop: begin
-	  item.Left := clx;
-	  item.Top := cly;
-	  WidgetW := clw;
-	  WidgetH := item.Widget.Height;
-	  item.Widget.CheckSize(WidgetW, WidgetH);
-	  Inc(cly, WidgetH);
-	  Dec(clh, WidgetH);
-        end;
-      dmRight: begin
-	  item.Left := clx + clw - item.Widget.Width;
-	  item.Top := cly;
-	  WidgetW := item.Widget.Width;
-	  WidgetH := clh;
-	  item.Widget.CheckSize(WidgetW, WidgetH);
-	  Dec(clw, WidgetW);
-        end;
-      dmBottom: begin
-	  item.Left := clx;
-	  item.Top := cly + clh - item.Widget.Height;
-	  WidgetW := clw;
-	  WidgetH := item.Widget.Height;
-	  item.Widget.CheckSize(WidgetW, WidgetH);
-	  Dec(clh, WidgetH);
-        end;
-      dmClient: begin
-          ASSERT(not Assigned(ClientWidget),
-	    'DockingLayout owns multiple widgets with "client" docking mode!');
-	  ClientWidget := item.Widget;
-        end;
-      dmUndocked: begin end;    // Do nothing
-      else ASSERT(false, 'Invalid docking mode');
-    end;
-    if item.DockingMode <> dmClient then begin
-      if item.DockingMode <> dmUndocked then
-        SetChildSize(item.Widget, WidgetW, WidgetH);
-      MoveChild(item.Widget, item.Left, item.Top);
-    end;
-  end;
-  if Assigned(ClientWidget) then begin
-    ClientWidget.SetSize(clw, clh);
-    MoveChild(ClientWidget, clx, cly);
-  end;
-end;
 
 
 // -------------------------------------------------------------------
@@ -234,10 +293,6 @@ end;
 procedure TGridLayout.OnFinishCreation;
 begin
   inherited OnFinishCreation;
-end;
-
-procedure TGridLayout.OnRecalcLayout;
-begin
 end;
 
 procedure TGridLayout.AddWidget(AWidget: TWidget; x, y, w, h: LongInt);
@@ -278,6 +333,7 @@ begin
     item.Widget.FinishCreation;
     PutChild(item.Widget, 0, 0);
   end;
+//  OnRecalcLayout;
 end;
 
 procedure TBoxLayout.AddWidget(AWidget: TWidget);
@@ -289,11 +345,11 @@ begin
   item.Widget := AWidget;
   if CreationState = wcsCreationDone then begin
     PutChild(AWidget, 0, 0);
-    RecalcLayout;
+//    RecalcLayout;
   end;
 end;
 
-procedure TBoxLayout.OnRecalcLayout;
+{procedure TBoxLayout.OnRecalcLayout;
 var
   i: Integer;
   size, x, y: LongInt;
@@ -307,6 +363,21 @@ begin
     else
       Inc(size, item.Widget.Height);
   end;
+
+{###  if FOrientation = boxHorz then begin
+    if FMinWidth < size then begin
+WriteLn('Setze MinWidth auf ', size);
+      SetFixedSize(size, FHeight);
+{      FMinWidth := size;
+      FMinHeight := FHeight;
+      OnMinMaxSizeChanged;}
+      exit;
+    end
+  end else
+    if FMinHeight < size then begin
+      SetMinHeight(size);
+      exit;
+    end;}
 
   x := 0;
   y := 0;
@@ -342,7 +413,7 @@ begin
         horzCenter: x := (FWidth - item.Widget.Width) div 2;
         horzRight: x := FWidth - item.Widget.Width;
       end;
-
+WriteLn('Moving ', item.Widget.ClassName, ' ', item.Widget.Name, ' to ', x, ' / ', y);
     MoveChild(item.Widget, x, y);
 
     if FOrientation = boxHorz then
@@ -350,11 +421,14 @@ begin
     else
       Inc(y, item.Widget.Height);
   end;
-end;
+end;}
 
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:28:53  sg
+  * Implemented new layouting engine (at this time, for TDockingLayout only)
+
   Revision 1.2  2000/01/24 00:21:29  sg
   * Extended copyright to year 2000...
 
