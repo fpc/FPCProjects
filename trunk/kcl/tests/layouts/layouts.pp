@@ -31,6 +31,7 @@ type
     procedure FixedBtnClicked(Sender: TObject);
     procedure DockingBtnClicked(Sender: TObject);
     procedure GridBtnClicked(Sender: TObject);
+    procedure BoxBtnClicked(Sender: TObject);
     procedure ExitBtnClicked(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -61,6 +62,15 @@ type
   TGridForm = Class(TForm)
     Layout : TGridLayout;
     Button1,Button2,Button3,Button4,Button5 : TButton;
+  public
+    constructor Create(AOwner: TComponent); override;
+  end;
+
+  TBoxForm = Class(TForm)
+    Layout : TDockingLayout;
+    BoxLayout : TBoxLayout;
+    Button1,Button2,Button3,FlipButton : TButton;
+    procedure FlipOrientation (Sender : TObject);
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -98,7 +108,8 @@ begin
     BoxBtn := TButton.Create(Self);
       BoxBtn.Name := 'BoxBtn';
       BoxBtn.Text := 'Box layout';
-      BoxBtn.Enabled := False;
+      BoxBtn.Enabled := True;
+      BoxBtn.OnClick := @BoxBtnClicked;
     Box.AddWidget(BoxBtn);
     GridBtn := TButton.Create(Self);
       GridBtn.Name := 'GridBtn';
@@ -149,6 +160,13 @@ var
   form: TGridForm;
 begin
   Application.CreateForm(TGridForm, form);
+end;
+
+procedure TMainForm.BoxBtnClicked(Sender: TObject);
+var
+  form: TBoxForm;
+begin
+  Application.CreateForm(TBoxForm, form);
 end;
 
 procedure TMainForm.ExitBtnClicked(Sender: TObject);
@@ -276,6 +294,68 @@ begin
   Content := Layout;
 end;
 
+// -------------------------------------------------------------------
+//   TBoxForm
+// -------------------------------------------------------------------
+
+constructor TBoxForm.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+
+  Text := 'Box Layout';
+  BorderWidth := 8;
+
+  writeln ('Creating main layout');
+  Layout := TDockingLayout.Create(Self);
+    Layout.Name := 'Layout';
+  FlipButton := TButton.Create(Self);
+      FlipButton.Name := 'FlipButton';
+      FlipButton.Text := 'Vertical';
+      FlipButton.OnCLick:=@FlipOrientation;
+  Layout.AddWidget(FlipButton,dmBottom);
+  writeln ('Creating box layout');
+  BoxLayout:=TBoxLayout.Create(Self);
+    BoxLayout.Name := 'Box';
+    BoxLayout.Orientation := boxHorz;
+    BoxLayout.VertAlign := vertFill;
+    BoxLayout.Spacing := 4;
+    writeln ('Creating button 1');
+    Button1 := TButton.Create(Self);
+      Button1.Name := 'Button1';
+      Button1.Text := 'Button 1';
+    BoxLayout.AddWidget(Button1);
+    writeln ('Creating button 2');
+    Button2 := TButton.Create(Self);
+      Button2.Name := 'Button2';
+      Button2.Text := 'Button 2';
+    BoxLayout.AddWidget(Button2);
+    writeln ('Creating button 3');
+    Button3 := TButton.Create(Self);
+      Button3.Name := 'Button3';
+      Button3.Text := 'Button 3';
+    BoxLayout.AddWidget(Button3);
+  Writeln ('Adding boxlayout to main layout');
+  Layout.AddWidget(BoxLayout,dmClient);
+  Content := Layout;
+end;
+
+procedure TBoxForm.FlipOrientation (Sender : TObject);
+
+begin
+  With BoxLayout do
+    If Orientation = boxHorz then
+      begin
+      Orientation := boxVert;
+      HorzAlign := HorzFill;
+      FlipButton.Text:='Horizontal';
+      end
+    else
+      begin
+      Orientation := BoxHorz;
+      vertAlign:=VertFill;
+      FlipButton.text:='Vertical';
+      end;
+end;
 
 // -------------------------------------------------------------------
 //   Application setup
@@ -294,6 +374,9 @@ end.
 
 {
   $Log$
+  Revision 1.4  2000/02/18 21:08:39  michael
+  + Added box layout
+
   Revision 1.3  2000/02/18 20:02:57  michael
   + Added grid layout
 
