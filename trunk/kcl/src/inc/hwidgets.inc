@@ -20,6 +20,8 @@
 //      Note: TWidget declaration is in hguibase.inc
 // ===================================================================
 
+type
+
 // -------------------------------------------------------------------
 //   Label
 // -------------------------------------------------------------------
@@ -38,9 +40,11 @@
 
   TEdit = class(TWidget)
   protected
+    FMultiLine: Boolean;
     procedure OnFinishCreation; override;
   published
     property Text;
+    property MultiLine: Boolean read FMultiLine write FMultiLine default False;
   end;
 
 
@@ -48,24 +52,36 @@
 //   Buttons
 // -------------------------------------------------------------------
 
-  TButtonWidget = class(TWidget)
+  TGenericButton = class(TWidget)
   protected
     FOnClick: TNotifyEvent;
+  public
+    procedure DoClick;
   published
     property OnClick: TNotifyEvent read FOnClick write FOnClick;
   end;
 
-  TButton = class(TButtonWidget)
+  TButton = class(TGenericButton)
   protected
     procedure OnFinishCreation; override;
   published
     property Text;
   end;
 
+  TImageButton = class(TGenericButton)
+  protected
+    FImageList: TImageList;
+    FImageIndex: Integer;
+    procedure OnFinishCreation; override;
+  published
+    property ImageList: TImageList read FImageList write FImageList;
+    property ImageIndex: Integer read FImageIndex write FImageIndex;
+  end;
+
 
   TCheckBoxState = (cbUnchecked, cbChecked, cbGrayed);
 
-  TCheckBox = class(TButtonWidget)
+  TCheckBox = class(TGenericButton)
   protected
     FState: TCheckBoxState;
     function  GetState: TCheckBoxState;
@@ -207,7 +223,7 @@
   public
     function  CreateCanvas: TCanvas;
     procedure DoPaint(ACanvas: TCanvas; const ARect: TRect);
-    procedure DoKey(AKey: Char; AKeyCode: LongWord; AShift: TShiftState);
+    function  DoKey(AKey: Char; AKeyCode: LongWord; AShift: TShiftState): Boolean;
     procedure DoMouseButtonDown(AButton: TMouseButton; AShift: TShiftState;
       AMouseX, AMouseY: Integer);
     procedure DoMouseButtonUp(AButton: TMouseButton; AShift: TShiftState;
@@ -237,13 +253,18 @@
 //   Notebook
 // -------------------------------------------------------------------
 
+  TNotebook = class;
+
   TNotebookPage = class(TCollectionItem)
   protected
     priv: TNotebookPage_private;
+    FNotebook: TNotebook;
     FText: String;
     FContent: TWidget;
     procedure SetText(const AText: String);
     procedure SetContent(AContent: TWidget);
+  public
+    property Notebook: TNotebook read FNotebook;
   published
     property Text: String read FText write SetText;
     property Content: TWidget read FContent write SetContent;
@@ -315,8 +336,64 @@
   end;
 
 
+// -------------------------------------------------------------------
+//   ToolBar
+// -------------------------------------------------------------------
+
+  TToolBar = class;
+
+  TToolButtonStyle = (tbsButton, tbsCheck, tbsDropDown, tbsSeparator,
+    tbsDivider);
+
+  TToolButton = class(TKCLComponent)
+  protected
+    FToolBar: TToolBar;
+    FStyle: TToolButtonStyle;
+    FCommand: TCommand;
+    priv: TToolButton_private;
+
+    procedure SetParentComponent(AParent: TComponent); override;
+
+    procedure SetToolBar(AToolBar: TToolBar);
+    procedure SetCommand(ACommand: TCommand);
+  public
+    function HasParent: Boolean; override;
+    function GetParentComponent: TComponent; override;
+  published
+    property Style: TToolButtonStyle read FStyle write FStyle default tbsButton;
+    property Command: TCommand read FCommand write SetCommand;
+  end;
+
+
+  TToolBar = class(TWidget)
+  protected
+    Items: TList;		// All buttons and widgets in the toolbar
+    priv: TToolBar_private;
+
+    procedure GetChildren(AProc: TGetChildProc; ARoot: TComponent); override;
+    procedure Notification(AComponent: TComponent;
+      AOperation: TOperation); override;
+    procedure OnFinishCreation; override;
+
+    function  CommandChangeFilter(AEvent: TEventObj): Boolean;
+    procedure InternalAddItem(AItem: TKCLComponent);
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    function  AddChildWidget(AWidget: TWidget): Boolean; override;
+    procedure RemoveChildWidget(AWidget: TWidget); override;
+    function AddButton(AOwner: TComponent): TToolButton;
+    function CalcItemsWidth: Integer;
+  end;
+
+
 {
   $Log$
+  Revision 1.4  2000/01/24 00:08:04  sg
+  * Added property "MultiLine" to TEdit
+  * Added TImageButton
+  * Added TToolBar and TToolButton
+
   Revision 1.3  2000/01/10 09:54:11  peter
     * listbox added
 
