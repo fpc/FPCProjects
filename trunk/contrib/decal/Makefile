@@ -205,13 +205,15 @@ endif
 PACKAGESDIR:=$(wildcard $(FPCDIR) $(FPCDIR)/packages/base $(FPCDIR)/packages/extra)
 override PACKAGE_NAME=decal
 override PACKAGE_VERSION=0.01
-decalio: decal superstream
-decalsamples: decal randomtesting
-decaltesting: decal decalsamples
-decal: mwfixedrecsort
-randomtesting: decal
-override TARGET_PROGRAMS+=regressdecal.dpr
-override TARGET_UNITS+=mwfixedrecsort decal superstream randomtesting decalsamples decalio
+decalio$(PPUEXT): decalio.pas decal$(PPUEXT) superstream$(PPUEXT)
+decalsamples$(PPUEXT): decalsamples.pas decal$(PPUEXT) randomtesting$(PPUEXT)
+decaltesting$(PPUEXT): decalsamples.pas decal$(PPUEXT) decalsamples$(PPUEXT)
+decal$(PPUEXT): decal.pas mwfixedrecsort$(PPUEXT)
+randomtesting$(PPUEXT): randomtesting.pas decal$(PPUEXT)
+regressdecal$(PPUEXT): 
+	$(COMPILER) regressdecal.dpr
+override TARGET_PROGRAMS+=regressdecal
+override TARGET_UNITS+=mwfixedrecsort decal superstream randomtesting decalsamples decalio decaltesting
 override INSTALL_BASEDIR=.
 ifdef REQUIRE_UNITSDIR
 override UNITSDIR+=$(REQUIRE_UNITSDIR)

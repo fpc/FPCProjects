@@ -7,9 +7,10 @@ packages=
 
 [target]
 dirs=
-units= mwfixedrecsort decal superstream randomtesting decalsamples decalio
+units= mwfixedrecsort decal superstream randomtesting decalsamples decalio \
+	decaltesting
 
-programs=regressdecal.dpr
+programs=regressdecal
 
 [compiler]
 
@@ -17,8 +18,11 @@ programs=regressdecal.dpr
 basedir=.
 
 [prerules]
-decalio: decal superstream
-decalsamples: decal randomtesting
-decaltesting: decal decalsamples
-decal: mwfixedrecsort
-randomtesting: decal
+decalio$(PPUEXT): decalio.pas decal$(PPUEXT) superstream$(PPUEXT)
+decalsamples$(PPUEXT): decalsamples.pas decal$(PPUEXT) randomtesting$(PPUEXT)
+decaltesting$(PPUEXT): decalsamples.pas decal$(PPUEXT) decalsamples$(PPUEXT)
+decal$(PPUEXT): decal.pas mwfixedrecsort$(PPUEXT)
+randomtesting$(PPUEXT): randomtesting.pas decal$(PPUEXT)
+
+regressdecal$(PPUEXT): 
+	$(COMPILER) regressdecal.dpr

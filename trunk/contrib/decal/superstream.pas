@@ -162,7 +162,7 @@ const
   {** Indicate that the item is a wide string (not supported). }
 	ssvtWideString = vtWideString;
 
-{$IFDEF DELPHI4}
+{$IFDEF COMP_HAS_INT64}
 	ssvtInt64 = vtInt64;
 {$ENDIF}
 
@@ -1137,7 +1137,7 @@ begin
 							begin
 								raise TObjStreamException.Create('Wide string not supported yet.');
 							end;
-{$IFDEF DELPHI4}
+{$IFDEF COMP_HAS_INT64}
 						vtInt64:
 							begin
 								write(ptr^, sizeof(int64) * counts[i]);
@@ -1233,7 +1233,7 @@ begin
 							begin
 								raise TObjStreamException.Create('Wide string not supported yet.');
 							end;
-{$IFDEF DELPHI4}
+{$IFDEF COMP_HAS_INT64}
 						vtInt64:
 							begin
 								readfixed(ptr^, sizeof(int64) * counts[i]);
@@ -1320,7 +1320,7 @@ begin
 							begin
 								TransferItem(item, @VWideString, direction);
 							end;
-						{$IFDEF DELPHI4}
+						{$IFDEF COMP_HAS_INT64}
 						vtInt64:
 							begin
 								Getmem(VInt64, sizeof(int64));
@@ -1427,7 +1427,7 @@ begin
 							write(len, sizeof(len));
 							if len > 0 then write(WideString(VWideString)[1], len);
 						end;
-{$IFDEF DELPHI4}
+{$IFDEF COMP_HAS_INT64}
 					vtInt64:
 						write(VInt64, sizeof(int64));
 {$ENDIF}
@@ -1502,7 +1502,7 @@ begin
 						raise TObjStreamException.Create('Can''t read in interfaces.');
 					vtWideString:
 						raise TObjStreamException.Create('Can''t read in wide strings.');
-					{$IFDEF DELPHI4}
+					{$IFDEF COMP_HAS_INT64}
 					vtInt64:
 						readFixed(PInt64(itemAddress)^, sizeof(int64));
 					{$ENDIF}
@@ -1951,6 +1951,9 @@ finalization
 end.
 {
   $Log$
+  Revision 1.4  2004/04/13 17:46:27  marco
+   * small fixes to defines and makefiles
+
   Revision 1.3  2004/04/12 10:23:21  marco
    * regressdecal now has output
 

@@ -3257,7 +3257,7 @@ type
 
 implementation
 
-uses mwFixedRecSort, variants;
+uses mwFixedRecSort {$IFDEF RTL_HAS_UNITVARIANTS} ,variants {$ENDIF};
 
 //
 // We need to bring a couple of things forward from the Delphi system unit.
@@ -11190,6 +11190,9 @@ end.
 
 {
  $Log$
+ Revision 1.4  2004/04/13 17:46:27  marco
+  * small fixes to defines and makefiles
+
  Revision 1.3  2004/04/12 10:23:21  marco
   * regressdecal now has output
 

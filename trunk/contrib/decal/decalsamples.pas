@@ -16,8 +16,7 @@ uses {$ifdef win32}Windows,{$endif} Math, Classes, SysUtils, RandomTesting
 {$ifdef Unix},BaseUnix,Unix{$endif};
 
 {$ifdef Unix}
-
-Function GetTickCount:integer; // returns ms, should return 18ms (55 hz)
+Function GetTickCount:int64; // returns ms, should return 18ms (55 hz)
 
 var t:ttimeval;
     tz:ttimezone;

@@ -31,11 +31,18 @@
 
 {$IFDEF VER120}
 {$DEFINE DELPHI4}
+{$define COMP_HAS_INT64}
 {$ENDIF}
 
 {$IFDEF VER130}
 {$DEFINE DELPHI5}
+{$define COMP_HAS_INT64}
 {$ENDIF}
+
+{$IFDEF VER140}
+{$define RTL_HAS_UNITVARIANTS} 
+{$define COMP_HAS_INT64}
+{$endif}
 
 {$IFDEF FPC}
 {$IFDEF VER1_0}
@@ -44,10 +51,11 @@
 {$ELSE}
 {$mode Delphi}
 {$goto on}
-{$DEFINE DELPHI5}
 {$ifdef Unix}
   {$define UseSysthrds}
 {$endif}
+{$define COMP_HAS_INT64}
+{$define RTL_HAS_UNITVARIANTS} 
 {$ENDIF}
 {$ENDIF}
 
@@ -69,6 +77,9 @@
 
 {
    $Log$
+   Revision 1.3  2004/04/13 17:46:27  marco
+    * small fixes to defines and makefiles
+
    Revision 1.2  2004/04/12 10:23:21  marco
     * regressdecal now has output
 
