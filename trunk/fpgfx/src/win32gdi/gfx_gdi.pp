@@ -192,6 +192,7 @@ type
     procedure WMActivate(var Msg: TMessage); message WM_ACTIVATE;
     procedure WMPaint(var Msg: TMessage); message WM_PAINT;
     procedure WMShowWindow(var Msg: TMessage); message WM_SHOWWINDOW;
+    procedure WMMove(var Msg: TMessage); message WM_MOVE;
     procedure WMSize(var Msg: TMessage); message WM_SIZE;
     // Input messages:
     procedure WMLButtonDown(var Msg: TMessage); message WM_LBUTTONDOWN;
@@ -208,7 +209,7 @@ type
   protected
     WindowClass: TWndClass; {!!!: static;}
     FWindowStyle, FWindowStyleEx: LongWord;	// values used for creation
-    FMouseInWindow, FHasMouseCapture: Boolean;
+    FMouseInWindow, FHasMouseCapture, FHasFocus: Boolean;
     function GetTitle: String; override;
     procedure SetTitle(const ATitle: String); override;
     function DoMouseEnterLeaveCheck(const Msg: TMessage): Boolean;
@@ -219,6 +220,7 @@ type
     destructor Destroy; override;
     procedure DefaultHandler(var Message); override;
 
+    procedure SetPosition(ALeft, ATop: Integer); override;
     procedure SetSize(AWidth, AHeight: Integer); override;
     procedure SetClientSize(AWidth, AHeight: Integer); override;
     procedure SetMinMaxSize(AMinWidth, AMinHeight,
@@ -1032,6 +1034,12 @@ begin
     TMessage(Message).Msg, TMessage(Message).wParam, TMessage(Message).lParam);
 end;
 
+procedure TGDIWindow.SetPosition(ALeft, ATop: Integer);
+begin
+  Windows.SetWindowPos(Handle, 0, ALeft, ATop, 0, 0,
+    SWP_NOSIZE or SWP_NOZORDER);
+end;
+
 procedure TGDIWindow.SetSize(AWidth, AHeight: Integer);
 begin
   if (AWidth <> Width) or (AHeight <> Height) then
@@ -1138,11 +1146,15 @@ procedure TGDIWindow.WMActivate(var Msg: TMessage);
 begin
   if Msg.wParam = WA_INACTIVE then
   begin
+    FHasFocus := False;
     if Assigned(OnFocusOut) then
       OnFocusOut(Self);
   end else
+  begin
+    FHasFocus := True;
     if Assigned(OnFocusIn) then
       OnFocusIn(Self);
+  end;
 end;
 
 procedure TGDIWindow.WMPaint(var Msg: TMessage);
@@ -1183,11 +1195,22 @@ begin
       OnHide(Self);
 end;
 
+procedure TGDIWindow.WMMove(var Msg: TMessage);
+begin
+  if (Msg.lParamLo <> Left) or (Msg.lParamHi <> Top) then
+  begin
+    FLeft := Msg.lParamLo;
+    FTop := Msg.lParamHi;
+    if Assigned(OnMove) then
+      OnMove(Self);
+  end;
+end;
+
 procedure TGDIWindow.WMSize(var Msg: TMessage);
 var
   r: Windows.Rect;
 begin
-  if (ClientWidth <> Msg.lParamLo) or (ClientHeight <> Msg.lParamHi) then
+  if (Msg.lParamLo <> ClientWidth) or (Msg.lParamHi <> ClientHeight) then
   begin
     Windows.GetWindowRect(Handle, r);
     FWidth := r.Right - r.Left;
@@ -1203,6 +1226,8 @@ end;
 
 procedure TGDIWindow.WMLButtonDown(var Msg: TMessage);
 begin
+  if not FHasFocus then
+    Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbLeft, GetKeyboardShiftState,
       Msg.lParamLo, Msg.lParamHi);
@@ -1217,6 +1242,8 @@ end;
 
 procedure TGDIWindow.WMRButtonDown(var Msg: TMessage);
 begin
+  if not FHasFocus then
+    Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbRight, GetKeyboardShiftState,
       Msg.lParamLo, Msg.lParamHi);
@@ -1231,6 +1258,8 @@ end;
 
 procedure TGDIWindow.WMMButtonDown(var Msg: TMessage);
 begin
+  if not FHasFocus then
+    Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbMiddle, GetKeyboardShiftState,
       Msg.lParamLo, Msg.lParamHi);
@@ -1287,6 +1316,11 @@ end.
 
 {
   $Log$
+  Revision 1.5  2001/01/18 15:33:30  sg
+  * Implemented TGDIWindow.SetPosition
+  * TGDIWindow.Left and .Top now contain the right values
+  * Changed the focus handling (although it's not really correct ATM!)
+
   Revision 1.4  2001/01/18 15:00:14  sg
   * Added TGfxWindowType and implemented support for it
 
