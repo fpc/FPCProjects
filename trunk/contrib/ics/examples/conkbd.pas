@@ -26,15 +26,18 @@ type
         procedure Execute; override;
     end;
 
-Procedure initialise(kMain:HWND;Const kevents : TKbdEventRec;UseCtrlH:Boolean;CONST OtherEvents:Array of Integer);
+Procedure Initialise(kMain:HWND;Const kevents : TKbdEventRec;UseCtrlH:Boolean;CONST OtherEvents:Array of Integer);
 
 implementation
 
-Var KbdHwndMain : HWND;
-    KbdCallback : TKbdEventRec;
-    KbdLoaded   : Boolean;
+Type TDwArr   =   Array[0..999] Of DWord;
+     PDwArr   =   ^TDwArr;
+
+Var KbdHwndMain     : HWND;
+    KbdCallback     : TKbdEventRec;
+    KbdLoaded       : Boolean;
     KbdCustomEvents : Integer;
-    KbdEvents   : PDWord;
+    KbdEvents       : PDwArr;
 
 function CtrlHandlerRoutine(CtrlType : DWORD) : DWORD; stdcall;
 begin
@@ -60,6 +63,8 @@ function MyWindowProc(
     alParam : LPARAM): Integer; stdcall;
 var
     MsgRec : TMsg;
+    I      : Integer;
+    Found  : Boolean;
 begin
     Result := 0;  // This means we handled the message
     try
@@ -92,13 +97,14 @@ begin
                Begin
                    i:=0;
                    Repeat
-                     If (auMsg=KbdEvents[i] AND Assigned(kbdCallback.EventOther) Then
+                     If (auMsg=KbdEvents^[i]) AND Assigned(kbdCallback.EventOther) Then
                        Begin
                           Found:=True;
                           Result:=KbdCallBack.EventOther(MsgRec);
                        End;
                      Inc(I);
                    Until (i=KbdCustomEvents) or Found;
+               End;
             If Not Found Then
                Result := DefWindowProc(ahWnd, auMsg, awParam, alParam)
           End;
@@ -165,7 +171,7 @@ begin
     end;
 end;
 
-Procedure initialise(kMain:HWND;Const kevents : TKbdEventRec;UseCtrlH:Boolean;CONST OtherEvents:Array of Integer);
+Procedure Initialise(kMain:HWND;Const kevents : TKbdEventRec;UseCtrlH:Boolean;CONST OtherEvents:Array of Integer);
 
 Begin
    kbdHwndMain:=kMain;
@@ -175,7 +181,7 @@ Begin
    If KbdCustomEvents>0 Then
       Begin
          GetMem(KbdEvents,Sizeof(DWord)*KbdCustomEvents);
-         Move(OtherEvents,KbdEvents[0],SIZEOF(DWord)*KbdCustomEvents);
+         Move(OtherEvents,KbdEvents^[0],SIZEOF(DWord)*KbdCustomEvents);
       End;
    If UseCtrlH Then
       SetConsoleCtrlHandler(@CtrlHandlerRoutine, TRUE);
