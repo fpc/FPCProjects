@@ -128,10 +128,13 @@ type
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure SetText(const AText: String); override;
+    procedure SetChecked(Value : Boolean);
+    function GetChecked : Boolean;
   published
     property Text;
     property CanExpandWidth;
     property State: TCheckBoxState read GetState write SetState default cbUnchecked;
+    property Checked : Boolean Read GetChecked Write SetChecked;
   end;
 
   TRadioButton = class(TGenericButton)
@@ -558,6 +561,9 @@ type
 
 {
   $Log$
+  Revision 1.16  2000/03/01 22:25:57  michael
+   + Added TCheckbox.Checked
+
   Revision 1.15  2000/02/25 13:26:10  michael
   + Added gettext read for tedit.text
 
