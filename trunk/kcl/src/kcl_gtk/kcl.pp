@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -20,10 +20,6 @@ unit KCL;
 {$H+}  // Use AnsiStrings
 
 {$DEFINE kcl_gtk}
-
-{$IFDEF Debug}
-{$DEFINE DebugEvents}
-{$ENDIF}
 
 // Currently required, until direct X clipboard access is implemented
 {$DEFINE KCL_USEINTERNALCLIPBOARD}
@@ -107,13 +103,15 @@ var
 
 begin
   Application := TApplication.Create(nil);
-//  ASSERT(False);
 end.
 
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:33  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:21:01  sg
+  * The symbol "DebugEvent" isn't defined automatically anymore in DEBUG mode
+
+  Revision 1.1.1.1  1999/12/30 21:33:33  sg
+  Initial import
 
 }
