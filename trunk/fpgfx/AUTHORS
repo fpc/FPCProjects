@@ -5,4 +5,8 @@ Sebastian Guenther	<sg@freepascal.org>
 
 Contributors
 ------------
-Lots of input from Thomas Schatzl
+Lots of input from Thomas Schatzl in the beginnings
+Additional bug reports etc. by
+  Michael van Canneyt  (speed issues)
+  Marco van de Voort  (FreeBSD testing)
+  Florian Klämpfl  (testing with strange Win32 X servers...)
