@@ -52,9 +52,9 @@ end;
 
 procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
 begin
-  Window.Canvas.SetColor(Window.Canvas.MapColor(colRed));
+  Window.Canvas.SetColor(colRed);
   Window.Canvas.FillRect(Rect);
-  Window.Canvas.SetColor(Window.Canvas.MapColor(colYellow));
+  Window.Canvas.SetColor(colYellow);
   Window.Canvas.DrawImage(Image, 0, 0);
 end;
 
@@ -78,6 +78,9 @@ end.
 
 {
   $Log$
+  Revision 1.5  2001/02/09 20:49:03  sg
+  * Adapted to recent improvements in fpGFX interfaces
+
   Revision 1.4  2001/01/11 23:21:53  sg
   *** empty log message ***
 

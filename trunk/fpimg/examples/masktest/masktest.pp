@@ -102,7 +102,7 @@ begin
   begin
     Color.Blue := $ffff - (i * $ffff) div Window.Height;
     Color.Red := Color.Blue shr 1;
-    Window.Canvas.SetColor(Window.Canvas.MapColor(Color));
+    Window.Canvas.SetColor(Color);
     r.Top := i;
     r.Bottom := i + 1;
     Window.Canvas.FillRect(r);
@@ -113,7 +113,6 @@ begin
   x2 := x1 + Window.ClientWidth div 2;
   y2 := y1 + Window.ClientHeight div 2;
 
-  Window.Canvas.SetColor(Window.Canvas.MapColor(colWhite));
   Window.Canvas.MaskedCopy(Image2Canvas, MaskCanvas, x1, y1);
   Window.Canvas.TextOut(x1, y1 + Image2.Height, 'monochrome');
   Window.Canvas.MaskedCopy(Image4Canvas, MaskCanvas, x2, y1);
@@ -139,6 +138,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2001/02/09 20:49:03  sg
+  * Adapted to recent improvements in fpGFX interfaces
+
   Revision 1.1  2001/01/11 23:21:53  sg
   *** empty log message ***
 
