@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="3"/>
+    <General>
+      <ProjectType Value="Program"/>
+      <MainUnit Value="0"/>
+      <ActiveEditorIndexAtStart Value="1"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=""/>
+      <Title Value="testsuite"/>
+    </General>
+    <JumpHistory Count="12" HistoryIndex="11">
+      <Position1>
+        <Filename Value="/home/michael/fixbranch/rtl/linux/syslinux.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position1>
+      <Position2>
+        <Filename Value="utests.pp"/>
+        <Caret Line="278" Column="35" TopLine="259"/>
+      </Position2>
+      <Position3>
+        <Filename Value="utests.pp"/>
+        <Caret Line="267" Column="45" TopLine="253"/>
+      </Position3>
+      <Position4>
+        <Filename Value="utests.pp"/>
+        <Caret Line="271" Column="58" TopLine="256"/>
+      </Position4>
+      <Position5>
+        <Filename Value="utests.pp"/>
+        <Caret Line="214" Column="64" TopLine="187"/>
+      </Position5>
+      <Position6>
+        <Filename Value="utests.pp"/>
+        <Caret Line="282" Column="34" TopLine="261"/>
+      </Position6>
+      <Position7>
+        <Filename Value="utests.pp"/>
+        <Caret Line="281" Column="21" TopLine="266"/>
+      </Position7>
+      <Position8>
+        <Filename Value="utests.pp"/>
+        <Caret Line="214" Column="54" TopLine="213"/>
+      </Position8>
+      <Position9>
+        <Filename Value="utests.pp"/>
+        <Caret Line="296" Column="45" TopLine="275"/>
+      </Position9>
+      <Position10>
+        <Filename Value="utests.pp"/>
+        <Caret Line="295" Column="15" TopLine="276"/>
+      </Position10>
+      <Position11>
+        <Filename Value="utests.pp"/>
+        <Caret Line="279" Column="18" TopLine="276"/>
+      </Position11>
+      <Position12>
+        <Filename Value="/home/michael/fixbranch/rtl/linux/syslinux.pp"/>
+        <Caret Line="5" Column="1" TopLine="1"/>
+      </Position12>
+    </JumpHistory>
+    <Units Count="3">
+      <Unit0>
+        <CursorPos X="9" Y="16"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="testsuite.pp"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="testsuite"/>
+        <UsageCount Value="23"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="21" Y="40"/>
+        <EditorIndex Value="1"/>
+        <Filename Value="utests.pp"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="34"/>
+        <UnitName Value="utests"/>
+        <UsageCount Value="23"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="1" Y="5"/>
+        <EditorIndex Value="2"/>
+        <Filename Value="/home/michael/fixbranch/rtl/linux/syslinux.pp"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="SysLinux"/>
+        <UsageCount Value="12"/>
+      </Unit2>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+</CONFIG>
