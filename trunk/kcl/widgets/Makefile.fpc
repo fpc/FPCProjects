@@ -1,0 +1,9 @@
+#
+#   Makefile.fpc for KCL Widgets
+#
+
+[targets]
+dirs=kclshedit glpaintbox
+
+[sections]
+none=1
