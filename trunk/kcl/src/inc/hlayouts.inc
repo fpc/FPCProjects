@@ -20,6 +20,8 @@
 
 type
 
+  ELayoutError = class(Exception);
+
   THorzAlign = (horzLeft, horzCenter, horzRight, horzFill);
   TVertAlign = (vertTop, vertCenter, vertBottom, vertFill);
 
@@ -41,12 +43,14 @@ type
   TLayout = class(TWidget)
   protected
     FWidgets: TCollection;
+    FBorderSpacing: Integer;
     IsRecalcingLayout: Boolean;
 
     function  GetWidgetCount: Integer; override;
     function  GetWidgets(AIndex: Integer): TWidget; override;
     procedure AddFixedChild(AChild: TWidget);
     procedure OnFinishCreation; override;
+    property BorderSpacing: Integer read FBorderSpacing write FBorderSpacing;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -59,7 +63,7 @@ type
 
   TFixedItem = class(TLayoutItem)
   public
-    Left, Top: LongInt;
+    Left, Top: Integer;
   end;
 
   TFixedLayout = class(TLayout)
@@ -69,8 +73,8 @@ type
     procedure LayoutChildren; override;
   published
     constructor Create(AOwner: TComponent); override;
-    procedure AddWidget(AWidget: TWidget; ALeft, ATop: LongInt);
-    procedure MoveWidget(AWidget: TWidget; ALeft, ATop: LongInt);
+    procedure AddWidget(AWidget: TWidget; ALeft, ATop: Integer);
+    procedure MoveWidget(AWidget: TWidget; ALeft, ATop: Integer);
   end;
 
 
@@ -82,7 +86,7 @@ type
 
   TDockingItem = class(TLayoutItem)
   public
-    Left, Top: LongInt;
+    Left, Top: Integer;
     DockingMode: TDockingMode;
   end;
 
@@ -94,7 +98,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; ADockingMode: TDockingMode);
-    procedure AddWidget(AWidget: TWidget; ALeft, ATop: LongInt);
+    procedure AddWidget(AWidget: TWidget; ALeft, ATop: Integer);
   end;
 
 
@@ -104,32 +108,40 @@ type
 
   TGridItem = class(TLayoutItem)
   public
-    x, y, Width, Height: LongInt;
+    x, y, Width, Height: Integer;
   end;
 
-  TGridLayout = class(TLayout)
+  TCustomGridLayout = class(TLayout)
+  private
+    FColCount, FRowCount: Integer;
+    FColSpacing, FRowSpacing: Integer;
+    procedure SetColCount(AColCount: Integer);
+    procedure SetRowCount(ARowCount: Integer);
+    procedure SetColSpacing(AColSpacing: Integer);
+    procedure SetRowSpacing(ARowSpacing: Integer);
   protected
-    FRows, FColumns: LongInt;
-    FSameSizeCells: Boolean;
-    FHorzSpacing, FVertSpacing: Integer;
-
-    procedure FSetSameSizeCells(ASameSize: Boolean);
-
-    procedure InitSizeInfos(var RowInfos, ColInfos: PWidgetArrayInfoArray);
+    procedure InitSizeInfos(var ColInfos, RowInfos: PWidgetArrayInfoArray);
 
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure LayoutChildren; override;
+
+    property ColCount: Integer read FColCount write SetColCount default 2;
+    property RowCount: Integer read FRowCount write SetRowCount default 2;
+    property ColSpacing: Integer read FColSpacing write SetColSpacing default 4;
+    property RowSpacing: Integer read FRowSpacing write SetRowSpacing default 4;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure AddWidget(AWidget: TWidget; x, y, w, h: LongInt);
+    procedure AddWidget(AWidget: TWidget; x, y, w, h: Integer);
+    procedure MoveWidget(AWidget: TWidget; x, y, w, h: Integer);
+  end;
+
+  TGridLayout = class(TCustomGridLayout)
   published
-    property  Rows: LongInt read FRows write FRows default 2;
-    property  Columns: LongInt read FColumns write FColumns default 2;
-    property  SameSizeCells: Boolean read FSameSizeCells
-      write FSetSameSizeCells default True;
-    property HorzSpacing: Integer read FHorzSpacing write FHorzSpacing;
-    property VertSpacing: Integer read FVertSpacing write FVertSpacing;
+    property ColCount;
+    property RowCount;
+    property ColSpacing;
+    property RowSpacing;
   end;
 
 
@@ -139,29 +151,41 @@ type
 
   TBoxOrientation = (boxHorz, boxVert);
 
-  TBoxLayout = class(TLayout)
-  protected
+  TCustomBoxLayout = class(TLayout)
+  private
     FHorzAlign: THorzAlign;
     FVertAlign: TVertAlign;
     FOrientation: TBoxOrientation;
     FSpacing: Integer;
     procedure SetOrientation(AOrientation: TBoxOrientation);
+  protected
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure LayoutChildren; override;
-  public
-    constructor Create(AOwner: TComponent); override;
-    procedure AddWidget(AWidget: TWidget);
-  published
     property HorzAlign: THorzAlign read FHorzAlign write FHorzAlign default horzFill;
     property VertAlign: TVertAlign read FVertAlign write FVertAlign default vertFill;
     property Orientation: TBoxOrientation read FOrientation write SetOrientation default boxHorz;
-    property Spacing: Integer read FSpacing write FSpacing;
+    property Spacing: Integer read FSpacing write FSpacing default 4;
+  public
+    constructor Create(AOwner: TComponent); override;
+    procedure AddWidget(AWidget: TWidget);
+  end;
+
+  TBoxLayout = class(TCustomBoxLayout)
+  published
+    property BorderSpacing;
+    property HorzAlign;
+    property Orientation;
+    property Spacing;
+    property VertAlign;
   end;
 
 
 {
   $Log$
+  Revision 1.9  2000/03/14 11:48:47  sg
+  * More improvements and fixes
+
   Revision 1.8  2000/02/24 13:39:32  sg
   * More layout fixes...
 

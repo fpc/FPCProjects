@@ -18,6 +18,11 @@
 //   Common layout widgets implementation
 // ===================================================================
 
+resourcestring
+  SLayoutWidgetNotFound = 'Layout child widget not found';
+
+
+
 procedure AddToSizes(infos: PWidgetArrayInfoArray; count: Integer; TooMuch: Integer);
 var
   i, add, FoundElements: Integer;
@@ -78,11 +83,11 @@ begin
   end;
 end;
 
-procedure CorrectSizes(infos: PWidgetArrayInfoArray; count: Integer; DestSize, CurSize: Integer);
+procedure CorrectSizes(infos: PWidgetArrayInfoArray; count: Integer; SizeDiff: Integer);
 var
   TooMuch: Integer;
 begin
-  TooMuch := DestSize - CurSize;
+  TooMuch := SizeDiff;
   if TooMuch > 0 then
     AddToSizes(infos, count, TooMuch)
   else if TooMuch < 0 then
@@ -130,7 +135,7 @@ begin
 end;
 
 
-procedure TFixedLayout.AddWidget(AWidget: TWidget; ALeft, ATop: LongInt);
+procedure TFixedLayout.AddWidget(AWidget: TWidget; ALeft, ATop: Integer);
 var
   item: TFixedItem;
 begin
@@ -144,7 +149,7 @@ begin
 end;
 
 
-procedure TFixedLayout.MoveWidget(AWidget: TWidget; ALeft, ATop: LongInt);
+procedure TFixedLayout.MoveWidget(AWidget: TWidget; ALeft, ATop: Integer);
 var
   i: integer;
   item: TFixedItem;
@@ -158,7 +163,7 @@ begin
       exit;
     end;
   end;
-  ASSERT(False, 'TFixedLayout.MoveWidget: Widget not found');
+  raise ELayoutError.Create(SLayoutWidgetNotFound);
 end;
 
 
@@ -171,7 +176,7 @@ begin
 
   for i := 0 to FWidgets.Count - 1 do begin
     item := TFixedItem(FWidgets.Items[i]);
-    item.Widget.FinishCreation;
+    item.Widget.HandleNeeded;
     AddFixedChild(item.Widget);
     item.Widget.SetBounds(item.Left, item.Top, item.Widget.DefW, item.Widget.DefH);
   end;
@@ -230,7 +235,7 @@ begin
   inherited OnFinishCreation;
   for i := 0 to FWidgets.Count - 1 do begin
     item := TDockingItem(FWidgets.Items[i]);
-    item.Widget.FinishCreation;
+    item.Widget.HandleNeeded;
     AddFixedChild(item.Widget);
   end;
 end;
@@ -243,8 +248,12 @@ var
   w, cw: TWidget;
 begin
   if FWidgets.Count = 0 then begin
+    MinW := 0;
+    MinH := 0;
     DefW := 200;
     DefH := 200;
+    MaxW := InfiniteSize;
+    MaxH := InfiniteSize;
     exit;
   end;
 
@@ -266,6 +275,8 @@ begin
     DefW := cw.DefW;
     DefH := cw.DefH;
   end else begin
+    MinW := 0;
+    MinH := 0;
     DefW := 200;
     DefH := 200;
     MaxW := InfiniteSize;
@@ -301,16 +312,16 @@ end;
 
 procedure TDockingLayout.LayoutChildren;
 var
-  clx, cly, clw, clh: LongInt;   // Client rectangle
+  clx, cly, clw, clh: Integer;   // Client rectangle
   ClientWidget: TWidget;
-  i, WidgetW, WidgetH: LongInt;
+  i, WidgetW, WidgetH: Integer;
   item: TDockingItem;
 begin
   clx := 0;
   cly := 0;
   clw := FWidth;
   clh := FHeight;
-  //WriteLn('=> DockingLayout.LayoutChildren ', FWidth, ' x ', FHeight);
+  // WriteLn('=> DockingLayout.LayoutChildren ', FWidth, ' x ', FHeight);
   if (clw = 0) or (clh = 0) then exit;
 
   // Process all attached widgets
@@ -348,15 +359,11 @@ begin
 	  item.Top := cly + clh - WidgetH;
 	  Dec(clh, WidgetH);
         end;
-      dmClient: begin
-          ASSERT(not Assigned(ClientWidget),
-	    'DockingLayout owns multiple widgets with docking mode dmClient!');
-	  ClientWidget := item.Widget;
-        end;
+      dmClient:
+	ClientWidget := item.Widget;
     end;
-    if item.DockingMode <> dmClient then begin
+    if item.DockingMode <> dmClient then
       item.Widget.SetBounds(item.Left, item.Top, WidgetW, WidgetH);
-    end;
   end;
   if Assigned(ClientWidget) then
     ClientWidget.SetBounds(clx, cly, clw, clh);
@@ -378,7 +385,7 @@ begin
 end;
 
 
-procedure TDockingLayout.AddWidget(AWidget: TWidget; ALeft, ATop: LongInt);
+procedure TDockingLayout.AddWidget(AWidget: TWidget; ALeft, ATop: Integer);
 var
   item: TDockingItem;
 begin
@@ -396,46 +403,67 @@ end;
 
 
 // -------------------------------------------------------------------
-//   TGridLayout
+//   TCustomGridLayout
 // -------------------------------------------------------------------
 
-constructor TGridLayout.Create(AOwner: TComponent);
+procedure TCustomGridLayout.SetColCount(AColCount: Integer);
 begin
-  inherited Create(AOwner);
-  FWidgets := TCollection.Create(TGridItem);
-  FRows := 2;
-  FColumns := 2;
+  if AColCount <> FColCount then begin
+    FColCount := AColCount;
+    RecalcLayout;
+  end;
 end;
 
 
-procedure TGridLayout.FSetSameSizeCells(ASameSize: Boolean);
+procedure TCustomGridLayout.SetRowCount(ARowCount: Integer);
 begin
-  FSameSizeCells := ASameSize;
+  if ARowCount <> FRowCount then begin
+    FRowCount := ARowCount;
+    RecalcLayout;
+  end;
 end;
 
 
-procedure TGridLayout.InitSizeInfos(var RowInfos, ColInfos: PWidgetArrayInfoArray);
+procedure TCustomGridLayout.SetColSpacing(AColSpacing: Integer);
+begin
+  if AColSpacing <> FColSpacing then begin
+    FColSpacing := AColSpacing;
+    RecalcLayout;
+  end;
+end;
+
+
+procedure TCustomGridLayout.SetRowSpacing(ARowSpacing: Integer);
+begin
+  if ARowSpacing <> FRowSpacing then begin
+    FRowSpacing := ARowSpacing;
+    RecalcLayout;
+  end;
+end;
+
+
+procedure TCustomGridLayout.InitSizeInfos(var ColInfos, RowInfos: PWidgetArrayInfoArray);
 var
   i: Integer;
   item: TGridItem;
 begin
-  GetMem(RowInfos, FRows * SizeOf(TWidgetArrayInfo));
-  GetMem(ColInfos, FColumns * SizeOf(TWidgetArrayInfo));
+  GetMem(ColInfos, FColCount * SizeOf(TWidgetArrayInfo));
+  GetMem(RowInfos, FRowCount * SizeOf(TWidgetArrayInfo));
 
-  for i := 0 to FRows - 1 do begin
-    RowInfos^[i].min := 0;
-    RowInfos^[i].def := 0;
-    RowInfos^[i].max := InfiniteSize;
-    RowInfos^[i].MinFlag := True;
-    RowInfos^[i].MaxFlag := True;
-  end;
-
-  for i := 0 to FColumns - 1 do begin
+  for i := 0 to FColCount - 1 do begin
     ColInfos^[i].min := 0;
     ColInfos^[i].def := 0;
     ColInfos^[i].max := InfiniteSize;
     ColInfos^[i].MinFlag := True;
     ColInfos^[i].MaxFlag := True;
+  end;
+
+  for i := 0 to FRowCount - 1 do begin
+    RowInfos^[i].min := 0;
+    RowInfos^[i].def := 0;
+    RowInfos^[i].max := InfiniteSize;
+    RowInfos^[i].MinFlag := True;
+    RowInfos^[i].MaxFlag := True;
   end;
 
   for i := 0 to FWidgets.Count - 1 do begin
@@ -448,7 +476,7 @@ begin
     RowInfos^[item.y].max := Min(RowInfos^[item.y].max, item.Widget.MaxH);
   end;
 
-  for i := 0 to FColumns - 1 do begin
+  for i := 0 to FColCount - 1 do begin
     if ColInfos^[i].def = 0 then ColInfos^[i].def := 20;
     if ColInfos^[i].min >= ColInfos^[i].def then
       ColInfos^[i].MinFlag := False;
@@ -456,7 +484,7 @@ begin
       ColInfos^[i].MaxFlag := False;
   end;
 
-  for i := 0 to FRows - 1 do begin
+  for i := 0 to FRowCount - 1 do begin
     if RowInfos^[i].def = 0 then RowInfos^[i].def := 20;
     if RowInfos^[i].min >= RowInfos^[i].def then
       RowInfos^[i].MinFlag := False;
@@ -466,12 +494,12 @@ begin
 end;
 
 
-procedure TGridLayout.OnFinishCreation;
+procedure TCustomGridLayout.OnFinishCreation;
 var
   i: Integer;
 begin
   for i := 0 to FWidgets.Count - 1 do
-    TGridItem(FWidgets.Items[i]).Widget.FinishCreation;
+    TGridItem(FWidgets.Items[i]).Widget.HandleNeeded;
 
   inherited OnFinishCreation;
 
@@ -480,30 +508,30 @@ begin
 end;
 
 
-procedure TGridLayout.DoRecalcLayout;
+procedure TCustomGridLayout.DoRecalcLayout;
 var
-  RowInfos, ColInfos: PWidgetArrayInfoArray;
+  ColInfos, RowInfos: PWidgetArrayInfoArray;
   i: Integer;
 begin
-  MinW := 0;
-  MinH := 0;
-  DefW := 0;
-  DefH := 0;
-  MaxW := 0;
-  MaxH := 0;
+  MinW := (FColCount - 1) * FColSpacing;
+  MinH := (FRowCount - 1) * FRowSpacing;
+  DefW := (FColCount - 1) * FColSpacing;
+  DefH := (FRowCount - 1) * FRowSpacing;
+  MaxW := (FColCount - 1) * FColSpacing;
+  MaxH := (FRowCount - 1) * FRowSpacing;
 
-  InitSizeInfos(RowInfos, ColInfos);
+  InitSizeInfos(ColInfos, RowInfos);
 
-  for i := 0 to FColumns - 1 do begin
-    Inc(MinW, ColInfos^[i].min + FHorzSpacing);
-    Inc(DefW, ColInfos^[i].def + FHorzSpacing);
-    MaxW := Min(InfiniteSize, MaxW + ColInfos^[i].max + FHorzSpacing);
+  for i := 0 to FColCount - 1 do begin
+    Inc(MinW, ColInfos^[i].min);
+    Inc(DefW, ColInfos^[i].def);
+    MaxW := Min(InfiniteSize, MaxW + ColInfos^[i].max);
   end;
 
-  for i := 0 to FRows - 1 do begin
-    Inc(MinH, RowInfos^[i].min + FVertSpacing);
-    Inc(DefH, RowInfos^[i].def + FVertSpacing);
-    MaxH := Min(InfiniteSize, MaxH + RowInfos^[i].max + FVertSpacing);
+  for i := 0 to FRowCount - 1 do begin
+    Inc(MinH, RowInfos^[i].min);
+    Inc(DefH, RowInfos^[i].def);
+    MaxH := Min(InfiniteSize, MaxH + RowInfos^[i].max);
   end;
 
   FreeMem(RowInfos);
@@ -511,16 +539,16 @@ begin
 end;
 
 
-procedure TGridLayout.LayoutChildren;
+procedure TCustomGridLayout.LayoutChildren;
 var
-  RowInfos, ColInfos: PWidgetArrayInfoArray;
+  ColInfos, RowInfos: PWidgetArrayInfoArray;
   i, j, x, y, w, h, def: Integer;
   item: TGridItem;
 begin
-  InitSizeInfos(RowInfos, ColInfos);
+  InitSizeInfos(ColInfos, RowInfos);
 
-  CorrectSizes(ColInfos, FColumns, FWidth, DefW);
-  CorrectSizes(RowInfos, FRows, FHeight, DefH);
+  CorrectSizes(ColInfos, FColCount, FWidth - DefW);
+  CorrectSizes(RowInfos, FRowCount, FHeight - DefH);
 
   for i := 0 to FWidgets.Count - 1 do begin
     item := TGridItem(FWidgets.Items[i]);
@@ -528,9 +556,9 @@ begin
     y := 0; for j := 0 to item.y - 1 do Inc(y, RowInfos^[j].def);
     w := 0; for j := 0 to item.Width - 1 do Inc(w, ColInfos^[item.x + j].def);
     h := 0; for j := 0 to item.Height - 1 do Inc(h, RowInfos^[item.y + j].def);
-    Inc(w, (item.Width - 1) * FHorzSpacing);
-    Inc(h, (item.Height - 1) * FVertSpacing);
-    item.Widget.SetBounds(x + item.x * FHorzSpacing, y + item.y * FVertSpacing, w, h);
+    Inc(w, (item.Width - 1) * FColSpacing);
+    Inc(h, (item.Height - 1) * FRowSpacing);
+    item.Widget.SetBounds(x + item.x * FColSpacing, y + item.y * FRowSpacing, w, h);
   end;
 
   FreeMem(ColInfos);
@@ -538,7 +566,18 @@ begin
 end;
 
 
-procedure TGridLayout.AddWidget(AWidget: TWidget; x, y, w, h: LongInt);
+constructor TCustomGridLayout.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FWidgets := TCollection.Create(TGridItem);
+  FColCount := 2;
+  FRowCount := 2;
+  FColSpacing := 4;
+  FRowSpacing := 4;
+end;
+
+
+procedure TCustomGridLayout.AddWidget(AWidget: TWidget; x, y, w, h: Integer);
 var
   item: TGridItem;
 begin
@@ -552,30 +591,51 @@ begin
 end;
 
 
+procedure TCustomGridLayout.MoveWidget(AWidget: TWidget; x, y, w, h: Integer);
+var
+  i: integer;
+  item: TGridItem;
+begin
+  for i := 0 to FWidgets.Count - 1 do begin
+    item := TGridItem(FWidgets.Items[i]);
+    if item.Widget = AWidget then begin
+      item.x := x;
+      item.y := y;
+      item.Width := w;
+      item.Height := h;
+      RecalcLayout;
+      exit;
+    end;
+  end;
+  raise ELayoutError.Create(SLayoutWidgetNotFound);
+end;
+
+
 // -------------------------------------------------------------------
-//   TBoxLayout
+//   TCustomBoxLayout
 // -------------------------------------------------------------------
 
-procedure TBoxLayout.SetOrientation(AOrientation: TBoxOrientation);
+procedure TCustomBoxLayout.SetOrientation(AOrientation: TBoxOrientation);
 begin
   if AOrientation <> FOrientation then begin
     FOrientation := AOrientation;
-    if Assigned(FHandle) then
+    if HandleAllocated then
       RecalcLayout;
   end;
 end;
 
 
-constructor TBoxLayout.Create(AOwner: TComponent);
+constructor TCustomBoxLayout.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FWidgets := TCollection.Create(TLayoutItem);
   FHorzAlign := horzFill;
   FVertAlign := vertFill;
+  FSpacing := 4;
 end;
 
 
-procedure TBoxLayout.OnFinishCreation;
+procedure TCustomBoxLayout.OnFinishCreation;
 var
   i: Integer;
   item: TLayoutItem;
@@ -583,13 +643,13 @@ begin
   inherited OnFinishCreation;
   for i := 0 to FWidgets.Count - 1 do begin
     item := TLayoutItem(FWidgets.Items[i]);
-    item.Widget.FinishCreation;
+    item.Widget.HandleNeeded;
     AddFixedChild(item.Widget);
   end;
 end;
 
 
-procedure TBoxLayout.AddWidget(AWidget: TWidget);
+procedure TCustomBoxLayout.AddWidget(AWidget: TWidget);
 var
   item: TLayoutItem;
 begin
@@ -603,7 +663,7 @@ begin
 end;
 
 
-procedure TBoxLayout.DoRecalcLayout;
+procedure TCustomBoxLayout.DoRecalcLayout;
 var
   i: Integer;
   item: TLayoutItem;
@@ -612,8 +672,8 @@ begin
   if FOrientation = boxHorz then begin
     MinW := i;
     MinH := 0;
-    DefW := i;
-    DefH := 0;
+    DefW := 0;
+    DefH := MinH;
     MaxW := DefW;
     MaxH := InfiniteSize;
   end else begin
@@ -651,10 +711,17 @@ begin
         MaxW := item.Widget.MaxW;
     end;
   end;
+
+  Inc(MinW, 2 * FBorderSpacing);
+  Inc(MinH, 2 * FBorderSpacing);
+  Inc(DefW, 2 * FBorderSpacing);
+  Inc(DefH, 2 * FBorderSpacing);
+  MaxW := Min(InfiniteSize, MaxW + FBorderSpacing);
+  MaxH := Min(InfiniteSize, MaxH + FBorderSpacing);
 end;
 
 
-procedure TBoxLayout.LayoutChildren;
+procedure TCustomBoxLayout.LayoutChildren;
 var
   sizes: PWidgetArrayInfoArray;
   i, x, y, xpos, ypos, w, h, TooMuch, sum: Integer;
@@ -695,10 +762,10 @@ begin
 
   if FOrientation = boxHorz then begin
     if FHorzAlign = horzFill then
-      CorrectSizes(sizes, FWidgets.Count, FWidth, DefW)
+      CorrectSizes(sizes, FWidgets.Count, FWidth - DefW)
   end else
     if FVertAlign = vertFill then
-      CorrectSizes(sizes, FWidgets.Count, FHeight, DefH);
+      CorrectSizes(sizes, FWidgets.Count, FHeight - DefH);
 
   sum := (FWidgets.Count - 1) * FSpacing;
   for i := 0 to FWidgets.Count - 1 do
@@ -707,14 +774,14 @@ begin
   if FOrientation = boxHorz then
     case FHorzAlign of
       horzCenter: x := (FWidth - sum) div 2;
-      horzRight:  x := FWidth - sum;
-      else	x := 0;
+      horzRight:  x := FWidth - FBorderSpacing - sum;
+      else	  x := FBorderSpacing;
     end
   else
     case FVertAlign of
       vertCenter: y := (FHeight - sum) div 2;
-      vertBottom: y := FHeight - sum;
-      else        y := 0;
+      vertBottom: y := FHeight - FBorderSpacing - sum;
+      else        y := FBorderSpacing;
     end;
 
   for i := 0 to FWidgets.Count - 1 do begin
@@ -725,8 +792,8 @@ begin
       h := Min(FHeight, item.Widget.DefH);
       case FVertAlign of
         vertCenter: ypos := (FHeight - h) div 2;
-	vertBottom: ypos := FHeight - h;
-	else        ypos := 0;
+	vertBottom: ypos := FHeight - FBorderSpacing - h;
+	else        ypos := FBorderSpacing;
       end;
       Inc(x, sizes^[i].def + FSpacing);
       if FVertAlign = vertFill then
@@ -737,8 +804,8 @@ begin
       h := sizes^[i].def;
       case FHorzAlign of
         horzCenter: xpos := (FWidth - w) div 2;
-	horzRight : xpos := FWidth - w;
-	else        xpos := 0;
+	horzRight : xpos := FWidth - FBorderSpacing - w;
+	else        xpos := FBorderSpacing;
       end;
       Inc(y, sizes^[i].def + FSpacing);
       if FHorzAlign = horzFill then
@@ -753,6 +820,9 @@ end;
 
 {
   $Log$
+  Revision 1.9  2000/03/14 11:48:47  sg
+  * More improvements and fixes
+
   Revision 1.8  2000/02/24 13:39:32  sg
   * More layout fixes...
 
@@ -770,14 +840,4 @@ end;
 
   Revision 1.4  2000/02/17 22:20:35  sg
   * Adapted TGridLayout and TBoxLayout to new layouting algorithm
-
-  Revision 1.3  2000/02/10 18:28:53  sg
-  * Implemented new layouting engine (at this time, for TDockingLayout only)
-
-  Revision 1.2  2000/01/24 00:21:29  sg
-  * Extended copyright to year 2000...
-
-  Revision 1.1.1.1  1999/12/30 21:33:09  sg
-  Initial import
-
 }
