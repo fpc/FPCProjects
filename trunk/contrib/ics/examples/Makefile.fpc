@@ -1,6 +1,6 @@
 
 [target]
-programs_win32=concli2 conftp conhttp consmtp consrv1
+programs_win32=concli2 conftp conhttp consmtp consrv1 concli1
 srcexT=($SRCEXT
 
 [require]

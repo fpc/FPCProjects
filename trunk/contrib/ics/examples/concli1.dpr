@@ -43,6 +43,7 @@ Legal issues: Copyright (C) 1997-2002 by François PIETTE
 Updates:
 Dec 05, 1998 V1.01 Don't use TWait control anymore
 Aug 31, 2003 V1.02 Completely rewritten sample.
+}
 
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}

@@ -203,7 +203,7 @@ UNITSDIR:=$(wildcard $(FPCDIR)/units/$(OS_TARGET))
 endif
 PACKAGESDIR:=$(wildcard $(FPCDIR) $(FPCDIR)/packages/base $(FPCDIR)/packages/extra)
 ifeq ($(OS_TARGET),win32)
-override TARGET_PROGRAMS+=concli2 conftp conhttp consmtp consrv1
+override TARGET_PROGRAMS+=concli2 conftp conhttp consmtp consrv1 concli1
 endif
 override INSTALL_FPCPACKAGE=y
 override COMPILER_INCLUDEDIR+=../vc32
