@@ -35,7 +35,7 @@ program Oxygene;
 // Uncomment this to enable Logging
 // Never know when we need this option... and this is a good example too...
 {$DEFINE LOG}
-
+{$i sdlh.inc}
 uses
   SysUtils,
   sdl,
