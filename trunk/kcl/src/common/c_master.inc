@@ -28,6 +28,9 @@
 {$INCLUDE clayouts.inc}
 {$INCLUDE cmenus.inc}
 {$INCLUDE cbuttons.inc}
+{$INCLUDE cgroupbox.inc}
+{$INCLUDE clistbox.inc}
+{$INCLUDE ccombobox.inc}
 {$INCLUDE cpaintbox.inc}
 {$INCLUDE cnotebook.inc}
 {$INCLUDE cstatusbar.inc}
@@ -81,6 +84,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/17 22:19:13  sg
+  * Added cgroupbox.inc, clistbox.inc, ccombobox.inc
+
   Revision 1.4  2000/02/10 18:26:51  sg
   * Added more include files
 
