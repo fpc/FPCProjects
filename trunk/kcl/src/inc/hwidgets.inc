@@ -33,6 +33,8 @@ type
     procedure SetText(const AText: String); override;
   published
     property Text;
+    property CanExpandWidth;
+    property CanExpandHeight;
   end;
 
 
@@ -49,6 +51,8 @@ type
     procedure SetText(const AText: String); override;
   published
     property Text;
+    property CanExpandWidth;
+    property CanExpandHeight;
     property MultiLine: Boolean read FMultiLine write FMultiLine default False;
     property DefaultWidth: Integer read FDefaultWidth write FDefaultWidth;
   end;
@@ -61,6 +65,7 @@ type
   TSeparator = class(TWidget)
   protected
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
   end;
 
 
@@ -86,6 +91,8 @@ type
     procedure SetText(const AText: String); override;
   published
     property Text;
+    property CanExpandWidth;
+    property CanExpandHeight;
     property Default: Boolean read FDefault write FDefault default False;
   end;
 
@@ -95,6 +102,8 @@ type
     FImageIndex: Integer;
     procedure OnFinishCreation; override;
   published
+    property CanExpandWidth;
+    property CanExpandHeight;
     property ImageList: TImageList read FImageList write FImageList;
     property ImageIndex: Integer read FImageIndex write FImageIndex;
   end;
@@ -112,6 +121,7 @@ type
     procedure SetText(const AText: String); override;
   published
     property Text;
+    property CanExpandWidth;
     property State: TCheckBoxState read GetState write SetState default cbUnchecked;
   end;
 
@@ -124,6 +134,7 @@ type
     procedure SetText(const AText: String); override;
   published
     property Text;
+    property CanExpandWidth;
     property Checked: Boolean read FChecked write SetChecked;
   end;
 
@@ -135,19 +146,13 @@ type
   TCustomGroupBox = class(TWidget)
   protected
     FContent: TWidget;
-    FFixedWidth, FFixedHeight: Boolean;
-
-    constructor Create(AOwner: TComponent); override;
     function  GetWidgetCount: Integer; override;
     function  GetWidgets(AIndex: Integer): TWidget; override;
     procedure DoRecalcLayout; override;
     procedure ApplySize; override;
     procedure OnFinishCreation; override;
     procedure SetText(const AText: String); override;
-
     property  Content: TWidget read FContent write FContent;
-    property  FixedWidth: Boolean read FFixedWidth write FFixedWidth default True;
-    property  FixedHeight: Boolean read FFixedHeight write FFixedHeight default True;
   public
     function  IsRadioGroup: Boolean; override;
   end;
@@ -155,9 +160,9 @@ type
   TGroupBox = class(TCustomGroupBox)
   published
     property Text;
+    property CanExpandWidth;
+    property CanExpandHeight;
     property Content;
-    property FixedWidth;
-    property FixedHeight;
   end;
 
 
@@ -185,6 +190,8 @@ type
 
   TListBox = class(TCustomListBox)
   published
+    property CanExpandWidth;
+    property CanExpandHeight;
     property Items;
     property ItemIndex;
     property OnDblClick;
@@ -218,6 +225,7 @@ type
 
   TComboBox = class(TCustomComboBox)
   published
+    property CanExpandWidth;
     property Style;
     property Items;
   end;
@@ -235,6 +243,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
   published
+    property CanExpandWidth;
+    property CanExpandHeight;
     property ColCount: Integer read FColCount write FColCount default 1;
     property LineCount: Integer read FLineCount write FLineCount;
   end;
@@ -249,6 +259,9 @@ type
     procedure OnFinishCreation; override;
   public
     constructor Create(AOwner: TComponent); override;
+  published
+    property CanExpandWidth;
+    property CanExpandHeight;
   end;
 
 
@@ -424,6 +437,8 @@ type
     property  Pages[AIndex: Integer]: TNotebookPage read GetPages;
     property  CurPage: TNotebookPage read GetCurPage;
   published
+    property CanExpandWidth;
+    property CanExpandHeight;
     property PageIndex: Integer read GetPageIndex write SetPageIndex;
     property OnPageChange: TPageChangeEvent read FOnPageChange write FOnPageChange;
   end;
@@ -533,6 +548,10 @@ type
 
 {
   $Log$
+  Revision 1.10  2000/02/22 14:39:03  sg
+  * Made "CanExpandWidth" and "CanExpandHeight" properties available via
+    'published' where appropiate
+
   Revision 1.9  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 
