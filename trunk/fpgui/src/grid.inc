@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Grid widgets implementation
@@ -31,9 +31,12 @@ var
   i: Integer;
 begin
   inherited Create(AOwner);
+  WidgetStyle := WidgetStyle + [wsOpaque];
   FCanExpandWidth := True;
   FCanExpandHeight := True;
   ScrollingSupport := TScrollingSupport.Create(Self);
+  ScrollingSupport.HorzScrollBar.OnScroll := @HorzScrollBarScroll;
+  ScrollingSupport.VertScrollBar.OnScroll := @VertScrollBarScroll;
 
   FDefaultColWidth := 64;
   FDefaultRowHeight := 24;
@@ -43,9 +46,6 @@ begin
   FFixedRows := 1;
   GetMem(FColWidths, FColCount * SizeOf(Integer));
   GetMem(FRowHeights, FRowCount * SizeOf(Integer));
-
-  ScrollingSupport.HorzScrollBar.SmallChange := DefaultColWidth;
-  ScrollingSupport.VertScrollBar.SmallChange := DefaultRowHeight;
 
   for i := 0 to 4 do
   begin
@@ -69,9 +69,9 @@ end;
 
 procedure TCustomGrid.Paint(Canvas: TGfxCanvas);
 var
-  x1, y1, x2, y2, x, y, xs, ys, ThisRowHeight: Integer;
+  x1, y1, x2, y2, x, y, Sum: Integer;
   CellRect: TRect;
-  state: TGridDrawState;
+  GridDrawState: TGridDrawState;
 begin
   if not Canvas.IntersectClipRect(ScrollingSupport.ClientRect) then
     exit;
@@ -80,96 +80,147 @@ begin
   begin
     x1 := Left;
     y1 := Top;
-    x2 := Right - 1;
-    y2 := Bottom - 1;
-  end;
-  // WriteLn(Format('TCustomGrid.Paint(%d/%d - %d/%d)', [x1, y1, x2, y2]));
-
-  // Draw column grid
-
-  Style.SetUIColor(Canvas, cl3DFace);
-  xs := ColWidths[0];
-  x := 1;
-  while True do
-  begin
-    if xs >= x1 then
-      Canvas.DrawLine(xs, 0, xs, GridHeight);
-    if x < ColCount then
-    begin
-      Inc(xs, ColWidths[x]);
-      if xs >= x2 then
-        break;
-      Inc(x);
-    end else
-      break;
-  end;
-
-  ys := RowHeights[0];
-  y := 1;
-  while True do
-  begin
-    if ys >= y1 then
-      Canvas.DrawLine(0, ys, GridWidth, ys);
-    if y < RowCount then
-    begin
-      Inc(ys, RowHeights[y]);
-      if ys >= y2 then
-	break;
-      Inc(y);
-    end else
-      break;
+    x2 := Right;
+    y2 := Bottom;
   end;
 
 
-  Style.SetUIColor(Canvas, clWindow);
-  ys := 0;
-  for y := 0 to RowCount - 1 do
+  // Draw the cells
+
+  CellRect.Top := ScrollingSupport.ClientRect.Top;
+  y := 0;
+  while y < RowCount do
   begin
-    ThisRowHeight := RowHeights[y];
-    if ys + ThisRowHeight > y1 then
+    CellRect.Bottom := CellRect.Top + RowHeights[y];
+    if CellRect.Bottom > y1 then
     begin
-      xs := 0;
-      for x := 0 to ColCount - 1 do
+      CellRect.Left := ScrollingSupport.ClientRect.Left;
+      x := 0;
+      while x < ColCount do
       begin
-        if xs + ColWidths[x] > x1 then
+        CellRect.Right := CellRect.Left + ColWidths[x];
+	if CellRect.Right > x1 then
 	begin
-	  CellRect.Left := xs + 1;
-	  CellRect.Top := ys + 1;
-	  CellRect.Right := xs + ColWidths[x];
-	  CellRect.Bottom := ys + ThisRowHeight;
-	  state := [];
+	  GridDrawState := [];
 	  if (x < FixedCols) or (y < FixedRows) then
-	    Include(state, gdFixed)
-	  else
-	    Canvas.FillRect(CellRect);
+	    Include(GridDrawState, gdFixed);
+
 	  Canvas.SaveState;
-	  Style.SetUIColor(Canvas, clWindowText);
-	  DrawCell(Canvas, x, y, CellRect, state);
+	  if gdFixed in GridDrawState then
+	  begin
+	    with CellRect do
+	      Style.DrawButtonFace(Canvas,
+	        Rect(Left, Top, Right + 1, Bottom + 1), []);
+	    Style.SetUIColor(Canvas, clBtnText);
+	  end else
+	  begin
+	    Style.SetUIColor(Canvas, clWindow);
+	    Canvas.FillRect(CellRect);
+	    Style.SetUIColor(Canvas, clWindowText);
+	  end;
+	  DrawCell(Canvas, x, y, CellRect, GridDrawState);
 	  Canvas.RestoreState;
 	end;
-	Inc(xs, ColWidths[x]);
-	if xs >= x2 then
+
+	CellRect.Left := CellRect.Right + 1;
+	if CellRect.Left >= x2 then
 	  break;
+
+        Inc(x);
+        if x = FixedRows then
+          Inc(x, ScrollingSupport.HorzScrollBar.Position);
       end;
     end;
-    Inc(ys, ThisRowHeight);
-    if ys >= y2 then
+
+    CellRect.Top := CellRect.Bottom + 1;
+    if CellRect.Top >= y2 then
       break;
+
+    Inc(y);
+    if y = FixedRows then
+      Inc(y, ScrollingSupport.VertScrollBar.Position);
   end;
+
+
+  // Draw the grid lines
+
+  Style.SetUIColor(Canvas, cl3DFace);
+
+  y := 0;
+  Sum := ScrollingSupport.ClientRect.Top;
+  while y < RowCount do
+  begin
+    Inc(Sum, RowHeights[y]);
+    if (y >= FixedRows) and (Sum >= y1) then
+      Canvas.DrawLine(ScrollingSupport.ClientRect.Left + FixedWidth, Sum,
+        CellRect.Right + 1, Sum);
+    Inc(Sum);
+    if Sum >= y2 then
+      break;
+
+    Inc(y);
+    if y = FixedRows then
+      Inc(y, ScrollingSupport.VertScrollBar.Position);
+  end;
+
+  x := 0;
+  Sum := ScrollingSupport.ClientRect.Left;
+  while x < ColCount do
+  begin
+    Inc(Sum, ColWidths[x]);
+    if (x >= FixedCols) and (Sum >= x1) then
+      Canvas.DrawLine(Sum, ScrollingSupport.ClientRect.Top + FixedHeight,
+        Sum, CellRect.Bottom);
+    Inc(Sum);
+    if Sum >= x2 then
+      break;
+
+    Inc(x);
+    if x = FixedCols then
+      Inc(x, ScrollingSupport.HorzScrollBar.Position);
+  end;
+
+
+  // Clear the empty space right and below the grid itself
+
+  Style.SetUIColor(Canvas, clWindow);
+  if CellRect.Right + 1 < x2 then
+    Canvas.FillRect(Rect(CellRect.Right + 1, y1, x2, y2));
+  if CellRect.Bottom + 1 < y2 then
+    Canvas.FillRect(Rect(x1, CellRect.Top, CellRect.Right + 1, y2));
 end;
 
 function TCustomGrid.ProcessEvent(Event: TEventObj): Boolean;
+var
+  i, Sum, Max: Integer;
 begin
   Result := ScrollingSupport.ProcessEvent(Event) or
     inherited ProcessEvent(Event);
   if Event.InheritsFrom(TResizeEventObj) then
   begin
+    Sum := 0;
+    Max := ScrollingSupport.ClientRect.Right -
+      ScrollingSupport.ClientRect.Left - FixedWidth;
+    for i := ScrollingSupport.HorzScrollBar.Position to ColCount - 1 do
+    begin
+      Inc(Sum, ColWidths[i] + 1);
+      if Sum >= Max then
+        break;
+    end;
     ScrollingSupport.HorzScrollBar.PageSize :=
-      ScrollingSupport.ClientRect.Right -
-      ScrollingSupport.ClientRect.Left;
+      i - ScrollingSupport.HorzScrollBar.Position;
+
+    Sum := 0;
+    Max := ScrollingSupport.ClientRect.Bottom -
+      ScrollingSupport.ClientRect.Top - FixedHeight;
+    for i := ScrollingSupport.VertScrollBar.Position to RowCount - 1 do
+    begin
+      Inc(Sum, RowHeights[i] + 1);
+      if Sum >= Max then
+        break;
+    end;
     ScrollingSupport.VertScrollBar.PageSize :=
-      ScrollingSupport.ClientRect.Bottom -
-      ScrollingSupport.ClientRect.Top;
+      i - ScrollingSupport.VertScrollBar.Position;
   end;
 end;
 
@@ -190,8 +241,15 @@ var
 begin
   FGridWidth := 0;
   for i := 0 to ColCount - 1 do
-    Inc(FGridWidth, ColWidths[i]);
-  ScrollingSupport.HorzScrollBar.Max := FGridWidth - 1;
+    Inc(FGridWidth, ColWidths[i] + 1);
+  if FGridWidth > 0 then
+    Dec(FGridWidth);
+
+  FFixedWidth := 0;
+  for i := 0 to FixedCols - 1 do
+    Inc(FFixedWidth, ColWidths[i] + 1);
+  if FFixedWidth > 0 then
+    Dec(FFixedWidth);
 end;
 
 procedure TCustomGrid.RowHeightsChanged;
@@ -200,8 +258,15 @@ var
 begin
   FGridHeight := 0;
   for i := 0 to RowCount - 1 do
-    Inc(FGridHeight, RowHeights[i]);
-  ScrollingSupport.VertScrollBar.Max := FGridHeight - 1;
+    Inc(FGridHeight, RowHeights[i] + 1);
+  if FGridHeight > 0 then
+    Dec(FGridHeight);
+
+  FFixedHeight := 0;
+  for i := 0 to FixedRows - 1 do
+    Inc(FFixedHeight, RowHeights[i] + 1);
+  if FFixedHeight > 0 then
+    Dec(FFixedHeight);
 end;
 
 procedure TCustomGrid.SizeChanged(OldColCount, OldRowCount: Integer);
@@ -225,6 +290,8 @@ begin
     for i := OldColCount to FColCount - 1 do
       FColWidths^[i] := FDefaultColWidth;
 
+    ScrollingSupport.HorzScrollBar.Max := ColCount -  FixedCols - 1;
+
     ColWidthsChanged;
     SizeChanged(OldColCount, FRowCount);
   end;
@@ -243,8 +310,28 @@ begin
     for i := OldRowCount to FRowCount - 1 do
       FRowHeights^[i] := FDefaultRowHeight;
 
+    ScrollingSupport.VertScrollBar.Max := RowCount - FixedRows - 1;
+
     RowHeightsChanged;
     SizeChanged(FColCount, OldRowCount);
+  end;
+end;
+
+procedure TCustomGrid.SetFixedCols(AFixedCols: Integer);
+begin
+  if AFixedCols <> FixedCols then
+  begin
+    FFixedCols := AFixedCols;
+    ScrollingSupport.HorzScrollBar.Max := ColCount -  FixedCols - 1;
+  end;
+end;
+
+procedure TCustomGrid.SetFixedRows(AFixedRows: Integer);
+begin
+  if AFixedRows <> FixedRows then
+  begin
+    FFixedRows := AFixedRows;
+    ScrollingSupport.VertScrollBar.Max := RowCount - FixedRows - 1;
   end;
 end;
 
@@ -302,6 +389,60 @@ begin
   FRowHeights^[ARow] := AHeight;
 end;
 
+procedure TCustomGrid.HorzScrollBarScroll(Sender: TObject;
+  var APosition: Integer);
+var
+  i, Delta: Integer;
+  r: TRect;
+begin
+  Delta := 0;
+  if APosition > ScrollingSupport.HorzScrollBar.Position then
+    for i := ScrollingSupport.HorzScrollBar.Position to APosition - 1 do
+      Dec(Delta, ColWidths[i + FixedCols] + 1)
+  else
+    for i := APosition to ScrollingSupport.HorzScrollBar.Position - 1 do
+      Inc(Delta, ColWidths[i + FixedCols] + 1);
+
+  // Scroll the horizontal fixed cells
+  r := ScrollingSupport.ClientRect;
+  Inc(r.Left, FixedWidth + 1);
+  if r.Left <= r.Right then
+  begin
+    if Delta < 0 then		// Scrolling to the right side
+      Dec(r.Left, Delta)
+    else			// Scrolling to the left side
+      Dec(r.Right, Delta);
+    Scroll(r, Delta, 0);
+  end;
+end;
+
+procedure TCustomGrid.VertScrollBarScroll(Sender: TObject;
+  var APosition: Integer);
+var
+  i, Delta: Integer;
+  r: TRect;
+begin
+  Delta := 0;
+  if APosition > ScrollingSupport.VertScrollBar.Position then
+    for i := ScrollingSupport.VertScrollBar.Position to APosition - 1 do
+      Dec(Delta, RowHeights[i + FixedRows] + 1)
+  else
+    for i := APosition to ScrollingSupport.VertScrollBar.Position - 1 do
+      Inc(Delta, RowHeights[i + FixedRows] + 1);
+
+  // Scroll the grid body
+  r := ScrollingSupport.ClientRect;
+  Inc(r.Top, FixedHeight + 1);
+  if r.Top <= r.Bottom then
+  begin
+    if Delta < 0 then		// Scrolling downwards
+      Dec(r.Top, Delta)
+    else			// Scrolling upwards
+      Dec(r.Bottom, Delta);
+    Scroll(r, 0, Delta);
+  end;
+end;
+
 
 // -------------------------------------------------------------------
 //   TDrawGrid
@@ -311,12 +452,6 @@ procedure TDrawGrid.DrawCell(ACanvas: TGfxCanvas; ACol, ARow: Integer;
   ARect: TRect;
  AState: TGridDrawState);
 begin
-  if gdFixed in AState then
-  begin
-    Style.DrawButtonFace(ACanvas, ARect, []);
-    Style.SetUIColor(ACanvas, clBtnText);
-  end else
-    Style.SetUIColor(ACanvas, clWindowText);
   if Assigned(OnDrawCell) then
     OnDrawCell(Self, ACanvas, ACol, ARow, ARect, AState);
 end;
@@ -374,17 +509,9 @@ var
   s: String;
 begin
   // WriteLn('TStringGrid.DrawCell(', ACol, ', ', ARow, ', ', Integer(AState), ');');
-  if gdFixed in AState then
-  begin
-    Style.DrawButtonFace(ACanvas, ARect, []);
-    Style.SetUIColor(ACanvas, clBtnText);
-  end else
-    Style.SetUIColor(ACanvas, clWindowText);
   s := Cells[ACol, ARow];
   if Length(s) > 0 then
-  begin
     ACanvas.TextOut(ARect.Left + 2, ARect.Top + 2, s);
-  end;
   if Assigned(OnDrawCell) then
     OnDrawCell(Self, ACanvas, ACol, ARow, ARect, AState);
 end;
@@ -408,6 +535,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2001/01/17 21:36:55  sg
+  * Scrolling improvements
+
   Revision 1.3  2001/01/11 23:30:12  sg
   *** empty log message ***
 

@@ -391,6 +391,29 @@ begin
 
   TCustomForm(Widget).Wnd.Canvas.CopyRect(TCustomForm(Widget).Wnd.Canvas, r,
     r.Left + DeltaX, r.Top + DeltaY);
+
+
+  // Redraw the areas which has been scrolled in
+
+  if DeltaX <> 0 then
+  begin
+    r := ARect;
+    if DeltaX < 0 then	// Scrolling to the right size
+      r.Left := r.Right + DeltaX
+    else			// Scrolling to the left size
+      r.Right := r.Left + DeltaX;
+    Redraw(r);
+  end;
+
+  if DeltaY <> 0 then
+  begin
+    r := ARect;
+    if DeltaY < 0 then	// Scrolling downwards
+      r.Top := r.Bottom + DeltaY
+    else			// Scrolling upwards
+      r.Bottom := r.Top + DeltaY;
+    Redraw(r);
+  end;
 end;
 
 procedure TWidget.SetFocus;
@@ -822,6 +845,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/01/17 21:36:55  sg
+  * Scrolling improvements
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

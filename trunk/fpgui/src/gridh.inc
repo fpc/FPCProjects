@@ -39,15 +39,21 @@
     FDefaultRowHeight: Integer;
     FGridWidth: Integer;
     FGridHeight: Integer;
+    FFixedWidth: Integer;
+    FFixedHeight: Integer;
     FColWidths, FRowHeights: PIntegerArray;
     procedure SetColCount(AColCount: Integer);
     procedure SetRowCount(ARowCount: Integer);
+    procedure SetFixedCols(AFixedCols: Integer);
+    procedure SetFixedRows(AFixedRows: Integer);
     procedure SetDefaultColWidth(AWidth: Integer);
     procedure SetDefaultRowHeight(AHeight: Integer);
     function GetColWidths(ACol: Integer): Integer;
     procedure SetColWidths(ACol, AWidth: Integer);
     function GetRowHeights(ARow: Integer): Integer;
     procedure SetRowHeights(ARow, AHeight: Integer);
+    procedure HorzScrollBarScroll(Sender: TObject; var APosition: Integer);
+    procedure VertScrollBarScroll(Sender: TObject; var APosition: Integer);
   protected
     ScrollingSupport: TScrollingSupport;
 
@@ -66,10 +72,12 @@
     property CanExpandHeight default True;
     property ColCount: Integer read FColCount write SetColCount default 5;
     property RowCount: Integer read FRowCount write SetRowCount default 5;
-    property FixedCols: Integer read FFixedCols write FFixedCols default 1;
-    property FixedRows: Integer read FFixedRows write FFixedRows default 1;
+    property FixedCols: Integer read FFixedCols write SetFixedCols default 1;
+    property FixedRows: Integer read FFixedRows write SetFixedRows default 1;
     property GridWidth: Integer read FGridWidth;
     property GridHeight: Integer read FGridHeight;
+    property FixedWidth: Integer read FFixedWidth;
+    property FixedHeight: Integer read FFixedHeight;
     property DefaultColWidth: Integer read FDefaultColWidth write SetDefaultColWidth default 64;
     property DefaultRowHeight: Integer read FDefaultRowHeight write SetDefaultRowHeight default 24;
     property ColWidths[ACol: Integer]: Integer read GetColWidths write SetColWidths;
@@ -143,6 +151,9 @@
 
 {
   $Log$
+  Revision 1.4  2001/01/17 21:36:55  sg
+  * Scrolling improvements
+
   Revision 1.3  2001/01/11 23:30:12  sg
   *** empty log message ***
 

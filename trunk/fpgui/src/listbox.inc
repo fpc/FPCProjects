@@ -71,8 +71,10 @@ begin
   FCanExpandHeight := True;
 
   ScrollingSupport := TScrollingSupport.Create(Self);
-  ScrollingSupport.HorzScrollBar.OnScroll := @HorzScrollBarScroll;
-  ScrollingSupport.VertScrollBar.OnScroll := @VertScrollBarScroll;
+  ScrollingSupport.HorzScrollBar.OnScroll :=
+    @ScrollingSupport.DefHorzScrollHandler;
+  ScrollingSupport.VertScrollBar.OnScroll :=
+    @ScrollingSupport.DefVertScrollHandler;
   Items := TListBoxStrings.Create(Self);
   FItemIndex := -1;
   UpdateScrollBars;
@@ -232,50 +234,6 @@ end;
 
 // private methods
 
-procedure TCustomListBox.HorzScrollBarScroll(Sender: TObject;
-  var APosition: Integer);
-var
-  Delta: Integer;
-  r: TRect;
-begin
-  Delta := ScrollingSupport.HorzScrollBar.Position - APosition;
-  r := ScrollingSupport.ClientRect;
-  if Delta < 0 then	// Scrolling to the right side
-    Dec(r.Left, Delta)
-  else			// Scrolling to the left side
-    Dec(r.Right, Delta);
-  Scroll(r, Delta, 0);
-
-  // Redraw the area which has been scrolled in
-  if Delta < 0 then	// Scrolling to the right size
-    r.Left := r.Right + Delta
-  else			// Scrolling to the left size
-    r.Right := r.Left + Delta;
-  Redraw(r);
-end;
-
-procedure TCustomListBox.VertScrollBarScroll(Sender: TObject;
-  var APosition: Integer);
-var
-  Delta: Integer;
-  r: TRect;
-begin
-  Delta := ScrollingSupport.VertScrollBar.Position - APosition;
-  r := ScrollingSupport.ClientRect;
-  if Delta < 0 then	// Scrolling downwards
-    Dec(r.Top, Delta)
-  else			// Scrolling upwards
-    Dec(r.Bottom, Delta);
-  Scroll(r, 0, Delta);
-
-  // Redraw the area which has been scrolled in
-  if Delta < 0 then	// Scrolling downwards
-    r.Top := r.Bottom + Delta
-  else			// Scrolling upwards
-    r.Bottom := r.Top + Delta;
-  Redraw(r);
-end;
-
 function TCustomListBox.EvMousePressed(Event: TMousePressedEventObj): Boolean;
 var
   Index: Integer;
@@ -304,6 +262,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2001/01/17 21:36:55  sg
+  * Scrolling improvements
+
   Revision 1.3  2001/01/11 23:30:12  sg
   *** empty log message ***
 

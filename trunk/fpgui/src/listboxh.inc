@@ -20,8 +20,6 @@
   private
     FItems: TStrings;
     FItemIndex: Integer;
-    procedure HorzScrollBarScroll(Sender: TObject; var APosition: Integer);
-    procedure VertScrollBarScroll(Sender: TObject; var APosition: Integer);
     function EvMousePressed(Event: TMousePressedEventObj): Boolean;
   protected
     ScrollingSupport: TScrollingSupport;
@@ -57,6 +55,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/01/17 21:36:55  sg
+  * Scrolling improvements
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

@@ -112,12 +112,46 @@ begin
   end;
 end;
 
+procedure TScrollingSupport.DefHorzScrollHandler(Sender: TObject;
+  var APosition: Integer);
+var
+  Delta: Integer;
+  r: TRect;
+begin
+  Delta := HorzScrollBar.Position - APosition;
+  r := ClientRect;
+  if Delta < 0 then	// Scrolling to the right side
+    Dec(r.Left, Delta)
+  else			// Scrolling to the left side
+    Dec(r.Right, Delta);
+  Parent.Scroll(r, Delta, 0);
+end;
+
+procedure TScrollingSupport.DefVertScrollHandler(Sender: TObject;
+  var APosition: Integer);
+var
+  Delta: Integer;
+  r: TRect;
+begin
+  Delta := VertScrollBar.Position - APosition;
+  r := ClientRect;
+  if Delta < 0 then	// Scrolling downwards
+    Dec(r.Top, Delta)
+  else			// Scrolling upwards
+    Dec(r.Bottom, Delta);
+  Parent.Scroll(r, 0, Delta);
+end;
+
 function TScrollingSupport.EvMouseWheel(Event: TMouseWheelEventObj): Boolean;
 var
   mshift: TShiftState;
 begin
   mshift := Event.Shift * [ssShift, ssAlt, ssCtrl, ssMeta,
     ssSuper, ssHyper, ssAltGr];
+
+  if not (wsIsVisible in VertScrollBar.WidgetState) then
+    Include(mshift, ssShift);
+
   if mshift = [] then
     VertScrollBar.Position := VertScrollBar.Position +
       Round(Event.WheelDelta * VertScrollBar.SmallChange)
@@ -218,6 +252,9 @@ end;}
 
 {
   $Log$
+  Revision 1.3  2001/01/17 21:36:55  sg
+  * Scrolling improvements
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

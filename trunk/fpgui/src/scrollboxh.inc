@@ -28,6 +28,10 @@
     function ProcessEvent(Event: TEventObj): Boolean;
     function DistributeEvent(Event: TEventObj): Boolean;
     procedure EvRecalcLayout;
+
+    procedure DefHorzScrollHandler(Sender: TObject; var APosition: Integer);
+    procedure DefVertScrollHandler(Sender: TObject; var APosition: Integer);
+
     property ClientRect: TRect read FClientRect;
   end;
 
@@ -51,6 +55,9 @@
 
 {
   $Log$
+  Revision 1.2  2001/01/17 21:36:55  sg
+  * Scrolling improvements
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 
