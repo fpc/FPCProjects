@@ -3,4 +3,4 @@
 #
 
 [targets]
-dirs=helloworld eventtest
+dirs=helloworld eventtest imgtest

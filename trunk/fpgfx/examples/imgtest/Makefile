@@ -144,6 +144,21 @@ endif
 endif
 endif
 
+ifndef PACKAGESDIR
+PACKAGESDIR=$(FPCDIR)/packages
+endif
+ifndef TOOLKITSDIR
+TOOLKITSDIR=
+endif
+ifndef COMPONENTSDIR
+COMPONENTSDIR=
+endif
+
+# Create units dir
+ifneq ($(FPCDIR),.)
+UNITSDIR=$(FPCDIR)/units/$(OS_TARGET)
+endif
+
 #####################################################################
 # User Settings
 #####################################################################
@@ -151,7 +166,7 @@ endif
 
 # Targets
 
-override DIROBJECTS+=$(wildcard helloworld eventtest imgtest)
+override EXEOBJECTS+=imgtest
 
 # Clean
 
@@ -162,12 +177,14 @@ ZIPTARGET=install
 
 # Defaults
 
+override NEEDOPT=-S2h
 
 # Directories
 
 
 # Packages
 
+override PACKAGES+=rtl fcl fpgfx
 
 # Libraries
 
@@ -454,6 +471,115 @@ endif
 endif
 
 
+# Check if the dirs really exists, else turn it off
+ifeq ($(wildcard $(UNITSDIR)),)
+UNITSDIR=
+endif
+ifeq ($(wildcard $(TOOLKITSDIR)),)
+TOOLKITSDIR=
+endif
+ifeq ($(wildcard $(PACKAGESDIR)),)
+PACKAGESDIR=
+endif
+ifeq ($(wildcard $(COMPONENTSDIR)),)
+COMPONENTSDIR=
+endif
+
+
+# PACKAGESDIR packages
+
+PACKAGERTL=1
+PACKAGEFCL=1
+PACKAGEFPGFX=1
+
+ifdef PACKAGERTL
+ifneq ($(wildcard $(FPCDIR)/rtl),)
+ifneq ($(wildcard $(FPCDIR)/rtl/$(OS_TARGET)),)
+PACKAGEDIR_RTL=$(FPCDIR)/rtl/$(OS_TARGET)
+else
+PACKAGEDIR_RTL=$(FPCDIR)/rtl
+endif
+ifeq ($(wildcard $(PACKAGEDIR_RTL)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_rtl
+package_rtl:
+	$(MAKE) -C $(PACKAGEDIR_RTL) all
+endif
+UNITDIR_RTL=$(PACKAGEDIR_RTL)
+else
+PACKAGEDIR_RTL=
+ifneq ($(wildcard $(UNITSDIR)/rtl),)
+ifneq ($(wildcard $(UNITSDIR)/rtl/$(OS_TARGET)),)
+UNITDIR_RTL=$(UNITSDIR)/rtl/$(OS_TARGET)
+else
+UNITDIR_RTL=$(UNITSDIR)/rtl
+endif
+else
+UNITDIR_RTL=
+endif
+endif
+ifdef UNITDIR_RTL
+override NEEDUNITDIR+=$(UNITDIR_RTL)
+endif
+endif
+ifdef PACKAGEFCL
+ifneq ($(wildcard $(FPCDIR)/fcl),)
+ifneq ($(wildcard $(FPCDIR)/fcl/$(OS_TARGET)),)
+PACKAGEDIR_FCL=$(FPCDIR)/fcl/$(OS_TARGET)
+else
+PACKAGEDIR_FCL=$(FPCDIR)/fcl
+endif
+ifeq ($(wildcard $(PACKAGEDIR_FCL)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_fcl
+package_fcl:
+	$(MAKE) -C $(PACKAGEDIR_FCL) all
+endif
+UNITDIR_FCL=$(PACKAGEDIR_FCL)
+else
+PACKAGEDIR_FCL=
+ifneq ($(wildcard $(UNITSDIR)/fcl),)
+ifneq ($(wildcard $(UNITSDIR)/fcl/$(OS_TARGET)),)
+UNITDIR_FCL=$(UNITSDIR)/fcl/$(OS_TARGET)
+else
+UNITDIR_FCL=$(UNITSDIR)/fcl
+endif
+else
+UNITDIR_FCL=
+endif
+endif
+ifdef UNITDIR_FCL
+override NEEDUNITDIR+=$(UNITDIR_FCL)
+endif
+endif
+ifdef PACKAGEFPGFX
+ifneq ($(wildcard $(PACKAGESDIR)/fpgfx),)
+ifneq ($(wildcard $(PACKAGESDIR)/fpgfx/$(OS_TARGET)),)
+PACKAGEDIR_FPGFX=$(PACKAGESDIR)/fpgfx/$(OS_TARGET)
+else
+PACKAGEDIR_FPGFX=$(PACKAGESDIR)/fpgfx
+endif
+ifeq ($(wildcard $(PACKAGEDIR_FPGFX)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_fpgfx
+package_fpgfx:
+	$(MAKE) -C $(PACKAGEDIR_FPGFX) all
+endif
+UNITDIR_FPGFX=$(PACKAGEDIR_FPGFX)
+else
+PACKAGEDIR_FPGFX=
+ifneq ($(wildcard $(UNITSDIR)/fpgfx),)
+ifneq ($(wildcard $(UNITSDIR)/fpgfx/$(OS_TARGET)),)
+UNITDIR_FPGFX=$(UNITSDIR)/fpgfx/$(OS_TARGET)
+else
+UNITDIR_FPGFX=$(UNITSDIR)/fpgfx
+endif
+else
+UNITDIR_FPGFX=
+endif
+endif
+ifdef UNITDIR_FPGFX
+override NEEDUNITDIR+=$(UNITDIR_FPGFX)
+endif
+endif
+
 
 #####################################################################
 # Default Directories
@@ -658,6 +784,14 @@ ifdef VERBOSE
 override FPCOPT+=-vwni
 endif
 
+ifdef NEEDOPT
+override FPCOPT+=$(NEEDOPT)
+endif
+
+ifdef NEEDUNITDIR
+override FPCOPT+=$(addprefix -Fu,$(NEEDUNITDIR))
+endif
+
 ifdef UNITSDIR
 override FPCOPT+=-Fu$(UNITSDIR)
 endif
@@ -729,17 +863,17 @@ endif
 # Standard rules
 #####################################################################
 
-all: fpc_all $(addsuffix _all,$(DIROBJECTS))
+all: fpc_all
 
-debug: fpc_debug $(addsuffix _debug,$(DIROBJECTS))
+debug: fpc_debug
 
-smart: fpc_smart $(addsuffix _smart,$(DIROBJECTS))
+smart: fpc_smart
 
-shared: fpc_shared $(addsuffix _shared,$(DIROBJECTS))
+shared: fpc_shared
 
-showinstall: fpc_showinstall $(addsuffix _showinstall,$(DIROBJECTS))
+showinstall: fpc_showinstall
 
-install: fpc_install $(addsuffix _install,$(DIROBJECTS))
+install: fpc_install
 
 sourceinstall: fpc_sourceinstall
 
@@ -751,17 +885,33 @@ zipsourceinstall: fpc_zipsourceinstall
 
 zipexampleinstall: fpc_zipexampleinstall
 
-clean: fpc_clean $(addsuffix _clean,$(DIROBJECTS))
+clean: fpc_clean
 
-distclean: fpc_distclean $(addsuffix _distclean,$(DIROBJECTS))
+distclean: fpc_distclean
 
-cleanall: fpc_cleanall $(addsuffix _cleanall,$(DIROBJECTS))
-
-require: $(addsuffix _require,$(DIROBJECTS))
+cleanall: fpc_cleanall
 
 info: fpc_info
 
-.PHONY:  all debug smart shared showinstall install sourceinstall exampleinstall zipinstall zipsourceinstall zipexampleinstall clean distclean cleanall require info
+.PHONY:  all debug smart shared showinstall install sourceinstall exampleinstall zipinstall zipsourceinstall zipexampleinstall clean distclean cleanall info
+
+#####################################################################
+# Exes
+#####################################################################
+
+.PHONY: fpc_exes
+
+ifdef EXEOBJECTS
+override EXEFILES=$(addsuffix $(EXEEXT),$(EXEOBJECTS))
+override EXEOFILES:=$(addsuffix $(OEXT),$(EXEOBJECTS)) $(addprefix $(LIBPREFIX),$(addsuffix $(STATICLIBEXT),$(EXEOBJECTS)))
+
+override ALLTARGET+=fpc_exes
+override INSTALLEXEFILES+=$(EXEFILES)
+override CLEANEXEFILES+=$(EXEFILES) $(EXEOFILES)
+
+endif
+
+fpc_exes: $(EXEFILES)
 
 #####################################################################
 # General compile rules
@@ -1129,194 +1279,6 @@ endif
 	@$(ECHO)  DestZipDir........... $(DESTZIPDIR)
 	@$(ECHO)  ZipName.............. $(ZIPNAME)
 	@$(ECHO)
-
-#####################################################################
-# Directories
-#####################################################################
-
-OBJECTDIRHELLOWORLD=1
-OBJECTDIREVENTTEST=1
-OBJECTDIRIMGTEST=1
-
-# Dir helloworld
-
-ifdef OBJECTDIRHELLOWORLD
-.PHONY:  helloworld_all helloworld_debug helloworld_examples helloworld_test helloworld_smart helloworld_shared helloworld_showinstall helloworld_install helloworld_sourceinstall helloworld_exampleinstall helloworld_zipinstall helloworld_zipsourceinstall helloworld_zipexampleinstall helloworld_clean helloworld_distclean helloworld_cleanall helloworld_require helloworld_info
-
-helloworld_all:
-	$(MAKE) -C helloworld all
-
-helloworld_debug:
-	$(MAKE) -C helloworld debug
-
-helloworld_examples:
-	$(MAKE) -C helloworld examples
-
-helloworld_test:
-	$(MAKE) -C helloworld test
-
-helloworld_smart:
-	$(MAKE) -C helloworld smart
-
-helloworld_shared:
-	$(MAKE) -C helloworld shared
-
-helloworld_showinstall:
-	$(MAKE) -C helloworld showinstall
-
-helloworld_install:
-	$(MAKE) -C helloworld install
-
-helloworld_sourceinstall:
-	$(MAKE) -C helloworld sourceinstall
-
-helloworld_exampleinstall:
-	$(MAKE) -C helloworld exampleinstall
-
-helloworld_zipinstall:
-	$(MAKE) -C helloworld zipinstall
-
-helloworld_zipsourceinstall:
-	$(MAKE) -C helloworld zipsourceinstall
-
-helloworld_zipexampleinstall:
-	$(MAKE) -C helloworld zipexampleinstall
-
-helloworld_clean:
-	$(MAKE) -C helloworld clean
-
-helloworld_distclean:
-	$(MAKE) -C helloworld distclean
-
-helloworld_cleanall:
-	$(MAKE) -C helloworld cleanall
-
-helloworld_require:
-	$(MAKE) -C helloworld require
-
-helloworld_info:
-	$(MAKE) -C helloworld info
-endif
-
-# Dir eventtest
-
-ifdef OBJECTDIREVENTTEST
-.PHONY:  eventtest_all eventtest_debug eventtest_examples eventtest_test eventtest_smart eventtest_shared eventtest_showinstall eventtest_install eventtest_sourceinstall eventtest_exampleinstall eventtest_zipinstall eventtest_zipsourceinstall eventtest_zipexampleinstall eventtest_clean eventtest_distclean eventtest_cleanall eventtest_require eventtest_info
-
-eventtest_all:
-	$(MAKE) -C eventtest all
-
-eventtest_debug:
-	$(MAKE) -C eventtest debug
-
-eventtest_examples:
-	$(MAKE) -C eventtest examples
-
-eventtest_test:
-	$(MAKE) -C eventtest test
-
-eventtest_smart:
-	$(MAKE) -C eventtest smart
-
-eventtest_shared:
-	$(MAKE) -C eventtest shared
-
-eventtest_showinstall:
-	$(MAKE) -C eventtest showinstall
-
-eventtest_install:
-	$(MAKE) -C eventtest install
-
-eventtest_sourceinstall:
-	$(MAKE) -C eventtest sourceinstall
-
-eventtest_exampleinstall:
-	$(MAKE) -C eventtest exampleinstall
-
-eventtest_zipinstall:
-	$(MAKE) -C eventtest zipinstall
-
-eventtest_zipsourceinstall:
-	$(MAKE) -C eventtest zipsourceinstall
-
-eventtest_zipexampleinstall:
-	$(MAKE) -C eventtest zipexampleinstall
-
-eventtest_clean:
-	$(MAKE) -C eventtest clean
-
-eventtest_distclean:
-	$(MAKE) -C eventtest distclean
-
-eventtest_cleanall:
-	$(MAKE) -C eventtest cleanall
-
-eventtest_require:
-	$(MAKE) -C eventtest require
-
-eventtest_info:
-	$(MAKE) -C eventtest info
-endif
-
-# Dir imgtest
-
-ifdef OBJECTDIRIMGTEST
-.PHONY:  imgtest_all imgtest_debug imgtest_examples imgtest_test imgtest_smart imgtest_shared imgtest_showinstall imgtest_install imgtest_sourceinstall imgtest_exampleinstall imgtest_zipinstall imgtest_zipsourceinstall imgtest_zipexampleinstall imgtest_clean imgtest_distclean imgtest_cleanall imgtest_require imgtest_info
-
-imgtest_all:
-	$(MAKE) -C imgtest all
-
-imgtest_debug:
-	$(MAKE) -C imgtest debug
-
-imgtest_examples:
-	$(MAKE) -C imgtest examples
-
-imgtest_test:
-	$(MAKE) -C imgtest test
-
-imgtest_smart:
-	$(MAKE) -C imgtest smart
-
-imgtest_shared:
-	$(MAKE) -C imgtest shared
-
-imgtest_showinstall:
-	$(MAKE) -C imgtest showinstall
-
-imgtest_install:
-	$(MAKE) -C imgtest install
-
-imgtest_sourceinstall:
-	$(MAKE) -C imgtest sourceinstall
-
-imgtest_exampleinstall:
-	$(MAKE) -C imgtest exampleinstall
-
-imgtest_zipinstall:
-	$(MAKE) -C imgtest zipinstall
-
-imgtest_zipsourceinstall:
-	$(MAKE) -C imgtest zipsourceinstall
-
-imgtest_zipexampleinstall:
-	$(MAKE) -C imgtest zipexampleinstall
-
-imgtest_clean:
-	$(MAKE) -C imgtest clean
-
-imgtest_distclean:
-	$(MAKE) -C imgtest distclean
-
-imgtest_cleanall:
-	$(MAKE) -C imgtest cleanall
-
-imgtest_require:
-	$(MAKE) -C imgtest require
-
-imgtest_info:
-	$(MAKE) -C imgtest info
-endif
 
 #####################################################################
 # Local Makefile

@@ -1,0 +1,10 @@
+#
+#   Makefile.fpc for fpGFX example "ImgTest"
+#
+
+[targets]
+programs=imgtest
+
+[require]
+options=-S2h
+packages=fcl fpgfx
