@@ -103,12 +103,13 @@ ResourceString
   SLinkLinkSmart = 'smartlinked';
   SLinkLinkStatic = 'statically linked';
   SLinkLinkDynamic = 'dynamically linked';
-  SLinkLinkerOptions = 'Extra options for linker';
+  SLinkLinkerOptions = 'Extra options';
+  SLinkOutputName = 'Output name';
   SLinkOmitLinking = 'Omit linking stage';
   SLinkUseClib = 'Link to C library';
   SLinkStripSymbols = 'Strip unused symbols';
   SLinkType = 'Units to use';
-  SlinkOPtions = 'Linker options';
+  SlinkOptions = 'Linker options';
     
   // general options
   SGeneralCheckUnitName = 'Omit unit name check';
@@ -213,14 +214,14 @@ Type
        // Linker options
        CBLinkMakeDynlib,
        CBLinkMakeSmartLink, 
-       CBLinkLinkerOptions ,
        CBLinkOmitLinking ,
        CBLinkUseClib ,
        CBLinkStripSymbols : TCheckBox;
        RBLinkLinkSmart ,
        RBLinkLinkStatic ,
        RBLinkLinkDynamic : TRadioButton;
-       ELinkLinkerOptions : TEdit;
+       ELinkLinkerOptions,
+       ELinkOutputName : TEdit;
        GBLinkOptions : TGroupBox;
        // general page.
        CBGeneralCheckUnitName ,
@@ -342,13 +343,14 @@ begin
     Name := 'SearchLayout';
     Rows := 5;
     Columns := 2;
-    HorzSpacing := 4;
+    HorzSpacing := 8;
     VertSpacing := 4;
     SameSizeCells:=False;
     // Unit Search path
     FUnitSearchPath:=TFileEdit.Create(Self);
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SUnitSearchPath;
+    ALabel.Alignment:=taRightJustify;
     ALabel.CanExpandWidth := False;
     AddWidget(ALabel,0,0,1,1);
     AddWidget(FUnitSearchPath,1,0,1,1);
@@ -356,24 +358,28 @@ begin
     FIncludePath:=TFileEdit.Create(Self);
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SIncludePath;
+    ALabel.Alignment:=taRightJustify;
     AddWidget(ALabel,0,1,1,1);
     AddWidget(FIncludePath,1,1,1,1);
     // Object file search path
     FObjectSearchPath:=TFileEdit.Create(Self);
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SObjectSearchPath;
+    ALabel.Alignment:=taRightJustify;
     AddWidget(ALabel,0,2,1,1);
     AddWidget(FObjectSearchPath,1,2,1,1);
     // Library search parth
     FLibrarySearchPath:=TFileEdit.Create(Self);
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SLibrarySearchPath;
+    ALabel.Alignment:=taRightJustify;
     AddWidget(ALabel,0,3,1,1);
     AddWidget(FLibrarySearchPath,1,3,1,1);
     // Tools search path
     FToolsSearchDir:=TFileEdit.Create(Self);
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SToolsSearchDir;
+    ALabel.Alignment:=taRightJustify;
     AddWidget(ALabel,0,4,1,1);
     AddWidget(FToolsSearchDir,1,4,1,1);
     FinishCreation;
@@ -401,9 +407,11 @@ begin
     AddWidget(FUnitOutputDir,1,1,1,1);
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SOutputDir;
+    ALabel.Alignment:=taRightJustify;
     Alabel.CanExpandWidth:=FAlse;
     AddWidget(ALabel,0,0,1,1);
     Alabel:=TLabel.Create(Self);
+    ALabel.Alignment:=taRightJustify;
     ALabel.Text:=SUnitOutputDir;
     AddWidget(ALabel,0,1,1,1);
     end;
@@ -840,11 +848,13 @@ begin
       VertSpacing:=8;
       HorzSpacing:=8;
       Alabel:=TLabel.Create(Self);
+      ALabel.Alignment:=taRightJustify;
       ALabel.Text:=SCodeHeapSize;
       AddWidget(Alabel,0,0,1,1);
       AddWidget(ECodeHeapSize,1,0,1,1);
       ALabel:=TLabel.Create(Self);
       ALabel.Text:=SCodestackSize;
+      ALabel.Alignment:=taRightJustify;
       ALAbel.CanExpandWidth:=False;
       AddWidget(ALabel,0,1,1,1);
       AddWidget(ECodeStackSize,1,1,1,1);
@@ -983,12 +993,12 @@ Function TCompilerOptionsForm.CreateLinkerPage : TWidget;
 Var 
   ALabel  : TLabel;
   Layout : TBoxLayout;
+  Grid : TGridLayout;
   GB : TGroupBox;
   
 begin
   CBLinkMakeDynlib := TCheckBox.Create(Self);
   CBLinkMakeSmartLink := TCheckBox.Create(Self); 
-  CBLinkLinkerOptions  := TCheckBox.Create(Self);
   CBLinkOmitLinking  := TCheckBox.Create(Self);
   CBLinkUseClib  := TCheckBox.Create(Self);
   CBLinkStripSymbols := TCheckBox.Create(Self);
@@ -996,11 +1006,11 @@ begin
   RBLinkLinkSmart  := TRadioButton.Create(Self);
   RBLinkLinkStatic  := TRadioButton.Create(Self);
   ELinkLinkerOptions := TEdit.Create(Self);
+  ELinkOutputname := TEdit.Create(Self);
   GBLinkOptions := TGroupBox.Create(Self);
   // text
   CBLinkMakeDynlib.Text := SLinkMakeDynlib;
   CBLinkMakeSmartLink.Text := SLinkMakeSmartLink; 
-  CBLinkLinkerOptions.Text := SLinkLinkerOptions ;
   CBLinkOmitLinking.Text := SLinkOmitLinking ;
   CBLinkUseClib.Text := SLinkUseClib ;
   CBLinkStripSymbols.Text := SLinkStripSymbols;
@@ -1011,7 +1021,6 @@ begin
   // Names  
   CBLinkMakeDynlib.Name := 'CBLinkMakeDynlib';
   CBLinkMakeSmartLink.Name := 'CBLinkMakeSmartLink'; 
-  CBLinkLinkerOptions.Name := 'CBLinkLinkerOptions';
   CBLinkOmitLinking.Name := 'CBLinkOmitLinking';
   CBLinkUseClib.Name := 'CBLinkUseClib';
   CBLinkStripSymbols.Name := 'CBLinkStripSymbols';
@@ -1025,17 +1034,25 @@ begin
   CBLinkOmitLinking.OnClick:=@OnOmitLinkingClick;
   
   // Start layout.
-  Layout:=TBoxLayout.Create(Self);
-  With Layout do
+  Grid:=TGridLayout.Create(Self);
+  With Grid do
     begin
-    Orientation:=boxHorz;
-    horzAlign:=HorzFill;
-    Spacing:=8;
+    Rows:=2;
+    Columns:=2;
+    HorzSpacing := 4;
+    VertSpacing := 4;
     ALabel:=TLabel.Create(Self);
+    ALabel.Alignment:=taRightJustify;
     ALabel.Text:=SLinkLinkerOptions;
     Alabel.CanExpandWidth:=False;
-    AddWidget(Alabel);
-    AddWidget(ELinkLinkerOptions);
+    AddWidget(Alabel,0,0,1,1);
+    AddWidget(ELinkLinkerOptions,1,0,1,1);
+    ALabel:=TLabel.Create(Self);
+    ALabel.Alignment:=taRightJustify;
+    ALabel.Text:=SLinkOutputname;
+    Alabel.CanExpandWidth:=False;
+    AddWidget(Alabel,0,1,1,1);
+    AddWidget(ELinkOutputName,1,1,1,1);
     end;
   GB :=TGroupBox.Create(Self);
   With GB Do
@@ -1045,10 +1062,18 @@ begin
     With Content as TBoxLAyout do
       begin
       Orientation:=BoxVert;
+      HorzAlign:=HorzLeft;
       AddWidget(RBLinkLinkStatic);
       AddWidget(RBLinkLinkSmart);
       AddWidget(RBLinkLinkDynamic);
       end; 
+    end;  
+  Layout:=TBoxLAyout.Create(Self);
+  with Layout do
+    begin
+    Orientation:=BoxHorz;
+    HorzAlign:=HorzLeft;
+    AddWidget(GB);
     end;  
   With GBLinkOptions do
     begin
@@ -1063,8 +1088,8 @@ begin
       AddWidget(CBLinkStripSymbols);
       AddWidget(CBLinkMakeDynlib);
       AddWidget(CBLinkMakeSmartLink);
-      AddWidget(Layout);
-      AddWidget(GB)
+      AddWidget(Grid);
+      AddWidget(Layout)
       end;
     end;
   Result:=TBoxLayout.Create(Self);  
@@ -1088,6 +1113,7 @@ end;
 Function TCompilerOptionsForm.CreateGeneralPage : TWidget;
 
 Var Layout1,Layout2,Layout3 : TBoxLayout;
+    Layout : TgridLayout;
     ALAbel : TLabel;
     
 begin
@@ -1208,32 +1234,27 @@ begin
   (Result as TBoxLayout).AddWidget(Layout3);
   // Writeln('Adding edits');
   // Add 2 edits.  
-  Layout1:=TBoxLayout.Create(Self);
-  With Layout1 do
+  Layout:=TGridLayout.Create(Self);
+  With Layout do
     begin
-    Orientation:=boxHorz;
-    horzAlign:=HorzFill;
-    Spacing:=8;
+    Rows:=2;
+    Columns:=2;
+    HorzSpacing:=4;
+    VertSpacing:=4;
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SGeneralDefines;
+    ALabel.Alignment:=taRightJustify;
     Alabel.CanExpandWidth:=False;
-    AddWidget(Alabel);
-    AddWidget(EGeneralDefines);
-    end;
-  (Result as TBoxLayout).AddWidget(Layout1);
-  Layout1:=TBoxLayout.Create(Self);
-  With Layout1 do
-    begin
-    Orientation:=boxHorz;
-    horzAlign:=HorzFill;
-    Spacing:=8;
+    AddWidget(Alabel,0,0,1,1);
+    AddWidget(EGeneralDefines,1,0,1,1);
     ALabel:=TLabel.Create(Self);
     ALabel.Text:=SGeneralUnDefines;
+    ALabel.Alignment:=taRightJustify;
     Alabel.CanExpandWidth:=False;
-    AddWidget(Alabel);
-    AddWidget(EGeneralUnDefines);
+    AddWidget(Alabel,0,1,1,1);
+    AddWidget(EGeneralUnDefines,1,1,1,1);
     end;
-  (Result as TBoxLayout).AddWidget(Layout1);
+  (Result as TBoxLayout).AddWidget(Layout);
   // Debug info
   // Writeln('Adding debug info');
   With GBGeneralDebugOptions do
@@ -1506,6 +1527,8 @@ begin
       AddOption('-XD');
     If Length(ELinkLinkerOptions.Text)>0 then
       AddOption('-k'+ELinkLinkerOptions.Text);
+    If Length(ELinkOutputName.Text)>0 then
+      AddOption('-o'+ELinkOutputName.Text);
     end;  
   // Writeln(stderr,'General options');
   // general page.
@@ -1579,6 +1602,9 @@ end.
 
 {
   $Log$
+  Revision 1.6  2000/02/25 14:51:17  michael
+  Some cosmetics and output name added
+
   Revision 1.5  2000/02/25 13:55:47  michael
   Fixed some minor bugs. All options now passed correctly.
 
