@@ -31,7 +31,6 @@ const
   keyEscape		= $1b;
   keyDelete		= $7f;
 
-
   // special keys
 
   keyVoid		= $e000;
@@ -266,6 +265,9 @@ const
 
 {
   $Log$
+  Revision 1.3  2000/12/23 23:07:24  sg
+  *** empty log message ***
+
   Revision 1.2  2000/10/28 20:27:33  sg
   * Changed handling of offscreen stuff to the concept of Bitmaps and
     Images

@@ -51,7 +51,7 @@ type
     [1,1]: Y scalation
     [2,1]: Y translation
     NOTE: This may change in the future! Don't assume anything about the
-	  structure of TGfxMatrix! TGfxDrawable only allows you to read and
+	  structure of TGfxMatrix! TGfxCanvas only allows you to read and
 	  write the current transformation matrix so that the matrix can
 	  easily be saved and restored.
   }
@@ -156,22 +156,23 @@ type
 
   EGfxError = class(Exception);
 
+  TGfxImage = class;
   TGfxDevice = class;
   TGfxWindow = class;
 
   // Fonts
 
   TGfxFont = class
-    { This class doesn't define anything... Create it from a drawable and
+    { This class doesn't define anything... Create it from a canvas and
       destroy it with Free, as usual. }
   end;
 
 
-  // Drawables
+  // Canvasses
 
   TGfxLineStyle = (lsSolid, lsDot);
 
-  TGfxDrawable = class
+  TGfxCanvas = class
   private
     FMatrix: TGfxMatrix;
   protected
@@ -180,7 +181,8 @@ type
     FPixelFormat: TGfxPixelFormat;
     constructor Create;
   public
-    function CreateBitmap(AWidth, AHeight: Integer): TGfxDrawable; virtual; abstract;
+    function CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas; virtual; abstract;
+    function CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas; virtual; abstract;
 
     // Transformations
     procedure Transform(x, y: Integer; var OutX, OutY: Integer);
@@ -213,9 +215,15 @@ type
     procedure TextOut(x, y: Integer; const AText: String); virtual; abstract;
 
     // Bit block transfers
-    procedure Copy(ASource: TGfxDrawable; DestX, DestY: Integer); virtual;
-    procedure CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
-      DestX, DestY: Integer); virtual; abstract;
+    procedure Copy(ASource: TGfxCanvas; DestX, DestY: Integer); virtual;
+    procedure CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
+      ADestX, ADestY: Integer); virtual; abstract;
+
+    // Image drawing
+    procedure DrawImage(AImage: TGfxImage; ADestX, ADestY: Integer); virtual;
+    procedure DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
+      ADestX, ADestY: Integer); virtual; abstract;
+
 
     // Properties
     property Width: Integer read FWidth;
@@ -234,9 +242,7 @@ type
   public
     procedure Lock(var AData: Pointer; var AStride: LongWord); virtual; abstract;
     procedure Unlock; virtual;
-    procedure Draw(ADrawable: TGfxDrawable; ADestX, ADestY: Integer); virtual;
-    procedure DrawRect(ASourceRect: TRect; ADrawable: TGfxDrawable;
-      ADestX, ADestY: Integer); virtual; abstract;
+    procedure SetPixelsFromData(AData: Pointer; AStride: LongWord);
     property Width: Integer read FWidth;
     property Height: Integer read FHeight;
     property PixelFormat: TGfxPixelFormat read FPixelFormat;
@@ -251,10 +257,13 @@ type
 
 
   TGfxDisplay = class(TGfxDevice)
+  private
+    FOnIdle: TNotifyEvent;
   public
     function CreateWindow: TGfxWindow; virtual; abstract;
     procedure Run; virtual; abstract;
     procedure BreakRun; virtual; abstract;
+    property OnIdle: TNotifyEvent read FOnIdle write FOnIdle;
   end;
 
 
@@ -284,6 +293,7 @@ type
     FOnClose: TNotifyEvent;
     FOnFocusIn: TNotifyEvent;
     FOnFocusOut: TNotifyEvent;
+    FOnHide: TNotifyEvent;
     FOnKeyPressed: TGfxKeyEvent;
     FOnKeyReleased: TGfxKeyEvent;
     FOnKeyChar: TGfxKeyCharEvent;
@@ -295,11 +305,12 @@ type
     FOnMouseWheel: TGfxMouseWheelEvent;
     FOnPaint: TGfxPaintEvent;
     FOnResize: TNotifyEvent;
+    FOnShow: TNotifyEvent;
     procedure SetWidth(AWidth: Integer);
     procedure SetHeight(AHeight: Integer);
   protected
     FDisplay: TGfxDisplay;
-    FDrawable: TGfxDrawable;
+    FCanvas: TGfxCanvas;
     FLeft: Integer;
     FTop: Integer;
     FWidth: Integer;
@@ -317,7 +328,7 @@ type
     procedure ReleaseMouse; virtual; abstract;
 
     property Display: TGfxDisplay read FDisplay;
-    property Drawable: TGfxDrawable read FDrawable;
+    property Canvas: TGfxCanvas read FCanvas;
     // Window state
     property Left: Integer read FLeft;
     property Top: Integer read FTop;
@@ -330,6 +341,7 @@ type
     property OnClose: TNotifyEvent read FOnClose write FOnClose;
     property OnFocusIn: TNotifyEvent read FOnFocusIn write FOnFocusIn;
     property OnFocusOut: TNotifyEvent read FOnFocusOut write FOnFocusOut;
+    property OnHide: TNotifyEvent read FOnHide write FOnHide;
     property OnKeyPressed: TGfxKeyEvent read FOnKeyPressed write FOnKeyPressed;
     property OnKeyReleased: TGfxKeyEvent read FOnKeyReleased write FOnKeyReleased;
     property OnKeyChar: TGfxKeyCharEvent read FOnKeyChar write FOnKeyChar;
@@ -341,6 +353,7 @@ type
     property OnMouseWheel: TGfxMouseWheelEvent read FOnMouseWheel write FOnMouseWheel;
     property OnPaint: TGfxPaintEvent read FOnPaint write FOnPaint;
     property OnResize: TNotifyEvent read FOnResize write FOnResize;
+    property OnShow: TNotifyEvent read FOnShow write FOnShow;
   end;
 
 
@@ -351,29 +364,29 @@ implementation
 
 
 // ===================================================================
-//   TGfxDrawable
+//   TGfxCanvas
 // ===================================================================
 
-constructor TGfxDrawable.Create;
+constructor TGfxCanvas.Create;
 begin
   inherited Create;
   Matrix := GfxIdentityMatrix;
 end;
 
-procedure TGfxDrawable.Transform(x, y: Integer; var OutX, OutY: Integer);
+procedure TGfxCanvas.Transform(x, y: Integer; var OutX, OutY: Integer);
 begin
   OutX := Matrix._00 * x + Matrix._20;
   OutY := Matrix._11 * y + Matrix._21;
 end;
 
-procedure TGfxDrawable.AppendTranslation(dx, dy: Integer);
+procedure TGfxCanvas.AppendTranslation(dx, dy: Integer);
 begin
   // Append a translation to the existing transformation matrix
   Inc(FMatrix._20, FMatrix._00 * dx);
   Inc(FMatrix._21, FMatrix._11 * dy);
 end;
 
-procedure TGfxDrawable.DrawPolyLine(const Coords: array of Integer);
+procedure TGfxCanvas.DrawPolyLine(const Coords: array of Integer);
 var
   i: Integer;
 begin
@@ -385,27 +398,38 @@ begin
   end;
 end;
 
-procedure TGfxDrawable.DrawRect(const Rect: TRect);
+procedure TGfxCanvas.DrawRect(const Rect: TRect);
 begin
   DrawPolyLine([Rect.Left, Rect.Top, Rect.Right - 1, Rect.Top,
     Rect.Right - 1, Rect.Bottom - 1, Rect.Left, Rect.Bottom - 1, Rect.Left, Rect.Top]);
 end;
 
-function TGfxDrawable.TextExtent(const AText: String): TSize;
+function TGfxCanvas.TextExtent(const AText: String): TSize;
 begin
   Result.cx := TextWidth(AText);
   Result.cy := FontCellHeight;
 end;
 
-function TGfxDrawable.TextWidth(const AText: String): Integer;
+function TGfxCanvas.TextWidth(const AText: String): Integer;
 begin
   Result := TextExtent(AText).cx;
 end;
 
-procedure TGfxDrawable.Copy(ASource: TGfxDrawable; DestX, DestY: Integer);
+procedure TGfxCanvas.Copy(ASource: TGfxCanvas; DestX, DestY: Integer);
 begin
   ASSERT(Assigned(ASource));
   CopyRect(ASource, Rect(0, 0, ASource.Width, ASource.Height), DestX, DestY);
+end;
+
+procedure TGfxCanvas.DrawImage(AImage: TGfxImage; ADestX, ADestY: Integer);
+var
+  r: TRect;
+begin
+  r.Left := 0;
+  r.Top := 0;
+  r.Right := AImage.Width;
+  r.Bottom := AImage.Height;
+  DrawImageRect(AImage, r, ADestX, ADestY);
 end;
 
 
@@ -426,15 +450,40 @@ begin
   // Default implementation: Do nothing...
 end;
 
-procedure TGfxImage.Draw(ADrawable: TGfxDrawable; ADestX, ADestY: Integer);
+procedure TGfxImage.SetPixelsFromData(AData: Pointer; AStride: LongWord);
 var
-  r: TRect;
+  DestData: Pointer;
+  DestStride, BytesPerScanline: LongWord;
+  y: Integer;
 begin
-  r.Left := 0;
-  r.Top := 0;
-  r.Right := Width;
-  r.Bottom := Height;
-  DrawRect(r, ADrawable, ADestX, ADestY);
+  if Height <= 0 then
+    exit;
+
+  Lock(DestData, DestStride);
+  try
+    if DestStride = AStride then
+      Move(AData^, DestData^, AStride * Height)
+    else
+    begin
+      if DestStride > AStride then
+        BytesPerScanline := AStride
+      else
+        BytesPerScanline := DestStride;
+
+      y := 0;
+      while True do
+      begin
+        Move(AData^, DestData^, BytesPerScanline);
+	Inc(y);
+	if y = Height then
+	  break;
+	Inc(AData, AStride);
+	Inc(DestData, DestStride);
+      end;
+    end;
+  finally
+    Unlock;
+  end;
 end;
 
 
@@ -638,6 +687,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/12/23 23:07:24  sg
+  *** empty log message ***
+
   Revision 1.2  2000/10/28 20:27:32  sg
   * Changed handling of offscreen stuff to the concept of Bitmaps and
     Images

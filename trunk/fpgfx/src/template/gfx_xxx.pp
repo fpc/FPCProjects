@@ -77,7 +77,7 @@ type
     procedure TextOut(x, y: Integer; const AText: String); override;
 
     procedure CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
-      DestX, DestY: Integer); override;
+      ADestX, ADestY: Integer); override;
 
 
     property Display: TxxxDisplay read FDisplay;
@@ -422,6 +422,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/12/23 23:07:24  sg
+  *** empty log message ***
+
   Revision 1.2  2000/10/28 20:28:27  sg
   * First version
 

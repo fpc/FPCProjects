@@ -99,7 +99,7 @@ type
     procedure TextOut(x, y: Integer; const AText: String); override;
 
     procedure CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
-      DestX, DestY: Integer); override;
+      ADestX, ADestY: Integer); override;
 
     property Handle: HDC read FHandle;
   end;
@@ -370,7 +370,7 @@ begin
 end;
 
 procedure TGDIDrawable.CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
-  DestX, DestY: Integer);
+  ADestX, ADestY: Integer);
 begin
   Transform(DestX, DestY, DestX, DestY);
   WriteLn('Not implemented yet: TGDIDrawable.CopyRect');
@@ -718,6 +718,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/12/23 23:07:24  sg
+  *** empty log message ***
+
   Revision 1.1  2000/10/28 20:30:50  sg
   * First version (NOT compilable at the moment, as the sources haven't been
     adapted to recent interfaces changes yet!)
