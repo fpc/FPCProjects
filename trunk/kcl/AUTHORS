@@ -1,0 +1,18 @@
+KCL Authors:
+============
+
+Sebastian Guenther (sg@freepascal.org)
+  Project leader, design, GTK target
+
+Tom Jones (tojo@freepascal.org)
+  Additional input, Win32 target
+
+
+
+Contributors so far:
+
+Michael van Canneyt (michael@freepascal.org)
+  Much additional input; web hosting
+
+Peter Vreman (peter@freepascal.org)
+  GTK support, SHEdit development
