@@ -2,7 +2,7 @@
     $Id$
 
     KCLSHEdit - SHEdit Widget Implementation for KCL
-    Copyright (C) 1999  Sebastian Guenther (sg@freepascal.org)
+    Copyright (C) 1999 - 2000  Sebastian Guenther (sg@freepascal.org)
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -52,7 +52,8 @@ type
     shWhitespace: Integer;
 
     PaintBox: TPaintBox;
-    FLeftIndent: Integer;
+    FLeftIndent: Integer;		// Left indent (border) in pixel (!)
+    FDefMaxTextWidth: Integer;          // Position of vertical bar, in chars
     CharW, CharH: Integer;
     Fonts: array[TSHFontStyle] of TFont; // Fonts for content drawing
     Canvas: TCanvas;
@@ -62,13 +63,16 @@ type
     FFontName: String;
     FFontSize: Integer;
     CursorVisible: Boolean;
+    MouseSelStartX, MouseSelStartY: Integer;
 
     procedure OnPaintBoxPaint(Sender: TObject; ACanvas: TCanvas;
       const rect: TRect);
     procedure KeyPressed(Sender: TObject; key: Char; KeyCode: LongWord;
       ShiftState: TShiftState);
-    procedure PaintboxMouseButtonDown(Sender: TObject; MouseX, MouseY: Integer;
-      ShiftState: TShiftState);
+    procedure PaintboxMouseButtonDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; MouseX, MouseY: Integer);
+    procedure PaintboxMouseMove(Sender: TObject; Shift: TShiftState;
+      MouseX, MouseY: Integer);
     procedure PaintboxFocusIn(Sender: TObject);
     procedure PaintboxFocusOut(Sender: TObject);
 
@@ -99,8 +103,8 @@ type
     procedure SetLineCount(count: Integer);
 
     // Clipboard support
-    //function  GetClipboard: String;
-    //procedure SetClipboard(Content: String);
+    function  GetClipboard: String;
+    procedure SetClipboard(AContent: String);
 
   public
 
@@ -113,6 +117,7 @@ type
     property Editor: TSHTextEdit read FEditor;
     property LeftIndent: Integer read FLeftIndent write FLeftIndent;
     DrawVBar: Boolean;
+    property DefMaxTextWidth: Integer read FDefMaxTextWidth write FDefMaxTextWidth;
   end;
 
 
@@ -166,8 +171,8 @@ function  TKCLWidgetIf.GetLineWidth: Integer;			   begin Result := Widget.GetLin
 procedure TKCLWidgetIf.SetLineWidth(w: Integer);		   begin Widget.SetLineWidth(w) end;
 function  TKCLWidgetIf.GetLineCount: Integer;			   begin Result := Widget.GetLineCount end;
 procedure TKCLWidgetIf.SetLineCount(count: Integer);		   begin Widget.SetLineCount(count) end;
-function  TKCLWidgetIf.GetClipboard: String;			   begin WriteLn('GetClipboard') end;
-procedure TKCLWidgetIf.SetClipboard(Content: String);		   begin WriteLn('SetClipboard') end;
+function  TKCLWidgetIf.GetClipboard: String;			   begin Result := Widget.GetClipboard end;
+procedure TKCLWidgetIf.SetClipboard(Content: String);		   begin Widget.SetClipboard(Content) end;
 
 
 
@@ -178,6 +183,8 @@ var
   f: TFont;
 begin
   inherited Create(AOwner);
+
+  // Set up the interface adapter
   r := TKCLWidgetIf.Create;
   r.Widget := Self;
   WidgetIface := r;
@@ -199,10 +206,13 @@ begin
   FLeftIndent := CharW div 2;
 
   PaintBox := TPaintBox.Create(Self);
+  PaintBox.Name := 'PaintBox';
   Content := PaintBox;
 end;
 
 procedure TKCLSHWidget.SetupEditor(ADoc: TTextDoc; AEditClass: TSHTextEditClass);
+var
+  action: TKeyboardActionDescr;
 begin
   FDoc := ADoc;
   FEditor := AEditClass.Create(ADoc, WidgetIface);
@@ -231,7 +241,6 @@ begin
   FEditor.AddKeyDef(@FEditor.CursorDocBegin, selExtend, 'Selection Document Start', keyPageUp, [ssCtrl,ssShift]);
   FEditor.AddKeyDef(@FEditor.CursorDocEnd, selExtend, 'Selection Document End', keyPageDown, [ssCtrl,ssShift]);
 
-
   FEditor.AddKeyDef(@FEditor.ToggleOverwriteMode, selClear, 'Toggle overwrite mode', keyInsert, []);
   FEditor.AddKeyDef(@FEditor.EditDelLeft, selClear, 'Delete char left of cursor', keyBackspace, []);
   FEditor.AddKeyDef(@FEditor.EditDelRight, selClear, 'Delete char right of cursor', keyDelete, []);
@@ -239,10 +248,23 @@ begin
   FEditor.AddKeyDef(@FEditor.EditUndo, selClear, 'Undo last action', keyBackspace, [ssAlt]);
   FEditor.AddKeyDef(@FEditor.EditRedo, selClear, 'Redo last undone action', keyBackspace, [ssShift, ssAlt]);
 
+  action := FEditor.AddKeyboardAction(@FEditor.ClipboardCut, selClear, 'Move text selection to clipboard');
+  FEditor.AddKeyboardAssignment(keyDelete, [ssShift], action);
+  FEditor.AddKeyboardAssignment(Ord('X'), [ssCtrl], action);
+
+  action := FEditor.AddKeyboardAction(@FEditor.ClipboardCopy, selNothing, 'Copy text selection to clipboard');
+  FEditor.AddKeyboardAssignment(keyInsert, [ssCtrl], action);
+  FEditor.AddKeyboardAssignment(Ord('C'), [ssCtrl], action);
+
+  action := FEditor.AddKeyboardAction(@FEditor.ClipboardPaste, selClear, 'Insert content of clipboard');
+  FEditor.AddKeyboardAssignment(keyInsert, [ssShift], action);
+  FEditor.AddKeyboardAssignment(Ord('V'), [ssCtrl], action);
+
   // Now the paintbox can be set up correctly:
   PaintBox.OnPaint := @OnPaintBoxPaint;
   PaintBox.OnKey := @KeyPressed;
   PaintBox.OnMouseButtonDown := @PaintboxMouseButtonDown;
+  PaintBox.OnMouseMove := @PaintboxMouseMove;
   PaintBox.OnFocusIn := @PaintboxFocusIn;
   PaintBox.OnFocusOut := @PaintboxFocusOut;
 end;
@@ -250,9 +272,12 @@ end;
 procedure TKCLSHWidget.OnPaintBoxPaint(Sender: TObject; ACanvas: TCanvas;
   const rect: TRect);
 var
+  OldCanvas: TCanvas;
   px: Integer;
   r: TRect;
 begin
+  ASSERT(Assigned(ACanvas));
+  OldCanvas := Canvas;	// necessary for nested paint events!
   Canvas := ACanvas;
 
   if DrawVBar then begin
@@ -263,10 +288,9 @@ begin
       Canvas.Line(px, rect.Top, px, rect.Bottom);
       Canvas.Color := colGray;
       Canvas.Line(px - 1, rect.Top, px - 1, rect.Bottom);
+      Canvas.Line(px - 3, rect.Top, px - 3, rect.Bottom);
       Canvas.Color := colWhite;
       Canvas.Line(px - 2, rect.Top, px - 2, rect.Bottom);
-      Canvas.Color := colGray;
-      Canvas.Line(px - 3, rect.Top, px - 3, rect.Bottom);
     end;
 
     // Erase left bar
@@ -287,7 +311,14 @@ begin
   // Draw text
   FEditor.DrawContent((rect.Left - FLeftIndent) div CharW, rect.Top div CharH,
     (rect.Right - FLeftIndent - 1) div CharW, (rect.Bottom - 1) div CharH);
-  Canvas := nil;
+
+  if FDefMaxTextWidth > 0 then begin
+    px := FLeftIndent + FDefMaxTextWidth * CharW;
+    Canvas.Color := colGray;
+    Canvas.Line(px, rect.Top, px, rect.Bottom);
+  end;
+
+  Canvas := OldCanvas;
 end;
 
 procedure TKCLSHWidget.KeyPressed(Sender: TObject; key: Char; KeyCode: LongWord;
@@ -300,14 +331,39 @@ begin
     FEditor.KeyPressed(KeyCode, ShiftState);
 end;
 
-procedure TKCLSHWidget.PaintboxMouseButtonDown(Sender: TObject; mx, my: Integer;
-  ShiftState: TShiftState);
+procedure TKCLSHWidget.PaintboxMouseButtonDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; mx, my: Integer);
 begin
-  if (mx < FLeftIndent) or not Assigned(FDoc) then exit;
-
-  FEditor.CursorX := (mx - FLeftIndent + CharW div 2) div CharW;
-  FEditor.CursorY := my div CharH;
+  if (Button <> mbLeft) or (mx < FLeftIndent) or (not Assigned(FDoc)) then
+    exit;
+  MouseSelStartX := (mx - FLeftIndent + CharW div 2) div CharW;
+  MouseSelStartY :=  my div CharH;
+  if MouseSelStartY >= FDoc.LineCount then exit;
+  FEditor.StartSelectionChange;
+  FEditor.CursorX := MouseSelStartX;
+  FEditor.CursorY := MouseSelStartY;
+  FEditor.Selection.Clear;
+  FEditor.EndSelectionChange;
   PaintBox.SetFocus;
+end;
+
+procedure TKCLSHWidget.PaintboxMouseMove(Sender: TObject; Shift: TShiftState;
+  mx, my: Integer);
+begin
+  if (mx < FLeftIndent) or (not Assigned(FDoc)) then exit;
+  if ssLeft in Shift then begin
+    mx := (mx - FLeftIndent + CharW div 2) div CharW;
+    my := my div CharH;
+    if my >= FDoc.LineCount then exit;
+    FEditor.StartSelectionChange;
+    FEditor.Selection.StartX := MouseSelStartX;
+    FEditor.Selection.StartY := MouseSelStartY;
+    FEditor.Selection.EndX := mx;
+    FEditor.Selection.EndY := my;
+    FEditor.CursorX := mx;
+    FEditor.CursorY := my;
+    FEditor.EndSelectionChange;
+  end;
 end;
 
 procedure TKCLSHWidget.PaintboxFocusIn(Sender: TObject);
@@ -347,7 +403,7 @@ end;
 
 procedure TKCLSHWidget.InvalidateLines(y1, y2: Integer);
 begin
-  PaintBox.Redraw(FLeftIndent, y1 * CharH, FWidth, CharH);
+  PaintBox.Redraw(FLeftIndent, y1 * CharH, FWidth, (y2 - y1 + 1) * CharH);
 end;
 
 procedure TKCLSHWidget.ClearRect(x1, y1, x2, y2: Integer);
@@ -379,8 +435,9 @@ var
   NewColor: LongWord;
   hs: PChar;
 begin
+//  WriteLn('DrawTextLine: x1=', x1, ', x2=', x2, ', y=', y);
+  if Canvas = nil then WriteLn('Canvas = nil !!!');
   ASSERT(Assigned(Canvas));
-  // WriteLn('DrawTextLine: x1=', x1, ', x2=', x2, ', y=', y);
 
   // Erase the (potentially multi-coloured) background
   hs := s;
@@ -518,13 +575,38 @@ begin
   VertRange.MaxValue := count * CharH;
 end;
 
+function TKCLSHWidget.GetClipboard: String;
+begin
+  Clipboard.Open;
+  if not Clipboard.HasFormat('text/plain') then begin
+    Clipboard.Close;
+    Result := '';
+  end else begin
+    Result := Clipboard.AsText;
+    Clipboard.Close;
+  end;
+end;
+
+procedure TKCLSHWidget.SetClipboard(AContent: String);
+begin
+  Clipboard.Open;
+  Clipboard.Clear;
+  Clipboard.AsText := AContent;
+  Clipboard.Close;
+end;
+
 
 end.
 
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:34:09  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:23:48  sg
+  * Added mouse selection support
+  * Added clipboard support
+  * Paint events now may be nested (this caused some crashs before)
+
+  Revision 1.1.1.1  1999/12/30 21:34:09  sg
+  Initial import
 
 }
