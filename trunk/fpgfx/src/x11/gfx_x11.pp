@@ -37,6 +37,7 @@ resourcestring
   SWindowCreationFailed = 'Creation of X11 window failed';
   SWindowUnsupportedPixelFormat = 'Window uses unsupported pixel format: %d bits per pixel';
   SNoDefaultFont = 'Unable to load default font';
+  SIncompatibleCanvasForBlitting = 'Cannot blit from %s to %s';
 
 type
 
@@ -113,7 +114,6 @@ type
 
     procedure CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
       ADestX, ADestY: Integer); override;
-
     procedure DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
       ADestX, ADestY: Integer); override;
 
@@ -228,6 +228,9 @@ type
     procedure SetSize(AWidth, AHeight: Integer); override;
     procedure SetMinMaxSize(AMinWidth, AMinHeight,
       AMaxWidth, AMaxHeight: Integer); override;
+    procedure SetClientSize(AWidth, AHeight: Integer); override;
+    procedure SetMinMaxClientSize(AMinWidth, AMinHeight,
+      AMaxWidth, AMaxHeight: Integer); override;
     procedure Show; override;
     procedure Invalidate(const ARect: TRect); override;
     procedure CaptureMouse; override;
@@ -304,21 +307,17 @@ begin
   FFontStruct := FDefaultFont;
   if Assigned(FFontStruct) then
     XSetFont(DisplayHandle, GC, FFontStruct^.FID);
+
+  FRegion := XCreateRegion;
+  XSetRegion(DisplayHandle, GC, Region);
 end;
 
 destructor TXCanvas.Destroy;
 begin
-  if Assigned(Region) then
-    XDestroyRegion(Region);
+  XDestroyRegion(Region);
   if Assigned(GC) then
     XFreeGC(DisplayHandle, GC);
   inherited Destroy;
-end;
-
-procedure TXCanvas.Resized(NewWidth, NewHeight: Integer);
-begin
-  FWidth := NewWidth;
-  FHeight := NewHeight;
 end;
 
 function TXCanvas.CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas;
@@ -345,13 +344,9 @@ begin
   SavedState^.Prev := FStateStackpointer;
   SavedState^.Matrix := Matrix;
   SavedState^.Region := Region;
-  if Assigned(Region) then
-  begin
-    NewRegion := XCreateRegion;
-    XUnionRegion(Region, NewRegion, NewRegion);
-    SavedState^.Region := NewRegion;
-  end else
-    SavedState^.Region := nil;
+  NewRegion := XCreateRegion;
+  XUnionRegion(Region, NewRegion, NewRegion);
+  FRegion := NewRegion;
   SavedState^.Color := FCurColor;
   FStateStackpointer := SavedState;
 end;
@@ -364,11 +359,9 @@ begin
   FStateStackpointer := SavedState^.Prev;
   Matrix := SavedState^.Matrix;
 
-  if Assigned(Region) then
-    XDestroyRegion(Region);
+  XDestroyRegion(Region);
   FRegion := SavedState^.Region;
-  if Assigned(Region) then
-    XSetRegion(DisplayHandle, GC, Region);
+  XSetRegion(DisplayHandle, GC, Region);
 
   SetColor(SavedState^.Color);
 
@@ -377,9 +370,7 @@ end;
 
 procedure TXCanvas.EmptyClipRect;
 begin
-  if Assigned(Region) then
-    XDestroyRegion(Region);
-
+  XDestroyRegion(Region);
   FRegion := XCreateRegion;
   XSetRegion(DisplayHandle, GC, Region);
 end;
@@ -395,15 +386,6 @@ begin
 
   if (x2 > x1) and (y2 > y1) then
   begin
-    if not Assigned(Region) then
-    begin
-      XRect.x := 0;
-      XRect.y := 0;
-      XRect.Width := Width;
-      XRect.Height := Height;
-      FRegion := XCreateRegion;
-      XUnionRectWithRegion(@XRect, Region, Region);
-    end;
     XRect.x := x1;
     XRect.y := y1;
     XRect.Width := x2 - x1;
@@ -413,7 +395,6 @@ begin
     XSubtractRegion(Region, RectRegion, Region);
     XDestroyRegion(RectRegion);
     XSetRegion(DisplayHandle, GC, Region);
-
     Result := not XEmptyRegion(Region);
   end else
     Result := False;
@@ -436,16 +417,9 @@ begin
     XRect.Height := y2 - y1;
     RectRegion := XCreateRegion;
     XUnionRectWithRegion(@XRect, RectRegion, RectRegion);
-
-    if Assigned(Region) then
-    begin
-      XIntersectRegion(Region, RectRegion, Region);
-      XDestroyRegion(RectRegion);
-    end else
-      FRegion := RectRegion;
-
+    XIntersectRegion(Region, RectRegion, Region);
+    XDestroyRegion(RectRegion);
     XSetRegion(DisplayHandle, GC, Region);
-
     Result := not XEmptyRegion(Region);
   end else
     Result := False;
@@ -466,12 +440,10 @@ begin
     XRect.y := y1;
     XRect.Width := x2 - x1;
     XRect.Height := y2 - y1;
-    if not Assigned(Region) then
-      FRegion := XCreateRegion;
     XUnionRectWithRegion(@XRect, Region, Region);
     XSetRegion(DisplayHandle, GC, Region);
   end;
-  Result := Assigned(Region) and (not XEmptyRegion(Region));
+  Result := not XEmptyRegion(Region);
 end;
 
 function TXCanvas.GetClipRect: TRect;
@@ -626,7 +598,8 @@ begin
     Result.cy := 0;
   end else
   begin
-    XQueryTextExtents(DisplayHandle, GC^.GID, PChar(AText), Length(AText),
+    XQueryTextExtents(DisplayHandle, XGContextFromGC(GC),
+      PChar(AText), Length(AText),
       @Direction, @FontAscent, @FontDescent, @CharStruct);
     Result.cx := CharStruct.Width;
     Result.cy := CharStruct.Ascent + CharStruct.Descent;
@@ -642,7 +615,8 @@ begin
     Result := 0
   else
   begin
-    XQueryTextExtents(DisplayHandle, GC^.GID, PChar(AText), Length(AText),
+    XQueryTextExtents(DisplayHandle, XGContextFromGC(GC),
+      PChar(AText), Length(AText),
       @Direction, @FontAscent, @FontDescent, @CharStruct);
     Result := CharStruct.Width;
   end;
@@ -660,23 +634,24 @@ procedure TXCanvas.CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
 var
   RealHeight: Integer;
 begin
-  if not ASource.InheritsFrom(TXPixmapCanvas) then
-    exit;
+  if not ASource.InheritsFrom(TXCanvas) then
+    raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
+      [ASource.ClassName, Self.ClassName]);
 
   Transform(ADestX, ADestY, ADestX, ADestY);
 
-  if ASource.PixelFormat.FormatType = ftMono then
+  if (ASource <> Self) and (ASource.PixelFormat.FormatType = ftMono) then
   begin
     RealHeight := ASourceRect.Bottom - ASourceRect.Top;
     if ADestY + RealHeight > Height then
       RealHeight := Height - ADestY;
-    XSetClipMask(DisplayHandle, GC, TXPixmapCanvas(ASource).Handle);
+    XSetClipMask(DisplayHandle, GC, TXCanvas(ASource).Handle);
     XSetClipOrigin(DisplayHandle, GC, ADestX, ADestY);
     XFillRectangle(DisplayHandle, Handle, GC, ADestX, ADestY,
       ASource.Width, RealHeight);
     XSetClipMask(DisplayHandle, GC, 0);
   end else
-    XCopyArea(DisplayHandle, TXPixmapCanvas(ASource).Handle, Handle, GC,
+    XCopyArea(DisplayHandle, TXCanvas(ASource).Handle, Handle, GC,
       ASourceRect.Left, ASourceRect.Top, ASourceRect.Right - ASourceRect.Left,
       ASourceRect.Bottom - ASourceRect.Top, ADestX, ADestY);
 end;
@@ -766,6 +741,22 @@ begin
     // !!!: Change to XDestroyImage when this macro gets supported by xutil.pp
     Image^.f.destroy_image(Image);
   end;
+end;
+
+procedure TXCanvas.Resized(NewWidth, NewHeight: Integer);
+var
+  XRect: TXRectangle;
+begin
+  FWidth := NewWidth;
+  FHeight := NewHeight;
+
+  XDestroyRegion(Region);
+  XRect.x := 0;
+  XRect.y := 0;
+  XRect.Width := Width;
+  XRect.Height := Height;
+  FRegion := XCreateRegion;
+  XUnionRectWithRegion(@XRect, Region, Region);
 end;
 
 
@@ -865,11 +856,6 @@ end;
 //   TXDisplay
 // -------------------------------------------------------------------
 
-{###
-{$LINKLIB Xext}
-function XShmPixmapFormat(dpy: PDisplay): LongInt; cdecl; external;
-}
-
 function TXDisplay.GetHandle: PDisplay;
 var
   f: PXPixmapFormatValues;
@@ -962,14 +948,14 @@ begin
       XNextEvent(FHandle, @Event);
 
     // According to a comment in X.h, the valid event types start with 2!
-    if Event.EventType >= 2 then
+    if Event._type >= 2 then
     begin
       Window := FindWindowByXID(Event.XAny.Window);
 
       if Assigned(Window) then
         Window.Dispatch(Event)
       else
-        WriteLn('fpGFX/X11: Received X event ''', GetXEventName(Event.EventType),
+        WriteLn('fpGFX/X11: Received X event ''', GetXEventName(Event._type),
 	  ''' for unknown window');
     end;
   end;
@@ -1150,9 +1136,12 @@ begin
   FTop := Event.y;
   if (FWidth <> Event.Width) or (FHeight <> Event.Height) then
   begin
+  // !!!: The following 2 lines are _quite_ wrong... :)
     FWidth := Event.Width;
     FHeight := Event.Height;
-    TXCanvas(Canvas).Resized(FWidth, FHeight);
+    FClientWidth := Event.Width;
+    FClientHeight := Event.Height;
+    TXCanvas(Canvas).Resized(ClientWidth, ClientHeight);
     if Assigned(OnResize) then
       OnResize(Self);
   end;
@@ -1487,23 +1476,38 @@ end;
 procedure TXWindow.DefaultHandler(var Message);
 begin
   WriteLn('fpGFX/X11: Unhandled X11 event received: ',
-    GetXEventName(TXEvent(Message).EventType));
+    GetXEventName(TXEvent(Message)._type));
 end;
 
 procedure TXWindow.SetSize(AWidth, AHeight: Integer);
+begin
+  // !!!: Implement this proper
+  WriteLn('fpGFX/X11: TXWindow.SetSize is not properly implemented yet');
+  SetClientSize(AWidth, AHeight);
+end;
+
+procedure TXWindow.SetMinMaxSize(AMinWidth, AMinHeight,
+  AMaxWidth, AMaxHeight: Integer);
+begin
+  // !!!: Implement this proper
+  WriteLn('fpGFX/X11: TXWindow.SetMinMaxSize is not properly implemented yet');
+  SetMinMaxClientSize(AMinWidth, AMinHeight, AMaxWidth, AMaxHeight);
+end;
+
+procedure TXWindow.SetClientSize(AWidth, AHeight: Integer);
 var
   ChangeMask: Cardinal;
   Changes: TXWindowChanges;
 begin
   ChangeMask := 0;
 
-  if AWidth <> Width then
+  if AWidth <> ClientWidth then
   begin
     ChangeMask := CWWidth;
     Changes.Width := AWidth;
   end;
 
-  if AHeight <> Height then
+  if AHeight <> ClientHeight then
   begin
     ChangeMask := ChangeMask or CWHeight;
     Changes.Height := AHeight;
@@ -1513,7 +1517,7 @@ begin
     XConfigureWindow(DisplayHandle, Handle, ChangeMask, @Changes);
 end;
 
-procedure TXWindow.SetMinMaxSize(AMinWidth, AMinHeight,
+procedure TXWindow.SetMinMaxClientSize(AMinWidth, AMinHeight,
   AMaxWidth, AMaxHeight: Integer);
 var
   Supplied: LongInt;
@@ -1563,7 +1567,7 @@ var
   Event: TXExposeEvent;
 begin
   FillChar(Event, SizeOf(Event), #0);
-  Event.EventType := X.Expose;
+  Event._type := X.Expose;
   Event.Window := FHandle;
   Event.x := ARect.Left;
   Event.y := ARect.Top;
@@ -1666,6 +1670,11 @@ begin
 
 {
   $Log$
+  Revision 1.5  2000/12/31 16:32:04  sg
+  * Implemented TXWindow.SetClientSize and SetMinMaxClientSize
+  * Adapted to new X11 units
+  * Clipping bugfixes
+
   Revision 1.4  2000/12/24 13:15:29  sg
   * Implemented TXCanvas.EmptyClipRect and TXCanvas.UnionClipRect
   * Vastly improved handling of expose events: Successive expositions are
