@@ -1,0 +1,16 @@
+
+Decal compiled under FPC 1,1 after a few bugfixes to FPC. (1.1 from oct 8,
+2003 or later)
+
+Changes to decal made while importing were very minor:
+- the D6 compability fix, USE'ing the variants unit in the body of the 
+   decal unit
+- Adding {$IFDEF FPC} {$DEFINE DELPHI5} somewhere.
+
+More fixes will be done as time goes by, which can be logged below (or
+use the CVS logs)
+
+All fixes accepted for this directory are placed under LGPL/MPL dual license
+
+
+Marco van de Voort
