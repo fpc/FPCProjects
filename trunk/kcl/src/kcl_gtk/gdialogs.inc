@@ -19,45 +19,36 @@
 // ===================================================================
 
 // -------------------------------------------------------------------
-//   TDialog
+//   TCustomDialog
 // -------------------------------------------------------------------
 
-constructor TDialog.Create(AOwner: TComponent);
+procedure TCustomDialog.Ok(AObj: TObject);
+begin
+end;
+
+procedure TCustomDialog.Cancel(AObj: TObject);
+begin
+end;
+
+procedure TCustomDialog.OnFinishCreation;
+begin
+  FHandle := gtk_window_new(GTK_WINDOW_DIALOG);
+  inherited OnFinishCreation;
+end;
+
+procedure TCustomDialog.DoClose;
+begin
+  gtk_widget_destroy(FHandle);
+  FHandle := nil;
+  gtk_main_quit;
+end;
+
+constructor TCustomDialog.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 end;
 
-procedure TDialog.Ok(AObj: TObject);
-begin
-end;
-
-procedure TDialog.Cancel(AObj: TObject);
-begin
-end;
-
-procedure TDialog.OnFinishCreation;
-begin
-  FHandle := gtk_window_new(GTK_WINDOW_DIALOG);
-
-  inherited OnFinishCreation;
-
-{  if Assigned(FContent) then begin
-    if sizeFixed in FSizeFlags then
-      FContent.SizeFlags := FContent.SizeFlags + [sizeFixed];
-    FContent.FinishCreation;
-    if Assigned(FContent.Handle.Widget) then
-      gtk_container_add(PGtkContainer(Handle.Form), FContent.Handle.Widget);
-    if sizeAuto in FSizeFlags then begin
-      // WriteLn('Setting dialog size to ', FContent.FWidth, 'x', FContent.FHeight);
-      SetSize(FContent.FWidth, FContent.FHeight);
-    end;
-  end;
-
-  gtk_window_set_title(Handle.Form, PChar(FText));}
-end;
-
-
-function TDialog.Run: Boolean;
+function TCustomDialog.Run: Boolean;
 begin
   FinishCreation;
   gtk_main;
@@ -65,64 +56,75 @@ begin
 end;
 
 
-// -------------------------------------------------------
+// -------------------------------------------------------------------
 //   TStdBtnDialog
-// -------------------------------------------------------
+// -------------------------------------------------------------------
 
 constructor TStdBtnDialog.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FButtons := [btnOk, btnApply, btnCancel];
+  FButtons := [btnOk, btnCancel];
+  FBorderWidth := 8;
 end;
 
 procedure TStdBtnDialog.SetButtons(AButtons: TStdDlgButtons);
 begin
-  Buttons := AButtons;
+  FButtons := AButtons;
 end;
 
-procedure TStdBtnDialog.SetContent(AContent: TWidget);
+procedure TStdBtnDialog.StdBtnClicked(Sender: TObject);
 begin
-  RealContent := AContent;
-//###  AContent.SetDefaultSize(100, 100);
+  FResultWidget := TWidget(Sender);
+  Close;
 end;
 
 procedure TStdBtnDialog.OnFinishCreation;
 
-  procedure AddBtn(AText: String);
-  var
-    btn: TButton;
+  function AddBtn(AText: String; ADefault: Boolean): TButton;
   begin
-    btn := TButton.Create(Self);
-    btn.Text := AText;
-    BtnLayout.AddWidget(btn);
+    Result := TButton.Create(Self);
+    Result.Text := AText;
+//    Result.Default := ADefault;
+    Result.OnClick := @StdBtnClicked;
+    BtnLayout.AddWidget(Result);
   end;
 
 begin
-  MainLayout := TDockingLayout.Create(Self);
-  if Assigned(RealContent) then
-    MainLayout.AddWidget(RealContent, dmClient);
+  MainLayout := TBoxLayout.Create(Self);
+  MainLayout.Orientation := boxVert;
+  MainLayout.HorzAlign := horzFill;
+  MainLayout.Spacing := 8;
+
+  if Assigned(FDlgContent) then
+    MainLayout.AddWidget(FDlgContent);
+
+  Separator := TSeparator.Create(Self);
+  MainLayout.AddWidget(Separator);
 
   BtnLayout := TBoxLayout.Create(Self);
   BtnLayout.Orientation := boxHorz;
   BtnLayout.HorzAlign := horzRight;
+  BtnLayout.VertAlign := vertFill;
+  BtnLayout.Spacing := 8;
 
-  if btnOk in FButtons then AddBtn(btnText_OK);
-  if btnYes in FButtons then AddBtn(btnText_Yes);
-  if btnNo in FButtons then AddBtn(btnText_No);
-  if btnCancel in FButtons then AddBtn(btnText_Cancel);
-  if btnAbort in FButtons then AddBtn(btnText_Abort);
-  if btnApply in FButtons then AddBtn(btnText_Apply);
-  if btnHelp in FButtons then AddBtn(btnText_Help);
+  if btnOk in FButtons then AddBtn(btnText_OK, True);
+  if btnYes in FButtons then AddBtn(btnText_Yes, False);
+  if btnNo in FButtons then AddBtn(btnText_No, False);
+  if btnCancel in FButtons then AddBtn(btnText_Cancel, False);
+  if btnAbort in FButtons then AddBtn(btnText_Abort, False);
+  if btnApply in FButtons then AddBtn(btnText_Apply, False);
+  if btnHelp in FButtons then AddBtn(btnText_Help, False);
 
-  MainLayout.AddWidget(BtnLayout, dmBottom);
+  MainLayout.AddWidget(BtnLayout);
+
   inherited SetContent(MainLayout);
   inherited OnFinishCreation;
 end;
 
 
-// -------------------------------------------------------
+// -------------------------------------------------------------------
 //   TFileDialog
-// -------------------------------------------------------
+// -------------------------------------------------------------------
 
 procedure FileDialog_OK(GtkWidget: PGtkWidget; dlg: TFileDialog); cdecl;
 begin
@@ -171,6 +173,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/17 22:27:01  sg
+  * Made dialogs working again; TStdBtnDialog is now functional
+
   Revision 1.4  2000/02/10 18:40:56  sg
   * Small fixes
 
