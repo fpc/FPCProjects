@@ -514,3 +514,37 @@ diff -r -u -N origdb/top.c gdb/top.c
  
    /* Second line is a copyright notice. */
  
+--- origdb/i386-tdep.c	Wed Apr  3 14:25:35 2002
++++ gdb/i386-tdep.c	Wed Apr 10 07:36:03 2002
+@@ -632,6 +632,8 @@ i386_skip_prologue (int pc)
+ {
+   unsigned char op;
+   int i;
++  CORE_ADDR last_push_esi_pos = 0;
++
+   static unsigned char pic_pat[6] =
+   { 0xe8, 0, 0, 0, 0,		/* call   0x0 */
+     0x5b,			/* popl   %ebx */
+@@ -651,7 +653,9 @@ i386_skip_prologue (int pc)
+       /* Break if not `pushl' instrunction.  */
+       if (op < 0x50 || op > 0x57)
+ 	break;
+-      codestream_get ();
++      if (op == 0x56)
++	last_push_esi_pos = codestream_tell ();
++      codestream_get();
+     }
+ 
+   /* The native cc on SVR4 in -K PIC mode inserts the following code
+@@ -707,7 +711,10 @@ i386_skip_prologue (int pc)
+ 
+   i386_follow_jump ();
+ 
+-  return (codestream_tell ());
++  if (codestream_tell () == last_push_esi_pos + 1)
++    return (last_push_esi_pos);
++  else
++    return (codestream_tell ());
+ }
+ 
+ void
