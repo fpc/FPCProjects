@@ -1,8 +1,8 @@
 #include "dbgcom.h"
 #include <i386/tm-i386v.h>
 
-#define FLOAT_INFO {print_387_control_word(fpue.control); \
-        print_387_status_word (fpue.status);\
+#define FLOAT_INFO {print_387_control_word(npx.control); \
+        print_387_status_word (npx.status);\
         print_387_mmx(); \
         }
 

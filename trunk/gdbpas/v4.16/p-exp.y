@@ -1434,12 +1434,11 @@ yyerror (msg)
 }
 /*
   $Log$
-  Revision 1.2  1999/01/05 08:39:34  pierre
-    + dbgcom.h and dbgcom.c modified by Andris Pavenis
-    + added code for MMX state detection and display
-      (still uggly :
-       FPU stack shown by "info all"
-       MMX registers shown by "info float" if in MMX mode)
+  Revision 1.3  1999/01/18 10:14:16  pierre
+   * working version for testgdb
+
+  Revision 1.3  1999/01/06 09:30:04  Pierre
+  FPU and MMX add-on
 
   Revision 1.2  1998/12/23 15:53:06  Pierre
   exceptions and floatinfo

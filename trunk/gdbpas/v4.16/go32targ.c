@@ -143,14 +143,25 @@ go32_detach(char *args, int from_tty)
 /* 컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴� */
 
 static int resume_is_step;
+static int pass_signal;
+static enum target_signal gdb_int_to_pass;
 
 static void
 go32_resume(int pid, int step, enum target_signal siggnal)
 {
+  int i;
 #if 0
   printf_unfiltered("go32_resume called\n");
 #endif
   resume_is_step = step;
+  pass_signal = 0;
+  gdb_int_to_pass = siggnal;
+  if (siggnal != TARGET_SIGNAL_0)
+    for (i=0; sig_map[i].go32_sig != -1; i++)
+     if ((sig_map[i].gdb_sig == siggnal) && (a_tss.tss_irqn == sig_map[i].go32_sig))
+      {
+       pass_signal = 1;
+      }
 }
 
 /* 컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴� */
@@ -158,14 +169,55 @@ go32_resume(int pid, int step, enum target_signal siggnal)
 static int
 go32_wait(int pid, struct target_waitstatus *status)
 {
+  unsigned char b;
+  int stored_addr;
+  unsigned char stepping_over_interrupt = 0;
 #if 0
   printf_unfiltered("go32_wait %d\n", pid);
 #endif
   if (resume_is_step)
-    a_tss.tss_eflags |= 0x0100;
+    {
+     /* if the next instruction is int we should place a int3
+        right after because otherwise the stepping is only effective after
+        that instruction as the int instruction resets the trace flag */
+     /* this does not solve the same problem that could
+        appear for INTO */
+     read_child(a_tss.tss_eip,&b,1);
+     if (b==0xCD)
+       {
+         unsigned char int3_code=0xCC;
+         stepping_over_interrupt=1;
+         stored_addr=a_tss.tss_eip+2;
+         read_child(stored_addr,&b,1);
+         write_child(stored_addr,&int3_code,1);
+       }
+     a_tss.tss_eflags |= 0x0100;
+    }
   else
     a_tss.tss_eflags &= 0xfeff;
+
+  /* eliminate signal if nopass */
+  if (pass_signal==0)
+    {
+     a_tss.tss_irqn=0xff;
+    }
+  else
+    {
+     /* set trap flag to know we should pass exception */
+     a_tss.tss_trap=0xffff;
+    }
   run_child();
+  /* eip points to after int3 instruction */
+  if (stepping_over_interrupt && (a_tss.tss_eip==stored_addr+1))
+    {
+     /* restore code */
+     a_tss.tss_eip--;
+     write_child(a_tss.tss_eip,&b,1);
+     /* stopped by int3 instead of int1 */
+     /* does not matter as both are converted to SIG_TRAP */
+     a_tss.tss_irqn=1;
+    }
+  
   if (a_tss.tss_irqn == 0x21)
   {
     status->kind = TARGET_WAITKIND_EXITED;
@@ -204,9 +256,9 @@ go32_fetch_registers(int regno)
   if ((regno>15) || (end_reg>16)) {
     int freg;
     for (freg=regno; freg<end_reg; freg++)
-     if (fpue.isvalid[freg-16])
+     if (npx.st_valid[freg-16])
        {
-         long double d = fpue.st[freg-16];
+         long double d = npx.st[freg-16];
    
          register_valid[freg] = 1;
 
@@ -251,7 +303,7 @@ static void store_register(int regno)
   if (regno>15) {
 
      long double d = *(long double *) (&registers[REGISTER_BYTE(regno)]);
-     fpue.st[regno-16]=d;
+     npx.st[regno-16]=d;
      return;
     }
 

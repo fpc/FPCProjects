@@ -33,6 +33,7 @@ static char *id = __libdbg_ident_string;
 #define DESCRIPTOR_COUNT	128
 #define DOS_DESCRIPTOR_COUNT	128
 #define DPMI_EXCEPTION_COUNT     18
+#define DS_SIZE_COUNT           128
 
 #define USE_FSEXT
 #define CLOSE_UNREGISTERED_FILES
@@ -75,11 +76,12 @@ __crt0_glob_function(char *foo)
 
 ExternalDebuggerInfo edi;
 TSS a_tss;
-FPUEnvironment fpue;
 
 static jmp_buf jumper;
 
 static int my_ds,my_cs,app_cs,app_exit_cs,app_ds;
+static unsigned int app_ds_size[DS_SIZE_COUNT];
+static int app_ds_index = 0;
 static jmp_buf load_state;
 
 static int nset, breakhandle[4];
@@ -100,59 +102,106 @@ static int excp_count;
 static int redir_excp_count;
 #endif
 
-static void store_fpu_env (void)
+static void dbgsig(int sig);
+static void (*oldTRAP)(int);
+static void (*oldSEGV)(int);
+static void (*oldFPE)(int);
+static void (*oldINT)(int);
+static void (*oldILL)(int);
+
+NPX npx;
+
+/* ------------------------------------------------------------------------- */
+/* Store the contents of the NPX in the global variable `npx'.  */
+
+#define FPU_PRESENT 0x04
+
+void save_npx (void)
 {
 #ifdef SAVE_FP
   int i;
   int valid_nb = 0;
-  long double d;
-  unsigned char * b = (unsigned char *) (&d);
-  asm("fnsave %0" : "=g" (fpue));
-  fpue.top = (fpue.status & FPU_TOP_MASK) >> FPU_TOP_SHIFT;
-  fpue.is_mmx = (fpue.top == 0);
+  if ((__dpmi_get_coprocessor_status() & FPU_PRESENT) == 0)
+    return;
+  asm ("inb	$0xa0, %%al
+	testb	$0x20, %%al
+	jz	1f
+	xorb	%%al, %%al
+	outb	%%al, $0xf0
+	movb	$0x20, %%al
+	outb	%%al, $0xa0
+	outb	%%al, $0x20
+1:
+	fnsave	%0
+	fwait"
+       : "=m" (npx)
+       : /* No input */
+       : "%eax");
+  npx.top = (npx.status & NPX_TOP_MASK) >> NPX_TOP_SHIFT;
+  npx.in_mmx_mode = (npx.top == 0);
   for (i=0;i<8;i++)
     {
     /* tag is a array of 8 2 bits that contain info about FPU registers
        st(0) is register(top) and st(1) is register (top+1) ... */
-     fpue.isvalid[i] = ((fpue.tag >> (((fpue.top+i) & 7) << 1)) & 3) != 3;
-     if (fpue.isvalid[i])
+     npx.st_valid[i] = ((npx.tag >> (((npx.top+i) & 7) << 1)) & 3) != 3;
+     if (npx.st_valid[i])
        {
-        fpue.st[i]=fpue.r[(i+fpue.top) & 7];
-        d=fpue.r[i];
+        npx.st[i]= * (long double *) &(npx.reg[i]);
         /* On my Pentium II the two last bytes are set to 0xff
            on MMX instructions, but on the Intel docs
            it was only specified that the exponent part
            has all bits set !
            Moreover this are only set if the specific mmx register is used */
-           
-        if ((b[8] != 0xff) || ((b[9] & 0x7f) != 0x7f))
-          if ((fpue.tag >> ((((fpue.top+i) & 7) << 1)) & 3) == 2)
-            fpue.is_mmx=0;
+
+        if (npx.reg[i].exponent!=0x7fff)
+          if ((npx.tag >> ((((npx.top+i) & 7) << 1)) & 3) == 2)
+            npx.in_mmx_mode=0;
        }
      else
        {
-        fpue.st[i]=0;
-        fpue.is_mmx=0;
+        npx.st[i]=0;
+        npx.in_mmx_mode=0;
        }
     }
+ if (npx.in_mmx_mode)
+  for (i=0;i<8;i++)
+   {
+    npx.mmx[i]= * (long double *) &(npx.reg[i]);
+   }
+   
+  /* asm("frstor %0" : :"m" (npx)); */
+  /* if we do this in mmx mode the fpu will be unusable */
 #endif
 }
+/* ------------------------------------------------------------------------- */
+/* Reload the contents of the NPX from the global variable `npx'.  */
 
-static void restore_fpu_env (void)
+void load_npx (void)
 {
-#ifdef SAVE_FP
   int i;
-  for (i=0;i<8;i++)
-    {
-     if ((fpue.isvalid[i]) && (fpue.st[i]!=fpue.r[(i+fpue.top) & 7]))
-       {
-        fpue.r[(i+fpue.top) & 7]=fpue.st[i];
-       }
-    }
-  /* after this the FPU is restored :
-     no MMX nor FPU instruction should occur after this one */
-  asm("frstor _fpue");
-#endif
+  if ((__dpmi_get_coprocessor_status() & FPU_PRESENT) == 0)
+    return;
+  if (npx.in_mmx_mode)
+   {
+    /* change reg to mmx */
+    for (i=0;i<8;i++)
+     if (npx.mmx[i]!= * (long double *) &(npx.reg[i]))
+      {
+       memcpy(&(npx.reg[i]),&(npx.mmx[i]),10);
+      }
+   }
+  else
+   {
+    /* change reg to st */
+    for (i=0;i<8;i++)
+      {
+       if ((npx.st_valid[i]) && (npx.st[i]!= * (long double *) &(npx.reg[i])))
+         {
+          memcpy(&(npx.reg[i]),&(npx.st[i]),10);
+         }
+      }
+   }
+  asm ("frstor %0" : "=m" (npx));
 }
 
 static int _DPMIsetBreak(unsigned short sizetype, unsigned vaddr)
@@ -212,7 +261,7 @@ void _set_break_DPMI(void)
   unsigned short sizetype;
   unsigned long vbase;
   
-  if(__dpmi_get_segment_base_address(__djgpp_app_DS, &vbase) == -1)
+  if(__dpmi_get_segment_base_address(app_ds, &vbase) == -1)
     return;
   extract = edi.dr[7] >> 16;
   nset = 0;
@@ -255,13 +304,13 @@ void _clear_break_DPMI(void)
 
 static __dpmi_paddr old_i31,old_i21,user_i31,user_i21;
 static int user_int_set = 0;
-static __dpmi_paddr my_i9,user_i9,my_i8,user_i8;
+static __dpmi_paddr my_i9,user_i9,hook_i9,my_i8,user_i8;
 
 static void hook_dpmi(void)
 {
   int i;
   __dpmi_paddr new_int;
-  extern void i21_hook(void),i31_hook(void);
+  extern void i21_hook(void),i31_hook(void),__dbgcom_kbd_hdlr(void);
 
   __dpmi_get_protected_mode_interrupt_vector(0x21, &old_i21);
   __dpmi_get_protected_mode_interrupt_vector(0x31, &old_i31);
@@ -279,21 +328,36 @@ static void hook_dpmi(void)
   __dpmi_set_protected_mode_interrupt_vector(0x21, &new_int);
   new_int.offset32 = (unsigned long)i31_hook;
   __dpmi_set_protected_mode_interrupt_vector(0x31, &new_int);
+  /* avoid to set the ds limit to 0xfff twice */
+  new_int.offset32 = (unsigned long)__dbgcom_kbd_hdlr;
+  __dpmi_set_protected_mode_interrupt_vector(0x09, &new_int);
 
   /* If we have called already unhook_dpmi, the user interrupt
      vectors for the keyboard and the timer are valid. */
   if (user_int_set)
   {
-    __dpmi_set_protected_mode_interrupt_vector(0x09, &user_i9);
+    if ((user_i9.offset32!=new_int.offset32) || (user_i9.selector!=new_int.selector))
+      __dpmi_set_protected_mode_interrupt_vector(0x09, &user_i9);
     __dpmi_set_protected_mode_interrupt_vector(0x08, &user_i8);
     __dpmi_set_protected_mode_interrupt_vector(0x21, &user_i21);
     __dpmi_set_protected_mode_interrupt_vector(0x31, &user_i31);
   }
-  for (i=0;i<DPMI_EXCEPTION_COUNT;i++)
+  /*    DONT DO THIS (PM)
+    for (i=0;i<DPMI_EXCEPTION_COUNT;i++)
     {
         if (app_handler[i].offset32 && app_handler[i].selector)
         __dpmi_set_processor_exception_handler_vector(i,&app_handler[i]);
-    }
+    } */
+  /* Save all the changed signal handlers */
+  signal(SIGTRAP, dbgsig);
+  signal(SIGSEGV, dbgsig);
+  signal(SIGFPE, dbgsig);
+  signal(SIGINT, dbgsig);
+  signal(SIGILL, dbgsig);
+    
+  load_npx();
+  /* Crtl-C renders app code unreadable */
+  __djgpp_app_DS = app_ds;
 }
 
 /* Set an exception handler */
@@ -329,11 +393,19 @@ _not_in_current_app:                                                    \n\
 );
 
 /* Get an exception handler */
-
+/* Problem : we must react like the dpmi server */
+/* for example win95 refuses call 0x210 so we should also refuse it */
+/* otherwise we can get into troubles */
 asm("\n\
         .text                                                           \n\
         .align  2,0x90                                                  \n\
 _get_exception_handler:                                                 \n\
+        pushl   %eax                                                    \n\
+	pushf								\n\
+	.byte	0x2e							\n\
+	lcall	_old_i31						\n\
+        popl   %eax                                                     \n\
+	jc	Lc31_set_flags_and_iret					\n\
         pushl   %eax                                                    \n\
         push    %es                                                     \n\
         push    %ds                                                     \n\
@@ -496,6 +568,8 @@ CL7:									\n\
   0x0007   : __dpmi_set_selector_base_address
              hooked because the hardware breakpoints need to be reset
              if we change the base address of __djgpp_app_DS
+  0x0008   : __dpmi_set_selector_limit
+             hooked for djgpp_hw_exception tracing
   0x000A   : __dpmi_create_alias_descriptor
   
   0x0100   : __dpmi_allocate_dos_memory
@@ -530,7 +604,9 @@ _i31_hook:								\n\
 	je	Lc31_free_descriptor					\n\
 	cmpw	$0x0007,%ax						\n\
 	je	Lc31_set_selector_base_address				\n\
-	cmpw	$0x000A,%ax						\n\
+	cmpw	$0x0008,%ax						\n\
+	je	Lc31_set_selector_limit                                 \n\
+        cmpw	$0x000A,%ax						\n\
 	je	Lc31_create_alias_descriptor				\n\
 	cmpw	$0x0100,%ax						\n\
 	je	Lc31_allocate_dos_memory				\n\
@@ -563,9 +639,29 @@ Lc31_set_flags_and_iret:                                                \n\
 	popl	%eax							\n\
 Lc31_iret:                                                              \n\
         iret								\n\
+Lc31_set_selector_limit:                                                \n\
+	.byte	0x2e							\n\
+	cmpw	_app_ds,%bx					        \n\
+	jne	L_jmp_to_old_i31					\n\
+        pushl   %ds                                                     \n\
+        pushl   %eax                                                    \n\
+        .byte   0x2e                                                    \n\
+        movw    _my_ds,%ax                                              \n\
+        movw    %ax,%ds                                                 \n\
+        movl    _app_ds_index,%eax                                      \n\
+        movw    %cx,_app_ds_size+2(,%eax,4)                             \n\
+        movw    %dx,_app_ds_size(,%eax,4)                               \n\
+        incl    _app_ds_index                                           \n\
+        cmpl    $128,_app_ds_index                                      \n\
+        jne     Lc31_index_ok                                           \n\
+        movl    $0,_app_ds_index                                        \n\
+Lc31_index_ok:                                                          \n\
+        popl    %eax                                                    \n\
+        popl    %ds                                                     \n\
+        jmp     L_jmp_to_old_i31                                        \n\
 Lc31_set_selector_base_address:                                         \n\
 	.byte	0x2e							\n\
-	cmpw	___djgpp_app_DS,%bx					\n\
+	cmpw	_app_ds,%bx					        \n\
 	jne	L_jmp_to_old_i31					\n\
 	pushf								\n\
 	.byte	0x2e							\n\
@@ -580,8 +676,8 @@ Lc31_set_selector_base_address:                                         \n\
 Lc31_set_protected_mode_interrupt:                                      \n\
 	cmpb	$0x75,%bl						\n\
 	je	Lc31_iret						\n\
-	cmpb	$0x09,%bl                                             	\n\
-	je	Lc31_iret						\n\
+	//cmpb	$0x09,%bl                                             	\n\
+	//je	Lc31_iret						\n\
 	jmp	L_jmp_to_old_i31					\n\
 Lc31_alloc_mem:								\n\
 	pushf								\n\
@@ -716,8 +812,14 @@ Lc21:	push	%eax							\n\
 	movl	8(%esp),%eax						\n\
 	cs								\n\
 	cmpw	_app_exit_cs,%ax					\n\
+	je	Lc21_exit                                               \n\
+	cs								\n\
+	cmpw	_app_cs,%ax					        \n\
+	je	Lc21_exit                                               \n\
 	pop	%eax							\n\
-	jne	Lc21_jmp_to_old						\n\
+        jmp     Lc21_jmp_to_old                                         \n\
+Lc21_exit:                                                              \n\
+	pop	%eax							\n\
 	call	___djgpp_save_interrupt_regs				\n\
 	movl	___djgpp_exception_state_ptr,%esi			\n\
 	movl	$0x21,56(%esi)						\n\
@@ -731,21 +833,107 @@ Lc21:	push	%eax							\n\
 	"
 	);
 
-/*	movw	%cs:__go32_info_block+26, %fs				\n\
-	.byte	0x64							\n\
-	movw	$0x7021,0xb0f00						\n\ */
+/* complete code to return from an exception */
+asm (  ".text
+       .align 2,0x90
+       .globl    _dbgcom_exception_return_complete
+_dbgcom_exception_return_complete:       /* remove errorcode from stack */
+       //* we must also switch stack back !! */
+       //* relative to ebp */
+       //* 0 previous ebp */
+       //* 4 exception number */
+       //* 8 return eip */
+       //* 12 return cs */
+       //* 16 return eflags */
+       //* 20 return esp  */
+       //* 24 return ss  */
+       //* -4 stored ds */
+       //* -8 stored eax */
+       //* -12 stored esi */
+       pushl  %ebp
+       movl   %esp,%ebp
+       pushl  %ds
+       pushl  %eax
+       pushl  %esi
+       movl   24(%ebp),%eax
+       movw   %ax,%ds
+       movl   20(%ebp),%esi
+       //* ds:esi points now to app stack */
+       subl  $28,%esi
+       movl  %esi,20(%ebp)
+       //* eflags on app stack */
+       movl  16(%ebp),%eax
+       movl  %eax,%ds:24(%esi)
+       //* cs on app stack */
+       movl  12(%ebp),%eax
+       movl  %eax,%ds:20(%esi)
+       //* eip on app stack */
+       movl  8(%ebp),%eax
+       movl  %eax,%ds:16(%esi)
+       //* esi on app stack */
+       movl  -12(%ebp),%eax
+       movl  %eax,%ds:12(%esi)
+       //* eax on app stack */
+       movl  -8(%ebp),%eax
+       movl  %eax,%ds:8(%esi)
+       //* ds on app_stack */
+       movl  -4(%ebp),%eax
+       movl  %eax,%ds:4(%esi)
+       //* ebp on app_stack */
+       movl  (%ebp),%eax
+       movl  %eax,%ds:(%esi)
+       //* switch stack */
+       movl  24(%ebp),%eax
+       movw  %ax,%ss
+       movl  %esi,%esp
+       //* now on app stack */
+       popl  %ebp
+       popl  %eax
+       movw  %ax,%ds
+       popl  %eax
+       popl  %esi
+       iret
+    ");
+
+static jmp_buf here;
 
 /* simple code to return from an exception */
 asm (  ".text
        .align 2,0x90
-_exception_return:       /* remove errorcode from stack */
-       addl $4,%esp
-       lret
-    ");
+       .globl    _dbgcom_exception_return
+_dbgcom_exception_return:       /* remove errorcode from stack */
+        movl    %cs:___djgpp_our_DS,%eax                                \n\
+        movw    %ax,%ds                                                 \n\
+        movw    %ax,%es                                                 \n\
+	pushl	$1							\n\
+	pushl	$_here						        \n\
+	call	_longjmp						\n\
+        ");
+        
+/*	movw	%cs:__go32_info_block+26, %fs				\n\
+	.byte	0x64							\n\
+	movw	$0x7021,0xb0f00						\n\ */
+
+/* do not set limit of ds selector two times */
+asm (".text
+        .global ___dbgcom_kbd_hdlr
+___dbgcom_kbd_hdlr:
+        ljmp    %cs:___djgpp_old_kbd");
+        
+    
     
 static void unhook_dpmi(void)
 {
   int i;
+  /* Crtl-C renders debugger code unreadable */
+  __djgpp_app_DS = __djgpp_our_DS;
+  save_npx();
+  /* Restore all changed signal handlers */
+  signal(SIGTRAP, oldTRAP);
+  signal(SIGSEGV, oldSEGV);
+  signal(SIGFPE, oldFPE);
+  signal(SIGINT, oldINT);
+  signal(SIGILL, oldILL);
   /* save app i31 and i21 if changed */
   __dpmi_get_protected_mode_interrupt_vector(0x31, &user_i31);
   __dpmi_get_protected_mode_interrupt_vector(0x21, &user_i21);
@@ -774,54 +962,21 @@ static void unhook_dpmi(void)
 		 /* Why? (AP) */
 }
 
-static void dbgsig(int sig)
-{
-#ifdef DEBUG_EXCEPTIONS
-    excp_info[excp_index].excp_eip=__djgpp_exception_state->__eip;
-    excp_info[excp_index].excp_cs=__djgpp_exception_state->__cs;
-    excp_info[excp_index].excp_nb=__djgpp_exception_state->__signum;
-    excp_index++;
-    excp_count++;
-    if (excp_index==20)
-      excp_index=0;
-#endif
-  if(__djgpp_exception_state->__cs == app_cs /* || sig == SIGTRAP */)
-  {
-    *load_state = *__djgpp_exception_state;	/* exception was in other process */
-    longjmp(jumper, 1);
-  }
-  else
-  {
-    extern int invalid_sel_addr(short sel, unsigned a, unsigned len, char for_write);
-    
-    int signum =  __djgpp_exception_state->__signum;
-  if (
-     (app_handler[signum].offset32) &&
-     (app_handler[signum].selector) &&
-      !invalid_sel_addr(app_handler[signum].selector,
-        app_handler[signum].offset32,1,0) &&
-     ((app_handler[signum].offset32 !=
-      our_handler[signum].offset32) ||
-     (app_handler[signum].selector !=
-      our_handler[signum].selector)))
+static void call_app_exception(int signum, char complete)
     {
-    extern void exception_return(void);
+    extern void dbgcom_exception_return(void);
+    extern void dbgcom_exception_return_complete(void);
 #ifdef DEBUG_EXCEPTIONS
     redir_excp_count++;
 #endif
-    *load_state = *__djgpp_exception_state;     /* exception was in other process */
     eip = load_state->__eip;
     cs  = load_state->__cs;
     esp = load_state->__esp;
-    /* reset the debug trace bit */
-    /* we should only do this under certain specific conditions
-       but which ones ?? */
+    ss  = load_state->__ss;
     eflags = load_state->__eflags;
-    /* if (signum!=1)
-     eflags &= 0xfffffeff; */
+    /* reset the debug trace bit */
     /* we don't want to step inside the exception_table code */
     load_state->__eflags &= 0xfffffeff;
-    ss  = load_state->__ss;
     errcode = load_state->__sigmask;
     load_state->__eip=app_handler[signum].offset32;
     load_state->__cs=app_handler[signum].selector;
@@ -834,7 +989,10 @@ static void dbgsig(int sig)
     load_state->__esp= (int) cur_pos;
     /* where to return */
     ret_cs = my_cs;
-    ret_eip = (int) &exception_return;
+    if (complete)
+      ret_eip = (int) &dbgcom_exception_return_complete;
+    else
+      ret_eip = (int) &dbgcom_exception_return;
     memcpy(cur_pos,&ret_eip,4);
     cur_pos+=4;
     memcpy(cur_pos,&ret_cs,4);
@@ -853,6 +1011,78 @@ static void dbgsig(int sig)
     cur_pos+=4;
     longjmp(load_state, load_state->__eax);
     }
+
+static void dbgsig(int sig)
+{
+  unsigned int ds_size;
+  int signum =  __djgpp_exception_state->__signum;
+  asm ("movl _app_ds,%%eax
+        lsl  %%eax,%%eax
+        movl %%eax,%0"
+        : "=g" (ds_size) );
+
+  /* correct ds limit here */
+  if ((ds_size==0xfff) && (signum==0xc || signum==0xd))
+    {
+      if (app_ds_index>1)
+        {
+          /* set the limt correctly */
+          __dpmi_set_segment_limit(app_ds,app_ds_size[app_ds_index-2]);
+        }
+     /* let app restore the ds selector */
+     if (!setjmp(here))
+      {
+       *load_state = *__djgpp_exception_state;     /* exception was in other process */
+       load_state->__eip = here->__eip;
+       load_state->__esp = here->__esp;
+       load_state->__cs = here->__cs;
+       load_state->__ss = here->__ss;
+       /* do use ss stack
+       load_state->__signum = 0xd;
+       /* longjmp returns eax value */
+       load_state->__eax = 1;
+       call_app_exception(__djgpp_exception_state->__signum,0);
+      }
+     /* I still have no idea how to get the exception number back */
+     /* just keep the fake exception value */
+     signum=0x1B;
+     __djgpp_exception_state->__signum=signum;
+    }
+  
+#ifdef DEBUG_EXCEPTIONS
+    excp_info[excp_index].excp_eip=__djgpp_exception_state->__eip;
+    excp_info[excp_index].excp_cs=__djgpp_exception_state->__cs;
+    excp_info[excp_index].excp_nb=signum;
+    excp_index++;
+    excp_count++;
+    if (excp_index==20)
+      excp_index=0;
+#endif
+  if(__djgpp_exception_state->__cs == app_cs)
+     /* || sig == SIGTRAP) */
+  {
+    *load_state = *__djgpp_exception_state;	/* exception was in other process */
+    __djgpp_exception_state_ptr = (jmp_buf *) __djgpp_exception_state->__exception_ptr;
+    longjmp(jumper, 1);
+  }
+  else
+  {
+    extern int invalid_sel_addr(short sel, unsigned a, unsigned len, char for_write);
+    
+  if ((signum<DPMI_EXCEPTION_COUNT) &&
+     (app_handler[signum].offset32) &&
+     (app_handler[signum].selector) &&
+      !invalid_sel_addr(app_handler[signum].selector,
+        app_handler[signum].offset32,1,0) &&
+     ((app_handler[signum].offset32 !=
+      our_handler[signum].offset32) ||
+     (app_handler[signum].selector !=
+      our_handler[signum].selector)))
+    {
+     *load_state = *__djgpp_exception_state;     /* exception was in other process */
+     __djgpp_exception_state_ptr = (jmp_buf *) __djgpp_exception_state->__exception_ptr;
+     call_app_exception(signum,1);
+    }
    /*  else
      {
       *load_state = *__djgpp_exception_state;
@@ -863,6 +1093,8 @@ static void dbgsig(int sig)
 
 void run_child(void)
 {
+  /* we should call the exception handlers if an exception is on */
+  /* Question : how distinguish exception zero ? */
   load_state->__cs = a_tss.tss_cs;
   load_state->__ss = a_tss.tss_ss;
   load_state->__ds = a_tss.tss_ds;
@@ -880,11 +1112,23 @@ void run_child(void)
   load_state->__esi = a_tss.tss_esi;
   load_state->__edi = a_tss.tss_edi;
   if(!setjmp(jumper)){
+    extern int invalid_sel_addr(short sel, unsigned a, unsigned len, char for_write);
     /* jump to tss */
     _set_break_DPMI();
     hook_dpmi();
-    restore_fpu_env();
-    longjmp(load_state, load_state->__eax);
+    /* hack in go32target.c to be able to pass an exception to
+    child tss_trap is set to 0xffff */
+    if ((a_tss.tss_trap == 0xffff) &&
+     (a_tss.tss_irqn<DPMI_EXCEPTION_COUNT) &&
+     (app_handler[a_tss.tss_irqn].offset32) &&
+     (app_handler[a_tss.tss_irqn].selector) &&
+      !invalid_sel_addr(app_handler[a_tss.tss_irqn].selector,
+        app_handler[a_tss.tss_irqn].offset32,1,0))
+      {
+       call_app_exception(a_tss.tss_irqn,1);
+      }
+    else
+      longjmp(load_state, load_state->__eax);
     /* we never return here, execption routine will longjump */
   }
   /* exception routine:  save state, copy to tss, return */
@@ -906,7 +1150,7 @@ void run_child(void)
   a_tss.tss_ebp = load_state->__ebp;
   a_tss.tss_irqn = load_state->__signum;
   a_tss.tss_error = load_state->__sigmask;
-  store_fpu_env();
+  a_tss.tss_trap = 0;
   unhook_dpmi();
   _clear_break_DPMI();
 }
@@ -918,7 +1162,7 @@ static int invalid_addr(unsigned a, unsigned len)
      different selectors. */
 
   unsigned limit;
-  limit = __dpmi_get_segment_limit(__djgpp_app_DS);
+  limit = __dpmi_get_segment_limit(app_ds);
   if(4096 <= a             /* First page is used for NULL pointer detection. */
   && a <= limit            /* To guard against limit < len. */
   && a - 1 <= limit - len  /* To guard against limit <= a + len - 1. */
@@ -934,7 +1178,7 @@ int read_child(unsigned child_addr, void *buf, unsigned len)
 {
   if (invalid_addr(child_addr, len))
     return 1;
-  movedata(__djgpp_app_DS, child_addr, my_ds, (int)buf, len);
+  movedata(app_ds, child_addr, my_ds, (int)buf, len);
   return 0;
 }
 
@@ -942,7 +1186,7 @@ int write_child(unsigned child_addr, void *buf, unsigned len)
 {
   if (invalid_addr(child_addr, len))
     return 1;
-  movedata(my_ds, (int)buf, __djgpp_app_DS, child_addr, len);
+  movedata(my_ds, (int)buf, app_ds, child_addr, len);
   return 0;
 }
 
@@ -1009,11 +1253,6 @@ int write_sel_addr(unsigned sel, unsigned child_addr, void *buf, unsigned len)
 
 static _GO32_StubInfo si;
 
-static void (*oldTRAP)(int);
-static void (*oldSEGV)(int);
-static void (*oldFPE)(int);
-static void (*oldINT)(int);
-
 void edi_init(jmp_buf start_state)
 {
   int i;
@@ -1037,23 +1276,31 @@ void edi_init(jmp_buf start_state)
   a_tss.tss_eip = load_state->__eip;
   a_tss.tss_esp = load_state->__esp;
   a_tss.tss_eflags = load_state->__eflags;
+  a_tss.tss_trap = 0;
 
-  __djgpp_app_DS = a_tss.tss_ds;
+  app_ds = a_tss.tss_ds;
   app_cs = a_tss.tss_cs;
   edi.app_base = 0;
-  memset(&fpue,0,sizeof(fpue));
+  memset(&npx,0,sizeof(npx));
   /* Save all the changed signal handlers */
   oldTRAP = signal(SIGTRAP, dbgsig);
   oldSEGV = signal(SIGSEGV, dbgsig);
   oldFPE = signal(SIGFPE, dbgsig);
   oldINT = signal(SIGINT, dbgsig);
+  oldILL = signal(SIGILL, dbgsig);
+  /* Restore all changed signal handlers */
+  signal(SIGTRAP, oldTRAP);
+  signal(SIGSEGV, oldSEGV);
+  signal(SIGFPE, oldFPE);
+  signal(SIGINT, oldINT);
+  signal(SIGILL, oldILL);
   movedata(a_tss.tss_fs,0,my_ds,(unsigned)&si,sizeof(si));
   memset(mem_handles,0,sizeof(mem_handles));
   mem_handles[0] = si.memory_handle;
   memset(descriptors,0,sizeof(descriptors));
   descriptors[0] = si.cs_selector;
   descriptors[1] = si.ds_selector;
-  descriptors[2] = __djgpp_app_DS;
+  descriptors[2] = app_ds;
   descriptors[3] = app_cs; 
   app_exit_cs=si.cs_selector;
   memset(dos_descriptors,0,sizeof(dos_descriptors));
@@ -1085,6 +1332,14 @@ void cleanup_client(void)
          excp_info[i].excp_cs=0;
          excp_info[i].excp_nb=0;
       }
+    for (i=0;i<DS_SIZE_COUNT;i++)
+      {
+       if (app_ds_size[i])
+         {
+          fprintf(stderr," ds size %08x\n",app_ds_size[i]);
+          app_ds_size[i] = 0;
+         }
+      }
     excp_count=0;
     redir_excp_count=0;
     excp_index=0;
@@ -1109,7 +1364,7 @@ void cleanup_client(void)
   /* Set the flag, that the user interrupt vectors are no longer valid */
   user_int_set = 0;
 
-  memset(&fpue,0,sizeof(fpue));
+  memset(&npx,0,sizeof(npx));
   /* Close all handles, which may be left open */
   close_handles();
   for (i=0;i<DOS_DESCRIPTOR_COUNT;i++)
@@ -1147,6 +1402,7 @@ void cleanup_client(void)
   signal(SIGSEGV, oldSEGV);
   signal(SIGFPE, oldFPE);
   signal(SIGINT, oldINT);
+  signal(SIGILL, oldILL);
 }
 
 #ifndef USE_FSEXT
@@ -1321,12 +1577,11 @@ _init_dbg_fsext(void)
 
 /* 
   $Log$
-  Revision 1.5  1999/01/05 08:39:32  pierre
-    + dbgcom.h and dbgcom.c modified by Andris Pavenis
-    + added code for MMX state detection and display
-      (still uggly :
-       FPU stack shown by "info all"
-       MMX registers shown by "info float" if in MMX mode)
+  Revision 1.6  1999/01/18 10:14:13  pierre
+   * working version for testgdb
+
+  Revision 1.2  1999/01/06 09:30:03  Pierre
+  FPU and MMX add-on
 
   Revision 1.3  1998/12/21 11:03:01  pierre
    * problems of FSEXT_dbg solved

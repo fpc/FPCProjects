@@ -29,27 +29,38 @@ extern ExternalDebuggerInfo edi;
 /* r[8] is the array as defined in intel docs   */
 /* st0 is r[top]                                */
 
-#define FPU_TOP_MASK 0x3800
-#define FPU_TOP_SHIFT 11
+#define NPX_TOP_MASK 0x3800
+#define NPX_TOP_SHIFT 11
 
 typedef struct {
-  unsigned short control,res1,status,res2,tag,res3;
-  unsigned long instofs;
-  unsigned short instsel,opcode;
-  unsigned long operandofs;
-  unsigned short operandsel,res4;
-  /* added to allow use of fnsave instruction
-     works also for MMX instructions */
-  long double r[8];
-  long double st[8];
-  /* this is for fpu stack so
-     is_valid[1] means st1 is valid on stack
-     its location is r[1+top] */
-  char isvalid[8];
-  char top,is_mmx;
-} FPUEnvironment;
+  unsigned short sig0;
+  unsigned short sig1;
+  unsigned short sig2;
+  unsigned short sig3;
+  unsigned short exponent:15;
+  unsigned short sign:1;
+} NPXREG;
 
-extern FPUEnvironment fpue;
+typedef struct {
+  unsigned int control;
+  unsigned int status;
+  unsigned int tag;
+  unsigned int eip;
+  unsigned int cs;
+  unsigned int dataptr;
+  unsigned int datasel;
+  NPXREG reg[8];
+  long double st[8];
+  char st_valid[8];
+  long double mmx[8];
+  char in_mmx_mode;
+  char top;
+} NPX;
+
+extern NPX npx;
+
+void save_npx (void); /* Save the FPU of the debugged program */
+void load_npx (void); /* Restore the FPU of the debugged program */
 
 void run_child(void);
 int read_child(unsigned child_addr, void *buf, unsigned len);
