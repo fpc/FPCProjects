@@ -38,8 +38,28 @@ msgstr ""
 msgid "Open recent file"
 msgstr ""
 
+#: kassandra:menuopenrecentworkspace
+msgid "Open recent workspace"
+msgstr ""
+
 #: kassandra:menuexit
 msgid "E&xit"
+msgstr ""
+
+#: kassandra:menuedit
+msgid "&Edit"
+msgstr ""
+
+#: kassandra:menueditcut
+msgid "&Cut"
+msgstr ""
+
+#: kassandra:menueditcopy
+msgid "C&opy"
+msgstr ""
+
+#: kassandra:menueditpaste
+msgid "&Paste"
 msgstr ""
 
 #: kassandra:menuview
@@ -56,6 +76,10 @@ msgstr ""
 
 #: kassandra:menugeneraloptions
 msgid "&General options..."
+msgstr ""
+
+#: kassandra:menuhelp
+msgid "&Help"
 msgstr ""
 
 #: kassandra:dlgglobaloptions

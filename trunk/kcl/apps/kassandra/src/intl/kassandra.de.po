@@ -38,9 +38,29 @@ msgstr "Sichere Arbeitsbereich als..."
 msgid "Open recent file"
 msgstr "Öffne zuletztbenutze Datei"
 
+#: kassandra:menuopenrecentworkspace
+msgid "Open recent workspace"
+msgstr "Öffne zuletztbenutzen Arbeitsbereich"
+
 #: kassandra:menuexit
 msgid "E&xit"
 msgstr "B&eenden"
+
+#: kassandra:menuedit
+msgid "&Edit"
+msgstr "&Bearbeiten"
+
+#: kassandra:menueditcut
+msgid "&Cut"
+msgstr "&Ausschneiden"
+
+#: kassandra:menueditcopy
+msgid "C&opy"
+msgstr "&Kopieren"
+
+#: kassandra:menueditpaste
+msgid "&Paste"
+msgstr "&Einfügen"
 
 #: kassandra:menuview
 msgid "&View"
@@ -57,6 +77,10 @@ msgstr "&Optionen"
 #: kassandra:menugeneraloptions
 msgid "&General options..."
 msgstr "&Allgemeine Einstellungen..."
+
+#: kassandra:menuhelp
+msgid "&Help"
+msgstr "&Hilfe"
 
 #: kassandra:dlgglobaloptions
 msgid "Global Options"
