@@ -1,45 +1,29 @@
-program InterbaseTest;
+{
+    $Id$
+
+    fpGUI  -  Free Pascal Graphical User Interface
+    Copyright (C) 2001 by
+      Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
+
+    InterBase database test
+
+    See the file COPYING.FPC, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+}
+
+
+program InterBaseTest;
 
 {$linklib dl}
 {$linklib crypt}
 
-uses SysUtils, Classes, fpGUI, DB, Interbase;
+uses SysUtils, Classes, fpGUI, fpGUI_DB, DB, InterBase;
 
 type
-  TFieldDataLink = class(TDataLink)
-  private
-    FWidget: TWidget;
-    FField: TField;
-    FFieldName: String;
-    FOnDataChange: TNotifyEvent;
-    procedure SetFieldName(const AFieldName: String);
-    procedure UpdateField;
-  protected
-    procedure ActiveChanged; override;
-    procedure RecordChanged(AField: TField); override;
-  public
-    constructor Create(AWidget: TWidget);
-    property Field: TField read FField;
-    property FieldName: String read FFieldName write SetFieldName;
-    property OnDataChange: TNotifyEvent read FOnDataChange write FOnDataChange;
-  end;
-
-  TDBText = class(TCustomLabel)
-  private
-    FDataLink: TFieldDataLink;
-    function GetDataField: String;
-    procedure SetDataField(const ADataField: String);
-    function GetDataSource: TDataSource;
-    procedure SetDataSource(ADataSource: TDataSource);
-    procedure DataChange(Sender: TObject);
-  public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
-  published
-    property Text;
-    property DataField: String read GetDataField write SetDataField;
-    property DataSource: TDataSource read GetDataSource write SetDataSource;
-  end;
 
   TMainForm = class(TForm)
     Database: TIBDatabase;
@@ -59,85 +43,6 @@ type
     procedure NextDatasetClick(Sender: TObject);
     procedure LastDatasetClick(Sender: TObject);
   end;
-
-
-
-constructor TFieldDataLink.Create(AWidget: TWidget);
-begin
-  inherited Create;
-  FWidget := AWidget;
-end;
-
-procedure TFieldDataLink.ActiveChanged;
-begin
-  UpdateField;
-end;
-
-procedure TFieldDataLink.RecordChanged(AField: TField);
-begin
-  if Assigned(OnDataChange) then
-    OnDataChange(Self);
-end;
-
-procedure TFieldDataLink.SetFieldName(const AFieldName: String);
-begin
-  if AFieldName <> FieldName then
-  begin
-    FFieldName := AFieldName;
-    UpdateField;
-  end;
-end;
-
-procedure TFieldDataLink.UpdateField;
-begin
-WriteLn('##############UpdateField. DataSet: ', DataSource.DataSet.ClassName);
-  FField := DataSource.DataSet.FindField(FieldName);
-  if Assigned(OnDataChange) then
-    OnDataChange(Self);
-end;
-
-
-constructor TDBText.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FDataLink := TFieldDataLink.Create(Self);
-  FDataLink.OnDataChange := @DataChange;
-end;
-
-destructor TDBText.Destroy;
-begin
-  FDataLink.Free;
-  inherited Destroy;
-end;
-
-function TDBText.GetDataField: String;
-begin
-  Result := FDataLink.FieldName;
-end;
-
-procedure TDBText.SetDataField(const ADataField: String);
-begin
-  FDataLink.FieldName := ADataField;
-end;
-
-function TDBText.GetDataSource: TDataSource;
-begin
-  Result := FDataLink.DataSource;
-end;
-
-procedure TDBText.SetDataSource(ADataSource: TDataSource);
-begin
-  FDataLink.DataSource := ADataSource;
-end;
-
-procedure TDBText.DataChange(Sender: TObject);
-begin
-WriteLn('TDBText.DataChange');
-  if Assigned(FDataLink.Field) then
-    Text := FDataLink.Field.DisplayText
-  else
-    WriteLn('  Field ist NIL');
-end;
 
 
 // -------------------------------------------------------------------
@@ -212,7 +117,15 @@ end;
 var
   MainForm: TMainForm;
 begin
-  Application.Title := 'Interbase Test';
+  Application.Title := 'InterBase Test';
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;
 end.
+
+
+{
+  $Log$
+  Revision 1.2  2001/01/17 21:35:45  sg
+  * Now uses fpGUI_DB unit
+
+}
