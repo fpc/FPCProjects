@@ -34,6 +34,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define STOPPED_BY_WATCHPOINT(W)  \
   go32_stopped_by_watchpoint (inferior_pid,0)
 
+#define target_stopped_data_address() \
+  go32_stopped_by_watchpoint (inferior_pid,0)
+
 /* Use these macros for watchpoint insertion/removal.  */
 
 #define target_insert_watchpoint(addr, len, type)  \
