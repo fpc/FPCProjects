@@ -158,7 +158,7 @@ endif
 
 # Targets
 
-override DIROBJECTS+=$(wildcard kclshedit glpaintbox)
+override DIROBJECTS+=$(wildcard kassandra)
 
 # Clean
 
@@ -253,109 +253,57 @@ require: $(addsuffix _require,$(DIROBJECTS))
 # Directories
 #####################################################################
 
-OBJECTDIRKCLSHEDIT=1
-OBJECTDIRGLPAINTBOX=1
+OBJECTDIRKASSANDRA=1
 
-# Dir kclshedit
+# Dir kassandra
 
-ifdef OBJECTDIRKCLSHEDIT
-.PHONY:  kclshedit_all kclshedit_debug kclshedit_examples kclshedit_test kclshedit_smart kclshedit_shared kclshedit_showinstall kclshedit_install kclshedit_sourceinstall kclshedit_zipinstall kclshedit_zipsourceinstall kclshedit_clean kclshedit_cleanall kclshedit_require kclshedit_info
+ifdef OBJECTDIRKASSANDRA
+.PHONY:  kassandra_all kassandra_debug kassandra_examples kassandra_test kassandra_smart kassandra_shared kassandra_showinstall kassandra_install kassandra_sourceinstall kassandra_zipinstall kassandra_zipsourceinstall kassandra_clean kassandra_cleanall kassandra_require kassandra_info
 
-kclshedit_all:
-	$(MAKE) -C kclshedit all
+kassandra_all:
+	$(MAKE) -C kassandra all
 
-kclshedit_debug:
-	$(MAKE) -C kclshedit debug
+kassandra_debug:
+	$(MAKE) -C kassandra debug
 
-kclshedit_examples:
-	$(MAKE) -C kclshedit examples
+kassandra_examples:
+	$(MAKE) -C kassandra examples
 
-kclshedit_test:
-	$(MAKE) -C kclshedit test
+kassandra_test:
+	$(MAKE) -C kassandra test
 
-kclshedit_smart:
-	$(MAKE) -C kclshedit smart
+kassandra_smart:
+	$(MAKE) -C kassandra smart
 
-kclshedit_shared:
-	$(MAKE) -C kclshedit shared
+kassandra_shared:
+	$(MAKE) -C kassandra shared
 
-kclshedit_showinstall:
-	$(MAKE) -C kclshedit showinstall
+kassandra_showinstall:
+	$(MAKE) -C kassandra showinstall
 
-kclshedit_install:
-	$(MAKE) -C kclshedit install
+kassandra_install:
+	$(MAKE) -C kassandra install
 
-kclshedit_sourceinstall:
-	$(MAKE) -C kclshedit sourceinstall
+kassandra_sourceinstall:
+	$(MAKE) -C kassandra sourceinstall
 
-kclshedit_zipinstall:
-	$(MAKE) -C kclshedit zipinstall
+kassandra_zipinstall:
+	$(MAKE) -C kassandra zipinstall
 
-kclshedit_zipsourceinstall:
-	$(MAKE) -C kclshedit zipsourceinstall
+kassandra_zipsourceinstall:
+	$(MAKE) -C kassandra zipsourceinstall
 
-kclshedit_clean:
-	$(MAKE) -C kclshedit clean
+kassandra_clean:
+	$(MAKE) -C kassandra clean
 
-kclshedit_cleanall:
-	$(MAKE) -C kclshedit cleanall
+kassandra_cleanall:
+	$(MAKE) -C kassandra cleanall
 
-kclshedit_require:
-	$(MAKE) -C kclshedit require
+kassandra_require:
+	$(MAKE) -C kassandra require
 
-kclshedit_info:
-	$(MAKE) -C kclshedit info
-endif
-
-# Dir glpaintbox
-
-ifdef OBJECTDIRGLPAINTBOX
-.PHONY:  glpaintbox_all glpaintbox_debug glpaintbox_examples glpaintbox_test glpaintbox_smart glpaintbox_shared glpaintbox_showinstall glpaintbox_install glpaintbox_sourceinstall glpaintbox_zipinstall glpaintbox_zipsourceinstall glpaintbox_clean glpaintbox_cleanall glpaintbox_require glpaintbox_info
-
-glpaintbox_all:
-	$(MAKE) -C glpaintbox all
-
-glpaintbox_debug:
-	$(MAKE) -C glpaintbox debug
-
-glpaintbox_examples:
-	$(MAKE) -C glpaintbox examples
-
-glpaintbox_test:
-	$(MAKE) -C glpaintbox test
-
-glpaintbox_smart:
-	$(MAKE) -C glpaintbox smart
-
-glpaintbox_shared:
-	$(MAKE) -C glpaintbox shared
-
-glpaintbox_showinstall:
-	$(MAKE) -C glpaintbox showinstall
-
-glpaintbox_install:
-	$(MAKE) -C glpaintbox install
-
-glpaintbox_sourceinstall:
-	$(MAKE) -C glpaintbox sourceinstall
-
-glpaintbox_zipinstall:
-	$(MAKE) -C glpaintbox zipinstall
-
-glpaintbox_zipsourceinstall:
-	$(MAKE) -C glpaintbox zipsourceinstall
-
-glpaintbox_clean:
-	$(MAKE) -C glpaintbox clean
-
-glpaintbox_cleanall:
-	$(MAKE) -C glpaintbox cleanall
-
-glpaintbox_require:
-	$(MAKE) -C glpaintbox require
-
-glpaintbox_info:
-	$(MAKE) -C glpaintbox info
+kassandra_info:
+	$(MAKE) -C kassandra info
 endif
 
 #####################################################################
