@@ -26,6 +26,14 @@ begin
     Result := b;
 end;
 
+function Max(a, b: Integer): Integer;
+begin
+  if a > b then
+    Result := a
+  else
+    Result := b;
+end;
+
 function ClipMinMax(val, min, max: Integer): Integer;
 begin
   if val < min then
@@ -40,6 +48,11 @@ end;
 // -------------------------------------------------------------------
 //   TWidget
 // -------------------------------------------------------------------
+
+function TWidget.GetWidgetCount: Integer;
+begin
+  Result := 0;
+end;
 
 procedure TWidget.SetSize(AWidth, AHeight: Integer);
 begin
@@ -122,9 +135,18 @@ begin
   Result := False;
 end;
 
+function TWidget.IsRadioGroup: Boolean;
+begin
+  Result := False;
+end;
+
+
 
 {
   $Log$
+  Revision 1.3  2000/02/17 22:21:07  sg
+  * Added methods "GetWidgetCount" and "IsRadioGroup"
+
   Revision 1.2  2000/02/10 18:31:51  sg
   * Added generic size calculation methods
 
