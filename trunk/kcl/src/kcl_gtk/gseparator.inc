@@ -24,9 +24,18 @@ begin
   inherited OnFinishCreation;
 end;
 
+procedure TSeparator.DoRecalcLayout;
+begin
+  inherited DoRecalcLayout;
+  MaxH := DefH;
+end;
+
 
 {
   $Log$
+  Revision 1.2  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.1  2000/02/17 22:32:24  sg
   * First implementation
 

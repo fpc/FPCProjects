@@ -240,18 +240,21 @@ begin
   canvas.Free;
 
   if dx > 0 then
-    Redraw(FWidth - dx, 0, dx, FHeight, False)
+    Redraw(FWidth - dx, 0, dx, FHeight, True)
   else if dx < 0 then
-    Redraw(0, 0, -dx, FHeight, False);
+    Redraw(0, 0, -dx, FHeight, True);
   if dy > 0 then
-    Redraw(0, FHeight - dy, FWidth, dy, False)
+    Redraw(0, FHeight - dy, FWidth, dy, True)
   else if dy < 0 then
-    Redraw(0, 0, FWidth, -dy, False);
+    Redraw(0, 0, FWidth, -dy, True);
 end;
 
 
 {
   $Log$
+  Revision 1.6  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.5  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

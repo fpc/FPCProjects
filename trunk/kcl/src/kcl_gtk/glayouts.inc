@@ -19,13 +19,6 @@ begin
   gtk_fixed_put(PGtkFixed(FHandle), AChild.FHandle, ax, ay);
 end;
 
-procedure TLayout.MoveChild(AChild: TWidget; ax, ay: LongInt);
-begin
-  // Only move the child if it has a valid size!!!
-  if Assigned(AChild.FHandle) and (AChild.FHandle^.allocation.width > 1) then
-    AChild.SetPosition(ax, ay);
-end;
-
 procedure TLayout.OnFinishCreation;
 begin
   FHandle := gtk_fixed_new;
@@ -35,6 +28,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.5  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

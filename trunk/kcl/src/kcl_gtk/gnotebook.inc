@@ -138,8 +138,8 @@ begin
 
   Inc(MinW, FrameBorders.Left + FrameBorders.Right);
   Inc(MinH, FrameBorders.Top + FrameBorders.Bottom);
-  MaxW := Max(InfiniteSize, MaxW + FrameBorders.Left + FrameBorders.Right);
-  MaxH := Max(InfiniteSize, MaxH + FrameBorders.Top + FrameBorders.Bottom);
+  MaxW := Min(InfiniteSize, MaxW + FrameBorders.Left + FrameBorders.Right);
+  MaxH := Min(InfiniteSize, MaxH + FrameBorders.Top + FrameBorders.Bottom);
   Inc(DefW, FrameBorders.Left + FrameBorders.Right);
   Inc(DefH, FrameBorders.Top + FrameBorders.Bottom);
 end;
@@ -189,6 +189,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.5  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

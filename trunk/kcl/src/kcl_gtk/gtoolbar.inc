@@ -102,7 +102,6 @@ var
   image: PImageListItem;
   pixmap: PGtkWidget;
   ElType: TGtkToolbarChildType;
-  shortcut: String;
 begin
   if AItem.InheritsFrom(TToolButton) then begin
     btn := TToolButton(AItem);
@@ -189,6 +188,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.2  2000/02/10 18:48:03  sg
   * Fixed memory leaks
   * Added layout calculation to TToolBar

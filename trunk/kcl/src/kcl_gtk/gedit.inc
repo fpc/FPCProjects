@@ -15,7 +15,7 @@
 
 
 // ===================================================================
-// Edit widget implementation for GTK+
+//   Edit widget implementation for GTK+
 // ===================================================================
 
 procedure TEdit.OnFinishCreation;
@@ -42,6 +42,8 @@ begin
     DefW := 40;
   end;
   MaxW := InfiniteSize;
+  if not FMultiLine then
+    MaxH := DefH;
 end;
 
 procedure TEdit.SetText(const AText: String);
@@ -54,6 +56,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.4  2000/02/18 22:19:49  sg
   * Implemented SetText
 

@@ -22,16 +22,19 @@
 //   TCustomForm
 // -------------------------------------------------------------------
 
-procedure TCustomForm_SizeAllocate(widget: PGtkWidget; alloc: PGtkAllocation;
+procedure TCustomForm_ConfigureEvent(widget: PGtkWidget; event: PGdkEventConfigure;
   AForm: TCustomForm); cdecl;
 begin
-  //WriteLn('Form: Size allocated for ', AForm.ClassName, ': ', alloc^.Width, 'x', alloc^.Height);
-  if (AForm.FWidth <> alloc^.width) or (AForm.FHeight <> alloc^.height) then begin
-    AForm.FWidth := alloc^.width;
-    AForm.FHeight := alloc^.height;
+  if (event^.width < AForm.MinW) or (event^.height < AForm.MinH) then begin
+    //WriteLn('  MinW = ', AForm.MinW, '  MinH = ', AForm.MinH);
+    AForm.SetSize(Max(event^.width, AForm.MinW), Max(event^.height, AForm.MinH));
+    exit;
+  end;
+  if (AForm.FWidth <> event^.width) or (AForm.FHeight <> event^.height) then begin
+    AForm.FWidth := event^.width;
+    AForm.FHeight := event^.height;
     if Assigned(AForm.FContent) then
-      AForm.FContent.SetSize(AForm.FWidth - 2 * AForm.FBorderWidth,
-        AForm.FHeight - 2 * AForm.FBorderWidth);
+      AForm.ApplySize;
   end;
 end;
 
@@ -118,22 +121,24 @@ begin
 
   inherited OnFinishCreation;
 
-  RecalcLayout;
+  DoRecalcLayout;
 
   if Length(FText) = 0 then
     gtk_window_set_title(PGtkWindow(FHandle), PChar(Application.Title))
   else
     gtk_window_set_title(PGtkWindow(FHandle), PChar(FText));
 
-  gtk_signal_connect(PGtkObject(FHandle), 'size_allocate',
-    GTK_SIGNAL_FUNC(@TCustomForm_SizeAllocate), Self);
+  gtk_signal_connect(PGtkObject(FHandle), 'configure_event',
+    GTK_SIGNAL_FUNC(@TCustomForm_ConfigureEvent), Self);
 
   gtk_signal_connect(PGtkObject(FHandle), 'map_event',
     GTK_SIGNAL_FUNC(@TCustomForm_OnMap), Self);
 
   gtk_signal_connect(PGtkObject(FHandle), 'delete-event',
     GTK_SIGNAL_FUNC(@TCustomForm_OnDelete), Self);
+
   ApplySize;
+  ApplyMinMaxSize;
 end;
 
 procedure TCustomForm.ApplySize;
@@ -183,6 +188,9 @@ end;
 
 {
   $Log$
+  Revision 1.7  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.6  2000/02/18 18:22:39  sg
   * Fixed resizing when a border is set (BorderWidth > 0)
 

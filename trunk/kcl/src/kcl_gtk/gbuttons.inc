@@ -44,10 +44,21 @@ begin
 end;
 
 procedure TButton.DoRecalcLayout;
+var
+  font: PGdkFont;
+  BorderSize, xthickness, ythickness: Integer;
 begin
   inherited DoRecalcLayout;
-  Inc(DefW, 16);
-  Inc(DefH, 4);
+
+  font := PGtkStyle(PGtkBin(FHandle)^.child^.thestyle)^.font;
+
+  BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width;
+  xthickness := PGtkStyle(FHandle^.thestyle)^.klass^.xthickness;
+  ythickness := PGtkStyle(FHandle^.thestyle)^.klass^.ythickness;
+
+  MinH := font^.ascent + font^.descent + 2 * (BorderSize + ythickness + 1);
+  DefW := MinW + 16;
+  DefH := MinH + 4;
 end;
 
 procedure TButton.SetText(const AText: String);
@@ -189,6 +200,9 @@ end;
 
 {
   $Log$
+  Revision 1.7  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.6  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

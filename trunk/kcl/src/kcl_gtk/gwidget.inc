@@ -101,12 +101,6 @@ begin
   gtk_widget_hide(FHandle);
 end;
 
-procedure TWidget.SetPosition(x, y: Integer);
-begin
-  if Assigned(FHandle) then
-    gtk_widget_set_uposition(FHandle, x, y);
-end;
-
 procedure TWidget.OnFinishCreation;
 begin
   ASSERT(Assigned(FHandle));
@@ -124,8 +118,6 @@ begin
 
   if not FEnabled then
     gtk_widget_set_sensitive(FHandle, False);
-
-  FCreationState := wcsCreationDone;
 
   // GTK-connect all signals
   gtk_signal_connect(PGtkObject(FHandle), 'focus_in_event',
@@ -169,6 +161,8 @@ begin
 
   FVisible := True;
   FEnabled := True;
+  FCanExpandWidth := True;
+  FCanExpandHeight := True;
 end;
 
 destructor TWidget.Destroy;
@@ -178,19 +172,10 @@ begin
   inherited Destroy;
 end;
 
-procedure TWidget.SetFocus;
+procedure TWidget.SetPosition(x, y: Integer);
 begin
   if Assigned(FHandle) then
-    gtk_window_set_focus(
-      PGtkWindow(gtk_widget_get_toplevel(FHandle)), FHandle);
-end;
-
-function TWidget.HasFocus: Boolean;
-begin
-  if Assigned(FHandle) then
-    Result := GTK_WIDGET_HAS_FOCUS(FHandle)
-  else
-    Result := False;
+    gtk_widget_set_uposition(FHandle, x, y);
 end;
 
 procedure TWidget.Redraw(AtOnce: Boolean);
@@ -230,9 +215,27 @@ begin
       gtk_widget_queue_draw_area(FHandle, ax, ay, aw, ah);
 end;
 
+procedure TWidget.SetFocus;
+begin
+  if Assigned(FHandle) then
+    gtk_window_set_focus(
+      PGtkWindow(gtk_widget_get_toplevel(FHandle)), FHandle);
+end;
+
+function TWidget.HasFocus: Boolean;
+begin
+  if Assigned(FHandle) then
+    Result := GTK_WIDGET_HAS_FOCUS(FHandle)
+  else
+    Result := False;
+end;
+
 
 {
   $Log$
+  Revision 1.7  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.6  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

@@ -27,6 +27,7 @@ type
   TGtkAdjRange = class(TRange)
   protected
     adj: PGtkAdjustment;
+    FPageSize: Integer;
     function  GetMaxValue: Integer; override;
     procedure SetMaxValue(NewMaxValue: Integer); override;
     function  GetCurValue: Integer; override;
@@ -36,10 +37,10 @@ type
     constructor Create;
   end;
 
-  TAbstractWidgetRange = class(TGtkAdjRange)
+  TScrollBoxRange = class(TGtkAdjRange)
   protected
-    ScrollBox: TAbstractScrollingWidget;
-    constructor Create(AScrollBox: TAbstractScrollingWidget);
+    ScrollBox: TScrollBox;
+    constructor Create(AScrollBox: TScrollBox);
     procedure SetMaxValue(NewMaxValue: Integer); override;
   end;
 
@@ -67,6 +68,7 @@ procedure TGtkAdjRange.SetMaxValue(NewMaxValue: Integer);
 begin
   if NewMaxValue = Trunc(adj^.upper) then exit;
   adj^.upper := NewMaxValue;
+  adj^.page_size := FPageSize;
   gtk_adjustment_changed(adj);
 end;
 
@@ -91,23 +93,23 @@ end;
 
 procedure TGtkAdjRange.SetPageSize(NewPageSize: Integer);
 begin
+  FPageSize := NewPageSize;
   adj^.page_size := NewPageSize;
   gtk_adjustment_changed(adj);
 end;
 
 
-constructor TAbstractWidgetRange.Create(AScrollBox: TAbstractScrollingWidget);
+constructor TScrollBoxRange.Create(AScrollBox: TScrollBox);
 begin
   inherited Create;
   ScrollBox := AScrollBox;
 end;
 
-procedure TAbstractWidgetRange.SetMaxValue(NewMaxValue: Integer);
+procedure TScrollBoxRange.SetMaxValue(NewMaxValue: Integer);
 begin
   inherited SetMaxValue(NewMaxValue);
   if ScrollBox.FCreationState = wcsCreationDone then
-    if Assigned(ScrollBox.FContent) and
-      Assigned(ScrollBox.FContent.FHandle) then
+    if Assigned(ScrollBox.FContent) and Assigned(ScrollBox.FContent.FHandle) then
       gtk_widget_set_usize(ScrollBox.FContent.FHandle,
         ScrollBox.HorzRange.MaxValue, ScrollBox.VertRange.MaxValue);
 end;
@@ -120,8 +122,8 @@ end;
 constructor TScrollBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FHorzRange := TAbstractWidgetRange.Create(Self);
-  FVertRange := TAbstractWidgetRange.Create(Self);
+  FHorzRange := TScrollBoxRange.Create(Self);
+  FVertRange := TScrollBoxRange.Create(Self);
 end;
 
 destructor TScrollBox.Destroy;
@@ -184,8 +186,8 @@ end;
 constructor TScrollers.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FHorzRange := TAbstractWidgetRange.Create(Self);
-  FVertRange := TAbstractWidgetRange.Create(Self);
+  FHorzRange := TGtkAdjRange.Create;
+  FVertRange := TGtkAdjRange.Create;
 end;
 
 destructor TScrollers.Destroy;
@@ -299,6 +301,9 @@ end;
 
 {
   $Log$
+  Revision 1.7  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.6  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 

@@ -92,7 +92,6 @@ procedure TStdBtnDialog.OnFinishCreation;
 begin
   MainLayout := TBoxLayout.Create(Self);
   MainLayout.Orientation := boxVert;
-  MainLayout.HorzAlign := horzFill;
   MainLayout.Spacing := 8;
 
   if Assigned(FDlgContent) then
@@ -104,7 +103,8 @@ begin
   BtnLayout := TBoxLayout.Create(Self);
   BtnLayout.Orientation := boxHorz;
   BtnLayout.HorzAlign := horzRight;
-  BtnLayout.VertAlign := vertFill;
+  BtnLayout.VertAlign := vertCenter;
+  BtnLayout.CanExpandHeight := False;
   BtnLayout.Spacing := 8;
 
   if btnOk in FButtons then AddBtn(btnText_OK, True);
@@ -173,6 +173,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.5  2000/02/17 22:27:01  sg
   * Made dialogs working again; TStdBtnDialog is now functional
 

@@ -72,18 +72,12 @@ begin
   Inc(DefH, ContentDefH);
   Inc(MinH, ContentMinH);
 
-  if FFixedWidth then
-    MaxW := DefW
+  if ContentMaxW > PGtkFrame(FHandle)^.label_width then
+    MaxW := Min(InfiniteSize, MaxW + ContentMaxW)
   else
-    if ContentMaxW > PGtkFrame(FHandle)^.label_width then
-      MaxW := Min(InfiniteSize, MaxW + ContentMaxW)
-    else
-      Inc(MaxW, PGtkFrame(FHandle)^.label_width);
+    Inc(MaxW, PGtkFrame(FHandle)^.label_width);
 
-  if FFixedHeight then
-    MaxH := DefH
-  else
-    MaxH := Min(InfiniteSize, MaxH + ContentMaxH);
+  MaxH := Min(InfiniteSize, MaxH + ContentMaxH);
 end;
 
 procedure TCustomGroupBox.ApplySize;
@@ -110,6 +104,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.2  2000/02/18 22:19:49  sg
   * Implemented SetText
 

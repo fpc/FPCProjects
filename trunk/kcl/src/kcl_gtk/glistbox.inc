@@ -18,6 +18,44 @@
 //   TCustomListBox implementation for GTK+
 // ===================================================================
 
+// -------------------------------------------------------------------
+//   TListBoxStrings
+// -------------------------------------------------------------------
+
+type
+
+  TListBoxStrings = class(TStringList)
+  protected
+    ListBox: TCustomListBox;
+  public
+    constructor Create(AListBox: TCustomListBox);
+    function Add(const S: string): Integer; override;
+  end;
+
+
+constructor TListBoxStrings.Create(AListBox: TCustomListBox);
+begin
+  inherited Create;
+  ListBox := AListBox;
+end;
+
+function TListBoxStrings.Add(const S: string): Integer;
+var
+  item: PGtkWidget;
+begin
+  Result := inherited Add(s);
+  if Assigned(ListBox.priv.list) then begin
+    item := gtk_list_item_new_with_label(PChar(s));
+    gtk_widget_show(item);
+    gtk_container_add(PGtkContainer(ListBox.priv.list), item);
+  end;
+end;
+
+
+// -------------------------------------------------------------------
+//   TCustomListBox event handlers
+// -------------------------------------------------------------------
+
 function TCustomListBox_ButtonPressEvent(GtkWidget: PGtkWidget; event: PGdkEventButton;
   ListBox: TCustomListBox): Integer; cdecl;
 begin
@@ -26,6 +64,10 @@ begin
   Result := 1;
 end;
 
+
+// -------------------------------------------------------------------
+//   TCustomListBox
+// -------------------------------------------------------------------
 
 function TCustomListBox.GetItemIndex: Integer;
 var
@@ -83,6 +125,12 @@ begin
   MaxH := InfiniteSize;
 end;
 
+constructor TCustomListBox.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FItems := TListBoxStrings.Create(Self);
+end;
+
 procedure TCustomListBox.Clear;
 var
   list: PGList;
@@ -98,6 +146,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/22 14:40:32  sg
+  * More layout fixes; minor improvements
+
   Revision 1.4  2000/02/18 18:27:23  sg
   * Changed creation order so that the list items can get a correct size
 
