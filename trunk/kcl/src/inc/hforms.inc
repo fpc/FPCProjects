@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -17,6 +17,8 @@
 // ===================================================================
 //   Base Classes for Forms
 // ===================================================================
+
+type
 
   TGenericForm = class(TWidget)
   protected
@@ -49,6 +51,9 @@
 
 {
   $Log$
+  Revision 1.3  2000/01/24 00:08:49  sg
+  * Extended copyright to year 2000...
+
   Revision 1.2  2000/01/06 22:58:10  sg
   * Added "priv" field to TGenericForm
 
