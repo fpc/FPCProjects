@@ -247,9 +247,12 @@ uses
   {$endif UNIX}
   ;
 
-{$ifdef Unix}  
+{$ifdef Unix}  		// should be non linux unix, but apparantly libc is
+			// not ok.
 Type
-  UInt     = BaseUnix.cUint;
+{$ifndef Linux}			
+  UInt     = BaseUnix.cUint;	// linux doesn't include baseunix
+{$endif}
   xid      = txid;   
   pixmap   = tpixmap;  
   font     = tfont;    
