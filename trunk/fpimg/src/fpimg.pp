@@ -29,10 +29,10 @@ interface
 uses Classes, GFXBase, ImageIO;
 
 
-function CreateImageFromFile(ADisplay: TGfxDisplay; AReader: TImageReaderClass;
+function CreateImageFromFile(ADevice: TGfxDevice; AReader: TImageReaderClass;
   const AFilename: String): TGfxImage;
 
-function CreateImageFromStream(ADisplay: TGfxDisplay; AReader: TImageReaderClass;
+function CreateImageFromStream(ADevice: TGfxDevice; AReader: TImageReaderClass;
   AStream: TStream): TGfxImage;
 
 
@@ -40,21 +40,21 @@ function CreateImageFromStream(ADisplay: TGfxDisplay; AReader: TImageReaderClass
 implementation
 
 
-function CreateImageFromFile(ADisplay: TGfxDisplay; AReader: TImageReaderClass;
+function CreateImageFromFile(ADevice: TGfxDevice; AReader: TImageReaderClass;
   const AFilename: String): TGfxImage;
 var
   Stream: TFileStream;
 begin
   Stream := TFileStream.Create(AFilename, fmOpenRead);
   try
-    Result := CreateImageFromStream(ADisplay, AReader, Stream);
+    Result := CreateImageFromStream(ADevice, AReader, Stream);
   finally
     Stream.Free;
   end;
 end;
 
 
-function CreateImageFromStream(ADisplay: TGfxDisplay; AReader: TImageReaderClass;
+function CreateImageFromStream(ADevice: TGfxDevice; AReader: TImageReaderClass;
   AStream: TStream): TGfxImage;
 var
   Reader: TImageReader;
@@ -64,7 +64,7 @@ begin
   Reader := AReader.Create;
   try
     Reader.ProcessHeaderData(AStream);
-    Result := ADisplay.CreateImage(Reader.Width, Reader.Height,
+    Result := ADevice.CreateImage(Reader.Width, Reader.Height,
       Reader.PixelFormat);
     try
       Result.Lock(Data, Stride);
@@ -88,6 +88,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/10/29 12:15:23  sg
+  * Now uses TGfxDevice instead of TGfxDisplay
+
   Revision 1.1  2000/10/27 23:40:00  sg
   * First version
 
