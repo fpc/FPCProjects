@@ -26,6 +26,8 @@ type
 
   TCustomForm = class(TWidget)
   protected
+    FShowModal : Boolean;
+    FModalResult : Integer;
     priv: TGenericForm_private;
     LastMinW, LastMinH, LastMaxW, LastMaxH: Integer;
     FContent: TWidget;
@@ -41,7 +43,8 @@ type
     procedure SetPositionY(y: Integer);
     procedure ApplyMinMaxSize;
     procedure DoClose; dynamic;
-
+    procedure DoShow;Virtual;
+    
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure LayoutChildren; override;
@@ -56,10 +59,12 @@ type
     function  IsRadioGroup: Boolean; override;
     function  CanClose: Boolean; virtual;
     procedure Show;
+    Function  ShowModal : Integer;
     procedure Close;
     procedure SetDefaultSize(AWidth, AHeight: Integer);
     procedure SetPosition(x, y: Integer);
 
+    property  ModalResult : Integer Read FModalResult Write FModalResult;
     property  PositionX: Integer read GetPositionX write SetPositionX default -1;
     property  PositionY: Integer read GetPositionY write SetPositionY default -1;
   end;
@@ -84,6 +89,10 @@ type
 
 {
   $Log$
+  Revision 1.7  2000/02/25 11:40:28  michael
+  + Added Checked reader to TRadioButton
+  + Started support for ShowModal
+
   Revision 1.6  2000/02/24 13:39:32  sg
   * More layout fixes...
 

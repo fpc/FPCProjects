@@ -137,13 +137,14 @@ type
   protected
     FChecked: Boolean;
     procedure SetChecked(AChecked: Boolean);
+    Function  GetChecked : Boolean;
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure SetText(const AText: String); override;
   published
     property Text;
     property CanExpandWidth;
-    property Checked: Boolean read FChecked write SetChecked;
+    property Checked: Boolean read GetChecked write SetChecked;
   end;
 
 
@@ -556,6 +557,10 @@ type
 
 {
   $Log$
+  Revision 1.13  2000/02/25 11:40:28  michael
+  + Added Checked reader to TRadioButton
+  + Started support for ShowModal
+
   Revision 1.12  2000/02/24 14:54:27  sg
   * TLabel -> TCustomLabel, TLabel
   * Added property Alignment to TCustomLabel

@@ -131,7 +131,7 @@ begin
 
   inherited OnFinishCreation;
 
-  gtk_signal_connect(PGtkObject(FHandle), 'clicked',
+  gtk_signal_connect(PGtkObject(FHandle), 'toggled',
     GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
 end;
 
@@ -156,6 +156,12 @@ procedure TRadioButton.SetChecked(AChecked: Boolean);
 begin
   FChecked := AChecked;
   gtk_toggle_button_set_active(PGtkToggleButton(FHandle), AChecked);
+end;
+
+Function TRadioButton.GetChecked : Boolean;
+begin
+  FChecked:=gtk_toggle_button_get_active(PGtkToggleButton(FHandle));
+  Result:=FChecked;
 end;
 
 procedure TRadioButton.OnFinishCreation;
@@ -202,6 +208,9 @@ begin
   gtk_container_add(PGtkContainer(FHandle), lbl);
 
   inherited OnFinishCreation;
+
+  gtk_signal_connect(PGtkObject(FHandle), 'toggled',
+    GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
 end;
 
 procedure TRadioButton.DoRecalcLayout;
@@ -219,6 +228,10 @@ end;
 
 {
   $Log$
+  Revision 1.10  2000/02/25 11:40:28  michael
+  + Added Checked reader to TRadioButton
+  + Started support for ShowModal
+
   Revision 1.9  2000/02/24 14:55:38  sg
   * TButton, TCheckBox and TRadioButton now support "&" to mark shortcuts
 

@@ -103,7 +103,9 @@ begin
     if Assigned(FContent.FHandle) then
       gtk_container_add(PGtkContainer(FHandle), FContent.FHandle);
   end;
-
+  
+  gtk_window_set_modal(PGtkWindow(FHandle), FShowModal);
+  
   inherited OnFinishCreation;
 
   if Length(FText) = 0 then
@@ -134,10 +136,8 @@ begin
   priv.AccelGroup := gtk_accel_group_new;
 end;
 
-procedure TCustomForm.Show;
+procedure TCustomForm.DoShow;
 begin
-  FinishCreation;
-  ASSERT(Assigned(FHandle));
   gtk_widget_show(FHandle);
 end;
 
@@ -160,6 +160,10 @@ end;
 
 {
   $Log$
+  Revision 1.9  2000/02/25 11:40:28  michael
+  + Added Checked reader to TRadioButton
+  + Started support for ShowModal
+
   Revision 1.8  2000/02/24 13:39:32  sg
   * More layout fixes...
 

@@ -117,9 +117,29 @@ begin
   end;
 end;
 
+procedure TCustomForm.Show;
+begin
+  FShowModal:=False;
+  FinishCreation;
+  ASSERT(Assigned(FHandle));
+  DoShow;
+end;
+
+function TCustomForm.Showmodal : Integer;
+begin
+  FShowModal:=True;
+  FinishCreation;
+  ASSERT(Assigned(FHandle));
+  DoShow;
+  result:=FModalResult;
+end;
 
 {
   $Log$
+  Revision 1.5  2000/02/25 11:40:28  michael
+  + Added Checked reader to TRadioButton
+  + Started support for ShowModal
+
   Revision 1.4  2000/02/24 13:39:32  sg
   * More layout fixes...
 
