@@ -68,4 +68,7 @@
  {$MODE Delphi}
  {$ASMMODE Intel}
  {$DEFINE NODISPID}
+ {$DEFINE NODISPINTERFACE}
+ {$DEFINE NOVCL}
+ {$define nooleserver}
 {$ENDIF}
