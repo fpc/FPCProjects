@@ -1,0 +1,17 @@
+#
+#   Makefile.fpc for KCL Win32 Implementation
+#
+
+[targets]
+units=kcl
+rst=kcl
+
+[require]
+packages=fcl
+
+[install]
+subdir=kcl
+
+[dirs]
+fpcdir=../../..
+incdir=../inc ../common
