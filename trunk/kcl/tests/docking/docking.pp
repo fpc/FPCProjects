@@ -50,9 +50,9 @@ begin
   left.Text := 'Left';
   DockingLayout.AddWidget(left, dmLeft);}
 
-  btn := TButton.Create(Self);
+{  btn := TButton.Create(Self);
   btn.Text := 'Client';
-  DockingLayout.AddWidget(btn, dmClient);
+  DockingLayout.AddWidget(btn, dmClient);}
 end;
 
 var
@@ -70,6 +70,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/03/19 00:32:57  sg
+  * Adapted to changes in KCL interface
+
   Revision 1.1  2000/02/17 22:38:27  sg
   * First public version
 

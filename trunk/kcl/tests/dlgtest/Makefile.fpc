@@ -8,6 +8,7 @@ programs=dlgtest
 
 [require]
 toolkit=$(KCLGUI)
+packages=fcl
 
 
 [dirs]

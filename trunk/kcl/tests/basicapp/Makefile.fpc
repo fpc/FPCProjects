@@ -8,6 +8,7 @@ programs=basicapp
 
 [require]
 toolkit=$(KCLGUI)
+packages=fcl
 
 
 [dirs]

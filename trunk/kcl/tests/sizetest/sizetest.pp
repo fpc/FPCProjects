@@ -23,9 +23,11 @@ uses Classes, KCL;
 type
   TMainForm = class(TForm)
     button: TButton;
+    procedure ButtonClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
   end;
+
 
 
 constructor TMainForm.Create(AOwner: TComponent);
@@ -35,7 +37,13 @@ begin
   button := TButton.Create(Self);
   button.Name := 'button';
   button.Text := 'Click me';
+  button.OnClick := @ButtonClick;
   Content := button;
+end;
+
+procedure TMainForm.ButtonClick(Sender: TObject);
+begin
+  Application.Terminate;
 end;
 
 
@@ -52,6 +60,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/03/19 00:32:57  sg
+  * Adapted to changes in KCL interface
+
   Revision 1.1  2000/02/17 22:38:27  sg
   * First public version
 

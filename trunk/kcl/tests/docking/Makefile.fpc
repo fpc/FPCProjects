@@ -8,6 +8,7 @@ programs=docking
 
 [require]
 toolkit=$(KCLGUI)
+packages=fcl
 
 
 [dirs]
