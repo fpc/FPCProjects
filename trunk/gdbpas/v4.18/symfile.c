@@ -1653,6 +1653,7 @@ init_filename_language_table ()
       add_filename_language (".pas",   language_pascal);
       add_filename_language (".p",     language_pascal);
       add_filename_language (".pp",    language_pascal);
+      add_filename_language (".inc",   language_pascal);
     }
 }
 
