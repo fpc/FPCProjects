@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -42,16 +42,19 @@ type
   end;
 
 
-  TStdDlgButtons = set of (btnOK, btnCancel, btnApply, btnYes, btnNo, btnHelp);
+  TStdDlgButtons =
+    set of (btnOK, btnCancel, btnAbort, btnApply, btnYes, btnNo, btnHelp);
 
 resourcestring
   btnText_Ok = 'Ok';
   btnText_Cancel = 'Cancel';
+  btnText_Abort = 'Abort';
   btnText_Apply = 'Apply';
   btnText_Yes = 'Yes';
   btnText_No = 'No';
   btnText_Help = 'Help';
 
+  dlgText_FileDialog = 'Select file';
 type
 
   TStdBtnDialog = class(TDialog)
@@ -85,7 +88,11 @@ type
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:20  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:13:30  sg
+  * Added "Abort" button for DefButton dialog
+  * Added resourcestring for TFileDialog caption
+
+  Revision 1.1.1.1  1999/12/30 21:33:20  sg
+  Initial import
 
 }
