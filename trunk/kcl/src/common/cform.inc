@@ -85,8 +85,10 @@ begin
     else
       FHeight := ClipMinMax(FDefaultHeight, MinH, MaxH);
 
-  ApplySize;	// Start top-down layouting
-  ApplyMinMaxSize;
+  if FCreationState = wcsCreationDone then begin
+    ApplySize;	// Start top-down layouting
+    ApplyMinMaxSize;
+  end;
 end;
 
 function TCustomForm.IsRadioGroup: Boolean;
@@ -111,6 +113,10 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/22 14:35:06  sg
+  * In DoRecalcLayout: "ApplySize" and "ApplyMinMaxSize" are only called
+    after the creation of the form
+
   Revision 1.2  2000/02/17 22:20:02  sg
   * DoRecalcLayout now consideres BorderWidth
   * Added IsRadioGroup
