@@ -47,6 +47,7 @@ type
     function  GetAsText: String;
     procedure SetAsText(AText: String);
   public
+    destructor Destroy; override;
     procedure Open;
     procedure Close;
     procedure Clear;
@@ -75,6 +76,9 @@ function Clipboard: TClipboard;
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:32:54  sg
+  * Added destructor to TClipboard
+
   Revision 1.2  2000/01/24 00:08:49  sg
   * Extended copyright to year 2000...
 
