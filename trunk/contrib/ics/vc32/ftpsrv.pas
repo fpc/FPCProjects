@@ -544,6 +544,10 @@ type
                               var Keyword : TFtpString;
                               var Params  : TFtpString;
                               var Answer  : TFtpString); virtual;
+
+        Function  FtpServerAllocateHWND(Method: TWndMethod):HWND;
+        procedure FtpServerDeallocateHWnd(WHandle : HWND);
+
     public
         constructor Create(AOwner: TComponent); override;
         destructor  Destroy; override;
@@ -844,7 +848,7 @@ end;
 constructor TFtpServer.Create(AOwner: TComponent);
 begin
     inherited Create(AOwner);
-    FWindowHandle       := WSocket.AllocateHWnd(WndProc);
+    FWindowHandle       := FtpServerAllocateHWnd(WndProc);
     FServSocket         := TWSocket.Create(Self);
     FServSocket.Name    := 'ServerWSocket';
     FClientList         := TList.Create;
@@ -911,10 +915,42 @@ begin
         FPasvPortTable     := nil;
         FPasvPortTableSize := 0;
     end;
-    WSocket.DeallocateHWnd(FWindowHandle);
+    FTPServerDeallocateHWnd(FWindowHandle);
     inherited Destroy;
 end;
 
+
+{$IFDEF NOFORMS}
+{ This function is a callback function. It means that it is called by       }
+{ windows. This is the very low level message handler procedure setup to    }
+{ handle the message sent by windows (winsock) to handle messages.          }
+function TFTPServerWindowProc(
+    ahWnd   : HWND;
+    auMsg   : Integer;
+    awParam : WPARAM;
+    alParam : LPARAM): Integer; stdcall;
+var
+    Obj    : TObject;
+    MsgRec : TMessage;
+begin
+    { At window creation asked windows to store a pointer to our object     }
+    Obj := TObject(GetWindowLong(ahWnd, 0));
+
+    { If the pointer doesn't represent a TCustomSmtpClient, just call the default procedure}
+    if not (Obj is TFtpServer) then
+        Result := DefWindowProc(ahWnd, auMsg, awParam, alParam)
+    else begin
+        { Delphi use a TMessage type to pass parameter to his own kind of   }
+        { windows procedure. So we are doing the same...                    }
+        MsgRec.Msg    := auMsg;
+        MsgRec.wParam := awParam;
+        MsgRec.lParam := alParam;
+        { May be a try/except around next line is needed. Not sure ! }
+        TFtpServer(Obj).WndProc(MsgRec);
+        Result := MsgRec.Result;
+    end;
+end;
+{$ENDIF}
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 procedure TFtpServer.WndProc(var MsgRec: TMessage);
@@ -950,6 +986,27 @@ begin
                 Client.CloseRequest := TRUE;
         end;
     end;
+end;
+
+
+Function TFtpServer.FtpServerAllocateHWND(Method: TWndMethod):HWND;
+
+Begin
+{$IFDEF NOFORMS}
+    Result := XSocketAllocateHWnd(Self);
+    SetWindowLong(Result, GWL_WNDPROC, LongInt(@TFtpServerWindowProc));
+{$ELSE}
+     Result := WSocket.AllocateHWnd(Method);
+{$ENDIF}
+End;
+
+procedure TFtpServer.FtpServerDeallocateHWnd(WHandle : HWND);
+begin
+{$IFDEF NOFORMS}
+    XSocketDeallocateHWnd(WHandle);
+{$ELSE}
+    WSocket.DeallocateHWnd(WHandle);
+{$ENDIF}
 end;
 
 
