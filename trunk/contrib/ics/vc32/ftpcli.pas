@@ -428,9 +428,10 @@ unit FtpCli;
 
 
 interface
+{$i icsdef.inc}
 
 uses
-  SysUtils, WinTypes, WinProcs, Messages, Classes,
+  SysUtils, {$ifdef UseWindows} Windows,{$else}WinTypes, WinProcs, {$endif}Messages, Classes,
 {$IFNDEF NOFORMS}
   Forms, Controls,
 {$ENDIF}
@@ -669,7 +670,7 @@ type
     procedure   ExecGetAsync;    virtual;
     procedure   ReceiveAsync;    virtual;
     procedure   PutAsync;        virtual;
-    procedure   ExecPutAsync;    virtual;  
+    procedure   ExecPutAsync;    virtual;
     procedure   TransmitAsync;   virtual;
     procedure   AppendAsync;     virtual;
     procedure   ExecAppendAsync; virtual;
@@ -728,7 +729,7 @@ type
                                                          write SetLocalStream;
     property ResumeAt           : LongInt                read  FResumeAt
                                                          write FResumeAt;
-    property HostName           : String                 read  FHostName 
+    property HostName           : String                 read  FHostName
                                                          write FHostName;
     property Port               : String                 read  FPort
                                                          write FPort;
@@ -736,17 +737,17 @@ type
                                                          write FLocalAddr; {bb}
     property UserName           : String                 read  FUserName
                                                          write FUserName;
-    property PassWord           : String                 read  FPassWord  
+    property PassWord           : String                 read  FPassWord
                                                          write FPassWord;
-    property HostDirName        : String                 read  FHostDirName 
+    property HostDirName        : String                 read  FHostDirName
                                                          write FHostDirName;
-    property HostFileName       : String                 read  FHostFileName 
+    property HostFileName       : String                 read  FHostFileName
                                                          write FHostFileName;
-    property LocalFileName      : String                 read  FLocalFileName 
+    property LocalFileName      : String                 read  FLocalFileName
                                                          write SetLocalFileName;
-    property DisplayFileFlag    : Boolean                read  FDisplayFileFlag 
+    property DisplayFileFlag    : Boolean                read  FDisplayFileFlag
                                                          write FDisplayFileFlag;
-    property Binary             : Boolean                read  GetBinary 
+    property Binary             : Boolean                read  GetBinary
                                                          write SetBinary;
     property Passive            : Boolean                read  FPassive
                                                          write SetPassive;
@@ -859,7 +860,7 @@ type
     property MultiThreaded : Boolean read FMultiThreaded write FMultiThreaded;
     property HostName;
     property Port;
-    property LocalAddr; {bb}    
+    property LocalAddr; {bb}
     property UserName;
     property PassWord;
     property HostDirName;
@@ -1104,7 +1105,7 @@ begin
     FConnectionType:= ftpDirect;
     FProxyServer   := '';    { Should Socks properties be set to '' as well? }
     FOptions       := [ftpAcceptLF];
-    FLocalAddr     := '0.0.0.0'; {bb}    
+    FLocalAddr     := '0.0.0.0'; {bb}
     FControlSocket := TWSocket.Create(Self);
     FControlSocket.OnSessionConnected := ControlSocketSessionConnected;
     FControlSocket.OnDataAvailable    := ControlSocketDataAvailable;
@@ -2802,7 +2803,7 @@ begin
 
         FDataSocket.Port               := IntToStr(TargetPort);
         FDataSocket.Addr               := TargetIP; {ControlSocket.Addr;}
-        FDataSocket.LocalAddr          := FLocalAddr; {bb}        
+        FDataSocket.LocalAddr          := FLocalAddr; {bb}
         FDataSocket.OnSessionConnected := DataSocketGetSessionConnected;
         FDataSocket.LingerOnOff        := wsLingerOff;
         FDataSocket.LingerTimeout      := 0;
@@ -3256,7 +3257,7 @@ begin
 
     if FRequestType = ftpRqAbort then
         Exit;
-        
+
     if Len = 0 then begin
         { Remote has closed. We will soon receive FD_CLOSE (OnSessionClosed) }
         { FControlSocket.Close;                                              }
