@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -13,8 +13,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
 
+
 // ===================================================================
-//   Column list widget implementation for GTK+
+//   TListBox implementation for GTK+
 // ===================================================================
 
 constructor TListBox.Create(AOwner: TComponent);
@@ -36,11 +37,11 @@ procedure TListBox.OnFinishCreation;
 var
   i : integer;
 begin
-  Handle.Widget := gtk_list_new;
+  FHandle := gtk_list_new;
   for i := 0 to FItems.Count - 1 do
    begin
      ItemGtkWidgets[i] := gtk_list_item_new_with_label(pchar(FItems[i]));
-     gtk_container_add(PGtkContainer(Handle.Widget), ItemGtkWidgets[i]);
+     gtk_container_add(PGtkContainer(FHandle), ItemGtkWidgets[i]);
      gtk_widget_show(ItemGtkWidgets[i]);
    end;
   inherited OnFinishCreation;
@@ -69,18 +70,15 @@ end;
 
 procedure TListBox.SetItems(AItems: TStrings);
 var
-  i : integer;
+  i: integer;
 begin
   FItems.Assign(AItems);
-  if assigned(Handle.Widget) then
-   begin
-     for i := 0 to FItems.Count - 1 do
-      begin
-        ItemGtkWidgets[i] := gtk_list_item_new_with_label(pchar(FItems[i]));
-        gtk_container_add(PGtkContainer(Handle.Widget), ItemGtkWidgets[i]);
-        gtk_widget_show(ItemGtkWidgets[i]);
-      end;
-   end;
+  if Assigned(FHandle) then
+    for i := 0 to FItems.Count - 1 do begin
+      ItemGtkWidgets[i] := gtk_list_item_new_with_label(pchar(FItems[i]));
+      gtk_container_add(PGtkContainer(FHandle), ItemGtkWidgets[i]);
+      gtk_widget_show(ItemGtkWidgets[i]);
+    end;
 end;
 
 
@@ -89,31 +87,32 @@ var
   i : integer;
 begin
   FItems.Add(AString);
-  if assigned(Handle.Widget) then
-   begin
-     i:=FItems.Count-1;
-     ItemGtkWidgets[i] := gtk_list_item_new_with_label(pchar(FItems[i]));
-     gtk_container_add(PGtkContainer(Handle.Widget), ItemGtkWidgets[i]);
-     gtk_widget_show(ItemGtkWidgets[i]);
-   end;
+  if Assigned(FHandle) then begin
+    i := FItems.Count - 1;
+    ItemGtkWidgets[i] := gtk_list_item_new_with_label(PChar(FItems[i]));
+    gtk_container_add(PGtkContainer(FHandle), ItemGtkWidgets[i]);
+    gtk_widget_show(ItemGtkWidgets[i]);
+  end;
 end;
 
 
 procedure TListBox.Clear;
 var
-  i : integer;
+  i: integer;
 begin
-  if assigned(Handle.Widget) then
-   begin
-     for i := 0 to FItems.Count - 1 do
-      gtk_container_remove(PGtkContainer(Handle.Widget), ItemGtkWidgets[i]);
-   end;
+  if Assigned(FHandle) then
+    for i := 0 to FItems.Count - 1 do
+      gtk_container_remove(PGtkContainer(FHandle), ItemGtkWidgets[i]);
   FItemGtkWidgetsCnt:=0;
-  Freemem(FItemGtkWidgets);
+  FreeMem(FItemGtkWidgets);
 end;
 
 {
   $Log$
+  Revision 1.2  2000/01/24 00:30:55  sg
+  * Extended copyright to year 2000...
+  * Modifications to reflect the changed definition of TWidgetHandle
+
   Revision 1.1  2000/01/10 09:54:11  peter
     * listbox added
 

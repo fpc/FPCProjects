@@ -13,8 +13,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
 
+
 // ===================================================================
-// ScrollWindow widget implementation for GTK+
+//   ScrollWindow widget implementation for GTK+
 // ===================================================================
 
 // -------------------------------------------------------------------
@@ -96,8 +97,8 @@ begin
   inherited SetMaxValue(NewMaxValue);
   if ScrollBox.FCreationState = wcsCreationDone then
     if Assigned(ScrollBox.FContent) and
-      Assigned(ScrollBox.FContent.Handle.Widget) then
-      gtk_widget_set_usize(ScrollBox.FContent.Handle.Widget,
+      Assigned(ScrollBox.FContent.FHandle) then
+      gtk_widget_set_usize(ScrollBox.FContent.FHandle,
         ScrollBox.HorzRange.MaxValue, ScrollBox.VertRange.MaxValue);
 end;
 
@@ -116,8 +117,8 @@ end;
 procedure TScrollBox_SetupContent(sb: TScrollBox);
 begin
   sb.FContent.FinishCreation;
-  gtk_scrolled_window_add_with_viewport(PGtkScrolledWindow(sb.Handle.Widget),
-      sb.FContent.Handle.Widget);
+  gtk_scrolled_window_add_with_viewport(PGtkScrolledWindow(sb.FHandle),
+      sb.FContent.FHandle);
   sb.RecalcLayout;
 end;
 
@@ -125,32 +126,32 @@ procedure TScrollBox.SetContent(AContent: TWidget);
 begin
   FContent := AContent;
   FContent.FParent := Self;
-  if Assigned(Handle.Widget) then
+  if Assigned(FHandle) then
     TScrollBox_SetupContent(Self);
 end;
 
 procedure TScrollBox.OnFinishCreation;
 begin
-  Handle.Widget := gtk_scrolled_window_new(
+  FHandle := gtk_scrolled_window_new(
     TGtkAdjRange(FHorzRange).adj, TGtkAdjRange(FVertRange).adj);
 
-  gtk_scrolled_window_set_policy(PGtkScrolledWindow(Handle.Widget),
+  gtk_scrolled_window_set_policy(PGtkScrolledWindow(FHandle),
     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   inherited OnFinishCreation;
 
   if Assigned(FContent) then begin
     TScrollBox_SetupContent(Self);
-    ASSERT(Assigned(FContent.Handle.Widget));
-    gtk_widget_set_usize(FContent.Handle.Widget,
+    ASSERT(Assigned(FContent.FHandle));
+    gtk_widget_set_usize(FContent.FHandle,
       FHorzRange.MaxValue, FVertRange.MaxValue);
   end;
 end;
 
 procedure TScrollBox.OnRecalcLayout;
 begin
-  if Assigned(FContent.Handle.Widget) then
-    gtk_widget_set_usize(FContent.Handle.Widget,
+  if Assigned(FContent.FHandle) then
+    gtk_widget_set_usize(FContent.FHandle,
       FContent.Width, FContent.Height);
 end;
 
@@ -177,8 +178,8 @@ end;
 
 procedure THorzScrollBar.OnFinishCreation;
 begin
-  Handle.Widget := gtk_hscrollbar_new(nil);
-  // *** Scroll bar not yet functional
+  FHandle := gtk_hscrollbar_new(nil);
+  // ### Scroll bar not yet functional
   inherited OnFinishCreation;
 end;
 
@@ -191,14 +192,18 @@ end;
 
 procedure TVertScrollBar.OnFinishCreation;
 begin
-  Handle.Widget := gtk_vscrollbar_new(nil);
-  // *** Scroll bar not yet functional
+  FHandle := gtk_vscrollbar_new(nil);
+  // ### Scroll bar not yet functional
   inherited OnFinishCreation;
 end;
 
 
 {
   $Log$
+  Revision 1.3  2000/01/24 00:30:55  sg
+  * Extended copyright to year 2000...
+  * Modifications to reflect the changed definition of TWidgetHandle
+
   Revision 1.2  2000/01/05 19:20:17  sg
   * TScrollBox: Removed the QuickHack with forwarding mouse events to an
     included PaintBox (not necessary anymore!)

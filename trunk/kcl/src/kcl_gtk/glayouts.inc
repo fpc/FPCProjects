@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -16,12 +16,12 @@
 
 procedure TLayout.PutChild(AChild: TWidget; ax, ay: LongInt);
 begin
-  gtk_fixed_put(PGtkFixed(Handle.Widget), AChild.Handle.Widget, ax, ay);
+  gtk_fixed_put(PGtkFixed(FHandle), AChild.FHandle, ax, ay);
 end;
 
 procedure TLayout.MoveChild(AChild: TWidget; ax, ay: LongInt);
 begin
-  gtk_widget_set_uposition(AChild.Handle.Widget, ax, ay);
+  gtk_widget_set_uposition(AChild.FHandle, ax, ay);
 end;
 
 procedure TLayout.SetChildSize(AChild: TWidget; AWidth, AHeight: LongInt);
@@ -31,14 +31,18 @@ end;
 
 procedure TLayout.FinishCreation;
 begin
-  Handle.Widget := gtk_fixed_new;
+  FHandle := gtk_fixed_new;
   inherited FinishCreation;
 end;
 
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:25  sg
-  Initial revision
+  Revision 1.2  2000/01/24 00:30:55  sg
+  * Extended copyright to year 2000...
+  * Modifications to reflect the changed definition of TWidgetHandle
+
+  Revision 1.1.1.1  1999/12/30 21:33:25  sg
+  Initial import
 
 }

@@ -13,6 +13,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
 
+
 // ===================================================================
 //   Implementations of dialog box classes of all kind
 // ===================================================================
@@ -36,7 +37,7 @@ end;
 
 procedure TDialog.OnFinishCreation;
 begin
-  Handle.Form := PGtkWindow(gtk_window_new(GTK_WINDOW_DIALOG));
+  FHandle := gtk_window_new(GTK_WINDOW_DIALOG);
 
   inherited OnFinishCreation;
 
@@ -126,8 +127,8 @@ procedure FileDialog_OK(GtkWidget: PGtkWidget; dlg: TFileDialog); cdecl;
 begin
   dlg.ResultCode := True;
   dlg.FFilename := gtk_file_selection_get_filename(
-    PGtkFileSelection(dlg.Handle.Widget));
-  gtk_widget_destroy(dlg.Handle.Widget);
+    PGtkFileSelection(dlg.FHandle));
+  gtk_widget_destroy(dlg.FHandle);
 end;
 
 procedure FileDialog_Destroy(GtkWidget: PGtkWidget; dlg: TFileDialog); cdecl;
@@ -138,20 +139,20 @@ end;
 procedure TFileDialog.OnFinishCreation;
 begin
   // Special OnFinishCreation handling!
-  Handle.Widget := gtk_file_selection_new(PChar(dlgText_FileDialog));
+  FHandle := gtk_file_selection_new(PChar(dlgText_FileDialog));
 
-  gtk_window_set_modal(PGtkWindow(Handle.Widget), True);
+  gtk_window_set_modal(PGtkWindow(FHandle), True);
 
-  gtk_signal_connect(PGtkObject(Handle.Widget), 'destroy',
+  gtk_signal_connect(PGtkObject(FHandle), 'destroy',
     GTK_SIGNAL_FUNC(@FileDialog_Destroy), Self);
 
   gtk_signal_connect(
-    PGtkObject(PGtkFileSelection(Handle.Widget)^.ok_button),
+    PGtkObject(PGtkFileSelection(FHandle)^.ok_button),
     'clicked', GTK_SIGNAL_FUNC(@FileDialog_OK), Self);
 
   gtk_signal_connect_object(
-    PGtkObject(PGtkFileSelection(Handle.Widget)^.cancel_button),
-    'clicked', GTK_SIGNAL_FUNC(@gtk_widget_destroy), PGtkObject(Handle.Widget));
+    PGtkObject(PGtkFileSelection(FHandle)^.cancel_button),
+    'clicked', GTK_SIGNAL_FUNC(@gtk_widget_destroy), PGtkObject(FHandle));
 
   FCreationState := wcsCreationDone;
 end;
@@ -159,16 +160,20 @@ end;
 function TFileDialog.Run: Boolean;
 begin
   FinishCreation;
-  gtk_widget_show(Handle.Widget);
+  gtk_widget_show(FHandle);
   FFilename := '';
   gtk_main;
-  Handle.Widget := nil;		// The GTK widget has already been destroyed!
+  FHandle := nil;		// The GTK widget has already been destroyed!
   Result := ResultCode;
 end;
 
 
 {
   $Log$
+  Revision 1.3  2000/01/24 00:30:55  sg
+  * Extended copyright to year 2000...
+  * Modifications to reflect the changed definition of TWidgetHandle
+
   Revision 1.2  2000/01/05 19:17:46  sg
   * Added 'Abort' button to StdBtnDialog
   * StdBtnDialog now uses resourestrings for the button texts
