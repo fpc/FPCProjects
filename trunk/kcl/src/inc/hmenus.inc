@@ -26,6 +26,7 @@ type
     FGray: Boolean;
     FHandle: TMenuItemHandle;
     FOnClick: TNotifyEvent;
+    FParent: TObject;
     procedure OnFinishCreation; virtual;
     procedure SetGray(AGray: Boolean);
     procedure SetText(const AText: String);
@@ -70,7 +71,10 @@ type
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:19  sg
-  Initial revision
+  Revision 1.2  2000/01/06 22:58:52  sg
+  * TMenuItem now stores its parent (which can be TMenuBar or TMenu)
+
+  Revision 1.1.1.1  1999/12/30 21:33:19  sg
+  Initial import
 
 }
