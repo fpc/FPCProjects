@@ -25,21 +25,21 @@ uses
   ViewMan, Vw_SHText;				// Kassandra units
 
 resourcestring
-  menuFile = 'File';
-  menuNewFile = 'New file';
-  menuOpenFile = 'Open file...';
-  menuSaveFile = 'Save file';
-  menuSaveFileAs = 'Save file as...';
-  menuCloseFile = 'Close file';
-  menuOpenWorkspace = 'Open workspace...';
+  menuFile = '&File';
+  menuNewFile = '&New file';
+  menuOpenFile = '&Open file...';
+  menuSaveFile = '&Save file';
+  menuSaveFileAs = 'Save file &as...';
+  menuCloseFile = '&Close file';
+  menuOpenWorkspace = 'Open &workspace...';
   menuSaveWorkspace = 'Save workspace';
   menuSaveWorkspaceAs = 'Save workspace as...';
   menuOpenRecentFile = 'Open recent file';
-  menuExit = 'Exit';
-  menuView = 'View';
-  menuViewOutput = 'Output window';
-  menuOptions = 'Options';
-  menuGeneralOptions = 'General options...';
+  menuExit = 'E&xit';
+  menuView = '&View';
+  menuViewOutput = '&Output window';
+  menuOptions = '&Options';
+  menuGeneralOptions = '&General options...';
 
   dlgGlobalOptions = 'Global Options';
 
@@ -422,6 +422,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/01/06 23:05:07  sg
+  * Menu items now use "&" to mark the accelerator key
+
   Revision 1.2  2000/01/05 19:28:14  sg
   * Lots of bug fixes and adaptions to changes in other units
   * almost all widgets now have a correct component name and owner
