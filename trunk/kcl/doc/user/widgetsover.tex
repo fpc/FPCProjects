@@ -1,0 +1,116 @@
+%===============================================================================
+% KCL User's Guide
+% (c) 2000 Sebastian Guenther, sg@freepascal.org
+% $Id$
+%===============================================================================
+
+\chapter{Widgets overview}
+
+%-------------------------------------------------------------------------------
+
+\section{What are widgets?}
+In KCL, the term "Widget" refers to a visual user interface element; this can be
+a control element such as a button or label, or even a whole window (a main
+windows or dialog box, for example.)
+All widgets derive from TKCLComponent, i.e. they are normal FCL components
+with the additional ability to support events and event filtering.
+\\ The widget classes share a lot of common properties and methods, therefore
+they have a common base class called \texttt{TWidget}. All widgets support the
+following:
+\begin{itemize}
+\item A handle for the underlying object of the library which is used by the
+      current KCL target. (Example: For Windows, this would be a HWND,
+      for GTK this would be a PGtkWidget)
+\item A parent widget
+\item A text which is displayed on the widget (property "\texttt{Text}")
+\item Current size, minimum size, maximum size, size mode
+\item Methods for adding and removing child widgets
+\item Methods for redrawing a whole or a part of a widget
+\item Handling of the input focus
+\item Different input states such as deactivated (property "\texttt{Enabled}")
+\item Hints, i.e. short descriptive texts that pop up when the user moves the
+      mouse cursor over the widget (properties "\texttt{Hint}" and
+      "\texttt{ShowHint}")
+\item Some basic events: \texttt{OnCreate} is called when the widget object
+      of the underlying widget library has been created; \texttt{OnFocusIn} and
+      \texttt{OnFocusOut} are called when the widgets receives or looses the
+      input focus.
+\end{itemize}
+
+\section{Ownership}
+All widgets have an owner (property "\texttt{Owner}") and a parent widget
+(property "\texttt{Parent}").
+\\ The owner is already introduced in \texttt{TWidget}'s ancestor
+\texttt{TComponent}, this is the logical owner of the widget seen as a
+component. The main function of this ownership is the ability to stream all
+components which are belonging together at once and to free all children
+components when the owner component is being destroyed.
+\\ The parent, which exists only for widgets, is the 'visual' parent of the
+widget. A menu item belongs to its menu, a layout widget may be the parent
+of a button and so on.
+\subsection{Streaming}
+The streaming support code in KCL is able to stream components together with
+its subcomponents. It tries to store the components in a hierarchical manner;
+for widgets the hierarchy is given through the 'visual' hierarchy, i.e. the
+parent/child relationships. (Internally all relations are defined using the
+\texttt{TComponent} methods \texttt{HasParent} and \texttt{GetParentComponent},
+\texttt{TWidget} overwrites both methods so that they return the \texttt{Parent}
+property of the widget.)
+
+\section{Size and resizing}
+One of the most complex basic mechanisms in KCL is the size and resizing
+algorithm.
+\\ Basically, all widgets have the following properties which influence the
+size:
+\begin{itemize}
+\item \texttt{SizeMode}: This property controls how the initial size of a widget
+      after its creation is calculated, and how the widget behaves when the
+      widget itself or its parent is being resized. The following values are
+      defined for the size mode:
+      \begin{itemize}
+      \item \texttt{sizeAuto} (default)
+      \item \texttt{sizeManual}
+      \item \texttt{sizeFixed}
+      \item \texttt{sizeFill} (only valid for widgets which have a parent)
+      \end{itemize}
+\item \texttt{Constraints} (Type \texttt{TSizeConstraints}): Its properties
+      \texttt{MinWidth} and \texttt{MinHeight} represent the minimum size of the
+      widget; both values default to "0", which is interpreted as the default
+      size of the widget.
+      A widget can not get smaller than its default size, regardless of the
+      values of these properties!
+      \\ Properties \texttt{MaxWidth} and \texttt{MaxHeight}: This is the
+      maximum size of the widget. -1 x -1 means the default size of the widget;
+      0 x 0 (which is the default) is interpreted as infinite, i.e. the maximum
+      size of the widget is not restricted.
+\item \texttt{Width} and \texttt{Height}: Finally, this is the current size of
+      a widget. Changing the values of these properties may have different
+      results, depending on the current size mode: (all sizes are clipped
+      against the Constraints property of the widgets, of course)
+      \\ For the manual size mode and for the fixed size mode, the widget size
+         is set directly.
+      \\ For the auto size mode, changing these values will set the size mode
+         to \texttt{sizeManual}, the current size will be adjusted.
+      \\ For the fill size mode, changes of these values will be ignored.
+\end{itemize}
+All properties can be changed without any effect, as long as the widget creation
+has not been finished. \texttt{OnFinishCreation} will have to calculate the
+default size of the widget and to store it in the protected variables
+\texttt{TWidget.DefWidth} and \texttt{TWidget.DefHeight}.
+Finally, as soon as \texttt{TWidget.\-OnFinishCreation} is executed or any of the
+properties listed above is changing, the method \texttt{TWidget.SizesChanged}
+will be called. This method adjusts the real size of the widget, if necessary.
+\\ Furthermore, when a widget has changed its size it calls the method
+\texttt{RecalcLayout} for its parent and then for all of its child widgets.
+Notifying the parent is important for auto-sizing parents, and it even may
+influence the minimum and/or maximum size of the parent. Notifying the children
+enables space-filling children to adjust their sizes.
+\\ To support the size calculations, there is a protected virtual method called
+\texttt{TWidget.\-GetReal\-MinMaxSize}; this method calculates the "real" minimum
+and maximum size in pixels, i.e. the special values "0" and "-1" for the sizes
+are set to the right currently valid values; additionally the widgets clip these
+values against its children sizes. (example: a layout widget with maximum size
+200x60 which holds a button with a maximum size of 50 x 50 and which has a
+border of 10 pixels on each side, will return 70 x 60 as real maximum size.)
+KCL widgets should not change their size properties only because the current
+situation violates some of the sizing rules, as in the above example.
