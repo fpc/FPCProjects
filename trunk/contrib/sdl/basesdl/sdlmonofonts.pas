@@ -24,8 +24,8 @@ unit SDLMonoFonts;
 
 interface
 
-{$i sdl.inc}
-
+{$i jedi-sdl.inc}
+{$H+}
 uses
   Classes,
   SysUtils,

@@ -73,7 +73,7 @@
 
 unit SDL_Mixer;
 
-{$i sdl.inc}
+{$i jedi-sdl.inc}
 
 {$WEAKPACKAGEUNIT ON}
 

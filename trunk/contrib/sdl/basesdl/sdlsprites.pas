@@ -17,8 +17,8 @@ unit SDLSprites;
 
 interface
 
-{$i sdl.inc}
-
+{$i jedi-sdl.inc}
+{$mode delphi}
 uses
 {$IFDEF WIN32}
   Windows,
@@ -30,6 +30,7 @@ uses
 type
   TSpriteList = class;
   TSprite = class
+   private
     ID : byte; { we can easily determine the sprite's type }
     ParentList : TSpriteList;
     PrevRect : TSDL_Rect; { rectangle of previous position in the screen }
