@@ -827,7 +827,7 @@ version.c: Makefile
 # Makefile.in, but that was a pretty big annoyance.
 c-exp_tab.o: c-exp_tab.c
 c-exp_tab.c: c-exp.y
-	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/c-exp.y  y_tab.c c-exp.tmp -- $(YFLAGS) 
+	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/c-exp.y  y.tab.c c-exp.tmp -- $(YFLAGS) 
 	-sed -e '/extern.*malloc/d' \
 	     -e '/extern.*realloc/d' \
 	     -e '/extern.*free/d' \
@@ -841,7 +841,7 @@ c-exp_tab.c: c-exp.y
 
 jv-exp_tab.o: jv-exp_tab.c
 jv-exp_tab.c: jv-exp.y
-	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/jv-exp.y  y_tab.c jv-exp.tmp -- $(YFLAGS)
+	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/jv-exp.y  y.tab.c jv-exp.tmp -- $(YFLAGS)
 	-sed -e '/extern.*malloc/d' \
 	     -e '/extern.*realloc/d' \
 	     -e '/extern.*free/d' \
@@ -855,7 +855,7 @@ jv-exp_tab.c: jv-exp.y
 
 f-exp_tab.o: f-exp_tab.c
 f-exp_tab.c: f-exp.y c-exp_tab.c
-	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/f-exp.y  y_tab.c f-exp.tmp -- $(YFLAGS) 
+	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/f-exp.y  y.tab.c f-exp.tmp -- $(YFLAGS) 
 	-sed -e '/extern.*malloc/d' \
 	     -e '/extern.*realloc/d' \
 	     -e '/extern.*free/d' \
@@ -873,7 +873,7 @@ f-exp_tab.c: f-exp.y c-exp_tab.c
 # else.
 m2-exp_tab.o: m2-exp_tab.c
 m2-exp_tab.c: m2-exp.y
-	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/m2-exp.y  y_tab.c m2-exp.tmp -- $(YFLAGS) 
+	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/m2-exp.y  y.tab.c m2-exp.tmp -- $(YFLAGS) 
 	-sed -e '/extern.*malloc/d' \
 	     -e '/extern.*realloc/d' \
 	     -e '/extern.*free/d' \
@@ -891,7 +891,7 @@ m2-exp_tab.c: m2-exp.y
 # else.
 p-exp_tab.o: p-exp_tab.c
 p-exp_tab.c: p-exp.y
-	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/p-exp.y  y_tab.c p-exp.tmp -- $(YFLAGS)
+	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/p-exp.y  y.tab.c p-exp.tmp -- $(YFLAGS)
 	-sed -e '/extern.*malloc/d' \
 	     -e '/extern.*realloc/d' \
 	     -e '/extern.*free/d' \
