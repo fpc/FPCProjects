@@ -36,11 +36,11 @@ constructor TMainWindow.Create(ADisplay: TDefDisplay);
 begin
   inherited Create;
   Display := ADisplay;
-  Image := CreateImageFromFile(Display, TBMPReader, ParamStr(1));
-  Window := ADisplay.CreateWindow;
+  Image := CreateImageFromFile(Display.DefaultScreen, TBMPReader, ParamStr(1));
+  Window := ADisplay.DefaultScreen.CreateWindow;
   Window.Title := 'fpImg Bitmap Test';
   Window.OnPaint := @Paint;
-  Window.SetSize(Image.Width, Image.Height);
+  Window.SetFixedClientSize(Image.Width, Image.Height);
   Window.Show;
 end;
 
@@ -52,6 +52,9 @@ end;
 
 procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
 begin
+  Window.Canvas.SetColor(Window.Canvas.MapColor(colRed));
+  Window.Canvas.FillRect(Rect);
+  Window.Canvas.SetColor(Window.Canvas.MapColor(colYellow));
   Window.Canvas.DrawImage(Image, 0, 0);
 end;
 
@@ -74,5 +77,8 @@ end.
 
 
 {
-  $Id$
+  $Log$
+  Revision 1.4  2001/01/11 23:21:53  sg
+  *** empty log message ***
+
 }

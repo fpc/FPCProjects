@@ -142,6 +142,16 @@ else
 override FPCDIR=wrong
 endif
 
+# Default FPCDIR
+ifeq ($(FPCDIR),wrong)
+override FPCDIR=../../../../fpc
+ifeq ($(wildcard $(FPCDIR)/rtl),)
+ifeq ($(wildcard $(FPCDIR)/units),)
+override FPCDIR=wrong
+endif
+endif
+endif
+
 # Detect FPCDIR
 ifeq ($(FPCDIR),wrong)
 ifdef inUnix
@@ -165,6 +175,21 @@ endif
 endif
 endif
 
+ifndef PACKAGESDIR
+PACKAGESDIR=$(FPCDIR)/packages
+endif
+ifndef TOOLKITSDIR
+TOOLKITSDIR=
+endif
+ifndef COMPONENTSDIR
+COMPONENTSDIR=
+endif
+
+# Create units dir
+ifneq ($(FPCDIR),.)
+UNITSDIR=$(FPCDIR)/units/$(OS_TARGET)
+endif
+
 #####################################################################
 # User Settings
 #####################################################################
@@ -172,7 +197,7 @@ endif
 
 # Targets
 
-override DIROBJECTS+=$(wildcard disp_bmp masktest)
+override EXEOBJECTS+=masktest
 
 # Clean
 
@@ -183,12 +208,15 @@ ZIPTARGET=install
 
 # Defaults
 
+override NEEDOPT=-S2h
 
 # Directories
 
+override NEEDUNITDIR=../../src
 
 # Packages
 
+override PACKAGES+=rtl fcl fpgfx
 
 # Libraries
 
@@ -467,6 +495,115 @@ endif
 endif
 
 
+# Check if the dirs really exists, else turn it off
+ifeq ($(wildcard $(UNITSDIR)),)
+UNITSDIR=
+endif
+ifeq ($(wildcard $(TOOLKITSDIR)),)
+TOOLKITSDIR=
+endif
+ifeq ($(wildcard $(PACKAGESDIR)),)
+PACKAGESDIR=
+endif
+ifeq ($(wildcard $(COMPONENTSDIR)),)
+COMPONENTSDIR=
+endif
+
+
+# PACKAGESDIR packages
+
+PACKAGERTL=1
+PACKAGEFCL=1
+PACKAGEFPGFX=1
+
+ifdef PACKAGERTL
+ifneq ($(wildcard $(FPCDIR)/rtl),)
+ifneq ($(wildcard $(FPCDIR)/rtl/$(OS_TARGET)),)
+PACKAGEDIR_RTL=$(FPCDIR)/rtl/$(OS_TARGET)
+else
+PACKAGEDIR_RTL=$(FPCDIR)/rtl
+endif
+ifeq ($(wildcard $(PACKAGEDIR_RTL)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_rtl
+package_rtl:
+	$(MAKE) -C $(PACKAGEDIR_RTL) all
+endif
+UNITDIR_RTL=$(PACKAGEDIR_RTL)
+else
+PACKAGEDIR_RTL=
+ifneq ($(wildcard $(UNITSDIR)/rtl),)
+ifneq ($(wildcard $(UNITSDIR)/rtl/$(OS_TARGET)),)
+UNITDIR_RTL=$(UNITSDIR)/rtl/$(OS_TARGET)
+else
+UNITDIR_RTL=$(UNITSDIR)/rtl
+endif
+else
+UNITDIR_RTL=
+endif
+endif
+ifdef UNITDIR_RTL
+override NEEDUNITDIR+=$(UNITDIR_RTL)
+endif
+endif
+ifdef PACKAGEFCL
+ifneq ($(wildcard $(FPCDIR)/fcl),)
+ifneq ($(wildcard $(FPCDIR)/fcl/$(OS_TARGET)),)
+PACKAGEDIR_FCL=$(FPCDIR)/fcl/$(OS_TARGET)
+else
+PACKAGEDIR_FCL=$(FPCDIR)/fcl
+endif
+ifeq ($(wildcard $(PACKAGEDIR_FCL)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_fcl
+package_fcl:
+	$(MAKE) -C $(PACKAGEDIR_FCL) all
+endif
+UNITDIR_FCL=$(PACKAGEDIR_FCL)
+else
+PACKAGEDIR_FCL=
+ifneq ($(wildcard $(UNITSDIR)/fcl),)
+ifneq ($(wildcard $(UNITSDIR)/fcl/$(OS_TARGET)),)
+UNITDIR_FCL=$(UNITSDIR)/fcl/$(OS_TARGET)
+else
+UNITDIR_FCL=$(UNITSDIR)/fcl
+endif
+else
+UNITDIR_FCL=
+endif
+endif
+ifdef UNITDIR_FCL
+override NEEDUNITDIR+=$(UNITDIR_FCL)
+endif
+endif
+ifdef PACKAGEFPGFX
+ifneq ($(wildcard $(PACKAGESDIR)/fpgfx),)
+ifneq ($(wildcard $(PACKAGESDIR)/fpgfx/$(OS_TARGET)),)
+PACKAGEDIR_FPGFX=$(PACKAGESDIR)/fpgfx/$(OS_TARGET)
+else
+PACKAGEDIR_FPGFX=$(PACKAGESDIR)/fpgfx
+endif
+ifeq ($(wildcard $(PACKAGEDIR_FPGFX)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_fpgfx
+package_fpgfx:
+	$(MAKE) -C $(PACKAGEDIR_FPGFX) all
+endif
+UNITDIR_FPGFX=$(PACKAGEDIR_FPGFX)
+else
+PACKAGEDIR_FPGFX=
+ifneq ($(wildcard $(UNITSDIR)/fpgfx),)
+ifneq ($(wildcard $(UNITSDIR)/fpgfx/$(OS_TARGET)),)
+UNITDIR_FPGFX=$(UNITSDIR)/fpgfx/$(OS_TARGET)
+else
+UNITDIR_FPGFX=$(UNITSDIR)/fpgfx
+endif
+else
+UNITDIR_FPGFX=
+endif
+endif
+ifdef UNITDIR_FPGFX
+override NEEDUNITDIR+=$(UNITDIR_FPGFX)
+endif
+endif
+
 
 #####################################################################
 # Default Directories
@@ -671,6 +808,14 @@ ifdef VERBOSE
 override FPCOPT+=-vwni
 endif
 
+ifdef NEEDOPT
+override FPCOPT+=$(NEEDOPT)
+endif
+
+ifdef NEEDUNITDIR
+override FPCOPT+=$(addprefix -Fu,$(NEEDUNITDIR))
+endif
+
 ifdef UNITSDIR
 override FPCOPT+=-Fu$(UNITSDIR)
 endif
@@ -742,17 +887,17 @@ endif
 # Standard rules
 #####################################################################
 
-all: fpc_all $(addsuffix _all,$(DIROBJECTS))
+all: fpc_all
 
-debug: fpc_debug $(addsuffix _debug,$(DIROBJECTS))
+debug: fpc_debug
 
-smart: fpc_smart $(addsuffix _smart,$(DIROBJECTS))
+smart: fpc_smart
 
-shared: fpc_shared $(addsuffix _shared,$(DIROBJECTS))
+shared: fpc_shared
 
-showinstall: fpc_showinstall $(addsuffix _showinstall,$(DIROBJECTS))
+showinstall: fpc_showinstall
 
-install: fpc_install $(addsuffix _install,$(DIROBJECTS))
+install: fpc_install
 
 sourceinstall: fpc_sourceinstall
 
@@ -764,17 +909,33 @@ zipsourceinstall: fpc_zipsourceinstall
 
 zipexampleinstall: fpc_zipexampleinstall
 
-clean: fpc_clean $(addsuffix _clean,$(DIROBJECTS))
+clean: fpc_clean
 
-distclean: fpc_distclean $(addsuffix _distclean,$(DIROBJECTS))
+distclean: fpc_distclean
 
-cleanall: fpc_cleanall $(addsuffix _cleanall,$(DIROBJECTS))
-
-require: $(addsuffix _require,$(DIROBJECTS))
+cleanall: fpc_cleanall
 
 info: fpc_info
 
-.PHONY:  all debug smart shared showinstall install sourceinstall exampleinstall zipinstall zipsourceinstall zipexampleinstall clean distclean cleanall require info
+.PHONY:  all debug smart shared showinstall install sourceinstall exampleinstall zipinstall zipsourceinstall zipexampleinstall clean distclean cleanall info
+
+#####################################################################
+# Exes
+#####################################################################
+
+.PHONY: fpc_exes
+
+ifdef EXEOBJECTS
+override EXEFILES=$(addsuffix $(EXEEXT),$(EXEOBJECTS))
+override EXEOFILES:=$(addsuffix $(OEXT),$(EXEOBJECTS)) $(addprefix $(LIBPREFIX),$(addsuffix $(STATICLIBEXT),$(EXEOBJECTS)))
+
+override ALLTARGET+=fpc_exes
+override INSTALLEXEFILES+=$(EXEFILES)
+override CLEANEXEFILES+=$(EXEFILES) $(EXEOFILES)
+
+endif
+
+fpc_exes: $(EXEFILES)
 
 #####################################################################
 # General compile rules
@@ -1175,133 +1336,6 @@ endif
 	@$(ECHO)  DestZipDir........... $(DESTZIPDIR)
 	@$(ECHO)  ZipName.............. $(ZIPNAME)
 	@$(ECHO)
-
-#####################################################################
-# Directories
-#####################################################################
-
-OBJECTDIRDISP_BMP=1
-OBJECTDIRMASKTEST=1
-
-# Dir disp_bmp
-
-ifdef OBJECTDIRDISP_BMP
-.PHONY:  disp_bmp_all disp_bmp_debug disp_bmp_examples disp_bmp_test disp_bmp_smart disp_bmp_shared disp_bmp_showinstall disp_bmp_install disp_bmp_sourceinstall disp_bmp_exampleinstall disp_bmp_zipinstall disp_bmp_zipsourceinstall disp_bmp_zipexampleinstall disp_bmp_clean disp_bmp_distclean disp_bmp_cleanall disp_bmp_require disp_bmp_info
-
-disp_bmp_all:
-	$(MAKE) -C disp_bmp all
-
-disp_bmp_debug:
-	$(MAKE) -C disp_bmp debug
-
-disp_bmp_examples:
-	$(MAKE) -C disp_bmp examples
-
-disp_bmp_test:
-	$(MAKE) -C disp_bmp test
-
-disp_bmp_smart:
-	$(MAKE) -C disp_bmp smart
-
-disp_bmp_shared:
-	$(MAKE) -C disp_bmp shared
-
-disp_bmp_showinstall:
-	$(MAKE) -C disp_bmp showinstall
-
-disp_bmp_install:
-	$(MAKE) -C disp_bmp install
-
-disp_bmp_sourceinstall:
-	$(MAKE) -C disp_bmp sourceinstall
-
-disp_bmp_exampleinstall:
-	$(MAKE) -C disp_bmp exampleinstall
-
-disp_bmp_zipinstall:
-	$(MAKE) -C disp_bmp zipinstall
-
-disp_bmp_zipsourceinstall:
-	$(MAKE) -C disp_bmp zipsourceinstall
-
-disp_bmp_zipexampleinstall:
-	$(MAKE) -C disp_bmp zipexampleinstall
-
-disp_bmp_clean:
-	$(MAKE) -C disp_bmp clean
-
-disp_bmp_distclean:
-	$(MAKE) -C disp_bmp distclean
-
-disp_bmp_cleanall:
-	$(MAKE) -C disp_bmp cleanall
-
-disp_bmp_require:
-	$(MAKE) -C disp_bmp require
-
-disp_bmp_info:
-	$(MAKE) -C disp_bmp info
-endif
-
-# Dir masktest
-
-ifdef OBJECTDIRMASKTEST
-.PHONY:  masktest_all masktest_debug masktest_examples masktest_test masktest_smart masktest_shared masktest_showinstall masktest_install masktest_sourceinstall masktest_exampleinstall masktest_zipinstall masktest_zipsourceinstall masktest_zipexampleinstall masktest_clean masktest_distclean masktest_cleanall masktest_require masktest_info
-
-masktest_all:
-	$(MAKE) -C masktest all
-
-masktest_debug:
-	$(MAKE) -C masktest debug
-
-masktest_examples:
-	$(MAKE) -C masktest examples
-
-masktest_test:
-	$(MAKE) -C masktest test
-
-masktest_smart:
-	$(MAKE) -C masktest smart
-
-masktest_shared:
-	$(MAKE) -C masktest shared
-
-masktest_showinstall:
-	$(MAKE) -C masktest showinstall
-
-masktest_install:
-	$(MAKE) -C masktest install
-
-masktest_sourceinstall:
-	$(MAKE) -C masktest sourceinstall
-
-masktest_exampleinstall:
-	$(MAKE) -C masktest exampleinstall
-
-masktest_zipinstall:
-	$(MAKE) -C masktest zipinstall
-
-masktest_zipsourceinstall:
-	$(MAKE) -C masktest zipsourceinstall
-
-masktest_zipexampleinstall:
-	$(MAKE) -C masktest zipexampleinstall
-
-masktest_clean:
-	$(MAKE) -C masktest clean
-
-masktest_distclean:
-	$(MAKE) -C masktest distclean
-
-masktest_cleanall:
-	$(MAKE) -C masktest cleanall
-
-masktest_require:
-	$(MAKE) -C masktest require
-
-masktest_info:
-	$(MAKE) -C masktest info
-endif
 
 #####################################################################
 # Local Makefile

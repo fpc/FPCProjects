@@ -72,6 +72,8 @@ type
     // Image properties, only available after OnHeaderRead event
     FWidth, FHeight: Integer;
     FPixelFormat: TGfxPixelFormat;
+    FPaletteSize: Integer;
+    FPalette: PGfxColor;
 
     procedure HeaderFinished;
     procedure SegmentFinished(AStartY, AHeight: Integer);
@@ -95,6 +97,8 @@ type
     property Width: Integer read FWidth;
     property Height: Integer read FHeight;
     property PixelFormat: TGfxPixelFormat read FPixelFormat;
+    property PaletteSize: Integer read FPaletteSize;
+    property Palette: PGfxColor read FPalette;
     property SegmentData: Pointer read FSegmentData;
     property SegmentStride: LongWord read FSegmentStride;
     property SegmentHeight: Integer read FSegmentHeight;
@@ -199,6 +203,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2001/01/11 23:21:53  sg
+  *** empty log message ***
+
   Revision 1.2  2000/10/28 20:17:52  sg
   * Improved segment handling
   * Interface cleaning up

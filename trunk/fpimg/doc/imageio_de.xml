@@ -388,23 +388,35 @@ Nur Debug-Version: Prüft per Zusicherung auf korrekten Zustand des Lesers.
 </element>
 
 <element name="TImageReader.DoProcessHeaderData">  <!-- Prozedur -->
-<short></short>
+<short>Implementierung: Header-Daten verarbeiten</short>
 <descr>
+<p>Diese virtuelle Methode muß von abgeleiteten Klassen überschrieben werden,
+um Header-Daten einlesen zu können.</p>
+<p>Wenn diese Methode aufgerufen wird, steht mindestens ein Byte zum Lesen vom
+angegebenen Stream-Objekt bereit - anderenfalls liegt ein Lesefehler vor.
+Implementierungen dieser Methode sollten versuchen, soviel Bytes wie möglich
+auf einmal zu verarbeiten; sie müssen aber nach einer beliebigen Anzahl von
+gelesen Bytes ihre Arbeit unterbrechen können. Solange der aktuelle Zustand
+<link id="TImageReaderState.irsInHeader"/> ist, wird der Aufrufer diese Methode
+immer wieder aufrufen, wenn seiner Meinung nach neue Daten zur Verfügung
+stehen. Achtung, diese Methode sollte nicht bereits in den Datenbereich
+hineinlesen, da alle Bildleser nach Möglichkeit den Datenstrom rein von vorne
+nach hinten verarbeiten können sollen, ohne zurückzuspringen.</p>
+<p>Sobald der Header fertig eingelesen wurde und die Bildeigenschaften dieses
+Objekts gesetzt wurden, muß <link id="TImageReader.HeaderFinished"/> aufgerufen
+werden, und diese Methode verlassen werden.</p>
 </descr>
 <errors>
+Kann nicht mindestens ein Byte vom Stream-Objekt gelesen werden, so muß eine
+<link id="EImgOutOfData"/> Exception ausgelöst werden.
 </errors>
 <seealso>
+  <link id="TImageReader.ProcessHeaderData"/>
 </seealso>
 </element>
 
 <element name="TImageReader.DoProcessHeaderData.AStream">  <!-- Argument -->
-<short></short>
-<descr>
-</descr>
-<errors>
-</errors>
-<seealso>
-</seealso>
+<short>Quelle für die Header-Daten</short>
 </element>
 
 <element name="TImageReader.DoGetImageSegmentStartY">  <!-- Funktion -->

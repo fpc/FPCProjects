@@ -52,14 +52,20 @@ type
     biClrImportant: DWORD;
   end;
 
+  PRGBQuad = ^TRGBQuad;
+  TRGBQuad = packed record
+    rgbBlue, rgbGreen, rgbRed, rgbReserved: BYTE;
+  end;
+
 
   TBMPReader = class(TImageReader)
   protected
     FFileHeader: TBitmapFileHeader;
     FInfoHeader: TBitmapInfoHeader;
+    FBMPPalette: PRGBQuad;
     FFileStride: LongWord;
 
-    HeaderBytesRead: Integer;
+    HeaderBytesRead, PalBytesRead: Integer;
     ScanlinesLeft: Integer;
     ThisSegmentHeight: Integer;
     ScanlinesLeftInSegment: Integer;
@@ -73,8 +79,10 @@ type
     procedure InitSegmentReading;
     procedure DoProcessImageData(AStream: TStream); override;
   public
+    destructor Destroy; override;
     property FileHeader: TBitmapFileHeader read FFileHeader;
     property InfoHeader: TBitmapInfoHeader read FInfoHeader;
+    property BMPPalette: PRGBQuad read FBMPPalette;
     property FileStride: LongWord read FFileStride;
   end;
 
@@ -82,10 +90,21 @@ type
 implementation
 
 
+destructor TBMPReader.Destroy;
+begin
+  if Assigned(Palette) then
+    FreeMem(FPalette);
+  if Assigned(BMPPalette) then
+    FreeMem(FBMPPalette);
+  inherited Destroy;
+end;
+
 procedure TBMPReader.DoProcessHeaderData(AStream: TStream);
 var
-  HaveRead: Integer;
+  DataOffset: LongWord;
+  HaveRead, BytesToSkip, i: Integer;
   IsFirstRead: Boolean;
+  SkipBuffer: array[0..1023] of Byte;
 begin
   if HeaderBytesRead < SizeOf(FileHeader) then
   begin
@@ -108,25 +127,85 @@ begin
         raise EImgOutOfData.Create
       else
         exit;
+    IsFirstRead := False;
     Inc(HeaderBytesRead, HaveRead);
   end;
 
   if HeaderBytesRead = SizeOf(FileHeader) + SizeOf(InfoHeader) then
   begin
-    FWidth := InfoHeader.biWidth;
-    FHeight := InfoHeader.biHeight;
-
-    // Set up the pixel format
     case InfoHeader.biBitCount of
-      24:
-        begin
-          FFileStride := (Width * 3 + 3) and not 3;
-  	  FPixelFormat := PixelFormatBGR24;
-	  // !!!: Doesn't handle formats with other masks yet
-        end;
-      // !!!: Add support for more color depths
-      else
-        raise EImgUnsupportedPixelFormat.Create;
+      1: FPaletteSize := 2;
+      4: FPaletteSize := 16;
+      8: FPaletteSize := 256;
+    end;
+    if PaletteSize > 0 then
+    begin
+      GetMem(FBMPPalette, PaletteSize * SizeOf(TRGBQuad));
+      GetMem(FPalette, PaletteSize * SizeOf(TGfxColor));
+    end;
+  end;
+
+  if HeaderBytesRead >= SizeOf(FileHeader) + SizeOf(InfoHeader) then
+  begin
+    DataOffset := FileHeader.bfOffBits;
+    if HeaderBytesRead < DataOffset then
+    begin
+      BytesToSkip := DataOffset - HeaderBytesRead;
+      if BytesToSkip > SizeOf(SkipBuffer) then
+        BytesToSkip := SizeOf(SkipBuffer);
+      HaveRead := AStream.Read(SkipBuffer, BytesToSkip);
+      if HaveRead = 0 then
+	if IsFirstRead then
+	  raise EImgOutOfData.Create
+	else
+	  exit;
+      IsFirstRead := False;
+      Inc(HeaderBytesRead, HaveRead);
+      if PalBytesRead < PaletteSize * SizeOf(TGfxPixel) then
+      begin
+        Move(SkipBuffer, PByte(FBMPPalette)[PalBytesRead], HaveRead);
+        Inc(PalBytesRead, HaveRead);
+      end;
+    end;
+
+    if HeaderBytesRead = DataOffset then
+    begin
+      FWidth := InfoHeader.biWidth;
+      FHeight := InfoHeader.biHeight;
+
+      if PaletteSize > 0 then
+        for i := 0 to PaletteSize - 1 do
+	begin
+	  Palette[i].Red := BMPPalette[i].rgbRed * 257;
+	  Palette[i].Green := BMPPalette[i].rgbGreen * 257;
+	  Palette[i].Blue := BMPPalette[i].rgbBlue * 257;
+	  Palette[i].Alpha := 0;
+	end;
+
+      case InfoHeader.biBitCount of
+	1:
+          begin
+	    FFileStride := ((Width + 31) shr 3) and not 3;
+	    FPixelFormat.FormatType := ftMono;
+	  end;
+	4:
+          begin
+	    FFileStride := ((Width + 7) shr 1) and not 3;
+	    FPixelFormat.FormatType := ftPal4;
+	  end;
+	8:
+          begin
+	    FFileStride := (Width + 3) and not 3;
+	    FPixelFormat.FormatType := ftPal8;
+	  end;
+        24:
+          begin
+            FFileStride := (Width * 3 + 3) and not 3;
+  	    FPixelFormat := PixelFormatBGR24;
+          end;
+        else
+          raise EImgUnsupportedPixelFormat.Create;
+      end;
     end;
 
     HeaderFinished;
@@ -233,6 +312,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2001/01/11 23:21:53  sg
+  *** empty log message ***
+
   Revision 1.2  2000/10/28 20:17:52  sg
   * Improved segment handling
   * Interface cleaning up

@@ -3,4 +3,4 @@
 #
 
 [targets]
-dirs=disp_bmp
+dirs=disp_bmp masktest
