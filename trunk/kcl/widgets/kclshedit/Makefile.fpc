@@ -7,7 +7,7 @@ units=kclshedit
 
 [require]
 toolkit=$(KCLGUI)
-packages=fcl
+packages=fcl gtk
 
 [dirs]
 fpcdir=$(KCLDIR)/..
