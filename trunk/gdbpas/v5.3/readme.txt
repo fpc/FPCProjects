@@ -32,6 +32,6 @@ Instructions to update the packages/gdbint/libgdb/target directory.
 and copy all libraries to the packages/gdbint/libgdb/$target directory.
 
  On unix systems this can be made easily by
-going back to buildd directory and executing
+going one directory level up and executing
 
   cp `ls */lib*.a` /some/fpc/src/base/dir/packages/gdbint/libgdb/$target
