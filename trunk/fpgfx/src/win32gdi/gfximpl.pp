@@ -25,6 +25,8 @@ uses GFX_GDI;
 
 type
 
+  TDefCanvas = TGDICanvas;
+  TDefScreen = TGDIScreen;
   TDefDisplay = TGDIDisplay;
   TDefWindow = TGDIWindow;
 
@@ -36,6 +38,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2001/02/09 20:45:33  sg
+  * Added TDefCanvas and TDefScreen
+
   Revision 1.1  2000/10/28 20:30:50  sg
   * First version (NOT compilable at the moment, as the sources haven't been
     adapted to recent interfaces changes yet!)
