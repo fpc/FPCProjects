@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -58,7 +58,10 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:09  sg
-  Initial revision
+  Revision 1.2  2000/01/24 00:21:29  sg
+  * Extended copyright to year 2000...
+
+  Revision 1.1.1.1  1999/12/30 21:33:09  sg
+  Initial import
 
 }
