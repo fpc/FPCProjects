@@ -18,9 +18,10 @@
 //   GTK+ specific implementation of TTimer component
 // ===================================================================
 
-procedure TTimer_TimerProc(timer: TTimer); cdecl;
+function TTimer_TimerProc(timer: TTimer): Integer; cdecl;
 begin
   timer.Timer;
+  Result := 1;
 end;
 
 procedure TTimer.Update;
@@ -37,6 +38,10 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/22 14:41:38  sg
+  * Fixed TTimer_TimerProc: Now a result value is set so that the timer
+    always continues. Before sometimes it stopped after the first tick.
+
   Revision 1.2  2000/01/24 00:30:55  sg
   * Extended copyright to year 2000...
   * Modifications to reflect the changed definition of TWidgetHandle
