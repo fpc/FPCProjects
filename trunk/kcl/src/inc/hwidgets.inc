@@ -57,9 +57,9 @@ type
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure SetText(const AText: String); override;
-    function GetText : String;
+    Function GetText : String;override;
   published
-    property Text read gettext write settext;
+    property Text;
     property CanExpandWidth;
     property CanExpandHeight;
     property MultiLine: Boolean read FMultiLine write FMultiLine default False;
@@ -558,6 +558,9 @@ type
 
 {
   $Log$
+  Revision 1.15  2000/02/25 13:26:10  michael
+  + Added gettext read for tedit.text
+
   Revision 1.14  2000/02/25 13:15:58  michael
   + Added gettext read for tedit.text
 

@@ -127,10 +127,18 @@ begin
   Result := False;
 end;
 
+function TWidget.GetText : String;
+
+begin
+  Result:=FText;
+end;
 
 
 {
   $Log$
+  Revision 1.7  2000/02/25 13:26:10  michael
+  + Added gettext read for tedit.text
+
   Revision 1.6  2000/02/24 13:39:32  sg
   * More layout fixes...
 

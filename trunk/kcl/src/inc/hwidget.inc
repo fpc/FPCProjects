@@ -91,10 +91,10 @@ type
     procedure Redraw(AtOnce: Boolean);
     procedure Redraw(const rect: TRect; AtOnce: Boolean);
     procedure Redraw(ax, ay, aw, ah: Integer; AtOnce: Boolean);
-
+     
     procedure SetFocus;
     function  HasFocus: Boolean;
-
+    Function  GetText : String;virtual; 
     function  IsRadioGroup: Boolean; dynamic;
 
     property Handle: TWidgetHandle read FHandle;
@@ -102,7 +102,7 @@ type
     property WidgetCount: Integer read GetWidgetCount;
     property Widgets[AIndex: Integer]: TWidget read GetWidgets;
     property CreationState: TWidgetCreationState read FCreationState default wcsNotCreated;
-    property Text: String read FText write SetText;
+    property Text: String read GetText write SetText;
     // State
     property Visible: Boolean read FVisible write SetVisible default True;
     property Enabled: Boolean read FEnabled write SetEnabled default True;
@@ -122,6 +122,9 @@ type
 
 {
   $Log$
+  Revision 1.8  2000/02/25 13:26:10  michael
+  + Added gettext read for tedit.text
+
   Revision 1.7  2000/02/24 13:39:32  sg
   * More layout fixes...
 
