@@ -1,0 +1,23 @@
+[target]
+programs=blitzbomber
+
+[require]
+packages=x11 
+# sdl
+
+[compiler]
+includedir=../../include
+unitdir=../../basesdl
+
+[clean]
+#units=tictactoe
+
+#[install]
+#fpcpackage=y
+
+#[default]
+#fpcdir=../../../..
+
+[rules]
+blitzbomber: blitzbomber.dpr
+	$(COMPILER) blitzbomber.dpr		
