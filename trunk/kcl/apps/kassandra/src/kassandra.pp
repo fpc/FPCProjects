@@ -2,7 +2,7 @@
     $Id$
 
     Kassandra  -  Multiplatform Integrated Development Environment
-    Copyright (C) 1999  Sebastian Guenther (sg@freepascal.org)
+    Copyright (C) 1999 - 2000  Sebastian Guenther (sg@freepascal.org)
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -17,9 +17,12 @@
 {$H+}
 
 program Kassandra;
-uses dos, sysutils, xmlcfg, gettext, kcl,
-  view_notebook, vw_generic, vw_shtext,
-  sh_pas, sh_xml, shedit, kclshedit, doc_text;
+uses
+  DOS, SysUtils,				// system units
+  XMLCfg, GetText,				// FPC helper units
+  SHEdit, doc_text, sh_pas, sh_xml,		// SHEdit & friends
+  KCL, KCLSHEdit,				// KCL units
+  ViewMan, Vw_SHText;				// Kassandra units
 
 resourcestring
   menuFile = 'File';
@@ -28,6 +31,9 @@ resourcestring
   menuSaveFile = 'Save file';
   menuSaveFileAs = 'Save file as...';
   menuCloseFile = 'Close file';
+  menuOpenWorkspace = 'Open workspace...';
+  menuSaveWorkspace = 'Save workspace';
+  menuSaveWorkspaceAs = 'Save workspace as...';
   menuOpenRecentFile = 'Open recent file';
   menuExit = 'Exit';
   menuView = 'View';
@@ -49,7 +55,7 @@ type
   TMainForm = class(TForm)
   protected
     Layout: TDockingLayout;
-    Views: TViewNotebook;
+    Views: TViewManager;
     StatusBar: TStatusBar;
     OutputSplitter: TSplitter;
     CompilerOutput: TKCLSHWidget;
@@ -58,7 +64,10 @@ type
     RecentFiles: array[0..RECENTFILECOUNT-1] of String;
 
     // Menu bar
-    SaveFileItem, SaveFileAsItem, CloseFileItem: TMenuItem;
+    MenuBar: TMenuBar;
+    RecentFileMenu: TMenu;
+    SaveFileItem, SaveFileAsItem, CloseFileItem,
+      OpenWorkspaceItem, SaveWorkspaceItem, SaveWorkspaceAsItem: TMenuItem;
     RecentFileItems: array[0..RECENTFILECOUNT-1] of TMenuItem;
 
     procedure CreateMenuBar;
@@ -105,18 +114,22 @@ begin
 
   // Create basic layout object
   Layout := TDockingLayout.Create(Self);
+  Layout.Name := 'Layout';
   Content := Layout;
 
   // Create notebook with file views
-  Views := TViewNotebook.Create(Self);
+  Views := TViewManager.Create(Self);
+  Views.Name := 'Views';
 
   // Create compiler output window
   CompilerOutput := TKCLSHWidget.Create(Self);
+  CompilerOutput.Name := 'CompilerOutput';
   CompilerOutput.SetupEditor(TTextDoc.Create, TSHTextEdit);
   CompilerOutput.Document.AddLine(strCompilerOutput);
 
   // Create splitter which contains views and compiler output
   OutputSplitter := TSplitter.Create(Self);
+  OutputSplitter.Name := 'OutputSplitter';
   OutputSplitter.ResizePolicy := srFixedPane2;
   OutputSplitter.Pane1 := Views;
   OutputSplitter.Pane2 := CompilerOutput;
@@ -127,6 +140,7 @@ begin
 
   // Create status bar
   StatusBar := TStatusBar.Create(Self);
+  StatusBar.Name := 'StatusBar';
   StatusBar.Text := strReady;
   Layout.AddWidget(StatusBar, dmBottom);
 end;
@@ -139,61 +153,88 @@ end;
 
 procedure TMainForm.CreateMenuBar;
 var
-  bar: TMenuBar;
-  menu, submenu: TMenu;
+  menu: TMenu;
   item: TMenuItem;
 begin
-  bar := TMenuBar.Create(Self);
-  Layout.AddWidget(bar, dmTop);
+  MenuBar := TMenuBar.Create(Self);
+  MenuBar.Name := 'MenuBar';
+  Layout.AddWidget(MenuBar, dmTop);
 
   // Add file menu
   menu := TMenu.Create(Self);
+  menu.Name := 'FileMenu';	// ###
   menu.Text := menuFile;
   menu.OnClick := @FileMenu;
-  bar.AddItem(menu);
+  MenuBar.AddItem(menu);
   item := TMenuItem.Create(Self);
+    item.Name := 'NewFileItem';	// ###
     item.Text := menuNewFile;
     item.OnClick := @FileNew;
     menu.AddItem(item);
   item := TMenuItem.Create(Self);
+    item.Name := 'OpenFileItem';	// ###
     item.Text := menuOpenFile;
     item.OnClick := @FileOpen;
     menu.AddItem(item);
   SaveFileItem := TMenuItem.Create(Self);
+    SaveFileItem.Name := 'SaveFileItem';
     SaveFileItem.Text := menuSaveFile;
     SaveFileItem.OnClick := @FileSave;
     menu.AddItem(SaveFileItem);
   SaveFileAsItem := TMenuItem.Create(Self);
+    SaveFileAsItem.Name := 'SaveFileAsItem';
     SaveFileAsItem.Text := menuSaveFileAs;
     SaveFileAsItem.OnClick := @FileSaveAs;
     menu.AddItem(SaveFileAsItem);
   CloseFileItem := TMenuItem.Create(Self);
+    CloseFileItem.Name := 'CloseFileItem';
     CloseFileItem.Text := menuCloseFile;
     CloseFileItem.OnClick := @FileClose;
     menu.AddItem(CloseFileItem);
   item := TMenuItem.Create(Self);
+    item.Name := 'FileSepItem1';	// ###
     item.Text := '-';
     menu.AddItem(item);
-  //  TMenuItem.Create(menu).Text := 'Open workspace...';
-  //  TMenuItem.Create(menu).Text := 'Save workspace';
-  //  TMenuItem.Create(menu).Text := 'Save workspace as...';
-  //  TMenuItem.Create(menu).Text := '-';
-  submenu := TMenu.Create(Self);
-    menu.AddItem(submenu);
-    submenu.Text := menuOpenRecentFile;
-    submenu.Gray := True;
+  OpenWorkspaceItem := TMenuItem.Create(Self);
+    OpenWorkspaceItem.Name := 'OpenWorkspaceItem';
+    OpenWorkspaceItem.Text := menuOpenWorkspace;
+    OpenWorkspaceItem.Gray := True;
+    menu.AddItem(OpenWorkspaceItem);
+  SaveWorkspaceItem := TMenuItem.Create(Self);
+    SaveWorkspaceItem.Name := 'SaveWorkspaceItem';
+    SaveWorkspaceItem.Text := menuSaveWorkspace;
+    SaveWorkspaceItem.Gray := True;
+    menu.AddItem(SaveWorkspaceItem);
+  SaveWorkspaceAsItem := TMenuItem.Create(Self);
+    SaveWorkspaceAsItem.Name := 'SaveWorkspaceAsItem';
+    SaveWorkspaceAsItem.Text := menuSaveWorkspaceAs;
+    SaveWorkspaceAsItem.Gray := True;
+    menu.AddItem(SaveWorkspaceAsItem);
   item := TMenuItem.Create(Self);
+    item.Name := 'FileSepItem2';	// ###
+    item.Text := '-';
+    menu.AddItem(item);
+  RecentFileMenu := TMenu.Create(Self);
+    RecentFileMenu.Name := 'RecentFileMenu';
+    RecentFileMenu.Text := menuOpenRecentFile;
+    RecentFileMenu.Gray := True;
+    menu.AddItem(RecentFileMenu);
+  item := TMenuItem.Create(Self);
+    item.Name := 'FileSepItem3';	// ###
     item.Text := '-';
     menu.AddItem(item);
   item := TMenuItem.Create(Self);
+    item.Name := 'ExitItem';	// ###
     item.Text := menuExit;
     item.OnClick := @FileQuit;
     menu.AddItem(item);
 
   menu := TMenu.Create(Self);
+  menu.Name := 'ViewMenu';	// ###
   menu.Text := menuView;
-  bar.AddItem(menu);
+  MenuBar.AddItem(menu);
   item := TMenuItem.Create(Self);
+    item.Name := 'ViewOutputItem';	// ###
     item.Text := menuViewOutput;
     item.OnClick := @ViewToggleOutputWindow;
     menu.AddItem(item);
@@ -201,7 +242,7 @@ begin
 { Deactivated until all dialog and widget classes are working!
   menu := TMenu.Create(Self);
   menu.Text := menuOptions;
-  bar.AddItem(menu);
+  MenuBar.AddItem(menu);
   item := TMenuItem.Create(Self);
     item.Text := menuGeneralOptions;
     item.OnClick := @Options;
@@ -235,12 +276,12 @@ begin
   ext := Copy(ext, 2, Length(ext));
   if (ext <> '') and (Pos(UpCase(ext) + ';',
     Config.GetValue('SyntaxHighlighter/Pascal/ext', 'PP;PAS;INC') + ';') > 0) then
-    view := TSHPasView.Create(doc)
+    view := TSHPasView.Create(Views, doc)
   else if (ext <> '') and (Pos(UpCase(ext) + ';',
     Config.GetValue('SyntaxHighlighter/XML/ext', 'XML;DTD;HTML;HTM') + ';') > 0) then
-    view := TSHXMLView.Create(doc)
+    view := TSHXMLView.Create(Views, doc)
   else
-    view := TSHTextView.Create(doc);
+    view := TSHTextView.Create(Views, doc);
 
   view.FileName := AFileName;
   Views.CurPageIndex := Views.AddView(view);
@@ -260,8 +301,7 @@ procedure TMainForm.FileNew(Sender: TObject);
 var
   view: TSHTextView;
 begin
-  WriteLn('FileNew');
-  view := TSHTextView.Create(TTextDoc.Create, TSHPasEdit);
+  view := TSHTextView.Create(Views, TTextDoc.Create, TSHPasEdit);
   view.FileName := 'noname' + IntToStr(NonameCounter) + '.pp';
   view.HasDefaultName := True;
   Inc(NonameCounter);
@@ -273,9 +313,8 @@ var
   FileDlg: TFileDialog;
 begin
   FileDlg := TFileDialog.Create(nil);
-  if not FileDlg.Run then exit;
-
-  OpenFileByName(FileDlg.Filename);
+  if FileDlg.Run then
+    OpenFileByName(FileDlg.Filename);
   FileDlg.Free;
 end;
 
@@ -374,6 +413,7 @@ begin
   Application.Title := 'Kassandra IDE';
 
   MainForm := TMainForm.Create;
+  MainForm.Name := 'MainForm';
   Application.AddForm(MainForm);
   Application.Run;
   MainForm.Free;
@@ -382,7 +422,11 @@ end.
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:32:52  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:28:14  sg
+  * Lots of bug fixes and adaptions to changes in other units
+  * almost all widgets now have a correct component name and owner
+
+  Revision 1.1.1.1  1999/12/30 21:32:52  sg
+  Initial import
 
 }
