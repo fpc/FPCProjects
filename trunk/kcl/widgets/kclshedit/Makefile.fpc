@@ -5,6 +5,8 @@
 [targets]
 units=kclshedit
 
+[require]
+packages=fcl
 
 [dirs]
 fpcdir=../../..

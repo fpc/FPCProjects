@@ -7,7 +7,7 @@ programs=ogldemo1 ogldemo2
 
 
 [require]
-packages=x11 opengl
+packages=fcl x11 opengl
 components=glpaintbox
 
 

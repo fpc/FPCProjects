@@ -6,10 +6,8 @@
 dirs=tests
 units=glpaintbox
 
-
 [require]
-packages=x11 opengl
-
+packages=fcl x11 opengl
 
 [dirs]
 fpcdir=../../..

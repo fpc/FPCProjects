@@ -9,7 +9,7 @@ rst=kassandra
 
 
 [require]
-packages=x11
+packages=fcl x11
 components=kclshedit
 
 
