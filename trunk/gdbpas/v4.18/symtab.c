@@ -3921,9 +3921,20 @@ rbreak_command (regexp, from_tty)
                                           + strlen (SYMBOL_NAME (p->symbol))
                                           + 4);
           strcpy (string, p->symtab->filename);
-          strcat (string, ":'");
-          strcat (string, SYMBOL_NAME (p->symbol));
-          strcat (string, "'");
+          if ((SYMBOL_LANGUAGE(p->symbol) == language_pascal) &&
+              (SYMBOL_LINE (p->symbol) > 0))
+            {
+             char binary_str[33];
+             strcat (string, ":");
+             sprintf(binary_str,"%d",SYMBOL_LINE (p->symbol));
+             strcat (string, binary_str);
+            }
+          else
+            {
+             strcat (string, ":'");
+             strcat (string, SYMBOL_NAME (p->symbol));
+             strcat (string, "'");
+            }
           break_command (string, from_tty);
           print_symbol_info (FUNCTIONS_NAMESPACE,
                              p->symtab,
