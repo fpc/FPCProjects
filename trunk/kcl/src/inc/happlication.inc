@@ -20,7 +20,7 @@
 
 type
 
-  TGenericForm = class;
+  TCustomForm = class;
 
   TReadFormProc = procedure(Instance: TComponent) of object;
 
@@ -28,12 +28,14 @@ type
   protected
     FTitle: String;
     FReadFormProc: TReadFormProc;
-    FForms: TList;
+    IsRunning: Boolean;
+    procedure Notification(AComponent: TComponent;
+      Operation: TOperation); override;
   public
     destructor Destroy; override;
     procedure Initialize;
     procedure CreateForm(InstanceClass: TComponentClass; var Reference);
-    procedure AddForm(AForm: TGenericForm);
+    procedure AddForm(AForm: TCustomForm);
     procedure Run;
     procedure Terminate;
 
@@ -44,6 +46,9 @@ type
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:32:25  sg
+  * TGenericForm is now called TCustomForm
+
   Revision 1.2  2000/01/24 00:08:49  sg
   * Extended copyright to year 2000...
 
