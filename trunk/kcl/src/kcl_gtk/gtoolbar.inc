@@ -41,6 +41,21 @@ begin
 end;
 
 
+destructor TToolBar.Destroy;
+var
+  i: Integer;
+  btn: TToolButton;
+begin
+  for i := 0 to Items.Count - 1 do
+    if TObject(Items.Items[i]).InheritsFrom(TToolButton) then begin
+      btn := TToolButton(Items.Items[i]);
+      if Assigned(btn.FCommand) then
+        btn.FCommand.RemoveEventFilter(TCmdChangeEventObj, @CommandChangeFilter);
+    end;
+  Items.Free;
+  inherited Destroy;
+end;
+
 function TToolBar.CommandChangeFilter(AEvent: TEventObj): Boolean;
 
   function FindButton(cmd: TCommand): TToolButton;
@@ -102,7 +117,7 @@ begin
           and (cmd.FImageIndex < cmd.FCommandList.FImages.priv.count) then begin
 	  // Create pixmap for the icon on the button
           image := PImageListItem(cmd.FCommandList.FImages.priv.Items[cmd.FImageIndex]);
-          pixmap := gtk_pixmap_new(image^.Image, image^.Mask);
+          pixmap := gtk_pixmap_new(image^.ImageCanvas.pixmap, image^.Mask);
 	end;
 	ToolTip := StripUnderlines(cmd.FText);
 	if Length(cmd.FShortCut) > 0 then
@@ -164,9 +179,20 @@ begin
   inherited OnFinishCreation;
 end;
 
+procedure TToolBar.DoRecalcLayout;
+begin
+  inherited DoRecalcLayout;
+  DefW := MinH;
+  MinW := MinH * 4;
+end;
+
 
 {
   $Log$
+  Revision 1.2  2000/02/10 18:48:03  sg
+  * Fixed memory leaks
+  * Added layout calculation to TToolBar
+
   Revision 1.1  2000/01/24 00:15:23  sg
   * First version
 
