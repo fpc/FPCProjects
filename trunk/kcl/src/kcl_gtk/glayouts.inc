@@ -21,7 +21,8 @@ end;
 
 procedure TLayout.MoveChild(AChild: TWidget; ax, ay: LongInt);
 begin
-  if Assigned(AChild.FHandle) then
+  // Only move the child if it has a valid size!!!
+  if Assigned(AChild.FHandle) and (AChild.FHandle^.allocation.width > 1) then
     gtk_widget_set_uposition(AChild.FHandle, ax, ay);
 end;
 
@@ -34,6 +35,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/18 18:23:05  sg
+  * Children are only moved if their creation has been finished correctly
+
   Revision 1.3  2000/02/10 18:44:10  sg
   * Small fixes
 
