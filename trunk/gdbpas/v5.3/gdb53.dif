@@ -1,0 +1,611 @@
+diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
+--- origdb/Makefile.in	2002-11-13 10:55:34.000000000 +0100
++++ gdb/Makefile.in	2002-11-13 10:18:08.000000000 +0100
+@@ -561,7 +561,7 @@ SFILES = ada-exp.y ada-lang.c ada-typepr
+ 	ui-file.h ui-file.c \
+ 	frame.c doublest.c \
+ 	builtin-regs.c std-regs.c \
+-	gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
++	fpc-abi.c gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
+ 
+ LINTFILES = $(SFILES) $(YYFILES) $(CONFIG_SRCS) init.c
+ 
+@@ -846,7 +846,7 @@ COMMON_OBS = version.o blockframe.o brea
+ 	nlmread.o serial.o mdebugread.o top.o utils.o \
+ 	ui-file.o \
+ 	frame.o doublest.o \
+-	gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
++	fpc-abi.o gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
+ 
+ OBS = $(COMMON_OBS) $(ANNOTATE_OBS)
+ 
+@@ -1661,6 +1661,8 @@ findvar.o: findvar.c $(defs_h) $(symtab_
+ fork-child.o: fork-child.c $(defs_h) $(gdb_string_h) $(frame_h) \
+ 	$(inferior_h) $(target_h) $(gdb_wait_h) $(gdb_vfork_h) $(gdbcore_h) \
+ 	$(terminal_h) $(gdbthread_h) $(command_h)
++fpc-abi.o: fpc-abi.c $(defs_h) $(gdb_string_h) $(symtab_h) \
++	$(gdbtypes_h) $(value_h) $(demangle_h) $(cp_abi_h)
+ # OBSOLETE fr30-tdep.o: fr30-tdep.c
+ frame.o: frame.c $(defs_h) $(frame_h) $(target_h) $(value_h) $(inferior_h) \
+ 	$(regcache_h) $(gdb_assert_h)
+diff -u -p -r -N -x Entries origdb/fpc-abi.c gdb/fpc-abi.c
+--- origdb/fpc-abi.c	1970-01-01 01:00:00.000000000 +0100
++++ gdb/fpc-abi.c	2002-11-05 12:03:34.000000000 +0100
+@@ -0,0 +1,408 @@
++/* Abstraction of FPC abi.
++   Contributed by Pierre Muller  <muller@ics.u-strasbg.fr>
++   Copyright 2001 Free Software Foundation, Inc.
++
++   This file is part of GDB.
++
++   This program is free software; you can redistribute it and/or
++   modify
++   it under the terms of the GNU General Public License as published
++   by
++   the Free Software Foundation; either version 2 of the License, or
++   (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software
++   Foundation, Inc., 59 Temple Place - Suite 330,
++   Boston, MA 02111-1307, USA.  */
++
++#include "defs.h"
++#include "gdb_string.h"
++#include "symtab.h"
++#include "gdbtypes.h"
++#include "value.h"
++#include "demangle.h"
++#include "cp-abi.h"
++
++/* #include <ctype.h> */
++
++struct cp_abi_ops fpc_abi_ops;
++
++static int vb_match (struct type *, int, struct type *);
++int fpc_baseclass_offset (struct type *type, int index, char *valaddr,
++			    CORE_ADDR address);
++
++static enum dtor_kinds
++fpc_is_destructor_name (const char *name)
++{
++  if ((name[0] == '_' && is_cplus_marker (name[1]) && name[2] == '_')
++      || strncmp (name, "__dt__", 6) == 0)
++    return complete_object_dtor;
++  else
++    return 0;
++}
++
++static enum ctor_kinds
++fpc_is_constructor_name (const char *name)
++{
++  if ((name[0] == '_' && name[1] == '_'
++       && (isdigit (name[2]) || strchr ("Qt", name[2])))
++      || strncmp (name, "__ct__", 6) == 0)
++    return complete_object_ctor;
++  else
++    return 0;
++}
++
++static int
++fpc_is_vtable_name (const char *name)
++{
++  return ((name)[0] == 'V'
++	  && (name)[1] == 'M' && (name)[2] == 'T'
++	  && (name)[3] == '_');
++}
++
++static int
++fpc_is_operator_name (const char *name)
++{
++  return strncmp (name, "operator", 8) == 0;
++}
++
++
++/* Return a virtual function as a value.
++   ARG1 is the object which provides the virtual function
++   table pointer.  *ARG1P is side-effected in calling this function.
++   F is the list of member functions which contains the desired virtual
++   function.
++   J is an index into F which provides the desired virtual function.
++
++   TYPE is the type in which F is located.  */
++static struct value *
++fpc_virtual_fn_field (struct value **arg1p, struct fn_field * f, int j,
++			struct type * type, int offset)
++{
++  struct value *arg1 = *arg1p;
++  struct type *type1 = check_typedef (VALUE_TYPE (arg1));
++
++
++  struct type *entry_type;
++  /* First, get the virtual function table pointer.  That comes
++     with a strange type, so cast it to type `pointer to long' (which
++     should serve just fine as a function type).  Then, index into
++     the table, and convert final value to appropriate function type.  */
++  struct value *entry;
++  struct value *vfn;
++  struct value *vtbl;
++  struct value *vi = value_from_longest (builtin_type_int,
++				     (LONGEST) TYPE_FN_FIELD_VOFFSET (f, j));
++  struct type *fcontext = TYPE_FN_FIELD_FCONTEXT (f, j);
++  struct type *context;
++  if (fcontext == NULL)
++    /* We don't have an fcontext (e.g. the program was compiled with
++       g++ version 1).  Try to get the vtbl from the TYPE_VPTR_BASETYPE.
++       This won't work right for multiple inheritance, but at least we
++       should do as well as GDB 3.x did.  */
++    fcontext = TYPE_VPTR_BASETYPE (type);
++  context = lookup_pointer_type (fcontext);
++  /* Now context is a pointer to the basetype containing the vtbl.  */
++  if (TYPE_TARGET_TYPE (context) != type1)
++    {
++      struct value *tmp = value_cast (context, value_addr (arg1));
++      arg1 = value_ind (tmp);
++      type1 = check_typedef (VALUE_TYPE (arg1));
++    }
++
++  context = type1;
++  /* Now context is the basetype containing the vtbl.  */
++
++  /* This type may have been defined before its virtual function table
++     was.  If so, fill in the virtual function table entry for the
++     type now.  */
++  if (TYPE_VPTR_FIELDNO (context) < 0)
++    fill_in_vptr_fieldno (context);
++
++  /* The virtual function table is now an array of structures
++     which have the form { int16 offset, delta; void *pfn; }.  */
++  vtbl = value_primitive_field (arg1, 0, TYPE_VPTR_FIELDNO (context),
++				TYPE_VPTR_BASETYPE (context));
++
++  /* With older versions of g++, the vtbl field pointed to an array
++     of structures.  Nowadays it points directly to the structure. */
++  if (TYPE_CODE (VALUE_TYPE (vtbl)) == TYPE_CODE_PTR
++      && TYPE_CODE (TYPE_TARGET_TYPE (VALUE_TYPE (vtbl))) == TYPE_CODE_ARRAY)
++    {
++      /* Handle the case where the vtbl field points to an
++         array of structures. */
++      vtbl = value_ind (vtbl);
++
++      /* Index into the virtual function table.  This is hard-coded because
++         looking up a field is not cheap, and it may be important to save
++         time, e.g. if the user has set a conditional breakpoint calling
++         a virtual function.  */
++      entry = value_subscript (vtbl, vi);
++    }
++  else
++    {
++      /* Handle the case where the vtbl field points directly to a structure. */
++      vtbl = value_add (vtbl, vi);
++      entry = value_ind (vtbl);
++    }
++
++  entry_type = check_typedef (VALUE_TYPE (entry));
++
++  if (TYPE_CODE (entry_type) == TYPE_CODE_STRUCT)
++    {
++      /* Move the `this' pointer according to the virtual function table. */
++      VALUE_OFFSET (arg1) += value_as_long (value_field (entry, 0));
++
++      if (!VALUE_LAZY (arg1))
++	{
++	  VALUE_LAZY (arg1) = 1;
++	  value_fetch_lazy (arg1);
++	}
++
++      vfn = value_field (entry, 2);
++    }
++  else if (TYPE_CODE (entry_type) == TYPE_CODE_PTR)
++    vfn = entry;
++  else
++    error ("I'm confused:  virtual function table has bad type");
++  /* Reinstantiate the function pointer with the correct type.  */
++  VALUE_TYPE (vfn) = lookup_pointer_type (TYPE_FN_FIELD_TYPE (f, j));
++
++  *arg1p = arg1;
++  return vfn;
++}
++
++
++struct type *
++fpc_value_rtti_type (struct value *v, int *full, int *top, int *using_enc)
++{
++  struct type *known_type;
++  struct type *rtti_type;
++  CORE_ADDR coreptr;
++  struct value *vp;
++  long top_offset = 0;
++  char rtti_type_name[256];
++  CORE_ADDR vtbl;
++  struct minimal_symbol *minsym;
++  struct symbol *sym;
++  char *demangled_name;
++  char *mangled_name;
++  struct type *btype;
++
++  if (full)
++    *full = 0;
++  if (top)
++    *top = -1;
++  if (using_enc)
++    *using_enc = 0;
++
++  /* Get declared type */
++  known_type = VALUE_TYPE (v);
++  CHECK_TYPEDEF (known_type);
++  /* RTTI works only or class objects */
++  if (TYPE_CODE (known_type) != TYPE_CODE_CLASS)
++    return NULL;
++
++  /* Plan on this changing in the future as i get around to setting
++     the vtables properly for G++ compiled stuff.  Also, I'll be using
++     the type info functions, which are always right.  Deal with it
++     until then.  */
++
++  /* If the type has no vptr fieldno, try to get it filled in */
++  if (TYPE_VPTR_FIELDNO(known_type) < 0)
++    fill_in_vptr_fieldno(known_type);
++
++  /* If we still can't find one, give up */
++  if (TYPE_VPTR_FIELDNO(known_type) < 0)
++    return NULL;
++
++  /* Make sure our basetype and known type match, otherwise, cast
++     so we can get at the vtable properly.
++  */
++  btype = TYPE_VPTR_BASETYPE (known_type);
++  CHECK_TYPEDEF (btype);
++  if (btype != known_type )
++    {
++      v = value_cast (btype, v);
++      if (using_enc)
++        *using_enc=1;
++    }
++  /*
++    We can't use value_ind here, because it would want to use RTTI, and
++    we'd waste a bunch of time figuring out we already know the type.
++    Besides, we don't care about the type, just the actual pointer
++  */
++  if (VALUE_ADDRESS (value_field (v, TYPE_VPTR_FIELDNO (known_type))) == 0)
++    return NULL;
++
++  vtbl=value_as_address(value_ind(value_field(v,TYPE_VPTR_FIELDNO(known_type))));
++
++  /* Try to find a symbol that is the vtable */
++  minsym=lookup_minimal_symbol_by_pc(vtbl);
++  if (minsym==NULL
++      || (mangled_name=SYMBOL_NAME(minsym))==NULL
++      || !is_vtable_name (mangled_name))
++    return NULL;
++
++  /* If we just skip the prefix, we get screwed by namespaces */
++  if (strchr (mangled_name, '$'))
++    {
++      demangled_name = strchr (mangled_name, '$') + 2;
++    }
++  else
++    demangled_name = mangled_name;
++  /* Lookup the type for the name */
++  rtti_type=lookup_typename(demangled_name, (struct block *)0,1);
++
++  if (rtti_type==NULL)
++    return NULL;
++
++  if (TYPE_N_BASECLASSES(rtti_type) > 1 &&  full && (*full) != 1)
++    {
++      if (top)
++        *top=TYPE_BASECLASS_BITPOS(rtti_type,TYPE_VPTR_FIELDNO(rtti_type))/8;
++      if (top && ((*top) >0))
++        {
++          if (TYPE_LENGTH(rtti_type) > TYPE_LENGTH(known_type))
++            {
++              if (full)
++                *full=0;
++            }
++          else
++            {
++              if (full)
++                *full=1;
++            }
++        }
++    }
++  else
++    {
++      if (full)
++        *full=1;
++    }
++
++  return rtti_type;
++}
++
++/* Return true if the INDEXth field of TYPE is a virtual baseclass
++   pointer which is for the base class whose type is BASECLASS.  */
++
++static int
++vb_match (struct type *type, int index, struct type *basetype)
++{
++  struct type *fieldtype;
++  char *name = TYPE_FIELD_NAME (type, index);
++  char *field_class_name = NULL;
++
++  if (*name != '_')
++    return 0;
++  /* gcc 2.4 uses _vb$.  */
++  if (name[1] == 'v' && name[2] == 'b' && is_cplus_marker (name[3]))
++    field_class_name = name + 4;
++  /* gcc 2.5 will use __vb_.  */
++  if (name[1] == '_' && name[2] == 'v' && name[3] == 'b' && name[4] == '_')
++    field_class_name = name + 5;
++
++  if (field_class_name == NULL)
++    /* This field is not a virtual base class pointer.  */
++    return 0;
++
++  /* It's a virtual baseclass pointer, now we just need to find out whether
++     it is for this baseclass.  */
++  fieldtype = TYPE_FIELD_TYPE (type, index);
++  if (fieldtype == NULL
++      || TYPE_CODE (fieldtype) != TYPE_CODE_PTR)
++    /* "Can't happen".  */
++    return 0;
++
++  /* What we check for is that either the types are equal (needed for
++     nameless types) or have the same name.  This is ugly, and a more
++     elegant solution should be devised (which would probably just push
++     the ugliness into symbol reading unless we change the stabs format).  */
++  if (TYPE_TARGET_TYPE (fieldtype) == basetype)
++    return 1;
++
++  if (TYPE_NAME (basetype) != NULL
++      && TYPE_NAME (TYPE_TARGET_TYPE (fieldtype)) != NULL
++      && STREQ (TYPE_NAME (basetype),
++		TYPE_NAME (TYPE_TARGET_TYPE (fieldtype))))
++    return 1;
++  return 0;
++}
++
++/* Compute the offset of the baseclass which is
++   the INDEXth baseclass of class TYPE,
++   for value at VALADDR (in host) at ADDRESS (in target).
++   The result is the offset of the baseclass value relative
++   to (the address of)(ARG) + OFFSET.
++
++   -1 is returned on error. */
++
++int
++fpc_baseclass_offset (struct type *type, int index, char *valaddr,
++		  CORE_ADDR address)
++{
++  struct type *basetype = TYPE_BASECLASS (type, index);
++
++  if (BASETYPE_VIA_VIRTUAL (type, index))
++    {
++      /* Must hunt for the pointer to this virtual baseclass.  */
++      register int i, len = TYPE_NFIELDS (type);
++      register int n_baseclasses = TYPE_N_BASECLASSES (type);
++
++      /* First look for the virtual baseclass pointer
++         in the fields.  */
++      for (i = n_baseclasses; i < len; i++)
++	{
++	  if (vb_match (type, i, basetype))
++	    {
++	      CORE_ADDR addr
++	      = unpack_pointer (TYPE_FIELD_TYPE (type, i),
++				valaddr + (TYPE_FIELD_BITPOS (type, i) / 8));
++
++	      return addr - (LONGEST) address;
++	    }
++	}
++      /* Not in the fields, so try looking through the baseclasses.  */
++      for (i = index + 1; i < n_baseclasses; i++)
++	{
++	  int boffset =
++	  baseclass_offset (type, i, valaddr, address);
++	  if (boffset)
++	    return boffset;
++	}
++      /* Not found.  */
++      return -1;
++    }
++
++  /* Baseclass is easily computed.  */
++  return TYPE_BASECLASS_BITPOS (type, index) / 8;
++}
++
++static void
++init_fpc_ops (void)
++{
++  fpc_abi_ops.shortname = "fpc";
++  fpc_abi_ops.longname = "Free Pascal ABI";
++  fpc_abi_ops.doc = "Free Pascal v1.0 ABI";
++  fpc_abi_ops.is_destructor_name = fpc_is_destructor_name;
++  fpc_abi_ops.is_constructor_name = fpc_is_constructor_name;
++  fpc_abi_ops.is_vtable_name = fpc_is_vtable_name;
++  fpc_abi_ops.is_operator_name = fpc_is_operator_name;
++  fpc_abi_ops.virtual_fn_field = fpc_virtual_fn_field;
++  fpc_abi_ops.rtti_type = fpc_value_rtti_type;
++  fpc_abi_ops.baseclass_offset = fpc_baseclass_offset;
++}
++
++void
++_initialize_fpc_abi (void)
++{
++  init_fpc_ops ();
++  register_cp_abi (fpc_abi_ops);
++}
+diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
+--- origdb/i386-tdep.c	2002-09-16 16:34:08.000000000 +0200
++++ gdb/i386-tdep.c	2002-09-16 16:35:42.000000000 +0200
+@@ -708,6 +708,8 @@ i386_skip_prologue (CORE_ADDR pc)
+ {
+   unsigned char op;
+   int i;
++  CORE_ADDR last_push_esi_pos = 0;
++
+   static unsigned char pic_pat[6] =
+   { 0xe8, 0, 0, 0, 0,		/* call   0x0 */
+     0x5b,			/* popl   %ebx */
+@@ -727,7 +729,9 @@ i386_skip_prologue (CORE_ADDR pc)
+       /* Break if not `pushl' instrunction.  */
+       if (op < 0x50 || op > 0x57)
+ 	break;
+-      codestream_get ();
++      if (op == 0x56)
++	last_push_esi_pos = codestream_tell ();
++      codestream_get();
+     }
+ 
+   /* The native cc on SVR4 in -K PIC mode inserts the following code
+@@ -783,7 +787,10 @@ i386_skip_prologue (CORE_ADDR pc)
+ 
+   i386_follow_jump ();
+ 
+-  return (codestream_tell ());
++  if (codestream_tell () == last_push_esi_pos + 1)
++    return (last_push_esi_pos);
++  else
++    return (codestream_tell ());
+ }
+ 
+ /* Use the program counter to determine the contents and size of a
+diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
+--- origdb/minsyms.c	2002-09-16 16:34:08.000000000 +0200
++++ gdb/minsyms.c	2002-11-05 12:04:00.000000000 +0100
+@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile 
+ 	for (i = 0; i < mcount; i++)
+ 	  {
+ 	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
++	    if (strcmp (name, "fpc_compiled") == 0)
++	      {
++		switch_to_cp_abi ("fpc");
++		break;
++	      }
++	
+ 	    if (name[0] == '_' && name[1] == 'Z')
+ 	      {
+ 		switch_to_cp_abi ("gnu-v3");
+diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
+--- origdb/p-exp.y	2002-11-13 10:55:34.000000000 +0100
++++ gdb/p-exp.y	2002-11-13 10:20:10.000000000 +0100
+@@ -294,7 +294,8 @@ exp	:	exp '.' { search_field = 1; } 
+ 				current_type = TYPE_TARGET_TYPE (current_type);
+ 			      current_type = lookup_struct_elt_type (
+ 				current_type, $4.ptr, false); };
+-			 } ; 
++			 } 
++	;
+ exp	:	exp '['
+ 			/* We need to save the current_type value */
+ 			{ char *arrayname; 
+@@ -322,8 +323,7 @@ exp	:	exp '['
+ 			    current_type = TYPE_TARGET_TYPE (current_type); }
+ 	;
+ 
+-exp	:	exp '('
+-			/* This is to save the value of arglist_len
++exp	:	exp '(' /* This is to save the value of arglist_len
+ 			   being accumulated by an outer function call.  */
+ 			{ push_current_type ();
+ 			  start_arglist (); }
+@@ -649,7 +649,7 @@ variable:	name_not_typename
+ 			      if (this_type)
+ 				current_type = lookup_struct_elt_type (
+ 				  this_type,
+-				  $1.stoken.ptr, false);
++				  copy_name ($1.stoken), false);
+ 			      else
+ 				current_type = NULL; 
+ 			    }
+@@ -1479,6 +1479,16 @@ yylex ()
+ 	yylval.sval.length = namelen; 
+ 	return FIELDNAME;
+       } 
++    /* if not found uppercase the whole.  */
++    if (!sym && !is_a_field_of_this)
++      {
++       for (i = 0; i <= namelen; i++)
++         {
++           if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
++              tokstart[i] -= ('a'-'A');
++          }
++      }
++
+     /* Call lookup_symtab, not lookup_partial_symtab, in case there are
+        no psymtabs (coff, xcoff, or some future change to blow away the
+        psymtabs once once symbols are read).  */
+diff -u -p -r -N -x Entries origdb/top.c gdb/top.c
+--- origdb/top.c	2002-10-07 14:50:54.000000000 +0200
++++ gdb/top.c	2002-10-07 14:47:52.000000000 +0200
+@@ -1353,7 +1353,7 @@ print_gdb_version (struct ui_file *strea
+      program to parse, and is just canonical program name and version
+      number, which starts after last space. */
+ 
+-  fprintf_filtered (stream, "GNU gdb %s\n", version);
++  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
+ 
+   /* Second line is a copyright notice. */
+ 
+diff -u -p -r -N -x Entries origdb/win32-nat.c gdb/win32-nat.c
+--- origdb/win32-nat.c	2002-09-16 16:34:20.000000000 +0200
++++ gdb/win32-nat.c	2002-09-16 16:36:16.000000000 +0200
+@@ -81,6 +81,13 @@ static unsigned dr[8];
+ static int debug_registers_changed = 0;
+ static int debug_registers_used = 0;
+ 
++#ifdef HAVE_SSE_REGS
++#define CONTEXT_DEBUGGER_DR CONTEXT_DEBUGGER | CONTEXT_DEBUG_REGISTERS \
++	| CONTEXT_EXTENDED_REGISTERS
++#else
++#define CONTEXT_DEBUGGER_DR CONTEXT_DEBUGGER | CONTEXT_DEBUG_REGISTERS
++#endif
++
+ /* The string sent by cygwin when it processes a signal.
+    FIXME: This should be in a cygwin include file. */
+ #define CYGWIN_SIGNAL_STRING "cygwin: signal"
+@@ -286,6 +293,22 @@ child_add_thread (DWORD id, HANDLE h)
+   th->h = h;
+   th->next = thread_head.next;
+   thread_head.next = th;
++  /* Set the debug registers for the new thread in they are used.  */
++  if (debug_registers_used)
++    {
++      /* Only change the value of the debug registers.  */
++      th->context.ContextFlags = CONTEXT_DEBUG_REGISTERS;
++      CHECK (GetThreadContext (th->h, &th->context));
++      th->context.Dr0 = dr[0];
++      th->context.Dr1 = dr[1];
++      th->context.Dr2 = dr[2];
++      th->context.Dr3 = dr[3];
++      /* th->context.Dr6 = dr[6];
++      FIXME: should we set dr6 also ?? */
++      th->context.Dr7 = dr[7];
++      CHECK (SetThreadContext (th->h, &th->context));
++      th->context.ContextFlags = 0;
++    }
+   add_thread (pid_to_ptid (id));
+   /* Set the debug registers for the new thread in they are used.  */
+   if (debug_registers_used)
+@@ -1717,6 +1740,16 @@ child_resume (ptid_t ptid, int step, enu
+   th = thread_rec (current_event.dwThreadId, FALSE);
+   if (th)
+     {
++      if (debug_registers_changed)
++        {
++          th->context.Dr0 = dr[0];
++          th->context.Dr1 = dr[1];
++          th->context.Dr2 = dr[2];
++          th->context.Dr3 = dr[3];
++          /* th->context.Dr6 = dr[6];
++           FIXME: should we set dr6 also ?? */
++          th->context.Dr7 = dr[7];
++        }
+       if (step)
+ 	{
+ 	  /* Single step by setting t bit */
