@@ -15,22 +15,119 @@
 
 
 // ===================================================================
-//   Common implementation of TWidget methods
+//   Common implementation of TWidget & friends methods
 // ===================================================================
+
+function Min(a, b: Integer): Integer;
+begin
+  if a < b then
+    Result := a
+  else
+    Result := b;
+end;
+
+function ClipMinMax(val, min, max: Integer): Integer;
+begin
+  if val < min then
+    Result := min
+  else if val > max then
+    Result := max
+  else
+    Result := val;
+end;
+
+
+// -------------------------------------------------------------------
+//   TWidget
+// -------------------------------------------------------------------
+
+procedure TWidget.SetSize(AWidth, AHeight: Integer);
+begin
+  FWidth := AWidth;
+  FHeight := AHeight;
+  ApplySize;
+end;
+
+procedure TWidget.RecalcLayout;
+var
+  SizeReq: TGtkRequisition;
+begin
+  MinW := 0;
+  MinH := 0;
+  MaxW := 0;
+  MaxH := 0;
+  DefW := 0;
+  DefH := 0;
+
+  DoRecalcLayout;
+
+  if MinW = 0 then MinW := 1;
+  if MinH = 0 then MinH := 1;
+  if MaxW < MinW then MaxW := MinW;
+  if MaxH < MinH then MaxH := MinH;
+  if DefW < MinW then DefW := MinW;
+  if DefH < MinW then DefH := MinH;
+
+  if Assigned(FParent) and (FParent.FCreationState = wcsCreationDone) then
+    FParent.RecalcLayout;
+end;
+
+procedure TWidget.SetVisible(AVisible: Boolean);
+begin
+  if AVisible = FVisible then exit;
+  FVisible := AVisible;
+  if FCreationState >= wcsCreationInProgress then
+    if AVisible then
+      Show
+    else
+      Hide;
+end;
+
+procedure TWidget.FinishCreation;
+begin
+  if FCreationState = wcsCreationDone then exit;
+
+  if Assigned(FParent) and (FParent.FCreationState < wcsCreationInProgress) then begin
+    ASSERT(False);
+    exit;
+  end;
+
+  FCreationState := wcsCreationInProgress;
+
+  // Start the real widget creation:
+  OnFinishCreation;
+
+  if FVisible then
+    Show;
+
+  RecalcLayout;
+
+  if Assigned(OnCreate) then
+    OnCreate(Self);
+end;
+
+procedure TWidget.BlockDrawing;
+begin
+  Inc(BlockDrawingCounter);
+end;
+
+procedure TWidget.UnblockDrawing;
+begin
+  ASSERT(BlockDrawingCounter > 0, 'Invalid TWidget.UnblockDrawing');
+  Dec(BlockDrawingCounter);
+end;
 
 function TWidget.AddChildWidget(AWidget: TWidget): Boolean;
 begin
   Result := False;
 end;
 
-procedure TWidget.RemoveChildWidget(AWidget: TWidget);
-begin
-  // This method is supposed to do nothing for TWidget
-end;
-
 
 {
   $Log$
+  Revision 1.2  2000/02/10 18:31:51  sg
+  * Added generic size calculation methods
+
   Revision 1.1  2000/01/24 00:13:57  sg
   * First version
 
