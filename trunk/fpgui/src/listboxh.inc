@@ -19,10 +19,15 @@
   TCustomListBox = class(TWidget)
   private
     FItems: TStrings;
+    FItemIndex: Integer;
+    procedure HorzScrollBarScroll(Sender: TObject; var APosition: Integer);
     procedure VertScrollBarScroll(Sender: TObject; var APosition: Integer);
+    function EvMousePressed(Event: TMousePressedEventObj): Boolean;
   protected
     ScrollingSupport: TScrollingSupport;
+    FMaxItemWidth: Integer;
     ItemHeight: Integer;
+    IsParented: Boolean;
 
     procedure Paint(Canvas: TGfxCanvas); override;
     function ProcessEvent(Event: TEventObj): Boolean; override;
@@ -30,7 +35,13 @@
 //    procedure EvKeyPressed(Key: Word; Shift: TShiftState); override;
     procedure EvRecalcLayout; override;
 
+    procedure RecalcWidth;
     procedure UpdateScrollBars;
+    procedure RedrawItem(AIndex: Integer);
+
+    property CanExpandWidth default True;
+    property CanExpandHeight default True;
+    property ItemIndex: Integer read FItemIndex default -1;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -46,6 +57,9 @@
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

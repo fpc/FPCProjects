@@ -58,15 +58,18 @@ var
   l: TLabel;
 begin
   inherited Create(AOwner);
+  FCanExpandWidth := True;
   WidgetStyle := WidgetStyle + [wsCaptureMouse, wsClickable, wsOpaque];
 
   l := TLabel.Create(Self);
+  l.CanExpandWidth := True;
   l.Text := 'Combobox';
   l.Parent := Self;
 
   FButton := TArrowButton.Create(Self);
   FButton.Embedded := True;
   FButton.CanExpandWidth := False;
+  FButton.OnClick := @ButtonClick;
   FButton.Parent := Self;
 end;
 
@@ -112,9 +115,42 @@ begin
   end;
 end;
 
+procedure TCustomComboBox.ButtonClick(Sender: TObject);
+var
+  l: TCustomListBox;
+  i: Integer;
+begin
+  if Assigned(FDropDown) then
+    ListDeactivate(nil)
+  else
+  begin
+    FDropDown := TCustomForm.Create(Self);
+    FDropDown.FrameType := False;
+//    FDropDown.SetEmbeddedParent(FindForm);
+    FDropDown.SetPosition(ClientToScreen(Point(0, Height)));
+    FDropDown.OnDeactivate := @ListDeactivate;
+
+    l := TCustomListBox.Create(FDropDown);
+    for i := 1 to 20 do
+      l.Items.Add(Format('Item #%d...', [i]));
+    l.Parent := FDropDown;
+
+    FDropDown.Show;
+  end;
+end;
+
+procedure TCustomComboBox.ListDeactivate(Sender: TObject);
+begin
+  FDropDown.Free;
+  FDropDown := nil;
+end;
+
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:11  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:14  sg
   * First public CVS version...
 

@@ -9,16 +9,16 @@ type
     ExitBtn: TButton;
     Separator: TSeparator;
 
-    procedure CheckBoxBtnClicked(Sender: TObject);
-    procedure RadioButtonBtnClicked(Sender: TObject);
-    procedure GroupBoxBtnClicked(Sender: TObject);
-    procedure EditBtnClicked(Sender: TObject);
-    procedure ScrollBarBtnClicked(Sender: TObject);
-    procedure ScrollBoxBtnClicked(Sender: TObject);
-    procedure ListBoxBtnClicked(Sender: TObject);
-    procedure ComboBoxBtnClicked(Sender: TObject);
-    procedure GridBtnClicked(Sender: TObject);
-    procedure ExitBtnClicked(Sender: TObject);
+    procedure CheckBoxBtnClick(Sender: TObject);
+    procedure RadioButtonBtnClick(Sender: TObject);
+    procedure GroupBoxBtnClick(Sender: TObject);
+    procedure EditBtnClick(Sender: TObject);
+    procedure ScrollBarBtnClick(Sender: TObject);
+    procedure ScrollBoxBtnClick(Sender: TObject);
+    procedure ListBoxBtnClick(Sender: TObject);
+    procedure ComboBoxBtnClick(Sender: TObject);
+    procedure GridBtnClick(Sender: TObject);
+    procedure ExitBtnClick(Sender: TObject);
   end;
 
   TTestForm = class(TForm)
@@ -48,6 +48,7 @@ type
 
     procedure GrayCheckBoxClick(Sender: TObject);
     procedure ButtonClick(Sender: TObject);
+    procedure RadioButtonClick(Sender: TObject);
   end;
 
   TEditForm = class(TTestForm)
@@ -88,7 +89,6 @@ type
 
   TListBoxForm = class(TTestForm)
     ListBox: TListBox;
-    procedure FormCreate(Sender: TObject);
   end;
 
   TComboBoxForm = class(TTestForm)
@@ -110,70 +110,70 @@ type
 //   TMainForm
 // -------------------------------------------------------------------
 
-procedure TMainForm.CheckBoxBtnClicked(Sender: TObject);
+procedure TMainForm.CheckBoxBtnClick(Sender: TObject);
 var
   Form: TCheckBoxForm;
 begin
   Application.CreateForm(TCheckBoxForm, Form);
 end;
 
-procedure TMainForm.RadioButtonBtnClicked(Sender: TObject);
+procedure TMainForm.RadioButtonBtnClick(Sender: TObject);
 var
   Form: TRadioButtonForm;
 begin
   Application.CreateForm(TRadioButtonForm, Form);
 end;
 
-procedure TMainForm.GroupBoxBtnClicked(Sender: TObject);
+procedure TMainForm.GroupBoxBtnClick(Sender: TObject);
 var
   Form: TGroupBoxForm;
 begin
   Application.CreateForm(TGroupBoxForm, Form);
 end;
 
-procedure TMainForm.EditBtnClicked(Sender: TObject);
+procedure TMainForm.EditBtnClick(Sender: TObject);
 var
   Form: TEditForm;
 begin
   Application.CreateForm(TEditForm, Form);
 end;
 
-procedure TMainForm.ScrollBarBtnClicked(Sender: TObject);
+procedure TMainForm.ScrollBarBtnClick(Sender: TObject);
 var
   Form: TScrollBarForm;
 begin
   Application.CreateForm(TScrollBarForm, Form);
 end;
 
-procedure TMainForm.ScrollBoxBtnClicked(Sender: TObject);
+procedure TMainForm.ScrollBoxBtnClick(Sender: TObject);
 var
   Form: TScrollBoxForm;
 begin
   Application.CreateForm(TScrollBoxForm, Form);
 end;
 
-procedure TMainForm.ListBoxBtnClicked(Sender: TObject);
+procedure TMainForm.ListBoxBtnClick(Sender: TObject);
 var
   Form: TListBoxForm;
 begin
   Application.CreateForm(TListBoxForm, Form);
 end;
 
-procedure TMainForm.ComboBoxBtnClicked(Sender: TObject);
+procedure TMainForm.ComboBoxBtnClick(Sender: TObject);
 var
   Form: TComboBoxForm;
 begin
   Application.CreateForm(TComboBoxForm, Form);
 end;
 
-procedure TMainForm.GridBtnClicked(Sender: TObject);
+procedure TMainForm.GridBtnClick(Sender: TObject);
 var
   Form: TGridForm;
 begin
   Application.CreateForm(TGridForm, Form);
 end;
 
-procedure TMainForm.ExitBtnClicked(Sender: TObject);
+procedure TMainForm.ExitBtnClick(Sender: TObject);
 begin
   Close;
 end;
@@ -212,6 +212,12 @@ end;
 procedure TGroupBoxForm.ButtonClick(Sender: TObject);
 begin
   Radio1.Checked := True;
+  Button.Enabled := False;
+end;
+
+procedure TGroupBoxForm.RadioButtonClick(Sender: TObject);
+begin
+  Button.Enabled := not Radio1.Checked;
 end;
 
 
@@ -271,19 +277,6 @@ end;
 
 
 // -------------------------------------------------------------------
-//   TListBoxForm
-// -------------------------------------------------------------------
-
-procedure TListBoxForm.FormCreate(Sender: TObject);
-var
-  i: Integer;
-begin
-  for i := 1 to 20 do
-    ListBox.Items.Add('Item ' + IntToStr(i));
-end;
-
-
-// -------------------------------------------------------------------
 //   TComboBoxForm
 // -------------------------------------------------------------------
 
@@ -311,6 +304,7 @@ end;
 var
   MainForm: TMainForm;
 begin
+WriteLn('Version: ' + {$I %date%} + ' ' + {$I %time%});
   Application.Title := 'Widget Test';
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;

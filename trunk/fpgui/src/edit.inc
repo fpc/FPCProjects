@@ -24,6 +24,7 @@ constructor TCustomEdit.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   WidgetStyle := WidgetStyle + [wsCaptureMouse, wsClickable, wsOpaque];
+  FCanExpandWidth := True;
 end;
 
 procedure TCustomEdit.Paint(Canvas: TGfxCanvas);
@@ -150,6 +151,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.2  2000/12/24 13:18:12  sg
   * Some small fixes (improved speed, and better scrollbar handling where
     appropiate)

@@ -61,7 +61,11 @@
     property Canvas: TGfxCanvas read FCanvas write FCanvas;
   end;
 
-  TPreparePaintEventObj = class(TPaintingEventObj);
+  TPreparePaintEventObj = class(TPaintingEventObj)
+  public
+    // To prevent invisible children to be processed:
+    function SendToChild(AChild: TWidget): Boolean; override;
+  end;
 
   TPaintEventObj = class(TPaintingEventObj)
   public
@@ -115,12 +119,12 @@
 
   TMouseWheelEventObj = class(TMouseEventObj)
   private
-    FWheelDelta: Integer;
+    FWheelDelta: Single;
   public
     constructor Create(ASender: TObject; AShift: TShiftState;
-      AWheelDelta, AMouseX, AMouseY: Integer);
+      AWheelDelta: Single; AMouseX, AMouseY: Integer);
   published
-    property WheelDelta: Integer read FWheelDelta write FWheelDelta;
+    property WheelDelta: Single read FWheelDelta write FWheelDelta;
   end;
 
 
@@ -139,6 +143,7 @@
     FTop: Integer;
     FWidth: Integer;
     FHeight: Integer;
+    FClientRect: TRect;
     FOnClick: TNotifyEvent;
     // Property access
     procedure SetParent(AParent: TWidget);
@@ -179,8 +184,8 @@
     procedure SetCanExpandWidth(allow: Boolean);
     procedure SetCanExpandHeight(allow: Boolean);
     procedure SetText(const AText: String);
-    property CanExpandWidth: Boolean read FCanExpandWidth write SetCanExpandWidth default True;
-    property CanExpandHeight: Boolean read FCanExpandHeight write SetCanExpandHeight default True;
+    property CanExpandWidth: Boolean read FCanExpandWidth write SetCanExpandWidth default False;
+    property CanExpandHeight: Boolean read FCanExpandHeight write SetCanExpandHeight default False;
     property Text: String read FText write SetText;
     property OnClick: TNotifyEvent read FOnClick write FOnClick;
   public
@@ -190,16 +195,21 @@
     function FindForm: TCustomForm;
     procedure SetEmbeddedParent(AParent: TWidget);
     procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+    function ClientToScreen(const APoint: TPoint): TPoint; virtual;
     procedure Update;
     procedure RecalcLayout;
     procedure Show; dynamic;
+    procedure Hide; dynamic;
     procedure Redraw;
+    procedure Redraw(const ARect: TRect);
+    procedure Scroll(const ARect: TRect; DeltaX, DeltaY: Integer);
     procedure SetFocus;
     property Parent: TWidget read FParent write SetParent;
     property Left: Integer read FLeft;
     property Top: Integer read FTop;
     property Width: Integer read FWidth;
     property Height: Integer read FHeight;
+    property ClientRect: TRect read FClientRect;
     property Style: TStyle read GetStyle;
     property Enabled: Boolean read FEnabled write SetEnabled default True;
   end;
@@ -207,6 +217,9 @@
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

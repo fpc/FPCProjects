@@ -24,29 +24,13 @@ constructor TCustomForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
+  FCanExpandWidth := True;
+  FCanExpandHeight := True;
+  FFrameType := True;
+
   if not Assigned(FStyle) then
     FStyle := Application.DefaultStyle;
 
-  FWnd := Application.Display.CreateWindow;
-  Wnd.OnClose := @WndClose;
-  Wnd.OnFocusIn := @WndFocusIn;
-  Wnd.OnFocusOut := @WndFocusOut;
-  Wnd.OnHide := @WndHide;
-  Wnd.OnKeyPressed := @WndKeyPressed;
-  Wnd.OnKeyReleased := @WndKeyReleased;
-  Wnd.OnKeyChar := @WndKeyChar;
-  Wnd.OnMouseEnter := @WndMouseEnter;
-  Wnd.OnMouseLeave := @WndMouseLeave;
-  Wnd.OnMouseMove := @WndMouseMoved;
-  Wnd.OnMousePressed := @WndMousePressed;
-  Wnd.OnMouseReleased := @WndMouseReleased;
-  Wnd.OnMouseWheel := @WndMouseWheel;
-  Wnd.OnPaint := @WndPaint;
-  Wnd.OnResize := @WndResize;
-  Wnd.OnShow := @WndShow;
-
-  if Length(Text) = 0 then
-    Wnd.Title := Application.Title;
 end;
 
 destructor TCustomForm.Destroy;
@@ -60,6 +44,10 @@ end;
 procedure TCustomForm.Show;
 begin
   LAYOUTTRACE('TCustomForm.Show for %s:%s', [Name, ClassName]);
+
+  if not Assigned(Wnd) then
+    CreateWnd;
+
   { Don't call the inherited method, as we process the hide & show events
     delivered by fpGFX for forms. }
   if WidgetState * [wsGetsVisible, wsIsVisible] = [] then
@@ -75,6 +63,18 @@ procedure TCustomForm.Close;
 begin
   FWnd.Free;
   FWnd := nil;
+end;
+
+procedure TCustomForm.SetPosition(APosition: TPoint);
+begin
+  if Assigned(Wnd) then
+    Wnd.SetPosition(APosition.x, APosition.y)
+  else
+  begin
+    FLeft := APosition.x;
+    FTop := APosition.y;
+    FPositionSpecified := True;
+  end;
 end;
 
 procedure TCustomForm.WidgetCoords(AWidget: TWidget; var OutX, OutY: Integer);
@@ -115,8 +115,6 @@ begin
 end;
 
 procedure TCustomForm.EvRecalcLayout;
-var
-  OrigW, OrigH: Integer;
 begin
   if Assigned(Child) then
   begin
@@ -127,42 +125,82 @@ begin
     MaxW := Min(InfiniteSize, Child.MaxW + 2 * BorderWidth);
     MaxH := Min(InfiniteSize, Child.MaxH + 2 * BorderWidth);
   end;
-
-  Wnd.SetMinMaxSize(MinW, MinH, MaxW, MaxH);
-
-  OrigW := Width;
-  OrigH := Height;
-
-  if (Width < MinW) or (Height < MinW) or (Width > MaxW) or (Height > MaxH) then
-  begin
-    if Width < MinW then
-      FWidth := MinW;
-    if Height < MinH then
-      FHeight := MinH;
-    if Width > MaxW then
-      FWidth := MaxW;
-    if Height > MaxH then
-      FHeight := MaxH;
-    Wnd.SetSize(Width, Height);
-  end;
-
-  if not FResizedByUser then
-  begin
-    FWidth := DefW;
-    FHeight := DefH;
-    if (Width <> OrigW) or (Height <> OrigH) then
-    begin
-      LAYOUTTRACE('TCustomForm.EvRecalcLayout for %s:%s: Setting size to %dx%d',
-        [Name, ClassName, DefW, DefH]);
-      Wnd.SetSize(Width, Height);
-      Resized;
-    end;
-  end;
+  ApplyNewLayout;
 end;
 
 procedure TCustomForm.EvTextChanged;
 begin
-  Wnd.Title := Text;
+  if Assigned(Wnd) then
+    Wnd.Title := Text;
+end;
+
+
+// other protected methods
+
+procedure TCustomForm.CreateWnd;
+begin
+  FWnd := Application.Display.DefaultScreen.CreateWindow(FrameType);
+  if FPositionSpecified then
+    Wnd.SetPosition(Left, Top);
+  Wnd.OnClose := @WndClose;
+  Wnd.OnFocusIn := @WndFocusIn;
+  Wnd.OnFocusOut := @WndFocusOut;
+  Wnd.OnHide := @WndHide;
+  Wnd.OnKeyPressed := @WndKeyPressed;
+  Wnd.OnKeyReleased := @WndKeyReleased;
+  Wnd.OnKeyChar := @WndKeyChar;
+  Wnd.OnMouseEnter := @WndMouseEnter;
+  Wnd.OnMouseLeave := @WndMouseLeave;
+  Wnd.OnMouseMove := @WndMouseMoved;
+  Wnd.OnMousePressed := @WndMousePressed;
+  Wnd.OnMouseReleased := @WndMouseReleased;
+  Wnd.OnMouseWheel := @WndMouseWheel;
+  Wnd.OnPaint := @WndPaint;
+  Wnd.OnMove := @WndMove;
+  Wnd.OnResize := @WndResize;
+  Wnd.OnShow := @WndShow;
+
+  if Length(Text) = 0 then
+    Wnd.Title := Application.Title
+  else
+    Wnd.Title := Text;
+end;
+
+procedure TCustomForm.ApplyNewLayout;
+var
+  OrigW, OrigH: Integer;
+begin
+  Wnd.SetMinMaxClientSize(MinW, MinH, MaxW, MaxH);
+
+  OrigW := ClientRect.Right;
+  OrigH := ClientRect.Bottom;
+
+  if (ClientRect.Right < MinW) or (ClientRect.Bottom < MinW) or
+    (ClientRect.Right > MaxW) or (ClientRect.Bottom > MaxH) then
+  begin
+    if ClientRect.Right < MinW then
+      FClientRect.Right := MinW;
+    if ClientRect.Bottom < MinH then
+      FClientRect.Bottom := MinH;
+    if ClientRect.Right > MaxW then
+      FClientRect.Right := MaxW;
+    if ClientRect.Bottom > MaxH then
+      FClientRect.Bottom := MaxH;
+//    Wnd.SetClientSize(ClientRect.Right, ClientRect.Bottom);
+  end;
+
+  if not FResizedByUser then
+  begin
+    FClientRect.Right := DefW;
+    FClientRect.Bottom := DefH;
+  end;
+
+  if (ClientRect.Right <> OrigW) or (ClientRect.Bottom <> OrigH) then
+  begin
+    LAYOUTTRACE('TCustomForm.EvRecalcLayout for %s:%s: Setting size to %dx%d',
+      [Name, ClassName, ClientRect.Right, ClientRect.Bottom]);
+    Wnd.SetClientSize(ClientRect.Right, ClientRect.Bottom);
+  end;
 end;
 
 
@@ -170,9 +208,11 @@ end;
 
 procedure TCustomForm.Resized;
 begin
+  ClientRect.Right := Wnd.ClientWidth;
+  ClientRect.Bottom := Wnd.ClientHeight;
   if Assigned(Child) then
     Child.SetBounds(BorderWidth, BorderWidth,
-      Width - 2 * BorderWidth, Height - 2 * BorderWidth);
+      ClientRect.Right - 2 * BorderWidth, ClientRect.Bottom - 2 * BorderWidth);
 end;
 
 procedure TCustomForm.SetFocusedWidget(AWidget: TWidget);
@@ -216,6 +256,8 @@ begin
   FIsActive := True;
   if Assigned(FocusedWidget) then
     FocusedWidget.EvFocusChanged;
+  if Assigned(OnActivate) then
+    OnActivate(Self);
 end;
 
 procedure TCustomForm.WndFocusOut(Sender: TObject);
@@ -223,6 +265,8 @@ begin
   FIsActive := False;
   if Assigned(FocusedWidget) then
     FocusedWidget.EvFocusChanged;
+  if Assigned(OnDeactivate) then
+    OnDeactivate(Self);
 end;
 
 procedure TCustomForm.WndHide(Sender: TObject);
@@ -342,7 +386,7 @@ begin
 end;
 
 procedure TCustomForm.WndMouseWheel(Sender: TObject; Shift: TShiftState;
-  WheelDelta, x, y: Integer);
+  WheelDelta: Single; x, y: Integer);
 begin
   if wsEnabled in WidgetState then
     SendEvent(TMouseWheelEventObj.Create(Self, Shift, WheelDelta, x, y));
@@ -356,11 +400,17 @@ begin
     SendEvent(TPaintEventObj.Create(Self, Wnd.Canvas));
 end;
 
+procedure TCustomForm.WndMove(Sender: TObject);
+begin
+  FLeft := Wnd.Left;
+  FTop := Wnd.Top;
+end;
+
 procedure TCustomForm.WndResize(Sender: TObject);
 begin
   LAYOUTTRACE('TCustomForm.WndResize for %s:%s: New size is %dx%d. Visible? %d',
     [Name, ClassName, Wnd.Width, Wnd.Height, Ord(wsIsVisible in WidgetState)]);
-  if wsIsVisible in WidgetState then
+  if WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
   begin
     FResizedByUser := (Wnd.Width <> DefW) or (Wnd.Height <> DefH);
     SetBounds(Left, Top, Wnd.Width, Wnd.Height);
@@ -381,6 +431,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.2  2000/12/24 13:18:12  sg
   * Some small fixes (improved speed, and better scrollbar handling where
     appropiate)

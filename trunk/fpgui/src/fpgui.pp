@@ -35,6 +35,9 @@ type
   TColor = type LongWord;
 
 const
+
+  InfiniteSize = 16383;
+
   {COLOR_HOTLIGHT = 26;
   COLOR_GRADIENTACTIVECAPTION = 27;
   COLOR_GRADIENTINACTIVECAPTION = 28;
@@ -102,7 +105,7 @@ type
 
   // The following flags are used for styles
 
-  TButtonFlags = set of (btnIsDefault, btnIsPressed,
+  TButtonFlags = set of (btnIsEmbedded, btnIsDefault, btnIsPressed,
     btnIsSelected, btnHasFocus);
 
   TCheckboxFlags = set of (cbIsPressed, cbHasFocus, cbIsEnabled, cbIsChecked);
@@ -154,8 +157,6 @@ implementation
 uses XMLRead {!!!:, XMLStreaming};
 
 const
-  InfiniteSize = 16383;
-
   // !!!: Only here until FCL has been switched to Resourcestrings
   SListIndexError = 'List index exceeds bounds (%d)';
 
@@ -267,6 +268,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.2  2000/12/24 13:18:12  sg
   * Some small fixes (improved speed, and better scrollbar handling where
     appropiate)

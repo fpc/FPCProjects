@@ -27,7 +27,7 @@
     FOnScroll: TScrollEvent;
     ButtonUp, ButtonDown: TGenericButton;
     Slider: TWidget;
-    HasBorder: Boolean;		// for internal embedded usage!
+    Embedded: Boolean;		// for internal embedded usage!
 
     // Event handling
     procedure Resized;
@@ -35,18 +35,21 @@
     procedure ButtonDownClick(Sender: TObject);
     // Property access
     procedure SetOrientation(AOrientation: TOrientation);
+    procedure SetMin(AMin: Integer);
+    procedure SetMax(AMax: Integer);
     procedure SetPageSize(APageSize: Integer);
     procedure SetPosition(APosition: Integer);
     // Helpers
     function GetButtonSize: Integer;
+    function ClipPosition(APosition: Integer): Integer;
   protected
     function ProcessEvent(Event: TEventObj): Boolean; override;
     function DistributeEvent(Event: TEventObj): Boolean; override;
     procedure Paint(Canvas: TGfxCanvas); override;
     procedure EvRecalcLayout; override;
     property Orientation: TOrientation read FOrientation write SetOrientation;
-    property Min: Integer read FMin write FMin default 0;
-    property Max: Integer read FMax write FMax default 100;
+    property Min: Integer read FMin write SetMin default 0;
+    property Max: Integer read FMax write SetMax default 100;
     property PageSize: Integer read FPageSize write SetPageSize;
     property Position: Integer read FPosition write SetPosition default 0;
     property SmallChange: Integer read FSmallChange write FSmallChange default 1;
@@ -78,6 +81,9 @@
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

@@ -2,52 +2,64 @@ object MainForm: TMainForm
   Text = 'Widget tests'
   BorderWidth = 8
   object Box: TBoxLayout
+    CanExpandWidth = False
     Spacing = 8
     Orientation = Vertical
     object Label: TLabel
+      CanExpandWidth = True
       Text = 'Choose a test form:'
     end
     object CheckboxBtn: TButton
+      CanExpandWidth = True
       Text = 'Check boxes'
-      OnClick = CheckboxBtnClicked
+      OnClick = CheckboxBtnClick
     end
     object RadioButtonBtn: TButton
+      CanExpandWidth = True
       Text = 'Radio buttons'
-      OnClick = RadioButtonBtnClicked
+      OnClick = RadioButtonBtnClick
     end
     object GroupBoxBtn: TButton
+      CanExpandWidth = True
       Text = 'Group boxes'
-      OnClick = GroupBoxBtnClicked
+      OnClick = GroupBoxBtnClick
     end
     object EditBtn: TButton
+      CanExpandWidth = True
       Text = 'Edit fields'
-      OnClick = EditBtnClicked
+      OnClick = EditBtnClick
     end
     object ScrollBarBtn: TButton
+      CanExpandWidth = True
       Text = 'Scroll bars'
-      OnClick = ScrollBarBtnClicked
+      OnClick = ScrollBarBtnClick
     end
     object ScrollBoxBtn: TButton
+      CanExpandWidth = True
       Text = 'Scroll boxes'
-      OnClick = ScrollBoxBtnClicked
+      OnClick = ScrollBoxBtnClick
     end
     object ListBoxBtn: TButton
+      CanExpandWidth = True
       Text = 'List boxes'
-      OnClick = ListBoxBtnClicked
+      OnClick = ListBoxBtnClick
     end
     object ComboBoxBtn: TButton
+      CanExpandWidth = True
       Text = 'Combo boxes'
-      OnClick = ComboBoxBtnClicked
+      OnClick = ComboBoxBtnClick
     end
     object GridBtn: TButton
+      CanExpandWidth = True
       Text = 'Grids'
-      OnClick = GridBtnClicked
+      OnClick = GridBtnClick
     end
     object Separator: TSeparator
     end
     object ExitBtn: TButton
+      CanExpandWidth = True
       Text = 'Exit'
-      OnClick = ExitBtnClicked
+      OnClick = ExitBtnClick
     end
   end
 end

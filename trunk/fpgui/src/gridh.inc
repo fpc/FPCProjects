@@ -62,6 +62,8 @@
  AState: TGridDrawState); virtual; abstract;
     procedure RowHeightsChanged; dynamic;
     procedure SizeChanged(OldColCount, OldRowCount: Integer); dynamic;
+    property CanExpandWidth default True;
+    property CanExpandHeight default True;
     property ColCount: Integer read FColCount write SetColCount default 5;
     property RowCount: Integer read FRowCount write SetRowCount default 5;
     property FixedCols: Integer read FFixedCols write FFixedCols default 1;
@@ -141,6 +143,9 @@
 
 {
   $Log$
+  Revision 1.3  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.2  2000/12/24 13:18:12  sg
   * Some small fixes (improved speed, and better scrollbar handling where
     appropiate)

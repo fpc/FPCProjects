@@ -20,7 +20,7 @@
 //   TStyle
 // ===================================================================
 
-constructor TStyle.Create(ADevice: TGfxDevice);
+constructor TStyle.Create(ADisplay: TGfxDisplay);
 begin
   inherited Create;
 end;
@@ -48,59 +48,124 @@ const
   rgbaGray: TGfxColor = (Red: $8000; Green: $8000; Blue: $8000; Alpha: 0);
   rgbaBlack: TGfxColor = (Red: $0000; Green: $0000; Blue: $0000; Alpha: 0);
   rgbaBlue: TGfxColor = (Red: $0000; Green: $0000; Blue: $ffff; Alpha: 0);
+  rgbaDkBlue: TGfxColor = (Red: $0000; Green: $0000; Blue: $8000; Alpha: 0);
   rgbaLtYellow: TGfxColor = (Red: $ffff; Green: $ffff; Blue: $e100; Alpha: 0);
 
 
-constructor TDefaultStyle.Create(ADevice: TGfxDevice);
-
-  function CreateMonoBitmap(Data: Pointer; w, h: Integer): TGfxImage;
-  begin
-    Result := ADevice.CreateImage(w, h, PixelFormatMono);
-    Result.SetPixelsFromData(Data, (w + 7) div 8);
-  end;
-
+constructor TDefaultStyle.Create(ADisplay: TGfxDisplay);
 const
-  RadioBitmap0Data: array[0..11] of Word = 
-    ($0f0, $30c, $002, $002, $001, $001, $001, $001, $002, $002, $000, $000);
-  RadioBitmap1Data: array[0..11] of Word = 
-    ($000, $0f0, $30c, $004, $002, $002, $002, $002, $004, $000, $000, $000);
-  RadioBitmap2Data: array[0..11] of Word = 
-    ($000, $000, $400, $400, $800, $800, $800, $800, $400, $400, $30c, $0f0);
-  RadioBitmap3Data: array[0..11] of Word = 
-    ($000, $000, $000, $200, $400, $400, $400, $400, $200, $30c, $0f0, $000);
-  RadioBitmap4Data: array[0..11] of Word = 
-    ($000, $000, $0f0, $1f8, $3fc, $3fc, $3fc, $3fc, $1f8, $0f0, $000, $000);
-  RadioBitmap5Data: array[0..11] of Word = 
-    ($000, $000, $000, $000, $060, $0f0, $0f0, $060, $000, $000, $000, $000);
-  CheckBitmapData: array[0..7] of Byte = ($00, $80, $c0, $e2, $76, $3e, $1c, $08);
-  ArrowUpBitmapData: array[0..3] of Byte = ($08, $1c, $3e, $7f);
-  ArrowDownBitmapData: array[0..3] of Byte = ($7f, $3e, $1c, $08);
-  ArrowLeftBitmapData: array[0..6] of Byte = ($08, $0c, $0e, $0f, $0e, $0c, $08);
-  ArrowRightBitmapData: array[0..6] of Byte = ($01, $03, $07, $0f, $07, $03, $01);
+  // 60x12 pixel 4bpp bitmap
+  RadioBitmapData: array[0..359] of Byte = (
+    $00, $00, $22, $22, $00, $00, $00, $00, $22, $22, $00, $00, $00, $00, $22, $22, $00, $00, $00, $00, $22, $22, $00, $00, $00, $00, $22, $22, $00, $00,
+    $00, $22, $11, $11, $22, $00, $00, $22, $11, $11, $22, $00, $00, $22, $11, $11, $22, $00, $00, $22, $11, $11, $22, $00, $00, $22, $11, $11, $22, $00,
+    $02, $11, $77, $77, $11, $50, $02, $11, $77, $77, $11, $50, $02, $11, $33, $33, $11, $50, $02, $11, $33, $33, $11, $50, $02, $11, $33, $33, $11, $50,
+    $02, $17, $77, $77, $74, $50, $02, $17, $77, $77, $74, $50, $02, $13, $33, $33, $34, $50, $02, $13, $33, $33, $34, $50, $02, $13, $33, $33, $34, $50,
+    $21, $77, $77, $77, $77, $45, $21, $77, $76, $67, $77, $45, $21, $33, $33, $33, $33, $45, $21, $33, $36, $63, $33, $45, $21, $33, $32, $23, $33, $45,
+    $21, $77, $77, $77, $77, $45, $21, $77, $66, $66, $77, $45, $21, $33, $33, $33, $33, $45, $21, $33, $66, $66, $33, $45, $21, $33, $22, $22, $33, $45,
+    $21, $77, $77, $77, $77, $45, $21, $77, $66, $66, $77, $45, $21, $33, $33, $33, $33, $45, $21, $33, $66, $66, $33, $45, $21, $33, $22, $22, $33, $45,
+    $21, $77, $77, $77, $77, $45, $21, $77, $76, $67, $77, $45, $21, $33, $33, $33, $33, $45, $21, $33, $36, $63, $33, $45, $21, $33, $32, $23, $33, $45,
+    $02, $17, $77, $77, $74, $50, $02, $17, $77, $77, $74, $50, $02, $13, $33, $33, $34, $50, $02, $13, $33, $33, $34, $50, $02, $13, $33, $33, $34, $50,
+    $02, $44, $77, $77, $44, $50, $02, $44, $77, $77, $44, $50, $02, $44, $33, $33, $44, $50, $02, $44, $33, $33, $44, $50, $02, $44, $33, $33, $44, $50,
+    $00, $55, $44, $44, $55, $00, $00, $55, $44, $44, $55, $00, $00, $55, $44, $44, $55, $00, $00, $55, $44, $44, $55, $00, $00, $55, $44, $44, $55, $00,
+    $00, $00, $55, $55, $00, $00, $00, $00, $55, $55, $00, $00, $00, $00, $55, $55, $00, $00, $00, $00, $55, $55, $00, $00, $00, $00, $55, $55, $00, $00
+  );
+
+  // 12x12 pixel monochrome bitmap
+  RadioMaskData: array[0..23] of Byte = ($0f, $00, $3f, $c0, $7f, $e0, $7f,
+    $e0, $ff, $f0, $ff, $f0, $ff, $f0, $ff, $f0, $7f, $e0, $7f, $e0, $3f, $c0,
+    $0f, $00);
+
+  // 65x13 pixel 4bpp bitmap
+  CheckBoxBitmapData: array[0..428] of Byte = (
+    $22, $22, $22, $22, $22, $22, $52, $22, $22, $22, $22, $22, $25, $22, $22, $22, $22, $22, $22, $52, $22, $22, $22, $22, $22, $25, $22, $22, $22, $22, $22, $22, $50,
+    $21, $11, $11, $11, $11, $14, $52, $11, $11, $11, $11, $11, $45, $21, $11, $11, $11, $11, $14, $52, $11, $11, $11, $11, $11, $45, $21, $11, $11, $11, $11, $14, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $77, $77, $77, $77, $45, $21, $33, $33, $33, $33, $34, $52, $13, $33, $33, $33, $33, $45, $21, $33, $33, $33, $33, $34, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $77, $77, $77, $67, $45, $21, $33, $33, $33, $33, $34, $52, $13, $33, $33, $33, $63, $45, $21, $33, $33, $33, $32, $34, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $77, $77, $76, $67, $45, $21, $33, $33, $33, $33, $34, $52, $13, $33, $33, $36, $63, $45, $21, $33, $33, $33, $22, $34, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $67, $77, $66, $67, $45, $21, $33, $33, $33, $33, $34, $52, $13, $63, $33, $66, $63, $45, $21, $32, $33, $32, $22, $34, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $66, $76, $66, $77, $45, $21, $33, $33, $33, $33, $34, $52, $13, $66, $36, $66, $33, $45, $21, $32, $23, $22, $23, $34, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $66, $66, $67, $77, $45, $21, $33, $33, $33, $33, $34, $52, $13, $66, $66, $63, $33, $45, $21, $32, $22, $22, $33, $34, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $76, $66, $77, $77, $45, $21, $33, $33, $33, $33, $34, $52, $13, $36, $66, $33, $33, $45, $21, $33, $22, $23, $33, $34, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $77, $67, $77, $77, $45, $21, $33, $33, $33, $33, $34, $52, $13, $33, $63, $33, $33, $45, $21, $33, $32, $33, $33, $34, $50,
+    $21, $77, $77, $77, $77, $74, $52, $17, $77, $77, $77, $77, $45, $21, $33, $33, $33, $33, $34, $52, $13, $33, $33, $33, $33, $45, $21, $33, $33, $33, $33, $34, $50,
+    $24, $44, $44, $44, $44, $44, $52, $44, $44, $44, $44, $44, $45, $24, $44, $44, $44, $44, $44, $52, $44, $44, $44, $44, $44, $45, $24, $44, $44, $44, $44, $44, $50,
+    $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $55, $50
+  );
+
+  // 64x8 pixel 4bpp bitmap
+  ArrowBitmapData: array[0..255] of Byte = (
+    $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $13, $33, $33, $31, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $23, $33, $33, $23, $33, $33,
+    $33, $33, $33, $33, $33, $33, $33, $33, $33, $31, $13, $33, $33, $31, $13, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $32, $25, $33, $33, $22, $33, $33,
+    $33, $31, $33, $33, $11, $11, $11, $13, $33, $11, $13, $33, $33, $31, $11, $33, $33, $32, $33, $33, $22, $22, $22, $23, $33, $22, $25, $33, $33, $22, $23, $33,
+    $33, $11, $13, $33, $31, $11, $11, $33, $31, $11, $13, $33, $33, $31, $11, $13, $33, $22, $23, $33, $32, $22, $22, $55, $32, $22, $25, $33, $33, $22, $22, $33,
+    $31, $11, $11, $33, $33, $11, $13, $33, $33, $11, $13, $33, $33, $31, $11, $33, $32, $22, $22, $33, $33, $22, $25, $53, $33, $22, $25, $33, $33, $22, $25, $53,
+    $11, $11, $11, $13, $33, $31, $33, $33, $33, $31, $13, $33, $33, $31, $13, $33, $22, $22, $22, $23, $33, $32, $55, $33, $33, $32, $25, $33, $33, $22, $55, $33,
+    $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $13, $33, $33, $31, $33, $33, $35, $55, $55, $55, $33, $33, $53, $33, $33, $33, $25, $33, $33, $25, $53, $33,
+    $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $33, $35, $33, $33, $35, $33, $33
+  );
+
+var
+  PalData: array[0..7] of TGfxColor;
+  Palette: TGfxPalette;
+  Image: TGfxImage;
 begin
-  inherited Create(ADevice);
-  RadioBitmaps[0] := CreateMonoBitmap(@RadioBitmap0Data, 12, 12);
-  RadioBitmaps[1] := CreateMonoBitmap(@RadioBitmap1Data, 12, 12);
-  RadioBitmaps[2] := CreateMonoBitmap(@RadioBitmap2Data, 12, 12);
-  RadioBitmaps[3] := CreateMonoBitmap(@RadioBitmap3Data, 12, 12);
-  RadioBitmaps[4] := CreateMonoBitmap(@RadioBitmap4Data, 12, 12);
-  RadioBitmaps[5] := CreateMonoBitmap(@RadioBitmap5Data, 12, 12);
-  CheckBitmap := CreateMonoBitmap(@CheckBitmapData, 8, 8);
-  ArrowBitmaps[arrowUp] := CreateMonoBitmap(@ArrowUpBitmapData, 7, 4);
-  ArrowBitmaps[arrowDown] := CreateMonoBitmap(@ArrowDownBitmapData, 7, 4);
-  ArrowBitmaps[arrowLeft] := CreateMonoBitmap(@ArrowLeftBitmapData, 4, 7);
-  ArrowBitmaps[arrowRight] := CreateMonoBitmap(@ArrowRightBitmapData, 4, 7);
+  inherited Create(ADisplay);
+
+  PalData[0] := colMagenta;
+  PalData[1] := colBlack;
+  PalData[2] := rgbaGray;
+  PalData[3] := rgbaLtGray;
+  PalData[4] := rgbaLtLtGray;
+  PalData[5] := colWhite;
+  PalData[6] := GetGUIColor(clWindowText);
+  PalData[7] := GetGUIColor(clWindow);
+
+{  PalData[1] := GetGUIColor(cl3DDkShadow);
+  PalData[2] := GetGUIColor(cl3DShadow);
+  PalData[3] := GetGUIColor(cl3DFace);
+  PalData[4] := GetGUIColor(cl3DHighlight);
+  PalData[5] := GetGUIColor(clWindow);
+  PalData[6] := GetGUIColor(clWindowText);}
+
+  { The image canvas contains 3 horizontal stripes:
+    - y=0..11: Radio button images (5x 12x12 pixel)
+    - y=12..24: Check box images (5x 13x13 pixel)
+    - y=25..32: Arrow images (8x 8x8 pixel) }
+
+  ImageCanvas := ADisplay.DefaultScreen.CreateBitmap(65, 33);
+  MaskCanvas := ADisplay.DefaultScreen.CreateMonoBitmap(12, 12);
+  Palette := ADisplay.DefaultScreen.CreatePalette(8, @PalData);
+
+  Image := ADisplay.CreateImage(60, 12, PixelFormatPal4);
+  Image.Palette := Palette;
+  Image.SetPixelsFromData(@RadioBitmapData, 30);
+  ImageCanvas.DrawImage(Image, 0, 0);
+  Image.Free;
+
+  Image := ADisplay.CreateImage(12, 12, PixelFormatMono);
+  Image.SetPixelsFromData(@RadioMaskData, 2);
+  MaskCanvas.DrawImage(Image, 0, 0);
+  Image.Free;
+
+  Image := ADisplay.CreateImage(66, 13, PixelFormatPal4); {!!!: width is 65, but fpGFX emulayer has a problem with odd widths}
+  Image.Palette := Palette;
+  Image.SetPixelsFromData(@CheckBoxBitmapData, 33);
+  ImageCanvas.DrawImage(Image, 0, 12);
+  Image.Free;
+
+  Image := ADisplay.CreateImage(64, 8, PixelFormatPal4);
+  Image.Palette := Palette;
+  Image.SetPixelsFromData(@ArrowBitmapData, 32);
+  ImageCanvas.DrawImage(Image, 0, 25);
+  Image.Free;
+
+  Palette.Release;
 end;
 
 destructor TDefaultStyle.Destroy;
-var
-  i: Integer;
 begin
-  for i := Ord(Low(TArrowDirection)) to Ord(High(TArrowDirection)) do
-    ArrowBitmaps[TArrowDirection(i)].Free;
-  CheckBitmap.Free;
-  for i := 0 to 5 do
-    RadioBitmaps[i].Free;
+  MaskCanvas.Free;
+  ImageCanvas.Free;
   inherited Destroy;
 end;
 
@@ -134,11 +199,13 @@ end;
 
 procedure TDefaultStyle.DrawFocusRect(Canvas: TGfxCanvas; const ARect: TRect);
 begin
-//  Canvas.SetColor(GC.MapColor(rgbaBlack));
-//  Canvas.SetLineStyle(lsDot);	// !!!: Disabled as long a a certain nVidia X-Server has bugs with this...
+  // !!!: Disabled as long a a certain nVidia X-Server has bugs with this...
+{  Canvas.SetColor(Canvas.MapColor(rgbaBlack));
+  Canvas.SetLineStyle(lsDot);
+  Canvas.DrawRect(ARect);
+  Canvas.SetLineStyle(lsSolid);}
   Canvas.SetColor(Canvas.MapColor(rgbaGray));
   Canvas.DrawRect(ARect);
-  Canvas.SetLineStyle(lsSolid);
 end;
 
 procedure TDefaultStyle.DrawSunkenOuterBorder(Canvas: TGfxCanvas;
@@ -167,7 +234,7 @@ begin
     clMenuText: Result := rgbaBlack;
     clWindowText: Result := rgbaBlack;
     clAppWorkSpace: Result := rgbaGray;
-    clHighlight: Result := rgbaBlue;
+    clHighlight: Result := rgbaDkBlue;
     clHighlightText: Result := rgbaWhite;
     cl3DFace: Result := rgbaLtGray;
     cl3DShadow: Result := rgbaGray;
@@ -192,6 +259,24 @@ begin
     SetUIColor(Canvas, cl3DShadow);
   end;
   Canvas.TextOut(x, y, AText);
+end;
+
+procedure TDefaultStyle.DrawItemBefore(Canvas: TGfxCanvas; const ARect: TRect;
+  Flags: TItemFlags);
+begin
+  if ifSelected in Flags then
+  begin
+    SetUIColor(Canvas, clHighlight);
+    Canvas.FillRect(ARect);
+    SetUIColor(Canvas, clHighlightText);
+  end;
+end;
+
+procedure TDefaultStyle.DrawItemAfter(Canvas: TGfxCanvas; const ARect: TRect;
+  Flags: TItemFlags);
+begin
+  if ifFocused in Flags then
+    DrawFocusRect(Canvas, ARect);
 end;
 
 procedure TDefaultStyle.DrawWindowBackground(Canvas: TGfxCanvas;
@@ -228,7 +313,10 @@ begin
     Dec(r.Bottom);
   end else
   begin
-    Draw3DFrame(Canvas, r, cl3DHighlight, cl3DLight, cl3DDkShadow, cl3DShadow);
+    if btnIsEmbedded in Flags then
+      Draw3DFrame(Canvas, r, cl3DLight, cl3DHighlight, cl3DDkShadow, cl3DShadow)
+    else
+      Draw3DFrame(Canvas, r, cl3DHighlight, cl3DLight, cl3DDkShadow, cl3DShadow);
     Inc(r.Left, 2);
     Inc(r.Top, 2);
     Dec(r.Right, 2);
@@ -328,29 +416,24 @@ end;
 procedure TDefaultStyle.DrawCheckBox(Canvas: TGfxCanvas;
   const ARect, LabelRect: TRect; Flags: TCheckboxFlags);
 var
-  BoxY: Integer;
+  Index, BoxY: Integer;
 begin
   SetUIColor(Canvas, cl3DFace);
   Canvas.FillRect(ARect);
   with ARect do
   begin
     BoxY := Top + (Bottom - Top - 13) div 2;
-    Draw3DFrame(Canvas, Rect(Left, BoxY, Left + 13, BoxY + 13),
-      cl3DShadow, cl3DDkShadow, cl3DHighlight, cl3DFace);
-    if (not (cbIsEnabled in Flags)) or (cbIsPressed in Flags) then
-      SetUIColor(Canvas, cl3DFace)
-    else
-      SetUIColor(Canvas, clWindow);
-    Canvas.FillRect(Rect(Left + 2, BoxY + 2, Left + 11, BoxY + 11));
-    if cbIsChecked in Flags then
+    if cbIsEnabled in Flags then
     begin
-      if cbIsEnabled in Flags then
-        SetUIColor(Canvas, clWindowText)
-      else
-        SetUIColor(Canvas, cl3DShadow);
-      Canvas.DrawImage(CheckBitmap, Left + 2, BoxY + 2);
-    end;
+      Index := Ord(cbIsChecked in Flags);
+      if cbIsPressed in Flags then
+        Inc(Index, 2);
+    end else
+      Index := 2 + Ord(cbIsChecked in Flags) * 2;
+    Canvas.CopyRect(ImageCanvas, Rect(Index * 13, 12, (Index + 1) * 13, 25),
+      Left, BoxY);
   end;
+
   if cbHasFocus in Flags then
     with LabelRect do
       DrawFocusRect(Canvas, Rect(Left - 2, Top - 2, Right + 2, Bottom + 2));
@@ -367,34 +450,23 @@ end;
 
 procedure TDefaultStyle.DrawRadioButton(Canvas: TGfxCanvas;
   const ARect, LabelRect: TRect; Flags: TCheckboxFlags);
-const
-  Colors: array[0..3] of TColor = (cl3DShadow, cl3DDkShadow, cl3DHighlight, cl3DFace);
 var
-  i, BtnY: Integer;
+  Index, BtnY: Integer;
 begin
   SetUIColor(Canvas, cl3DFace);
   Canvas.FillRect(ARect);
   with ARect do
   begin
     BtnY := Top + (Bottom - Top - 12) div 2;
-    for i := 0 to 3 do
+    if cbIsEnabled in Flags then
     begin
-      SetUIColor(Canvas, Colors[i]);
-      Canvas.DrawImage(RadioBitmaps[i], Left, BtnY);
-    end;
-    if (cbIsPressed in Flags) or not (cbIsEnabled in Flags) then
-      SetUIColor(Canvas, cl3DFace)
-    else
-      SetUIColor(Canvas, clWindow);
-    Canvas.DrawImage(RadioBitmaps[4], Left, BtnY);
-    if cbIsChecked in Flags then
-    begin
-      if cbIsEnabled in Flags then
-        SetUIColor(Canvas, clWindowText)
-      else
-        SetUIColor(Canvas, cl3DShadow);
-      Canvas.DrawImage(RadioBitmaps[5], Left, BtnY);
-    end;
+      Index := Ord(cbIsChecked in Flags);
+      if cbIsPressed in Flags then
+        Inc(Index, 2);
+    end else
+      Index := 2 + Ord(cbIsChecked in Flags) * 2;
+    Canvas.MaskedCopyRect(ImageCanvas, MaskCanvas,
+      Rect(Index * 12, 0, (Index + 1) * 12, 12), 0, 0, Left, BtnY);
   end;
   if cbHasFocus in Flags then
     with LabelRect do
@@ -419,12 +491,12 @@ end;
 procedure TDefaultStyle.DrawComboBoxArrow(Canvas: TGfxCanvas;
   const ARect: TRect; IsPressed, IsEnabled: Boolean);
 var
-  x, y: Integer;
+  x, y, Index: Integer;
 begin
   with ARect do
   begin
-    x := Left + (Right - Left - 7) div 2;
-    y := Top + (Bottom - Top - 4) div 2;
+    x := Left + (Right - Left - 8) div 2;
+    y := Top + (Bottom - Top - 8) div 2;
   end;
   if IsPressed then
   begin
@@ -432,15 +504,8 @@ begin
     Inc(y);
   end;
 
-  if IsEnabled then
-    SetUIColor(Canvas, clBtnText)
-  else
-  begin
-    SetUIColor(Canvas, cl3DHighlight);
-    Canvas.DrawImage(ArrowBitmaps[arrowDown], x + 1, y + 1);
-    SetUIColor(Canvas, cl3DShadow);
-  end;
-    Canvas.DrawImage(ArrowBitmaps[arrowDown], x, y);
+  Index := 1 + Ord(not IsEnabled) * 4;
+  Canvas.CopyRect(ImageCanvas, Rect(Index * 8, 25, (Index + 1) * 8, 33), x, y);
 end;
 
 function TDefaultStyle.GetScrollBarBorders(Orientation: TOrientation): TRect;
@@ -478,27 +543,17 @@ end;
 procedure TDefaultStyle.DrawScrollBarButton(Canvas: TGfxCanvas;
   const ARect: TRect; Direction: TArrowDirection;
   IsPressed, IsEnabled: Boolean);
-const
-  Widths: array[TArrowDirection] of Integer = (7, 7, 4, 4);
-  Heights: array[TArrowDirection] of Integer = (4, 4, 7, 7);
 var
-  x, y: Integer;
+  x, y, Index: Integer;
 begin
   with ARect do
   begin
-    x := Left + (Right - Left - Widths[Direction]) div 2;
-    y := Top + (Bottom - Top - Heights[Direction]) div 2;
+    x := Left + (Right - Left - 8) div 2;
+    y := Top + (Bottom - Top - 8) div 2;
   end;
 
-  if IsEnabled then
-    SetUIColor(Canvas, clBtnText)
-  else
-  begin
-    SetUIColor(Canvas, cl3DHighlight);
-    Canvas.DrawImage(ArrowBitmaps[Direction], x + 1, y + 1);
-    SetUIColor(Canvas, cl3DShadow);
-  end;
-    Canvas.DrawImage(ArrowBitmaps[Direction], x, y);
+  Index := Ord(Direction) + Ord(not IsEnabled) * 4;
+  Canvas.CopyRect(ImageCanvas, Rect(Index * 8, 25, (Index + 1) * 8, 33), x, y);
 end;
 
 function TDefaultStyle.GetScrollBoxBorders: TRect;
@@ -516,6 +571,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

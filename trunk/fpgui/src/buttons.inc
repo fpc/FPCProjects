@@ -29,7 +29,10 @@ procedure TGenericButton.Paint(Canvas: TGfxCanvas);
 var
   Flags: TButtonFlags;
 begin
-  Flags := [];
+  if Embedded then
+    Flags := [btnIsEmbedded]
+  else
+    Flags := [];
   if (wsClicked in WidgetState) and (wsMouseInside in WidgetState) then
     Include(Flags, btnIsPressed);
   if (wsHasFocus in WidgetState) and not Embedded then
@@ -87,6 +90,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:11  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:14  sg
   * First public CVS version...
 

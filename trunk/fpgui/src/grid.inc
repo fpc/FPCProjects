@@ -31,6 +31,8 @@ var
   i: Integer;
 begin
   inherited Create(AOwner);
+  FCanExpandWidth := True;
+  FCanExpandHeight := True;
   ScrollingSupport := TScrollingSupport.Create(Self);
 
   FDefaultColWidth := 64;
@@ -41,6 +43,9 @@ begin
   FFixedRows := 1;
   GetMem(FColWidths, FColCount * SizeOf(Integer));
   GetMem(FRowHeights, FRowCount * SizeOf(Integer));
+
+  ScrollingSupport.HorzScrollBar.SmallChange := DefaultColWidth;
+  ScrollingSupport.VertScrollBar.SmallChange := DefaultRowHeight;
 
   for i := 0 to 4 do
   begin
@@ -307,7 +312,11 @@ procedure TDrawGrid.DrawCell(ACanvas: TGfxCanvas; ACol, ARow: Integer;
  AState: TGridDrawState);
 begin
   if gdFixed in AState then
+  begin
     Style.DrawButtonFace(ACanvas, ARect, []);
+    Style.SetUIColor(ACanvas, clBtnText);
+  end else
+    Style.SetUIColor(ACanvas, clWindowText);
   if Assigned(OnDrawCell) then
     OnDrawCell(Self, ACanvas, ACol, ARow, ARect, AState);
 end;
@@ -366,7 +375,11 @@ var
 begin
   // WriteLn('TStringGrid.DrawCell(', ACol, ', ', ARow, ', ', Integer(AState), ');');
   if gdFixed in AState then
+  begin
     Style.DrawButtonFace(ACanvas, ARect, []);
+    Style.SetUIColor(ACanvas, clBtnText);
+  end else
+    Style.SetUIColor(ACanvas, clWindowText);
   s := Cells[ACol, ARow];
   if Length(s) > 0 then
   begin
@@ -395,6 +408,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.2  2000/12/24 13:18:12  sg
   * Some small fixes (improved speed, and better scrollbar handling where
     appropiate)

@@ -29,6 +29,7 @@
     procedure EvKeyChar(KeyChar: Char); override;
     procedure EvRecalcLayout; override;
     procedure EvTextChanged; override;
+    property CanExpandWidth default True;
     property PasswordChar: Char read FPasswordChar write SetPasswordChar default #0;
     property CursorPos: Integer read FCursorPos write SetCursorPos;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -38,6 +39,7 @@
 
   TEdit = class(TCustomEdit)
   published
+    property CanExpandWidth;
     property Enabled;
     property PasswordChar;
     property Text;
@@ -47,6 +49,9 @@
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

@@ -21,9 +21,16 @@
 // ===================================================================
 
 procedure TCustomLabel.Paint(Canvas: TGfxCanvas);
+var
+  x: Integer;
 begin
   Canvas.SetColor(Style.MapGUIColor(Canvas, clBtnText));
-  Style.DrawText(Canvas, (Width - Canvas.TextWidth(Text)) div 2,
+  case Alignment of
+    taLeftJustify: x := 0;
+    taCenter: x := (Width - Canvas.TextWidth(Text)) div 2;
+    taRightJustify: x := Width - Canvas.TextWidth(Text);
+  end;
+  Style.DrawText(Canvas, x,
     (Height - Canvas.FontCellHeight) div 2, Text, WidgetState);
 end;
 
@@ -38,9 +45,21 @@ begin
   DefH := MinH;
 end;
 
+procedure TCustomLabel.SetAlignment(AAlignment: TAlignment);
+begin
+  if AAlignment <> Alignment then
+  begin
+    FAlignment := AAlignment;
+    Redraw;
+  end;
+end;
+
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

@@ -18,11 +18,13 @@
 
 // Styles
 
+  TItemFlags = set of (ifFocused, ifSelected, ifDeactivated);
+
   TArrowDirection = (arrowUp, arrowDown, arrowLeft, arrowRight);
 
   TStyle = class
   public
-    constructor Create(ADevice: TGfxDevice); virtual;
+    constructor Create(ADisplay: TGfxDisplay); virtual;
     // Colors
     function GetGUIColor(Color: TColor): TGfxColor; virtual; abstract;
     function MapGUIColor(Canvas: TGfxCanvas; Color: TColor): TGfxPixel; 
@@ -31,6 +33,11 @@
     // General
     procedure DrawText(Canvas: TGfxCanvas; x, y: Integer; const AText: String;
       State: TWidgetState); virtual; abstract;
+
+    procedure DrawItemBefore(Canvas: TGfxCanvas; const ARect: TRect;
+      Flags: TItemFlags); virtual; abstract;
+    procedure DrawItemAfter(Canvas: TGfxCanvas; const ARect: TRect;
+      Flags: TItemFlags); virtual; abstract;
 
     // Windows
     procedure DrawWindowBackground(Canvas: TGfxCanvas;
@@ -83,11 +90,10 @@
 
   TDefaultStyle = class(TStyle)
   protected
-    RadioBitmaps: array[0..5] of TGfxImage;
-    CheckBitmap: TGfxImage;
-    ArrowBitmaps: array[TArrowDirection] of TGfxImage;
+    ImageCanvas, MaskCanvas: TGfxCanvas;
+//    ArrowBitmaps: array[TArrowDirection] of TGfxImage;
   public
-    constructor Create(ADevice: TGfxDevice); override;
+    constructor Create(ADisplay: TGfxDisplay); override;
     destructor Destroy; override;
 
     procedure Draw3DFrame(Canvas: TGfxCanvas; const ARect: TRect;
@@ -98,6 +104,10 @@
     function GetGUIColor(Color: TColor): TGfxColor; override;
     procedure DrawText(Canvas: TGfxCanvas; x, y: Integer; const AText: String;
       State: TWidgetState); override;
+    procedure DrawItemBefore(Canvas: TGfxCanvas; const ARect: TRect;
+      Flags: TItemFlags); override;
+    procedure DrawItemAfter(Canvas: TGfxCanvas; const ARect: TRect;
+      Flags: TItemFlags); override;
     procedure DrawWindowBackground(Canvas: TGfxCanvas;
       const ARect: TRect); override;
     procedure DrawButtonFace(Canvas: TGfxCanvas; const ARect: TRect;
@@ -138,6 +148,9 @@
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

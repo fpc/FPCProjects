@@ -62,6 +62,15 @@ begin
 end;
 
 
+function TPreparePaintEventObj.SendToChild(AChild: TWidget): Boolean;
+begin
+  if wsIsVisible in AChild.WidgetState then
+    Result := inherited SendToChild(AChild)
+  else
+    Result := False;
+end;
+
+
 constructor TPaintingEventObj.Create(ASender: TObject; ACanvas: TGfxCanvas);
 begin
   inherited Create(ASender);
@@ -70,15 +79,19 @@ end;
 
 function TPaintEventObj.SendToChild(AChild: TWidget): Boolean;
 begin
-  Canvas.SaveState;
-  if Canvas.IntersectClipRect(Rect(AChild.Left, AChild.Top,
-    AChild.Left + AChild.Width, AChild.Top + AChild.Height)) then
+  if wsIsVisible in AChild.WidgetState then
   begin
-    Canvas.AppendTranslation(AChild.Left, AChild.Top);
-    Result := inherited SendToChild(AChild);
+    Canvas.SaveState;
+    if Canvas.IntersectClipRect(Rect(AChild.Left, AChild.Top,
+      AChild.Left + AChild.Width, AChild.Top + AChild.Height)) then
+    begin
+      Canvas.AppendTranslation(AChild.Left, AChild.Top);
+      Result := inherited SendToChild(AChild);
+    end else
+      Result := False;
+    Canvas.RestoreState;
   end else
     Result := False;
-  Canvas.RestoreState;
 end;
 
 
@@ -150,7 +163,7 @@ begin
 end;
 
 constructor TMouseWheelEventObj.Create(ASender: TObject; AShift: TShiftState;
-  AWheelDelta, AMouseX, AMouseY: Integer);
+  AWheelDelta: Single; AMouseX, AMouseY: Integer);
 begin
   inherited Create(ASender, AShift, AMouseX, AMouseY);
   WheelDelta := AWheelDelta;
@@ -165,8 +178,8 @@ constructor TWidget.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   WidgetState := [wsEnabled];
-  FCanExpandWidth := True;
-  FCanExpandHeight := True;
+  FCanExpandWidth := False;
+  FCanExpandHeight := False;
   FEnabled := True;
 end;
 
@@ -225,8 +238,17 @@ begin
   begin
     FWidth := AWidth;
     FHeight := AHeight;
+    FClientRect := Rect(0, 0, Width, Height);
     SendEvent(TResizeEventObj.Create(Self));
   end;
+end;
+
+function TWidget.ClientToScreen(const APoint: TPoint): TPoint;
+begin
+  Result.x := APoint.x + Left;
+  Result.y := APoint.y + Top;
+  if Assigned(Parent) then
+    Result := Parent.ClientToScreen(Result);
 end;
 
 procedure TWidget.Update;
@@ -274,9 +296,6 @@ begin
   if (not FCanExpandHeight) or (MaxH < DefH) then
     MaxH := DefH;
 
-{  FWidth := DefW;
-  FHeight := DefH;}
-
   if (DefW < OldW) or (DefH < OldH) or ((not (wsOpaque in WidgetStyle)) and
     ((DefW > OldW) or (DefH > OldH))) then
   begin
@@ -299,14 +318,37 @@ end;
 
 procedure TWidget.Show;
 begin
-  LAYOUTTRACE('TWidget.Show for %s:%s', [Name, ClassName]);
-  // !!!: This implementation is currenty very, very wrong
-  Include(WidgetState, wsIsVisible);
-  SendEvent(TVisibilityChangeEventObj.Create(Self));
-  Update;
+  if WidgetState * [wsGetsVisible, wsIsVisible] = [] then
+  begin
+    LAYOUTTRACE('TWidget.Show for %s:%s', [Name, ClassName]);
+    // !!!: This implementation is currenty very, very wrong
+    Include(WidgetState, wsIsVisible);
+    SendEvent(TVisibilityChangeEventObj.Create(Self));
+    if wsIsUpdating in Parent.WidgetState then
+      Parent.SendEvent(TUpdateEventObj.Create(Self))
+    else
+      Parent.Update;
+  end;
+end;
+
+procedure TWidget.Hide;
+begin
+  if wsIsVisible in WidgetState then
+  begin
+    LAYOUTTRACE('TWidget.Hide for %s:%s', [Name, ClassName]);
+    WidgetState := WidgetState - [wsGetsVisible, wsIsVisible];
+    SendEvent(TVisibilityChangeEventObj.Create(Self));
+    Parent.Update;
+  end else
+    Exclude(WidgetState, wsGetsVisible);
 end;
 
 procedure TWidget.Redraw;
+begin
+  Redraw(Rect(0, 0, Width, Height));
+end;
+
+procedure TWidget.Redraw(const ARect: TRect);
 var
   x, y: Integer;
   Widget: TWidget;
@@ -314,8 +356,8 @@ begin
   if not (wsIsVisible in WidgetState) then
     exit;
 
-  x := 0;
-  y := 0;
+  x := ARect.Left;
+  y := ARect.Top;
   Widget := Self;
   while Assigned(Widget.Parent) do
   begin
@@ -323,7 +365,32 @@ begin
     Inc(y, Widget.Top);
     Widget := Widget.parent;
   end;
-  TCustomForm(Widget).Wnd.Invalidate(Rect(x, y, x + Width, y + Height));
+  TCustomForm(Widget).Wnd.Invalidate(Rect(x, y,
+    x + ARect.Right - ARect.Left, y + ARect.Bottom - ARect.Top));
+end;
+
+procedure TWidget.Scroll(const ARect: TRect; DeltaX, DeltaY: Integer);
+var
+  r: TRect;
+  Widget: TWidget;
+begin
+  if not (wsIsVisible in WidgetState) then
+    exit;
+
+  r := ARect;
+
+  Widget := Self;
+  while Assigned(Widget.Parent) do
+  begin
+    Inc(r.Left, Widget.Left);
+    Inc(r.Top, Widget.Top);
+    Inc(r.Right, Widget.Left);
+    Inc(r.Bottom, Widget.Top);
+    Widget := Widget.parent;
+  end;
+
+  TCustomForm(Widget).Wnd.Canvas.CopyRect(TCustomForm(Widget).Wnd.Canvas, r,
+    r.Left + DeltaX, r.Top + DeltaY);
 end;
 
 procedure TWidget.SetFocus;
@@ -680,7 +747,7 @@ end;
 
 function TWidget.EvVisibilityChange(Event: TVisibilityChangeEventObj): Boolean;
 begin
-  if Assigned(Parent) then
+  if (Event.Sender <> Self) and Assigned(Parent) then
   begin
     if wsGetsVisible in Parent.WidgetState then
       Include(WidgetState, wsGetsVisible)
@@ -755,6 +822,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

@@ -21,25 +21,31 @@
     procedure StdBtnClicked(Sender: TObject);
   protected
     FButtons: TMsgDlgButtons;
-    FDlgChild: TWidget;
     MainLayout, BtnLayout: TBoxLayout;
+    Separator: TSeparator;
+    function ProcessEvent(Event: TEventObj): Boolean; override;
+    function DistributeEvent(Event: TEventObj): Boolean; override;
+    procedure EvRecalcLayout; override;
     procedure SetButtons(AButtons: TMsgDlgButtons);
     property Buttons: TMsgDlgButtons read FButtons write SetButtons default [mbOk, mbCancel];
-    property Child: TWidget read FDlgChild write FDlgChild;
   public
     constructor Create(AOwner: TComponent); override;
   end;
 
+
   TStandardDialog = class(TCustomStandardDialog)
   published
-    property Buttons;
-    property Child;
     property Text;
+    property OnCreate;
+    property Buttons;
   end;
 
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

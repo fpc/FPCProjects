@@ -12,6 +12,7 @@ object GroupBoxForm: TGroupBoxForm
 	  OnClick = GrayCheckBoxClick
         end
         object Button: TButton
+	  Enabled = False
           Text = 'Reset radio buttons'
 	  OnClick = ButtonClick
 	end
@@ -24,18 +25,23 @@ object GroupBoxForm: TGroupBoxForm
 	object Radio1: TRadioButton
 	  Checked = True
 	  Text = 'Option 1'
+	  OnClick = RadioButtonClick
 	end
 	object Radio2: TRadioButton
 	  Text = 'Option 2'
+	  OnClick = RadioButtonClick
 	end
 	object Radio3: TRadioButton
 	  Text = 'Option 3'
+	  OnClick = RadioButtonClick
 	end
 	object Radio4: TRadioButton
 	  Text = 'Option 4'
+	  OnClick = RadioButtonClick
 	end
 	object Radio5: TRadioButton
 	  Text = 'Option 5'
+	  OnClick = RadioButtonClick
 	end
       end
     end

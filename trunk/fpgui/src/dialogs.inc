@@ -20,13 +20,15 @@
 //   TCustomStandardDialog
 // ===================================================================
 
+// public methods
+
 constructor TCustomStandardDialog.Create(AOwner: TComponent);
 
   function AddBtn(const AText: String; ADefault: Boolean): TButton;
   begin
     Result := TButton.Create(Self);
     Result.Text := AText;
-//    Result.Default := ADefault;
+    // Result.Default := ADefault;
     Result.OnClick := @StdBtnClicked;
     Result.Parent := BtnLayout;
   end;
@@ -38,18 +40,17 @@ begin
 
   MainLayout := TBoxLayout.Create(Self);
   MainLayout.Orientation := Vertical;
+  MainLayout.SetEmbeddedParent(Self);
 
-  if Assigned(FDlgChild) then
-    FDlgChild.Parent := MainLayout;
-
-{!!!:  Separator := TSeparator.Create(Self);
-  MainLayout.AddControl(Separator);}
+  Separator := TSeparator.Create(Self);
+  Separator.Parent := MainLayout;
 
   BtnLayout := TBoxLayout.Create(Self);
   BtnLayout.Orientation := Horizontal;
   BtnLayout.HorzAlign := horzRight;
   BtnLayout.VertAlign := vertCenter;
   BtnLayout.CanExpandHeight := False;
+  BtnLayout.Parent := MainLayout;
 
   if mbYes      in FButtons then AddBtn(mbText_Yes, False);
   if mbNo       in FButtons then AddBtn(mbText_No, False);
@@ -64,9 +65,50 @@ begin
   if mbYesToAll in FButtons then AddBtn(mbText_YesToAll, False);
   if mbHelp     in FButtons then AddBtn(mbText_Help, False);
 
-  BtnLayout.Parent := MainLayout;
+end;
 
-  TCustomForm(Self).Child := MainLayout;
+
+// protected methods
+
+function TCustomStandardDialog.ProcessEvent(Event: TEventObj): Boolean;
+begin
+  if Event.InheritsFrom(TResizeEventObj) then
+  begin
+    if Assigned(Child) then
+      Child.SetBounds(BorderWidth, BorderWidth, Width - 2 * BorderWidth,
+        Height - MainLayout.DefH - 2 * BorderWidth);
+    MainLayout.SetBounds(BorderWidth, Height - MainLayout.DefH - BorderWidth,
+      Width - 2 * BorderWidth, MainLayout.DefH - BorderWidth);
+    Result := False;
+  end else
+    Result := MainLayout.ProcessEvent(Event) or inherited ProcessEvent(Event);
+end;
+
+function TCustomStandardDialog.DistributeEvent(Event: TEventObj): Boolean;
+begin
+  Result := Event.SendToChild(MainLayout) or inherited DistributeEvent(Event);
+end;
+
+procedure TCustomStandardDialog.EvRecalcLayout;
+begin
+  if Assigned(Child) then
+  begin
+    MinW := Child.MinW + 2 * BorderWidth;
+    MinH := Child.MinH + 2 * BorderWidth;
+    DefW := Child.DefW + 2 * BorderWidth;
+    DefH := Child.DefH + 2 * BorderWidth;
+    MaxW := Min(InfiniteSize, Child.MaxW + 2 * BorderWidth);
+    MaxH := Min(InfiniteSize, Child.MaxH + 2 * BorderWidth);
+  end;
+
+  MinW := Max(MinW, MainLayout.MinW + 2 * BorderWidth);
+  Inc(MinH, MainLayout.DefH + BorderWidth);
+  DefW := Max(DefW, MainLayout.DefW + 2 * BorderWidth);
+  DefH := Min(InfiniteSize, DefH);
+  MaxW := Min(MaxW, MainLayout.MaxW + 2 * BorderWidth);
+  MaxH := Min(InfiniteSize, MaxH + MainLayout.DefH);
+
+  ApplyNewLayout;
 end;
 
 procedure TCustomStandardDialog.SetButtons(AButtons: TMsgDlgButtons);
@@ -82,6 +124,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:11  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

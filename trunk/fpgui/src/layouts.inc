@@ -116,18 +116,13 @@ end;
 //   TLayout
 // -------------------------------------------------------------------
 
-procedure TLayout.AddFixedChild(AChild: TWidget);
-begin
-end;
+// public methods
 
-function TLayout.GetChildCount: Integer;
+constructor TLayout.Create(AOwner: TComponent);
 begin
-  Result := FWidgets.Count;
-end;
-
-function TLayout.GetChild(Index: Integer): TWidget;
-begin
-  Result := TLayoutItem(FWidgets.Items[Index]).Widget;
+  inherited Create(AOwner);
+  FCanExpandWidth := True;
+  FCanExpandHeight := True;
 end;
 
 destructor TLayout.Destroy;
@@ -147,6 +142,23 @@ begin
       exit;
     end;
   Result := False;
+end;
+
+
+// protected methods
+
+procedure TLayout.AddFixedChild(AChild: TWidget);
+begin
+end;
+
+function TLayout.GetChildCount: Integer;
+begin
+  Result := FWidgets.Count;
+end;
+
+function TLayout.GetChild(Index: Integer): TWidget;
+begin
+  Result := TLayoutItem(FWidgets.Items[Index]).Widget;
 end;
 
 
@@ -865,6 +877,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

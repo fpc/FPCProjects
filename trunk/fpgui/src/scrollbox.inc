@@ -26,13 +26,13 @@ begin
 
   HorzScrollBar := TCustomScrollBar.Create(Parent);
   HorzScrollBar.Name := '#Scrolling_HorzBar';
-  HorzScrollBar.HasBorder := False;
+  HorzScrollBar.Embedded := True;
   HorzScrollBar.SetEmbeddedParent(Parent);
 
   VertScrollBar := TCustomScrollBar.Create(Parent);
   VertScrollBar.Name := '#Scrolling_VertBar';
   VertScrollBar.Orientation := Vertical;
-  VertScrollBar.HasBorder := False;
+  VertScrollBar.Embedded := True;
   VertScrollBar.SetEmbeddedParent(Parent);
 end;
 
@@ -43,30 +43,49 @@ end;
 
 function TScrollingSupport.ProcessEvent(Event: TEventObj): Boolean;
 var
+  HorzScrollBarHeight, VertScrollBarWidth: Integer;
+
+  procedure CalcScrollBarSizes;
+  begin
+    if HorzScrollBar.WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
+      HorzScrollBarHeight := HorzScrollBar.MinH
+    else
+      HorzScrollBarHeight := 0;
+
+    if VertScrollBar.WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
+      VertScrollBarWidth := VertScrollBar.MinW
+    else
+      VertScrollBarWidth := 0;
+  end;
+
+var
   Canvas: TGfxCanvas;
 begin
-  if Event.InheritsFrom(TResizeEventObj) then
+  if Event.InheritsFrom(TResizeEventObj) or (Event.InheritsFrom(TUpdateEventObj)
+    and (wsIsVisible in Parent.WidgetState)) then
   begin
     with Parent.Style.GetScrollBoxBorders do
     begin
+      CalcScrollBarSizes;
       HorzScrollBar.SetBounds(Left, Parent.Height - HorzScrollBar.MinH - Bottom,
-        Parent.Width - VertScrollBar.MinW - Left - Right, HorzScrollBar.MinH);
+        Parent.Width - VertScrollBarWidth - Left - Right, HorzScrollBar.MinH);
       VertScrollBar.SetBounds(Parent.Width - VertScrollBar.MinW - Right, Top,
-        VertScrollBar.MinW, Parent.Height - HorzScrollBar.MinH - Top - Bottom);
+        VertScrollBar.MinW, Parent.Height - HorzScrollBarHeight - Top - Bottom);
       ClientRect.Left := Left;
       ClientRect.Top := Top;
-      ClientRect.Right := Parent.Width - Right - VertScrollBar.Width;
-      ClientRect.Bottom := Parent.Height - Bottom - HorzScrollBar.Height;
+      ClientRect.Right := Parent.Width - Right - VertScrollBarWidth;
+      ClientRect.Bottom := Parent.Height - Bottom - HorzScrollBarHeight;
     end;
     Result := False;
   end else if Event.InheritsFrom(TPaintEventObj) then
   begin
+    CalcScrollBarSizes;
     Canvas := TPaintEventObj(Event).Canvas;
     Parent.Style.DrawScrollBoxBorder(Canvas,
       Rect(0, 0, Parent.Width, Parent.Height));
     Parent.Style.DrawWindowBackground(Canvas, Rect(VertScrollBar.Left,
-      HorzScrollBar.Top, VertScrollBar.Left + VertScrollBar.Width,
-      HorzScrollBar.Top + HorzScrollBar.Height));
+      HorzScrollBar.Top, VertScrollBar.Left + VertScrollBarWidth,
+      HorzScrollBar.Top + HorzScrollBarHeight));
     Result := False;
   end else if Event.InheritsFrom(TMouseWheelEventObj) then
     Result := EvMouseWheel(TMouseWheelEventObj(Event))
@@ -101,10 +120,10 @@ begin
     ssSuper, ssHyper, ssAltGr];
   if mshift = [] then
     VertScrollBar.Position := VertScrollBar.Position +
-      Event.WheelDelta * VertScrollBar.SmallChange
+      Round(Event.WheelDelta * VertScrollBar.SmallChange)
   else if mshift = [ssShift] then
     HorzScrollBar.Position := HorzScrollBar.Position +
-      Event.WheelDelta * VertScrollBar.SmallChange;
+      Round(Event.WheelDelta * VertScrollBar.SmallChange);
 end;
 
 
@@ -116,6 +135,8 @@ constructor TCustomScrollBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   WidgetStyle := WidgetStyle + [wsClickable, wsOpaque];
+  FCanExpandWidth := True;
+  FCanExpandHeight := True;
   ScrollingSupport := TScrollingSupport.Create(Self);
 end;
 
@@ -197,6 +218,9 @@ end;}
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

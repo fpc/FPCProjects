@@ -55,6 +55,7 @@ type
     procedure AddFixedChild(AChild: TWidget);
     property BorderSpacing: Integer read FBorderSpacing write FBorderSpacing;
   public
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function ContainsChild(AChild: TWidget): Boolean; override;
   end;
@@ -132,6 +133,8 @@ type
 
   TBoxLayout = class(TCustomBoxLayout)
   published
+    property CanExpandWidth;
+    property CanExpandHeight;
     property Enabled;
     property BorderSpacing;
     property HorzAlign;
@@ -197,6 +200,9 @@ type
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

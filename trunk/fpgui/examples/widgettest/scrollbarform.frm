@@ -88,10 +88,12 @@ object ScrollBarForm: TScrollBarForm
 	    Widget = PosLabel5
 	  end>
         object Col3Label: TLabel
+	  Alignment = taCenter
           Text = 'Position'
         end
         object Label1: TLabel
-          Text = '-0..1, PageSize=0:'
+	  Alignment = taRightJustify
+          Text = '0..1, PageSize=0:'
         end
         object ScrollBar1: TScrollBar
           Min = 0
@@ -99,9 +101,11 @@ object ScrollBarForm: TScrollBarForm
 	  OnChange = ScrollBar1Change
         end
         object PosLabel1: TLabel
+	  Alignment = taCenter
           Text = '---'
         end
         object Label2: TLabel
+	  Alignment = taRightJustify
           Text = '0..1, PageSize=1:'
         end
         object ScrollBar2: TScrollBar
@@ -110,9 +114,11 @@ object ScrollBarForm: TScrollBarForm
 	  OnChange = ScrollBar2Change
         end
         object PosLabel2: TLabel
+	  Alignment = taCenter
           Text = '---'
         end
         object Label3: TLabel
+	  Alignment = taRightJustify
           Text = '-2..3, PageSize=0:'
         end
         object ScrollBar3: TScrollBar
@@ -121,9 +127,11 @@ object ScrollBarForm: TScrollBarForm
 	  OnChange = ScrollBar3Change
         end
         object PosLabel3: TLabel
+	  Alignment = taCenter
           Text = '---'
         end
         object Label4: TLabel
+	  Alignment = taRightJustify
           Text = '-5..9, PageSize=4:'
         end
         object ScrollBar4: TScrollBar
@@ -133,9 +141,11 @@ object ScrollBarForm: TScrollBarForm
 	  OnChange = ScrollBar4Change
         end
         object PosLabel4: TLabel
+	  Alignment = taCenter
           Text = '---'
         end
         object Label5: TLabel
+	  Alignment = taRightJustify
           Text = '-100..200, PageSize=7:'
         end
         object ScrollBar5: TScrollBar
@@ -145,6 +155,7 @@ object ScrollBarForm: TScrollBarForm
 	  OnChange = ScrollBar5Change
         end
         object PosLabel5: TLabel
+	  Alignment = taCenter
           Text = '---'
 	end
       end

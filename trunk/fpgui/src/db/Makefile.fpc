@@ -3,8 +3,7 @@
 #
 
 [targets]
-# db is only temporarily here
-units=db fpgui_db
+units=fpgui_db
 
 [require]
 options=-S2h

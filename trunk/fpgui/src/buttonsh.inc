@@ -33,6 +33,7 @@
 
   TButton = class(TCustomButton)
   published
+    property CanExpandWidth;
     property Enabled;
     property Text;
     property OnClick;
@@ -56,6 +57,9 @@
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:11  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:14  sg
   * First public CVS version...
 

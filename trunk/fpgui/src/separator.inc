@@ -23,6 +23,7 @@
 constructor TCustomSeparator.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FCanExpandWidth := True;
   FSpacing := 4;
 end;
 
@@ -35,10 +36,14 @@ procedure TCustomSeparator.EvRecalcLayout;
 begin
   if Orientation = Horizontal then
   begin
+    FCanExpandWidth := True;
+    FCanExpandHeight := False;
     MaxW := InfiniteSize;
     MinH := Style.GetSeparatorSize + 2 * Spacing
   end else
   begin
+    FCanExpandWidth := False;
+    FCanExpandHeight := True;
     MinW := Style.GetSeparatorSize + 2 * Spacing;
     MaxH := InfiniteSize;
   end;
@@ -65,6 +70,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

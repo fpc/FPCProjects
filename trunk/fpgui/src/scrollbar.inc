@@ -89,29 +89,41 @@ var
 begin
   ASSERT(Owner is TCustomScrollBar);
 
-  if WidgetState * [wsGetsVisible, wsIsVisible] = [] then
-    exit;
+  if WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
+  begin
+    with TCustomScrollBar(Owner) do
+    begin
+      if (Min = Max) or (Max - Min = PageSize - 1) then
+	ButtonPos := 0
+      else
+      begin
+	if Orientation = Horizontal then
+	  Size := Self.Width
+	else
+	  Size := Self.Height;
+	if PageSize = 0 then
+	  ButtonPos := (Position - Min) * (Size - ButtonSize) div (Max - Min)
+        else
+          ButtonPos := (Position - Min) *
+	    (Size - ButtonSize) div (Max - Min - PageSize + 1);
+      end;
+      ButtonSize := GetButtonSize;
+    end;
+    Redraw;
+  end;
 
   with TCustomScrollBar(Owner) do
-  begin
-    if (Min = Max) or (Max - Min = PageSize - 1) then
-      ButtonPos := 0
-    else
+    if Embedded and
+      (Parent.WidgetState * [wsGetsVisible, wsIsVisible] <> []) then
     begin
-      if Orientation = Horizontal then
-        Size := Self.Width
-      else
-        Size := Self.Height;
-      if PageSize = 0 then
-        ButtonPos := (Position - Min) *
-	  (Size - ButtonSize) div (Max - Min)
-      else
-        ButtonPos := (Position - Min) *
-	  (Size - ButtonSize) div (Max - Min - PageSize + 1);
+      if (Max <= Min) or ((PageSize > 0) and (PageSize > Max - Min)) then
+	Hide
+      else if WidgetState * [wsGetsVisible, wsIsVisible] = [] then
+      begin
+	Show;
+	UpdateBar;
+      end;
     end;
-    ButtonSize := GetButtonSize;
-  end;
-  Redraw;
 end;
 
 procedure TScrollBarSlider.Paint(Canvas: TGfxCanvas);
@@ -162,7 +174,7 @@ begin
 
   StartPos^ := ButtonPos;
   EndPos^ := ButtonPos + ButtonSize;
-  Style.DrawButtonFace(Canvas, r, []);
+  Style.DrawButtonFace(Canvas, r, [btnIsEmbedded]);
 end;
 
 function TScrollBarSlider.ProcessEvent(Event: TEventObj): Boolean;
@@ -171,19 +183,19 @@ begin
   if Event.InheritsFrom(TVisibilityChangeEventObj) then
   begin
 // !!!: Why don't we get an wsIsVisible update?!?
-    if wsGetsVisible in WidgetState then
+    if WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
       UpdateBar;
-  end else if Event is TMousePressedEventObj then
+  end else if Event.InheritsFrom(TMousePressedEventObj) then
     Result := EvMousePressed(TMousePressedEventObj(Event))
-  else if Event is TMouseReleasedEventObj then
+  else if Event.InheritsFrom(TMouseReleasedEventObj) then
     Result := EvMouseReleased(TMouseReleasedEventObj(Event))
-  else if Event is TMouseMoveEventObj then
+  else if Event.InheritsFrom(TMouseMoveEventObj) then
     Result := EvMouseMove(TMouseMoveEventObj(Event));
 
   if not Result then
     Result := inherited ProcessEvent(Event);
 
-  if Event is TResizeEventObj then
+  if Event.InheritsFrom(TResizeEventObj) then
     UpdateBar;
 end;
 
@@ -191,7 +203,10 @@ function TScrollBarSlider.EvMousePressed(Event: TMousePressedEventObj): Boolean;
 var
   Pos: Integer;
 begin
-  inherited ProcessEvent(Event);	// For mouse grabbing support
+  Result := inherited ProcessEvent(Event);	// For mouse grabbing support
+
+  if Event.Button <> mbLeft then
+    exit;
 
   if TCustomScrollBar(Owner).Orientation = Horizontal then
     Pos := Event.MouseX
@@ -217,7 +232,10 @@ end;
 function TScrollBarSlider.EvMouseReleased(
   Event: TMouseReleasedEventObj): Boolean;
 begin
-  inherited ProcessEvent(Event);	// For mouse grabbing support
+  Result := inherited ProcessEvent(Event);	// For mouse grabbing support
+
+  if Event.Button <> mbLeft then
+    exit;
 
   if IsDraggingButton then
   begin
@@ -301,14 +319,7 @@ begin
       Result := Result div (Size - ButtonSize);
       Result := Result + Min;
     end;
-
-    if Result > Max - PageSize then
-      if PageSize = 0 then
-	Result := Max
-      else
-	Result := Max - PageSize + 1;
-    if Result < Min then
-      Result := Min;
+    Result := ClipPosition(Result);
   end;
 end;
 
@@ -321,7 +332,7 @@ constructor TCustomScrollBar.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Include(WidgetStyle, wsOpaque);
-  HasBorder := True;
+  Embedded := False;
 
   FMax := 100;
   FSmallChange := 1;
@@ -405,7 +416,7 @@ end;
 
 procedure TCustomScrollBar.Paint(Canvas: TGfxCanvas);
 begin
-  if HasBorder then
+  if not Embedded then
     Style.DrawScrollBarBorder(Canvas, Rect(0, 0, Width, Height));
 end;
 
@@ -413,7 +424,7 @@ procedure TCustomScrollBar.Resized;
 var
   r: TRect;
 begin
-  if HasBorder then
+  if not Embedded then
     with Style.GetScrollBarBorders(Orientation) do
     begin
       r.Left := Left;
@@ -467,7 +478,7 @@ begin
     MaxH := InfiniteSize;
   end;
 
-  if HasBorder then
+  if not Embedded then
     with Style.GetScrollBarBorders(Orientation) do
     begin
       Inc(MinW, Left + Right);
@@ -511,6 +522,19 @@ begin
   end;
 end;
 
+function TCustomScrollBar.ClipPosition(APosition: Integer): Integer;
+begin
+  if APosition > Max - PageSize then
+    if PageSize = 0 then
+      Result := Max
+    else
+      Result := Max - PageSize + 1
+  else
+    Result := APosition;
+  if Result < Min then
+    Result := Min;
+end;
+
 procedure TCustomScrollBar.SetOrientation(AOrientation: TOrientation);
 begin
   if AOrientation <> Orientation then
@@ -528,6 +552,26 @@ begin
   end;
 end;
 
+procedure TCustomScrollBar.SetMin(AMin: Integer);
+begin
+  if AMin <> Min then
+  begin
+    FMin := AMin;
+    Position := Position;	// Do range clipping
+    TScrollBarSlider(Slider).UpdateBar;
+  end;
+end;
+
+procedure TCustomScrollBar.SetMax(AMax: Integer);
+begin
+  if AMax <> Max then
+  begin
+    FMax := AMax;
+    Position := Position;	// Do range clipping
+    TScrollBarSlider(Slider).UpdateBar;
+  end;
+end;
+
 procedure TCustomScrollBar.SetPageSize(APageSize: Integer);
 begin
   if APageSize <> PageSize then
@@ -540,17 +584,10 @@ end;
 
 procedure TCustomScrollBar.SetPosition(APosition: Integer);
 begin
+  APosition := ClipPosition(APosition);
+
   if (APosition <> Position) and Assigned(OnScroll) then
     OnScroll(Self, APosition);
-
-  if APosition > Max - PageSize then
-    if PageSize = 0 then
-      APosition := Max
-    else
-      APosition := Max - PageSize + 1;
-
-  if APosition < Min then
-    APosition := Min;
 
   if APosition <> Position then
   begin
@@ -564,6 +601,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/01/11 23:30:12  sg
+  *** empty log message ***
+
   Revision 1.2  2000/12/24 13:18:12  sg
   * Some small fixes (improved speed, and better scrollbar handling where
     appropiate)
