@@ -100,6 +100,7 @@ type
 
   TNotebookPage_private = record
     LabelWidget: PGtkWidget;
+    BorderWidget: PGtkWidget;
   end;
 
   TToolButton_private = record
@@ -226,6 +227,9 @@ end.
 
 {
   $Log$
+  Revision 1.9  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.8  2000/02/18 18:30:15  sg
   * Added TScrollers_private
 

@@ -30,7 +30,7 @@ begin
   inherited Destroy;
 end;
 
-function TNotebook.GetPage(AIndex: Integer): TNotebookPage;
+function TNotebook.GetPages(AIndex: Integer): TNotebookPage;
 begin
   Result := TNotebookPage(FPages.Items[AIndex]);
 end;
@@ -38,6 +38,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.1  2000/02/10 18:51:59  sg
   * First implementation; most methods have been moved from the GTK target
     implementation to this file.

@@ -151,6 +151,11 @@ begin
   end;
 end;
 
+procedure TCanvas.CopyRect(dx, dy, dw, dh, sx, sy: Integer);
+begin
+  gdk_window_copy_area(FHandle, priv.GC, dx, dy, FHandle, sx, sy, dw, dh);
+end;
+
 procedure TCanvas.DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
   ASourceX, ASourceY, ASourceW, ASourceH: Integer);
 var
@@ -280,6 +285,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.3  2000/02/10 18:42:43  sg
   * All classes now call the inherited destructor in Destroy
 

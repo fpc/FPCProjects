@@ -204,18 +204,17 @@ WriteLn('TSplitter.ApplySize: ', FPane1.DefW, ' x ', FPane1.DefH,
 end;
 
 procedure TSplitter.ApplySize;
-{var
-  BorderSize, GutterSize, NewPos: Integer;}
+var
+  BorderSize, GutterSize{, NewPos}: Integer;
 begin
 {  gLastSplitterInfosValid := True;
   gLastSplitterPos := PGtkPaned(FHandle)^.child1_size;
-  gLastSplitterSize := FHeight;
-
+  gLastSplitterSize := FHeight;}
 
   BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width;
   GutterSize := PGtkPaned(FHandle)^.gutter_size;
 
-
+{
   if FSplitterPos = -1 then begin
     if Assigned(FPane1) then
       if FOrientation = soHorizontal then
@@ -236,12 +235,15 @@ WriteLn('TSplitter.ApplySize: ', FPane1.DefW, ' x ', FPane1.DefH,
     FPane1.SetSize(FWidth, PGtkPaned(FHandle)^.child1_size);
 
   if Assigned(FPane2) then
-    FPane2.SetSize(FWidth, FHeight - PGtkPaned(FHandle)^.child1_size);
+    FPane2.SetSize(FWidth, FHeight - PGtkPaned(FHandle)^.child1_size - BorderSize * 2 - GutterSize);
 end;
 
 
 {
   $Log$
+  Revision 1.5  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.4  2000/02/18 18:29:07  sg
   * The panes are now notified when their size has changed
 

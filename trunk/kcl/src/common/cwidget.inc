@@ -65,6 +65,7 @@ procedure TWidget.RecalcLayout;
 var
   SizeReq: TGtkRequisition;
 begin
+  if not Assigned(FHandle) then exit;
   MinW := 0;
   MinH := 0;
   MaxW := 0;
@@ -76,10 +77,10 @@ begin
 
   if MinW = 0 then MinW := 1;
   if MinH = 0 then MinH := 1;
-  if MaxW < MinW then MaxW := MinW;
-  if MaxH < MinH then MaxH := MinH;
   if DefW < MinW then DefW := MinW;
   if DefH < MinW then DefH := MinH;
+  if MaxW < DefW then MaxW := DefW;
+  if MaxH < DefH then MaxH := DefH;
 
   if Assigned(FParent) and (FParent.FCreationState = wcsCreationDone) then
     FParent.RecalcLayout;
@@ -144,6 +145,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.3  2000/02/17 22:21:07  sg
   * Added methods "GetWidgetCount" and "IsRadioGroup"
 

@@ -69,11 +69,17 @@ begin
 end;
 
 procedure TCustomComboBox.DoRecalcLayout;
+var
+  ButtonReq: TGtkRequisition;
 begin
   inherited DoRecalcLayout;
-  MinW := 20;
-  DefW := 40;
-  MaxW := InfiniteSize;
+
+  PGtkWidgetClass(gtk_type_class(GTK_OBJECT_TYPE(PGtkObject(PGtkCombo(FHandle)^.button))))^.
+    size_request(PGtkCombo(FHandle)^.button, @ButtonReq);
+
+  MinW := ButtonReq.Width + 20;
+  DefW := ButtonReq.Width + 80;
+  MaxH := DefH;
 end;
 
 procedure TCustomComboBox.SetText(const AText: String);
@@ -93,6 +99,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.2  2000/02/18 22:19:49  sg
   * Implemented SetText
 

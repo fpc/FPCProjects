@@ -102,6 +102,7 @@ type
     procedure FillRect(const rect: TRect);
     procedure FillRect(ax, ay, aw, ah: Integer);
     procedure Text(x, y: Integer; const AText: String);
+    procedure CopyRect(dx, dy, dw, dh, sx, sy: Integer);
     procedure DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap);
     procedure DrawBitmap(ADestX, ADestY: Integer; ABitmap: TBitmap;
       ASourceW, ASourceH: Integer);
@@ -138,6 +139,9 @@ type
 
 {
   $Log$
+  Revision 1.3  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.2  2000/01/24 00:09:41  sg
   * Added TBitmap and bitmap drawing support to TCanvas
 

@@ -44,9 +44,18 @@ type
   end;
 
 
+
+procedure TGtkAdjRange_ValueChanged(adj: PGtkAdjustment; range: TGtkAdjRange); cdecl;
+begin
+  if Assigned(range.FOnValueChange) then
+    range.FOnValueChange(range);
+end;
+
 constructor TGtkAdjRange.Create;
 begin
   adj := PGtkAdjustment(gtk_adjustment_new(0, 0, 200, 1, 10, 100));
+  gtk_signal_connect(PGtkObject(adj), 'value_changed',
+    GTK_SIGNAL_FUNC(@TGtkAdjRange_ValueChanged), self);
 end;
 
 function TGtkAdjRange.GetMaxValue: Integer;
@@ -204,9 +213,8 @@ begin
   gtk_fixed_put(PGtkFixed(FHandle), priv.Frame, 0, 0);
   gtk_widget_show(priv.Frame);
 
-  if Assigned(FContent) and Assigned(FContent.FHandle) then begin
+  if Assigned(FContent) and Assigned(FContent.FHandle) then
     gtk_container_add(PGtkContainer(priv.Frame), FContent.FHandle);
-  end;
 
   priv.HorzScrollbar := gtk_hscrollbar_new(TGtkAdjRange(FHorzRange).adj);
   gtk_fixed_put(PGtkFixed(FHandle), priv.HorzScrollbar, 0, 0);
@@ -240,20 +248,20 @@ var
   HorzBarSize, VertBarSize: TGtkRequisition;
 begin
   inherited ApplySize;
-  WriteLn('TScrollers.ApplySize ', FWidth, ' x ', FHeight);
 
-  PGtkWidgetClass(gtk_type_class(GTK_OBJECT_TYPE(PGtkObject(priv.HorzScrollbar))))^.
-    size_request(FHandle, @HorzBarSize);
+  gtk_widget_size_request(priv.HorzScrollbar, @HorzBarSize);
+  gtk_widget_size_request(priv.VertScrollbar, @VertBarSize);
 
-  PGtkWidgetClass(gtk_type_class(GTK_OBJECT_TYPE(PGtkObject(priv.VertScrollbar))))^.
-    size_request(FHandle, @VertBarSize);
-
-  gtk_widget_set_usize(priv.HorzScrollbar, FWidth - VertBarSize.Width, VertBarSize.Height);
-  gtk_widget_set_usize(priv.VertScrollbar, HorzBarSize.Width, FHeight - HorzBarSize.Height);
+  gtk_widget_set_usize(priv.HorzScrollbar, FWidth - VertBarSize.Width, HorzBarSize.Height);
+  gtk_widget_set_usize(priv.VertScrollbar, VertBarSize.Width, FHeight - HorzBarSize.Height);
   gtk_widget_set_usize(priv.Frame, FWidth - VertBarSize.Width, FHeight - HorzBarSize.Height);
-
   gtk_fixed_move(PGtkFixed(FHandle), priv.HorzScrollbar, 0, FHeight - HorzBarSize.Height);
   gtk_fixed_move(PGtkFixed(FHandle), priv.VertScrollbar, FWidth - VertBarSize.Width, 0);
+
+  if Assigned(FContent) then
+    FContent.SetSize(
+      FWidth - VertBarSize.Width - PGtkStyle(priv.Frame^.thestyle)^.klass^.xthickness * 2,
+      FHeight - HorzBarSize.Height - PGtkStyle(priv.Frame^.thestyle)^.klass^.ythickness * 2);
 end;
 
 
@@ -291,6 +299,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.5  2000/02/18 18:28:35  sg
   * Started TScrollers
 

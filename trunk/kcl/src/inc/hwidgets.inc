@@ -258,6 +258,7 @@ type
 
   TRange = class(TPersistent)
   protected
+    FOnValueChange: TNotifyEvent;
     function  GetMaxValue: Integer; virtual; abstract;
     procedure SetMaxValue(AMaxValue: Integer); virtual; abstract;
     function  GetCurValue: Integer; virtual; abstract;
@@ -269,6 +270,7 @@ type
     property MaxValue: Integer read GetMaxValue write SetMaxValue default 200;
     property CurValue: Integer read GetCurValue write SetCurValue;
     property PageSize: Integer read GetPageSize write SetPageSize default 100;
+    property OnValueChange: TNotifyEvent read FOnValueChange write FOnValueChange;
   end;
 
   THorzScrollBar = class(TWidget)
@@ -346,7 +348,9 @@ type
     FOnMouseMove: TMouseMoveEvent;
     procedure OnFinishCreation; override;
   public
+    constructor Create(AOwner: TComponent); override;
     function  CreateCanvas: TCanvas;
+    procedure ScrollBy(dx, dy: Integer; DoClear: Boolean);
     procedure DoPaint(ACanvas: TCanvas; const ARect: TRect);
     function  DoKey(AKey: Char; AKeyCode: LongWord; AShift: TShiftState): Boolean;
     procedure DoMouseButtonDown(AButton: TMouseButton; AShift: TShiftState;
@@ -365,8 +369,6 @@ type
   end;
 
   TPaintBox = class(TCustomPaintBox)
-  public
-    constructor Create(AOwner: TComponent); override;
   published
     property OnPaint;
     property OnKey;
@@ -388,6 +390,7 @@ type
     FNotebook: TNotebook;
     FText: String;
     FContent: TWidget;
+    FBorderWidth: Integer;
     procedure SetText(const AText: String);
     procedure SetContent(AContent: TWidget);
   public
@@ -395,31 +398,33 @@ type
   published
     property Text: String read FText write SetText;
     property Content: TWidget read FContent write SetContent;
+    property BorderWidth: Integer read FBorderWidth write FBorderWidth default 0;
   end;
 
   TPageChangeEvent = procedure(Sender: TWidget; OldPage, NewPage: Integer) of object;
 
   TNotebook = class(TWidget)
   protected
+    FrameBorders: TRect;
     FPages: TCollection;
     FOnPageChange: TPageChangeEvent;
 
-    function  GetPage(AIndex: Integer): TNotebookPage;
+    function  GetPages(AIndex: Integer): TNotebookPage;
     function  GetCurPage: TNotebookPage;
-    function  GetCurPageIndex: Integer;
-    procedure SetCurPageIndex(AIndex: Integer);
+    function  GetPageIndex: Integer;
+    procedure SetPageIndex(AIndex: Integer);
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
+    procedure ApplySize; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function  AddPage(AText: String; AChild: TWidget): Integer;
     procedure RemovePage(AIndex: Integer); virtual;
-    property  Page[AIndex: Integer]: TNotebookPage read GetPage;
+    property  Pages[AIndex: Integer]: TNotebookPage read GetPages;
     property  CurPage: TNotebookPage read GetCurPage;
   published
-    property Pages: TCollection read FPages;
-    property CurPageIndex: Integer read GetCurPageIndex write SetCurPageIndex;
+    property PageIndex: Integer read GetPageIndex write SetPageIndex;
     property OnPageChange: TPageChangeEvent read FOnPageChange write FOnPageChange;
   end;
 
@@ -528,6 +533,9 @@ type
 
 {
   $Log$
+  Revision 1.9  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.8  2000/02/18 22:18:57  sg
   * The "SetText" methods of all relevant classes are now overwritten
 

@@ -64,12 +64,7 @@ begin
       FOnMouseMove(Self, AShift, AMouseX, AMouseY);
 end;
 
-
-// -------------------------------------------------------------------
-//   TPaintBox
-// -------------------------------------------------------------------
-
-constructor TPaintBox.Create(AOwner: TComponent);
+constructor TCustomPaintBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 end;
@@ -77,6 +72,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.3  2000/02/10 18:29:38  sg
   * Added TPaintBox.Create
 

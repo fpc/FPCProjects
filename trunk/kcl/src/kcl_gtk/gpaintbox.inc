@@ -183,12 +183,6 @@ end;
 //   TCustomPaintBox
 // -------------------------------------------------------------------
 
-function TCustomPaintBox.CreateCanvas: TCanvas;
-begin
-  ASSERT(Assigned(FHandle));
-  Result := TGdkCanvas.Create(FHandle^.window);
-end;
-
 procedure TCustomPaintBox.OnFinishCreation;
 begin
   if not Assigned(FHandle) then
@@ -214,9 +208,53 @@ begin
   inherited OnFinishCreation;
 end;
 
+function TCustomPaintBox.CreateCanvas: TCanvas;
+begin
+  ASSERT(Assigned(FHandle));
+  Result := TGdkCanvas.Create(FHandle^.window);
+end;
+
+procedure TCustomPaintBox.ScrollBy(dx, dy: Integer; DoClear: Boolean);
+var
+  canvas: TCanvas;
+  SourceX, SourceY, DestX, DestY: Integer;
+begin
+  //WriteLn('Scroll by ', dx, ' x ', dy);
+  if dx > 0 then begin
+    SourceX := dx;
+    DestX := 0;
+  end else begin
+    SourceX := 0;
+    DestX := -dx;
+  end;
+  if dy > 0 then begin
+    SourceY := dy;
+    DestY := 0;
+  end else begin
+    SourceY := 0;
+    DestY := -dy;
+  end;
+
+  canvas := CreateCanvas;
+  canvas.CopyRect(DestX, DestY, FWidth - Abs(dx), FHeight - Abs(dy), SourceX, SourceY);
+  canvas.Free;
+
+  if dx > 0 then
+    Redraw(FWidth - dx, 0, dx, FHeight, False)
+  else if dx < 0 then
+    Redraw(0, 0, -dx, FHeight, False);
+  if dy > 0 then
+    Redraw(0, FHeight - dy, FWidth, dy, False)
+  else if dy < 0 then
+    Redraw(0, 0, FWidth, -dy, False);
+end;
+
 
 {
   $Log$
+  Revision 1.5  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.4  2000/02/10 18:46:19  sg
   * Removed method "OnSetSize"
 

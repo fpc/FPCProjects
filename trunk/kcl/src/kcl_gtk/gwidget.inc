@@ -101,6 +101,12 @@ begin
   gtk_widget_hide(FHandle);
 end;
 
+procedure TWidget.SetPosition(x, y: Integer);
+begin
+  if Assigned(FHandle) then
+    gtk_widget_set_uposition(FHandle, x, y);
+end;
+
 procedure TWidget.OnFinishCreation;
 begin
   ASSERT(Assigned(FHandle));
@@ -187,41 +193,49 @@ begin
     Result := False;
 end;
 
-procedure TWidget.Redraw;
+procedure TWidget.Redraw(AtOnce: Boolean);
+var
+  r: TGdkRectangle;
 begin
   if Assigned(FHandle) then
-    gtk_widget_queue_draw(FHandle);
+    if AtOnce then begin
+      r.x := 0;
+      r.y := 0;
+      r.Width := FWidth;
+      r.Height := FHeight;
+      gtk_widget_draw(FHandle, @r);
+    end else
+      gtk_widget_queue_draw(FHandle);
 end;
 
-procedure TWidget.Redraw(const Rect: TRect);
+procedure TWidget.Redraw(const Rect: TRect; AtOnce: Boolean);
+begin
+  if Assigned(FHandle) then
+    gtk_widget_queue_draw_area(FHandle, Rect.Left, Rect.Top,
+      Rect.Right - Rect.Left, Rect.Bottom - Rect.Top);
+end;
+
+procedure TWidget.Redraw(ax, ay, aw, ah: Integer; AtOnce: Boolean);
 var
   r: TGdkRectangle;
 begin
-  if Assigned(FHandle) then begin
-    r.x := Rect.Left;
-    r.y := Rect.Top;
-    r.Width := Rect.Right - Rect.Left + 1;
-    r.Height := Rect.Bottom - Rect.Top + 1;
-    gtk_widget_draw(FHandle, @r);
-  end;
-end;
-
-procedure TWidget.Redraw(ax, ay, aw, ah: Integer);
-var
-  r: TGdkRectangle;
-begin
-  if Assigned(FHandle) then begin
-    r.x := ax;
-    r.y := ay;
-    r.Width := aw;
-    r.Height := ah;
-    gtk_widget_draw(FHandle, @r);
-  end;
+  if Assigned(FHandle) then
+    if AtOnce then begin
+      r.x := ax;
+      r.y := ay;
+      r.Width := aw;
+      r.Height := ah;
+      gtk_widget_draw(FHandle, @r);
+    end else
+      gtk_widget_queue_draw_area(FHandle, ax, ay, aw, ah);
 end;
 
 
 {
   $Log$
+  Revision 1.6  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.5  2000/02/18 18:29:56  sg
   * Default size requests are now done directly by calling the GTK widget's
     size_request method instead of calling gtk_widget_size_request.

@@ -114,7 +114,7 @@ end;
 procedure TCheckBox.DoRecalcLayout;
 begin
   inherited DoRecalcLayout;
-  MaxW := InfiniteSize;
+  MaxH := DefH;
 end;
 
 procedure TCheckBox.SetText(const AText: String);
@@ -176,7 +176,7 @@ end;
 procedure TRadioButton.DoRecalcLayout;
 begin
   inherited DoRecalcLayout;
-  MaxW := InfiniteSize;
+  MaxH := DefH;
 end;
 
 procedure TRadioButton.SetText(const AText: String);
@@ -189,6 +189,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.5  2000/02/18 22:19:49  sg
   * Implemented SetText
 

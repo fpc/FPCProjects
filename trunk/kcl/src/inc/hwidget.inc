@@ -60,6 +60,7 @@ type
     procedure SetEnabled(AEnabled: Boolean);
     procedure SetText(const AText: String); dynamic;
     procedure SetHint(const AHint: String);
+    procedure SetPosition(x, y: Integer);
     procedure OnFinishCreation; virtual;
     procedure DoRecalcLayout; virtual;
     procedure ApplySize; virtual;	// apply current size (FWidth and FHeight); adjust children
@@ -80,9 +81,9 @@ type
 
     procedure BlockDrawing;
     procedure UnblockDrawing;
-    procedure Redraw;
-    procedure Redraw(const rect: TRect);
-    procedure Redraw(ax, ay, aw, ah: Integer);
+    procedure Redraw(AtOnce: Boolean);
+    procedure Redraw(const rect: TRect; AtOnce: Boolean);
+    procedure Redraw(ax, ay, aw, ah: Integer; AtOnce: Boolean);
 
     procedure SetFocus;
     function  HasFocus: Boolean;
@@ -114,6 +115,9 @@ type
 
 {
   $Log$
+  Revision 1.5  2000/02/19 19:09:00  sg
+  * Fixed layouting bugs; minor improvements
+
   Revision 1.4  2000/02/17 22:24:41  sg
   * Added properties "Widgets" and "WidgetCount"
   * Added "IsRadioGroup" (needed for TRadioButton under GTK)
