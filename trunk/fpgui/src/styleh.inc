@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Style declarations
@@ -35,8 +35,8 @@
     procedure SetUIColor(Canvas: TGfxCanvas; Color: TColor);
 
     // General
-    procedure DrawText(Canvas: TGfxCanvas; x, y: Integer; const AText: String;
-      State: TWidgetState); virtual; abstract;
+    procedure DrawText(Canvas: TGfxCanvas; const APosition: TPoint;
+      const AText: String; State: TWidgetState); virtual; abstract;
 
     procedure DrawItemBefore(Canvas: TGfxCanvas; const ARect: TRect;
       Flags: TItemFlags); virtual; abstract;
@@ -66,13 +66,13 @@
     // Check boxes
     procedure DrawCheckBox(Canvas: TGfxCanvas; const ARect, LabelRect: TRect;
       Flags: TCheckboxFlags); virtual; abstract;
-    procedure GetCheckBoxLayout(LabelW, LabelH: Integer;
-      var TotalW, TotalH, LabelX, LabelY: Integer); virtual; abstract;
+    procedure GetCheckBoxLayout(const LabelSize: TSize;
+      var TotalSize: TSize; var LabelPos: TPoint); virtual; abstract;
     // Radio buttons
     procedure DrawRadioButton(Canvas: TGfxCanvas;
       const ARect, LabelRect: TRect; Flags: TCheckboxFlags); virtual; abstract;
-    procedure GetRadioButtonLayout(LabelW, LabelH: Integer;
-      var TotalW, TotalH, LabelX, LabelY: Integer); virtual; abstract;
+    procedure GetRadioButtonLayout(const LabelSize: TSize;
+      var TotalSize: TSize; var LabelPos: TPoint); virtual; abstract;
     // Combo boxes
     function GetComboBoxArrowSize: TSize; virtual; abstract;
     procedure DrawComboBoxArrow(Canvas: TGfxCanvas; const ARect: TRect;
@@ -106,8 +106,8 @@
     procedure DrawSunkenOuterBorder(Canvas: TGfxCanvas; const ARect: TRect);
 
     function GetGUIColor(Color: TColor): TGfxColor; override;
-    procedure DrawText(Canvas: TGfxCanvas; x, y: Integer; const AText: String;
-      State: TWidgetState); override;
+    procedure DrawText(Canvas: TGfxCanvas; const APosition: TPoint;
+      const AText: String; State: TWidgetState); override;
     procedure DrawItemBefore(Canvas: TGfxCanvas; const ARect: TRect;
       Flags: TItemFlags); override;
     procedure DrawItemAfter(Canvas: TGfxCanvas; const ARect: TRect;
@@ -128,12 +128,12 @@
     function GetEditBoxBorders: TRect; override;
     procedure DrawCheckBox(Canvas: TGfxCanvas; const ARect, LabelRect: TRect;
       Flags: TCheckboxFlags); override;
-    procedure GetCheckBoxLayout(LabelW, LabelH: Integer;
-      var TotalW, TotalH, LabelX, LabelY: Integer); override;
+    procedure GetCheckBoxLayout(const LabelSize: TSize;
+      var TotalSize: TSize; var LabelPos: TPoint); override;
     procedure DrawRadioButton(Canvas: TGfxCanvas;
       const ARect, LabelRect: TRect; Flags: TCheckboxFlags); override;
-    procedure GetRadioButtonLayout(LabelW, LabelH: Integer;
-      var TotalW, TotalH, LabelX, LabelY: Integer); override;
+    procedure GetRadioButtonLayout(const LabelSize: TSize;
+      var TotalSize: TSize; var LabelPos: TPoint); override;
     function GetComboBoxArrowSize: TSize; override;
     procedure DrawComboBoxArrow(Canvas: TGfxCanvas; const ARect: TRect;
       IsPressed, IsEnabled: Boolean); override;
@@ -152,6 +152,11 @@
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:45  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

@@ -44,70 +44,20 @@ end;
 function TScrollingSupport.ProcessEvent(Event: TEventObj): Boolean;
 var
   HorzScrollBarHeight, VertScrollBarWidth: Integer;
-
-  procedure CalcScrollBarSizes;
+  Canvas: TGfxCanvas;
+begin
+  if Event.InheritsFrom(TPaintEventObj) then
   begin
-    if HorzScrollBar.WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
-      HorzScrollBarHeight := HorzScrollBar.MinH
+    if HorzScrollBar.Visible then
+      HorzScrollBarHeight := HorzScrollBar.MinSize.cy
     else
       HorzScrollBarHeight := 0;
 
-    if VertScrollBar.WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
-      VertScrollBarWidth := VertScrollBar.MinW
+    if VertScrollBar.Visible then
+      VertScrollBarWidth := VertScrollBar.MinSize.cx
     else
       VertScrollBarWidth := 0;
-  end;
 
-var
-  Canvas: TGfxCanvas;
-  HorzBarVisible, VertBarVisible,
-    LastHorzBarVisible, LastVertBarVisible: Boolean;
-begin
-  if Event.InheritsFrom(TResizeEventObj) or (Event.InheritsFrom(TUpdateEventObj)
-    and (wsIsVisible in Parent.WidgetState)) then
-  begin
-    { Attention: If the change the visibility of the scroll bars within an
-      update event, this won't raise another update event! }
-
-    HorzBarVisible := HorzScrollBar.WidgetState *
-      [wsGetsVisible, wsIsVisible] <> [];
-    VertBarVisible := VertScrollBar.WidgetState *
-      [wsGetsVisible, wsIsVisible] <> [];
-    LastHorzBarVisible := not HorzBarVisible;
-
-    FBorders := Parent.Style.GetScrollBoxBorders;
-    with FBorders do
-    begin
-      while (HorzBarVisible <> LastHorzBarVisible) or
-        (VertBarVisible <> LastVertBarVisible) do
-      begin
-        LastHorzBarVisible := HorzBarVisible;
-        LastVertBarVisible := VertBarVisible;
-        CalcScrollBarSizes;
-        HorzScrollBar.SetBounds(
-	  Left, Parent.Height - HorzScrollBar.MinH - Bottom,
-          Parent.Width - VertScrollBarWidth - Left - Right, HorzScrollBar.MinH);
-        VertScrollBar.SetBounds(Parent.Width - VertScrollBar.MinW - Right,
-	  Top, VertScrollBar.MinW,
-	  Parent.Height - HorzScrollBarHeight - Top - Bottom);
-
-        ClientRect.Left := Left;
-        ClientRect.Top := Top;
-        ClientRect.Right := Parent.Width - Right - VertScrollBarWidth;
-        ClientRect.Bottom := Parent.Height - Bottom - HorzScrollBarHeight;
-        if Assigned(OnClientRectChange) then
-          OnClientRectChange(Self);
-
-        HorzBarVisible := HorzScrollBar.WidgetState *
-          [wsGetsVisible, wsIsVisible] <> [];
-        VertBarVisible := VertScrollBar.WidgetState *
-          [wsGetsVisible, wsIsVisible] <> [];
-      end;
-    end;
-    Result := False;
-  end else if Event.InheritsFrom(TPaintEventObj) then
-  begin
-    CalcScrollBarSizes;
     Canvas := TPaintEventObj(Event).Canvas;
     Parent.Style.DrawScrollBoxBorder(Canvas,
       Rect(0, 0, Parent.Width, Parent.Height));
@@ -137,8 +87,8 @@ begin
   begin
     Canvas := TPaintEventObj(Event).Canvas;
     OldMatrix := Canvas.Matrix;
-    Canvas.AppendTranslation(ClientRect.Left - HorzScrollBar.Position,
-      ClientRect.Top - VertScrollBar.Position);
+    Canvas.AppendTranslation(Point(ClientRect.Left - HorzScrollBar.Position,
+      ClientRect.Top - VertScrollBar.Position));
     Result := Event.SendToChild(AChild);
     Canvas.Matrix := OldMatrix;
   end else if Event.InheritsFrom(TPaintEventObj) then
@@ -146,8 +96,8 @@ begin
     Canvas := TPaintEventObj(Event).Canvas;
     Canvas.SaveState;
     try
-      Canvas.AppendTranslation(-HorzScrollBar.Position,
-        -VertScrollBar.Position);
+      Canvas.AppendTranslation(Point(-HorzScrollBar.Position,
+        -VertScrollBar.Position));
       if Canvas.IntersectClipRect(ClientRect) {and Canvas.IntersectClipRect(
         Rect(AChild.Left + ClientRect.Left, AChild.Top + ClientRect.Top,
           AChild.Left + AChild.Width + ClientRect.Left,
@@ -157,7 +107,7 @@ begin
 	  AChild.Top + ClientRect.Top);
         Inc(Event.RefCount);
         Result := AChild.SendEvent(Event);}
-        Canvas.AppendTranslation(ClientRect.Left, ClientRect.Top);
+        Canvas.AppendTranslation(ClientRect.TopLeft);
 	Result := Event.SendToChild(AChild);
       end else
         Result := False;
@@ -168,17 +118,79 @@ begin
     Result := Event.SendToChild(AChild);
 end;
 
-procedure TScrollingSupport.EvRecalcLayout;
+procedure TScrollingSupport.CalcSizes;
 begin
   FBorders := Parent.Style.GetScrollBoxBorders;
   with Parent, Borders do
   begin
-    MinW := Left + Right + HorzScrollBar.MinW + VertScrollBar.MinW;
-    DefW := Left + Right + HorzScrollBar.DefW + VertScrollBar.DefW;
-    MinH := Top + Bottom + HorzScrollBar.MinH + VertScrollBar.MinH;
-    DefH := Top + Bottom + HorzScrollBar.DefH + VertScrollBar.DefH;
-    MaxW := InfiniteSize;
-    MaxH := InfiniteSize;
+    FMinSize := HorzScrollBar.MinSize + VertScrollBar.MinSize +
+      TopLeft + BottomRight;
+    FDefSize := HorzScrollBar.DefSize + VertScrollBar.DefSize +
+      TopLeft + BottomRight;
+  end;
+end;
+
+procedure TScrollingSupport.Resized;
+var
+  HorzScrollBarHeight, VertScrollBarWidth: Integer;
+
+  procedure CalcScrollBarSizes;
+  begin
+    if HorzScrollBar.Visible then
+      HorzScrollBarHeight := HorzScrollBar.MinSize.cy
+    else
+      HorzScrollBarHeight := 0;
+
+    if VertScrollBar.Visible then
+      VertScrollBarWidth := VertScrollBar.MinSize.cx
+    else
+      VertScrollBarWidth := 0;
+  end;
+
+var
+  Canvas: TGfxCanvas;
+  HorzBarVisible, VertBarVisible,
+    LastHorzBarVisible, LastVertBarVisible: Boolean;
+begin
+  HorzBarVisible := HorzScrollBar.Visible;
+  VertBarVisible := VertScrollBar.Visible;
+  LastHorzBarVisible := not HorzBarVisible;
+
+  if FVirtualSize <> Size(0, 0) then
+    with Size(ClientRect) do
+    begin
+      HorzScrollBar.PageSize := cx;
+      VertScrollBar.PageSize := cy;
+    end;
+
+  FBorders := Parent.Style.GetScrollBoxBorders;
+  with FBorders do
+  begin
+    while (HorzBarVisible <> LastHorzBarVisible) or
+      (VertBarVisible <> LastVertBarVisible) do
+    begin
+      LastHorzBarVisible := HorzBarVisible;
+      LastVertBarVisible := VertBarVisible;
+      CalcScrollBarSizes;
+      HorzScrollBar.SetBounds(
+	Point(Left, Parent.Height - HorzScrollBar.MinSize.cy - Bottom),
+        Size(Parent.Width - VertScrollBarWidth - Left - Right,
+	  HorzScrollBar.MinSize.cy));
+      VertScrollBar.SetBounds(
+        Point(Parent.Width - VertScrollBar.MinSize.cx - Right, Top),
+	Size(VertScrollBar.MinSize.cx,
+	  Parent.Height - HorzScrollBarHeight - Top - Bottom));
+
+      ClientRect.Left := Left;
+      ClientRect.Top := Top;
+      ClientRect.Right := Parent.Width - Right - VertScrollBarWidth;
+      ClientRect.Bottom := Parent.Height - Bottom - HorzScrollBarHeight;
+      if Assigned(OnClientRectChange) then
+        OnClientRectChange(Self);
+
+      HorzBarVisible := HorzScrollBar.Visible;
+      VertBarVisible := VertScrollBar.Visible;
+    end;
   end;
 end;
 
@@ -186,15 +198,24 @@ function TScrollingSupport.CalcClientSize(AHorzBarVisible,
   AVertBarVisible: Boolean): TSize;
 begin
   FBorders := Parent.Style.GetScrollBoxBorders;
-  with Borders do
-  begin
-    Result.cx := Parent.Width - Left - Right;
-    Result.cy := Parent.Height - Top - Bottom;
-    if AVertBarVisible then
-      Dec(Result.cx, VertScrollBar.MinW);
-    if AHorzBarVisible then
-      Dec(Result.cy, HorzScrollBar.MinH);
-  end;
+  Result := Parent.BoundsSize - Borders.TopLeft - Borders.BottomRight;
+  if AVertBarVisible then
+    Dec(Result.cx, VertScrollBar.MinSize.cx);
+  if AHorzBarVisible then
+    Dec(Result.cy, HorzScrollBar.MinSize.cy);
+end;
+
+procedure TScrollingSupport.SetVirtualSize(const ASize: TSize);
+begin
+  FVirtualSize := ASize;
+  HorzScrollBar.Max := FVirtualSize.cx;
+  VertScrollBar.Max := FVirtualSize.cy;
+end;
+
+function TScrollingSupport.ScrollPos: TPoint;
+begin
+  Result.x := HorzScrollBar.Position;
+  Result.y := VertScrollBar.Position;
 end;
 
 procedure TScrollingSupport.DefHorzScrollHandler(Sender: TObject;
@@ -237,7 +258,7 @@ begin
   mshift := Event.Shift * [ssShift, ssAlt, ssCtrl, ssMeta,
     ssSuper, ssHyper, ssAltGr];
 
-  if not (wsIsVisible in VertScrollBar.WidgetState) then
+  if not VertScrollBar.Visible then
     Include(mshift, ssShift);
 
   if mshift = [] then
@@ -292,10 +313,14 @@ begin
     inherited DistributeEvent(Event);
 end;
 
-
-procedure TCustomScrollBox.EvRecalcLayout;
+procedure TCustomScrollBox.CalcSizes;
 begin
-  ScrollingSupport.EvRecalcLayout;
+  ScrollingSupport.CalcSizes;
+end;
+
+procedure TCustomScrollBox.Resized;
+begin
+  ScrollingSupport.Resized;
 end;
 
 { !!!: Move to TScrollingSupport as soon as this is a real event
@@ -341,6 +366,11 @@ end;}
 
 {
   $Log$
+  Revision 1.5  2001/02/14 23:14:45  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.4  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

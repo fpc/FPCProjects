@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Scrollbar widget declarations
@@ -30,7 +30,6 @@
     Embedded: Boolean;		// for internal embedded usage!
 
     // Event handling
-    procedure Resized;
     procedure ButtonUpClick(Sender: TObject);
     procedure ButtonDownClick(Sender: TObject);
     // Property access
@@ -44,10 +43,10 @@
     function ClipPosition(APosition: Integer): Integer;
     procedure UpdateBar;
   protected
-    function ProcessEvent(Event: TEventObj): Boolean; override;
     function DistributeEvent(Event: TEventObj): Boolean; override;
     procedure Paint(Canvas: TGfxCanvas); override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
+    procedure Resized; override;
     property Orientation: TOrientation read FOrientation write SetOrientation;
     property Min: Integer read FMin write SetMin default 0;
     property Max: Integer read FMax write SetMax default 100;
@@ -82,6 +81,11 @@
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Radiobutton widget declaration
@@ -21,10 +21,10 @@
     procedure SetChecked(AChecked: Boolean);
   protected
     FChecked: Boolean;
-    FLabelX, FLabelY: Integer;
+    FLabelPos: TPoint;
     procedure Click; override;
     procedure Paint(Canvas: TGfxCanvas); override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
     property Checked: Boolean read FChecked write SetChecked;
   public
     constructor Create(AOwner: TComponent); override;
@@ -41,6 +41,11 @@
 
 {
   $Log$
+  Revision 1.2  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

@@ -156,8 +156,8 @@ begin
   begin
     Inc(Sum, RowHeights[y]);
     if (y >= FixedRows) and (Sum >= y1) then
-      Canvas.DrawLine(ScrollingSupport.ClientRect.Left + FixedWidth, Sum,
-        CellRect.Right + 1, Sum);
+      Canvas.DrawLine(Point(ScrollingSupport.ClientRect.Left + FixedWidth, Sum),
+        Point(CellRect.Right + 1, Sum));
     Inc(Sum);
     if Sum >= y2 then
       break;
@@ -173,8 +173,8 @@ begin
   begin
     Inc(Sum, ColWidths[x]);
     if (x >= FixedCols) and (Sum >= x1) then
-      Canvas.DrawLine(Sum, ScrollingSupport.ClientRect.Top + FixedHeight,
-        Sum, CellRect.Bottom);
+      Canvas.DrawLine(Point(Sum, ScrollingSupport.ClientRect.Top + FixedHeight),
+        Point(Sum, CellRect.Bottom));
     Inc(Sum);
     if Sum >= x2 then
       break;
@@ -195,37 +195,9 @@ begin
 end;
 
 function TCustomGrid.ProcessEvent(Event: TEventObj): Boolean;
-var
-  i, Sum, Max: Integer;
 begin
   Result := ScrollingSupport.ProcessEvent(Event) or
     inherited ProcessEvent(Event);
-  if Event.InheritsFrom(TResizeEventObj) then
-  begin
-    Sum := 0;
-    Max := ScrollingSupport.ClientRect.Right -
-      ScrollingSupport.ClientRect.Left - FixedWidth;
-    for i := ScrollingSupport.HorzScrollBar.Position to ColCount - 1 do
-    begin
-      Inc(Sum, ColWidths[i] + 1);
-      if Sum >= Max then
-        break;
-    end;
-    ScrollingSupport.HorzScrollBar.PageSize :=
-      i - ScrollingSupport.HorzScrollBar.Position;
-
-    Sum := 0;
-    Max := ScrollingSupport.ClientRect.Bottom -
-      ScrollingSupport.ClientRect.Top - FixedHeight;
-    for i := ScrollingSupport.VertScrollBar.Position to RowCount - 1 do
-    begin
-      Inc(Sum, RowHeights[i] + 1);
-      if Sum >= Max then
-        break;
-    end;
-    ScrollingSupport.VertScrollBar.PageSize :=
-      i - ScrollingSupport.VertScrollBar.Position;
-  end;
 end;
 
 function TCustomGrid.DistributeEvent(Event: TEventObj): Boolean;
@@ -234,9 +206,14 @@ begin
     inherited DistributeEvent(Event);
 end;
 
-procedure TCustomGrid.EvRecalcLayout;
+procedure TCustomGrid.CalcSizes;
 begin
-  ScrollingSupport.EvRecalcLayout;
+  ScrollingSupport.CalcSizes;
+end;
+
+procedure TCustomGrid.Resized;
+begin
+  ScrollingSupport.Resized;
 end;
 
 procedure TCustomGrid.ColWidthsChanged;
@@ -515,7 +492,7 @@ begin
   // WriteLn('TStringGrid.DrawCell(', ACol, ', ', ARow, ', ', Integer(AState), ');');
   s := Cells[ACol, ARow];
   if Length(s) > 0 then
-    ACanvas.TextOut(ARect.Left + 2, ARect.Top + 2, s);
+    ACanvas.TextOut(ARect.TopLeft + Point(2, 2), s);
   if Assigned(OnDrawCell) then
     OnDrawCell(Self, ACanvas, ACol, ARow, ARect, AState);
 end;
@@ -539,6 +516,11 @@ end;
 
 {
   $Log$
+  Revision 1.6  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.5  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Combobox widget declarations
@@ -18,7 +18,6 @@
 
   TCustomComboBox = class(TWidget)
   private
-    function EvResize(Event: TResizeEventObj): Boolean;
     procedure ButtonClick(Sender: TObject);
     procedure DropDownDeactivate(Sender: TObject);
     procedure DropDownDestroy(Sender: TObject);
@@ -26,9 +25,9 @@
     FButton: TGenericButton;
     FDropDown: TCustomForm;
     procedure Paint(Canvas: TGfxCanvas); override;
-    function ProcessEvent(Event: TEventObj): Boolean; override;
+    procedure CalcSizes; override;
+    procedure Resized; override;
     function DistributeEvent(Event: TEventObj): Boolean; override;
-    procedure EvRecalcLayout; override;
     property CanExpandWidth default True;
   public
     constructor Create(AOwner: TComponent); override;
@@ -44,6 +43,11 @@
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

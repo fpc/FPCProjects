@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Scrollbar widget implementation
@@ -28,7 +28,7 @@ type
   TScrollBarButton = class(TGenericButton)
   protected
     procedure Paint(Canvas: TGfxCanvas); override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
   public
     Direction: TArrowDirection;
   end;
@@ -36,19 +36,15 @@ type
 procedure TScrollBarButton.Paint(Canvas: TGfxCanvas);
 begin
   inherited Paint(Canvas);
-  Style.DrawScrollBarButton(Canvas, Rect(0, 0, Width, Height), Direction,
-    (wsClicked in WidgetState) and (wsMouseInside in WidgetState),
+  Style.DrawScrollBarButton(Canvas, Rect(0, 0, BoundsSize.cx, BoundsSize.cy),
+     Direction, (wsClicked in WidgetState) and (wsMouseInside in WidgetState),
     wsEnabled in WidgetState);
 end;
 
-procedure TScrollBarButton.EvRecalcLayout;
+procedure TScrollBarButton.CalcSizes;
 begin
   ASSERT(Owner is TCustomScrollBar);
-  with Style.GetScrollBarBtnSize(TCustomScrollBar(Owner).Orientation) do
-  begin
-    MinW := cx;
-    MinH := cy;
-  end;
+  FMinSize := Style.GetScrollBarBtnSize(TCustomScrollBar(Owner).Orientation);
 end;
 
 
@@ -68,7 +64,7 @@ type
     DragStartMousePos, DragStartButtonPos, ButtonMoveSavedPosition: Integer;
     procedure Paint(Canvas: TGfxCanvas); override;
     function ProcessEvent(Event: TEventObj): Boolean; override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
     function CalcPosition: Integer;
   public
     constructor Create(AOwner: TComponent); override;
@@ -88,7 +84,7 @@ var
 begin
   ASSERT(Owner is TCustomScrollBar);
 
-  if WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
+  if Visible then
   begin
     with TCustomScrollBar(Owner) do
     begin
@@ -97,9 +93,9 @@ begin
       else
       begin
 	if Orientation = Horizontal then
-	  Size := Self.Width
+	  Size := Self.BoundsSize.cx
 	else
-	  Size := Self.Height;
+	  Size := Self.BoundsSize.cy;
 	if PageSize = 0 then
 	  ButtonPos := (Position - Min) * (Size - ButtonSize) div (Max - Min)
         else
@@ -171,12 +167,7 @@ end;
 function TScrollBarSlider.ProcessEvent(Event: TEventObj): Boolean;
 begin
   Result := False;
-  if Event.InheritsFrom(TVisibilityChangeEventObj) then
-  begin
-// !!!: Why don't we get an wsIsVisible update?!?
-    if WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
-      UpdateBar;
-  end else if Event.InheritsFrom(TMousePressedEventObj) then
+  if Event.InheritsFrom(TMousePressedEventObj) then
     Result := EvMousePressed(TMousePressedEventObj(Event))
   else if Event.InheritsFrom(TMouseReleasedEventObj) then
     Result := EvMouseReleased(TMouseReleasedEventObj(Event))
@@ -186,7 +177,7 @@ begin
   if not Result then
     Result := inherited ProcessEvent(Event);
 
-  if Event.InheritsFrom(TResizeEventObj) then
+  if Event.InheritsFrom(TVisibilityChangeEventObj) and Visible then
     UpdateBar;
 end;
 
@@ -200,9 +191,9 @@ begin
     exit;
 
   if TCustomScrollBar(Owner).Orientation = Horizontal then
-    Pos := Event.MouseX
+    Pos := Event.Position.x
   else
-    Pos := Event.MouseY;
+    Pos := Event.Position.y;
 
   if Pos < ButtonPos then
   begin
@@ -266,11 +257,11 @@ begin
     if wsMouseInside in WidgetState then
       if TCustomScrollBar(Owner).Orientation = Horizontal then
       begin
-        Pos := Event.MouseX;
+        Pos := Event.Position.x;
         Size := Width;
       end else
       begin
-        Pos := Event.MouseY;
+        Pos := Event.Position.y;
         Size := Height;
       end
     else
@@ -299,13 +290,12 @@ begin
     Result := False;
 end;
 
-procedure TScrollBarSlider.EvRecalcLayout;
+procedure TScrollBarSlider.CalcSizes;
 begin
-  inherited EvRecalcLayout;
   if TCustomScrollBar(Owner).Orientation = Horizontal then
-    DefW := Style.GetScrollBarBtnSize(Horizontal).cy * 5
+    FDefSize.cx := Style.GetScrollBarBtnSize(Horizontal).cy * 5
   else
-    DefH := Style.GetScrollBarBtnSize(Vertical).cx * 5;
+    FDefSize.cy := Style.GetScrollBarBtnSize(Vertical).cx * 5;
 end;
 
 function TScrollBarSlider.CalcPosition: Integer;
@@ -409,16 +399,6 @@ begin
     Position := Position + LargeChange;
 end;
 
-function TCustomScrollBar.ProcessEvent(Event: TEventObj): Boolean;
-begin
-  if Event is TResizeEventObj then
-  begin
-    Resized;
-    Result := False;
-  end else
-    Result := inherited ProcessEvent(Event);
-end;
-
 function TCustomScrollBar.DistributeEvent(Event: TEventObj): Boolean;
 begin
   Result := Event.SendToChild(Slider) or Event.SendToChild(ButtonUp) or
@@ -429,6 +409,38 @@ procedure TCustomScrollBar.Paint(Canvas: TGfxCanvas);
 begin
   if not Embedded then
     Style.DrawScrollBarBorder(Canvas, Rect(0, 0, Width, Height));
+end;
+
+procedure TCustomScrollBar.CalcSizes;
+begin
+  if Orientation = Horizontal then
+  begin
+    FMinSize.cx := ButtonUp.DefSize.cx + Slider.MinSize.cx + ButtonDown.DefSize.cx;
+    FMinSize.cy := ButtonUp.DefSize.cy;
+    FDefSize.cx := ButtonUp.DefSize.cx + Slider.DefSize.cx + ButtonDown.DefSize.cx;
+    FDefSize.cy := ButtonUp.DefSize.cy;
+    FMaxSize.cx := InfiniteSize;
+    FMaxSize.cy := ButtonUp.DefSize.cy;
+  end else
+  begin
+    FMinSize.cx := ButtonUp.DefSize.cx;
+    FMinSize.cy := ButtonUp.DefSize.cy + Slider.MinSize.cy + ButtonDown.DefSize.cy;
+    FDefSize.cx := ButtonUp.DefSize.cx;
+    FDefSize.cy := ButtonUp.DefSize.cy + Slider.DefSize.cy + ButtonDown.DefSize.cy;
+    FMaxSize.cx := ButtonUp.DefSize.cx;
+    FMaxSize.cy := InfiniteSize;
+  end;
+
+  if not Embedded then
+    with Style.GetScrollBarBorders(Orientation) do
+    begin
+      Inc(FMinSize.cx, Left + Right);
+      Inc(FMinSize.cy, Top + Bottom);
+      FDefSize.cx := fpGUI.Min(DefSize.cx + Left + Right, InfiniteSize);
+      FDefSize.cy := fpGUI.Min(DefSize.cy + Top + Bottom, InfiniteSize);
+      FMaxSize.cx := fpGUI.Min(MaxSize.cx + Left + Right, InfiniteSize);
+      FMaxSize.cy := fpGUI.Min(MaxSize.cy + Top + Bottom, InfiniteSize);
+    end;
 end;
 
 procedure TCustomScrollBar.Resized;
@@ -454,53 +466,23 @@ begin
   with r do
     if Orientation = Horizontal then
     begin
-      ButtonUp.SetBounds(Left, Top, ButtonUp.DefW, Bottom - Top);
-      ButtonDown.SetBounds(Right - ButtonDown.DefW, Top,
-        ButtonDown.DefW, Bottom - Top);
-      Slider.SetBounds(Left + ButtonUp.DefW, Top,
-        Right - Left - ButtonUp.DefW - ButtonDown.DefW, Bottom - Top);
+      ButtonUp.SetBounds(TopLeft, Size(ButtonUp.DefSize.cx, Bottom - Top));
+      ButtonDown.SetBounds(Point(Right - ButtonDown.DefSize.cx, Top),
+        Size(ButtonDown.DefSize.cx, Bottom - Top));
+      Slider.SetBounds(Point(Left + ButtonUp.DefSize.cx, Top),
+        Size(Right - Left - ButtonUp.DefSize.cx - ButtonDown.DefSize.cx,
+	  Bottom - Top));
     end else
     begin
-      ButtonUp.SetBounds(Left, Top, Right - Left, ButtonDown.DefH);
-      ButtonDown.SetBounds(Left, Bottom - ButtonDown.DefH,
-        Right - Left, ButtonDown.DefH);
-      Slider.SetBounds(Left, Top + ButtonUp.DefH,
-        Right - Left, Bottom - Top - ButtonUp.DefH - ButtonDown.DefH);
+      ButtonUp.SetBounds(TopLeft, Size(Right - Left, ButtonDown.DefSize.cy));
+      ButtonDown.SetBounds(Point(Left, Bottom - ButtonDown.DefSize.cy),
+        Size(Right - Left, ButtonDown.DefSize.cy));
+      Slider.SetBounds(Point(Left, Top + ButtonUp.DefSize.cy),
+        Size(Right - Left,
+	  Bottom - Top - ButtonUp.DefSize.cy - ButtonDown.DefSize.cy));
     end;
 
   UpdateBar;
-end;
-
-procedure TCustomScrollBar.EvRecalcLayout;
-begin
-  if Orientation = Horizontal then
-  begin
-    MinW := ButtonUp.DefW + Slider.MinW + ButtonDown.DefW;
-    MinH := ButtonUp.DefH;
-    DefW := ButtonUp.DefW + Slider.DefW + ButtonDown.DefW;
-    DefH := ButtonUp.DefH;
-    MaxW := InfiniteSize;
-    MaxH := ButtonUp.DefH;
-  end else
-  begin
-    MinW := ButtonUp.DefW;
-    MinH := ButtonUp.DefH + Slider.MinH + ButtonDown.DefH;
-    DefW := ButtonUp.DefW;
-    DefH := ButtonUp.DefH + Slider.DefH + ButtonDown.DefH;
-    MaxW := ButtonUp.DefW;
-    MaxH := InfiniteSize;
-  end;
-
-  if not Embedded then
-    with Style.GetScrollBarBorders(Orientation) do
-    begin
-      Inc(MinW, Left + Right);
-      Inc(MinH, Top + Bottom);
-      DefW := fpGUI.Min(DefW + Left + Right, InfiniteSize);
-      DefH := fpGUI.Min(DefH + Top + Bottom, InfiniteSize);
-      MaxW := fpGUI.Min(MaxW + Left + Right, InfiniteSize);
-      MaxH := fpGUI.Min(MaxH + Top + Bottom, InfiniteSize);
-    end;
 end;
 
 procedure TCustomScrollBar.ButtonUpClick(Sender: TObject);
@@ -621,6 +603,11 @@ end;
 
 {
   $Log$
+  Revision 1.5  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.4  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

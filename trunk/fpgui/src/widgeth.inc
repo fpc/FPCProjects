@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Basic events and widget declarations
@@ -39,13 +39,19 @@
 
   // Miscellaneous events
 
-  TUpdateEventObj = class(TEventObj);
+  TLayoutingEventObj = class(TEventObj);
 
-  TResizeEventObj = class(TEventObj)
+  TCalcSizesEventObj = class(TLayoutingEventObj);
+
+  TResizedEventObj = class(TLayoutingEventObj)
+  private
+    FIsForced: Boolean;
   public
-    // To block the propagation of this event to children:
-    function SendToChild(AChild: TWidget): Boolean; override;
+    constructor Create(ASender: TObject; AIsForced: Boolean);
+  published
+    property IsForced: Boolean read FIsForced write FIsForced;
   end;
+
 
   TDestroyEventObj = class(TEventObj);
 
@@ -79,15 +85,14 @@
   TMouseEventObj = class(TEventObj)
   private
     FShift: TShiftState;
-    FMouseX, FMouseY: Integer;
+    FPosition: TPoint;
   public
     constructor Create(ASender: TObject; AShift: TShiftState;
-      AMouseX, AMouseY: Integer);
+      APosition: TPoint);
     function SendToChild(AChild: TWidget): Boolean; override;
+    property Position: TPoint read FPosition write FPosition;
   published
     property Shift: TShiftState read FShift write FShift;
-    property MouseX: Integer read FMouseX write FMouseX;
-    property MouseY: Integer read FMouseY write FMouseY;
   end;
 
   TMouseButtonEventObj = class(TMouseEventObj)
@@ -95,7 +100,7 @@
     FButton: TMouseButton;
   public
     constructor Create(ASender: TObject; AButton: TMouseButton;
-      AShift: TShiftState; AMouseX, AMouseY: Integer);
+      AShift: TShiftState; APosition: TPoint);
   published
     property Button: TMouseButton read FButton write FButton;
   end;
@@ -131,7 +136,7 @@
     FWheelDelta: Single;
   public
     constructor Create(ASender: TObject; AShift: TShiftState;
-      AWheelDelta: Single; AMouseX, AMouseY: Integer);
+      AWheelDelta: Single; APosition: TPoint);
   published
     property WheelDelta: Single read FWheelDelta write FWheelDelta;
   end;
@@ -148,18 +153,18 @@
   TWidget = class(TComponent)
   private
     FParent: TWidget;
-    FLeft: Integer;
-    FTop: Integer;
-    FWidth: Integer;
-    FHeight: Integer;
-    FClientRect: TRect;
     FOnClick: TNotifyEvent;
     // Property access
     procedure SetParent(AParent: TWidget);
+    function GetBoundsRect: TRect;
+    function GetLeft: Integer;
+    function GetTop: Integer;
+    function GetWidth: Integer;
+    function GetHeight: Integer;
     procedure SetEnabled(AEnabled: Boolean);
     procedure SetVisible(AVisible: Boolean);
     // Event handling
-    function EvUpdate(Event: TUpdateEventObj): Boolean;
+    function EvCalcSizes(Event: TCalcSizesEventObj): Boolean;
     function EvEnabledChange(Event: TEnabledChangeEventObj): Boolean;
     function EvVisibilityChange(Event: TVisibilityChangeEventObj): Boolean;
     function EvMousePressed(Event: TMousePressedEventObj): Boolean;
@@ -175,7 +180,11 @@
     FCanExpandWidth: Boolean;
     FEnabled: Boolean;
     FVisible: Boolean;
-    DefW, DefH, MinW, MinH, MaxW, MaxH: Integer;
+
+    FOrigin: TPoint;
+    FBoundsSize: TSize;
+    FClientRect: TRect;
+    FMinSize, FMaxSize, FDefSize: TSize;
     WidgetStyle: TWidgetStyle;
     WidgetState: TWidgetState;
 
@@ -183,6 +192,9 @@
     procedure Click; dynamic;
     procedure Paint(Canvas: TGfxCanvas); virtual;
     procedure SetParentComponent(AParent: TComponent); override;
+    // Layouting
+    procedure CalcSizes; virtual; abstract;
+    procedure Resized; virtual;
     // Events:
     function ProcessEvent(Event: TEventObj): Boolean; virtual;
     function DistributeEvent(Event: TEventObj): Boolean; virtual;
@@ -190,10 +202,9 @@
     procedure EvKeyPressed(Key: Word; Shift: TShiftState); dynamic;
     procedure EvKeyReleased(Key: Word; Shift: TShiftState); dynamic;
     procedure EvKeyChar(KeyChar: Char); dynamic;
-    procedure EvRecalcLayout; dynamic;		// Recalc sizes
     procedure EvTextChanged; dynamic;
 
-    function DoMouseEnter(AShift: TShiftState; AMouseX, AMouseY: Integer): Boolean;
+    function DoMouseEnter(AShift: TShiftState; AMousePos: TPoint): Boolean;
 
     // Properties
     function GetStyle: TStyle;
@@ -211,25 +222,28 @@
     function SendEvent(Event: TEventObj): Boolean;
     function FindForm: TCustomForm;
     procedure SetEmbeddedParent(AParent: TWidget);
-    procedure SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+    procedure SetBounds(APosition: TPoint; ASize: TSize);
     function WidgetToClient(const APoint: TPoint): TPoint; virtual;
     function ClientToWidget(const APoint: TPoint): TPoint; virtual;
     function ClientToScreen(const APoint: TPoint): TPoint; virtual;
-    procedure Update;
-    procedure RecalcLayout;
     procedure Show; dynamic;
     procedure Hide; dynamic;
     procedure Redraw;
     procedure Redraw(const ARect: TRect);
     procedure Scroll(const ARect: TRect; DeltaX, DeltaY: Integer);
     procedure SetFocus;
+    procedure Update;
     property Parent: TWidget read FParent write SetParent;
-    property Left: Integer read FLeft;
-    property Top: Integer read FTop;
-    property Width: Integer read FWidth;
-    property Height: Integer read FHeight;
-    property OptimalWidth: Integer read DefW;
-    property OptimalHeight: Integer read DefH;
+    property Origin: TPoint read FOrigin;
+    property BoundsSize: TSize read FBoundsSize;
+    property BoundsRect: TRect read GetBoundsRect;
+    property Left: Integer read GetLeft;
+    property Top: Integer read GetTop;
+    property Width: Integer read GetWidth;
+    property Height: Integer read GetHeight;
+    property MinSize: TSize read FMinSize;
+    property MaxSize: TSize read FMaxSize;
+    property DefSize: TSize read FDefSize;
     property ClientRect: TRect read FClientRect;
     property Style: TStyle read GetStyle;
     property Enabled: Boolean read FEnabled write SetEnabled default True;
@@ -239,6 +253,11 @@
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:45  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

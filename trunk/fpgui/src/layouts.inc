@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Layout widgets implementations
@@ -181,7 +181,7 @@ begin
   item.Left := ALeft;
   item.Top := ATop;
   item.Widget := AWidget;
-  AWidget.SetBounds(item.Left, item.Top, item.Widget.DefW, item.Widget.DefH);
+  AWidget.SetBounds(Point(item.Left, item.Top), item.Widget.DefSize);
   AddFixedChild(AWidget);
 end;
 
@@ -197,34 +197,27 @@ begin
     begin
       item.Left := ALeft;
       item.Top := ATop;
-      AWidget.SetBounds(ALeft, ATop, AWidget.Width, AWidget.Height);
+      AWidget.SetBounds(Point(item.Left, item.Top), item.Widget.DefSize);
       exit;
     end;
   end;
   raise ELayoutError.Create(SLayoutWidgetNotFound);
 end;
 
-procedure TFixedLayout.EvRecalcLayout;
+procedure TFixedLayout.CalcSizes;
 var
   i: Integer;
   item: TFixedItem;
 begin
-  inherited EvRecalcLayout;
-  MinW := 1;
-  MinH := 1;
   if FWidgets.Count = 0 then
-  begin
-    DefW := 50;
-    DefH := 50;
-  end else
+    FDefSize := Size(50, 50)
+  else
     for i := 0 to FWidgets.Count - 1 do
     begin
       item := TFixedItem(FWidgets.Items[i]);
-      DefW := Max(DefW, item.Left + item.Widget.DefW);
-      DefH := Max(DefH, item.Top + item.Widget.DefH);
+      FDefSize.cx := Max(DefSize.cx, item.Left + item.Widget.DefSize.cx);
+      FDefSize.cy := Max(DefSize.cx, item.Top + item.Widget.DefSize.cy);
     end;
-  MaxW := InfiniteSize;
-  MaxH := InfiniteSize;
 end;
 
 {procedure TFixedLayout.EvLayoutChildren(Canvas: TGfxCanvas);
@@ -235,7 +228,7 @@ begin
   for i := 0 to FWidgets.Count - 1 do
   begin
     item := TFixedItem(FWidgets.Items[i]);
-    item.Widget.SetBounds(item.Left, item.Top, item.Widget.DefW, item.Widget.DefH);
+    item.Widget.SetBounds(item.Left, item.Top, item.Widget.DefSize.cx, item.Widget.DefSize.cy);
   end;
 end;}
 
@@ -250,21 +243,15 @@ begin
   FWidgets := TCollection.Create(TDockingItem);
 end;
 
-procedure TDockingLayout.EvRecalcLayout;
+procedure TDockingLayout.CalcSizes;
 var
   i: Integer;
   item: TDockingItem;
   w, cw: TWidget;
 begin
-  inherited EvRecalcLayout;
   if FWidgets.Count = 0 then
   begin
-    MinW := 0;
-    MinH := 0;
-    DefW := 200;
-    DefH := 200;
-    MaxW := InfiniteSize;
-    MaxH := InfiniteSize;
+    FDefSize := Size(200, 200);
     exit;
   end;
 
@@ -282,21 +269,11 @@ begin
 
   if Assigned(cw) then
   begin
-    MinW := cw.MinW;
-    MinH := cw.MinH;
-    MaxW := cw.MaxW;
-    MaxH := cw.MaxH;
-    DefW := cw.DefW;
-    DefH := cw.DefH;
+    FMinSize := cw.MinSize;
+    FMaxSize := cw.MaxSize;
+    FDefSize := cw.DefSize;
   end else
-  begin
-    MinW := 0;
-    MinH := 0;
-    DefW := 200;
-    DefH := 200;
-    MaxW := InfiniteSize;
-    MaxH := InfiniteSize;
-  end;
+    FDefSize := Size(200, 200);
 
   for i := 0 to FWidgets.Count - 1 do
   begin
@@ -305,29 +282,29 @@ begin
     case item.DockingMode of
       dmTop, dmBottom:
         begin
-          if MinW < w.MinW then
-	    MinW := w.MinW;
-	  Inc(MinH, w.MinH);
-	  if MaxW < w.MaxW then
-	    MaxW := w.MaxW;
-	  if MaxH < InfiniteSize then
-	    Inc(MaxH, w.MaxH);
-	  if DefW < w.DefW then
-	    DefW := w.DefW;
-	  Inc(DefH, w.DefH);
+          if MinSize.cx < w.MinSize.cx then
+	    FMinSize.cx := w.MinSize.cx;
+	  Inc(FMinSize.cy, w.MinSize.cy);
+	  if MaxSize.cx < w.MaxSize.cx then
+	    FMaxSize.cx := w.MaxSize.cx;
+	  if MaxSize.cy < InfiniteSize then
+	    Inc(FMaxSize.cy, w.MaxSize.cy);
+	  if DefSize.cx < w.DefSize.cx then
+	    FDefSize.cx := w.DefSize.cx;
+	  Inc(FDefSize.cy, w.DefSize.cy);
         end;
       dmLeft, dmRight:
         begin
-	  Inc(MinW, w.MinW);
-          if MinH < w.MinH then
-	    MinH := w.MinH;
-	  if MaxW < InfiniteSize then
-	    Inc(MaxW, w.MaxW);
-	  if MaxH < w.MaxH then
-	    MaxH := w.MaxH;
-	  Inc(DefW, w.DefW);
-	  if DefH < w.DefH then
-	    DefH := w.DefH;
+	  Inc(FMinSize.cx, w.MinSize.cx);
+          if MinSize.cy < w.MinSize.cy then
+	    FMinSize.cy := w.MinSize.cy;
+	  if MaxSize.cx < InfiniteSize then
+	    Inc(FMaxSize.cx, w.MaxSize.cx);
+	  if MaxSize.cy < w.MaxSize.cy then
+	    FMaxSize.cy := w.MaxSize.cy;
+	  Inc(FDefSize.cx, w.DefSize.cx);
+	  if DefSize.cy < w.DefSize.cy then
+	    FDefSize.cy := w.DefSize.cy;
         end;
     end;
   end;
@@ -343,9 +320,9 @@ var
 begin
   clx := 0;
   cly := 0;
-  clw := FWidth;
-  clh := FHeight;
-  // WriteLn('=> DockingLayout.EvLayoutChildren ', FWidth, ' x ', FHeight);
+  clw := BoundsSize.cx;
+  clh := BoundsSize.cy;
+  // WriteLn('=> DockingLayout.EvLayoutChildren ', BoundsSize.cx, ' x ', BoundsSize.cy);
   if (clw = 0) or (clh = 0) then
     exit;
 
@@ -357,7 +334,7 @@ begin
     case item.DockingMode of
       dmLeft:
         begin
-	  WidgetW := item.Widget.DefW;
+	  WidgetW := item.Widget.DefSize.cx;
 	  WidgetH := clh;
 	  item.Left := clx;
 	  item.Top := cly;
@@ -367,7 +344,7 @@ begin
       dmTop:
         begin
 	  WidgetW := clw;
-	  WidgetH := item.Widget.DefH;
+	  WidgetH := item.Widget.DefSize.cy;
 	  item.Left := clx;
 	  item.Top := cly;
 	  Inc(cly, WidgetH);
@@ -375,7 +352,7 @@ begin
         end;
       dmRight:
         begin
-	  WidgetW := item.Widget.DefW;
+	  WidgetW := item.Widget.DefSize.cx;
 	  WidgetH := clh;
 	  item.Left := clx + clw - WidgetW;
           item.Top := cly;
@@ -383,7 +360,7 @@ begin
         end;
       dmBottom:
         begin
-	  WidgetH := item.Widget.DefH;
+	  WidgetH := item.Widget.DefSize.cy;
 	  WidgetW := clw;
 	  item.Left := clx;
 	  item.Top := cly + clh - WidgetH;
@@ -433,7 +410,7 @@ begin
   if AOrientation <> FOrientation then
   begin
     FOrientation := AOrientation;
-    RecalcLayout;
+    Update;
   end;
 end;
 
@@ -463,42 +440,30 @@ begin
   // !!!: Not implemented yet
 end;
 
-function TCustomBoxLayout.ProcessEvent(Event: TEventObj): Boolean;
-begin
-  if Event.InheritsFrom(TResizeEventObj) then
-    Resized;
-  Result := inherited ProcessEvent(Event);
-end;
-
-procedure TCustomBoxLayout.EvRecalcLayout;
+procedure TCustomBoxLayout.CalcSizes;
 var
   i: Integer;
   item: TLayoutItem;
 begin
-  inherited EvRecalcLayout;
   i := (FWidgets.Count - 1) * FSpacing;
   if Orientation = Horizontal then
   begin
-    MinW := i;
-    MinH := 0;
-    DefW := i;
-    DefH := MinH;
+    FMinSize := Size(i, 0);
+    FDefSize := MinSize;
     if HorzAlign = horzFill then
-      MaxW := i
+      FMaxSize.cx := i
     else
-      MaxW := InfiniteSize;
-    MaxH := InfiniteSize;
+      FMaxSize.cx := InfiniteSize;
+    FMaxSize.cy := InfiniteSize;
   end else
   begin
-    MinW := 0;
-    MinH := i;
-    DefW := 0;
-    DefH := i;
-    MaxW := InfiniteSize;
+    FMinSize := Size(0, i);
+    FDefSize := MinSize;
+    FMaxSize.cx := InfiniteSize;
     if VertAlign = vertFill then
-      MaxH := i
+      FMaxSize.cy := i
     else
-      MaxH := InfiniteSize;
+      FMaxSize.cy := InfiniteSize;
   end;
 
   for i := 0 to FWidgets.Count - 1 do
@@ -506,37 +471,37 @@ begin
     item := TLayoutItem(FWidgets.Items[i]);
     if Orientation = Horizontal then
     begin
-      Inc(MinW, item.Widget.MinW);
-      Inc(DefW, item.Widget.DefW);
-      MaxW := Min(InfiniteSize, MaxW + item.Widget.MaxW);
-      MaxH := Min(MaxH, item.Widget.MaxH);
-      if MinH < item.Widget.MinH then
-        MinH := item.Widget.MinH;
-      if DefH < item.Widget.DefH then
-        DefH := item.Widget.DefH;
-      if MaxH > item.Widget.MaxH then
-        MaxH := item.Widget.MaxH;
+      Inc(FMinSize.cx, item.Widget.MinSize.cx);
+      Inc(FDefSize.cx, item.Widget.DefSize.cx);
+      FMaxSize.cx := Min(InfiniteSize, MaxSize.cx + item.Widget.MaxSize.cx);
+      FMaxSize.cy := Min(MaxSize.cy, item.Widget.MaxSize.cy);
+      if MinSize.cy < item.Widget.MinSize.cy then
+        FMinSize.cy := item.Widget.MinSize.cy;
+      if DefSize.cy < item.Widget.DefSize.cy then
+        FDefSize.cy := item.Widget.DefSize.cy;
+      if MaxSize.cy > item.Widget.MaxSize.cy then
+        FMaxSize.cy := item.Widget.MaxSize.cy;
     end else
     begin
-      Inc(MinH, item.Widget.MinH);
-      Inc(DefH, item.Widget.DefH);
-      MaxW := Min(MaxW, item.Widget.MaxW);
-      MaxH := Min(InfiniteSize, MaxH + item.Widget.MaxH);
-      if MinW < item.Widget.MinW then
-        MinW := item.Widget.MinW;
-      if DefW < item.Widget.DefW then
-        DefW := item.Widget.DefW;
-      if MaxW > item.Widget.MaxW then
-        MaxW := item.Widget.MaxW;
+      Inc(FMinSize.cy, item.Widget.MinSize.cy);
+      Inc(FDefSize.cy, item.Widget.DefSize.cy);
+      FMaxSize.cx := Min(MaxSize.cx, item.Widget.MaxSize.cx);
+      FMaxSize.cy := Min(InfiniteSize, MaxSize.cy + item.Widget.MaxSize.cy);
+      if MinSize.cx < item.Widget.MinSize.cx then
+        FMinSize.cx := item.Widget.MinSize.cx;
+      if DefSize.cx < item.Widget.DefSize.cx then
+        FDefSize.cx := item.Widget.DefSize.cx;
+      if MaxSize.cx > item.Widget.MaxSize.cx then
+        FMaxSize.cx := item.Widget.MaxSize.cx;
     end;
   end;
 
-  Inc(MinW, 2 * FBorderSpacing);
-  Inc(MinH, 2 * FBorderSpacing);
-  Inc(DefW, 2 * FBorderSpacing);
-  Inc(DefH, 2 * FBorderSpacing);
-  MaxW := Min(InfiniteSize, MaxW + 2 * FBorderSpacing);
-  MaxH := Min(InfiniteSize, MaxH + 2 * FBorderSpacing);
+  Inc(FMinSize.cx, 2 * FBorderSpacing);
+  Inc(FMinSize.cy, 2 * FBorderSpacing);
+  Inc(FDefSize.cx, 2 * FBorderSpacing);
+  Inc(FDefSize.cy, 2 * FBorderSpacing);
+  FMaxSize.cx := Min(InfiniteSize, MaxSize.cx + 2 * FBorderSpacing);
+  FMaxSize.cy := Min(InfiniteSize, MaxSize.cy + 2 * FBorderSpacing);
 end;
 
 procedure TCustomBoxLayout.Resized;
@@ -560,17 +525,17 @@ begin
     for i := 0 to FWidgets.Count - 1 do
     begin
       item := TLayoutItem(FWidgets.Items[i]);
-      sizes^[i].min := Max(sizes^[i].min, item.Widget.MinW);
-      sizes^[i].def := Max(sizes^[i].def, item.Widget.DefW);
-      sizes^[i].max := Min(sizes^[i].max, item.Widget.MaxW);
+      sizes^[i].min := Max(sizes^[i].min, item.Widget.MinSize.cx);
+      sizes^[i].def := Max(sizes^[i].def, item.Widget.DefSize.cx);
+      sizes^[i].max := Min(sizes^[i].max, item.Widget.MaxSize.cx);
     end
   else
     for i := 0 to FWidgets.Count - 1 do
     begin
       item := TLayoutItem(FWidgets.Items[i]);
-      sizes^[i].min := Max(sizes^[i].min, item.Widget.MinH);
-      sizes^[i].def := Max(sizes^[i].def, item.Widget.DefH);
-      sizes^[i].max := Min(sizes^[i].max, item.Widget.MaxH);
+      sizes^[i].min := Max(sizes^[i].min, item.Widget.MinSize.cy);
+      sizes^[i].def := Max(sizes^[i].def, item.Widget.DefSize.cy);
+      sizes^[i].max := Min(sizes^[i].max, item.Widget.MaxSize.cy);
     end;
 
   for i := 0 to FWidgets.Count - 1 do
@@ -585,10 +550,10 @@ begin
   if Orientation = Horizontal then
   begin
     if FHorzAlign = horzFill then
-      CorrectSizes(sizes, FWidgets.Count, FWidth - DefW)
+      CorrectSizes(sizes, FWidgets.Count, BoundsSize.cx - DefSize.cx)
   end else
     if FVertAlign = vertFill then
-      CorrectSizes(sizes, FWidgets.Count, FHeight - DefH);
+      CorrectSizes(sizes, FWidgets.Count, BoundsSize.cy - DefSize.cy);
 
   sum := (FWidgets.Count - 1) * FSpacing;
   for i := 0 to FWidgets.Count - 1 do
@@ -596,14 +561,14 @@ begin
 
   if Orientation = Horizontal then
     case FHorzAlign of
-      horzCenter: x := (FWidth - sum) div 2;
-      horzRight:  x := FWidth - FBorderSpacing - sum;
+      horzCenter: x := (BoundsSize.cx - sum) div 2;
+      horzRight:  x := BoundsSize.cx - FBorderSpacing - sum;
       else	  x := FBorderSpacing;
     end
   else
     case FVertAlign of
-      vertCenter: y := (FHeight - sum) div 2;
-      vertBottom: y := FHeight - FBorderSpacing - sum;
+      vertCenter: y := (BoundsSize.cy - sum) div 2;
+      vertBottom: y := BoundsSize.cy - FBorderSpacing - sum;
       else        y := FBorderSpacing;
     end;
 
@@ -614,30 +579,30 @@ begin
     begin
       xpos := x;
       w := sizes^[i].def;
-      h := Min(FHeight, item.Widget.DefH);
+      h := Min(BoundsSize.cy, item.Widget.DefSize.cy);
       case FVertAlign of
-        vertCenter: ypos := (FHeight - h) div 2;
-	vertBottom: ypos := FHeight - FBorderSpacing - h;
+        vertCenter: ypos := (BoundsSize.cy - h) div 2;
+	vertBottom: ypos := BoundsSize.cy - FBorderSpacing - h;
 	else        ypos := FBorderSpacing;
       end;
       Inc(x, sizes^[i].def + FSpacing);
       if FVertAlign = vertFill then
-        h := Min(FHeight, item.Widget.MaxH);
+        h := Min(BoundsSize.cy, item.Widget.MaxSize.cy);
     end else
     begin
       ypos := y;
-      w := Min(FWidth, item.Widget.DefW);
+      w := Min(BoundsSize.cx, item.Widget.DefSize.cx);
       h := sizes^[i].def;
       case FHorzAlign of
-        horzCenter: xpos := (FWidth - w) div 2;
-	horzRight : xpos := FWidth - FBorderSpacing - w;
+        horzCenter: xpos := (BoundsSize.cx - w) div 2;
+	horzRight : xpos := BoundsSize.cx - FBorderSpacing - w;
 	else        xpos := FBorderSpacing;
       end;
       Inc(y, sizes^[i].def + FSpacing);
       if FHorzAlign = horzFill then
-        w := Min(FWidth, item.Widget.MaxW);
+        w := Min(BoundsSize.cx, item.Widget.MaxSize.cx);
     end;
-    item.Widget.SetBounds(xpos, ypos, w, h);
+    item.Widget.SetBounds(Point(xpos, ypos), Size(w, h));
   end;
 
   FreeMem(sizes);
@@ -661,7 +626,7 @@ begin
   if AColCount <> FColCount then
   begin
     FColCount := AColCount;
-    RecalcLayout;
+    Update;
   end;
 end;
 
@@ -670,7 +635,7 @@ begin
   if ARowCount <> FRowCount then
   begin
     FRowCount := ARowCount;
-    RecalcLayout;
+    Update;
   end;
 end;
 
@@ -679,7 +644,7 @@ begin
   if AColSpacing <> FColSpacing then
   begin
     FColSpacing := AColSpacing;
-    RecalcLayout;
+    Update;
   end;
 end;
 
@@ -688,7 +653,7 @@ begin
   if ARowSpacing <> FRowSpacing then
   begin
     FRowSpacing := ARowSpacing;
-    RecalcLayout;
+    Update;
   end;
 end;
 
@@ -721,12 +686,12 @@ begin
   for i := 0 to FWidgets.Count - 1 do
   begin
     item := TGridItem(FWidgets.Items[i]);
-    ColInfos^[item.x].min := Max(ColInfos^[item.x].min, item.Widget.MinW);
-    ColInfos^[item.x].def := Max(ColInfos^[item.x].def, item.Widget.DefW);
-    ColInfos^[item.x].max := Min(ColInfos^[item.x].max, item.Widget.MaxW);
-    RowInfos^[item.y].min := Max(RowInfos^[item.y].min, item.Widget.MinH);
-    RowInfos^[item.y].def := Max(RowInfos^[item.y].def, item.Widget.DefH);
-    RowInfos^[item.y].max := Min(RowInfos^[item.y].max, item.Widget.MaxH);
+    ColInfos^[item.x].min := Max(ColInfos^[item.x].min, item.Widget.MinSize.cx);
+    ColInfos^[item.x].def := Max(ColInfos^[item.x].def, item.Widget.DefSize.cx);
+    ColInfos^[item.x].max := Min(ColInfos^[item.x].max, item.Widget.MaxSize.cx);
+    RowInfos^[item.y].min := Max(RowInfos^[item.y].min, item.Widget.MinSize.cy);
+    RowInfos^[item.y].def := Max(RowInfos^[item.y].def, item.Widget.DefSize.cy);
+    RowInfos^[item.y].max := Min(RowInfos^[item.y].max, item.Widget.MaxSize.cy);
   end;
 
   for i := 0 to FColCount - 1 do
@@ -750,37 +715,72 @@ begin
   end;
 end;
 
-procedure TCustomGridLayout.EvRecalcLayout;
+procedure TCustomGridLayout.CalcSizes;
 var
   ColInfos, RowInfos: PWidgetArrayInfoArray;
   i: Integer;
 begin
-  inherited EvRecalcLayout;
-  MinW := (FColCount - 1) * FColSpacing;
-  MinH := (FRowCount - 1) * FRowSpacing;
-  DefW := (FColCount - 1) * FColSpacing;
-  DefH := (FRowCount - 1) * FRowSpacing;
-  MaxW := (FColCount - 1) * FColSpacing;
-  MaxH := (FRowCount - 1) * FRowSpacing;
+  MinSize.cx := (FColCount - 1) * FColSpacing;
+  MinSize.cy := (FRowCount - 1) * FRowSpacing;
+  DefSize.cx := (FColCount - 1) * FColSpacing;
+  DefSize.cy := (FRowCount - 1) * FRowSpacing;
+  MaxSize.cx := (FColCount - 1) * FColSpacing;
+  MaxSize.cy := (FRowCount - 1) * FRowSpacing;
 
   InitSizeInfos(ColInfos, RowInfos);
 
   for i := 0 to FColCount - 1 do
   begin
-    Inc(MinW, ColInfos^[i].min);
-    Inc(DefW, ColInfos^[i].def);
-    MaxW := Min(InfiniteSize, MaxW + ColInfos^[i].max);
+    Inc(FMinSize.cx, ColInfos^[i].min);
+    Inc(FDefSize.cx, ColInfos^[i].def);
+    FMaxSize.cx := Min(InfiniteSize, MaxSize.cx + ColInfos^[i].max);
   end;
 
   for i := 0 to FRowCount - 1 do
   begin
-    Inc(MinH, RowInfos^[i].min);
-    Inc(DefH, RowInfos^[i].def);
-    MaxH := Min(InfiniteSize, MaxH + RowInfos^[i].max);
+    Inc(FMinSize.cy, RowInfos^[i].min);
+    Inc(FDefSize.cy, RowInfos^[i].def);
+    FMaxSize.cy := Min(InfiniteSize, MaxSize.cy + RowInfos^[i].max);
   end;
 
   FreeMem(RowInfos);
   FreeMem(ColInfos);
+end;
+
+procedure TCustomGridLayout.Resized;
+var
+  ColInfos, RowInfos: PWidgetArrayInfoArray;
+  i, j, x, y, w, h: Integer;
+  item: TGridItem;
+begin
+  InitSizeInfos(ColInfos, RowInfos);
+
+  CorrectSizes(ColInfos, FColCount, BoundsSize.cx - DefSize.cx);
+  CorrectSizes(RowInfos, FRowCount, BoundsSize.cy - DefSize.cy);
+
+  for i := 0 to FWidgets.Count - 1 do
+  begin
+    item := TGridItem(FWidgets.Items[i]);
+    x := 0;
+    for j := 0 to item.x - 1 do
+      Inc(x, ColInfos^[j].def);
+    y := 0;
+    for j := 0 to item.y - 1 do
+      Inc(y, RowInfos^[j].def);
+    w := 0;
+    for j := 0 to item.Width - 1 do
+      Inc(w, ColInfos^[item.x + j].def);
+    h := 0;
+    for j := 0 to item.Height - 1 do
+      Inc(h, RowInfos^[item.y + j].def);
+    Inc(w, (item.Width - 1) * FColSpacing);
+    Inc(h, (item.Height - 1) * FRowSpacing);
+    item.Widget.SetBounds(Point(x + item.x * FColSpacing,
+      y + item.y * FRowSpacing), Size(w, h));
+  end;
+
+  FreeMem(ColInfos);
+  FreeMem(RowInfos);
 end;
 
 constructor TCustomGridLayout.Create(AOwner: TComponent);
@@ -825,58 +825,21 @@ begin
       item.y := y;
       item.Width := w;
       item.Height := h;
-      RecalcLayout;
+      Update;
       exit;
     end;
   end;
   raise ELayoutError.Create(SLayoutWidgetNotFound);
 end;
 
-function TCustomGridLayout.ProcessEvent(Event: TEventObj): Boolean;
-begin
-  if Event.InheritsFrom(TResizeEventObj) then
-    Resized;
-  Result := inherited ProcessEvent(Event);
-end;
-
-procedure TCustomGridLayout.Resized;
-var
-  ColInfos, RowInfos: PWidgetArrayInfoArray;
-  i, j, x, y, w, h: Integer;
-  item: TGridItem;
-begin
-  InitSizeInfos(ColInfos, RowInfos);
-
-  CorrectSizes(ColInfos, FColCount, FWidth - DefW);
-  CorrectSizes(RowInfos, FRowCount, FHeight - DefH);
-
-  for i := 0 to FWidgets.Count - 1 do
-  begin
-    item := TGridItem(FWidgets.Items[i]);
-    x := 0;
-    for j := 0 to item.x - 1 do
-      Inc(x, ColInfos^[j].def);
-    y := 0;
-    for j := 0 to item.y - 1 do
-      Inc(y, RowInfos^[j].def);
-    w := 0;
-    for j := 0 to item.Width - 1 do
-      Inc(w, ColInfos^[item.x + j].def);
-    h := 0;
-    for j := 0 to item.Height - 1 do
-      Inc(h, RowInfos^[item.y + j].def);
-    Inc(w, (item.Width - 1) * FColSpacing);
-    Inc(h, (item.Height - 1) * FRowSpacing);
-    item.Widget.SetBounds(x + item.x * FColSpacing, y + item.y * FRowSpacing, w, h);
-  end;
-
-  FreeMem(ColInfos);
-  FreeMem(RowInfos);
-end;
-
 
 {
   $Log$
+  Revision 1.3  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

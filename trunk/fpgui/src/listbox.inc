@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Listbox widget implementation
@@ -43,7 +43,7 @@ var
   ItemWidth: Integer;
 begin
   Result := inherited Add(s);
-  if ListBox.IsParented then
+  if Assigned(ListBox.FindForm) and Assigned(ListBox.FindForm.Wnd) then
   begin
     ItemWidth := ListBox.FindForm.Wnd.Canvas.TextWidth(s) + 4;
     if ItemWidth > ListBox.FMaxItemWidth then
@@ -111,9 +111,8 @@ begin
     EndIndex := (Position + PageSize) div ItemHeight;
   end;
 
-  Canvas.AppendTranslation(
-    ScrollingSupport.ClientRect.Left - ScrollingSupport.HorzScrollBar.Position,
-    ScrollingSupport.ClientRect.Top - ScrollingSupport.VertScrollBar.Position);
+  Canvas.AppendTranslation(ScrollingSupport.ClientRect.TopLeft -
+    ScrollingSupport.ScrollPos);
 
   if StartIndex < 0 then
     StartIndex := 0;
@@ -141,7 +140,7 @@ begin
       Include(ItemFlags, ifSelected);
 
     Style.DrawItemBefore(Canvas, ItemRect, ItemFlags);
-    Canvas.TextOut(2, i * ItemHeight, Items[i]);
+    Canvas.TextOut(Point(2, i * ItemHeight), Items[i]);
     Style.DrawItemAfter(Canvas, ItemRect, ItemFlags);
 
     Canvas.RestoreState;
@@ -163,25 +162,8 @@ begin
       EvMouseMoved(TMouseMoveEventObj(Event)) or
       inherited ProcessEvent(Event)
   else
-  begin
     Result := ScrollingSupport.ProcessEvent(Event) or
       inherited ProcessEvent(Event);
-    if Event.InheritsFrom(TUpdateEventObj) then
-    begin
-      IsParented := True;
-      RecalcWidth;
-    end;
-    if Event.InheritsFrom(TResizeEventObj) then
-    begin
-      UpdateScrollBars;
-      ScrollingSupport.HorzScrollBar.PageSize :=
-	ScrollingSupport.ClientRect.Right -
-	ScrollingSupport.ClientRect.Left;
-      ScrollingSupport.VertScrollBar.PageSize :=
-	ScrollingSupport.ClientRect.Bottom -
-	ScrollingSupport.ClientRect.Top;
-    end;
-  end;
 end;
 
 function TCustomListBox.DistributeEvent(Event: TEventObj): Boolean;
@@ -190,18 +172,25 @@ begin
     inherited DistributeEvent(Event);
 end;
 
-procedure TCustomListBox.EvRecalcLayout;
+procedure TCustomListBox.CalcSizes;
 begin
-  ScrollingSupport.EvRecalcLayout;
+  ScrollingSupport.CalcSizes;
   ItemHeight := FindForm.Wnd.Canvas.FontCellHeight;
   ScrollingSupport.VertScrollBar.SmallChange := ItemHeight;
+  RecalcWidth;
+end;
+
+procedure TCustomListBox.Resized;
+begin
+  ScrollingSupport.Resized;
+  UpdateScrollBars;
 end;
 
 procedure TCustomListBox.RecalcWidth;
 var
   i, ItemWidth: Integer;
 begin
-  if not IsParented then
+  if (not Assigned(FindForm)) or (not Assigned(FindForm.Wnd)) then
     exit;
 
   FMaxItemWidth := 0;
@@ -215,11 +204,9 @@ begin
 end;
 
 procedure TCustomListBox.UpdateScrollBars;
-var
-  i: Integer;
 begin
-  ScrollingSupport.HorzScrollBar.Max := FMaxItemWidth;
-  ScrollingSupport.VertScrollBar.Max := Items.Count * ItemHeight - 1;
+  ScrollingSupport.SetVirtualSize(
+    Size(FMaxItemWidth, Items.Count * ItemHeight - 1));
 end;
 
 procedure TCustomListBox.RedrawItem(AIndex: Integer);
@@ -272,16 +259,13 @@ function TCustomListBox.ProcessMouseEvent(Event: TMouseEventObj): Boolean;
 var
   Index: Integer;
 begin
-  if (Event.MouseX < ScrollingSupport.ClientRect.Left) or
-     (Event.MouseY < ScrollingSupport.ClientRect.Top) or
-     (Event.MouseX >= ScrollingSupport.ClientRect.Right) or
-     (Event.MouseY >= ScrollingSupport.ClientRect.Bottom) then
+  if not PtInRect(ScrollingSupport.ClientRect, Event.Position) then
   begin
     Result := False;
     exit;
   end;
 
-  Index := (Event.MouseY - ScrollingSupport.ClientRect.Top +
+  Index := (Event.Position.y - ScrollingSupport.ClientRect.Top +
     ScrollingSupport.VertScrollBar.Position) div ItemHeight;
   if (Index >= 0) and (Index < Items.Count) and ((Index <> ItemIndex) or
     (HotTrack and Event.InheritsFrom(TMouseReleasedEventObj))) then
@@ -303,6 +287,11 @@ end;
 
 {
   $Log$
+  Revision 1.6  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.5  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

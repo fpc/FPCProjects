@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Label widget implementation
@@ -27,22 +27,17 @@ begin
   Canvas.SetColor(Style.GetUIColor(clWindowText));
   case Alignment of
     taLeftJustify: x := 0;
-    taCenter: x := (Width - Canvas.TextWidth(Text)) div 2;
-    taRightJustify: x := Width - Canvas.TextWidth(Text);
+    taCenter: x := (BoundsSize.cx - Canvas.TextWidth(Text)) div 2;
+    taRightJustify: x := BoundsSize.cx - Canvas.TextWidth(Text);
   end;
-  Style.DrawText(Canvas, x,
-    (Height - Canvas.FontCellHeight) div 2, Text, WidgetState);
+  Style.DrawText(Canvas, Point(x,
+    (BoundsSize.cy - Canvas.FontCellHeight) div 2), Text, WidgetState);
 end;
 
-procedure TCustomLabel.EvRecalcLayout;
+procedure TCustomLabel.CalcSizes;
 begin
   with FindForm.Wnd.Canvas do
-  begin
-    MinW := TextWidth(Text);
-    MinH := FontCellHeight;
-  end;
-  DefW := MinW;
-  DefH := MinH;
+    FMinSize := Size(TextWidth(Text), FontCellHeight);
 end;
 
 procedure TCustomLabel.SetAlignment(AAlignment: TAlignment);
@@ -57,6 +52,11 @@ end;
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

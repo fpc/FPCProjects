@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Layouts widgets declarations
@@ -72,7 +72,7 @@ type
 
   TFixedLayout = class(TLayout)
   protected
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; ALeft, ATop: Integer);
@@ -96,7 +96,7 @@ type
 
   TDockingLayout = class(TLayout)
   protected
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; ADockingMode: TDockingMode);
@@ -117,10 +117,9 @@ type
     FOrientation: TOrientation;
     FSpacing: Integer;
     procedure SetOrientation(AOrientation: TOrientation);
-    procedure Resized;
   protected
-    function ProcessEvent(Event: TEventObj): Boolean; override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
+    procedure Resized; override;
     property HorzAlign: THorzAlign read FHorzAlign write FHorzAlign default horzFill;
     property VertAlign: TVertAlign read FVertAlign write FVertAlign default vertFill;
     property Orientation: TOrientation read FOrientation write SetOrientation default Horizontal;
@@ -168,12 +167,10 @@ type
     procedure SetRowCount(ARowCount: Integer);
     procedure SetColSpacing(AColSpacing: Integer);
     procedure SetRowSpacing(ARowSpacing: Integer);
-    procedure Resized;
   protected
-    function ProcessEvent(Event: TEventObj): Boolean; override;
-
     procedure InitSizeInfos(var ColInfos, RowInfos: PWidgetArrayInfoArray);
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
+    procedure Resized; override;
 
     property GridPositions: TCollection read FWidgets write FWidgets;
     property ColCount: Integer read FColCount write SetColCount default 2;
@@ -200,6 +197,11 @@ type
 
 {
   $Log$
+  Revision 1.3  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

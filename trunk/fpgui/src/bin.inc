@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Bin widget implementation
@@ -58,17 +58,14 @@ begin
     TList.Error(SListIndexError, Index);
 end;
 
-procedure TBinWidget.EvRecalcLayout;
+procedure TBinWidget.CalcSizes;
 begin
-  LAYOUTTRACE('TBinWidget.EvRecalcLayout for %s:%s', [Name, ClassName]);
+  LAYOUTTRACE('TBinWidget.CalcSizes for %s:%s', [Name, ClassName]);
   if Assigned(Child) then
   begin
-    MinW := Child.MinW;
-    MinH := Child.MinH;
-    DefW := Child.DefW;
-    DefH := Child.DefH;
-    MaxW := Child.MaxW;
-    MaxH := Child.MaxH;
+    FMinSize := Child.MinSize;
+    FMaxSize := Child.MaxSize;
+    FDefSize := Child.DefSize;
   end;
 end;
 
@@ -80,6 +77,11 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/02/14 23:14:43  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.1  2000/12/23 23:20:14  sg
   * First public CVS version...
 

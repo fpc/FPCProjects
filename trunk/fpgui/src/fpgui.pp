@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     fpGUI master file
@@ -95,9 +95,8 @@ type
 
   TWidgetState = set of (
     wsEnabled,		// Is the widget currently enabled, or is it deactivated
-    wsGetsVisible,	// Widget will be visible soon
-    wsIsVisible,	// Widget and parents are really visible now
-    wsIsUpdating,	// The widget is currently updating itself
+    wsIsVisible,	// Widget and parents are visible
+    wsSizeIsForced,	// If the current size has been forced ->no auto resizes
     wsHasFocus,		// Widget has the input focus
     wsMouseInside,	// Mouse cursor is inside this widget
     wsClicked);		// User currently clicks on this widget
@@ -272,6 +271,11 @@ end.
 
 {
   $Log$
+  Revision 1.5  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.4  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

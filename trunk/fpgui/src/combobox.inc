@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Combobox widget implementation
@@ -28,7 +28,7 @@ type
   TArrowButton = class(TGenericButton)
   protected
     procedure Paint(Canvas: TGfxCanvas); override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
   end;
 
 procedure TArrowButton.Paint(Canvas: TGfxCanvas);
@@ -39,13 +39,9 @@ begin
     wsEnabled in WidgetState);
 end;
 
-procedure TArrowButton.EvRecalcLayout;
+procedure TArrowButton.CalcSizes;
 begin
-  with Style.GetComboBoxArrowSize do
-  begin
-    MinW := cx;
-    MinH := cy;
-  end;
+  FMinSize := Style.GetComboBoxArrowSize;
 end;
 
 
@@ -78,36 +74,25 @@ begin
   Style.DrawEditBox(Canvas, Rect(0, 0, Width, Height));
 end;
 
-function TCustomComboBox.ProcessEvent(Event: TEventObj): Boolean;
+procedure TCustomComboBox.CalcSizes;
 begin
-  if Event is TResizeEventObj then
-    Result := EvResize(TResizeEventObj(Event))
-  else
-    Result := inherited ProcessEvent(Event);
+  with Style.GetEditBoxBorders do
+    FMinSize := Size(FButton.MinSize.cx,
+      Max(FindForm.Wnd.Canvas.FontCellHeight, FButton.MinSize.cy)) +
+      TopLeft + BottomRight;
+end;
+
+procedure TCustomComboBox.Resized;
+begin
+  with Style.GetEditBoxBorders do
+    FButton.SetBounds(Point(Width - Right - FButton.MinSize.cx, Top),
+      FButton.MinSize);
 end;
 
 function TCustomComboBox.DistributeEvent(Event: TEventObj): Boolean;
 begin
   Result := Event.SendToChild(FButton) or
     inherited DistributeEvent(Event);
-end;
-
-function TCustomComboBox.EvResize(Event: TResizeEventObj): Boolean;
-begin
-  with Style.GetEditBoxBorders do
-    FButton.SetBounds(Width - Right - FButton.MinW, Top,
-      FButton.MinW, FButton.MinH);
-  Result := False;
-end;
-
-procedure TCustomComboBox.EvRecalcLayout;
-begin
-  with Style.GetEditBoxBorders do
-  begin
-    MinW := FButton.MinW + Left + Right;
-    MinH := Top + Bottom +
-      Max(FindForm.Wnd.Canvas.FontCellHeight, FButton.MinH);
-  end;
 end;
 
 procedure TCustomComboBox.ButtonClick(Sender: TObject);
@@ -145,6 +130,11 @@ end;
 
 {
   $Log$
+  Revision 1.5  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.4  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Edit widget declarations
@@ -25,9 +25,9 @@
     FPasswordChar: Char;
     FCursorPos: Integer;
     procedure Paint(Canvas: TGfxCanvas); override;
+    procedure CalcSizes; override;
     procedure EvKeyPressed(Key: Word; Shift: TShiftState); override;
     procedure EvKeyChar(KeyChar: Char); override;
-    procedure EvRecalcLayout; override;
     procedure EvTextChanged; override;
     property CanExpandWidth default True;
     property Cursor default crIBeam;
@@ -50,6 +50,11 @@
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

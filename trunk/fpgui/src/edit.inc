@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Edit widget implementation
@@ -36,10 +36,10 @@ var
 begin
   Borders := Style.GetEditBoxBorders;
 
-  Style.DrawEditBox(Canvas, Rect(0, 0, Width, Height));
+  Style.DrawEditBox(Canvas, Rect(0, 0, BoundsSize.cx, BoundsSize.cy));
 
   if not Canvas.IntersectClipRect(Rect(Borders.Left + 1, Borders.Top + 1,
-    Width - Borders.Right - 1, Height - Borders.Bottom - 1)) then
+    BoundsSize.cx - Borders.Right - 1, BoundsSize.cy - Borders.Bottom - 1)) then
     exit;
 
   if wsEnabled in WidgetState then
@@ -56,12 +56,12 @@ begin
       FillChar(s[1], Length(Text), PasswordChar);
   end;
 
-  Canvas.TextOut(Borders.Left + 1, Borders.Top + 1, s);
+  Canvas.TextOut(Borders.TopLeft + Point(1, 1), s);
 
   if wsHasFocus in WidgetState then
   begin
     x := Borders.Left + 1 + Canvas.TextWidth(Copy(s, 1, CursorPos));
-    Canvas.DrawLine(x, Borders.Top, x, Height - Borders.Bottom);
+    Canvas.DrawLine(Point(x, Borders.Top), Point(x, BoundsSize.cy - Borders.Bottom));
   end;
 end;
 
@@ -114,14 +114,13 @@ begin
   end;
 end;
 
-procedure TCustomEdit.EvRecalcLayout;
+procedure TCustomEdit.CalcSizes;
 var
   Borders: TRect;
 begin
   Borders := Style.GetEditBoxBorders;
-  MinW := 50;
-  MinH := Borders.Top + Borders.Bottom +
-    FindForm.Wnd.Canvas.FontCellHeight + 2;
+  FMinSize := Size(50, Borders.Top + Borders.Bottom +
+    FindForm.Wnd.Canvas.FontCellHeight + 2);
 end;
 
 procedure TCustomEdit.EvTextChanged;
@@ -152,6 +151,11 @@ end;
 
 {
   $Log$
+  Revision 1.5  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.4  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

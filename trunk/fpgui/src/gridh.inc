@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Grid widgets declarations
@@ -60,7 +60,8 @@
     procedure Paint(Canvas: TGfxCanvas); override;
     function ProcessEvent(Event: TEventObj): Boolean; override;
     function DistributeEvent(Event: TEventObj): Boolean; override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
+    procedure Resized; override;
 
     procedure ColWidthsChanged; dynamic;
     procedure DrawCell(ACanvas: TGfxCanvas; ACol, ARow: Integer; ARect: TRect;
@@ -151,6 +152,11 @@
 
 {
   $Log$
+  Revision 1.5  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.4  2001/01/17 21:36:55  sg
   * Scrolling improvements
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Separator widget implementation
@@ -32,20 +32,18 @@ begin
   Style.DrawSeparator(Canvas, Rect(0, 0, Width, Height), Orientation);
 end;
 
-procedure TCustomSeparator.EvRecalcLayout;
+procedure TCustomSeparator.CalcSizes;
 begin
   if Orientation = Horizontal then
   begin
     FCanExpandWidth := True;
     FCanExpandHeight := False;
-    MaxW := InfiniteSize;
-    MinH := Style.GetSeparatorSize + 2 * Spacing
+    FMinSize.cy := Style.GetSeparatorSize + 2 * Spacing
   end else
   begin
     FCanExpandWidth := False;
     FCanExpandHeight := True;
-    MinW := Style.GetSeparatorSize + 2 * Spacing;
-    MaxH := InfiniteSize;
+    FMinSize.cx := Style.GetSeparatorSize + 2 * Spacing;
   end;
 end;
 
@@ -54,7 +52,7 @@ begin
   if AOrientation <> Orientation then
   begin
     FOrientation := AOrientation;
-    RecalcLayout;
+    Update;
   end;
 end;
 
@@ -63,13 +61,18 @@ begin
   if ASpacing <> Spacing then
   begin
     FSpacing := ASpacing;
-    RecalcLayout;
+    Update;
   end;
 end;
 
 
 {
   $Log$
+  Revision 1.3  2001/02/14 23:14:45  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

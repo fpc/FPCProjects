@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Basic widget implementation
@@ -54,13 +54,11 @@ end;
 //   Miscellaneous events
 // -------------------------------------------------------------------
 
-function TResizeEventObj.SendToChild(AChild: TWidget): Boolean;
+constructor TResizedEventObj.Create(ASender: TObject; AIsForced: Boolean);
 begin
-  { This event is not propagated to children automatically, as each container
-    widget will have to provide an individual layouting mechanism. }
-  Result := False;
+  inherited Create(ASender);
+  FIsForced := AIsForced;
 end;
-
 
 function TPreparePaintEventObj.SendToChild(AChild: TWidget): Boolean;
 begin
@@ -85,11 +83,10 @@ begin
   begin
     Canvas.SaveState;
     try
-      if Canvas.IntersectClipRect(Rect(AChild.Left, AChild.Top,
-        AChild.Left + AChild.Width, AChild.Top + AChild.Height)) then
+      if Canvas.IntersectClipRect(AChild.BoundsRect) then
       begin
-        ClientPos := AChild.ClientToWidget(Point(AChild.Left, AChild.Top));
-        Canvas.AppendTranslation(ClientPos.x, ClientPos.y);
+        ClientPos := AChild.ClientToWidget(AChild.Origin);
+        Canvas.AppendTranslation(ClientPos);
         Result := inherited SendToChild(AChild);
       end else
         Result := False;
@@ -106,42 +103,35 @@ end;
 // -------------------------------------------------------------------
 
 constructor TMouseEventObj.Create(ASender: TObject; AShift: TShiftState;
-  AMouseX, AMouseY: Integer);
+  APosition: TPoint);
 begin
   inherited Create(ASender);
   Shift := AShift;
-  MouseX := AMouseX;
-  MouseY := AMouseY;
+  Position := APosition;
 end;
 
 function TMouseEventObj.SendToChild(AChild: TWidget): Boolean;
 var
-  OldX, OldY: Integer;
-  ClientPos: TPoint;
+  OldPos, ClientPos: TPoint;
 begin
   if (AChild.WidgetState * [wsEnabled, wsIsVisible] = [wsEnabled, wsIsVisible])
     and ((AChild = AChild.FindForm.MouseCaptureWidget) or
-    ((MouseX >= AChild.Left) and (MouseY >= AChild.Top) and
-    (MouseX < AChild.Left + AChild.Width) and
-    (MouseY < AChild.Top + AChild.Height))) then
+    PtInRect(AChild.BoundsRect, Position)) then
   begin
     // Store the old values, as they might get modified during AChild.SendEvent!
-    OldX := MouseX;
-    OldY := MouseY;
-    ClientPos := AChild.WidgetToClient(Point(MouseX, MouseY));
-    MouseX := ClientPos.x - AChild.Left;
-    MouseY := ClientPos.y - AChild.Top;
+    OldPos := Position;
+    ClientPos := AChild.WidgetToClient(Position);
+    Position := ClientPos - AChild.Origin;
     Result := inherited SendToChild(AChild);
-    MouseX := OldX;
-    MouseY := OldY;
+    Position := OldPos;
   end else
     Result := False;
 end;
 
 constructor TMouseButtonEventObj.Create(ASender: TObject; AButton: TMouseButton;
-  AShift: TShiftState; AMouseX, AMouseY: Integer);
+  AShift: TShiftState; APosition: TPoint);
 begin
-  inherited Create(ASender, AShift, AMouseX, AMouseY);
+  inherited Create(ASender, AShift, APosition);
   Button := AButton;
 end;
 
@@ -150,12 +140,9 @@ begin
   if AChild.WidgetState * [wsEnabled, wsIsVisible] = [wsEnabled, wsIsVisible]
     then
   begin
-    if ({(AChild = AChild.FindForm.MouseCaptureWidget) or}
-      ((MouseX >= AChild.Left) and (MouseY >= AChild.Top) and
-      (MouseX < AChild.Left + AChild.Width) and
-      (MouseY < AChild.Top + AChild.Height))) and not
+    if PtInRect(AChild.BoundsRect, Position) and not
       (wsMouseInside in AChild.WidgetState) then
-        AChild.DoMouseEnter(Shift, MouseX - AChild.Left, MouseY - AChild.Top);
+      AChild.DoMouseEnter(Shift, Position - AChild.Origin);
 
     Result := inherited SendToChild(AChild);
   end else
@@ -185,9 +172,9 @@ begin
 end;
 
 constructor TMouseWheelEventObj.Create(ASender: TObject; AShift: TShiftState;
-  AWheelDelta: Single; AMouseX, AMouseY: Integer);
+  AWheelDelta: Single; APosition: TPoint);
 begin
-  inherited Create(ASender, AShift, AMouseX, AMouseY);
+  inherited Create(ASender, AShift, APosition);
   WheelDelta := AWheelDelta;
 end;
 
@@ -242,7 +229,14 @@ var
 begin
   Widget := Self;
   while not (Widget is TCustomForm) do
+  begin
     Widget := Widget.Parent;
+    if not Assigned(Widget) then
+    begin
+      Result := nil;
+      exit;
+    end;
+  end;
   Result := TCustomForm(Widget);
 end;
 
@@ -251,18 +245,16 @@ begin
   FParent := AParent;
 end;
 
-procedure TWidget.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
+procedure TWidget.SetBounds(APosition: TPoint; ASize: TSize);
 begin
   LAYOUTTRACE('TWidget.SetBounds for %s:%s. Old size: %dx%d, new size: %dx%d',
-    [Name, ClassName, Width, Height, AWidth, AHeight]);
-  FLeft := ALeft;
-  FTop := ATop;
-  if (AWidth <> Width) or (AHeight <> Height) then
+    [Name, ClassName, BoundsSize.cx, BoundsSize.cy, ASize.cx, ASize.cy]);
+  FOrigin := APosition;
+  if ASize <> BoundsSize then
   begin
-    FWidth := AWidth;
-    FHeight := AHeight;
-    FClientRect := Rect(0, 0, Width, Height);
-    SendEvent(TResizeEventObj.Create(Self));
+    FBoundsSize := ASize;
+    FClientRect := Rect(0, 0, BoundsSize.cx, BoundsSize.cy);
+    SendEvent(TResizedEventObj.Create(Self, wsSizeIsForced in WidgetState));
   end;
 end;
 
@@ -280,14 +272,13 @@ end;
 
 function TWidget.ClientToScreen(const APoint: TPoint): TPoint;
 begin
-  Result.x := APoint.x + Left;
-  Result.y := APoint.y + Top;
+  Result := APoint + Origin;
   Result := ClientToWidget(Result);
   if Assigned(Parent) then
     Result := Parent.ClientToScreen(Result);
 end;
 
-procedure TWidget.Update;
+{procedure TWidget.Update;
 begin
   LAYOUTTRACE('TWidget.Update for %s:%s', [Name, ClassName]);
   if wsIsUpdating in WidgetState then
@@ -304,8 +295,7 @@ var
   x, y: Integer;
   Widget: TWidget;
 begin
-  if (csLoading in ComponentState) or
-    (WidgetState * [wsGetsVisible, wsIsVisible] = []) then
+  if (csLoading in ComponentState) or (not Visible) then
     exit;
 
   LAYOUTTRACE('TWidget.RecalcLayout for %s:%s', [Name, ClassName]);
@@ -350,42 +340,40 @@ begin
 
   if Assigned(Parent) and not (wsIsUpdating in Parent.WidgetState) then
     Parent.RecalcLayout;
-end;
+end;}
 
 procedure TWidget.Show;
 begin
-  FVisible := True;
-  if WidgetState * [wsGetsVisible, wsIsVisible] = [] then
+  if not Visible then
   begin
     LAYOUTTRACE('TWidget.Show for %s:%s', [Name, ClassName]);
-    // !!!: This implementation is currenty very, very wrong
-    Include(WidgetState, wsIsVisible);
-    SendEvent(TVisibilityChangeEventObj.Create(Self));
-    if wsIsUpdating in Parent.WidgetState then
-      Parent.SendEvent(TUpdateEventObj.Create(Self))
-    else
+    FVisible := True;
+    if Assigned(Parent) and (wsIsVisible in Parent.WidgetState) then
+    begin
+      SendEvent(TVisibilityChangeEventObj.Create(Self));
       Parent.Update;
+    end;
   end;
 end;
 
 procedure TWidget.Hide;
 begin
-  FVisible := False;
-  if WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
+  if Visible then
   begin
     LAYOUTTRACE('TWidget.Hide for %s:%s', [Name, ClassName]);
-    WidgetState := WidgetState - [wsGetsVisible, wsIsVisible];
-    SendEvent(TVisibilityChangeEventObj.Create(Self));
-    if wsIsUpdating in Parent.WidgetState then
-      Parent.SendEvent(TUpdateEventObj.Create(Self))
-    else
-      Parent.Update;
+    FVisible := False;
+    if wsIsVisible in WidgetState then
+    begin
+      SendEvent(TVisibilityChangeEventObj.Create(Self));
+      if Assigned(Parent) then
+        Parent.Update;
+    end;
   end;
 end;
 
 procedure TWidget.Redraw;
 begin
-  Redraw(Rect(0, 0, Width, Height));
+  Redraw(Rect(0, 0, BoundsSize.cx, BoundsSize.cy));
 end;
 
 procedure TWidget.Redraw(const ARect: TRect);
@@ -432,15 +420,10 @@ begin
     while Widget <> Form do
     begin
       ClipRect.TopLeft := Form.WidgetCoords(Widget);
-      ClipRect.Right := ClipRect.Left + Widget.Width;
-      ClipRect.Bottom := ClipRect.Top + Widget.Height;
+      ClipRect.BottomRight := ClipRect.TopLeft + Widget.BoundsSize;
       Canvas.IntersectClipRect(ClipRect);
-
-      with Widget.ClientToWidget(Point(0, 0)) do
-      begin
-        Inc(r.Left, Widget.Left + x);
-        Inc(r.Top, Widget.Top + y);
-      end;
+      r.TopLeft := r.TopLeft + Widget.Origin +
+        Widget.ClientToWidget(Point(0, 0));
       Widget := Widget.Parent;
     end;
 
@@ -468,7 +451,7 @@ begin
     if r.Bottom + DeltaY > ClipRect.Bottom then
       r.Bottom := ClipRect.Bottom - DeltaY;
 
-    Canvas.CopyRect(Canvas, r, r.Left + DeltaX, r.Top + DeltaY);
+    Canvas.CopyRect(Canvas, r, r.TopLeft + Point(DeltaX, DeltaY));
   finally
     Canvas.RestoreState;
   end;
@@ -536,6 +519,32 @@ begin
   FindForm.FocusedWidget := Self;
 end;
 
+procedure TWidget.Update;
+var
+  PropagateUpdate: Boolean;
+  OldMinSize, OldMaxSize, OldDefSize: TSize;
+begin
+  if not (wsIsVisible in WidgetState) then
+    exit;
+
+  if wsSizeIsForced in WidgetState then
+    PropagateUpdate := True
+  else
+  begin
+    OldMinSize := MinSize;
+    OldMaxSize := MaxSize;
+    OldDefSize := DefSize;
+    SendEvent(TCalcSizesEventObj.Create(Self));
+    PropagateUpdate := (OldMinSize <> MinSize) or (OldMaxSize <> MaxSize) or
+      (OldDefSize <> DefSize);
+  end;
+
+  if PropagateUpdate and Assigned(Parent) then
+    Parent.Update
+  else
+    SendEvent(TResizedEventObj.Create(Self, wsSizeIsForced in WidgetState));
+end;
+
 
 // Protected methods
 
@@ -579,6 +588,11 @@ begin
     Show
   else
     Hide;
+end;
+
+procedure TWidget.Resized;
+begin
+  // Do nothing by default
 end;
 
 procedure TWidget.EvFocusChanged;
@@ -724,16 +738,15 @@ end;
 
 procedure TWidget.EvTextChanged;
 begin
-  RecalcLayout;
+  Update;
   Redraw;
 end;
 
-function TWidget.DoMouseEnter(AShift: TShiftState;
-  AMouseX, AMouseY: Integer): Boolean;
+function TWidget.DoMouseEnter(AShift: TShiftState; AMousePos: TPoint): Boolean;
 var
   Event: TMouseEnterEventObj;
 begin
-  Event := TMouseEnterEventObj.Create(Self, AShift, AMouseX, AMouseY);
+  Event := TMouseEnterEventObj.Create(Self, AShift, AMousePos);
   Event.AddRef;
   Result := SendEvent(Event);
   if Event.NewCursor <> crDefault then
@@ -769,7 +782,15 @@ var
   PreparationEvent: TPreparePaintEventObj;
 begin
   // Handle events which must be processed before the children get them
-  if Event.InheritsFrom(TEnabledChangeEventObj) then
+  if Event.InheritsFrom(TResizedEventObj) then
+  begin
+    if TResizedEventObj(Event).IsForced then
+      Include(WidgetState, wsSizeIsForced)
+    else
+      Exclude(WidgetState, wsSizeIsForced);
+    Resized;
+    Result := DistributeEvent(Event);
+  end else if Event.InheritsFrom(TEnabledChangeEventObj) then
     Result := EvEnabledChange(TEnabledChangeEventObj(Event))
   else if Event.InheritsFrom(TVisibilityChangeEventObj) then
     Result := EvVisibilityChange(TVisibilityChangeEventObj(Event)) or
@@ -781,13 +802,13 @@ begin
     Canvas := TPreparePaintEventObj(Event).Canvas;
     if wsOpaque in WidgetStyle then
     begin
-      Canvas.ExcludeClipRect(Rect(Left, Top, Left + Width, Top + Height));
+      Canvas.ExcludeClipRect(BoundsRect);
       Result := False;
     end else
     begin
       Matrix := Canvas.Matrix;
-      ClientPos := ClientToWidget(Point(Left, Top));
-      Canvas.AppendTranslation(ClientPos.x, ClientPos.y);
+      ClientPos := ClientToWidget(Origin);
+      Canvas.AppendTranslation(ClientPos);
       Result := DistributeEvent(Event);
       Canvas.Matrix := Matrix;
     end;
@@ -806,8 +827,10 @@ begin
     // First distribute the event to all children, then try to handle them here
     Result := DistributeEvent(Event);
     if not Result then
-      if Event.InheritsFrom(TUpdateEventObj) then
-        Result := EvUpdate(TUpdateEventObj(Event))
+      if Event.InheritsFrom(TCalcSizesEventObj) then
+        EvCalcSizes(TCalcSizesEventObj(Event))
+{      if Event.InheritsFrom(TUpdateEventObj) then
+        Result := EvUpdate(TUpdateEventObj(Event))}
       else if Event.InheritsFrom(TMousePressedEventObj) then
 	Result := EvMousePressed(TMousePressedEventObj(Event))
       else if Event.InheritsFrom(TMouseReleasedEventObj) then
@@ -842,12 +865,38 @@ begin
   end;
 end;
 
+function TWidget.GetBoundsRect: TRect;
+begin
+  Result.TopLeft := Origin;
+  Result.BottomRight := Origin + BoundsSize;
+end;
+
+function TWidget.GetLeft: Integer;
+begin
+  Result := Origin.x;
+end;
+
+function TWidget.GetTop: Integer;
+begin
+  Result := Origin.y;
+end;
+
+function TWidget.GetWidth: Integer;
+begin
+  Result := BoundsSize.cx;
+end;
+
+function TWidget.GetHeight: Integer;
+begin
+  Result := BoundsSize.cy;
+end;
+
 procedure TWidget.SetCanExpandWidth(allow: Boolean);
 begin
   if FCanExpandWidth <> allow then
   begin
     FCanExpandWidth := allow;
-    RecalcLayout;
+    Update;
   end;
 end;
 
@@ -856,7 +905,7 @@ begin
   if FCanExpandHeight <> allow then
   begin
     FCanExpandHeight := allow;
-    RecalcLayout;
+    Update;
   end;
 end;
 
@@ -869,19 +918,29 @@ begin
   end;
 end;
 
-// Old event handlers
-
-procedure TWidget.EvRecalcLayout;
-begin
-  LAYOUTTRACE('TWidget.EvRecalcLayout for %s:%s', [Name, ClassName]);
-end;
-
 
 // Event handling
 
-function TWidget.EvUpdate(Event: TUpdateEventObj): Boolean;
+function TWidget.EvCalcSizes(Event: TCalcSizesEventObj): Boolean;
 begin
-  RecalcLayout;
+  LAYOUTTRACE('TWidget.EvCalcSizes for %s:%s', [Name, ClassName]);
+
+  FMinSize := Size(0, 0);
+  FMaxSize := Size(InfiniteSize, InfiniteSize);
+  FDefSize := Size(0, 0);
+
+  CalcSizes;
+
+  if MinSize.cx = 0 then FMinSize.cx := 1;
+  if MinSize.cy = 0 then FMinSize.cy := 1;
+  if DefSize.cx < MinSize.cx then FDefSize.cx := MinSize.cx;
+  if DefSize.cy < MinSize.cy then FDefSize.cy := MinSize.cy;
+
+  if (not FCanExpandWidth) or (MaxSize.cx < DefSize.cx) then
+    FMaxSize.cx := DefSize.cx;
+  if (not FCanExpandHeight) or (MaxSize.cy < DefSize.cy) then
+    FMaxSize.cy := DefSize.cy;
+
   Result := False;
 end;
 
@@ -912,19 +971,13 @@ end;
 
 function TWidget.EvVisibilityChange(Event: TVisibilityChangeEventObj): Boolean;
 begin
-  if (Event.Sender <> Self) and Assigned(Parent) then
+  if Visible then
   begin
-    if Visible and (wsGetsVisible in Parent.WidgetState) then
-      Include(WidgetState, wsGetsVisible)
-    else
-      Exclude(WidgetState, wsGetsVisible);
-    if Visible and (wsIsVisible in Parent.WidgetState) then
-      Include(WidgetState, wsIsVisible)
-    else
-      Exclude(WidgetState, wsIsVisible);
-    LAYOUTTRACE('TWidget.EvVisibilityChange for %s:%s: New state: GetsVisible=%d, IsVisible=%d',
-      [Name, ClassName, Ord(wsGetsVisible in WidgetState), Ord(wsIsVisible in WidgetState)]);
-  end;
+    if (not Assigned(Parent)) or (wsIsVisible in Parent.WidgetState) then
+      Include(WidgetState, wsIsVisible);
+  end else
+    Exclude(WidgetState, wsIsVisible);
+
   Result := False;
 end;
 
@@ -953,8 +1006,8 @@ begin
     begin
       Exclude(WidgetState, wsClicked);
       with Event do
-        if (MouseX >= 0) and (MouseY >= 0) and
-	  (MouseX < Width) and (MouseY < Height) then
+        if (Position.x >= 0) and (Position.y >= 0) and
+	  (Position.x < BoundsSize.cx) and (Position.y < BoundsSize.cy) then
           Click
         else
           Redraw;
@@ -990,15 +1043,15 @@ end;
 
 function TWidget.EvMouseLeaveCheck(Event: TMouseLeaveCheckEventObj): Boolean;
 begin
-  if ((Event.MouseX < 0) or (Event.MouseY < 0) or
-    (Event.MouseX >= Width) or (Event.MouseY >= Height)) then
+  if ((Event.Position.x < 0) or (Event.Position.y < 0) or
+    (Event.Position.x >= BoundsSize.cx) or
+    (Event.Position.y >= BoundsSize.cy)) then
   begin
     if wsMouseInside in WidgetState then
       SendEvent(TMouseLeaveEventObj.Create(Self))
   end else if (FindForm.MouseCaptureWidget = Self) and
     not (wsMouseInside in WidgetState) then
-    SendEvent(TMouseEnterEventObj.Create(Self, Event.Shift,
-      Event.MouseX, Event.MouseY));
+    SendEvent(TMouseEnterEventObj.Create(Self, Event.Shift, Event.Position));
 
   if (wsMouseInside in WidgetState) and (Event.NewCursor = crDefault) and
     (Cursor <> crDefault) then
@@ -1011,6 +1064,11 @@ end;
 
 {
   $Log$
+  Revision 1.6  2001/02/14 23:14:45  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.5  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

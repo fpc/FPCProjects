@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Checkbox widget implementation
@@ -39,8 +39,8 @@ var
   Flags: TCheckboxFlags;
 begin
   FontHeight := Canvas.FontCellHeight;
-  LabelRect.Left := FLabelX;
-  LabelRect.Top := FLabelY + (Height - MinH) div 2;
+  LabelRect.Left := FLabelPos.x;
+  LabelRect.Top := FLabelPos.y + (Height - MinSize.cy) div 2;
   LabelRect.Right := LabelRect.Left + Canvas.TextWidth(Text);
   LabelRect.Bottom := LabelRect.Top + FontHeight;
 
@@ -56,14 +56,14 @@ begin
 
   Style.DrawCheckbox(Canvas, Rect(0, 0, Width, Height), LabelRect, Flags);
   Canvas.SetColor(Style.GetUIColor(clWindowText));
-  Style.DrawText(Canvas, LabelRect.Left, LabelRect.Top, Text, WidgetState);
+  Style.DrawText(Canvas, LabelRect.TopLeft, Text, WidgetState);
 end;
 
-procedure TCustomCheckBox.EvRecalcLayout;
+procedure TCustomCheckBox.CalcSizes;
 begin
   with FindForm.Wnd.Canvas do
-    Style.GetCheckBoxLayout(TextWidth(Text), FontCellHeight,
-      MinW, MinH, FLabelX, FLabelY);
+    Style.GetCheckBoxLayout(Size(TextWidth(Text), FontCellHeight),
+      FMinSize, FLabelPos);
 end;
 
 procedure TCustomCheckBox.SetChecked(AChecked: Boolean);
@@ -78,6 +78,11 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.2  2001/02/09 20:50:19  sg
   * The usual bunch of improvements and bug fixes...
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Button widgets implementations
@@ -42,7 +42,7 @@ begin
       Include(Flags, btnHasFocus);
   end;
 
-  Style.DrawButtonFace(Canvas, Rect(0, 0, Width, Height), Flags);
+  Style.DrawButtonFace(Canvas, Rect(0, 0, BoundsSize.cx, BoundsSize.cy), Flags);
 end;
 
 
@@ -52,6 +52,7 @@ end;
 
 procedure TCustomButton.Paint(Canvas: TGfxCanvas);
 var
+  Pt: TPoint;
   x, y: Integer;
   Borders: TRect;
 begin
@@ -59,37 +60,38 @@ begin
 
   Borders := Style.GetButtonBorders;
   Canvas.IntersectClipRect(Rect(Borders.Left, Borders.Top,
-    Width - Borders.Right, Height - Borders.Bottom));
+    BoundsSize.cx - Borders.Right, BoundsSize.cy - Borders.Bottom));
 
   Canvas.SetColor(Style.GetUIColor(clBtnText));
-  x := (Width - Canvas.TextWidth(Text)) div 2;
-  y := (Height - Canvas.FontCellHeight) div 2;
+  Pt.x := (BoundsSize.cx - Canvas.TextWidth(Text)) div 2;
+  Pt.y := (BoundsSize.cy - Canvas.FontCellHeight) div 2;
   if (wsClicked in WidgetState) and (wsMouseInside in WidgetState) then
-  begin
-    Inc(x);
-    Inc(y);
-  end;
-  Style.DrawText(Canvas, x, y, Text, WidgetState);
+    Pt := Pt + Point(1, 1);
+  Style.DrawText(Canvas, Pt, Text, WidgetState);
 end;
 
-procedure TCustomButton.EvRecalcLayout;
+procedure TCustomButton.CalcSizes;
 var
   Borders: TRect;
 begin
-  LAYOUTTRACE('TCustomButton.EvRecalcLayout for %s:%s', [Name, ClassName]);
+  LAYOUTTRACE('TCustomButton.CalcSizes for %s:%s', [Name, ClassName]);
   Borders := Style.GetButtonBorders;
   with FindForm.Wnd.Canvas do
   begin
-    MinW := Borders.Left + Borders.Right + TextWidth(Text);
-    MinH := Borders.Left + Borders.Right + FontCellHeight;
+    FMinSize.cx := Borders.Left + Borders.Right + TextWidth(Text);
+    FMinSize.cy := Borders.Left + Borders.Right + FontCellHeight;
   end;
-  DefW := MinW + 20;
-  DefH := MinH + 2;
+  FDefSize := FMinSize + Size(20, 2);
 end;
 
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:43  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:19  sg
   * The usual bunch of improvements and bug fixes...
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Listbox widget declarations
@@ -29,13 +29,13 @@
     ScrollingSupport: TScrollingSupport;
     FMaxItemWidth: Integer;
     ItemHeight: Integer;
-    IsParented: Boolean;
 
     procedure Paint(Canvas: TGfxCanvas); override;
     function ProcessEvent(Event: TEventObj): Boolean; override;
     function DistributeEvent(Event: TEventObj): Boolean; override;
 //    procedure EvKeyPressed(Key: Word; Shift: TShiftState); override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
+    procedure Resized; override;
 
     procedure RecalcWidth;
     procedure UpdateScrollBars;
@@ -64,6 +64,11 @@
 
 {
   $Log$
+  Revision 1.5  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.4  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

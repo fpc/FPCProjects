@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Dialogs declarations
@@ -25,7 +25,8 @@
     Separator: TSeparator;
     function ProcessEvent(Event: TEventObj): Boolean; override;
     function DistributeEvent(Event: TEventObj): Boolean; override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
+    procedure Resized; override;
     procedure SetButtons(AButtons: TMsgDlgButtons);
     property Buttons: TMsgDlgButtons read FButtons write SetButtons default [mbOk, mbCancel];
   public
@@ -43,6 +44,11 @@
 
 {
   $Log$
+  Revision 1.3  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.2  2001/01/11 23:30:12  sg
   *** empty log message ***
 

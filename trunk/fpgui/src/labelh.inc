@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Label widget declarations
@@ -22,7 +22,7 @@
   protected
     FAlignment: TAlignment;
     procedure Paint(Canvas: TGfxCanvas); override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
     property Alignment: TAlignment read FAlignment write SetAlignment;
   end;
 
@@ -37,6 +37,11 @@
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

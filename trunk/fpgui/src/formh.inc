@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Form declarations
@@ -27,8 +27,6 @@
     FOnDestroy: TNotifyEvent;
     FOnActivate: TNotifyEvent;
     FOnDeactivate: TNotifyEvent;
-    // Event handling
-    procedure Resized;
     // Property access
     procedure SetFocusedWidget(AWidget: TWidget);
     procedure SetMouseCaptureWidget(AWidget: TWidget);
@@ -37,18 +35,20 @@
     procedure WndFocusIn(Sender: TObject);
     procedure WndFocusOut(Sender: TObject);
     procedure WndHide(Sender: TObject);
-    procedure WndKeyPressed(Sender: TObject; Key: Word; Shift: TShiftState);
-    procedure WndKeyReleased(Sender: TObject; Key: Word; Shift: TShiftState);
-    procedure WndKeyChar(Sender: TObject; KeyChar: Char);
-    procedure WndMouseEnter(Sender: TObject; Shift: TShiftState; x, y: Integer);
+    procedure WndKeyPressed(Sender: TObject; AKey: Word; AShift: TShiftState);
+    procedure WndKeyReleased(Sender: TObject; AKey: Word; AShift: TShiftState);
+    procedure WndKeyChar(Sender: TObject; AKeyChar: Char);
+    procedure WndMouseEnter(Sender: TObject; AShift: TShiftState;
+       const AMousePos: TPoint);
     procedure WndMouseLeave(Sender: TObject);
-    procedure WndMouseMoved(Sender: TObject; Shift: TShiftState; x, y: Integer);
-    procedure WndMousePressed(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; x, y: Integer);
-    procedure WndMouseReleased(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; x, y: Integer);
-    procedure WndMouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Single; x, y: Integer);
+    procedure WndMouseMoved(Sender: TObject; AShift: TShiftState;
+      const AMousePos: TPoint);
+    procedure WndMousePressed(Sender: TObject; AButton: TMouseButton;
+      AShift: TShiftState; const AMousePos: TPoint);
+    procedure WndMouseReleased(Sender: TObject; AButton: TMouseButton;
+      AShift: TShiftState; const AMousePos: TPoint);
+    procedure WndMouseWheel(Sender: TObject; AShift: TShiftState;
+      AWheelDelta: Single; const AMousePos: TPoint);
     procedure WndPaint(Sender: TObject; const ARect: TRect);
     procedure WndMove(Sender: TObject);
     procedure WndResize(Sender: TObject);
@@ -58,13 +58,13 @@
     FIsActive, FResizedByUser, FPositionSpecified: Boolean;
     procedure Loaded; override;
     procedure Paint(Canvas: TGfxCanvas); override;
+    procedure Resized; override;
     function WidgetCoords(AWidget: TWidget): TPoint;
     function ProcessEvent(Event: TEventObj): Boolean; override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
     procedure EvTextChanged; override;
 
     procedure CreateWnd;
-    procedure ApplyNewLayout;
 
     property CanExpandWidth default True;
     property CanExpandHeight default True;
@@ -99,6 +99,11 @@
 
 {
   $Log$
+  Revision 1.5  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.4  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

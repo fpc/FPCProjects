@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Default style implementation
@@ -153,24 +153,24 @@ begin
   Image := ADisplay.CreateImage(60, 12, PixelFormatPal4);
   Image.Palette := Palette;
   Image.SetPixelsFromData(@RadioBitmapData, 30);
-  ImageCanvas.DrawImage(Image, 0, 0);
+  ImageCanvas.DrawImage(Image, Point(0, 0));
   Image.Free;
 
   Image := ADisplay.CreateImage(12, 12, PixelFormatMono);
   Image.SetPixelsFromData(@RadioMaskData, 2);
-  MaskCanvas.DrawImage(Image, 0, 0);
+  MaskCanvas.DrawImage(Image, Point(0, 0));
   Image.Free;
 
   Image := ADisplay.CreateImage(66, 13, PixelFormatPal4); {!!!: width is 65, but fpGFX emulayer has a problem with odd widths}
   Image.Palette := Palette;
   Image.SetPixelsFromData(@CheckBoxBitmapData, 33);
-  ImageCanvas.DrawImage(Image, 0, 12);
+  ImageCanvas.DrawImage(Image, Point(0, 12));
   Image.Free;
 
   Image := ADisplay.CreateImage(64, 8, PixelFormatPal4);
   Image.Palette := Palette;
   Image.SetPixelsFromData(@ArrowBitmapData, 32);
-  ImageCanvas.DrawImage(Image, 0, 25);
+  ImageCanvas.DrawImage(Image, Point(0, 25));
   Image.Free;
 
   Palette.Release;
@@ -201,13 +201,25 @@ begin
   with ARect do
   begin
     SetUIColor(Canvas, Color1);
-    Canvas.DrawPolyLine([Left, Bottom - 2, Left, Top, Right - 1, Top]);
+    {Canvas.DrawPolyLine([Point(Left, Bottom - 2), TopLeft,
+      Point(Right - 1, Top)]);}
+    Canvas.DrawLine(Point(Left, Bottom - 2), TopLeft);
+    Canvas.DrawLine(TopLeft, Point(Right - 1, Top));
     SetUIColor(Canvas, Color2);
-    Canvas.DrawPolyLine([Left + 1, Bottom - 3, Left + 1, Top + 1, Right - 2, Top + 1]);
+    {Canvas.DrawPolyLine([Point(Left + 1, Bottom - 3), Point(Left + 1, Top + 1),
+      Point(Right - 2, Top + 1)]);}
+    Canvas.DrawLine(Point(Left + 1, Bottom - 3), Point(Left + 1, Top + 1));
+    Canvas.DrawLine(Point(Left + 1, Top + 1), Point(Right - 2, Top + 1));
     SetUIColor(Canvas, Color3);
-    Canvas.DrawPolyLine([Left, Bottom - 1, Right - 1, Bottom - 1, Right - 1, Top - 1]);
+    {Canvas.DrawPolyLine([Point(Left, Bottom - 1), Point(Right - 1, Bottom - 1),
+      Point(Right - 1, Top - 1)]);}
+    Canvas.DrawLine(Point(Left, Bottom - 1), Point(Right - 1, Bottom - 1));
+    Canvas.DrawLine(Point(Right - 1, Bottom - 1), Point(Right - 1, Top - 1));
     SetUIColor(Canvas, Color4);
-    Canvas.DrawPolyLine([Left + 1, Bottom - 2, Right - 2, Bottom - 2, Right - 2, Top]);
+    {Canvas.DrawPolyLine([Point(Left + 1, Bottom - 2),
+      Point(Right - 2, Bottom - 2), Point(Right - 2, Top)]);}
+    Canvas.DrawLine(Point(Left + 1, Bottom - 2), Point(Right - 2, Bottom - 2));
+    Canvas.DrawLine(Point(Right - 2, Bottom - 2), Point(Right - 2, Top));
   end;
 end;
 
@@ -217,26 +229,30 @@ begin
   with ARect do
   begin
     SetUIColor(Canvas, cl3DShadow);
-    Canvas.DrawPolyLine([Left, Bottom - 2, Left, Top, Right, Top]);
+    // Canvas.DrawPolyLine([Point(Left, Bottom - 2), TopLeft, Point(Right, Top)]);
+    Canvas.DrawLine(Point(Left, Bottom - 2), TopLeft);
+    Canvas.DrawLine(TopLeft, Point(Right, Top));
     SetUIColor(Canvas, cl3DHighlight);
-    Canvas.DrawPolyLine([Left, Bottom - 1, Right - 1, Bottom - 1,
-      Right - 1, Top - 1]);
+    {Canvas.DrawPolyLine([Point(Left, Bottom - 1), Point(Right - 1, Bottom - 1),
+      Point(Right - 1, Top - 1)]);}
+    Canvas.DrawLine(Point(Left, Bottom - 1), Point(Right - 1, Bottom - 1));
+    Canvas.DrawLine(Point(Right - 1, Bottom - 1), Point(Right - 1, Top - 1));
   end;
 end;
 
 
 // style engine implementation
 
-procedure TDefaultStyle.DrawText(Canvas: TGfxCanvas; x, y: Integer;
+procedure TDefaultStyle.DrawText(Canvas: TGfxCanvas; const APosition: TPoint;
   const AText: String; State: TWidgetState);
 begin
   if not (wsEnabled in State) then
   begin
     SetUIColor(Canvas, cl3DHighlight);
-    Canvas.TextOut(x + 1, y + 1, AText);
+    Canvas.TextOut(APosition + Point(1, 1), AText);
     SetUIColor(Canvas, cl3DShadow);
   end;
-  Canvas.TextOut(x, y, AText);
+  Canvas.TextOut(APosition, AText);
 end;
 
 procedure TDefaultStyle.DrawItemBefore(Canvas: TGfxCanvas; const ARect: TRect;
@@ -350,25 +366,41 @@ begin
   TopLine := ARect.Top + TitleHeight div 3;
 
   SetUIColor(Canvas, cl3DHighlight);
-  with ARect do
+{  with ARect do
     Canvas.DrawPolyLine([Left + TitleWidth + 10, TopLine + 1,
       Right - 1, TopLine + 1,
       Right - 1, Bottom - 1,
       Left + 1, Bottom - 1,
       Left + 1, TopLine + 1,
-      Left + 8, TopLine + 1]);
+      Left + 8, TopLine + 1]);}
+  with ARect do
+  begin
+    Canvas.DrawLine(Point(Left + TitleWidth + 10, TopLine + 1), Point(Right - 1, TopLine + 1));
+    Canvas.DrawLine(Point(Right - 1, TopLine + 1), Point(Right - 1, Bottom - 1));
+    Canvas.DrawLine(Point(Right - 1, Bottom - 1), Point(Left + 1, Bottom - 1));
+    Canvas.DrawLine(Point(Left + 1, Bottom - 1), Point(Left + 1, TopLine + 1));
+    Canvas.DrawLine(Point(Left + 1, TopLine + 1), Point(Left + 8, TopLine + 1));
+  end;
 
   SetUIColor(Canvas, cl3DShadow);
-  with ARect do
+{  with ARect do
     Canvas.DrawPolyLine([Left + TitleWidth + 10, TopLine,
       Right - 2, TopLine,
       Right - 2, Bottom - 2,
       Left, Bottom - 2,
       Left, TopLine,
-      Left + 8, TopLine]);
+      Left + 8, TopLine]);}
+  with ARect do
+  begin
+    Canvas.DrawLine(Point(Left + TitleWidth + 10, TopLine), Point(Right - 2, TopLine));
+    Canvas.DrawLine(Point(Right - 2, TopLine), Point(Right - 2, Bottom - 2));
+    Canvas.DrawLine(Point(Right - 2, Bottom - 2), Point(Left, Bottom - 2));
+    Canvas.DrawLine(Point(Left, Bottom - 2), Point(Left, TopLine));
+    Canvas.DrawLine(Point(Left, TopLine), Point(Left + 8, TopLine));
+  end;
 
   SetUIColor(Canvas, clWindowText);
-  DrawText(Canvas, ARect.Left + 9, ARect.Top, ALabel, WidgetState);
+  DrawText(Canvas, ARect.TopLeft + Point(9, 0), ALabel, WidgetState);
 end;
 
 function TDefaultStyle.GetGroupBoxBorders(Canvas: TGfxCanvas;
@@ -409,7 +441,7 @@ begin
     end else
       Index := 2 + Ord(cbIsChecked in Flags) * 2;
     Canvas.CopyRect(ImageCanvas, Rect(Index * 13, 12, (Index + 1) * 13, 25),
-      Left, BoxY);
+      Point(Left, BoxY));
   end;
 
   if cbHasFocus in Flags then
@@ -417,13 +449,11 @@ begin
       DrawFocusRect(Canvas, Rect(Left - 2, Top - 2, Right + 2, Bottom + 2));
 end;
 
-procedure TDefaultStyle.GetCheckBoxLayout(LabelW, LabelH: Integer;
-  var TotalW, TotalH, LabelX, LabelY: Integer);
+procedure TDefaultStyle.GetCheckBoxLayout(const LabelSize: TSize;
+  var TotalSize: TSize; var LabelPos: TPoint);
 begin
-  TotalW := LabelW + 21;
-  TotalH := Max(13, LabelH + 4);
-  LabelX := 19;
-  LabelY := (TotalH - LabelH) div 2;
+  TotalSize := Size(LabelSize.cx + 21, Max(13, LabelSize.cy + 4));
+  LabelPos := Point(19, (TotalSize.cy - LabelSize.cy) div 2);
 end;
 
 procedure TDefaultStyle.DrawRadioButton(Canvas: TGfxCanvas;
@@ -442,46 +472,40 @@ begin
     end else
       Index := 2 + Ord(cbIsChecked in Flags) * 2;
     Canvas.MaskedCopyRect(ImageCanvas, MaskCanvas,
-      Rect(Index * 12, 0, (Index + 1) * 12, 12), 0, 0, Left, BtnY);
+      Rect(Index * 12, 0, (Index + 1) * 12, 12),
+      Point(0, 0), Point(Left, BtnY));
   end;
   if cbHasFocus in Flags then
     with LabelRect do
       DrawFocusRect(Canvas, Rect(Left - 2, Top - 2, Right + 2, Bottom + 2));
 end;
 
-procedure TDefaultStyle.GetRadioButtonLayout(LabelW, LabelH: Integer;
-  var TotalW, TotalH, LabelX, LabelY: Integer);
+procedure TDefaultStyle.GetRadioButtonLayout(const LabelSize: TSize;
+  var TotalSize: TSize; var LabelPos: TPoint);
 begin
-  TotalW := LabelW + 20;
-  TotalH := Max(12, LabelH + 4);
-  LabelX := 18;
-  LabelY := (TotalH - LabelH) div 2;
+  TotalSize := Size(LabelSize.cx + 20, Max(12, LabelSize.cy + 4));
+  LabelPos := Point(18, (TotalSize.cy - LabelSize.cy) div 2);
 end;
 
 function TDefaultStyle.GetComboBoxArrowSize: TSize;
 begin
-  Result.cx := 16;
-  Result.cy := 17;
+  Result := Size(16, 17);
 end;
 
 procedure TDefaultStyle.DrawComboBoxArrow(Canvas: TGfxCanvas;
   const ARect: TRect; IsPressed, IsEnabled: Boolean);
 var
-  x, y, Index: Integer;
+  Pt: TPoint;
+  Index: Integer;
 begin
   with ARect do
-  begin
-    x := Left + (Right - Left - 8) div 2;
-    y := Top + (Bottom - Top - 8) div 2;
-  end;
+    Pt := TopLeft + Point((Right - Left - 8) div 2, (Bottom - Top - 8) div 2);
+
   if IsPressed then
-  begin
-    Inc(x);
-    Inc(y);
-  end;
+    Pt := Pt + Point(1, 1);
 
   Index := 1 + Ord(not IsEnabled) * 4;
-  Canvas.CopyRect(ImageCanvas, Rect(Index * 8, 25, (Index + 1) * 8, 33), x, y);
+  Canvas.CopyRect(ImageCanvas, Rect(Index * 8, 25, (Index + 1) * 8, 33), Pt);
 end;
 
 function TDefaultStyle.GetScrollBarBorders(Orientation: TOrientation): TRect;
@@ -506,10 +530,14 @@ begin
   with ARect do
   begin
     SetUIColor(Canvas, cl3DShadow);
-    Canvas.DrawPolyLine([Left, Bottom - 1, Left, Top, Right, Top]);
+{    Canvas.DrawPolyLine([Left, Bottom - 1, Left, Top, Right, Top]);}
+    Canvas.DrawLine(Point(Left, Bottom - 1), TopLeft);
+    Canvas.DrawLine(TopLeft, Point(Right, Top));
     SetUIColor(Canvas, cl3DHighlight);
-    Canvas.DrawPolyLine([Left + 1, Bottom - 1, Right - 1, Bottom - 1,
-      Right - 1, Top]);
+{    Canvas.DrawPolyLine([Left + 1, Bottom - 1, Right - 1, Bottom - 1,
+      Right - 1, Top]);}
+    Canvas.DrawLine(Point(Left + 1, Bottom - 1), Point(Right - 1, Bottom - 1));
+    Canvas.DrawLine(Point(Right - 1, Bottom - 1), Point(Right - 1, Top));
     SetUIColor(Canvas, cl3DFace);
     Canvas.FillRect(Rect(Left, Bottom - 1, Left + 1, Bottom));
     Canvas.FillRect(Rect(Right - 1, Top, Right, Top + 1));
@@ -520,16 +548,14 @@ procedure TDefaultStyle.DrawScrollBarButton(Canvas: TGfxCanvas;
   const ARect: TRect; Direction: TArrowDirection;
   IsPressed, IsEnabled: Boolean);
 var
-  x, y, Index: Integer;
+  Index: Integer;
 begin
-  with ARect do
-  begin
-    x := Left + (Right - Left - 8) div 2;
-    y := Top + (Bottom - Top - 8) div 2;
-  end;
-
   Index := Ord(Direction) + Ord(not IsEnabled) * 4;
-  Canvas.CopyRect(ImageCanvas, Rect(Index * 8, 25, (Index + 1) * 8, 33), x, y);
+  with ARect do
+    Canvas.CopyRect(
+      ImageCanvas,
+      Rect(Index * 8, 25, (Index + 1) * 8, 33),
+      TopLeft + Point((Right - Left - 8) div 2, (Bottom - Top - 8) div 2));
 end;
 
 function TDefaultStyle.GetScrollBoxBorders: TRect;
@@ -547,6 +573,11 @@ end;
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:45  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

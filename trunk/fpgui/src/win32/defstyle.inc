@@ -36,8 +36,7 @@ var
 begin
   if Canvas.InheritsFrom(TGDICanvas) then
   begin
-    Canvas.Transform(ARect.Left, ARect.Top, Rect.Left, Rect.Top);
-    Canvas.Transform(ARect.Right, ARect.Bottom, Rect.Right, Rect.Bottom);
+    Rect := RectToWinRect(Canvas.Transform(ARect));
     Windows.DrawFocusRect(TGDICanvas(Canvas).Handle, Rect)
   end else
   begin
@@ -49,6 +48,11 @@ end;
 
 {
   $Log$
+  Revision 1.2  2001/02/14 23:14:45  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.1  2001/02/12 08:49:46  sg
   * First version
 

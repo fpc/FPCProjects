@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Groupbox widget implementation
@@ -20,38 +20,30 @@
 //   TCustomGroupBox
 // ===================================================================
 
-function TCustomGroupBox.ProcessEvent(Event: TEventObj): Boolean;
-begin
-  if Event.InheritsFrom(TResizeEventObj) then
-    Resized;
-
-  Result := inherited ProcessEvent(Event);
-end;
-
 procedure TCustomGroupBox.Paint(Canvas: TGfxCanvas);
 begin
   Style.DrawGroupBox(Canvas, Rect(0, 0, Width, Height), Text, WidgetState);
 end;
 
-procedure TCustomGroupBox.EvRecalcLayout;
+procedure TCustomGroupBox.CalcSizes;
 var
   Borders: TRect;
   LabelWidth: Integer;
 begin
   Borders := Style.GetGroupBoxBorders(FindForm.Wnd.Canvas, Text, LabelWidth);
-  MinW := Borders.Left + Borders.Right + LabelWidth;
-  MinH := Borders.Top + Borders.Bottom;
+  FMinSize.cx := Borders.Left + Borders.Right + LabelWidth;
+  FMinSize.cy := Borders.Top + Borders.Bottom;
   if Assigned(Child) then
   begin
-    if Child.MinW > LabelWidth then
-      MinW := Borders.Left + Borders.Right + Child.MinW;
-    Inc(MinH, Child.MinH);
-    if Child.DefW > LabelWidth then
-      DefW := Borders.Left + Borders.Right + Child.MinW;
-    Inc(DefH, Child.DefH);
-    if Child.MaxW > LabelWidth then
-      MaxW := Min(Borders.Left + Borders.Right + Child.MaxW, InfiniteSize);
-    MaxH := Min(MaxH + Child.MaxH, InfiniteSize);
+    if Child.MinSize.cx > LabelWidth then
+      FMinSize.cx := Borders.Left + Borders.Right + Child.MinSize.cx;
+    Inc(FMinSize.cy, Child.MinSize.cy);
+    if Child.DefSize.cx > LabelWidth then
+      FDefSize.cx := Borders.Left + Borders.Right + Child.MinSize.cx;
+    Inc(FDefSize.cy, Child.DefSize.cy);
+    if Child.MaxSize.cx > LabelWidth then
+      FMaxSize.cx := Min(Borders.Left + Borders.Right + Child.MaxSize.cx, InfiniteSize);
+    FMaxSize.cy := Min(MaxSize.cy + Child.MaxSize.cy, InfiniteSize);
   end;
 end;
 
@@ -61,12 +53,17 @@ var
 begin
   if Assigned(Child) then
     with Style.GetGroupBoxBorders(FindForm.Wnd.Canvas, Text, LabelWidth) do
-      Child.SetBounds(Left, Top, Width - Left - Right, Height - Top - Bottom);
+      Child.SetBounds(TopLeft, Size(Width - Left - Right, Height - Top - Bottom));
 end;
 
 
 {
   $Log$
+  Revision 1.2  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.1  2000/12/23 23:20:15  sg
   * First public CVS version...
 

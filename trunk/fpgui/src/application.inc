@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Application class implementation
@@ -55,7 +55,6 @@ begin
   form^ := TCustomForm(InstanceClass.Create(Self));
 
   Filename := LowerCase(Copy(InstanceClass.ClassName, 2, 255)) + '.frm';
-  WriteLn('Default streaming: ', Filename);
 
   TextStream := TFileStream.Create(Filename, fmOpenRead);
   BinStream := TMemoryStream.Create;
@@ -130,6 +129,11 @@ end;}
 
 {
   $Log$
+  Revision 1.2  2001/02/14 23:14:43  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.1  2000/12/23 23:20:14  sg
   * First public CVS version...
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Form implementation
@@ -49,17 +49,16 @@ begin
   LAYOUTTRACE('TCustomForm.Show for %s:%s', [Name, ClassName]);
 
   if not Assigned(Wnd) then
-    CreateWnd;
-
-  { Don't call the inherited method, as we process the hide & show events
-    delivered by fpGFX for forms. }
-  if WidgetState * [wsGetsVisible, wsIsVisible] = [] then
   begin
-    Include(WidgetState, wsGetsVisible);
-    SendEvent(TVisibilityChangeEventObj.Create(Self));
-    Update;
-    FWnd.Show;
+    CreateWnd;
+    // !!!: Doesn't handle a set initial size yet
+    SendEvent(TCalcSizesEventObj.Create(Self));
+    Wnd.SetMinMaxClientSize(MinSize, MaxSize);
+    Wnd.SetClientSize(DefSize);
   end;
+
+  FVisible := True;
+  FWnd.Show;
 end;
 
 procedure TCustomForm.Close;
@@ -71,26 +70,20 @@ end;
 procedure TCustomForm.SetPosition(APosition: TPoint);
 begin
   if Assigned(Wnd) then
-    Wnd.SetPosition(APosition.x, APosition.y)
+    Wnd.SetPosition(APosition)
   else
   begin
-    FLeft := APosition.x;
-    FTop := APosition.y;
+    FOrigin := APosition;
     FPositionSpecified := True;
   end;
 end;
 
 function TCustomForm.WidgetCoords(AWidget: TWidget): TPoint;
 begin
-  Result.x := 0;
-  Result.y := 0;
+  Result := Point(0, 0);
   while AWidget <> Self do
   begin
-    with AWidget.Parent.ClientToWidget(Point(AWidget.Left, AWidget.Top)) do
-    begin
-      Inc(Result.x, x);
-      Inc(Result.y, y);
-    end;
+    Result := Result + AWidget.Parent.ClientToWidget(AWidget.Origin);
     AWidget := AWidget.Parent;
   end;
 end;
@@ -107,31 +100,23 @@ begin
   Style.DrawWindowBackground(Canvas, Rect(0, 0, Width, Height));
 end;
 
-
-// fpGUI event handlers
-
-function TCustomForm.ProcessEvent(Event: TEventObj): Boolean;
-begin
-  if Event is TResizeEventObj then
-    Resized
-  else if Event is TDestroyEventObj then
-    FWnd := nil;
-
-  Result := inherited ProcessEvent(Event);
-end;
-
-procedure TCustomForm.EvRecalcLayout;
+procedure TCustomForm.CalcSizes;
 begin
   if Assigned(Child) then
   begin
-    MinW := Child.MinW + 2 * BorderWidth;
-    MinH := Child.MinH + 2 * BorderWidth;
-    DefW := Child.DefW + 2 * BorderWidth;
-    DefH := Child.DefH + 2 * BorderWidth;
-    MaxW := Min(InfiniteSize, Child.MaxW + 2 * BorderWidth);
-    MaxH := Min(InfiniteSize, Child.MaxH + 2 * BorderWidth);
+    FMinSize := Child.MinSize + 2 * BorderWidth;
+    FDefSize := Child.DefSize + 2 * BorderWidth;
+    FMaxSize.cx := Min(InfiniteSize, Child.MaxSize.cx + 2 * BorderWidth);
+    FMaxSize.cy := Min(InfiniteSize, Child.MaxSize.cy + 2 * BorderWidth);
   end;
-  ApplyNewLayout;
+end;
+
+function TCustomForm.ProcessEvent(Event: TEventObj): Boolean;
+begin
+  if Event is TDestroyEventObj then
+    FWnd := nil;
+
+  Result := inherited ProcessEvent(Event);
 end;
 
 procedure TCustomForm.EvTextChanged;
@@ -153,7 +138,7 @@ begin
     ParentWnd := nil;
   FWnd := Application.Display.DefaultScreen.CreateWindow(ParentWnd, WindowType);
   if FPositionSpecified then
-    Wnd.SetPosition(Left, Top);
+    Wnd.SetPosition(Origin);
   Wnd.OnClose := @WndClose;
   Wnd.OnFocusIn := @WndFocusIn;
   Wnd.OnFocusOut := @WndFocusOut;
@@ -178,7 +163,7 @@ begin
     Wnd.Title := Text;
 end;
 
-procedure TCustomForm.ApplyNewLayout;
+{procedure TCustomForm.ApplyNewLayout;
 var
   OrigW, OrigH: Integer;
 begin
@@ -213,7 +198,7 @@ begin
       [Name, ClassName, ClientRect.Right, ClientRect.Bottom]);
     Wnd.SetClientSize(ClientRect.Right, ClientRect.Bottom);
   end;
-end;
+end;}
 
 
 // TCustomForm private methods
@@ -223,8 +208,8 @@ begin
   ClientRect.Right := Wnd.ClientWidth;
   ClientRect.Bottom := Wnd.ClientHeight;
   if Assigned(Child) then
-    Child.SetBounds(BorderWidth, BorderWidth,
-      ClientRect.Right - 2 * BorderWidth, ClientRect.Bottom - 2 * BorderWidth);
+    Child.SetBounds(Point(BorderWidth, BorderWidth),
+      TSize(ClientRect.BottomRight) - 2 * BorderWidth);
 end;
 
 procedure TCustomForm.SetFocusedWidget(AWidget: TWidget);
@@ -295,34 +280,37 @@ begin
   end;
 end;
 
-procedure TCustomForm.WndKeyPressed(Sender: TObject; Key: Word; Shift: TShiftState);
+procedure TCustomForm.WndKeyPressed(Sender: TObject;
+  AKey: Word; AShift: TShiftState);
 begin
   if Assigned(FocusedWidget) then
-    FocusedWidget.EvKeyPressed(Key, Shift)
+    FocusedWidget.EvKeyPressed(AKey, AShift)
   else
-    EvKeyPressed(Key, Shift);
+    EvKeyPressed(AKey, AShift);
 end;
 
-procedure TCustomForm.WndKeyReleased(Sender: TObject; Key: Word; Shift: TShiftState);
+procedure TCustomForm.WndKeyReleased(Sender: TObject;
+  AKey: Word; AShift: TShiftState);
 begin
   if Assigned(FocusedWidget) then
-    FocusedWidget.EvKeyReleased(Key, Shift)
+    FocusedWidget.EvKeyReleased(AKey, AShift)
   else
-    EvKeyReleased(Key, Shift);
+    EvKeyReleased(AKey, AShift);
 end;
 
-procedure TCustomForm.WndKeyChar(Sender: TObject; KeyChar: Char);
+procedure TCustomForm.WndKeyChar(Sender: TObject; AKeyChar: Char);
 begin
   if Assigned(FocusedWidget) then
-    FocusedWidget.EvKeyChar(KeyChar)
+    FocusedWidget.EvKeyChar(AKeyChar)
   else
-    EvKeyChar(KeyChar);
+    EvKeyChar(AKeyChar);
 end;
 
-procedure TCustomForm.WndMouseEnter(Sender: TObject; Shift: TShiftState; x, y: Integer);
+procedure TCustomForm.WndMouseEnter(Sender: TObject;
+  AShift: TShiftState; const AMousePos: TPoint);
 begin
   if wsEnabled in WidgetState then
-    DoMouseEnter(Shift, x, y);
+    DoMouseEnter(AShift, AMousePos);
 end;
 
 procedure TCustomForm.WndMouseLeave(Sender: TObject);
@@ -331,7 +319,8 @@ begin
     SendEvent(TMouseLeaveEventObj.Create(Self));
 end;
 
-procedure TCustomForm.WndMouseMoved(Sender: TObject; Shift: TShiftState; x, y: Integer);
+procedure TCustomForm.WndMouseMoved(Sender: TObject;
+  AShift: TShiftState; const AMousePos: TPoint);
 {var
   dx, dy: Integer;
   IsInside: Boolean;
@@ -352,73 +341,68 @@ begin
      TMouseMovedEventObj.Create(Self, Shift, x - dx, y - dy));
   end else}
 
-  procedure SendMouseEvents(Widget: TWidget; ax, ay: Integer);
+  procedure SendMouseEvents(Widget: TWidget; APos: TPoint);
   var
     LeaveCheckEvent: TMouseLeaveCheckEventObj;
   begin
-    LeaveCheckEvent := TMouseLeaveCheckEventObj.Create(Self, Shift, ax, ay);
+    LeaveCheckEvent := TMouseLeaveCheckEventObj.Create(Self, AShift, APos);
     LeaveCheckEvent.AddRef;
     Widget.SendEvent(LeaveCheckEvent);
-    Widget.SendEvent(TMouseMoveEventObj.Create(Self, Shift, ax, ay));
+    Widget.SendEvent(TMouseMoveEventObj.Create(Self, AShift, APos));
     if (LeaveCheckEvent.NewCursor <> crDefault) and
       (LeaveCheckEvent.NewCursor <> Wnd.Cursor) then
       Wnd.Cursor := LeaveCheckEvent.NewCursor;
     LeaveCheckEvent.Free;
   end;
 
-var
-  Pt: TPoint;
 begin
   if wsEnabled in WidgetState then
     if Assigned(MouseCaptureWidget) then
     begin
-      Pt := WidgetCoords(MouseCaptureWidget);
-      SendMouseEvents(MouseCaptureWidget, x - Pt.x, y - Pt.y);
+      SendMouseEvents(MouseCaptureWidget,
+        AMousePos - WidgetCoords(MouseCaptureWidget));
       if not Assigned(MouseCaptureWidget) then
-	SendMouseEvents(Self, x, y);
+	SendMouseEvents(Self, AMousePos);
     end else
-      SendMouseEvents(Self, x, y);
+      SendMouseEvents(Self, AMousePos);
 end;
 
-procedure TCustomForm.WndMousePressed(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; x, y: Integer);
-var
-  Pt: TPoint;
+procedure TCustomForm.WndMousePressed(Sender: TObject; AButton: TMouseButton;
+  AShift: TShiftState; const AMousePos: TPoint);
 begin
   if wsEnabled in WidgetState then
     if Assigned(MouseCaptureWidget) then
     begin
-      Pt := WidgetCoords(MouseCaptureWidget);
       MouseCaptureWidget.SendEvent(
-        TMousePressedEventObj.Create(Self, Button, Shift, x - Pt.x, y - Pt.y));
+        TMousePressedEventObj.Create(Self, AButton, AShift,
+	  AMousePos - WidgetCoords(MouseCaptureWidget)));
       if not Assigned(MouseCaptureWidget) then
-	SendEvent(TMouseMoveEventObj.Create(Self, Shift, x, y));
+	SendEvent(TMouseMoveEventObj.Create(Self, AShift, AMousePos));
     end else
-      SendEvent(TMousePressedEventObj.Create(Self, Button, Shift, x, y));
+      SendEvent(TMousePressedEventObj.Create(Self, AButton, AShift, AMousePos));
 end;
 
-procedure TCustomForm.WndMouseReleased(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; x, y: Integer);
-var
-  Pt: TPoint;
+procedure TCustomForm.WndMouseReleased(Sender: TObject; AButton: TMouseButton;
+  AShift: TShiftState; const AMousePos: TPoint);
 begin
   if wsEnabled in WidgetState then
     if Assigned(MouseCaptureWidget) then
     begin
-      Pt := WidgetCoords(MouseCaptureWidget);
       MouseCaptureWidget.SendEvent(
-        TMouseReleasedEventObj.Create(Self, Button, Shift, x - Pt.x, y - Pt.y));
+        TMouseReleasedEventObj.Create(Self, AButton, AShift,
+	  AMousePos - WidgetCoords(MouseCaptureWidget)));
       if not Assigned(MouseCaptureWidget) then
-	SendEvent(TMouseMoveEventObj.Create(Self, Shift, x, y));
+	SendEvent(TMouseMoveEventObj.Create(Self, AShift, AMousePos));
     end else
-      SendEvent(TMouseReleasedEventObj.Create(Self, Button, Shift, x, y));
+      SendEvent(TMouseReleasedEventObj.Create(Self,
+        AButton, AShift, AMousePos));
 end;
 
-procedure TCustomForm.WndMouseWheel(Sender: TObject; Shift: TShiftState;
-  WheelDelta: Single; x, y: Integer);
+procedure TCustomForm.WndMouseWheel(Sender: TObject; AShift: TShiftState;
+  AWheelDelta: Single; const AMousePos: TPoint);
 begin
   if wsEnabled in WidgetState then
-    SendEvent(TMouseWheelEventObj.Create(Self, Shift, WheelDelta, x, y));
+    SendEvent(TMouseWheelEventObj.Create(Self, AShift, AWheelDelta, AMousePos));
 end;
 
 procedure TCustomForm.WndPaint(Sender: TObject; const ARect: TRect);
@@ -431,27 +415,25 @@ end;
 
 procedure TCustomForm.WndMove(Sender: TObject);
 begin
-  FLeft := Wnd.Left;
-  FTop := Wnd.Top;
+  FOrigin := Point(Wnd.Left, Wnd.Top);
 end;
 
 procedure TCustomForm.WndResize(Sender: TObject);
 begin
   LAYOUTTRACE('TCustomForm.WndResize for %s:%s: New size is %dx%d. Visible? %d',
     [Name, ClassName, Wnd.Width, Wnd.Height, Ord(wsIsVisible in WidgetState)]);
-  if WidgetState * [wsGetsVisible, wsIsVisible] <> [] then
+  if Visible or (wsIsVisible in WidgetState) then
   begin
-    FResizedByUser := (Wnd.Width <> DefW) or (Wnd.Height <> DefH);
-    SetBounds(Left, Top, Wnd.Width, Wnd.Height);
+    FResizedByUser := (Wnd.Width <> DefSize.cx) or (Wnd.Height <> DefSize.cy);
+    SetBounds(Origin, Size(Wnd.Width, Wnd.Height));
   end;
 end;
 
 procedure TCustomForm.WndShow(Sender: TObject);
 begin
   LAYOUTTRACE('TCustomForm.WndShow for %s:%s', [Name, ClassName]);
-  if WidgetState * [wsGetsVisible, wsIsVisible] = [wsGetsVisible] then
+  if not (wsIsVisible in WidgetState) then
   begin
-    Exclude(WidgetState, wsGetsVisible);
     Include(WidgetState, wsIsVisible);
     SendEvent(TVisibilityChangeEventObj.Create(Self));
   end;
@@ -460,6 +442,11 @@ end;
 
 {
   $Log$
+  Revision 1.6  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.5  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

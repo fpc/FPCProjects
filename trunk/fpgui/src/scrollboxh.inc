@@ -21,6 +21,7 @@
     Parent: TWidget;
     FBorders: TRect;
     FClientRect: TRect;
+    FVirtualSize: TSize;
     FHorzScrollBar, FVertScrollBar: TScrollBar;
     FOnClientRectChange: TNotifyEvent;
     function EvMouseWheel(Event: TMouseWheelEventObj): Boolean;
@@ -30,8 +31,11 @@
     function ProcessEvent(Event: TEventObj): Boolean;
     function DistributeEvent(Event: TEventObj): Boolean;
     function SendToChild(AChild: TWidget; Event: TEventObj): Boolean;
-    procedure EvRecalcLayout;
+    procedure CalcSizes;
+    procedure Resized;
     function CalcClientSize(AHorzBarVisible, AVertBarVisible: Boolean): TSize;
+    procedure SetVirtualSize(const ASize: TSize);
+    function ScrollPos: TPoint;
 
     procedure DefHorzScrollHandler(Sender: TObject; var APosition: Integer);
     procedure DefVertScrollHandler(Sender: TObject; var APosition: Integer);
@@ -51,7 +55,8 @@
     function ProcessEvent(Event: TEventObj): Boolean; override;
     function DistributeEvent(Event: TEventObj): Boolean; override;
 //    procedure EvKeyPressed(Key: Word; Shift: TShiftState); override;
-    procedure EvRecalcLayout; override;
+    procedure CalcSizes; override;
+    procedure Resized; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -63,6 +68,11 @@
 
 {
   $Log$
+  Revision 1.4  2001/02/14 23:14:45  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.3  2001/02/09 20:50:20  sg
   * The usual bunch of improvements and bug fixes...
 

@@ -2,7 +2,7 @@
     $Id$
 
     fpGUI  -  Free Pascal Graphical User Interface
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Dialogs implementations
@@ -72,16 +72,7 @@ end;
 
 function TCustomStandardDialog.ProcessEvent(Event: TEventObj): Boolean;
 begin
-  if Event.InheritsFrom(TResizeEventObj) then
-  begin
-    if Assigned(Child) then
-      Child.SetBounds(BorderWidth, BorderWidth, Width - 2 * BorderWidth,
-        Height - MainLayout.DefH - 2 * BorderWidth);
-    MainLayout.SetBounds(BorderWidth, Height - MainLayout.DefH - BorderWidth,
-      Width - 2 * BorderWidth, MainLayout.DefH - BorderWidth);
-    Result := False;
-  end else
-    Result := MainLayout.ProcessEvent(Event) or inherited ProcessEvent(Event);
+  Result := MainLayout.ProcessEvent(Event) or inherited ProcessEvent(Event);
 end;
 
 function TCustomStandardDialog.DistributeEvent(Event: TEventObj): Boolean;
@@ -89,26 +80,33 @@ begin
   Result := Event.SendToChild(MainLayout) or inherited DistributeEvent(Event);
 end;
 
-procedure TCustomStandardDialog.EvRecalcLayout;
+procedure TCustomStandardDialog.CalcSizes;
 begin
   if Assigned(Child) then
   begin
-    MinW := Child.MinW + 2 * BorderWidth;
-    MinH := Child.MinH + 2 * BorderWidth;
-    DefW := Child.DefW + 2 * BorderWidth;
-    DefH := Child.DefH + 2 * BorderWidth;
-    MaxW := Min(InfiniteSize, Child.MaxW + 2 * BorderWidth);
-    MaxH := Min(InfiniteSize, Child.MaxH + 2 * BorderWidth);
+    FMinSize := Child.MinSize + 2 * BorderWidth;
+    FDefSize := Child.DefSize + 2 * BorderWidth;
+    FMaxSize.cx := Min(InfiniteSize, Child.MaxSize.cx + 2 * BorderWidth);
+    FMaxSize.cy := Min(InfiniteSize, Child.MaxSize.cy + 2 * BorderWidth);
   end;
 
-  MinW := Max(MinW, MainLayout.MinW + 2 * BorderWidth);
-  Inc(MinH, MainLayout.DefH + BorderWidth);
-  DefW := Max(DefW, MainLayout.DefW + 2 * BorderWidth);
-  DefH := Min(InfiniteSize, DefH);
-  MaxW := Min(MaxW, MainLayout.MaxW + 2 * BorderWidth);
-  MaxH := Min(InfiniteSize, MaxH + MainLayout.DefH);
+  FMinSize.cx := Max(MinSize.cx, MainLayout.MinSize.cx + 2 * BorderWidth);
+  Inc(FMinSize.cy, MainLayout.DefSize.cy + BorderWidth);
+  FDefSize.cx := Max(DefSize.cx, MainLayout.DefSize.cx + 2 * BorderWidth);
+  FDefSize.cy := Min(InfiniteSize, DefSize.cy);
+  FMaxSize.cx := Min(MaxSize.cx, MainLayout.MaxSize.cx + 2 * BorderWidth);
+  FMaxSize.cy := Min(InfiniteSize, MaxSize.cy + MainLayout.DefSize.cy);
+end;
 
-  ApplyNewLayout;
+procedure TCustomStandardDialog.Resized;
+begin
+  if Assigned(Child) then
+    Child.SetBounds(Point(BorderWidth, BorderWidth),
+      Size(Width - 2 * BorderWidth,
+        Height - MainLayout.DefSize.cy - 2 * BorderWidth));
+  MainLayout.SetBounds(
+    Point(BorderWidth, Height - MainLayout.DefSize.cy - BorderWidth),
+    Size(Width - 2 * BorderWidth, MainLayout.DefSize.cy - BorderWidth));
 end;
 
 procedure TCustomStandardDialog.SetButtons(AButtons: TMsgDlgButtons);
@@ -124,6 +122,11 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/02/14 23:14:44  sg
+  * Adaptions to fpGFX changes; added much more usage of TSize and TPoint
+    here as well
+  * Heavy improvements of the layouting algorithm
+
   Revision 1.2  2001/01/11 23:30:11  sg
   *** empty log message ***
 
