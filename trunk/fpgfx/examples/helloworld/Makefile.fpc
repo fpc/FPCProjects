@@ -2,9 +2,14 @@
 #   Makefile.fpc for fpGFX example "HelloWorld"
 #
 
-[targets]
+[target]
 programs=helloworld
 
 [require]
-options=-S2h
 packages=fcl fpgfx
+packages_linux=fpgfx_x11
+packages_freebsd=fpgfx_x11
+packages_netbsd=fpgfx_x11
+
+[compiler]
+options=-S2h

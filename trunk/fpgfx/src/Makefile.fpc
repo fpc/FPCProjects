@@ -2,22 +2,28 @@
 #   Makefile.fpc for fpGFX
 #
 
-[targets]
-units=gfxbase
-rst=gfxbase
-dirs=emulayer
-dirs_linux=x11
-dirs_win32=win32gdi
+[package]
+name=fpgfx
+version=1.0.5
 
 [require]
-options=-S2h
-packages=
+packages=fcl
 
-[libs]
-libname=fpgfx
+[target]
+units=gfxbase geldirty gelimage
+rsts=gfxbase
+dirs_linux=x11
+dirs_freebsd=x11
+dirs_netbsd=x11
+dirs_win32=win32gdi
+
+[compiler]
+sourcedir=emulayer
+targetdir=.
+options=-S2h
 
 [install]
-subdir=
+fpcpackage=y
 
-[dirs]
-fpcdir=../../../fpc
+[default]
+fpcdir=../../../fixbranch

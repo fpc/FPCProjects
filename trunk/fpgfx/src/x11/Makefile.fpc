@@ -2,20 +2,23 @@
 #   Makefile.fpc for fpGFX X11 target
 #
 
-[targets]
+[package]
+name=fpgfx_x11
+version=1.0.5
+
+[require]
+packages=fcl
+
+[target]
 units=gfx_x11 gfximpl
 rst=gfx_x11
 
-[require]
+[compiler]
+unitdir=.. ../emulayer
 options=-S2h
-packages=
-
-[libs]
-libname=fpgfx_x11
 
 [install]
-subdir=
+fpcpackage=y
 
-[dirs]
-fpcdir=../../../../fpc
-unitdir=.. ../emulayer
+[default]
+fpcdir=../../../../fixbranch
