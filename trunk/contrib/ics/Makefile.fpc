@@ -1,0 +1,25 @@
+[package]
+name=ics
+version=0.01
+# based on jun 26 sources.
+
+[require]
+packages=
+
+[target]
+dirs=
+units= wsockbuf wsocket wsockets uuencode dnsquery  fingcli ftpcli  ftpsrvc ftpsrvt httpprot httpsrv icmp mbxfile md5 mimedec mimeutil ping smtpprot
+examples=conhttp
+exampledirs=examples
+
+[compiler]
+targetdir=.
+sourcedir=vc32 examples
+includedir=vc32
+
+[install]
+basedir=.
+
+[prerules]
+wsocket : wsockbuf
+
