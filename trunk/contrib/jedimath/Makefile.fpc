@@ -1,0 +1,30 @@
+[package]
+name=sdl
+version=0.01
+# based on the April 2004 alpha
+
+[require]
+packages=
+
+[target]
+dirs=
+
+units= jm8087 jmcomplex jmdsp jmhistogram jmlargeint jmlogic jmmathbasics \
+       jmmatrix jmstatistics jmsymbolics jmtypes
+
+rsts=  jmdsp  jmmathbasics jmsymbolics
+
+
+#exampledirs=demo2d demo3d
+
+[compiler]
+targetdir=source
+sourcedir=source 
+unitsdir=source
+includedir=source include
+
+[install]
+basedir=.
+
+[prerules]
+
