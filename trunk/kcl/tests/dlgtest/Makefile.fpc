@@ -1,0 +1,24 @@
+#
+#   Makefile.fpc for dlgtest
+#
+
+[targets]
+programs=dlgtest
+
+
+[require]
+toolkit=$(KCLGUI)
+
+
+[dirs]
+fpcdir=$(KCLDIR)/..
+toolkitdir=$(KCLGUIDIR)
+
+
+[presettings]
+# KCL Settings
+KCLGUI=kcl_gtk
+KCLDIR=../..
+
+KCLGUIDIR=$(KCLDIR)/src
+KCLWIDGETSDIR=$(KCLDIR)/widgets
