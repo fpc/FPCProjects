@@ -20,13 +20,23 @@
 
 type
 
-  THorzAlign = (horzLeft, horzCenter, horzRight, horzFixed, horzFill);
-  TVertAlign = (vertTop, vertCenter, vertBottom, vertFixed, vertFill);
+  THorzAlign = (horzLeft, horzCenter, horzRight, horzFill);
+  TVertAlign = (vertTop, vertCenter, vertBottom, vertFill);
 
   TLayoutItem = class(TCollectionItem)
   public
     Widget: TWidget;
   end;
+
+  TWidgetArrayInfo = record
+    min, def, max: Integer;
+    MinFlag, MaxFlag: Boolean;
+  end;
+
+  TWidgetArrayInfoArray = array[0..(1 shl 30) div SizeOf(TWidgetArrayInfo) - 1] of TWidgetArrayInfo;
+  PWidgetArrayInfoArray = ^TWidgetArrayInfoArray;
+
+
 
   TLayout = class(TWidget)
   protected
@@ -36,7 +46,6 @@ type
     function  GetWidgetCount: Integer; override;
     function  GetWidgets(AIndex: Integer): TWidget; override;
     procedure PutChild(AChild: TWidget; ax, ay: LongInt);	// Initial
-    procedure MoveChild(AChild: TWidget; ax, ay: LongInt);	// After init
     procedure OnFinishCreation; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -105,6 +114,8 @@ type
 
     procedure FSetSameSizeCells(ASameSize: Boolean);
 
+    procedure InitSizeInfos(var RowInfos, ColInfos: PWidgetArrayInfoArray);
+
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure ApplySize; override;
@@ -141,8 +152,8 @@ type
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget);
   published
-    property HorzAlign: THorzAlign read FHorzAlign write FHorzAlign default horzFixed;
-    property VertAlign: TVertAlign read FVertAlign write FVertAlign default vertFixed;
+    property HorzAlign: THorzAlign read FHorzAlign write FHorzAlign default horzFill;
+    property VertAlign: TVertAlign read FVertAlign write FVertAlign default vertFill;
     property Orientation: TBoxOrientation read FOrientation write SetOrientation default boxHorz;
     property Spacing: Integer read FSpacing write FSpacing;
   end;
@@ -150,6 +161,9 @@ type
 
 {
   $Log$
+  Revision 1.7  2000/02/22 14:37:49  sg
+  * Removed horzFixed and vertFixed
+
   Revision 1.6  2000/02/18 22:18:19  sg
   * Added TBoxLayout.SetOrientation
 
