@@ -18,6 +18,23 @@
 //   The main application object
 // ===================================================================
 
+// GTK+ idle handler
+procedure TApplication_Idle(app: TApplication); cdecl;
+begin
+  if Assigned(app.FOnIdle) then
+    app.FOnIdle(app);
+end;
+
+procedure TApplication.SetOnIdle(AOnIdle: TNotifyEvent);
+begin
+  if Assigned(AOnIdle) and (priv.IdleHandle = 0) then
+    priv.IdleHandle := gtk_idle_add(TGtkFunction(@TApplication_Idle), Self)
+  else if not Assigned(AOnIdle) and (priv.IdleHandle > 0) then begin
+    gtk_idle_remove(priv.IdleHandle);
+    priv.IdleHandle := 0;
+  end;
+  FOnIdle := AOnIdle;
+end;
 
 procedure TApplication.Notification(AComponent: TComponent;
   Operation: TOperation);
@@ -66,6 +83,8 @@ begin
     if Components[i].InheritsFrom(TWidget) then
       TWidget(Components[i]).FinishCreation;
   IsRunning := True;
+  SetOnIdle(FOnIdle);
+
   gtk_main;
   IsRunning := False;
 end;
@@ -79,6 +98,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/17 22:26:13  sg
+  * Implemented support for idle handler
+
   Revision 1.4  2000/02/10 18:39:27  sg
   * TGenericForm has been changed to TCustomForm
   * Changed the form management to prevent memory leaks and for correct
