@@ -218,7 +218,7 @@ var
   Widget: TWidget;
 begin
   Widget := Self;
-  while Assigned(Widget) and Assigned(Widget.Parent) do
+  while not (Widget is TCustomForm) do
     Widget := Widget.Parent;
   Result := TCustomForm(Widget);
 end;
@@ -302,7 +302,7 @@ begin
     x := 0;
     y := 0;
     Widget := Self;
-    while Assigned(Widget.Parent) do
+    while not (Widget is TCustomForm) do
     begin
       Inc(x, Widget.Left);
       Inc(y, Widget.Top);
@@ -359,7 +359,7 @@ begin
   x := ARect.Left;
   y := ARect.Top;
   Widget := Self;
-  while Assigned(Widget.Parent) do
+  while not (Widget is TCustomForm) do
   begin
     Inc(x, Widget.Left);
     Inc(y, Widget.Top);
@@ -380,7 +380,7 @@ begin
   r := ARect;
 
   Widget := Self;
-  while Assigned(Widget.Parent) do
+  while not (Widget is TCustomForm) do
   begin
     Inc(r.Left, Widget.Left);
     Inc(r.Top, Widget.Top);
@@ -845,6 +845,11 @@ end;
 
 {
   $Log$
+  Revision 1.4  2001/01/18 15:38:40  sg
+  * Serveral loops now stop when they found a TCustomForm as widget parent
+    instead of checking for NIL - this is necessary to support parented
+    forms.
+
   Revision 1.3  2001/01/17 21:36:55  sg
   * Scrolling improvements
 
