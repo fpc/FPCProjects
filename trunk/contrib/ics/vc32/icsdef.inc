@@ -1,8 +1,8 @@
 
 {$ifdef FPC}
-{$MODE Delphi}
-{$asmmode Intel}
-{$define usewindows}
-{$define Noforms}
+{$MODE Delphi}                           // delphi mode
+{$asmmode Intel}                         // Intel syntax assembler
+{$define usewindows}                     // Use "Windows" unit.
+{$define Noforms}                        // No unit forms.
 {$define socketulongmustmatch}
 {$endif}

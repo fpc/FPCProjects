@@ -5,14 +5,74 @@ easier CVSing.
 All copyrights of Francois Piette are retained. The FPC contribution is
 merely some compability fixes and release engineering.
 
+
+ICS
+
+
+
+Used FPC compiler: 1.1.x development series 26 august or later.
+                (this includes 2.0 beta's)
+
 Changes:
 
-In general and wsocket unit:
+The ICS package central vc32 dir has 4 types of units:
 
-- icsdef.inc included everywhere.
-- When "usewindows" is defined, use the windows unit.
+1 units that compile right away with 1.1 with only the "general"
+        changes and maybe a few very small detail fixes (see "per file"
+        and can be tested using one of the con<x> files.
+2 same 1, but can't be tested because there is no console demo.
+3 units that use forms, but only for (de)allocatehwnd and/or the
+    application object. (see "dummy forms" paragraph)
+    (tncnx, pop3prot, nntpcli and ftpsrv )
+4 Heavily VCL using units that define controls.
+    (tnoptfrm emulvt, wait and pop3cli use forms heavily. tnemulvt
+         uses emulvt)
+
+As said category 1 and 2 only need the "general" fixes, and a few "per unit"
+ fixes.
+
+Category 3 also, but needs some work done to hack up a dummy forms unit,
+        will also need to fix.
+
+Category 4 Maybe (partially?) portable to lazarus in a year time, but I
+         don't touch them for now.
+
+[general changes]
+- icsdef.inc included everywhere, the right spot is after the
+        interface keyword
+- When "usewindows" is defined, use the windows unit
   Affects nearly all "uses" clauses AND qualified unitname use.
-- Some minor fixes for pass by reference of a longint being incompatible
-        when the function is defined as ulong(=longword)
+  This looks like
+    {$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif}
+- introduce noforms check everywhere (controls graphics etc, except for units
+        that actually define only controls (category 4)
+- Some of the comments braces in the unit description (the large
+        comment which is first in each unit) need to be balanced TP style,
+        because only the icsdef.inc puts FPC in Delphi mode.
+        (about 2 or 3 occurances)
+
+
+[unit specific changes]
+- [wsocket] Some minor fixes for pass by reference of a longint
+            being incompatible
+            when the function is defined as ulong(=longword)
+
+- [mbxfile] had a lines 329 and 332 fixed.
+         NewPos + p - Buf - 3 becomes  NewPos + (p - Buf) - 3
+         This is a FPC bug, but the fix doesn't matter for Delphi,
+         and makes life easier for time being.
+
+
+Per file:
+- tncnx, pop3prot, nntpcli and ftpsrv wants (de)allocatehwnd
+
+- pop3prot also uses the "application" object. Some demoes do too
+         (concli2)
+- wsocket had some minor fixes for pass by reference of a longint being incompatible
+         when the function is defined as ulong(=longword)
+- mbxfile had a lines 329 and 332 fixed.
+         NewPos + p - Buf - 3 becomes  NewPos + (p - Buf) - 3
+- tnoptfrm emulvt, wait and pop3cli  use forms heavily. tnemulvt
+         uses emulvt
 
 

@@ -9,7 +9,7 @@ packages=
 [target]
 dirs=
 units= wsockbuf wsocket wsockets uuencode dnsquery  fingcli ftpcli  ftpsrvc ftpsrvt httpprot httpsrv icmp mbxfile md5 mimedec mimeutil ping smtpprot
-examples=conhttp
+
 exampledirs=examples
 
 [compiler]
