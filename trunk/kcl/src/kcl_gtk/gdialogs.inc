@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -104,12 +104,13 @@ begin
   BtnLayout.Orientation := boxHorz;
   BtnLayout.HorzAlign := horzRight;
 
-  if btnOk in FButtons then AddBtn('OK');
-  if btnYes in FButtons then AddBtn('Yes');
-  if btnNo in FButtons then AddBtn('No');
-  if btnCancel in FButtons then AddBtn('Cancel');
-  if btnApply in FButtons then AddBtn('Apply');
-  if btnHelp in FButtons then AddBtn('Help');
+  if btnOk in FButtons then AddBtn(btnText_OK);
+  if btnYes in FButtons then AddBtn(btnText_Yes);
+  if btnNo in FButtons then AddBtn(btnText_No);
+  if btnCancel in FButtons then AddBtn(btnText_Cancel);
+  if btnAbort in FButtons then AddBtn(btnText_Abort);
+  if btnApply in FButtons then AddBtn(btnText_Apply);
+  if btnHelp in FButtons then AddBtn(btnText_Help);
 
   MainLayout.AddWidget(BtnLayout, dmBottom);
   inherited SetContent(MainLayout);
@@ -137,7 +138,7 @@ end;
 procedure TFileDialog.OnFinishCreation;
 begin
   // Special OnFinishCreation handling!
-  Handle.Widget := gtk_file_selection_new('File Selection');
+  Handle.Widget := gtk_file_selection_new(PChar(dlgText_FileDialog));
 
   gtk_window_set_modal(PGtkWindow(Handle.Widget), True);
 
@@ -161,13 +162,19 @@ begin
   gtk_widget_show(Handle.Widget);
   FFilename := '';
   gtk_main;
+  Handle.Widget := nil;		// The GTK widget has already been destroyed!
   Result := ResultCode;
 end;
 
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:45  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:17:46  sg
+  * Added 'Abort' button to StdBtnDialog
+  * StdBtnDialog now uses resourestrings for the button texts
+  * The default caption of TFileDialog is now a resourcestring
+
+  Revision 1.1.1.1  1999/12/30 21:33:45  sg
+  Initial import
 
 }
