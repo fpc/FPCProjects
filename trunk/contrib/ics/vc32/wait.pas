@@ -68,10 +68,10 @@ unit Wait;
 {$ENDIF}
 
 interface
-
+{$i icsdef.inc}
 uses
-  SysUtils, WinTypes, WinProcs, Messages, Classes, Graphics, Controls,
-  Forms, Dialogs, StdCtrls, ExtCtrls;
+  SysUtils, {$ifdef usewindows} windows,{$else}WinTypes, WinProcs, {$endif} Messages, Classes
+  {$ifndef NOFORMS},Graphics, Controls, Forms, Dialogs, StdCtrls, ExtCtrls{$endif};
 
 const
   WaitVersion = 212;

@@ -52,6 +52,8 @@ Apr 20, 2003 V1.02 Corrected comment about SignOn: It's a domain name.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 program ConSmtp;
 
+{$i icsdef.inc}
+
 {$IFDEF VER80}
     Bomb('Sorry, Delphi 1 does not support console mode programs');
 {$ENDIF}

@@ -9,7 +9,7 @@ WebSite:      http://www.rtfm.be/fpiette
 Creation:     February 14th, 1998
 Version:      1.00
 Support:      Use twsocket@rtfm.be mailing list. See website for details.
-Legal issues: Copyright (C) 1997 by François PIETTE 
+Legal issues: Copyright (C) 1997 by François PIETTE
 
               This software is provided 'as-is', without any express or
               implied warranty.  In no event will the author be held liable
@@ -39,7 +39,7 @@ Updates:
 unit UUEncode;
 
 interface
-
+{$i icsdef.inc}
 uses
     SysUtils;
 
