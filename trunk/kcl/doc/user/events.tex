@@ -22,7 +22,7 @@ components as senders:
       This kind of event mechanism is extremely efficient, but not very
       powerful. They should be used wherever possible, but remember the event
       design rules described below.
-\item Support for generic event filters. Each sender (and additionally the
+\item Support for generic event filters. Each sender (and additionally
       the whole KCL system per se) manages a list of event handling and
       filtering methods, and the kind of event a specific filter is interested
       in. The filters for a given sender are concatenated, and each filter may
@@ -112,7 +112,7 @@ end;
 The code for the notify methods look exactly the same as in Delphi-like
 libraries. Only the support for the generic handlers need somewhat work
 (one line of code): In this example, \texttt{DoKeyPressed} creates a new
-\texttt{TKeyEventObj} object with the given mouse coordinates and calls
+\texttt{TKeyEventObj} object with the given key codes and modifiers and calls
 the method \texttt{CallEventFilters}, which is defined in \texttt{TKCLControl}.
 (Note that the properties of the event class are published; this is by
 intention, the generated run-time type informations (RTTI) can be very useful
