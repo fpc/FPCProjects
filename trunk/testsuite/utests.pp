@@ -28,6 +28,7 @@ Type
     Procedure GetRunRowAttr(Sender : TObject; Var BGColor : String;
                             Var Align : THTMLAlign; Var VAlign : THTMLValign;
                             Var CustomAttr : String) ;
+    Procedure FormatFailedOverview(Sender : TObject; Var CellData : String);
   Public
     Function CreateDataset(Qry : String) : TMySQLDataset;
     Function CreateTableProducer(DS : TDataset) :TTableProducer;
@@ -61,6 +62,8 @@ Const
   DefPassword = ''; // fill this in, too.
 }
 
+Const
+  SDetailsURL = 'testsuite.cgi?TESTACTION=1&TESTRUN=%s';
 
 Procedure TTestSuite.DoRun;
 
@@ -323,7 +326,6 @@ begin
     end;
 end;
 
-
 Procedure TTestSuite.ShowRunOverview;
 
 Const
@@ -342,7 +344,6 @@ Const
               ' %s '+
               ' GROUP BY TU_ID ';
 
-  SDetailsURL = 'testsuite.cgi?TESTACTION=1&TESTRUN=%s';
 
 Var
   S,A,Qry : String;
@@ -380,7 +381,8 @@ begin
             Border:=True;
             OnGetRowAttributes:=@GetOverViewRowAttr;
             CreateColumns(Nil);
-            (TableColumns.Items[0] as TTableColumn).ActionURL:=A;
+            TableColumns.ColumnByName('TU_ID').ActionURL:=A;
+            TableColumns.ColumnByNAme('FAILED').OnGetCellContents:=@FormatFailedOverview;
             CreateTable(Response);
           Finally
             Free;
@@ -584,6 +586,19 @@ begin
       BGColor:='#98FB98'    // pale Green
     else
       BGColor:='#FF82AB';   // Light red
+end;
+
+procedure TTestSuite.FormatFailedOverview(Sender: TObject; var CellData: String);
+
+Var
+  S: String;
+  P : TTableProducer;
+
+begin
+  P:=(Sender as TTableProducer);
+  S:=Format(SDetailsURL,[P.DataSet.FieldByName('TU_ID').AsString]);
+  S:=S+'&TESTFAILEDONLY=1&TESTNOSKIPPED=1';
+  CellData:=Format('<A HREF="%s">%s</A>',[S,CellData]);
 end;
 
 end.
