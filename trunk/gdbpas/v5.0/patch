@@ -7097,7 +7097,15 @@ diff -urN origdb/valops.c gdb/valops.c
 diff -urN origdb/win32-nat.c gdb/win32-nat.c
 --- origdb/win32-nat.c	Fri Apr 21 06:33:50 2000
 +++ gdb/win32-nat.c	Wed Sep 19 18:15:12 2001
-@@ -428,6 +428,7 @@
+@@ -102,6 +102,7 @@
+ static DEBUG_EVENT current_event;	/* The current debug event from
+ 					   WaitForDebugEvent */
+ static HANDLE current_process_handle;	/* Currently executing process */
++static HANDLE current_process_file_handle;
+ static thread_info *current_thread;	/* Info on currently selected thread */
+ static DWORD main_thread_id;	/* Thread ID of the main thread */
+ static int ignore_first_first_chance = 0; /* True if we should ignore the
+@@ -428,6 +429,7 @@
    int mainline;
    int flags;
    struct objfile *ret;
@@ -7105,7 +7113,7 @@ diff -urN origdb/win32-nat.c gdb/win32-nat.c
  };
  
  static int
-@@ -449,7 +450,7 @@
+@@ -449,7 +451,7 @@
  static struct objfile *
  safe_symbol_file_add (char *name, int from_tty,
  		      struct section_addr_info *addrs,
@@ -7114,20 +7122,18 @@ diff -urN origdb/win32-nat.c gdb/win32-nat.c
  
  {
    struct safe_symbol_file_add_args p;
-@@ -463,8 +464,12 @@
+@@ -463,6 +465,10 @@
    p.addrs = addrs;
    p.mainline = mainline;
    p.flags = flags;
 +  p.hFile = hFile;
-   catch_errors (safe_symbol_file_add_stub, &p, "", RETURN_MASK_ERROR);
- 
 +  /* DLL handles are not used */
 +  CloseHandle(p.hFile);
-+  
++
+   catch_errors (safe_symbol_file_add_stub, &p, "", RETURN_MASK_ERROR);
+ 
    do_cleanups (cleanup);
-   return p.ret;
- }
-@@ -559,7 +564,7 @@
+@@ -559,7 +565,7 @@
       of the file header and the section alignment. */
  
    section_addrs.text_addr = (int) event->lpBaseOfDll + 0x1000;
@@ -7136,7 +7142,7 @@ diff -urN origdb/win32-nat.c gdb/win32-nat.c
    printf_unfiltered ("%x:%s\n", event->lpBaseOfDll, dll_name);
  
    return 1;
-@@ -758,6 +763,7 @@
+@@ -758,6 +764,7 @@
  		     (unsigned) current_event.dwThreadId,
  		     "CREATE_PROCESS_DEBUG_EVENT"));
        current_process_handle = current_event.u.CreateProcessInfo.hProcess;
@@ -7144,7 +7150,7 @@ diff -urN origdb/win32-nat.c gdb/win32-nat.c
  
        main_thread_id = inferior_pid = current_event.dwThreadId;
        /* Add the main thread */
-@@ -773,6 +779,7 @@
+@@ -773,6 +780,7 @@
        ourstatus->kind = TARGET_WAITKIND_EXITED;
        ourstatus->value.integer = current_event.u.ExitProcess.dwExitCode;
        CloseHandle (current_process_handle);
@@ -7152,3 +7158,11 @@ diff -urN origdb/win32-nat.c gdb/win32-nat.c
        *retval = current_event.dwProcessId;
        breakout = 1;
        break;
+@@ -1155,6 +1163,7 @@
+     }
+ 
+   CHECK (CloseHandle (current_process_handle));
++  CHECK (CloseHandle (current_process_file_handle));
+ 
+   /* this may fail in an attached process so don't check. */
+   (void) CloseHandle (current_thread->h);
