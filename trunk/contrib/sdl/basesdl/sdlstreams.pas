@@ -1,4 +1,8 @@
-unit SDLStreams;
+unit sdlstreams;
+{
+  $Id$
+  
+}
 {******************************************************************}
 {                                                                  }
 {       SDL - Simple DirectMedia Layer                             }
@@ -55,16 +59,26 @@ unit SDLStreams;
 {                        by "QuePasha Pepe" <mrkroket@hotmail.com> }
 {                                                                  }
 {******************************************************************}
+{
+  $Log$
+  Revision 1.2  2004/02/15 21:07:56  marco
+   * updated
+
+  Revision 1.1  2004/02/05 00:08:20  savage
+  Module 1.0 release
+
+  
+}
+
+{$i jedi-sdl.inc}
 
 interface
-
-{$i sdl.inc}
 
 uses
   Classes,
   SysUtils,
-  SDL,
-  SDLUtils;
+  sdl,
+  sdlutils;
 
 {$IFDEF FPC}
 type

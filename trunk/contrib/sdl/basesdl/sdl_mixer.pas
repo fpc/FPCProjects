@@ -94,7 +94,7 @@ interface
 {$DEFINE IA32}
 {$ENDIF}
 
-{$IFDEF LINUX}
+{$IFDEF unix}
 {$DEFINE IA32}
 {$ENDIF}
 {$endif}
@@ -107,6 +107,9 @@ uses
 {$IFDEF LINUX}
   Types,
   LibC,
+ {$else}
+  BaseUnix,
+  Unix,
 {$ENDIF}
   SDL,
   smpeg;
@@ -120,7 +123,7 @@ const
 {$IFDEF WIN32}
   LibName = 'SDL_mixer.dll';
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF UNIX}
   LibName = 'libSDL_mixer.so';
 {$ENDIF}
 {$IFDEF MACOS}

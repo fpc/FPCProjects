@@ -1,4 +1,8 @@
-unit Logger;
+unit logger;
+{
+  $Id$
+
+}
 {******************************************************************************}
 {                                                                              }
 {                Error Logging Unit                                            }
@@ -57,32 +61,46 @@ unit Logger;
 {                                exist in Free Pascal                          }
 {                                                                              }
 {******************************************************************************}
-{$I sdl.inc}
-{$IFDEF FPC}
-{$M+}
-{$ENDIF}
+{
+  $Log$
+  Revision 1.2  2004/02/15 21:07:56  marco
+   * updated
+
+  Revision 1.1  2004/02/05 00:08:20  savage
+  Module 1.0 release
+
+  
+}
+
+{$I jedi-sdl.inc}
+
+{$WEAKPACKAGEUNIT OFF}
 
 interface
 
 uses
   Classes,
   SysUtils;
-  
+
 type
-  TLogger = class(TFileStream)
+  TLogger = class
   private
+    FFileHandle : TextFile;
     FApplicationName : string;
     FApplicationPath : string;
   protected
 
   public
     constructor Create;
+    destructor Destroy; override;
+    function GetApplicationName: string;
+    function GetApplicationPath: string;
     procedure LogError( ErrorMessage : string; Location : string );
     procedure LogWarning( WarningMessage : string; Location : string );
     procedure LogStatus( StatusMessage : string; Location : string );
   published
-    property ApplicationName : string read FApplicationName;
-    property ApplicationPath : string read FApplicationPath;
+    property ApplicationName : string read GetApplicationName;
+    property ApplicationPath : string read GetApplicationPath;
   end;
 
 var
@@ -95,8 +113,26 @@ constructor TLogger.Create;
 begin
   FApplicationName := ExtractFileName( ParamStr(0) );
   FApplicationPath := ExtractFilePath( ParamStr(0) );
-  inherited Create( FApplicationPath + Copy( FApplicationName, 0, Length( FApplicationName ){$IFDEF WIN32} - 4{$ENDIF} ) + '.log',
-                    fmCreate {$IFNDEF FPC}or fmShareExclusive{$ENDIF} );
+  AssignFile( FFileHandle, FApplicationPath + ChangeFileExt( FApplicationName, '.log' ) );
+  ReWrite( FFileHandle );
+  (*inherited Create( FApplicationPath + ChangeFileExt( FApplicationName, '.log' ),
+                    fmCreate {$IFNDEF FPC}or fmShareExclusive{$ENDIF} );*)
+end;
+
+destructor TLogger.Destroy;
+begin
+  CloseFile( FFileHandle );
+  inherited;
+end;
+
+function TLogger.GetApplicationName: string;
+begin
+  result := FApplicationName;
+end;
+
+function TLogger.GetApplicationPath: string;
+begin
+  result := FApplicationPath;
 end;
 
 procedure TLogger.LogError(ErrorMessage, Location: string);
@@ -104,7 +140,8 @@ var
   S : string;
 begin
   S := '*** ERROR *** : @ ' + TimeToStr(Time) + ' MSG : ' + ErrorMessage + ' IN : ' + Location + #13#10;
-  Write(S[1], Length(S));
+  WriteLn( FFileHandle,  S );
+  Flush( FFileHandle );
 end;
 
 procedure TLogger.LogStatus(StatusMessage, Location: string);
@@ -112,7 +149,8 @@ var
   S : string;
 begin
   S := 'STATUS INFO : @ ' + TimeToStr(Time) + ' MSG : ' + StatusMessage + ' IN : ' + Location + #13#10;
-  Write(S[1], Length(S));
+  WriteLn( FFileHandle,  S );
+  Flush( FFileHandle );
 end;
 
 procedure TLogger.LogWarning(WarningMessage, Location: string);
@@ -120,7 +158,8 @@ var
   S : string;
 begin
   S := '=== WARNING === : @ ' + TimeToStr(Time) + ' MSG : ' + WarningMessage + ' IN : ' + Location + #13#10;
-  Write(S[1], Length(S));
+  WriteLn( FFileHandle,  S );
+  Flush( FFileHandle );
 end;
 
 initialization

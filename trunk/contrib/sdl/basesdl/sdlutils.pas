@@ -1,4 +1,8 @@
-unit SDLUtils;
+unit sdlutils;
+{
+  $Id$
+  
+}
 {******************************************************************************}
 {                                                                              }
 {       Borland Delphi SDL - Simple DirectMedia Layer                          }
@@ -90,17 +94,40 @@ unit SDLUtils;
 {                                                                              }
 {  June    12   2002 - JF : Updated SDL_PixelTestSurfaceVsRect                 }
 {                                                                              }
+{ November  9   2002 - JF : Added Jason's boolean Surface functions            }
+{                                                                              }
+{ December 10   2002 - DE : Added Dean's SDL_ClipLine function                 }
+{                                                                              }
+{    April 26   2003 - SS : Incorporated JF's changes to SDL_ClipLine          }
+{                           Fixed SDL_ClipLine bug for non-zero cliprect x, y  }
+{                           Added overloaded SDL_DrawLine for dashed lines     }
+{                                                                              }
 {******************************************************************************}
+{
+  $Log$
+  Revision 1.2  2004/02/15 21:07:56  marco
+   * updated
+
+  Revision 1.2  2004/02/14 00:23:39  savage
+  As UNIX is defined in jedi-sdl.inc this will be used to check linux compatability as well. Units have been changed to reflect this change.
+
+  Revision 1.1  2004/02/05 00:08:20  savage
+  Module 1.0 release
+
+  
+}
+
 interface
 
-{$i sdl.inc}
+{$i jedi-sdl.inc}
+
 uses
-{$IFDEF LINUX}
+{$IFDEF UNIX}
   Types,
   Xlib,
 {$ENDIF}
   SysUtils,
-  SDL;
+  sdl;
 
 type
   TGradientStyle = ( gsHorizontal, gsVertical );
@@ -122,7 +149,10 @@ procedure SDL_SubPixel( DstSurface : PSDL_Surface; x : cardinal; y : cardinal; C
 
 // Line procedures
 procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
-  cardinal );
+  cardinal ); overload;
+
+procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
+  cardinal ; DashLength, DashSpace : byte );  overload;  
 
 procedure SDL_AddLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
   cardinal );
@@ -144,7 +174,7 @@ procedure SDL_TexturedSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect; Texture : PSDL_Surface;
   TextureRect : PSDL_Rect );
 
-  procedure SDL_ZoomSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect; DstSurface : PSDL_Surface; DstRect : PSDL_Rect );
+procedure SDL_ZoomSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect; DstSurface : PSDL_Surface; DstRect : PSDL_Rect );
 
 procedure SDL_WarpSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect; DstSurface : PSDL_Surface; UL, UR, LR, LL : PPoint );
 
@@ -174,6 +204,7 @@ procedure SDL_RotateRad( DstSurface, SrcSurface : PSDL_Surface; SrcRect :
 
 function ValidateSurfaceRect( DstSurface : PSDL_Surface; dstrect : PSDL_Rect ) : TSDL_Rect;
 
+// Fill Rect routine
 procedure SDL_FillRectAdd( DstSurface : PSDL_Surface; dstrect : PSDL_Rect; color : UInt32 );
 
 procedure SDL_FillRectSub( DstSurface : PSDL_Surface; dstrect : PSDL_Rect; color : UInt32 );
@@ -191,6 +222,22 @@ procedure SDL_50Scanline2xBlit(Src, Dest: PSDL_Surface);
 function SDL_PixelTestSurfaceVsRect( SrcSurface1 : PSDL_Surface; SrcRect1 :
 PSDL_Rect; SrcRect2 : PSDL_Rect; Left1, Top1, Left2, Top2 : integer ) :
 boolean;
+
+// Jason's boolean Surface functions
+procedure SDL_ORSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
+  DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
+
+procedure SDL_ANDSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
+  DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
+
+
+procedure SDL_GTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
+  DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
+
+procedure SDL_LTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
+  DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
+
+function SDL_ClipLine(var x1,y1,x2,y2: Integer; ClipRect: PSDL_Rect) : boolean;
 
 implementation
 
@@ -1565,9 +1612,9 @@ begin
   if SDL_MustLock( DstSurface ) then
     SDL_UnlockSurface( DstSurface );
 end;
+
 // Draw a line between x1,y1 and x2,y2 to the given surface
 // NOTE: The surface must be locked before calling this!
-
 procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
   cardinal );
 var
@@ -1608,6 +1655,110 @@ begin
     for y := 0 to dy - 1 do
     begin
       SDL_PutPixel( DstSurface, px, py, Color );
+      x := x + dx;
+      if x >= dy then
+      begin
+        x := x - dy;
+        px := px + sdx;
+      end;
+      py := py + sdy;
+    end;
+  end;
+end;
+
+// Draw a dashed line between x1,y1 and x2,y2 to the given surface
+// NOTE: The surface must be locked before calling this!
+procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
+  cardinal ; DashLength, DashSpace : byte );  overload;
+var
+  dx, dy, sdx, sdy, x, y, px, py, counter : integer; drawdash : boolean;
+begin
+  counter := 0;
+  drawdash := true; //begin line drawing with dash
+
+  //Avoid invalid user-passed dash parameters
+  if (DashLength < 1)
+  then DashLength := 1;
+  if (DashSpace < 1)
+  then DashSpace := 0;
+
+  dx := x2 - x1;
+  dy := y2 - y1;
+  if dx < 0 then
+    sdx := -1
+  else
+    sdx := 1;
+  if dy < 0 then
+    sdy := -1
+  else
+    sdy := 1;
+  dx := sdx * dx + 1;
+  dy := sdy * dy + 1;
+  x := 0;
+  y := 0;
+  px := x1;
+  py := y1;
+  if dx >= dy then
+  begin
+    for x := 0 to dx - 1 do
+      begin
+
+      //Alternate drawing dashes, or leaving spaces
+      if drawdash then
+        begin
+          SDL_PutPixel( DstSurface, px, py, Color );
+          inc(counter);
+          if (counter > DashLength-1) and (DashSpace > 0) then
+            begin
+              drawdash := false;
+              counter := 0;
+            end;
+        end
+      else //space
+        begin
+          inc(counter);
+          if counter > DashSpace-1 then
+            begin
+              drawdash := true;
+              counter := 0;
+            end;
+        end;
+
+      y := y + dy;
+      if y >= dx then
+      begin
+        y := y - dx;
+        py := py + sdy;
+      end;
+      px := px + sdx;
+    end;
+  end
+  else
+  begin
+    for y := 0 to dy - 1 do
+    begin
+
+      //Alternate drawing dashes, or leaving spaces
+      if drawdash then
+        begin
+          SDL_PutPixel( DstSurface, px, py, Color );
+          inc(counter);
+          if (counter > DashLength-1) and (DashSpace > 0) then
+            begin
+              drawdash := false;
+              counter := 0;
+            end;
+        end
+      else //space
+        begin
+          inc(counter);
+          if counter > DashSpace-1 then
+            begin
+              drawdash := true;
+              counter := 0;
+            end;
+        end;
+
       x := x + dx;
       if x >= dy then
       begin
@@ -1720,8 +1871,8 @@ begin
     end;
   end;
 end;
-// flips a rectangle vertically on given surface
 
+// flips a rectangle vertically on given surface
 procedure SDL_FlipRectV( DstSurface : PSDL_Surface; Rect : PSDL_Rect );
 var
   TmpRect : TSDL_Rect;
@@ -1762,8 +1913,8 @@ begin
       SDL_UnlockSurface( DstSurface );
   end;
 end;
-// flips a rectangle horizontally on given surface
 
+// flips a rectangle horizontally on given surface
 procedure SDL_FlipRectH( DstSurface : PSDL_Surface; Rect : PSDL_Rect );
 type
   T24bit = packed array[ 0..2 ] of byte;
@@ -1871,9 +2022,9 @@ begin
       SDL_UnlockSurface( DstSurface );
   end;
 end;
+
 // Use with caution! The procedure allocates memory for TSDL_Rect and return with its pointer.
 // But you MUST free it after you don't need it anymore!!!
-
 function PSDLRect( aLeft, aTop, aWidth, aHeight : integer ) : PSDL_Rect;
 var
   Rect : PSDL_Rect;
@@ -1945,8 +2096,8 @@ begin
   else
     result := -1;
 end;
-// Stretches a part of a surface
 
+// Stretches a part of a surface
 function SDL_ScaleSurfaceRect( SrcSurface : PSDL_Surface; SrcX1, SrcY1, SrcW, SrcH,
   Width, Height : integer ) : PSDL_Surface;
 var
@@ -3102,6 +3253,995 @@ Bottom1 <=
         inc( Addr1, Mod1 );
 
       end;
+  end;
+end;
+
+procedure SDL_ORSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
+  DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
+var
+  R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+  Src, Dest : TSDL_Rect;
+  Diff : integer;
+  SrcAddr, DestAddr : cardinal;
+  WorkX, WorkY : word;
+  SrcMod, DestMod : cardinal;
+  Bits : cardinal;
+begin
+  if ( SrcSurface = nil ) or ( DestSurface = nil ) then
+    exit; // Remove this to make it faster
+  if ( SrcSurface.Format.BitsPerPixel <> DestSurface.Format.BitsPerPixel ) then
+    exit; // Remove this to make it faster
+  if SrcRect = nil then
+  begin
+    with Src do
+    begin
+      x := 0;
+      y := 0;
+      w := SrcSurface.w;
+      h := SrcSurface.h;
+    end;
+  end
+  else
+    Src := SrcRect^;
+  if DestRect = nil then
+  begin
+    Dest.x := 0;
+    Dest.y := 0;
+  end
+  else
+    Dest := DestRect^;
+  Dest.w := Src.w;
+  Dest.h := Src.h;
+  with DestSurface.Clip_Rect do
+  begin
+    // Source's right side is greater than the dest.cliprect
+    if Dest.x + Src.w > x + w then
+    begin
+      smallint( Src.w ) := x + w - Dest.x;
+      smallint( Dest.w ) := x + w - Dest.x;
+      if smallint( Dest.w ) < 1 then
+        exit;
+    end;
+    // Source's bottom side is greater than the dest.clip
+    if Dest.y + Src.h > y + h then
+    begin
+      smallint( Src.h ) := y + h - Dest.y;
+      smallint( Dest.h ) := y + h - Dest.y;
+      if smallint( Dest.h ) < 1 then
+        exit;
+    end;
+    // Source's left side is less than the dest.clip
+    if Dest.x < x then
+    begin
+      Diff := x - Dest.x;
+      Src.x := Src.x + Diff;
+      smallint( Src.w ) := smallint( Src.w ) - Diff;
+      Dest.x := x;
+      smallint( Dest.w ) := smallint( Dest.w ) - Diff;
+      if smallint( Dest.w ) < 1 then
+        exit;
+    end;
+    // Source's Top side is less than the dest.clip
+    if Dest.y < y then
+    begin
+      Diff := y - Dest.y;
+      Src.y := Src.y + Diff;
+      smallint( Src.h ) := smallint( Src.h ) - Diff;
+      Dest.y := y;
+      smallint( Dest.h ) := smallint( Dest.h ) - Diff;
+      if smallint( Dest.h ) < 1 then
+        exit;
+    end;
+  end;
+  with SrcSurface^ do
+  begin
+    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+      Format.BytesPerPixel;
+    SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+    TransparentColor := Format.colorkey;
+  end;
+  with DestSurface^ do
+  begin
+    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+      Format.BytesPerPixel;
+    DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+    Bits := Format.BitsPerPixel;
+  end;
+  SDL_LockSurface( SrcSurface );
+  SDL_LockSurface( DestSurface );
+  WorkY := Src.h;
+  case bits of
+    8 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt8( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt8( DestAddr )^;
+              PUInt8( DestAddr )^ := Pixel2 OR Pixel1;
+            end;
+            inc( SrcAddr );
+            inc( DestAddr );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    15 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt16( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt16( DestAddr )^;
+
+              PUInt16( DestAddr )^ := Pixel2 OR Pixel1;
+
+            end;
+            inc( SrcAddr, 2 );
+            inc( DestAddr, 2 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    16 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt16( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt16( DestAddr )^;
+
+                PUInt16( DestAddr )^ := Pixel2 OR Pixel1;
+
+            end;
+            inc( SrcAddr, 2 );
+            inc( DestAddr, 2 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    24 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt32( SrcAddr )^ and $00FFFFFF;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt32( DestAddr )^ and $00FFFFFF;
+
+              PUInt32( DestAddr )^ := PUInt32( DestAddr )^ and $FF000000 or Pixel2 or Pixel1;
+            end;
+            inc( SrcAddr, 3 );
+            inc( DestAddr, 3 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    32 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt32( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt32( DestAddr )^;
+
+                PUInt32( DestAddr )^ := Pixel2 or Pixel1;
+            end;
+            inc( SrcAddr, 4 );
+            inc( DestAddr, 4 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+  end;
+  SDL_UnlockSurface( SrcSurface );
+  SDL_UnlockSurface( DestSurface );
+end;
+
+procedure SDL_ANDSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
+  DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
+var
+  R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+  Src, Dest : TSDL_Rect;
+  Diff : integer;
+  SrcAddr, DestAddr : cardinal;
+  WorkX, WorkY : word;
+  SrcMod, DestMod : cardinal;
+  Bits : cardinal;
+begin
+  if ( SrcSurface = nil ) or ( DestSurface = nil ) then
+    exit; // Remove this to make it faster
+  if ( SrcSurface.Format.BitsPerPixel <> DestSurface.Format.BitsPerPixel ) then
+    exit; // Remove this to make it faster
+  if SrcRect = nil then
+  begin
+    with Src do
+    begin
+      x := 0;
+      y := 0;
+      w := SrcSurface.w;
+      h := SrcSurface.h;
+    end;
+  end
+  else
+    Src := SrcRect^;
+  if DestRect = nil then
+  begin
+    Dest.x := 0;
+    Dest.y := 0;
+  end
+  else
+    Dest := DestRect^;
+  Dest.w := Src.w;
+  Dest.h := Src.h;
+  with DestSurface.Clip_Rect do
+  begin
+    // Source's right side is greater than the dest.cliprect
+    if Dest.x + Src.w > x + w then
+    begin
+      smallint( Src.w ) := x + w - Dest.x;
+      smallint( Dest.w ) := x + w - Dest.x;
+      if smallint( Dest.w ) < 1 then
+        exit;
+    end;
+    // Source's bottom side is greater than the dest.clip
+    if Dest.y + Src.h > y + h then
+    begin
+      smallint( Src.h ) := y + h - Dest.y;
+      smallint( Dest.h ) := y + h - Dest.y;
+      if smallint( Dest.h ) < 1 then
+        exit;
+    end;
+    // Source's left side is less than the dest.clip
+    if Dest.x < x then
+    begin
+      Diff := x - Dest.x;
+      Src.x := Src.x + Diff;
+      smallint( Src.w ) := smallint( Src.w ) - Diff;
+      Dest.x := x;
+      smallint( Dest.w ) := smallint( Dest.w ) - Diff;
+      if smallint( Dest.w ) < 1 then
+        exit;
+    end;
+    // Source's Top side is less than the dest.clip
+    if Dest.y < y then
+    begin
+      Diff := y - Dest.y;
+      Src.y := Src.y + Diff;
+      smallint( Src.h ) := smallint( Src.h ) - Diff;
+      Dest.y := y;
+      smallint( Dest.h ) := smallint( Dest.h ) - Diff;
+      if smallint( Dest.h ) < 1 then
+        exit;
+    end;
+  end;
+  with SrcSurface^ do
+  begin
+    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+      Format.BytesPerPixel;
+    SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+    TransparentColor := Format.colorkey;
+  end;
+  with DestSurface^ do
+  begin
+    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+      Format.BytesPerPixel;
+    DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+    Bits := Format.BitsPerPixel;
+  end;
+  SDL_LockSurface( SrcSurface );
+  SDL_LockSurface( DestSurface );
+  WorkY := Src.h;
+  case bits of
+    8 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt8( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt8( DestAddr )^;
+              PUInt8( DestAddr )^ := Pixel2 and Pixel1;
+            end;
+            inc( SrcAddr );
+            inc( DestAddr );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    15 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt16( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt16( DestAddr )^;
+
+              PUInt16( DestAddr )^ := Pixel2 and Pixel1;
+
+            end;
+            inc( SrcAddr, 2 );
+            inc( DestAddr, 2 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    16 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt16( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt16( DestAddr )^;
+
+                PUInt16( DestAddr )^ := Pixel2 and Pixel1;
+
+            end;
+            inc( SrcAddr, 2 );
+            inc( DestAddr, 2 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    24 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt32( SrcAddr )^ and $00FFFFFF;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt32( DestAddr )^ and $00FFFFFF;
+
+              PUInt32( DestAddr )^ := PUInt32( DestAddr )^ and $FF000000 or Pixel2 and Pixel1;
+            end;
+            inc( SrcAddr, 3 );
+            inc( DestAddr, 3 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    32 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt32( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt32( DestAddr )^;
+
+                PUInt32( DestAddr )^ := Pixel2 and Pixel1;
+            end;
+            inc( SrcAddr, 4 );
+            inc( DestAddr, 4 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+  end;
+  SDL_UnlockSurface( SrcSurface );
+  SDL_UnlockSurface( DestSurface );
+end;
+
+
+
+procedure SDL_GTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
+  DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
+var
+  R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+  Src, Dest : TSDL_Rect;
+  Diff : integer;
+  SrcAddr, DestAddr : cardinal;
+  WorkX, WorkY : word;
+  SrcMod, DestMod : cardinal;
+  Bits : cardinal;
+begin
+  if ( SrcSurface = nil ) or ( DestSurface = nil ) then
+    exit; // Remove this to make it faster
+  if ( SrcSurface.Format.BitsPerPixel <> DestSurface.Format.BitsPerPixel ) then
+    exit; // Remove this to make it faster
+  if SrcRect = nil then
+  begin
+    with Src do
+    begin
+      x := 0;
+      y := 0;
+      w := SrcSurface.w;
+      h := SrcSurface.h;
+    end;
+  end
+  else
+    Src := SrcRect^;
+  if DestRect = nil then
+  begin
+    Dest.x := 0;
+    Dest.y := 0;
+  end
+  else
+    Dest := DestRect^;
+  Dest.w := Src.w;
+  Dest.h := Src.h;
+  with DestSurface.Clip_Rect do
+  begin
+    // Source's right side is greater than the dest.cliprect
+    if Dest.x + Src.w > x + w then
+    begin
+      smallint( Src.w ) := x + w - Dest.x;
+      smallint( Dest.w ) := x + w - Dest.x;
+      if smallint( Dest.w ) < 1 then
+        exit;
+    end;
+    // Source's bottom side is greater than the dest.clip
+    if Dest.y + Src.h > y + h then
+    begin
+      smallint( Src.h ) := y + h - Dest.y;
+      smallint( Dest.h ) := y + h - Dest.y;
+      if smallint( Dest.h ) < 1 then
+        exit;
+    end;
+    // Source's left side is less than the dest.clip
+    if Dest.x < x then
+    begin
+      Diff := x - Dest.x;
+      Src.x := Src.x + Diff;
+      smallint( Src.w ) := smallint( Src.w ) - Diff;
+      Dest.x := x;
+      smallint( Dest.w ) := smallint( Dest.w ) - Diff;
+      if smallint( Dest.w ) < 1 then
+        exit;
+    end;
+    // Source's Top side is less than the dest.clip
+    if Dest.y < y then
+    begin
+      Diff := y - Dest.y;
+      Src.y := Src.y + Diff;
+      smallint( Src.h ) := smallint( Src.h ) - Diff;
+      Dest.y := y;
+      smallint( Dest.h ) := smallint( Dest.h ) - Diff;
+      if smallint( Dest.h ) < 1 then
+        exit;
+    end;
+  end;
+  with SrcSurface^ do
+  begin
+    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+      Format.BytesPerPixel;
+    SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+    TransparentColor := Format.colorkey;
+  end;
+  with DestSurface^ do
+  begin
+    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+      Format.BytesPerPixel;
+    DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+    Bits := Format.BitsPerPixel;
+  end;
+  SDL_LockSurface( SrcSurface );
+  SDL_LockSurface( DestSurface );
+  WorkY := Src.h;
+  case bits of
+    8 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt8( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt8( DestAddr )^;
+              if Pixel2 > 0 then
+              begin
+                if Pixel2 and $E0 > Pixel1 and $E0 then R := Pixel2 and $E0 else R := Pixel1 and $E0;
+                if Pixel2 and $1C > Pixel1 and $1C then G := Pixel2 and $1C else G := Pixel1 and $1C;
+                if Pixel2 and $03 > Pixel1 and $03 then B := Pixel2 and $03 else B := Pixel1 and $03;
+
+                if R > $E0 then
+                  R := $E0;
+                if G > $1C then
+                  G := $1C;
+                if B > $03 then
+                  B := $03;
+                PUInt8( DestAddr )^ := R or G or B;
+              end
+              else
+                PUInt8( DestAddr )^ := Pixel1;
+            end;
+            inc( SrcAddr );
+            inc( DestAddr );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    15 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt16( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt16( DestAddr )^;
+              if Pixel2 > 0 then
+              begin
+
+              if Pixel2 and $7C00 > Pixel1 and $7C00 then R := Pixel2 and $7C00 else R := Pixel1 and $7C00;
+              if Pixel2 and $03E0 > Pixel1 and $03E0 then G := Pixel2 and $03E0 else G := Pixel1 and $03E0;
+              if Pixel2 and $001F > Pixel1 and $001F then B := Pixel2 and $001F else B := Pixel1 and $001F;
+
+                PUInt16( DestAddr )^ := R or G or B;
+              end
+              else
+                PUInt16( DestAddr )^ := Pixel1;
+            end;
+            inc( SrcAddr, 2 );
+            inc( DestAddr, 2 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    16 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt16( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt16( DestAddr )^;
+              if Pixel2 > 0 then
+              begin
+
+              if Pixel2 and $F800 > Pixel1 and $F800 then R := Pixel2 and $F800 else R := Pixel1 and $F800;
+              if Pixel2 and $07E0 > Pixel1 and $07E0 then G := Pixel2 and $07E0 else G := Pixel1 and $07E0;
+              if Pixel2 and $001F > Pixel1 and $001F then B := Pixel2 and $001F else B := Pixel1 and $001F;
+
+                PUInt16( DestAddr )^ := R or G or B;
+              end
+              else
+                PUInt16( DestAddr )^ := Pixel1;
+            end;
+            inc( SrcAddr, 2 );
+            inc( DestAddr, 2 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    24 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt32( SrcAddr )^ and $00FFFFFF;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt32( DestAddr )^ and $00FFFFFF;
+              if Pixel2 > 0 then
+              begin
+
+              if Pixel2 and $FF0000 > Pixel1 and $FF0000 then R := Pixel2 and $FF0000 else R := Pixel1 and $FF0000;
+              if Pixel2 and $00FF00 > Pixel1 and $00FF00 then G := Pixel2 and $00FF00 else G := Pixel1 and $00FF00;
+              if Pixel2 and $0000FF > Pixel1 and $0000FF then B := Pixel2 and $0000FF else B := Pixel1 and $0000FF;
+
+                PUInt32( DestAddr )^ := PUInt32( DestAddr )^ and $FF000000 or ( R or G or B );
+              end
+              else
+                PUInt32( DestAddr )^ := PUInt32( DestAddr )^ and $FF000000 or Pixel1;
+            end;
+            inc( SrcAddr, 3 );
+            inc( DestAddr, 3 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    32 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt32( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt32( DestAddr )^;
+              if Pixel2 > 0 then
+              begin
+
+              if Pixel2 and $FF0000 > Pixel1 and $FF0000 then R := Pixel2 and $FF0000 else R := Pixel1 and $FF0000;
+              if Pixel2 and $00FF00 > Pixel1 and $00FF00 then G := Pixel2 and $00FF00 else G := Pixel1 and $00FF00;
+              if Pixel2 and $0000FF > Pixel1 and $0000FF then B := Pixel2 and $0000FF else B := Pixel1 and $0000FF;
+
+                PUInt32( DestAddr )^ := R or G or B;
+              end
+              else
+                PUInt32( DestAddr )^ := Pixel1;
+            end;
+            inc( SrcAddr, 4 );
+            inc( DestAddr, 4 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+  end;
+  SDL_UnlockSurface( SrcSurface );
+  SDL_UnlockSurface( DestSurface );
+end;
+
+
+procedure SDL_LTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
+  DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
+var
+  R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+  Src, Dest : TSDL_Rect;
+  Diff : integer;
+  SrcAddr, DestAddr : cardinal;
+  WorkX, WorkY : word;
+  SrcMod, DestMod : cardinal;
+  Bits : cardinal;
+begin
+  if ( SrcSurface = nil ) or ( DestSurface = nil ) then
+    exit; // Remove this to make it faster
+  if ( SrcSurface.Format.BitsPerPixel <> DestSurface.Format.BitsPerPixel ) then
+    exit; // Remove this to make it faster
+  if SrcRect = nil then
+  begin
+    with Src do
+    begin
+      x := 0;
+      y := 0;
+      w := SrcSurface.w;
+      h := SrcSurface.h;
+    end;
+  end
+  else
+    Src := SrcRect^;
+  if DestRect = nil then
+  begin
+    Dest.x := 0;
+    Dest.y := 0;
+  end
+  else
+    Dest := DestRect^;
+  Dest.w := Src.w;
+  Dest.h := Src.h;
+  with DestSurface.Clip_Rect do
+  begin
+    // Source's right side is greater than the dest.cliprect
+    if Dest.x + Src.w > x + w then
+    begin
+      smallint( Src.w ) := x + w - Dest.x;
+      smallint( Dest.w ) := x + w - Dest.x;
+      if smallint( Dest.w ) < 1 then
+        exit;
+    end;
+    // Source's bottom side is greater than the dest.clip
+    if Dest.y + Src.h > y + h then
+    begin
+      smallint( Src.h ) := y + h - Dest.y;
+      smallint( Dest.h ) := y + h - Dest.y;
+      if smallint( Dest.h ) < 1 then
+        exit;
+    end;
+    // Source's left side is less than the dest.clip
+    if Dest.x < x then
+    begin
+      Diff := x - Dest.x;
+      Src.x := Src.x + Diff;
+      smallint( Src.w ) := smallint( Src.w ) - Diff;
+      Dest.x := x;
+      smallint( Dest.w ) := smallint( Dest.w ) - Diff;
+      if smallint( Dest.w ) < 1 then
+        exit;
+    end;
+    // Source's Top side is less than the dest.clip
+    if Dest.y < y then
+    begin
+      Diff := y - Dest.y;
+      Src.y := Src.y + Diff;
+      smallint( Src.h ) := smallint( Src.h ) - Diff;
+      Dest.y := y;
+      smallint( Dest.h ) := smallint( Dest.h ) - Diff;
+      if smallint( Dest.h ) < 1 then
+        exit;
+    end;
+  end;
+  with SrcSurface^ do
+  begin
+    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+      Format.BytesPerPixel;
+    SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+    TransparentColor := Format.colorkey;
+  end;
+  with DestSurface^ do
+  begin
+    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+      Format.BytesPerPixel;
+    DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+    Bits := Format.BitsPerPixel;
+  end;
+  SDL_LockSurface( SrcSurface );
+  SDL_LockSurface( DestSurface );
+  WorkY := Src.h;
+  case bits of
+    8 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt8( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt8( DestAddr )^;
+              if Pixel2 > 0 then
+              begin
+                if Pixel2 and $E0 < Pixel1 and $E0 then R := Pixel2 and $E0 else R := Pixel1 and $E0;
+                if Pixel2 and $1C < Pixel1 and $1C then G := Pixel2 and $1C else G := Pixel1 and $1C;
+                if Pixel2 and $03 < Pixel1 and $03 then B := Pixel2 and $03 else B := Pixel1 and $03;
+
+                if R > $E0 then
+                  R := $E0;
+                if G > $1C then
+                  G := $1C;
+                if B > $03 then
+                  B := $03;
+                PUInt8( DestAddr )^ := R or G or B;
+              end
+              else
+                PUInt8( DestAddr )^ := Pixel1;
+            end;
+            inc( SrcAddr );
+            inc( DestAddr );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    15 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt16( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt16( DestAddr )^;
+              if Pixel2 > 0 then
+              begin
+
+              if Pixel2 and $7C00 < Pixel1 and $7C00 then R := Pixel2 and $7C00 else R := Pixel1 and $7C00;
+              if Pixel2 and $03E0 < Pixel1 and $03E0 then G := Pixel2 and $03E0 else G := Pixel1 and $03E0;
+              if Pixel2 and $001F < Pixel1 and $001F then B := Pixel2 and $001F else B := Pixel1 and $001F;
+
+                PUInt16( DestAddr )^ := R or G or B;
+              end
+              else
+                PUInt16( DestAddr )^ := Pixel1;
+            end;
+            inc( SrcAddr, 2 );
+            inc( DestAddr, 2 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    16 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt16( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt16( DestAddr )^;
+              if Pixel2 > 0 then
+              begin
+
+              if Pixel2 and $F800 < Pixel1 and $F800 then R := Pixel2 and $F800 else R := Pixel1 and $F800;
+              if Pixel2 and $07E0 < Pixel1 and $07E0 then G := Pixel2 and $07E0 else G := Pixel1 and $07E0;
+              if Pixel2 and $001F < Pixel1 and $001F then B := Pixel2 and $001F else B := Pixel1 and $001F;
+
+                PUInt16( DestAddr )^ := R or G or B;
+              end
+              else
+                PUInt16( DestAddr )^ := Pixel1;
+            end;
+            inc( SrcAddr, 2 );
+            inc( DestAddr, 2 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    24 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt32( SrcAddr )^ and $00FFFFFF;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt32( DestAddr )^ and $00FFFFFF;
+              if Pixel2 > 0 then
+              begin
+
+              if Pixel2 and $FF0000 < Pixel1 and $FF0000 then R := Pixel2 and $FF0000 else R := Pixel1 and $FF0000;
+              if Pixel2 and $00FF00 < Pixel1 and $00FF00 then G := Pixel2 and $00FF00 else G := Pixel1 and $00FF00;
+              if Pixel2 and $0000FF < Pixel1 and $0000FF then B := Pixel2 and $0000FF else B := Pixel1 and $0000FF;
+
+                PUInt32( DestAddr )^ := PUInt32( DestAddr )^ and $FF000000 or ( R or G or B );
+              end
+              else
+                PUInt32( DestAddr )^ := PUInt32( DestAddr )^ and $FF000000 or Pixel1;
+            end;
+            inc( SrcAddr, 3 );
+            inc( DestAddr, 3 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+    32 :
+      begin
+        repeat
+          WorkX := Src.w;
+          repeat
+            Pixel1 := PUInt32( SrcAddr )^;
+            if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
+            begin
+              Pixel2 := PUInt32( DestAddr )^;
+              if Pixel2 > 0 then
+              begin
+
+              if Pixel2 and $FF0000 < Pixel1 and $FF0000 then R := Pixel2 and $FF0000 else R := Pixel1 and $FF0000;
+              if Pixel2 and $00FF00 < Pixel1 and $00FF00 then G := Pixel2 and $00FF00 else G := Pixel1 and $00FF00;
+              if Pixel2 and $0000FF < Pixel1 and $0000FF then B := Pixel2 and $0000FF else B := Pixel1 and $0000FF;
+
+                PUInt32( DestAddr )^ := R or G or B;
+              end
+              else
+                PUInt32( DestAddr )^ := Pixel1;
+            end;
+            inc( SrcAddr, 4 );
+            inc( DestAddr, 4 );
+            dec( WorkX );
+          until WorkX = 0;
+          inc( SrcAddr, SrcMod );
+          inc( DestAddr, DestMod );
+          dec( WorkY );
+        until WorkY = 0;
+      end;
+  end;
+  SDL_UnlockSurface( SrcSurface );
+  SDL_UnlockSurface( DestSurface );
+end;
+
+// Will clip the x1,x2,y1,x2 params to the ClipRect provided
+function SDL_ClipLine(var x1,y1,x2,y2: Integer; ClipRect: PSDL_Rect) : boolean;
+  var tflag, flag1, flag2: word;
+    txy, xedge, yedge: Integer;
+    slope: single;
+
+  function ClipCode(x,y: Integer): word;
+  begin
+    Result := 0;
+    if x < ClipRect.x then Result := 1;
+    if x >= ClipRect.w + ClipRect.x then Result := Result or 2;
+    if y < ClipRect.y then Result := Result or 4;
+    if y >= ClipRect.h + ClipRect.y then Result := Result or 8;
+  end;
+
+begin
+  flag1 := ClipCode(x1,y1);
+  flag2 := ClipCode(x2,y2);
+  result := true;
+
+  while true do
+  begin
+    if (flag1 or flag2) = 0 then Exit; // all in
+
+    if (flag1 and flag2) <> 0 then
+      begin
+        result := false;
+        Exit; // all out
+      end;
+
+    if flag2 = 0 then
+      begin
+        txy := x1; x1 := x2; x2 := txy;
+        txy := y1; y1 := y2; y2 := txy;
+        tflag := flag1; flag1 := flag2; flag2 := tflag;
+      end;
+
+    if (flag2 and 3) <> 0 then
+      begin
+        if (flag2 and 1) <> 0 then
+          xedge := ClipRect.x
+        else
+          xedge := ClipRect.w + ClipRect.x -1; // back 1 pixel otherwise we end up in a loop
+
+        slope := (y2 - y1) / (x2 - x1);
+        y2 := y1 + Round(slope * (xedge - x1));
+        x2 := xedge;
+      end
+    else
+      begin
+        if (flag2 and 4) <> 0 then
+          yedge := ClipRect.y
+        else
+          yedge := ClipRect.h + ClipRect.y -1; // up 1 pixel otherwise we end up in a loop
+
+        slope := (x2 - x1) / (y2 - y1);
+        x2 := x1 + Round(slope * (yedge - y1));
+        y2 := yedge;
+      end;
+
+    flag2 := ClipCode(x2, y2);
   end;
 end;
 
