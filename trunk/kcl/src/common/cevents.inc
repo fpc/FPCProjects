@@ -59,9 +59,18 @@ begin
   Rect := ARect;
 end;
 
+constructor TCmdChangeEventObj.Create(ASender: TCommand; AChangeType: TCmdChangeType);
+begin
+  inherited Create(ASender);
+  ChangeType := AChangeType;
+end;
+
 
 {
   $Log$
+  Revision 1.3  2000/01/24 00:18:53  sg
+  * Added TCmdChangeEventObj
+
   Revision 1.2  2000/01/05 19:11:12  sg
   * Made mouse event VCL compatible
   * Added mouse move event
