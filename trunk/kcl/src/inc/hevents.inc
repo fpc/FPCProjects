@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -49,20 +49,20 @@ type
 // -------------------------------------------------------------------
 
   TKeyEvent = procedure(Sender: TObject; Key: Char; KeyCode: LongWord;
-    ShiftState: TShiftState) of object;
+    Shift: TShiftState) of object;
 
   TKeyEventObj = class(TEventObj)
   private
     FKey: Char;
     FKeyCode: LongWord;
-    FShiftState: TShiftState;
+    FShift: TShiftState;
   public
     constructor Create(ASender: TObject; AKey: Char; AKeyCode: LongWord;
-      AShiftState: TShiftState);
+      AShift: TShiftState);
   published
     property Key: Char read FKey write FKey;
     property KeyCode: LongWord read FKeyCode write FKeyCode;
-    property ShiftState: TShiftState read FShiftState write FShiftState;
+    property Shift: TShiftState read FShift write FShift;
   end;
 
 
@@ -70,23 +70,47 @@ type
 //   Mouse
 // -------------------------------------------------------------------
 
+  TMouseButton = (mbLeft, mbRight, mbMiddle);
+
   TClickEvent = TNotifyEvent;
   TClickEventObj = class(TEventObj) end;
 
-  TMouseEvent = procedure(Sender: TObject; MouseX, MouseY: Integer;
-    ShiftState: TShiftState) of object;
+  TMouseEvent = procedure(Sender: TObject; Button: TMouseButton;
+    Shift: TShiftState; MouseX, MouseY: Integer) of object;
 
   TMouseEventObj = class(TEventObj)
   protected
+    FButton: TMouseButton;
+    FShift: TShiftState;
     FMouseX, FMouseY: Integer;
-    FShiftState: TShiftState;
   public
-    constructor Create(ASender: TObject; AMouseX, AMouseY: Integer;
-      AShiftState: TShiftState);
+    constructor Create(ASender: TObject; AButton: TMouseButton;
+      AShift: TShiftState; AMouseX, AMouseY: Integer);
   published
+    property Button: TMouseButton read FButton write FButton;
+    property Shift: TShiftState read FShift write FShift;
     property MouseX: Integer read FMouseX write FMouseX;
     property MouseY: Integer read FMouseY write FMouseY;
-    property ShiftState: TShiftState read FShiftState write FShiftState;
+  end;
+
+  TMouseButtonDownEventObj = type TMouseEventObj;
+  TMouseButtonUpEventObj = type TMouseEventObj;
+
+
+  TMouseMoveEvent = procedure(Sender: TObject; Shift: TShiftState;
+    MouseX, MouseY: Integer) of object;
+
+  TMouseMoveEventObj = class(TEventObj)
+  protected
+    FShift: TShiftState;
+    FMouseX, FMouseY: Integer;
+  public
+    constructor Create(ASender: TObject; AShift: TShiftState;
+      AMouseX, AMouseY: Integer);
+  published
+    property Shift: TShiftState read FShift write FShift;
+    property MouseX: Integer read FMouseX write FMouseX;
+    property MouseY: Integer read FMouseY write FMouseY;
   end;
 
 
@@ -114,7 +138,11 @@ type
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:20  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:14:15  sg
+  * Made mouse events VCL compatible
+  * Added mouse move event
+
+  Revision 1.1.1.1  1999/12/30 21:33:20  sg
+  Initial import
 
 }
