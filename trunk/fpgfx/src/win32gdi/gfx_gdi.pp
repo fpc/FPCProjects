@@ -25,6 +25,10 @@ uses
   SysUtils, Classes,	// FPC units
   GfxBase;		// fpGUI units
 
+resourcestring
+  SGDICanvasInvalidFontClass = 'Tried to set font of class "%s" into GDI context; only TGDIFont is allowed.';
+
+
 const
   WM_MOUSEWHEEL = $020a;
 
@@ -50,9 +54,12 @@ type
   TGDIDisplay = class;
 
   TGDIFont = class(TGfxFont)
+  private
+    FHandle: HFONT;
   public
-    constructor Create;
+    constructor Create(const Descriptor: String);
     destructor Destroy; override;
+    property Handle: HFONT read FHandle;
   end;
 
   PGDICanvasState = ^TGDICanvasState;
@@ -60,14 +67,19 @@ type
     Prev: PGDICanvasState;
     Matrix: TGfxMatrix;
     Color, PenColor, FontColor: TGfxPixel;
+    PenLineStyle: TGfxLineStyle;
+    Font: TGfxFont;
   end;
 
   TGDICanvas = class(TGfxCanvas)
   private
     FHandle: HDC;
     FColor, FBrushColor, FPenColor, FFontColor: TGfxPixel;
+    FLineStyle, FPenLineStyle: TGfxLineStyle;
     FBrush, FOldBrush: HBRUSH;
     FPen, FOldPen: HPEN;
+    FFont: TGfxFont;
+    FFontHandle, FDefaultFontHandle, FCurFontHandle: HFONT;
     FFontMetrics: TTextMetric;
     FStateStackpointer: PGDICanvasState;
     procedure Resized(NewWidth, NewHeight: Integer);
@@ -88,7 +100,7 @@ type
     function UnionClipRect(const ARect: TRect): Boolean; override;
     function GetClipRect: TRect; override;
     function MapColor(const AColor: TGfxColor): TGfxPixel; override;
-    procedure SetColor(AColor: TGfxPixel); override;
+    procedure SetColor_(AColor: TGfxPixel); override;
     procedure SetFont(AFont: TGfxFont); override;
     procedure SetLineStyle(ALineStyle: TGfxLineStyle); override;
 
@@ -174,6 +186,7 @@ type
     constructor Create;
     destructor Destroy; override;
     function CreateFont(const Descriptor: String): TGfxFont; override;
+    function GetDefaultFontName(const AFontClass: TGfxFontClass): String; override;
     function CreateImage(AWidth, AHeight: Integer;
       APixelFormat: TGfxPixelFormat): TGfxImage; override;
     procedure Run; override;
@@ -206,30 +219,36 @@ type
     procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
     procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
     procedure WMChar(var Msg: TMessage); message WM_CHAR;
+    procedure WMSysKeyDown(var Msg: TMessage); message WM_SYSKEYDOWN;
+    procedure WMSysKeyUp(var Msg: TMessage); message WM_SYSKEYUP;
+    procedure WMSysChar(var Msg: TMessage); message WM_SYSCHAR;
   protected
     WindowClass: TWndClass; {!!!: static;}
     FWindowStyle, FWindowStyleEx: LongWord;	// values used for creation
     FMouseInWindow, FHasMouseCapture, FHasFocus: Boolean;
     function GetTitle: String; override;
     procedure SetTitle(const ATitle: String); override;
+    procedure DoSetCursor; override;
+    procedure UpdateWindowButtons;
     function DoMouseEnterLeaveCheck(const Msg: TMessage): Boolean;
-  private
+  public
     constructor Create(AScreen: TGDIScreen; AParent: TGDIWindow;
       AWindowType: TGfxWindowType);
-  public
     destructor Destroy; override;
     procedure DefaultHandler(var Message); override;
 
     procedure SetPosition(ALeft, ATop: Integer); override;
     procedure SetSize(AWidth, AHeight: Integer); override;
-    procedure SetClientSize(AWidth, AHeight: Integer); override;
     procedure SetMinMaxSize(AMinWidth, AMinHeight,
       AMaxWidth, AMaxHeight: Integer); override;
-        procedure Show; override;
+    procedure SetClientSize(AWidth, AHeight: Integer); override;
+    procedure SetMinMaxClientSize(AMinWidth, AMinHeight,
+      AMaxWidth, AMaxHeight: Integer); override;
+    procedure Show; override;
     procedure Invalidate(const ARect: TRect); override;
+    procedure PaintInvalidRegion; override;
     procedure CaptureMouse; override;
     procedure ReleaseMouse; override;
-
 
     property Handle: HWND read FHandle;
   end;
@@ -248,17 +267,74 @@ implementation
 //   TGDIFont
 // -------------------------------------------------------------------
 
-constructor TGDIFont.Create;
+constructor TGDIFont.Create(const Descriptor: String);
+type
+  TXLFDFields = (lfdFoundry, lfdFamily, lfdWeight, lfdSlant, lfdSetWidth,
+    lfdAddStyle, lfdPixelSize, lfdPointSize, lfdResolutionX, lfdResolutionY,
+    lfdSpacing, lfdAverageWidth, lfdCharsetRegistry, lfdCharsetEncoding);
+var
+  Fields: array[TXLFDFields] of String;
+  FontInfo: LOGFONT;
+  FieldIndex: TXLFDFields;
+  s: String;
+  i: Integer;
+  dc: HDC;
 begin
   inherited Create;
-  // !!!: Implement this
-  WriteLn('Not implemented yet: TGDIFont.Create');
+
+  // Split the font descriptor string
+  s := Descriptor;
+  for FieldIndex := Low(TXLFDFields) to High(TXLFDFields) do
+  begin
+    Fields[FieldIndex] := Copy(s, 2, Length(s));
+    i := Pos('-', Fields[FieldIndex]);
+    if i = 0 then
+      i := Length(s);
+    Fields[FieldIndex] := Copy(Fields[FieldIndex], 1, i - 1);
+    s := Copy(s, i + 1, Length(s));
+  end;
+
+  FillChar(FontInfo, SizeOf(FontInfo), 0);
+
+  if (Length(Fields[lfdPixelSize]) > 0) and (Fields[lfdPixelSize] <> '*') then
+    FontInfo.lfHeight := StrToInt(Fields[lfdPixelSize])
+  else if (Length(Fields[lfdPointSize]) > 0) and
+    (Fields[lfdPointSize] <> '*') then
+  begin
+    dc := Windows.GetDC(0);
+    FontInfo.lfHeight := ((StrToInt(Fields[lfdPointSize]) *
+      Windows.GetDeviceCaps(dc, LOGPIXELSY)) + (5 * 72)) div 720;
+    Windows.ReleaseDC(0, dc);
+  end;
+
+  if (Length(Fields[lfdAverageWidth]) > 0) and
+    (Fields[lfdAverageWidth] <> '*') then
+    FontInfo.lfWidth := StrToInt(Fields[lfdAverageWidth]);
+
+  if CompareText(Fields[lfdWeight], 'medium') = 0 then
+    FontInfo.lfWeight := FW_MEDIUM
+  else if CompareText(Fields[lfdWeight], 'bold') = 0 then
+    FontInfo.lfWeight := FW_BOLD;
+
+  if (CompareText(Fields[lfdSlant], 'i') = 0) or
+    (CompareText(Fields[lfdSlant], 'o') = 0) then
+    FontInfo.lfItalic := 1;
+
+  if (CompareText(Fields[lfdSpacing], 'm') = 0) or
+    (CompareText(Fields[lfdSpacing], 'c') = 0) then
+    FontInfo.lfPitchAndFamily := FIXED_PITCH
+  else if CompareText(Fields[lfdSpacing], 'p') = 0 then
+    FontInfo.lfPitchAndFamily := VARIABLE_PITCH;
+
+  if Fields[lfdFamily] <> '*' then
+    FontInfo.lfFaceName := Fields[lfdFamily];
+
+  FHandle := Windows.CreateFontIndirect(@FontInfo);
 end;
 
 destructor TGDIFont.Destroy;
 begin
-  WriteLn('Not implemented yet: TGDIFont.Destroy');
-  // !!!: Implement this
+  Windows.DeleteObject(Handle);
   inherited Destroy;
 end;
 
@@ -272,7 +348,9 @@ begin
   inherited Create;
   FHandle := AHandle;
   ASSERT(Handle <> 0);
-  Windows.SelectObject(Handle, Windows.GetStockObject(DEFAULT_GUI_FONT));
+  FDefaultFontHandle := Windows.GetStockObject(DEFAULT_GUI_FONT);
+  FFontHandle := FDefaultFontHandle;
+  Windows.SelectObject(Handle, FDefaultFontHandle);
   Windows.GetTextMetrics(Handle, @FFontMetrics);
   Windows.SetBkMode(Handle, TRANSPARENT);
 end;
@@ -302,7 +380,9 @@ begin
   SavedState^.Matrix := Matrix;
   SavedState^.Color := FColor;
   SavedState^.PenColor := FPenColor;
+  SavedState^.PenLineStyle := FPenLineStyle;
   SavedState^.FontColor := FFontColor;
+  SavedState^.Font := FFont;
   FStateStackpointer := SavedState;
   Windows.SaveDC(Handle);
 end;
@@ -316,9 +396,11 @@ begin
   SavedState := FStateStackpointer;
   FStateStackpointer := SavedState^.Prev;
   Matrix := SavedState^.Matrix;
-  FFontColor := SavedState^.FontColor;
-  FPenColor := SavedState^.PenColor;
   FColor := SavedState^.Color;
+  FPenColor := SavedState^.PenColor;
+  FPenLineStyle := SavedState^.PenLineStyle;
+  FFontColor := SavedState^.FontColor;
+  SetFont(SavedState^.Font);
   Dispose(SavedState);
 end;
 
@@ -382,21 +464,36 @@ begin
   Result := RGB(AColor.Red div 257, AColor.Green div 257, AColor.Blue div 257);
 end;
 
-procedure TGDICanvas.SetColor(AColor: TGfxPixel);
+procedure TGDICanvas.SetColor_(AColor: TGfxPixel);
 begin
   FColor := AColor;
 end;
 
 procedure TGDICanvas.SetFont(AFont: TGfxFont);
 begin
-  WriteLn('Not implemented yet: TGDICanvas.SetFont');
-  // !!!: Implement this
+  if AFont = FFont then
+    exit;
+
+  FFont := AFont;
+
+  if not Assigned(AFont) then
+  begin
+    if FFontHandle = FDefaultFontHandle then
+      exit;
+    FFontHandle := FDefaultFontHandle;
+  end else
+  begin
+    if not AFont.InheritsFrom(TGDIFont) then
+      raise EGfxError.CreateFmt(SGDICanvasInvalidFontClass, [AFont.ClassName]);
+    if TGDIFont(AFont).Handle = FFontHandle then
+      exit;
+    FFontHandle := TGDIFont(AFont).Handle;
+  end;
 end;
 
 procedure TGDICanvas.SetLineStyle(ALineStyle: TGfxLineStyle);
 begin
-  WriteLn('Not implemented yet: TGDICanvas.SetLineStyle');
-  // !!!: Implement this
+  FLineStyle := ALineStyle;
 end;
 
 procedure TGDICanvas.DrawArc(const Rect: TRect; StartAngle, EndAngle: Single);
@@ -440,11 +537,13 @@ end;
 
 function TGDICanvas.FontCellHeight: Integer;
 begin
+  NeedFont(False);
   Result := FFontMetrics.tmHeight;
 end;
 
 function TGDICanvas.TextExtent(const AText: String): TSize;
 begin
+  NeedFont(False);
   Windows.GetTextExtentPoint32(Handle, PChar(AText), Length(AText), @Result);
 end;
 
@@ -585,32 +684,42 @@ begin
   begin
     if FBrush <> 0 then
     begin
-      SelectObject(Handle, FOldBrush);
-      DeleteObject(FBrush);
+      Windows.SelectObject(Handle, FOldBrush);
+      Windows.DeleteObject(FBrush);
     end;
     FBrushColor := FColor;
-    FBrush := CreateSolidBrush(FBrushColor);
-    FOldBrush := SelectObject(Handle, FBrush);
+    FBrush := Windows.CreateSolidBrush(FBrushColor);
+    FOldBrush := Windows.SelectObject(Handle, FBrush);
   end;
 end;
 
 procedure TGDICanvas.NeedPen;
 begin
-  if (FPen = 0) or (FPenColor <> FColor) then
+  if (FPen = 0) or (FPenColor <> FColor) or (FPenLineStyle <> FLineStyle) then
   begin
     if FPen <> 0 then
     begin
-      SelectObject(Handle, FOldPen);
-      DeleteObject(FPen);
+      Windows.SelectObject(Handle, FOldPen);
+      Windows.DeleteObject(FPen);
     end;
     FPenColor := FColor;
-    FPen := CreatePen(PS_SOLID, 0, FPenColor);
-    FOldPen := SelectObject(Handle, FPen);
+    FPenLineStyle := FLineStyle;
+    case FPenLineStyle of
+      lsSolid:
+        FPen := Windows.CreatePen(PS_SOLID, 0, FPenColor);
+    end;
+    FOldPen := Windows.SelectObject(Handle, FPen);
   end;
 end;
 
 procedure TGDICanvas.NeedFont(ANeedFontColor: Boolean);
 begin
+  if FCurFontHandle <> FFontHandle then
+  begin
+    Windows.SelectObject(Handle, FFontHandle);
+    Windows.GetTextMetrics(Handle, @FFontMetrics);
+    FCurFontHandle := FFontHandle;
+  end;
   if ANeedFontColor then
     NeedFontColor;
 end;
@@ -620,7 +729,7 @@ begin
   if FFontColor <> FColor then
   begin
     FFontColor := FColor;
-    SetTextColor(Handle, FFontColor);
+    Windows.SetTextColor(Handle, FFontColor);
   end;
 end;
 
@@ -836,8 +945,18 @@ end;
 
 function TGDIDisplay.CreateFont(const Descriptor: String): TGfxFont;
 begin
-  Result := TGDIFont.Create;
+  Result := TGDIFont.Create(Descriptor);
 end;
+
+function TGDIDisplay.GetDefaultFontName(
+  const AFontClass: TGfxFontClass): String;
+const
+  FontNames: array[TGfxFontClass] of String = (
+    'Times New Roman', 'Arial', 'Courier New', 'Wingdings');
+begin
+  Result := FontNames[AFontClass];
+end;
+
 
 function TGDIDisplay.CreateImage(AWidth, AHeight: Integer;
   APixelFormat: TGfxPixelFormat): TGfxImage;
@@ -896,45 +1015,8 @@ begin
     Result := Windows.DefWindowProc(hwnd, uMsg, wParam, lParam);
 end;
 
-function TGDIWindow.GetTitle: String;
-var
-  l: Integer;
-begin
-  l := Windows.GetWindowTextLength(Handle);
-  SetLength(Result, l);
-  Windows.GetWindowText(Handle, @Result[1], l);
-end;
 
-procedure TGDIWindow.SetTitle(const ATitle: String);
-begin
-  Windows.SetWindowText(Handle, PChar(ATitle));
-end;
-
-function TGDIWindow.DoMouseEnterLeaveCheck(const Msg: TMessage): Boolean;
-begin
-  if not FMouseInWindow then
-  begin
-    FMouseInWindow := True;
-    Windows.SetCapture(Handle);
-    if Assigned(OnMouseEnter) then
-      OnMouseEnter(Self, GetKeyboardShiftState, Msg.lParamLo, Msg.lParamHi);
-    Result := Msg.Msg <> WM_MOUSEMOVE;
-  end else
-  begin
-    if (Msg.lParamLo < 0) or (Msg.lParamHi < 0) or
-      (Msg.lParamLo >= ClientWidth) or (Msg.lParamHi >= ClientHeight) then
-      FMouseInWindow := False;
-
-    if (not FHasMouseCapture) and (not FMouseInWindow) then
-    begin
-      Windows.ReleaseCapture;
-      if Assigned(OnMouseLeave) then
-        OnMouseLeave(Self);
-      Result := False;
-    end else
-      Result := True;
-  end;
-end;
+// public methods
 
 constructor TGDIWindow.Create(AScreen: TGDIScreen; AParent: TGDIWindow;
   AWindowType: TGfxWindowType);
@@ -959,6 +1041,7 @@ var
   ParentHandle: HWND;
 begin
   inherited Create;
+  FWindowType := AWindowType;
   FScreen := AScreen;
 
   // Initialize a window class, if necessary
@@ -966,8 +1049,7 @@ begin
   begin
     with WindowClass do
     begin
-      style := CS_HREDRAW or
- CS_VREDRAW;
+      style := CS_HREDRAW or CS_VREDRAW;
       lpfnWndProc := WndProc(@fpGFXWindowProc);
       hInstance := MainInstance;
       hIcon := LoadIcon(0, IDI_APPLICATION);
@@ -1047,6 +1129,16 @@ begin
       SWP_NOMOVE or SWP_NOZORDER);
 end;
 
+procedure TGDIWindow.SetMinMaxSize(AMinWidth, AMinHeight,
+  AMaxWidth, AMaxHeight: Integer);
+begin
+  FMinWidth := AMinWidth;
+  FMinHeight := AMinHeight;
+  FMaxWidth := AMaxWidth;
+  FMaxHeight := AMaxHeight;
+  UpdateWindowButtons;
+end;
+
 procedure TGDIWindow.SetClientSize(AWidth, AHeight: Integer);
 var
   Rect: Windows.Rect;
@@ -1062,13 +1154,40 @@ begin
   end;
 end;
 
-procedure TGDIWindow.SetMinMaxSize(AMinWidth, AMinHeight,
+procedure TGDIWindow.SetMinMaxClientSize(AMinWidth, AMinHeight,
   AMaxWidth, AMaxHeight: Integer);
+var
+  Rect: Windows.Rect;
 begin
-  FMinWidth := AMinWidth;
-  FMinHeight := AMinHeight;
-  FMaxWidth := AMaxWidth;
-  FMaxHeight := AMaxHeight;
+  Rect.Left := 0;
+  Rect.Top := 0;
+  Rect.Right := AMinWidth;
+  Rect.Bottom := AMinHeight;
+  Windows.AdjustWindowRectEx(Rect, FWindowStyle, False, FWindowStyleEx);
+  if AMinWidth > 0 then
+    FMinWidth := Rect.Right - Rect.Left
+  else
+    FMinWidth := 0;
+  if AMinHeight > 0 then
+    FMinHeight := Rect.Bottom - Rect.Top
+  else
+    FMinHeight := 0;
+
+  Rect.Left := 0;
+  Rect.Top := 0;
+  Rect.Right := AMaxWidth;
+  Rect.Bottom := AMaxHeight;
+  Windows.AdjustWindowRectEx(Rect, FWindowStyle, False, FWindowStyleEx);
+  if AMaxWidth > 0 then
+    FMaxWidth := Rect.Right - Rect.Left
+  else
+    FMaxWidth := 0;
+  if AMaxHeight > 0 then
+    FMaxHeight := Rect.Bottom - Rect.Top
+  else
+    FMaxHeight := 0;
+
+  UpdateWindowButtons;
 end;
 
 procedure TGDIWindow.Show;
@@ -1086,6 +1205,11 @@ begin
   Rect.Right := ARect.Right;
   Rect.Bottom := ARect.Bottom;
   Windows.InvalidateRect(Handle, Rect, False);
+end;
+
+procedure TGDIWindow.PaintInvalidRegion;
+begin
+  Windows.UpdateWindow(Handle);
 end;
 
 procedure TGDIWindow.CaptureMouse;
@@ -1108,12 +1232,132 @@ begin
   begin
     FHasMouseCapture := False;
     if not FMouseInWindow then
+    begin
       Windows.ReleaseCapture;
+    end;
   end;
 end;
 
 
-// Message handlers
+// protected methods
+
+function TGDIWindow.GetTitle: String;
+var
+  l: Integer;
+begin
+  l := Windows.GetWindowTextLength(Handle);
+  SetLength(Result, l);
+  Windows.GetWindowText(Handle, @Result[1], l);
+end;
+
+procedure TGDIWindow.SetTitle(const ATitle: String);
+begin
+  Windows.SetWindowText(Handle, PChar(ATitle));
+end;
+
+procedure TGDIWindow.DoSetCursor;
+const
+  CursorTable: array[TGfxCursor] of Integer = (
+    32512,	// crDefault
+    0,		// crNone
+    32512,	// crArrow
+    32515,	// crCross
+    32513,	// crIBeam
+    32646,	// crSize
+    32645,	// crSizeNS
+    32644,	// crSizeWE
+    32516,	// crUpArrow
+    32514,	// crHourGlass
+    32648,	// crNoDrop
+    32651);	// crHelp
+var
+  ID: Integer;
+begin
+  if FMouseInWindow then
+  begin
+    ID := CursorTable[Cursor];
+    if ID <> 0 then
+      Windows.SetCursor(Windows.LoadCursor(0, MAKEINTRESOURCE(ID)))
+    else
+      Windows.SetCursor(0);
+  end;
+end;
+
+procedure TGDIWindow.UpdateWindowButtons;
+var
+  CanMaximize: Boolean;
+begin
+  if FWindowType = wtWindow then
+  begin
+    CanMaximize := (FMaxWidth = 0) or (FMaxHeight = 0) or
+      (FMaxWidth > FMinWidth) or (FMaxHeight > FMinHeight);
+
+    if CanMaximize and ((FWindowStyle and WS_MAXIMIZEBOX) = 0) then
+      FWindowStyle := FWindowStyle or WS_MAXIMIZEBOX
+    else if (not CanMaximize) and
+      ((FWindowStyle and WS_MAXIMIZEBOX) <> 0) then
+      FWindowStyle := FWindowStyle and not WS_MAXIMIZEBOX;
+
+    Windows.SetWindowLong(Handle, GWL_STYLE, FWindowStyle or
+      (Windows.GetWindowLong(Handle, GWL_STYLE) and
+      (WS_MAXIMIZE or WS_MINIMIZE or WS_VISIBLE)));	// preserver these bits!
+  end;
+end;
+
+
+function WindowFromPoint(x, y: Windows.LONG):Windows.HWND; external 'user32' name 'WindowFromPoint';
+
+function TGDIWindow.DoMouseEnterLeaveCheck(const Msg: TMessage): Boolean;
+
+  function CursorInDifferentWindow: Boolean;
+  var
+    pt: Windows.POINT;
+  begin
+    pt.x := Msg.lParamLo;
+    pt.y := Msg.lParamHi;
+
+    // only WM_MOUSEWHEEL uses screen coordinates!!!
+    if Msg.Msg <> WM_MOUSEWHEEL then
+      Windows.ClientToScreen(Handle, pt);
+
+    Result := WindowFromPoint(pt.x, pt.y) <> Handle;
+{!!!:    Result := Windows.WindowFromPoint(pt) <> Handle;}
+  end;
+
+var
+  pt: Windows.POINT;
+begin
+  if not FMouseInWindow then
+  begin
+    FMouseInWindow := True;
+    DoSetCursor;
+    Windows.SetCapture(Handle);
+    if Assigned(OnMouseEnter) then
+      OnMouseEnter(Self, GetKeyboardShiftState, Msg.lParamLo, Msg.lParamHi);
+    Result := Msg.Msg <> WM_MOUSEMOVE;
+  end else
+  begin
+    pt.x := Msg.lParamLo;
+    pt.y := Msg.lParamHi;
+    if Msg.Msg = WM_MOUSEWHEEL then
+      Windows.ScreenToClient(Handle, pt);
+    if (pt.x < 0) or (pt.y < 0) or (pt.x >= ClientWidth) or
+      (pt.y >= ClientHeight) or CursorInDifferentWindow then
+      FMouseInWindow := False;
+
+    if (not FHasMouseCapture) and (not FMouseInWindow) then
+    begin
+      Windows.ReleaseCapture;
+      if Assigned(OnMouseLeave) then
+        OnMouseLeave(Self);
+      Result := False;
+    end else
+      Result := True;
+  end;
+end;
+
+
+// private methods
 
 procedure TGDIWindow.WMCreate(var Msg: TMessage);
 begin
@@ -1226,7 +1470,7 @@ end;
 
 procedure TGDIWindow.WMLButtonDown(var Msg: TMessage);
 begin
-  if not FHasFocus then
+  if FMouseInWindow and not FHasFocus then
     Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbLeft, GetKeyboardShiftState,
@@ -1242,7 +1486,7 @@ end;
 
 procedure TGDIWindow.WMRButtonDown(var Msg: TMessage);
 begin
-  if not FHasFocus then
+  if FMouseInWindow and not FHasFocus then
     Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbRight, GetKeyboardShiftState,
@@ -1258,7 +1502,7 @@ end;
 
 procedure TGDIWindow.WMMButtonDown(var Msg: TMessage);
 begin
-  if not FHasFocus then
+  if FMouseInWindow and not FHasFocus then
     Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbMiddle, GetKeyboardShiftState,
@@ -1279,16 +1523,25 @@ begin
 end;
 
 procedure TGDIWindow.WMMouseWheel(var Msg: TMessage);
+var
+  pt: Windows.POINT;
 begin
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMouseWheel) then
+  begin
+    pt.x := Msg.lParamLo;
+    pt.y := Msg.lParamHi;
+    Windows.ScreenToClient(Handle, pt);
     OnMouseWheel(Self, GetKeyboardShiftState, SmallInt(Msg.wParamHi) / -120.0,
-      Msg.lParamLo, Msg.lParamHi);
+      pt.x, pt.y);
+  end;
 end;
 
 procedure TGDIWindow.WMKeyDown(var Msg: TMessage);
 begin
   if Assigned(OnKeyPressed) then
     OnKeyPressed(Self, VirtKeyToKeycode(Msg.wParam), GetKeyboardShiftState);
+  if (Msg.wParam = $2e {VK_DELETE}) and Assigned(OnKeyChar) then
+    OnKeyChar(Self, #127);
 end;
 
 procedure TGDIWindow.WMKeyUp(var Msg: TMessage);
@@ -1301,6 +1554,21 @@ procedure TGDIWindow.WMChar(var Msg: TMessage);
 begin
   if Assigned(OnKeyChar) then
     OnKeyChar(Self, Chr(Msg.wParam));
+end;
+
+procedure TGDIWindow.WMSysKeyDown(var Msg: TMessage);
+begin
+  WMKeyDown(Msg);
+end;
+
+procedure TGDIWindow.WMSysKeyUp(var Msg: TMessage);
+begin
+  WMKeyUp(Msg);
+end;
+
+procedure TGDIWindow.WMSysChar(var Msg: TMessage);
+begin
+  WMChar(Msg);
 end;
 
 
@@ -1316,6 +1584,11 @@ end.
 
 {
   $Log$
+  Revision 1.6  2001/02/09 20:46:11  sg
+  * Lots of bugfixes, as usual ;)
+  * Adapted to recent interface additions
+  * Implemented font support
+
   Revision 1.5  2001/01/18 15:33:30  sg
   * Implemented TGDIWindow.SetPosition
   * TGDIWindow.Left and .Top now contain the right values
