@@ -15,7 +15,7 @@
 #include <go32.h>
 #include <signal.h>
 #include <setjmp.h>
-#include <debug/dbgcom.h>
+#include /* <debug/dbgcom.h> */ "dbgcom.h"
 #include <sys/exceptn.h>
 #include <stubinfo.h>
 #include <sys/farptr.h>
@@ -70,6 +70,8 @@ __crt0_glob_function(char *foo)
 
 ExternalDebuggerInfo edi;
 TSS a_tss;
+FPUEnvironment fpue;
+
 static jmp_buf jumper;
 
 static int my_ds,my_cs,app_cs,app_exit_cs,app_ds;
@@ -92,6 +94,57 @@ static int excp_index;
 static int excp_count;
 static int redir_excp_count;
 #endif
+
+static void store_fpu_env (void)
+{
+  unsigned char tag;
+  int i;
+  int valid_nb = 0;
+  long double d;
+  asm("fstenv %0" : "=g" (fpue));
+  tag = (fpue.status & FPU_TOP_MASK) >> FPU_TOP_SHIFT;
+  for (i=0;i<8;i++)
+    {
+    /* tag is a array of 8 2 bits that contain info about FPU registers
+       st(0) is register(tag) and st(1) is register (tag-1) ... */
+     fpue.isvalid[i] = ((fpue.tag >> ((((8+tag)+i) & 7) << 1)) & 3) != 3;
+    }
+  /* to store the fpu registers we use fstpt and push them again after */
+  /* this code assumes that the only valid regs are
+     from top to base, is this allways true ?
+     for me it is the very definition of a stack */
+  for (i=0;i<8;i++)
+    if (fpue.isvalid[i])
+      {
+       asm("fstpt %0" : "=g" (d));
+       fpue.st[i]=d;
+      }
+  for (i=7;i>=0;i--)
+    if (fpue.isvalid[i])
+      {
+       d=fpue.st[i];
+       asm("fldt %0" :  : "g" (d));
+      }
+}
+
+static void restore_fpu_env (void)
+{
+  int i;
+  long double d;
+  /* to store the fpu registers we use fstpt and push them again after */
+  for (i=0;i<8;i++)
+    if (fpue.isvalid[i])
+      {
+       asm("fstpt %0" : "=g" (d));
+      }
+  for (i=7;i>=0;i--)
+    if (fpue.isvalid[i])
+      {
+       d=fpue.st[i];
+       asm("fldt %0" :  : "g" (d));
+      }
+  asm("fldenv %0" :  : "g" (fpue));
+}
 
 static int _DPMIsetBreak(unsigned short sizetype, unsigned vaddr)
 {
@@ -823,6 +876,7 @@ void run_child(void)
     /* jump to tss */
     _set_break_DPMI();
     hook_dpmi();
+    restore_fpu_env();
     longjmp(load_state, load_state->__eax);
     /* we never return here, execption routine will longjump */
   }
@@ -845,6 +899,7 @@ void run_child(void)
   a_tss.tss_ebp = load_state->__ebp;
   a_tss.tss_irqn = load_state->__signum;
   a_tss.tss_error = load_state->__sigmask;
+  store_fpu_env();
   unhook_dpmi();
   _clear_break_DPMI();
 }
@@ -979,6 +1034,7 @@ void edi_init(jmp_buf start_state)
   __djgpp_app_DS = a_tss.tss_ds;
   app_cs = a_tss.tss_cs;
   edi.app_base = 0;
+  memset(&fpue,0,sizeof(fpue));
   /* Save all the changed signal handlers */
   oldTRAP = signal(SIGTRAP, dbgsig);
   oldSEGV = signal(SIGSEGV, dbgsig);
@@ -1046,6 +1102,7 @@ void cleanup_client(void)
   /* Set the flag, that the user interrupt vectors are no longer valid */
   user_int_set = 0;
 
+  memset(&fpue,0,sizeof(fpue));
   /* Close all handles, which may be left open */
   close_handles();
   for (i=0;i<DOS_DESCRIPTOR_COUNT;i++)
@@ -1257,6 +1314,12 @@ _init_dbg_fsext(void)
 
 /* 
   $Log$
+  Revision 1.4  1998/12/23 10:55:29  pierre
+    + added FPU support for go32v2
+    * now can both handle extended with ten or twelve bytes
+    + added fpue structure for storing FPU environment and stack
+      (in dbgcom.h available for all debuggers
+
   Revision 1.3  1998/12/21 11:03:01  pierre
    * problems of FSEXT_dbg solved
  

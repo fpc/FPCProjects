@@ -501,6 +501,9 @@ DISTSTUFF = $(YYFILES)
 .c.o:
 	$(CC) -c $(INTERNAL_CFLAGS) $<
 
+.c.S:
+	$(CC) -S $(INTERNAL_CFLAGS) $<
+
 all: gdbpas
 
 installcheck:
@@ -1573,6 +1576,12 @@ gdbpas : $(OBS) $(TSOBS) dbgcom.o $(ADD_DEPS) $(CDEPS) init.o
 ### end of the gdb Makefile.in.
 #
 # $Log$
+# Revision 1.4  1998/12/23 10:55:28  pierre
+#   + added FPU support for go32v2
+#   * now can both handle extended with ten or twelve bytes
+#   + added fpue structure for storing FPU environment and stack
+#     (in dbgcom.h available for all debuggers
+#
 # Revision 1.3  1998/12/21 11:02:59  pierre
 #  * problems of FSEXT_dbg solved
 #

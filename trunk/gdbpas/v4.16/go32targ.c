@@ -47,7 +47,7 @@ static int prog_has_started = 0;
 #include <string.h>
 #include <unistd.h>
 #include <debug/v2load.h>
-#include <debug/dbgcom.h>
+#include /* <debug/dbgcom.h> */ "dbgcom.h"
 
 void cleanup_client();
 
@@ -200,6 +200,33 @@ go32_fetch_registers(int regno)
      regno=0;	/*start at first register*/
      end_reg=sizeof(regno_mapping)/sizeof(regno_mapping[0]);	/*# regs in table*/
   }
+  /* FPU treated separately */
+  if ((regno>15) || (end_reg>16)) {
+    int freg;
+    for (freg=regno; freg<end_reg; freg++)
+     if (fpue.isvalid[freg-16])
+       {
+         long double d = fpue.st[freg-16];
+   
+         register_valid[freg] = 1;
+
+         memcpy (&registers[REGISTER_BYTE (regno)], &d, REGISTER_RAW_SIZE (regno));
+       }
+     else
+       {
+         long double d = 0;
+         /* should be zero but this is used for something else */
+         register_valid[regno] = 1;
+         memcpy (&registers[REGISTER_BYTE (regno)], &d, REGISTER_RAW_SIZE (regno));
+         if (end_reg==regno+1)
+           {
+            printf_unfiltered("st(%d) above stack end", regno-16);
+           }
+       }
+     if (regno>15)
+       return;
+    }
+
   for (; regno<end_reg; regno++) {
      switch (regno_mapping[regno].size)
      {
@@ -220,6 +247,14 @@ static void store_register(int regno)
 {
   char *rp = (char *)&a_tss + regno_mapping[regno].tss_ofs;
   int v = *(int *)(&registers[REGISTER_BYTE(regno)]);
+  /* FPU treated separately */
+  if (regno>15) {
+
+     long double d = *(long double *) (&registers[REGISTER_BYTE(regno)]);
+     fpue.st[regno-16]=d;
+     return;
+    }
+
   switch (regno_mapping[regno].size)
   {
     case 4:
