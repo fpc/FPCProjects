@@ -492,7 +492,7 @@ diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
  	      {
  		switch_to_cp_abi ("gnu-v3");
 diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
---- origdb/p-exp.y	2002-11-13 10:55:34.000000000 +0100
+--- origdb/p-exp.y	2002-11-13 16:44:42.000000000 +0100
 +++ gdb/p-exp.y	2002-11-13 10:20:10.000000000 +0100
 @@ -294,7 +294,8 @@ exp	:	exp '.' { search_field = 1; } 
  				current_type = TYPE_TARGET_TYPE (current_type);
@@ -514,15 +514,6 @@ diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
  			   being accumulated by an outer function call.  */
  			{ push_current_type ();
  			  start_arglist (); }
-@@ -649,7 +649,7 @@ variable:	name_not_typename
- 			      if (this_type)
- 				current_type = lookup_struct_elt_type (
- 				  this_type,
--				  $1.stoken.ptr, false);
-+				  copy_name ($1.stoken), false);
- 			      else
- 				current_type = NULL; 
- 			    }
 @@ -1479,6 +1479,16 @@ yylex ()
  	yylval.sval.length = namelen; 
  	return FIELDNAME;
