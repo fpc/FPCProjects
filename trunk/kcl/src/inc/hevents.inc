@@ -48,8 +48,8 @@ type
 //   Keyboard
 // -------------------------------------------------------------------
 
-  TKeyEvent = procedure(Sender: TObject; Key: Char; KeyCode: LongWord;
-    Shift: TShiftState) of object;
+  TKeyEvent = function(Sender: TObject; Key: Char; KeyCode: LongWord;
+    Shift: TShiftState): Boolean of object;
 
   TKeyEventObj = class(TEventObj)
   private
@@ -136,8 +136,33 @@ type
   end;
 
 
+// -------------------------------------------------------------------
+//   Commands
+// -------------------------------------------------------------------
+
+  TCmdExecuteEventObj = type TEventObj;
+
+
+  TCommand = class;
+
+  TCmdChangeType = (cctEnabled);
+
+  TCmdChangeEventObj = class(TEventObj)
+  protected
+    FChangeType: TCmdChangeType;
+  public
+    constructor Create(ASender: TCommand; AChangeType: TCmdChangeType);
+  published
+    property ChangeType: TCmdChangeType read FChangeType write FChangeType;
+  end;
+
+
 {
   $Log$
+  Revision 1.3  2000/01/24 00:04:34  sg
+  * TKeyEvent is now a function
+  * Added event objects for TCommand
+
   Revision 1.2  2000/01/05 19:14:15  sg
   * Made mouse events VCL compatible
   * Added mouse move event
