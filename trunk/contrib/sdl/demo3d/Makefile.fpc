@@ -1,0 +1,8 @@
+#
+#   Makefile.fpc for Free Pascal Packages
+#
+
+[target]
+dirs=blockout
+
+
