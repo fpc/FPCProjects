@@ -63,3 +63,9 @@
 
 {$Z4}
 {$A+}
+
+{$IFDEF FPC}
+ {$MODE Delphi}
+ {$ASMMODE Intel}
+ {$DEFINE NODISPID}
+{$ENDIF}
