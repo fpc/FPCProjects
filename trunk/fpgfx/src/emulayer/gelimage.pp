@@ -2,7 +2,7 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Image conversion helpers
@@ -16,7 +16,7 @@
 }
 
 
-unit GFXImage;
+unit GELImage;
 
 {$IFDEF Debug}
 {$ASSERTIONS On}
@@ -404,10 +404,8 @@ end.
 
 {
   $Log$
-  Revision 1.2  2001/01/11 23:07:24  sg
-  *** empty log message ***
-
-  Revision 1.1  2000/10/28 20:28:27  sg
-  * First version
+  Revision 1.1  2001/01/17 21:27:51  sg
+  * Renamed unit gfximage to gelimage
+  * Added unit geldirty
 
 }

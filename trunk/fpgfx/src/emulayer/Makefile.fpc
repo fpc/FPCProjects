@@ -1,9 +1,9 @@
 #
-#   Makefile.fpc for fpGFX emulation layer
+#   Makefile.fpc for fpGFX emulation layer (GEL)
 #
 
 [targets]
-units=gfximage
+units_linux=gelimage geldirty
 
 [require]
 options=-S2h
