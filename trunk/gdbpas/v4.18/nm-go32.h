@@ -25,6 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #define TARGET_CAN_USE_HARDWARE_WATCHPOINT(type, cnt, ot) 1
 
+/* 16 is the maximum we can hope to handle */
+#define TARGET_REGION_SIZE_OK_FOR_HW_WATCHPOINT(byte_count) \
+        (LONGEST)(byte_count) <= 16
+        
 /* After a watchpoint trap, the PC points to the instruction after the
    one that caused the trap.  Therefore we don't need to step over it.
    But we do need to reset the status register to avoid another trap.  */

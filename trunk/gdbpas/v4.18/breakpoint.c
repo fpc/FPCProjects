@@ -1,4 +1,4 @@
-/* Everything about breakpoints, for GDB.
+ /* Everything about breakpoints, for GDB.
    Copyright 1986, 87, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 1999
              Free Software Foundation, Inc.
 
@@ -769,11 +769,14 @@ insert_breakpoints ()
 	
 	  if (within_current_scope)
 	    {
+         CORE_ADDR last_lval_address = 0;
+         int last_lval_size = 0;
+         int last_type = 0;
 	      /* Evaluate the expression and cut the chain of values
 		 produced off from the value chain.  */
 	      v = evaluate_expression (b->exp);
 	      value_release_to_mark (mark);
-	    
+
 	      b->val_chain = v;
 	      b->inserted = 1;
 
@@ -781,7 +784,12 @@ insert_breakpoints ()
 	      for ( ; v; v=v->next)
 		{
 		  /* If it's a memory location, then we must watch it.  */
-		  if (v->lval == lval_memory)
+        if ((VALUE_LVAL (v) == lval_memory) &&
+        /* Unless its a bigger part from a small part we want to
+           watch */
+            !((VALUE_ADDRESS (v) + VALUE_OFFSET (v) <= last_lval_address) &&
+              (VALUE_ADDRESS (v) + VALUE_OFFSET (v) + TYPE_LENGTH (VALUE_TYPE (v))
+                >= last_lval_address + last_lval_size)))
 		    {
 		      int addr, len, type;
 		    
@@ -789,17 +797,24 @@ insert_breakpoints ()
 		      len = TYPE_LENGTH (VALUE_TYPE (v));
 		      type = 0;
 		      if (b->type == bp_read_watchpoint)
-			type = 1;
+			     type = 1;
 		      else if (b->type == bp_access_watchpoint)
-			type = 2;
-
+			     type = 2;
+            /* Non terminal are only important if
+               their value changes */
+            if (last_type)
+              type = 0;
 		      val = target_insert_watchpoint (addr, len, type);
 		      if (val == -1)
-			{
-			  b->inserted = 0;
-			  break;
-			}
+  			    {
+			     b->inserted = 0;
+              /* shouldn't we remove the watchpoint right now ?? */
+			     break;
+			    }
 		      val = 0;
+            last_lval_size = len;
+            last_lval_address = VALUE_ADDRESS (v) + VALUE_OFFSET (v);
+            last_type = type;
 		    }
 		}
 	      /* Failure to insert a watchpoint on any memory value in the
@@ -1099,6 +1114,9 @@ remove_breakpoint (b, is)
 	   && ! b->duplicate)
     {
       value_ptr v, n;
+      CORE_ADDR last_lval_address = 0;
+      int last_lval_size = 0;
+      int last_type = 0;
       
       b->inserted = (is == mark_inserted);
       /* Walk down the saved value chain.  */
@@ -1106,10 +1124,16 @@ remove_breakpoint (b, is)
 	{
 	  /* For each memory reference remove the watchpoint
 	     at that address.  */
-	  if (v->lval == lval_memory)
+		  /* If it's a memory location, then we must watch it.  */
+        if ((VALUE_LVAL (v) == lval_memory) &&
+        /* Unless its a bigger part from a small part we want to
+           watch */
+            !((VALUE_ADDRESS (v) + VALUE_OFFSET (v) <= last_lval_address) &&
+              (VALUE_ADDRESS (v) + VALUE_OFFSET (v) + TYPE_LENGTH (VALUE_TYPE (v))
+                >= last_lval_address + last_lval_size)))
 	    {
 	      int addr, len, type;
-	      
+         
 	      addr = VALUE_ADDRESS (v) + VALUE_OFFSET (v);
 	      len = TYPE_LENGTH (VALUE_TYPE (v));
 	      type = 0;
@@ -1117,11 +1141,15 @@ remove_breakpoint (b, is)
 		type = 1;
 	      else if (b->type == bp_access_watchpoint)
 		type = 2;
-
+         if (last_type)
+           type = 0;
 	      val = target_remove_watchpoint (addr, len, type);
 	      if (val == -1)
 		b->inserted = 1;
 	      val = 0;
+         last_lval_size = len;
+         last_lval_address = VALUE_ADDRESS (v) + VALUE_OFFSET (v);
+         last_type = type;
 	    }
 	}
       /* Failure to remove any of the hardware watchpoints comes here.  */
@@ -1939,6 +1967,9 @@ watchpoint_check (p)
 
       value_ptr mark = value_mark ();
       value_ptr new_val = evaluate_expression (bs->breakpoint_at->exp);
+      if (VALUE_LAZY(new_val))
+        value_fetch_lazy (new_val);
+
       /* access watchpoint have NULL val field
          WHY ?? */
       if (!b->val)

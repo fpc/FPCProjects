@@ -872,6 +872,7 @@ do { \
 #define SHOW_DR(text) do {} while (0)
 #endif
 
+int watchpoint_addr[4];
 /* Insert a watchpoint.  */
 
 int
@@ -928,6 +929,9 @@ go32_insert_aligned_watchpoint (int pid, CORE_ADDR waddr, CORE_ADDR addr,
   SET_WATCH (i, addr, read_write_bits, len_bits);
   LOCAL_ENABLE_REG (i);
   SET_LOCAL_EXACT ();
+  /* GDB need to get the start of the global watched area */
+  watchpoint_addr[i] = waddr;
+  return 0;
 }
 
 static int
@@ -973,7 +977,7 @@ go32_remove_watchpoint (int pid, CORE_ADDR addr, int len)
 
   for (i = 0; i <= 3; i++)
     {
-      if (D_REGS[i] == addr)
+      if (watchpoint_addr[i] == addr)
 	{
 	  DISABLE_REG (i);
 	}
@@ -996,19 +1000,12 @@ go32_stopped_by_watchpoint (int pid,int reset)
   for (i = 0; i <= 3; i++)
     {
       if (WATCH_HIT (i))
-	{
-	  SHOW_DR (HIT);
-	  ret = D_REGS[i];
-     if (reset)
-      WATCH_RESET(i)
- 	}
+   	{
+	     SHOW_DR (HIT);
+	     /* ret = D_REGS[i]; */
+        ret = watchpoint_addr[i];
+   	}
     }
-  /* this is a hack to GDB. If we stopped at a hardware breakpoint,
-     the stop_pc must incremented by DECR_PC_AFTER_BREAK. I tried everything
-     with the DECR_PC_AFTER_HW_BREAK, but nothing works. */
-  /* This is probably fixed by jtc's recent patch -sts 2/19/99 */
-  if (!reset && STATUS && !ret)
-    stop_pc += DECR_PC_AFTER_BREAK;
 
   return ret;
 }
