@@ -4,7 +4,7 @@
 
 [targets]
 units=gfx_xxx
-# do not compileg fximpl for this dummy target
+# do not compile gfximpl for this dummy target
 rst=gfx_xxx
 
 [require]

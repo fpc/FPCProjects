@@ -176,8 +176,7 @@ endif
 
 # Targets
 
-override UNITOBJECTS+=gfx_xxx
-override RSTOBJECTS+=gfx_xxx
+override UNITOBJECTS+=gfximage
 
 # Clean
 
@@ -200,7 +199,6 @@ override PACKAGES+=rtl
 
 # Libraries
 
-LIBNAME=fpgfx_xxx
 
 # Info
 
@@ -861,16 +859,6 @@ override INSTALLPPUFILES+=$(UNITPPUFILES)
 override CLEANPPUFILES+=$(UNITPPUFILES)
 
 fpc_units: $(UNITPPUFILES)
-
-#####################################################################
-# Resource strings
-#####################################################################
-
-ifdef RSTOBJECTS
-override RSTFILES=$(addsuffix $(RSTEXT),$(RSTOBJECTS))
-
-override CLEANRSTFILES+=$(RSTFILES)
-endif
 
 #####################################################################
 # General compile rules

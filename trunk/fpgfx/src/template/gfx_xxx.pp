@@ -2,7 +2,8 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000  by Sebastian Guenther, sg@freepascal.org
+    Copyright (C) 2000 by
+      Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Template for new target implementations
 
@@ -26,7 +27,7 @@ uses
 
 type
 
-  ExxxError = class(Exception);
+  ExxxError = class(EGfxError);
 
   TxxxDrawable = class;
   TxxxDisplay = class;
@@ -37,24 +38,26 @@ type
     destructor Destroy; override;
   end;
 
-  PxxxContextState = ^TxxxContextState;
-  TxxxContextState = record
-    Prev: PxxxContextState;
+  PxxxDrawableState = ^TxxxDrawableState;
+  TxxxDrawableState = record
+    Prev: PxxxDrawableState;
     Matrix: TGfxMatrix;
     // xxx Region data etc.
   end;
 
-  TxxxContext = class(TGfxContext)
+  TxxxDrawable = class(TGfxDrawable)
   private
-    FStateStackpointer: PxxxContextState;
-    function GetDrawable: TxxxDrawable;
+    FDisplay: TxxxDisplay;
+    FStateStackpointer: PxxxDrawableState;
+    procedure Resized(NewWidth, NewHeight: Integer);
   public
-    constructor Create(ADrawable: TxxxDrawable);
+    constructor Create(ADisplay: TxxxDisplay);	// xxx And other arguments optionally
     destructor Destroy; override;
 
-    function CreateMemoryDrawable(AWidth, AHeight: Integer;
+    function CreateMemoryDrawable(AWidth, AHeight: Cardinal;
       const APixelFormat: TGfxPixelFormat;
-      const AData: TGfxPixelData): TGfxDrawable; override;
+      AStride: LongWord; AData: Pointer): TGfxDrawable; override;
+
     procedure SaveState; override;
     procedure RestoreState; override;
     function ExcludeClipRect(const ARect: TRect): Boolean; override;
@@ -70,23 +73,13 @@ type
     procedure DrawLine(x1, y1, x2, y2: Integer); override;
     procedure FillRect(const Rect: TRect); override;
     function FontCellHeight: Integer; override;
-    function TextWidth(const AText: String): Integer; override;
+    function TextWidth(const AText: String): Cardinal; override;
     procedure TextOut(x, y: Integer; const AText: String); override;
 
     procedure CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
       DestX, DestY: Integer); override;
 
-    property Drawable: TxxxDrawable read GetDrawable;
-  end;
 
-
-  TxxxDrawable = class(TGfxDrawable)
-  private
-    FDisplay: TxxxDisplay;
-    procedure Resized(NewWidth, NewHeight: Integer);
-  public
-    constructor Create(ADisplay: TxxxDisplay);	// xxx And other arguments optionally
-    function CreateContext: TGfxContext; override;
     property Display: TxxxDisplay read FDisplay;
   end;
 
@@ -102,7 +95,11 @@ type
   end;
 
 
+  xxxSomeHandleType = Pointer;	// !!!: Remove this in your implementation
+
   TxxxWindow = class(TGfxWindow)
+  private
+    FHandle: xxxSomeHandleType;
   protected
     function GetTitle: String; override;
     procedure SetTitle(const ATitle: String); override;
@@ -111,13 +108,15 @@ type
   public
     destructor Destroy; override;
 
-    procedure SetSize(AWidth, AHeight: Integer); override;
+    procedure SetSize(AWidth, AHeight: Cardinal); override;
     procedure SetMinMaxSize(AMinWidth, AMinHeight,
-      AMaxWidth, AMaxHeight: Integer); override;
+      AMaxWidth, AMaxHeight: Cardinal); override;
     procedure Show; override;
     procedure Invalidate(const ARect: TRect); override;
     procedure CaptureMouse; override;
     procedure ReleaseMouse; override;
+
+    property Handle: xxxSomeHandleType read FHandle;
   end;
 
 
@@ -145,174 +144,9 @@ end;
 
 
 // -------------------------------------------------------------------
-//   TxxxContext
+//   TxxxDrawable
 // -------------------------------------------------------------------
 
-constructor TxxxContext.Create(ADrawable: TxxxDrawable);
-begin
-  inherited Create(ADrawable);
-  // !!!: Create handle, init context (line attributes, font etc.)
-end;
-
-destructor TxxxContext.Destroy;
-begin
-  // !!!: Implement this
-  inherited Destroy;
-end;
-
-function TxxxContext.CreateMemoryDrawable(AWidth, AHeight: Integer;
-  const APixelFormat: TGfxPixelFormat;
-  const AData: TGfxPixelData): TGfxDrawable;
-begin
-  // !!!: Implement this
-  raise EGfxError.Create(SUnsupportedPixelFormat);
-end;
-
-procedure TxxxContext.SaveState;
-var
-  SavedState: PxxxContextState;
-begin
-  New(SavedState);
-  SavedState^.Prev := FStateStackpointer;
-  SavedState^.Matrix := Matrix;
-  // !!!: Save additional state informations
-  FStateStackpointer := SavedState;
-end;
-
-procedure TxxxContext.RestoreState;
-var
-  SavedState: PxxxContextState;
-begin
-  SavedState := FStateStackpointer;
-  FStateStackpointer := SavedState^.Prev;
-  Matrix := SavedState^.Matrix;
-  // !!!: Restore additional state informations
-  Dispose(SavedState);
-end;
-
-function TxxxContext.ExcludeClipRect(const ARect: TRect): Boolean;
-var
-  x1, y1, x2, y2: Integer;
-begin
-  Transform(ARect.Left, ARect.Top, x1, y1);
-  Transform(ARect.Right, ARect.Bottom, x2, y2);
-
-  if (x2 > x1) and (y2 > y1) then
-  begin
-    // !!!: Implement this
-    Result := True; // !!!: Return False if region is empty
-  end else
-    Result := False;
-end;
-
-function TxxxContext.IntersectClipRect(const ARect: TRect): Boolean;
-var
-  x1, y1, x2, y2: Integer;
-begin
-  Transform(ARect.Left, ARect.Top, x1, y1);
-  Transform(ARect.Right, ARect.Bottom, x2, y2);
-
-  if (x2 > x1) and (y2 > y1) then
-  begin
-    // !!!: Implement this
-    Result := True; // !!!: Return False if region is empty
-  end else
-    Result := False;
-end;
-
-function TxxxContext.GetClipRect: TRect;
-begin
-  // !!!: Implement this
-  Result.Left := 0;
-  Result.Top := 0;
-  Result.Right := 0;
-  Result.Bottom := 0;
-end;
-
-function TxxxContext.MapColor(const AColor: TGfxColor): TGfxPixel;
-begin
-  // !!!: Implement this
-  Result := 0;
-end;
-
-procedure TxxxContext.SetColor(AColor: TGfxPixel);
-begin
-  // !!!: Implement this
-end;
-
-procedure TxxxContext.SetFont(AFont: TGfxFont);
-begin
-  // !!!: Implement this
-end;
-
-procedure TxxxContext.SetLineStyle(ALineStyle: TGfxLineStyle);
-begin
-  // !!!: Implement this
-end;
-
-procedure TxxxContext.DrawArc(const Rect: TRect; StartAngle, EndAngle: Single);
-var
-  x1, y1, x2, y2: Integer;
-begin
-  Transform(Rect.Left, Rect.Top, x1, y1);
-  Transform(Rect.Right, Rect.Bottom, x2, y2);
-  // !!!: Implement this
-end;
-
-procedure TxxxContext.DrawCircle(const Rect: TRect);
-var
-  x1, y1, x2, y2: Integer;
-begin
-  Transform(Rect.Left, Rect.Top, x1, y1);
-  Transform(Rect.Right, Rect.Bottom, x2, y2);
-  // !!!: Implement this
-end;
-
-procedure TxxxContext.DrawLine(x1, y1, x2, y2: Integer);
-begin
-  Transform(x1, y1, x1, y1);
-  Transform(x2, y2, x2, y2);
-  // !!!: Implement this
-end;
-
-procedure TxxxContext.FillRect(const Rect: TRect);
-var
-  r: TRect;
-begin
-  Transform(Rect.Left, Rect.Top, r.Left, r.Top);
-  Transform(Rect.Right, Rect.Bottom, r.Right, r.Bottom);
-  // !!!: Implement this
-end;
-
-function TxxxContext.FontCellHeight: Integer;
-begin
-  // !!!: Implement this
-  Result := 16;
-end;
-
-function TxxxContext.TextWidth(const AText: String): Integer;
-begin
-  // !!!: Implement this
-  Result := 16 * Length(AText);
-end;
-
-procedure TxxxContext.TextOut(x, y: Integer; const AText: String);
-begin
-  Transform(x, y, x, y);
-  // !!!: Implement this
-end;
-
-procedure TxxxContext.CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
-  DestX, DestY: Integer);
-begin
-  Transform(DestX, DestY, DestX, DestY);
-  // !!!: Implement this
-end;
-
-function TxxxContext.GetDrawable: TxxxDrawable;
-begin
-  Result := TxxxDrawable(FDrawable);
-end;
 
 
 // -------------------------------------------------------------------
@@ -321,14 +155,165 @@ end;
 
 constructor TxxxDrawable.Create(ADisplay: TxxxDisplay);
 begin
-  inherited Create(ADisplay);
+  inherited Create;
   FDisplay := ADisplay;
+  // !!!: Create handle, init graphics state (line attributes, font etc.)
+end;
+
+destructor TxxxDrawable.Destroy;
+begin
+  // !!!: Implement this
+  inherited Destroy;
+end;
+
+function TxxxDrawable.CreateMemoryDrawable(AWidth, AHeight: Cardinal;
+  const APixelFormat: TGfxPixelFormat;
+  AStride: LongWord; AData: Pointer): TGfxDrawable;
+begin
+  // !!!: Implement this
+  raise EGfxError.Create(SUnsupportedPixelFormat);
+  Result := nil;
+end;
+
+procedure TxxxDrawable.SaveState;
+var
+  SavedState: PxxxDrawableState;
+begin
+  New(SavedState);
+  SavedState^.Prev := FStateStackpointer;
+  SavedState^.Matrix := Matrix;
+  // !!!: Save additional state informations
+  FStateStackpointer := SavedState;
+end;
+
+procedure TxxxDrawable.RestoreState;
+var
+  SavedState: PxxxDrawableState;
+begin
+  SavedState := FStateStackpointer;
+  FStateStackpointer := SavedState^.Prev;
+  Matrix := SavedState^.Matrix;
+  // !!!: Restore additional state informations
+  Dispose(SavedState);
+end;
+
+function TxxxDrawable.ExcludeClipRect(const ARect: TRect): Boolean;
+var
+  x1, y1, x2, y2: Integer;
+begin
+  Transform(ARect.Left, ARect.Top, x1, y1);
+  Transform(ARect.Right, ARect.Bottom, x2, y2);
+
+  if (x2 > x1) and (y2 > y1) then
+  begin
+    // !!!: Implement this
+    Result := True; // !!!: Return False if region is empty
+  end else
+    Result := False;
+end;
+
+function TxxxDrawable.IntersectClipRect(const ARect: TRect): Boolean;
+var
+  x1, y1, x2, y2: Integer;
+begin
+  Transform(ARect.Left, ARect.Top, x1, y1);
+  Transform(ARect.Right, ARect.Bottom, x2, y2);
+
+  if (x2 > x1) and (y2 > y1) then
+  begin
+    // !!!: Implement this
+    Result := True; // !!!: Return False if region is empty
+  end else
+    Result := False;
+end;
+
+function TxxxDrawable.GetClipRect: TRect;
+begin
+  // !!!: Implement this
+  Result.Left := 0;
+  Result.Top := 0;
+  Result.Right := 0;
+  Result.Bottom := 0;
+end;
+
+function TxxxDrawable.MapColor(const AColor: TGfxColor): TGfxPixel;
+begin
+  // !!!: Implement this
+  Result := 0;
+end;
+
+procedure TxxxDrawable.SetColor(AColor: TGfxPixel);
+begin
   // !!!: Implement this
 end;
 
-function TxxxDrawable.CreateContext: TGfxContext;
+procedure TxxxDrawable.SetFont(AFont: TGfxFont);
 begin
-  Result := TxxxContext.Create(Self);
+  // !!!: Implement this
+end;
+
+procedure TxxxDrawable.SetLineStyle(ALineStyle: TGfxLineStyle);
+begin
+  // !!!: Implement this
+end;
+
+procedure TxxxDrawable.DrawArc(const Rect: TRect; StartAngle, EndAngle: Single);
+var
+  x1, y1, x2, y2: Integer;
+begin
+  Transform(Rect.Left, Rect.Top, x1, y1);
+  Transform(Rect.Right, Rect.Bottom, x2, y2);
+  // !!!: Implement this
+end;
+
+procedure TxxxDrawable.DrawCircle(const Rect: TRect);
+var
+  x1, y1, x2, y2: Integer;
+begin
+  Transform(Rect.Left, Rect.Top, x1, y1);
+  Transform(Rect.Right, Rect.Bottom, x2, y2);
+  // !!!: Implement this
+end;
+
+procedure TxxxDrawable.DrawLine(x1, y1, x2, y2: Integer);
+begin
+  Transform(x1, y1, x1, y1);
+  Transform(x2, y2, x2, y2);
+  // !!!: Implement this
+end;
+
+procedure TxxxDrawable.FillRect(const Rect: TRect);
+var
+  r: TRect;
+begin
+  Transform(Rect.Left, Rect.Top, r.Left, r.Top);
+  Transform(Rect.Right, Rect.Bottom, r.Right, r.Bottom);
+  // !!!: Implement this
+end;
+
+function TxxxDrawable.FontCellHeight: Integer;
+begin
+  // !!!: Implement this
+  Result := 16;
+end;
+
+function TxxxDrawable.TextWidth(const AText: String): Cardinal;
+begin
+  // !!!: Implement this
+  Result := 16 * Length(AText);
+end;
+
+procedure TxxxDrawable.TextOut(x, y: Integer; const AText: String);
+begin
+  Transform(x, y, x, y);
+  // !!!: Implement this
+end;
+
+procedure TxxxDrawable.CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
+  DestX, DestY: Integer);
+begin
+  Transform(DestX, DestY, DestX, DestY);
+  // !!!: Implement this
 end;
 
 procedure TxxxDrawable.Resized(NewWidth, NewHeight: Integer);
@@ -400,13 +385,13 @@ begin
   inherited Destroy;
 end;
 
-procedure TxxxWindow.SetSize(AWidth, AHeight: Integer);
+procedure TxxxWindow.SetSize(AWidth, AHeight: Cardinal);
 begin
   // !!!: Implement this
 end;
 
 procedure TxxxWindow.SetMinMaxSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
+  AMaxWidth, AMaxHeight: Cardinal);
 begin
   // !!!: Implement this
 end;
@@ -437,6 +422,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/10/28 20:28:27  sg
+  * First version
+
   Revision 1.1  2000/08/04 21:05:53  sg
   * First version in CVS
 
