@@ -42,12 +42,11 @@ var
 begin
   inherited Create;
   Display := ADisplay;
-  Window := ADisplay.CreateWindow;
+  Window := ADisplay.DefaultScreen.CreateWindow(True);
   Window.Title := 'fpGFX Bitmap Test';
   Window.OnPaint := @Paint;
   Window.SetClientSize(256, 256);
   Window.SetMinMaxClientSize(256, 256, 256, 256);
-  Window.Show;
 
   Image := Display.CreateImage(256, 256, PixelFormatRGB32);
 
@@ -56,6 +55,8 @@ begin
     for i := 0 to 255 do
       PLongWord(Data)[j * 256 + i] := (i shl 16) or (j shl 8);
   Image.Unlock;
+
+  Window.Show;
 end;
 
 destructor TMainWindow.Destroy;

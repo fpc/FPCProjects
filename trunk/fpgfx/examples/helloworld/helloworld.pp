@@ -41,7 +41,7 @@ begin
   inherited Create;
   Display := ADisplay;
   Font := Display.CreateFont('-*-*-*-r-normal--36-*-*-*-*-*-iso8859-1');
-  Window := ADisplay.CreateWindow;
+  Window := ADisplay.DefaultScreen.CreateWindow(True);
   Window.Title := 'fpGFX Hello World example';
   Window.OnPaint := @Paint;
   Window.Canvas.SetFont(Font);

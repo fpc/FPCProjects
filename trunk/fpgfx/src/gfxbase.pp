@@ -30,8 +30,8 @@ uses SysUtils, Classes;
 
 resourcestring
   // Exception message strings, to be used by target implementations
-  SUnsupportedPixelFormat = 'Pixel format is not supported';
-
+  SUnsupportedPixelFormat = 'Pixel format (%d bits/pixel) is not supported';
+  SIncompatibleCanvasForBlitting = 'Cannot blit from %s to %s';
 
 type
 
@@ -65,34 +65,30 @@ const
 
 type
 
+  PGfxColor = ^TGfxColor;
   TGfxColor = packed record
     Red, Green, Blue, Alpha: Word;
   end;
 
+  PGfxPixel = ^TGfxPixel;
   TGfxPixel = LongWord;
 
   TGfxFormatType = (
     ftInvalid,
     ftMono,		// Monochrome
     ftPal4,		// 4 bpp using palette
-    ftPalA4,		// 4 bpp using palette with alpha values > 0
+    ftPal4A,		// 4 bpp using palette with alpha values > 0
     ftPal8,		// 8 bpp using palette
-    ftPalA8,		// 8 bpp using palette with alpha values > 0
-    ftRGB16,		// 16 bpp RGB
+    ftPal8A,		// 8 bpp using palette with alpha values > 0
+    ftRGB16,		// 15/16 bpp RGB
     ftRGBA16,		// 16 bpp RGBA
     ftRGB24,		// 24 bpp RGB
-    ftRGBA24,		// 24 bpp RGBA
     ftRGB32,		// 32 bpp RGB
     ftRGBA32);		// 32 bpp RGBA
 
-  // !!!: Change this to dynamic array as soon as FPC supports it!
-  TGfxPalette = array[0..255] of TGfxColor;
-
   TGfxPixelFormat = record
     case FormatType: TGfxFormatType of
-      ftPal4, ftPalA4, ftPal8, ftPalA8:
-        (Palette: TGfxPalette);
-      ftRGB16, ftRGBA16, ftRGB24, ftRGBA24, ftRGB32, ftRGBA32: (
+      ftRGB16, ftRGBA16, ftRGB24, ftRGB32, ftRGBA32: (
 	RedMask: TGfxPixel;
 	GreenMask: TGfxPixel;
         BlueMask: TGfxPixel;
@@ -103,12 +99,11 @@ type
 const
 
   FormatTypeBPPTable: array[TGfxFormatType] of Integer =
-    (0, 1, 4, 4, 8, 8, 16, 16, 24, 24, 32, 32);
+    (0, 1, 4, 4, 8, 8, 16, 16, 24, 32, 32);
 
   // Some predefined colors:
 
   colTransparent: TGfxColor	= (Red: $0000; Green: $0000; Blue: $0000; Alpha: $ffff);
-
   colBlack: TGfxColor		= (Red: $0000; Green: $0000; Blue: $0000; Alpha: $0000);
   colBlue: TGfxColor		= (Red: $0000; Green: $0000; Blue: $ffff; Alpha: $0000);
   colGreen: TGfxColor		= (Red: $0000; Green: $ffff; Blue: $0000; Alpha: $0000);
@@ -124,40 +119,86 @@ const
   PixelFormatMono: TGfxPixelFormat = (
     FormatType: ftMono);
 
+  PixelFormatPal4: TGfxPixelFormat = (
+    FormatType: ftPal4);
+
+  PixelFormatPal4A: TGfxPixelFormat = (
+    FormatType: ftPal4A);
+
+  PixelFormatPal8: TGfxPixelFormat = (
+    FormatType: ftPal8);
+
+  PixelFormatPal8A: TGfxPixelFormat = (
+    FormatType: ftPal8A);
+
   PixelFormatRGB24: TGfxPixelFormat = (
-    FormatType: ftRGB24;
-    RedMask: $0000ff;
-    GreenMask: $00ff00;
-    BlueMask: $ff0000;
-    AlphaMask: 0);
+    FormatType:	ftRGB24;
+    RedMask:	$0000ff;
+    GreenMask:	$00ff00;
+    BlueMask:	$ff0000;
+    AlphaMask:	0);
 
   PixelFormatBGR24: TGfxPixelFormat = (
-    FormatType: ftRGB24;
-    RedMask: $ff0000;
-    GreenMask: $00ff00;
-    BlueMask: $0000ff;
-    AlphaMask: 0);
+    FormatType:	ftRGB24;
+    RedMask:	$ff0000;
+    GreenMask:	$00ff00;
+    BlueMask:	$0000ff;
+    AlphaMask:	0);
 
   PixelFormatRGB32: TGfxPixelFormat = (
+    FormatType:	ftRGB32;
+    RedMask:	$0000ff;
+    GreenMask:	$00ff00;
+    BlueMask:	$ff0000;
+    AlphaMask:	0);
+
+  PixelFormatRGBA32: TGfxPixelFormat = (
     FormatType: ftRGB32;
-    RedMask: $0000ff;
-    GreenMask: $00ff00;
-    BlueMask: $ff0000;
-    AlphaMask: 0);
+    RedMask:	$000000ff;
+    GreenMask:	$0000ff00;
+    BlueMask:	$00ff0000;
+    AlphaMask:	$ff000000);
+
+  PixelFormatARGB32: TGfxPixelFormat = (
+    FormatType: ftRGB32;
+    RedMask:	$0000ff00;
+    GreenMask:	$00ff0000;
+    BlueMask:	$ff000000;
+    AlphaMask:	$000000ff);
 
   PixelFormatBGR32: TGfxPixelFormat = (
-    FormatType: ftRGB32;
-    RedMask: $ff0000;
-    GreenMask: $00ff00;
-    BlueMask: $0000ff;
-    AlphaMask: 0);
+    FormatType:	ftRGB32;
+    RedMask:	$ff0000;
+    GreenMask:	$00ff00;
+    BlueMask:	$0000ff;
+    AlphaMask:	0);
+
+  PixelFormatBGRA32: TGfxPixelFormat = (
+    FormatType:	ftRGB32;
+    RedMask:	$00ff0000;
+    GreenMask:	$0000ff00;
+    BlueMask:	$000000ff;
+    AlphaMask:	$ff000000);
+
+  PixelFormatABGR32: TGfxPixelFormat = (
+    FormatType:	ftRGB32;
+    RedMask:	$ff000000;
+    GreenMask:	$00ff0000;
+    BlueMask:	$0000ff00;
+    AlphaMask:	$000000ff);
 
 type
 
   EGfxError = class(Exception);
 
+  EGfxUnsupportedPixelFormat = class(EGfxError)
+    constructor Create(const APixelFormat: TGfxPixelFormat);
+  end;
+
+
   TGfxImage = class;
   TGfxDevice = class;
+  TGfxDisplay = class;
   TGfxWindow = class;
 
   // Fonts
@@ -165,6 +206,25 @@ type
   TGfxFont = class
     { This class doesn't define anything... Create it from a canvas and
       destroy it with Free, as usual. }
+  end;
+
+
+  // Palettes
+
+  TGfxPalette = class
+  private
+    FRefCount: LongInt;
+    FEntryCount: Integer;
+    FEntries: PGfxColor;
+    function GetEntry(AIndex: Integer): TGfxColor;
+  protected
+    constructor Create(AEntryCount: Integer; AEntries: PGfxColor);
+  public
+    destructor Destroy; override;
+    procedure AddRef;
+    procedure Release;
+    property EntryCount: Integer read FEntryCount;
+    property Entries[AIndex: Integer]: TGfxColor read GetEntry;
   end;
 
 
@@ -181,9 +241,6 @@ type
     FPixelFormat: TGfxPixelFormat;
     constructor Create;
   public
-    function CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas; virtual; abstract;
-    function CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas; virtual; abstract;
-
     // Transformations
     procedure Transform(x, y: Integer; var OutX, OutY: Integer);
     procedure ReverseTransform(x, y: Integer; var OutX, OutY: Integer);
@@ -220,6 +277,11 @@ type
     procedure Copy(ASource: TGfxCanvas; DestX, DestY: Integer); virtual;
     procedure CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
       ADestX, ADestY: Integer); virtual; abstract;
+    procedure MaskedCopy(ASource, AMask: TGfxCanvas; DestX, DestY: Integer); virtual;
+{!!!:    procedure MaskedCopyRect(ASource, AMask: TGfxCanvas; const ASourceRect: TRect;
+      ADestX, ADestY: Integer); virtual;}
+    procedure MaskedCopyRect(ASource, AMask: TGfxCanvas; const ASourceRect: TRect;
+      AMaskX, AMaskY, ADestX, ADestY: Integer); virtual; abstract;
 
     // Image drawing
     procedure DrawImage(AImage: TGfxImage; ADestX, ADestY: Integer); virtual;
@@ -239,19 +301,39 @@ type
   private
     FWidth, FHeight: Integer;
     FPixelFormat: TGfxPixelFormat;
+    FPalette: TGfxPalette;
+    procedure SetPalette(APalette: TGfxPalette);
   protected
     constructor Create(AWidth, AHeight: Integer; APixelFormat: TGfxPixelFormat);
   public
+    destructor Destroy; override;
     procedure Lock(var AData: Pointer; var AStride: LongWord); virtual; abstract;
     procedure Unlock; virtual;
     procedure SetPixelsFromData(AData: Pointer; AStride: LongWord);
     property Width: Integer read FWidth;
     property Height: Integer read FHeight;
     property PixelFormat: TGfxPixelFormat read FPixelFormat;
+    property Palette: TGfxPalette read FPalette write SetPalette;
+  end;
+
+
+  TGfxScreen = class
+  private
+    FDisplay: TGfxDisplay;
+  public
+    constructor Create(ADisplay: TGfxDisplay);
+    function CreatePalette(AEntryCount: Integer;
+      AEntries: PGfxColor): TGfxPalette; virtual;
+    function CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas; virtual; abstract;
+    function CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas; virtual; abstract;
+    function CreateWindow: TGfxWindow;
+    function CreateWindow(ABorder: Boolean): TGfxWindow; virtual; abstract;
+    property Display: TGfxDisplay read FDisplay;
   end;
 
 
   TGfxDevice = class
+  public
     function CreateFont(const Descriptor: String): TGfxFont; virtual; abstract;
     function CreateImage(AWidth, AHeight: Integer;
       APixelFormat: TGfxPixelFormat): TGfxImage; virtual; abstract;
@@ -261,10 +343,12 @@ type
   TGfxDisplay = class(TGfxDevice)
   private
     FOnIdle: TNotifyEvent;
+  protected
+    FDefaultScreen: TGfxScreen;
   public
-    function CreateWindow: TGfxWindow; virtual; abstract;
     procedure Run; virtual; abstract;
     procedure BreakRun; virtual; abstract;
+    property DefaultScreen: TGfxScreen read FDefaultScreen;
     property OnIdle: TNotifyEvent read FOnIdle write FOnIdle;
   end;
 
@@ -284,7 +368,7 @@ type
   TGfxMouseMoveEvent = procedure(Sender: TObject; Shift: TShiftState;
     x, y: Integer) of object;
   TGfxMouseWheelEvent = procedure(Sender: TObject; Shift: TShiftState;
-    WheelDelta, x, y: Integer) of object;
+    WheelDelta: Single; x, y: Integer) of object;
   // Painting
   TGfxPaintEvent = procedure(Sender: TObject; const Rect: TRect) of object;
 
@@ -306,12 +390,13 @@ type
     FOnMouseMove: TGfxMouseMoveEvent;
     FOnMouseWheel: TGfxMouseWheelEvent;
     FOnPaint: TGfxPaintEvent;
+    FOnMove: TNotifyEvent;
     FOnResize: TNotifyEvent;
     FOnShow: TNotifyEvent;
     procedure SetWidth(AWidth: Integer);
     procedure SetHeight(AHeight: Integer);
   protected
-    FDisplay: TGfxDisplay;
+    FScreen: TGfxScreen;
     FCanvas: TGfxCanvas;
     FLeft: Integer;
     FTop: Integer;
@@ -323,18 +408,21 @@ type
     procedure SetTitle(const ATitle: String); virtual;
   public
     function CanClose: Boolean; virtual;
+    procedure SetPosition(ALeft, ATop: Integer); virtual;
     procedure SetSize(AWidth, AHeight: Integer); virtual;
     procedure SetMinMaxSize(AMinWidth, AMinHeight,
       AMaxWidth, AMaxHeight: Integer); virtual;
+    procedure SetFixedSize(AWidth, AHeight: Integer);
     procedure SetClientSize(AWidth, AHeight: Integer); virtual;
     procedure SetMinMaxClientSize(AMinWidth, AMinHeight,
       AMaxWidth, AMaxHeight: Integer); virtual;
+    procedure SetFixedClientSize(AWidth, AHeight: Integer);
     procedure Show; virtual; abstract;
     procedure Invalidate(const ARect: TRect); virtual; abstract;
     procedure CaptureMouse; virtual; abstract;
     procedure ReleaseMouse; virtual; abstract;
 
-    property Display: TGfxDisplay read FDisplay;
+    property Screen: TGfxScreen read FScreen;
     property Canvas: TGfxCanvas read FCanvas;
     // Window state
     property Left: Integer read FLeft;
@@ -361,6 +449,7 @@ type
     property OnMouseMove: TGfxMouseMoveEvent read FOnMouseMove write FOnMouseMove;
     property OnMouseWheel: TGfxMouseWheelEvent read FOnMouseWheel write FOnMouseWheel;
     property OnPaint: TGfxPaintEvent read FOnPaint write FOnPaint;
+    property OnMove: TNotifyEvent read FOnMove write FOnMove;
     property OnResize: TNotifyEvent read FOnResize write FOnResize;
     property OnShow: TNotifyEvent read FOnShow write FOnShow;
   end;
@@ -370,6 +459,60 @@ function KeycodeToText(Key: Word; ShiftState: TShiftState): String;
 
 
 implementation
+
+
+// ===================================================================
+//   Exceptions
+// ===================================================================
+
+constructor EGfxUnsupportedPixelFormat.Create(const
+  APixelFormat: TGfxPixelFormat);
+begin
+  inherited CreateFmt(SUnsupportedPixelFormat,
+    [FormatTypeBPPTable[APixelFormat.FormatType]]);
+end;
+
+
+// ===================================================================
+//   TGfxPalette
+// ===================================================================
+
+destructor TGfxPalette.Destroy;
+begin
+  if Assigned(FEntries) then
+    FreeMem(FEntries);
+  inherited Destroy;
+end;
+
+procedure TGfxPalette.AddRef;
+begin
+  Inc(FRefCount);
+end;
+
+procedure TGfxPalette.Release;
+begin
+  if FRefCount <= 0 then
+    Free
+  else
+    Dec(FRefCount);
+end;
+
+constructor TGfxPalette.Create(AEntryCount: Integer; AEntries: PGfxColor);
+begin
+  inherited Create;
+  FEntryCount := AEntryCount;
+  GetMem(FEntries, EntryCount * SizeOf(TGfxColor));
+  if Assigned(AEntries) then
+    Move(AEntries^, FEntries^, EntryCount * SizeOf(TGfxColor));
+end;
+
+function TGfxPalette.GetEntry(AIndex: Integer): TGfxColor;
+begin
+  if (AIndex >= 0) and (AIndex < EntryCount) then
+    Result := FEntries[AIndex]
+  else
+    Result := colBlack;
+end;
 
 
 // ===================================================================
@@ -420,8 +563,12 @@ end;
 
 procedure TGfxCanvas.DrawRect(const Rect: TRect);
 begin
-  DrawPolyLine([Rect.Left, Rect.Top, Rect.Right - 1, Rect.Top,
-    Rect.Right - 1, Rect.Bottom - 1, Rect.Left, Rect.Bottom - 1, Rect.Left, Rect.Top]);
+  DrawPolyLine(
+    [Rect.Left, Rect.Top,
+     Rect.Right - 1, Rect.Top,
+     Rect.Right - 1, Rect.Bottom - 1,
+     Rect.Left, Rect.Bottom - 1,
+     Rect.Left, Rect.Top]);
 end;
 
 function TGfxCanvas.TextExtent(const AText: String): TSize;
@@ -441,6 +588,19 @@ begin
   CopyRect(ASource, Rect(0, 0, ASource.Width, ASource.Height), DestX, DestY);
 end;
 
+procedure TGfxCanvas.MaskedCopy(ASource, AMask: TGfxCanvas; DestX, DestY: Integer);
+begin
+  MaskedCopyRect(ASource, AMask, Rect(0, 0, ASource.Width, ASource.Height),
+    0, 0, DestX, DestY);
+end;
+
+{!!!:procedure TGfxCanvas.MaskedCopyRect(ASource, AMask: TGfxCanvas;
+  const ASourceRect: TRect; ADestX, ADestY: Integer);
+begin
+  MaskedCopyRect(ASource, AMask, ASourceRect,
+    ASourceRect.Left, ASourceRect.Top, ADestX, ADestY);
+end;}
+
 procedure TGfxCanvas.DrawImage(AImage: TGfxImage; ADestX, ADestY: Integer);
 var
   r: TRect;
@@ -457,12 +617,13 @@ end;
 //   TGfxImage
 // ===================================================================
 
-constructor TGfxImage.Create(AWidth, AHeight: Integer;
-  APixelFormat: TGfxPixelFormat);
+// public methods
+
+destructor TGfxImage.Destroy;
 begin
-  FWidth := AWidth;
-  FHeight := AHeight;
-  FPixelFormat := APixelFormat;
+  if Assigned(Palette) then
+    Palette.Release;
+  inherited Destroy;
 end;
 
 procedure TGfxImage.Unlock;
@@ -507,32 +668,61 @@ begin
 end;
 
 
+// protected methods
+
+constructor TGfxImage.Create(AWidth, AHeight: Integer;
+  APixelFormat: TGfxPixelFormat);
+begin
+  FWidth := AWidth;
+  FHeight := AHeight;
+  FPixelFormat := APixelFormat;
+end;
+
+
+// private methods
+
+procedure TGfxImage.SetPalette(APalette: TGfxPalette);
+begin
+  if APalette <> Palette then
+  begin
+    if Assigned(Palette) then
+      Palette.Release;
+
+    FPalette := APalette;
+
+    if Assigned(Palette) then
+      Palette.AddRef;
+  end;
+end;
+
+
+// ===================================================================
+//   TGfxScreen
+// ===================================================================
+
+constructor TGfxScreen.Create(ADisplay: TGfxDisplay);
+begin
+  inherited Create;
+  FDisplay := ADisplay;
+end;
+
+function TGfxScreen.CreatePalette(AEntryCount: Integer;
+  AEntries: PGfxColor): TGfxPalette;
+begin
+  Result := TGfxPalette.Create(AEntryCount, AEntries);
+end;
+
+function TGfxScreen.CreateWindow: TGfxWindow;
+begin
+  Result := CreateWindow(True);
+end;
+
+
 // ===================================================================
 //   TGfxWindow
 // ===================================================================
 
-procedure TGfxWindow.SetWidth(AWidth: Integer);
-begin
-  SetSize(AWidth, Height);
-end;
-
-procedure TGfxWindow.SetHeight(AHeight: Integer);
-begin
-  SetSize(Width, AHeight);
-end;
-
-function TGfxWindow.GetTitle: String;
-begin
-  SetLength(Result, 0);
-end;
-
-{ Methods which do nothing because GFX target implementations are not
-  required to implement this methods: }
-
-procedure TGfxWindow.SetTitle(const ATitle: String);
-begin
-  // Empty
-end;
+// public methods
 
 function TGfxWindow.CanClose: Boolean;
 begin
@@ -540,6 +730,11 @@ begin
     Result := OnCanClose(Self)
   else
     Result := True;
+end;
+
+procedure TGfxWindow.SetPosition(ALeft, ATop: Integer);
+begin
+  // Empty
 end;
 
 procedure TGfxWindow.SetSize(AWidth, AHeight: Integer);
@@ -553,6 +748,12 @@ begin
   // Empty
 end;
 
+procedure TGfxWindow.SetFixedSize(AWidth, AHeight: Integer);
+begin
+  SetSize(AWidth, AHeight);
+  SetMinMaxSize(AWidth, AHeight, AWidth, AHeight);
+end;
+
 procedure TGfxWindow.SetClientSize(AWidth, AHeight: Integer);
 begin
   // Empty
@@ -564,6 +765,42 @@ begin
   // Empty
 end;
 
+procedure TGfxWindow.SetFixedClientSize(AWidth, AHeight: Integer);
+begin
+  SetClientSize(AWidth, AHeight);
+  SetMinMaxClientSize(AWidth, AHeight, AWidth, AHeight);
+end;
+
+
+// protected methods
+
+function TGfxWindow.GetTitle: String;
+begin
+  SetLength(Result, 0);
+end;
+
+procedure TGfxWindow.SetTitle(const ATitle: String);
+begin
+  // Empty
+end;
+
+
+// private methods
+
+procedure TGfxWindow.SetWidth(AWidth: Integer);
+begin
+  SetSize(AWidth, Height);
+end;
+
+procedure TGfxWindow.SetHeight(AHeight: Integer);
+begin
+  SetSize(Width, AHeight);
+end;
+
+
+// ===================================================================
+//   Global functions
+// ===================================================================
 
 function KeycodeToText(Key: Word; ShiftState: TShiftState): String;
 
@@ -718,6 +955,9 @@ end.
 
 {
   $Log$
+  Revision 1.6  2001/01/11 23:07:24  sg
+  *** empty log message ***
+
   Revision 1.5  2000/12/31 16:29:59  sg
   * Added TGfxWindow.SetClientSize and SetMinMaxClientSize
 

@@ -12,9 +12,14 @@ const
 
 type
   TMainWindow = class
+    procedure FocusIn(Sender: TObject);
+    procedure FocusOut(Sender: TObject);
     procedure KeyPressed(Sender: TObject; Key: Word; ShiftState: TShiftState);
     procedure KeyReleased(Sender: TObject; Key: Word; ShiftState: TShiftState);
     procedure KeyChar(Sender: TObject; AKeyChar: Char);
+    procedure MouseEnter(Sender: TObject; Shift: TShiftState;
+      x, y: Integer);
+    procedure MouseLeave(Sender: TObject);
     procedure MousePressed(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; x, y: Integer);
     procedure MouseReleased(Sender: TObject; Button: TMouseButton;
@@ -22,8 +27,9 @@ type
     procedure MouseMove(Sender: TObject; Shift: TShiftState;
       x, y: Integer);
     procedure MouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta, x, y: Integer);
+      WheelDelta: Single; x, y: Integer);
     procedure Paint(Sender: TObject; const Rect: TRect);
+    procedure Move(Sender: TObject);
     procedure Resize(Sender: TObject);
   private
     FWindow: TGfxWindow;
@@ -36,17 +42,22 @@ type
 constructor TMainWindow.Create(ADisplay: TDefDisplay);
 begin
   inherited Create;
-  FWindow := ADisplay.CreateWindow;
+  FWindow := ADisplay.DefaultScreen.CreateWindow(True);
   FWindow.SetClientSize(500, 100);
   FWindow.Title := 'fpGFX Event Test example';
+  FWindow.OnFocusIn := @FocusIn;
+  FWindow.OnFocusOut := @FocusOut;
   FWindow.OnKeyPressed := @KeyPressed;
   FWindow.OnKeyReleased := @KeyReleased;
   FWindow.OnKeyChar := @KeyChar;
+  FWindow.OnMouseEnter := @MouseEnter;
+  FWindow.OnMouseLeave := @MouseLeave;
   FWindow.OnMousePressed := @MousePressed;
   FWindow.OnMouseReleased := @MouseReleased;
   FWindow.OnMouseMove := @MouseMove;
   FWindow.OnMouseWheel := @MouseWheel;
   FWindow.OnPaint := @Paint;
+  FWindow.OnMove := @Move;
   FWindow.OnResize := @Resize;
   FWindow.Show;
 end;
@@ -97,6 +108,16 @@ begin
   Result := Result + ']';
 end;
 
+procedure TMainWindow.FocusIn(Sender: TObject);
+begin
+  WriteLn('Got focus');
+end;
+
+procedure TMainWindow.FocusOut(Sender: TObject);
+begin
+  WriteLn('Lost focus');
+end;
+
 procedure TMainWindow.KeyPressed(Sender: TObject; Key: Word;
   ShiftState: TShiftState);
 begin
@@ -120,6 +141,17 @@ begin
     WriteLn('#', Ord(AKeyChar));
 end;
 
+procedure TMainWindow.MouseEnter(Sender: TObject; Shift: TShiftState;
+  x, y: Integer);
+begin
+  WriteLn(MouseState(Shift, x, y), 'Mouse entered window');
+end;
+
+procedure TMainWindow.MouseLeave(Sender: TObject);
+begin
+  WriteLn('Mouse left window');
+end;
+
 procedure TMainWindow.MousePressed(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; x, y: Integer);
 begin
@@ -141,9 +173,9 @@ begin
 end;
 
 procedure TMainWindow.MouseWheel(Sender: TObject; Shift: TShiftState;
-  WheelDelta, x, y: Integer);
+  WheelDelta: Single; x, y: Integer);
 begin
-  WriteLn(MouseState(Shift, x, y), 'Mouse wheel rotated by ', WheelDelta,
+  WriteLn(MouseState(Shift, x, y), 'Mouse wheel rotated by ', WheelDelta:0:2,
     ' ticks');
 end;
 
@@ -161,9 +193,16 @@ begin
   end;
 end;
 
+procedure TMainWindow.Move(Sender: TObject);
+begin
+  WriteLn('Window has been moved to ', FWindow.Left, '/', FWindow.Top);
+end;
+
 procedure TMainWindow.Resize(Sender: TObject);
 begin
-  WriteLn('Window has been resized to ', FWindow.Width, ' x ', FWindow.Height);
+  WriteLn('Window has been resized. New width: ',
+    FWindow.Width, ' x ', FWindow.Height,
+    '; new client width: ', FWindow.ClientWidth, ' x ', FWindow.ClientHeight);
 end;
 
 var

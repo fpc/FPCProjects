@@ -84,11 +84,6 @@ type
       AXDrawable: X.TDrawable; ADefaultFont: PXFontStruct);
     destructor Destroy; override;
 
-    function CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas; override;
-    function CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas; override;
-    {procedure PutImageRect(ASourceRect: TRect; ADestX, ADestY: Integer;
-      const APixelFormat: TGfxPixelFormat; AStride: LongWord;
-      AData: Pointer); override;}
     procedure SaveState; override;
     procedure RestoreState; override;
     procedure EmptyClipRect; override;
@@ -114,6 +109,8 @@ type
 
     procedure CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
       ADestX, ADestY: Integer); override;
+    procedure MaskedCopyRect(ASource, AMask: TGfxCanvas; const ASourceRect: TRect;
+      AMaskX, AMaskY, ADestX, ADestY: Integer); override;
     procedure DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
       ADestX, ADestY: Integer); override;
 
@@ -135,6 +132,12 @@ type
   public
     constructor Create(AColormap: TColormap; ADisplay: TXDisplay;
       AHandle: TPixmap; APixelFormat: TGfxPixelFormat);
+    destructor Destroy; override;
+  end;
+
+  TXMonoPixmapCanvas = class(TXPixmapCanvas)
+    constructor Create(AColormap: TColormap; ADisplay: TXDisplay;
+      AHandle: TPixmap);
   end;
 
 
@@ -161,6 +164,22 @@ type
   end;
 
 
+  TXScreen = class(TGfxScreen)
+  private
+    FDisplayHandle: PDisplay;
+    FScreenIndex: Integer;
+    FScreenInfo: PScreen;
+  public
+    constructor Create(ADisplay: TXDisplay; AScreenIndex: Integer);
+    function CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas; override;
+    function CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas; override;
+    function CreateWindow(ABorder: Boolean): TGfxWindow; override;
+    property DisplayHandle: PDisplay read FDisplayHandle;
+    property ScreenIndex: Integer read FScreenIndex;
+    property ScreenInfo: PScreen read FScreenInfo;
+  end;
+
+
   TXWindow = class;
 
   TXDisplay = class(TGfxDisplay)
@@ -176,11 +195,11 @@ type
     FWMHints: TAtom;			// Atom for "_MOTIF_WM_HINTS"
     function GetHandle: PDisplay;
   public
+    constructor Create;
     destructor Destroy; override;
     function CreateFont(const Descriptor: String): TGfxFont; override;
     function CreateImage(AWidth, AHeight: Integer;
       APixelFormat: TGfxPixelFormat): TGfxImage; override;
-    function CreateWindow: TGfxWindow; override;
     procedure Run; override;
     procedure BreakRun; override;
 
@@ -193,6 +212,8 @@ type
   TXWindow = class(TGfxWindow)
   private
     FHandle: X.TWindow;
+    FDisplay: TXDisplay;
+    FBorder: Boolean;
     FComposeStatus: TXComposeStatus;
     FComposeBuffer: String[32];
     function StartComposing(const Event: TXKeyEvent): TKeySym;
@@ -215,16 +236,18 @@ type
     procedure ClientMessage(var Event: TXClientMessageEvent); message X.ClientMessage;
   protected
     IsExposing: Boolean;
-    function ConvertShiftState(AState: Cardinal): TShiftState;
-    function KeySymToKeycode(KeySym: TKeySym): Word;
+    CanMaximize: Boolean;
     function GetTitle: String; override;
     procedure SetTitle(const ATitle: String); override;
-  private
-    constructor Create(ADisplay: TXDisplay);
+    function ConvertShiftState(AState: Cardinal): TShiftState;
+    function KeySymToKeycode(KeySym: TKeySym): Word;
+    procedure UpdateMotifWMHints;
   public
+    constructor Create(AScreen: TXScreen; ABorder: Boolean);
     destructor Destroy; override;
     procedure DefaultHandler(var Message); override;
 
+    procedure SetPosition(ALeft, ATop: Integer); override;
     procedure SetSize(AWidth, AHeight: Integer); override;
     procedure SetMinMaxSize(AMinWidth, AMinHeight,
       AMaxWidth, AMaxHeight: Integer); override;
@@ -238,7 +261,13 @@ type
 
     function DisplayHandle: PDisplay; {!!!: inline;	will crash with current compiler}
     property Handle: X.TWindow read FHandle;
+    property Display: TXDisplay read FDisplay;
   end;
+
+
+var
+  LeaderWindow: X.TWindow;
+  ClientLeaderAtom: TAtom;
 
 
 function GetXEventName(Event: LongInt): String;
@@ -295,7 +324,6 @@ begin
   XGetGeometry(DisplayHandle, Handle, @DummyWnd, @DummyInt, @DummyInt,
     @FWidth, @FHeight, @DummyInt, @DummyInt);
 
-
   GCValues.graphics_exposures := False;
   FGC := XCreateGC(DisplayHandle, Handle, GCGraphicsExposures, @GCValues);
   if not Assigned(GC) then
@@ -309,7 +337,7 @@ begin
     XSetFont(DisplayHandle, GC, FFontStruct^.FID);
 
   FRegion := XCreateRegion;
-  XSetRegion(DisplayHandle, GC, Region);
+  Resized(Width, Height);	// Set up a proper clipping region
 end;
 
 destructor TXCanvas.Destroy;
@@ -318,21 +346,6 @@ begin
   if Assigned(GC) then
     XFreeGC(DisplayHandle, GC);
   inherited Destroy;
-end;
-
-function TXCanvas.CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas;
-begin
-  ASSERT(PixelFormat.FormatType <> ftInvalid);
-  Result := TXPixmapCanvas.Create(ColorMap, FDisplay,
-    XCreatePixmap(DisplayHandle, Handle, AWidth, AHeight,
-      FormatTypeBPPTable[PixelFormat.FormatType]), PixelFormat);
-end;
-
-function TXCanvas.CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas;
-begin
-  ASSERT(PixelFormat.FormatType <> ftInvalid);
-  Result := TXPixmapCanvas.Create(ColorMap, FDisplay,
-    XCreatePixmap(DisplayHandle, Handle, AWidth, AHeight, 1), PixelFormatMono);
 end;
 
 procedure TXCanvas.SaveState;
@@ -395,7 +408,7 @@ begin
     XSubtractRegion(Region, RectRegion, Region);
     XDestroyRegion(RectRegion);
     XSetRegion(DisplayHandle, GC, Region);
-    Result := not XEmptyRegion(Region);
+    Result := XEmptyRegion(Region) = 0;
   end else
     Result := False;
 end;
@@ -420,7 +433,7 @@ begin
     XIntersectRegion(Region, RectRegion, Region);
     XDestroyRegion(RectRegion);
     XSetRegion(DisplayHandle, GC, Region);
-    Result := not XEmptyRegion(Region);
+    Result := XEmptyRegion(Region) = 0;
   end else
     Result := False;
 end;
@@ -428,7 +441,6 @@ end;
 function TXCanvas.UnionClipRect(const ARect: TRect): Boolean;
 var
   x1, y1, x2, y2: Integer;
-  RectRegion: TRegion;
   XRect: TXRectangle;
 begin
   Transform(ARect.Left, ARect.Top, x1, y1);
@@ -443,7 +455,7 @@ begin
     XUnionRectWithRegion(@XRect, Region, Region);
     XSetRegion(DisplayHandle, GC, Region);
   end;
-  Result := not XEmptyRegion(Region);
+  Result := XEmptyRegion(Region) = 0;
 end;
 
 function TXCanvas.GetClipRect: TRect;
@@ -632,12 +644,15 @@ end;
 procedure TXCanvas.CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
   ADestX, ADestY: Integer);
 var
-  RealHeight: Integer;
+  SourceLeft, SourceTop, SourceRight, SourceBottom, RealHeight: Integer;
 begin
   if not ASource.InheritsFrom(TXCanvas) then
     raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
       [ASource.ClassName, Self.ClassName]);
 
+  ASource.Transform(ASourceRect.Left, ASourceRect.Top, SourceLeft, SourceTop);
+  ASource.Transform(ASourceRect.Right, ASourceRect.Bottom,
+    SourceRight, SourceBottom);
   Transform(ADestX, ADestY, ADestX, ADestY);
 
   if (ASource <> Self) and (ASource.PixelFormat.FormatType = ftMono) then
@@ -656,27 +671,31 @@ begin
       ASourceRect.Bottom - ASourceRect.Top, ADestX, ADestY);
 end;
 
-{procedure TXCanvas.DrawBitmap(ABitmap: TGfxBitmap; DestX, DestY: Integer);
+procedure TXCanvas.MaskedCopyRect(ASource, AMask: TGfxCanvas;
+  const ASourceRect: TRect; AMaskX, AMaskY, ADestX, ADestY: Integer);
 var
+  SourceLeft, SourceTop, SourceRight, SourceBottom: Integer;
 begin
-  Transform(DestX, DestY, DestX, DestY);
+  if not ASource.InheritsFrom(TXCanvas) then
+    raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
+      [ASource.ClassName, Self.ClassName]);
+  if not AMask.InheritsFrom(TXMonoPixmapCanvas) then
+    raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
+      [AMask.ClassName, Self.ClassName]);
 
-  if ABitmap.BitsPerPixel = 1 then
-  begin
-    Pixmap := XCreateBitmapFromData(Canvas.Display, Canvas.Handle,
-      ABitmap.Data, ABitmap.Width, ABitmap.Height);
+  ASource.Transform(ASourceRect.Left, ASourceRect.Top, SourceLeft, SourceTop);
+  ASource.Transform(ASourceRect.Right, ASourceRect.Bottom,
+    SourceRight, SourceBottom);
+  AMask.Transform(AMaskX, AMaskY, AMaskX, AMaskY);
+  Transform(ADestX, ADestY, ADestX, ADestY);
 
-    XSetClipMask(Canvas.Display, Handle, Pixmap);
-    XSetClipOrigin(Canvas.Display, Handle, DestX, DestY);
-    XFillRectangle(Canvas.Display, Canvas.Handle, Handle, DestX, DestY,
-      DestX + ABitmap.Width, DestY + ABitmap.Height);
-    XSetClipMask(Canvas.Display, Handle, 0);
-
-    XFreePixmap(Canvas.Display, Pixmap);
-  end;
-  { XCopyArea(Canvas.Display, Pixmap, Canvas.Handle, Handle, 0, 0,
-    ABitmap.Width, ABitmap.Height, DestX, DestY); }
-end;}
+  XSetClipMask(DisplayHandle, GC, TXCanvas(AMask).Handle);
+  XSetClipOrigin(DisplayHandle, GC, ADestX, ADestY);
+  XCopyArea(DisplayHandle, TXCanvas(ASource).Handle, Handle, GC,
+    SourceLeft, SourceTop, SourceRight - SourceLeft,
+    SourceBottom - SourceTop, ADestX, ADestY);
+  XSetClipMask(DisplayHandle, GC, 0);
+end;
 
 
 function malloc(size: LongWord): Pointer; cdecl; external;
@@ -686,8 +705,6 @@ procedure TXCanvas.DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
 var
   SourceRect: TRect;
   RealWidth, RealHeight: Integer;
-  Data: Pointer;
-  Stride: LongWord;
   Pixmap: TPixmap;
   Image: XLib.PXImage;
 begin
@@ -709,38 +726,27 @@ begin
   if (RealWidth <= 0) or (RealHeight <= 0) then
     exit;
 
-  if AImage.PixelFormat.FormatType = ftMono then
-  begin
-    Pixmap := XCreateBitmapFromData(DisplayHandle, Handle,
-      TXImage(AImage).Data + ASourceRect.Top * TXImage(AImage).Stride,
-      RealWidth, RealHeight);
+  // !!!: Add support for XF86 4 and XShm etc. to speed this up!
+  Image := XCreateImage(DisplayHandle, Visual,
+    FormatTypeBPPTable[PixelFormat.FormatType], ZPixmap,
+    0, nil, RealWidth, RealHeight, 8, 0);
+  Image^.data := malloc(Image^.bytes_per_line * RealHeight);
 
-    XSetClipMask(DisplayHandle, GC, Pixmap);
-    XSetClipOrigin(DisplayHandle, GC, ADestX, ADestY);
-    // !!!: Doesn't support clipping yet
-    XFillRectangle(DisplayHandle, Handle, GC,
-      ADestX, ADestY, AImage.Width, RealHeight);
-    XSetClipMask(DisplayHandle, GC, 0);
-
-    XFreePixmap(DisplayHandle, Pixmap);
-  end else
-  begin
-    // !!!: Add support for XF86 4 and XShm etc. to speed this up!
-    Image := XCreateImage(DisplayHandle, Visual,
-      FormatTypeBPPTable[PixelFormat.FormatType], ZPixmap,
-      0, nil, RealWidth, RealHeight, 8, 0);
-    Image^.data := malloc(Image^.bytes_per_line * RealHeight);
-
-    ConvertImage(ASourceRect, AImage.PixelFormat,
+  if (AImage.PixelFormat.FormatType = ftMono) and
+    Self.InheritsFrom(TXMonoPixmapCanvas) then
+    // mirror the bits within all image data bytes...:
+    FlipMonoImageBits(ASourceRect, TXImage(AImage).Data,
+      TXImage(AImage).Stride, 0, 0, Image^.data, Image^.bytes_per_line)
+  else
+    ConvertImage(ASourceRect, AImage.PixelFormat, AImage.Palette,
       TXImage(AImage).Data, TXImage(AImage).Stride,
       0, 0, PixelFormat, Image^.data, Image^.bytes_per_line);
 
-    XPutImage(DisplayHandle, Handle, GC,
-      Image, 0, 0, ADestX, ADestY, AImage.Width, AImage.Height);
+  XPutImage(DisplayHandle, Handle, GC,
+    Image, 0, 0, ADestX, ADestY, AImage.Width, AImage.Height);
 
-    // !!!: Change to XDestroyImage when this macro gets supported by xutil.pp
-    Image^.f.destroy_image(Image);
-  end;
+  // !!!: Change to XDestroyImage when this macro gets supported by xutil.pp
+  Image^.f.destroy_image(Image);
 end;
 
 procedure TXCanvas.Resized(NewWidth, NewHeight: Integer);
@@ -808,6 +814,23 @@ begin
   FPixelFormat := APixelFormat;
 end;
 
+destructor TXPixmapCanvas.Destroy;
+begin
+  XFreePixmap(DisplayHandle, Handle);
+  inherited Destroy;
+end;
+
+
+// -------------------------------------------------------------------
+//   TXMonoPixmapCanvas
+// -------------------------------------------------------------------
+
+constructor TXMonoPixmapCanvas.Create(AColormap: TColormap; ADisplay: TXDisplay;
+  AHandle: TPixmap);
+begin
+  inherited Create(AColormap, ADisplay, AHandle, PixelFormatMono);
+end;
+
 
 // -------------------------------------------------------------------
 //   TXImage
@@ -821,6 +844,8 @@ begin
   case APixelFormat.FormatType of
     ftMono:
       FStride := (AWidth + 7) shr 3;
+    ftPal4, ftPal4A:
+      FStride := (AWidth + 1) and not 1;
     else
       FStride := AWidth * (FormatTypeBPPTable[APixelFormat.FormatType] shr 3);
   end;
@@ -853,39 +878,92 @@ end;
 
 
 // -------------------------------------------------------------------
+//   TXScreen
+// -------------------------------------------------------------------
+
+constructor TXScreen.Create(ADisplay: TXDisplay; AScreenIndex: Integer);
+begin
+  inherited Create(ADisplay);
+  FDisplayHandle := ADisplay.Handle;
+  FScreenIndex := AScreenIndex;
+
+  FScreenInfo := XScreenOfDisplay(DisplayHandle, ScreenIndex);
+end;
+
+function TXScreen.CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas;
+var
+  Depth: Integer;
+  PixelFormat: TGfxPixelFormat;
+begin
+  Depth := XDefaultDepthOfScreen(ScreenInfo);
+  case Depth of
+    1: PixelFormat.FormatType := ftMono;
+    4: PixelFormat.FormatType := ftPal4;
+    8: PixelFormat.FormatType := ftPal8;
+    16: PixelFormat.FormatType := ftRGB16;
+    24: PixelFormat.FormatType := ftRGB24;
+    32: PixelFormat.FormatType := ftRGB32;
+    else
+      raise EX11Error.CreateFmt(SWindowUnsupportedPixelFormat, [Depth]);
+  end;
+
+  if Depth >= 16 then
+    with XDefaultVisualOfScreen(ScreenInfo)^ do
+    begin
+      PixelFormat.RedMask := red_mask;
+      PixelFormat.GreenMask := green_mask;
+      PixelFormat.BlueMask := blue_mask;
+    end;
+
+  Result := TXPixmapCanvas.Create(
+    XDefaultColormapOfScreen(ScreenInfo), TXDisplay(Display),
+    XCreatePixmap(DisplayHandle, XRootWindowOfScreen(ScreenInfo),
+      AWidth, AHeight,
+    Depth), PixelFormat);
+end;
+
+function TXScreen.CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas;
+begin
+  Result := TXMonoPixmapCanvas.Create(
+    XDefaultColormap(DisplayHandle, ScreenIndex), TXDisplay(Display),
+    XCreatePixmap(DisplayHandle, XRootWindowOfScreen(ScreenInfo),
+      AWidth, AHeight, 1));
+end;
+
+function TXScreen.CreateWindow(ABorder: Boolean): TGfxWindow;
+begin
+  Result := TXWindow.Create(Self, ABorder);
+  if not Assigned(TXDisplay(Display).FWindows) then
+    TXDisplay(Display).FWindows := TList.Create;
+  TXDisplay(Display).FWindows.Add(Result);
+end;
+
+
+// -------------------------------------------------------------------
 //   TXDisplay
 // -------------------------------------------------------------------
 
-function TXDisplay.GetHandle: PDisplay;
-var
-  f: PXPixmapFormatValues;
-  count: LongInt;
-begin
-  if not Assigned(FHandle) then
-  begin
-    if Length(DisplayName) = 0 then
-      FDisplayName := XDisplayName(nil);
-    FHandle := XOpenDisplay(PChar(DisplayName));
-    if not Assigned(FHandle) then
-      raise EX11Error.CreateFmt(SOpenDisplayFailed, [DisplayName]);
-    FRootWindow := XDefaultRootWindow(FHandle);
+// public methods
 
-    FDefaultFont := XLoadQueryFont(FHandle,
-      '-adobe-helvetica-medium-r-normal--*-120-*-*-*-*-iso8859-1');
-    if not Assigned(FDefaultFont) then
-    begin
-      FDefaultFont := XLoadQueryFont(FHandle, 'fixed');
-      if not Assigned(FDefaultFont) then
-        raise EX11Error.Create(SNoDefaultFont);
-    end;
-  end;
-  Result := FHandle;
+constructor TXDisplay.Create;
+begin
+  inherited Create;
+  FDefaultScreen := TXScreen.Create(Self, XDefaultScreen(Handle));
 end;
 
 destructor TXDisplay.Destroy;
 var
   i: Integer;
 begin
+  if Assigned(FWindows) then
+  begin
+    for i := 0 to FWindows.Count - 1 do
+      TXWindow(FWindows[i]).Free;
+    FWindows.Free;
+  end;
+
+  DefaultScreen.Free;
+
   if Assigned(FDefaultFont) then
   begin
     if FDefaultFont^.fid <> 0 then
@@ -895,13 +973,6 @@ begin
 
   if Assigned(FHandle) then
     XCloseDisplay(FHandle);
-
-  if Assigned(FWindows) then
-  begin
-    for i := 0 to FWindows.Count - 1 do
-      TXWindow(FWindows[i]).Free;
-    FWindows.Free;
-  end;
 
   inherited Destroy;
 end;
@@ -915,14 +986,6 @@ function TXDisplay.CreateImage(AWidth, AHeight: Integer;
   APixelFormat: TGfxPixelFormat): TGfxImage;
 begin
   Result := TXImage.Create(Handle, AWidth, AHeight, APixelFormat);
-end;
-
-function TXDisplay.CreateWindow: TGfxWindow;
-begin
-  Result := TXWindow.Create(Self);
-  if not Assigned(FWindows) then
-    FWindows := TList.Create;
-  FWindows.Add(Result);
 end;
 
 procedure TXDisplay.Run;
@@ -979,10 +1042,458 @@ begin
   Result := nil;
 end;
 
+function TXDisplay.GetHandle: PDisplay;
+begin
+  if not Assigned(FHandle) then
+  begin
+    if Length(DisplayName) = 0 then
+      FDisplayName := XDisplayName(nil);
+    FHandle := XOpenDisplay(PChar(DisplayName));
+    if not Assigned(FHandle) then
+      raise EX11Error.CreateFmt(SOpenDisplayFailed, [DisplayName]);
+    FRootWindow := XDefaultRootWindow(FHandle);
+
+    FDefaultFont := XLoadQueryFont(FHandle,
+      '-adobe-helvetica-medium-r-normal--*-120-*-*-*-*-iso8859-1');
+    if not Assigned(FDefaultFont) then
+    begin
+      FDefaultFont := XLoadQueryFont(FHandle, 'fixed');
+      if not Assigned(FDefaultFont) then
+        raise EX11Error.Create(SNoDefaultFont);
+    end;
+  end;
+  Result := FHandle;
+end;
+
 
 // -------------------------------------------------------------------
 //   TXWindow
 // -------------------------------------------------------------------
+
+// public methods
+
+constructor TXWindow.Create(AScreen: TXScreen; ABorder: Boolean);
+const
+  WindowHints: TXWMHints = (
+    flags: InputHint or StateHint or WindowGroupHint;
+    input: True;
+    initial_state: NormalState;
+    icon_pixmap: 0;
+    icon_window: 0;
+    icon_x: 0;
+    icon_y: 0;
+    icon_mask: 0;
+    window_group: 0;
+  );
+var
+  Colormap: TColormap;
+  Attr: TXSetWindowAttributes;
+  SizeHints: TXSizeHints;
+  ClassHint: PXClassHint;
+begin
+  inherited Create;
+
+  FScreen := AScreen;
+  FDisplay := TXDisplay(Screen.Display);
+  FBorder := ABorder;
+
+  if LeaderWindow = 0 then
+  begin
+    LeaderWindow := XCreateSimpleWindow(DisplayHandle,
+      XDefaultRootWindow(DisplayHandle), 10, 10, 10, 10, 0, 0, 0);
+
+    ClassHint := XAllocClassHint;
+    ClassHint^.res_name := 'fpGFX'; // !!! use app name
+    ClassHint^.res_class := 'FpGFX';
+    XSetWMProperties(DisplayHandle, LeaderWindow, nil, nil, nil, 0, nil, nil,
+      ClassHint);
+    XFree(ClassHint);
+    ClientLeaderAtom := XInternAtom(DisplayHandle, 'WM_CLIENT_LEADER', False);
+  end;
+
+  Colormap := XDefaultColormap(DisplayHandle, XDefaultScreen(DisplayHandle));
+
+  Attr.event_mask := KeyPressMask or KeyReleaseMask or ButtonPressMask or
+    ButtonReleaseMask or EnterWindowMask or LeaveWindowMask or
+    PointerMotionMask or ExposureMask or FocusChangeMask or StructureNotifyMask;
+  Attr.Colormap := Colormap;
+
+  SizeHints.flags := PSize;
+  SizeHints.x := 0;
+  SizeHints.y := 0;
+  SizeHints.width := 200;
+  SizeHints.height := 200;
+
+  FHandle := XCreateWindow(
+    DisplayHandle,
+    XDefaultRootWindow(DisplayHandle),	// create top-level window
+    SizeHints.x, SizeHints.y,		// position
+    SizeHints.width, SizeHints.height,	// size
+    0,					// border size
+    CopyFromParent,			// depth
+    InputOutput,			// class
+    CopyFromParent,			// visual
+    CWEventMask or CWColormap,		// valuemask: What in "Attr" is valid?
+    @Attr);
+
+  if Handle = 0 then
+    raise EX11Error.Create(SWindowCreationFailed);
+
+  XSetStandardProperties(DisplayHandle, Handle, nil, nil, 0,
+    argv, argc, @SizeHints);
+
+  XSetWMNormalHints(DisplayHandle, Handle, @SizeHints);
+
+  WindowHints.flags := WindowGroupHint;
+  WindowHints.window_group := LeaderWindow;
+  XSetWMHints(DisplayHandle, Handle, @WindowHints);
+
+  XChangeProperty(DisplayHandle, Handle, ClientLeaderAtom, 33, 32,
+    PropModeReplace, @LeaderWindow, 1);
+
+  // We want to get a Client Message when the user tries to close this window
+  if Display.FWMProtocols = 0 then
+    Display.FWMProtocols := XInternAtom(DisplayHandle,
+      'WM_PROTOCOLS', False);
+  if Display.FWMDeleteWindow = 0 then
+    Display.FWMDeleteWindow := XInternAtom(DisplayHandle,
+      'WM_DELETE_WINDOW', False);
+
+  XSetWMProtocols(DisplayHandle, FHandle, @Display.FWMDeleteWindow, 1);
+
+
+  FCanvas := TXWindowCanvas.Create(Colormap, Display, Handle,
+    Display.FDefaultFont);
+end;
+
+destructor TXWindow.Destroy;
+begin
+  if Assigned(OnClose) then
+    OnClose(Self);
+
+  XDestroyWindow(DisplayHandle, Handle);
+  Canvas.Free;
+
+  TXDisplay(Display).FWindows.Remove(Self);
+  inherited Destroy;
+end;
+
+procedure TXWindow.DefaultHandler(var Message);
+begin
+  WriteLn('fpGFX/X11: Unhandled X11 event received: ',
+    GetXEventName(TXEvent(Message)._type));
+end;
+
+procedure TXWindow.SetPosition(ALeft, ATop: Integer);
+var
+  Supplied: LongInt;
+  SizeHints: PXSizeHints;
+begin
+  SizeHints := XAllocSizeHints;
+  XGetWMNormalHints(DisplayHandle, Handle, SizeHints, @Supplied);
+  SizeHints^.flags := SizeHints^.flags or PPosition;
+  SizeHints^.x := ALeft;
+  SizeHints^.y := ATop;
+  XSetWMNormalHints(DisplayHandle, Handle, SizeHints);
+  XFree(SizeHints);
+  XMoveWindow(DisplayHandle, Handle, ALeft, ATop);
+end;
+
+procedure TXWindow.SetSize(AWidth, AHeight: Integer);
+begin
+  // !!!: Implement this properly
+  WriteLn('fpGFX/X11: TXWindow.SetSize is not properly implemented yet');
+  SetClientSize(AWidth, AHeight);
+end;
+
+procedure TXWindow.SetMinMaxSize(AMinWidth, AMinHeight,
+  AMaxWidth, AMaxHeight: Integer);
+begin
+  // !!!: Implement this properly
+  WriteLn('fpGFX/X11: TXWindow.SetMinMaxSize is not properly implemented yet');
+  SetMinMaxClientSize(AMinWidth, AMinHeight, AMaxWidth, AMaxHeight);
+end;
+
+procedure TXWindow.SetClientSize(AWidth, AHeight: Integer);
+var
+  ChangeMask: Cardinal;
+  Changes: TXWindowChanges;
+begin
+  ChangeMask := 0;
+
+  if AWidth <> ClientWidth then
+  begin
+    ChangeMask := CWWidth;
+    Changes.Width := AWidth;
+  end;
+
+  if AHeight <> ClientHeight then
+  begin
+    ChangeMask := ChangeMask or CWHeight;
+    Changes.Height := AHeight;
+  end;
+
+  if ChangeMask <> 0 then
+    XConfigureWindow(DisplayHandle, Handle, ChangeMask, @Changes);
+end;
+
+procedure TXWindow.SetMinMaxClientSize(AMinWidth, AMinHeight,
+  AMaxWidth, AMaxHeight: Integer);
+var
+  Supplied: LongInt;
+  SizeHints: PXSizeHints;
+begin
+  CanMaximize := (AMaxWidth > AMinWidth) or (AMaxHeight > AMinHeight);
+  UpdateMotifWMHints;
+
+  SizeHints := XAllocSizeHints;
+  XGetWMNormalHints(DisplayHandle, Handle, SizeHints, @Supplied);
+  with SizeHints^ do
+  begin
+    if (AMinWidth > 0) or (AMinHeight > 0) then
+    begin
+      flags := flags or PMinSize;
+      min_width := AMinWidth;
+      min_height := AMinHeight;
+    end else
+      flags := flags and not PMinSize;
+
+    if (AMaxWidth > 0) or (AMaxHeight > 0) then
+    begin
+      flags := flags or PMaxSize;
+      if AMaxWidth > 0 then
+        max_width := AMaxWidth
+      else
+        max_width := 32767;
+      if AMaxHeight > 0 then
+        max_height := AMaxHeight
+      else
+        max_height := 32767;
+    end else
+      flags := flags and not PMaxSize;
+  end;
+
+  XSetWMNormalHints(DisplayHandle, Handle, SizeHints);
+  XFree(SizeHints);
+end;
+
+procedure TXWindow.Show;
+begin
+  XMapRaised(DisplayHandle, Handle);
+end;
+
+procedure TXWindow.Invalidate(const ARect: TRect);
+var
+  Event: TXExposeEvent;
+begin
+  FillChar(Event, SizeOf(Event), #0);
+  Event._type := X.Expose;
+  Event.Window := FHandle;
+  Event.x := ARect.Left;
+  Event.y := ARect.Top;
+  Event.Width := ARect.Right - ARect.Left;
+  Event.Height := ARect.Bottom - ARect.Top;
+  XSendEvent(DisplayHandle, Handle, False, 0, @Event);
+end;
+
+procedure TXWindow.CaptureMouse;
+begin
+  XGrabPointer(DisplayHandle, Handle, False, ButtonPressMask or
+    ButtonReleaseMask or EnterWindowMask or LeaveWindowMask or
+    PointerMotionMask, GrabModeAsync, GrabModeAsync, 0, 0, CurrentTime);
+end;
+
+procedure TXWindow.ReleaseMouse;
+begin
+  XUngrabPointer(DisplayHandle, CurrentTime);
+end;
+
+function TXWindow.DisplayHandle: PDisplay; {!!!: inline;}
+begin
+  Result := TXDisplay(Screen.Display).Handle;
+end;
+
+
+// protected methods
+
+function TXWindow.GetTitle: String;
+var
+  s: PChar;
+begin
+  XFetchName(DisplayHandle, Handle, @s);
+  Result := s;
+  XFree(s);
+end;
+
+procedure TXWindow.SetTitle(const ATitle: String);
+begin
+  XStoreName(DisplayHandle, Handle, PChar(ATitle));
+end;
+
+function TXWindow.ConvertShiftState(AState: Cardinal): TShiftState;
+begin
+  Result := [];
+  if (AState and Button1Mask) <> 0 then
+    Include(Result, ssLeft);
+  if (AState and Button2Mask) <> 0 then
+    Include(Result, ssMiddle);
+  if (AState and Button3Mask) <> 0 then
+    Include(Result, ssRight);
+  if (AState and ShiftMask) <> 0 then
+    Include(Result, ssShift);
+  if (AState and LockMask) <> 0 then
+    Include(Result, ssCaps);
+  if (AState and ControlMask) <> 0 then
+    Include(Result, ssCtrl);
+  if (AState and Mod1Mask) <> 0 then
+    Include(Result, ssAlt);
+  if (AState and Mod2Mask) <> 0 then
+    Include(Result, ssNum);
+  if (AState and Mod4Mask) <> 0 then
+    Include(Result, ssSuper);
+  if (AState and Mod5Mask) <> 0 then
+    Include(Result, ssScroll);
+  if (AState and (1 shl 13)) <> 0 then
+    Include(Result, ssAltGr);
+end;
+
+function TXWindow.KeySymToKeycode(KeySym: TKeySym): Word;
+const
+  Table_20aX: array[$20a0..$20ac] of Word = (keyEcuSign, keyColonSign,
+    keyCruzeiroSign, keyFFrancSign, keyLiraSign, keyMillSign, keyNairaSign,
+    keyPesetaSign, keyRupeeSign, keyWonSign, keyNewSheqelSign, keyDongSign,
+    keyEuroSign);
+  Table_feXX: array[$fe50..$fe60] of Word = (keyDeadGrave, keyDeadAcute,
+    keyDeadCircumflex, keyDeadTilde, keyDeadMacron,keyDeadBreve,
+    keyDeadAbovedot, keyDeadDiaeresis, keyDeadRing, keyDeadDoubleacute,
+    keyDeadCaron, keyDeadCedilla, keyDeadOgonek, keyDeadIota,
+    keyDeadVoicedSound, keyDeadSemivoicedSound, keyDeadBelowdot);
+  Table_ff5X: array[$ff50..$ff58] of Word = (keyHome, keyLeft, keyUp, keyRight,
+    keyDown, keyPrior, keyNext, keyEnd, keyBegin);
+  Table_ff6X: array[$ff60..$ff6b] of Word = (keySelect, keyPrintScreen,
+    keyExecute, keyNIL, keyInsert, keyUndo, keyRedo, keyMenu, keyFind,
+    keyCancel, keyHelp, keyBreak);
+  Table_ff9X: array[$ff91..$ff9f] of Word = (keyPF1, keyPF2, keyPF3, keyPF4,
+    keyP7, keyP4, keyP8, keyP6, keyP2, keyP9, keyP3, keyP1, keyP5, keyP0,
+    keyPDecimal);
+  Table_ffeX: array[$ffe1..$ffee] of Word = (keyShiftL, keyShiftR, keyCtrlL,
+    keyCtrlR, keyCapsLock, keyShiftLock, keyMetaL, keyMetaR, keyAltL, keyAltR,
+    keySuperL, keySuperR, keyHyperL, keyHyperR);
+begin
+  case KeySym of
+    0..Ord('a')-1, Ord('z')+1..$bf, $f7:
+      Result := KeySym;
+    Ord('a')..Ord('z'), $c0..$f6, $f8..$ff:
+      Result := KeySym - 32;
+    $20a0..$20ac: Result := Table_20aX[KeySym];
+    $fe20: Result := keyTab;
+    $fe50..$fe60: Result := Table_feXX[KeySym];
+    $ff08: Result := keyBackspace;
+    $ff09: Result := keyTab;
+    $ff0a: Result := keyLinefeed;
+    $ff0b: Result := keyClear;
+    $ff0d: Result := keyReturn;
+    $ff13: Result := keyPause;
+    $ff14: Result := keyScrollLock;
+    $ff15: Result := keySysRq;
+    $ff1b: Result := keyEscape;
+    $ff50..$ff58: Result := Table_ff5X[KeySym];
+    $ff60..$ff6b: Result := Table_ff6X[KeySym];
+    $ff7e: Result := keyModeSwitch;
+    $ff7f: Result := keyNumLock;
+    $ff80: Result := keyPSpace;
+    $ff89: Result := keyPTab;
+    $ff8d: Result := keyPEnter;
+    $ff91..$ff9f: Result := Table_ff9X[KeySym];
+    $ffaa: Result := keyPAsterisk;
+    $ffab: Result := keyPPlus;
+    $ffac: Result := keyPSeparator;
+    $ffad: Result := keyPMinus;
+    $ffae: Result := keyPDecimal;
+    $ffaf: Result := keyPSlash;
+    $ffb0..$ffb9: Result := keyP0 + KeySym - $ffb0;
+    $ffbd: Result := keyPEqual;
+    $ffbe..$ffe0: Result := keyF1 + KeySym - $ffbe;
+    $ffe1..$ffee: Result := Table_ffeX[KeySym];
+    $ffff: Result := keyDelete;
+  else
+    Result := keyNIL;
+  end;
+{$IFDEF Debug}
+  if Result = keyNIL then
+    WriteLn('fpGFX/X11: Unknown KeySym: $', IntToHex(KeySym, 4));
+{$ENDIF}
+end;
+
+procedure TXWindow.UpdateMotifWMHints;
+type
+  PMotifWmHints = ^TMotifWmHints;
+  TMotifWmHints = packed record
+    Flags, Functions, Decorations: LongWord;
+    InputMode: LongInt;
+    Status: LongWord;
+  end;
+const
+  MWM_HINTS_FUNCTIONS = 1;
+  MWM_HINTS_DECORATIONS = 2;
+  FuncAll = 1;
+  FuncResize = 2;
+  FuncMove = 4;
+  FuncMinimize = 8;
+  FuncMaximize = 16;
+  FuncClose = 32;
+  DecorAll = 1;
+  DecorBorder = 2;
+  DecorResizeH = 4;
+  DecorTitle = 8;
+  DecorMenu = 16;
+  DecorMinimize = 32;
+  DecorMaximize = 64;
+var
+  PropType: TAtom;
+  PropFormat: LongInt;
+  PropItemCount, PropBytesAfter: LongWord;
+  Hints: PMotifWmHints;
+  NewHints: TMotifWmHints;
+begin
+  if TXDisplay(Display).FWMHints = 0 then
+    TXDisplay(Display).FWMHints :=
+      XInternAtom(TXDisplay(Display).Handle, '_MOTIF_WM_HINTS', False);
+
+  XGetWindowProperty(TXDisplay(Display).Handle, Handle,
+    TXDisplay(Display).FWMHints, 0, 5, False, AnyPropertyType, @PropType,
+    @PropFormat, @PropItemCount, @PropBytesAfter, @Hints);
+
+  NewHints.Flags := MWM_HINTS_FUNCTIONS or MWM_HINTS_DECORATIONS;
+  NewHints.Functions := FuncResize or FuncMove or FuncMinimize or FuncClose;
+  // !!!: Very temporary solution, as long as we have only two frame styles
+  if FBorder then
+    NewHints.Decorations := DecorBorder or DecorTitle or DecorMenu or DecorMinimize
+  else
+    NewHints.Decorations := 0;
+  if CanMaximize then
+  begin
+    NewHints.Functions := NewHints.Functions or FuncMaximize;
+    NewHints.Decorations := NewHints.Decorations or DecorMaximize;
+  end;
+
+  if Assigned(Hints) then
+  begin
+    Hints^.Flags := Hints^.Flags or NewHints.Flags;
+    Hints^.Decorations := NewHints.Decorations;
+    Hints^.Functions := NewHints.Functions;
+  end else
+    Hints := @NewHints;
+
+  XChangeProperty(TXDisplay(Display).Handle, Handle,
+    TXDisplay(Display).FWMHints, TXDisplay(Display).FWMHints,
+    32, PropModeReplace, Pointer(Hints), 5);
+  if Hints <> @NewHints then
+    XFree(Hints);
+end;
+
+
+// private methods
 
 const
   ButtonTable: array[1..3] of TMouseButton = (mbLeft, mbMiddle, mbRight);
@@ -1120,7 +1631,6 @@ end;
 
 procedure TXWindow.Reparent(var Event: TXReparentEvent);
 begin
-  WriteLn('fpGFX/X11: XWindow: Reparent');
   if Assigned(OnCreate) then
     OnCreate(Self);
 end;
@@ -1132,9 +1642,14 @@ end;
 
 procedure TXWindow.Configure(var Event: TXConfigureEvent);
 begin
-  FLeft := Event.x;
-  FTop := Event.y;
-  if (FWidth <> Event.Width) or (FHeight <> Event.Height) then
+  if (Event.x <> Left) or (Event.y <> Top) then
+  begin
+    FLeft := Event.x;
+    FTop := Event.y;
+    if Assigned(OnMove) then
+      OnMove(Self);
+  end;
+  if (Event.Width <> Width) or (Event.Height <> Height) then
   begin
   // !!!: The following 2 lines are _quite_ wrong... :)
     FWidth := Event.Width;
@@ -1160,434 +1675,10 @@ begin
     WriteLn('fpGFX/X11: Unknown client message: ', Event.message_type);
 end;
 
-function TXWindow.DisplayHandle: PDisplay; {!!!: inline;}
-begin
-  Result := TXDisplay(Display).Handle;
-end;
 
-function TXWindow.ConvertShiftState(AState: Cardinal): TShiftState;
-begin
-  Result := [];
-  if (AState and Button1Mask) <> 0 then
-    Include(Result, ssLeft);
-  if (AState and Button2Mask) <> 0 then
-    Include(Result, ssMiddle);
-  if (AState and Button3Mask) <> 0 then
-    Include(Result, ssRight);
-  if (AState and ShiftMask) <> 0 then
-    Include(Result, ssShift);
-  if (AState and LockMask) <> 0 then
-    Include(Result, ssCaps);
-  if (AState and ControlMask) <> 0 then
-    Include(Result, ssCtrl);
-  if (AState and Mod1Mask) <> 0 then
-    Include(Result, ssAlt);
-  if (AState and Mod2Mask) <> 0 then
-    Include(Result, ssNum);
-  if (AState and Mod4Mask) <> 0 then
-    Include(Result, ssSuper);
-  if (AState and Mod5Mask) <> 0 then
-    Include(Result, ssScroll);
-  if (AState and (1 shl 13)) <> 0 then
-    Include(Result, ssAltGr);
-end;
-
-function TXWindow.KeySymToKeycode(KeySym: TKeySym): Word;
-begin
-  case KeySym of
-    0..Ord('a')-1, Ord('z')+1..$bf, $f7:
-      Result := KeySym;
-    Ord('a')..Ord('z'), $c0..$f6, $f8..$ff:
-      Result := KeySym - 32;
-    $20a0: Result := keyEcuSign;
-    $20a1: Result := keyColonSign;
-    $20a2: Result := keyCruzeiroSign;
-    $20a3: Result := keyFFrancSign;
-    $20a4: Result := keyLiraSign;
-    $20a5: Result := keyMillSign;
-    $20a6: Result := keyNairaSign;
-    $20a7: Result := keyPesetaSign;
-    $20a8: Result := keyRupeeSign;
-    $20a9: Result := keyWonSign;
-    $20aa: Result := keyNewSheqelSign;
-    $20ab: Result := keyDongSign;
-    $20ac: Result := keyEuroSign;
-    $fe20: Result := keyTab;
-    $fe50: Result := keyDeadGrave;
-    $fe51: Result := keyDeadAcute;
-    $fe52: Result := keyDeadCircumflex;
-    $fe53: Result := keyDeadTilde;
-    $fe54: Result := keyDeadMacron;
-    $fe55: Result := keyDeadBreve;
-    $fe56: Result := keyDeadAbovedot;
-    $fe57: Result := keyDeadDiaeresis;
-    $fe58: Result := keyDeadRing;
-    $fe59: Result := keyDeadDoubleacute;
-    $fe5a: Result := keyDeadCaron;
-    $fe5b: Result := keyDeadCedilla;
-    $fe5c: Result := keyDeadOgonek;
-    $fe5d: Result := keyDeadIota;
-    $fe5e: Result := keyDeadVoicedSound;
-    $fe5f: Result := keyDeadSemivoicedSound;
-    $fe60: Result := keyDeadBelowdot;
-    $ff08: Result := keyBackspace;
-    $ff09: Result := keyTab;
-    $ff0a: Result := keyLinefeed;
-    $ff0b: Result := keyClear;
-    $ff0d: Result := keyReturn;
-    $ff13: Result := keyPause;
-    $ff14: Result := keyScrollLock;
-    $ff15: Result := keySysRq;
-    $ff1b: Result := keyEscape;
-    $ff50: Result := keyHome;
-    $ff51: Result := keyLeft;
-    $ff52: Result := keyUp;
-    $ff53: Result := keyRight;
-    $ff54: Result := keyDown;
-    $ff55: Result := keyPrior;
-    $ff56: Result := keyNext;
-    $ff57: Result := keyEnd;
-    $ff58: Result := keyBegin;
-    $ff60: Result := keySelect;
-    $ff61: Result := keyPrintScreen;
-    $ff62: Result := keyExecute;
-    $ff63: Result := keyInsert;
-    $ff65: Result := keyUndo;
-    $ff66: Result := keyRedo;
-    $ff67: Result := keyMenu;
-    $ff68: Result := keyFind;
-    $ff69: Result := keyCancel;
-    $ff6a: Result := keyHelp;
-    $ff6b: Result := keyBreak;
-    $ff7e: Result := keyModeSwitch;
-    $ff7f: Result := keyNumLock;
-    $ff80: Result := keyPSpace;
-    $ff89: Result := keyPTab;
-    $ff8d: Result := keyPEnter;
-    $ff91: Result := keyPF1;
-    $ff92: Result := keyPF2;
-    $ff93: Result := keyPF3;
-    $ff94: Result := keyPF4;
-    $ff95: Result := keyP7;
-    $ff96: Result := keyP4;
-    $ff97: Result := keyP8;
-    $ff98: Result := keyP6;
-    $ff99: Result := keyP2;
-    $ff9a: Result := keyP9;
-    $ff9b: Result := keyP3;
-    $ff9c: Result := keyP1;
-    $ff9d: Result := keyP5;
-    $ff9e: Result := keyP0;
-    $ff9f: Result := keyPDecimal;
-    $ffaa: Result := keyPAsterisk;
-    $ffab: Result := keyPPlus;
-    $ffac: Result := keyPSeparator;
-    $ffad: Result := keyPMinus;
-    $ffae: Result := keyPDecimal;
-    $ffaf: Result := keyPSlash;
-    $ffb0: Result := keyP0;
-    $ffb1: Result := keyP1;
-    $ffb2: Result := keyP2;
-    $ffb3: Result := keyP3;
-    $ffb4: Result := keyP4;
-    $ffb5: Result := keyP5;
-    $ffb6: Result := keyP6;
-    $ffb7: Result := keyP7;
-    $ffb8: Result := keyP8;
-    $ffb9: Result := keyP9;
-    $ffbd: Result := keyPEqual;
-    $ffbe: Result := keyF1;
-    $ffbf: Result := keyF2;
-    $ffc0: Result := keyF3;
-    $ffc1: Result := keyF4;
-    $ffc2: Result := keyF5;
-    $ffc3: Result := keyF6;
-    $ffc4: Result := keyF7;
-    $ffc5: Result := keyF8;
-    $ffc6: Result := keyF9;
-    $ffc7: Result := keyF10;
-    $ffc8: Result := keyF11;
-    $ffc9: Result := keyF12;
-    $ffca: Result := keyF13;
-    $ffcb: Result := keyF14;
-    $ffcc: Result := keyF15;
-    $ffcd: Result := keyF16;
-    $ffce: Result := keyF17;
-    $ffcf: Result := keyF18;
-    $ffd0: Result := keyF19;
-    $ffd1: Result := keyF20;
-    $ffd2: Result := keyF21;
-    $ffd3: Result := keyF22;
-    $ffd4: Result := keyF23;
-    $ffd5: Result := keyF24;
-    $ffd6: Result := keyF25;
-    $ffd7: Result := keyF26;
-    $ffd8: Result := keyF27;
-    $ffd9: Result := keyF28;
-    $ffda: Result := keyF29;
-    $ffdb: Result := keyF30;
-    $ffdc: Result := keyF31;
-    $ffdd: Result := keyF32;
-    $ffde: Result := keyF33;
-    $ffdf: Result := keyF34;
-    $ffe0: Result := keyF35;
-    $ffe1: Result := keyShiftL;
-    $ffe2: Result := keyShiftR;
-    $ffe3: Result := keyCtrlL;
-    $ffe4: Result := keyCtrlR;
-    $ffe5: Result := keyCapsLock;
-    $ffe6: Result := keyShiftLock;
-    $ffe7: Result := keyMetaL;
-    $ffe8: Result := keyMetaR;
-    $ffe9: Result := keyAltL;
-    $ffea: Result := keyAltR;
-    $ffeb: Result := keySuperL;
-    $ffec: Result := keySuperR;
-    $ffed: Result := keyHyperL;
-    $ffee: Result := keyHyperR;
-    $ffff: Result := keyDelete;
-  else
-    begin
-      WriteLn('fpGFX/X11: Unknown KeySym: $', IntToHex(KeySym, 4));
-      Result := keyNIL;
-    end;
-  end;
-  // WriteLn('KeySym translated to $', IntToHex(Result, 4));	
-end;
-
-function TXWindow.GetTitle: String;
-var
-  s: PChar;
-begin
-  XFetchName(DisplayHandle, Handle, @s);
-  Result := s;
-  XFree(s);
-end;
-
-procedure TXWindow.SetTitle(const ATitle: String);
-begin
-  XStoreName(DisplayHandle, Handle, PChar(ATitle));
-end;
-
-constructor TXWindow.Create(ADisplay: TXDisplay);
-const
-  WindowHints: TXWMHints = (
-    flags: InputHint or StateHint or WindowGroupHint;
-    input: True;
-    initial_state: NormalState;
-    icon_pixmap: 0;
-    icon_window: 0;
-    icon_x: 0;
-    icon_y: 0;
-    icon_mask: 0;
-    window_group: 0;
-  );
-var
-  Colormap: TColormap;
-  Attr: TXSetWindowAttributes;
-  SizeHints: TXSizeHints;
-  LeaderWindow: X.TWindow;
-  ClassHint: PXClassHint;
-  ClientLeaderAtom: TAtom;
-begin
-  inherited Create;
-
-  FDisplay := ADisplay;
-
-  LeaderWindow := XCreateSimpleWindow(DisplayHandle,
-    XDefaultRootWindow(DisplayHandle), 10, 10, 10, 10, 0, 0, 0);
-
-  ClassHint := XAllocClassHint;
-  ClassHint^.res_name := 'fpGFX'; // !!! use app name
-  ClassHint^.res_class := 'FpGFX';
-  XSetWMProperties(DisplayHandle, LeaderWindow, nil, nil, nil, 0, nil, nil,
-    ClassHint);
-  XFree(ClassHint);
-
-
-  Colormap := XDefaultColormap(ADisplay.Handle, XDefaultScreen(ADisplay.Handle));
-
-  Attr.event_mask := KeyPressMask or KeyReleaseMask or ButtonPressMask or
-    ButtonReleaseMask or EnterWindowMask or LeaveWindowMask or
-    PointerMotionMask or ExposureMask or FocusChangeMask or StructureNotifyMask;
-  Attr.Colormap := Colormap;
-
-  SizeHints.flags := PSize;
-  SizeHints.x := 0;
-  SizeHints.y := 0;
-  SizeHints.width := 200;
-  SizeHints.height := 200;
-
-  FHandle := XCreateWindow(
-    DisplayHandle,
-    XDefaultRootWindow(DisplayHandle),	// parent: Create a top-level window
-    SizeHints.x, SizeHints.y,		// position
-    SizeHints.width, SizeHints.height,	// size
-    0,					// border size
-    CopyFromParent,			// depth
-    InputOutput,			// class
-    CopyFromParent,			// visual
-    CWEventMask or CWColormap,		// valuemask: What in "Attr" is valid?
-    @Attr);
-
-  if Handle = 0 then
-    raise EX11Error.Create(SWindowCreationFailed);
-
-  XSetStandardProperties(DisplayHandle, Handle, nil, nil, 0,
-    argv, argc, @SizeHints);
-
-  XSetWMNormalHints(DisplayHandle, Handle, @SizeHints);
-
-  WindowHints.flags := WindowGroupHint;
-  WindowHints.window_group := LeaderWindow;
-  XSetWMHints(DisplayHandle, Handle, @WindowHints);
-
-  ClientLeaderAtom := XInternAtom(DisplayHandle, 'WM_CLIENT_LEADER', False);
-  XChangeProperty(DisplayHandle, Handle, ClientLeaderAtom, 33, 32,
-    PropModeReplace, @LeaderWindow, 1);
-
-  // We want to get a Client Message when the user tries to close this window
-  if ADisplay.FWMProtocols = 0 then
-    ADisplay.FWMProtocols := XInternAtom(DisplayHandle,
-      'WM_PROTOCOLS', False);
-  if ADisplay.FWMDeleteWindow = 0 then
-    ADisplay.FWMDeleteWindow := XInternAtom(DisplayHandle,
-      'WM_DELETE_WINDOW', False);
-
-  XSetWMProtocols(ADisplay.Handle, FHandle, @ADisplay.FWMDeleteWindow, 1);
-
-
-  FCanvas := TXWindowCanvas.Create(Colormap, ADisplay, Handle,
-    ADisplay.FDefaultFont);
-end;
-
-destructor TXWindow.Destroy;
-begin
-  if Assigned(OnClose) then
-    OnClose(Self);
-
-  XDestroyWindow(DisplayHandle, Handle);
-  Canvas.Free;
-
-  TXDisplay(Display).FWindows.Remove(Self);
-  inherited Destroy;
-end;
-
-procedure TXWindow.DefaultHandler(var Message);
-begin
-  WriteLn('fpGFX/X11: Unhandled X11 event received: ',
-    GetXEventName(TXEvent(Message)._type));
-end;
-
-procedure TXWindow.SetSize(AWidth, AHeight: Integer);
-begin
-  // !!!: Implement this proper
-  WriteLn('fpGFX/X11: TXWindow.SetSize is not properly implemented yet');
-  SetClientSize(AWidth, AHeight);
-end;
-
-procedure TXWindow.SetMinMaxSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
-begin
-  // !!!: Implement this proper
-  WriteLn('fpGFX/X11: TXWindow.SetMinMaxSize is not properly implemented yet');
-  SetMinMaxClientSize(AMinWidth, AMinHeight, AMaxWidth, AMaxHeight);
-end;
-
-procedure TXWindow.SetClientSize(AWidth, AHeight: Integer);
-var
-  ChangeMask: Cardinal;
-  Changes: TXWindowChanges;
-begin
-  ChangeMask := 0;
-
-  if AWidth <> ClientWidth then
-  begin
-    ChangeMask := CWWidth;
-    Changes.Width := AWidth;
-  end;
-
-  if AHeight <> ClientHeight then
-  begin
-    ChangeMask := ChangeMask or CWHeight;
-    Changes.Height := AHeight;
-  end;
-
-  if ChangeMask <> 0 then
-    XConfigureWindow(DisplayHandle, Handle, ChangeMask, @Changes);
-end;
-
-procedure TXWindow.SetMinMaxClientSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
-var
-  Supplied: LongInt;
-  SizeHints: PXSizeHints;
-  PropType: TAtom;
-  PropFormat: LongInt;
-  PropItemCount, PropBytesAfter: LongWord;
-begin
-  SizeHints := XAllocSizeHints;
-  XGetWMNormalHints(DisplayHandle, Handle, SizeHints, @Supplied);
-  with SizeHints^ do
-  begin
-    if (AMinWidth > 0) or (AMinHeight > 0) then
-    begin
-      flags := flags or PMinSize;
-      min_width := AMinWidth;
-      min_height := AMinHeight;
-    end else
-      flags := flags and Cardinal(not PMinSize);	// !!!
-
-    if (AMaxWidth > 0) or (AMaxHeight > 0) then
-    begin
-      flags := flags or PMaxSize;
-      if AMaxWidth > 0 then
-        max_width := AMaxWidth
-      else
-        max_width := 32767;
-      if AMaxHeight > 0 then
-        max_height := AMaxHeight
-      else
-        max_height := 32767;
-    end else
-      flags := flags and Cardinal(not PMaxSize);	// !!!
-  end;
-
-  XSetWMNormalHints(DisplayHandle, Handle, SizeHints);
-  XFree(SizeHints);
-end;
-
-procedure TXWindow.Show;
-begin
-  XMapRaised(DisplayHandle, Handle);
-end;
-
-procedure TXWindow.Invalidate(const ARect: TRect);
-var
-  Event: TXExposeEvent;
-begin
-  FillChar(Event, SizeOf(Event), #0);
-  Event._type := X.Expose;
-  Event.Window := FHandle;
-  Event.x := ARect.Left;
-  Event.y := ARect.Top;
-  Event.Width := ARect.Right - ARect.Left;
-  Event.Height := ARect.Bottom - ARect.Top;
-  XSendEvent(DisplayHandle, Handle, False, 0, @Event);
-end;
-
-procedure TXWindow.CaptureMouse;
-begin
-  XGrabPointer(DisplayHandle, Handle, False, ButtonPressMask or
-    ButtonReleaseMask or EnterWindowMask or LeaveWindowMask or
-    PointerMotionMask, GrabModeAsync, GrabModeAsync, 0, 0, CurrentTime);
-end;
-
-procedure TXWindow.ReleaseMouse;
-begin
-  XUngrabPointer(DisplayHandle, CurrentTime);
-end;
-
+// -------------------------------------------------------------------
+//   Global utility functions
+// -------------------------------------------------------------------
 
 function GetXEventName(Event: LongInt): String;
 const
@@ -1611,65 +1702,11 @@ end;
 end.
 
 
-// Some old, unused code, which might be useful in the future:
-
-// ...setting the window decorations and functions...
-{
-type
-  PMotifWmHints = ^TMotifWmHints;
-  TMotifWmHints = packed record
-    Flags, Functions, Decorations: LongWord;
-    InputMode: LongInt;
-    Status: LongWord;
-  end;
-const
-  MWM_HINTS_FUNCTIONS = 1;
-  MWM_HINTS_DECORATIONS = 2;
-  FuncAll = 1;
-  FuncResize = 2;
-  FuncMove = 4;
-  FuncMinimize = 8;
-  FuncMaximize = 16;
-  FuncClose = 32;
-  DecorAll = 1;
-  DecorBorder = 2;
-  DecorResizeH = 4;
-  DecorTitle = 8;
-  DecorMenu = 16;
-  DecorMinimize = 32;
-  DecorMaximize = 64;
-var
-  Hints: PMotifWmHints;
-  NewHints: TMotifWmHints;
-begin
-  if TXDisplay(Display).FWMHints = 0 then
-    TXDisplay(Display).FWMHints :=
-      XInternAtom(TXDisplay(Display).Handle, '_MOTIF_WM_HINTS', False);
-
-  XGetWindowProperty(TXDisplay(Display).Handle, Handle,
-    TXDisplay(Display).FWMHints, 0, 5, False, AnyPropertyType, @PropType,
-    @PropFormat, @PropItemCount, @PropBytesAfter, @Hints);
-
-  NewHints.Flags := MWM_HINTS_FUNCTIONS or MWM_HINTS_DECORATIONS;
-  NewHints.Functions := FuncResize or FuncMove or FuncMinimize or FuncMaximize or FuncClose;
-  NewHints.Decorations := DecorBorder or DecorTitle or DecorMenu or DecorMinimize or DecorMaximize;
-  if Assigned(Hints) then
-  begin
-    Hints^.Flags := Hints^.Flags or NewHints.Flags;
-    Hints^.Decorations := NewHints.Decorations;
-    Hints^.Functions := NewHints.Functions;
-  end else
-    Hints := @NewHints;
-
-  XChangeProperty(TXDisplay(Display).Handle, Handle,
-    TXDisplay(Display).FWMHints, TXDisplay(Display).FWMHints,
-    32, PropModeReplace, Pointer(Hints), 5);
-  if Hints <> @NewHints then
-    XFree(Hints);}
-
-
 {
   $Log$
+  Revision 1.6  2001/01/11 23:07:24  sg
+  *** empty log message ***
+
   Revision 1.5  2000/12/31 16:32:04  sg
   * Implemented TXWindow.SetClientSize and SetMinMaxClientSize
   * Adapted to new X11 units
