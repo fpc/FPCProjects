@@ -645,7 +645,8 @@ begin
     M:=TMemoryStream.Create;
     Try
       With TFPWriterPNG.Create do
-        try
+        try 
+          UseAlpha:=True;
           ImageWrite(M,I);
         Finally
           Free;
@@ -715,7 +716,7 @@ begin
   H:=Img.Height;
   // Writeln('Transparant');
   cnv.Brush.Style:=bsSolid;
-  cnv.Brush.Color:=colLtGray;
+  cnv.Brush.Color:=colTransparent;
   cnv.Pen.Color:=colWhite;
   Cnv.Rectangle(0,0,W,H);
   // Writeln('Setting font');
