@@ -1,0 +1,214 @@
+\documentclass{report}
+\usepackage{html}
+\usepackage{thumbpdf}
+\usepackage{fpc}
+\usepackage{times}
+\begin{document}
+\author{Sebastian Guenther}
+\title{FlexORB User's Guide and Reference}
+\docversion{Version 0.01}
+\maketitle
+\tableofcontents
+
+%===============================================================================
+\chapter{Introduction}
+
+%-------------------------------------------------------------------------------
+
+\section{General}
+FlexORB is a lightweight and flexible ORB for CORBA. Its main target is the \fpc
+Compiler (FPC). It is written in \fpc, and it is built around the special
+features of this compiler (e.g. its support for AnsiStrings).
+\newline Just for clarification:
+\begin{itemize}
+\item \textbf{CORBA}: Common Object Request Broker Architecture; defines a
+      platform and language independent object model and some important services
+      with client/server environments as the main target.
+\item \textbf{CORBA object}: Object in the sense of OOP, which has a
+      well-defined interface to its environment.
+\item \textbf{IDL}: Interface Description Lanuage, declarative language derived
+      from C++ which is used to describe the interfaces of CORBA objects in a
+      platform and language independent manner. You use an \textit{IDL compiler}
+      to create mappings to a specific programming language (here mappings means
+      e.g. header files in C/C++ or units in Pascal).
+\item \textbf{ORB}: Object Request Broker, a CORBA object which provides the basic
+      services, e.g. all methods needed for bootstrapping the whole CORBA
+      system.
+\item \textbf{GIOP}: General Inter-ORB protocol. This is a well-defined binary
+      protocol which can be used by different ORBs to communicate with each
+      other.
+      Normally ORBs use \textit{bridges} to support objects which run on a
+      different ORB. This process is transparent to the developer.
+\item \textbf{IIOP}: A specific GIOP application: IIOP is an extension to GIOP
+      which defines how ORBs communicate using an TCP/IP connection. Using IIOP,
+      it is possible that different ORBs run on different machines within a
+      network.
+\end{itemize}
+The most important features of FlexORB are:
+\begin{itemize}
+\item Small memory footprint
+\item Extensibility: Provides internal interfaces to extend the ORB with
+      features which are not available as default.
+      (hence the name \textit{Flex}Orb).
+\item IIOP bridge, which enables FlexORB to communicate with other ORB's
+      (possibly running on different machines) and objects written in other
+      programming languages or scripting languages.
+\item Direct support of C and C++ with some special libraries to make it
+      possible to implement CORBA objects in C/C++. GIOP/IIOP in conjunction
+      with a C/C++ ORB can do this job, too, but such solutions are
+      \textit{much} slower.
+\item Provides internal interfaces to extend the ORB with features which are
+      not available as default. (hence the name \textit{Flex}Orb).
+\end{itemize}
+
+%-------------------------------------------------------------------------------
+
+\section{Design Decisions}
+The most important thing about FlexORB is that it \textit{cannot} be fully CORBA
+compliant. The CORBA specification requires that a compliant implementation
+supports at least one of the defined language mappings. But unfortunately there
+is no mapping for Object Pascal, so FlexORB uses its own mapping. This can be
+seen as an important advantage: FlexORB does not really try to be CORBA
+compliant as \textit{close} as possible, but it tries to be as \textit{simple}
+as possible. It is not the goal of FlexORB to provide all defined CORBA
+features and services; it is only meant as a way to make FPC more open to the
+rest of the OOP world via the GIOP/IIOP bridge.
+\subsection{Client view}
+The following decisions influence the way how clients of CORBA objects see the
+ORB and the objects:
+\begin{itemize}
+\item As a general rule the CORBA objects shall look to the clients almost
+      the same as native objects. The exact mapping which provides this
+      requirement is described in detail in chapter \ref{ChapterMapping} on
+      page \pageref{ChapterMapping}.
+\item The ORB can be seen as an object with a simple public interface. It has to
+      be initialized via the standard \texttt{ORB\_Init} function, which
+      returns a reference to the ORB as a pointer to an \texttt{IOrb} interface.
+\item All object references are simply pointers to an interface
+      object. It does not distinguish between a reference to a CORBA object and
+      directly created instances.
+      \footnote{This is different to the C++ mapping: In C++ you can create
+      objects directly on the stack, whereas \fpc objects and interfaces
+      can only exist as a memory object with pointers attached to them.
+      Therefore, the C++ mapping uses two different types per object interface,
+      but the FlexORB mapping uses only one - the reference which is native to
+      Object Pascal.}
+      Interfaces cannot have constructors or destructors, the only way to
+      create new object instances is to call 
+\item Object references have the same maximum life span as the ORB; i.e. you
+      cannot store an object reference (or its string equivalent using
+      \texttt{ORB.object\_to\_string}) within a file and retrieve it in
+      another session of the same program. All object references are only valid
+      within the FlexORB instance which created the object.
+      \newline This is the same semantic as with standard Object Pascal objects.
+\end{itemize}
+
+\subsection{Implementator's view}
+For implementators of CORBA objects (in C/S environments the CORBA
+objects can be seen as \textit{servers}). it is important that they can use the ORB
+as simple as possible. The following design decisions try to support this:
+\begin{itemize}
+\item The ORB tries to be as compliant as possible, but it only supports the
+      methods which are needed by the other parts of FlexORB.
+\item The defined object adapters (BOA (Basic Object Adapter) and POA (Portable
+      Object Adapter)) provide services which are not applicable to FlexORB.
+      Normally it is recommended to implement CORBA objects using the POA as
+      an implementation helper. The reason is that the POA provides a common
+      API for object implementations, regardless of the ORB used; it makes the
+      implementations portable between different ORBs. As there is no other
+      ORB for \fpc but FlexORB yet, and as there is no CORBA compliant
+      Pascal mapping in CORBA, this argument does not apply here. Supporting
+      the full POA interface would increase the complexity of FlexORB
+      tremendously.
+      \newline FlexORB object implementations use a much simpler base class
+      than the POA instead, which is called \texttt{TCorbaObject}.
+\end{itemize}
+
+%===============================================================================
+\chapter{CORBA Mapping to \fpc}
+\label{ChapterMapping}
+
+This chapter discusses how the basic CORBA structures and services are being
+mapped to the \fpc language. It also defines an IDL to \fpc mapping, and the
+reverse mapping from \fpc source to IDL.
+
+%-------------------------------------------------------------------------------
+
+\subsection{Overview}
+The basic mapping of CORBA and IDL types follows some quite simple rules. 
+\begin{itemize}
+\item Strings are always represented as \texttt{AnsiStrings}. "\texttt{in}"
+      arguments of methods are translated to \texttt{const AnsiString}.
+\item Object interfaces directly map to the \fpc \texttt{interface} construct.
+    \marginpar{See chapter \ref{ChapterFPCBeta} for FPC beta remarks}
+\end{itemize}
+
+%-------------------------------------------------------------------------------
+
+\subsection{IDL mapping}
+Mapping all possible members of an IDL definition is somewhat difficult, as it
+is possible in IDL to declare certain type definitions within an interface
+declaration - this is not possible in \fpc at all. The solution is to insert
+such declarations in front of the interface declaration, additionally the name
+of the interface is added in front of the name of the declaration.
+\newline A simple example:
+\begin{verbatim}
+module Test
+{
+  interface MyInterface {
+    typedef struct TestStruct {
+      int x, y;
+    };
+
+    void setStruct(in TestStruct tstr);
+  };
+};
+\end{verbatim}
+would map to:
+\begin{verbatim}
+unit Test;
+interface
+type
+  TMyInterface_TestStruct = record
+    x, y: Integer;
+  end;
+
+  IMyInterface = interface
+    procedure setStruct(const tstr: TMyInterface_TestStruct);
+  end;
+...
+\end{verbatim}
+
+%-------------------------------------------------------------------------------
+
+\subsection{FPC mapping}
+A special parser can read \fpc source codes and translate all interface
+declarations together with their referenced type and constant declarations back
+to IDL. This mapping process is simply the reverse process of the IDL to \fpc
+mapping.
+
+%===============================================================================
+\chapter{Special Notes on \fpc Beta}
+\label{ChapterFPCBeta}
+Unfortunately, some of the compiler features needed by FlexORB are not available
+in the compiler at the time of this writing. They are expected to appear quite
+soon after \fpc 1.0 has been released; in the meantime the FlexORB beta
+implementation behaves somewhat different than described in this document:
+\begin{itemize}
+\item There is not support for the \texttt{interface} construct yet. Instead,
+      normal classes (\texttt{class} constructs) are used to emulate interfaces.
+\item Multiple Inheritance is emulated by FlexORB, too: The object
+      implementations have to register theirselves once per run, FlexORB will
+      create all the necessary glue code and virtual method tables from this
+      informations.
+\item It does not yet create the run-time type information (RTTI) necessary for
+      the run-time interface inspection capabilities of CORBA. FlexORB will have
+      to use other means of getting the RTTI data in the meantime.
+%### Update as soon as possible:
+      (Wether this
+      will be realized by reading external RTTI files or by an extended version
+      of the registering procedure necessary for the Multiple Inheritance
+      support, has to be defined ASAP.)
+\end{itemize}
+
+\end{document}
