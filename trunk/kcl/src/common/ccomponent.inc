@@ -49,6 +49,24 @@ begin
   FilterList.Add(filter);
 end;
 
+procedure TKCLComponent.RemoveEventFilter(EventClass: TEventClass;
+  FilterFn: TEventFilterFn);
+var
+  i: Integer;
+  filter: PEventFilter;
+begin
+  ASSERT(Assigned(FilterList));
+  for i := 0 to FilterList.Count - 1 do begin
+    filter := PEventFilter(FilterList.Items[i]);
+    if (filter^.EventClass = EventClass) and (filter^.FilterFn = FilterFn) then begin
+      Dispose(filter);
+      FilterList.Delete(i);
+      break;
+    end;
+  end;
+end;
+
+
 procedure DumpEvent(Dest: TObject; Event: TEventObj);
 type
   PObject = ^TObject;
@@ -112,6 +130,7 @@ begin
     end;
   end;
   WriteLn;
+  FreeMem(PropList);
 end;
 
 function TKCLComponent.CallEventFilters(Event: TEventObj): Boolean;
@@ -131,11 +150,16 @@ begin
 	break;
       end;
     end;
+  Event.Release;
 end;
 
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:27:57  sg
+  * Added "RemoveEventFilter"
+  * Memory leaks fixed
+
   Revision 1.3  2000/01/24 00:17:58  sg
   * Implement event handler registration and event distribution
 
