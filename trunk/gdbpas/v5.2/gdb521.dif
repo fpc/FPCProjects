@@ -1,64 +1,44 @@
 diff -u -p -r origdb/breakpoint.c gdb/breakpoint.c
---- origdb/breakpoint.c	2002-09-16 10:23:54.000000000 +0200
-+++ gdb/breakpoint.c	2002-09-16 10:34:18.000000000 +0200
-@@ -1437,6 +1449,42 @@ breakpoint_init_inferior (enum inf_conte
- 
-   ALL_BREAKPOINTS_SAFE (b, temp)
-   {
-+        /* Disabled, does not work correctly
-+	if ((b->type == bp_hardware_watchpoint
-+	       || b->type == bp_watchpoint
-+	       || b->type == bp_access_watchpoint
-+	       || b->type == bp_read_watchpoint)
-+	     && (context == inf_exited))
-+	 {
-+	  if (b->val)
-+	    value_free (b->val);
-+	  b->val = NULL;
-+         } */
-+        if ((((REMOVE_HARDWARE_BREAKPOINT_AT_EXIT)
-+		&& b->type == bp_hardware_breakpoint)
-+	       ||((REMOVE_HARDWARE_WATCHPOINT_AT_EXIT)
-+		  && (b->type == bp_hardware_watchpoint
-+		      || b->type == bp_access_watchpoint
-+	              || b->type == bp_read_watchpoint)))
-+                   && b->inserted
-+		   && context == inf_exited)
-+   	 remove_breakpoint (b, mark_uninserted);
-+
-+	/* Also disabled
-+	if (b->type == bp_hardware_watchpoint
-+	       || b->type == bp_watchpoint
-+	       || b->type == bp_access_watchpoint
-+	       || b->type == bp_read_watchpoint)
-+	{
-+	  struct value * val;
-+	  struct value * mark = value_mark (); 
-+	  val = evaluate_expression (b->exp);
-+	  release_value (val);
-+	  if (VALUE_LAZY (val))
-+	   value_fetch_lazy (val);
-+	  b->val = val;
-+	  value_free_to_mark (mark);
-+	 } */
-     b->inserted = 0;
- 
-     switch (b->type)
-@@ -6892,8 +6940,9 @@ breakpoint_re_set_one (PTR bint)
- 	    xfree (b->cond);
- 	  b->cond = parse_exp_1 (&s, (struct block *) 0, 0);
- 	}
--      if (b->enable_state == bp_enabled)
--	mention (b);
-+      /* Generates lot of noise
-+	if (b->enable_state == bp_enabled)
-+	mention (b); */
-       value_free_to_mark (mark);
-       break;
-     case bp_catch_catch:
+--- origdb/breakpoint.c	Mon Sep 16 11:41:25 2002
++++ gdb/breakpoint.c	Mon Sep 16 12:08:29 2002
+@@ -720,7 +720,19 @@ insert_breakpoints (void)
+     if (b->enable_state == bp_permanent)
+       /* Permanent breakpoints cannot be inserted or removed.  */
+       continue;
+-    else if (b->type != bp_watchpoint
++    if ((b->type == bp_watchpoint
++	 || b->type == bp_hardware_watchpoint
++	 || b->type == bp_read_watchpoint
++	 || b->type == bp_access_watchpoint) && (!b->val))
++      {
++	struct value *val;
++	val = evaluate_expression (b->exp);
++	release_value (val);
++	if (VALUE_LAZY (val))
++	  value_fetch_lazy (val);
++	b->val = val;
++      } 
++    if (b->type != bp_watchpoint
+ 	&& b->type != bp_hardware_watchpoint
+ 	&& b->type != bp_read_watchpoint
+ 	&& b->type != bp_access_watchpoint
+@@ -1460,6 +1472,13 @@ breakpoint_init_inferior (enum inf_conte
+ 	/* Likewise for watchpoints on local expressions.  */
+ 	if (b->exp_valid_block != NULL)
+ 	  delete_breakpoint (b);
++	if (context == inf_starting) 
++	  {
++	    /* Reset val field to force reread of starting value in insert_breakpoints.  */
++	    if (b->val)
++	      value_free (b->val);
++	    b->val = NULL;
++	  }
+ 	break;
+       default:
+ 	/* Likewise for exception catchpoints in dynamic-linked
 diff -u -p -r origdb/i386-tdep.c gdb/i386-tdep.c
---- origdb/i386-tdep.c	2002-09-16 10:24:39.000000000 +0200
-+++ gdb/i386-tdep.c	2002-09-16 10:34:18.000000000 +0200
+--- origdb/i386-tdep.c	Mon Sep 16 11:41:12 2002
++++ gdb/i386-tdep.c	Mon Sep 16 12:08:46 2002
 @@ -690,6 +690,8 @@ i386_skip_prologue (int pc)
  {
    unsigned char op;
@@ -92,8 +72,8 @@ diff -u -p -r origdb/i386-tdep.c gdb/i386-tdep.c
  
  void
 diff -u -p -r origdb/p-exp.y gdb/p-exp.y
---- origdb/p-exp.y	2002-09-16 10:24:52.000000000 +0200
-+++ gdb/p-exp.y	2002-09-16 10:34:18.000000000 +0200
+--- origdb/p-exp.y	Mon Sep 16 11:41:07 2002
++++ gdb/p-exp.y	Mon Sep 16 12:08:46 2002
 @@ -50,7 +50,7 @@ Foundation, Inc., 59 Temple Place - Suit
  #include "gdb_string.h"
  #include <ctype.h>
@@ -460,8 +440,8 @@ diff -u -p -r origdb/p-exp.y gdb/p-exp.y
  {
    error ("A %s in expression, near `%s'.", (msg ? msg : "error"), lexptr);
 diff -u -p -r origdb/p-lang.c gdb/p-lang.c
---- origdb/p-lang.c	2002-09-16 10:24:52.000000000 +0200
-+++ gdb/p-lang.c	2002-09-16 10:34:18.000000000 +0200
+--- origdb/p-lang.c	Mon Sep 16 11:41:26 2002
++++ gdb/p-lang.c	Mon Sep 16 12:08:46 2002
 @@ -44,7 +44,8 @@ extern void _initialize_pascal_language 
     but this does not happen for Free Pascal nor for GPC.  */
  int
@@ -529,8 +509,8 @@ diff -u -p -r origdb/p-lang.c gdb/p-lang.c
  			0, "char", objfile);
        break;
 diff -u -p -r origdb/p-lang.h gdb/p-lang.h
---- origdb/p-lang.h	2002-09-16 10:24:52.000000000 +0200
-+++ gdb/p-lang.h	2002-09-16 10:34:18.000000000 +0200
+--- origdb/p-lang.h	Mon Sep 16 11:41:26 2002
++++ gdb/p-lang.h	Mon Sep 16 12:08:46 2002
 @@ -38,7 +38,8 @@ extern void pascal_type_print_method_arg
  
  /* These are in p-lang.c: */
@@ -542,8 +522,8 @@ diff -u -p -r origdb/p-lang.h gdb/p-lang.h
  extern void pascal_printchar (int, struct ui_file *);
  
 diff -u -p -r origdb/p-valprint.c gdb/p-valprint.c
---- origdb/p-valprint.c	2002-09-16 10:24:52.000000000 +0200
-+++ gdb/p-valprint.c	2002-09-16 10:34:18.000000000 +0200
+--- origdb/p-valprint.c	Mon Sep 16 11:41:12 2002
++++ gdb/p-valprint.c	Mon Sep 16 12:08:46 2002
 @@ -191,7 +191,7 @@ pascal_val_print (struct type *type, cha
  	     Pascal strings are mapped to records
  	     with lowercase names PM  */
@@ -563,8 +543,8 @@ diff -u -p -r origdb/p-valprint.c gdb/p-valprint.c
  	      len = extract_unsigned_integer (valaddr + embedded_offset + length_pos, length_size);
  	      LA_PRINT_STRING (stream, valaddr + embedded_offset + string_pos, len, char_size, 0);
 diff -u -p -r origdb/top.c gdb/top.c
---- origdb/top.c	2002-09-16 10:25:37.000000000 +0200
-+++ gdb/top.c	2002-09-16 10:34:18.000000000 +0200
+--- origdb/top.c	Mon Sep 16 11:41:08 2002
++++ gdb/top.c	Mon Sep 16 12:08:46 2002
 @@ -1325,7 +1325,7 @@ print_gdb_version (struct ui_file *strea
       program to parse, and is just canonical program name and version
       number, which starts after last space. */
@@ -575,8 +555,8 @@ diff -u -p -r origdb/top.c gdb/top.c
    /* Second line is a copyright notice. */
  
 diff -u -p -r origdb/win32-nat.c gdb/win32-nat.c
---- origdb/win32-nat.c	2002-09-16 10:25:41.000000000 +0200
-+++ gdb/win32-nat.c	2002-09-16 10:34:18.000000000 +0200
+--- origdb/win32-nat.c	Mon Sep 16 11:41:09 2002
++++ gdb/win32-nat.c	Mon Sep 16 12:08:46 2002
 @@ -81,6 +81,13 @@ static unsigned dr[8];
  static int debug_registers_changed = 0;
  static int debug_registers_used = 0;

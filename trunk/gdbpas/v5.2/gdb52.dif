@@ -36,7 +36,6 @@ diff -u -p -r origdb/breakpoint.c gdb/breakpoint.c
  	break;
        default:
  	/* Likewise for exception catchpoints in dynamic-linked
-Only in gdb: breakpoint.c.orig
 diff -u -p -r origdb/config/i386/nm-i386.h gdb/config/i386/nm-i386.h
 --- origdb/config/i386/nm-i386.h	2002-09-16 10:24:02.000000000 +0200
 +++ gdb/config/i386/nm-i386.h	2002-09-16 11:40:22.000000000 +0200
