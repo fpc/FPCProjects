@@ -44,8 +44,13 @@ type
 	2: (Layout: PGtkLayout);
       end;
 
+  TGenericForm_private = record
+    AccelGroup: PGtkAccelGroup;
+  end;
+
   TMenuItemHandle = record
     item, submenu: PGtkWidget;
+    AccelGroup: PGtkAccelGroup;
   end;
 
   THorzScrollBar_private = PGtkAdjustment;
@@ -108,6 +113,11 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/01/06 23:04:11  sg
+  * Added TGenericForm_private; its only use until now is the support of
+    an attached AccelGroup (for the underlined menu accelerators; full
+    accelerator support (will be added later) will need this, too.
+
   Revision 1.2  2000/01/05 19:21:01  sg
   * The symbol "DebugEvent" isn't defined automatically anymore in DEBUG mode
 
