@@ -30,6 +30,7 @@ type
     procedure SimpleBtnClicked(Sender: TObject);
     procedure FixedBtnClicked(Sender: TObject);
     procedure DockingBtnClicked(Sender: TObject);
+    procedure GridBtnClicked(Sender: TObject);
     procedure ExitBtnClicked(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -52,6 +53,13 @@ type
 
   TDockingForm = Class(TForm)
     Layout : TDockingLayout;
+    Button1,Button2,Button3,Button4,Button5 : TButton;
+  public
+    constructor Create(AOwner: TComponent); override;
+  end;
+
+  TGridForm = Class(TForm)
+    Layout : TGridLayout;
     Button1,Button2,Button3,Button4,Button5 : TButton;
   public
     constructor Create(AOwner: TComponent); override;
@@ -95,7 +103,8 @@ begin
     GridBtn := TButton.Create(Self);
       GridBtn.Name := 'GridBtn';
       GridBtn.Text := 'Grid layout';
-      GridBtn.Enabled := False;
+      GridBtn.Enabled := True;
+      GridBtn.OnClick := @GridBtnCLicked;
     Box.AddWidget(GridBtn);
     DockingBtn := TButton.Create(Self);
       DockingBtn.Name := 'DockingBtn';
@@ -133,6 +142,13 @@ var
   form: TDockingForm;
 begin
   Application.CreateForm(TDockingForm, form);
+end;
+
+procedure TMainForm.GridBtnClicked(Sender: TObject);
+var
+  form: TGridForm;
+begin
+  Application.CreateForm(TGridForm, form);
 end;
 
 procedure TMainForm.ExitBtnClicked(Sender: TObject);
@@ -218,6 +234,48 @@ begin
   Content := Layout;
 end;
 
+// -------------------------------------------------------------------
+//   TGridForm
+// -------------------------------------------------------------------
+
+constructor TGridForm.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+
+  Text := 'Grid Layout';
+  BorderWidth := 8;
+
+  Layout := TGridLayout.Create(Self);
+    Layout.Name := 'Layout';
+    Layout.Rows := 3;
+    Layout.Columns := 3;
+    Layout.HorzSpacing := 4;
+    Layout.VertSpacing := 4;
+
+    Button1 := TButton.Create(Self);
+      Button1.Name := 'TopLeft';
+      Button1.Text := 'Top Left';
+    Layout.AddWidget(Button1, 0, 0, 1, 1);
+
+    Button2 := TButton.Create(Self);
+      Button2.Name := 'TopRight';
+      Button2.Text := 'Top Right';
+    Layout.AddWidget(Button2, 2,0,1,1);
+    Button3 := TButton.Create(Self);
+      Button3.Name := 'CenterCenter';
+      Button3.Text := 'Center Center';
+    Layout.AddWidget(Button3, 1,1,1,1);
+    Button4 := TButton.Create(Self);
+      Button4.Name := 'BottomLeft';
+      Button4.Text := 'Bottom Left';
+    Layout.AddWidget(Button4,0,2,1,1);
+    Button5 := TButton.Create(Self);
+      Button5.Name := 'BottomRight';
+      Button5.Text := 'Bottom Right';
+    Layout.AddWidget(Button5, 2,2,1,1);
+  Content := Layout;
+end;
+
 
 // -------------------------------------------------------------------
 //   Application setup
@@ -236,6 +294,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/02/18 20:02:57  michael
+  + Added grid layout
+
   Revision 1.2  2000/02/18 19:53:09  michael
   + Added docking layout
 
