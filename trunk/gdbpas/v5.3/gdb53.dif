@@ -7,18 +7,18 @@ diff -u -p -r -N -x Entries origdb/Makefile.in gdb/Makefile.in
  	builtin-regs.c std-regs.c \
 -	gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
 +	fpc-abi.c gnu-v2-abi.c gnu-v3-abi.c hpacc-abi.c cp-abi.c
- 
+
  LINTFILES = $(SFILES) $(YYFILES) $(CONFIG_SRCS) init.c
- 
+
 @@ -846,7 +846,7 @@ COMMON_OBS = version.o blockframe.o brea
  	nlmread.o serial.o mdebugread.o top.o utils.o \
  	ui-file.o \
  	frame.o doublest.o \
 -	gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
 +	fpc-abi.o gnu-v2-abi.o gnu-v3-abi.o hpacc-abi.o cp-abi.o
- 
+
  OBS = $(COMMON_OBS) $(ANNOTATE_OBS)
- 
+
 @@ -1661,6 +1661,8 @@ findvar.o: findvar.c $(defs_h) $(symtab_
  fork-child.o: fork-child.c $(defs_h) $(gdb_string_h) $(frame_h) \
  	$(inferior_h) $(target_h) $(gdb_wait_h) $(gdb_vfork_h) $(gdbcore_h) \
@@ -461,24 +461,24 @@ diff -u -p -r -N -x Entries origdb/i386-tdep.c gdb/i386-tdep.c
 +	last_push_esi_pos = codestream_tell ();
 +      codestream_get();
      }
- 
+
    /* The native cc on SVR4 in -K PIC mode inserts the following code
 @@ -783,7 +787,10 @@ i386_skip_prologue (CORE_ADDR pc)
- 
+
    i386_follow_jump ();
- 
+
 -  return (codestream_tell ());
 +  if (codestream_tell () == last_push_esi_pos + 1)
 +    return (last_push_esi_pos);
 +  else
 +    return (codestream_tell ());
  }
- 
+
  /* Use the program counter to determine the contents and size of a
 diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
 --- origdb/minsyms.c	2002-09-16 16:34:08.000000000 +0200
 +++ gdb/minsyms.c	2002-11-05 12:04:00.000000000 +0100
-@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile 
+@@ -912,6 +912,12 @@ install_minimal_symbols (struct objfile
  	for (i = 0; i < mcount; i++)
  	  {
  	    const char *name = SYMBOL_NAME (&objfile->msymbols[i]);
@@ -494,20 +494,20 @@ diff -u -p -r -N -x Entries origdb/minsyms.c gdb/minsyms.c
 diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
 --- origdb/p-exp.y	2002-11-13 16:44:42.000000000 +0100
 +++ gdb/p-exp.y	2002-11-13 10:20:10.000000000 +0100
-@@ -294,7 +294,8 @@ exp	:	exp '.' { search_field = 1; } 
+@@ -294,7 +294,8 @@ exp	:	exp '.' { search_field = 1; }
  				current_type = TYPE_TARGET_TYPE (current_type);
  			      current_type = lookup_struct_elt_type (
  				current_type, $4.ptr, false); };
--			 } ; 
-+			 } 
+-			 } ;
++			 }
 +	;
  exp	:	exp '['
  			/* We need to save the current_type value */
- 			{ char *arrayname; 
+ 			{ char *arrayname;
 @@ -322,8 +323,7 @@ exp	:	exp '['
  			    current_type = TYPE_TARGET_TYPE (current_type); }
  	;
- 
+
 -exp	:	exp '('
 -			/* This is to save the value of arglist_len
 +exp	:	exp '(' /* This is to save the value of arglist_len
@@ -515,9 +515,9 @@ diff -u -p -r -N -x Entries origdb/p-exp.y gdb/p-exp.y
  			{ push_current_type ();
  			  start_arglist (); }
 @@ -1479,6 +1479,16 @@ yylex ()
- 	yylval.sval.length = namelen; 
+ 	yylval.sval.length = namelen;
  	return FIELDNAME;
-       } 
+       }
 +    /* if not found uppercase the whole.  */
 +    if (!sym && !is_a_field_of_this)
 +      {
@@ -537,66 +537,9 @@ diff -u -p -r -N -x Entries origdb/top.c gdb/top.c
 @@ -1353,7 +1353,7 @@ print_gdb_version (struct ui_file *strea
       program to parse, and is just canonical program name and version
       number, which starts after last space. */
- 
+
 -  fprintf_filtered (stream, "GNU gdb %s\n", version);
 +  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
- 
+
    /* Second line is a copyright notice. */
- 
-diff -u -p -r -N -x Entries origdb/win32-nat.c gdb/win32-nat.c
---- origdb/win32-nat.c	2002-09-16 16:34:20.000000000 +0200
-+++ gdb/win32-nat.c	2002-09-16 16:36:16.000000000 +0200
-@@ -81,6 +81,13 @@ static unsigned dr[8];
- static int debug_registers_changed = 0;
- static int debug_registers_used = 0;
- 
-+#ifdef HAVE_SSE_REGS
-+#define CONTEXT_DEBUGGER_DR CONTEXT_DEBUGGER | CONTEXT_DEBUG_REGISTERS \
-+	| CONTEXT_EXTENDED_REGISTERS
-+#else
-+#define CONTEXT_DEBUGGER_DR CONTEXT_DEBUGGER | CONTEXT_DEBUG_REGISTERS
-+#endif
-+
- /* The string sent by cygwin when it processes a signal.
-    FIXME: This should be in a cygwin include file. */
- #define CYGWIN_SIGNAL_STRING "cygwin: signal"
-@@ -286,6 +293,22 @@ child_add_thread (DWORD id, HANDLE h)
-   th->h = h;
-   th->next = thread_head.next;
-   thread_head.next = th;
-+  /* Set the debug registers for the new thread in they are used.  */
-+  if (debug_registers_used)
-+    {
-+      /* Only change the value of the debug registers.  */
-+      th->context.ContextFlags = CONTEXT_DEBUG_REGISTERS;
-+      CHECK (GetThreadContext (th->h, &th->context));
-+      th->context.Dr0 = dr[0];
-+      th->context.Dr1 = dr[1];
-+      th->context.Dr2 = dr[2];
-+      th->context.Dr3 = dr[3];
-+      /* th->context.Dr6 = dr[6];
-+      FIXME: should we set dr6 also ?? */
-+      th->context.Dr7 = dr[7];
-+      CHECK (SetThreadContext (th->h, &th->context));
-+      th->context.ContextFlags = 0;
-+    }
-   add_thread (pid_to_ptid (id));
-   /* Set the debug registers for the new thread in they are used.  */
-   if (debug_registers_used)
-@@ -1717,6 +1740,16 @@ child_resume (ptid_t ptid, int step, enu
-   th = thread_rec (current_event.dwThreadId, FALSE);
-   if (th)
-     {
-+      if (debug_registers_changed)
-+        {
-+          th->context.Dr0 = dr[0];
-+          th->context.Dr1 = dr[1];
-+          th->context.Dr2 = dr[2];
-+          th->context.Dr3 = dr[3];
-+          /* th->context.Dr6 = dr[6];
-+           FIXME: should we set dr6 also ?? */
-+          th->context.Dr7 = dr[7];
-+        }
-       if (step)
- 	{
- 	  /* Single step by setting t bit */
+
