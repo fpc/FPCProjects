@@ -418,7 +418,8 @@ begin
     begin
     Orientation := BoxHorz;
     HorzAlign:=HorzRight;
-    VertAlign:=VertFill;
+    VertAlign:=VertCenter;
+    CanExpandHeight:=False;
     Spacing:=8;
     // OKbutton;
     OKButton:=TButton.Create(Self);
