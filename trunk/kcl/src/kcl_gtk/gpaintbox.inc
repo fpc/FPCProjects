@@ -214,15 +214,12 @@ begin
   inherited OnFinishCreation;
 end;
 
-procedure TCustomPaintBox.OnSetSize;
-begin
-  ASSERT(Assigned(FHandle));
-  gtk_widget_set_usize(FHandle, FWidth, FHeight);
-end;
-
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:46:19  sg
+  * Removed method "OnSetSize"
+
   Revision 1.3  2000/01/24 00:27:08  sg
   * Improved keyboard handling: If a widget handled a pressed key, further
     distribution of the key event will be suppressed
