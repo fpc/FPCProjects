@@ -56,6 +56,7 @@ end;
 destructor TGdkCanvas.Destroy;
 begin
   gdk_gc_destroy(priv.GC);
+  inherited Destroy;
 end;
 
 
@@ -84,8 +85,8 @@ end;
 
 destructor TGdkPixmapCanvas.Destroy;
 begin
-  inherited Destroy;
   gdk_pixmap_unref(pixmap);
+  inherited Destroy;
 end;
 
 
@@ -196,6 +197,7 @@ destructor TFont.Destroy;
 begin
   if Assigned(Handle.GdkFont) then
     gdk_font_unref(Handle.GdkFont);
+  inherited Destroy;
 end;
 
 procedure TFont.FSetFontName(const AFontName: String);
@@ -278,6 +280,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:42:43  sg
+  * All classes now call the inherited destructor in Destroy
+
   Revision 1.2  2000/01/24 00:23:53  sg
   * Added bitmap drawing methods to TCanvas
 
