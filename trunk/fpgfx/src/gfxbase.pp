@@ -274,20 +274,38 @@ type
     FHeight: Integer;
     FPixelFormat: TGfxPixelFormat;
     constructor Create;
+    function DoExcludeClipRect(const ARect: TRect): Boolean; virtual; abstract;
+    function DoIntersectClipRect(const ARect: TRect): Boolean; virtual; abstract;
+    function DoUnionClipRect(const ARect: TRect): Boolean; virtual; abstract;
+    function DoGetClipRect: TRect; virtual; abstract;
+    procedure DoDrawArc(const ARect: TRect; StartAngle, EndAngle: Single); virtual; abstract;
+    procedure DoDrawCircle(const ARect: TRect); virtual; abstract;
+    procedure DoDrawLine(const AFrom, ATo: TPoint); virtual; abstract;
+    procedure DoDrawRect(const ARect: TRect); virtual;
+    procedure DoFillRect(const ARect: TRect); virtual; abstract;
+    procedure DoTextOut(const APosition: TPoint; const AText: String); virtual; abstract;
+    procedure DoCopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
+      const ADestPos: TPoint); virtual; abstract;
+    procedure DoMaskedCopyRect(ASource, AMask: TGfxCanvas;
+      const ASourceRect: TRect; const AMaskPos, ADestPos: TPoint); virtual; abstract;
+    procedure DoDrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
+      const ADestPos: TPoint); virtual; abstract;
   public
     // Transformations
-    procedure Transform(x, y: Integer; var OutX, OutY: Integer);
-    procedure ReverseTransform(x, y: Integer; var OutX, OutY: Integer);
-    procedure AppendTranslation(dx, dy: Integer);
+    function Transform(APoint: TPoint): TPoint;
+    function Transform(ARect: TRect): TRect;
+    function ReverseTransform(APoint: TPoint): TPoint;
+    function ReverseTransform(ARect: TRect): TRect;
+    procedure AppendTranslation(ADelta: TPoint);
 
     // Graphics state
     procedure SaveState; virtual; abstract;
     procedure RestoreState; virtual; abstract;
     procedure EmptyClipRect; virtual;
-    function ExcludeClipRect(const ARect: TRect): Boolean; virtual; abstract;
-    function IntersectClipRect(const ARect: TRect): Boolean; virtual; abstract;
-    function UnionClipRect(const ARect: TRect): Boolean; virtual; abstract;
-    function GetClipRect: TRect; virtual; abstract;
+    function ExcludeClipRect(const ARect: TRect): Boolean;
+    function IntersectClipRect(const ARect: TRect): Boolean;
+    function UnionClipRect(const ARect: TRect): Boolean;
+    function GetClipRect: TRect;
     function MapColor(const AColor: TGfxColor): TGfxPixel; virtual; abstract;
     procedure SetColor_(AColor: TGfxPixel); virtual; abstract;
     procedure SetColor(AColor: TGfxColor); virtual;
@@ -295,33 +313,33 @@ type
     procedure SetLineStyle(ALineStyle: TGfxLineStyle); virtual; abstract;
 
     // Drawing functions
-    procedure DrawArc(const Rect: TRect; StartAngle, EndAngle: Single); virtual; abstract;
-    procedure DrawCircle(const Rect: TRect); virtual; abstract;
-    procedure DrawLine(x1, y1, x2, y2: Integer); virtual; abstract;
-    procedure DrawPolyLine(const Coords: array of Integer); virtual;
-    procedure DrawRect(const Rect: TRect); virtual;
-    procedure FillRect(const Rect: TRect); virtual; abstract;
+    procedure DrawArc(const ARect: TRect; StartAngle, EndAngle: Single);
+    procedure DrawCircle(const ARect: TRect);
+    procedure DrawLine(const AFrom, ATo: TPoint);
+    procedure DrawPolyLine(const Coords: array of TPoint); virtual;
+    procedure DrawRect(const ARect: TRect);
+    procedure FillRect(const ARect: TRect);
 
     // Fonts
     function FontCellHeight: Integer; virtual; abstract;
     function TextExtent(const AText: String): TSize; virtual;
     function TextWidth(const AText: String): Integer; virtual;
-    procedure TextOut(x, y: Integer; const AText: String); virtual; abstract;
+    procedure TextOut(const APosition: TPoint; const AText: String);
 
     // Bit block transfers
-    procedure Copy(ASource: TGfxCanvas; DestX, DestY: Integer); virtual;
+    procedure Copy(ASource: TGfxCanvas; const ADestPos: TPoint); virtual;
     procedure CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
-      ADestX, ADestY: Integer); virtual; abstract;
-    procedure MaskedCopy(ASource, AMask: TGfxCanvas; DestX, DestY: Integer); virtual;
+      const ADestPos: TPoint);
+    procedure MaskedCopy(ASource, AMask: TGfxCanvas; const ADestPos: TPoint);
 {!!!:    procedure MaskedCopyRect(ASource, AMask: TGfxCanvas; const ASourceRect: TRect;
-      ADestX, ADestY: Integer); virtual;}
+      const ADestPos: TPoint); virtual;}
     procedure MaskedCopyRect(ASource, AMask: TGfxCanvas; const ASourceRect: TRect;
-      AMaskX, AMaskY, ADestX, ADestY: Integer); virtual; abstract;
+      const AMaskPos, ADestPos: TPoint);
 
     // Image drawing
-    procedure DrawImage(AImage: TGfxImage; ADestX, ADestY: Integer); virtual;
+    procedure DrawImage(AImage: TGfxImage; const ADestPos: TPoint);
     procedure DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
-      ADestX, ADestY: Integer); virtual; abstract;
+      const ADestPos: TPoint);
 
 
     // Properties
@@ -395,19 +413,19 @@ type
   // Lifetime handling
   TGfxCanCloseEvent = function(Sender: TObject): Boolean of object;
   // Keyboard
-  TGfxKeyEvent = procedure(Sender: TObject; Key: Word;
-    Shift: TShiftState) of object;
-  TGfxKeyCharEvent = procedure(Sender: TObject; KeyChar: Char) of object;
+  TGfxKeyEvent = procedure(Sender: TObject; AKey: Word;
+    AShift: TShiftState) of object;
+  TGfxKeyCharEvent = procedure(Sender: TObject; AKeyChar: Char) of object;
   // Mouse
   TMouseButton = (mbLeft, mbRight, mbMiddle);
-  TGfxMouseButtonEvent = procedure(Sender: TObject; Button: TMouseButton;
-    Shift: TShiftState; x, y: Integer) of object;
-  TGfxMouseMoveEvent = procedure(Sender: TObject; Shift: TShiftState;
-    x, y: Integer) of object;
-  TGfxMouseWheelEvent = procedure(Sender: TObject; Shift: TShiftState;
-    WheelDelta: Single; x, y: Integer) of object;
+  TGfxMouseButtonEvent = procedure(Sender: TObject; AButton: TMouseButton;
+    AShift: TShiftState; const AMousePos: TPoint) of object;
+  TGfxMouseMoveEvent = procedure(Sender: TObject; AShift: TShiftState;
+    const AMousePos: TPoint) of object;
+  TGfxMouseWheelEvent = procedure(Sender: TObject; AShift: TShiftState;
+    AWheelDelta: Single; const AMousePos: TPoint) of object;
   // Painting
-  TGfxPaintEvent = procedure(Sender: TObject; const Rect: TRect) of object;
+  TGfxPaintEvent = procedure(Sender: TObject; const ARect: TRect) of object;
 
   TGfxWindow = class
   private
@@ -449,15 +467,13 @@ type
     procedure DoSetCursor; virtual; abstract;
   public
     function CanClose: Boolean; virtual;
-    procedure SetPosition(ALeft, ATop: Integer); virtual;
-    procedure SetSize(AWidth, AHeight: Integer); virtual;
-    procedure SetMinMaxSize(AMinWidth, AMinHeight,
-      AMaxWidth, AMaxHeight: Integer); virtual;
-    procedure SetFixedSize(AWidth, AHeight: Integer);
-    procedure SetClientSize(AWidth, AHeight: Integer); virtual;
-    procedure SetMinMaxClientSize(AMinWidth, AMinHeight,
-      AMaxWidth, AMaxHeight: Integer); virtual;
-    procedure SetFixedClientSize(AWidth, AHeight: Integer);
+    procedure SetPosition(const APosition: TPoint); virtual;
+    procedure SetSize(const ASize: TSize); virtual;
+    procedure SetMinMaxSize(const AMinSize, AMaxSize: TSize); virtual;
+    procedure SetFixedSize(const ASize: TSize);
+    procedure SetClientSize(const ASize: TSize); virtual;
+    procedure SetMinMaxClientSize(const AMinSize, AMaxSize: TSize); virtual;
+    procedure SetFixedClientSize(const ASize: TSize);
     procedure Show; virtual; abstract;
     procedure Invalidate(const ARect: TRect); virtual; abstract;
     procedure PaintInvalidRegion; virtual; abstract;
@@ -501,10 +517,27 @@ type
 
 // Some helpers:
 
-operator = (const AColor1, AColor2: TGfxColor) b: Boolean;
+// Sizes, points etc.
+function Size(AWidth, AHeight: Integer): TSize;
+function Size(ARect: TRect): TSize;
+operator = (const ASize1, ASize2: TSize) b: Boolean;
+operator + (const APoint1, APoint2: TPoint) p: TPoint;
+operator + (const APoint: TPoint; ASize: TSize) p: TPoint;
+operator + (const ASize: TSize; APoint: TPoint) s: TSize;
+operator + (const ASize1, ASize2: TSize) s: TSize;
+operator + (const APoint: TPoint; i: Integer) p: TPoint;
+operator + (const ASize: TSize; i: Integer) s: TSize;
+operator - (const APoint1, APoint2: TPoint) p: TPoint;
+operator - (const APoint: TPoint; i: Integer) p: TPoint;
+operator - (const ASize: TSize; const APoint: TPoint) s: TSize;
+operator - (const ASize: TSize; i: Integer) s: TSize;
+function PtInRect(const ARect: TRect; const APoint: TPoint): Boolean;
 
+// Colors
+operator = (const AColor1, AColor2: TGfxColor) b: Boolean;
 function GetAvgColor(const AColor1, AColor2: TGfxColor): TGfxColor;
 
+// Keyboard
 function KeycodeToText(Key: Word; ShiftState: TShiftState): String;
 
 
@@ -575,23 +608,39 @@ begin
   Matrix := GfxIdentityMatrix;
 end;
 
-procedure TGfxCanvas.Transform(x, y: Integer; var OutX, OutY: Integer);
+function TGfxCanvas.Transform(APoint: TPoint): TPoint;
 begin
-  OutX := Matrix._00 * x + Matrix._20;
-  OutY := Matrix._11 * y + Matrix._21;
+  Result.x := Matrix._00 * APoint.x + Matrix._20;
+  Result.y := Matrix._11 * APoint.y + Matrix._21;
 end;
 
-procedure TGfxCanvas.ReverseTransform(x, y: Integer; var OutX, OutY: Integer);
+function TGfxCanvas.Transform(ARect: TRect): TRect;
 begin
-  OutX := (x - Matrix._20) div Matrix._00;
-  OutY := (y - Matrix._21) div Matrix._11;
+  Result.Left := Matrix._00 * ARect.Left + Matrix._20;
+  Result.Top := Matrix._11 * ARect.Top + Matrix._21;
+  Result.Right := Matrix._00 * ARect.Right + Matrix._20;
+  Result.Bottom := Matrix._11 * ARect.Bottom + Matrix._21;
 end;
 
-procedure TGfxCanvas.AppendTranslation(dx, dy: Integer);
+function TGfxCanvas.ReverseTransform(APoint: TPoint): TPoint;
+begin
+  Result.x := (APoint.x - Matrix._20) div Matrix._00;
+  Result.y := (APoint.y - Matrix._21) div Matrix._11;
+end;
+
+function TGfxCanvas.ReverseTransform(ARect: TRect): TRect;
+begin
+  Result.Left := (ARect.Left - Matrix._20) div Matrix._00;
+  Result.Top := (ARect.Top - Matrix._21) div Matrix._11;
+  Result.Right := (ARect.Right - Matrix._20) div Matrix._00;
+  Result.Bottom := (ARect.Bottom - Matrix._21) div Matrix._11;
+end;
+
+procedure TGfxCanvas.AppendTranslation(ADelta: TPoint);
 begin
   // Append a translation to the existing transformation matrix
-  Inc(FMatrix._20, FMatrix._00 * dx);
-  Inc(FMatrix._21, FMatrix._11 * dy);
+  Inc(FMatrix._20, FMatrix._00 * ADelta.x);
+  Inc(FMatrix._21, FMatrix._11 * ADelta.y);
 end;
 
 procedure TGfxCanvas.EmptyClipRect;
@@ -599,31 +648,103 @@ begin
   IntersectClipRect(Rect(0, 0, 0, 0));
 end;
 
+function TGfxCanvas.ExcludeClipRect(const ARect: TRect): Boolean;
+var
+  Rect: TRect;
+begin
+  Rect := Transform(ARect);
+  if (Rect.Right > Rect.Left) and (Rect.Bottom > Rect.Top) then
+    Result := DoExcludeClipRect(Rect)
+  else
+    Result := False;
+end;
+
+function TGfxCanvas.IntersectClipRect(const ARect: TRect): Boolean;
+var
+  Rect: TRect;
+begin
+  Rect := Transform(ARect);
+  if (Rect.Right > Rect.Left) and (Rect.Bottom > Rect.Top) then
+    Result := DoIntersectClipRect(Rect)
+  else
+    Result := False;
+end;
+
+function TGfxCanvas.UnionClipRect(const ARect: TRect): Boolean;
+var
+  Rect: TRect;
+begin
+  Rect := Transform(ARect);
+  if (Rect.Right > Rect.Left) and (Rect.Bottom > Rect.Top) then
+    Result := DoUnionClipRect(Rect)
+  else
+    with GetClipRect do
+      Result := (Right > Left) and (Bottom > Top);
+end;
+
+function TGfxCanvas.GetClipRect: TRect;
+begin
+  Result := ReverseTransform(DoGetClipRect);
+end;
+
 procedure TGfxCanvas.SetColor(AColor: TGfxColor);
 begin
   SetColor_(MapColor(AColor));
 end;
 
-procedure TGfxCanvas.DrawPolyLine(const Coords: array of Integer);
+procedure TGfxCanvas.DrawArc(const ARect: TRect; StartAngle, EndAngle: Single);
+begin
+  DoDrawArc(Transform(ARect), StartAngle, EndAngle);
+end;
+
+procedure TGfxCanvas.DrawCircle(const ARect: TRect);
+begin
+  DoDrawCircle(Transform(ARect));
+end;
+
+procedure TGfxCanvas.DrawLine(const AFrom, ATo: TPoint);
+begin
+  DoDrawLine(Transform(AFrom), Transform(ATo));
+end;
+
+procedure TGfxCanvas.DrawPolyLine(const Coords: array of TPoint);
 var
   i: Integer;
 begin
-  i := Low(Coords);
-  while i <= High(Coords) - 3 do
-  begin
-    DrawLine(Coords[i], Coords[i + 1], Coords[i + 2], Coords[i + 3]);
-    Inc(i, 2);
-  end;
+  for i := Low(Coords) to High(Coords) do
+    DrawLine(Coords[i], Coords[i + 1]);
 end;
 
-procedure TGfxCanvas.DrawRect(const Rect: TRect);
+procedure TGfxCanvas.DoDrawRect(const ARect: TRect);
 begin
-  DrawPolyLine(
-    [Rect.Left, Rect.Top,
-     Rect.Right - 1, Rect.Top,
-     Rect.Right - 1, Rect.Bottom - 1,
-     Rect.Left, Rect.Bottom - 1,
-     Rect.Left, Rect.Top]);
+{  DrawPolyLine(
+    [ARect.TopLeft,
+     Point(ARect.Right - 1, ARect.Top),
+     Point(ARect.Right - 1, ARect.Bottom - 1),
+     Point(ARect.Left, ARect.Bottom - 1),
+     ARect.TopLeft]);}
+  DoDrawLine(ARect.TopLeft, Point(ARect.Right - 1, ARect.Top));
+  DoDrawLine(Point(ARect.Right - 1, ARect.Top), Point(ARect.Right - 1, ARect.Bottom - 1));
+  DoDrawLine(Point(ARect.Right - 1, ARect.Bottom - 1), Point(ARect.Left, ARect.Bottom - 1));
+  DoDrawLine(Point(ARect.Left, ARect.Bottom - 1), ARect.TopLeft);
+end;
+
+procedure TGfxCanvas.DrawRect(const ARect: TRect);
+var
+  r: TRect;
+begin
+  r := Transform(ARect);
+  if (r.Right > r.Left) and (r.Bottom > r.Top) then
+    DoDrawRect(r);
+end;
+
+procedure TGfxCanvas.FillRect(const ARect: TRect);
+var
+  r: TRect;
+begin
+  r := Transform(ARect);
+  if (r.Right > r.Left) and (r.Bottom > r.Top) then
+    DoFillRect(r);
 end;
 
 function TGfxCanvas.TextExtent(const AText: String): TSize;
@@ -637,16 +758,42 @@ begin
   Result := TextExtent(AText).cx;
 end;
 
-procedure TGfxCanvas.Copy(ASource: TGfxCanvas; DestX, DestY: Integer);
+procedure TGfxCanvas.TextOut(const APosition: TPoint; const AText: String);
 begin
-  ASSERT(Assigned(ASource));
-  CopyRect(ASource, Rect(0, 0, ASource.Width, ASource.Height), DestX, DestY);
+  DoTextOut(Transform(APosition), AText);
 end;
 
-procedure TGfxCanvas.MaskedCopy(ASource, AMask: TGfxCanvas; DestX, DestY: Integer);
+procedure TGfxCanvas.Copy(ASource: TGfxCanvas; const ADestPos: TPoint);
+begin
+  ASSERT(Assigned(ASource));
+  CopyRect(ASource, Rect(0, 0, ASource.Width, ASource.Height), ADestPos);
+end;
+
+procedure TGfxCanvas.CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
+  const ADestPos: TPoint);
+var
+  SourceRect: TRect;
+begin
+  SourceRect := ASource.Transform(ASourceRect);
+  with SourceRect do
+    if (Left >= Right) or (Top >= Bottom) then
+      exit;
+
+  DoCopyRect(ASource, SourceRect, Transform(ADestPos));
+end;
+
+procedure TGfxCanvas.MaskedCopy(ASource, AMask: TGfxCanvas;
+  const ADestPos: TPoint);
 begin
   MaskedCopyRect(ASource, AMask, Rect(0, 0, ASource.Width, ASource.Height),
-    0, 0, DestX, DestY);
+    Point(0, 0), ADestPos);
+end;
+
+procedure TGfxCanvas.MaskedCopyRect(ASource, AMask: TGfxCanvas;
+  const ASourceRect: TRect; const AMaskPos, ADestPos: TPoint);
+begin
+  DoMaskedCopyRect(ASource, AMask, ASource.Transform(ASourceRect),
+    AMask.Transform(AMaskPos), Transform(ADestPos));
 end;
 
 {!!!:procedure TGfxCanvas.MaskedCopyRect(ASource, AMask: TGfxCanvas;
@@ -656,15 +803,25 @@ begin
     ASourceRect.Left, ASourceRect.Top, ADestX, ADestY);
 end;}
 
-procedure TGfxCanvas.DrawImage(AImage: TGfxImage; ADestX, ADestY: Integer);
-var
-  r: TRect;
+procedure TGfxCanvas.DrawImage(AImage: TGfxImage; const ADestPos: TPoint);
 begin
-  r.Left := 0;
-  r.Top := 0;
-  r.Right := AImage.Width;
-  r.Bottom := AImage.Height;
-  DrawImageRect(AImage, r, ADestX, ADestY);
+  DrawImageRect(AImage, Rect(0, 0, AImage.Width, AImage.Height), ADestPos);
+end;
+
+procedure TGfxCanvas.DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
+  const ADestPos: TPoint);
+var
+  SourceRect: TRect;
+begin
+  SourceRect := ASourceRect;
+  if SourceRect.Right > Width then
+    SourceRect.Right := Width;
+  if SourceRect.Bottom > Height then
+    SourceRect.Bottom := Height;
+
+  if (SourceRect.Right > SourceRect.Left) and
+    (SourceRect.Bottom > SourceRect.Top) then
+    DoDrawImageRect(AImage, ASourceRect, Transform(ADestPos));
 end;
 
 
@@ -801,43 +958,41 @@ begin
     Result := True;
 end;
 
-procedure TGfxWindow.SetPosition(ALeft, ATop: Integer);
+procedure TGfxWindow.SetPosition(const APosition: TPoint);
 begin
   // Empty
 end;
 
-procedure TGfxWindow.SetSize(AWidth, AHeight: Integer);
+procedure TGfxWindow.SetSize(const ASize: TSize);
 begin
   // Empty
 end;
 
-procedure TGfxWindow.SetMinMaxSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
+procedure TGfxWindow.SetMinMaxSize(const AMinSize, AMaxSize: TSize);
 begin
   // Empty
 end;
 
-procedure TGfxWindow.SetFixedSize(AWidth, AHeight: Integer);
+procedure TGfxWindow.SetFixedSize(const ASize: TSize);
 begin
-  SetSize(AWidth, AHeight);
-  SetMinMaxSize(AWidth, AHeight, AWidth, AHeight);
+  SetMinMaxSize(ASize, ASize);
+  SetSize(ASize);
 end;
 
-procedure TGfxWindow.SetClientSize(AWidth, AHeight: Integer);
+procedure TGfxWindow.SetClientSize(const ASize: TSize);
 begin
   // Empty
 end;
 
-procedure TGfxWindow.SetMinMaxClientSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
+procedure TGfxWindow.SetMinMaxClientSize(const AMinSize, AMaxSize: TSize);
 begin
   // Empty
 end;
 
-procedure TGfxWindow.SetFixedClientSize(AWidth, AHeight: Integer);
+procedure TGfxWindow.SetFixedClientSize(const ASize: TSize);
 begin
-  SetClientSize(AWidth, AHeight);
-  SetMinMaxClientSize(AWidth, AHeight, AWidth, AHeight);
+  SetMinMaxClientSize(ASize, ASize);
+  SetClientSize(ASize);
 end;
 
 
@@ -858,12 +1013,12 @@ end;
 
 procedure TGfxWindow.SetWidth(AWidth: Integer);
 begin
-  SetSize(AWidth, Height);
+  SetSize(Size(AWidth, Height));
 end;
 
 procedure TGfxWindow.SetHeight(AHeight: Integer);
 begin
-  SetSize(Width, AHeight);
+  SetSize(Size(Width, AHeight));
 end;
 
 procedure TGfxWindow.SetCursor(ACursor: TGfxCursor);
@@ -879,6 +1034,92 @@ end;
 // ===================================================================
 //   Global functions
 // ===================================================================
+
+// Sizes, points etc.
+
+function Size(AWidth, AHeight: Integer): TSize;
+begin
+  Result.cx := AWidth;
+  Result.cy := AHeight;
+end;
+
+function Size(ARect: TRect): TSize;
+begin
+  Result.cx := ARect.Right - ARect.Left;
+  Result.cy := ARect.Bottom - ARect.Top;
+end;
+
+operator = (const ASize1, ASize2: TSize) b: Boolean;
+begin
+  b := (ASize1.cx = ASize2.cx) and (ASize1.cy = ASize2.cy);
+end;
+
+operator + (const APoint1, APoint2: TPoint) p: TPoint;
+begin
+  p.x := APoint1.x + APoint2.x;
+  p.y := APoint1.y + APoint2.y;
+end;
+
+operator + (const APoint: TPoint; ASize: TSize) p: TPoint;
+begin
+  p.x := APoint.x + ASize.cx;
+  p.y := APoint.y + ASize.cy;
+end;
+
+operator + (const ASize: TSize; APoint: TPoint) s: TSize;
+begin
+  s.cx := ASize.cx + APoint.x;
+  s.cy := ASize.cy + APoint.y;
+end;
+
+operator + (const ASize1, ASize2: TSize) s: TSize;
+begin
+  s.cx := ASize1.cx + ASize2.cx;
+  s.cy := ASize1.cy + ASize2.cy;
+end;
+
+operator + (const APoint: TPoint; i: Integer) p: TPoint;
+begin
+  p.x := APoint.x + i;
+  p.y := APoint.y + i;
+end;
+
+operator + (const ASize: TSize; i: Integer) s: TSize;
+begin
+  s.cx := ASize.cx + i;
+  s.cy := ASize.cy + i;
+end;
+
+operator - (const APoint1, APoint2: TPoint) p: TPoint;
+begin
+  p.x := APoint1.x - APoint2.x;
+  p.y := APoint1.y - APoint2.y;
+end;
+
+operator - (const APoint: TPoint; i: Integer) p: TPoint;
+begin
+  p.x := APoint.x - i;
+  p.y := APoint.y - i;
+end;
+
+operator - (const ASize: TSize; const APoint: TPoint) s: TSize;
+begin
+  s.cx := ASize.cx - APoint.x;
+  s.cy := ASize.cy - APoint.y;
+end;
+
+operator - (const ASize: TSize; i: Integer) s: TSize;
+begin
+  s.cx := ASize.cx - i;
+  s.cy := ASize.cy - i;
+end;
+
+function PtInRect(const ARect: TRect; const APoint: TPoint): Boolean;
+begin
+  with ARect, APoint do
+    Result := (x >= Left) and (y >= Top) and (x < Right) and (y < Bottom);
+end;
+
 
 // Color functions
 
@@ -1052,6 +1293,9 @@ end.
 
 {
   $Log$
+  Revision 1.9  2001/02/14 23:07:47  sg
+  * Switched to use TSize and TPoint whereever possible
+
   Revision 1.8  2001/02/09 20:43:05  sg
   * Added more color definitions
   * Overloaded TGfxCanvas.SetColor to accept a TGfxColor as well

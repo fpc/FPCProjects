@@ -45,8 +45,8 @@ begin
   Window := ADisplay.DefaultScreen.CreateWindow(nil, wtWindow);
   Window.Title := 'fpGFX Bitmap Test';
   Window.OnPaint := @Paint;
-  Window.SetClientSize(256, 256);
-  Window.SetMinMaxClientSize(256, 256, 256, 256);
+  Window.SetClientSize(Size(256, 256));
+  Window.SetMinMaxClientSize(Size(256, 256), Size(256, 256));
 
   Image := Display.CreateImage(256, 256, PixelFormatRGB32);
 
@@ -75,7 +75,7 @@ begin
   r.Right := Window.Width;
   r.Bottom := Window.Height;
   Window.Canvas.FillRect(r);
-  Window.Canvas.DrawImage(Image, 0, 0);
+  Window.Canvas.DrawImage(Image, Point(0, 0));
 end;
 
 var
@@ -88,3 +88,11 @@ begin
   MainWindow.Free;
   Display.Free;
 end.
+
+
+{
+  $Log$
+  Revision 1.7  2001/02/14 23:07:47  sg
+  * Switched to use TSize and TPoint whereever possible
+
+}

@@ -28,27 +28,27 @@ type
   TMainWindow = class
     procedure FocusIn(Sender: TObject);
     procedure FocusOut(Sender: TObject);
-    procedure KeyPressed(Sender: TObject; Key: Word; ShiftState: TShiftState);
-    procedure KeyReleased(Sender: TObject; Key: Word; ShiftState: TShiftState);
+    procedure KeyPressed(Sender: TObject; AKey: Word; AShiftState: TShiftState);
+    procedure KeyReleased(Sender: TObject; AKey: Word; AShiftState: TShiftState);
     procedure KeyChar(Sender: TObject; AKeyChar: Char);
-    procedure MouseEnter(Sender: TObject; Shift: TShiftState;
-      x, y: Integer);
+    procedure MouseEnter(Sender: TObject; AShift: TShiftState;
+      const AMousePos: TPoint);
     procedure MouseLeave(Sender: TObject);
-    procedure MousePressed(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; x, y: Integer);
-    procedure MouseReleased(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; x, y: Integer);
-    procedure MouseMove(Sender: TObject; Shift: TShiftState;
-      x, y: Integer);
-    procedure MouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Single; x, y: Integer);
-    procedure Paint(Sender: TObject; const Rect: TRect);
+    procedure MousePressed(Sender: TObject; AButton: TMouseButton;
+      AShift: TShiftState; const AMousePos: TPoint);
+    procedure MouseReleased(Sender: TObject; AButton: TMouseButton;
+      AShift: TShiftState; const AMousePos: TPoint);
+    procedure MouseMove(Sender: TObject; AShift: TShiftState;
+      const AMousePos: TPoint);
+    procedure MouseWheel(Sender: TObject; AShift: TShiftState;
+      AWheelDelta: Single; const AMousePos: TPoint);
+    procedure Paint(Sender: TObject; const ARect: TRect);
     procedure Move(Sender: TObject);
     procedure Resize(Sender: TObject);
   private
     FWindow: TGfxWindow;
     function ShiftStateToStr(Shift: TShiftState): String;
-    function MouseState(Shift: TShiftState; x, y: Integer): String;
+    function MouseState(AShift: TShiftState; const AMousePos: TPoint): String;
   public
     constructor Create(ADisplay: TDefDisplay);
   end;
@@ -57,7 +57,7 @@ constructor TMainWindow.Create(ADisplay: TDefDisplay);
 begin
   inherited Create;
   FWindow := ADisplay.DefaultScreen.CreateWindow(nil, wtWindow);
-  FWindow.SetClientSize(500, 100);
+  FWindow.SetClientSize(Size(500, 100));
   FWindow.Title := 'fpGFX Event Test example';
   FWindow.OnFocusIn := @FocusIn;
   FWindow.OnFocusOut := @FocusOut;
@@ -111,12 +111,13 @@ begin
     SetLength(Result, Length(Result) - 1);
 end;
 
-function TMainWindow.MouseState(Shift: TShiftState; x, y: Integer): String;
+function TMainWindow.MouseState(AShift: TShiftState;
+  const AMousePos: TPoint): String;
 var
   ShiftStateStr: String;
 begin
-  ShiftStateStr := ShiftStateToStr(Shift);
-  Result := '[X=' + IntToStr(x) + ' Y=' + IntToStr(y);
+  ShiftStateStr := ShiftStateToStr(AShift);
+  Result := '[X=' + IntToStr(AMousePos.x) + ' Y=' + IntToStr(AMousePos.y);
   if Length(ShiftStateStr) > 0 then
     Result := Result + ' ' + ShiftStateStr;
   Result := Result + ']';
@@ -132,18 +133,18 @@ begin
   WriteLn('Lost focus');
 end;
 
-procedure TMainWindow.KeyPressed(Sender: TObject; Key: Word;
-  ShiftState: TShiftState);
+procedure TMainWindow.KeyPressed(Sender: TObject; AKey: Word;
+  AShiftState: TShiftState);
 begin
-  WriteLn('[', ShiftStateToStr(ShiftState), '] Key pressed: ',
-    KeycodeToText(Key, []));
+  WriteLn('[', ShiftStateToStr(AShiftState), '] Key pressed: ',
+    KeycodeToText(AKey, []));
 end;
 
-procedure TMainWindow.KeyReleased(Sender: TObject; Key: Word;
-  ShiftState: TShiftState);
+procedure TMainWindow.KeyReleased(Sender: TObject; AKey: Word;
+  AShiftState: TShiftState);
 begin
-  WriteLn('[', ShiftStateToStr(ShiftState), '] Key released: ',
-    KeycodeToText(Key, []));
+  WriteLn('[', ShiftStateToStr(AShiftState), '] Key released: ',
+    KeycodeToText(AKey, []));
 end;
 
 procedure TMainWindow.KeyChar(Sender: TObject; AKeyChar: Char);
@@ -155,10 +156,10 @@ begin
     WriteLn('#', Ord(AKeyChar));
 end;
 
-procedure TMainWindow.MouseEnter(Sender: TObject; Shift: TShiftState;
-  x, y: Integer);
+procedure TMainWindow.MouseEnter(Sender: TObject; AShift: TShiftState;
+  const AMousePos: TPoint);
 begin
-  WriteLn(MouseState(Shift, x, y), 'Mouse entered window');
+  WriteLn(MouseState(AShift, AMousePos), 'Mouse entered window');
 end;
 
 procedure TMainWindow.MouseLeave(Sender: TObject);
@@ -166,44 +167,45 @@ begin
   WriteLn('Mouse left window');
 end;
 
-procedure TMainWindow.MousePressed(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; x, y: Integer);
+procedure TMainWindow.MousePressed(Sender: TObject; AButton: TMouseButton;
+  AShift: TShiftState; const AMousePos: TPoint);
 begin
-  WriteLn(MouseState(Shift, x, y),
-    'Mouse button pressed: ', ButtonNames[Button]);
+  WriteLn(MouseState(AShift, AMousePos),
+    'Mouse button pressed: ', ButtonNames[AButton]);
 end;
 
-procedure TMainWindow.MouseReleased(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; x, y: Integer);
+procedure TMainWindow.MouseReleased(Sender: TObject; AButton: TMouseButton;
+  AShift: TShiftState; const AMousePos: TPoint);
 begin
-  WriteLn(MouseState(Shift, x, y),
-    'Mouse button released: ', ButtonNames[Button]);
+  WriteLn(MouseState(AShift, AMousePos),
+    'Mouse button released: ', ButtonNames[AButton]);
 end;
 
-procedure TMainWindow.MouseMove(Sender: TObject; Shift: TShiftState;
-  x, y: Integer);
+procedure TMainWindow.MouseMove(Sender: TObject; AShift: TShiftState;
+  const AMousePos: TPoint);
 begin
-  WriteLn(MouseState(Shift, x, y), 'Mouse moved');
+  WriteLn(MouseState(AShift, AMousePos), 'Mouse moved');
 end;
 
-procedure TMainWindow.MouseWheel(Sender: TObject; Shift: TShiftState;
-  WheelDelta: Single; x, y: Integer);
+procedure TMainWindow.MouseWheel(Sender: TObject; AShift: TShiftState;
+  AWheelDelta: Single; const AMousePos: TPoint);
 begin
-  WriteLn(MouseState(Shift, x, y), 'Mouse wheel rotated by ', WheelDelta:0:2,
-    ' ticks');
+  WriteLn(MouseState(AShift, AMousePos), 'Mouse wheel rotated by ',
+    AWheelDelta:0:2, ' ticks');
 end;
 
-procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
+procedure TMainWindow.Paint(Sender: TObject; const ARect: TRect);
 begin
   with FWindow.Canvas do
   begin
     SetColor(colWhite);
-    FillRect(Rect);
+    FillRect(ARect);
     SetColor(colBlack);
-    TextOut(0, 0, 'Event test');
-    TextOut(0, FontCellHeight,
+    TextOut(Point(0, 0), 'Event test');
+    TextOut(Point(0, FontCellHeight),
       'Do something interactive (move mouse, press keys...)');
-    TextOut(0, FontCellHeight * 2, 'and watch the output on the console.');
+    TextOut(Point(0, FontCellHeight * 2),
+      'and watch the output on the console.');
   end;
 end;
 
@@ -233,6 +235,9 @@ end.
 
 {
   $Log$
+  Revision 1.8  2001/02/14 23:07:47  sg
+  * Switched to use TSize and TPoint whereever possible
+
   Revision 1.7  2001/02/09 20:48:02  sg
   * Adapted to fpGFX interface improvements
 

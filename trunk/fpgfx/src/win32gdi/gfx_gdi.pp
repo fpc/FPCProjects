@@ -95,30 +95,35 @@ type
     procedure SaveState; override;
     procedure RestoreState; override;
     procedure EmptyClipRect; override;
-    function ExcludeClipRect(const ARect: TRect): Boolean; override;
-    function IntersectClipRect(const ARect: TRect): Boolean; override;
-    function UnionClipRect(const ARect: TRect): Boolean; override;
-    function GetClipRect: TRect; override;
+  protected
+    function DoExcludeClipRect(const ARect: TRect): Boolean; override;
+    function DoIntersectClipRect(const ARect: TRect): Boolean; override;
+    function DoUnionClipRect(const ARect: TRect): Boolean; override;
+    function DoGetClipRect: TRect; override;
+  public
     function MapColor(const AColor: TGfxColor): TGfxPixel; override;
     procedure SetColor_(AColor: TGfxPixel); override;
     procedure SetFont(AFont: TGfxFont); override;
     procedure SetLineStyle(ALineStyle: TGfxLineStyle); override;
 
-    procedure DrawArc(const Rect: TRect; StartAngle, EndAngle: Single); override;
-    procedure DrawCircle(const Rect: TRect); override;
-    procedure DrawLine(x1, y1, x2, y2: Integer); override;
-    procedure FillRect(const Rect: TRect); override;
+  protected
+    procedure DoDrawArc(const ARect: TRect; StartAngle, EndAngle: Single); override;
+    procedure DoDrawCircle(const ARect: TRect); override;
+    procedure DoDrawLine(const AFrom, ATo: TPoint); override;
+    procedure DoFillRect(const ARect: TRect); override;
+  public
     function FontCellHeight: Integer; override;
     function TextExtent(const AText: String): TSize; override;
-    procedure TextOut(x, y: Integer; const AText: String); override;
+  protected
+    procedure DoTextOut(const APosition: TPoint; const AText: String); override;
 
-    procedure CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
-      ADestX, ADestY: Integer); override;
-    procedure MaskedCopyRect(ASource, AMask: TGfxCanvas;
-      const ASourceRect: TRect;
-      AMaskX, AMaskY, ADestX, ADestY: Integer); override;
-    procedure DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
-      ADestX, ADestY: Integer); override;
+    procedure DoCopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
+      const ADestPos: TPoint); override;
+    procedure DoMaskedCopyRect(ASource, AMask: TGfxCanvas;
+      const ASourceRect: TRect; const AMaskPos, ADestPos: TPoint); override;
+    procedure DoDrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
+      const ADestPos: TPoint); override;
+  public
 
     property Handle: HDC read FHandle;
   end;
@@ -197,7 +202,7 @@ type
   TGDIWindow = class(TGfxWindow)
   private
     FHandle: HWND;
-    FMinWidth, FMinHeight, FMaxWidth, FMaxHeight: Integer;
+    FMinSize, FMaxSize: TSize;
     // Messages:
     procedure WMCreate(var Msg: TMessage); message WM_CREATE;
     procedure WMDestroy(var Msg: TMessage); message WM_DESTROY;
@@ -237,13 +242,11 @@ type
     destructor Destroy; override;
     procedure DefaultHandler(var Message); override;
 
-    procedure SetPosition(ALeft, ATop: Integer); override;
-    procedure SetSize(AWidth, AHeight: Integer); override;
-    procedure SetMinMaxSize(AMinWidth, AMinHeight,
-      AMaxWidth, AMaxHeight: Integer); override;
-    procedure SetClientSize(AWidth, AHeight: Integer); override;
-    procedure SetMinMaxClientSize(AMinWidth, AMinHeight,
-      AMaxWidth, AMaxHeight: Integer); override;
+    procedure SetPosition(const APosition: TPoint); override;
+    procedure SetSize(const ASize: TSize); override;
+    procedure SetMinMaxSize(const AMinSize, AMaxSize: TSize); override;
+    procedure SetClientSize(const ASize: TSize); override;
+    procedure SetMinMaxClientSize(const AMinSize, AMaxSize: TSize); override;
     procedure Show; override;
     procedure Invalidate(const ARect: TRect); override;
     procedure PaintInvalidRegion; override;
@@ -253,6 +256,9 @@ type
     property Handle: HWND read FHandle;
   end;
 
+
+function RectToWinRect(const ARect: TRect): Windows.Rect;
+function WinRectToRect(const ARect: Windows.Rect): TRect;
 
 function VirtKeyToKeycode(VirtKey: Byte): Word;
 function GetKeyboardShiftState: TShiftState;
@@ -409,52 +415,36 @@ begin
   Windows.IntersectClipRect(Handle, 0, 0, 0, 0);
 end;
 
-function TGDICanvas.ExcludeClipRect(const ARect: TRect): Boolean;
-var
-  x1, y1, x2, y2: Integer;
+function TGDICanvas.DoExcludeClipRect(const ARect: TRect): Boolean;
 begin
-  Transform(ARect.Left, ARect.Top, x1, y1);
-  Transform(ARect.Right, ARect.Bottom, x2, y2);
-  Result := Windows.ExcludeClipRect(Handle, x1, y1, x2, y2) <> NULLREGION;
+  with ARect do
+    Result :=
+      Windows.ExcludeClipRect(Handle, Left, Top, Right, Bottom) <> NULLREGION;
 end;
 
-function TGDICanvas.IntersectClipRect(const ARect: TRect): Boolean;
-var
-  x1, y1, x2, y2: Integer;
+function TGDICanvas.DoIntersectClipRect(const ARect: TRect): Boolean;
 begin
-  Transform(ARect.Left, ARect.Top, x1, y1);
-  Transform(ARect.Right, ARect.Bottom, x2, y2);
-
-  if (x2 > x1) and (y2 > y1) then
-    Result := Windows.IntersectClipRect(Handle, x1, y1, x2, y2) <> NULLREGION
-  else
-    Result := False;
+  with ARect do
+    Result :=
+      Windows.IntersectClipRect(Handle, Left, Top, Right, Bottom) <> NULLREGION
 end;
 
-function TGDICanvas.UnionClipRect(const ARect: TRect): Boolean;
+function TGDICanvas.DoUnionClipRect(const ARect: TRect): Boolean;
 var
-  x1, y1, x2, y2: Integer;
   Region: HRGN;
 begin
-  Transform(ARect.Left, ARect.Top, x1, y1);
-  Transform(ARect.Right, ARect.Bottom, x2, y2);
-
-  if (x2 > x1) and (y2 > y1) then
-  begin
-    Region := Windows.CreateRectRgn(x1, y1, x2, y2);
-    Result := Windows.ExtSelectClipRgn(Handle, Region, RGN_OR) <> NULLREGION;
-    Windows.DeleteObject(Region);
-  end else
-    Result := False;
+  with ARect do
+    Region := Windows.CreateRectRgn(Left, Top, Right, Bottom);
+  Result := Windows.ExtSelectClipRgn(Handle, Region, RGN_OR) <> NULLREGION;
+  Windows.DeleteObject(Region);
 end;
 
-function TGDICanvas.GetClipRect: TRect;
+function TGDICanvas.DoGetClipRect: TRect;
 var
   Rect: Windows.Rect;
 begin
   Windows.GetClipBox(Handle, Rect);
-  ReverseTransform(Rect.Left, Rect.Top, Result.Left, Result.Top);
-  ReverseTransform(Rect.Right, Rect.Bottom, Result.Right, Result.Bottom);
+  Result := TRect(Rect);
 end;
 
 function TGDICanvas.MapColor(const AColor: TGfxColor): TGfxPixel;
@@ -496,42 +486,31 @@ begin
   FLineStyle := ALineStyle;
 end;
 
-procedure TGDICanvas.DrawArc(const Rect: TRect; StartAngle, EndAngle: Single);
-var
-  x1, y1, x2, y2: Integer;
+procedure TGDICanvas.DoDrawArc(const ARect: TRect; StartAngle, EndAngle: Single);
 begin
-  Transform(Rect.Left, Rect.Top, x1, y1);
-  Transform(Rect.Right, Rect.Bottom, x2, y2);
   WriteLn('Not implemented yet: TGDICanvas.DrawArc');
   // !!!: Implement this
 end;
 
-procedure TGDICanvas.DrawCircle(const Rect: TRect);
-var
-  x1, y1, x2, y2: Integer;
+procedure TGDICanvas.DoDrawCircle(const ARect: TRect);
 begin
-  Transform(Rect.Left, Rect.Top, x1, y1);
-  Transform(Rect.Right, Rect.Bottom, x2, y2);
   WriteLn('Not implemented yet: TGDICanvas.DrawCircle');
   // !!!: Implement this
 end;
 
-procedure TGDICanvas.DrawLine(x1, y1, x2, y2: Integer);
+procedure TGDICanvas.DoDrawLine(const AFrom, ATo: TPoint);
 begin
-  Transform(x1, y1, x1, y1);
-  Transform(x2, y2, x2, y2);
   NeedPen;
-  Windows.MoveToEx(Handle, x1, y1, nil);
-  Windows.LineTo(Handle, x2, y2);
+  Windows.MoveToEx(Handle, AFrom.x, AFrom.y, nil);
+  Windows.LineTo(Handle, ATo.x, ATo.y);
 end;
 
-procedure TGDICanvas.FillRect(const Rect: TRect);
+procedure TGDICanvas.DoFillRect(const ARect: TRect);
 var
   r: Windows.Rect;
 begin
-  Transform(Rect.Left, Rect.Top, r.Left, r.Top);
-  Transform(Rect.Right, Rect.Bottom, r.Right, r.Bottom);
   NeedBrush;
+  r := RectToWinRect(ARect);
   Windows.FillRect(Handle, r, FBrush);
 end;
 
@@ -547,37 +526,31 @@ begin
   Windows.GetTextExtentPoint32(Handle, PChar(AText), Length(AText), @Result);
 end;
 
-procedure TGDICanvas.TextOut(x, y: Integer; const AText: String);
+procedure TGDICanvas.DoTextOut(const APosition: TPoint; const AText: String);
 begin
-  Transform(x, y, x, y);
   NeedFont(True);
-  Windows.TextOut(Handle, x, y, PChar(AText), Length(AText));
+  Windows.TextOut(Handle, APosition.x, APosition.y,
+    PChar(AText), Length(AText));
 end;
 
-procedure TGDICanvas.CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
-  ADestX, ADestY: Integer);
-var
-  SourceLeft, SourceTop, SourceRight, SourceBottom: Integer;
+procedure TGDICanvas.DoCopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
+  const ADestPos: TPoint);
 begin
   if not ASource.InheritsFrom(TGDICanvas) then
     raise EGDIError.CreateFmt(SIncompatibleCanvasForBlitting,
       [ASource.ClassName, Self.ClassName]);
 
-  ASource.Transform(ASourceRect.Left, ASourceRect.Top, SourceLeft, SourceTop);
-  ASource.Transform(ASourceRect.Right, ASourceRect.Bottom,
-    SourceRight, SourceBottom);
-  Transform(ADestX, ADestY, ADestX, ADestY);
-
   Windows.BitBlt(
-    Handle, ADestX, ADestY, SourceRight - SourceLeft, SourceBottom - SourceTop,
-    TGDICanvas(ASource).Handle, SourceLeft, SourceTop,
+    Handle, ADestPos.x, ADestPos.y, ASourceRect.Right - ASourceRect.Left,
+    ASourceRect.Bottom - ASourceRect.Top,
+    TGDICanvas(ASource).Handle, ASourceRect.Left, ASourceRect.Top,
     SRCCOPY);
 end;
 
-procedure TGDICanvas.MaskedCopyRect(ASource, AMask: TGfxCanvas;
-  const ASourceRect: TRect; AMaskX, AMaskY, ADestX, ADestY: Integer);
+procedure TGDICanvas.DoMaskedCopyRect(ASource, AMask: TGfxCanvas;
+  const ASourceRect: TRect; const AMaskPos, ADestPos: TPoint);
 var
-  SourceLeft, SourceTop, SourceRight, SourceBottom, w, h: Integer;
+  w, h: Integer;
   SourceBitmap, AndObjectBitmap, AndMemBitmap, SaveBitmap,
     OldSourceBitmap, OldAndObjectBitmap, OldAndMemBitmap,
     OldSaveBitmap: HBITMAP;
@@ -591,13 +564,8 @@ begin
     raise EGDIError.CreateFmt(SIncompatibleCanvasForBlitting,
       [AMask.ClassName, Self.ClassName]);
 
-  ASource.Transform(ASourceRect.Left, ASourceRect.Top, SourceLeft, SourceTop);
-  ASource.Transform(ASourceRect.Right, ASourceRect.Bottom,
-    SourceRight, SourceBottom);
-  AMask.Transform(AMaskX, AMaskY, AMaskX, AMaskY);
-  Transform(ADestX, ADestY, ADestX, ADestY);
-  w := SourceRight - SourceLeft;
-  h := SourceBottom - SourceTop;
+  w := ASourceRect.Right - ASourceRect.Left;
+  h := ASourceRect.Bottom - ASourceRect.Top;
 
   // See http://support.microsoft.com/support/kb/articles/Q79/2/12.ASP
 
@@ -612,19 +580,19 @@ begin
   OldAndMemBitmap := Windows.SelectObject(MemDC, AndMemBitmap);
 
   Windows.BitBlt(SourceDC, 0, 0, w, h,
-    TGDICanvas(ASource).Handle, SourceLeft, SourceTop, SRCCOPY);
-  Windows.BitBlt(MemDC, 0, 0, w, h, Handle, ADestX, ADestY, SRCCOPY);
+    TGDICanvas(ASource).Handle, ASourceRect.Left, ASourceRect.Top, SRCCOPY);
+  Windows.BitBlt(MemDC, 0, 0, w, h, Handle, ADestPos.x, ADestPos.y, SRCCOPY);
 
   // !!!: Find a ROP for replacing the following 2 Blits with a single one:
   Windows.BitBlt(ObjectDC, 0, 0, w, h,
-    TGDICanvas(AMask).Handle, AMaskX, AMaskY, NOTSRCCOPY);
+    TGDICanvas(AMask).Handle, AMaskPos.x, AMaskPos.y, NOTSRCCOPY);
   Windows.BitBlt(MemDC, 0, 0, w, h, ObjectDC, 0, 0, SRCAND);
 
   Windows.BitBlt(SourceDC, 0, 0, w, h,
-    TGDICanvas(AMask).Handle, AMaskX, AMaskY, SRCAND);
+    TGDICanvas(AMask).Handle, AMaskPos.x, AMaskPos.y, SRCAND);
   Windows.BitBlt(MemDC, 0, 0, w, h, SourceDC, 0, 0, SRCPAINT);
   // Copy the result to the screen
-  Windows.BitBlt(Handle, ADestX, ADestY, w, h, MemDC, 0, 0, SRCCOPY);
+  Windows.BitBlt(Handle, ADestPos.x, ADestPos.y, w, h, MemDC, 0, 0, SRCCOPY);
 
   // Clean up
   Windows.DeleteObject(Windows.SelectObject(ObjectDC, OldAndObjectBitmap));
@@ -635,8 +603,8 @@ begin
   Windows.DeleteDC(SourceDC);
 end;
 
-procedure TGDICanvas.DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
-  ADestX, ADestY: Integer);
+procedure TGDICanvas.DoDrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
+  const ADestPos: TPoint);
 var
   MemDC: HDC;
   OldBitmap: HBITMAP;
@@ -647,8 +615,6 @@ begin
   {$IFDEF Debug}
   ASSERT(not TGDIImage(AImage).IsLocked);
   {$ENDIF}
-
-  Transform(ADestX, ADestY, ADestX, ADestY);
 
   MemDC := Windows.CreateCompatibleDC(Handle);
   OldBitmap := Windows.SelectObject(MemDC, TGDIImage(AImage).Handle);
@@ -670,7 +636,7 @@ begin
   end;
 
   with ASourceRect do
-    Windows.BitBlt(Handle, ADestX, ADestY, Right - Left, Bottom - Top,
+    Windows.BitBlt(Handle, ADestPos.x, ADestPos.y, Right - Left, Bottom - Top,
       MemDC, Left, Top, SRCCOPY);
 
   Windows.SelectObject(MemDC, OldBitmap);
@@ -1116,76 +1082,72 @@ begin
     TMessage(Message).Msg, TMessage(Message).wParam, TMessage(Message).lParam);
 end;
 
-procedure TGDIWindow.SetPosition(ALeft, ATop: Integer);
+procedure TGDIWindow.SetPosition(const APosition: TPoint);
 begin
-  Windows.SetWindowPos(Handle, 0, ALeft, ATop, 0, 0,
+  Windows.SetWindowPos(Handle, 0, APosition.x, APosition.y, 0, 0,
     SWP_NOSIZE or SWP_NOZORDER);
 end;
 
-procedure TGDIWindow.SetSize(AWidth, AHeight: Integer);
+procedure TGDIWindow.SetSize(const ASize: TSize);
 begin
-  if (AWidth <> Width) or (AHeight <> Height) then
-    Windows.SetWindowPos(Handle, 0, 0, 0, AWidth, AHeight,
+  if (ASize.cx <> Width) or (ASize.cy <> Height) then
+    Windows.SetWindowPos(Handle, 0, 0, 0, ASize.cx, ASize.cy,
       SWP_NOMOVE or SWP_NOZORDER);
 end;
 
-procedure TGDIWindow.SetMinMaxSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
+procedure TGDIWindow.SetMinMaxSize(const AMinSize, AMaxSize: TSize);
 begin
-  FMinWidth := AMinWidth;
-  FMinHeight := AMinHeight;
-  FMaxWidth := AMaxWidth;
-  FMaxHeight := AMaxHeight;
+  FMinSize := AMinSize;
+  FMaxSize := AMaxSize;
   UpdateWindowButtons;
 end;
 
-procedure TGDIWindow.SetClientSize(AWidth, AHeight: Integer);
+procedure TGDIWindow.SetClientSize(const ASize: TSize);
 var
-  Rect: Windows.Rect;
+  r: Windows.Rect;
 begin
-  if (AWidth <> ClientWidth) or (AHeight <> ClientHeight) then
+  if (ASize.cx <> ClientWidth) or (ASize.cx <> ClientHeight) then
   begin
-    Rect.Left := 0;
-    Rect.Top := 0;
-    Rect.Right := AWidth;
-    Rect.Bottom := AHeight;
-    Windows.AdjustWindowRectEx(Rect, FWindowStyle, False, FWindowStyleEx);
-    SetSize(Rect.Right - Rect.Left, Rect.Bottom - Rect.Top);
+    r.Left := 0;
+    r.Top := 0;
+    r.Right := ASize.cx;
+    r.Bottom := ASize.cy;
+    Windows.AdjustWindowRectEx(r, FWindowStyle, False, FWindowStyleEx);
+    SetSize(Size(WinRectToRect(r)));
   end;
 end;
 
-procedure TGDIWindow.SetMinMaxClientSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
+procedure TGDIWindow.SetMinMaxClientSize(const AMinSize, AMaxSize: TSize);
 var
   Rect: Windows.Rect;
 begin
   Rect.Left := 0;
   Rect.Top := 0;
-  Rect.Right := AMinWidth;
-  Rect.Bottom := AMinHeight;
+  Rect.Right := AMinSize.cx;
+  Rect.Bottom := AMinSize.cy;
   Windows.AdjustWindowRectEx(Rect, FWindowStyle, False, FWindowStyleEx);
-  if AMinWidth > 0 then
-    FMinWidth := Rect.Right - Rect.Left
+  if AMinSize.cx > 0 then
+    FMinSize.cx := Rect.Right - Rect.Left
   else
-    FMinWidth := 0;
-  if AMinHeight > 0 then
-    FMinHeight := Rect.Bottom - Rect.Top
+    FMinSize.cx := 0;
+  if AMinSize.cy > 0 then
+    FMinSize.cy := Rect.Bottom - Rect.Top
   else
-    FMinHeight := 0;
+    FMinSize.cy := 0;
 
   Rect.Left := 0;
   Rect.Top := 0;
-  Rect.Right := AMaxWidth;
-  Rect.Bottom := AMaxHeight;
+  Rect.Right := AMaxSize.cx;
+  Rect.Bottom := AMaxSize.cy;
   Windows.AdjustWindowRectEx(Rect, FWindowStyle, False, FWindowStyleEx);
-  if AMaxWidth > 0 then
-    FMaxWidth := Rect.Right - Rect.Left
+  if AMaxSize.cx > 0 then
+    FMaxSize.cx := Rect.Right - Rect.Left
   else
-    FMaxWidth := 0;
-  if AMaxHeight > 0 then
-    FMaxHeight := Rect.Bottom - Rect.Top
+    FMaxSize.cx := 0;
+  if AMaxSize.cy > 0 then
+    FMaxSize.cy := Rect.Bottom - Rect.Top
   else
-    FMaxHeight := 0;
+    FMaxSize.cy := 0;
 
   UpdateWindowButtons;
 end;
@@ -1289,8 +1251,8 @@ var
 begin
   if FWindowType = wtWindow then
   begin
-    CanMaximize := (FMaxWidth = 0) or (FMaxHeight = 0) or
-      (FMaxWidth > FMinWidth) or (FMaxHeight > FMinHeight);
+    CanMaximize := (FMaxSize.cx = 0) or (FMaxSize.cy = 0) or
+      (FMaxSize.cx > FMinSize.cx) or (FMaxSize.cy > FMinSize.cy);
 
     if CanMaximize and ((FWindowStyle and WS_MAXIMIZEBOX) = 0) then
       FWindowStyle := FWindowStyle or WS_MAXIMIZEBOX
@@ -1333,7 +1295,8 @@ begin
     DoSetCursor;
     Windows.SetCapture(Handle);
     if Assigned(OnMouseEnter) then
-      OnMouseEnter(Self, GetKeyboardShiftState, Msg.lParamLo, Msg.lParamHi);
+      OnMouseEnter(Self, GetKeyboardShiftState,
+        Point(Msg.lParamLo, Msg.lParamHi));
     Result := Msg.Msg <> WM_MOUSEMOVE;
   end else
   begin
@@ -1375,14 +1338,14 @@ procedure TGDIWindow.WMGetMinMaxInfo(var Msg: TMessage);
 begin
   with PMinMaxInfo(Msg.lParam)^ do
   begin
-    if FMinWidth > 0 then
-      ptMinTrackSize.x := FMinWidth;
-    if FMinHeight > 0 then
-      ptMinTrackSize.y := FMinHeight;
-    if FMaxWidth > 0 then
-      ptMaxTrackSize.x := FMaxWidth;
-    if FMaxHeight > 0 then
-      ptMaxTrackSize.y := FMaxHeight;
+    if FMinSize.cx > 0 then
+      ptMinTrackSize.x := FMinSize.cx;
+    if FMinSize.cy > 0 then
+      ptMinTrackSize.y := FMinSize.cy;
+    if FMaxSize.cx > 0 then
+      ptMaxTrackSize.x := FMaxSize.cx;
+    if FMaxSize.cy > 0 then
+      ptMaxTrackSize.y := FMaxSize.cy;
   end;
 end;
 
@@ -1474,14 +1437,14 @@ begin
     Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbLeft, GetKeyboardShiftState,
-      Msg.lParamLo, Msg.lParamHi);
+      Point(Msg.lParamLo, Msg.lParamHi));
 end;
 
 procedure TGDIWindow.WMLButtonUp(var Msg: TMessage);
 begin
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMouseReleased) then
     OnMouseReleased(Self, mbLeft, GetKeyboardShiftState,
-      Msg.lParamLo, Msg.lParamHi);
+      Point(Msg.lParamLo, Msg.lParamHi));
 end;
 
 procedure TGDIWindow.WMRButtonDown(var Msg: TMessage);
@@ -1490,14 +1453,14 @@ begin
     Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbRight, GetKeyboardShiftState,
-      Msg.lParamLo, Msg.lParamHi);
+      Point(Msg.lParamLo, Msg.lParamHi));
 end;
 
 procedure TGDIWindow.WMRButtonUp(var Msg: TMessage);
 begin
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMouseReleased) then
     OnMouseReleased(Self, mbRight, GetKeyboardShiftState,
-      Msg.lParamLo, Msg.lParamHi);
+      Point(Msg.lParamLo, Msg.lParamHi));
 end;
 
 procedure TGDIWindow.WMMButtonDown(var Msg: TMessage);
@@ -1506,20 +1469,20 @@ begin
     Windows.SetActiveWindow(Handle);
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMousePressed) then
     OnMousePressed(Self, mbMiddle, GetKeyboardShiftState,
-      Msg.lParamLo, Msg.lParamHi);
+      Point(Msg.lParamLo, Msg.lParamHi));
 end;
 
 procedure TGDIWindow.WMMButtonUp(var Msg: TMessage);
 begin
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMouseReleased) then
     OnMouseReleased(Self, mbMiddle, GetKeyboardShiftState,
-      Msg.lParamLo, Msg.lParamHi);
+      Point(Msg.lParamLo, Msg.lParamHi));
 end;
 
 procedure TGDIWindow.WMMouseMove(var Msg: TMessage);
 begin
   if DoMouseEnterLeaveCheck(Msg) and Assigned(OnMouseMove) then
-    OnMouseMove(Self, GetKeyboardShiftState, Msg.lParamLo, Msg.lParamHi);
+    OnMouseMove(Self, GetKeyboardShiftState, Point(Msg.lParamLo, Msg.lParamHi));
 end;
 
 procedure TGDIWindow.WMMouseWheel(var Msg: TMessage);
@@ -1532,7 +1495,7 @@ begin
     pt.y := Msg.lParamHi;
     Windows.ScreenToClient(Handle, pt);
     OnMouseWheel(Self, GetKeyboardShiftState, SmallInt(Msg.wParamHi) / -120.0,
-      pt.x, pt.y);
+      Point(pt.x, pt.y));
   end;
 end;
 
@@ -1576,6 +1539,23 @@ end;
 //   Helpers
 // -------------------------------------------------------------------
 
+function RectToWinRect(const ARect: TRect): Windows.Rect;
+begin
+  Result.Left := ARect.Left;
+  Result.Top := ARect.Top;
+  Result.Right := ARect.Right;
+  Result.Bottom := ARect.Bottom;
+end;
+
+function WinRectToRect(const ARect: Windows.Rect): TRect;
+begin
+  Result.Left := ARect.Left;
+  Result.Top := ARect.Top;
+  Result.Right := ARect.Right;
+  Result.Bottom := ARect.Bottom;
+end;
+
+
 {$INCLUDE gdikeys.inc}
 
 
@@ -1584,6 +1564,9 @@ end.
 
 {
   $Log$
+  Revision 1.7  2001/02/14 23:07:47  sg
+  * Switched to use TSize and TPoint whereever possible
+
   Revision 1.6  2001/02/09 20:46:11  sg
   * Lots of bugfixes, as usual ;)
   * Adapted to recent interface additions

@@ -48,8 +48,8 @@ begin
   Window.Canvas.SetFont(Font);
   TextSize.cx := Window.Canvas.TextWidth(HelloWorldString);
   TextSize.cy := Window.Canvas.FontCellHeight;
-  Window.SetClientSize((TextSize.cx * 3) div 2, TextSize.cy * 2);
-  Window.SetMinMaxClientSize(TextSize.cx, TextSize.cy, 0, 0);
+  Window.SetClientSize(Size((TextSize.cx * 3) div 2, TextSize.cy * 2));
+  Window.SetMinMaxClientSize(TextSize, Size(0, 0));
   Window.Show;
 end;
 
@@ -81,12 +81,12 @@ begin
 
   Window.Canvas.SetColor(colBlack);
   Window.Canvas.SetFont(Font);
-  Window.Canvas.TextOut((Window.ClientWidth - TextSize.cx) div 2 + 1,
-    (Window.ClientHeight - TextSize.cy) div 2 + 1, HelloWorldString);
+  Window.Canvas.TextOut(Point((Window.ClientWidth - TextSize.cx) div 2 + 1,
+    (Window.ClientHeight - TextSize.cy) div 2 + 1), HelloWorldString);
 
   Window.Canvas.SetColor(colWhite);
-  Window.Canvas.TextOut((Window.ClientWidth - TextSize.cx) div 2 - 1,
-    (Window.ClientHeight - TextSize.cy) div 2 - 1, HelloWorldString);
+  Window.Canvas.TextOut(Point((Window.ClientWidth - TextSize.cx) div 2 - 1,
+    (Window.ClientHeight - TextSize.cy) div 2 - 1), HelloWorldString);
 end;
 
 var
@@ -103,6 +103,9 @@ end.
 
 {
   $Log$
+  Revision 1.8  2001/02/14 23:07:47  sg
+  * Switched to use TSize and TPoint whereever possible
+
   Revision 1.7  2001/02/09 20:48:02  sg
   * Adapted to fpGFX interface improvements
 

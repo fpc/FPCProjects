@@ -90,32 +90,40 @@ type
     procedure SaveState; override;
     procedure RestoreState; override;
     procedure EmptyClipRect; override;
-    function ExcludeClipRect(const ARect: TRect): Boolean; override;
-    function IntersectClipRect(const ARect: TRect): Boolean; override;
-    function UnionClipRect(const ARect: TRect): Boolean; override;
-    function GetClipRect: TRect; override;
+  protected
+    function DoExcludeClipRect(const ARect: TRect): Boolean; override;
+    function DoIntersectClipRect(const ARect: TRect): Boolean; override;
+    function DoUnionClipRect(const ARect: TRect): Boolean; override;
+    function DoGetClipRect: TRect; override;
+  public
     function MapColor(const AColor: TGfxColor): TGfxPixel; override;
     procedure SetColor_(AColor: TGfxPixel); override;
     procedure SetFont(AFont: TGfxFont); override;
     procedure SetLineStyle(ALineStyle: TGfxLineStyle); override;
 
-    procedure DrawArc(const Rect: TRect; StartAngle, EndAngle: Single); override;
-    procedure DrawCircle(const Rect: TRect); override;
-    procedure DrawLine(x1, y1, x2, y2: Integer); override;
-    procedure DrawPolyLine(const Coords: array of Integer); override;
-    procedure DrawRect(const Rect: TRect); override;
-    procedure FillRect(const Rect: TRect); override;
+  protected
+    procedure DoDrawArc(const ARect: TRect; StartAngle, EndAngle: Single); override;
+    procedure DoDrawCircle(const ARect: TRect); override;
+    procedure DoDrawLine(const AFrom, ATo: TPoint); override;
+  public
+    procedure DrawPolyLine(const Coords: array of TPoint); override;
+  protected
+    procedure DoDrawRect(const ARect: TRect); override;
+    procedure DoFillRect(const ARect: TRect); override;
+  public
     function FontCellHeight: Integer; override;
     function TextExtent(const AText: String): TSize; override;
     function TextWidth(const AText: String): Integer; override;
-    procedure TextOut(x, y: Integer; const AText: String); override;
+  protected
+    procedure DoTextOut(const APosition: TPoint; const AText: String); override;
 
-    procedure CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
-      ADestX, ADestY: Integer); override;
-    procedure MaskedCopyRect(ASource, AMask: TGfxCanvas; const ASourceRect: TRect;
-      AMaskX, AMaskY, ADestX, ADestY: Integer); override;
-    procedure DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
-      ADestX, ADestY: Integer); override;
+    procedure DoCopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
+      const ADestPos: TPoint); override;
+    procedure DoMaskedCopyRect(ASource, AMask: TGfxCanvas;
+      const ASourceRect: TRect; const AMaskPos, ADestPos: TPoint); override;
+    procedure DoDrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
+      const ADestPos: TPoint); override;
+  public
 
     property DisplayHandle: PDisplay read FDisplayHandle;
     property Handle: X.TDrawable read FHandle;
@@ -260,13 +268,11 @@ type
     destructor Destroy; override;
     procedure DefaultHandler(var Message); override;
 
-    procedure SetPosition(ALeft, ATop: Integer); override;
-    procedure SetSize(AWidth, AHeight: Integer); override;
-    procedure SetMinMaxSize(AMinWidth, AMinHeight,
-      AMaxWidth, AMaxHeight: Integer); override;
-    procedure SetClientSize(AWidth, AHeight: Integer); override;
-    procedure SetMinMaxClientSize(AMinWidth, AMinHeight,
-      AMaxWidth, AMaxHeight: Integer); override;
+    procedure SetPosition(const APosition: TPoint); override;
+    procedure SetSize(const ASize: TSize); override;
+    procedure SetMinMaxSize(const AMinSize, AMaxSize: TSize); override;
+    procedure SetClientSize(const ASize: TSize); override;
+    procedure SetMinMaxClientSize(const AMinSize, AMaxSize: TSize); override;
     procedure Show; override;
     procedure Invalidate(const ARect: TRect); override;
     procedure PaintInvalidRegion; override;
@@ -283,7 +289,8 @@ var
   LeaderWindow: X.TWindow;
   ClientLeaderAtom: TAtom;
 
-
+function RectToXRect(const ARect: TRect): TXRectangle;
+function XRectToRect(const ARect: TXRectangle): TRect;
 function GetXEventName(Event: LongInt): String;
 
 
@@ -404,84 +411,50 @@ begin
   XSetRegion(DisplayHandle, GC, Region);
 end;
 
-function TXCanvas.ExcludeClipRect(const ARect: TRect): Boolean;
+function TXCanvas.DoExcludeClipRect(const ARect: TRect): Boolean;
 var
-  x1, y1, x2, y2: Integer;
   RectRegion: TRegion;
   XRect: TXRectangle;
 begin
-  Transform(ARect.Left, ARect.Top, x1, y1);
-  Transform(ARect.Right, ARect.Bottom, x2, y2);
-
-  if (x2 > x1) and (y2 > y1) then
-  begin
-    XRect.x := x1;
-    XRect.y := y1;
-    XRect.Width := x2 - x1;
-    XRect.Height := y2 - y1;
-    RectRegion := XCreateRegion;
-    XUnionRectWithRegion(@XRect, RectRegion, RectRegion);
-    XSubtractRegion(Region, RectRegion, Region);
-    XDestroyRegion(RectRegion);
-    XSetRegion(DisplayHandle, GC, Region);
-    Result := XEmptyRegion(Region) = 0;
-  end else
-    Result := False;
-end;
-
-function TXCanvas.IntersectClipRect(const ARect: TRect): Boolean;
-var
-  x1, y1, x2, y2: Integer;
-  RectRegion: TRegion;
-  XRect: TXRectangle;
-begin
-  Transform(ARect.Left, ARect.Top, x1, y1);
-  Transform(ARect.Right, ARect.Bottom, x2, y2);
-
-  if (x2 > x1) and (y2 > y1) then
-  begin
-    XRect.x := x1;
-    XRect.y := y1;
-    XRect.Width := x2 - x1;
-    XRect.Height := y2 - y1;
-    RectRegion := XCreateRegion;
-    XUnionRectWithRegion(@XRect, RectRegion, RectRegion);
-    XIntersectRegion(Region, RectRegion, Region);
-    XDestroyRegion(RectRegion);
-    XSetRegion(DisplayHandle, GC, Region);
-    Result := XEmptyRegion(Region) = 0;
-  end else
-    Result := False;
-end;
-
-function TXCanvas.UnionClipRect(const ARect: TRect): Boolean;
-var
-  x1, y1, x2, y2: Integer;
-  XRect: TXRectangle;
-begin
-  Transform(ARect.Left, ARect.Top, x1, y1);
-  Transform(ARect.Right, ARect.Bottom, x2, y2);
-
-  if (x2 > x1) and (y2 > y1) then
-  begin
-    XRect.x := x1;
-    XRect.y := y1;
-    XRect.Width := x2 - x1;
-    XRect.Height := y2 - y1;
-    XUnionRectWithRegion(@XRect, Region, Region);
-    XSetRegion(DisplayHandle, GC, Region);
-  end;
+  XRect := RectToXRect(ARect);
+  RectRegion := XCreateRegion;
+  XUnionRectWithRegion(@XRect, RectRegion, RectRegion);
+  XSubtractRegion(Region, RectRegion, Region);
+  XDestroyRegion(RectRegion);
+  XSetRegion(DisplayHandle, GC, Region);
   Result := XEmptyRegion(Region) = 0;
 end;
 
-function TXCanvas.GetClipRect: TRect;
+function TXCanvas.DoIntersectClipRect(const ARect: TRect): Boolean;
+var
+  RectRegion: TRegion;
+  XRect: TXRectangle;
+begin
+  XRect := RectToXRect(ARect);
+  RectRegion := XCreateRegion;
+  XUnionRectWithRegion(@XRect, RectRegion, RectRegion);
+  XIntersectRegion(Region, RectRegion, Region);
+  XDestroyRegion(RectRegion);
+  XSetRegion(DisplayHandle, GC, Region);
+  Result := XEmptyRegion(Region) = 0;
+end;
+
+function TXCanvas.DoUnionClipRect(const ARect: TRect): Boolean;
+var
+  XRect: TXRectangle;
+begin
+  XRect := RectToXRect(ARect);
+  XUnionRectWithRegion(@XRect, Region, Region);
+  XSetRegion(DisplayHandle, GC, Region);
+  Result := XEmptyRegion(Region) = 0;
+end;
+
+function TXCanvas.DoGetClipRect: TRect;
 var
   XRect: TXRectangle;
 begin
   XClipBox(Region, @XRect);
-  ReverseTransform(XRect.x, XRect.y, Result.Left, Result.Top);
-  ReverseTransform(XRect.x + XRect.Width, XRect.y + XRect.Height,
-    Result.Right, Result.Bottom);
+  Result := XRectToRect(XRect);
 end;
 
 function TXCanvas.MapColor(const AColor: TGfxColor): TGfxPixel;
@@ -545,48 +518,40 @@ begin
   end;
 end;
 
-procedure TXCanvas.DrawArc(const Rect: TRect; StartAngle, EndAngle: Single);
-var
-  x1, y1, x2, y2: Integer;
+procedure TXCanvas.DoDrawArc(const ARect: TRect; StartAngle, EndAngle: Single);
 begin
-  Transform(Rect.Left, Rect.Top, x1, y1);
-  Transform(Rect.Right, Rect.Bottom, x2, y2);
-  XDrawArc(DisplayHandle, Handle, GC,
-    x1, y1, x2 - x1 - 1, y2 - y1 - 1,
-    Round(StartAngle * 64), Round((EndAngle - StartAngle) * 64));
+  with ARect do
+    XDrawArc(DisplayHandle, Handle, GC,
+      Left, Top, Right - Left - 1, Bottom - Top - 1,
+      Round(StartAngle * 64), Round((EndAngle - StartAngle) * 64));
 end;
 
-procedure TXCanvas.DrawCircle(const Rect: TRect);
-var
-  x1, y1, x2, y2: Integer;
+procedure TXCanvas.DoDrawCircle(const ARect: TRect);
 begin
-  Transform(Rect.Left, Rect.Top, x1, y1);
-  Transform(Rect.Right, Rect.Bottom, x2, y2);
-  XDrawArc(DisplayHandle, Handle, GC,
-    x1, y1, x2 - x1 - 1, y2 - y1 - 1, 0, 23040);
+  with ARect do
+    XDrawArc(DisplayHandle, Handle, GC,
+      Left, Top, Right - Left - 1, Bottom - Top - 1, 0, 23040);
 end;
 
-procedure TXCanvas.DrawLine(x1, y1, x2, y2: Integer);
+procedure TXCanvas.DoDrawLine(const AFrom, ATo: TPoint);
 begin
-  Transform(x1, y1, x1, y1);
-  Transform(x2, y2, x2, y2);
-  XDrawLine(DisplayHandle, Handle, GC, x1, y1, x2, y2);
+  XDrawLine(DisplayHandle, Handle, GC, AFrom.x, AFrom.y, ATo.x, ATo.y);
 end;
 
-procedure TXCanvas.DrawPolyLine(const Coords: array of Integer);
+procedure TXCanvas.DrawPolyLine(const Coords: array of TPoint);
 var
   Points: PXPoint;
-  CoordsIndex, PointsIndex, x, y: Integer;
+  CoordsIndex, PointsIndex: Integer;
+  Pt: TPoint;
 begin
   GetMem(Points, (High(Coords) - Low(Coords) + 1) * SizeOf(TXPoint));
   CoordsIndex := Low(Coords);
   PointsIndex := 0;
-  while CoordsIndex < High(Coords) do
+  for CoordsIndex := Low(Coords) to High(Coords) do
   begin
-    Transform(Coords[CoordsIndex], Coords[CoordsIndex + 1], x, y);
-    Points[PointsIndex].x := x;
-    Points[PointsIndex].y := y;
-    Inc(CoordsIndex, 2);
+    Pt := Transform(Coords[CoordsIndex]);
+    Points[PointsIndex].x := Pt.x;
+    Points[PointsIndex].y := Pt.y;
     Inc(PointsIndex);
   end;
 
@@ -595,25 +560,18 @@ begin
   FreeMem(Points);
 end;
 
-procedure TXCanvas.DrawRect(const Rect: TRect);
-var
-  x1, y1, x2, y2: Integer;
+procedure TXCanvas.DoDrawRect(const ARect: TRect);
 begin
-  Transform(Rect.Left, Rect.Top, x1, y1);
-  Transform(Rect.Right, Rect.Bottom, x2, y2);
-  if (Rect.Right > Rect.Left) and (Rect.Bottom > Rect.Top) then
-    XDrawRectangle(DisplayHandle, Handle, GC, x1, y1, x2 - x1 - 1, y2 - y1 - 1);
+  with ARect do
+    XDrawRectangle(DisplayHandle, Handle, GC, Left, Top,
+      Right - Left - 1, Bottom - Top - 1);
 end;
 
-procedure TXCanvas.FillRect(const Rect: TRect);
-var
-  r: TRect;
+procedure TXCanvas.DoFillRect(const ARect: TRect);
 begin
-  Transform(Rect.Left, Rect.Top, r.Left, r.Top);
-  Transform(Rect.Right, Rect.Bottom, r.Right, r.Bottom);
-  if (r.Right > r.Left) and (r.Bottom > r.Top) then
-    XFillRectangle(DisplayHandle, Handle, GC, r.Left, r.Top,
-      r.Right - r.Left, r.Bottom - r.Top);
+  with ARect do
+    XFillRectangle(DisplayHandle, Handle, GC, Left, Top,
+      Right - Left, Bottom - Top);
 end;
 
 function TXCanvas.FontCellHeight: Integer;
@@ -656,56 +614,48 @@ begin
   end;
 end;
 
-procedure TXCanvas.TextOut(x, y: Integer; const AText: String);
+procedure TXCanvas.DoTextOut(const APosition: TPoint; const AText: String);
 begin
-  Transform(x, y, x, y);
-  XDrawString(DisplayHandle, Handle, GC, x, y + FFontStruct^.ascent,
-    PChar(AText), Length(AText));
+  XDrawString(DisplayHandle, Handle, GC, APosition.x,
+    APosition.y + FFontStruct^.ascent, PChar(AText), Length(AText));
 end;
 
-procedure TXCanvas.CopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
-  ADestX, ADestY: Integer);
+procedure TXCanvas.DoCopyRect(ASource: TGfxCanvas; const ASourceRect: TRect;
+  const ADestPos: TPoint);
 var
-  SourceLeft, SourceTop, SourceRight, SourceBottom, RealHeight: Integer;
+  DestPos: TPoint;
+  RealHeight: Integer;
 begin
   if not ASource.InheritsFrom(TXCanvas) then
     raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
       [ASource.ClassName, Self.ClassName]);
 
-  ASource.Transform(ASourceRect.Left, ASourceRect.Top, SourceLeft, SourceTop);
-  ASource.Transform(ASourceRect.Right, ASourceRect.Bottom,
-    SourceRight, SourceBottom);
-
-  if (ASourceRect.Left >= ASourceRect.Right) or
-    (ASourceRect.Top >= ASourceRect.Bottom) then
-    exit;
-
-  Transform(ADestX, ADestY, ADestX, ADestY);
-
   if (ASource <> Self) and (ASource.PixelFormat.FormatType = ftMono) then
   begin
     // !!!: This case will probably be removed completely very soon
     RealHeight := ASourceRect.Bottom - ASourceRect.Top;
-    if ADestY + RealHeight > Height then
-      RealHeight := Height - ADestY;
+    if DestPos.y + RealHeight > Height then
+      RealHeight := Height - ADestPos.y;
     XSetClipMask(DisplayHandle, GC, TXCanvas(ASource).Handle);
-    XSetClipOrigin(DisplayHandle, GC, ADestX, ADestY);
-    XFillRectangle(DisplayHandle, Handle, GC, ADestX, ADestY,
+    XSetClipOrigin(DisplayHandle, GC, ADestPos.x, ADestPos.y);
+    XFillRectangle(DisplayHandle, Handle, GC, ADestPos.x, ADestPos.y,
       ASource.Width, RealHeight);
     // Restore old clipping settings
     XSetClipOrigin(DisplayHandle, GC, 0, 0);
     XSetRegion(DisplayHandle, GC, Region);
   end else
     XCopyArea(DisplayHandle, TXCanvas(ASource).Handle, Handle, GC,
-      ASourceRect.Left, ASourceRect.Top, ASourceRect.Right - ASourceRect.Left,
-      ASourceRect.Bottom - ASourceRect.Top, ADestX, ADestY);
+      ASourceRect.Left, ASourceRect.Top,
+      ASourceRect.Right - ASourceRect.Left,
+      ASourceRect.Bottom - ASourceRect.Top, ADestPos.x, ADestPos.y);
 end;
 
-procedure TXCanvas.MaskedCopyRect(ASource, AMask: TGfxCanvas;
-  const ASourceRect: TRect; AMaskX, AMaskY, ADestX, ADestY: Integer);
+procedure TXCanvas.DoMaskedCopyRect(ASource, AMask: TGfxCanvas;
+  const ASourceRect: TRect; const AMaskPos, ADestPos: TPoint);
 var
-  SourceLeft, SourceTop, SourceRight, SourceBottom,
-    RectWidth, RectHeight: Integer;
+  RectWidth, RectHeight: Integer;
+  DestPos, MaskPos: TPoint;
+  SourceRect: TRect;
 begin
   if not ASource.InheritsFrom(TXCanvas) then
     raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
@@ -714,56 +664,54 @@ begin
     raise EX11Error.CreateFmt(SIncompatibleCanvasForBlitting,
       [AMask.ClassName, Self.ClassName]);
 
-  SourceLeft := ASourceRect.Left;
-  SourceTop := ASourceRect.Top;
-  SourceRight := ASourceRect.Right;
-  SourceBottom := ASourceRect.Bottom;
-  RectWidth := SourceRight - SourceLeft;
-  RectHeight := SourceBottom - SourceTop;
+  RectWidth := ASourceRect.Right - ASourceRect.Left;
+  RectHeight := ASourceRect.Bottom - ASourceRect.Top;
 
   { !!!: Attention! The current implementation only clips to the ClipRect,
     i.e. the outer bounds of the current clipping region. In other words, the
     result is only correct for a simple rectangle clipping region. }
-  with GetClipRect do
+  with DoGetClipRect do
   begin
-    if (ADestX + RectWidth <= Left) or (ADestY + RectHeight <= Top) then
+    if (ADestPos.x + RectWidth <= Left) or (ADestPos.y + RectHeight <= Top) then
       exit;
 
-    if ADestX < Left then
+    DestPos := ADestPos;
+    MaskPos := AMaskPos;
+    SourceRect := ASourceRect;
+
+    if DestPos.x < Left then
     begin
-      Inc(AMaskX, Left - ADestX);
-      Inc(SourceLeft, Left - ADestX);
-      ADestX := Left;
+      Inc(MaskPos.x, Left - DestPos.x);
+      Inc(SourceRect.Left, Left - DestPos.x);
+      DestPos.x := Left;
     end;
-    if ADestY < Top then
+    if DestPos.y < Top then
     begin
-      Inc(AMaskY, Top - ADestY);
-      Inc(SourceTop, Top - ADestY);
-      ADestY := Top;
+      Inc(MaskPos.y, Top - DestPos.y);
+      Inc(SourceRect.Top, Top - DestPos.y);
+      DestPos.y := Top;
     end;
 
-    if (ADestX >= Right) or (ADestY >= Bottom) then
+    if (DestPos.x >= Right) or (DestPos.y >= Bottom) then
       exit;
 
-    if ADestX + RectWidth > Right then
-      RectWidth := Right - ADestX;
-    if ADestY + RectHeight > Bottom then
-      RectHeight := Bottom - ADestY;
+    if DestPos.x + RectWidth > Right then
+      RectWidth := Right - DestPos.x;
+    if DestPos.y + RectHeight > Bottom then
+      RectHeight := Bottom - DestPos.y;
   end;
 
   if (RectWidth <= 0) or (RectHeight <= 0) then
     exit;
 
-  ASource.Transform(SourceLeft, SourceTop, SourceLeft, SourceTop);
-  ASource.Transform(SourceRight, SourceBottom, SourceRight, SourceBottom);
-  AMask.Transform(AMaskX, AMaskY, AMaskX, AMaskY);
-  Transform(ADestX, ADestY, ADestX, ADestY);
 
   XSetClipMask(DisplayHandle, GC, TXCanvas(AMask).Handle);
-  XSetClipOrigin(DisplayHandle, GC, ADestX - AMaskX, ADestY - AMaskY);
+  XSetClipOrigin(DisplayHandle, GC,
+    DestPos.x - MaskPos.x, DestPos.y - MaskPos.y);
 
   XCopyArea(DisplayHandle, TXCanvas(ASource).Handle, Handle, GC,
-    SourceLeft, SourceTop, RectWidth, RectHeight, ADestX, ADestY);
+    SourceRect.Left, SourceRect.Top, RectWidth, RectHeight,
+    DestPos.x, DestPos.y);
 
   // Restore old clipping settings
   XSetClipOrigin(DisplayHandle, GC, 0, 0);
@@ -773,11 +721,10 @@ end;
 
 function malloc(size: LongWord): Pointer; cdecl; external;
 
-procedure TXCanvas.DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
-  ADestX, ADestY: Integer);
+procedure TXCanvas.DoDrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
+  const ADestPos: TPoint);
 var
   SourceRect: TRect;
-  RealWidth, RealHeight: Integer;
   Image: XLib.PXImage;
 begin
   ASSERT(AImage.InheritsFrom(TXImage));
@@ -785,24 +732,14 @@ begin
   ASSERT(not TXImage(AImage).IsLocked);
   {$ENDIF}
 
-  Transform(ADestX, ADestY, ADestX, ADestY);
-
-  SourceRect := ASourceRect;
-  if SourceRect.Right > Width then
-    SourceRect.Right := Width;
-  if SourceRect.Bottom > Height then
-    SourceRect.Bottom := Height;
-
-  RealWidth := ASourceRect.Right - ASourceRect.Left;
-  RealHeight := ASourceRect.Bottom - ASourceRect.Top;
-  if (RealWidth <= 0) or (RealHeight <= 0) then
-    exit;
-
   // !!!: Add support for XF86 4 and XShm etc. to speed this up!
   Image := XCreateImage(DisplayHandle, Visual,
-    FormatTypeBPPTable[PixelFormat.FormatType], ZPixmap,
-    0, nil, RealWidth, RealHeight, 8, 0);
-  Image^.data := malloc(Image^.bytes_per_line * RealHeight);
+    FormatTypeBPPTable[PixelFormat.FormatType], ZPixmap, 0, nil,
+    ASourceRect.Right - ASourceRect.Left,
+    ASourceRect.Bottom - ASourceRect.Top, 8, 0);
+
+  Image^.data := malloc(Image^.bytes_per_line *
+    (ASourceRect.Bottom - ASourceRect.Top));
 
   if (AImage.PixelFormat.FormatType = ftMono) and
     Self.InheritsFrom(TXMonoPixmapCanvas) then
@@ -815,7 +752,7 @@ begin
       0, 0, PixelFormat, Image^.data, Image^.bytes_per_line);
 
   XPutImage(DisplayHandle, Handle, GC,
-    Image, 0, 0, ADestX, ADestY, AImage.Width, AImage.Height);
+    Image, 0, 0, ADestPos.x, ADestPos.y, AImage.Width, AImage.Height);
 
   // !!!: Change to XDestroyImage when this macro gets supported by xutil.pp
   Image^.f.destroy_image(Image);
@@ -1283,7 +1220,7 @@ begin
     GetXEventName(TXEvent(Message)._type));
 end;
 
-procedure TXWindow.SetPosition(ALeft, ATop: Integer);
+procedure TXWindow.SetPosition(const APosition: TPoint);
 var
   Supplied: LongInt;
   SizeHints: PXSizeHints;
@@ -1291,82 +1228,80 @@ begin
   SizeHints := XAllocSizeHints;
   XGetWMNormalHints(DisplayHandle, Handle, SizeHints, @Supplied);
   SizeHints^.flags := SizeHints^.flags or PPosition;
-  SizeHints^.x := ALeft;
-  SizeHints^.y := ATop;
+  SizeHints^.x := APosition.x;
+  SizeHints^.y := APosition.y;
   XSetWMNormalHints(DisplayHandle, Handle, SizeHints);
   XFree(SizeHints);
-  XMoveWindow(DisplayHandle, Handle, ALeft, ATop);
+  XMoveWindow(DisplayHandle, Handle, APosition.x, APosition.y);
 end;
 
-procedure TXWindow.SetSize(AWidth, AHeight: Integer);
+procedure TXWindow.SetSize(const ASize: TSize);
 begin
   // !!!: Implement this properly
   WriteLn('fpGFX/X11: TXWindow.SetSize is not properly implemented yet');
-  SetClientSize(AWidth, AHeight);
+  SetClientSize(ASize);
 end;
 
-procedure TXWindow.SetMinMaxSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
+procedure TXWindow.SetMinMaxSize(const AMinSize, AMaxSize: TSize);
 begin
   // !!!: Implement this properly
   WriteLn('fpGFX/X11: TXWindow.SetMinMaxSize is not properly implemented yet');
-  SetMinMaxClientSize(AMinWidth, AMinHeight, AMaxWidth, AMaxHeight);
+  SetMinMaxClientSize(AMinSize, AMaxSize);
 end;
 
-procedure TXWindow.SetClientSize(AWidth, AHeight: Integer);
+procedure TXWindow.SetClientSize(const ASize: TSize);
 var
   ChangeMask: Cardinal;
   Changes: TXWindowChanges;
 begin
   ChangeMask := 0;
 
-  if AWidth <> ClientWidth then
+  if ASize.cx <> ClientWidth then
   begin
     ChangeMask := CWWidth;
-    Changes.Width := AWidth;
+    Changes.Width := ASize.cx;
   end;
 
-  if AHeight <> ClientHeight then
+  if ASize.cy <> ClientHeight then
   begin
     ChangeMask := ChangeMask or CWHeight;
-    Changes.Height := AHeight;
+    Changes.Height := ASize.cy;
   end;
 
   if ChangeMask <> 0 then
     XConfigureWindow(DisplayHandle, Handle, ChangeMask, @Changes);
 end;
 
-procedure TXWindow.SetMinMaxClientSize(AMinWidth, AMinHeight,
-  AMaxWidth, AMaxHeight: Integer);
+procedure TXWindow.SetMinMaxClientSize(const AMinSize, AMaxSize: TSize);
 var
   Supplied: LongInt;
   SizeHints: PXSizeHints;
 begin
-  CanMaximize := (AMaxWidth = 0) or (AMaxHeight = 0) or
-    (AMaxWidth > AMinWidth) or (AMaxHeight > AMinHeight);
+  CanMaximize := (AMaxSize.cx = 0) or (AMaxSize.cy = 0) or
+    (AMaxSize.cx > AMinSize.cx) or (AMaxSize.cy > AMinSize.cy);
   UpdateMotifWMHints;
 
   SizeHints := XAllocSizeHints;
   XGetWMNormalHints(DisplayHandle, Handle, SizeHints, @Supplied);
   with SizeHints^ do
   begin
-    if (AMinWidth > 0) or (AMinHeight > 0) then
+    if (AMinSize.cx > 0) or (AMinSize.cy > 0) then
     begin
       flags := flags or PMinSize;
-      min_width := AMinWidth;
-      min_height := AMinHeight;
+      min_width := AMinSize.cx;
+      min_height := AMinSize.cy;
     end else
       flags := flags and not PMinSize;
 
-    if (AMaxWidth > 0) or (AMaxHeight > 0) then
+    if (AMaxSize.cx > 0) or (AMaxSize.cy > 0) then
     begin
       flags := flags or PMaxSize;
-      if AMaxWidth > 0 then
-        max_width := AMaxWidth
+      if AMaxSize.cx > 0 then
+        max_width := AMaxSize.cx
       else
         max_width := 32767;
-      if AMaxHeight > 0 then
-        max_height := AMaxHeight
+      if AMaxSize.cy > 0 then
+        max_height := AMaxSize.cy
       else
         max_height := 32767;
     end else
@@ -1670,7 +1605,7 @@ begin
     Button1..Button3:
       if Assigned(OnMousePressed) then
         OnMousePressed(Self, ButtonTable[Event.Button],
-          ConvertShiftState(Event.State), Event.x, Event.y);
+          ConvertShiftState(Event.State), Point(Event.x, Event.y));
     Button4, Button5:		// Mouse wheel message
       begin
         if Event.Button = Button4 then
@@ -1695,7 +1630,7 @@ begin
 
         if Assigned(OnMouseWheel) then
           OnMouseWheel(Self, ConvertShiftState(Event.State),
-	    Sum, Event.x, Event.y);
+	    Sum, Point(Event.x, Event.y));
       end;
   end;
 end;
@@ -1705,13 +1640,13 @@ begin
   if (Event.Button >= 1) and (Event.Button <= 3) and
     Assigned(OnMouseReleased) then
     OnMouseReleased(Self, ButtonTable[Event.Button],
-      ConvertShiftState(Event.State), Event.x, Event.y);
+      ConvertShiftState(Event.State), Point(Event.x, Event.y));
 end;
 
 procedure TXWindow.EnterWindow(var Event: TXEnterWindowEvent);
 begin
   if Assigned(OnMouseEnter) then
-    OnMouseEnter(Self, ConvertShiftState(Event.State), Event.x, Event.y);
+    OnMouseEnter(Self, ConvertShiftState(Event.State), Point(Event.x, Event.y));
 end;
 
 procedure TXWindow.LeaveWindow(var Event: TXLeaveWindowEvent);
@@ -1723,7 +1658,7 @@ end;
 procedure TXWindow.PointerMoved(var Event: TXPointerMovedEvent);
 begin
   if Assigned(OnMouseMove) then
-    OnMouseMove(Self, ConvertShiftState(Event.State), Event.x, Event.y);
+    OnMouseMove(Self, ConvertShiftState(Event.State), Point(Event.x, Event.y));
 end;
 
 procedure TXWindow.Expose(var Event: TXExposeEvent);
@@ -1831,6 +1766,22 @@ end;
 //   Global utility functions
 // -------------------------------------------------------------------
 
+function RectToXRect(const ARect: TRect): TXRectangle;
+begin
+  Result.x := ARect.Left;
+  Result.y := ARect.Top;
+  Result.width := ARect.Right - ARect.Left;
+  Result.height := ARect.Bottom - ARect.Top;
+end;
+
+function XRectToRect(const ARect: TXRectangle): TRect;
+begin
+  Result.Left := ARect.x;
+  Result.Top := ARect.y;
+  Result.Right := ARect.x + ARect.width;
+  Result.Bottom := ARect.y + ARect.height;
+end;
+
 function GetXEventName(Event: LongInt): String;
 const
   EventNames: array[2..34] of String = (
@@ -1855,6 +1806,9 @@ end.
 
 {
   $Log$
+  Revision 1.10  2001/02/14 23:07:47  sg
+  * Switched to use TSize and TPoint whereever possible
+
   Revision 1.9  2001/02/09 20:47:25  sg
   * Better mouse wheel support
   * Implemented new fpGFX interface methods (DefaultFontNames, cursors...)
