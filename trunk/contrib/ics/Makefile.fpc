@@ -13,8 +13,9 @@ units= wsockbuf wsocket wsockets uuencode dnsquery  fingcli ftpcli  ftpsrvc ftps
 exampledirs=examples
 
 [compiler]
-targetdir=.
+targetdir=vc32
 sourcedir=vc32 examples
+unitsdir=vc32
 includedir=vc32
 
 [install]

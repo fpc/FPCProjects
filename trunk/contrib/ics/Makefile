@@ -210,7 +210,7 @@ override TARGET_EXAMPLEDIRS+=examples
 override INSTALL_BASEDIR=.
 override COMPILER_INCLUDEDIR+=vc32
 override COMPILER_SOURCEDIR+=vc32 examples
-override COMPILER_TARGETDIR+=.
+override COMPILER_TARGETDIR+=vc32
 ifdef REQUIRE_UNITSDIR
 override UNITSDIR+=$(REQUIRE_UNITSDIR)
 endif
@@ -1071,9 +1071,13 @@ fpc_release:
 %$(EXEEXT): %.pas
 	$(COMPILER) $<
 	$(EXECPPAS)
+%$(EXEEXT): %.dpr
+	$(COMPILER) $<
+	$(EXECPPAS)
 %.res: %.rc
 	windres -i $< -o $@
 vpath %.pp $(COMPILER_SOURCEDIR) $(COMPILER_INCLUDEDIR)
+vpath %.dpr $(COMPILER_SOURCEDIR) $(COMPILER_INCLUDEDIR)
 vpath %.pas $(COMPILER_SOURCEDIR) $(COMPILER_INCLUDEDIR)
 vpath %$(PPUEXT) $(COMPILER_UNITTARGETDIR)
 .PHONY: fpc_install fpc_sourceinstall fpc_exampleinstall
