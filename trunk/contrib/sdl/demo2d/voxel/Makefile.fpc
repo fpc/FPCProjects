@@ -1,0 +1,23 @@
+[target]
+programs=jedisdlnewvox
+
+[require]
+packages=x11 
+# sdl
+
+[compiler]
+includedir=../../include
+unitdir=../../basesdl
+
+[clean]
+#units=tictactoe
+
+#[install]
+#fpcpackage=y
+
+#[default]
+#fpcdir=../../../..
+
+[rules]
+jedisdlnewvox: jedisdlnewvox.dpr
+	$(COMPILER) jedisdlnewvox.dpr		
