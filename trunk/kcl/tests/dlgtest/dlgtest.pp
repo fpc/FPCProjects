@@ -42,7 +42,7 @@ var
 begin
   inherited Create(AOwner);
 
-  BorderWidth := 5;
+  BorderWidth := 8;
 
   BaseLayout := TGridLayout.Create(Self);
     BaseLayout.Rows := 4;
@@ -66,8 +66,6 @@ begin
       RadioLayout1 := TBoxLayout.Create(Self);
         RadioLayout1.Name := 'RadioLayout1';
         RadioLayout1.Orientation := boxVert;
-        RadioLayout1.HorzAlign := horzFill;
-        RadioLayout1.VertAlign := vertFixed;
         Radio1a := TRadioButton.Create(Self);
           Radio1a.Name := 'Radio1a';
           Radio1a.Text := 'Radio button 1 a';
@@ -85,8 +83,6 @@ begin
       RadioLayout2 := TBoxLayout.Create(Self);
         RadioLayout2.Name := 'RadioLayout2';
         RadioLayout2.Orientation := boxVert;
-        RadioLayout2.HorzAlign := horzFill;
-        RadioLayout2.VertAlign := vertFixed;
         Radio2a := TRadioButton.Create(Self);
           Radio2a.Name := 'Radio2a';
           Radio2a.Text := 'Radio button 2 a';
@@ -139,6 +135,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/02/22 14:42:36  sg
+  * Adapted radio box layout widgets to changes in KCL interface
+
   Revision 1.1  2000/02/17 22:38:27  sg
   * First public version
 
