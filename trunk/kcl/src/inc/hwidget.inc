@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -33,8 +33,10 @@ type
     BlockDrawingCounter: LongInt;
     BlockRelayoutCounter: LongInt;
 
+    FHandle: TWidgetHandle;
     FParent: TWidget;
     FVisible: Boolean;
+    FEnabled: Boolean;
     FWidth, FHeight: LongInt;
     FMinWidth, FMinHeight, FMaxWidth, FMaxHeight: LongInt;
     FSizeFlags: TSizeFlags;
@@ -48,6 +50,7 @@ type
     FOnFocusOut: TNotifyEvent;
 
     procedure SetVisible(AVisible: Boolean);
+    procedure SetEnabled(AEnabled: Boolean);
     procedure SetWidth(AWidth: LongInt);
     procedure SetHeight(AHeight: LongInt);
     procedure SetMinWidth(AWidth: LongInt);
@@ -63,10 +66,11 @@ type
     procedure OnSizeChanged; virtual;
     procedure OnMinMaxSizeChanged; virtual;
   public
-    Handle: TWidgetHandle;
-
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
+    function  AddChildWidget(AWidget: TWidget): Boolean; dynamic;
+    procedure RemoveChildWidget(AWidget: TWidget); dynamic;
 
     {"FinishCreation" should be called when all properties have been set (the
      underlying window objects are created in FinishCreation). Note that some
@@ -92,6 +96,7 @@ type
     function  HasFocus: Boolean;
 
 
+    property Handle: TWidgetHandle read FHandle;
     property Parent: TWidget read FParent;
     property CreationState: TWidgetCreationState read FCreationState
       default wcsNotCreated;
@@ -100,6 +105,7 @@ type
       read FParentShowHint write FParentShowHint default True;
   published
     property Visible: Boolean read FVisible write SetVisible default True;
+    property Enabled: Boolean read FEnabled write SetEnabled default True;
     property Width: LongInt read FWidth write SetWidth;
     property Height: LongInt read FHeight write SetHeight;
     property MinWidth: LongInt read FMinWidth write SetMinWidth;
@@ -120,7 +126,12 @@ type
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:17  sg
-  Initial revision
+  Revision 1.2  2000/01/24 00:07:15  sg
+  * Added AddChildWidget and RemoveChildWidget
+  * "Handle" is now a read-only property
+  * Added "Enabled" property
+
+  Revision 1.1.1.1  1999/12/30 21:33:17  sg
+  Initial import
 
 }
