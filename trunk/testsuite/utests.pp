@@ -4,7 +4,7 @@ unit utests;
 
 interface
 
-uses cgiapp,sysutils,mysqlDB,whtml,dbwhtml,db,
+uses cgiapp,sysutils,mysqlDB4,whtml,dbwhtml,db,
      Classes,ftFont,fpimage,fpimgcanv,fpWritePng,fpcanvas;
 
 Type
@@ -686,7 +686,7 @@ Var
     Cnv.Line(X,Y,X+DX,Y-Dy);
     DX:=Round(R/2*Cos((A1+A2)/2));
     DY:=Round(R/2*Sin((A1+A2)/2));
-    Cnv.Brush.Color:=Col;
+    Cnv.Brush.FpColor:=Col;
     Cnv.FloodFill(X+DX,Y-DY);
   end;
   
@@ -705,7 +705,7 @@ begin
     Name:='arial';
     FontIndex:=0;
     Size:=12;
-    Color:=colred;
+    FPColor:=colred;
     AntiAliased:=False;
     Resolution:=96;
     end;
@@ -716,8 +716,8 @@ begin
   H:=Img.Height;
   // Writeln('Transparant');
   cnv.Brush.Style:=bsSolid;
-  cnv.Brush.Color:=colTransparent;
-  cnv.Pen.Color:=colWhite;
+  cnv.Brush.FPColor:=colTransparent;
+  cnv.Pen.FPColor:=colWhite;
   Cnv.Rectangle(0,0,W,H);
   // Writeln('Setting font');
   Cnv.Font:=F;
@@ -736,29 +736,29 @@ begin
     R.Right:=W;
   Ra:=CR div 2;  
   // Writeln('Setting pen color');
-  Cnv.Pen.Color:=colBlack;  
+  Cnv.Pen.FPColor:=colBlack;  
   // Writeln('Palette size : ',Img.Palette.Count);
   // Writeln('Setting brush style');
-  cnv.brush.color:=colRed;
+  cnv.brush.FPColor:=colRed;
 //  cnv.pen.width:=1;
   // Writeln('Drawing ellipse');
   Cnv.Ellipse(R);
   // Writeln('Setting text');
   // Writeln('Palette size : ',Img.Palette.Count);
 
-  cnv.font.Color:=colred;
+  cnv.font.FPColor:=colred;
   Inc(FH,4);
   FR:=Failed/Total;
   SR:=Skipped/Total;
   PR:=1-(FR+SR);
   Cnv.Textout(1,FH,Format('%d Failed (%3.1f%%)',[Failed,Fr*100]));
   // Writeln('Palette size : ',Img.Palette.Count);
-  cnv.font.Color:=colYellow;
+  cnv.font.FPColor:=colYellow;
   Cnv.Textout(1,FH*2,Format('%d Skipped (%3.1f%%)',[Skipped,SR*100]));
   A1:=(Pi*2*(failed/total));
   A2:=A1+(Pi*2*(Skipped/Total));
   AddPie(Ra,R.Top+Ra,Ra,A1,A2,ColYellow);
-  cnv.font.Color:=colGreen;
+  cnv.font.FPColor:=colGreen;
   // Writeln('Palette size : ',Img.Palette.Count);
   A1:=A2;
   A2:=A1+(Pi*2*((Total-(Skipped+Failed))/Total));
