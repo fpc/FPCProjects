@@ -431,7 +431,7 @@ interface
 {$i icsdef.inc}
 
 uses
-  SysUtils, {$ifdef UseWindows} Windows,{$else}WinTypes, WinProcs, {$endif}Messages, Classes,
+  Messages,SysUtils, {$ifdef UseWindows} Windows,{$else}WinTypes, WinProcs, {$endif} Classes,
 {$IFNDEF NOFORMS}
   Forms, Controls,
 {$ENDIF}

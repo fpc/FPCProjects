@@ -258,7 +258,7 @@ interface
 {$ENDIF}
 
 uses
-    {$ifdef usewindows} Windows,{$else} WinTypes, WinProcs, {$endif}SysUtils, Messages, Classes,
+    Messages,{$ifdef usewindows} Windows,{$else} WinTypes, WinProcs, {$endif}SysUtils, Classes,
 {$IFNDEF NOFORMS}
     Forms, Controls,
 {$ENDIF}

@@ -554,8 +554,8 @@ interface
 {$I icsdef.inc}
 
 uses
-
-  {$ifdef UseWindows}Windows, {$else}WinTypes, WinProcs,{$endif} Messages, Classes, SysUtils,
+ messages,
+  {$ifdef UseWindows}Windows, {$else}WinTypes, WinProcs,{$endif} Classes, SysUtils,
 {$IFNDEF NOFORMS} { See comments in history at 14/02/99 }
   Forms,
 {$ENDIF}

@@ -79,7 +79,7 @@ interface
 { which are _NOT_ freeware. See http://www.overbyte.be for details.         }
 
 uses
-  {$ifdef useWindows} Windows,{$else}WinTypes, WinProcs, {$endif}Messages, SysUtils, Classes,
+  Messages,{$ifdef useWindows} Windows,{$else}WinTypes, WinProcs, {$endif} SysUtils, Classes,
   {$ifndef NOFORMS} Graphics, Controls, Forms, Dialogs, {$endif}WSocket, Winsock;
 
 const

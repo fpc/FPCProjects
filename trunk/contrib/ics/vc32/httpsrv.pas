@@ -82,7 +82,7 @@ interface
 {$i icsdef.inc}
 
 uses
-  {$ifdef UseWindows}Windows,{$else}WinTypes, WinProcs, {$endif} Messages, SysUtils, Classes,
+  Messages,{$ifdef UseWindows}Windows,{$else}WinTypes, WinProcs, {$endif} SysUtils, Classes,
   {$ifndef NOFORMS} Graphics, Controls, Forms, Dialogs, {$endif}
   WSocket, WSocketS;
 
