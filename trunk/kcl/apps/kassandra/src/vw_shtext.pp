@@ -97,6 +97,8 @@ var
 begin
   inherited Create(AManager, ADoc, TSHPasEdit);
   e := Editor as TSHPasEdit;
+
+  e.shInvalid    := Widget.AddSHStyle('Invalid',       colRed,         colDefault, fsNormal);
   e.shSymbol     := Widget.AddSHStyle('Symbol',        colBrown,       colDefault, fsNormal);
   e.shKeyword    := Widget.AddSHStyle('Keyword',       colBlack,       colDefault, fsBold);
   e.shComment    := Widget.AddSHStyle('Comment',       colDarkCyan,    colDefault, fsItalics);
@@ -131,6 +133,9 @@ end.
 
 {
   $Log$
+  Revision 1.4  2000/02/20 11:00:45  sg
+  * Added "shInvalid" style initialization for the Pascal highlighter
+
   Revision 1.3  2000/02/10 18:26:19  sg
   * Files are now saved with TTextDocument.SaveToFile
 
