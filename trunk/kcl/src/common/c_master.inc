@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -29,6 +29,7 @@ type
 {$INCLUDE cguibase.inc}
 {$INCLUDE clayouts.inc}
 {$INCLUDE cmenus.inc}
+{$INCLUDE cpaintbox.inc}
 
 
 procedure Register;
@@ -73,8 +74,11 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:12  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:09:15  sg
+  * Added cpaintbox.inc to list of included files
+
+  Revision 1.1.1.1  1999/12/30 21:33:12  sg
+  Initial import
 
   Revision 1.1  1999/12/23 17:40:25  sg
   * Added KCL to CVS tree (but without Win32 target yet)
