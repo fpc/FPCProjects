@@ -28,7 +28,7 @@ type
 
     FOnInitGL: TNotifyEvent;
     procedure OnFinishCreation; override;
-    procedure OnSizeChanged; override;
+    procedure ApplySize; override;
   public
     function  BeginGL: Boolean;
     procedure EndGL;
@@ -131,9 +131,9 @@ begin
     GTK_SIGNAL_FUNC(@TGLPaintBox_Realize), Self);
 end;
 
-procedure TGLPaintBox.OnSizeChanged;
+procedure TGLPaintBox.ApplySize;
 begin
-  inherited OnSizeChanged;
+  inherited ApplySize;
   if GTK_WIDGET_REALIZED(Handle) and MakeCurrent then begin
     glViewport(0, 0, Width, Height);
     glFlush;
@@ -174,6 +174,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:49:50  sg
+  * Adapted to new layouting methods
+
   Revision 1.2  2000/01/26 21:20:40  peter
     * Makefile updates
     * glpaintbox fixed for Handle
