@@ -72,14 +72,15 @@ Jan 24, 2003 V5.00 Skipped to version 5 because of SSL code
 unit WSocketS;
 
 interface
+{$i icsdef.inc}
 
 { You must define USE_SSL so that SSL code is included in the component.    }
 { To be able to compile the component, you must have the SSL related files  }
 { which are _NOT_ freeware. See http://www.overbyte.be for details.         }
 
 uses
-  WinTypes, WinProcs, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, WSocket, Winsock;
+  {$ifdef useWindows} Windows,{$else}WinTypes, WinProcs, {$endif}Messages, SysUtils, Classes,
+  {$ifndef NOFORMS} Graphics, Controls, Forms, Dialogs, {$endif}WSocket, Winsock;
 
 const
     WSocketServerVersion     = 500;

@@ -72,16 +72,19 @@ Oct 12, 2002 V1.06 Added THttpConnection.PostedDataReceived to be called from
              Added read/only property SrcVersion with component source version
 Jan 05, 2003 V1.07 Fixed isxdigit
 Feb 11, 2003 V1.08 Enhanced HTTP1.1 handling (persitant connexions)
-
+}
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 unit HttpSrv;
 
 interface
 
+{$i icsdef.inc}
+
 uses
-  WinTypes, WinProcs, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, WSocket, WSocketS;
+  {$ifdef UseWindows}Windows,{$else}WinTypes, WinProcs, {$endif} Messages, SysUtils, Classes,
+  {$ifndef NOFORMS} Graphics, Controls, Forms, Dialogs, {$endif}
+  WSocket, WSocketS;
 
 const
     THttpServerVersion = 108;

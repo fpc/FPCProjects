@@ -42,6 +42,9 @@ Sep 29, 1999 V1.01 Adapted for Delphi 5
 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 program ConSrv1;
+
+{$i icsdef.inc}
+
 {$IFDEF VER80}
   Bomb('Sorry but Delphi 1 doesn''t support console mode program');
 {$ENDIF}

@@ -37,7 +37,7 @@ Legal issues: Copyright (C) 1997-2002 by François PIETTE
 
 Updates:
 Dec 05, 1998 V1.01 Don't use TWait control anymore
-
+}
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 {$IFDEF VER80}
     Bomb('Sorry, Delphi 1 does not support console mode programs');
@@ -45,8 +45,10 @@ Dec 05, 1998 V1.01 Don't use TWait control anymore
 {$APPTYPE CONSOLE}
 program ConCli1;
 
+{$i icsdef.inc}
+
 uses
-    Forms, WSocket;
+    {$Ifndef NOFORMS} Forms, {$endif}  {$ifdef FPC} custapp,{$endif} WSocket;
 
 var
     WSocket1 : TWSocket;
