@@ -59,15 +59,15 @@ begin
 
   priv.list := gtk_list_new;
 
+  gtk_scrolled_window_add_with_viewport(PGtkScrolledWindow(FHandle), priv.list);
+
+  inherited OnFinishCreation;
+
   for i := 0 to FItems.Count - 1 do begin
     item := gtk_list_item_new_with_label(PChar(FItems[i]));
-    gtk_widget_show(item);
     gtk_container_add(PGtkContainer(priv.list), item);
   end;
-
-  gtk_scrolled_window_add_with_viewport(PGtkScrolledWindow(FHandle), priv.list);
-  gtk_widget_show(priv.list);
-  inherited OnFinishCreation;
+  gtk_widget_show_all(priv.list);
 
   gtk_signal_connect_after(PGtkObject(priv.list), 'button_press_event',
     GTK_SIGNAL_FUNC(@TCustomListBox_ButtonPressEvent), Self);
@@ -75,8 +75,12 @@ end;
 
 procedure TCustomListBox.DoRecalcLayout;
 begin
+  MinW := 16;
+  MinH := 16;
   DefW := 16;
   DefH := 16;
+  MaxW := InfiniteSize;
+  MaxH := InfiniteSize;
 end;
 
 procedure TCustomListBox.Clear;
@@ -94,6 +98,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/18 18:27:23  sg
+  * Changed creation order so that the list items can get a correct size
+
   Revision 1.3  2000/02/17 22:30:12  sg
   * Major rewrite to get more VCL-like and to get platform-independent
   * TListBox now creates a scrolling window with a GTK listbox inside. GTK's
