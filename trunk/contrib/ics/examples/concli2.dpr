@@ -41,13 +41,15 @@ Legal issues: Copyright (C) 1997-2002 by François PIETTE
 Updates:
 Dec 05, 1998 V1.01 Don't use TWait object anymore.
 
-
+}
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 {$IFDEF VER80}
     Bomb('Sorry, Delphi 1 does not support console mode programs');
 {$ENDIF}
 {$APPTYPE CONSOLE}
 program ConCli2;
+
+{$i icsdef.inc}
 
 uses
     Windows, Classes, WSocket;
