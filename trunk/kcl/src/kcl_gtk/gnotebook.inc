@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -13,15 +13,37 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
 
+
 // ===================================================================
 //   Notebook widget implementation for GTK+
 // ===================================================================
 
+procedure TNotebookPage_SetText(APage: TNotebookPage; const AText: String);
+var
+  s: String;
+  accel: LongWord;
+  form: TWidget;
+begin
+  s := ConvertUnderlines(AText);
+  accel := gtk_label_parse_uline(PGtkLabel(APage.priv.LabelWidget), PChar(s));
+  if accel <> GDK_VoidSymbol then begin
+    form := APage.FNotebook;
+    while Assigned(form) and not form.InheritsFrom(TGenericForm) do
+      form := form.FParent;
+    if Assigned(form) then begin
+      gtk_widget_add_accelerator(APage.priv.LabelWidget, 'grab_focus',
+        TGenericForm(form).priv.AccelGroup, accel, GDK_MOD1_MASK, GTK_ACCEL_LOCKED);
+    end;
+  end;
+end;
+
 procedure TNotebookPage.SetText(const AText: String);
+var
+  s: String;
 begin
   FText := AText;
   if Assigned(priv.LabelWidget) then
-    gtk_label_set_text(priv.LabelWidget, PChar(AText));
+    TNotebookPage_SetText(Self, FText);
 end;
 
 procedure TNotebookPage.SetContent(AContent: TWidget);
@@ -44,24 +66,24 @@ end;
 
 function TNotebook.GetCurPage: TNotebookPage;
 begin
-  if Assigned(Handle.Widget) then
+  if Assigned(FHandle) then
     Result := TNotebookPage(FPages.Items
-      [gtk_notebook_get_current_page(PGtkNotebook(Handle.Widget))])
+      [gtk_notebook_get_current_page(PGtkNotebook(FHandle))])
   else
     Result := nil;
 end;
 
 function TNotebook.GetCurPageIndex: Integer;
 begin
-  if Assigned(Handle.Widget) then
-    Result := gtk_notebook_get_current_page(PGtkNotebook(Handle.Widget))
+  if Assigned(FHandle) then
+    Result := gtk_notebook_get_current_page(PGtkNotebook(FHandle))
   else
     Result := -1;
 end;
 
 procedure TNotebook.SetCurPageIndex(AIndex: Integer);
 begin
-  gtk_notebook_set_page(PGtkNotebook(Handle.Widget), AIndex);
+  gtk_notebook_set_page(PGtkNotebook(FHandle), AIndex);
 end;
 
 procedure TNotebook.OnFinishCreation;
@@ -69,16 +91,16 @@ var
   i: Integer;
   pg: TNotebookPage;
 begin
-  Handle.Widget := gtk_notebook_new;
+  FHandle := gtk_notebook_new;
 
   inherited OnFinishCreation;
 
   for i := 0 to FPages.Count - 1 do begin
     pg := TNotebookPage(FPages.Items[i]);
     pg.Content.FinishCreation;
-    pg.priv.LabelWidget := PGtkLabel(gtk_label_new(PChar(pg.Text)));
-    gtk_notebook_append_page(PGtkNotebook(Handle.Widget),
-      pg.Content.Handle.Widget, PGtkWidget(pg.priv.LabelWidget));
+    pg.priv.LabelWidget := gtk_label_new('');
+    TNotebookPage_SetText(pg, pg.FText);
+    gtk_notebook_append_page(PGtkNotebook(FHandle), pg.Content.FHandle, pg.priv.LabelWidget);
   end;
 end;
 
@@ -96,26 +118,31 @@ begin
   NewPage := TNotebookPage(FPages.Add);
   NewPage.FText := AText;
   NewPage.FContent := AWidget;
+  NewPage.FNotebook := Self;
 
-  if Assigned(Handle.Widget) then begin
+  if Assigned(FHandle) then begin
     AWidget.FinishCreation;
-    NewPage.priv.LabelWidget := PGtkLabel(gtk_label_new(PChar(NewPage.Text)));
-    gtk_notebook_append_page(PGtkNotebook(Handle.Widget), AWidget.Handle.Widget,
-      PGtkWidget(NewPage.priv.LabelWidget));
+    NewPage.priv.LabelWidget := gtk_label_new('');
+    TNotebookPage_SetText(NewPage, NewPage.Text);
+    gtk_notebook_append_page(PGtkNotebook(FHandle), AWidget.FHandle, NewPage.priv.LabelWidget);
   end;
 end;
 
 procedure TNotebook.RemovePage(AIndex: Integer);
 begin
   if (AIndex < 0) or (AIndex >= FPages.Count) then exit;
-  gtk_notebook_remove_page(PGtkNotebook(Handle.Widget), AIndex);
+  gtk_notebook_remove_page(PGtkNotebook(FHandle), AIndex);
   FPages.Items[AIndex].Free;
 end;
 
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:24  sg
-  Initial revision
+  Revision 1.2  2000/01/24 00:25:58  sg
+  * Started implementation of shortcut support for notebook pages
+    (doesn't work yet!)
+
+  Revision 1.1.1.1  1999/12/30 21:33:24  sg
+  Initial import
 
 }
