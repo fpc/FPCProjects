@@ -31,9 +31,25 @@ begin
   inherited OnFinishCreation;
 end;
 
+procedure TEdit.DoRecalcLayout;
+begin
+  inherited DoRecalcLayout;
+  if FDefaultWidth > 0 then begin
+    MinW := FDefaultWidth;	// ### not correct; only until TToolBar can size a TEdit correctly
+    DefW := FDefaultWidth;
+  end else begin
+    MinW := 20;
+    DefW := 40;
+  end;
+  MaxW := InfiniteSize;
+end;
+
 
 {
   $Log$
+  Revision 1.3  2000/02/17 22:27:24  sg
+  * Implemented "DoRecalcLayout"
+
   Revision 1.2  2000/01/24 00:23:14  sg
   * Implemented multi-line support (switchable via property "MultiLine")
 
