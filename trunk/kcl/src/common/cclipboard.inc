@@ -55,6 +55,13 @@ begin
   end;
 end;
 
+destructor TClipboard.Destroy;
+begin
+  priv.IsOpen := True;	// We need this for the Clear call
+  Clear;
+  inherited Destroy;
+end;
+
 procedure TClipboard.Open;
 begin
   priv.IsOpen := True;
@@ -221,6 +228,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:27:19  sg
+  * Added destructor to TClipboard to remove memory leaks
+
   Revision 1.2  2000/01/24 00:21:29  sg
   * Extended copyright to year 2000...
 
