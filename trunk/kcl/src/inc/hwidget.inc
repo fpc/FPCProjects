@@ -29,6 +29,7 @@ type
 
   TWidgetCreationState = (wcsNotCreated, wcsCreationInProgress, wcsCreationDone);
 
+
   TWidget = class(TKCLComponent)
   protected
     BlockDrawingCounter: LongInt;
@@ -39,6 +40,7 @@ type
     FEnabled: Boolean;
     DefW, DefH, MinW, MinH, MaxW, MaxH: Integer;
     FWidth, FHeight: Integer;
+    FCanExpandWidth, FCanExpandHeight: Boolean;
     FText: String;
     FCreationState: TWidgetCreationState;
     FParentShowHint, FShowHint: Boolean;
@@ -50,9 +52,9 @@ type
 
     function  GetWidgetCount: Integer; virtual;
     function  GetWidgets(AIndex: Integer): TWidget; virtual; abstract;
-    procedure SetSize(AWidth, AHeight: Integer);
-    procedure RecalcLayout;		// called at initialization or by a child
     procedure SetVisible(AVisible: Boolean);
+    procedure SetCanExpandWidth(allow: Boolean);
+    procedure SetCanExpandHeight(allow: Boolean);
 
     // Platform specific:
     procedure Show;
@@ -60,10 +62,13 @@ type
     procedure SetEnabled(AEnabled: Boolean);
     procedure SetText(const AText: String); dynamic;
     procedure SetHint(const AHint: String);
-    procedure SetPosition(x, y: Integer);
+
     procedure OnFinishCreation; virtual;
     procedure DoRecalcLayout; virtual;
     procedure ApplySize; virtual;	// apply current size (FWidth and FHeight); adjust children
+
+    property CanExpandWidth: Boolean read FCanExpandWidth write SetCanExpandWidth default True;
+    property CanExpandHeight: Boolean read FCanExpandHeight write SetCanExpandHeight default True;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -78,6 +83,9 @@ type
      Before this function terminates, it will set 'CreationState' to
      wcsCreationDone.}
     procedure FinishCreation;
+    procedure RecalcLayout;		// called at initialization or by a child
+    procedure SetSize(AWidth, AHeight: Integer);
+    procedure SetPosition(x, y: Integer);
 
     procedure BlockDrawing;
     procedure UnblockDrawing;
@@ -115,6 +123,10 @@ type
 
 {
   $Log$
+  Revision 1.6  2000/02/22 14:38:19  sg
+  * Added CanExpandWidth and CanExpandHeight
+  * SetSize, SetPosition and RecalcLayout now are public
+
   Revision 1.5  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 
