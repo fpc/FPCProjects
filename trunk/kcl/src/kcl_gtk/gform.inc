@@ -24,6 +24,8 @@ begin
   // Set a default size
   FWidth := 100;
   FHeight := 100;
+
+  priv.AccelGroup := gtk_accel_group_new;
 end;
 
 function TGenericForm_OnDestroy(GtkObject: PGtkObject; AForm: TGenericForm):
@@ -53,6 +55,8 @@ procedure TForm.OnFinishCreation;
 begin
   if not Assigned(Handle.Form) then    // -> derived class can create their own form
     Handle.Form := PGtkWindow(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+
+  gtk_window_add_accel_group(Handle.Form, priv.AccelGroup);
 
   inherited OnFinishCreation;
 
@@ -106,7 +110,10 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:25  sg
-  Initial revision
+  Revision 1.2  2000/01/06 23:01:14  sg
+  * Added Accelerator Group creation to TGenericForm
+
+  Revision 1.1.1.1  1999/12/30 21:33:25  sg
+  Initial import
 
 }
