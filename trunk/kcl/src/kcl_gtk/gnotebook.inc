@@ -28,11 +28,11 @@ begin
   accel := gtk_label_parse_uline(PGtkLabel(APage.priv.LabelWidget), PChar(s));
   if accel <> GDK_VoidSymbol then begin
     form := APage.FNotebook;
-    while Assigned(form) and not form.InheritsFrom(TGenericForm) do
+    while Assigned(form) and not form.InheritsFrom(TCustomForm) do
       form := form.FParent;
     if Assigned(form) then begin
       gtk_widget_add_accelerator(APage.priv.LabelWidget, 'grab_focus',
-        TGenericForm(form).priv.AccelGroup, accel, GDK_MOD1_MASK, GTK_ACCEL_LOCKED);
+        TCustomForm(form).priv.AccelGroup, accel, GDK_MOD1_MASK, GTK_ACCEL_LOCKED);
     end;
   end;
 end;
@@ -52,17 +52,6 @@ begin
 end;
 
 
-
-constructor TNotebook.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FPages := TCollection.Create(TNotebookPage);
-end;
-
-function TNotebook.GetPage(AIndex: Integer): TNotebookPage;
-begin
-  Result := TNotebookPage(FPages.Items[AIndex]);
-end;
 
 function TNotebook.GetCurPage: TNotebookPage;
 begin
@@ -104,11 +93,6 @@ begin
   end;
 end;
 
-procedure TNotebook.OnSizeChanged;
-begin
-  inherited OnSizeChanged;
-end;
-
 function TNotebook.AddPage(AText: String; AWidget: TWidget): Integer;
 var
   NewPage: TNotebookPage;
@@ -138,6 +122,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:45:49  sg
+  * Moved some GTK-independent methods back to cnotebook.inc
+
   Revision 1.2  2000/01/24 00:25:58  sg
   * Started implementation of shortcut support for notebook pages
     (doesn't work yet!)
