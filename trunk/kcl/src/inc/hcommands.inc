@@ -46,7 +46,7 @@ type
 
     function HasParent: Boolean; override;
     function GetParentComponent: TComponent; override;
-  //### published  compiler bug workaround !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  published
     property CommandList: TCommandList read FCommandList write SetCommandList;
     property Text: String read FText write FText;
     property Hint: String read FHint write FHint;
@@ -91,6 +91,9 @@ type
 
 {
   $Log$
+  Revision 1.2  2000/01/30 23:29:40  peter
+    * use published again
+
   Revision 1.1  2000/01/24 00:02:21  sg
   * First version
 
