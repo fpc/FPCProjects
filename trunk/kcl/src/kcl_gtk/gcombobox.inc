@@ -60,10 +60,12 @@ begin
     list := g_list_append(list, PChar(FItems[i]));
   gtk_combo_set_popdown_strings(PGtkCombo(FHandle), list);
 
-  gtk_signal_connect(PGtkObject(PGtkCombo(FHandle)^.entry), 'changed',
-    GTK_SIGNAL_FUNC(@TCustomComboBox_TextChanged), Self);
+  gtk_entry_set_text(PGtkEntry(PGtkCombo(FHandle)^.entry), PChar(FText));
 
   inherited OnFinishCreation;
+
+  gtk_signal_connect(PGtkObject(PGtkCombo(FHandle)^.entry), 'changed',
+    GTK_SIGNAL_FUNC(@TCustomComboBox_TextChanged), Self);
 end;
 
 procedure TCustomComboBox.DoRecalcLayout;
@@ -72,6 +74,13 @@ begin
   MinW := 20;
   DefW := 40;
   MaxW := InfiniteSize;
+end;
+
+procedure TCustomComboBox.SetText(const AText: String);
+begin
+  if Assigned(FHandle) then
+    gtk_entry_set_text(PGtkEntry(PGtkCombo(FHandle)^.entry), PChar(AText));
+  inherited SetText(AText);
 end;
 
 procedure TCustomComboBox.Clear;
@@ -84,6 +93,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/02/18 22:19:49  sg
+  * Implemented SetText
+
   Revision 1.1  2000/02/17 22:32:24  sg
   * First implementation
 

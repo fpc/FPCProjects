@@ -100,9 +100,19 @@ begin
   end;
 end;
 
+procedure TCustomGroupBox.SetText(const AText: String);
+begin
+  if Assigned(FHandle) then
+    gtk_frame_set_label(PGtkFrame(FHandle), PChar(AText));
+  inherited SetText(AText);
+end;
+
 
 {
   $Log$
+  Revision 1.2  2000/02/18 22:19:49  sg
+  * Implemented SetText
+
   Revision 1.1  2000/02/17 22:32:24  sg
   * First implementation
 

@@ -44,9 +44,19 @@ begin
   MaxW := InfiniteSize;
 end;
 
+procedure TEdit.SetText(const AText: String);
+begin
+  if Assigned(FHandle) then
+    gtk_entry_set_text(PGtkEntry(FHandle), PChar(AText));
+  inherited SetText(AText);
+end;
+
 
 {
   $Log$
+  Revision 1.4  2000/02/18 22:19:49  sg
+  * Implemented SetText
+
   Revision 1.3  2000/02/17 22:27:24  sg
   * Implemented "DoRecalcLayout"
 
