@@ -93,6 +93,14 @@ begin
   end;
 end;
 
+procedure TNotebook.DoRecalcLayout;
+begin
+  MinW := 50;
+  MinH := 20;
+  DefW := 100;
+  DefH := 100;
+end;
+
 function TNotebook.AddPage(AText: String; AWidget: TWidget): Integer;
 var
   NewPage: TNotebookPage;
@@ -122,6 +130,10 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/18 18:28:13  sg
+  * Added dummy default sizes (the sizes calculated by GTK 1.2.7 cannot be
+    used anymore)
+
   Revision 1.3  2000/02/10 18:45:49  sg
   * Moved some GTK-independent methods back to cnotebook.inc
 
