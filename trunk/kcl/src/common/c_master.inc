@@ -26,16 +26,21 @@ type
 {$INCLUDE cevents.inc}
 {$INCLUDE ccomponent.inc}
 {$INCLUDE ctimer.inc}
+{$INCLUDE cgraphics.inc}
+{$INCLUDE ccommands.inc}
 {$INCLUDE cguibase.inc}
+{$INCLUDE cwidget.inc}
 {$INCLUDE clayouts.inc}
 {$INCLUDE cmenus.inc}
+{$INCLUDE cbuttons.inc}
 {$INCLUDE cpaintbox.inc}
+{$INCLUDE ctoolbar.inc}
 
 
 procedure Register;
 var
   InvComponents: array[0..1] of TComponentClass;
-  BaseComponents: array[0..13] of TComponentClass;
+  BaseComponents: array[0..17] of TComponentClass;
   LayoutComponents: array[0..3] of TComponentClass;
   DialogComponents: array[0..2] of TComponentClass;
 begin
@@ -46,17 +51,21 @@ begin
   BaseComponents[0]  := TLabel;
   BaseComponents[1]  := TEdit;
   BaseComponents[2]  := TButton;
-  BaseComponents[3]  := TColList;
-  BaseComponents[4]  := TTreeView;
-  BaseComponents[5]  := THorzScrollBar;
-  BaseComponents[6]  := TVertScrollBar;
-  BaseComponents[7]  := TScrollBox;
-  BaseComponents[8]  := TPaintBox;
-  BaseComponents[9]  := TNotebook;
-  BaseComponents[10] := TStatusBar;
-  BaseComponents[11] := TSplitter;
-  BaseComponents[12] := TMenuBar;
-  BaseComponents[13] := TMenu;
+  BaseComponents[3]  := TImageButton;
+  BaseComponents[4]  := TListBox;
+  BaseComponents[5]  := TColList;
+  BaseComponents[6]  := TTreeView;
+  BaseComponents[7]  := THorzScrollBar;
+  BaseComponents[8]  := TVertScrollBar;
+  BaseComponents[9]  := TScrollBox;
+  BaseComponents[10]  := TPaintBox;
+  BaseComponents[11] := TNotebook;
+  BaseComponents[12] := TToolBar;
+  BaseComponents[13] := TStatusBar;
+  BaseComponents[14] := TSplitter;
+  BaseComponents[15] := TMenuBar;
+  BaseComponents[16] := TMenu;
+  BaseComponents[17] := TToolBar;
   RegisterComponents('Base Widgets', BaseComponents);
 
   LayoutComponents[0]  := TFixedLayout;
@@ -74,6 +83,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/01/24 00:11:44  sg
+  * Added more widgets to the component registration function
+
   Revision 1.2  2000/01/05 19:09:15  sg
   * Added cpaintbox.inc to list of included files
 
