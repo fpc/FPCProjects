@@ -1,0 +1,21 @@
+[defaults]
+defaulttarget=go32v2
+
+[targets]
+programs=buildttt
+
+[clean]
+units=winttt5 dirttt5 fastttt5 iottt5 keyttt5 listttt5 menuttt5 miscttt5 \
+nestttt5 pullttt5 readttt5 strnttt5
+
+[require]
+options=-Sgo
+
+[presettings]
+PASEXT=.pas
+
+[rules]
+buildttt$(EXEEXT): winttt5$(PASEXT) dirttt5$(PASEXT) fastttt5$(PASEXT) \
+iottt5$(PASEXT) keyttt5$(PASEXT) listttt5$(PASEXT) menuttt5$(PASEXT) \
+miscttt5$(PASEXT) nestttt5$(PASEXT) pullttt5$(PASEXT) readttt5$(PASEXT) \
+strnttt5$(PASEXT) winttt5.inc fastttt5.inc

@@ -1,0 +1,8 @@
+This directory contains the source code of the FPC/32 Bit Dos conversion of
+TechnoJock's Turbo Toolkit 5.10. The buildttt.exe program at the end of the
+build process can be deleted safely.
+
+To make it clear: this conversion *only* works for the Go32v2 Dos target,
+not for anything else (no Windows, no Linux, no nothing)
+
+FPC conversion copyright (C) 2000 by Jonas Maebe (jonas@freepascal.org)
