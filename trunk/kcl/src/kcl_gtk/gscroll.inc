@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -113,66 +113,11 @@ begin
   FVertRange := TGtkScrollboxRange.Create(Self);
 end;
 
-procedure TScrollBox_MouseForwarder(ScrollBox: TScrollBox;
-  var method: TMouseEvent; x, y: Integer; ShiftState: TShiftState);
-begin
-  if not Assigned(method) then exit;
-
-  x := (x - 4) + ScrollBox.FHorzRange.CurValue;
-  y := (y - 4) + ScrollBox.FVertRange.CurValue;
-
-  if (x >= 0) and (y >= 0) and (x <= ScrollBox.FHorzRange.MaxValue) and
-    (y <= ScrollBox.FVertRange.MaxValue) then
-    method(ScrollBox, x, y, ShiftState);
-end;
-
-function TScrollBox_ButtonPressEvent(GtkWidget: PGtkWidget; event: PGdkEventButton;
-  ScrollBox: TScrollBox): Integer; cdecl;
-begin
-  TScrollBox_MouseForwarder(ScrollBox,
-    TPaintBox(ScrollBox.FContent).FOnMouseButtonDown,
-    Round(event^.x), Round(event^.y), []);
-  Result := 1;
-end;
-
-function TScrollBox_ButtonReleaseEvent(GtkWidget: PGtkWidget; event: PGdkEventButton;
-  ScrollBox: TScrollBox): Integer; cdecl;
-begin
-  TScrollBox_MouseForwarder(ScrollBox,
-    TPaintBox(ScrollBox.FContent).FOnMouseButtonUp,
-    Round(event^.x), Round(event^.y), []);
-  Result := 1;
-end;
-
-function TScrollBox_DragMotionEvent(GtkWidget: PGtkWidget;
-  DragContext: PGdkDragContext; x, y: Integer; time: LongWord;
-  ScrollBox: TScrollBox): Integer; cdecl;
-begin
-WriteLn('TScrollBox_DragMotionEvent');
-{  TScrollBox_MouseForwarder(ScrollBox,
-    TPaintBox(ScrollBox.FContent).FOnMouseMove,
-    Round(event^.x), Round(event^.y), []);
-}  Result := 1;
-end;
-
 procedure TScrollBox_SetupContent(sb: TScrollBox);
 begin
   sb.FContent.FinishCreation;
-
   gtk_scrolled_window_add_with_viewport(PGtkScrolledWindow(sb.Handle.Widget),
-    sb.FContent.Handle.Widget);
-
-  if sb.FContent.InheritsFrom(TPaintBox) then begin
-    gtk_signal_connect(PGtkObject(sb.Handle.Widget), 'button-press-event',
-      GTK_SIGNAL_FUNC(@TScrollBox_ButtonPressEvent), sb);
-    gtk_signal_connect(PGtkObject(sb.Handle.Widget), 'button-release-event',
-      GTK_SIGNAL_FUNC(@TScrollBox_ButtonReleaseEvent), sb);
-    //gtk_signal_connect_after(PGtkObject(sb.Handle.Widget), 'drag-motion-event',
-    //  GTK_SIGNAL_FUNC(@TScrollBox_ButtonReleaseEvent), sb);
-
-    //### gtk_widget_set_events(sb.Handle.Widget, GDK_POINTER_MOTION_MASK);
-  end;
-
+      sb.FContent.Handle.Widget);
   sb.RecalcLayout;
 end;
 
@@ -184,12 +129,13 @@ begin
     TScrollBox_SetupContent(Self);
 end;
 
-
-
 procedure TScrollBox.OnFinishCreation;
 begin
   Handle.Widget := gtk_scrolled_window_new(
     TGtkAdjRange(FHorzRange).adj, TGtkAdjRange(FVertRange).adj);
+
+  gtk_scrolled_window_set_policy(PGtkScrolledWindow(Handle.Widget),
+    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   inherited OnFinishCreation;
 
@@ -253,7 +199,12 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:44  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:20:17  sg
+  * TScrollBox: Removed the QuickHack with forwarding mouse events to an
+    included PaintBox (not necessary anymore!)
+  * Scroll bars of TScrollBox are only displayed if necessary (automatic mode)
+
+  Revision 1.1.1.1  1999/12/30 21:33:44  sg
+  Initial import
 
 }
