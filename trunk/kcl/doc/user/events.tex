@@ -1,0 +1,211 @@
+%===============================================================================
+% KCL User's Guide
+% (c) 2000 Sebastian Guenther, sg@freepascal.org
+% $Id$
+%===============================================================================
+
+\chapter{Events}
+
+%-------------------------------------------------------------------------------
+
+\section{Overview}
+KCL has very advanced event handling capabilites. An event can be emitted by
+any object (called \textit{sender}) and may be handled by registered receivers.
+\\ There are two kinds of event receivers; the second one works only with KCL
+components as senders:
+\begin{itemize}
+\item Support for notify methods: These are n-to-1 connections; a sender can
+      be connected to a single notify method, but this method can be connected
+      to more than one event source at the same time.
+      Such events are typed via the argument list which is used by
+      the notify methods, so that all types can be validated at compile-time.
+      This kind of event mechanism is extremely efficient, but not very
+      powerful. They should be used wherever possible, but remember the event
+      design rules described below.
+\item Support for generic event filters. Each sender (and additionally the
+      the whole KCL system per se) manages a list of event handling and
+      filtering methods, and the kind of event a specific filter is interested
+      in. The filters for a given sender are concatenated, and each filter may
+      advise the sender to stop further processing of the current event via its
+      result value. (\true = further processing, \false = stop it)\\
+      At this stage of event processing, each event is being represented
+      as an instance of a \texttt{TEventObj} object (or one of its derived
+      classes). Here, type checking is done at run-time. These connections are
+      n-to-n relations, where a single event may cause several handlers to
+      be called; and, of course, a single handler (filter) may be registered
+      for multiple events on an arbitrary number of senders.\\
+      Performance is not that good anymore: The more filters there are
+      registered for a specific sender, the more time the sender will need to
+      process an event.
+\end{itemize}
+It is important to see how both methods play together: Each event first runs to
+the list of registered event filters, and if all of them succeed (return \true),
+the notify method is called if necessary.\\
+\subsection{Usage guidelines}
+The primary uses of the filters are: Debugging and internal messaging. For speed
+reasons, normal applications should always use the simple notify methods. The
+filters are very handy for composite widgets, for example, where the application
+developer should still have access to some events of the internal widgets, but
+the compositing widgets would need them, too. Other applications are high-level
+classes which doesn't want to interfere with the normal notifier messaging,
+e.g. for data-aware forms: A non-GUI database class can install its filters for
+edit widgets on the form, and each time presses the Enter key within an edit
+widget, it automatically updates the underlying database. When this object would
+use the normal notify method, the application developer would have no chance to
+add his own validation code.
+
+\section{Implementation Details}
+
+\subsection{Adding new events}
+The source of an event must be an object; for supporting the generic handlers
+the sender has to be an object inherited from \texttt{TKCLComponent}.
+For each single event \textit{E}, a helper method called "Do\textit{E}" is to
+be declared and implemented. This method takes all the event properties as
+arguments. Its task is to call the registered method handlers and to call the
+notify method, if set.
+This is done via some methods which are defined in \texttt{TKCLComponent}:
+\small
+\begin{listing}{1}
+type
+
+  TKeyEvent = procedure(Sender: TObject; Key: Char; KeyCode: LongWord;
+    Shift: TShiftState) of object;
+
+  TKeyEventObj = class(TEventObj)
+  private
+    FKey: Char;
+    FKeyCode: LongWord;
+    FShift: TShiftState;
+  public
+    constructor Create(ASender: TObject; AKey: Char;
+      AKeyCode: LongWord; AShift: TShiftState);
+  published
+    property Key: Char read FKey write FKey;
+    property KeyCode: LongWord read FKeyCode write FKeyCode;
+    property Shift: TShiftState read FShift write FShift;
+  end;
+
+  TKeyPressedEventObj = type TKeyEventObj;
+  TKeyReleasedEventObj = type TKeyEventObj;
+
+  TMyComponent = class(TKCLComponent)
+  protected
+    FOnKeyPressed: TOnKeyEvent;
+  public
+    procedure DoKeyPressed(AKey: Char; AKeyCode: LongWord;
+      AShift: TShiftState);
+    property OnKeyPressed: TOnKey read FOnKeyPressed
+      write FOnKeyPressed;
+  end;
+
+procedure TMyComponent.DoKeyPressed(AKey: Char; AKeyCode: LongWord;
+                                    AShift: TShiftState);
+begin
+  if CallEventFilters(TKeyPressedEventObj.Create(Self, AKey,
+    AKeyCode, AShift)) then
+    if Assigned(FOnKeyPressed) then
+      FOnKeyPressed(Self, AKey, AKeyCode, AShift);
+end;
+\end{listing}
+\normalsize
+
+The code for the notify methods look exactly the same as in Delphi-like
+libraries. Only the support for the generic handlers need somewhat work
+(one line of code): In this example, \texttt{DoKeyPressed} creates a new
+\texttt{TKeyEventObj} object with the given mouse coordinates and calls
+the method \texttt{CallEventFilters}, which is defined in \texttt{TKCLControl}.
+(Note that the properties of the event class are published; this is by
+intention, the generated run-time type informations (RTTI) can be very useful
+for the purpose of debugging and event tracing.)
+\texttt{CallEventFilters} simply checks all registered event filters and calls
+those handlers which are registered for the given event type.\\
+{\textbf{Note:} While the notify methods are named via the property names in
+their classes, it is necessary to create different event filter classes for
+different events. For example, the properties of the "Key pressed" and "Key
+released" events may be the same, but a filter normally coudln't distinguish
+between them. The solution is to add alias classes like in lines 20-21 in the
+above example.
+
+\subsection{Using notify methods}
+Almost all GUI applications will have to use notify methods, most will
+contain dozends or hundreds of them. Fortunately, using notify methods
+is very simple: Just declare a method with matching argument list, implement
+it and assign the address of the new method to the according property of the
+sender.\\
+A simple example will show all necessary aspects:
+\small
+\begin{listing}{1}
+type
+  TMyClass = class
+    KeyCatcher: TMyComponent;
+    constructor Create;
+    procedure OnKeyCatcherKeyPressed(Sender: TObject; AKey: Char;
+      AKeyCode: LongWord; AShift: TShiftState);
+  end;
+
+  constructor TMyClass.Create;
+  begin
+    // [...] Initialize KeyCatcher here
+    KeyCatcher.OnKeyPressed := @OnKeyCatcherKeyPressed;
+  end;
+
+  procedure TMyClass.OnKeyCatcherKeyPressed(Sender: TObject;
+    AKey: Char; AKeyCode: LongWord; AShift: TShiftState);
+  begin
+    WriteLn('Key pressed: ', AKey);
+  end;
+\end{listing}
+\normalsize
+
+\texttt{TMyClass} contains a notify methods called
+\texttt{OnKeyCatcherKeyPressed}, which will be called whenever the object
+\texttt{KeyCatcher} (as declared in the example at the beginning of this
+section) sends a "Key pressed" event. This connection is done in line 12; this
+call will associate both the method and the object instance with the
+\texttt{OnKeyPressed} property of \texttt{TMyComponent}.
+
+\subsection{Using generic event filters}
+The processing and filtering of generic events requires some discipline from
+the developer, as the event types cannot be checked by the compiler anymore.
+On the other hand, it is possible to process all kinds of events from an
+unlimited count of senders with a single method. The following example shows
+how to use event filters within a normal application:
+\small
+\begin{listing}{1}
+type
+  TMyApplication = class
+    KeyCatcher: TMyComponent;
+    constructor Create;
+    function MyEventFilter(Event: TEventObj): Boolean;
+  end;
+
+  constructor TMyApplication.Create;
+  begin
+    // [...] Initialize KeyCatcher here
+    KeyCatcher.AddEventFilter(TKeyPressedEventObj, @MyEventFilter);
+  end;
+
+  function TMyApplication.MyEventFilter(Event: TEventObj): Boolean;
+  begin
+    WriteLn('Got event ', Event.ClassName,
+      ' from object of type ', Event.Sender.ClassName);
+    if Event.InheritsFrom(TKeyPressedEventObj) then
+      WriteLn('Key pressed: ', TKeyPressedEventObj(Event).Key);
+    Result := True;  // allow further processing of this event
+  end;
+\end{listing}
+\normalsize
+These kind of event handlers are called "generic" because the handlers
+(filters) itself are declared so that they could receive any kind of
+event. (see line 5)
+Adding the filter is performed by a call to the \texttt{AddEventFilter} method
+of the sender (line 11), its first argument is the kind of event the filter is
+interested in, and the second argument is the address of the filter method.
+\textbf{Attention:} The filter will be called for all events of the specified
+type (class) \emph{and its derived classes}. So, in our example, a filter for
+\texttt{TKeyEventObj} will be called for both key press
+(\texttt{TKeyPressedEventObj}) and key release (\texttt{TKeyReleasedEventObj})
+events! A filter for \texttt{TEventObj} will catch \emph{all} events.\\
+The result value of the filter method (set in line 20 in the example above)
+determines if this event will be processed further: \true will do, \false will
+stop any further processing.
