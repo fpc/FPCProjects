@@ -20,25 +20,33 @@
 
 type
 
-  TGenericDialog = class(TForm)
+  TGenericDialog = class(TCustomForm)
   public
     function Run: Boolean; virtual; abstract;
   end;
 
 
-  TDialog = class(TGenericDialog)
+  TCustomDialog = class(TGenericDialog)
   protected
     FOnOk, FOnCancel: TNotifyEvent;
     FResultWidget: TWidget;
 
     procedure Ok(AObj: TObject);
     procedure Cancel(AObj: TObject);
-    // procedure SetContent(AContent: TWidget); override;
     procedure OnFinishCreation; override;
+    procedure DoClose; override;
   public
     constructor Create(AOwner: TComponent); override;
     function Run: Boolean; override;
     property ResultWidget: TWidget read FResultWidget;
+  end;
+
+
+  TDialog = class(TCustomDialog)
+  published
+    property Text;
+    property Content;
+    property BorderWidth;
   end;
 
 
@@ -55,21 +63,23 @@ resourcestring
   btnText_Help = 'Help';
 
   dlgText_FileDialog = 'Select file';
+
 type
 
-  TStdBtnDialog = class(TDialog)
+  TStdBtnDialog = class(TCustomDialog)
   protected
     FButtons: TStdDlgButtons;
-    MainLayout: TDockingLayout;
-    BtnLayout: TBoxLayout;
-    RealContent: TWidget;
+    FDlgContent: TWidget;
+    MainLayout, BtnLayout: TBoxLayout;
+    Separator: TSeparator;
     procedure SetButtons(AButtons: TStdDlgButtons);
-    procedure SetContent(AContent: TWidget); // ###override;
+    procedure StdBtnClicked(Sender: TObject);
     procedure OnFinishCreation; override;
   public
     constructor Create(AOwner: TComponent); override;
     property Buttons: TStdDlgButtons read FButtons write SetButtons
-      default [btnOk];
+      default [btnOk, btnCancel];
+    property Content: TWidget read FDlgContent write FDlgContent;
   end;
 
 
@@ -88,6 +98,10 @@ type
 
 {
   $Log$
+  Revision 1.3  2000/02/17 22:21:56  sg
+  * Added TCustomDialog
+  * Several improvements...
+
   Revision 1.2  2000/01/05 19:13:30  sg
   * Added "Abort" button for DefButton dialog
   * Added resourcestring for TFileDialog caption
