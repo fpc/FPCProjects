@@ -235,6 +235,8 @@ unit SmtpProt;
 
 interface
 
+{$i icsdef.inc}
+
 {$B-}           { Enable partial boolean evaluation   }
 {$T-}           { Untyped pointers                    }
 {$X+}           { Enable extended syntax              }
@@ -256,7 +258,7 @@ interface
 {$ENDIF}
 
 uses
-    WinTypes, WinProcs, SysUtils, Messages, Classes,
+    {$ifdef usewindows} Windows,{$else} WinTypes, WinProcs, {$endif}SysUtils, Messages, Classes,
 {$IFNDEF NOFORMS}
     Forms, Controls,
 {$ENDIF}
@@ -580,7 +582,7 @@ type
     published
         property ShareMode;
         property Host;
-        property LocalAddr; {bb}        
+        property LocalAddr; {bb}
         property Port;
         property SignOn;
         property Username;
@@ -620,7 +622,7 @@ type
                                                      write FOnAttachContentType;
         property OnAttachHeader  : TSmtpAttachHeader read  FOnAttachHeader
                                                      write FOnAttachHeader;
-                                                     
+
     end;
 
     { TSyncSmtpCli add synchronous functions. You should avoid using this   }
@@ -922,7 +924,7 @@ begin
         FHdrLines.Destroy;
         FHdrLines := nil;
     end;
-    
+
     if Assigned(FAuthTypesSupported) then begin
         FAuthTypesSupported.Destroy;
         FAuthTypesSupported := nil;

@@ -55,7 +55,7 @@ Mar 14, 2003 V1.05 Bas Steendijk <steendijk@xs4all.nl> corrected a bug when
 unit MD5;
 
 interface
-
+  {$i icsdef.inc}
 uses
     SysUtils, Classes;
 

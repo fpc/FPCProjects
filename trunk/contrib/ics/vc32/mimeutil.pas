@@ -47,7 +47,7 @@ May 03, 2003  V1.00 Initial release
 unit MimeUtil;
 
 interface
-
+{$i icsdef.inc}
 uses
     SysUtils, Classes;
 
