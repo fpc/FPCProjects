@@ -75,12 +75,17 @@ begin
 
   DoRecalcLayout;
 
+  FCreationState := wcsCreationDone;
+
   if MinW = 0 then MinW := 1;
   if MinH = 0 then MinH := 1;
   if DefW < MinW then DefW := MinW;
-  if DefH < MinW then DefH := MinH;
-  if MaxW < DefW then MaxW := DefW;
-  if MaxH < DefH then MaxH := DefH;
+  if DefH < MinH then DefH := MinH;
+
+  if (not FCanExpandWidth) or (MaxW < DefW) then
+    MaxW := DefW;
+  if (not FCanExpandHeight) or (MaxH < DefH) then
+    MaxH := DefH;
 
   if Assigned(FParent) and (FParent.FCreationState = wcsCreationDone) then
     FParent.RecalcLayout;
@@ -95,6 +100,22 @@ begin
       Show
     else
       Hide;
+end;
+
+procedure TWidget.SetCanExpandWidth(allow: Boolean);
+begin
+  if FCanExpandWidth <> allow then begin
+    FCanExpandWidth := allow;
+    RecalcLayout;
+  end;
+end;
+
+procedure TWidget.SetCanExpandHeight(allow: Boolean);
+begin
+  if FCanExpandHeight <> allow then begin
+    FCanExpandHeight := allow;
+    RecalcLayout;
+  end;
 end;
 
 procedure TWidget.FinishCreation;
@@ -145,6 +166,9 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/02/22 14:37:13  sg
+  * Added stuff for CanExpandWidth and CanExpandHeight properties
+
   Revision 1.4  2000/02/19 19:09:00  sg
   * Fixed layouting bugs; minor improvements
 
