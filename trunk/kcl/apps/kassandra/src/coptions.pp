@@ -264,6 +264,7 @@ Type
        Procedure OnEnableOptimizationsClick (Sender : TObject);
        Procedure OnVerbosityOffClick (Sender : TObject);
        Procedure OnVerbosityOnClick (Sender : TObject);
+       Procedure OnOmitLinkingClick (Sender : TObject);
        Procedure OnSetProcessorOnClick (Sender : TObject);
        Procedure SetVerbosities (OnOff : Boolean);
        Procedure FormToOptions;
@@ -1019,6 +1020,9 @@ begin
   RBLinkLinkDynamic.Name := 'RBLinkLinkDynamic';
   ELinkLinkerOptions.Name := 'ELinkLinkerOptions';
   GBLinkOptions.Name := 'GBLinkOptions';
+
+  // CallBAcks
+  CBLinkOmitLinking.OnClick:=@OnOmitLinkingClick;
   
   // Start layout.
   Layout:=TBoxLayout.Create(Self);
@@ -1055,6 +1059,7 @@ begin
       HorzAlign:=HorzFill;
       VertAlign:=VertTop;
       Spacing:=8;
+      AddWidget(CBLinkUseCLib);
       AddWidget(CBLinkStripSymbols);
       AddWidget(CBLinkMakeDynlib);
       AddWidget(CBLinkMakeSmartLink);
@@ -1072,6 +1077,12 @@ begin
     AddWidget(CBLinkOmitLinking);
     AddWidget(GBLinkOptions);
     end;
+end;
+
+Procedure TCompilerOptionsForm.OnOmitLinkingClick (Sender : TObject);
+
+begin
+  GBLinkOptions.Enabled:=Not((Sender as TCheckBox).State=CbChecked);
 end;
 
 Function TCompilerOptionsForm.CreateGeneralPage : TWidget;
@@ -1427,6 +1438,7 @@ begin
       AddOption('-Ch'+Temp);
     end;
   // rest of -C options  
+  //  Writeln(stderr,'Code options');
   Temp:='';  
   If (CBCodeIOCheck.State=cbChecked) then
     Temp:=Temp+'i';
@@ -1439,6 +1451,7 @@ begin
   if Length(Temp)>0 then
     AddOption('-C'+temp);
   // Optimizations  
+  // Writeln(stderr,'Code optmizations');
   If (CBEnableOptimizations.State=cbChecked) then
     begin
     Temp:='-O';
@@ -1466,8 +1479,10 @@ begin
       else If (RBCodePentiumPro.Checked) then
         Temp := Temp+'3';
       end;  
+    AddOption(Temp);
     end;  
   // Linker options
+  // Writeln(stderr,'Linker options');
   If (CBLinkOmitLinking.State=cbChecked) then
     AddOption('-Cn')
   else
@@ -1477,23 +1492,27 @@ begin
     If (CBLinkMakeSmartLink.State=cbChecked) then
       AddOption('-CX'); 
     If (CBLinkUseClib.State=cbChecked) then
-      AddOption('-Xs');
+      AddOption('-Xc');
     If (CBLinkStripSymbols.State=cbChecked) then
       AddOption('-Xs');
     If (RBLinkLinkSmart.Checked) then
       AddOption('-XX')
-    else If (RBLinkLinkStatic.Checked) then
-      AddOption('-XS')
+    {
+     // This is on by default.
+    Else If (RBLinkLinkStatic.Checked) then
+      AddOption('-XS') 
+    }
     else If (RBLinkLinkDynamic.Checked) then
       AddOption('-XD');
     If Length(ELinkLinkerOptions.Text)>0 then
       AddOption('-k'+ELinkLinkerOptions.Text);
     end;  
+  // Writeln(stderr,'General options');
   // general page.
   If (CBGeneralCheckUnitName.State=cbChecked) then
     AddOption('-Un');
   If (CBGeneralSystemUNit.State=cbChecked) then
-    AddOption('-Un');
+    AddOption('-Us');
   If (CBGeneralBuild.State=cbChecked) then
     AddOption('-B');
   If (CBGeneralNoConfig.State=cbChecked) then
@@ -1510,13 +1529,14 @@ begin
   If (CBGeneralScript.State=cbChecked) then
     AddOption('-s');
   // Debug info.  
+  // Writeln(stderr,'Debug options');
   If (CBGeneralDebugInfo.State=cbChecked) then
     begin
     temp:='-g';
-      If (CBGeneralgsym.State=cbChecked) then
+    If (CBGeneralgsym.State=cbChecked) then
        Temp := Temp+'g';
     If (CBGeneraldbx.State=cbChecked) then
-      Temp := Temp+'g';
+      Temp := Temp+'d';
     If (CBGeneralHeaptrace.State=cbChecked) then
       Temp := Temp+'h';
     If (CBGeneralLineInfo.State=cbChecked) then
@@ -1559,6 +1579,9 @@ end.
 
 {
   $Log$
+  Revision 1.5  2000/02/25 13:55:47  michael
+  Fixed some minor bugs. All options now passed correctly.
+
   Revision 1.4  2000/02/25 11:41:07  michael
   + Options can be read after dialog closes.
 
