@@ -1,3 +1,21 @@
+{
+    $Id$
+
+    fpGFX  -  Free Pascal Graphics Library
+    Copyright (C) 2000 by
+      Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
+
+    'Hello world' example
+
+    See the file COPYING, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+}
+
+
 program HelloWorld;
 
 uses Classes, GFXBase, GFXImpl;
@@ -11,7 +29,6 @@ type
   private
     Display: TDefDisplay;
     Window: TGfxWindow;
-    Context: TGfxContext;
     TextSize: TSize;
     Font: TGfxFont;
   public
@@ -28,24 +45,19 @@ begin
   Window.Title := 'fpGFX Hello World example';
   Window.OnPaint := @Paint;
   Window.Show;
-  Context := Window.Drawable.CreateContext;
-  Context.SetFont(Font);
-  TextSize := Context.TextExtent(HelloWorldString);
+  Window.Drawable.SetFont(Font);
+  TextSize := Window.Drawable.TextExtent(HelloWorldString);
   Window.SetSize((TextSize.cx * 3) div 2, TextSize.cy * 2);
   Window.SetMinMaxSize(TextSize.cx, TextSize.cy, 0, 0);
 end;
 
 destructor TMainWindow.Destroy;
 begin
-  Context.Free;
   Font.Free;
   inherited Destroy;
 end;
 
 procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
-const
-  Black: TGfxColor = (Red: $0000; Green: $0000; Blue: $0000; Alpha: 0);
-  White: TGfxColor = (Red: $ffff; Green: $ffff; Blue: $ffff; Alpha: 0);
 var
   Color: TGfxColor;
   r: TRect;
@@ -59,23 +71,19 @@ begin
   for i := Rect.Top to Rect.Bottom - 1 do
   begin
     Color.Blue := $ffff - (i * $ffff) div Window.Height;
-    Context.SetColor(Context.MapColor(Color));
+    Window.Drawable.SetColor(Window.Drawable.MapColor(Color));
     r.Top := i;
     r.Bottom := i + 1;
-    Context.FillRect(r);
+    Window.Drawable.FillRect(r);
   end;
 
-  Context.SetColor(Context.MapColor(Black));
-  Context.TextOut(
-    (Window.Width - TextSize.cx) div 2 + 1,
-    (Window.Height - TextSize.cy) div 2 + 1,
-    HelloWorldString);
+  Window.Drawable.SetColor(Window.Drawable.MapColor(colBlack));
+  Window.Drawable.TextOut((Window.Width - TextSize.cx) div 2 + 1,
+    (Window.Height - TextSize.cy) div 2 + 1, HelloWorldString);
 
-  Context.SetColor(Context.MapColor(White));
-  Context.TextOut(
-    (Window.Width - TextSize.cx) div 2 - 1,
-    (Window.Height - TextSize.cy) div 2 - 1,
-    HelloWorldString);
+  Window.Drawable.SetColor(Window.Drawable.MapColor(colWhite));
+  Window.Drawable.TextOut((Window.Width - TextSize.cx) div 2 - 1,
+    (Window.Height - TextSize.cy) div 2 - 1, HelloWorldString);
 end;
 
 var

@@ -141,27 +141,22 @@ end;
 procedure TMainWindow.MouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta, x, y: Integer);
 begin
-  WriteLn(MouseState(Shift, x, y), 'Mouse wheel changed by ', WheelDelta,
+  WriteLn(MouseState(Shift, x, y), 'Mouse wheel rotated by ', WheelDelta,
     ' ticks');
 end;
 
 procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
-const
-  Black: TGfxColor = (Red: $0000; Green: $0000; Blue: $0000; Alpha: 0);
-  White: TGfxColor = (Red: $ffff; Green: $ffff; Blue: $ffff; Alpha: 0);
-var
-  Context: TGfxContext;
 begin
-  Context := FWindow.Drawable.CreateContext;
-  Context.SetColor(Context.MapColor(White));
-  Context.FillRect(Rect);
-  Context.SetColor(Context.MapColor(Black));
-  Context.TextOut(0, 0, 'Event test');
-  Context.TextOut(0, Context.FontCellHeight,
-    'Do something interactive (move mouse, press keys...)');
-  Context.TextOut(0, Context.FontCellHeight * 2,
-     'and watch the output on the console.');
-  Context.Free;
+  with FWindow.Drawable do
+  begin
+    SetColor(MapColor(colWhite));
+    FillRect(Rect);
+    SetColor(MapColor(colBlack));
+    TextOut(0, 0, 'Event test');
+    TextOut(0, FontCellHeight,
+      'Do something interactive (move mouse, press keys...)');
+    TextOut(0, FontCellHeight * 2, 'and watch the output on the console.');
+  end;
 end;
 
 var
