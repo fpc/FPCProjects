@@ -37,12 +37,16 @@ type
   public
     destructor Destroy; override;
     procedure AddEventFilter(EventClass: TEventClass; FilterFn: TEventFilterFn);
+    procedure RemoveEventFilter(EventClass: TEventClass; FilterFn: TEventFilterFn);
     function  CallEventFilters(Event: TEventObj): Boolean;
   end;
 
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:33:28  sg
+  * Added TKCLComponent.RemoveEventFilter
+
   Revision 1.2  2000/01/24 00:03:45  sg
   * TEventFilterFn is now a function of object, and not a normal function
     (this should have been the case since the beginning, but I forgot it...)
