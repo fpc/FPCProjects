@@ -30,8 +30,14 @@ end;
 // -------------------------------------------------------------------
 
 procedure TButton.OnFinishCreation;
+var
+  lbl: PGtkWidget;
 begin
-  FHandle := gtk_button_new_with_label(PChar(FText));
+  FHandle := gtk_button_new;
+  lbl := gtk_label_new(nil);
+  gtk_label_parse_uline(PGtkLabel(lbl), PChar(ConvertUnderlines(FText)));
+  gtk_widget_show(lbl);
+  gtk_container_add(PGtkContainer(FHandle), lbl);
   if FDefault then begin
     GTK_WIDGET_SET_FLAGS(FHandle, GTK_CAN_DEFAULT);
     gtk_widget_grab_default(FHandle);
@@ -113,9 +119,18 @@ begin
 end;
 
 procedure TCheckBox.OnFinishCreation;
+var
+  lbl: PGtkWidget;
 begin
-  FHandle := gtk_check_button_new_with_label(PChar(FText));
+  FHandle := gtk_check_button_new;
+  lbl := gtk_label_new(nil);
+  gtk_misc_set_alignment(PGtkMisc(lbl), 0, 0.5);
+  gtk_label_parse_uline(PGtkLabel(lbl), PChar(ConvertUnderlines(FText)));
+  gtk_widget_show(lbl);
+  gtk_container_add(PGtkContainer(FHandle), lbl);
+
   inherited OnFinishCreation;
+
   gtk_signal_connect(PGtkObject(FHandle), 'clicked',
     GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
 end;
@@ -154,6 +169,7 @@ procedure TRadioButton.OnFinishCreation;
       Result := PGtkRadioButton(p.FHandle)
     else begin
       for i := 0 to p.WidgetCount - 1 do begin
+        if p.Widgets[i].IsRadioGroup then continue;
 	r := FindOtherRadioButton(p.Widgets[i]);
 	if Assigned(r) then begin
 	  Result := r;
@@ -167,6 +183,7 @@ procedure TRadioButton.OnFinishCreation;
 var
   p: TWidget;
   other: PGtkRadioButton;
+  lbl: PGtkWidget;
 begin
   // We must find other radio buttons within the same radio group
   p := FParent;
@@ -177,7 +194,13 @@ begin
     p := p.FParent;
   end;
 
-  FHandle := gtk_radio_button_new_with_label_from_widget(other, PChar(FText));
+  FHandle := gtk_radio_button_new_from_widget(other);
+  lbl := gtk_label_new(nil);
+  gtk_misc_set_alignment(PGtkMisc(lbl), 0, 0.5);
+  gtk_label_parse_uline(PGtkLabel(lbl), PChar(ConvertUnderlines(FText)));
+  gtk_widget_show(lbl);
+  gtk_container_add(PGtkContainer(FHandle), lbl);
+
   inherited OnFinishCreation;
 end;
 
@@ -196,6 +219,9 @@ end;
 
 {
   $Log$
+  Revision 1.9  2000/02/24 14:55:38  sg
+  * TButton, TCheckBox and TRadioButton now support "&" to mark shortcuts
+
   Revision 1.8  2000/02/24 13:39:32  sg
   * More layout fixes...
 
