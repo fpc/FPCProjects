@@ -1,30 +1,30 @@
 #: kassandra:menufile
-msgid "File"
-msgstr "Datei"
+msgid "&File"
+msgstr "&Datei"
 
 #: kassandra:menunewfile
-msgid "New file"
-msgstr "Neue Datei"
+msgid "&New file"
+msgstr "&Neue Datei"
 
 #: kassandra:menuopenfile
-msgid "Open file..."
-msgstr "Öffne Datei..."
+msgid "&Open file..."
+msgstr "&Öffne Datei..."
 
 #: kassandra:menusavefile
-msgid "Save file"
-msgstr "Sichere Datei"
+msgid "&Save file"
+msgstr "&Sichere Datei"
 
 #: kassandra:menusavefileas
-msgid "Save file as..."
-msgstr "Sichere Datei als..."
+msgid "Save file &as..."
+msgstr "Sichere Datei &als..."
 
 #: kassandra:menuclosefile
-msgid "Close file"
-msgstr "Schliesse Datei"
+msgid "&Close file"
+msgstr "S&chliesse Datei"
 
 #: kassandra:menuopenworkspace
-msgid "Open workspace..."
-msgstr "Öffne Arbeitsbereich..."
+msgid "Open &workspace..."
+msgstr "Öffne &Arbeitsbereich..."
 
 #: kassandra:menusaveworkspace
 msgid "Save workspace"
@@ -39,24 +39,24 @@ msgid "Open recent file"
 msgstr "Öffne zuletztbenutze Datei"
 
 #: kassandra:menuexit
-msgid "Exit"
-msgstr "Beenden"
+msgid "E&xit"
+msgstr "B&eenden"
 
 #: kassandra:menuview
-msgid "View"
-msgstr "Ansicht"
+msgid "&View"
+msgstr "&Ansicht"
 
 #: kassandra:menuviewoutput
-msgid "Output window"
-msgstr "Ausgabefenster"
+msgid "&Output window"
+msgstr "&Ausgabefenster"
 
 #: kassandra:menuoptions
-msgid "Options"
-msgstr "Optionen"
+msgid "&Options"
+msgstr "&Optionen"
 
 #: kassandra:menugeneraloptions
-msgid "General options..."
-msgstr "Allgemeine Einstellungen..."
+msgid "&General options..."
+msgstr "&Allgemeine Einstellungen..."
 
 #: kassandra:dlgglobaloptions
 msgid "Global Options"

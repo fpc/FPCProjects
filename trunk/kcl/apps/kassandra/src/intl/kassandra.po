@@ -1,29 +1,29 @@
 #: kassandra:menufile
-msgid "File"
+msgid "&File"
 msgstr ""
 
 #: kassandra:menunewfile
-msgid "New file"
+msgid "&New file"
 msgstr ""
 
 #: kassandra:menuopenfile
-msgid "Open file..."
+msgid "&Open file..."
 msgstr ""
 
 #: kassandra:menusavefile
-msgid "Save file"
+msgid "&Save file"
 msgstr ""
 
 #: kassandra:menusavefileas
-msgid "Save file as..."
+msgid "Save file &as..."
 msgstr ""
 
 #: kassandra:menuclosefile
-msgid "Close file"
+msgid "&Close file"
 msgstr ""
 
 #: kassandra:menuopenworkspace
-msgid "Open workspace..."
+msgid "Open &workspace..."
 msgstr ""
 
 #: kassandra:menusaveworkspace
@@ -39,23 +39,23 @@ msgid "Open recent file"
 msgstr ""
 
 #: kassandra:menuexit
-msgid "Exit"
+msgid "E&xit"
 msgstr ""
 
 #: kassandra:menuview
-msgid "View"
+msgid "&View"
 msgstr ""
 
 #: kassandra:menuviewoutput
-msgid "Output window"
+msgid "&Output window"
 msgstr ""
 
 #: kassandra:menuoptions
-msgid "Options"
+msgid "&Options"
 msgstr ""
 
 #: kassandra:menugeneraloptions
-msgid "General options..."
+msgid "&General options..."
 msgstr ""
 
 #: kassandra:dlgglobaloptions
