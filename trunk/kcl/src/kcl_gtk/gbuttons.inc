@@ -32,7 +32,13 @@ end;
 procedure TButton.OnFinishCreation;
 begin
   FHandle := gtk_button_new_with_label(PChar(FText));
+  if FDefault then begin
+    GTK_WIDGET_SET_FLAGS(FHandle, GTK_CAN_DEFAULT);
+    gtk_widget_grab_default(FHandle);
+  end;
+
   inherited OnFinishCreation;
+
   gtk_signal_connect(PGtkObject(FHandle), 'clicked',
     GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
 end;
@@ -98,9 +104,73 @@ begin
     GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
 end;
 
+procedure TCheckBox.DoRecalcLayout;
+begin
+  inherited DoRecalcLayout;
+  MaxW := InfiniteSize;
+end;
+
+
+// -------------------------------------------------------------------
+//   TRadioButton
+// -------------------------------------------------------------------
+
+procedure TRadioButton.SetChecked(AChecked: Boolean);
+begin
+  FChecked := AChecked;
+  gtk_toggle_button_set_active(PGtkToggleButton(FHandle), AChecked);
+end;
+
+procedure TRadioButton.OnFinishCreation;
+
+  function FindOtherRadioButton(p: TWidget): PGtkRadioButton;
+  var
+    i: Integer;
+    r: PGtkRadioButton;
+  begin
+    if (p <> Self) and (p is TRadioButton) then
+      Result := PGtkRadioButton(p.FHandle)
+    else begin
+      for i := 0 to p.WidgetCount - 1 do begin
+	r := FindOtherRadioButton(p.Widgets[i]);
+	if Assigned(r) then begin
+	  Result := r;
+	  exit;
+	end;
+      end;
+      Result := nil;
+    end;
+  end;
+
+var
+  p: TWidget;
+  other: PGtkRadioButton;
+begin
+  // We must find other radio buttons within the same radio group
+  p := FParent;
+  other := nil;
+  while Assigned(p) do begin
+    other := FindOtherRadioButton(p);
+    if Assigned(other) or p.IsRadioGroup then break;
+    p := p.FParent;
+  end;
+
+  FHandle := gtk_radio_button_new_with_label_from_widget(other, PChar(FText));
+  inherited OnFinishCreation;
+end;
+
+procedure TRadioButton.DoRecalcLayout;
+begin
+  inherited DoRecalcLayout;
+  MaxW := InfiniteSize;
+end;
+
 
 {
   $Log$
+  Revision 1.4  2000/02/17 22:26:38  sg
+  * Added TRadioButton
+
   Revision 1.3  2000/02/10 18:40:16  sg
   * Added layout calculations to TButton
 
