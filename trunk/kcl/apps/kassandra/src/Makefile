@@ -207,7 +207,7 @@ override NEEDUNITDIR=$(KCLGUIDIR)
 
 # Packages
 
-override PACKAGES+=rtl fcl x11
+override PACKAGES+=rtl fcl
 override COMPONENTS+=kclshedit
 ifneq ($(wildcard $(FPCDIR)/rtl),)
 ifneq ($(wildcard $(FPCDIR)/rtl/$(OS_TARGET)),)
@@ -252,28 +252,6 @@ endif
 endif
 ifdef UNITDIR_FCL
 override NEEDUNITDIR+=$(UNITDIR_FCL)
-endif
-ifneq ($(wildcard $(PACKAGEDIR)/x11),)
-ifneq ($(wildcard $(PACKAGEDIR)/x11/$(OS_TARGET)),)
-PACKAGEDIR_X11=$(PACKAGEDIR)/x11/$(OS_TARGET)
-else
-PACKAGEDIR_X11=$(PACKAGEDIR)/x11
-endif
-UNITDIR_X11=$(PACKAGEDIR_X11)
-else
-PACKAGEDIR_X11=
-ifneq ($(wildcard $(UNITSDIR)/x11),)
-ifneq ($(wildcard $(UNITSDIR)/x11/$(OS_TARGET)),)
-UNITDIR_X11=$(UNITSDIR)/x11/$(OS_TARGET)
-else
-UNITDIR_X11=$(UNITSDIR)/x11
-endif
-else
-UNITDIR_X11=
-endif
-endif
-ifdef UNITDIR_X11
-override NEEDUNITDIR+=$(UNITDIR_X11)
 endif
 ifneq ($(wildcard $(COMPONENTDIR)/kclshedit),)
 ifneq ($(wildcard $(COMPONENTDIR)/kclshedit/$(OS_TARGET)),)
@@ -802,7 +780,6 @@ endif
 
 PACKAGERTL=1
 PACKAGEFCL=1
-PACKAGEX11=1
 ifdef PACKAGERTL
 ifneq ($(wildcard $(PACKAGEDIR_RTL)),)
 ifeq ($(wildcard $(PACKAGEDIR_RTL)/$(FPCMADE)),)
@@ -821,17 +798,8 @@ fcl_package:
 endif
 endif
 endif
-ifdef PACKAGEX11
-ifneq ($(wildcard $(PACKAGEDIR_X11)),)
-ifeq ($(wildcard $(PACKAGEDIR_X11)/$(FPCMADE)),)
-override COMPILEPACKAGES+=x11
-x11_package:
-	$(MAKE) -C $(PACKAGEDIR_X11) all
-endif
-endif
-endif
 
-.PHONY:  rtl_package rtl_package fcl_package x11_package
+.PHONY:  rtl_package rtl_package fcl_package
 
 COMPONENTKCLSHEDIT=1
 ifdef PACKAGEKCLSHEDIT
