@@ -1,0 +1,34 @@
+[target]
+programs=jedisdlpixeltest jedisdlrotatesurface jedisdlwormhole jedisdlutilstest 
+[require]
+packages=x11
+
+[compiler]
+includedir=../../include
+unitdir=../../basesdl
+
+[clean]
+#units=tictactoe
+
+#[install]
+#fpcpackage=y
+
+#[default]
+#fpcdir=../../../..
+
+[rules]
+#maintest pixeltest rotatesurface wormhole
+
+jedisdlutilstest: maintst/jedisdlutilstest.dpr
+	$(COMPILER) maintst/jedisdlutilstest.dpr
+
+jedisdlpixeltest: pixeltst/jedisdlpixeltest.dpr
+	$(COMPILER) pixeltst/jedisdlpixeltest.dpr
+
+jedisdlrotatesurface: rotatesurfacedem/jedisdlrotatesurface.dpr
+	$(COMPILER) rotatesurfacedem/jedisdlrotatesurface.dpr
+
+jedisdlwormhole: wormholedem/jedisdlwormhole.dpr
+	$(COMPILER) wormholedem/jedisdlwormhole.dpr
+
+
