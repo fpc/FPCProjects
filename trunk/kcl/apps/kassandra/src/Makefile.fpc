@@ -3,7 +3,7 @@
 #
 
 [targets]
-units=view_notebook vw_generic vw_shtext
+units=viewman vw_shtext
 programs=kassandra
 rst=kassandra
 
