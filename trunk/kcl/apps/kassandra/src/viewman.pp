@@ -30,13 +30,14 @@ type
   protected
     PageInfos: TCollection;
     procedure ViewModified(View: TGenericView);
-    function FGetCount: Integer;
+    function  GetCount: Integer;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     function  AddView(View: TGenericView): Integer;
     function  GetView(index: Integer): TGenericView;
     procedure CloseView(index: Integer);
-    property  Count: Integer read FGetCount;
+    property  Count: Integer read GetCount;
   end;
 
 
@@ -49,15 +50,15 @@ type
     FFilename: String;
     FIsModified: Boolean;
     FOnModified: TOnViewModified;
-    procedure FSetFileName(NewFileName: String);
-    procedure FSetIsModified(NewIsModified: Boolean);
+    procedure SetFileName(NewFileName: String);
+    procedure SetIsModified(NewIsModified: Boolean);
   public
     constructor Create(AManager: TViewManager);
     property MainSubwindow: TWidget read FMainSubwindow;
-    property FileName: String read FFileName write FSetFileName;
+    property FileName: String read FFileName write SetFileName;
     PageNumber: Integer;
     HasDefaultName: Boolean;		// Set if filename is not really set
-    property IsModified: Boolean read FIsModified write FSetIsModified;
+    property IsModified: Boolean read FIsModified write SetIsModified;
     procedure Save; virtual;
     property OnModified: TOnViewModified read FOnModified write FOnModified;
   end;
@@ -87,6 +88,16 @@ constructor TViewManager.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   PageInfos := TCollection.Create(TPageInfo);
+end;
+
+destructor TViewManager.Destroy;
+var
+  i: Integer;
+begin
+  for i := 0 to PageInfos.Count - 1 do
+    TPageInfo(PageInfos.Items[i]).View.Free;
+  PageInfos.Free;
+  inherited Destroy;
 end;
 
 function GetViewTitle(View: TGenericView): String;
@@ -141,10 +152,11 @@ end;
 procedure TViewManager.CloseView(index: Integer);
 begin
   RemovePage(index);
+  TPageInfo(PageInfos.Items[index]).View.Free;
   PageInfos.Items[index].Free;
 end;
 
-function TViewManager.FGetCount: Integer;
+function TViewManager.GetCount: Integer;
 begin
   Result := PageInfos.Count;
 end;
@@ -178,7 +190,7 @@ begin
   manager := AManager;
 end;
 
-procedure TGenericView.FSetFileName(NewFileName: String);
+procedure TGenericView.SetFileName(NewFileName: String);
 begin
   if NewFileName <> FFileName then begin
     FFileName := newFileName;
@@ -187,7 +199,7 @@ begin
   end;
 end;
 
-procedure TGenericView.FSetIsModified(NewIsModified: Boolean);
+procedure TGenericView.SetIsModified(NewIsModified: Boolean);
 begin
   if NewIsModified <> FIsModified then begin
     FIsModified := NewIsModified;
@@ -198,7 +210,7 @@ end;
 
 procedure TGenericView.Save;
 begin
-  FSetIsModified(False);
+  IsModified := False;
 end;
 
 
@@ -219,6 +231,10 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:25:18  sg
+  * Changed method names (removed "F" at start)
+  * Added destructor to remove memory leaks...
+
   Revision 1.2  2000/01/24 00:34:18  sg
   * The page title label now underlines the page number (instead of "[1]" etc.)
 
