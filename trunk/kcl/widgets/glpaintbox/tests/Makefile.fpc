@@ -20,7 +20,7 @@ componentdir=$(KCLWIDGETSDIR)
 [presettings]
 # KCL Settings
 KCLGUI=kcl_gtk
-KCLDIR=../..
+KCLDIR=../../..
 
 KCLGUIDIR=$(KCLDIR)/src
 KCLWIDGETSDIR=$(KCLDIR)/widgets

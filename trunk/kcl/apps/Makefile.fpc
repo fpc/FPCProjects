@@ -1,0 +1,9 @@
+#
+#   Makefile.fpc for KCL Applications
+#
+
+[targets]
+dirs=kassandra
+
+[sections]
+none=1

@@ -1,0 +1,11 @@
+#
+#   Makefile.fpc for Kassandra Component Library
+#
+
+[targets]
+dirs_linux=kcl_gtk
+dirs_win32=kcl_gtk kcl_w32
+
+[defaults]
+defaultdir=kcl_gtk
+

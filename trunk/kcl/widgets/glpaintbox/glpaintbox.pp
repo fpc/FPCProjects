@@ -48,7 +48,7 @@ uses gdk, gtk;
 function TGLPaintBox.MakeCurrent: Boolean;
 begin
   if glxcontext = nil then exit(False);
-  Result := glXMakeCurrent(xdisplay, PGdkWindowPrivate(Handle.Widget^.window)^.xwindow, glxcontext);
+  Result := glXMakeCurrent(xdisplay, PGdkWindowPrivate(Handle^.window)^.xwindow, glxcontext);
 end;
 
 function TGLPaintBox_Realize(GtkWidget: PGtkWidget;
@@ -127,14 +127,14 @@ begin
 
   inherited OnFinishCreation;
 
-  gtk_signal_connect(PGtkObject(Handle.Widget), 'realize',
+  gtk_signal_connect(PGtkObject(Handle), 'realize',
     GTK_SIGNAL_FUNC(@TGLPaintBox_Realize), Self);
 end;
 
 procedure TGLPaintBox.OnSizeChanged;
 begin
   inherited OnSizeChanged;
-  if GTK_WIDGET_REALIZED(Handle.Widget) and MakeCurrent then begin
+  if GTK_WIDGET_REALIZED(Handle) and MakeCurrent then begin
     glViewport(0, 0, Width, Height);
     glFlush;
   end;
@@ -142,7 +142,7 @@ end;
 
 function TGLPaintBox.BeginGL: Boolean;
 begin
-  if not GTK_WIDGET_REALIZED(Handle.Widget) then exit(False);
+  if not GTK_WIDGET_REALIZED(Handle) then exit(False);
   Result := MakeCurrent;
 end;
 
@@ -155,7 +155,7 @@ procedure TGLPaintBox.SwapBuffers;
 var
   drawable: PGdkWindowPrivate;
 begin
-  drawable := PGdkWindowPrivate(Handle.Widget^.window);
+  drawable := PGdkWindowPrivate(Handle^.window);
   glXSwapBuffers(GDK_WINDOW_XDISPLAY(drawable), GDK_WINDOW_XWINDOW(drawable));
 end;
 
@@ -174,6 +174,10 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/01/26 21:20:40  peter
+    * Makefile updates
+    * glpaintbox fixed for Handle
+
   Revision 1.1  1999/12/31 19:21:42  sg
   * Initial version for the new KCL
 

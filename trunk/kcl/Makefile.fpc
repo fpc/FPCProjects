@@ -1,0 +1,19 @@
+#
+#   Makefile.fpc for Kassandra Component Library
+#
+
+[targets]
+dirs=src widgets apps
+
+pkgs=kclbase{src} \
+     kclwidgets{widgets} \
+     kclapps{apps}
+
+[install]
+packagename=kcl
+sourcesubdirs=0
+
+[sections]
+none=1
+zipsourceinstall=1
+
