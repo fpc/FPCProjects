@@ -81,14 +81,40 @@ uses Windows, ActiveX, Classes {$ifndef NOVCL} , Graphics, OleServer, OleCtrls, 
 //   Non-DISP interfaces: IID_xxxx
 // *********************************************************************//
 
-{$ifdef FPC} // temporarily
-        type TOleEnum   = type LongWord;
+{$ifdef FPC} // DUMMY! temporarily to get things compiling
+        // Dummy stuff I inserted here to keep it compilable, derived
+        // from this unit's (and units that depend on it) code.
+        // can be used as template for implementation.
+
+        type TOleEnum   = type LongWord; // in activex?
              OleVariant = variant;
              TOleVariant= OleVariant;
              POleVariant= ^TOleVariant;
              SysUINT    = Windows.UINT;
              SysINT     = Windows.WINT;
-             TOleServer = Class(TPersistant) end;
+
+             TServerData= Record
+                            ClassID:   TGUID;
+                            IntfIID:   TGUID;
+                            EventIID:  String;   // probably TGUID too
+                            LicenseKey: pointer;
+                            Version: integer
+                            end;
+
+             TOleServer = Class(TPersistent)
+                           private
+                            ServerData : ^TServerData;
+                           public
+                 function  GetServer:IUnknown;
+                 procedure InitServerData; virtual;
+                 constructor Create(AOwner: TComponent); virtual;
+                 Procedure Connect; virtual;
+                 procedure Disconnect; virtual;
+                 end;
+
+function CreateComObject(ID: TGUID): IUnknown; //empty
+function CreateRemoteComObject(w:widestring; ID: TGUID): IUnknown; //empty
+
 {$endif}
 
 const
@@ -4258,7 +4284,11 @@ type
     property PrintableString: WideString read Get_PrintableString write Set_PrintableString;
     property NumericString: WideString read Get_NumericString write Set_NumericString;
     property Boolean: Integer read Get_Boolean write Set_Boolean;
+    {$ifdef FPC}
+    property _Integer: Integer read Get_Integer write Set_Integer;
+    {$else}
     property Integer: Integer read Get_Integer write Set_Integer;
+    {$endif}
     property UTCTime: TDateTime read Get_UTCTime write Set_UTCTime;
   published
 {$IFDEF LIVE_SERVER_AT_DESIGN_TIME}
@@ -6283,6 +6313,18 @@ procedure Register;
 implementation
 
 uses ComObj;
+
+{$ifdef FPC} // dummy
+function CreateComObject(ID: TGUID): IUnknown; //empty
+
+begin
+end;
+
+function CreateRemoteComObject(w:widestring; ID: TGUID): IUnknown; //empty
+
+begin
+end;
+{$endif}
 
 class function CoPropertyEntry.Create: IADsPropertyEntry;
 begin
