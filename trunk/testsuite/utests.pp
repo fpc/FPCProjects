@@ -18,9 +18,16 @@ Type
     FOS  : String;
     FDate : TDateTime;
     FDebug,
+    FNoSkipped,
     FOnlyFailed : Boolean;
     FAction : Integer;
     FTestLastDays : Integer;
+    Procedure GetOverviewRowAttr(Sender : TObject; Var BGColor : String;
+                                   Var Align : THTMLAlign; Var VAlign : THTMLValign;
+                                   Var CustomAttr : String) ;
+    Procedure GetRunRowAttr(Sender : TObject; Var BGColor : String;
+                            Var Align : THTMLAlign; Var VAlign : THTMLValign;
+                            Var CustomAttr : String) ;
   Public
     Function CreateDataset(Qry : String) : TMySQLDataset;
     Function CreateTableProducer(DS : TDataset) :TTableProducer;
@@ -98,6 +105,8 @@ begin
     end;
   S:=RequestVariables['TESTFAILEDONLY'];
   FOnlyFailed:=(S='1');
+  S:=RequestVariables['TESTNOSKIPPED'];
+  FNoSkipped:=(S='1');
   S:=RequestVariables['DEBUGCGI'];
   FDebug:=(S='1');
   Result:=FAction;
@@ -234,6 +243,12 @@ begin
       CellNext;
         EmitCheckBox('TESTFAILEDONLY','1',FonlyFailed);
       CellEnd;
+    RowNext;
+      CellStart;
+        Write('No skipped tests');
+      CellNext;
+        EmitCheckBox('TESTNOSKIPPED','1',FNoSkipped);
+      CellEnd;
     RowEnd;
     TableEnd;
     ParaGraphStart;
@@ -245,6 +260,14 @@ begin
   AddResponseLn('</BODY>');
   AddResponseLn('</HTML>');
 end;
+
+procedure TTestSuite.GetOverviewRowAttr(Sender: TObject; var BGColor: String;
+  var Align: THTMLAlign; var VAlign: THTMLValign; var CustomAttr: String);
+begin
+  If ((Sender as TTAbleProducer).CurrentRow mod 2=0) then
+    BGColor:='#EEEEEE'
+end;
+
 
 Function TTestSuite.CreateDataset(Qry : String) : TMySQLDataset;
 
@@ -322,7 +345,8 @@ Const
   SDetailsURL = 'testsuite.cgi?TESTACTION=1&TESTRUN=%s';
 
 Var
-   S,A : String;
+  S,A,Qry : String;
+  Q : TMySQLDataset;
 
 begin
    S:='';
@@ -341,8 +365,35 @@ begin
    A:=SDetailsURL;
    If FOnlyFailed then
      A:=A+'&TESTFAILEDONLY=1';
-   DefaultTableFromQuery(Format(SOverview,[S]),A,True);
+   If FNoSkipped then
+     A:=A+'&TESTNOSKIPPED=1';
+  Qry:=Format(SOverview,[S]);
+  If FDebug then
+    Write('Query : '+Qry);
+  Q:=CreateDataset(Qry);
+  With Q do
+    try
+      Open;
+      Try
+        With CreateTableProducer(Q) do
+          Try
+            Border:=True;
+            OnGetRowAttributes:=@GetOverViewRowAttr;
+            CreateColumns(Nil);
+            (TableColumns.Items[0] as TTableColumn).ActionURL:=A;
+            CreateTable(Response);
+          Finally
+            Free;
+          end;
+        Write('Record count: '+IntTostr(Q.RecordCount));
+      Finally
+        Close;
+      end;
+    finally
+      Free;
+    end;
 end;
+
 
 Function TTestSuite.GetOSName(ID : String) : String;
 
@@ -414,7 +465,7 @@ begin
             CellStart;
               Write('Date');
             CellNext;
-              Write(Q.FieldByNAme('TV_VERSION').AsString);
+              Write(Q.FieldByNAme('TU_DATE').AsString);
             CellEnd;
           RowEnd;
           TableEnd;
@@ -431,6 +482,10 @@ Procedure TTestSuite.ShowRunResults;
 
 Var
   S : String;
+  Qry : String;
+  Q : TMySQLDataset;
+  FL : String;
+  
 begin
   ConnectToDB;
   ContentType:='text/html';
@@ -439,14 +494,31 @@ begin
   With FHTMLWriter do
     begin
     HeaderStart(1);
-    Write('View Test suite results: Result');
+    Write('Test suite results for run '+FRunID);
     HeaderEnd(1);
-    Write('Test run data: ');
+    HeaderStart(2);
+    Write('Test run data : ');
+    HeaderEnd(2);
     If ShowRunData then
       begin
+      HeaderStart(2);
       Write('Detailed test run results:');
-      If FOnlyFailed then
-        Write(' (only failed tests are shown)');
+
+      FL:='';
+      If FOnlyFailed or FNoSkipped then
+        begin
+        FL:='';
+        If FOnlyFailed then
+          FL:='failed';
+        if FNoSkipped then
+          begin
+          If (FL<>'') then
+            FL:=FL+',';
+          FL:=FL+'not skipped';
+          end;
+        Write(' (only '+FL+' tests are shown)');
+        end;
+      HeaderEnd(2);
       ParaGraphStart;
       S:='SELECT T_NAME as Test,T_FULLNAME as FileName ,TR_SKIP as Skipped,TR_OK as OK FROM ';
       S:=S+' TESTRESULTS,TESTS WHERE ';
@@ -454,11 +526,64 @@ begin
       S:=S+'  AND (TR_TESTRUN_FK='+FRunID+') ';
       If FOnlyFailed then
         S:=S+' AND (TR_OK="-")';
-      DefaultTableFromQuery(S,'',True);
+      If FNoSkipped then
+        S:=S+' AND (TR_SKIP="-")';
+      Qry:=S;
+      If FDebug then
+        Write('Query : '+Qry);
+      Q:=CreateDataset(Qry);
+      With Q do
+        try
+          Open;
+          Try
+            With CreateTableProducer(Q) do
+              Try
+                Border:=True;
+                FL:='Test,FileName';
+                If Not FNoSkipped then
+                  FL:=FL+',Skipped';
+                If Not FOnlyFailed then
+                  FL:=FL+',OK';
+                CreateColumns(FL);
+                OnGetRowAttributes:=@GetRunRowAttr;
+                //(TableColumns.Items[0] as TTableColumn).ActionURL:=ALink;
+                CreateTable(Response);
+              Finally
+                Free;
+              end;
+            Write('Record count: '+IntTostr(Q.RecordCount));
+          Finally
+            Close;
+          end;
+        finally
+          Free;
+        end;
       end
     else
       Write('No data for test run with ID: '+FRunID);
     end;
+end;
+
+procedure TTestSuite.GetRunRowAttr(Sender: TObject; var BGColor: String;
+  var Align: THTMLAlign; var VAlign: THTMLValign; var CustomAttr: String);
+  
+Var
+  P : TTableProducer;
+  
+begin
+  P:=(Sender as TTAbleProducer);
+  If (FOnlyFailed and FNoSkipped) then
+    begin
+    If (P.CurrentRow Mod 2)=0 then
+      BGColor:='#EEEEEE'
+    end
+  else
+    If P.Dataset.FieldByName('Skipped').AsString='+' then
+      BGColor:='yellow'    // Yellow
+    else If P.Dataset.FieldByName('OK').AsString='+' then
+      BGColor:='#98FB98'    // pale Green
+    else
+      BGColor:='#FF82AB';   // Light red
 end;
 
 end.
