@@ -54,9 +54,9 @@ begin
   DataSource.DataSet := DataSet;
 
   CurNameText.DataSource := DataSource;
-  CurNameText.DataField := 'UserName';
+  CurNameText.DataField := 'Name';
   CurEMailText.DataSource := DataSource;
-  CurEMailText.DataField := 'InstEmail';
+  CurEMailText.DataField := 'Address';
 
   DataSet.Open;
 
@@ -105,6 +105,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2001/01/18 12:40:41  sg
+  * Now uses the correct field names for the data links ;)
+
   Revision 1.1  2001/01/17 21:33:28  sg
   * First version
 
