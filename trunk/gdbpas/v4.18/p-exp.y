@@ -38,7 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    with include files (<malloc.h> and <stdlib.h> for example) just became
    too messy, particularly when such includes can be inserted at random
    times by the parser generator.  */
-   
+
 %{
 
 #include "defs.h"
@@ -82,7 +82,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define	yydef	pas_def		
 #define	yychk	pas_chk		
 #define	yypgo	pas_pgo		
-#define	yyact	pas_act		
+#define	yyact	pas_act
 #define	yyexca	pas_exca
 #define yyerrflag pas_errflag
 #define yynerrs	pas_nerrs
@@ -121,6 +121,8 @@ yylex PARAMS ((void));
 void
 yyerror PARAMS ((char *));
 
+static char *
+uptok PARAMS ((char *, int));
 %}
 
 /* Although the yacc "value" of an expression is not used,
@@ -187,7 +189,7 @@ parse_number PARAMS ((char *, int, int, YYSTYPE *));
    E.g. "c" when input_radix==16.  Depending on the parse, it will be
    turned into a name or into a number.  */
 
-%token <ssym> NAME_OR_INT 
+%token <ssym> NAME_OR_INT
 
 %token STRUCT CLASS SIZEOF COLONCOLON
 %token ERROR
@@ -217,7 +219,7 @@ parse_number PARAMS ((char *, int, int, YYSTYPE *));
 %left '*' '/'
 %right UNARY INCREMENT DECREMENT
 %right ARROW '.' '[' '('
-%token <ssym> BLOCKNAME 
+%token <ssym> BLOCKNAME
 %type <bval> block
 %left COLONCOLON
 
@@ -273,7 +275,7 @@ exp	:	exp '[' exp1 ']'
 			{ write_exp_elt_opcode (BINOP_SUBSCRIPT); }
 	;
 
-exp	:	exp '(' 
+exp	:	exp '('
 			/* This is to save the value of arglist_len
 			   being accumulated by an outer function call.  */
 			{ start_arglist (); }
@@ -560,7 +562,7 @@ variable:	name_not_typename
 			      if (symbol_read_needs_frame (sym))
 				{
 				  if (innermost_block == 0 ||
-				      contained_in (block_found, 
+				      contained_in (block_found,
 						    innermost_block))
 				    innermost_block = block_found;
 				}
@@ -578,7 +580,7 @@ variable:	name_not_typename
 			      /* C++: it hangs off of `this'.  Must
 			         not inadvertently convert from a method call
 				 to data ref.  */
-			      if (innermost_block == 0 || 
+			      if (innermost_block == 0 ||
 				  contained_in (block_found, innermost_block))
 				innermost_block = block_found;
 			      write_exp_elt_opcode (OP_THIS);
@@ -875,11 +877,11 @@ parse_number (p, len, parsed_float, putithere)
    /* If the high bit of the worked out type is set then this number
       has to be unsigned. */
 
-   if (unsigned_p || (n & high_bit)) 
+   if (unsigned_p || (n & high_bit))
      {
        putithere->typed_val_int.type = unsigned_type;
      }
-   else 
+   else
      {
        putithere->typed_val_int.type = signed_type;
      }
@@ -916,7 +918,26 @@ static const struct token tokentab2[] =
     {":=", ASSIGN, BINOP_END}
   };
 
+/* Allocate uppercased var */
+/* make an uppercased copy of tokstart */
+static char * uptok (tokstart, namelen)
+  char *tokstart;
+  int namelen;
+{
+  int i;
+  char *uptokstart = (char *)malloc(namelen+1);
+  for (i = 0;i <= namelen;i++)
+    {
+      if ((tokstart[i]>='a' && tokstart[i]<='z'))
+        uptokstart[i] = tokstart[i]-('a'-'A');
+      else
+        uptokstart[i] = tokstart[i];
+    }
+  uptokstart[namelen]='\0';
+  return uptokstart;
+}
 /* Read one token, getting characters through lexptr.  */
+
 
 static int
 yylex ()
@@ -931,7 +952,7 @@ yylex ()
   int tempbufindex;
   static char *tempbuf;
   static int tempbufsize;
-  
+
  retry:
 
   tokstart = lexptr;
@@ -988,7 +1009,8 @@ yylex ()
 	      if (lexptr[-1] != '\'')
 		error ("Unmatched single quote.");
 	      namelen -= 2;
-	      tokstart++;
+              tokstart++;
+              uptokstart = uptok(tokstart,namelen);
 	      goto tryname;
 	    }
 	  error ("Invalid character constant.");
@@ -1194,17 +1216,9 @@ yylex ()
       c = tokstart[++namelen];
     }
 
-  /* make an uppercased copy of tokstart */
+  uptokstart = uptok(tokstart,namelen);
 
-  uptokstart = (char *)malloc(namelen+1);
-  for (i = 0;i <= namelen;i++)
-    {
-      if ((tokstart[i]>='a' && tokstart[i]<='z'))
-        uptokstart[i] = tokstart[i]-('a'-'A');
-      else
-        uptokstart[i] = tokstart[i];
-    }
-  /* The token "if" terminates the expression and is NOT 
+  /* The token "if" terminates the expression and is NOT
      removed from the input stream.  */
   if (namelen == 2 && uptokstart[0] == 'I' && uptokstart[1] == 'F')
     {
@@ -1219,40 +1233,40 @@ yylex ()
   switch (namelen)
     {
     case 6:
-      if (STREQN (uptokstart, "OBJECT", 6))
+      if (STREQ (uptokstart, "OBJECT"))
 	return CLASS;
-      if (STREQN (uptokstart, "RECORD", 6))
+      if (STREQ (uptokstart, "RECORD"))
 	return STRUCT;
-      if (STREQN (uptokstart, "SIZEOF", 6))
+      if (STREQ (uptokstart, "SIZEOF"))
 	return SIZEOF;
       break;
     case 5:
-      if (STREQN (uptokstart, "CLASS", 5))
+      if (STREQ (uptokstart, "CLASS"))
 	return CLASS;
-      if (STREQN (uptokstart, "FALSE", 5))
+      if (STREQ (uptokstart, "FALSE"))
 	{
           yylval.lval = 0;
           return FALSE;
         }
       break;
     case 4:
-      if (STREQN (uptokstart, "TRUE", 4))
+      if (STREQ (uptokstart, "TRUE"))
 	{
           yylval.lval = 1;
   	  return TRUE;
         }
-      if (STREQN (uptokstart, "SELF", 4))
-	{
+      if (STREQ (uptokstart, "SELF"))
+        {
+          /* here we search for 'this' like
+             inserted in FPC stabs debug info */
 	  static const char this_name[] =
-				 { CPLUS_MARKER, 't', 'h', 'i', 's', '\0' };
+				 { /* CPLUS_MARKER,*/ 't', 'h', 'i', 's', '\0' };
 
 	  if (lookup_symbol (this_name, expression_context_block,
 			     VAR_NAMESPACE, (int *) NULL,
 			     (struct symtab **) NULL))
 	    return THIS;
 	}
-      break;
-    case 3:
       break;
     default:
       break;
@@ -1408,7 +1422,7 @@ yylex ()
     /* Input names that aren't symbols but ARE valid hex numbers,
        when the input radix permits them, can be names or numbers
        depending on the parse.  Note we support radixes > 16 here.  */
-    if (!sym && 
+    if (!sym &&
         ((tokstart[0] >= 'a' && tokstart[0] < 'a' + input_radix - 10) ||
          (tokstart[0] >= 'A' && tokstart[0] < 'A' + input_radix - 10)))
       {
@@ -1438,6 +1452,9 @@ yyerror (msg)
 }
 /*
   $Log$
+  Revision 1.2  1999/10/05 06:15:31  pierre
+   * p 'Test' and Self problem fixed
+
   Revision 1.1  1999/09/07 11:40:19  pierre
    First import of pascal gdb 4.18 changes
 
