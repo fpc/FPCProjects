@@ -301,7 +301,6 @@ begin
   Sprites.Clear;
 end;
 
-procedure TSpriteEngine.SortSprites;
   function CompareZ( Item1, Item2 : TSprite ) : Integer;
   begin
     if Item1.z < Item2.z then
@@ -311,6 +310,9 @@ procedure TSpriteEngine.SortSprites;
     else
       Result := 0;
   end;
+
+procedure TSpriteEngine.SortSprites;
+
 begin
   Sprites.Sort( @CompareZ );
 end;
