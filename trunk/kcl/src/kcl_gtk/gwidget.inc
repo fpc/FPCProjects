@@ -80,6 +80,8 @@ end;
 procedure TWidget.SetText(const AText: String);
 begin
   FText := AText;
+  if Assigned(FHandle) then
+    RecalcLayout;
 end;
 
 procedure TWidget.SetHint(const AHint: String);
@@ -223,6 +225,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/17 22:31:09  sg
+  * When the widget text has changed, RecalcLayout is now called
+
   Revision 1.3  2000/02/10 18:48:50  sg
   * Implemented new size and layout methods
 
