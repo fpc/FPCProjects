@@ -5538,17 +5538,34 @@ re_exec (s)
 /* allocates a unique translation buffer for insensitive search */
 /* FIXME this buffer is never disposed */
 
-static int create_case_insensitive_translate_buffer ()
+int create_case_insensitive_translate_buffer ()
 {
   int i;
-  case_insensitive_buffer = (RE_TRANSLATE_TYPE) malloc (CHAR_SET_SIZE
+      if (!case_insensitive_buffer)
+   {
+    case_insensitive_buffer = (RE_TRANSLATE_TYPE) malloc (CHAR_SET_SIZE
 				      * sizeof (*(RE_TRANSLATE_TYPE)0));
-  if (case_insensitive_buffer == NULL)
-    return (int) REG_ESPACE;
+    if (case_insensitive_buffer == NULL)
+      return (int) REG_ESPACE;
 
-  /* Map uppercase characters to corresponding lowercase ones.  */
-  for (i = 0; i < CHAR_SET_SIZE; i++)
-    case_insensitive_buffer[i] = ISLOWER (i) ? toupper (i) : i;
+    /* Map uppercase characters to corresponding lowercase ones.  */
+    for (i = 0; i < CHAR_SET_SIZE; i++)
+      case_insensitive_buffer[i] = ISLOWER (i) ? toupper (i) : i;
+   }
+
+  /* Use this for re_comp called after */
+  re_comp_buf.translate = case_insensitive_buffer;
+
+  return 0;
+}
+
+int reset_translate_buffer ()
+{
+  int i;
+  if (case_insensitive_buffer)
+    free(case_insensitive_buffer);
+  /* Use this for re_comp called after */
+  re_comp_buf.translate = NULL;
   return 0;
 }
 

@@ -2,7 +2,7 @@
    expression library, version 0.12.
    Copyright (C) 1985,89,90,91,92,93,95,96,97,98 Free Software Foundation, Inc.
 
-   NOTE: The canonical source of this file is maintained with the 
+   NOTE: The canonical source of this file is maintained with the
    GNU C Library.  Bugs can be reported to bug-glibc@prep.ai.mit.edu.
 
    This program is free software; you can redistribute it and/or modify it
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #ifndef _REGEX_H
@@ -534,6 +534,8 @@ extern void re_set_registers
 #ifdef _REGEX_RE_COMP
 # ifndef _CRAY
 /* 4.2 bsd compatibility.  */
+extern int create_case_insensitive_translate_buffer _RE_ARGS (());
+extern int reset_translate_buffer _RE_ARGS (());
 extern char *re_comp _RE_ARGS ((const char *));
 extern int re_exec _RE_ARGS ((const char *));
 extern int re_iexec _RE_ARGS ((char *,int));
