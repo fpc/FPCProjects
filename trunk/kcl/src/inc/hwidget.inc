@@ -48,6 +48,8 @@ type
     FOnFocusIn: TNotifyEvent;
     FOnFocusOut: TNotifyEvent;
 
+    function  GetWidgetCount: Integer; virtual;
+    function  GetWidgets(AIndex: Integer): TWidget; virtual; abstract;
     procedure SetSize(AWidth, AHeight: Integer);
     procedure RecalcLayout;		// called at initialization or by a child
     procedure SetVisible(AVisible: Boolean);
@@ -85,9 +87,12 @@ type
     procedure SetFocus;
     function  HasFocus: Boolean;
 
+    function  IsRadioGroup: Boolean; dynamic;
 
     property Handle: TWidgetHandle read FHandle;
     property Parent: TWidget read FParent;
+    property WidgetCount: Integer read GetWidgetCount;
+    property Widgets[AIndex: Integer]: TWidget read GetWidgets;
     property CreationState: TWidgetCreationState read FCreationState default wcsNotCreated;
     property Text: String read FText write SetText;
     // State
@@ -109,6 +114,10 @@ type
 
 {
   $Log$
+  Revision 1.4  2000/02/17 22:24:41  sg
+  * Added properties "Widgets" and "WidgetCount"
+  * Added "IsRadioGroup" (needed for TRadioButton under GTK)
+
   Revision 1.3  2000/02/10 18:37:43  sg
   * Heavy interface changes for the new layouting algorithm
 
