@@ -1,0 +1,26 @@
+
+[target]
+programs_win32=concli2 conftp conhttp consmtp consrv1
+srcexT=($SRCEXT
+
+[require]
+#packages=fcl
+
+[compiler]
+#options=-S2
+
+
+[install]
+fpcpackage=y
+
+[default]
+#fpcdir=../..
+
+[rules]
+
+concli2($EXEEXT): concli2.dpr
+conftp($EXEEXT): conftp.dpr
+
+
+
+
