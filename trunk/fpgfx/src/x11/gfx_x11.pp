@@ -2,7 +2,7 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     X11/XLib target implementation
@@ -27,7 +27,8 @@ interface
 uses
   SysUtils, Classes,	// FPC units
   X, XLib, XUtil,	// X11 units
-  GfxBase;		// fpGFX units
+  GfxBase,		// fpGFX units
+  GELDirty;		// fpGFX emulation layer
 
 resourcestring
   // X11 exception strings
@@ -182,18 +183,25 @@ type
 
   TXWindow = class;
 
+  PXWindowListEntry = ^TXWindowListEntry;
+  TXWindowListEntry = record
+    GfxWindow: TXWindow;
+    XWindowID: X.TWindow;
+  end;
+
   TXDisplay = class(TGfxDisplay)
   private
     DoBreakRun: Boolean;
+    FDirtyList: TDirtyList;
     FDefaultFont: PXFontStruct;
     FDisplayName: String;
     FHandle: PDisplay;
-    FRootWindow: X.TWindow;
-    FWindows: TList;
+    FWindows: TList;			// List of PXWindowListEntry records
     FWMProtocols: TAtom;		// Atom for "WM_PROTOCOLS"
     FWMDeleteWindow: TAtom;		// Atom for "WM_DELETE_WINDOW"
     FWMHints: TAtom;			// Atom for "_MOTIF_WM_HINTS"
     function GetHandle: PDisplay;
+    property DirtyList: TDirtyList read FDirtyList;
   public
     constructor Create;
     destructor Destroy; override;
@@ -203,7 +211,7 @@ type
     procedure Run; override;
     procedure BreakRun; override;
 
-    function FindWindowByXID(XWindowID: X.TWindow): TXWindow;
+    function FindWindowByXID(XWindowID: X.TWindow): PXWindowListEntry;
     property Handle: PDisplay read GetHandle;
     property DisplayName: String read FDisplayName write FDisplayName;
   end;
@@ -231,7 +239,6 @@ type
     procedure Map(var Event: TXMapEvent); message X.MapNotify;
     procedure Unmap(var Event: TXUnmapEvent); message X.UnmapNotify;
     procedure Reparent(var Event: TXReparentEvent); message X.ReparentNotify;
-    procedure DestroyWindow(var Event: TXDestroyWindowEvent); message X.DestroyNotify;
     procedure Configure(var Event: TXConfigureEvent); message X.ConfigureNotify;
     procedure ClientMessage(var Event: TXClientMessageEvent); message X.ClientMessage;
   protected
@@ -278,7 +285,7 @@ function GetXEventName(Event: LongInt): String;
 
 implementation
 
-uses GFXImage;
+uses GELImage;
 
 
 // -------------------------------------------------------------------
@@ -653,6 +660,11 @@ begin
   ASource.Transform(ASourceRect.Left, ASourceRect.Top, SourceLeft, SourceTop);
   ASource.Transform(ASourceRect.Right, ASourceRect.Bottom,
     SourceRight, SourceBottom);
+
+  if (ASourceRect.Left >= ASourceRect.Right) or
+    (ASourceRect.Top >= ASourceRect.Bottom) then
+    exit;
+
   Transform(ADestX, ADestY, ADestX, ADestY);
 
   if (ASource <> Self) and (ASource.PixelFormat.FormatType = ftMono) then
@@ -705,7 +717,6 @@ procedure TXCanvas.DrawImageRect(AImage: TGfxImage; ASourceRect: TRect;
 var
   SourceRect: TRect;
   RealWidth, RealHeight: Integer;
-  Pixmap: TPixmap;
   Image: XLib.PXImage;
 begin
   ASSERT(AImage.InheritsFrom(TXImage));
@@ -792,10 +803,6 @@ begin
 
   if Attr.Depth >= 16 then
   begin
-    WriteLn('Visual masks: ',
-      IntToHex(Visual^.red_mask, 8), '-',
-      IntToHex(Visual^.green_mask, 8), '-',
-      IntToHex(Visual^.blue_mask, 8));
     PixelFormat.RedMask := Visual^.red_mask;
     PixelFormat.GreenMask := Visual^.green_mask;
     PixelFormat.BlueMask := Visual^.blue_mask;
@@ -931,11 +938,16 @@ begin
 end;
 
 function TXScreen.CreateWindow(ABorder: Boolean): TGfxWindow;
+var
+  WindowListEntry: PXWindowListEntry;
 begin
   Result := TXWindow.Create(Self, ABorder);
   if not Assigned(TXDisplay(Display).FWindows) then
     TXDisplay(Display).FWindows := TList.Create;
-  TXDisplay(Display).FWindows.Add(Result);
+  New(WindowListEntry);
+  WindowListEntry^.GfxWindow := TXWindow(Result);
+  WindowListEntry^.XWindowID := TXWindow(Result).Handle;
+  TXDisplay(Display).FWindows.Add(WindowListEntry);
 end;
 
 
@@ -948,21 +960,28 @@ end;
 constructor TXDisplay.Create;
 begin
   inherited Create;
+  FDirtyList := TDirtyList.Create;
   FDefaultScreen := TXScreen.Create(Self, XDefaultScreen(Handle));
 end;
 
 destructor TXDisplay.Destroy;
 var
   i: Integer;
+  WindowListEntry: PXWindowListEntry;
 begin
   if Assigned(FWindows) then
   begin
     for i := 0 to FWindows.Count - 1 do
-      TXWindow(FWindows[i]).Free;
+    begin
+      WindowListEntry := PXWindowListEntry(FWindows[i]);
+      WindowListEntry^.GfxWindow.Free;
+      Dispose(WindowListEntry);
+    end;
     FWindows.Free;
   end;
 
   DefaultScreen.Free;
+  DirtyList.Free;
 
   if Assigned(FDefaultFont) then
   begin
@@ -991,7 +1010,7 @@ end;
 procedure TXDisplay.Run;
 var
   Event: TXEvent;
-  Window: TXWindow;
+  WindowListEntry: PXWindowListEntry;
 begin
   if not Assigned(FWindows) then
     exit;
@@ -1000,11 +1019,15 @@ begin
   DoBreakRun := False;
   while (FWindows.Count > 0) and not DoBreakRun do
   begin
-    if Assigned(OnIdle) then
+    if Assigned(OnIdle) or Assigned(DirtyList.First) then
     begin
       if not XCheckMaskEvent(FHandle, MaxInt, @Event) then
       begin
-        OnIdle(Self);
+        if Assigned(DirtyList.First) then
+	  DirtyList.PaintAll
+	else
+          if Assigned(OnIdle) then
+	    OnIdle(Self);
 	continue;
       end;
     end else
@@ -1013,11 +1036,17 @@ begin
     // According to a comment in X.h, the valid event types start with 2!
     if Event._type >= 2 then
     begin
-      Window := FindWindowByXID(Event.XAny.Window);
+      WindowListEntry := FindWindowByXID(Event.XAny.Window);
 
-      if Assigned(Window) then
-        Window.Dispatch(Event)
-      else
+      if Event._type = X.DestroyNotify then
+      begin
+	FWindows.Remove(WindowListEntry);
+        Dispose(WindowListEntry);
+      end else if Assigned(WindowListEntry) then
+      begin
+        if Assigned(WindowListEntry^.GfxWindow) then
+          WindowListEntry^.GfxWindow.Dispatch(Event);
+      end else
         WriteLn('fpGFX/X11: Received X event ''', GetXEventName(Event._type),
 	  ''' for unknown window');
     end;
@@ -1029,14 +1058,14 @@ begin
   DoBreakRun := True;
 end;
 
-function TXDisplay.FindWindowByXID(XWindowID: X.TWindow): TXWindow;
+function TXDisplay.FindWindowByXID(XWindowID: X.TWindow): PXWindowListEntry;
 var
   i: Integer;
 begin
   for i := 0 to FWindows.Count - 1 do
   begin
-    Result := TXWindow(FWindows[i]);
-    if Result.Handle = XWindowID then
+    Result := PXWindowListEntry(FWindows[i]);
+    if Result^.XWindowID = XWindowID then
       exit;
   end;
   Result := nil;
@@ -1051,7 +1080,6 @@ begin
     FHandle := XOpenDisplay(PChar(DisplayName));
     if not Assigned(FHandle) then
       raise EX11Error.CreateFmt(SOpenDisplayFailed, [DisplayName]);
-    FRootWindow := XDefaultRootWindow(FHandle);
 
     FDefaultFont := XLoadQueryFont(FHandle,
       '-adobe-helvetica-medium-r-normal--*-120-*-*-*-*-iso8859-1');
@@ -1171,10 +1199,13 @@ begin
   if Assigned(OnClose) then
     OnClose(Self);
 
+  Display.DirtyList.ClearQueueForWindow(Self);
+
   XDestroyWindow(DisplayHandle, Handle);
   Canvas.Free;
 
-  TXDisplay(Display).FWindows.Remove(Self);
+  Display.FindWindowByXID(Handle)^.GfxWindow := nil;
+
   inherited Destroy;
 end;
 
@@ -1283,17 +1314,8 @@ begin
 end;
 
 procedure TXWindow.Invalidate(const ARect: TRect);
-var
-  Event: TXExposeEvent;
 begin
-  FillChar(Event, SizeOf(Event), #0);
-  Event._type := X.Expose;
-  Event.Window := FHandle;
-  Event.x := ARect.Left;
-  Event.y := ARect.Top;
-  Event.Width := ARect.Right - ARect.Left;
-  Event.Height := ARect.Bottom - ARect.Top;
-  XSendEvent(DisplayHandle, Handle, False, 0, @Event);
+  Display.DirtyList.AddRect(Self, ARect);
 end;
 
 procedure TXWindow.CaptureMouse;
@@ -1582,9 +1604,10 @@ begin
 end;
 
 procedure TXWindow.Expose(var Event: TXExposeEvent);
-var
+{var
   IsNotEmpty: Boolean;
 begin
+WriteLn('Expose');
   if Assigned(OnPaint) then
     with Event do
     begin
@@ -1603,6 +1626,13 @@ begin
 	Canvas.RestoreState;
       end;
     end;
+end;}
+var
+  r: TRect;
+begin
+  with Event do
+    r := Rect(x, y, x + Width, y + Height);
+  Display.DirtyList.AddRect(Self, r);
 end;
 
 procedure TXWindow.FocusIn(var Event: TXFocusInEvent);
@@ -1635,13 +1665,11 @@ begin
     OnCreate(Self);
 end;
 
-procedure TXWindow.DestroyWindow(var Event: TXDestroyWindowEvent);
-begin
-  WriteLn('fpGFX/X11: XWindow: DestroyWindow');
-end;
-
 procedure TXWindow.Configure(var Event: TXConfigureEvent);
 begin
+  while XCheckTypedWindowEvent(DisplayHandle, Handle,
+    X.ConfigureNotify, @Event) do;
+
   if (Event.x <> Left) or (Event.y <> Top) then
   begin
     FLeft := Event.x;
@@ -1704,6 +1732,10 @@ end.
 
 {
   $Log$
+  Revision 1.7  2001/01/17 21:29:03  sg
+  * Implemented dirty rectangle list
+  * Minor improvements in window list management
+
   Revision 1.6  2001/01/11 23:07:24  sg
   *** empty log message ***
 
@@ -1717,15 +1749,4 @@ end.
   * Vastly improved handling of expose events: Successive expositions are
     gathered and delivered as a single event; the clipping region of the
     canvas will be set accordingly.
-
-  Revision 1.3  2000/12/23 23:07:24  sg
-  *** empty log message ***
-
-  Revision 1.2  2000/10/28 20:27:33  sg
-  * Changed handling of offscreen stuff to the concept of Bitmaps and
-    Images
-
-  Revision 1.1  2000/08/04 21:05:53  sg
-  * First version in CVS
-
 }
