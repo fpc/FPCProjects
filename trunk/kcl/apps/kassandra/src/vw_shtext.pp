@@ -2,7 +2,7 @@
     $Id$
 
     Kassandra  -  Multiplatform Integrated Development Environment
-    Copyright (C) 1999  Sebastian Guenther (sg@freepascal.org)
+    Copyright (C) 1999 - 2000  Sebastian Guenther (sg@freepascal.org)
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -18,10 +18,10 @@
 {$MODE objfpc}
 {$M+,H+}
 
-unit vw_shtext;
+unit Vw_SHText;
 
 interface
-uses vw_generic, doc_text, SHEdit, KCLSHEdit;
+uses ViewMan, doc_text, SHEdit, KCLSHEdit;
 
 type
 
@@ -29,25 +29,25 @@ type
 
   TSHTextView = class(TGenericView)
   protected
-    LeftIndent, DefMaxTextWidth: Integer;
     Editor: TSHTextEdit;
     Widget: TKCLSHWidget;
     FDoc: TTextDoc;
     procedure ModifiedChanged(Sender: TObject);
-    constructor Create(ADoc: TTextDoc; AEditClass: TSHTextEditClass);
+    constructor Create(AManager: TViewManager; ADoc: TTextDoc;
+      AEditClass: TSHTextEditClass);
   public
-    constructor Create(ADoc: TTextDoc);
+    constructor Create(AManager: TViewManager; ADoc: TTextDoc);
     procedure Save; override;
   end;
 
   TSHPasView = class(TSHTextView)
   public
-    constructor Create(ADoc: TTextDoc);
+    constructor Create(AManager: TViewManager; ADoc: TTextDoc);
   end;
 
   TSHXMLView = class(TSHTextView)
   public
-    constructor Create(ADoc: TTextDoc);
+    constructor Create(AManager: TViewManager; ADoc: TTextDoc);
   end;
 
 
@@ -56,25 +56,25 @@ implementation
 uses KCL, sh_pas, sh_xml;
 
 
-constructor TSHTextView.Create(ADoc: TTextDoc);
+constructor TSHTextView.Create(AManager: TViewManager; ADoc: TTextDoc);
 begin
-  Self.Create(ADoc, TSHTextEdit);
+  Self.Create(AManager, ADoc, TSHTextEdit);
 end;
 
-constructor TSHTextView.Create(ADoc: TTextDoc; AEditClass: TSHTextEditClass);
+constructor TSHTextView.Create(AManager: TViewManager; ADoc: TTextDoc;
+  AEditClass: TSHTextEditClass);
 begin
-  inherited Create;
+  inherited Create(AManager);
   FDoc := ADoc;
-  Widget := TKCLSHWidget.Create(nil);
-  Widget.SetupEditor(ADoc, AEditClass);
-  Widget.DrawVBar := True;
-  Widget.LeftIndent := 24;
-  Editor := Widget.Editor;
+  Widget := TKCLSHWidget.Create(manager);
   FMainSubwindow := Widget;
 
   // Editor widget setup
-  LeftIndent := 24;
-  DefMaxTextWidth := 80;
+  Widget.SetupEditor(ADoc, AEditClass);
+  Editor := Widget.Editor;
+  Widget.DrawVBar := True;
+  Widget.LeftIndent := 24;
+  Widget.DefMaxTextWidth := 80;
   Editor.OnModifiedChange := @ModifiedChanged;
 end;
 
@@ -98,11 +98,11 @@ end;
 
 
 
-constructor TSHPasView.Create(ADoc: TTextDoc);
+constructor TSHPasView.Create(AManager: TViewManager; ADoc: TTextDoc);
 var
   e: TSHPasEdit;
 begin
-  inherited Create(ADoc, TSHPasEdit);
+  inherited Create(AManager, ADoc, TSHPasEdit);
   e := Editor as TSHPasEdit;
   e.shSymbol     := Widget.AddSHStyle('Symbol',        colBrown,       colDefault, fsNormal);
   e.shKeyword    := Widget.AddSHStyle('Keyword',       colBlack,       colDefault, fsBold);
@@ -114,11 +114,11 @@ begin
   e.shAssembler  := Widget.AddSHStyle('Assembler',     colDarkGreen,   colDefault, fsNormal);
 end;
 
-constructor TSHXMLView.Create(ADoc: TTextDoc);
+constructor TSHXMLView.Create(AManager: TViewManager; ADoc: TTextDoc);
 var
   e: TSHXMLEdit;
 begin
-  inherited Create(ADoc, TSHXMLEdit);
+  inherited Create(AManager, ADoc, TSHXMLEdit);
   e := Editor as TSHXMLEdit;
 
   e.shTag        := Widget.AddSHStyle('Tag',           colBlack,       colDefault, fsBold);
@@ -138,7 +138,11 @@ end.
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:22:31  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:27:26  sg
+  * Support for view manager
+  * Widgets now set their owner correctly
+
+  Revision 1.1.1.1  1999/12/30 21:22:31  sg
+  Initial import
 
 }
