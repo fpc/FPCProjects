@@ -18,6 +18,9 @@
 //   Main Definitions for TWidget
 // ===================================================================
 
+// Helper function:
+function ClipMinMax(val, min, max: Integer): Integer;
+
 type
 
   TWidget = class;
@@ -26,20 +29,16 @@ type
 
   TWidgetCreationState = (wcsNotCreated, wcsCreationInProgress, wcsCreationDone);
 
-  TSizeFlags = set of (sizeAuto, sizeFixed);
-
   TWidget = class(TKCLComponent)
   protected
     BlockDrawingCounter: LongInt;
-    BlockRelayoutCounter: LongInt;
 
     FHandle: TWidgetHandle;
     FParent: TWidget;
     FVisible: Boolean;
     FEnabled: Boolean;
-    FWidth, FHeight: LongInt;
-    FMinWidth, FMinHeight, FMaxWidth, FMaxHeight: LongInt;
-    FSizeFlags: TSizeFlags;
+    DefW, DefH, MinW, MinH, MaxW, MaxH: Integer;
+    FWidth, FHeight: Integer;
     FText: String;
     FCreationState: TWidgetCreationState;
     FParentShowHint, FShowHint: Boolean;
@@ -49,42 +48,33 @@ type
     FOnFocusIn: TNotifyEvent;
     FOnFocusOut: TNotifyEvent;
 
+    procedure SetSize(AWidth, AHeight: Integer);
+    procedure RecalcLayout;		// called at initialization or by a child
     procedure SetVisible(AVisible: Boolean);
-    procedure SetEnabled(AEnabled: Boolean);
-    procedure SetWidth(AWidth: LongInt);
-    procedure SetHeight(AHeight: LongInt);
-    procedure SetMinWidth(AWidth: LongInt);
-    procedure SetMinHeight(AHeight: LongInt);
-    procedure SetMaxWidth(AWidth: LongInt);
-    procedure SetMaxHeight(AHeight: LongInt);
-    procedure SetText(const AText: String); virtual;
-    procedure SetHint(const AHint: String);
 
+    // Platform specific:
+    procedure Show;
+    procedure Hide;
+    procedure SetEnabled(AEnabled: Boolean);
+    procedure SetText(const AText: String); dynamic;
+    procedure SetHint(const AHint: String);
     procedure OnFinishCreation; virtual;
-    procedure OnRecalcLayout; virtual;
-    procedure OnSetSize; virtual;
-    procedure OnSizeChanged; virtual;
-    procedure OnMinMaxSizeChanged; virtual;
+    procedure DoRecalcLayout; virtual;
+    procedure ApplySize; virtual;	// apply current size (FWidth and FHeight); adjust children
+
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
     function  AddChildWidget(AWidget: TWidget): Boolean; dynamic;
-    procedure RemoveChildWidget(AWidget: TWidget); dynamic;
+    procedure RemoveChildWidget(AWidget: TWidget); dynamic; abstract;
 
     {"FinishCreation" should be called when all properties have been set (the
      underlying window objects are created in FinishCreation). Note that some
      functions like TApplication.Run may call FinishCreation automatically.
      Before this function terminates, it will set 'CreationState' to
      wcsCreationDone.}
-    procedure FinishCreation; virtual;
-    procedure RecalcLayout;    // Mainly used for layout classes
-    procedure ParentRecalcLayout;
-
-    procedure SetSize(AWidth, AHeight: LongInt);
-    procedure SetDefaultSize(AWidth, AHeight: LongInt);
-    procedure SetFixedSize(AWidth, AHeight: LongInt);
-    procedure CheckSize(var AWidth, AHeight: LongInt);
+    procedure FinishCreation;
 
     procedure BlockDrawing;
     procedure UnblockDrawing;
@@ -98,26 +88,19 @@ type
 
     property Handle: TWidgetHandle read FHandle;
     property Parent: TWidget read FParent;
-    property CreationState: TWidgetCreationState read FCreationState
-      default wcsNotCreated;
+    property CreationState: TWidgetCreationState read FCreationState default wcsNotCreated;
     property Text: String read FText write SetText;
-    property ParentShowHint: Boolean
-      read FParentShowHint write FParentShowHint default True;
-  published
+    // State
     property Visible: Boolean read FVisible write SetVisible default True;
     property Enabled: Boolean read FEnabled write SetEnabled default True;
-    property Width: LongInt read FWidth write SetWidth;
-    property Height: LongInt read FHeight write SetHeight;
-    property MinWidth: LongInt read FMinWidth write SetMinWidth;
-    property MinHeight: LongInt read FMinHeight write SetMinHeight;
-    property MaxWidth: LongInt read FMaxWidth write SetMaxWidth
-      default InfiniteSize;
-    property MaxHeight: LongInt read FMaxHeight write SetMaxHeight
-      default InfiniteSize;
-    property SizeFlags: TSizeFlags read FSizeFlags write FSizeFlags;
-    property Hint: string read FHint write SetHint;
+    // Size
+    property Width: Integer read FWidth;
+    property Height: Integer read FHeight;
+    // Hints
+    property Hint: String read FHint write SetHint;
     property ShowHint: Boolean read FShowHint write FShowHint;
-
+    property ParentShowHint: Boolean read FParentShowHint write FParentShowHint default True;
+    // Events
     property OnCreate: TNotifyEvent read FOnCreate write FOnCreate;
     property OnFocusIn: TNotifyEvent read FOnFocusIn write FOnFocusIn;
     property OnFocusOut: TNotifyEvent read FOnFocusOut write FOnFocusOut;
@@ -126,6 +109,9 @@ type
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:37:43  sg
+  * Heavy interface changes for the new layouting algorithm
+
   Revision 1.2  2000/01/24 00:07:15  sg
   * Added AddChildWidget and RemoveChildWidget
   * "Handle" is now a read-only property
