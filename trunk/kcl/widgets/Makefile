@@ -134,20 +134,6 @@ override FPCDIR:=$(subst /$(FPC)$(EXEEXT),,$(firstword $(strip $(wildcard $(adds
 endif
 endif
 
-ifndef PACKAGESDIR
-PACKAGESDIR=$(FPCDIR)/packages
-endif
-ifndef TOOLKITSDIR
-TOOLKITSDIR=
-endif
-ifndef COMPONENTSDIR
-COMPONENTSDIR=
-endif
-# Create units dir
-ifneq ($(FPCDIR),.)
-UNITSDIR=$(FPCDIR)/units/$(OS_TARGET)
-endif
-
 #####################################################################
 # User Settings
 #####################################################################
@@ -172,61 +158,31 @@ ZIPTARGET=install
 
 # Packages
 
-override PACKAGES+=rtl
 
 # Libraries
 
 
 
-# Check if the dirs really exists, else turn it off
-ifeq ($(wildcard $(UNITSDIR)),)
-UNITSDIR=
-endif
-ifeq ($(wildcard $(TOOLKITSDIR)),)
-TOOLKITSDIR=
-endif
-ifeq ($(wildcard $(PACKAGESDIR)),)
-PACKAGESDIR=
-endif
-ifeq ($(wildcard $(COMPONENTSDIR)),)
-COMPONENTSDIR=
-endif
 
+#####################################################################
+# Default Directories
+#####################################################################
 
-# PACKAGESDIR packages
-
-PACKAGERTL=1
-
-ifdef PACKAGERTL
-ifneq ($(wildcard $(FPCDIR)/rtl),)
-ifneq ($(wildcard $(FPCDIR)/rtl/$(OS_TARGET)),)
-PACKAGEDIR_RTL=$(FPCDIR)/rtl/$(OS_TARGET)
+# set the prefix directory where to install everything
+ifndef PREFIXINSTALLDIR
+ifdef inlinux
+PREFIXINSTALLDIR=/usr
 else
-PACKAGEDIR_RTL=$(FPCDIR)/rtl
-endif
-ifeq ($(wildcard $(PACKAGEDIR_RTL)/$(FPCMADE)),)
-override COMPILEPACKAGES+=package_rtl
-package_rtl:
-	$(MAKE) -C $(PACKAGEDIR_RTL) all
-endif
-UNITDIR_RTL=$(PACKAGEDIR_RTL)
-else
-PACKAGEDIR_RTL=
-ifneq ($(wildcard $(UNITSDIR)/rtl),)
-ifneq ($(wildcard $(UNITSDIR)/rtl/$(OS_TARGET)),)
-UNITDIR_RTL=$(UNITSDIR)/rtl/$(OS_TARGET)
-else
-UNITDIR_RTL=$(UNITSDIR)/rtl
-endif
-else
-UNITDIR_RTL=
+PREFIXINSTALLDIR=/pp
 endif
 endif
-ifdef UNITDIR_RTL
-override NEEDUNITDIR+=$(UNITDIR_RTL)
-endif
-endif
+export PREFIXINSTALLDIR
 
+# Where to place the resulting zip files
+ifndef DESTZIPDIR
+DESTZIPDIR:=$(BASEDIR)
+endif
+export DESTZIPDIR
 
 #####################################################################
 # Redirection
@@ -276,8 +232,9 @@ require: $(addsuffix _require,$(DIROBJECTS))
 
 .PHONY:  all debug examples test smart shared showinstall install sourceinstall clean cleanall require
 
-
-# Target Dirs
+#####################################################################
+# Directories
+#####################################################################
 
 OBJECTDIRKCLSHEDIT=1
 OBJECTDIRGLPAINTBOX=1
@@ -285,7 +242,7 @@ OBJECTDIRGLPAINTBOX=1
 # Dir kclshedit
 
 ifdef OBJECTDIRKCLSHEDIT
-.PHONY:  kclshedit_all kclshedit_debug kclshedit_examples kclshedit_test kclshedit_smart kclshedit_shared kclshedit_showinstall kclshedit_install kclshedit_sourceinstall kclshedit_zipinstall kclshedit_zipinstalladd kclshedit_clean kclshedit_cleanall kclshedit_require kclshedit_info
+.PHONY:  kclshedit_all kclshedit_debug kclshedit_examples kclshedit_test kclshedit_smart kclshedit_shared kclshedit_showinstall kclshedit_install kclshedit_sourceinstall kclshedit_zipinstall kclshedit_zipsourceinstall kclshedit_clean kclshedit_cleanall kclshedit_require kclshedit_info
 
 kclshedit_all:
 	$(MAKE) -C kclshedit all
@@ -317,8 +274,8 @@ kclshedit_sourceinstall:
 kclshedit_zipinstall:
 	$(MAKE) -C kclshedit zipinstall
 
-kclshedit_zipinstalladd:
-	$(MAKE) -C kclshedit zipinstalladd
+kclshedit_zipsourceinstall:
+	$(MAKE) -C kclshedit zipsourceinstall
 
 kclshedit_clean:
 	$(MAKE) -C kclshedit clean
@@ -336,7 +293,7 @@ endif
 # Dir glpaintbox
 
 ifdef OBJECTDIRGLPAINTBOX
-.PHONY:  glpaintbox_all glpaintbox_debug glpaintbox_examples glpaintbox_test glpaintbox_smart glpaintbox_shared glpaintbox_showinstall glpaintbox_install glpaintbox_sourceinstall glpaintbox_zipinstall glpaintbox_zipinstalladd glpaintbox_clean glpaintbox_cleanall glpaintbox_require glpaintbox_info
+.PHONY:  glpaintbox_all glpaintbox_debug glpaintbox_examples glpaintbox_test glpaintbox_smart glpaintbox_shared glpaintbox_showinstall glpaintbox_install glpaintbox_sourceinstall glpaintbox_zipinstall glpaintbox_zipsourceinstall glpaintbox_clean glpaintbox_cleanall glpaintbox_require glpaintbox_info
 
 glpaintbox_all:
 	$(MAKE) -C glpaintbox all
@@ -368,8 +325,8 @@ glpaintbox_sourceinstall:
 glpaintbox_zipinstall:
 	$(MAKE) -C glpaintbox zipinstall
 
-glpaintbox_zipinstalladd:
-	$(MAKE) -C glpaintbox zipinstalladd
+glpaintbox_zipsourceinstall:
+	$(MAKE) -C glpaintbox zipsourceinstall
 
 glpaintbox_clean:
 	$(MAKE) -C glpaintbox clean

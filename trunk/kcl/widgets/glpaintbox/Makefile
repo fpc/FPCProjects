@@ -161,6 +161,7 @@ endif
 ifndef COMPONENTSDIR
 COMPONENTSDIR=$(KCLWIDGETSDIR)
 endif
+
 # Create units dir
 ifneq ($(FPCDIR),.)
 UNITSDIR=$(FPCDIR)/units/$(OS_TARGET)
@@ -313,17 +314,6 @@ else
 LDCONFIG=
 endif
 
-# ppdep
-ifndef PPDEP
-PPDEP:=$(strip $(wildcard $(addsuffix /ppdep$(EXEEXT),$(SEARCHPATH))))
-ifeq ($(PPDEP),)
-PPDEP=
-else
-PPDEP:=$(firstword $(PPDEP))
-endif
-endif
-export PPDEP
-
 # ppumove
 ifndef PPUMOVE
 PPUMOVE:=$(strip $(wildcard $(addsuffix /ppumove$(EXEEXT),$(SEARCHPATH))))
@@ -368,28 +358,6 @@ endif
 endif
 export UPXPROG
 
-# gdate/date
-ifndef DATE
-DATE:=$(strip $(wildcard $(addsuffix /date$(EXEEXT),$(SEARCHPATH))))
-ifeq ($(DATE),)
-DATE:=$(strip $(wildcard $(addsuffix /gdate$(EXEEXT),$(SEACHPATH))))
-ifeq ($(DATE),)
-DATE=
-else
-DATE:=$(firstword $(DATE))
-endif
-else
-DATE:=$(firstword $(DATE))
-endif
-endif
-export DATE
-
-ifdef DATE
-DATESTR:=$(shell $(DATE) +%Y%m%d)
-else
-DATESTR=
-endif
-
 # ZipProg, you can't use Zip as the var name (PFV)
 ifndef ZIPPROG
 ZIPPROG:=$(strip $(wildcard $(addsuffix /zip$(EXEEXT),$(SEARCHPATH))))
@@ -401,8 +369,26 @@ endif
 endif
 export ZIPPROG
 
-ifndef ZIPEXT
+ZIPOPT=-9
 ZIPEXT=.zip
+
+# Tar
+ifndef TARPROG
+TARPROG:=$(strip $(wildcard $(addsuffix /tar$(EXEEXT),$(SEARCHPATH))))
+ifeq ($(TARPROG),)
+TARPROG=
+else
+TARPROG:=$(firstword $(TARPROG))
+endif
+endif
+export TARPROG
+
+ifeq ($(USETAR),bz2)
+TAROPT=vI
+TAREXT=.tar.bz2
+else
+TAROPT=vz
+TAREXT=.tar.gz
 endif
 
 #####################################################################
@@ -419,7 +405,6 @@ SMARTEXT=.sl
 STATICLIBEXT=.a
 SHAREDLIBEXT=.so
 RSTEXT=.rst
-PACKAGESUFFIX=
 FPCMADE=fpcmade
 
 # Go32v1
@@ -430,19 +415,16 @@ ASMEXT=.s1
 SMARTEXT=.sl1
 STATICLIBEXT=.a1
 SHAREDLIBEXT=.so1
-PACKAGESUFFIX=v1
 FPCMADE=fpcmade.v1
 endif
 
 # Go32v2
 ifeq ($(OS_TARGET),go32v2)
-PACKAGESUFFIX=go32
 FPCMADE=fpcmade.dos
 endif
 
 # Linux
 ifeq ($(OS_TARGET),linux)
-PACKAGESUFFIX=linux
 FPCMADE=fpcmade.lnx
 endif
 
@@ -454,7 +436,6 @@ ASMEXT=.sw
 SMARTEXT=.slw
 STATICLIBEXT=.aw
 SHAREDLIBEXT=.dll
-PACKAGESUFFIX=w32
 FPCMADE=fpcmade.w32
 endif
 
@@ -466,7 +447,6 @@ OEXT=.oo2
 SMARTEXT=.so
 STATICLIBEXT=.ao2
 SHAREDLIBEXT=.dll
-PACKAGESUFFIX=os2
 FPCMADE=fpcmade.os2
 endif
 
@@ -683,6 +663,12 @@ endif
 endif
 export PREFIXINSTALLDIR
 
+# Where to place the resulting zip files
+ifndef DESTZIPDIR
+DESTZIPDIR:=$(BASEDIR)
+endif
+export DESTZIPDIR
+
 #####################################################################
 # Install Directories
 #####################################################################
@@ -728,6 +714,9 @@ ifdef inlinux
 SOURCEINSTALLDIR=$(PREFIXINSTALLDIR)/src/fpc-$(FPC_VERSION)
 else
 SOURCEINSTALLDIR=$(BASEINSTALLDIR)/source
+endif
+ifdef SOURCESUBDIR
+SOURCEINSTALLDIR:=$(SOURCEINSTALLDIR)/$(SOURCESUBDIR)
 endif
 endif
 
@@ -871,7 +860,7 @@ sourceinstall: fpc_sourceinstall $(addsuffix _sourceinstall,$(DIROBJECTS))
 
 zipinstall: fpc_zipinstall
 
-zipinstalladd: fpc_zipinstalladd
+zipsourceinstall: fpc_zipsourceinstall
 
 clean: fpc_clean $(addsuffix _clean,$(DIROBJECTS))
 
@@ -881,7 +870,7 @@ require: $(addsuffix _require,$(DIROBJECTS))
 
 info: fpc_info
 
-.PHONY:  all debug examples smart shared showinstall install sourceinstall zipinstall zipinstalladd clean cleanall require info
+.PHONY:  all debug examples smart shared showinstall install sourceinstall zipinstall zipsourceinstall clean cleanall require info
 
 #####################################################################
 # Units
@@ -962,7 +951,7 @@ endif
 # Install rules
 #####################################################################
 
-.PHONY: fpc_showinstall fpc_install
+.PHONY: fpc_showinstall fpc_install fpc_sourceinstall
 
 ifdef EXTRAINSTALLUNITS
 override INSTALLPPUFILES+=$(addsuffix $(PPUEXT),$(EXTRAINSTALLUNITS))
@@ -1024,21 +1013,31 @@ ifdef EXTRAINSTALLFILES
 	$(INSTALL) $(EXTRAINSTALLFILES) $(DATAINSTALLDIR)
 endif
 
-#####################################################################
-# Source install rules
-#####################################################################
-
-.PHONY: fpc_sourceinstall
+ifndef SOURCETOPDIR
+SOURCETOPDIR=$(BASEDIR)
+endif
 
 fpc_sourceinstall: clean
 	$(MKDIR) $(SOURCEINSTALLDIR)
-	$(COPYTREE) $(BASEDIR) $(SOURCEINSTALLDIR)
+	$(COPYTREE) $(SOURCETOPDIR) $(SOURCEINSTALLDIR)
+
 
 #####################################################################
 # Zip
 #####################################################################
 
-.PHONY: fpc_zipinstall fpc_zipinstalladd
+.PHONY: fpc_zipinstall fpc_zipsourceinstall
+
+# Create suffix to add
+ifndef PACKAGESUFFIX
+PACKAGESUFFIX=$(OS_TARGET)
+ifeq ($(OS_TARGET),go32v2)
+PACKAGESUFFIX=dos
+endif
+ifeq ($(OS_TARGET),win32)
+PACKAGESUFFIX=w32
+endif
+endif
 
 # Temporary path to pack a file
 ifndef PACKDIR
@@ -1049,43 +1048,20 @@ PACKDIR=/tmp/fpc-pack
 endif
 endif
 
-# Test dir if none specified
-ifndef DESTZIPDIR
-DESTZIPDIR:=$(BASEDIR)
-endif
-
 # Maybe create default zipname from packagename
 ifndef ZIPNAME
 ifdef PACKAGENAME
-ZIPNAME=$(PACKAGENAME)$(PACKAGESUFFIX)
+ZIPNAME=$(PACKAGEPREFIX)$(PACKAGENAME)$(PACKAGESUFFIX)
 endif
 endif
 
-# Add .zip/.tar.gz extension
-ifdef ZIPNAME
-ifndef inlinux
-override ZIPNAME:=$(ZIPNAME)$(ZIPEXT)
-endif
-endif
-
-# Note: This will not remove the zipfile first
-fpc_zipinstalladd:
-ifndef ZIPNAME
-	@$(ECHO) "Please specify ZIPNAME!"
-	@exit 1
-else
-	$(MAKE) $(ZIPTARGET) PREFIXINSTALLDIR=$(PACKDIR)
+# Use tar by default under linux
+ifndef USEZIP
 ifdef inlinux
-	gzip -d $(DESTZIPDIR)/$(ZIPNAME).tar.gz
-	cd $(PACKDIR) ; tar rv --file $(DESTZIPDIR)/$(ZIPNAME).tar * ; cd $(BASEDIR)
-	gzip $(DESTZIPDIR)/$(ZIPNAME).tar
-else
-	cd $(PACKDIR) ; $(ZIPPROG) $(DESTZIPDIR)/$(ZIPNAME) * ; cd $(BASEDIR)
+USETAR=1
 endif
-	$(DELTREE) $(PACKDIR)
 endif
 
-# First remove the zip and then install
 fpc_zipinstall:
 ifndef ZIPNAME
 	@$(ECHO) "Please specify ZIPNAME!"
@@ -1093,13 +1069,16 @@ ifndef ZIPNAME
 else
 	$(DEL) $(DESTZIPDIR)/$(ZIPNAME)
 	$(MAKE) $(ZIPTARGET) PREFIXINSTALLDIR=$(PACKDIR)
-ifdef inlinux
-	cd $(PACKDIR) ; tar cvz --file $(DESTZIPDIR)/$(ZIPNAME).tar.gz * ; cd $(BASEDIR)
+ifdef USETAR
+	cd $(PACKDIR) ; $(TARPROG) c$(TAROPT) --file $(DESTZIPDIR)/$(ZIPNAME)$(TAREXT) * ; cd $(BASEDIR)
 else
-	cd $(PACKDIR) ; $(ZIPPROG) $(DESTZIPDIR)/$(ZIPNAME) * ; cd $(BASEDIR)
+	cd $(PACKDIR) ; $(ZIPPROG) -Dr $(ZIPOPT) $(DESTZIPDIR)/$(ZIPNAME)$(ZIPEXT) * ; cd $(BASEDIR)
 endif
 	$(DELTREE) $(PACKDIR)
 endif
+
+fpc_zipsourceinstall:
+	$(MAKE) fpc_zipinstall ZIPTARGET=sourceinstall PACKAGESUFFIX=src
 
 #####################################################################
 # Clean rules
@@ -1187,6 +1166,9 @@ fpc_infoinstall:
 ifdef DATE
 	@$(ECHO)  DateStr.............. $(DATESTR)
 endif
+ifdef PACKAGEPREFIX
+	@$(ECHO)  PackagePrefix........ $(PACKAGEPREFIX)
+endif
 ifdef PACKAGENAME
 	@$(ECHO)  PackageName.......... $(PACKAGENAME)
 endif
@@ -1204,15 +1186,16 @@ endif
 	@$(ECHO)  ZipName.............. $(ZIPNAME)
 	@$(ECHO)
 
-
-# Target Dirs
+#####################################################################
+# Directories
+#####################################################################
 
 OBJECTDIRTESTS=1
 
 # Dir tests
 
 ifdef OBJECTDIRTESTS
-.PHONY:  tests_all tests_debug tests_examples tests_test tests_smart tests_shared tests_showinstall tests_install tests_sourceinstall tests_zipinstall tests_zipinstalladd tests_clean tests_cleanall tests_require tests_info
+.PHONY:  tests_all tests_debug tests_examples tests_test tests_smart tests_shared tests_showinstall tests_install tests_sourceinstall tests_zipinstall tests_zipsourceinstall tests_clean tests_cleanall tests_require tests_info
 
 tests_all:
 	$(MAKE) -C tests all
@@ -1244,8 +1227,8 @@ tests_sourceinstall:
 tests_zipinstall:
 	$(MAKE) -C tests zipinstall
 
-tests_zipinstalladd:
-	$(MAKE) -C tests zipinstalladd
+tests_zipsourceinstall:
+	$(MAKE) -C tests zipsourceinstall
 
 tests_clean:
 	$(MAKE) -C tests clean
