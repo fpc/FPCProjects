@@ -282,6 +282,8 @@ type
         procedure   ProcessList(Sender : TObject);
         procedure   CheckReady;
         procedure   DoHighLevelAsync;
+        function    Pop3ClientAllocateHWnd(Method: TWndMethod): HWND;
+        procedure   Pop3ClientDeallocateHWnd(WHandle: HWND);
     public
         constructor Create(AOwner : TComponent); override;
         destructor  Destroy; override;
@@ -464,6 +466,7 @@ procedure Register;
 implementation
 
 
+
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 {$IFDEF VER80}
 procedure SetLength(var S: string; NewLength: Integer);
@@ -529,11 +532,45 @@ begin
 end;
 
 
+{$IFDEF NOFORMS}
+{ This function is a callback function. It means that it is called by       }
+{ windows. This is the very low level message handler procedure setup to    }
+{ handle the message sent by windows (winsock) to handle messages.          }
+function Pop3ClientWindowProc(
+    ahWnd   : HWND;
+    auMsg   : Integer;
+    awParam : WPARAM;
+    alParam : LPARAM): Integer; stdcall;
+var
+    Obj    : TObject;
+    MsgRec : TMessage;
+begin
+    { At window creation asked windows to store a pointer to our object     }
+    Obj := TObject(GetWindowLong(ahWnd, 0));
+
+    { If the pointer doesn't represent a TCustomSmtpClient, just call the default procedure}
+    if not (Obj is TCustomPop3Cli) then
+        Result := DefWindowProc(ahWnd, auMsg, awParam, alParam)
+    else begin
+        { Delphi use a TMessage type to pass parameter to his own kind of   }
+        { windows procedure. So we are doing the same...                    }
+        MsgRec.Msg    := auMsg;
+        MsgRec.wParam := awParam;
+        MsgRec.lParam := alParam;
+        { May be a try/except around next line is needed. Not sure ! }
+        TCustomPop3Cli(Obj).WndProc(MsgRec);
+        Result := MsgRec.Result;
+    end;
+end;
+{$ENDIF}
+
+
+
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 constructor TCustomPop3Cli.Create(AOwner : TComponent);
 begin
     inherited Create(AOwner);
-    FWindowHandle            := WSocket.AllocateHWnd(WndProc);
+    FWindowHandle            := Pop3ClientAllocateHWnd(WndProc);
     FWSocket                 := TWSocket.Create(nil);
     FWSocket.OnSessionClosed := WSocketSessionClosed;
     FProtocolState           := pop3Disconnected;
@@ -543,6 +580,29 @@ begin
 end;
 
 
+function TCustomPop3Cli.Pop3ClientAllocateHWnd(Method: TWndMethod) : HWND;
+begin
+{$IFDEF NOFORMS}
+    Result := XSocketAllocateHWnd(Self);
+    SetWindowLong(Result, GWL_WNDPROC, LongInt(@pop3ClientWindowProc));
+{$ELSE}
+     Result := WSocket.AllocateHWnd(Method);
+{$ENDIF}
+end;
+
+
+{* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
+procedure TCustomPop3Cli.Pop3ClientDeallocateHWnd(WHandle : HWND);
+begin
+{$IFDEF NOFORMS}
+    XSocketDeallocateHWnd(WHandle);
+{$ELSE}
+    WSocket.DeallocateHWnd(WHandle);
+{$ENDIF}
+end;
+
+
+
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 destructor TCustomPop3Cli.Destroy;
 begin
@@ -550,7 +610,7 @@ begin
         FWSocket.Destroy;
         FWSocket := nil;
     end;
-    WSocket.DeallocateHWnd(FWindowHandle);
+    Pop3ClientDeallocateHWnd(FWindowHandle);
     inherited Destroy;
 end;
 
@@ -1093,7 +1153,11 @@ end;
 procedure TCustomPop3Cli.SendCommand(Cmd : String);
 begin
     Display('> ' + Cmd);
-    Application.ProcessMessages;
+    {$IFNDEF NOFORMS}
+      Application.ProcessMessages;
+    {$ELSE}
+      FWSocket.ProcessMessages;
+    {$ENDIF}
     FWSocket.SendStr(Cmd + #13 + #10);
 end;
 
@@ -1647,7 +1711,7 @@ begin
             break;
         end;
 
-        if  Application.Terminated or
+        if  {$IFDEF NOFORMS} FWSocket.Terminated {$ELSE} Application.Terminated{$ENDIF} or
             ((FTimeout > 0) and (Integer(GetTickCount) > FTimeStop)) then begin
             { Application is terminated or timeout occured }
             inherited Abort;
@@ -1661,7 +1725,11 @@ begin
             FWSocket.ProcessMessages
         else
 {$ENDIF}
+{$IFNDEF NOFORMS}
             Application.ProcessMessages;
+{$ELSE}
+            FWSocket.ProcessMessages;
+{$ENDIF}
 {$IFNDEF VER80}
         { Do not use 100% CPU, but slow down transfert on high speed LAN }
         Sleep(0);
