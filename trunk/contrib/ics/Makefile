@@ -205,9 +205,7 @@ PACKAGESDIR:=$(wildcard $(FPCDIR) $(FPCDIR)/packages/base $(FPCDIR)/packages/ext
 override PACKAGE_NAME=ics
 override PACKAGE_VERSION=0.01
 wsocket : wsockbuf
-conhttp($EXEEXT) : conhttp.dcr
 override TARGET_UNITS+=wsockbuf wsocket wsockets uuencode dnsquery  fingcli ftpcli  ftpsrvc ftpsrvt httpprot httpsrv icmp mbxfile md5 mimedec mimeutil ping smtpprot
-override TARGET_EXAMPLES+=conhttp
 override TARGET_EXAMPLEDIRS+=examples
 override INSTALL_BASEDIR=.
 override COMPILER_INCLUDEDIR+=vc32
