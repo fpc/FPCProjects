@@ -65,6 +65,8 @@ ResourceString
   SSyntaxOther = 'Other syntax options'; 
   SSyntaxCOperators = 'Allow C operators';
   SSyntaxAllowGoto = 'Allow goto/label';
+  SSyntaxAnsiStrings = 'Use ansistrings';
+  SSyntaxInline = 'Allow inline code';
   SSyntaxMacros = 'Allow macros';
   SSyntaxConst = 'Constructor name must be init';
   SSyntaxStatic = 'Allow static keyword in objects';
@@ -185,6 +187,8 @@ Type
        GBSyntaxOther : TgroupBox;
        CBSyntaxCOperators ,
        CBSyntaxAllowGoto ,
+       CBSyntaxAnsistrings, 
+       CBSyntaxInline, 
        CBSyntaxMacros ,
        CBSyntaxConst ,
        CBSyntaxStatic : TCheckBox;
@@ -677,6 +681,8 @@ begin
     end;
   CBSyntaxCOperators := TCheckBox.Create(Self);
   CBSyntaxAllowGoto := TCheckBox.Create(Self);
+  CBSyntaxAnsiStrings := TCheckBox.Create(Self);
+  CBSyntaxInline := TCheckBox.Create(Self);
   CBSyntaxMacros := TCheckBox.Create(Self);
   CBSyntaxConst := TCheckBox.Create(Self);
   CBSyntaxStatic := TCheckBox.Create(Self);
@@ -687,6 +693,8 @@ begin
   CBSyntaxStatic.Text:=  SSyntaxStatic;
   CBSyntaxCOperators.Name := 'SSyntaxCOperators';
   CBSyntaxAllowGoto.Name := 'SSyntaxAllowGoto';
+  CBSyntaxAnsistrings.Name := 'SSyntaxAnsistrings';
+  CBSyntaxInline.Name := 'SSyntaxInline';
   CBSyntaxMacros.Name := 'SSyntaxMacros';
   CBSyntaxConst.Name := 'SSyntaxConst';
   CBSyntaxStatic.Name := 'SSyntaxStatic';
@@ -702,6 +710,8 @@ begin
       Orientation:=boxVert;
       AddWidget(CBSyntaxCOperators);
       AddWidget(CBSyntaxAllowGoto);
+      AddWidget(CBSyntaxAnsistrings);
+      AddWidget(CBSyntaxInline);
       AddWidget(CBSyntaxMacros);
       AddWidget(CBSyntaxConst);
       AddWidget(CBSyntaxStatic);
@@ -1435,6 +1445,10 @@ begin
     Temp := Temp+'c';
   If (CBSyntaxAllowGoto.State=cbChecked) then
     Temp := Temp+'g';
+  If (CBSyntaxAnsistrings.State=cbChecked) then
+    Temp := Temp+'h';
+  If (CBSyntaxInline.State=cbChecked) then
+    Temp := Temp+'i';
   If (CBSyntaxMacros.State=cbChecked) then
     Temp := Temp+'m';
   If (CBSyntaxConst.State=cbChecked) then
@@ -1589,7 +1603,239 @@ end;
 
 Procedure TCompilerOptionsForm.OptionsToForm;
 
+   Function Switch(Const S : String) : Boolean;
+    
+   begin
+     result:=Not(S='-');
+   end; 
+   
+   function Setbool(const opts:string; var pos: Longint):boolean;
+   
+   // return False if next char after pos is '-'
+     
+   begin
+     Result := Not((Length(Opts) > Pos) And (Opts[Succ(Pos)] = '-'));
+     if not result then
+       inc(pos);
+   end;
+
+   Procedure InterpretOption (Option : String);
+
+   Var Opt,Opt2 : Char;
+       i,j : longint;
+          
+   begin
+     Opt:=Option[2];
+     Delete(Option,1,2);
+     Case Opt of
+       'a' : begin
+             CBGeneralKeepAsm.Checked:=True;
+             For I:=1 to Length(Option) do 
+               Case Option[j] of
+                 'l' : CBGeneralAsmListSource.Checked:=True;
+                 'r' : CBGeneralAsmListRegAlloc.Checked:=True;
+                 't' : CBgeneralAsmListTempAlloc.Checked:=True;
+                 '-' : begin
+                       CBGeneralAsmListSource.Checked:=False;
+                       CBGeneralAsmListRegAlloc.Checked:=False;
+                       CBgeneralAsmListTempAlloc.Checked:=False;
+                       CBGeneralKeepAsm.Checked:=False;
+                       end;
+               end;
+             end;
+       'A' : Begin
+             // To be implemented.
+             end;      
+       'b' : begin
+             CBGeneralBrowserInfo.Checked:=True;
+             if Option='l' then
+               CBGeneralLocalBrowserInfo.Checked:=True
+             else if OPtion='-' then
+               begin
+               CBGeneralLocalBrowserInfo.Checked:=False;
+               CBGeneralBrowserInfo.Checked:=False;
+               end;  
+             end;
+       'B' : CBGeneralBuild.Checked:=Switch(Option);
+       'C' : begin
+             j:=1;
+             While j<=Length(Option) do
+               begin
+               Case Option[j] of
+                 'h' : begin
+                       ECodeheapSize.Text:=Copy(Option,2,255);
+                       Break;
+                       end; 
+                 's' : begin
+                       ECodeStackSize.Text:=Copy(Option,2,255);
+                       Break;
+                       end; 
+                 't' : CBCodeStackCheck.Checked:=SetBool(Option,j);
+                 'i' : CBCodeIOCheck.Checked:=SetBool(Option,j);
+                 'n' : begin
+                       CBLinkOmitLinking.Checked:=Not SetBool(OPtion,j);
+                       GBLinkOptions.Enabled:=Not CBLinkOmitLinking.Checked;
+                       end;
+                 'o' : CBCodeOverflow.Checked:=SetBool(Option,j);
+                 'r' : CBCodeRangeCheck.Checked:=SetBool(Option,j);
+                 'D' : CBLinkMakeDynLib.Checked:=SetBool(Option,j);
+                 'X' : CBLinkMakeSmartLink.Checked:=SetBool(Option,j);
+                 
+                 end;
+               Inc(j);  
+               end;  
+             end;
+       'd' : EGeneralDefines.Text:=EGeneralDefines.Text+';'+Option;
+       'e' : FToolsSearchDir.Text:=Option;
+       'E' : CBLinkOmitLinking.Checked:=Switch(Option);
+       'F' : begin
+             Opt2:=Option[1];
+             Delete(Option,1,1);
+             Case Opt2 of
+               'D' : FToolsSearchDir.Text:=Option;
+               'i' : FIncludePath.Text:=FIncludePath.text+';'+Option;
+               'l' : FLibrarySearchPath.Text:=FLibrarySearchPath.text+';'+Option;
+               'o' : FObjectSearchPath.Text:=FObjectSearchPath.text+';'+Option;
+               'u' : FUnitSearchPath.Text:=FUnitSearchPath.text+';'+Option;
+               'U' : FUnitOutputDir.Text:=Option;
+               'E' : FOutputDir.Text:=Option;
+             end;
+             end;
+       'g' : begin
+             j:=0;
+             CBGeneralDebugInfo.Checked:=SetBool(Option,J);
+             GBGeneralDebugOptions.Enabled:=CBGeneralDebugInfo.Checked;
+             if CBGeneralDebugInfo.Checked then
+               begin
+               While j<=Length(Option) do
+                 begin
+                 Case Option[j] of
+                   'd' : CBGeneraldbx.Checked:=True;
+                   'g' : CBGeneralgsym.Checked:=True; 
+                   'h' : CBGeneralHeaptrace.Checked:=True;
+                   'l' : CBGeneralLineInfo.Checked:=true; 
+                   'c' : CBGeneralCheckPointers.Checked:=true;
+                   end;
+                 inc(j);
+                 end;
+               end;
+             end;
+       'I' : FIncludePath.Text:=FIncludePath.text+';'+Option;
+       'k' : ELinkLinkerOptions.text:=ELinkLinkerOptions.Text+option;
+       'l' : CBShowLogo.Checked:=Switch(Option); 
+       'n' : CBGeneralNoConfig.Checked:=Switch(Option);
+       'o' : ELinkOutputName.Text:=Option;
+       'p' : begin
+             j:=1;
+             CBgeneralProfile.Checked:=(length(Option)>0) and (option[1]='g')
+                                        and SetBool(Option,J);
+             end;                           
+       's' : CBGeneralScript.Checked:=Switch(Option);
+       'S' : begin
+             for i:=1 to length(Option) do
+               case Option[i] of
+                 '2' : RBSyntaxObjfpc.Checked:=true;
+                 'd' : RBSyntaxDelphi.Checked:=True;
+                 'o' : RBSyntaxTP.Checked:=true;
+                 'c' : CBSyntaxCOperators.Checked:=True;
+                 'g' : CBSyntaxAllowGoto.Checked:=True;
+                 'h' : CBSyntaxAnsiStrings.Checked:=True;
+                 'i' : CBSyntaxInline.Checked:=True;
+                 'm' : CBSyntaxMacros.Checked:=true;
+                 's' : CBSyntaxConst.Checked:=true;
+                 't' : CBSyntaxStatic.Checked:=true;
+               end;  
+             end;
+       'u' : EGeneralUndefines.Text:=EGeneralUndefines.Text+';'+Option;
+       'U' : for i:=1 to length(Option) do
+               Case OPtion[i] of
+                 'n' : CBGeneralCheckUnitName.Checked:=true;
+                 'g' : CBGeneralSystemUnit.Checked:=True;
+               end;
+       'v' : for i:=1 to length(option) do
+               if (Option[i] in ['0','a']) then
+                 begin
+                 cbShowAll.Checked:=Option[i]='a';
+                 cbShowNothing.Checked:=option[i]='0';
+                 SetVerbosities(Option[i]='a');
+                 FGeneralgroup.Enabled:=False;
+                 end
+               else
+                  begin
+                  CBShowAll.Checked:=False;
+                  CBShowNothing.Checked:=False;
+                  FGeneralGroup.Enabled:=True;
+                  case Option[i] of
+                    'w' : CBShowWarnings.Checked:=True;
+                    'n' : CBShowNotes.Checked:=True;
+                    'h' : CBShowHints.Checked:=true;
+                    'i' : CBShowInfo.Checked:=true;
+                    'l' : CBShowLines.Checked:=true;
+                    'b' : CBShowProcedureBacktrace.Checked:=True;
+                    'u' : CBShowUnit.Checked:=True;
+                    'd' : CBShowDebug.Checked:=true;
+                    't' : CBShowTried.Checked:=True;
+                    'm' : CBShowMacros.Checked:=true;
+                    'p' : CBShowProcedures.Checked:=True;
+                    'c' : CBShowConditionals.Checked:=true;
+                    'r' : CBShowGCC.Checked:=True;
+                    end;
+                  end;  
+       'X' : For i:=1 to Length(Option) do
+               Case Option[i] of
+                 'c' : CBLinkUseCLib.Checked:=True;
+                 's' : CBLinkStripSymbols.Checked:=True;
+                 'X' : RBLinkLinkSmart.Checked:=true;
+                 'S' : RBLinkLinkStatic.Checked:=True;
+                 'D' : RBLinkLinkDynamic.Checked:=true;
+               end;           
+       'R' : begin
+             RBSyntaxAsmAtt.Checked:=option='att';
+             RBSyntaxAsmIntel.Checked:=Option='intel';
+             RBSyntaxAsmDirect.Checked:=Option='direct';
+             end;
+       'O' : begin
+             j:=1;
+             While j<=Length(OPtion) do
+               begin
+               case Option[j] of
+                 'g' : CBCodeSmaller.Checked:=true;
+                 'G' : CBCodeFaster.Checked:=true;
+                 'r' : CBCoderegister.Checked:=True;
+                 'u' : CBCodeuncertain.Checked:=True;
+                 'p' : if j<Length(Option) then
+                         begin
+                         inc(j);
+                         CBCodeProcessor.Checked:=True;
+                         GBProcType.Enabled:=True;
+                         Case Option[j] of
+                          '1' : RBCode386.Checked:=True;
+                          '2' : RBCodePentium.Checked:=True;
+                          '3' : RBCodePentiumPro.Checked:=True;
+                         end;
+                         end;
+                 '1' : RBCodeLevel1.Checked:=True;
+                 '2' : RBCodeLevel2.Checked:=True;
+                 '3' : RBCodeLevel3.Checked:=True;
+               end;  { Case }
+               inc(j);
+               end;
+             end;  
+     end; {Case Opt}      
+   end;
+
+Var i : longint;
+    Temp : string;
+  
 begin
+  If CompilerOptions.Count=0 then
+    exit;
+  For I:=0 to CompilerOptions.Count-1 do
+    begin
+    Temp:=Trim(CompilerOptions[i]);
+    If (Length(Temp)>1) and (Temp[1]='-') then
+      InterPretOption(Temp);
+    end;
 end;
 
 Procedure TCompilerOptionsForm.SetCompilerOptions (Value : TStrings);
@@ -1602,6 +1848,9 @@ end.
 
 {
   $Log$
+  Revision 1.7  2000/03/01 22:41:29  michael
+  + Implemented Options2Form
+
   Revision 1.6  2000/02/25 14:51:17  michael
   Some cosmetics and output name added
 
