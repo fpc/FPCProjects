@@ -2,7 +2,7 @@
     $Id$
 
     fpImg  -  Free Pascal Imaging Library
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Example: Display BMP file
@@ -40,7 +40,7 @@ begin
   Window := ADisplay.DefaultScreen.CreateWindow;
   Window.Title := 'fpImg Bitmap Test';
   Window.OnPaint := @Paint;
-  Window.SetFixedClientSize(Image.Width, Image.Height);
+  Window.SetFixedClientSize(Size(Image.Width, Image.Height));
   Window.Show;
 end;
 
@@ -55,7 +55,7 @@ begin
   Window.Canvas.SetColor(colRed);
   Window.Canvas.FillRect(Rect);
   Window.Canvas.SetColor(colYellow);
-  Window.Canvas.DrawImage(Image, 0, 0);
+  Window.Canvas.DrawImage(Image, Point(0, 0));
 end;
 
 var
@@ -78,6 +78,9 @@ end.
 
 {
   $Log$
+  Revision 1.6  2001/02/14 23:08:59  sg
+  * Adapted to changes in fpGFX interface
+
   Revision 1.5  2001/02/09 20:49:03  sg
   * Adapted to recent improvements in fpGFX interfaces
 

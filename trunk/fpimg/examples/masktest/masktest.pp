@@ -2,7 +2,7 @@
     $Id$
 
     fpImg  -  Free Pascal Imaging Library
-    Copyright (C) 2000-2001 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Example: Display BMP file with monochrome mask
@@ -43,32 +43,32 @@ begin
   Image2 := CreateImageFromFile(Display.DefaultScreen, TBMPReader, 'image2.bmp');
   Image2Canvas :=
     Display.DefaultScreen.CreateBitmap(Image2.Width, Image2.Height);
-  Image2Canvas.DrawImage(Image2, 0, 0);
+  Image2Canvas.DrawImage(Image2, Point(0, 0));
 
   Image4 := CreateImageFromFile(Display.DefaultScreen, TBMPReader, 'image4.bmp');
   Image4Canvas :=
     Display.DefaultScreen.CreateBitmap(Image4.Width, Image4.Height);
-  Image4Canvas.DrawImage(Image4, 0, 0);
+  Image4Canvas.DrawImage(Image4, Point(0, 0));
 
   Image8 := CreateImageFromFile(Display.DefaultScreen, TBMPReader, 'image8.bmp');
   Image8Canvas :=
     Display.DefaultScreen.CreateBitmap(Image8.Width, Image8.Height);
-  Image8Canvas.DrawImage(Image8, 0, 0);
+  Image8Canvas.DrawImage(Image8, Point(0, 0));
 
   Image24 := CreateImageFromFile(Display.DefaultScreen, TBMPReader, 'image24.bmp');
   Image24Canvas :=
     Display.DefaultScreen.CreateBitmap(Image24.Width, Image24.Height);
-  Image24Canvas.DrawImage(Image24, 0, 0);
+  Image24Canvas.DrawImage(Image24, Point(0, 0));
 
   // Load and prepare the image mask
   Mask := CreateImageFromFile(Display.DefaultScreen, TBMPReader, 'mask.bmp');
   MaskCanvas := Display.DefaultScreen.CreateMonoBitmap(Mask.Width, Mask.Height);
-  MaskCanvas.DrawImage(Mask, 0, 0);
+  MaskCanvas.DrawImage(Mask, Point(0, 0));
 
   Window := ADisplay.DefaultScreen.CreateWindow;
   Window.Title := 'fpImg Blitting Mask Test';
   Window.OnPaint := @Paint;
-  Window.SetClientSize(Image2.Width * 2 + 64, Image2.Height * 2 + 64);
+  Window.SetClientSize(Size(Image2.Width * 2 + 64, Image2.Height * 2 + 64));
   Window.Show;
 end;
 
@@ -113,14 +113,14 @@ begin
   x2 := x1 + Window.ClientWidth div 2;
   y2 := y1 + Window.ClientHeight div 2;
 
-  Window.Canvas.MaskedCopy(Image2Canvas, MaskCanvas, x1, y1);
-  Window.Canvas.TextOut(x1, y1 + Image2.Height, 'monochrome');
-  Window.Canvas.MaskedCopy(Image4Canvas, MaskCanvas, x2, y1);
-  Window.Canvas.TextOut(x2, y1 + Image2.Height, '4bpp palettized');
-  Window.Canvas.MaskedCopy(Image8Canvas, MaskCanvas, x1, y2);
-  Window.Canvas.TextOut(x1, y2 + Image2.Height, '8bpp palettized');
-  Window.Canvas.MaskedCopy(Image24Canvas, MaskCanvas, x2, y2);
-  Window.Canvas.TextOut(x2, y2 + Image2.Height, '24bpp true color');
+  Window.Canvas.MaskedCopy(Image2Canvas, MaskCanvas, Point(x1, y1));
+  Window.Canvas.TextOut(Point(x1, y1 + Image2.Height), 'monochrome');
+  Window.Canvas.MaskedCopy(Image4Canvas, MaskCanvas, Point(x2, y1));
+  Window.Canvas.TextOut(Point(x2, y1 + Image2.Height), '4bpp palettized');
+  Window.Canvas.MaskedCopy(Image8Canvas, MaskCanvas, Point(x1, y2));
+  Window.Canvas.TextOut(Point(x1, y2 + Image2.Height), '8bpp palettized');
+  Window.Canvas.MaskedCopy(Image24Canvas, MaskCanvas, Point(x2, y2));
+  Window.Canvas.TextOut(Point(x2, y2 + Image2.Height), '24bpp true color');
 end;
 
 var
@@ -138,6 +138,9 @@ end.
 
 {
   $Log$
+  Revision 1.3  2001/02/14 23:08:59  sg
+  * Adapted to changes in fpGFX interface
+
   Revision 1.2  2001/02/09 20:49:03  sg
   * Adapted to recent improvements in fpGFX interfaces
 
