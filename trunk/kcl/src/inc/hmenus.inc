@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -20,59 +20,53 @@
 
 type
 
+  TMenuItemStyle = (misDefault, misSeparator, misCheck);
+
   TMenuItem = class(TKCLComponent)
   protected
-    FText: String;
-    FGray: Boolean;
-    FShortCut: String;
     FHandle: TMenuItemHandle;
-    FOnClick: TNotifyEvent;
+    FStyle: TMenuItemStyle;
+    FCommand: TCommand;
     FParent: TObject;
+    priv: TMenuItem_private;
+    function  CommandChangeFilter(AEvent: TEventObj): Boolean;
     procedure OnFinishCreation; virtual;
-    procedure SetGray(AGray: Boolean);
-    procedure SetText(const AText: String);
   public
     constructor Create(AOwner: TComponent); override;
-    procedure DoClick;
+    property Handle: TMenuItemHandle read FHandle;
   published
-    property  Text: String read FText write SetText;
-    property  Gray: Boolean read FGray write SetGray;
-    property  ShortCut: String read FShortCut write FShortCut;
-    property  OnClick: TNotifyEvent read FOnClick write FOnClick;
-  end;
-
-  TMenuItemInfo = class(TCollectionItem)
-  protected
-    FItem: TMenuItem;
-  published
-    property Item: TMenuItem read FItem write FItem;
+    property Style: TMenuItemStyle read FStyle write FStyle;
+    property Command: TCommand read FCommand write FCommand;
   end;
 
   TMenu = class(TMenuItem)
   protected
-    FItems: TCollection;
+    FItems: TList;
+    FText: String;
+    MenuPriv: TMenu_private;
     procedure OnFinishCreation; override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure AddItem(AItem: TMenuItem);
-  published
-    property Items: TCollection read FItems;
   end;
 
   TMenuBar = class(TWidget)
   protected
-    FItems: TCollection;
+    FItems: TList;
     procedure OnFinishCreation; override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure AddItem(AItem: TMenuItem);
-  published
-    property Items: TCollection read FItems;
   end;
 
 
 {
   $Log$
+  Revision 1.4  2000/01/24 00:06:18  sg
+  * Restructuring, menu items are now bound to a TCommand
+
   Revision 1.3  2000/01/07 22:48:49  sg
   * Added property "ShortCut" to TMenuItem
 
