@@ -55,6 +55,8 @@ unit WSockBuf;
 
 interface
 
+{$i icsdef.inc}
+
 uses
   SysUtils;
 

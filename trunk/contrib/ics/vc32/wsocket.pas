@@ -551,8 +551,11 @@ unit WSocket;
 
 interface
 
+{$I icsdef.inc}
+
 uses
-  WinTypes, WinProcs, Messages, Classes, SysUtils,
+
+  {$ifdef UseWindows}Windows, {$else}WinTypes, WinProcs,{$endif} Messages, Classes, SysUtils,
 {$IFNDEF NOFORMS} { See comments in history at 14/02/99 }
   Forms,
 {$ENDIF}
@@ -902,6 +905,8 @@ type
                                                     write FOnDisplay;
   end;
 
+
+
   TSocksState          = (socksData, socksNegociateMethods, socksAuthenticate, socksConnect);
   TSocksAuthentication = (socksNoAuthentication, socksAuthenticateUsercode);
   TSocksAuthState      = (socksAuthStart, socksAuthSuccess, socksAuthFailure, socksAuthNotRequired);
@@ -982,7 +987,7 @@ type
   TLineLimitEvent = procedure (Sender        : TObject;
                                RcvdLength    : LongInt;
                                var ClearData : Boolean) of object;
-                               
+
 { You must define USE_SSL so that SSL code is included in the component.    }
 { To be able to compile the component, you must have the SSL related files  }
 { which are _NOT_ freeware. See http://www.overbyte.be for details.         }
@@ -1187,26 +1192,26 @@ type
     TShutdown              = function (s: TSocket; how: Integer): Integer;
     TSetSockOpt            = function (s: TSocket; level, optname: Integer;
                                        optval: PChar;
-                                       optlen: Integer): Integer; 
-    TGetSockOpt            = function (s: TSocket; level, optname: Integer; optval: PChar; var optlen: Integer): Integer; 
+                                       optlen: Integer): Integer;
+    TGetSockOpt            = function (s: TSocket; level, optname: Integer; optval: PChar; var optlen: Integer): Integer;
     TSendTo                = function (s: TSocket; var Buf;
                                        len, flags: Integer;
                                        var addrto: TSockAddr;
-                                       tolen: Integer): Integer; 
+                                       tolen: Integer): Integer;
     TSend                  = function (s: TSocket; var Buf;
                                        len, flags: Integer): Integer;
     TRecv                  = function (s: TSocket;
                                        var Buf;
-                                       len, flags: Integer): Integer; 
+                                       len, flags: Integer): Integer;
     TRecvFrom              = function (s: TSocket;
                                        var Buf; len, flags: Integer;
                                        var from: TSockAddr;
-                                       var fromlen: Integer): Integer; 
+                                       var fromlen: Integer): Integer;
     Tntohs                 = function (netshort: u_short): u_short;
-    Tntohl                 = function (netlong: u_long): u_long; 
-    TListen                = function (s: TSocket; backlog: Integer): Integer; 
+    Tntohl                 = function (netlong: u_long): u_long;
+    TListen                = function (s: TSocket; backlog: Integer): Integer;
     TIoctlSocket           = function (s: TSocket; cmd: DWORD;
-                                       var arg: u_long): Integer; 
+                                       var arg: u_long): Integer;
     TInet_ntoa             = function (inaddr: TInAddr): PChar;
     TInet_addr             = function (cp: PChar): u_long;
     Thtons                 = function (hostshort: u_short): u_short;
@@ -1732,7 +1737,7 @@ begin
         FRecvFrom              := nil;
         Fntohs                 := nil;
         Fntohl                 := nil;
-        FListen                := nil; 
+        FListen                := nil;
         FIoctlSocket           := nil;
         FInet_ntoa             := nil;
         FInet_addr             := nil;
@@ -2341,7 +2346,7 @@ begin
     if Assigned(FOnMessagePump) then
         FOnMessagePump(Self)
     else
-        Self.ProcessMessages;  
+        Self.ProcessMessages;
 {$ELSE}
 {$IFNDEF VER80}
     { Delphi 1 doesn't support multithreading }
@@ -2430,7 +2435,11 @@ var
 { called with dwReason equal to DLL_PROCESS_DETACH.                         }
 procedure WSocketUnregisterClass;
 begin
-    Winprocs.UnregisterClass(XSocketWindowClass.lpszClassName, HInstance);
+    {$ifdef UseWindows}
+     Windows.UnregisterClass(XSocketWindowClass.lpszClassName, HInstance);
+    {$else}
+     Winprocs.UnregisterClass(XSocketWindowClass.lpszClassName, HInstance);
+    {$endif}
 end;
 
 
@@ -2448,8 +2457,12 @@ begin
                                     XSocketWindowClass.lpszClassName,
                                     TempClass);
     if not ClassRegistered then begin
-       { Not yet registered, do it right now                                }
+       { Not yet registered, do it right now}
+      {$ifdef UseWindows}
+       Result := Windows.RegisterClass(XSocketWindowClass);
+      {$else}
        Result := WinProcs.RegisterClass(XSocketWindowClass);
+      {$endif}
        if Result = 0 then
            Exit;
     end;
@@ -2672,16 +2685,21 @@ end;
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 { Get the number of char received and waiting to be read                    }
 function TCustomWSocket.GetRcvdCount : LongInt;
+
+var temp : Longword;
+
 begin
     if csDesigning in ComponentState then begin
         Result := -1;
         Exit;
     end;
-    if WSocket_ioctlsocket(FHSocket, FIONREAD, Result) = SOCKET_ERROR then begin
+    if WSocket_ioctlsocket(FHSocket, FIONREAD, temp) = SOCKET_ERROR then begin
         Result := -1;
         SocketError('ioctlSocket');
         Exit;
     end;
+
+    Result:=Temp;
 end;
 
 
@@ -3037,7 +3055,11 @@ procedure TCustomWSocket.ASyncReceive(
     MySocketOptions : TWSocketOptions);
 var
     bMore  : Boolean;
+    {$ifdef FPC}
+    lCount : LongWord;
+    {$else}
     lCount : LongInt;
+    {$endif}
     TrashCan : array [0..1023] of char;
 begin
     bMore := TRUE;
@@ -4097,7 +4119,7 @@ end;
 
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
-function TCustomWSocket.Accept: TSocket; 
+function TCustomWSocket.Accept: TSocket;
 var
    len     : integer;
 begin
@@ -4298,7 +4320,11 @@ end;
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 procedure TCustomWSocket.WaitForClose;
 var
+    {$ifdef FPC}
+    lCount    : LongWord;
+    {$else}
     lCount    : LongInt;
+    {$endif}
     Status    : Integer;
     Ch        : Char;
 begin
@@ -5752,7 +5778,7 @@ begin
         FTimeOut      := Timeout * 1000
     else
         FTimeOut      := -Timeout;
-        
+
     FLineReceivedFlag := FALSE;
     FLinePointer      := @Buffer;
     { Save existing OnDataAvailable handler and install our own }
