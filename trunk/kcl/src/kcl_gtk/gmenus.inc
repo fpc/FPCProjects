@@ -48,7 +48,9 @@ var
   i: Integer;
   lbl: PGtkWidget;
   accel: LongWord;
+  mods: TGdkModifierType;
   form: TWidget;
+  menu: TMenuItem;
 begin
   if FText = '-' then
     FHandle.Item := gtk_menu_item_new
@@ -63,6 +65,7 @@ begin
     lbl := gtk_accel_label_new('');		// NIL won't work!
     gtk_misc_set_alignment(PGtkMisc(lbl), 0.0, 0.5);
     gtk_container_add(PGtkContainer(FHandle.Item), lbl);
+    gtk_accel_label_set_accel_widget(PGtkAccelLabel(lbl), FHandle.Item);
 
     accel := gtk_label_parse_uline(PGtkLabel(lbl), PChar(s));
     if accel <> GDK_VoidSymbol then
@@ -71,15 +74,30 @@ begin
 	while Assigned(form) and not form.InheritsFrom(TGenericForm) do
 	  form := form.FParent;
 	if Assigned(form) then
-          gtk_widget_add_accelerator(FHandle.Item, 'activate_item',
+          gtk_widget_add_accelerator(FHandle.Item, 'activate',
 	    TGenericForm(form).priv.AccelGroup,
 	    accel, GDK_MOD1_MASK, GTK_ACCEL_LOCKED)
       end else if FParent.InheritsFrom(TMenu) then
-        gtk_widget_add_accelerator(FHandle.Item, 'activate_item',
+        gtk_widget_add_accelerator(FHandle.Item, 'activate',
 	  gtk_menu_ensure_uline_accel_group(PGtkMenu(TMenu(FParent).
 	  FHandle.SubMenu)), accel, 0, GTK_ACCEL_LOCKED);
 
-    gtk_accel_label_set_accel_widget(PGtkAccelLabel(lbl), FHandle.Item);
+    if Length(FShortCut) > 0 then begin
+      menu := Self;
+      while Assigned(menu.FParent) and menu.FParent.InheritsFrom(TMenuItem) do
+        menu := TMenuItem(menu.FParent);
+      // 'menu' must be a TMenuBar now
+      form := TMenuBar(menu.FParent);
+      while Assigned(form) and not form.InheritsFrom(TGenericForm) do
+	form := form.FParent;
+      if Assigned(form) then begin
+        gtk_accelerator_parse(PChar(FShortCut), @accel, @mods);
+        gtk_widget_add_accelerator(FHandle.Item, 'activate',
+	  TGenericForm(form).priv.AccelGroup,
+	  accel, mods, GTK_ACCEL_VISIBLE);
+      end;
+    end;
+
     gtk_widget_show(lbl);
   end;
 
@@ -167,6 +185,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/01/07 22:49:47  sg
+  * Added full shortcut support for menu items
+
   Revision 1.2  2000/01/06 23:02:24  sg
   * "&" in menu item texts are now interpreted as underline command, and the
     according keyboard accelerators are created
