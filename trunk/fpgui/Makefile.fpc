@@ -1,0 +1,6 @@
+#
+#   Makefile.fpc for fpGUI tree
+#
+
+[targets]
+dirs=src examples

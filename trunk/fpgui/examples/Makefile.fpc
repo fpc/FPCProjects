@@ -1,0 +1,6 @@
+#
+#   Makefile.fpc for fpGUI examples
+#
+
+[targets]
+dirs=helloworld layouttest widgettest

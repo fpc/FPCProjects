@@ -1,0 +1,20 @@
+#
+#   Makefile.fpc for fpGUI
+#
+
+[targets]
+units=fpgui
+dirs=db
+
+[require]
+options=-S2h
+packages=fcl fpgfx
+
+#[libs]
+#libname=fpgui
+
+[install]
+subdir=
+
+[dirs]
+fpcdir=../../../..

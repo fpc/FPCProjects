@@ -1,0 +1,47 @@
+{
+    $Id$
+
+    fpGUI  -  Free Pascal Graphical User Interface
+    Copyright (C) 2000 by
+      Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
+
+    Radiobutton widget declaration
+
+    See the file COPYING.FPC, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+}
+
+
+  TCustomRadioButton = class(TWidget)
+  private
+    procedure SetChecked(AChecked: Boolean);
+  protected
+    FChecked: Boolean;
+    FLabelX, FLabelY: Integer;
+    procedure Click; override;
+    procedure Paint(Canvas: TGfxCanvas); override;
+    procedure EvRecalcLayout; override;
+    property Checked: Boolean read FChecked write SetChecked;
+  public
+    constructor Create(AOwner: TComponent); override;
+  end;
+
+  TRadioButton = class(TCustomRadioButton)
+  published
+    property Enabled;
+    property Checked;
+    property Text;
+    property OnClick;
+  end;
+
+
+{
+  $Log$
+  Revision 1.1  2000/12/23 23:20:15  sg
+  * First public CVS version...
+
+}

@@ -1,0 +1,21 @@
+#
+#   Makefile.fpc for fpGUI database support
+#
+
+[targets]
+# db is only temporarily here
+units=db fpgui_db
+
+[require]
+options=-S2h
+packages=fcl fpgfx fpgui
+
+#[libs]
+#libname=fpgui
+
+[install]
+subdir=
+
+[dirs]
+fpcdir=../../../..
+unitdir=..
