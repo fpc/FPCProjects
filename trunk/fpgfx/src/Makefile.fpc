@@ -20,4 +20,4 @@ libname=fpgfx
 subdir=
 
 [dirs]
-fpcdir=../../..
+fpcdir=../../../fpc

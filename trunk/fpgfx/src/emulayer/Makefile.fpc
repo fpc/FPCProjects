@@ -13,5 +13,5 @@ packages=
 subdir=
 
 [dirs]
-fpcdir=../../../..
+fpcdir=../../../../fpc
 unitdir=..
