@@ -18,9 +18,35 @@
 //   Implementation of TKCLComponent
 // ===================================================================
 
+destructor TKCLComponent.Destroy;
+var
+  i: Integer;
+  filter: PEventFilter;
+begin
+  if Assigned(FilterList) then begin
+    for i := 0 to FilterList.Count - 1 do begin
+      filter := PEventFilter(FilterList.Items[i]);
+      Dispose(filter);
+    end;
+    FilterList.Free;
+  end;
+  inherited Destroy;
+end;
+
 procedure TKCLComponent.AddEventFilter(EventClass: TEventClass;
   FilterFn: TEventFilterFn);
+var
+  filter: PEventFilter;
 begin
+  ASSERT(Assigned(FilterFn));
+
+  if not Assigned(FilterList) then
+    FilterList := TList.Create;
+
+  New(filter);
+  filter^.EventClass := EventClass;
+  filter^.FilterFn := FilterFn;
+  FilterList.Add(filter);
 end;
 
 procedure DumpEvent(Dest: TObject; Event: TEventObj);
@@ -89,16 +115,30 @@ begin
 end;
 
 function TKCLComponent.CallEventFilters(Event: TEventObj): Boolean;
+var
+  i: Integer;
+  filter: PEventFilter;
 begin
   {$IFDEF DebugEvents}
   DumpEvent(Self, Event);
   {$ENDIF}
   Result := True;
+  if Assigned(FilterList) then
+    for i := 0 to FilterList.Count - 1 do begin
+      filter := PEventFilter(FilterList.Items[i]);
+      if filter^.EventClass.InheritsFrom(Event.ClassType) and not filter^.FilterFn(Event) then begin
+        Result := false;
+	break;
+      end;
+    end;
 end;
 
 
 {
   $Log$
+  Revision 1.3  2000/01/24 00:17:58  sg
+  * Implement event handler registration and event distribution
+
   Revision 1.2  2000/01/05 19:09:58  sg
   * Improved event dumping alot
 
