@@ -2,7 +2,7 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     'Hello world' example
@@ -41,7 +41,7 @@ begin
   inherited Create;
   Display := ADisplay;
   Font := Display.CreateFont('-*-*-*-r-normal--36-*-*-*-*-*-iso8859-1');
-  Window := ADisplay.DefaultScreen.CreateWindow(True);
+  Window := ADisplay.DefaultScreen.CreateWindow(nil, wtWindow);
   Window.Title := 'fpGFX Hello World example';
   Window.OnPaint := @Paint;
   Window.Canvas.SetFont(Font);

@@ -174,7 +174,8 @@ type
     constructor Create(ADisplay: TXDisplay; AScreenIndex: Integer);
     function CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas; override;
     function CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas; override;
-    function CreateWindow(ABorder: Boolean): TGfxWindow; override;
+    function CreateWindow(AParent: TGfxWindow;
+      AWindowType: TGfxWindowType): TGfxWindow; override;
     property DisplayHandle: PDisplay read FDisplayHandle;
     property ScreenIndex: Integer read FScreenIndex;
     property ScreenInfo: PScreen read FScreenInfo;
@@ -221,7 +222,8 @@ type
   private
     FHandle: X.TWindow;
     FDisplay: TXDisplay;
-    FBorder: Boolean;
+    FParent: TGfxWindow;
+    FWindowType: TGfxWindowType;
     FComposeStatus: TXComposeStatus;
     FComposeBuffer: String[32];
     function StartComposing(const Event: TXKeyEvent): TKeySym;
@@ -250,7 +252,8 @@ type
     function KeySymToKeycode(KeySym: TKeySym): Word;
     procedure UpdateMotifWMHints;
   public
-    constructor Create(AScreen: TXScreen; ABorder: Boolean);
+    constructor Create(AScreen: TXScreen; AParent: TGfxWindow;
+      AWindowType: TGfxWindowType);
     destructor Destroy; override;
     procedure DefaultHandler(var Message); override;
 
@@ -937,11 +940,12 @@ begin
       AWidth, AHeight, 1));
 end;
 
-function TXScreen.CreateWindow(ABorder: Boolean): TGfxWindow;
+function TXScreen.CreateWindow(AParent: TGfxWindow;
+  AWindowType: TGfxWindowType): TGfxWindow;
 var
   WindowListEntry: PXWindowListEntry;
 begin
-  Result := TXWindow.Create(Self, ABorder);
+  Result := TXWindow.Create(Self, AParent, AWindowType);
   if not Assigned(TXDisplay(Display).FWindows) then
     TXDisplay(Display).FWindows := TList.Create;
   New(WindowListEntry);
@@ -1100,7 +1104,8 @@ end;
 
 // public methods
 
-constructor TXWindow.Create(AScreen: TXScreen; ABorder: Boolean);
+constructor TXWindow.Create(AScreen: TXScreen; AParent: TGfxWindow;
+  AWindowType: TGfxWindowType);
 const
   WindowHints: TXWMHints = (
     flags: InputHint or StateHint or WindowGroupHint;
@@ -1123,7 +1128,8 @@ begin
 
   FScreen := AScreen;
   FDisplay := TXDisplay(Screen.Display);
-  FBorder := ABorder;
+  FParent := AParent;
+  FWindowType := AWindowType;
 
   if LeaderWindow = 0 then
   begin
@@ -1488,8 +1494,8 @@ begin
 
   NewHints.Flags := MWM_HINTS_FUNCTIONS or MWM_HINTS_DECORATIONS;
   NewHints.Functions := FuncResize or FuncMove or FuncMinimize or FuncClose;
-  // !!!: Very temporary solution, as long as we have only two frame styles
-  if FBorder then
+
+  if FWindowType in [wtWindow, wtPopup, wtToolWindow] then
     NewHints.Decorations := DecorBorder or DecorTitle or DecorMenu or DecorMinimize
   else
     NewHints.Decorations := 0;
@@ -1732,6 +1738,9 @@ end.
 
 {
   $Log$
+  Revision 1.8  2001/01/18 15:00:14  sg
+  * Added TGfxWindowType and implemented support for it
+
   Revision 1.7  2001/01/17 21:29:03  sg
   * Implemented dirty rectangle list
   * Minor improvements in window list management

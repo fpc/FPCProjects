@@ -1,6 +1,20 @@
-// $Id$
+{
+    $Id$
 
-{ EventTest for fpGFX, written by Sebastian Guenther (sg@freepascal.org) }
+    fpGFX  -  Free Pascal Graphics Library
+    Copyright (C) 2000 - 2001 by
+      Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
+
+    Event Test example
+
+    See the file COPYING, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+}
+
 
 program EventTest;
 
@@ -42,7 +56,7 @@ type
 constructor TMainWindow.Create(ADisplay: TDefDisplay);
 begin
   inherited Create;
-  FWindow := ADisplay.DefaultScreen.CreateWindow(True);
+  FWindow := ADisplay.DefaultScreen.CreateWindow(nil, wtWindow);
   FWindow.SetClientSize(500, 100);
   FWindow.Title := 'fpGFX Event Test example';
   FWindow.OnFocusIn := @FocusIn;
@@ -218,5 +232,8 @@ end.
 
 
 {
-  $Log:
+  $Log$
+  Revision 1.6  2001/01/18 15:00:14  sg
+  * Added TGfxWindowType and implemented support for it
+
 }

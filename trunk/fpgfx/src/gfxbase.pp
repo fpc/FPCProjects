@@ -2,7 +2,7 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     fpGFX basic declarations
@@ -201,6 +201,10 @@ type
   TGfxDisplay = class;
   TGfxWindow = class;
 
+  TGfxWindowType = (wtWindow, wtBorderlessWindow, wtPopup, wtBorderlessPopup,
+    wtToolWindow, wtChild);
+
+
   // Fonts
 
   TGfxFont = class
@@ -327,7 +331,8 @@ type
     function CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas; virtual; abstract;
     function CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas; virtual; abstract;
     function CreateWindow: TGfxWindow;
-    function CreateWindow(ABorder: Boolean): TGfxWindow; virtual; abstract;
+    function CreateWindow(AParent: TGfxWindow;
+      AWindowType: TGfxWindowType): TGfxWindow; virtual; abstract;
     property Display: TGfxDisplay read FDisplay;
   end;
 
@@ -714,7 +719,7 @@ end;
 
 function TGfxScreen.CreateWindow: TGfxWindow;
 begin
-  Result := CreateWindow(True);
+  Result := CreateWindow(nil, wtWindow);
 end;
 
 
@@ -955,6 +960,9 @@ end.
 
 {
   $Log$
+  Revision 1.7  2001/01/18 15:00:14  sg
+  * Added TGfxWindowType and implemented support for it
+
   Revision 1.6  2001/01/11 23:07:24  sg
   *** empty log message ***
 
@@ -963,15 +971,4 @@ end.
 
   Revision 1.4  2000/12/24 13:13:02  sg
   * Added TGfxCanvas.ReverseTransform and TGfxCanvas.EmptyClipRect
-
-  Revision 1.3  2000/12/23 23:07:24  sg
-  *** empty log message ***
-
-  Revision 1.2  2000/10/28 20:27:32  sg
-  * Changed handling of offscreen stuff to the concept of Bitmaps and
-    Images
-
-  Revision 1.1  2000/08/04 21:05:52  sg
-  * First version in CVS
-
 }

@@ -2,7 +2,7 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Image Test example
@@ -42,7 +42,7 @@ var
 begin
   inherited Create;
   Display := ADisplay;
-  Window := ADisplay.DefaultScreen.CreateWindow(True);
+  Window := ADisplay.DefaultScreen.CreateWindow(nil, wtWindow);
   Window.Title := 'fpGFX Bitmap Test';
   Window.OnPaint := @Paint;
   Window.SetClientSize(256, 256);

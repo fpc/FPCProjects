@@ -2,7 +2,7 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Win32 GDI target implementation
@@ -152,9 +152,15 @@ type
 
 
   TGDIScreen = class(TGfxScreen)
+  private
+    FDisplay: TGDIDisplay;
   public
+    constructor Create(ADisplay: TGDIDisplay);
     function CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas; override;
     function CreateMonoBitmap(AWidth, AHeight: Integer): TGfxCanvas; override;
+    function CreateWindow(AParent: TGfxWindow;
+      AWindowType: TGfxWindowType): TGfxWindow; override;
+    property Display: TGDIDisplay read FDisplay;
   end;
 
 
@@ -170,7 +176,6 @@ type
     function CreateFont(const Descriptor: String): TGfxFont; override;
     function CreateImage(AWidth, AHeight: Integer;
       APixelFormat: TGfxPixelFormat): TGfxImage; override;
-    function CreateWindow: TGfxWindow; override;
     procedure Run; override;
     procedure BreakRun; override;
   end;
@@ -208,7 +213,8 @@ type
     procedure SetTitle(const ATitle: String); override;
     function DoMouseEnterLeaveCheck(const Msg: TMessage): Boolean;
   private
-    constructor Create(ADisplay: TGDIDisplay);
+    constructor Create(AScreen: TGDIScreen; AParent: TGDIWindow;
+      AWindowType: TGfxWindowType);
   public
     destructor Destroy; override;
     procedure DefaultHandler(var Message); override;
@@ -766,6 +772,12 @@ end;
 //   TGDIScreen
 // -------------------------------------------------------------------
 
+constructor TGDIScreen.Create(ADisplay: TGDIDisplay);
+begin
+  inherited Create(ADisplay);
+  FDisplay := ADisplay;
+end;
+
 function TGDIScreen.CreateBitmap(AWidth, AHeight: Integer): TGfxCanvas;
 var
   TempDC: HDC;
@@ -784,6 +796,15 @@ begin
   Result := TGDIBitmapCanvas.Create(
     Windows.CreateCompatibleBitmap(TempDC, AWidth, AHeight), AWidth, AHeight);
   Windows.DeleteDC(TempDC);
+end;
+
+function TGDIScreen.CreateWindow(AParent: TGfxWindow;
+  AWindowType: TGfxWindowType): TGfxWindow;
+begin
+  Result := TGDIWindow.Create(Self, AParent as TGDIWindow, AWindowType);
+  if not Assigned(Display.FWindows) then
+    Display.FWindows := TList.Create;
+  Display.FWindows.Add(Result);
 end;
 
 
@@ -820,14 +841,6 @@ function TGDIDisplay.CreateImage(AWidth, AHeight: Integer;
   APixelFormat: TGfxPixelFormat): TGfxImage;
 begin
   Result := TGDIImage.Create(AWidth, AHeight, APixelFormat);
-end;
-
-function TGDIDisplay.CreateWindow: TGfxWindow;
-begin
-  Result := TGDIWindow.Create(Self);
-  if not Assigned(FWindows) then
-    FWindows := TList.Create;
-  FWindows.Add(Result);
 end;
 
 procedure TGDIDisplay.Run;
@@ -921,10 +934,30 @@ begin
   end;
 end;
 
-constructor TGDIWindow.Create(ADisplay: TGDIDisplay);
+constructor TGDIWindow.Create(AScreen: TGDIScreen; AParent: TGDIWindow;
+  AWindowType: TGfxWindowType);
+const
+  WindowStyleTable: array[TGfxWindowType] of LongWord = (
+    WS_OVERLAPPEDWINDOW,	// wtWindow
+    WS_OVERLAPPED,		// wtBorderlessWindow
+    WS_POPUPWINDOW,		// wtPopup
+    WS_POPUP,			// wtBorderlessPopup
+    WS_OVERLAPPED,		// wtToolWindow
+    WS_CHILDWINDOW);		// wtChild
+
+  WindowStyleExTable: array[TGfxWindowType] of LongWord = (
+    WS_EX_APPWINDOW,		// wtWindow
+    WS_EX_APPWINDOW,		// wtBorderlessWindow
+    0,				// wtPopup
+    0,				// wtBorderlessPopup
+    WS_EX_PALETTEWINDOW,	// wtToolWindow
+    0);				// wtChild
+
+var
+  ParentHandle: HWND;
 begin
   inherited Create;
-  FDisplay := ADisplay;
+  FScreen := AScreen;
 
   // Initialize a window class, if necessary
   if not Assigned(WindowClass.lpfnWndProc) then
@@ -943,8 +976,13 @@ begin
     Windows.RegisterClass(@WindowClass);
   end;
 
-  FWindowStyle := WS_OVERLAPPEDWINDOW;
-  FWindowStyleEx := WS_EX_APPWINDOW;
+  if Assigned(AParent) then
+    ParentHandle := AParent.Handle
+  else
+    ParentHandle := 0;
+
+  FWindowStyle := WindowStyleTable[AWindowType];
+  FWindowStyleEx := WindowStyleExTable[AWindowType];
 
   FHandle := Windows.CreateWindowEx(
     FWindowStyleEx,			// extended window style
@@ -955,7 +993,7 @@ begin
     CW_USEDEFAULT,			// vertical position of window
     CW_USEDEFAULT,			// window width
     CW_USEDEFAULT,			// window height
-    0,					// handle to parent or owner window
+    ParentHandle,			// handle to parent or owner window
     0,					// menu handle or child identifier
     MainInstance,			// handle to application instance
     Self);				// window-creation data
@@ -979,10 +1017,10 @@ begin
     Windows.DestroyWindow(OldHandle);
   end;
 
-  TGDIDisplay(Display).FWindows.Remove(Self);
+  TGDIDisplay(Screen.Display).FWindows.Remove(Self);
 
   // Are we the last window for our owning display?
-  if TGDIDisplay(Display).FWindows.Count = 0 then
+  if TGDIDisplay(Screen.Display).FWindows.Count = 0 then
     Windows.PostQuitMessage(0);
 
   inherited Destroy;
@@ -1249,6 +1287,9 @@ end.
 
 {
   $Log$
+  Revision 1.4  2001/01/18 15:00:14  sg
+  * Added TGfxWindowType and implemented support for it
+
   Revision 1.3  2001/01/11 23:07:24  sg
   *** empty log message ***
 
