@@ -33,8 +33,14 @@ unit glx;
 
 {
   $Log$
-  Revision 1.1  2004/02/15 21:37:14  marco
-   * new snapshot
+  Revision 1.2  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.1  2004/03/30 21:53:55  savage
+  Moved to it's own folder.
+
+  Revision 1.5  2004/02/15 22:48:35  savage
+  More FPC and FreeBSD support changes.
 
   Revision 1.4  2004/02/14 22:36:29  savage
   Fixed inconsistencies of using LoadLibrary and LoadModule.
@@ -61,8 +67,8 @@ unit glx;
 
 interface
 
-{$i jedi-sdl.inc}
-{$H+}
+{$I jedi-sdl.inc}
+
 //{$MACRO ON}
 
 {$IFDEF UNIX}
@@ -218,13 +224,13 @@ uses
 var
   libGLX: TModuleHandle;
 
-function InitGLXFromLibrary(dll:string): Boolean;
+function InitGLXFromLibrary( dll : PChar ): Boolean;
 begin
   Result := False;
 
-  if not LoadModule(libglx,PChar( dll ) ) then
-    exit(false);
-   
+  if LoadModule( libGLX, dll ) then
+    exit;
+
   glXChooseVisual := GetModuleSymbol(libglx, 'glXChooseVisual');
   glXCreateContext := GetModuleSymbol(libglx, 'glXCreateContext');
   glXDestroyContext := GetModuleSymbol(libglx, 'glXDestroyContext');

@@ -52,8 +52,14 @@ Abstract:
 
 {
   $Log$
-  Revision 1.1  2004/02/15 21:37:14  marco
-   * new snapshot
+  Revision 1.2  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.1  2004/03/30 21:53:54  savage
+  Moved to it's own folder.
+
+  Revision 1.4  2004/02/20 17:09:55  savage
+  Code tidied up in gl, glu and glut, while extensions in glext.pas are now loaded using SDL_GL_GetProcAddress, thus making it more cross-platform compatible, but now more tied to SDL.
 
   Revision 1.3  2004/02/14 00:23:39  savage
   As UNIX is defined in jedi-sdl.inc this will be used to check linux compatability as well. Units have been changed to reflect this change.
@@ -108,6 +114,16 @@ type
 {******************************************************************************}
 
 const
+{$IFDEF WIN32}
+  GLLibName = 'OpenGL32.dll';
+{$ENDIF}
+{$IFDEF UNIX}
+  GLLibName = 'libGL.so';
+{$ENDIF}
+{$IFDEF __MACH__}
+  GLLibName = 'libGL.dylib';
+{$ENDIF}
+
   // Version
   GL_VERSION_1_1                    = 1;
 
@@ -2260,22 +2276,13 @@ begin
 end;
 
 initialization
-
   {$IFNDEF FPC}
   {$IFNDEF __GPC__}
   Set8087CW($133F);
   {$ENDIF}
   {$ENDIF}
 
-  {$IFDEF Win32}
-  LoadOpenGL('opengl32.dll');
-  {$ENDIF}
-  {$IFDEF UNIX}
-  LoadOpenGL('libGL.so');
-  {$ENDIF}
-  {$IFDEF __MACH__}
-  LoadOpenGL('libGL.dylib');
-  {$ENDIF}
+  LoadOpenGL( GLLibName );
 
 finalization
 

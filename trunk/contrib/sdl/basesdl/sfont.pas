@@ -1,10 +1,15 @@
+unit sfont;
 {******************************************************************}
+{
+  $Id$
+
+}
 {                                                                  }
 {       Borland Delphi SFont                                       }
 {       Conversion of the Linux Games- SFont Library for SDL       }
 {                                                                  }
 { Original work created by Karl Bartel  <karlb@gmx.net>            }
-{ Copyright (C) 2001 Karl Bartel.                                  }
+{ Copyright (C) 2003 Karl Bartel.                                  }
 { All Rights Reserved.                                             }
 {                                                                  }
 { The original files are : sfont.c                                 }
@@ -68,100 +73,110 @@
 {   Sept    29 2001 - JF : Added Róbert Surface Adding and         }
 {                          Subtraction functions                   }
 {                                                                  }
-{                                                                  }
-{                                                                  }
+{
+  $Log$
+  Revision 1.2  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.2  2004/03/31 09:04:31  savage
+  Added jedi-sdl.inc files for better FreePascal/multi compiler support.
+
+  Revision 1.1  2004/03/28 10:45:16  savage
+  Standardised SFont Functions so that they are prefixed with SFont_ and more in line with Karl's v2.02 release. Demos have been updated appropriately.
+
+
+}
 {******************************************************************}
 
-unit SFont;
+{$I jedi-sdl.inc}
 
 interface
-{$i sdlh.inc}
 
 uses
   SysUtils,
-  SDL,
-  SDLUtils;
+  sdl,
+  sdlutils;
 
 // Delcare one variable of this type for each font you are using.
 // To load the fonts, load the font image into YourFont->Surface
 // and call InitFont( YourFont );
 type
   TSfont_FontInfo = record
-    Surface: PSDL_Surface; //SDL_Surface *Surface;
-    CharPos: array[0..511] of integer; //int CharPos[512];
-    h: integer; //int h;
+    Surface : PSDL_Surface; //SDL_Surface *Surface;
+    CharPos : array[ 0..511 ] of integer; //int CharPos[512];
+    MaxPos : integer; //int h;
   end;
   PSFont_FontInfo = ^TSfont_FontInfo;
 
   // Initializes the font
   // Font: this contains the suface with the font.
   //       The font must be loaded before using this function.
-procedure InitFont(Font: PSDL_Surface);
-procedure InitFont2(Font: PSFont_FontInfo);
+procedure SFont_InitFont( Font : PSDL_Surface );
+procedure SFont_InitFont2( Font : PSFont_FontInfo );
 
 // Blits a string to a surface
 // Destination: the suface you want to blit to
 // text: a string containing the text you want to blit.
-procedure PutString(Surface_: PSDL_Surface; x: Integer; y: Integer; text:
-  pchar);
-procedure PutStringAdd(Surface_: PSDL_Surface; x: Integer; y: Integer; text:
-  pchar);
-procedure PutStringSub(Surface_: PSDL_Surface; x: Integer; y: Integer; text:
-  pchar);
+procedure SFont_Write( Surface_ : PSDL_Surface; x : Integer; y : Integer; text :
+  pchar );
+procedure SFont_WriteAdd( Surface_ : PSDL_Surface; x : Integer; y : Integer; text :
+  pchar );
+procedure SFont_WriteSub( Surface_ : PSDL_Surface; x : Integer; y : Integer; text :
+  pchar );
 
-procedure PutString2(Surface_: PSDL_Surface; Font: PSFont_FontInfo; x: integer;
-  y: integer; text: pchar);
-procedure PutStringAdd2(Surface_: PSDL_Surface; Font: PSFont_FontInfo; x: integer;
-  y: integer; text: pchar);
-procedure PutStringSub2(Surface_: PSDL_Surface; Font: PSFont_FontInfo; x: integer;
-  y: integer; text: pchar);
+procedure SFont_Write2( Surface_ : PSDL_Surface; Font : PSFont_FontInfo; x : integer;
+  y : integer; text : pchar );
+procedure SFont_WriteAdd2( Surface_ : PSDL_Surface; Font : PSFont_FontInfo; x : integer;
+  y : integer; text : pchar );
+procedure SFont_WriteSub2( Surface_ : PSDL_Surface; Font : PSFont_FontInfo; x : integer;
+  y : integer; text : pchar );
 
 // Returns the width of "text" in pixels
-function TextWidth(Text: pchar): integer;
-function TextWidth2(Font: PSFont_FontInfo; Text: pchar): integer;
+function SFont_TextWidth( Text : pchar ) : integer;
+function SFont_TextWidth2( Font : PSFont_FontInfo; Text : pchar ) : integer;
 
 // Blits a string to with centered x position
-procedure XCenteredString(Surface_: PSDL_Surface; y: Integer; text: pchar);
-procedure XCenteredString2(Surface_: PSDL_Surface; Font: PSFont_FontInfo; y:
-  integer; text: pchar);
+procedure SFont_WriteCentered( Surface_ : PSDL_Surface; y : Integer; text : pchar );
+procedure SFont_WriteCentered2( Surface_ : PSDL_Surface; Font : PSFont_FontInfo; y :
+  integer; text : pchar );
 
 // Allows the user to enter text
 // Width: What is the maximum width of the text (in pixels)
 // text: This string contains the text which was entered by the user
-procedure SFont_Input(Destination: PSDL_Surface; x: Integer; y: integer; Width:
-  integer; text: pchar);
-procedure SFont_Input2(Destination: PSDL_Surface; Font: PSFont_FontInfo; x:
-  integer; y: integer; Width: integer; text: pchar);
+procedure SFont_Input( Destination : PSDL_Surface; x : Integer; y : integer; Width :
+  integer; text : pchar );
+procedure SFont_Input2( Destination : PSDL_Surface; Font : PSFont_FontInfo; x :
+  integer; y : integer; Width : integer; text : pchar );
 // Not part of the original implementation, but We really shouldn't be falling for the C Scanf problem...
 // This version requires a maximum length for the amount of text to input.
-procedure SFont_Input3(Destination: PSDL_Surface; Font: PSFont_FontInfo; x:
-  integer; y: integer; Width: integer; text: pchar; MaxChars: Cardinal);
+procedure SFont_Input3( Destination : PSDL_Surface; Font : PSFont_FontInfo; x :
+  integer; y : integer; Width : integer; text : pchar; MaxChars : Cardinal );
 
 { We'll use SDL for reporting errors }
-procedure Font_SetError(fmt: PChar);
+procedure SFont_SetError( fmt : PChar );
 
-function Font_GetError: PChar;
+function SFont_GetError : PChar;
 
 var
-  InternalFont: TSFont_FontInfo;
+  InternalFont : TSFont_FontInfo;
 
 implementation
 
-procedure Font_SetError(fmt: PChar);
+procedure SFont_SetError( fmt : PChar );
 begin
-  SDL_SetError(fmt);
+  SDL_SetError( fmt );
 end;
 
-function Font_GetError: PChar;
+function SFont_GetError : PChar;
 begin
   result := SDL_GetError;
 end;
 
 
-procedure InitFont2(Font: PSFont_FontInfo);
+procedure SFont_InitFont2( Font : PSFont_FontInfo );
 var
-  X: Integer;
-  I: Integer;
+  X : Integer;
+  I : Integer;
 begin
 
   x := 0;
@@ -179,304 +194,301 @@ begin
   while x < Font.Surface.w do
   begin
 
-    if SDL_GetPixel(Font.Surface, x, 0) = SDL_MapRGB(Font.Surface.format, 255, 0,
-      255) then
+    if SDL_GetPixel( Font.Surface, x, 0 ) = SDL_MapRGB( Font.Surface.format, 255, 0,
+      255 ) then
     begin
-      Font.CharPos[i] := x;
-      inc(i);
-      while ((x < Font.Surface.w - 1) and (SDL_GetPixel(Font.Surface, x, 0) =
-        SDL_MapRGB(Font.Surface.format, 255, 0, 255))) do
+      Font.CharPos[ i ] := x;
+      inc( i );
+      while ( ( x < Font.Surface.w - 1 ) and ( SDL_GetPixel( Font.Surface, x, 0 ) =
+        SDL_MapRGB( Font.Surface.format, 255, 0, 255 ) ) ) do
       begin
-        inc(x);
+        inc( x );
       end;
-      Font.CharPos[i] := x;
-      inc(i);
+      Font.CharPos[ i ] := x;
+      inc( i );
     end;
-    inc(x);
+    inc( x );
   end;
 
-  Font.h := Font.Surface.h;
-  SDL_SetColorKey(Font.Surface, SDL_SRCCOLORKEY, SDL_GetPixel(Font.Surface, 0,
-    Font.Surface.h - 1));
+  Font.MaxPos := Font.Surface.h;
+  SDL_SetColorKey( Font.Surface, SDL_SRCCOLORKEY, SDL_GetPixel( Font.Surface, 0,
+    Font.Surface.h - 1 ) );
 end;
 
-procedure InitFont(Font: PSDL_Surface);
+procedure SFont_InitFont( Font : PSDL_Surface );
 begin
-
   InternalFont.Surface := Font;
-  InitFont2(@InternalFont);
-
+  SFont_InitFont2( @InternalFont );
 end;
 
-procedure PutStringAdd2(Surface_: PSDL_Surface; Font: PSFont_FontInfo; x: integer;
-  y: integer; text: pchar);
+procedure SFont_WriteAdd2( Surface_ : PSDL_Surface; Font : PSFont_FontInfo; x : integer;
+  y : integer; text : pchar );
 var
-  ofs: Integer;
-  i: Integer;
-  srcrect, dstrect: SDL_Rect;
+  ofs : Integer;
+  i : Integer;
+  srcrect, dstrect : SDL_Rect;
 
 begin
   i := 0;
 
-  while text[i] <> chr(0) do
+  while text[ i ] <> chr( 0 ) do
   begin
-    if text[i] = ' ' then
+    if text[ i ] = ' ' then
     begin
-      x := x + Font.CharPos[2] - Font.CharPos[1];
-      inc(i);
+      x := x + Font.CharPos[ 2 ] - Font.CharPos[ 1 ];
+      inc( i );
 
     end
     else
     begin
-      ofs := ((integer(text[i]) - 33) * 2) + 1;
+      ofs := ( ( integer( text[ i ] ) - 33 ) * 2 ) + 1;
 
-      srcrect.w := (Font.CharPos[ofs + 2] + Font.CharPos[ofs + 1]) div 2 -
-        (Font.CharPos[ofs] + Font.CharPos[ofs - 1]) div 2;
+      srcrect.w := ( Font.CharPos[ ofs + 2 ] + Font.CharPos[ ofs + 1 ] ) div 2 -
+        ( Font.CharPos[ ofs ] + Font.CharPos[ ofs - 1 ] ) div 2;
       dstrect.w := srcrect.w;
       srcrect.h := Font.Surface.h - 1;
       dstrect.h := srcrect.h;
-      srcrect.x := (Font.CharPos[ofs] + Font.CharPos[ofs - 1]) div 2;
+      srcrect.x := ( Font.CharPos[ ofs ] + Font.CharPos[ ofs - 1 ] ) div 2;
       srcrect.y := 1;
-      dstrect.x := x - (Font.CharPos[ofs] - Font.CharPos[ofs - 1]) div 2;
+      dstrect.x := x - ( Font.CharPos[ ofs ] - Font.CharPos[ ofs - 1 ] ) div 2;
       dstrect.y := y;
 
-      SDL_AddSurface(Font.Surface, @srcrect, Surface_, @dstrect);
+      SDL_AddSurface( Font.Surface, @srcrect, Surface_, @dstrect );
 
-      x := x + Font.CharPos[ofs + 1] - Font.CharPos[ofs];
-      inc(i);
+      x := x + Font.CharPos[ ofs + 1 ] - Font.CharPos[ ofs ];
+      inc( i );
     end;
   end;
 end;
 
-procedure PutStringSub2(Surface_: PSDL_Surface; Font: PSFont_FontInfo; x: integer;
-  y: integer; text: pchar);
+procedure SFont_WriteSub2( Surface_ : PSDL_Surface; Font : PSFont_FontInfo; x : integer;
+  y : integer; text : pchar );
 var
-  ofs: Integer;
-  i: Integer;
-  srcrect, dstrect: SDL_Rect;
+  ofs : Integer;
+  i : Integer;
+  srcrect, dstrect : SDL_Rect;
 
 begin
   i := 0;
 
-  while text[i] <> chr(0) do
+  while text[ i ] <> chr( 0 ) do
   begin
-    if text[i] = ' ' then
+    if text[ i ] = ' ' then
     begin
-      x := x + Font.CharPos[2] - Font.CharPos[1];
-      inc(i);
+      x := x + Font.CharPos[ 2 ] - Font.CharPos[ 1 ];
+      inc( i );
 
     end
     else
     begin
-      ofs := ((integer(text[i]) - 33) * 2) + 1;
+      ofs := ( ( integer( text[ i ] ) - 33 ) * 2 ) + 1;
 
-      srcrect.w := (Font.CharPos[ofs + 2] + Font.CharPos[ofs + 1]) div 2 -
-        (Font.CharPos[ofs] + Font.CharPos[ofs - 1]) div 2;
+      srcrect.w := ( Font.CharPos[ ofs + 2 ] + Font.CharPos[ ofs + 1 ] ) div 2 -
+        ( Font.CharPos[ ofs ] + Font.CharPos[ ofs - 1 ] ) div 2;
       dstrect.w := srcrect.w;
       srcrect.h := Font.Surface.h - 1;
       dstrect.h := srcrect.h;
-      srcrect.x := (Font.CharPos[ofs] + Font.CharPos[ofs - 1]) div 2;
+      srcrect.x := ( Font.CharPos[ ofs ] + Font.CharPos[ ofs - 1 ] ) div 2;
       srcrect.y := 1;
-      dstrect.x := x - (Font.CharPos[ofs] - Font.CharPos[ofs - 1]) div 2;
+      dstrect.x := x - ( Font.CharPos[ ofs ] - Font.CharPos[ ofs - 1 ] ) div 2;
       dstrect.y := y;
 
-      SDL_SubSurface(Font.Surface, @srcrect, Surface_, @dstrect);
+      SDL_SubSurface( Font.Surface, @srcrect, Surface_, @dstrect );
 
-      x := x + Font.CharPos[ofs + 1] - Font.CharPos[ofs];
-      inc(i);
+      x := x + Font.CharPos[ ofs + 1 ] - Font.CharPos[ ofs ];
+      inc( i );
     end;
   end;
 end;
 
-procedure PutString2(Surface_: PSDL_Surface; Font: PSFont_FontInfo; x: integer;
-  y: integer; text: pchar);
+procedure SFont_Write2( Surface_ : PSDL_Surface; Font : PSFont_FontInfo; x : integer;
+  y : integer; text : pchar );
 var
-  ofs: Integer;
-  i: Integer;
-  srcrect, dstrect: SDL_Rect;
+  ofs : Integer;
+  i : Integer;
+  srcrect, dstrect : SDL_Rect;
 
 begin
   i := 0;
 
-  while text[i] <> chr(0) do
+  while text[ i ] <> chr( 0 ) do
   begin
-    if text[i] = ' ' then
+    if text[ i ] = ' ' then
     begin
-      x := x + Font.CharPos[2] - Font.CharPos[1];
-      inc(i);
+      x := x + Font.CharPos[ 2 ] - Font.CharPos[ 1 ];
+      inc( i );
 
     end
     else
     begin
-      ofs := ((integer(text[i]) - 33) * 2) + 1;
+      ofs := ( ( integer( text[ i ] ) - 33 ) * 2 ) + 1;
 
-      srcrect.w := (Font.CharPos[ofs + 2] + Font.CharPos[ofs + 1]) div 2 -
-        (Font.CharPos[ofs] + Font.CharPos[ofs - 1]) div 2;
+      srcrect.w := ( Font.CharPos[ ofs + 2 ] + Font.CharPos[ ofs + 1 ] ) div 2 -
+        ( Font.CharPos[ ofs ] + Font.CharPos[ ofs - 1 ] ) div 2;
       dstrect.w := srcrect.w;
       srcrect.h := Font.Surface.h - 1;
       dstrect.h := srcrect.h;
-      srcrect.x := (Font.CharPos[ofs] + Font.CharPos[ofs - 1]) div 2;
+      srcrect.x := ( Font.CharPos[ ofs ] + Font.CharPos[ ofs - 1 ] ) div 2;
       srcrect.y := 1;
-      dstrect.x := x - (Font.CharPos[ofs] - Font.CharPos[ofs - 1]) div 2;
+      dstrect.x := x - ( Font.CharPos[ ofs ] - Font.CharPos[ ofs - 1 ] ) div 2;
       dstrect.y := y;
 
-      SDL_BlitSurface(Font.Surface, @srcrect, Surface_, @dstrect);
+      SDL_BlitSurface( Font.Surface, @srcrect, Surface_, @dstrect );
 
-      x := x + Font.CharPos[ofs + 1] - Font.CharPos[ofs];
-      inc(i);
+      x := x + Font.CharPos[ ofs + 1 ] - Font.CharPos[ ofs ];
+      inc( i );
     end;
   end;
 end;
 
-procedure PutString(Surface_: PSDL_Surface; x: Integer; y: Integer; text:
-  pchar);
+procedure SFont_Write( Surface_ : PSDL_Surface; x : Integer; y : Integer; text :
+  pchar );
 begin
-
-  PutString2(Surface_, @InternalFont, x, y, text);
+  SFont_Write2( Surface_, @InternalFont, x, y, text );
 end;
 
-procedure PutStringAdd(Surface_: PSDL_Surface; x: Integer; y: Integer; text:
-  pchar);
+procedure SFont_WriteAdd( Surface_ : PSDL_Surface; x : Integer; y : Integer; text :
+  pchar );
 begin
 
-  PutStringAdd2(Surface_, @InternalFont, x, y, text);
+  SFont_WriteAdd2( Surface_, @InternalFont, x, y, text );
 end;
 
-procedure PutStringSub(Surface_: PSDL_Surface; x: Integer; y: Integer; text:
-  pchar);
+procedure SFont_WriteSub( Surface_ : PSDL_Surface; x : Integer; y : Integer; text :
+  pchar );
 begin
 
-  PutStringSub2(Surface_, @InternalFont, x, y, text);
+  SFont_WriteSub2( Surface_, @InternalFont, x, y, text );
 end;
 
 
 
-function TextWidth2(Font: PSFont_FontInfo; Text: pchar): integer;
+function SFont_TextWidth2( Font : PSFont_FontInfo; Text : pchar ) : integer;
 var
-  x, i, ofs: integer;
+  x, i, ofs : integer;
 
 begin
   x := 0;
   i := 0;
   ofs := 0;
-  while text[i] <> chr(0) do
+  while text[ i ] <> chr( 0 ) do
   begin
-    if text[i] = ' ' then
+    if text[ i ] = ' ' then
     begin
-      x := x + Font.CharPos[2] - Font.CharPos[1];
-      inc(i);
+      x := x + Font.CharPos[ 2 ] - Font.CharPos[ 1 ];
+      inc( i );
     end
     else
     begin
-      ofs := (integer(text[i]) - 33) * 2 + 1;
-      x := x + Font.CharPos[ofs + 1] - Font.CharPos[ofs];
-      inc(i);
+      ofs := ( integer( text[ i ] ) - 33 ) * 2 + 1;
+      x := x + Font.CharPos[ ofs + 1 ] - Font.CharPos[ ofs ];
+      inc( i );
     end;
   end;
-  result := (x + Font.CharPos[ofs + 2] - Font.CharPos[ofs + 1]);
+  result := ( x + Font.CharPos[ ofs + 2 ] - Font.CharPos[ ofs + 1 ] );
 end;
 
-function TextWidth(Text: pchar): integer;
+function SFont_TextWidth( Text : pchar ) : integer;
 begin
-  result := TextWidth2(@InternalFont, Text);
+  result := SFont_TextWidth2( @InternalFont, Text );
 end;
 
-procedure XCenteredString2(Surface_: PSDL_Surface; Font: PSFont_FontInfo; y:
-  integer; text: pchar);
+procedure SFont_WriteCentered2( Surface_ : PSDL_Surface; Font : PSFont_FontInfo; y :
+  integer; text : pchar );
 begin
-  PutString2(Surface_, @InternalFont, Surface_.w div 2 - TextWidth(text) div 2,
-    y, text);
+  SFont_Write2( Surface_, @InternalFont, Surface_.w div 2 - SFont_TextWidth( text ) div 2,
+    y, text );
 end;
 
-procedure XCenteredString(Surface_: PSDL_Surface; y: Integer; text: pchar);
+procedure SFont_WriteCentered( Surface_ : PSDL_Surface; y : Integer; text : pchar );
 begin
-  XCenteredString2(Surface_, @InternalFont, y, text);
+  SFont_WriteCentered2( Surface_, @InternalFont, y, text );
 end;
 
-procedure SFont_Input3(Destination: PSDL_Surface; Font: PSFont_FontInfo; x:
-  integer; y: integer; Width: integer; text: pchar; MaxChars: Cardinal);
+procedure SFont_Input3( Destination : PSDL_Surface; Font : PSFont_FontInfo; x :
+  integer; y : integer; Width : integer; text : pchar; MaxChars : Cardinal );
 var
-  event: TSDL_Event;
-  ch, ofs, leftshift: integer;
+  event : TSDL_Event;
+  ch, ofs, leftshift : integer;
 
-  Back: PSDL_Surface;
-  rect: SDL_Rect;
+  Back : PSDL_Surface;
+  rect : SDL_Rect;
 begin
   ch := 0; //Just to shut the compiler up
-  ofs := (integer(text[0]) - 33) * 2 + 1;
-  leftshift := (Font.CharPos[ofs] - Font.CharPos[ofs - 1]) div 2;
+  ofs := ( integer( text[ 0 ] ) - 33 ) * 2 + 1;
+  leftshift := ( Font.CharPos[ ofs ] - Font.CharPos[ ofs - 1 ] ) div 2;
 
-  Back := SDL_AllocSurface(Destination.flags,
+  Back := SDL_AllocSurface( Destination.flags,
     Width,
-    Font.h,
+    Font.MaxPos,
     Destination.format.BitsPerPixel,
     Destination.format.Rmask,
     Destination.format.Gmask,
-    Destination.format.Bmask, 0);
+    Destination.format.Bmask, 0 );
 
   rect.x := x - leftshift;
   rect.y := y;
   rect.w := Width;
   rect.h := Font.Surface.h;
-  SDL_BlitSurface(Destination, @rect, Back, nil);
-  PutString2(Destination, Font, x, y, text);
-  SDL_UpdateRect(Destination, x - leftshift, y, Width, Font.h);
+  SDL_BlitSurface( Destination, @rect, Back, nil );
+  SFont_Write2( Destination, Font, x, y, text );
+  SDL_UpdateRect( Destination, x - leftshift, y, Width, Font.MaxPos );
 
   // start input
-  SDL_EnableUNICODE(1);
-  while ((ch <> SDLK_RETURN) and (SDL_WaitEvent(@event) > 0)) do
+  SDL_EnableUNICODE( 1 );
+  while ( ( ch <> SDLK_RETURN ) and ( SDL_WaitEvent( @event ) > 0 ) ) do
   begin
     if event.type_ = SDL_KEYDOWN then
     begin
 
       ch := event.key.keysym.unicode;
-      if (ch = SDLK_BACKSPACE) and (strlen(text) > 0) then
+      if ( ch = SDLK_BACKSPACE ) and ( strlen( text ) > 0 ) then
       begin
-        text[strlen(text) - 1] := chr(0);
+        text[ strlen( text ) - 1 ] := chr( 0 );
       end
       else
       begin
-        if strlen(text) < MaxChars then
+        if strlen( text ) < MaxChars then
         begin
           if ch <> SDLK_BACKSPACE then
           begin
-            text[strlen(text)] := chr(ch);
-            text[strlen(text)] := chr(0);
+            text[ strlen( text ) ] := chr( ch );
+            text[ strlen( text ) ] := chr( 0 );
           end;
-          if (TextWidth2(Font, text) > Width) then
-            text[strlen(text)] := chr(0);
+          if ( SFont_TextWidth2( Font, text ) > Width ) then
+            text[ strlen( text ) ] := chr( 0 );
 
         end;
       end;
-      SDL_BlitSurface(Back, nil, Destination, @rect);
-      PutString2(Destination, Font, x, y, text);
-      SDL_UpdateRect(Destination, x - (Font.CharPos[ofs] - Font.CharPos[ofs - 1])
-        div 2, y, Width, Font.Surface.h);
+      SDL_BlitSurface( Back, nil, Destination, @rect );
+      SFont_Write2( Destination, Font, x, y, text );
+      SDL_UpdateRect( Destination, x - ( Font.CharPos[ ofs ] - Font.CharPos[ ofs - 1 ] )
+        div 2, y, Width, Font.Surface.h );
 
     end;
   end;
-  text[strlen(text)] := chr(0);
-  SDL_FreeSurface(Back);
+  text[ strlen( text ) ] := chr( 0 );
+  SDL_FreeSurface( Back );
 end;
 
-procedure SFont_Input2(Destination: PSDL_Surface; Font: PSFont_FontInfo; x:
-  integer; y: integer; Width: integer; text: pchar);
+procedure SFont_Input2( Destination : PSDL_Surface; Font : PSFont_FontInfo; x :
+  integer; y : integer; Width : integer; text : pchar );
 var
-  MaxChars: Cardinal;
+  MaxChars : Cardinal;
 begin
-  MaxChars := length(text); // Just to make sure that we don't spill into
+  MaxChars := length( text ); // Just to make sure that we don't spill into
   // memory that doesn't belong to us.
   // We can't test the array as we use it
   // Because we're putting the 0 at the current
   // position.
 
-  SFont_Input3(Destination, Font, x, y, Width, Text, MaxChars);
+  SFont_Input3( Destination, Font, x, y, Width, Text, MaxChars );
 end;
 
-procedure SFont_Input(Destination: PSDL_Surface; x: Integer; y: integer; Width:
-  integer; text: pchar);
+procedure SFont_Input( Destination : PSDL_Surface; x : Integer; y : integer; Width :
+  integer; text : pchar );
 begin
-  SFont_Input2(Destination, @InternalFont, x, y, Width, text);
+  SFont_Input2( Destination, @InternalFont, x, y, Width, text );
 end;
 
 end.

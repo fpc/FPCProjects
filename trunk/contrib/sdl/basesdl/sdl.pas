@@ -1,7 +1,7 @@
 unit sdl;
 {
   $Id$
-  
+
 }
 {******************************************************************************}
 {                                                                              }
@@ -9,7 +9,7 @@ unit sdl;
 {       Conversion of the Simple DirectMedia Layer Headers                     }
 {                                                                              }
 { Portions created by Sam Lantinga <slouken@devolution.com> are                }
-{ Copyright (C) 1997, 1998, 1999, 2000, 2001  Sam Lantinga                     }
+{ Copyright (C) 1997-2004  Sam Lantinga                                        }
 { 5635-34 Springhouse Dr.                                                      }
 { Pleasanton, CA 94588 (USA)                                                   }
 {                                                                              }
@@ -33,12 +33,13 @@ unit sdl;
 {                          SDL_thread.h                                        }
 {                          SDL_mutex .h                                        }
 {                          SDL_getenv.h                                        }
+{                          SDL_loadso.h                                        }
 {                                                                              }
 { The initial developer of this Pascal code was :                              }
 { Dominqiue Louis <Dominique@SavageSoftware.com.au>                            }
 {                                                                              }
 { Portions created by Dominqiue Louis are                                      }
-{ Copyright (C) 2000 - 2001 Dominqiue Louis.                                   }
+{ Copyright (C) 2000 - 2004 Dominqiue Louis.                                   }
 {                                                                              }
 {                                                                              }
 { Contributor(s)                                                               }
@@ -165,17 +166,44 @@ unit sdl;
 {                          This was compiled with fpc 1.1, so remember to set  }
 {                          include file path. ie. -Fi/usr/share/fpcsrc/rtl/*   }
 {                                                                              }
-{******************************************************************************}
 {
   $Log$
-  Revision 1.2  2004/02/15 21:07:56  marco
-   * updated
+  Revision 1.3  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.5  2004/02/22 15:32:10  savage
+  SDL_GetEnv Fix so it also works on FPC/Linux. Thanks to Rodrigo for pointing this out.
+
+  Revision 1.4  2004/02/21 23:24:29  savage
+  SDL_GetEnv Fix so that it is not define twice for FPC. Thanks to Rene Hugentobler for pointing out this bug,
+
+  Revision 1.3  2004/02/18 22:35:51  savage
+  Brought sdl.pas up to 1.2.7 compatability
+  Thus...
+  Added SDL_GL_STEREO,
+      SDL_GL_MULTISAMPLEBUFFERS,
+      SDL_GL_MULTISAMPLESAMPLES
+
+  Add DLL/Shared object functions
+  function SDL_LoadObject( const sofile : PChar ) : Pointer;
+
+  function SDL_LoadFunction( handle : Pointer; const name : PChar ) : Pointer;
+
+  procedure SDL_UnloadObject( handle : Pointer );
+
+  Added function to create RWops from const memory: SDL_RWFromConstMem()
+  function SDL_RWFromConstMem(const mem: Pointer; size: Integer) : PSDL_RWops;
+
+  Ported SDL_cpuinfo.h so Now you can test for Specific CPU types.
+
+  Revision 1.2  2004/02/17 21:37:12  savage
+  Tidying up of units
 
   Revision 1.1  2004/02/05 00:08:20  savage
   Module 1.0 release
 
-  
 }
+{******************************************************************************}
 
 {$I jedi-sdl.inc}
 
@@ -200,7 +228,9 @@ uses
     {$IFDEF Ver1_0}
     linux,
     {$ELSE}
-    pthreads,baseunix,unix,
+    pthreads,
+    baseunix,
+    unix,
     {$ENDIF}
     x,
     xlib;
@@ -1164,7 +1194,8 @@ type
   //SDL_types.h types
   // Basic data types
 
-  TSDL_Bool = (SDL_FALSE, SDL_TRUE);
+  SDL_Bool  = (SDL_FALSE, SDL_TRUE);
+  TSDL_Bool = SDL_Bool;
 
   PUInt8Array = ^TUInt8Array;
   PUInt8 = ^UInt8;
@@ -1900,7 +1931,10 @@ type
     SDL_GL_ACCUM_RED_SIZE,
     SDL_GL_ACCUM_GREEN_SIZE,
     SDL_GL_ACCUM_BLUE_SIZE,
-    SDL_GL_ACCUM_ALPHA_SIZE);
+    SDL_GL_ACCUM_ALPHA_SIZE,
+    SDL_GL_STEREO,
+    SDL_GL_MULTISAMPLEBUFFERS,
+    SDL_GL_MULTISAMPLESAMPLES);
 
 
 
@@ -2149,6 +2183,9 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_RWFromFP'{$ELSE} SDLLibName{$ENDIF __G
 function SDL_RWFromMem(mem: Pointer; size: Integer): PSDL_RWops;
 cdecl; external {$IFDEF __GPC__}name 'SDL_RWFromMem'{$ELSE} SDLLibName{$ENDIF __GPC__};
 {$EXTERNALSYM SDL_RWFromMem}
+function SDL_RWFromConstMem(const mem: Pointer; size: Integer) : PSDL_RWops;
+cdecl; external {$IFDEF __GPC__}name 'SDL_RWFromConstMem'{$ELSE} SDLLibName{$ENDIF __GPC__};
+{$EXTERNALSYM SDL_RWFromConstMem}
 function SDL_AllocRW: PSDL_RWops;
 cdecl; external {$IFDEF __GPC__}name 'SDL_AllocRW'{$ELSE} SDLLibName{$ENDIF __GPC__};
 {$EXTERNALSYM SDL_AllocRW}
@@ -3724,6 +3761,31 @@ function SDL_GetWMInfo(info : PSDL_SysWMinfo) : integer;
 cdecl; external {$IFDEF __GPC__}name 'SDL_GetWMInfo'{$ELSE} SDLLibName{$ENDIF __GPC__};
 {$EXTERNALSYM SDL_GetWMInfo}
 
+{------------------------------------------------------------------------------}
+
+//SDL_loadso.h
+{* This function dynamically loads a shared object and returns a pointer
+ * to the object handle (or NULL if there was an error).
+ * The 'sofile' parameter is a system dependent name of the object file.
+ *}
+function SDL_LoadObject( const sofile : PChar ) : Pointer;
+cdecl; external {$IFDEF __GPC__}name 'SDL_LoadObject'{$ELSE} SDLLibName{$ENDIF __GPC__};
+{$EXTERNALSYM SDL_LoadObject}
+
+{* Given an object handle, this function looks up the address of the
+ * named function in the shared object and returns it.  This address
+ * is no longer valid after calling SDL_UnloadObject().
+ *}
+function SDL_LoadFunction( handle : Pointer; const name : PChar ) : Pointer;
+cdecl; external {$IFDEF __GPC__}name 'SDL_LoadFunction'{$ELSE} SDLLibName{$ENDIF __GPC__};
+{$EXTERNALSYM SDL_LoadFunction}
+
+{* Unload a shared object from memory *}
+procedure SDL_UnloadObject( handle : Pointer );
+cdecl; external {$IFDEF __GPC__}name 'SDL_UnloadObject'{$ELSE} SDLLibName{$ENDIF __GPC__};
+{$EXTERNALSYM SDL_UnloadObject}
+
+
 
 {------------------------------------------------------------------------------}
 
@@ -3895,7 +3957,7 @@ begin
   Result := _putenv(variable);
   {$ENDIF}
 
-  {$IFDEF Unix}
+  {$IFDEF UNIX}
   {$IFDEF FPC}
   Result := _putenv(variable);
   {$ELSE}
@@ -3914,20 +3976,25 @@ cdecl; external {$IFDEF __GPC__}name 'getenv'{$ELSE} 'MSVCRT.DLL'{$ENDIF};
 function SDL_getenv(const name: PChar): PChar;
 begin
   {$IFDEF WIN32}
+
   {$IFDEF __GPC__}
   Result := getenv( string( name ) );
   {$ELSE}
   Result := getenv( name );
   {$ENDIF}
+
+  {$ELSE}
+
+  {$IFDEF UNIX}
+
+  {$IFDEF FPC}
+  Result := fpgetenv(name);
+  {$ELSE}
+  Result := libc.getenv(name);  
   {$ENDIF}
 
-  {$IFDEF FPC}			
-  {$ifdef Linux}			// yes linux here. libc is really
-					// linux specific, not unix
-  Result := libc.getenv(name);
-  {$else}
-  Result := fpgetenv(name);
   {$ENDIF}
+
   {$ENDIF}
 end;
 

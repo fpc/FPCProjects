@@ -26,8 +26,14 @@ unit glut;
 
 {
   $Log$
-  Revision 1.1  2004/02/15 21:37:14  marco
-   * new snapshot
+  Revision 1.2  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.1  2004/03/30 21:53:54  savage
+  Moved to it's own folder.
+
+  Revision 1.5  2004/02/20 17:09:55  savage
+  Code tidied up in gl, glu and glut, while extensions in glext.pas are now loaded using SDL_GL_GetProcAddress, thus making it more cross-platform compatible, but now more tied to SDL.
 
   Revision 1.4  2004/02/14 22:36:29  savage
   Fixed inconsistencies of using LoadLibrary and LoadModule.
@@ -76,6 +82,16 @@ type
   TGlut1Char2IntCallback = procedure(c: Byte; v1, v2: Integer); {$IFNDEF __GPC__}{$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
 
 const
+{$IFDEF WIN32}
+  GlutLibName = 'glut32.dll';
+{$ENDIF}
+{$IFDEF UNIX}
+  GlutLibName = 'libglut.so';
+{$ENDIF}
+{$IFDEF __MACH__}
+  GlutLibName = 'libglut.dylib';
+{$ENDIF}
+
   GLUT_API_VERSION                = 3;
   GLUT_XLIB_IMPLEMENTATION        = 12;
   // Display mode bit masks.
@@ -656,18 +672,9 @@ begin
 end;
 
 initialization
-  {$IFDEF Win32}
-  LoadGlut('glut32.dll');
-  {$ENDIF}
-  {$IFDEF UNIX}
-  LoadGlut('libglut.so');
-  {$ENDIF}
-  {$IFDEF __MACH__}
-  LoadGlut('libglut.dylib');
-  {$ENDIF}
+  LoadGlut( GlutLibName );
 
 finalization
-
   FreeGlut;
 
 end.

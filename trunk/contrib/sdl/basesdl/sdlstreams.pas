@@ -61,8 +61,8 @@ unit sdlstreams;
 {******************************************************************}
 {
   $Log$
-  Revision 1.2  2004/02/15 21:07:56  marco
-   * updated
+  Revision 1.3  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
 
   Revision 1.1  2004/02/05 00:08:20  savage
   Module 1.0 release

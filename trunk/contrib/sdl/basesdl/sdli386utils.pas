@@ -101,8 +101,11 @@ unit sdli386utils;
 {******************************************************************************}
 {
   $Log$
-  Revision 1.2  2004/02/15 21:07:56  marco
-   * updated
+  Revision 1.3  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.3  2004/02/20 22:04:11  savage
+  Added Changes as mentioned by Rodrigo "Rui" R. (1/2 RRC2Soft) to facilitate FPC compilation and it also works in Delphi. Also syncronized the funcitons so that they are identical to sdlutils.pas, when no assembly version is available.
 
   Revision 1.2  2004/02/14 00:23:39  savage
   As UNIX is defined in jedi-sdl.inc this will be used to check linux compatability as well. Units have been changed to reflect this change.
@@ -145,7 +148,10 @@ procedure SDL_SubPixel( SrcSurface : PSDL_Surface; x : integer; y : integer; Col
 
 // Line procedures
 procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
-  cardinal );
+  cardinal );overload;
+
+procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
+  cardinal ; DashLength, DashSpace : byte );  overload;  
 
 procedure SDL_AddLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
   cardinal );
@@ -228,7 +234,7 @@ procedure SDL_GTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
 procedure SDL_LTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 
-procedure SDL_ClipLine(var x1,y1,x2,y2: Integer; ClipRect: PSDL_Rect);
+function SDL_ClipLine(var x1,y1,x2,y2: Integer; ClipRect: PSDL_Rect) : boolean;
 
 implementation
 
@@ -886,6 +892,110 @@ begin
     for y := 0 to dy - 1 do
     begin
       SDL_PutPixel( DstSurface, px, py, Color );
+      x := x + dx;
+      if x >= dy then
+      begin
+        x := x - dy;
+        px := px + sdx;
+      end;
+      py := py + sdy;
+    end;
+  end;
+end;
+
+// Draw a dashed line between x1,y1 and x2,y2 to the given surface
+// NOTE: The surface must be locked before calling this!
+procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
+  cardinal ; DashLength, DashSpace : byte );  overload;
+var
+  dx, dy, sdx, sdy, x, y, px, py, counter : integer; drawdash : boolean;
+begin
+  counter := 0;
+  drawdash := true; //begin line drawing with dash
+
+  //Avoid invalid user-passed dash parameters
+  if (DashLength < 1)
+  then DashLength := 1;
+  if (DashSpace < 1)
+  then DashSpace := 0;
+
+  dx := x2 - x1;
+  dy := y2 - y1;
+  if dx < 0 then
+    sdx := -1
+  else
+    sdx := 1;
+  if dy < 0 then
+    sdy := -1
+  else
+    sdy := 1;
+  dx := sdx * dx + 1;
+  dy := sdy * dy + 1;
+  x := 0;
+  y := 0;
+  px := x1;
+  py := y1;
+  if dx >= dy then
+  begin
+    for x := 0 to dx - 1 do
+      begin
+
+      //Alternate drawing dashes, or leaving spaces
+      if drawdash then
+        begin
+          SDL_PutPixel( DstSurface, px, py, Color );
+          inc(counter);
+          if (counter > DashLength-1) and (DashSpace > 0) then
+            begin
+              drawdash := false;
+              counter := 0;
+            end;
+        end
+      else //space
+        begin
+          inc(counter);
+          if counter > DashSpace-1 then
+            begin
+              drawdash := true;
+              counter := 0;
+            end;
+        end;
+
+      y := y + dy;
+      if y >= dx then
+      begin
+        y := y - dx;
+        py := py + sdy;
+      end;
+      px := px + sdx;
+    end;
+  end
+  else
+  begin
+    for y := 0 to dy - 1 do
+    begin
+
+      //Alternate drawing dashes, or leaving spaces
+      if drawdash then
+        begin
+          SDL_PutPixel( DstSurface, px, py, Color );
+          inc(counter);
+          if (counter > DashLength-1) and (DashSpace > 0) then
+            begin
+              drawdash := false;
+              counter := 0;
+            end;
+        end
+      else //space
+        begin
+          inc(counter);
+          if counter > DashSpace-1 then
+            begin
+              drawdash := true;
+              counter := 0;
+            end;
+        end;
+
       x := x + dx;
       if x >= dy then
       begin
@@ -3294,13 +3404,13 @@ begin
            @LoopX:
              mov eax, [ecx] // (PUInt32(WriteAddr)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              and eax, $00ffffff
-             and dword [edx], $ff000000
+             and dword ptr [edx], $ff000000
              or [edx], eax
-             and dword [edx + 3], $00ffffff // (PUInt32(WriteAddr + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
+             and dword ptr [edx + 3], $00ffffff // (PUInt32(WriteAddr + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              or [edx + 3], eax
-             and dword [edx + ebx], $00ffffff // (PUInt32(WriteAddr + DestPitch)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
+             and dword ptr [edx + ebx], $00ffffff // (PUInt32(WriteAddr + DestPitch)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              or [edx + ebx], eax
-             and dword [edx + ebx + 3], $00ffffff // (PUInt32(WriteAddr + DestPitch + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
+             and dword ptr [edx + ebx + 3], $00ffffff // (PUInt32(WriteAddr + DestPitch + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              or [edx + ebx + 3], eax
 
              add ecx, 3 // inc(ReadAddr, 3);
@@ -3499,9 +3609,9 @@ begin
            @LoopX:
              mov eax, [ecx] // (PUInt32(WriteAddr)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              and eax, $00ffffff
-             and dword [edx], $ff000000
+             and dword ptr [edx], $ff000000
              or [edx], eax
-             and dword [edx + 3], $00ffffff // (PUInt32(WriteAddr + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
+             and dword ptr [edx + 3], $00ffffff // (PUInt32(WriteAddr + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              or [edx + 3], eax
 
              add ecx, 3 // inc(ReadAddr, 3);
@@ -3753,15 +3863,15 @@ begin
            @LoopX:
              mov eax, [ecx] // (PUInt32(WriteAddr)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              and eax, $00ffffff
-             and dword [edx], $ff000000
+             and dword ptr [edx], $ff000000
              or [edx], eax
-             and dword [edx + 3], $00ffffff // (PUInt32(WriteAddr + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
+             and dword ptr [edx + 3], $00ffffff // (PUInt32(WriteAddr + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              or [edx + 3], eax
              shr eax, 1
              and eax, $007f7f7f
-             and dword [edx + ebx], $00ffffff // (PUInt32(WriteAddr + DestPitch)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
+             and dword ptr [edx + ebx], $00ffffff // (PUInt32(WriteAddr + DestPitch)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              or [edx + ebx], eax
-             and dword [edx + ebx + 3], $00ffffff // (PUInt32(WriteAddr + DestPitch + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
+             and dword ptr [edx + ebx + 3], $00ffffff // (PUInt32(WriteAddr + DestPitch + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
              or [edx + ebx + 3], eax
 
              add ecx, 3 // inc(ReadAddr, 3);
@@ -5052,8 +5162,8 @@ begin
   SDL_UnlockSurface( DestSurface );
 end;
 
-procedure SDL_ClipLine(var x1,y1,x2,y2: Integer; ClipRect: PSDL_Rect);
-var flag, flag1, flag2: word;
+function SDL_ClipLine(var x1,y1,x2,y2: Integer; ClipRect: PSDL_Rect) : boolean;
+var tflag, flag1, flag2: word;
     txy, xedge, yedge: Integer;
     slope: single;
 
@@ -5061,46 +5171,56 @@ var flag, flag1, flag2: word;
   begin
     Result := 0;
     if x < ClipRect.x then Result := 1;
-    if x >= ClipRect.w then Result := Result or 2;
+    if x >= ClipRect.w + ClipRect.x then Result := Result or 2;
     if y < ClipRect.y then Result := Result or 4;
-    if y >= ClipRect.h then Result := Result or 8;
+    if y >= ClipRect.h + ClipRect.y then Result := Result or 8;
   end;
 
 begin
   flag1 := ClipCode(x1,y1);
   flag2 := ClipCode(x2,y2);
+  result := true;
 
   while true do
   begin
-    if (flag1 or flag2) = 0 then Exit;  // all in
-    if (flag1 and flag2) <> 0 then Exit;     // all out
+    if (flag1 or flag2) = 0 then Exit; // all in
+
+    if (flag1 and flag2) <> 0 then
+      begin
+        result := false;
+        Exit; // all out
+      end;
+
     if flag2 = 0 then
-    begin
-      txy := x1; x1 := x2; x2 := txy;
-      txy := y1; y1 := y2; y2 := txy;
-      flag := flag1; flag1 := flag2; flag2 := flag;
-    end;
+      begin
+        txy := x1; x1 := x2; x2 := txy;
+        txy := y1; y1 := y2; y2 := txy;
+        tflag := flag1; flag1 := flag2; flag2 := tflag;
+      end;
 
     if (flag2 and 3) <> 0 then
-    begin
-      if (flag2 and 1) <> 0 then
-        xedge := ClipRect.x
-      else
-        xedge := ClipRect.w-1; // back 1 pixel otherwise we end up in a loop
-      slope := (y2 - y1) / (x2 - x1);
-      y2 := y1 + Round(slope * (xedge - x1));
-      x2 := xedge;
-    end
+      begin
+        if (flag2 and 1) <> 0 then
+          xedge := ClipRect.x
+        else
+          xedge := ClipRect.w + ClipRect.x -1; // back 1 pixel otherwise we end up in a loop
+
+        slope := (y2 - y1) / (x2 - x1);
+        y2 := y1 + Round(slope * (xedge - x1));
+        x2 := xedge;
+      end
     else
-    begin
-      if (flag2 and 4) <> 0 then
-        yedge := ClipRect.y
-      else
-        yedge := ClipRect.h-1;  // up 1 pixel otherwise we end up in a loop
-      slope := (x2 - x1) / (y2 - y1);
-      x2 := x1 + Round(slope * (yedge - y1));
-      y2 := yedge;
-    end;
+      begin
+        if (flag2 and 4) <> 0 then
+          yedge := ClipRect.y
+        else
+          yedge := ClipRect.h + ClipRect.y -1; // up 1 pixel otherwise we end up in a loop
+
+        slope := (x2 - x1) / (y2 - y1);
+        x2 := x1 + Round(slope * (yedge - y1));
+        y2 := yedge;
+      end;
+
     flag2 := ClipCode(x2, y2);
   end;
 end;

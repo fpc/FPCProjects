@@ -105,8 +105,8 @@ unit sdlutils;
 {******************************************************************************}
 {
   $Log$
-  Revision 1.2  2004/02/15 21:07:56  marco
-   * updated
+  Revision 1.3  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
 
   Revision 1.2  2004/02/14 00:23:39  savage
   As UNIX is defined in jedi-sdl.inc this will be used to check linux compatability as well. Units have been changed to reflect this change.

@@ -1,4 +1,9 @@
+unit sdlsprites;
 {************************************************************************
+(*
+  $Id$
+
+ *)
  * SDLSprites.pas for JEDI-SDL                                          *
  * Written by KiCHY                                                     *
  * Version 1.04 (04 june 2001)                                          *
@@ -12,44 +17,65 @@
  * 28 oct  2001 RK: v1.03 Added NumberOfFrames                          *
  * 02 nov  2001 RK: v1.04 Modifed Draw method (hint by Logan)           *
  * 04 june 2002 RK: v1.05 Fixed memory leaks                            *
+ * 19 Jan  2004 DL: v1.06 Changed ReallocMem Call to SetLength and      *
+ *                  Moved CompareZ function                             *
+(*
+  $Log$
+  Revision 1.4  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.3  2004/03/31 09:04:31  savage
+  Added jedi-sdl.inc files for better FreePascal/multi compiler support.
+
+  Revision 1.2  2004/03/30 22:21:34  savage
+  After some prodding by Marco Van de Voort, I have made TSprite more OO by adding private and public scopes.
+
+  Revision 1.1  2004/02/26 00:06:25  savage
+  Sprite Engine first commit.
+
+
+ *)
  ************************************************************************}
-unit SDLSprites;
+
+{$I jedi-sdl.inc}
 
 interface
 
-{$i jedi-sdl.inc}
-{$mode delphi}
 uses
 {$IFDEF WIN32}
   Windows,
 {$ENDIF}
   Classes,
   SysUtils,
-  SDL_Image,
-  SDL;
+  sdl_image,
+  sdl;
+
 type
   TSpriteList = class;
+
   TSprite = class
-   private
-    ID : byte; { we can easily determine the sprite's type }
+  private
+    Flags : cardinal; // for SDL_BlitSurface
+    isDead : boolean; // need to destroy ?
+    function Remove : integer; // remove sprite from screen, result=-2 then background surface is lost
+  public
+    ID : byte; // we can easily determine the sprite's type
     ParentList : TSpriteList;
-    PrevRect : TSDL_Rect; { rectangle of previous position in the screen }
-    Flags : cardinal; { for SDL_BlitSurface }
-    isDead : boolean; { need to destroy ? }
-    SrcRect : TSDL_Rect; { source rectangle what contains the image-data }
-    AnimPhase : integer; { which image we draw }
-    x, y, z : integer; { x, y coords for screen, z for sorting }
-    w, h : integer; { Width & Height of sprite }
-    Surface, Background, Image : PSDL_Surface; { Screen, Background and sprite images }
-    NumberOfFrames : integer; { count of frames [by brombs] }
+    AnimPhase : integer; // which image we draw
+    NumberOfFrames : integer; // count of frames [by brombs]
+    x, y, z : integer; // x, y coords for screen, z for sorting
+    w, h : integer; // Width & Height of sprite
+    Surface, Background, Image : PSDL_Surface; // Screen, Background and sprite images
+    SrcRect : TSDL_Rect; // source rectangle what contains the image-data
+    PrevRect : TSDL_Rect; // rectangle of previous position in the screen 
     constructor Create( const _Image : string; Width, Height : integer );
     procedure GetCollisionRect( Rect : PSDL_Rect ); virtual;
-    function Remove : integer; { remove sprite from screen, result=-2 then background surface is lost }
-    procedure Draw; virtual; { draw sprite on screen }
-    procedure Move; virtual; { move a sprite }
-    procedure Kill; { we will need to destroy this sprite }
-    procedure Free; virtual; { destroy sprite }
+    procedure Draw; virtual; // draw sprite on screen
+    procedure Move; virtual; // move a sprite
+    procedure Kill; // we will need to destroy this sprite
+    procedure Free; virtual; // destroy sprite
   end;
+
   TSpriteList = class( TList )
   protected
     function Get( Index : Integer ) : TSprite;
@@ -57,32 +83,55 @@ type
   public
     property Items[ Index : Integer ] : TSprite read Get write Put; default;
   end;
+
   TSpriteEngine = class
   private
-    NeedSort : boolean; { do we need to resort sprites by Z? }
-    FSurface, FBackground : PSDL_Surface; { screen and background surface }
+    NeedSort : boolean; // do we need to resort sprites by Z?
+    FSurface, FBackground : PSDL_Surface; // screen and background surface
     procedure SetSurface( _Surface : PSDL_Surface );
     procedure SetBackground( _Surface : PSDL_Surface );
   public
-    Sprites : TSpriteList; { all sprites }
+    Sprites : TSpriteList; // all sprites
     NumberOfRects : integer;
     UpdateRects : array of TSDL_Rect;
-    NeedRedrawBackground : boolean; { background surface is lost? }
-    procedure Clear; { destroy all sprites from list }
-    procedure SortSprites; { that is }
-    procedure AddSprite( Item : TSprite ); { add a sprite to list }
-    procedure RemoveSprite( Item : TSprite ); { remove a sprite from list and from memory }
+    NeedRedrawBackground : boolean; // background surface is lost?
+    procedure Clear; // destroy all sprites from list
+    procedure SortSprites; // that is
+    procedure AddSprite( Item : TSprite ); // add a sprite to list
+    procedure RemoveSprite( Item : TSprite ); // remove a sprite from list and from memory
     procedure Free;
-    procedure Move; { move all sprites in the list }
-    procedure Draw; { draw all sprites in the list }
-    property Surface : PSDL_Surface read FSurface write SetSurface; { screen surface }
-    property BackgroundSurface : PSDL_Surface read FBackground write SetBackground; { background surface }
+    procedure Move; // move all sprites in the list
+    procedure Draw; // draw all sprites in the list
+    property Surface : PSDL_Surface read FSurface write SetSurface; // screen surface
+    property BackgroundSurface : PSDL_Surface read FBackground write SetBackground; // background surface
     constructor Create( _Surface : PSDL_Surface );
   end;
-function isCollideRects( Rect1, Rect2 : PSDL_Rect ) : boolean;
-implementation
-{ Create a sprite. Transparent color is $00ff00ff }
 
+  function isCollideRects( Rect1, Rect2 : PSDL_Rect ) : boolean;
+
+implementation
+
+function CompareZ( Item1, Item2 : TSprite ) : Integer;
+begin
+  if Item1.z < Item2.z then
+    Result := -1
+  else if Item1.z > Item2.z then
+    Result := 1
+  else
+    Result := 0;
+end;
+
+function isCollideRects( Rect1, Rect2 : PSDL_Rect ) : boolean;
+begin
+  Result := true;
+  if ( Rect1.x + Rect1.w < Rect2.x ) or
+    ( Rect1.x > Rect2.x + Rect2.w ) or
+    ( Rect1.y + Rect1.h < Rect2.y ) or
+    ( Rect1.y > Rect2.y + Rect2.h ) then
+    Result := false;
+end;
+
+// Create a sprite. Transparent color is $00ff00ff
 constructor TSprite.Create( const _Image : string; Width, Height : integer );
 var
   Temp : PSDL_Surface;
@@ -111,8 +160,8 @@ begin
   SrcRect.w := w;
   SrcRect.h := h;
 end;
-{ we can separately determine the collision rectangle }
 
+// we can separately determine the collision rectangle
 procedure TSprite.GetCollisionRect( Rect : PSDL_Rect );
 begin
   Rect.x := x;
@@ -148,14 +197,14 @@ procedure TSprite.Draw;
 var
   DestRect : TSDL_Rect;
 begin
-  SrcRect.x := AnimPhase * w; { which animation phase need to draw? }
-  DestRect.x := x; { set screen positions }
+  SrcRect.x := AnimPhase * w; // which animation phase need to draw?
+  DestRect.x := x; // set screen positions
   DestRect.y := y;
   SDL_BlitSurface( Image, @SrcRect, Surface, @DestRect );
   PrevRect := DestRect;
 end;
-{ - TSpriteList ---------------------------------------------------------- }
 
+// TSpriteList ---------------------------------------
 function TSpriteList.Get( Index : Integer ) : TSprite;
 begin
   Result := inherited Get( Index );
@@ -165,8 +214,8 @@ procedure TSpriteList.Put( Index : Integer; Item : TSprite );
 begin
   inherited Put( Index, Item );
 end;
-{ - TSpriteEngine -------------------------------------------------------- }
 
+// TSpriteEngine ----------------------------------------
 constructor TSpriteEngine.Create( _Surface : PSDL_Surface );
 begin
   inherited Create;
@@ -187,28 +236,18 @@ end;
 
 procedure TSpriteEngine.AddSprite( Item : TSprite );
 begin
-  Item.Surface := Surface; { setting new sprite's surfaces }
+  Item.Surface := Surface; // setting new sprite's surfaces
   Item.Background := FBackground;
   Item.ParentList := Sprites;
   Sprites.Add( Item );
   NeedSort := true;
- {$ifdef FPC}
-  SetLength(UpdateRects,Sprites.Count*2);
- {$else}
- // if this works, I consider it a Delphi bug}
-  ReallocMem( UpdateRects, Sprites.Count * 2 * sizeof( TSDL_Rect ) );
-{$endif}
+  SetLength( UpdateRects, Sprites.Count * 2 * sizeof( TSDL_Rect ) );
 end;
 
 procedure TSpriteEngine.RemoveSprite( Item : TSprite );
 begin
   Sprites.Remove( Item );
- {$ifdef FPC}
-  SetLength(UpdateRects,Sprites.Count*2);
- {$else}
- // if this works, I consider it a Delphi bug}
-  ReallocMem( UpdateRects, Sprites.Count * 2 * sizeof( TSDL_Rect ) );
-{$endif}
+  SetLength( UpdateRects, Sprites.Count * 2 * sizeof( TSDL_Rect ) );
 end;
 
 procedure TSpriteEngine.Move;
@@ -266,8 +305,8 @@ begin
   end;
   NumberOfRects := j;
 end;
-{ set all sprites' Surface to _Surface }
 
+// set all sprites' Surface to _Surface 
 procedure TSpriteEngine.SetSurface( _Surface : PSDL_Surface );
 var
   i : integer;
@@ -277,8 +316,8 @@ begin
     for i := 0 to Sprites.Count - 1 do
       Sprites[ i ].Surface := _Surface;
 end;
-{ set all sprites' Background surface to _Surface }
 
+// set all sprites' Background surface to _Surface 
 procedure TSpriteEngine.SetBackground( _Surface : PSDL_Surface );
 var
   i : integer;
@@ -294,7 +333,7 @@ var
   TempSpr : TSprite;
 begin
   while Sprites.Count > 0 do
-  begin { destroy all sprites }
+  begin // destroy all sprites
     TempSpr := Sprites[ 0 ];
     RemoveSprite( TempSpr );
     TempSpr.Free;
@@ -302,29 +341,9 @@ begin
   Sprites.Clear;
 end;
 
-  function CompareZ( Item1, Item2 : TSprite ) : Integer;
-  begin
-    if Item1.z < Item2.z then
-      Result := -1
-    else if Item1.z > Item2.z then
-      Result := 1
-    else
-      Result := 0;
-  end;
-
 procedure TSpriteEngine.SortSprites;
-
 begin
   Sprites.Sort( @CompareZ );
 end;
 
-function isCollideRects( Rect1, Rect2 : PSDL_Rect ) : boolean;
-begin
-  Result := true;
-  if ( Rect1.x + Rect1.w < Rect2.x ) or
-    ( Rect1.x > Rect2.x + Rect2.w ) or
-    ( Rect1.y + Rect1.h < Rect2.y ) or
-    ( Rect1.y > Rect2.y + Rect2.h ) then
-    Result := false;
-end;
 end.

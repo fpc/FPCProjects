@@ -1,28 +1,56 @@
-//==========================================================================================
-//  FMOD errors header file. Copyright (c), FireLight Multimedia 2000.
-//==========================================================================================
-//  History
-//
-//  2000/12/14 by Steve 'Sly' Williams
-//  - Updated to version 3.30
-//
-//  2000/11/08 by Steve 'Sly' Williams
-//  - Conversion of fmod_errors.h.  Slight name change was required because Pascal
-//    is not case-sensitive and confuses the unit name with the type FMOD_ERRORS.
-//
-//  2002/01/30 by Steve 'Sly' Williams
-//  FMOD Version 3.50
-//  - Removed FMOD_ERR_NO_EAX2
-//==========================================================================================
+{ =============================================================================================== }
+{ FMOD Main header file. Copyright (c), Firelight Technologies Pty, Ltd. 1999-2003.               }
+{ =============================================================================================== }
+{
+  NOTE: For the demos to run you must have either fmod.dll (in Windows)
+  or libfmod-3.70.so (in Linux) installed.
+
+  In Windows, copy the fmod.dll file found in the api directory to either of
+  the following locations (in order of preference)
+  - your application directory
+  - Windows\System (95/98) or WinNT\System32 (NT/2000/XP)
+
+  In Linux, make sure you are signed in as root and copy the libfmod-3.70.so
+  file from the api directory to your /usr/lib/ directory.
+  Then via a command line, navigate to the /usr/lib/ directory and create
+  a symbolic link between libfmod-3.70.so and libfmod.so. This is done with
+  the following command (assuming you are in /usr/lib/)...
+  ln -s libfmod-3.70.so libfmod.so.
+}
+{ =============================================================================================== }
 
 unit fmoderrors;
 
+{
+  $Id$
+  
+}
+{
+  $Log$
+  Revision 1.2  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.1  2004/03/30 21:52:34  savage
+  Moved to it's own folder.
+
+  Revision 1.2  2004/02/14 00:56:55  savage
+  Added UNIX support for FreeBSD
+
+  Revision 1.2  2004/02/05 00:37:32  savage
+  New FMod 3.71 units and updated sdlinput.pas
+
+  Revision 1.1  2004/02/05 00:08:19  savage
+  Module 1.0 release
+
+  
+}
+
 interface
 
-UNTESTED WITH FPC. Can't test linux specific libraries on FreeBSD.
+{$I jedi-sdl.inc}
 
 uses
-  fmod;
+  fmodtypes;
 
 function FMOD_ErrorString(ErrorCode: TFModErrors): PChar;
 

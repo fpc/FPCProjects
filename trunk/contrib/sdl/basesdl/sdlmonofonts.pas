@@ -1,5 +1,4 @@
-unit SDLMonoFonts;
-
+unit sdlmonofonts;
 {******************************************************************}
 {                                                                  }
 { SDL_MonoFonts unit by RÛbert KisnÈmeth (KiCHY)                   }
@@ -22,16 +21,16 @@ unit SDLMonoFonts;
 {                                                                  }
 {******************************************************************}
 
+{$I jedi-sdl.inc}
+
 interface
 
-{$i jedi-sdl.inc}
-{$H+}
 uses
   Classes,
   SysUtils,
-  SDL,
-  SDL_Image,
-  SDLUtils;
+  sdl,
+  sdl_image,
+  sdlutils;
 
 const
  CharSet = ' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~·ÈÌÛˆı˙¸˚¡…Õ”÷’⁄‹€';

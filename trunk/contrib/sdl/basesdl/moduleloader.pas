@@ -33,8 +33,11 @@ unit moduleloader;
 {******************************************************************}
 {
   $Log$
-  Revision 1.1  2004/02/15 21:37:14  marco
-   * new snapshot
+  Revision 1.2  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.4  2004/02/20 17:19:10  savage
+  Added Calling convention to Win32 functions just in case.
 
   Revision 1.3  2004/02/14 22:36:29  savage
   Fixed inconsistencies of using LoadLibrary and LoadModule.
@@ -71,13 +74,13 @@ const
   // Value designating an unassigned TModuleHandle od a failed loading
   INVALID_MODULEHANDLE_VALUE = TModuleHandle(0);
 
-function LoadModule(var Module: TModuleHandle; FileName: PChar): Boolean;
-function LoadModuleEx(var Module: TModuleHandle; FileName: PChar; Flags: Cardinal): Boolean;
-procedure UnloadModule(var Module: TModuleHandle);
-function GetModuleSymbol(Module: TModuleHandle; SymbolName: PChar): Pointer;
-function GetModuleSymbolEx(Module: TModuleHandle; SymbolName: PChar; var Accu: Boolean): Pointer;
-function ReadModuleData(Module: TModuleHandle; SymbolName: PChar; var Buffer; Size: Cardinal): Boolean;
-function WriteModuleData(Module: TModuleHandle; SymbolName: PChar; var Buffer; Size: Cardinal): Boolean;
+function LoadModule(var Module: TModuleHandle; FileName: PChar): Boolean; stdcall;
+function LoadModuleEx(var Module: TModuleHandle; FileName: PChar; Flags: Cardinal): Boolean; stdcall;
+procedure UnloadModule(var Module: TModuleHandle); stdcall;
+function GetModuleSymbol(Module: TModuleHandle; SymbolName: PChar): Pointer; stdcall;
+function GetModuleSymbolEx(Module: TModuleHandle; SymbolName: PChar; var Accu: Boolean): Pointer; stdcall;
+function ReadModuleData(Module: TModuleHandle; SymbolName: PChar; var Buffer; Size: Cardinal): Boolean; stdcall;
+function WriteModuleData(Module: TModuleHandle; SymbolName: PChar; var Buffer; Size: Cardinal): Boolean; stdcall;
 
 implementation
 

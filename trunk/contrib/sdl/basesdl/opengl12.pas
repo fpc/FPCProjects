@@ -225,8 +225,17 @@ unit opengl12;
 {******************************************************************************}
 {
   $Log$
-  Revision 1.4  2004/02/15 21:07:56  marco
-   * updated
+  Revision 1.5  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.1  2004/03/30 21:53:55  savage
+  Moved to it's own folder.
+
+  Revision 1.6  2004/02/20 17:26:19  savage
+  Extensions are now loaded using SDL_GL_GetProcAddress, thus making it more cross-platform compatible, but now more tied to SDL.
+
+  Revision 1.5  2004/02/15 22:48:36  savage
+  More FPC and FreeBSD support changes.
 
   Revision 1.4  2004/02/14 22:36:29  savage
   Fixed inconsistencies of using LoadLibrary and LoadModule.
@@ -7039,9 +7048,10 @@ implementation
 uses
   SysUtils,
   Classes,
-  moduleloader; 
+  sdl,
+  moduleloader;
 
-type                                   
+type
   EOpenGLException = class(Exception);
 
 {$ifndef FPC} 
@@ -7057,8 +7067,8 @@ const
   INVALID_MODULEHANDLE = 0; 
 
 var
-  GLHandle: HINST; 
-  GLUHandle: HINST; 
+  GLHandle: TModuleHandle;
+  GLUHandle: TModuleHandle; 
 {$endif}
 
 {$ifdef UNIX}
@@ -7066,8 +7076,8 @@ const
   INVALID_MODULEHANDLE = nil; 
 
 var
-  GLHandle: Pointer;
-  GLUHandle: Pointer; 
+  GLHandle: TModuleHandle;
+  GLUHandle: TModuleHandle; 
 {$endif}
 
   // The context list is used to determine if a context is active already in any thread.
@@ -7579,523 +7589,519 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure LoadProcAddresses;
-var
-  Handle: TModuleHandle;
 begin
   if GLHandle <> INVALID_MODULEHANDLE then
   begin
-    Handle := TModuleHandle(GLHandle); // Kylix compatiblilty trick
-
-    glAccum := GetModuleSymbol(Handle, 'glAccum');
-    glAlphaFunc := GetModuleSymbol(Handle, 'glAlphaFunc'); 
-    glAreTexturesResident := GetModuleSymbol(Handle, 'glAreTexturesResident'); 
-    glArrayElement := GetModuleSymbol(Handle, 'glArrayElement'); 
-    glBegin := GetModuleSymbol(Handle, 'glBegin'); 
-    glBindTexture := GetModuleSymbol(Handle, 'glBindTexture'); 
-    glBitmap := GetModuleSymbol(Handle, 'glBitmap'); 
-    glBlendFunc := GetModuleSymbol(Handle, 'glBlendFunc'); 
-    glCallList := GetModuleSymbol(Handle, 'glCallList'); 
-    glCallLists := GetModuleSymbol(Handle, 'glCallLists'); 
-    glClear := GetModuleSymbol(Handle, 'glClear'); 
-    glClearAccum := GetModuleSymbol(Handle, 'glClearAccum'); 
-    glClearColor := GetModuleSymbol(Handle, 'glClearColor'); 
-    glClearDepth := GetModuleSymbol(Handle, 'glClearDepth'); 
-    glClearIndex := GetModuleSymbol(Handle, 'glClearIndex'); 
-    glClearStencil := GetModuleSymbol(Handle, 'glClearStencil'); 
-    glClipPlane := GetModuleSymbol(Handle, 'glClipPlane'); 
-    glColor3b := GetModuleSymbol(Handle, 'glColor3b'); 
-    glColor3bv := GetModuleSymbol(Handle, 'glColor3bv'); 
-    glColor3d := GetModuleSymbol(Handle, 'glColor3d'); 
-    glColor3dv := GetModuleSymbol(Handle, 'glColor3dv'); 
-    glColor3f := GetModuleSymbol(Handle, 'glColor3f'); 
-    glColor3fv := GetModuleSymbol(Handle, 'glColor3fv'); 
-    glColor3i := GetModuleSymbol(Handle, 'glColor3i'); 
-    glColor3iv := GetModuleSymbol(Handle, 'glColor3iv');
-    glColor3s := GetModuleSymbol(Handle, 'glColor3s'); 
-    glColor3sv := GetModuleSymbol(Handle, 'glColor3sv'); 
-    glColor3ub := GetModuleSymbol(Handle, 'glColor3ub');
-    glColor3ubv := GetModuleSymbol(Handle, 'glColor3ubv'); 
-    glColor3ui := GetModuleSymbol(Handle, 'glColor3ui'); 
-    glColor3uiv := GetModuleSymbol(Handle, 'glColor3uiv'); 
-    glColor3us := GetModuleSymbol(Handle, 'glColor3us'); 
-    glColor3usv := GetModuleSymbol(Handle, 'glColor3usv'); 
-    glColor4b := GetModuleSymbol(Handle, 'glColor4b'); 
-    glColor4bv := GetModuleSymbol(Handle, 'glColor4bv'); 
-    glColor4d := GetModuleSymbol(Handle, 'glColor4d'); 
-    glColor4dv := GetModuleSymbol(Handle, 'glColor4dv'); 
-    glColor4f := GetModuleSymbol(Handle, 'glColor4f'); 
-    glColor4fv := GetModuleSymbol(Handle, 'glColor4fv'); 
-    glColor4i := GetModuleSymbol(Handle, 'glColor4i'); 
-    glColor4iv := GetModuleSymbol(Handle, 'glColor4iv'); 
-    glColor4s := GetModuleSymbol(Handle, 'glColor4s'); 
-    glColor4sv := GetModuleSymbol(Handle, 'glColor4sv'); 
-    glColor4ub := GetModuleSymbol(Handle, 'glColor4ub'); 
-    glColor4ubv := GetModuleSymbol(Handle, 'glColor4ubv'); 
-    glColor4ui := GetModuleSymbol(Handle, 'glColor4ui'); 
-    glColor4uiv := GetModuleSymbol(Handle, 'glColor4uiv'); 
-    glColor4us := GetModuleSymbol(Handle, 'glColor4us'); 
-    glColor4usv := GetModuleSymbol(Handle, 'glColor4usv'); 
-    glColorMask := GetModuleSymbol(Handle, 'glColorMask');
-    glColorMaterial := GetModuleSymbol(Handle, 'glColorMaterial'); 
-    glColorPointer := GetModuleSymbol(Handle, 'glColorPointer'); 
-    glCopyPixels := GetModuleSymbol(Handle, 'glCopyPixels'); 
-    glCopyTexImage1D := GetModuleSymbol(Handle, 'glCopyTexImage1D'); 
-    glCopyTexImage2D := GetModuleSymbol(Handle, 'glCopyTexImage2D'); 
-    glCopyTexSubImage1D := GetModuleSymbol(Handle, 'glCopyTexSubImage1D'); 
-    glCopyTexSubImage2D := GetModuleSymbol(Handle, 'glCopyTexSubImage2D'); 
-    glCullFace := GetModuleSymbol(Handle, 'glCullFace'); 
-    glDeleteLists := GetModuleSymbol(Handle, 'glDeleteLists'); 
-    glDeleteTextures := GetModuleSymbol(Handle, 'glDeleteTextures'); 
-    glDepthFunc := GetModuleSymbol(Handle, 'glDepthFunc');
-    glDepthMask := GetModuleSymbol(Handle, 'glDepthMask'); 
-    glDepthRange := GetModuleSymbol(Handle, 'glDepthRange'); 
-    glDisable := GetModuleSymbol(Handle, 'glDisable'); 
-    glDisableClientState := GetModuleSymbol(Handle, 'glDisableClientState'); 
-    glDrawArrays := GetModuleSymbol(Handle, 'glDrawArrays'); 
-    glDrawBuffer := GetModuleSymbol(Handle, 'glDrawBuffer'); 
-    glDrawElements := GetModuleSymbol(Handle, 'glDrawElements'); 
-    glDrawPixels := GetModuleSymbol(Handle, 'glDrawPixels'); 
-    glEdgeFlag := GetModuleSymbol(Handle, 'glEdgeFlag'); 
-    glEdgeFlagPointer := GetModuleSymbol(Handle, 'glEdgeFlagPointer'); 
-    glEdgeFlagv := GetModuleSymbol(Handle, 'glEdgeFlagv'); 
-    glEnable := GetModuleSymbol(Handle, 'glEnable'); 
-    glEnableClientState := GetModuleSymbol(Handle, 'glEnableClientState'); 
-    glEnd := GetModuleSymbol(Handle, 'glEnd');
-    glEndList := GetModuleSymbol(Handle, 'glEndList'); 
-    glEvalCoord1d := GetModuleSymbol(Handle, 'glEvalCoord1d'); 
-    glEvalCoord1dv := GetModuleSymbol(Handle, 'glEvalCoord1dv'); 
-    glEvalCoord1f := GetModuleSymbol(Handle, 'glEvalCoord1f'); 
-    glEvalCoord1fv := GetModuleSymbol(Handle, 'glEvalCoord1fv'); 
-    glEvalCoord2d := GetModuleSymbol(Handle, 'glEvalCoord2d'); 
-    glEvalCoord2dv := GetModuleSymbol(Handle, 'glEvalCoord2dv'); 
-    glEvalCoord2f := GetModuleSymbol(Handle, 'glEvalCoord2f'); 
-    glEvalCoord2fv := GetModuleSymbol(Handle, 'glEvalCoord2fv'); 
-    glEvalMesh1 := GetModuleSymbol(Handle, 'glEvalMesh1'); 
-    glEvalMesh2 := GetModuleSymbol(Handle, 'glEvalMesh2'); 
-    glEvalPoint1 := GetModuleSymbol(Handle, 'glEvalPoint1'); 
-    glEvalPoint2 := GetModuleSymbol(Handle, 'glEvalPoint2'); 
-    glFeedbackBuffer := GetModuleSymbol(Handle, 'glFeedbackBuffer'); 
-    glFinish := GetModuleSymbol(Handle, 'glFinish'); 
-    glFlush := GetModuleSymbol(Handle, 'glFlush'); 
-    glFogf := GetModuleSymbol(Handle, 'glFogf'); 
-    glFogfv := GetModuleSymbol(Handle, 'glFogfv'); 
-    glFogi := GetModuleSymbol(Handle, 'glFogi');
-    glFogiv := GetModuleSymbol(Handle, 'glFogiv'); 
-    glFrontFace := GetModuleSymbol(Handle, 'glFrontFace'); 
-    glFrustum := GetModuleSymbol(Handle, 'glFrustum'); 
-    glGenLists := GetModuleSymbol(Handle, 'glGenLists'); 
-    glGenTextures := GetModuleSymbol(Handle, 'glGenTextures'); 
-    glGetBooleanv := GetModuleSymbol(Handle, 'glGetBooleanv');
-    glGetClipPlane := GetModuleSymbol(Handle, 'glGetClipPlane'); 
-    glGetDoublev := GetModuleSymbol(Handle, 'glGetDoublev'); 
-    glGetError := GetModuleSymbol(Handle, 'glGetError'); 
-    glGetFloatv := GetModuleSymbol(Handle, 'glGetFloatv'); 
-    glGetIntegerv := GetModuleSymbol(Handle, 'glGetIntegerv'); 
-    glGetLightfv := GetModuleSymbol(Handle, 'glGetLightfv'); 
-    glGetLightiv := GetModuleSymbol(Handle, 'glGetLightiv'); 
-    glGetMapdv := GetModuleSymbol(Handle, 'glGetMapdv'); 
-    glGetMapfv := GetModuleSymbol(Handle, 'glGetMapfv'); 
-    glGetMapiv := GetModuleSymbol(Handle, 'glGetMapiv'); 
-    glGetMaterialfv := GetModuleSymbol(Handle, 'glGetMaterialfv'); 
-    glGetMaterialiv := GetModuleSymbol(Handle, 'glGetMaterialiv'); 
-    glGetPixelMapfv := GetModuleSymbol(Handle, 'glGetPixelMapfv'); 
-    glGetPixelMapuiv := GetModuleSymbol(Handle, 'glGetPixelMapuiv'); 
-    glGetPixelMapusv := GetModuleSymbol(Handle, 'glGetPixelMapusv'); 
-    glGetPointerv := GetModuleSymbol(Handle, 'glGetPointerv'); 
-    glGetPolygonStipple := GetModuleSymbol(Handle, 'glGetPolygonStipple'); 
-    glGetString := GetModuleSymbol(Handle, 'glGetString'); 
-    glGetTexEnvfv := GetModuleSymbol(Handle, 'glGetTexEnvfv'); 
-    glGetTexEnviv := GetModuleSymbol(Handle, 'glGetTexEnviv'); 
-    glGetTexGendv := GetModuleSymbol(Handle, 'glGetTexGendv'); 
-    glGetTexGenfv := GetModuleSymbol(Handle, 'glGetTexGenfv'); 
-    glGetTexGeniv := GetModuleSymbol(Handle, 'glGetTexGeniv'); 
-    glGetTexImage := GetModuleSymbol(Handle, 'glGetTexImage'); 
-    glGetTexLevelParameterfv := GetModuleSymbol(Handle, 'glGetTexLevelParameterfv');
-    glGetTexLevelParameteriv := GetModuleSymbol(Handle, 'glGetTexLevelParameteriv'); 
-    glGetTexParameterfv := GetModuleSymbol(Handle, 'glGetTexParameterfv');
-    glGetTexParameteriv := GetModuleSymbol(Handle, 'glGetTexParameteriv'); 
-    glHint := GetModuleSymbol(Handle, 'glHint'); 
-    glIndexMask := GetModuleSymbol(Handle, 'glIndexMask'); 
-    glIndexPointer := GetModuleSymbol(Handle, 'glIndexPointer'); 
-    glIndexd := GetModuleSymbol(Handle, 'glIndexd'); 
-    glIndexdv := GetModuleSymbol(Handle, 'glIndexdv'); 
-    glIndexf := GetModuleSymbol(Handle, 'glIndexf'); 
-    glIndexfv := GetModuleSymbol(Handle, 'glIndexfv'); 
-    glIndexi := GetModuleSymbol(Handle, 'glIndexi'); 
-    glIndexiv := GetModuleSymbol(Handle, 'glIndexiv'); 
-    glIndexs := GetModuleSymbol(Handle, 'glIndexs'); 
-    glIndexsv := GetModuleSymbol(Handle, 'glIndexsv'); 
-    glIndexub := GetModuleSymbol(Handle, 'glIndexub'); 
-    glIndexubv := GetModuleSymbol(Handle, 'glIndexubv'); 
-    glInitNames := GetModuleSymbol(Handle, 'glInitNames'); 
-    glInterleavedArrays := GetModuleSymbol(Handle, 'glInterleavedArrays'); 
-    glIsEnabled := GetModuleSymbol(Handle, 'glIsEnabled'); 
-    glIsList := GetModuleSymbol(Handle, 'glIsList'); 
-    glIsTexture := GetModuleSymbol(Handle, 'glIsTexture'); 
-    glLightModelf := GetModuleSymbol(Handle, 'glLightModelf'); 
-    glLightModelfv := GetModuleSymbol(Handle, 'glLightModelfv'); 
-    glLightModeli := GetModuleSymbol(Handle, 'glLightModeli'); 
-    glLightModeliv := GetModuleSymbol(Handle, 'glLightModeliv');
-    glLightf := GetModuleSymbol(Handle, 'glLightf'); 
-    glLightfv := GetModuleSymbol(Handle, 'glLightfv'); 
-    glLighti := GetModuleSymbol(Handle, 'glLighti'); 
-    glLightiv := GetModuleSymbol(Handle, 'glLightiv'); 
-    glLineStipple := GetModuleSymbol(Handle, 'glLineStipple'); 
-    glLineWidth := GetModuleSymbol(Handle, 'glLineWidth'); 
-    glListBase := GetModuleSymbol(Handle, 'glListBase'); 
-    glLoadIdentity := GetModuleSymbol(Handle, 'glLoadIdentity'); 
-    glLoadMatrixd := GetModuleSymbol(Handle, 'glLoadMatrixd'); 
-    glLoadMatrixf := GetModuleSymbol(Handle, 'glLoadMatrixf');
-    glLoadName := GetModuleSymbol(Handle, 'glLoadName'); 
-    glLogicOp := GetModuleSymbol(Handle, 'glLogicOp'); 
-    glMap1d := GetModuleSymbol(Handle, 'glMap1d'); 
-    glMap1f := GetModuleSymbol(Handle, 'glMap1f'); 
-    glMap2d := GetModuleSymbol(Handle, 'glMap2d'); 
-    glMap2f := GetModuleSymbol(Handle, 'glMap2f'); 
-    glMapGrid1d := GetModuleSymbol(Handle, 'glMapGrid1d'); 
-    glMapGrid1f := GetModuleSymbol(Handle, 'glMapGrid1f'); 
-    glMapGrid2d := GetModuleSymbol(Handle, 'glMapGrid2d'); 
-    glMapGrid2f := GetModuleSymbol(Handle, 'glMapGrid2f'); 
-    glMaterialf := GetModuleSymbol(Handle, 'glMaterialf'); 
-    glMaterialfv := GetModuleSymbol(Handle, 'glMaterialfv'); 
-    glMateriali := GetModuleSymbol(Handle, 'glMateriali'); 
-    glMaterialiv := GetModuleSymbol(Handle, 'glMaterialiv'); 
-    glMatrixMode := GetModuleSymbol(Handle, 'glMatrixMode');
-    glMultMatrixd := GetModuleSymbol(Handle, 'glMultMatrixd'); 
-    glMultMatrixf := GetModuleSymbol(Handle, 'glMultMatrixf'); 
-    glNewList := GetModuleSymbol(Handle, 'glNewList'); 
-    glNormal3b := GetModuleSymbol(Handle, 'glNormal3b'); 
-    glNormal3bv := GetModuleSymbol(Handle, 'glNormal3bv'); 
-    glNormal3d := GetModuleSymbol(Handle, 'glNormal3d'); 
-    glNormal3dv := GetModuleSymbol(Handle, 'glNormal3dv'); 
-    glNormal3f := GetModuleSymbol(Handle, 'glNormal3f'); 
-    glNormal3fv := GetModuleSymbol(Handle, 'glNormal3fv'); 
-    glNormal3i := GetModuleSymbol(Handle, 'glNormal3i'); 
-    glNormal3iv := GetModuleSymbol(Handle, 'glNormal3iv'); 
-    glNormal3s := GetModuleSymbol(Handle, 'glNormal3s'); 
-    glNormal3sv := GetModuleSymbol(Handle, 'glNormal3sv'); 
-    glNormalPointer := GetModuleSymbol(Handle, 'glNormalPointer'); 
-    glOrtho := GetModuleSymbol(Handle, 'glOrtho'); 
-    glPassThrough := GetModuleSymbol(Handle, 'glPassThrough'); 
-    glPixelMapfv := GetModuleSymbol(Handle, 'glPixelMapfv'); 
-    glPixelMapuiv := GetModuleSymbol(Handle, 'glPixelMapuiv');
-    glPixelMapusv := GetModuleSymbol(Handle, 'glPixelMapusv'); 
-    glPixelStoref := GetModuleSymbol(Handle, 'glPixelStoref'); 
-    glPixelStorei := GetModuleSymbol(Handle, 'glPixelStorei'); 
-    glPixelTransferf := GetModuleSymbol(Handle, 'glPixelTransferf'); 
-    glPixelTransferi := GetModuleSymbol(Handle, 'glPixelTransferi'); 
-    glPixelZoom := GetModuleSymbol(Handle, 'glPixelZoom'); 
-    glPointSize := GetModuleSymbol(Handle, 'glPointSize');
-    glPolygonMode := GetModuleSymbol(Handle, 'glPolygonMode'); 
-    glPolygonOffset := GetModuleSymbol(Handle, 'glPolygonOffset'); 
-    glPolygonStipple := GetModuleSymbol(Handle, 'glPolygonStipple'); 
-    glPopAttrib := GetModuleSymbol(Handle, 'glPopAttrib'); 
-    glPopClientAttrib := GetModuleSymbol(Handle, 'glPopClientAttrib'); 
-    glPopMatrix := GetModuleSymbol(Handle, 'glPopMatrix'); 
-    glPopName := GetModuleSymbol(Handle, 'glPopName'); 
-    glPrioritizeTextures := GetModuleSymbol(Handle, 'glPrioritizeTextures'); 
-    glPushAttrib := GetModuleSymbol(Handle, 'glPushAttrib'); 
-    glPushClientAttrib := GetModuleSymbol(Handle, 'glPushClientAttrib'); 
-    glPushMatrix := GetModuleSymbol(Handle, 'glPushMatrix'); 
-    glPushName := GetModuleSymbol(Handle, 'glPushName'); 
-    glRasterPos2d := GetModuleSymbol(Handle, 'glRasterPos2d'); 
-    glRasterPos2dv := GetModuleSymbol(Handle, 'glRasterPos2dv'); 
-    glRasterPos2f := GetModuleSymbol(Handle, 'glRasterPos2f'); 
-    glRasterPos2fv := GetModuleSymbol(Handle, 'glRasterPos2fv'); 
-    glRasterPos2i := GetModuleSymbol(Handle, 'glRasterPos2i'); 
-    glRasterPos2iv := GetModuleSymbol(Handle, 'glRasterPos2iv'); 
-    glRasterPos2s := GetModuleSymbol(Handle, 'glRasterPos2s'); 
-    glRasterPos2sv := GetModuleSymbol(Handle, 'glRasterPos2sv'); 
-    glRasterPos3d := GetModuleSymbol(Handle, 'glRasterPos3d'); 
-    glRasterPos3dv := GetModuleSymbol(Handle, 'glRasterPos3dv'); 
-    glRasterPos3f := GetModuleSymbol(Handle, 'glRasterPos3f'); 
-    glRasterPos3fv := GetModuleSymbol(Handle, 'glRasterPos3fv'); 
-    glRasterPos3i := GetModuleSymbol(Handle, 'glRasterPos3i');
-    glRasterPos3iv := GetModuleSymbol(Handle, 'glRasterPos3iv');
-    glRasterPos3s := GetModuleSymbol(Handle, 'glRasterPos3s'); 
-    glRasterPos3sv := GetModuleSymbol(Handle, 'glRasterPos3sv'); 
-    glRasterPos4d := GetModuleSymbol(Handle, 'glRasterPos4d'); 
-    glRasterPos4dv := GetModuleSymbol(Handle, 'glRasterPos4dv'); 
-    glRasterPos4f := GetModuleSymbol(Handle, 'glRasterPos4f'); 
-    glRasterPos4fv := GetModuleSymbol(Handle, 'glRasterPos4fv'); 
-    glRasterPos4i := GetModuleSymbol(Handle, 'glRasterPos4i'); 
-    glRasterPos4iv := GetModuleSymbol(Handle, 'glRasterPos4iv'); 
-    glRasterPos4s := GetModuleSymbol(Handle, 'glRasterPos4s'); 
-    glRasterPos4sv := GetModuleSymbol(Handle, 'glRasterPos4sv'); 
-    glReadBuffer := GetModuleSymbol(Handle, 'glReadBuffer'); 
-    glReadPixels := GetModuleSymbol(Handle, 'glReadPixels'); 
-    glRectd := GetModuleSymbol(Handle, 'glRectd'); 
-    glRectdv := GetModuleSymbol(Handle, 'glRectdv'); 
-    glRectf := GetModuleSymbol(Handle, 'glRectf'); 
-    glRectfv := GetModuleSymbol(Handle, 'glRectfv'); 
-    glRecti := GetModuleSymbol(Handle, 'glRecti'); 
-    glRectiv := GetModuleSymbol(Handle, 'glRectiv'); 
-    glRects := GetModuleSymbol(Handle, 'glRects'); 
-    glRectsv := GetModuleSymbol(Handle, 'glRectsv'); 
-    glRenderMode := GetModuleSymbol(Handle, 'glRenderMode'); 
-    glRotated := GetModuleSymbol(Handle, 'glRotated'); 
-    glRotatef := GetModuleSymbol(Handle, 'glRotatef'); 
-    glScaled := GetModuleSymbol(Handle, 'glScaled');
-    glScalef := GetModuleSymbol(Handle, 'glScalef'); 
-    glScissor := GetModuleSymbol(Handle, 'glScissor'); 
-    glSelectBuffer := GetModuleSymbol(Handle, 'glSelectBuffer'); 
-    glShadeModel := GetModuleSymbol(Handle, 'glShadeModel'); 
-    glStencilFunc := GetModuleSymbol(Handle, 'glStencilFunc'); 
-    glStencilMask := GetModuleSymbol(Handle, 'glStencilMask'); 
-    glStencilOp := GetModuleSymbol(Handle, 'glStencilOp'); 
-    glTexCoord1d := GetModuleSymbol(Handle, 'glTexCoord1d'); 
-    glTexCoord1dv := GetModuleSymbol(Handle, 'glTexCoord1dv');
-    glTexCoord1f := GetModuleSymbol(Handle, 'glTexCoord1f'); 
-    glTexCoord1fv := GetModuleSymbol(Handle, 'glTexCoord1fv'); 
-    glTexCoord1i := GetModuleSymbol(Handle, 'glTexCoord1i'); 
-    glTexCoord1iv := GetModuleSymbol(Handle, 'glTexCoord1iv'); 
-    glTexCoord1s := GetModuleSymbol(Handle, 'glTexCoord1s'); 
-    glTexCoord1sv := GetModuleSymbol(Handle, 'glTexCoord1sv'); 
-    glTexCoord2d := GetModuleSymbol(Handle, 'glTexCoord2d'); 
-    glTexCoord2dv := GetModuleSymbol(Handle, 'glTexCoord2dv'); 
-    glTexCoord2f := GetModuleSymbol(Handle, 'glTexCoord2f'); 
-    glTexCoord2fv := GetModuleSymbol(Handle, 'glTexCoord2fv'); 
-    glTexCoord2i := GetModuleSymbol(Handle, 'glTexCoord2i'); 
-    glTexCoord2iv := GetModuleSymbol(Handle, 'glTexCoord2iv'); 
-    glTexCoord2s := GetModuleSymbol(Handle, 'glTexCoord2s'); 
-    glTexCoord2sv := GetModuleSymbol(Handle, 'glTexCoord2sv'); 
-    glTexCoord3d := GetModuleSymbol(Handle, 'glTexCoord3d'); 
-    glTexCoord3dv := GetModuleSymbol(Handle, 'glTexCoord3dv');
-    glTexCoord3f := GetModuleSymbol(Handle, 'glTexCoord3f'); 
-    glTexCoord3fv := GetModuleSymbol(Handle, 'glTexCoord3fv'); 
-    glTexCoord3i := GetModuleSymbol(Handle, 'glTexCoord3i'); 
-    glTexCoord3iv := GetModuleSymbol(Handle, 'glTexCoord3iv'); 
-    glTexCoord3s := GetModuleSymbol(Handle, 'glTexCoord3s'); 
-    glTexCoord3sv := GetModuleSymbol(Handle, 'glTexCoord3sv'); 
-    glTexCoord4d := GetModuleSymbol(Handle, 'glTexCoord4d'); 
-    glTexCoord4dv := GetModuleSymbol(Handle, 'glTexCoord4dv'); 
-    glTexCoord4f := GetModuleSymbol(Handle, 'glTexCoord4f'); 
-    glTexCoord4fv := GetModuleSymbol(Handle, 'glTexCoord4fv'); 
-    glTexCoord4i := GetModuleSymbol(Handle, 'glTexCoord4i'); 
-    glTexCoord4iv := GetModuleSymbol(Handle, 'glTexCoord4iv'); 
-    glTexCoord4s := GetModuleSymbol(Handle, 'glTexCoord4s'); 
-    glTexCoord4sv := GetModuleSymbol(Handle, 'glTexCoord4sv'); 
-    glTexCoordPointer := GetModuleSymbol(Handle, 'glTexCoordPointer'); 
-    glTexEnvf := GetModuleSymbol(Handle, 'glTexEnvf'); 
-    glTexEnvfv := GetModuleSymbol(Handle, 'glTexEnvfv');
-    glTexEnvi := GetModuleSymbol(Handle, 'glTexEnvi'); 
-    glTexEnviv := GetModuleSymbol(Handle, 'glTexEnviv'); 
-    glTexGend := GetModuleSymbol(Handle, 'glTexGend'); 
-    glTexGendv := GetModuleSymbol(Handle, 'glTexGendv'); 
-    glTexGenf := GetModuleSymbol(Handle, 'glTexGenf'); 
-    glTexGenfv := GetModuleSymbol(Handle, 'glTexGenfv'); 
-    glTexGeni := GetModuleSymbol(Handle, 'glTexGeni'); 
-    glTexGeniv := GetModuleSymbol(Handle, 'glTexGeniv');
-    glTexImage1D := GetModuleSymbol(Handle, 'glTexImage1D'); 
-    glTexImage2D := GetModuleSymbol(Handle, 'glTexImage2D'); 
-    glTexParameterf := GetModuleSymbol(Handle, 'glTexParameterf'); 
-    glTexParameterfv := GetModuleSymbol(Handle, 'glTexParameterfv'); 
-    glTexParameteri := GetModuleSymbol(Handle, 'glTexParameteri'); 
-    glTexParameteriv := GetModuleSymbol(Handle, 'glTexParameteriv'); 
-    glTexSubImage1D := GetModuleSymbol(Handle, 'glTexSubImage1D'); 
-    glTexSubImage2D := GetModuleSymbol(Handle, 'glTexSubImage2D'); 
-    glTranslated := GetModuleSymbol(Handle, 'glTranslated'); 
-    glTranslatef := GetModuleSymbol(Handle, 'glTranslatef'); 
-    glVertex2d := GetModuleSymbol(Handle, 'glVertex2d'); 
-    glVertex2dv := GetModuleSymbol(Handle, 'glVertex2dv'); 
-    glVertex2f := GetModuleSymbol(Handle, 'glVertex2f'); 
-    glVertex2fv := GetModuleSymbol(Handle, 'glVertex2fv'); 
-    glVertex2i := GetModuleSymbol(Handle, 'glVertex2i'); 
-    glVertex2iv := GetModuleSymbol(Handle, 'glVertex2iv'); 
-    glVertex2s := GetModuleSymbol(Handle, 'glVertex2s'); 
-    glVertex2sv := GetModuleSymbol(Handle, 'glVertex2sv'); 
-    glVertex3d := GetModuleSymbol(Handle, 'glVertex3d'); 
-    glVertex3dv := GetModuleSymbol(Handle, 'glVertex3dv'); 
-    glVertex3f := GetModuleSymbol(Handle, 'glVertex3f'); 
-    glVertex3fv := GetModuleSymbol(Handle, 'glVertex3fv'); 
-    glVertex3i := GetModuleSymbol(Handle, 'glVertex3i'); 
-    glVertex3iv := GetModuleSymbol(Handle, 'glVertex3iv'); 
-    glVertex3s := GetModuleSymbol(Handle, 'glVertex3s');
-    glVertex3sv := GetModuleSymbol(Handle, 'glVertex3sv'); 
-    glVertex4d := GetModuleSymbol(Handle, 'glVertex4d'); 
-    glVertex4dv := GetModuleSymbol(Handle, 'glVertex4dv'); 
-    glVertex4f := GetModuleSymbol(Handle, 'glVertex4f'); 
-    glVertex4fv := GetModuleSymbol(Handle, 'glVertex4fv'); 
-    glVertex4i := GetModuleSymbol(Handle, 'glVertex4i'); 
-    glVertex4iv := GetModuleSymbol(Handle, 'glVertex4iv'); 
-    glVertex4s := GetModuleSymbol(Handle, 'glVertex4s'); 
-    glVertex4sv := GetModuleSymbol(Handle, 'glVertex4sv'); 
-    glVertexPointer := GetModuleSymbol(Handle, 'glVertexPointer'); 
-    glViewport := GetModuleSymbol(Handle, 'glViewport'); 
+    glAccum := GetModuleSymbol( GLHandle, 'glAccum');
+    glAlphaFunc := GetModuleSymbol( GLHandle, 'glAlphaFunc'); 
+    glAreTexturesResident := GetModuleSymbol( GLHandle, 'glAreTexturesResident'); 
+    glArrayElement := GetModuleSymbol( GLHandle, 'glArrayElement'); 
+    glBegin := GetModuleSymbol( GLHandle, 'glBegin'); 
+    glBindTexture := GetModuleSymbol( GLHandle, 'glBindTexture'); 
+    glBitmap := GetModuleSymbol( GLHandle, 'glBitmap'); 
+    glBlendFunc := GetModuleSymbol( GLHandle, 'glBlendFunc'); 
+    glCallList := GetModuleSymbol( GLHandle, 'glCallList'); 
+    glCallLists := GetModuleSymbol( GLHandle, 'glCallLists'); 
+    glClear := GetModuleSymbol( GLHandle, 'glClear'); 
+    glClearAccum := GetModuleSymbol( GLHandle, 'glClearAccum'); 
+    glClearColor := GetModuleSymbol( GLHandle, 'glClearColor'); 
+    glClearDepth := GetModuleSymbol( GLHandle, 'glClearDepth'); 
+    glClearIndex := GetModuleSymbol( GLHandle, 'glClearIndex'); 
+    glClearStencil := GetModuleSymbol( GLHandle, 'glClearStencil'); 
+    glClipPlane := GetModuleSymbol( GLHandle, 'glClipPlane'); 
+    glColor3b := GetModuleSymbol( GLHandle, 'glColor3b'); 
+    glColor3bv := GetModuleSymbol( GLHandle, 'glColor3bv'); 
+    glColor3d := GetModuleSymbol( GLHandle, 'glColor3d'); 
+    glColor3dv := GetModuleSymbol( GLHandle, 'glColor3dv'); 
+    glColor3f := GetModuleSymbol( GLHandle, 'glColor3f'); 
+    glColor3fv := GetModuleSymbol( GLHandle, 'glColor3fv'); 
+    glColor3i := GetModuleSymbol( GLHandle, 'glColor3i'); 
+    glColor3iv := GetModuleSymbol( GLHandle, 'glColor3iv');
+    glColor3s := GetModuleSymbol( GLHandle, 'glColor3s'); 
+    glColor3sv := GetModuleSymbol( GLHandle, 'glColor3sv'); 
+    glColor3ub := GetModuleSymbol( GLHandle, 'glColor3ub');
+    glColor3ubv := GetModuleSymbol( GLHandle, 'glColor3ubv'); 
+    glColor3ui := GetModuleSymbol( GLHandle, 'glColor3ui'); 
+    glColor3uiv := GetModuleSymbol( GLHandle, 'glColor3uiv'); 
+    glColor3us := GetModuleSymbol( GLHandle, 'glColor3us'); 
+    glColor3usv := GetModuleSymbol( GLHandle, 'glColor3usv'); 
+    glColor4b := GetModuleSymbol( GLHandle, 'glColor4b'); 
+    glColor4bv := GetModuleSymbol( GLHandle, 'glColor4bv'); 
+    glColor4d := GetModuleSymbol( GLHandle, 'glColor4d'); 
+    glColor4dv := GetModuleSymbol( GLHandle, 'glColor4dv'); 
+    glColor4f := GetModuleSymbol( GLHandle, 'glColor4f'); 
+    glColor4fv := GetModuleSymbol( GLHandle, 'glColor4fv'); 
+    glColor4i := GetModuleSymbol( GLHandle, 'glColor4i'); 
+    glColor4iv := GetModuleSymbol( GLHandle, 'glColor4iv'); 
+    glColor4s := GetModuleSymbol( GLHandle, 'glColor4s'); 
+    glColor4sv := GetModuleSymbol( GLHandle, 'glColor4sv'); 
+    glColor4ub := GetModuleSymbol( GLHandle, 'glColor4ub'); 
+    glColor4ubv := GetModuleSymbol( GLHandle, 'glColor4ubv'); 
+    glColor4ui := GetModuleSymbol( GLHandle, 'glColor4ui'); 
+    glColor4uiv := GetModuleSymbol( GLHandle, 'glColor4uiv'); 
+    glColor4us := GetModuleSymbol( GLHandle, 'glColor4us'); 
+    glColor4usv := GetModuleSymbol( GLHandle, 'glColor4usv'); 
+    glColorMask := GetModuleSymbol( GLHandle, 'glColorMask');
+    glColorMaterial := GetModuleSymbol( GLHandle, 'glColorMaterial'); 
+    glColorPointer := GetModuleSymbol( GLHandle, 'glColorPointer'); 
+    glCopyPixels := GetModuleSymbol( GLHandle, 'glCopyPixels'); 
+    glCopyTexImage1D := GetModuleSymbol( GLHandle, 'glCopyTexImage1D'); 
+    glCopyTexImage2D := GetModuleSymbol( GLHandle, 'glCopyTexImage2D'); 
+    glCopyTexSubImage1D := GetModuleSymbol( GLHandle, 'glCopyTexSubImage1D'); 
+    glCopyTexSubImage2D := GetModuleSymbol( GLHandle, 'glCopyTexSubImage2D'); 
+    glCullFace := GetModuleSymbol( GLHandle, 'glCullFace'); 
+    glDeleteLists := GetModuleSymbol( GLHandle, 'glDeleteLists'); 
+    glDeleteTextures := GetModuleSymbol( GLHandle, 'glDeleteTextures'); 
+    glDepthFunc := GetModuleSymbol( GLHandle, 'glDepthFunc');
+    glDepthMask := GetModuleSymbol( GLHandle, 'glDepthMask'); 
+    glDepthRange := GetModuleSymbol( GLHandle, 'glDepthRange'); 
+    glDisable := GetModuleSymbol( GLHandle, 'glDisable'); 
+    glDisableClientState := GetModuleSymbol( GLHandle, 'glDisableClientState'); 
+    glDrawArrays := GetModuleSymbol( GLHandle, 'glDrawArrays'); 
+    glDrawBuffer := GetModuleSymbol( GLHandle, 'glDrawBuffer'); 
+    glDrawElements := GetModuleSymbol( GLHandle, 'glDrawElements'); 
+    glDrawPixels := GetModuleSymbol( GLHandle, 'glDrawPixels'); 
+    glEdgeFlag := GetModuleSymbol( GLHandle, 'glEdgeFlag'); 
+    glEdgeFlagPointer := GetModuleSymbol( GLHandle, 'glEdgeFlagPointer'); 
+    glEdgeFlagv := GetModuleSymbol( GLHandle, 'glEdgeFlagv'); 
+    glEnable := GetModuleSymbol( GLHandle, 'glEnable'); 
+    glEnableClientState := GetModuleSymbol( GLHandle, 'glEnableClientState'); 
+    glEnd := GetModuleSymbol( GLHandle, 'glEnd');
+    glEndList := GetModuleSymbol( GLHandle, 'glEndList'); 
+    glEvalCoord1d := GetModuleSymbol( GLHandle, 'glEvalCoord1d'); 
+    glEvalCoord1dv := GetModuleSymbol( GLHandle, 'glEvalCoord1dv'); 
+    glEvalCoord1f := GetModuleSymbol( GLHandle, 'glEvalCoord1f'); 
+    glEvalCoord1fv := GetModuleSymbol( GLHandle, 'glEvalCoord1fv'); 
+    glEvalCoord2d := GetModuleSymbol( GLHandle, 'glEvalCoord2d'); 
+    glEvalCoord2dv := GetModuleSymbol( GLHandle, 'glEvalCoord2dv'); 
+    glEvalCoord2f := GetModuleSymbol( GLHandle, 'glEvalCoord2f'); 
+    glEvalCoord2fv := GetModuleSymbol( GLHandle, 'glEvalCoord2fv'); 
+    glEvalMesh1 := GetModuleSymbol( GLHandle, 'glEvalMesh1'); 
+    glEvalMesh2 := GetModuleSymbol( GLHandle, 'glEvalMesh2'); 
+    glEvalPoint1 := GetModuleSymbol( GLHandle, 'glEvalPoint1'); 
+    glEvalPoint2 := GetModuleSymbol( GLHandle, 'glEvalPoint2'); 
+    glFeedbackBuffer := GetModuleSymbol( GLHandle, 'glFeedbackBuffer'); 
+    glFinish := GetModuleSymbol( GLHandle, 'glFinish'); 
+    glFlush := GetModuleSymbol( GLHandle, 'glFlush'); 
+    glFogf := GetModuleSymbol( GLHandle, 'glFogf'); 
+    glFogfv := GetModuleSymbol( GLHandle, 'glFogfv'); 
+    glFogi := GetModuleSymbol( GLHandle, 'glFogi');
+    glFogiv := GetModuleSymbol( GLHandle, 'glFogiv'); 
+    glFrontFace := GetModuleSymbol( GLHandle, 'glFrontFace'); 
+    glFrustum := GetModuleSymbol( GLHandle, 'glFrustum'); 
+    glGenLists := GetModuleSymbol( GLHandle, 'glGenLists'); 
+    glGenTextures := GetModuleSymbol( GLHandle, 'glGenTextures'); 
+    glGetBooleanv := GetModuleSymbol( GLHandle, 'glGetBooleanv');
+    glGetClipPlane := GetModuleSymbol( GLHandle, 'glGetClipPlane'); 
+    glGetDoublev := GetModuleSymbol( GLHandle, 'glGetDoublev'); 
+    glGetError := GetModuleSymbol( GLHandle, 'glGetError'); 
+    glGetFloatv := GetModuleSymbol( GLHandle, 'glGetFloatv'); 
+    glGetIntegerv := GetModuleSymbol( GLHandle, 'glGetIntegerv'); 
+    glGetLightfv := GetModuleSymbol( GLHandle, 'glGetLightfv'); 
+    glGetLightiv := GetModuleSymbol( GLHandle, 'glGetLightiv'); 
+    glGetMapdv := GetModuleSymbol( GLHandle, 'glGetMapdv'); 
+    glGetMapfv := GetModuleSymbol( GLHandle, 'glGetMapfv'); 
+    glGetMapiv := GetModuleSymbol( GLHandle, 'glGetMapiv'); 
+    glGetMaterialfv := GetModuleSymbol( GLHandle, 'glGetMaterialfv'); 
+    glGetMaterialiv := GetModuleSymbol( GLHandle, 'glGetMaterialiv'); 
+    glGetPixelMapfv := GetModuleSymbol( GLHandle, 'glGetPixelMapfv'); 
+    glGetPixelMapuiv := GetModuleSymbol( GLHandle, 'glGetPixelMapuiv'); 
+    glGetPixelMapusv := GetModuleSymbol( GLHandle, 'glGetPixelMapusv'); 
+    glGetPointerv := GetModuleSymbol( GLHandle, 'glGetPointerv'); 
+    glGetPolygonStipple := GetModuleSymbol( GLHandle, 'glGetPolygonStipple'); 
+    glGetString := GetModuleSymbol( GLHandle, 'glGetString'); 
+    glGetTexEnvfv := GetModuleSymbol( GLHandle, 'glGetTexEnvfv'); 
+    glGetTexEnviv := GetModuleSymbol( GLHandle, 'glGetTexEnviv'); 
+    glGetTexGendv := GetModuleSymbol( GLHandle, 'glGetTexGendv'); 
+    glGetTexGenfv := GetModuleSymbol( GLHandle, 'glGetTexGenfv'); 
+    glGetTexGeniv := GetModuleSymbol( GLHandle, 'glGetTexGeniv'); 
+    glGetTexImage := GetModuleSymbol( GLHandle, 'glGetTexImage'); 
+    glGetTexLevelParameterfv := GetModuleSymbol( GLHandle, 'glGetTexLevelParameterfv');
+    glGetTexLevelParameteriv := GetModuleSymbol( GLHandle, 'glGetTexLevelParameteriv'); 
+    glGetTexParameterfv := GetModuleSymbol( GLHandle, 'glGetTexParameterfv');
+    glGetTexParameteriv := GetModuleSymbol( GLHandle, 'glGetTexParameteriv'); 
+    glHint := GetModuleSymbol( GLHandle, 'glHint'); 
+    glIndexMask := GetModuleSymbol( GLHandle, 'glIndexMask'); 
+    glIndexPointer := GetModuleSymbol( GLHandle, 'glIndexPointer'); 
+    glIndexd := GetModuleSymbol( GLHandle, 'glIndexd'); 
+    glIndexdv := GetModuleSymbol( GLHandle, 'glIndexdv'); 
+    glIndexf := GetModuleSymbol( GLHandle, 'glIndexf'); 
+    glIndexfv := GetModuleSymbol( GLHandle, 'glIndexfv'); 
+    glIndexi := GetModuleSymbol( GLHandle, 'glIndexi'); 
+    glIndexiv := GetModuleSymbol( GLHandle, 'glIndexiv'); 
+    glIndexs := GetModuleSymbol( GLHandle, 'glIndexs'); 
+    glIndexsv := GetModuleSymbol( GLHandle, 'glIndexsv'); 
+    glIndexub := GetModuleSymbol( GLHandle, 'glIndexub'); 
+    glIndexubv := GetModuleSymbol( GLHandle, 'glIndexubv'); 
+    glInitNames := GetModuleSymbol( GLHandle, 'glInitNames'); 
+    glInterleavedArrays := GetModuleSymbol( GLHandle, 'glInterleavedArrays'); 
+    glIsEnabled := GetModuleSymbol( GLHandle, 'glIsEnabled'); 
+    glIsList := GetModuleSymbol( GLHandle, 'glIsList'); 
+    glIsTexture := GetModuleSymbol( GLHandle, 'glIsTexture'); 
+    glLightModelf := GetModuleSymbol( GLHandle, 'glLightModelf'); 
+    glLightModelfv := GetModuleSymbol( GLHandle, 'glLightModelfv'); 
+    glLightModeli := GetModuleSymbol( GLHandle, 'glLightModeli'); 
+    glLightModeliv := GetModuleSymbol( GLHandle, 'glLightModeliv');
+    glLightf := GetModuleSymbol( GLHandle, 'glLightf'); 
+    glLightfv := GetModuleSymbol( GLHandle, 'glLightfv'); 
+    glLighti := GetModuleSymbol( GLHandle, 'glLighti'); 
+    glLightiv := GetModuleSymbol( GLHandle, 'glLightiv'); 
+    glLineStipple := GetModuleSymbol( GLHandle, 'glLineStipple'); 
+    glLineWidth := GetModuleSymbol( GLHandle, 'glLineWidth'); 
+    glListBase := GetModuleSymbol( GLHandle, 'glListBase'); 
+    glLoadIdentity := GetModuleSymbol( GLHandle, 'glLoadIdentity'); 
+    glLoadMatrixd := GetModuleSymbol( GLHandle, 'glLoadMatrixd'); 
+    glLoadMatrixf := GetModuleSymbol( GLHandle, 'glLoadMatrixf');
+    glLoadName := GetModuleSymbol( GLHandle, 'glLoadName'); 
+    glLogicOp := GetModuleSymbol( GLHandle, 'glLogicOp'); 
+    glMap1d := GetModuleSymbol( GLHandle, 'glMap1d'); 
+    glMap1f := GetModuleSymbol( GLHandle, 'glMap1f'); 
+    glMap2d := GetModuleSymbol( GLHandle, 'glMap2d'); 
+    glMap2f := GetModuleSymbol( GLHandle, 'glMap2f'); 
+    glMapGrid1d := GetModuleSymbol( GLHandle, 'glMapGrid1d'); 
+    glMapGrid1f := GetModuleSymbol( GLHandle, 'glMapGrid1f'); 
+    glMapGrid2d := GetModuleSymbol( GLHandle, 'glMapGrid2d'); 
+    glMapGrid2f := GetModuleSymbol( GLHandle, 'glMapGrid2f'); 
+    glMaterialf := GetModuleSymbol( GLHandle, 'glMaterialf'); 
+    glMaterialfv := GetModuleSymbol( GLHandle, 'glMaterialfv'); 
+    glMateriali := GetModuleSymbol( GLHandle, 'glMateriali'); 
+    glMaterialiv := GetModuleSymbol( GLHandle, 'glMaterialiv'); 
+    glMatrixMode := GetModuleSymbol( GLHandle, 'glMatrixMode');
+    glMultMatrixd := GetModuleSymbol( GLHandle, 'glMultMatrixd'); 
+    glMultMatrixf := GetModuleSymbol( GLHandle, 'glMultMatrixf'); 
+    glNewList := GetModuleSymbol( GLHandle, 'glNewList'); 
+    glNormal3b := GetModuleSymbol( GLHandle, 'glNormal3b'); 
+    glNormal3bv := GetModuleSymbol( GLHandle, 'glNormal3bv'); 
+    glNormal3d := GetModuleSymbol( GLHandle, 'glNormal3d'); 
+    glNormal3dv := GetModuleSymbol( GLHandle, 'glNormal3dv'); 
+    glNormal3f := GetModuleSymbol( GLHandle, 'glNormal3f'); 
+    glNormal3fv := GetModuleSymbol( GLHandle, 'glNormal3fv'); 
+    glNormal3i := GetModuleSymbol( GLHandle, 'glNormal3i'); 
+    glNormal3iv := GetModuleSymbol( GLHandle, 'glNormal3iv'); 
+    glNormal3s := GetModuleSymbol( GLHandle, 'glNormal3s'); 
+    glNormal3sv := GetModuleSymbol( GLHandle, 'glNormal3sv'); 
+    glNormalPointer := GetModuleSymbol( GLHandle, 'glNormalPointer'); 
+    glOrtho := GetModuleSymbol( GLHandle, 'glOrtho'); 
+    glPassThrough := GetModuleSymbol( GLHandle, 'glPassThrough'); 
+    glPixelMapfv := GetModuleSymbol( GLHandle, 'glPixelMapfv'); 
+    glPixelMapuiv := GetModuleSymbol( GLHandle, 'glPixelMapuiv');
+    glPixelMapusv := GetModuleSymbol( GLHandle, 'glPixelMapusv'); 
+    glPixelStoref := GetModuleSymbol( GLHandle, 'glPixelStoref'); 
+    glPixelStorei := GetModuleSymbol( GLHandle, 'glPixelStorei'); 
+    glPixelTransferf := GetModuleSymbol( GLHandle, 'glPixelTransferf'); 
+    glPixelTransferi := GetModuleSymbol( GLHandle, 'glPixelTransferi'); 
+    glPixelZoom := GetModuleSymbol( GLHandle, 'glPixelZoom'); 
+    glPointSize := GetModuleSymbol( GLHandle, 'glPointSize');
+    glPolygonMode := GetModuleSymbol( GLHandle, 'glPolygonMode'); 
+    glPolygonOffset := GetModuleSymbol( GLHandle, 'glPolygonOffset'); 
+    glPolygonStipple := GetModuleSymbol( GLHandle, 'glPolygonStipple'); 
+    glPopAttrib := GetModuleSymbol( GLHandle, 'glPopAttrib'); 
+    glPopClientAttrib := GetModuleSymbol( GLHandle, 'glPopClientAttrib'); 
+    glPopMatrix := GetModuleSymbol( GLHandle, 'glPopMatrix'); 
+    glPopName := GetModuleSymbol( GLHandle, 'glPopName'); 
+    glPrioritizeTextures := GetModuleSymbol( GLHandle, 'glPrioritizeTextures'); 
+    glPushAttrib := GetModuleSymbol( GLHandle, 'glPushAttrib'); 
+    glPushClientAttrib := GetModuleSymbol( GLHandle, 'glPushClientAttrib'); 
+    glPushMatrix := GetModuleSymbol( GLHandle, 'glPushMatrix'); 
+    glPushName := GetModuleSymbol( GLHandle, 'glPushName'); 
+    glRasterPos2d := GetModuleSymbol( GLHandle, 'glRasterPos2d'); 
+    glRasterPos2dv := GetModuleSymbol( GLHandle, 'glRasterPos2dv'); 
+    glRasterPos2f := GetModuleSymbol( GLHandle, 'glRasterPos2f'); 
+    glRasterPos2fv := GetModuleSymbol( GLHandle, 'glRasterPos2fv'); 
+    glRasterPos2i := GetModuleSymbol( GLHandle, 'glRasterPos2i'); 
+    glRasterPos2iv := GetModuleSymbol( GLHandle, 'glRasterPos2iv'); 
+    glRasterPos2s := GetModuleSymbol( GLHandle, 'glRasterPos2s'); 
+    glRasterPos2sv := GetModuleSymbol( GLHandle, 'glRasterPos2sv'); 
+    glRasterPos3d := GetModuleSymbol( GLHandle, 'glRasterPos3d'); 
+    glRasterPos3dv := GetModuleSymbol( GLHandle, 'glRasterPos3dv'); 
+    glRasterPos3f := GetModuleSymbol( GLHandle, 'glRasterPos3f'); 
+    glRasterPos3fv := GetModuleSymbol( GLHandle, 'glRasterPos3fv'); 
+    glRasterPos3i := GetModuleSymbol( GLHandle, 'glRasterPos3i');
+    glRasterPos3iv := GetModuleSymbol( GLHandle, 'glRasterPos3iv');
+    glRasterPos3s := GetModuleSymbol( GLHandle, 'glRasterPos3s'); 
+    glRasterPos3sv := GetModuleSymbol( GLHandle, 'glRasterPos3sv'); 
+    glRasterPos4d := GetModuleSymbol( GLHandle, 'glRasterPos4d'); 
+    glRasterPos4dv := GetModuleSymbol( GLHandle, 'glRasterPos4dv'); 
+    glRasterPos4f := GetModuleSymbol( GLHandle, 'glRasterPos4f'); 
+    glRasterPos4fv := GetModuleSymbol( GLHandle, 'glRasterPos4fv'); 
+    glRasterPos4i := GetModuleSymbol( GLHandle, 'glRasterPos4i'); 
+    glRasterPos4iv := GetModuleSymbol( GLHandle, 'glRasterPos4iv'); 
+    glRasterPos4s := GetModuleSymbol( GLHandle, 'glRasterPos4s'); 
+    glRasterPos4sv := GetModuleSymbol( GLHandle, 'glRasterPos4sv'); 
+    glReadBuffer := GetModuleSymbol( GLHandle, 'glReadBuffer'); 
+    glReadPixels := GetModuleSymbol( GLHandle, 'glReadPixels'); 
+    glRectd := GetModuleSymbol( GLHandle, 'glRectd'); 
+    glRectdv := GetModuleSymbol( GLHandle, 'glRectdv'); 
+    glRectf := GetModuleSymbol( GLHandle, 'glRectf'); 
+    glRectfv := GetModuleSymbol( GLHandle, 'glRectfv'); 
+    glRecti := GetModuleSymbol( GLHandle, 'glRecti'); 
+    glRectiv := GetModuleSymbol( GLHandle, 'glRectiv'); 
+    glRects := GetModuleSymbol( GLHandle, 'glRects'); 
+    glRectsv := GetModuleSymbol( GLHandle, 'glRectsv'); 
+    glRenderMode := GetModuleSymbol( GLHandle, 'glRenderMode'); 
+    glRotated := GetModuleSymbol( GLHandle, 'glRotated'); 
+    glRotatef := GetModuleSymbol( GLHandle, 'glRotatef'); 
+    glScaled := GetModuleSymbol( GLHandle, 'glScaled');
+    glScalef := GetModuleSymbol( GLHandle, 'glScalef'); 
+    glScissor := GetModuleSymbol( GLHandle, 'glScissor'); 
+    glSelectBuffer := GetModuleSymbol( GLHandle, 'glSelectBuffer'); 
+    glShadeModel := GetModuleSymbol( GLHandle, 'glShadeModel'); 
+    glStencilFunc := GetModuleSymbol( GLHandle, 'glStencilFunc'); 
+    glStencilMask := GetModuleSymbol( GLHandle, 'glStencilMask'); 
+    glStencilOp := GetModuleSymbol( GLHandle, 'glStencilOp'); 
+    glTexCoord1d := GetModuleSymbol( GLHandle, 'glTexCoord1d'); 
+    glTexCoord1dv := GetModuleSymbol( GLHandle, 'glTexCoord1dv');
+    glTexCoord1f := GetModuleSymbol( GLHandle, 'glTexCoord1f'); 
+    glTexCoord1fv := GetModuleSymbol( GLHandle, 'glTexCoord1fv'); 
+    glTexCoord1i := GetModuleSymbol( GLHandle, 'glTexCoord1i'); 
+    glTexCoord1iv := GetModuleSymbol( GLHandle, 'glTexCoord1iv'); 
+    glTexCoord1s := GetModuleSymbol( GLHandle, 'glTexCoord1s'); 
+    glTexCoord1sv := GetModuleSymbol( GLHandle, 'glTexCoord1sv'); 
+    glTexCoord2d := GetModuleSymbol( GLHandle, 'glTexCoord2d'); 
+    glTexCoord2dv := GetModuleSymbol( GLHandle, 'glTexCoord2dv'); 
+    glTexCoord2f := GetModuleSymbol( GLHandle, 'glTexCoord2f'); 
+    glTexCoord2fv := GetModuleSymbol( GLHandle, 'glTexCoord2fv'); 
+    glTexCoord2i := GetModuleSymbol( GLHandle, 'glTexCoord2i'); 
+    glTexCoord2iv := GetModuleSymbol( GLHandle, 'glTexCoord2iv'); 
+    glTexCoord2s := GetModuleSymbol( GLHandle, 'glTexCoord2s'); 
+    glTexCoord2sv := GetModuleSymbol( GLHandle, 'glTexCoord2sv'); 
+    glTexCoord3d := GetModuleSymbol( GLHandle, 'glTexCoord3d'); 
+    glTexCoord3dv := GetModuleSymbol( GLHandle, 'glTexCoord3dv');
+    glTexCoord3f := GetModuleSymbol( GLHandle, 'glTexCoord3f'); 
+    glTexCoord3fv := GetModuleSymbol( GLHandle, 'glTexCoord3fv'); 
+    glTexCoord3i := GetModuleSymbol( GLHandle, 'glTexCoord3i'); 
+    glTexCoord3iv := GetModuleSymbol( GLHandle, 'glTexCoord3iv'); 
+    glTexCoord3s := GetModuleSymbol( GLHandle, 'glTexCoord3s'); 
+    glTexCoord3sv := GetModuleSymbol( GLHandle, 'glTexCoord3sv'); 
+    glTexCoord4d := GetModuleSymbol( GLHandle, 'glTexCoord4d'); 
+    glTexCoord4dv := GetModuleSymbol( GLHandle, 'glTexCoord4dv'); 
+    glTexCoord4f := GetModuleSymbol( GLHandle, 'glTexCoord4f'); 
+    glTexCoord4fv := GetModuleSymbol( GLHandle, 'glTexCoord4fv'); 
+    glTexCoord4i := GetModuleSymbol( GLHandle, 'glTexCoord4i'); 
+    glTexCoord4iv := GetModuleSymbol( GLHandle, 'glTexCoord4iv'); 
+    glTexCoord4s := GetModuleSymbol( GLHandle, 'glTexCoord4s'); 
+    glTexCoord4sv := GetModuleSymbol( GLHandle, 'glTexCoord4sv'); 
+    glTexCoordPointer := GetModuleSymbol( GLHandle, 'glTexCoordPointer'); 
+    glTexEnvf := GetModuleSymbol( GLHandle, 'glTexEnvf'); 
+    glTexEnvfv := GetModuleSymbol( GLHandle, 'glTexEnvfv');
+    glTexEnvi := GetModuleSymbol( GLHandle, 'glTexEnvi'); 
+    glTexEnviv := GetModuleSymbol( GLHandle, 'glTexEnviv'); 
+    glTexGend := GetModuleSymbol( GLHandle, 'glTexGend'); 
+    glTexGendv := GetModuleSymbol( GLHandle, 'glTexGendv'); 
+    glTexGenf := GetModuleSymbol( GLHandle, 'glTexGenf'); 
+    glTexGenfv := GetModuleSymbol( GLHandle, 'glTexGenfv'); 
+    glTexGeni := GetModuleSymbol( GLHandle, 'glTexGeni'); 
+    glTexGeniv := GetModuleSymbol( GLHandle, 'glTexGeniv');
+    glTexImage1D := GetModuleSymbol( GLHandle, 'glTexImage1D'); 
+    glTexImage2D := GetModuleSymbol( GLHandle, 'glTexImage2D'); 
+    glTexParameterf := GetModuleSymbol( GLHandle, 'glTexParameterf'); 
+    glTexParameterfv := GetModuleSymbol( GLHandle, 'glTexParameterfv'); 
+    glTexParameteri := GetModuleSymbol( GLHandle, 'glTexParameteri'); 
+    glTexParameteriv := GetModuleSymbol( GLHandle, 'glTexParameteriv'); 
+    glTexSubImage1D := GetModuleSymbol( GLHandle, 'glTexSubImage1D'); 
+    glTexSubImage2D := GetModuleSymbol( GLHandle, 'glTexSubImage2D'); 
+    glTranslated := GetModuleSymbol( GLHandle, 'glTranslated'); 
+    glTranslatef := GetModuleSymbol( GLHandle, 'glTranslatef'); 
+    glVertex2d := GetModuleSymbol( GLHandle, 'glVertex2d'); 
+    glVertex2dv := GetModuleSymbol( GLHandle, 'glVertex2dv'); 
+    glVertex2f := GetModuleSymbol( GLHandle, 'glVertex2f'); 
+    glVertex2fv := GetModuleSymbol( GLHandle, 'glVertex2fv'); 
+    glVertex2i := GetModuleSymbol( GLHandle, 'glVertex2i'); 
+    glVertex2iv := GetModuleSymbol( GLHandle, 'glVertex2iv'); 
+    glVertex2s := GetModuleSymbol( GLHandle, 'glVertex2s'); 
+    glVertex2sv := GetModuleSymbol( GLHandle, 'glVertex2sv'); 
+    glVertex3d := GetModuleSymbol( GLHandle, 'glVertex3d'); 
+    glVertex3dv := GetModuleSymbol( GLHandle, 'glVertex3dv'); 
+    glVertex3f := GetModuleSymbol( GLHandle, 'glVertex3f'); 
+    glVertex3fv := GetModuleSymbol( GLHandle, 'glVertex3fv'); 
+    glVertex3i := GetModuleSymbol( GLHandle, 'glVertex3i'); 
+    glVertex3iv := GetModuleSymbol( GLHandle, 'glVertex3iv'); 
+    glVertex3s := GetModuleSymbol( GLHandle, 'glVertex3s');
+    glVertex3sv := GetModuleSymbol( GLHandle, 'glVertex3sv'); 
+    glVertex4d := GetModuleSymbol( GLHandle, 'glVertex4d'); 
+    glVertex4dv := GetModuleSymbol( GLHandle, 'glVertex4dv'); 
+    glVertex4f := GetModuleSymbol( GLHandle, 'glVertex4f'); 
+    glVertex4fv := GetModuleSymbol( GLHandle, 'glVertex4fv'); 
+    glVertex4i := GetModuleSymbol( GLHandle, 'glVertex4i'); 
+    glVertex4iv := GetModuleSymbol( GLHandle, 'glVertex4iv'); 
+    glVertex4s := GetModuleSymbol( GLHandle, 'glVertex4s'); 
+    glVertex4sv := GetModuleSymbol( GLHandle, 'glVertex4sv'); 
+    glVertexPointer := GetModuleSymbol( GLHandle, 'glVertexPointer'); 
+    glViewport := GetModuleSymbol( GLHandle, 'glViewport'); 
 
     // window support routines
     {$ifdef Win32}
-    wglGetProcAddress := GetModuleSymbol(Handle, 'wglGetProcAddress'); 
-    wglCopyContext := GetModuleSymbol(Handle, 'wglCopyContext'); 
-    wglCreateContext := GetModuleSymbol(Handle, 'wglCreateContext'); 
-    wglCreateLayerContext := GetModuleSymbol(Handle, 'wglCreateLayerContext'); 
-    wglDeleteContext := GetModuleSymbol(Handle, 'wglDeleteContext'); 
-    wglDescribeLayerPlane := GetModuleSymbol(Handle, 'wglDescribeLayerPlane'); 
-    wglGetCurrentContext := GetModuleSymbol(Handle, 'wglGetCurrentContext'); 
-    wglGetCurrentDC := GetModuleSymbol(Handle, 'wglGetCurrentDC'); 
-    wglGetLayerPaletteEntries := GetModuleSymbol(Handle, 'wglGetLayerPaletteEntries'); 
-    wglMakeCurrent := GetModuleSymbol(Handle, 'wglMakeCurrent'); 
-    wglRealizeLayerPalette := GetModuleSymbol(Handle, 'wglRealizeLayerPalette');
-    wglSetLayerPaletteEntries := GetModuleSymbol(Handle, 'wglSetLayerPaletteEntries'); 
-    wglShareLists := GetModuleSymbol(Handle, 'wglShareLists'); 
-    wglSwapLayerBuffers := GetModuleSymbol(Handle, 'wglSwapLayerBuffers'); 
-    wglSwapMultipleBuffers := GetModuleSymbol(Handle, 'wglSwapMultipleBuffers'); 
-    wglUseFontBitmapsA := GetModuleSymbol(Handle, 'wglUseFontBitmapsA'); 
-    wglUseFontOutlinesA := GetModuleSymbol(Handle, 'wglUseFontOutlinesA'); 
-    wglUseFontBitmapsW := GetModuleSymbol(Handle, 'wglUseFontBitmapsW'); 
-    wglUseFontOutlinesW := GetModuleSymbol(Handle, 'wglUseFontOutlinesW');
-    wglUseFontBitmaps := GetModuleSymbol(Handle, 'wglUseFontBitmapsA'); 
-    wglUseFontOutlines := GetModuleSymbol(Handle, 'wglUseFontOutlinesA');
+    wglGetProcAddress := GetModuleSymbol( GLHandle, 'wglGetProcAddress'); 
+    wglCopyContext := GetModuleSymbol( GLHandle, 'wglCopyContext'); 
+    wglCreateContext := GetModuleSymbol( GLHandle, 'wglCreateContext'); 
+    wglCreateLayerContext := GetModuleSymbol( GLHandle, 'wglCreateLayerContext'); 
+    wglDeleteContext := GetModuleSymbol( GLHandle, 'wglDeleteContext'); 
+    wglDescribeLayerPlane := GetModuleSymbol( GLHandle, 'wglDescribeLayerPlane'); 
+    wglGetCurrentContext := GetModuleSymbol( GLHandle, 'wglGetCurrentContext'); 
+    wglGetCurrentDC := GetModuleSymbol( GLHandle, 'wglGetCurrentDC'); 
+    wglGetLayerPaletteEntries := GetModuleSymbol( GLHandle, 'wglGetLayerPaletteEntries'); 
+    wglMakeCurrent := GetModuleSymbol( GLHandle, 'wglMakeCurrent'); 
+    wglRealizeLayerPalette := GetModuleSymbol( GLHandle, 'wglRealizeLayerPalette');
+    wglSetLayerPaletteEntries := GetModuleSymbol( GLHandle, 'wglSetLayerPaletteEntries'); 
+    wglShareLists := GetModuleSymbol( GLHandle, 'wglShareLists'); 
+    wglSwapLayerBuffers := GetModuleSymbol( GLHandle, 'wglSwapLayerBuffers'); 
+    wglSwapMultipleBuffers := GetModuleSymbol( GLHandle, 'wglSwapMultipleBuffers'); 
+    wglUseFontBitmapsA := GetModuleSymbol( GLHandle, 'wglUseFontBitmapsA'); 
+    wglUseFontOutlinesA := GetModuleSymbol( GLHandle, 'wglUseFontOutlinesA'); 
+    wglUseFontBitmapsW := GetModuleSymbol( GLHandle, 'wglUseFontBitmapsW'); 
+    wglUseFontOutlinesW := GetModuleSymbol( GLHandle, 'wglUseFontOutlinesW');
+    wglUseFontBitmaps := GetModuleSymbol( GLHandle, 'wglUseFontBitmapsA'); 
+    wglUseFontOutlines := GetModuleSymbol( GLHandle, 'wglUseFontOutlinesA');
     {$endif}
 
     // GL 1.2
-    glDrawRangeElements := GetModuleSymbol(Handle, 'glDrawRangeElements'); 
-    glTexImage3D := GetModuleSymbol(Handle, 'glTexImage3D'); 
+    glDrawRangeElements := GetModuleSymbol( GLHandle, 'glDrawRangeElements'); 
+    glTexImage3D := GetModuleSymbol( GLHandle, 'glTexImage3D'); 
 
     // GL 1.2 ARB imaging
-    glBlendColor := GetModuleSymbol(Handle, 'glBlendColor'); 
-    glBlendEquation := GetModuleSymbol(Handle, 'glBlendEquation'); 
-    glColorSubTable := GetModuleSymbol(Handle, 'glColorSubTable'); 
-    glCopyColorSubTable := GetModuleSymbol(Handle, 'glCopyColorSubTable'); 
-    glColorTable := GetModuleSymbol(Handle, 'glCopyColorSubTable'); 
-    glCopyColorTable := GetModuleSymbol(Handle, 'glCopyColorTable'); 
-    glColorTableParameteriv := GetModuleSymbol(Handle, 'glColorTableParameteriv'); 
-    glColorTableParameterfv := GetModuleSymbol(Handle, 'glColorTableParameterfv');
-    glGetColorTable := GetModuleSymbol(Handle, 'glGetColorTable'); 
-    glGetColorTableParameteriv := GetModuleSymbol(Handle, 'glGetColorTableParameteriv'); 
-    glGetColorTableParameterfv := GetModuleSymbol(Handle, 'glGetColorTableParameterfv'); 
-    glConvolutionFilter1D := GetModuleSymbol(Handle, 'glConvolutionFilter1D'); 
-    glConvolutionFilter2D := GetModuleSymbol(Handle, 'glConvolutionFilter2D'); 
-    glCopyConvolutionFilter1D := GetModuleSymbol(Handle, 'glCopyConvolutionFilter1D'); 
-    glCopyConvolutionFilter2D := GetModuleSymbol(Handle, 'glCopyConvolutionFilter2D'); 
-    glGetConvolutionFilter := GetModuleSymbol(Handle, 'glGetConvolutionFilter'); 
-    glSeparableFilter2D := GetModuleSymbol(Handle, 'glSeparableFilter2D'); 
-    glGetSeparableFilter := GetModuleSymbol(Handle, 'glGetSeparableFilter'); 
-    glConvolutionParameteri := GetModuleSymbol(Handle, 'glConvolutionParameteri'); 
-    glConvolutionParameteriv := GetModuleSymbol(Handle, 'glConvolutionParameteriv'); 
-    glConvolutionParameterf := GetModuleSymbol(Handle, 'glConvolutionParameterf'); 
-    glConvolutionParameterfv := GetModuleSymbol(Handle, 'glConvolutionParameterfv'); 
-    glGetConvolutionParameteriv := GetModuleSymbol(Handle, 'glGetConvolutionParameteriv'); 
-    glGetConvolutionParameterfv := GetModuleSymbol(Handle, 'glGetConvolutionParameterfv');
-    glHistogram := GetModuleSymbol(Handle, 'glHistogram'); 
-    glResetHistogram := GetModuleSymbol(Handle, 'glResetHistogram');
-    glGetHistogram := GetModuleSymbol(Handle, 'glGetHistogram');
-    glGetHistogramParameteriv := GetModuleSymbol(Handle, 'glGetHistogramParameteriv'); 
-    glGetHistogramParameterfv := GetModuleSymbol(Handle, 'glGetHistogramParameterfv'); 
-    glMinmax := GetModuleSymbol(Handle, 'glMinmax'); 
-    glResetMinmax := GetModuleSymbol(Handle, 'glResetMinmax'); 
-    glGetMinmax := GetModuleSymbol(Handle, 'glGetMinmax'); 
-    glGetMinmaxParameteriv := GetModuleSymbol(Handle, 'glGetMinmaxParameteriv');
-    glGetMinmaxParameterfv := GetModuleSymbol(Handle, 'glGetMinmaxParameterfv'); 
+    glBlendColor := GetModuleSymbol( GLHandle, 'glBlendColor'); 
+    glBlendEquation := GetModuleSymbol( GLHandle, 'glBlendEquation'); 
+    glColorSubTable := GetModuleSymbol( GLHandle, 'glColorSubTable'); 
+    glCopyColorSubTable := GetModuleSymbol( GLHandle, 'glCopyColorSubTable'); 
+    glColorTable := GetModuleSymbol( GLHandle, 'glCopyColorSubTable'); 
+    glCopyColorTable := GetModuleSymbol( GLHandle, 'glCopyColorTable'); 
+    glColorTableParameteriv := GetModuleSymbol( GLHandle, 'glColorTableParameteriv'); 
+    glColorTableParameterfv := GetModuleSymbol( GLHandle, 'glColorTableParameterfv');
+    glGetColorTable := GetModuleSymbol( GLHandle, 'glGetColorTable'); 
+    glGetColorTableParameteriv := GetModuleSymbol( GLHandle, 'glGetColorTableParameteriv'); 
+    glGetColorTableParameterfv := GetModuleSymbol( GLHandle, 'glGetColorTableParameterfv'); 
+    glConvolutionFilter1D := GetModuleSymbol( GLHandle, 'glConvolutionFilter1D'); 
+    glConvolutionFilter2D := GetModuleSymbol( GLHandle, 'glConvolutionFilter2D'); 
+    glCopyConvolutionFilter1D := GetModuleSymbol( GLHandle, 'glCopyConvolutionFilter1D'); 
+    glCopyConvolutionFilter2D := GetModuleSymbol( GLHandle, 'glCopyConvolutionFilter2D'); 
+    glGetConvolutionFilter := GetModuleSymbol( GLHandle, 'glGetConvolutionFilter'); 
+    glSeparableFilter2D := GetModuleSymbol( GLHandle, 'glSeparableFilter2D'); 
+    glGetSeparableFilter := GetModuleSymbol( GLHandle, 'glGetSeparableFilter'); 
+    glConvolutionParameteri := GetModuleSymbol( GLHandle, 'glConvolutionParameteri'); 
+    glConvolutionParameteriv := GetModuleSymbol( GLHandle, 'glConvolutionParameteriv'); 
+    glConvolutionParameterf := GetModuleSymbol( GLHandle, 'glConvolutionParameterf'); 
+    glConvolutionParameterfv := GetModuleSymbol( GLHandle, 'glConvolutionParameterfv'); 
+    glGetConvolutionParameteriv := GetModuleSymbol( GLHandle, 'glGetConvolutionParameteriv'); 
+    glGetConvolutionParameterfv := GetModuleSymbol( GLHandle, 'glGetConvolutionParameterfv');
+    glHistogram := GetModuleSymbol( GLHandle, 'glHistogram'); 
+    glResetHistogram := GetModuleSymbol( GLHandle, 'glResetHistogram');
+    glGetHistogram := GetModuleSymbol( GLHandle, 'glGetHistogram');
+    glGetHistogramParameteriv := GetModuleSymbol( GLHandle, 'glGetHistogramParameteriv'); 
+    glGetHistogramParameterfv := GetModuleSymbol( GLHandle, 'glGetHistogramParameterfv'); 
+    glMinmax := GetModuleSymbol( GLHandle, 'glMinmax'); 
+    glResetMinmax := GetModuleSymbol( GLHandle, 'glResetMinmax'); 
+    glGetMinmax := GetModuleSymbol( GLHandle, 'glGetMinmax'); 
+    glGetMinmaxParameteriv := GetModuleSymbol( GLHandle, 'glGetMinmaxParameteriv');
+    glGetMinmaxParameterfv := GetModuleSymbol( GLHandle, 'glGetMinmaxParameterfv'); 
 
     {$ifdef UNIX}
-    glXChooseVisual := GetModuleSymbol(Handle, 'glXChooseVisual'); 
-    glXCreateContext := GetModuleSymbol(Handle, 'glXCreateContext'); 
-    glXDestroyContext := GetModuleSymbol(Handle, 'glXDestroyContext'); 
-    glXMakeCurrent := GetModuleSymbol(Handle, 'glXMakeCurrent'); 
-    glXCopyContext := GetModuleSymbol(Handle, 'glXCopyContext'); 
-    glXSwapBuffers := GetModuleSymbol(Handle, 'glXSwapBuffers'); 
-    glXCreateGLXPixmap := GetModuleSymbol(Handle, 'glXCreateGLXPixmap'); 
-    glXDestroyGLXPixmap := GetModuleSymbol(Handle, 'glXDestroyGLXPixmap'); 
-    glXQueryExtension := GetModuleSymbol(Handle, 'glXQueryExtension'); 
-    glXQueryVersion := GetModuleSymbol(Handle, 'glXQueryVersion'); 
-    glXIsDirect := GetModuleSymbol(Handle, 'glXIsDirect'); 
-    glXGetConfig := GetModuleSymbol(Handle, 'glXGetConfig'); 
-    glXGetCurrentContext := GetModuleSymbol(Handle, 'glXGetCurrentContext'); 
-    glXGetCurrentDrawable := GetModuleSymbol(Handle, 'glXGetCurrentDrawable'); 
-    glXWaitGL := GetModuleSymbol(Handle, 'glXWaitGL'); 
-    glXWaitX := GetModuleSymbol(Handle, 'glXWaitX'); 
-    glXUseXFont := GetModuleSymbol(Handle, 'glXUseXFont'); 
-    glXQueryExtensionsString := GetModuleSymbol(Handle, 'glXQueryExtensionsString'); 
-    glXQueryServerString := GetModuleSymbol(Handle, 'glXQueryServerString'); 
-    glXGetClientString := GetModuleSymbol(Handle, 'glXGetClientString'); 
-    glXGetCurrentDisplay := GetModuleSymbol(Handle, 'glXGetCurrentDisplay');
-    glXChooseFBConfig := GetModuleSymbol(Handle, 'glXChooseFBConfig');
-    glXGetFBConfigAttrib := GetModuleSymbol(Handle, 'glXGetFBConfigAttrib'); 
-    glXGetFBConfigs := GetModuleSymbol(Handle, 'glXGetFBConfigs'); 
-    glXGetVisualFromFBConfig := GetModuleSymbol(Handle, 'glXGetVisualFromFBConfig'); 
-    glXCreateWindow := GetModuleSymbol(Handle, 'glXCreateWindow'); 
-    glXDestroyWindow := GetModuleSymbol(Handle, 'glXDestroyWindow'); 
-    glXCreatePixmap := GetModuleSymbol(Handle, 'glXCreatePixmap'); 
-    glXDestroyPixmap := GetModuleSymbol(Handle, 'glXDestroyPixmap'); 
-    glXCreatePbuffer := GetModuleSymbol(Handle, 'glXCreatePbuffer'); 
-    glXDestroyPbuffer := GetModuleSymbol(Handle, 'glXDestroyPbuffer'); 
-    glXQueryDrawable := GetModuleSymbol(Handle, 'glXQueryDrawable'); 
-    glXCreateNewContext := GetModuleSymbol(Handle, 'glXCreateNewContext'); 
-    glXMakeContextCurrent := GetModuleSymbol(Handle, 'glXMakeContextCurrent'); 
-    glXGetCurrentReadDrawable := GetModuleSymbol(Handle, 'glXGetCurrentReadDrawable'); 
-    glXQueryContext := GetModuleSymbol(Handle, 'glXQueryContext'); 
-    glXSelectEvent := GetModuleSymbol(Handle, 'glXSelectEvent'); 
-    glXGetSelectedEvent := GetModuleSymbol(Handle, 'glXGetSelectedEvent'); 
-    glXGetVideoSyncSGI := GetModuleSymbol(Handle, 'glXGetVideoSyncSGI'); 
-    glXWaitVideoSyncSGI := GetModuleSymbol(Handle, 'glXWaitVideoSyncSGI'); 
-    glXFreeContextEXT := GetModuleSymbol(Handle, 'glXFreeContextEXT'); 
-    glXGetContextIDEXT := GetModuleSymbol(Handle, 'glXGetContextIDEXT'); 
-    glXGetCurrentDisplayEXT := GetModuleSymbol(Handle, 'glXGetCurrentDisplayEXT'); 
-    glXImportContextEXT := GetModuleSymbol(Handle, 'glXImportContextEXT'); 
-    glXQueryContextInfoEXT := GetModuleSymbol(Handle, 'glXQueryContextInfoEXT'); 
-    glXCopySubBufferMESA := GetModuleSymbol(Handle, 'glXCopySubBufferMESA'); 
-    glXCreateGLXPixmapMESA := GetModuleSymbol(Handle, 'glXCreateGLXPixmapMESA');
-    glXReleaseBuffersMESA := GetModuleSymbol(Handle, 'glXReleaseBuffersMESA'); 
-    glXSet3DfxModeMESA := GetModuleSymbol(Handle, 'glXSet3DfxModeMESA'); 
+    glXChooseVisual := GetModuleSymbol( GLHandle, 'glXChooseVisual'); 
+    glXCreateContext := GetModuleSymbol( GLHandle, 'glXCreateContext'); 
+    glXDestroyContext := GetModuleSymbol( GLHandle, 'glXDestroyContext'); 
+    glXMakeCurrent := GetModuleSymbol( GLHandle, 'glXMakeCurrent'); 
+    glXCopyContext := GetModuleSymbol( GLHandle, 'glXCopyContext'); 
+    glXSwapBuffers := GetModuleSymbol( GLHandle, 'glXSwapBuffers'); 
+    glXCreateGLXPixmap := GetModuleSymbol( GLHandle, 'glXCreateGLXPixmap'); 
+    glXDestroyGLXPixmap := GetModuleSymbol( GLHandle, 'glXDestroyGLXPixmap'); 
+    glXQueryExtension := GetModuleSymbol( GLHandle, 'glXQueryExtension'); 
+    glXQueryVersion := GetModuleSymbol( GLHandle, 'glXQueryVersion'); 
+    glXIsDirect := GetModuleSymbol( GLHandle, 'glXIsDirect'); 
+    glXGetConfig := GetModuleSymbol( GLHandle, 'glXGetConfig'); 
+    glXGetCurrentContext := GetModuleSymbol( GLHandle, 'glXGetCurrentContext'); 
+    glXGetCurrentDrawable := GetModuleSymbol( GLHandle, 'glXGetCurrentDrawable'); 
+    glXWaitGL := GetModuleSymbol( GLHandle, 'glXWaitGL'); 
+    glXWaitX := GetModuleSymbol( GLHandle, 'glXWaitX'); 
+    glXUseXFont := GetModuleSymbol( GLHandle, 'glXUseXFont'); 
+    glXQueryExtensionsString := GetModuleSymbol( GLHandle, 'glXQueryExtensionsString'); 
+    glXQueryServerString := GetModuleSymbol( GLHandle, 'glXQueryServerString'); 
+    glXGetClientString := GetModuleSymbol( GLHandle, 'glXGetClientString'); 
+    glXGetCurrentDisplay := GetModuleSymbol( GLHandle, 'glXGetCurrentDisplay');
+    glXChooseFBConfig := GetModuleSymbol( GLHandle, 'glXChooseFBConfig');
+    glXGetFBConfigAttrib := GetModuleSymbol( GLHandle, 'glXGetFBConfigAttrib'); 
+    glXGetFBConfigs := GetModuleSymbol( GLHandle, 'glXGetFBConfigs'); 
+    glXGetVisualFromFBConfig := GetModuleSymbol( GLHandle, 'glXGetVisualFromFBConfig'); 
+    glXCreateWindow := GetModuleSymbol( GLHandle, 'glXCreateWindow'); 
+    glXDestroyWindow := GetModuleSymbol( GLHandle, 'glXDestroyWindow'); 
+    glXCreatePixmap := GetModuleSymbol( GLHandle, 'glXCreatePixmap'); 
+    glXDestroyPixmap := GetModuleSymbol( GLHandle, 'glXDestroyPixmap'); 
+    glXCreatePbuffer := GetModuleSymbol( GLHandle, 'glXCreatePbuffer'); 
+    glXDestroyPbuffer := GetModuleSymbol( GLHandle, 'glXDestroyPbuffer'); 
+    glXQueryDrawable := GetModuleSymbol( GLHandle, 'glXQueryDrawable'); 
+    glXCreateNewContext := GetModuleSymbol( GLHandle, 'glXCreateNewContext'); 
+    glXMakeContextCurrent := GetModuleSymbol( GLHandle, 'glXMakeContextCurrent'); 
+    glXGetCurrentReadDrawable := GetModuleSymbol( GLHandle, 'glXGetCurrentReadDrawable'); 
+    glXQueryContext := GetModuleSymbol( GLHandle, 'glXQueryContext'); 
+    glXSelectEvent := GetModuleSymbol( GLHandle, 'glXSelectEvent'); 
+    glXGetSelectedEvent := GetModuleSymbol( GLHandle, 'glXGetSelectedEvent'); 
+    glXGetVideoSyncSGI := GetModuleSymbol( GLHandle, 'glXGetVideoSyncSGI'); 
+    glXWaitVideoSyncSGI := GetModuleSymbol( GLHandle, 'glXWaitVideoSyncSGI'); 
+    glXFreeContextEXT := GetModuleSymbol( GLHandle, 'glXFreeContextEXT'); 
+    glXGetContextIDEXT := GetModuleSymbol( GLHandle, 'glXGetContextIDEXT'); 
+    glXGetCurrentDisplayEXT := GetModuleSymbol( GLHandle, 'glXGetCurrentDisplayEXT'); 
+    glXImportContextEXT := GetModuleSymbol( GLHandle, 'glXImportContextEXT'); 
+    glXQueryContextInfoEXT := GetModuleSymbol( GLHandle, 'glXQueryContextInfoEXT'); 
+    glXCopySubBufferMESA := GetModuleSymbol( GLHandle, 'glXCopySubBufferMESA'); 
+    glXCreateGLXPixmapMESA := GetModuleSymbol( GLHandle, 'glXCreateGLXPixmapMESA');
+    glXReleaseBuffersMESA := GetModuleSymbol( GLHandle, 'glXReleaseBuffersMESA'); 
+    glXSet3DfxModeMESA := GetModuleSymbol( GLHandle, 'glXSet3DfxModeMESA'); 
     {$endif}
   end; 
 
   if GLUHandle <> INVALID_MODULEHANDLE then
   begin
-    Handle := TModuleHandle(GLUHandle); // Kylix compatiblilty trick
+    GLHandle := TModuleHandle(GLUHandle); // Kylix compatiblilty trick
 
-    gluBeginCurve := GetModuleSymbol(Handle, 'gluBeginCurve'); 
-    gluBeginPolygon := GetModuleSymbol(Handle, 'gluBeginPolygon'); 
-    gluBeginSurface := GetModuleSymbol(Handle, 'gluBeginSurface'); 
-    gluBeginTrim := GetModuleSymbol(Handle, 'gluBeginTrim'); 
-    gluBuild1DMipmaps := GetModuleSymbol(Handle, 'gluBuild1DMipmaps'); 
-    gluBuild2DMipmaps := GetModuleSymbol(Handle, 'gluBuild2DMipmaps'); 
-    gluCylinder := GetModuleSymbol(Handle, 'gluCylinder'); 
-    gluDeleteNurbsRenderer := GetModuleSymbol(Handle, 'gluDeleteNurbsRenderer'); 
-    gluDeleteQuadric := GetModuleSymbol(Handle, 'gluDeleteQuadric'); 
-    gluDeleteTess := GetModuleSymbol(Handle, 'gluDeleteTess'); 
-    gluDisk := GetModuleSymbol(Handle, 'gluDisk'); 
-    gluEndCurve := GetModuleSymbol(Handle, 'gluEndCurve'); 
-    gluEndPolygon := GetModuleSymbol(Handle, 'gluEndPolygon'); 
-    gluEndSurface := GetModuleSymbol(Handle, 'gluEndSurface'); 
-    gluEndTrim := GetModuleSymbol(Handle, 'gluEndTrim'); 
-    gluErrorString := GetModuleSymbol(Handle, 'gluErrorString');
-    gluGetNurbsProperty := GetModuleSymbol(Handle, 'gluGetNurbsProperty'); 
-    gluGetString := GetModuleSymbol(Handle, 'gluGetString'); 
-    gluGetTessProperty := GetModuleSymbol(Handle, 'gluGetTessProperty'); 
-    gluLoadSamplingMatrices := GetModuleSymbol(Handle, 'gluLoadSamplingMatrices'); 
-    gluLookAt := GetModuleSymbol(Handle, 'gluLookAt'); 
-    gluNewNurbsRenderer := GetModuleSymbol(Handle, 'gluNewNurbsRenderer'); 
-    gluNewQuadric := GetModuleSymbol(Handle, 'gluNewQuadric'); 
-    gluNewTess := GetModuleSymbol(Handle, 'gluNewTess'); 
-    gluNextContour := GetModuleSymbol(Handle, 'gluNextContour'); 
-    gluNurbsCallback := GetModuleSymbol(Handle, 'gluNurbsCallback'); 
-    gluNurbsCurve := GetModuleSymbol(Handle, 'gluNurbsCurve'); 
-    gluNurbsProperty := GetModuleSymbol(Handle, 'gluNurbsProperty'); 
-    gluNurbsSurface := GetModuleSymbol(Handle, 'gluNurbsSurface'); 
-    gluOrtho2D := GetModuleSymbol(Handle, 'gluOrtho2D'); 
-    gluPartialDisk := GetModuleSymbol(Handle, 'gluPartialDisk');
-    gluPerspective := GetModuleSymbol(Handle, 'gluPerspective'); 
-    gluPickMatrix := GetModuleSymbol(Handle, 'gluPickMatrix'); 
-    gluProject := GetModuleSymbol(Handle, 'gluProject'); 
-    gluPwlCurve := GetModuleSymbol(Handle, 'gluPwlCurve'); 
-    gluQuadricCallback := GetModuleSymbol(Handle, 'gluQuadricCallback'); 
-    gluQuadricDrawStyle := GetModuleSymbol(Handle, 'gluQuadricDrawStyle'); 
-    gluQuadricNormals := GetModuleSymbol(Handle, 'gluQuadricNormals'); 
-    gluQuadricOrientation := GetModuleSymbol(Handle, 'gluQuadricOrientation'); 
-    gluQuadricTexture := GetModuleSymbol(Handle, 'gluQuadricTexture'); 
-    gluScaleImage := GetModuleSymbol(Handle, 'gluScaleImage');
-    gluSphere := GetModuleSymbol(Handle, 'gluSphere'); 
-    gluTessBeginContour := GetModuleSymbol(Handle, 'gluTessBeginContour'); 
-    gluTessBeginPolygon := GetModuleSymbol(Handle, 'gluTessBeginPolygon'); 
-    gluTessCallback := GetModuleSymbol(Handle, 'gluTessCallback'); 
-    gluTessEndContour := GetModuleSymbol(Handle, 'gluTessEndContour'); 
-    gluTessEndPolygon := GetModuleSymbol(Handle, 'gluTessEndPolygon'); 
-    gluTessNormal := GetModuleSymbol(Handle, 'gluTessNormal'); 
-    gluTessProperty := GetModuleSymbol(Handle, 'gluTessProperty'); 
-    gluTessVertex := GetModuleSymbol(Handle, 'gluTessVertex'); 
-    gluUnProject := GetModuleSymbol(Handle, 'gluUnProject'); 
+    gluBeginCurve := GetModuleSymbol( GLUHandle, 'gluBeginCurve');
+    gluBeginPolygon := GetModuleSymbol( GLUHandle, 'gluBeginPolygon');
+    gluBeginSurface := GetModuleSymbol( GLUHandle, 'gluBeginSurface');
+    gluBeginTrim := GetModuleSymbol( GLUHandle, 'gluBeginTrim');
+    gluBuild1DMipmaps := GetModuleSymbol( GLUHandle, 'gluBuild1DMipmaps');
+    gluBuild2DMipmaps := GetModuleSymbol( GLUHandle, 'gluBuild2DMipmaps');
+    gluCylinder := GetModuleSymbol( GLUHandle, 'gluCylinder');
+    gluDeleteNurbsRenderer := GetModuleSymbol( GLUHandle, 'gluDeleteNurbsRenderer');
+    gluDeleteQuadric := GetModuleSymbol( GLUHandle, 'gluDeleteQuadric');
+    gluDeleteTess := GetModuleSymbol( GLUHandle, 'gluDeleteTess');
+    gluDisk := GetModuleSymbol( GLUHandle, 'gluDisk');
+    gluEndCurve := GetModuleSymbol( GLUHandle, 'gluEndCurve');
+    gluEndPolygon := GetModuleSymbol( GLUHandle, 'gluEndPolygon');
+    gluEndSurface := GetModuleSymbol( GLUHandle, 'gluEndSurface');
+    gluEndTrim := GetModuleSymbol( GLUHandle, 'gluEndTrim');
+    gluErrorString := GetModuleSymbol( GLUHandle, 'gluErrorString');
+    gluGetNurbsProperty := GetModuleSymbol( GLUHandle, 'gluGetNurbsProperty');
+    gluGetString := GetModuleSymbol( GLUHandle, 'gluGetString');
+    gluGetTessProperty := GetModuleSymbol( GLUHandle, 'gluGetTessProperty');
+    gluLoadSamplingMatrices := GetModuleSymbol( GLUHandle, 'gluLoadSamplingMatrices');
+    gluLookAt := GetModuleSymbol( GLUHandle, 'gluLookAt');
+    gluNewNurbsRenderer := GetModuleSymbol( GLUHandle, 'gluNewNurbsRenderer');
+    gluNewQuadric := GetModuleSymbol( GLUHandle, 'gluNewQuadric');
+    gluNewTess := GetModuleSymbol( GLUHandle, 'gluNewTess');
+    gluNextContour := GetModuleSymbol( GLUHandle, 'gluNextContour');
+    gluNurbsCallback := GetModuleSymbol( GLUHandle, 'gluNurbsCallback');
+    gluNurbsCurve := GetModuleSymbol( GLUHandle, 'gluNurbsCurve');
+    gluNurbsProperty := GetModuleSymbol( GLUHandle, 'gluNurbsProperty');
+    gluNurbsSurface := GetModuleSymbol( GLUHandle, 'gluNurbsSurface');
+    gluOrtho2D := GetModuleSymbol( GLUHandle, 'gluOrtho2D');
+    gluPartialDisk := GetModuleSymbol( GLUHandle, 'gluPartialDisk');
+    gluPerspective := GetModuleSymbol( GLUHandle, 'gluPerspective');
+    gluPickMatrix := GetModuleSymbol( GLUHandle, 'gluPickMatrix');
+    gluProject := GetModuleSymbol( GLUHandle, 'gluProject');
+    gluPwlCurve := GetModuleSymbol( GLUHandle, 'gluPwlCurve');
+    gluQuadricCallback := GetModuleSymbol( GLUHandle, 'gluQuadricCallback');
+    gluQuadricDrawStyle := GetModuleSymbol( GLUHandle, 'gluQuadricDrawStyle');
+    gluQuadricNormals := GetModuleSymbol( GLUHandle, 'gluQuadricNormals');
+    gluQuadricOrientation := GetModuleSymbol( GLUHandle, 'gluQuadricOrientation');
+    gluQuadricTexture := GetModuleSymbol( GLUHandle, 'gluQuadricTexture');
+    gluScaleImage := GetModuleSymbol( GLUHandle, 'gluScaleImage');
+    gluSphere := GetModuleSymbol( GLUHandle, 'gluSphere');
+    gluTessBeginContour := GetModuleSymbol( GLUHandle, 'gluTessBeginContour');
+    gluTessBeginPolygon := GetModuleSymbol( GLUHandle, 'gluTessBeginPolygon');
+    gluTessCallback := GetModuleSymbol( GLUHandle, 'gluTessCallback');
+    gluTessEndContour := GetModuleSymbol( GLUHandle, 'gluTessEndContour');
+    gluTessEndPolygon := GetModuleSymbol( GLUHandle, 'gluTessEndPolygon');
+    gluTessNormal := GetModuleSymbol( GLUHandle, 'gluTessNormal');
+    gluTessProperty := GetModuleSymbol( GLUHandle, 'gluTessProperty');
+    gluTessVertex := GetModuleSymbol( GLUHandle, 'gluTessVertex');
+    gluUnProject := GetModuleSymbol( GLUHandle, 'gluUnProject'); 
   end; 
 end; 
 
@@ -8697,590 +8703,587 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure ReadExtensions;
-var
-  Handle: Cardinal;
 begin
   if GLHandle <> INVALID_MODULEHANDLE then
   begin
-    Handle := Cardinal(GLHandle); // Kylix compatiblilty trick
     // GL extensions
-    glArrayElementArrayEXT := GetModuleSymbol( Handle, 'glArrayElementArrayEXT');
-    glColorTableEXT := GetModuleSymbol( Handle, 'glColorTableEXT');
-    glColorSubTableEXT := GetModuleSymbol( Handle, 'glColorSubTableEXT');
-    glGetColorTableEXT := GetModuleSymbol( Handle, 'glGetColorTableEXT');
-    glGetColorTablePameterivEXT := GetModuleSymbol( Handle, 'glGetColorTablePameterivEXT');
-    glGetColorTablePameterfvEXT := GetModuleSymbol( Handle, 'glGetColorTablePameterfvEXT');
-    glLockArraysEXT := GetModuleSymbol( Handle, 'glLockArraysEXT');
-    glUnlockArraysEXT := GetModuleSymbol( Handle, 'glUnlockArraysEXT');
-    glCopyTexImage1DEXT := GetModuleSymbol( Handle, 'glCopyTexImage1DEXT');
-    glCopyTexSubImage1DEXT := GetModuleSymbol( Handle, 'glCopyTexSubImage1DEXT');
-    glCopyTexImage2DEXT := GetModuleSymbol( Handle, 'glCopyTexImage2DEXT');
-    glCopyTexSubImage2DEXT := GetModuleSymbol( Handle, 'glCopyTexSubImage2DEXT');
-    glCopyTexSubImage3DEXT := GetModuleSymbol( Handle, 'glCopyTexSubImage3DEXT');
-    glIndexFuncEXT := GetModuleSymbol( Handle, 'glIndexFuncEXT');
-    glIndexMaterialEXT := GetModuleSymbol( Handle, 'glIndexMaterialEXT');
-    glPolygonOffsetEXT := GetModuleSymbol( Handle, 'glPolygonOffsetEXT');
-    glTexSubImage1dEXT := GetModuleSymbol( Handle, 'glTexSubImage1DEXT');
-    glTexSubImage2dEXT := GetModuleSymbol( Handle, 'glTexSubImage2DEXT');
-    glTexSubImage3dEXT := GetModuleSymbol( Handle, 'glTexSubImage3DEXT');
-    glGenTexturesEXT := GetModuleSymbol( Handle, 'glGenTexturesEXT');
-    glDeleteTexturesEXT := GetModuleSymbol( Handle, 'glDeleteTexturesEXT');
-    glBindTextureEXT := GetModuleSymbol( Handle, 'glBindTextureEXT');
-    glPrioritizeTexturesEXT := GetModuleSymbol( Handle, 'glPrioritizeTexturesEXT');
-    glAreTexturesResidentEXT := GetModuleSymbol( Handle, 'glAreTexturesResidentEXT');
-    glIsTextureEXT := GetModuleSymbol( Handle, 'glIsTextureEXT');
+    glArrayElementArrayEXT := SDL_GL_GetProcAddress( 'glArrayElementArrayEXT');
+    glColorTableEXT := SDL_GL_GetProcAddress( 'glColorTableEXT');
+    glColorSubTableEXT := SDL_GL_GetProcAddress( 'glColorSubTableEXT');
+    glGetColorTableEXT := SDL_GL_GetProcAddress( 'glGetColorTableEXT');
+    glGetColorTablePameterivEXT := SDL_GL_GetProcAddress( 'glGetColorTablePameterivEXT');
+    glGetColorTablePameterfvEXT := SDL_GL_GetProcAddress( 'glGetColorTablePameterfvEXT');
+    glLockArraysEXT := SDL_GL_GetProcAddress( 'glLockArraysEXT');
+    glUnlockArraysEXT := SDL_GL_GetProcAddress( 'glUnlockArraysEXT');
+    glCopyTexImage1DEXT := SDL_GL_GetProcAddress( 'glCopyTexImage1DEXT');
+    glCopyTexSubImage1DEXT := SDL_GL_GetProcAddress( 'glCopyTexSubImage1DEXT');
+    glCopyTexImage2DEXT := SDL_GL_GetProcAddress( 'glCopyTexImage2DEXT');
+    glCopyTexSubImage2DEXT := SDL_GL_GetProcAddress( 'glCopyTexSubImage2DEXT');
+    glCopyTexSubImage3DEXT := SDL_GL_GetProcAddress( 'glCopyTexSubImage3DEXT');
+    glIndexFuncEXT := GetModuleSymbol( GLHandle, 'glIndexFuncEXT');
+    glIndexMaterialEXT := SDL_GL_GetProcAddress( 'glIndexMaterialEXT');
+    glPolygonOffsetEXT := SDL_GL_GetProcAddress( 'glPolygonOffsetEXT');
+    glTexSubImage1dEXT := SDL_GL_GetProcAddress( 'glTexSubImage1DEXT');
+    glTexSubImage2dEXT := SDL_GL_GetProcAddress( 'glTexSubImage2DEXT');
+    glTexSubImage3dEXT := SDL_GL_GetProcAddress( 'glTexSubImage3DEXT');
+    glGenTexturesEXT := SDL_GL_GetProcAddress( 'glGenTexturesEXT');
+    glDeleteTexturesEXT := SDL_GL_GetProcAddress( 'glDeleteTexturesEXT');
+    glBindTextureEXT := SDL_GL_GetProcAddress( 'glBindTextureEXT');
+    glPrioritizeTexturesEXT := SDL_GL_GetProcAddress( 'glPrioritizeTexturesEXT');
+    glAreTexturesResidentEXT := SDL_GL_GetProcAddress( 'glAreTexturesResidentEXT');
+    glIsTextureEXT := GetModuleSymbol( GLHandle, 'glIsTextureEXT');
 
     // EXT_vertex_array
-    glArrayElementEXT := GetModuleSymbol( Handle, 'glArrayElementEXT');
-    glColorPointerEXT := GetModuleSymbol( Handle, 'glColorPointerEXT');
-    glDrawArraysEXT := GetModuleSymbol( Handle, 'glDrawArraysEXT');
-    glEdgeFlagPointerEXT := GetModuleSymbol( Handle, 'glEdgeFlagPointerEXT');
-    glGetPointervEXT := GetModuleSymbol( Handle, 'glGetPointervEXT');
-    glIndexPointerEXT := GetModuleSymbol( Handle, 'glIndexPointerEXT');
-    glNormalPointerEXT := GetModuleSymbol( Handle, 'glNormalPointerEXT');
-    glTexCoordPointerEXT := GetModuleSymbol( Handle, 'glTexCoordPointerEXT');
-    glVertexPointerEXT := GetModuleSymbol( Handle, 'glVertexPointerEXT');
+    glArrayElementEXT := SDL_GL_GetProcAddress( 'glArrayElementEXT');
+    glColorPointerEXT := SDL_GL_GetProcAddress( 'glColorPointerEXT');
+    glDrawArraysEXT := SDL_GL_GetProcAddress( 'glDrawArraysEXT');
+    glEdgeFlagPointerEXT := SDL_GL_GetProcAddress( 'glEdgeFlagPointerEXT');
+    glGetPointervEXT := SDL_GL_GetProcAddress( 'glGetPointervEXT');
+    glIndexPointerEXT := SDL_GL_GetProcAddress( 'glIndexPointerEXT');
+    glNormalPointerEXT := SDL_GL_GetProcAddress( 'glNormalPointerEXT');
+    glTexCoordPointerEXT := SDL_GL_GetProcAddress( 'glTexCoordPointerEXT');
+    glVertexPointerEXT := SDL_GL_GetProcAddress( 'glVertexPointerEXT');
 
     // ARB_multitexture
-    glMultiTexCoord1dARB := GetModuleSymbol( Handle, 'glMultiTexCoord1dARB');
-    glMultiTexCoord1dVARB := GetModuleSymbol( Handle, 'glMultiTexCoord1dVARB');
-    glMultiTexCoord1fARBP := GetModuleSymbol( Handle, 'glMultiTexCoord1fARBP');
-    glMultiTexCoord1fVARB := GetModuleSymbol( Handle, 'glMultiTexCoord1fVARB');
-    glMultiTexCoord1iARB := GetModuleSymbol( Handle, 'glMultiTexCoord1iARB');
-    glMultiTexCoord1iVARB := GetModuleSymbol( Handle, 'glMultiTexCoord1iVARB');
-    glMultiTexCoord1sARBP := GetModuleSymbol( Handle, 'glMultiTexCoord1sARBP');
-    glMultiTexCoord1sVARB := GetModuleSymbol( Handle, 'glMultiTexCoord1sVARB');
-    glMultiTexCoord2dARB := GetModuleSymbol( Handle, 'glMultiTexCoord2dARB');
-    glMultiTexCoord2dvARB := GetModuleSymbol( Handle, 'glMultiTexCoord2dvARB');
-    glMultiTexCoord2fARB := GetModuleSymbol( Handle, 'glMultiTexCoord2fARB');
-    glMultiTexCoord2fvARB := GetModuleSymbol( Handle, 'glMultiTexCoord2fvARB');
-    glMultiTexCoord2iARB := GetModuleSymbol( Handle, 'glMultiTexCoord2iARB');
-    glMultiTexCoord2ivARB := GetModuleSymbol( Handle, 'glMultiTexCoord2ivARB');
-    glMultiTexCoord2sARB := GetModuleSymbol( Handle, 'glMultiTexCoord2sARB');
-    glMultiTexCoord2svARB := GetModuleSymbol( Handle, 'glMultiTexCoord2svARB');
-    glMultiTexCoord3dARB := GetModuleSymbol( Handle, 'glMultiTexCoord3dARB');
-    glMultiTexCoord3dvARB := GetModuleSymbol( Handle, 'glMultiTexCoord3dvARB');
-    glMultiTexCoord3fARB := GetModuleSymbol( Handle, 'glMultiTexCoord3fARB');
-    glMultiTexCoord3fvARB := GetModuleSymbol( Handle, 'glMultiTexCoord3fvARB');
-    glMultiTexCoord3iARB := GetModuleSymbol( Handle, 'glMultiTexCoord3iARB');
-    glMultiTexCoord3ivARB := GetModuleSymbol( Handle, 'glMultiTexCoord3ivARB');
-    glMultiTexCoord3sARB := GetModuleSymbol( Handle, 'glMultiTexCoord3sARB');
-    glMultiTexCoord3svARB := GetModuleSymbol( Handle, 'glMultiTexCoord3svARB');
-    glMultiTexCoord4dARB := GetModuleSymbol( Handle, 'glMultiTexCoord4dARB');
-    glMultiTexCoord4dvARB := GetModuleSymbol( Handle, 'glMultiTexCoord4dvARB');
-    glMultiTexCoord4fARB := GetModuleSymbol( Handle, 'glMultiTexCoord4fARB');
-    glMultiTexCoord4fvARB := GetModuleSymbol( Handle, 'glMultiTexCoord4fvARB');
-    glMultiTexCoord4iARB := GetModuleSymbol( Handle, 'glMultiTexCoord4iARB');
-    glMultiTexCoord4ivARB := GetModuleSymbol( Handle, 'glMultiTexCoord4ivARB');
-    glMultiTexCoord4sARB := GetModuleSymbol( Handle, 'glMultiTexCoord4sARB');
-    glMultiTexCoord4svARB := GetModuleSymbol( Handle, 'glMultiTexCoord4svARB');
-    glActiveTextureARB := GetModuleSymbol( Handle, 'glActiveTextureARB');
-    glClientActiveTextureARB := GetModuleSymbol( Handle, 'glClientActiveTextureARB');
+    glMultiTexCoord1dARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1dARB');
+    glMultiTexCoord1dVARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1dVARB');
+    glMultiTexCoord1fARBP := SDL_GL_GetProcAddress( 'glMultiTexCoord1fARBP');
+    glMultiTexCoord1fVARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1fVARB');
+    glMultiTexCoord1iARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1iARB');
+    glMultiTexCoord1iVARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1iVARB');
+    glMultiTexCoord1sARBP := SDL_GL_GetProcAddress( 'glMultiTexCoord1sARBP');
+    glMultiTexCoord1sVARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1sVARB');
+    glMultiTexCoord2dARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2dARB');
+    glMultiTexCoord2dvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2dvARB');
+    glMultiTexCoord2fARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2fARB');
+    glMultiTexCoord2fvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2fvARB');
+    glMultiTexCoord2iARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2iARB');
+    glMultiTexCoord2ivARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2ivARB');
+    glMultiTexCoord2sARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2sARB');
+    glMultiTexCoord2svARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2svARB');
+    glMultiTexCoord3dARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3dARB');
+    glMultiTexCoord3dvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3dvARB');
+    glMultiTexCoord3fARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3fARB');
+    glMultiTexCoord3fvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3fvARB');
+    glMultiTexCoord3iARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3iARB');
+    glMultiTexCoord3ivARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3ivARB');
+    glMultiTexCoord3sARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3sARB');
+    glMultiTexCoord3svARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3svARB');
+    glMultiTexCoord4dARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4dARB');
+    glMultiTexCoord4dvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4dvARB');
+    glMultiTexCoord4fARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4fARB');
+    glMultiTexCoord4fvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4fvARB');
+    glMultiTexCoord4iARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4iARB');
+    glMultiTexCoord4ivARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4ivARB');
+    glMultiTexCoord4sARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4sARB');
+    glMultiTexCoord4svARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4svARB');
+    glActiveTextureARB := SDL_GL_GetProcAddress( 'glActiveTextureARB');
+    glClientActiveTextureARB := SDL_GL_GetProcAddress( 'glClientActiveTextureARB');
 
     // EXT_compiled_vertex_array
-    glLockArrayEXT := GetModuleSymbol( Handle, 'glLockArrayEXT');
-    glUnlockArrayEXT := GetModuleSymbol( Handle, 'glUnlockArrayEXT');
+    glLockArrayEXT := SDL_GL_GetProcAddress( 'glLockArrayEXT');
+    glUnlockArrayEXT := SDL_GL_GetProcAddress( 'glUnlockArrayEXT');
 
     // EXT_cull_vertex
-    glCullParameterdvEXT := GetModuleSymbol( Handle, 'glCullParameterdvEXT');
-    glCullParameterfvEXT := GetModuleSymbol( Handle, 'glCullParameterfvEXT');
+    glCullParameterdvEXT := SDL_GL_GetProcAddress( 'glCullParameterdvEXT');
+    glCullParameterfvEXT := SDL_GL_GetProcAddress( 'glCullParameterfvEXT');
 
     // WIN_swap_hint
-    glAddSwapHintRectWIN := GetModuleSymbol( Handle, 'glAddSwapHintRectWIN');
+    glAddSwapHintRectWIN := SDL_GL_GetProcAddress( 'glAddSwapHintRectWIN');
 
     // EXT_point_parameter
-    glPointParameterfEXT := GetModuleSymbol( Handle, 'glPointParameterfEXT');
-    glPointParameterfvEXT := GetModuleSymbol( Handle, 'glPointParameterfvEXT');
+    glPointParameterfEXT := SDL_GL_GetProcAddress( 'glPointParameterfEXT');
+    glPointParameterfvEXT := SDL_GL_GetProcAddress( 'glPointParameterfvEXT');
 
     // GL_ARB_transpose_matrix
-    glLoadTransposeMatrixfARB := GetModuleSymbol( Handle, 'glLoadTransposeMatrixfARB');
-    glLoadTransposeMatrixdARB := GetModuleSymbol( Handle, 'glLoadTransposeMatrixdARB');
-    glMultTransposeMatrixfARB := GetModuleSymbol( Handle, 'glMultTransposeMatrixfARB');
-    glMultTransposeMatrixdARB := GetModuleSymbol( Handle, 'glMultTransposeMatrixdARB');
+    glLoadTransposeMatrixfARB := SDL_GL_GetProcAddress( 'glLoadTransposeMatrixfARB');
+    glLoadTransposeMatrixdARB := SDL_GL_GetProcAddress( 'glLoadTransposeMatrixdARB');
+    glMultTransposeMatrixfARB := SDL_GL_GetProcAddress( 'glMultTransposeMatrixfARB');
+    glMultTransposeMatrixdARB := SDL_GL_GetProcAddress( 'glMultTransposeMatrixdARB');
 
-    glSampleCoverageARB := GetModuleSymbol( Handle, 'glSampleCoverageARB');
-    glSamplePassARB := GetModuleSymbol( Handle, 'glSamplePassARB');
+    glSampleCoverageARB := SDL_GL_GetProcAddress( 'glSampleCoverageARB');
+    glSamplePassARB := SDL_GL_GetProcAddress( 'glSamplePassARB');
 
     // GL_ARB_multisample
-    glCompressedTexImage3DARB := GetModuleSymbol( Handle, 'glCompressedTexImage3DARB');
-    glCompressedTexImage2DARB := GetModuleSymbol( Handle, 'glCompressedTexImage2DARB');
-    glCompressedTexImage1DARB := GetModuleSymbol( Handle, 'glCompressedTexImage1DARB');
-    glCompressedTexSubImage3DARB := GetModuleSymbol( Handle, 'glCompressedTexSubImage3DARB');
-    glCompressedTexSubImage2DARB := GetModuleSymbol( Handle, 'glCompressedTexSubImage2DARB');
-    glCompressedTexSubImage1DARB := GetModuleSymbol( Handle, 'glCompressedTexSubImage1DARB');
-    glGetCompressedTexImageARB := GetModuleSymbol( Handle, 'glGetCompressedTexImageARB');
+    glCompressedTexImage3DARB := SDL_GL_GetProcAddress( 'glCompressedTexImage3DARB');
+    glCompressedTexImage2DARB := SDL_GL_GetProcAddress( 'glCompressedTexImage2DARB');
+    glCompressedTexImage1DARB := SDL_GL_GetProcAddress( 'glCompressedTexImage1DARB');
+    glCompressedTexSubImage3DARB := SDL_GL_GetProcAddress( 'glCompressedTexSubImage3DARB');
+    glCompressedTexSubImage2DARB := SDL_GL_GetProcAddress( 'glCompressedTexSubImage2DARB');
+    glCompressedTexSubImage1DARB := SDL_GL_GetProcAddress( 'glCompressedTexSubImage1DARB');
+    glGetCompressedTexImageARB := SDL_GL_GetProcAddress( 'glGetCompressedTexImageARB');
 
     // GL_EXT_blend_color
-    glBlendColorEXT := GetModuleSymbol( Handle, 'glBlendColorEXT');
+    glBlendColorEXT := SDL_GL_GetProcAddress( 'glBlendColorEXT');
 
     // GL_EXT_texture3D
-    glTexImage3DEXT := GetModuleSymbol( Handle, 'glTexImage3DEXT');
+    glTexImage3DEXT := SDL_GL_GetProcAddress( 'glTexImage3DEXT');
 
     // GL_SGIS_texture_filter4
-    glGetTexFilterFuncSGIS := GetModuleSymbol( Handle, 'glGetTexFilterFuncSGIS'); 
-    glTexFilterFuncSGIS := GetModuleSymbol( Handle, 'glTexFilterFuncSGIS');
+    glGetTexFilterFuncSGIS := SDL_GL_GetProcAddress( 'glGetTexFilterFuncSGIS'); 
+    glTexFilterFuncSGIS := SDL_GL_GetProcAddress( 'glTexFilterFuncSGIS');
 
     // GL_EXT_histogram
-    glGetHistogramEXT := GetModuleSymbol( Handle, 'glGetHistogramEXT'); 
-    glGetHistogramParameterfvEXT := GetModuleSymbol( Handle, 'glGetHistogramParameterfvEXT'); 
-    glGetHistogramParameterivEXT := GetModuleSymbol( Handle, 'glGetHistogramParameterivEXT'); 
-    glGetMinmaxEXT := GetModuleSymbol( Handle, 'glGetMinmaxEXT'); 
-    glGetMinmaxParameterfvEXT := GetModuleSymbol( Handle, 'glGetMinmaxParameterfvEXT'); 
-    glGetMinmaxParameterivEXT := GetModuleSymbol( Handle, 'glGetMinmaxParameterivEXT'); 
-    glHistogramEXT := GetModuleSymbol( Handle, 'glHistogramEXT'); 
-    glMinmaxEXT := GetModuleSymbol( Handle, 'glMinmaxEXT'); 
-    glResetHistogramEXT := GetModuleSymbol( Handle, 'glResetHistogramEXT'); 
-    glResetMinmaxEXT := GetModuleSymbol( Handle, 'glResetMinmaxEXT'); 
+    glGetHistogramEXT := SDL_GL_GetProcAddress( 'glGetHistogramEXT'); 
+    glGetHistogramParameterfvEXT := SDL_GL_GetProcAddress( 'glGetHistogramParameterfvEXT'); 
+    glGetHistogramParameterivEXT := SDL_GL_GetProcAddress( 'glGetHistogramParameterivEXT'); 
+    glGetMinmaxEXT := SDL_GL_GetProcAddress( 'glGetMinmaxEXT'); 
+    glGetMinmaxParameterfvEXT := SDL_GL_GetProcAddress( 'glGetMinmaxParameterfvEXT'); 
+    glGetMinmaxParameterivEXT := SDL_GL_GetProcAddress( 'glGetMinmaxParameterivEXT'); 
+    glHistogramEXT := SDL_GL_GetProcAddress( 'glHistogramEXT'); 
+    glMinmaxEXT := SDL_GL_GetProcAddress( 'glMinmaxEXT'); 
+    glResetHistogramEXT := SDL_GL_GetProcAddress( 'glResetHistogramEXT'); 
+    glResetMinmaxEXT := SDL_GL_GetProcAddress( 'glResetMinmaxEXT'); 
 
     // GL_EXT_convolution
-    glConvolutionFilter1DEXT := GetModuleSymbol( Handle, 'glConvolutionFilter1DEXT'); 
-    glConvolutionFilter2DEXT := GetModuleSymbol( Handle, 'glConvolutionFilter2DEXT'); 
-    glConvolutionParameterfEXT := GetModuleSymbol( Handle, 'glConvolutionParameterfEXT');
-    glConvolutionParameterfvEXT := GetModuleSymbol( Handle, 'glConvolutionParameterfvEXT'); 
-    glConvolutionParameteriEXT := GetModuleSymbol( Handle, 'glConvolutionParameteriEXT'); 
-    glConvolutionParameterivEXT := GetModuleSymbol( Handle, 'glConvolutionParameterivEXT'); 
-    glCopyConvolutionFilter1DEXT := GetModuleSymbol( Handle, 'glCopyConvolutionFilter1DEXT'); 
-    glCopyConvolutionFilter2DEXT := GetModuleSymbol( Handle, 'glCopyConvolutionFilter2DEXT'); 
-    glGetConvolutionFilterEXT := GetModuleSymbol( Handle, 'glGetConvolutionFilterEXT'); 
-    glGetConvolutionParameterfvEXT := GetModuleSymbol( Handle, 'glGetConvolutionParameterfvEXT'); 
-    glGetConvolutionParameterivEXT := GetModuleSymbol( Handle, 'glGetConvolutionParameterivEXT');
-    glGetSeparableFilterEXT := GetModuleSymbol( Handle, 'glGetSeparableFilterEXT'); 
-    glSeparableFilter2DEXT := GetModuleSymbol( Handle, 'glSeparableFilter2DEXT'); 
+    glConvolutionFilter1DEXT := SDL_GL_GetProcAddress( 'glConvolutionFilter1DEXT'); 
+    glConvolutionFilter2DEXT := SDL_GL_GetProcAddress( 'glConvolutionFilter2DEXT'); 
+    glConvolutionParameterfEXT := SDL_GL_GetProcAddress( 'glConvolutionParameterfEXT');
+    glConvolutionParameterfvEXT := SDL_GL_GetProcAddress( 'glConvolutionParameterfvEXT'); 
+    glConvolutionParameteriEXT := SDL_GL_GetProcAddress( 'glConvolutionParameteriEXT'); 
+    glConvolutionParameterivEXT := SDL_GL_GetProcAddress( 'glConvolutionParameterivEXT'); 
+    glCopyConvolutionFilter1DEXT := SDL_GL_GetProcAddress( 'glCopyConvolutionFilter1DEXT'); 
+    glCopyConvolutionFilter2DEXT := SDL_GL_GetProcAddress( 'glCopyConvolutionFilter2DEXT'); 
+    glGetConvolutionFilterEXT := SDL_GL_GetProcAddress( 'glGetConvolutionFilterEXT'); 
+    glGetConvolutionParameterfvEXT := SDL_GL_GetProcAddress( 'glGetConvolutionParameterfvEXT'); 
+    glGetConvolutionParameterivEXT := SDL_GL_GetProcAddress( 'glGetConvolutionParameterivEXT');
+    glGetSeparableFilterEXT := SDL_GL_GetProcAddress( 'glGetSeparableFilterEXT'); 
+    glSeparableFilter2DEXT := SDL_GL_GetProcAddress( 'glSeparableFilter2DEXT'); 
 
     // GL_SGI_color_table
-    glColorTableSGI := GetModuleSymbol( Handle, 'glColorTableSGI'); 
-    glColorTableParameterfvSGI := GetModuleSymbol( Handle, 'glColorTableParameterfvSGI'); 
-    glColorTableParameterivSGI := GetModuleSymbol( Handle, 'glColorTableParameterivSGI'); 
-    glCopyColorTableSGI := GetModuleSymbol( Handle, 'glCopyColorTableSGI');
-    glGetColorTableSGI := GetModuleSymbol( Handle, 'glGetColorTableSGI'); 
-    glGetColorTableParameterfvSGI := GetModuleSymbol( Handle, 'glGetColorTableParameterfvSGI'); 
-    glGetColorTableParameterivSGI := GetModuleSymbol( Handle, 'glGetColorTableParameterivSGI'); 
+    glColorTableSGI := SDL_GL_GetProcAddress( 'glColorTableSGI'); 
+    glColorTableParameterfvSGI := SDL_GL_GetProcAddress( 'glColorTableParameterfvSGI'); 
+    glColorTableParameterivSGI := SDL_GL_GetProcAddress( 'glColorTableParameterivSGI'); 
+    glCopyColorTableSGI := SDL_GL_GetProcAddress( 'glCopyColorTableSGI');
+    glGetColorTableSGI := SDL_GL_GetProcAddress( 'glGetColorTableSGI'); 
+    glGetColorTableParameterfvSGI := SDL_GL_GetProcAddress( 'glGetColorTableParameterfvSGI'); 
+    glGetColorTableParameterivSGI := SDL_GL_GetProcAddress( 'glGetColorTableParameterivSGI'); 
 
     // GL_SGIX_pixel_texture
-    glPixelTexGenSGIX := GetModuleSymbol( Handle, 'glPixelTexGenSGIX'); 
+    glPixelTexGenSGIX := SDL_GL_GetProcAddress( 'glPixelTexGenSGIX'); 
 
     // GL_SGIS_pixel_texture
-    glPixelTexGenParameteriSGIS := GetModuleSymbol( Handle, 'glPixelTexGenParameteriSGIS'); 
-    glPixelTexGenParameterivSGIS := GetModuleSymbol( Handle, 'glPixelTexGenParameterivSGIS'); 
-    glPixelTexGenParameterfSGIS := GetModuleSymbol( Handle, 'glPixelTexGenParameterfSGIS'); 
-    glPixelTexGenParameterfvSGIS := GetModuleSymbol( Handle, 'glPixelTexGenParameterfvSGIS'); 
-    glGetPixelTexGenParameterivSGIS := GetModuleSymbol( Handle, 'glGetPixelTexGenParameterivSGIS'); 
-    glGetPixelTexGenParameterfvSGIS := GetModuleSymbol( Handle, 'glGetPixelTexGenParameterfvSGIS'); 
+    glPixelTexGenParameteriSGIS := SDL_GL_GetProcAddress( 'glPixelTexGenParameteriSGIS'); 
+    glPixelTexGenParameterivSGIS := SDL_GL_GetProcAddress( 'glPixelTexGenParameterivSGIS'); 
+    glPixelTexGenParameterfSGIS := SDL_GL_GetProcAddress( 'glPixelTexGenParameterfSGIS'); 
+    glPixelTexGenParameterfvSGIS := SDL_GL_GetProcAddress( 'glPixelTexGenParameterfvSGIS'); 
+    glGetPixelTexGenParameterivSGIS := SDL_GL_GetProcAddress( 'glGetPixelTexGenParameterivSGIS'); 
+    glGetPixelTexGenParameterfvSGIS := SDL_GL_GetProcAddress( 'glGetPixelTexGenParameterfvSGIS'); 
 
     // GL_SGIS_texture4D
-    glTexImage4DSGIS := GetModuleSymbol( Handle, 'glTexImage4DSGIS');
-    glTexSubImage4DSGIS := GetModuleSymbol( Handle, 'glTexSubImage4DSGIS'); 
+    glTexImage4DSGIS := SDL_GL_GetProcAddress( 'glTexImage4DSGIS');
+    glTexSubImage4DSGIS := SDL_GL_GetProcAddress( 'glTexSubImage4DSGIS'); 
 
     // GL_SGIS_detail_texture
-    glDetailTexFuncSGIS := GetModuleSymbol( Handle, 'glDetailTexFuncSGIS'); 
-    glGetDetailTexFuncSGIS := GetModuleSymbol( Handle, 'glGetDetailTexFuncSGIS'); 
+    glDetailTexFuncSGIS := SDL_GL_GetProcAddress( 'glDetailTexFuncSGIS'); 
+    glGetDetailTexFuncSGIS := SDL_GL_GetProcAddress( 'glGetDetailTexFuncSGIS'); 
 
     // GL_SGIS_sharpen_texture
-    glSharpenTexFuncSGIS := GetModuleSymbol( Handle, 'glSharpenTexFuncSGIS'); 
-    glGetSharpenTexFuncSGIS := GetModuleSymbol( Handle, 'glGetSharpenTexFuncSGIS'); 
+    glSharpenTexFuncSGIS := SDL_GL_GetProcAddress( 'glSharpenTexFuncSGIS'); 
+    glGetSharpenTexFuncSGIS := SDL_GL_GetProcAddress( 'glGetSharpenTexFuncSGIS'); 
 
     // GL_SGIS_multisample
-    glSampleMaskSGIS := GetModuleSymbol( Handle, 'glSampleMaskSGIS'); 
-    glSamplePatternSGIS := GetModuleSymbol( Handle, 'glSamplePatternSGIS'); 
+    glSampleMaskSGIS := SDL_GL_GetProcAddress( 'glSampleMaskSGIS'); 
+    glSamplePatternSGIS := SDL_GL_GetProcAddress( 'glSamplePatternSGIS'); 
 
     // GL_EXT_blend_minmax
-    glBlendEquationEXT := GetModuleSymbol( Handle, 'glBlendEquationEXT'); 
+    glBlendEquationEXT := SDL_GL_GetProcAddress( 'glBlendEquationEXT'); 
 
     // GL_SGIX_sprite
-    glSpriteParameterfSGIX := GetModuleSymbol( Handle, 'glSpriteParameterfSGIX'); 
-    glSpriteParameterfvSGIX := GetModuleSymbol( Handle, 'glSpriteParameterfvSGIX'); 
-    glSpriteParameteriSGIX := GetModuleSymbol( Handle, 'glSpriteParameteriSGIX'); 
-    glSpriteParameterivSGIX := GetModuleSymbol( Handle, 'glSpriteParameterivSGIX'); 
+    glSpriteParameterfSGIX := SDL_GL_GetProcAddress( 'glSpriteParameterfSGIX'); 
+    glSpriteParameterfvSGIX := SDL_GL_GetProcAddress( 'glSpriteParameterfvSGIX'); 
+    glSpriteParameteriSGIX := SDL_GL_GetProcAddress( 'glSpriteParameteriSGIX'); 
+    glSpriteParameterivSGIX := SDL_GL_GetProcAddress( 'glSpriteParameterivSGIX'); 
 
     // GL_EXT_point_parameters
-    glPointParameterfSGIS := GetModuleSymbol( Handle, 'glPointParameterfSGIS');
-    glPointParameterfvSGIS := GetModuleSymbol( Handle, 'glPointParameterfvSGIS'); 
+    glPointParameterfSGIS := SDL_GL_GetProcAddress( 'glPointParameterfSGIS');
+    glPointParameterfvSGIS := SDL_GL_GetProcAddress( 'glPointParameterfvSGIS'); 
 
     // GL_SGIX_instruments
-    glGetInstrumentsSGIX := GetModuleSymbol( Handle, 'glGetInstrumentsSGIX'); 
-    glInstrumentsBufferSGIX := GetModuleSymbol( Handle, 'glInstrumentsBufferSGIX'); 
-    glPollInstrumentsSGIX := GetModuleSymbol( Handle, 'glPollInstrumentsSGIX');
-    glReadInstrumentsSGIX := GetModuleSymbol( Handle, 'glReadInstrumentsSGIX'); 
-    glStartInstrumentsSGIX := GetModuleSymbol( Handle, 'glStartInstrumentsSGIX'); 
-    glStopInstrumentsSGIX := GetModuleSymbol( Handle, 'glStopInstrumentsSGIX'); 
+    glGetInstrumentsSGIX := SDL_GL_GetProcAddress( 'glGetInstrumentsSGIX'); 
+    glInstrumentsBufferSGIX := SDL_GL_GetProcAddress( 'glInstrumentsBufferSGIX'); 
+    glPollInstrumentsSGIX := SDL_GL_GetProcAddress( 'glPollInstrumentsSGIX');
+    glReadInstrumentsSGIX := SDL_GL_GetProcAddress( 'glReadInstrumentsSGIX'); 
+    glStartInstrumentsSGIX := SDL_GL_GetProcAddress( 'glStartInstrumentsSGIX'); 
+    glStopInstrumentsSGIX := SDL_GL_GetProcAddress( 'glStopInstrumentsSGIX'); 
 
     // GL_SGIX_framezoom
-    glFrameZoomSGIX := GetModuleSymbol( Handle, 'glFrameZoomSGIX'); 
+    glFrameZoomSGIX := SDL_GL_GetProcAddress( 'glFrameZoomSGIX'); 
 
     // GL_SGIX_tag_sample_buffer
-    glTagSampleBufferSGIX := GetModuleSymbol( Handle, 'glTagSampleBufferSGIX'); 
+    glTagSampleBufferSGIX := SDL_GL_GetProcAddress( 'glTagSampleBufferSGIX'); 
 
     // GL_SGIX_polynomial_ffd
-    glDeformationMap3dSGIX := GetModuleSymbol( Handle, 'glDeformationMap3dSGIX'); 
-    glDeformationMap3fSGIX := GetModuleSymbol( Handle, 'glDeformationMap3fSGIX'); 
-    glDeformSGIX := GetModuleSymbol( Handle, 'glDeformSGIX'); 
-    glLoadIdentityDeformationMapSGIX := GetModuleSymbol( Handle, 'glLoadIdentityDeformationMapSGIX'); 
+    glDeformationMap3dSGIX := SDL_GL_GetProcAddress( 'glDeformationMap3dSGIX'); 
+    glDeformationMap3fSGIX := SDL_GL_GetProcAddress( 'glDeformationMap3fSGIX'); 
+    glDeformSGIX := SDL_GL_GetProcAddress( 'glDeformSGIX'); 
+    glLoadIdentityDeformationMapSGIX := SDL_GL_GetProcAddress( 'glLoadIdentityDeformationMapSGIX'); 
 
     // GL_SGIX_reference_plane
-    glReferencePlaneSGIX := GetModuleSymbol( Handle, 'glReferencePlaneSGIX'); 
+    glReferencePlaneSGIX := SDL_GL_GetProcAddress( 'glReferencePlaneSGIX'); 
 
     // GL_SGIX_flush_raster
-    glFlushRasterSGIX := GetModuleSymbol( Handle, 'glFlushRasterSGIX'); 
+    glFlushRasterSGIX := SDL_GL_GetProcAddress( 'glFlushRasterSGIX'); 
 
     // GL_SGIS_fog_function
-    glFogFuncSGIS := GetModuleSymbol( Handle, 'glFogFuncSGIS'); 
-    glGetFogFuncSGIS := GetModuleSymbol( Handle, 'glGetFogFuncSGIS'); 
+    glFogFuncSGIS := SDL_GL_GetProcAddress( 'glFogFuncSGIS'); 
+    glGetFogFuncSGIS := SDL_GL_GetProcAddress( 'glGetFogFuncSGIS'); 
 
     // GL_HP_image_transform
-    glImageTransformParameteriHP := GetModuleSymbol( Handle, 'glImageTransformParameteriHP'); 
-    glImageTransformParameterfHP := GetModuleSymbol( Handle, 'glImageTransformParameterfHP'); 
-    glImageTransformParameterivHP := GetModuleSymbol( Handle, 'glImageTransformParameterivHP'); 
-    glImageTransformParameterfvHP := GetModuleSymbol( Handle, 'glImageTransformParameterfvHP'); 
-    glGetImageTransformParameterivHP := GetModuleSymbol( Handle, 'glGetImageTransformParameterivHP');
-    glGetImageTransformParameterfvHP := GetModuleSymbol( Handle, 'glGetImageTransformParameterfvHP'); 
+    glImageTransformParameteriHP := SDL_GL_GetProcAddress( 'glImageTransformParameteriHP'); 
+    glImageTransformParameterfHP := SDL_GL_GetProcAddress( 'glImageTransformParameterfHP'); 
+    glImageTransformParameterivHP := SDL_GL_GetProcAddress( 'glImageTransformParameterivHP'); 
+    glImageTransformParameterfvHP := SDL_GL_GetProcAddress( 'glImageTransformParameterfvHP'); 
+    glGetImageTransformParameterivHP := SDL_GL_GetProcAddress( 'glGetImageTransformParameterivHP');
+    glGetImageTransformParameterfvHP := SDL_GL_GetProcAddress( 'glGetImageTransformParameterfvHP'); 
 
     // GL_EXT_color_subtable
-    glCopyColorSubTableEXT := GetModuleSymbol( Handle, 'glCopyColorSubTableEXT'); 
+    glCopyColorSubTableEXT := SDL_GL_GetProcAddress( 'glCopyColorSubTableEXT'); 
 
     // GL_PGI_misc_hints
-    glHintPGI := GetModuleSymbol( Handle, 'glHintPGI'); 
+    glHintPGI := SDL_GL_GetProcAddress( 'glHintPGI'); 
 
     // GL_EXT_paletted_texture
-    glGetColorTableParameterivEXT := GetModuleSymbol( Handle, 'glGetColorTableParameterivEXT'); 
-    glGetColorTableParameterfvEXT := GetModuleSymbol( Handle, 'glGetColorTableParameterfvEXT'); 
+    glGetColorTableParameterivEXT := SDL_GL_GetProcAddress( 'glGetColorTableParameterivEXT'); 
+    glGetColorTableParameterfvEXT := SDL_GL_GetProcAddress( 'glGetColorTableParameterfvEXT'); 
 
     // GL_SGIX_list_priority
-    glGetListParameterfvSGIX := GetModuleSymbol( Handle, 'glGetListParameterfvSGIX'); 
-    glGetListParameterivSGIX := GetModuleSymbol( Handle, 'glGetListParameterivSGIX'); 
-    glListParameterfSGIX := GetModuleSymbol( Handle, 'glListParameterfSGIX');
-    glListParameterfvSGIX := GetModuleSymbol( Handle, 'glListParameterfvSGIX'); 
-    glListParameteriSGIX := GetModuleSymbol( Handle, 'glListParameteriSGIX'); 
-    glListParameterivSGIX := GetModuleSymbol( Handle, 'glListParameterivSGIX'); 
+    glGetListParameterfvSGIX := SDL_GL_GetProcAddress( 'glGetListParameterfvSGIX'); 
+    glGetListParameterivSGIX := SDL_GL_GetProcAddress( 'glGetListParameterivSGIX'); 
+    glListParameterfSGIX := SDL_GL_GetProcAddress( 'glListParameterfSGIX');
+    glListParameterfvSGIX := SDL_GL_GetProcAddress( 'glListParameterfvSGIX'); 
+    glListParameteriSGIX := SDL_GL_GetProcAddress( 'glListParameteriSGIX'); 
+    glListParameterivSGIX := SDL_GL_GetProcAddress( 'glListParameterivSGIX'); 
 
     // GL_SGIX_fragment_lighting
-    glFragmentColorMaterialSGIX := GetModuleSymbol( Handle, 'glFragmentColorMaterialSGIX'); 
-    glFragmentLightfSGIX := GetModuleSymbol( Handle, 'glFragmentLightfSGIX'); 
-    glFragmentLightfvSGIX := GetModuleSymbol( Handle, 'glFragmentLightfvSGIX'); 
-    glFragmentLightiSGIX := GetModuleSymbol( Handle, 'glFragmentLightiSGIX'); 
-    glFragmentLightivSGIX := GetModuleSymbol( Handle, 'glFragmentLightivSGIX'); 
-    glFragmentLightModelfSGIX := GetModuleSymbol( Handle, 'glFragmentLightModelfSGIX'); 
-    glFragmentLightModelfvSGIX := GetModuleSymbol( Handle, 'glFragmentLightModelfvSGIX'); 
-    glFragmentLightModeliSGIX := GetModuleSymbol( Handle, 'glFragmentLightModeliSGIX'); 
-    glFragmentLightModelivSGIX := GetModuleSymbol( Handle, 'glFragmentLightModelivSGIX'); 
-    glFragmentMaterialfSGIX := GetModuleSymbol( Handle, 'glFragmentMaterialfSGIX'); 
-    glFragmentMaterialfvSGIX := GetModuleSymbol( Handle, 'glFragmentMaterialfvSGIX');
-    glFragmentMaterialiSGIX := GetModuleSymbol( Handle, 'glFragmentMaterialiSGIX'); 
-    glFragmentMaterialivSGIX := GetModuleSymbol( Handle, 'glFragmentMaterialivSGIX'); 
-    glGetFragmentLightfvSGIX := GetModuleSymbol( Handle, 'glGetFragmentLightfvSGIX'); 
-    glGetFragmentLightivSGIX := GetModuleSymbol( Handle, 'glGetFragmentLightivSGIX'); 
-    glGetFragmentMaterialfvSGIX := GetModuleSymbol( Handle, 'glGetFragmentMaterialfvSGIX');
-    glGetFragmentMaterialivSGIX := GetModuleSymbol( Handle, 'glGetFragmentMaterialivSGIX'); 
-    glLightEnviSGIX := GetModuleSymbol( Handle, 'glLightEnviSGIX'); 
+    glFragmentColorMaterialSGIX := SDL_GL_GetProcAddress( 'glFragmentColorMaterialSGIX'); 
+    glFragmentLightfSGIX := SDL_GL_GetProcAddress( 'glFragmentLightfSGIX'); 
+    glFragmentLightfvSGIX := SDL_GL_GetProcAddress( 'glFragmentLightfvSGIX'); 
+    glFragmentLightiSGIX := SDL_GL_GetProcAddress( 'glFragmentLightiSGIX'); 
+    glFragmentLightivSGIX := SDL_GL_GetProcAddress( 'glFragmentLightivSGIX'); 
+    glFragmentLightModelfSGIX := SDL_GL_GetProcAddress( 'glFragmentLightModelfSGIX'); 
+    glFragmentLightModelfvSGIX := SDL_GL_GetProcAddress( 'glFragmentLightModelfvSGIX'); 
+    glFragmentLightModeliSGIX := SDL_GL_GetProcAddress( 'glFragmentLightModeliSGIX'); 
+    glFragmentLightModelivSGIX := SDL_GL_GetProcAddress( 'glFragmentLightModelivSGIX'); 
+    glFragmentMaterialfSGIX := SDL_GL_GetProcAddress( 'glFragmentMaterialfSGIX'); 
+    glFragmentMaterialfvSGIX := SDL_GL_GetProcAddress( 'glFragmentMaterialfvSGIX');
+    glFragmentMaterialiSGIX := SDL_GL_GetProcAddress( 'glFragmentMaterialiSGIX'); 
+    glFragmentMaterialivSGIX := SDL_GL_GetProcAddress( 'glFragmentMaterialivSGIX'); 
+    glGetFragmentLightfvSGIX := SDL_GL_GetProcAddress( 'glGetFragmentLightfvSGIX'); 
+    glGetFragmentLightivSGIX := SDL_GL_GetProcAddress( 'glGetFragmentLightivSGIX'); 
+    glGetFragmentMaterialfvSGIX := SDL_GL_GetProcAddress( 'glGetFragmentMaterialfvSGIX');
+    glGetFragmentMaterialivSGIX := SDL_GL_GetProcAddress( 'glGetFragmentMaterialivSGIX'); 
+    glLightEnviSGIX := SDL_GL_GetProcAddress( 'glLightEnviSGIX'); 
 
     // GL_EXT_draw_range_elements
-    glDrawRangeElementsEXT := GetModuleSymbol( Handle, 'glDrawRangeElementsEXT'); 
+    glDrawRangeElementsEXT := SDL_GL_GetProcAddress( 'glDrawRangeElementsEXT'); 
 
     // GL_EXT_light_texture
-    glApplyTextureEXT := GetModuleSymbol( Handle, 'glApplyTextureEXT'); 
-    glTextureLightEXT := GetModuleSymbol( Handle, 'glTextureLightEXT'); 
-    glTextureMaterialEXT := GetModuleSymbol( Handle, 'glTextureMaterialEXT'); 
+    glApplyTextureEXT := SDL_GL_GetProcAddress( 'glApplyTextureEXT'); 
+    glTextureLightEXT := SDL_GL_GetProcAddress( 'glTextureLightEXT'); 
+    glTextureMaterialEXT := SDL_GL_GetProcAddress( 'glTextureMaterialEXT'); 
 
     // GL_SGIX_async
-    glAsyncMarkerSGIX := GetModuleSymbol( Handle, 'glAsyncMarkerSGIX'); 
-    glFinishAsyncSGIX := GetModuleSymbol( Handle, 'glFinishAsyncSGIX'); 
-    glPollAsyncSGIX := GetModuleSymbol( Handle, 'glPollAsyncSGIX'); 
-    glGenAsyncMarkersSGIX := GetModuleSymbol( Handle, 'glGenAsyncMarkersSGIX'); 
-    glDeleteAsyncMarkersSGIX := GetModuleSymbol( Handle, 'glDeleteAsyncMarkersSGIX'); 
-    glIsAsyncMarkerSGIX := GetModuleSymbol( Handle, 'glIsAsyncMarkerSGIX'); 
+    glAsyncMarkerSGIX := SDL_GL_GetProcAddress( 'glAsyncMarkerSGIX'); 
+    glFinishAsyncSGIX := SDL_GL_GetProcAddress( 'glFinishAsyncSGIX'); 
+    glPollAsyncSGIX := SDL_GL_GetProcAddress( 'glPollAsyncSGIX'); 
+    glGenAsyncMarkersSGIX := SDL_GL_GetProcAddress( 'glGenAsyncMarkersSGIX'); 
+    glDeleteAsyncMarkersSGIX := SDL_GL_GetProcAddress( 'glDeleteAsyncMarkersSGIX'); 
+    glIsAsyncMarkerSGIX := SDL_GL_GetProcAddress( 'glIsAsyncMarkerSGIX'); 
 
     // GL_INTEL_parallel_arrays
-    glVertexPointervINTEL := GetModuleSymbol( Handle, 'glVertexPointervINTEL'); 
-    glNormalPointervINTEL := GetModuleSymbol( Handle, 'glNormalPointervINTEL'); 
-    glColorPointervINTEL := GetModuleSymbol( Handle, 'glColorPointervINTEL'); 
-    glTexCoordPointervINTEL := GetModuleSymbol( Handle, 'glTexCoordPointervINTEL'); 
+    glVertexPointervINTEL := SDL_GL_GetProcAddress( 'glVertexPointervINTEL'); 
+    glNormalPointervINTEL := SDL_GL_GetProcAddress( 'glNormalPointervINTEL'); 
+    glColorPointervINTEL := SDL_GL_GetProcAddress( 'glColorPointervINTEL'); 
+    glTexCoordPointervINTEL := SDL_GL_GetProcAddress( 'glTexCoordPointervINTEL'); 
 
     // GL_EXT_pixel_transform
-    glPixelTransformParameteriEXT := GetModuleSymbol( Handle, 'glPixelTransformParameteriEXT');
-    glPixelTransformParameterfEXT := GetModuleSymbol( Handle, 'glPixelTransformParameterfEXT'); 
-    glPixelTransformParameterivEXT := GetModuleSymbol( Handle, 'glPixelTransformParameterivEXT'); 
-    glPixelTransformParameterfvEXT := GetModuleSymbol( Handle, 'glPixelTransformParameterfvEXT'); 
+    glPixelTransformParameteriEXT := SDL_GL_GetProcAddress( 'glPixelTransformParameteriEXT');
+    glPixelTransformParameterfEXT := SDL_GL_GetProcAddress( 'glPixelTransformParameterfEXT'); 
+    glPixelTransformParameterivEXT := SDL_GL_GetProcAddress( 'glPixelTransformParameterivEXT'); 
+    glPixelTransformParameterfvEXT := SDL_GL_GetProcAddress( 'glPixelTransformParameterfvEXT'); 
 
     // GL_EXT_secondary_color
-    glSecondaryColor3bEXT := GetModuleSymbol( Handle, 'glSecondaryColor3bEXT'); 
-    glSecondaryColor3bvEXT := GetModuleSymbol( Handle, 'glSecondaryColor3bvEXT'); 
-    glSecondaryColor3dEXT := GetModuleSymbol( Handle, 'glSecondaryColor3dEXT'); 
-    glSecondaryColor3dvEXT := GetModuleSymbol( Handle, 'glSecondaryColor3dvEXT'); 
-    glSecondaryColor3fEXT := GetModuleSymbol( Handle, 'glSecondaryColor3fEXT'); 
-    glSecondaryColor3fvEXT := GetModuleSymbol( Handle, 'glSecondaryColor3fvEXT'); 
-    glSecondaryColor3iEXT := GetModuleSymbol( Handle, 'glSecondaryColor3iEXT'); 
-    glSecondaryColor3ivEXT := GetModuleSymbol( Handle, 'glSecondaryColor3ivEXT'); 
-    glSecondaryColor3sEXT := GetModuleSymbol( Handle, 'glSecondaryColor3sEXT'); 
-    glSecondaryColor3svEXT := GetModuleSymbol( Handle, 'glSecondaryColor3svEXT'); 
-    glSecondaryColor3ubEXT := GetModuleSymbol( Handle, 'glSecondaryColor3ubEXT');
-    glSecondaryColor3ubvEXT := GetModuleSymbol( Handle, 'glSecondaryColor3ubvEXT'); 
-    glSecondaryColor3uiEXT := GetModuleSymbol( Handle, 'glSecondaryColor3uiEXT'); 
-    glSecondaryColor3uivEXT := GetModuleSymbol( Handle, 'glSecondaryColor3uivEXT'); 
-    glSecondaryColor3usEXT := GetModuleSymbol( Handle, 'glSecondaryColor3usEXT'); 
-    glSecondaryColor3usvEXT := GetModuleSymbol( Handle, 'glSecondaryColor3usvEXT'); 
-    glSecondaryColorPointerEXT := GetModuleSymbol( Handle, 'glSecondaryColorPointerEXT'); 
+    glSecondaryColor3bEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3bEXT'); 
+    glSecondaryColor3bvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3bvEXT'); 
+    glSecondaryColor3dEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3dEXT'); 
+    glSecondaryColor3dvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3dvEXT'); 
+    glSecondaryColor3fEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3fEXT'); 
+    glSecondaryColor3fvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3fvEXT'); 
+    glSecondaryColor3iEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3iEXT'); 
+    glSecondaryColor3ivEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3ivEXT'); 
+    glSecondaryColor3sEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3sEXT'); 
+    glSecondaryColor3svEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3svEXT'); 
+    glSecondaryColor3ubEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3ubEXT');
+    glSecondaryColor3ubvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3ubvEXT'); 
+    glSecondaryColor3uiEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3uiEXT'); 
+    glSecondaryColor3uivEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3uivEXT'); 
+    glSecondaryColor3usEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3usEXT'); 
+    glSecondaryColor3usvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3usvEXT'); 
+    glSecondaryColorPointerEXT := SDL_GL_GetProcAddress( 'glSecondaryColorPointerEXT'); 
 
     // GL_EXT_texture_perturb_normal
-    glTextureNormalEXT := GetModuleSymbol( Handle, 'glTextureNormalEXT'); 
+    glTextureNormalEXT := SDL_GL_GetProcAddress( 'glTextureNormalEXT'); 
 
     // GL_EXT_multi_draw_arrays
-    glMultiDrawArraysEXT := GetModuleSymbol( Handle, 'glMultiDrawArraysEXT'); 
-    glMultiDrawElementsEXT := GetModuleSymbol( Handle, 'glMultiDrawElementsEXT'); 
+    glMultiDrawArraysEXT := SDL_GL_GetProcAddress( 'glMultiDrawArraysEXT'); 
+    glMultiDrawElementsEXT := SDL_GL_GetProcAddress( 'glMultiDrawElementsEXT'); 
 
     // GL_EXT_fog_coord
-    glFogCoordfEXT := GetModuleSymbol( Handle, 'glFogCoordfEXT');
-    glFogCoordfvEXT := GetModuleSymbol( Handle, 'glFogCoordfvEXT'); 
-    glFogCoorddEXT := GetModuleSymbol( Handle, 'glFogCoorddEXT'); 
-    glFogCoorddvEXT := GetModuleSymbol( Handle, 'glFogCoorddvEXT'); 
-    glFogCoordPointerEXT := GetModuleSymbol( Handle, 'glFogCoordPointerEXT'); 
+    glFogCoordfEXT := SDL_GL_GetProcAddress( 'glFogCoordfEXT');
+    glFogCoordfvEXT := SDL_GL_GetProcAddress( 'glFogCoordfvEXT'); 
+    glFogCoorddEXT := SDL_GL_GetProcAddress( 'glFogCoorddEXT'); 
+    glFogCoorddvEXT := SDL_GL_GetProcAddress( 'glFogCoorddvEXT'); 
+    glFogCoordPointerEXT := SDL_GL_GetProcAddress( 'glFogCoordPointerEXT'); 
 
     // GL_EXT_coordinate_frame
-    glTangent3bEXT := GetModuleSymbol( Handle, 'glTangent3bEXT'); 
-    glTangent3bvEXT := GetModuleSymbol( Handle, 'glTangent3bvEXT'); 
-    glTangent3dEXT := GetModuleSymbol( Handle, 'glTangent3dEXT'); 
-    glTangent3dvEXT := GetModuleSymbol( Handle, 'glTangent3dvEXT'); 
-    glTangent3fEXT := GetModuleSymbol( Handle, 'glTangent3fEXT'); 
-    glTangent3fvEXT := GetModuleSymbol( Handle, 'glTangent3fvEXT'); 
-    glTangent3iEXT := GetModuleSymbol( Handle, 'glTangent3iEXT'); 
-    glTangent3ivEXT := GetModuleSymbol( Handle, 'glTangent3ivEXT'); 
-    glTangent3sEXT := GetModuleSymbol( Handle, 'glTangent3sEXT'); 
-    glTangent3svEXT := GetModuleSymbol( Handle, 'glTangent3svEXT');
-    glBinormal3bEXT := GetModuleSymbol( Handle, 'glBinormal3bEXT'); 
-    glBinormal3bvEXT := GetModuleSymbol( Handle, 'glBinormal3bvEXT'); 
-    glBinormal3dEXT := GetModuleSymbol( Handle, 'glBinormal3dEXT'); 
-    glBinormal3dvEXT := GetModuleSymbol( Handle, 'glBinormal3dvEXT'); 
-    glBinormal3fEXT := GetModuleSymbol( Handle, 'glBinormal3fEXT'); 
-    glBinormal3fvEXT := GetModuleSymbol( Handle, 'glBinormal3fvEXT'); 
-    glBinormal3iEXT := GetModuleSymbol( Handle, 'glBinormal3iEXT'); 
-    glBinormal3ivEXT := GetModuleSymbol( Handle, 'glBinormal3ivEXT'); 
-    glBinormal3sEXT := GetModuleSymbol( Handle, 'glBinormal3sEXT'); 
-    glBinormal3svEXT := GetModuleSymbol( Handle, 'glBinormal3svEXT'); 
-    glTangentPointerEXT := GetModuleSymbol( Handle, 'glTangentPointerEXT'); 
-    glBinormalPointerEXT := GetModuleSymbol( Handle, 'glBinormalPointerEXT'); 
+    glTangent3bEXT := SDL_GL_GetProcAddress( 'glTangent3bEXT'); 
+    glTangent3bvEXT := SDL_GL_GetProcAddress( 'glTangent3bvEXT'); 
+    glTangent3dEXT := SDL_GL_GetProcAddress( 'glTangent3dEXT'); 
+    glTangent3dvEXT := SDL_GL_GetProcAddress( 'glTangent3dvEXT'); 
+    glTangent3fEXT := SDL_GL_GetProcAddress( 'glTangent3fEXT'); 
+    glTangent3fvEXT := SDL_GL_GetProcAddress( 'glTangent3fvEXT'); 
+    glTangent3iEXT := SDL_GL_GetProcAddress( 'glTangent3iEXT'); 
+    glTangent3ivEXT := SDL_GL_GetProcAddress( 'glTangent3ivEXT'); 
+    glTangent3sEXT := SDL_GL_GetProcAddress( 'glTangent3sEXT'); 
+    glTangent3svEXT := SDL_GL_GetProcAddress( 'glTangent3svEXT');
+    glBinormal3bEXT := SDL_GL_GetProcAddress( 'glBinormal3bEXT'); 
+    glBinormal3bvEXT := SDL_GL_GetProcAddress( 'glBinormal3bvEXT'); 
+    glBinormal3dEXT := SDL_GL_GetProcAddress( 'glBinormal3dEXT'); 
+    glBinormal3dvEXT := SDL_GL_GetProcAddress( 'glBinormal3dvEXT'); 
+    glBinormal3fEXT := SDL_GL_GetProcAddress( 'glBinormal3fEXT'); 
+    glBinormal3fvEXT := SDL_GL_GetProcAddress( 'glBinormal3fvEXT'); 
+    glBinormal3iEXT := SDL_GL_GetProcAddress( 'glBinormal3iEXT'); 
+    glBinormal3ivEXT := SDL_GL_GetProcAddress( 'glBinormal3ivEXT'); 
+    glBinormal3sEXT := SDL_GL_GetProcAddress( 'glBinormal3sEXT'); 
+    glBinormal3svEXT := SDL_GL_GetProcAddress( 'glBinormal3svEXT'); 
+    glTangentPointerEXT := SDL_GL_GetProcAddress( 'glTangentPointerEXT'); 
+    glBinormalPointerEXT := SDL_GL_GetProcAddress( 'glBinormalPointerEXT'); 
 
     // GL_SUNX_constant_data
-    glFinishTextureSUNX := GetModuleSymbol( Handle, 'glFinishTextureSUNX'); 
+    glFinishTextureSUNX := SDL_GL_GetProcAddress( 'glFinishTextureSUNX'); 
 
     // GL_SUN_global_alpha
-    glGlobalAlphaFactorbSUN := GetModuleSymbol( Handle, 'glGlobalAlphaFactorbSUN'); 
-    glGlobalAlphaFactorsSUN := GetModuleSymbol( Handle, 'glGlobalAlphaFactorsSUN'); 
-    glGlobalAlphaFactoriSUN := GetModuleSymbol( Handle, 'glGlobalAlphaFactoriSUN'); 
-    glGlobalAlphaFactorfSUN := GetModuleSymbol( Handle, 'glGlobalAlphaFactorfSUN'); 
-    glGlobalAlphaFactordSUN := GetModuleSymbol( Handle, 'glGlobalAlphaFactordSUN'); 
-    glGlobalAlphaFactorubSUN := GetModuleSymbol( Handle, 'glGlobalAlphaFactorubSUN'); 
-    glGlobalAlphaFactorusSUN := GetModuleSymbol( Handle, 'glGlobalAlphaFactorusSUN'); 
-    glGlobalAlphaFactoruiSUN := GetModuleSymbol( Handle, 'glGlobalAlphaFactoruiSUN');
+    glGlobalAlphaFactorbSUN := SDL_GL_GetProcAddress( 'glGlobalAlphaFactorbSUN'); 
+    glGlobalAlphaFactorsSUN := SDL_GL_GetProcAddress( 'glGlobalAlphaFactorsSUN'); 
+    glGlobalAlphaFactoriSUN := SDL_GL_GetProcAddress( 'glGlobalAlphaFactoriSUN'); 
+    glGlobalAlphaFactorfSUN := SDL_GL_GetProcAddress( 'glGlobalAlphaFactorfSUN'); 
+    glGlobalAlphaFactordSUN := SDL_GL_GetProcAddress( 'glGlobalAlphaFactordSUN'); 
+    glGlobalAlphaFactorubSUN := SDL_GL_GetProcAddress( 'glGlobalAlphaFactorubSUN'); 
+    glGlobalAlphaFactorusSUN := SDL_GL_GetProcAddress( 'glGlobalAlphaFactorusSUN'); 
+    glGlobalAlphaFactoruiSUN := SDL_GL_GetProcAddress( 'glGlobalAlphaFactoruiSUN');
 
     // GL_SUN_triangle_list
-    glReplacementCodeuiSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiSUN'); 
-    glReplacementCodeusSUN := GetModuleSymbol( Handle, 'glReplacementCodeusSUN'); 
-    glReplacementCodeubSUN := GetModuleSymbol( Handle, 'glReplacementCodeubSUN'); 
-    glReplacementCodeuivSUN := GetModuleSymbol( Handle, 'glReplacementCodeuivSUN'); 
-    glReplacementCodeusvSUN := GetModuleSymbol( Handle, 'glReplacementCodeusvSUN');
-    glReplacementCodeubvSUN := GetModuleSymbol( Handle, 'glReplacementCodeubvSUN'); 
-    glReplacementCodePointerSUN := GetModuleSymbol( Handle, 'glReplacementCodePointerSUN'); 
+    glReplacementCodeuiSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiSUN'); 
+    glReplacementCodeusSUN := SDL_GL_GetProcAddress( 'glReplacementCodeusSUN'); 
+    glReplacementCodeubSUN := SDL_GL_GetProcAddress( 'glReplacementCodeubSUN'); 
+    glReplacementCodeuivSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuivSUN'); 
+    glReplacementCodeusvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeusvSUN');
+    glReplacementCodeubvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeubvSUN'); 
+    glReplacementCodePointerSUN := SDL_GL_GetProcAddress( 'glReplacementCodePointerSUN'); 
 
     // GL_SUN_vertex
-    glColor4ubVertex2fSUN := GetModuleSymbol( Handle, 'glColor4ubVertex2fSUN'); 
-    glColor4ubVertex2fvSUN := GetModuleSymbol( Handle, 'glColor4ubVertex2fvSUN'); 
-    glColor4ubVertex3fSUN := GetModuleSymbol( Handle, 'glColor4ubVertex3fSUN'); 
-    glColor4ubVertex3fvSUN := GetModuleSymbol( Handle, 'glColor4ubVertex3fvSUN'); 
-    glColor3fVertex3fSUN := GetModuleSymbol( Handle, 'glColor3fVertex3fSUN'); 
-    glColor3fVertex3fvSUN := GetModuleSymbol( Handle, 'glColor3fVertex3fvSUN'); 
-    glNormal3fVertex3fSUN := GetModuleSymbol( Handle, 'glNormal3fVertex3fSUN'); 
-    glNormal3fVertex3fvSUN := GetModuleSymbol( Handle, 'glNormal3fVertex3fvSUN'); 
-    glColor4fNormal3fVertex3fSUN := GetModuleSymbol( Handle, 'glColor4fNormal3fVertex3fSUN'); 
-    glColor4fNormal3fVertex3fvSUN := GetModuleSymbol( Handle, 'glColor4fNormal3fVertex3fvSUN'); 
-    glTexCoord2fVertex3fSUN := GetModuleSymbol( Handle, 'glTexCoord2fVertex3fSUN'); 
-    glTexCoord2fVertex3fvSUN := GetModuleSymbol( Handle, 'glTexCoord2fVertex3fvSUN');
-    glTexCoord4fVertex4fSUN := GetModuleSymbol( Handle, 'glTexCoord4fVertex4fSUN'); 
-    glTexCoord4fVertex4fvSUN := GetModuleSymbol( Handle, 'glTexCoord4fVertex4fvSUN');
-    glTexCoord2fColor4ubVertex3fSUN := GetModuleSymbol( Handle, 'glTexCoord2fColor4ubVertex3fSUN'); 
-    glTexCoord2fColor4ubVertex3fvSUN := GetModuleSymbol( Handle, 'glTexCoord2fColor4ubVertex3fvSUN'); 
-    glTexCoord2fColor3fVertex3fSUN := GetModuleSymbol( Handle, 'glTexCoord2fColor3fVertex3fSUN'); 
-    glTexCoord2fColor3fVertex3fvSUN := GetModuleSymbol( Handle, 'glTexCoord2fColor3fVertex3fvSUN'); 
-    glTexCoord2fNormal3fVertex3fSUN := GetModuleSymbol( Handle, 'glTexCoord2fNormal3fVertex3fSUN'); 
-    glTexCoord2fNormal3fVertex3fvSUN := GetModuleSymbol( Handle, 'glTexCoord2fNormal3fVertex3fvSUN'); 
-    glTexCoord2fColor4fNormal3fVertex3fSUN := GetModuleSymbol( Handle, 'glTexCoord2fColor4fNormal3fVertex3fSUN'); 
-    glTexCoord2fColor4fNormal3fVertex3fvSUN := GetModuleSymbol( Handle, 'glTexCoord2fColor4fNormal3fVertex3fvSUN'); 
-    glTexCoord4fColor4fNormal3fVertex4fSUN := GetModuleSymbol( Handle, 'glTexCoord4fColor4fNormal3fVertex4fSUN'); 
-    glTexCoord4fColor4fNormal3fVertex4fvSUN := GetModuleSymbol( Handle, 'glTexCoord4fColor4fNormal3fVertex4fvSUN'); 
-    glReplacementCodeuiVertex3fSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiVertex3fSUN'); 
-    glReplacementCodeuiVertex3fvSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiVertex3fvSUN'); 
-    glReplacementCodeuiColor4ubVertex3fSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiColor4ubVertex3fSUN'); 
-    glReplacementCodeuiColor4ubVertex3fvSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiColor4ubVertex3fvSUN');
-    glReplacementCodeuiColor3fVertex3fSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiColor3fVertex3fSUN'); 
-    glReplacementCodeuiColor3fVertex3fvSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiColor3fVertex3fvSUN'); 
-    glReplacementCodeuiNormal3fVertex3fSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiNormal3fVertex3fSUN'); 
-    glReplacementCodeuiNormal3fVertex3fvSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiNormal3fVertex3fvSUN'); 
-    glReplacementCodeuiColor4fNormal3fVertex3fSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiColor4fNormal3fVertex3fSUN'); 
-    glReplacementCodeuiColor4fNormal3fVertex3fvSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiColor4fNormal3fVertex3fvSUN'); 
-    glReplacementCodeuiTexCoord2fVertex3fSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiTexCoord2fVertex3fSUN'); 
-    glReplacementCodeuiTexCoord2fVertex3fvSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiTexCoord2fVertex3fvSUN'); 
-    glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN'); 
-    glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN'); 
-    glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN');
-    glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN := GetModuleSymbol( Handle, 'glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN'); 
+    glColor4ubVertex2fSUN := SDL_GL_GetProcAddress( 'glColor4ubVertex2fSUN'); 
+    glColor4ubVertex2fvSUN := SDL_GL_GetProcAddress( 'glColor4ubVertex2fvSUN'); 
+    glColor4ubVertex3fSUN := SDL_GL_GetProcAddress( 'glColor4ubVertex3fSUN'); 
+    glColor4ubVertex3fvSUN := SDL_GL_GetProcAddress( 'glColor4ubVertex3fvSUN'); 
+    glColor3fVertex3fSUN := SDL_GL_GetProcAddress( 'glColor3fVertex3fSUN'); 
+    glColor3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glColor3fVertex3fvSUN'); 
+    glNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glNormal3fVertex3fSUN'); 
+    glNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glNormal3fVertex3fvSUN'); 
+    glColor4fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glColor4fNormal3fVertex3fSUN'); 
+    glColor4fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glColor4fNormal3fVertex3fvSUN'); 
+    glTexCoord2fVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fVertex3fSUN'); 
+    glTexCoord2fVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fVertex3fvSUN');
+    glTexCoord4fVertex4fSUN := SDL_GL_GetProcAddress( 'glTexCoord4fVertex4fSUN'); 
+    glTexCoord4fVertex4fvSUN := SDL_GL_GetProcAddress( 'glTexCoord4fVertex4fvSUN');
+    glTexCoord2fColor4ubVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor4ubVertex3fSUN'); 
+    glTexCoord2fColor4ubVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor4ubVertex3fvSUN'); 
+    glTexCoord2fColor3fVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor3fVertex3fSUN'); 
+    glTexCoord2fColor3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor3fVertex3fvSUN'); 
+    glTexCoord2fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fNormal3fVertex3fSUN'); 
+    glTexCoord2fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fNormal3fVertex3fvSUN'); 
+    glTexCoord2fColor4fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor4fNormal3fVertex3fSUN'); 
+    glTexCoord2fColor4fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor4fNormal3fVertex3fvSUN'); 
+    glTexCoord4fColor4fNormal3fVertex4fSUN := SDL_GL_GetProcAddress( 'glTexCoord4fColor4fNormal3fVertex4fSUN'); 
+    glTexCoord4fColor4fNormal3fVertex4fvSUN := SDL_GL_GetProcAddress( 'glTexCoord4fColor4fNormal3fVertex4fvSUN'); 
+    glReplacementCodeuiVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiVertex3fSUN'); 
+    glReplacementCodeuiVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiVertex3fvSUN'); 
+    glReplacementCodeuiColor4ubVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor4ubVertex3fSUN'); 
+    glReplacementCodeuiColor4ubVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor4ubVertex3fvSUN');
+    glReplacementCodeuiColor3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor3fVertex3fSUN'); 
+    glReplacementCodeuiColor3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor3fVertex3fvSUN'); 
+    glReplacementCodeuiNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiNormal3fVertex3fSUN'); 
+    glReplacementCodeuiNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiNormal3fVertex3fvSUN'); 
+    glReplacementCodeuiColor4fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor4fNormal3fVertex3fSUN'); 
+    glReplacementCodeuiColor4fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor4fNormal3fVertex3fvSUN'); 
+    glReplacementCodeuiTexCoord2fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fVertex3fSUN'); 
+    glReplacementCodeuiTexCoord2fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fVertex3fvSUN'); 
+    glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN'); 
+    glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN'); 
+    glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN');
+    glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN'); 
 
     // GL_EXT_blend_func_separate
-    glBlendFuncSeparateEXT := GetModuleSymbol( Handle, 'glBlendFuncSeparateEXT'); 
+    glBlendFuncSeparateEXT := SDL_GL_GetProcAddress( 'glBlendFuncSeparateEXT'); 
 
     // GL_EXT_vertex_weighting
-    glVertexWeightfEXT := GetModuleSymbol( Handle, 'glVertexWeightfEXT'); 
-    glVertexWeightfvEXT := GetModuleSymbol( Handle, 'glVertexWeightfvEXT'); 
-    glVertexWeightPointerEXT := GetModuleSymbol( Handle, 'glVertexWeightPointerEXT'); 
+    glVertexWeightfEXT := SDL_GL_GetProcAddress( 'glVertexWeightfEXT'); 
+    glVertexWeightfvEXT := SDL_GL_GetProcAddress( 'glVertexWeightfvEXT'); 
+    glVertexWeightPointerEXT := SDL_GL_GetProcAddress( 'glVertexWeightPointerEXT'); 
 
     // GL_NV_vertex_array_range
-    glFlushVertexArrayRangeNV := GetModuleSymbol( Handle, 'glFlushVertexArrayRangeNV'); 
-    glVertexArrayRangeNV := GetModuleSymbol( Handle, 'glVertexArrayRangeNV'); 
-    wglAllocateMemoryNV := GetModuleSymbol( Handle, 'wglAllocateMemoryNV'); 
-    wglFreeMemoryNV := GetModuleSymbol( Handle, 'wglFreeMemoryNV'); 
+    glFlushVertexArrayRangeNV := SDL_GL_GetProcAddress( 'glFlushVertexArrayRangeNV'); 
+    glVertexArrayRangeNV := SDL_GL_GetProcAddress( 'glVertexArrayRangeNV'); 
+    wglAllocateMemoryNV := SDL_GL_GetProcAddress( 'wglAllocateMemoryNV'); 
+    wglFreeMemoryNV := SDL_GL_GetProcAddress( 'wglFreeMemoryNV'); 
 
     // GL_NV_register_combiners
-    glCombinerParameterfvNV := GetModuleSymbol( Handle, 'glCombinerParameterfvNV'); 
-    glCombinerParameterfNV := GetModuleSymbol( Handle, 'glCombinerParameterfNV'); 
-    glCombinerParameterivNV := GetModuleSymbol( Handle, 'glCombinerParameterivNV'); 
-    glCombinerParameteriNV := GetModuleSymbol( Handle, 'glCombinerParameteriNV');
-    glCombinerInputNV := GetModuleSymbol( Handle, 'glCombinerInputNV'); 
-    glCombinerOutputNV := GetModuleSymbol( Handle, 'glCombinerOutputNV'); 
-    glFinalCombinerInputNV := GetModuleSymbol( Handle, 'glFinalCombinerInputNV'); 
-    glGetCombinerInputParameterfvNV := GetModuleSymbol( Handle, 'glGetCombinerInputParameterfvNV');
-    glGetCombinerInputParameterivNV := GetModuleSymbol( Handle, 'glGetCombinerInputParameterivNV'); 
-    glGetCombinerOutputParameterfvNV := GetModuleSymbol( Handle, 'glGetCombinerOutputParameterfvNV'); 
-    glGetCombinerOutputParameterivNV := GetModuleSymbol( Handle, 'glGetCombinerOutputParameterivNV'); 
-    glGetFinalCombinerInputParameterfvNV := GetModuleSymbol( Handle, 'glGetFinalCombinerInputParameterfvNV'); 
-    glGetFinalCombinerInputParameterivNV := GetModuleSymbol( Handle, 'glGetFinalCombinerInputParameterivNV'); 
+    glCombinerParameterfvNV := SDL_GL_GetProcAddress( 'glCombinerParameterfvNV'); 
+    glCombinerParameterfNV := SDL_GL_GetProcAddress( 'glCombinerParameterfNV'); 
+    glCombinerParameterivNV := SDL_GL_GetProcAddress( 'glCombinerParameterivNV'); 
+    glCombinerParameteriNV := SDL_GL_GetProcAddress( 'glCombinerParameteriNV');
+    glCombinerInputNV := SDL_GL_GetProcAddress( 'glCombinerInputNV'); 
+    glCombinerOutputNV := SDL_GL_GetProcAddress( 'glCombinerOutputNV'); 
+    glFinalCombinerInputNV := SDL_GL_GetProcAddress( 'glFinalCombinerInputNV'); 
+    glGetCombinerInputParameterfvNV := SDL_GL_GetProcAddress( 'glGetCombinerInputParameterfvNV');
+    glGetCombinerInputParameterivNV := SDL_GL_GetProcAddress( 'glGetCombinerInputParameterivNV'); 
+    glGetCombinerOutputParameterfvNV := SDL_GL_GetProcAddress( 'glGetCombinerOutputParameterfvNV'); 
+    glGetCombinerOutputParameterivNV := SDL_GL_GetProcAddress( 'glGetCombinerOutputParameterivNV'); 
+    glGetFinalCombinerInputParameterfvNV := SDL_GL_GetProcAddress( 'glGetFinalCombinerInputParameterfvNV'); 
+    glGetFinalCombinerInputParameterivNV := SDL_GL_GetProcAddress( 'glGetFinalCombinerInputParameterivNV'); 
 
     // GL_MESA_resize_buffers
-    glResizeBuffersMESA := GetModuleSymbol( Handle, 'glResizeBuffersMESA'); 
+    glResizeBuffersMESA := SDL_GL_GetProcAddress( 'glResizeBuffersMESA'); 
 
     // GL_MESA_window_pos
-    glWindowPos2dMESA := GetModuleSymbol( Handle, 'glWindowPos2dMESA'); 
-    glWindowPos2dvMESA := GetModuleSymbol( Handle, 'glWindowPos2dvMESA');
-    glWindowPos2fMESA := GetModuleSymbol( Handle, 'glWindowPos2fMESA'); 
-    glWindowPos2fvMESA := GetModuleSymbol( Handle, 'glWindowPos2fvMESA'); 
-    glWindowPos2iMESA := GetModuleSymbol( Handle, 'glWindowPos2iMESA'); 
-    glWindowPos2ivMESA := GetModuleSymbol( Handle, 'glWindowPos2ivMESA'); 
-    glWindowPos2sMESA := GetModuleSymbol( Handle, 'glWindowPos2sMESA'); 
-    glWindowPos2svMESA := GetModuleSymbol( Handle, 'glWindowPos2svMESA'); 
-    glWindowPos3dMESA := GetModuleSymbol( Handle, 'glWindowPos3dMESA'); 
-    glWindowPos3dvMESA := GetModuleSymbol( Handle, 'glWindowPos3dvMESA'); 
-    glWindowPos3fMESA := GetModuleSymbol( Handle, 'glWindowPos3fMESA'); 
-    glWindowPos3fvMESA := GetModuleSymbol( Handle, 'glWindowPos3fvMESA'); 
-    glWindowPos3iMESA := GetModuleSymbol( Handle, 'glWindowPos3iMESA'); 
-    glWindowPos3ivMESA := GetModuleSymbol( Handle, 'glWindowPos3ivMESA'); 
-    glWindowPos3sMESA := GetModuleSymbol( Handle, 'glWindowPos3sMESA');
-    glWindowPos3svMESA := GetModuleSymbol( Handle, 'glWindowPos3svMESA'); 
-    glWindowPos4dMESA := GetModuleSymbol( Handle, 'glWindowPos4dMESA'); 
-    glWindowPos4dvMESA := GetModuleSymbol( Handle, 'glWindowPos4dvMESA');
-    glWindowPos4fMESA := GetModuleSymbol( Handle, 'glWindowPos4fMESA'); 
-    glWindowPos4fvMESA := GetModuleSymbol( Handle, 'glWindowPos4fvMESA'); 
-    glWindowPos4iMESA := GetModuleSymbol( Handle, 'glWindowPos4iMESA'); 
-    glWindowPos4ivMESA := GetModuleSymbol( Handle, 'glWindowPos4ivMESA'); 
-    glWindowPos4sMESA := GetModuleSymbol( Handle, 'glWindowPos4sMESA'); 
-    glWindowPos4svMESA := GetModuleSymbol( Handle, 'glWindowPos4svMESA'); 
+    glWindowPos2dMESA := SDL_GL_GetProcAddress( 'glWindowPos2dMESA'); 
+    glWindowPos2dvMESA := SDL_GL_GetProcAddress( 'glWindowPos2dvMESA');
+    glWindowPos2fMESA := SDL_GL_GetProcAddress( 'glWindowPos2fMESA'); 
+    glWindowPos2fvMESA := SDL_GL_GetProcAddress( 'glWindowPos2fvMESA'); 
+    glWindowPos2iMESA := SDL_GL_GetProcAddress( 'glWindowPos2iMESA'); 
+    glWindowPos2ivMESA := SDL_GL_GetProcAddress( 'glWindowPos2ivMESA'); 
+    glWindowPos2sMESA := SDL_GL_GetProcAddress( 'glWindowPos2sMESA'); 
+    glWindowPos2svMESA := SDL_GL_GetProcAddress( 'glWindowPos2svMESA'); 
+    glWindowPos3dMESA := SDL_GL_GetProcAddress( 'glWindowPos3dMESA'); 
+    glWindowPos3dvMESA := SDL_GL_GetProcAddress( 'glWindowPos3dvMESA'); 
+    glWindowPos3fMESA := SDL_GL_GetProcAddress( 'glWindowPos3fMESA'); 
+    glWindowPos3fvMESA := SDL_GL_GetProcAddress( 'glWindowPos3fvMESA'); 
+    glWindowPos3iMESA := SDL_GL_GetProcAddress( 'glWindowPos3iMESA'); 
+    glWindowPos3ivMESA := SDL_GL_GetProcAddress( 'glWindowPos3ivMESA'); 
+    glWindowPos3sMESA := SDL_GL_GetProcAddress( 'glWindowPos3sMESA');
+    glWindowPos3svMESA := SDL_GL_GetProcAddress( 'glWindowPos3svMESA'); 
+    glWindowPos4dMESA := SDL_GL_GetProcAddress( 'glWindowPos4dMESA'); 
+    glWindowPos4dvMESA := SDL_GL_GetProcAddress( 'glWindowPos4dvMESA');
+    glWindowPos4fMESA := SDL_GL_GetProcAddress( 'glWindowPos4fMESA'); 
+    glWindowPos4fvMESA := SDL_GL_GetProcAddress( 'glWindowPos4fvMESA'); 
+    glWindowPos4iMESA := SDL_GL_GetProcAddress( 'glWindowPos4iMESA'); 
+    glWindowPos4ivMESA := SDL_GL_GetProcAddress( 'glWindowPos4ivMESA'); 
+    glWindowPos4sMESA := SDL_GL_GetProcAddress( 'glWindowPos4sMESA'); 
+    glWindowPos4svMESA := SDL_GL_GetProcAddress( 'glWindowPos4svMESA'); 
 
     // GL_IBM_multimode_draw_arrays
-    glMultiModeDrawArraysIBM := GetModuleSymbol( Handle, 'glMultiModeDrawArraysIBM'); 
-    glMultiModeDrawElementsIBM := GetModuleSymbol( Handle, 'glMultiModeDrawElementsIBM'); 
+    glMultiModeDrawArraysIBM := SDL_GL_GetProcAddress( 'glMultiModeDrawArraysIBM'); 
+    glMultiModeDrawElementsIBM := SDL_GL_GetProcAddress( 'glMultiModeDrawElementsIBM'); 
 
     // GL_IBM_vertex_array_lists
-    glColorPointerListIBM := GetModuleSymbol( Handle, 'glColorPointerListIBM'); 
-    glSecondaryColorPointerListIBM := GetModuleSymbol( Handle, 'glSecondaryColorPointerListIBM'); 
-    glEdgeFlagPointerListIBM := GetModuleSymbol( Handle, 'glEdgeFlagPointerListIBM'); 
-    glFogCoordPointerListIBM := GetModuleSymbol( Handle, 'glFogCoordPointerListIBM');
-    glIndexPointerListIBM := GetModuleSymbol( Handle, 'glIndexPointerListIBM'); 
-    glNormalPointerListIBM := GetModuleSymbol( Handle, 'glNormalPointerListIBM'); 
-    glTexCoordPointerListIBM := GetModuleSymbol( Handle, 'glTexCoordPointerListIBM'); 
-    glVertexPointerListIBM := GetModuleSymbol( Handle, 'glVertexPointerListIBM'); 
+    glColorPointerListIBM := SDL_GL_GetProcAddress( 'glColorPointerListIBM'); 
+    glSecondaryColorPointerListIBM := SDL_GL_GetProcAddress( 'glSecondaryColorPointerListIBM'); 
+    glEdgeFlagPointerListIBM := SDL_GL_GetProcAddress( 'glEdgeFlagPointerListIBM'); 
+    glFogCoordPointerListIBM := SDL_GL_GetProcAddress( 'glFogCoordPointerListIBM');
+    glIndexPointerListIBM := SDL_GL_GetProcAddress( 'glIndexPointerListIBM'); 
+    glNormalPointerListIBM := SDL_GL_GetProcAddress( 'glNormalPointerListIBM'); 
+    glTexCoordPointerListIBM := SDL_GL_GetProcAddress( 'glTexCoordPointerListIBM'); 
+    glVertexPointerListIBM := SDL_GL_GetProcAddress( 'glVertexPointerListIBM'); 
 
     // GL_3DFX_tbuffer
-    glTbufferMask3DFX := GetModuleSymbol( Handle, 'glTbufferMask3DFX'); 
+    glTbufferMask3DFX := SDL_GL_GetProcAddress( 'glTbufferMask3DFX'); 
 
     // GL_EXT_multisample
-    glSampleMaskEXT := GetModuleSymbol( Handle, 'glSampleMaskEXT'); 
-    glSamplePatternEXT := GetModuleSymbol( Handle, 'glSamplePatternEXT'); 
+    glSampleMaskEXT := SDL_GL_GetProcAddress( 'glSampleMaskEXT'); 
+    glSamplePatternEXT := SDL_GL_GetProcAddress( 'glSamplePatternEXT'); 
 
     // GL_SGIS_texture_color_mask
-    glTextureColorMaskSGIS := GetModuleSymbol( Handle, 'glTextureColorMaskSGIS'); 
+    glTextureColorMaskSGIS := SDL_GL_GetProcAddress( 'glTextureColorMaskSGIS'); 
 
     // GL_SGIX_igloo_interface
-    glIglooInterfaceSGIX := GetModuleSymbol( Handle, 'glIglooInterfaceSGIX'); 
+    glIglooInterfaceSGIX := SDL_GL_GetProcAddress( 'glIglooInterfaceSGIX'); 
 
     // GLU extensions
-    gluNurbsCallbackDataEXT := GetModuleSymbol( Handle, 'gluNurbsCallbackDataEXT'); 
-    gluNewNurbsTessellatorEXT := GetModuleSymbol( Handle, 'gluNewNurbsTessellatorEXT'); 
-    gluDeleteNurbsTessellatorEXT := GetModuleSymbol( Handle, 'gluDeleteNurbsTessellatorEXT'); 
+    gluNurbsCallbackDataEXT := SDL_GL_GetProcAddress( 'gluNurbsCallbackDataEXT'); 
+    gluNewNurbsTessellatorEXT := SDL_GL_GetProcAddress( 'gluNewNurbsTessellatorEXT'); 
+    gluDeleteNurbsTessellatorEXT := SDL_GL_GetProcAddress( 'gluDeleteNurbsTessellatorEXT'); 
 
     // GL_NV_vertex_program
-    glAreProgramsResidentNV := GetModuleSymbol( Handle, 'glAreProgramsResidentNV'); 
-    glBindProgramNV := GetModuleSymbol( Handle, 'glBindProgramNV'); 
-    glDeleteProgramsNV := GetModuleSymbol( Handle, 'glDeleteProgramsNV'); 
-    glExecuteProgramNV := GetModuleSymbol( Handle, 'glExecuteProgramNV'); 
-    glGenProgramsNV := GetModuleSymbol( Handle, 'glGenProgramsNV'); 
-    glGetProgramParameterdvNV := GetModuleSymbol( Handle, 'glGetProgramParameterdvNV'); 
-    glGetProgramParameterfvNV := GetModuleSymbol( Handle, 'glGetProgramParameterfvNV');
-    glGetProgramivNV := GetModuleSymbol( Handle, 'glGetProgramivNV');
-    glGetProgramStringNV := GetModuleSymbol( Handle, 'glGetProgramStringNV'); 
-    glGetTrackMatrixivNV := GetModuleSymbol( Handle, 'glGetTrackMatrixivNV'); 
-    glGetVertexAttribdvNV:= GetModuleSymbol( Handle, 'glGetVertexAttribdvNV'); 
-    glGetVertexAttribfvNV:= GetModuleSymbol( Handle, 'glGetVertexAttribfvNV'); 
-    glGetVertexAttribivNV:= GetModuleSymbol( Handle, 'glGetVertexAttribivNV'); 
+    glAreProgramsResidentNV := SDL_GL_GetProcAddress( 'glAreProgramsResidentNV'); 
+    glBindProgramNV := SDL_GL_GetProcAddress( 'glBindProgramNV'); 
+    glDeleteProgramsNV := SDL_GL_GetProcAddress( 'glDeleteProgramsNV'); 
+    glExecuteProgramNV := SDL_GL_GetProcAddress( 'glExecuteProgramNV'); 
+    glGenProgramsNV := SDL_GL_GetProcAddress( 'glGenProgramsNV'); 
+    glGetProgramParameterdvNV := SDL_GL_GetProcAddress( 'glGetProgramParameterdvNV'); 
+    glGetProgramParameterfvNV := SDL_GL_GetProcAddress( 'glGetProgramParameterfvNV');
+    glGetProgramivNV := SDL_GL_GetProcAddress( 'glGetProgramivNV');
+    glGetProgramStringNV := SDL_GL_GetProcAddress( 'glGetProgramStringNV'); 
+    glGetTrackMatrixivNV := SDL_GL_GetProcAddress( 'glGetTrackMatrixivNV'); 
+    glGetVertexAttribdvNV:= SDL_GL_GetProcAddress( 'glGetVertexAttribdvNV'); 
+    glGetVertexAttribfvNV:= SDL_GL_GetProcAddress( 'glGetVertexAttribfvNV'); 
+    glGetVertexAttribivNV:= SDL_GL_GetProcAddress( 'glGetVertexAttribivNV'); 
     glGetVertexAttribPointervNV := wglGetProcAddress ('glGetVertexAttribPointervNV'); 
-    glIsProgramNV := GetModuleSymbol( Handle, 'glIsProgramNV'); 
-    glLoadProgramNV := GetModuleSymbol( Handle, 'glLoadProgramNV'); 
-    glProgramParameter4dNV := GetModuleSymbol( Handle, 'glProgramParameter4dNV'); 
-    glProgramParameter4dvNV := GetModuleSymbol( Handle, 'glProgramParameter4dvNV'); 
-    glProgramParameter4fNV := GetModuleSymbol( Handle, 'glProgramParameter4fNV'); 
-    glProgramParameter4fvNV := GetModuleSymbol( Handle, 'glProgramParameter4fvNV'); 
+    glIsProgramNV := SDL_GL_GetProcAddress( 'glIsProgramNV'); 
+    glLoadProgramNV := SDL_GL_GetProcAddress( 'glLoadProgramNV'); 
+    glProgramParameter4dNV := SDL_GL_GetProcAddress( 'glProgramParameter4dNV'); 
+    glProgramParameter4dvNV := SDL_GL_GetProcAddress( 'glProgramParameter4dvNV'); 
+    glProgramParameter4fNV := SDL_GL_GetProcAddress( 'glProgramParameter4fNV'); 
+    glProgramParameter4fvNV := SDL_GL_GetProcAddress( 'glProgramParameter4fvNV'); 
     glProgramParameters4dvNV := wglGetProcAddress ('glProgramParameters4dvNV'); 
     glProgramParameters4fvNV := wglGetProcAddress ('glProgramParameters4fvNV'); 
     glRequestResidentProgramsNV := wglGetProcAddress ('glRequestResidentProgramsNV'); 
-    glTrackMatrixNV := GetModuleSymbol( Handle, 'glTrackMatrixNV');
-    glVertexAttribPointerNV := GetModuleSymbol( Handle, 'glVertexAttribPointerNV'); 
-    glVertexAttrib1dNV := GetModuleSymbol( Handle, 'glVertexAttrib1dNV'); 
-    glVertexAttrib1dvNV := GetModuleSymbol( Handle, 'glVertexAttrib1dvNV'); 
-    glVertexAttrib1fNV := GetModuleSymbol( Handle, 'glVertexAttrib1fNV'); 
-    glVertexAttrib1fvNV := GetModuleSymbol( Handle, 'glVertexAttrib1fvNV'); 
-    glVertexAttrib1sNV := GetModuleSymbol( Handle, 'glVertexAttrib1sNV'); 
-    glVertexAttrib1svNV := GetModuleSymbol( Handle, 'glVertexAttrib1svNV'); 
-    glVertexAttrib2dNV := GetModuleSymbol( Handle, 'glVertexAttrib2dNV');
-    glVertexAttrib2dvNV := GetModuleSymbol( Handle, 'glVertexAttrib2dvNV'); 
-    glVertexAttrib2fNV := GetModuleSymbol( Handle, 'glVertexAttrib2fNV'); 
-    glVertexAttrib2fvNV := GetModuleSymbol( Handle, 'glVertexAttrib2fvNV'); 
-    glVertexAttrib2sNV := GetModuleSymbol( Handle, 'glVertexAttrib2sNV'); 
-    glVertexAttrib2svNV := GetModuleSymbol( Handle, 'glVertexAttrib2svNV'); 
-    glVertexAttrib3dNV := GetModuleSymbol( Handle, 'glVertexAttrib3dNV'); 
-    glVertexAttrib3dvNV := GetModuleSymbol( Handle, 'glVertexAttrib3dvNV'); 
-    glVertexAttrib3fNV := GetModuleSymbol( Handle, 'glVertexAttrib3fNV');
-    glVertexAttrib3fvNV := GetModuleSymbol( Handle, 'glVertexAttrib3fvNV'); 
-    glVertexAttrib3sNV := GetModuleSymbol( Handle, 'glVertexAttrib3sNV'); 
-    glVertexAttrib3svNV := GetModuleSymbol( Handle, 'glVertexAttrib3svNV'); 
-    glVertexAttrib4dNV := GetModuleSymbol( Handle, 'glVertexAttrib4dNV'); 
-    glVertexAttrib4dvNV := GetModuleSymbol( Handle, 'glVertexAttrib4dvNV'); 
-    glVertexAttrib4fNV := GetModuleSymbol( Handle, 'glVertexAttrib4fNV'); 
-    glVertexAttrib4fvNV := GetModuleSymbol( Handle, 'glVertexAttrib4fvNV'); 
-    glVertexAttrib4sNV := GetModuleSymbol( Handle, 'glVertexAttrib4sNV'); 
-    glVertexAttrib4svNV := GetModuleSymbol( Handle, 'glVertexAttrib4svNV'); 
-    glVertexAttrib4ubvNV := GetModuleSymbol( Handle, 'glVertexAttrib4ubvNV'); 
-    glVertexAttribs1dvNV := GetModuleSymbol( Handle, 'glVertexAttribs1dvNV'); 
-    glVertexAttribs1fvNV := GetModuleSymbol( Handle, 'glVertexAttribs1fvNV'); 
-    glVertexAttribs1svNV := GetModuleSymbol( Handle, 'glVertexAttribs1svNV'); 
-    glVertexAttribs2dvNV := GetModuleSymbol( Handle, 'glVertexAttribs2dvNV'); 
-    glVertexAttribs2fvNV := GetModuleSymbol( Handle, 'glVertexAttribs2fvNV'); 
-    glVertexAttribs2svNV := GetModuleSymbol( Handle, 'glVertexAttribs2svNV');
-    glVertexAttribs3dvNV := GetModuleSymbol( Handle, 'glVertexAttribs3dvNV');
-    glVertexAttribs3fvNV := GetModuleSymbol( Handle, 'glVertexAttribs3fvNV'); 
-    glVertexAttribs3svNV := GetModuleSymbol( Handle, 'glVertexAttribs3svNV'); 
-    glVertexAttribs4dvNV := GetModuleSymbol( Handle, 'glVertexAttribs4dvNV'); 
-    glVertexAttribs4fvNV := GetModuleSymbol( Handle, 'glVertexAttribs4fvNV'); 
-    glVertexAttribs4svNV := GetModuleSymbol( Handle, 'glVertexAttribs4svNV'); 
-    glVertexAttribs4ubvNV := GetModuleSymbol( Handle, 'glVertexAttribs4ubvN'); 
+    glTrackMatrixNV := SDL_GL_GetProcAddress( 'glTrackMatrixNV');
+    glVertexAttribPointerNV := SDL_GL_GetProcAddress( 'glVertexAttribPointerNV'); 
+    glVertexAttrib1dNV := SDL_GL_GetProcAddress( 'glVertexAttrib1dNV'); 
+    glVertexAttrib1dvNV := SDL_GL_GetProcAddress( 'glVertexAttrib1dvNV'); 
+    glVertexAttrib1fNV := SDL_GL_GetProcAddress( 'glVertexAttrib1fNV'); 
+    glVertexAttrib1fvNV := SDL_GL_GetProcAddress( 'glVertexAttrib1fvNV'); 
+    glVertexAttrib1sNV := SDL_GL_GetProcAddress( 'glVertexAttrib1sNV'); 
+    glVertexAttrib1svNV := SDL_GL_GetProcAddress( 'glVertexAttrib1svNV'); 
+    glVertexAttrib2dNV := SDL_GL_GetProcAddress( 'glVertexAttrib2dNV');
+    glVertexAttrib2dvNV := SDL_GL_GetProcAddress( 'glVertexAttrib2dvNV'); 
+    glVertexAttrib2fNV := SDL_GL_GetProcAddress( 'glVertexAttrib2fNV'); 
+    glVertexAttrib2fvNV := SDL_GL_GetProcAddress( 'glVertexAttrib2fvNV'); 
+    glVertexAttrib2sNV := SDL_GL_GetProcAddress( 'glVertexAttrib2sNV'); 
+    glVertexAttrib2svNV := SDL_GL_GetProcAddress( 'glVertexAttrib2svNV'); 
+    glVertexAttrib3dNV := SDL_GL_GetProcAddress( 'glVertexAttrib3dNV'); 
+    glVertexAttrib3dvNV := SDL_GL_GetProcAddress( 'glVertexAttrib3dvNV'); 
+    glVertexAttrib3fNV := SDL_GL_GetProcAddress( 'glVertexAttrib3fNV');
+    glVertexAttrib3fvNV := SDL_GL_GetProcAddress( 'glVertexAttrib3fvNV'); 
+    glVertexAttrib3sNV := SDL_GL_GetProcAddress( 'glVertexAttrib3sNV'); 
+    glVertexAttrib3svNV := SDL_GL_GetProcAddress( 'glVertexAttrib3svNV'); 
+    glVertexAttrib4dNV := SDL_GL_GetProcAddress( 'glVertexAttrib4dNV'); 
+    glVertexAttrib4dvNV := SDL_GL_GetProcAddress( 'glVertexAttrib4dvNV'); 
+    glVertexAttrib4fNV := SDL_GL_GetProcAddress( 'glVertexAttrib4fNV'); 
+    glVertexAttrib4fvNV := SDL_GL_GetProcAddress( 'glVertexAttrib4fvNV'); 
+    glVertexAttrib4sNV := SDL_GL_GetProcAddress( 'glVertexAttrib4sNV'); 
+    glVertexAttrib4svNV := SDL_GL_GetProcAddress( 'glVertexAttrib4svNV'); 
+    glVertexAttrib4ubvNV := SDL_GL_GetProcAddress( 'glVertexAttrib4ubvNV'); 
+    glVertexAttribs1dvNV := SDL_GL_GetProcAddress( 'glVertexAttribs1dvNV'); 
+    glVertexAttribs1fvNV := SDL_GL_GetProcAddress( 'glVertexAttribs1fvNV'); 
+    glVertexAttribs1svNV := SDL_GL_GetProcAddress( 'glVertexAttribs1svNV'); 
+    glVertexAttribs2dvNV := SDL_GL_GetProcAddress( 'glVertexAttribs2dvNV'); 
+    glVertexAttribs2fvNV := SDL_GL_GetProcAddress( 'glVertexAttribs2fvNV'); 
+    glVertexAttribs2svNV := SDL_GL_GetProcAddress( 'glVertexAttribs2svNV');
+    glVertexAttribs3dvNV := SDL_GL_GetProcAddress( 'glVertexAttribs3dvNV');
+    glVertexAttribs3fvNV := SDL_GL_GetProcAddress( 'glVertexAttribs3fvNV'); 
+    glVertexAttribs3svNV := SDL_GL_GetProcAddress( 'glVertexAttribs3svNV'); 
+    glVertexAttribs4dvNV := SDL_GL_GetProcAddress( 'glVertexAttribs4dvNV'); 
+    glVertexAttribs4fvNV := SDL_GL_GetProcAddress( 'glVertexAttribs4fvNV'); 
+    glVertexAttribs4svNV := SDL_GL_GetProcAddress( 'glVertexAttribs4svNV'); 
+    glVertexAttribs4ubvNV := SDL_GL_GetProcAddress( 'glVertexAttribs4ubvN'); 
 
     // ARB wgl extensions
-    wglGetExtensionsStringARB := GetModuleSymbol( Handle, 'wglGetExtensionsStringARB');
-    wglGetPixelFormatAttribivARB := GetModuleSymbol( Handle, 'wglGetPixelFormatAttribivARB');
-    wglGetPixelFormatAttribfvARB := GetModuleSymbol( Handle, 'wglGetPixelFormatAttribfvARB');
-    wglChoosePixelFormatARB := GetModuleSymbol( Handle, 'wglChoosePixelFormatARB');
+    wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
+    wglGetPixelFormatAttribivARB := SDL_GL_GetProcAddress( 'wglGetPixelFormatAttribivARB');
+    wglGetPixelFormatAttribfvARB := SDL_GL_GetProcAddress( 'wglGetPixelFormatAttribfvARB');
+    wglChoosePixelFormatARB := SDL_GL_GetProcAddress( 'wglChoosePixelFormatARB');
 
     // To get synchronized again, if this proc was called externally.
     LastPixelFormat := 0;
@@ -9826,17 +9829,16 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure CloseOpenGL; 
-
 begin
   if GLHandle <> INVALID_MODULEHANDLE then
   begin
-    UnloadModule(tmodulehandle(GLHandle));
+    UnloadModule( GLHandle );
     GLHandle := INVALID_MODULEHANDLE;
   end;
 
   if GLUHandle <> INVALID_MODULEHANDLE then
   begin
-    UnloadModule(tmodulehandle(GLUHandle));
+    UnloadModule( GLUHandle );
     GLUHandle := INVALID_MODULEHANDLE;
   end;
 
@@ -9874,10 +9876,10 @@ begin
   else
   begin
     if GLHandle <>  INVALID_MODULEHANDLE then
-      UnloadModule(TModuleHandle(GLHandle)); 
+      UnloadModule( GLHandle );
 
     if GLUHandle <>  INVALID_MODULEHANDLE then
-      UnloadModule(TModuleHandle(GLUHandle)); 
+      UnloadModule( GLUHandle );
   end; 
 end; 
 

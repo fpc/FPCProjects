@@ -11,8 +11,20 @@ unit glext;
 
 {
   $Log$
-  Revision 1.1  2004/02/15 21:37:14  marco
-   * new snapshot
+  Revision 1.2  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.1  2004/03/30 21:53:54  savage
+  Moved to it's own folder.
+
+  Revision 1.6  2004/03/28 00:28:43  savage
+  Fixed some glSecondaryColor definitions...
+
+  Revision 1.5  2004/02/20 17:18:16  savage
+  Forgot to prefix function pointer with @ for FPC and other Pascal compilers.
+
+  Revision 1.4  2004/02/20 17:09:55  savage
+  Code tidied up in gl, glu and glut, while extensions in glext.pas are now loaded using SDL_GL_GetProcAddress, thus making it more cross-platform compatible, but now more tied to SDL.
 
   Revision 1.3  2004/02/14 22:36:29  savage
   Fixed inconsistencies of using LoadLibrary and LoadModule.
@@ -1124,22 +1136,22 @@ const
   GL_SECONDARY_COLOR_ARRAY_POINTER_EXT = $845D;
   GL_SECONDARY_COLOR_ARRAY_EXT = $845E;
 var
-  glSecondaryColor3bEXT: procedure(components: GLbyte); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3sEXT: procedure(components: GLshort); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3iEXT: procedure(components: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3fEXT: procedure(components: GLfloat); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3dEXT: procedure(components: GLdouble); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3ubEXT: procedure(components: GLubyte); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3usEXT: procedure(components: GLushort); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3uiEXT: procedure(components: GLuint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3bvEXT: procedure(components: GLbyte); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3svEXT: procedure(components: GLshort); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3ivEXT: procedure(components: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3fvEXT: procedure(components: GLfloat); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3dvEXT: procedure(components: GLdouble); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3ubvEXT: procedure(components: GLubyte); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3usvEXT: procedure(components: GLushort); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glSecondaryColor3uivEXT: procedure(components: GLuint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3bEXT: procedure(red, green, blue: GLbyte); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3sEXT: procedure(red, green, blue: GLshort); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3iEXT: procedure(red, green, blue: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3fEXT: procedure(red, green, blue: GLfloat); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3dEXT: procedure(red, green, blue: GLdouble); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3ubEXT: procedure(red, green, blue: GLubyte); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3usEXT: procedure(red, green, blue: GLushort); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3uiEXT: procedure(red, green, blue: GLuint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3bvEXT: procedure(components: PGLbyte); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3svEXT: procedure(components: PGLshort); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3ivEXT: procedure(components: PGLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3fvEXT: procedure(components: PGLfloat); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3dvEXT: procedure(components: PGLdouble); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3ubvEXT: procedure(components: PGLubyte); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3usvEXT: procedure(components: PGLushort); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glSecondaryColor3uivEXT: procedure(components: PGLuint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
   glSecondaryColorPointerEXT: procedure(size: GLint; _type: GLenum; stride: GLsizei; pointer: PGLvoid); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 function Load_GL_EXT_secondary_color: Boolean;
@@ -3187,6 +3199,9 @@ function Load_GL_NV_vertex_program2: Boolean;
 
 implementation
 
+uses
+  sdl;
+
 {$IFNDEF Win32}
 function wglGetProcAddress(proc: PChar): Pointer;
 begin
@@ -3240,81 +3255,81 @@ begin
   Result := FALSE;
   {extstring := glGetString(GL_EXTENSIONS);}
 
-    glBlendColor := GetModuleSymbol( LibGL,  'glBlendColor');
+    @glBlendColor := SDL_GL_GetProcAddress( 'glBlendColor');
     if not Assigned(glBlendColor) then Exit;
-    glBlendEquation := GetModuleSymbol( LibGL,  'glBlendEquation');
+    @glBlendEquation := SDL_GL_GetProcAddress( 'glBlendEquation');
     if not Assigned(glBlendEquation) then Exit;
-    glDrawRangeElements := GetModuleSymbol( LibGL,  'glDrawRangeElements');
+    @glDrawRangeElements := SDL_GL_GetProcAddress( 'glDrawRangeElements');
     if not Assigned(glDrawRangeElements) then Exit;
-    glColorTable := GetModuleSymbol( LibGL,  'glColorTable');
+    @glColorTable := SDL_GL_GetProcAddress( 'glColorTable');
     if not Assigned(glColorTable) then Exit;
-    glColorTableParameterfv := GetModuleSymbol( LibGL,  'glColorTableParameterfv');
+    @glColorTableParameterfv := SDL_GL_GetProcAddress( 'glColorTableParameterfv');
     if not Assigned(glColorTableParameterfv) then Exit;
-    glColorTableParameteriv := GetModuleSymbol( LibGL,  'glColorTableParameteriv');
+    @glColorTableParameteriv := SDL_GL_GetProcAddress( 'glColorTableParameteriv');
     if not Assigned(glColorTableParameteriv) then Exit;
-    glCopyColorTable := GetModuleSymbol( LibGL,  'glCopyColorTable');
+    @glCopyColorTable := SDL_GL_GetProcAddress( 'glCopyColorTable');
     if not Assigned(glCopyColorTable) then Exit;
-    glGetColorTable := GetModuleSymbol( LibGL,  'glGetColorTable');
+    @glGetColorTable := SDL_GL_GetProcAddress( 'glGetColorTable');
     if not Assigned(glGetColorTable) then Exit;
-    glGetColorTableParameterfv := GetModuleSymbol( LibGL,  'glGetColorTableParameterfv');
+    @glGetColorTableParameterfv := SDL_GL_GetProcAddress( 'glGetColorTableParameterfv');
     if not Assigned(glGetColorTableParameterfv) then Exit;
-    glGetColorTableParameteriv := GetModuleSymbol( LibGL,  'glGetColorTableParameteriv');
+    @glGetColorTableParameteriv := SDL_GL_GetProcAddress( 'glGetColorTableParameteriv');
     if not Assigned(glGetColorTableParameteriv) then Exit;
-    glColorSubTable := GetModuleSymbol( LibGL,  'glColorSubTable');
+    @glColorSubTable := SDL_GL_GetProcAddress( 'glColorSubTable');
     if not Assigned(glColorSubTable) then Exit;
-    glCopyColorSubTable := GetModuleSymbol( LibGL,  'glCopyColorSubTable');
+    @glCopyColorSubTable := SDL_GL_GetProcAddress( 'glCopyColorSubTable');
     if not Assigned(glCopyColorSubTable) then Exit;
-    glConvolutionFilter1D := GetModuleSymbol( LibGL,  'glConvolutionFilter1D');
+    @glConvolutionFilter1D := SDL_GL_GetProcAddress( 'glConvolutionFilter1D');
     if not Assigned(glConvolutionFilter1D) then Exit;
-    glConvolutionFilter2D := GetModuleSymbol( LibGL,  'glConvolutionFilter2D');
+    @glConvolutionFilter2D := SDL_GL_GetProcAddress( 'glConvolutionFilter2D');
     if not Assigned(glConvolutionFilter2D) then Exit;
-    glConvolutionParameterf := GetModuleSymbol( LibGL,  'glConvolutionParameterf');
+    @glConvolutionParameterf := SDL_GL_GetProcAddress( 'glConvolutionParameterf');
     if not Assigned(glConvolutionParameterf) then Exit;
-    glConvolutionParameterfv := GetModuleSymbol( LibGL,  'glConvolutionParameterfv');
+    @glConvolutionParameterfv := SDL_GL_GetProcAddress( 'glConvolutionParameterfv');
     if not Assigned(glConvolutionParameterfv) then Exit;
-    glConvolutionParameteri := GetModuleSymbol( LibGL,  'glConvolutionParameteri');
+    @glConvolutionParameteri := SDL_GL_GetProcAddress( 'glConvolutionParameteri');
     if not Assigned(glConvolutionParameteri) then Exit;
-    glConvolutionParameteriv := GetModuleSymbol( LibGL,  'glConvolutionParameteriv');
+    @glConvolutionParameteriv := SDL_GL_GetProcAddress( 'glConvolutionParameteriv');
     if not Assigned(glConvolutionParameteriv) then Exit;
-    glCopyConvolutionFilter1D := GetModuleSymbol( LibGL,  'glCopyConvolutionFilter1D');
+    @glCopyConvolutionFilter1D := SDL_GL_GetProcAddress( 'glCopyConvolutionFilter1D');
     if not Assigned(glCopyConvolutionFilter1D) then Exit;
-    glCopyConvolutionFilter2D := GetModuleSymbol( LibGL,  'glCopyConvolutionFilter2D');
+    @glCopyConvolutionFilter2D := SDL_GL_GetProcAddress( 'glCopyConvolutionFilter2D');
     if not Assigned(glCopyConvolutionFilter2D) then Exit;
-    glGetConvolutionFilter := GetModuleSymbol( LibGL,  'glGetConvolutionFilter');
+    @glGetConvolutionFilter := SDL_GL_GetProcAddress( 'glGetConvolutionFilter');
     if not Assigned(glGetConvolutionFilter) then Exit;
-    glGetConvolutionParameterfv := GetModuleSymbol( LibGL,  'glGetConvolutionParameterfv');
+    @glGetConvolutionParameterfv := SDL_GL_GetProcAddress( 'glGetConvolutionParameterfv');
     if not Assigned(glGetConvolutionParameterfv) then Exit;
-    glGetConvolutionParameteriv := GetModuleSymbol( LibGL,  'glGetConvolutionParameteriv');
+    @glGetConvolutionParameteriv := SDL_GL_GetProcAddress( 'glGetConvolutionParameteriv');
     if not Assigned(glGetConvolutionParameteriv) then Exit;
-    glGetSeparableFilter := GetModuleSymbol( LibGL,  'glGetSeparableFilter');
+    @glGetSeparableFilter := SDL_GL_GetProcAddress( 'glGetSeparableFilter');
     if not Assigned(glGetSeparableFilter) then Exit;
-    glSeparableFilter2D := GetModuleSymbol( LibGL,  'glSeparableFilter2D');
+    @glSeparableFilter2D := SDL_GL_GetProcAddress( 'glSeparableFilter2D');
     if not Assigned(glSeparableFilter2D) then Exit;
-    glGetHistogram := GetModuleSymbol( LibGL,  'glGetHistogram');
+    @glGetHistogram := SDL_GL_GetProcAddress( 'glGetHistogram');
     if not Assigned(glGetHistogram) then Exit;
-    glGetHistogramParameterfv := GetModuleSymbol( LibGL,  'glGetHistogramParameterfv');
+    @glGetHistogramParameterfv := SDL_GL_GetProcAddress( 'glGetHistogramParameterfv');
     if not Assigned(glGetHistogramParameterfv) then Exit;
-    glGetHistogramParameteriv := GetModuleSymbol( LibGL,  'glGetHistogramParameteriv');
+    @glGetHistogramParameteriv := SDL_GL_GetProcAddress( 'glGetHistogramParameteriv');
     if not Assigned(glGetHistogramParameteriv) then Exit;
-    glGetMinmax := GetModuleSymbol( LibGL,  'glGetMinmax');
+    @glGetMinmax := SDL_GL_GetProcAddress( 'glGetMinmax');
     if not Assigned(glGetMinmax) then Exit;
-    glGetMinmaxParameterfv := GetModuleSymbol( LibGL,  'glGetMinmaxParameterfv');
+    @glGetMinmaxParameterfv := SDL_GL_GetProcAddress( 'glGetMinmaxParameterfv');
     if not Assigned(glGetMinmaxParameterfv) then Exit;
-    glGetMinmaxParameteriv := GetModuleSymbol( LibGL,  'glGetMinmaxParameteriv');
+    @glGetMinmaxParameteriv := SDL_GL_GetProcAddress( 'glGetMinmaxParameteriv');
     if not Assigned(glGetMinmaxParameteriv) then Exit;
-    glHistogram := GetModuleSymbol( LibGL,  'glHistogram');
+    @glHistogram := SDL_GL_GetProcAddress( 'glHistogram');
     if not Assigned(glHistogram) then Exit;
-    glMinmax := GetModuleSymbol( LibGL,  'glMinmax');
+    @glMinmax := SDL_GL_GetProcAddress( 'glMinmax');
     if not Assigned(glMinmax) then Exit;
-    glResetHistogram := GetModuleSymbol( LibGL,  'glResetHistogram');
+    @glResetHistogram := SDL_GL_GetProcAddress( 'glResetHistogram');
     if not Assigned(glResetHistogram) then Exit;
-    glResetMinmax := GetModuleSymbol( LibGL,  'glResetMinmax');
+    @glResetMinmax := SDL_GL_GetProcAddress( 'glResetMinmax');
     if not Assigned(glResetMinmax) then Exit;
-    glTexImage3D := GetModuleSymbol( LibGL,  'glTexImage3D');
+    @glTexImage3D := SDL_GL_GetProcAddress( 'glTexImage3D');
     if not Assigned(glTexImage3D) then Exit;
-    glTexSubImage3D := GetModuleSymbol( LibGL,  'glTexSubImage3D');
+    @glTexSubImage3D := SDL_GL_GetProcAddress( 'glTexSubImage3D');
     if not Assigned(glTexSubImage3D) then Exit;
-    glCopyTexSubImage3D := GetModuleSymbol( LibGL,  'glCopyTexSubImage3D');
+    @glCopyTexSubImage3D := SDL_GL_GetProcAddress( 'glCopyTexSubImage3D');
     if not Assigned(glCopyTexSubImage3D) then Exit;
     Result := TRUE;
 
@@ -3343,97 +3358,97 @@ begin
   Result := FALSE;
   {extstring := glGetString(GL_EXTENSIONS);}
 
-    glActiveTexture := GetModuleSymbol( LibGL,  'glActiveTexture');
+    @glActiveTexture := SDL_GL_GetProcAddress( 'glActiveTexture');
     if not Assigned(glActiveTexture) then Exit;
-    glClientActiveTexture := GetModuleSymbol( LibGL,  'glClientActiveTexture');
+    @glClientActiveTexture := SDL_GL_GetProcAddress( 'glClientActiveTexture');
     if not Assigned(glClientActiveTexture) then Exit;
-    glMultiTexCoord1d := GetModuleSymbol( LibGL,  'glMultiTexCoord1d');
+    @glMultiTexCoord1d := SDL_GL_GetProcAddress( 'glMultiTexCoord1d');
     if not Assigned(glMultiTexCoord1d) then Exit;
-    glMultiTexCoord1dv := GetModuleSymbol( LibGL,  'glMultiTexCoord1dv');
+    @glMultiTexCoord1dv := SDL_GL_GetProcAddress( 'glMultiTexCoord1dv');
     if not Assigned(glMultiTexCoord1dv) then Exit;
-    glMultiTexCoord1f := GetModuleSymbol( LibGL,  'glMultiTexCoord1f');
+    @glMultiTexCoord1f := SDL_GL_GetProcAddress( 'glMultiTexCoord1f');
     if not Assigned(glMultiTexCoord1f) then Exit;
-    glMultiTexCoord1fv := GetModuleSymbol( LibGL,  'glMultiTexCoord1fv');
+    @glMultiTexCoord1fv := SDL_GL_GetProcAddress( 'glMultiTexCoord1fv');
     if not Assigned(glMultiTexCoord1fv) then Exit;
-    glMultiTexCoord1i := GetModuleSymbol( LibGL,  'glMultiTexCoord1i');
+    @glMultiTexCoord1i := SDL_GL_GetProcAddress( 'glMultiTexCoord1i');
     if not Assigned(glMultiTexCoord1i) then Exit;
-    glMultiTexCoord1iv := GetModuleSymbol( LibGL,  'glMultiTexCoord1iv');
+    @glMultiTexCoord1iv := SDL_GL_GetProcAddress( 'glMultiTexCoord1iv');
     if not Assigned(glMultiTexCoord1iv) then Exit;
-    glMultiTexCoord1s := GetModuleSymbol( LibGL,  'glMultiTexCoord1s');
+    @glMultiTexCoord1s := SDL_GL_GetProcAddress( 'glMultiTexCoord1s');
     if not Assigned(glMultiTexCoord1s) then Exit;
-    glMultiTexCoord1sv := GetModuleSymbol( LibGL,  'glMultiTexCoord1sv');
+    @glMultiTexCoord1sv := SDL_GL_GetProcAddress( 'glMultiTexCoord1sv');
     if not Assigned(glMultiTexCoord1sv) then Exit;
-    glMultiTexCoord2d := GetModuleSymbol( LibGL,  'glMultiTexCoord2d');
+    @glMultiTexCoord2d := SDL_GL_GetProcAddress( 'glMultiTexCoord2d');
     if not Assigned(glMultiTexCoord2d) then Exit;
-    glMultiTexCoord2dv := GetModuleSymbol( LibGL,  'glMultiTexCoord2dv');
+    @glMultiTexCoord2dv := SDL_GL_GetProcAddress( 'glMultiTexCoord2dv');
     if not Assigned(glMultiTexCoord2dv) then Exit;
-    glMultiTexCoord2f := GetModuleSymbol( LibGL,  'glMultiTexCoord2f');
+    @glMultiTexCoord2f := SDL_GL_GetProcAddress( 'glMultiTexCoord2f');
     if not Assigned(glMultiTexCoord2f) then Exit;
-    glMultiTexCoord2fv := GetModuleSymbol( LibGL,  'glMultiTexCoord2fv');
+    @glMultiTexCoord2fv := SDL_GL_GetProcAddress( 'glMultiTexCoord2fv');
     if not Assigned(glMultiTexCoord2fv) then Exit;
-    glMultiTexCoord2i := GetModuleSymbol( LibGL,  'glMultiTexCoord2i');
+    @glMultiTexCoord2i := SDL_GL_GetProcAddress( 'glMultiTexCoord2i');
     if not Assigned(glMultiTexCoord2i) then Exit;
-    glMultiTexCoord2iv := GetModuleSymbol( LibGL,  'glMultiTexCoord2iv');
+    @glMultiTexCoord2iv := SDL_GL_GetProcAddress( 'glMultiTexCoord2iv');
     if not Assigned(glMultiTexCoord2iv) then Exit;
-    glMultiTexCoord2s := GetModuleSymbol( LibGL,  'glMultiTexCoord2s');
+    @glMultiTexCoord2s := SDL_GL_GetProcAddress( 'glMultiTexCoord2s');
     if not Assigned(glMultiTexCoord2s) then Exit;
-    glMultiTexCoord2sv := GetModuleSymbol( LibGL,  'glMultiTexCoord2sv');
+    @glMultiTexCoord2sv := SDL_GL_GetProcAddress( 'glMultiTexCoord2sv');
     if not Assigned(glMultiTexCoord2sv) then Exit;
-    glMultiTexCoord3d := GetModuleSymbol( LibGL,  'glMultiTexCoord3d');
+    @glMultiTexCoord3d := SDL_GL_GetProcAddress( 'glMultiTexCoord3d');
     if not Assigned(glMultiTexCoord3d) then Exit;
-    glMultiTexCoord3dv := GetModuleSymbol( LibGL,  'glMultiTexCoord3dv');
+    @glMultiTexCoord3dv := SDL_GL_GetProcAddress( 'glMultiTexCoord3dv');
     if not Assigned(glMultiTexCoord3dv) then Exit;
-    glMultiTexCoord3f := GetModuleSymbol( LibGL,  'glMultiTexCoord3f');
+    @glMultiTexCoord3f := SDL_GL_GetProcAddress( 'glMultiTexCoord3f');
     if not Assigned(glMultiTexCoord3f) then Exit;
-    glMultiTexCoord3fv := GetModuleSymbol( LibGL,  'glMultiTexCoord3fv');
+    @glMultiTexCoord3fv := SDL_GL_GetProcAddress( 'glMultiTexCoord3fv');
     if not Assigned(glMultiTexCoord3fv) then Exit;
-    glMultiTexCoord3i := GetModuleSymbol( LibGL,  'glMultiTexCoord3i');
+    @glMultiTexCoord3i := SDL_GL_GetProcAddress( 'glMultiTexCoord3i');
     if not Assigned(glMultiTexCoord3i) then Exit;
-    glMultiTexCoord3iv := GetModuleSymbol( LibGL,  'glMultiTexCoord3iv');
+    @glMultiTexCoord3iv := SDL_GL_GetProcAddress( 'glMultiTexCoord3iv');
     if not Assigned(glMultiTexCoord3iv) then Exit;
-    glMultiTexCoord3s := GetModuleSymbol( LibGL,  'glMultiTexCoord3s');
+    @glMultiTexCoord3s := SDL_GL_GetProcAddress( 'glMultiTexCoord3s');
     if not Assigned(glMultiTexCoord3s) then Exit;
-    glMultiTexCoord3sv := GetModuleSymbol( LibGL,  'glMultiTexCoord3sv');
+    @glMultiTexCoord3sv := SDL_GL_GetProcAddress( 'glMultiTexCoord3sv');
     if not Assigned(glMultiTexCoord3sv) then Exit;
-    glMultiTexCoord4d := GetModuleSymbol( LibGL,  'glMultiTexCoord4d');
+    @glMultiTexCoord4d := SDL_GL_GetProcAddress( 'glMultiTexCoord4d');
     if not Assigned(glMultiTexCoord4d) then Exit;
-    glMultiTexCoord4dv := GetModuleSymbol( LibGL,  'glMultiTexCoord4dv');
+    @glMultiTexCoord4dv := SDL_GL_GetProcAddress( 'glMultiTexCoord4dv');
     if not Assigned(glMultiTexCoord4dv) then Exit;
-    glMultiTexCoord4f := GetModuleSymbol( LibGL,  'glMultiTexCoord4f');
+    @glMultiTexCoord4f := SDL_GL_GetProcAddress( 'glMultiTexCoord4f');
     if not Assigned(glMultiTexCoord4f) then Exit;
-    glMultiTexCoord4fv := GetModuleSymbol( LibGL,  'glMultiTexCoord4fv');
+    @glMultiTexCoord4fv := SDL_GL_GetProcAddress( 'glMultiTexCoord4fv');
     if not Assigned(glMultiTexCoord4fv) then Exit;
-    glMultiTexCoord4i := GetModuleSymbol( LibGL,  'glMultiTexCoord4i');
+    @glMultiTexCoord4i := SDL_GL_GetProcAddress( 'glMultiTexCoord4i');
     if not Assigned(glMultiTexCoord4i) then Exit;
-    glMultiTexCoord4iv := GetModuleSymbol( LibGL,  'glMultiTexCoord4iv');
+    @glMultiTexCoord4iv := SDL_GL_GetProcAddress( 'glMultiTexCoord4iv');
     if not Assigned(glMultiTexCoord4iv) then Exit;
-    glMultiTexCoord4s := GetModuleSymbol( LibGL,  'glMultiTexCoord4s');
+    @glMultiTexCoord4s := SDL_GL_GetProcAddress( 'glMultiTexCoord4s');
     if not Assigned(glMultiTexCoord4s) then Exit;
-    glMultiTexCoord4sv := GetModuleSymbol( LibGL,  'glMultiTexCoord4sv');
+    @glMultiTexCoord4sv := SDL_GL_GetProcAddress( 'glMultiTexCoord4sv');
     if not Assigned(glMultiTexCoord4sv) then Exit;
-    glLoadTransposeMatrixf := GetModuleSymbol( LibGL,  'glLoadTransposeMatrixf');
+    @glLoadTransposeMatrixf := SDL_GL_GetProcAddress( 'glLoadTransposeMatrixf');
     if not Assigned(glLoadTransposeMatrixf) then Exit;
-    glLoadTransposeMatrixd := GetModuleSymbol( LibGL,  'glLoadTransposeMatrixd');
+    @glLoadTransposeMatrixd := SDL_GL_GetProcAddress( 'glLoadTransposeMatrixd');
     if not Assigned(glLoadTransposeMatrixd) then Exit;
-    glMultTransposeMatrixf := GetModuleSymbol( LibGL,  'glMultTransposeMatrixf');
+    @glMultTransposeMatrixf := SDL_GL_GetProcAddress( 'glMultTransposeMatrixf');
     if not Assigned(glMultTransposeMatrixf) then Exit;
-    glMultTransposeMatrixd := GetModuleSymbol( LibGL,  'glMultTransposeMatrixd');
+    @glMultTransposeMatrixd := SDL_GL_GetProcAddress( 'glMultTransposeMatrixd');
     if not Assigned(glMultTransposeMatrixd) then Exit;
-    glSampleCoverage := GetModuleSymbol( LibGL,  'glSampleCoverage');
+    @glSampleCoverage := SDL_GL_GetProcAddress( 'glSampleCoverage');
     if not Assigned(glSampleCoverage) then Exit;
-    glCompressedTexImage3D := GetModuleSymbol( LibGL,  'glCompressedTexImage3D');
+    @glCompressedTexImage3D := SDL_GL_GetProcAddress( 'glCompressedTexImage3D');
     if not Assigned(glCompressedTexImage3D) then Exit;
-    glCompressedTexImage2D := GetModuleSymbol( LibGL,  'glCompressedTexImage2D');
+    @glCompressedTexImage2D := SDL_GL_GetProcAddress( 'glCompressedTexImage2D');
     if not Assigned(glCompressedTexImage2D) then Exit;
-    glCompressedTexImage1D := GetModuleSymbol( LibGL,  'glCompressedTexImage1D');
+    @glCompressedTexImage1D := SDL_GL_GetProcAddress( 'glCompressedTexImage1D');
     if not Assigned(glCompressedTexImage1D) then Exit;
-    glCompressedTexSubImage3D := GetModuleSymbol( LibGL,  'glCompressedTexSubImage3D');
+    @glCompressedTexSubImage3D := SDL_GL_GetProcAddress( 'glCompressedTexSubImage3D');
     if not Assigned(glCompressedTexSubImage3D) then Exit;
-    glCompressedTexSubImage2D := GetModuleSymbol( LibGL,  'glCompressedTexSubImage2D');
+    @glCompressedTexSubImage2D := SDL_GL_GetProcAddress( 'glCompressedTexSubImage2D');
     if not Assigned(glCompressedTexSubImage2D) then Exit;
-    glCompressedTexSubImage1D := GetModuleSymbol( LibGL,  'glCompressedTexSubImage1D');
+    @glCompressedTexSubImage1D := SDL_GL_GetProcAddress( 'glCompressedTexSubImage1D');
     if not Assigned(glCompressedTexSubImage1D) then Exit;
-    glGetCompressedTexImage := GetModuleSymbol( LibGL,  'glGetCompressedTexImage');
+    @glGetCompressedTexImage := SDL_GL_GetProcAddress( 'glGetCompressedTexImage');
     if not Assigned(glGetCompressedTexImage) then Exit;
     Result := TRUE;
 
@@ -3449,73 +3464,73 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_multitexture', extstring) then
   begin
-    glActiveTextureARB := GetModuleSymbol( LibGL,  'glActiveTextureARB');
+    @glActiveTextureARB := SDL_GL_GetProcAddress( 'glActiveTextureARB' );
     if not Assigned(glActiveTextureARB) then Exit;
-    glClientActiveTextureARB := GetModuleSymbol( LibGL,  'glClientActiveTextureARB');
+    @glClientActiveTextureARB := SDL_GL_GetProcAddress( 'glClientActiveTextureARB');
     if not Assigned(glClientActiveTextureARB) then Exit;
-    glMultiTexCoord1dARB := GetModuleSymbol( LibGL,  'glMultiTexCoord1dARB');
+    @glMultiTexCoord1dARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1dARB');
     if not Assigned(glMultiTexCoord1dARB) then Exit;
-    glMultiTexCoord1dvARB := GetModuleSymbol( LibGL,  'glMultiTexCoord1dvARB');
+    @glMultiTexCoord1dvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1dvARB');
     if not Assigned(glMultiTexCoord1dvARB) then Exit;
-    glMultiTexCoord1fARB := GetModuleSymbol( LibGL,  'glMultiTexCoord1fARB');
+    @glMultiTexCoord1fARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1fARB');
     if not Assigned(glMultiTexCoord1fARB) then Exit;
-    glMultiTexCoord1fvARB := GetModuleSymbol( LibGL,  'glMultiTexCoord1fvARB');
+    @glMultiTexCoord1fvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1fvARB');
     if not Assigned(glMultiTexCoord1fvARB) then Exit;
-    glMultiTexCoord1iARB := GetModuleSymbol( LibGL,  'glMultiTexCoord1iARB');
+    @glMultiTexCoord1iARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1iARB');
     if not Assigned(glMultiTexCoord1iARB) then Exit;
-    glMultiTexCoord1ivARB := GetModuleSymbol( LibGL,  'glMultiTexCoord1ivARB');
+    @glMultiTexCoord1ivARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1ivARB');
     if not Assigned(glMultiTexCoord1ivARB) then Exit;
-    glMultiTexCoord1sARB := GetModuleSymbol( LibGL,  'glMultiTexCoord1sARB');
+    @glMultiTexCoord1sARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1sARB');
     if not Assigned(glMultiTexCoord1sARB) then Exit;
-    glMultiTexCoord1svARB := GetModuleSymbol( LibGL,  'glMultiTexCoord1svARB');
+    @glMultiTexCoord1svARB := SDL_GL_GetProcAddress( 'glMultiTexCoord1svARB');
     if not Assigned(glMultiTexCoord1svARB) then Exit;
-    glMultiTexCoord2dARB := GetModuleSymbol( LibGL,  'glMultiTexCoord2dARB');
+    @glMultiTexCoord2dARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2dARB');
     if not Assigned(glMultiTexCoord2dARB) then Exit;
-    glMultiTexCoord2dvARB := GetModuleSymbol( LibGL,  'glMultiTexCoord2dvARB');
+    @glMultiTexCoord2dvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2dvARB');
     if not Assigned(glMultiTexCoord2dvARB) then Exit;
-    glMultiTexCoord2fARB := GetModuleSymbol( LibGL,  'glMultiTexCoord2fARB');
+    @glMultiTexCoord2fARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2fARB');
     if not Assigned(glMultiTexCoord2fARB) then Exit;
-    glMultiTexCoord2fvARB := GetModuleSymbol( LibGL,  'glMultiTexCoord2fvARB');
+    @glMultiTexCoord2fvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2fvARB');
     if not Assigned(glMultiTexCoord2fvARB) then Exit;
-    glMultiTexCoord2iARB := GetModuleSymbol( LibGL,  'glMultiTexCoord2iARB');
+    @glMultiTexCoord2iARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2iARB');
     if not Assigned(glMultiTexCoord2iARB) then Exit;
-    glMultiTexCoord2ivARB := GetModuleSymbol( LibGL,  'glMultiTexCoord2ivARB');
+    @glMultiTexCoord2ivARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2ivARB');
     if not Assigned(glMultiTexCoord2ivARB) then Exit;
-    glMultiTexCoord2sARB := GetModuleSymbol( LibGL,  'glMultiTexCoord2sARB');
+    @glMultiTexCoord2sARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2sARB');
     if not Assigned(glMultiTexCoord2sARB) then Exit;
-    glMultiTexCoord2svARB := GetModuleSymbol( LibGL,  'glMultiTexCoord2svARB');
+    @glMultiTexCoord2svARB := SDL_GL_GetProcAddress( 'glMultiTexCoord2svARB');
     if not Assigned(glMultiTexCoord2svARB) then Exit;
-    glMultiTexCoord3dARB := GetModuleSymbol( LibGL,  'glMultiTexCoord3dARB');
+    @glMultiTexCoord3dARB := SDL_GL_GetProcAddress(  'glMultiTexCoord3dARB');
     if not Assigned(glMultiTexCoord3dARB) then Exit;
-    glMultiTexCoord3dvARB := GetModuleSymbol( LibGL,  'glMultiTexCoord3dvARB');
+    @glMultiTexCoord3dvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3dvARB');
     if not Assigned(glMultiTexCoord3dvARB) then Exit;
-    glMultiTexCoord3fARB := GetModuleSymbol( LibGL,  'glMultiTexCoord3fARB');
+    @glMultiTexCoord3fARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3fARB');
     if not Assigned(glMultiTexCoord3fARB) then Exit;
-    glMultiTexCoord3fvARB := GetModuleSymbol( LibGL,  'glMultiTexCoord3fvARB');
+    @glMultiTexCoord3fvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3fvARB');
     if not Assigned(glMultiTexCoord3fvARB) then Exit;
-    glMultiTexCoord3iARB := GetModuleSymbol( LibGL,  'glMultiTexCoord3iARB');
+    @glMultiTexCoord3iARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3iARB');
     if not Assigned(glMultiTexCoord3iARB) then Exit;
-    glMultiTexCoord3ivARB := GetModuleSymbol( LibGL,  'glMultiTexCoord3ivARB');
+    @glMultiTexCoord3ivARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3ivARB');
     if not Assigned(glMultiTexCoord3ivARB) then Exit;
-    glMultiTexCoord3sARB := GetModuleSymbol( LibGL,  'glMultiTexCoord3sARB');
+    @glMultiTexCoord3sARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3sARB');
     if not Assigned(glMultiTexCoord3sARB) then Exit;
-    glMultiTexCoord3svARB := GetModuleSymbol( LibGL,  'glMultiTexCoord3svARB');
+    @glMultiTexCoord3svARB := SDL_GL_GetProcAddress( 'glMultiTexCoord3svARB');
     if not Assigned(glMultiTexCoord3svARB) then Exit;
-    glMultiTexCoord4dARB := GetModuleSymbol( LibGL,  'glMultiTexCoord4dARB');
+    @glMultiTexCoord4dARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4dARB');
     if not Assigned(glMultiTexCoord4dARB) then Exit;
-    glMultiTexCoord4dvARB := GetModuleSymbol( LibGL,  'glMultiTexCoord4dvARB');
+    @glMultiTexCoord4dvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4dvARB');
     if not Assigned(glMultiTexCoord4dvARB) then Exit;
-    glMultiTexCoord4fARB := GetModuleSymbol( LibGL,  'glMultiTexCoord4fARB');
+    @glMultiTexCoord4fARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4fARB');
     if not Assigned(glMultiTexCoord4fARB) then Exit;
-    glMultiTexCoord4fvARB := GetModuleSymbol( LibGL,  'glMultiTexCoord4fvARB');
+    @glMultiTexCoord4fvARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4fvARB');
     if not Assigned(glMultiTexCoord4fvARB) then Exit;
-    glMultiTexCoord4iARB := GetModuleSymbol( LibGL,  'glMultiTexCoord4iARB');
+    @glMultiTexCoord4iARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4iARB');
     if not Assigned(glMultiTexCoord4iARB) then Exit;
-    glMultiTexCoord4ivARB := GetModuleSymbol( LibGL,  'glMultiTexCoord4ivARB');
+    @glMultiTexCoord4ivARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4ivARB');
     if not Assigned(glMultiTexCoord4ivARB) then Exit;
-    glMultiTexCoord4sARB := GetModuleSymbol( LibGL,  'glMultiTexCoord4sARB');
+    @glMultiTexCoord4sARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4sARB');
     if not Assigned(glMultiTexCoord4sARB) then Exit;
-    glMultiTexCoord4svARB := GetModuleSymbol( LibGL,  'glMultiTexCoord4svARB');
+    @glMultiTexCoord4svARB := SDL_GL_GetProcAddress( 'glMultiTexCoord4svARB');
     if not Assigned(glMultiTexCoord4svARB) then Exit;
     Result := TRUE;
   end;
@@ -3532,13 +3547,13 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_transpose_matrix', extstring) then
   begin
-    glLoadTransposeMatrixfARB := GetModuleSymbol( LibGL,  'glLoadTransposeMatrixfARB');
+    @glLoadTransposeMatrixfARB := SDL_GL_GetProcAddress( 'glLoadTransposeMatrixfARB');
     if not Assigned(glLoadTransposeMatrixfARB) then Exit;
-    glLoadTransposeMatrixdARB := GetModuleSymbol( LibGL,  'glLoadTransposeMatrixdARB');
+    @glLoadTransposeMatrixdARB := SDL_GL_GetProcAddress( 'glLoadTransposeMatrixdARB');
     if not Assigned(glLoadTransposeMatrixdARB) then Exit;
-    glMultTransposeMatrixfARB := GetModuleSymbol( LibGL,  'glMultTransposeMatrixfARB');
+    @glMultTransposeMatrixfARB := SDL_GL_GetProcAddress( 'glMultTransposeMatrixfARB');
     if not Assigned(glMultTransposeMatrixfARB) then Exit;
-    glMultTransposeMatrixdARB := GetModuleSymbol( LibGL,  'glMultTransposeMatrixdARB');
+    @glMultTransposeMatrixdARB := SDL_GL_GetProcAddress( 'glMultTransposeMatrixdARB');
     if not Assigned(glMultTransposeMatrixdARB) then Exit;
     Result := TRUE;
   end;
@@ -3555,7 +3570,7 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_multisample', extstring) then
   begin
-    glSampleCoverageARB := GetModuleSymbol( LibGL,  'glSampleCoverageARB');
+    @glSampleCoverageARB := SDL_GL_GetProcAddress( 'glSampleCoverageARB');
     if not Assigned(glSampleCoverageARB) then Exit;
     Result := TRUE;
   end;
@@ -3584,13 +3599,13 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := wglGetExtensionsStringARB(wglGetCurrentDC);
 
   if glext_ExtensionSupported('WGL_ARB_extensions_string', extstring) then
   begin
-    wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+    wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
     if not Assigned(wglGetExtensionsStringARB) then Exit;
     Result := TRUE;
   end;
@@ -3603,19 +3618,19 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := wglGetExtensionsStringARB(wglGetCurrentDC);
 
   if glext_ExtensionSupported('WGL_ARB_buffer_region', extstring) then
   begin
-    wglCreateBufferRegionARB := GetModuleSymbol( LibGL,  'wglCreateBufferRegionARB');
+    wglCreateBufferRegionARB := SDL_GL_GetProcAddress( 'wglCreateBufferRegionARB');
     if not Assigned(wglCreateBufferRegionARB) then Exit;
-    wglDeleteBufferRegionARB := GetModuleSymbol( LibGL,  'wglDeleteBufferRegionARB');
+    wglDeleteBufferRegionARB := SDL_GL_GetProcAddress( 'wglDeleteBufferRegionARB');
     if not Assigned(wglDeleteBufferRegionARB) then Exit;
-    wglSaveBufferRegionARB := GetModuleSymbol( LibGL,  'wglSaveBufferRegionARB');
+    wglSaveBufferRegionARB := SDL_GL_GetProcAddress( 'wglSaveBufferRegionARB');
     if not Assigned(wglSaveBufferRegionARB) then Exit;
-    wglRestoreBufferRegionARB := GetModuleSymbol( LibGL,  'wglRestoreBufferRegionARB');
+    wglRestoreBufferRegionARB := SDL_GL_GetProcAddress( 'wglRestoreBufferRegionARB');
     if not Assigned(wglRestoreBufferRegionARB) then Exit;
     Result := TRUE;
   end;
@@ -3663,9 +3678,9 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_point_parameters', extstring) then
   begin
-    glPointParameterfARB := GetModuleSymbol( LibGL,  'glPointParameterfARB');
+    @glPointParameterfARB := SDL_GL_GetProcAddress(  'glPointParameterfARB');
     if not Assigned(glPointParameterfARB) then Exit;
-    glPointParameterfvARB := GetModuleSymbol( LibGL,  'glPointParameterfvARB');
+    @glPointParameterfvARB := SDL_GL_GetProcAddress(  'glPointParameterfvARB');
     if not Assigned(glPointParameterfvARB) then Exit;
     Result := TRUE;
   end;
@@ -3727,19 +3742,19 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_texture_compression', extstring) then
   begin
-    glCompressedTexImage3DARB := GetModuleSymbol( LibGL,  'glCompressedTexImage3DARB');
+    @glCompressedTexImage3DARB := SDL_GL_GetProcAddress( 'glCompressedTexImage3DARB');
     if not Assigned(glCompressedTexImage3DARB) then Exit;
-    glCompressedTexImage2DARB := GetModuleSymbol( LibGL,  'glCompressedTexImage2DARB');
+    @glCompressedTexImage2DARB := SDL_GL_GetProcAddress( 'glCompressedTexImage2DARB');
     if not Assigned(glCompressedTexImage2DARB) then Exit;
-    glCompressedTexImage1DARB := GetModuleSymbol( LibGL,  'glCompressedTexImage1DARB');
+    @glCompressedTexImage1DARB := SDL_GL_GetProcAddress( 'glCompressedTexImage1DARB');
     if not Assigned(glCompressedTexImage1DARB) then Exit;
-    glCompressedTexSubImage3DARB := GetModuleSymbol( LibGL,  'glCompressedTexSubImage3DARB');
+    @glCompressedTexSubImage3DARB := SDL_GL_GetProcAddress( 'glCompressedTexSubImage3DARB');
     if not Assigned(glCompressedTexSubImage3DARB) then Exit;
-    glCompressedTexSubImage2DARB := GetModuleSymbol( LibGL,  'glCompressedTexSubImage2DARB');
+    @glCompressedTexSubImage2DARB := SDL_GL_GetProcAddress( 'glCompressedTexSubImage2DARB');
     if not Assigned(glCompressedTexSubImage2DARB) then Exit;
-    glCompressedTexSubImage1DARB := GetModuleSymbol( LibGL,  'glCompressedTexSubImage1DARB');
+    @glCompressedTexSubImage1DARB := SDL_GL_GetProcAddress( 'glCompressedTexSubImage1DARB');
     if not Assigned(glCompressedTexSubImage1DARB) then Exit;
-    glGetCompressedTexImageARB := GetModuleSymbol( LibGL,  'glGetCompressedTexImageARB');
+    @glGetCompressedTexImageARB := SDL_GL_GetProcAddress( 'glGetCompressedTexImageARB');
     if not Assigned(glGetCompressedTexImageARB) then Exit;
     Result := TRUE;
   end;
@@ -3816,27 +3831,27 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_vertex_blend', extstring) then
   begin
-    glWeightbvARB := GetModuleSymbol( LibGL,  'glWeightbvARB');
+    @glWeightbvARB := SDL_GL_GetProcAddress(  'glWeightbvARB');
     if not Assigned(glWeightbvARB) then Exit;
-    glWeightsvARB := GetModuleSymbol( LibGL,  'glWeightsvARB');
+    @glWeightsvARB := SDL_GL_GetProcAddress( 'glWeightsvARB');
     if not Assigned(glWeightsvARB) then Exit;
-    glWeightivARB := GetModuleSymbol( LibGL,  'glWeightivARB');
+    @glWeightivARB := SDL_GL_GetProcAddress( 'glWeightivARB');
     if not Assigned(glWeightivARB) then Exit;
-    glWeightfvARB := GetModuleSymbol( LibGL,  'glWeightfvARB');
+    @glWeightfvARB := SDL_GL_GetProcAddress( 'glWeightfvARB');
     if not Assigned(glWeightfvARB) then Exit;
-    glWeightdvARB := GetModuleSymbol( LibGL,  'glWeightdvARB');
+    @glWeightdvARB := SDL_GL_GetProcAddress( 'glWeightdvARB');
     if not Assigned(glWeightdvARB) then Exit;
-    glWeightvARB := GetModuleSymbol( LibGL,  'glWeightvARB');
+    @glWeightvARB := SDL_GL_GetProcAddress( 'glWeightvARB');
     if not Assigned(glWeightvARB) then Exit;
-    glWeightubvARB := GetModuleSymbol( LibGL,  'glWeightubvARB');
+    @glWeightubvARB := SDL_GL_GetProcAddress( 'glWeightubvARB');
     if not Assigned(glWeightubvARB) then Exit;
-    glWeightusvARB := GetModuleSymbol( LibGL,  'glWeightusvARB');
+    @glWeightusvARB := SDL_GL_GetProcAddress( 'glWeightusvARB');
     if not Assigned(glWeightusvARB) then Exit;
-    glWeightuivARB := GetModuleSymbol( LibGL,  'glWeightuivARB');
+    @glWeightuivARB := SDL_GL_GetProcAddress( 'glWeightuivARB');
     if not Assigned(glWeightuivARB) then Exit;
-    glWeightPointerARB := GetModuleSymbol( LibGL,  'glWeightPointerARB');
+    @glWeightPointerARB := SDL_GL_GetProcAddress( 'glWeightPointerARB');
     if not Assigned(glWeightPointerARB) then Exit;
-    glVertexBlendARB := GetModuleSymbol( LibGL,  'glVertexBlendARB');
+    @glVertexBlendARB := SDL_GL_GetProcAddress( 'glVertexBlendARB');
     if not Assigned(glVertexBlendARB) then Exit;
     Result := TRUE;
   end;
@@ -3853,129 +3868,129 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_vertex_program', extstring) then
   begin
-    glVertexAttrib1sARB := GetModuleSymbol( LibGL,  'glVertexAttrib1sARB');
+    @glVertexAttrib1sARB := SDL_GL_GetProcAddress( 'glVertexAttrib1sARB');
     if not Assigned(glVertexAttrib1sARB) then Exit;
-    glVertexAttrib1fARB := GetModuleSymbol( LibGL,  'glVertexAttrib1fARB');
+    @glVertexAttrib1fARB := SDL_GL_GetProcAddress( 'glVertexAttrib1fARB');
     if not Assigned(glVertexAttrib1fARB) then Exit;
-    glVertexAttrib1dARB := GetModuleSymbol( LibGL,  'glVertexAttrib1dARB');
+    @glVertexAttrib1dARB := SDL_GL_GetProcAddress( 'glVertexAttrib1dARB');
     if not Assigned(glVertexAttrib1dARB) then Exit;
-    glVertexAttrib2sARB := GetModuleSymbol( LibGL,  'glVertexAttrib2sARB');
+    @glVertexAttrib2sARB := SDL_GL_GetProcAddress( 'glVertexAttrib2sARB');
     if not Assigned(glVertexAttrib2sARB) then Exit;
-    glVertexAttrib2fARB := GetModuleSymbol( LibGL,  'glVertexAttrib2fARB');
+    @glVertexAttrib2fARB := SDL_GL_GetProcAddress( 'glVertexAttrib2fARB');
     if not Assigned(glVertexAttrib2fARB) then Exit;
-    glVertexAttrib2dARB := GetModuleSymbol( LibGL,  'glVertexAttrib2dARB');
+    @glVertexAttrib2dARB := SDL_GL_GetProcAddress( 'glVertexAttrib2dARB');
     if not Assigned(glVertexAttrib2dARB) then Exit;
-    glVertexAttrib3sARB := GetModuleSymbol( LibGL,  'glVertexAttrib3sARB');
+    @glVertexAttrib3sARB := SDL_GL_GetProcAddress( 'glVertexAttrib3sARB');
     if not Assigned(glVertexAttrib3sARB) then Exit;
-    glVertexAttrib3fARB := GetModuleSymbol( LibGL,  'glVertexAttrib3fARB');
+    @glVertexAttrib3fARB := SDL_GL_GetProcAddress( 'glVertexAttrib3fARB');
     if not Assigned(glVertexAttrib3fARB) then Exit;
-    glVertexAttrib3dARB := GetModuleSymbol( LibGL,  'glVertexAttrib3dARB');
+    @glVertexAttrib3dARB := SDL_GL_GetProcAddress( 'glVertexAttrib3dARB');
     if not Assigned(glVertexAttrib3dARB) then Exit;
-    glVertexAttrib4sARB := GetModuleSymbol( LibGL,  'glVertexAttrib4sARB');
+    @glVertexAttrib4sARB := SDL_GL_GetProcAddress( 'glVertexAttrib4sARB');
     if not Assigned(glVertexAttrib4sARB) then Exit;
-    glVertexAttrib4fARB := GetModuleSymbol( LibGL,  'glVertexAttrib4fARB');
+    @glVertexAttrib4fARB := SDL_GL_GetProcAddress( 'glVertexAttrib4fARB');
     if not Assigned(glVertexAttrib4fARB) then Exit;
-    glVertexAttrib4dARB := GetModuleSymbol( LibGL,  'glVertexAttrib4dARB');
+    @glVertexAttrib4dARB := SDL_GL_GetProcAddress( 'glVertexAttrib4dARB');
     if not Assigned(glVertexAttrib4dARB) then Exit;
-    glVertexAttrib4NubARB := GetModuleSymbol( LibGL,  'glVertexAttrib4NubARB');
+    @glVertexAttrib4NubARB := SDL_GL_GetProcAddress( 'glVertexAttrib4NubARB');
     if not Assigned(glVertexAttrib4NubARB) then Exit;
-    glVertexAttrib1svARB := GetModuleSymbol( LibGL,  'glVertexAttrib1svARB');
+    @glVertexAttrib1svARB := SDL_GL_GetProcAddress( 'glVertexAttrib1svARB');
     if not Assigned(glVertexAttrib1svARB) then Exit;
-    glVertexAttrib1fvARB := GetModuleSymbol( LibGL,  'glVertexAttrib1fvARB');
+    @glVertexAttrib1fvARB := SDL_GL_GetProcAddress( 'glVertexAttrib1fvARB');
     if not Assigned(glVertexAttrib1fvARB) then Exit;
-    glVertexAttrib1dvARB := GetModuleSymbol( LibGL,  'glVertexAttrib1dvARB');
+    @glVertexAttrib1dvARB := SDL_GL_GetProcAddress( 'glVertexAttrib1dvARB');
     if not Assigned(glVertexAttrib1dvARB) then Exit;
-    glVertexAttrib2svARB := GetModuleSymbol( LibGL,  'glVertexAttrib2svARB');
+    @glVertexAttrib2svARB := SDL_GL_GetProcAddress( 'glVertexAttrib2svARB');
     if not Assigned(glVertexAttrib2svARB) then Exit;
-    glVertexAttrib2fvARB := GetModuleSymbol( LibGL,  'glVertexAttrib2fvARB');
+    @glVertexAttrib2fvARB := SDL_GL_GetProcAddress( 'glVertexAttrib2fvARB');
     if not Assigned(glVertexAttrib2fvARB) then Exit;
-    glVertexAttrib2dvARB := GetModuleSymbol( LibGL,  'glVertexAttrib2dvARB');
+    @glVertexAttrib2dvARB := SDL_GL_GetProcAddress( 'glVertexAttrib2dvARB');
     if not Assigned(glVertexAttrib2dvARB) then Exit;
-    glVertexAttrib3svARB := GetModuleSymbol( LibGL,  'glVertexAttrib3svARB');
+    @glVertexAttrib3svARB := SDL_GL_GetProcAddress( 'glVertexAttrib3svARB');
     if not Assigned(glVertexAttrib3svARB) then Exit;
-    glVertexAttrib3fvARB := GetModuleSymbol( LibGL,  'glVertexAttrib3fvARB');
+    @glVertexAttrib3fvARB := SDL_GL_GetProcAddress( 'glVertexAttrib3fvARB');
     if not Assigned(glVertexAttrib3fvARB) then Exit;
-    glVertexAttrib3dvARB := GetModuleSymbol( LibGL,  'glVertexAttrib3dvARB');
+    @glVertexAttrib3dvARB := SDL_GL_GetProcAddress( 'glVertexAttrib3dvARB');
     if not Assigned(glVertexAttrib3dvARB) then Exit;
-    glVertexAttrib4bvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4bvARB');
+    @glVertexAttrib4bvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4bvARB');
     if not Assigned(glVertexAttrib4bvARB) then Exit;
-    glVertexAttrib4svARB := GetModuleSymbol( LibGL,  'glVertexAttrib4svARB');
+    @glVertexAttrib4svARB := SDL_GL_GetProcAddress( 'glVertexAttrib4svARB');
     if not Assigned(glVertexAttrib4svARB) then Exit;
-    glVertexAttrib4ivARB := GetModuleSymbol( LibGL,  'glVertexAttrib4ivARB');
+    @glVertexAttrib4ivARB := SDL_GL_GetProcAddress( 'glVertexAttrib4ivARB');
     if not Assigned(glVertexAttrib4ivARB) then Exit;
-    glVertexAttrib4ubvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4ubvARB');
+    @glVertexAttrib4ubvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4ubvARB');
     if not Assigned(glVertexAttrib4ubvARB) then Exit;
-    glVertexAttrib4usvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4usvARB');
+    @glVertexAttrib4usvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4usvARB');
     if not Assigned(glVertexAttrib4usvARB) then Exit;
-    glVertexAttrib4uivARB := GetModuleSymbol( LibGL,  'glVertexAttrib4uivARB');
+    @glVertexAttrib4uivARB := SDL_GL_GetProcAddress( 'glVertexAttrib4uivARB');
     if not Assigned(glVertexAttrib4uivARB) then Exit;
-    glVertexAttrib4fvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4fvARB');
+    @glVertexAttrib4fvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4fvARB');
     if not Assigned(glVertexAttrib4fvARB) then Exit;
-    glVertexAttrib4dvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4dvARB');
+    @glVertexAttrib4dvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4dvARB');
     if not Assigned(glVertexAttrib4dvARB) then Exit;
-    glVertexAttrib4NbvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4NbvARB');
+    @glVertexAttrib4NbvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4NbvARB');
     if not Assigned(glVertexAttrib4NbvARB) then Exit;
-    glVertexAttrib4NsvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4NsvARB');
+    @glVertexAttrib4NsvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4NsvARB');
     if not Assigned(glVertexAttrib4NsvARB) then Exit;
-    glVertexAttrib4NivARB := GetModuleSymbol( LibGL,  'glVertexAttrib4NivARB');
+    @glVertexAttrib4NivARB := SDL_GL_GetProcAddress('glVertexAttrib4NivARB');
     if not Assigned(glVertexAttrib4NivARB) then Exit;
-    glVertexAttrib4NubvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4NubvARB');
+    @glVertexAttrib4NubvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4NubvARB');
     if not Assigned(glVertexAttrib4NubvARB) then Exit;
-    glVertexAttrib4NusvARB := GetModuleSymbol( LibGL,  'glVertexAttrib4NusvARB');
+    @glVertexAttrib4NusvARB := SDL_GL_GetProcAddress( 'glVertexAttrib4NusvARB');
     if not Assigned(glVertexAttrib4NusvARB) then Exit;
-    glVertexAttrib4NuivARB := GetModuleSymbol( LibGL,  'glVertexAttrib4NuivARB');
+    @glVertexAttrib4NuivARB := SDL_GL_GetProcAddress( 'glVertexAttrib4NuivARB');
     if not Assigned(glVertexAttrib4NuivARB) then Exit;
-    glVertexAttribPointerARB := GetModuleSymbol( LibGL,  'glVertexAttribPointerARB');
+    @glVertexAttribPointerARB := SDL_GL_GetProcAddress( 'glVertexAttribPointerARB');
     if not Assigned(glVertexAttribPointerARB) then Exit;
-    glEnableVertexAttribArrayARB := GetModuleSymbol( LibGL,  'glEnableVertexAttribArrayARB');
+    @glEnableVertexAttribArrayARB := SDL_GL_GetProcAddress( 'glEnableVertexAttribArrayARB');
     if not Assigned(glEnableVertexAttribArrayARB) then Exit;
-    glDisableVertexAttribArrayARB := GetModuleSymbol( LibGL,  'glDisableVertexAttribArrayARB');
+    @glDisableVertexAttribArrayARB := SDL_GL_GetProcAddress( 'glDisableVertexAttribArrayARB');
     if not Assigned(glDisableVertexAttribArrayARB) then Exit;
-    glProgramStringARB := GetModuleSymbol( LibGL,  'glProgramStringARB');
+    @glProgramStringARB := SDL_GL_GetProcAddress( 'glProgramStringARB');
     if not Assigned(glProgramStringARB) then Exit;
-    glBindProgramARB := GetModuleSymbol( LibGL,  'glBindProgramARB');
+    @glBindProgramARB := SDL_GL_GetProcAddress( 'glBindProgramARB');
     if not Assigned(glBindProgramARB) then Exit;
-    glDeleteProgramsARB := GetModuleSymbol( LibGL,  'glDeleteProgramsARB');
+    @glDeleteProgramsARB := SDL_GL_GetProcAddress( 'glDeleteProgramsARB');
     if not Assigned(glDeleteProgramsARB) then Exit;
-    glGenProgramsARB := GetModuleSymbol( LibGL,  'glGenProgramsARB');
+    @glGenProgramsARB := SDL_GL_GetProcAddress( 'glGenProgramsARB');
     if not Assigned(glGenProgramsARB) then Exit;
-    glProgramEnvParameter4dARB := GetModuleSymbol( LibGL,  'glProgramEnvParameter4dARB');
+    @glProgramEnvParameter4dARB := SDL_GL_GetProcAddress( 'glProgramEnvParameter4dARB');
     if not Assigned(glProgramEnvParameter4dARB) then Exit;
-    glProgramEnvParameter4dvARB := GetModuleSymbol( LibGL,  'glProgramEnvParameter4dvARB');
+    @glProgramEnvParameter4dvARB := SDL_GL_GetProcAddress( 'glProgramEnvParameter4dvARB');
     if not Assigned(glProgramEnvParameter4dvARB) then Exit;
-    glProgramEnvParameter4fARB := GetModuleSymbol( LibGL,  'glProgramEnvParameter4fARB');
+    @glProgramEnvParameter4fARB := SDL_GL_GetProcAddress( 'glProgramEnvParameter4fARB');
     if not Assigned(glProgramEnvParameter4fARB) then Exit;
-    glProgramEnvParameter4fvARB := GetModuleSymbol( LibGL,  'glProgramEnvParameter4fvARB');
+    @glProgramEnvParameter4fvARB := SDL_GL_GetProcAddress( 'glProgramEnvParameter4fvARB');
     if not Assigned(glProgramEnvParameter4fvARB) then Exit;
-    glProgramLocalParameter4dARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4dARB');
+    @glProgramLocalParameter4dARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4dARB');
     if not Assigned(glProgramLocalParameter4dARB) then Exit;
-    glProgramLocalParameter4dvARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4dvARB');
+    @glProgramLocalParameter4dvARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4dvARB');
     if not Assigned(glProgramLocalParameter4dvARB) then Exit;
-    glProgramLocalParameter4fARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4fARB');
+    @glProgramLocalParameter4fARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4fARB');
     if not Assigned(glProgramLocalParameter4fARB) then Exit;
-    glProgramLocalParameter4fvARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4fvARB');
+    @glProgramLocalParameter4fvARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4fvARB');
     if not Assigned(glProgramLocalParameter4fvARB) then Exit;
-    glGetProgramEnvParameterdvARB := GetModuleSymbol( LibGL,  'glGetProgramEnvParameterdvARB');
+    @glGetProgramEnvParameterdvARB := SDL_GL_GetProcAddress( 'glGetProgramEnvParameterdvARB');
     if not Assigned(glGetProgramEnvParameterdvARB) then Exit;
-    glGetProgramEnvParameterfvARB := GetModuleSymbol( LibGL,  'glGetProgramEnvParameterfvARB');
+    @glGetProgramEnvParameterfvARB := SDL_GL_GetProcAddress( 'glGetProgramEnvParameterfvARB');
     if not Assigned(glGetProgramEnvParameterfvARB) then Exit;
-    glGetProgramLocalParameterdvARB := GetModuleSymbol( LibGL,  'glGetProgramLocalParameterdvARB');
+    @glGetProgramLocalParameterdvARB := SDL_GL_GetProcAddress( 'glGetProgramLocalParameterdvARB');
     if not Assigned(glGetProgramLocalParameterdvARB) then Exit;
-    glGetProgramLocalParameterfvARB := GetModuleSymbol( LibGL,  'glGetProgramLocalParameterfvARB');
+    @glGetProgramLocalParameterfvARB := SDL_GL_GetProcAddress( 'glGetProgramLocalParameterfvARB');
     if not Assigned(glGetProgramLocalParameterfvARB) then Exit;
-    glGetProgramivARB := GetModuleSymbol( LibGL,  'glGetProgramivARB');
+    @glGetProgramivARB := SDL_GL_GetProcAddress( 'glGetProgramivARB');
     if not Assigned(glGetProgramivARB) then Exit;
-    glGetProgramStringARB := GetModuleSymbol( LibGL,  'glGetProgramStringARB');
+    @glGetProgramStringARB := SDL_GL_GetProcAddress( 'glGetProgramStringARB');
     if not Assigned(glGetProgramStringARB) then Exit;
-    glGetVertexAttribdvARB := GetModuleSymbol( LibGL,  'glGetVertexAttribdvARB');
+    @glGetVertexAttribdvARB := SDL_GL_GetProcAddress( 'glGetVertexAttribdvARB');
     if not Assigned(glGetVertexAttribdvARB) then Exit;
-    glGetVertexAttribfvARB := GetModuleSymbol( LibGL,  'glGetVertexAttribfvARB');
+    @glGetVertexAttribfvARB := SDL_GL_GetProcAddress( 'glGetVertexAttribfvARB');
     if not Assigned(glGetVertexAttribfvARB) then Exit;
-    glGetVertexAttribivARB := GetModuleSymbol( LibGL,  'glGetVertexAttribivARB');
+    @glGetVertexAttribivARB := SDL_GL_GetProcAddress( 'glGetVertexAttribivARB');
     if not Assigned(glGetVertexAttribivARB) then Exit;
-    glGetVertexAttribPointervARB := GetModuleSymbol( LibGL,  'glGetVertexAttribPointervARB');
+    @glGetVertexAttribPointervARB := SDL_GL_GetProcAddress( 'glGetVertexAttribPointervARB');
     if not Assigned(glGetVertexAttribPointervARB) then Exit;
-    glIsProgramARB := GetModuleSymbol( LibGL,  'glIsProgramARB');
+    @glIsProgramARB := SDL_GL_GetProcAddress( 'glIsProgramARB');
     if not Assigned(glIsProgramARB) then Exit;
     Result := TRUE;
   end;
@@ -3992,37 +4007,37 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_window_pos', extstring) then
   begin
-    glWindowPos2dARB := GetModuleSymbol( LibGL,  'glWindowPos2dARB');
+    @glWindowPos2dARB := SDL_GL_GetProcAddress( 'glWindowPos2dARB');
     if not Assigned(glWindowPos2dARB) then Exit;
-    glWindowPos2fARB := GetModuleSymbol( LibGL,  'glWindowPos2fARB');
+    @glWindowPos2fARB := SDL_GL_GetProcAddress( 'glWindowPos2fARB');
     if not Assigned(glWindowPos2fARB) then Exit;
-    glWindowPos2iARB := GetModuleSymbol( LibGL,  'glWindowPos2iARB');
+    @glWindowPos2iARB := SDL_GL_GetProcAddress( 'glWindowPos2iARB');
     if not Assigned(glWindowPos2iARB) then Exit;
-    glWindowPos2sARB := GetModuleSymbol( LibGL,  'glWindowPos2sARB');
+    @glWindowPos2sARB := SDL_GL_GetProcAddress( 'glWindowPos2sARB');
     if not Assigned(glWindowPos2sARB) then Exit;
-    glWindowPos2dvARB := GetModuleSymbol( LibGL,  'glWindowPos2dvARB');
+    @glWindowPos2dvARB := SDL_GL_GetProcAddress( 'glWindowPos2dvARB');
     if not Assigned(glWindowPos2dvARB) then Exit;
-    glWindowPos2fvARB := GetModuleSymbol( LibGL,  'glWindowPos2fvARB');
+    @glWindowPos2fvARB := SDL_GL_GetProcAddress( 'glWindowPos2fvARB');
     if not Assigned(glWindowPos2fvARB) then Exit;
-    glWindowPos2ivARB := GetModuleSymbol( LibGL,  'glWindowPos2ivARB');
+    @glWindowPos2ivARB := SDL_GL_GetProcAddress( 'glWindowPos2ivARB');
     if not Assigned(glWindowPos2ivARB) then Exit;
-    glWindowPos2svARB := GetModuleSymbol( LibGL,  'glWindowPos2svARB');
+    @glWindowPos2svARB := SDL_GL_GetProcAddress( 'glWindowPos2svARB');
     if not Assigned(glWindowPos2svARB) then Exit;
-    glWindowPos3dARB := GetModuleSymbol( LibGL,  'glWindowPos3dARB');
+    @glWindowPos3dARB := SDL_GL_GetProcAddress( 'glWindowPos3dARB');
     if not Assigned(glWindowPos3dARB) then Exit;
-    glWindowPos3fARB := GetModuleSymbol( LibGL,  'glWindowPos3fARB');
+    @glWindowPos3fARB := SDL_GL_GetProcAddress( 'glWindowPos3fARB');
     if not Assigned(glWindowPos3fARB) then Exit;
-    glWindowPos3iARB := GetModuleSymbol( LibGL,  'glWindowPos3iARB');
+    @glWindowPos3iARB := SDL_GL_GetProcAddress( 'glWindowPos3iARB');
     if not Assigned(glWindowPos3iARB) then Exit;
-    glWindowPos3sARB := GetModuleSymbol( LibGL,  'glWindowPos3sARB');
+    @glWindowPos3sARB := SDL_GL_GetProcAddress( 'glWindowPos3sARB');
     if not Assigned(glWindowPos3sARB) then Exit;
-    glWindowPos3dvARB := GetModuleSymbol( LibGL,  'glWindowPos3dvARB');
+    @glWindowPos3dvARB := SDL_GL_GetProcAddress( 'glWindowPos3dvARB');
     if not Assigned(glWindowPos3dvARB) then Exit;
-    glWindowPos3fvARB := GetModuleSymbol( LibGL,  'glWindowPos3fvARB');
+    @glWindowPos3fvARB := SDL_GL_GetProcAddress( 'glWindowPos3fvARB');
     if not Assigned(glWindowPos3fvARB) then Exit;
-    glWindowPos3ivARB := GetModuleSymbol( LibGL,  'glWindowPos3ivARB');
+    @glWindowPos3ivARB := SDL_GL_GetProcAddress( 'glWindowPos3ivARB');
     if not Assigned(glWindowPos3ivARB) then Exit;
-    glWindowPos3svARB := GetModuleSymbol( LibGL,  'glWindowPos3svARB');
+    @glWindowPos3svARB := SDL_GL_GetProcAddress( 'glWindowPos3svARB');
     if not Assigned(glWindowPos3svARB) then Exit;
     Result := TRUE;
   end;
@@ -4084,7 +4099,7 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_blend_color', extstring) then
   begin
-    glBlendColorEXT := GetModuleSymbol( LibGL,  'glBlendColorEXT');
+    @glBlendColorEXT := SDL_GL_GetProcAddress( 'glBlendColorEXT');
     if not Assigned(glBlendColorEXT) then Exit;
     Result := TRUE;
   end;
@@ -4101,7 +4116,7 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_blend_func_separate', extstring) then
   begin
-    glBlendFuncSeparateEXT := GetModuleSymbol( LibGL,  'glBlendFuncSeparateEXT');
+    @glBlendFuncSeparateEXT := SDL_GL_GetProcAddress( 'glBlendFuncSeparateEXT');
     if not Assigned(glBlendFuncSeparateEXT) then Exit;
     Result := TRUE;
   end;
@@ -4133,7 +4148,7 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_blend_minmax', extstring) then
   begin
-    glBlendEquationEXT := GetModuleSymbol( LibGL,  'glBlendEquationEXT');
+    @glBlendEquationEXT := SDL_GL_GetProcAddress( 'glBlendEquationEXT');
     if not Assigned(glBlendEquationEXT) then Exit;
     Result := TRUE;
   end;
@@ -4180,9 +4195,9 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_color_subtable', extstring) then
   begin
-    glColorSubTableEXT := GetModuleSymbol( LibGL,  'glColorSubTableEXT');
+    @glColorSubTableEXT := SDL_GL_GetProcAddress( 'glColorSubTableEXT');
     if not Assigned(glColorSubTableEXT) then Exit;
-    glCopyColorSubTableEXT := GetModuleSymbol( LibGL,  'glCopyColorSubTableEXT');
+    @glCopyColorSubTableEXT := SDL_GL_GetProcAddress( 'glCopyColorSubTableEXT');
     if not Assigned(glCopyColorSubTableEXT) then Exit;
     Result := TRUE;
   end;
@@ -4199,9 +4214,9 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_compiled_vertex_array', extstring) then
   begin
-    glLockArraysEXT := wglGetProcAddress('glLockArraysEXT');
+    @glLockArraysEXT := wglGetProcAddress('glLockArraysEXT');
     if not Assigned(glLockArraysEXT) then Exit;
-    glUnlockArraysEXT := GetModuleSymbol( LibGL,  'glUnlockArraysEXT');
+    @glUnlockArraysEXT := SDL_GL_GetProcAddress( 'glUnlockArraysEXT');
     if not Assigned(glUnlockArraysEXT) then Exit;
     Result := TRUE;
   end;
@@ -4218,31 +4233,31 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_convolution', extstring) then
   begin
-    glConvolutionFilter1DEXT := GetModuleSymbol( LibGL,  'glConvolutionFilter1DEXT');
+    @glConvolutionFilter1DEXT := SDL_GL_GetProcAddress( 'glConvolutionFilter1DEXT');
     if not Assigned(glConvolutionFilter1DEXT) then Exit;
-    glConvolutionFilter2DEXT := GetModuleSymbol( LibGL,  'glConvolutionFilter2DEXT');
+    @glConvolutionFilter2DEXT := SDL_GL_GetProcAddress( 'glConvolutionFilter2DEXT');
     if not Assigned(glConvolutionFilter2DEXT) then Exit;
-    glCopyConvolutionFilter1DEXT := GetModuleSymbol( LibGL,  'glCopyConvolutionFilter1DEXT');
+    @glCopyConvolutionFilter1DEXT := SDL_GL_GetProcAddress( 'glCopyConvolutionFilter1DEXT');
     if not Assigned(glCopyConvolutionFilter1DEXT) then Exit;
-    glCopyConvolutionFilter2DEXT := GetModuleSymbol( LibGL,  'glCopyConvolutionFilter2DEXT');
+    @glCopyConvolutionFilter2DEXT := SDL_GL_GetProcAddress( 'glCopyConvolutionFilter2DEXT');
     if not Assigned(glCopyConvolutionFilter2DEXT) then Exit;
-    glGetConvolutionFilterEXT := GetModuleSymbol( LibGL,  'glGetConvolutionFilterEXT');
+    @glGetConvolutionFilterEXT := SDL_GL_GetProcAddress( 'glGetConvolutionFilterEXT');
     if not Assigned(glGetConvolutionFilterEXT) then Exit;
-    glSeparableFilter2DEXT := GetModuleSymbol( LibGL,  'glSeparableFilter2DEXT');
+    @glSeparableFilter2DEXT := SDL_GL_GetProcAddress( 'glSeparableFilter2DEXT');
     if not Assigned(glSeparableFilter2DEXT) then Exit;
-    glGetSeparableFilterEXT := GetModuleSymbol( LibGL,  'glGetSeparableFilterEXT');
+    @glGetSeparableFilterEXT := SDL_GL_GetProcAddress( 'glGetSeparableFilterEXT');
     if not Assigned(glGetSeparableFilterEXT) then Exit;
-    glConvolutionParameteriEXT := GetModuleSymbol( LibGL,  'glConvolutionParameteriEXT');
+    @glConvolutionParameteriEXT := SDL_GL_GetProcAddress( 'glConvolutionParameteriEXT');
     if not Assigned(glConvolutionParameteriEXT) then Exit;
-    glConvolutionParameterivEXT := GetModuleSymbol( LibGL,  'glConvolutionParameterivEXT');
+    @glConvolutionParameterivEXT := SDL_GL_GetProcAddress( 'glConvolutionParameterivEXT');
     if not Assigned(glConvolutionParameterivEXT) then Exit;
-    glConvolutionParameterfEXT := GetModuleSymbol( LibGL,  'glConvolutionParameterfEXT');
+    @glConvolutionParameterfEXT := SDL_GL_GetProcAddress( 'glConvolutionParameterfEXT');
     if not Assigned(glConvolutionParameterfEXT) then Exit;
-    glConvolutionParameterfvEXT := GetModuleSymbol( LibGL,  'glConvolutionParameterfvEXT');
+    @glConvolutionParameterfvEXT := SDL_GL_GetProcAddress( 'glConvolutionParameterfvEXT');
     if not Assigned(glConvolutionParameterfvEXT) then Exit;
-    glGetConvolutionParameterivEXT := GetModuleSymbol( LibGL,  'glGetConvolutionParameterivEXT');
+    @glGetConvolutionParameterivEXT := SDL_GL_GetProcAddress( 'glGetConvolutionParameterivEXT');
     if not Assigned(glGetConvolutionParameterivEXT) then Exit;
-    glGetConvolutionParameterfvEXT := GetModuleSymbol( LibGL,  'glGetConvolutionParameterfvEXT');
+    @glGetConvolutionParameterfvEXT := SDL_GL_GetProcAddress( 'glGetConvolutionParameterfvEXT');
     if not Assigned(glGetConvolutionParameterfvEXT) then Exit;
     Result := TRUE;
   end;
@@ -4259,15 +4274,15 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_fog_coord', extstring) then
   begin
-    glFogCoordfEXfloat := GetModuleSymbol( LibGL,  'glFogCoordfEXfloat');
+    @glFogCoordfEXfloat := SDL_GL_GetProcAddress( 'glFogCoordfEXfloat');
     if not Assigned(glFogCoordfEXfloat) then Exit;
-    glFogCoorddEXdouble := GetModuleSymbol( LibGL,  'glFogCoorddEXdouble');
+    @glFogCoorddEXdouble := SDL_GL_GetProcAddress( 'glFogCoorddEXdouble');
     if not Assigned(glFogCoorddEXdouble) then Exit;
-    glFogCoordfvEXfloat := GetModuleSymbol( LibGL,  'glFogCoordfvEXfloat');
+    @glFogCoordfvEXfloat := SDL_GL_GetProcAddress( 'glFogCoordfvEXfloat');
     if not Assigned(glFogCoordfvEXfloat) then Exit;
-    glFogCoorddvEXdouble := GetModuleSymbol( LibGL,  'glFogCoorddvEXdouble');
+    @glFogCoorddvEXdouble := SDL_GL_GetProcAddress( 'glFogCoorddvEXdouble');
     if not Assigned(glFogCoorddvEXdouble) then Exit;
-    glFogCoordPointerEXT := GetModuleSymbol( LibGL,  'glFogCoordPointerEXT');
+    @glFogCoordPointerEXT := SDL_GL_GetProcAddress( 'glFogCoordPointerEXT');
     if not Assigned(glFogCoordPointerEXT) then Exit;
     Result := TRUE;
   end;
@@ -4284,25 +4299,25 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_histogram', extstring) then
   begin
-    glHistogramEXT := GetModuleSymbol( LibGL,  'glHistogramEXT');
+    @glHistogramEXT := SDL_GL_GetProcAddress( 'glHistogramEXT');
     if not Assigned(glHistogramEXT) then Exit;
-    glResetHistogramEXT := GetModuleSymbol( LibGL,  'glResetHistogramEXT');
+    @glResetHistogramEXT := SDL_GL_GetProcAddress( 'glResetHistogramEXT');
     if not Assigned(glResetHistogramEXT) then Exit;
-    glGetHistogramEXT := GetModuleSymbol( LibGL,  'glGetHistogramEXT');
+    @glGetHistogramEXT := SDL_GL_GetProcAddress( 'glGetHistogramEXT');
     if not Assigned(glGetHistogramEXT) then Exit;
-    glGetHistogramParameterivEXT := GetModuleSymbol( LibGL,  'glGetHistogramParameterivEXT');
+    @glGetHistogramParameterivEXT := SDL_GL_GetProcAddress( 'glGetHistogramParameterivEXT');
     if not Assigned(glGetHistogramParameterivEXT) then Exit;
-    glGetHistogramParameterfvEXT := GetModuleSymbol( LibGL,  'glGetHistogramParameterfvEXT');
+    @glGetHistogramParameterfvEXT := SDL_GL_GetProcAddress( 'glGetHistogramParameterfvEXT');
     if not Assigned(glGetHistogramParameterfvEXT) then Exit;
-    glMinmaxEXT := GetModuleSymbol( LibGL,  'glMinmaxEXT');
+    @glMinmaxEXT := SDL_GL_GetProcAddress( 'glMinmaxEXT');
     if not Assigned(glMinmaxEXT) then Exit;
-    glResetMinmaxEXT := GetModuleSymbol( LibGL,  'glResetMinmaxEXT');
+    @glResetMinmaxEXT := SDL_GL_GetProcAddress( 'glResetMinmaxEXT');
     if not Assigned(glResetMinmaxEXT) then Exit;
-    glGetMinmaxEXT := GetModuleSymbol( LibGL,  'glGetMinmaxEXT');
+    @glGetMinmaxEXT := SDL_GL_GetProcAddress( 'glGetMinmaxEXT');
     if not Assigned(glGetMinmaxEXT) then Exit;
-    glGetMinmaxParameterivEXT := GetModuleSymbol( LibGL,  'glGetMinmaxParameterivEXT');
+    @glGetMinmaxParameterivEXT := SDL_GL_GetProcAddress( 'glGetMinmaxParameterivEXT');
     if not Assigned(glGetMinmaxParameterivEXT) then Exit;
-    glGetMinmaxParameterfvEXT := GetModuleSymbol( LibGL,  'glGetMinmaxParameterfvEXT');
+    @glGetMinmaxParameterfvEXT := SDL_GL_GetProcAddress( 'glGetMinmaxParameterfvEXT');
     if not Assigned(glGetMinmaxParameterfvEXT) then Exit;
     Result := TRUE;
   end;
@@ -4319,9 +4334,9 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_multi_draw_arrays', extstring) then
   begin
-    glMultiDrawArraysEXT := GetModuleSymbol( LibGL,  'glMultiDrawArraysEXT');
+    @glMultiDrawArraysEXT := SDL_GL_GetProcAddress( 'glMultiDrawArraysEXT');
     if not Assigned(glMultiDrawArraysEXT) then Exit;
-    glMultiDrawElementsEXT := GetModuleSymbol( LibGL,  'glMultiDrawElementsEXT');
+    @glMultiDrawElementsEXT := SDL_GL_GetProcAddress( 'glMultiDrawElementsEXT');
     if not Assigned(glMultiDrawElementsEXT) then Exit;
     Result := TRUE;
   end;
@@ -4353,15 +4368,15 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_paletted_texture', extstring) then
   begin
-    glColorTableEXT := GetModuleSymbol( LibGL,  'glColorTableEXT');
+    @glColorTableEXT := SDL_GL_GetProcAddress( 'glColorTableEXT');
     if not Assigned(glColorTableEXT) then Exit;
-    glColorSubTableEXT := GetModuleSymbol( LibGL,  'glColorSubTableEXT');
+    @glColorSubTableEXT := SDL_GL_GetProcAddress( 'glColorSubTableEXT');
     if not Assigned(glColorSubTableEXT) then Exit;
-    glGetColorTableEXT := GetModuleSymbol( LibGL,  'glGetColorTableEXT');
+    @glGetColorTableEXT := SDL_GL_GetProcAddress( 'glGetColorTableEXT');
     if not Assigned(glGetColorTableEXT) then Exit;
-    glGetColorTableParameterivEXT := GetModuleSymbol( LibGL,  'glGetColorTableParameterivEXT');
+    @glGetColorTableParameterivEXT := SDL_GL_GetProcAddress( 'glGetColorTableParameterivEXT');
     if not Assigned(glGetColorTableParameterivEXT) then Exit;
-    glGetColorTableParameterfvEXT := GetModuleSymbol( LibGL,  'glGetColorTableParameterfvEXT');
+    @glGetColorTableParameterfvEXT := SDL_GL_GetProcAddress( 'glGetColorTableParameterfvEXT');
     if not Assigned(glGetColorTableParameterfvEXT) then Exit;
     Result := TRUE;
   end;
@@ -4378,9 +4393,9 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_point_parameters', extstring) then
   begin
-    glPointParameterfEXT := GetModuleSymbol( LibGL,  'glPointParameterfEXT');
+    @glPointParameterfEXT := SDL_GL_GetProcAddress( 'glPointParameterfEXT');
     if not Assigned(glPointParameterfEXT) then Exit;
-    glPointParameterfvEXT := GetModuleSymbol( LibGL,  'glPointParameterfvEXT');
+    @glPointParameterfvEXT := SDL_GL_GetProcAddress( 'glPointParameterfvEXT');
     if not Assigned(glPointParameterfvEXT) then Exit;
     Result := TRUE;
   end;
@@ -4397,7 +4412,7 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_polygon_offset', extstring) then
   begin
-    glPolygonOffsetEXT := GetModuleSymbol( LibGL,  'glPolygonOffsetEXT');
+    @glPolygonOffsetEXT := SDL_GL_GetProcAddress( 'glPolygonOffsetEXT');
     if not Assigned(glPolygonOffsetEXT) then Exit;
     Result := TRUE;
   end;
@@ -4414,39 +4429,39 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_secondary_color', extstring) then
   begin
-    glSecondaryColor3bEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3bEXT');
+    @glSecondaryColor3bEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3bEXT');
     if not Assigned(glSecondaryColor3bEXT) then Exit;
-    glSecondaryColor3sEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3sEXT');
+    @glSecondaryColor3sEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3sEXT');
     if not Assigned(glSecondaryColor3sEXT) then Exit;
-    glSecondaryColor3iEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3iEXT');
+    @glSecondaryColor3iEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3iEXT');
     if not Assigned(glSecondaryColor3iEXT) then Exit;
-    glSecondaryColor3fEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3fEXT');
+    @glSecondaryColor3fEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3fEXT');
     if not Assigned(glSecondaryColor3fEXT) then Exit;
-    glSecondaryColor3dEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3dEXT');
+    @glSecondaryColor3dEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3dEXT');
     if not Assigned(glSecondaryColor3dEXT) then Exit;
-    glSecondaryColor3ubEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3ubEXT');
+    @glSecondaryColor3ubEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3ubEXT');
     if not Assigned(glSecondaryColor3ubEXT) then Exit;
-    glSecondaryColor3usEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3usEXT');
+    @glSecondaryColor3usEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3usEXT');
     if not Assigned(glSecondaryColor3usEXT) then Exit;
-    glSecondaryColor3uiEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3uiEXT');
+    @glSecondaryColor3uiEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3uiEXT');
     if not Assigned(glSecondaryColor3uiEXT) then Exit;
-    glSecondaryColor3bvEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3bvEXT');
+    @glSecondaryColor3bvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3bvEXT');
     if not Assigned(glSecondaryColor3bvEXT) then Exit;
-    glSecondaryColor3svEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3svEXT');
+    @glSecondaryColor3svEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3svEXT');
     if not Assigned(glSecondaryColor3svEXT) then Exit;
-    glSecondaryColor3ivEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3ivEXT');
+    @glSecondaryColor3ivEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3ivEXT');
     if not Assigned(glSecondaryColor3ivEXT) then Exit;
-    glSecondaryColor3fvEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3fvEXT');
+    @glSecondaryColor3fvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3fvEXT');
     if not Assigned(glSecondaryColor3fvEXT) then Exit;
-    glSecondaryColor3dvEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3dvEXT');
+    @glSecondaryColor3dvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3dvEXT');
     if not Assigned(glSecondaryColor3dvEXT) then Exit;
-    glSecondaryColor3ubvEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3ubvEXT');
+    @glSecondaryColor3ubvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3ubvEXT');
     if not Assigned(glSecondaryColor3ubvEXT) then Exit;
-    glSecondaryColor3usvEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3usvEXT');
+    @glSecondaryColor3usvEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3usvEXT');
     if not Assigned(glSecondaryColor3usvEXT) then Exit;
-    glSecondaryColor3uivEXT := GetModuleSymbol( LibGL,  'glSecondaryColor3uivEXT');
+    @glSecondaryColor3uivEXT := SDL_GL_GetProcAddress( 'glSecondaryColor3uivEXT');
     if not Assigned(glSecondaryColor3uivEXT) then Exit;
-    glSecondaryColorPointerEXT := GetModuleSymbol( LibGL,  'glSecondaryColorPointerEXT');
+    @glSecondaryColorPointerEXT := SDL_GL_GetProcAddress( 'glSecondaryColorPointerEXT');
     if not Assigned(glSecondaryColorPointerEXT) then Exit;
     Result := TRUE;
   end;
@@ -4508,7 +4523,7 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_stencil_two_side', extstring) then
   begin
-    glActiveStencilFaceEXT := GetModuleSymbol( LibGL,  'glActiveStencilFaceEXT');
+    @glActiveStencilFaceEXT := SDL_GL_GetProcAddress( 'glActiveStencilFaceEXT');
     if not Assigned(glActiveStencilFaceEXT) then Exit;
     Result := TRUE;
   end;
@@ -4540,11 +4555,11 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_subtexture', extstring) then
   begin
-    glTexSubImage1DEXT := GetModuleSymbol( LibGL,  'glTexSubImage1DEXT');
+    @glTexSubImage1DEXT := SDL_GL_GetProcAddress( 'glTexSubImage1DEXT');
     if not Assigned(glTexSubImage1DEXT) then Exit;
-    glTexSubImage2DEXT := GetModuleSymbol( LibGL,  'glTexSubImage2DEXT');
+    @glTexSubImage2DEXT := SDL_GL_GetProcAddress( 'glTexSubImage2DEXT');
     if not Assigned(glTexSubImage2DEXT) then Exit;
-    glTexSubImage3DEXT := GetModuleSymbol( LibGL,  'glTexSubImage3DEXT');
+    @glTexSubImage3DEXT := SDL_GL_GetProcAddress( 'glTexSubImage3DEXT');
     if not Assigned(glTexSubImage3DEXT) then Exit;
     Result := TRUE;
   end;
@@ -4561,7 +4576,7 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_texture3D', extstring) then
   begin
-    glTexImage3DEXT := GetModuleSymbol( LibGL,  'glTexImage3DEXT');
+    @glTexImage3DEXT := SDL_GL_GetProcAddress( 'glTexImage3DEXT');
     if not Assigned(glTexImage3DEXT) then Exit;
     Result := TRUE;
   end;
@@ -4668,17 +4683,17 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_texture_object', extstring) then
   begin
-    glGenTexturesEXT := GetModuleSymbol( LibGL,  'glGenTexturesEXT');
+    @glGenTexturesEXT := SDL_GL_GetProcAddress( 'glGenTexturesEXT');
     if not Assigned(glGenTexturesEXT) then Exit;
-    glDeleteTexturesEXT := GetModuleSymbol( LibGL,  'glDeleteTexturesEXT');
+    @glDeleteTexturesEXT := SDL_GL_GetProcAddress( 'glDeleteTexturesEXT');
     if not Assigned(glDeleteTexturesEXT) then Exit;
-    glBindTextureEXT := GetModuleSymbol( LibGL,  'glBindTextureEXT');
+    @glBindTextureEXT := SDL_GL_GetProcAddress( 'glBindTextureEXT');
     if not Assigned(glBindTextureEXT) then Exit;
-    glPrioritizeTexturesEXT := GetModuleSymbol( LibGL,  'glPrioritizeTexturesEXT');
+    @glPrioritizeTexturesEXT := SDL_GL_GetProcAddress( 'glPrioritizeTexturesEXT');
     if not Assigned(glPrioritizeTexturesEXT) then Exit;
-    glAreTexturesResidentEXT := GetModuleSymbol( LibGL,  'glAreTexturesResidentEXT');
+    @glAreTexturesResidentEXT := SDL_GL_GetProcAddress( 'glAreTexturesResidentEXT');
     if not Assigned(glAreTexturesResidentEXT) then Exit;
-    glIsTextureEXT := GetModuleSymbol( LibGL,  'glIsTextureEXT');
+    @glIsTextureEXT := SDL_GL_GetProcAddress( 'glIsTextureEXT');
     if not Assigned(glIsTextureEXT) then Exit;
     Result := TRUE;
   end;
@@ -4695,23 +4710,23 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_vertex_array', extstring) then
   begin
-    glArrayElementEXT := GetModuleSymbol( LibGL,  'glArrayElementEXT');
+    @glArrayElementEXT := SDL_GL_GetProcAddress( 'glArrayElementEXT');
     if not Assigned(glArrayElementEXT) then Exit;
-    glDrawArraysEXT := GetModuleSymbol( LibGL,  'glDrawArraysEXT');
+    @glDrawArraysEXT := SDL_GL_GetProcAddress( 'glDrawArraysEXT');
     if not Assigned(glDrawArraysEXT) then Exit;
-    glVertexPointerEXT := GetModuleSymbol( LibGL,  'glVertexPointerEXT');
+    @glVertexPointerEXT := SDL_GL_GetProcAddress( 'glVertexPointerEXT');
     if not Assigned(glVertexPointerEXT) then Exit;
-    glNormalPointerEXT := GetModuleSymbol( LibGL,  'glNormalPointerEXT');
+    @glNormalPointerEXT := SDL_GL_GetProcAddress( 'glNormalPointerEXT');
     if not Assigned(glNormalPointerEXT) then Exit;
-    glColorPointerEXT := GetModuleSymbol( LibGL,  'glColorPointerEXT');
+    @glColorPointerEXT := SDL_GL_GetProcAddress( 'glColorPointerEXT');
     if not Assigned(glColorPointerEXT) then Exit;
-    glIndexPointerEXT := GetModuleSymbol( LibGL,  'glIndexPointerEXT');
+    @glIndexPointerEXT := SDL_GL_GetProcAddress( 'glIndexPointerEXT');
     if not Assigned(glIndexPointerEXT) then Exit;
-    glTexCoordPointerEXT := GetModuleSymbol( LibGL,  'glTexCoordPointerEXT');
+    @glTexCoordPointerEXT := SDL_GL_GetProcAddress( 'glTexCoordPointerEXT');
     if not Assigned(glTexCoordPointerEXT) then Exit;
-    glEdgeFlagPointerEXT := GetModuleSymbol( LibGL,  'glEdgeFlagPointerEXT');
+    @glEdgeFlagPointerEXT := SDL_GL_GetProcAddress( 'glEdgeFlagPointerEXT');
     if not Assigned(glEdgeFlagPointerEXT) then Exit;
-    glGetPointervEXT := GetModuleSymbol( LibGL,  'glGetPointervEXT');
+    @glGetPointervEXT := SDL_GL_GetProcAddress( 'glGetPointervEXT');
     if not Assigned(glGetPointervEXT) then Exit;
     Result := TRUE;
   end;
@@ -4728,89 +4743,89 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_vertex_shader', extstring) then
   begin
-    glBeginVertexShaderEXT := GetModuleSymbol( LibGL,  'glBeginVertexShaderEXT');
+    @glBeginVertexShaderEXT := SDL_GL_GetProcAddress( 'glBeginVertexShaderEXT');
     if not Assigned(glBeginVertexShaderEXT) then Exit;
-    glEndVertexShaderEXT := GetModuleSymbol( LibGL,  'glEndVertexShaderEXT');
+    @glEndVertexShaderEXT := SDL_GL_GetProcAddress( 'glEndVertexShaderEXT');
     if not Assigned(glEndVertexShaderEXT) then Exit;
-    glBindVertexShaderEXT := GetModuleSymbol( LibGL,  'glBindVertexShaderEXT');
+    @glBindVertexShaderEXT := SDL_GL_GetProcAddress( 'glBindVertexShaderEXT');
     if not Assigned(glBindVertexShaderEXT) then Exit;
-    glGenVertexShadersEXT := GetModuleSymbol( LibGL,  'glGenVertexShadersEXT');
+    @glGenVertexShadersEXT := SDL_GL_GetProcAddress( 'glGenVertexShadersEXT');
     if not Assigned(glGenVertexShadersEXT) then Exit;
-    glDeleteVertexShaderEXT := GetModuleSymbol( LibGL,  'glDeleteVertexShaderEXT');
+    @glDeleteVertexShaderEXT := SDL_GL_GetProcAddress( 'glDeleteVertexShaderEXT');
     if not Assigned(glDeleteVertexShaderEXT) then Exit;
-    glShaderOp1EXT := GetModuleSymbol( LibGL,  'glShaderOp1EXT');
+    @glShaderOp1EXT := SDL_GL_GetProcAddress( 'glShaderOp1EXT');
     if not Assigned(glShaderOp1EXT) then Exit;
-    glShaderOp2EXT := GetModuleSymbol( LibGL,  'glShaderOp2EXT');
+    @glShaderOp2EXT := SDL_GL_GetProcAddress( 'glShaderOp2EXT');
     if not Assigned(glShaderOp2EXT) then Exit;
-    glShaderOp3EXT := GetModuleSymbol( LibGL,  'glShaderOp3EXT');
+    @glShaderOp3EXT := SDL_GL_GetProcAddress( 'glShaderOp3EXT');
     if not Assigned(glShaderOp3EXT) then Exit;
-    glSwizzleEXT := GetModuleSymbol( LibGL,  'glSwizzleEXT');
+    @glSwizzleEXT := SDL_GL_GetProcAddress( 'glSwizzleEXT');
     if not Assigned(glSwizzleEXT) then Exit;
-    glWriteMaskEXT := GetModuleSymbol( LibGL,  'glWriteMaskEXT');
+    @glWriteMaskEXT := SDL_GL_GetProcAddress( 'glWriteMaskEXT');
     if not Assigned(glWriteMaskEXT) then Exit;
-    glInsertComponentEXT := GetModuleSymbol( LibGL,  'glInsertComponentEXT');
+    @glInsertComponentEXT := SDL_GL_GetProcAddress( 'glInsertComponentEXT');
     if not Assigned(glInsertComponentEXT) then Exit;
-    glExtractComponentEXT := GetModuleSymbol( LibGL,  'glExtractComponentEXT');
+    @glExtractComponentEXT := SDL_GL_GetProcAddress( 'glExtractComponentEXT');
     if not Assigned(glExtractComponentEXT) then Exit;
-    glGenSymbolsEXT := GetModuleSymbol( LibGL,  'glGenSymbolsEXT');
+    @glGenSymbolsEXT := SDL_GL_GetProcAddress( 'glGenSymbolsEXT');
     if not Assigned(glGenSymbolsEXT) then Exit;
-    glSetInvariantEXT := GetModuleSymbol( LibGL,  'glSetInvariantEXT');
+    @glSetInvariantEXT := SDL_GL_GetProcAddress( 'glSetInvariantEXT');
     if not Assigned(glSetInvariantEXT) then Exit;
-    glSetLocalConstantEXT := GetModuleSymbol( LibGL,  'glSetLocalConstantEXT');
+    @glSetLocalConstantEXT := SDL_GL_GetProcAddress( 'glSetLocalConstantEXT');
     if not Assigned(glSetLocalConstantEXT) then Exit;
-    glVariantbvEXT := GetModuleSymbol( LibGL,  'glVariantbvEXT');
+    @glVariantbvEXT := SDL_GL_GetProcAddress( 'glVariantbvEXT');
     if not Assigned(glVariantbvEXT) then Exit;
-    glVariantsvEXT := GetModuleSymbol( LibGL,  'glVariantsvEXT');
+    @glVariantsvEXT := SDL_GL_GetProcAddress( 'glVariantsvEXT');
     if not Assigned(glVariantsvEXT) then Exit;
-    glVariantivEXT := GetModuleSymbol( LibGL,  'glVariantivEXT');
+    @glVariantivEXT := SDL_GL_GetProcAddress( 'glVariantivEXT');
     if not Assigned(glVariantivEXT) then Exit;
-    glVariantfvEXT := GetModuleSymbol( LibGL,  'glVariantfvEXT');
+    @glVariantfvEXT := SDL_GL_GetProcAddress( 'glVariantfvEXT');
     if not Assigned(glVariantfvEXT) then Exit;
-    glVariantdvEXT := GetModuleSymbol( LibGL,  'glVariantdvEXT');
+    @glVariantdvEXT := SDL_GL_GetProcAddress( 'glVariantdvEXT');
     if not Assigned(glVariantdvEXT) then Exit;
-    glVariantubvEXT := GetModuleSymbol( LibGL,  'glVariantubvEXT');
+    @glVariantubvEXT := SDL_GL_GetProcAddress( 'glVariantubvEXT');
     if not Assigned(glVariantubvEXT) then Exit;
-    glVariantusvEXT := GetModuleSymbol( LibGL,  'glVariantusvEXT');
+    @glVariantusvEXT := SDL_GL_GetProcAddress( 'glVariantusvEXT');
     if not Assigned(glVariantusvEXT) then Exit;
-    glVariantuivEXT := GetModuleSymbol( LibGL,  'glVariantuivEXT');
+    @glVariantuivEXT := SDL_GL_GetProcAddress( 'glVariantuivEXT');
     if not Assigned(glVariantuivEXT) then Exit;
-    glVariantPointerEXT := GetModuleSymbol( LibGL,  'glVariantPointerEXT');
+    @glVariantPointerEXT := SDL_GL_GetProcAddress( 'glVariantPointerEXT');
     if not Assigned(glVariantPointerEXT) then Exit;
-    glEnableVariantClientStateEXT := GetModuleSymbol( LibGL,  'glEnableVariantClientStateEXT');
+    @glEnableVariantClientStateEXT := SDL_GL_GetProcAddress( 'glEnableVariantClientStateEXT');
     if not Assigned(glEnableVariantClientStateEXT) then Exit;
-    glDisableVariantClientStateEXT := GetModuleSymbol( LibGL,  'glDisableVariantClientStateEXT');
+    @glDisableVariantClientStateEXT := SDL_GL_GetProcAddress( 'glDisableVariantClientStateEXT');
     if not Assigned(glDisableVariantClientStateEXT) then Exit;
-    glBindLightParameterEXT := GetModuleSymbol( LibGL,  'glBindLightParameterEXT');
+    @glBindLightParameterEXT := SDL_GL_GetProcAddress( 'glBindLightParameterEXT');
     if not Assigned(glBindLightParameterEXT) then Exit;
-    glBindMaterialParameterEXT := GetModuleSymbol( LibGL,  'glBindMaterialParameterEXT');
+    @glBindMaterialParameterEXT := SDL_GL_GetProcAddress( 'glBindMaterialParameterEXT');
     if not Assigned(glBindMaterialParameterEXT) then Exit;
-    glBindTexGenParameterEXT := GetModuleSymbol( LibGL,  'glBindTexGenParameterEXT');
+    @glBindTexGenParameterEXT := SDL_GL_GetProcAddress( 'glBindTexGenParameterEXT');
     if not Assigned(glBindTexGenParameterEXT) then Exit;
-    glBindTextureUnitParameterEXT := GetModuleSymbol( LibGL,  'glBindTextureUnitParameterEXT');
+    @glBindTextureUnitParameterEXT := SDL_GL_GetProcAddress( 'glBindTextureUnitParameterEXT');
     if not Assigned(glBindTextureUnitParameterEXT) then Exit;
-    glBindParameterEXT := GetModuleSymbol( LibGL,  'glBindParameterEXT');
+    @glBindParameterEXT := SDL_GL_GetProcAddress( 'glBindParameterEXT');
     if not Assigned(glBindParameterEXT) then Exit;
-    glIsVariantEnabledEXT := GetModuleSymbol( LibGL,  'glIsVariantEnabledEXT');
+    @glIsVariantEnabledEXT := SDL_GL_GetProcAddress( 'glIsVariantEnabledEXT');
     if not Assigned(glIsVariantEnabledEXT) then Exit;
-    glGetVariantBooleanvEXT := GetModuleSymbol( LibGL,  'glGetVariantBooleanvEXT');
+    @glGetVariantBooleanvEXT := SDL_GL_GetProcAddress( 'glGetVariantBooleanvEXT');
     if not Assigned(glGetVariantBooleanvEXT) then Exit;
-    glGetVariantIntegervEXT := GetModuleSymbol( LibGL,  'glGetVariantIntegervEXT');
+    @glGetVariantIntegervEXT := SDL_GL_GetProcAddress( 'glGetVariantIntegervEXT');
     if not Assigned(glGetVariantIntegervEXT) then Exit;
-    glGetVariantFloatvEXT := GetModuleSymbol( LibGL,  'glGetVariantFloatvEXT');
+    @glGetVariantFloatvEXT := SDL_GL_GetProcAddress( 'glGetVariantFloatvEXT');
     if not Assigned(glGetVariantFloatvEXT) then Exit;
-    glGetVariantPointervEXT := GetModuleSymbol( LibGL,  'glGetVariantPointervEXT');
+    @glGetVariantPointervEXT := SDL_GL_GetProcAddress( 'glGetVariantPointervEXT');
     if not Assigned(glGetVariantPointervEXT) then Exit;
-    glGetInvariantBooleanvEXT := GetModuleSymbol( LibGL,  'glGetInvariantBooleanvEXT');
+    @glGetInvariantBooleanvEXT := SDL_GL_GetProcAddress( 'glGetInvariantBooleanvEXT');
     if not Assigned(glGetInvariantBooleanvEXT) then Exit;
-    glGetInvariantIntegervEXT := GetModuleSymbol( LibGL,  'glGetInvariantIntegervEXT');
+    @glGetInvariantIntegervEXT := SDL_GL_GetProcAddress( 'glGetInvariantIntegervEXT');
     if not Assigned(glGetInvariantIntegervEXT) then Exit;
-    glGetInvariantFloatvEXT := GetModuleSymbol( LibGL,  'glGetInvariantFloatvEXT');
+    @glGetInvariantFloatvEXT := SDL_GL_GetProcAddress( 'glGetInvariantFloatvEXT');
     if not Assigned(glGetInvariantFloatvEXT) then Exit;
-    glGetLocalConstantBooleanvEXT := GetModuleSymbol( LibGL,  'glGetLocalConstantBooleanvEXT');
+    @glGetLocalConstantBooleanvEXT := SDL_GL_GetProcAddress( 'glGetLocalConstantBooleanvEXT');
     if not Assigned(glGetLocalConstantBooleanvEXT) then Exit;
-    glGetLocalConstantIntegervEXT := GetModuleSymbol( LibGL,  'glGetLocalConstantIntegervEXT');
+    @glGetLocalConstantIntegervEXT := SDL_GL_GetProcAddress( 'glGetLocalConstantIntegervEXT');
     if not Assigned(glGetLocalConstantIntegervEXT) then Exit;
-    glGetLocalConstantFloatvEXT := GetModuleSymbol( LibGL,  'glGetLocalConstantFloatvEXT');
+    @glGetLocalConstantFloatvEXT := SDL_GL_GetProcAddress( 'glGetLocalConstantFloatvEXT');
     if not Assigned(glGetLocalConstantFloatvEXT) then Exit;
     Result := TRUE;
   end;
@@ -4827,11 +4842,11 @@ begin
 
   if glext_ExtensionSupported('GL_EXT_vertex_weighting', extstring) then
   begin
-    glVertexWeightfEXT := GetModuleSymbol( LibGL,  'glVertexWeightfEXT');
+    @glVertexWeightfEXT := SDL_GL_GetProcAddress( 'glVertexWeightfEXT');
     if not Assigned(glVertexWeightfEXT) then Exit;
-    glVertexWeightfvEXT := GetModuleSymbol( LibGL,  'glVertexWeightfvEXT');
+    @glVertexWeightfvEXT := SDL_GL_GetProcAddress( 'glVertexWeightfvEXT');
     if not Assigned(glVertexWeightfvEXT) then Exit;
-    glVertexWeightPointerEXT := GetModuleSymbol( LibGL,  'glVertexWeightPointerEXT');
+    @glVertexWeightPointerEXT := SDL_GL_GetProcAddress( 'glVertexWeightPointerEXT');
     if not Assigned(glVertexWeightPointerEXT) then Exit;
     Result := TRUE;
   end;
@@ -4908,23 +4923,23 @@ begin
 
   if glext_ExtensionSupported('GL_NV_evaluators', extstring) then
   begin
-    glMapControlPointsNV := GetModuleSymbol( LibGL,  'glMapControlPointsNV');
+    @glMapControlPointsNV := SDL_GL_GetProcAddress( 'glMapControlPointsNV');
     if not Assigned(glMapControlPointsNV) then Exit;
-    glMapParameterivNV := GetModuleSymbol( LibGL,  'glMapParameterivNV');
+    @glMapParameterivNV := SDL_GL_GetProcAddress( 'glMapParameterivNV');
     if not Assigned(glMapParameterivNV) then Exit;
-    glMapParameterfvNV := GetModuleSymbol( LibGL,  'glMapParameterfvNV');
+    @glMapParameterfvNV := SDL_GL_GetProcAddress( 'glMapParameterfvNV');
     if not Assigned(glMapParameterfvNV) then Exit;
-    glGetMapControlPointsNV := GetModuleSymbol( LibGL,  'glGetMapControlPointsNV');
+    @glGetMapControlPointsNV := SDL_GL_GetProcAddress( 'glGetMapControlPointsNV');
     if not Assigned(glGetMapControlPointsNV) then Exit;
-    glGetMapParameterivNV := GetModuleSymbol( LibGL,  'glGetMapParameterivNV');
+    @glGetMapParameterivNV := SDL_GL_GetProcAddress( 'glGetMapParameterivNV');
     if not Assigned(glGetMapParameterivNV) then Exit;
-    glGetMapParameterfvNV := GetModuleSymbol( LibGL,  'glGetMapParameterfvNV');
+    @glGetMapParameterfvNV := SDL_GL_GetProcAddress( 'glGetMapParameterfvNV');
     if not Assigned(glGetMapParameterfvNV) then Exit;
-    glGetMapAttribParameterivNV := GetModuleSymbol( LibGL,  'glGetMapAttribParameterivNV');
+    @glGetMapAttribParameterivNV := SDL_GL_GetProcAddress( 'glGetMapAttribParameterivNV');
     if not Assigned(glGetMapAttribParameterivNV) then Exit;
-    glGetMapAttribParameterfvNV := GetModuleSymbol( LibGL,  'glGetMapAttribParameterfvNV');
+    @glGetMapAttribParameterfvNV := SDL_GL_GetProcAddress( 'glGetMapAttribParameterfvNV');
     if not Assigned(glGetMapAttribParameterfvNV) then Exit;
-    glEvalMapsNV := GetModuleSymbol( LibGL,  'glEvalMapsNV');
+    @glEvalMapsNV := SDL_GL_GetProcAddress( 'glEvalMapsNV');
     if not Assigned(glEvalMapsNV) then Exit;
     Result := TRUE;
   end;
@@ -4941,19 +4956,19 @@ begin
 
   if glext_ExtensionSupported('GL_NV_fence', extstring) then
   begin
-    glGenFencesNV := GetModuleSymbol( LibGL,  'glGenFencesNV');
+    @glGenFencesNV := SDL_GL_GetProcAddress( 'glGenFencesNV');
     if not Assigned(glGenFencesNV) then Exit;
-    glDeleteFencesNV := GetModuleSymbol( LibGL,  'glDeleteFencesNV');
+    @glDeleteFencesNV := SDL_GL_GetProcAddress( 'glDeleteFencesNV');
     if not Assigned(glDeleteFencesNV) then Exit;
-    glSetFenceNV := GetModuleSymbol( LibGL,  'glSetFenceNV');
+    @glSetFenceNV := SDL_GL_GetProcAddress( 'glSetFenceNV');
     if not Assigned(glSetFenceNV) then Exit;
-    glTestFenceNV := GetModuleSymbol( LibGL,  'glTestFenceNV');
+    @glTestFenceNV := SDL_GL_GetProcAddress( 'glTestFenceNV');
     if not Assigned(glTestFenceNV) then Exit;
-    glFinishFenceNV := GetModuleSymbol( LibGL,  'glFinishFenceNV');
+    @glFinishFenceNV := SDL_GL_GetProcAddress( 'glFinishFenceNV');
     if not Assigned(glFinishFenceNV) then Exit;
-    glIsFenceNV := GetModuleSymbol( LibGL,  'glIsFenceNV');
+    @glIsFenceNV := SDL_GL_GetProcAddress( 'glIsFenceNV');
     if not Assigned(glIsFenceNV) then Exit;
-    glGetFenceivNV := GetModuleSymbol( LibGL,  'glGetFenceivNV');
+    @glGetFenceivNV := SDL_GL_GetProcAddress( 'glGetFenceivNV');
     if not Assigned(glGetFenceivNV) then Exit;
     Result := TRUE;
   end;
@@ -5015,19 +5030,19 @@ begin
 
   if glext_ExtensionSupported('GL_NV_occlusion_query', extstring) then
   begin
-    glGenOcclusionQueriesNV := GetModuleSymbol( LibGL,  'glGenOcclusionQueriesNV');
+    @glGenOcclusionQueriesNV := SDL_GL_GetProcAddress( 'glGenOcclusionQueriesNV');
     if not Assigned(glGenOcclusionQueriesNV) then Exit;
-    glDeleteOcclusionQueriesNV := GetModuleSymbol( LibGL,  'glDeleteOcclusionQueriesNV');
+    @glDeleteOcclusionQueriesNV := SDL_GL_GetProcAddress( 'glDeleteOcclusionQueriesNV');
     if not Assigned(glDeleteOcclusionQueriesNV) then Exit;
-    glIsOcclusionQueryNV := GetModuleSymbol( LibGL,  'glIsOcclusionQueryNV');
+    @glIsOcclusionQueryNV := SDL_GL_GetProcAddress( 'glIsOcclusionQueryNV');
     if not Assigned(glIsOcclusionQueryNV) then Exit;
-    glBeginOcclusionQueryNV := GetModuleSymbol( LibGL,  'glBeginOcclusionQueryNV');
+    @glBeginOcclusionQueryNV := SDL_GL_GetProcAddress( 'glBeginOcclusionQueryNV');
     if not Assigned(glBeginOcclusionQueryNV) then Exit;
-    glEndOcclusionQueryNV := GetModuleSymbol( LibGL,  'glEndOcclusionQueryNV');
+    @glEndOcclusionQueryNV := SDL_GL_GetProcAddress( 'glEndOcclusionQueryNV');
     if not Assigned(glEndOcclusionQueryNV) then Exit;
-    glGetOcclusionQueryivNV := GetModuleSymbol( LibGL,  'glGetOcclusionQueryivNV');
+    @glGetOcclusionQueryivNV := SDL_GL_GetProcAddress( 'glGetOcclusionQueryivNV');
     if not Assigned(glGetOcclusionQueryivNV) then Exit;
-    glGetOcclusionQueryuivNV := GetModuleSymbol( LibGL,  'glGetOcclusionQueryuivNV');
+    @glGetOcclusionQueryuivNV := SDL_GL_GetProcAddress( 'glGetOcclusionQueryuivNV');
     if not Assigned(glGetOcclusionQueryuivNV) then Exit;
     Result := TRUE;
   end;
@@ -5059,9 +5074,9 @@ begin
 
   if glext_ExtensionSupported('GL_NV_point_sprite', extstring) then
   begin
-    glPointParameteriNV := GetModuleSymbol( LibGL,  'glPointParameteriNV');
+    @glPointParameteriNV := SDL_GL_GetProcAddress( 'glPointParameteriNV');
     if not Assigned(glPointParameteriNV) then Exit;
-    glPointParameterivNV := GetModuleSymbol( LibGL,  'glPointParameterivNV');
+    @glPointParameterivNV := SDL_GL_GetProcAddress( 'glPointParameterivNV');
     if not Assigned(glPointParameterivNV) then Exit;
     Result := TRUE;
   end;
@@ -5078,31 +5093,31 @@ begin
 
   if glext_ExtensionSupported('GL_NV_register_combiners', extstring) then
   begin
-    glCombinerParameterfvNV := GetModuleSymbol( LibGL,  'glCombinerParameterfvNV');
+    @glCombinerParameterfvNV := SDL_GL_GetProcAddress( 'glCombinerParameterfvNV');
     if not Assigned(glCombinerParameterfvNV) then Exit;
-    glCombinerParameterivNV := GetModuleSymbol( LibGL,  'glCombinerParameterivNV');
+    @glCombinerParameterivNV := SDL_GL_GetProcAddress( 'glCombinerParameterivNV');
     if not Assigned(glCombinerParameterivNV) then Exit;
-    glCombinerParameterfNV := GetModuleSymbol( LibGL,  'glCombinerParameterfNV');
+    @glCombinerParameterfNV := SDL_GL_GetProcAddress( 'glCombinerParameterfNV');
     if not Assigned(glCombinerParameterfNV) then Exit;
-    glCombinerParameteriNV := GetModuleSymbol( LibGL,  'glCombinerParameteriNV');
+    @glCombinerParameteriNV := SDL_GL_GetProcAddress( 'glCombinerParameteriNV');
     if not Assigned(glCombinerParameteriNV) then Exit;
-    glCombinerInputNV := GetModuleSymbol( LibGL,  'glCombinerInputNV');
+    @glCombinerInputNV := SDL_GL_GetProcAddress( 'glCombinerInputNV');
     if not Assigned(glCombinerInputNV) then Exit;
-    glCombinerOutputNV := GetModuleSymbol( LibGL,  'glCombinerOutputNV');
+    @glCombinerOutputNV := SDL_GL_GetProcAddress( 'glCombinerOutputNV');
     if not Assigned(glCombinerOutputNV) then Exit;
-    glFinalCombinerInputNV := GetModuleSymbol( LibGL,  'glFinalCombinerInputNV');
+    @glFinalCombinerInputNV := SDL_GL_GetProcAddress( 'glFinalCombinerInputNV');
     if not Assigned(glFinalCombinerInputNV) then Exit;
-    glGetCombinerInputParameterfvNV := GetModuleSymbol( LibGL,  'glGetCombinerInputParameterfvNV');
+    @glGetCombinerInputParameterfvNV := SDL_GL_GetProcAddress( 'glGetCombinerInputParameterfvNV');
     if not Assigned(glGetCombinerInputParameterfvNV) then Exit;
-    glGetCombinerInputParameterivNV := GetModuleSymbol( LibGL,  'glGetCombinerInputParameterivNV');
+    @glGetCombinerInputParameterivNV := SDL_GL_GetProcAddress( 'glGetCombinerInputParameterivNV');
     if not Assigned(glGetCombinerInputParameterivNV) then Exit;
-    glGetCombinerOutputParameterfvNV := GetModuleSymbol( LibGL,  'glGetCombinerOutputParameterfvNV');
+    @glGetCombinerOutputParameterfvNV := SDL_GL_GetProcAddress( 'glGetCombinerOutputParameterfvNV');
     if not Assigned(glGetCombinerOutputParameterfvNV) then Exit;
-    glGetCombinerOutputParameterivNV := GetModuleSymbol( LibGL,  'glGetCombinerOutputParameterivNV');
+    @glGetCombinerOutputParameterivNV := SDL_GL_GetProcAddress( 'glGetCombinerOutputParameterivNV');
     if not Assigned(glGetCombinerOutputParameterivNV) then Exit;
-    glGetFinalCombinerInputParameterfvNV := GetModuleSymbol( LibGL,  'glGetFinalCombinerInputParameterfvNV');
+    @glGetFinalCombinerInputParameterfvNV := SDL_GL_GetProcAddress( 'glGetFinalCombinerInputParameterfvNV');
     if not Assigned(glGetFinalCombinerInputParameterfvNV) then Exit;
-    glGetFinalCombinerInputParameterivNV := GetModuleSymbol( LibGL,  'glGetFinalCombinerInputParameterivNV');
+    @glGetFinalCombinerInputParameterivNV := SDL_GL_GetProcAddress( 'glGetFinalCombinerInputParameterivNV');
     if not Assigned(glGetFinalCombinerInputParameterivNV) then Exit;
     Result := TRUE;
   end;
@@ -5119,9 +5134,9 @@ begin
 
   if glext_ExtensionSupported('GL_NV_register_combiners2', extstring) then
   begin
-    glCombinerStageParameterfvNV := GetModuleSymbol( LibGL,  'glCombinerStageParameterfvNV');
+    @glCombinerStageParameterfvNV := SDL_GL_GetProcAddress( 'glCombinerStageParameterfvNV');
     if not Assigned(glCombinerStageParameterfvNV) then Exit;
-    glGetCombinerStageParameterfvNV := GetModuleSymbol( LibGL,  'glGetCombinerStageParameterfvNV');
+    @glGetCombinerStageParameterfvNV := SDL_GL_GetProcAddress( 'glGetCombinerStageParameterfvNV');
     if not Assigned(glGetCombinerStageParameterfvNV) then Exit;
     Result := TRUE;
   end;
@@ -5258,14 +5273,14 @@ begin
 
   if glext_ExtensionSupported('GL_NV_vertex_array_range', extstring) then
   begin
-    glVertexArrayRangeNV := GetModuleSymbol( LibGL,  'glVertexArrayRangeNV');
+    @glVertexArrayRangeNV := SDL_GL_GetProcAddress( 'glVertexArrayRangeNV');
     if not Assigned(glVertexArrayRangeNV) then Exit;
-    glFlushVertexArrayRangeNV := GetModuleSymbol( LibGL,  'glFlushVertexArrayRangeNV');
+    @glFlushVertexArrayRangeNV := SDL_GL_GetProcAddress( 'glFlushVertexArrayRangeNV');
     if not Assigned(glFlushVertexArrayRangeNV) then Exit;
 {$IFDEF Win32}
-    wglAllocateMemoryNV := GetModuleSymbol( LibGL,  'wglAllocateMemoryNV');
+    wglAllocateMemoryNV := SDL_GL_GetProcAddress( 'wglAllocateMemoryNV');
     if not Assigned(wglAllocateMemoryNV) then Exit;
-    wglFreeMemoryNV := GetModuleSymbol( LibGL,  'wglFreeMemoryNV');
+    wglFreeMemoryNV := SDL_GL_GetProcAddress( 'wglFreeMemoryNV');
     if not Assigned(wglFreeMemoryNV) then Exit;
 {$ENDIF}
     Result := TRUE;
@@ -5298,129 +5313,129 @@ begin
 
   if glext_ExtensionSupported('GL_NV_vertex_program', extstring) then
   begin
-    glBindProgramNV := GetModuleSymbol( LibGL,  'glBindProgramNV');
+    @glBindProgramNV := SDL_GL_GetProcAddress( 'glBindProgramNV');
     if not Assigned(glBindProgramNV) then Exit;
-    glDeleteProgramsNV := GetModuleSymbol( LibGL,  'glDeleteProgramsNV');
+    @glDeleteProgramsNV := SDL_GL_GetProcAddress( 'glDeleteProgramsNV');
     if not Assigned(glDeleteProgramsNV) then Exit;
-    glExecuteProgramNV := GetModuleSymbol( LibGL,  'glExecuteProgramNV');
+    @glExecuteProgramNV := SDL_GL_GetProcAddress( 'glExecuteProgramNV');
     if not Assigned(glExecuteProgramNV) then Exit;
-    glGenProgramsNV := GetModuleSymbol( LibGL,  'glGenProgramsNV');
+    @glGenProgramsNV := SDL_GL_GetProcAddress( 'glGenProgramsNV');
     if not Assigned(glGenProgramsNV) then Exit;
-    glAreProgramsResidentNV := GetModuleSymbol( LibGL,  'glAreProgramsResidentNV');
+    @glAreProgramsResidentNV := SDL_GL_GetProcAddress( 'glAreProgramsResidentNV');
     if not Assigned(glAreProgramsResidentNV) then Exit;
-    glRequestResidentProgramsNV := GetModuleSymbol( LibGL,  'glRequestResidentProgramsNV');
+    @glRequestResidentProgramsNV := SDL_GL_GetProcAddress( 'glRequestResidentProgramsNV');
     if not Assigned(glRequestResidentProgramsNV) then Exit;
-    glGetProgramParameterfvNV := GetModuleSymbol( LibGL,  'glGetProgramParameterfvNV');
+    @glGetProgramParameterfvNV := SDL_GL_GetProcAddress( 'glGetProgramParameterfvNV');
     if not Assigned(glGetProgramParameterfvNV) then Exit;
-    glGetProgramParameterdvNV := GetModuleSymbol( LibGL,  'glGetProgramParameterdvNV');
+    @glGetProgramParameterdvNV := SDL_GL_GetProcAddress( 'glGetProgramParameterdvNV');
     if not Assigned(glGetProgramParameterdvNV) then Exit;
-    glGetProgramivNV := GetModuleSymbol( LibGL,  'glGetProgramivNV');
+    @glGetProgramivNV := SDL_GL_GetProcAddress( 'glGetProgramivNV');
     if not Assigned(glGetProgramivNV) then Exit;
-    glGetProgramStringNV := GetModuleSymbol( LibGL,  'glGetProgramStringNV');
+    @glGetProgramStringNV := SDL_GL_GetProcAddress( 'glGetProgramStringNV');
     if not Assigned(glGetProgramStringNV) then Exit;
-    glGetTrackMatrixivNV := GetModuleSymbol( LibGL,  'glGetTrackMatrixivNV');
+    @glGetTrackMatrixivNV := SDL_GL_GetProcAddress( 'glGetTrackMatrixivNV');
     if not Assigned(glGetTrackMatrixivNV) then Exit;
-    glGetVertexAttribdvNV := GetModuleSymbol( LibGL,  'glGetVertexAttribdvNV');
+    @glGetVertexAttribdvNV := SDL_GL_GetProcAddress( 'glGetVertexAttribdvNV');
     if not Assigned(glGetVertexAttribdvNV) then Exit;
-    glGetVertexAttribfvNV := GetModuleSymbol( LibGL,  'glGetVertexAttribfvNV');
+    @glGetVertexAttribfvNV := SDL_GL_GetProcAddress( 'glGetVertexAttribfvNV');
     if not Assigned(glGetVertexAttribfvNV) then Exit;
-    glGetVertexAttribivNV := GetModuleSymbol( LibGL,  'glGetVertexAttribivNV');
+    @glGetVertexAttribivNV := SDL_GL_GetProcAddress( 'glGetVertexAttribivNV');
     if not Assigned(glGetVertexAttribivNV) then Exit;
-    glGetVertexAttribPointervNV := GetModuleSymbol( LibGL,  'glGetVertexAttribPointervNV');
+    @glGetVertexAttribPointervNV := SDL_GL_GetProcAddress( 'glGetVertexAttribPointervNV');
     if not Assigned(glGetVertexAttribPointervNV) then Exit;
-    glIsProgramNV := GetModuleSymbol( LibGL,  'glIsProgramNV');
+    @glIsProgramNV := SDL_GL_GetProcAddress( 'glIsProgramNV');
     if not Assigned(glIsProgramNV) then Exit;
-    glLoadProgramNV := GetModuleSymbol( LibGL,  'glLoadProgramNV');
+    @glLoadProgramNV := SDL_GL_GetProcAddress( 'glLoadProgramNV');
     if not Assigned(glLoadProgramNV) then Exit;
-    glProgramParameter4fNV := GetModuleSymbol( LibGL,  'glProgramParameter4fNV');
+    @glProgramParameter4fNV := SDL_GL_GetProcAddress( 'glProgramParameter4fNV');
     if not Assigned(glProgramParameter4fNV) then Exit;
-    glProgramParameter4fvNV := GetModuleSymbol( LibGL,  'glProgramParameter4fvNV');
+    @glProgramParameter4fvNV := SDL_GL_GetProcAddress( 'glProgramParameter4fvNV');
     if not Assigned(glProgramParameter4fvNV) then Exit;
-    glProgramParameters4dvNV := GetModuleSymbol( LibGL,  'glProgramParameters4dvNV');
+    @glProgramParameters4dvNV := SDL_GL_GetProcAddress( 'glProgramParameters4dvNV');
     if not Assigned(glProgramParameters4dvNV) then Exit;
-    glProgramParameters4fvNV := GetModuleSymbol( LibGL,  'glProgramParameters4fvNV');
+    @glProgramParameters4fvNV := SDL_GL_GetProcAddress( 'glProgramParameters4fvNV');
     if not Assigned(glProgramParameters4fvNV) then Exit;
-    glTrackMatrixNV := GetModuleSymbol( LibGL,  'glTrackMatrixNV');
+    @glTrackMatrixNV := SDL_GL_GetProcAddress( 'glTrackMatrixNV');
     if not Assigned(glTrackMatrixNV) then Exit;
-    glVertexAttribPointerNV := GetModuleSymbol( LibGL,  'glVertexAttribPointerNV');
+    @glVertexAttribPointerNV := SDL_GL_GetProcAddress( 'glVertexAttribPointerNV');
     if not Assigned(glVertexAttribPointerNV) then Exit;
-    glVertexAttrib1sNV := GetModuleSymbol( LibGL,  'glVertexAttrib1sNV');
+    @glVertexAttrib1sNV := SDL_GL_GetProcAddress( 'glVertexAttrib1sNV');
     if not Assigned(glVertexAttrib1sNV) then Exit;
-    glVertexAttrib1fNV := GetModuleSymbol( LibGL,  'glVertexAttrib1fNV');
+    @glVertexAttrib1fNV := SDL_GL_GetProcAddress( 'glVertexAttrib1fNV');
     if not Assigned(glVertexAttrib1fNV) then Exit;
-    glVertexAttrib1dNV := GetModuleSymbol( LibGL,  'glVertexAttrib1dNV');
+    @glVertexAttrib1dNV := SDL_GL_GetProcAddress( 'glVertexAttrib1dNV');
     if not Assigned(glVertexAttrib1dNV) then Exit;
-    glVertexAttrib2sNV := GetModuleSymbol( LibGL,  'glVertexAttrib2sNV');
+    @glVertexAttrib2sNV := SDL_GL_GetProcAddress( 'glVertexAttrib2sNV');
     if not Assigned(glVertexAttrib2sNV) then Exit;
-    glVertexAttrib2fNV := GetModuleSymbol( LibGL,  'glVertexAttrib2fNV');
+    @glVertexAttrib2fNV := SDL_GL_GetProcAddress( 'glVertexAttrib2fNV');
     if not Assigned(glVertexAttrib2fNV) then Exit;
-    glVertexAttrib2dNV := GetModuleSymbol( LibGL,  'glVertexAttrib2dNV');
+    @glVertexAttrib2dNV := SDL_GL_GetProcAddress( 'glVertexAttrib2dNV');
     if not Assigned(glVertexAttrib2dNV) then Exit;
-    glVertexAttrib3sNV := GetModuleSymbol( LibGL,  'glVertexAttrib3sNV');
+    @glVertexAttrib3sNV := SDL_GL_GetProcAddress( 'glVertexAttrib3sNV');
     if not Assigned(glVertexAttrib3sNV) then Exit;
-    glVertexAttrib3fNV := GetModuleSymbol( LibGL,  'glVertexAttrib3fNV');
+    @glVertexAttrib3fNV := SDL_GL_GetProcAddress( 'glVertexAttrib3fNV');
     if not Assigned(glVertexAttrib3fNV) then Exit;
-    glVertexAttrib3dNV := GetModuleSymbol( LibGL,  'glVertexAttrib3dNV');
+    @glVertexAttrib3dNV := SDL_GL_GetProcAddress( 'glVertexAttrib3dNV');
     if not Assigned(glVertexAttrib3dNV) then Exit;
-    glVertexAttrib4sNV := GetModuleSymbol( LibGL,  'glVertexAttrib4sNV');
+    @glVertexAttrib4sNV := SDL_GL_GetProcAddress( 'glVertexAttrib4sNV');
     if not Assigned(glVertexAttrib4sNV) then Exit;
-    glVertexAttrib4fNV := GetModuleSymbol( LibGL,  'glVertexAttrib4fNV');
+    @glVertexAttrib4fNV := SDL_GL_GetProcAddress( 'glVertexAttrib4fNV');
     if not Assigned(glVertexAttrib4fNV) then Exit;
-    glVertexAttrib4dNV := GetModuleSymbol( LibGL,  'glVertexAttrib4dNV');
+    @glVertexAttrib4dNV := SDL_GL_GetProcAddress( 'glVertexAttrib4dNV');
     if not Assigned(glVertexAttrib4dNV) then Exit;
-    glVertexAttrib4ubNV := GetModuleSymbol( LibGL,  'glVertexAttrib4ubNV');
+    @glVertexAttrib4ubNV := SDL_GL_GetProcAddress( 'glVertexAttrib4ubNV');
     if not Assigned(glVertexAttrib4ubNV) then Exit;
-    glVertexAttrib1svNV := GetModuleSymbol( LibGL,  'glVertexAttrib1svNV');
+    @glVertexAttrib1svNV := SDL_GL_GetProcAddress( 'glVertexAttrib1svNV');
     if not Assigned(glVertexAttrib1svNV) then Exit;
-    glVertexAttrib1fvNV := GetModuleSymbol( LibGL,  'glVertexAttrib1fvNV');
+    @glVertexAttrib1fvNV := SDL_GL_GetProcAddress( 'glVertexAttrib1fvNV');
     if not Assigned(glVertexAttrib1fvNV) then Exit;
-    glVertexAttrib1dvNV := GetModuleSymbol( LibGL,  'glVertexAttrib1dvNV');
+    @glVertexAttrib1dvNV := SDL_GL_GetProcAddress( 'glVertexAttrib1dvNV');
     if not Assigned(glVertexAttrib1dvNV) then Exit;
-    glVertexAttrib2svNV := GetModuleSymbol( LibGL,  'glVertexAttrib2svNV');
+    @glVertexAttrib2svNV := SDL_GL_GetProcAddress( 'glVertexAttrib2svNV');
     if not Assigned(glVertexAttrib2svNV) then Exit;
-    glVertexAttrib2fvNV := GetModuleSymbol( LibGL,  'glVertexAttrib2fvNV');
+    @glVertexAttrib2fvNV := SDL_GL_GetProcAddress( 'glVertexAttrib2fvNV');
     if not Assigned(glVertexAttrib2fvNV) then Exit;
-    glVertexAttrib2dvNV := GetModuleSymbol( LibGL,  'glVertexAttrib2dvNV');
+    @glVertexAttrib2dvNV := SDL_GL_GetProcAddress( 'glVertexAttrib2dvNV');
     if not Assigned(glVertexAttrib2dvNV) then Exit;
-    glVertexAttrib3svNV := GetModuleSymbol( LibGL,  'glVertexAttrib3svNV');
+    @glVertexAttrib3svNV := SDL_GL_GetProcAddress( 'glVertexAttrib3svNV');
     if not Assigned(glVertexAttrib3svNV) then Exit;
-    glVertexAttrib3fvNV := GetModuleSymbol( LibGL,  'glVertexAttrib3fvNV');
+    @glVertexAttrib3fvNV := SDL_GL_GetProcAddress( 'glVertexAttrib3fvNV');
     if not Assigned(glVertexAttrib3fvNV) then Exit;
-    glVertexAttrib3dvNV := GetModuleSymbol( LibGL,  'glVertexAttrib3dvNV');
+    @glVertexAttrib3dvNV := SDL_GL_GetProcAddress( 'glVertexAttrib3dvNV');
     if not Assigned(glVertexAttrib3dvNV) then Exit;
-    glVertexAttrib4svNV := GetModuleSymbol( LibGL,  'glVertexAttrib4svNV');
+    @glVertexAttrib4svNV := SDL_GL_GetProcAddress( 'glVertexAttrib4svNV');
     if not Assigned(glVertexAttrib4svNV) then Exit;
-    glVertexAttrib4fvNV := GetModuleSymbol( LibGL,  'glVertexAttrib4fvNV');
+    @glVertexAttrib4fvNV := SDL_GL_GetProcAddress( 'glVertexAttrib4fvNV');
     if not Assigned(glVertexAttrib4fvNV) then Exit;
-    glVertexAttrib4dvNV := GetModuleSymbol( LibGL,  'glVertexAttrib4dvNV');
+    @glVertexAttrib4dvNV := SDL_GL_GetProcAddress( 'glVertexAttrib4dvNV');
     if not Assigned(glVertexAttrib4dvNV) then Exit;
-    glVertexAttrib4ubvNV := GetModuleSymbol( LibGL,  'glVertexAttrib4ubvNV');
+    @glVertexAttrib4ubvNV := SDL_GL_GetProcAddress( 'glVertexAttrib4ubvNV');
     if not Assigned(glVertexAttrib4ubvNV) then Exit;
-    glVertexAttribs1svNV := GetModuleSymbol( LibGL,  'glVertexAttribs1svNV');
+    @glVertexAttribs1svNV := SDL_GL_GetProcAddress( 'glVertexAttribs1svNV');
     if not Assigned(glVertexAttribs1svNV) then Exit;
-    glVertexAttribs1fvNV := GetModuleSymbol( LibGL,  'glVertexAttribs1fvNV');
+    @glVertexAttribs1fvNV := SDL_GL_GetProcAddress( 'glVertexAttribs1fvNV');
     if not Assigned(glVertexAttribs1fvNV) then Exit;
-    glVertexAttribs1dvNV := GetModuleSymbol( LibGL,  'glVertexAttribs1dvNV');
+    @glVertexAttribs1dvNV := SDL_GL_GetProcAddress( 'glVertexAttribs1dvNV');
     if not Assigned(glVertexAttribs1dvNV) then Exit;
-    glVertexAttribs2svNV := GetModuleSymbol( LibGL,  'glVertexAttribs2svNV');
+    @glVertexAttribs2svNV := SDL_GL_GetProcAddress( 'glVertexAttribs2svNV');
     if not Assigned(glVertexAttribs2svNV) then Exit;
-    glVertexAttribs2fvNV := GetModuleSymbol( LibGL,  'glVertexAttribs2fvNV');
+    @glVertexAttribs2fvNV := SDL_GL_GetProcAddress( 'glVertexAttribs2fvNV');
     if not Assigned(glVertexAttribs2fvNV) then Exit;
-    glVertexAttribs2dvNV := GetModuleSymbol( LibGL,  'glVertexAttribs2dvNV');
+    @glVertexAttribs2dvNV := SDL_GL_GetProcAddress( 'glVertexAttribs2dvNV');
     if not Assigned(glVertexAttribs2dvNV) then Exit;
-    glVertexAttribs3svNV := GetModuleSymbol( LibGL,  'glVertexAttribs3svNV');
+    @glVertexAttribs3svNV := SDL_GL_GetProcAddress( 'glVertexAttribs3svNV');
     if not Assigned(glVertexAttribs3svNV) then Exit;
-    glVertexAttribs3fvNV := GetModuleSymbol( LibGL,  'glVertexAttribs3fvNV');
+    @glVertexAttribs3fvNV := SDL_GL_GetProcAddress( 'glVertexAttribs3fvNV');
     if not Assigned(glVertexAttribs3fvNV) then Exit;
-    glVertexAttribs3dvNV := GetModuleSymbol( LibGL,  'glVertexAttribs3dvNV');
+    @glVertexAttribs3dvNV := SDL_GL_GetProcAddress( 'glVertexAttribs3dvNV');
     if not Assigned(glVertexAttribs3dvNV) then Exit;
-    glVertexAttribs4svNV := GetModuleSymbol( LibGL,  'glVertexAttribs4svNV');
+    @glVertexAttribs4svNV := SDL_GL_GetProcAddress( 'glVertexAttribs4svNV');
     if not Assigned(glVertexAttribs4svNV) then Exit;
-    glVertexAttribs4fvNV := GetModuleSymbol( LibGL,  'glVertexAttribs4fvNV');
+    @glVertexAttribs4fvNV := SDL_GL_GetProcAddress( 'glVertexAttribs4fvNV');
     if not Assigned(glVertexAttribs4fvNV) then Exit;
-    glVertexAttribs4dvNV := GetModuleSymbol( LibGL,  'glVertexAttribs4dvNV');
+    @glVertexAttribs4dvNV := SDL_GL_GetProcAddress( 'glVertexAttribs4dvNV');
     if not Assigned(glVertexAttribs4dvNV) then Exit;
-    glVertexAttribs4ubvNV := GetModuleSymbol( LibGL,  'glVertexAttribs4ubvNV');
+    @glVertexAttribs4ubvNV := SDL_GL_GetProcAddress( 'glVertexAttribs4ubvNV');
     if not Assigned(glVertexAttribs4ubvNV) then Exit;
     Result := TRUE;
   end;
@@ -5452,11 +5467,11 @@ begin
 
   if glext_ExtensionSupported('GL_ATI_element_array', extstring) then
   begin
-    glElementPointerATI := GetModuleSymbol( LibGL,  'glElementPointerATI');
+    @glElementPointerATI := SDL_GL_GetProcAddress( 'glElementPointerATI');
     if not Assigned(glElementPointerATI) then Exit;
-    glDrawElementArrayATI := GetModuleSymbol( LibGL,  'glDrawElementArrayATI');
+    @glDrawElementArrayATI := SDL_GL_GetProcAddress( 'glDrawElementArrayATI');
     if not Assigned(glDrawElementArrayATI) then Exit;
-    glDrawRangeElementArrayATI := GetModuleSymbol( LibGL,  'glDrawRangeElementArrayATI');
+    @glDrawRangeElementArrayATI := SDL_GL_GetProcAddress( 'glDrawRangeElementArrayATI');
     if not Assigned(glDrawRangeElementArrayATI) then Exit;
     Result := TRUE;
   end;
@@ -5473,13 +5488,13 @@ begin
 
   if glext_ExtensionSupported('GL_ATI_envmap_bumpmap', extstring) then
   begin
-    glTexBumpParameterivATI := GetModuleSymbol( LibGL,  'glTexBumpParameterivATI');
+    @glTexBumpParameterivATI := SDL_GL_GetProcAddress( 'glTexBumpParameterivATI');
     if not Assigned(glTexBumpParameterivATI) then Exit;
-    glTexBumpParameterfvATI := GetModuleSymbol( LibGL,  'glTexBumpParameterfvATI');
+    @glTexBumpParameterfvATI := SDL_GL_GetProcAddress( 'glTexBumpParameterfvATI');
     if not Assigned(glTexBumpParameterfvATI) then Exit;
-    glGetTexBumpParameterivATI := GetModuleSymbol( LibGL,  'glGetTexBumpParameterivATI');
+    @glGetTexBumpParameterivATI := SDL_GL_GetProcAddress( 'glGetTexBumpParameterivATI');
     if not Assigned(glGetTexBumpParameterivATI) then Exit;
-    glGetTexBumpParameterfvATI := GetModuleSymbol( LibGL,  'glGetTexBumpParameterfvATI');
+    @glGetTexBumpParameterfvATI := SDL_GL_GetProcAddress( 'glGetTexBumpParameterfvATI');
     if not Assigned(glGetTexBumpParameterfvATI) then Exit;
     Result := TRUE;
   end;
@@ -5496,33 +5511,33 @@ begin
 
   if glext_ExtensionSupported('GL_ATI_fragment_shader', extstring) then
   begin
-    glGenFragmentShadersATI := GetModuleSymbol( LibGL,  'glGenFragmentShadersATI');
+    @glGenFragmentShadersATI := SDL_GL_GetProcAddress( 'glGenFragmentShadersATI');
     if not Assigned(glGenFragmentShadersATI) then Exit;
-    glBindFragmentShaderATI := GetModuleSymbol( LibGL,  'glBindFragmentShaderATI');
+    @glBindFragmentShaderATI := SDL_GL_GetProcAddress( 'glBindFragmentShaderATI');
     if not Assigned(glBindFragmentShaderATI) then Exit;
-    glDeleteFragmentShaderATI := GetModuleSymbol( LibGL,  'glDeleteFragmentShaderATI');
+    @glDeleteFragmentShaderATI := SDL_GL_GetProcAddress( 'glDeleteFragmentShaderATI');
     if not Assigned(glDeleteFragmentShaderATI) then Exit;
-    glBeginFragmentShaderATI := GetModuleSymbol( LibGL,  'glBeginFragmentShaderATI');
+    @glBeginFragmentShaderATI := SDL_GL_GetProcAddress( 'glBeginFragmentShaderATI');
     if not Assigned(glBeginFragmentShaderATI) then Exit;
-    glEndFragmentShaderATI := GetModuleSymbol( LibGL,  'glEndFragmentShaderATI');
+    @glEndFragmentShaderATI := SDL_GL_GetProcAddress( 'glEndFragmentShaderATI');
     if not Assigned(glEndFragmentShaderATI) then Exit;
-    glPassTexCoordATI := GetModuleSymbol( LibGL,  'glPassTexCoordATI');
+    @glPassTexCoordATI := SDL_GL_GetProcAddress( 'glPassTexCoordATI');
     if not Assigned(glPassTexCoordATI) then Exit;
-    glSampleMapATI := GetModuleSymbol( LibGL,  'glSampleMapATI');
+    @glSampleMapATI := SDL_GL_GetProcAddress( 'glSampleMapATI');
     if not Assigned(glSampleMapATI) then Exit;
-    glColorFragmentOp1ATI := GetModuleSymbol( LibGL,  'glColorFragmentOp1ATI');
+    @glColorFragmentOp1ATI := SDL_GL_GetProcAddress( 'glColorFragmentOp1ATI');
     if not Assigned(glColorFragmentOp1ATI) then Exit;
-    glColorFragmentOp2ATI := GetModuleSymbol( LibGL,  'glColorFragmentOp2ATI');
+    @glColorFragmentOp2ATI := SDL_GL_GetProcAddress( 'glColorFragmentOp2ATI');
     if not Assigned(glColorFragmentOp2ATI) then Exit;
-    glColorFragmentOp3ATI := GetModuleSymbol( LibGL,  'glColorFragmentOp3ATI');
+    @glColorFragmentOp3ATI := SDL_GL_GetProcAddress( 'glColorFragmentOp3ATI');
     if not Assigned(glColorFragmentOp3ATI) then Exit;
-    glAlphaFragmentOp1ATI := GetModuleSymbol( LibGL,  'glAlphaFragmentOp1ATI');
+    @glAlphaFragmentOp1ATI := SDL_GL_GetProcAddress( 'glAlphaFragmentOp1ATI');
     if not Assigned(glAlphaFragmentOp1ATI) then Exit;
-    glAlphaFragmentOp2ATI := GetModuleSymbol( LibGL,  'glAlphaFragmentOp2ATI');
+    @glAlphaFragmentOp2ATI := SDL_GL_GetProcAddress( 'glAlphaFragmentOp2ATI');
     if not Assigned(glAlphaFragmentOp2ATI) then Exit;
-    glAlphaFragmentOp3ATI := GetModuleSymbol( LibGL,  'glAlphaFragmentOp3ATI');
+    @glAlphaFragmentOp3ATI := SDL_GL_GetProcAddress( 'glAlphaFragmentOp3ATI');
     if not Assigned(glAlphaFragmentOp3ATI) then Exit;
-    glSetFragmentShaderConstantATI := GetModuleSymbol( LibGL,  'glSetFragmentShaderConstantATI');
+    @glSetFragmentShaderConstantATI := SDL_GL_GetProcAddress( 'glSetFragmentShaderConstantATI');
     if not Assigned(glSetFragmentShaderConstantATI) then Exit;
     Result := TRUE;
   end;
@@ -5539,9 +5554,9 @@ begin
 
   if glext_ExtensionSupported('GL_ATI_pn_triangles', extstring) then
   begin
-    glPNTrianglesiATI := GetModuleSymbol( LibGL,  'glPNTrianglesiATI');
+    @glPNTrianglesiATI := SDL_GL_GetProcAddress( 'glPNTrianglesiATI');
     if not Assigned(glPNTrianglesiATI) then Exit;
-    glPNTrianglesfATI := GetModuleSymbol( LibGL,  'glPNTrianglesfATI');
+    @glPNTrianglesfATI := SDL_GL_GetProcAddress( 'glPNTrianglesfATI');
     if not Assigned(glPNTrianglesfATI) then Exit;
     Result := TRUE;
   end;
@@ -5573,29 +5588,29 @@ begin
 
   if glext_ExtensionSupported('GL_ATI_vertex_array_object', extstring) then
   begin
-    glNewObjectBufferATI := GetModuleSymbol( LibGL,  'glNewObjectBufferATI');
+    @glNewObjectBufferATI := SDL_GL_GetProcAddress( 'glNewObjectBufferATI');
     if not Assigned(glNewObjectBufferATI) then Exit;
-    glIsObjectBufferATI := GetModuleSymbol( LibGL,  'glIsObjectBufferATI');
+    @glIsObjectBufferATI := SDL_GL_GetProcAddress( 'glIsObjectBufferATI');
     if not Assigned(glIsObjectBufferATI) then Exit;
-    glUpdateObjectBufferATI := GetModuleSymbol( LibGL,  'glUpdateObjectBufferATI');
+    @glUpdateObjectBufferATI := SDL_GL_GetProcAddress( 'glUpdateObjectBufferATI');
     if not Assigned(glUpdateObjectBufferATI) then Exit;
-    glGetObjectBufferfvATI := GetModuleSymbol( LibGL,  'glGetObjectBufferfvATI');
+    @glGetObjectBufferfvATI := SDL_GL_GetProcAddress( 'glGetObjectBufferfvATI');
     if not Assigned(glGetObjectBufferfvATI) then Exit;
-    glGetObjectBufferivATI := GetModuleSymbol( LibGL,  'glGetObjectBufferivATI');
+    @glGetObjectBufferivATI := SDL_GL_GetProcAddress( 'glGetObjectBufferivATI');
     if not Assigned(glGetObjectBufferivATI) then Exit;
-    glDeleteObjectBufferATI := GetModuleSymbol( LibGL,  'glDeleteObjectBufferATI');
+    @glDeleteObjectBufferATI := SDL_GL_GetProcAddress( 'glDeleteObjectBufferATI');
     if not Assigned(glDeleteObjectBufferATI) then Exit;
-    glArrayObjectATI := GetModuleSymbol( LibGL,  'glArrayObjectATI');
+    @glArrayObjectATI := SDL_GL_GetProcAddress( 'glArrayObjectATI');
     if not Assigned(glArrayObjectATI) then Exit;
-    glGetArrayObjectfvATI := GetModuleSymbol( LibGL,  'glGetArrayObjectfvATI');
+    @glGetArrayObjectfvATI := SDL_GL_GetProcAddress( 'glGetArrayObjectfvATI');
     if not Assigned(glGetArrayObjectfvATI) then Exit;
-    glGetArrayObjectivATI := GetModuleSymbol( LibGL,  'glGetArrayObjectivATI');
+    @glGetArrayObjectivATI := SDL_GL_GetProcAddress( 'glGetArrayObjectivATI');
     if not Assigned(glGetArrayObjectivATI) then Exit;
-    glVariantArrayObjectATI := GetModuleSymbol( LibGL,  'glVariantArrayObjectATI');
+    @glVariantArrayObjectATI := SDL_GL_GetProcAddress( 'glVariantArrayObjectATI');
     if not Assigned(glVariantArrayObjectATI) then Exit;
-    glGetVariantArrayObjectfvATI := GetModuleSymbol( LibGL,  'glGetVariantArrayObjectfvATI');
+    @glGetVariantArrayObjectfvATI := SDL_GL_GetProcAddress( 'glGetVariantArrayObjectfvATI');
     if not Assigned(glGetVariantArrayObjectfvATI) then Exit;
-    glGetVariantArrayObjectivATI := GetModuleSymbol( LibGL,  'glGetVariantArrayObjectivATI');
+    @glGetVariantArrayObjectivATI := SDL_GL_GetProcAddress( 'glGetVariantArrayObjectivATI');
     if not Assigned(glGetVariantArrayObjectivATI) then Exit;
     Result := TRUE;
   end;
@@ -5612,95 +5627,95 @@ begin
 
   if glext_ExtensionSupported('GL_ATI_vertex_streams', extstring) then
   begin
-    glVertexStream1s := GetModuleSymbol( LibGL,  'glVertexStream1s');
+    @glVertexStream1s := SDL_GL_GetProcAddress( 'glVertexStream1s');
     if not Assigned(glVertexStream1s) then Exit;
-    glVertexStream1i := GetModuleSymbol( LibGL,  'glVertexStream1i');
+    @glVertexStream1i := SDL_GL_GetProcAddress( 'glVertexStream1i');
     if not Assigned(glVertexStream1i) then Exit;
-    glVertexStream1f := GetModuleSymbol( LibGL,  'glVertexStream1f');
+    @glVertexStream1f := SDL_GL_GetProcAddress( 'glVertexStream1f');
     if not Assigned(glVertexStream1f) then Exit;
-    glVertexStream1d := GetModuleSymbol( LibGL,  'glVertexStream1d');
+    @glVertexStream1d := SDL_GL_GetProcAddress( 'glVertexStream1d');
     if not Assigned(glVertexStream1d) then Exit;
-    glVertexStream1sv := GetModuleSymbol( LibGL,  'glVertexStream1sv');
+    @glVertexStream1sv := SDL_GL_GetProcAddress( 'glVertexStream1sv');
     if not Assigned(glVertexStream1sv) then Exit;
-    glVertexStream1iv := GetModuleSymbol( LibGL,  'glVertexStream1iv');
+    @glVertexStream1iv := SDL_GL_GetProcAddress( 'glVertexStream1iv');
     if not Assigned(glVertexStream1iv) then Exit;
-    glVertexStream1fv := GetModuleSymbol( LibGL,  'glVertexStream1fv');
+    @glVertexStream1fv := SDL_GL_GetProcAddress( 'glVertexStream1fv');
     if not Assigned(glVertexStream1fv) then Exit;
-    glVertexStream1dv := GetModuleSymbol( LibGL,  'glVertexStream1dv');
+    @glVertexStream1dv := SDL_GL_GetProcAddress( 'glVertexStream1dv');
     if not Assigned(glVertexStream1dv) then Exit;
-    glVertexStream2s := GetModuleSymbol( LibGL,  'glVertexStream2s');
+    @glVertexStream2s := SDL_GL_GetProcAddress( 'glVertexStream2s');
     if not Assigned(glVertexStream2s) then Exit;
-    glVertexStream2i := GetModuleSymbol( LibGL,  'glVertexStream2i');
+    @glVertexStream2i := SDL_GL_GetProcAddress( 'glVertexStream2i');
     if not Assigned(glVertexStream2i) then Exit;
-    glVertexStream2f := GetModuleSymbol( LibGL,  'glVertexStream2f');
+    @glVertexStream2f := SDL_GL_GetProcAddress( 'glVertexStream2f');
     if not Assigned(glVertexStream2f) then Exit;
-    glVertexStream2d := GetModuleSymbol( LibGL,  'glVertexStream2d');
+    @glVertexStream2d := SDL_GL_GetProcAddress( 'glVertexStream2d');
     if not Assigned(glVertexStream2d) then Exit;
-    glVertexStream2sv := GetModuleSymbol( LibGL,  'glVertexStream2sv');
+    @glVertexStream2sv := SDL_GL_GetProcAddress( 'glVertexStream2sv');
     if not Assigned(glVertexStream2sv) then Exit;
-    glVertexStream2iv := GetModuleSymbol( LibGL,  'glVertexStream2iv');
+    @glVertexStream2iv := SDL_GL_GetProcAddress( 'glVertexStream2iv');
     if not Assigned(glVertexStream2iv) then Exit;
-    glVertexStream2fv := GetModuleSymbol( LibGL,  'glVertexStream2fv');
+    @glVertexStream2fv := SDL_GL_GetProcAddress( 'glVertexStream2fv');
     if not Assigned(glVertexStream2fv) then Exit;
-    glVertexStream2dv := GetModuleSymbol( LibGL,  'glVertexStream2dv');
+    @glVertexStream2dv := SDL_GL_GetProcAddress( 'glVertexStream2dv');
     if not Assigned(glVertexStream2dv) then Exit;
-    glVertexStream3s := GetModuleSymbol( LibGL,  'glVertexStream3s');
+    @glVertexStream3s := SDL_GL_GetProcAddress( 'glVertexStream3s');
     if not Assigned(glVertexStream3s) then Exit;
-    glVertexStream3i := GetModuleSymbol( LibGL,  'glVertexStream3i');
+    @glVertexStream3i := SDL_GL_GetProcAddress( 'glVertexStream3i');
     if not Assigned(glVertexStream3i) then Exit;
-    glVertexStream3f := GetModuleSymbol( LibGL,  'glVertexStream3f');
+    @glVertexStream3f := SDL_GL_GetProcAddress( 'glVertexStream3f');
     if not Assigned(glVertexStream3f) then Exit;
-    glVertexStream3d := GetModuleSymbol( LibGL,  'glVertexStream3d');
+    @glVertexStream3d := SDL_GL_GetProcAddress( 'glVertexStream3d');
     if not Assigned(glVertexStream3d) then Exit;
-    glVertexStream3sv := GetModuleSymbol( LibGL,  'glVertexStream3sv');
+    @glVertexStream3sv := SDL_GL_GetProcAddress( 'glVertexStream3sv');
     if not Assigned(glVertexStream3sv) then Exit;
-    glVertexStream3iv := GetModuleSymbol( LibGL,  'glVertexStream3iv');
+    @glVertexStream3iv := SDL_GL_GetProcAddress( 'glVertexStream3iv');
     if not Assigned(glVertexStream3iv) then Exit;
-    glVertexStream3fv := GetModuleSymbol( LibGL,  'glVertexStream3fv');
+    @glVertexStream3fv := SDL_GL_GetProcAddress( 'glVertexStream3fv');
     if not Assigned(glVertexStream3fv) then Exit;
-    glVertexStream3dv := GetModuleSymbol( LibGL,  'glVertexStream3dv');
+    @glVertexStream3dv := SDL_GL_GetProcAddress( 'glVertexStream3dv');
     if not Assigned(glVertexStream3dv) then Exit;
-    glVertexStream4s := GetModuleSymbol( LibGL,  'glVertexStream4s');
+    @glVertexStream4s := SDL_GL_GetProcAddress( 'glVertexStream4s');
     if not Assigned(glVertexStream4s) then Exit;
-    glVertexStream4i := GetModuleSymbol( LibGL,  'glVertexStream4i');
+    @glVertexStream4i := SDL_GL_GetProcAddress( 'glVertexStream4i');
     if not Assigned(glVertexStream4i) then Exit;
-    glVertexStream4f := GetModuleSymbol( LibGL,  'glVertexStream4f');
+    @glVertexStream4f := SDL_GL_GetProcAddress( 'glVertexStream4f');
     if not Assigned(glVertexStream4f) then Exit;
-    glVertexStream4d := GetModuleSymbol( LibGL,  'glVertexStream4d');
+    @glVertexStream4d := SDL_GL_GetProcAddress( 'glVertexStream4d');
     if not Assigned(glVertexStream4d) then Exit;
-    glVertexStream4sv := GetModuleSymbol( LibGL,  'glVertexStream4sv');
+    @glVertexStream4sv := SDL_GL_GetProcAddress( 'glVertexStream4sv');
     if not Assigned(glVertexStream4sv) then Exit;
-    glVertexStream4iv := GetModuleSymbol( LibGL,  'glVertexStream4iv');
+    @glVertexStream4iv := SDL_GL_GetProcAddress( 'glVertexStream4iv');
     if not Assigned(glVertexStream4iv) then Exit;
-    glVertexStream4fv := GetModuleSymbol( LibGL,  'glVertexStream4fv');
+    @glVertexStream4fv := SDL_GL_GetProcAddress( 'glVertexStream4fv');
     if not Assigned(glVertexStream4fv) then Exit;
-    glVertexStream4dv := GetModuleSymbol( LibGL,  'glVertexStream4dv');
+    @glVertexStream4dv := SDL_GL_GetProcAddress( 'glVertexStream4dv');
     if not Assigned(glVertexStream4dv) then Exit;
-    glNormalStream3b := GetModuleSymbol( LibGL,  'glNormalStream3b');
+    @glNormalStream3b := SDL_GL_GetProcAddress( 'glNormalStream3b');
     if not Assigned(glNormalStream3b) then Exit;
-    glNormalStream3s := GetModuleSymbol( LibGL,  'glNormalStream3s');
+    @glNormalStream3s := SDL_GL_GetProcAddress( 'glNormalStream3s');
     if not Assigned(glNormalStream3s) then Exit;
-    glNormalStream3i := GetModuleSymbol( LibGL,  'glNormalStream3i');
+    @glNormalStream3i := SDL_GL_GetProcAddress( 'glNormalStream3i');
     if not Assigned(glNormalStream3i) then Exit;
-    glNormalStream3f := GetModuleSymbol( LibGL,  'glNormalStream3f');
+    @glNormalStream3f := SDL_GL_GetProcAddress( 'glNormalStream3f');
     if not Assigned(glNormalStream3f) then Exit;
-    glNormalStream3d := GetModuleSymbol( LibGL,  'glNormalStream3d');
+    @glNormalStream3d := SDL_GL_GetProcAddress( 'glNormalStream3d');
     if not Assigned(glNormalStream3d) then Exit;
-    glNormalStream3bv := GetModuleSymbol( LibGL,  'glNormalStream3bv');
+    @glNormalStream3bv := SDL_GL_GetProcAddress( 'glNormalStream3bv');
     if not Assigned(glNormalStream3bv) then Exit;
-    glNormalStream3sv := GetModuleSymbol( LibGL,  'glNormalStream3sv');
+    @glNormalStream3sv := SDL_GL_GetProcAddress( 'glNormalStream3sv');
     if not Assigned(glNormalStream3sv) then Exit;
-    glNormalStream3iv := GetModuleSymbol( LibGL,  'glNormalStream3iv');
+    @glNormalStream3iv := SDL_GL_GetProcAddress( 'glNormalStream3iv');
     if not Assigned(glNormalStream3iv) then Exit;
-    glNormalStream3fv := GetModuleSymbol( LibGL,  'glNormalStream3fv');
+    @glNormalStream3fv := SDL_GL_GetProcAddress( 'glNormalStream3fv');
     if not Assigned(glNormalStream3fv) then Exit;
-    glNormalStream3dv := GetModuleSymbol( LibGL,  'glNormalStream3dv');
+    @glNormalStream3dv := SDL_GL_GetProcAddress( 'glNormalStream3dv');
     if not Assigned(glNormalStream3dv) then Exit;
-    glClientActiveVertexStream := GetModuleSymbol( LibGL,  'glClientActiveVertexStream');
+    @glClientActiveVertexStream := SDL_GL_GetProcAddress( 'glClientActiveVertexStream');
     if not Assigned(glClientActiveVertexStream) then Exit;
-    glVertexBlendEnvi := GetModuleSymbol( LibGL,  'glVertexBlendEnvi');
+    @glVertexBlendEnvi := SDL_GL_GetProcAddress( 'glVertexBlendEnvi');
     if not Assigned(glVertexBlendEnvi) then Exit;
-    glVertexBlendEnvf := GetModuleSymbol( LibGL,  'glVertexBlendEnvf');
+    @glVertexBlendEnvf := SDL_GL_GetProcAddress( 'glVertexBlendEnvf');
     if not Assigned(glVertexBlendEnvf) then Exit;
     Result := TRUE;
   end;
@@ -5714,19 +5729,19 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_I3D_image_buffer', extstring) then
   begin
-    wglCreateImageBufferI3D := GetModuleSymbol( LibGL,  'wglCreateImageBufferI3D');
+    wglCreateImageBufferI3D := SDL_GL_GetProcAddress( 'wglCreateImageBufferI3D');
     if not Assigned(wglCreateImageBufferI3D) then Exit;
-    wglDestroyImageBufferI3D := GetModuleSymbol( LibGL,  'wglDestroyImageBufferI3D');
+    wglDestroyImageBufferI3D := SDL_GL_GetProcAddress( 'wglDestroyImageBufferI3D');
     if not Assigned(wglDestroyImageBufferI3D) then Exit;
-    wglAssociateImageBufferEventsI3D := GetModuleSymbol( LibGL,  'wglAssociateImageBufferEventsI3D');
+    wglAssociateImageBufferEventsI3D := SDL_GL_GetProcAddress( 'wglAssociateImageBufferEventsI3D');
     if not Assigned(wglAssociateImageBufferEventsI3D) then Exit;
-    wglReleaseImageBufferEventsI3D := GetModuleSymbol( LibGL,  'wglReleaseImageBufferEventsI3D');
+    wglReleaseImageBufferEventsI3D := SDL_GL_GetProcAddress( 'wglReleaseImageBufferEventsI3D');
     if not Assigned(wglReleaseImageBufferEventsI3D) then Exit;
     Result := TRUE;
   end;
@@ -5739,19 +5754,19 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_I3D_swap_frame_lock', extstring) then
   begin
-    wglEnableFrameLockI3D := GetModuleSymbol( LibGL,  'wglEnableFrameLockI3D');
+    wglEnableFrameLockI3D := SDL_GL_GetProcAddress( 'wglEnableFrameLockI3D');
     if not Assigned(wglEnableFrameLockI3D) then Exit;
-    wglDisableFrameLockI3D := GetModuleSymbol( LibGL,  'wglDisableFrameLockI3D');
+    wglDisableFrameLockI3D := SDL_GL_GetProcAddress( 'wglDisableFrameLockI3D');
     if not Assigned(wglDisableFrameLockI3D) then Exit;
-    wglIsEnabledFrameLockI3D := GetModuleSymbol( LibGL,  'wglIsEnabledFrameLockI3D');
+    wglIsEnabledFrameLockI3D := SDL_GL_GetProcAddress( 'wglIsEnabledFrameLockI3D');
     if not Assigned(wglIsEnabledFrameLockI3D) then Exit;
-    wglQueryFrameLockMasterI3D := GetModuleSymbol( LibGL,  'wglQueryFrameLockMasterI3D');
+    wglQueryFrameLockMasterI3D := SDL_GL_GetProcAddress( 'wglQueryFrameLockMasterI3D');
     if not Assigned(wglQueryFrameLockMasterI3D) then Exit;
     Result := TRUE;
   end;
@@ -5764,19 +5779,19 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_I3D_swap_frame_usage', extstring) then
   begin
-    wglGetFrameUsageI3D := GetModuleSymbol( LibGL,  'wglGetFrameUsageI3D');
+    wglGetFrameUsageI3D := SDL_GL_GetProcAddress( 'wglGetFrameUsageI3D');
     if not Assigned(wglGetFrameUsageI3D) then Exit;
-    wglBeginFrameTrackingI3D := GetModuleSymbol( LibGL,  'wglBeginFrameTrackingI3D');
+    wglBeginFrameTrackingI3D := SDL_GL_GetProcAddress( 'wglBeginFrameTrackingI3D');
     if not Assigned(wglBeginFrameTrackingI3D) then Exit;
-    wglEndFrameTrackingI3D := GetModuleSymbol( LibGL,  'wglEndFrameTrackingI3D');
+    wglEndFrameTrackingI3D := SDL_GL_GetProcAddress( 'wglEndFrameTrackingI3D');
     if not Assigned(wglEndFrameTrackingI3D) then Exit;
-    wglQueryFrameTrackingI3D := GetModuleSymbol( LibGL,  'wglQueryFrameTrackingI3D');
+    wglQueryFrameTrackingI3D := SDL_GL_GetProcAddress( 'wglQueryFrameTrackingI3D');
     if not Assigned(wglQueryFrameTrackingI3D) then Exit;
     Result := TRUE;
   end;
@@ -5824,9 +5839,9 @@ begin
 
   if glext_ExtensionSupported('GL_IBM_multimode_draw_arrays', extstring) then
   begin
-    glMultiModeDrawArraysIBM := GetModuleSymbol( LibGL,  'glMultiModeDrawArraysIBM');
+    @glMultiModeDrawArraysIBM := SDL_GL_GetProcAddress( 'glMultiModeDrawArraysIBM');
     if not Assigned(glMultiModeDrawArraysIBM) then Exit;
-    glMultiModeDrawElementsIBM := GetModuleSymbol( LibGL,  'glMultiModeDrawElementsIBM');
+    @glMultiModeDrawElementsIBM := SDL_GL_GetProcAddress( 'glMultiModeDrawElementsIBM');
     if not Assigned(glMultiModeDrawElementsIBM) then Exit;
     Result := TRUE;
   end;
@@ -5873,19 +5888,19 @@ begin
 
   if glext_ExtensionSupported('GL_IBM_vertex_array_lists', extstring) then
   begin
-    glColorPointerListIBM := GetModuleSymbol( LibGL,  'glColorPointerListIBM');
+    @glColorPointerListIBM := SDL_GL_GetProcAddress( 'glColorPointerListIBM');
     if not Assigned(glColorPointerListIBM) then Exit;
-    glSecondaryColorPointerListIBM := GetModuleSymbol( LibGL,  'glSecondaryColorPointerListIBM');
+    @glSecondaryColorPointerListIBM := SDL_GL_GetProcAddress( 'glSecondaryColorPointerListIBM');
     if not Assigned(glSecondaryColorPointerListIBM) then Exit;
-    glEdgeFlagPointerListIBM := GetModuleSymbol( LibGL,  'glEdgeFlagPointerListIBM');
+    @glEdgeFlagPointerListIBM := SDL_GL_GetProcAddress( 'glEdgeFlagPointerListIBM');
     if not Assigned(glEdgeFlagPointerListIBM) then Exit;
-    glFogCoordPointerListIBM := GetModuleSymbol( LibGL,  'glFogCoordPointerListIBM');
+    @glFogCoordPointerListIBM := SDL_GL_GetProcAddress( 'glFogCoordPointerListIBM');
     if not Assigned(glFogCoordPointerListIBM) then Exit;
-    glNormalPointerListIBM := GetModuleSymbol( LibGL,  'glNormalPointerListIBM');
+    @glNormalPointerListIBM := SDL_GL_GetProcAddress( 'glNormalPointerListIBM');
     if not Assigned(glNormalPointerListIBM) then Exit;
-    glTexCoordPointerListIBM := GetModuleSymbol( LibGL,  'glTexCoordPointerListIBM');
+    @glTexCoordPointerListIBM := SDL_GL_GetProcAddress( 'glTexCoordPointerListIBM');
     if not Assigned(glTexCoordPointerListIBM) then Exit;
-    glVertexPointerListIBM := GetModuleSymbol( LibGL,  'glVertexPointerListIBM');
+    @glVertexPointerListIBM := SDL_GL_GetProcAddress( 'glVertexPointerListIBM');
     if not Assigned(glVertexPointerListIBM) then Exit;
     Result := TRUE;
   end;
@@ -5902,7 +5917,7 @@ begin
 
   if glext_ExtensionSupported('GL_MESA_resize_buffers', extstring) then
   begin
-    glResizeBuffersMESA := GetModuleSymbol( LibGL,  'glResizeBuffersMESA');
+    @glResizeBuffersMESA := SDL_GL_GetProcAddress( 'glResizeBuffersMESA');
     if not Assigned(glResizeBuffersMESA) then Exit;
     Result := TRUE;
   end;
@@ -5919,53 +5934,53 @@ begin
 
   if glext_ExtensionSupported('GL_MESA_window_pos', extstring) then
   begin
-    glWindowPos2dMESA := GetModuleSymbol( LibGL,  'glWindowPos2dMESA');
+    @glWindowPos2dMESA := SDL_GL_GetProcAddress( 'glWindowPos2dMESA');
     if not Assigned(glWindowPos2dMESA) then Exit;
-    glWindowPos2fMESA := GetModuleSymbol( LibGL,  'glWindowPos2fMESA');
+    @glWindowPos2fMESA := SDL_GL_GetProcAddress( 'glWindowPos2fMESA');
     if not Assigned(glWindowPos2fMESA) then Exit;
-    glWindowPos2iMESA := GetModuleSymbol( LibGL,  'glWindowPos2iMESA');
+    @glWindowPos2iMESA := SDL_GL_GetProcAddress( 'glWindowPos2iMESA');
     if not Assigned(glWindowPos2iMESA) then Exit;
-    glWindowPos2sMESA := GetModuleSymbol( LibGL,  'glWindowPos2sMESA');
+    @glWindowPos2sMESA := SDL_GL_GetProcAddress( 'glWindowPos2sMESA');
     if not Assigned(glWindowPos2sMESA) then Exit;
-    glWindowPos2ivMESA := GetModuleSymbol( LibGL,  'glWindowPos2ivMESA');
+    @glWindowPos2ivMESA := SDL_GL_GetProcAddress( 'glWindowPos2ivMESA');
     if not Assigned(glWindowPos2ivMESA) then Exit;
-    glWindowPos2svMESA := GetModuleSymbol( LibGL,  'glWindowPos2svMESA');
+    @glWindowPos2svMESA := SDL_GL_GetProcAddress( 'glWindowPos2svMESA');
     if not Assigned(glWindowPos2svMESA) then Exit;
-    glWindowPos2fvMESA := GetModuleSymbol( LibGL,  'glWindowPos2fvMESA');
+    @glWindowPos2fvMESA := SDL_GL_GetProcAddress( 'glWindowPos2fvMESA');
     if not Assigned(glWindowPos2fvMESA) then Exit;
-    glWindowPos2dvMESA := GetModuleSymbol( LibGL,  'glWindowPos2dvMESA');
+    @glWindowPos2dvMESA := SDL_GL_GetProcAddress( 'glWindowPos2dvMESA');
     if not Assigned(glWindowPos2dvMESA) then Exit;
-    glWindowPos3iMESA := GetModuleSymbol( LibGL,  'glWindowPos3iMESA');
+    @glWindowPos3iMESA := SDL_GL_GetProcAddress( 'glWindowPos3iMESA');
     if not Assigned(glWindowPos3iMESA) then Exit;
-    glWindowPos3sMESA := GetModuleSymbol( LibGL,  'glWindowPos3sMESA');
+    @glWindowPos3sMESA := SDL_GL_GetProcAddress( 'glWindowPos3sMESA');
     if not Assigned(glWindowPos3sMESA) then Exit;
-    glWindowPos3fMESA := GetModuleSymbol( LibGL,  'glWindowPos3fMESA');
+    @glWindowPos3fMESA := SDL_GL_GetProcAddress( 'glWindowPos3fMESA');
     if not Assigned(glWindowPos3fMESA) then Exit;
-    glWindowPos3dMESA := GetModuleSymbol( LibGL,  'glWindowPos3dMESA');
+    @glWindowPos3dMESA := SDL_GL_GetProcAddress( 'glWindowPos3dMESA');
     if not Assigned(glWindowPos3dMESA) then Exit;
-    glWindowPos3ivMESA := GetModuleSymbol( LibGL,  'glWindowPos3ivMESA');
+    @glWindowPos3ivMESA := SDL_GL_GetProcAddress( 'glWindowPos3ivMESA');
     if not Assigned(glWindowPos3ivMESA) then Exit;
-    glWindowPos3svMESA := GetModuleSymbol( LibGL,  'glWindowPos3svMESA');
+    @glWindowPos3svMESA := SDL_GL_GetProcAddress( 'glWindowPos3svMESA');
     if not Assigned(glWindowPos3svMESA) then Exit;
-    glWindowPos3fvMESA := GetModuleSymbol( LibGL,  'glWindowPos3fvMESA');
+    @glWindowPos3fvMESA := SDL_GL_GetProcAddress( 'glWindowPos3fvMESA');
     if not Assigned(glWindowPos3fvMESA) then Exit;
-    glWindowPos3dvMESA := GetModuleSymbol( LibGL,  'glWindowPos3dvMESA');
+    @glWindowPos3dvMESA := SDL_GL_GetProcAddress( 'glWindowPos3dvMESA');
     if not Assigned(glWindowPos3dvMESA) then Exit;
-    glWindowPos4iMESA := GetModuleSymbol( LibGL,  'glWindowPos4iMESA');
+    @glWindowPos4iMESA := SDL_GL_GetProcAddress( 'glWindowPos4iMESA');
     if not Assigned(glWindowPos4iMESA) then Exit;
-    glWindowPos4sMESA := GetModuleSymbol( LibGL,  'glWindowPos4sMESA');
+    @glWindowPos4sMESA := SDL_GL_GetProcAddress( 'glWindowPos4sMESA');
     if not Assigned(glWindowPos4sMESA) then Exit;
-    glWindowPos4fMESA := GetModuleSymbol( LibGL,  'glWindowPos4fMESA');
+    @glWindowPos4fMESA := SDL_GL_GetProcAddress( 'glWindowPos4fMESA');
     if not Assigned(glWindowPos4fMESA) then Exit;
-    glWindowPos4dMESA := GetModuleSymbol( LibGL,  'glWindowPos4dMESA');
+    @glWindowPos4dMESA := SDL_GL_GetProcAddress( 'glWindowPos4dMESA');
     if not Assigned(glWindowPos4dMESA) then Exit;
-    glWindowPos4ivMESA := GetModuleSymbol( LibGL,  'glWindowPos4ivMESA');
+    @glWindowPos4ivMESA := SDL_GL_GetProcAddress( 'glWindowPos4ivMESA');
     if not Assigned(glWindowPos4ivMESA) then Exit;
-    glWindowPos4svMESA := GetModuleSymbol( LibGL,  'glWindowPos4svMESA');
+    @glWindowPos4svMESA := SDL_GL_GetProcAddress( 'glWindowPos4svMESA');
     if not Assigned(glWindowPos4svMESA) then Exit;
-    glWindowPos4fvMESA := GetModuleSymbol( LibGL,  'glWindowPos4fvMESA');
+    @glWindowPos4fvMESA := SDL_GL_GetProcAddress( 'glWindowPos4fvMESA');
     if not Assigned(glWindowPos4fvMESA) then Exit;
-    glWindowPos4dvMESA := GetModuleSymbol( LibGL,  'glWindowPos4dvMESA');
+    @glWindowPos4dvMESA := SDL_GL_GetProcAddress( 'glWindowPos4dvMESA');
     if not Assigned(glWindowPos4dvMESA) then Exit;
     Result := TRUE;
   end;
@@ -6042,9 +6057,9 @@ begin
 
   if glext_ExtensionSupported('GL_SGIS_multisample', extstring) then
   begin
-    glSampleMaskSGIS := GetModuleSymbol( LibGL,  'glSampleMaskSGIS');
+    @glSampleMaskSGIS := SDL_GL_GetProcAddress( 'glSampleMaskSGIS');
     if not Assigned(glSampleMaskSGIS) then Exit;
-    glSamplePatternSGIS := GetModuleSymbol( LibGL,  'glSamplePatternSGIS');
+    @glSamplePatternSGIS := SDL_GL_GetProcAddress( 'glSamplePatternSGIS');
     if not Assigned(glSamplePatternSGIS) then Exit;
     Result := TRUE;
   end;
@@ -6061,13 +6076,13 @@ begin
 
   if glext_ExtensionSupported('GL_SGIS_pixel_texture', extstring) then
   begin
-    glPixelTexGenParameteriSGIS := GetModuleSymbol( LibGL,  'glPixelTexGenParameteriSGIS');
+    @glPixelTexGenParameteriSGIS := SDL_GL_GetProcAddress( 'glPixelTexGenParameteriSGIS');
     if not Assigned(glPixelTexGenParameteriSGIS) then Exit;
-    glPixelTexGenParameterfSGIS := GetModuleSymbol( LibGL,  'glPixelTexGenParameterfSGIS');
+    @glPixelTexGenParameterfSGIS := SDL_GL_GetProcAddress( 'glPixelTexGenParameterfSGIS');
     if not Assigned(glPixelTexGenParameterfSGIS) then Exit;
-    glGetPixelTexGenParameterivSGIS := GetModuleSymbol( LibGL,  'glGetPixelTexGenParameterivSGIS');
+    @glGetPixelTexGenParameterivSGIS := SDL_GL_GetProcAddress( 'glGetPixelTexGenParameterivSGIS');
     if not Assigned(glGetPixelTexGenParameterivSGIS) then Exit;
-    glGetPixelTexGenParameterfvSGIS := GetModuleSymbol( LibGL,  'glGetPixelTexGenParameterfvSGIS');
+    @glGetPixelTexGenParameterfvSGIS := SDL_GL_GetProcAddress( 'glGetPixelTexGenParameterfvSGIS');
     if not Assigned(glGetPixelTexGenParameterfvSGIS) then Exit;
     Result := TRUE;
   end;
@@ -6099,7 +6114,7 @@ begin
 
   if glext_ExtensionSupported('GL_SGIS_texture_color_mask', extstring) then
   begin
-    glTextureColorMaskSGIS := GetModuleSymbol( LibGL,  'glTextureColorMaskSGIS');
+    @glTextureColorMaskSGIS := SDL_GL_GetProcAddress( 'glTextureColorMaskSGIS');
     if not Assigned(glTextureColorMaskSGIS) then Exit;
     Result := TRUE;
   end;
@@ -6221,19 +6236,19 @@ begin
 
   if glext_ExtensionSupported('GL_SGI_color_table', extstring) then
   begin
-    glColorTableSGI := GetModuleSymbol( LibGL,  'glColorTableSGI');
+    @glColorTableSGI := SDL_GL_GetProcAddress( 'glColorTableSGI');
     if not Assigned(glColorTableSGI) then Exit;
-    glCopyColorTableSGI := GetModuleSymbol( LibGL,  'glCopyColorTableSGI');
+    @glCopyColorTableSGI := SDL_GL_GetProcAddress( 'glCopyColorTableSGI');
     if not Assigned(glCopyColorTableSGI) then Exit;
-    glColorTableParameterivSGI := GetModuleSymbol( LibGL,  'glColorTableParameterivSGI');
+    @glColorTableParameterivSGI := SDL_GL_GetProcAddress( 'glColorTableParameterivSGI');
     if not Assigned(glColorTableParameterivSGI) then Exit;
-    glColorTableParameterfvSGI := GetModuleSymbol( LibGL,  'glColorTableParameterfvSGI');
+    @glColorTableParameterfvSGI := SDL_GL_GetProcAddress( 'glColorTableParameterfvSGI');
     if not Assigned(glColorTableParameterfvSGI) then Exit;
-    glGetColorTableSGI := GetModuleSymbol( LibGL,  'glGetColorTableSGI');
+    @glGetColorTableSGI := SDL_GL_GetProcAddress( 'glGetColorTableSGI');
     if not Assigned(glGetColorTableSGI) then Exit;
-    glGetColorTableParameterivSGI := GetModuleSymbol( LibGL,  'glGetColorTableParameterivSGI');
+    @glGetColorTableParameterivSGI := SDL_GL_GetProcAddress( 'glGetColorTableParameterivSGI');
     if not Assigned(glGetColorTableParameterivSGI) then Exit;
-    glGetColorTableParameterfvSGI := GetModuleSymbol( LibGL,  'glGetColorTableParameterfvSGI');
+    @glGetColorTableParameterfvSGI := SDL_GL_GetProcAddress( 'glGetColorTableParameterfvSGI');
     if not Assigned(glGetColorTableParameterfvSGI) then Exit;
     Result := TRUE;
   end;
@@ -6265,85 +6280,85 @@ begin
 
   if glext_ExtensionSupported('GL_SUN_vertex', extstring) then
   begin
-    glColor4ubVertex2fSUN := GetModuleSymbol( LibGL,  'glColor4ubVertex2fSUN');
+    @glColor4ubVertex2fSUN := SDL_GL_GetProcAddress( 'glColor4ubVertex2fSUN');
     if not Assigned(glColor4ubVertex2fSUN) then Exit;
-    glColor4ubVertex2fvSUN := GetModuleSymbol( LibGL,  'glColor4ubVertex2fvSUN');
+    @glColor4ubVertex2fvSUN := SDL_GL_GetProcAddress( 'glColor4ubVertex2fvSUN');
     if not Assigned(glColor4ubVertex2fvSUN) then Exit;
-    glColor4ubVertex3fSUN := GetModuleSymbol( LibGL,  'glColor4ubVertex3fSUN');
+    @glColor4ubVertex3fSUN := SDL_GL_GetProcAddress( 'glColor4ubVertex3fSUN');
     if not Assigned(glColor4ubVertex3fSUN) then Exit;
-    glColor4ubVertex3fvSUN := GetModuleSymbol( LibGL,  'glColor4ubVertex3fvSUN');
+    @glColor4ubVertex3fvSUN := SDL_GL_GetProcAddress( 'glColor4ubVertex3fvSUN');
     if not Assigned(glColor4ubVertex3fvSUN) then Exit;
-    glColor3fVertex3fSUN := GetModuleSymbol( LibGL,  'glColor3fVertex3fSUN');
+    @glColor3fVertex3fSUN := SDL_GL_GetProcAddress( 'glColor3fVertex3fSUN');
     if not Assigned(glColor3fVertex3fSUN) then Exit;
-    glColor3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glColor3fVertex3fvSUN');
+    @glColor3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glColor3fVertex3fvSUN');
     if not Assigned(glColor3fVertex3fvSUN) then Exit;
-    glNormal3fVertex3fSUN := GetModuleSymbol( LibGL,  'glNormal3fVertex3fSUN');
+    @glNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glNormal3fVertex3fSUN');
     if not Assigned(glNormal3fVertex3fSUN) then Exit;
-    glNormal3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glNormal3fVertex3fvSUN');
+    @glNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glNormal3fVertex3fvSUN');
     if not Assigned(glNormal3fVertex3fvSUN) then Exit;
-    glColor4fNormal3fVertex3fSUN := GetModuleSymbol( LibGL,  'glColor4fNormal3fVertex3fSUN');
+    @glColor4fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glColor4fNormal3fVertex3fSUN');
     if not Assigned(glColor4fNormal3fVertex3fSUN) then Exit;
-    glColor4fNormal3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glColor4fNormal3fVertex3fvSUN');
+    @glColor4fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glColor4fNormal3fVertex3fvSUN');
     if not Assigned(glColor4fNormal3fVertex3fvSUN) then Exit;
-    glTexCoord2fVertex3fSUN := GetModuleSymbol( LibGL,  'glTexCoord2fVertex3fSUN');
+    @glTexCoord2fVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fVertex3fSUN');
     if not Assigned(glTexCoord2fVertex3fSUN) then Exit;
-    glTexCoord2fVertex3fvSUN := GetModuleSymbol( LibGL,  'glTexCoord2fVertex3fvSUN');
+    @glTexCoord2fVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fVertex3fvSUN');
     if not Assigned(glTexCoord2fVertex3fvSUN) then Exit;
-    glTexCoord4fVertex4fSUN := GetModuleSymbol( LibGL,  'glTexCoord4fVertex4fSUN');
+    @glTexCoord4fVertex4fSUN := SDL_GL_GetProcAddress( 'glTexCoord4fVertex4fSUN');
     if not Assigned(glTexCoord4fVertex4fSUN) then Exit;
-    glTexCoord4fVertex4fvSUN := GetModuleSymbol( LibGL,  'glTexCoord4fVertex4fvSUN');
+    @glTexCoord4fVertex4fvSUN := SDL_GL_GetProcAddress( 'glTexCoord4fVertex4fvSUN');
     if not Assigned(glTexCoord4fVertex4fvSUN) then Exit;
-    glTexCoord2fColor4ubVertex3fSUN := GetModuleSymbol( LibGL,  'glTexCoord2fColor4ubVertex3fSUN');
+    @glTexCoord2fColor4ubVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor4ubVertex3fSUN');
     if not Assigned(glTexCoord2fColor4ubVertex3fSUN) then Exit;
-    glTexCoord2fColor4ubVertex3fvSUN := GetModuleSymbol( LibGL,  'glTexCoord2fColor4ubVertex3fvSUN');
+    @glTexCoord2fColor4ubVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor4ubVertex3fvSUN');
     if not Assigned(glTexCoord2fColor4ubVertex3fvSUN) then Exit;
-    glTexCoord2fColor3fVertex3fSUN := GetModuleSymbol( LibGL,  'glTexCoord2fColor3fVertex3fSUN');
+    @glTexCoord2fColor3fVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor3fVertex3fSUN');
     if not Assigned(glTexCoord2fColor3fVertex3fSUN) then Exit;
-    glTexCoord2fColor3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glTexCoord2fColor3fVertex3fvSUN');
+    @glTexCoord2fColor3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor3fVertex3fvSUN');
     if not Assigned(glTexCoord2fColor3fVertex3fvSUN) then Exit;
-    glTexCoord2fNormal3fVertex3fSUN := GetModuleSymbol( LibGL,  'glTexCoord2fNormal3fVertex3fSUN');
+    @glTexCoord2fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fNormal3fVertex3fSUN');
     if not Assigned(glTexCoord2fNormal3fVertex3fSUN) then Exit;
-    glTexCoord2fNormal3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glTexCoord2fNormal3fVertex3fvSUN');
+    @glTexCoord2fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fNormal3fVertex3fvSUN');
     if not Assigned(glTexCoord2fNormal3fVertex3fvSUN) then Exit;
-    glTexCoord2fColor4fNormal3fVertex3fSUN := GetModuleSymbol( LibGL,  'glTexCoord2fColor4fNormal3fVertex3fSUN');
+    @glTexCoord2fColor4fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor4fNormal3fVertex3fSUN');
     if not Assigned(glTexCoord2fColor4fNormal3fVertex3fSUN) then Exit;
-    glTexCoord2fColor4fNormal3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glTexCoord2fColor4fNormal3fVertex3fvSUN');
+    @glTexCoord2fColor4fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glTexCoord2fColor4fNormal3fVertex3fvSUN');
     if not Assigned(glTexCoord2fColor4fNormal3fVertex3fvSUN) then Exit;
-    glTexCoord4fColor4fNormal3fVertex4fSUN := GetModuleSymbol( LibGL,  'glTexCoord4fColor4fNormal3fVertex4fSUN');
+    @glTexCoord4fColor4fNormal3fVertex4fSUN := SDL_GL_GetProcAddress( 'glTexCoord4fColor4fNormal3fVertex4fSUN');
     if not Assigned(glTexCoord4fColor4fNormal3fVertex4fSUN) then Exit;
-    glTexCoord4fColor4fNormal3fVertex4fvSUN := GetModuleSymbol( LibGL,  'glTexCoord4fColor4fNormal3fVertex4fvSUN');
+    @glTexCoord4fColor4fNormal3fVertex4fvSUN := SDL_GL_GetProcAddress( 'glTexCoord4fColor4fNormal3fVertex4fvSUN');
     if not Assigned(glTexCoord4fColor4fNormal3fVertex4fvSUN) then Exit;
-    glReplacementCodeuiVertex3fSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiVertex3fSUN');
+    @glReplacementCodeuiVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiVertex3fSUN');
     if not Assigned(glReplacementCodeuiVertex3fSUN) then Exit;
-    glReplacementCodeuiVertex3fvSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiVertex3fvSUN');
+    @glReplacementCodeuiVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiVertex3fvSUN');
     if not Assigned(glReplacementCodeuiVertex3fvSUN) then Exit;
-    glReplacementCodeuiColor4ubVertex3fSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiColor4ubVertex3fSUN');
+    @glReplacementCodeuiColor4ubVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor4ubVertex3fSUN');
     if not Assigned(glReplacementCodeuiColor4ubVertex3fSUN) then Exit;
-    glReplacementCodeuiColor4ubVertex3fvSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiColor4ubVertex3fvSUN');
+    @glReplacementCodeuiColor4ubVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor4ubVertex3fvSUN');
     if not Assigned(glReplacementCodeuiColor4ubVertex3fvSUN) then Exit;
-    glReplacementCodeuiColor3fVertex3fSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiColor3fVertex3fSUN');
+    @glReplacementCodeuiColor3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor3fVertex3fSUN');
     if not Assigned(glReplacementCodeuiColor3fVertex3fSUN) then Exit;
-    glReplacementCodeuiColor3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiColor3fVertex3fvSUN');
+    @glReplacementCodeuiColor3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor3fVertex3fvSUN');
     if not Assigned(glReplacementCodeuiColor3fVertex3fvSUN) then Exit;
-    glReplacementCodeuiNormal3fVertex3fSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiNormal3fVertex3fSUN');
+    @glReplacementCodeuiNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiNormal3fVertex3fSUN');
     if not Assigned(glReplacementCodeuiNormal3fVertex3fSUN) then Exit;
-    glReplacementCodeuiNormal3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiNormal3fVertex3fvSUN');
+    @glReplacementCodeuiNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiNormal3fVertex3fvSUN');
     if not Assigned(glReplacementCodeuiNormal3fVertex3fvSUN) then Exit;
-    glReplacementCodeuiColor4fNormal3fVertex3fSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiColor4fNormal3fVertex3fSUN');
+    @glReplacementCodeuiColor4fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor4fNormal3fVertex3fSUN');
     if not Assigned(glReplacementCodeuiColor4fNormal3fVertex3fSUN) then Exit;
-    glReplacementCodeuiColor4fNormal3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiColor4fNormal3fVertex3fvSUN');
+    @glReplacementCodeuiColor4fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiColor4fNormal3fVertex3fvSUN');
     if not Assigned(glReplacementCodeuiColor4fNormal3fVertex3fvSUN) then Exit;
-    glReplacementCodeuiTexCoord2fVertex3fSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiTexCoord2fVertex3fSUN');
+    @glReplacementCodeuiTexCoord2fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fVertex3fSUN');
     if not Assigned(glReplacementCodeuiTexCoord2fVertex3fSUN) then Exit;
-    glReplacementCodeuiTexCoord2fVertex3fvSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiTexCoord2fVertex3fvSUN');
+    @glReplacementCodeuiTexCoord2fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fVertex3fvSUN');
     if not Assigned(glReplacementCodeuiTexCoord2fVertex3fvSUN) then Exit;
-    glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN');
+    @glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN');
     if not Assigned(glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN) then Exit;
-    glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN');
+    @glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN');
     if not Assigned(glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN) then Exit;
-    glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN');
+    @glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN');
     if not Assigned(glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN) then Exit;
-    glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN := GetModuleSymbol( LibGL,  'glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN');
+    @glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN := SDL_GL_GetProcAddress( 'glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN');
     if not Assigned(glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN) then Exit;
     Result := TRUE;
   end;
@@ -6360,43 +6375,43 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_fragment_program', extstring) then
   begin
-    glProgramStringARB := GetModuleSymbol( LibGL,  'glProgramStringARB');
+    @glProgramStringARB := SDL_GL_GetProcAddress( 'glProgramStringARB');
     if not Assigned(glProgramStringARB) then Exit;
-    glBindProgramARB := GetModuleSymbol( LibGL,  'glBindProgramARB');
+    @glBindProgramARB := SDL_GL_GetProcAddress( 'glBindProgramARB');
     if not Assigned(glBindProgramARB) then Exit;
-    glDeleteProgramsARB := GetModuleSymbol( LibGL,  'glDeleteProgramsARB');
+    @glDeleteProgramsARB := SDL_GL_GetProcAddress( 'glDeleteProgramsARB');
     if not Assigned(glDeleteProgramsARB) then Exit;
-    glGenProgramsARB := GetModuleSymbol( LibGL,  'glGenProgramsARB');
+    @glGenProgramsARB := SDL_GL_GetProcAddress( 'glGenProgramsARB');
     if not Assigned(glGenProgramsARB) then Exit;
-    glProgramEnvParameter4dARB := GetModuleSymbol( LibGL,  'glProgramEnvParameter4dARB');
+    @glProgramEnvParameter4dARB := SDL_GL_GetProcAddress( 'glProgramEnvParameter4dARB');
     if not Assigned(glProgramEnvParameter4dARB) then Exit;
-    glProgramEnvParameter4dvARB := GetModuleSymbol( LibGL,  'glProgramEnvParameter4dvARB');
+    @glProgramEnvParameter4dvARB := SDL_GL_GetProcAddress( 'glProgramEnvParameter4dvARB');
     if not Assigned(glProgramEnvParameter4dvARB) then Exit;
-    glProgramEnvParameter4fARB := GetModuleSymbol( LibGL,  'glProgramEnvParameter4fARB');
+    @glProgramEnvParameter4fARB := SDL_GL_GetProcAddress( 'glProgramEnvParameter4fARB');
     if not Assigned(glProgramEnvParameter4fARB) then Exit;
-    glProgramEnvParameter4fvARB := GetModuleSymbol( LibGL,  'glProgramEnvParameter4fvARB');
+    @glProgramEnvParameter4fvARB := SDL_GL_GetProcAddress( 'glProgramEnvParameter4fvARB');
     if not Assigned(glProgramEnvParameter4fvARB) then Exit;
-    glProgramLocalParameter4dARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4dARB');
+    @glProgramLocalParameter4dARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4dARB');
     if not Assigned(glProgramLocalParameter4dARB) then Exit;
-    glProgramLocalParameter4dvARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4dvARB');
+    @glProgramLocalParameter4dvARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4dvARB');
     if not Assigned(glProgramLocalParameter4dvARB) then Exit;
-    glProgramLocalParameter4fARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4fARB');
+    @glProgramLocalParameter4fARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4fARB');
     if not Assigned(glProgramLocalParameter4fARB) then Exit;
-    glProgramLocalParameter4fvARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4fvARB');
+    @glProgramLocalParameter4fvARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4fvARB');
     if not Assigned(glProgramLocalParameter4fvARB) then Exit;
-    glGetProgramEnvParameterdvARB := GetModuleSymbol( LibGL,  'glGetProgramEnvParameterdvARB');
+    @glGetProgramEnvParameterdvARB := SDL_GL_GetProcAddress( 'glGetProgramEnvParameterdvARB');
     if not Assigned(glGetProgramEnvParameterdvARB) then Exit;
-    glGetProgramEnvParameterfvARB := GetModuleSymbol( LibGL,  'glGetProgramEnvParameterfvARB');
+    @glGetProgramEnvParameterfvARB := SDL_GL_GetProcAddress( 'glGetProgramEnvParameterfvARB');
     if not Assigned(glGetProgramEnvParameterfvARB) then Exit;
-    glGetProgramLocalParameterdvARB := GetModuleSymbol( LibGL,  'glGetProgramLocalParameterdvARB');
+    @glGetProgramLocalParameterdvARB := SDL_GL_GetProcAddress( 'glGetProgramLocalParameterdvARB');
     if not Assigned(glGetProgramLocalParameterdvARB) then Exit;
-    glGetProgramLocalParameterfvARB := GetModuleSymbol( LibGL,  'glGetProgramLocalParameterfvARB');
+    @glGetProgramLocalParameterfvARB := SDL_GL_GetProcAddress( 'glGetProgramLocalParameterfvARB');
     if not Assigned(glGetProgramLocalParameterfvARB) then Exit;
-    glGetProgramivARB := GetModuleSymbol( LibGL,  'glGetProgramivARB');
+    @glGetProgramivARB := SDL_GL_GetProcAddress( 'glGetProgramivARB');
     if not Assigned(glGetProgramivARB) then Exit;
-    glGetProgramStringARB := GetModuleSymbol( LibGL,  'glGetProgramStringARB');
+    @glGetProgramStringARB := SDL_GL_GetProcAddress( 'glGetProgramStringARB');
     if not Assigned(glGetProgramStringARB) then Exit;
-    glIsProgramARB := GetModuleSymbol( LibGL,  'glIsProgramARB');
+    @glIsProgramARB := SDL_GL_GetProcAddress( 'glIsProgramARB');
     if not Assigned(glIsProgramARB) then Exit;
     Result := TRUE;
   end;
@@ -6443,15 +6458,15 @@ begin
 
   if glext_ExtensionSupported('GL_APPLE_element_array', extstring) then
   begin
-    glElementPointerAPPLE := GetModuleSymbol( LibGL,  'glElementPointerAPPLE');
+    @glElementPointerAPPLE := SDL_GL_GetProcAddress( 'glElementPointerAPPLE');
     if not Assigned(glElementPointerAPPLE) then Exit;
-    glDrawElementArrayAPPLE := GetModuleSymbol( LibGL,  'glDrawElementArrayAPPLE');
+    @glDrawElementArrayAPPLE := SDL_GL_GetProcAddress( 'glDrawElementArrayAPPLE');
     if not Assigned(glDrawElementArrayAPPLE) then Exit;
-    glDrawRangeElementArrayAPPLE := GetModuleSymbol( LibGL,  'glDrawRangeElementArrayAPPLE');
+    @glDrawRangeElementArrayAPPLE := SDL_GL_GetProcAddress( 'glDrawRangeElementArrayAPPLE');
     if not Assigned(glDrawRangeElementArrayAPPLE) then Exit;
-    glMultiDrawElementArrayAPPLE := GetModuleSymbol( LibGL,  'glMultiDrawElementArrayAPPLE');
+    @glMultiDrawElementArrayAPPLE := SDL_GL_GetProcAddress( 'glMultiDrawElementArrayAPPLE');
     if not Assigned(glMultiDrawElementArrayAPPLE) then Exit;
-    glMultiDrawRangeElementArrayAPPLE := GetModuleSymbol( LibGL,  'glMultiDrawRangeElementArrayAPPLE');
+    @glMultiDrawRangeElementArrayAPPLE := SDL_GL_GetProcAddress( 'glMultiDrawRangeElementArrayAPPLE');
     if not Assigned(glMultiDrawRangeElementArrayAPPLE) then Exit;
     Result := TRUE;
   end;
@@ -6468,21 +6483,21 @@ begin
 
   if glext_ExtensionSupported('GL_APPLE_fence', extstring) then
   begin
-    glGenFencesAPPLE := GetModuleSymbol( LibGL,  'glGenFencesAPPLE');
+    @glGenFencesAPPLE := SDL_GL_GetProcAddress( 'glGenFencesAPPLE');
     if not Assigned(glGenFencesAPPLE) then Exit;
-    glDeleteFencesAPPLE := GetModuleSymbol( LibGL,  'glDeleteFencesAPPLE');
+    @glDeleteFencesAPPLE := SDL_GL_GetProcAddress( 'glDeleteFencesAPPLE');
     if not Assigned(glDeleteFencesAPPLE) then Exit;
-    glSetFenceAPPLE := GetModuleSymbol( LibGL,  'glSetFenceAPPLE');
+    @glSetFenceAPPLE := SDL_GL_GetProcAddress( 'glSetFenceAPPLE');
     if not Assigned(glSetFenceAPPLE) then Exit;
-    glIsFenceAPPLE := GetModuleSymbol( LibGL,  'glIsFenceAPPLE');
+    @glIsFenceAPPLE := SDL_GL_GetProcAddress( 'glIsFenceAPPLE');
     if not Assigned(glIsFenceAPPLE) then Exit;
-    glTestFenceAPPLE := GetModuleSymbol( LibGL,  'glTestFenceAPPLE');
+    @glTestFenceAPPLE := SDL_GL_GetProcAddress( 'glTestFenceAPPLE');
     if not Assigned(glTestFenceAPPLE) then Exit;
-    glFinishFenceAPPLE := GetModuleSymbol( LibGL,  'glFinishFenceAPPLE');
+    @glFinishFenceAPPLE := SDL_GL_GetProcAddress( 'glFinishFenceAPPLE');
     if not Assigned(glFinishFenceAPPLE) then Exit;
-    glTestObjectAPPLE := GetModuleSymbol( LibGL,  'glTestObjectAPPLE');
+    @glTestObjectAPPLE := SDL_GL_GetProcAddress( 'glTestObjectAPPLE');
     if not Assigned(glTestObjectAPPLE) then Exit;
-    glFinishObjectAPPLE := GetModuleSymbol( LibGL,  'glFinishObjectAPPLE');
+    @glFinishObjectAPPLE := SDL_GL_GetProcAddress( 'glFinishObjectAPPLE');
     if not Assigned(glFinishObjectAPPLE) then Exit;
     Result := TRUE;
   end;
@@ -6499,13 +6514,13 @@ begin
 
   if glext_ExtensionSupported('GL_APPLE_vertex_array_object', extstring) then
   begin
-    glBindVertexArrayAPPLE := GetModuleSymbol( LibGL,  'glBindVertexArrayAPPLE');
+    @glBindVertexArrayAPPLE := SDL_GL_GetProcAddress( 'glBindVertexArrayAPPLE');
     if not Assigned(glBindVertexArrayAPPLE) then Exit;
-    glDeleteVertexArraysAPPLE := GetModuleSymbol( LibGL,  'glDeleteVertexArraysAPPLE');
+    @glDeleteVertexArraysAPPLE := SDL_GL_GetProcAddress( 'glDeleteVertexArraysAPPLE');
     if not Assigned(glDeleteVertexArraysAPPLE) then Exit;
-    glGenVertexArraysAPPLE := GetModuleSymbol( LibGL,  'glGenVertexArraysAPPLE');
+    @glGenVertexArraysAPPLE := SDL_GL_GetProcAddress( 'glGenVertexArraysAPPLE');
     if not Assigned(glGenVertexArraysAPPLE) then Exit;
-    glIsVertexArrayAPPLE := GetModuleSymbol( LibGL,  'glIsVertexArrayAPPLE');
+    @glIsVertexArrayAPPLE := SDL_GL_GetProcAddress( 'glIsVertexArrayAPPLE');
     if not Assigned(glIsVertexArrayAPPLE) then Exit;
     Result := TRUE;
   end;
@@ -6522,11 +6537,11 @@ begin
 
   if glext_ExtensionSupported('GL_APPLE_vertex_array_range', extstring) then
   begin
-    glVertexArrayRangeAPPLE := GetModuleSymbol( LibGL,  'glVertexArrayRangeAPPLE');
+    @glVertexArrayRangeAPPLE := SDL_GL_GetProcAddress( 'glVertexArrayRangeAPPLE');
     if not Assigned(glVertexArrayRangeAPPLE) then Exit;
-    glFlushVertexArrayRangeAPPLE := GetModuleSymbol( LibGL,  'glFlushVertexArrayRangeAPPLE');
+    @glFlushVertexArrayRangeAPPLE := SDL_GL_GetProcAddress( 'glFlushVertexArrayRangeAPPLE');
     if not Assigned(glFlushVertexArrayRangeAPPLE) then Exit;
-    glVertexArrayParameteriAPPLE := GetModuleSymbol( LibGL,  'glVertexArrayParameteriAPPLE');
+    @glVertexArrayParameteriAPPLE := SDL_GL_GetProcAddress( 'glVertexArrayParameteriAPPLE');
     if not Assigned(glVertexArrayParameteriAPPLE) then Exit;
     Result := TRUE;
   end;
@@ -6540,17 +6555,17 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_ARB_pixel_format', extstring) then
   begin
-    wglGetPixelFormatAttribivARB := GetModuleSymbol( LibGL,  'wglGetPixelFormatAttribivARB');
+    wglGetPixelFormatAttribivARB := SDL_GL_GetProcAddress( 'wglGetPixelFormatAttribivARB');
     if not Assigned(wglGetPixelFormatAttribivARB) then Exit;
-    wglGetPixelFormatAttribfvARB := GetModuleSymbol( LibGL,  'wglGetPixelFormatAttribfvARB');
+    wglGetPixelFormatAttribfvARB := SDL_GL_GetProcAddress( 'wglGetPixelFormatAttribfvARB');
     if not Assigned(wglGetPixelFormatAttribfvARB) then Exit;
-    wglChoosePixelFormatARB := GetModuleSymbol( LibGL,  'wglChoosePixelFormatARB');
+    wglChoosePixelFormatARB := SDL_GL_GetProcAddress( 'wglChoosePixelFormatARB');
     if not Assigned(wglChoosePixelFormatARB) then Exit;
     Result := TRUE;
   end;
@@ -6563,15 +6578,15 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_ARB_make_current_read', extstring) then
   begin
-    wglMakeContextCurrentARB := GetModuleSymbol( LibGL,  'wglMakeContextCurrentARB');
+    wglMakeContextCurrentARB := SDL_GL_GetProcAddress( 'wglMakeContextCurrentARB');
     if not Assigned(wglMakeContextCurrentARB) then Exit;
-    wglGetCurrentReadDCARB := GetModuleSymbol( LibGL,  'wglGetCurrentReadDCARB');
+    wglGetCurrentReadDCARB := SDL_GL_GetProcAddress( 'wglGetCurrentReadDCARB');
     if not Assigned(wglGetCurrentReadDCARB) then Exit;
     Result := TRUE;
   end;
@@ -6584,21 +6599,21 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_ARB_pbuffer', extstring) then
   begin
-    wglCreatePbufferARB := GetModuleSymbol( LibGL,  'wglCreatePbufferARB');
+    wglCreatePbufferARB := SDL_GL_GetProcAddress( 'wglCreatePbufferARB');
     if not Assigned(wglCreatePbufferARB) then Exit;
-    wglGetPbufferDCARB := GetModuleSymbol( LibGL,  'wglGetPbufferDCARB');
+    wglGetPbufferDCARB := SDL_GL_GetProcAddress( 'wglGetPbufferDCARB');
     if not Assigned(wglGetPbufferDCARB) then Exit;
-    wglReleasePbufferDCARB := GetModuleSymbol( LibGL,  'wglReleasePbufferDCARB');
+    wglReleasePbufferDCARB := SDL_GL_GetProcAddress( 'wglReleasePbufferDCARB');
     if not Assigned(wglReleasePbufferDCARB) then Exit;
-    wglDestroyPbufferARB := GetModuleSymbol( LibGL,  'wglDestroyPbufferARB');
+    wglDestroyPbufferARB := SDL_GL_GetProcAddress( 'wglDestroyPbufferARB');
     if not Assigned(wglDestroyPbufferARB) then Exit;
-    wglQueryPbufferARB := GetModuleSymbol( LibGL,  'wglQueryPbufferARB');
+    wglQueryPbufferARB := SDL_GL_GetProcAddress( 'wglQueryPbufferARB');
     if not Assigned(wglQueryPbufferARB) then Exit;
     Result := TRUE;
   end;
@@ -6611,15 +6626,15 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_EXT_swap_control', extstring) then
   begin
-    wglSwapIntervalEXT := GetModuleSymbol( LibGL,  'wglSwapIntervalEXT');
+    wglSwapIntervalEXT := SDL_GL_GetProcAddress( 'wglSwapIntervalEXT');
     if not Assigned(wglSwapIntervalEXT) then Exit;
-    wglGetSwapIntervalEXT := GetModuleSymbol( LibGL,  'wglGetSwapIntervalEXT');
+    wglGetSwapIntervalEXT := SDL_GL_GetProcAddress( 'wglGetSwapIntervalEXT');
     if not Assigned(wglGetSwapIntervalEXT) then Exit;
     Result := TRUE;
   end;
@@ -6632,17 +6647,17 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_ARB_render_texture', extstring) then
   begin
-    wglBindTexImageARB := GetModuleSymbol( LibGL,  'wglBindTexImageARB');
+    wglBindTexImageARB := SDL_GL_GetProcAddress( 'wglBindTexImageARB');
     if not Assigned(wglBindTexImageARB) then Exit;
-    wglReleaseTexImageARB := GetModuleSymbol( LibGL,  'wglReleaseTexImageARB');
+    wglReleaseTexImageARB := SDL_GL_GetProcAddress( 'wglReleaseTexImageARB');
     if not Assigned(wglReleaseTexImageARB) then Exit;
-    wglSetPbufferAttribARB := GetModuleSymbol( LibGL,  'wglSetPbufferAttribARB');
+    wglSetPbufferAttribARB := SDL_GL_GetProcAddress( 'wglSetPbufferAttribARB');
     if not Assigned(wglSetPbufferAttribARB) then Exit;
     Result := TRUE;
   end;
@@ -6655,13 +6670,13 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_EXT_extensions_string', extstring) then
   begin
-    wglGetExtensionsStringEXT := GetModuleSymbol( LibGL,  'wglGetExtensionsStringEXT');
+    wglGetExtensionsStringEXT := SDL_GL_GetProcAddress( 'wglGetExtensionsStringEXT');
     if not Assigned(wglGetExtensionsStringEXT) then Exit;
     Result := TRUE;
   end;
@@ -6674,15 +6689,15 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_EXT_make_current_read', extstring) then
   begin
-    wglMakeContextCurrentEXT := GetModuleSymbol( LibGL,  'wglMakeContextCurrentEXT');
+    wglMakeContextCurrentEXT := SDL_GL_GetProcAddress( 'wglMakeContextCurrentEXT');
     if not Assigned(wglMakeContextCurrentEXT) then Exit;
-    wglGetCurrentReadDCEXT := GetModuleSymbol( LibGL,  'wglGetCurrentReadDCEXT');
+    wglGetCurrentReadDCEXT := SDL_GL_GetProcAddress( 'wglGetCurrentReadDCEXT');
     if not Assigned(wglGetCurrentReadDCEXT) then Exit;
     Result := TRUE;
   end;
@@ -6695,21 +6710,21 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_EXT_pbuffer', extstring) then
   begin
-    wglCreatePbufferEXT := GetModuleSymbol( LibGL,  'wglCreatePbufferEXT');
+    wglCreatePbufferEXT := SDL_GL_GetProcAddress( 'wglCreatePbufferEXT');
     if not Assigned(wglCreatePbufferEXT) then Exit;
-    wglGetPbufferDCEXT := GetModuleSymbol( LibGL,  'wglGetPbufferDCEXT');
+    wglGetPbufferDCEXT := SDL_GL_GetProcAddress( 'wglGetPbufferDCEXT');
     if not Assigned(wglGetPbufferDCEXT) then Exit;
-    wglReleasePbufferDCEXT := GetModuleSymbol( LibGL,  'wglReleasePbufferDCEXT');
+    wglReleasePbufferDCEXT := SDL_GL_GetProcAddress( 'wglReleasePbufferDCEXT');
     if not Assigned(wglReleasePbufferDCEXT) then Exit;
-    wglDestroyPbufferEXT := GetModuleSymbol( LibGL,  'wglDestroyPbufferEXT');
+    wglDestroyPbufferEXT := SDL_GL_GetProcAddress( 'wglDestroyPbufferEXT');
     if not Assigned(wglDestroyPbufferEXT) then Exit;
-    wglQueryPbufferEXT := GetModuleSymbol( LibGL,  'wglQueryPbufferEXT');
+    wglQueryPbufferEXT := SDL_GL_GetProcAddress( 'wglQueryPbufferEXT');
     if not Assigned(wglQueryPbufferEXT) then Exit;
     Result := TRUE;
   end;
@@ -6722,17 +6737,17 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_EXT_pixel_format', extstring) then
   begin
-    wglGetPixelFormatAttribivEXT := GetModuleSymbol( LibGL,  'wglGetPixelFormatAttribivEXT');
+    wglGetPixelFormatAttribivEXT := SDL_GL_GetProcAddress( 'wglGetPixelFormatAttribivEXT');
     if not Assigned(wglGetPixelFormatAttribivEXT) then Exit;
-    wglGetPixelFormatAttribfvEXT := GetModuleSymbol( LibGL,  'wglGetPixelFormatAttribfvEXT');
+    wglGetPixelFormatAttribfvEXT := SDL_GL_GetProcAddress( 'wglGetPixelFormatAttribfvEXT');
     if not Assigned(wglGetPixelFormatAttribfvEXT) then Exit;
-    wglChoosePixelFormatEXT := GetModuleSymbol( LibGL,  'wglChoosePixelFormatEXT');
+    wglChoosePixelFormatEXT := SDL_GL_GetProcAddress( 'wglChoosePixelFormatEXT');
     if not Assigned(wglChoosePixelFormatEXT) then Exit;
     Result := TRUE;
   end;
@@ -6745,15 +6760,15 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_I3D_digital_video_control', extstring) then
   begin
-    wglGetDigitalVideoParametersI3D := GetModuleSymbol( LibGL,  'wglGetDigitalVideoParametersI3D');
+    wglGetDigitalVideoParametersI3D := SDL_GL_GetProcAddress( 'wglGetDigitalVideoParametersI3D');
     if not Assigned(wglGetDigitalVideoParametersI3D) then Exit;
-    wglSetDigitalVideoParametersI3D := GetModuleSymbol( LibGL,  'wglSetDigitalVideoParametersI3D');
+    wglSetDigitalVideoParametersI3D := SDL_GL_GetProcAddress( 'wglSetDigitalVideoParametersI3D');
     if not Assigned(wglSetDigitalVideoParametersI3D) then Exit;
     Result := TRUE;
   end;
@@ -6766,19 +6781,19 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_I3D_gamma', extstring) then
   begin
-    wglGetGammaTableParametersI3D := GetModuleSymbol( LibGL,  'wglGetGammaTableParametersI3D');
+    wglGetGammaTableParametersI3D := SDL_GL_GetProcAddress( 'wglGetGammaTableParametersI3D');
     if not Assigned(wglGetGammaTableParametersI3D) then Exit;
-    wglSetGammaTableParametersI3D := GetModuleSymbol( LibGL,  'wglSetGammaTableParametersI3D');
+    wglSetGammaTableParametersI3D := SDL_GL_GetProcAddress( 'wglSetGammaTableParametersI3D');
     if not Assigned(wglSetGammaTableParametersI3D) then Exit;
-    wglGetGammaTableI3D := GetModuleSymbol( LibGL,  'wglGetGammaTableI3D');
+    wglGetGammaTableI3D := SDL_GL_GetProcAddress( 'wglGetGammaTableI3D');
     if not Assigned(wglGetGammaTableI3D) then Exit;
-    wglSetGammaTableI3D := GetModuleSymbol( LibGL,  'wglSetGammaTableI3D');
+    wglSetGammaTableI3D := SDL_GL_GetProcAddress( 'wglSetGammaTableI3D');
     if not Assigned(wglSetGammaTableI3D) then Exit;
     Result := TRUE;
   end;
@@ -6791,35 +6806,35 @@ var
 begin
 
   Result := FALSE;
-  wglGetExtensionsStringARB := GetModuleSymbol( LibGL,  'wglGetExtensionsStringARB');
+  wglGetExtensionsStringARB := SDL_GL_GetProcAddress( 'wglGetExtensionsStringARB');
   if not Assigned(wglGetExtensionsStringARB) then Exit;
   extstring := PChar(wglGetExtensionsStringARB(wglGetCurrentDC));
 
   if glext_ExtensionSupported('WGL_I3D_genlock', extstring) then
   begin
-    wglEnableGenlockI3D := GetModuleSymbol( LibGL,  'wglEnableGenlockI3D');
+    wglEnableGenlockI3D := SDL_GL_GetProcAddress( 'wglEnableGenlockI3D');
     if not Assigned(wglEnableGenlockI3D) then Exit;
-    wglDisableGenlockI3D := GetModuleSymbol( LibGL,  'wglDisableGenlockI3D');
+    wglDisableGenlockI3D := SDL_GL_GetProcAddress( 'wglDisableGenlockI3D');
     if not Assigned(wglDisableGenlockI3D) then Exit;
-    wglIsEnabledGenlockI3D := GetModuleSymbol( LibGL,  'wglIsEnabledGenlockI3D');
+    wglIsEnabledGenlockI3D := SDL_GL_GetProcAddress( 'wglIsEnabledGenlockI3D');
     if not Assigned(wglIsEnabledGenlockI3D) then Exit;
-    wglGenlockSourceI3D := GetModuleSymbol( LibGL,  'wglGenlockSourceI3D');
+    wglGenlockSourceI3D := SDL_GL_GetProcAddress( 'wglGenlockSourceI3D');
     if not Assigned(wglGenlockSourceI3D) then Exit;
-    wglGetGenlockSourceI3D := GetModuleSymbol( LibGL,  'wglGetGenlockSourceI3D');
+    wglGetGenlockSourceI3D := SDL_GL_GetProcAddress( 'wglGetGenlockSourceI3D');
     if not Assigned(wglGetGenlockSourceI3D) then Exit;
-    wglGenlockSourceEdgeI3D := GetModuleSymbol( LibGL,  'wglGenlockSourceEdgeI3D');
+    wglGenlockSourceEdgeI3D := SDL_GL_GetProcAddress( 'wglGenlockSourceEdgeI3D');
     if not Assigned(wglGenlockSourceEdgeI3D) then Exit;
-    wglGetGenlockSourceEdgeI3D := GetModuleSymbol( LibGL,  'wglGetGenlockSourceEdgeI3D');
+    wglGetGenlockSourceEdgeI3D := SDL_GL_GetProcAddress( 'wglGetGenlockSourceEdgeI3D');
     if not Assigned(wglGetGenlockSourceEdgeI3D) then Exit;
-    wglGenlockSampleRateI3D := GetModuleSymbol( LibGL,  'wglGenlockSampleRateI3D');
+    wglGenlockSampleRateI3D := SDL_GL_GetProcAddress( 'wglGenlockSampleRateI3D');
     if not Assigned(wglGenlockSampleRateI3D) then Exit;
-    wglGetGenlockSampleRateI3D := GetModuleSymbol( LibGL,  'wglGetGenlockSampleRateI3D');
+    wglGetGenlockSampleRateI3D := SDL_GL_GetProcAddress( 'wglGetGenlockSampleRateI3D');
     if not Assigned(wglGetGenlockSampleRateI3D) then Exit;
-    wglGenlockSourceDelayI3D := GetModuleSymbol( LibGL,  'wglGenlockSourceDelayI3D');
+    wglGenlockSourceDelayI3D := SDL_GL_GetProcAddress( 'wglGenlockSourceDelayI3D');
     if not Assigned(wglGenlockSourceDelayI3D) then Exit;
-    wglGetGenlockSourceDelayI3D := GetModuleSymbol( LibGL,  'wglGetGenlockSourceDelayI3D');
+    wglGetGenlockSourceDelayI3D := SDL_GL_GetProcAddress( 'wglGetGenlockSourceDelayI3D');
     if not Assigned(wglGetGenlockSourceDelayI3D) then Exit;
-    wglQueryGenlockMaxSourceDelayI3D := GetModuleSymbol( LibGL,  'wglQueryGenlockMaxSourceDelayI3D');
+    wglQueryGenlockMaxSourceDelayI3D := SDL_GL_GetProcAddress( 'wglQueryGenlockMaxSourceDelayI3D');
     if not Assigned(wglQueryGenlockMaxSourceDelayI3D) then Exit;
     Result := TRUE;
   end;
@@ -6837,15 +6852,15 @@ begin
 
   if glext_ExtensionSupported('GL_ARB_matrix_palette', extstring) then
   begin
-    glCurrentPaletteMatrixARB := GetModuleSymbol( LibGL,  'glCurrentPaletteMatrixARB');
+    @glCurrentPaletteMatrixARB := SDL_GL_GetProcAddress( 'glCurrentPaletteMatrixARB');
     if not Assigned(glCurrentPaletteMatrixARB) then Exit;
-    glMatrixIndexubvARB := GetModuleSymbol( LibGL,  'glMatrixIndexubvARB');
+    @glMatrixIndexubvARB := SDL_GL_GetProcAddress( 'glMatrixIndexubvARB');
     if not Assigned(glMatrixIndexubvARB) then Exit;
-    glMatrixIndexusvARB := GetModuleSymbol( LibGL,  'glMatrixIndexusvARB');
+    @glMatrixIndexusvARB := SDL_GL_GetProcAddress( 'glMatrixIndexusvARB');
     if not Assigned(glMatrixIndexusvARB) then Exit;
-    glMatrixIndexuivARB := GetModuleSymbol( LibGL,  'glMatrixIndexuivARB');
+    @glMatrixIndexuivARB := SDL_GL_GetProcAddress( 'glMatrixIndexuivARB');
     if not Assigned(glMatrixIndexuivARB) then Exit;
-    glMatrixIndexPointerARB := GetModuleSymbol( LibGL,  'glMatrixIndexPointerARB');
+    @glMatrixIndexPointerARB := SDL_GL_GetProcAddress( 'glMatrixIndexPointerARB');
     if not Assigned(glMatrixIndexPointerARB) then Exit;
     Result := TRUE;
   end;
@@ -6862,15 +6877,15 @@ begin
 
   if glext_ExtensionSupported('GL_NV_element_array', extstring) then
   begin
-    glElementPointerNV := GetModuleSymbol( LibGL,  'glElementPointerNV');
+    @glElementPointerNV := SDL_GL_GetProcAddress( 'glElementPointerNV');
     if not Assigned(glElementPointerNV) then Exit;
-    glDrawElementArrayNV := GetModuleSymbol( LibGL,  'glDrawElementArrayNV');
+    @glDrawElementArrayNV := SDL_GL_GetProcAddress( 'glDrawElementArrayNV');
     if not Assigned(glDrawElementArrayNV) then Exit;
-    glDrawRangeElementArrayNV := GetModuleSymbol( LibGL,  'glDrawRangeElementArrayNV');
+    @glDrawRangeElementArrayNV := SDL_GL_GetProcAddress( 'glDrawRangeElementArrayNV');
     if not Assigned(glDrawRangeElementArrayNV) then Exit;
-    glMultiDrawElementArrayNV := GetModuleSymbol( LibGL,  'glMultiDrawElementArrayNV');
+    @glMultiDrawElementArrayNV := SDL_GL_GetProcAddress( 'glMultiDrawElementArrayNV');
     if not Assigned(glMultiDrawElementArrayNV) then Exit;
-    glMultiDrawRangeElementArrayNV := GetModuleSymbol( LibGL,  'glMultiDrawRangeElementArrayNV');
+    @glMultiDrawRangeElementArrayNV := SDL_GL_GetProcAddress( 'glMultiDrawRangeElementArrayNV');
     if not Assigned(glMultiDrawRangeElementArrayNV) then Exit;
     Result := TRUE;
   end;
@@ -6902,25 +6917,25 @@ begin
 
   if glext_ExtensionSupported('GL_NV_fragment_program', extstring) then
   begin
-    glProgramNamedParameter4fNV := GetModuleSymbol( LibGL,  'glProgramNamedParameter4fNV');
+    @glProgramNamedParameter4fNV := SDL_GL_GetProcAddress( 'glProgramNamedParameter4fNV');
     if not Assigned(glProgramNamedParameter4fNV) then Exit;
-    glProgramNamedParameter4dNV := GetModuleSymbol( LibGL,  'glProgramNamedParameter4dNV');
+    @glProgramNamedParameter4dNV := SDL_GL_GetProcAddress( 'glProgramNamedParameter4dNV');
     if not Assigned(glProgramNamedParameter4dNV) then Exit;
-    glGetProgramNamedParameterfvNV := GetModuleSymbol( LibGL,  'glGetProgramNamedParameterfvNV');
+    @glGetProgramNamedParameterfvNV := SDL_GL_GetProcAddress( 'glGetProgramNamedParameterfvNV');
     if not Assigned(glGetProgramNamedParameterfvNV) then Exit;
-    glGetProgramNamedParameterdvNV := GetModuleSymbol( LibGL,  'glGetProgramNamedParameterdvNV');
+    @glGetProgramNamedParameterdvNV := SDL_GL_GetProcAddress( 'glGetProgramNamedParameterdvNV');
     if not Assigned(glGetProgramNamedParameterdvNV) then Exit;
-    glProgramLocalParameter4dARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4dARB');
+    @glProgramLocalParameter4dARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4dARB');
     if not Assigned(glProgramLocalParameter4dARB) then Exit;
-    glProgramLocalParameter4dvARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4dvARB');
+    @glProgramLocalParameter4dvARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4dvARB');
     if not Assigned(glProgramLocalParameter4dvARB) then Exit;
-    glProgramLocalParameter4fARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4fARB');
+    @glProgramLocalParameter4fARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4fARB');
     if not Assigned(glProgramLocalParameter4fARB) then Exit;
-    glProgramLocalParameter4fvARB := GetModuleSymbol( LibGL,  'glProgramLocalParameter4fvARB');
+    @glProgramLocalParameter4fvARB := SDL_GL_GetProcAddress( 'glProgramLocalParameter4fvARB');
     if not Assigned(glProgramLocalParameter4fvARB) then Exit;
-    glGetProgramLocalParameterdvARB := GetModuleSymbol( LibGL,  'glGetProgramLocalParameterdvARB');
+    @glGetProgramLocalParameterdvARB := SDL_GL_GetProcAddress( 'glGetProgramLocalParameterdvARB');
     if not Assigned(glGetProgramLocalParameterdvARB) then Exit;
-    glGetProgramLocalParameterfvARB := GetModuleSymbol( LibGL,  'glGetProgramLocalParameterfvARB');
+    @glGetProgramLocalParameterfvARB := SDL_GL_GetProcAddress( 'glGetProgramLocalParameterfvARB');
     if not Assigned(glGetProgramLocalParameterfvARB) then Exit;
     Result := TRUE;
   end;
@@ -6937,9 +6952,9 @@ begin
 
   if glext_ExtensionSupported('GL_NV_primitive_restart', extstring) then
   begin
-    glPrimitiveRestartNV := GetModuleSymbol( LibGL,  'glPrimitiveRestartNV');
+    @glPrimitiveRestartNV := SDL_GL_GetProcAddress( 'glPrimitiveRestartNV');
     if not Assigned(glPrimitiveRestartNV) then Exit;
-    glPrimitiveRestartIndexNV := GetModuleSymbol( LibGL,  'glPrimitiveRestartIndexNV');
+    @glPrimitiveRestartIndexNV := SDL_GL_GetProcAddress( 'glPrimitiveRestartIndexNV');
     if not Assigned(glPrimitiveRestartIndexNV) then Exit;
     Result := TRUE;
   end;

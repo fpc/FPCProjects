@@ -47,8 +47,11 @@ unit geometry;
 // (c) Copyright 1999, Dipl. Ing. Mike Lischke (public@lischke-online.de)
 {
   $Log$
-  Revision 1.1  2004/02/15 21:37:14  marco
-   * new snapshot
+  Revision 1.2  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.1  2004/03/30 21:53:54  savage
+  Moved to it's own folder.
 
   Revision 1.1  2004/02/05 00:08:19  savage
   Module 1.0 release

@@ -1,4 +1,9 @@
+unit sdl_mixer;
 {******************************************************************************}
+{
+  $Id$
+  
+}
 {                                                                              }
 {       Borland Delphi SDL_Mixer - Simple DirectMedia Layer Mixer Library      }
 {       Conversion of the Simple DirectMedia Layer Headers                     }
@@ -69,49 +74,70 @@
 {                                                                              }
 {  February  02 2002 - DL : Update to version 1.2.1                            }
 {                                                                              }
+{   April   03 2003 - DL : Added jedi-sdl.inc include file to support more     }
+{                          Pascal compilers. Initial support is now included   }
+{                          for GnuPascal, VirtualPascal, TMT and obviously     }
+{                          continue support for Delphi Kylix and FreePascal.   }
+{                                                                              }
+{   April   24 2003 - DL : under instruction from Alexey Barkovoy, I have added}
+{                          better TMT Pascal support and under instruction     }
+{                          from Prof. Abimbola Olowofoyeku (The African Chief),}
+{                          I have added better Gnu Pascal support              }
+{                                                                              }
+{   April   30 2003 - DL : under instruction from David Mears AKA              }
+{                          Jason Siletto, I have added FPC Linux support.      }
+{                          This was compiled with fpc 1.1, so remember to set  }
+{                          include file path. ie. -Fi/usr/share/fpcsrc/rtl/*   }
+{                                                                              }
+{
+  $Log$
+  Revision 1.4  2004/04/03 20:05:02  marco
+   * new versions from Dominique. No postediting at all necessary atm
+
+  Revision 1.3  2004/03/31 10:05:08  savage
+  Better defines for Endianess under FreePascal and Borland compilers.
+
+  Revision 1.2  2004/03/30 20:23:28  savage
+  Tidied up use of UNIX compiler directive.
+
+  Revision 1.1  2004/02/14 23:35:42  savage
+  version 1 of sdl_image, sdl_mixer and smpeg.
+
+
+}
 {******************************************************************************}
 
-unit SDL_Mixer;
-
-{$i jedi-sdl.inc}
-
-{$WEAKPACKAGEUNIT ON}
+{$I jedi-sdl.inc}
 
 {$ALIGN ON}
 
-{$IFDEF FPC}
-{$PACKRECORDS 4}
-{$ENDIF FPC}
-
 interface
 
-{$ifdef FPC}
-{$ifdef i386}		// FPC allows to test for intel arch directly.
-  {$DEFINE IA32}
-{$endif}
-{$else}
-{$IFDEF WIN32}
+{$IFDEF DELPHI}
 {$DEFINE IA32}
 {$ENDIF}
 
-{$IFDEF unix}
+{$IFDEF KYLIX}
 {$DEFINE IA32}
 {$ENDIF}
-{$endif}
+
+{$IFDEF FPC}
+{$IFDEF FPC_LITTLE_ENDIAN}
+{$DEFINE IA32}
+{$ENDIF}
+{$ENDIF}
 
 uses
-{$IFDEF WIN32}
-  Windows,
+{$IFDEF __GPC__}
+  gpc,
 {$ENDIF}
 
-{$IFDEF LINUX}
-  Types,
-  LibC,
- {$else}
-  BaseUnix,
-  Unix,
+{$IFDEF WIN32}
+  {$IFNDEF __GPC__}
+  Windows,
+  {$ENDIF}
 {$ENDIF}
-  SDL,
+  sdl,
   smpeg;
 
 const
@@ -121,13 +147,13 @@ const
   MIX_PATCHLEVEL = 1;
 
 {$IFDEF WIN32}
-  LibName = 'SDL_mixer.dll';
+  SDL_MixerLibName = 'SDL_mixer.dll';
 {$ENDIF}
 {$IFDEF UNIX}
-  LibName = 'libSDL_mixer.so';
+  SDL_MixerLibName = 'libSDL_mixer.so';
 {$ENDIF}
-{$IFDEF MACOS}
-  LibName = 'libSDL_mixer.dylib';
+{$IFDEF __MACH__}
+  SDL_MixerLibName = 'libSDL_mixer.dylib';
 {$ENDIF}
 
   // SDL_Mixer.h constants
@@ -394,18 +420,23 @@ type
   PMix_Music = ^TMix_Music;
   TMix_Music = T_Mix_Music;
 
-  TMixFunction = function( udata : Pointer; stream : PUint8; len : integer ) :
-  Pointer; cdecl;
+  {$IFNDEF __GPC__}
+  TMixFunction = function( udata : Pointer; stream : PUint8; len : integer ) : Pointer; cdecl;
+  {$ELSE}
+  TMixFunction = function( udata : Pointer; stream : PUint8; len : integer ) : Pointer;
+  {$ENDIF}
 
   {* This function gets the version of the dynamically linked SDL_mixer library.
      It should NOT be used to fill a version structure, instead you should use the
      MIX_VERSION() macro. *}
-function Mix_Linked_Version : PSDL_version; cdecl; external LibName;
+function Mix_Linked_Version : PSDL_version;
+cdecl; external {$IFDEF __GPC__}name 'Mix_Linked_Version'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_Linked_Version}
 
 { Open the mixer with a certain audio format }
 function Mix_OpenAudio( frequency : integer; format : Uint16; channels :
-  integer; chunksize : integer ) : integer; cdecl; external LibName;
+  integer; chunksize : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_OpenAudio'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_OpenAudio}
 
 { Dynamically change the number of channels managed by the mixer.
@@ -413,27 +444,26 @@ function Mix_OpenAudio( frequency : integer; format : Uint16; channels :
    stopped.
    This function returns the new number of allocated channels.
  }
-function Mix_AllocateChannels( numchannels : integer ) : integer; cdecl; external
-LibName;
+function Mix_AllocateChannels( numchannels : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_AllocateChannels'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_AllocateChannels}
 
 { Find out what the actual audio device parameters are.
    This function returns 1 if the audio has been opened, 0 otherwise.
  }
-function Mix_QuerySpec( var frequency : integer; var format : Uint16; var
-  channels : integer ) : integer; cdecl; external LibName;
+function Mix_QuerySpec( var frequency : integer; var format : Uint16; var channels : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_QuerySpec'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_QuerySpec}
 
 { Load a wave file or a music (.mod .s3m .it .xm) file }
 function Mix_LoadWAV_RW( src : PSDL_RWops; freesrc : integer ) : PMix_Chunk;
-cdecl;
-external LibName;
+cdecl; external {$IFDEF __GPC__}name 'Mix_LoadWAV_RW'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_LoadWAV_RW}
 
 function Mix_LoadWAV( filename : PChar ) : PMix_Chunk;
 
-function Mix_LoadMUS( const filename : PChar ) : PMix_Music; cdecl; external
-LibName;
+function Mix_LoadMUS( const filename : PChar ) : PMix_Music;
+cdecl; external {$IFDEF __GPC__}name 'Mix_LoadMUS'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_LoadMUS}
 
 (*#if 0 { This hasn't been hooked into music.c yet }
@@ -443,48 +473,56 @@ function Mix_LoadMUS_RW(SDL_RWops *rw) : PMix_Music;  cdecl;
 #endif*)
 
 { Load a wave file of the mixer format from a memory buffer }
-function Mix_QuickLoad_WAV( mem : PUint8 ) : PMix_Chunk; cdecl; external
-LibName;
+function Mix_QuickLoad_WAV( mem : PUint8 ) : PMix_Chunk;
+cdecl; external {$IFDEF __GPC__}name 'Mix_QuickLoad_WAV'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_QuickLoad_WAV}
 
 { Free an audio chunk previously loaded }
-procedure Mix_FreeChunk( chunk : PMix_Chunk ); cdecl; external LibName;
+procedure Mix_FreeChunk( chunk : PMix_Chunk );
+cdecl; external {$IFDEF __GPC__}name 'Mix_FreeChunk'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FreeChunk}
 
-procedure Mix_FreeMusic( music : PMix_Music ); cdecl; external LibName;
+procedure Mix_FreeMusic( music : PMix_Music );
+cdecl; external {$IFDEF __GPC__}name 'Mix_FreeMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FreeMusic}
 
 { Set a function that is called after all mixing is performed.
    This can be used to provide real-time visual display of the audio stream
    or add a custom mixer filter for the stream data.
 }
-procedure Mix_SetPostMix( mix_func : TMixFunction; arg : Pointer ); cdecl;
-external LibName;
+procedure Mix_SetPostMix( mix_func : TMixFunction; arg : Pointer );
+cdecl; external {$IFDEF __GPC__}name 'Mix_SetPostMix'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_SetPostMix}
 
 { Add your own music player or additional mixer function.
    If 'mix_func' is NULL, the default music player is re-enabled.
  }
-procedure Mix_HookMusic( mix_func : TMixFunction; arg : Pointer ); cdecl;
-external LibName;
+procedure Mix_HookMusic( mix_func : TMixFunction; arg : Pointer );
+ cdecl; external {$IFDEF __GPC__}name 'Mix_HookMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_HookMusic}
 
 { Add your own callback when the music has finished playing.
  }
-procedure Mix_HookMusicFinished( music_finished : Pointer ); cdecl; external
-LibName;
+procedure Mix_HookMusicFinished( music_finished : Pointer );
+cdecl; external {$IFDEF __GPC__}name 'Mix_HookMusicFinished'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_HookMusicFinished}
 
 { Get a pointer to the user data for the current music hook }
-function Mix_GetMusicHookData : Pointer; cdecl; external LibName;
+function Mix_GetMusicHookData : Pointer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_GetMusicHookData'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_GetMusicHookData}
 
 {* Add your own callback when a channel has finished playing. NULL
  * to disable callback.*}
 type
-   TChannel_finished = procedure(channel: Integer); cdecl;
+  {$IFNDEF __GPC__}
+  TChannel_finished = procedure( channel: Integer ); cdecl;
+  {$ELSE}
+  TChannel_finished = procedure( channel: Integer );
+  {$ENDIF}
 
-procedure Mix_ChannelFinished( channel_finished : TChannel_finished ); cdecl; external LibName;
+procedure Mix_ChannelFinished( channel_finished : TChannel_finished );
+cdecl; external {$IFDEF __GPC__}name 'Mix_ChannelFinished'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_ChannelFinished}
 
 const
@@ -506,8 +544,11 @@ const
    *  stream.
    *}
 type
-  TMix_EffectFunc = function( chan : integer; stream : Pointer; len : integer; udata : Pointer ) :
-  Pointer; cdecl;
+  {$IFNDEF __GPC__}
+  TMix_EffectFunc = function( chan : integer; stream : Pointer; len : integer; udata : Pointer ) : Pointer; cdecl;
+  {$ELSE}
+  TMix_EffectFunc = function( chan : integer; stream : Pointer; len : integer; udata : Pointer ) : Pointer;
+  {$ENDIF}
   {*
    * This is a callback that signifies that a channel has finished all its
    *  loops and has completed playback. This gets called if the buffer
@@ -515,7 +556,11 @@ type
    *  a channel via Mix_AllocateChannels(), or unregister a callback while
    *  it's still playing.
    *}
+  {$IFNDEF __GPC__}
   TMix_EffectDone = function( chan : integer; udata : Pointer ) : Pointer; cdecl;
+  {$ELSE}
+  TMix_EffectDone = function( chan : integer; udata : Pointer ) : Pointer;
+  {$ENDIF}
   {* Register a special effect function. At mixing time, the channel data is
   *  copied into a buffer and passed through each registered effect function.
   *  After it passes through all the functions, it is mixed into the final
@@ -560,7 +605,8 @@ type
   * returns zero if error (no such channel), nonzero if added.
   *  Error messages can be retrieved from Mix_GetError().
   *}
-function Mix_RegisterEffect( chan : integer; f : TMix_EffectFunc; d : TMix_EffectDone; arg : Pointer ) : integer; cdecl; external LibName;
+function Mix_RegisterEffect( chan : integer; f : TMix_EffectFunc; d : TMix_EffectDone; arg : Pointer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_RegisterEffect'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_RegisterEffect}
 
 {* You may not need to call this explicitly, unless you need to stop an
@@ -571,7 +617,8 @@ function Mix_RegisterEffect( chan : integer; f : TMix_EffectFunc; d : TMix_Effec
  * returns zero if error (no such channel or effect), nonzero if removed.
  *  Error messages can be retrieved from Mix_GetError().
  *}
-function Mix_UnregisterEffect( channel : integer; f : TMix_EffectFunc ) : integer; cdecl; external LibName;
+function Mix_UnregisterEffect( channel : integer; f : TMix_EffectFunc ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_UnregisterEffect'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_UnregisterEffect}
 
  {* You may not need to call this explicitly, unless you need to stop all
@@ -585,7 +632,8 @@ function Mix_UnregisterEffect( channel : integer; f : TMix_EffectFunc ) : intege
   * returns zero if error( no such channel ), nonzero if all effects removed.
   * Error messages can be retrieved from Mix_GetError( ).
   *}
-function Mix_UnregisterAllEffects( channel : integer ) : integer; cdecl; external LibName;
+function Mix_UnregisterAllEffects( channel : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_UnregisterAllEffects'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_UnregisterAllEffects}
 
 const
@@ -625,7 +673,8 @@ const
   * mode is a no - op, but this call will return successful in that case .
   * Error messages can be retrieved from Mix_GetError( ).
   * }
-  function Mix_SetPanning( channel : integer; left : Uint8; right : Uint8  ) : integer; cdecl; external LibName;
+  function Mix_SetPanning( channel : integer; left : Uint8; right : Uint8  ) : integer;
+  cdecl; external {$IFDEF __GPC__}name 'Mix_SetPanning'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
   {$EXTERNALSYM Mix_SetPanning}
   
   { * set the position ofa channel.( angle ) is an integer from 0 to 360, that
@@ -665,7 +714,8 @@ const
   * nonzero if position effect is enabled.
   * Error messages can be retrieved from Mix_GetError( ).
   * }
-  function Mix_SetPosition( channel :integer; angle : Sint16; distance : Uint8  ) : integer; cdecl; external LibName;
+  function Mix_SetPosition( channel :integer; angle : Sint16; distance : Uint8  ) : integer;
+  cdecl; external {$IFDEF __GPC__}name 'Mix_SetPosition'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
   {$EXTERNALSYM Mix_SetPosition}
 
   {* set the "distance" of a channel.( distance ) is an integer from 0 to 255
@@ -695,7 +745,8 @@ const
   * nonzero if position effect is enabled.
     * Error messages can be retrieved from Mix_GetError( ).
     * }
-    function Mix_SetDistance( channel : integer ; distance : Uint8  ) : integer; cdecl; external LibName;
+    function Mix_SetDistance( channel : integer; distance : Uint8 ) : integer;
+    cdecl; external {$IFDEF __GPC__}name 'Mix_SetDistance'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
     {$EXTERNALSYM Mix_SetDistance}
   { *
     * !!! FIXME : Haven't implemented, since the effect goes past the
@@ -740,7 +791,8 @@ const
   * mode is a no - op, but this call will return successful in that case .
   * Error messages can be retrieved from Mix_GetError( ).
   * }
-  function Mix_SetReverseStereo( channel : integer; flip : integer ) : integer; cdecl; external LibName;
+  function Mix_SetReverseStereo( channel : integer; flip : integer ) : integer;
+  cdecl; external {$IFDEF __GPC__}name 'Mix_SetReverseStereo'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
   {$EXTERNALSYM Mix_SetReverseStereo}
   { end of effects API. - -ryan. *}
 
@@ -748,7 +800,8 @@ const
    them dynamically to the next sample if requested with a -1 value below.
    Returns the number of reserved channels.
  }
-function Mix_ReserveChannels( num : integer ) : integer; cdecl; external LibName;
+function Mix_ReserveChannels( num : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_ReserveChannels'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_ReserveChannels}
 
 { Channel grouping functions }
@@ -759,36 +812,41 @@ function Mix_ReserveChannels( num : integer ) : integer; cdecl; external LibName
    represent the group of all the channels).
    Returns true if everything was OK.
  }
-function Mix_GroupChannel( which : integer; tag : integer ) : integer; cdecl;
-external LibName;
+function Mix_GroupChannel( which : integer; tag : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_GroupChannel'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_GroupChannel}
 
 { Assign several consecutive channels to a group }
 function Mix_GroupChannels( from : integer; to_ : integer; tag : integer ) :
-integer; cdecl; external LibName;
+integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_GroupChannels'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_GroupChannels}
 
 { Finds the first available channel in a group of channels }
-function Mix_GroupAvailable( tag : integer ) : integer; cdecl; external LibName;
+function Mix_GroupAvailable( tag : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_GroupAvailable'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_GroupAvailable}
 
 { Returns the number of channels in a group. This is also a subtle
    way to get the total number of channels when 'tag' is -1
  }
-function Mix_GroupCount( tag : integer ) : integer; cdecl; external LibName;
+function Mix_GroupCount( tag : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_GroupCount'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_GroupCount}
 
 { Finds the "oldest" sample playing in a group of channels }
-function Mix_GroupOldest( tag : integer ) : integer; cdecl; external LibName;
+function Mix_GroupOldest( tag : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_GroupOldest'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_GroupOldest}
 
 { Finds the "most recent" (i.e. last) sample playing in a group of channels }
-function Mix_GroupNewer( tag : integer ) : integer; cdecl; external LibName;
+function Mix_GroupNewer( tag : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_GroupNewer'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_GroupNewer}
 
 { The same as above, but the sound is played at most 'ticks' milliseconds }
-function Mix_PlayChannelTimed( channel : integer; chunk : PMix_Chunk; loops :
-  integer; ticks : integer ) : integer; cdecl; external LibName;
+function Mix_PlayChannelTimed( channel : integer; chunk : PMix_Chunk; loops : integer; ticks : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_PlayChannelTimed'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_PlayChannelTimed}
 
 { Play an audio chunk on a specific channel.
@@ -797,54 +855,51 @@ function Mix_PlayChannelTimed( channel : integer; chunk : PMix_Chunk; loops :
    If 'loops' is -1, loop inifinitely (~65000 times).
    Returns which channel was used to play the sound.
 }
-function Mix_PlayChannel( channel : integer; chunk : PMix_Chunk; loops : integer
-  ) : integer;
+function Mix_PlayChannel( channel : integer; chunk : PMix_Chunk; loops : integer ) : integer;
 
-function Mix_PlayMusic( music : PMix_Music; loops : integer ) : integer; cdecl;
-external
-  LibName;
+function Mix_PlayMusic( music : PMix_Music; loops : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_PlayMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_PlayMusic}
 
 { Fade in music or a channel over "ms" milliseconds, same semantics as the "Play" functions }
-function Mix_FadeInMusic( music : PMix_Music; loops : integer; ms : integer ) :
-integer;
-cdecl; external LibName;
+function Mix_FadeInMusic( music : PMix_Music; loops : integer; ms : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_FadeInMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FadeInMusic}
 
-function Mix_FadeInChannelTimed( channel : integer; chunk : PMix_Chunk; loops :
-  integer; ms : integer; ticks : integer ) : integer; cdecl; external LibName;
+function Mix_FadeInChannelTimed( channel : integer; chunk : PMix_Chunk; loops : integer; ms : integer; ticks : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_FadeInChannelTimed'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FadeInChannelTimed}
 
-function Mix_FadeInChannel( channel : integer; chunk : PMix_Chunk; loops :
-  integer; ms : integer ) : integer;
+function Mix_FadeInChannel( channel : integer; chunk : PMix_Chunk; loops : integer; ms : integer ) : integer;
 
 { Set the volume in the range of 0-128 of a specific channel or chunk.
    If the specified channel is -1, set volume for all channels.
    Returns the original volume.
    If the specified volume is -1, just return the current volume.
 }
-function Mix_Volume( channel : integer; volume : integer ) : integer; cdecl;
-external
-  LibName;
+function Mix_Volume( channel : integer; volume : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_Volume'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_Volume}
 
 function Mix_VolumeChunk( chunk : PMix_Chunk; volume : integer ) : integer;
-cdecl;
-external LibName;
+cdecl; external {$IFDEF __GPC__}name 'Mix_VolumeChunk'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_VolumeChunk}
 
-function Mix_VolumeMusic( volume : integer ) : integer; cdecl; external LibName;
+function Mix_VolumeMusic( volume : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_VolumeMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_VolumeMusic}
 
 { Halt playing of a particular channel }
-function Mix_HaltChannel( channel : integer ) : integer; cdecl; external
-LibName;
+function Mix_HaltChannel( channel : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_HaltChannel'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_HaltChannel}
 
-function Mix_HaltGroup( tag : integer ) : integer; cdecl; external LibName;
+function Mix_HaltGroup( tag : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_HaltGroup'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_HaltGroup}
 
-function Mix_HaltMusic : integer; cdecl; external LibName;
+function Mix_HaltMusic : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_HaltMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_HaltMusic}
 
 { Change the expiration delay for a particular channel.
@@ -852,69 +907,81 @@ function Mix_HaltMusic : integer; cdecl; external LibName;
    or remove the expiration if 'ticks' is -1
 }
 function Mix_ExpireChannel( channel : integer; ticks : integer ) : integer;
-cdecl; external LibName;
+cdecl; external {$IFDEF __GPC__}name 'Mix_ExpireChannel'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_ExpireChannel}
 
 { Halt a channel, fading it out progressively till it's silent
    The ms parameter indicates the number of milliseconds the fading
    will take.
  }
-function Mix_FadeOutChannel( which : integer; ms : integer ) : integer; cdecl;
-external LibName;
+function Mix_FadeOutChannel( which : integer; ms : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_FadeOutChannel'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FadeOutChannel}
-function Mix_FadeOutGroup( tag : integer; ms : integer ) : integer; cdecl;
-external LibName;
+function Mix_FadeOutGroup( tag : integer; ms : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_FadeOutGroup'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FadeOutGroup}
-function Mix_FadeOutMusic( ms : integer ) : integer; cdecl; external LibName;
+function Mix_FadeOutMusic( ms : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_FadeOutMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FadeOutMusic}
 
 { Query the fading status of a channel }
-function Mix_FadingMusic : TMix_Fading; cdecl; external LibName;
+function Mix_FadingMusic : TMix_Fading;
+cdecl; external {$IFDEF __GPC__}name 'Mix_FadingMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FadingMusic}
 
-function Mix_FadingChannel( which : integer ) : TMix_Fading; cdecl; external
-LibName;
+function Mix_FadingChannel( which : integer ) : TMix_Fading;
+cdecl; external {$IFDEF __GPC__}name 'Mix_FadingChannel'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_FadingChannel}
 
 { Pause/Resume a particular channel }
-procedure Mix_Pause( channel : integer ); cdecl; external LibName;
+procedure Mix_Pause( channel : integer );
+cdecl; external {$IFDEF __GPC__}name 'Mix_Pause'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_Pause}
 
-procedure Mix_Resume( channel : integer ); cdecl; external LibName;
+procedure Mix_Resume( channel : integer );
+cdecl; external {$IFDEF __GPC__}name 'Mix_Resume'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_Resume}
 
-function Mix_Paused( channel : integer ) : integer; cdecl; external LibName;
+function Mix_Paused( channel : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_Paused'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_Paused}
 
 { Pause/Resume the music stream }
-procedure Mix_PauseMusic; cdecl; external LibName;
+procedure Mix_PauseMusic;
+cdecl; external {$IFDEF __GPC__}name 'Mix_PauseMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_PauseMusic}
 
-procedure Mix_ResumeMusic; cdecl; external LibName;
+procedure Mix_ResumeMusic;
+cdecl; external {$IFDEF __GPC__}name 'Mix_ResumeMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_ResumeMusic}
 
-procedure Mix_RewindMusic; cdecl; external LibName;
+procedure Mix_RewindMusic;
+cdecl; external {$IFDEF __GPC__}name 'Mix_RewindMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_RewindMusic}
 
-function Mix_PausedMusic : integer; cdecl; external LibName;
+function Mix_PausedMusic : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_PausedMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_PausedMusic}
 
 { Check the status of a specific channel.
    If the specified channel is -1, check all channels.
 }
-function Mix_Playing( channel : integer ) : integer; cdecl; external LibName;
+function Mix_Playing( channel : integer ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_Playing'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_Playing}
 
-function Mix_PlayingMusic : integer; cdecl; external LibName;
+function Mix_PlayingMusic : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_PlayingMusic'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_PlayingMusic}
 
 { Stop music and set external music playback command }
-function Mix_SetMusicCMD( const command : PChar ) : integer; cdecl; external
-LibName;
+function Mix_SetMusicCMD( const command : PChar ) : integer;
+cdecl; external {$IFDEF __GPC__}name 'Mix_SetMusicCMD'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_SetMusicCMD}
 
 { Close the mixer, halting all playing audio }
-procedure Mix_CloseAudio; cdecl; external LibName;
+procedure Mix_CloseAudio;
+cdecl; external {$IFDEF __GPC__}name 'Mix_CloseAudio'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_CloseAudio}
 
 { We'll use SDL for reporting errors }
@@ -930,13 +997,16 @@ function Mix_GetError : PChar;
 
 implementation
 
+{$IFDEF __GPC__}
+  {$L 'sdl_mixer'}  { link sdl_mixer.dll.a or libsdl_mixer.so or libsdl_mixer.a }
+{$ENDIF}
+
 function Mix_LoadWAV( filename : PChar ) : PMix_Chunk;
 begin
   result := Mix_LoadWAV_RW( SDL_RWFromFile( filename, 'rb' ), 1 );
 end;
 
-function Mix_PlayChannel( channel : integer; chunk : PMix_Chunk; loops : integer
-  ) : integer;
+function Mix_PlayChannel( channel : integer; chunk : PMix_Chunk; loops : integer ) : integer;
 begin
   result := Mix_PlayChannelTimed( channel, chunk, loops, -1 );
 end;
