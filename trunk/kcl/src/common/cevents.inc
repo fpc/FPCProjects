@@ -21,7 +21,23 @@
 constructor TEventObj.Create(ASender: TObject);
 begin
   Sender := ASender;
+  RefCount := 1;
 end;
+
+procedure TEventObj.AddRef;
+begin
+  Inc(RefCount);
+end;
+
+procedure TEventObj.Release;
+begin
+  ASSERT(RefCount > 0);
+  Dec(RefCount);
+  if RefCount = 0 then
+    Self.Free;
+end;
+
+
 
 constructor TKeyEventObj.Create(ASender: TObject; AKey: Char;
   AKeyCode: LongWord; AShift: TShiftState);
@@ -68,6 +84,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:28:20  sg
+  * Added reference counting
+
   Revision 1.3  2000/01/24 00:18:53  sg
   * Added TCmdChangeEventObj
 
