@@ -116,6 +116,21 @@ begin
     AState = cbChecked);
 end;
 
+function TCheckBox.GetChecked : Boolean;
+
+begin
+    Result := (State=cbChecked);
+end;
+
+procedure TCheckBox.SetChecked(Value : Boolean);
+
+begin
+  If Value then
+    State := cbChecked
+  else
+    State := cbUnchecked;
+end;
+
 procedure TCheckBox.OnFinishCreation;
 var
   lbl: PGtkWidget;
@@ -226,6 +241,9 @@ end;
 
 {
   $Log$
+  Revision 1.12  2000/03/01 22:25:41  michael
+  inc/hwidgets.inc
+
   Revision 1.11  2000/02/25 15:12:56  sg
   * TButton.Default now works correctly (but not changing this value after
     TButton.FinishCreation...)
