@@ -225,6 +225,9 @@ unit opengl12;
 {******************************************************************************}
 {
   $Log$
+  Revision 1.7  2004/04/30 15:17:06  marco
+   * wglswap now unVER100'ed
+
   Revision 1.6  2004/04/04 15:38:28  marco
    * deleted CR char
 
@@ -4901,7 +4904,7 @@ type
   end;
   {$ENDIF}
 
-  {$ifdef VER100} // Delphi 3
+  {$ifdef win32} // Delphi 3
   PWGLSwap = ^TWGLSwap;
   {$EXTERNALSYM _WGLSWAP}
   _WGLSWAP = packed record
