@@ -1,0 +1,18 @@
+
+This is a FPC work copy of ICS, with slightly rearranged directories for
+easier CVSing.
+
+All copyrights of Francois Piette are retained. The FPC contribution is
+merely some compability fixes and release engineering.
+
+Changes:
+
+In general and wsocket unit:
+
+- icsdef.inc included everywhere.
+- When "usewindows" is defined, use the windows unit.
+  Affects nearly all "uses" clauses AND qualified unitname use.
+- Some minor fixes for pass by reference of a longint being incompatible
+        when the function is defined as ulong(=longword)
+
+
