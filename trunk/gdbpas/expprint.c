@@ -1,3 +1,7 @@
+/*
+  Modifications for FPC support
+  $Id$
+*/
 /* Print in infix form a struct expression.
    Copyright (C) 1986, 1989, 1991 Free Software Foundation, Inc.
 
@@ -61,6 +65,8 @@ print_subexp (exp, pos, stream, prec)
   enum precedence myprec = PREC_NULL;
   /* Set to 1 for a right-associative operator.  */
   int assoc = 0;
+  /* for easier difference in pascal symtax */
+  int is_pascal = exp->language_defn->la_language == language_pascal;
   value_ptr val;
   char *tempstr = NULL;
 
@@ -296,7 +302,12 @@ print_subexp (exp, pos, stream, prec)
       tem = longest_to_int (exp->elts[pc + 1].longconst);
       (*pos) += 3 + BYTES_TO_EXP_ELEM (tem + 1);
       print_subexp (exp, pos, stream, PREC_SUFFIX);
-      fputs_filtered ("->", stream);
+      if (is_pascal)
+        {
+          fputs_filtered ("^.", stream);
+        }
+      else
+        fputs_filtered ("->", stream);
       fputs_filtered (&exp->elts[pc + 2].string, stream);
       return;
 
@@ -317,14 +328,21 @@ print_subexp (exp, pos, stream, prec)
       fputs_filtered ("--", stream);
       return;
 
+      /* typecast is type(exp) in pascal instead of (type)exp */
     case UNOP_CAST:
       (*pos) += 2;
       if ((int) prec > (int) PREC_PREFIX)
         fputs_filtered ("(", stream);
-      fputs_filtered ("(", stream);
+      if (!is_pascal)
+        fputs_filtered ("(", stream);
       type_print (exp->elts[pc + 1].type, "", stream, 0);
-      fputs_filtered (") ", stream);
+      if (!is_pascal)
+        fputs_filtered (") ", stream);
+      if (is_pascal)
+        fputs_filtered ("(", stream);
       print_subexp (exp, pos, stream, PREC_PREFIX);
+      if (is_pascal)
+        fputs_filtered (") ", stream);
       if ((int) prec > (int) PREC_PREFIX)
         fputs_filtered (")", stream);
       return;
@@ -377,7 +395,12 @@ print_subexp (exp, pos, stream, prec)
 
     case OP_THIS:
       ++(*pos);
-      fputs_filtered ("this", stream);
+      if (is_pascal)
+        {
+          fputs_filtered ("self", stream);
+        }
+      else
+        fputs_filtered ("this", stream);
       return;
 
     /* Modula-2 ops */
@@ -632,3 +655,11 @@ dump_expression (exp, stream, note)
 }
 
 #endif	/* DEBUG_EXPRESSIONS */
+
+/*
+  $Log$
+  Revision 1.2  1998/09/18 12:37:37  pierre
+  first new files
+
+*/
+

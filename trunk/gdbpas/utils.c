@@ -1,3 +1,7 @@
+/*
+  Modifications for FPC support
+  $Id$
+*/
 /* General utility routines for GDB, the GNU debugger.
    Copyright 1986, 89, 90, 91, 92, 95, 1996 Free Software Foundation, Inc.
 
@@ -1950,6 +1954,7 @@ fprintf_symbol_filtered (stream, name, lang, arg_mode)
 	{
 	  switch (lang)
 	    {
+	    case language_pascal:
 	    case language_cplus:
 	      demangled = cplus_demangle (name, arg_mode);
 	      break;
@@ -2636,3 +2641,9 @@ preg_nz(reg)
     }
   return preg_str;
 }
+/*
+  $Log$
+  Revision 1.2  1998/09/18 12:37:42  pierre
+  first new files
+
+*/

@@ -1,3 +1,7 @@
+/*
+  Modifications for FPC support
+  $Id$
+*/
 /* Symbol table definitions for GDB.
    Copyright 1986, 1989, 1991, 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
@@ -136,7 +140,8 @@ extern CORE_ADDR symbol_overlayed_address PARAMS((CORE_ADDR, asection *));
   do {									\
     SYMBOL_LANGUAGE (symbol) = language;				\
     if (SYMBOL_LANGUAGE (symbol) == language_cplus			\
-	|| SYMBOL_LANGUAGE (symbol) == language_java)			\
+	|| SYMBOL_LANGUAGE (symbol) == language_java			\
+	|| SYMBOL_LANGUAGE (symbol) == language_pascal)			\
       {									\
 	SYMBOL_CPLUS_DEMANGLED_NAME (symbol) = NULL;			\
       }									\
@@ -1369,3 +1374,9 @@ extern struct symbol *
 fixup_symbol_section PARAMS ((struct symbol  *, struct objfile *));
 
 #endif /* !defined(SYMTAB_H) */
+/*
+  $Log$
+  Revision 1.2  1998/09/18 12:37:41  pierre
+  first new files
+
+*/

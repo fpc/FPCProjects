@@ -1,3 +1,7 @@
+/*
+  Modifications for FPC support
+  $Id$
+*/
 /* Generic symbol file reading for the GNU debugger, GDB.
    Copyright 1990, 1991, 1992, 1993, 1994, 1995, 1996
    Free Software Foundation, Inc.
@@ -1416,6 +1420,8 @@ deduce_language_from_filename (filename)
   else if (STREQ (c, ".cc") || STREQ (c, ".C") || STREQ (c, ".cxx")
 	   || STREQ (c, ".cpp") || STREQ (c, ".cp") || STREQ (c, ".c++"))
     return language_cplus;
+  else if (STREQ (c, ".pp") || STREQ (c, ".pas"))
+    return language_pascal;
   else if (STREQ (c, ".java"))
     return language_java;
   else if (STREQ (c, ".ch") || STREQ (c, ".c186") || STREQ (c, ".c286"))
@@ -2673,3 +2679,9 @@ for access from GDB.", &cmdlist);
   add_cmd ("load-target", class_support, overlay_load_command, 
 	   "Read the overlay mapping state from the target.", &overlaylist);
 }
+/*
+  $Log$
+  Revision 1.2  1998/09/18 12:37:40  pierre
+  first new files
+
+*/
