@@ -436,6 +436,15 @@ end;
 //   TBoxLayout
 // -------------------------------------------------------------------
 
+procedure TBoxLayout.SetOrientation(AOrientation: TBoxOrientation);
+begin
+  if AOrientation <> FOrientation then begin
+    FOrientation := AOrientation;
+    if Assigned(FHandle) then
+      RecalcLayout;
+  end;
+end;
+
 constructor TBoxLayout.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -563,6 +572,9 @@ end;
 
 {
   $Log$
+  Revision 1.6  2000/02/18 22:17:53  sg
+  * TBoxLayout now relayouts itself if its orientation has been changed
+
   Revision 1.5  2000/02/18 18:20:01  sg
   * TFixedLayout works again
   * Fixed layouting of TBoxLayout and TGridLayout
