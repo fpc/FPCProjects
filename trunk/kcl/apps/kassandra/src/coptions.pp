@@ -139,7 +139,8 @@ Type
     TFileEdit = TEdit; // change to TCombobox when implementing histories
  
     TCompilerOptionsForm = Class(TForm)
-       FLabel : Tlabel;
+       // Visual elements.
+//       FLabel : Tlabel;
        // Directories page
        FOptionPanes : TNotebook;
        FSearchPathsGroup,
@@ -249,6 +250,9 @@ Type
        // Buttons
        OKButton,
        CancelButton : TButton;
+       
+       // Non-visual elements
+       FCompilerOptions : TStrings;
        Function CreateDirectoryPage : TWidget;
        Function CreateVerbosityPage : TWidget;
        Function CreateSyntaxPage : TWidget;
@@ -256,21 +260,28 @@ Type
        Function CreateLinkerPage : TWidget;
        Function CreateGeneralPage : TWidget;
        Function CreateButtons : TWidget;
-       Procedure OnOkClick (Sender : TObject);
+       Procedure OnOkCancelClick (Sender : TObject);
        Procedure OnEnableOptimizationsClick (Sender : TObject);
        Procedure OnVerbosityOffClick (Sender : TObject);
        Procedure OnVerbosityOnClick (Sender : TObject);
        Procedure OnSetProcessorOnClick (Sender : TObject);
        Procedure SetVerbosities (OnOff : Boolean);
+       Procedure FormToOptions;
+       Procedure OptionsToForm;
+       Procedure SetCompilerOptions (Value : TStrings);
      Public
        Constructor Create (AOwner : TComponent); Override;
        Destructor Destroy; override;  
+       Property CompilerOptions : TStrings Read FCompilerOptions 
+                                           Write SetCompilerOptions;
      end;
 
 Var 
   CompilerOptionsForm : TCompilerOptionsForm;
      
 Implementation
+
+uses sysutils;
 
 Constructor TCompilerOptionsForm.Create (AOwner : TComponent);
 
@@ -279,6 +290,8 @@ Constructor TCompilerOptionsForm.Create (AOwner : TComponent);
              
 begin
   Inherited Create(AOwner);
+  Visible:=False;
+  FCompilerOptions:=TStringList.create;
   Text := SProjectOptions;
   Name:='ProjectOptions';
 //  Content:=CreateDirectoryPage;
@@ -299,7 +312,7 @@ begin
   FOptionPanes.Pages[page].BorderWidth := 8;
   Page:=FOptionPanes.AddPage(STabLinker,CreateLinkerPage);
   FOptionPanes.Pages[page].BorderWidth := 8;
-  FoptionPanes.FinishCreation;
+//  FoptionPanes.FinishCreation;
 //  Content:=FoptionPanes;
   MainLayout.AddWidget(FoptionPanes); // ,dmClient);
   MainLayout.AddWidget(TSeparator.Create(Self));
@@ -312,6 +325,7 @@ end;
 Destructor TCompilerOptionsForm.Destroy;  
 
 begin
+  FCompilerOptions.Free;
   Inherited Destroy;
 end;
 
@@ -424,11 +438,12 @@ begin
     // OKbutton;
     OKButton:=TButton.Create(Self);
     OKButton.Text:=SOK;
-    OKButton.OnClick:=@OnOKClick;
+    OKButton.OnClick:=@OnOKCancelClick;
     AddWidget(OKButton);
     // Cancel button;
     CancelButton:=TButton.Create(Self);
     CancelButton.Text:=SCancel;
+    CancelButton.OnClick:=@OnOKCancelClick;
     AddWidget(CancelButton);
     end;
 end;
@@ -1267,10 +1282,297 @@ begin
   // Writeln('Finished');
 end;
 
-Procedure TCompilerOptionsForm.OnOkClick (Sender : TObject);
+Procedure TCompilerOptionsForm.OnOkCancelClick (Sender : TObject);
 
 begin
+  If (Sender=OKButton) then
+    FormToOptions;
   Close;
 end;
 
+Procedure TCompilerOptionsForm.FormToOptions;
+
+ Function AddOption(Const Value : String) : longint;
+ 
+ begin
+   Result:=FCompilerOptions.Add(VAlue);
+ end;
+ 
+ procedure SplitOption (Value : String; Const Prefix : String);
+ 
+ Var l : longint;
+ 
+ begin
+   // Convert spaces to ;
+   For L:=1 to length(Value) do
+     if Value[l]=' ' then
+       Value[l]:=';';
+   L:=Pos(';',Value);
+   While (L>0) and (Length(Value)>0) do
+     begin
+     If L>1 then
+       AddOption(Prefix+Copy(Value,1,L-1));
+     Delete(Value,1,L);
+     L:=Pos(';',Value);
+     end;
+   If Length(Value)>0 then  
+     AddOption(Prefix+Value);
+ end; 
+
+Var Temp : String;
+    L : Longint;
+    
+begin
+  FCompilerOptions.Clear;
+  // Directory page.
+  If Length(FUnitOutputDir.Text)>0 then
+    AddOption('-FU'+FUnitOutputDir.Text);
+  If Length(FOutputDir.Text)>0 then
+    AddOption('-FE'+FOutputDir.Text);
+  If Length(FToolsSearchDir.Text)>0 then
+    AddOption('-FD'+FToolsSearchDir.Text);
+  If Length(FIncludePath.Text)>0 then
+    AddOption('-Fi'+FIncludePath.Text);
+  If Length(FObjectSearchPath.Text)>0 then
+    AddOption('-Fo'+FObjectSearchPath.Text);
+  If Length(FLibrarySearchPath.Text)>0 then
+    AddOption('-Fl'+FLibrarySearchPath.Text);
+  If Length(FUnitSearchPath.Text)>0 then
+    AddOption('-Fu'+FUnitSearchPath.Text);
+  // Compiler messages page
+  If (CBShowAll.State=cbChecked) then
+    begin
+    AddOption('-va');
+    AddOption('-l');
+    end
+  else if (CBShowNothing.State=cbChecked) then
+    AddOption('-v0')
+  else 
+    begin
+    Temp:='';
+    If (CBShowWarnings.State=cbChecked) then
+      Temp := Temp+'w';
+    If (CBShowNotes.State=cbChecked) then
+      Temp := Temp+'n';
+    If (CBShowHints.State=cbChecked) then
+      Temp := Temp+'h';
+    If (CBShowInfo.State=cbChecked) then
+      Temp := Temp+'i';
+    If (CBShowLines.State=cbChecked) then
+      Temp := Temp+'l';
+    If (CBShowProcedureBacktrace.State=cbChecked) then
+      Temp := Temp+'b';
+    If (CBShowUnit.State=cbChecked) then
+      Temp := Temp+'u';
+    If (CBShowDebug.State=cbChecked) then
+      Temp := Temp+'d';
+    If (CBShowTried.State=cbChecked) then
+      Temp := Temp+'t';
+    If (CBShowMacros.State=cbChecked) then
+      Temp := Temp+'m';
+    If (CBShowProcedures.State=cbChecked) then
+      Temp := Temp+'p';
+    If (CBShowConditionals.State=cbChecked) then
+      Temp := Temp+'c';
+    If (CBShowGCC.State=cbChecked) then
+      Temp := Temp+'r';
+    If Length(Temp)>0 then
+      AddOption('-v'+temp);  
+    If (CBShowLogo.State=cbChecked) then
+      AddOption('-l');
+    end;
+  // Syntax options
+  If Not (RBSyntaxAsmAtt.Checked) then
+    begin
+    If (RBSyntaxAsmIntel.Checked) then
+      AddOption('-Rintel');
+    If (RBSyntaxAsmDirect.Checked) then
+      AddOption('-Rdirect');
+    end;   
+  If not (RBSyntaxFPC.Checked) then
+    begin
+    If (RBSyntaxDelphi.Checked) then
+      AddOption('-Sd');
+    If (RBSyntaxTP.Checked) then
+      AddOption('-So');
+    If (RBSyntaxObjfpc.Checked) then
+      AddOption('-S2');
+    end;
+  Temp:='';    
+  If (CBSyntaxCOperators.State=cbChecked) then
+    Temp := Temp+'c';
+  If (CBSyntaxAllowGoto.State=cbChecked) then
+    Temp := Temp+'g';
+  If (CBSyntaxMacros.State=cbChecked) then
+    Temp := Temp+'m';
+  If (CBSyntaxConst.State=cbChecked) then
+    Temp := Temp+'s';
+  If (CBSyntaxStatic.State=cbChecked) then
+    Temp := Temp+'t';
+  If Length(Temp)>0 then
+    AddOption('-S'+Temp);  
+  // Code page
+  Temp:=ECodeStackSize.Text;
+  If Length(Temp)>0 then
+    begin
+    L:=StrToIntDef(Temp,-1);
+    if L>0 then
+      AddOption('-Cs'+Temp);
+    end;
+  Temp:=ECodeHeapSize.Text;  
+  If Length(Temp)>0 then
+    begin
+    L:=StrToIntDef(Temp,-1);
+    if L>0 then
+      AddOption('-Ch'+Temp);
+    end;
+  // rest of -C options  
+  Temp:='';  
+  If (CBCodeIOCheck.State=cbChecked) then
+    Temp:=Temp+'i';
+  If (CBCodeOverFlow.State=cbChecked) then
+    Temp:=Temp+'o';
+  If (CBCodeRangeCheck.State=cbChecked) then
+    Temp:=Temp+'r';
+  If (CBCodeStackCheck.State=cbChecked) then
+    Temp:=Temp+'t';
+  if Length(Temp)>0 then
+    AddOption('-C'+temp);
+  // Optimizations  
+  If (CBEnableOptimizations.State=cbChecked) then
+    begin
+    Temp:='-O';
+    If (RBCodeLevel1.Checked) then
+      Temp := Temp+'1'
+    Else If (RBCodeLevel2.Checked) then
+      Temp := Temp+'2'
+    Else If (RBCodeLevel3.Checked) then
+      Temp := Temp+'3';
+    If (CBCodeSmaller.State=cbChecked) then
+      Temp := Temp+'g';
+    If (CBCodeFaster.State=cbChecked) then
+      Temp := Temp+'G';
+    If (CBCodeRegister.State=cbChecked) then
+      Temp := Temp+'r';
+    If (CBCodeUncertain.State=cbChecked) then
+      Temp := Temp+'u';
+    If (CBCodeProcessor.State=cbChecked) then
+      begin
+      temp:=temp+'p';
+      If (RBCode386.Checked) then
+        Temp := Temp+'1'
+      else If (RBCodePentium.Checked) then
+        Temp := Temp+'2'
+      else If (RBCodePentiumPro.Checked) then
+        Temp := Temp+'3';
+      end;  
+    end;  
+  // Linker options
+  If (CBLinkOmitLinking.State=cbChecked) then
+    AddOption('-Cn')
+  else
+    begin
+    If (CBLinkMakeDynlib.State=cbChecked) then
+      AddOption('-CD');
+    If (CBLinkMakeSmartLink.State=cbChecked) then
+      AddOption('-CX'); 
+    If (CBLinkUseClib.State=cbChecked) then
+      AddOption('-Xs');
+    If (CBLinkStripSymbols.State=cbChecked) then
+      AddOption('-Xs');
+    If (RBLinkLinkSmart.Checked) then
+      AddOption('-XX')
+    else If (RBLinkLinkStatic.Checked) then
+      AddOption('-XS')
+    else If (RBLinkLinkDynamic.Checked) then
+      AddOption('-XD');
+    If Length(ELinkLinkerOptions.Text)>0 then
+      AddOption('-k'+ELinkLinkerOptions.Text);
+    end;  
+  // general page.
+  If (CBGeneralCheckUnitName.State=cbChecked) then
+    AddOption('-Un');
+  If (CBGeneralSystemUNit.State=cbChecked) then
+    AddOption('-Un');
+  If (CBGeneralBuild.State=cbChecked) then
+    AddOption('-B');
+  If (CBGeneralNoConfig.State=cbChecked) then
+    AddOption('-n');
+  If (CBGeneralPipes.State=cbChecked) then
+    AddOption('-P');
+  If (CBGeneralBrowserInfo.State=cbChecked) then
+    begin
+    Temp:='-b';
+    If (CBGeneralLocalBrowserINfo.State=cbChecked) then
+      Temp:=temp+'l';
+    AddOption(Temp);
+    end;  
+  If (CBGeneralScript.State=cbChecked) then
+    AddOption('-s');
+  // Debug info.  
+  If (CBGeneralDebugInfo.State=cbChecked) then
+    begin
+    temp:='-g';
+      If (CBGeneralgsym.State=cbChecked) then
+       Temp := Temp+'g';
+    If (CBGeneraldbx.State=cbChecked) then
+      Temp := Temp+'g';
+    If (CBGeneralHeaptrace.State=cbChecked) then
+      Temp := Temp+'h';
+    If (CBGeneralLineInfo.State=cbChecked) then
+      Temp := Temp+'l';
+    If (CBGeneralCheckPointers.State=cbChecked) then
+      Temp := Temp+'c';
+    AddOption(Temp);  
+    end;
+  If (CBGeneralProfile.State=cbChecked) then
+    AddOption('-pg');
+  If (CBGeneralKeepAsm.State=cbChecked) then
+    begin
+    Temp:='-a';
+    If (CBGeneralAsmListSource.State=cbChecked) then
+       Temp := Temp+'l';
+    If (CBGeneralAsmListRegAlloc.State=cbChecked) then
+       Temp := Temp+'r';
+    If (CBGeneralAsmListTempAlloc.State=cbChecked) then
+       Temp := Temp+'t';
+    AddOption(Temp);
+    end;  
+  If Length(EGeneralDefines.Text)>0 then
+    SplitOption(EGeneralDefines.Text,'-d');
+  If Length(EGeneralUnDefines.Text)>0 then
+    SplitOption(EGeneralUnDefines.Text,'-u');
+end;
+
+Procedure TCompilerOptionsForm.OptionsToForm;
+
+begin
+end;
+
+Procedure TCompilerOptionsForm.SetCompilerOptions (Value : TStrings);
+
+begin
+  FCompilerOptions.Text:=Value.Text;
+end;
+
 end.
+
+{
+  $Log$
+  Revision 1.4  2000/02/25 11:41:07  michael
+  + Options can be read after dialog closes.
+
+
+  revision 1.3
+  date: 2000/02/24 22:11:55;  author: sg;  state: Exp;  lines: +3 -2
+  * Fixed OK/Cancel button layout
+
+  revision 1.2
+  date: 2000/02/24 21:11:04;  author: michael;  state: Exp;  lines: +447 -18
+  + All options present now.
+
+  revision 1.1
+  date: 2000/02/24 13:00:46;  author: michael;  state: Exp;
+  + Initial implementation
+
+}
