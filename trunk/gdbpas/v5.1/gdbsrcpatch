@@ -1,7 +1,7 @@
-diff -r -u -N origdb/breakpoint.c gdb/breakpoint.c
---- origdb/breakpoint.c	Wed Jan 23 12:38:06 2002
-+++ gdb/breakpoint.c	Wed Jan 23 13:02:04 2002
-@@ -234,6 +234,18 @@
+diff -r -u -p -N origdb/breakpoint.c gdb/breakpoint.c
+--- origdb/breakpoint.c	Wed Apr  3 14:25:21 2002
++++ gdb/breakpoint.c	Wed Apr 10 14:39:30 2002
+@@ -234,6 +234,18 @@ static int executing_breakpoint_commands
  	     B ? (TMP=B->next, 1): 0;	\
  	     B = TMP)
  
@@ -20,7 +20,7 @@ diff -r -u -N origdb/breakpoint.c gdb/breakpoint.c
  /* True if SHIFT_INST_REGS defined, false otherwise.  */
  
  int must_shift_inst_regs =
-@@ -1439,6 +1451,42 @@
+@@ -1439,6 +1451,42 @@ breakpoint_init_inferior (enum inf_conte
  
    ALL_BREAKPOINTS_SAFE (b, temp)
    {
@@ -63,7 +63,7 @@ diff -r -u -N origdb/breakpoint.c gdb/breakpoint.c
      b->inserted = 0;
  
      switch (b->type)
-@@ -7134,8 +7182,9 @@
+@@ -7134,8 +7182,9 @@ breakpoint_re_set_one (PTR bint)
  	    xfree (b->cond);
  	  b->cond = parse_exp_1 (&s, (struct block *) 0, 0);
  	}
@@ -75,9 +75,9 @@ diff -r -u -N origdb/breakpoint.c gdb/breakpoint.c
        value_free_to_mark (mark);
        break;
      case bp_catch_catch:
-diff -r -u -N origdb/config/i386/cygwin.mh gdb/config/i386/cygwin.mh
---- origdb/config/i386/cygwin.mh	Wed Jan 23 12:37:59 2002
-+++ gdb/config/i386/cygwin.mh	Wed Jan 23 13:02:04 2002
+diff -r -u -p -N origdb/config/i386/cygwin.mh gdb/config/i386/cygwin.mh
+--- origdb/config/i386/cygwin.mh	Wed Apr  3 14:25:24 2002
++++ gdb/config/i386/cygwin.mh	Wed Apr 10 14:39:30 2002
 @@ -1,6 +1,6 @@
  MH_CFLAGS=
  XM_FILE=xm-cygwin.h
@@ -87,9 +87,9 @@ diff -r -u -N origdb/config/i386/cygwin.mh gdb/config/i386/cygwin.mh
 +NATDEPFILES= i386-nat.o win32-nat.o corelow.o
 +NAT_FILE=nm-cygwin.h
  XM_CLIBS=
-diff -r -u -N origdb/config/i386/nm-cygwin.h gdb/config/i386/nm-cygwin.h
---- origdb/config/i386/nm-cygwin.h	Thu Jan  1 01:00:00 1970
-+++ gdb/config/i386/nm-cygwin.h	Wed Jan 23 13:02:04 2002
+diff -r -u -p -N origdb/config/i386/nm-cygwin.h gdb/config/i386/nm-cygwin.h
+--- origdb/config/i386/nm-cygwin.h	Thu Jan  1 00:00:00 1970
++++ gdb/config/i386/nm-cygwin.h	Wed Apr 10 14:39:30 2002
 @@ -0,0 +1,38 @@
 +/* Native definitions for Intel x86 running CYGWIN.
 +   Copyright (C) 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
@@ -129,10 +129,10 @@ diff -r -u -N origdb/config/i386/nm-cygwin.h gdb/config/i386/nm-cygwin.h
 +
 +#define I386_DR_LOW_GET_STATUS()	cygwin_get_dr6 ()
 +extern unsigned cygwin_get_dr6 (void);
-diff -r -u -N origdb/config/i386/nm-i386.h gdb/config/i386/nm-i386.h
---- origdb/config/i386/nm-i386.h	Wed Jan 23 12:37:59 2002
-+++ gdb/config/i386/nm-i386.h	Wed Jan 23 13:02:04 2002
-@@ -115,6 +115,12 @@
+diff -r -u -p -N origdb/config/i386/nm-i386.h gdb/config/i386/nm-i386.h
+--- origdb/config/i386/nm-i386.h	Wed Apr  3 14:25:24 2002
++++ gdb/config/i386/nm-i386.h	Wed Apr 10 14:39:30 2002
+@@ -115,6 +115,12 @@ extern int  i386_remove_hw_breakpoint (C
  
  #define DECR_PC_AFTER_HW_BREAK 0
  
@@ -145,10 +145,10 @@ diff -r -u -N origdb/config/i386/nm-i386.h gdb/config/i386/nm-i386.h
  #endif /* I386_USE_GENERIC_WATCHPOINTS */
  
  #endif /* NM_I386_H */
-diff -r -u -N origdb/go32-nat.c gdb/go32-nat.c
---- origdb/go32-nat.c	Wed Jan 23 12:38:06 2002
-+++ gdb/go32-nat.c	Wed Jan 23 13:02:04 2002
-@@ -674,7 +674,7 @@
+diff -r -u -p -N origdb/go32-nat.c gdb/go32-nat.c
+--- origdb/go32-nat.c	Wed Apr  3 14:25:35 2002
++++ gdb/go32-nat.c	Wed Apr 10 14:39:30 2002
+@@ -670,7 +670,7 @@ go32_mourn_inferior (void)
       be nice if GDB itself would take care to remove all breakpoints
       at all times, but it doesn't, probably under an assumption that
       the OS cleans up when the debuggee exits.  */
@@ -157,7 +157,7 @@ diff -r -u -N origdb/go32-nat.c gdb/go32-nat.c
    go32_kill_inferior ();
    generic_mourn_inferior ();
  }
-@@ -698,7 +698,7 @@
+@@ -694,7 +694,7 @@ void
  go32_set_dr (int i, CORE_ADDR addr)
  {
    if (i < 0 || i > 3)
@@ -166,10 +166,10 @@ diff -r -u -N origdb/go32-nat.c gdb/go32-nat.c
  		    "Invalid register %d in go32_set_dr.\n", i);
    D_REGS[i] = addr;
  }
-diff -r -u -N origdb/i386-linux-nat.c gdb/i386-linux-nat.c
---- origdb/i386-linux-nat.c	Wed Jan 23 12:37:56 2002
-+++ gdb/i386-linux-nat.c	Wed Jan 23 13:02:04 2002
-@@ -259,12 +259,13 @@
+diff -r -u -p -N origdb/i386-linux-nat.c gdb/i386-linux-nat.c
+--- origdb/i386-linux-nat.c	Wed Apr  3 14:25:35 2002
++++ gdb/i386-linux-nat.c	Wed Apr 10 14:39:30 2002
+@@ -259,12 +259,13 @@ store_register (int regno)
    for (i = 0; i < REGISTER_RAW_SIZE (regno); i += sizeof (PTRACE_XFER_TYPE))
      {
        errno = 0;
@@ -185,10 +185,45 @@ diff -r -u -N origdb/i386-linux-nat.c gdb/i386-linux-nat.c
  		   REGISTER_NAME (regno), regno);
  	  perror_with_name (mess);
  	}
-diff -r -u -N origdb/i386bsd-nat.c gdb/i386bsd-nat.c
---- origdb/i386bsd-nat.c	Wed Jan 23 12:37:54 2002
-+++ gdb/i386bsd-nat.c	Wed Jan 23 13:02:04 2002
-@@ -236,8 +236,9 @@
+diff -r -u -p -N origdb/i386-tdep.c gdb/i386-tdep.c
+--- origdb/i386-tdep.c	Wed Apr  3 14:25:35 2002
++++ gdb/i386-tdep.c	Wed Apr 10 14:39:30 2002
+@@ -632,6 +632,8 @@ i386_skip_prologue (int pc)
+ {
+   unsigned char op;
+   int i;
++  CORE_ADDR last_push_esi_pos = 0;
++
+   static unsigned char pic_pat[6] =
+   { 0xe8, 0, 0, 0, 0,		/* call   0x0 */
+     0x5b,			/* popl   %ebx */
+@@ -651,7 +653,9 @@ i386_skip_prologue (int pc)
+       /* Break if not `pushl' instrunction.  */
+       if (op < 0x50 || op > 0x57)
+ 	break;
+-      codestream_get ();
++      if (op == 0x56)
++	last_push_esi_pos = codestream_tell ();
++      codestream_get();
+     }
+ 
+   /* The native cc on SVR4 in -K PIC mode inserts the following code
+@@ -707,7 +711,10 @@ i386_skip_prologue (int pc)
+ 
+   i386_follow_jump ();
+ 
+-  return (codestream_tell ());
++  if (codestream_tell () == last_push_esi_pos + 1)
++    return (last_push_esi_pos);
++  else
++    return (codestream_tell ());
+ }
+ 
+ void
+diff -r -u -p -N origdb/i386bsd-nat.c gdb/i386bsd-nat.c
+--- origdb/i386bsd-nat.c	Wed Apr  3 14:25:35 2002
++++ gdb/i386bsd-nat.c	Wed Apr 10 14:39:30 2002
+@@ -236,8 +236,9 @@ i386bsd_dr_set (int regnum, unsigned int
  {
    struct dbreg dbregs;
  
@@ -200,7 +235,7 @@ diff -r -u -N origdb/i386bsd-nat.c gdb/i386bsd-nat.c
      perror_with_name ("Couldn't get debug registers");
  
    /* For some mysterious reason, some of the reserved bits in the
-@@ -247,8 +248,9 @@
+@@ -247,8 +248,9 @@ i386bsd_dr_set (int regnum, unsigned int
  
    DBREG_DRX ((&dbregs), regnum) = value;
  
@@ -212,69 +247,466 @@ diff -r -u -N origdb/i386bsd-nat.c gdb/i386bsd-nat.c
      perror_with_name ("Couldn't write debug registers");
  }
  
-diff -r -u -N origdb/p-exp.y gdb/p-exp.y
+diff -r -u -p -N origdb/p-exp.y gdb/p-exp.y
 --- origdb/p-exp.y	Wed Apr  3 14:25:39 2002
-+++ gdb/p-exp.y	Wed Apr  3 14:59:10 2002
-@@ -1300,7 +1300,7 @@
- 			 &is_a_field_of_this,
- 			 (struct symtab **) NULL);
++++ gdb/p-exp.y	Wed Apr 17 22:09:57 2002
+@@ -50,7 +50,7 @@ Foundation, Inc., 59 Temple Place - Suit
+ #include "gdb_string.h"
+ #include <ctype.h>
+ #include "expression.h"
+-#include "value.h"
++#include "value.h" 
+ #include "parser-defs.h"
+ #include "language.h"
+ #include "p-lang.h"
+@@ -151,9 +151,14 @@ static char * uptok (char *, int);
+ /* YYSTYPE gets defined by %union */
+ static int
+ parse_number (char *, int, int, YYSTYPE *);
++
++static struct type * current_type;
++static void push_current_type ();
++static void pop_current_type ();
++static int search_field;
+ %}
+ 
+-%type <voidval> exp exp1 type_exp start variable qualified_name
++%type <voidval> exp exp1 type_exp start normal_start variable qualified_name
+ %type <tval> type typebase
+ /* %type <bval> block */
+ 
+@@ -171,7 +176,8 @@ parse_number (char *, int, int, YYSTYPE 
+    Contexts where this distinction is not important can use the
+    nonterminal "name", which matches either NAME or TYPENAME.  */
+ 
+-%token <sval> STRING
++%token <sval> STRING 
++%token <sval> FIELDNAME
+ %token <ssym> NAME /* BLOCKNAME defined below to give it higher precedence. */
+ %token <tsym> TYPENAME
+ %type <sval> name
+@@ -212,6 +218,7 @@ parse_number (char *, int, int, YYSTYPE 
+ %left '*' '/'
+ %right UNARY INCREMENT DECREMENT
+ %right ARROW '.' '[' '('
++%right '^'
+ %token <ssym> BLOCKNAME
+ %type <bval> block
+ %left COLONCOLON
+@@ -219,15 +226,21 @@ parse_number (char *, int, int, YYSTYPE 
+ 
+ %%
+ 
+-start   :	exp1
++start   :	{ current_type = NULL;
++		  search_field = 0;
++		}
++		normal_start;
++
++normal_start	:
++		exp1
+ 	|	type_exp
+ 	;
+ 
+ type_exp:	type
+ 			{ write_exp_elt_opcode(OP_TYPE);
+ 			  write_exp_elt_type($1);
+-			  write_exp_elt_opcode(OP_TYPE);}
+-	;
++			  write_exp_elt_opcode(OP_TYPE);
++			  current_type = $1; } ;
+ 
+ /* Expressions, including the comma operator.  */
+ exp1	:	exp
+@@ -237,10 +250,14 @@ exp1	:	exp
+ 
+ /* Expressions, not including the comma operator.  */
+ exp	:	exp '^'   %prec UNARY
+-			{ write_exp_elt_opcode (UNOP_IND); }
++			{ write_exp_elt_opcode (UNOP_IND);
++			  if (current_type) 
++			    current_type = TYPE_TARGET_TYPE (current_type); }
+ 
+ exp	:	'@' exp    %prec UNARY
+-			{ write_exp_elt_opcode (UNOP_ADDR); }
++			{ write_exp_elt_opcode (UNOP_ADDR); 
++			  if (current_type)
++			    current_type = TYPE_POINTER_TYPE (current_type); }
+ 
+ exp	:	'-' exp    %prec UNARY
+ 			{ write_exp_elt_opcode (UNOP_NEG); }
+@@ -258,24 +275,55 @@ exp	:	DECREMENT  '(' exp ')'   %prec UNA
+ 			{ write_exp_elt_opcode (UNOP_PREDECREMENT); }
+ 	;
+ 
+-exp	:	exp '.' name
++exp	:	exp '.' { search_field = 1; } 
++		FIELDNAME 
++		/* name */
+ 			{ write_exp_elt_opcode (STRUCTOP_STRUCT);
+-			  write_exp_string ($3);
+-			  write_exp_elt_opcode (STRUCTOP_STRUCT); }
+-	;
+-
+-exp	:	exp '[' exp1 ']'
+-			{ write_exp_elt_opcode (BINOP_SUBSCRIPT); }
+-	;
++			  write_exp_string ($4); 
++			  write_exp_elt_opcode (STRUCTOP_STRUCT);
++			  search_field = 0; 
++			  if (current_type)
++			    { while (TYPE_CODE (current_type) == TYPE_CODE_PTR)
++				current_type = TYPE_TARGET_TYPE (current_type);
++			      current_type = lookup_struct_elt_type (
++				current_type, $4.ptr, false); };
++			 } ; 
++exp	:	exp '['
++			/* We need to save the current_type value */
++			{ char *arrayname; 
++			  int arrayfieldindex;
++			  arrayfieldindex = is_pascal_string_type (
++				current_type, NULL, NULL,
++				NULL, NULL, &arrayname); 
++			  if (arrayfieldindex) 
++			    {
++			      struct stoken stringsval;
++			      stringsval.ptr = alloca (strlen (arrayname) + 1);
++			      stringsval.length = strlen (arrayname);
++			      strcpy (stringsval.ptr, arrayname);
++			      current_type = TYPE_FIELD_TYPE (current_type,
++				arrayfieldindex - 1); 
++			      write_exp_elt_opcode (STRUCTOP_STRUCT);
++			      write_exp_string (stringsval); 
++			      write_exp_elt_opcode (STRUCTOP_STRUCT);
++			    }
++			  push_current_type ();  }
++		exp1 ']'
++			{ pop_current_type ();
++			  write_exp_elt_opcode (BINOP_SUBSCRIPT);
++			  if (current_type)
++			    current_type = TYPE_TARGET_TYPE (current_type); }
+ 
+ exp	:	exp '('
+ 			/* This is to save the value of arglist_len
+ 			   being accumulated by an outer function call.  */
+-			{ start_arglist (); }
++			{ push_current_type ();
++			  start_arglist (); }
+ 		arglist ')'	%prec ARROW
+ 			{ write_exp_elt_opcode (OP_FUNCALL);
+ 			  write_exp_elt_longcst ((LONGEST) end_arglist ());
+-			  write_exp_elt_opcode (OP_FUNCALL); }
++			  write_exp_elt_opcode (OP_FUNCALL); 
++			  pop_current_type (); }
+ 	;
+ 
+ arglist	:
+@@ -288,7 +336,8 @@ arglist	:
+ exp	:	type '(' exp ')' %prec UNARY
+ 			{ write_exp_elt_opcode (UNOP_CAST);
+ 			  write_exp_elt_type ($1);
+-			  write_exp_elt_opcode (UNOP_CAST); }
++			  write_exp_elt_opcode (UNOP_CAST); 
++			  current_type = $1; }
+ 	;
+ 
+ exp	:	'(' exp1 ')'
+@@ -567,9 +616,11 @@ variable:	name_not_typename
+ 			      write_exp_elt_block (NULL);
+ 			      write_exp_elt_sym (sym);
+ 			      write_exp_elt_opcode (OP_VAR_VALUE);
+-			    }
++			      current_type = sym->type; }
+ 			  else if ($1.is_a_field_of_this)
+ 			    {
++			      struct value * this_val;
++			      struct type * this_type;
+ 			      /* Object pascal: it hangs off of `this'.  Must
+ 			         not inadvertently convert from a method call
+ 				 to data ref.  */
+@@ -581,6 +632,18 @@ variable:	name_not_typename
+ 			      write_exp_elt_opcode (STRUCTOP_PTR);
+ 			      write_exp_string ($1.stoken);
+ 			      write_exp_elt_opcode (STRUCTOP_PTR);
++			      /* we need type of this */
++			      this_val = value_of_this (0); 
++			      if (this_val)
++				this_type = this_val->type;
++			      else
++				this_type = NULL;
++			      if (this_type)
++				current_type = lookup_struct_elt_type (
++				  this_type,
++				  $1.stoken.ptr, false);
++			      else
++				current_type = NULL; 
+ 			    }
+ 			  else
+ 			    {
+@@ -881,6 +944,36 @@ parse_number (p, len, parsed_float, puti
+    return INT;
+ }
+ 
++
++struct type_push
++{
++  struct type *stored;
++  struct type_push *next;
++};
++
++static struct type_push *tp_top = NULL;
++
++static void push_current_type ()
++{
++  struct type_push *tpnew;
++  tpnew = (struct type_push *) malloc (sizeof (struct type_push));
++  tpnew->next = tp_top;
++  tpnew->stored = current_type;
++  current_type = NULL;
++  tp_top = tpnew; 
++}
++
++static void pop_current_type ()
++{
++  struct type_push *tp = tp_top;
++  if (tp)
++    {
++      current_type = tp->stored;
++      tp_top = tp->next;
++      xfree (tp);
++    }
++}
++
+ struct token
+ {
+   char *operator;
+@@ -907,8 +1000,8 @@ static const struct token tokentab2[] =
+     {"<>", NOTEQUAL, BINOP_END},
+     {"<=", LEQ, BINOP_END},
+     {">=", GEQ, BINOP_END},
+-    {":=", ASSIGN, BINOP_END}
+-  };
++    {":=", ASSIGN, BINOP_END},
++    {"::", COLONCOLON, BINOP_END} };
+ 
+ /* Allocate uppercased var */
+ /* make an uppercased copy of tokstart */
+@@ -1147,6 +1240,7 @@ yylex ()
+ 	  {
+ 	    tempbuf = (char *) realloc (tempbuf, tempbufsize += 64);
+ 	  }
++
+ 	switch (*tokptr)
+ 	  {
+ 	  case '\0':
+@@ -1293,25 +1387,37 @@ yylex ()
+     char *tmp = copy_name (yylval.sval);
+     struct symbol *sym;
+     int is_a_field_of_this = 0;
++    int is_a_field = 0;
+     int hextype;
+ 
+-    sym = lookup_symbol (tmp, expression_context_block,
+-			 VAR_NAMESPACE,
+-			 &is_a_field_of_this,
+-			 (struct symtab **) NULL);
++
++    if (search_field && current_type)
++      is_a_field = (lookup_struct_elt_type (current_type, tmp, 1) != NULL);	
++    if (is_a_field)
++      sym = NULL;
++    else
++      sym = lookup_symbol (tmp, expression_context_block,
++			   VAR_NAMESPACE,
++			   &is_a_field_of_this,
++			   (struct symtab **) NULL);
      /* second chance uppercased (as Free Pascal does).  */
 -    if (!sym)
-+    if (!sym && !is_a_field_of_this)
++    if (!sym && !is_a_field_of_this && !is_a_field)
        {
         for (i = 0; i <= namelen; i++)
           {
-@@ -1311,15 +1311,15 @@
+            if ((tmp[i] >= 'a' && tmp[i] <= 'z'))
+              tmp[i] -= ('a'-'A');
+          }
+-       sym = lookup_symbol (tmp, expression_context_block,
++       if (search_field && current_type)
++	 is_a_field = (lookup_struct_elt_type (current_type, tmp, 1) != NULL);	
++       if (is_a_field)
++	 sym = NULL;
++       else
++	 sym = lookup_symbol (tmp, expression_context_block,
                          VAR_NAMESPACE,
                          &is_a_field_of_this,
                          (struct symtab **) NULL);
 -       if (sym)
-+       if (sym || is_a_field_of_this)
++       if (sym || is_a_field_of_this || is_a_field)
           for (i = 0; i <= namelen; i++)
             {
               if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
-                tokstart[i] -= ('a'-'A');
+@@ -1319,7 +1425,7 @@ yylex ()
             }
        }
--    /* Third chance Capitalized (as GPC does).  */
+     /* Third chance Capitalized (as GPC does).  */
 -    if (!sym)
-+     /* Third chance Capitalized (as GPC does).  */
-+    if (!sym && !is_a_field_of_this)
++    if (!sym && !is_a_field_of_this && !is_a_field)
        {
         for (i = 0; i <= namelen; i++)
           {
-@@ -1336,7 +1336,7 @@
+@@ -1332,11 +1438,16 @@ yylex ()
+            if ((tmp[i] >= 'A' && tmp[i] <= 'Z'))
+              tmp[i] -= ('A'-'a');
+           }
+-       sym = lookup_symbol (tmp, expression_context_block,
++       if (search_field && current_type)
++	 is_a_field = (lookup_struct_elt_type (current_type, tmp, 1) != NULL);	
++       if (is_a_field)
++	 sym = NULL;
++       else
++	 sym = lookup_symbol (tmp, expression_context_block,
                           VAR_NAMESPACE,
                           &is_a_field_of_this,
                           (struct symtab **) NULL);
 -        if (sym)
-+        if (sym || is_a_field_of_this)
++       if (sym || is_a_field_of_this || is_a_field)
            for (i = 0; i <= namelen; i++)
              {
                if (i == 0)
-@@ -1349,7 +1349,17 @@
+@@ -1349,6 +1460,15 @@ yylex ()
                    tokstart[i] -= ('A'-'a');
              }
        }
--    /* Call lookup_symtab, not lookup_partial_symtab, in case there are
-+     /* Finally, uppercase for Free Pascal.  */
-+    if (!sym && !is_a_field_of_this)
-+      {
-+         for (i = 0; i <= namelen; i++)
-+           {
-+             if ((tokstart[i] >= 'a' && tokstart[i] <= 'z'))
-+                  tokstart[i] -= ('a'-'A');
-+            }
-+      }
 +
-+   /* Call lookup_symtab, not lookup_partial_symtab, in case there are
++    if (is_a_field)
++      {
++	tempbuf = (char *) realloc (tempbuf, namelen + 1);
++	strncpy (tempbuf, tokstart, namelen); tempbuf [namelen] = 0;
++	yylval.sval.ptr = tempbuf;
++	yylval.sval.length = namelen; 
++	return FIELDNAME;
++      } 
+     /* Call lookup_symtab, not lookup_partial_symtab, in case there are
         no psymtabs (coff, xcoff, or some future change to blow away the
         psymtabs once once symbols are read).  */
-     if ((sym && SYMBOL_CLASS (sym) == LOC_BLOCK) ||
-diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
---- origdb/win32-nat.c	Wed Jan 23 12:37:56 2002
-+++ gdb/win32-nat.c	Wed Jan 23 13:02:04 2002
-@@ -65,6 +65,17 @@
+diff -r -u -p -N origdb/p-lang.c gdb/p-lang.c
+--- origdb/p-lang.c	Wed Apr  3 14:25:39 2002
++++ gdb/p-lang.c	Wed Apr 17 22:02:25 2002
+@@ -44,7 +44,8 @@ extern void _initialize_pascal_language 
+    but this does not happen for Free Pascal nor for GPC.  */
+ int
+ is_pascal_string_type (struct type *type,int *length_pos,
+-                       int * length_size, int *string_pos, int *char_size)
++                       int *length_size, int *string_pos, int *char_size,
++		       char **arrayname)
+ {
+   if (TYPE_CODE (type) == TYPE_CODE_STRUCT)
+     {
+@@ -54,11 +55,17 @@ is_pascal_string_type (struct type *type
+           && strcmp (TYPE_FIELDS (type)[0].name, "length") == 0 
+           && strcmp (TYPE_FIELDS (type)[1].name, "st") == 0)
+         {
+-          *length_pos = TYPE_FIELD_BITPOS (type, 0) / TARGET_CHAR_BIT;
+-          *length_size = TYPE_FIELD_TYPE (type, 0)->length;
+-          *string_pos = TYPE_FIELD_BITPOS (type, 1) / TARGET_CHAR_BIT;
+-          *char_size = 1;
+-          return 1;
++          if (length_pos)
++	    *length_pos = TYPE_FIELD_BITPOS (type, 0) / TARGET_CHAR_BIT;
++          if (length_size)
++	    *length_size = TYPE_FIELD_TYPE (type, 0)->length;
++          if (string_pos)
++	    *string_pos = TYPE_FIELD_BITPOS (type, 1) / TARGET_CHAR_BIT;
++          if (char_size)
++	    *char_size = 1;
++ 	  if (arrayname)
++	    *arrayname = TYPE_FIELDS (type)[1].name;
++         return 2;
+         };
+       /* GNU pascal strings.  */
+       /* Three fields: Capacity, length and schema$ or _p_schema.  */
+@@ -66,12 +73,18 @@ is_pascal_string_type (struct type *type
+           && strcmp (TYPE_FIELDS (type)[0].name, "Capacity") == 0
+           && strcmp (TYPE_FIELDS (type)[1].name, "length") == 0)
+         {
+-          *length_pos = TYPE_FIELD_BITPOS (type, 1) / TARGET_CHAR_BIT;
+-          *length_size = TYPE_FIELD_TYPE (type, 1)->length;
+-          *string_pos = TYPE_FIELD_BITPOS (type, 2) / TARGET_CHAR_BIT;
++          if (length_pos)
++	    *length_pos = TYPE_FIELD_BITPOS (type, 1) / TARGET_CHAR_BIT;
++          if (length_size)
++	    *length_size = TYPE_FIELD_TYPE (type, 1)->length;
++          if (string_pos)
++	    *string_pos = TYPE_FIELD_BITPOS (type, 2) / TARGET_CHAR_BIT;
+           /* FIXME: how can I detect wide chars in GPC ?? */
+-          *char_size = 1;
+-          return 1;
++          if (char_size)
++	    *char_size = 1;
++ 	  if (arrayname)
++	    *arrayname = TYPE_FIELDS (type)[1].name;
++         return 2;
+         };
+     }
+   return 0;
+@@ -280,7 +293,7 @@ pascal_create_fundamental_type (struct o
+ 			0, "void", objfile);
+       break;
+     case FT_CHAR:
+-      type = init_type (TYPE_CODE_INT,
++      type = init_type (TYPE_CODE_CHAR,
+ 			TARGET_CHAR_BIT / TARGET_CHAR_BIT,
+ 			0, "char", objfile);
+       break;
+diff -r -u -p -N origdb/p-lang.h gdb/p-lang.h
+--- origdb/p-lang.h	Wed Apr  3 14:25:39 2002
++++ gdb/p-lang.h	Wed Apr 17 22:02:25 2002
+@@ -38,7 +38,8 @@ extern void pascal_type_print_method_arg
+ 
+ /* These are in p-lang.c: */
+ 
+-extern int is_pascal_string_type (struct type *, int *, int *, int *, int*);
++extern int 
++  is_pascal_string_type (struct type *, int *, int *, int *, int *, char **);
+ 
+ extern void pascal_printchar (int, struct ui_file *);
+ 
+diff -r -u -p -N origdb/p-valprint.c gdb/p-valprint.c
+--- origdb/p-valprint.c	Wed Apr  3 14:25:39 2002
++++ gdb/p-valprint.c	Wed Apr 17 22:02:25 2002
+@@ -190,7 +190,7 @@ pascal_val_print (struct type *type, cha
+ 	     Pascal strings are mapped to records
+ 	     with lowercase names PM  */
+           if (is_pascal_string_type (elttype, &length_pos,
+-                                     &length_size, &string_pos, &char_size)
++                                     &length_size, &string_pos, &char_size, NULL)
+ 	      && addr != 0)
+ 	    {
+ 	      ULONGEST string_length;
+@@ -319,7 +319,7 @@ pascal_val_print (struct type *type, cha
+       else
+ 	{
+           if (is_pascal_string_type (type, &length_pos, &length_size,
+-                                     &string_pos, &char_size))
++                                     &string_pos, &char_size, NULL))
+ 	    {
+ 	      len = extract_unsigned_integer (valaddr + embedded_offset + length_pos, length_size);
+ 	      LA_PRINT_STRING (stream, valaddr + embedded_offset + string_pos, len, char_size, 0);
+diff -r -u -p -N origdb/top.c gdb/top.c
+--- origdb/top.c	Wed Apr  3 14:25:55 2002
++++ gdb/top.c	Wed Apr 10 14:39:30 2002
+@@ -1228,7 +1228,7 @@ print_gdb_version (struct ui_file *strea
+      program to parse, and is just canonical program name and version
+      number, which starts after last space. */
+ 
+-  fprintf_filtered (stream, "GNU gdb %s\n", version);
++  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
+ 
+   /* Second line is a copyright notice. */
+ 
+diff -r -u -p -N origdb/win32-nat.c gdb/win32-nat.c
+--- origdb/win32-nat.c	Wed Apr  3 14:25:56 2002
++++ gdb/win32-nat.c	Wed Apr 10 14:39:30 2002
+@@ -65,6 +65,17 @@ enum
  #include <sys/procfs.h>
  #include <psapi.h>
  
@@ -292,7 +724,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
  /* The string sent by cygwin when it processes a signal.
     FIXME: This should be in a cygwin include file. */
  #define CYGWIN_SIGNAL_STRING "cygwin: signal"
-@@ -168,10 +179,29 @@
+@@ -168,10 +179,29 @@ static const int mappings[] =
    context_offset (FloatSave.DataSelector),
    context_offset (FloatSave.DataOffset),
    context_offset (FloatSave.ErrorSelector)
@@ -322,7 +754,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
  /* This vector maps the target's idea of an exception (extracted
     from the DEBUG_EVENT structure) to GDB's idea. */
  
-@@ -209,7 +239,17 @@
+@@ -209,7 +239,17 @@ thread_rec (DWORD id, int get_context)
  	    else if (get_context < 0)
  	      th->suspend_count = -1;
  
@@ -341,7 +773,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
  	    GetThreadContext (th->h, &th->context);
  	  }
  	return th;
-@@ -233,6 +273,22 @@
+@@ -233,6 +273,22 @@ child_add_thread (DWORD id, HANDLE h)
    th->h = h;
    th->next = thread_head.next;
    thread_head.next = th;
@@ -364,7 +796,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
    add_thread (pid_to_ptid (id));
    return th;
  }
-@@ -280,13 +336,6 @@
+@@ -280,13 +336,6 @@ child_delete_thread (DWORD id)
  }
  
  static void
@@ -378,7 +810,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
  do_child_fetch_inferior_registers (int r)
  {
    char *context_offset = ((char *) &current_thread->context) + mappings[r];
-@@ -343,7 +392,7 @@
+@@ -343,7 +392,7 @@ static BOOL WINAPI (*psapi_EnumProcessMo
  static BOOL WINAPI (*psapi_GetModuleInformation) (HANDLE, HMODULE, LPMODULEINFO, DWORD) = NULL;
  static DWORD WINAPI (*psapi_GetModuleFileNameExA) (HANDLE, HMODULE, LPSTR, DWORD) = NULL;
  
@@ -387,7 +819,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
  psapi_get_dll_name (DWORD BaseAddress, char *dll_name_ret)
  {
    DWORD len;
-@@ -765,6 +814,12 @@
+@@ -765,6 +814,12 @@ handle_exception (struct target_waitstat
         (DWORD) current_event.u.Exception.ExceptionRecord.ExceptionAddress));
        ourstatus->value.sig = TARGET_SIGNAL_TRAP;
        break;
@@ -400,7 +832,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
      case DBG_CONTROL_C:
        DEBUG_EXCEPT (("gdb: Target exception CONTROL_C at 0x%08lx\n",
         (DWORD) current_event.u.Exception.ExceptionRecord.ExceptionAddress));
-@@ -993,8 +1048,13 @@
+@@ -993,8 +1048,13 @@ child_wait (ptid_t ptid, struct target_w
  static void
  do_initial_child_stuff (DWORD pid)
  {
@@ -414,7 +846,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
    last_sig = 0;
    event_count = 0;
    exception_count = 0;
-@@ -1294,9 +1354,23 @@
+@@ -1294,9 +1354,23 @@ void
  child_resume (ptid_t ptid, int step, enum target_signal sig)
  {
    thread_info *th;
@@ -441,7 +873,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
  
    last_sig = 0;
  
-@@ -1307,6 +1381,16 @@
+@@ -1307,6 +1381,16 @@ child_resume (ptid_t ptid, int step, enu
    th = thread_rec (current_event.dwThreadId, FALSE);
    if (th)
      {
@@ -458,7 +890,7 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
        if (step)
  	{
  	  /* Single step by setting t bit */
-@@ -1449,6 +1533,43 @@
+@@ -1449,6 +1533,43 @@ _initialize_inftarg (void)
  
    add_target (&child_ops);
  }
@@ -502,49 +934,3 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
  
  /* Determine if the thread referenced by "pid" is alive
     by "polling" it.  If WaitForSingleObject returns WAIT_OBJECT_0
-diff -r -u -N origdb/top.c gdb/top.c
---- origdb/top.c   Sun Oct 21 20:41:18 2001
-+++ gdb/top.c	Thu Mar 14 00:40:00 2002
-@@ -1228,7 +1228,7 @@
-      program to parse, and is just canonical program name and version
-      number, which starts after last space. */
- 
--  fprintf_filtered (stream, "GNU gdb %s\n", version);
-+  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
- 
-   /* Second line is a copyright notice. */
- 
---- origdb/i386-tdep.c	Wed Apr  3 14:25:35 2002
-+++ gdb/i386-tdep.c	Wed Apr 10 07:36:03 2002
-@@ -632,6 +632,8 @@ i386_skip_prologue (int pc)
- {
-   unsigned char op;
-   int i;
-+  CORE_ADDR last_push_esi_pos = 0;
-+
-   static unsigned char pic_pat[6] =
-   { 0xe8, 0, 0, 0, 0,		/* call   0x0 */
-     0x5b,			/* popl   %ebx */
-@@ -651,7 +653,9 @@ i386_skip_prologue (int pc)
-       /* Break if not `pushl' instrunction.  */
-       if (op < 0x50 || op > 0x57)
- 	break;
--      codestream_get ();
-+      if (op == 0x56)
-+	last_push_esi_pos = codestream_tell ();
-+      codestream_get();
-     }
- 
-   /* The native cc on SVR4 in -K PIC mode inserts the following code
-@@ -707,7 +711,10 @@ i386_skip_prologue (int pc)
- 
-   i386_follow_jump ();
- 
--  return (codestream_tell ());
-+  if (codestream_tell () == last_push_esi_pos + 1)
-+    return (last_push_esi_pos);
-+  else
-+    return (codestream_tell ());
- }
- 
- void
