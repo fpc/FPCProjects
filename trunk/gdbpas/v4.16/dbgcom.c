@@ -1,3 +1,6 @@
+/* $Id$ */
+/* modified for use with FPC and */
+/* exception handling support by Pierre Muller */
 /* Copyright (C) 1998 DJ Delorie, see COPYING.DJ for details */
 /* Copyright (C) 1997 DJ Delorie, see COPYING.DJ for details */
 /* Copyright (C) 1996 DJ Delorie, see COPYING.DJ for details */
@@ -26,7 +29,24 @@ static char *id = __libdbg_ident_string;
 #define DESCRIPTOR_COUNT	128
 #define DOS_DESCRIPTOR_COUNT	128
 #define DPMI_EXCEPTION_COUNT     18
+
+#define USE_FSEXT
+#define CLOSE_UNREGISTERED_FILES
+
+#ifdef FPC
+#undef CLOSE_UNREGISTERED_FILES
+#endif
+/* debug splitted into 3 parts */
+#define DEBUG_ALL_DBGCOM
+
+#ifdef DEBUG_ALL_DBGCOM
+/* general debug infos */
 #define DEBUG_DBGCOM
+/* files open/close infos */
+#define DEBUG_DBGCOM_FILES
+/* exceptions infos */
+#define DEBUG_EXCEPTIONS
+#endif /* DEBUG_ALL_DBGCOM */
 
 long mem_handles[MEM_HANDLE_COUNT];
 unsigned short descriptors[DESCRIPTOR_COUNT];
@@ -59,7 +79,7 @@ static int nset, breakhandle[4];
 
 static __dpmi_paddr our_handler[DPMI_EXCEPTION_COUNT],app_handler[DPMI_EXCEPTION_COUNT];
 
-#ifdef DEBUG_DBGCOM
+#ifdef DEBUG_EXCEPTIONS
 typedef
   struct {
    short excp_cs;
@@ -229,9 +249,9 @@ _change_exception_handler:                                              \n\
         movzbl %bl,%eax                                                 \n\
         imull  $8,%eax                                                  \n\
         addl  $_app_handler,%eax  /* only retain handlers */            \n\
-        cmpw   _app_cs,%cx                                              \n\
+        cmpw   _app_cs,%cx /* for the main app     */                   \n\
         jne    _not_in_current_app                                      \n\
-        movl  %ecx,4(%eax)        /* for the main app     */            \n\
+        movl  %ecx,4(%eax)                                              \n\
         movl  %edx,(%eax)                                               \n\
 _not_in_current_app:                                                    \n\
         subl  $_app_handler,%eax /* allways restore our handler */      \n\
@@ -696,7 +716,7 @@ static void unhook_dpmi(void)
 
 static void dbgsig(int sig)
 {
-#ifdef DEBUG_DBGCOM
+#ifdef DEBUG_EXCEPTIONS
     excp_info[excp_index].excp_eip=__djgpp_exception_state->__eip;
     excp_info[excp_index].excp_cs=__djgpp_exception_state->__cs;
     excp_info[excp_index].excp_nb=__djgpp_exception_state->__signum;
@@ -726,7 +746,7 @@ static void dbgsig(int sig)
       our_handler[signum].selector)))
     {
     extern void exception_return(void);
-#ifdef DEBUG_DBGCOM
+#ifdef DEBUG_EXCEPTIONS
     redir_excp_count++;
 #endif
     *load_state = *__djgpp_exception_state;     /* exception was in other process */
@@ -734,8 +754,13 @@ static void dbgsig(int sig)
     cs  = load_state->__cs;
     esp = load_state->__esp;
     /* reset the debug trace bit */
-    load_state->__eflags &= 0xfffffeff;
+    /* we should only do this under certain specific conditions
+       but which ones ?? */
     eflags = load_state->__eflags;
+    /* if (signum!=1)
+     eflags &= 0xfffffeff; */
+    /* we don't want to step inside the exception_table code */
+    load_state->__eflags &= 0xfffffeff;
     ss  = load_state->__ss;
     errcode = load_state->__sigmask;
     load_state->__eip=app_handler[signum].offset32;
@@ -981,7 +1006,7 @@ void cleanup_client(void)
 
   /* restore __djgpp_app_DS for Ctrl-C !! */
   __djgpp_app_DS = __djgpp_our_DS;
-#ifdef DEBUG_DBGCOM
+#ifdef DEBUG_EXCEPTIONS
     fprintf(stderr,"excp_count = %d\n",excp_count);
     fprintf(stderr,"redir_excp_count = %d\n",redir_excp_count);
     fprintf(stderr,"excp_index = %d\n",excp_index);
@@ -1060,6 +1085,13 @@ void cleanup_client(void)
   signal(SIGINT, oldINT);
 }
 
+#ifndef USE_FSEXT
+
+static void close_handles(void)
+{
+}
+
+#else /* USE_FSEXT */
 /*
    Now the FSEXT function for watching files being opened. This is needed,
    because the debuggee can open files which are not closed and if you
@@ -1109,10 +1141,16 @@ static void close_handles(void)
         && handles[handle] == 0xff /* but not recorded by the fsext function */
        )
     { /* it was opened by the debuggee */
-#ifdef DEBUG_DBGCOM
+#ifdef CLOSE_UNREGISTERED_FILES
+#ifdef DEBUG_DBGCOM_FILES
       fprintf(stderr,"closing %d\n",handle);
 #endif
       _close(handle);
+#else  /* not CLOSE_UNREGISTERED_FILES */
+#ifdef DEBUG_DBGCOM_FILES
+      fprintf(stderr,"unknown open file %d\n",handle);
+#endif
+#endif /* CLOSE_UNREGISTERED_FILES */
     }
   }
 
@@ -1137,8 +1175,8 @@ static int dbg_fsext(__FSEXT_Fnumber _function_number,
       attrib = va_arg(_args,int);
       in_dbg_fsext++;
       retval = _creat(filename,attrib);
-#ifdef DEBUG_DBGCOM
-      fprintf(stderr,"_creat() => %d\n",retval);
+#ifdef DEBUG_DBGCOM_FILES
+      fprintf(stderr,"_creat(%s) => %d\n",filename,retval);
 #endif
       in_dbg_fsext--;
       if (retval != -1)
@@ -1152,7 +1190,7 @@ static int dbg_fsext(__FSEXT_Fnumber _function_number,
       oflag = va_arg(_args,int);
       in_dbg_fsext++;
       retval = _open(filename,oflag);
-#ifdef DEBUG_DBGCOM
+#ifdef DEBUG_DBGCOM_FILES
       fprintf(stderr,"_open(%s) => %d\n",filename,retval);
 #endif
       in_dbg_fsext--;
@@ -1165,7 +1203,7 @@ static int dbg_fsext(__FSEXT_Fnumber _function_number,
     case __FSEXT_close:
       handle = va_arg(_args,int);
       in_dbg_fsext++;
-#ifdef DEBUG_DBGCOM
+#ifdef DEBUG_DBGCOM_FILES
       fprintf(stderr,"_close(%d)\n",handle);
 #endif
       retval = _close(handle);
@@ -1215,3 +1253,6 @@ _init_dbg_fsext(void)
   /* enable the fsext function */
   in_dbg_fsext = 0;
 }
+#endif /* def USE_FSEXT */
+
+/* $Log: */@

@@ -1,3 +1,5 @@
+# $Id$
+# modified for FPC
 #       This makefile is designed for DJGPP
 SRCDIR=.
 # Copyright 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996
@@ -150,7 +152,7 @@ GLOBAL_CFLAGS = $(MT_CFLAGS) $(MH_CFLAGS)
 
 # CFLAGS is specifically reserved for setting from the command line
 # when running make.  I.E.  "make CFLAGS=-Wmissing-prototypes".
-CFLAGS = -g
+CFLAGS = -gstabs
 
 # Need to pass this to testsuite for "make check".  Probably should be
 # consistent with top-level Makefile.in and gdb/testsuite/Makefile.in
@@ -499,7 +501,7 @@ DISTSTUFF = $(YYFILES)
 .c.o:
 	$(CC) -c $(INTERNAL_CFLAGS) $<
 
-all: gdb
+all: gdbpas
 
 installcheck:
 
@@ -1563,16 +1565,12 @@ $(M2EXPTAB).o: $(M2EXPTAB).c $(defs_h) $(expression_h) $(gdbtypes_h) \
 
 dbgcom.o : dbgcom.c
 
-mygdb: $(OBS) $(TSOBS) dbgcom.o $(ADD_DEPS) $(CDEPS) init.o
-	rm -f mygdb
-	$(CC_LD) $(INTERNAL_LDFLAGS) -o mygdb \
+gdbpas : $(OBS) $(TSOBS) dbgcom.o $(ADD_DEPS) $(CDEPS) init.o
+	rm -f gdbpas.exe
+	$(CC_LD) $(INTERNAL_LDFLAGS) -o gdbpas \
 	  init.o dbgcom.o $(OBS) $(TSOBS) $(ADD_FILES) $(CLIBS) $(LOADLIBES)
 
-dbg202.o : dbg202.c
-
-gdb202: $(OBS) $(TSOBS) dbg202.o $(ADD_DEPS) $(CDEPS) init.o
-	rm -f gdb202
-	$(CC_LD) $(INTERNAL_LDFLAGS) -o gdb202 \
-	  init.o dbg202.o $(OBS) $(TSOBS) $(ADD_FILES) $(CLIBS) $(LOADLIBES)
-
 ### end of the gdb Makefile.in.
+#
+# $Log : $
+#
