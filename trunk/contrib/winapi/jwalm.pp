@@ -83,6 +83,8 @@ interface
 (*$HPPEMIT '#include <lmuseflg.h>'*)
 (*$HPPEMIT '#include <lmwksta.h>'*)
 
+{$I windefines.inc}
+
 uses
   JwaWinSvc, JwaWinType, JwaWinBase, JwaWinNT;
 
@@ -545,7 +547,7 @@ const
 
   NERR_MultipleNets        = (NERR_BASE+200);
   // This operation is not supported on computers with multiple networks.
-  
+
 // Server API related
 // Error codes BASE+210 to BASE+229
 
@@ -6995,7 +6997,7 @@ type
   end;
   TAtEnum = _AT_ENUM;
   AT_ENUM = _AT_ENUM;
-  
+
 function NetScheduleJobAdd(Servername: LPCWSTR; Buffer: Pointer;
   var JobId: DWORD): NET_API_STATUS; stdcall;
 

@@ -56,8 +56,8 @@ interface
 //#define DEFINE_SHLGUID(name, l, w1, w2) DEFINE_GUID(name, l, w1, w2, 0xC0,0,0,0,0,0,0,0x46)
 
 const
-  CLSID_ShellDesktop: TGUID = (D1:$00021400; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46)); // 00021400-0000-0000-C000-0000000000));
-  CLSID_ShellLink: TGUID = (D1:$00021401; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46)); // 00021401-0000-0000-C000-0000000000));
+  CLSID_ShellDesktop: TGUID = (D1:$00021400; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46)); // 00021400-0000-0000-C000-0000000000));
+  CLSID_ShellLink: TGUID = (D1:$00021401; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46)); // 00021401-0000-0000-C000-0000000000));
 
   CLSID_NetworkPlaces: TGUID = (D1:$208D2C60; D2:$3AEA; D3:$1069; D4:($A2,$D7,$08,$00,$2B,$30,$30,$9D));//208D2C60-3AEA-1069-A2D7-08002B3030));
   CLSID_NetworkDomain: TGUID = (D1:$46e06680; D2:$4bf0; D3:$11d1; D4:($83,$ee,$00,$a0,$c9,$0d,$c8,$49));//46e06680-4bf0-11d1-83ee-00a0c90dc8));
@@ -78,59 +78,59 @@ const
 
 //#if (_WIN32_IE >= 0x0400)
 
-  CATID_BrowsableShellExt: TGUID = (D1:$00021490; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  CATID_BrowseInPlace: TGUID = (D1:$00021491; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  CATID_DeskBand: TGUID = (D1:$00021492; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  CATID_InfoBand: TGUID = (D1:$00021493; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  CATID_CommBand: TGUID = (D1:$00021494; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  CATID_BrowsableShellExt: TGUID = (D1:$00021490; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  CATID_BrowseInPlace: TGUID = (D1:$00021491; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  CATID_DeskBand: TGUID = (D1:$00021492; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  CATID_InfoBand: TGUID = (D1:$00021493; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  CATID_CommBand: TGUID = (D1:$00021494; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 //#endif
 
-  PSGUID_INTERNETSHORTCUT: TGUID = (D1:$000214A0; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  FMTID_Intshcut: TGUID = (D1:$000214A0; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  PSGUID_INTERNETSHORTCUT: TGUID = (D1:$000214A0; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  FMTID_Intshcut: TGUID = (D1:$000214A0; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
-  PSGUID_INTERNETSITE: TGUID = (D1:$000214A1; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  FMTID_InternetSite: TGUID = (D1:$000214A1; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  PSGUID_INTERNETSITE: TGUID = (D1:$000214A1; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  FMTID_InternetSite: TGUID = (D1:$000214A1; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
-  CGID_Explorer: TGUID = (D1:$000214D0; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  CGID_ShellDocView: TGUID = (D1:$000214D1; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  CGID_Explorer: TGUID = (D1:$000214D0; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  CGID_ShellDocView: TGUID = (D1:$000214D1; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 //#if (_WIN32_IE >= 0x0400)
 
-  CGID_ShellServiceObject: TGUID = (D1:$000214D2; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  CGID_ExplorerBarDoc: TGUID = (D1:$000214D3; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  CGID_ShellServiceObject: TGUID = (D1:$000214D2; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  CGID_ExplorerBarDoc: TGUID = (D1:$000214D3; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 //#endif
 
-  IID_INewShortcutHookA: TGUID = (D1:$000214E1; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellBrowser: TGUID = (D1:$000214E2; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellView: TGUID = (D1:$000214E3; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IContextMenu: TGUID = (D1:$000214E4; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellIcon: TGUID = (D1:$000214E5; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellFolder: TGUID = (D1:$000214E6; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellExtInit: TGUID = (D1:$000214E8; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellPropSheetExt: TGUID = (D1:$000214E9; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IPersistFolder: TGUID = (D1:$000214EA; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IExtractIconA: TGUID = (D1:$000214EB; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellDetails: TGUID = (D1:$000214EC; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IDelayedRelease: TGUID = (D1:$000214ED; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellLinkA: TGUID = (D1:$000214EE; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellCopyHookA: TGUID = (D1:$000214EF; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IFileViewerA: TGUID = (D1:$000214F0; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_ICommDlgBrowser: TGUID = (D1:$000214F1; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IEnumIDList: TGUID = (D1:$000214F2; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IFileViewerSite: TGUID = (D1:$000214F3; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IContextMenu2: TGUID = (D1:$000214F4; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellExecuteHookA: TGUID = (D1:$000214F5; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IPropSheetPage: TGUID = (D1:$000214F6; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_INewShortcutHookW: TGUID = (D1:$000214F7; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IFileViewerW: TGUID = (D1:$000214F8; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellLinkW: TGUID = (D1:$000214F9; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IExtractIconW: TGUID = (D1:$000214FA; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellExecuteHookW: TGUID = (D1:$000214FB; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellCopyHookW: TGUID = (D1:$000214FC; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  IID_INewShortcutHookA: TGUID = (D1:$000214E1; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellBrowser: TGUID = (D1:$000214E2; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellView: TGUID = (D1:$000214E3; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IContextMenu: TGUID = (D1:$000214E4; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellIcon: TGUID = (D1:$000214E5; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellFolder: TGUID = (D1:$000214E6; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellExtInit: TGUID = (D1:$000214E8; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellPropSheetExt: TGUID = (D1:$000214E9; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IPersistFolder: TGUID = (D1:$000214EA; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IExtractIconA: TGUID = (D1:$000214EB; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellDetails: TGUID = (D1:$000214EC; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IDelayedRelease: TGUID = (D1:$000214ED; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellLinkA: TGUID = (D1:$000214EE; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellCopyHookA: TGUID = (D1:$000214EF; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IFileViewerA: TGUID = (D1:$000214F0; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_ICommDlgBrowser: TGUID = (D1:$000214F1; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IEnumIDList: TGUID = (D1:$000214F2; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IFileViewerSite: TGUID = (D1:$000214F3; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IContextMenu2: TGUID = (D1:$000214F4; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellExecuteHookA: TGUID = (D1:$000214F5; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IPropSheetPage: TGUID = (D1:$000214F6; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_INewShortcutHookW: TGUID = (D1:$000214F7; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IFileViewerW: TGUID = (D1:$000214F8; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellLinkW: TGUID = (D1:$000214F9; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IExtractIconW: TGUID = (D1:$000214FA; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellExecuteHookW: TGUID = (D1:$000214FB; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellCopyHookW: TGUID = (D1:$000214FC; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
-  IID_IRemoteComputer: TGUID = (D1:$000214FE; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IRemoteComputer: TGUID = (D1:$000214FE; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 //#define IID_ICopyHookA                  IID_IShellCopyHookA
 
@@ -142,12 +142,12 @@ const
 
 //#define SID_LinkSite    IID_IShellLinkW     // IServiceProvider::QueryService() access the link object that is defering to you
 
-  SID_LinkSite: TGUID = (D1:$000214F9; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  SID_LinkSite: TGUID = (D1:$000214F9; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 
 //#if (_WIN32_IE >= 0x0400)
 
-  IID_IQueryInfo: TGUID = (D1:$00021500; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IQueryInfo: TGUID = (D1:$00021500; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 //#endif
 
@@ -222,13 +222,13 @@ const
 
 //#define SID_SShellBrowser IID_IShellBrowser
 
-  SID_SShellBrowser: TGUID = (D1:$000214E2; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  SID_SShellBrowser: TGUID = (D1:$000214E2; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 //#if (_WIN32_IE >= 0x0400)
 
 //#define SID_SShellDesktop CLSID_ShellDesktop
 
-  SID_SShellDesktop: TGUID = (D1:$00021400; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46)); // 00021400-0000-0000-C000-0000000000));
+  SID_SShellDesktop: TGUID = (D1:$00021400; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46)); // 00021400-0000-0000-C000-0000000000));
 
 //#endif
 
@@ -259,12 +259,12 @@ const
 //#define IID_IShellExecuteHook   IID_IShellExecuteHookW
 //#define IID_INewShortcutHook    IID_INewShortcutHookW
 
-  IID_IFileViewer: TGUID = (D1:$000214F8; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellLink: TGUID = (D1:$000214F9; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IExtractIcon: TGUID = (D1:$000214FA; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellExecuteHook: TGUID = (D1:$000214FB; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellCopyHook: TGUID = (D1:$000214FC; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_INewShortcutHook: TGUID = (D1:$000214F7; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IFileViewer: TGUID = (D1:$000214F8; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellLink: TGUID = (D1:$000214F9; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IExtractIcon: TGUID = (D1:$000214FA; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellExecuteHook: TGUID = (D1:$000214FB; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellCopyHook: TGUID = (D1:$000214FC; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_INewShortcutHook: TGUID = (D1:$000214F7; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 {$ELSE}
 
@@ -275,12 +275,12 @@ const
 //#define IID_IShellExecuteHook   IID_IShellExecuteHookA
 //#define IID_INewShortcutHook    IID_INewShortcutHookA
 
-  IID_IFileViewer: TGUID = (D1:$000214F0; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellLink: TGUID = (D1:$000214EE; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IExtractIcon: TGUID = (D1:$000214EB; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellCopyHook: TGUID = (D1:$000214EF; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_IShellExecuteHook: TGUID = (D1:$000214F5; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
-  IID_INewShortcutHook: TGUID = (D1:$000214E1; D2:$; D3:$; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IFileViewer: TGUID = (D1:$000214F0; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellLink: TGUID = (D1:$000214EE; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IExtractIcon: TGUID = (D1:$000214EB; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellCopyHook: TGUID = (D1:$000214EF; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_IShellExecuteHook: TGUID = (D1:$000214F5; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
+  IID_INewShortcutHook: TGUID = (D1:$000214E1; D2:$0; D3:$0; D4:($C0,0,0,0,0,0,0,$46));
 
 {$ENDIF}
 

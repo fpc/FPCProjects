@@ -45,6 +45,8 @@ unit JwaLoadPerf;
 
 interface
 
+{$I windefines.inc}
+
 uses
   JwaWinType;
 

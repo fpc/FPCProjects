@@ -36,6 +36,8 @@ unit JwaWinLDAP;
 
 interface
 
+{$I windefines.inc}
+
 uses
   Windows;
 

@@ -578,7 +578,11 @@ type
 
 const
   ANSI_NULL = CHAR(0);
+  {$ifndef FPC}
   UNICODE_NULL = WCHAR(0);
+  {$else}
+  UNICODE_NULL = WORD(0);
+  {$endif}
   UNICODE_STRING_MAX_BYTES = WORD(65534);
   UNICODE_STRING_MAX_CHARS = 32767;
 
@@ -882,7 +886,11 @@ type
   LONG_PTR = Longint;
   PLONG_PTR = ^LONG_PTR;
   ULONG_PTR = Longword;
+{$ifdef FPC}
+  PULONG_PTR = ^ULONG_PTR;
+{$else}
   PULONG_PTR = ^PULONG_PTR;
+{$endif}
 
   LONG32 = Integer;
   PLONG32 = ^LONG32;

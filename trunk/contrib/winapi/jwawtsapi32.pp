@@ -44,6 +44,7 @@
 unit JwaWtsApi32;
 
 interface
+{$I windefines.inc}
 
 uses
   JwaWinNT, JwaWinType;
@@ -453,7 +454,7 @@ const
 //==============================================================================
 
 type
-  _WTS_VIRTUAL_CLASS = (WTSVirtualClientData, WTSVirtualFileHandle);  
+  _WTS_VIRTUAL_CLASS = (WTSVirtualClientData, WTSVirtualFileHandle);
   WTS_VIRTUAL_CLASS = _WTS_VIRTUAL_CLASS;
   TWtsVirtualClass = WTS_VIRTUAL_CLASS;
 
