@@ -2,12 +2,19 @@
 CVS Import changes
 - dos2unix (CVS is unix)
 - renamed *.pas to *.pp
-- strip {$externalsym <blaat>}
-- ( next import should kill HPPEMITs too)
+- strip {$externalsym <blaat>} ( next import should kill HPPEMITs too)
 
-Batchfiles:
+Makefiles
+winapi now has makefiles, but is still a bit problematic. (some files
+don't build, and there is some cyclic problem going on)
+
+Batchfiles: (convtools dir))
 - comp.bat compiles each file. If error level<>0 the compile output is appended
-to longlog.log
+               to longlog.log. Uses docomp.bat to do the actual compiling
+- finddep.bat is used to generate the dependancy information in
+    makefile.fpc. See filtervt.pas source for more details
+    also calls docomp2.bat
+
 
 jwawintype
 - fixed pulong_ptr=pulong_ptr. Is this a bug in winapi or FPC?
