@@ -29,9 +29,6 @@ begin
     item.FCommand.Execute(item);
 end;
 
-function  gtk_check_menu_item_new : PGtkWidget;cdecl;external 'gtk' name 'gtk_check_menu_item_new'; 
-
-
 function TMenuItem.CommandChangeFilter(AEvent: TEventObj): Boolean;
 var
   cmd: TCommand;
@@ -231,6 +228,10 @@ end;
 
 {
   $Log$
+  Revision 1.5  2000/01/24 18:37:07  sg
+  * Moved the declaration of gtk_check_menu_item_new to the proper location,
+    fpc/packages/gtk/gtk/gtkcheckmenuitem.pp
+
   Revision 1.4  2000/01/24 00:25:25  sg
   * Major reimplementation to support TCommand, including support for
     displaying an icon left to a menu item; corrected shortcut handling
