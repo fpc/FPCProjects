@@ -52,7 +52,7 @@ interface
 {$I WINDEFINES.INC}
 
 uses
-  JwaWinType;
+  JwaWinType,jwawinerror;
 
 // Published: http://support.microsoft.com/default.aspx?scid=kb;en-us;297768
 
