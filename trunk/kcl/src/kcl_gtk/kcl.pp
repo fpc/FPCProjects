@@ -37,9 +37,12 @@ type
 
   TTimerHandle = LongWord;
 
+
+  TGdkPixmapCanvas = class;
+
   PImageListItem = ^TImageListItem;
   TImageListItem = record
-    Image: PGdkPixmap;
+    ImageCanvas: TGdkPixmapCanvas;
     Mask: PGdkPixmap;
   end;
 
@@ -76,6 +79,10 @@ type
 
   TBitmap_private = record
     Data, ConvData: Pointer;
+  end;
+
+  TScrollBox_private = record
+    viewport: PGtkWidget;
   end;
 
   TNotebookPage_private = record
@@ -192,13 +199,21 @@ end;
 {$INCLUDE gtoolbar.inc}
 
 
-begin
+initialization
   Application := TApplication.Create(nil);
+
+finalization
+  if Assigned(GlobalClipboard) then
+    GlobalClipboard.Free;
+  Application.Free;
 end.
 
 
 {
   $Log$
+  Revision 1.6  2000/02/10 18:49:22  sg
+  * The global clipboard object is now freed on KCL exit
+
   Revision 1.5  2000/01/24 00:29:29  sg
   * Restructured some of the *_private records
   * TWidgetHandle is now a simple PGtkWidget
