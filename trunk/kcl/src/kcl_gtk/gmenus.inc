@@ -43,11 +43,45 @@ begin
 end;
 
 procedure TMenuItem.OnFinishCreation;
+var
+  s: String;
+  i: Integer;
+  lbl: PGtkWidget;
+  accel: LongWord;
+  form: TWidget;
 begin
   if FText = '-' then
     FHandle.Item := gtk_menu_item_new
-  else
-    FHandle.Item := gtk_menu_item_new_with_label(PChar(FText));
+  else begin
+    // Replace all "&" in FText with "_" (the underline character in GTK)
+    s := FText;
+    for i := 1 to Length(s) do
+      if s[i] = '&' then
+        s[i] := '_';
+
+    FHandle.Item := gtk_menu_item_new;
+    lbl := gtk_accel_label_new('');		// NIL won't work!
+    gtk_misc_set_alignment(PGtkMisc(lbl), 0.0, 0.5);
+    gtk_container_add(PGtkContainer(FHandle.Item), lbl);
+
+    accel := gtk_label_parse_uline(PGtkLabel(lbl), PChar(s));
+    if accel <> GDK_VoidSymbol then
+      if FParent.InheritsFrom(TMenuBar) then begin
+        form := TMenuBar(FParent);
+	while Assigned(form) and not form.InheritsFrom(TGenericForm) do
+	  form := form.FParent;
+	if Assigned(form) then
+          gtk_widget_add_accelerator(FHandle.Item, 'activate_item',
+	    TGenericForm(form).priv.AccelGroup,
+	    accel, GDK_MOD1_MASK, GTK_ACCEL_LOCKED)
+      end else if FParent.InheritsFrom(TMenu) then
+        gtk_widget_add_accelerator(FHandle.Item, 'activate_item',
+	  gtk_menu_ensure_uline_accel_group(PGtkMenu(TMenu(FParent).
+	  FHandle.SubMenu)), accel, 0, GTK_ACCEL_LOCKED);
+
+    gtk_accel_label_set_accel_widget(PGtkAccelLabel(lbl), FHandle.Item);
+    gtk_widget_show(lbl);
+  end;
 
   if FGray then
     gtk_widget_set_state(FHandle.Item, GTK_STATE_INSENSITIVE);
@@ -85,6 +119,7 @@ procedure TMenu.AddItem(AItem: TMenuItem);
 var
   NewItem: TMenuItemInfo;
 begin
+  AItem.FParent := Self;
   NewItem := TMenuItemInfo(FItems.Add);
   NewItem.Item := AItem;
   if Assigned(FHandle.submenu) then begin
@@ -103,6 +138,7 @@ procedure TMenuBar.AddItem(AItem: TMenuItem);
 var
   NewItem: TMenuItemInfo;
 begin
+  AItem.FParent := Self;
   NewItem := TMenuItemInfo(FItems.Add);
   NewItem.Item := AItem;
   if Assigned(Handle.Widget) then begin
@@ -131,7 +167,11 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:25  sg
-  Initial revision
+  Revision 1.2  2000/01/06 23:02:24  sg
+  * "&" in menu item texts are now interpreted as underline command, and the
+    according keyboard accelerators are created
+
+  Revision 1.1.1.1  1999/12/30 21:33:25  sg
+  Initial import
 
 }
