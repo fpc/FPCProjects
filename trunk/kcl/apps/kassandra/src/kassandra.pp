@@ -19,7 +19,7 @@
 program Kassandra;
 uses
   DOS, SysUtils, Classes,			// system units
-  XMLCfg, GetText, Process, Async_IO,		// FPC helper units / FCL
+  XMLCfg, GetText, Process, AsyncIO,		// FPC helper units / FCL
   SHEdit, doc_text, sh_pas, sh_xml,		// SHEdit & friends
   KCL, KCLSHEdit,				// KCL units
   ViewMan, Vw_SHText;				// Kassandra units
@@ -522,7 +522,6 @@ begin
   if TrackCursor then begin
     CompilerOutputWnd.Editor.CursorX := 0;
     CompilerOutputWnd.Editor.CursorY := LineCount;
-    CompilerOutputWnd.Editor.AdjustRangeToCursor;
   end;
 end;
 
@@ -544,6 +543,9 @@ end.
 
 {
   $Log$
+  Revision 1.9  2000/02/22 14:33:02  sg
+  * Unit name change: Async_IO -> AsyncIO (in FCL)
+
   Revision 1.8  2000/02/20 11:01:27  sg
   * The syntax highlighter for files created with "File - New" is now
     initialized correctly
