@@ -57,8 +57,9 @@ type
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure SetText(const AText: String); override;
+    function GetText : String;
   published
-    property Text;
+    property Text read gettext write settext;
     property CanExpandWidth;
     property CanExpandHeight;
     property MultiLine: Boolean read FMultiLine write FMultiLine default False;
@@ -557,6 +558,9 @@ type
 
 {
   $Log$
+  Revision 1.14  2000/02/25 13:15:58  michael
+  + Added gettext read for tedit.text
+
   Revision 1.13  2000/02/25 11:40:28  michael
   + Added Checked reader to TRadioButton
   + Started support for ShowModal
