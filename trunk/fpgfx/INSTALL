@@ -1,0 +1,19 @@
+1. This is not even alpha software. Don't use it for development yet.
+
+2. Do build the library and the examples, you will need a recent version
+   of the Free Pascal compiler (FPC). Check http://www.freepascal.org/ on
+   how to obtain the latest release.
+
+3. For building the HTML documentation, you will need the following packages:
+   * Jade, the SGML/XML DSSSL engine
+   * DocBook XML
+
+4. To make everything just enter "make" in this directory. To build only parts
+   of this package, enter the according directory and issue a "make" command
+   there.
+   The makefiles for subdirectories, the library and the examples use fpcmake,
+   so they will understand the common FPC make rules.
+
+
+Have fun,
+Sebastian

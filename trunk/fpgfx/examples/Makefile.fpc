@@ -1,0 +1,6 @@
+#
+#   Makefile.fpc for fpGFX examples
+#
+
+[targets]
+dirs=helloworld eventtest

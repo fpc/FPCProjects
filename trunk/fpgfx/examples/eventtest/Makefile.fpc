@@ -1,0 +1,10 @@
+#
+#   Makefile.fpc for fpGFX example "EventTest"
+#
+
+[targets]
+programs=eventtest
+
+[require]
+options=-S2h
+packages=fcl fpgfx

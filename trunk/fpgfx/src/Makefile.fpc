@@ -1,0 +1,21 @@
+#
+#   Makefile.fpc for fpGFX
+#
+
+[targets]
+units=gfxbase
+rst=gfxbase
+dirs_linux=x11
+
+[require]
+options=-S2h
+packages=
+
+[libs]
+libname=fpgfx
+
+[install]
+subdir=
+
+[dirs]
+fpcdir=../../..

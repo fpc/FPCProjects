@@ -1,0 +1,21 @@
+#
+#   Makefile.fpc for fpGFX X11 support
+#
+
+[targets]
+units=gfx_x11 gfximpl
+rst=gfx_x11
+
+[require]
+options=-S2h
+packages=
+
+[libs]
+libname=fpgfx_x11
+
+[install]
+subdir=
+
+[dirs]
+fpcdir=../../../..
+unitdir=..

@@ -1,0 +1,10 @@
+#
+#   Makefile.fpc for fpGFX example "HelloWorld"
+#
+
+[targets]
+programs=helloworld
+
+[require]
+options=-S2h
+packages=fcl fpgfx
