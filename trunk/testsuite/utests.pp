@@ -4,7 +4,8 @@ unit utests;
 
 interface
 
-uses cgiapp,sysutils,mysqlDB,whtml,dbwhtml,db;
+uses cgiapp,sysutils,mysqlDB,whtml,dbwhtml,db,
+     Classes,ftFont,fpimage,fpimgcanv,fpWritePng,fpcanvas;
 
 Type
   TTestSuite = Class(TCgiApplication)
@@ -20,6 +21,9 @@ Type
     FDebug,
     FNoSkipped,
     FOnlyFailed : Boolean;
+    FRunSkipCount,
+    FRunFailedCount,
+    FRunCount : Integer;
     FAction : Integer;
     FTestLastDays : Integer;
     Procedure GetOverviewRowAttr(Sender : TObject; Var BGColor : String;
@@ -29,6 +33,7 @@ Type
                             Var Align : THTMLAlign; Var VAlign : THTMLValign;
                             Var CustomAttr : String) ;
     Procedure FormatFailedOverview(Sender : TObject; Var CellData : String);
+    Procedure DoDrawPie(Img : TFPCustomImage; Skipped,Failed,Total : Integer);
   Public
     Function CreateDataset(Qry : String) : TMySQLDataset;
     Function CreateTableProducer(DS : TDataset) :TTableProducer;
@@ -47,10 +52,13 @@ Type
     procedure DisconnectFromDB;
     Procedure EmitTitle(ATitle : String);
     Procedure ShowRunOverview;
+    Procedure CreateRunPie;
     Function  ShowRunData : Boolean;
+    
   end;
 
 implementation
+
 
 Const
 {$i utests.cfg}
@@ -73,6 +81,7 @@ begin
       Case InitCGIVars of
         0 : EmitForm;
         1 : ShowRunResults;
+        2 : CreateRunPie;
       end;
     finally
         DisConnectFromDB;
@@ -111,6 +120,9 @@ begin
   S:=RequestVariables['TESTNOSKIPPED'];
   FNoSkipped:=(S='1');
   S:=RequestVariables['DEBUGCGI'];
+  FRunCount:=StrToIntDef(RequestVariables['PIETOTAL'],0);
+  FRunSkipCount:=StrToIntDef(RequestVariables['PIESKIPPED'],0);
+  FRunFailedCount:=StrToIntDef(RequestVariables['PIEFAILED'],0);
   FDebug:=(S='1');
   Result:=FAction;
 end;
@@ -422,7 +434,7 @@ Function TTestSuite.ShowRunData : Boolean;
 
 COnst
   SGetRunData = 'SELECT TU_ID,TU_DATE,TC_NAME,TO_NAME,TV_VERSION '+
-                ' FROM TESTRESULTS,TESTRUN,TESTCPU,TESTOS,TESTVERSION '+
+                ' FROM TESTRUN,TESTCPU,TESTOS,TESTVERSION '+
                 'WHERE '+
                 ' (TC_ID=TU_CPU_FK) AND '+
                 ' (TO_ID=TU_OS_FK) AND '+
@@ -533,6 +545,9 @@ begin
       Qry:=S;
       If FDebug then
         Write('Query : '+Qry);
+      FRunCount:=0;
+      FRunSkipCount:=0;
+      FRunFailedCount:=0;  
       Q:=CreateDataset(Qry);
       With Q do
         try
@@ -560,6 +575,11 @@ begin
         finally
           Free;
         end;
+      If Not (FRunCount=0) and not (FNoSkipped or FOnlyFailed) then
+        begin
+        ParaGraphStart;
+        TagStart('IMG',Format('Src="testsuite.cgi?TESTACTION=2&PIETOTAL=%d&PIEFAILED=%d&PIESKIPPED=%d"',[FRunCount,FRunFailedCount,FRunSkipCount]));
+        end;
       end
     else
       Write('No data for test run with ID: '+FRunID);
@@ -574,6 +594,7 @@ Var
   
 begin
   P:=(Sender as TTAbleProducer);
+  Inc(FRunCount);
   If (FOnlyFailed and FNoSkipped) then
     begin
     If (P.CurrentRow Mod 2)=0 then
@@ -581,11 +602,17 @@ begin
     end
   else
     If P.Dataset.FieldByName('Skipped').AsString='+' then
-      BGColor:='yellow'    // Yellow
+      begin
+      Inc(FRunSkipCount);
+      BGColor:='yellow';    // Yellow
+      end
     else If P.Dataset.FieldByName('OK').AsString='+' then
       BGColor:='#98FB98'    // pale Green
     else
+      begin
+      Inc(FRunFailedCount);
       BGColor:='#FF82AB';   // Light red
+      end;
 end;
 
 procedure TTestSuite.FormatFailedOverview(Sender: TObject; var CellData: String);
@@ -600,5 +627,145 @@ begin
   S:=S+'&TESTFAILEDONLY=1&TESTNOSKIPPED=1';
   CellData:=Format('<A HREF="%s">%s</A>',[S,CellData]);
 end;
+
+Procedure TTestSuite.CreateRunPie;
+
+Var
+  I : TFPMemoryImage;
+  M : TMemoryStream;
+  
+begin
+  ftFont.InitEngine;
+  FontMgr.SearchPath:='/usr/lib/X11/fonts/truetype';
+  I:=TFPMemoryImage.Create(320,320);
+  try
+    If FRunCount=0 Then 
+      Raise Exception.Create('Invalid parameters passed to script: No total count');
+    DoDrawPie(I,FRunSkipCount,FRunFailedCount,FRunCount);
+    M:=TMemoryStream.Create;
+    Try
+      With TFPWriterPNG.Create do
+        try
+          ImageWrite(M,I);
+        Finally
+          Free;
+        end;
+      ContentType:='image/png';
+      EmitContentType;
+      M.Position:=0;
+      Response.CopyFrom(M,M.Size);
+    Finally
+      M.Free;
+    end;  
+  Finally
+    I.Free;
+  end;    
+end;
+  
+Procedure TTestSuite.DoDrawPie(Img : TFPCustomImage; Skipped,Failed,Total : Integer);
+
+Var
+  Cnv : TFPImageCanvas;
+  W,H,FH,CR,ra : Integer;
+  A1,A2,FR,SR,PR : Double;
+  R : TRect;
+  F : TFreeTypeFont;
+  
+  Procedure AddPie(X,Y,R : Integer; AStart,AStop : Double; Col : TFPColor);
+
+  Var
+    DX,Dy : Integer;
+  
+  begin
+    DX:=Round(R*Cos(A1));
+    DY:=Round(R*Sin(A1));
+    Cnv.Line(X,Y,X+DX,Y-DY);
+    DX:=Round(Ra*Cos(A2));
+    DY:=Round(Ra*Sin(A2));
+    Cnv.Line(X,Y,X+DX,Y-Dy);
+    DX:=Round(R/2*Cos((A1+A2)/2));
+    DY:=Round(R/2*Sin((A1+A2)/2));
+    Cnv.Brush.Color:=Col;
+    Cnv.FloodFill(X+DX,Y-DY);
+  end;
+  
+  Function FractionAngle(F,T : Integer): Double;
+  
+  begin
+    Result:=(2*Pi*(F/T))
+  end;
+  
+  
+    
+begin
+  F:=TFreeTypeFont.Create;
+  With F do
+    begin
+    Name:='arial';
+    FontIndex:=0;
+    Size:=12;
+    Color:=colred;
+    AntiAliased:=False;
+    Resolution:=96;
+    end;
+  // Writeln('Creating image');
+  Cnv:=TFPImageCanvas.Create(Img);
+  // Writeln('Getting width and height');
+  W:=Img.Width;
+  H:=Img.Height;
+  // Writeln('Transparant');
+  cnv.Brush.Style:=bsSolid;
+  cnv.Brush.Color:=colLtGray;
+  cnv.Pen.Color:=colWhite;
+  Cnv.Rectangle(0,0,W,H);
+  // Writeln('Setting font');
+  Cnv.Font:=F;
+  // Writeln('Getting textwidth ');
+  FH:=CNV.GetTextHeight('A');
+  If FH=0 then 
+    FH:=14; // 3 * 14;
+  Inc(FH,3);  
+  R.Top:=FH*4;
+  R.Left:=0;
+  R.Bottom:=H;
+  CR:=H-(FH*4);
+  If W>CR then
+    R.Right:=CR
+  else
+    R.Right:=W;
+  Ra:=CR div 2;  
+  // Writeln('Setting pen color');
+  Cnv.Pen.Color:=colBlack;  
+  // Writeln('Palette size : ',Img.Palette.Count);
+  // Writeln('Setting brush style');
+  cnv.brush.color:=colRed;
+//  cnv.pen.width:=1;
+  // Writeln('Drawing ellipse');
+  Cnv.Ellipse(R);
+  // Writeln('Setting text');
+  // Writeln('Palette size : ',Img.Palette.Count);
+
+  cnv.font.Color:=colred;
+  Inc(FH,4);
+  FR:=Failed/Total;
+  SR:=Skipped/Total;
+  PR:=1-(FR+SR);
+  Cnv.Textout(1,FH,Format('%d Failed (%3.1f%%)',[Failed,Fr*100]));
+  // Writeln('Palette size : ',Img.Palette.Count);
+  cnv.font.Color:=colYellow;
+  Cnv.Textout(1,FH*2,Format('%d Skipped (%3.1f%%)',[Skipped,SR*100]));
+  A1:=(Pi*2*(failed/total));
+  A2:=A1+(Pi*2*(Skipped/Total));
+  AddPie(Ra,R.Top+Ra,Ra,A1,A2,ColYellow);
+  cnv.font.Color:=colGreen;
+  // Writeln('Palette size : ',Img.Palette.Count);
+  A1:=A2;
+  A2:=A1+(Pi*2*((Total-(Skipped+Failed))/Total));
+  Cnv.Textout(1,FH*3,Format('%d Passed (%3.1f%%',[Total-Skipped-Failed,PR*100]));
+  AddPie(Ra,R.Top+Ra,Ra,A1,A2,ColGreen);
+  // Writeln('Palette size : ',Img.Palette.Count);
+  // Writeln('All done');
+end;
+
 
 end.

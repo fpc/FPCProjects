@@ -2,7 +2,7 @@
 {$h+}
 program testsuite;
 
-uses utests;
+uses cmem,utests;
 
 Var
   App : TTestSuite;
