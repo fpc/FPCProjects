@@ -18,12 +18,6 @@
 //   Common implementation of TCustomListBox methods
 // ===================================================================
 
-constructor TCustomListBox.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FItems := TStringList.Create;
-end;
-
 destructor TCustomListBox.Destroy;
 begin
   FItems.Free;
@@ -33,6 +27,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/02/22 14:36:45  sg
+  * Removed common constructor
+
   Revision 1.1  2000/02/17 22:33:19  sg
   * First implementation
 

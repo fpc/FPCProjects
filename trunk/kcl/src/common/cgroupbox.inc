@@ -18,13 +18,6 @@
 //   Common implementation of TCustomGroupBox methods
 // ===================================================================
 
-constructor TCustomGroupBox.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FFixedWidth := True;
-  FFixedHeight := True;
-end;
-
 function TCustomGroupBox.GetWidgetCount: Integer;
 begin
   if Assigned(FContent) then
@@ -47,6 +40,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/02/22 14:35:29  sg
+  * Removed common constructor
+
   Revision 1.1  2000/02/17 22:33:19  sg
   * First implementation
 
