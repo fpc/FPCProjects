@@ -6,6 +6,9 @@
 dirs_linux=kcl_gtk
 dirs_win32=kcl_gtk kcl_w32
 
+[sections]
+none=1
+
 [defaults]
 defaultdir=kcl_gtk
 

@@ -1,0 +1,12 @@
+#
+#   Makefile.fpc for Kassandra
+#
+
+[targets]
+dirs=src
+
+[sections]
+none=1
+
+[defaults]
+defaultdir=src
