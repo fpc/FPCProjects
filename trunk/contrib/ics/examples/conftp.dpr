@@ -46,6 +46,8 @@ Updates:
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 program ConFtp;
 
+
+{$i icsdef.inc}
 {$IFDEF VER80}
     Bomb('Sorry, Delphi 1 does not support console mode programs');
 {$ENDIF}
