@@ -127,7 +127,7 @@ begin
   Result := PageInfos.Count;
   PageInfo := TPageInfo(PageInfos.Add);
   PageInfo.View := View;
-  PageInfo.PgIndex := AddPage('[' + IntToStr(PageNumber) + '] ' +
+  PageInfo.PgIndex := AddPage('&' + IntToStr(PageNumber) + ' ' +
     GetViewTitle(View), View.MainSubwindow);
   View.OnModified := @ViewModified;
   View.MainSubwindow.FinishCreation;
@@ -158,7 +158,7 @@ begin
   for i := 0 to PageInfos.Count - 1 do begin
     PageInfo := TPageInfo(PageInfos.Items[i]);
     if PageInfo.View = View then begin
-      s := '[' + IntToStr(View.PageNumber) + '] ' + GetViewTitle(View);
+      s := '&' + IntToStr(View.PageNumber) + ' ' + GetViewTitle(View);
       if View.IsModified then
         s := s + ' *';
       TNotebookPage(Page[PageInfo.PgIndex]).Text := s;
@@ -219,6 +219,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/01/24 00:34:18  sg
+  * The page title label now underlines the page number (instead of "[1]" etc.)
+
   Revision 1.1  2000/01/05 19:26:34  sg
   * First version (composited of the old 'view_notebook.pp' and 'vw_generic.pp')
 
