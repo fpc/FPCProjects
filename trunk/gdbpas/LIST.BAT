@@ -1,0 +1,1 @@
+diff -b -c %1.%2 new\%1.%2 > new\%1.dif
