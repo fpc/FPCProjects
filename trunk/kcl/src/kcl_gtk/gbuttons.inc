@@ -29,6 +29,16 @@ end;
 //   TButton
 // -------------------------------------------------------------------
 
+
+procedure TButton_OnMap(GtkButton: PGtkButton; button: TButton); cdecl;
+begin
+  if button.FDefault then begin
+    GTK_WIDGET_SET_FLAGS(button.FHandle, GTK_CAN_DEFAULT);
+    gtk_widget_grab_default(button.FHandle);
+  end;
+end;
+
+
 procedure TButton.OnFinishCreation;
 var
   lbl: PGtkWidget;
@@ -38,29 +48,18 @@ begin
   gtk_label_parse_uline(PGtkLabel(lbl), PChar(ConvertUnderlines(FText)));
   gtk_widget_show(lbl);
   gtk_container_add(PGtkContainer(FHandle), lbl);
-  if FDefault then begin
-    GTK_WIDGET_SET_FLAGS(FHandle, GTK_CAN_DEFAULT);
-    gtk_widget_grab_default(FHandle);
-  end;
 
   inherited OnFinishCreation;
 
   gtk_signal_connect(PGtkObject(FHandle), 'clicked',
     GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
+
+  gtk_signal_connect(PGtkObject(FHandle), 'map',
+    GTK_SIGNAL_FUNC(@TButton_OnMap), self);
 end;
 
 procedure TButton.DoRecalcLayout;
-var
-  font: PGdkFont;
-  BorderSize, xthickness, ythickness: Integer;
 begin
-  font := PGtkStyle(PGtkBin(FHandle)^.child^.thestyle)^.font;
-
-  BorderSize := PGtkContainer(FHandle)^.flag0 and bm_TGtkContainer_border_width;
-  xthickness := PGtkStyle(FHandle^.thestyle)^.klass^.xthickness;
-  ythickness := PGtkStyle(FHandle^.thestyle)^.klass^.ythickness;
-
-  MinH := font^.ascent + font^.descent + 2 * (BorderSize + ythickness + 1);
   DefW := MinW + 16;
   DefH := MinH + 4;
 end;
@@ -90,7 +89,6 @@ begin
   pixmap := gtk_pixmap_new(item^.ImageCanvas.pixmap, item^.Mask);
   gtk_container_add(PGtkContainer(FHandle), PGtkWidget(pixmap));
 
-//###  SetFixedSize(FImageList.Width + 8, FImageList.Height + 8);
   inherited OnFinishCreation;
   gtk_signal_connect(PGtkObject(FHandle), 'clicked',
     GTK_SIGNAL_FUNC(@TGenericButton_Clicked), self);
@@ -228,6 +226,11 @@ end;
 
 {
   $Log$
+  Revision 1.11  2000/02/25 15:12:56  sg
+  * TButton.Default now works correctly (but not changing this value after
+    TButton.FinishCreation...)
+  * Simplified size calculations for TButton
+
   Revision 1.10  2000/02/25 11:40:28  michael
   + Added Checked reader to TRadioButton
   + Started support for ShowModal
