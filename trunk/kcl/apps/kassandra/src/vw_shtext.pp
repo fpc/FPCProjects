@@ -98,7 +98,7 @@ begin
   inherited Create(AManager, ADoc, TSHPasEdit);
   e := Editor as TSHPasEdit;
 
-  e.shInvalid    := Widget.AddSHStyle('Invalid',       colRed,         colDefault, fsNormal);
+  e.shInvalid    := Widget.AddSHStyle('Invalid',       colWhite,         colRed, fsNormal);
   e.shSymbol     := Widget.AddSHStyle('Symbol',        colBrown,       colDefault, fsNormal);
   e.shKeyword    := Widget.AddSHStyle('Keyword',       colBlack,       colDefault, fsBold);
   e.shComment    := Widget.AddSHStyle('Comment',       colDarkCyan,    colDefault, fsItalics);
@@ -133,6 +133,9 @@ end.
 
 {
   $Log$
+  Revision 1.5  2000/02/22 14:34:10  sg
+  * Changed colours for shInvalid
+
   Revision 1.4  2000/02/20 11:00:45  sg
   * Added "shInvalid" style initialization for the Pascal highlighter
 
