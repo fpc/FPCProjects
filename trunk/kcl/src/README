@@ -1,5 +1,7 @@
+$Id$
+
 Note: In the following, the term "target" refers to the different
-      implementations for different platforms.
+      implementations for different platforms and/or toolkits.
 
 
 Subdirectory "inc"
@@ -17,7 +19,7 @@ This file $INCLUDEs most of the other "c*.inc" files.
 
 Subdirectory "kcl_gtk"
 ----------------------
-GTK+ (1.2) target implementation
+GTK+ (version >= 1.2) target implementation
 
 Subdirectory "kcl_w32"
 ----------------------
@@ -29,6 +31,17 @@ h*.inc => header (interface)
 c*.inc => common implementation
 g*.inc => GTK
 w*.inc => Win32
+
+
+
+Compiler switches and symbols
+=============================
+
+Event debugging
+---------------
+Define the symbol "DebugEvents" (compiler command line switch: "-dDebugEvents")
+while compiling to get a dump of all events occuring in the system.
+
 
 
 - Sebastian Guenther, sg@freepascal.org
