@@ -85,7 +85,9 @@ end;
 
 procedure TCustomForm.DoClose;
 begin
-  Self.Free;
+  if FShowModal then
+    gtk_main_quit;
+  // Self.Free;
 end;
 
 procedure TCustomForm.OnFinishCreation;
@@ -139,6 +141,8 @@ end;
 procedure TCustomForm.DoShow;
 begin
   gtk_widget_show(FHandle);
+  if FShowModal then
+    gtk_main;
 end;
 
 procedure TCustomForm.Close;
@@ -160,6 +164,9 @@ end;
 
 {
   $Log$
+  Revision 1.10  2000/02/25 12:44:29  michael
+  + ShowModal support finished
+
   Revision 1.9  2000/02/25 11:40:28  michael
   + Added Checked reader to TRadioButton
   + Started support for ShowModal
