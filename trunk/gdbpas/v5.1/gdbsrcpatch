@@ -474,3 +474,15 @@ diff -r -u -N origdb/win32-nat.c gdb/win32-nat.c
  
  /* Determine if the thread referenced by "pid" is alive
     by "polling" it.  If WaitForSingleObject returns WAIT_OBJECT_0
+diff -r -u -N origdb/top.c gdb/top.c
+--- origdb/top.c   Sun Oct 21 20:41:18 2001
++++ gdb/top.c	Thu Mar 14 00:40:00 2002
+@@ -1228,7 +1228,7 @@
+      program to parse, and is just canonical program name and version
+      number, which starts after last space. */
+ 
+-  fprintf_filtered (stream, "GNU gdb %s\n", version);
++  fprintf_filtered (stream, "GNU gdb %s adapted to Free Pascal\n", version);
+ 
+   /* Second line is a copyright notice. */
+ 
