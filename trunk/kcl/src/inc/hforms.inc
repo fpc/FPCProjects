@@ -20,37 +20,69 @@
 
 type
 
-  TGenericForm = class(TWidget)
+// -------------------------------------------------------------------
+//   TCustomForm
+// -------------------------------------------------------------------
+
+  TCustomForm = class(TWidget)
   protected
-    FOnClose: TNotifyEvent;
     priv: TGenericForm_private;
+    FContent: TWidget;
+    FDefaultWidth, FDefaultHeight, FPositionX, FPositionY: Integer;
+    FOnClose: TNotifyEvent;
+
+    procedure SetContent(AContent: TWidget);
+    procedure SetDefaultWidth(AWidth: Integer);
+    procedure SetDefaultHeight(AHeight: Integer);
+    function  GetPositionX: Integer;
+    function  GetPositionY: Integer;
+    procedure SetPositionX(x: Integer);
+    procedure SetPositionY(y: Integer);
+    procedure ApplyMinMaxSize;
+
+    procedure OnFinishCreation; override;
+    procedure ApplySize; override;
+    procedure DoRecalcLayout; override;
   public
     constructor Create(AOwner: TComponent); override;
     function  CanClose: Boolean; virtual;
-    procedure Show; virtual; abstract;
-  published
+    procedure Show;
+    procedure Close;
+    procedure SetDefaultSize(AWidth, AHeight: Integer);
+    procedure SetPosition(x, y: Integer);
+
+    property Content: TWidget read FContent write SetContent;
+    property DefaultWidth: Integer read FDefaultWidth write SetDefaultWidth default -1;
+    property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default -1;
+    property PositionX: Integer read GetPositionX write SetPositionX default -1;
+    property PositionY: Integer read GetPositionY write SetPositionY default -1;
     property OnClose: TNotifyEvent read FOnClose;
   end;
 
 
-  TForm = class(TGenericForm)
-  protected
-    FContent: TWidget;
-    procedure SetContent(AContent: TWidget); // ###virtual;
-    procedure OnFinishCreation; override;
-    procedure OnSetSize; override;
-    procedure OnSizeChanged; override;
-  public
-    procedure Close; virtual;
-    procedure Show; override;
+// -------------------------------------------------------------------
+//   TForm
+// -------------------------------------------------------------------
+
+  TForm = class(TCustomForm)
   published
-    property Content: TWidget read FContent write SetContent stored True;
     property Text;
+    property Content;
+    property DefaultWidth;
+    property DefaultHeight;
+    property PositionX;
+    property PositionY;
+    property OnClose;
   end;
 
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:35:18  sg
+  * Renamed TGenericForm to TCustomForm, to make this more VCL-like
+  * Added new properties for accessing the position and the default size
+    of a form
+
   Revision 1.3  2000/01/24 00:08:49  sg
   * Extended copyright to year 2000...
 
