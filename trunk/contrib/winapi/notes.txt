@@ -1,0 +1,34 @@
+
+CVS Import changes
+- dos2unix (CVS is unix)
+- renamed *.pas to *.pp
+- strip {$externalsym <blaat>}
+- ( next import should kill HPPEMITs too)
+
+Batchfiles:
+- comp.bat compiles each file. If error level<>0 the compile output is appended
+to longlog.log
+
+jwawintype
+- fixed pulong_ptr=pulong_ptr. Is this a bug in winapi or FPC?
+- fixed wchar(0) problem
+
+jwawinbase:1152 RTE 216 if compiled automatically via jwaaccctrl.pp
+
+for
+jwaadstlb,
+jwaloadperf,
+jwawinlm,
+jwawinldap,
+jwazmouse,
+jwawtsapi32
+- added {$i windefines.inc}
+
+jwaadstlb
+- NOVCL around the VCL units.
+- temporarily defined toleenum as longword.
+- windefines added
+- NODISPINTERFACE around all dispinterfaces. (implementation and definition)
+- property integer:integer somewhere fixed to _integer:integer (line 1510
+- misc small fixes by adding dummy types. See {$ifdef fpc} block on top
+        of the file.
