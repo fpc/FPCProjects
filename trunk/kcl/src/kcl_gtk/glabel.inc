@@ -18,28 +18,47 @@
 //   Label widget implementation for GTK+
 // ===================================================================
 
-
-procedure TLabel.OnFinishCreation;
+procedure TCustomLabel.SetAlignment(AAlignment: TAlignment);
+var
+  x: Single;
 begin
-  FHandle := gtk_label_new(PChar(FText));
-  gtk_label_set_justify(PGtkLabel(FHandle), GTK_JUSTIFY_LEFT);
+  FAlignment := AAlignment;
+  if Assigned(FHandle) then begin
+    case FAlignment of
+      taLeftJustify : x := 0;
+      taRightJustify: x := 1.0;
+      taCenter	  : x := 0.5;
+    end;
+    gtk_misc_set_alignment(PGtkMisc(FHandle), x, 0.5);
+  end;
+end;
+
+procedure TCustomLabel.OnFinishCreation;
+begin
+  FHandle := gtk_label_new(nil);
+  gtk_label_parse_uline(PGtkLabel(FHandle), PChar(ConvertUnderlines(FText)));
+  SetAlignment(FAlignment);
   inherited OnFinishCreation;
 end;
 
-procedure TLabel.DoRecalcLayout;
+procedure TCustomLabel.DoRecalcLayout;
 begin
 end;
 
-procedure TLabel.SetText(const AText: String);
+procedure TCustomLabel.SetText(const AText: String);
 begin
   if Assigned(FHandle) then
-    gtk_label_set_text(PGtkLabel(FHandle), PChar(AText));
+    gtk_label_parse_uline(PGtkLabel(FHandle), PChar(ConvertUnderlines(AText)));
   inherited SetText(AText);
 end;
 
 
 {
   $Log$
+  Revision 1.5  2000/02/24 14:56:16  sg
+  * Implemented "Alignment" property
+  * TCustomLabel now supports "&" in "Text" property to mark shortcuts
+
   Revision 1.4  2000/02/24 13:39:32  sg
   * More layout fixes...
 
