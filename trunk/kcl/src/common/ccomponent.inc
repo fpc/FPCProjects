@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -24,27 +24,68 @@ begin
 end;
 
 procedure DumpEvent(Dest: TObject; Event: TEventObj);
-{var
+type
+  PObject = ^TObject;
+var
   ClassInfo: PTypeInfo;
-  ClassTypeData: PTypeData;
+  ClassTypeData, TypeData: PTypeData;
   PropList: PPropList;
-  PropCount, i: Integer;}
-begin
-  WriteLn('Event: ', Event.ClassName, ' for ', Dest.ClassName);
+  PropInfo: PPropInfo;
+  PropCount, i: Integer;
 
-{  ClassInfo := Event.ClassInfo;
-WriteLn('ClassInfo: ', Integer(ClassInfo));
+  c: Char;
+  obj: TObject;
+  s, s2: String;
+begin
+  Write(Event.ClassName);
+
+  ClassInfo := Event.ClassInfo;
   ClassTypeData := GetTypeData(ClassInfo);
-WriteLn('ClassTypeData: ', Integer(ClassInfo));
   PropCount := ClassTypeData^.PropCount;
-WriteLn('PropCount: ', PropCount);
   GetMem(PropList, SizeOf(TPropInfo) * PropCount);
-WriteLn('GetMem OK');
   PropCount := GetPropList(ClassInfo, tkAny, PropList);
-WriteLn('GetPropList OK');
   for i := 0 to PropCount - 1 do begin
-    WriteLn(PropList^[i]^.Name);
-  end;}
+    PropInfo := PropList^[i];
+    if i = 0 then
+      Write(': ')
+    else
+      Write(', ');
+    Write(PropList^[i]^.Name, '=');
+    TypeData := GetTypeData(PropInfo^.PropType);
+    case PropInfo^.PropType^.Kind of
+      tkChar, tkWChar: begin
+          c := Chr(GetOrdProp(Event, PropInfo));
+	  if (c >= ' ') and (c < #255) and (c <> #127) then
+            Write('''', c, '''')
+	  else
+	    Write('#', Ord(c));
+        end;
+      tkInteger: Write(GetOrdProp(Event, PropInfo));
+      tkEnumeration: Write(GetOrdProp(Event, PropInfo));
+      tkSet: Write(GetOrdProp(Event, PropInfo));
+      tkClass: begin
+          obj := PObject(Pointer(Event)+Longint(PropInfo^.GetProc))^;
+	  //if obj.InheritsFrom(TComponent) and (Length(TComponent(obj).Name) > 0) then
+	  //  Write(TComponent(obj).Name)
+	  if obj.InheritsFrom(TComponent) then begin
+	    s := '';
+	    while Assigned(obj) do begin
+	      s2 := TPersistent(obj).GetNamePath;
+	      if Length(s2) = 0 then s2 := obj.ClassName;
+	      if Length(s) > 0 then
+	        s := s2 + '.' + s
+	      else
+	        s := s2;
+	      obj := TComponent(obj).Owner;
+	    end;
+	    Write(s)
+	  end else
+	    Write(obj.ClassName);
+	end;
+      else Write('??? ', Ord(PropInfo^.PropType^.Kind));
+    end;
+  end;
+  WriteLn;
 end;
 
 function TKCLComponent.CallEventFilters(Event: TEventObj): Boolean;
@@ -58,7 +99,10 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:09  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:09:58  sg
+  * Improved event dumping alot
+
+  Revision 1.1.1.1  1999/12/30 21:33:09  sg
+  Initial import
 
 }
