@@ -406,7 +406,8 @@ evaluate_subexp_standard (expect_type, exp, pos, noside)
      about CHILL to know whether expected types is the way to do it.
      FORTRAN I don't know.  */
   if (exp->language_defn->la_language != language_cplus
-      && exp->language_defn->la_language != language_chill)
+      && exp->language_defn->la_language != language_chill
+      && exp->language_defn->la_language != language_pascal)
     expect_type = NULL_TYPE;
 
   pc = (*pos)++;
