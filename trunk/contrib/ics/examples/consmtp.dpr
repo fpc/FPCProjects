@@ -74,11 +74,11 @@ const
 { server which doesn't allow relaying. So you'll be rejected !              }
 const
     { This is your ISP SMPT server hostname }
-    YourSmtpServer   = 'relay.skynet.be';
+    YourSmtpServer   = 'smtp.yourdomain.invalid';
     { This is your sign on. Usually just your domain name }
-    WhoYouAre        = 'YourDomainName';
+    WhoYouAre        = 'mydomain.invalid';
     { And here your own email address }
-    YourEmailAddress = 'user.name@domain.name';
+    YourEmailAddress = 'fpcport@ics.com';
     { And finally the destination email address }
     DestinationEmail = 'francois.piette@swing.be';
 
@@ -155,6 +155,9 @@ begin
     FMessageBody.Add(Trim(CopyRight));
     FMessageBody.Add('');
     FMessageBody.Add('--');
+    FMessageBody.Add('USING FREEPASCAL 1.1');
+    FMessageBody.Add('All console demoes work. Thanks to the compiler developpers');
+    FMessageBody.Add('for all those fixes');
     FMessageBody.Add(FSmtpCli.SignOn);
     FMessageBody.Add(FSmtpCli.FromName);
 
