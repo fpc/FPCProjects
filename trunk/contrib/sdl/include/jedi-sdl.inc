@@ -72,15 +72,27 @@
 {   2004-01-19 - DL : Under instruction from Marco van de Voort, I have added  }
 {                     Better FPC support for FreeBSD.                          }
 {                                                                              }
-{
+(*
   $Log$
-  Revision 1.2  2004/02/15 21:36:01  marco
-   * fixes to new snapshot
+  Revision 1.3  2004/04/04 10:58:38  marco
+   * new version
+
+  Revision 1.1  2004/04/03 20:09:00  marco
+   * New units in this version
+
+  Revision 1.5  2004/03/30 22:41:02  savage
+  Added extra commenting due to previous compiler directive
+
+  Revision 1.4  2004/03/30 22:08:33  savage
+  Added Kylix Define
+
+  Revision 1.3  2004/03/30 21:34:40  savage
+  {$H+} needed for FPC compatiblity
 
   Revision 1.2  2004/02/14 00:23:39  savage
   As UNIX is defined in jedi-sdl.inc this will be used to check linux compatability as well. Units have been changed to reflect this change.
 
-}
+*)
 {******************************************************************************}
 
 {.$define Debug}           { uncomment for debugging }
@@ -187,6 +199,20 @@
    {$DEFINE Has_Int64}
 {$ENDIF ver170}
 
+{$IFDEF UNIX}
+  {$ifdef VER150}
+    {$define KYLIX}
+  {$endif}
+
+  {$ifdef VER140}
+    {$define KYLIX}
+  {$endif}
+
+  {$ifdef VER140}
+    {$define KYLIX}
+  {$endif}
+{$ENDIF UNIX}
+
 {$IFDEF VirtualPascal} {  Virtual Pascal 2.x }
    {$DEFINE Delphi}    {  Use Delphi Syntax }
    {$DEFINE VP2}
@@ -200,6 +226,7 @@
 
 {$IFDEF FPC}
   {$MODE Delphi}          { use Delphi compatibility mode }
+  {$H+}
   {$PACKRECORDS 4}        // Added for record
   {$MACRO ON}             // Added For OpenGL
   {$THREADING on}
@@ -263,7 +290,7 @@
 {$ENDIF}
 
 {$IFDEF Win32}
-  {}                    { no long strings, please! }
+  {$H-}                    { no long strings, please! }
   {$DEFINE OS_BigMem}
 {$ELSE Win32}
   {$IFDEF ver70}
