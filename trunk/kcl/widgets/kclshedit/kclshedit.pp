@@ -67,8 +67,8 @@ type
 
     procedure OnPaintBoxPaint(Sender: TObject; ACanvas: TCanvas;
       const rect: TRect);
-    procedure KeyPressed(Sender: TObject; key: Char; KeyCode: LongWord;
-      ShiftState: TShiftState);
+    function  KeyPressed(Sender: TObject; key: Char; KeyCode: LongWord;
+      ShiftState: TShiftState): Boolean;
     procedure PaintboxMouseButtonDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; MouseX, MouseY: Integer);
     procedure PaintboxMouseMove(Sender: TObject; Shift: TShiftState;
@@ -321,14 +321,14 @@ begin
   Canvas := OldCanvas;
 end;
 
-procedure TKCLSHWidget.KeyPressed(Sender: TObject; key: Char; KeyCode: LongWord;
-  ShiftState: TShiftState);
+function TKCLSHWidget.KeyPressed(Sender: TObject; key: Char; KeyCode: LongWord;
+  ShiftState: TShiftState): Boolean;
 begin
   // WriteLn('Key pressed: Key=#', Ord(key), ', KeyCode=', KeyCode);
   if key <> #0 then
-    FEditor.KeyPressed(Ord(key), ShiftState)
+    Result := not FEditor.KeyPressed(Ord(key), ShiftState)
   else
-    FEditor.KeyPressed(KeyCode, ShiftState);
+    Result := not FEditor.KeyPressed(KeyCode, ShiftState);
 end;
 
 procedure TKCLSHWidget.PaintboxMouseButtonDown(Sender: TObject;
@@ -601,6 +601,10 @@ end.
 
 {
   $Log$
+  Revision 1.3  2000/01/24 00:32:16  sg
+  * "KeyPressed" now returns a flag which indicates wether the key press
+    has been processed or not
+
   Revision 1.2  2000/01/05 19:23:48  sg
   * Added mouse selection support
   * Added clipboard support
