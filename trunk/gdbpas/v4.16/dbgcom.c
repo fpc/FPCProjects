@@ -15,7 +15,11 @@
 #include <go32.h>
 #include <signal.h>
 #include <setjmp.h>
-#include /* <debug/dbgcom.h> */ "dbgcom.h"
+#ifndef FPC
+#include <debug/dbgcom.h>
+#else
+#include "dbgcom.h"
+#endif /* not FPC */
 #include <sys/exceptn.h>
 #include <stubinfo.h>
 #include <sys/farptr.h>
@@ -32,6 +36,7 @@ static char *id = __libdbg_ident_string;
 
 #define USE_FSEXT
 #define CLOSE_UNREGISTERED_FILES
+#define SAVE_FP
 
 #ifdef FPC
 #undef CLOSE_UNREGISTERED_FILES
@@ -43,7 +48,7 @@ static char *id = __libdbg_ident_string;
 /* general debug infos */
 #define DEBUG_DBGCOM
 /* files open/close infos */
-#define DEBUG_DBGCOM_FILES
+//#define DEBUG_DBGCOM_FILES
 /* exceptions infos */
 #define DEBUG_EXCEPTIONS
 #endif /* DEBUG_ALL_DBGCOM */
@@ -97,53 +102,57 @@ static int redir_excp_count;
 
 static void store_fpu_env (void)
 {
-  unsigned char tag;
+#ifdef SAVE_FP
   int i;
   int valid_nb = 0;
   long double d;
-  asm("fstenv %0" : "=g" (fpue));
-  tag = (fpue.status & FPU_TOP_MASK) >> FPU_TOP_SHIFT;
+  unsigned char * b = (unsigned char *) (&d);
+  asm("fnsave %0" : "=g" (fpue));
+  fpue.top = (fpue.status & FPU_TOP_MASK) >> FPU_TOP_SHIFT;
+  fpue.is_mmx = (fpue.top == 0);
   for (i=0;i<8;i++)
     {
     /* tag is a array of 8 2 bits that contain info about FPU registers
-       st(0) is register(tag) and st(1) is register (tag-1) ... */
-     fpue.isvalid[i] = ((fpue.tag >> ((((8+tag)+i) & 7) << 1)) & 3) != 3;
+       st(0) is register(top) and st(1) is register (top+1) ... */
+     fpue.isvalid[i] = ((fpue.tag >> (((fpue.top+i) & 7) << 1)) & 3) != 3;
+     if (fpue.isvalid[i])
+       {
+        fpue.st[i]=fpue.r[(i+fpue.top) & 7];
+        d=fpue.r[i];
+        /* On my Pentium II the two last bytes are set to 0xff
+           on MMX instructions, but on the Intel docs
+           it was only specified that the exponent part
+           has all bits set !
+           Moreover this are only set if the specific mmx register is used */
+           
+        if ((b[8] != 0xff) || ((b[9] & 0x7f) != 0x7f))
+          if ((fpue.tag >> ((((fpue.top+i) & 7) << 1)) & 3) == 2)
+            fpue.is_mmx=0;
+       }
+     else
+       {
+        fpue.st[i]=0;
+        fpue.is_mmx=0;
+       }
     }
-  /* to store the fpu registers we use fstpt and push them again after */
-  /* this code assumes that the only valid regs are
-     from top to base, is this allways true ?
-     for me it is the very definition of a stack */
-  for (i=0;i<8;i++)
-    if (fpue.isvalid[i])
-      {
-       asm("fstpt %0" : "=g" (d));
-       fpue.st[i]=d;
-      }
-  for (i=7;i>=0;i--)
-    if (fpue.isvalid[i])
-      {
-       d=fpue.st[i];
-       asm("fldt %0" :  : "g" (d));
-      }
+#endif
 }
 
 static void restore_fpu_env (void)
 {
+#ifdef SAVE_FP
   int i;
-  long double d;
-  /* to store the fpu registers we use fstpt and push them again after */
   for (i=0;i<8;i++)
-    if (fpue.isvalid[i])
-      {
-       asm("fstpt %0" : "=g" (d));
-      }
-  for (i=7;i>=0;i--)
-    if (fpue.isvalid[i])
-      {
-       d=fpue.st[i];
-       asm("fldt %0" :  : "g" (d));
-      }
-  asm("fldenv %0" :  : "g" (fpue));
+    {
+     if ((fpue.isvalid[i]) && (fpue.st[i]!=fpue.r[(i+fpue.top) & 7]))
+       {
+        fpue.r[(i+fpue.top) & 7]=fpue.st[i];
+       }
+    }
+  /* after this the FPU is restored :
+     no MMX nor FPU instruction should occur after this one */
+  asm("frstor _fpue");
+#endif
 }
 
 static int _DPMIsetBreak(unsigned short sizetype, unsigned vaddr)
@@ -260,6 +269,11 @@ static void hook_dpmi(void)
   __dpmi_get_protected_mode_interrupt_vector(0x09, &my_i9);
   __dpmi_get_protected_mode_interrupt_vector(0x08, &my_i8);
 
+  for (i=0;i<DPMI_EXCEPTION_COUNT;i++)
+    {
+      __dpmi_get_processor_exception_handler_vector(i,&our_handler[i]);
+    }
+
   asm("mov %%cs,%0" : "=g" (new_int.selector) );
   new_int.offset32 = (unsigned long)i21_hook;
   __dpmi_set_protected_mode_interrupt_vector(0x21, &new_int);
@@ -277,11 +291,8 @@ static void hook_dpmi(void)
   }
   for (i=0;i<DPMI_EXCEPTION_COUNT;i++)
     {
-      __dpmi_get_processor_exception_handler_vector(i,&our_handler[i]);
-      /*
         if (app_handler[i].offset32 && app_handler[i].selector)
         __dpmi_set_processor_exception_handler_vector(i,&app_handler[i]);
-      */
     }
 }
 
@@ -318,17 +329,7 @@ _not_in_current_app:                                                    \n\
 );
 
 /* Get an exception handler */
-/* (returns app_handler if set disabled because creates problems (PM))  */
 
-asm("\n\
-        .text                                                           \n\
-        .align  2,0x90                                                  \n\
-_get_exception_handler:                                                 \n\
-        .byte 0x2e                                                      \n\
-        ljmp _old_i31                                                   \n\
-        ");
-
-/* this creates problems ! WHY ??
 asm("\n\
         .text                                                           \n\
         .align  2,0x90                                                  \n\
@@ -342,9 +343,9 @@ _get_exception_handler:                                                 \n\
         movw    %ax,%es                                                 \n\
         movzbl %bl,%eax                                                 \n\
         imull  $8,%eax                                                  \n\
-        addl  $_app_handler,%eax   only retain handlers             \n\
-        cmpw  $0,4(%eax)           for the main app                 \n\
-        je    _app_exception_not_set                                    \n\
+        addl  $_app_handler,%eax   /* only retain handlers */           \n\
+        cmpw  $0,4(%eax)                                                \n\
+        je    _app_exception_not_set /* for the main app */             \n\
         cmpl  $0,(%eax)                                                 \n\
         je    _app_exception_not_set                                    \n\
         movl  (%eax),%edx                                               \n\
@@ -352,7 +353,8 @@ _get_exception_handler:                                                 \n\
         pop    %ds                                                      \n\
         pop    %es                                                      \n\
         popl   %eax                                                     \n\
-        ret                                                             \n\
+	clc								\n\
+        jmp   Lc31_set_flags_and_iret				        \n\
 _app_exception_not_set:                                                 \n\
         pop   %ds                                                       \n\
         pop   %es                                                       \n\
@@ -360,7 +362,7 @@ _app_exception_not_set:                                                 \n\
         .byte 0x2e                                                      \n\
         ljmp _old_i31                                                   \n\
         ret                                                             \n"
-); */
+); 
 
 /* Change a handle in the list: EAX is the old handle, EDX is the new */
 /* for changing a value, we need our ds, because cs has no write access */
@@ -506,6 +508,8 @@ CL7:									\n\
              Ctrl-C will thus create a SIGINT in the top level
              program but cont will directly return to
              the code before interruption no matter at which level)
+             (passing to next would be possible but then we would get a
+              interruption in all levels !!)
   0x0210   : __dpmi_get_extended_exception_handler_vector_pm
   0x0212   : __dpmi_set_extended_exception_handler_vector_pm
   
@@ -514,7 +518,7 @@ CL7:									\n\
   0x0503   : __dpmi_resize_memory
   
 */ 
-asm(		        		       			        "\n\
+asm(						       			"\n\
 	.text								\n\
 	.align  2,0x90							\n\
         .globl  _dbgcom_hook_i31                                        \n\
@@ -689,17 +693,17 @@ Lc31_set_exception_handler:                                             \n\
         pushf                                                           \n\
         .byte  0x2e                                                     \n\
         lcall   _old_i31                                                \n\
-        jc   Lc31_set_flags_and_iret                                    \n\
         popl   %edx                                                     \n\
         popl   %ecx                                                     \n\
         popl   %ebx                                                     \n\
         popl   %eax                                                     \n\
+        jc   Lc31_set_flags_and_iret                                    \n\
         call   _change_exception_handler                                \n\
         pushf                                                           \n\
         .byte  0x2e                                                     \n\
         lcall   _old_i31                                                \n\
         jmp Lc31_set_flags_and_iret                                     \n\
-        .align  2,0x90                                                  \n\
+	.align  2,0x90							\n\
         .globl  _dbgcom_hook_i21                                        \n\
 _dbgcom_hook_i21:                                                       \n\
 _i21_hook:								\n\
@@ -765,6 +769,9 @@ static void unhook_dpmi(void)
       if (i!=2)
         __dpmi_set_processor_exception_handler_vector(i,&our_handler[i]);
     }
+
+  asm ("sti");   /* This improve stability under Win9X after SIGINT */
+		 /* Why? (AP) */
 }
 
 static void dbgsig(int sig)
@@ -780,7 +787,7 @@ static void dbgsig(int sig)
 #endif
   if(__djgpp_exception_state->__cs == app_cs /* || sig == SIGTRAP */)
   {
-    *load_state = *__djgpp_exception_state;     /* exception was in other process */
+    *load_state = *__djgpp_exception_state;	/* exception was in other process */
     longjmp(jumper, 1);
   }
   else
@@ -1314,11 +1321,12 @@ _init_dbg_fsext(void)
 
 /* 
   $Log$
-  Revision 1.4  1998/12/23 10:55:29  pierre
-    + added FPU support for go32v2
-    * now can both handle extended with ten or twelve bytes
-    + added fpue structure for storing FPU environment and stack
-      (in dbgcom.h available for all debuggers
+  Revision 1.5  1999/01/05 08:39:32  pierre
+    + dbgcom.h and dbgcom.c modified by Andris Pavenis
+    + added code for MMX state detection and display
+      (still uggly :
+       FPU stack shown by "info all"
+       MMX registers shown by "info float" if in MMX mode)
 
   Revision 1.3  1998/12/21 11:03:01  pierre
    * problems of FSEXT_dbg solved

@@ -33,8 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Number of machine registers */
 
-#ifdef NOT_USE_387_FPU
-
+#ifdef NO_FPU_REGS
 #undef  NUM_REGS
 #define NUM_REGS 16
 
@@ -97,7 +96,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
   ((N) == PC_REGNUM || (N) == FP_REGNUM || (N) == SP_REGNUM ?         \
    lookup_pointer_type (builtin_type_void) : builtin_type_int)
 
-#endif /* not USE_FPU */
+#endif /* def NO_FPU_REGS */
 
 /* Store the address of the place in which to copy the structure the
    subroutine will return.  This is called from call_function. */

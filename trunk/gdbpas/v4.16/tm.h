@@ -3,6 +3,7 @@
 
 #define FLOAT_INFO {print_387_control_word(fpue.control); \
         print_387_status_word (fpue.status);\
+        print_387_mmx(); \
         }
 
 #define DIRNAME_SEPARATOR ';'

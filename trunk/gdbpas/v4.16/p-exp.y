@@ -55,11 +55,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* workaround for v4.16 DJGPP (PM) */
 #ifndef ULONGEST
-#  ifdef CC_HAS_LONG_LONG
-#    define ULONGEST unsigned long long
-#  else
-#    define ULONGEST unsigned long
-#  endif
+#ifdef CC_HAS_LONG_LONG
+#define ULONGEST unsigned long long
+#else
+#define ULONGEST unsigned long
+#endif
 #endif
 
 /* Remap normal yacc parser interface names (yyparse, yylex, yyerror, etc),
@@ -1434,6 +1434,16 @@ yyerror (msg)
 }
 /*
   $Log$
+  Revision 1.2  1999/01/05 08:39:34  pierre
+    + dbgcom.h and dbgcom.c modified by Andris Pavenis
+    + added code for MMX state detection and display
+      (still uggly :
+       FPU stack shown by "info all"
+       MMX registers shown by "info float" if in MMX mode)
+
+  Revision 1.2  1998/12/23 15:53:06  Pierre
+  exceptions and floatinfo
+
   Revision 1.1  1998/12/18 18:25:49  pierre
   first DJGPP v4.16 for pascal with exception debugging capabilities
 

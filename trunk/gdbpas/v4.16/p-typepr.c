@@ -879,6 +879,16 @@ pas_type_print_base (type, stream, show, level)
 
 /*
   $Log$
+  Revision 1.2  1999/01/05 08:39:36  pierre
+    + dbgcom.h and dbgcom.c modified by Andris Pavenis
+    + added code for MMX state detection and display
+      (still uggly :
+       FPU stack shown by "info all"
+       MMX registers shown by "info float" if in MMX mode)
+
+  Revision 1.2  1998/12/23 15:53:06  Pierre
+  exceptions and floatinfo
+
   Revision 1.1  1998/12/18 18:25:50  pierre
   first DJGPP v4.16 for pascal with exception debugging capabilities
 

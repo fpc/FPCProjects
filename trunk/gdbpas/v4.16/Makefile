@@ -72,7 +72,7 @@ CC=gcc
 srcdir = $(SRCDIR)
 VPATH = $(SRCDIR)
 
-YACC=@YACC@
+YACC=bison
 
 # where to find makeinfo, preferably one designed for texinfo-2
 MAKEINFO = makeinfo --no-split
@@ -142,7 +142,7 @@ ENABLE_OBS=
 # It is also possible that you will need to add -I/usr/include/sys if
 # your system doesn't have fcntl.h in /usr/include (which is where it
 # should be according to Posix).
-DEFS = -Dother_sel
+DEFS = -DFPC -Dother_sel
 GDB_CFLAGS = -I. -I$(srcdir) -I$(srcdir)/config $(DEFS)
 
 # M{H,T}_CFLAGS, if defined, have host- and target-dependent CFLAGS
@@ -1576,11 +1576,15 @@ gdbpas : $(OBS) $(TSOBS) dbgcom.o $(ADD_DEPS) $(CDEPS) init.o
 ### end of the gdb Makefile.in.
 #
 # $Log$
-# Revision 1.4  1998/12/23 10:55:28  pierre
-#   + added FPU support for go32v2
-#   * now can both handle extended with ten or twelve bytes
-#   + added fpue structure for storing FPU environment and stack
-#     (in dbgcom.h available for all debuggers
+# Revision 1.5  1999/01/05 08:39:31  pierre
+#   + dbgcom.h and dbgcom.c modified by Andris Pavenis
+#   + added code for MMX state detection and display
+#     (still uggly :
+#      FPU stack shown by "info all"
+#      MMX registers shown by "info float" if in MMX mode)
+#
+# Revision 1.3  1998/12/23 15:53:06  Pierre
+# exceptions and floatinfo
 #
 # Revision 1.3  1998/12/21 11:02:59  pierre
 #  * problems of FSEXT_dbg solved

@@ -23,8 +23,11 @@ typedef struct {
 
 extern ExternalDebuggerInfo edi;
 
-/* structure of FPU env */
-/* plus space from the FPU stack */
+/* structure of FPU state                       */
+/* 14 bytes for FPU env                         */
+/* plus 8*10 bytes from the FPU stack           */
+/* r[8] is the array as defined in intel docs   */
+/* st0 is r[top]                                */
 
 #define FPU_TOP_MASK 0x3800
 #define FPU_TOP_SHIFT 11
@@ -35,8 +38,15 @@ typedef struct {
   unsigned short instsel,opcode;
   unsigned long operandofs;
   unsigned short operandsel,res4;
-  char isvalid[8];
+  /* added to allow use of fnsave instruction
+     works also for MMX instructions */
+  long double r[8];
   long double st[8];
+  /* this is for fpu stack so
+     is_valid[1] means st1 is valid on stack
+     its location is r[1+top] */
+  char isvalid[8];
+  char top,is_mmx;
 } FPUEnvironment;
 
 extern FPUEnvironment fpue;

@@ -306,6 +306,12 @@ extern void i386_pop_frame PARAMS ((void));
 extern void print_387_control_word PARAMS ((unsigned int));
 extern void print_387_status_word PARAMS ((unsigned int));
 
+#define SUPPORT_I387_MMX
+
+#ifdef SUPPORT_I387_MMX
+extern void print_387_mmx PARAMS ((void));
+#endif /* SUPPORT_I387_MMX */
+
 /* Offset from SP to first arg on stack at first instruction of a function */
 
 #define SP_ARG0 (1 * 4)
