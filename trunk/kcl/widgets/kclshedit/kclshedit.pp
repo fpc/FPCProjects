@@ -55,7 +55,7 @@ type
     FLeftIndent: Integer;		// Left indent (border) in pixel (!)
     FDefMaxTextWidth: Integer;          // Position of vertical bar, in chars
     CharW, CharH: Integer;
-    Fonts: array[TSHFontStyle] of TFont; // Fonts for content drawing
+    Fonts: {array[TSHFontStyle] of} TFont; // Fonts for content drawing
     Canvas: TCanvas;
     FDoc: TTextDoc;
     FEditor: TSHTextEdit;
@@ -79,11 +79,10 @@ type
 
     // The "real" ISHWidget Implemenation:
 
-    procedure InvalidateRect(x1, y1, x2, y2: Integer);
-    procedure InvalidateLines(y1, y2: Integer);
+    procedure InvalidateRect(x, y, w, h: Integer);
 
     // Drawing
-    procedure ClearRect(x1, y1, x2, y2: Integer);
+    procedure ClearRect(x, y, w, h: Integer);
     procedure DrawTextLine(x1, x2, y: Integer; s: PChar);
 
     // Cursor
@@ -109,6 +108,7 @@ type
   public
 
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure SetupEditor(ADoc: TTextDoc; AEditClass: TSHTextEditClass);
 
     function  AddSHStyle(AName: String; AColor, ABackground: LongWord;
@@ -135,9 +135,8 @@ type
 
   TKCLWidgetIf = class(ISHWidget)
     Widget: TKCLSHWidget;
-    procedure InvalidateRect(x1, y1, x2, y2: Integer); override;
-    procedure InvalidateLines(y1, y2: Integer); override;
-    procedure ClearRect(x1, y1, x2, y2: Integer); override;
+    procedure InvalidateRect(x, y, w, h: Integer); override;
+    procedure ClearRect(x, y, w, h: Integer); override;
     procedure DrawTextLine(x1, x2, y: Integer; s: PChar); override;
     procedure ShowCursor(x, y: Integer); override;
     procedure HideCursor(x, y: Integer); override;
@@ -155,9 +154,8 @@ type
     procedure SetClipboard(Content: String); override;
   end;
 
-procedure TKCLWidgetIf.InvalidateRect(x1, y1, x2, y2: Integer);	   begin Widget.InvalidateRect(x1, y1, x2, y2) end;
-procedure TKCLWidgetIf.InvalidateLines(y1, y2: Integer);	   begin Widget.InvalidateLines(y1, y2) end;
-procedure TKCLWidgetIf.ClearRect(x1, y1, x2, y2: Integer);	   begin Widget.ClearRect(x1, y1, x2, y2) end;
+procedure TKCLWidgetIf.InvalidateRect(x, y, w, h: Integer);	   begin Widget.InvalidateRect(x, y, w, h) end;
+procedure TKCLWidgetIf.ClearRect(x, y, w, h: Integer);	   	   begin Widget.ClearRect(x, y, w, h) end;
 procedure TKCLWidgetIf.DrawTextLine(x1, x2, y: Integer; s: PChar); begin Widget.DrawTextLine(x1, x2, y, s) end;
 procedure TKCLWidgetIf.ShowCursor(x, y: Integer);		   begin Widget.ShowCursor(x, y) end;
 procedure TKCLWidgetIf.HideCursor(x, y: Integer);		   begin Widget.HideCursor(x, y)  end;
@@ -192,22 +190,37 @@ begin
   // Create Fonts
   FFontName := 'courier';
   FFontSize := 14;
-  for i := 0 to 3 do begin
+//  for i := 0 to 3 do begin
     f := TFont.Create;
     f.FontName := FFontName;
     f.Height := FFontSize;
     f.Bold := (i and 1) <> 0;
     f.Italics := (i and 2) <> 0;
-    Fonts[TSHFontStyle(i)] := f;
-  end;
-  CharW := Fonts[fsBold].GetTextWidth(' ');
+Fonts := f;
+//    Fonts[TSHFontStyle(i)] := f;
+//  end;
+//  CharW := Fonts[fsBold].GetTextWidth(' ');
+  CharW := Fonts.GetTextWidth(' ');
   CharH := FFontSize + 3;   // *** find better way to determine max. cell height
 
-  FLeftIndent := CharW div 2;
+//  FLeftIndent := CharW div 2;
 
   PaintBox := TPaintBox.Create(Self);
   PaintBox.Name := 'PaintBox';
   Content := PaintBox;
+end;
+
+destructor TKCLSHWidget.Destroy;
+begin
+  FEditor.Free;
+
+  //for i := 0 to 3 do
+    Fonts.Free;
+  WidgetIface.Free;
+
+  FreeMem(SHStyles);
+
+  inherited Destroy;
 end;
 
 procedure TKCLSHWidget.SetupEditor(ADoc: TTextDoc; AEditClass: TSHTextEditClass);
@@ -273,7 +286,7 @@ procedure TKCLSHWidget.OnPaintBoxPaint(Sender: TObject; ACanvas: TCanvas;
   const rect: TRect);
 var
   OldCanvas: TCanvas;
-  px: Integer;
+  px, x, y: Integer;
   r: TRect;
 begin
   ASSERT(Assigned(ACanvas));
@@ -308,9 +321,20 @@ begin
     Canvas.FillRect(0, rect.Top, FLeftIndent, rect.Bottom - rect.Top + 1);
   end;
 
+//###
+//  Canvas.Color := SHStyles^[shWhitespace].Background;
+//  Canvas.FillRect(rect);
+//###
+
   // Draw text
-  FEditor.DrawContent((rect.Left - FLeftIndent) div CharW, rect.Top div CharH,
-    (rect.Right - FLeftIndent - 1) div CharW, (rect.Bottom - 1) div CharH);
+  x := (rect.Left - FLeftIndent) div CharW;
+  y := rect.Top div CharH;
+  FEditor.DrawContent(x, y, (rect.Right - FLeftIndent + CharW + 1) div CharW - x,
+    (rect.Bottom + CharH - 1) div CharH - y);
+
+//  Canvas.Color := SHStyles^[shWhitespace].Background;
+//  Canvas.FillRect(FLeftIndent + x * CharW, y * CharH, w * CharW, h * CharH);
+
 
   if FDefMaxTextWidth > 0 then begin
     px := FLeftIndent + FDefMaxTextWidth * CharW;
@@ -338,7 +362,8 @@ begin
     exit;
   MouseSelStartX := (mx - FLeftIndent + CharW div 2) div CharW;
   MouseSelStartY :=  my div CharH;
-  if MouseSelStartY >= FDoc.LineCount then exit;
+  if MouseSelStartY >= FDoc.LineCount then
+    MouseSelStartY := FDoc.LineCount - 1;
   FEditor.StartSelectionChange;
   FEditor.CursorX := MouseSelStartX;
   FEditor.CursorY := MouseSelStartY;
@@ -354,7 +379,8 @@ begin
   if ssLeft in Shift then begin
     mx := (mx - FLeftIndent + CharW div 2) div CharW;
     my := my div CharH;
-    if my >= FDoc.LineCount then exit;
+    if my >= FDoc.LineCount then
+      my := FDoc.LineCount - 1;
     FEditor.StartSelectionChange;
     FEditor.Selection.StartX := MouseSelStartX;
     FEditor.Selection.StartY := MouseSelStartY;
@@ -390,28 +416,18 @@ begin
 end;
 
 
-procedure TKCLSHWidget.InvalidateRect(x1, y1, x2, y2: Integer);
-var
-  r: TRect;
+procedure TKCLSHWidget.InvalidateRect(x, y, w, h: Integer);
 begin
-  r.Left := FLeftIndent + x1 * CharW;
-  r.Top := y1 * CharH;
-  r.Right := FLeftIndent + (x2 + 1) * CharW;
-  r.Bottom := (y2 + 1) * CharH;
-  PaintBox.Redraw(r);
+//WriteLn('  Invalidate ', x, '/', y, ', ', w, 'x', h);
+  PaintBox.Redraw(FLeftIndent + x * CharW, y * CharH, w * CharW, h * CharH);
 end;
 
-procedure TKCLSHWidget.InvalidateLines(y1, y2: Integer);
-begin
-  PaintBox.Redraw(FLeftIndent, y1 * CharH, FWidth, (y2 - y1 + 1) * CharH);
-end;
-
-procedure TKCLSHWidget.ClearRect(x1, y1, x2, y2: Integer);
+procedure TKCLSHWidget.ClearRect(x, y, w, h: Integer);
 begin
   ASSERT(Assigned(Canvas));
+//WriteLn('ClearRect: ', x, '/', y, ', ', w, 'x', h);
   Canvas.Color := SHStyles^[shWhitespace].Background;
-  Canvas.FillRect(x1 * CharW + FLeftIndent, y1 * CharH,
-    (x2 - x1 + 1) * CharW, (y2 - y1 + 1) * CharH);
+  Canvas.FillRect(FLeftIndent + x * CharW, y * CharH, w * CharW, h * CharH);
 end;
 
 procedure TKCLSHWidget.DrawTextLine(x1, x2, y: Integer; s: PChar);
@@ -425,8 +441,7 @@ var
     if CurX1 < x1 then
       CurX1 := x1;
     if CurX2 >= x1 then
-      Canvas.FillRect(CurX1 * CharW + FLeftIndent, y * CharH,
-        (CurX2 - CurX1 + 1) * CharW + FLeftIndent, CharH);
+      Canvas.FillRect(CurX1 * CharW + FLeftIndent, y * CharH, (CurX2 - CurX1 + 1) * CharW, CharH);
     CurX1 := CurX2 + 1;
   end;
 
@@ -436,7 +451,6 @@ var
   hs: PChar;
 begin
 //  WriteLn('DrawTextLine: x1=', x1, ', x2=', x2, ', y=', y);
-  if Canvas = nil then WriteLn('Canvas = nil !!!');
   ASSERT(Assigned(Canvas));
 
   // Erase the (potentially multi-coloured) background
@@ -496,7 +510,7 @@ begin
       else begin
         if (CurX1 >= x1) and (CurX1 <= x2) then begin
           Canvas.Color := SHStyles^[RequestedColor].Color;
-	  Canvas.Font := Fonts[SHStyles^[RequestedColor].FontStyle];
+	  Canvas.Font := Fonts;//Fonts[SHStyles^[RequestedColor].FontStyle];
 	  Canvas.Text(CurX1 * CharW + FLeftIndent, y * CharH, s[0]);
         end;
         Inc(s);
@@ -527,12 +541,14 @@ end;
 
 function TKCLSHWidget.GetHorzPos: Integer;
 begin
-  Result := (HorzRange.CurValue - FLeftIndent) div CharW;
+  // Do NOT use LeftIndent here!
+  Result := HorzRange.CurValue div CharW;
 end;
 
 procedure TKCLSHWidget.SetHorzPos(x: Integer);
 begin
-  HorzRange.CurValue := FLeftIndent + x * CharW;
+  // Do NOT use LeftIndent here!
+  HorzRange.CurValue := x * CharW;
 end;
 
 function TKCLSHWidget.GetVertPos: Integer;
@@ -547,7 +563,7 @@ end;
 
 function TKCLSHWidget.GetPageWidth: Integer;
 begin
-  Result := HorzRange.PageSize;
+  Result := (HorzRange.PageSize - FLeftIndent + CharW - 1) div CharW;
 end;
 
 function TKCLSHWidget.GetPageHeight: Integer;
@@ -601,6 +617,10 @@ end.
 
 {
   $Log$
+  Revision 1.4  2000/01/31 19:32:26  sg
+  * Adapted to new SHEdit interface (mainly for selection redrawing fixes)
+  * Fixed horizontal scrolling
+
   Revision 1.3  2000/01/24 00:32:16  sg
   * "KeyPressed" now returns a flag which indicates wether the key press
     has been processed or not
