@@ -1,11 +1,20 @@
+USERSGUIDE=kcluser
+
 all:
-	latex kcl
-	latex kcl
+	latex $(USERSGUIDE)
+	latex $(USERSGUIDE)
 pdf:
-	pdflatex kcl
-	pdflatex kcl
-	thumbpdf kcl
-	pdflatex kcl
+	pdflatex $(USERSGUIDE)
+	pdflatex $(USERSGUIDE)
+	thumbpdf $(USERSGUIDE)
+	pdflatex $(USERSGUIDE)
+
+smallpdf:
+	pslatex $(USERSGUIDE)
+	dvips $(USERSGUIDE)
+	ps2pdf $(USERSGUIDE).ps $(USERSGUIDE)_small.pdf
+	rm -f $(USERSGUIDE).ps $(USERSGUIDE).dvi
+
 clean:
 	rm -f *.aux *.log *.png *.toc *.out thumb*.*
 mrproper:
