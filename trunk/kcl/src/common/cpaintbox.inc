@@ -25,12 +25,12 @@ begin
       FOnPaint(Self, ACanvas, ARect);
 end;
 
-procedure TCustomPaintBox.DoKey(AKey: Char; AKeyCode: LongWord;
-  AShift: TShiftState);
+function TCustomPaintBox.DoKey(AKey: Char; AKeyCode: LongWord;
+  AShift: TShiftState): Boolean;
 begin
-  if CallEventFilters(TKeyEventObj.Create(Self, AKey, AKeyCode, AShift)) then
-    if Assigned(FOnKey) then
-      FOnKey(Self, AKey, AKeyCode, AShift);
+  Result := CallEventFilters(TKeyEventObj.Create(Self, AKey, AKeyCode, AShift));
+  if Result and Assigned(FOnKey) then
+    Result := FOnKey(Self, AKey, AKeyCode, AShift);
 end;
 
 procedure TCustomPaintBox.DoMouseButtonDown(AButton: TMouseButton;
@@ -63,6 +63,10 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/01/24 00:20:43  sg
+  * Changed "DoKey" to function; it now returns if the event has been handled
+    successfully or not
+
   Revision 1.1  2000/01/05 19:12:00  sg
   * First version
 
