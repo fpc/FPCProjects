@@ -74,8 +74,8 @@
 {                                                                              }
 {
   $Log$
-  Revision 1.1  2004/02/15 21:11:21  marco
-   * new version. Initial
+  Revision 1.2  2004/02/15 21:36:01  marco
+   * fixes to new snapshot
 
   Revision 1.2  2004/02/14 00:23:39  savage
   As UNIX is defined in jedi-sdl.inc this will be used to check linux compatability as well. Units have been changed to reflect this change.
@@ -263,7 +263,7 @@
 {$ENDIF}
 
 {$IFDEF Win32}
-  {$H-}                    { no long strings, please! }
+  {}                    { no long strings, please! }
   {$DEFINE OS_BigMem}
 {$ELSE Win32}
   {$IFDEF ver70}
