@@ -1,5 +1,5 @@
 #
-#   Makefile.fpc for fpGFX X11 support
+#   Makefile.fpc for fpGFX X11 target
 #
 
 [targets]
@@ -17,5 +17,5 @@ libname=fpgfx_x11
 subdir=
 
 [dirs]
-fpcdir=../../../..
-unitdir=..
+fpcdir=../../../../fpc
+unitdir=.. ../emulayer

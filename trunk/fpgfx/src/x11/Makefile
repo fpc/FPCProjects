@@ -123,7 +123,7 @@ endif
 
 # Default FPCDIR
 ifeq ($(FPCDIR),wrong)
-override FPCDIR=../../../..
+override FPCDIR=../../../../fpc
 ifeq ($(wildcard $(FPCDIR)/rtl),)
 ifeq ($(wildcard $(FPCDIR)/units),)
 override FPCDIR=wrong
@@ -192,7 +192,7 @@ override NEEDOPT=-S2h
 
 # Directories
 
-override NEEDUNITDIR=..
+override NEEDUNITDIR=.. ../emulayer
 
 # Packages
 
