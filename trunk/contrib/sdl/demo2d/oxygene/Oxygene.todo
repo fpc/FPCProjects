@@ -1,0 +1,4 @@
+{DONE -Debugging : Implement Logging.}
+{DONE -Effects : Insert supporting BASS v1.1 because it sounds better than SDL_Mixer.}
+{DONE -Effects : Add various sound effects to the game.}
+{TODO -Effects : Add a death effect to Spikey and Medusa.} 
