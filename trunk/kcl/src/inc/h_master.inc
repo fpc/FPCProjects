@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -33,14 +33,18 @@
 {$INCLUDE hclipboard.inc}	// Clipboard class
 
 // Visual Stuff:
-{$INCLUDE hdrawing.inc}		// Drawing support (canvas, fonts etc.)
+{$INCLUDE hgraphics.inc}	// Graphics support (drawing, bitmaps etc.)
+{$INCLUDE himagelist.inc}	// TImageList
+{$INCLUDE hcommands.inc}	// TCommand, TCommandList
 {$INCLUDE hwidget.inc}		// TWidget
+{$INCLUDE hmenus.inc}		// Menu classes (menu bars, items, popups...)
 {$INCLUDE hwidgets.inc}		// Widgets
 {$INCLUDE hlayouts.inc}		// GUI layout classes
 {$INCLUDE hforms.inc}		// Widgets
 {$INCLUDE hdialogs.inc}		// Dialog box support
-{$INCLUDE hmenus.inc}		// Menu classes (menu bars, items, popups...)
 
+
+function  ShortcutDisplayName(const AShortCut: String): String;
 
 procedure Register;		// Register all components (-> persistence)
 
@@ -50,8 +54,11 @@ var
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:22  sg
-  Initial revision
+  Revision 1.2  2000/01/24 00:01:06  sg
+  * Added himagelist and hcommands, renamed hdrawing to hgraphics
+
+  Revision 1.1.1.1  1999/12/30 21:33:22  sg
+  Initial import
 
   Revision 1.1  1999/12/23 17:40:25  sg
   * Added KCL to CVS tree (but without Win32 target yet)
