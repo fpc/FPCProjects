@@ -27,7 +27,7 @@ unit KCL;
 
 interface
 
-uses classes, GDK, GTK;
+uses Classes, GDK, GTK;
 
 const
 
@@ -37,20 +37,29 @@ type
 
   TTimerHandle = LongWord;
 
-  TWidgetHandle = record
-      case Byte of
-        0: (Form: PGtkWindow);
-        1: (Widget: PGtkWidget);
-        2: (Layout: PGtkLayout);
-      end;
+  PImageListItem = ^TImageListItem;
+  TImageListItem = record
+    Image: PGdkPixmap;
+    Mask: PGdkPixmap;
+  end;
+
+  TImageList_private = TList;	// List of elements of type PImageListItem
+
+  TWidgetHandle = PGtkWidget;
 
   TGenericForm_private = record
     AccelGroup: PGtkAccelGroup;
   end;
 
-  TMenuItemHandle = record
-    item, submenu: PGtkWidget;
+  TMenuItemHandle = PGtkWidget;
+  TMenuItem_private = record
+    Item, SubMenu, Packer, Pixmap: PGtkWidget;
     AccelGroup: PGtkAccelGroup;
+    TextLabel, AccelLabel: PGtkWidget;
+  end;
+
+  TMenu_private = record
+    TearoffItem: PGtkWidget;
   end;
 
   THorzScrollBar_private = PGtkAdjustment;
@@ -65,8 +74,20 @@ type
     GC: PGdkGC;
   end;
 
+  TBitmap_private = record
+    Data, ConvData: Pointer;
+  end;
+
   TNotebookPage_private = record
-    LabelWidget: PGtkLabel;
+    LabelWidget: PGtkWidget;
+  end;
+
+  TToolButton_private = record
+    Widget: PGtkWidget;
+  end;
+
+  TToolBar_private = record
+    ToolBar: PGtkToolBar;
   end;
 
 {$INCLUDE h_master.inc}
@@ -79,6 +100,68 @@ uses SysUtils, TypInfo;
 
 var
   gToolTips: PGtkToolTips;
+  gBitmapWnd: PGtkWidget;
+  gBitmapGC: PGdkGC;
+  gGdkRGBInitialized: Boolean;
+
+
+
+function ReplaceStr(const s, OldStr, NewStr: String): String;
+var
+  i: Integer;
+begin
+  Result := s;
+  i := Pos(OldStr, s);
+  if i = 0 then exit;
+  Result := Copy(s, 1, i - 1) + NewStr + Copy(s, i + Length(OldStr), Length(s));
+end;
+
+function ShortcutDisplayName(const AShortCut: String): String;
+var
+  accel: LongWord;
+  mods: TGdkModifierType;
+begin
+  gtk_accelerator_parse(PChar(AShortCut), @accel, @mods);
+  Result := Trim(UpperCase(gtk_accelerator_name(accel, mods)));
+  Result := ReplaceStr(Result, '<SHIFT>', 'Shift+');
+  Result := ReplaceStr(Result, '<CONTROL>', 'Ctrl+');
+  Result := ReplaceStr(Result, '<ALT>', 'Alt+');
+end;
+
+
+procedure BitmapWndNeeded;
+begin
+  if not Assigned(gBitmapWnd) then begin
+    gBitmapWnd := gtk_window_new(GTK_WINDOW_POPUP);
+    gtk_widget_set_usize(gBitmapWnd, 0, 0);
+    gtk_widget_show(gBitmapWnd);
+    gtk_widget_hide(gBitmapWnd);
+    gBitmapGC := gdk_gc_new(gBitmapWnd^.window);
+  end;
+end;
+
+procedure GdkRGBNeeded;
+begin
+  if not gGdkRGBInitialized then begin
+    gdk_rgb_init;
+    gGdkRGBInitialized := True;
+  end;
+end;
+
+
+// Replace all "&" in AmpersandStr with "_" (the underline character in GTK)
+function ConvertUnderlines(const AmpersandStr: String): String;
+var
+  i: Integer;
+begin
+  SetLength(Result, 0);
+  for i := 1 to Length(AmpersandStr) do
+    case AmpersandStr[i] of
+      '&': Result := Result + '_';
+      '_': Result := Result + '__';
+      else Result := Result + AmpersandStr[i];
+    end;
+end;
 
 
 {$INCLUDE c_master.inc}
@@ -86,17 +169,18 @@ var
 
 {$INCLUDE gapplication.inc}
 {$INCLUDE gtimer.inc}
-{$INCLUDE gdrawing.inc}
+{$INCLUDE ggraphics.inc}
 {$INCLUDE gform.inc}
 {$INCLUDE glayouts.inc}
 {$INCLUDE gdialogs.inc}
 {$INCLUDE gmenus.inc}
+{$INCLUDE gimagelist.inc}
 
 // Widgets:
 {$INCLUDE gwidget.inc}
 {$INCLUDE glabel.inc}
 {$INCLUDE gedit.inc}
-{$INCLUDE gbutton.inc}
+{$INCLUDE gbuttons.inc}
 {$INCLUDE glistbox.inc}
 {$INCLUDE gcolumnlist.inc}
 {$INCLUDE gtreeview.inc}
@@ -105,6 +189,7 @@ var
 {$INCLUDE gnotebook.inc}
 {$INCLUDE gstatusbar.inc}
 {$INCLUDE gsplitter.inc}
+{$INCLUDE gtoolbar.inc}
 
 
 begin
@@ -114,6 +199,11 @@ end.
 
 {
   $Log$
+  Revision 1.5  2000/01/24 00:29:29  sg
+  * Restructured some of the *_private records
+  * TWidgetHandle is now a simple PGtkWidget
+  * Added some helper functions
+
   Revision 1.4  2000/01/10 09:54:11  peter
     * listbox added
 
