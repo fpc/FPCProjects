@@ -405,7 +405,7 @@ var
 begin
   doc := TTextDoc.Create;
   doc.AddLine('');
-  view := TSHTextView.Create(Views, doc, TSHPasEdit);
+  view := TSHPasView.Create(Views, doc);
   view.FileName := 'noname' + IntToStr(NonameCounter) + '.pp';
   view.HasDefaultName := True;
   Inc(NonameCounter);
@@ -544,6 +544,10 @@ end.
 
 {
   $Log$
+  Revision 1.8  2000/02/20 11:01:27  sg
+  * The syntax highlighter for files created with "File - New" is now
+    initialized correctly
+
   Revision 1.7  2000/02/19 19:08:07  sg
   * Adapted to changes in KCL
 
