@@ -2,7 +2,7 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000 by
+    Copyright (C) 2000 - 2001 by
       Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     Win32 GDI target implementation: Keycode translation helpers
@@ -37,7 +37,7 @@ const
     -1,			// $0f
     keyShift,		// $10  VK_SHIFT
     keyCtrl,		// $11  VK_CONTROL
-    keyMenu,		// $12  VK_MENU
+    keyAlt,		// $12  VK_MENU
     keyPause,		// $13  VK_PAUSE
     -1,			// $14  VK_CAPITAL
     -1,			// $15  VK_KANA
@@ -63,7 +63,7 @@ const
     keySelect,		// $29  VK_SELECT
     keyPrintScreen,	// $2a  VK_PRINT
     keyExecute,		// $2b  VK_EXECUTE
-    -1,			// $2c  VK_SNAPSHOT
+    keyPrintScreen,	// $2c  VK_SNAPSHOT
     keyInsert,		// $2d  VK_INSERT
     keyDelete,		// $2e  VK_DELETE
     keyHelp,		// $2f  VK_HELP
@@ -205,13 +205,13 @@ const
     -1,			// $b7  VK_LAUNCH_APP2
     -1,			// $b8
     -1,			// $b9
-    -1,			// $ba  VK_OEM_1
-    -1,			// $bb  VK_OEM_PLUS
-    -1,			// $bc  VK_OEM_COMMA
-    -1,			// $bd  VK_OEM_MINUS
-    -1,			// $be  VK_OEM_PERIOD
-    -1,			// $bf  VK_OEM_2
-    -1,			// $c0  VK_OEM_3
+    $dc, {U Umlaut}	// $ba  VK_OEM_1
+    $2b, {+ char}	// $bb  VK_OEM_PLUS
+    $2c, {, char}	// $bc  VK_OEM_COMMA
+    $2d, {- char}	// $bd  VK_OEM_MINUS
+    $2e, {. char}	// $be  VK_OEM_PERIOD
+    $23, {# char}	// $bf  VK_OEM_2
+    $d6, {O Umlaut}	// $c0  VK_OEM_3
     -1,			// $c1
     -1,			// $c2
     -1,			// $c3
@@ -239,13 +239,13 @@ const
     -1,			// $d9
     -1,			// $da
     -1,			// $db  VK_OEM_4
-    -1,			// $dc  VK_OEM_5
-    -1,			// $dd  VK_OEM_6
-    -1,			// $de  VK_OEM_7
+    keyDeadCircumflex,	// $dc  VK_OEM_5
+    keyDeadAcute,	// $dd  VK_OEM_6
+    $c4, {A Umlaut}	// $de  VK_OEM_7
     -1,			// $df  VK_OEM_8
     -1,			// $e0
     -1,			// $e1  VK_OEM_AX
-    -1,			// $e2  VK_OEM_102
+    $3c, {< char}	// $e2  VK_OEM_102
     -1,			// $e3  VK_ICO_HELP
     keyP5,		// $e4  VK_ICO_00
     -1,			// $e5  VK_PROCESSKEY
@@ -279,10 +279,15 @@ const
 begin
   if TranslTable[VirtKey]  = -1 then
   begin
+{$IFDEF Debug}
     WriteLn('No mapping for virtual keycode $', IntToHex(VirtKey, 2));
+{$ENDIF}
     Result := keyNIL
   end else
+  begin
     Result := TranslTable[VirtKey];
+    // WriteLn('Key $', IntToHex(VirtKey, 2), ' mapped to $', IntToHex(Result, 4));
+  end;
 end;
 
 
@@ -292,29 +297,32 @@ var
 begin
   Windows.GetKeyboardState(State);
   Result := [];
-  if State[VK_SHIFT] <> 0 then
+  if (State[VK_SHIFT] and 128) <> 0 then
     Include(Result, ssShift);
-  if State[VK_MENU] <> 0 then
+  if (State[VK_MENU] and 128) <> 0 then
     Include(Result, ssAlt);
-  if State[VK_CONTROL] <> 0 then
+  if (State[VK_CONTROL] and 128) <> 0 then
     Include(Result, ssCtrl);
-  if State[VK_LBUTTON] <> 0 then
+  if (State[VK_LBUTTON] and 128) <> 0 then
     Include(Result, ssLeft);
-  if State[VK_RBUTTON] <> 0 then
+  if (State[VK_RBUTTON] and 128) <> 0 then
     Include(Result, ssRight);
-  if State[VK_MBUTTON] <> 0 then
+  if (State[VK_MBUTTON] and 128) <> 0 then
     Include(Result, ssMiddle);
-  if State[VK_CAPITAL] <> 0 then
+  if (State[VK_CAPITAL] and 1) <> 0 then
     Include(Result, ssCaps);
-  if State[VK_NUMLOCK] <> 0 then
+  if (State[VK_NUMLOCK] and 1) <> 0 then
     Include(Result, ssNum);
-  if State[VK_SCROLL] <> 0 then
+  if (State[VK_SCROLL] and 1) <> 0 then
     Include(Result, ssScroll);
 end;
 
 
 {
   $Log$
+  Revision 1.2  2001/02/09 20:44:59  sg
+  * Fixed lots of keyboard mapping bugs
+
   Revision 1.1  2001/01/11 23:07:24  sg
   *** empty log message ***
 
