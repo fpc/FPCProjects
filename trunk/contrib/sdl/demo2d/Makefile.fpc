@@ -3,6 +3,6 @@
 #
 
 [target]
-dirs=blitzbomber isometric mouse plasma voxel sdltests sdlutilstests
+dirs=blitzbomber isometric mouse plasma voxel sdltests sdlutilstests monofonts
 
 

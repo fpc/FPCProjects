@@ -202,7 +202,9 @@ else
 UNITSDIR:=$(wildcard $(FPCDIR)/units/$(OS_TARGET))
 endif
 PACKAGESDIR:=$(wildcard $(FPCDIR) $(FPCDIR)/packages/base $(FPCDIR)/packages/extra)
-override TARGET_DIRS+=blitzbomber isometric mouse plasma voxel sdltests sdlutilstests monofonts
+override TARGET_PROGRAMS+=monofonts_test
+override COMPILER_INCLUDEDIR+=../../include
+override COMPILER_UNITDIR+=../../basesdl
 ifdef REQUIRE_UNITSDIR
 override UNITSDIR+=$(REQUIRE_UNITSDIR)
 endif
@@ -874,7 +876,7 @@ else
 TAROPT=vz
 TAREXT=.tar.gz
 endif
-override REQUIRE_PACKAGES=rtl 
+override REQUIRE_PACKAGES=rtl x11
 ifeq ($(OS_TARGET),linux)
 ifeq ($(CPU_TARGET),i386)
 REQUIRE_PACKAGES_RTL=1
@@ -1206,9 +1208,118 @@ ifeq ($(FULL_SOURCE),$(FULL_TARGET))
 EXECPPAS:=@$(PPAS)
 endif
 endif
+.PHONY: fpc_exes
+ifdef TARGET_PROGRAMS
+override EXEFILES=$(addsuffix $(EXEEXT),$(TARGET_PROGRAMS))
+override EXEOFILES:=$(addsuffix $(OEXT),$(TARGET_PROGRAMS)) $(addprefix $(STATICLIBPREFIX),$(addsuffix $(STATICLIBEXT),$(TARGET_PROGRAMS)))
+override ALLTARGET+=fpc_exes
+override INSTALLEXEFILES+=$(EXEFILES)
+override CLEANEXEFILES+=$(EXEFILES) $(EXEOFILES)
+ifeq ($(OS_TARGET),os2)
+override CLEANEXEFILES+=$(addsuffix $(AOUTEXT),$(TARGET_PROGRAMS))
+endif
+ifeq ($(OS_TARGET),emx)
+override CLEANEXEFILES+=$(addsuffix $(AOUTEXT),$(TARGET_PROGRAMS))
+endif
+endif
+fpc_exes: $(EXEFILES)
 ifdef TARGET_RSTS
 override RSTFILES=$(addsuffix $(RSTEXT),$(TARGET_RSTS))
 override CLEANRSTFILES+=$(RSTFILES)
+endif
+.PHONY: fpc_all fpc_smart fpc_debug fpc_release
+$(FPCMADE): $(ALLDEPENDENCIES) $(ALLTARGET)
+	@$(ECHOREDIR) Compiled > $(FPCMADE)
+fpc_all: $(FPCMADE)
+fpc_smart:
+	$(MAKE) all LINKSMART=1 CREATESMART=1
+fpc_debug:
+	$(MAKE) all DEBUG=1
+fpc_release:
+	$(MAKE) all RELEASE=1
+.SUFFIXES: $(EXEEXT) $(PPUEXT) $(OEXT) .pas .pp .rc .res
+%$(PPUEXT): %.pp
+	$(COMPILER) $<
+	$(EXECPPAS)
+%$(PPUEXT): %.pas
+	$(COMPILER) $<
+	$(EXECPPAS)
+%$(EXEEXT): %.pp
+	$(COMPILER) $<
+	$(EXECPPAS)
+%$(EXEEXT): %.pas
+	$(COMPILER) $<
+	$(EXECPPAS)
+%.res: %.rc
+	windres -i $< -o $@
+vpath %.pp $(COMPILER_SOURCEDIR) $(COMPILER_INCLUDEDIR)
+vpath %.pas $(COMPILER_SOURCEDIR) $(COMPILER_INCLUDEDIR)
+vpath %$(PPUEXT) $(COMPILER_UNITTARGETDIR)
+.PHONY: fpc_install fpc_sourceinstall fpc_exampleinstall
+ifdef INSTALL_UNITS
+override INSTALLPPUFILES+=$(addsuffix $(PPUEXT),$(INSTALL_UNITS))
+endif
+ifdef INSTALL_BUILDUNIT
+override INSTALLPPUFILES:=$(filter-out $(INSTALL_BUILDUNIT)$(PPUEXT),$(INSTALLPPUFILES))
+endif
+ifdef INSTALLPPUFILES
+override INSTALLPPULINKFILES:=$(subst $(PPUEXT),$(OEXT),$(INSTALLPPUFILES)) $(addprefix $(STATICLIBPREFIX),$(subst $(PPUEXT),$(STATICLIBEXT),$(INSTALLPPUFILES)))
+override INSTALLPPUFILES:=$(addprefix $(UNITTARGETDIRPREFIX),$(INSTALLPPUFILES))
+override INSTALLPPULINKFILES:=$(wildcard $(addprefix $(UNITTARGETDIRPREFIX),$(INSTALLPPULINKFILES)))
+override INSTALL_CREATEPACKAGEFPC=1
+endif
+ifdef INSTALLEXEFILES
+override INSTALLEXEFILES:=$(addprefix $(TARGETDIRPREFIX),$(INSTALLEXEFILES))
+endif
+fpc_install: all $(INSTALLTARGET)
+ifdef INSTALLEXEFILES
+	$(MKDIR) $(INSTALL_BINDIR)
+ifdef UPXPROG
+	-$(UPXPROG) $(INSTALLEXEFILES)
+endif
+	$(INSTALLEXE) $(INSTALLEXEFILES) $(INSTALL_BINDIR)
+endif
+ifdef INSTALL_CREATEPACKAGEFPC
+ifdef FPCMAKE
+ifdef PACKAGE_VERSION
+ifneq ($(wildcard Makefile.fpc),)
+	$(FPCMAKE) -p -T$(OS_TARGET) Makefile.fpc
+	$(MKDIR) $(INSTALL_UNITDIR)
+	$(INSTALL) Package.fpc $(INSTALL_UNITDIR)
+endif
+endif
+endif
+endif
+ifdef INSTALLPPUFILES
+	$(MKDIR) $(INSTALL_UNITDIR)
+	$(INSTALL) $(INSTALLPPUFILES) $(INSTALL_UNITDIR)
+ifneq ($(INSTALLPPULINKFILES),)
+	$(INSTALL) $(INSTALLPPULINKFILES) $(INSTALL_UNITDIR)
+endif
+ifneq ($(wildcard $(LIB_FULLNAME)),)
+	$(MKDIR) $(INSTALL_LIBDIR)
+	$(INSTALL) $(LIB_FULLNAME) $(INSTALL_LIBDIR)
+ifdef inUnix
+	ln -sf $(LIB_FULLNAME) $(INSTALL_LIBDIR)/$(LIB_NAME)
+endif
+endif
+endif
+ifdef INSTALL_FILES
+	$(MKDIR) $(INSTALL_DATADIR)
+	$(INSTALL) $(INSTALL_FILES) $(INSTALL_DATADIR)
+endif
+fpc_sourceinstall: distclean
+	$(MKDIR) $(INSTALL_SOURCEDIR)
+	$(COPYTREE) $(BASEDIR)/* $(INSTALL_SOURCEDIR)
+fpc_exampleinstall: $(addsuffix _distclean,$(TARGET_EXAMPLEDIRS))
+ifdef HASEXAMPLES
+	$(MKDIR) $(INSTALL_EXAMPLEDIR)
+endif
+ifdef EXAMPLESOURCEFILES
+	$(COPY) $(EXAMPLESOURCEFILES) $(INSTALL_EXAMPLEDIR)
+endif
+ifdef TARGET_EXAMPLEDIRS
+	$(COPYTREE) $(addsuffix /*,$(TARGET_EXAMPLEDIRS)) $(INSTALL_EXAMPLEDIR)
 endif
 .PHONY: fpc_clean fpc_cleanall fpc_distclean
 ifdef EXEFILES
@@ -1358,378 +1469,28 @@ endif
 fpc_makefile_sub2: $(addsuffix _makefile_dirs,$(TARGET_DIRS) $(TARGET_EXAMPLEDIRS))
 fpc_makefile_dirs: fpc_makefile_sub1 fpc_makefile_sub2
 fpc_makefiles: fpc_makefile fpc_makefile_dirs
-TARGET_DIRS_BLITZBOMBER=1
-TARGET_DIRS_ISOMETRIC=1
-TARGET_DIRS_MOUSE=1
-TARGET_DIRS_PLASMA=1
-TARGET_DIRS_VOXEL=1
-TARGET_DIRS_SDLTESTS=1
-TARGET_DIRS_SDLUTILSTESTS=1
-TARGET_DIRS_MONOFONTS=1
-ifdef TARGET_DIRS_BLITZBOMBER
-blitzbomber_all:
-	$(MAKE) -C blitzbomber all
-blitzbomber_debug:
-	$(MAKE) -C blitzbomber debug
-blitzbomber_smart:
-	$(MAKE) -C blitzbomber smart
-blitzbomber_release:
-	$(MAKE) -C blitzbomber release
-blitzbomber_examples:
-	$(MAKE) -C blitzbomber examples
-blitzbomber_shared:
-	$(MAKE) -C blitzbomber shared
-blitzbomber_install:
-	$(MAKE) -C blitzbomber install
-blitzbomber_sourceinstall:
-	$(MAKE) -C blitzbomber sourceinstall
-blitzbomber_exampleinstall:
-	$(MAKE) -C blitzbomber exampleinstall
-blitzbomber_distinstall:
-	$(MAKE) -C blitzbomber distinstall
-blitzbomber_zipinstall:
-	$(MAKE) -C blitzbomber zipinstall
-blitzbomber_zipsourceinstall:
-	$(MAKE) -C blitzbomber zipsourceinstall
-blitzbomber_zipexampleinstall:
-	$(MAKE) -C blitzbomber zipexampleinstall
-blitzbomber_zipdistinstall:
-	$(MAKE) -C blitzbomber zipdistinstall
-blitzbomber_clean:
-	$(MAKE) -C blitzbomber clean
-blitzbomber_distclean:
-	$(MAKE) -C blitzbomber distclean
-blitzbomber_cleanall:
-	$(MAKE) -C blitzbomber cleanall
-blitzbomber_info:
-	$(MAKE) -C blitzbomber info
-blitzbomber_makefiles:
-	$(MAKE) -C blitzbomber makefiles
-blitzbomber:
-	$(MAKE) -C blitzbomber all
-.PHONY: blitzbomber_all blitzbomber_debug blitzbomber_smart blitzbomber_release blitzbomber_examples blitzbomber_shared blitzbomber_install blitzbomber_sourceinstall blitzbomber_exampleinstall blitzbomber_distinstall blitzbomber_zipinstall blitzbomber_zipsourceinstall blitzbomber_zipexampleinstall blitzbomber_zipdistinstall blitzbomber_clean blitzbomber_distclean blitzbomber_cleanall blitzbomber_info blitzbomber_makefiles blitzbomber
-endif
-ifdef TARGET_DIRS_ISOMETRIC
-isometric_all:
-	$(MAKE) -C isometric all
-isometric_debug:
-	$(MAKE) -C isometric debug
-isometric_smart:
-	$(MAKE) -C isometric smart
-isometric_release:
-	$(MAKE) -C isometric release
-isometric_examples:
-	$(MAKE) -C isometric examples
-isometric_shared:
-	$(MAKE) -C isometric shared
-isometric_install:
-	$(MAKE) -C isometric install
-isometric_sourceinstall:
-	$(MAKE) -C isometric sourceinstall
-isometric_exampleinstall:
-	$(MAKE) -C isometric exampleinstall
-isometric_distinstall:
-	$(MAKE) -C isometric distinstall
-isometric_zipinstall:
-	$(MAKE) -C isometric zipinstall
-isometric_zipsourceinstall:
-	$(MAKE) -C isometric zipsourceinstall
-isometric_zipexampleinstall:
-	$(MAKE) -C isometric zipexampleinstall
-isometric_zipdistinstall:
-	$(MAKE) -C isometric zipdistinstall
-isometric_clean:
-	$(MAKE) -C isometric clean
-isometric_distclean:
-	$(MAKE) -C isometric distclean
-isometric_cleanall:
-	$(MAKE) -C isometric cleanall
-isometric_info:
-	$(MAKE) -C isometric info
-isometric_makefiles:
-	$(MAKE) -C isometric makefiles
-isometric:
-	$(MAKE) -C isometric all
-.PHONY: isometric_all isometric_debug isometric_smart isometric_release isometric_examples isometric_shared isometric_install isometric_sourceinstall isometric_exampleinstall isometric_distinstall isometric_zipinstall isometric_zipsourceinstall isometric_zipexampleinstall isometric_zipdistinstall isometric_clean isometric_distclean isometric_cleanall isometric_info isometric_makefiles isometric
-endif
-ifdef TARGET_DIRS_MOUSE
-mouse_all:
-	$(MAKE) -C mouse all
-mouse_debug:
-	$(MAKE) -C mouse debug
-mouse_smart:
-	$(MAKE) -C mouse smart
-mouse_release:
-	$(MAKE) -C mouse release
-mouse_examples:
-	$(MAKE) -C mouse examples
-mouse_shared:
-	$(MAKE) -C mouse shared
-mouse_install:
-	$(MAKE) -C mouse install
-mouse_sourceinstall:
-	$(MAKE) -C mouse sourceinstall
-mouse_exampleinstall:
-	$(MAKE) -C mouse exampleinstall
-mouse_distinstall:
-	$(MAKE) -C mouse distinstall
-mouse_zipinstall:
-	$(MAKE) -C mouse zipinstall
-mouse_zipsourceinstall:
-	$(MAKE) -C mouse zipsourceinstall
-mouse_zipexampleinstall:
-	$(MAKE) -C mouse zipexampleinstall
-mouse_zipdistinstall:
-	$(MAKE) -C mouse zipdistinstall
-mouse_clean:
-	$(MAKE) -C mouse clean
-mouse_distclean:
-	$(MAKE) -C mouse distclean
-mouse_cleanall:
-	$(MAKE) -C mouse cleanall
-mouse_info:
-	$(MAKE) -C mouse info
-mouse_makefiles:
-	$(MAKE) -C mouse makefiles
-mouse:
-	$(MAKE) -C mouse all
-.PHONY: mouse_all mouse_debug mouse_smart mouse_release mouse_examples mouse_shared mouse_install mouse_sourceinstall mouse_exampleinstall mouse_distinstall mouse_zipinstall mouse_zipsourceinstall mouse_zipexampleinstall mouse_zipdistinstall mouse_clean mouse_distclean mouse_cleanall mouse_info mouse_makefiles mouse
-endif
-ifdef TARGET_DIRS_PLASMA
-plasma_all:
-	$(MAKE) -C plasma all
-plasma_debug:
-	$(MAKE) -C plasma debug
-plasma_smart:
-	$(MAKE) -C plasma smart
-plasma_release:
-	$(MAKE) -C plasma release
-plasma_examples:
-	$(MAKE) -C plasma examples
-plasma_shared:
-	$(MAKE) -C plasma shared
-plasma_install:
-	$(MAKE) -C plasma install
-plasma_sourceinstall:
-	$(MAKE) -C plasma sourceinstall
-plasma_exampleinstall:
-	$(MAKE) -C plasma exampleinstall
-plasma_distinstall:
-	$(MAKE) -C plasma distinstall
-plasma_zipinstall:
-	$(MAKE) -C plasma zipinstall
-plasma_zipsourceinstall:
-	$(MAKE) -C plasma zipsourceinstall
-plasma_zipexampleinstall:
-	$(MAKE) -C plasma zipexampleinstall
-plasma_zipdistinstall:
-	$(MAKE) -C plasma zipdistinstall
-plasma_clean:
-	$(MAKE) -C plasma clean
-plasma_distclean:
-	$(MAKE) -C plasma distclean
-plasma_cleanall:
-	$(MAKE) -C plasma cleanall
-plasma_info:
-	$(MAKE) -C plasma info
-plasma_makefiles:
-	$(MAKE) -C plasma makefiles
-plasma:
-	$(MAKE) -C plasma all
-.PHONY: plasma_all plasma_debug plasma_smart plasma_release plasma_examples plasma_shared plasma_install plasma_sourceinstall plasma_exampleinstall plasma_distinstall plasma_zipinstall plasma_zipsourceinstall plasma_zipexampleinstall plasma_zipdistinstall plasma_clean plasma_distclean plasma_cleanall plasma_info plasma_makefiles plasma
-endif
-ifdef TARGET_DIRS_VOXEL
-voxel_all:
-	$(MAKE) -C voxel all
-voxel_debug:
-	$(MAKE) -C voxel debug
-voxel_smart:
-	$(MAKE) -C voxel smart
-voxel_release:
-	$(MAKE) -C voxel release
-voxel_examples:
-	$(MAKE) -C voxel examples
-voxel_shared:
-	$(MAKE) -C voxel shared
-voxel_install:
-	$(MAKE) -C voxel install
-voxel_sourceinstall:
-	$(MAKE) -C voxel sourceinstall
-voxel_exampleinstall:
-	$(MAKE) -C voxel exampleinstall
-voxel_distinstall:
-	$(MAKE) -C voxel distinstall
-voxel_zipinstall:
-	$(MAKE) -C voxel zipinstall
-voxel_zipsourceinstall:
-	$(MAKE) -C voxel zipsourceinstall
-voxel_zipexampleinstall:
-	$(MAKE) -C voxel zipexampleinstall
-voxel_zipdistinstall:
-	$(MAKE) -C voxel zipdistinstall
-voxel_clean:
-	$(MAKE) -C voxel clean
-voxel_distclean:
-	$(MAKE) -C voxel distclean
-voxel_cleanall:
-	$(MAKE) -C voxel cleanall
-voxel_info:
-	$(MAKE) -C voxel info
-voxel_makefiles:
-	$(MAKE) -C voxel makefiles
-voxel:
-	$(MAKE) -C voxel all
-.PHONY: voxel_all voxel_debug voxel_smart voxel_release voxel_examples voxel_shared voxel_install voxel_sourceinstall voxel_exampleinstall voxel_distinstall voxel_zipinstall voxel_zipsourceinstall voxel_zipexampleinstall voxel_zipdistinstall voxel_clean voxel_distclean voxel_cleanall voxel_info voxel_makefiles voxel
-endif
-ifdef TARGET_DIRS_SDLTESTS
-sdltests_all:
-	$(MAKE) -C sdltests all
-sdltests_debug:
-	$(MAKE) -C sdltests debug
-sdltests_smart:
-	$(MAKE) -C sdltests smart
-sdltests_release:
-	$(MAKE) -C sdltests release
-sdltests_examples:
-	$(MAKE) -C sdltests examples
-sdltests_shared:
-	$(MAKE) -C sdltests shared
-sdltests_install:
-	$(MAKE) -C sdltests install
-sdltests_sourceinstall:
-	$(MAKE) -C sdltests sourceinstall
-sdltests_exampleinstall:
-	$(MAKE) -C sdltests exampleinstall
-sdltests_distinstall:
-	$(MAKE) -C sdltests distinstall
-sdltests_zipinstall:
-	$(MAKE) -C sdltests zipinstall
-sdltests_zipsourceinstall:
-	$(MAKE) -C sdltests zipsourceinstall
-sdltests_zipexampleinstall:
-	$(MAKE) -C sdltests zipexampleinstall
-sdltests_zipdistinstall:
-	$(MAKE) -C sdltests zipdistinstall
-sdltests_clean:
-	$(MAKE) -C sdltests clean
-sdltests_distclean:
-	$(MAKE) -C sdltests distclean
-sdltests_cleanall:
-	$(MAKE) -C sdltests cleanall
-sdltests_info:
-	$(MAKE) -C sdltests info
-sdltests_makefiles:
-	$(MAKE) -C sdltests makefiles
-sdltests:
-	$(MAKE) -C sdltests all
-.PHONY: sdltests_all sdltests_debug sdltests_smart sdltests_release sdltests_examples sdltests_shared sdltests_install sdltests_sourceinstall sdltests_exampleinstall sdltests_distinstall sdltests_zipinstall sdltests_zipsourceinstall sdltests_zipexampleinstall sdltests_zipdistinstall sdltests_clean sdltests_distclean sdltests_cleanall sdltests_info sdltests_makefiles sdltests
-endif
-ifdef TARGET_DIRS_SDLUTILSTESTS
-sdlutilstests_all:
-	$(MAKE) -C sdlutilstests all
-sdlutilstests_debug:
-	$(MAKE) -C sdlutilstests debug
-sdlutilstests_smart:
-	$(MAKE) -C sdlutilstests smart
-sdlutilstests_release:
-	$(MAKE) -C sdlutilstests release
-sdlutilstests_examples:
-	$(MAKE) -C sdlutilstests examples
-sdlutilstests_shared:
-	$(MAKE) -C sdlutilstests shared
-sdlutilstests_install:
-	$(MAKE) -C sdlutilstests install
-sdlutilstests_sourceinstall:
-	$(MAKE) -C sdlutilstests sourceinstall
-sdlutilstests_exampleinstall:
-	$(MAKE) -C sdlutilstests exampleinstall
-sdlutilstests_distinstall:
-	$(MAKE) -C sdlutilstests distinstall
-sdlutilstests_zipinstall:
-	$(MAKE) -C sdlutilstests zipinstall
-sdlutilstests_zipsourceinstall:
-	$(MAKE) -C sdlutilstests zipsourceinstall
-sdlutilstests_zipexampleinstall:
-	$(MAKE) -C sdlutilstests zipexampleinstall
-sdlutilstests_zipdistinstall:
-	$(MAKE) -C sdlutilstests zipdistinstall
-sdlutilstests_clean:
-	$(MAKE) -C sdlutilstests clean
-sdlutilstests_distclean:
-	$(MAKE) -C sdlutilstests distclean
-sdlutilstests_cleanall:
-	$(MAKE) -C sdlutilstests cleanall
-sdlutilstests_info:
-	$(MAKE) -C sdlutilstests info
-sdlutilstests_makefiles:
-	$(MAKE) -C sdlutilstests makefiles
-sdlutilstests:
-	$(MAKE) -C sdlutilstests all
-.PHONY: sdlutilstests_all sdlutilstests_debug sdlutilstests_smart sdlutilstests_release sdlutilstests_examples sdlutilstests_shared sdlutilstests_install sdlutilstests_sourceinstall sdlutilstests_exampleinstall sdlutilstests_distinstall sdlutilstests_zipinstall sdlutilstests_zipsourceinstall sdlutilstests_zipexampleinstall sdlutilstests_zipdistinstall sdlutilstests_clean sdlutilstests_distclean sdlutilstests_cleanall sdlutilstests_info sdlutilstests_makefiles sdlutilstests
-endif
-ifdef TARGET_DIRS_MONOFONTS
-monofonts_all:
-	$(MAKE) -C monofonts all
-monofonts_debug:
-	$(MAKE) -C monofonts debug
-monofonts_smart:
-	$(MAKE) -C monofonts smart
-monofonts_release:
-	$(MAKE) -C monofonts release
-monofonts_examples:
-	$(MAKE) -C monofonts examples
-monofonts_shared:
-	$(MAKE) -C monofonts shared
-monofonts_install:
-	$(MAKE) -C monofonts install
-monofonts_sourceinstall:
-	$(MAKE) -C monofonts sourceinstall
-monofonts_exampleinstall:
-	$(MAKE) -C monofonts exampleinstall
-monofonts_distinstall:
-	$(MAKE) -C monofonts distinstall
-monofonts_zipinstall:
-	$(MAKE) -C monofonts zipinstall
-monofonts_zipsourceinstall:
-	$(MAKE) -C monofonts zipsourceinstall
-monofonts_zipexampleinstall:
-	$(MAKE) -C monofonts zipexampleinstall
-monofonts_zipdistinstall:
-	$(MAKE) -C monofonts zipdistinstall
-monofonts_clean:
-	$(MAKE) -C monofonts clean
-monofonts_distclean:
-	$(MAKE) -C monofonts distclean
-monofonts_cleanall:
-	$(MAKE) -C monofonts cleanall
-monofonts_info:
-	$(MAKE) -C monofonts info
-monofonts_makefiles:
-	$(MAKE) -C monofonts makefiles
-monofonts:
-	$(MAKE) -C monofonts all
-.PHONY: monofonts_all monofonts_debug monofonts_smart monofonts_release monofonts_examples monofonts_shared monofonts_install monofonts_sourceinstall monofonts_exampleinstall monofonts_distinstall monofonts_zipinstall monofonts_zipsourceinstall monofonts_zipexampleinstall monofonts_zipdistinstall monofonts_clean monofonts_distclean monofonts_cleanall monofonts_info monofonts_makefiles monofonts
-endif
-all: $(addsuffix _all,$(TARGET_DIRS))
-debug: $(addsuffix _debug,$(TARGET_DIRS))
-smart: $(addsuffix _smart,$(TARGET_DIRS))
-release: $(addsuffix _release,$(TARGET_DIRS))
-examples: $(addsuffix _examples,$(TARGET_DIRS))
-shared: $(addsuffix _shared,$(TARGET_DIRS))
-install: $(addsuffix _install,$(TARGET_DIRS))
-sourceinstall: $(addsuffix _sourceinstall,$(TARGET_DIRS))
-exampleinstall: $(addsuffix _exampleinstall,$(TARGET_DIRS))
-distinstall: $(addsuffix _distinstall,$(TARGET_DIRS))
-zipinstall: $(addsuffix _zipinstall,$(TARGET_DIRS))
-zipsourceinstall: $(addsuffix _zipsourceinstall,$(TARGET_DIRS))
-zipexampleinstall: $(addsuffix _zipexampleinstall,$(TARGET_DIRS))
-zipdistinstall: $(addsuffix _zipdistinstall,$(TARGET_DIRS))
-clean: $(addsuffix _clean,$(TARGET_DIRS))
-distclean: $(addsuffix _distclean,$(TARGET_DIRS))
-cleanall: $(addsuffix _cleanall,$(TARGET_DIRS))
+all: fpc_all
+debug: fpc_debug
+smart: fpc_smart
+release: fpc_release
+examples:
+shared:
+install: fpc_install
+sourceinstall: fpc_sourceinstall
+exampleinstall: fpc_exampleinstall
+distinstall:
+zipinstall:
+zipsourceinstall:
+zipexampleinstall:
+zipdistinstall:
+clean: fpc_clean
+distclean: fpc_distclean
+cleanall: fpc_cleanall
 info: fpc_info
-makefiles: fpc_makefiles $(addsuffix _makefiles,$(TARGET_DIRS))
+makefiles: fpc_makefiles
 .PHONY: all debug smart release examples shared install sourceinstall exampleinstall distinstall zipinstall zipsourceinstall zipexampleinstall zipdistinstall clean distclean cleanall info makefiles
 ifneq ($(wildcard fpcmake.loc),)
 include fpcmake.loc
 endif
+monofonts_test: monofonts_test.dpr
+	$(COMPILER) monofonts_test.dpr		
