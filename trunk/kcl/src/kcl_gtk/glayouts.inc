@@ -21,23 +21,22 @@ end;
 
 procedure TLayout.MoveChild(AChild: TWidget; ax, ay: LongInt);
 begin
-  gtk_widget_set_uposition(AChild.FHandle, ax, ay);
+  if Assigned(AChild.FHandle) then
+    gtk_widget_set_uposition(AChild.FHandle, ax, ay);
 end;
 
-procedure TLayout.SetChildSize(AChild: TWidget; AWidth, AHeight: LongInt);
-begin
-  AChild.SetSize(AWidth, AHeight);
-end;
-
-procedure TLayout.FinishCreation;
+procedure TLayout.OnFinishCreation;
 begin
   FHandle := gtk_fixed_new;
-  inherited FinishCreation;
+  inherited OnFinishCreation;
 end;
 
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:44:10  sg
+  * Small fixes
+
   Revision 1.2  2000/01/24 00:30:55  sg
   * Extended copyright to year 2000...
   * Modifications to reflect the changed definition of TWidgetHandle

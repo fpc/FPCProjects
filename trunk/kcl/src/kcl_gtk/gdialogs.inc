@@ -60,6 +60,7 @@ end;
 function TDialog.Run: Boolean;
 begin
   FinishCreation;
+  gtk_main;
   Result := False;
 end;
 
@@ -68,11 +69,10 @@ end;
 //   TStdBtnDialog
 // -------------------------------------------------------
 
-
 constructor TStdBtnDialog.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FButtons := [btnOk];
+  FButtons := [btnOk, btnApply, btnCancel];
 end;
 
 procedure TStdBtnDialog.SetButtons(AButtons: TStdDlgButtons);
@@ -83,7 +83,7 @@ end;
 procedure TStdBtnDialog.SetContent(AContent: TWidget);
 begin
   RealContent := AContent;
-  AContent.SetDefaultSize(100, 100);
+//###  AContent.SetDefaultSize(100, 100);
 end;
 
 procedure TStdBtnDialog.OnFinishCreation;
@@ -99,7 +99,8 @@ procedure TStdBtnDialog.OnFinishCreation;
 
 begin
   MainLayout := TDockingLayout.Create(Self);
-  MainLayout.AddWidget(RealContent, dmClient);
+  if Assigned(RealContent) then
+    MainLayout.AddWidget(RealContent, dmClient);
 
   BtnLayout := TBoxLayout.Create(Self);
   BtnLayout.Orientation := boxHorz;
@@ -170,6 +171,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:40:56  sg
+  * Small fixes
+
   Revision 1.3  2000/01/24 00:30:55  sg
   * Extended copyright to year 2000...
   * Modifications to reflect the changed definition of TWidgetHandle
