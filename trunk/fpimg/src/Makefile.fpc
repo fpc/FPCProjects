@@ -8,13 +8,11 @@ rst=imageio
 
 [require]
 options=-S2h
-packages=
+packages=fpgfx
 
 [libs]
 libname=fpimg
 
-[install]
-subdir=
-
 [dirs]
-fpcdir=../../..
+fpcdir=../../../fpc
+unitdir=../../fpgfx/src

@@ -123,7 +123,7 @@ endif
 
 # Default FPCDIR
 ifeq ($(FPCDIR),wrong)
-override FPCDIR=../../..
+override FPCDIR=../../../fpc
 ifeq ($(wildcard $(FPCDIR)/rtl),)
 ifeq ($(wildcard $(FPCDIR)/units),)
 override FPCDIR=wrong
@@ -192,10 +192,11 @@ override NEEDOPT=-S2h
 
 # Directories
 
+override NEEDUNITDIR=../../fpgfx/src
 
 # Packages
 
-override PACKAGES+=rtl
+override PACKAGES+=rtl fpgfx
 
 # Libraries
 
@@ -501,6 +502,7 @@ endif
 # PACKAGESDIR packages
 
 PACKAGERTL=1
+PACKAGEFPGFX=1
 
 ifdef PACKAGERTL
 ifneq ($(wildcard $(FPCDIR)/rtl),)
@@ -529,6 +531,35 @@ endif
 endif
 ifdef UNITDIR_RTL
 override NEEDUNITDIR+=$(UNITDIR_RTL)
+endif
+endif
+ifdef PACKAGEFPGFX
+ifneq ($(wildcard $(PACKAGESDIR)/fpgfx),)
+ifneq ($(wildcard $(PACKAGESDIR)/fpgfx/$(OS_TARGET)),)
+PACKAGEDIR_FPGFX=$(PACKAGESDIR)/fpgfx/$(OS_TARGET)
+else
+PACKAGEDIR_FPGFX=$(PACKAGESDIR)/fpgfx
+endif
+ifeq ($(wildcard $(PACKAGEDIR_FPGFX)/$(FPCMADE)),)
+override COMPILEPACKAGES+=package_fpgfx
+package_fpgfx:
+	$(MAKE) -C $(PACKAGEDIR_FPGFX) all
+endif
+UNITDIR_FPGFX=$(PACKAGEDIR_FPGFX)
+else
+PACKAGEDIR_FPGFX=
+ifneq ($(wildcard $(UNITSDIR)/fpgfx),)
+ifneq ($(wildcard $(UNITSDIR)/fpgfx/$(OS_TARGET)),)
+UNITDIR_FPGFX=$(UNITSDIR)/fpgfx/$(OS_TARGET)
+else
+UNITDIR_FPGFX=$(UNITSDIR)/fpgfx
+endif
+else
+UNITDIR_FPGFX=
+endif
+endif
+ifdef UNITDIR_FPGFX
+override NEEDUNITDIR+=$(UNITDIR_FPGFX)
 endif
 endif
 

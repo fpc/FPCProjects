@@ -121,6 +121,16 @@ else
 override FPCDIR=wrong
 endif
 
+# Default FPCDIR
+ifeq ($(FPCDIR),wrong)
+override FPCDIR=../../../../fpc
+ifeq ($(wildcard $(FPCDIR)/rtl),)
+ifeq ($(wildcard $(FPCDIR)/units),)
+override FPCDIR=wrong
+endif
+endif
+endif
+
 # Detect FPCDIR
 ifeq ($(FPCDIR),wrong)
 ifdef inUnix
@@ -181,6 +191,7 @@ override NEEDOPT=-S2h
 
 # Directories
 
+override NEEDUNITDIR=../../src
 
 # Packages
 

@@ -8,3 +8,7 @@ programs=disp_bmp
 [require]
 options=-S2h
 packages=fcl fpgfx
+
+[dirs]
+fpcdir=../../../../fpc
+unitdir=../../src
