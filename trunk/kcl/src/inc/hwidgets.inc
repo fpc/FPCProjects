@@ -26,15 +26,23 @@ type
 //   Label
 // -------------------------------------------------------------------
 
-  TLabel = class(TWidget)
+  TCustomLabel = class(TWidget)
+  private
+    FAlignment: TAlignment;
+    procedure SetAlignment(AAlignment: TAlignment);
   protected
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
     procedure SetText(const AText: String); override;
+    property Alignment: TAlignment read FAlignment write SetAlignment default taLeftJustify;
+  end;
+
+  TLabel = class(TCustomLabel)
   published
     property Text;
     property CanExpandWidth;
     property CanExpandHeight;
+    property Alignment;
   end;
 
 
@@ -548,6 +556,10 @@ type
 
 {
   $Log$
+  Revision 1.12  2000/02/24 14:54:27  sg
+  * TLabel -> TCustomLabel, TLabel
+  * Added property Alignment to TCustomLabel
+
   Revision 1.11  2000/02/24 13:39:32  sg
   * More layout fixes...
 
