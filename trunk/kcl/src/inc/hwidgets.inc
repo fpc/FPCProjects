@@ -285,22 +285,45 @@ type
     property Range: TRange read FRange;
   end;
 
-  TScrollBox = class(TWidget)
+  TAbstractScrollingWidget = class(TWidget)
+  protected
+    FContent: TWidget;
+    FHorzRange, FVertRange: TRange;
+    procedure SetContent(AContent: TWidget); virtual; abstract;
+    property Content: TWidget read FContent write SetContent;
+    property HorzRange: TRange read FHorzRange;
+    property VertRange: TRange read FVertRange;
+  end;
+
+  TScrollBox = class(TAbstractScrollingWidget)
   protected
     priv: TScrollBox_private;
-    FHorzRange, FVertRange: TRange;
-    FContent: TWidget;
-
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
-    procedure SetContent(AContent: TWidget); virtual;
+    procedure SetContent(AContent: TWidget); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
   published
-    property Content: TWidget read FContent write SetContent;
-    property HorzRange: TRange read FHorzRange;
-    property VertRange: TRange read FVertRange;
+    property Content;
+    property HorzRange;
+    property VertRange;
+  end;
+
+  TScrollers = class(TAbstractScrollingWidget)
+  protected
+    priv: TScrollers_private;
+    procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
+    procedure ApplySize; override;
+    procedure SetContent(AContent: TWidget); override;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+  published
+    property Content;
+    property HorzRange;
+    property VertRange;
   end;
 
 
@@ -380,6 +403,7 @@ type
     function  GetCurPageIndex: Integer;
     procedure SetCurPageIndex(AIndex: Integer);
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -498,6 +522,10 @@ type
 
 {
   $Log$
+  Revision 1.7  2000/02/18 18:21:07  sg
+  * Introduced TAbstractScrollWidget
+  * Added TScrollers
+
   Revision 1.6  2000/02/17 22:25:42  sg
   * Cleaned up TListBox
   * Added TComboBox, TRadioButton, TSeparator
