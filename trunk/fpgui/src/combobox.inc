@@ -78,11 +78,6 @@ begin
   Style.DrawEditBox(Canvas, Rect(0, 0, Width, Height));
 end;
 
-{procedure TCustomComboBox.EvLayoutChildren(Canvas: TGfxCanvas);
-begin
-  FBox.SetBounds(2, 2, Width - 4, Height - 4);
-end;}
-
 function TCustomComboBox.ProcessEvent(Event: TEventObj): Boolean;
 begin
   if Event is TResizeEventObj then
@@ -125,8 +120,8 @@ begin
   else
   begin
     FDropDown := TCustomForm.Create(Self);
-    FDropDown.FrameType := False;
-//    FDropDown.SetEmbeddedParent(FindForm);
+    FDropDown.WindowType := wtBorderlessPopup;
+    FDropDown.SetEmbeddedParent(FindForm);
     FDropDown.SetPosition(ClientToScreen(Point(0, Height)));
     FDropDown.OnDeactivate := @ListDeactivate;
 
@@ -148,6 +143,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2001/01/18 15:36:48  sg
+  * The drop-down window is now parented
+
   Revision 1.2  2001/01/11 23:30:11  sg
   *** empty log message ***
 
