@@ -1,0 +1,21 @@
+#
+#   Makefile.fpc for fpGFX Win32 GDI support
+#
+
+[targets]
+units=gfx_gdi gfximpl
+rst=gfx_gdi
+
+[require]
+options=-S2ht
+packages=
+
+[libs]
+libname=fpgfx_gdi
+
+[install]
+subdir=
+
+[dirs]
+fpcdir=../../../..
+unitdir=..
