@@ -22,6 +22,16 @@
 //   GTK signal handlers
 // -------------------------------------------------------------------
 
+var
+  gNeedSizeRequest: Boolean;
+
+procedure TWidget_Destroy(GtkWidget: PGtkWidget; Widget: TWidget); cdecl;
+begin
+  ASSERT(Assigned(Widget));
+  ASSERT(Widget.FHandle = GtkWidget);
+  Widget.FHandle := nil;
+end;
+
 function TWidget_FocusInEvent(GtkWidget: PGtkWidget; event: PGdkEventFocus;
   Widget: TWidget): Integer; cdecl;
 begin
@@ -38,33 +48,25 @@ begin
   Result := 1;
 end;
 
+procedure TWidget_SizeRequest(widget: PGtkWidget; req: PGtkRequisition;
+  AWidget: TWidget); cdecl;
+begin
+  if not gNeedSizeRequest then begin
+    req^.Width := AWidget.MinW;
+    req^.Height := AWidget.MinH;
+  end;
+end;
+
 procedure TWidget_SizeAllocate(widget: PGtkWidget; alloc: PGtkAllocation;
   AWidget: TWidget); cdecl;
 begin
 //  WriteLn('Size allocated for ', AWidget.ClassName, ': ', alloc^.Width, 'x', alloc^.Height);
-  if (alloc^.Width <> AWidget.FWidth) or
-    (alloc^.Height <> AWidget.FHeight) then begin
-    AWidget.FWidth := alloc^.Width;
-    AWidget.FHeight := alloc^.Height;
-    AWidget.OnSizeChanged;
-  end;
 end;
 
 
 // -------------------------------------------------------------------
 //   TWidget property handling
 // -------------------------------------------------------------------
-
-procedure TWidget.SetVisible(AVisible: Boolean);
-begin
-  if AVisible = FVisible then exit;
-  FVisible := AVisible;
-  if FCreationState >= wcsCreationInProgress then
-    if AVisible then
-      gtk_widget_show(FHandle)
-    else
-      gtk_widget_hide(FHandle);
-end;
 
 procedure TWidget.SetEnabled(AEnabled: Boolean);
 begin
@@ -90,110 +92,65 @@ end;
 //   TWidget protected methods
 // -------------------------------------------------------------------
 
-procedure TWidget.FinishCreation;
+procedure TWidget.Show;
 begin
-  if FCreationState = wcsCreationDone then exit;
-
-  if Assigned(FParent) and FParent.InheritsFrom(TWidget) and
-    (TWidget(FParent).FCreationState < wcsCreationInProgress) then exit;
-
-  FCreationState := wcsCreationInProgress;
-
-  OnFinishCreation;
   ASSERT(Assigned(FHandle));
+  gtk_widget_show(FHandle);
+end;
 
-  gtk_widget_set_sensitive(FHandle, FEnabled);
-
-  if not (sizeAuto in FSizeFlags) then
-    OnMinMaxSizeChanged;
-
-  if Assigned(OnCreate) then
-    OnCreate(Self);
+procedure TWidget.Hide;
+begin
+  ASSERT(Assigned(FHandle));
+  gtk_widget_hide(FHandle);
 end;
 
 procedure TWidget.OnFinishCreation;
-var
-  SizeReq: TGtkRequisition;
 begin
   ASSERT(Assigned(FHandle));
 
-  if sizeAuto in FSizeFlags then begin
-    // Get default size of widget from GTK
-    gtk_widget_size_request(FHandle, @SizeReq);
-    FWidth := SizeReq.Width;
-    FHeight := SizeReq.Height;
-  end;
+  gtk_signal_connect(PGtkObject(FHandle), 'destroy', GTK_SIGNAL_FUNC(@TWidget_Destroy), Self);
 
-  if sizeFixed in FSizeFlags then
-    gtk_widget_set_usize(FHandle, FWidth, FHeight);
+  gtk_signal_connect(PGtkObject(FHandle), 'size_request',
+    GTK_SIGNAL_FUNC(@TWidget_SizeRequest), Self);
 
-  gtk_signal_connect_after(PGtkObject(FHandle), 'size-allocate',
+  gtk_signal_connect_after(PGtkObject(FHandle), 'size_allocate',
     GTK_SIGNAL_FUNC(@TWidget_SizeAllocate), Self);
 
-  OnSetSize;
-
-  if FShowHint then begin
-    // WriteLn(IntToHex(LongInt(Self), 8), ' Setting Tooltip for ', ClassName, ': ', FHint);
+  if FShowHint then
     gtk_tooltips_set_tip(gToolTips, FHandle, PChar(FHint), PChar(FHint));
-  end;
 
-  if FVisible then
-    gtk_widget_show(FHandle);
+  if not FEnabled then
+    gtk_widget_set_sensitive(FHandle, False);
 
   FCreationState := wcsCreationDone;
 
   // GTK-connect all signals
-  gtk_signal_connect(PGtkObject(FHandle), 'focus-in-event',
+  gtk_signal_connect(PGtkObject(FHandle), 'focus_in_event',
     GTK_SIGNAL_FUNC(@TWidget_FocusInEvent), self);
-  gtk_signal_connect(PGtkObject(FHandle), 'focus-out-event',
+  gtk_signal_connect(PGtkObject(FHandle), 'focus_out_event',
     GTK_SIGNAL_FUNC(@TWidget_FocusOutEvent), self);
 end;
 
-procedure TWidget.OnRecalcLayout; begin end;
-
-procedure TWidget.OnSetSize;
+procedure TWidget.DoRecalcLayout;
+var
+  SizeReq: TGtkRequisition;
 begin
   ASSERT(Assigned(FHandle));
-
-  PGtkObject(FHandle)^.flags := PGtkObject(FHandle)^.flags and not
-    Ord(GTK_VISIBLE);
-
-  FHandle^.allocation.Width := FWidth;
-  FHandle^.allocation.Height := FHeight;
-  gtk_widget_set_usize(FHandle, FWidth, FHeight);
-
-  PGtkObject(FHandle)^.flags := PGtkObject(FHandle)^.flags or
-    Ord(GTK_VISIBLE);
+  gNeedSizeRequest := True;
+  gtk_widget_size_request(FHandle, @SizeReq);
+  gNeedSizeRequest := False;
+  DefW := SizeReq.Width;
+  DefH := SizeReq.Height;
+  MinW := DefW;
+  MinH := DefH;
+  MaxW := InfiniteSize;
+  MaxH := InfiniteSize;
 end;
 
-procedure TWidget.OnSizeChanged;
+procedure TWidget.ApplySize;
 begin
-{  if (FWidth < FMinWidth) or (FHeight < FMinHeight) or (FWidth > FMaxWidth) or
-    (FHeight > FMaxHeight) then begin
-    if FWidth < FMinWidth then FWidth := FMinWidth;
-    if FWidth > FMaxWidth then FWidth := FMaxWidth;
-    if FHeight < FMinHeight then FHeight := FMinHeight;
-    if FHeight > FMaxHeight then FHeight := FMaxHeight;
-    SetSize(FWidth, FHeight);
-  end else begin
-}
-  ParentRecalcLayout;
-
-  OnMinMaxSizeChanged;    // GTK specific Quick Hack (tm)...
-end;
-
-procedure TWidget.OnMinMaxSizeChanged;
-var
-  geom: TGdkGeometry;
-begin
-  if Assigned(FHandle) and Assigned(FHandle^.window) then begin
-    geom.min_width := FMinWidth;
-    geom.min_height := FMinHeight;
-    geom.max_width := FMaxWidth;
-    geom.max_height := FMaxHeight;
-    gdk_window_set_geometry_hints(FHandle^.window, @geom,
-      GDK_HINT_MIN_SIZE or GDK_HINT_MAX_SIZE);
-  end;
+  if Assigned(FHandle) then
+    gtk_widget_set_usize(FHandle, FWidth, FHeight);
 end;
 
 
@@ -207,17 +164,13 @@ begin
 
   FVisible := True;
   FEnabled := True;
-  FSizeFlags := [sizeAuto];
-  FMinWidth := 0;
-  FMinHeight := 0;
-  FMaxWidth := InfiniteSize;
-  FMaxHeight := InfiniteSize;
 end;
 
 destructor TWidget.Destroy;
 begin
   if Assigned(FHandle) then
     gtk_widget_destroy(FHandle);
+  inherited Destroy;
 end;
 
 procedure TWidget.SetFocus;
@@ -233,32 +186,6 @@ begin
     Result := GTK_WIDGET_HAS_FOCUS(FHandle)
   else
     Result := False;
-end;
-
-
-procedure TWidget.SetSize(AWidth, AHeight: LongInt);
-begin
-  if (AWidth = FWidth) and (AHeight = FHeight) then exit;
-  FWidth := AWidth;
-  FHeight := AHeight;
-  if CreationState >= wcsCreationInProgress then
-    OnSetSize;
-end;
-
-procedure TWidget.SetDefaultSize(AWidth, AHeight: LongInt);
-begin
-  FSizeFlags := FSizeFlags - [sizeAuto];
-  SetSize(AWidth, AHeight);
-end;
-
-procedure TWidget.SetFixedSize(AWidth, AHeight: LongInt);
-begin
-  FSizeFlags := [sizeFixed];
-  FMinWidth := AWidth;
-  FMinHeight := AHeight;
-  FMaxWidth := AWidth;
-  FMaxHeight := AHeight;
-  SetSize(AWidth, AHeight);
 end;
 
 procedure TWidget.Redraw;
@@ -296,6 +223,9 @@ end;
 
 {
   $Log$
+  Revision 1.3  2000/02/10 18:48:50  sg
+  * Implemented new size and layout methods
+
   Revision 1.2  2000/01/24 00:28:42  sg
   * Added "Enabled" property
 
