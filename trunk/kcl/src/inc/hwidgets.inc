@@ -46,6 +46,7 @@ type
     FDefaultWidth: Integer;
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
+    procedure SetText(const AText: String); override;
   published
     property Text;
     property MultiLine: Boolean read FMultiLine write FMultiLine default False;
@@ -82,6 +83,7 @@ type
   protected
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
+    procedure SetText(const AText: String); override;
   published
     property Text;
     property Default: Boolean read FDefault write FDefault default False;
@@ -107,6 +109,7 @@ type
     procedure SetState(AState: TCheckBoxState);
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
+    procedure SetText(const AText: String); override;
   published
     property Text;
     property State: TCheckBoxState read GetState write SetState default cbUnchecked;
@@ -118,6 +121,7 @@ type
     procedure SetChecked(AChecked: Boolean);
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
+    procedure SetText(const AText: String); override;
   published
     property Text;
     property Checked: Boolean read FChecked write SetChecked;
@@ -139,6 +143,7 @@ type
     procedure DoRecalcLayout; override;
     procedure ApplySize; override;
     procedure OnFinishCreation; override;
+    procedure SetText(const AText: String); override;
 
     property  Content: TWidget read FContent write FContent;
     property  FixedWidth: Boolean read FFixedWidth write FFixedWidth default True;
@@ -201,6 +206,7 @@ type
     FItems: TStrings;
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
+    procedure SetText(const AText: String); override;
     property Style: TComboBoxStyle read FStyle write FStyle default csDropDown;
   public
     constructor Create(AOwner: TComponent); override;
@@ -522,6 +528,9 @@ type
 
 {
   $Log$
+  Revision 1.8  2000/02/18 22:18:57  sg
+  * The "SetText" methods of all relevant classes are now overwritten
+
   Revision 1.7  2000/02/18 18:21:07  sg
   * Introduced TAbstractScrollWidget
   * Added TScrollers
