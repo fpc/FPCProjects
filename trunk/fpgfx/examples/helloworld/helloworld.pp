@@ -44,11 +44,11 @@ begin
   Window := ADisplay.CreateWindow;
   Window.Title := 'fpGFX Hello World example';
   Window.OnPaint := @Paint;
-  Window.Show;
-  Window.Drawable.SetFont(Font);
-  TextSize := Window.Drawable.TextExtent(HelloWorldString);
+  Window.Canvas.SetFont(Font);
+  TextSize := Window.Canvas.TextExtent(HelloWorldString);
   Window.SetSize((TextSize.cx * 3) div 2, TextSize.cy * 2);
   Window.SetMinMaxSize(TextSize.cx, TextSize.cy, 0, 0);
+  Window.Show;
 end;
 
 destructor TMainWindow.Destroy;
@@ -71,18 +71,18 @@ begin
   for i := Rect.Top to Rect.Bottom - 1 do
   begin
     Color.Blue := $ffff - (i * $ffff) div Window.Height;
-    Window.Drawable.SetColor(Window.Drawable.MapColor(Color));
+    Window.Canvas.SetColor(Window.Canvas.MapColor(Color));
     r.Top := i;
     r.Bottom := i + 1;
-    Window.Drawable.FillRect(r);
+    Window.Canvas.FillRect(r);
   end;
 
-  Window.Drawable.SetColor(Window.Drawable.MapColor(colBlack));
-  Window.Drawable.TextOut((Window.Width - TextSize.cx) div 2 + 1,
+  Window.Canvas.SetColor(Window.Canvas.MapColor(colBlack));
+  Window.Canvas.TextOut((Window.Width - TextSize.cx) div 2 + 1,
     (Window.Height - TextSize.cy) div 2 + 1, HelloWorldString);
 
-  Window.Drawable.SetColor(Window.Drawable.MapColor(colWhite));
-  Window.Drawable.TextOut((Window.Width - TextSize.cx) div 2 - 1,
+  Window.Canvas.SetColor(Window.Canvas.MapColor(colWhite));
+  Window.Canvas.TextOut((Window.Width - TextSize.cx) div 2 - 1,
     (Window.Height - TextSize.cy) div 2 - 1, HelloWorldString);
 end;
 

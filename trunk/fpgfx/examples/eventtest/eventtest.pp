@@ -24,6 +24,7 @@ type
     procedure MouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta, x, y: Integer);
     procedure Paint(Sender: TObject; const Rect: TRect);
+    procedure Resize(Sender: TObject);
   private
     FWindow: TGfxWindow;
     function ShiftStateToStr(Shift: TShiftState): String;
@@ -46,6 +47,7 @@ begin
   FWindow.OnMouseMove := @MouseMove;
   FWindow.OnMouseWheel := @MouseWheel;
   FWindow.OnPaint := @Paint;
+  FWindow.OnResize := @Resize;
   FWindow.Show;
 end;
 
@@ -147,7 +149,7 @@ end;
 
 procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
 begin
-  with FWindow.Drawable do
+  with FWindow.Canvas do
   begin
     SetColor(MapColor(colWhite));
     FillRect(Rect);
@@ -157,6 +159,11 @@ begin
       'Do something interactive (move mouse, press keys...)');
     TextOut(0, FontCellHeight * 2, 'and watch the output on the console.');
   end;
+end;
+
+procedure TMainWindow.Resize(Sender: TObject);
+begin
+  WriteLn('Window has been resized to ', FWindow.Width, ' x ', FWindow.Height);
 end;
 
 var

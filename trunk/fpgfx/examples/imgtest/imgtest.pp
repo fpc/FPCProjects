@@ -46,6 +46,7 @@ begin
   Window.Title := 'fpGFX Bitmap Test';
   Window.OnPaint := @Paint;
   Window.SetSize(256, 256);
+  Window.SetMinMaxSize(256, 256, 256, 256);
   Window.Show;
 
   Image := Display.CreateImage(256, 256, PixelFormatRGB32);
@@ -67,13 +68,13 @@ procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
 var
   r: TRect;
 begin
-  Window.Drawable.SetColor(Window.Drawable.MapColor(colBlue));
+  Window.Canvas.SetColor(Window.Canvas.MapColor(colBlue));
   r.Left := 0;
   r.Top := 0;
   r.Right := Window.Width;
   r.Bottom := Window.Height;
-  Window.Drawable.FillRect(r);
-  Image.Draw(Window.Drawable, 0, 0);
+  Window.Canvas.FillRect(r);
+  Window.Canvas.DrawImage(Image, 0, 0);
 end;
 
 var

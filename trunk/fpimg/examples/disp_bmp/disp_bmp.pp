@@ -52,7 +52,7 @@ end;
 
 procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
 begin
-  Image.Draw(Window.Drawable, 0, 0);
+  Window.Canvas.DrawImage(Image, 0, 0);
 end;
 
 var
