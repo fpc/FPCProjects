@@ -24,6 +24,7 @@ type
   protected
     FText: String;
     FGray: Boolean;
+    FShortCut: String;
     FHandle: TMenuItemHandle;
     FOnClick: TNotifyEvent;
     FParent: TObject;
@@ -36,6 +37,7 @@ type
   published
     property  Text: String read FText write SetText;
     property  Gray: Boolean read FGray write SetGray;
+    property  ShortCut: String read FShortCut write FShortCut;
     property  OnClick: TNotifyEvent read FOnClick write FOnClick;
   end;
 
@@ -71,6 +73,9 @@ type
 
 {
   $Log$
+  Revision 1.3  2000/01/07 22:48:49  sg
+  * Added property "ShortCut" to TMenuItem
+
   Revision 1.2  2000/01/06 22:58:52  sg
   * TMenuItem now stores its parent (which can be TMenuBar or TMenu)
 
