@@ -33,6 +33,7 @@ type
     procedure OnFinishCreation; virtual;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     property Handle: TMenuItemHandle read FHandle;
   published
     property Style: TMenuItemStyle read FStyle write FStyle;
@@ -55,6 +56,7 @@ type
   protected
     FItems: TList;
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -64,6 +66,10 @@ type
 
 {
   $Log$
+  Revision 1.5  2000/02/10 18:37:08  sg
+  * Added destructor to TMenuItem to remove a memory leak
+  * Added DoRecalcLayout to TMenuBar
+
   Revision 1.4  2000/01/24 00:06:18  sg
   * Restructuring, menu items are now bound to a TCommand
 
