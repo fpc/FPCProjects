@@ -34,9 +34,21 @@ begin
   DefW := DefH * 4;
 end;
 
+procedure TStatusBar.SetText(const AText: String);
+begin
+  FText := AText;
+  if Assigned(FHandle) then begin
+    gtk_statusbar_pop(PGtkStatusbar(FHandle), 1);
+    gtk_statusbar_push(PGtkStatusbar(FHandle), 1, PChar(FText));
+  end;
+end;
+
 
 {
   $Log$
+  Revision 1.4  2000/02/17 22:30:34  sg
+  * The statusbar text now can be changed after creation
+
   Revision 1.3  2000/02/10 18:47:38  sg
   * Added layout calculation to TStatusBar
 
