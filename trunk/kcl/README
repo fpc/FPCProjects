@@ -1,0 +1,12 @@
+Hello,
+
+KCL will not be developed any further. It will be replaced by fpGFX and fpGUI;
+the RAD IDE, Kassandra, will be renamed to fpBuilder.
+URLs for more informations:
+http://www.freepascal.org/fpgfx/
+http://www.freepascal.org/fpgui/  (*)
+http://www.freepascal.org/fpbuilder/  (*)
+ (*) = not available at the time of writing
+
+
+- Sebastian  (sg@freepascal.org)
