@@ -69,6 +69,7 @@ type
     Color, PenColor, FontColor: TGfxPixel;
     PenLineStyle: TGfxLineStyle;
     Font: TGfxFont;
+    CurFontHandle: HFONT;
   end;
 
   TGDICanvas = class(TGfxCanvas)
@@ -303,7 +304,7 @@ begin
   FillChar(FontInfo, SizeOf(FontInfo), 0);
 
   if (Length(Fields[lfdPixelSize]) > 0) and (Fields[lfdPixelSize] <> '*') then
-    FontInfo.lfHeight := StrToInt(Fields[lfdPixelSize])
+    FontInfo.lfHeight := -StrToInt(Fields[lfdPixelSize])
   else if (Length(Fields[lfdPointSize]) > 0) and
     (Fields[lfdPointSize] <> '*') then
   begin
@@ -355,7 +356,7 @@ begin
   FHandle := AHandle;
   ASSERT(Handle <> 0);
   FDefaultFontHandle := Windows.GetStockObject(DEFAULT_GUI_FONT);
-  FFontHandle := FDefaultFontHandle;
+  FCurFontHandle := FDefaultFontHandle;
   Windows.SelectObject(Handle, FDefaultFontHandle);
   Windows.GetTextMetrics(Handle, @FFontMetrics);
   Windows.SetBkMode(Handle, TRANSPARENT);
@@ -389,7 +390,11 @@ begin
   SavedState^.PenLineStyle := FPenLineStyle;
   SavedState^.FontColor := FFontColor;
   SavedState^.Font := FFont;
+  SavedState^.CurFontHandle := FCurFontHandle;
   FStateStackpointer := SavedState;
+  { !!!: This is very dangerous! Some of the FCurXXX variables are not saved in
+    SavedState, which might result in graphics errors under certain
+    circumstances. Better try to remove SaveDC/RestoreDC completely. }
   Windows.SaveDC(Handle);
 end;
 
@@ -406,6 +411,7 @@ begin
   FPenColor := SavedState^.PenColor;
   FPenLineStyle := SavedState^.PenLineStyle;
   FFontColor := SavedState^.FontColor;
+  FCurFontHandle := SavedState^.CurFontHandle;
   SetFont(SavedState^.Font);
   Dispose(SavedState);
 end;
@@ -467,16 +473,11 @@ begin
   FFont := AFont;
 
   if not Assigned(AFont) then
-  begin
-    if FFontHandle = FDefaultFontHandle then
-      exit;
-    FFontHandle := FDefaultFontHandle;
-  end else
+    FFontHandle := FDefaultFontHandle
+  else
   begin
     if not AFont.InheritsFrom(TGDIFont) then
       raise EGfxError.CreateFmt(SGDICanvasInvalidFontClass, [AFont.ClassName]);
-    if TGDIFont(AFont).Handle = FFontHandle then
-      exit;
     FFontHandle := TGDIFont(AFont).Handle;
   end;
 end;
@@ -683,6 +684,7 @@ begin
   if FCurFontHandle <> FFontHandle then
   begin
     Windows.SelectObject(Handle, FFontHandle);
+    { TODO : Store the font metrics in TGDIFont }
     Windows.GetTextMetrics(Handle, @FFontMetrics);
     FCurFontHandle := FFontHandle;
   end;
@@ -943,10 +945,12 @@ begin
     Windows.TranslateMessage(@msg);
     Windows.DispatchMessage(@msg);
   end;
+  DoBreakRun := False;
 end;
 
 procedure TGDIDisplay.BreakRun;
 begin
+WriteLn('TGDIDisplay.BreakRun');
   DoBreakRun := True;
 end;
 
@@ -1564,6 +1568,9 @@ end.
 
 {
   $Log$
+  Revision 1.8  2001/05/09 19:16:20  sg
+  * Some font fixes
+
   Revision 1.7  2001/02/14 23:07:47  sg
   * Switched to use TSize and TPoint whereever possible
 
@@ -1579,15 +1586,4 @@ end.
 
   Revision 1.4  2001/01/18 15:00:14  sg
   * Added TGfxWindowType and implemented support for it
-
-  Revision 1.3  2001/01/11 23:07:24  sg
-  *** empty log message ***
-
-  Revision 1.2  2000/12/23 23:07:24  sg
-  *** empty log message ***
-
-  Revision 1.1  2000/10/28 20:30:50  sg
-  * First version (NOT compilable at the moment, as the sources haven't been
-    adapted to recent interfaces changes yet!)
-
 }
