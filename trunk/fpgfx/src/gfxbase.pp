@@ -317,12 +317,17 @@ type
     FTop: Integer;
     FWidth: Integer;
     FHeight: Integer;
+    FClientWidth: Integer;
+    FClientHeight: Integer;
     function GetTitle: String; virtual;
     procedure SetTitle(const ATitle: String); virtual;
   public
     function CanClose: Boolean; virtual;
     procedure SetSize(AWidth, AHeight: Integer); virtual;
     procedure SetMinMaxSize(AMinWidth, AMinHeight,
+      AMaxWidth, AMaxHeight: Integer); virtual;
+    procedure SetClientSize(AWidth, AHeight: Integer); virtual;
+    procedure SetMinMaxClientSize(AMinWidth, AMinHeight,
       AMaxWidth, AMaxHeight: Integer); virtual;
     procedure Show; virtual; abstract;
     procedure Invalidate(const ARect: TRect); virtual; abstract;
@@ -336,6 +341,8 @@ type
     property Top: Integer read FTop;
     property Width: Integer read FWidth write SetWidth;
     property Height: Integer read FHeight write SetHeight;
+    property ClientWidth: Integer read FClientWidth;
+    property ClientHeight: Integer read FClientHeight;
     property Title: String read GetTitle write SetTitle;
     // Event handlers
     property OnCreate: TNotifyEvent read FOnCreate write FOnCreate;
@@ -546,6 +553,17 @@ begin
   // Empty
 end;
 
+procedure TGfxWindow.SetClientSize(AWidth, AHeight: Integer);
+begin
+  // Empty
+end;
+
+procedure TGfxWindow.SetMinMaxClientSize(AMinWidth, AMinHeight,
+  AMaxWidth, AMaxHeight: Integer);
+begin
+  // Empty
+end;
+
 
 function KeycodeToText(Key: Word; ShiftState: TShiftState): String;
 
@@ -700,6 +718,9 @@ end.
 
 {
   $Log$
+  Revision 1.5  2000/12/31 16:29:59  sg
+  * Added TGfxWindow.SetClientSize and SetMinMaxClientSize
+
   Revision 1.4  2000/12/24 13:13:02  sg
   * Added TGfxCanvas.ReverseTransform and TGfxCanvas.EmptyClipRect
 
