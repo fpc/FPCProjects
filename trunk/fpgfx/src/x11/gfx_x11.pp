@@ -90,8 +90,10 @@ type
       AData: Pointer); override;}
     procedure SaveState; override;
     procedure RestoreState; override;
+    procedure EmptyClipRect; override;
     function ExcludeClipRect(const ARect: TRect): Boolean; override;
     function IntersectClipRect(const ARect: TRect): Boolean; override;
+    function UnionClipRect(const ARect: TRect): Boolean; override;
     function GetClipRect: TRect; override;
     function MapColor(const AColor: TGfxColor): TGfxPixel; override;
     procedure SetColor(AColor: TGfxPixel); override;
@@ -212,6 +214,7 @@ type
     procedure Configure(var Event: TXConfigureEvent); message X.ConfigureNotify;
     procedure ClientMessage(var Event: TXClientMessageEvent); message X.ClientMessage;
   protected
+    IsExposing: Boolean;
     function ConvertShiftState(AState: Cardinal): TShiftState;
     function KeySymToKeycode(KeySym: TKeySym): Word;
     function GetTitle: String; override;
@@ -372,13 +375,21 @@ begin
   Dispose(SavedState);
 end;
 
+procedure TXCanvas.EmptyClipRect;
+begin
+  if Assigned(Region) then
+    XDestroyRegion(Region);
+
+  FRegion := XCreateRegion;
+  XSetRegion(DisplayHandle, GC, Region);
+end;
+
 function TXCanvas.ExcludeClipRect(const ARect: TRect): Boolean;
 var
   x1, y1, x2, y2: Integer;
   RectRegion: TRegion;
   XRect: TXRectangle;
 begin
-
   Transform(ARect.Left, ARect.Top, x1, y1);
   Transform(ARect.Right, ARect.Bottom, x2, y2);
 
@@ -440,15 +451,37 @@ begin
     Result := False;
 end;
 
+function TXCanvas.UnionClipRect(const ARect: TRect): Boolean;
+var
+  x1, y1, x2, y2: Integer;
+  RectRegion: TRegion;
+  XRect: TXRectangle;
+begin
+  Transform(ARect.Left, ARect.Top, x1, y1);
+  Transform(ARect.Right, ARect.Bottom, x2, y2);
+
+  if (x2 > x1) and (y2 > y1) then
+  begin
+    XRect.x := x1;
+    XRect.y := y1;
+    XRect.Width := x2 - x1;
+    XRect.Height := y2 - y1;
+    if not Assigned(Region) then
+      FRegion := XCreateRegion;
+    XUnionRectWithRegion(@XRect, Region, Region);
+    XSetRegion(DisplayHandle, GC, Region);
+  end;
+  Result := Assigned(Region) and (not XEmptyRegion(Region));
+end;
+
 function TXCanvas.GetClipRect: TRect;
 var
   XRect: TXRectangle;
 begin
   XClipBox(Region, @XRect);
-  Result.Left := XRect.x;
-  Result.Top := XRect.y;
-  Result.Right := XRect.x + XRect.Width;
-  Result.Bottom := XRect.y + XRect.Height;
+  ReverseTransform(XRect.x, XRect.y, Result.Left, Result.Top);
+  ReverseTransform(XRect.x + XRect.Width, XRect.y + XRect.Height,
+    Result.Right, Result.Bottom);
 end;
 
 function TXCanvas.MapColor(const AColor: TGfxColor): TGfxPixel;
@@ -1052,12 +1085,27 @@ begin
 end;
 
 procedure TXWindow.Expose(var Event: TXExposeEvent);
+var
+  IsNotEmpty: Boolean;
 begin
   if Assigned(OnPaint) then
     with Event do
-      // Yes, it's possible to get Expose events with a zero sized rectangle...
-      if (Width > 0) and (Height > 0) then
-	OnPaint(Self, Rect(x, y, x + Width, y + Height));
+    begin
+      if not IsExposing then
+      begin
+        IsExposing := True;
+	Canvas.SaveState;
+	Canvas.EmptyClipRect;
+      end;
+      IsNotEmpty := Canvas.UnionClipRect(Rect(x, y, x + Width, y + Height));
+      if Count = 0 then
+      begin
+        if IsNotEmpty then
+	  OnPaint(Self, Canvas.GetClipRect);
+	IsExposing := False;
+	Canvas.RestoreState;
+      end;
+    end;
 end;
 
 procedure TXWindow.FocusIn(var Event: TXFocusInEvent);
@@ -1514,6 +1562,7 @@ procedure TXWindow.Invalidate(const ARect: TRect);
 var
   Event: TXExposeEvent;
 begin
+  FillChar(Event, SizeOf(Event), #0);
   Event.EventType := X.Expose;
   Event.Window := FHandle;
   Event.x := ARect.Left;
@@ -1617,6 +1666,12 @@ begin
 
 {
   $Log$
+  Revision 1.4  2000/12/24 13:15:29  sg
+  * Implemented TXCanvas.EmptyClipRect and TXCanvas.UnionClipRect
+  * Vastly improved handling of expose events: Successive expositions are
+    gathered and delivered as a single event; the clipping region of the
+    canvas will be set accordingly.
+
   Revision 1.3  2000/12/23 23:07:24  sg
   *** empty log message ***
 
