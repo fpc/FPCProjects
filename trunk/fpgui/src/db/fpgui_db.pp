@@ -36,6 +36,7 @@ type
     procedure SetFieldName(const AFieldName: String);
     procedure UpdateField;
   protected
+    procedure ActiveChanged; override;
     procedure RecordChanged(AField: TField); override;
   public
     constructor Create(AWidget: TWidget);
@@ -72,6 +73,11 @@ constructor TFieldDataLink.Create(AWidget: TWidget);
 begin
   inherited Create;
   FWidget := AWidget;
+end;
+
+procedure TFieldDataLink.ActiveChanged;
+begin
+  UpdateField;
 end;
 
 procedure TFieldDataLink.RecordChanged(AField: TField);
@@ -133,7 +139,16 @@ end;
 
 procedure TDBText.DataChange(Sender: TObject);
 begin
-  Text := FDataLink.Field.DisplayText;
+Write('TDBText.DataChange');
+  if Assigned(FDataLink.Field) then
+  begin
+    Text := FDataLink.Field.DisplayText;
+    WriteLn(' new text: "', Text, '"');
+  end else
+  begin
+    Text := '';
+    WriteLn('DataLink has no data');
+  end;
 end;
 
 
@@ -142,6 +157,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2001/01/17 21:36:26  sg
+  * Updating fixes
+
   Revision 1.1  2000/12/23 23:20:16  sg
   * First public CVS version...
 
