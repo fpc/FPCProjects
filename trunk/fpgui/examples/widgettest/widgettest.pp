@@ -302,8 +302,8 @@ procedure TGridForm.FormCreate(Sender: TObject);
 var
   x, y: Integer;
 begin
-  for y := 0 to 4 do
-    for x := 0 to 4 do
+  for y := 0 to StringGrid.RowCount - 1 do
+    for x := 0 to StringGrid.ColCount - 1 do
       StringGrid.Cells[x, y] := Format('%d, %d', [x, y]);
 end;
 
