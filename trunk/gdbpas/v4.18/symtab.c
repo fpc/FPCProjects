@@ -3737,6 +3737,8 @@ print_symbol_info (kind, s, sym, block, last)
      int block;
      char *last;
 {
+  enum language store_current=current_language->la_language;
+  
   if (last == NULL || strcmp (last, s->filename) != 0)
     {
       fputs_filtered ("\nFile ", gdb_stdout);
@@ -3756,11 +3758,17 @@ print_symbol_info (kind, s, sym, block, last)
            (kind == TYPES_NAMESPACE &&
             SYMBOL_NAMESPACE(sym) == STRUCT_NAMESPACE))
     {
-      type_print (SYMBOL_TYPE (sym),
+     /*  Try to respect the local language  */
+      if ((language_mode == language_mode_auto) &&
+          (SYMBOL_LANGUAGE(sym) != language_unknown) &&
+           /* Is this possible ??? */
+          (SYMBOL_LANGUAGE(sym) != language_auto) &&
+          (current_language->la_language != SYMBOL_LANGUAGE(sym)))
+         set_language(SYMBOL_LANGUAGE(sym));
+       type_print (SYMBOL_TYPE (sym),
                   (SYMBOL_CLASS (sym) == LOC_TYPEDEF
                    ? "" : SYMBOL_SOURCE_NAME (sym)),
                   gdb_stdout, 0);
-
       printf_filtered (";\n");
     }
   else
@@ -3787,6 +3795,8 @@ print_symbol_info (kind, s, sym, block, last)
         }
 # endif
     }
+  if (store_current != current_language->la_language)
+    set_language(store_current);
 }
 
 /* This help function for symtab_symbol_info() prints information
