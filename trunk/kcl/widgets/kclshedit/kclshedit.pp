@@ -83,7 +83,7 @@ type
     procedure PaintboxFocusOut(Sender: TObject);
 
     procedure DoRecalcLayout; override;
-    procedure ApplySize; override;
+    procedure LayoutChildren; override;
     procedure SetMinHorzVisible(AChars: Integer);
     procedure SetMinVertVisible(AChars: Integer);
     procedure SetDefHorzVisible(AChars: Integer);
@@ -741,9 +741,9 @@ begin
   DefH := FDefVertVisible * CharH;
 end;
 
-procedure TKCLSHWidget.ApplySize;
+procedure TKCLSHWidget.LayoutChildren;
 begin
-  inherited ApplySize;
+  inherited LayoutChildren;
   HorzRange.PageSize := PaintBox.Width;
   VertRange.PageSize := PaintBox.Height;
 end;
@@ -778,6 +778,9 @@ end.
 
 {
   $Log$
+  Revision 1.8  2000/02/24 13:41:59  sg
+  * LayoutChildren (the former ApplySize) now calls its inherited method
+
   Revision 1.7  2000/02/22 14:43:46  sg
   * Lot of fixes, works now perfectly flicker-free
 
