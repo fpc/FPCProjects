@@ -155,11 +155,6 @@ begin
   end;
 end;
 
-{ !!!: 15/16 bit to 24/32 bit expansion:
-    PByte(Dest)[0] := HiByte(Word(((PixelIn and Params.RedMask) shr Params.RedShiftR) * Params.RedMult));
-    PByte(Dest)[1] := HiByte(Word(((PixelIn and Params.GreenMask) shr Params.GreenShiftR) * Params.GreenMult));
-    PByte(Dest)[2] := HiByte(Word(((PixelIn and Params.BlueMask) shr Params.BlueShiftR) * Params.BlueMult));
-}
 
 procedure ConvertInternalToRGB16(Params: TConvertParams; Data: Pointer;
   Dest: Pointer; Width: Integer);
@@ -187,14 +182,14 @@ begin
   repeat
     PixelIn := PLongWord(Data)^;
     PixelOut :=
-      (((PixelIn and $ff0000) shr Params.RedShiftR) shl Params.RedShiftL) or
+      (((PixelIn and $0000ff) shr Params.RedShiftR) shl Params.RedShiftL) or
       (((PixelIn and $00ff00) shr Params.GreenShiftR) shl Params.GreenShiftL) or
-      (((PixelIn and $0000ff) shr Params.BlueShiftR) shl Params.BlueShiftL);
+      (((PixelIn and $ff0000) shr Params.BlueShiftR) shl Params.BlueShiftL);
     PWord(Dest)^ := Word(PixelOut);
     PByte(Dest)[2] := PixelOut shr 16;
 
     Inc(Data, 4);
-    Inc(Dest, 4);
+    Inc(Dest, 3);
     Dec(Width);
   until Width = 0;
 end;
@@ -207,9 +202,9 @@ begin
   repeat
     PixelIn := PLongWord(Data)^;
     PLongWord(Dest)^ :=
-      (((PixelIn and $ff0000) shr Params.RedShiftR) shl Params.RedShiftL) or
+      (((PixelIn and $0000ff) shr Params.RedShiftR) shl Params.RedShiftL) or
       (((PixelIn and $00ff00) shr Params.GreenShiftR) shl Params.GreenShiftL) or
-      (((PixelIn and $0000ff) shr Params.BlueShiftR) shl Params.BlueShiftL);
+      (((PixelIn and $ff0000) shr Params.BlueShiftR) shl Params.BlueShiftL);
 
     Inc(Data, 4);
     Inc(Dest, 4);
@@ -272,7 +267,7 @@ procedure ConvertImage(
   end;
 
 var
-  ParamsTo, ParamsFrom: TConvertParams;
+  ParamsS2I, ParamsI2D: TConvertParams;  // Source to internal, internal to dest
   ConvertToInternal: TConvertToInternalProc;
   ConvertFromInternal: TConvertFromInternalProc;
   Scanline: Pointer;
@@ -282,47 +277,47 @@ begin
     ftMono:
       begin
         ConvertToInternal := @ConvertMonoToInternal;
-	max := ConvertPalette(1, ParamsTo);
+	max := ConvertPalette(1, ParamsS2I);
 	if max < 1 then
 	begin
-	  ParamsTo.Palette[1] := $ffffff;
+	  ParamsS2I.Palette[1] := $ffffff;
 	  if max < 0 then
-	    ParamsTo.Palette[0] := 0;
+	    ParamsS2I.Palette[0] := 0;
 	end;
       end;
     ftPal4, ftPal4A:
       begin
         ConvertToInternal := @ConvertPal4ToInternal;
-	max := ConvertPalette(15, ParamsTo);
+	max := ConvertPalette(15, ParamsS2I);
 	for i := max + 1 to 15 do
-	  ParamsTo.Palette[i] := 0;
+	  ParamsS2I.Palette[i] := 0;
       end;
     ftPal8, ftPal8A:
       begin
         ConvertToInternal := @ConvertPal8ToInternal;
-	max := ConvertPalette(255, ParamsTo);
+	max := ConvertPalette(255, ParamsS2I);
 	for i := max + 1 to 255 do
-	  ParamsTo.Palette[i] := i or (i shl 8) or (i shl 16);
+	  ParamsS2I.Palette[i] := i or (i shl 8) or (i shl 16);
       end;
     ftRGB24:
       begin
         ConvertToInternal := @ConvertRGB24ToInternal;
-	ParamsTo.RedShiftR := 8 -
-	  GetBitShiftAndCount(ASourceFormat.RedMask, ParamsTo.RedShiftL);
-	ParamsTo.GreenShiftR := 16 -
-	  GetBitShiftAndCount(ASourceFormat.GreenMask, ParamsTo.GreenShiftL);
-	ParamsTo.BlueShiftR := 24 -
-	  GetBitShiftAndCount(ASourceFormat.BlueMask, ParamsTo.BlueShiftL);
+	ParamsS2I.RedShiftR := 8 -
+	  GetBitShiftAndCount(ASourceFormat.RedMask, ParamsS2I.RedShiftL);
+	ParamsS2I.GreenShiftR := 16 -
+	  GetBitShiftAndCount(ASourceFormat.GreenMask, ParamsS2I.GreenShiftL);
+	ParamsS2I.BlueShiftR := 24 -
+	  GetBitShiftAndCount(ASourceFormat.BlueMask, ParamsS2I.BlueShiftL);
       end;
     ftRGB32:
       begin
         ConvertToInternal := @ConvertRGB32ToInternal;
-	ParamsTo.RedShiftR := 8 -
-	  GetBitShiftAndCount(ASourceFormat.RedMask, ParamsTo.RedShiftL);
-	ParamsTo.GreenShiftR := 16 -
-	  GetBitShiftAndCount(ASourceFormat.GreenMask, ParamsTo.GreenShiftL);
-	ParamsTo.BlueShiftR := 24 -
-	  GetBitShiftAndCount(ASourceFormat.BlueMask, ParamsTo.BlueShiftL);
+	ParamsS2I.RedShiftR := 8 -
+	  GetBitShiftAndCount(ASourceFormat.RedMask, ParamsS2I.RedShiftL);
+	ParamsS2I.GreenShiftR := 16 -
+	  GetBitShiftAndCount(ASourceFormat.GreenMask, ParamsS2I.GreenShiftL);
+	ParamsS2I.BlueShiftR := 24 -
+	  GetBitShiftAndCount(ASourceFormat.BlueMask, ParamsS2I.BlueShiftL);
       end;
     else
       raise EGfxUnsupportedPixelFormat.Create(ASourceFormat);
@@ -332,17 +327,17 @@ begin
     ftRGB16:
       begin
         ConvertFromInternal := @ConvertInternalToRGB16;
-	SetupShifts(ADestFormat, ParamsFrom);
+	SetupShifts(ADestFormat, ParamsI2D);
       end;
     ftRGB24:
       begin
         ConvertFromInternal := @ConvertInternalToRGB24;
-	SetupShifts(ADestFormat, ParamsFrom);
+	SetupShifts(ADestFormat, ParamsI2D);
       end;
     ftRGB32:
       begin
         ConvertFromInternal := @ConvertInternalToRGB32;
-	SetupShifts(ADestFormat, ParamsFrom);
+	SetupShifts(ADestFormat, ParamsI2D);
       end;
     else
       raise EGfxUnsupportedPixelFormat.Create(ASourceFormat);
@@ -352,10 +347,10 @@ begin
   GetMem(Scanline, w * SizeOf(TGfxPixel));
   for y := ASourceRect.Top to ASourceRect.Bottom - 1 do
   begin
-    ConvertToInternal(ParamsTo, ASourceData,
+    ConvertToInternal(ParamsS2I, ASourceData,
       ASourceRect.Left, ASourceRect.Right, Scanline);
     Inc(ASourceData, ASourceStride);
-    ConvertFromInternal(ParamsFrom, Scanline, ADestData, w);
+    ConvertFromInternal(ParamsI2D, Scanline, ADestData, w);
     Inc(ADestData, ADestStride);
   end;
   FreeMem(Scanline);
@@ -404,6 +399,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2001/05/09 18:59:36  sg
+  * Fixed lots of conversion routines
+
   Revision 1.1  2001/01/17 21:27:51  sg
   * Renamed unit gfximage to gelimage
   * Added unit geldirty
