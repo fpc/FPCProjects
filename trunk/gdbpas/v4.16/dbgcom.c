@@ -1255,4 +1255,9 @@ _init_dbg_fsext(void)
 }
 #endif /* def USE_FSEXT */
 
-/* $Log: */@
+/* 
+  $Log$
+  Revision 1.3  1998/12/21 11:03:01  pierre
+   * problems of FSEXT_dbg solved
+ 
+*/

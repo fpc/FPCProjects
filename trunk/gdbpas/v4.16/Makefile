@@ -1572,5 +1572,8 @@ gdbpas : $(OBS) $(TSOBS) dbgcom.o $(ADD_DEPS) $(CDEPS) init.o
 
 ### end of the gdb Makefile.in.
 #
-# $Log : $
+# $Log$
+# Revision 1.3  1998/12/21 11:02:59  pierre
+#  * problems of FSEXT_dbg solved
+#
 #
