@@ -28,8 +28,8 @@ uses
   doc_text, SHEdit;
 
 const
-  colInvalid     = $ff000000;
-  colDefault     = $ffffffff;
+  colInvalid = $ff000000;
+  colDefault = $ffffffff;
 
 type
 
@@ -54,8 +54,9 @@ type
     PaintBox: TPaintBox;
     FLeftIndent: Integer;		// Left indent (border) in pixel (!)
     FDefMaxTextWidth: Integer;          // Position of vertical bar, in chars
+    FMinHorzVisible, FMinVertVisible, FDefHorzVisible, FDefVertVisible: Integer;
     CharW, CharH: Integer;
-    Fonts: {array[TSHFontStyle] of} TFont; // Fonts for content drawing
+    Fonts: array[TSHFontStyle] of TFont; // Fonts for content drawing
     Canvas: TCanvas;
     FDoc: TTextDoc;
     FEditor: TSHTextEdit;
@@ -76,6 +77,11 @@ type
     procedure PaintboxFocusIn(Sender: TObject);
     procedure PaintboxFocusOut(Sender: TObject);
 
+    procedure DoRecalcLayout; override;
+    procedure SetMinHorzVisible(AChars: Integer);
+    procedure SetMinVertVisible(AChars: Integer);
+    procedure SetDefHorzVisible(AChars: Integer);
+    procedure SetDefVertVisible(AChars: Integer);
 
     // The "real" ISHWidget Implemenation:
 
@@ -113,11 +119,17 @@ type
 
     function  AddSHStyle(AName: String; AColor, ABackground: LongWord;
       AStyle: TSHFontStyle): Integer;
+
     property Document: TTextDoc read FDoc;
     property Editor: TSHTextEdit read FEditor;
     property LeftIndent: Integer read FLeftIndent write FLeftIndent;
     DrawVBar: Boolean;
     property DefMaxTextWidth: Integer read FDefMaxTextWidth write FDefMaxTextWidth;
+
+    property MinHorzVisible: Integer read FMinHorzVisible write SetMinHorzVisible default 1;
+    property MinVertVisible: Integer read FMinVertVisible write SetMinVertVisible default 1;
+    property DefHorzVisible: Integer read FDefHorzVisible write SetDefHorzVisible default 5;
+    property DefVertVisible: Integer read FDefVertVisible write SetDefVertVisible default 3;
   end;
 
 
@@ -190,20 +202,23 @@ begin
   // Create Fonts
   FFontName := 'courier';
   FFontSize := 14;
-//  for i := 0 to 3 do begin
+  for i := 0 to 3 do begin
     f := TFont.Create;
     f.FontName := FFontName;
     f.Height := FFontSize;
     f.Bold := (i and 1) <> 0;
     f.Italics := (i and 2) <> 0;
-Fonts := f;
-//    Fonts[TSHFontStyle(i)] := f;
-//  end;
-//  CharW := Fonts[fsBold].GetTextWidth(' ');
-  CharW := Fonts.GetTextWidth(' ');
+    Fonts[TSHFontStyle(i)] := f;
+  end;
+  CharW := Fonts[fsBold].GetTextWidth(' ');
   CharH := FFontSize + 3;   // *** find better way to determine max. cell height
 
-//  FLeftIndent := CharW div 2;
+  FLeftIndent := CharW div 2;
+
+  FMinHorzVisible := 1;
+  FMinVertVisible := 1;
+  FDefHorzVisible := 5;
+  FDefVertVisible := 3;
 
   PaintBox := TPaintBox.Create(Self);
   PaintBox.Name := 'PaintBox';
@@ -211,11 +226,13 @@ Fonts := f;
 end;
 
 destructor TKCLSHWidget.Destroy;
+var
+  i: Integer;
 begin
   FEditor.Free;
 
-  //for i := 0 to 3 do
-    Fonts.Free;
+  for i := 0 to 3 do
+    Fonts[TSHFontStyle(i)].Free;
   WidgetIface.Free;
 
   FreeMem(SHStyles);
@@ -321,20 +338,11 @@ begin
     Canvas.FillRect(0, rect.Top, FLeftIndent, rect.Bottom - rect.Top + 1);
   end;
 
-//###
-//  Canvas.Color := SHStyles^[shWhitespace].Background;
-//  Canvas.FillRect(rect);
-//###
-
   // Draw text
   x := (rect.Left - FLeftIndent) div CharW;
   y := rect.Top div CharH;
   FEditor.DrawContent(x, y, (rect.Right - FLeftIndent + CharW + 1) div CharW - x,
     (rect.Bottom + CharH - 1) div CharH - y);
-
-//  Canvas.Color := SHStyles^[shWhitespace].Background;
-//  Canvas.FillRect(FLeftIndent + x * CharW, y * CharH, w * CharW, h * CharH);
-
 
   if FDefMaxTextWidth > 0 then begin
     px := FLeftIndent + FDefMaxTextWidth * CharW;
@@ -510,7 +518,7 @@ begin
       else begin
         if (CurX1 >= x1) and (CurX1 <= x2) then begin
           Canvas.Color := SHStyles^[RequestedColor].Color;
-	  Canvas.Font := Fonts;//Fonts[SHStyles^[RequestedColor].FontStyle];
+	  Canvas.Font := Fonts[SHStyles^[RequestedColor].FontStyle];
 	  Canvas.Text(CurX1 * CharW + FLeftIndent, y * CharH, s[0]);
         end;
         Inc(s);
@@ -612,11 +620,49 @@ begin
 end;
 
 
+procedure TKCLSHWidget.DoRecalcLayout;
+begin
+  inherited DoRecalcLayout;
+  Inc(MinW, FMinHorzVisible * CharW + FLeftIndent);
+  Inc(MinH, FMinVertVisible * CharH);
+  DefW := FDefHorzVisible * CharW + FLeftIndent;
+  DefH := FDefVertVisible * CharH;
+end;
+
+procedure TKCLSHWidget.SetMinHorzVisible(AChars: Integer);
+begin
+  FMinHorzVisible := AChars;
+  RecalcLayout;
+end;
+
+procedure TKCLSHWidget.SetMinVertVisible(AChars: Integer);
+begin
+  FMinVertVisible := AChars;
+  RecalcLayout;
+end;
+
+procedure TKCLSHWidget.SetDefHorzVisible(AChars: Integer);
+begin
+  FDefHorzVisible := AChars;
+  RecalcLayout;
+end;
+
+procedure TKCLSHWidget.SetDefVertVisible(AChars: Integer);
+begin
+  FDefVertVisible := AChars;
+  RecalcLayout;
+end;
+
+
 end.
 
 
 {
   $Log$
+  Revision 1.5  2000/02/10 18:50:34  sg
+  * Added layout calculations
+  * This widget now supports a minimum and default visible size
+
   Revision 1.4  2000/01/31 19:32:26  sg
   * Adapted to new SHEdit interface (mainly for selection redrawing fixes)
   * Fixed horizontal scrolling
