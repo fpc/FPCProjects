@@ -156,6 +156,9 @@ go32_resume(int pid, int step, enum target_signal siggnal)
   resume_is_step = step;
   pass_signal = 0;
   gdb_int_to_pass = siggnal;
+  /* this allows to pass the raised signal to child */
+  /* POSIX signal is transformed back into processor exception
+     if an exception was raised */
   if (siggnal != TARGET_SIGNAL_0)
     for (i=0; sig_map[i].go32_sig != -1; i++)
      if ((sig_map[i].gdb_sig == siggnal) && (a_tss.tss_irqn == sig_map[i].go32_sig))
@@ -272,7 +275,9 @@ go32_fetch_registers(int regno)
          memcpy (&registers[REGISTER_BYTE (regno)], &d, REGISTER_RAW_SIZE (regno));
          if (end_reg==regno+1)
            {
+#if 0
             printf_unfiltered("st(%d) above stack end", regno-16);
+#endif
            }
        }
      if (regno>15)

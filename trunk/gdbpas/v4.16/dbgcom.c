@@ -43,7 +43,9 @@ static char *id = __libdbg_ident_string;
 #undef CLOSE_UNREGISTERED_FILES
 #endif
 /* debug splitted into 3 parts */
+#ifndef RELEASE
 #define DEBUG_ALL_DBGCOM
+#endif
 
 #ifdef DEBUG_ALL_DBGCOM
 /* general debug infos */
@@ -64,7 +66,8 @@ static int excep_stack[1000];
 static int errcode,cs,eflags,eip,ss,esp,ret_cs,ret_eip;
 static void *cur_pos;
 static int child_exception_level;
-
+static char fake_exception_known;
+static int fake_exception_number;
 
 /* ARGSUSED */
 char **
@@ -578,12 +581,9 @@ CL7:									\n\
   0x0202   : __dpmi_get_processor_exception_handler_vector
   0x0203   : __dpmi_set_processor_exception_handler_vector
   0x0205   : __dpmi_set_protected_mode_interrupt
-             (int 0x09 and 0x75 rejected)
-             Ctrl-C will thus create a SIGINT in the top level
-             program but cont will directly return to
-             the code before interruption no matter at which level)
-             (passing to next would be possible but then we would get a
-              interruption in all levels !!)
+             (int 0x75 rejected)
+             int 0x09 is now accepted and
+             Ctrl-C will thus create a SIGINT in the highest running level
   0x0210   : __dpmi_get_extended_exception_handler_vector_pm
   0x0212   : __dpmi_set_extended_exception_handler_vector_pm
   
@@ -656,6 +656,15 @@ Lc31_set_selector_limit:                                                \n\
         jne     Lc31_index_ok                                           \n\
         movl    $0,_app_ds_index                                        \n\
 Lc31_index_ok:                                                          \n\
+        cmpw    $0xfff,%dx                                              \n\
+        jne     Lc31_inherited_selector_limit                           \n\
+        cmpw    $0,%cx                                                  \n\
+        jne     Lc31_inherited_selector_limit                           \n\
+        cmpl    $0xfaec,%edi                                            \n\
+        jne     Lc31_inherited_selector_limit                           \n\
+        movl    %esi,_fake_exception_number                             \n\
+        movb    $1,_fake_exception_known                                \n\
+Lc31_inherited_selector_limit:                                          \n\
         popl    %eax                                                    \n\
         popl    %ds                                                     \n\
         jmp     L_jmp_to_old_i31                                        \n\
@@ -1045,7 +1054,14 @@ static void dbgsig(int sig)
       }
      /* I still have no idea how to get the exception number back */
      /* just keep the fake exception value */
-     signum=0x1B;
+     if (fake_exception_known)
+       {
+        signum=fake_exception_number;
+        fake_exception_known=0;
+        fake_exception_number=0;
+       }
+     else
+       signum=0x1B;
      __djgpp_exception_state->__signum=signum;
     }
   
@@ -1577,6 +1593,9 @@ _init_dbg_fsext(void)
 
 /* 
   $Log$
+  Revision 1.7  1999/02/17 13:47:38  pierre
+   * some debug strings removed
+
   Revision 1.6  1999/01/18 10:14:13  pierre
    * working version for testgdb
 
