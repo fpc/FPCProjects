@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -34,9 +34,8 @@ begin
     rect.Bottom := rect.Top + event^.area.height;
 
     Canvas := TGdkExposeCanvas.Create(PaintBox);
-    //WriteLn('Clipping to ', rect.Left, '/', rect.Top, ' - ', rect.Right, '/', rect.Bottom);
     gdk_gc_set_clip_rectangle(Canvas.priv.gc, @event^.area);
-    PaintBox.OnPaint(PaintBox, Canvas, rect);
+    PaintBox.DoPaint(Canvas, rect);
     Canvas.Free;
   end;
 end;
@@ -106,32 +105,70 @@ begin
   if (KeyState and $400) <> 0 then ShiftState := ShiftState + [ssRight];
   if (KeyState and $2000) <> 0 then ShiftState := ShiftState + [ssAltGr];
 
-  PaintBox.OnKey(PaintBox, Key, KeyCode, ShiftState);
+  if (Key <> #0) or (KeyCode > 0) then
+    PaintBox.DoKey(Key, KeyCode, ShiftState);
+end;
+
+function GdkToButton(button: Integer): TMouseButton;
+begin
+  case button of
+    1: Result := mbLeft;
+    3: Result := mbRight;
+    // map (button=2) and all unknown buttons to middle button:
+    else Result := mbMiddle;
+  end;
+end;
+
+function GdkToShiftState(state: Integer): TShiftState;
+begin
+  {if (state and GDK_SHIFT_MASK) <> 0 then Write('Shift ');
+  if (state and GDK_LOCK_MASK) <> 0 then Write('Lock ');
+  if (state and GDK_CONTROL_MASK) <> 0 then Write('Control ');
+  if (state and GDK_MOD1_MASK) <> 0 then Write('Mod1 ');
+  if (state and GDK_MOD2_MASK) <> 0 then Write('Mod2 ');
+  if (state and GDK_MOD3_MASK) <> 0 then Write('Mod3 ');
+  if (state and GDK_MOD4_MASK) <> 0 then Write('Mod4 ');
+  if (state and GDK_MOD5_MASK) <> 0 then Write('Mod5 ');
+  if (state and GDK_BUTTON1_MASK) <> 0 then Write('Button1 ');
+  if (state and GDK_BUTTON2_MASK) <> 0 then Write('Button2 ');
+  if (state and GDK_BUTTON3_MASK) <> 0 then Write('Button3 ');
+  if (state and GDK_BUTTON4_MASK) <> 0 then Write('Button4 ');
+  if (state and GDK_BUTTON5_MASK) <> 0 then Write('Button5 ');
+  WriteLn;}
+  Result := [];
+  if (state and GDK_SHIFT_MASK)   <> 0 then Result := Result + [ssShift];
+  if (state and GDK_LOCK_MASK)    <> 0 then Result := Result + [ssCaps];
+  if (state and GDK_CONTROL_MASK) <> 0 then Result := Result + [ssCtrl];
+  if (state and GDK_MOD1_MASK)    <> 0 then Result := Result + [ssAlt];
+  if (state and GDK_MOD2_MASK)    <> 0 then Result := Result + [ssNum];
+  if (state and GDK_MOD4_MASK)    <> 0 then Result := Result + [ssSuper];
+  if (state and GDK_MOD5_MASK)    <> 0 then Result := Result + [ssScroll];
+  if (state and GDK_BUTTON1_MASK) <> 0 then Result := Result + [ssLeft];
+  if (state and GDK_BUTTON2_MASK) <> 0 then Result := Result + [ssMiddle];
+  if (state and GDK_BUTTON3_MASK) <> 0 then Result := Result + [ssRight];
 end;
 
 function TPaintBox_ButtonPressEvent(GtkWidget: PGtkWidget; event: PGdkEventButton;
   PaintBox: TPaintBox): Integer; cdecl;
 begin
-  if Assigned(PaintBox.OnMouseButtonDown) then
-    PaintBox.OnMouseButtonDown(PaintBox, Round(event^.x), Round(event^.y), []);
+  PaintBox.DoMouseButtonDown(GdkToButton(event^.button),
+    GdkToShiftState(event^.state), Round(event^.x), Round(event^.y));
   Result := 1;
 end;
 
 function TPaintBox_ButtonReleaseEvent(GtkWidget: PGtkWidget; event: PGdkEventButton;
   PaintBox: TPaintBox): Integer; cdecl;
 begin
-  if Assigned(PaintBox.OnMouseButtonUp) then
-    PaintBox.OnMouseButtonUp(PaintBox, Round(event^.x), Round(event^.y), []);
+  PaintBox.DoMouseButtonUp(GdkToButton(event^.button),
+    GdkToShiftState(event^.state), Round(event^.x), Round(event^.y));
   Result := 1;
 end;
 
 function TPaintBox_MotionNotifyEvent(GtkWidget: PGtkWidget; event: PGdkEventMotion;
   PaintBox: TPaintBox): Integer; cdecl;
 begin
-  if Assigned(PaintBox.OnMouseMove) then begin
-    WriteLn('Motion, ', event^.State);
-    PaintBox.OnMouseMove(PaintBox, Round(event^.x), Round(event^.y), []);
-  end;
+  PaintBox.DoMouseMove(GdkToShiftState(event^.state),
+    Round(event^.x), Round(event^.y));
   Result := 1;
 end;
 
@@ -146,17 +183,10 @@ begin
   Result := TGdkCanvas.Create(Handle.Widget^.window);
 end;
 
-
-// -------------------------------------------------------------------
-//   TPaintBox
-// -------------------------------------------------------------------
-
-procedure TPaintBox.OnFinishCreation;
+procedure TCustomPaintBox.OnFinishCreation;
 begin
   if not Assigned(Handle.Widget) then
     Handle.Widget := gtk_drawing_area_new;
-
-  inherited OnFinishCreation;
 
   gtk_signal_connect_after(PGtkObject(Handle.Widget), 'expose-event',
     GTK_SIGNAL_FUNC(@TPaintBox_Expose), self);
@@ -171,10 +201,14 @@ begin
   gtk_signal_connect(PGtkObject(Handle.Widget), 'button-release-event',
     GTK_SIGNAL_FUNC(@TPaintBox_ButtonReleaseEvent), Self);
   gtk_signal_connect(PGtkObject(Handle.Widget), 'motion-notify-event',
-    GTK_SIGNAL_FUNC(@TPaintBox_ButtonReleaseEvent), Self);
+    GTK_SIGNAL_FUNC(@TPaintBox_MotionNotifyEvent), Self);
+  gtk_widget_add_events(Handle.Widget, GDK_BUTTON_PRESS_MASK or
+    GDK_BUTTON_RELEASE_MASK or GDK_POINTER_MOTION_MASK);
+
+  inherited OnFinishCreation;
 end;
 
-procedure TPaintBox.OnSetSize;
+procedure TCustomPaintBox.OnSetSize;
 begin
   ASSERT(Assigned(Handle.Widget));
   gtk_widget_set_usize(Handle.Widget, FWidth, FHeight);
@@ -183,7 +217,10 @@ end;
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:50  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:18:37  sg
+  * All events are not implemented properly
+
+  Revision 1.1.1.1  1999/12/30 21:33:50  sg
+  Initial import
 
 }
