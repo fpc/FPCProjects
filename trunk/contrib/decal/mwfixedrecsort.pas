@@ -12,7 +12,7 @@
  | You use it at your own risc.
  | E-Mail me at Martin.Waldenburg@t-online.de
 
-{--------------------------------------------------------------------}
+ --------------------------------------------------------------------}
 { Martin Waldenburg
 	Landaeckerstrasse 27
 	71642 Ludwigsburg
@@ -22,13 +22,12 @@
 
 unit mwFixedRecSort;
 
-{$R-}
-
-
-
 interface
 
-uses SysUtils, Windows, Classes;
+{$i decalh.inc}
+{$R-}
+
+uses SysUtils, {$ifdef win32} Windows, {$endif} Classes;
 
 type
 	TMergeCompare = function (Item1, Item2: Pointer): Integer;

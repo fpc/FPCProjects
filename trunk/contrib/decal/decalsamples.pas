@@ -1,5 +1,5 @@
 unit DeCALSamples;
-
+{$i decalh.inc}
 interface
 
 uses DeCAL;
@@ -8,7 +8,21 @@ procedure DoExamples;
 
 implementation
 
-uses Windows, Math, Classes, SysUtils, RandomTesting;
+uses {$ifdef win32}Windows,{$endif} Math, Classes, SysUtils, RandomTesting
+{$ifdef Unix},BaseUnix,Unix{$endif};
+
+{$ifdef Unix}
+
+Function GetTickCount:integer; // returns ms, should return 18ms (55 hz)
+
+var t:ttimeval;
+    tz:ttimezone;
+    
+begin
+ fpgettimeofday(@t,@tz);
+ result:=1000*t.tv_sec+ (t.tv_usec) div 1000;   // sec * 1000 + (microsec) / 1000
+end;
+{$endif}
 
 var
 	counter : Integer = 0;

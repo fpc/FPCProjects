@@ -14,7 +14,7 @@ Copyright (c) 2000 Ross Judson.  <P>
 }
 
 unit DeCALIO;
-
+{$i decalh.inc}
 interface
 
 implementation

@@ -1,5 +1,5 @@
 program RegressSDL;
-
+{$i decalh.inc}
 uses
   SysUtils,
   DeCALIO in 'DeCALIO.pas',

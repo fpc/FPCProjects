@@ -12,5 +12,6 @@ use the CVS logs)
 
 All fixes accepted for this directory are placed under LGPL/MPL dual license
 
+2004-04-02 Did some changes to get it compiling under FPC/Unix
 
 Marco van de Voort

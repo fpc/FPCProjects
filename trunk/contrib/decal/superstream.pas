@@ -105,21 +105,9 @@ end;
 // We violate range checking in a few places here, deliberately.
 {$RANGECHECKS OFF}
 
-{$IFDEF VER100}
-{$DEFINE DELPHI3}
-{$ENDIF}
-
-{$IFDEF VER110}
-{$DEFINE DELPHI3}
-{$ENDIF}
-
-{$IFDEF VER120}
-{$DEFINE DELPHI4}
-{$ENDIF}
-
-
 unit SuperStream;
 
+{$i decalh.inc}
 interface
 
 uses Classes, SysUtils;
@@ -656,7 +644,9 @@ type
 
 implementation
 
+{$ifdef win32}
 uses Windows;
+{$endif}
 
 const
 	// How big should the buffered streams used by the TObjStream helpers be?

@@ -1,5 +1,5 @@
 unit RandomTesting;
-
+{$i decalh.inc}
 interface
 
 procedure RandomGo;

@@ -63,56 +63,24 @@
   Martin Waldenburg <BR>
   Julian Bucknall <BR>
   Vladimir Merzlaikov <BR>
-	Kurt Westerfeld <P>
-
+  Kurt Westerfeld <P>
 }
+
+{
+FPC modifications by Marco van de Voort
+}
+
 
 unit DeCAL;
 
-{$IFDEF VER100}
-{$DEFINE DELPHI3}
-{$ENDIF}
-
-{$IFDEF VER110}
-{$DEFINE DELPHI3}
-{$ENDIF}
-
-{$IFDEF VER120}
-{$DEFINE DELPHI4}
-{$ENDIF}
-
-{$IFDEF VER130}
-{$DEFINE DELPHI5}
-{$ENDIF}
-
-{$IFDEF FPC}
-{$IFDEF VER1_0}
-{$USER THIS IS NOT GOING TO WORK!}
- BOMB!
-{$ELSE}
-{$DEFINE DELPHI5}
-{$ENDIF}
-{$ENDIF}
-
-// {$DEFINE DEBUG}
-{$DEFINE USEPOOLS}
-
-{$IFDEF DELPHI3}
-{$ELSE}
-{$DEFINE USELONGWORD}
-{$ENDIF}
-
-// can't seem to ifopt these
-//{$IFOPT WARNINGS+}
-{$DEFINE WARNINGSON}
-//{$ENDIF}
-//{$IFOPT HINTS+}
-{$DEFINE HINTSON}
-//{$ENDIF}
+{$i decalh.inc} 	// central includefile to hide compiler differences
 
 interface
 
-uses Windows, Classes, SysUtils
+uses {$ifdef win32}Windows,{$endif} Classes, SysUtils 
+{$ifdef UseSysThrds}
+   ,SysThrds
+{$endif}
 {$IFDEF GC}
 			,gc
 {$ENDIF}
@@ -3398,12 +3366,20 @@ type
 constructor TDeCALCriticalSection.Create;
 begin
   inherited Create;
-  InitializeCriticalSection(FSection);
+  {$ifdef UseSysThrds}
+    InitCriticalSection(FSection);
+  {$else}
+    InitializeCriticalSection(FSection);
+  {$endif}
 end;
 
 destructor TDeCALCriticalSection.Destroy;
 begin
-  DeleteCriticalSection(FSection);
+  {$ifdef UseSysthrds}
+    DoneCriticalSection(Fsection);
+  {$else}
+    DeleteCriticalSection(FSection);
+  {$endif}
   inherited Destroy;
 end;
 
