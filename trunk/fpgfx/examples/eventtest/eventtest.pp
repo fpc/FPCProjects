@@ -197,9 +197,9 @@ procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
 begin
   with FWindow.Canvas do
   begin
-    SetColor(MapColor(colWhite));
+    SetColor(colWhite);
     FillRect(Rect);
-    SetColor(MapColor(colBlack));
+    SetColor(colBlack);
     TextOut(0, 0, 'Event test');
     TextOut(0, FontCellHeight,
       'Do something interactive (move mouse, press keys...)');
@@ -233,6 +233,9 @@ end.
 
 {
   $Log$
+  Revision 1.7  2001/02/09 20:48:02  sg
+  * Adapted to fpGFX interface improvements
+
   Revision 1.6  2001/01/18 15:00:14  sg
   * Added TGfxWindowType and implemented support for it
 

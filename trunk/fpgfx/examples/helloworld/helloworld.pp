@@ -40,12 +40,14 @@ constructor TMainWindow.Create(ADisplay: TDefDisplay);
 begin
   inherited Create;
   Display := ADisplay;
-  Font := Display.CreateFont('-*-*-*-r-normal--36-*-*-*-*-*-iso8859-1');
+  Font := Display.CreateFont('-*-' + Display.GetDefaultFontName(fcSerif) +
+    '-*-r-normal--36-*-*-*-*-*-iso8859-1');
   Window := ADisplay.DefaultScreen.CreateWindow(nil, wtWindow);
   Window.Title := 'fpGFX Hello World example';
   Window.OnPaint := @Paint;
   Window.Canvas.SetFont(Font);
-  TextSize := Window.Canvas.TextExtent(HelloWorldString);
+  TextSize.cx := Window.Canvas.TextWidth(HelloWorldString);
+  TextSize.cy := Window.Canvas.FontCellHeight;
   Window.SetClientSize((TextSize.cx * 3) div 2, TextSize.cy * 2);
   Window.SetMinMaxClientSize(TextSize.cx, TextSize.cy, 0, 0);
   Window.Show;
@@ -70,18 +72,19 @@ begin
   r.Right := Rect.Right;
   for i := Rect.Top to Rect.Bottom - 1 do
   begin
-    Color.Blue := $ffff - (i * $ffff) div Window.Height;
-    Window.Canvas.SetColor(Window.Canvas.MapColor(Color));
+    Color.Blue := $ffff - (i * $ffff) div Window.ClientHeight;
+    Window.Canvas.SetColor(Color);
     r.Top := i;
     r.Bottom := i + 1;
     Window.Canvas.FillRect(r);
   end;
 
-  Window.Canvas.SetColor(Window.Canvas.MapColor(colBlack));
+  Window.Canvas.SetColor(colBlack);
+  Window.Canvas.SetFont(Font);
   Window.Canvas.TextOut((Window.ClientWidth - TextSize.cx) div 2 + 1,
     (Window.ClientHeight - TextSize.cy) div 2 + 1, HelloWorldString);
 
-  Window.Canvas.SetColor(Window.Canvas.MapColor(colWhite));
+  Window.Canvas.SetColor(colWhite);
   Window.Canvas.TextOut((Window.ClientWidth - TextSize.cx) div 2 - 1,
     (Window.ClientHeight - TextSize.cy) div 2 - 1, HelloWorldString);
 end;
@@ -96,3 +99,11 @@ begin
   MainWindow.Free;
   Display.Free;
 end.
+
+
+{
+  $Log$
+  Revision 1.7  2001/02/09 20:48:02  sg
+  * Adapted to fpGFX interface improvements
+
+}

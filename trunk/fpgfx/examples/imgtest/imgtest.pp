@@ -69,7 +69,7 @@ procedure TMainWindow.Paint(Sender: TObject; const Rect: TRect);
 var
   r: TRect;
 begin
-  Window.Canvas.SetColor(Window.Canvas.MapColor(colBlue));
+  Window.Canvas.SetColor(colBlue);
   r.Left := 0;
   r.Top := 0;
   r.Right := Window.Width;
