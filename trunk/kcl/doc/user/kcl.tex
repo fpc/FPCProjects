@@ -1,0 +1,91 @@
+\documentclass{report}
+\usepackage{html}
+\usepackage{thumbpdf}
+\usepackage{fpc}
+\usepackage{times}
+\begin{document}
+\author{Sebastian Guenther}
+\title{KCL User's Guide}
+\docversion{Version 0.01}
+\maketitle
+\tableofcontents
+
+%===============================================================================
+\chapter{Messaging}
+
+%-------------------------------------------------------------------------------
+
+\section{Overview}
+KCL has very advanced messaging capabilites. The term "messaging" referres to
+the exchange of messages between KCL controls and other objects or controls: A
+control can generate a message which will be distributed to registered
+receivers.
+There are two messaging mechanisms in KCL:
+\begin{itemize}
+\item Support for notifier methods: These are equivalent to n-to-1 connections;
+      a message source can be connected to a single message handler, but this
+      message handler can be connected to several message sources.
+      \newline These messages are typed via the argument list which is used by
+      the notifier methods. All types are checked at compile-time.
+\item Support for generic message handlers. Each object (and additionally the
+      the whole KCL system, treated as a single object) manages a list of
+      message handler methods, and the kind of messages a specific handler is
+      interested in.
+      \newline On this stage of message processing, each message is being
+      represented as an instance of a TEvent object (or one of its derived
+      classes). Type checking is done at run-time. These connections are
+      n-to-n relations, where a single event may cause several handlers to
+      be called; and, of course, a single handler may be registered for
+      multiple events on an arbitrary number of event sources.
+\end{itemize}
+
+\section{Implementation Details}
+
+\subsection{How to implement new messages}
+
+For each single message <A>, there is a helper method called "Do<A>". This is a
+procedure which takes all the message attributes as arguments. Its task is to
+call the registered method handlers and to call the notifier, if set. This is
+done via some methods which are defined in \texttt{TControl}, the base class for
+all KCL controls:
+\small
+\begin{verbatim}
+type
+
+  TOnMouseClick = procedure(Sender: TControl; x, y: Integer) of object;
+
+  TMouseClickEvent = class(TEvent)
+    x, y: Integer;
+    constructor Create(ax, ay: Integer);
+  end;
+
+  TMyControl = class(TControl)
+  protected
+    FOnMouseClick: TOnMouseClick;
+  public
+    procedure DoMouseClick(x, y: Integer);
+    property OnMouseClick: TOnMouseClick read FOnMouseClick write FOnMouseClick;
+  end;
+
+procedure TMyControl.DoMouseClick(x, y: Integer);
+begin
+  if CallMsgHandlers(TMouseClickEvent.Create(x, y)) then
+    if Assigned(FOnMouseClick) then
+      FOnMouseClick(Self, x, y);
+end;
+\end{verbatim}
+\normalsize
+
+The code for the notifiers look exactly the same as in Delphi-like libraries.
+Only the support for the generic handlers need somewhat work (one line of code):
+In this example, \texttt{DoMouseClick} creates a new \texttt{TMouseClickEvent}
+object with the given mouse coordinates and calls the method
+\texttt{CallMsgHandlers}, which is defined in \texttt{TControl}.
+\texttt{CallMsgHandlers} simply checks all registered message handlers and calls
+those handlers which are registered for the given message type.
+
+\subsection{How to use notifier methods}
+
+\subsection{How to use generic message handlers}
+
+\end{document}

@@ -1,0 +1,60 @@
+#: kassandra:menufile
+msgid "File"
+msgstr ""
+
+#: kassandra:menunewfile
+msgid "New file"
+msgstr ""
+
+#: kassandra:menuopenfile
+msgid "Open file..."
+msgstr ""
+
+#: kassandra:menusavefile
+msgid "Save file"
+msgstr ""
+
+#: kassandra:menusavefileas
+msgid "Save file as..."
+msgstr ""
+
+#: kassandra:menuclosefile
+msgid "Close file"
+msgstr ""
+
+#: kassandra:menuopenrecentfile
+msgid "Open recent file"
+msgstr ""
+
+#: kassandra:menuexit
+msgid "Exit"
+msgstr ""
+
+#: kassandra:menuview
+msgid "View"
+msgstr ""
+
+#: kassandra:menuviewoutput
+msgid "Output window"
+msgstr ""
+
+#: kassandra:menuoptions
+msgid "Options"
+msgstr ""
+
+#: kassandra:menugeneraloptions
+msgid "General options..."
+msgstr ""
+
+#: kassandra:dlgglobaloptions
+msgid "Global Options"
+msgstr ""
+
+#: kassandra:strready
+msgid "Ready"
+msgstr ""
+
+#: kassandra:strcompileroutput
+msgid "Compiler output will go here"
+msgstr ""
+

@@ -1,0 +1,34 @@
+Note: In the following, the term "target" refers to the different
+      implementations for different platforms.
+
+
+Subdirectory "inc"
+------------------
+This directory contains the common include files for the "interface" sections
+of all KCL targets.
+h_master.inc is the main include file, it $INCLUDEs several "h*.inc" files.
+
+Subdirectory "common"
+---------------------
+This directory contains all code which can be shared between different KCL
+targets. h_master.inc should be included in the implementation parts of all
+KCL units, it provides some common method and function implementations.
+This file $INCLUDEs most of the other "c*.inc" files.
+
+Subdirectory "kcl_gtk"
+----------------------
+GTK+ (1.2) target implementation
+
+Subdirectory "kcl_w32"
+----------------------
+Win32 target implementation
+
+
+The first character of all .inc files determines its kind:
+h*.inc => header (interface)
+c*.inc => common implementation
+g*.inc => GTK
+w*.inc => Win32
+
+
+- Sebastian Guenther, sg@freepascal.org
