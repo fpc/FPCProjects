@@ -186,11 +186,13 @@ type
 
     // Transformations
     procedure Transform(x, y: Integer; var OutX, OutY: Integer);
+    procedure ReverseTransform(x, y: Integer; var OutX, OutY: Integer);
     procedure AppendTranslation(dx, dy: Integer);
 
     // Graphics state
     procedure SaveState; virtual; abstract;
     procedure RestoreState; virtual; abstract;
+    procedure EmptyClipRect; virtual;
     function ExcludeClipRect(const ARect: TRect): Boolean; virtual; abstract;
     function IntersectClipRect(const ARect: TRect): Boolean; virtual; abstract;
     function UnionClipRect(const ARect: TRect): Boolean; virtual; abstract;
@@ -379,11 +381,22 @@ begin
   OutY := Matrix._11 * y + Matrix._21;
 end;
 
+procedure TGfxCanvas.ReverseTransform(x, y: Integer; var OutX, OutY: Integer);
+begin
+  OutX := (x - Matrix._20) div Matrix._00;
+  OutY := (y - Matrix._21) div Matrix._11;
+end;
+
 procedure TGfxCanvas.AppendTranslation(dx, dy: Integer);
 begin
   // Append a translation to the existing transformation matrix
   Inc(FMatrix._20, FMatrix._00 * dx);
   Inc(FMatrix._21, FMatrix._11 * dy);
+end;
+
+procedure TGfxCanvas.EmptyClipRect;
+begin
+  IntersectClipRect(Rect(0, 0, 0, 0));
 end;
 
 procedure TGfxCanvas.DrawPolyLine(const Coords: array of Integer);
@@ -687,6 +700,9 @@ end.
 
 {
   $Log$
+  Revision 1.4  2000/12/24 13:13:02  sg
+  * Added TGfxCanvas.ReverseTransform and TGfxCanvas.EmptyClipRect
+
   Revision 1.3  2000/12/23 23:07:24  sg
   *** empty log message ***
 
