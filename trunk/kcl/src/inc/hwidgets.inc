@@ -2,7 +2,7 @@
     $Id$
 
     KCL  -  Kassandra Component Library
-    Copyright (C) 1999  by the KCL team
+    Copyright (C) 1999 - 2000  by the KCL team
       see file AUTHORS in base directory of this distribution
 
     See the file COPYING.FPC, included in this distribution,
@@ -109,7 +109,6 @@
 //   Scroll Bars, Scroll Box
 // -------------------------------------------------------------------
 
-
   TRange = class(TPersistent)
   protected
     function  GetMaxValue: Integer; virtual; abstract;
@@ -174,23 +173,35 @@
     FOnKey: TKeyEvent;
     FOnMouseButtonDown: TMouseEvent;
     FOnMouseButtonUp: TMouseEvent;
-    FOnMouseMove: TMouseEvent;
+    FOnMouseMove: TMouseMoveEvent;
+    procedure OnFinishCreation; override;
+    procedure OnSetSize; override;
   public
     function  CreateCanvas: TCanvas;
-  published
+    procedure DoPaint(ACanvas: TCanvas; const ARect: TRect);
+    procedure DoKey(AKey: Char; AKeyCode: LongWord; AShift: TShiftState);
+    procedure DoMouseButtonDown(AButton: TMouseButton; AShift: TShiftState;
+      AMouseX, AMouseY: Integer);
+    procedure DoMouseButtonUp(AButton: TMouseButton; AShift: TShiftState;
+      AMouseX, AMouseY: Integer);
+    procedure DoMouseMove(AShift: TShiftState; AMouseX, AMouseY: Integer);
+
     property OnPaint: TPaintEvent read FOnPaint write FOnPaint;
     property OnKey: TKeyEvent read FOnKey write FOnKey;
     property OnMouseButtonDown: TMouseEvent read FOnMouseButtonDown
       write FOnMouseButtonDown;
     property OnMouseButtonUp: TMouseEvent read FOnMouseButtonUp
       write FOnMouseButtonUp;
-    property OnMouseMove: TMouseEvent read FOnMouseMove write FOnMouseMove;
+    property OnMouseMove: TMouseMoveEvent read FOnMouseMove write FOnMouseMove;
   end;
 
   TPaintBox = class(TCustomPaintBox)
-  protected
-    procedure OnFinishCreation; override;
-    procedure OnSetSize; override;
+  published
+    property OnPaint;
+    property OnKey;
+    property OnMouseButtonDown;
+    property OnMouseButtonUp;
+    property OnMouseMove;
   end;
 
 
@@ -278,7 +289,10 @@
 
 {
   $Log$
-  Revision 1.1  1999/12/30 21:33:20  sg
-  Initial revision
+  Revision 1.2  2000/01/05 19:15:58  sg
+  * Moved all published properties of TCustomPaintBox to TPaintBox
+
+  Revision 1.1.1.1  1999/12/30 21:33:20  sg
+  Initial import
 
 }
