@@ -56,6 +56,7 @@ type
   TFixedLayout = class(TLayout)
   protected
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
   published
     constructor Create(AOwner: TComponent); override;
     procedure AddWidget(AWidget: TWidget; ALeft, ATop: LongInt);
@@ -149,6 +150,9 @@ type
 
 {
   $Log$
+  Revision 1.5  2000/02/18 18:20:30  sg
+  * Added "DoRecalcLayout" for TFixedLayout
+
   Revision 1.4  2000/02/17 22:23:57  sg
   * Added spacing properties to TGridLayout and TBoxLayout
   * Cleaned up the child widget collection item classes
