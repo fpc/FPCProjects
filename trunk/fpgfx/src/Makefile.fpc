@@ -5,7 +5,9 @@
 [targets]
 units=gfxbase
 rst=gfxbase
+dirs=emulayer
 dirs_linux=x11
+dirs_win32=win32gdi
 
 [require]
 options=-S2h

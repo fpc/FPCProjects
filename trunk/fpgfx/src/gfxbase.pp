@@ -2,7 +2,8 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000  by Sebastian Guenther, sg@freepascal.org
+    Copyright (C) 2000 by
+      Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     fpGFX basic declarations
 
@@ -14,15 +15,16 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
 
+
 unit GfxBase;
-
-interface
-
-uses SysUtils, Classes;
 
 {$IFDEF Debug}
 {$ASSERTIONS On}
 {$ENDIF}
+
+interface
+
+uses SysUtils, Classes;
 
 {$INCLUDE keys.inc}
 
@@ -34,7 +36,7 @@ resourcestring
 type
 
   TSize = record
-    cx, cy: LongInt;
+    cx, cy: Integer;
   end;
 
 
@@ -49,7 +51,7 @@ type
     [1,1]: Y scalation
     [2,1]: Y translation
     NOTE: This may change in the future! Don't assume anything about the
-	  structure of TGfxMatrix! TGfxContext only allows you to read and
+	  structure of TGfxMatrix! TGfxDrawable only allows you to read and
 	  write the current transformation matrix so that the matrix can
 	  easily be saved and restored.
   }
@@ -61,12 +63,7 @@ type
 const
   GfxIdentityMatrix: TGfxMatrix = (_00: 1; _20: 0; _11: 1; _21: 0);
 
-
 type
-
-  EGfxError = class(Exception);
-
-  // Colors
 
   TGfxColor = packed record
     Red, Green, Blue, Alpha: Word;
@@ -74,66 +71,91 @@ type
 
   TGfxPixel = LongWord;
 
+  TGfxFormatType = (
+    ftInvalid,
+    ftMono,		// Monochrome
+    ftPal4,		// 4 bpp using palette
+    ftPalA4,		// 4 bpp using palette with alpha values > 0
+    ftPal8,		// 8 bpp using palette
+    ftPalA8,		// 8 bpp using palette with alpha values > 0
+    ftRGB16,		// 16 bpp RGB
+    ftRGBA16,		// 16 bpp RGBA
+    ftRGB24,		// 24 bpp RGB
+    ftRGBA24,		// 24 bpp RGBA
+    ftRGB32,		// 32 bpp RGB
+    ftRGBA32);		// 32 bpp RGBA
+
+  // !!!: Change this to dynamic array as soon as FPC supports it!
+  TGfxPalette = array[0..255] of TGfxColor;
 
   TGfxPixelFormat = record
-    BitsPerPixel: Integer;
-    RedMask: TGfxPixel;
-    RedShift: Integer;
-    GreenMask: TGfxPixel;
-    GreenShift: Integer;
-    BlueMask: TGfxPixel;
-    BlueShift: Integer;
-    AlphaMask: TGfxPixel;
-    AlphaShift: Integer;
-  end;
-
-  PGfxPixelData = ^TGfxPixelData;
-  TGfxPixelData = record
-    Stride: LongInt;	// Width of scan line in bytes of 0 for default
-    Data: Pointer;
-  end;
+    case FormatType: TGfxFormatType of
+      ftPal4, ftPalA4, ftPal8, ftPalA8:
+        (Palette: TGfxPalette);
+      ftRGB16, ftRGBA16, ftRGB24, ftRGBA24, ftRGB32, ftRGBA32: (
+	RedMask: TGfxPixel;
+	GreenMask: TGfxPixel;
+        BlueMask: TGfxPixel;
+        AlphaMask: TGfxPixel);	// only used for RGBA types
+    end;
 
 
 const
 
+  FormatTypeBPPTable: array[TGfxFormatType] of Integer =
+    (0, 1, 4, 4, 8, 8, 16, 16, 24, 24, 32, 32);
+
+  // Some predefined colors:
+
+  colTransparent: TGfxColor	= (Red: $0000; Green: $0000; Blue: $0000; Alpha: $ffff);
+
+  colBlack: TGfxColor		= (Red: $0000; Green: $0000; Blue: $0000; Alpha: $0000);
+  colBlue: TGfxColor		= (Red: $0000; Green: $0000; Blue: $ffff; Alpha: $0000);
+  colGreen: TGfxColor		= (Red: $0000; Green: $ffff; Blue: $0000; Alpha: $0000);
+  colCyan: TGfxColor		= (Red: $0000; Green: $ffff; Blue: $ffff; Alpha: $0000);
+  colRed: TGfxColor		= (Red: $ffff; Green: $0000; Blue: $0000; Alpha: $0000);
+  colMagenta: TGfxColor		= (Red: $ffff; Green: $0000; Blue: $ffff; Alpha: $0000);
+  colYellow: TGfxColor		= (Red: $ffff; Green: $ffff; Blue: $0000; Alpha: $0000);
+  colWhite: TGfxColor		= (Red: $ffff; Green: $ffff; Blue: $ffff; Alpha: $0000);
+
+
   // Some predefined pixel formats:
 
   PixelFormatMono: TGfxPixelFormat = (
-    BitsPerPixel: 1;
-    RedMask: 1;
-    RedShift: 0;
-    GreenMask: 1;
-    GreenShift: 0;
-    BlueMask: 1;
-    BlueShift: 0;
-    AlphaMask: 0;
-    AlphaShift: 0);
+    FormatType: ftMono);
 
   PixelFormatRGB24: TGfxPixelFormat = (
-    BitsPerPixel: 24;
+    FormatType: ftRGB24;
     RedMask: $0000ff;
-    RedShift: 0;
     GreenMask: $00ff00;
-    GreenShift: 8;
     BlueMask: $ff0000;
-    BlueShift: 0;
-    AlphaMask: 0;
-    AlphaShift: 0);
+    AlphaMask: 0);
 
   PixelFormatBGR24: TGfxPixelFormat = (
-    BitsPerPixel: 24;
+    FormatType: ftRGB24;
     RedMask: $ff0000;
-    RedShift: 0;
     GreenMask: $00ff00;
-    GreenShift: 8;
     BlueMask: $0000ff;
-    BlueShift: 0;
-    AlphaMask: 0;
-    AlphaShift: 0);
+    AlphaMask: 0);
+
+  PixelFormatRGB32: TGfxPixelFormat = (
+    FormatType: ftRGB32;
+    RedMask: $0000ff;
+    GreenMask: $00ff00;
+    BlueMask: $ff0000;
+    AlphaMask: 0);
+
+  PixelFormatBGR32: TGfxPixelFormat = (
+    FormatType: ftRGB32;
+    RedMask: $ff0000;
+    GreenMask: $00ff00;
+    BlueMask: $0000ff;
+    AlphaMask: 0);
 
 type
 
-  TGfxDrawable = class;
+  EGfxError = class(Exception);
+
   TGfxDevice = class;
   TGfxWindow = class;
 
@@ -145,28 +167,26 @@ type
   end;
 
 
-  // Graphics context
-
+  // Drawables
 
   TGfxLineStyle = (lsSolid, lsDot);
 
-  TGfxContext = class
+  TGfxDrawable = class
   private
     FMatrix: TGfxMatrix;
-    function GetDevice: TGfxDevice;
   protected
-    FDrawable: TGfxDrawable;
-    constructor Create(ADrawable: TGfxDrawable);
+    FWidth: Integer;
+    FHeight: Integer;
+    FPixelFormat: TGfxPixelFormat;
+    constructor Create;
   public
-    function CreateMemoryDrawable(AWidth, AHeight: Integer;
-      const APixelFormat: TGfxPixelFormat;
-      const AData: TGfxPixelData): TGfxDrawable; virtual; abstract;
+    function CreateBitmap(AWidth, AHeight: Integer): TGfxDrawable; virtual; abstract;
 
     // Transformations
     procedure Transform(x, y: Integer; var OutX, OutY: Integer);
     procedure AppendTranslation(dx, dy: Integer);
 
-    // Graphics context state
+    // Graphics state
     procedure SaveState; virtual; abstract;
     procedure RestoreState; virtual; abstract;
     function ExcludeClipRect(const ARect: TRect): Boolean; virtual; abstract;
@@ -198,24 +218,25 @@ type
       DestX, DestY: Integer); virtual; abstract;
 
     // Properties
-    property Drawable: TGfxDrawable read FDrawable;
-    property Device: TGfxDevice read GetDevice;
+    property Width: Integer read FWidth;
+    property Height: Integer read FHeight;
+    property PixelFormat: TGfxPixelFormat read FPixelFormat;
     property Matrix: TGfxMatrix read FMatrix write FMatrix;
   end;
 
 
-  // Drawable
-
-  TGfxDrawable = class
-  protected
-    FDevice: TGfxDevice;
-    FWidth: Integer;
-    FHeight: Integer;
+  TGfxImage = class
+  private
+    FWidth, FHeight: Integer;
     FPixelFormat: TGfxPixelFormat;
-    constructor Create(ADevice: TGfxDevice);
+  protected
+    constructor Create(AWidth, AHeight: Integer; APixelFormat: TGfxPixelFormat);
   public
-    function CreateContext: TGfxContext; virtual; abstract;
-    property Device: TGfxDevice read FDevice;
+    procedure Lock(var AData: Pointer; var AStride: LongWord); virtual; abstract;
+    procedure Unlock; virtual;
+    procedure Draw(ADrawable: TGfxDrawable; ADestX, ADestY: Integer); virtual;
+    procedure DrawRect(ASourceRect: TRect; ADrawable: TGfxDrawable;
+      ADestX, ADestY: Integer); virtual; abstract;
     property Width: Integer read FWidth;
     property Height: Integer read FHeight;
     property PixelFormat: TGfxPixelFormat read FPixelFormat;
@@ -224,27 +245,16 @@ type
 
   TGfxDevice = class
     function CreateFont(const Descriptor: String): TGfxFont; virtual; abstract;
+    function CreateImage(AWidth, AHeight: Integer;
+      APixelFormat: TGfxPixelFormat): TGfxImage; virtual; abstract;
   end;
+
 
   TGfxDisplay = class(TGfxDevice)
   public
     function CreateWindow: TGfxWindow; virtual; abstract;
     procedure Run; virtual; abstract;
-  end;
-
-
-// Bitmap class (read-only bitmap which can be used for several targets
-// simultaneously)
-
-  TGfxBitmap = class
-  private
-    FWidth, FHeight: Integer;
-    FPixelFormat: TGfxPixelFormat;
-    FData: TGfxPixelData;
-  public
-    constructor Create(AWidth, AHeight: Integer;
-      const APixelFormat: TGfxPixelFormat; const AData: TGfxPixelData);
-    procedure Draw(AContext: TGfxContext; DestX, DestY: Integer);
+    procedure BreakRun; virtual; abstract;
   end;
 
 
@@ -341,30 +351,29 @@ implementation
 
 
 // ===================================================================
-//   TGfxContext
+//   TGfxDrawable
 // ===================================================================
 
-constructor TGfxContext.Create(ADrawable: TGfxDrawable);
+constructor TGfxDrawable.Create;
 begin
   inherited Create;
-  FDrawable := ADrawable;
   Matrix := GfxIdentityMatrix;
 end;
 
-procedure TGfxContext.Transform(x, y: Integer; var OutX, OutY: Integer);
+procedure TGfxDrawable.Transform(x, y: Integer; var OutX, OutY: Integer);
 begin
   OutX := Matrix._00 * x + Matrix._20;
   OutY := Matrix._11 * y + Matrix._21;
 end;
 
-procedure TGfxContext.AppendTranslation(dx, dy: Integer);
+procedure TGfxDrawable.AppendTranslation(dx, dy: Integer);
 begin
   // Append a translation to the existing transformation matrix
   Inc(FMatrix._20, FMatrix._00 * dx);
   Inc(FMatrix._21, FMatrix._11 * dy);
 end;
 
-procedure TGfxContext.DrawPolyLine(const Coords: array of Integer);
+procedure TGfxDrawable.DrawPolyLine(const Coords: array of Integer);
 var
   i: Integer;
 begin
@@ -376,72 +385,56 @@ begin
   end;
 end;
 
-procedure TGfxContext.DrawRect(const Rect: TRect);
+procedure TGfxDrawable.DrawRect(const Rect: TRect);
 begin
   DrawPolyLine([Rect.Left, Rect.Top, Rect.Right - 1, Rect.Top,
     Rect.Right - 1, Rect.Bottom - 1, Rect.Left, Rect.Bottom - 1, Rect.Left, Rect.Top]);
 end;
 
-function TGfxContext.TextExtent(const AText: String): TSize;
+function TGfxDrawable.TextExtent(const AText: String): TSize;
 begin
   Result.cx := TextWidth(AText);
   Result.cy := FontCellHeight;
 end;
 
-function TGfxContext.TextWidth(const AText: String): Integer;
+function TGfxDrawable.TextWidth(const AText: String): Integer;
 begin
   Result := TextExtent(AText).cx;
 end;
 
-procedure TGfxContext.Copy(ASource: TGfxDrawable; DestX, DestY: Integer);
+procedure TGfxDrawable.Copy(ASource: TGfxDrawable; DestX, DestY: Integer);
 begin
   ASSERT(Assigned(ASource));
   CopyRect(ASource, Rect(0, 0, ASource.Width, ASource.Height), DestX, DestY);
 end;
 
-function TGfxContext.GetDevice: TGfxDevice;
+
+// ===================================================================
+//   TGfxImage
+// ===================================================================
+
+constructor TGfxImage.Create(AWidth, AHeight: Integer;
+  APixelFormat: TGfxPixelFormat);
 begin
-  Result := Drawable.Device;
-end;
-
-
-// ===================================================================
-//   TGfxBitmap
-//	NOTE: The current implementation is extremely slow, as it
-//	doesn't cache the bitmap data for the different targets!!!
-// ===================================================================
-
-constructor TGfxDrawable.Create(ADevice: TGfxDevice);
-begin
-  inherited Create;
-  FDevice := ADevice;
-end;
-
-
-// ===================================================================
-//   TGfxBitmap
-//	NOTE: The current implementation is extremely slow, as it
-//	doesn't cache the bitmap data for the different targets!!!
-// ===================================================================
-
-constructor TGfxBitmap.Create(AWidth, AHeight: Integer;
-  const APixelFormat: TGfxPixelFormat; const AData: TGfxPixelData);
-begin
-  inherited Create;
   FWidth := AWidth;
   FHeight := AHeight;
   FPixelFormat := APixelFormat;
-  FData := AData;
 end;
 
-procedure TGfxBitmap.Draw(AContext: TGfxContext; DestX, DestY: Integer);
-var
-  MemDrawable: TGfxDrawable;
+procedure TGfxImage.Unlock;
 begin
-  MemDrawable :=
-    AContext.CreateMemoryDrawable(FWidth, FHeight, FPixelFormat, FData);
-  AContext.Copy(MemDrawable, DestX, DestY);
-  MemDrawable.Free;
+  // Default implementation: Do nothing...
+end;
+
+procedure TGfxImage.Draw(ADrawable: TGfxDrawable; ADestX, ADestY: Integer);
+var
+  r: TRect;
+begin
+  r.Left := 0;
+  r.Top := 0;
+  r.Right := Width;
+  r.Bottom := Height;
+  DrawRect(r, ADrawable, ADestX, ADestY);
 end;
 
 
@@ -645,6 +638,10 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/10/28 20:27:32  sg
+  * Changed handling of offscreen stuff to the concept of Bitmaps and
+    Images
+
   Revision 1.1  2000/08/04 21:05:52  sg
   * First version in CVS
 

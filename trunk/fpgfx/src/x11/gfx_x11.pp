@@ -2,7 +2,8 @@
     $Id$
 
     fpGFX  -  Free Pascal Graphics Library
-    Copyright (C) 2000  by Sebastian Guenther, sg@freepascal.org
+    Copyright (C) 2000 by
+      Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
 
     X11/XLib target implementation
 
@@ -17,6 +18,10 @@
 
 unit GFX_X11;
 
+{$IFDEF Debug}
+{$ASSERTIONS On}
+{$ENDIF}
+
 interface
 
 uses
@@ -27,13 +32,14 @@ uses
 resourcestring
   // X11 exception strings
   SGCCreationFailed = 'Creation of X11 graphics context failed';
-  SXContextInvalidFontClass = 'Tried to set font of class "%s" into X11 context; only TXFont is allowed.';
+  SXDrawableInvalidFontClass = 'Tried to set font of class "%s" into X11 context; only TXFont is allowed.';
   SOpenDisplayFailed = 'Opening of display "%s" failed';
   SWindowCreationFailed = 'Creation of X11 window failed';
+  SWindowUnsupportedPixelFormat = 'Window uses unsupported pixel format: %d bits per pixel';
 
 type
 
-  EX11Error = class(Exception);
+  EX11Error = class(EGfxError);
 
   TXDrawable = class;
   TXDisplay = class;
@@ -49,29 +55,35 @@ type
     property FontStruct: PXFontStruct read FFontStruct;
   end;
 
-  PXContextState = ^TXContextState;
-  TXContextState = record
-    Prev: PXContextState;
+  PXDrawableState = ^TXDrawableState;
+  TXDrawableState = record
+    Prev: PXDrawableState;
     Matrix: TGfxMatrix;
     Region: TRegion;
   end;
 
-  TXContext = class(TGfxContext)
+  TXDrawable = class(TGfxDrawable)
   private
-    FHandle: TGC;
-    FDefaultFontStruct: PXFontStruct;
-    FFontStruct: PXFontStruct;
+    FDisplay: TXDisplay;
+    FDisplayHandle: PDisplay;
+    FHandle: X.TDrawable;
+    FGC: TGC;
+    FVisual: PVisual;
     FRegion: TRegion;
-    FStateStackpointer: PXContextState;
-    function GetDrawable: TXDrawable;
-    function GetDisplayHandle: PDisplay;
+    FDefaultFont: PXFontStruct;
+    FFontStruct: PXFontStruct;
+    FStateStackpointer: PXDrawableState;
+    FColormap: TColormap;
+    procedure Resized(NewWidth, NewHeight: Integer);
   public
-    constructor Create(ADrawable: TXDrawable);
+    constructor Create(AColormap: TColormap; ADisplay: TXDisplay;
+      AXDrawable: X.TDrawable; ADefaultFont: PXFontStruct);
     destructor Destroy; override;
 
-    function CreateMemoryDrawable(AWidth, AHeight: Integer;
-      const APixelFormat: TGfxPixelFormat;
-      const AData: TGfxPixelData): TGfxDrawable; override;
+    function CreateBitmap(AWidth, AHeight: Integer): TGfxDrawable; override;
+    {procedure PutImageRect(ASourceRect: TRect; ADestX, ADestY: Integer;
+      const APixelFormat: TGfxPixelFormat; AStride: LongWord;
+      AData: Pointer); override;}
     procedure SaveState; override;
     procedure RestoreState; override;
     function ExcludeClipRect(const ARect: TRect): Boolean; override;
@@ -96,33 +108,49 @@ type
     procedure CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
       DestX, DestY: Integer); override;
 
-    property Drawable: TXDrawable read GetDrawable;
-    property DisplayHandle: PDisplay read GetDisplayHandle;
-    property Handle: TGC read FHandle;
+    property DisplayHandle: PDisplay read FDisplayHandle;
+    property Handle: X.TDrawable read FHandle;
+    property GC: TGC read FGC;
+    property Visual: PVisual read FVisual;
+    property Colormap: TColormap read FColormap;
     property Region: TRegion read FRegion;
   end;
 
-
-  TXDrawable = class(TGfxDrawable)
-  private
-    FColormap: TColormap;
-    FDefaultFont: PXFontStruct;
-    FDisplay: TXDisplay;
-    FHandle: X.TDrawable;
-    procedure Resized(NewWidth, NewHeight: Integer);
+  TXWindowDrawable = class(TXDrawable)
   public
     constructor Create(AColormap: TColormap; ADisplay: TXDisplay;
-      AHandle: X.TDrawable; ADefaultFont: PXFontStruct);
-    function CreateContext: TGfxContext; override;
-    property Colormap: TColormap read FColormap;
-    property Display: TXDisplay read FDisplay;
-    property Handle: X.TDrawable read FHandle;
+      AXDrawable: X.TDrawable; ADefaultFont: PXFontStruct);
   end;
 
   TXPixmapDrawable = class(TXDrawable)
   public
     constructor Create(ADisplay: TXDisplay; AHandle: TPixmap;
       APixelFormat: TGfxPixelFormat);
+  end;
+
+
+  TXImage = class(TGfxImage)
+  private
+    FDisplayHandle: PDisplay;
+    {$IFDEF Debug}
+    IsLocked: Boolean;
+    {$ENDIF}
+  protected
+    FStride: LongWord;
+    FData: Pointer;
+  public
+    constructor Create(ADisplayHandle: PDisplay; AWidth, AHeight: Integer;
+      APixelFormat: TGfxPixelFormat);
+    destructor Destroy; override;
+    procedure Lock(var AData: Pointer; var AStride: LongWord); override;
+    {$IFDEF Debug}
+    procedure Unlock; override;
+    {$ENDIF}
+    procedure DrawRect(ASourceRect: TRect; ADrawable: TGfxDrawable;
+      ADestX, ADestY: Integer); override;
+    property DisplayHandle: PDisplay read FDisplayHandle;
+    property Stride: LongWord read FStride;
+    property Data: Pointer read FData;
   end;
 
 
@@ -141,6 +169,8 @@ type
   public
     destructor Destroy; override;
     function CreateFont(const Descriptor: String): TGfxFont; override;
+    function CreateImage(AWidth, AHeight: Integer;
+      APixelFormat: TGfxPixelFormat): TGfxImage; override;
     function CreateWindow: TGfxWindow; override;
     procedure Run; override;
 
@@ -202,6 +232,8 @@ type
 
 implementation
 
+uses GFXImage;
+
 
 // -------------------------------------------------------------------
 //   TXFont
@@ -227,52 +259,63 @@ end;
 
 
 // -------------------------------------------------------------------
-//   TXContext
+//   TXDrawable
 // -------------------------------------------------------------------
 
-constructor TXContext.Create(ADrawable: TXDrawable);
+constructor TXDrawable.Create(AColormap: TColormap; ADisplay: TXDisplay;
+  AXDrawable: X.TDrawable; ADefaultFont: PXFontStruct);
+var
+  DummyWnd: PWindow;
+  DummyInt: LongInt;
 begin
-  inherited Create(ADrawable);
-  FHandle := XCreateGC(DisplayHandle, Drawable.Handle, 0, nil);
-  if not Assigned(Handle) then
+  inherited Create;
+  FColormap := AColormap;
+  FDisplay := ADisplay;
+  FDisplayHandle := ADisplay.Handle;
+  FHandle := AXDrawable;
+  FDefaultFont := ADefaultFont;
+  XGetGeometry(DisplayHandle, Handle, @DummyWnd, @DummyInt, @DummyInt,
+    @FWidth, @FHeight, @DummyInt, @DummyInt);
+
+
+  FGC := XCreateGC(DisplayHandle, Handle, 0, nil);
+  if not Assigned(GC) then
     raise EX11Error.Create(SGCCreationFailed);
 
-  XSetLineAttributes(DisplayHandle, Handle, 0,
+  XSetLineAttributes(DisplayHandle, GC, 0,
     LineSolid, CapNotLast, JoinMiter);
 
-  FDefaultFontStruct := Drawable.FDefaultFont;
-  FFontStruct := FDefaultFontStruct;
-  XSetFont(DisplayHandle, Handle, FFontStruct^.FID);
+  FFontStruct := FDefaultFont;
+  if Assigned(FFontStruct) then
+    XSetFont(DisplayHandle, GC, FFontStruct^.FID);
 end;
 
-destructor TXContext.Destroy;
+destructor TXDrawable.Destroy;
 begin
   if Assigned(Region) then
     XDestroyRegion(Region);
-  if Assigned(Handle) then
-    XFreeGC(DisplayHandle, Handle);
+  if Assigned(GC) then
+    XFreeGC(DisplayHandle, GC);
   inherited Destroy;
 end;
 
-function TXContext.CreateMemoryDrawable(AWidth, AHeight: Integer;
-  const APixelFormat: TGfxPixelFormat;
-  const AData: TGfxPixelData): TGfxDrawable;
-var
-  Pixmap: TPixmap;
+procedure TXDrawable.Resized(NewWidth, NewHeight: Integer);
 begin
-  if (APixelFormat.BitsPerPixel = 1) and
-    (AData.Stride = (AWidth + 7) div 8) then
-    Pixmap := XCreateBitmapFromData(DisplayHandle, Drawable.Handle,
-      AData.Data, AWidth, AHeight)
-  else
-    // !!!: Pixel format is not supported yet
-    raise EGfxError.Create(SUnsupportedPixelFormat);
-  Result := TXPixmapDrawable.Create(Drawable.Display, Pixmap, APixelFormat);
+  FWidth := NewWidth;
+  FHeight := NewHeight;
 end;
 
-procedure TXContext.SaveState;
+function TXDrawable.CreateBitmap(AWidth, AHeight: Integer): TGfxDrawable;
+begin
+  ASSERT(PixelFormat.FormatType <> ftInvalid);
+  Result := TXPixmapDrawable.Create(FDisplay,
+    XCreatePixmap(DisplayHandle, Handle, AWidth, AHeight,
+      FormatTypeBPPTable[PixelFormat.FormatType]), PixelFormat);
+end;
+
+procedure TXDrawable.SaveState;
 var
-  SavedState: PXContextState;
+  SavedState: PXDrawableState;
   NewRegion: TRegion;
 begin
   New(SavedState);
@@ -289,9 +332,9 @@ begin
   FStateStackpointer := SavedState;
 end;
 
-procedure TXContext.RestoreState;
+procedure TXDrawable.RestoreState;
 var
-  SavedState: PXContextState;
+  SavedState: PXDrawableState;
 begin
   SavedState := FStateStackpointer;
   FStateStackpointer := SavedState^.Prev;
@@ -301,12 +344,12 @@ begin
     XDestroyRegion(Region);
   FRegion := SavedState^.Region;
   if Assigned(Region) then
-    XSetRegion(DisplayHandle, Handle, Region);
+    XSetRegion(DisplayHandle, GC, Region);
 
   Dispose(SavedState);
 end;
 
-function TXContext.ExcludeClipRect(const ARect: TRect): Boolean;
+function TXDrawable.ExcludeClipRect(const ARect: TRect): Boolean;
 var
   x1, y1, x2, y2: Integer;
   RectRegion: TRegion;
@@ -322,8 +365,8 @@ begin
     begin
       XRect.x := 0;
       XRect.y := 0;
-      XRect.Width := Drawable.Width;
-      XRect.Height := Drawable.Height;
+      XRect.Width := Width;
+      XRect.Height := Height;
       FRegion := XCreateRegion;
       XUnionRectWithRegion(@XRect, Region, Region);
     end;
@@ -335,14 +378,14 @@ begin
     XUnionRectWithRegion(@XRect, RectRegion, RectRegion);
     XSubtractRegion(Region, RectRegion, Region);
     XDestroyRegion(RectRegion);
-    XSetRegion(DisplayHandle, Handle, Region);
+    XSetRegion(DisplayHandle, GC, Region);
 
     Result := not XEmptyRegion(Region);
   end else
     Result := False;
 end;
 
-function TXContext.IntersectClipRect(const ARect: TRect): Boolean;
+function TXDrawable.IntersectClipRect(const ARect: TRect): Boolean;
 var
   x1, y1, x2, y2: Integer;
   RectRegion: TRegion;
@@ -367,14 +410,14 @@ begin
     end else
       FRegion := RectRegion;
 
-    XSetRegion(DisplayHandle, Handle, Region);
+    XSetRegion(DisplayHandle, GC, Region);
 
     Result := not XEmptyRegion(Region);
   end else
     Result := False;
 end;
 
-function TXContext.GetClipRect: TRect;
+function TXDrawable.GetClipRect: TRect;
 var
   XRect: TXRectangle;
 begin
@@ -385,7 +428,7 @@ begin
   Result.Bottom := XRect.y + XRect.Height;
 end;
 
-function TXContext.MapColor(const AColor: TGfxColor): TGfxPixel;
+function TXDrawable.MapColor(const AColor: TGfxColor): TGfxPixel;
 var
   Color: TXColor;
 begin
@@ -393,79 +436,79 @@ begin
   Color.Red := AColor.Red;
   Color.Green := AColor.Green;
   Color.Blue := AColor.Blue;
-  XAllocColor(DisplayHandle, Drawable.Colormap, @Color);
+  XAllocColor(DisplayHandle, Colormap, @Color);
   Result := Color.Pixel;
 end;
 
-procedure TXContext.SetColor(AColor: TGfxPixel);
+procedure TXDrawable.SetColor(AColor: TGfxPixel);
 begin
-  XSetForeground(DisplayHandle, Handle, AColor);
+  XSetForeground(DisplayHandle, GC, AColor);
 end;
 
-procedure TXContext.SetFont(AFont: TGfxFont);
+procedure TXDrawable.SetFont(AFont: TGfxFont);
 begin
   if AFont = nil then
   begin
-    if FFontStruct = FDefaultFontStruct then
+    if FFontStruct = FDefaultFont then
       exit;
-    FFontStruct := FDefaultFontStruct;
+    FFontStruct := FDefaultFont;
   end else
   begin
     if not AFont.InheritsFrom(TXFont) then
-      raise EGfxError.Create(SXContextInvalidFontClass);
+      raise EGfxError.CreateFmt(SXDrawableInvalidFontClass, [AFont.ClassName]);
     if TXFont(AFont).FontStruct = FFontStruct then
       exit;
     FFontStruct := TXFont(AFont).FontStruct;
   end;
-  XSetFont(DisplayHandle, Handle, FFontStruct^.FID);
+  XSetFont(DisplayHandle, GC, FFontStruct^.FID);
 end;
 
-procedure TXContext.SetLineStyle(ALineStyle: TGfxLineStyle);
+procedure TXDrawable.SetLineStyle(ALineStyle: TGfxLineStyle);
 const
   DotDashes: array[0..1] of Char = #1#1;
 begin
   case ALineStyle of
     lsSolid:
-      XSetLineAttributes(DisplayHandle, Handle, 0,
+      XSetLineAttributes(DisplayHandle, GC, 0,
         LineSolid, CapNotLast, JoinMiter);
     lsDot:
       begin
-        XSetLineAttributes(DisplayHandle, Handle, 0,
+        XSetLineAttributes(DisplayHandle, GC, 0,
           LineOnOffDash, CapNotLast, JoinMiter);
-        XSetDashes(DisplayHandle, Handle, 0, DotDashes, 2);
+        XSetDashes(DisplayHandle, GC, 0, DotDashes, 2);
       end;
   end;
 end;
 
-procedure TXContext.DrawArc(const Rect: TRect; StartAngle, EndAngle: Single);
+procedure TXDrawable.DrawArc(const Rect: TRect; StartAngle, EndAngle: Single);
 var
   x1, y1, x2, y2: Integer;
 begin
   Transform(Rect.Left, Rect.Top, x1, y1);
   Transform(Rect.Right, Rect.Bottom, x2, y2);
-  XDrawArc(DisplayHandle, Drawable.Handle, Handle,
+  XDrawArc(DisplayHandle, Handle, GC,
     x1, y1, x2 - x1 - 1, y2 - y1 - 1,
     Round(StartAngle * 64), Round((EndAngle - StartAngle) * 64));
 end;
 
-procedure TXContext.DrawCircle(const Rect: TRect);
+procedure TXDrawable.DrawCircle(const Rect: TRect);
 var
   x1, y1, x2, y2: Integer;
 begin
   Transform(Rect.Left, Rect.Top, x1, y1);
   Transform(Rect.Right, Rect.Bottom, x2, y2);
-  XDrawArc(DisplayHandle, Drawable.Handle, Handle,
+  XDrawArc(DisplayHandle, Handle, GC,
     x1, y1, x2 - x1 - 1, y2 - y1 - 1, 0, 23040);
 end;
 
-procedure TXContext.DrawLine(x1, y1, x2, y2: Integer);
+procedure TXDrawable.DrawLine(x1, y1, x2, y2: Integer);
 begin
   Transform(x1, y1, x1, y1);
   Transform(x2, y2, x2, y2);
-  XDrawLine(DisplayHandle, Drawable.Handle, Handle, x1, y1, x2, y2);
+  XDrawLine(DisplayHandle, Handle, GC, x1, y1, x2, y2);
 end;
 
-procedure TXContext.DrawPolyLine(const Coords: array of Integer);
+procedure TXDrawable.DrawPolyLine(const Coords: array of Integer);
 var
   Points: PXPoint;
   CoordsIndex, PointsIndex, x, y: Integer;
@@ -482,83 +525,82 @@ begin
     Inc(PointsIndex);
   end;
 
-  XDrawLines(DisplayHandle, Drawable.Handle, Handle, Points, PointsIndex, CoordModeOrigin);
+  XDrawLines(DisplayHandle, Handle, GC, Points, PointsIndex, CoordModeOrigin);
 
   FreeMem(Points);
 end;
 
-procedure TXContext.DrawRect(const Rect: TRect);
+procedure TXDrawable.DrawRect(const Rect: TRect);
 var
   x1, y1, x2, y2: Integer;
 begin
   Transform(Rect.Left, Rect.Top, x1, y1);
   Transform(Rect.Right, Rect.Bottom, x2, y2);
-  XDrawRectangle(DisplayHandle, Drawable.Handle, Handle, x1, y1, x2 - x1 - 1, y2 - y1 - 1);
+  XDrawRectangle(DisplayHandle, Handle, GC, x1, y1, x2 - x1 - 1, y2 - y1 - 1);
 end;
 
-procedure TXContext.FillRect(const Rect: TRect);
+procedure TXDrawable.FillRect(const Rect: TRect);
 var
   r: TRect;
 begin
   Transform(Rect.Left, Rect.Top, r.Left, r.Top);
   Transform(Rect.Right, Rect.Bottom, r.Right, r.Bottom);
-  XFillRectangle(DisplayHandle, Drawable.Handle, Handle, r.Left, r.Top,
+  XFillRectangle(DisplayHandle, Handle, GC, r.Left, r.Top,
     r.Right - r.Left, r.Bottom - r.Top);
 end;
 
-function TXContext.FontCellHeight: Integer;
+function TXDrawable.FontCellHeight: Integer;
 begin
   Result := FFontStruct^.Ascent + FFontStruct^.Descent;
 end;
 
-function TXContext.TextExtent(const AText: String): TSize;
+function TXDrawable.TextExtent(const AText: String): TSize;
 var
   Direction, FontAscent, FontDescent: LongInt;
   CharStruct: TXCharStruct;
 begin
-  XQueryTextExtents(DisplayHandle, Handle^.GID, PChar(AText), Length(AText),
+  XQueryTextExtents(DisplayHandle, GC^.GID, PChar(AText), Length(AText),
     @Direction, @FontAscent, @FontDescent, @CharStruct);
   Result.cx := CharStruct.Width;
   Result.cy := CharStruct.Ascent + CharStruct.Descent;
 end;
 
-function TXContext.TextWidth(const AText: String): Integer;
+function TXDrawable.TextWidth(const AText: String): Integer;
 var
   Direction, FontAscent, FontDescent: LongInt;
   CharStruct: TXCharStruct;
 begin
-  XQueryTextExtents(DisplayHandle, Handle^.GID, PChar(AText), Length(AText),
+  XQueryTextExtents(DisplayHandle, GC^.GID, PChar(AText), Length(AText),
     @Direction, @FontAscent, @FontDescent, @CharStruct);
   Result := CharStruct.Width;
 end;
 
-procedure TXContext.TextOut(x, y: Integer; const AText: String);
+procedure TXDrawable.TextOut(x, y: Integer; const AText: String);
 begin
   Transform(x, y, x, y);
-  XDrawString(DisplayHandle, Drawable.Handle, Handle,
-    x, y + FFontStruct^.ascent,
+  XDrawString(DisplayHandle, Handle, GC, x, y + FFontStruct^.ascent,
     PChar(AText), Length(AText));
 end;
 
-procedure TXContext.CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
+procedure TXDrawable.CopyRect(ASource: TGfxDrawable; const ASourceRect: TRect;
   DestX, DestY: Integer);
 begin
   Transform(DestX, DestY, DestX, DestY);
 
-  if (ASource.PixelFormat.BitsPerPixel = 1) and
+  if (ASource.PixelFormat.FormatType = ftMono) and
     ASource.InheritsFrom(TXPixmapDrawable) then
   begin
-    XSetClipMask(DisplayHandle, Handle, TXPixmapDrawable(ASource).Handle);
-    XSetClipOrigin(DisplayHandle, Handle, DestX, DestY);
-    XFillRectangle(DisplayHandle, Drawable.Handle, Handle, DestX, DestY,
+    XSetClipMask(DisplayHandle, GC, TXPixmapDrawable(ASource).Handle);
+    XSetClipOrigin(DisplayHandle, GC, DestX, DestY);
+    XFillRectangle(DisplayHandle, Handle, GC, DestX, DestY,
       DestX + ASource.Width, DestY + ASource.Height);
-    XSetClipMask(DisplayHandle, Handle, 0);
+    XSetClipMask(DisplayHandle, GC, 0);
   end;
   { XCopyArea(DisplayHandle, Pixmap, Drawable.Handle, Handle, 0, 0,
     ABitmap.Width, ABitmap.Height, DestX, DestY); }
 end;
 
-{procedure TXContext.DrawBitmap(ABitmap: TGfxBitmap; DestX, DestY: Integer);
+{procedure TXDrawable.DrawBitmap(ABitmap: TGfxBitmap; DestX, DestY: Integer);
 var
   Pixmap: TPixmap;
 begin
@@ -581,45 +623,40 @@ begin
     ABitmap.Width, ABitmap.Height, DestX, DestY); }
 end;}
 
-function TXContext.GetDrawable: TXDrawable;
-begin
-  Result := TXDrawable(FDrawable);
-end;
-
-function TXContext.GetDisplayHandle: PDisplay;
-begin
-  Result := Drawable.Display.Handle;
-end;
-
 
 // -------------------------------------------------------------------
-//   TXDrawable
+//   TXWindowDrawable
 // -------------------------------------------------------------------
-
-constructor TXDrawable.Create(AColormap: TColormap; ADisplay: TXDisplay;
-  AHandle: X.TDrawable; ADefaultFont: PXFontStruct);
+constructor TXWindowDrawable.Create(AColormap: TColormap; ADisplay: TXDisplay;
+  AXDrawable: X.TDrawable; ADefaultFont: PXFontStruct);
 var
-  DummyWnd: PWindow;
-  DummyInt: LongInt;
+  Attr: XLib.TXWindowAttributes;
 begin
-  inherited Create(ADisplay);
-  FColormap := AColormap;
-  FDisplay := ADisplay;
-  FHandle := AHandle;
-  FDefaultFont := ADefaultFont;
-  XGetGeometry(Display.Handle, Handle, @DummyWnd, @DummyInt, @DummyInt,
-    @FWidth, @FHeight, @DummyInt, @DummyInt);
-end;
+  inherited Create(AColormap, ADisplay, AXDrawable, ADefaultFont);
+  XGetWindowAttributes(DisplayHandle, Handle, @Attr);
+  case Attr.Depth of
+    1: PixelFormat.FormatType := ftMono;
+    4: PixelFormat.FormatType := ftPal4;
+    8: PixelFormat.FormatType := ftPal8;
+    16: PixelFormat.FormatType := ftRGB16;
+    24: PixelFormat.FormatType := ftRGB24;
+    32: PixelFormat.FormatType := ftRGB32;
+    else
+      raise EX11Error.CreateFmt(SWindowUnsupportedPixelFormat, [Attr.Depth]);
+  end;
 
-function TXDrawable.CreateContext: TGfxContext;
-begin
-  Result := TXContext.Create(Self);
-end;
+  FVisual := Attr.Visual;
 
-procedure TXDrawable.Resized(NewWidth, NewHeight: Integer);
-begin
-  FWidth := NewWidth;
-  FHeight := NewHeight;
+  if Attr.Depth >= 16 then
+  begin
+    WriteLn('Visual masks: ',
+      IntToHex(Visual^.red_mask, 8), '-',
+      IntToHex(Visual^.green_mask, 8), '-',
+      IntToHex(Visual^.blue_mask, 8));
+    PixelFormat.RedMask := Visual^.red_mask;
+    PixelFormat.GreenMask := Visual^.green_mask;
+    PixelFormat.BlueMask := Visual^.blue_mask;
+  end;
 end;
 
 
@@ -636,10 +673,89 @@ end;
 
 
 // -------------------------------------------------------------------
+//   TXImage
+// -------------------------------------------------------------------
+
+var
+  i2: XLib.TXImage;
+
+constructor TXImage.Create(ADisplayHandle: PDisplay; AWidth, AHeight: Integer;
+  APixelFormat: TGfxPixelFormat);
+begin
+  inherited Create(AWidth, AHeight, APixelFormat);
+  FDisplayHandle := ADisplayHandle;
+
+  FStride := AWidth * (FormatTypeBPPTable[APixelFormat.FormatType] shr 3);
+  GetMem(FData, FStride * Height);
+end;
+
+destructor TXImage.Destroy;
+begin
+  FreeMem(FData);
+  inherited Destroy;
+end;
+
+procedure TXImage.Lock(var AData: Pointer; var AStride: LongWord);
+begin
+  {$IFDEF Debug}
+  ASSERT(not IsLocked);
+  IsLocked := True;
+  {$ENDIF}
+  AData := Data;
+  AStride := Stride;
+end;
+
+{$IFDEF Debug}
+procedure TXImage.Unlock;
+begin
+  ASSERT(IsLocked);
+  IsLocked := False;
+end;
+{$ENDIF}
+
+function malloc(size: LongWord): Pointer; cdecl; external;
+
+procedure TXImage.DrawRect(ASourceRect: TRect; ADrawable: TGfxDrawable;
+  ADestX, ADestY: Integer);
+var
+  XDrawable: TXDrawable;
+  Image: XLib.PXImage;
+begin
+  {$IFDEF Debug}
+  ASSERT(not IsLocked);
+  {$ENDIF}
+  ASSERT(ADrawable.InheritsFrom(TXDrawable));
+  XDrawable := TXDrawable(ADrawable);
+
+  Image := XCreateImage(XDrawable.DisplayHandle, XDrawable.Visual,
+    FormatTypeBPPTable[XDrawable.PixelFormat.FormatType], ZPixmap,
+    0, nil, Width, Height, 8, 0);
+  Image^.data := malloc(Image^.bytes_per_line * Height);
+
+  ConvertImage(ASourceRect, PixelFormat, Data, Stride,
+    ADestX, ADestY, XDrawable.PixelFormat, Image^.data, Image^.bytes_per_line);
+
+  XPutImage(XDrawable.DisplayHandle, XDrawable.Handle, XDrawable.GC,
+    Image, 0, 0, ADestX, ADestY, Width, Height);
+
+  // !!!: Change to XDestroyImage when this macro gets supported by xutil.pp
+  Image^.f.destroy_image(Image);
+end;
+
+
+// -------------------------------------------------------------------
 //   TXDisplay
 // -------------------------------------------------------------------
 
+{###
+{$LINKLIB Xext}
+function XShmPixmapFormat(dpy: PDisplay): LongInt; cdecl; external;
+}
+
 function TXDisplay.GetHandle: PDisplay;
+var
+  f: PXPixmapFormatValues;
+  count: LongInt;
 begin
   if not Assigned(FHandle) then
   begin
@@ -657,6 +773,8 @@ begin
 end;
 
 destructor TXDisplay.Destroy;
+var
+  i: Integer;
 begin
   if Assigned(FDefaultFont) then
   begin
@@ -667,14 +785,26 @@ begin
 
   if Assigned(FHandle) then
     XCloseDisplay(FHandle);
+
   if Assigned(FWindows) then
+  begin
+    for i := 0 to FWindows.Count - 1 do
+      TXWindow(FWindows[i]).Free;
     FWindows.Free;
+  end;
+
   inherited Destroy;
 end;
 
 function TXDisplay.CreateFont(const Descriptor: String): TGfxFont;
 begin
   Result := TXFont.Create(Handle, Descriptor);
+end;
+
+function TXDisplay.CreateImage(AWidth, AHeight: Integer;
+  APixelFormat: TGfxPixelFormat): TGfxImage;
+begin
+  Result := TXImage.Create(Handle, AWidth, AHeight, APixelFormat);
 end;
 
 function TXDisplay.CreateWindow: TGfxWindow;
@@ -1156,7 +1286,7 @@ begin
   XSetWMProtocols(ADisplay.Handle, FHandle, @ADisplay.FWMDeleteWindow, 1);
 
 
-  FDrawable := TXDrawable.Create(Colormap, ADisplay, Handle,
+  FDrawable := TXWindowDrawable.Create(Colormap, ADisplay, Handle,
     ADisplay.FDefaultFont);
 end;
 
@@ -1273,6 +1403,10 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/10/28 20:27:33  sg
+  * Changed handling of offscreen stuff to the concept of Bitmaps and
+    Images
+
   Revision 1.1  2000/08/04 21:05:53  sg
   * First version in CVS
 
