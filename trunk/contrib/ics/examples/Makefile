@@ -206,6 +206,8 @@ ifeq ($(OS_TARGET),win32)
 override TARGET_PROGRAMS+=concli2 conftp conhttp consmtp consrv1
 endif
 override INSTALL_FPCPACKAGE=y
+override COMPILER_INCLUDEDIR+=../vc32
+override COMPILER_UNITDIR+=../vc32
 ifdef REQUIRE_UNITSDIR
 override UNITSDIR+=$(REQUIRE_UNITSDIR)
 endif
@@ -1054,9 +1056,13 @@ fpc_release:
 %$(EXEEXT): %.pas
 	$(COMPILER) $<
 	$(EXECPPAS)
+%$(EXEEXT): %.dpr
+	$(COMPILER) $<
+	$(EXECPPAS)
 %.res: %.rc
 	windres -i $< -o $@
 vpath %.pp $(COMPILER_SOURCEDIR) $(COMPILER_INCLUDEDIR)
+vpath %.dpr $(COMPILER_SOURCEDIR) $(COMPILER_INCLUDEDIR)
 vpath %.pas $(COMPILER_SOURCEDIR) $(COMPILER_INCLUDEDIR)
 vpath %$(PPUEXT) $(COMPILER_UNITTARGETDIR)
 .PHONY: fpc_install fpc_sourceinstall fpc_exampleinstall
@@ -1296,5 +1302,3 @@ makefiles: fpc_makefiles
 ifneq ($(wildcard fpcmake.loc),)
 include fpcmake.loc
 endif
-concli2($EXEEXT): concli2.dcr
-conftp($EXEEXT): conftp.dcr

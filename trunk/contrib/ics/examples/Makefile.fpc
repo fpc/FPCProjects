@@ -8,7 +8,8 @@ srcexT=($SRCEXT
 
 [compiler]
 #options=-S2
-
+includedir=../vc32
+unitdir=../vc32
 
 [install]
 fpcpackage=y
@@ -16,10 +17,12 @@ fpcpackage=y
 [default]
 #fpcdir=../..
 
-[rules]
 
-concli2($EXEEXT): concli2.dpr
-conftp($EXEEXT): conftp.dpr
+#[rules]
+
+
+#concli2($EXEEXT): concli2.dpr
+#conftp($EXEEXT): conftp.dpr
 
 
 
