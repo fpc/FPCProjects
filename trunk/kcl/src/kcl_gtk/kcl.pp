@@ -93,6 +93,11 @@ type
     viewport: PGtkWidget;
   end;
 
+  TScrollers_private = record
+    frame: PGtkWidget;				// PGtkFrame
+    HorzScrollbar, VertScrollbar: PGtkWidget;	// PGtkHScrollbar, PGtkVScrollbar
+  end;
+
   TNotebookPage_private = record
     LabelWidget: PGtkWidget;
   end;
@@ -212,7 +217,6 @@ end;
 
 initialization
   Application := TApplication.Create(nil);
-
 finalization
   if Assigned(GlobalClipboard) then
     GlobalClipboard.Free;
@@ -222,6 +226,9 @@ end.
 
 {
   $Log$
+  Revision 1.8  2000/02/18 18:30:15  sg
+  * Added TScrollers_private
+
   Revision 1.7  2000/02/17 22:31:37  sg
   * Added gseparator.inc, gcombobox.inc, ggroupbox.inc
 
