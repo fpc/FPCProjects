@@ -29,6 +29,8 @@ type
   TLabel = class(TWidget)
   protected
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
+    procedure SetText(const AText: String); override;
   published
     property Text;
   end;
@@ -41,10 +43,23 @@ type
   TEdit = class(TWidget)
   protected
     FMultiLine: Boolean;
+    FDefaultWidth: Integer;
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
   published
     property Text;
     property MultiLine: Boolean read FMultiLine write FMultiLine default False;
+    property DefaultWidth: Integer read FDefaultWidth write FDefaultWidth;
+  end;
+
+
+// -------------------------------------------------------------------
+//   Separator
+// -------------------------------------------------------------------
+
+  TSeparator = class(TWidget)
+  protected
+    procedure OnFinishCreation; override;
   end;
 
 
@@ -62,11 +77,14 @@ type
   end;
 
   TButton = class(TGenericButton)
+  private
+    FDefault: Boolean;
   protected
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
   published
     property Text;
+    property Default: Boolean read FDefault write FDefault default False;
   end;
 
   TImageButton = class(TGenericButton)
@@ -88,10 +106,53 @@ type
     function  GetState: TCheckBoxState;
     procedure SetState(AState: TCheckBoxState);
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
   published
-    property State: TCheckBoxState
-      read GetState write SetState default cbUnchecked;
     property Text;
+    property State: TCheckBoxState read GetState write SetState default cbUnchecked;
+  end;
+
+  TRadioButton = class(TGenericButton)
+  protected
+    FChecked: Boolean;
+    procedure SetChecked(AChecked: Boolean);
+    procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
+  published
+    property Text;
+    property Checked: Boolean read FChecked write SetChecked;
+  end;
+
+
+// -------------------------------------------------------------------
+//   TGroupBox
+// -------------------------------------------------------------------
+
+  TCustomGroupBox = class(TWidget)
+  protected
+    FContent: TWidget;
+    FFixedWidth, FFixedHeight: Boolean;
+
+    constructor Create(AOwner: TComponent); override;
+    function  GetWidgetCount: Integer; override;
+    function  GetWidgets(AIndex: Integer): TWidget; override;
+    procedure DoRecalcLayout; override;
+    procedure ApplySize; override;
+    procedure OnFinishCreation; override;
+
+    property  Content: TWidget read FContent write FContent;
+    property  FixedWidth: Boolean read FFixedWidth write FFixedWidth default True;
+    property  FixedHeight: Boolean read FFixedHeight write FFixedHeight default True;
+  public
+    function  IsRadioGroup: Boolean; override;
+  end;
+
+  TGroupBox = class(TCustomGroupBox)
+  published
+    property Text;
+    property Content;
+    property FixedWidth;
+    property FixedHeight;
   end;
 
 
@@ -99,27 +160,60 @@ type
 //   TListBox
 // -------------------------------------------------------------------
 
-  PGtkWidgetsArray = ^TGtkWidgetsArray;
-  TGtkWidgetsArray = array[0..maxint] of PGtkWidget;
-
-  TListBox = class(TWidget)
+  TCustomListBox = class(TWidget)
   private
-    FItemGtkWidgets: PGtkWidgetsArray;
-    FItemGtkWidgetsCnt: Integer;
-    function  GetItemGtkWidget(index: Integer): PGtkWidget;
-    procedure SetItemGtkWidget(index: Integer; widget: PGtkWidget);
-    property ItemGtkWidgets[Index: Integer]: PGtkWidget read GetItemGtkWidget write SetItemGtkWidget;
+    FOnDblClick: TNotifyEvent;
+    property OnDblClick: TNotifyEvent read FOnDblClick write FOnDblClick;
   protected
+    priv: TCustomListBox_private;
     FItems: TStrings;
+    function GetItemIndex: Integer;
     procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure SetItems(AItems: TStrings);
-    procedure AddItem(AString: string);
     procedure Clear;
-  published
     property Items: TStrings read FItems write FItems;
+    property ItemIndex: Integer read GetItemIndex;
+  end;
+
+  TListBox = class(TCustomListBox)
+  published
+    property Items;
+    property ItemIndex;
+    property OnDblClick;
+  end;
+
+
+// -------------------------------------------------------------------
+//   TComboBox
+// -------------------------------------------------------------------
+
+  TComboBoxStyle = (csDropDown, csDropDownList);
+
+  TCustomComboBox = class(TWidget)
+  private
+    function GetItemIndex: Integer;
+    procedure SetItemIndex(AIndex: Integer);
+  protected
+    FStyle: TComboBoxStyle;
+    FItems: TStrings;
+    procedure OnFinishCreation; override;
+    procedure DoRecalcLayout; override;
+    property Style: TComboBoxStyle read FStyle write FStyle default csDropDown;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure Clear;
+    property Items: TStrings read FItems write FItems;
+    property ItemIndex: Integer read GetItemIndex write SetItemIndex;
+  end;
+
+  TComboBox = class(TCustomComboBox)
+  published
+    property Style;
+    property Items;
   end;
 
 
@@ -308,6 +402,7 @@ type
   protected
     procedure OnFinishCreation; override;
     procedure DoRecalcLayout; override;
+    procedure SetText(const AText: String); override;
   public
     constructor Create(AOwner: TComponent); override;
   published
@@ -403,6 +498,11 @@ type
 
 {
   $Log$
+  Revision 1.6  2000/02/17 22:25:42  sg
+  * Cleaned up TListBox
+  * Added TComboBox, TRadioButton, TSeparator
+  * Added several new properties to existing widgets
+
   Revision 1.5  2000/02/10 18:38:32  sg
   * Some widgets need their own DoRecalcLayout
 
