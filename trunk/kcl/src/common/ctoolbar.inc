@@ -69,12 +69,6 @@ begin
   Items := TList.Create;
 end;
 
-destructor TToolBar.Destroy;
-begin
-  Items.Free;
-  inherited Destroy;
-end;
-
 function TToolBar.AddChildWidget(AWidget: TWidget): Boolean;
 begin
   Items.Add(AWidget);
@@ -101,6 +95,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/02/10 18:31:14  sg
+  * TToolBar.Destroy is now a target-dependent method
+
   Revision 1.1  2000/01/24 00:13:57  sg
   * First version
 
