@@ -61,16 +61,18 @@ type
 
     HeaderBytesRead: Integer;
     ScanlinesLeft: Integer;
+    ThisSegmentHeight: Integer;
     ScanlinesLeftInSegment: Integer;
     ScanlineBytesDone: LongWord;
     CurScanline: Pointer;
 
+    procedure DoProcessHeaderData(AStream: TStream); override;
+    function DoGetImageSegmentStartY(ASegmentHeight: Integer): Integer;
+      override;
     procedure InitImageReading; override;
     procedure InitSegmentReading;
     procedure DoProcessImageData(AStream: TStream); override;
   public
-    procedure ProcessHeaderData(AStream: TStream); override;
-
     property FileHeader: TBitmapFileHeader read FFileHeader;
     property InfoHeader: TBitmapInfoHeader read FInfoHeader;
     property FileStride: LongWord read FFileStride;
@@ -80,14 +82,13 @@ type
 implementation
 
 
-procedure TBMPReader.ProcessHeaderData(AStream: TStream);
+procedure TBMPReader.DoProcessHeaderData(AStream: TStream);
 var
-  ToRead, HaveRead: Integer;
+  HaveRead: Integer;
   IsFirstRead: Boolean;
 begin
   if HeaderBytesRead < SizeOf(FileHeader) then
   begin
-    FState := irsInHeader;
     HaveRead := AStream.Read(PChar(@FileHeader)[HeaderBytesRead],
       SizeOf(FileHeader) - HeaderBytesRead);
     if HaveRead = 0 then
@@ -128,8 +129,15 @@ begin
         raise EImgUnsupportedPixelFormat.Create;
     end;
 
-    HeaderReadingFinished;
+    HeaderFinished;
   end;
+end;
+
+function TBMPReader.DoGetImageSegmentStartY(ASegmentHeight: Integer): Integer;
+begin
+  Result := ScanlinesLeft - ASegmentHeight;
+  if Result < 0 then
+    Result := 0;
 end;
 
 procedure TBMPReader.InitImageReading;
@@ -140,11 +148,12 @@ end;
 
 procedure TBMPReader.InitSegmentReading;
 begin
-  ScanlinesLeftInSegment := ScanlinesLeft;
-  if ScanlinesLeftInSegment > SegmentHeight then
-    ScanlinesLeftInSegment := SegmentHeight;
+  ThisSegmentHeight := ScanlinesLeft;
+  if ThisSegmentHeight > SegmentHeight then
+    ThisSegmentHeight := SegmentHeight;
+  ScanlinesLeftInSegment := ThisSegmentHeight;
   ScanlineBytesDone := 0;
-  CurScanline := SegmentData + (SegmentHeight - 1) * SegmentStride;
+  CurScanline := SegmentData + (ThisSegmentHeight - 1) * SegmentStride;
 end;
 
 procedure TBMPReader.DoProcessImageData(AStream: TStream);
@@ -156,9 +165,9 @@ procedure TBMPReader.DoProcessImageData(AStream: TStream);
 
     if ScanlinesLeftInSegment = 0 then
     begin
-      SegmentReadingFinished(ScanlinesLeft, SegmentHeight);
+      SegmentFinished(ScanlinesLeft, ThisSegmentHeight);
       if ScanlinesLeft = 0 then
-        ImageReadingFinished
+        ImageFinished
       else
         InitSegmentReading;
     end else
@@ -224,6 +233,10 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/10/28 20:17:52  sg
+  * Improved segment handling
+  * Interface cleaning up
+
   Revision 1.1  2000/10/27 23:40:00  sg
   * First version
 

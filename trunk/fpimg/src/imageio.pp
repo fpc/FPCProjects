@@ -55,34 +55,38 @@ type
   TSegmentEvent = procedure(Sender: TObject; StartY, Height: Integer) of object;
 
   TImageReader = class
-  protected
+  private
     FState: TImageReaderState;
-    // Callbacks
-    FOnHeader: TNotifyEvent;
-    FOnSegment: TSegmentEvent;
-    FOnImage: TNotifyEvent;
-
-    // Image properties, only available after OnHeaderRead event
-    FWidth, FHeight: Integer;
-    FPixelFormat: TGfxPixelFormat;
 
     { Needed for reading of image data. These values must be initialized by
       the user via SetImageSegmentBuffer }
     FSegmentData: Pointer;
     FSegmentStride: LongWord;
     FSegmentHeight: Integer;
-    SegmentSize: LongWord;		// Size in bytes
+    FSegmentSize: LongWord;		// Size in bytes
 
-    procedure HeaderReadingFinished;
-    procedure SegmentReadingFinished(AStartY, AHeight: Integer);
-    procedure ImageReadingFinished;
+    FOnHeader: TNotifyEvent;
+    FOnSegment: TSegmentEvent;
+    FOnImage: TNotifyEvent;
+  protected
+    // Image properties, only available after OnHeaderRead event
+    FWidth, FHeight: Integer;
+    FPixelFormat: TGfxPixelFormat;
 
+    procedure HeaderFinished;
+    procedure SegmentFinished(AStartY, AHeight: Integer);
+    procedure ImageFinished;
+
+    procedure DoProcessHeaderData(AStream: TStream); virtual; abstract;
+    function DoGetImageSegmentStartY(ASegmentHeight: Integer): Integer;
+      virtual; abstract;
     procedure InitImageReading; virtual;
     procedure DoProcessImageData(AStream: TStream); virtual; abstract;
 
   public
     constructor Create; virtual;
-    procedure ProcessHeaderData(AStream: TStream); virtual; abstract;
+    procedure ProcessHeaderData(AStream: TStream);
+    function GetImageSegmentStartY(ASegmentHeight: Integer): Integer;
     procedure SetImageSegmentBuffer(AData: Pointer; AStride: LongWord;
       ASegmentHeight: Integer);
     procedure ProcessImageData(AStream: TStream);
@@ -94,6 +98,7 @@ type
     property SegmentData: Pointer read FSegmentData;
     property SegmentStride: LongWord read FSegmentStride;
     property SegmentHeight: Integer read FSegmentHeight;
+    property SegmentSize: LongWord read FSegmentSize;
 
     property OnHeader: TNotifyEvent read FOnHeader write FOnHeader;
     property OnSegment: TSegmentEvent read FOnSegment write FOnSegment;
@@ -121,6 +126,20 @@ begin
   inherited Create;
 end;
 
+procedure TImageReader.ProcessHeaderData(AStream: TStream);
+begin
+  ASSERT(FState in [irsStart, irsInHeader]);
+  if State = irsStart then
+    FState := irsInHeader;
+  DoProcessHeaderData(AStream);
+end;
+
+function TImageReader.GetImageSegmentStartY(ASegmentHeight: Integer): Integer;
+begin
+  ASSERT(State in [irsHeaderRead, irsInImage]);
+  Result := DoGetImageSegmentStartY(ASegmentHeight);
+end;
+
 procedure TImageReader.SetImageSegmentBuffer(AData: Pointer; AStride: LongWord;
   ASegmentHeight: Integer);
 begin
@@ -128,7 +147,7 @@ begin
   FSegmentData := AData;
   FSegmentStride := AStride;
   FSegmentHeight := ASegmentHeight;
-  SegmentSize := SegmentStride * SegmentHeight;
+  FSegmentSize := SegmentStride * SegmentHeight;
 end;
 
 procedure TImageReader.ProcessImageData(AStream: TStream);
@@ -146,7 +165,7 @@ begin
   DoProcessImageData(AStream);
 end;
 
-procedure TImageReader.HeaderReadingFinished;
+procedure TImageReader.HeaderFinished;
 begin
   ASSERT(FState = irsInHeader);
   FState := irsHeaderRead;
@@ -154,14 +173,14 @@ begin
     OnHeader(Self);
 end;
 
-procedure TImageReader.SegmentReadingFinished(AStartY, AHeight: Integer);
+procedure TImageReader.SegmentFinished(AStartY, AHeight: Integer);
 begin
   ASSERT(FState = irsInImage);
   if Assigned(OnSegment) then
     OnSegment(Self, AStartY, AHeight);
 end;
 
-procedure TImageReader.ImageReadingFinished;
+procedure TImageReader.ImageFinished;
 begin
   ASSERT(FState = irsInImage);
   FState := irsFinished;
@@ -171,7 +190,7 @@ end;
 
 procedure TImageReader.InitImageReading;
 begin
-  ASSERT(FState = irsHeaderRead);
+  // Do nothing
 end;
 
 
@@ -180,6 +199,10 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/10/28 20:17:52  sg
+  * Improved segment handling
+  * Interface cleaning up
+
   Revision 1.1  2000/10/27 23:40:00  sg
   * First version
 

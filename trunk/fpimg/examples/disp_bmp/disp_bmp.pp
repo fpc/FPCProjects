@@ -71,3 +71,8 @@ begin
   MainWindow.Free;
   Display.Free;
 end.
+
+
+{
+  $Id$
+}
