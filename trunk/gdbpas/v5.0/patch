@@ -7094,3 +7094,61 @@ diff -urN origdb/valops.c gdb/valops.c
  		{
  		  v = search_struct_field (type_name_no_tag (t2),
  				       value_zero (t1, not_lval), 0, t1, 1);
+diff -urN origdb/win32-nat.c gdb/win32-nat.c
+--- origdb/win32-nat.c	Fri Apr 21 06:33:50 2000
++++ gdb/win32-nat.c	Wed Sep 19 18:15:12 2001
+@@ -428,6 +428,7 @@
+   int mainline;
+   int flags;
+   struct objfile *ret;
++  HANDLE hFile;
+ };
+ 
+ static int
+@@ -449,7 +450,7 @@
+ static struct objfile *
+ safe_symbol_file_add (char *name, int from_tty,
+ 		      struct section_addr_info *addrs,
+-		      int mainline, int flags)
++		      int mainline, int flags, HANDLE hFile)
+ 
+ {
+   struct safe_symbol_file_add_args p;
+@@ -463,8 +464,12 @@
+   p.addrs = addrs;
+   p.mainline = mainline;
+   p.flags = flags;
++  p.hFile = hFile;
+   catch_errors (safe_symbol_file_add_stub, &p, "", RETURN_MASK_ERROR);
+ 
++  /* DLL handles are not used */
++  CloseHandle(p.hFile);
++  
+   do_cleanups (cleanup);
+   return p.ret;
+ }
+@@ -559,7 +564,7 @@
+      of the file header and the section alignment. */
+ 
+   section_addrs.text_addr = (int) event->lpBaseOfDll + 0x1000;
+-  safe_symbol_file_add (dll_name, 0, &section_addrs, 0, OBJF_SHARED);
++  safe_symbol_file_add (dll_name, 0, &section_addrs, 0, OBJF_SHARED,event->hFile);
+   printf_unfiltered ("%x:%s\n", event->lpBaseOfDll, dll_name);
+ 
+   return 1;
+@@ -758,6 +763,7 @@
+ 		     (unsigned) current_event.dwThreadId,
+ 		     "CREATE_PROCESS_DEBUG_EVENT"));
+       current_process_handle = current_event.u.CreateProcessInfo.hProcess;
++      current_process_file_handle = current_event.u.CreateProcessInfo.hFile;
+ 
+       main_thread_id = inferior_pid = current_event.dwThreadId;
+       /* Add the main thread */
+@@ -773,6 +779,7 @@
+       ourstatus->kind = TARGET_WAITKIND_EXITED;
+       ourstatus->value.integer = current_event.u.ExitProcess.dwExitCode;
+       CloseHandle (current_process_handle);
++      CloseHandle (current_process_file_handle);
+       *retval = current_event.dwProcessId;
+       breakout = 1;
+       break;
