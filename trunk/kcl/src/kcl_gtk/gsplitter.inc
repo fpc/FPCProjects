@@ -69,6 +69,17 @@ begin
   end;}
 end;}
 
+procedure TSplitter_Pane_SizeAllocate(widget: PGtkWidget; alloc: PGtkAllocation;
+  AWidget: TWidget); cdecl;
+begin
+  if (AWidget.FWidth <> alloc^.width) or (AWidget.FHeight <> alloc^.height) then begin
+    AWidget.FWidth := alloc^.width;
+    AWidget.FHeight := alloc^.height;
+    AWidget.ApplySize;
+  end;
+end;
+
+
 
 procedure TSplitter.SetPane1(APane1: TWidget);
 begin
@@ -123,15 +134,26 @@ begin
   gtk_signal_connect(PGtkObject(FHandle), 'motion_notify_event',
     GTK_SIGNAL_FUNC(@TSplitter_MotionNotifyEvent), Self);
 
+
 //  gtk_signal_connect_after(PGtkObject(FHandle), 'size_allocate',
 //    GTK_SIGNAL_FUNC(@TSplitter_SizeAllocate), Self);
 
 
   gtk_paned_set_gutter_size(PGtkPaned(FHandle), 10);
 
-  if Assigned(FPane1) then SetPane1(FPane1);
-  if Assigned(FPane2) then SetPane2(FPane2);
+  if Assigned(FPane1) then begin
+    SetPane1(FPane1);
+    if Assigned(FPane1.FHandle) then
+      gtk_signal_connect(PGtkObject(FPane1.FHandle), 'size_allocate',
+        GTK_SIGNAL_FUNC(@TSplitter_Pane_SizeAllocate), FPane1);
+  end;
 
+  if Assigned(FPane2) then begin
+    SetPane2(FPane2);
+    if Assigned(FPane2.FHandle) then
+      gtk_signal_connect(PGtkObject(FPane2.FHandle), 'size_allocate',
+        GTK_SIGNAL_FUNC(@TSplitter_Pane_SizeAllocate), FPane2);
+  end;
 
   inherited OnFinishCreation;
 end;
@@ -209,11 +231,20 @@ WriteLn('TSplitter.ApplySize: ', FPane1.DefW, ' x ', FPane1.DefH,
 //  
 }
   inherited ApplySize;
+
+  if Assigned(FPane1) then
+    FPane1.SetSize(FWidth, PGtkPaned(FHandle)^.child1_size);
+
+  if Assigned(FPane2) then
+    FPane2.SetSize(FWidth, FHeight - PGtkPaned(FHandle)^.child1_size);
 end;
 
 
 {
   $Log$
+  Revision 1.4  2000/02/18 18:29:07  sg
+  * The panes are now notified when their size has changed
+
   Revision 1.3  2000/02/10 18:47:22  sg
   * Added layout calculation (not 100% finished yet!)
 
