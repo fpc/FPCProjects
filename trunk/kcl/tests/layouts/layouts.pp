@@ -29,6 +29,7 @@ type
 
     procedure SimpleBtnClicked(Sender: TObject);
     procedure FixedBtnClicked(Sender: TObject);
+    procedure DockingBtnClicked(Sender: TObject);
     procedure ExitBtnClicked(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -49,6 +50,13 @@ type
     constructor Create(AOwner: TComponent); override;
   end;
 
+  TDockingForm = Class(TForm)
+    Layout : TDockingLayout;
+    Button1,Button2,Button3,Button4,Button5 : TButton;
+  public
+    constructor Create(AOwner: TComponent); override;
+  end;
+ 
 
 // -------------------------------------------------------------------
 //   TMainForm
@@ -92,7 +100,8 @@ begin
     DockingBtn := TButton.Create(Self);
       DockingBtn.Name := 'DockingBtn';
       DockingBtn.Text := 'Docking layout';
-      DockingBtn.Enabled := False;
+      DockingBtn.Enabled := True;
+      DockingBtn.OnClick := @DockingBtnCLicked;
     Box.AddWidget(DockingBtn);
     Separator := TSeparator.Create(Self);
       Separator.Name := 'Separator';
@@ -117,6 +126,13 @@ var
   form: TFixedForm;
 begin
   Application.CreateForm(TFixedForm, form);
+end;
+
+procedure TMainForm.DockingBtnClicked(Sender: TObject);
+var
+  form: TDockingForm;
+begin
+  Application.CreateForm(TDockingForm, form);
 end;
 
 procedure TMainForm.ExitBtnClicked(Sender: TObject);
@@ -166,6 +182,42 @@ begin
   Content := Layout;
 end;
 
+// -------------------------------------------------------------------
+//   TDockingForm
+// -------------------------------------------------------------------
+
+constructor TDockingForm.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+
+  Text := 'Docking Layout';
+  BorderWidth := 8;
+
+  Layout := TDockingLayout.Create(Self);
+    Layout.Name := 'Layout';
+    Button1 := TButton.Create(Self);
+      Button1.Name := 'BTop';
+      Button1.Text := 'Top Alignment';
+    Layout.AddWidget(Button1, dmTop);
+    Button2 := TButton.Create(Self);
+      Button2.Name := 'BBottom';
+      Button2.Text := 'Bottom Alignment';
+    Layout.AddWidget(Button2, dmBottom);
+    Button3 := TButton.Create(Self);
+      Button3.Name := 'BLeft';
+      Button3.Text := 'Left Alignment';
+    Layout.AddWidget(Button3, dmLeft);
+    Button4 := TButton.Create(Self);
+      Button4.Name := 'BRight';
+      Button4.Text := 'Right Alignment';
+    Layout.AddWidget(Button4, dmRight);
+    Button5 := TButton.Create(Self);
+      Button5.Name := 'BCLient';
+      Button5.Text := 'Client Alignment';
+    Layout.AddWidget(Button5, dmClient);
+  Content := Layout;
+end;
+
 
 // -------------------------------------------------------------------
 //   Application setup
@@ -184,6 +236,9 @@ end.
 
 {
   $Log$
+  Revision 1.2  2000/02/18 19:53:09  michael
+  + Added docking layout
+
   Revision 1.1  2000/02/18 18:31:10  sg
   * First version
 
