@@ -28,7 +28,7 @@ type
   protected
     priv: TGenericForm_private;
     FContent: TWidget;
-    FDefaultWidth, FDefaultHeight, FPositionX, FPositionY: Integer;
+    FBorderWidth, FDefaultWidth, FDefaultHeight, FPositionX, FPositionY: Integer;
     FOnClose: TNotifyEvent;
 
     procedure SetContent(AContent: TWidget);
@@ -39,24 +39,28 @@ type
     procedure SetPositionX(x: Integer);
     procedure SetPositionY(y: Integer);
     procedure ApplyMinMaxSize;
+    procedure DoClose; dynamic;
 
     procedure OnFinishCreation; override;
     procedure ApplySize; override;
     procedure DoRecalcLayout; override;
+    property  Content: TWidget read FContent write SetContent;
+    property  BorderWidth: Integer read FBorderWidth write FBorderWidth;
+    property  DefaultWidth: Integer read FDefaultWidth write SetDefaultWidth default -1;
+    property  DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default -1;
+    property  OnClose: TNotifyEvent read FOnClose;
+
   public
     constructor Create(AOwner: TComponent); override;
+    function  IsRadioGroup: Boolean; override;
     function  CanClose: Boolean; virtual;
     procedure Show;
     procedure Close;
     procedure SetDefaultSize(AWidth, AHeight: Integer);
     procedure SetPosition(x, y: Integer);
 
-    property Content: TWidget read FContent write SetContent;
-    property DefaultWidth: Integer read FDefaultWidth write SetDefaultWidth default -1;
-    property DefaultHeight: Integer read FDefaultHeight write SetDefaultHeight default -1;
-    property PositionX: Integer read GetPositionX write SetPositionX default -1;
-    property PositionY: Integer read GetPositionY write SetPositionY default -1;
-    property OnClose: TNotifyEvent read FOnClose;
+    property  PositionX: Integer read GetPositionX write SetPositionX default -1;
+    property  PositionY: Integer read GetPositionY write SetPositionY default -1;
   end;
 
 
@@ -68,6 +72,7 @@ type
   published
     property Text;
     property Content;
+    property BorderWidth;
     property DefaultWidth;
     property DefaultHeight;
     property PositionX;
@@ -78,6 +83,10 @@ type
 
 {
   $Log$
+  Revision 1.5  2000/02/17 22:23:01  sg
+  * Changed the visibility of some TCustomForm properties to get more VCL-like
+  * Added "IsRadioGroup" (needed for TRadioButton under GTK)
+
   Revision 1.4  2000/02/10 18:35:18  sg
   * Renamed TGenericForm to TCustomForm, to make this more VCL-like
   * Added new properties for accessing the position and the default size
