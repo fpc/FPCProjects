@@ -27,7 +27,15 @@ begin
 end;
 
 destructor TImageList.Destroy;
+var
+  i: Integer;
+  item: PImageListItem;
 begin
+  for i := 0 to priv.Count - 1 do begin
+    item := PImageListItem(priv.Items[i]);
+    item^.ImageCanvas.Free;
+    Dispose(item);
+  end;
   priv.Free;
   inherited Destroy;
 end;
@@ -75,9 +83,8 @@ begin
     New(item);
     item^.Mask := gdk_bitmap_create_from_data(nil, MaskData, FWidth, FHeight);
     FreeMem(MaskData);
-    item^.Image := ImgCanvas.pixmap;
+    item^.ImageCanvas := ImgCanvas;
     priv.Add(item);
-    //priv.Add(gtk_pixmap_new(ImgCanvas.pixmap, mask));
     Inc(x, FWidth);
   end;
 end;
@@ -85,6 +92,9 @@ end;
 
 {
   $Log$
+  Revision 1.2  2000/02/10 18:43:40  sg
+  * Fixed memory leaks
+
   Revision 1.1  2000/01/24 00:15:23  sg
   * First version
 
