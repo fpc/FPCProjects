@@ -1,0 +1,226 @@
+[package]
+name=mysql
+version=1.1.0
+
+[require]
+pcakges=
+
+[target]
+units= jwawinnt jwawintype jwawinbase \
+jwaaccctrl jwaaclapi jwaaclui jwaactiveds jwaadsdb jwaadserr \
+jwaadshlp jwaadsnms jwaadsprop jwaadssts jwaadstlb jwaadtgen  \
+jwaaf_irda jwaatalkwsh jwaauthif jwaauthz jwabatclass jwabits  \
+jwabitsmsg jwablberr jwabugcodes jwacderr jwacmnquery jwacolordlg \
+jwacpl jwacplext jwacryptuiapi jwadbt jwadde jwadhcpcsdk jwadhcpssdk \
+jwadlgs jwadsadmin jwadsclient jwadsgetdc jwadskquota jwadsquery \ 
+jwadsrole jwaerrorrep jwaexcpt jwafaxdev jwafaxext jwafaxmmc \
+jwafaxroute jwagpedit jwahherror jwahtmlguid jwahtmlhelp \
+jwaiaccess jwaiadmext jwaiiscnfg jwaimagehlp jwaimapi \
+jwaimapierror jwaime jwaioevent jwaipexport jwaiphlpapi \
+jwaipifcons jwaipinfoid jwaiprtrmib jwaiptypes jwaisguids \
+jwaissper16 jwalm jwalmaccess jwalmalert jwalmapibuf jwalmat \
+jwalmaudit jwalmconfig jwalmcons jwalmdfs jwalmerr jwalmerrlog \
+jwalmjoin jwalmmsg jwalmremutl jwalmrepl jwalmserver jwalmshare \
+jwalmsname jwalmstats jwalmsvc jwalmuse jwalmuseflg jwalmwksta \
+jwaloadperf jwalpmapi jwamciavi jwamprerror jwamsi jwamsidefs \
+jwamsiquery jwamstask jwamstcpip jwamswsock jwanb30 jwanetsh \
+jwanspapi jwantdsapi jwantdsbcli jwantdsbmsg jwantldap jwantquery \ 
+jwantsecapi jwantstatus jwaobjsel jwapatchapi jwapatchwiz jwapbt \
+jwapdh jwapdhmsg jwapowrprof jwaprofinfo jwaprotocol jwaprsht \
+jwapsapi jwaqos jwaqosname jwaqospol jwaqossp jwareason jwaregstr \
+jwarpc jwarpcasync jwarpcdce jwarpcnsi jwarpcnterr jwarpcssl \
+jwascesvc jwaschedule jwaschemadef jwasddl jwasecext jwasecurity \
+jwasens jwasensapi jwasensevts jwasfc jwashlguid jwasisbkup jwasnmp \
+jwasporder jwasrrestoreptapi jwasspi jwasubauth jwasvcguid \
+jwatlhelp32 jwatmschema jwatraffic jwauserenv jwauxtheme jwawbemcli \
+jwawinable jwawinber jwawincon jwawincpl jwawincred \
+jwawincrypt jwawindns jwawinefs jwawinerror jwawinfax jwawingdi \
+jwawinioctl jwawinldap jwawinnetwk jwawinnls jwawinperf \
+jwawinreg jwawinsafer jwawinsock jwawinsock2 jwawinsvc  \
+jwawinuser jwawinver jwawinwlx jwawmistr jwawownt16 jwawownt32 \
+jwawpapi jwawpapimsg jwawpcrsmsg jwawpftpmsg jwawppstmsg \
+jwawpspihlp jwawptypes jwawpwizmsg jwaws2atm jwaws2dnet jwaws2spi \
+jwaws2tcpip jwawshisotp jwawsipx jwawsnetbs jwawsnwlink jwawsvns \
+jwawtsapi32 jwazmouse 
+
+[install]
+basedir=.
+
+[prerules]
+jwaaccctrl$(PPUEXT) : jwawinbase$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwaaclapi$(PPUEXT) : jwaaccctrl$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwaaclui$(PPUEXT) : jwaaccctrl$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwaactiveds$(PPUEXT) : jwaadstlb$(PPUEXT) 
+jwaadshlp$(PPUEXT) : jwaadstlb$(PPUEXT) 
+jwaadsprop$(PPUEXT) : jwaadstlb$(PPUEXT) 
+jwaadssts$(PPUEXT) : jwawinnt$(PPUEXT) 
+jwaadtgen$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwaaf_irda$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwaatalkwsh$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwaauthif$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaauthz$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwabatclass$(PPUEXT) : jwawinioctl$(PPUEXT) jwawintype$(PPUEXT) 
+jwabits$(PPUEXT) : jwabitsmsg$(PPUEXT) jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwabitsmsg$(PPUEXT) : jwawintype$(PPUEXT) 
+jwabugcodes$(PPUEXT) : jwawintype$(PPUEXT) 
+jwacmnquery$(PPUEXT) : jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwacpl$(PPUEXT) : jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwacryptuiapi$(PPUEXT) : jwawincrypt$(PPUEXT) jwawintype$(PPUEXT) 
+jwadbt$(PPUEXT) : jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwadde$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwadhcpcsdk$(PPUEXT) : jwawintype$(PPUEXT) 
+jwadhcpssdk$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwadsadmin$(PPUEXT) : jwaadstlb$(PPUEXT) 
+jwadsclient$(PPUEXT) : jwaadstlb$(PPUEXT) 
+jwadsgetdc$(PPUEXT) : jwantsecapi$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwadskquota$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwadsquery$(PPUEXT) : jwacmnquery$(PPUEXT) jwawintype$(PPUEXT) 
+jwadsrole$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaerrorrep$(PPUEXT) : jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwaexcpt$(PPUEXT) : jwawintype$(PPUEXT) 
+jwafaxdev$(PPUEXT) : jwaprsht$(PPUEXT) jwawintype$(PPUEXT) 
+jwafaxext$(PPUEXT) : jwawintype$(PPUEXT) 
+jwafaxmmc$(PPUEXT) : jwawintype$(PPUEXT) 
+jwafaxroute$(PPUEXT) : jwawintype$(PPUEXT) 
+jwagpedit$(PPUEXT) : jwaprsht$(PPUEXT) jwawintype$(PPUEXT) 
+jwahherror$(PPUEXT) : jwawintype$(PPUEXT) 
+jwahtmlhelp$(PPUEXT) : jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwaiaccess$(PPUEXT) : jwaaccctrl$(PPUEXT) jwawintype$(PPUEXT) 
+jwaiadmext$(PPUEXT) : jwaiiscnfg$(PPUEXT) jwawintype$(PPUEXT) 
+jwaiiscnfg$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaimagehlp$(PPUEXT) : jwawinbase$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwaimapi$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaimapierror$(PPUEXT) : jwawinerror$(PPUEXT) jwawintype$(PPUEXT) 
+jwaime$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaioevent$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaipexport$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaiphlpapi$(PPUEXT) : jwaipexport$(PPUEXT) jwaiprtrmib$(PPUEXT) jwaiptypes$(PPUEXT) jwawinbase$(PPUEXT) jwawinsock$(PPUEXT) jwawintype$(PPUEXT) 
+jwaipinfoid$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaiprtrmib$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaiptypes$(PPUEXT) : jwawinsock2$(PPUEXT) jwawintype$(PPUEXT) 
+jwaissper16$(PPUEXT) : jwasspi$(PPUEXT) 
+jwalm$(PPUEXT) : jwawinbase$(PPUEXT) jwawinnt$(PPUEXT) jwawinsvc$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmaccess$(PPUEXT) : jwalmcons$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmalert$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmapibuf$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmat$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmaudit$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmconfig$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmcons$(PPUEXT) : jwalmerr$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmdfs$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmerrlog$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmjoin$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmmsg$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmremutl$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmrepl$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmserver$(PPUEXT) : jwalmcons$(PPUEXT) jwawinsvc$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmshare$(PPUEXT) : jwalmcons$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmsname$(PPUEXT) : jwawintype$(PPUEXT) 
+jwalmstats$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmsvc$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmuse$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwalmwksta$(PPUEXT) : jwalmcons$(PPUEXT) jwawintype$(PPUEXT) 
+jwaloadperf$(PPUEXT) : jwawintype$(PPUEXT) 
+jwalpmapi$(PPUEXT) : jwawinsock2$(PPUEXT) jwawintype$(PPUEXT) 
+jwamsi$(PPUEXT) : jwawincrypt$(PPUEXT) jwawintype$(PPUEXT) 
+jwamsidefs$(PPUEXT) : jwawintype$(PPUEXT) 
+jwamsiquery$(PPUEXT) : jwamsi$(PPUEXT) jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwamstask$(PPUEXT) : commctrl$(PPUEXT) jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwamstcpip$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwamswsock$(PPUEXT) : jwawinbase$(PPUEXT) jwawinsock2$(PPUEXT) jwawintype$(PPUEXT) 
+jwanb30$(PPUEXT) : jwawintype$(PPUEXT) 
+jwanetsh$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwanspapi$(PPUEXT) : jwawinsock2$(PPUEXT) jwawintype$(PPUEXT) 
+jwantdsapi$(PPUEXT) : jwarpcdce$(PPUEXT) jwaschedule$(PPUEXT) jwawinbase$(PPUEXT) jwawinnls$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwantdsbcli$(PPUEXT) : jwawintype$(PPUEXT) 
+jwantdsbmsg$(PPUEXT) : jwawinerror$(PPUEXT) jwawintype$(PPUEXT) 
+jwantquery$(PPUEXT) : comobj$(PPUEXT) jwawintype$(PPUEXT) 
+jwantsecapi$(PPUEXT) : jwantstatus$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwantstatus$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaobjsel$(PPUEXT) : jwawintype$(PPUEXT) 
+jwapatchapi$(PPUEXT) : jwawintype$(PPUEXT) 
+jwapatchwiz$(PPUEXT) : jwawintype$(PPUEXT) 
+jwapdh$(PPUEXT) : jwawinbase$(PPUEXT) jwawinperf$(PPUEXT) jwawintype$(PPUEXT) 
+jwapdhmsg$(PPUEXT) : jwawintype$(PPUEXT) 
+jwapowrprof$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwaprofinfo$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaprsht$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwapsapi$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaqos$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaqosname$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwaqospol$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwaqossp$(PPUEXT) : jwaqos$(PPUEXT) jwawinsock2$(PPUEXT) 
+jwareason$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaregstr$(PPUEXT) : jwawintype$(PPUEXT) 
+jwarpcasync$(PPUEXT) : jwarpc$(PPUEXT) jwarpcdce$(PPUEXT) jwawinbase$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwarpcdce$(PPUEXT) : jwarpc$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwarpcnsi$(PPUEXT) : jwarpc$(PPUEXT) jwarpcdce$(PPUEXT) jwawintype$(PPUEXT) 
+jwarpcnterr$(PPUEXT) : jwawinerror$(PPUEXT) 
+jwarpcssl$(PPUEXT) : jwarpc$(PPUEXT) jwawincrypt$(PPUEXT) jwawintype$(PPUEXT) 
+jwascesvc$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaschedule$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaschemadef$(PPUEXT) : jwawintype$(PPUEXT) 
+jwasddl$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwasecext$(PPUEXT) : jwasspi$(PPUEXT) jwawintype$(PPUEXT) 
+jwasensapi$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwasensevts$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwasfc$(PPUEXT) : jwawintype$(PPUEXT) 
+jwasisbkup$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwasnmp$(PPUEXT) : jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwasporder$(PPUEXT) : jwawintype$(PPUEXT) 
+jwasrrestoreptapi$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwasspi$(PPUEXT) : jwawintype$(PPUEXT) 
+jwasubauth$(PPUEXT) : jwawintype$(PPUEXT) 
+jwatlhelp32$(PPUEXT) : jwawintype$(PPUEXT) 
+jwatmschema$(PPUEXT) : jwawintype$(PPUEXT) 
+jwatraffic$(PPUEXT) : jwaqos$(PPUEXT) jwawintype$(PPUEXT) 
+jwauserenv$(PPUEXT) : jwaprofinfo$(PPUEXT) jwawinbase$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwauxtheme$(PPUEXT) : jwawingdi$(PPUEXT) jwawintype$(PPUEXT) 
+jwawbemcli$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawinable$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawinbase$(PPUEXT) : jwantstatus$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinber$(PPUEXT) : jwawinldap$(PPUEXT) jwawintype$(PPUEXT) 
+jwawincon$(PPUEXT) : jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwawincpl$(PPUEXT) : jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwawincred$(PPUEXT) : jwalmcons$(PPUEXT) jwantsecapi$(PPUEXT) jwawinbase$(PPUEXT) jwawinerror$(PPUEXT) jwawintype$(PPUEXT) 
+jwawincrypt$(PPUEXT) : jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwawindns$(PPUEXT) : jwawinsock2$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinefs$(PPUEXT) : jwawinbase$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinerror$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawinfax$(PPUEXT) : jwawinbase$(PPUEXT) jwawinerror$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawingdi$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinioctl$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinnetwk$(PPUEXT) : jwawinerror$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinnls$(PPUEXT) : jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinnt$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawinperf$(PPUEXT) : jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinreg$(PPUEXT) : jwareason$(PPUEXT) jwawinbase$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinsafer$(PPUEXT) : jwawincrypt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinsock$(PPUEXT) : jwawinbase$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinsock2$(PPUEXT) : jwaqos$(PPUEXT) jwawinbase$(PPUEXT) jwawinerror$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinsvc$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawintype$(PPUEXT) : jwawinnt$(PPUEXT) 
+jwawinuser$(PPUEXT) : jwawinbase$(PPUEXT) jwawingdi$(PPUEXT) jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawinver$(PPUEXT) : jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwawinwlx$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
+jwawmistr$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwawownt16$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawownt32$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawpapi$(PPUEXT) : jwawintype$(PPUEXT) jwawptypes$(PPUEXT) 
+jwawpapimsg$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawpcrsmsg$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawpftpmsg$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawppstmsg$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawpspihlp$(PPUEXT) : jwawintype$(PPUEXT) jwawptypes$(PPUEXT) 
+jwawptypes$(PPUEXT) : jwawintype$(PPUEXT) 
+jwawpwizmsg$(PPUEXT) : jwawintype$(PPUEXT) 
+jwaws2atm$(PPUEXT) : jwawinsock2$(PPUEXT) jwawintype$(PPUEXT) 
+jwaws2dnet$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwaws2spi$(PPUEXT) : jwawinsock2$(PPUEXT) jwawintype$(PPUEXT) 
+jwaws2tcpip$(PPUEXT) : jwawinbase$(PPUEXT) jwawinnt$(PPUEXT) jwawinsock2$(PPUEXT) jwawintype$(PPUEXT) 
+jwawshisotp$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwawsnetbs$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwawsnwlink$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwawsvns$(PPUEXT) : jwawinsock2$(PPUEXT) 
+jwawtsapi32$(PPUEXT) : jwawinnt$(PPUEXT) jwawintype$(PPUEXT) 
+jwazmouse$(PPUEXT) : jwawintype$(PPUEXT) jwawinuser$(PPUEXT) 
