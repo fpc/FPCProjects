@@ -112,6 +112,31 @@ const
   colMagenta: TGfxColor		= (Red: $ffff; Green: $0000; Blue: $ffff; Alpha: $0000);
   colYellow: TGfxColor		= (Red: $ffff; Green: $ffff; Blue: $0000; Alpha: $0000);
   colWhite: TGfxColor		= (Red: $ffff; Green: $ffff; Blue: $ffff; Alpha: $0000);
+  colGray: TGfxColor		= (Red: $8000; Green: $8000; Blue: $8000; Alpha: $0000);
+  colLtGray: TGfxColor		= (Red: $c000; Green: $c000; Blue: $c000; Alpha: $0000);
+  colDkBlue: TGfxColor		= (Red: $0000; Green: $0000; Blue: $8000; Alpha: $0000);
+  colDkGreen: TGfxColor		= (Red: $0000; Green: $8000; Blue: $0000; Alpha: $0000);
+  colDkCyan: TGfxColor		= (Red: $0000; Green: $8000; Blue: $8000; Alpha: $0000);
+  colDkRed: TGfxColor		= (Red: $8000; Green: $0000; Blue: $0000; Alpha: $0000);
+  colDkMagenta: TGfxColor	= (Red: $8000; Green: $0000; Blue: $8000; Alpha: $0000);
+  colDkYellow: TGfxColor	= (Red: $8000; Green: $8000; Blue: $0000; Alpha: $0000);
+
+  webBlack: TGfxColor		= (Red: $0000; Green: $0000; Blue: $0000; Alpha: $0000);
+  webMaroon: TGfxColor		= (Red: $8000; Green: $0000; Blue: $0000; Alpha: $0000);
+  webGreen: TGfxColor		= (Red: $0000; Green: $8000; Blue: $0000; Alpha: $0000);
+  webOlive: TGfxColor		= (Red: $8000; Green: $8000; Blue: $0000; Alpha: $0000);
+  webNavy: TGfxColor		= (Red: $0000; Green: $0000; Blue: $8000; Alpha: $0000);
+  webPurple: TGfxColor		= (Red: $8000; Green: $0000; Blue: $8000; Alpha: $0000);
+  webTeal: TGfxColor		= (Red: $0000; Green: $8000; Blue: $8000; Alpha: $0000);
+  webGray: TGfxColor		= (Red: $8000; Green: $8000; Blue: $8000; Alpha: $0000);
+  webSilver: TGfxColor		= (Red: $c000; Green: $c000; Blue: $c000; Alpha: $0000);
+  webRed: TGfxColor		= (Red: $ffff; Green: $0000; Blue: $0000; Alpha: $0000);
+  webLime: TGfxColor		= (Red: $0000; Green: $ffff; Blue: $0000; Alpha: $0000);
+  webYellow: TGfxColor		= (Red: $ffff; Green: $ffff; Blue: $0000; Alpha: $0000);
+  webBlue: TGfxColor		= (Red: $0000; Green: $0000; Blue: $ffff; Alpha: $0000);
+  webFuchsia: TGfxColor		= (Red: $ffff; Green: $0000; Blue: $ffff; Alpha: $0000);
+  webAqua: TGfxColor		= (Red: $0000; Green: $ffff; Blue: $ffff; Alpha: $0000);
+  webWhite: TGfxColor		= (Red: $ffff; Green: $ffff; Blue: $ffff; Alpha: $0000);
 
 
   // Some predefined pixel formats:
@@ -204,8 +229,13 @@ type
   TGfxWindowType = (wtWindow, wtBorderlessWindow, wtPopup, wtBorderlessPopup,
     wtToolWindow, wtChild);
 
+  TGfxCursor = (crDefault, crNone, crArrow, crCross, crIBeam, crSize, crSizeNS,
+    crSizeWE, cpUpArrow, crHourGlass, crNoDrop, crHelp);
+
 
   // Fonts
+
+  TGfxFontClass = (fcSerif, fcSansSerif, fcTypewriter, fcDingbats);
 
   TGfxFont = class
     { This class doesn't define anything... Create it from a canvas and
@@ -259,7 +289,8 @@ type
     function UnionClipRect(const ARect: TRect): Boolean; virtual; abstract;
     function GetClipRect: TRect; virtual; abstract;
     function MapColor(const AColor: TGfxColor): TGfxPixel; virtual; abstract;
-    procedure SetColor(AColor: TGfxPixel); virtual; abstract;
+    procedure SetColor_(AColor: TGfxPixel); virtual; abstract;
+    procedure SetColor(AColor: TGfxColor); virtual;
     procedure SetFont(AFont: TGfxFont); virtual; abstract;
     procedure SetLineStyle(ALineStyle: TGfxLineStyle); virtual; abstract;
 
@@ -340,6 +371,7 @@ type
   TGfxDevice = class
   public
     function CreateFont(const Descriptor: String): TGfxFont; virtual; abstract;
+    function GetDefaultFontName(const AFontClass: TGfxFontClass): String; virtual;
     function CreateImage(AWidth, AHeight: Integer;
       APixelFormat: TGfxPixelFormat): TGfxImage; virtual; abstract;
   end;
@@ -379,6 +411,7 @@ type
 
   TGfxWindow = class
   private
+    FCursor: TGfxCursor;
     FOnCreate: TNotifyEvent;
     FOnCanClose: TGfxCanCloseEvent;
     FOnClose: TNotifyEvent;
@@ -400,7 +433,9 @@ type
     FOnShow: TNotifyEvent;
     procedure SetWidth(AWidth: Integer);
     procedure SetHeight(AHeight: Integer);
+    procedure SetCursor(ACursor: TGfxCursor);
   protected
+    FWindowType: TGfxWindowType;
     FScreen: TGfxScreen;
     FCanvas: TGfxCanvas;
     FLeft: Integer;
@@ -411,6 +446,7 @@ type
     FClientHeight: Integer;
     function GetTitle: String; virtual;
     procedure SetTitle(const ATitle: String); virtual;
+    procedure DoSetCursor; virtual; abstract;
   public
     function CanClose: Boolean; virtual;
     procedure SetPosition(ALeft, ATop: Integer); virtual;
@@ -424,9 +460,11 @@ type
     procedure SetFixedClientSize(AWidth, AHeight: Integer);
     procedure Show; virtual; abstract;
     procedure Invalidate(const ARect: TRect); virtual; abstract;
+    procedure PaintInvalidRegion; virtual; abstract;
     procedure CaptureMouse; virtual; abstract;
     procedure ReleaseMouse; virtual; abstract;
 
+    property WindowType: TGfxWindowType read FWindowType;
     property Screen: TGfxScreen read FScreen;
     property Canvas: TGfxCanvas read FCanvas;
     // Window state
@@ -436,6 +474,7 @@ type
     property Height: Integer read FHeight write SetHeight;
     property ClientWidth: Integer read FClientWidth;
     property ClientHeight: Integer read FClientHeight;
+    property Cursor: TGfxCursor read FCursor write SetCursor;
     property Title: String read GetTitle write SetTitle;
     // Event handlers
     property OnCreate: TNotifyEvent read FOnCreate write FOnCreate;
@@ -459,6 +498,12 @@ type
     property OnShow: TNotifyEvent read FOnShow write FOnShow;
   end;
 
+
+// Some helpers:
+
+operator = (const AColor1, AColor2: TGfxColor) b: Boolean;
+
+function GetAvgColor(const AColor1, AColor2: TGfxColor): TGfxColor;
 
 function KeycodeToText(Key: Word; ShiftState: TShiftState): String;
 
@@ -552,6 +597,11 @@ end;
 procedure TGfxCanvas.EmptyClipRect;
 begin
   IntersectClipRect(Rect(0, 0, 0, 0));
+end;
+
+procedure TGfxCanvas.SetColor(AColor: TGfxColor);
+begin
+  SetColor_(MapColor(AColor));
 end;
 
 procedure TGfxCanvas.DrawPolyLine(const Coords: array of Integer);
@@ -724,6 +774,20 @@ end;
 
 
 // ===================================================================
+//   TGfxDevice
+// ===================================================================
+
+function TGfxDevice.GetDefaultFontName(
+  const AFontClass: TGfxFontClass): String;
+const
+  FontNames: array[TGfxFontClass] of String = (
+    'times', 'helvetica', 'courier', 'dingbats');
+begin
+  Result := FontNames[AFontClass];
+end;
+
+
+// ===================================================================
 //   TGfxWindow
 // ===================================================================
 
@@ -802,10 +866,38 @@ begin
   SetSize(Width, AHeight);
 end;
 
+procedure TGfxWindow.SetCursor(ACursor: TGfxCursor);
+begin
+  if ACursor <> Cursor then
+  begin
+    FCursor := ACursor;
+    DoSetCursor;
+  end;
+end;
+
 
 // ===================================================================
 //   Global functions
 // ===================================================================
+
+// Color functions
+
+operator = (const AColor1, AColor2: TGfxColor) b: Boolean;
+begin
+  b := (AColor1.Red = AColor2.Red) and (AColor1.Green = AColor2.Green) and
+    (AColor1.Blue = AColor2.Blue) and (AColor1.Alpha = AColor2.Alpha);
+end;
+
+function GetAvgColor(const AColor1, AColor2: TGfxColor): TGfxColor;
+begin
+  Result.Red := AColor1.Red + (AColor2.Red - AColor1.Red) div 2;
+  Result.Green := AColor1.Green + (AColor2.Green - AColor1.Green) div 2;
+  Result.Blue := AColor1.Blue + (AColor2.Blue - AColor1.Blue) div 2;
+  Result.Alpha := AColor1.Alpha + (AColor2.Alpha - AColor1.Alpha) div 2;
+end;
+
+
+// Keyboard functions
 
 function KeycodeToText(Key: Word; ShiftState: TShiftState): String;
 
@@ -960,6 +1052,13 @@ end.
 
 {
   $Log$
+  Revision 1.8  2001/02/09 20:43:05  sg
+  * Added more color definitions
+  * Overloaded TGfxCanvas.SetColor to accept a TGfxColor as well
+  * Added support for setting the cursor type within a window
+  * Added TGfxWindow.PaintInvalidRegion
+  * Added GetAvgColor helper function
+
   Revision 1.7  2001/01/18 15:00:14  sg
   * Added TGfxWindowType and implemented support for it
 
