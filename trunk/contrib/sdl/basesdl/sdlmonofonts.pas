@@ -21,23 +21,26 @@ unit sdlmonofonts;
 {                                                                  }
 {******************************************************************}
 
-{$I jedi-sdl.inc}
 
 interface
 
+{$I jedi-sdl.inc}
+
 uses
-  Classes,
-  SysUtils,
+//  Classes,
+//  SysUtils,
   sdl,
   sdl_image,
   sdlutils;
+
+
 
 const
  CharSet = ' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~áéíóöõúüûÁÉÍÓÖÕÚÜÛ';
 
 type
   TAlignment = (taLeftJustify, taRightJustify, taCenter);
-  
+
   PFont = ^TFont;
   TFont = object
   private
@@ -60,6 +63,8 @@ type
   end;
 
 implementation
+
+Uses Classes,SysUtils;
 
 constructor TFont.Initialize(const Filename: string);
 begin
@@ -124,7 +129,7 @@ begin
    #13: begin
          inc(ReadPos,1);
          break;
-        end; 
+        end;
    else WasLetter:=true
   end;
   inc(ReadPos);
@@ -272,7 +277,7 @@ begin
  for i:=0 to Len-1 do begin
   p:=pos(Txt[i], CharSet)-1;
   if p>=0 then Result:=Result+Rects[p].w+1;
- end; 
+ end;
 end;
 
 function TFont.WidthOf(Txt: PChar): integer;

@@ -168,6 +168,9 @@ unit sdl;
 {                                                                              }
 {
   $Log$
+  Revision 1.5  2004/04/30 16:24:02  marco
+   * small fixes
+
   Revision 1.4  2004/04/04 15:38:28  marco
    * deleted CR char
 
@@ -208,11 +211,12 @@ unit sdl;
 }
 {******************************************************************************}
 
-{$I jedi-sdl.inc}
 
 {$ALIGN ON}
 
 interface
+
+{$I jedi-sdl.inc}
 
 uses
 {$IFDEF __GPC__}
@@ -1209,7 +1213,7 @@ type
   PUInt16 = ^UInt16;
   UInt16 = word;
 {$EXTERNALSYM UInt16}
-  
+
   SInt16 = smallint;
 {$EXTERNALSYM SInt16}
 
@@ -1351,7 +1355,7 @@ type
   {$ELSE}
   TSDL_NewTimerCallback = function( interval: UInt32; param: Pointer ): UInt32;
   {$ENDIF}
-  
+
   // Definition of the timer ID type
   PSDL_TimerID = ^TSDL_TimerID;
   TSDL_TimerID = record
@@ -1986,7 +1990,7 @@ PSDL_semaphore = ^TSDL_semaphore;
   end;
 {$ELSE}
   {$IFDEF FPC}
-  // This should be semaphore.h 
+  // This should be semaphore.h
   __sem_lock_t = {packed} record { Not in header file - anonymous }
     status: Longint;
     spinlock: Integer;
@@ -1998,7 +2002,7 @@ PSDL_semaphore = ^TSDL_semaphore;
     __sem_waiting: longint ; {_pthread_queue;}
   end;
   {$ENDIF}
-  
+
   TSDL_semaphore = record
     sem: Pointer; //PSem_t;
   {$IFNDEF USE_NAMED_SEMAPHORES}
@@ -2083,7 +2087,7 @@ PSDL_semaphore = ^TSDL_semaphore;
 
   { Generic procedure pointer }
   TProcedure = procedure;
-  
+
 {------------------------------------------------------------------------------}
 { initialization                                                               }
 {------------------------------------------------------------------------------}
@@ -3151,12 +3155,12 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_ConvertSurface'{$ELSE} SDLLibName{$END
   surface (src or dst) is copied.  The final blit rectangles are saved
   in 'srcrect' and 'dstrect' after all clipping is performed.
   If the blit is successful, it returns 0, otherwise it returns -1.
- 
+
   The blit function should not be called on a locked surface.
- 
+
   The blit semantics for surfaces with and without alpha and colorkey
   are defined as follows:
- 
+
   RGBA->RGB:
       SDL_SRCALPHA set:
    alpha-blend (using alpha-channel).
@@ -3166,7 +3170,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_ConvertSurface'{$ELSE} SDLLibName{$END
    if SDL_SRCCOLORKEY set, only copy the pixels matching the
    RGB values of the source colour key, ignoring alpha in the
    comparison.
- 
+
   RGB->RGBA:
       SDL_SRCALPHA set:
    alpha-blend (using the source per-surface alpha value);
@@ -3176,7 +3180,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_ConvertSurface'{$ELSE} SDLLibName{$END
       both:
    if SDL_SRCCOLORKEY set, only copy the pixels matching the
    source colour key.
- 
+
   RGBA->RGBA:
       SDL_SRCALPHA set:
    alpha-blend (using the source alpha channel) the RGB values;
@@ -3187,7 +3191,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_ConvertSurface'{$ELSE} SDLLibName{$END
    if SDL_SRCCOLORKEY set, only copy the pixels matching the
    RGB values of the source colour key, ignoring alpha in the
    comparison.
- 
+
   RGB->RGB:
       SDL_SRCALPHA set:
    alpha-blend (using the source per-surface alpha value).
@@ -3196,7 +3200,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_ConvertSurface'{$ELSE} SDLLibName{$END
       both:
    if SDL_SRCCOLORKEY set, only copy the pixels matching the
    source colour key.
- 
+
   If either of the surfaces were in video memory, and the blit returns -2,
   the video memory was lost, so it should be reloaded with artwork and
   re-blitted:
@@ -3993,7 +3997,7 @@ begin
   {$IFDEF FPC}
   Result := fpgetenv(name);
   {$ELSE}
-  Result := libc.getenv(name);  
+  Result := libc.getenv(name);
   {$ENDIF}
 
   {$ENDIF}

@@ -74,6 +74,9 @@
 {                                                                              }
 (*
   $Log$
+  Revision 1.4  2004/04/30 16:24:02  marco
+   * small fixes
+
   Revision 1.3  2004/04/04 10:58:38  marco
    * new version
 
@@ -289,6 +292,7 @@
   {$OA+} // Objects and structures align
 {$ENDIF}
 
+{$ifndef FPC}
 {$IFDEF Win32}
   {$H-}                    { no long strings, please! }
   {$DEFINE OS_BigMem}
@@ -297,6 +301,7 @@
     {$DEFINE assembler}
   {$ENDIF} { use 16-bit assembler! }
 {$ENDIF Win32}
+{$endif}
 
 { ************************** dos/dos-like platforms **************}
 {$IFDEF Windows}

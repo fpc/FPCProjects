@@ -1,7 +1,7 @@
 unit sdl_image;
 {
   $Id$
-  
+
 }
 {******************************************************************************}
 {                                                                              }
@@ -83,6 +83,9 @@ unit sdl_image;
 {                                                                              }
 {
   $Log$
+  Revision 1.5  2004/04/30 16:24:02  marco
+   * small fixes
+
   Revision 1.4  2004/04/04 15:38:28  marco
    * deleted CR char
 
@@ -96,14 +99,16 @@ unit sdl_image;
   version 1 of sdl_image, sdl_mixer and smpeg.
 
 
-}  
+}
 {******************************************************************************}
 
-{$I jedi-sdl.inc}
+
 
 {$ALIGN ON}
 
 interface
+
+{$I jedi-sdl.inc}
 
 uses
 {$IFDEF __GPC__}
