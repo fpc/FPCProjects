@@ -3,6 +3,6 @@
 #
 
 [target]
-dirs=blitzbomber voxel
+dirs=blitzbomber isometric mouse plasma voxel sdltests
 
 

@@ -202,7 +202,7 @@ else
 UNITSDIR:=$(wildcard $(FPCDIR)/units/$(OS_TARGET))
 endif
 PACKAGESDIR:=$(wildcard $(FPCDIR) $(FPCDIR)/packages/base $(FPCDIR)/packages/extra)
-override TARGET_DIRS+=blitzbomber voxel
+override TARGET_DIRS+=blitzbomber isometric mouse plasma voxel sdltests
 ifdef REQUIRE_UNITSDIR
 override UNITSDIR+=$(REQUIRE_UNITSDIR)
 endif
@@ -1359,7 +1359,11 @@ fpc_makefile_sub2: $(addsuffix _makefile_dirs,$(TARGET_DIRS) $(TARGET_EXAMPLEDIR
 fpc_makefile_dirs: fpc_makefile_sub1 fpc_makefile_sub2
 fpc_makefiles: fpc_makefile fpc_makefile_dirs
 TARGET_DIRS_BLITZBOMBER=1
+TARGET_DIRS_ISOMETRIC=1
+TARGET_DIRS_MOUSE=1
+TARGET_DIRS_PLASMA=1
 TARGET_DIRS_VOXEL=1
+TARGET_DIRS_SDLTESTS=1
 ifdef TARGET_DIRS_BLITZBOMBER
 blitzbomber_all:
 	$(MAKE) -C blitzbomber all
@@ -1403,6 +1407,135 @@ blitzbomber:
 	$(MAKE) -C blitzbomber all
 .PHONY: blitzbomber_all blitzbomber_debug blitzbomber_smart blitzbomber_release blitzbomber_examples blitzbomber_shared blitzbomber_install blitzbomber_sourceinstall blitzbomber_exampleinstall blitzbomber_distinstall blitzbomber_zipinstall blitzbomber_zipsourceinstall blitzbomber_zipexampleinstall blitzbomber_zipdistinstall blitzbomber_clean blitzbomber_distclean blitzbomber_cleanall blitzbomber_info blitzbomber_makefiles blitzbomber
 endif
+ifdef TARGET_DIRS_ISOMETRIC
+isometric_all:
+	$(MAKE) -C isometric all
+isometric_debug:
+	$(MAKE) -C isometric debug
+isometric_smart:
+	$(MAKE) -C isometric smart
+isometric_release:
+	$(MAKE) -C isometric release
+isometric_examples:
+	$(MAKE) -C isometric examples
+isometric_shared:
+	$(MAKE) -C isometric shared
+isometric_install:
+	$(MAKE) -C isometric install
+isometric_sourceinstall:
+	$(MAKE) -C isometric sourceinstall
+isometric_exampleinstall:
+	$(MAKE) -C isometric exampleinstall
+isometric_distinstall:
+	$(MAKE) -C isometric distinstall
+isometric_zipinstall:
+	$(MAKE) -C isometric zipinstall
+isometric_zipsourceinstall:
+	$(MAKE) -C isometric zipsourceinstall
+isometric_zipexampleinstall:
+	$(MAKE) -C isometric zipexampleinstall
+isometric_zipdistinstall:
+	$(MAKE) -C isometric zipdistinstall
+isometric_clean:
+	$(MAKE) -C isometric clean
+isometric_distclean:
+	$(MAKE) -C isometric distclean
+isometric_cleanall:
+	$(MAKE) -C isometric cleanall
+isometric_info:
+	$(MAKE) -C isometric info
+isometric_makefiles:
+	$(MAKE) -C isometric makefiles
+isometric:
+	$(MAKE) -C isometric all
+.PHONY: isometric_all isometric_debug isometric_smart isometric_release isometric_examples isometric_shared isometric_install isometric_sourceinstall isometric_exampleinstall isometric_distinstall isometric_zipinstall isometric_zipsourceinstall isometric_zipexampleinstall isometric_zipdistinstall isometric_clean isometric_distclean isometric_cleanall isometric_info isometric_makefiles isometric
+endif
+ifdef TARGET_DIRS_MOUSE
+mouse_all:
+	$(MAKE) -C mouse all
+mouse_debug:
+	$(MAKE) -C mouse debug
+mouse_smart:
+	$(MAKE) -C mouse smart
+mouse_release:
+	$(MAKE) -C mouse release
+mouse_examples:
+	$(MAKE) -C mouse examples
+mouse_shared:
+	$(MAKE) -C mouse shared
+mouse_install:
+	$(MAKE) -C mouse install
+mouse_sourceinstall:
+	$(MAKE) -C mouse sourceinstall
+mouse_exampleinstall:
+	$(MAKE) -C mouse exampleinstall
+mouse_distinstall:
+	$(MAKE) -C mouse distinstall
+mouse_zipinstall:
+	$(MAKE) -C mouse zipinstall
+mouse_zipsourceinstall:
+	$(MAKE) -C mouse zipsourceinstall
+mouse_zipexampleinstall:
+	$(MAKE) -C mouse zipexampleinstall
+mouse_zipdistinstall:
+	$(MAKE) -C mouse zipdistinstall
+mouse_clean:
+	$(MAKE) -C mouse clean
+mouse_distclean:
+	$(MAKE) -C mouse distclean
+mouse_cleanall:
+	$(MAKE) -C mouse cleanall
+mouse_info:
+	$(MAKE) -C mouse info
+mouse_makefiles:
+	$(MAKE) -C mouse makefiles
+mouse:
+	$(MAKE) -C mouse all
+.PHONY: mouse_all mouse_debug mouse_smart mouse_release mouse_examples mouse_shared mouse_install mouse_sourceinstall mouse_exampleinstall mouse_distinstall mouse_zipinstall mouse_zipsourceinstall mouse_zipexampleinstall mouse_zipdistinstall mouse_clean mouse_distclean mouse_cleanall mouse_info mouse_makefiles mouse
+endif
+ifdef TARGET_DIRS_PLASMA
+plasma_all:
+	$(MAKE) -C plasma all
+plasma_debug:
+	$(MAKE) -C plasma debug
+plasma_smart:
+	$(MAKE) -C plasma smart
+plasma_release:
+	$(MAKE) -C plasma release
+plasma_examples:
+	$(MAKE) -C plasma examples
+plasma_shared:
+	$(MAKE) -C plasma shared
+plasma_install:
+	$(MAKE) -C plasma install
+plasma_sourceinstall:
+	$(MAKE) -C plasma sourceinstall
+plasma_exampleinstall:
+	$(MAKE) -C plasma exampleinstall
+plasma_distinstall:
+	$(MAKE) -C plasma distinstall
+plasma_zipinstall:
+	$(MAKE) -C plasma zipinstall
+plasma_zipsourceinstall:
+	$(MAKE) -C plasma zipsourceinstall
+plasma_zipexampleinstall:
+	$(MAKE) -C plasma zipexampleinstall
+plasma_zipdistinstall:
+	$(MAKE) -C plasma zipdistinstall
+plasma_clean:
+	$(MAKE) -C plasma clean
+plasma_distclean:
+	$(MAKE) -C plasma distclean
+plasma_cleanall:
+	$(MAKE) -C plasma cleanall
+plasma_info:
+	$(MAKE) -C plasma info
+plasma_makefiles:
+	$(MAKE) -C plasma makefiles
+plasma:
+	$(MAKE) -C plasma all
+.PHONY: plasma_all plasma_debug plasma_smart plasma_release plasma_examples plasma_shared plasma_install plasma_sourceinstall plasma_exampleinstall plasma_distinstall plasma_zipinstall plasma_zipsourceinstall plasma_zipexampleinstall plasma_zipdistinstall plasma_clean plasma_distclean plasma_cleanall plasma_info plasma_makefiles plasma
+endif
 ifdef TARGET_DIRS_VOXEL
 voxel_all:
 	$(MAKE) -C voxel all
@@ -1445,6 +1578,49 @@ voxel_makefiles:
 voxel:
 	$(MAKE) -C voxel all
 .PHONY: voxel_all voxel_debug voxel_smart voxel_release voxel_examples voxel_shared voxel_install voxel_sourceinstall voxel_exampleinstall voxel_distinstall voxel_zipinstall voxel_zipsourceinstall voxel_zipexampleinstall voxel_zipdistinstall voxel_clean voxel_distclean voxel_cleanall voxel_info voxel_makefiles voxel
+endif
+ifdef TARGET_DIRS_SDLTESTS
+sdltests_all:
+	$(MAKE) -C sdltests all
+sdltests_debug:
+	$(MAKE) -C sdltests debug
+sdltests_smart:
+	$(MAKE) -C sdltests smart
+sdltests_release:
+	$(MAKE) -C sdltests release
+sdltests_examples:
+	$(MAKE) -C sdltests examples
+sdltests_shared:
+	$(MAKE) -C sdltests shared
+sdltests_install:
+	$(MAKE) -C sdltests install
+sdltests_sourceinstall:
+	$(MAKE) -C sdltests sourceinstall
+sdltests_exampleinstall:
+	$(MAKE) -C sdltests exampleinstall
+sdltests_distinstall:
+	$(MAKE) -C sdltests distinstall
+sdltests_zipinstall:
+	$(MAKE) -C sdltests zipinstall
+sdltests_zipsourceinstall:
+	$(MAKE) -C sdltests zipsourceinstall
+sdltests_zipexampleinstall:
+	$(MAKE) -C sdltests zipexampleinstall
+sdltests_zipdistinstall:
+	$(MAKE) -C sdltests zipdistinstall
+sdltests_clean:
+	$(MAKE) -C sdltests clean
+sdltests_distclean:
+	$(MAKE) -C sdltests distclean
+sdltests_cleanall:
+	$(MAKE) -C sdltests cleanall
+sdltests_info:
+	$(MAKE) -C sdltests info
+sdltests_makefiles:
+	$(MAKE) -C sdltests makefiles
+sdltests:
+	$(MAKE) -C sdltests all
+.PHONY: sdltests_all sdltests_debug sdltests_smart sdltests_release sdltests_examples sdltests_shared sdltests_install sdltests_sourceinstall sdltests_exampleinstall sdltests_distinstall sdltests_zipinstall sdltests_zipsourceinstall sdltests_zipexampleinstall sdltests_zipdistinstall sdltests_clean sdltests_distclean sdltests_cleanall sdltests_info sdltests_makefiles sdltests
 endif
 all: $(addsuffix _all,$(TARGET_DIRS))
 debug: $(addsuffix _debug,$(TARGET_DIRS))
