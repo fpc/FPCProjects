@@ -84,10 +84,12 @@ var
 
 type
   TPlayer = class(TSprite)
+   private
     Rotor: integer;
     ShootCounter: integer;
     DestRect: TSDL_Rect;
     Rects: array[0..1, 0..6] of TSDL_Rect;
+  public
     constructor Create;
     procedure Draw; override;
     procedure Move; override;
@@ -95,18 +97,22 @@ type
   end;
 
   TLaser = class(TSprite)
+  private
     DestRect: TSDL_Rect;
+  public
     constructor Create(_x, _y: integer);
     procedure Draw; override;
     procedure Move; override;
   end;
 
   TEnemy = class(TSprite)
+   private
     Hull: integer;
     DestRect: TSDL_Rect;
     Speed, SpeedCounter: integer;
     Rotor: integer;
     Rects: array[0..1] of TSDL_Rect;
+  public
     constructor Create;
     procedure HitByLaser;
     procedure Draw; override;
@@ -116,9 +122,11 @@ type
   end;
 
   TExplosion = class(TSprite)
+   private
     DestRect: TSDL_Rect;
     Rects: array[0..7] of TSDL_Rect;
     Speed, SpeedCounter: integer;
+  public
     constructor Create(_x, _y, _Speed: integer);
     procedure Move; override;
     procedure Draw; override;

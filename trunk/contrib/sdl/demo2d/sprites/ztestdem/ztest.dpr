@@ -72,8 +72,10 @@ const
 
 type
   TMySprite = class(TSprite)
+   private
     xi: integer;
     AnimCounter: integer;
+   public
     constructor Create;
     procedure Move; override;
   end;
