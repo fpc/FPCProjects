@@ -34,6 +34,9 @@ unit fmoddyn;
 }
 (*
   $Log$
+  Revision 1.2  2004/04/04 15:38:28  marco
+   * deleted CR char
+
   Revision 1.1  2004/04/03 20:09:00  marco
    * New units in this version
 

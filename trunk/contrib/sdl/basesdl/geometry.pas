@@ -47,6 +47,9 @@ unit geometry;
 // (c) Copyright 1999, Dipl. Ing. Mike Lischke (public@lischke-online.de)
 {
   $Log$
+  Revision 1.3  2004/04/04 15:38:28  marco
+   * deleted CR char
+
   Revision 1.2  2004/04/03 20:05:02  marco
    * new versions from Dominique. No postediting at all necessary atm
 

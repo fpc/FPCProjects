@@ -225,6 +225,9 @@ unit opengl12;
 {******************************************************************************}
 {
   $Log$
+  Revision 1.6  2004/04/04 15:38:28  marco
+   * deleted CR char
+
   Revision 1.5  2004/04/03 20:05:02  marco
    * new versions from Dominique. No postediting at all necessary atm
 
