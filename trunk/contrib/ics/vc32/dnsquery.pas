@@ -71,8 +71,11 @@ unit DnsQuery;
 
 interface
 
+{$i icsdef.inc}
+
 uses
-  WinTypes, WinProcs, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  {$ifdef usewindows}Windows,{$else}WinTypes, WinProcs, {$endif}Messages, SysUtils, Classes,
+  {$ifndef noforms} Graphics, Controls, Forms, Dialogs, {$endif}
   Winsock, WSocket;
 
 const
@@ -141,7 +144,7 @@ const
   DnsQueryMAILA   = 254; { MailAgent, obsolete, use MX instead               }
   DnsQueryALL     = 255; { Request ALL records                               }
 
-  { Opcode field in query flags }                                            
+  { Opcode field in query flags }
   DnsOpCodeQUERY  = 0;
   DnsOpCodeIQUERY = 1;
   DnsOpCodeSTATUS = 2;

@@ -78,9 +78,11 @@ interface
 {$IFDEF VER125} { C++ Builder V4.0                    }
     {$ObjExportAll On}
 {$ENDIF}
+{$i icsdef.inc}
 
 uses
-    WinTypes, WinProcs, Messages, Classes, SysUtils, Winsock, WSocket;
+    {$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif} Messages,
+             Classes, SysUtils, Winsock, WSocket;
 
 const
     FtpCtrlSocketVersion = 109;

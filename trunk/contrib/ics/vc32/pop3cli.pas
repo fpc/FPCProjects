@@ -75,6 +75,8 @@ unit pop3cli;
 
 interface
 
+{$i icsdef.inc}
+
 {$B-}           { Enable partial boolean evaluation   }
 {$T-}           { Untyped pointers                    }
 {$IFNDEF VER80} { Not for Delphi 1                    }
@@ -85,16 +87,17 @@ interface
 {$ENDIF}
 
 uses
-    WinTypes,
-    WinProcs,
+    {$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif}
     SysUtils,
-    Messages, 
+    Messages,
     Classes,
+    {$ifndef noforms}
     Graphics,
     Controls,
     Forms,
     Dialogs,
     Menus,
+    {$endif}
     WSocket,
     Wait,
     MD5;
@@ -517,7 +520,7 @@ function TPop3Client.Stat : Boolean;
 begin
     FMsgCount := 0;
     FMsgSize  := 0;
-    
+
     Result := StartTransaction('STAT', '');
     if not Result then
         Exit;

@@ -246,9 +246,11 @@ unit MimeDec;
 {$ENDIF}
 
 interface
+{$i icsdef.inc}
 
 uses
-    WinTypes, WinProcs, SysUtils, Classes;
+    {$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif}
+    SysUtils, Classes;
 
 const
     MimeDecodeVersion  = 126;

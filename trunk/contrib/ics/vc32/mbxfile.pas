@@ -50,10 +50,12 @@ Updates:
 unit MbxFile;
 
 interface
-
+{$i icsdef.inc}
 uses
-    SysUtils, WinTypes, WinProcs, Messages, Classes, Graphics, Controls,
-    Forms, Dialogs, ExtCtrls;
+    SysUtils,{$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif}
+
+    Messages, Classes {$ifndef NOFORMS} ,Graphics, Controls,
+    Forms, Dialogs, ExtCtrls {$endif};
 
 const
     MbxFileVersion = 100;
@@ -324,10 +326,10 @@ begin
             while (p >= Buf) and (p^ <> #$7F) do
                 Dec(p);
             if p^ = #$7F then begin
-                FFileStream.Position := NewPos + p - Buf - 3;
+                FFileStream.Position := NewPos + (p - Buf) - 3;
                 FFileStream.Read(Sign, SizeOf(Sign));
                 if Sign = MSG_SIGNATURE then begin
-                    NewPos := NewPos + p - Buf - 3;
+                    NewPos := NewPos + (p - Buf) - 3;
                     More   := FALSE;
                     Break;
                 end;

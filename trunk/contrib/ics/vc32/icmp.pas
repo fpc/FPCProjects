@@ -65,6 +65,8 @@ interface
 // Win 32 features.
 {$ENDIF}
 
+{$i icsdef.inc}
+
 uses
   Windows, SysUtils, Classes, WinSock;
 

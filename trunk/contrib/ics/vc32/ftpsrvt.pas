@@ -60,6 +60,7 @@ interface
 {$IFDEF VER125} { C++ Builder V4.0                    }
     {$ObjExportAll On}
 {$ENDIF}
+{$i icsdef.inc}
 
 const
     FtpSrvT_Unit       = 102;
@@ -71,7 +72,8 @@ function FileUtcStr(cFileName : String) : String;
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 implementation
 uses
-    WinTypes, WinProcs, SysUtils;
+  {$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif}
+  SysUtils;
 
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}

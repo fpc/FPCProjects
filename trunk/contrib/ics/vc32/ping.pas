@@ -70,6 +70,8 @@ unit Ping;
 
 interface
 
+{$i icsdef.inc}
+
 uses
   Windows, Messages, SysUtils, Classes, Winsock, Icmp;
 

@@ -63,8 +63,11 @@ interface
     {$ObjExportAll On}
 {$ENDIF}
 
+{$i icsdef.inc}
+
 uses
-    WinTypes, WinProcs, SysUtils, Messages, Classes, Graphics, Controls,
+    {$ifdef usewindows} Windows, {$else} WinTypes, WinProcs, {$endif} SysUtils, Messages, Classes,
+    {$ifndef noforms} Graphics, Controls, {$endif}
     WSocket;
 
 const
@@ -194,7 +197,7 @@ begin
     end
     else
     begin
-        I := Pos('@', FQuery);     { angus } 
+        I := Pos('@', FQuery);     { angus }
         FWSocket.SendStr(copy (FQuery, 1, pred (I)) + #13 + #10);
 	end ;
 end;

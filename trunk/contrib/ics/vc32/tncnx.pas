@@ -76,8 +76,12 @@ unit TnCnx;
 
 interface
 
+{$i icsdef.inc}
+
 uses
-  SysUtils, WinTypes, WinProcs, Messages, Classes, Controls, Forms,
+  SysUtils,     {$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif}
+  Messages, Classes,
+  {$ifndef noforms} Controls, Forms, {$endif}
   WSocket, Winsock;
 
 const

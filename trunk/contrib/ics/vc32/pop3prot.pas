@@ -107,6 +107,8 @@ unit Pop3Prot;
 
 interface
 
+{$i icsdef.inc}
+
 {$B-}           { Enable partial boolean evaluation   }
 {$T-}           { Untyped pointers                    }
 {$X+}           { Enable extended syntax              }
@@ -122,8 +124,10 @@ interface
 {$ENDIF}
 
 uses
-    WinTypes, WinProcs, SysUtils, Messages, Classes, Graphics, Controls,
-    Forms, Dialogs, Menus, WSocket, WinSock, MD5;
+    {$ifdef usewindows} Windows, {$else} WinTypes, WinProcs, {$endif}
+    SysUtils, Messages, Classes,
+    {$ifndef noforms} Graphics, Controls, Forms, Dialogs, Menus, {$endif}
+    WSocket, WinSock, MD5;
 
 const
     Pop3CliVersion     = 217;
@@ -534,7 +538,7 @@ begin
     FWSocket.OnSessionClosed := WSocketSessionClosed;
     FProtocolState           := pop3Disconnected;
     FState                   := pop3Ready;
-    FLocalAddr               := '0.0.0.0'; {bb}    
+    FLocalAddr               := '0.0.0.0'; {bb}
     FPort                    := 'pop3';
 end;
 

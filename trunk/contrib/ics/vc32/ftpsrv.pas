@@ -155,9 +155,11 @@ unit FtpSrv;
 
 interface
 
+{$i icsdef.inc}
+
 uses
-    WinTypes, WinProcs, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-    Dialogs, Winsock, WSocket, FtpSrvC, FtpSrvT;
+    {$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif} Messages, SysUtils, Classes,
+    {$ifndef NoForms} Graphics, Controls, Forms, Dialogs, {$endif} Winsock, WSocket, FtpSrvC, FtpSrvT;
 
 const
     FtpServerVersion         = 126;
@@ -759,7 +761,7 @@ const
     msgStouError      = msgStorError;
     msgFeatFollows    = '211-Extensions supported:';
     msgFeatFollowDone = '211 END';
-    msgFeatFailed     = '211 No-Features';           
+    msgFeatFailed     = '211 No-Features';
 
 
 function SlashesToBackSlashes(const S : String) : String; forward;
@@ -889,7 +891,7 @@ begin
     AddCommand('MODE', CommandMODE);
     AddCommand('OVER', CommandOverflow);
     AddCommand('STOU', CommandSTOU);
-    AddCommand('FEAT', CommandFEAT); 
+    AddCommand('FEAT', CommandFEAT);
 end;
 
 
@@ -2264,7 +2266,7 @@ begin
         end;
     end;
 
-    Client.ByteCount := 0;    
+    Client.ByteCount := 0;
     SendNextDataChunk(Client, Data);
 end;
 

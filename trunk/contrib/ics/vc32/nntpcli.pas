@@ -90,6 +90,7 @@ unit NntpCli;
 
 interface
 
+{$i icsdef.inc}
 {$B-}           { Enable partial boolean evaluation   }
 {$T-}           { Untyped pointers                    }
 {$X+}           { Enable extended syntax              }
@@ -112,8 +113,9 @@ interface
 {$ENDIF}
 
 uses
-    WinTypes, WinProcs, SysUtils, Messages, Classes, Forms, WinSock, WSocket,
-    MimeUtil;
+    {$Ifdef usewindows}Windows, {$else}WinTypes, WinProcs, {$endif}
+    SysUtils, Messages, Classes, {$ifndef NOFORMS}Forms,{$endif}
+    WinSock, WSocket, MimeUtil;
 
 const
     NntpCliVersion     = 115;

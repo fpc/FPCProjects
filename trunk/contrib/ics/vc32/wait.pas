@@ -79,6 +79,7 @@ const
 type
   TWaitEvent = procedure(Sender: TObject; Count : integer) of object;
 
+{$ifndef noforms}
   TCustomWait = class(TCustomControl)
   public
     constructor Create(AOwner: TComponent); override;
@@ -133,6 +134,7 @@ type
     property Running;
     property Visible;
   end;
+{$endif}
 
 procedure Register;
 
@@ -141,7 +143,9 @@ implementation
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 procedure Register;
 begin
+ {$ifndef noforms}
     RegisterComponents('FPiette', [TWait]);
+ {$endif}
 end;
 
 
@@ -160,6 +164,7 @@ begin
     end;
 end;
 
+{$ifndef noforms}
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 constructor TCustomWait.Create(AOwner: TComponent);
@@ -326,6 +331,7 @@ begin
     Canvas.Rectangle(3, 3, 3 + Len, Height - 4);
     Canvas.TextOut(4, Height div 2 - 8, FCaption);
 end;
+{$endif}
 
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
