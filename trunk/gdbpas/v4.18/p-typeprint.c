@@ -98,7 +98,7 @@ pas_print_type (type, varstring, stream, show, level)
   /* For demangled function names, we have the arglist as part of the name,
      so don't print an additional pair of ()'s */
 
-  demangled_args = strchr(varstring, '(') != NULL;
+  demangled_args = varstring ? strchr(varstring, '(') != NULL : NULL;
   pas_type_print_varspec_suffix (type, stream, show, 0, demangled_args);
 
 }
@@ -875,6 +875,9 @@ pas_type_print_base (type, stream, show, level)
 
 /*
   $Log$
+  Revision 1.2  1999/10/29 11:57:06  pierre
+   * avoid NULL dereference
+
   Revision 1.1  1999/09/07 11:40:19  pierre
    First import of pascal gdb 4.18 changes
 
