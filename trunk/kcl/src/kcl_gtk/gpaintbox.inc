@@ -41,14 +41,14 @@ begin
 end;
 
 function TPaintBox_KeyPressed(GtkWidget: PGtkWidget; Event: PGdkEventKey;
-  PaintBox: TPaintBox): Integer; cdecl;
+  PaintBox: TPaintBox): Boolean; cdecl;
 var
   KeyState: Integer;
   Key: Char;
   KeyCode: LongWord;
   ShiftState: TShiftState;
 begin
-  Result := 1;
+  Result := False;
   if not Assigned(PaintBox.OnKey) then exit;
 
   KeyCode := 0;
@@ -106,7 +106,13 @@ begin
   if (KeyState and $2000) <> 0 then ShiftState := ShiftState + [ssAltGr];
 
   if (Key <> #0) or (KeyCode > 0) then
-    PaintBox.DoKey(Key, KeyCode, ShiftState);
+    Result := not PaintBox.DoKey(Key, KeyCode, ShiftState);
+
+  {IMPORTANT: When our key event handler said that it handled the key, we _must_
+   stop further processing of this event here! Else the widget's parent will
+   process it, which can cause strange effects (especially for cursor keys)}
+  if Result then
+    gtk_signal_emit_stop_by_name(PGtkObject(GtkWidget), 'key_press_event');
 end;
 
 function GdkToButton(button: Integer): TMouseButton;
@@ -179,30 +185,30 @@ end;
 
 function TCustomPaintBox.CreateCanvas: TCanvas;
 begin
-  ASSERT(Assigned(Handle.Widget));
-  Result := TGdkCanvas.Create(Handle.Widget^.window);
+  ASSERT(Assigned(FHandle));
+  Result := TGdkCanvas.Create(FHandle^.window);
 end;
 
 procedure TCustomPaintBox.OnFinishCreation;
 begin
-  if not Assigned(Handle.Widget) then
-    Handle.Widget := gtk_drawing_area_new;
+  if not Assigned(FHandle) then
+    FHandle := gtk_drawing_area_new;
 
-  gtk_signal_connect_after(PGtkObject(Handle.Widget), 'expose-event',
+  gtk_signal_connect_after(PGtkObject(FHandle), 'expose_event',
     GTK_SIGNAL_FUNC(@TPaintBox_Expose), self);
-  PGtkObject(Handle.Widget)^.flags := PGtkObject(Handle.Widget)^.flags or
+  PGtkObject(FHandle)^.flags := PGtkObject(FHandle)^.flags or
     Ord(GTK_CAN_FOCUS);
 
   // GTK-connect all needed signals
-  gtk_signal_connect_after(PGtkObject(Handle.Widget), 'key-press-event',
+  gtk_signal_connect(PGtkObject(FHandle), 'key_press_event',
     GTK_SIGNAL_FUNC(@TPaintBox_KeyPressed), Self);
-  gtk_signal_connect(PGtkObject(Handle.Widget), 'button-press-event',
+  gtk_signal_connect(PGtkObject(FHandle), 'button_press_event',
     GTK_SIGNAL_FUNC(@TPaintBox_ButtonPressEvent), Self);
-  gtk_signal_connect(PGtkObject(Handle.Widget), 'button-release-event',
+  gtk_signal_connect(PGtkObject(FHandle), 'button_release_event',
     GTK_SIGNAL_FUNC(@TPaintBox_ButtonReleaseEvent), Self);
-  gtk_signal_connect(PGtkObject(Handle.Widget), 'motion-notify-event',
+  gtk_signal_connect(PGtkObject(FHandle), 'motion_notify_event',
     GTK_SIGNAL_FUNC(@TPaintBox_MotionNotifyEvent), Self);
-  gtk_widget_add_events(Handle.Widget, GDK_BUTTON_PRESS_MASK or
+  gtk_widget_add_events(FHandle, GDK_BUTTON_PRESS_MASK or
     GDK_BUTTON_RELEASE_MASK or GDK_POINTER_MOTION_MASK);
 
   inherited OnFinishCreation;
@@ -210,13 +216,17 @@ end;
 
 procedure TCustomPaintBox.OnSetSize;
 begin
-  ASSERT(Assigned(Handle.Widget));
-  gtk_widget_set_usize(Handle.Widget, FWidth, FHeight);
+  ASSERT(Assigned(FHandle));
+  gtk_widget_set_usize(FHandle, FWidth, FHeight);
 end;
 
 
 {
   $Log$
+  Revision 1.3  2000/01/24 00:27:08  sg
+  * Improved keyboard handling: If a widget handled a pressed key, further
+    distribution of the key event will be suppressed
+
   Revision 1.2  2000/01/05 19:18:37  sg
   * All events are not implemented properly
 
