@@ -7,22 +7,22 @@ programs=ogldemo1 ogldemo2
 
 
 [require]
+toolkit=$(KCLGUI)
 packages=fcl x11 opengl
 components=glpaintbox
 
-
 [dirs]
-fpcdir=../../../..
-unitdir=$(KCLGUIDIR)
+fpcdir=$(KCLDIR)/..
+toolkitdir=$(KCLGUIDIR)
 componentdir=$(KCLWIDGETSDIR)
 
 
 [presettings]
 # KCL Settings
-KCLGUI=gtk
-KCLDIR=../../..
+KCLGUI=kcl_gtk
+KCLDIR=../..
 
-KCLGUIDIR=$(KCLDIR)/src/kcl_$(KCLGUI)
+KCLGUIDIR=$(KCLDIR)/src
 KCLWIDGETSDIR=$(KCLDIR)/widgets
 
 

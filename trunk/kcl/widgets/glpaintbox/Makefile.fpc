@@ -7,20 +7,21 @@ dirs=tests
 units=glpaintbox
 
 [require]
+toolkit=$(KCLGUI)
 packages=fcl x11 opengl
 
 [dirs]
-fpcdir=../../..
-unitdir=$(KCLGUIDIR)
+fpcdir=$(KCLDIR)/..
+toolkitdir=$(KCLGUIDIR)
 componentdir=$(KCLWIDGETSDIR)
 
 
 [presettings]
 # KCL Settings
-KCLGUI=gtk
+KCLGUI=kcl_gtk
 KCLDIR=../..
 
-KCLGUIDIR=$(KCLDIR)/src/kcl_$(KCLGUI)
+KCLGUIDIR=$(KCLDIR)/src
 KCLWIDGETSDIR=$(KCLDIR)/widgets
 
 

@@ -6,18 +6,19 @@
 units=kclshedit
 
 [require]
+toolkit=$(KCLGUI)
 packages=fcl
 
 [dirs]
-fpcdir=../../..
-unitdir=$(KCLGUIDIR)
+fpcdir=$(KCLDIR)/..
+toolkitdir=$(KCLGUIDIR)
 componentdir=$(KCLWIDGETSDIR)
 
 
 [presettings]
 # KCL Settings
-KCLGUI=gtk
+KCLGUI=kcl_gtk
 KCLDIR=../..
 
-KCLGUIDIR=$(KCLDIR)/src/kcl_$(KCLGUI)
+KCLGUIDIR=$(KCLDIR)/src
 KCLWIDGETSDIR=$(KCLDIR)/widgets
