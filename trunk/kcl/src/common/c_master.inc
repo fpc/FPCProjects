@@ -18,22 +18,20 @@
 //   Master Include File for all KCL Implementations
 // ===================================================================
 
-type
-
-  PByteArray = ^TByteArray;
-  TByteArray = array[LongWord] of Byte;
-
 {$INCLUDE cevents.inc}
 {$INCLUDE ccomponent.inc}
 {$INCLUDE ctimer.inc}
 {$INCLUDE cgraphics.inc}
 {$INCLUDE ccommands.inc}
-{$INCLUDE cguibase.inc}
 {$INCLUDE cwidget.inc}
+{$INCLUDE cform.inc}
 {$INCLUDE clayouts.inc}
 {$INCLUDE cmenus.inc}
 {$INCLUDE cbuttons.inc}
 {$INCLUDE cpaintbox.inc}
+{$INCLUDE cnotebook.inc}
+{$INCLUDE cstatusbar.inc}
+{$INCLUDE csplitter.inc}
 {$INCLUDE ctoolbar.inc}
 
 
@@ -83,6 +81,9 @@ end;
 
 {
   $Log$
+  Revision 1.4  2000/02/10 18:26:51  sg
+  * Added more include files
+
   Revision 1.3  2000/01/24 00:11:44  sg
   * Added more widgets to the component registration function
 
