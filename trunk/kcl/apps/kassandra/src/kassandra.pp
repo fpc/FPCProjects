@@ -18,7 +18,7 @@
 
 program Kassandra;
 uses
-  DOS, SysUtils,				// system units
+  DOS, SysUtils, Classes,			// system units
   XMLCfg, GetText,				// FPC helper units
   SHEdit, doc_text, sh_pas, sh_xml,		// SHEdit & friends
   KCL, KCLSHEdit,				// KCL units
@@ -73,7 +73,7 @@ type
       FileWorkspaceSaveAsCmd, FileRecentFilesMenuCmd,
       FileRecentWorkspacesMenuCmd, FileExitCmd,
       EditMenuCmd, EditCutCmd, EditCopyCmd, EditPasteCmd,
-      ViewMenuCmd, ViewOutputCmd,
+      ViewMenuCmd, ViewOutputCmd, ViewOptionsCmd,
       HelpMenuCmd, HelpAboutCmd: TCommand;
 
     // Menu bar
@@ -93,7 +93,7 @@ type
     procedure CreateMenuBar;
     procedure OnViewsChanged;
   public
-    constructor Create;
+    constructor Create(AOwner: TComponent); override;
     destructor  Destroy; override;
 
     procedure SaveConfig;
@@ -110,7 +110,7 @@ type
   end;
 
 
-constructor TMainForm.Create;
+constructor TMainForm.Create(AOwner: TComponent);
 
   function AddToolButton(command: TCommand): TToolButton;
   begin
@@ -123,7 +123,7 @@ var
   sep: TToolButton;
   bmp: TBitmap;
 begin
-  inherited Create(nil);
+  inherited Create(AOwner);
 
   // Read configuration file
   Config := TXMLConfig.Create(GetEnv('HOME') + '/.kassandra');  // *** not platform independent (sg)
@@ -131,8 +131,10 @@ begin
     RecentFiles[i - 1] :=
       Config.GetValue('MainWindow/RecentFiles/File'+ IntToStr(i), '');
 
-  // Init main window and create widgets
-
+  // Init main window
+  SetPosition(
+    Config.GetValue('MainWindow/PosAndSize/X', -1),
+    Config.GetValue('MainWindow/PosAndSize/Y', -1));
   SetDefaultSize(
     Config.GetValue('MainWindow/PosAndSize/Width', 600),
     Config.GetValue('MainWindow/PosAndSize/Height', 400));
@@ -169,6 +171,7 @@ begin
   bmp := TBitmap.Create;
   bmp.LoadFromFile('toolbar.bmp');
   ImageList.AddMasked(bmp, colMagenta);
+  bmp.Free;
 
   // Create command list
   Commands := TCommandList.Create(Self);
@@ -190,7 +193,8 @@ begin
   EditCopyCmd := Commands.Add(Self, 'EditCopyCmd', menuEditCopy, '<control>C', 4, nil);
   EditPasteCmd := Commands.Add(Self, 'EditPasteCmd', menuEditPaste, '<control>V', 5, nil);
   ViewMenuCmd := Commands.Add(Self, 'ViewMenuCmd', menuView, '', -1, nil);
-  ViewOutputCmd := Commands.Add(Self, 'ViewOutputCmd', menuViewOutput, '', -1, @OnViewToggleOutputWindowCmd); ViewOutputCmd.Checked := True;
+  ViewOutputCmd := Commands.Add(Self, 'ViewOutputCmd', menuViewOutput, '', -1, nil{@OnViewToggleOutputWindowCmd}); ViewOutputCmd.Checked := True;
+  ViewOptionsCmd := Commands.Add(Self, 'ViewOptionsCmd', menuOptions, '', -1, @OnViewOptionsCmd);
   HelpMenuCmd := Commands.Add(Self, 'HelpMenuCmd', menuHelp, '', -1, nil);
   HelpAboutCmd := Commands.Add(Self, 'HelpAboutCmd', '<HelpAbout>', 'F1', 7, nil);
 
@@ -229,6 +233,7 @@ end;
 destructor TMainForm.Destroy;
 begin
   SaveConfig;
+  Config.Free;
   inherited Destroy;
 end;
 
@@ -285,6 +290,7 @@ begin
   menu.Command := ViewMenuCmd;
   MenuBar.AddItem(menu);
   item := AddItem(menu, ViewOutputCmd); item.Style := misCheck;
+  AddItem(menu, ViewOptionsCmd);
 
   menu := TMenu.Create(Self);
   menu.Command := HelpMenuCmd;
@@ -307,6 +313,8 @@ end;
 
 procedure TMainForm.SaveConfig;
 begin
+  Config.SetValue('MainWindow/PosAndSize/X', PositionX);
+  Config.SetValue('MainWindow/PosAndSize/Y', PositionY);
   Config.SetValue('MainWindow/PosAndSize/Width', Width);
   Config.SetValue('MainWindow/PosAndSize/Height', Height);
   Config.Flush;
@@ -339,9 +347,12 @@ end;
 
 procedure TMainForm.OnFileNewCmd(Sender: TObject);
 var
+  doc: TTextDoc;
   view: TSHTextView;
 begin
-  view := TSHTextView.Create(Views, TTextDoc.Create, TSHPasEdit);
+  doc := TTextDoc.Create;
+  doc.AddLine('');
+  view := TSHTextView.Create(Views, doc, TSHPasEdit);
   view.FileName := 'noname' + IntToStr(NonameCounter) + '.pp';
   view.HasDefaultName := True;
   Inc(NonameCounter);
@@ -412,7 +423,7 @@ begin
 end;
 
 procedure TMainForm.OnViewOptionsCmd(Sender: TObject);
-{###var
+var
   dlg: TStdBtnDialog;
   dl: TDockingLayout;
   l: TLabel;
@@ -420,50 +431,53 @@ procedure TMainForm.OnViewOptionsCmd(Sender: TObject);
   OkButton: TButton;
 begin
   dlg := TStdBtnDialog.Create(nil);
-  // dlg.Buttons := [btnOK, btnCancel];
+//  dlg.Buttons := [btnOK, btnCancel];
   dlg.Text := dlgGlobalOptions;
-  dl := TDockingLayout.Create(dlg);
-  dl.AddWidget(TKCLSHEditConfig.Create(nil), dmClient);
+{  dl := TDockingLayout.Create(dlg);
+//  dl.AddWidget(TKCLSHEditConfig.Create(nil), dmClient);
 
   l := TLabel.Create(dlg);
   l.Text := 'The editor config is only temporarily here';
   dl.AddWidget(l, dmTop);
 
-  OkButton := TButton.Create;
+  OkButton := TButton.Create(dlg);
   OkButton.Text := 'OK';
 
-  buttons := TGridLayout.Create;
+  buttons := TGridLayout.Create(dlg);
   buttons.Rows := 1;
   buttons.Columns := 3;
   buttons.AddWidget(OkButton, 0, 0, 1, 1);
 
   dl.AddWidget(buttons, dmBottom);
 
-  dlg.Content := dl;
+  dlg.Content := dl;}
   dlg.Run;
-end;}
-begin
+  dlg.Free;
 end;
 
 
 var
   MainForm: TMainForm;
 begin
-  gettext.TranslateResourceStrings('intl/kassandra.%s.mo');
+//  gettext.TranslateResourceStrings('intl/kassandra.%s.mo');
 
   Application.Initialize;
   Application.Title := 'Kassandra IDE';
 
-  MainForm := TMainForm.Create;
+  MainForm := TMainForm.Create(Application);
   MainForm.Name := 'MainForm';
   Application.AddForm(MainForm);
   Application.Run;
-  MainForm.Free;
 end.
 
 
 {
   $Log$
+  Revision 1.5  2000/02/10 18:23:44  sg
+  * The position of the main window is now stored
+  * Gettext disabled due to some memory leak problems in the RTL
+  * Lots of small corrections and adaptions to changed KCL interface
+
   Revision 1.4  2000/01/24 00:33:10  sg
   * All possible menu commands are now TCommand's; the menu bar creation has
     been adapted accordingly
