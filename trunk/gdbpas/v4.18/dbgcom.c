@@ -1333,7 +1333,7 @@ int invalid_sel_addr(short sel, unsigned a, unsigned len, char for_write)
 int read_sel_addr(unsigned child_addr, void *buf, unsigned len, unsigned sel)
 {
   /* first clear memory */
-  memcpy(buf,0,len);
+  bzero(buf,len);
   if (invalid_sel_addr(sel, child_addr, len, 0))
     return 1;
   movedata(sel, child_addr, my_ds, (int)buf, len);
