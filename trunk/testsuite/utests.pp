@@ -45,10 +45,15 @@ Type
 implementation
 
 Const
+{$i utests.cfg}
+
+{ if utests.cfg is missed, create one with the following contents:
   DefDatabase = 'TESTSUITE';
   DefHost     = '';
   DefDBUser   = ''; // fill this in when compiling.
   DefPassword = ''; // fill this in, too.
+}
+
 
 Procedure TTestSuite.DoRun;
 
@@ -299,7 +304,11 @@ end;
 Procedure TTestSuite.ShowRunOverview;
 
 Const
-  SOverview = 'SELECT TU_ID,TU_DATE,TC_NAME,TO_NAME,TV_VERSION,COUNT(TR_ID) as RESULTCOUNT'+
+  SOverview = 'SELECT TU_ID,TU_DATE,TC_NAME,TO_NAME,TV_VERSION,COUNT(TR_ID) as RESULTCOUNT,'+
+              '(TU_SUCCESSFULLYFAILED+TU_SUCCESFULLYCOMPILED+TU_SUCCESSFULLYRUN) AS OK,'+
+              '(TU_FAILEDTOCOMPILE+TU_FAILEDTORUN+TU_FAILEDTOFAIL) as FAILED,'+              
+              '(TU_SUCCESSFULLYFAILED+TU_SUCCESFULLYCOMPILED+TU_SUCCESSFULLYRUN+'+
+              'TU_FAILEDTOCOMPILE+TU_FAILEDTORUN+TU_FAILEDTOFAIL) as TOTAL'+              
               ' FROM TESTRESULTS,TESTRUN,TESTCPU,TESTOS,TESTVERSION '+
               'WHERE '+
               ' (TC_ID=TU_CPU_FK) AND '+
@@ -308,9 +317,9 @@ Const
               ' (TR_TESTRUN_FK=TU_ID) '+
               ' %s '+
               ' GROUP BY TU_ID ';
-              
+
   SDetailsURL = 'testsuite.cgi?TESTACTION=1&TESTRUN=%s';
-  
+
 Var
    S,A : String;
 
