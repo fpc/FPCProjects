@@ -357,30 +357,22 @@ var
   i: Longint;
 begin
   Result:=False;
-  if Length(msg) > 0 then begin
+  if (Length(msg) > 0) and (Length(msg) < FBufferSize) then begin
     Result:=True;
-    if Length(msg) > FBufferSize then begin
-      for i:=0 to Length(msg) div FBufferSize-1 do
-        if not FSerSock.Send(Copy(msg, i * FBufferSize + 1, FBufferSize)) then
-          Result:=False;
-    end else Result:=FSerSock.Send(msg);
-  end;
+    Result:=FSerSock.Send(msg);
+  end else Bail('Message too long');
 end;
 
 function TLUdp.SendMessage(const msg: string; const Address: string): Boolean;
 var
   i: Longint;
 begin
-  if Length(msg) > 0 then
+  if (Length(msg) > 0) and (Length(msg) < FBufferSize) then
     begin
       Result:=True;
       FSersock.FCliAddr.Addr:=StrToNetAddr(Address);
-      if Length(msg) > FBufferSize then begin
-        for i:=0 to Length(msg) div FBufferSize-1 do
-          if not FSerSock.Send(Copy(msg, i * FBufferSize + 1, FBufferSize)) then
-            Result:=False;
-      end else Result:=FSerSock.Send(msg);
-    end;
+      Result:=FSerSock.Send(msg);
+    end else Bail('Message too long');
 end;
 
 procedure TLUdp.SetSeparate(const Value: Boolean);
@@ -622,7 +614,7 @@ begin
   if (Length(msg) > 0) and (FSocks.Count > 0) then
     for i:=FSocks.Count-1 downto 0 do begin
       if Length(msg) > FBufferSize then begin
-        for j:=0 to Length(msg) div FBufferSize-1 do
+        for j:=0 to (Length(msg)-1) div FBufferSize do
           if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
             Result:=False;
       end else Result:=FSocks[i].Send(msg);
@@ -639,7 +631,7 @@ begin
         if FSocks[i].FSnum = snum then begin
           Result:=True;
           if Length(msg) > FBufferSize then begin
-            for j:=0 to Length(msg) div FBufferSize-1 do
+            for j:=0 to (Length(msg)-1) div FBufferSize do
               if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
                 Result:=False;
           end else Result:=FSocks[i].Send(msg);
