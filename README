@@ -1,0 +1,4 @@
+FPCBot 0.5 copyright (c) 2005 by Ales Katona and Joost van der Sluis.
+This is the FPCBot sources along with the lNet library and the cgi script for web interface.
+Use the makefile to compile.
+See file INSTALL for instructions on how to make it run.

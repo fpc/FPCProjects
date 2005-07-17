@@ -1,0 +1,51 @@
+/* Don't forget to create the users first with:                                            */
+/*                                                                                         */
+/* gsec -user sysdba -password masterkey -add fpcbot -pw tobcpf -fname fpcbot             */
+/* gsec -user sysdba -password masterkey -add ircfpcbot -pw tobcpfcri35 -fname ircfpcbot  */
+/*                                                                                         */
+/* then:                                                                                   */
+/*                                                                                         */
+/* ibsql < create_database_script                                                          */
+
+SET SQL DIALECT 3;
+
+SET NAMES NONE;
+
+CREATE DATABASE '/opt/firebird/data/fpcbot.fdb'
+USER 'SYSDBA' PASSWORD 'janosik'
+PAGE_SIZE 1024
+DEFAULT CHARACTER SET NONE;
+
+/******************************************************************************/
+/****                              Generators                              ****/
+/******************************************************************************/
+
+CREATE GENERATOR GEN_LOGLINEID;
+SET GENERATOR GEN_LOGLINEID TO 1;
+
+/******************************************************************************/
+/****                                Tables                                ****/
+/******************************************************************************/
+
+CREATE TABLE TBL_LOGLINES (
+    LOGLINEID  INTEGER NOT NULL,
+    SENDER     VARCHAR(50) CHARACTER SET NONE,
+    RECIEVER   VARCHAR(50) CHARACTER SET NONE,
+    MSG        VARCHAR(4096) CHARACTER SET NONE,
+    LOGTIME    TIMESTAMP
+);
+
+/******************************************************************************/
+/****                             Primary Keys                             ****/
+/******************************************************************************/
+
+ALTER TABLE TBL_LOGLINES ADD CONSTRAINT PK_TBL_LOGLINES PRIMARY KEY (LOGLINEID);
+
+/******************************************************************************/
+/****                              Privileges                              ****/
+/******************************************************************************/
+
+/* Privileges of users */
+
+GRANT SELECT ON TBL_LOGLINES TO IRCFPCBOT;
+GRANT INSERT ON TBL_LOGLINES TO FPCBOT;
