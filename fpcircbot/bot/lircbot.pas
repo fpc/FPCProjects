@@ -264,7 +264,7 @@ var
                                       n + Length(FPCommands[i].Command) + 1,
                                       Length(FLastLine.Msg));
             FPCommands[i].FAction(Self);
-          end else Respond('Sorry but you are not a power user');
+          end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
           Result:=True;
           Exit;
         end;
@@ -280,31 +280,39 @@ var
             if FRIP then FRespondTo:=FLastLine.Sender
             else FRespondTo:=FLastLine.Reciever;
             FPCommands[i].FAction(Self);
-          end else Respond('Sorry but you are not a power user');
+          end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
           Result:=True;
           Exit;
         end;
       end;
   end;
   
+  procedure ParseForCommands;
+  begin
+    if FLastLine.Sender <> FNick then
+      if FCon.OnRecieve = @OnRe then // parse commands only BY ONE
+        if not ParseCommands then ParsePCommands;
+  end;
+  
+  procedure ParseForPings(const nMsg: string);
+  begin
+    FLastLine.FMsg:=CleanEnding(nMsg);
+    if Pos('PING', FLastLine.FMsg) = 1 then
+      FCon.SendMessage('PONG :' + Copy(FLastLine.FMsg, 7, Length(FLastLine.FMsg)));
+  end;
+
 var
   s: string;
   i: Longint;
   nMsg: string;
+  Parsed: Boolean;
   SL: TStringList;
 begin
   nMsg:=Msg;
   s:=SeparateByEnding(nMsg);
   if Length(s) > 0 then OnRe(s, 0);
 
-  if ParseLine(nmsg) and (FLastLine.Sender <> FNick) then begin
-    if FCon.OnRecieve = @OnRe then // parse commands only BY ONE
-      if not ParseCommands then ParsePCommands;
-  end else begin
-    FLastLine.FMsg:=CleanEnding(nMsg);
-    if Pos('PING', FLastLine.FMsg) = 1 then
-      FCon.SendMessage('PONG :' + Copy(FLastLine.FMsg, 7, Length(FLastLine.FMsg)));
-  end;
+  Parsed:=ParseLine(nMsg);
 
   if Assigned(FOnRecieve) then
     if Pos(',', FLastLine.FReciever) > 0 then begin
@@ -314,10 +322,16 @@ begin
       if SL.Count > 0 then
         for i:=0 to SL.Count-1 do if Length(SL[i]) > 0 then begin
           FLastLine.FReciever:=SL[i];
+          if Parsed then ParseForCommands
+          else ParseForPings(nMsg);
           FOnRecieve(Self);
         end;
       SL.Free;
-    end else FOnRecieve(Self);
+    end else begin
+      if Parsed then ParseForCommands
+      else ParseForPings(nMsg);
+      FOnRecieve(Self);
+    end;
 end;
 
 procedure TLIrcBot.OnReTest(const msg: string; const snum: Longint);
@@ -641,9 +655,7 @@ var
   n: Longint;
 begin
   Result:=False;
-  Respond('Trying to find ' + User + ' in ' + Channel);
   n:=FChannels.IndexOf(Channel);
-  Respond('Channel ' + Channel + ' is in list position: ' + IntToStr(n));
   if n >= 0 then
     if FPeople[n].IndexOf(User) >= 0 then Result:=True;
 end;

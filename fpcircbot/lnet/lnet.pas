@@ -353,8 +353,6 @@ begin
 end;
 
 function TLUdp.SendMessage(const msg: string): Boolean;
-var
-  i: Longint;
 begin
   Result:=False;
   if (Length(msg) > 0) and (Length(msg) < FBufferSize) then begin
@@ -364,8 +362,6 @@ begin
 end;
 
 function TLUdp.SendMessage(const msg: string; const Address: string): Boolean;
-var
-  i: Longint;
 begin
   if (Length(msg) > 0) and (Length(msg) < FBufferSize) then
     begin
@@ -613,11 +609,9 @@ begin
   Result:=True;
   if (Length(msg) > 0) and (FSocks.Count > 0) then
     for i:=FSocks.Count-1 downto 0 do begin
-      if Length(msg) > FBufferSize then begin
-        for j:=0 to (Length(msg)-1) div FBufferSize do
-          if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
-            Result:=False;
-      end else Result:=FSocks[i].Send(msg);
+      for j:=0 to (Length(msg)-1) div FBufferSize do
+        if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
+          Result:=False;
     end;
 end;
 
@@ -630,11 +624,9 @@ begin
       for i:=FSocks.Count-1 Downto 0 do
         if FSocks[i].FSnum = snum then begin
           Result:=True;
-          if Length(msg) > FBufferSize then begin
-            for j:=0 to (Length(msg)-1) div FBufferSize do
-              if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
-                Result:=False;
-          end else Result:=FSocks[i].Send(msg);
+          for j:=0 to (Length(msg)-1) div FBufferSize do
+            if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
+              Result:=False;
           Break;
         end;
 end;
