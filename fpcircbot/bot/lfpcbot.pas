@@ -29,9 +29,10 @@ const
   
   Version        = '0.5';
   BotName        = 'FPCBot'; // change as you need (WARNING: HAS TO BE REGISTERED TO NICKSERV)
-  NickPass       = 'booze'; // change as you need
   LogURL         = 'http://almindor.no-ip.org/cgi-bin/cgifpcbot'; // change as you need
   Root           = 'fpk'; // your nickname (has to be nickserv registered)
+
+{$i hiddeninc.inc}
 
   DefaultChannels: array[0..1] of string = ('#fpc', '#lazarus-ide');
 
