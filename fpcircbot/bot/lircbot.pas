@@ -555,7 +555,7 @@ begin
     end; // if
     
     if FCommand = 'NICK' then begin
-    
+      FindInChannels;
       if FPeople.Count > 0 then
         for m:=0 to FPeople.Count-1 do
           if FPeople[m].Count > 0 then
@@ -563,7 +563,6 @@ begin
               if FPeople[m][n] = FLastLine.Sender then FPeople[m][n]:=FLastLine.Msg;
               
       FLastLine.FMsg:=FLastLine.FSender + ' is now known as ' + FLastLine.FMsg;
-      FindInChannels;
       Result:=True;
     end;
   end;
