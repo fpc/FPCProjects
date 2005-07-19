@@ -29,11 +29,12 @@ const
   
   Version        = '0.5';
   BotName        = 'FPCBot'; // change as you need (WARNING: HAS TO BE REGISTERED TO NICKSERV)
-  LogURL         = 'http://almindor.no-ip.org/cgi-bin/cgifpcbot'; // change as you need
-  Root           = 'fpk'; // your nickname (has to be nickserv registered)
+  LogURL         = 'http://www.de.freepascal.org/cgi-bin/cgifpcbot'; // change as you need
 
-{$i hiddeninc.inc}
+  {$Warning Make sure you created hiddeninc.inc file according to INSTALL}
+  {$i hiddeninc.inc} // create this file with your nickserv password there
 
+  DefaultUsers   : array[0..1] of string = ('fpk', 'Almindor);
   DefaultChannels: array[0..1] of string = ('#fpc', '#lazarus-ide');
 
 type
@@ -41,10 +42,12 @@ type
    protected
     Logging: Boolean;
     FLogQuery: TSQLQuery;
+    FSeenQuery: TSQLQuery;
     FLogTransaction: TSQLTransaction;
     FLogFBConnection: TSQLConnection;
    public
     Quit: Boolean;
+    TimeStarted: string;
     constructor Create;
     destructor Destroy; override;
     procedure OnHelp(Caller: TLIrcBot);
@@ -56,7 +59,8 @@ type
     procedure OnPart(Caller: TLIrcBot);
     procedure OnJoin(Caller: TLIrcBot);
     procedure OnQuit(Caller: TLIrcBot);
-    procedure OnSay(Caller: TLIrcBot);
+    procedure OnSayAll(Caller: TLIrcBot);
+    procedure OnSayTo(Caller: TLIrcBot);
     procedure OnLog(Caller: TLIrcBot);
     procedure OnAddPuser(Caller: TLIrcBot);
     procedure OnRemovePuser(Caller: TLIrcBot);
@@ -87,14 +91,20 @@ begin
     sql.add('insert into tbl_LogLines(loglineid,logtime,sender,reciever,msg) values (gen_id(GEN_LOGLINEID,1),current_timestamp,:sender,:reciever,:msg)');
     prepare;
   end;
+  
+   FSeenQuery := tsqlquery.Create(nil);
+   FSeenQuery.DataBase := FLogFBConnection;
+   FSeenQuery.transaction := FLogTransaction;
+   FSeenQuery.ParseSQL:=False;
 end;
 
 destructor TDoer.Destroy;
 begin
   FLogFBConnection.Close;
-  FLogFBConnection.free;
-  FLogTransaction.free;
-  FLogQuery.free;
+  FLogFBConnection.Free;
+  FLogTransaction.Free;
+  FLogQuery.Free;
+  FSeenQuery.Free;
 end;
 
 procedure TDoer.OnHelp(Caller: TLIrcBot);
@@ -120,6 +130,7 @@ begin
   Caller.Respond(BotName + ' ' + Version);
   Caller.Respond('Logging: ' + BoolStr[Logging]);
   Caller.Respond('Private Response: ' + BoolStr[Caller.ReplyInPrivate]);
+  Caller.Respond('Online since: ' + TimeStarted);
 end;
 
 procedure TDoer.OnAbout(Caller: TLIrcBot);
@@ -132,10 +143,17 @@ end;
 procedure TDoer.OnSeen(Caller: TLIrcBot);
 begin
   with Caller.LastLine, Caller do
-  if UserInChannel(Reciever, Arguments) then
-    Respond(Arguments + ' is already in here!')
-  else begin
-    // TODO: add DB lookup for last seen time
+  if UserInChannel(Reciever, Trim(Arguments)) then
+    Respond(Trim(Arguments) + ' is already in here!')
+  else if Logging then with FSeenQuery do begin
+    Sql.Clear;
+    Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender=''' + Trim(Arguments) + ''' order by logtime desc');
+    Open;
+    if not Eof then
+      Respond(Trim(Arguments) + 'last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
+    else
+      Respond('I''ve never seen ' + Trim(Arguments));
+    Close;
   end;
 end;
 
@@ -200,7 +218,16 @@ begin
   end;
 end;
 
-procedure TDoer.OnSay(Caller: TLIrcBot);
+procedure TDoer.OnSayAll(Caller: TLIrcBot);
+var
+  s: string;
+  i, n: Longint;
+begin
+  with Caller, Caller.LastLine do
+    SendMessage(Arguments);
+end;
+
+procedure TDoer.OnSayTo(Caller: TLIrcBot);
 var
   s: string;
   i, n: Longint;
@@ -210,14 +237,8 @@ begin
     n:=Pos(' ', s);
     if n > 0 then begin
       Delete(s, n, Length(s));
-      if ChannelCount > 0 then
-        for i:=0 to ChannelCount-1 do
-          if Channels[i] = s then begin
-            SendMessage(Copy(Arguments, n+1, Length(Arguments)), s);
-            Exit;
-          end;
+      SendMessage(Copy(Arguments, n+1, Length(Arguments)), s);
     end;
-    SendMessage(Arguments);
   end;
 end;
 
@@ -296,7 +317,8 @@ begin
   Doer.Logging:=True;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;
-  Con.AddPuser(Root);
+  for i:=Low(DefaultUsers) to High(DefaultUsers) do
+    Con.AddPuser(DefaultUsers[i]);
 
   // Normal commands
   Con.AddCommand('help', @Doer.OnHelp, 'Makes me display this message');
@@ -311,7 +333,8 @@ begin
   Con.AddPCommand('part', @Doer.OnPart, 'Makes me part the channel');
   Con.AddPCommand('join', @Doer.OnJoin, 'Makes me join a channel');
   Con.AddPCommand('quit', @Doer.OnQuit, 'Makes me quit(use "quit confirm" if you are sure)');
-  Con.AddPCommand('say', @Doer.OnSay, 'Makes me say something(Optional param is channel)');
+  Con.AddPCommand('sayall', @Doer.OnSayAll, 'Makes me say something to everyone');
+  Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Makes me say something to someone/channel');
   Con.AddPCommand('log', @Doer.OnLog, 'Makes me begin/end logging. Param is (On/Off)');
   Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Makes ma add a power user');
   Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Makes me remove a power user');
@@ -319,6 +342,7 @@ begin
   Con.OnRecieve:=@Doer.OnRecieve;
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;
+    Doer.TimeStarted:=DateTimeToStr(Now);
     for i:=Low(DefaultChannels) to High(DefaultChannels) do
       Con.Join(DefaultChannels[i]);
     while not Doer.Quit do begin
