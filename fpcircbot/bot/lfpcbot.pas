@@ -28,14 +28,14 @@ const
   BoolStr: array[Boolean] of string = ('Off', 'On');
   
   Version        = '0.5';
-  BotName        = 'FPCBot'; // change as you need (WARNING: HAS TO BE REGISTERED TO NICKSERV)
+  BotName        = 'AlmBot'; // change as you need (WARNING: HAS TO BE REGISTERED TO NICKSERV)
   LogURL         = 'http://www.de.freepascal.org/cgi-bin/cgifpcbot'; // change as you need
 
   {$Warning Make sure you created hiddeninc.inc file according to INSTALL}
   {$i hiddeninc.inc} // create this file with your nickserv password there
 
-  DefaultUsers   : array[0..1] of string = ('fpk', 'Almindor);
-  DefaultChannels: array[0..1] of string = ('#fpc', '#lazarus-ide');
+  DefaultUsers   : array[0..1] of string = ('Almindor', 'fpk');
+  DefaultChannels: array[0..1] of string = ('#lentilwars', '#jojo');
 
 type
   TDoer = class
@@ -73,7 +73,7 @@ begin
   Quit:=False;
   FLogFBConnection := tIBConnection.Create(nil);
   with FLogFBConnection do begin
-    DatabaseName := '/opt/firebird/data/fpcbot.fdb';
+    DatabaseName := '/var/firebird/fpcbot.fdb';
     UserName := 'fpcbot';
     Password := 'tobcpf';
   end;
@@ -150,7 +150,7 @@ begin
     Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender=''' + Trim(Arguments) + ''' order by logtime desc');
     Open;
     if not Eof then
-      Respond(Trim(Arguments) + 'last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
+      Respond(Trim(Arguments) + ' last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
     else
       Respond('I''ve never seen ' + Trim(Arguments));
     Close;
@@ -219,9 +219,6 @@ begin
 end;
 
 procedure TDoer.OnSayAll(Caller: TLIrcBot);
-var
-  s: string;
-  i, n: Longint;
 begin
   with Caller, Caller.LastLine do
     SendMessage(Arguments);
