@@ -28,14 +28,14 @@ const
   BoolStr: array[Boolean] of string = ('Off', 'On');
   
   Version        = '0.5';
-  BotName        = 'AlmBot'; // change as you need (WARNING: HAS TO BE REGISTERED TO NICKSERV)
+  BotName        = 'FPCBot'; // change as you need (WARNING: HAS TO BE REGISTERED TO NICKSERV)
   LogURL         = 'http://www.de.freepascal.org/cgi-bin/cgifpcbot'; // change as you need
 
   {$Warning Make sure you created hiddeninc.inc file according to INSTALL}
   {$i hiddeninc.inc} // create this file with your nickserv password there
 
   DefaultUsers   : array[0..1] of string = ('Almindor', 'fpk');
-  DefaultChannels: array[0..1] of string = ('#lentilwars', '#jojo');
+  DefaultChannels: array[0..1] of string = ('#fpc', '#lazarus-ide');
 
 type
   TDoer = class
