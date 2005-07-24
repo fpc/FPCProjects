@@ -6,7 +6,7 @@ uses
   Classes, SysUtils, Web, SqlDB, IBConnection;
   
 const
-  {$Warning Don't forget to make hiddeninc.inc file!}
+  { copy include/hiddenpass.inc.default to hiddenpass.inc and adapt it to your needs }
   {$i hiddeninc.inc}
 
 var LogFBConnection : TIBConnection;
@@ -23,8 +23,8 @@ begin
   LogFBConnection := tIBConnection.Create(nil);
   with LogFBConnection do begin
     DatabaseName := DBPath;
-    UserName := 'sysdba';
-    Password := MASTERKEY;
+    UserName := CGIDBName;
+    Password := CGIDBPass;
   end;
 
   LogTransaction := tsqltransaction.create(nil);
@@ -68,10 +68,17 @@ begin
       sql.add('select first ' + IntToStr(Count) + ' sender, msg, cast(logtime as varchar(25)) as logtime from tbl_loglines where reciever=''' + Channel + ''' order by loglineid desc');
 
     open;
+    i:=0;
     while not eof do begin
-      HTMLCode.Add('<tr><td>' + Copy(fieldbyname('logtime').asstring, 1, 19) +
+      if (i mod 2)=0 then
+        HTMLCode.Add('<tr style="background-color:#FFFFFF">')
+      else
+        HTMLCode.Add('<tr style="background-color:#AFAFAF">');
+      
+      HTMLCode.Add('<td nowrap>' + Copy(fieldbyname('logtime').asstring, 1, 19) +
                    '</td><td>' + fieldbyname('sender').asstring+'</td><td>' +
                    fieldbyname('msg').asstring+'</td></tr>');
+      inc(i);
       Next;
     end;
     
