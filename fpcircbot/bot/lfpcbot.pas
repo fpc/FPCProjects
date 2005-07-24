@@ -22,7 +22,7 @@ along with This program; if not, Write to the Free Software Foundation,
 {$mode objfpc}{$H+}
 
 uses
-  SysUtils, SqlDB, IBConnection, lNet, lIrcBot;
+  Crt, SysUtils, SqlDB, IBConnection, lNet, lIrcBot;
   
 const
   BoolStr: array[Boolean] of string = ('Off', 'On');
