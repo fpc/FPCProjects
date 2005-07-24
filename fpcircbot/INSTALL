@@ -1,6 +1,6 @@
-Make sure you enter your DB password (MASTERKEY) in the cgifpcbot.pas file before compilation.
-Also create a hiddeninc.inc file with NickPass = 'the_bots_NickServ_password' somewhere in bot/include.
-After you compile everything put the cgi/cgifpcbot file into your cgi directory.
+Make sure to modify the hiddeninc.inc file so it has your paths and passwords.
+After you compile everything put the cgi/cgifpcbot file and cgi/html directory into your cgi directory.
+Put psp.png file(cgi/html) into your htdocs directory (usualy /var/www).
 Use the file "create_database_script.sql"(view it for instructions, again, change the password to your db one) to create the FB database.
 When everything's done just run lfpcbot. It will automagicly connect to FreeNode.
 Issue commands by /msg <command> or FPCBot <command>. If you want to change the server

@@ -1,4 +1,3 @@
-
  constructor TLSocketList.Create;
  begin
    inherited Create(true);

@@ -117,7 +117,6 @@ type
     function UserInChannel(const Channel, User: string): Boolean;
     procedure Quit;
     procedure SendMessage(const Msg: string; const Reciever: string = '');
-//    procedure SendRaw(const Msg: string);
     procedure Respond(const aMsg: string);
     procedure RegisterSelf;
     procedure AddCommand(const Command: string; Action: TLIrcCallback; const Help: string = '');
@@ -518,18 +517,16 @@ begin
   end;
   ParseCommand;
   with FLastLine do begin
-    m:=Pos('ACTION', FLastLine.FMsg);
-    
-    if FCommand = 'PRIVMSG' then Result:=True;
-    
-    if  (FCommand = 'PRIVMSG') // emotes
-    and (m > 0) then begin
-      FLastLine.FMsg:=Copy(FLastLine.FMsg, m + x, Length(FLastLine.FMsg));
-      FLastLine.FMsg:=FLastLine.FSender + ' ' + FLastLine.FMsg;
-      FLastLine.FMsg:=Copy(FLastLine.FMsg, 1, Length(FLastLine.FMsg) - 1);
-      FLastLine.FSender:='*';
+    if FCommand = 'PRIVMSG' then begin
       Result:=True;
-    end; // if/and
+      m:=Pos('ACTION', FLastLine.FMsg);
+      if (m = 2) and (FLastLine.FMsg[1] = #1) then begin
+        FLastLine.FMsg:=Copy(FLastLine.FMsg, m + x, Length(FLastLine.FMsg));
+        FLastLine.FMsg:=FLastLine.FSender + ' ' + FLastLine.FMsg;
+        FLastLine.FMsg:=Copy(FLastLine.FMsg, 1, Length(FLastLine.FMsg));
+        FLastLine.FSender:='*';
+      end; // if/and
+    end;
     
     if FCommand = 'JOIN' then begin
       FLastLine.FReciever:=FLastLine.FMsg;
@@ -676,11 +673,6 @@ begin
         FCon.SendMessage('PRIVMSG ' + FChannels[i] + ' :' + Msg + #13#10);
   end;
 end;
-
-{procedure TLIrcBot.SendRaw(const Msg: string);
-begin
-  FCon.SendMessage(Msg + #13#10);
-end;}
 
 procedure TLIrcBot.Respond(const aMsg: string);
 begin

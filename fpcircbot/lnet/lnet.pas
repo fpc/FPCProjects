@@ -38,7 +38,7 @@ const
   LUDP = 1;
   { Default Values }
   DefaultMaxSockets =    64;
-  DefaultBufferSize = 65535;
+  DefaultBufferSize = 65534;
   DefaultMaxMsgs    =  1000;
   { Address constants }
   LADDR_ANY = '0.0.0.0';
@@ -113,7 +113,7 @@ type
     FOnAccept,
     FOnDisconnect: TLObjProc;
     procedure SetSeparate(const Value: Boolean); virtual; abstract;
-    procedure SetBufferSize(const Size: LongInt);
+    procedure SetBufferSize(const Size: LongInt); virtual; abstract;
     procedure SetMaxMsgs(const Size: LongInt);
    public
     constructor Create;
@@ -138,6 +138,7 @@ type
     function GetMessageCount: Cardinal;
     procedure Bail(const msg: string);
     procedure SetSeparate(const Value: Boolean); override;
+    procedure SetBufferSize(const Size: LongInt); override;
    public
     constructor Create;
     destructor Destroy; override;
@@ -166,6 +167,7 @@ type
     procedure Bail(const msg: string; const socknum: LongInt);
     procedure CallAccept;
     procedure SetSeparate(const Value: Boolean); override;
+    procedure SetBufferSize(const Size: LongInt); override;
    public
     constructor Create;
     destructor Destroy; override;
@@ -237,12 +239,6 @@ end;
 destructor TLConnection.Destroy;
 begin
   Connections.Remove(Self);
-end;
-
-procedure TLConnection.SetBufferSize(const Size: LongInt);
-begin
-  if Size > 4 then
-    FBufferSize:=Size;
 end;
 
 procedure TLConnection.SetMaxMsgs(const Size: LongInt);
@@ -363,7 +359,7 @@ end;
 
 function TLUdp.SendMessage(const msg: string; const Address: string): Boolean;
 begin
-  if (Length(msg) > 0) and (Length(msg) < FBufferSize) then
+  if (Length(msg) > 0) and (Length(msg) <= FBufferSize) then
     begin
       Result:=True;
       FSersock.FCliAddr.Addr:=StrToNetAddr(Address);
@@ -375,6 +371,12 @@ procedure TLUdp.SetSeparate(const Value: Boolean);
 begin
   FSeparate:=Value;
   FSerSock.FSeparate:=Value;
+end;
+
+procedure TLUdp.SetBufferSize(const Size: LongInt);
+begin
+  if Size > 4 then
+    FSerSock.SetBufferSize(Size);
 end;
 
 //******************************TLTCP**********************************
@@ -641,6 +643,16 @@ begin
       FSocks[i].Separate:=Value;
 end;
 
+procedure TLTcp.SetBufferSize(const Size: LongInt);
+var
+  i: Longint;
+begin
+  if Size > 4 then
+    if FSocks.Count > 0 then
+      for i:=0 to FSocks.Count-1 do
+        FSocks[i].SetBufferSize(Size);
+end;
+
 //********************************TLSocket*************************************
 
 constructor TLSocket.Create(const protocol: Byte; Owner: TLConnection; const num: LongInt);
@@ -702,9 +714,11 @@ procedure TLSocket.SetBufferSize(const Size: LongInt);
 begin
   if Size > 4 then
     begin
-      FbufferSize:=Size;
-      SetSocketOptions(FSock, SOL_SOCKET, SO_RCVBUF, FBufferSize, SizeOf(FBufferSize));
-      SetSocketOptions(FSock, SOL_SOCKET, SO_SNDBUF, FBufferSize, SizeOf(FBufferSize));
+      FBufferSize:=Size;
+      if FBufferSize > DefaultBuffersize then begin
+        SetSocketOptions(FSock, SOL_SOCKET, SO_RCVBUF, FBufferSize, SizeOf(FBufferSize));
+        SetSocketOptions(FSock, SOL_SOCKET, SO_SNDBUF, FBufferSize, SizeOf(FBufferSize));
+      end;
     end;
 end;
 

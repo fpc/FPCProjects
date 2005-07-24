@@ -22,15 +22,11 @@ along with This program; if not, Write to the Free Software Foundation,
 {$mode objfpc}{$H+}
 
 uses
-  SysUtils, Crt, SqlDB, IBConnection, lNet, lIrcBot;
+  SysUtils, SqlDB, IBConnection, lNet, lIrcBot;
   
 const
   BoolStr: array[Boolean] of string = ('Off', 'On');
   
-  Version        = '0.5';
-  BotName        = 'FPCBot'; // change as you need (WARNING: HAS TO BE REGISTERED TO NICKSERV)
-  LogURL         = 'http://www.de.freepascal.org/cgi-bin/cgifpcbot'; // change as you need
-
   {$Warning Make sure you created hiddeninc.inc file according to INSTALL}
   {$i hiddeninc.inc} // create this file with your nickserv password there
 
@@ -73,9 +69,9 @@ begin
   Quit:=False;
   FLogFBConnection := tIBConnection.Create(nil);
   with FLogFBConnection do begin
-    DatabaseName := '/var/firebird/fpcbot.fdb';
-    UserName := 'fpcbot';
-    Password := 'tobcpf';
+    DatabaseName := DBPath;
+    UserName := BotDBName;
+    Password := BotDBPass;
   end;
 
   FLogTransaction := tsqltransaction.create(nil);
@@ -143,18 +139,18 @@ end;
 procedure TDoer.OnSeen(Caller: TLIrcBot);
 begin
   with Caller.LastLine, Caller do
-  if UserInChannel(Reciever, Trim(Arguments)) then
-    Respond(Trim(Arguments) + ' is already in here!')
-  else if Logging then with FSeenQuery do begin
-    Sql.Clear;
-    Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender=''' + Trim(Arguments) + ''' order by logtime desc');
-    Open;
-    if not Eof then
-      Respond(Trim(Arguments) + ' last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
-    else
-      Respond('I''ve never seen ' + Trim(Arguments));
-    Close;
-  end;
+    if UserInChannel(Reciever, Trim(Arguments)) then
+      Respond(Trim(Arguments) + ' is already in here!')
+    else if Logging then with FSeenQuery do begin
+      Sql.Clear;
+      Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender=''' + Trim(Arguments) + ''' order by logtime desc');
+      Open;
+      if not Eof then
+        Respond(Trim(Arguments) + ' last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
+      else
+        Respond('I''ve never seen ' + Trim(Arguments));
+      Close;
+    end;
 end;
 
 procedure TDoer.OnLogUrl(Caller: TLIrcBot);
@@ -226,15 +222,16 @@ end;
 
 procedure TDoer.OnSayTo(Caller: TLIrcBot);
 var
-  s: string;
-  i, n: Longint;
+  s, m: string;
+  n: Longint;
 begin
   with Caller, Caller.LastLine do begin
     s:=Arguments;
     n:=Pos(' ', s);
     if n > 0 then begin
+      m:=Copy(s, n+1, Length(s));
       Delete(s, n, Length(s));
-      SendMessage(Copy(Arguments, n+1, Length(Arguments)), s);
+      SendMessage(Copy(m, 1, Length(m)), s);
     end;
   end;
 end;
