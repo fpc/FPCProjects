@@ -6,7 +6,7 @@ uses
   Classes, SysUtils, Web, SqlDB, IBConnection;
   
 const
-  { copy include/hiddenpass.inc.default to hiddenpass.inc and adapt it to your needs }
+  {$Warning Don't forget to make hiddeninc.inc file!}
   {$i hiddeninc.inc}
 
 var LogFBConnection : TIBConnection;
@@ -23,8 +23,8 @@ begin
   LogFBConnection := tIBConnection.Create(nil);
   with LogFBConnection do begin
     DatabaseName := DBPath;
-    UserName := CGIDBName;
-    Password := CGIDBPass;
+    UserName := 'sysdba';
+    Password := MASTERKEY;
   end;
 
   LogTransaction := tsqltransaction.create(nil);
@@ -39,6 +39,7 @@ begin
 
     Web_Header;
     Web_FileOut('html/header.html');
+    Web_FileOut('html/footer.html');
 
     if (Channel = '#') and Web_VarExists('channel') then try
       Channel:=Web_GetVar('channel');
@@ -58,7 +59,7 @@ begin
       Sender:='';
     end;
 
-    writeln('<table border="0">');
+    writeln('<hr><table border="0">');
     writeln('<font size="10">');
 
     sql.clear;
@@ -68,18 +69,18 @@ begin
       sql.add('select first ' + IntToStr(Count) + ' sender, msg, cast(logtime as varchar(25)) as logtime from tbl_loglines where reciever=''' + Channel + ''' order by loglineid desc');
 
     open;
-    i:=0;
+    i:=1;
     while not eof do begin
-      if (i mod 2)=0 then
+      if (i mod 2) = 0 then
         HTMLCode.Add('<tr style="background-color:#FFFFFF">')
       else
-        HTMLCode.Add('<tr style="background-color:#AFAFAF">');
-      
+        HTMLCode.Add('<tr style="background-color:#E0E0E0">');
+
       HTMLCode.Add('<td nowrap>' + Copy(fieldbyname('logtime').asstring, 1, 19) +
                    '</td><td>' + fieldbyname('sender').asstring+'</td><td>' +
                    fieldbyname('msg').asstring+'</td></tr>');
-      inc(i);
       Next;
+      Inc(i);
     end;
     
     if HTMLCode.Count > 0 then
@@ -91,7 +92,8 @@ begin
     HTMLCode.Free;
   end;
 
-  Web_FileOut('html/footer.html');
+  if i > 25 then
+    Web_FileOut('html/footer.html');
   writeln('</body></html>');
 
   LogFBConnection.Close;
@@ -99,4 +101,3 @@ begin
   LogTransaction.free;
   LogQuery.free;
 end.
-
