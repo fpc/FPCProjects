@@ -1,0 +1,64 @@
+--------------------------------------------------------------------
+             The Pascal Server Pages License, version 1.0
+  Copyright (C) 2003-2004 by Pascal Server Pages development team.
+--------------------------------------------------------------------
+
+                     1. DISTRIBUTION AND WARRANTY.
+
+ Pascal Server Pages ("the product" in the following) is a free 
+software product. It comes free for personal and business use but
+absolutely NO WARRANTY.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE  DISCLAIMED. IN NO EVENT SHALL THE REGENTS
+OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+USE, DATA, OR  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+ The product can be used in direct way as web programming tool
+in personal or commercial purpose without any limits. The product
+can not be distributed for profit without agreement of Pascal
+Server Pages development team in written form.
+
+                          2. SOURCE COPYING.
+
+ The product source code copyrights belong to its authors. The
+product sources can not be used in commercial purpose if it is not
+connected with direct Pascal Server Pages usage besides cases of
+code authors agreement.
+ Redistributions of any form whatsoever must retain the following
+acknowledgment:
+ "This product includes Pascal Server Pages, freely available from
+<http://www.psp.furtopia.org>".
+
+                     3. MODIFYING AND DEVELOPMENT.
+
+ The product can be modified in any special purpose but the
+modifications can not be published without knowledge of Pascal
+Server Pages development team. Product development is centralized
+to avoid appearances of product clones or misunderstandings.
+
+--------------------------------------------------------------------
+
+ This product was developed for use with Free Pascal Compiler,
+protected by GNU General Public License and freely available from
+<http://www.freepascal.org>.
+
+ Pascal Server Pages development team can be contacted via e-mail
+at psp-mail@bk.ru.
+
+ For more information on Pascal Server Pages please see the product
+documentation or visit <http://www.psp.furtopia.org>.
+
+--------------------------------------------------------------------
+
+Vladimir Sibirov, Pascal Server Pages development team leader.
+
+[23 June 2004].
