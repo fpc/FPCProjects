@@ -38,7 +38,7 @@ const
   LUDP = 1;
   { Default Values }
   DefaultMaxSockets =    64;
-  DefaultBufferSize = 65534;
+  DefaultBufferSize = 65535;
   DefaultMaxMsgs    =  1000;
   { Address constants }
   LADDR_ANY = '0.0.0.0';
@@ -113,7 +113,7 @@ type
     FOnAccept,
     FOnDisconnect: TLObjProc;
     procedure SetSeparate(const Value: Boolean); virtual; abstract;
-    procedure SetBufferSize(const Size: LongInt); virtual; abstract;
+    procedure SetBufferSize(const Size: LongInt);
     procedure SetMaxMsgs(const Size: LongInt);
    public
     constructor Create;
@@ -138,7 +138,6 @@ type
     function GetMessageCount: Cardinal;
     procedure Bail(const msg: string);
     procedure SetSeparate(const Value: Boolean); override;
-    procedure SetBufferSize(const Size: LongInt); override;
    public
     constructor Create;
     destructor Destroy; override;
@@ -167,7 +166,6 @@ type
     procedure Bail(const msg: string; const socknum: LongInt);
     procedure CallAccept;
     procedure SetSeparate(const Value: Boolean); override;
-    procedure SetBufferSize(const Size: LongInt); override;
    public
     constructor Create;
     destructor Destroy; override;
@@ -220,6 +218,15 @@ var
 {$i lsocketlist.inc}
 {$i tlconnectionlist.inc}
 
+function SocketError: Longint;
+begin
+  {$ifdef win32}
+  Result:=WSAGetLastError;
+  {$else}
+  Result:=Sockets.SocketError;
+  {$endif}
+end;
+
 procedure CallConnections;
 var
   i: Longint;
@@ -239,6 +246,12 @@ end;
 destructor TLConnection.Destroy;
 begin
   Connections.Remove(Self);
+end;
+
+procedure TLConnection.SetBufferSize(const Size: LongInt);
+begin
+  if Size > 4 then
+    FBufferSize:=Size;
 end;
 
 procedure TLConnection.SetMaxMsgs(const Size: LongInt);
@@ -359,7 +372,7 @@ end;
 
 function TLUdp.SendMessage(const msg: string; const Address: string): Boolean;
 begin
-  if (Length(msg) > 0) and (Length(msg) <= FBufferSize) then
+  if (Length(msg) > 0) and (Length(msg) < FBufferSize) then
     begin
       Result:=True;
       FSersock.FCliAddr.Addr:=StrToNetAddr(Address);
@@ -371,12 +384,6 @@ procedure TLUdp.SetSeparate(const Value: Boolean);
 begin
   FSeparate:=Value;
   FSerSock.FSeparate:=Value;
-end;
-
-procedure TLUdp.SetBufferSize(const Size: LongInt);
-begin
-  if Size > 4 then
-    FSerSock.SetBufferSize(Size);
 end;
 
 //******************************TLTCP**********************************
@@ -611,9 +618,11 @@ begin
   Result:=True;
   if (Length(msg) > 0) and (FSocks.Count > 0) then
     for i:=FSocks.Count-1 downto 0 do begin
-      for j:=0 to (Length(msg)-1) div FBufferSize do
-        if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
-          Result:=False;
+      if Length(msg) > FBufferSize then begin
+        for j:=0 to (Length(msg)-1) div FBufferSize do
+          if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
+            Result:=False;
+      end else Result:=FSocks[i].Send(msg);
     end;
 end;
 
@@ -626,9 +635,11 @@ begin
       for i:=FSocks.Count-1 Downto 0 do
         if FSocks[i].FSnum = snum then begin
           Result:=True;
-          for j:=0 to (Length(msg)-1) div FBufferSize do
-            if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
-              Result:=False;
+          if Length(msg) > FBufferSize then begin
+            for j:=0 to (Length(msg)-1) div FBufferSize do
+              if not FSocks[i].Send(Copy(msg, j * FBufferSize + 1, FBufferSize)) then
+                Result:=False;
+          end else Result:=FSocks[i].Send(msg);
           Break;
         end;
 end;
@@ -641,16 +652,6 @@ begin
   if FSocks.Count > 0 then
     for i:=0 to FSocks.Count-1 do
       FSocks[i].Separate:=Value;
-end;
-
-procedure TLTcp.SetBufferSize(const Size: LongInt);
-var
-  i: Longint;
-begin
-  if Size > 4 then
-    if FSocks.Count > 0 then
-      for i:=0 to FSocks.Count-1 do
-        FSocks[i].SetBufferSize(Size);
 end;
 
 //********************************TLSocket*************************************
@@ -714,11 +715,9 @@ procedure TLSocket.SetBufferSize(const Size: LongInt);
 begin
   if Size > 4 then
     begin
-      FBufferSize:=Size;
-      if FBufferSize > DefaultBuffersize then begin
-        SetSocketOptions(FSock, SOL_SOCKET, SO_RCVBUF, FBufferSize, SizeOf(FBufferSize));
-        SetSocketOptions(FSock, SOL_SOCKET, SO_SNDBUF, FBufferSize, SizeOf(FBufferSize));
-      end;
+      FbufferSize:=Size;
+      SetSocketOptions(FSock, SOL_SOCKET, SO_RCVBUF, FBufferSize, SizeOf(FBufferSize));
+      SetSocketOptions(FSock, SOL_SOCKET, SO_SNDBUF, FBufferSize, SizeOf(FBufferSize));
     end;
 end;
 
@@ -851,16 +850,18 @@ begin
           Move(msg[1], Temp[Sizeof(LongInt)+1], Length(msg));
         end;
       if FFlag = SOCK_STREAM then
-        n:=sockets.send(FSock, Temp[1], Length(Temp), LMSG)
+        {$ifdef win32}
+        n:=tomwinsock.send(FSock, Temp[1], Length(Temp), LMSG)
           else
-           {$ifdef win32}
             begin
               s:=Temp;
               n:=tomwinsock.sendto(FSock, s[1], Length(Temp), LMSG, TSockAddrIn(FCliAddr), FAddrlen);
             end; // win32 sendto is totaly shitty with sockets, I have to use winsock
-            {$else}
+        {$else}
+        n:=sockets.send(FSock, Temp[1], Length(Temp), LMSG)
+          else
             n:=sockets.sendto(FSock, Temp[1], Length(Temp), LMSG, FCliAddr, FAddrlen);
-            {$endif}
+        {$endif}
       if n < 0 then Bail('Send error', socketerror);
       if n > 0 then Result:=true;
     end;
@@ -874,33 +875,36 @@ begin
     begin
       SetLength(s, FbufferSize);
       if FFlag = SOCK_STREAM then
-        n:=sockets.Recv(FSock, s[1], FbufferSize, LMSG)
+        {$ifdef win32}
+        n:=tomwinsock.Recv(FSock, s[1], FbufferSize, LMSG)
           else
-           {$ifdef win32}
             n:=tomwinsock.Recvfrom(FSock, s[1], FBufferSize, LMSG, TSockAddrIn(FCliAddr), FAddrlen);
-           {$else}
+        {$else}
+        n:=sockets.Recvfrom(FSock, s[1], FBufferSize, LMSG, FCliAddr, FAddrlen)
+          else
             n:=sockets.Recvfrom(FSock, s[1], FBufferSize, LMSG, FCliAddr, FAddrlen);
-           {$endif}
-      if n = 0 then bail('Lost Connection', -1);
-      if Connected then
-        if (n > 0) and (n <= FBufferSize) then
-          begin
-            SetLength(s, n);
-            if FBuffer.Count < FMaxMsgs then
-              begin
-                if FSeparate then
-                  begin
-                    repeat
-                      Move(s[1], n, SizeOf(n));
-                      Temp:=Copy(s, SizeOf(n)+1, n);
-                      if Length(Temp) + SizeOf(n) < Length(s) then
-                        s:=Copy(s, Length(Temp)+SizeOf(n)+1, Length(s)-Length(Temp)+SizeOf(n))
-                      else s:='';
-                      FBuffer.Add(Temp);
-                    until Length(s) = 0;
-                  end else FBuffer.Add(s)
-              end else Bail('Buffer full', -1);
-          end;
+        {$endif}
+      if n = 0 then Bail('Lost Connection', -1);
+      if n < 0 then Bail('Recieve Error', SocketError);
+      if Connected then begin
+        if (n <= FBufferSize) then begin
+          SetLength(s, n);
+          if FBuffer.Count < FMaxMsgs then
+            begin
+              if FSeparate then
+                begin
+                  repeat
+                    Move(s[1], n, SizeOf(n));
+                    Temp:=Copy(s, SizeOf(n)+1, n);
+                    if Length(Temp) + SizeOf(n) < Length(s) then
+                      s:=Copy(s, Length(Temp)+SizeOf(n)+1, Length(s)-Length(Temp)+SizeOf(n))
+                    else s:='';
+                    FBuffer.Add(Temp);
+                  until Length(s) = 0;
+                end else FBuffer.Add(s)
+            end else Bail('Buffer full', -1);
+        end else Bail('Buffer overrun!', -1);
+      end;
     end;
   Result:=Connected;
 end;

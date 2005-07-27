@@ -501,11 +501,16 @@ var
             FLastLine.FReciever:=FChannels[m]
           else
             FLastLine.FReciever:=FLastLine.FReciever + ',' + FChannels[m];
-          if Del then FPeople[m].Delete(n);
+          if Del then begin
+            Writeln('Deleting ', FPeople[m][n], ' from ', FChannels[m]);
+            FPeople[m].Delete(n);
+          end;
         end;
       end;
   end;
-  
+
+var
+  s: string; // helper string
 begin
   Writeln('PARSING LINE: ', aMsg);
   Result:=False;
@@ -532,7 +537,10 @@ begin
       FLastLine.FReciever:=FLastLine.FMsg;
       FLastLine.FMsg:=FLastLine.Sender + ' joins ' + FLastLine.FMsg;
       n:=FChannels.IndexOf(FLastLine.Reciever);
-      if n >= 0 then with FPeople[n] do Add(FLastLine.Sender);
+      if n >= 0 then with FPeople[n] do begin
+        Writeln('Adding ', FLastLine.Sender, ' to ', FChannels[n]);
+        Add(FLastLine.Sender);
+      end;
       Result:=True;
     end; // if
     
@@ -541,7 +549,10 @@ begin
                       FLastLine.Reciever + '(' + FLastLine.FMsg + ')';
       n:=FChannels.IndexOf(FLastLine.Reciever);
       if n >= 0 then with FPeople[n] do
-        if IndexOf(FlastLine.Sender) >= 0 then Delete(IndexOf(FlastLine.Sender));
+        if IndexOf(FlastLine.Sender) >= 0 then begin
+          Writeln('Deleting ', FLastLine.Sender, ' from ', FChannels[n]);
+          Delete(IndexOf(FlastLine.Sender));
+        end;
       Result:=True;
     end; // if
     
@@ -550,6 +561,22 @@ begin
       FindInChannels(True);
       Result:=True;
     end; // if
+    
+    if FCommand = 'KICK' then begin
+      n:=Pos(' ', FLastLine.FReciever);
+      if n > 0 then begin
+        s:=Copy(FLastLine.FReciever, n+1, Length(FLastLine.FReciever));
+        Delete(FLastLine.FReciever, n, Length(FLastLine.FReciever));
+      end else s:=FLastLine.FReciever;
+      n:=FChannels.IndexOf(FLastLine.FReciever);
+      if n >= 0 then with FPeople[n] do
+        if IndexOf(s) >= 0 then begin
+          Delete(IndexOf(s));
+          Writeln('Deleting ', s, ' from ', FChannels[n]);
+        end;
+      FLastLine.FMsg:=s + ' has been kicked by ' + FLastLine.Sender + ' (' + FLastLine.FMsg + ')';
+      Result:=True;
+    end;
     
     if FCommand = 'NICK' then begin
       FindInChannels;
@@ -562,6 +589,15 @@ begin
       FLastLine.FMsg:=FLastLine.FSender + ' is now known as ' + FLastLine.FMsg;
       Result:=True;
     end;
+
+    if FCommand = 'NOTICE' then Result:=False;
+    if FCommand = 'MODE' then Result:=False;
+  end;
+  if not Result then with FLastLine do begin
+    FSender:='';
+    FReciever:='';
+    FArguments:='';
+    FMsg:=aMsg;
   end;
 end;
 
