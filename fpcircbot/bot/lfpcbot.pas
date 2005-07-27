@@ -143,7 +143,10 @@ begin
       Respond(Trim(Arguments) + ' is already in here!')
     else if Logging then with FSeenQuery do begin
       Sql.Clear;
-      Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender=''' + Trim(Arguments) + ''' order by logtime desc');
+      if (Length(Reciever) > 0) and (Reciever[1] = '#') then
+        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where (reciever=''' + Reciever + ''' and sender=''' + Trim(Arguments) + ''') order by logtime desc')
+      else
+        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender=''' + Trim(Arguments) + ''' order by logtime 
       Open;
       if not Eof then
         Respond(Trim(Arguments) + ' last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
