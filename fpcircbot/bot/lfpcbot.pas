@@ -137,21 +137,28 @@ begin
 end;
 
 procedure TDoer.OnSeen(Caller: TLIrcBot);
+var
+  Args: string;
 begin
+  Args:=Trim(Caller.LastLine.Arguments);
+  if Args[Length(Args)] = '?' then begin
+    Delete(Args, Length(Args), 1);
+    Args:=Trim(Args);
+  end;
   with Caller.LastLine, Caller do
-    if UserInChannel(Reciever, Trim(Arguments)) then
-      Respond(Trim(Arguments) + ' is already in here!')
+    if UserInChannel(Reciever, Args) then
+      Respond(Args + ' is already in here!')
     else if Logging then with FSeenQuery do begin
       Sql.Clear;
       if (Length(Reciever) > 0) and (Reciever[1] = '#') then
-        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where (reciever=''' + Reciever + ''' and sender=''' + Trim(Arguments) + ''') order by logtime desc')
+        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where (reciever=''' + Reciever + ''' and sender=''' + Args + ''') order by logtime desc')
       else
-        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender=''' + Trim(Arguments) + ''' order by logtime desc');
+        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender=''' + Args + ''' order by logtime desc');
       Open;
       if not Eof then
-        Respond(Trim(Arguments) + ' last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
+        Respond(Args + ' last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
       else
-        Respond('I''ve never seen ' + Trim(Arguments));
+        Respond('I''ve never seen ' + Args);
       Close;
     end;
 end;
