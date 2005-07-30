@@ -73,7 +73,7 @@ begin
     if (Channel = '#') and Web_VarExists('channel') then try
       Channel:=Web_GetVar('channel');
     except
-      Channel:='#fpc';
+      Channel:='#lentilwars';
     end;
 
     if Web_VarExists('linecount') then try
@@ -109,17 +109,18 @@ function FilterHtml(const s: string): string;
     while n > 0 do begin
       Delete(Result, n, 1);
       Insert(dst, Result, n);
+      n:=Pos(src, Result);
     end;
   end;
   
 begin
   Result:=s;
   if Length(Result) > 0 then begin
-    Exchange('>', '&lt');
-    Exchange('>', '&gt');
-    Exchange('"', '&quot');
-    Exchange(#34, '&#34');
-    Exchange(#39, '&#39');
+    Exchange('<', '&lt;');
+    Exchange('>', '&gt;');
+    Exchange('"', '&quot;');
+    Exchange(#34, '&#34;');
+    Exchange(#39, '&#39;');
   end;
 end;
 
@@ -156,12 +157,11 @@ begin
 
       HTMLCode.Add('<td nowrap>' + Copy(fieldbyname('logtime').asstring, 1, 19) +
                    '</td><td>' + fieldbyname('sender').asstring+'</td><td>' +
-                   fieldbyname('msg').asstring+'</td></tr>');
+                   FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
       Next;
       Inc(i);
     end;
 
-    HTMLCode.Text:=FilterHtml(HTMLCode.Text);
     if HTMLCode.Count > 0 then
       for i:=HTMLCode.Count - 1 downto 0 do
         Writeln(HTMLCode[i]);
@@ -170,8 +170,6 @@ begin
     writeln('</table></font><hr>');
   end;
 
-  if i > 25 then
-    Web_FileOut('html/footer.html');
   writeln('</body></html>');
   
   Free;
