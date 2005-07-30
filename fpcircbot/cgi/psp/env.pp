@@ -23,7 +23,7 @@ var EnvC: longint; external name '_envc';
 {$ENDIF}
 
 {$IFDEF UNIX}
-function getenv(const envvar: string): string;
+function getenv(const name: PChar): PChar; cdecl; external 'c' name 'getenv';
 {$ENDIF}
 
 {$IFDEF OS2}
@@ -38,24 +38,6 @@ implementation
 
 // Found here and there: replacement for dos unit usage. Prevents from reaching
 // 255 char GET and COOKIE limit.
-
-{$IFDEF UNIX}
-
-uses
-  cmem;
-  
-function c_getenv(const name: PChar): PChar; cdecl; external 'c' name 'getenv';
-
-function getenv(const envvar : string) : string;
-var
-  p: pChar;
-begin
-  p := c_getenv(PChar(envvar));
-  result := p;
-  cmem.Free(p);
-end;
-
-{$ENDIF}
 
 {$IFDEF OS2}
 // From dos unit for OS/2

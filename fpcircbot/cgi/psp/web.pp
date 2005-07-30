@@ -782,7 +782,11 @@ end;
 
 function Web_GetEnv(name: string): string;
 begin
+    {$IFDEF UNIX}
+    result := AnsiString(getenv(PChar(upcase(name))));
+    {$ELSE}
     result := getenv(upcase(name));
+    {$ENDIF}
 end;
 
 {------------------------------------------------------------------------------}

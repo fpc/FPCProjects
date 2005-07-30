@@ -25,7 +25,7 @@ begin
   LogFBConnection := tIBConnection.Create(nil);
   with LogFBConnection do begin
     DatabaseName := DBPath;
-    UserName := 'sysdba';
+    UserName := CgiDBName;
     Password := CgiDBPass;
   end;
 
@@ -73,7 +73,7 @@ begin
     if (Channel = '#') and Web_VarExists('channel') then try
       Channel:=Web_GetVar('channel');
     except
-      Channel:='#lentilwars';
+      Channel:='#fpc';
     end;
 
     if Web_VarExists('linecount') then try
