@@ -41,6 +41,7 @@ type
     FSeenQuery: TSQLQuery;
     FLogTransaction: TSQLTransaction;
     FLogFBConnection: TSQLConnection;
+    function TrimQuestion(const s: string): string;
    public
     Quit: Boolean;
     TimeStarted: string;
@@ -103,6 +104,27 @@ begin
   FSeenQuery.Free;
 end;
 
+function TDoer.TrimQuestion(const s: string): string;
+
+procedure CleanChar(const c: Char);
+var
+  n: Longint;
+begin
+  n:=Pos(c, Result);
+  if n > 0 then begin
+    Delete(Result, n, Length(Result));
+    Result:=Trim(Result);
+  end;
+end;
+
+begin
+  Result:=s;
+  CleanChar('?');
+  CleanChar('/');
+  CleanChar('\');
+  CleanChar('!');
+end;
+
 procedure TDoer.OnHelp(Caller: TLIrcBot);
 var
   i: Longint;
@@ -140,11 +162,8 @@ procedure TDoer.OnSeen(Caller: TLIrcBot);
 var
   Args: string;
 begin
-  Args:=Trim(Caller.LastLine.Arguments);
-  if Args[Length(Args)] = '?' then begin
-    Delete(Args, Length(Args), 1);
-    Args:=Trim(Args);
-  end;
+  Args:=TrimQuestion(Caller.LastLine.Arguments);
+  
   with Caller.LastLine, Caller do
     if UserInChannel(Reciever, Args) then
       Respond(Args + ' is already in here!')
