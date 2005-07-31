@@ -173,8 +173,10 @@ begin
   FLastLine:=TLIrcRec.Create;
   FLogin:=Login;
   FPusers:=TStringList.Create;
+  FPusers.CaseSensitive:=False;
   FPeople:=TStringListList.Create(True);
   FChannels:=TStringList.Create;
+  FChannels.CaseSensitive:=False;
   FCommands:=TLCommandList.Create;
   FPCommands:=TLCommandList.Create;
   FLastLine.FSender:='';
@@ -308,9 +310,9 @@ var
   SL: TStringList;
 begin
   nMsg:=Msg;
+  Writeln(nMsg);
   s:=SeparateByEnding(nMsg);
   if Length(s) > 0 then OnRe(s, 0);
-
   Parsed:=ParseLine(nMsg);
 
   if Assigned(FOnRecieve) then
@@ -569,7 +571,13 @@ begin
         Delete(FLastLine.FReciever, n, Length(FLastLine.FReciever));
       end else s:=FLastLine.FReciever;
       n:=FChannels.IndexOf(FLastLine.FReciever);
-      if n >= 0 then with FPeople[n] do
+      if s = Nick then begin
+        if n >= 0 then begin
+          Writeln('Deleting channel ', FChannels[n], ' and all users from it');
+          FChannels.Delete(n);
+          FPeople.Delete(n);
+        end;
+      end else if n >= 0 then with FPeople[n] do
         if IndexOf(s) >= 0 then begin
           Delete(IndexOf(s));
           Writeln('Deleting ', s, ' from ', FChannels[n]);
@@ -654,6 +662,7 @@ begin
     FCon.SendMessage('JOIN ' + Channel + #13#10);
     FChannels.Add(Channel);
     FPeople.Add(TStringList.Create);
+    FPeople.Last.CaseSensitive:=False;
     FPeople.Last.Duplicates:=dupIgnore;
     FCon.OnRecieve:=@OnReJoin;
     i:=0;
