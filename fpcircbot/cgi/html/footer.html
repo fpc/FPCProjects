@@ -1,3 +1,8 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+</head>
+<body>
 <center>
 <h3>Log display options</h3>
 </center>
@@ -6,46 +11,47 @@
   <table>
     <tbody>
       <tr>
-      </tr>
-      <tr>
         <td colspan="1" rowspan="4">
-        <h3><a href="http://www.psp.furtopia.org/cgi-bin/psp/news.psp" target="_blank"><img
+        <h3><a href="http://www.psp.furtopia.org/cgi-bin/psp/news.psp"
+ target="_blank"><img
  style="border: 0px solid ; width: 180px; height: 120px;"
-<<<<<<< .mine
  alt="Pascal Server Pages" src="http://www.de.freepascal.org/psp.png"></a></h3>
-=======
- alt="Pascal Server Pages" src="../psp.png"></a></h3>
->>>>>>> .r22
         </td>
-        <td></td>
         <td width="20%"><strong>Channel:</strong></td>
-        <td width="80%">
+        <td style="width: 30%;">
         <select name="channel">
-        <option name="fpc" value="#fpc">#fpc</option>
-        <option name="lazarus" value="#lazarus-ide">#lazarus-ide</option>
+        <option name="lentilwars" value="#lentilwars">#lentilwars</option>
+        <option name="jojo" value="#jojo">#jojo</option>
         </select>
         </td>
+        <td><span style="font-weight: bold;">Date:</span></td>
+        <td><input name="date" size="20" type="text"></td>
       </tr>
       <tr>
-        <td></td>
-        <td width="20%"><strong>Line Count:</strong></td>
-        <td width="80%">
+        <td width="20%"><strong>Line
+Count:</strong></td>
+        <td width="30%">
         <select name="linecount">
         <option name="fifty" initial="" value="50">50</option>
         <option name="onehundered" value="100">100</option>
         <option name="onefifty" value="150">150</option>
         <option name="twohundered" value="200">200</option>
+        <option name="allday" value="0">Whole Day</option>
         </select>
         </td>
+        <td><span style="font-weight: bold;">Message contains:</span></td>
+        <td><input name="msg" size="20" type="text"></td>
       </tr>
       <tr>
-        <td></td>
         <td width="20%"><strong>Sender:</strong></td>
-        <td width="80%"><input name="sender" size="80" type="text"></td>
+        <td width="30%"><input name="sender" size="20" type="text"></td>
+        <td></td>
+        <td></td>
       </tr>
       <tr>
-        <td></td>
         <td width="20%"><input value="Submit" type="submit"></td>
+        <td style="text-align: center;" colspan="3" rowspan="1">Date
+format: dd-mm-yyyy</td>
       </tr>
     </tbody>
   </table>
