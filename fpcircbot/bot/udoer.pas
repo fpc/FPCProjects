@@ -122,7 +122,7 @@ begin
 end;
 
 begin
-  Result:=s;
+  Result:=Trim(s);
   CleanChars(['?', '!', '@', '#', '$', '%', '&', '*', '/', ';', ':', '.', ',']);
 end;
 
@@ -185,7 +185,7 @@ end;
 
 procedure TDoer.OnDefine(Caller: TLIrcBot);
 var
-  n: Longint;
+  n, m: Longint;
   DefWord, Args: string;
 
 procedure AddIt;
@@ -204,8 +204,8 @@ begin
       if n > 0 then begin
         DefWord:=Args;
         Delete(DefWord, n, Length(DefWord));
-        n:=FDefWords.IndexOf(DefWord);
-        if n < 0 then AddIt
+        m:=FDefWords.IndexOf(DefWord);
+        if m < 0 then AddIt
         else begin
           FDefWords.Delete(n);
           FDefinitions.Delete(n);
@@ -225,7 +225,9 @@ begin
   with Caller, Caller.LastLine do begin
     n:=FDefWords.IndexOf(Args);
     if (n >= 0) and (n < FDefinitions.Count) then
-      Respond(FDefWords[n] + ' ' + FDefinitions[n]);
+      Respond(FDefWords[n] + ' ' + FDefinitions[n])
+    else
+      Respond('I don''t have ' + Args + ' in my definitions table');
   end;
 end;
 
