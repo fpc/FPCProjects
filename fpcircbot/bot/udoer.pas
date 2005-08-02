@@ -1,4 +1,4 @@
-unit udoer;
+unit uDoer;
 
 {$mode objfpc}{$H+}
 
@@ -18,10 +18,10 @@ type
    protected
     FLogQuery: TSQLQuery;
     FSeenQuery: TSQLQuery;
+    FDefinesQuery: TSQLQuery;
+    FDefViewQuery: TSQLQuery;
     FLogTransaction: TSQLTransaction;
     FLogFBConnection: TSQLConnection;
-    FDefinitions: TStringList;
-    FDefWords: TStringList;
     function TrimQuestion(const s: string): string;
    public
     Quit: Boolean;
@@ -53,13 +53,6 @@ implementation
 
 constructor TDoer.Create;
 begin
-  FDefWords:=TStringList.Create;
-  FDefWords.CaseSensitive:=False;
-  FDefWords.Duplicates:=dupIgnore;
-  FDefinitions:=TStringList.Create;
-  FDefinitions.CaseSensitive:=False;
-  FDefinitions.Duplicates:=dupIgnore;
-
   Quit:=False;
   FLogFBConnection := tIBConnection.Create(nil);
   with FLogFBConnection do begin
@@ -82,27 +75,36 @@ begin
     prepare;
   end;
 
-   FSeenQuery := tsqlquery.Create(nil);
-   FSeenQuery.DataBase := FLogFBConnection;
-   FSeenQuery.transaction := FLogTransaction;
-   FSeenQuery.ParseSQL:=False;
+  FSeenQuery := tsqlquery.Create(nil);
+  FSeenQuery.DataBase := FLogFBConnection;
+  FSeenQuery.transaction := FLogTransaction;
+  FSeenQuery.ParseSQL:=False;
 
-{   FDefinesQuery := tsqlquery.Create(nil);
-   FDefinesQuery.DataBase := FLogFBConnection;
-   FDefinesQuery.transaction := FLogTransaction;
-   FDefinesQuery.ParseSQL:=False;}
+  FDefinesQuery := tsqlquery.Create(nil);
+  with FDefinesQuery do begin
+    DataBase := FLogFBConnection;
+    Transaction := FLogTransaction;
+
+{    sql.clear;
+    sql.add('insert into tbl_definitions(definitionid,definition,description) values (gen_id(GEN_DEFINITIONID,1),:definition,:description)');
+    prepare;}
+  end;
+
+  FDefViewQuery := tsqlquery.Create(nil);
+  FDefViewQuery.DataBase := FLogFBConnection;
+  FDefViewQuery.transaction := FLogTransaction;
+  FDefViewQuery.ParseSQL:=False;
 end;
 
 destructor TDoer.Destroy;
 begin
-  FDefinitions.Free;
-  FDefWords.Free;
-
   FLogFBConnection.Close;
   FLogFBConnection.Free;
   FLogTransaction.Free;
   FLogQuery.Free;
   FSeenQuery.Free;
+  FDefinesQuery.Free;
+  FDefViewQuery.Free;
 end;
 
 function TDoer.TrimQuestion(const s: string): string;
@@ -155,11 +157,17 @@ end;
 procedure TDoer.OnAbout(Caller: TLIrcBot);
 begin
   Caller.Respond(BotName + ' ' + Version + ' , copyright (C) 2005 by Ales Katona and Joost van der Sluis');
-  Caller.Respond('Contact: almindor@gmail.com     SVN: http://svn.freepascal.org/svn/fpcprojects');
+  Caller.Respond('Contact: almindor@gmail.com     SVN: http://svn.freepascal.org/svn/fpcprojects/fpcircbot');
   Caller.Respond('This bot was programmed in Object Pascal language using the Free Pascal Compiler');
 end;
 
 procedure TDoer.OnSeen(Caller: TLIrcBot);
+
+  function GetDateDiff(const ADate: string): string;
+  begin
+    Result:='';
+  end;
+
 var
   Args: string;
 begin
@@ -171,12 +179,19 @@ begin
     else if Logging then with FSeenQuery do begin
       Sql.Clear;
       if (Length(Reciever) > 0) and (Reciever[1] = '#') then
-        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where (reciever like ''' + Reciever + ''' and sender like ''' + Args + ''') order by logtime desc')
+      
+        Sql.Add('select first 1 cast(logtime as varchar(25)) as ' +
+                'logtime from tbl_loglines where (reciever=''' + Reciever +
+                ''' and upper(sender)=''' + UpperCase(Args) + ''') order by logtime desc')
       else
-        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime from tbl_loglines where sender like ''' + Args + ''' order by logtime desc');
+        Sql.Add('select first 1 cast(logtime as varchar(25)) as ' +
+                'logtime from tbl_loglines where upper(sender)=''' + UpperCase(Args) +
+                ''' order by logtime desc');
+                
       Open;
       if not Eof then
-        Respond(Args + ' last seen ' + Copy(fieldbyname('logtime').asstring, 1, 19))
+        Respond(Args + ' last seen ' +
+                Copy(fieldbyname('logtime').asstring, 1, 19))
       else
         Respond('I''ve never seen ' + Args);
       Close;
@@ -187,14 +202,48 @@ procedure TDoer.OnDefine(Caller: TLIrcBot);
 var
   n, m: Longint;
   DefWord, Args: string;
+  
+  function UpdateDef: Boolean;
+  begin
+    Result:=False;
+    with FDefViewQuery, Caller, Caller.LastLine do try
+      Sql.Clear;
+      Sql.Add('select first 1 description from tbl_definitions where definition=''' +
+              DefWord + '''');
 
-procedure AddIt;
-begin
-  FDefWords.Add(DefWord);
-  FDefinitions.Add(Copy(Args, n+1, Length(Args)) +
-                   ' -- defined by ' + Caller.LastLine.Sender);
-  Caller.Respond('As ordered');
-end;
+      Open;
+      if not Eof then Result:=True;
+      Close;
+    except
+      Respond('DB read error');
+    end;
+    
+    if Result then
+      with Caller, FDefinesQuery do try
+        Sql.Clear;
+        Sql.Add('update tbl_definitions set description=''' + Args +
+                ' -- defined by ' + LastLine.Sender +
+                ''' where definition=''' + DefWord + '''');
+        ExecSQL;
+        FLogTransaction.CommitRetaining;
+        Respond('As ordered');
+      except
+        Respond('DB update error');
+      end;
+  end;
+
+  procedure AddIt;
+  begin
+    if not UpdateDef then with FDefinesQuery do try
+      Sql.Clear;
+      Sql.Add('insert into tbl_definitions(definitionid,definition,description) ' +
+              'values (gen_id(GEN_DEFINITIONID,1),'''+ DefWord+''','''+ Args +''')');
+      ExecSQL;
+      Caller.Respond('As ordered');
+    except
+      Caller.Respond('DB insert error');
+    end;
+   end;
 
 begin
   Args:=TrimQuestion(Caller.LastLine.Arguments);
@@ -204,30 +253,29 @@ begin
       if n > 0 then begin
         DefWord:=Args;
         Delete(DefWord, n, Length(DefWord));
-        m:=FDefWords.IndexOf(DefWord);
-        if m < 0 then AddIt
-        else begin
-          FDefWords.Delete(n);
-          FDefinitions.Delete(n);
-          AddIt;
-        end;
+        DefWord:=Trim(LowerCase(DefWord));
+        Args:=Copy(Args, n + 1, Length(Args));
+        AddIt;
       end else Respond('Usage: ' + Nick + ': define <what> <definition>');
     end else Respond('Usage: ' + Nick + ': define <what> <definition>');
   end;
 end;
 
 procedure TDoer.OnWhatIs(Caller: TLIrcBot);
-var
-  n: Longint;
-  Args: string;
 begin
-  Args:=TrimQuestion(Caller.LastLine.Arguments);
-  with Caller, Caller.LastLine do begin
-    n:=FDefWords.IndexOf(Args);
-    if (n >= 0) and (n < FDefinitions.Count) then
-      Respond(FDefWords[n] + ' ' + FDefinitions[n])
+  with FDefViewQuery, Caller, Caller.LastLine do try
+    Sql.Clear;
+    Sql.Add('select first 1 description from tbl_definitions where definition=''' +
+            Trim(LowerCase(Arguments)) + '''');
+    
+    Open;
+    if not Eof then
+      Respond(Arguments + ' ' + FieldByName('description').AsString)
     else
-      Respond('I don''t have ' + Args + ' in my definitions table');
+      Respond('I don''t have ' + Arguments + ' in my database');
+    Close;
+  except
+    Respond('DB read error');
   end;
 end;
 

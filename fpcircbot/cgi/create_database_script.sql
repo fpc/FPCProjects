@@ -12,7 +12,7 @@ SET SQL DIALECT 3;
 SET NAMES NONE;
 
 CREATE DATABASE '/var/firebird/fpcbot.fdb'
-USER 'SYSDBA' PASSWORD 'janosik'
+USER 'SYSDBA' PASSWORD 'masterkey'
 PAGE_SIZE 1024
 DEFAULT CHARACTER SET NONE;
 
@@ -22,6 +22,9 @@ DEFAULT CHARACTER SET NONE;
 
 CREATE GENERATOR GEN_LOGLINEID;
 SET GENERATOR GEN_LOGLINEID TO 1;
+
+CREATE GENERATOR GEN_DEFINITIONID;
+SET GENERATOR GEN_DEFINITIONID TO 1;
 
 /******************************************************************************/
 /****                                Tables                                ****/
@@ -35,11 +38,21 @@ CREATE TABLE TBL_LOGLINES (
     LOGTIME    TIMESTAMP
 );
 
+CREATE TABLE TBL_DEFINITIONS (
+    DEFINITIONID  INTEGER NOT NULL,
+    DEFINITION    VARCHAR(20) NOT NULL,
+    DESCRIPTION   VARCHAR(255)
+);
+
 /******************************************************************************/
 /****                             Primary Keys                             ****/
 /******************************************************************************/
 
 ALTER TABLE TBL_LOGLINES ADD CONSTRAINT PK_TBL_LOGLINES PRIMARY KEY (LOGLINEID);
+
+alter table tbl_Definitions add constraint pk_definitions primary key (definitionid);
+
+alter table tbl_Definitions add constraint unq_definitions unique (definition);
 
 /******************************************************************************/
 /****                              Privileges                              ****/
@@ -50,3 +63,6 @@ ALTER TABLE TBL_LOGLINES ADD CONSTRAINT PK_TBL_LOGLINES PRIMARY KEY (LOGLINEID);
 GRANT SELECT ON TBL_LOGLINES TO IRCFPCBOT;
 GRANT INSERT ON TBL_LOGLINES TO FPCBOT;
 GRANT SELECT ON TBL_LOGLINES TO FPCBOT;
+GRANT INSERT ON TBL_DEFINITIONS TO FPCBOT;
+GRANT SELECT ON TBL_DEFINITIONS TO FPCBOT;
+GRANT UPDATE ON TBL_DEFINITIONS TO FPCBOT;

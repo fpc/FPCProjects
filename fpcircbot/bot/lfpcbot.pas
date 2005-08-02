@@ -1,4 +1,4 @@
-program lfpcbot;
+program lFPCBot;
 
 {                            FPCBot
 
