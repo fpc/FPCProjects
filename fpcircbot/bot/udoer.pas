@@ -262,15 +262,18 @@ begin
 end;
 
 procedure TDoer.OnWhatIs(Caller: TLIrcBot);
+var
+  Args: string;
 begin
   with FDefViewQuery, Caller, Caller.LastLine do try
+    Args:=TrimQuestion(Arguments);
     Sql.Clear;
     Sql.Add('select first 1 description from tbl_definitions where definition=''' +
-            Trim(LowerCase(Arguments)) + '''');
+            LowerCase(Args) + '''');
     
     Open;
     if not Eof then
-      Respond(Arguments + ' ' + FieldByName('description').AsString)
+      Respond(Args + ' ' + FieldByName('description').AsString)
     else
       Respond('I don''t have ' + Arguments + ' in my database');
     Close;

@@ -25,33 +25,33 @@
         </select>
         </td>
         <td><span style="font-weight: bold;">Date:</span></td>
-        <td><input name="date" size="20" type="text"></td>
+        <td><input name="date" size="20" type="text" value="$date"></td>
       </tr>
       <tr>
         <td width="20%"><strong>Line
 Count:</strong></td>
         <td width="30%">
-        <select name="linecount">
-        <option name="fifty" initial="" value="50">50</option>
+        <select name="linecount" initial="200">
+        <option name="fifty" value="50">50</option>
         <option name="onehundered" value="100">100</option>
         <option name="onefifty" value="150">150</option>
         <option name="twohundered" value="200">200</option>
-        <option name="allday" value="0">Whole Day</option>
+        <option name="allday" value="9999">Whole Day</option>
         </select>
         </td>
         <td><span style="font-weight: bold;">Message contains:</span></td>
-        <td><input name="msg" size="20" type="text"></td>
+        <td><input name="msg" size="20" type="text" value="$msg"></td>
       </tr>
       <tr>
         <td width="20%"><strong>Sender:</strong></td>
-        <td width="30%"><input name="sender" size="20" type="text"></td>
+        <td width="30%"><input name="sender" size="20" type="text" value="$sender"></td>
         <td></td>
         <td></td>
       </tr>
       <tr>
         <td width="20%"><input value="Submit" type="submit"></td>
         <td style="text-align: center;" colspan="3" rowspan="1">Date
-format: dd-mm-yyyy</td>
+format: yyyy-mm-dd</td>
       </tr>
     </tbody>
   </table>

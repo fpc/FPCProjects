@@ -16,7 +16,7 @@ var
   LogTransaction  : TSQLTransaction;
   LogQuery        : TSQLQuery;
   Channel, Sender : string;
-  Count           : string;
+  Count, Msg, Date: string;
   i               : Longint;
   HTMLCode        : TStringList;
   
@@ -48,6 +48,8 @@ begin
   Channel:='#' + GetEnvironmentVariable('QUERY_STRING');
   Sender:='';
   Count:='50';
+  Msg:='';
+  Date:=''; // today
   HTMLCode:=TStringList.Create;
 end;
 
@@ -69,24 +71,24 @@ begin
 end;
 
 procedure GetWebVars;
+
+  procedure TryGetWebVar(var LocalVar: string; const VarName, DefValue: string);
+  begin
+    if Web_VarExists(VarName) then try
+      LocalVar:=Web_GetVar(VarName);
+    except
+      LocalVar:=DefValue;
+    end else Web_SetVar(VarName, LocalVar);
+  end;
+
 begin
-    if (Channel = '#') and Web_VarExists('channel') then try
-      Channel:=Web_GetVar('channel');
-    except
-      Channel:='#lentilwars';
-    end;
-
-    if Web_VarExists('linecount') then try
-      Count:=Web_GetVar('linecount');
-    except
-      Count:='50';
-    end;
-
-    if Web_VarExists('sender') then try
-      Sender:=Web_GetVar('sender');
-    except
-      Sender:='';
-    end;
+  if Channel = '#' then Channel:='#lentilwars';
+  
+  TryGetWebVar(Channel, 'channel', '#lentilwars');
+  TryGetWebVar(Count, 'linecount', '50');
+  TryGetWebVar(Sender, 'sender', '');
+  TryGetWebVar(Msg, 'msg', '');
+  TryGetWebVar(Date, 'date', '');
 end;
 
 {< = &lt;
@@ -100,32 +102,22 @@ end;
 \015 = &#13;}
 
 function FilterHtml(const s: string): string;
-
-  procedure Exchange(const src, dst: string);
-  var
-    n: Longint;
-  begin
-    n:=Pos(src, Result);
-    while n > 0 do begin
-      Delete(Result, n, 1);
-      Insert(dst, Result, n);
-      n:=Pos(src, Result);
-    end;
-  end;
-  
 begin
   Result:=s;
   if Length(Result) > 0 then begin
-    Exchange('<', '&lt;');
-    Exchange('>', '&gt;');
-    Exchange('"', '&quot;');
-    Exchange(#34, '&#34;');
-    Exchange(#39, '&#39;');
+    Result:=StringReplace(Result, '<', '&lt;', [rfReplaceAll]);
+    Result:=StringReplace(Result, '>', '&gt;', [rfReplaceAll]);
+    Result:=StringReplace(Result, '"', '&quot;', [rfReplaceAll]);
+    Result:=StringReplace(Result, #34, '&#34;', [rfReplaceAll]);
+    Result:=StringReplace(Result, #39, '&#39;', [rfReplaceAll]);
   end;
 end;
 
+var
+  s: string;
 begin
   Init;
+  s:='';
 
   with LogQuery do begin
     DataBase := LogFBConnection;
@@ -134,34 +126,40 @@ begin
 
     Web_Header;
     Web_FileOut('html/header.html');
-    Web_FileOut('html/footer.html');
-
     GetWebVars;
+    Web_TemplateOut('html/footer.html');
 
     writeln('<hr><table border="0">');
     writeln('<font size="10">');
 
-    sql.clear;
-    if Length(Sender) > 0 then
-      sql.add('select first ' + Count + ' sender, msg, cast(logtime as varchar(25)) as logtime from tbl_loglines where (reciever=''' + Channel + ''' and sender=''' + Sender + ''') order by loglineid desc')
-    else
-      sql.add('select first ' + Count + ' sender, msg, cast(logtime as varchar(25)) as logtime from tbl_loglines where reciever=''' + Channel + ''' order by loglineid desc');
+    if Length(Sender) > 0 then s:=s + ' and sender=''' + Sender + '''';
+    if Length(Msg) > 0 then s:=s + ' and msg like ''%' + Msg + '%''';
+    if Length(Date) > 0 then s:=s + ' and CAST (logtime as date) = ''' + Date + '''';
+    
+    try
+      sql.clear;
+      sql.add('select first ' + Count + ' sender, msg, cast(logtime as varchar(25)) ' +
+              'as logtime from tbl_loglines where (reciever=''' + Channel +
+              '''' + s + ') order by loglineid desc');
+      open;
+      i:=1;
+      while not eof do begin
+        if (i mod 2) = 0 then
+          HTMLCode.Add('<tr style="background-color:#FFFFFF">')
+        else
+          HTMLCode.Add('<tr style="background-color:#E0E0E0">');
 
-    open;
-    i:=1;
-    while not eof do begin
-      if (i mod 2) = 0 then
-        HTMLCode.Add('<tr style="background-color:#FFFFFF">')
-      else
-        HTMLCode.Add('<tr style="background-color:#E0E0E0">');
+        HTMLCode.Add('<td nowrap>' + Copy(fieldbyname('logtime').asstring, 1, 19) +
+                     '</td><td>' + fieldbyname('sender').asstring+'</td><td>' +
+                     FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
+        Next;
+        Inc(i);
+      end;
 
-      HTMLCode.Add('<td nowrap>' + Copy(fieldbyname('logtime').asstring, 1, 19) +
-                   '</td><td>' + fieldbyname('sender').asstring+'</td><td>' +
-                   FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
-      Next;
-      Inc(i);
+    except on E: Exception do
+      Writeln('SQL', E.Message);
     end;
-
+    
     if HTMLCode.Count > 0 then
       for i:=HTMLCode.Count - 1 downto 0 do
         Writeln(HTMLCode[i]);
@@ -169,7 +167,9 @@ begin
     close;
     writeln('</table></font><hr>');
   end;
-
+  writeln('SQL COMMAND: ', 'select first ' + Count + ' sender, msg, cast(logtime as varchar(25)) ' +
+            'as logtime from tbl_loglines where (reciever=''' + Channel +
+            '''' + s + ') order by loglineid desc');
   writeln('</body></html>');
   
   Free;

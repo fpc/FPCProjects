@@ -220,8 +220,9 @@ var
     Result:=False;
     if FCommands.Count > 0 then
       for i:=0 to FCommands.Count-1 do begin
+        n:=Pos(FCommands[i].Command, LowerCase(FLastLine.Msg));
         if (LowerCase(FLastLine.Reciever) = LowerCase(FNick))
-        and (LowerCase(Trim(FLastLine.Msg)) = FCommands[i].Command) then begin
+        and (n > 0) then begin
           if Assigned(FCommands[i].FAction) then begin
             FRespondTo:=FLastLine.Sender;
             FLastLine.FArguments:=Copy(FLastLine.Msg, 8, Length(FLastLine.Msg));
