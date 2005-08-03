@@ -237,7 +237,8 @@ var
     if not UpdateDef then with FDefinesQuery do try
       Sql.Clear;
       Sql.Add('insert into tbl_definitions(definitionid,definition,description) ' +
-              'values (gen_id(GEN_DEFINITIONID,1),'''+ DefWord+''','''+ Args +''')');
+              'values (gen_id(GEN_DEFINITIONID,1),'''+ DefWord+''',''' +
+               Args + ' -- defined by ' + Caller.LastLine.Sender + ''')');
       ExecSQL;
       Caller.Respond('As ordered');
     except
