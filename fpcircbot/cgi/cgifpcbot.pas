@@ -167,9 +167,6 @@ begin
     close;
     writeln('</table></font><hr>');
   end;
-  writeln('SQL COMMAND: ', 'select first ' + Count + ' sender, msg, cast(logtime as varchar(25)) ' +
-            'as logtime from tbl_loglines where (reciever=''' + Channel +
-            '''' + s + ') order by loglineid desc');
   writeln('</body></html>');
   
   Free;
