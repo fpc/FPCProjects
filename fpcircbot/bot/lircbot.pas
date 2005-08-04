@@ -221,7 +221,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
     Result:=False;
     
     FWords.Clear;
-    FWords.CommaText:=StringReplace(LowerCase(Trim(FLastLine.Msg)), ' ', ',', [rfReplaceAll]);
+    FWords.CommaText:=StringReplace(Trim(FLastLine.Msg), ' ', ',', [rfReplaceAll]);
     for i:=FWords.Count-1 downto 0 do
       if FWords[i] = '' then FWords.Delete(i);
 
@@ -229,7 +229,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
       for i:=0 to FCommands.Count-1 do begin
         if FWords.Count > 0 then
           if (LowerCase(FLastLine.Reciever) = LowerCase(FNick))
-          and (LowerCase(FCommands[i].Command) = FWords[0]) then begin
+          and (FCommands[i].Command = LowerCase(FWords[0])) then begin
             if Assigned(FCommands[i].FAction) then begin
               FRespondTo:=FLastLine.Sender;
               FLastLine.FArguments:='';
@@ -244,8 +244,8 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
           end;
 
         if FWords.Count > 1 then
-          if  (Pos(LowerCase(Nick), FWords[0]) > 0)
-          and (LowerCase(FCommands[i].Command) = FWords[1]) then begin
+          if  (Pos(LowerCase(Nick), LowerCase(FWords[0])) > 0)
+          and (FCommands[i].Command = LowerCase(FWords[1])) then begin
             if Assigned(FCommands[i].FAction) then begin
               FLastLine.FArguments:='';
               if FWords.Count > 2 then
@@ -269,7 +269,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
     Result:=False;
 
     FWords.Clear;
-    FWords.CommaText:=StringReplace(LowerCase(Trim(FLastLine.Msg)), ' ', ',', [rfReplaceAll]);
+    FWords.CommaText:=StringReplace(Trim(FLastLine.Msg), ' ', ',', [rfReplaceAll]);
     for i:=FWords.Count-1 downto 0 do
       if FWords[i] = '' then FWords.Delete(i);
 
@@ -277,7 +277,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
       for i:=0 to FPCommands.Count-1 do begin
         if FWords.Count > 0 then
           if (LowerCase(FLastLine.Reciever) = LowerCase(FNick))
-          and (FPCommands[i].Command = FWords[0]) then begin
+          and (FPCommands[i].Command = LowerCase(FWords[0])) then begin
             if Assigned(FPCommands[i].FAction)
             and (IsPuser(FLastLine.Sender)) then begin
               FRespondTo:=FLastLine.Sender;
@@ -293,8 +293,8 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
           end;
           
         if FWords.Count > 1 then
-          if  (Pos(LowerCase(Nick), FWords[0]) > 0)
-          and (FWords[1] = LowerCase(FPCommands[i].Command)) then begin
+          if  (Pos(LowerCase(Nick), LowerCase(FWords[0])) > 0)
+          and (LowerCase(FWords[1]) = FPCommands[i].Command) then begin
             if Assigned(FPCommands[i].FAction)
             and (IsPuser(FLastLine.Sender)) then begin
               FLastLine.FArguments:='';

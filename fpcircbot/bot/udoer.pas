@@ -47,6 +47,7 @@ type
     procedure OnRemovePuser(Caller: TLIrcBot);
     procedure OnListPusers(Caller: TLIrcBot);
     procedure OnRecieve(Caller: TLIrcBot);
+    procedure OnUnknown(Caller: TLIrcBot);
   end;
 
 implementation
@@ -200,7 +201,7 @@ end;
 
 procedure TDoer.OnDefine(Caller: TLIrcBot);
 var
-  n, m: Longint;
+  n: Longint;
   DefWord, Args: string;
   
   function UpdateDef: Boolean;
@@ -247,18 +248,20 @@ var
    end;
 
 begin
-  Args:=TrimQuestion(Caller.LastLine.Arguments);
+  Args:=StringReplace(Caller.LastLine.Arguments, ':', '`dd', [rfReplaceAll]);
   with Caller, Caller.LastLine do begin
-    if Length(Args) > 0 then begin
-      n:=Pos(' ', Args);
-      if n > 0 then begin
-        DefWord:=Args;
-        Delete(DefWord, n, Length(DefWord));
-        DefWord:=Trim(LowerCase(DefWord));
-        Args:=Copy(Args, n + 1, Length(Args));
-        AddIt;
+    if Length(Args) < 256 then begin
+      if Length(Args) > 0 then begin
+        n:=Pos(' ', Args);
+        if n > 0 then begin
+          DefWord:=Args;
+          Delete(DefWord, n, Length(DefWord));
+          DefWord:=Trim(LowerCase(DefWord));
+          Args:=Copy(Args, n + 1, Length(Args));
+          AddIt;
+        end else Respond('Usage: ' + Nick + ': define <what> <definition>');
       end else Respond('Usage: ' + Nick + ': define <what> <definition>');
-    end else Respond('Usage: ' + Nick + ': define <what> <definition>');
+    end else Respond('Description string too long, max size is 255 chars');
   end;
 end;
 
@@ -274,7 +277,8 @@ begin
     
     Open;
     if not Eof then
-      Respond(Args + ' ' + FieldByName('description').AsString)
+      Respond(Args + ' ' +
+              StringReplace(FieldByName('description').AsString, '`dd', ':', [rfReplaceAll]))
     else
       Respond('I don''t have ' + Arguments + ' in my database');
     Close;
@@ -426,6 +430,14 @@ begin
   end;
 end;
 
+procedure TDoer.OnUnknown(Caller: TLIrcBot);
+begin
+  Caller.Respond('Command not found: ' +
+                  Trim(Copy(Caller.LastLine.Msg,
+                       Length(Caller.Nick) + 2,
+                       Length(Caller.LastLine.Msg)))
+                  );
+end;
 
 end.
 
