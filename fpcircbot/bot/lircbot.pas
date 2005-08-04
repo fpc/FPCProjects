@@ -86,6 +86,7 @@ type
     FChan: string; // detto
     FNickPass: string;
     FPeople: TStringListList;
+    FWords: TStringList;
    protected
     //******TCP callbacks********
     procedure OnEr(const msg: string; const snum: Longint);
@@ -173,6 +174,7 @@ begin
   FLastLine:=TLIrcRec.Create;
   FLogin:=Login;
   FPusers:=TStringList.Create;
+  FWords:=TStringList.Create;
   FPusers.CaseSensitive:=False;
   FPeople:=TStringListList.Create(True);
   FChannels:=TStringList.Create;
@@ -200,7 +202,8 @@ begin
   FCommands.Free;
   FPCommands.Free;
   FLastLine.Free;
-  FPeople.Free;;
+  FPeople.Free;
+  FWords.Free;
 end;
 
 //******TCP callbacks********
@@ -210,83 +213,103 @@ begin
 end;
 
 procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
-var
-  m, n: Longint;
 
   function ParseCommands: Boolean;
   var
-    i: Longint;
+    i, j: Longint;
   begin
     Result:=False;
+    
+    FWords.Clear;
+    FWords.CommaText:=StringReplace(LowerCase(Trim(FLastLine.Msg)), ' ', ',', [rfReplaceAll]);
+    for i:=FWords.Count-1 downto 0 do
+      if FWords[i] = '' then FWords.Delete(i);
+
     if FCommands.Count > 0 then
       for i:=0 to FCommands.Count-1 do begin
-        n:=Pos(FCommands[i].Command, LowerCase(FLastLine.Msg));
-        if (LowerCase(FLastLine.Reciever) = LowerCase(FNick))
-        and (n > 0) then begin
-          if Assigned(FCommands[i].FAction) then begin
-            FRespondTo:=FLastLine.Sender;
-            FLastLine.FArguments:=Copy(FLastLine.Msg, 8, Length(FLastLine.Msg));
-            FCommands[i].FAction(Self);
+        if FWords.Count > 0 then
+          if (LowerCase(FLastLine.Reciever) = LowerCase(FNick))
+          and (LowerCase(FCommands[i].Command) = FWords[0]) then begin
+            if Assigned(FCommands[i].FAction) then begin
+              FRespondTo:=FLastLine.Sender;
+              FLastLine.FArguments:='';
+              if FWords.Count > 1 then
+                for j:=1 to FWords.Count-1 do
+                  FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
+              FLastLine.FArguments:=Trim(FLastLine.FArguments);
+              FCommands[i].FAction(Self);
+            end;
+            Result:=True;
+            Exit;
           end;
-          Result:=True;
-          Exit;
-        end;
 
-        m:=Pos(LowerCase(FNick), LowerCase(FLastLine.Msg));
-        n:=Pos(FCommands[i].Command, LowerCase(FLastLine.Msg));
-        if (m > 0) and (n > 0) and (m < n) then begin
-          if Assigned(FCommands[i].FAction) then begin
-            FLastLine.FArguments:=Copy(FLastLine.Msg,
-                                       n + Length(FCommands[i].Command) + 1,
-                                       Length(FLastLine.Msg));
-            if FRIP then FRespondTo:=FLastLine.Sender
-            else FRespondTo:=FLastLine.Reciever;
-            FCommands[i].FAction(Self);
+        if FWords.Count > 1 then
+          if  (Pos(LowerCase(Nick), FWords[0]) > 0)
+          and (LowerCase(FCommands[i].Command) = FWords[1]) then begin
+            if Assigned(FCommands[i].FAction) then begin
+              FLastLine.FArguments:='';
+              if FWords.Count > 2 then
+                for j:=2 to FWords.Count-1 do
+                  FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
+              FLastLine.FArguments:=Trim(FLastLine.FArguments);
+              if FRIP then FRespondTo:=FLastLine.Sender
+              else FRespondTo:=FLastLine.Reciever;
+              FCommands[i].FAction(Self);
+            end;
+            Result:=True;
+            Exit;
           end;
-          Result:=True;
-          Exit;
-        end;
       end;
   end;
   
   function ParsePCommands: Boolean;
   var
-    i: Longint;
+    i, j: Longint;
   begin
     Result:=False;
+
+    FWords.Clear;
+    FWords.CommaText:=StringReplace(LowerCase(Trim(FLastLine.Msg)), ' ', ',', [rfReplaceAll]);
+    for i:=FWords.Count-1 downto 0 do
+      if FWords[i] = '' then FWords.Delete(i);
+
     if FPCommands.Count > 0 then
       for i:=0 to FPCommands.Count-1 do begin
-        n:=Pos(FPCommands[i].Command, LowerCase(FLastLine.Msg));
-        if (LowerCase(FLastLine.Reciever) = LowerCase(FNick))
-        and (n > 0) then begin
-          if Assigned(FPCommands[i].FAction)
-          and (IsPuser(FLastLine.Sender)) then begin
-            FRespondTo:=FLastLine.Sender;
-            FLastLine.FArguments:=Copy(FLastLine.Msg,
-                                      n + Length(FPCommands[i].Command) + 1,
-                                      Length(FLastLine.Msg));
-            FPCommands[i].FAction(Self);
-          end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
-          Result:=True;
-          Exit;
-        end;
-
-        m:=Pos(LowerCase(FNick), LowerCase(FLastLine.Msg));
-        n:=Pos(FPCommands[i].Command, LowerCase(FLastLine.Msg));
-        if (m = 1) and (n > 0) then begin
-          if Assigned(FPCommands[i].FAction)
-          and (IsPuser(FLastLine.Sender)) then begin
-            FLastLine.FArguments:=Copy(FLastLine.Msg,
-                                      n + Length(FPCommands[i].Command) + 1,
-                                      Length(FLastLine.Msg));
-            if FRIP then FRespondTo:=FLastLine.Sender
-            else FRespondTo:=FLastLine.Reciever;
-            FPCommands[i].FAction(Self);
-          end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
-          Result:=True;
-          Exit;
-        end;
-      end;
+        if FWords.Count > 0 then
+          if (LowerCase(FLastLine.Reciever) = LowerCase(FNick))
+          and (FPCommands[i].Command = FWords[0]) then begin
+            if Assigned(FPCommands[i].FAction)
+            and (IsPuser(FLastLine.Sender)) then begin
+              FRespondTo:=FLastLine.Sender;
+              FLastLine.FArguments:='';
+              if FWords.Count > 1 then
+                for j:=1 to FWords.Count-1 do
+                  FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
+              FLastLine.FArguments:=Trim(FLastLine.FArguments);
+              FPCommands[i].FAction(Self);
+            end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
+            Result:=True;
+            Exit;
+          end;
+          
+        if FWords.Count > 1 then
+          if  (Pos(LowerCase(Nick), FWords[0]) > 0)
+          and (FWords[1] = LowerCase(FPCommands[i].Command)) then begin
+            if Assigned(FPCommands[i].FAction)
+            and (IsPuser(FLastLine.Sender)) then begin
+              FLastLine.FArguments:='';
+              if FWords.Count > 2 then
+                for j:=2 to FWords.Count-1 do
+                  FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
+              FLastLine.FArguments:=Trim(FLastLine.FArguments);
+              if FRIP then FRespondTo:=FLastLine.Sender
+              else FRespondTo:=FLastLine.Reciever;
+              FPCommands[i].FAction(Self);
+            end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
+            Result:=True;
+            Exit;
+          end;
+      end; // for
   end;
   
   procedure ParseForCommands;
