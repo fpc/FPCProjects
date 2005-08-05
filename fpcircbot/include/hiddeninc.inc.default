@@ -7,8 +7,10 @@ DefaultChannels: array[0..1] of string = ('#chan1', '#chan2'); // detto
 
 { you must change all these for the bot to work. See file INSTALL for DB instructions }
 NickPass  = 'nickpass';
+
+
 BotDBName = 'fpcbot';
 BotDBPass = 'botpass';
-DBPath    = 'dbpath';
-CGIDBName = 'cginame';
+CGIDBName = 'cgifpc';
 CGIDBPass = 'cgipass';
+DBPath    = '/path/to/db';

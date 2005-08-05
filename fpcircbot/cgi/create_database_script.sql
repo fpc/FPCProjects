@@ -1,7 +1,7 @@
 /* Don't forget to create the users first with:                                            */
 /*                                                                                         */
-/* gsec -user sysdba -password masterkey -add fpcbot -pw tobcpf -fname fpcbot             */
-/* gsec -user sysdba -password masterkey -add ircfpcbot -pw tobcpfcri35 -fname ircfpcbot  */
+/* gsec -user sysdba -password masterkey -add fpcbot -pw botpass -fname fpcbot             */
+/* gsec -user sysdba -password masterkey -add cgifpc -pw cgipass -fname cgifpc             */
 /*                                                                                         */
 /* then:                                                                                   */
 /*                                                                                         */
@@ -11,8 +11,8 @@ SET SQL DIALECT 3;
 
 SET NAMES NONE;
 
-CREATE DATABASE '/var/firebird/fpcbot.fdb'
-USER 'SYSDBA' PASSWORD 'janosik'
+CREATE DATABASE 'fpcbot.fdb'
+USER 'SYSDBA' PASSWORD 'masterkey'
 PAGE_SIZE 1024
 DEFAULT CHARACTER SET NONE;
 
@@ -60,7 +60,7 @@ alter table tbl_Definitions add constraint unq_definitions unique (definition);
 
 /* Privileges of users */
 
-GRANT SELECT ON TBL_LOGLINES TO IRCFPCBOT;
+GRANT SELECT ON TBL_LOGLINES TO CGIFPC;
 GRANT INSERT ON TBL_LOGLINES TO FPCBOT;
 GRANT SELECT ON TBL_LOGLINES TO FPCBOT;
 GRANT INSERT ON TBL_DEFINITIONS TO FPCBOT;
