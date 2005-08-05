@@ -1,6 +1,12 @@
+REQUIREMENTS:
+FPC 2.0.1 or 2.1.1.
+Firebird2 - classic or superserver.
+Apache or other web server capable of CGI-BIN.
+Permissions for your database.
+
 BEFORE COMPILATION:
-Make sure to modify the hiddeninc.inc.default file so it has your paths and passwords.
-Then rename the file to hiddeninc.inc
+Make sure to modify the include/hiddeninc.inc.default file so it has your paths and passwords.
+Then rename the file to include/hiddeninc.inc
 
 COMPILATION:
 make
@@ -8,7 +14,7 @@ make
 AFTER COMPILATION:
 After you compile everything put the cgi/cgifpcbot file and cgi/html directory into your cgi directory.
 
-Use the file "create_database_script.sql"(view it for instructions, again, change the password to your db one) to create the FB database.
+Use the file "create_database_script.sql"(view it for instructions, again, change the password to your db one) to create the FB database. Put the newly created DB into the desired directory. In unix make sure the file is writable by group "firebird" and that you as user are a part of this group. In windows, let me know how this works.
 
 When everything's done just run lfpcbot. It will automagicly connect to FreeNode.
 Issue commands by /msg <command> or BotName <command>.
