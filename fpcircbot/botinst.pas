@@ -203,10 +203,6 @@ begin
       Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'html' + PathDelim + 'header.html ' +
                                       CgiBin + PathDelim + 'html';
       Proc.Execute;
-      Writeln('Cleaning temporary files...');
-      DeleteFile('cgibin_path.ipt');
-      DeleteFile('makedb.sh');
-      DeleteFile('dbscr.sql');
       Writeln('Installation complete.');
     except
       on e: Exception do

@@ -7,10 +7,18 @@ Permissions for your database.
 
 ------------------------------------------AUTO INSTALL---------------------------------------------
 
+BEFORE COMPILATION:
+
+Make sure the directory to which the database file will be place(you'll get asked during install)
+is owned by "firebird" group and user. Otherwise the DB cannot be created.
+
+COMPILATION AND INSTALL:
+
 make auto
 make install (as root)
 
 -----------------------------------MANUAL INSTALL GUIDE--------------------------------------------
+
 
 BEFORE COMPILATION:
 Make sure to modify the include/hiddeninc.inc.default file so it has your paths and passwords.
@@ -23,9 +31,11 @@ Lastly run the cgi/create_database_script.sql as is specified inside to create y
 SPECIAL NOTE: The isql binary varies from system to system. Sometimes it's isql-fb and so on. Look in your firebird/bin directory to see what the binary name is.
 
 COMPILATION:
-make manual
+
+make
 
 AFTER COMPILATION:
+
 After you compile everything put the cgi/cgifpcbot file and cgi/html directory into your cgi directory.
 
 Put the newly created DB into the desired directory. In unix make sure the file is writable by group "firebird" and that you as user are a part of this group. In windows, let me know how this works.

@@ -27,6 +27,9 @@ clean:
 	delp lnet
 	delp cgi/psp
 	delp .
+	rm -f cgibin_path.ipt
+	rm -f makedb.sh
+	rm -f dbscr.sql
 
 debug:
 	$(PP) $(BASEARGS) -g $(LBOT)
