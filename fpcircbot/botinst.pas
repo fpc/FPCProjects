@@ -144,6 +144,13 @@ begin
     List.SaveToFile('bot' + PathDelim + 'botconfig.cfg');
 
     // DB CREATION
+    if FileExists(DBFile) then begin
+      Writeln('WARNING WARNING WARNING');
+      Writeln('There is an already existing DB file in: ', DBFile);
+      Writeln('If you want to recreate(deletes ALL content) your DB, continue');
+      Writeln('otherwise press escape and chose another location');
+      ReadString;
+    end;
     Writeln('Creating DB..');
 
     Proc.CommandLine:=gsec + ' -user sysdba -password ' +
