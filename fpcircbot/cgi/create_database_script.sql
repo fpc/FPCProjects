@@ -1,7 +1,7 @@
 /* Don't forget to create the users first with:                                            */
 /*                                                                                         */
-/* gsec -user sysdba -password masterkey -add fpcbot -pw botpass -fname fpcbot             */
-/* gsec -user sysdba -password masterkey -add cgifpc -pw cgipass -fname cgifpc             */
+/* gsec -user sysdba -password janosik -add fpcbot -pw botpass -fname fpcbot               */
+/* gsec -user sysdba -password janosik -add cgifpc -pw cgipass -fname cgifpc               */
 /*                                                                                         */
 /* then:                                                                                   */
 /*                                                                                         */
@@ -11,8 +11,8 @@ SET SQL DIALECT 3;
 
 SET NAMES NONE;
 
-CREATE DATABASE 'fpcbot.fdb'
-USER 'SYSDBA' PASSWORD 'masterkey'
+CREATE DATABASE '$dbpath'
+USER 'SYSDBA' PASSWORD '$sysdbapass'
 PAGE_SIZE 1024
 DEFAULT CHARACTER SET NONE;
 
@@ -60,9 +60,9 @@ alter table tbl_Definitions add constraint unq_definitions unique (definition);
 
 /* Privileges of users */
 
-GRANT SELECT ON TBL_LOGLINES TO CGIFPC;
-GRANT INSERT ON TBL_LOGLINES TO FPCBOT;
-GRANT SELECT ON TBL_LOGLINES TO FPCBOT;
-GRANT INSERT ON TBL_DEFINITIONS TO FPCBOT;
-GRANT SELECT ON TBL_DEFINITIONS TO FPCBOT;
-GRANT UPDATE ON TBL_DEFINITIONS TO FPCBOT;
+GRANT SELECT ON TBL_LOGLINES TO $cgidbname;
+GRANT INSERT ON TBL_LOGLINES TO $botdbname;
+GRANT SELECT ON TBL_LOGLINES TO $botdbname;
+GRANT INSERT ON TBL_DEFINITIONS TO $botdbname;
+GRANT SELECT ON TBL_DEFINITIONS TO $botdbname;
+GRANT UPDATE ON TBL_DEFINITIONS TO $botdbname;

@@ -3,7 +3,7 @@ program cgiFpcBot;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, Web, SqlDB, IBConnection;
+  Classes, SysUtils, Web, SqlDB, IBConnection, stringutils;
   
 procedure Main;
 
@@ -89,34 +89,14 @@ begin
   TryGetWebVar(Sender, 'sender', '');
   TryGetWebVar(Msg, 'msg', '');
   TryGetWebVar(Date, 'date', '');
-end;
-
-{< = &lt;
-> = &gt;
-" = &quot;
-" = &#34;
-' = &#39;
-\x8b = &#8249;
-\x9b = &#8250;
-\012 = &#10;
-\015 = &#13;}
-
-function FilterHtml(const s: string): string;
-begin
-  Result:=s;
-  if Length(Result) > 0 then begin
-    Result:=StringReplace(Result, '<', '&lt;', [rfReplaceAll]);
-    Result:=StringReplace(Result, '>', '&gt;', [rfReplaceAll]);
-    Result:=StringReplace(Result, '"', '&quot;', [rfReplaceAll]);
-    Result:=StringReplace(Result, #34, '&#34;', [rfReplaceAll]);
-    Result:=StringReplace(Result, #39, '&#39;', [rfReplaceAll]);
-  end;
+	
 end;
 
 var
-  s: string;
+  LN, s: string;
 begin
   Init;
+  LN:='';
   s:='';
 
   with LogQuery do begin
@@ -132,28 +112,30 @@ begin
     writeln('<hr><table border="0">');
     writeln('<font size="10">');
 
-    if Length(Sender) > 0 then s:=s + ' and sender=''' + Sender + '''';
-    if Length(Msg) > 0 then s:=s + ' and msg like ''%' + Msg + '%''';
-    if Length(Date) > 0 then s:=s + ' and CAST (logtime as date) = ''' + Date + '''';
+    if Length(Sender) > 0 then s:=s + ' and sender=''' + QuoteString(Sender) + '''';
+    if Length(Msg) > 0 then s:=s + ' and msg like ''%' + QuoteString(Msg) + '%''';
+    if Length(Date) > 0 then s:=s + ' and CAST (logtime as date) = ''' +QuoteString (Date) + '''';
     
     try
       sql.clear;
       sql.add('select first ' + Count + ' sender, msg, cast(logtime as varchar(25)) ' +
-              'as logtime from tbl_loglines where (reciever=''' + Channel +
+              'as logtime from tbl_loglines where (reciever=''' + QuoteString(Channel) +
               '''' + s + ') order by loglineid desc');
       open;
-      i:=1;
+      i:=2;
       while not eof do begin
         if (i mod 2) = 0 then
           HTMLCode.Add('<tr style="background-color:#FFFFFF">')
         else
           HTMLCode.Add('<tr style="background-color:#E0E0E0">');
 
-        HTMLCode.Add('<td nowrap>' + Copy(fieldbyname('logtime').asstring, 1, 19) +
-                     '</td><td>' + fieldbyname('sender').asstring+'</td><td>' +
+        s:=FilterHtml(fieldbyname('sender').asstring);
+        HTMLCode.Add('<td nowrap>' + FilterHtml(Copy(fieldbyname('logtime').asstring, 1, 19)) +
+                     '</td><td>' + s +'</td><td>' +
                      FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
         Next;
-        Inc(i);
+        if LN <> s then Inc(i);
+        LN:=s;
       end;
 
     except on E: Exception do

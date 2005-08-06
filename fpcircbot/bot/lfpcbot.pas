@@ -22,7 +22,7 @@ along with This program; if not, Write to the Free Software Foundation,
 {$mode objfpc}{$H+}
 
 uses
-  uDoer, Crt, SysUtils, lIrcBot;
+  uDoer, Crt, Classes, SysUtils, lIrcBot;
 
 procedure Main;
 var
@@ -31,15 +31,18 @@ var
   i: Longint;
   PORT: Word;
   Doer: TDoer;
+  ConfigList: TStringList;
 begin
+  ConfigList:=TStringList.Create;
+  ConfigList.LoadFromFile('botconfig.cfg');
+  ConfigList.CommaText:=ConfigList.Text;
   AD:='irc.freenode.net';
   PORT:=6667;
   Doer:=TDoer.Create;
   Doer.Logging:=True;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;
-  for i:=Low(DefaultUsers) to High(DefaultUsers) do
-    Con.AddPuser(DefaultUsers[i]);
+  Con.AddPuser(ConfigList[0]);
 
   // Normal commands
   Con.AddCommand('help', @Doer.OnHelp, 'Makes me display this message');
@@ -65,8 +68,7 @@ begin
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;
     Doer.TimeStarted:=DateTimeToStr(Now);
-    for i:=Low(DefaultChannels) to High(DefaultChannels) do
-      Con.Join(DefaultChannels[i]);
+    Con.Join(ConfigList[1]);
     while not Doer.Quit do begin
       if  KeyPressed
       and (ReadKey = #27) then Doer.Quit:=True;
@@ -77,6 +79,7 @@ begin
   
   Con.Free;
   Doer.Free;
+  ConfigList.Free;
 end;
 
 begin

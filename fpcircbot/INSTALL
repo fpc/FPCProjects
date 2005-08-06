@@ -1,8 +1,16 @@
 REQUIREMENTS:
+
 FPC 2.0.1 or 2.1.1.
 Firebird2 - classic or superserver.
 Apache or other web server capable of CGI-BIN.
 Permissions for your database.
+
+------------------------------------------AUTO INSTALL---------------------------------------------
+
+make auto
+make install (as root)
+
+-----------------------------------MANUAL INSTALL GUIDE--------------------------------------------
 
 BEFORE COMPILATION:
 Make sure to modify the include/hiddeninc.inc.default file so it has your paths and passwords.
@@ -15,12 +23,14 @@ Lastly run the cgi/create_database_script.sql as is specified inside to create y
 SPECIAL NOTE: The isql binary varies from system to system. Sometimes it's isql-fb and so on. Look in your firebird/bin directory to see what the binary name is.
 
 COMPILATION:
-make
+make manual
 
 AFTER COMPILATION:
 After you compile everything put the cgi/cgifpcbot file and cgi/html directory into your cgi directory.
 
 Put the newly created DB into the desired directory. In unix make sure the file is writable by group "firebird" and that you as user are a part of this group. In windows, let me know how this works.
+Edit bot/botconfig.cfg.default and change $root and $channel to default user and channel.
+Save as bot/botconfig.cfg
 
 When everything's done just run lfpcbot. It will automagicly connect to FreeNode.
 Issue commands by /msg <command> or BotName <command>.

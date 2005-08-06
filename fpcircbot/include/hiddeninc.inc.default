@@ -1,16 +1,11 @@
-Version        = '0.6';
-BotName        = 'NameBot'; // change as you need (WARNING: HAS TO BE REGISTERED TO NICKSERV)
-LogURL         = 'http://localhost'; // change as you need
+Version        = '0.7';
+BotName        = '$botname';
+LogURL         = '$logurl';
 
-DefaultUsers   : array[0..1] of string = ('user1', 'user2'); // Change accordingly
-DefaultChannels: array[0..1] of string = ('#chan1', '#chan2'); // detto
+NickPass  = '$nickpass';
 
-{ you must change all these for the bot to work. See file INSTALL for DB instructions }
-NickPass  = 'nickpass';
-
-
-BotDBName = 'fpcbot';
-BotDBPass = 'botpass';
-CGIDBName = 'cgifpc';
-CGIDBPass = 'cgipass';
-DBPath    = '/path/to/db';
+BotDBName = '$fpcbot';
+BotDBPass = '$botpass';
+CGIDBName = '$cgifpc';
+CGIDBPass = '$cgipass';
+DBPath    = '$dbpath';
