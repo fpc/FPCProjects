@@ -287,7 +287,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
                   FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
               FPCommands[i].FAction(Self);
-            end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
+            end else SendMessage('Sorry but you are not a power user', FLastLine.Sender);
             Result:=True;
             Exit;
           end;
