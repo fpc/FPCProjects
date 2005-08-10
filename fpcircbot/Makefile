@@ -1,5 +1,5 @@
 PP=fpc
-BASEARGS=-Fulnet -Fubot/chatext -Filnet/include -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
+BASEARGS=-Fucommon -Fulnet -Fubot/chatext -Filnet/include -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
 ARGS=$(BASEARGS) -O2p2 -XX -Xs
 LBOT=bot/lfpcbot.pas
 LCGI=cgi/cgifpcbot.pas
@@ -26,6 +26,7 @@ clean:
 	delp cgi
 	delp lnet
 	delp cgi/psp
+	delp common
 	delp .
 	rm -f cgibin_path.ipt
 	rm -f makedb.sh

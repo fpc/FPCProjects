@@ -10,7 +10,7 @@ uses
   {$ifndef noDB}
   SqlDB, IBConnection,
   {$endif}
-  Classes, SysUtils, lIrcBot, Markov;
+  Classes, SysUtils, lIrcBot, StringUtils, Markov;
 
 const
   BoolStr: array[Boolean] of string = ('Off', 'On');
@@ -186,7 +186,7 @@ var
   Args: string;
 begin
   {$ifndef noDB}
-  Args:=TrimQuestion(Caller.LastLine.Arguments);
+  Args:=QuoteString(TrimQuestion(Caller.LastLine.Arguments));
 
   with Caller.LastLine, Caller do
     if UserInChannel(Reciever, Args) then
@@ -263,8 +263,11 @@ var
       Caller.Respond('DB insert error');
     end;
    end;
+   
+var
+  i: Longint;
 begin
-  Args:=StringReplace(Caller.LastLine.Arguments, ':', '`dd', [rfReplaceAll]);
+  Args:=StringReplace(QuoteString(Caller.LastLine.Arguments), ':', '`dd', [rfReplaceAll]);
   with Caller, Caller.LastLine do begin
     if Length(Args) < 256 then begin
       if Length(Args) > 0 then begin
@@ -291,7 +294,7 @@ var
 begin
 {$ifndef noDB}
   with FDefViewQuery, Caller, Caller.LastLine do try
-    Args:=TrimQuestion(Arguments);
+    Args:=StringReplace(QuoteString(TrimQuestion(Arguments)), '`dd', ':', [rfReplaceAll]);
     Sql.Clear;
     Sql.Add('select first 1 description from tbl_definitions where definition=''' +
             LowerCase(Args) + '''');
