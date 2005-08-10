@@ -1,5 +1,7 @@
 Unit Dict;
 
+{$mode objfpc}
+
 Interface
 
 Type
