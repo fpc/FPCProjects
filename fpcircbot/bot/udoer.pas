@@ -456,7 +456,7 @@ begin
   {$endif}
   
   // MARCOV
-  with Caller.LastLine, Caller do begin
+  with Caller.LastLine, Caller do if Sender <> Nick then begin
     if (Length(Reciever) > 0) and not WasCommand then
       if Reciever = Nick then
         SendMessage(Talk(Msg), Sender)
