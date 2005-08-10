@@ -1,40 +1,61 @@
 REQUIREMENTS:
 
-FPC 2.0.1 or 2.1.1.
-Firebird2 - classic or superserver.
-Apache or other web server capable of CGI-BIN.
-Permissions for your database.
+FPC 2.0.1 or 2.1.1. [required]
+Firebird2 - classic or superserver. [optional]
+Apache or other web server capable of CGI-BIN. [optional]
+Permissions for your database. [required for optional]
+
+If you chose not to have DB support compiled into the bot you cannot use the CGI interface
+and some of the bot's commands will become obsololete. It will however save you lots of
+fuzz with installing the firebird DB etc. Good for people who just want to try the bot out.
+The choice wether to have DB or not is given during auto-install.
 
 ------------------------------------------AUTO INSTALL---------------------------------------------
 
 BEFORE COMPILATION:
 
-Make sure the directory to which the database file will be place(you'll get asked during install)
-is owned by "firebird" group and user. Otherwise the DB cannot be created.
+For people with DB support:
+
+Make sure the directory to which the database file will be placed(you'll get asked during install)
+is owned by "firebird" group and user. Otherwise the DB cannot be created. Also make sure YOU(the user which runs make) are in the "firebird" group.
 
 COMPILATION AND INSTALL:
 
-make auto
-make install (as root)
+make
+make compile
+make install (as root) [only with DB support]
 
 -----------------------------------MANUAL INSTALL GUIDE--------------------------------------------
+
+This section is for those people who want to manualy install the bot, or who HAVE to because the installer failed.(give me a bugrep in that case)
 
 
 BEFORE COMPILATION:
 Make sure to modify the include/hiddeninc.inc.default file so it has your paths and passwords.
 Then rename the file to include/hiddeninc.inc
+
+If you DON'T want to have database support, add this line to include/baseinc.inc
+{$define noDB}
+
+If you DO want to have database support do this
+------------------------------------------------------------------------------------------------------
 Modify cgi/create_database_script.sql and change all "masterkey" to your sysdba password.
 In same file (in the upper comment) change the fpcbot password and cgifpc password to those in hiddeninc.inc.
 Then run the gsec command as is specified in the (now modified) create_database.sql file.
 Lastly run the cgi/create_database_script.sql as is specified inside to create your new log/defines database.
 
 SPECIAL NOTE: The isql binary varies from system to system. Sometimes it's isql-fb and so on. Look in your firebird/bin directory to see what the binary name is.
+------------------------------------------------------------------------------------------------------
 
 COMPILATION:
 
-make
+make compile
 
 AFTER COMPILATION:
+
+For those without DB support: no installation, just go to bot and run lfpcbot[.exe]
+
+For those with DB support:
 
 After you compile everything put the cgi/cgifpcbot file and cgi/html directory into your cgi directory.
 

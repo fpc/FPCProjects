@@ -28,10 +28,10 @@ procedure Main;
 var
   Con: TLIrcBot;
   AD: string;
-  i: Longint;
   PORT: Word;
   Doer: TDoer;
   ConfigList: TStringList;
+  n, i: Longint;
 begin
   ConfigList:=TStringList.Create;
   ConfigList.LoadFromFile('botconfig.cfg');
@@ -42,33 +42,40 @@ begin
   Doer.Logging:=True;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;
-  Con.AddPuser(ConfigList[0]);
 
   // Normal commands
-  Con.AddCommand('help', @Doer.OnHelp, 'Makes me display this message');
-  Con.AddCommand('about', @Doer.OnAbout, 'Makes me tell about my creator');
-  Con.AddCommand('status', @Doer.OnStatus, 'Makes me display the current status');
-  Con.AddCommand('seen', @Doer.OnSeen, 'Makes me tell you when I last saw someone');
-  Con.AddCommand('define', @Doer.OnDefine, 'Makes me add a definition to the database');
-  Con.AddCommand('whatis', @Doer.OnWhatIs, 'Makes me tell you what something is if it''s defined in the database');
-  Con.AddCommand('logurl', @Doer.OnLogUrl, 'Makes me tell you where the log is');
-  Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Makes me list power users');
+  Con.AddCommand('!help', @Doer.OnHelp, 'Makes me display this message');
+  Con.AddCommand('!about', @Doer.OnAbout, 'Makes me tell about my creator');
+  Con.AddCommand('!status', @Doer.OnStatus, 'Makes me display the current status');
+  Con.AddCommand('!seen', @Doer.OnSeen, 'Makes me tell you when I last saw someone');
+  Con.AddCommand('!define', @Doer.OnDefine, 'Makes me add a definition to the database');
+  Con.AddCommand('!whatis', @Doer.OnWhatIs, 'Makes me tell you what something is if it''s defined in the database');
+  Con.AddCommand('!logurl', @Doer.OnLogUrl, 'Makes me tell you where the log is');
+  Con.AddCommand('!listpusers', @Doer.OnListPUsers, 'Makes me list power users');
 
   // Power user commands
-  Con.AddPCommand('replyprv', @Doer.OnReplyPrv, 'Makes me reply in private, param is (On/Off)');
-  Con.AddPCommand('part', @Doer.OnPart, 'Makes me part the channel');
-  Con.AddPCommand('join', @Doer.OnJoin, 'Makes me join a channel');
-  Con.AddPCommand('quit', @Doer.OnQuit, 'Makes me quit(use "quit confirm" if you are sure)');
-  Con.AddPCommand('sayall', @Doer.OnSayAll, 'Makes me say something to everyone');
-  Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Makes me say something to someone/channel');
-  Con.AddPCommand('log', @Doer.OnLog, 'Makes me begin/end logging. Param is (On/Off)');
-  Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Makes ma add a power user');
-  Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Makes me remove a power user');
+  Con.AddPCommand('!replyprv', @Doer.OnReplyPrv, 'Makes me reply in private, param is (On/Off)');
+  Con.AddPCommand('!part', @Doer.OnPart, 'Makes me part the channel');
+  Con.AddPCommand('!join', @Doer.OnJoin, 'Makes me join a channel');
+  Con.AddPCommand('!quit', @Doer.OnQuit, 'Makes me quit(use "quit confirm" if you are sure)');
+  Con.AddPCommand('!sayall', @Doer.OnSayAll, 'Makes me say something to everyone');
+  Con.AddPCOmmand('!sayto', @Doer.OnSayTo, 'Makes me say something to someone/channel');
+  Con.AddPCommand('!log', @Doer.OnLog, 'Makes me begin/end logging. Param is (On/Off)');
+  Con.AddPCommand('!addpuser', @Doer.OnAddPuser, 'Makes ma add a power user');
+  Con.AddPCommand('!removepuser', @Doer.OnRemovePuser, 'Makes me remove a power user');
   Con.OnRecieve:=@Doer.OnRecieve;
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;
     Doer.TimeStarted:=DateTimeToStr(Now);
-    Con.Join(ConfigList[1]);
+    
+    if ConfigList.Count > 0 then begin
+      n:=ConfigList.IndexOf('?');
+      if n > 0 then
+        for i:=0 to n-1 do Con.AddPuser(ConfigList[i]);
+      if n < ConfigList.Count-1 then
+        for i:=n+1 to ConfigList.Count-1 do Con.Join(ConfigList[i]);
+    end;
+    
     while not Doer.Quit do begin
       if  KeyPressed
       and (ReadKey = #27) then Doer.Quit:=True;

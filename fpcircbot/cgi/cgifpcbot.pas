@@ -82,7 +82,7 @@ procedure GetWebVars;
   end;
 
 begin
-  if Channel = '#' then Channel:='#lentilwars';
+  if Channel = '#' then Channel:='#fpc';
   
   TryGetWebVar(Channel, 'channel', '#lentilwars');
   TryGetWebVar(Count, 'linecount', '50');

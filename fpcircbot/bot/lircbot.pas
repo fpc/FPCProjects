@@ -39,6 +39,7 @@ type
     FArguments: string;
     FMsg: string;
     FCommand: string;
+    FWasCommand: Boolean;
     FTime: TDateTime;
    public
     function CloneSelf: TLIrcRec;
@@ -47,6 +48,7 @@ type
     property Arguments: string read FArguments;
     property Msg: string read FMsg;
     property Time: TDateTime read FTime;
+    property WasCommand: Boolean read FWasCommand;
   end;
   
   TLIrcBot = class;
@@ -81,6 +83,7 @@ type
     FPCommands: TLCommandList;
     FRespondTo: string;
     FOnRecieve: TLIrcCallback;
+    FOnDisconnect: TLIrcCallback;
     FRIP: Boolean;
     FNickOK: string; // a little hack
     FChan: string; // detto
@@ -138,6 +141,7 @@ type
     property PuserCount: Longint read GetPuserCount;
     property Connected: Boolean read GetConnected;
     property OnRecieve: TLIrcCallback read FOnRecieve write FOnRecieve;
+    property OnDisconnect: TLIrcCallback read FOnDisconnect write FOnDisconnect;
     property LastLine: TLIrcRec read FLastLine;
     property ReplyInPrivate: Boolean read FRIP write FRIP;
     property NickServPassword: string read FNickPass write FNickPass;
@@ -154,6 +158,7 @@ begin
   Result.FMsg:=FMsg;
   Result.FCommand:=FCommand;
   Result.FTime:=FTime;
+  Result.FWasCommand:=FWasCommand;
 end;
 
 constructor TLCommand.Create(const s: string; a: TLIrcCallback; const h: string = '');
@@ -240,6 +245,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FCommands[i].FAction(Self);
             end;
             Result:=True;
+            FLastLine.FWasCommand:=True;
             Exit;
           end;
 
@@ -257,6 +263,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FCommands[i].FAction(Self);
             end;
             Result:=True;
+            FLastLine.FWasCommand:=True;
             Exit;
           end;
       end;
@@ -289,6 +296,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FPCommands[i].FAction(Self);
             end else SendMessage('Sorry but you are not a power user', FLastLine.Sender);
             Result:=True;
+            FLastLine.FWasCommand:=True;
             Exit;
           end;
           
@@ -307,6 +315,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FPCommands[i].FAction(Self);
             end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
             Result:=True;
+            FLastLine.FWasCommand:=True;
             Exit;
           end;
       end; // for
@@ -338,6 +347,7 @@ begin
   s:=SeparateByEnding(nMsg);
   if Length(s) > 0 then OnRe(s, 0);
   Parsed:=ParseLine(nMsg);
+  FLastLine.FWasCommand:=False;
 
   if Assigned(FOnRecieve) then
     if Pos(',', FLastLine.FReciever) > 0 then begin
@@ -397,8 +407,11 @@ end;
 
 procedure TLIrcBot.OnDs(const msg: string; const snum: Longint);
 begin
-  if Length(FServer) > 0 then
+  if Length(FServer) > 0 then begin
     Connect(FPort, FServer);
+    if Assigned(OnDisconnect) then
+      OnDisconnect(Self);
+  end;
 end;
 
 //******TCP callbacks end****
@@ -567,7 +580,8 @@ begin
         Writeln('Adding ', FLastLine.Sender, ' to ', FChannels[n]);
         Add(FLastLine.Sender);
       end;
-      Result:=True;
+      if FLastLine.FSender <> Nick then
+        Result:=True;
     end; // if
     
     if FCommand = 'PART' then begin

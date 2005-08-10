@@ -1,5 +1,5 @@
 PP=fpc
-BASEARGS=-Fulnet -Filnet/include -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
+BASEARGS=-Fulnet -Fubot/chatext -Filnet/include -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
 ARGS=$(BASEARGS) -O2p2 -XX -Xs
 LBOT=bot/lfpcbot.pas
 LCGI=cgi/cgifpcbot.pas
@@ -10,19 +10,19 @@ INSTBIN2=./botinst inst
 all:
 	$(PP) $(ARGS) $(INSTSRC)
 	$(INSTBIN1)
+	echo "Run make compile."
+
+compile:
 	$(PP) $(ARGS) $(LBOT)
 	$(PP) $(ARGS) $(LCGI)
 	echo "Run make install as root."
-
-manual:
-	$(PP) $(ARGS) $(LBOT)
-	$(PP) $(ARGS) $(LCGI)
 
 install:
 	$(INSTBIN2)
 
 clean:
 	delp bot
+	delp bot/chatext
 	delp cgi
 	delp lnet
 	delp cgi/psp

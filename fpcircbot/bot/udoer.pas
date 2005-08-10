@@ -2,10 +2,15 @@ unit uDoer;
 
 {$mode objfpc}{$H+}
 
+{$i baseinc.inc}
+
 interface
 
 uses
-  Classes, SysUtils, lIrcBot, SqlDB, IBConnection;
+  {$ifndef noDB}
+  SqlDB, IBConnection,
+  {$endif}
+  Classes, SysUtils, lIrcBot, Markov;
 
 const
   BoolStr: array[Boolean] of string = ('Off', 'On');
@@ -16,12 +21,14 @@ const
 type
   TDoer = class
    protected
+    {$ifndef noDB}
     FLogQuery: TSQLQuery;
     FSeenQuery: TSQLQuery;
     FDefinesQuery: TSQLQuery;
     FDefViewQuery: TSQLQuery;
     FLogTransaction: TSQLTransaction;
     FLogFBConnection: TSQLConnection;
+    {$endif}
     function TrimQuestion(const s: string): string;
    public
     Quit: Boolean;
@@ -55,6 +62,8 @@ implementation
 constructor TDoer.Create;
 begin
   Quit:=False;
+  InitDict;
+  {$ifndef nodb}
   FLogFBConnection := tIBConnection.Create(nil);
   with FLogFBConnection do begin
     DatabaseName := DBPath;
@@ -95,10 +104,12 @@ begin
   FDefViewQuery.DataBase := FLogFBConnection;
   FDefViewQuery.transaction := FLogTransaction;
   FDefViewQuery.ParseSQL:=False;
+  {$endif}
 end;
 
 destructor TDoer.Destroy;
 begin
+  {$ifndef noDB}
   FLogFBConnection.Close;
   FLogFBConnection.Free;
   FLogTransaction.Free;
@@ -106,6 +117,8 @@ begin
   FSeenQuery.Free;
   FDefinesQuery.Free;
   FDefViewQuery.Free;
+  {$endif}
+  DoneDict;
 end;
 
 function TDoer.TrimQuestion(const s: string): string;
@@ -172,6 +185,7 @@ procedure TDoer.OnSeen(Caller: TLIrcBot);
 var
   Args: string;
 begin
+  {$ifndef noDB}
   Args:=TrimQuestion(Caller.LastLine.Arguments);
 
   with Caller.LastLine, Caller do
@@ -197,13 +211,16 @@ begin
         Respond('I''ve never seen ' + Args);
       Close;
     end;
+  {$else}
+  Caller.Respond('I have no DB compiled in, I cannot see the history');
+  {$endif}
 end;
 
 procedure TDoer.OnDefine(Caller: TLIrcBot);
 var
   n: Longint;
   DefWord, Args: string;
-  
+{$ifndef noDB}
   function UpdateDef: Boolean;
   begin
     Result:=False;
@@ -246,7 +263,6 @@ var
       Caller.Respond('DB insert error');
     end;
    end;
-
 begin
   Args:=StringReplace(Caller.LastLine.Arguments, ':', '`dd', [rfReplaceAll]);
   with Caller, Caller.LastLine do begin
@@ -263,12 +279,17 @@ begin
       end else Respond('Usage: ' + Nick + ': define <what> <definition>');
     end else Respond('Description string too long, max size is 255 chars');
   end;
+{$else}
+begin
+  Caller.Respond('I have no DB compiled in, I cannot add definitions');
+{$endif}
 end;
 
 procedure TDoer.OnWhatIs(Caller: TLIrcBot);
 var
   Args: string;
 begin
+{$ifndef noDB}
   with FDefViewQuery, Caller, Caller.LastLine do try
     Args:=TrimQuestion(Arguments);
     Sql.Clear;
@@ -285,6 +306,9 @@ begin
   except
     Respond('DB read error');
   end;
+{$else}
+  Caller.Respond('I have no DB compiled in, I cannot search definitions')
+{$endif}
 end;
 
 procedure TDoer.OnLogUrl(Caller: TLIrcBot);
@@ -408,6 +432,7 @@ begin
   with Caller.LastLine do
     Writeln('(', DateTimeToStr(Now), ')$', Sender, '$', Reciever, '$', Msg);
   Writeln('----------------------END-----------------------');
+  {$ifndef noDB}
   if Logging then with Caller.Lastline do begin
     if  (Length(Reciever) > 0)
     and (Length(Sender) < 50)
@@ -427,6 +452,18 @@ begin
         Caller.Respond('Error writing to DB!');
       end;
     end;
+  end;
+  {$endif}
+  
+  // MARCOV
+  with Caller.LastLine, Caller do begin
+    if (Length(Reciever) > 0) and not WasCommand then
+      if Reciever = Nick then
+        SendMessage(Talk(Msg), Sender)
+      else if Pos(Nick, Msg) = 1 then begin
+        SendMessage(Sender + ': ' + Talk(Copy(Msg, Length(Nick) + 1, Length(Msg))), Reciever)
+      end
+      else TalkTo(Msg);
   end;
 end;
 
