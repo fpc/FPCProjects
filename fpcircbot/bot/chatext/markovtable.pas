@@ -1,5 +1,7 @@
 Unit MarkovTable;
 
+{$mode objfpc}
+
 Interface
 
 Type

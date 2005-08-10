@@ -1,5 +1,7 @@
 Unit Markov;
 
+{$mode objfpc}
+
 Interface
 
 Uses Dict, Break, MarkovTable;
@@ -56,25 +58,7 @@ End;
 
 Function Translate(C : Char): Char;
 Begin
-	If C In ['ä', 'â', 'ã', 'à', 'á', 'Ä', 'Â', 'Ã', 'À', 'Á'] Then 
-		Translate := 'a'
-	Else
-	If C In ['ö', 'ô', 'õ', 'ò', 'ó', 'Ö', 'Ô', 'Õ', 'Ò', 'Ó'] Then 
-		Translate := 'o'
-	Else	
-	If C In ['ë', 'ê', 'è', 'é', 'Ë', 'Ê', 'È', 'É'] Then 
-		Translate := 'e'
-	Else
-	If C In ['ï', 'î', 'ì', 'í', 'Ï', 'Î', 'Ì', 'Í'] Then 
-		Translate := 'i'
-	Else
-	If C In ['ü', 'û', 'ù', 'ú', 'Ü', 'Û', 'Ù', 'Ú'] Then 
-		Translate := 'u'
-	Else
-	If C In ['ç', 'Ç'] Then 
-		Translate := 'c' 
-	Else
-		Translate := C;
+	Translate := C;
 End;
 
 Function Correct(St : AnsiString): AnsiString;
