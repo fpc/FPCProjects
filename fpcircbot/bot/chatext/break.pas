@@ -1,7 +1,5 @@
 Unit Break;
 
-{$mode objfpc}
-
 Interface
 
 Type

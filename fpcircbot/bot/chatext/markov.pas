@@ -1,7 +1,5 @@
 Unit Markov;
 
-{$mode objfpc}
-
 Interface
 
 Uses Dict, Break, MarkovTable;

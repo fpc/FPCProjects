@@ -44,25 +44,25 @@ begin
   Con.NickServPassword:=NickPass;
 
   // Normal commands
-  Con.AddCommand('!help', @Doer.OnHelp, 'Makes me display this message');
-  Con.AddCommand('!about', @Doer.OnAbout, 'Makes me tell about my creator');
-  Con.AddCommand('!status', @Doer.OnStatus, 'Makes me display the current status');
-  Con.AddCommand('!seen', @Doer.OnSeen, 'Makes me tell you when I last saw someone');
-  Con.AddCommand('!define', @Doer.OnDefine, 'Makes me add a definition to the database');
-  Con.AddCommand('!whatis', @Doer.OnWhatIs, 'Makes me tell you what something is if it''s defined in the database');
-  Con.AddCommand('!logurl', @Doer.OnLogUrl, 'Makes me tell you where the log is');
-  Con.AddCommand('!listpusers', @Doer.OnListPUsers, 'Makes me list power users');
+  Con.AddCommand('help', @Doer.OnHelp, 'Makes me display this message');
+  Con.AddCommand('about', @Doer.OnAbout, 'Makes me tell about my creator');
+  Con.AddCommand('status', @Doer.OnStatus, 'Makes me display the current status');
+  Con.AddCommand('seen', @Doer.OnSeen, 'Makes me tell you when I last saw someone');
+  Con.AddCommand('define', @Doer.OnDefine, 'Makes me add a definition to the database');
+  Con.AddCommand('whatis', @Doer.OnWhatIs, 'Makes me tell you what something is if it''s defined in the database');
+  Con.AddCommand('logurl', @Doer.OnLogUrl, 'Makes me tell you where the log is');
+  Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Makes me list power users');
 
   // Power user commands
-  Con.AddPCommand('!replyprv', @Doer.OnReplyPrv, 'Makes me reply in private, param is (On/Off)');
-  Con.AddPCommand('!part', @Doer.OnPart, 'Makes me part the channel');
-  Con.AddPCommand('!join', @Doer.OnJoin, 'Makes me join a channel');
-  Con.AddPCommand('!quit', @Doer.OnQuit, 'Makes me quit(use "quit confirm" if you are sure)');
-  Con.AddPCommand('!sayall', @Doer.OnSayAll, 'Makes me say something to everyone');
-  Con.AddPCOmmand('!sayto', @Doer.OnSayTo, 'Makes me say something to someone/channel');
-  Con.AddPCommand('!log', @Doer.OnLog, 'Makes me begin/end logging. Param is (On/Off)');
-  Con.AddPCommand('!addpuser', @Doer.OnAddPuser, 'Makes ma add a power user');
-  Con.AddPCommand('!removepuser', @Doer.OnRemovePuser, 'Makes me remove a power user');
+  Con.AddPCommand('replyprv', @Doer.OnReplyPrv, 'Makes me reply in private, param is (On/Off)');
+  Con.AddPCommand('part', @Doer.OnPart, 'Makes me part the channel');
+  Con.AddPCommand('join', @Doer.OnJoin, 'Makes me join a channel');
+  Con.AddPCommand('quit', @Doer.OnQuit, 'Makes me quit(use "quit confirm" if you are sure)');
+  Con.AddPCommand('sayall', @Doer.OnSayAll, 'Makes me say something to everyone');
+  Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Makes me say something to someone/channel');
+  Con.AddPCommand('log', @Doer.OnLog, 'Makes me begin/end logging. Param is (On/Off)');
+  Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Makes ma add a power user');
+  Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Makes me remove a power user');
   Con.OnRecieve:=@Doer.OnRecieve;
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;
