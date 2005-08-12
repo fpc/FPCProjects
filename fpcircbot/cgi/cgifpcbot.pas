@@ -82,13 +82,22 @@ procedure GetWebVars;
   end;
 
 begin
-  if Channel = '#' then Channel:='#fpc';
+  if Channel = '#' then Channel:='#lentilwars';
   
   TryGetWebVar(Channel, 'channel', '#lentilwars');
+	
+	Channel := return_Channel_sanitize (Channel); //Make sure to have only allowed chars ... :)
+	
   TryGetWebVar(Count, 'linecount', '50');
+ 	Count := return_Number_sanitize (Count); //Making sure that we have only number chars ...
+	
   TryGetWebVar(Sender, 'sender', '');
+	Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
+	
   TryGetWebVar(Msg, 'msg', '');
+	
   TryGetWebVar(Date, 'date', '');
+	Date := return_datetimestamp_sanitize (Date); //Making sure that only allowed chars can be for the date
 	
 end;
 
@@ -112,15 +121,15 @@ begin
     writeln('<hr><table border="0">');
     writeln('<font size="10">');
 
-    if Length(Sender) > 0 then s:=s + ' and sender=''' + QuoteString(Sender) + '''';
-    if Length(Msg) > 0 then s:=s + ' and msg like ''%' + QuoteString(Msg) + '%''';
-    if Length(Date) > 0 then s:=s + ' and CAST (logtime as date) = ''' +QuoteString (Date) + '''';
+    if Length(Sender) > 0 then s:=s + ' and sender=' + AnsiQuotedStr(SQLEscape(Sender), #39);
+    if Length(Msg) > 0 then s:=s + ' and msg like ''%' + SQLEscape(Msg) + '%''';
+    if Length(Date) > 0 then s:=s + ' and CAST (logtime as date) = ' + AnsiQuotedStr(SQLEscape (Date), #39) ;
     
     try
       sql.clear;
-      sql.add('select first ' + Count + ' sender, msg, cast(logtime as varchar(25)) ' +
-              'as logtime from tbl_loglines where (reciever=''' + QuoteString(Channel) +
-              '''' + s + ') order by loglineid desc');
+      sql.add('select first ' + SQLEscape(Count) + ' sender, msg, cast(logtime as varchar(25)) ' +
+              'as logtime from tbl_loglines where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) +
+               s + ') order by loglineid desc');
       open;
       i:=2;
       while not eof do begin
@@ -129,10 +138,9 @@ begin
         else
           HTMLCode.Add('<tr style="background-color:#E0E0E0">');
 
-        s:=FilterHtml(fieldbyname('sender').asstring);
+				s := FilterHtml(fieldbyname('sender').asstring);
         HTMLCode.Add('<td nowrap>' + FilterHtml(Copy(fieldbyname('logtime').asstring, 1, 19)) +
-                     '</td><td>' + s +'</td><td>' +
-                     FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
+                     '</td><td>' + s +'</td><td>' + FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
         Next;
         if LN <> s then Inc(i);
         LN:=s;
@@ -144,7 +152,7 @@ begin
     
     if HTMLCode.Count > 0 then
       for i:=HTMLCode.Count - 1 downto 0 do
-        Writeln(HTMLCode[i]);
+        Writeln(FilterHtml(HTMLCode[i]));
         
     close;
     writeln('</table></font><hr>');

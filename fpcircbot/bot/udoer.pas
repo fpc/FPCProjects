@@ -29,11 +29,15 @@ type
     FLogTransaction: TSQLTransaction;
     FLogFBConnection: TSQLConnection;
     {$endif}
+    FMarkov: TMarkov;
+    FSList: TStringList;
     function TrimQuestion(const s: string): string;
+    function SepString(const s: string): TStringList;
    public
     Quit: Boolean;
     TimeStarted: string;
     Logging: Boolean;
+    MarkovOn: Boolean;
     constructor Create;
     destructor Destroy; override;
     procedure OnHelp(Caller: TLIrcBot);
@@ -53,6 +57,8 @@ type
     procedure OnAddPuser(Caller: TLIrcBot);
     procedure OnRemovePuser(Caller: TLIrcBot);
     procedure OnListPusers(Caller: TLIrcBot);
+    procedure OnMarkov(Caller: TLIrcBot);
+    procedure OnSetMarkov(Caller: TLIrcBot);
     procedure OnRecieve(Caller: TLIrcBot);
     procedure OnUnknown(Caller: TLIrcBot);
   end;
@@ -62,7 +68,9 @@ implementation
 constructor TDoer.Create;
 begin
   Quit:=False;
-  InitDict;
+  FMarkov:=TMarkov.Create('words.txt', 'markov.txt', 30, 70);
+  FSList:=TStringList.Create;
+  MarkovOn:=False;
   {$ifndef nodb}
   FLogFBConnection := tIBConnection.Create(nil);
   with FLogFBConnection do begin
@@ -118,7 +126,8 @@ begin
   FDefinesQuery.Free;
   FDefViewQuery.Free;
   {$endif}
-  DoneDict;
+  FMarkov.Free;
+  FSList.Free;
 end;
 
 function TDoer.TrimQuestion(const s: string): string;
@@ -140,6 +149,39 @@ end;
 begin
   Result:=Trim(s);
   CleanChars(['?', '!', '@', '#', '$', '%', '&', '*', '/', ';', ':', '.', ',']);
+end;
+
+function TDoer.SepString(const s: string): TStringList;
+var
+  i: Longint;
+begin
+  Result:=nil;
+  FSList.Clear;
+  FSList.CommaText:=StringReplace(s, ' ', ',', [rfReplaceAll]);
+  if Length(FSList.Text) > 0 then begin
+    FSList.Text:=StringReplace(FSList.Text, ':', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, ';', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, ')', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '(', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '.', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '"', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '-', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '_', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '=', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '+', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '!', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '?', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '/', ' ', [rfReplaceAll]);
+    FSList.Text:=StringReplace(FSList.Text, '\', ' ', [rfReplaceAll]);
+  end;
+  if FSList.Count > 0 then
+    for i:=FSList.Count-1 downto 0 do
+      if FSList[i] = '' then
+        FSList.Delete(i)
+      else
+        FSList[i]:=Trim(LowerCase(FSList[i]));
+  if FSList.Count > 0 then
+    Result:=FSList;
 end;
 
 procedure TDoer.OnHelp(Caller: TLIrcBot);
@@ -165,6 +207,7 @@ begin
   Caller.Respond(BotName + ' ' + Version);
   Caller.Respond('Logging: ' + BoolStr[Logging]);
   Caller.Respond('Private Response: ' + BoolStr[Caller.ReplyInPrivate]);
+  Caller.Respond('Markov generator: ' + BoolStr[MarkovOn]);
   Caller.Respond('Online since: ' + TimeStarted);
 end;
 
@@ -186,7 +229,7 @@ var
   Args: string;
 begin
   {$ifndef noDB}
-  Args:=QuoteString(TrimQuestion(Caller.LastLine.Arguments));
+  Args:=SQLEscape(TrimQuestion(Caller.LastLine.Arguments));
 
   with Caller.LastLine, Caller do
     if UserInChannel(Reciever, Args) then
@@ -264,10 +307,8 @@ var
     end;
    end;
    
-var
-  i: Longint;
 begin
-  Args:=StringReplace(QuoteString(Caller.LastLine.Arguments), ':', '`dd', [rfReplaceAll]);
+  Args:=StringReplace(SQLEscape(Caller.LastLine.Arguments), ':', '`dd', [rfReplaceAll]);
   with Caller, Caller.LastLine do begin
     if Length(Args) < 256 then begin
       if Length(Args) > 0 then begin
@@ -294,7 +335,7 @@ var
 begin
 {$ifndef noDB}
   with FDefViewQuery, Caller, Caller.LastLine do try
-    Args:=StringReplace(QuoteString(TrimQuestion(Arguments)), '`dd', ':', [rfReplaceAll]);
+    Args:=StringReplace(SQLEscape(TrimQuestion(Arguments)), '`dd', ':', [rfReplaceAll]);
     Sql.Clear;
     Sql.Add('select first 1 description from tbl_definitions where definition=''' +
             LowerCase(Args) + '''');
@@ -429,6 +470,45 @@ begin
       Caller.Respond(Caller.PUsers[i]);
 end;
 
+procedure TDoer.OnMarkov(Caller: TLIrcBot);
+begin
+  if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
+    MarkovOn:=True;
+    Caller.Respond('As ordered');
+  end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
+    MarkovOn:=False;
+    Caller.Respond('As ordered');
+  end else Caller.Respond('Currently: ' + BoolStr[MarkovOn] +
+                          ' with deviation: ' + IntToStr(FMarkov.ErrorMargin) +
+                          '% and threshold: ' + IntToStr(FMarkov.Threshold) + '%');
+end;
+
+procedure TDoer.OnSetMarkov(Caller: TLIrcBot);
+var
+  l: TStringList;
+  m, n: Longint;
+begin
+  if MarkovOn then with Caller, Caller.LastLine do begin
+    if Length(Trim(Arguments)) > 0 then begin
+      l:=SepString(Arguments);
+      if Assigned(l) and (l.Count > 1) then begin
+        try
+          m:=StrToInt(Trim(l[0]));
+          n:=StrToInt(Trim(l[1]));
+          if (m >= 0) and (m <= 100) and (n >= 0) and (n <= 100) then begin
+            FMarkov.ErrorMargin:=m;
+            FMarkov.Threshold:=n;
+            Respond('As ordered');
+          end else Respond('Argument values out of range, range is <0..100>');
+        except
+          on e: Exception do
+            Respond('Conversion Error: ' + e.message);
+        end;
+      end else Respond('Syntax: SetMarkov <deviation> <threshold> where both are integer <0..100>');
+    end else Respond('Syntax: SetMarkov <deviation> <threshold> where both are integer <0..100>');
+  end else Caller.Respond('Markov generator is turned off, turn it on with Markov command');
+end;
+
 procedure TDoer.OnRecieve(Caller: TLIrcBot);
 begin
   Writeln('---------------------BEGIN----------------------');
@@ -459,15 +539,16 @@ begin
   {$endif}
   
   // MARCOV
-  with Caller.LastLine, Caller do if Sender <> Nick then begin
-    if (Length(Reciever) > 0) and not WasCommand then
-      if Reciever = Nick then
-        SendMessage(Talk(Msg), Sender)
-      else if Pos(Nick, Msg) = 1 then begin
-        SendMessage(Sender + ': ' + Talk(Copy(Msg, Length(Nick) + 1, Length(Msg))), Reciever)
-      end
-      else TalkTo(Msg);
-  end;
+  if MarkovOn then
+    with Caller.LastLine, Caller do if Sender <> Nick then begin
+      if (Length(Reciever) > 0) and not WasCommand then
+        if LowerCase(Reciever) = LowerCase(Nick) then
+          SendMessage(FMarkov.Talk(SepString(Msg)), Sender)
+        else if Pos(LowerCase(Nick), LowerCase(Msg)) = 1 then begin
+          SendMessage(Sender + ': ' + FMarkov.Talk(SepString((Copy(Msg, Length(Nick) + 1, Length(Msg))))), Reciever)
+        end
+        else FMarkov.TalkTo(SepString(Msg));
+    end;
 end;
 
 procedure TDoer.OnUnknown(Caller: TLIrcBot);

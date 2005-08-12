@@ -1,6 +1,6 @@
 Unit Break;
 
-{$mode objfpc}
+{$mode objfpc}{$H+}
 
 Interface
 

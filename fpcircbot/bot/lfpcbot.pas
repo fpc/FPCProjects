@@ -40,6 +40,7 @@ begin
   PORT:=6667;
   Doer:=TDoer.Create;
   Doer.Logging:=True;
+  Doer.MarkovOn:=True;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;
 
@@ -63,6 +64,8 @@ begin
   Con.AddPCommand('log', @Doer.OnLog, 'Makes me begin/end logging. Param is (On/Off)');
   Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Makes ma add a power user');
   Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Makes me remove a power user');
+  Con.AddPCommand('markov', @Doer.OnMarkov, 'Makes me start/stop the markov response generator');
+  Con.AddPCommand('setmarkov', @Doer.OnSetMarkov, 'Makes me set the deviation and threshold of the markov generator. Syntax is SetMarkov <deviation> <threshold> where both are ints <0..100>');
   Con.OnRecieve:=@Doer.OnRecieve;
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;

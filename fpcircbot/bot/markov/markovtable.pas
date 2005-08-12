@@ -1,6 +1,6 @@
 Unit MarkovTable;
 
-{$mode objfpc}
+{$mode objfpc}{$h+}
 
 Interface
 
@@ -47,14 +47,14 @@ Var
 	Handler : Text;
 	Temp    : String;
 Begin
-	Assign(Handler, fName);
+	AssignFile(Handler, fName);
 	Reset(Handler);
 	While Not(Eof(Handler)) Do
 	Begin
 		ReadLn(Handler, Temp);
 		AppendWord(StrToInt(Temp));
 	End;
-	Close(Handler);
+	CloseFile(Handler);
 	fNumber := Length(fBuffer);
 End;
 
@@ -65,11 +65,11 @@ Var
 Begin
 	If fNumber <= 0 Then
 		Exit;
-	Assign(Handler, fName);
+	AssignFile(Handler, fName);
 	Rewrite(Handler);
 	For Ctrl := 0 To (fNumber - 1) Do
 		WriteLn(Handler, fBuffer[Ctrl]);
-	Close(Handler);
+	CloseFile(Handler);
 	fNumber := Length(fBuffer);
 End;
 

@@ -1,13 +1,13 @@
-Unit Dict;
+Unit MarkovDict;
 
-{$mode objfpc}
+{$mode objfpc}{$h+}
 
 Interface
 
 Type
-	TArrayOfString = Array Of String;
-	
-	TDict = Class
+	TArrayOfString = Array Of AnsiString;
+
+	TMarkovDict = Class
 	Private
 		fName   : String;
 		fNumber : Integer;
@@ -17,14 +17,15 @@ Type
 		Destructor Destroy; Override;
 		Procedure Load;
 		Procedure Flush;
-		Function InsertWord(St : String): Integer;
+		Function InsertWord(St : AnsiString): Integer;
+		Function FindWord(St : AnsiString): Integer;
 		Property Words : TArrayOfString Read fWords Write fWords;
 		Property Count : Integer Read fNumber;
 	End;
 
 Implementation
 
-Constructor TDict.Create(Arq : String);
+Constructor TMarkovDict.Create(Arq : String);
 Begin
 	Inherited Create;
 	fName := Arq;
@@ -32,7 +33,7 @@ Begin
 	SetLength(fWords, 0);
 End;
 
-Destructor TDict.Destroy;
+Destructor TMarkovDict.Destroy;
 Begin
 	fNumber := 0;
 	fName := '';
@@ -40,7 +41,8 @@ Begin
 	Inherited Destroy;
 End;
 
-Procedure TDict.Load;
+// Loads the list from a file
+Procedure TMarkovDict.Load;
 Var 
 	Handler : Text;
 	Temp    : String;
@@ -56,7 +58,8 @@ Begin
 	fNumber := Length(fWords);
 End;
 
-Procedure TDict.Flush;
+// Saves the list to a file
+Procedure TMarkovDict.Flush;
 Var 
 	Handler : Text;
 	Ctrl    : Cardinal;
@@ -71,20 +74,22 @@ Begin
 	fNumber := Length(fWords);
 End;
 
-Function TDict.InsertWord(St : String): Integer;
+// adds a new word to the list returning his value or 
+// returns the value of a word if it is already in the list
+Function TMarkovDict.InsertWord(St : AnsiString): Integer;
 Var
 	Ctrl  : Cardinal;
 	Found : Boolean;
 Begin
 	fNumber := Length(fWords);
 	Found := False;
-	If St = '' Then
+	If (St = '') Then
 	Begin
 		InsertWord := (-1);
 		Exit;
 	End;
 	If fNumber > 0 Then
-		For Ctrl := 0 To (fNumber - 1) Do
+		For Ctrl := 0 To (fNumber - 1) Do // Finds if the word already exists in the list
 			If fWords[Ctrl] = St Then
 			Begin
 				Found := True;
@@ -98,6 +103,32 @@ Begin
 		fWords[fNumber - 1] := St;
 		InsertWord := (fNumber - 1);
 	End;
+End;
+
+// Finds a word in the list, returning -1 if the word
+// isn't already there
+Function TMarkovDict.FindWord(St : AnsiString): Integer;
+Var
+	Ctrl  : Cardinal;
+	Found : Boolean;
+Begin
+	fNumber := Length(fWords);
+	Found := False;
+	If (St = '') Then
+	Begin
+		FindWord := (-1);
+		Exit;
+	End;
+	If fNumber > 0 Then
+		For Ctrl := 0 To (fNumber - 1) Do
+			If fWords[Ctrl] = St Then
+			Begin
+				Found := True;
+				FindWord := (Ctrl);
+				Exit;
+			End;
+	If Not Found Then
+		FindWord := -1;
 End;
 
 End.

@@ -1,5 +1,5 @@
 PP=fpc
-BASEARGS=-Fucommon -Fulnet -Fubot/chatext -Filnet/include -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
+BASEARGS=-Fucommon -Fulnet -Fubot/markov -Filnet/include -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
 ARGS=$(BASEARGS) -O2p2 -XX -Xs
 LBOT=bot/lfpcbot.pas
 LCGI=cgi/cgifpcbot.pas
@@ -22,7 +22,7 @@ install:
 
 clean:
 	delp bot
-	delp bot/chatext
+	delp bot/markov
 	delp cgi
 	delp lnet
 	delp cgi/psp
