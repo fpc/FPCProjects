@@ -189,7 +189,13 @@ begin
     s:=StringReplace(s, '?', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '/', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '\', ' ', [rfReplaceAll]);
-    
+    s:=StringReplace(s, '>', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '<', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '[', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, ']', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '{', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '}', ' ', [rfReplaceAll]);
+
     FSList.CommaText:=StringReplace(s, ' ', ',', [rfReplaceAll]);
     if FSList.Count > 0 then
       for i:=FSList.Count-1 downto 0 do
