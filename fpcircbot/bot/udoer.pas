@@ -32,7 +32,7 @@ type
     FMarkov: TMarkov;
     FSList: TStringList;
     function TrimQuestion(const s: string): string;
-    function SepString(const s: string): TStringList;
+    function SepString(s: string): TStringList;
    public
     Quit: Boolean;
     TimeStarted: string;
@@ -66,9 +66,25 @@ type
 implementation
 
 constructor TDoer.Create;
+
+  procedure CreateMarkov(const a, b: string; const n, m: Byte);
+  var
+    f: TextFile;
+  begin
+    if not FileExists(a) then begin
+      AssignFile(f, a);
+      Rewrite(f);
+    end;
+    if not FileExists(b) then begin
+      AssignFile(f, b);
+      Rewrite(f);
+    end;
+    FMarkov:=TMarkov.Create(a, b, n, m);
+  end;
+
 begin
   Quit:=False;
-  FMarkov:=TMarkov.Create('words.txt', 'markov.txt', 30, 70);
+  CreateMarkov('words1.txt', 'markov1.txt', 15, 85);
   FSList:=TStringList.Create;
   MarkovOn:=False;
   {$ifndef nodb}
@@ -151,37 +167,39 @@ begin
   CleanChars(['?', '!', '@', '#', '$', '%', '&', '*', '/', ';', ':', '.', ',']);
 end;
 
-function TDoer.SepString(const s: string): TStringList;
+function TDoer.SepString(s: string): TStringList;
 var
   i: Longint;
 begin
   Result:=nil;
   FSList.Clear;
-  FSList.CommaText:=StringReplace(s, ' ', ',', [rfReplaceAll]);
-  if Length(FSList.Text) > 0 then begin
-    FSList.Text:=StringReplace(FSList.Text, ':', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, ';', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, ')', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '(', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '.', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '"', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '-', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '_', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '=', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '+', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '!', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '?', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '/', ' ', [rfReplaceAll]);
-    FSList.Text:=StringReplace(FSList.Text, '\', ' ', [rfReplaceAll]);
+  if Length(s) > 0 then begin
+    s:=StringReplace(s, ':', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, ';', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, ')', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '(', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '.', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, ',', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '"', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '-', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '_', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '=', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '+', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '!', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '?', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '/', ' ', [rfReplaceAll]);
+    s:=StringReplace(s, '\', ' ', [rfReplaceAll]);
+    
+    FSList.CommaText:=StringReplace(s, ' ', ',', [rfReplaceAll]);
+    if FSList.Count > 0 then
+      for i:=FSList.Count-1 downto 0 do
+        if FSList[i] = '' then
+          FSList.Delete(i)
+        else
+          FSList[i]:=Trim(LowerCase(FSList[i]));
+    if FSList.Count > 0 then
+      Result:=FSList;
   end;
-  if FSList.Count > 0 then
-    for i:=FSList.Count-1 downto 0 do
-      if FSList[i] = '' then
-        FSList.Delete(i)
-      else
-        FSList[i]:=Trim(LowerCase(FSList[i]));
-  if FSList.Count > 0 then
-    Result:=FSList;
 end;
 
 procedure TDoer.OnHelp(Caller: TLIrcBot);
