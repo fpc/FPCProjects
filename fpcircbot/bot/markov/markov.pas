@@ -150,6 +150,7 @@ Begin
 	If N <= 3 Then 
 		N := 3; // Minimal ammount that makes sense
 	Key  := K;
+        if Key < 0 then Exit;
 	Ctrl := 1;
 	Temp := '';
 	// Start with the word corresponding to K
