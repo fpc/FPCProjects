@@ -115,7 +115,7 @@ type
     constructor Create(const Nick, Login: string);
     destructor Destroy; override;
     function Connect(const Port: Word; const Server: string): Boolean;
-    function IsPuser(const Nick: string): Boolean;
+    function IsPuser(const aNick: string): Boolean;
     function Join(const Channel: string): Boolean;
     function Part(const Channel: string): Boolean;
     function UserInChannel(const Channel, User: string): Boolean;
@@ -552,6 +552,12 @@ var
         end;
       end;
   end;
+  
+  procedure FilterSpecial(var s: string);
+  begin
+    if Length(s) > 0 then
+      if s[1] = '@' then Delete(s, 1, 1);
+  end;
 
 var
   s: string; // helper string
@@ -565,6 +571,7 @@ begin
     FArguments:='';
   end;
   ParseCommand;
+  FilterSpecial(FLastLine.FSender);
   with FLastLine do begin
     if FCommand = 'PRIVMSG' then begin
       Result:=True;
@@ -671,26 +678,28 @@ begin
   end;
 end;
 
-function TLIrcBot.IsPuser(const Nick: string): Boolean;
+function TLIrcBot.IsPuser(const aNick: string): Boolean;
 var
   i: Longint;
   Backup: TLIrcRec;
 begin
   Result:=False;
-  FNickOK:=Nick;
-  if FPUsers.IndexOf(Nick) >= 0 then begin
-    Backup:=FLastLine.CloneSelf;
-    FCon.SendMessage('NICKSERV :INFO ' + Nick + #13#10);
-    FCon.OnRecieve:=@OnReTest;
-    for i:=0 to 1000 do begin // LOOONG wait time for nickServ
-      FCon.CallAction;
-      Sleep(10);
-      if Length(FNickOK) = 0 then Result:=True;
-      if Result then Break;
+  if Length(aNick) > 0 then begin
+    FNickOK:=aNick;
+    if FPUsers.IndexOf(aNick) >= 0 then begin
+      Backup:=FLastLine.CloneSelf;
+      FCon.SendMessage('NICKSERV :INFO ' + aNick + #13#10);
+      FCon.OnRecieve:=@OnReTest;
+      for i:=0 to 1000 do begin // LOOONG wait time for nickServ
+        FCon.CallAction;
+        Sleep(10);
+        if Length(FNickOK) = 0 then Result:=True;
+        if Result then Break;
+      end;
+      FLastLine.Free;
+      FLastLine:=Backup;
+      FCon.OnRecieve:=@OnRe;
     end;
-    FLastLine.Free;
-    FLastLine:=Backup;
-    FCon.OnRecieve:=@OnRe;
   end;
 end;
 

@@ -209,20 +209,61 @@ begin
 end;
 
 procedure TDoer.OnHelp(Caller: TLIrcBot);
-var
-  i: Longint;
-begin
-  Caller.Respond(BotName + ' ' + Version + ' help system initialized');
-  if Caller.CommandCount > 0 then begin
-    Caller.Respond('User commands:');
-    for i:=0 to Caller.CommandCount-1 do
-      Caller.Respond(Caller.Commands[i].Command + ' - ' + Caller.Commands[i].Help);
+
+  function IsCommand(aCommand: string): Longint; // returns # of command or # of pcommand + 1000
+  var
+    i: Longint;
+  begin
+    Result:=-1;
+    aCommand:=LowerCase(aCommand);
+    with Caller do begin
+      if CommandCount > 0 then
+        for i:=0 to CommandCount-1 do
+          if Commands[i].Command = aCommand then begin
+            Result:=i;
+            Exit;
+          end;
+          
+      if PCommandCount > 0 then
+        for i:=0 to PCommandCount-1 do
+          if PCommands[i].Command = aCommand then begin
+            Result:=i + 1000;
+            Exit;
+          end;
+    end;
   end;
-  if Caller.IsPuser(Caller.LastLine.Sender)
-  and (Caller.PCommandCount > 0) then begin
-      Caller.Respond('Power user commands:');
+  
+var
+  i, n: Longint;
+  s: string;
+begin
+  if Length(Trim(Caller.LastLine.Arguments)) = 0 then begin
+    s:='';
+    Caller.Respond(BotName + ' ' + Version + ' use help <topic> to get more info');
+    if Caller.CommandCount > 0 then begin
+      s:=s + 'User commands: ';
+      for i:=0 to Caller.CommandCount-1 do
+        s:=s + Caller.Commands[i].Command + ' ';
+      Caller.Respond(s);
+    end;
+    s:='';
+    if Caller.IsPuser(Caller.LastLine.Sender)
+    and (Caller.PCommandCount > 0) then begin
+      s:=s + 'Power user commands: ';
       for i:=0 to Caller.PCommandCount-1 do
-        Caller.Respond(Caller.PCommands[i].Command + ' - ' + Caller.PCommands[i].Help);
+        s:=s + Caller.PCommands[i].Command + ' ';
+      Caller.Respond(s);
+    end;
+  end else begin
+    n:=IsCommand(Caller.LastLine.Arguments);
+    if n >= 0 then begin
+      if n < 1000 then
+        Caller.Respond(Caller.LastLine.Arguments + ': ' + Caller.Commands[n].Help)
+      else if Caller.IsPuser(Caller.LastLine.Sender) then begin
+        Dec(n, 1000);
+        Caller.Respond(Caller.LastLine.Arguments + ': ' + Caller.PCommands[n].Help);
+      end else Caller.Respond('You are not allowed to perform that command');
+    end else Caller.Respond(Caller.LastLine.Arguments + ' is not a command');
   end;
 end;
 
@@ -332,7 +373,7 @@ var
    end;
    
 begin
-  Args:=StringReplace(SQLEscape(Caller.LastLine.Arguments), ':', '`dd', [rfReplaceAll]);
+  Args:=SQLEscape(StringReplace((Caller.LastLine.Arguments), ':', '`dd', [rfReplaceAll]));
   with Caller, Caller.LastLine do begin
     if Length(Args) < 256 then begin
       if Length(Args) > 0 then begin
@@ -497,14 +538,21 @@ end;
 procedure TDoer.OnMarkov(Caller: TLIrcBot);
 begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
-    MarkovOn:=True;
-    Caller.Respond('As ordered');
+    if Caller.IsPuser(Caller.LastLine.Sender) then begin
+      MarkovOn:=True;
+      Caller.Respond('As ordered');
+    end else Caller.Respond('Only power users can change settings');
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
-    MarkovOn:=False;
-    Caller.Respond('As ordered');
+    if Caller.IsPuser(Caller.LastLine.Sender) then begin
+      MarkovOn:=False;
+      Caller.Respond('As ordered');
+    end else Caller.Respond('Only power users can change settings');
   end else Caller.Respond('Currently: ' + BoolStr[MarkovOn] +
                           ' with deviation: ' + IntToStr(FMarkov.ErrorMargin) +
-                          '% and threshold: ' + IntToStr(FMarkov.Threshold) + '%');
+                          '% and threshold: ' + IntToStr(FMarkov.Threshold) + '%' +
+                          ' most used word is: "' + FMarkov.HighestWord + '"' +
+                          ' word count is: ' + IntToStr(FMarkov.DictionaryWords) +
+                          ' markov entries: ' + IntToStr(FMarkov.EntriesMarkov));
 end;
 
 procedure TDoer.OnSetMarkov(Caller: TLIrcBot);
@@ -536,8 +584,10 @@ end;
 procedure TDoer.OnRecieve(Caller: TLIrcBot);
 begin
   Writeln('---------------------BEGIN----------------------');
-  with Caller.LastLine do
-    Writeln('(', DateTimeToStr(Now), ')$', Sender, '$', Reciever, '$', Msg);
+  with Caller.LastLine do begin
+    Write('(', DateTimeToStr(Now), ')$', Sender, '$', Reciever, '$', Msg);
+    if WasCommand then Writeln(' [COMMAND]') else Writeln;
+  end;
   Writeln('----------------------END-----------------------');
   {$ifndef noDB}
   if Logging then with Caller.Lastline do begin

@@ -45,27 +45,27 @@ begin
   Con.NickServPassword:=NickPass;
 
   // Normal commands
-  Con.AddCommand('help', @Doer.OnHelp, 'Makes me display this message');
-  Con.AddCommand('about', @Doer.OnAbout, 'Makes me tell about my creator');
-  Con.AddCommand('status', @Doer.OnStatus, 'Makes me display the current status');
-  Con.AddCommand('seen', @Doer.OnSeen, 'Makes me tell you when I last saw someone');
-  Con.AddCommand('define', @Doer.OnDefine, 'Makes me add a definition to the database');
-  Con.AddCommand('whatis', @Doer.OnWhatIs, 'Makes me tell you what something is if it''s defined in the database');
-  Con.AddCommand('logurl', @Doer.OnLogUrl, 'Makes me tell you where the log is');
-  Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Makes me list power users');
+  Con.AddCommand('help', @Doer.OnHelp, 'Syntax: help [command] Info: makes me display help. If [command] is an empty string I will display list of all possible commands.');
+  Con.AddCommand('about', @Doer.OnAbout, 'Syntax: about Info: makes me tell about my authors and where you can get more info about me.');
+  Con.AddCommand('status', @Doer.OnStatus, 'Syntax: status Info: makes me tell you the status of most of my variables.');
+  Con.AddCommand('seen', @Doer.OnSeen, 'Syntax: seen <nick> Info: makes me tell you when I last saw someone in this channel. <nick> is required.');
+  Con.AddCommand('define', @Doer.OnDefine, 'Syntax: define <word> <definition> Info: makes me add a definition to the database. <word> and <definition> are required');
+  Con.AddCommand('whatis', @Doer.OnWhatIs, 'Syntax: whatis <word> Info: makes me tell you what something is if it''s defined in the database. <word> is required.');
+  Con.AddCommand('logurl', @Doer.OnLogUrl, 'Syntax: logurl Info: makes me tell you where the log is');
+  Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Syntax: listpusers Info: makes me list power users');
+  Con.AddCommand('markov', @Doer.OnMarkov, 'Syntax: markov [on/off] Info: if parameter is empty, I will display info about the markov generator. If parameter is on/off it will start/shutdown the markov response generator (starting and shuting down the generator works only for power users).');
 
   // Power user commands
-  Con.AddPCommand('replyprv', @Doer.OnReplyPrv, 'Makes me reply in private, param is (On/Off)');
-  Con.AddPCommand('part', @Doer.OnPart, 'Makes me part the channel');
-  Con.AddPCommand('join', @Doer.OnJoin, 'Makes me join a channel');
-  Con.AddPCommand('quit', @Doer.OnQuit, 'Makes me quit(use "quit confirm" if you are sure)');
-  Con.AddPCommand('sayall', @Doer.OnSayAll, 'Makes me say something to everyone');
-  Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Makes me say something to someone/channel');
-  Con.AddPCommand('log', @Doer.OnLog, 'Makes me begin/end logging. Param is (On/Off)');
-  Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Makes ma add a power user');
-  Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Makes me remove a power user');
-  Con.AddPCommand('markov', @Doer.OnMarkov, 'Makes me start/stop the markov response generator');
-  Con.AddPCommand('setmarkov', @Doer.OnSetMarkov, 'Makes me set the deviation and threshold of the markov generator. Syntax is SetMarkov <deviation> <threshold> where both are ints <0..100>');
+  Con.AddPCommand('replyprv', @Doer.OnReplyPrv, 'Syntax: replyprv [on/off] Info: if parameter is empty, I will tell you if replyprv is on or off, otherwise it makes [not] me reply in private.');
+  Con.AddPCommand('part', @Doer.OnPart, 'Syntax: part <#channel> Info: makes me part the channel. <#channel> is required.');
+  Con.AddPCommand('join', @Doer.OnJoin, 'Syntax: join <#channel> Info: makes me join a channel. <#channel> is required.');
+  Con.AddPCommand('quit', @Doer.OnQuit, 'Syntax: quit [confirm] Info: makes me quit (use "quit confirm" if you are sure)');
+  Con.AddPCommand('sayall', @Doer.OnSayAll, 'Syntax: sayall <msg> Info: makes me say something to everyone. <msg> is required.');
+  Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Syntax: sayto <recipient> <msg> Info: makes me say something to someone/channel. <recipient> and <msg> are required. <msg> can be a channel or username.');
+  Con.AddPCommand('log', @Doer.OnLog, 'Syntax: log [on/off] Info: if parameter is empty, I will tell you if logging is off or on, otherwise it makes me start/stop logging.');
+  Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Syntax: addpuser <nick> Info: makes ma add a power user. <nick> is required.');
+  Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Syntax: removepuser <nick> Info: makes me remove a power user. <nick> is required.');
+  Con.AddPCommand('setmarkov', @Doer.OnSetMarkov, 'Syntax: setmarkov <deviation> <threshold> Info: makes me set the deviation and threshold of the markov generator. <deviation> and <threshold> are required. Both are ints <0..100>');
   Con.OnRecieve:=@Doer.OnRecieve;
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;
