@@ -1,5 +1,24 @@
 unit uDoer;
 
+{                            FPCBot
+
+CopyRight (c) 2005 by Ales Katona and Joost van der Sluis
+
+This program is Free software; you can rediStribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is diStributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; withOut even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a Copy of the GNU General Public License
+along with This program; if not, Write to the Free Software Foundation,
+ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+}
+
 {$mode objfpc}{$H+}
 
 {$i baseinc.inc}
@@ -422,6 +441,7 @@ end;
 
 procedure TDoer.OnLogUrl(Caller: TLIrcBot);
 begin
+  {$ifndef noDB}
   with Caller, Caller.LastLine do
     if Length(Reciever) > 0 then begin
       if Reciever[1] = '#' then
@@ -429,6 +449,9 @@ begin
       else
         Respond('see yourself chat ' + LogURL + '?' + Reciever)
     end;
+  {$else}
+  Caller.Respond('I have no DB compiled in, I cannot log the chat');
+  {$endif}
 end;
 
 procedure TDoer.OnReplyPrv(Caller: TLIrcBot);
@@ -550,7 +573,6 @@ begin
   end else Caller.Respond('Currently: ' + BoolStr[MarkovOn] +
                           ' with deviation: ' + IntToStr(FMarkov.ErrorMargin) +
                           '% and threshold: ' + IntToStr(FMarkov.Threshold) + '%' +
-                          ' most used word is: "' + FMarkov.HighestWord + '"' +
                           ' word count is: ' + IntToStr(FMarkov.DictionaryWords) +
                           ' markov entries: ' + IntToStr(FMarkov.EntriesMarkov));
 end;
