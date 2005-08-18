@@ -234,7 +234,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
       for i:=0 to FCommands.Count-1 do begin
         if FWords.Count > 0 then
           if ((LowerCase(FLastLine.Reciever) = LowerCase(FNick)) or (FWords[0][1] = '!'))
-          and (Pos(FCommands[i].Command, LowerCase(FWords[0])) > 0) then begin
+          and ((FCommands[i].Command = LowerCase(FWords[0])) or (FCommands[i].Command = LowerCase(Copy(FWords[0], 2, Length(FWords[0]))))) then begin
             if Assigned(FCommands[i].FAction) then begin
               if FWords[0][1] <> '!' then
                 FRespondTo:=FLastLine.Sender
@@ -282,9 +282,10 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
       if FWords[i] = '' then FWords.Delete(i);
     if FPCommands.Count > 0 then
       for i:=0 to FPCommands.Count-1 do begin
+        // PRIVATE
         if FWords.Count > 0 then
           if ((LowerCase(FLastLine.Reciever) = LowerCase(FNick)) or (FWords[0][1] = '!'))
-          and (Pos(FPCommands[i].Command, LowerCase(FWords[0])) > 0) then begin
+          and ((FPCommands[i].Command = LowerCase(FWords[0])) or (FPCommands[i].Command = LowerCase(Copy(FWords[0], 2, Length(FWords[0]))))) then begin
             if Assigned(FPCommands[i].FAction)
             and (IsPuser(FLastLine.Sender)) then begin
               if FWords[0][1] <> '!' then
@@ -301,7 +302,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
             Result:=True;
             Exit;
           end;
-          
+        // CHANNEL
         if FWords.Count > 1 then
           if  (Pos(LowerCase(Nick), LowerCase(FWords[0])) > 0)
           and (LowerCase(FWords[1]) = FPCommands[i].Command) then begin
