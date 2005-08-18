@@ -49,6 +49,7 @@ type
     FLogFBConnection: TSQLConnection;
     {$endif}
     FMarkov: TMarkov;
+    FLL: TLIrcRec; // for speed purposes
     FSList: TStringList;
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
@@ -103,7 +104,8 @@ constructor TDoer.Create;
 
 begin
   Quit:=False;
-  CreateMarkov('words1.txt', 'markov1.txt', 15, 85);
+  FLL:=TLIrcRec.Create;
+  CreateMarkov('words1.txt', 'markov1.txt', 15, 65);
   FSList:=TStringList.Create;
   MarkovOn:=False;
   {$ifndef nodb}
@@ -163,6 +165,7 @@ begin
   {$endif}
   FMarkov.Free;
   FSList.Free;
+  FLL.Free;
 end;
 
 function TDoer.TrimQuestion(const s: string): string;
@@ -297,9 +300,11 @@ end;
 
 procedure TDoer.OnAbout(Caller: TLIrcBot);
 begin
-  Caller.Respond(BotName + ' ' + Version + ' , copyright (C) 2005 by Ales Katona and Joost van der Sluis');
+  Caller.Respond(BotName + ' ' + Version + ' , copyright (C) 2005 by Ales Katona (Almindor).');
+  Caller.Respond('Database support made with help from Joost van der Sluis (Loesje).');
+  Caller.Respond('Markov response generator copyright (C) 2005 by J. Aldo G. de Freitas Junior (Pepe_Le_Pew).');
   Caller.Respond('Contact: almindor@gmail.com     SVN: http://svn.freepascal.org/svn/fpcprojects/fpcircbot');
-  Caller.Respond('This bot was programmed in Object Pascal language using the Free Pascal Compiler');
+  Caller.Respond('This bot was programmed in Object Pascal language using the Free Pascal Compiler.');
 end;
 
 procedure TDoer.OnSeen(Caller: TLIrcBot);
@@ -604,44 +609,61 @@ begin
 end;
 
 procedure TDoer.OnRecieve(Caller: TLIrcBot);
-begin
-  Writeln('---------------------BEGIN----------------------');
-  with Caller.LastLine do begin
-    Write('(', DateTimeToStr(Now), ')$', Sender, '$', Reciever, '$', Msg);
-    if WasCommand then Writeln(' [COMMAND]') else Writeln;
-  end;
-  Writeln('----------------------END-----------------------');
+var
+  TheLastLine: TLIrcRec;
+
+  procedure LogMessage;
+  begin
   {$ifndef noDB}
-  if Logging then with Caller.Lastline do begin
-    if  (Length(Reciever) > 0)
-    and (Length(Sender) < 50)
-    and (Length(Reciever) < 50)
-    and (Length(Msg) < 4096) then begin
-      FLogQuery.params.ParamByName('Sender').AsString:=Sender;
-      FLogQuery.params.ParamByName('Reciever').AsString:=Reciever;
-      FLogQuery.params.ParamByName('msg').AsString:=Msg;
-      try
-        FLogQuery.ExecSQL;
-        FLogTransaction.CommitRetaining;
-      except
-        Writeln('Error writing to FB. Following information isn''t stored:');
-        Writeln('Sender: ' + Sender);
-        Writeln('Reciever: ' + Reciever);
-        Writeln('MSg: ' + Msg);
-        Caller.Respond('Error writing to DB!');
+    with TheLastline do begin
+      if  (Length(Reciever) > 0)
+      and (Length(Sender) < 50)
+      and (Length(Reciever) < 50)
+      and (Length(Msg) < 4096) then begin
+        FLogQuery.params.ParamByName('Sender').AsString:=Sender;
+        FLogQuery.params.ParamByName('Reciever').AsString:=Reciever;
+        FLogQuery.params.ParamByName('msg').AsString:=Msg;
+        try
+          FLogQuery.ExecSQL;
+          FLogTransaction.CommitRetaining;
+        except
+          Writeln('Error writing to FB. Following information isn''t stored:');
+          Writeln('Sender: ' + Sender);
+          Writeln('Reciever: ' + Reciever);
+          Writeln('MSg: ' + Msg);
+          Caller.Respond('Error writing to DB!');
+        end;
       end;
     end;
-  end;
   {$endif}
-  
+  end;
+
+begin
+  Writeln('---------------------BEGIN----------------------');
+  with Caller.LastLine do
+    Writeln('(', DateTimeToStr(Now), ')$', Sender, '$', Reciever, '$', Msg);
+  Writeln('----------------------END-----------------------');
+  if Logging then begin
+    TheLastLine:=Caller.LastLine;
+    LogMessage;
+  end;
+
   // MARCOV
   if MarkovOn then
-    with Caller.LastLine, Caller do if Sender <> Nick then begin
-      if (Length(Reciever) > 0) and not WasCommand then
-        if LowerCase(Reciever) = LowerCase(Nick) then
-          SendMessage(FMarkov.Talk(SepString(Msg)), Sender)
-        else if Pos(LowerCase(Nick), LowerCase(Msg)) = 1 then begin
-          SendMessage(Sender + ': ' + FMarkov.Talk(SepString((Copy(Msg, Length(Nick) + 1, Length(Msg))))), Reciever)
+    with Caller.LastLine, Caller do begin
+      TheLastLine:=FLL;
+      FLL.FSender:=Caller.Nick;
+      if (Sender <> Nick) and (Length(Reciever) > 0) and WasChat then
+        if LowerCase(Reciever) = LowerCase(Nick) then begin
+          FLL.FReciever:=Sender;
+          FLL.FMsg:=FMarkov.Talk(SepString(Msg));
+          SendMessage(FLL.FMsg, Sender);
+          LogMessage;
+        end else if Pos(LowerCase(Nick), LowerCase(Msg)) = 1 then begin
+          FLL.FReciever:=Reciever;
+          FLL.FMsg:=FMarkov.Talk(SepString((Copy(Msg, Length(Nick) + 1, Length(Msg)))));
+          SendMessage(Sender + ': ' + FLL.Msg, Reciever);
+          LogMessage;
         end
         else FMarkov.TalkTo(SepString(Msg));
     end;

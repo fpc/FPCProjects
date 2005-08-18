@@ -4,6 +4,10 @@ Unit MarkovTable;
 
 Interface
 
+Const
+	ccStartToken  = '<<';
+	ccEndToken    = '>>';
+
 Type
 	TArrayOfInteger = Array Of Integer;
 	
@@ -19,6 +23,7 @@ Type
 		Procedure Flush;
 		Procedure AppendWord(W : Integer);
 		Function Hits(W1, W2 : Integer): Cardinal;
+		Function CountWords(Number : Integer): TArrayOfInteger;
 		Property Words : TArrayOfInteger Read fBuffer Write fBuffer;
 		Property Count : Cardinal Read fNumber;
 	End;
@@ -90,6 +95,20 @@ Begin
 		If (fBuffer[Ctrl] = W1) And (fBuffer[Ctrl + 1] = W2) Then
 			Inc(Temp);
 	Hits := Temp;
+End;
+
+Function TMarkovTable.CountWords(Number : Integer): TArrayOfInteger;
+Var 
+	Ctrl : Integer;
+	Temp : TArrayOfInteger;
+Begin
+	Write('Counting word usage... ');
+	SetLength(Temp, Number);
+	For Ctrl := 0 To fNumber - 1 Do
+		If fBuffer[Ctrl] >= 0 Then
+			Inc(Temp[fBuffer[Ctrl]]);
+	CountWords := Temp;
+	WriteLn('Done.');
 End;
 
 End.

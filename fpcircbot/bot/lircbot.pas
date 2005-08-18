@@ -33,14 +33,14 @@ uses
   
 type
   TLIrcRec = class
-   protected
+   public
     FSender: string;
     FReciever: string;
     FArguments: string;
     FMsg: string;
     FCommand: string;
-    FWasCommand: Boolean;
     FTime: TDateTime;
+    FWasChat: Boolean;
    public
     function CloneSelf: TLIrcRec;
     property Sender: string read FSender;
@@ -48,7 +48,7 @@ type
     property Arguments: string read FArguments;
     property Msg: string read FMsg;
     property Time: TDateTime read FTime;
-    property WasCommand: Boolean read FWasCommand;
+    property WasChat: Boolean read FWasChat;
   end;
   
   TLIrcBot = class;
@@ -158,7 +158,7 @@ begin
   Result.FMsg:=FMsg;
   Result.FCommand:=FCommand;
   Result.FTime:=FTime;
-  Result.FWasCommand:=FWasCommand;
+  Result.FWasChat:=FWasChat;
 end;
 
 constructor TLCommand.Create(const s: string; a: TLIrcCallback; const h: string = '');
@@ -248,7 +248,6 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FCommands[i].FAction(Self);
             end;
             Result:=True;
-            FLastLine.FWasCommand:=True;
             Exit;
           end;
 
@@ -266,7 +265,6 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FCommands[i].FAction(Self);
             end;
             Result:=True;
-            FLastLine.FWasCommand:=True;
             Exit;
           end;
       end;
@@ -301,7 +299,6 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FPCommands[i].FAction(Self);
             end else SendMessage('Sorry but you are not a power user', FLastLine.Sender);
             Result:=True;
-            FLastLine.FWasCommand:=True;
             Exit;
           end;
           
@@ -320,17 +317,22 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FPCommands[i].FAction(Self);
             end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
             Result:=True;
-            FLastLine.FWasCommand:=True;
             Exit;
           end;
       end; // for
   end;
   
   procedure ParseForCommands;
+  var
+    WasCommand: Boolean;
   begin
     if FLastLine.Sender <> FNick then
-      if FCon.OnRecieve = @OnRe then // parse commands only BY ONE
-        if not ParseCommands then ParsePCommands;
+      if FCon.OnRecieve = @OnRe then begin
+        WasCommand:=ParseCommands;
+        if not WasCommand then
+          WasCommand:=ParsePCommands;
+        if WasCommand then FLastLine.FWasChat:=False;
+      end;
   end;
   
   procedure ParseForPings(const nMsg: string);
@@ -352,7 +354,6 @@ begin
   s:=SeparateByEnding(nMsg);
   if Length(s) > 0 then OnRe(s, 0);
   Parsed:=ParseLine(nMsg);
-  FLastLine.FWasCommand:=False;
 
   if Assigned(FOnRecieve) then
     if Pos(',', FLastLine.FReciever) > 0 then begin
@@ -573,13 +574,15 @@ begin
   ParseCommand;
   FilterSpecial(FLastLine.FSender);
   with FLastLine do begin
+    FWasChat:=False;
     if FCommand = 'PRIVMSG' then begin
       Result:=True;
+      FWasChat:=True;
       m:=Pos('ACTION', FLastLine.FMsg);
       if (m = 2) and (FLastLine.FMsg[1] = #1) then begin
         FLastLine.FMsg:=Copy(FLastLine.FMsg, m + x, Length(FLastLine.FMsg));
         FLastLine.FMsg:=FLastLine.FSender + ' ' + FLastLine.FMsg;
-        FLastLine.FMsg:=Copy(FLastLine.FMsg, 1, Length(FLastLine.FMsg));
+        Delete(FLastLine.FMsg, Length(FLastLine.FMsg), 1);
         FLastLine.FSender:='*';
       end; // if/and
     end;
