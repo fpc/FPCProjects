@@ -26,6 +26,9 @@ SET GENERATOR GEN_LOGLINEID TO 1;
 CREATE GENERATOR GEN_DEFINITIONID;
 SET GENERATOR GEN_DEFINITIONID TO 1;
 
+CREATE GENERATOR GEN_CHANNELID;
+SET GENERATOR GEN_CHANNELID TO 1;
+
 /******************************************************************************/
 /****                                Tables                                ****/
 /******************************************************************************/
@@ -44,6 +47,11 @@ CREATE TABLE TBL_DEFINITIONS (
     DESCRIPTION   VARCHAR(255)
 );
 
+CREATE TABLE TBL_CHANNELS (
+    CHANNELID     INTEGER NOT NULL,
+    CHANNELNAME    VARCHAR(20) NOT NULL
+);
+
 /******************************************************************************/
 /****                             Primary Keys                             ****/
 /******************************************************************************/
@@ -54,6 +62,10 @@ alter table tbl_Definitions add constraint pk_definitions primary key (definitio
 
 alter table tbl_Definitions add constraint unq_definitions unique (definition);
 
+alter table tbl_Channels add constraint pk_channels primary key (channelid);
+
+alter table tbl_Channels add constraint unq_channels unique (channelname);
+
 /******************************************************************************/
 /****                              Privileges                              ****/
 /******************************************************************************/
@@ -63,6 +75,12 @@ alter table tbl_Definitions add constraint unq_definitions unique (definition);
 GRANT SELECT ON TBL_LOGLINES TO $cgidbname;
 GRANT INSERT ON TBL_LOGLINES TO $botdbname;
 GRANT SELECT ON TBL_LOGLINES TO $botdbname;
+
 GRANT INSERT ON TBL_DEFINITIONS TO $botdbname;
 GRANT SELECT ON TBL_DEFINITIONS TO $botdbname;
 GRANT UPDATE ON TBL_DEFINITIONS TO $botdbname;
+
+GRANT INSERT ON TBL_CHANNELS TO $botdbname;
+GRANT SELECT ON TBL_CHANNELS TO $botdbname;
+GRANT UPDATE ON TBL_CHANNELS TO $botdbname;
+GRANT SELECT ON TBL_CHANNELS TO $cgidbname;

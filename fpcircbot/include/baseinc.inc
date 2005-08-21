@@ -1,1 +1,1 @@
-
+{$define noDB}

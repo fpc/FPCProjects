@@ -726,7 +726,10 @@ begin
       s:=FGreetList[Random(FGreetList.Count)];
       s:=StringReplace(s, '$nick', Sender, [rfReplaceAll]);
       s:=StringReplace(s, '$channel', Reciever, [rfReplaceAll]);
-      Respond(s);
+      if ReplyInPrivate then
+        SendMessage(s, Sender)
+      else
+        SendMessage(s, Reciever);
     end;
   end;
 end;
