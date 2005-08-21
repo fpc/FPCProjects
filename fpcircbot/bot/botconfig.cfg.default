@@ -1,1 +1,20 @@
+!this is FPCBots configuration file, don't change the .default one!
+!comments begin with ! (must be 1st char on line)
+!empty lines are ignored, whitespaces allowed on empty lines.
+
+!1st valid line contains list of power users and channels to join on start
+!entries are separated by comma (,) and type(channel/user) is separated by ?
+!example root1,root2?#chan1,#chan2
+
 $root,?,$channel
+
+!this entry is list of greeting messages. One line = one message.
+! $channel and $nick will be automagicly replaced by the bot for respectable username and channel name.
+
+Hello $nick, I hope you'll enjoy $channel.
+Welcome to $channel, $nick.
+$nick! Welcome to $channel.
+Greetings $nick. Welcome to $channel.
+Be welcome here $nick. $channel is a friendly and open community.
+
+!end of file

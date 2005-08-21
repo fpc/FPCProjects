@@ -84,6 +84,9 @@ type
     FRespondTo: string;
     FOnRecieve: TLIrcCallback;
     FOnDisconnect: TLIrcCallback;
+    FOnUserJoin: TLIrcCallback;
+    FOnChannelJoin: TLIrcCallback;
+    FOnChannelQuit: TLIrcCallback;
     FRIP: Boolean;
     FNickOK: string; // a little hack
     FChan: string; // detto
@@ -140,11 +143,15 @@ type
     property PUsers[i: Longint]: string read GetPuser;
     property PuserCount: Longint read GetPuserCount;
     property Connected: Boolean read GetConnected;
-    property OnRecieve: TLIrcCallback read FOnRecieve write FOnRecieve;
-    property OnDisconnect: TLIrcCallback read FOnDisconnect write FOnDisconnect;
     property LastLine: TLIrcRec read FLastLine;
     property ReplyInPrivate: Boolean read FRIP write FRIP;
     property NickServPassword: string read FNickPass write FNickPass;
+    // CALLBACKS
+    property OnRecieve: TLIrcCallback read FOnRecieve write FOnRecieve;
+    property OnUserJoin: TLIrcCallback read FOnUserJoin write FOnUserJoin;
+    property OnChannelJoin: TLIrcCallback read FOnChannelJoin write FOnChannelJoin;
+    property OnChannelQuit: TLIrcCallback read FOnChannelQuit write FOnChannelQuit;
+    property OnDisconnect: TLIrcCallback read FOnDisconnect write FOnDisconnect;
   end;
 
 implementation
@@ -190,7 +197,12 @@ begin
   FLastLine.FReciever:='';
   FLastLine.FMsg:='';
   FRespondTo:='';
+  
   FOnRecieve:=nil;
+  FOnUserJoin:=nil;
+  FOnChannelJoin:=nil;
+  FOnChannelQuit:=nil;
+
   FPort:=0;
   FServer:='';
   FCon:=TLTcp.Create;
@@ -596,8 +608,11 @@ begin
         Writeln('Adding ', FLastLine.Sender, ' to ', FChannels[n]);
         Add(FLastLine.Sender);
       end;
-      if FLastLine.FSender <> Nick then
+      if FLastLine.FSender <> Nick then begin
         Result:=True;
+        if Assigned(FOnUserJoin) then
+          FOnUserJoin(Self);
+      end;
     end; // if
     
     if FCommand = 'PART' then begin
@@ -625,11 +640,13 @@ begin
         Delete(FLastLine.FReciever, n, Length(FLastLine.FReciever));
       end else s:=FLastLine.FReciever;
       n:=FChannels.IndexOf(FLastLine.FReciever);
-      if s = Nick then begin
+      if LowerCase(s) = LowerCase(Nick) then begin
         if n >= 0 then begin
           Writeln('Deleting channel ', FChannels[n], ' and all users from it');
           FChannels.Delete(n);
           FPeople.Delete(n);
+          if Assigned(FOnChannelQuit) then
+            FOnChannelQuit(Self);
         end;
       end else if n >= 0 then with FPeople[n] do
         if IndexOf(s) >= 0 then begin
@@ -730,6 +747,8 @@ begin
     end;
     FLastLine.Free;
     FLastLine:=Backup;
+    if Assigned(FOnChannelJoin) then
+      FOnChannelJoin(Self);
   end;
 end;
 
@@ -744,6 +763,8 @@ begin
     FPeople.Delete(n);
     FChannels.Delete(n);
     Result:=True;
+    if Assigned(FOnChannelQuit) then
+      FOnChannelQuit(Self);
   end;
 end;
 
@@ -759,7 +780,9 @@ end;
 
 procedure TLIrcBot.Quit;
 begin
-  FCon.SendMessage('QUIT' + #13#10)
+  FCon.SendMessage('QUIT' + #13#10);
+  if Assigned(FOnChannelQuit) then
+    FOnChannelQuit(Self);
 end;
 
 procedure TLIrcBot.SendMessage(const Msg: string; const Reciever: string = '');

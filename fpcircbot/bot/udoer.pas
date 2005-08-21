@@ -45,19 +45,23 @@ type
     FSeenQuery: TSQLQuery;
     FDefinesQuery: TSQLQuery;
     FDefViewQuery: TSQLQuery;
+    FChanQuery: TSQLQuery;
     FLogTransaction: TSQLTransaction;
     FLogFBConnection: TSQLConnection;
     {$endif}
     FMarkov: TMarkov;
     FLL: TLIrcRec; // for speed purposes
     FSList: TStringList;
+    FGreetList: TStringList;
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
+    procedure SetGreetList(const Value: TStringList);
    public
     Quit: Boolean;
     TimeStarted: string;
     Logging: Boolean;
     MarkovOn: Boolean;
+    Greetings: Boolean;
     constructor Create;
     destructor Destroy; override;
     procedure OnHelp(Caller: TLIrcBot);
@@ -74,13 +78,17 @@ type
     procedure OnSayAll(Caller: TLIrcBot);
     procedure OnSayTo(Caller: TLIrcBot);
     procedure OnLog(Caller: TLIrcBot);
+    procedure OnGreetings(Caller: TLIrcBot);
     procedure OnAddPuser(Caller: TLIrcBot);
     procedure OnRemovePuser(Caller: TLIrcBot);
     procedure OnListPusers(Caller: TLIrcBot);
     procedure OnMarkov(Caller: TLIrcBot);
     procedure OnSetMarkov(Caller: TLIrcBot);
     procedure OnRecieve(Caller: TLIrcBot);
-    procedure OnUnknown(Caller: TLIrcBot);
+    procedure OnUserJoin(Caller: TLIrcBot);
+    procedure OnChannelJoin(Caller: TLIrcBot);
+    procedure OnChannelQuit(Caller: TLIrcBot);
+    property GreetList: TStringList read FGreetList write SetGreetList;
   end;
 
 implementation
@@ -104,10 +112,16 @@ constructor TDoer.Create;
 
 begin
   Quit:=False;
+  Greetings:=False;
   FLL:=TLIrcRec.Create;
   CreateMarkov('words1.txt', 'markov1.txt', 15, 65);
   FSList:=TStringList.Create;
+  FGreetList:=TStringList.Create;
+  FGreetList.Add('Welcome to $channel, $nick. We are a friendly and open community here.');
+  FGreetList.Add('Hi $nick. Welcome to $channel.');
+  FGreetList.Add('Greetings $nick. I hope you enjoy $channel.');
   MarkovOn:=False;
+
   {$ifndef nodb}
   FLogFBConnection := tIBConnection.Create(nil);
   with FLogFBConnection do begin
@@ -149,6 +163,16 @@ begin
   FDefViewQuery.DataBase := FLogFBConnection;
   FDefViewQuery.transaction := FLogTransaction;
   FDefViewQuery.ParseSQL:=False;
+  
+  FChanQuery := tsqlquery.Create(nil);
+  with FChanQuery do begin
+    DataBase := FLogFBConnection;
+    Transaction := FLogTransaction;
+
+    sql.clear;
+    sql.add('insert into tbl_Channels(channelid,channelname) values (gen_id(GEN_CHANNELID,1),:channelname)');
+    prepare;
+  end;
   {$endif}
 end;
 
@@ -166,6 +190,7 @@ begin
   FMarkov.Free;
   FSList.Free;
   FLL.Free;
+  FGreetList.Free;
 end;
 
 function TDoer.TrimQuestion(const s: string): string;
@@ -227,6 +252,18 @@ begin
           FSList[i]:=Trim(LowerCase(FSList[i]));
     if FSList.Count > 0 then
       Result:=FSList;
+  end;
+end;
+
+procedure TDoer.SetGreetList(const Value: TStringList);
+var
+  i: Longint;
+begin
+  if Assigned(Value) then begin
+    FGreetList.Clear;
+    if Value.Count > 0 then
+      for i:=0 to Value.Count-1 do
+        FGreetList.Add(Value[i]);
   end;
 end;
 
@@ -542,6 +579,17 @@ begin
   end else Caller.Respond('Currently: ' + BoolStr[Logging]);
 end;
 
+procedure TDoer.OnGreetings(Caller: TLIrcBot);
+begin
+  if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
+    Greetings:=True;
+    Caller.Respond('As ordered');
+  end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
+    Greetings:=False;
+    Caller.Respond('As ordered');
+  end else Caller.Respond('Currently: ' + BoolStr[Logging]);
+end;
+
 procedure TDoer.OnAddPuser(Caller: TLIrcBot);
 begin
   Caller.AddPuser(Trim(Caller.LastLine.Arguments));
@@ -669,13 +717,28 @@ begin
     end;
 end;
 
-procedure TDoer.OnUnknown(Caller: TLIrcBot);
+procedure TDoer.OnUserJoin(Caller: TLIrcBot);
+var
+  s: string;
 begin
-  Caller.Respond('Command not found: ' +
-                  Trim(Copy(Caller.LastLine.Msg,
-                       Length(Caller.Nick) + 2,
-                       Length(Caller.LastLine.Msg)))
-                  );
+  if Greetings then with Caller, Caller.LastLine do begin
+    if FGreetList.Count > 0 then begin
+      s:=FGreetList[Random(FGreetList.Count)];
+      s:=StringReplace(s, '$nick', Sender, [rfReplaceAll]);
+      s:=StringReplace(s, '$channel', Reciever, [rfReplaceAll]);
+      Respond(s);
+    end;
+  end;
+end;
+
+procedure TDoer.OnChannelJoin(Caller: TLIrcBot);
+begin
+  Writeln('*****************ON CHANNEL JOIN********************');
+end;
+
+procedure TDoer.OnChannelQuit(Caller: TLIrcBot);
+begin
+  Writeln('*****************ON CHANNEL QUIT********************');
 end;
 
 end.

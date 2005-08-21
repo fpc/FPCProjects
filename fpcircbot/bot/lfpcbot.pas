@@ -23,6 +23,24 @@ along with This program; if not, Write to the Free Software Foundation,
 
 uses
   uDoer, Crt, Classes, SysUtils, lIrcBot;
+  
+function LoadConfig(const FileName: string): TStringList;
+var
+  i: Longint;
+begin
+  Result:=nil;
+  if FileExists(FileName) then begin
+    Result:=TStringList.Create;
+    Result.LoadFromFile(FileName);
+    if Result.Count > 0 then
+      for i:=Result.Count-1 downto 0 do begin
+        if Length(Result[i]) = 0 then
+          Result.Delete(i)
+        else if Result[i][1] = '!' then
+          Result.Delete(i);
+      end;
+  end;
+end;
 
 procedure Main;
 var
@@ -31,16 +49,24 @@ var
   PORT: Word;
   Doer: TDoer;
   ConfigList: TStringList;
+  ChannelsUsers: TStringList;
   n, i: Longint;
 begin
-  ConfigList:=TStringList.Create;
-  ConfigList.LoadFromFile('botconfig.cfg');
-  ConfigList.CommaText:=ConfigList.Text;
+  ConfigList:=LoadConfig('botconfig.cfg');
+  ChannelsUsers:=TStringList.Create;
+  if ConfigList = nil then begin
+    Writeln('Unable to work with config file');
+    Halt;
+  end;
+  ChannelsUsers.CommaText:=ConfigList[0];
+  ConfigList.Delete(0);
   AD:='irc.freenode.net';
   PORT:=6667;
   Doer:=TDoer.Create;
   Doer.Logging:=True;
   Doer.MarkovOn:=True;
+  Doer.Greetings:=True;
+  Doer.GreetList:=ConfigList;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;
 
@@ -63,20 +89,26 @@ begin
   Con.AddPCommand('sayall', @Doer.OnSayAll, 'Syntax: sayall <msg> Info: makes me say something to everyone. <msg> is required.');
   Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Syntax: sayto <recipient> <msg> Info: makes me say something to someone/channel. <recipient> and <msg> are required. <msg> can be a channel or username.');
   Con.AddPCommand('log', @Doer.OnLog, 'Syntax: log [on/off] Info: if parameter is empty, I will tell you if logging is off or on, otherwise it makes me start/stop logging.');
+  Con.AddPCommand('greetings', @Doer.OnGreetings, 'Syntax: greetings [on/off] Info: if parameter is empty, I will tell you if greetings are off or on, otherwise it makes me start/stop greeting people.');
   Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Syntax: addpuser <nick> Info: makes ma add a power user. <nick> is required.');
   Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Syntax: removepuser <nick> Info: makes me remove a power user. <nick> is required.');
   Con.AddPCommand('setmarkov', @Doer.OnSetMarkov, 'Syntax: setmarkov <deviation> <threshold> Info: makes me set the deviation and threshold of the markov generator. <deviation> and <threshold> are required. Both are ints <0..100>');
+  // CALLBACKS
   Con.OnRecieve:=@Doer.OnRecieve;
+  Con.OnUserJoin:=@Doer.OnUserJoin;
+  Con.OnChannelJoin:=@Doer.OnChannelJoin;
+  Con.OnChannelQuit:=@Doer.OnChannelQuit;
+
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;
     Doer.TimeStarted:=DateTimeToStr(Now);
     
-    if ConfigList.Count > 0 then begin
-      n:=ConfigList.IndexOf('?');
+    if ChannelsUsers.Count > 0 then begin
+      n:=ChannelsUsers.IndexOf('?');
       if n > 0 then
-        for i:=0 to n-1 do Con.AddPuser(ConfigList[i]);
-      if n < ConfigList.Count-1 then
-        for i:=n+1 to ConfigList.Count-1 do Con.Join(ConfigList[i]);
+        for i:=0 to n-1 do Con.AddPuser(ChannelsUsers[i]);
+      if n < ChannelsUsers.Count-1 then
+        for i:=n+1 to ChannelsUsers.Count-1 do Con.Join(ChannelsUsers[i]);
     end;
     
     while not Doer.Quit do begin
