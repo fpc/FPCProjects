@@ -332,6 +332,7 @@ begin
   Caller.Respond('Logging: ' + BoolStr[Logging]);
   Caller.Respond('Private Response: ' + BoolStr[Caller.ReplyInPrivate]);
   Caller.Respond('Markov generator: ' + BoolStr[MarkovOn]);
+  Caller.Respond('Greetings: ' + BoolStr[Greetings]);
   Caller.Respond('Online since: ' + TimeStarted);
 end;
 
