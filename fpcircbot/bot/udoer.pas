@@ -33,6 +33,7 @@ uses
 
 const
   BoolStr: array[Boolean] of string = ('Off', 'On');
+  YESSIR = 'As ordered';
 
   {$Warning Make sure you modified hiddeninc.inc.default file according to INSTALL}
   {$i hiddeninc.inc} // create this file with your nickserv password there
@@ -56,6 +57,8 @@ type
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
     procedure SetGreetList(const Value: TStringList);
+    procedure CleanChannels;
+    procedure AddChannels(Bot: TLIrcBot);
    public
     Quit: Boolean;
     TimeStarted: string;
@@ -84,6 +87,7 @@ type
     procedure OnListPusers(Caller: TLIrcBot);
     procedure OnMarkov(Caller: TLIrcBot);
     procedure OnSetMarkov(Caller: TLIrcBot);
+    procedure OnCleanChans(Caller: TLIrcBot);
     procedure OnRecieve(Caller: TLIrcBot);
     procedure OnUserJoin(Caller: TLIrcBot);
     procedure OnChannelJoin(Caller: TLIrcBot);
@@ -166,12 +170,13 @@ begin
   
   FChanQuery := tsqlquery.Create(nil);
   with FChanQuery do begin
+//    ReadOnly:=True;
     DataBase := FLogFBConnection;
     Transaction := FLogTransaction;
 
-    sql.clear;
-    sql.add('insert into tbl_Channels(channelid,channelname) values (gen_id(GEN_CHANNELID,1),:channelname)');
-    prepare;
+{    sql.clear;
+    sql.add('insert into tbl_channels(channelid,channelname) values (gen_id(GEN_CHANNELID,1),:channelname)');
+    prepare;}
   end;
   {$endif}
 end;
@@ -414,7 +419,7 @@ var
                 ''' where definition=''' + DefWord + '''');
         ExecSQL;
         FLogTransaction.CommitRetaining;
-        Respond('As ordered');
+        Respond(YESSIR);
       except
         Respond('DB update error');
       end;
@@ -428,7 +433,7 @@ var
               'values (gen_id(GEN_DEFINITIONID,1),'''+ DefWord+''',''' +
                Args + ' -- defined by ' + Caller.LastLine.Sender + ''')');
       ExecSQL;
-      Caller.Respond('As ordered');
+      Caller.Respond(YESSIR);
     except
       Caller.Respond('DB insert error');
     end;
@@ -501,10 +506,10 @@ procedure TDoer.OnReplyPrv(Caller: TLIrcBot);
 begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
     Caller.ReplyInPrivate:=True;
-    Caller.Respond('As ordered');
+    Caller.Respond(YESSIR);
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
     Caller.ReplyInPrivate:=False;
-    Caller.Respond('As ordered');
+    Caller.Respond(YESSIR);
   end else Caller.Respond('Currently: ' + BoolStr[Caller.ReplyInPrivate]);
 end;
 
@@ -523,7 +528,7 @@ begin
         for i:=0 to ChannelCount - 1 do
           Respond(Channels[i]);
       end;
-    end else Respond('As ordered');
+    end else Respond(YESSIR);
   end;
 end;
 
@@ -533,14 +538,14 @@ begin
     if not Join(LastLine.Arguments) then
       Respond('Unable to join, cannot join such channel')
     else
-      Respond('As ordered');
+      Respond(YESSIR);
 end;
 
 procedure TDoer.OnQuit(Caller: TLIrcBot);
 begin
   with Caller do begin
     if LowerCase(Trim(LastLine.Arguments)) = 'confirm' then begin
-      Respond('As ordered');
+      Respond(YESSIR);
       Quit;
       Self.Quit:=True;
     end else Respond('I don''t want to!');
@@ -573,10 +578,10 @@ procedure TDoer.OnLog(Caller: TLIrcBot);
 begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
     Logging:=True;
-    Caller.Respond('As ordered');
+    Caller.Respond(YESSIR);
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
     Logging:=False;
-    Caller.Respond('As ordered');
+    Caller.Respond(YESSIR);
   end else Caller.Respond('Currently: ' + BoolStr[Logging]);
 end;
 
@@ -584,23 +589,23 @@ procedure TDoer.OnGreetings(Caller: TLIrcBot);
 begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
     Greetings:=True;
-    Caller.Respond('As ordered');
+    Caller.Respond(YESSIR);
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
     Greetings:=False;
-    Caller.Respond('As ordered');
+    Caller.Respond(YESSIR);
   end else Caller.Respond('Currently: ' + BoolStr[Logging]);
 end;
 
 procedure TDoer.OnAddPuser(Caller: TLIrcBot);
 begin
   Caller.AddPuser(Trim(Caller.LastLine.Arguments));
-  Caller.Respond('As ordered');
+  Caller.Respond(YESSIR);
 end;
 
 procedure TDoer.OnRemovePuser(Caller: TLIrcBot);
 begin
   Caller.RemovePuser(Trim(Caller.LastLine.Arguments));
-  Caller.Respond('As ordered');
+  Caller.Respond(YESSIR);
 end;
 
 procedure TDoer.OnListPusers(Caller: TLIrcBot);
@@ -617,12 +622,12 @@ begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
     if Caller.IsPuser(Caller.LastLine.Sender) then begin
       MarkovOn:=True;
-      Caller.Respond('As ordered');
+      Caller.Respond(YESSIR);
     end else Caller.Respond('Only power users can change settings');
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
     if Caller.IsPuser(Caller.LastLine.Sender) then begin
       MarkovOn:=False;
-      Caller.Respond('As ordered');
+      Caller.Respond(YESSIR);
     end else Caller.Respond('Only power users can change settings');
   end else Caller.Respond('Currently: ' + BoolStr[MarkovOn] +
                           ' with deviation: ' + IntToStr(FMarkov.ErrorMargin) +
@@ -646,7 +651,7 @@ begin
           if (m >= 0) and (m <= 100) and (n >= 0) and (n <= 100) then begin
             FMarkov.ErrorMargin:=m;
             FMarkov.Threshold:=n;
-            Respond('As ordered');
+            Respond(YESSIR);
           end else Respond('Argument values out of range, range is <0..100>');
         except
           on e: Exception do
@@ -655,6 +660,13 @@ begin
       end else Respond('Syntax: SetMarkov <deviation> <threshold> where both are integer <0..100>');
     end else Respond('Syntax: SetMarkov <deviation> <threshold> where both are integer <0..100>');
   end else Caller.Respond('Markov generator is turned off, turn it on with Markov command');
+end;
+
+procedure TDoer.OnCleanChans(Caller: TLIrcBot);
+begin
+  CleanChannels;
+  AddChannels(Caller);
+  Caller.Respond(YESSIR);
 end;
 
 procedure TDoer.OnRecieve(Caller: TLIrcBot);
@@ -735,14 +747,49 @@ begin
   end;
 end;
 
+procedure TDoer.CleanChannels;
+begin
+  {$ifndef noDB}
+  with FChanQuery do try
+    SQL.Clear;
+    SQL.Add('delete from tbl_channels');
+    ExecSQL;
+  except on e: Exception do
+    writeln('Error deleting channels list in DB: ', e.message);
+  end;
+  {$endif}
+end;
+
+procedure TDoer.AddChannels(Bot: TLIrcBot);
+var
+  i: Integer;
+begin
+  {$ifndef noDB}
+  with FChanQuery.params, FChanQuery do
+    if Bot.ChannelCount > 0 then
+      for i:=0 to Bot.ChannelCount-1 do try
+        Sql.Clear;
+        Sql.Add('insert into tbl_channels(channelid,channelname) ' +
+                'values (gen_id(GEN_CHANNELID,1),'''+ Bot.Channels[i] + ''')');
+        ExecSQL;
+      except
+        Writeln('Error writing to FB. Following information isn''t stored:');
+        Writeln('Channel: ' + Bot.Channels[i]);
+        Writeln('Highest probability is that the DB has this channel in already');
+//        Bot.Respond('Error writing to DB!');
+      end;
+  {$endif}
+end;
+
 procedure TDoer.OnChannelJoin(Caller: TLIrcBot);
 begin
   Writeln('*****************ON CHANNEL JOIN********************');
+  AddChannels(Caller);
 end;
 
 procedure TDoer.OnChannelQuit(Caller: TLIrcBot);
 begin
-  Writeln('*****************ON CHANNEL QUIT********************');
+  // no, I didn't forget to put anything here
 end;
 
 end.

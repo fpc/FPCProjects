@@ -49,7 +49,7 @@ CREATE TABLE TBL_DEFINITIONS (
 
 CREATE TABLE TBL_CHANNELS (
     CHANNELID     INTEGER NOT NULL,
-    CHANNELNAME    VARCHAR(20) NOT NULL
+    CHANNELNAME   VARCHAR(25) CHARACTER SET NONE
 );
 
 /******************************************************************************/

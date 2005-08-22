@@ -1,4 +1,4 @@
-{ lNet v2.0.4
+{ lNet v2.0.6
 
   CopyRight (C) 2004 Ales Katona
 
@@ -39,7 +39,7 @@ const
   { Default Values }
   DefaultMaxSockets =    64;
   DefaultBufferSize = 65535;
-  DefaultMaxMsgs    =  1000;
+  DefaultMaxMsgs    =  1024;
   { Address constants }
   LADDR_ANY = '0.0.0.0';
   LADDR_BR  = '255.255.255.255';
@@ -66,33 +66,33 @@ type
     FAddr: TInetSockAddr;
     FCliAddr: TInetSockAddr;
     FConnected: Boolean;
-    FSeparate: Boolean;
     FBufferSize: Longint;
     FMaxmsgs: Longint;
     FAddrlen: Longint;
     FSock: Longint;
     FFlag: Longint;
     FSnum: LongInt;
-    function SetupSocket(const Port: Word; const Address: string): Boolean;
+    FSockPort: Word;
+    function SetupSocket(const APort: Word; const Address: string): Boolean;
     procedure SetNonBlock;
     procedure SetBufferSize(const Size: LongInt);
     procedure Bail(const msg: string; const ernum: LongInt);
     procedure LogError(const msg: string; const ernum: LongInt);
    public
-    constructor Create(const protocol: Byte; Owner: TLConnection; const num: LongInt);
+    constructor Create(const protocol: Byte; Owner: TLConnection; const num: LongInt = 0);
     constructor Create(const protocol: Byte; const num: LongInt = 0);
     destructor Destroy; override;
-    function SetServer(const Port: Word): Boolean;
+    function SetServer(const APort: Word): Boolean;
     function Accept(const SerSock: LongInt): Boolean;
-    function Connect(const Port: Word; const Address: string): Boolean;
+    function Connect(const APort: Word; const Address: string): Boolean;
     function Send(const msg: string): Boolean;
     function Recieve: Boolean;
     function GetHostAddress: string;
     function GetMessage(out msg: string): Boolean;
     procedure Disconnect;
     property BufferSize: LongInt read FBufferSize write SetBufferSize;
+    property Port: Word read FSockPort;
     property MaxMsgs: LongInt read FMaxMsgs write FMaxMsgs;
-    property Separate: Boolean read FSeparate write FSeparate;
     property Connected: Boolean read FConnected;
     property SNum: LongInt read FSnum;
   end;
@@ -107,19 +107,17 @@ type
     FBufferSize: LongInt;
     FTimeVal: TTimeVal;
     FMaxMsgs: LongInt;
-    FSeparate: Boolean;
     FOnRecieve,
     FOnError,
     FOnAccept,
     FOnDisconnect: TLObjProc;
-    procedure SetSeparate(const Value: Boolean); virtual; abstract;
     procedure SetBufferSize(const Size: LongInt);
     procedure SetMaxMsgs(const Size: LongInt);
    public
     constructor Create;
     destructor Destroy; override;
-    function Connect(const Port: Word; const Address: string): Boolean; virtual; abstract;
-    function Accept(const Port: Word): Boolean; virtual; abstract;
+    function Connect(const APort: Word; const Address: string): Boolean; virtual; abstract;
+    function Accept(const APort: Word): Boolean; virtual; abstract;
     function SendMessage(const msg: string): Boolean; virtual; abstract;
     procedure Disconnect(const s: LongInt = -1); virtual; abstract;
     procedure CallAction; virtual; abstract;
@@ -129,7 +127,6 @@ type
     property OnDisconnect: TLObjProc read FOnDisconnect write FOnDisconnect;
     property BufferSize: LongInt read FBufferSize write SetBufferSize;
     property MaxMsgs: LongInt read FMaxMsgs write SetMaxMsgs;
-    property Separate: Boolean read FSeparate write SetSeparate;
   end;
   
   { UDP Client/Server class. Provided to enable usage of UDP sockets }
@@ -137,12 +134,11 @@ type
    protected
     function GetMessageCount: Cardinal;
     procedure Bail(const msg: string);
-    procedure SetSeparate(const Value: Boolean); override;
    public
     constructor Create;
     destructor Destroy; override;
-    function Connect(const Port: Word; const Address: string = LADDR_BR): Boolean; override;
-    function Accept(const Port: Word): Boolean; override;
+    function Connect(const APort: Word; const Address: string = LADDR_BR): Boolean; override;
+    function Accept(const APort: Word): Boolean; override;
     function GetMessage(out s: string): Boolean;
     function GetHostAddress: string;
     function SendMessage(const msg: string): Boolean; override;
@@ -163,14 +159,13 @@ type
     function GetCount: Integer;
     function GetItem(const i: Longint): TLSocket;
     function CallRecieve(const snum: LongInt = -1): Boolean;
-    procedure Bail(const msg: string; const socknum: LongInt);
     procedure CallAccept;
-    procedure SetSeparate(const Value: Boolean); override;
+    procedure Bail(const msg: string; const socknum: LongInt);
    public
     constructor Create;
     destructor Destroy; override;
-    function Connect(const Port: Word; const Address: string): Boolean; override;
-    function Accept(const Port: Word): Boolean; override;
+    function Connect(const APort: Word; const Address: string): Boolean; override;
+    function Accept(const APort: Word): Boolean; override;
     function GetMessage(out s: string; snum: LongInt = 0): Boolean;
     function SendMessage(const msg: string): Boolean; override;
     function SendMessage(const msg: string; const snum: LongInt): Boolean;
@@ -250,8 +245,11 @@ end;
 
 procedure TLConnection.SetBufferSize(const Size: LongInt);
 begin
-  if Size > 4 then
+  if  (Size > 4)
+  and (Size <= DefaultBufferSize) then begin
     FBufferSize:=Size;
+    FSerSock.BufferSize:=Size;
+  end;
 end;
 
 procedure TLConnection.SetMaxMsgs(const Size: LongInt);
@@ -269,7 +267,6 @@ begin
   FTimeVal.tv_sec:=0;
   FBufferSize:=DefaultBufferSize;
   FMaxMsgs:=DefaultMaxMsgs;
-  FSeparate:=False;
   FOnRecieve:=nil; FOnAccept:=nil; FOnError:=nil;
   FSerSock:=TLSocket.Create(LUDP, Self, 1);
 end;
@@ -287,22 +284,22 @@ begin
 //   if Assigned(FOnDisconnect) then FOnDisconnect('Disconnecting', -1);
 end;
 
-function TLUdp.Accept(const Port: Word): Boolean;
+function TLUdp.Accept(const APort: Word): Boolean;
 begin
   if FSerSock.Connected then
     Disconnect;
   Result:=false;
-  Result:=FSerSock.SetServer(Port);
+  Result:=FSerSock.SetServer(APort);
   FSersock.FCliAddr:=FSerSock.FAddr;
   FSersock.FCliAddr.Addr:=StrToNetAddr(LADDR_BR);
   FSersock.FConnected:=true;
 end;
 
-function TLUdp.Connect(const Port: Word; const Address: string): Boolean;
+function TLUdp.Connect(const APort: Word; const Address: string): Boolean;
 begin
   Result:=False;
   if  FSerSock.Connected then Disconnect;
-  Result:=FSerSock.SetupSocket(Port, LADDR_ANY);
+  Result:=FSerSock.SetupSocket(APort, LADDR_ANY);
   FSerSock.FCliAddr:=FSerSock.FAddr;
   FSerSock.FCliAddr.Addr:=StrToNetAddr(Address);
   {$ifdef nonblocking}
@@ -352,13 +349,7 @@ end;
 
 function TLUdp.GetMessage(out s: string): Boolean;
 begin
-  Result:=false;
-  if GetMessageCount > 0 then
-    begin
-      Result:=true;
-      s:=FSerSock.FBuffer[0];
-      FSersock.FBuffer.Delete(0);
-    end;
+  Result:=FSerSock.GetMessage(s);
 end;
 
 function TLUdp.SendMessage(const msg: string): Boolean;
@@ -380,12 +371,6 @@ begin
     end else Bail('Message too long');
 end;
 
-procedure TLUdp.SetSeparate(const Value: Boolean);
-begin
-  FSeparate:=Value;
-  FSerSock.FSeparate:=Value;
-end;
-
 //******************************TLTCP**********************************
 
 constructor TLTcp.Create;
@@ -393,7 +378,6 @@ begin
   inherited Create;
   FTimeVal.tv_usec:=10;
   FTimeVal.tv_sec:=0;
-  FSeparate:=False;
   FBufferSize:=DefaultBufferSize;
   FMaxMsgs:=DefaultMaxMsgs;
   maxsockets:=defaultMaxSockets;
@@ -446,13 +430,13 @@ begin
         Result:=FSocks[i].GetHostAddress;
 end;
 
-function TLTcp.Accept(const Port: Word): Boolean;
+function TLTcp.Accept(const APort: Word): Boolean;
 begin
   if not FAccepting then
     begin
       Result:=false;
       if FSocks.Count > 0 then Disconnect;
-      if FSerSock.SetServer(Port) then
+      if FSerSock.SetServer(APort) then
         begin
           FSerSock.FConnected:=true;
           FAccepting:=true;
@@ -461,15 +445,14 @@ begin
     end else bail('Error, alReady Accepting', FSerSock.FSnum);
 end;
 
-function TLTcp.Connect(const Port: Word; const Address: string): Boolean;
+function TLTcp.Connect(const APort: Word; const Address: string): Boolean;
 begin
   Result:=False;
   if FSocks.Count > 0 then Disconnect;
   FSocks.Add(TLSocket.Create(LTCP, Self, 0));
   with FSocks.Last do
     begin
-      SetupSocket(Port, Address);
-      FSocks.Last.Separate:=Self.Separate;
+      SetupSocket(APort, Address);
       if fpConnect(FSock, @FAddr, FAddrlen) = 0 then
         begin
           FConnected:=true;
@@ -531,13 +514,11 @@ function TLTcp.CallRecieve(const snum: LongInt = -1): Boolean;
     if  (num >= 0) and (num < FSocks.Count)
     and (fpFD_ISSET(FSocks[num].FSock, FReadFDSet) <> 0) then
       with FSocks[num] do
-        if Recieve then
-          begin
-            while FSocks[num].GetMessage(s) do
-              if Assigned(FOnRecieve) then
-                FOnRecieve(s, FSocks[num].FSnum);
-            Result:=true;
-          end else FSocks.Delete(num);
+        if Recieve then begin
+          while FSocks[num].GetMessage(s) do
+            if Assigned(FOnRecieve) then FOnRecieve(s, FSocks[num].FSnum);
+          Result:=true;
+        end else FSocks.Delete(num);
   end;
   
 var
@@ -556,17 +537,17 @@ end;
 procedure TLTcp.CallAccept;
 
 begin
-  if (fpFD_ISSET(FSerSock.FSock, FReadFDSet) <> 0) and ((FSocks.Count) < MaxSockets) then
-    begin
-      FSocks.Add(TLSocket.Create(LTCP, Self, FSmax));
-      with FSocks.Last as TLSocket do
-        if Accept(FSerSock.FSock) then
-          begin
-            Inc(FSmax);
-            if  Assigned(FOnAccept) then
-              FOnAccept('Connection Accepted from '+GetHostAddress, FSmax-1);
-          end else FSocks.Delete(FSocks.Count-1);
-    end;
+  if  (fpFD_ISSET(FSerSock.FSock, FReadFDSet) <> 0)
+  and ((FSocks.Count) < MaxSockets) then begin
+    FSocks.Add(TLSocket.Create(LTCP, Self, FSmax));
+    with FSocks.Last as TLSocket do
+      if Accept(FSerSock.FSock) then begin
+        Inc(FSmax);
+        BufferSize:=Self.BufferSize;
+        if Assigned(FOnAccept) then
+          FOnAccept('Connection Accepted from '+GetHostAddress, FSmax-1);
+      end else FSocks.Delete(FSocks.Count-1);
+  end;
 end;
 
 function TLTcp.GetPosition(const snum: LongInt): LongInt;
@@ -644,22 +625,11 @@ begin
         end;
 end;
 
-procedure TLTcp.SetSeparate(const Value: Boolean);
-var
-  i: LongInt;
-begin
-  FSeparate:=Value;
-  if FSocks.Count > 0 then
-    for i:=0 to FSocks.Count-1 do
-      FSocks[i].Separate:=Value;
-end;
-
 //********************************TLSocket*************************************
 
-constructor TLSocket.Create(const protocol: Byte; Owner: TLConnection; const num: LongInt);
+constructor TLSocket.Create(const protocol: Byte; Owner: TLConnection; const num: LongInt = 0);
 begin
-  FConnected:=false;
-  FSeparate:=False;
+  FConnected:=False;
   FBuffer:=TStringList.Create;
   FMaxMsgs:=DefaultMaxMsgs;
   FAddrlen:=Sizeof(FAddr);
@@ -668,7 +638,6 @@ begin
     begin
       FBufferSize:=FParent.FBufferSize;
       FMaxMsgs:=FParent.FMaxMsgs;
-      FSeparate:=FParent.Separate;
     end else
     begin
       FBufferSize:=DefaultBufferSize;
@@ -684,7 +653,6 @@ end;
 constructor TLSocket.Create(const protocol: Byte; const num: LongInt = 0);
 begin
   FConnected:=false;
-  FSeparate:=False;
   FBuffer:=TstringList.Create;
   FMaxMsgs:=DefaultMaxMsgs;
   FbufferSize:=DefaultBufferSize;
@@ -703,22 +671,17 @@ end;
 
 procedure TLSocket.Disconnect;
 begin
-  if Connected then
-    begin
-      ShutDown(FSock, 2);// <> 0 then logerror('ShutDown error', socketerror);
-      if Closesocket(FSock) <> 0 then logerror('Closesocket error', socketerror);
-      FConnected:=false;
-    end;
+  if Connected then begin
+    ShutDown(FSock, 2);// <> 0 then logerror('ShutDown error', socketerror);
+    if Closesocket(FSock) <> 0 then logerror('Closesocket error', socketerror);
+    FConnected:=false;
+  end;
 end;
 
 procedure TLSocket.SetBufferSize(const Size: LongInt);
 begin
-  if Size > 4 then
-    begin
-      FbufferSize:=Size;
-      SetSocketOptions(FSock, SOL_SOCKET, SO_RCVBUF, FBufferSize, SizeOf(FBufferSize));
-      SetSocketOptions(FSock, SOL_SOCKET, SO_SNDBUF, FBufferSize, SizeOf(FBufferSize));
-    end;
+  if  (Size > 4)
+  and (Size <= DefaultBufferSize) then FbufferSize:=Size;
 end;
 
 procedure TLSocket.LogError(const msg: string; const ernum: LongInt);
@@ -748,15 +711,17 @@ function TLSocket.GetMessage(out msg: string): Boolean;
 begin
   msg:='';
   result:=false;
-  if FBuffer.Count > 0 then
-    begin
-      msg:=FBuffer[0];
+  if FBuffer.Count > 0 then begin
+    while FBuffer.Count > 0 do begin
+      msg:=msg + FBuffer[0];
       FBuffer.Delete(0);
-      result:=True;
     end;
+    FBuffer.Clear;
+    result:=True;
+  end;
 end;
 
-function TLSocket.SetupSocket(const Port: Word; const Address: string): Boolean;
+function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
 var
   Done: Boolean;
 begin
@@ -765,14 +730,13 @@ begin
     begin
       Done:=true;
       FSock:=fpsocket(AF_INET, FFlag, 0);
+      FSockPort:=APort;
       if FSock < 0 then bail('Socket error', SocketError);
       SetSocketOptions(FSock, SOL_SOCKET, SO_REUSEADDR, 'TRUE', Length('TRUE'));
-{      SetSocketOptions(FSock, SOL_SOCKET, SO_RCVBUF, FBufferSize, SizeOf(FBufferSize));
-      SetSocketOptions(FSock, SOL_SOCKET, SO_SNDBUF, FBufferSize, SizeOf(FBufferSize));}
       if FFlag = SOCK_DGRAM then
         SetSocketOptions(FSock, SOL_SOCKET, SO_BROADCAST, 'TRUE', Length('TRUE'));
       FAddr.family:=AF_INET;
-      FAddr.Port:=htons(Port);
+      FAddr.Port:=htons(APort);
       FAddr.Addr:=StrToNetAddr(Address);
       if (Address <> LADDR_ANY) and (FAddr.Addr = 0) then
         FAddr.Addr:=StrToNetAddr(GetHostIP(Address));
@@ -780,12 +744,12 @@ begin
     end;
 end;
 
-function TLSocket.SetServer(const Port: Word): Boolean;
+function TLSocket.SetServer(const APort: Word): Boolean;
 begin
   if not Connected then
     begin
       Result:=false;
-      SetUpSocket(Port, LADDR_ANY);
+      SetUpSocket(APort, LADDR_ANY);
       if fpBind(FSock, @FAddr, FAddrLen) < 0 then
         Bail('Error on bind', SocketError) else Result:=true;
       if (FFlag = SOCK_STREAM) and Result then
@@ -814,11 +778,11 @@ begin
     end;
 end;
 
-function TLSocket.Connect(const Port: Word; const Address: string): Boolean;
+function TLSocket.Connect(const APort: Word; const Address: string): Boolean;
 begin
   Result:=False;
   if FConnected then Disconnect;
-  if SetupSocket(Port, Address) then
+  if SetupSocket(APort, Address) then
     if fpConnect(FSock, @FAddr, FAddrlen) = 0 then
       begin
         FConnected:=true;
@@ -842,13 +806,6 @@ begin
   if Connected then
     begin
       Temp:=msg;
-      if FSeparate then
-        begin
-          n:=Length(msg);
-          SetLength(Temp, Length(msg)+SizeOf(LongInt));
-          Move(n, Temp[1], SizeOf(LongInt));
-          Move(msg[1], Temp[Sizeof(LongInt)+1], Length(msg));
-        end;
       if FFlag = SOCK_STREAM then
         {$ifdef win32}
         n:=tomwinsock.send(FSock, Temp[1], Length(Temp), LMSG)
@@ -868,8 +825,9 @@ begin
 end;
 
 function TLSocket.Recieve: Boolean;
-var n: LongInt;
-    s, Temp: string;
+var
+  n: LongInt;
+  s: string;
 begin
   if Connected then
     begin
@@ -888,21 +846,13 @@ begin
       if n < 0 then Bail('Recieve Error', SocketError);
       if Connected then begin
         if (n <= FBufferSize) then begin
+        
           SetLength(s, n);
           if FBuffer.Count < FMaxMsgs then
-            begin
-              if FSeparate then
-                begin
-                  repeat
-                    Move(s[1], n, SizeOf(n));
-                    Temp:=Copy(s, SizeOf(n)+1, n);
-                    if Length(Temp) + SizeOf(n) < Length(s) then
-                      s:=Copy(s, Length(Temp)+SizeOf(n)+1, Length(s)-Length(Temp)+SizeOf(n))
-                    else s:='';
-                    FBuffer.Add(Temp);
-                  until Length(s) = 0;
-                end else FBuffer.Add(s)
-            end else Bail('Buffer full', -1);
+            FBuffer.Add(s)
+          else
+            Bail('Buffer full', -1);
+            
         end else Bail('Buffer overrun!', -1);
       end;
     end;

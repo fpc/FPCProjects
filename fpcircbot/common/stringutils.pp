@@ -74,7 +74,7 @@ begin
 \015 = &#13;
 & = &amp;
 }
-		Result := StringReplace (Result, '&', '&amp;', [rfReplaceAll]); // Keep this the first or the rest of the changes will scrow up :)
+    Result := StringReplace (Result, '&', '&amp;', [rfReplaceAll]); // Keep this the first or the rest of the changes will scrow up :)
     Result := StringReplace (Result, '<', '&lt;', [rfReplaceAll]);
     Result := StringReplace (Result, '>', '&gt;', [rfReplaceAll]);
     Result := StringReplace (Result, '"', '&quot;', [rfReplaceAll]);

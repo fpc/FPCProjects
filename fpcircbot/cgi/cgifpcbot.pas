@@ -15,10 +15,12 @@ var
   LogFBConnection : TIBConnection;
   LogTransaction  : TSQLTransaction;
   LogQuery        : TSQLQuery;
+  ChanQuery       : TSQLQuery;
   Channel, Sender : string;
   Count, Msg, Date: string;
   i               : Longint;
   HTMLCode        : TStringList;
+  ChanList        : TStringList;
   
 procedure InitDB;
 begin
@@ -33,6 +35,18 @@ begin
   LogTransaction.database := LogFBConnection;
 
   LogQuery := tsqlquery.Create(nil);
+  with LogQuery do begin
+    DataBase := LogFBConnection;
+    transaction := LogTransaction;
+    ReadOnly:=True;
+  end;
+
+  ChanQuery := tsqlquery.Create(nil);
+  with ChanQuery do begin
+    DataBase := LogFBConnection;
+    transaction := LogTransaction;
+    ReadOnly:=True;
+  end;
 end;
 
 procedure FreeDB;
@@ -41,6 +55,7 @@ begin
   LogFBConnection.free;
   LogTransaction.free;
   LogQuery.free;
+  ChanQuery.Free;
 end;
 
 procedure InitCommon;
@@ -51,6 +66,7 @@ begin
   Msg:='';
   Date:=''; // today
   HTMLCode:=TStringList.Create;
+  ChanList:=TStringList.Create;
 end;
 
 procedure Init;
@@ -62,6 +78,7 @@ end;
 procedure FreeCommon;
 begin
   HTMLCode.Free;
+  ChanList.Free;
 end;
 
 procedure Free;
@@ -82,23 +99,47 @@ procedure GetWebVars;
   end;
 
 begin
-  if Channel = '#' then Channel:='#lentilwars';
-  
   TryGetWebVar(Channel, 'channel', '#lentilwars');
 	
 	Channel := return_Channel_sanitize (Channel); //Make sure to have only allowed chars ... :)
-	
+
   TryGetWebVar(Count, 'linecount', '50');
  	Count := return_Number_sanitize (Count); //Making sure that we have only number chars ...
 	
   TryGetWebVar(Sender, 'sender', '');
 	Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
-	
+
   TryGetWebVar(Msg, 'msg', '');
 	
   TryGetWebVar(Date, 'date', '');
 	Date := return_datetimestamp_sanitize (Date); //Making sure that only allowed chars can be for the date
 	
+end;
+
+function GetChannels: string;
+var
+  s: string;
+begin
+  Result:='';
+  with ChanQuery do try
+    SQL.Clear;
+    SQL.Add('select channelname from tbl_channels');
+    open;
+    while not eof do begin
+      s:=FieldByName('channelname').AsString;
+      Result:=Result + '<option value="' + s + '"';
+      if s <> Channel then
+        Result:=Result + '>'
+      else
+        Result:=Result + ' selected>';
+      Result:=Result + s + '</option>';
+      Next;
+      ChanList.Add(s);
+    end;
+    close;
+  except on e: Exception do
+    Writeln('SQL Error: ', FilterHTML(e.message));
+  end;
 end;
 
 var
@@ -109,22 +150,24 @@ begin
   s:='';
 
   with LogQuery do begin
-    DataBase := LogFBConnection;
-    transaction := LogTransaction;
-    ReadOnly:=True;
-
     Web_Header;
-    Web_FileOut('html/header.html');
     GetWebVars;
-    Web_TemplateOut('html/footer.html');
+    HTMLCode.LoadFromFile('html' + PathDelim + 'footer1.html');
+    HTMLCode.Text:=StringReplace(HTMLCode.Text, '$channels', GetChannels, [rfReplaceAll]);
+    Web_OutLn(HTMLCode.Text);
+    if Channel = '#' then
+      if ChanList.Count > 0 then Channel:=ChanList[0];
+    HTMLCode.Clear;
+
+    Web_TemplateOut('html' + PathDelim + 'footer2.html');
 
     writeln('<hr><table border="0">');
     writeln('<font size="10">');
 
-    if Length(Sender) > 0 then s:=s + ' and sender=' + AnsiQuotedStr(SQLEscape(Sender), #39);
+    if Length(Sender) > 0 then s:=s + ' and UPPER(sender)=' + UpperCase(AnsiQuotedStr(SQLEscape(Sender), #39));
     if Length(Msg) > 0 then s:=s + ' and msg like ''%' + SQLEscape(Msg) + '%''';
     if Length(Date) > 0 then s:=s + ' and CAST (logtime as date) = ' + AnsiQuotedStr(SQLEscape (Date), #39) ;
-    
+
     try
       sql.clear;
       sql.add('select first ' + SQLEscape(Count) + ' sender, msg, cast(logtime as varchar(25)) ' +
@@ -138,9 +181,11 @@ begin
         else
           HTMLCode.Add('<tr style="background-color:#E0E0E0">');
 
-				s := FilterHtml(fieldbyname('sender').asstring);
-        HTMLCode.Add('<td nowrap>' + FilterHtml(Copy(fieldbyname('logtime').asstring, 1, 19)) +
-                     '</td><td>' + s +'</td><td>' + FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
+	s:=FilterHtml(fieldbyname('sender').asstring);
+        HTMLCode.Add('<td nowrap>' +
+                     FilterHtml(Copy(fieldbyname('logtime').asstring, 1, 19)) +
+                     '</td><td>' + s +'</td><td>' +
+                     FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
         Next;
         if LN <> s then Inc(i);
         LN:=s;
@@ -152,7 +197,7 @@ begin
     
     if HTMLCode.Count > 0 then
       for i:=HTMLCode.Count - 1 downto 0 do
-        Writeln(FilterHtml(HTMLCode[i]));
+        Writeln(HTMLCode[i]);
         
     close;
     writeln('</table></font><hr>');

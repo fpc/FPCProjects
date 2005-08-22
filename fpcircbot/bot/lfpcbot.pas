@@ -64,7 +64,7 @@ begin
   PORT:=6667;
   Doer:=TDoer.Create;
   Doer.Logging:=True;
-  Doer.MarkovOn:=True;
+  Doer.MarkovOn:=False;
   Doer.Greetings:=True;
   Doer.GreetList:=ConfigList;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
@@ -93,6 +93,7 @@ begin
   Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Syntax: addpuser <nick> Info: makes ma add a power user. <nick> is required.');
   Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Syntax: removepuser <nick> Info: makes me remove a power user. <nick> is required.');
   Con.AddPCommand('setmarkov', @Doer.OnSetMarkov, 'Syntax: setmarkov <deviation> <threshold> Info: makes me set the deviation and threshold of the markov generator. <deviation> and <threshold> are required. Both are ints <0..100>');
+  Con.AddPCommand('cleanchans', @Doer.OnCleanChans, 'Syntax: cleanchans Info: makes me clean no longer occupied channels from the DB (so the CGI page doesn''t list them. They are still accesible via ?channelname in the URL).');
   // CALLBACKS
   Con.OnRecieve:=@Doer.OnRecieve;
   Con.OnUserJoin:=@Doer.OnUserJoin;
