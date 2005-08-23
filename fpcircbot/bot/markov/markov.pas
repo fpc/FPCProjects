@@ -102,11 +102,11 @@ End;
 Destructor TMarkov.Destroy;
 Begin
 	fDict.Flush;
-	fDict.Destroy;
+	fDict.Free;
 	fTable.Flush;
-	fTable.Destroy;
-	fUsed.Destroy;
-	fUserUsed.Destroy;
+	fTable.Free;
+	fUsed.Free;
+	fUserUsed.Free;
 	Inherited Destroy;
 End;
 
@@ -159,12 +159,12 @@ Begin
 	Possibles := 0;
 	SetLength(Partial, fDict.Count);
 	SetLength(Possible, fDict.Count);
-	Write('  Transition matrix with coefficients : ');
+	Write('   Transition matrix with coefficients : ');
 	// Generates the transition matrix for K
 	// from K to each possible word
 	For Ctrl := fEndCode To (fDict.Count - 1) Do
 	Begin
-		// Coefficient : two words in the context cancels out a word being too much used
+		// Coefficient : four words in the context cancels out a word being too much used
 		Coeff := (fUserUsed.WordUsed(Ctrl) + 1) / ((fUsed.WordUsed(Ctrl) + 1) * 4);
 		Partial[Ctrl] := Round(fTable.Transition[K, Ctrl] * Coeff);
 		If Partial[Ctrl] > Highest Then
@@ -175,7 +175,7 @@ Begin
 	// relative to the highest scoring word in the markov transition table
 	// If a value is higher than the threshold (E) then this is a "possible"
 	// word to follow K in a normal text
-	Write('  Apply thresholds : ');
+	Write('   Apply thresholds : ');
 	For Ctrl := fEndCode To (fDict.Count - 1) Do
 	Begin
 		If Partial[Ctrl] > 0 Then
@@ -193,7 +193,7 @@ Begin
 	NextKey := fEndCode;
 	// loop until find a possible word or tried too much...
 	// (try at least twice the ammount of words in the dictionary)
-	Write('  Select keyword : ');
+	Write('   Select keyword : ');
 	While Not(Possible[NextKey]) And (Ctrl <= fDict.Count * Possibles) Do 
 	Begin
 		NextKey := RandomFromTo(fEndCode, (fDict.Count - 1));
@@ -210,7 +210,7 @@ Begin
 	Else
 	Begin
 		MostProbable := fEndCode;
-		WriteLn(fDict.Words[fEndCode], ' selected.');
+		WriteLn(' End of phrase reached.');
 	End;
 End;
 
@@ -220,6 +220,8 @@ Var
 	Key   : Integer;
 Begin
 	// Start a fresh phrase
+	WriteLn('  TalkFrom');
+	WriteLn('  {');
 	Key := fStartCode;
 	Temp := '';
 	Repeat
@@ -232,16 +234,19 @@ Begin
 		End;
 		// The next word will be the most probable from the current one
 	Until Key = fEndCode;
+	WriteLn('  }');
 	TalkFrom := Temp;
 End;
 
 Function TMarkov.Talk(W : TStringList): AnsiString;
 Var
-	Temp : Ansistring;
-	Ctrl : Integer;
+	Temp  : Ansistring;
+	Ctrl  : Integer;
+	Ctrl2 : Integer;
 
 Begin
 	Temp := '';
+	Ctrl2 := 0;
 	If Assigned(W) Then
 	Begin
 		TalkTo(W);
@@ -267,8 +272,12 @@ Begin
 		WriteLn(' }');
 		WriteLn(' Iterating');
 		WriteLn(' {');
-		While Temp = '' Do
+		While (Temp = '') And (Ctrl2 <= 1024) Do
+		Begin
 			Temp := TalkFrom;
+			Inc(Ctrl2);
+			WriteLn('  Try : ', Ctrl2);
+		End;
 		WriteLn(' }');
 		WriteLn(' Result = ', Temp);
 		WriteLn('}');
@@ -284,7 +293,7 @@ Var
 	S1Pos : Integer;
 Begin
 	WriteLn('Searching for mispelled words');
-	WriteLn('}');
+	WriteLn('{');
 	S1Pos := fDict.FindWord(S1);
 	While S1Pos > fEndCode Do
 	Begin

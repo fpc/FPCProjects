@@ -44,33 +44,33 @@ End;
 // Loads the list from a file
 Procedure TMarkovDict.Load;
 Var 
-	Handler : Text;
+	Handler : TextFile;
 	Temp    : String;
 Begin
-	Assign(Handler, fName);
+	AssignFile(Handler, fName);
 	Reset(Handler);
 	While Not(Eof(Handler)) Do
 	Begin
 		ReadLn(Handler, Temp);
 		InsertWord(Temp);
 	End;
-	Close(Handler);
+	CloseFile(Handler);
 	fNumber := Length(fWords);
 End;
 
 // Saves the list to a file
 Procedure TMarkovDict.Flush;
 Var 
-	Handler : Text;
+	Handler : TextFile;
 	Ctrl    : Cardinal;
 Begin
 	If fNumber <= 0 Then
 		Exit;
-	Assign(Handler, fName);
+	AssignFile(Handler, fName);
 	Rewrite(Handler);
 	For Ctrl := 0 To (fNumber - 1) Do
 		WriteLn(Handler, fWords[Ctrl]);
-	Close(Handler);
+	CloseFile(Handler);
 	fNumber := Length(fWords);
 End;
 

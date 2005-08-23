@@ -189,6 +189,7 @@ begin
   FLogTransaction.Free;
   FLogQuery.Free;
   FSeenQuery.Free;
+  FChanQuery.Free;
   FDefinesQuery.Free;
   FDefViewQuery.Free;
   {$endif}

@@ -122,6 +122,7 @@ begin
   
   Con.Free;
   Doer.Free;
+  ChannelsUsers.Free;
   ConfigList.Free;
 end;
 

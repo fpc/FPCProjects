@@ -56,7 +56,7 @@ End;
 
 Procedure TMarkovTable.Load;
 Var 
-	Handler : Text;
+	Handler : TextFile;
 	Temp1,
 	Temp2,
 	Temp3   : AnsiString;
@@ -76,7 +76,7 @@ End;
 
 Procedure TMarkovTable.Flush;
 Var 
-	Handler : Text;
+	Handler : TextFile;
 	Ctrl    : Cardinal;
 Begin
 	fNumber := Length(fBuffer);
