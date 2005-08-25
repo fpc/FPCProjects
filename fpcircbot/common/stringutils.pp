@@ -135,8 +135,7 @@ begin
   s:=SQLStr;
   System.Delete(s, Length(s) - 5, 5);
   Result:=Copy(s, 9, 2) + '-' + Copy(s, 6, 2) + '-' + Copy(s, 3, 2) + Copy(s, 11, Length(s));
-  System.Delete(Result, Length(Result) - 3, 3);
-  if Result[4] = '0' then System.Delete(Result, 4, 1);
+  System.Delete(Result, Length(Result) - 2, 3);
 end;
 
 function CreateDiffStr(const DT1, DT2: TDateTime): string;
