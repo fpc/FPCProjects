@@ -365,6 +365,7 @@ var
   Args: string;
   Seen: TDateTime;
   SeenStr: string;
+  Today: TDateTime;
 begin
   {$ifndef noDB}
   Args:=SQLEscape(TrimQuestion(Caller.LastLine.Arguments));
@@ -376,19 +377,22 @@ begin
       Sql.Clear;
       if (Length(Reciever) > 0) and (Reciever[1] = '#') then
       
-        Sql.Add('select first 1 cast(logtime as varchar(25)) as ' +
-                'logtime from tbl_loglines where (reciever=''' + Reciever +
+        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime, ' +
+                'cast(current_timestamp as varchar(25)) as curtime ' +
+                'from tbl_loglines where (reciever=''' + Reciever +
                 ''' and upper(sender)=''' + UpperCase(Args) + ''') order by logtime desc')
       else
-        Sql.Add('select first 1 cast(logtime as varchar(25)) as ' +
-                'logtime from tbl_loglines where upper(sender)=''' + UpperCase(Args) +
+        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime, ' +
+                'cast (current_timestamp as varchar(25)) as curtime ' +
+                'from tbl_loglines where upper(sender)=''' + UpperCase(Args) +
                 ''' order by logtime desc');
                 
       Open;
       if not Eof then begin
+        Today:=StrToDateTime(SQLStrToDateTimeStr(FieldByName('curtime').AsString));
         SeenStr:=fieldbyname('logtime').AsString;
         Seen:=StrToDateTime(SQLStrToDateTimeStr(SeenStr));
-        SeenStr:=CreateDiffStr(Seen, Now);
+        SeenStr:=CreateDiffStr(Seen, Today);
         if Length(SeenStr) > 0 then
           Respond(Args + ' last seen ' + SeenStr + 'ago.')
         else
