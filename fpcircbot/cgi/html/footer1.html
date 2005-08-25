@@ -6,7 +6,7 @@
 <center>
 <h3>Log display options</h3>
 </center>
-<form name="form" method="post" action="cgifpcbot">
+<form name="form" method="get" action="cgifpcbot">
   <center>
   <table>
     <tbody>
@@ -30,11 +30,11 @@
         <td width="20%"><strong>Line
 Count:</strong></td>
         <td width="30%">
-        <select name="linecount" initial="200">
-        <option name="fifty" value="50">50</option>
-        <option name="onehundered" value="100">100</option>
-        <option name="onefifty" value="150">150</option>
-        <option name="twohundered" value="200">200</option>
-        <option name="allday" value="9999">Whole Day</option>
+        <select name="linecount">
+	  <option value="50" initial>50</value>
+	  <option value="100">100</value>
+	  <option value="150">150</value>
+	  <option value="200">200</value>
+	  <option value="9999">All day</value>
         </select>
         </td>

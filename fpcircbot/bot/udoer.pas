@@ -183,20 +183,23 @@ end;
 
 destructor TDoer.Destroy;
 begin
-  {$ifndef noDB}
-  FLogFBConnection.Close;
-  FLogFBConnection.Free;
-  FLogTransaction.Free;
-  FLogQuery.Free;
-  FSeenQuery.Free;
-  FChanQuery.Free;
-  FDefinesQuery.Free;
-  FDefViewQuery.Free;
-  {$endif}
   FMarkov.Free;
   FSList.Free;
   FLL.Free;
   FGreetList.Free;
+  {$ifndef noDB}
+  try
+    FLogFBConnection.Close;
+    FLogFBConnection.Free;
+    FLogTransaction.Free;
+    FLogQuery.Free;
+    FSeenQuery.Free;
+    FChanQuery.Free;
+    FDefinesQuery.Free;
+    FDefViewQuery.Free;
+  except
+  end;
+  {$endif}
 end;
 
 function TDoer.TrimQuestion(const s: string): string;
@@ -360,6 +363,8 @@ procedure TDoer.OnSeen(Caller: TLIrcBot);
 
 var
   Args: string;
+  Seen: TDateTime;
+  SeenStr: string;
 begin
   {$ifndef noDB}
   Args:=SQLEscape(TrimQuestion(Caller.LastLine.Arguments));
@@ -380,11 +385,15 @@ begin
                 ''' order by logtime desc');
                 
       Open;
-      if not Eof then
-        Respond(Args + ' last seen ' +
-                Copy(fieldbyname('logtime').asstring, 1, 19))
-      else
-        Respond('I''ve never seen ' + Args);
+      if not Eof then begin
+        SeenStr:=fieldbyname('logtime').AsString;
+        Seen:=StrToDateTime(SQLStrToDateTimeStr(SeenStr));
+        SeenStr:=CreateDiffStr(Seen, Now);
+        if Length(SeenStr) > 0 then
+          Respond(Args + ' last seen ' + SeenStr + 'ago.')
+        else
+          Respond(Args + ' was here less than a minute ago.');
+      end else Respond('I''ve never seen ' + Args);
       Close;
     end;
   {$else}
@@ -494,9 +503,9 @@ begin
   with Caller, Caller.LastLine do
     if Length(Reciever) > 0 then begin
       if Reciever[1] = '#' then
-        Respond('see yourself chat ' + LogURL + '?' + Copy(Reciever, 2, Length(Reciever)))
+        Respond('see yourself chat ' + LogURL + '?channel=' + Copy(Reciever, 2, Length(Reciever)))
       else
-        Respond('see yourself chat ' + LogURL + '?' + Reciever)
+        Respond('see yourself chat ' + LogURL + '?channel=' + Reciever)
     end;
   {$else}
   Caller.Respond('I have no DB compiled in, I cannot log the chat');
