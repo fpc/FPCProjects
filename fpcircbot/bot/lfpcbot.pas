@@ -65,7 +65,6 @@ begin
   Doer:=TDoer.Create;
   Doer.Logging:=True;
   Doer.MarkovOn:=False;
-  Doer.Greetings:=True;
   Doer.GreetList:=ConfigList;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;
@@ -89,7 +88,9 @@ begin
   Con.AddPCommand('sayall', @Doer.OnSayAll, 'Syntax: sayall <msg> Info: makes me say something to everyone. <msg> is required.');
   Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Syntax: sayto <recipient> <msg> Info: makes me say something to someone/channel. <recipient> and <msg> are required. <msg> can be a channel or username.');
   Con.AddPCommand('log', @Doer.OnLog, 'Syntax: log [on/off] Info: if parameter is empty, I will tell you if logging is off or on, otherwise it makes me start/stop logging.');
-  Con.AddPCommand('greetings', @Doer.OnGreetings, 'Syntax: greetings [on/off] Info: if parameter is empty, I will tell you if greetings are off or on, otherwise it makes me start/stop greeting people.');
+  Con.AddPCommand('greetings', @Doer.OnGreetings, 'Syntax: greetings [on/off/list] Info: if parameter is empty, I will tell you all channels I greet in, if it''s [list] it will list all greetings I know, otherwise it makes me start/stop greeting people in current channel (don''t use in private).');
+  Con.AddPCommand('addgreeting', @Doer.OnAddGreeting, 'Syntax: addgreeting <greeting> Info: makes me add a greeting. Examples: 1. "Hello $nick. Welcome to $channel. 2. #channel1 Welcome to #channel1." Example n.1 will add a generic greeting. Example n.2 will add a greeting specific for channel #channel1');
+  Con.AddPCommand('deletegreeting', @Doer.OnDeleteGreeting, 'Syntax: deletegreetings <greetnumber> Info: makes me delete a greeing from the list. Works only if the # is >=0 and < greetings count');
   Con.AddPCommand('addpuser', @Doer.OnAddPuser, 'Syntax: addpuser <nick> Info: makes ma add a power user. <nick> is required.');
   Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Syntax: removepuser <nick> Info: makes me remove a power user. <nick> is required.');
   Con.AddPCommand('setmarkov', @Doer.OnSetMarkov, 'Syntax: setmarkov <deviation> <threshold> Info: makes me set the deviation and threshold of the markov generator. <deviation> and <threshold> are required. Both are ints <0..100>');
@@ -127,6 +128,7 @@ begin
 end;
 
 begin
+  Randomize;
   Main;
 end.
 

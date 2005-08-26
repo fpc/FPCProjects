@@ -1,4 +1,4 @@
-!this is FPCBots configuration file, don't change the .default one!
+!this is FPCBots configuration file
 !comments begin with ! (must be 1st char on line)
 !empty lines are ignored, whitespaces allowed on empty lines.
 
@@ -6,10 +6,11 @@
 !entries are separated by comma (,) and type(channel/user) is separated by ?
 !example root1,root2?#chan1,#chan2
 
-$root,?,$channel
+Almindor,?,#lentilwars
 
 !this entry is list of greeting messages. One line = one message.
 ! $channel and $nick will be automagicly replaced by the bot for respectable username and channel name.
+! use #channelname as 1st word to specify greeting[s] only for this channel.
 
 Hello $nick, I hope you'll enjoy $channel.
 Welcome to $channel, $nick.

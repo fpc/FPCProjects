@@ -64,7 +64,7 @@ type
     TimeStarted: string;
     Logging: Boolean;
     MarkovOn: Boolean;
-    Greetings: Boolean;
+    Greetings: TStringList; // for each channel
     constructor Create;
     destructor Destroy; override;
     procedure OnHelp(Caller: TLIrcBot);
@@ -82,6 +82,8 @@ type
     procedure OnSayTo(Caller: TLIrcBot);
     procedure OnLog(Caller: TLIrcBot);
     procedure OnGreetings(Caller: TLIrcBot);
+    procedure OnAddGreeting(Caller: TLIrcBot);
+    procedure OnDeleteGreeting(Caller: TLIrcBot);
     procedure OnAddPuser(Caller: TLIrcBot);
     procedure OnRemovePuser(Caller: TLIrcBot);
     procedure OnListPusers(Caller: TLIrcBot);
@@ -116,14 +118,13 @@ constructor TDoer.Create;
 
 begin
   Quit:=False;
-  Greetings:=False;
+  Greetings:=TStringList.Create;
+  Greetings.Duplicates:=dupIgnore;
   FLL:=TLIrcRec.Create;
   CreateMarkov('words1.txt', 'markov1.txt', 15, 65);
   FSList:=TStringList.Create;
   FGreetList:=TStringList.Create;
-  FGreetList.Add('Welcome to $channel, $nick. We are a friendly and open community here.');
-  FGreetList.Add('Hi $nick. Welcome to $channel.');
-  FGreetList.Add('Greetings $nick. I hope you enjoy $channel.');
+  FGreetList.Duplicates:=dupIgnore;
   MarkovOn:=False;
 
   {$ifndef nodb}
@@ -187,6 +188,7 @@ begin
   FSList.Free;
   FLL.Free;
   FGreetList.Free;
+  Greetings.Free;
   {$ifndef noDB}
   try
     FLogFBConnection.Close;
@@ -341,7 +343,7 @@ begin
   Caller.Respond('Logging: ' + BoolStr[Logging]);
   Caller.Respond('Private Response: ' + BoolStr[Caller.ReplyInPrivate]);
   Caller.Respond('Markov generator: ' + BoolStr[MarkovOn]);
-  Caller.Respond('Greetings: ' + BoolStr[Greetings]);
+  Caller.Respond('Greetings: ' + Greetings.Text);
   Caller.Respond('Online since: ' + TimeStarted);
 end;
 
@@ -600,14 +602,55 @@ begin
 end;
 
 procedure TDoer.OnGreetings(Caller: TLIrcBot);
+var
+  i: Integer;
+  s: string;
 begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
-    Greetings:=True;
+    Greetings.Add(Caller.LastLine.Reciever);
     Caller.Respond(YESSIR);
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
-    Greetings:=False;
+    Greetings.Delete(Greetings.IndexOf(Caller.LastLine.Reciever));
     Caller.Respond(YESSIR);
-  end else Caller.Respond('Currently: ' + BoolStr[Logging]);
+  end else begin
+    if LowerCase(Caller.LastLine.Arguments) = 'list' then begin
+      Caller.Respond('Greetings count: ' + IntToStr(FGreetList.Count));
+      if FGreetList.Count > 0 then
+        for i:=0 to FGreetList.Count-1 do
+          Caller.Respond(IntToStr(i) + '. ' + FGreetList[i]);
+    end else begin
+      s:='';
+      if Greetings.Count > 0 then
+        for i:=0 to Greetings.Count-1 do s:=s + Greetings[i] + ' ';
+      if Length(s) > 0 then
+        Caller.Respond('Greeting in: ' + s)
+      else
+        Caller.Respond('I''m not greeting anyone in any channel.');
+    end;
+  end;
+end;
+
+procedure TDoer.OnAddGreeting(Caller: TLIrcBot);
+begin
+  with Caller.Lastline do
+    if Length(Arguments) > 0 then begin
+      FGreetList.Add(Arguments);
+      Caller.Respond(YESSIR);
+    end else Caller.Respond('Syntax: AddGreeting <greeting>');
+end;
+
+procedure TDoer.OnDeleteGreeting(Caller: TLIrcBot);
+var
+  x: Integer;
+begin
+  with Caller, Caller.LastLine do
+    if Length(Arguments) > 0 then try
+      x:=StrToInt(Arguments);
+      FGreetList.Delete(x);
+      Respond(YESSIR);
+    except on e: Exception do
+      Respond(e.message);
+    end;
 end;
 
 procedure TDoer.OnAddPuser(Caller: TLIrcBot);
@@ -745,19 +788,49 @@ begin
 end;
 
 procedure TDoer.OnUserJoin(Caller: TLIrcBot);
+type
+  TChoice = array of Integer;
+
+  function FillChoice(var Choice: TChoice; const Chan: string): Boolean;
+  var
+    i: Integer;
+  begin
+    Result:=False;
+    for i:=0 to FGreetList.Count-1 do
+      if Pos(Chan, FGreetList[i]) = 1 then begin
+        SetLength(Choice, Length(Choice) + 1);
+        Choice[High(Choice)]:=i;
+        Result:=True;
+      end;
+
+    if not Result then // in case the channel has no specific messages
+      for i:=0 to FGreetList.Count-1 do
+        if FGreetList[i][1] <> '#' then begin
+          SetLength(Choice, Length(Choice) + 1);
+          Choice[High(Choice)]:=i;
+        end;
+  end;
+
 var
   s: string;
+  Choice: TChoice;
+  Specific: Boolean;
 begin
-  if Greetings then with Caller, Caller.LastLine do begin
-    if FGreetList.Count > 0 then begin
-      s:=FGreetList[Random(FGreetList.Count)];
-      s:=StringReplace(s, '$nick', Sender, [rfReplaceAll]);
-      s:=StringReplace(s, '$channel', Reciever, [rfReplaceAll]);
-      if ReplyInPrivate then
-        SendMessage(s, Sender)
-      else
-        SendMessage(s, Reciever);
-    end;
+  with Caller, Caller.LastLine do begin
+    if Greetings.IndexOf(Reciever) >= 0 then
+      if FGreetList.Count > 0 then begin
+        SetLength(Choice, 0);
+        Specific:=FillChoice(Choice, Reciever);
+        Writeln('Choice: ', Length(Choice));
+        s:=FGreetList[Choice[Random(Length(Choice))]];
+        if Specific then Delete(s, 1, Length(Reciever) + 1); // delete the 1st word (channel specification + space)
+        s:=StringReplace(s, '$nick', Sender, [rfReplaceAll]);
+        s:=StringReplace(s, '$channel', Reciever, [rfReplaceAll]);
+        if ReplyInPrivate then
+          SendMessage(s, Sender)
+        else
+          SendMessage(s, Reciever);
+      end;
   end;
 end;
 
