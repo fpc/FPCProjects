@@ -8,7 +8,12 @@
 
 Almindor,?,#lentilwars
 
-!this entry is list of greeting messages. One line = one message.
+!2nd line consists of channel list where greetings are set, enty $none is REQUIRED as 1st
+!example: $none,#chan1,#chan2
+
+$none,
+
+!last entry is list of greeting messages. One line = one message.
 ! $channel and $nick will be automagicly replaced by the bot for respectable username and channel name.
 ! use #channelname as 1st word to specify greeting[s] only for this channel.
 

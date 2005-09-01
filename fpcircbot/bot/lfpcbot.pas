@@ -42,6 +42,40 @@ begin
   end;
 end;
 
+function GetAllUsers(Con: TLIrcBot): string;
+var
+  i: Integer;
+begin
+  Result:='';
+  if Con.PuserCount > 0 then
+    for i:=0 to Con.PuserCount-1 do Result:=Result + Con.PUsers[i] + ',';
+end;
+
+function GetAllChannels(Con: TLIrcBot): string;
+var
+  i: Integer;
+begin
+  Result:='';
+  if Con.ChannelCount > 0 then
+    for i:=0 to Con.ChannelCount-1 do Result:=Result + Con.Channels[i] + ',';
+  if Length(Result) > 0 then
+    Delete(Result, Length(Result), 1); // delete trailing ","
+end;
+
+procedure SetGreetings(out aList: TStringList; const s: string);
+begin
+  aList:=TStringList.Create;
+  if Length(s) > 6 then
+    aList.CommaText:=Copy(s, 7, Length(s));
+end;
+
+function CleanDoubles(const s: string): string;
+begin
+  Result:=s;
+  while Pos(',,', Result) > 0 do
+    Result:=StringReplace(Result, ',,', ',', [rfReplaceAll]);
+end;
+
 procedure Main;
 var
   Con: TLIrcBot;
@@ -53,11 +87,11 @@ var
   n, i: Longint;
 begin
   ConfigList:=LoadConfig('botconfig.cfg');
-  ChannelsUsers:=TStringList.Create;
   if ConfigList = nil then begin
     Writeln('Unable to work with config file');
     Halt;
   end;
+  ChannelsUsers:=TStringList.Create;
   ChannelsUsers.CommaText:=ConfigList[0];
   ConfigList.Delete(0);
   AD:='irc.freenode.net';
@@ -65,6 +99,8 @@ begin
   Doer:=TDoer.Create;
   Doer.Logging:=True;
   Doer.MarkovOn:=True;
+  SetGreetings(Doer.Greetings, ConfigList[0]);
+  ConfigList.Delete(0);
   Doer.GreetList:=ConfigList;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;
@@ -121,6 +157,16 @@ begin
       Delay(1);
     end;
   end else Writeln('Unable to connect to: ', AD, ' PORT: ', Port);
+  
+  // Save channels and power users as they are now for next use
+  ConfigList.Clear;
+  ConfigList.Add(GetAllUsers(Con));
+  ConfigList[0]:=ConfigList[0] + '?,' + GetAllChannels(Con);
+  // Save channels in which greetings are on
+  ConfigList.Add('$none' + CleanDoubles(',' + Doer.Greetings.CommaText));
+  // Save greetings list
+  ConfigList.Add(Doer.GreetList.Text);
+  ConfigList.SaveToFile('botconfig.cfg');
   
   Con.Free;
   Doer.Free;
