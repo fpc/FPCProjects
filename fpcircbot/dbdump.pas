@@ -53,6 +53,7 @@ var
   
 begin
   List:=TStringList.Create;
+  InitDB;
   with Query do begin
     sql.clear;
     sql.add('select * msg from tbl_loglines where sender <> ' + BotName);
