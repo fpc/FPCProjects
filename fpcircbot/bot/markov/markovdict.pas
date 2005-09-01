@@ -4,14 +4,24 @@ Unit MarkovDict;
 
 Interface
 
-Type
-	TArrayOfString = Array Of AnsiString;
+Uses
+  Classes;
 
-	TMarkovDict = Class
+Const
+	ccStartToken  = '<<';
+	ccEndToken    = '>>';
+	ccImpulse     = 10;
+
+Type
+
+        { TMarkovDict }
+
+        TMarkovDict = Class
 	Private
 		fName   : String;
-		fNumber : Integer;
-		fWords  : TArrayOfString;
+		fWords  : TStringList;
+                function GetCount: Integer;
+                function GetTransitions(index: integer): TStringList;
 	Public
 		Constructor Create(Arq : String);
 		Destructor Destroy; Override;
@@ -19,116 +29,130 @@ Type
 		Procedure Flush;
 		Function InsertWord(St : AnsiString): Integer;
 		Function FindWord(St : AnsiString): Integer;
-		Property Words : TArrayOfString Read fWords Write fWords;
-		Property Count : Integer Read fNumber;
+		Procedure ImpulsePair(S1, S2 : AnsiString);
+		Property Words : TStringList Read fWords Write fWords;
+                Property Transitions[index: integer]: TStringList read GetTransitions;
+		Property Count : Integer Read GetCount;
 	End;
 
 Implementation
+
+function TMarkovDict.GetCount: Integer;
+begin
+  Result:=fWords.Count;
+end;
+
+function TMarkovDict.GetTransitions(index: integer): TStringList;
+begin
+  Result := TStringList(fWords.Objects[index]);
+end;
 
 Constructor TMarkovDict.Create(Arq : String);
 Begin
 	Inherited Create;
 	fName := Arq;
-	fNumber := 0;
-	SetLength(fWords, 0);
+        fWords := TStringList.Create;
+        fWords.Sorted := true;
+        fWords.Duplicates := dupIgnore;
 End;
 
 Destructor TMarkovDict.Destroy;
+var
+  i: Integer;
 Begin
-	fNumber := 0;
 	fName := '';
-	SetLength(fWords, 0);
+        for i := 0 to fWords.Count -1 do
+          if Assigned(Transitions[i]) then
+            Transitions[i].Free;
+        fWords.Free;
 	Inherited Destroy;
 End;
 
 // Loads the list from a file
 Procedure TMarkovDict.Load;
 Var 
-	Handler : TextFile;
-	Temp    : String;
+  Handler : TextFile;
+  Word: string;
+  Line    : String;
+  NewTransitions: TStringList;
+  HitCount: ptrint;
 Begin
-	AssignFile(Handler, fName);
-	Reset(Handler);
-	While Not(Eof(Handler)) Do
-	Begin
-		ReadLn(Handler, Temp);
-		InsertWord(Temp);
-	End;
-	CloseFile(Handler);
-	fNumber := Length(fWords);
+  AssignFile(Handler, fName);
+  Reset(Handler);
+  While Not(Eof(Handler)) Do
+  Begin
+    ReadLn(Handler, Word);
+    readln(Handler, Line);
+    if length(Line)>0 then begin
+      NewTransitions := TStringList.Create;
+      repeat
+        readln(Handler, HitCount);
+        NewTransitions.AddObject(Line, TObject(HitCount));
+        readln(Handler, line);
+      until length(line)=0;
+    end
+    else
+      NewTransitions := nil;
+    FWords.AddObject(Word, NewTransitions);
+  End;
+  CloseFile(Handler);
 End;
 
 // Saves the list to a file
 Procedure TMarkovDict.Flush;
-Var 
-	Handler : TextFile;
-	Ctrl    : Cardinal;
-Begin
-	If fNumber <= 0 Then
-		Exit;
-	AssignFile(Handler, fName);
-	Rewrite(Handler);
-	For Ctrl := 0 To (fNumber - 1) Do
-		WriteLn(Handler, fWords[Ctrl]);
-	CloseFile(Handler);
-	fNumber := Length(fWords);
+var
+  w1, w2: integer;
+  MarkovText: TextFile;
+  Transition: TStringList;
+begin
+  assign(MarkovText, fName);
+  rewrite(MarkovText);
+  for w1 := 0 to fWords.Count-1 do begin
+    writeln(MarkovText, fWords[w1]);
+    Transition:=Transitions[w1];
+    if assigned(Transition) then begin
+      for w2 := 0 to Transition.Count -1 do begin
+        writeln(MarkovText, Transition[w2]);
+        writeln(MarkovText, ptrint(Transition.Objects[w2]));
+      end;
+    end;
+    writeln(MarkovText);
+  end;
+  closefile(MarkovText);
 End;
 
 // adds a new word to the list returning his value or 
 // returns the value of a word if it is already in the list
 Function TMarkovDict.InsertWord(St : AnsiString): Integer;
-Var
-	Ctrl  : Cardinal;
-	Found : Boolean;
 Begin
-	fNumber := Length(fWords);
-	Found := False;
-	If (St = '') Then
-	Begin
-		InsertWord := (-1);
-		Exit;
-	End;
-	If fNumber > 0 Then
-		For Ctrl := 0 To (fNumber - 1) Do // Finds if the word already exists in the list
-			If fWords[Ctrl] = St Then
-			Begin
-				Found := True;
-				InsertWord := (Ctrl);
-				Exit;
-			End;
-	If Not Found Then
-	Begin
-		Inc(fNumber);
-		SetLength(fWords, fNumber);
-		fWords[fNumber - 1] := St;
-		InsertWord := (fNumber - 1);
-	End;
+  Result := FWords.Add(st);
 End;
 
 // Finds a word in the list, returning -1 if the word
 // isn't already there
 Function TMarkovDict.FindWord(St : AnsiString): Integer;
-Var
-	Ctrl  : Cardinal;
-	Found : Boolean;
 Begin
-	fNumber := Length(fWords);
-	Found := False;
-	If (St = '') Then
-	Begin
-		FindWord := (-1);
-		Exit;
-	End;
-	If fNumber > 0 Then
-		For Ctrl := 0 To (fNumber - 1) Do
-			If fWords[Ctrl] = St Then
-			Begin
-				Found := True;
-				FindWord := (Ctrl);
-				Exit;
-			End;
-	If Not Found Then
-		FindWord := -1;
+  FindWord := fWords.IndexOf(St);
 End;
+
+procedure TMarkovDict.ImpulsePair(S1, S2: AnsiString);
+var
+  W1, W2: integer;
+  TransitionList: TStringList;
+begin
+  W1 := FWords.IndexOf(S1);
+  if W1<0 then
+    W1 := FWords.Add(S1);
+  TransitionList := Transitions[W1];
+  if not assigned(TransitionList) then begin
+    TransitionList := TStringList.Create;
+    FWords.Objects[W1] := TransitionList;
+  end;
+  W2 := TransitionList.IndexOf(S2);
+  if W2<0 then
+    W2 := TransitionList.Add(S2);
+  TransitionList.Objects[w2] :=
+    TObject(ptrint(TransitionList.Objects[w2])+ccImpulse);
+end;
 
 End.
