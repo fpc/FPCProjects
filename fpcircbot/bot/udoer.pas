@@ -91,6 +91,7 @@ type
     procedure OnSetMarkov(Caller: TLIrcBot);
     procedure OnCleanChans(Caller: TLIrcBot);
     procedure OnRecieve(Caller: TLIrcBot);
+    procedure OnDisconnect(Caller: TLIrcBot);
     procedure OnUserJoin(Caller: TLIrcBot);
     procedure OnChannelJoin(Caller: TLIrcBot);
     procedure OnChannelQuit(Caller: TLIrcBot);
@@ -785,6 +786,11 @@ begin
         end
         else FMarkov.TalkTo(SepString(Msg));
     end;
+end;
+
+procedure TDoer.OnDisconnect(Caller: TLIrcBot);
+begin
+  Caller.RegisterSelf;
 end;
 
 procedure TDoer.OnUserJoin(Caller: TLIrcBot);

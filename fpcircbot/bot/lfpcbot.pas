@@ -97,6 +97,7 @@ begin
   Con.AddPCommand('cleanchans', @Doer.OnCleanChans, 'Syntax: cleanchans Info: makes me clean no longer occupied channels from the DB (so the CGI page doesn''t list them. They are still accesible via ?channelname in the URL).');
   // CALLBACKS
   Con.OnRecieve:=@Doer.OnRecieve;
+  Con.OnDisconnect:=@Doer.OnDisconnect;
   Con.OnUserJoin:=@Doer.OnUserJoin;
   Con.OnChannelJoin:=@Doer.OnChannelJoin;
   Con.OnChannelQuit:=@Doer.OnChannelQuit;
