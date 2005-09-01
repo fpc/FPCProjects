@@ -3,7 +3,8 @@ BASEARGS=-Fucommon -Fulnet -Fubot/markov -Filnet/include -Fucgi -Fubot -Fibot/in
 ARGS=$(BASEARGS) -O2p2 -XX -Xs
 LBOT=bot/lfpcbot.pas
 LCGI=cgi/cgifpcbot.pas
-LDUMP=dbdump.pas
+LDUMP=utils/dbdump.pas
+LFILL=utils/fillmarkov.pas
 INSTSRC=botinst.pas
 INSTBIN1=./botinst
 INSTBIN2=./botinst inst
@@ -19,6 +20,7 @@ compile:
 	$(PP) $(ARGS) $(LBOT)
 	$(PP) $(ARGS) $(LCGI)
 	$(PP) $(ARGS) $(LDUMP)
+	$(PP) $(ARGS) $(LFILL)
 	echo "Run make install as root."
 
 install:
@@ -31,6 +33,7 @@ clean:
 	delp lnet
 	delp cgi/psp
 	delp common
+	delp utils
 	delp .
 	rm -f cgibin_path.ipt
 	rm -f makedb.sh
@@ -40,3 +43,4 @@ debug:
 	$(PP) $(BASEARGS) -g $(LBOT)
 	$(PP) $(BASEARGS) -g $(LCGI)
 	$(PP) $(BASEARGS) -g $(LDUMP)
+	$(PP) $(BASEARGS) -g $(LFILL)

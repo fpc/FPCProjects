@@ -64,7 +64,7 @@ begin
   PORT:=6667;
   Doer:=TDoer.Create;
   Doer.Logging:=True;
-  Doer.MarkovOn:=False;
+  Doer.MarkovOn:=True;
   Doer.GreetList:=ConfigList;
   Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;

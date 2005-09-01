@@ -102,19 +102,15 @@ implementation
 
 constructor TDoer.Create;
 
-  procedure CreateMarkov(const a, b: string; const n, m: Byte);
+  procedure CreateMarkov(const Filename: string; const n, m: Byte);
   var
     f: TextFile;
   begin
-    if not FileExists(a) then begin
-      AssignFile(f, a);
+    if not FileExists(Filename) then begin
+      AssignFile(f, Filename);
       Rewrite(f);
     end;
-    if not FileExists(b) then begin
-      AssignFile(f, b);
-      Rewrite(f);
-    end;
-    FMarkov:=TMarkov.Create(a, b, n, m);
+    FMarkov:=TMarkov.Create(Filename, n, m);
   end;
 
 begin
@@ -122,7 +118,7 @@ begin
   Greetings:=TStringList.Create;
   Greetings.Duplicates:=dupIgnore;
   FLL:=TLIrcRec.Create;
-  CreateMarkov('words1.txt', 'markov1.txt', 15, 65);
+  CreateMarkov('markovdata.txt', 15, 65);
   FSList:=TStringList.Create;
   FGreetList:=TStringList.Create;
   FGreetList.Duplicates:=dupIgnore;
@@ -352,7 +348,7 @@ procedure TDoer.OnAbout(Caller: TLIrcBot);
 begin
   Caller.Respond(BotName + ' ' + Version + ' , copyright (C) 2005 by Ales Katona (Almindor).');
   Caller.Respond('Database support made with help from Joost van der Sluis (Loesje).');
-  Caller.Respond('Markov response generator copyright (C) 2005 by J. Aldo G. de Freitas Junior (Pepe_Le_Pew).');
+  Caller.Respond('Markov response generator copyright (C) 2005 by J. Aldo G. de Freitas Junior (Pepe_Le_Pew), additional programming by Vincent Snijders');
   Caller.Respond('Contact: almindor@gmail.com     SVN: http://svn.freepascal.org/svn/fpcprojects/fpcircbot');
   Caller.Respond('This bot was programmed in Object Pascal language using the Free Pascal Compiler.');
 end;
