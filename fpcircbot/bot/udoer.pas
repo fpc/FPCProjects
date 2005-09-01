@@ -54,8 +54,10 @@ type
     FLL: TLIrcRec; // for speed purposes
     FSList: TStringList;
     FGreetList: TStringList;
+    FGreetings: TStringList; // for each channel
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
+    procedure SetGreetings(const Value: TStringList);
     procedure SetGreetList(const Value: TStringList);
     procedure CleanChannels;
     procedure AddChannels(Bot: TLIrcBot);
@@ -64,7 +66,6 @@ type
     TimeStarted: string;
     Logging: Boolean;
     MarkovOn: Boolean;
-    Greetings: TStringList; // for each channel
     constructor Create;
     destructor Destroy; override;
     procedure OnHelp(Caller: TLIrcBot);
@@ -96,6 +97,7 @@ type
     procedure OnChannelJoin(Caller: TLIrcBot);
     procedure OnChannelQuit(Caller: TLIrcBot);
     property GreetList: TStringList read FGreetList write SetGreetList;
+    property Greetings: TStringList read FGreetings write SetGreetings;
   end;
 
 implementation
@@ -273,6 +275,12 @@ begin
       for i:=0 to Value.Count-1 do
         FGreetList.Add(Value[i]);
   end;
+end;
+
+procedure TDoer.SetGreetings(const Value: TStringList);
+begin
+  FreeAndNil(FGreetings);
+  FGreetings:=Value;
 end;
 
 procedure TDoer.OnHelp(Caller: TLIrcBot);

@@ -62,8 +62,9 @@ begin
     Delete(Result, Length(Result), 1); // delete trailing ","
 end;
 
-procedure SetGreetings(out aList: TStringList; const s: string);
+procedure SetGreetings(var aList: TStringList; const s: string);
 begin
+  FreeAndNil(aList);
   aList:=TStringList.Create;
   if Length(s) > 6 then
     aList.CommaText:=Copy(s, 7, Length(s));
