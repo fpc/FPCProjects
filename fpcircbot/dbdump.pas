@@ -47,7 +47,7 @@ var
   begin
     Write('.');
     for i:=0 to List.Count-1 do
-      Writeln(f, List[i]);
+      if List[i][1] <> ':' then Writeln(f, List[i]);
     List.Clear;
   end;
   
@@ -64,6 +64,8 @@ begin
         AppendToFile(List);
       Next;
     end;
+    if List.Count > 0 then
+      AppendToFile(List);
     close;
   end;
   List.Free;
