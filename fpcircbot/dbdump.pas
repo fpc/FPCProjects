@@ -62,6 +62,7 @@ begin
       List.Add(FieldByName('msg').AsString);
       if List.Count > 10000 then    // we don't want to ruin the ram do we?
         AppendToFile(List);
+      Next;
     end;
     close;
   end;
