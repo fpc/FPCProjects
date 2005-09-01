@@ -56,7 +56,7 @@ begin
   InitDB;
   with Query do begin
     sql.clear;
-    sql.add('select * msg from tbl_loglines where sender <> ' + BotName);
+    sql.add('select * from tbl_loglines where sender <> ' + BotName);
     open;
     while not eof do begin
       List.Add(FieldByName('msg').AsString);
