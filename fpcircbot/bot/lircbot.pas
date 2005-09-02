@@ -79,6 +79,7 @@ type
     FPort: Word;
     FChannels: TStringList;
     FPUsers: TStringList;
+    FActivePusers: TStringList;
     FCommands: TLCommandList;
     FPCommands: TLCommandList;
     FRespondTo: string;
@@ -113,6 +114,7 @@ type
     function GetPuser(const i: Longint): string;
     function GetPuserCount: Longint;
     function ParseLine(const aMsg: string): Boolean;
+    function IsPuserCheck(const aNick: string): Boolean;
     procedure SetNick(const Value: string);
    public
     constructor Create(const Nick, Login: string);
@@ -186,6 +188,7 @@ begin
   FLastLine:=TLIrcRec.Create;
   FLogin:=Login;
   FPusers:=TStringList.Create;
+  FActivePusers:=TStringList.Create;
   FWords:=TStringList.Create;
   FPusers.CaseSensitive:=False;
   FPeople:=TStringListList.Create(True);
@@ -216,6 +219,7 @@ begin
   FCon.Free;
   FChannels.Free;
   FPUsers.Free;
+  FActivePusers.Free;
   FCommands.Free;
   FPCommands.Free;
   FLastLine.Free;
@@ -547,9 +551,25 @@ var
     end;
   end;
   
+  procedure CheckActive(const TheMan: string);
+  var
+    i: Integer;
+    StillExists: Boolean;
+  begin
+    if FActivePusers.IndexOf(TheMan) >=0 then begin
+      StillExists:=False;
+      if FPeople.Count > 0 then
+        for i:=0 to FPeople.Count-1 do
+          if FPeople[i].IndexOf(TheMan) >= 0 then StillExists:=True;
+      if not StillExists then
+        FActivePusers.Delete(FActivePusers.IndexOf(TheMan));
+    end;
+  end;
+  
   procedure FindInChannels(const Del: Boolean = False);
   var
-    n, m: Longint;
+    n, m: Integer;
+    TheMan: string;
   begin
     if FPeople.Count > 0 then
       for m:=0 to FPeople.Count-1 do begin
@@ -561,7 +581,9 @@ var
             FLastLine.FReciever:=FLastLine.FReciever + ',' + FChannels[m];
           if Del then begin
             Writeln('Deleting ', FPeople[m][n], ' from ', FChannels[m]);
+            TheMan:=FPeople[m][n];
             FPeople[m].Delete(n);
+            CheckActive(TheMan);
           end;
         end;
       end;
@@ -623,6 +645,7 @@ begin
         if IndexOf(FlastLine.Sender) >= 0 then begin
           Writeln('Deleting ', FLastLine.Sender, ' from ', FChannels[n]);
           Delete(IndexOf(FlastLine.Sender));
+          CheckActive(FLastLine.Sender);
         end;
       Result:=True;
     end; // if
@@ -645,6 +668,7 @@ begin
           Writeln('Deleting channel ', FChannels[n], ' and all users from it');
           FChannels.Delete(n);
           FPeople.Delete(n);
+          FActivePusers.Clear;
           if Assigned(FOnChannelQuit) then
             FOnChannelQuit(Self);
         end;
@@ -664,7 +688,10 @@ begin
           if FPeople[m].Count > 0 then
             for n:=0 to FPeople[m].Count-1 do
               if FPeople[m][n] = FLastLine.Sender then FPeople[m][n]:=FLastLine.Msg;
-              
+
+      n:=FActivePusers.IndexOf(FLastLine.FSender);
+      if n >= 0 then
+        FActivePusers[n]:=FLastLine.FMsg;
       FLastLine.FMsg:=FLastLine.FSender + ' is now known as ' + FLastLine.FMsg;
       Result:=True;
     end;
@@ -677,6 +704,32 @@ begin
     FReciever:='';
     FArguments:='';
     FMsg:=aMsg;
+  end;
+end;
+
+function TLIrcBot.IsPuserCheck(const aNick: string): Boolean;
+var
+  i: Longint;
+  Backup: TLIrcRec;
+begin
+  Writeln('ISPUSERCHECK CALLED');
+  Result:=False;
+  if Length(aNick) > 0 then begin
+    FNickOK:=aNick;
+    if FPUsers.IndexOf(aNick) >= 0 then begin
+      Backup:=FLastLine.CloneSelf;
+      FCon.SendMessage('NICKSERV :INFO ' + aNick + #13#10);
+      FCon.OnRecieve:=@OnReTest;
+      for i:=0 to 1000 do begin // LOOONG wait time for nickServ
+        FCon.CallAction;
+        Sleep(10);
+        if Length(FNickOK) = 0 then Result:=True;
+        if Result then Break;
+      end;
+      FLastLine.Free;
+      FLastLine:=Backup;
+      FCon.OnRecieve:=@OnRe;
+    end;
   end;
 end;
 
@@ -700,27 +753,14 @@ begin
 end;
 
 function TLIrcBot.IsPuser(const aNick: string): Boolean;
-var
-  i: Longint;
-  Backup: TLIrcRec;
 begin
   Result:=False;
-  if Length(aNick) > 0 then begin
-    FNickOK:=aNick;
-    if FPUsers.IndexOf(aNick) >= 0 then begin
-      Backup:=FLastLine.CloneSelf;
-      FCon.SendMessage('NICKSERV :INFO ' + aNick + #13#10);
-      FCon.OnRecieve:=@OnReTest;
-      for i:=0 to 1000 do begin // LOOONG wait time for nickServ
-        FCon.CallAction;
-        Sleep(10);
-        if Length(FNickOK) = 0 then Result:=True;
-        if Result then Break;
-      end;
-      FLastLine.Free;
-      FLastLine:=Backup;
-      FCon.OnRecieve:=@OnRe;
-    end;
+  if FActivePusers.Count > 0 then
+    if FActivePusers.IndexOf(aNick) >= 0 then
+      Result:=True;
+  if not Result then begin
+    Result:=IsPuserCheck(aNick);
+    if Result then FActivePusers.Add(aNick);
   end;
 end;
 
