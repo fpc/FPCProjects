@@ -615,7 +615,8 @@ begin
     Greetings.Add(Caller.LastLine.Reciever);
     Caller.Respond(YESSIR);
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
-    Greetings.Delete(Greetings.IndexOf(Caller.LastLine.Reciever));
+    if Greetings.IndexOf(Caller.LastLine.Reciever) >= 0 then
+      Greetings.Delete(Greetings.IndexOf(Caller.LastLine.Reciever));
     Caller.Respond(YESSIR);
   end else begin
     if LowerCase(Caller.LastLine.Arguments) = 'list' then begin

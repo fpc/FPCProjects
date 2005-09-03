@@ -189,6 +189,7 @@ begin
   FLogin:=Login;
   FPusers:=TStringList.Create;
   FActivePusers:=TStringList.Create;
+  FActivePusers.Duplicates:=dupIgnore;
   FWords:=TStringList.Create;
   FPusers.CaseSensitive:=False;
   FPeople:=TStringListList.Create(True);
@@ -829,7 +830,9 @@ procedure TLIrcBot.SendMessage(const Msg: string; const Reciever: string = '');
 var
   i: Longint;
 begin
+  Writeln('SENDMESSAGE CALLED');
   if Connected then begin
+    Writeln('SENDING: ', Msg, ' TO: ', Reciever);
     if Length(Reciever) > 0 then begin
       FCon.SendMessage('PRIVMSG ' + Reciever + ' :' + Msg + #13#10)
     end else if FChannels.Count > 0 then
