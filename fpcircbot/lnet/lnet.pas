@@ -803,25 +803,25 @@ begin
   Result:=false;
   if Length(msg) > FBufferSize then
     Bail('Send error: Message bigger than buffersize', -1);
-  if Connected then
-    begin
-      Temp:=msg;
-      if FFlag = SOCK_STREAM then
-        {$ifdef win32}
-        n:=tomwinsock.send(FSock, Temp[1], Length(Temp), LMSG)
-          else
-            begin
-              s:=Temp;
-              n:=tomwinsock.sendto(FSock, s[1], Length(Temp), LMSG, TSockAddrIn(FCliAddr), FAddrlen);
-            end; // win32 sendto is totaly shitty with sockets, I have to use winsock
-        {$else}
-        n:=sockets.send(FSock, Temp[1], Length(Temp), LMSG)
-          else
-            n:=sockets.sendto(FSock, Temp[1], Length(Temp), LMSG, FCliAddr, FAddrlen);
-        {$endif}
-      if n < 0 then Bail('Send error', socketerror);
-      if n > 0 then Result:=true;
-    end;
+  if Connected then begin
+    Writeln('INNER SEND: ', msg);
+    Temp:=msg;
+    if FFlag = SOCK_STREAM then
+    {$ifdef win32}
+      n:=tomwinsock.send(FSock, Temp[1], Length(Temp), LMSG)
+    else begin
+        s:=Temp;
+        n:=tomwinsock.sendto(FSock, s[1], Length(Temp), LMSG, TSockAddrIn(FCliAddr), FAddrlen);
+    end; // win32 sendto is totaly shitty with sockets, I have to use winsock
+    {$else}
+      n:=sockets.send(FSock, Temp[1], Length(Temp), LMSG)
+    else
+      n:=sockets.sendto(FSock, Temp[1], Length(Temp), LMSG, FCliAddr, FAddrlen);
+    {$endif}
+    Writeln('INNER RESULT: ', n);
+    if n < 0 then Bail('Send error', socketerror);
+    if n > 0 then Result:=true;
+  end;
 end;
 
 function TLSocket.Recieve: Boolean;

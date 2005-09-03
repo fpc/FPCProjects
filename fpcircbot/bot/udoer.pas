@@ -628,6 +628,7 @@ begin
       s:='';
       if Greetings.Count > 0 then
         for i:=0 to Greetings.Count-1 do s:=s + Greetings[i] + ' ';
+      s:=Trim(s);
       if Length(s) > 0 then
         Caller.Respond('Greeting in: ' + s)
       else
