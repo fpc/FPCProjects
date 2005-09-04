@@ -12,6 +12,7 @@ procedure CheckFile(const FileName: string);
 begin
   if not FileExists(FileName) then begin
     writeln(FileName, 'doesn''t exist');
+    halt;
   end;
 end;
 

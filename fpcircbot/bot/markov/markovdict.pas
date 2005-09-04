@@ -21,6 +21,7 @@ Type
 		fName   : String;
 		fWords  : TStringList;
                 function GetCount: Integer;
+                function GetMarkovCount: Integer;
                 function GetTransitions(index: integer): TStringList;
 	Public
 		Constructor Create(Arq : String);
@@ -33,6 +34,7 @@ Type
 		Property Words : TStringList Read fWords Write fWords;
                 Property Transitions[index: integer]: TStringList read GetTransitions;
 		Property Count : Integer Read GetCount;
+                Property MarkovCount: Integer read GetMarkovCount;
 	End;
 
 Implementation
@@ -40,6 +42,19 @@ Implementation
 function TMarkovDict.GetCount: Integer;
 begin
   Result:=fWords.Count;
+end;
+
+function TMarkovDict.GetMarkovCount: Integer;
+var
+  i: integer;
+  TransitionList: TStringList;
+begin
+  Result:=0;
+  for i := 0 to fWords.Count-1 do begin
+    TransitionList := Transitions[i];
+    if assigned(TransitionList) then
+      Result := Result + TransitionList.Count;
+  end;
 end;
 
 function TMarkovDict.GetTransitions(index: integer): TStringList;

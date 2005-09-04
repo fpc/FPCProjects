@@ -152,7 +152,7 @@ End;
 // Number of entries in the markov chain
 Function TMarkov.MarkovCount : Integer;
 Begin
-	MarkovCount := -1; // Not yet implemented
+	MarkovCount := fDict.MarkovCount;
 End;
 
 Function TMarkov.RandomWord(const S1: string; E : Integer): string;

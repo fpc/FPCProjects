@@ -1,10 +1,12 @@
 program testmarkov;
 
 {$mode objfpc}{$H+}
+// if UseTimer is defined, it will use tom's cpu unit to calculate some
+// some timings.
 {$DEFINE UseTimer}
 
 uses
-  Classes,
+  Classes, SysUtils,
 {$IFDEF UseTimer}
   Cpu,
 {$ENDIF}
@@ -16,6 +18,13 @@ var
   MyTimer: TTimer;
 {$ENDIF}
 
+procedure CheckFile(const FileName: string);
+begin
+  if not FileExists(FileName) then begin
+    writeln(FileName, 'doesn''t exist');
+  end;
+end;
+
 procedure init;
 begin
 {$IFDEF UseTimer}
@@ -26,7 +35,7 @@ begin
 {$IFDEF UseTimer}
   MyTimer.Start;
 {$ENDIF}
-  MyMarkov := TMarkov.Create('data\markovdata.txt', 15, 65);
+  MyMarkov := TMarkov.Create(ParamStr(1), 15, 65);
 {$IFDEF UseTimer}
   writeln('Loading: ', MyTimer.Stop * MyTimer.Resolution:8:6);
 {$ENDIF}
@@ -78,11 +87,28 @@ begin
   words.Free;
 end;
 
+procedure printmarkovcount;
 begin
+{$IFDEF UseTimer}
+  MyTimer.Start;
+{$ENDIF}
+    writeln('Markov transitions: ', MyMarkov.EntriesMarkov);
+{$IFDEF UseTimer}
+    writeln('Talking: ', MyTimer.Stop * MyTimer.Resolution:8:6);
+{$ENDIF}
+end;
+
+begin
+  if ParamCount<>1 then begin
+    writeln('Usage: testmarkov <markovdata.txt>');
+    halt;
+  end;
+  CheckFile(ParamStr(1));
   randomize;
   init;
   test;
   conversation;
+  printmarkovcount;
   MyMarkov.Free;
 {$IFDEF UseTimer}
   MyTimer.Free;
