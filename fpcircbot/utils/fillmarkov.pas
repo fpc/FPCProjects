@@ -1,6 +1,8 @@
+
 program fillmarkov;
 
 {$mode objfpc}{$H+}
+// define UseTimer, to use tom's cpu unit to print some timing results
 //{$DEFINE UseTimer}
 
 uses
@@ -20,6 +22,7 @@ procedure CheckFile(const FileName: string);
 begin
   if not FileExists(FileName) then begin
     writeln(FileName, 'doesn''t exist');
+    halt;
   end;
 end;
 
@@ -46,6 +49,7 @@ var
   DumpText: TextFile;
   line: string;
   lineNr: integer;
+  LinesAdded: integer;
   FSList: TStringList;
   
   function SepString(s: string): TStringList;
@@ -101,15 +105,22 @@ begin
     inc(lineNr);
     readln(DumpText, line);
     line := LowerCase(line);
-    if pos('joins #', line)=0 then
+    if (pos('joins #', line)=0) and
+      (pos('.freenode.net',line)=0) and
+      (pos('fpcbot',line)<>1) and // likely fpcbot commands
+      (pos('quits',line)=0) then begin
       MyMarkov.TalkTo(SepString(line));
-    if (lineNr mod 1000)=0 then
+      inc(LinesAdded);
+    end;
+    if (lineNr mod 10000)=0 then
       writeln(lineNr, ' lines read');
   end;
-  writeln(lineNr, ' lines read');
+  writeln('Lines read: ', lineNr, ' Lines added: ', LinesAdded);
 {$IFDEF UseTimer}
   writeln('Reading: ', MyTimer.Stop * MyTimer.Resolution:8:6);
 {$ENDIF}
+  writeln('Words: ', MyMarkov.DictionaryWords,
+    ' Markov entries: ', MyMarkov.EntriesMarkov);
 end;
 
 begin
