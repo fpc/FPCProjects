@@ -80,12 +80,15 @@ begin
 \015 = &#13;
 & = &amp;
 }
-    Result := StringReplace (Result, '&', '&amp;', [rfReplaceAll]); // Keep this the first or the rest of the changes will scrow up :)
-    Result := StringReplace (Result, '<', '&lt;', [rfReplaceAll]);
-    Result := StringReplace (Result, '>', '&gt;', [rfReplaceAll]);
-    Result := StringReplace (Result, '"', '&quot;', [rfReplaceAll]);
-{    Result := StringReplace (Result, #34, '&#34;', [rfReplaceAll]); // This is the same char as quote}
-    Result := StringReplace (Result, #39, '&#39;', [rfReplaceAll]);
+    Result := StringReplace (Result, '&',      '&amp;',   [rfReplaceAll]); // Keep this the first or the rest of the changes will scrow up :)
+    Result := StringReplace (Result, '<',      '&lt;',    [rfReplaceAll]);
+    Result := StringReplace (Result, '>',      '&gt;',    [rfReplaceAll]);
+    Result := StringReplace (Result, '"',      '&quot;',  [rfReplaceAll]);
+    Result := StringReplace (Result, #39,      '&#39;',   [rfReplaceAll]);
+    Result := StringReplace (Result, #$8b,     '&#8249;', [rfReplaceAll]);
+    Result := StringReplace (Result, #$9b,     '&#8250;', [rfReplaceAll]);
+    Result := StringReplace (Result, chr(&12), '&#10;',   [rfReplaceAll]);
+    Result := StringReplace (Result, chr(&15), '&#13;',   [rfReplaceAll]);
   end;
 end;
 

@@ -764,10 +764,8 @@ var
   end;
 
 begin
-  Writeln('---------------------BEGIN----------------------');
   with Caller.LastLine do
     Writeln('(', DateTimeToStr(Now), ')$', Sender, '$', Reciever, '$', Msg);
-  Writeln('----------------------END-----------------------');
   if Logging then begin
     TheLastLine:=Caller.LastLine;
     LogMessage;
@@ -789,8 +787,7 @@ begin
           FLL.FMsg:=FMarkov.Talk(SepString((Copy(Msg, Length(Nick) + 1, Length(Msg)))));
           SendMessage(Sender + ': ' + FLL.Msg, Reciever);
           LogMessage;
-        end
-        else FMarkov.TalkTo(SepString(Msg));
+        end else FMarkov.TalkTo(SepString(Msg));
     end;
 end;
 
@@ -882,7 +879,6 @@ end;
 
 procedure TDoer.OnChannelJoin(Caller: TLIrcBot);
 begin
-  Writeln('*****************ON CHANNEL JOIN********************');
   AddChannels(Caller);
 end;
 

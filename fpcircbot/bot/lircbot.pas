@@ -598,7 +598,6 @@ var
 var
   s: string; // helper string
 begin
-  Writeln('PARSING LINE: ', aMsg);
   Result:=False;
   with FLastLine do begin
     FSender:='';
