@@ -21,7 +21,7 @@ var
 procedure CheckFile(const FileName: string);
 begin
   if not FileExists(FileName) then begin
-    writeln(FileName, 'doesn''t exist');
+    writeln(FileName, ' doesn''t exist');
   end;
 end;
 

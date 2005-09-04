@@ -5,7 +5,7 @@ Unit MarkovDict;
 Interface
 
 Uses
-  Classes;
+  Classes, SysUtils;
 
 Const
 	ccStartToken  = '<<';
@@ -92,6 +92,8 @@ Var
   NewTransitions: TStringList;
   HitCount: ptrint;
 Begin
+  if not FileExists(fName) then exit;
+  
   AssignFile(Handler, fName);
   Reset(Handler);
   While Not(Eof(Handler)) Do
