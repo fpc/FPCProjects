@@ -357,7 +357,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
   begin
     FLastLine.FMsg:=CleanEnding(nMsg);
     if Pos('PING', FLastLine.FMsg) = 1 then
-      FCon.SendMessage('PONG :' + Copy(FLastLine.FMsg, 7, Length(FLastLine.FMsg)));
+      FCon.SendMessage('PONG :' + CleanEnding(Copy(FLastLine.FMsg, 7, Length(FLastLine.FMsg))) + #13#10);
   end;
 
 var
@@ -368,7 +368,6 @@ var
   SL: TStringList;
 begin
   nMsg:=Msg;
-  Writeln(nMsg);
   s:=SeparateByEnding(nMsg);
   if Length(s) > 0 then OnRe(s, 0);
   Parsed:=ParseLine(nMsg);
@@ -713,7 +712,6 @@ var
   i: Longint;
   Backup: TLIrcRec;
 begin
-  Writeln('ISPUSERCHECK CALLED');
   Result:=False;
   if Length(aNick) > 0 then begin
     FNickOK:=aNick;
@@ -831,7 +829,6 @@ var
   i: Longint;
 begin
   if Connected then begin
-    Writeln('OUTER SEND: ', Msg, ' TO: ', Reciever);
     if Length(Reciever) > 0 then begin
       FCon.SendMessage('PRIVMSG ' + Reciever + ' :' + Msg + #13#10)
     end else if FChannels.Count > 0 then

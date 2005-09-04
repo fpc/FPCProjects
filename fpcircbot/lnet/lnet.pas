@@ -804,7 +804,6 @@ begin
   if Length(msg) > FBufferSize then
     Bail('Send error: Message bigger than buffersize', -1);
   if Connected then begin
-    Writeln('INNER SEND: ', msg);
     Temp:=msg;
     if FFlag = SOCK_STREAM then
     {$ifdef win32}
@@ -818,7 +817,6 @@ begin
     else
       n:=sockets.sendto(FSock, Temp[1], Length(Temp), LMSG, FCliAddr, FAddrlen);
     {$endif}
-    Writeln('INNER RESULT: ', n);
     if n < 0 then Bail('Send error', socketerror);
     if n > 0 then Result:=true;
   end;
