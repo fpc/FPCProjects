@@ -90,8 +90,8 @@ Begin
 	fDict.Load;
 //	fTable := TMarkovTable.Create(P);
 //	fTable.Load;
-	fUsed := TLastWordsUsed.Create(16);
-	fUserUsed := TLastWordsUsed.Create(32);
+	fUsed := TLastWordsUsed.Create(128);
+	fUserUsed := TLastWordsUsed.Create(64);
 	fErrorMargin := M;
 	fThreshold   := T;
         // make sure the startToken and EndToken are part of it.
