@@ -1,4 +1,3 @@
-
 program fillmarkov;
 
 {$mode objfpc}{$H+}
@@ -97,6 +96,7 @@ begin
   assignfile(DumpText, ParamStr(1));
   reset(DumpText);
   lineNr := 0;
+  linesAdded := 0;
   FSList := TStringList.Create;
 {$IFDEF UseTimer}
   MyTimer.Start;
@@ -107,6 +107,7 @@ begin
     line := LowerCase(line);
     if (pos('joins #', line)=0) and
       (pos('.freenode.net',line)=0) and
+      (pos(' is now known as ',line)=0) and
       (pos('fpcbot',line)<>1) and // likely fpcbot commands
       (pos('quits',line)=0) then begin
       MyMarkov.TalkTo(SepString(line));
