@@ -768,7 +768,10 @@ var
   Backup: TLIrcRec;
 begin
   Result:=True;
-  if Connected and (FChannels.IndexOf(Channel) < 0) then begin
+  if Connected then begin
+    i:=FChannels.IndexOf(Channel);
+    if i >= 0 then
+      FChannels.Delete(i);
     Backup:=FLastLine.CloneSelf;
     FCon.SendMessage('JOIN ' + Channel + #13#10);
     FChannels.Add(Channel);
