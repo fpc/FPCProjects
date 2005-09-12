@@ -181,7 +181,7 @@ Begin
 	Begin
 		// Coefficient : four words in the context cancels out a word being too much used
 		Coeff := (fUserUsed.WordUsed(Transitions[Ctrl]) + 1) / ((fUsed.WordUsed(Transitions[Ctrl]) + 1) * 4);
-		Partial[Ctrl] := Round(Ptrint(Transitions.Objects[Ctrl]) * Coeff);
+		Partial[Ctrl] := Round(Ptrint(Transitions.Objects[Ctrl]) * Coeff * 100);
 		If Ctrl = EndCode Then
 		Partial[Ctrl] := Round(Partial[Ctrl] * 0.75);
 		If Partial[Ctrl] > Highest Then
