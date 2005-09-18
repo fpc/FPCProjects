@@ -579,11 +579,13 @@ procedure TDoer.OnSpell(Caller: TLIrcBot);
 var
   s: string;
 begin
-  s:=SpellCheck(Caller.LastLine.Arguments);
-  if Length(s) > 0 then begin
-    Caller.Respond('Your spelling is incorrect');
-    Caller.Respond('How about: ' + s);
-  end else Caller.Respond('Your spelling is correct');
+  if Length(Caller.LastLine.Arguments) > 0 then begin
+    s:=SpellCheck(Caller.LastLine.Arguments);
+    if Length(s) > 0 then begin
+      Caller.Respond('Your spelling is incorrect');
+      Caller.Respond('How about: ' + s);
+    end else Caller.Respond('Your spelling is correct');
+  end else Caller.Respond('Syntax: spell <sentence>');
 end;
 
 procedure TDoer.OnLSpell(Caller: TLIrcBot);
