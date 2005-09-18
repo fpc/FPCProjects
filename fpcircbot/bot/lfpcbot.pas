@@ -113,8 +113,8 @@ begin
   Con.AddCommand('seen', @Doer.OnSeen, 'Syntax: seen <nick> Info: makes me tell you when I last saw someone in this channel. <nick> is required.');
   Con.AddCommand('define', @Doer.OnDefine, 'Syntax: define <word> <definition> Info: makes me add a definition to the database. <word> and <definition> are required');
   Con.AddCommand('whatis', @Doer.OnWhatIs, 'Syntax: whatis <word> Info: makes me tell you what something is if it''s defined in the database. <word> is required.');
-  Con.AddCommand('spell', @Doer.OnSpell, 'Syntax: spell <sentence> Info: makes me tell you if your spelling is correct english and if not, suggest a better one');
-  Con.AddCommand('lspell', @Doer.OnLSpell, 'Syntax: lspell <language code> <sentence> Info: makes me tell you if your spelling is correct in given language and if not, suggest a better one. Example: lspell en mother goes shopping');
+  Con.AddCommand('spell', @Doer.OnSpell, 'Syntax: spell <sentence> Info: makes me tell you if your spelling is correct english and if not, suggest a better one. Encoding is UTF-8.');
+//  Con.AddCommand('lspell', @Doer.OnLSpell, 'Syntax: lspell <language code> <sentence> Info: makes me tell you if your spelling is correct in given language and if not, suggest a better one. Encoding is UTF-8. Example: lspell en mother goes shopping');
   Con.AddCommand('logurl', @Doer.OnLogUrl, 'Syntax: logurl Info: makes me tell you where the log is');
   Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Syntax: listpusers Info: makes me list power users');
   Con.AddCommand('markov', @Doer.OnMarkov, 'Syntax: markov [on/off] Info: if parameter is empty, I will display info about the markov generator. If parameter is on/off it will start/shutdown the markov response generator (starting and shuting down the generator works only for power users).');
@@ -141,6 +141,7 @@ begin
   Con.OnUserJoin:=@Doer.OnUserJoin;
   Con.OnChannelJoin:=@Doer.OnChannelJoin;
   Con.OnChannelQuit:=@Doer.OnChannelQuit;
+  Con.LogLine:=@Doer.OnRecieve;
 
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;

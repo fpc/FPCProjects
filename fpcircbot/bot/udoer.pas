@@ -605,7 +605,7 @@ begin
           Exit;
         end;
         s:=SpellCheck(Copy(Arguments, 4, Length(Arguments)));
-        FAP.Free;
+        FreeAndNil(FAP);
         FAP:=TAspellProcess.Create('', 'en');
         if Length(s) > 0 then begin
           Respond('Your spelling is incorrect');
@@ -887,12 +887,10 @@ begin
           FLL.FReciever:=Sender;
           FLL.FMsg:=FMarkov.Talk(SepString(Msg));
           SendMessage(FLL.FMsg, Sender);
-          LogMessage;
         end else if Pos(LowerCase(Nick), LowerCase(Msg)) = 1 then begin
           FLL.FReciever:=Reciever;
           FLL.FMsg:=FMarkov.Talk(SepString((Copy(Msg, Length(Nick) + 1, Length(Msg)))));
           SendMessage(Sender + ': ' + FLL.Msg, Reciever);
-          LogMessage;
         end else FMarkov.TalkTo(SepString(Msg));
     end;
 end;

@@ -88,6 +88,7 @@ type
     FOnUserJoin: TLIrcCallback;
     FOnChannelJoin: TLIrcCallback;
     FOnChannelQuit: TLIrcCallback;
+    FLogLine: TLIrcCallback;
     FRIP: Boolean;
     FNickOK: string; // a little hack
     FChan: string; // detto
@@ -154,6 +155,7 @@ type
     property OnChannelJoin: TLIrcCallback read FOnChannelJoin write FOnChannelJoin;
     property OnChannelQuit: TLIrcCallback read FOnChannelQuit write FOnChannelQuit;
     property OnDisconnect: TLIrcCallback read FOnDisconnect write FOnDisconnect;
+    property LogLine: TLIrcCallback read FLogLine write FLogLine;
   end;
 
 implementation
@@ -237,12 +239,12 @@ end;
 
 procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
 
-  function ParseCommands: Boolean;
+  function ParseCommands: Integer;
   var
     i, j: Longint;
     TheWord: string;
   begin
-    Result:=False;
+    Result:=-1;
     
     FWords.Clear;
     FWords.DelimitedText:=Trim(FLastLine.Msg);
@@ -268,9 +270,8 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
                 for j:=1 to FWords.Count-1 do
                   FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
-              FCommands[i].FAction(Self);
             end;
-            Result:=True;
+            Result:=i;
             Exit;
           end;
         end;
@@ -286,20 +287,19 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
               if FRIP then FRespondTo:=FLastLine.Sender
               else FRespondTo:=FLastLine.Reciever;
-              FCommands[i].FAction(Self);
             end;
-            Result:=True;
+            Result:=i;
             Exit;
           end;
       end;
   end;
   
-  function ParsePCommands: Boolean;
+  function ParsePCommands: Integer;
   var
     i, j: Longint;
     TheWord: string;
   begin
-    Result:=False;
+    Result:=-1;
 
     FWords.Clear;
     FWords.DelimitedText:=Trim(FLastLine.Msg);
@@ -327,9 +327,8 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
                 for j:=1 to FWords.Count-1 do
                   FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
-              FPCommands[i].FAction(Self);
             end else SendMessage('Sorry but you are not a power user', FLastLine.Sender);
-            Result:=True;
+            Result:=i + 1000;
             Exit;
           end;
         end;
@@ -347,24 +346,22 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
               if FRIP then FRespondTo:=FLastLine.Sender
               else FRespondTo:=FLastLine.Reciever;
-              FPCommands[i].FAction(Self);
             end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
-            Result:=True;
+            Result:=i + 1000;
             Exit;
           end;
       end; // for
   end;
   
-  procedure ParseForCommands;
-  var
-    WasCommand: Boolean;
+  function ParseForCommands: Integer;
   begin
+    Result:=-1;
     if FLastLine.Sender <> FNick then
       if FCon.OnRecieve = @OnRe then begin
-        WasCommand:=ParseCommands;
-        if not WasCommand then
-          WasCommand:=ParsePCommands;
-        if WasCommand then FLastLine.FWasChat:=False;
+        Result:=ParseCommands;
+        if Result < 0 then
+          Result:=ParsePCommands;
+        if Result >= 0 then FLastLine.FWasChat:=False;
       end;
   end;
   
@@ -377,7 +374,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
 
 var
   s: string;
-  i: Longint;
+  i, x: Integer;
   nMsg: string;
   Parsed: Boolean;
   SL: TStringList;
@@ -395,15 +392,35 @@ begin
       if SL.Count > 0 then
         for i:=0 to SL.Count-1 do if Length(SL[i]) > 0 then begin
           FLastLine.FReciever:=SL[i];
-          if Parsed then ParseForCommands
+          x:=-1;
+          if Parsed then x:=ParseForCommands
           else ParseForPings(nMsg);
           FOnRecieve(Self);
+
+          if x >= 0 then
+            if x >= 1000 then begin
+              if Assigned(FPCommands[x - 1000].FAction) then
+                FPCommands[x - 1000].FAction(Self);
+            end else begin
+              if Assigned(FCommands[x].FAction) then
+                FCommands[x].FAction(Self);
+            end;
         end;
       SL.Free;
     end else begin
-      if Parsed then ParseForCommands
+      x:=-1;
+      if Parsed then x:=ParseForCommands
       else ParseForPings(nMsg);
       FOnRecieve(Self);
+
+      if x >= 0 then
+        if x >= 1000 then begin
+          if Assigned(FPCommands[x - 1000].FAction) then
+            FPCommands[x - 1000].FAction(Self);
+        end else begin
+          if Assigned(FCommands[x].FAction) then
+            FCommands[x].FAction(Self);
+        end;
     end;
 end;
 
@@ -844,13 +861,30 @@ end;
 procedure TLIrcBot.SendMessage(const Msg: string; const Reciever: string = '');
 var
   i: Longint;
+  Backup: TLIrcRec;
 begin
   if Connected then begin
     if Length(Reciever) > 0 then begin
-      FCon.SendMessage('PRIVMSG ' + Reciever + ' :' + Msg + #13#10)
-    end else if FChannels.Count > 0 then
-      for i:=0 to FChannels.Count-1 do
+      Backup:=FLastLine.CloneSelf;
+      FLastLine.FSender:=FNick;
+      FLastLine.FReciever:=Reciever;
+      FLastLine.FMsg:=Msg;
+      FCon.SendMessage('PRIVMSG ' + Reciever + ' :' + Msg + #13#10);
+      if Assigned(FLogLine) then LogLine(Self);
+      FLastLine.Free;
+      FLastLine:=Backup;
+    end else if FChannels.Count > 0 then begin
+      Backup:=FLastLine.CloneSelf;
+      for i:=0 to FChannels.Count-1 do begin
+        FLastLine.FSender:=FNick;
+        FLastLine.FReciever:=Reciever;
+        FLastLine.FMsg:=Msg;
         FCon.SendMessage('PRIVMSG ' + FChannels[i] + ' :' + Msg + #13#10);
+        if Assigned(FLogLine) then LogLine(Self);
+      end;
+      FLastLine.Free;
+      FLastLine:=Backup;
+    end;
   end;
 end;
 
