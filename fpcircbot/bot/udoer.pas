@@ -603,6 +603,8 @@ begin
           Exit;
         end;
         s:=SpellCheck(Copy(Arguments, 4, Length(Arguments)));
+        FAP.Free;
+        FAP:=TAspellProcess.Create('', 'en');
         if Length(s) > 0 then begin
           Respond('Your spelling is incorrect');
           Respond('How about: ' + s);
