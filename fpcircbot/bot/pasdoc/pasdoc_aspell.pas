@@ -61,7 +61,7 @@ begin
   FProcess := TProcessLineTalk.Create(nil);
   
   { calculate FProcess.CommandLine }
-  FProcess.CommandLine := 'aspell -a';
+  FProcess.CommandLine := 'aspell -a --encoding="utf-8"';
   if AspellMode <> '' then
     FProcess.CommandLine := FProcess.CommandLine + ' --mode=' + AspellMode;
   if AspellLanguage <> '' then
