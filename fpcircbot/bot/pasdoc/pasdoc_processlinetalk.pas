@@ -2,7 +2,7 @@
 
 unit PasDoc_ProcessLineTalk;
 
-{$H+}
+{$mode delphi}{$H+}
 //{$I DEFINES.INC}
 
 {$ifdef FPC}

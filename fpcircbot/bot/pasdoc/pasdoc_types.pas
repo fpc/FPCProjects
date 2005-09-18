@@ -3,6 +3,8 @@
   @abstract(basic types used in PasDoc) }
 unit PasDoc_Types;
 
+{$mode delphi}{$h+}
+
 interface
 uses
   SysUtils;
