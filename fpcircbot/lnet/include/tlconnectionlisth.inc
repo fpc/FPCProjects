@@ -1,6 +1,6 @@
 // TLConnection header file
 // Automaticly created by listmaker
-  TLConnectionList = class(TObjectList)
+  TLConnectionList = class(TFPObjectList)
    private
     function GetItem(Index: Integer): TLConnection;
     Procedure SetItem(Index: Integer; AItem: TLConnection);

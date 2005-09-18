@@ -29,7 +29,9 @@ uses
   {$ifndef noDB}
   SqlDB, IBConnection,
   {$endif}
-  Classes, SysUtils, lIrcBot, StringUtils, Markov;
+  Classes, SysUtils,
+  lIrcBot, StringUtils, Markov,
+  PasDoc_Aspell, ObjectVector;
 
 const
   BoolStr: array[Boolean] of string = ('Off', 'On');
@@ -52,11 +54,14 @@ type
     {$endif}
     FMarkov: TMarkov;
     FLL: TLIrcRec; // for speed purposes
+    FAP: TAspellProcess;
+    FAPResult: TObjectVector;
     FSList: TStringList;
     FGreetList: TStringList;
     FGreetings: TStringList; // for each channel
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
+    function SpellCheck(const s: string): string;
     procedure SetGreetings(const Value: TStringList);
     procedure SetGreetList(const Value: TStringList);
     procedure CleanChannels;
@@ -66,6 +71,7 @@ type
     TimeStarted: string;
     Logging: Boolean;
     MarkovOn: Boolean;
+    SpellCount: Integer;
     constructor Create;
     destructor Destroy; override;
     procedure OnHelp(Caller: TLIrcBot);
@@ -75,6 +81,9 @@ type
     procedure OnDefine(Caller: TLIrcBot);
     procedure OnWhatIs(Caller: TLIrcBot);
     procedure OnLogUrl(Caller: TLIrcBot);
+    procedure OnSpell(Caller: TLIrcBot);
+    procedure OnLSpell(Caller: TLIrcBot);
+    procedure OnSpellCount(Caller: TLIrcBot);
     procedure OnReplyPrv(Caller: TLIrcBot);
     procedure OnPart(Caller: TLIrcBot);
     procedure OnJoin(Caller: TLIrcBot);
@@ -117,11 +126,15 @@ constructor TDoer.Create;
 
 begin
   Quit:=False;
+  SpellCount:=3;
+  FAP:=TAspellProcess.Create('', 'en');
+  FAPResult:=TObjectVector.Create(True);
   Greetings:=TStringList.Create;
   Greetings.Duplicates:=dupIgnore;
   FLL:=TLIrcRec.Create;
   CreateMarkov('markovdata.txt', 15, 65);
   FSList:=TStringList.Create;
+  FSList.Delimiter:=' ';
   FGreetList:=TStringList.Create;
   FGreetList.Duplicates:=dupIgnore;
   MarkovOn:=False;
@@ -183,6 +196,8 @@ end;
 
 destructor TDoer.Destroy;
 begin
+  FAP.Free;
+  FAPResult.Free;
   FMarkov.Free;
   FSList.Free;
   FLL.Free;
@@ -253,7 +268,7 @@ begin
     s:=StringReplace(s, '{', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '}', ' ', [rfReplaceAll]);
 
-    FSList.CommaText:=StringReplace(s, ' ', ',', [rfReplaceAll]);
+    FSList.DelimitedText:=s;
     if FSList.Count > 0 then
       for i:=FSList.Count-1 downto 0 do
         if FSList[i] = '' then
@@ -262,6 +277,43 @@ begin
           FSList[i]:=Trim(LowerCase(FSList[i]));
     if FSList.Count > 0 then
       Result:=FSList;
+  end;
+end;
+
+function TDoer.SpellCheck(const s: string): string;
+
+  function GetCountSpaces(const AStr: string; Count: Integer): string;
+  var
+    i, n: Integer;
+  begin
+    Result:=AStr;
+    n:=0;
+    if Length(AStr) > 0 then begin
+      for i:=1 to Length(AStr) do begin
+        if AStr[i] = ' ' then Inc(n);
+        if n >= Count then begin
+          Result:=Copy(AStr, 1, i);
+          Exit;
+        end;
+      end;
+      if Result[i] <> ' ' then
+        Result:=AStr + ' ';
+    end;
+  end;
+
+var
+  i: Integer;
+begin
+  Result:='';
+  if Length(s) > 0 then begin
+    FAP.CheckString(s, FAPResult);
+    if FAPResult.Count > 0 then begin
+      for i:=0 to FAPResult.Count-1 do try
+        Result:=Result + GetCountSpaces(Trim(TSpellingError(FAPResult[i]).Suggestions), SpellCount);
+      except on e: Exception do
+        Writeln(e.message);
+      end;
+    end;
   end;
 end;
 
@@ -523,6 +575,56 @@ begin
   {$endif}
 end;
 
+procedure TDoer.OnSpell(Caller: TLIrcBot);
+var
+  s: string;
+begin
+  s:=SpellCheck(Caller.LastLine.Arguments);
+  if Length(s) > 0 then begin
+    Caller.Respond('Your spelling is incorrect');
+    Caller.Respond('How about: ' + s);
+  end else Caller.Respond('Your spelling is correct');
+end;
+
+procedure TDoer.OnLSpell(Caller: TLIrcBot);
+var
+  s: string;
+begin
+  with Caller, Caller.LastLine do
+    if Length(Arguments) > 3 then begin
+      if Arguments[3] = ' ' then begin
+        FreeAndNil(FAP);
+        try
+          FAP:=TAspellProcess.Create('', Copy(Arguments, 1, 2));
+        except
+          Respond('Unable to process language');
+          FreeAndNil(FAP);
+          FAP:=TAspellProcess.Create('', 'en');
+          Exit;
+        end;
+        s:=SpellCheck(Copy(Arguments, 4, Length(Arguments)));
+        if Length(s) > 0 then begin
+          Respond('Your spelling is incorrect');
+          Respond('How about: ' + s);
+        end else Respond('Your spelling is correct');
+      end else Respond('Syntax: lspell <language code> <sentence>');
+    end else Respond('Syntax: lspell <language code> <sentence>');
+end;
+
+procedure TDoer.OnSpellCount(Caller: TLIrcBot);
+begin
+  with Caller, Caller.Lastline do begin
+    if Length(Trim(Arguments)) = 0 then
+      Respond('Currently ' + IntToStr(SpellCount))
+    else try
+      SpellCount:=StrToInt(Arguments);
+      Respond(YESSIR);
+    except on e: Exception do
+      Respond(e.message);
+    end;
+  end;
+end;
+
 procedure TDoer.OnReplyPrv(Caller: TLIrcBot);
 begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
@@ -703,15 +805,15 @@ end;
 procedure TDoer.OnSetMarkov(Caller: TLIrcBot);
 var
   l: TStringList;
-  m, n: Longint;
+  m, n: Byte;
 begin
   if MarkovOn then with Caller, Caller.LastLine do begin
     if Length(Trim(Arguments)) > 0 then begin
       l:=SepString(Arguments);
       if Assigned(l) and (l.Count > 1) then begin
         try
-          m:=StrToInt(Trim(l[0]));
-          n:=StrToInt(Trim(l[1]));
+          m:=Byte(StrToInt(Trim(l[0])));
+          n:=Byte(StrToInt(Trim(l[1])));
           if (m >= 0) and (m <= 100) and (n >= 0) and (n <= 100) then begin
             FMarkov.ErrorMargin:=m;
             FMarkov.Threshold:=n;

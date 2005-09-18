@@ -191,6 +191,7 @@ begin
   FActivePusers:=TStringList.Create;
   FActivePusers.Duplicates:=dupIgnore;
   FWords:=TStringList.Create;
+  FWords.Delimiter:=' ';
   FPusers.CaseSensitive:=False;
   FPeople:=TStringListList.Create(True);
   FChannels:=TStringList.Create;
@@ -243,7 +244,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
     Result:=False;
     
     FWords.Clear;
-    FWords.CommaText:=StringReplace(Trim(FLastLine.Msg), ' ', ',', [rfReplaceAll]);
+    FWords.DelimitedText:=Trim(FLastLine.Msg);
     for i:=FWords.Count-1 downto 0 do
       if FWords[i] = '' then FWords.Delete(i);
 
@@ -294,7 +295,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
     Result:=False;
 
     FWords.Clear;
-    FWords.CommaText:=StringReplace(Trim(FLastLine.Msg), ' ', ',', [rfReplaceAll]);
+    FWords.DelimitedText:=Trim(FLastLine.Msg);
     for i:=FWords.Count-1 downto 0 do
       if FWords[i] = '' then FWords.Delete(i);
     if FPCommands.Count > 0 then

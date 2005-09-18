@@ -1,25 +1,27 @@
-program cgiFpcBot;
+program cgiPastebin;
 
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, Web, SqlDB, IBConnection, stringutils;
+  Classes, SysUtils, IBConnection, SqlDB,
+  Web, stringutils;
   
 procedure Main;
 
 const
   {$Warning Don't forget to make hiddeninc.inc file!}
   {$i hiddeninc.inc}
-  ColorAr: array[Boolean] of string = ('#FFFFFF', '#E0E0E0');
 
 var
   LogFBConnection : TIBConnection;
   LogTransaction  : TSQLTransaction;
   LogQuery        : TSQLQuery;
+  WriteQuery      : TSQLQuery;
   ChanQuery       : TSQLQuery;
   Channel, Sender : string;
-  Count, Msg, Date: string;
-  i               : Longint;
+  Title, PasteID  : string;
+  pText, HL       : string;
+  i               : Integer;
   HTMLCode        : TStringList;
   ChanList        : TStringList;
   GetList         : TStringList;
@@ -38,9 +40,20 @@ begin
 
   LogQuery := tsqlquery.Create(nil);
   with LogQuery do begin
+    ReadOnly:=True;
     DataBase := LogFBConnection;
     transaction := LogTransaction;
-    ReadOnly:=True;
+  end;
+  
+  WriteQuery := tsqlquery.Create(nil);
+  with WriteQuery do begin
+    DataBase := LogFBConnection;
+    transaction := LogTransaction;
+
+    sql.clear;
+    sql.add('insert into tbl_pastes(pasteid,title,sender,pastetext,highlight) ' +
+            'values (gen_id(GEN_PASTEID,1),:title,:sender,:ptext,:hl)');
+    prepare;
   end;
 
   ChanQuery := tsqlquery.Create(nil);
@@ -57,16 +70,13 @@ begin
   LogFBConnection.free;
   LogTransaction.free;
   LogQuery.free;
+  WriteQuery.Free;
   ChanQuery.Free;
 end;
 
 procedure InitCommon;
 begin
   Channel:='';
-  Sender:='';
-  Count:='50';
-  Msg:='';
-  Date:=''; // today
   HTMLCode:=TStringList.Create;
   ChanList:=TStringList.Create;
   GetList:=TStringList.Create;
@@ -132,19 +142,19 @@ begin
   Counter:=0;
   
   TryGetWebVar(Channel, 'channel', DefChan);
-	
-	Channel := return_Channel_sanitize(Channel); //Make sure to have only allowed chars ... :)
+  Channel := return_Channel_sanitize(Channel); //Make sure to have only allowed chars ... :)
 
-  TryGetWebVar(Date, 'date', FormatDateTime('yyyy-mm-dd', SysUtils.Date));
-	Date := return_datetimestamp_sanitize (Date); //Making sure that only allowed chars can be for the date
-
-  TryGetWebVar(Count, 'linecount', '50');
- 	Count := return_Number_sanitize (Count); //Making sure that we have only number chars ...
-	
-  TryGetWebVar(Msg, 'msg', '');
+  TryGetWebVar(Title, 'title', '');
+  Title := return_Nick_sanitize (Title); //Making sure that only RFC allowed chars exists
 
   TryGetWebVar(Sender, 'sender', '');
-	Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
+  Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
+  
+  TryGetWebVar(PasteID, 'pasteid', '0');
+//  PasteID:=return_Decimal_sanitize(PasteID);
+
+  TryGetWebVar(pText, 'ptext', '');
+  pText:=FilterHTML(pText);
 end;
 
 procedure FillChannels;
@@ -153,13 +163,14 @@ begin
     SQL.Clear;
     SQL.Add('select channelname from tbl_channels');
     open;
+    ChanList.Add('----');
     while not eof do begin
       ChanList.Add(FieldByName('channelname').AsString);
       Next;
     end;
     close;
   except on e: Exception do
-    Writeln('<font size="5">Unable to fetch channel list.</font>');
+    Writeln('SQL Error: ', FilterHTML(e.message));
   end;
 end;
 
@@ -172,78 +183,85 @@ begin
   if ChanList.Count > 0 then
     for i:=0 to ChanList.Count-1 do begin
       s:=ChanList[i];
-      if Length(s) > 0 then System.Delete(s, 1, 1); // Delete #
+      if  (Length(s) > 0)
+      and (s[1] = '#') then System.Delete(s, 1, 1); // Delete #
       Result:=Result + '<option value="' + s + '"';
       if '#' + s <> Channel then
         Result:=Result + '>'
       else
         Result:=Result + ' selected>';
-      Result:=Result + '#' + s + '</option>';
+      if s <> '----' then
+        Result:=Result + '#' + s + '</option>'
+      else
+        Result:=Result + s + '</option>';
     end;
 end;
 
 
 var
-  LN, s: string;
-  Flip: Boolean;
+  Started: Boolean;
 begin
+  HL:='0';
   Init;
-  LN:='';
-  s:='';
 
   Web_Header;
   FillChannels;
   GetWebVars;
 
-  HTMLCode.LoadFromFile('html' + PathDelim + 'footer1.html');
+  HTMLCode.LoadFromFile('html' + PathDelim + 'pastebin1.html');
   HTMLCode.Text:=StringReplace(HTMLCode.Text, '$channels', GetHTMLChannels, [rfReplaceAll]);
+  
   Web_OutLn(HTMLCode.Text);
+
   if Channel = '#' then
     if ChanList.Count > 0 then Channel:=ChanList[0];
   HTMLCode.Clear;
-
-  Web_TemplateOut('html' + PathDelim + 'footer2.html');
-
-  writeln('<hr><table border="0">');
-
-  if Length(Sender) > 0 then s:=s + ' and UPPER(sender)=' + UpperCase(AnsiQuotedStr(SQLEscape(Sender), #39));
-  if Length(Msg) > 0 then s:=s + ' and msg like ''%' + SQLEscape(Msg) + '%''';
-  if Length(Date) > 0 then s:=s + ' and CAST (logtime as date) = ' + AnsiQuotedStr(SQLEscape (Date), #39) ;
-
-  with LogQuery do try
-    sql.clear;
-    sql.add('select first ' + SQLEscape(Count) + ' sender, msg, cast(logtime as varchar(25)) ' +
-            'as logtime from tbl_loglines where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) +
-             s + ') order by loglineid desc');
-    open;
-    Flip:=False;
-    LN:=FilterHtml(fieldbyname('sender').asstring);
-    while not eof do begin
-      s:=FilterHtml(fieldbyname('sender').asstring);
-      if s <> LN then Flip:=not Flip;
-
-      HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + '"><td nowrap>' +
-                   FilterHtml(Copy(fieldbyname('logtime').asstring, 1, 19)) +
-                   '</td><td>' + s +'</td><td>' +
-                   FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
-                   
-      LN:=s;
-      Next;
+  
+  Web_TemplateOut('html' + PathDelim + 'pastebin2.html');
+  PasteID:='17';
+  if PasteID <> '0' then begin
+    with LogQuery do try
+      Sql.Clear;
+      Writeln('select first 1 pastetext from tbl_pastes where pasteid=''' + PasteID + '''');
+      Sql.Add('select first 1 pastetext from tbl_pastes where pasteid=''' + PasteID + '''');
+      Open;
+      if not Eof then begin
+        pText:=FieldByName('pastetext').AsString;
+        Writeln('Text = "', pText, '"');
+      end;
+      Close;
+    except on e: Exception do
+      Writeln(e.message);
     end;
-    close;
-
-  except
-    Writeln('<font size="5">Invalid input.</font>');
-  end;
+  end else if pText <> '' then begin
+    with WriteQuery, WriteQuery.Params do try
+      ParamByName('title').AsString:=Title;
+      ParamByName('sender').AsString:=Sender;
+      ParamByName('ptext').AsString:=pText;
+      ParamByName('hl').AsString:=HL;
+      ExecSQL;
+      LogTransaction.CommitRetaining;
+    except on e: Exception do
+      Writeln(e.message);
+    end;
     
-  if HTMLCode.Count > 0 then
-    for i:=HTMLCode.Count - 1 downto 0 do
-      Writeln(HTMLCode[i]);
-
-  writeln('</table><hr>');
-  writeln('</body></html>');
-
-  Free;
+    with LogQuery do try
+      Sql.Clear;
+      Sql.Add('select first 1 pasteid from tbl_pastes order by pasteid desc');
+      Open;
+      if not Eof then
+        PasteID:=FieldByName('pasteid').AsString;
+      Close;
+    except on e: Exception do
+      Writeln(e.message);
+    end;
+    Web_SetVar('pasteid', PasteID);
+  end;
+  
+  Writeln('<input type="hidden" name="pasteid" value="', PasteID, '">');
+  Writeln('<textarea name="ptext" rows="30" cols="100">', pText, '</textarea>');
+  writeln('</form></body></html>');
+//  Free;
 end;
 
 begin

@@ -29,6 +29,9 @@ SET GENERATOR GEN_DEFINITIONID TO 1;
 CREATE GENERATOR GEN_CHANNELID;
 SET GENERATOR GEN_CHANNELID TO 1;
 
+CREATE GENERATOR GEN_PASTEID;
+SET GENERATOR GEN_PASTEID TO 1;
+
 /******************************************************************************/
 /****                                Tables                                ****/
 /******************************************************************************/
@@ -52,6 +55,14 @@ CREATE TABLE TBL_CHANNELS (
     CHANNELNAME   VARCHAR(25) CHARACTER SET NONE
 );
 
+CREATE TABLE TBL_PASTES (
+    PASTEID	INTEGER NOT NULL,
+    TITLE	VARCHAR(25) CHARACTER SET NONE,
+    SENDER	VARCHAR(50) CHARACTER SET NONE,
+    PASTETEXT   VARCHAR(9999) CHARACTER SET NONE,
+    HIGHLIGHT	INTEGER
+);
+
 /******************************************************************************/
 /****                             Primary Keys                             ****/
 /******************************************************************************/
@@ -65,6 +76,8 @@ alter table tbl_Definitions add constraint unq_definitions unique (definition);
 alter table tbl_Channels add constraint pk_channels primary key (channelid);
 
 alter table tbl_Channels add constraint unq_channels unique (channelname);
+
+ALTER TABLE TBL_PASTES ADD CONSTRAINT PK_TBL_PASTES PRIMARY KEY (PASTEID);
 
 /******************************************************************************/
 /****                              Privileges                              ****/
@@ -84,3 +97,7 @@ GRANT INSERT ON TBL_CHANNELS TO $botdbname;
 GRANT SELECT ON TBL_CHANNELS TO $botdbname;
 GRANT UPDATE ON TBL_CHANNELS TO $botdbname;
 GRANT SELECT ON TBL_CHANNELS TO $cgidbname;
+
+GRANT INSERT ON TBL_PASTES TO $cgidbname;
+GRANT SELECT ON TBL_PASTES TO $cgidbname;
+GRANT UPDATE ON TBL_PASTES TO $cgidbname;

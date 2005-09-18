@@ -1,4 +1,4 @@
-  TLSocketList = class(TObjectList)
+  TLSocketList = class(TFPObjectList)
    private
     function GetItem(Index: Integer): TLSocket;
     Procedure SetItem(Index: Integer; ASocket: TLSocket);
