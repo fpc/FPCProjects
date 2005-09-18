@@ -93,35 +93,42 @@ begin
 end;
 
 procedure GetWebVars;
-var
-  Counter: Integer;
-  
-  function GetValue(const From: string): string;
-  var
-    m: Integer;
-  begin
-    Result:='';
-    m:=Pos('=', From);
-    if (m > 0) and (Length(From) > m) then Result:=Copy(From, m+1, Length(From));
-  end;
 
   procedure TryGetWebVar(var LocalVar: string; const VarName, DefValue: string);
+  
+    function GetValue: string;
+    var
+      m, n, i: Integer;
+      From: string;
+    begin
+      Result:='';
+      for i:=0 to GetList.Count-1 do begin
+        From:=GetList[i];
+        n:=Pos(VarName, From);
+        m:=Pos('=', From);
+        if (m > 0) and (Length(From) > m)
+        and (n > 0) then begin
+          Result:=Copy(From, m+1, Length(From));
+          Exit;
+        end;
+      end;
+    end;
+
   begin
-    if (GetList.Count > Counter) and (Length(GetValue(GetList[Counter])) > 0) then begin
-      LocalVar:=GetValue(GetList[Counter]);
-      if Counter = 0 then LocalVar:='#' + LocalVar;
+    if (GetList.Count > 0) and ((Length(GetValue)) > 0) then begin
+      LocalVar:=GetValue;
+      if VarName = 'channel' then LocalVar:='#' + LocalVar;
       Web_SetVar(VarName, LocalVar);
     end else if Web_VarExists(VarName) then try
       LocalVar:=Web_GetVar(VarName);
       if Length(LocalVar) = 0 then LocalVar:=DefValue;
-      if Counter = 0 then LocalVar:='#' + LocalVar;
+      if VarName = 'channel' then LocalVar:='#' + LocalVar;
     except
       LocalVar:=DefValue;
     end else begin
       Web_SetVar(VarName, DefValue);
       LocalVar:=DefValue;
     end;
-    Inc(Counter);
   end;
 
 var
@@ -129,8 +136,7 @@ var
 begin
   DefChan:='';
   if ChanList.Count > 0 then DefChan:='#' + ChanList[0];
-  Counter:=0;
-  
+
   TryGetWebVar(Channel, 'channel', DefChan);
 	
 	Channel := return_Channel_sanitize(Channel); //Make sure to have only allowed chars ... :)
