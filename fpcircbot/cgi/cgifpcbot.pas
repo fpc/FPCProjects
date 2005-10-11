@@ -230,7 +230,7 @@ begin
 
       HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + '"><td nowrap width="1%">[' +
                    FilterHtml(Copy(fieldbyname('logtime').asstring, 12, 5)) + ']' +
-                   '</td><td nowrap width="1%">' + s +'</td><td>' +
+                   '</td><td nowrap width="1%">' + s + ': </td><td>' +
                    FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
                    
       LN:=s;
