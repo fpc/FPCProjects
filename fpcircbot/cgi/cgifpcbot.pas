@@ -165,7 +165,7 @@ begin
     end;
     close;
   except on e: Exception do
-    Writeln('<font size="5">Unable to fetch channel list.</font>');
+    Writeln('<h1>Unable to fetch channel list.</h1>');
   end;
 end;
 
@@ -210,7 +210,7 @@ begin
 
   Web_TemplateOut('html' + PathDelim + 'footer2.html');
 
-  writeln('<hr><table border="0">');
+  writeln('<table class="body_style">');
 
   if Length(Sender) > 0 then s:=s + ' and UPPER(sender)=' + UpperCase(AnsiQuotedStr(SQLEscape(Sender), #39));
   if Length(Msg) > 0 then s:=s + ' and msg like ''%' + SQLEscape(Msg) + '%''';
@@ -228,9 +228,9 @@ begin
       s:=FilterHtml(fieldbyname('sender').asstring);
       if s <> LN then Flip:=not Flip;
 
-      HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + '"><td nowrap>' +
-                   FilterHtml(Copy(fieldbyname('logtime').asstring, 1, 19)) +
-                   '</td><td>' + s +'</td><td>' +
+      HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + '"><td nowrap width="1%">[' +
+                   FilterHtml(Copy(fieldbyname('logtime').asstring, 12, 5)) + ']' +
+                   '</td><td nowrap width="1%">' + s +'</td><td>' +
                    FilterHtml(fieldbyname('msg').asstring) + '</td></tr>');
                    
       LN:=s;
@@ -239,14 +239,22 @@ begin
     close;
 
   except
-    Writeln('<font size="5">Invalid input.</font>');
+    Writeln('<h1>Invalid input.</h1>');
   end;
     
   if HTMLCode.Count > 0 then
     for i:=HTMLCode.Count - 1 downto 0 do
       Writeln(HTMLCode[i]);
 
-  writeln('</table><hr>');
+  writeln('</table><br>');
+  writeln('<p><a href="http://validator.w3.org/check?uri=referer"><img ' +
+          'style="border:0;width:88px;height:31px" ' +
+          'src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 ' +
+          'Transitional" height="31" width="88"></a>');
+  writeln('<a href="http://jigsaw.w3.org/css-validator/"> ' +
+          '<img style="border:0;width:88px;height:31px" ' +
+          'src="http://jigsaw.w3.org/css-validator/images/vcss" ' +
+          'alt="Valid CSS!"></a></p>');
   writeln('</body></html>');
 
   Free;
