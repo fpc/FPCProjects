@@ -103,35 +103,42 @@ begin
 end;
 
 procedure GetWebVars;
-var
-  Counter: Integer;
-  
-  function GetValue(const From: string): string;
-  var
-    m: Integer;
-  begin
-    Result:='';
-    m:=Pos('=', From);
-    if (m > 0) and (Length(From) > m) then Result:=Copy(From, m+1, Length(From));
-  end;
 
   procedure TryGetWebVar(var LocalVar: string; const VarName, DefValue: string);
+
+    function GetValue: string;
+    var
+      m, n, i: Integer;
+      From: string;
+    begin
+      Result:='';
+      for i:=0 to GetList.Count-1 do begin
+        From:=GetList[i];
+        n:=Pos(VarName, From);
+        m:=Pos('=', From);
+        if (m > 0) and (Length(From) > m)
+        and (n > 0) then begin
+          Result:=Copy(From, m+1, Length(From));
+          Exit;
+        end;
+      end;
+    end;
+
   begin
-    if (GetList.Count > Counter) and (Length(GetValue(GetList[Counter])) > 0) then begin
-      LocalVar:=GetValue(GetList[Counter]);
-      if Counter = 0 then LocalVar:='#' + LocalVar;
+    if (GetList.Count > 0) and ((Length(GetValue)) > 0) then begin
+      LocalVar:=GetValue;
+      if VarName = 'channel' then LocalVar:='#' + LocalVar;
       Web_SetVar(VarName, LocalVar);
     end else if Web_VarExists(VarName) then try
       LocalVar:=Web_GetVar(VarName);
       if Length(LocalVar) = 0 then LocalVar:=DefValue;
-      if Counter = 0 then LocalVar:='#' + LocalVar;
+      if VarName = 'channel' then LocalVar:='#' + LocalVar;
     except
       LocalVar:=DefValue;
     end else begin
       Web_SetVar(VarName, DefValue);
       LocalVar:=DefValue;
     end;
-    Inc(Counter);
   end;
 
 var
@@ -139,8 +146,7 @@ var
 begin
   DefChan:='';
   if ChanList.Count > 0 then DefChan:='#' + ChanList[0];
-  Counter:=0;
-  
+
   TryGetWebVar(Channel, 'channel', DefChan);
   Channel := return_Channel_sanitize(Channel); //Make sure to have only allowed chars ... :)
 
@@ -151,7 +157,7 @@ begin
   Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
   
   TryGetWebVar(PasteID, 'pasteid', '0');
-//  PasteID:=return_Decimal_sanitize(PasteID);
+  PasteID:=return_Decimal_sanitize(PasteID);
 
   TryGetWebVar(pText, 'ptext', '');
   pText:=FilterHTML(pText);
@@ -218,7 +224,6 @@ begin
   HTMLCode.Clear;
   
   Web_TemplateOut('html' + PathDelim + 'pastebin2.html');
-  PasteID:='17';
   if PasteID <> '0' then begin
     with LogQuery do try
       Sql.Clear;
@@ -260,6 +265,7 @@ begin
   
   Writeln('<input type="hidden" name="pasteid" value="', PasteID, '">');
   Writeln('<textarea name="ptext" rows="30" cols="100">', pText, '</textarea>');
+  Writeln(PasteID);
   writeln('</form></body></html>');
 //  Free;
 end;
