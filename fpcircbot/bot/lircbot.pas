@@ -95,6 +95,7 @@ type
     FNickPass: string;
     FPeople: TStringListList;
     FWords: TStringList;
+    FDoOnJoin: Boolean;
    protected
     //******TCP callbacks********
     procedure OnEr(const msg: string; const snum: Longint);
@@ -185,6 +186,7 @@ end;
 constructor TLIrcBot.Create(const Nick, Login: string);
 begin
   FNick:=Nick;
+  FDoOnJoin:=False;
   FNickOK:='';
   FRIP:=False;
   FLastLine:=TLIrcRec.Create;
@@ -396,6 +398,10 @@ begin
           if Parsed then x:=ParseForCommands
           else ParseForPings(nMsg);
           FOnRecieve(Self);
+          if FDoOnJoin then begin
+            FOnUserJoin(Self);
+            FDoOnJoin:=False;
+          end;
 
           if x >= 0 then
             if x >= 1000 then begin
@@ -664,7 +670,7 @@ begin
       if FLastLine.FSender <> Nick then begin
         Result:=True;
         if Assigned(FOnUserJoin) then
-          FOnUserJoin(Self);
+          FDoOnJoin:=True;
       end;
     end; // if
     
