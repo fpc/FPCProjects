@@ -30,7 +30,7 @@ uses
   SqlDB, IBConnection,
   {$endif}
   Classes, SysUtils,
-  lIrcBot, StringUtils, Markov,
+  lIrcBot, StringUtils, Markov, InfixMath,
   PasDoc_Aspell, ObjectVector;
 
 const
@@ -80,6 +80,8 @@ type
     procedure OnSeen(Caller: TLIrcBot);
     procedure OnDefine(Caller: TLIrcBot);
     procedure OnWhatIs(Caller: TLIrcBot);
+    procedure OnCalc(Caller: TLIrcBot);
+    procedure OnGoogle(Caller: TLIrcBot);
     procedure OnLogUrl(Caller: TLIrcBot);
     procedure OnSpell(Caller: TLIrcBot);
     procedure OnLSpell(Caller: TLIrcBot);
@@ -558,6 +560,44 @@ begin
 {$else}
   Caller.Respond('I have no DB compiled in, I cannot search definitions')
 {$endif}
+end;
+
+procedure TDoer.OnCalc(Caller: TLIrcBot);
+begin
+  with Caller, Caller.LastLine do begin
+    if Length(Arguments) > 0 then
+      Respond('Result = ' + IntToStr(ParseStringForMath(Arguments)))
+    else
+      Respond('Usage: calc <math expression>');
+  end;
+end;
+
+procedure TDoer.OnGoogle(Caller: TLIrcBot);
+var
+  Args: string;
+  i: Integer;
+  IsIn: Boolean;
+begin
+  with Caller, Caller.LastLine do begin
+    Writeln(Arguments);
+    if Length(Arguments) > 0 then begin
+      Args:=Arguments;
+      i:=Length(Args);
+      IsIn:=False;
+      while i > 1 do begin
+        if Args[i] = ' ' then begin
+          if IsIn then
+            Delete(Args, i, 1)
+          else begin
+            IsIn:=True;
+            Args[i]:='+';
+          end;
+        end else IsIn:=False;
+        Dec(i);
+      end;
+      Respond('http://www.google.com/search?&q=' + Args);
+    end else Respond('Usage: google <searchitem>');
+  end;
 end;
 
 procedure TDoer.OnLogUrl(Caller: TLIrcBot);
