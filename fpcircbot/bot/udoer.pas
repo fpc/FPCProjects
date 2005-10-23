@@ -565,10 +565,11 @@ end;
 procedure TDoer.OnCalc(Caller: TLIrcBot);
 begin
   with Caller, Caller.LastLine do begin
-    if Length(Arguments) > 0 then
-      Respond('Result = ' + IntToStr(ParseStringForMath(Arguments)))
-    else
-      Respond('Usage: calc <math expression>');
+    if Length(Arguments) > 0 then try
+      Respond('Result = ' + IntToStr(ParseStringForMath(Arguments)));
+    except
+      Respond('Unable to calculate');
+    end else Respond('Usage: calc <math expression>');
   end;
 end;
 
