@@ -408,11 +408,11 @@ end;
 
 procedure TDoer.OnAbout(Caller: TLIrcBot);
 begin
-  Caller.Respond(BotName + ' ' + Version + ' , copyright (C) 2005 by Ales Katona (Almindor).');
-  Caller.Respond('Database support made with help from Joost van der Sluis (Loesje).');
-  Caller.Respond('Markov response generator copyright (C) 2005 by J. Aldo G. de Freitas Junior (Pepe_Le_Pew), additional programming by Vincent Snijders');
-  Caller.Respond('Contact: almindor@gmail.com     SVN: http://svn.freepascal.org/svn/fpcprojects/fpcircbot');
-  Caller.Respond('This bot was programmed in Object Pascal language using the Free Pascal Compiler.');
+  Caller.Respond(BotName + ' ' + Version + ' , copyright (C) 2005 by Ales Katona (Almindor).' +
+                 'Database: Joost van der Sluis (Loesje) ' +
+                 'Markov generator: J. Aldo G. de Freitas Junior (Pepe_Le_Pew) and Vincent Snijders (fpcfan) ' +
+                 'Contact: almindor@gmail.com SVN: > http://svn.freepascal.org/svn/fpcprojects/fpcircbot < ' +
+                 'This bot was programmed in Object Pascal language using the Free Pascal Compiler.');
 end;
 
 procedure TDoer.OnSeen(Caller: TLIrcBot);
@@ -622,10 +622,10 @@ var
 begin
   if Length(Caller.LastLine.Arguments) > 0 then begin
     s:=SpellCheck(Caller.LastLine.Arguments);
-    if Length(s) > 0 then begin
-      Caller.Respond('Your spelling is incorrect');
-      Caller.Respond('How about: ' + s);
-    end else Caller.Respond('Your spelling is correct');
+    if Length(s) > 0 then
+      Caller.Respond('Incorrect, try: ' + s)
+    else
+      Caller.Respond('Your spelling is correct');
   end else Caller.Respond('Syntax: spell <sentence>');
 end;
 
@@ -648,10 +648,10 @@ begin
         s:=SpellCheck(Copy(Arguments, 4, Length(Arguments)));
         FreeAndNil(FAP);
         FAP:=TAspellProcess.Create('', 'en');
-        if Length(s) > 0 then begin
-          Respond('Your spelling is incorrect');
-          Respond('How about: ' + s);
-        end else Respond('Your spelling is correct');
+        if Length(s) > 0 then
+          Respond('Incorrect, try: ' + s)
+        else
+          Respond('Your spelling is correct');
       end else Respond('Syntax: lspell <language code> <sentence>');
     end else Respond('Syntax: lspell <language code> <sentence>');
 end;
@@ -692,9 +692,10 @@ begin
     if not Part(args) then begin
       Respond('Unable to comply, I''m not in' + args);
       if ChannelCount > 0 then begin
-        Respond('Try some of these: ');
+        args:='';
         for i:=0 to ChannelCount - 1 do
-          Respond(Channels[i]);
+          args:=args + Channels[i] + ' ';
+        Respond('Try some of these: ' + args);
       end;
     end else Respond(YESSIR);
   end;
@@ -768,9 +769,11 @@ begin
   end else begin
     if LowerCase(Caller.LastLine.Arguments) = 'list' then begin
       Caller.Respond('Greetings count: ' + IntToStr(FGreetList.Count));
-      if FGreetList.Count > 0 then
+      if FGreetList.Count > 0 then begin
         for i:=0 to FGreetList.Count-1 do
-          Caller.Respond(IntToStr(i) + '. ' + FGreetList[i]);
+          s:=s + IntToStr(i) + '. ' + FGreetList[i] + '  ';
+        Caller.Respond(s);
+      end;
     end else begin
       s:='';
       if Greetings.Count > 0 then
@@ -822,10 +825,13 @@ end;
 procedure TDoer.OnListPusers(Caller: TLIrcBot);
 var
   i: Longint;
+  s: string;
 begin
+  s:='';
   if Caller.PuserCount > 0 then
     for i:=0 to Caller.PuserCount-1 do
-      Caller.Respond(Caller.PUsers[i]);
+      s:=s + Caller.PUsers[i] + ' ';
+  Caller.Respond(s);
 end;
 
 procedure TDoer.OnMarkov(Caller: TLIrcBot);
