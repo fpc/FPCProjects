@@ -47,9 +47,7 @@ implementation
 uses
   Math;
 
-
 var
-  aZero: TCharInt;
   OperatorSet, OperandSet: set of Char;
 
 operator := (c: Char): TCharInt;
@@ -175,11 +173,13 @@ var
   var
     N1: Integer;
   begin
-    Result:=Operands.Pop;
-    while not Operands.Empty do begin
-      N1:=Operands.Pop;
-      Result:=ComputeMath(Operators.Pop, Result, N1);
-    end;
+    if not Operands.Empty then begin
+      Result:=Operands.Pop;
+      while not Operands.Empty do begin
+        N1:=Operands.Pop;
+        Result:=ComputeMath(Operators.Pop, Result, N1);
+      end;
+    end else raise Exception.Create('Cannot calculate');
   end;
 
   function GetOtherP(const s: string; const i: Integer): Integer;
@@ -199,11 +199,30 @@ var
     end;
   end;
   
+  function ValidP(const s: string): Boolean;
+  var
+    i, Count: Integer;
+  begin
+    Count:=0;
+    Result:=False;
+    if Length(s) > 0 then
+      for i:=1 to Length(s) do begin
+        if Count < 0 then Exit(False);
+        if s[i] = '(' then Inc(Count);
+        if s[i] = ')' then Dec(Count);
+      end;
+    if Count = 0 then Result:=True;
+  end;
+  
 var
   i, n, Last: Integer;
   LastPushed: Char;
   Num: string;
 begin
+  if not ValidP(s) then begin
+    raise Exception.Create('Wrong parentheses');
+    Exit(0);
+  end;
   LastPushed:=#0;
   Operands:=TCharStack.Create;
   Operators:=TCharStack.Create;
@@ -216,11 +235,16 @@ begin
         Num:=s[i] + Num;
       end else if s[i] in OperatorSet then begin
         if GetStrength(s[i]) < Last then begin
+          if Length(Num) > 0 then begin
+            Operands.Push(StrToInt(Num));
+            Num:='';
+          end;
           if LastPushed = '-' then
-            Operands.Push(aZero);
+            Operands.Push(0);
           Operands.Push(ComputeLast);
         end;
         Last:=GetStrength(s[i]);
+        LastPushed:=s[i];
         Operators.Push(s[i]);
         if Length(Num) > 0 then begin
           Operands.Push(StrToInt(Num));
@@ -243,7 +267,7 @@ begin
   if Length(Num) > 0 then
     Operands.Push(StrToInt(Num));
   if LastPushed = '-' then
-    Operands.Push(aZero);
+    Operands.Push(0);
   Result:=ComputeLast;
   Operands.Free;
   Operators.Free;
@@ -252,6 +276,5 @@ end;
 initialization
   OperatorSet:=['+', '-', '/', '%', '*', '^'];
   OperandSet:=['0'..'9'];
-  aZero.i:=0;
 
 end.
