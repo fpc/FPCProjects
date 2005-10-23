@@ -240,7 +240,7 @@ begin
             Num:='';
           end;
           if LastPushed = '-' then
-            Operands.Push(0);
+            Operands.Push(aZero);
           Operands.Push(ComputeLast);
         end;
         Last:=GetStrength(s[i]);
@@ -267,7 +267,7 @@ begin
   if Length(Num) > 0 then
     Operands.Push(StrToInt(Num));
   if LastPushed = '-' then
-    Operands.Push(0);
+    Operands.Push(aZero);
   Result:=ComputeLast;
   Operands.Free;
   Operators.Free;
@@ -276,5 +276,6 @@ end;
 initialization
   OperatorSet:=['+', '-', '/', '%', '*', '^'];
   OperandSet:=['0'..'9'];
+  aZero.i:=0;
 
 end.
