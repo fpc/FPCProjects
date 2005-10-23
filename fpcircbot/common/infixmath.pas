@@ -234,6 +234,7 @@ begin
     while i >= 1 do begin
       if s[i] in OperandSet then begin
         Num:=s[i] + Num;
+        LastPushed:=#0;
       end else if s[i] in OperatorSet then begin
         if GetStrength(s[i]) < Last then begin
           if Length(Num) > 0 then begin
@@ -255,6 +256,7 @@ begin
         if Length(Num) > 0 then begin
           Operands.Push(StrToInt(Num));
           Num:='';
+          LastPushed:=#0;
         end;
         
         if (s[i] = ')') and (i > 1) then begin
