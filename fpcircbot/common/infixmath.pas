@@ -48,6 +48,7 @@ uses
   Math;
 
 var
+  aZero: TCharInt; 
   OperatorSet, OperandSet: set of Char;
 
 operator := (c: Char): TCharInt;
