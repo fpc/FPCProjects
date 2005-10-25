@@ -685,7 +685,7 @@ begin
 
       Open;
       if not Eof then
-        Respond(Arguments + ': ' + FieldByName('msg').AsString)
+        Respond(FieldByName('msg').AsString)
       else
         Respond('I don''t have ' + Arguments + ' in my database');
       Close;
