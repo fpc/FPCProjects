@@ -86,6 +86,8 @@ type
     procedure OnSpell(Caller: TLIrcBot);
     procedure OnLSpell(Caller: TLIrcBot);
     procedure OnSpellCount(Caller: TLIrcBot);
+    procedure OnLastWord(Caller: TLIrcBot);
+    procedure OnFirstWord(Caller: TLIrcBot);
     procedure OnReplyPrv(Caller: TLIrcBot);
     procedure OnPart(Caller: TLIrcBot);
     procedure OnJoin(Caller: TLIrcBot);
@@ -668,6 +670,39 @@ begin
       Respond(e.message);
     end;
   end;
+end;
+
+procedure TDoer.OnLastWord(Caller: TLIrcBot);
+var
+  Args: string;
+begin
+  with Caller, Caller.LastLine do begin
+    if Length(Arguments) > 0 then with FSeenQuery do try
+      Args:=Trim(UpperCase(Arguments));
+      Sql.Clear;
+      Sql.Add('select first 1 msg as msg from tbl_loglines where ' +
+              'upper(sender)=''' + Args + ''' order by logtime desc');
+
+      Open;
+      if not Eof then
+        Respond(Arguments + ': ' + FieldByName('msg').AsString)
+      else
+        Respond('I don''t have ' + Arguments + ' in my database');
+      Close;
+    except on e: Exception do
+      Respond(e.message);
+    end else Respond('Usage: lastword <nick>');
+  end;
+end;
+
+procedure TDoer.OnFirstWord(Caller: TLIrcBot);
+const
+  RAR: array[0..2] of string = ('mommy', 'daddy', 'bobo');
+begin
+  if Length(Caller.LastLine.Arguments) > 0 then
+    Caller.Respond(RAR[Random(3)])
+  else
+    Caller.Respond('Are you nuts?');
 end;
 
 procedure TDoer.OnReplyPrv(Caller: TLIrcBot);
