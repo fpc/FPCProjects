@@ -11,9 +11,10 @@ const
   {$Warning Don't forget to make hiddeninc.inc file!}
   {$i hiddeninc.inc}
   ColorAr: array[Boolean] of string = ('#FFFFFF', '#E0E0E0');
-  HTML_RED = '#dd1010';
-  HTML_ORANGE = '#ddcc10';
-  HTML_GREEN = '#10dd10';
+  HTML_GRAY = '#cccccc';
+  HTML_RED = '#7d1010';
+  HTML_ORANGE = '#7d6c10';
+  HTML_GREEN = '#107d10';
 
 var
   LogFBConnection : TIBConnection;
@@ -234,17 +235,15 @@ begin
 
       TheColor:='';
       if Pos(s, smsg) = 1 then begin
-        if Pos('quits(', smsg) = Length(s) + 2 then TheColor:=HTML_RED;
-        if Pos('leaves ' + Channel, smsg) = Length(s) + 2 then TheColor:=HTML_ORANGE;
-        if Pos('joins ' + Channel, smsg) = Length(s) + 2 then TheColor:=HTML_GREEN;
+        if Pos('quits(', smsg) = Length(s) + 2 then TheColor:=';border-bottom:solid 1px '+ HTML_RED;
+        if Pos('leaves ' + Channel, smsg) = Length(s) + 2 then TheColor:=';border-bottom:solid 1px '+ HTML_ORANGE;
+        if Pos('joins ' + Channel, smsg) = Length(s) + 2 then TheColor:=';border-bottom:solid 1px '+ HTML_GREEN;
       end;
-      if Length(TheColor) = 0 then
-        TheColor:=ColorAr[Flip];
-
-      HTMLCode.Add('<tr style="background-color:' + TheColor + '"><td nowrap width="1%">[' +
-                   FilterHtml(Copy(fieldbyname('logtime').asstring, 12, 5)) + ']' +
-                   '</td><td nowrap width="1%">' + s + ': </td><td>' +
-                   smsg + '</td></tr>');
+      HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + TheColor + '">' +
+                   '<td nowrap width="1%">[' +
+                   FilterHtml(Copy(fieldbyname('logtime').asstring, 12, 5)) +
+                   ']' + '</td><td nowrap width="1%">' + s +
+                   ': </td><td>' + smsg + '</td></tr>');
 
       LN:=s;
       Next;
