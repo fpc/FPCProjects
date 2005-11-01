@@ -149,7 +149,7 @@ begin
 
   if Con.Connect(PORT, AD) then begin
     Con.RegisterSelf;
-    Doer.TimeStarted:=DateTimeToStr(Now);
+    Doer.TimeStarted:=Now;
     
     if ChannelsUsers.Count > 0 then begin
       n:=ChannelsUsers.IndexOf('?');
