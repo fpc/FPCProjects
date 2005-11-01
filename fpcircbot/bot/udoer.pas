@@ -68,7 +68,7 @@ type
     procedure AddChannels(Bot: TLIrcBot);
    public
     Quit: Boolean;
-    TimeStarted: string;
+    TimeStarted: TDateTime;
     Logging: Boolean;
     MarkovOn: Boolean;
     SpellCount: Integer;
@@ -400,12 +400,12 @@ end;
 
 procedure TDoer.OnStatus(Caller: TLIrcBot);
 begin
-  Caller.Respond(BotName + ' ' + Version);
-  Caller.Respond('Logging: ' + BoolStr[Logging]);
-  Caller.Respond('Private Response: ' + BoolStr[Caller.ReplyInPrivate]);
-  Caller.Respond('Markov generator: ' + BoolStr[MarkovOn]);
-  Caller.Respond('Greetings: ' + Greetings.Text);
-  Caller.Respond('Online since: ' + TimeStarted);
+  Caller.Respond(BotName + ' ' + Version + ' ' +
+                 'Logging: ' + BoolStr[Logging] + ' ' +
+                 'Private Response: ' + BoolStr[Caller.ReplyInPrivate] + ' ' +
+                 'Markov generator: ' + BoolStr[MarkovOn] + ' ' +
+//                 'Greetings: ' + Greetings.Text + ' ' +
+                 'Online for: ' + CreateDiffStr(TimeStarted, Now));
 end;
 
 procedure TDoer.OnAbout(Caller: TLIrcBot);
@@ -418,12 +418,6 @@ begin
 end;
 
 procedure TDoer.OnSeen(Caller: TLIrcBot);
-
-  function GetDateDiff(const ADate: string): string;
-  begin
-    Result:='';
-  end;
-
 var
   Args: string;
   Seen: TDateTime;
