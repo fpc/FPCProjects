@@ -22,6 +22,9 @@ function return_Channel_sanitize (const ChannelName : String) : String;
 function return_Nick_sanitize (const Nick : String) : String;
 //This function remove any illeagl chars for nick name according the RFC
 
+function return_Decimal_sanitize (const Decimal: string): string;
+//This functions remove any non-decimal chars
+
 function return_datetimestamp_sanitize (const DateTimeStamp : String) : String;
 //This function remove any illeagl chars for DateTimeStamp
 
@@ -123,6 +126,23 @@ begin
 
 end;
 
+function return_Decimal_sanitize (const Decimal: string): string;
+var
+  i: Integer;
+begin
+  i:=1;
+  Result:=Decimal;
+  if Length(Result) > 0 then
+    while i <= Length(Result) do begin
+      if not (Result[i] in ['0'..'9']) then
+        Delete(Result, i, 1)
+      else
+        Inc(i);
+    end;
+  if Length(Result) = 0 then
+    Result:='0';
+end;
+
 function return_datetimestamp_sanitize (const DateTimeStamp : String) : String;
 begin
   Result := DateTimeStamp;
@@ -175,9 +195,10 @@ begin
   Minute    := ((DiffTime div 1000) div 60) mod 60;
 
   if Year > 0 then Result:=Result + IntToStr(Year) + ' year' + MultiString(Year) + ' ';
-  if Day > 0 then Result:=Result + IntToStr(Day) + ' day' + MultiString(Day) + ' ';;
+  if Day > 0 then Result:=Result + IntToStr(Day) + ' day' + MultiString(Day) + ' ';
   if Hour > 0 then Result:=Result + IntToStr(Hour) + ' hour' + MultiString(Hour) + ' ';
   if Minute > 0 then Result:=Result + IntToStr(Minute) + ' minute' + MultiString(Minute) + ' ';
+  if Length(Result) = 0 then Result:='Less than a minute';
 end;
 
 end.

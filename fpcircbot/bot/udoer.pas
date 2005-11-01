@@ -399,13 +399,18 @@ begin
 end;
 
 procedure TDoer.OnStatus(Caller: TLIrcBot);
+var
+  Grt: string;
 begin
-  Caller.Respond(BotName + ' ' + Version + ' ' +
-                 'Logging: ' + BoolStr[Logging] + ' ' +
-                 'Private Response: ' + BoolStr[Caller.ReplyInPrivate] + ' ' +
-                 'Markov generator: ' + BoolStr[MarkovOn] + ' ' +
-//                 'Greetings: ' + Greetings.Text + ' ' +
-                 'Online for: ' + CreateDiffStr(TimeStarted, Now));
+  Grt:='';
+  if Length(Trim(Greetings.Text)) > 0 then
+    Grt:='Greetings: ' + Greetings.Text;
+  Caller.Respond(BotName + ' ' + Version + ', ' +
+                 'Logging: ' + BoolStr[Logging] + ', ' +
+                 'Private Response: ' + BoolStr[Caller.ReplyInPrivate] + ', ' +
+                 'Markov generator: ' + BoolStr[MarkovOn] + ', ' +
+                 'Online for: ' + CreateDiffStr(TimeStarted, Now) + ', ' + Grt);
+
 end;
 
 procedure TDoer.OnAbout(Caller: TLIrcBot);
