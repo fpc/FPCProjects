@@ -11,10 +11,11 @@ const
   {$Warning Don't forget to make hiddeninc.inc file!}
   {$i hiddeninc.inc}
   ColorAr: array[Boolean] of string = ('#FFFFFF', '#E0E0E0');
-  HTML_GRAY = '#cccccc';
-  HTML_RED = '#9d1010';
-  HTML_ORANGE = '#9d8c10';
-  HTML_GREEN = '#109d10';
+  HTML_GRAY   = '#cccccc';
+  HTML_RED    = '#9d1010';
+  HTML_ORANGE = '#ad10ad';
+  HTML_GREEN  = '#109d10';
+  HTML_BLUE   = '#10109d';
 
 var
   LogFBConnection : TIBConnection;
@@ -260,7 +261,8 @@ begin
           if Pos('quits(', smsg) = Length(s) + 2 then TheColor:=';color:'+ HTML_RED;
           if Pos('leaves ' + Channel, smsg) = Length(s) + 2 then TheColor:=';color:'+ HTML_RED;
           if Pos('joins ' + Channel, smsg) = Length(s) + 2 then TheColor:=';color:' + HTML_GREEN;
-        end;
+          if Pos(s + ' is now known as ', smsg) = 1 then TheColor:=';color:' + HTML_ORANGE;
+        end else if s = '*' then TheColor:=';color:' + HTML_BLUE;
         
         HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + TheColor + '">' +
                      '<td nowrap width="1%">[' +
