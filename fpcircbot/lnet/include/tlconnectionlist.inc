@@ -1,3 +1,4 @@
+{%MainUnit lnet.pas}
 // TLConnection body file
 // Automaticly created by listmaker
  constructor TLConnectionList.Create(const Owns: boolean = true);

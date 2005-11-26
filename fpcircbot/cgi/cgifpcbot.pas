@@ -22,7 +22,9 @@ var
   LogQuery        : TSQLQuery;
   ChanQuery       : TSQLQuery;
   Channel, Sender : string;
-  Count, Msg, Date: string;
+  Count, Msg      : string;
+  FromDate, ToDate: string;
+  FromTime, ToTime: string;
   i               : Longint;
   HTMLCode        : TStringList;
   ChanList        : TStringList;
@@ -70,7 +72,6 @@ begin
   Sender:='';
   Count:='50';
   Msg:='';
-  Date:=''; // today
   HTMLCode:=TStringList.Create;
   ChanList:=TStringList.Create;
   GetList:=TStringList.Create;
@@ -113,6 +114,7 @@ procedure GetWebVars;
         if (m > 0) and (Length(From) > m)
         and (n > 0) then begin
           Result:=Copy(From, m+1, Length(From));
+          Result:=StringReplace(Result, '%3A', ':', [rfReplaceAll]);
           Exit;
         end;
       end;
@@ -145,16 +147,24 @@ begin
 	
 	Channel := return_Channel_sanitize(Channel); //Make sure to have only allowed chars ... :)
 
-  TryGetWebVar(Date, 'date', FormatDateTime('yyyy-mm-dd', SysUtils.Date));
-	Date := return_datetimestamp_sanitize (Date); //Making sure that only allowed chars can be for the date
+  TryGetWebVar(FromDate, 'fromdate', FormatDateTime('yyyy-mm-dd', SysUtils.Date));
+	FromDate := return_datetimestamp_sanitize (FromDate); //Making sure that only allowed chars can be for the date
+  TryGetWebVar(ToDate, 'todate', '');
+	ToDate := return_datetimestamp_sanitize (ToDate); //Making sure that only allowed chars can be for the date
 
   TryGetWebVar(Count, 'linecount', '50');
  	Count := return_Number_sanitize (Count); //Making sure that we have only number chars ...
-	
-  TryGetWebVar(Msg, 'msg', '');
+
+  TryGetWebVar(FromTime, 'fromtime', '');
+        FromTime := return_datetimestamp_sanitize (FromTime);
+
+  TryGetWebVar(ToTime, 'totime', '');
+        ToTime := return_datetimestamp_sanitize (ToTime);
 
   TryGetWebVar(Sender, 'sender', '');
 	Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
+
+  TryGetWebVar(Msg, 'msg', '');
 end;
 
 procedure FillChannels;
@@ -192,6 +202,13 @@ begin
     end;
 end;
 
+function ValidRequest: Boolean;
+var
+  d1, d2: TDateTime;
+  i: Integer;
+begin
+  Result:=True;
+end;
 
 var
   LN, s, smsg, TheColor: string;
@@ -218,42 +235,49 @@ begin
 
   if Length(Sender) > 0 then s:=s + ' and UPPER(sender)=' + UpperCase(AnsiQuotedStr(SQLEscape(Sender), #39));
   if Length(Msg) > 0 then s:=s + ' and msg like ''%' + SQLEscape(Msg) + '%''';
-  if Length(Date) > 0 then s:=s + ' and CAST (logtime as date) = ' + AnsiQuotedStr(SQLEscape (Date), #39) ;
+  if Length(FromDate) > 0 then s:=s + ' and CAST (logtime as date) >= ' + AnsiQuotedStr(SQLEscape (FromDate), #39) ;
+  if Length(ToDate) > 0 then s:=s + ' and CAST (logtime as date) <= ' + AnsiQuotedStr(SQLEscape (ToDate), #39) ;
+  if Length(FromTime) > 0 then s:=s + ' and CAST (logtime as time) >= ' + AnsiQuotedStr(SQLEscape (FromTime), #39) ;
+  if Length(ToTime) > 0 then s:=s + ' and CAST (logtime as time) <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) ;
+  
 
-  with LogQuery do try
-    sql.clear;
-    sql.add('select first ' + SQLEscape(Count) + ' sender, msg, cast(logtime as varchar(25)) ' +
-            'as logtime from tbl_loglines where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) +
-             s + ') order by loglineid desc');
-    open;
-    Flip:=False;
-    LN:=FilterHtml(fieldbyname('sender').asstring);
-    while not eof do begin
-      s:=FilterHtml(fieldbyname('sender').asstring);
-      smsg:=FilterHtml(fieldbyname('msg').asstring);
-      if s <> LN then Flip:=not Flip;
+  if ValidRequest then begin
+    with LogQuery do try
+      sql.clear;
+      sql.add('select first ' + SQLEscape(Count) + ' sender, msg, cast(logtime as varchar(25)) ' +
+              'as logtime from tbl_loglines where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) +
+               s + ') order by loglineid desc');
+      open;
+      Flip:=False;
+      LN:=FilterHtml(fieldbyname('sender').asstring);
+      while not eof do begin
+        s:=FilterHtml(fieldbyname('sender').asstring);
+        smsg:=FilterHtml(fieldbyname('msg').asstring);
+        if s <> LN then Flip:=not Flip;
 
-      TheColor:='';
-      if Pos(s, smsg) = 1 then begin
-        if Pos('quits(', smsg) = Length(s) + 2 then TheColor:=';color:'+ HTML_RED;
-        if Pos('leaves ' + Channel, smsg) = Length(s) + 2 then TheColor:=';color:'+ HTML_RED;
-        if Pos('joins ' + Channel, smsg) = Length(s) + 2 then TheColor:=';color:' + HTML_GREEN;
+        TheColor:='';
+        if Pos(s, smsg) = 1 then begin
+          if Pos('quits(', smsg) = Length(s) + 2 then TheColor:=';color:'+ HTML_RED;
+          if Pos('leaves ' + Channel, smsg) = Length(s) + 2 then TheColor:=';color:'+ HTML_RED;
+          if Pos('joins ' + Channel, smsg) = Length(s) + 2 then TheColor:=';color:' + HTML_GREEN;
+        end;
+        
+        HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + TheColor + '">' +
+                     '<td nowrap width="1%">[' +
+                     FilterHtml(Copy(fieldbyname('logtime').asstring, 12, 5)) +
+                     ']' + '</td><td nowrap width="1%">' + s +
+                     ': </td><td>' + smsg + '</td></tr>');
+
+        LN:=s;
+        Next;
       end;
-      HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + TheColor + '">' +
-                   '<td nowrap width="1%">[' +
-                   FilterHtml(Copy(fieldbyname('logtime').asstring, 12, 5)) +
-                   ']' + '</td><td nowrap width="1%">' + s +
-                   ': </td><td>' + smsg + '</td></tr>');
+      close;
 
-      LN:=s;
-      Next;
+    except
+      Writeln('<h1>Invalid input.</h1>');
     end;
-    close;
+  end else Writeln('<h1>Invalid input, date difference too big?</h1>');
 
-  except
-    Writeln('<h1>Invalid input.</h1>');
-  end;
-    
   if HTMLCode.Count > 0 then
     for i:=HTMLCode.Count - 1 downto 0 do
       Writeln(HTMLCode[i]);

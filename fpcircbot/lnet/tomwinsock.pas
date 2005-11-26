@@ -33,7 +33,6 @@ Type
         PInteger  = ^Integer;
         PVOID     = Pointer;
         PLongInt  = ^LongInt;
-        DWORD     = LongInt;
 
 {$ifdef FPC}
         Smallint  = WORD;

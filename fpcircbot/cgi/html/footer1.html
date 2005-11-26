@@ -57,11 +57,15 @@ h1 {
 	  $channels
         </select>
         </td>
-        <td><span style="font-weight: bold;">Date:</span></td>
-        <td><input name="date" size="20" type="text" value="$date"></td>
+        <td width="10%"><span style="font-weight: bold;">Date:</span></td>
+        <td>
+          <input name="fromdate" size="10" type="text" value="$fromdate">
+          -
+          <input name="todate" size="10" type="text" value="$todate">
+        </td>
       </tr>
       <tr>
-        <td width="20%"><strong>Line
+        <td width="20%"><strong>Maximum Line
 Count:</strong></td>
         <td width="30%">
         <select name="linecount">
@@ -69,6 +73,13 @@ Count:</strong></td>
 	  <option value="100">100</option>
 	  <option value="150">150</option>
 	  <option value="200">200</option>
-	  <option value="9999">All day</option>
+	  <option value="9999">---</option>
         </select>
         </td>
+        <td width="10%"><span style="font-weight: bold;">Time:</span></td>
+        <td>
+          <input name="fromtime" size="10" type="text" value="$fromtime">
+          -
+          <input name="totime" size="10" type="text" value="$totime">
+        </td>
+

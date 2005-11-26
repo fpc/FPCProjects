@@ -1,6 +1,11 @@
+{%MainUnit lnet.pas}
 // TLConnection header file
 // Automaticly created by listmaker
+{$ifdef VER2_0_0}
+  TLConnectionList = class(TObjectList)
+{$else}
   TLConnectionList = class(TFPObjectList)
+{$endif}
    private
     function GetItem(Index: Integer): TLConnection;
     Procedure SetItem(Index: Integer; AItem: TLConnection);

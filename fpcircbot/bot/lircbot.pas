@@ -97,11 +97,11 @@ type
     FWords: TStringList;
    protected
     //******TCP callbacks********
-    procedure OnEr(const msg: string; const snum: Longint);
-    procedure OnRe(const msg: string; const snum: Longint);
-    procedure OnReTest(const msg: string; const snum: Longint); // for testing of input
-    procedure OnReJoin(const msg: string; const snum: Longint);
-    procedure OnDs(const msg: string; const snum: Longint);
+    procedure OnEr(const msg: string; aSocket: TLSocket);
+    procedure OnRe(const msg: string; aSocket: TLSocket);
+    procedure OnReTest(const msg: string; aSocket: TLSocket); // for testing of input
+    procedure OnReJoin(const msg: string; aSocket: TLSocket);
+    procedure OnDs(const msg: string; aSocket: TLSocket);
     //******TCP callbacks end****
     function CleanEnding(const astr: string): string;
     function SeparateByEnding(var astr: string): string;
@@ -215,7 +215,7 @@ begin
   FCon:=TLTcp.Create;
   FCon.OnError:=@OnEr;
   FCon.OnDisconnect:=@OnDs;
-  FCon.OnRecieve:=@OnRe;
+  FCon.OnReceive:=@OnRe;
 end;
 
 destructor TLIrcBot.Destroy;
@@ -232,12 +232,12 @@ begin
 end;
 
 //******TCP callbacks********
-procedure TLIrcBot.OnEr(const msg: string; const snum: Longint);
+procedure TLIrcBot.OnEr(const msg: string; aSocket: TLSocket);
 begin
   Writeln(StdErr, msg);
 end;
 
-procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
+procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
 
   function ParseCommands: Integer;
   var
@@ -357,7 +357,7 @@ procedure TLIrcBot.OnRe(const msg: string; const snum: Longint);
   begin
     Result:=-1;
     if FLastLine.Sender <> FNick then
-      if FCon.OnRecieve = @OnRe then begin
+      if FCon.OnReceive = @OnRe then begin
         Result:=ParseCommands;
         if Result < 0 then
           Result:=ParsePCommands;
@@ -381,7 +381,7 @@ var
 begin
   nMsg:=Msg;
   s:=SeparateByEnding(nMsg);
-  if Length(s) > 0 then OnRe(s, 0);
+  if Length(s) > 0 then OnRe(s, nil);
   Parsed:=ParseLine(nMsg);
 
   if Assigned(FOnRecieve) then
@@ -424,13 +424,13 @@ begin
     end;
 end;
 
-procedure TLIrcBot.OnReTest(const msg: string; const snum: Longint);
+procedure TLIrcBot.OnReTest(const msg: string; aSocket: TLSocket);
 begin
   if Pos(FNickOK + ' << ONLINE >>', Msg) > 0 then FNickOK:=''
-  else if Pos('NOTICE', msg) = 0 then OnRe(msg, 0);
+  else if Pos('NOTICE', msg) = 0 then OnRe(msg, nil);
 end;
 
-procedure TLIrcBot.OnReJoin(const msg: string; const snum: Longint);
+procedure TLIrcBot.OnReJoin(const msg: string; aSocket: TLSocket);
 const
   RPL_NAMREPLY = '353'; // successful join reply with names
 var
@@ -440,7 +440,7 @@ var
 begin
   nMsg:=Msg;
   s:=SeparateByEnding(nMsg);
-  if Length(s) > 0 then OnReJoin(s, 0);
+  if Length(s) > 0 then OnReJoin(s, nil);
   n:=Pos(RPL_NAMREPLY, nMsg);
   if n > 0 then begin
     s:=Copy(nmsg, n, Length(nmsg));
@@ -456,11 +456,11 @@ begin
     if FPeople[FChannels.IndexOf(FChan)].Count > 0 then
       for n:=0 to FPeople[FChannels.IndexOf(FChan)].Count - 1 do
         Writeln(FPeople[FChannels.IndexOf(FChan)][n]);
-    FCon.OnRecieve:=@OnRe;
-  end else if Pos('NOTICE', msg) = 0 then OnRe(nmsg, 0);
+    FCon.OnReceive:=@OnRe;
+  end else if Pos('NOTICE', msg) = 0 then OnRe(nmsg, nil);
 end;
 
-procedure TLIrcBot.OnDs(const msg: string; const snum: Longint);
+procedure TLIrcBot.OnDs(const msg: string; aSocket: TLSocket);
 begin
   if Length(FServer) > 0 then begin
     Connect(FPort, FServer);
@@ -502,7 +502,8 @@ end;
 function TLIrcBot.GetConnected: Boolean;
 begin
   Result:=False;
-  if FCon.Count > 0 then Result:=FCon[0].Connected
+  if FCon.Count > 0 then
+    Result:=FCon[1].Connected
 end;
 
 function TLIrcBot.GetChannel(const i: Longint): string;
@@ -749,7 +750,7 @@ begin
     if FPUsers.IndexOf(aNick) >= 0 then begin
       Backup:=FLastLine.CloneSelf;
       FCon.SendMessage('NICKSERV :INFO ' + aNick + #13#10);
-      FCon.OnRecieve:=@OnReTest;
+      FCon.OnReceive:=@OnReTest;
       for i:=0 to 1000 do begin // LOOONG wait time for nickServ
         FCon.CallAction;
         Sleep(10);
@@ -758,7 +759,7 @@ begin
       end;
       FLastLine.Free;
       FLastLine:=Backup;
-      FCon.OnRecieve:=@OnRe;
+      FCon.OnReceive:=@OnRe;
     end;
   end;
 end;
@@ -810,10 +811,10 @@ begin
     FPeople.Add(TStringList.Create);
     FPeople.Last.CaseSensitive:=False;
     FPeople.Last.Duplicates:=dupIgnore;
-    FCon.OnRecieve:=@OnReJoin;
+    FCon.OnReceive:=@OnReJoin;
     i:=0;
     FChan:=Channel;
-    while (FCon.OnRecieve = @OnReJoin) and (i < 100) do begin
+    while (FCon.OnReceive = @OnReJoin) and (i < 100) do begin
       FCon.CallAction;
       Sleep(10);
       Inc(i);
