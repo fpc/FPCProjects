@@ -70,6 +70,7 @@ type
     FFlag: Longint;
     FProt: Longint;
     FSockPort: Word;
+    FIgnoreShutdown: Boolean;
    protected
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
     function GetMessageCount: Integer;
@@ -136,7 +137,8 @@ type
     FForceUTF8: Boolean;
     FSocketType: TLSocketClass;
     FID: Integer; // internal number for server
-    function GetItem(const i: Longint): TLSocket;
+    function GetCount: Integer; virtual;
+    function GetItem(const i: Integer): TLSocket;
     function GetBlockTime: DWord;
     procedure SetBlockTime(const Value: DWord);
     procedure SetBufferSize(const Size: LongInt);
@@ -159,7 +161,8 @@ type
     property MaxMsgs: LongInt read FMaxMsgs write SetMaxMsgs;
     property BlockTime: DWord read GetBlockTime write SetBlockTime;
     property ForceUTF8: Boolean read FForceUTF8 write FForceUTF8;
-    property Socks[index: Longint]: TLSocket read GetItem; default;
+    property Socks[index: Integer]: TLSocket read GetItem; default;
+    property Count: Integer read GetCount;
   end;
   
   { UDP Client/Server class. Provided to enable usage of UDP sockets }
@@ -187,10 +190,11 @@ type
    protected
     FLast: TLSocket;
     FCount: Integer;
-    FSMax: Integer;
+    FSMax: QWord;
     FAccepting: Boolean;
     FMaxSockets: Integer;
     FReadFDSet: TFDSet;
+    function GetCount: Integer; override;
     procedure SetMaxSockets(const Value: Integer);
     procedure Bail(const msg: string; aSocket: TLSocket);
    public
@@ -205,7 +209,6 @@ type
     procedure CallAccept(const Check: Boolean = True);
     procedure CallAction; override;
    public
-    property Count: Integer read FCount;
     property Accepting: Boolean read FAccepting write FAccepting;
     property MaxSockets: Integer read FMaxSockets write SetMaxSockets;
   end;
@@ -316,15 +319,24 @@ begin
   Connections.Remove(Self);
 end;
 
-function TLConnection.GetItem(const i: longint): TLSocket;
+function TLConnection.GetCount: Integer;
+begin
+  Result:=1;
+end;
+
+function TLConnection.GetItem(const i: Integer): TLSocket;
 var
   Tmp: TLSocket;
+  Jumps: Integer;
 begin
   Result:=nil;
   Tmp:=FSerSock;
-  while Assigned(Tmp.Next) and (Tmp.SNum <> i) do
+  Jumps:=0;
+  while Assigned(Tmp.Next) and (Jumps < i) do begin
     Tmp:=Tmp.Next;
-  if Tmp.SNum = i then
+    Inc(Jumps);
+  end;
+  if Jumps = i then
     Result:=Tmp;
 end;
 
@@ -397,12 +409,17 @@ begin
 end;
 
 function TLUdp.Connect(const APort: Word; const Address: string): Boolean;
+var
+  IP: string;
 begin
   Result:=False;
   if FSerSock.Connected then Disconnect;
+  IP:=GetHostIP(Address);
+  if Length(IP) = 0 then
+    IP:=Address;
   Result:=FSerSock.SetupSocket(APort, LADDR_ANY);
   FSerSock.FCliAddr:=FSerSock.FAddr;
-  FSerSock.FCliAddr.Addr:=StrToNetAddr(Address);
+  FSerSock.FCliAddr.Addr:=StrToNetAddr(IP);
   {$ifdef nonblocking}
   if Result then FSerSock.SetNonBlock;
   {$endif}
@@ -494,7 +511,7 @@ end;
 constructor TLTcp.Create(SocketClass: TLSocketClass = nil);
 begin
   inherited Create(SocketClass);
-  FCount:=0;
+  FCount:=1;
   FSmax:=1;
   FBufferSize:=DefaultBufferSize;
   FMaxMsgs:=DefaultMaxMsgs;
@@ -502,6 +519,7 @@ begin
   FOnReceive:=nil; FOnAccept:=nil; FOnError:=nil;
   FAccepting:=false;
   FSerSock:=FSocketType.Create(SOCK_STREAM, 6, Self, 0);
+  FSerSock.FIgnoreShutdown:=True;
   FLast:=FSerSock;
 end;
 
@@ -530,7 +548,7 @@ begin
     FSerSock.Disconnect;
     FLast:=FSerSock;
     Result:=True;
-    FCount:=0;
+    FCount:=1;
   end else begin
     if aSocket <> FSerSock then begin
       if aSocket = FLast then
@@ -540,29 +558,35 @@ begin
         aSocket.Next.Prev:=aSocket.Prev;
       aSocket.Free;
       Dec(FCount);
-    end else FSerSock.Disconnect;
+    end else begin
+      FSerSock.Disconnect;
+      FAccepting:=False;
+    end;
     Result:=True;
   end;
 end;
 
 procedure TLTcp.Bail(const msg: string; aSocket: TLSocket);
 begin
-  if Assigned(aSocket) then
-    Disconnect(aSocket) else Disconnect;
   if Assigned(FOnError) then
     FOnError(msg, aSocket);
+  if Assigned(aSocket) then
+    Disconnect(aSocket)
+  else
+    Disconnect;
 end;
 
 function TLTcp.ControlSock(aSocket: TLSocket; const Check: Boolean = True): Boolean;
 var
-  s: string;
+  s, tmp: string;
 begin
   Result:=False;
+  s:='';
   if (not Check) or (fpFD_ISSET(aSocket.FSock, FReadFDSet) <> 0) then
     with aSocket do
-      if Receive then begin
-        while aSocket.GetMessage(s) do
-          if Assigned(FOnReceive) then FOnReceive(s, aSocket);
+      if Receive and aSocket.GetMessage(s) then begin
+        if Assigned(FOnReceive) then
+          FOnReceive(s, aSocket);
         Result:=True;
       end else Self.Disconnect(aSocket);
 end;
@@ -647,19 +671,25 @@ end;
 
 function TLTcp.CallReceive(aSocket: TLSocket = nil): Boolean;
 var
-  Tmp: TLSocket;
+  Tmp, Tmp2: TLSocket;
 begin
   Result:=False;
   if not Assigned(aSocket) then begin
     if Assigned(FSerSock.Next) then begin
       Tmp:=FSerSock.Next;
       repeat
+        Tmp2:=Tmp.Next;
         Result:=ControlSock(Tmp);
-        Tmp:=Tmp.Next;
+        Tmp:=Tmp2;
       until not Assigned(Tmp);
     end;
   end else
     Result:=ControlSock(aSocket);
+end;
+
+function TLTcp.GetCount: Integer;
+begin
+  Result:=FCount;
 end;
 
 procedure TLTcp.SetMaxSockets(const Value: Integer);
@@ -671,7 +701,7 @@ end;
 procedure TLTcp.CallAccept(const Check: Boolean = True);
 begin
   if ((not Check) or (fpFD_ISSET(FSerSock.FSock, FReadFDSet) <> 0))
-  and (Count < MaxSockets) then begin
+  and (FCount < MaxSockets) then begin
     FLast.Next:=FSocketType.Create(SOCK_STREAM, 6, Self, FSmax);
     if FLast.Next.Accept(FSerSock.FSock) then begin
       FLast.Next.Prev:=FLast;
@@ -706,7 +736,7 @@ var
   Tmp: TLSocket;
 begin
   Result:=False;
-  if (Length(msg) > 0) and (Count > 0) then
+  if (Length(msg) > 0) and (FCount > 1) then
     if Assigned(aSocket) then
       Result:=SendParts(aSocket)
     else begin
@@ -725,6 +755,7 @@ end;
 constructor TLBaseSocket.Create(const stype, protocol: Byte);
 begin
   FConnected:=false;
+  FIgnoreShutdown:=False;
   FBuffer:=TstringList.Create;
   FMaxMsgs:=DefaultMaxMsgs;
   FAddrlen:=Sizeof(FAddr);
@@ -742,7 +773,7 @@ end;
 procedure TLBaseSocket.Disconnect;
 begin
   if Connected then begin
-    if FFlag = SOCK_STREAM then
+    if (FFlag = SOCK_STREAM) and (not FIgnoreShutdown) then
       if ShutDown(FSock, 2) <> 0 then
         LogError('Shutdown error', SocketError);
     if Closesocket(FSock) <> 0 then

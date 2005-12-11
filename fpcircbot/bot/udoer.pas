@@ -23,6 +23,8 @@ along with This program; if not, Write to the Free Software Foundation,
 
 {$i baseinc.inc}
 
+//{$define noDB}
+
 interface
 
 uses
@@ -209,15 +211,16 @@ begin
   Greetings.Free;
   {$ifndef noDB}
   try
-    FLogFBConnection.Close;
-    FLogFBConnection.Free;
-    FLogTransaction.Free;
     FLogQuery.Free;
     FSeenQuery.Free;
     FChanQuery.Free;
     FDefinesQuery.Free;
     FDefViewQuery.Free;
-  except
+    FLogTransaction.Free;
+    FLogFBConnection.Close;
+    FLogFBConnection.Free;
+  except on e: Exception do
+    Writeln(e.message);
   end;
   {$endif}
 end;
@@ -675,6 +678,7 @@ procedure TDoer.OnLastWord(Caller: TLIrcBot);
 var
   Args: string;
 begin
+  {$ifndef noDB}
   with Caller, Caller.LastLine do begin
     if Length(Arguments) > 0 then with FSeenQuery do try
       Args:=Trim(UpperCase(Arguments));
@@ -692,6 +696,9 @@ begin
       Respond(e.message);
     end else Respond('Usage: lastword <nick>');
   end;
+  {$else}
+  Caller.Respond('I have no DB compiled in, cannot comply');
+  {$endif}
 end;
 
 procedure TDoer.OnFirstWord(Caller: TLIrcBot);
