@@ -130,7 +130,7 @@ begin
   Con.AddPCommand('join', @Doer.OnJoin, 'Syntax: join <#channel> Info: makes me join a channel. <#channel> is required.');
   Con.AddPCommand('quit', @Doer.OnQuit, 'Syntax: quit [confirm] Info: makes me quit (use "quit confirm" if you are sure)');
   Con.AddPCommand('sayall', @Doer.OnSayAll, 'Syntax: sayall <msg> Info: makes me say something to everyone. <msg> is required.');
-  Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Syntax: sayto <recipient> <msg> Info: makes me say something to someone/channel. <recipient> and <msg> are required. <msg> can be a channel or username.');
+  Con.AddPCOmmand('sayto', @Doer.OnSayTo, 'Syntax: sayto <recipient> <msg> Info: makes me say something to someone/channel. <recipient> and <msg> are required. <recipient> can be a channel or username.');
   Con.AddPCommand('log', @Doer.OnLog, 'Syntax: log [on/off] Info: if parameter is empty, I will tell you if logging is off or on, otherwise it makes me start/stop logging.');
   Con.AddPCommand('greetings', @Doer.OnGreetings, 'Syntax: greetings [on/off/list] Info: if parameter is empty, I will tell you all channels I greet in, if it''s [list] it will list all greetings I know, otherwise it makes me start/stop greeting people in current channel (don''t use in private).');
   Con.AddPCommand('addgreeting', @Doer.OnAddGreeting, 'Syntax: addgreeting <greeting> Info: makes me add a greeting. Examples: 1. "Hello $nick. Welcome to $channel. 2. #channel1 Welcome to #channel1." Example n.1 will add a generic greeting. Example n.2 will add a greeting specific for channel #channel1');
@@ -175,6 +175,7 @@ begin
   ConfigList.Add('$none' + CleanDoubles(',' + Doer.Greetings.CommaText));
   // Save greetings list
   ConfigList.Add(Doer.GreetList.Text);
+  Writeln('Saving config: ', ConfigList.Text);
   ConfigList.SaveToFile('botconfig.cfg');
   
   Con.Free;
