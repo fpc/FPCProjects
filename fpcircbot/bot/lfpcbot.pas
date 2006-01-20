@@ -77,7 +77,22 @@ begin
     Result:=StringReplace(Result, ',,', ',', [rfReplaceAll]);
 end;
 
+procedure GetADPORT(var anAD: string; var aPort: Word);
+begin
+  if ParamCount > 1 then try
+    aPORT:=Word(StrToInt(ParamStr(2)));
+  except
+    aPORT:=6667;
+  end else aPORT:=6667;
+  if ParamCount > 0 then
+    anAD:=ParamStr(1)
+  else
+    anAD:='chat.freenode.net';
+end;
+
 procedure Main;
+const
+  MAX_TIME = 5000;
 var
   Con: TLIrcBot;
   AD: string;
@@ -86,7 +101,11 @@ var
   ConfigList: TStringList;
   ChannelsUsers: TStringList;
   n, i: Longint;
+  WasConnected: Boolean = False;
+  TimeOut: Integer;
 begin
+  TimeOut:=0;
+  GetADPORT(AD, PORT);
   ConfigList:=LoadConfig('botconfig.cfg');
   if ConfigList = nil then begin
     Writeln('Unable to work with config file');
@@ -95,8 +114,6 @@ begin
   ChannelsUsers:=TStringList.Create;
   ChannelsUsers.CommaText:=ConfigList[0];
   ConfigList.Delete(0);
-  AD:='irc.freenode.net';
-  PORT:=6667;
   Doer:=TDoer.Create;
   Doer.Logging:=True;
   Doer.MarkovOn:=True;
@@ -146,11 +163,25 @@ begin
   Con.OnChannelJoin:=@Doer.OnChannelJoin;
   Con.OnChannelQuit:=@Doer.OnChannelQuit;
   Con.LogLine:=@Doer.OnRecieve;
-
-  if Con.Connect(PORT, AD) then begin
+  if not Con.Connect(AD, PORT) then
+    Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
+  else begin
+    Writeln('Connecting... press any key to cancel');
+    repeat
+      Sleep(1);
+      Con.CallAction;
+      Inc(TimeOut);
+      if KeyPressed then TimeOut:=MAX_TIME + 1;
+    until Con.Connected or (TimeOut > MAX_TIME);
+  end;
+  
+  if TimeOut > MAX_TIME then
+    Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
+  else begin
+    WasConnected:=True;
     Con.RegisterSelf;
     Doer.TimeStarted:=Now;
-    
+
     if ChannelsUsers.Count > 0 then begin
       n:=ChannelsUsers.IndexOf('?');
       if n > 0 then
@@ -158,25 +189,27 @@ begin
       if n < ChannelsUsers.Count-1 then
         for i:=n+1 to ChannelsUsers.Count-1 do Con.Join(ChannelsUsers[i]);
     end;
-    
+
     while not Doer.Quit do begin
       if  KeyPressed
       and (ReadKey = #27) then Doer.Quit:=True;
       Con.CallAction;
       Delay(1);
     end;
-  end else Writeln('Unable to connect to: ', AD, ' PORT: ', Port);
-  
-  // Save channels and power users as they are now for next use
-  ConfigList.Clear;
-  ConfigList.Add(GetAllUsers(Con));
-  ConfigList[0]:=ConfigList[0] + '?,' + GetAllChannels(Con);
-  // Save channels in which greetings are on
-  ConfigList.Add('$none' + CleanDoubles(',' + Doer.Greetings.CommaText));
-  // Save greetings list
-  ConfigList.Add(Doer.GreetList.Text);
-  Writeln('Saving config: ', ConfigList.Text);
-  ConfigList.SaveToFile('botconfig.cfg');
+  end;
+
+  if WasConnected then begin
+    // Save channels and power users as they are now for next use
+    ConfigList.Clear;
+    ConfigList.Add(GetAllUsers(Con));
+    ConfigList[0]:=ConfigList[0] + '?,' + GetAllChannels(Con);
+    // Save channels in which greetings are on
+    ConfigList.Add('$none' + CleanDoubles(',' + Doer.Greetings.CommaText));
+    // Save greetings list
+    ConfigList.Add(Doer.GreetList.Text);
+    Writeln('Saving config: ', ConfigList.Text);
+    ConfigList.SaveToFile('botconfig.cfg');
+  end;
   
   Con.Free;
   Doer.Free;
