@@ -69,6 +69,8 @@ type
   {$i tlcommandlisth.inc}
   {$i tstringlistlisth.inc}
 
+  { TLIrcBot }
+
   TLIrcBot = class
    protected
     FCon: TLTcp;
@@ -85,6 +87,7 @@ type
     FRespondTo: string;
     FOnRecieve: TLIrcCallback;
     FOnDisconnect: TLIrcCallback;
+    FOnConnect: TLIrcCallback;
     FOnUserJoin: TLIrcCallback;
     FOnChannelJoin: TLIrcCallback;
     FOnChannelQuit: TLIrcCallback;
@@ -96,12 +99,15 @@ type
     FPeople: TStringListList;
     FWords: TStringList;
    protected
+    procedure DoRe(const msg: string);
+    procedure DoReJoin(const msg: string);
     //******TCP callbacks********
     procedure OnEr(const msg: string; aSocket: TLSocket);
-    procedure OnRe(const msg: string; aSocket: TLSocket);
-    procedure OnReTest(const msg: string; aSocket: TLSocket); // for testing of input
-    procedure OnReJoin(const msg: string; aSocket: TLSocket);
-    procedure OnDs(const msg: string; aSocket: TLSocket);
+    procedure OnRe(aSocket: TLSocket);
+    procedure OnReTest(aSocket: TLSocket); // for testing of input
+    procedure OnReJoin(aSocket: TLSocket);
+    procedure OnDs(aSocket: TLSocket);
+    procedure OnCo(aSocket: TLSocket);
     //******TCP callbacks end****
     function CleanEnding(const astr: string): string;
     function SeparateByEnding(var astr: string): string;
@@ -120,7 +126,7 @@ type
    public
     constructor Create(const Nick, Login: string);
     destructor Destroy; override;
-    function Connect(const Port: Word; const Server: string): Boolean;
+    function Connect(const Server: string; const Port: Word): Boolean;
     function IsPuser(const aNick: string): Boolean;
     function Join(const Channel: string): Boolean;
     function Part(const Channel: string): Boolean;
@@ -155,6 +161,7 @@ type
     property OnChannelJoin: TLIrcCallback read FOnChannelJoin write FOnChannelJoin;
     property OnChannelQuit: TLIrcCallback read FOnChannelQuit write FOnChannelQuit;
     property OnDisconnect: TLIrcCallback read FOnDisconnect write FOnDisconnect;
+    property OnConnect: TLIrcCallback read FOnConnect write FOnConnect;
     property LogLine: TLIrcCallback read FLogLine write FLogLine;
   end;
 
@@ -209,10 +216,12 @@ begin
   FOnUserJoin:=nil;
   FOnChannelJoin:=nil;
   FOnChannelQuit:=nil;
+  FOnConnect:=nil;
+  FOnDisconnect:=nil;
 
   FPort:=0;
   FServer:='';
-  FCon:=TLTcp.Create;
+  FCon:=TLTcp.Create(nil);
   FCon.OnError:=@OnEr;
   FCon.OnDisconnect:=@OnDs;
   FCon.OnReceive:=@OnRe;
@@ -232,12 +241,8 @@ begin
 end;
 
 //******TCP callbacks********
-procedure TLIrcBot.OnEr(const msg: string; aSocket: TLSocket);
-begin
-  Writeln(StdErr, msg);
-end;
 
-procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
+procedure TLIrcBot.DoRe(const msg: string);
 
   function ParseCommands: Integer;
   var
@@ -245,7 +250,7 @@ procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
     TheWord: string;
   begin
     Result:=-1;
-    
+
     FWords.Clear;
     FWords.DelimitedText:=Trim(FLastLine.Msg);
     for i:=FWords.Count-1 downto 0 do
@@ -275,7 +280,7 @@ procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
             Exit;
           end;
         end;
-        
+
         if FWords.Count > 1 then
           if  (Pos(LowerCase(Nick), LowerCase(FWords[0])) > 0)
           and (FCommands[i].Command = LowerCase(FWords[1])) then begin
@@ -293,7 +298,7 @@ procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
           end;
       end;
   end;
-  
+
   function ParsePCommands: Integer;
   var
     i, j: Longint;
@@ -313,7 +318,7 @@ procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
             TheWord:=LowerCase(Copy(FWords[0], 2, Length(FWords[0])))
           else
             TheWord:=LowerCase(FWords[0]);
-            
+
           if ((LowerCase(FLastLine.Reciever) = LowerCase(FNick)) or (FWords[0][1] = '!'))
           and (FPCommands[i].Command = TheWord) then begin
             if Assigned(FPCommands[i].FAction)
@@ -332,7 +337,7 @@ procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
             Exit;
           end;
         end;
-          
+
         // CHANNEL
         if FWords.Count > 1 then
           if  (Pos(LowerCase(Nick), LowerCase(FWords[0])) > 0)
@@ -352,7 +357,7 @@ procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
           end;
       end; // for
   end;
-  
+
   function ParseForCommands: Integer;
   begin
     Result:=-1;
@@ -364,7 +369,7 @@ procedure TLIrcBot.OnRe(const msg: string; aSocket: TLSocket);
         if Result >= 0 then FLastLine.FWasChat:=False;
       end;
   end;
-  
+
   procedure ParseForPings(const nMsg: string);
   begin
     FLastLine.FMsg:=CleanEnding(nMsg);
@@ -381,9 +386,10 @@ var
 begin
   nMsg:=Msg;
   s:=SeparateByEnding(nMsg);
-  if Length(s) > 0 then OnRe(s, nil);
-  Parsed:=ParseLine(nMsg);
+  if Length(s) > 0 then
+    DoRe(s);
 
+  Parsed:=ParseLine(nMsg);
   if Assigned(FOnRecieve) then
     if Pos(',', FLastLine.FReciever) > 0 then begin
       SL:=TStringList.Create;
@@ -424,13 +430,31 @@ begin
     end;
 end;
 
-procedure TLIrcBot.OnReTest(const msg: string; aSocket: TLSocket);
+procedure TLIrcBot.OnEr(const msg: string; aSocket: TLSocket);
 begin
-  if Pos(FNickOK + ' << ONLINE >>', Msg) > 0 then FNickOK:=''
-  else if Pos('NOTICE', msg) = 0 then OnRe(msg, nil);
+  Writeln(StdErr, msg);
 end;
 
-procedure TLIrcBot.OnReJoin(const msg: string; aSocket: TLSocket);
+procedure TLIrcBot.OnRe(aSocket: TLSocket);
+var
+  s: string;
+begin
+  if FCon.GetMessage(s) > 0 then
+    DoRe(s);
+end;
+
+procedure TLIrcBot.OnReTest(aSocket: TLSocket);
+var
+  msg: string;
+begin
+  if FCon.GetMessage(msg) > 0 then
+    if Pos(FNickOK + ' << ONLINE >>', Msg) > 0 then
+      FNickOK:=''
+    else
+      if Pos('NOTICE', msg) = 0 then DoRe(msg);
+end;
+
+procedure TLIrcBot.DoReJoin(const msg: string);
 const
   RPL_NAMREPLY = '353'; // successful join reply with names
 var
@@ -438,9 +462,9 @@ var
   s: string;
   nMsg: string;
 begin
-  nMsg:=Msg;
+  nMsg:=msg;
   s:=SeparateByEnding(nMsg);
-  if Length(s) > 0 then OnReJoin(s, nil);
+  if Length(s) > 0 then DoReJoin(s);
   n:=Pos(RPL_NAMREPLY, nMsg);
   if n > 0 then begin
     s:=Copy(nmsg, n, Length(nmsg));
@@ -457,16 +481,30 @@ begin
       for n:=0 to FPeople[FChannels.IndexOf(FChan)].Count - 1 do
         Writeln(FPeople[FChannels.IndexOf(FChan)][n]);
     FCon.OnReceive:=@OnRe;
-  end else if Pos('NOTICE', msg) = 0 then OnRe(nmsg, nil);
+  end else if Pos('NOTICE', msg) = 0 then DoRe(nmsg);
 end;
 
-procedure TLIrcBot.OnDs(const msg: string; aSocket: TLSocket);
+procedure TLIrcBot.OnReJoin(aSocket: TLSocket);
+var
+  s: string;
+begin
+  if FCon.GetMessage(s) > 0 then
+    DoReJoin(s);
+end;
+
+procedure TLIrcBot.OnDs(aSocket: TLSocket);
 begin
   if Length(FServer) > 0 then begin
-    Connect(FPort, FServer);
+    Connect(FServer, FPort);
     if Assigned(OnDisconnect) then
       OnDisconnect(Self);
   end;
+end;
+
+procedure TLIrcBot.OnCo(aSocket: TLSocket);
+begin
+  if Assigned(FOnConnect) then
+    FOnConnect(Self);
 end;
 
 //******TCP callbacks end****
@@ -773,10 +811,10 @@ begin
   end else FNick:=Value;
 end;
 
-function TLIrcBot.Connect(const Port: Word; const Server: string): Boolean;
+function TLIrcBot.Connect(const Server: string; const Port: Word): Boolean;
 begin
   Result:=False;
-  if FCon.Connect(Port, Server) then begin
+  if FCon.Connect(Server, Port) then begin
     Result:=True;
     FPort:=Port;
     FServer:=Server;
