@@ -1,0 +1,27 @@
+For visual package (lnetpackage dir) you need to use Lazarus. See lnetpackage/README and lnetpackage/INSTALL.
+
+For LNET, LTCP, LUDP and LFTPl you need to do is type "make". (imake can make it too)
+Make.exe is shipped in win32 along with Free Pascal.
+Possible options are:
+
+make -- compiles all examples and lib with -XX -Xs -O2
+make debug -- compiles lib with debug info in(bounds check etc. as well)
+make memcheck -- compiles lib with memory checks in 
+make clean -- deletes the object files and ppus(requires delp, part of FPC)
+
+Usage: if you want to use lnet in your project, just copy the lNet directory somewhere and put it in compiler's unit search path with -Fu.
+
+Units:
+
+lnet.pas - this is the main workmule of the whole library. Contains all base classes and helper functions
+levents.pas - this is the "eventer" unit which holds TLEventer classes.
+ltelnet.pas - this is the telnet protocol addition. Currently only the client works.
+lftp.pas - this is the FTP protocol addition. Currently only the client works.
+
+Layout:
+
+lnet/ -- this root dir
+lnet/lib -- the library dir for all lnet libraries
+lnet/lib/sys -- system specific units and include files for lnet libraries
+lnet/examples -- console and visual example programs
+lnet/lazaruspackage -- visual package for lazarus
