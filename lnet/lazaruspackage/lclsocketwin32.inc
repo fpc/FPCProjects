@@ -65,6 +65,9 @@ begin
     if Events.lNetworkEvents and FD_WRITE  = FD_WRITE then
       if Assigned(FOnWrite) then
         FOnWrite(Self);
+        
+    if FDispose then
+      Free;
   end else Bail('EventEnum error', WSAGetLastError);
 end;
 
