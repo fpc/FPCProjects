@@ -8,6 +8,7 @@ TTCPC=examples/console/ltcp/lclient.pas
 TUDP=examples/console/ludp/ludp.pas
 TTELNET=examples/console/ltelnet/ltclient.pas
 TFTP=examples/console/lftp/lftpclient.pas
+THTTP=examples/console/lhttp/fphttpd.pas
 
 all:
 	$(PP) $(ARGS) $(TUDP)
@@ -15,6 +16,7 @@ all:
 	$(PP) $(ARGS) $(TTCPS)
 	$(PP) $(ARGS) $(TTELNET)
 	$(PP) $(ARGS) $(TFTP)
+	$(PP) $(ARGS) $(THTTP)
 
 clean:
 	delp .
@@ -24,7 +26,7 @@ clean:
 	delp examples/console/ltcp
 	delp examples/console/ltelnet
 	delp examples/console/lftp
-	delp examples/console/lnet/sys
+	delp examples/console/lhttp
 
 debug:
 	$(PP) $(BASEARGS) -g $(TLIB)
