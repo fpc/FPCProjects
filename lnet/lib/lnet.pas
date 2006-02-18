@@ -88,6 +88,7 @@ type
     function Connect(const Address: string; const APort: Word): Boolean;
     function Send(const aData; const aSize: Integer): Integer; virtual;
     function SendMessage(const msg: string): Integer;
+    procedure HandleReceiveError(var aError: Integer); virtual;
     function Get(var aData; const aSize: Integer): Integer; virtual;
     function GetMessage(out msg: string): Integer;
     procedure Disconnect; virtual;
@@ -125,8 +126,8 @@ type
     procedure Disconnect; override;
    public
     constructor Create; override;
+    procedure HandleReceiveError(var aError: Integer); override;
     function Send(const aData; const aSize: Integer): Integer; override;
-    function Get(var aData; const aSize: Integer): Integer; override;
     property NextSock: TLSocket read FNextSock write FNextSock;
     property PrevSock: TLSocket read FPrevSock write FPrevSock;
     property Parent: TLConnection read FParent write SetParent;
@@ -390,6 +391,11 @@ begin
   Result:=Length(msg);
 end;
 
+procedure TLBaseSocket.HandleReceiveError(var aError: Integer);
+begin
+  Bail('Receive Error', LSocketError);
+end;
+
 function TLBaseSocket.Get(var aData; const aSize: Integer): Integer;
 var
   AddressLength: Integer = SizeOf(FAddress);
@@ -407,7 +413,8 @@ begin
       Result:=sockets.Recvfrom(FHandle, aData, aSize, LMSG, FPeerAddress, AddressLength);
     {$endif}
     if Result = 0 then Bail('Lost Connection', -1);
-    if Result < 0 then Bail('Receive Error', LSocketError);
+    if Result < 0 then
+      HandleReceiveError(Result);
   end;
   if not Connected then
     Result:=0; // if it failed subsequently
@@ -545,6 +552,18 @@ begin
   FCanReceive:=False;
 end;
 
+procedure TLSocket.HandleReceiveError(var aError: Integer);
+begin
+  if LSocketError = BLOCK_ERROR then
+  begin
+    FCanReceive := False;
+    FIgnoreRead := False;
+    aError := 0;
+  end
+    else
+      Bail('Receive Error', LSocketError);
+end;
+
 function TLSocket.Send(const aData; const aSize: Integer): Integer;
 begin
   Result:=0;
@@ -564,34 +583,6 @@ begin
       end else FIgnoreWrite:=False;
     end;
  end;
-end;
-
-function TLSocket.Get(var aData; const aSize: Integer): Integer;
-var
-  AddressLength: Integer = SizeOf(FAddress);
-begin
-  Result:=0;
-  if CanReceive then begin
-    if FSocketType = SOCK_STREAM then
-    {$ifdef MSWINDOWS}
-      Result:=tomwinsock.Recv(FHandle, aData, aSize, LMSG)
-    else
-      Result:=tomwinsock.Recvfrom(FHandle, aData, aSize, LMSG, TSockAddrIn(FPeerAddress), AddressLength);
-    {$else}
-      Result:=sockets.Recv(FHandle, aData, aSize, LMSG)
-    else
-      Result:=sockets.Recvfrom(FHandle, aData, aSize, LMSG, FPeerAddress, AddressLength);
-    {$endif}
-    if Result = 0 then Bail('Lost Connection', -1);
-    if Result < 0 then
-      if LSocketError = BLOCK_ERROR then begin
-        FCanReceive:=False;
-        FIgnoreRead:=False;
-        Result:=0;
-      end else Bail('Receive Error', LSocketError);
-  end;
-  if not Connected then
-    Result:=0; // if it failed subsequently
 end;
 
 function TLSocket.CanSend: Boolean;
