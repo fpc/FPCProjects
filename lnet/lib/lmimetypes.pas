@@ -21,7 +21,7 @@
   me at ales@chello.sk
 }
 
-unit mimetypes;
+unit lMimeTypes;
 
 {$mode objfpc}{$h+}
 
