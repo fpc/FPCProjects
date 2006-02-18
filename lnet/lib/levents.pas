@@ -171,7 +171,7 @@ end;
 procedure TLEventer.Bail(const msg: string; const Ernum: Integer);
 begin
   if Assigned(FOnError) then
-    FOnError(msg + ': [' + IntToStr(Errno) + '] ' + LStrError(Ernum), Self);
+    FOnError(msg + ': [' + IntToStr(Ernum) + '] ' + LStrError(Ernum), Self);
 end;
 
 function TLEventer.AddHandle(aHandle: TLHandle): Boolean;
