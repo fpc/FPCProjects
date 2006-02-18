@@ -141,7 +141,7 @@ type
     FSocket: TLHTTPSocket;
     FWriteBlock: TWriteBlockMethod;
   protected
-    function ReadBlock: boolean; virtual;
+    function WriteData: boolean; virtual;
   public
     constructor Create;
 
@@ -315,13 +315,7 @@ begin
   Result := ASize;
 end;
 
-function TOutputItem.ReadBlock: boolean;
-begin
-  { EOF }
-  Result := true;
-end;
-
-function TOutputItem.WriteBlock: boolean;
+function TOutputItem.WriteData: boolean;
 var
   lWritten: integer;
 begin
@@ -335,6 +329,11 @@ begin
     Result := FEof;
 end;
 
+function TOutputItem.WriteBlock: boolean;
+begin
+  Result := WriteData;
+end;
+
 const
   ReserveChunkBytes = 12;
 
@@ -342,6 +341,7 @@ constructor TBufferOutput.Create;
 begin
   inherited;
   GetMem(FBuffer, DataBufferSize);
+  FWriteBlock := @WriteData;
 end;
 
 destructor TBufferOutput.Destroy;
@@ -385,7 +385,7 @@ var
 begin
   if not FOutputPending and not FEof then
   begin
-    FEof := ReadBlock;
+    FEof := WriteData;
     if FBufferPos - FBufferOffset > 0 then
     begin
       FOutputPending := true;
@@ -412,7 +412,7 @@ begin
       inc(FBufferSize, 5);
     end;
   end;
-  Result := inherited WriteBlock;
+  Result := inherited WriteData;
   if Result then
   begin
     Result := FEof;
@@ -425,7 +425,7 @@ function TBufferOutput.WriteBuffer: boolean;
 begin
   if not FOutputPending then
   begin
-    FEof := ReadBlock;
+    FEof := WriteData;
     FOutputPending := FEof;
     if FEof or (FBufferPos = FBufferSize) then
     begin
@@ -449,7 +449,7 @@ begin
   end;
   Result := FEof;
   if Result then
-    Result := inherited WriteBlock;
+    Result := inherited WriteData;
 end;
 
 function TBufferOutput.WriteBlock: boolean;

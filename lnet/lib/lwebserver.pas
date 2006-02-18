@@ -37,7 +37,7 @@ type
     FFile: file;
 
     function GetSize: integer;
-    function ReadBlock: boolean; override;
+    function WriteData: boolean; override;
   public
     constructor Create;
     destructor Destroy; override;
@@ -73,7 +73,7 @@ type
     destructor Destroy; override;
 
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
-    function  ReadBlock: boolean; override;
+    function  WriteData: boolean; override;
     procedure UpdateHeaders; override;
     
     property ExecPath: string read FExecPath write FExecPath;
@@ -193,8 +193,6 @@ begin
   FBufferPos := 0;
   FBufferSize := 0;
   FEof := false;
-  if Result then
-    FEof := ReadBlock;
 end;
 
 function TFileOutput.GetSize: integer; inline;
@@ -202,7 +200,7 @@ begin
   Result := FileSize(FFile);
 end;
 
-function TFileOutput.ReadBlock: boolean;
+function TFileOutput.WriteData: boolean;
 begin
   if FEof then 
     exit(true);
@@ -221,8 +219,11 @@ end;
 function TFileOutput.WriteBlock: boolean;
 begin
   if not FOutputPending then
-    FEof := ReadBlock;
-  Result := inherited;
+  begin
+    PrepareBuffer;
+    FEof := WriteData;
+  end;
+  Result := inherited WriteData;
 end;
 
 constructor TScriptOutput.Create;
@@ -259,7 +260,7 @@ begin
   { CGI process has output pending, we can write a block to socket }
   if FParsingHeaders then
   begin
-    if ReadBlock and FParsingHeaders then
+    if WriteData and FParsingHeaders then
     begin
       { still parsing headers ? something's wrong }
       FParsingHeaders := false;
@@ -405,7 +406,7 @@ begin
   exit(true);
 end;
 
-function TCGIOutput.ReadBlock: boolean;
+function TCGIOutput.WriteData: boolean;
 var
   lRead: integer;
 begin
