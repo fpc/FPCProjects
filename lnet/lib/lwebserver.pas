@@ -28,7 +28,7 @@ unit lwebserver;
 interface
 
 uses
-  sysutils, classes, lnet, lhttpserver, httputil, mimetypes, levents, 
+  sysutils, classes, lnet, lhttpserver, lhttputil, lmimetypes, levents, 
   lprocess, process;
 
 type
@@ -127,7 +127,7 @@ begin
     lOutput := TCGIOutput.Create;
     lOutput.Socket := ASocket;
     lOutput.ExecPath := ASocket.RequestInfo.Argument;
-    if SeperatePath(lOutput.ExecPath, lOutput.ExtraPath) then
+    if SeparatePath(lOutput.ExecPath, lOutput.ExtraPath) then
       lOutput.UpdateHeaders
     else
       ASocket.RequestInfo.Status := hsNotFound;

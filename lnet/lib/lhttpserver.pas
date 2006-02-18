@@ -28,7 +28,7 @@ unit lhttpserver;
 interface
 
 uses
-  classes, sysutils, strutils, lnet, unixutil, httputil, strbuffer;
+  classes, sysutils, strutils, lnet, unixutil, lhttputil, lstrbuffer;
 
 type
   TLHTTPRequest = (hrHead, hrGet, hrPost, hrUnknown);

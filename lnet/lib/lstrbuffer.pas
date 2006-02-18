@@ -21,7 +21,7 @@
   me at ales@chello.sk
 }
 
-unit strbuffer;
+unit lStrBuffer;
 
 {$mode objfpc}{$h+}
 

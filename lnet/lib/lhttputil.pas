@@ -21,7 +21,7 @@
   me at ales@chello.sk
 }
 
-unit httputil;
+unit lHTTPUtil;
 
 {$mode objfpc}{$h+}
 
@@ -36,7 +36,7 @@ function TZSeconds: integer;
 function GMTToLocalTime(ADateTime: TDateTime): TDateTime;
 function LocalTimeToGMT(ADateTime: TDateTime): TDateTime;
 
-function SeperatePath(var InPath: string; out ExtraPath: string): boolean;
+function SeparatePath(var InPath: string; out ExtraPath: string): boolean;
 
 implementation
 
@@ -68,7 +68,7 @@ begin
   Result := ADateTime - (TZSeconds*1000/MSecsPerDay);
 end;
 
-function SeperatePath(var InPath: string; out ExtraPath: string): boolean;
+function SeparatePath(var InPath: string; out ExtraPath: string): boolean;
 var
   lInfo: TSearchRec;
   lFullPath: string;

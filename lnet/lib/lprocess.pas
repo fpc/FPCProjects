@@ -21,7 +21,7 @@
   me at ales@chello.sk
 }
 
-unit lprocess;
+unit lProcess;
 
 {$mode objfpc}{$h+}
 
