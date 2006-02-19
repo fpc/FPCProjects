@@ -37,12 +37,15 @@ type
     FIgnoreRead: Boolean;    // so we can do edge-triggered
     FIgnoreError: Boolean;   // so we can do edge-triggered
     FDispose: Boolean;       // will free in the after-cycle
+    FReferenced: Boolean;    // is being referenced by eventer in loop
+    FDestroyed: Boolean;
     FNext: TLHandle;
     FPrev: TLHandle;
     FUserData: Pointer;
    public
     constructor Create; virtual;
     destructor Destroy; override;
+    procedure FreeInstance; override;
     property Prev: TLHandle read FPrev write FPrev;
     property Next: TLHandle read FNext write FNext;
     property IgnoreWrite: Boolean read FIgnoreWrite write FIgnoreWrite;
@@ -129,6 +132,17 @@ destructor TLHandle.Destroy;
 begin
   if Assigned(FEventer) then
     FEventer.UnplugHandle(Self);
+end;
+
+procedure TLHandle.FreeInstance;
+begin
+  { if self is referenced in main eventer loop, do not free memory yet }
+  if FReferenced then
+  begin
+    FDispose := true;
+    FDestroyed := true;
+  end else
+    inherited;
 end;
 
 { TLEventer }
@@ -304,6 +318,7 @@ begin
     if Result then begin
       Temp:=FRoot;
       while Assigned(Temp) do begin
+        Temp.FReferenced := true;
         if fpFD_ISSET(Temp.FHandle, FWriteFDSet) <> 0 then
           if Assigned(Temp.FOnWrite) then
             Temp.FOnWrite(Temp);
@@ -315,8 +330,12 @@ begin
             Temp.FOnError(Temp);
         Temp2:=Temp;
         Temp:=Temp.FNext;
+        Temp2.FReferenced := false;
         if Temp2.FDispose then
-          Temp2.Free;
+          if Temp2.FDestroyed then
+            Temp2.FreeInstance
+          else
+            Temp2.Free;
       end;
     end;
   end;
