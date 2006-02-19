@@ -43,7 +43,6 @@ type
     destructor Destroy; override;
 
     function  Open(const AFileName: string): boolean;
-    function  WriteBlock: boolean; override;
 
     property Size: integer read GetSize;
   end;
@@ -115,7 +114,11 @@ begin
 end;
 
 const
-  ScriptPathPrefix = 'cgi-bin';
+  ServerSoftware = 'fpHTTPd/0.2';
+  ScriptPathPrefix = 'cgi-bin/';
+  DocumentRoot = '/var/www';
+  CGIPath = '/usr/local/bin:/usr/bin:/bin';
+  CGIRoot = '/usr/lib/cgi-bin/';
 
 function TCGIHandler.HandleDocument(ASocket: TLHTTPSocket): TOutputItem;
 var
@@ -126,7 +129,7 @@ begin
   begin
     lOutput := TCGIOutput.Create;
     lOutput.Socket := ASocket;
-    lOutput.ExecPath := ASocket.RequestInfo.Argument;
+    lOutput.ExecPath := CGIRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
     if SeparatePath(lOutput.ExecPath, lOutput.ExtraPath) then
       lOutput.UpdateHeaders
     else
@@ -190,8 +193,6 @@ begin
   Reset(FFile,1);
   {$I+}
   Result := IOResult = 0;
-  FBufferPos := 0;
-  FBufferSize := 0;
   FEof := false;
 end;
 
@@ -201,29 +202,20 @@ begin
 end;
 
 function TFileOutput.WriteData: boolean;
+var
+  lRead: integer;
 begin
   if FEof then 
     exit(true);
-  FBufferPos := 0;
-  BlockRead(FFile, FBuffer^, FBufferSize, FBufferSize);
-  FOutputPending := FBufferSize > 0;
-  if FBufferSize = 0 then
+  BlockRead(FFile, FBuffer[FBufferPos], FBufferSize-FBufferPos, lRead);
+  Inc(FBufferPos, lRead);
+  if lRead = 0 then
   begin
     { EOF reached }
     Close(FFile);
     exit(true);
   end;
   exit(false);
-end;
-
-function TFileOutput.WriteBlock: boolean;
-begin
-  if not FOutputPending then
-  begin
-    PrepareBuffer;
-    FEof := WriteData;
-  end;
-  Result := inherited WriteData;
 end;
 
 constructor TScriptOutput.Create;
@@ -269,17 +261,12 @@ begin
       else
         FSocket.RequestInfo.Status := hsInternalError;
       FSocket.StartResponse(Self);
+      exit;
     end;
-  end else
+  end;
+  if not FParsingHeaders then
     FSocket.WriteBlock;
 end;
-
-const
-  ServerSoftware = 'fpHTTPd/0.2';
-  ServerHostname = 'server';
-  DocumentRoot = '/var/www';
-  CGIPath = '/usr/local/bin:/usr/bin:/bin';
-  CGIRoot = '/usr/lib/';
 
 procedure TCGIOutput.AddHTTPParam(const AName: string; AParam: TLHTTPRequestParameter);
 var
@@ -293,18 +280,27 @@ end;
 procedure TCGIOutput.UpdateHeaders;
 begin
   FProcess.Environment.Clear;
+{
+  FProcess.Environment.Add('SERVER_ADDR=');
+  FProcess.Environment.Add('SERVER_ADMIN=');
+  FProcess.Environment.Add('SERVER_NAME=');
+  FProcess.Environment.Add('SERVER_PORT=');
+}
   FProcess.Environment.Add('SERVER_SOFTWARE='+ServerSoftware);
-  FProcess.Environment.Add('SERVER_NAME='+ServerHostName);
-  FProcess.Environment.Add('GATEWAY_INTERFACE=CGI/1.1');
-  
+
+  FProcess.Environment.Add('GATEWAY_INTERFACE=CGI/1.1'); 
   FProcess.Environment.Add('SERVER_PROTOCOL='+FSocket.RequestInfo.VersionStr);
   FProcess.Environment.Add('REQUEST_METHOD='+FSocket.RequestInfo.Method);
+  FProcess.Environment.Add('REQUEST_URI=/'+FSocket.RequestInfo.Argument);
 
-  FProcess.Environment.Add('PATH_INFO='+FExtraPath);
-  FProcess.Environment.Add('PATH_TRANSLATED='+DocumentRoot+FExtraPath);
+  if Length(FExtraPath) > 0 then
+  begin
+    FProcess.Environment.Add('PATH_INFO='+FExtraPath);
+    FProcess.Environment.Add('PATH_TRANSLATED='+DocumentRoot+FExtraPath);
+  end;
 
-  FProcess.Environment.Add('SCRIPT_NAME=/'+FSocket.RequestInfo.Argument);
-  FProcess.Environment.Add('SCRIPT_FILENAME='+CGIRoot+FSocket.RequestInfo.Argument);
+  FProcess.Environment.Add('SCRIPT_NAME=/'+Copy(FExecPath, Length(CGIRoot)-7, 1024));
+  FProcess.Environment.Add('SCRIPT_FILENAME='+FExecPath);
   
   case FSocket.RequestInfo.RequestType of
     hrGet:
@@ -327,19 +323,21 @@ begin
   FProcess.Environment.Add('DOCUMENT_ROOT='+DocumentRoot);
   AddHTTPParam('HTTP_HOST', hpHost);
   AddHTTPParam('HTTP_COOKIE', hpCookie);
+  AddHTTPParam('HTTP_CONNECTION', hpConnection);
   AddHTTPParam('HTTP_REFERER', hpReferer);
   AddHTTPParam('HTTP_USER_AGENT', hpUserAgent);
   AddHTTPParam('HTTP_ACCEPT', hpAccept);
   FProcess.Environment.Add('PATH='+CGIPath);
 
-  FProcess.CommandLine := CGIRoot+FExecPath;
+  FProcess.Environment.Add('UNIQUE_ID=Q-eLbVoAAAQAAEkoEF8');
+
+  FProcess.CommandLine := FExecPath;
   FProcess.CurrentDirectory := CGIRoot;
   FProcess.Options := [poUsePipes];
   FProcess.Eventer := FSocket.Parent.Eventer;
   FProcess.Execute;
 
   FParsingHeaders := true;
-  FSocket.PrepareOutput(Self);
   FReadPos := FBufferPos;
   FParsePos := FBuffer+FReadPos;
 end;
@@ -354,8 +352,8 @@ function  TCGIOutput.ParseHeaders: boolean;
 var
   lHttpStatus: TLHTTPStatus;
   iEnd, lCode: integer;
-  lStatus: dword;
-  pLineEnd, pNextLine: pchar;
+  lStatus, lLength: dword;
+  pLineEnd, pNextLine, pValue: pchar;
 begin
   repeat
     iEnd := IndexByte(FParsePos^, @FBuffer[FReadPos]-FParsePos, 10);
@@ -379,9 +377,10 @@ begin
     if (iEnd = -1) or (FParsePos[iEnd+1] <> ' ') then
       break;
     FParsePos[iEnd] := #0;
+    pValue := FParsePos+iEnd+2;
     if StrIComp(FParsePos, 'Content-type') = 0 then
     begin
-      FSocket.RequestInfo.ContentType := FParsePos+iEnd+2;
+      FSocket.RequestInfo.ContentType := pValue;
     end else 
     if StrIComp(FParsePos, 'Location') = 0 then
     begin
@@ -390,14 +389,29 @@ begin
     end else 
     if StrIComp(FParsePos, 'Status') = 0 then
     begin
-      Val(FParsePos[iEnd+2], lStatus, lCode);
+      Val(pValue, lStatus, lCode);
       if lCode <> 0 then
         break;
       for lHttpStatus := Low(TLHTTPStatus) to High(TLHTTPStatus) do
         if HTTPStatusCodes[lHttpStatus] = lStatus then
           FSocket.RequestInfo.Status := lHttpStatus;
     end else
-      break;
+    if StrIComp(FParsePos, 'Content-Length') = 0 then
+    begin
+      Val(pValue, lLength, lCode);
+      if lCode <> 0 then
+        break;
+      FSocket.RequestInfo.ContentLength := lLength;
+    end else
+    if StrIComp(FParsePos, 'Last-Modified') = 0 then
+    begin
+      if not TryHTTPDateStrToDateTime(pValue, 
+        FSocket.RequestInfo.LastModified) then
+      begin
+        {$message warn TODO: log a warning message, unhandled datetime?};
+      end;
+    end else
+      {$message warn TODO: log a warning message, unhandled header?};
     FParsePos := pNextLine;
   until false;
 

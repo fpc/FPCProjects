@@ -42,7 +42,6 @@ type
   TLHTTPTransferEncoding = (teIdentity, teChunked);
 
 const
-  HTTPDateFormat: string = 'ddd, dd mmm yyyy hh:nn:ss';
   HTTPRequestStrings: array[TLHTTPRequest] of string =
     ('HEAD', 'GET', 'POST', '');
   HTTPRequestParameterStrings: array[TLHTTPRequestParameter] of string =
@@ -161,6 +160,7 @@ type
 
     function WriteChunk: boolean;
     function WriteBuffer: boolean;
+    function WritePlain: boolean;
     function WriteBlock: boolean; override;
   end;
 
@@ -168,8 +168,8 @@ type
   protected
     FFreeBuffer: boolean;
   public
-    constructor Create(ABuffer: pointer; ABufferSize: integer;
-      AFreeBuffer: boolean);
+    constructor Create(ABuffer: pointer; ABufferOffset, 
+      ABufferSize: integer; AFreeBuffer: boolean);
     destructor Destroy; override;
   end;
 
@@ -219,7 +219,6 @@ type
 
     procedure HandleReceive;
     procedure ParseBuffer;
-    procedure PrepareOutput(AOutputItem: TBufferOutput);
     procedure StartResponse(AOutputItem: TBufferOutput);
     procedure WriteBlock;
 
@@ -259,51 +258,6 @@ const
   RequestBufferSize = 1024;
   DataBufferSize = 64*1024;
 
-function TryHTTPDateStrToDateTime(ADateStr: pchar; var ADest: TDateTime): boolean;
-var
-  lYear, lMonth, lDay: word;
-  lTime: array[0..2] of word;
-  I, lCode: integer;
-begin
-  if StrLen(ADateStr) < Length(HTTPDateFormat)+4 then exit(false);
-  { skip redundant short day string }
-  Inc(ADateStr, 5);
-  { day }
-  if ADateStr[2] = ' ' then
-    ADateStr[2] := #0
-  else 
-    exit(false);
-  Val(ADateStr, lDay, lCode);
-  if lCode <> 0 then exit(false);
-  Inc(ADateStr, 3);
-  { month }
-  lMonth := 1;
-  repeat
-    if CompareMem(ADateStr, @ShortMonthNames[lMonth][1], 3) then break;
-    inc(lMonth);
-    if lMonth = 13 then exit(false);
-  until false;
-  Inc(ADateStr, 4);
-  { year }
-  if ADateStr[4] = ' ' then
-    ADateStr[4] := #0
-  else
-    exit(false);
-  Val(ADateStr, lYear, lCode);
-  if lCode <> 0 then exit(false);
-  Inc(ADateStr, 5);
-  { hour, minute, second }
-  for I := 0 to 2 do
-  begin
-    ADateStr[2] := #0;
-    Val(ADateStr, lTime[I], lCode);
-    Inc(ADateStr, 3);
-    if lCode <> 0 then exit(false);
-  end;
-  ADest := EncodeDate(lYear, lMonth, lDay) + EncodeTime(lTime[0], lTime[1], lTime[2], 0);
-  Result := true;
-end;
-
 constructor TOutputItem.Create;
 begin
   inherited;
@@ -341,7 +295,9 @@ constructor TBufferOutput.Create;
 begin
   inherited;
   GetMem(FBuffer, DataBufferSize);
-  FWriteBlock := @WriteData;
+  FWriteBlock := @WritePlain;
+  { prepare for "worst case" data needed }
+  PrepareChunk;
 end;
 
 destructor TBufferOutput.Destroy;
@@ -359,6 +315,7 @@ begin
 end;
 
 procedure TBufferOutput.PrepareBuffer;
+  { also for "plain" encoding }
 begin
   FBufferPos := 0;
   FBufferOffset := 0;
@@ -429,10 +386,10 @@ begin
     FOutputPending := FEof;
     if FEof or (FBufferPos = FBufferSize) then
     begin
-      if FBufferPos - FBufferOffset > 0 then
+      if FBufferPos > FBufferOffset then
       begin
-        FSocket.AddToOutput(TMemoryOutput.Create(FBuffer+FBufferOffset, 
-          FBufferPos-FBufferOffset, true));
+        FSocket.AddToOutput(TMemoryOutput.Create(FBuffer, FBufferOffset,
+          FBufferPos, true));
         Inc(FSocket.RequestInfo.ContentLength, FBufferPos-FBufferOffset);
       end;
       if not FEof then
@@ -452,17 +409,42 @@ begin
     Result := inherited WriteData;
 end;
 
+function TBufferOutput.WritePlain: boolean;
+begin
+  if not FOutputPending then
+  begin
+    FEof := WriteData;
+    if FBufferPos > FBufferOffset then
+    begin
+      FOutputPending := true;
+      FBufferSize := FBufferPos;
+      FBufferPos := FBufferOffset;
+    end else begin
+      FBufferSize := 0;
+      FBufferPos := 0;
+    end;
+  end;
+  Result := inherited WriteData;
+  if Result then
+  begin
+    Result := FEof;
+    if not Result then
+      PrepareBuffer;
+  end;
+end;
+
 function TBufferOutput.WriteBlock: boolean;
 begin
   Result := FWriteBlock();
 end;
 
-constructor TMemoryOutput.Create(ABuffer: pointer; ABufferSize: integer;
-      AFreeBuffer: boolean);
+constructor TMemoryOutput.Create(ABuffer: pointer; ABufferOffset, 
+  ABufferSize: integer; AFreeBuffer: boolean);
 begin
   inherited Create;
 
   FBuffer := ABuffer;
+  FBufferPos := ABufferOffset;
   FBufferSize := ABufferSize;
   FFreeBuffer := AFreeBuffer;
   FOutputPending := true;
@@ -483,7 +465,7 @@ begin
 
   FRequestInfo.RequestType := hrUnknown;
   FLogMessage := InitStringBuffer(256);
-  FBuffer := GetMem(RequestBufferSize)+1;
+  FBuffer := GetMem(RequestBufferSize);
   FBufferSize := RequestBufferSize;
   FBufferPos := FBuffer;
   FBufferEnd := FBufferPos;
@@ -493,8 +475,19 @@ begin
 end;
 
 destructor TLHTTPSocket.Destroy;
+var
+  lOutput: TOutputItem;
 begin
+  while FCurrentOutput <> nil do
+  begin
+    lOutput := FCurrentOutput;
+    FCurrentOutput := FCurrentOutput.FNext;
+    lOutput.Free;
+  end;
+  
   inherited;
+  FreeMem(FBuffer);
+  FreeMem(FLogMessage.Memory);
 end;
 
 procedure TLHTTPSocket.ResetDefaults;
@@ -556,7 +549,7 @@ begin
   end;
 
   FPendingData := false;
-  lRead := Get(FBufferEnd^, FBufferSize-PtrUInt(FBufferEnd-FBuffer));
+  lRead := Get(FBufferEnd^, FBufferSize-PtrUInt(FBufferEnd-FBuffer)-1);
   if lRead = 0 then exit;
   Inc(FBufferEnd, lRead);
   FBufferEnd^ := #0;
@@ -583,11 +576,11 @@ begin
   if FRequestPos <> nil then
   begin
     lBytesLeft := FBufferEnd-FRequestPos;
+    FBufferEnd := FBuffer+lBytesLeft;
+    FBufferPos := FBuffer;
     if lBytesLeft > 0 then
     begin
       Move(FRequestPos^, FBuffer^, lBytesLeft);
-      FBufferEnd := FBuffer+lBytesLeft;
-      FBufferPos := FBuffer;
       { restart parsing of request }
       FlushRequest;
     end;
@@ -605,7 +598,7 @@ begin
   if FRequestBuffer = nil then
   begin
     FRequestBuffer := FBuffer;
-    FBuffer := GetMem(DataBufferSize)+1;
+    FBuffer := GetMem(DataBufferSize);
     FBufferSize := DataBufferSize;
     FRequestPos := nil;
   end;
@@ -988,25 +981,6 @@ begin
   end;
 end;
 
-procedure TLHTTPSocket.PrepareOutput(AOutputItem: TBufferOutput);
-begin
-  if (FRequestInfo.ContentLength = 0) or (FRequestInfo.TransferEncoding = teChunked) then
-  begin
-    if FRequestInfo.Version >= 11 then
-    begin
-      { we can use chunked encoding }
-      FRequestInfo.TransferEncoding := teChunked;
-      AOutputItem.FWriteBlock := @AOutputItem.WriteChunk;
-      AOutputItem.PrepareChunk;
-    end else begin
-      { we need to buffer the response to find its length }
-      FRequestInfo.TransferEncoding := teIdentity;
-      AOutputItem.FWriteBlock := @AOutputItem.WriteBuffer;
-      AOutputItem.PrepareBuffer;
-    end;
-  end;
-end;
-
 procedure TLHTTPSocket.StartResponse(AOutputItem: TBufferOutput);
 var
   lDateTime: TDateTime;
@@ -1019,7 +993,7 @@ begin
     begin
       if TryHTTPDateStrToDateTime(FRequestInfo.Parameters[hpIfModifiedSince], lDateTime) then
       begin
-        if lDateTime > LocalTimeToGMT(FRequestInfo.DateTime) then
+        if lDateTime > FRequestInfo.DateTime then
           FRequestInfo.Status := hsBadRequest
         else
         if FRequestInfo.LastModified <= lDateTime then
@@ -1039,10 +1013,24 @@ begin
 
   if FRequestInfo.Status = hsOK then
   begin
-    if AOutputItem.FWriteBlock = @AOutputItem.WriteBuffer then
+    if FRequestInfo.ContentLength = 0 then
     begin
-      { need to accumulate data first }
-      exit;
+      if FRequestInfo.Version >= 11 then
+      begin
+        { we can use chunked encoding }
+        FRequestInfo.TransferEncoding := teChunked;
+        AOutputItem.FWriteBlock := @AOutputItem.WriteChunk;
+      end else begin
+        { we need to buffer the response to find its length }
+        FRequestInfo.TransferEncoding := teIdentity;
+        AOutputItem.FWriteBlock := @AOutputItem.WriteBuffer;
+        { need to accumulate data before starting header output }
+        AddToOutput(AOutputItem);
+        exit;
+      end;
+    end else begin
+      FRequestInfo.TransferEncoding := teIdentity;
+      AOutputItem.FWriteBlock := @AOutputItem.WritePlain;
     end;
     WriteHeaders(nil, AOutputItem);
   end else begin
@@ -1109,7 +1097,8 @@ begin
   FRequestInfo.ContentType := 'text/html';
   FRequestInfo.Status := AStatus;
   FRequestInfo.ContentLength := Length(lMessage);
-  WriteHeaders(nil, TMemoryOutput.Create(PChar(lMessage), Length(lMessage), false));
+  FRequestInfo.TransferEncoding := teIdentity;
+  WriteHeaders(nil, TMemoryOutput.Create(PChar(lMessage), 0, Length(lMessage), false));
 end;
 
 procedure TLHTTPSocket.WriteHeaders(AHeaderResponse, ADataResponse: TOutputItem);
@@ -1163,7 +1152,7 @@ begin
     AHeaderResponse.FBuffer := lMessage.Memory;
     AHeaderResponse.FBufferSize := lMessage.Pos-lMessage.Memory;
   end else
-    AddToOutput(TMemoryOutput.Create(lMessage.Memory, 
+    AddToOutput(TMemoryOutput.Create(lMessage.Memory, 0,
       lMessage.Pos-lMessage.Memory, true));
 
   if ADataResponse <> nil then

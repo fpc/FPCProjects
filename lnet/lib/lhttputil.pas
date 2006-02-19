@@ -30,11 +30,15 @@ interface
 uses
   sysutils, unixutil, strutils;
 
+const
+  HTTPDateFormat: string = 'ddd, dd mmm yyyy hh:nn:ss';
+  
 {$ifdef MSWINDOWS}
 function TZSeconds: integer;
 {$endif}
 function GMTToLocalTime(ADateTime: TDateTime): TDateTime;
 function LocalTimeToGMT(ADateTime: TDateTime): TDateTime;
+function TryHTTPDateStrToDateTime(ADateStr: pchar; var ADest: TDateTime): boolean;
 
 function SeparatePath(var InPath: string; out ExtraPath: string): boolean;
 
@@ -66,6 +70,51 @@ end;
 function LocalTimeToGMT(ADateTime: TDateTime): TDateTime;
 begin
   Result := ADateTime - (TZSeconds*1000/MSecsPerDay);
+end;
+
+function TryHTTPDateStrToDateTime(ADateStr: pchar; var ADest: TDateTime): boolean;
+var
+  lYear, lMonth, lDay: word;
+  lTime: array[0..2] of word;
+  I, lCode: integer;
+begin
+  if StrLen(ADateStr) < Length(HTTPDateFormat)+4 then exit(false);
+  { skip redundant short day string }
+  Inc(ADateStr, 5);
+  { day }
+  if ADateStr[2] = ' ' then
+    ADateStr[2] := #0
+  else 
+    exit(false);
+  Val(ADateStr, lDay, lCode);
+  if lCode <> 0 then exit(false);
+  Inc(ADateStr, 3);
+  { month }
+  lMonth := 1;
+  repeat
+    if CompareMem(ADateStr, @ShortMonthNames[lMonth][1], 3) then break;
+    inc(lMonth);
+    if lMonth = 13 then exit(false);
+  until false;
+  Inc(ADateStr, 4);
+  { year }
+  if ADateStr[4] = ' ' then
+    ADateStr[4] := #0
+  else
+    exit(false);
+  Val(ADateStr, lYear, lCode);
+  if lCode <> 0 then exit(false);
+  Inc(ADateStr, 5);
+  { hour, minute, second }
+  for I := 0 to 2 do
+  begin
+    ADateStr[2] := #0;
+    Val(ADateStr, lTime[I], lCode);
+    Inc(ADateStr, 3);
+    if lCode <> 0 then exit(false);
+  end;
+  ADest := EncodeDate(lYear, lMonth, lDay) + EncodeTime(lTime[0], lTime[1], lTime[2], 0);
+  Result := true;
 end;
 
 function SeparatePath(var InPath: string; out ExtraPath: string): boolean;

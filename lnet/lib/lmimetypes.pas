@@ -85,8 +85,17 @@ begin
   MimeList.Sorted := true;
 end;
 
+procedure FreeMimeList;
+var
+  I: integer;
+begin
+  for I := 0 to MimeList.Count - 1 do
+    MimeList.Objects[I].Free;
+  FreeAndNil(MimeList);
+end;
+
 initialization
   InitMimeList;
 finalization
-  FreeAndNil(MimeList);
+  FreeMimeList;
 end.
