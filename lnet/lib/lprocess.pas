@@ -28,7 +28,7 @@ unit lProcess;
 interface
 
 uses
-  classes, process, levents, pipes{, baseunix};
+  classes, process, levents, pipes;
 
 type
   TLInputPipeStream = class(TInputPipeStream)
@@ -103,12 +103,7 @@ begin
   FOutputEvent.Free;
   FStderrEvent.Free;
 end;
-{
-procedure SetNonBlock(AHandle: integer);
-begin
-  fpfcntl(AHandle, F_SETFL, fpfcntl(AHandle, F_GETFL) or O_NONBLOCK);
-end;
-}
+
 procedure TLProcess.Execute;
 begin
   inherited;
@@ -117,13 +112,10 @@ begin
       (Input <> nil) and (Output <> nil) and (Stderr <> nil) then
   begin
     FInputEvent.Handle := Input.Handle;
-//    SetNonBlock(FInputEvent.Handle);
     FInputEvent.IgnoreRead := true;
     FOutputEvent.Handle := Output.Handle;
-//    SetNonBlock(FOutputEvent.Handle);
     FOutputEvent.IgnoreWrite := true;
     FStderrEvent.Handle := Stderr.Handle;
-//    SetNonBlock(FStderrEvent.Handle);
     FStderrEvent.IgnoreWrite := true;
     FEventer.AddHandle(FInputEvent);
     FEventer.AddHandle(FOutputEvent);

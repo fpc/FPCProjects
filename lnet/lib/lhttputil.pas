@@ -28,7 +28,11 @@ unit lHTTPUtil;
 interface
 
 uses
-  sysutils, unixutil, strutils;
+  sysutils, 
+{$ifdef UNIX}
+  unixutil,
+{$endif}
+  strutils;
 
 const
   HTTPDateFormat: string = 'ddd, dd mmm yyyy hh:nn:ss';
