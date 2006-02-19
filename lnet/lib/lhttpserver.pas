@@ -1191,8 +1191,8 @@ end;
 
 constructor TLHTTPServer.Create(AOwner: TComponent);
 begin
-  inherited Create(AOwner, TLHTTPSocket);
-
+  inherited Create(AOwner);
+  SocketClass:=TLHTTPSocket;
   BlockTime := $7FFFFFFF;
   OnCanSend := @HandleSend;
   OnReceive := @HandleReceive;

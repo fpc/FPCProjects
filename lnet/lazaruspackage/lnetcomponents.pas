@@ -94,7 +94,8 @@ var
 
 constructor TLTCPComponent.Create(aOwner: TComponent);
 begin
-  inherited Create(aOwner, TLCLSocket);
+  inherited Create(aOwner);
+  SocketClass:=TLCLSocket;
   Eventer:=LCLEventer;
 end;
 
@@ -102,7 +103,8 @@ end;
 
 constructor TLUDPComponent.Create(aOwner: TComponent);
 begin
-  inherited Create(aOwner, TLCLSocket);
+  inherited Create(aOwner);
+  SocketClass:=TLCLSocket;
   Eventer:=LCLEventer;
 end;
 
@@ -110,7 +112,8 @@ end;
 
 constructor TLFTPClientComponent.Create(aOwner: TComponent);
 begin
-  inherited Create(aOwner, TLCLSocket);
+  inherited Create(aOwner);
+  SocketClass:=TLCLSocket;
   ControlConnection.Connection.Eventer:=LCLEventer;
   DataConnection.Eventer:=LCLEventer;
 end;

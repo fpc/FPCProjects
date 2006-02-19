@@ -85,6 +85,8 @@ type
     FOrders: TLTelnetControlChars;
     FConnected: Boolean;
     function Question(const Command: Char; const Value: Boolean): Char;
+    function GetSocketClass: TLSocketClass;
+    procedure SetSocketClass(Value: TLSocketClass);
     procedure StackFull;
     procedure DoubleIAC(var s: string);
     procedure TelnetParse(const msg: string);
@@ -92,7 +94,6 @@ type
     procedure SendCommand(const Command: Char; const Value: Boolean); virtual; abstract;
    public
     constructor Create(aOwner: TComponent); override;
-    constructor Create(aOwner: TComponent; SocketClass: TLSocketClass);
     destructor Destroy; override;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
@@ -111,6 +112,7 @@ type
     property OnConnect: TLProc read FOnConnect write FOnConnect;
     property OnError: TLErrorProc read FOnError write FOnError;
     property Connection: TLTCP read FConnection;
+    property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
   end;
 
   { TLTelnetClient }
@@ -127,7 +129,6 @@ type
     procedure SendCommand(const Command: Char; const Value: Boolean); override;
    public
     constructor Create(aOwner: TComponent); override;
-    constructor Create(aOwner: TComponent; SocketClass: TLSocketClass);
     function Connect(const anAddress: string; const aPort: Word): Boolean;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
@@ -148,14 +149,14 @@ var
 
 //*******************************TLTelnetClient********************************
 
-constructor TLTelnet.Create(aOwner: TComponent; SocketClass: TLSocketClass = nil);
+constructor TLTelnet.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   FOnReceive:=nil;
   FOnDisconnect:=nil;
   FOnError:=nil;
   FOnConnect:=nil;
-  FConnection:=TLTCP.Create(nil, SocketClass);
+  FConnection:=TLTCP.Create(aOwner);
   FOutput:=TMemoryStream.Create;
   FCommandCharIndex:=0;
   FStack:=TLControlStack.Create;
@@ -185,6 +186,16 @@ begin
     else
       Result:=TS_WONT;
   end;
+end;
+
+function TLTelnet.GetSocketClass: TLSocketClass;
+begin
+  Result:=FConnection.SocketClass;
+end;
+
+procedure TLTelnet.SetSocketClass(Value: TLSocketClass);
+begin
+  FConnection.SocketClass:=Value;
 end;
 
 procedure TLTelnet.StackFull;
@@ -224,11 +235,6 @@ begin
       if (FStack.Index > 0) or (msg[i] = TS_IAC) then
         FStack.Push(msg[i])
       else FOutput.WriteByte(Byte(msg[i]));
-end;
-
-constructor TLTelnet.Create(aOwner: TComponent);
-begin
-  Create(aOwner, nil);
 end;
 
 function TLTelnet.OptionIsSet(const Option: Char): Boolean;
@@ -271,12 +277,7 @@ end;
 
 constructor TLTelnetClient.Create(aOwner: TComponent);
 begin
-  Create(aOwner, nil);
-end;
-
-constructor TLTelnetClient.Create(aOwner: TComponent; SocketClass: TLSocketClass);
-begin
-  inherited Create(aOwner, SocketClass);
+  inherited Create(aOwner);
   FConnection.OnError:=@OnEr;
   FConnection.OnDisconnect:=@OnDs;
   FConnection.OnReceive:=@OnRe;

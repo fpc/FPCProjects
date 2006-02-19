@@ -66,7 +66,7 @@ type
     FPeerAddress: TInetSockAddr;
     FConnected: Boolean;
     FConnecting: Boolean;
-    FSocketType: Integer;
+    FSocketClass: Integer;
     FProtocol: Integer;
     FIgnoreShutdown: Boolean;
    protected
@@ -96,7 +96,7 @@ type
     property Connected: Boolean read FConnected;
     property Connecting: Boolean read FConnecting;
     property Protocol: Integer read FProtocol write FProtocol;
-    property SocketType: Integer read FSocketType write FSocketType;
+    property SocketType: Integer read FSocketClass write FSocketClass;
     property PeerAddress: string read GetPeerAddress;
     property LocalAddress: string read GetLocalAddress;
     property Handle: Integer read FHandle;
@@ -150,6 +150,7 @@ type
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer;
     procedure Disconnect;
     procedure CallAction;
+    property SocketClass: TLSocketClass;
   end;
   
   { Interface for all servers }
@@ -175,7 +176,7 @@ type
     FOnError: TLErrorProc;
     FOnDisconnect: TLProc;
     FOnCanSend: TLProc;
-    FSocketType: TLSocketClass;
+    FSocketClass: TLSocketClass;
     FRootSock: TLSocket;
     FIterator: TLSocket;
     FID: Integer; // internal number for server
@@ -198,7 +199,6 @@ type
     procedure FreeSocks; virtual;
    public
     constructor Create(aOwner: TComponent); override;
-    constructor Create(aOwner: TComponent; SocketClass: TLSocketClass);
     destructor Destroy; override;
     function Connect(const Address: string; const APort: Word): Boolean; virtual; abstract;
     function Listen(const APort: Word): Boolean; virtual; abstract;
@@ -220,6 +220,7 @@ type
     property Count: Integer read GetCount;
     property Connected: Boolean read GetConnected;
     property Iterator: TLSocket read FIterator;
+    property SocketClass: TLSocketClass read FSocketClass write FSocketClass;
     property Eventer: TLEventer read FEventer write SetEventer;
     property EventerClass: TLEventerClass read FEventerClass write FEventerClass;
   end;
@@ -228,6 +229,8 @@ type
 
   { TLBaseUdp }
 
+  { TLUdp }
+
   TLUdp = class(TLConnection)
    protected
     function GetConnected: Boolean; override;
@@ -235,10 +238,9 @@ type
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle); override;
     procedure Bail(const msg: string);
-    procedure SetCallbacks(aSocket: TLSocket);
+    procedure InitRoot;
    public
     constructor Create(aOwner: TComponent); override;
-    constructor Create(aOwner: TComponent; SocketClass: TLSocketClass);
     function Connect(const Address: string; const APort: Word): Boolean; override;
     function Listen(const APort: Word): Boolean; override;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
@@ -271,7 +273,6 @@ type
     procedure Bail(const msg: string; aSocket: TLSocket);
    public
     constructor Create(aOwner: TComponent); override;
-    constructor Create(aOwner: TComponent; SocketClass: TLSocketClass);
     function Connect(const Address: string; const APort: Word): Boolean; override;
     function Listen(const aPort: Word): Boolean; override;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
@@ -300,7 +301,7 @@ begin
   FConnected:=False;
   FConnecting:=False;
   FIgnoreShutdown:=False;
-  FSocketType:=SOCK_STREAM;
+  FSocketClass:=SOCK_STREAM;
   FProtocol:=IPPROTO_TCP;
 end;
 
@@ -313,7 +314,7 @@ end;
 procedure TLBaseSocket.Disconnect;
 begin
   if Connected or FConnecting then begin
-    if (FSocketType = SOCK_STREAM) and (not FIgnoreShutdown) and FConnected then
+    if (FSocketClass = SOCK_STREAM) and (not FIgnoreShutdown) and FConnected then
       if ShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
     if Closesocket(FHandle) <> 0 then
@@ -337,7 +338,7 @@ end;
 function TLBaseSocket.GetPeerAddress: string;
 begin
   Result:='';
-  if FSocketType = SOCK_STREAM then
+  if FSocketClass = SOCK_STREAM then
     Result:=HostAddrtoStr(FAddress.Addr)
   else
     Result:=HostAddrtoStr(FPeerAddress.Addr);
@@ -402,7 +403,7 @@ var
 begin
   Result:=0;
   if CanReceive then begin
-    if FSocketType = SOCK_STREAM then
+    if FSocketClass = SOCK_STREAM then
     {$ifdef MSWINDOWS}
       Result:=tomwinsock.Recv(FHandle, aData, aSize, LMSG)
     else
@@ -422,7 +423,7 @@ end;
 
 function TLBaseSocket.DoSend(const TheData; const TheSize: Integer): Integer;
 begin
-  if FSocketType = SOCK_STREAM then
+  if FSocketClass = SOCK_STREAM then
   {$ifdef MSWINDOWS}
     Result:=tomwinsock.send(FHandle, TheData, TheSize, LMSG)
   else
@@ -441,10 +442,10 @@ begin
   Result:=false;
   if not Connected then begin
     Done:=true;
-    FHandle:=fpsocket(AF_INET, FSocketType, FProtocol);
+    FHandle:=fpsocket(AF_INET, FSocketClass, FProtocol);
     if FHandle < 0 then bail('Socket error', LSocketError);
     SetNonBlock;
-    if FSocketType = SOCK_DGRAM then
+    if FSocketClass = SOCK_DGRAM then
       SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, True, SizeOf(True));
     FAddress.family:=AF_INET;
     FAddress.Port:=htons(APort);
@@ -469,7 +470,7 @@ begin
     SetupSocket(APort, LADDR_ANY);
     if fpBind(FHandle, @FAddress, SizeOf(FAddress)) < 0 then
       Bail('Error on bind', LSocketError) else Result:=true;
-    if (FSocketType = SOCK_STREAM) and Result then
+    if (FSocketClass = SOCK_STREAM) and Result then
       if fpListen(FHandle, 5) < 0 then
         Bail('Error on Listen', LSocketError) else Result:=true;
   end;
@@ -622,16 +623,8 @@ end;
 
 constructor TLConnection.Create(aOwner: TComponent);
 begin
-  Create(aOwner, nil);
-end;
-
-constructor TLConnection.Create(aOwner: TComponent; SocketClass: TLSocketClass);
-begin
   inherited Create(aOwner);
-  if Assigned(SocketClass) then
-    FSocketType:=SocketClass
-  else
-    FSocketType:=TLSocket;
+  FSocketClass:=TLSocket;
   FOnReceive:=nil;
   FOnError:=nil;
   FOnDisconnect:=nil;
@@ -749,30 +742,21 @@ end;
 
 constructor TLUdp.Create(aOwner: TComponent);
 begin
-  Create(aOwner, nil)
-end;
-
-constructor TLUdp.Create(aOwner: TComponent; SocketClass: TLSocketClass);
-begin
-  inherited Create(aOwner, SocketClass);
+  inherited Create(aOwner);
   FTimeVal.tv_usec:=0;
   FTimeVal.tv_sec:=0;
-  FRootSock:=FSocketType.Create;
-  FRootSock.SocketType:=SOCK_DGRAM;
-  FRootSock.Protocol:=PROTO_UDP;
-  FRootSock.Parent:=Self;
-  FIterator:=FRootSock;
-  SetCallbacks(FRootSock);
 end;
 
 procedure TLUdp.Disconnect;
 begin
-  FRootSock.Disconnect;
+  if Assigned(FRootSock) then
+    FRootSock.Disconnect;
 end;
 
 function TLUdp.Listen(const APort: Word): Boolean;
 begin
   Result:=False;
+  InitRoot;
   if FRootSock.Connected then
     Disconnect;
   if FRootSock.Listen(APort) then begin
@@ -789,6 +773,7 @@ var
   IP: string;
 begin
   Result:=False;
+  InitRoot;
   if FRootSock.Connected then Disconnect;
   IP:=GetHostIP(Address);
   if Length(IP) = 0 then
@@ -808,11 +793,18 @@ begin
     FOnError(msg, FRootSock);
 end;
 
-procedure TLUdp.SetCallbacks(aSocket: TLSocket);
+procedure TLUdp.InitRoot;
 begin
-  aSocket.OnRead:=@ReceiveAction;
-  aSocket.OnWrite:=@SendAction;
-  aSocket.OnError:=@ErrorAction;
+  if not Assigned(FRootSock) then begin
+    FRootSock:=FSocketClass.Create;
+    FRootSock.SocketType:=SOCK_DGRAM;
+    FRootSock.Protocol:=PROTO_UDP;
+    FRootSock.Parent:=Self;
+    FIterator:=FRootSock;
+    FRootSock.OnRead:=@ReceiveAction;
+    FRootSock.OnWrite:=@SendAction;
+    FRootSock.OnError:=@ErrorAction;
+  end;
 end;
 
 procedure TLUdp.ReceiveAction(aSocket: TLHandle);
@@ -856,52 +848,63 @@ end;
 
 function TLUdp.GetConnected: Boolean;
 begin
+  Result:=False;
+  if Assigned(FRootSock) then
   Result:=FRootSock.Connected;
 end;
 
 function TLUdp.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
-  Result:=FRootSock.Get(aData, aSize);
+  Result:=0;
+  if Assigned(FRootSock) then
+    Result:=FRootSock.Get(aData, aSize);
 end;
 
 function TLUdp.GetMessage(out msg: string; aSocket: TLSocket): Integer;
 begin
-  Result:=FRootSock.GetMessage(msg);
+  Result:=0;
+  if Assigned(FRootSock) then
+    Result:=FRootSock.GetMessage(msg);
 end;
 
 function TLUdp.SendMessage(const msg: string; aSocket: TLSocket = nil): Integer;
 begin
-  Result:=FRootSock.SendMessage(msg)
+  Result:=0;
+  if Assigned(FRootSock) then
+    Result:=FRootSock.SendMessage(msg)
 end;
 
 function TLUdp.SendMessage(const msg: string; const Address: string): Integer;
 begin
-  FRootSock.FPeerAddress.Addr:=StrToNetAddr(Address);
-  Result:=FRootSock.SendMessage(msg)
+  Result:=0;
+  if Assigned(FRootSock) then begin
+    FRootSock.FPeerAddress.Addr:=StrToNetAddr(Address);
+    Result:=FRootSock.SendMessage(msg)
+  end;
 end;
 
 function TLUdp.Send(const aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
-  Result:=FRootSock.Send(aData, aSize)
+  Result:=0;
+  if Assigned(FRootSock) then
+    Result:=FRootSock.Send(aData, aSize)
 end;
 
 function TLUdp.Send(const aData; const aSize: Integer; const Address: string
   ): Integer;
 begin
-  FRootSock.FPeerAddress.Addr:=StrToNetAddr(Address);
-  Result:=FRootSock.Send(aData, aSize);
+  Result:=0;
+  if Assigned(FRootSock) then begin
+    FRootSock.FPeerAddress.Addr:=StrToNetAddr(Address);
+    Result:=FRootSock.Send(aData, aSize);
+  end;
 end;
 
 //******************************TLTcp**********************************
 
 constructor TLTcp.Create(aOwner: TComponent);
 begin
-  Create(aOwner, nil)
-end;
-
-constructor TLTcp.Create(aOwner: TComponent; SocketClass: TLSocketClass);
-begin
-  inherited Create(aOwner, SocketClass);
+  inherited Create(aOwner);
   FIterator:=nil;
   FCount:=0;
   FRootSock:=nil;
@@ -914,7 +917,7 @@ begin
   Result:=False;
   if Assigned(FRootSock) then
     Disconnect;
-  FRootSock:=FSocketType.Create;
+  FRootSock:=FSocketClass.Create;
   FRootSock.Parent:=Self;
   Result:=FRootSock.Connect(Address, aPort);
   if Result then begin
@@ -931,7 +934,7 @@ function TLTcp.Listen(const aPort: Word): Boolean;
 begin
   Result:=false;
   if (aPort > 0) and not Assigned(FRootSock) then begin
-    FRootSock:=FSocketType.Create;
+    FRootSock:=FSocketClass.Create;
     FRootSock.Parent:=Self;
     FRootSock.FIgnoreShutdown:=True;
     if FRootSock.Listen(APort) then begin
@@ -1045,7 +1048,7 @@ procedure TLTcp.AcceptAction(aSocket: TLHandle);
 var
   Tmp: TLSocket;
 begin
-  Tmp:=FSocketType.Create;
+  Tmp:=FSocketClass.Create;
   Tmp.Parent:=Self;
   if Tmp.Accept(FRootSock.FHandle) then begin
     if Assigned(FRootSock.FNextSock) then begin

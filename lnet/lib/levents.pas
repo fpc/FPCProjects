@@ -28,7 +28,7 @@ type
 
   TLHandle = class
    protected
-    FHandle: Integer;
+    FHandle: THandle;
     FEventer: TLEventer;     // "queue holder"
     FOnRead: TLHandleEvent;
     FOnWrite: TLHandleEvent;

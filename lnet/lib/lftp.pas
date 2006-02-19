@@ -88,6 +88,8 @@ type
     function GetBinary: Boolean;
     function CanContinue(const aStatus: TLFTPStatus; const Arg1, Arg2: string): Boolean;
     function CleanInput(var s: string): Integer;
+    function GetSocketClass: TLSocketClass;
+    procedure SetSocketClass(Value: TLSocketClass);
     procedure SetStartPor(const Value: Word);
     procedure SetEcho(const Value: Boolean);
     procedure SetBinary(const Value: Boolean);
@@ -103,7 +105,6 @@ type
     procedure ExecuteFrontCommand;
    public
     constructor Create(aOwner: TComponent); override;
-    constructor Create(aOwner: TComponent; SocketClass: TLSocketClass);
     destructor Destroy; override;
    public
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
@@ -141,6 +142,7 @@ type
     property StartPort: Word read FStartPort write FStartPort;
     property Transfer: Boolean read GetTransfer;
     property UsePORT: Boolean read FUsePORT write FUsePORT;
+    property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
     property OnConnect: TLFTPClientCallback read FOnConnect write FOnConnect;
     property OnSent: TLFTPCLientProgressCallback read FOnSent write FOnSent;
     property OnReceive: TLFTPCLientCallback read FOnReceive write FOnReceive;
@@ -208,26 +210,21 @@ end;
 { TLFTPClient }
 
 constructor TLFTPClient.Create(aOwner: TComponent);
-begin
-  Create(aOwner, nil);
-end;
-
-constructor TLFTPClient.Create(aOwner: TComponent; SocketClass: TLSocketClass);
 var
   s: TLFTPStatus;
 begin
   inherited Create(aOwner);
-  FOnError:=nil;
   FStartPort:=DEFAULT_PORT;
   FSL:=TStringList.Create;
   FLastPort:=FStartPort;
   FUsePort:=False;
   FSending:=False;
-  FData:=TLTcp.Create(nil, SocketClass);
-  FControl:=TLFTPTelnetClient.Create(nil, SocketClass);
+  FData:=TLTcp.Create(nil);
+  FControl:=TLFTPTelnetClient.Create(nil);
   FControl.OnReceive:=@OnControlRe;
   FControl.OnConnect:=@OnCo;
   FControl.OnError:=@OnEr;
+  FOnError:=nil;
   FOnConnect:=nil;
   FOnSent:=nil;
   FOnReceive:=nil;
@@ -299,6 +296,17 @@ begin
   if i > 0 then
     s:=Copy(s, 1, i-1) + 'PASS';
   Result:=Length(s);
+end;
+
+function TLFTPClient.GetSocketClass: TLSocketClass;
+begin
+  Result:=FControl.SocketClass;
+end;
+
+procedure TLFTPClient.SetSocketClass(Value: TLSocketClass);
+begin
+  FControl.SocketClass:=Value;
+  FData.SocketClass:=Value;
 end;
 
 procedure TLFTPClient.SetStartPor(const Value: Word);

@@ -19,6 +19,7 @@
         </SyntaxOptions>
       </Parsing>
       <CodeGeneration>
+        <SmartLinkUnit Value="True"/>
         <Generate Value="Faster"/>
         <Optimizations>
           <OptimizationLevel Value="2"/>
@@ -26,8 +27,7 @@
       </CodeGeneration>
       <Linking>
         <Debugging>
-          <GenerateDebugInfo Value="True"/>
-          <UseHeaptrc Value="True"/>
+          <UseLineInfoUnit Value="False"/>
         </Debugging>
       </Linking>
       <Other>
