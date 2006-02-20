@@ -302,7 +302,7 @@ begin
   FConnecting:=False;
   FIgnoreShutdown:=False;
   FSocketClass:=SOCK_STREAM;
-  FProtocol:=IPPROTO_TCP;
+  FProtocol:=PROTO_TCP;
 end;
 
 destructor TLBaseSocket.Destroy;
