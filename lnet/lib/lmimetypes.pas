@@ -49,12 +49,14 @@ var
   lPos, lNextPos: integer;
   lLine, lName: string;
   lStrObj: TStringObject;
+  lBuffer: array[1..32*1024] of byte;
 begin
   MimeList := TStringList.Create;
   if FileExists(MimeFileName) then
   begin
     Assign(MimeFile, MimeFileName);
     Reset(MimeFile);
+    SetTextBuf(MimeFile, lBuffer);
     while not Eof(MimeFile) do
     begin
       ReadLn(MimeFile, lLine);
