@@ -123,7 +123,6 @@ end;
 
 function SeparatePath(var InPath: string; out ExtraPath: string): boolean;
 var
-  lInfo: TSearchRec;
   lFullPath: string;
   lPos: integer;
 begin
@@ -134,13 +133,11 @@ begin
     SetLength(InPath, Length(InPath)-1);
   Result := false;
   repeat
-    if FindFirst(InPath, faAnyFile, lInfo) = 0 then
+    if FileExists(InPath) then
     begin
-      Result := true;
       ExtraPath := Copy(lFullPath, Length(InPath)+1, Length(lFullPath)-Length(InPath));
+      exit(true);
     end;
-    FindClose(lInfo);
-    if Result then break;
     lPos := RPos('/', InPath);
     if lPos > 0 then
       SetLength(InPath, lPos-1)
