@@ -108,18 +108,26 @@ procedure TLProcess.Execute;
 begin
   inherited;
 
-  if (poUsePipes in Options) and (FEventer <> nil) and
-      (Input <> nil) and (Output <> nil) and (Stderr <> nil) then
+  if (poUsePipes in Options) and (FEventer <> nil) then
   begin
-    FInputEvent.Handle := Input.Handle;
-    FInputEvent.IgnoreRead := true;
-    FOutputEvent.Handle := Output.Handle;
-    FOutputEvent.IgnoreWrite := true;
-    FStderrEvent.Handle := Stderr.Handle;
-    FStderrEvent.IgnoreWrite := true;
-    FEventer.AddHandle(FInputEvent);
-    FEventer.AddHandle(FOutputEvent);
-    FEventer.AddHandle(FStderrEvent);
+    if Input <> nil then
+    begin
+      FInputEvent.Handle := Input.Handle;
+      FInputEvent.IgnoreRead := true;
+      FEventer.AddHandle(FInputEvent);
+    end;
+    if Output <> nil then
+    begin
+      FOutputEvent.Handle := Output.Handle;
+      FOutputEvent.IgnoreWrite := true;
+      FEventer.AddHandle(FOutputEvent);
+    end;
+    if Stderr <> nil then
+    begin
+      FStderrEvent.Handle := Stderr.Handle;
+      FStderrEvent.IgnoreWrite := true;
+      FEventer.AddHandle(FStderrEvent);
+    end;
   end;
 end;
 
