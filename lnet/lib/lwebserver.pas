@@ -189,6 +189,7 @@ end;
 function TFileOutput.Open(const AFileName: string): boolean;
 begin
   {$I-}
+  FileMode := fmInput;
   Assign(FFile, AFileName);
   Reset(FFile,1);
   {$I+}
@@ -231,6 +232,7 @@ constructor TCGIOutput.Create;
 begin
   inherited;
   FProcess := TLProcess.Create(nil);
+  FProcess.Options := FProcess.Options + [poStderrToOutput, poUsePipes];
   FProcess.OnNeedInput := @CGIProcNeedInput;
   FProcess.OnHasOutput := @CGIProcHasOutput;
 end;
@@ -333,7 +335,6 @@ begin
 
   FProcess.CommandLine := FExecPath;
   FProcess.CurrentDirectory := CGIRoot;
-  FProcess.Options := [poUsePipes];
   FProcess.Eventer := FSocket.Parent.Eventer;
   FProcess.Execute;
 
