@@ -200,7 +200,7 @@ type
     procedure AddToOutput(AOutputItem: TOutputItem);
     procedure LogMessage;
     procedure FlushRequest;
-    function  HandleDocument: TOutputItem; virtual;
+    function  HandleURI: TOutputItem; virtual;
     procedure ResetDefaults;
     procedure ProcessRequest;
     procedure PackRequestBuffer;
@@ -227,20 +227,20 @@ type
   
   { TLHTTPServer }
   
-  TDocumentHandler = class(TObject)
+  TURIHandler = class(TObject)
   private
-    FNext: TDocumentHandler;
+    FNext: TURIHandler;
   public
-    function HandleDocument(ASocket: TLHTTPSocket): TOutputItem; virtual; abstract;
+    function HandleURI(ASocket: TLHTTPSocket): TOutputItem; virtual; abstract;
   end;
 
   TLHTTPServer = class(TLTcp)
   protected
-    FHandlerList: TDocumentHandler;
+    FHandlerList: TURIHandler;
     FDelayFreeItems: TOutputItem;
   
     procedure FreeDelayFreeItems;
-    function HandleDocument(ASocket: TLHTTPSocket): TOutputItem;
+    function HandleURI(ASocket: TLHTTPSocket): TOutputItem;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -248,7 +248,7 @@ type
     procedure HandleReceive(aSocket: TLSocket);
     procedure HandleSend(aSocket: TLSocket);
 
-    procedure RegisterHandler(AHandler: TDocumentHandler);
+    procedure RegisterHandler(AHandler: TURIHandler);
   end;
 
 implementation
@@ -968,7 +968,7 @@ begin
       FRequestInputDone := true;
     end;
    
-    lOutputItem := HandleDocument;
+    lOutputItem := HandleURI;
     { if we have a valid outputitem, wait until it is ready 
       to produce its response }
     if lOutputItem = nil then
@@ -1039,9 +1039,9 @@ begin
   end;
 end;
 
-function TLHTTPSocket.HandleDocument: TOutputItem;
+function TLHTTPSocket.HandleURI: TOutputItem;
 begin
-  Result := TLHTTPServer(FParent).HandleDocument(Self);
+  Result := TLHTTPServer(FParent).HandleURI(Self);
 end;
 
 procedure TLHTTPSocket.ParseBuffer; inline;
@@ -1217,22 +1217,22 @@ begin
   FreeDelayFreeItems;
 end;
 
-function TLHTTPServer.HandleDocument(ASocket: TLHTTPSocket): TOutputItem;
+function TLHTTPServer.HandleURI(ASocket: TLHTTPSocket): TOutputItem;
 var
-  lHandler: TDocumentHandler;
+  lHandler: TURIHandler;
 begin
   Result := nil;
   lHandler := FHandlerList;
   while lHandler <> nil do
   begin
-    Result := lHandler.HandleDocument(ASocket);
+    Result := lHandler.HandleURI(ASocket);
     if ASocket.RequestInfo.Status <> hsOK then break;
     if Result <> nil then break;
     lHandler := lHandler.FNext;
   end;
 end;
 
-procedure TLHTTPServer.RegisterHandler(AHandler: TDocumentHandler);
+procedure TLHTTPServer.RegisterHandler(AHandler: TURIHandler);
 begin
   if AHandler = nil then exit;
   AHandler.FNext := FHandlerList;

@@ -47,21 +47,14 @@ type
     property Size: integer read GetSize;
   end;
 
-  TScriptOutput = class(TBufferOutput)
-  public
-    constructor Create;
-
-    procedure UpdateHeaders; virtual;
-  end;
-
-  TCGIOutput = class(TScriptOutput)
+  TCGIOutput = class(TBufferOutput)
   protected
     FProcess: TLProcess;
     FParsePos: pchar;
     FReadPos: integer;
     FParsingHeaders: boolean;
-    FExecPath: string;
     FExtraPath: string;
+    FScriptFileName: string;
     
     procedure AddHTTPParam(const AName: string; AParam: TLHTTPRequestParameter);
     procedure CGIProcNeedInput(AHandle: TLHandle);
@@ -73,25 +66,43 @@ type
 
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
     function  WriteData: boolean; override;
-    procedure UpdateHeaders; override;
+    procedure ExecuteProcess;
     
-    property ExecPath: string read FExecPath write FExecPath;
     property ExtraPath: string read FExtraPath write FExtraPath;
+    property Process: TLProcess read FProcess;
+    property ScriptFileName: string read FScriptFileName write FScriptFileName;
   end;
 
-  TCGIHandler = class(TDocumentHandler)
+  TCGIHandler = class(TURIHandler)
   public
-    function HandleDocument(ASocket: TLHTTPSocket): TOutputItem; override;
+    function HandleURI(ASocket: TLHTTPSocket): TOutputItem; override;
+  end;
+
+  TDocumentRequest = record
+    Socket: TLHTTPSocket;
+    Document: string;
+    ExtraPath: string;
+  end;
+
+  TDocumentHandler = class(TObject)
+  private
+    FNext: TDocumentHandler;
+  public
+    function HandleDocument(const ARequest: TDocumentRequest): TOutputItem; virtual; abstract;
+  end;
+
+  TFileHandler = class(TURIHandler)
+  protected
+    FDocHandlerList: TDocumentHandler;
+  public
+    function HandleFile(const ARequest: TDocumentRequest): TOutputItem;
+    function HandleURI(ASocket: TLHTTPSocket): TOutputItem; override;
+    procedure RegisterHandler(AHandler: TDocumentHandler);
   end;
 
   TPHPCGIHandler = class(TDocumentHandler)
   public
-    function HandleDocument(ASocket: TLHTTPSocket): TOutputItem; override;
-  end;
-
-  TFileHandler = class(TDocumentHandler)
-  public
-    function HandleDocument(ASocket: TLHTTPSocket): TOutputItem; override;
+    function HandleDocument(const ARequest: TDocumentRequest): TOutputItem; override;
   end;
 
   TLWebServer = class(TLHTTPServer)
@@ -108,66 +119,114 @@ implementation
 
 { Example handlers }
 
-function TPHPCGIHandler.HandleDocument(ASocket: TLHTTPSocket): TOutputItem;
-begin
-  Result := nil;
-end;
-
 const
   ServerSoftware = 'fpHTTPd/0.2';
   ScriptPathPrefix = 'cgi-bin/';
   DocumentRoot = '/var/www';
   CGIPath = '/usr/local/bin:/usr/bin:/bin';
   CGIRoot = '/usr/lib/cgi-bin/';
+  PHPCGIBinary = '/usr/lib/cgi-bin/php';
 
-function TCGIHandler.HandleDocument(ASocket: TLHTTPSocket): TOutputItem;
+function TCGIHandler.HandleURI(ASocket: TLHTTPSocket): TOutputItem;
 var
   lOutput: TCGIOutput;
+  lExecPath: string;
 begin
   if StrLComp(ASocket.RequestInfo.Argument, ScriptPathPrefix, 
       Length(ScriptPathPrefix)) = 0 then
   begin
     lOutput := TCGIOutput.Create;
     lOutput.Socket := ASocket;
-    lOutput.ExecPath := CGIRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
-    if SeparatePath(lOutput.ExecPath, lOutput.ExtraPath) then
-      lOutput.UpdateHeaders
-    else
+    lOutput.Process.CurrentDirectory := CGIRoot;
+    lExecPath := CGIRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
+    if SeparatePath(lExecPath, lOutput.ExtraPath) then
+    begin
+      lOutput.Process.CommandLine := lExecPath;
+      lOutput.ScriptFileName := lExecPath;
+      lOutput.ExecuteProcess;
+    end else
       ASocket.RequestInfo.Status := hsNotFound;
     Result := lOutput;
   end else
     Result := nil;
 end;
 
-function TFileHandler.HandleDocument(ASocket: TLHTTPSocket): TOutputItem;
+function TFileHandler.HandleFile(const ARequest: TDocumentRequest): TOutputItem;
 var
   lFileOutput: TFileOutput;
-  lInfo: TSearchRec;
+  lReqInfo: PRequestInfo;
   lIndex: integer;
+  lInfo: TSearchRec;
 begin
-  Result := nil;
-  if FindFirst(ASocket.RequestInfo.Argument, 0, lInfo) = 0 then
+  if Length(ARequest.ExtraPath) = 0 then
   begin
-    if not (ASocket.RequestInfo.RequestType in [hrHead, hrGet]) then
+    lReqInfo := @ARequest.Socket.RequestInfo;
+    if not (lReqInfo^.RequestType in [hrHead, hrGet]) then
     begin
-      ASocket.RequestInfo.Status := hsNotAllowed;
+      lReqInfo^.Status := hsNotAllowed;
     end else begin
       lFileOutput := TFileOutput.Create;
-      if lFileOutput.Open(ASocket.RequestInfo.Argument) then
+      FindFirst(ARequest.Document, 0, lInfo);
+      if lFileOutput.Open(ARequest.Document) then
       begin
-        ASocket.RequestInfo.Status := hsOK;
-        ASocket.RequestInfo.ContentLength := lInfo.Size;
-        ASocket.RequestInfo.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
-        lIndex := MimeList.IndexOf(ExtractFileExt(ASocket.RequestInfo.Argument));
+        lReqInfo^.Status := hsOK;
+        lReqInfo^.ContentLength := lInfo.Size;
+        lReqInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
+        lIndex := MimeList.IndexOf(ExtractFileExt(lReqInfo^.Argument));
         if lIndex >= 0 then
-          ASocket.RequestInfo.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
+          lReqInfo^.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
         Result := lFileOutput;
-        ASocket.StartResponse(lFileOutput);
+        ARequest.Socket.StartResponse(lFileOutput);
       end else
         lFileOutput.Free;
+      FindClose(lInfo);
     end;
   end;
-  FindClose(lInfo);
+end;
+
+function TFileHandler.HandleURI(ASocket: TLHTTPSocket): TOutputItem;
+var
+  lDocRequest: TDocumentRequest;
+  lHandler: TDocumentHandler;
+begin
+  Result := nil;
+  lDocRequest.Socket := ASocket;
+  lDocRequest.Document := ASocket.RequestInfo.Argument;
+  if not SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath) then exit;
+  
+  lHandler := FDocHandlerList;
+  while lHandler <> nil do
+  begin
+    Result := lHandler.HandleDocument(lDocRequest);
+    if Result <> nil then exit;
+    lHandler := lHandler.FNext;
+  end;
+
+  { no dynamic handler, see if it's a plain file }
+  Result := HandleFile(lDocRequest);
+end;
+
+procedure TFileHandler.RegisterHandler(AHandler: TDocumentHandler);
+begin
+  if AHandler = nil then exit;
+  AHandler.FNext := FDocHandlerList;
+  FDocHandlerList := AHandler;
+end;
+
+function TPHPCGIHandler.HandleDocument(const ARequest: TDocumentRequest): TOutputItem;
+var
+  lOutput: TCGIOutput;
+begin
+  if ExtractFileExt(ARequest.Document) = '.php' then
+  begin
+    lOutput := TCGIOutput.Create;
+    lOutput.Socket := ARequest.Socket;
+    lOutput.Process.CommandLine := PHPCGIBinary;
+    lOutput.ScriptFileName := ARequest.Document;
+    lOutput.ExecuteProcess;
+    Result := lOutput;
+  end else
+    Result := nil;
 end;
 
 { Output Items }
@@ -189,7 +248,7 @@ end;
 function TFileOutput.Open(const AFileName: string): boolean;
 begin
   {$I-}
-  FileMode := fmInput;
+  FileMode := 0;
   Assign(FFile, AFileName);
   Reset(FFile,1);
   {$I+}
@@ -217,15 +276,6 @@ begin
     exit(true);
   end;
   exit(false);
-end;
-
-constructor TScriptOutput.Create;
-begin
-  inherited;
-end;
-
-procedure TScriptOutput.UpdateHeaders;
-begin
 end;
 
 constructor TCGIOutput.Create;
@@ -279,7 +329,7 @@ begin
   FProcess.Environment.Add(AName+'='+lValue);
 end;
 
-procedure TCGIOutput.UpdateHeaders;
+procedure TCGIOutput.ExecuteProcess;
 begin
   FProcess.Environment.Clear;
 {
@@ -301,8 +351,8 @@ begin
     FProcess.Environment.Add('PATH_TRANSLATED='+DocumentRoot+FExtraPath);
   end;
 
-  FProcess.Environment.Add('SCRIPT_NAME=/'+Copy(FExecPath, Length(CGIRoot)-7, 1024));
-  FProcess.Environment.Add('SCRIPT_FILENAME='+FExecPath);
+  FProcess.Environment.Add('SCRIPT_NAME='+FSocket.RequestInfo.Argument);
+  FProcess.Environment.Add('SCRIPT_FILENAME='+FScriptFileName);
   
   case FSocket.RequestInfo.RequestType of
     hrGet:
@@ -323,6 +373,7 @@ begin
 //  FProcess.Environment.Add('REMOTE_USER='+...);
   
   FProcess.Environment.Add('DOCUMENT_ROOT='+DocumentRoot);
+  FProcess.Environment.Add('REDIRECT_STATUS=200');
   AddHTTPParam('HTTP_HOST', hpHost);
   AddHTTPParam('HTTP_COOKIE', hpCookie);
   AddHTTPParam('HTTP_CONNECTION', hpConnection);
@@ -331,10 +382,6 @@ begin
   AddHTTPParam('HTTP_ACCEPT', hpAccept);
   FProcess.Environment.Add('PATH='+CGIPath);
 
-  FProcess.Environment.Add('UNIQUE_ID=Q-eLbVoAAAQAAEkoEF8');
-
-  FProcess.CommandLine := FExecPath;
-  FProcess.CurrentDirectory := CGIRoot;
   FProcess.Eventer := FSocket.Parent.Eventer;
   FProcess.Execute;
 
@@ -455,7 +502,7 @@ begin
 
   RegisterHandler(FFileHandler);
   RegisterHandler(FCGIHandler);
-  RegisterHandler(FPHPCGIHandler);
+  FFileHandler.RegisterHandler(FPHPCGIHandler);
 end;
 
 destructor TLWebServer.Destroy;
