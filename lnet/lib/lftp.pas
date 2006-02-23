@@ -130,7 +130,7 @@ type
     procedure PresentWorkingDirectory;
     procedure Help(const Arg: string);
     procedure Disconnect;
-    procedure CallAction;
+    procedure CallAction; virtual;
    public
     property Connected: Boolean read GetConnected;
     property ControlConnection: TLTelnetClient read FControl;
@@ -278,7 +278,6 @@ function TLFTPClient.CanContinue(const aStatus: TLFTPStatus; const Arg1,
   Arg2: string): Boolean;
 begin
   Result:=FPipeLine or FStatus.Empty;
-
   if not Result then
     FCommandFront.Insert(MakeStatusRec(aStatus, Arg1, Arg2));
 end;

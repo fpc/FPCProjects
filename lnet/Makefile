@@ -9,6 +9,7 @@ TUDP=examples/console/ludp/ludp.pas
 TTELNET=examples/console/ltelnet/ltclient.pas
 TFTP=examples/console/lftp/lftpclient.pas
 THTTP=examples/console/lhttp/fphttpd.pas
+TSMTP=examples/console/lsmtp/lsmtpclient.pas
 
 all:
 	$(PP) $(ARGS) $(TUDP)
@@ -17,6 +18,7 @@ all:
 	$(PP) $(ARGS) $(TTELNET)
 	$(PP) $(ARGS) $(TFTP)
 	$(PP) $(ARGS) $(THTTP)
+	$(PP) $(ARGS) $(TSMTP)
 
 clean:
 	delp .
@@ -27,6 +29,7 @@ clean:
 	delp examples/console/ltelnet
 	delp examples/console/lftp
 	delp examples/console/lhttp
+	delp examples/console/lsmtp
 
 debug:
 	$(PP) $(BASEARGS) -g $(TLIB)
