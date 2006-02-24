@@ -55,10 +55,12 @@ type
     FParsingHeaders: boolean;
     FExtraPath: string;
     FScriptFileName: string;
+    FScriptName: string;
     
     procedure AddHTTPParam(const AName: string; AParam: TLHTTPRequestParameter);
     procedure CGIProcNeedInput(AHandle: TLHandle);
     procedure CGIProcHasOutput(AHandle: TLHandle);
+    procedure CGIProcHasStderr(AHandle: TLHandle);
     function  ParseHeaders: boolean;
   public
     constructor Create;
@@ -71,6 +73,7 @@ type
     property ExtraPath: string read FExtraPath write FExtraPath;
     property Process: TLProcess read FProcess;
     property ScriptFileName: string read FScriptFileName write FScriptFileName;
+    property ScriptName: string read FScriptName write FScriptName;
   end;
 
   TCGIHandler = class(TURIHandler)
@@ -113,6 +116,9 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
+    procedure LogAccess(const AMessage: string); override;
+    procedure LogError(const AMessage: string; ASocket: TLSocket);
   end;
 
 implementation
@@ -143,6 +149,8 @@ begin
     begin
       lOutput.Process.CommandLine := lExecPath;
       lOutput.ScriptFileName := lExecPath;
+      lOutput.ScriptName := Copy(lExecPath, Length(CGIRoot), 
+        Length(lExecPath)-Length(CGIRoot)+1);
       lOutput.ExecuteProcess;
     end else
       ASocket.RequestInfo.Status := hsNotFound;
@@ -222,7 +230,9 @@ begin
     lOutput := TCGIOutput.Create;
     lOutput.Socket := ARequest.Socket;
     lOutput.Process.CommandLine := PHPCGIBinary;
-    lOutput.ScriptFileName := ARequest.Document;
+    lOutput.ScriptName := '/'+ARequest.Document;
+    lOutput.ScriptFileName := DocumentRoot+lOutput.ScriptName;
+    lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.ExecuteProcess;
     Result := lOutput;
   end else
@@ -282,9 +292,10 @@ constructor TCGIOutput.Create;
 begin
   inherited;
   FProcess := TLProcess.Create(nil);
-  FProcess.Options := FProcess.Options + [poStderrToOutput, poUsePipes];
+  FProcess.Options := FProcess.Options + [poUsePipes];
   FProcess.OnNeedInput := @CGIProcNeedInput;
   FProcess.OnHasOutput := @CGIProcHasOutput;
+  FProcess.OnHasStderr := @CGIProcHasStderr;
 end;
 
 destructor TCGIOutput.Destroy;
@@ -329,6 +340,16 @@ begin
   FProcess.Environment.Add(AName+'='+lValue);
 end;
 
+procedure TCGIOutput.CGIProcHasStderr(AHandle: TLHandle);
+var
+  lBuf: array[0..1023] of char;
+  lRead: integer;
+begin
+  lRead := FProcess.Stderr.Read(lBuf, sizeof(lBuf)-1);
+  lBuf[lRead] := #0;
+  write(pchar(@lBuf[0]));
+end;
+
 procedure TCGIOutput.ExecuteProcess;
 begin
   FProcess.Environment.Clear;
@@ -348,10 +369,11 @@ begin
   if Length(FExtraPath) > 0 then
   begin
     FProcess.Environment.Add('PATH_INFO='+FExtraPath);
-    FProcess.Environment.Add('PATH_TRANSLATED='+DocumentRoot+FExtraPath);
+    { do not set PATH_TRANSLATED: bug in PHP }
+//    FProcess.Environment.Add('PATH_TRANSLATED='+DocumentRoot+FExtraPath);
   end;
 
-  FProcess.Environment.Add('SCRIPT_NAME='+FSocket.RequestInfo.Argument);
+  FProcess.Environment.Add('SCRIPT_NAME='+FScriptName);
   FProcess.Environment.Add('SCRIPT_FILENAME='+FScriptFileName);
   
   case FSocket.RequestInfo.RequestType of
@@ -361,8 +383,8 @@ begin
     end;
     hrPost:
     begin
-      FProcess.Environment.Add('CONTENT_TYPE='+FSocket.RequestInfo.Parameters[hpContentType]);
-      FProcess.Environment.Add('CONTENT_LENGTH='+FSocket.RequestInfo.Parameters[hpContentLength]);
+      AddHTTPParam('CONTENT_TYPE', hpContentType);
+      AddHTTPParam('CONTENT_LENGTH', hpContentLength);
     end;
   end;
   FProcess.Environment.Add('REMOTE_ADDR='+FSocket.PeerAddress);
@@ -402,6 +424,13 @@ var
   iEnd, lCode: integer;
   lStatus, lLength: dword;
   pLineEnd, pNextLine, pValue: pchar;
+
+  procedure AddExtraHeader;
+  begin
+    FSocket.RequestInfo.ExtraHeaders := FSocket.RequestInfo.ExtraHeaders +
+      FParsePos + ': ' + pValue + #13#10;
+  end;
+
 begin
   repeat
     iEnd := IndexByte(FParsePos^, @FBuffer[FReadPos]-FParsePos, 10);
@@ -432,7 +461,13 @@ begin
     end else 
     if StrIComp(FParsePos, 'Location') = 0 then
     begin
-      {$message warn TODO: CGI redirect location}
+      if StrLIComp(pValue, 'http://', 7) = 0 then
+      begin
+        FSocket.RequestInfo.Status := hsMovedPermanently;
+        { add location header as-is to response }
+        AddExtraHeader;
+      end else
+        writeln('WARNING: unimplemented ''Location'' response received from CGI script');
       //FSocket.RequestInfo.Status := hsRedirect;
     end else 
     if StrIComp(FParsePos, 'Status') = 0 then
@@ -454,12 +489,10 @@ begin
     if StrIComp(FParsePos, 'Last-Modified') = 0 then
     begin
       if not TryHTTPDateStrToDateTime(pValue, 
-        FSocket.RequestInfo.LastModified) then
-      begin
-        {$message warn TODO: log a warning message, unhandled datetime?};
-      end;
+          FSocket.RequestInfo.LastModified) then
+        writeln('WARNING: unable to parse last-modified string from CGI script: ', pValue);
     end else
-      {$message warn TODO: log a warning message, unhandled header?};
+      AddExtraHeader;
     FParsePos := pNextLine;
   until false;
 
@@ -499,6 +532,7 @@ begin
   FFileHandler := TFileHandler.Create;
   FCGIHandler := TCGIHandler.Create;
   FPHPCGIHandler := TPHPCGIHandler.Create;
+  FOnError := @LogError;
 
   RegisterHandler(FFileHandler);
   RegisterHandler(FCGIHandler);
@@ -512,6 +546,16 @@ begin
   FFileHandler.Free;
   FCGIHandler.Free;
   FPHPCGIHandler.Free;
+end;
+
+procedure TLWebServer.LogAccess(const AMessage: string);
+begin
+  writeln(AMessage);
+end;
+
+procedure TLWebServer.LogError(const AMessage: string; ASocket: TLSocket);
+begin
+  writeln(AMessage);
 end;
 
 end.
