@@ -404,7 +404,7 @@ begin
   AddHTTPParam('HTTP_ACCEPT', hpAccept);
   FProcess.Environment.Add('PATH='+CGIPath);
 
-  FProcess.Eventer := FSocket.Parent.Eventer;
+  FProcess.Eventer := FSocket.Server.Eventer;
   FProcess.Execute;
 
   FParsingHeaders := true;

@@ -185,6 +185,7 @@ type
 
   TLHTTPSocket = class(TLSocket)
   protected
+    FServer: TLHTTPServer;
     FBuffer: pchar;
     FBufferPos: pchar;
     FBufferEnd: pchar;
@@ -207,7 +208,6 @@ type
     procedure AddToOutput(AOutputItem: TOutputItem);
     procedure LogMessage;
     procedure FlushRequest;
-    function  GetServer: TLHTTPServer;
     function  HandleURI: TOutputItem; virtual;
     procedure ResetDefaults;
     procedure ProcessRequest;
@@ -231,7 +231,7 @@ type
     procedure StartResponse(AOutputItem: TBufferOutput);
     procedure WriteBlock;
 
-    property Server: TLHTTPServer read GetServer;
+    property Server: TLHTTPServer read FServer;
     property RequestInfo: TRequestInfo read FRequestInfo;
   end;
   
@@ -249,6 +249,7 @@ type
     FHandlerList: TURIHandler;
     FDelayFreeItems: TOutputItem;
   
+    function InitSocket(aSocket: TLSocket): TLSocket; override;
     procedure FreeDelayFreeItems;
     function HandleURI(ASocket: TLHTTPSocket): TOutputItem;
   public
@@ -513,11 +514,6 @@ begin
   inherited;
   FreeMem(FBuffer);
   FreeMem(FLogMessage.Memory);
-end;
-
-function TLHTTPSocket.GetServer: TLHTTPServer;
-begin
-  Result := TLHTTPServer(FParent);
 end;
 
 procedure TLHTTPSocket.ResetDefaults;
@@ -1226,6 +1222,12 @@ begin
   SocketClass := TLHTTPSocket;
   OnCanSend := @HandleSend;
   OnReceive := @HandleReceive;
+end;
+
+function TLHTTPServer.InitSocket(aSocket: TLSocket): TLSocket;
+begin
+  Result:=inherited InitSocket(aSocket);
+  TLHTTPSocket(aSocket).FServer:=Self;
 end;
 
 procedure TLHTTPServer.FreeDelayFreeItems;
