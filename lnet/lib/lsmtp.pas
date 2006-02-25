@@ -5,7 +5,7 @@ unit lsmtp;
 interface
 
 uses
-  Classes, lNet, lEvents, lFTP;
+  Classes, lNet, lEvents, lCommon;
   
 type
   TLSMTPClient = class;
