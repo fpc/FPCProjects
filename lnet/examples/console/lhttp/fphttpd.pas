@@ -26,7 +26,7 @@ program fpchttpd;
 {$mode objfpc}{$h+}
 
 uses
-  classes, lnet, baseunix, lwebserver;
+  classes, lnet, lwebserver;
 
 var
   Server: TLWebServer;
