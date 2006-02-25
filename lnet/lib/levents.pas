@@ -56,7 +56,7 @@ type
     property OnError: TLHandleEvent read FOnError write FOnError;
     property UserData: Pointer read FUserData write FUserData;
     property Dispose: Boolean read FDispose write FDispose;
-    property Handle: Integer read FHandle write FHandle;
+    property Handle: THandle read FHandle write FHandle;
     property Eventer: TLEventer read FEventer;
   end;
 

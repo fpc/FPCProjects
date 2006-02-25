@@ -99,7 +99,6 @@ type
     property SocketType: Integer read FSocketClass write FSocketClass;
     property PeerAddress: string read GetPeerAddress;
     property LocalAddress: string read GetLocalAddress;
-    property Handle: Integer read FHandle;
     property Port: Word read GetPort;
   end;
 
