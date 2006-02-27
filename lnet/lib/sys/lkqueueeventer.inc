@@ -81,6 +81,7 @@ begin
   Result:=n > 0;
   if Result then begin
     for i:=0 to n-1 do with TLHandle(FEvents[i].uData) do begin
+      FReferenced:=True;
       if (FEvents[i].Flags and EV_ERROR) > 0 then
         if Assigned(FOnError) then
           FOnError(TLHandle(FEvents[i].uData));
@@ -96,6 +97,7 @@ begin
       if Dispose then
         if FFreeList.IndexOf(TObject(FEvents[i].uData)) < 0 then
           FFreeList.Add(TObject(FEvents[i].uData));
+      FReferenced:=False;
     end;
     FFreeList.Clear;
   end;
