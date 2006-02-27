@@ -57,6 +57,7 @@ procedure TLCLSocket.HandleEvents(aData: PtrInt; aFlags: DWord);
                  No instance variable or method must be accessed after this call.
 }
 begin
+  FReferenced:=True;
   if (aFlags and G_IO_ERR = G_IO_ERR)
   or (aFlags and G_IO_NVAL = G_IO_NVAL) then
     if Assigned(FOnError) then
@@ -83,6 +84,7 @@ begin
     if Assigned(FOnRead) then
       FOnRead(Self);
   end;
+  FReferenced:=False;
   if FDispose then
     Free;
 end;

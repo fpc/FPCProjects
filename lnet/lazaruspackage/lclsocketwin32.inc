@@ -45,6 +45,7 @@ procedure TLCLSocket.HandleEvents(aData: PtrInt; aFlags: DWord);
 var
   Events: TWSANetworkEvents;
 begin
+  FReferenced:=True;
   if WSAEnumNetworkEvents(FHandle, FWinObject, @Events) = 0 then begin
     if Events.lNetworkEvents and FD_CONNECT = FD_CONNECT then
       if Assigned(FOnWrite) then
@@ -66,6 +67,7 @@ begin
       if Assigned(FOnWrite) then
         FOnWrite(Self);
         
+    FReferenced:=False;
     if FDispose then
       Free;
   end else Bail('EventEnum error', WSAGetLastError);
