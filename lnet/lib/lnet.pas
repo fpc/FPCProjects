@@ -37,7 +37,7 @@ interface
 uses
   Classes, lEvents,
 {$ifdef mswindows}
-  TomWinsock,
+  Winsock2,
 {$else}
   BaseUnix, NetDB,
 {$endif}
@@ -53,7 +53,7 @@ const
   { Protocols }
   PROTO_TCP =  6;
   PROTO_UDP = 17;
-  
+
 type
   TLSocket = class;
   
@@ -384,9 +384,9 @@ begin
   if CanReceive then begin
     if FSocketClass = SOCK_STREAM then
     {$ifdef MSWINDOWS}
-      Result:=tomwinsock.Recv(FHandle, aData, aSize, LMSG)
+      Result:=winsock2.Recv(FHandle, aData, aSize, LMSG)
     else
-      Result:=tomwinsock.Recvfrom(FHandle, aData, aSize, LMSG, TSockAddrIn(FPeerAddress), AddressLength);
+      Result:=winsock2.Recvfrom(FHandle, aData, aSize, LMSG, TSockAddrIn(FPeerAddress), AddressLength);
     {$else}
       Result:=sockets.Recv(FHandle, aData, aSize, LMSG)
     else
@@ -394,7 +394,7 @@ begin
     {$endif}
     if Result = 0 then
       Disconnect;
-    if Result < 0 then
+    if Result = INVALID_SOCKET then
       HandleReceiveError(Result);
   end;
   if not Connected then
@@ -405,9 +405,9 @@ function TLSocket.DoSend(const TheData; const TheSize: Integer): Integer;
 begin
   if FSocketClass = SOCK_STREAM then
   {$ifdef MSWINDOWS}
-    Result:=tomwinsock.send(FHandle, TheData, TheSize, LMSG)
+    Result:=winsock2.send(FHandle, TheData, TheSize, LMSG)
   else
-    Result:=tomwinsock.sendto(FHandle, TheData, TheSize, LMSG, TSockAddrIn(FPeerAddress), SizeOf(FPeerAddress));
+    Result:=winsock2.sendto(FHandle, TheData, TheSize, LMSG, TSockAddrIn(FPeerAddress), SizeOf(FPeerAddress));
   {$else}
     Result:=sockets.send(FHandle, TheData, TheSize, LMSG)
   else
@@ -423,7 +423,8 @@ begin
   if not Connected then begin
     Done:=true;
     FHandle:=fpsocket(AF_INET, FSocketClass, FProtocol);
-    if FHandle < 0 then bail('Socket error', LSocketError);
+    if FHandle = INVALID_SOCKET then
+      Bail('Socket error', LSocketError);
     SetNonBlock;
     if FSocketClass = SOCK_DGRAM then
       SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, True, SizeOf(True));
@@ -448,10 +449,12 @@ begin
   if not Connected then begin
     Result:=false;
     SetupSocket(APort, LADDR_ANY);
-    if fpBind(FHandle, @FAddress, SizeOf(FAddress)) < 0 then
-      Bail('Error on bind', LSocketError) else Result:=true;
+    if fpBind(FHandle, @FAddress, SizeOf(FAddress)) = INVALID_SOCKET then
+      Bail('Error on bind', LSocketError)
+    else
+      Result:=true;
     if (FSocketClass = SOCK_STREAM) and Result then
-      if fpListen(FHandle, 5) < 0 then
+      if fpListen(FHandle, 5) = INVALID_SOCKET then
         Bail('Error on Listen', LSocketError) else Result:=true;
   end;
 end;
@@ -463,7 +466,7 @@ begin
   Result:=false;
   if not Connected then begin
     FHandle:=fpAccept(sersock, @FAddress, @AddressLength);
-    if FHandle > -1 then begin
+    if FHandle <> INVALID_SOCKET then begin
       SetNonBlock;
       Result:=true;
       FConnected:=true;
@@ -510,20 +513,20 @@ end;
 
 procedure TLSocket.SetNonBlock;
 var
-  opt: Integer;
+  opt: DWord;
 begin
   {$ifdef MSWINDOWS}
    opt:=1;
-   if ioctlsocket(FHandle, FIONBIO, opt) < 0 then
+   if ioctlsocket(FHandle, FIONBIO, opt) = INVALID_SOCKET then
      bail('Error on SetFD', wsaGetLasterror);
   {$else}
    opt:=fpfcntl(FHandle, F_GETFL);
-   if opt < 0 then begin
+   if opt = INVALID_SOCKET then begin
      bail('ERROR on GetFD', LSocketError);
      Exit;
    end;
 
-   if fpfcntl(FHandle, F_SETFL, opt or O_NONBLOCK) < 0 then
+   if fpfcntl(FHandle, F_SETFL, opt or O_NONBLOCK) = INVALID_SOCKET then
      bail('Error on SetFL', LSocketError);
   {$endif}
 end;
@@ -953,7 +956,7 @@ begin
     {$ifndef mswindows}
     if fpgetpeername(FHandle, @a, @l) <> 0 then
     {$else}
-    if TomWinSock.getpeername(FHandle, a, l) <> 0 then
+    if winsock2.getpeername(FHandle, a, l) <> 0 then
     {$endif}
       Self.Bail('Error on connect: connection refused', TLSocket(aSocket))
     else begin

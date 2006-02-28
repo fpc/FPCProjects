@@ -1,5 +1,5 @@
 {$ifdef mswindows}
-  TomWinsock,
+  Winsock2,
 {$else}
   BaseUnix, NetDB,
 {$endif}
