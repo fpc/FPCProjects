@@ -7,8 +7,6 @@ uses
   
 type
 
-  { TProgresser }
-
   { TClient }
 
   TClient = class
@@ -79,6 +77,7 @@ constructor TClient.Create;
 begin
   FConnected:=False;
   FCon:=TLFTPClient.Create(nil);
+  FCon.Timeout:=50;
   FCon.OnConnect:=@OnConnect;
   FCon.OnReceive:=@OnReceive;
   FCon.OnControl:=@OnControl;
@@ -130,7 +129,6 @@ begin
     Writeln('Connecting... press any key to cancel');
     repeat
       FCon.CallAction;
-      Sleep(1);
       if KeyPressed then Exit;
     until FConnected;
   end else Halt;
@@ -177,7 +175,6 @@ begin
         'f', 'F': FCon.FeatureList;
       end;
       FCon.CallAction;
-      Sleep(1);
     end;
   end else FCon.GetMessage(s);
   if Length(s) > 0 then
@@ -202,6 +199,7 @@ begin
   Write(s, ': ');
   while True do begin
     FCon.CallAction;
+    Sleep(50);
     if KeyPressed then begin
       c:=ReadKey;
       case c of
@@ -217,15 +215,13 @@ begin
                        GotoXY(WhereX-1, WhereY);
                      end;
                    end;
-      else
-        begin
+        else begin
           Result:=Result + c;
           if not NoEcho then
             Write(c);
         end;
       end;
     end;
-    Sleep(1);
   end;
 end;
 

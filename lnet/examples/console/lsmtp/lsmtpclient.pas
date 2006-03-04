@@ -44,7 +44,6 @@ end;
 procedure TDoer.OnError(const msg: string; Sender: TLSocket);
 begin
   Writeln(msg);
-  Quit:=True;
 end;
 
 procedure PrintUsage(const Msg: string);
@@ -88,8 +87,7 @@ const
   MAX_RECIPIENTS = 10;
 var
   Doer: TDoer;
-  Subject, Sender, Message: string;
-  Recipients: array of string;
+  Subject, Sender, Recipients, Message: string;
   i: Integer;
 begin
   Quit:=False;
@@ -121,17 +119,11 @@ begin
         Quit:=True
       else begin
         Sender:=GetAnswer('From');
-        for i:=0 to MAX_Recipients-1 do begin
-          Recipients[i]:=GetAnswer('Recepient [' + IntToStr(i+1) + ']');
-          if Length(Recipients[i]) = 0 then begin
-            SetLength(Recipients, i);
-            Break;
-          end;
-        end;
+        Recipients:=GetAnswer('Recipients');
         Subject:=GetAnswer('Subject');
         Message:=GetAnswer('Data');
         
-        SMTP.SendMail(Sender, Subject, Message, Recipients);
+        SMTP.SendMail(Sender, Recipients, Subject, Message);
       end;
     Sleep(1);
   end;

@@ -68,7 +68,6 @@ type
     FStatus: TLFTPStatusFront;
     FCommandFront: TLFTPStatusFront;
     FStoreFile: TFileStream;
-    FTimeout: DWord;
     FExpectedBinary: Boolean;
     FPipeLine: Boolean;
     FStatusFlags: array[TLFTPStatus] of Boolean;
@@ -89,6 +88,8 @@ type
     function CanContinue(const aStatus: TLFTPStatus; const Arg1, Arg2: string): Boolean;
     function CleanInput(var s: string): Integer;
     function GetSocketClass: TLSocketClass;
+    function GetTimeout: DWord;
+    procedure SetTimeout(const Value: DWord);
     procedure SetSocketClass(Value: TLSocketClass);
     procedure SetStartPor(const Value: Word);
     procedure SetEcho(const Value: Boolean);
@@ -135,9 +136,9 @@ type
     property Connected: Boolean read GetConnected;
     property ControlConnection: TLTelnetClient read FControl;
     property DataConnection: TLTCP read FData;
+    property Timeout: DWord read GetTimeout write SetTimeout;
     property Binary: Boolean read GetBinary write SetBinary;
     property PipeLine: Boolean read FPipeLine write FPipeLine;
-    property Timeout: DWord read FTimeout write FTimeout;
     property Echo: Boolean read GetEcho write SetEcho;
     property StartPort: Word read FStartPort write FStartPort;
     property Transfer: Boolean read GetTransfer;
@@ -157,7 +158,6 @@ uses
 
 const
   FLE             = #13#10;
-  DEFAULT_TIMEOUT = 10000;
   DEFAULT_PORT    = 1024;
 
   EMPTY_REC: TLFTPStatusRec = (Status: fsNone; Args: ('', ''));
@@ -238,7 +238,6 @@ begin
   FData.OnDisconnect:=@OnDs;
   FData.OnCanSend:=@OnSe;
   FPipeLine:=False;
-  FTimeout:=DEFAULT_TIMEOUT;
 end;
 
 destructor TLFTPClient.Destroy;
@@ -300,6 +299,17 @@ end;
 function TLFTPClient.GetSocketClass: TLSocketClass;
 begin
   Result:=FControl.SocketClass;
+end;
+
+function TLFTPClient.GetTimeout: DWord;
+begin
+  Result:=FControl.Timeout;
+end;
+
+procedure TLFTPClient.SetTimeout(const Value: DWord);
+begin
+  FControl.Timeout:=Value;
+  FData.Timeout:=Value;
 end;
 
 procedure TLFTPClient.SetSocketClass(Value: TLSocketClass);
@@ -623,6 +633,7 @@ begin
         FOnSent(Self, 0);
       FreeAndNil(FStoreFile);
       FSending:=False;
+      {$hint this one calls freeinstance which doesn't pass}
       FData.Disconnect;
     end;
   until (n = 0) or (Sent = 0);

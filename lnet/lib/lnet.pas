@@ -21,12 +21,6 @@
   me at ales@chello.sk
 }
 
-{ TODO LIST
-
-  1. Optimize "max" in CallSelect in TLBaseTcp
-
-}
-
 unit lNet;
 
 {$mode objfpc}{$H+}
@@ -101,7 +95,6 @@ type
     function Connect(const Address: string; const APort: Word): Boolean;
     function Send(const aData; const aSize: Integer): Integer; virtual;
     function SendMessage(const msg: string): Integer;
-    procedure HandleReceiveError(var aError: Integer); virtual;
     function Get(var aData; const aSize: Integer): Integer; virtual;
     function GetMessage(out msg: string): Integer;
     procedure Disconnect; virtual;
@@ -163,17 +156,16 @@ type
     FID: Integer; // internal number for server
     FEventer: TLEventer;
     FEventerClass: TLEventerClass;
+    FTimeout: DWord;
     function InitSocket(aSocket: TLSocket): TLSocket; virtual;
     function GetConnected: Boolean; virtual; abstract;
     function GetCount: Integer; virtual;
     function GetItem(const i: Integer): TLSocket;
-    function GetBlockTime: DWord;
     procedure ConnectAction(aSocket: TLHandle); virtual;
     procedure AcceptAction(aSocket: TLHandle); virtual;
     procedure ReceiveAction(aSocket: TLHandle); virtual;
     procedure SendAction(aSocket: TLHandle); virtual;
     procedure ErrorAction(aSocket: TLHandle); virtual;
-    procedure SetBlockTime(const Value: DWord);
     procedure SetEventer(Value: TLEventer);
     procedure CanSend(aSocket: TLSocket); virtual;
     procedure EventError(const msg: string; Sender: TLEventer);
@@ -197,21 +189,17 @@ type
     property OnReceive: TLProc read FOnReceive write FOnReceive;
     property OnDisconnect: TLProc read FOnDisconnect write FOnDisconnect;
     property OnCanSend: TLProc read FOnCanSend write FOnCanSend;
-    property BlockTime: DWord read GetBlockTime write SetBlockTime;
     property Socks[index: Integer]: TLSocket read GetItem; default;
     property Count: Integer read GetCount;
     property Connected: Boolean read GetConnected;
     property Iterator: TLSocket read FIterator;
+    property Timeout: DWord read FTimeout write FTimeout;
     property SocketClass: TLSocketClass read FSocketClass write FSocketClass;
     property Eventer: TLEventer read FEventer write SetEventer;
     property EventerClass: TLEventerClass read FEventerClass write FEventerClass;
   end;
   
   { UDP Client/Server class. Provided to enable usage of UDP sockets }
-
-  { TLBaseUdp }
-
-  { TLUdp }
 
   TLUdp = class(TLConnection)
    protected
@@ -238,10 +226,6 @@ type
   end;
   
   { TCP Client/Server class. Provided to enable usage of TCP sockets }
-
-  { TLBaseTcp }
-
-  { TLTcp }
 
   TLTcp = class(TLConnection)
    protected
@@ -303,19 +287,19 @@ end;
 
 procedure TLSocket.Disconnect;
 begin
+  FDispose:=True;
+  FCanSend:=True;
+  FCanReceive:=True;
+  FIgnoreWrite:=True;
   if Connected or FConnecting then begin
+    FConnected:=false;
+    FConnecting:=False;
     if (FSocketClass = SOCK_STREAM) and (not FIgnoreShutdown) and FConnected then
       if ShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
     if Closesocket(FHandle) <> 0 then
       LogError('Closesocket error', LSocketError);
-    FConnected:=false;
-    FConnecting:=False;
   end;
-  FDispose:=True;
-  FCanSend:=True;
-  FCanReceive:=True;
-  FIgnoreWrite:=True;
 end;
 
 procedure TLSocket.LogError(const msg: string; const ernum: Integer);
@@ -367,15 +351,6 @@ begin
   Result:=Length(msg);
 end;
 
-procedure TLSocket.HandleReceiveError(var aError: Integer);
-begin
-  if LSocketError = BLOCK_ERROR then begin
-    FCanReceive := False;
-    FIgnoreRead := False;
-    aError := 0;
-  end else Bail('Receive Error', LSocketError);
-end;
-
 function TLSocket.Get(var aData; const aSize: Integer): Integer;
 var
   AddressLength: Integer = SizeOf(FAddress);
@@ -395,7 +370,10 @@ begin
     if Result = 0 then
       Disconnect;
     if Result = INVALID_SOCKET then
-      HandleReceiveError(Result);
+      if LSocketError = BLOCK_ERROR then begin
+        FCanReceive := False;
+        FIgnoreRead := False;
+      end else Bail('Receive Error', LSocketError);
   end;
   if not Connected then
     Result:=0; // if it failed subsequently
@@ -536,6 +514,7 @@ end;
 constructor TLConnection.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
+  FTimeout:=0;
   FSocketClass:=TLSocket;
   FOnReceive:=nil;
   FOnError:=nil;
@@ -585,11 +564,6 @@ begin
     Result:=Tmp;
 end;
 
-function TLConnection.GetBlockTime: DWord;
-begin
-  Result:=(FTimeVal.tv_sec * 1000) + (FTimeVal.tv_usec div 1000);
-end;
-
 procedure TLConnection.ConnectAction(aSocket: TLHandle);
 begin
 end;
@@ -608,12 +582,6 @@ end;
 
 procedure TLConnection.ErrorAction(aSocket: TLHandle);
 begin
-end;
-
-procedure TLConnection.SetBlockTime(const Value: DWord);
-begin
-  FTimeVal.tv_sec:=Value div 1000;
-  FTimeVal.tv_usec:=(Value mod 1000) * 1000;
 end;
 
 procedure TLConnection.SetEventer(Value: TLEventer);
@@ -644,6 +612,7 @@ begin
   end;
   if Assigned(FRootSock) then
     FEventer.AddHandle(FRootSock);
+  FEventer.Timeout:=FTimeout;
 end;
 
 procedure TLConnection.FreeSocks;

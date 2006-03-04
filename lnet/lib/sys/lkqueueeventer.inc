@@ -99,7 +99,8 @@ begin
           FFreeList.Add(TObject(FEvents[i].uData));
       FReferenced:=False;
     end;
-    FFreeList.Clear;
+    if FFreeList.Count > 0 then
+      FFreeList.Clear;
   end;
 end;
 

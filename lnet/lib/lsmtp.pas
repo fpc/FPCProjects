@@ -59,7 +59,7 @@ type
     function Connect(const HostName: string; const Port: Word = 25): Boolean; virtual;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer;
-    procedure SendMail(const From, Subject, Msg: string; const Recipients: array of string);
+    procedure SendMail(const From, Recipients, Subject, Msg: string);
     procedure Helo(HostName: string = '');
     procedure Ehlo(HostName: string = '');
     procedure Mail(const From: string);
@@ -86,7 +86,7 @@ uses
 const
   EMPTY_REC: TLSMTPStatusRec = (Status: ssNone; Args: ('', ''));
   SLE                        = #13#10;
-
+  
 {$i lcontainers.inc}
 
 function MakeStatusRec(const aStatus: TLSMTPStatus; const Arg1, Arg2: string): TLSMTPStatusRec;
@@ -104,6 +104,7 @@ begin
   FSL:=TStringList.Create;
   FHostName:='';
   FMessage:='';
+  {$warning TODO: fix pipelining support when server does it}
   FPipeLine:=False;
   FConnection:=TLTcp.Create(nil);
   FConnection.OnReceive:=@OnRe;
@@ -282,16 +283,16 @@ begin
     Result:=CleanInput(msg);
 end;
 
-procedure TLSMTPClient.SendMail(const From, Subject, Msg: string;
-  const Recipients: array of string);
+procedure TLSMTPClient.SendMail(const From, Recipients, Subject, Msg: string);
 var
   i: Integer;
 begin
   if (Length(Recipients) > 0) and (Length(From) > 0) then begin
     Mail(From);
-    for i:=Low(Recipients) to High(Recipients) do
-      Rcpt(Recipients[i]);
-    Data('Subject: ' + Subject + SLE + Msg);
+    FSL.CommaText:=StringReplace(Recipients, ' ', ',', [rfReplaceAll]);
+    for i:=0 to FSL.Count-1 do
+      Rcpt(FSL[i]);
+    Data('Subject: ' + Subject + SLE + 'To: ' + FSL.CommaText + SLE + Msg);
     Rset;
   end;
 end;

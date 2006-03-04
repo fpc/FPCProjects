@@ -86,7 +86,9 @@ type
     FConnected: Boolean;
     function Question(const Command: Char; const Value: Boolean): Char;
     function GetSocketClass: TLSocketClass;
+    function GetTimeout: DWord;
     procedure SetSocketClass(Value: TLSocketClass);
+    procedure SetTimeout(const Value: DWord);
     procedure StackFull;
     procedure DoubleIAC(var s: string);
     procedure TelnetParse(const msg: string);
@@ -107,6 +109,7 @@ type
     procedure CallAction; virtual; abstract;
     property Output: TMemoryStream read FOutput;
     property Connected: Boolean read FConnected;
+    property Timeout: DWord read GetTimeout write SetTimeout;
     property OnReceive: TLProc read FOnReceive write FOnReceive;
     property OnDisconnect: TLProc read FOnDisconnect write FOnDisconnect;
     property OnConnect: TLProc read FOnConnect write FOnConnect;
@@ -193,9 +196,19 @@ begin
   Result:=FConnection.SocketClass;
 end;
 
+function TLTelnet.GetTimeout: DWord;
+begin
+  Result:=FConnection.Timeout;
+end;
+
 procedure TLTelnet.SetSocketClass(Value: TLSocketClass);
 begin
   FConnection.SocketClass:=Value;
+end;
+
+procedure TLTelnet.SetTimeout(const Value: DWord);
+begin
+  FConnection.Timeout:=Value;
 end;
 
 procedure TLTelnet.StackFull;
