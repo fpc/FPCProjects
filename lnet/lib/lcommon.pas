@@ -5,7 +5,7 @@ unit lCommon;
 interface
 
 uses
-  {$i osunits.inc}
+  {$i sys/osunits.inc}
 
 const
   {$IFDEF MSWINDOWS}

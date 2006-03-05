@@ -78,6 +78,7 @@ type
     FOnConnect: TLFTPClientCallback;
     FOnError: TLErrorProc;
     FUsePORT: Boolean;
+    FChunkSize: Word;
     FLastPort: Word;
     FStartPort: Word;
     FSL: TStringList; // for evaluation, I want to prevent constant create/free
@@ -137,6 +138,7 @@ type
     property ControlConnection: TLTelnetClient read FControl;
     property DataConnection: TLTCP read FData;
     property Timeout: DWord read GetTimeout write SetTimeout;
+    property ChunkSize: Word read FChunkSize write FChunkSize;
     property Binary: Boolean read GetBinary write SetBinary;
     property PipeLine: Boolean read FPipeLine write FPipeLine;
     property Echo: Boolean read GetEcho write SetEcho;
@@ -210,10 +212,13 @@ end;
 { TLFTPClient }
 
 constructor TLFTPClient.Create(aOwner: TComponent);
+const
+  DEFAULT_CHUNK = 8192;
 var
   s: TLFTPStatus;
 begin
   inherited Create(aOwner);
+  FChunkSize:=DEFAULT_CHUNK;
   FStartPort:=DEFAULT_PORT;
   FSL:=TStringList.Create;
   FLastPort:=FStartPort;
@@ -613,15 +618,13 @@ begin
 end;
 
 procedure TLFTPClient.SendChunk(const CallBack: Boolean);
-const
-  BUFFER_SIZE = 65535;
 var
-  Buf: array[0..BUFFER_SIZE-1] of Byte;
+  Buf: array[0..65535] of Byte;
   n: Integer;
   Sent: Integer;
 begin
   repeat
-    n:=FStoreFile.Read(Buf, BUFFER_SIZE);
+    n:=FStoreFile.Read(Buf, FChunkSize);
     if n > 0 then begin
       Sent:=FData.Send(Buf, n);
       if CallBack and Assigned(FOnSent) and (Sent > 0) then

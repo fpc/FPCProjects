@@ -13,13 +13,14 @@ begin
   FTimeout.tv_sec:=0;
   FTimeout.tv_nsec:=0;
   FQueue:=KQueue;
-  if KQueue < 0 then
+  if FQueue < 0 then
     raise Exception.Create('Unable to create kqueue');
 end;
 
 destructor TLKQueueEventer.Destroy;
 begin
   FFreeList.Free;
+  fpClose(FQueue);
   inherited Destroy;
 end;
 
