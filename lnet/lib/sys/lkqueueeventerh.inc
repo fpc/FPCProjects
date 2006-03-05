@@ -10,7 +10,7 @@
     FEvents: array of TKEvent;
     FChanges: array of TKEvent;
     FFreeSlot: Integer;
-    FQueue: Integer;
+    FQueue: THandle;
 //    FFreeList: TFPObjectList;
     function GetTimeout: DWord; override;
     procedure SetTimeout(const Value: DWord); override;
