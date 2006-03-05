@@ -7,7 +7,7 @@
 constructor TLKQueueEventer.Create;
 begin
   inherited Create;
-  FFreeList:=TFPObjectList.Create(True);
+//  FFreeList:=TFPObjectList.Create(True);
   Inflate;
   FFreeSlot:=0;
   FTimeout.tv_sec:=0;
@@ -19,7 +19,7 @@ end;
 
 destructor TLKQueueEventer.Destroy;
 begin
-  FFreeList.Free;
+//  FFreeList.Free;
   fpClose(FQueue);
   inherited Destroy;
 end;
@@ -65,7 +65,7 @@ begin
     Inflate;
   if not aHandle.FIgnoreRead then begin
     EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_READ,
-           EV_ADD , 0, 0, Pointer(aHandle));
+           EV_ADD, 0, 0, Pointer(aHandle));
     Inc(FFreeSlot);
   end;
 end;
@@ -95,13 +95,18 @@ begin
         if Assigned(FOnRead) then
           FOnRead(TLHandle(FEvents[i].uData));
       // TODO: figure out a better way, this is hell slow
-      if Dispose then
+{      if Dispose then
         if FFreeList.IndexOf(TObject(FEvents[i].uData)) < 0 then
-          FFreeList.Add(TObject(FEvents[i].uData));
+          FFreeList.Add(TObject(FEvents[i].uData));}
       FReferenced:=False;
+      if FDispose then
+        if FDestroyed then
+          FreeInstance
+        else
+          Free;
     end;
-    if FFreeList.Count > 0 then
-      FFreeList.Clear;
+{    if FFreeList.Count > 0 then
+      FFreeList.Clear;}
   end;
 end;
 
