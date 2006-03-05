@@ -8,14 +8,14 @@ interface
 uses
   Contnrs,
   {$ifdef Linux}
-    //{$undef nochoice} // undefine for all "Optimized" targets
+    {$undef nochoice} // undefine for all "Optimized" targets
     Linux,
   {$endif}
   {$ifdef BSD}
     {$undef nochoice}
     BSD,
   {$endif}
-  {$i osunits.inc}
+  {$i sys/osunits.inc}
 
 type
   TLHandle = class;
@@ -104,7 +104,8 @@ type
     function CallAction: Boolean; override;
   end;
   
-{$i lkqueueeventerh.inc}
+{$i sys/lkqueueeventerh.inc}
+{$i sys/lepolleventerh.inc}
 
   function BestEventerClass: TLEventerClass;
 
@@ -341,7 +342,8 @@ begin
   end;
 end;
 
-{$i lkqueueeventer.inc}
+{$i sys/lkqueueeventer.inc}
+{$i sys/lepolleventer.inc}
 
 {$ifdef nochoice}
 
