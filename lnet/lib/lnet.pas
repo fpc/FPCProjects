@@ -172,11 +172,10 @@ type
     procedure DisconnectEvent(aSocket: TLHandle); virtual;
     procedure AcceptEvent(aSocket: TLHandle); virtual;
     procedure ReceiveEvent(aSocket: TLHandle); virtual;
-    procedure SendEvent(aSocket: TLHandle); virtual;
-    procedure ErrorEvent(aSocket: TLHandle); virtual;
+    procedure CanSendEvent(aSocket: TLHandle); virtual;
+    procedure ErrorEvent(const msg: string; aSocket: TLHandle); virtual;
     procedure SetEventer(Value: TLEventer);
-    procedure CanSend(aSocket: TLSocket); virtual;
-    procedure EventError(const msg: string; Sender: TLEventer);
+    procedure EventerError(const msg: string; Sender: TLEventer);
     procedure RegisterWithEventer; virtual;
     procedure FreeSocks; virtual;
    public
@@ -218,7 +217,6 @@ type
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle); override;
-    procedure ErrorEvent(aSocket: TLHandle); override;
     procedure Bail(const msg: string);
    public
     constructor Create(aOwner: TComponent); override;
@@ -250,7 +248,6 @@ type
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle); override;
-    procedure ErrorEvent(aSocket: TLHandle); override;
     procedure Bail(const msg: string; aSocket: TLSocket);
    public
     constructor Create(aOwner: TComponent); override;
@@ -622,16 +619,16 @@ begin
     FOnReceive(TLSocket(aSocket));
 end;
 
-procedure TLConnection.SendEvent(aSocket: TLHandle);
+procedure TLConnection.CanSendEvent(aSocket: TLHandle);
 begin
   if Assigned(FOnCanSend) then
     FOnCanSend(TLSocket(aSocket));
 end;
 
-procedure TLConnection.ErrorEvent(aSocket: TLHandle);
+procedure TLConnection.ErrorEvent(const msg: string; aSocket: TLHandle);
 begin
   if Assigned(FOnError) then
-    FOnError('Error: ' + LStrError(LSocketError), TLSocket(aSocket));
+    FOnError(msg, TLSocket(aSocket));
 end;
 
 procedure TLConnection.SetEventer(Value: TLEventer);
@@ -642,23 +639,16 @@ begin
   FEventer.AddRef;
 end;
 
-procedure TLConnection.CanSend(aSocket: TLSocket);
+procedure TLConnection.EventerError(const msg: string; Sender: TLEventer);
 begin
-  if Assigned(FOnCanSend) then
-    FOnCanSend(aSocket);
-end;
-
-procedure TLConnection.EventError(const msg: string; Sender: TLEventer);
-begin
-  if Assigned(FOnError) then
-    FOnError(msg, nil);
+  ErrorEvent(msg, nil);
 end;
 
 procedure TLConnection.RegisterWithEventer;
 begin
   if not Assigned(FEventer) then begin
     FEventer:=FEventerClass.Create;
-    FEventer.OnError:=@EventError;
+    FEventer.OnError:=@EventerError;
   end;
   if Assigned(FRootSock) then
     FEventer.AddHandle(FRootSock);
@@ -730,8 +720,7 @@ end;
 procedure TLUdp.Bail(const msg: string);
 begin
   Disconnect;
-  if Assigned(FOnError) then
-    FOnError(msg, FRootSock);
+  ErrorEvent(msg, FRootSock);
 end;
 
 function TLUdp.InitSocket(aSocket: TLSocket): TLSocket;
@@ -757,19 +746,13 @@ begin
   with TLSocket(aSocket) do begin
     FCanSend:=True;
     FIgnoreWrite:=True;
-    SendEvent(aSocket);
+    CanSendEvent(aSocket);
   end;
 end;
 
 procedure TLUdp.ErrorAction(aSocket: TLHandle);
 begin
-  ErrorEvent(aSocket);
   Bail('Error' + LStrError(LSocketError));
-end;
-
-procedure TLUdp.ErrorEvent(aSocket: TLHandle);
-begin
-  // DO NOTHING, bail takes care...
 end;
 
 function TLUdp.IterNext: Boolean;
@@ -886,8 +869,7 @@ end;
 
 procedure TLTcp.Bail(const msg: string; aSocket: TLSocket);
 begin
-  if Assigned(FOnError) then
-    FOnError(msg, aSocket);
+  ErrorEvent(msg, aSocket);
   if Assigned(aSocket) then
     DisconnectSocket(aSocket)
   else
@@ -1032,25 +1014,19 @@ begin
     else begin
       FCanSend:=True;
       FIgnoreWrite:=True;
-      SendEvent(aSocket);
+      CanSendEvent(aSocket);
     end;
   end;
 end;
 
 procedure TLTcp.ErrorAction(aSocket: TLHandle);
 begin
-  ErrorEvent(aSocket);
   with TLSocket(aSocket) do begin
     if Connecting then
       Self.Bail('Error on connect: connection refused' , TLSocket(aSocket))
     else
       Self.Bail('Error' + LStrError(LSocketError), TLSocket(aSocket));
   end;
-end;
-
-procedure TLTcp.ErrorEvent(aSocket: TLHandle);
-begin
-  // Do nothing...
 end;
 
 function TLTcp.GetConnected: Boolean;
