@@ -147,9 +147,11 @@ type
    protected
     FTimeVal: TTimeVal;
     FOnReceive: TLProc;
-    FOnError: TLErrorProc;
+    FOnAccept: TLProc;
+    FOnConnect: TLProc;
     FOnDisconnect: TLProc;
     FOnCanSend: TLProc;
+    FOnError: TLErrorProc;
     FSocketClass: TLSocketClass;
     FRootSock: TLSocket;
     FIterator: TLSocket;
@@ -166,6 +168,12 @@ type
     procedure ReceiveAction(aSocket: TLHandle); virtual;
     procedure SendAction(aSocket: TLHandle); virtual;
     procedure ErrorAction(aSocket: TLHandle); virtual;
+    procedure ConnectEvent(aSocket: TLHandle); virtual;
+    procedure DisconnectEvent(aSocket: TLHandle); virtual;
+    procedure AcceptEvent(aSocket: TLHandle); virtual;
+    procedure ReceiveEvent(aSocket: TLHandle); virtual;
+    procedure SendEvent(aSocket: TLHandle); virtual;
+    procedure ErrorEvent(aSocket: TLHandle); virtual;
     procedure SetEventer(Value: TLEventer);
     procedure CanSend(aSocket: TLSocket); virtual;
     procedure EventError(const msg: string; Sender: TLEventer);
@@ -201,6 +209,8 @@ type
   
   { UDP Client/Server class. Provided to enable usage of UDP sockets }
 
+  { TLUdp }
+
   TLUdp = class(TLConnection)
    protected
     function InitSocket(aSocket: TLSocket): TLSocket; override;
@@ -208,6 +218,7 @@ type
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle); override;
+    procedure ErrorEvent(aSocket: TLHandle); override;
     procedure Bail(const msg: string);
    public
     constructor Create(aOwner: TComponent); override;
@@ -227,11 +238,11 @@ type
   
   { TCP Client/Server class. Provided to enable usage of TCP sockets }
 
+  { TLTcp }
+
   TLTcp = class(TLConnection)
    protected
     FCount: Integer;
-    FOnAccept: TLProc;
-    FOnConnect: TLProc;
     function InitSocket(aSocket: TLSocket): TLSocket; override;
     function GetConnected: Boolean; override;
     procedure ConnectAction(aSocket: TLHandle); override;
@@ -239,6 +250,7 @@ type
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle); override;
+    procedure ErrorEvent(aSocket: TLHandle); override;
     procedure Bail(const msg: string; aSocket: TLSocket);
    public
     constructor Create(aOwner: TComponent); override;
@@ -520,6 +532,8 @@ begin
   FOnError:=nil;
   FOnDisconnect:=nil;
   FOnCanSend:=nil;
+  FOnConnect:=nil;
+  FOnAccept:=nil;
   FTimeVal.tv_sec:=0;
   FTimeVal.tv_usec:=0;
   FIterator:=nil;
@@ -582,6 +596,42 @@ end;
 
 procedure TLConnection.ErrorAction(aSocket: TLHandle);
 begin
+end;
+
+procedure TLConnection.ConnectEvent(aSocket: TLHandle);
+begin
+  if Assigned(FOnConnect) then
+    FOnConnect(TLSocket(aSocket));
+end;
+
+procedure TLConnection.DisconnectEvent(aSocket: TLHandle);
+begin
+  if Assigned(FOnDisconnect) then
+    FOnDisconnect(TLSocket(aSocket));
+end;
+
+procedure TLConnection.AcceptEvent(aSocket: TLHandle);
+begin
+  if Assigned(FOnAccept) then
+    FOnAccept(TLSocket(aSocket));
+end;
+
+procedure TLConnection.ReceiveEvent(aSocket: TLHandle);
+begin
+  if Assigned(FOnReceive) then
+    FOnReceive(TLSocket(aSocket));
+end;
+
+procedure TLConnection.SendEvent(aSocket: TLHandle);
+begin
+  if Assigned(FOnCanSend) then
+    FOnCanSend(TLSocket(aSocket));
+end;
+
+procedure TLConnection.ErrorEvent(aSocket: TLHandle);
+begin
+  if Assigned(FOnError) then
+    FOnError('Error: ' + LStrError(LSocketError), TLSocket(aSocket));
 end;
 
 procedure TLConnection.SetEventer(Value: TLEventer);
@@ -698,8 +748,7 @@ procedure TLUdp.ReceiveAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
     FCanReceive:=True;
-    if Assigned(FOnReceive) then
-      FOnReceive(FRootSock);
+    ReceiveEvent(aSocket);
   end;
 end;
 
@@ -708,14 +757,19 @@ begin
   with TLSocket(aSocket) do begin
     FCanSend:=True;
     FIgnoreWrite:=True;
-    if Assigned(FOnCanSend) then
-      FOnCanSend(FRootSock);
+    SendEvent(aSocket);
   end;
 end;
 
 procedure TLUdp.ErrorAction(aSocket: TLHandle);
 begin
+  ErrorEvent(aSocket);
   Bail('Error' + LStrError(LSocketError));
+end;
+
+procedure TLUdp.ErrorEvent(aSocket: TLHandle);
+begin
+  // DO NOTHING, bail takes care...
 end;
 
 function TLUdp.IterNext: Boolean;
@@ -795,8 +849,6 @@ begin
   FIterator:=nil;
   FCount:=0;
   FRootSock:=nil;
-  FOnAccept:=nil;
-  FOnConnect:=nil;
 end;
 
 function TLTcp.Connect(const Address: string; const APort: Word): Boolean;
@@ -931,8 +983,7 @@ begin
     else begin
       FConnected:=True;
       FConnecting:=False;
-      if Assigned(FOnConnect) then
-        FOnConnect(TLSocket(aSocket));
+      ConnectEvent(aSocket);
     end;
   end;
 end;
@@ -953,8 +1004,7 @@ begin
       FIterator:=Tmp;
     Inc(FCount);
     FEventer.AddHandle(Tmp);
-    if Assigned(FOnAccept) then
-      FOnAccept(Tmp);
+    AcceptEvent(Tmp);
   end else Tmp.Free;
 end;
 
@@ -965,11 +1015,9 @@ begin
   else with TLSocket(aSocket) do begin
     if Connected then begin
       FCanReceive:=True;
-      if Assigned(FOnReceive) then
-        FOnReceive(TLSocket(aSocket));
+      ReceiveEvent(aSocket);
       if not Connected then begin
-        if Assigned(FOnDisconnect) then
-          FOnDisconnect(TLSocket(aSocket));
+        DisconnectEvent(aSocket);
         DisconnectSocket(TLSocket(aSocket));
       end;
     end;
@@ -984,20 +1032,25 @@ begin
     else begin
       FCanSend:=True;
       FIgnoreWrite:=True;
-      if Assigned(FOnCanSend) then
-        FOnCanSend(TLSocket(aSocket));
+      SendEvent(aSocket);
     end;
   end;
 end;
 
 procedure TLTcp.ErrorAction(aSocket: TLHandle);
 begin
+  ErrorEvent(aSocket);
   with TLSocket(aSocket) do begin
     if Connecting then
       Self.Bail('Error on connect: connection refused' , TLSocket(aSocket))
     else
       Self.Bail('Error' + LStrError(LSocketError), TLSocket(aSocket));
   end;
+end;
+
+procedure TLTcp.ErrorEvent(aSocket: TLHandle);
+begin
+  // Do nothing...
 end;
 
 function TLTcp.GetConnected: Boolean;
