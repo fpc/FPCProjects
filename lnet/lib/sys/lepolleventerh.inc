@@ -13,6 +13,7 @@
     FTimeout: cInt;
     FEvents: array of TEpollEvent;
     FEpollFD: THandle;
+    FFreeList: TFPObjectList;
     function GetTimeout: DWord; override;
     procedure SetTimeout(const Value: DWord); override;
     procedure Inflate;

@@ -10,6 +10,7 @@ const
 constructor TLEpollEventer.Create;
 begin
   inherited Create;
+  FFreeList:=TFPObjectList.Create;
   Inflate;
   FTimeout:=0;
   FEpollFD:=epoll_create(BASE_SIZE);
@@ -20,6 +21,7 @@ end;
 destructor TLEpollEventer.Destroy;
 begin
   fpClose(FEpollFD);
+  FFreeList.Free;
   inherited Destroy;
 end;
 
@@ -48,43 +50,56 @@ function TLEpollEventer.AddHandle(aHandle: TLHandle): Boolean;
 var
   lEvent: TEpollEvent;
 begin
-  inherited AddHandle(aHandle);
-  lEvent.events:=EPOLLIN or EPOLLOUT or EPOLLERR;
-  lEvent.data.ptr:=aHandle;
-  if epoll_ctl(FEpollFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
-    raise Exception.Create('Error adding handle to epoll')
-  else
-    Inc(FCount);
-  if FCount > High(FEvents) then
-    Inflate;
+  Result:=inherited AddHandle(aHandle);
+  if Result then begin
+    Result:=False;
+    lEvent.events:=EPOLLIN or EPOLLOUT or EPOLLERR or EPOLLHUP or EPOLLPRI or EPOLLET;
+    lEvent.data.ptr:=aHandle;
+    if epoll_ctl(FEpollFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
+      raise Exception.Create('Error adding handle to epoll')
+    else begin
+      Inc(FCount);
+      Result:=True;
+    end;
+    if FCount > High(FEvents) then
+      Inflate;
+  end;
 end;
 
 function TLEpollEventer.CallAction: Boolean;
 var
   i, n: Integer;
+  Temp: TLHandle;
 begin
   n:=epoll_wait(FEpollFD, @FEvents[0], FCount, FTimeout);
   if n < 0 then
     Bail('Error on kqueue: ', SocketError);
   Result:=n > 0;
-  if Result then
-    for i:=0 to n-1 do with TLHandle(FEvents[i].data.ptr) do begin
-      FReferenced:=True;
-      if FEvents[i].events and EPOLLERR = EPOLLERR then
-        if Assigned(FOnError) then
-          FOnError(TLHandle(FEvents[i].data.ptr));
+  if Result then begin
+    for i:=0 to n-1 do begin
+      Temp:=TLHandle(FEvents[i].data.ptr);
+      Temp.FReferenced:=True;
+      if (FEvents[i].events and EPOLLERR = EPOLLERR)
+      or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
+        if Assigned(Temp.FOnError) then
+          Temp.FOnError(Temp);
           
-      if FEvents[i].events and EPOLLOUT = EPOLLOUT then
-        if Assigned(FOnWrite) then
-          FOnWrite(TLHandle(FEvents[i].data.ptr));
+      if (FEvents[i].events and EPOLLOUT = EPOLLOUT)
+      or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then
+        if Assigned(Temp.FOnWrite) then
+          Temp.FOnWrite(Temp);
           
       if FEvents[i].events and EPOLLIN = EPOLLIN then
-        if Assigned(FOnRead) then
-          FOnRead(TLHandle(FEvents[i].data.ptr));
-      FReferenced:=False;
-      if FDispose then
-        Free;
+        if Assigned(Temp.FOnRead) then
+          Temp.FOnRead(Temp);
+      Temp.FReferenced:=False;
+      if Temp.FDispose then
+        if Temp.FDestroyed then
+          Temp.FreeInstance
+        else
+          Temp.Free;
     end;
+  end;
 end;
 
 function BestEventerClass: TLEventerClass;

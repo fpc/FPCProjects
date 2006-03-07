@@ -30,14 +30,7 @@ interface
 
 uses
   Classes, lEvents,
-{$ifdef mswindows}
-  Winsock2,
-{$else}
-  BaseUnix, NetDB,
-{$endif}
-  SysUtils, Sockets;
-
-//  {$i osunits.inc}
+  {$i sys/osunits.inc}
 
 const
   { Address constants }
@@ -499,14 +492,17 @@ begin
 end;
 
 procedure TLSocket.SetNonBlock;
+{$ifdef MSWINDOWS}
 var
   opt: DWord;
 begin
-  {$ifdef MSWINDOWS}
    opt:=1;
    if ioctlsocket(FHandle, FIONBIO, opt) = INVALID_SOCKET then
      bail('Error on SetFD', wsaGetLasterror);
-  {$else}
+{$else}
+var
+  opt: cInt;
+begin
    opt:=fpfcntl(FHandle, F_GETFL);
    if opt = INVALID_SOCKET then begin
      bail('ERROR on GetFD', LSocketError);
@@ -515,7 +511,7 @@ begin
 
    if fpfcntl(FHandle, F_SETFL, opt or O_NONBLOCK) = INVALID_SOCKET then
      bail('Error on SetFL', LSocketError);
-  {$endif}
+{$endif}
 end;
 
 //*******************************TLConnection*********************************
@@ -860,7 +856,6 @@ begin
     if FRootSock.Listen(APort) then begin
       FRootSock.FConnected:=True;
       FRootSock.FServerSocket:=True;
-      FIterator:=FRootSock;
       RegisterWithEventer;
       Result:=true;
     end;
@@ -954,6 +949,7 @@ var
   {$endif}
   l: Integer;
 begin
+  Writeln('ConnectAction on: ', DWord(aSocket));
   with TLSocket(aSocket) do begin
     l:=SizeOf(a);
     {$ifndef mswindows}
