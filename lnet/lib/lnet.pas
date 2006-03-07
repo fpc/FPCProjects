@@ -949,7 +949,6 @@ var
   {$endif}
   l: Integer;
 begin
-  Writeln('ConnectAction on: ', DWord(aSocket));
   with TLSocket(aSocket) do begin
     l:=SizeOf(a);
     {$ifndef mswindows}
