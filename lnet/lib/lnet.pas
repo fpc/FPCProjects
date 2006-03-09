@@ -156,6 +156,7 @@ type
     function GetConnected: Boolean; virtual; abstract;
     function GetCount: Integer; virtual;
     function GetItem(const i: Integer): TLSocket;
+    function GetTimeout: DWord;
     procedure ConnectAction(aSocket: TLHandle); virtual;
     procedure AcceptAction(aSocket: TLHandle); virtual;
     procedure ReceiveAction(aSocket: TLHandle); virtual;
@@ -167,6 +168,7 @@ type
     procedure ReceiveEvent(aSocket: TLHandle); virtual;
     procedure CanSendEvent(aSocket: TLHandle); virtual;
     procedure ErrorEvent(const msg: string; aSocket: TLHandle); virtual;
+    procedure SetTimeout(const AValue: DWord);
     procedure SetEventer(Value: TLEventer);
     procedure EventerError(const msg: string; Sender: TLEventer);
     procedure RegisterWithEventer; virtual;
@@ -193,7 +195,7 @@ type
     property Count: Integer read GetCount;
     property Connected: Boolean read GetConnected;
     property Iterator: TLSocket read FIterator;
-    property Timeout: DWord read FTimeout write FTimeout;
+    property Timeout: DWord read GetTimeout write SetTimeout;
     property SocketClass: TLSocketClass read FSocketClass write FSocketClass;
     property Eventer: TLEventer read FEventer write SetEventer;
     property EventerClass: TLEventerClass read FEventerClass write FEventerClass;
@@ -571,6 +573,14 @@ begin
     Result:=Tmp;
 end;
 
+function TLConnection.GetTimeout: DWord;
+begin
+  if Assigned(FEventer) then
+    Result:=FEventer.Timeout
+  else
+    Result:=FTimeout;
+end;
+
 procedure TLConnection.ConnectAction(aSocket: TLHandle);
 begin
 end;
@@ -625,6 +635,13 @@ procedure TLConnection.ErrorEvent(const msg: string; aSocket: TLHandle);
 begin
   if Assigned(FOnError) then
     FOnError(msg, TLSocket(aSocket));
+end;
+
+procedure TLConnection.SetTimeout(const AValue: DWord);
+begin
+  if Assigned(FEventer) then
+    FEventer.Timeout:=aValue;
+  FTimeout:=aValue;
 end;
 
 procedure TLConnection.SetEventer(Value: TLEventer);
