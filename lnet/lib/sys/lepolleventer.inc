@@ -56,11 +56,7 @@ begin
     lEvent.events:=EPOLLIN or EPOLLOUT or EPOLLERR or EPOLLHUP or EPOLLPRI or EPOLLET;
     lEvent.data.ptr:=aHandle;
     if epoll_ctl(FEpollFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
-      raise Exception.Create('Error adding handle to epoll')
-    else begin
-      Inc(FCount);
-      Result:=True;
-    end;
+      raise Exception.Create('Error adding handle to epoll');
     if FCount > High(FEvents) then
       Inflate;
   end;
