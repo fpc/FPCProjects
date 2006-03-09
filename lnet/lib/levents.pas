@@ -39,8 +39,9 @@ type
     FDispose: Boolean;       // will free in the after-cycle
     FReferenced: Boolean;    // is being referenced by eventer in loop
     FDestroyed: Boolean;
-    FNext: TLHandle;
     FPrev: TLHandle;
+    FNext: TLHandle;
+    FFreeNext: TLHandle;
     FUserData: Pointer;
    public
     constructor Create; virtual;
@@ -48,6 +49,7 @@ type
     procedure FreeInstance; override;
     property Prev: TLHandle read FPrev write FPrev;
     property Next: TLHandle read FNext write FNext;
+    property FreeNext: TLHandle read FFreeNext write FFreeNext;
     property IgnoreWrite: Boolean read FIgnoreWrite write FIgnoreWrite;
     property IgnoreRead: Boolean read FIgnoreRead write FIgnoreRead;
     property IgnoreError: Boolean read FIgnoreError write FIgnoreError;
@@ -123,6 +125,9 @@ begin
   FOnError:=nil;
   FUserData:=nil;
   FEventer:=nil;
+  FPrev:=nil;
+  FNext:=nil;
+  FFreeNext:=nil;
   FDispose:=False;
   FIgnoreWrite:=False;
   FIgnoreRead:=False;

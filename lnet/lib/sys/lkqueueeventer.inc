@@ -7,7 +7,8 @@
 constructor TLKQueueEventer.Create;
 begin
   inherited Create;
-//  FFreeList:=TFPObjectList.Create(True);
+  FFreeRoot:=nil;
+  FFreeIter:=nil;
   Inflate;
   FFreeSlot:=0;
   FTimeout.tv_sec:=0;
@@ -19,7 +20,8 @@ end;
 
 destructor TLKQueueEventer.Destroy;
 begin
-//  FFreeList.Free;
+  if Assigned(FFreeRoot) then
+    FreeHandles;
   fpClose(FQueue);
   inherited Destroy;
 end;
@@ -51,6 +53,32 @@ begin
   end;
 end;
 
+procedure TLKQueueEventer.AddForFree(aHandle: TLHandle);
+begin
+  aHandle.FDestroyed:=True;
+  if not Assigned(FFreeIter) then begin
+    FFreeIter:=aHandle;
+    FFreeRoot:=aHandle;
+  end else begin
+    FFreeIter.FreeNext:=aHandle;
+    FFreeIter:=aHandle;
+  end;
+end;
+
+procedure TLKQueueEventer.FreeHandles;
+var
+  Temp, Temp2: TLHandle;
+begin
+  Temp:=FFreeRoot;
+  while Assigned(Temp) do begin
+    Temp2:=Temp.FreeNext;
+    Temp.Free;
+    Temp:=Temp2;
+  end;
+  FFreeRoot:=nil;
+  FFreeIter:=nil;
+end;
+
 function TLKQueueEventer.AddHandle(aHandle: TLHandle): Boolean;
 begin
   Result:=inherited AddHandle(aHandle);
@@ -73,6 +101,7 @@ end;
 function TLKQueueEventer.CallAction: Boolean;
 var
   i, n: Integer;
+  Temp: TLHandle;
 begin
   n:=KEvent(FQueue, @FChanges[0], FFreeSlot,
             @FEvents[0], Length(FEvents), @FTimeout);
@@ -81,32 +110,30 @@ begin
     Bail('Error on kqueue: ', SocketError);
   Result:=n > 0;
   if Result then begin
-    for i:=0 to n-1 do with TLHandle(FEvents[i].uData) do begin
-      FReferenced:=True;
+    for i:=0 to n-1 do begin
+      Temp:=TLHandle(FEvents[i].uData);
+      Temp.FReferenced:=True;
+      
       if (FEvents[i].Flags and EV_ERROR) > 0 then
-        if Assigned(FOnError) then
-          FOnError(TLHandle(FEvents[i].uData));
+        if Assigned(Temp.FOnError) then
+          Temp.FOnError(Temp);
 
       if FEvents[i].Filter = EVFILT_WRITE then
-        if Assigned(FOnWrite) then
-          FOnWrite(TLHandle(FEvents[i].uData));
+        if Assigned(Temp.FOnWrite) then
+          Temp.FOnWrite(Temp);
 
       if FEvents[i].Filter = EVFILT_READ then
-        if Assigned(FOnRead) then
-          FOnRead(TLHandle(FEvents[i].uData));
-      // TODO: figure out a better way, this is hell slow
-{      if Dispose then
-        if FFreeList.IndexOf(TObject(FEvents[i].uData)) < 0 then
-          FFreeList.Add(TObject(FEvents[i].uData));}
-      FReferenced:=False;
-      if FDispose then
-        if FDestroyed then
-          FreeInstance
-        else
-          Free;
+        if Assigned(Temp.FOnRead) then
+          Temp.FOnRead(Temp);
+          
+      Temp.FReferenced:=False;
+      
+      if Temp.FDispose and not Temp.FDestroyed then
+        AddForFree(Temp);
     end;
-{    if FFreeList.Count > 0 then
-      FFreeList.Clear;}
+    
+    if Assigned(FFreeRoot) then
+      FreeHandles;
   end;
 end;
 
