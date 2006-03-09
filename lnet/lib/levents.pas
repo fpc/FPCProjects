@@ -8,7 +8,7 @@ interface
 uses
   Contnrs,
   {$ifdef Linux}
-    {$undef nochoice} // undefine for all "Optimized" targets
+    {.$undef nochoice} // undefine for all "Optimized" targets
     Linux,
   {$endif}
   {$ifdef BSD}
@@ -105,7 +105,7 @@ type
   end;
   
 {$i sys/lkqueueeventerh.inc}
-{$i sys/lepolleventerh.inc}
+{.$i sys/lepolleventerh.inc}
 
   function BestEventerClass: TLEventerClass;
 
@@ -343,7 +343,7 @@ begin
 end;
 
 {$i sys/lkqueueeventer.inc}
-{$i sys/lepolleventer.inc}
+{.$i sys/lepolleventer.inc}
 
 {$ifdef nochoice}
 

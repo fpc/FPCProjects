@@ -29,7 +29,7 @@ interface
 
 uses
   sysutils, classes, lnet, lhttpserver, lhttputil, lmimetypes, levents, 
-  lprocess, process;
+  lprocess, process, lfastcgi, fastcgi;
 
 type
   TFileOutput = class(TBufferOutput)
@@ -39,7 +39,7 @@ type
     function GetSize: integer;
     function WriteData: boolean; override;
   public
-    constructor Create;
+    constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
     function  Open(const AFileName: string): boolean;
@@ -49,31 +49,71 @@ type
 
   TCGIOutput = class(TBufferOutput)
   protected
-    FProcess: TLProcess;
     FParsePos: pchar;
     FReadPos: integer;
     FParsingHeaders: boolean;
     FExtraPath: string;
     FScriptFileName: string;
     FScriptName: string;
-    
+   
+    procedure AddEnvironment(const AName, AValue: string); virtual; abstract;
     procedure AddHTTPParam(const AName: string; AParam: TLHTTPRequestParameter);
+    function  ParseHeaders: boolean;
+    procedure CGIOutputError; virtual; abstract;
+    procedure WriteCGIBlock;
+    function  WriteCGIData: boolean; virtual; abstract;
+  public
+    constructor Create(ASocket: TLHTTPSocket);
+    destructor Destroy; override;
+
+    function  WriteData: boolean; override;
+    procedure StartRequest; virtual;
+    
+    property ExtraPath: string read FExtraPath write FExtraPath;
+    property ScriptFileName: string read FScriptFileName write FScriptFileName;
+    property ScriptName: string read FScriptName write FScriptName;
+  end;
+
+  TSimpleCGIOutput = class(TCGIOutput)
+  protected
+    FProcess: TLProcess;
+
+    procedure AddEnvironment(const AName, AValue: string); override;
     procedure CGIProcNeedInput(AHandle: TLHandle);
     procedure CGIProcHasOutput(AHandle: TLHandle);
     procedure CGIProcHasStderr(AHandle: TLHandle);
-    function  ParseHeaders: boolean;
+    function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
+    procedure CGIOutputError; override;
+    function  WriteCGIData: boolean; override;
   public
-    constructor Create;
+    constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
-    function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
-    function  WriteData: boolean; override;
-    procedure ExecuteProcess;
-    
-    property ExtraPath: string read FExtraPath write FExtraPath;
+    procedure  StartRequest; override;
+
     property Process: TLProcess read FProcess;
-    property ScriptFileName: string read FScriptFileName write FScriptFileName;
-    property ScriptName: string read FScriptName write FScriptName;
+  end;
+
+  TFastCGIOutput = class(TCGIOutput)
+  protected
+    FRequest: TLFastCGIRequest;
+
+    procedure AddEnvironment(const AName, AValue: string); override;
+    procedure CGIOutputError; override;
+    procedure DoneInput; override;
+    procedure RequestEnd(ARequest: TLFastCGIRequest);
+    procedure RequestNeedInput(ARequest: TLFastCGIRequest);
+    procedure RequestHasOutput(ARequest: TLFastCGIRequest);
+    procedure RequestHasStderr(ARequest: TLFastCGIRequest);
+    function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
+    function  WriteCGIData: boolean; override;
+  public
+    constructor Create(ASocket: TLHTTPSocket);
+    destructor Destroy; override;
+
+    procedure StartRequest; override;
+
+    property Request: TLFastCGIRequest read FRequest write FRequest;
   end;
 
   TCGIHandler = class(TURIHandler)
@@ -108,11 +148,25 @@ type
     function HandleDocument(const ARequest: TDocumentRequest): TOutputItem; override;
   end;
 
+  TPHPFastCGIHandler = class(TDocumentHandler)
+  protected
+    FPool: TLFastCGIPool;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    function HandleDocument(const ARequest: TDocumentRequest): TOutputItem; override;
+
+    property Pool: TLFastCGIPool read FPool;
+  end;
+
   TLWebServer = class(TLHTTPServer)
   protected
     FFileHandler: TFileHandler;
     FCGIHandler: TCGIHandler;
-    FPHPCGIHandler: TPHPCGIHandler;
+    FPHPCGIHandler: TPHPFastCGIHandler;
+
+    procedure RegisterWithEventer; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -135,14 +189,13 @@ const
 
 function TCGIHandler.HandleURI(ASocket: TLHTTPSocket): TOutputItem;
 var
-  lOutput: TCGIOutput;
+  lOutput: TSimpleCGIOutput;
   lExecPath: string;
 begin
   if StrLComp(ASocket.RequestInfo.Argument, ScriptPathPrefix, 
       Length(ScriptPathPrefix)) = 0 then
   begin
-    lOutput := TCGIOutput.Create;
-    lOutput.Socket := ASocket;
+    lOutput := TSimpleCGIOutput.Create(ASocket);
     lOutput.Process.CurrentDirectory := CGIRoot;
     lExecPath := CGIRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
     if SeparatePath(lExecPath, lOutput.ExtraPath) then
@@ -151,7 +204,7 @@ begin
       lOutput.ScriptFileName := lExecPath;
       lOutput.ScriptName := Copy(lExecPath, Length(CGIRoot), 
         Length(lExecPath)-Length(CGIRoot)+1);
-      lOutput.ExecuteProcess;
+      lOutput.StartRequest;
     end else
       ASocket.RequestInfo.Status := hsNotFound;
     Result := lOutput;
@@ -173,7 +226,7 @@ begin
     begin
       lReqInfo^.Status := hsNotAllowed;
     end else begin
-      lFileOutput := TFileOutput.Create;
+      lFileOutput := TFileOutput.Create(ARequest.Socket);
       FindFirst(ARequest.Document, 0, lInfo);
       if lFileOutput.Open(ARequest.Document) then
       begin
@@ -223,17 +276,45 @@ end;
 
 function TPHPCGIHandler.HandleDocument(const ARequest: TDocumentRequest): TOutputItem;
 var
-  lOutput: TCGIOutput;
+  lOutput: TSimpleCGIOutput;
 begin
   if ExtractFileExt(ARequest.Document) = '.php' then
   begin
-    lOutput := TCGIOutput.Create;
-    lOutput.Socket := ARequest.Socket;
+    lOutput := TSimpleCGIOutput.Create(ARequest.Socket);
     lOutput.Process.CommandLine := PHPCGIBinary;
     lOutput.ScriptName := '/'+ARequest.Document;
     lOutput.ScriptFileName := DocumentRoot+lOutput.ScriptName;
     lOutput.ExtraPath := ARequest.ExtraPath;
-    lOutput.ExecuteProcess;
+    lOutput.StartRequest;
+    Result := lOutput;
+  end else
+    Result := nil;
+end;
+
+constructor TPHPFastCGIHandler.Create;
+begin
+  inherited;
+  FPool := TLFastCGIPool.Create;
+end;
+
+destructor TPHPFastCGIHandler.Destroy;
+begin
+  inherited;
+  FPool.Free;
+end;
+
+function TPHPFastCGIHandler.HandleDocument(const ARequest: TDocumentRequest): TOutputItem;
+var
+  lOutput: TFastCGIOutput;
+begin
+  if ExtractFileExt(ARequest.Document) = '.php' then
+  begin
+    lOutput := TFastCGIOutput.Create(ARequest.Socket);
+    lOutput.ScriptName := '/'+ARequest.Document;
+    lOutput.ScriptFileName := DocumentRoot+lOutput.ScriptName;
+    lOutput.ExtraPath := ARequest.ExtraPath;
+    lOutput.Request := FPool.BeginRequest(FCGI_RESPONDER);
+    lOutput.StartRequest;
     Result := lOutput;
   end else
     Result := nil;
@@ -241,7 +322,7 @@ end;
 
 { Output Items }
 
-constructor TFileOutput.Create;
+constructor TFileOutput.Create(ASocket: TLHTTPSocket);
 begin
   inherited;
   FEof := true;
@@ -288,47 +369,14 @@ begin
   exit(false);
 end;
 
-constructor TCGIOutput.Create;
+constructor TCGIOutput.Create(ASocket: TLHTTPSocket);
 begin
   inherited;
-  FProcess := TLProcess.Create(nil);
-  FProcess.Options := FProcess.Options + [poUsePipes];
-  FProcess.OnNeedInput := @CGIProcNeedInput;
-  FProcess.OnHasOutput := @CGIProcHasOutput;
-  FProcess.OnHasStderr := @CGIProcHasStderr;
 end;
 
 destructor TCGIOutput.Destroy;
 begin
   inherited;
-  FProcess.Free;
-end;
-
-procedure TCGIOutput.CGIProcNeedInput(AHandle: TLHandle);
-begin
-  FProcess.InputEvent.IgnoreWrite := true;
-  FSocket.ParseBuffer;
-end;
-
-procedure TCGIOutput.CGIProcHasOutput(AHandle: TLHandle);
-begin
-  { CGI process has output pending, we can write a block to socket }
-  if FParsingHeaders then
-  begin
-    if WriteData and FParsingHeaders then
-    begin
-      { still parsing headers ? something's wrong }
-      FParsingHeaders := false;
-      if FProcess.ExitStatus = 127 then
-        FSocket.RequestInfo.Status := hsNotFound
-      else
-        FSocket.RequestInfo.Status := hsInternalError;
-      FSocket.StartResponse(Self);
-      exit;
-    end;
-  end;
-  if not FParsingHeaders then
-    FSocket.WriteBlock;
 end;
 
 procedure TCGIOutput.AddHTTPParam(const AName: string; AParam: TLHTTPRequestParameter);
@@ -337,49 +385,38 @@ var
 begin
   lValue := FSocket.RequestInfo.Parameters[AParam];
   if lValue = nil then exit;
-  FProcess.Environment.Add(AName+'='+lValue);
+  AddEnvironment(AName, lValue);
 end;
 
-procedure TCGIOutput.CGIProcHasStderr(AHandle: TLHandle);
-var
-  lBuf: array[0..1023] of char;
-  lRead: integer;
+procedure TCGIOutput.StartRequest;
 begin
-  lRead := FProcess.Stderr.Read(lBuf, sizeof(lBuf)-1);
-  lBuf[lRead] := #0;
-  write(pchar(@lBuf[0]));
-end;
-
-procedure TCGIOutput.ExecuteProcess;
-begin
-  FProcess.Environment.Clear;
 {
   FProcess.Environment.Add('SERVER_ADDR=');
   FProcess.Environment.Add('SERVER_ADMIN=');
   FProcess.Environment.Add('SERVER_NAME=');
   FProcess.Environment.Add('SERVER_PORT=');
 }
-  FProcess.Environment.Add('SERVER_SOFTWARE='+ServerSoftware);
+  AddEnvironment('SERVER_SOFTWARE', ServerSoftware);
 
-  FProcess.Environment.Add('GATEWAY_INTERFACE=CGI/1.1'); 
-  FProcess.Environment.Add('SERVER_PROTOCOL='+FSocket.RequestInfo.VersionStr);
-  FProcess.Environment.Add('REQUEST_METHOD='+FSocket.RequestInfo.Method);
-  FProcess.Environment.Add('REQUEST_URI=/'+FSocket.RequestInfo.Argument);
+  AddEnvironment('GATEWAY_INTERFACE', 'CGI/1.1'); 
+  AddEnvironment('SERVER_PROTOCOL', FSocket.RequestInfo.VersionStr);
+  AddEnvironment('REQUEST_METHOD', FSocket.RequestInfo.Method);
+  AddEnvironment('REQUEST_URI', '/'+FSocket.RequestInfo.Argument);
 
   if Length(FExtraPath) > 0 then
   begin
-    FProcess.Environment.Add('PATH_INFO='+FExtraPath);
+    AddEnvironment('PATH_INFO', FExtraPath);
     { do not set PATH_TRANSLATED: bug in PHP }
-//    FProcess.Environment.Add('PATH_TRANSLATED='+DocumentRoot+FExtraPath);
+//    AddEnvironment('PATH_TRANSLATED', DocumentRoot+FExtraPath);
   end;
 
-  FProcess.Environment.Add('SCRIPT_NAME='+FScriptName);
-  FProcess.Environment.Add('SCRIPT_FILENAME='+FScriptFileName);
+  AddEnvironment('SCRIPT_NAME', FScriptName);
+  AddEnvironment('SCRIPT_FILENAME', FScriptFileName);
   
   case FSocket.RequestInfo.RequestType of
     hrGet:
     begin
-      FProcess.Environment.Add('QUERY_STRING='+FSocket.RequestInfo.QueryParams);
+      AddEnvironment('QUERY_STRING', FSocket.RequestInfo.QueryParams);
     end;
     hrPost:
     begin
@@ -387,35 +424,26 @@ begin
       AddHTTPParam('CONTENT_LENGTH', hpContentLength);
     end;
   end;
-  FProcess.Environment.Add('REMOTE_ADDR='+FSocket.PeerAddress);
-  FProcess.Environment.Add('REMOTE_PORT='+IntToStr(FSocket.Port));
+  AddEnvironment('REMOTE_ADDR', FSocket.PeerAddress);
+  AddEnvironment('REMOTE_PORT', IntToStr(FSocket.Port));
 
   { used when user has authenticated in some way to server }
-//  FProcess.Environment.Add('AUTH_TYPE='+...);
-//  FProcess.Environment.Add('REMOTE_USER='+...);
+//  AddEnvironment('AUTH_TYPE='+...);
+//  AddEnvironment('REMOTE_USER='+...);
   
-  FProcess.Environment.Add('DOCUMENT_ROOT='+DocumentRoot);
-  FProcess.Environment.Add('REDIRECT_STATUS=200');
+  AddEnvironment('DOCUMENT_ROOT=', DocumentRoot);
+  AddEnvironment('REDIRECT_STATUS', '200');
   AddHTTPParam('HTTP_HOST', hpHost);
   AddHTTPParam('HTTP_COOKIE', hpCookie);
   AddHTTPParam('HTTP_CONNECTION', hpConnection);
   AddHTTPParam('HTTP_REFERER', hpReferer);
   AddHTTPParam('HTTP_USER_AGENT', hpUserAgent);
   AddHTTPParam('HTTP_ACCEPT', hpAccept);
-  FProcess.Environment.Add('PATH='+CGIPath);
-
-  FProcess.Eventer := FSocket.Server.Eventer;
-  FProcess.Execute;
+  AddEnvironment('PATH', CGIPath);
 
   FParsingHeaders := true;
   FReadPos := FBufferPos;
   FParsePos := FBuffer+FReadPos;
-end;
-
-function TCGIOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
-begin
-  Result := FProcess.Input.Write(ABuffer^, ASize);
-  FProcess.InputEvent.IgnoreWrite := false;
 end;
 
 function  TCGIOutput.ParseHeaders: boolean;
@@ -468,7 +496,6 @@ begin
         AddExtraHeader;
       end else
         writeln('WARNING: unimplemented ''Location'' response received from CGI script');
-      //FSocket.RequestInfo.Status := hsRedirect;
     end else 
     if StrIComp(FParsePos, 'Status') = 0 then
     begin
@@ -502,14 +529,11 @@ begin
 end;
 
 function TCGIOutput.WriteData: boolean;
-var
-  lRead: integer;
 begin
   if not FParsingHeaders then
     FReadPos := FBufferPos;
-  lRead := FProcess.Output.Read(FBuffer[FReadPos], FBufferSize-FReadPos);
-  if lRead = 0 then exit(true);
-  Inc(FReadPos, lRead);
+  if WriteCGIData then
+    exit(true);
   if FParsingHeaders then
   begin
     if ParseHeaders then
@@ -523,6 +547,184 @@ begin
   exit(false);
 end;
 
+procedure TCGIOutput.WriteCGIBlock;
+begin
+  { CGI process has output pending, we can write a block to socket }
+  if FParsingHeaders then
+  begin
+    if WriteData and FParsingHeaders then
+    begin
+      { still parsing headers ? something's wrong }
+      FParsingHeaders := false;
+      CGIOutputError;
+      FSocket.StartResponse(Self);
+      exit;
+    end;
+  end;
+  if not FParsingHeaders then
+    FSocket.WriteBlock;
+end;
+
+{ TSimpleCGIOutput }
+
+constructor TSimpleCGIOutput.Create(ASocket: TLHTTPSocket);
+begin
+  inherited;
+  FProcess := TLProcess.Create(nil);
+  FProcess.Options := FProcess.Options + [poUsePipes];
+  FProcess.OnNeedInput := @CGIProcNeedInput;
+  FProcess.OnHasOutput := @CGIProcHasOutput;
+  FProcess.OnHasStderr := @CGIProcHasStderr;
+end;
+
+destructor TSimpleCGIOutput.Destroy;
+begin
+  inherited;
+  FProcess.Free;
+end;
+
+function TSimpleCGIOutput.WriteCGIData: boolean;
+var
+  lRead: integer;
+begin
+  lRead := FProcess.Output.Read(FBuffer[FReadPos], FBufferSize-FReadPos);
+  if lRead = 0 then exit(true);
+  Inc(FReadPos, lRead);
+end;
+
+procedure TSimpleCGIOutput.AddEnvironment(const AName, AValue: string);
+begin
+  FProcess.Environment.Add(AName+'='+AValue);
+end;
+
+function TSimpleCGIOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
+begin
+  Result := FProcess.Input.Write(ABuffer^, ASize);
+  FProcess.InputEvent.IgnoreWrite := false;
+end;
+
+procedure TSimpleCGIOutput.StartRequest;
+begin
+  inherited;
+  
+  FProcess.Eventer := FSocket.Server.Eventer;
+  FProcess.Execute;
+end;
+
+procedure TSimpleCGIOutput.CGIOutputError;
+begin
+  if FProcess.ExitStatus = 127 then
+    FSocket.RequestInfo.Status := hsNotFound
+  else
+    FSocket.RequestInfo.Status := hsInternalError;
+end;
+
+procedure TSimpleCGIOutput.CGIProcNeedInput(AHandle: TLHandle);
+begin
+  FProcess.InputEvent.IgnoreWrite := true;
+  FSocket.ParseBuffer;
+end;
+
+procedure TSimpleCGIOutput.CGIProcHasOutput(AHandle: TLHandle);
+begin
+  WriteCGIBlock;
+end;
+
+procedure TSimpleCGIOutput.CGIProcHasStderr(AHandle: TLHandle);
+var
+  lBuf: array[0..1023] of char;
+  lRead: integer;
+begin
+  lRead := FProcess.Stderr.Read(lBuf, sizeof(lBuf)-1);
+  lBuf[lRead] := #0;
+  write(pchar(@lBuf[0]));
+end;
+
+{ TFastCGIOutput }
+
+constructor TFastCGIOutput.Create(ASocket: TLHTTPSocket);
+begin
+  inherited;
+end;
+
+destructor TFastCGIOutput.Destroy;
+begin
+  if FRequest <> nil then
+    FRequest.AbortRequest;
+  inherited;
+end;
+
+procedure TFastCGIOutput.AddEnvironment(const AName, AValue: string);
+begin
+  FRequest.SendParam(AName, AValue);
+end;
+
+procedure TFastCGIOutput.CGIOutputError;
+begin
+  FSocket.RequestInfo.Status := hsNotFound;
+end;
+
+procedure TFastCGIOutput.DoneInput;
+begin
+  if FRequest <> nil then
+    FRequest.DoneInput;
+end;
+
+procedure TFastCGIOutput.RequestEnd(ARequest: TLFastCGIRequest);
+begin
+  FRequest.OnEndRequest := nil;
+  FRequest.OnInput := nil;
+  FRequest.OnOutput := nil;
+  FRequest := nil;
+  { trigger final write, to flush output to socket }
+  WriteCGIBlock;
+end;
+
+procedure TFastCGIOutput.RequestNeedInput(ARequest: TLFastCGIRequest);
+begin
+  FSocket.ParseBuffer;
+end;
+
+procedure TFastCGIOutput.RequestHasOutput(ARequest: TLFastCGIRequest);
+begin
+  WriteCGIBlock;
+end;
+
+procedure TFastCGIOutput.RequestHasStderr(ARequest: TLFastCGIRequest);
+var
+  lBuf: array[0..1023] of char;
+  lRead: integer;
+begin
+  lRead := ARequest.Get(lBuf, sizeof(lBuf)-1);
+  lBuf[lRead] := #0;
+  write(pchar(@lBuf[0]));
+end;
+
+function  TFastCGIOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
+begin
+  Result := FRequest.SendInput(ABuffer, ASize);
+end;
+
+function  TFastCGIOutput.WriteCGIData: boolean;
+var
+  lRead: integer;
+begin
+  if FRequest = nil then exit(true);
+  lRead := FRequest.Get(@FBuffer[FReadPos], FBufferSize-FReadPos);
+  Inc(FReadPos, lRead);
+  Result := false;
+end;
+
+procedure TFastCGIOutput.StartRequest;
+begin
+  FRequest.OnEndRequest := @RequestEnd;
+  FRequest.OnInput := @RequestNeedInput;
+  FRequest.OnOutput := @RequestHasOutput;
+  FRequest.OnStderr := @RequestHasStderr;
+  inherited;
+  FRequest.DoneParams;
+end;
+
 { TLWebServer }
 
 constructor TLWebServer.Create(AOwner: TComponent);
@@ -531,7 +733,7 @@ begin
 
   FFileHandler := TFileHandler.Create;
   FCGIHandler := TCGIHandler.Create;
-  FPHPCGIHandler := TPHPCGIHandler.Create;
+  FPHPCGIHandler := TPHPFastCGIHandler.Create;
   FOnError := @LogError;
 
   RegisterHandler(FFileHandler);
@@ -546,6 +748,14 @@ begin
   FFileHandler.Free;
   FCGIHandler.Free;
   FPHPCGIHandler.Free;
+end;
+
+procedure TLWebServer.RegisterWithEventer;
+begin
+  inherited;
+  FPHPCGIHandler.Pool.Eventer := Eventer;
+  FPHPCGIHandler.Pool.Host := 'localhost';
+  FPHPCGIHandler.Pool.Port := 6000;
 end;
 
 procedure TLWebServer.LogAccess(const AMessage: string);

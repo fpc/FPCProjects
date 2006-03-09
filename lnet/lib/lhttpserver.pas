@@ -141,19 +141,23 @@ type
     FOutputPending: boolean;
     FEof: boolean;
     FNext: TOutputItem;
+    FPrevDelayFree: TOutputItem;
+    FNextDelayFree: TOutputItem;
     FSocket: TLHTTPSocket;
     FWriteBlock: TWriteBlockMethod;
-  protected
+
+    procedure DoneInput; virtual;
     function WriteData: boolean; virtual;
   public
-    constructor Create;
+    constructor Create(ASocket: TLHTTPSocket);
+    destructor Destroy; override;
 
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; virtual;
     procedure LogAccess(const AMessage: string);
     procedure LogError(const AMessage: string);
     function  WriteBlock: boolean; virtual;
 
-    property Socket: TLHTTPSocket read FSocket write FSocket;
+    property Socket: TLHTTPSocket read FSocket;
   end;
 
   TBufferOutput = class(TOutputItem)
@@ -161,7 +165,7 @@ type
     procedure PrepareChunk;
     procedure PrepareBuffer;
   public
-    constructor Create;
+    constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
     function WriteChunk: boolean;
@@ -174,8 +178,8 @@ type
   protected
     FFreeBuffer: boolean;
   public
-    constructor Create(ABuffer: pointer; ABufferOffset, 
-      ABufferSize: integer; AFreeBuffer: boolean);
+    constructor Create(ASocket: TLHTTPSocket; ABuffer: pointer; 
+      ABufferOffset, ABufferSize: integer; AFreeBuffer: boolean);
     destructor Destroy; override;
   end;
 
@@ -227,7 +231,7 @@ type
 
     procedure HandleReceive;
     procedure LogAccess(const AMessage: string);
-    procedure ParseBuffer;
+    function  ParseBuffer: boolean;
     procedure StartResponse(AOutputItem: TBufferOutput);
     procedure WriteBlock;
 
@@ -270,9 +274,29 @@ const
   RequestBufferSize = 1024;
   DataBufferSize = 64*1024;
 
-constructor TOutputItem.Create;
+constructor TOutputItem.Create(ASocket: TLHTTPSocket);
 begin
+  FSocket := ASocket;
+  inherited Create;
+end;
+
+destructor TOutputItem.Destroy;
+begin
+  if FSocket.FCurrentInput = Self then
+    FSocket.FCurrentInput := nil;
+    
+  if FPrevDelayFree = nil then
+    FSocket.FServer.FDelayFreeItems := FNextDelayFree
+  else
+    FPrevDelayFree.FNextDelayFree := FNextDelayFree;
+  if FNextDelayFree <> nil then
+    FNextDelayFree.FPrevDelayFree := FPrevDelayFree;
+
   inherited;
+end;
+
+procedure TOutputItem.DoneInput;
+begin
 end;
 
 function TOutputItem.HandleInput(ABuffer: pchar; ASize: dword): dword;
@@ -313,7 +337,7 @@ end;
 const
   ReserveChunkBytes = 12;
 
-constructor TBufferOutput.Create;
+constructor TBufferOutput.Create(ASocket: TLHTTPSocket);
 begin
   inherited;
   GetMem(FBuffer, DataBufferSize);
@@ -410,7 +434,7 @@ begin
     begin
       if FBufferPos > FBufferOffset then
       begin
-        FSocket.AddToOutput(TMemoryOutput.Create(FBuffer, FBufferOffset,
+        FSocket.AddToOutput(TMemoryOutput.Create(FSocket, FBuffer, FBufferOffset,
           FBufferPos, true));
         Inc(FSocket.RequestInfo.ContentLength, FBufferPos-FBufferOffset);
       end;
@@ -460,10 +484,10 @@ begin
   Result := FWriteBlock();
 end;
 
-constructor TMemoryOutput.Create(ABuffer: pointer; ABufferOffset, 
-  ABufferSize: integer; AFreeBuffer: boolean);
+constructor TMemoryOutput.Create(ASocket: TLHTTPSocket; ABuffer: pointer; 
+  ABufferOffset, ABufferSize: integer; AFreeBuffer: boolean);
 begin
-  inherited Create;
+  inherited Create(ASocket);
 
   FBuffer := ABuffer;
   FBufferPos := ABufferOffset;
@@ -504,8 +528,6 @@ begin
   begin
     lOutput := FCurrentOutput;
     FCurrentOutput := FCurrentOutput.FNext;
-    if lOutput = FCurrentInput then
-      FCurrentInput := nil;
     lOutput.Free;
   end;
   if FCurrentInput <> nil then
@@ -585,7 +607,7 @@ begin
   if lRead = 0 then exit;
   Inc(FBufferEnd, lRead);
   FBufferEnd^ := #0;
-  FParseBuffer();
+  ParseBuffer;
 
   if FIgnoreWrite then
     WriteBlock;
@@ -1010,7 +1032,8 @@ begin
         WriteError(hsNotFound)
       else
         WriteError(FRequestInfo.Status);
-    end;
+    end else if FRequestInputDone then
+      FCurrentInput.DoneInput;
   end;
 end;
 
@@ -1069,7 +1092,6 @@ begin
   end else begin
     WriteError(FRequestInfo.Status);
     Server.DelayFree(AOutputItem);
-    FCurrentInput := nil;
   end;
 end;
 
@@ -1078,9 +1100,15 @@ begin
   Result := Server.HandleURI(Self);
 end;
 
-procedure TLHTTPSocket.ParseBuffer; inline;
+function TLHTTPSocket.ParseBuffer: boolean;
 begin
-  FParseBuffer();
+  Result := FParseBuffer();
+  if not Result and not FRequestInputDone then
+  begin
+    FRequestInputDone := true;
+    if FCurrentInput <> nil then
+      FCurrentInput.DoneInput;
+  end;
 end;
 
 procedure TLHTTPSocket.WriteBlock;
@@ -1095,8 +1123,6 @@ begin
       FCurrentOutput := FCurrentOutput.FNext;
       if lFreeOutput = FLastOutput then
         FLastOutput := nil;
-      if lFreeOutput = FCurrentInput then
-        FCurrentInput := nil;
       lFreeOutput.Free;
     end;
     { nothing left to write, request was busy and now completed }
@@ -1114,7 +1140,7 @@ begin
         { rewind buffer pointers if at end of buffer anyway }
         if FBufferPos = FBufferEnd then
           PackRequestBuffer;
-        if FParseBuffer() and FPendingData then 
+        if ParseBuffer and FPendingData then 
         begin
           { end of input buffer reached, try reading more }
           HandleReceive;
@@ -1134,7 +1160,7 @@ begin
   FRequestInfo.Status := AStatus;
   FRequestInfo.ContentLength := Length(lMessage);
   FRequestInfo.TransferEncoding := teIdentity;
-  WriteHeaders(nil, TMemoryOutput.Create(PChar(lMessage), 0, Length(lMessage), false));
+  WriteHeaders(nil, TMemoryOutput.Create(Self, PChar(lMessage), 0, Length(lMessage), false));
 end;
 
 procedure TLHTTPSocket.WriteHeaders(AHeaderResponse, ADataResponse: TOutputItem);
@@ -1190,7 +1216,7 @@ begin
     AHeaderResponse.FBuffer := lMessage.Memory;
     AHeaderResponse.FBufferSize := lMessage.Pos-lMessage.Memory;
   end else
-    AddToOutput(TMemoryOutput.Create(lMessage.Memory, 0,
+    AddToOutput(TMemoryOutput.Create(Self, lMessage.Memory, 0,
       lMessage.Pos-lMessage.Memory, true));
 
   if ADataResponse <> nil then
@@ -1211,7 +1237,6 @@ begin
     FCurrentOutput := AOutputItem;
   end;
   FLastOutput := AOutputItem;
-  AOutputItem.Socket := Self;
 end;
 
 { TLHTTPServer }
@@ -1237,14 +1262,16 @@ begin
   while FDelayFreeItems <> nil do
   begin
     lItem := FDelayFreeItems;
-    FDelayFreeItems := FDelayFreeItems.FNext;
+    FDelayFreeItems := FDelayFreeItems.FNextDelayFree;
     lItem.Free;
   end;
 end;
 
 procedure TLHTTPServer.DelayFree(AOutputItem: TOutputItem);
 begin
-  AOutputItem.FNext := FDelayFreeItems;
+  if FDelayFreeItems <> nil then
+    FDelayFreeItems.FPrevDelayFree := AOutputItem;
+  AOutputItem.FNextDelayFree := FDelayFreeItems;
   FDelayFreeItems := AOutputItem;
 end;
 
