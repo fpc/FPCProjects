@@ -665,7 +665,10 @@ begin
   end;
   if Assigned(FRootSock) then
     FEventer.AddHandle(FRootSock);
-  FEventer.Timeout:=FTimeout;
+  if (FEventer.Timeout = 0) and (FTimeout > 0) then
+    FEventer.Timeout:=FTimeout
+  else
+    FTimeout:=FEventer.Timeout;
 end;
 
 procedure TLConnection.FreeSocks;
