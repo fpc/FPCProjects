@@ -88,7 +88,6 @@ const
 var
   Doer: TDoer;
   Subject, Sender, Recipients, Message: string;
-  i: Integer;
 begin
   Quit:=False;
   Doer:=TDoer.Create;
