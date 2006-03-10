@@ -87,20 +87,25 @@ end;
 
 function TLEpollEventer.CallAction: Boolean;
 var
-  i, n, m: Integer;
+  i, MasterChanges, Changes, ReadChanges: Integer;
   Temp, TempRead: TLHandle;
   MasterEvents: array[0..1] of TEpollEvent;
 begin
-  n:=epoll_wait(FEpollMasterFD, @MasterEvents, 2, FTimeout);
-  if n > 0 then begin
-    n:=epoll_wait(FEpollFD, @FEvents[0], FCount, 0);
-    m:=epoll_wait(FEpollReadFD, @FEventsRead[0], FCount, 0);
-    if (n < 0) or (m < 0) then
-      Bail('Error on epoll: ', LSocketError);
-    Result:=n + m > 0;
+  Result:=False;
+  MasterChanges:=epoll_wait(FEpollMasterFD, @MasterEvents, 2, FTimeout);
+  if MasterChanges > 0 then begin
+    for i:=0 to MasterChanges-1 do
+      if MasterEvents[i].Data.fd = FEpollFD then
+        Changes:=epoll_wait(FEpollFD, @FEvents[0], FCount, 0)
+      else
+        ReadChanges:=epoll_wait(FEpollReadFD, @FEventsRead[0], FCount, 0);
+    if (Changes < 0) or (ReadChanges < 0) then
+      Bail('Error on epoll: ', LSocketError)
+    else
+      Result:=Changes + ReadChanges > 0;
     if Result then begin
-      for i:=0 to Max(n, m)-1 do begin
-        if i < n then begin
+      for i:=0 to Max(Changes, ReadChanges)-1 do begin
+        if i < Changes then begin
           Temp:=TLHandle(FEvents[i].data.ptr);
           Temp.FReferenced:=True;
           if (FEvents[i].events and EPOLLERR = EPOLLERR)
@@ -113,7 +118,7 @@ begin
             if Assigned(Temp.FOnWrite) then
               Temp.FOnWrite(Temp);
         end; // normals
-        if i < m then begin
+        if i < ReadChanges then begin
           TempRead:=TLHandle(FEventsRead[i].data.ptr);
           TempRead.FReferenced:=True;
 
@@ -122,7 +127,7 @@ begin
               TempRead.FOnRead(TempRead);
         end; // reads
 
-        if i < n then begin
+        if i < Changes then begin
           Temp.FReferenced:=False;
           if Temp.FDispose and (Temp <> TempRead) then
             if Temp.FDestroyed then
@@ -131,7 +136,7 @@ begin
               Temp.Free;
         end;
 
-        if i < m then begin
+        if i < ReadChanges then begin
           TempRead.FReferenced:=False;
           if TempRead.FDispose then
             if TempRead.FDestroyed then
