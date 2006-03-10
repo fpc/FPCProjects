@@ -43,7 +43,7 @@ end;
 
 procedure TLEpollEventer.SetTimeout(const Value: DWord);
 begin
-  FTimeout:=cInt(Value) div 2;
+  FTimeout:=cInt(Value);
 end;
 
 procedure TLEpollEventer.Inflate;
