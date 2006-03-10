@@ -12,7 +12,10 @@
    protected
     FTimeout: cInt;
     FEvents: array of TEpollEvent;
-    FEpollFD: THandle;
+    FEventsRead: array of TEpollEvent;
+    FEpollReadFD: THandle;   // this one monitors LT style for READ
+    FEpollFD: THandle;       // this one monitors ET style for other
+    FEpollMasterFD: THandle; // this one monitors the first two
     FFreeList: TFPObjectList;
     function GetTimeout: DWord; override;
     procedure SetTimeout(const Value: DWord); override;

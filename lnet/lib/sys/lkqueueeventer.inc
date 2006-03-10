@@ -107,7 +107,7 @@ begin
             @FEvents[0], Length(FEvents), @FTimeout);
   FFreeSlot:=0;
   if n < 0 then
-    Bail('Error on kqueue: ', SocketError);
+    Bail('Error on kqueue: ', LSocketError);
   Result:=n > 0;
   if Result then begin
     for i:=0 to n-1 do begin
