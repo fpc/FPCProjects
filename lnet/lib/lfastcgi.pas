@@ -538,6 +538,7 @@ begin
       begin
         FRequest.HandleReceive;
         if FContentLength = 0 then Flush;
+        exit;
       end;
       fsFlush: Flush;
     end;

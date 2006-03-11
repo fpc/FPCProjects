@@ -199,6 +199,7 @@ type
     FPendingData: boolean;
     FRequestInputDone: boolean;
     FRequestHeaderDone: boolean;
+    FOutputDone: boolean;
     FInputRemaining: dword;
     FLogMessage: TStringBuffer;
     FChunkState: TChunkState;
@@ -389,9 +390,9 @@ begin
   if not FOutputPending and not FEof then
   begin
     FEof := WriteData;
+    FOutputPending := true;
     if FBufferPos - FBufferOffset > 0 then
     begin
-      FOutputPending := true;
       lOffset := HexReverse(FBufferPos-FBufferOffset, FBuffer+FBufferOffset-3);
       FBuffer[FBufferOffset-2] := #13;
       FBuffer[FBufferOffset-1] := #10;
@@ -400,12 +401,11 @@ begin
       FBufferSize := FBufferPos+2;
       FBufferPos := FBufferOffset-lOffset-2;
     end else begin
-      FBufferSize := 0;
       FBufferPos := 0;
+      FBufferSize := 0;
     end;
     if FEof then
     begin
-      FOutputPending := true;
       FBuffer[FBufferSize] := '0';
       FBuffer[FBufferSize+1] := #13;
       FBuffer[FBufferSize+2] := #10;
@@ -593,6 +593,7 @@ begin
   if FRequestInputDone then 
   begin
     FPendingData := true;
+    FIgnoreRead := true;
     exit;
   end;
   
@@ -739,7 +740,7 @@ function TLHTTPSocket.ParseRequest: boolean;
 var
   pNextLine, pLineEnd: pchar;
 begin
-  if FRequestHeaderDone then exit(false);
+  if FRequestHeaderDone then exit(not FRequestInputDone);
   repeat
     pLineEnd := StrScan(FBufferPos, #10);
     if pLineEnd = nil then
@@ -755,7 +756,7 @@ begin
     ParseLine(pLineEnd);
     FBufferPos := pNextLine;
     if FRequestHeaderDone then
-      exit(false);
+      exit(not FRequestInputDone);
   until false;
 end;
 
@@ -909,8 +910,8 @@ begin
 
   if FBufferPos[0] = #0 then
   begin
-    ProcessRequest;
     FRequestHeaderDone := true;
+    ProcessRequest;
   end else
     ParseParameterLine(pLineEnd);
 end;
@@ -1129,23 +1130,32 @@ begin
     if FCurrentOutput = nil then
     begin
       LogMessage;
+      FOutputDone := true;
       if not FKeepAlive then
       begin
         Disconnect;
-      end else begin
-        FRequestInputDone := false;
-        FRequestHeaderDone := false;
-        FRequestPos := FBufferPos;
-        FlushRequest;
-        { rewind buffer pointers if at end of buffer anyway }
-        if FBufferPos = FBufferEnd then
-          PackRequestBuffer;
-        if ParseBuffer and FPendingData then 
-        begin
-          { end of input buffer reached, try reading more }
-          HandleReceive;
-        end;
+        exit;
       end;
+    end;
+  end;
+  if FOutputDone and FRequestInputDone then
+  begin
+    if FRequestInputDone then
+    begin
+      { next request }
+      FRequestInputDone := false;
+      FRequestHeaderDone := false;
+      FOutputDone := false;
+      FRequestPos := FBufferPos;
+      FlushRequest;
+      { rewind buffer pointers if at end of buffer anyway }
+      if FBufferPos = FBufferEnd then
+        PackRequestBuffer;
+    end;
+    if ParseBuffer and FPendingData then 
+    begin
+      { end of input buffer reached, try reading more }
+      HandleReceive;
     end;
   end;
 end;
@@ -1153,14 +1163,20 @@ end;
 procedure TLHTTPSocket.WriteError(AStatus: TLHTTPStatus);
 var
   lMessage: string;
+  lMsgOutput: TMemoryOutput;
 begin
-  FKeepAlive := false;
+  if AStatus >= hsBadRequest then
+    FKeepAlive := false;
   lMessage := HTTPDescriptions[AStatus];
   FRequestInfo.ContentType := 'text/html';
   FRequestInfo.Status := AStatus;
   FRequestInfo.ContentLength := Length(lMessage);
   FRequestInfo.TransferEncoding := teIdentity;
-  WriteHeaders(nil, TMemoryOutput.Create(Self, PChar(lMessage), 0, Length(lMessage), false));
+  if Length(lMessage) > 0 then
+    lMsgOutput := TMemoryOutput.Create(Self, PChar(lMessage), 0, Length(lMessage), false)
+  else
+    lMsgOutput := nil;
+  WriteHeaders(nil, lMsgOutput);
 end;
 
 procedure TLHTTPSocket.WriteHeaders(AHeaderResponse, ADataResponse: TOutputItem);
