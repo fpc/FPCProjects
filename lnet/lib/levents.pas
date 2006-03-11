@@ -70,10 +70,14 @@ type
     FCount: Integer;
     FOnError: TLEventerErrorCallback;
     FReferences: Integer;
+    FFreeRoot: TLHandle; // the root of "free" list if any
+    FFreeIter: TLHandle; // the last of "free" list if any
     function GetTimeout: DWord; virtual;
     procedure SetTimeout(const Value: DWord); virtual;
     procedure UnplugHandle(aHandle: TLHandle); virtual;
     procedure Bail(const msg: string; const Ernum: Integer);
+    procedure AddForFree(aHandle: TLHandle);
+    procedure FreeHandles;
    public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -156,6 +160,8 @@ end;
 constructor TLEventer.Create;
 begin
   FRoot:=nil;
+  FFreeRoot:=nil;
+  FFreeIter:=nil;
   FCount:=0;
   FReferences:=1;
 end;
@@ -192,6 +198,32 @@ procedure TLEventer.Bail(const msg: string; const Ernum: Integer);
 begin
   if Assigned(FOnError) then
     FOnError(msg + ': [' + IntToStr(Ernum) + '] ' + LStrError(Ernum), Self);
+end;
+
+procedure TLEventer.AddForFree(aHandle: TLHandle);
+begin
+  aHandle.FDestroyed:=True;
+  if not Assigned(FFreeIter) then begin
+    FFreeIter:=aHandle;
+    FFreeRoot:=aHandle;
+  end else begin
+    FFreeIter.FreeNext:=aHandle;
+    FFreeIter:=aHandle;
+  end;
+end;
+
+procedure TLEventer.FreeHandles;
+var
+  Temp, Temp2: TLHandle;
+begin
+  Temp:=FFreeRoot;
+  while Assigned(Temp) do begin
+    Temp2:=Temp.FreeNext;
+    Temp.Free;
+    Temp:=Temp2;
+  end;
+  FFreeRoot:=nil;
+  FFreeIter:=nil;
 end;
 
 function TLEventer.AddHandle(aHandle: TLHandle): Boolean;

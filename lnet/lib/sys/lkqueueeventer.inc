@@ -7,8 +7,6 @@
 constructor TLKQueueEventer.Create;
 begin
   inherited Create;
-  FFreeRoot:=nil;
-  FFreeIter:=nil;
   Inflate;
   FFreeSlot:=0;
   FTimeout.tv_sec:=0;
@@ -20,8 +18,6 @@ end;
 
 destructor TLKQueueEventer.Destroy;
 begin
-  if Assigned(FFreeRoot) then
-    FreeHandles;
   fpClose(FQueue);
   inherited Destroy;
 end;
@@ -51,32 +47,6 @@ begin
     SetLength(FChanges, BASE_SIZE);
     SetLength(FEvents, BASE_SIZE);
   end;
-end;
-
-procedure TLKQueueEventer.AddForFree(aHandle: TLHandle);
-begin
-  aHandle.FDestroyed:=True;
-  if not Assigned(FFreeIter) then begin
-    FFreeIter:=aHandle;
-    FFreeRoot:=aHandle;
-  end else begin
-    FFreeIter.FreeNext:=aHandle;
-    FFreeIter:=aHandle;
-  end;
-end;
-
-procedure TLKQueueEventer.FreeHandles;
-var
-  Temp, Temp2: TLHandle;
-begin
-  Temp:=FFreeRoot;
-  while Assigned(Temp) do begin
-    Temp2:=Temp.FreeNext;
-    Temp.Free;
-    Temp:=Temp2;
-  end;
-  FFreeRoot:=nil;
-  FFreeIter:=nil;
 end;
 
 function TLKQueueEventer.AddHandle(aHandle: TLHandle): Boolean;

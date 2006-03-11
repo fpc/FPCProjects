@@ -92,6 +92,8 @@ var
   MasterEvents: array[0..1] of TEpollEvent;
 begin
   Result:=False;
+  Changes:=0;
+  ReadChanges:=0;
   MasterChanges:=epoll_wait(FEpollMasterFD, @MasterEvents, 2, FTimeout);
   if MasterChanges > 0 then begin
     for i:=0 to MasterChanges-1 do
@@ -117,7 +119,11 @@ begin
           or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then
             if Assigned(Temp.FOnWrite) then
               Temp.FOnWrite(Temp);
+          Temp.FReferenced:=False;
+          if Temp.FDispose then
+            AddForFree(Temp);
         end; // normals
+        
         if i < ReadChanges then begin
           TempRead:=TLHandle(FEventsRead[i].data.ptr);
           TempRead.FReferenced:=True;
@@ -125,26 +131,13 @@ begin
           if FEventsRead[i].events and EPOLLIN = EPOLLIN then
             if Assigned(TempRead.FOnRead) then
               TempRead.FOnRead(TempRead);
-        end; // reads
-
-        if i < Changes then begin
-          Temp.FReferenced:=False;
-          if Temp.FDispose and (Temp <> TempRead) then
-            if Temp.FDestroyed then
-              Temp.FreeInstance
-            else
-              Temp.Free;
-        end;
-
-        if i < ReadChanges then begin
           TempRead.FReferenced:=False;
           if TempRead.FDispose then
-            if TempRead.FDestroyed then
-              TempRead.FreeInstance
-            else
-              TempRead.Free;
-        end;
+            AddForFree(TempRead);
+        end; // reads
       end;
+      if Assigned(FFreeRoot) then
+        FreeHandles;
     end;
   end;
 end;
