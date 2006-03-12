@@ -140,7 +140,7 @@ end;
 
 destructor TLHandle.Destroy;
 begin
-  if Assigned(FEventer) then
+  if not FReferenced and Assigned(FEventer) then
     FEventer.UnplugHandle(Self);
 end;
 
