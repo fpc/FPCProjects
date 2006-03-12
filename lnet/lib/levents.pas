@@ -38,7 +38,8 @@ type
     FIgnoreError: Boolean;   // so we can do edge-triggered
     FDispose: Boolean;       // will free in the after-cycle
     FReferenced: Boolean;    // is being referenced by eventer in loop
-    FDestroyed: Boolean;
+    FDestroyed: Boolean;     // used for making sure it's not going to get freed in bad time
+    FFreeing: Boolean;       // used to see if it's in the "to be freed" list
     FPrev: TLHandle;
     FNext: TLHandle;
     FFreeNext: TLHandle;
@@ -132,7 +133,10 @@ begin
   FPrev:=nil;
   FNext:=nil;
   FFreeNext:=nil;
+  FDestroyed:=False;
+  FFreeing:=False;
   FDispose:=False;
+  FReferenced:=False;
   FIgnoreWrite:=False;
   FIgnoreRead:=False;
   FIgnoreError:=False;
@@ -202,13 +206,15 @@ end;
 
 procedure TLEventer.AddForFree(aHandle: TLHandle);
 begin
-  aHandle.FDestroyed:=True;
-  if not Assigned(FFreeIter) then begin
-    FFreeIter:=aHandle;
-    FFreeRoot:=aHandle;
-  end else begin
-    FFreeIter.FreeNext:=aHandle;
-    FFreeIter:=aHandle;
+  if not aHandle.FFreeing then begin
+    aHandle.FFreeing:=True;
+    if not Assigned(FFreeIter) then begin
+      FFreeIter:=aHandle;
+      FFreeRoot:=aHandle;
+    end else begin
+      FFreeIter.FreeNext:=aHandle;
+      FFreeIter:=aHandle;
+    end;
   end;
 end;
 
