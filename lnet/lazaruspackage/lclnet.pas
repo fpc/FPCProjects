@@ -39,6 +39,7 @@ type
     FEventHandle: PEventHandler;
     FWinObject: THandle;   // for win32
     FFlags: DWord;
+    FReferenced: Boolean;
     function CanSend: Boolean; override;
     function CanReceive: Boolean; override;
     procedure SetNonBlock; override;
@@ -47,6 +48,7 @@ type
    public
     constructor Create; override;
     procedure Disconnect; override;
+    procedure Free;
   end;
   
 implementation
@@ -56,6 +58,13 @@ implementation
 {$else}
   {$i lclsocketgtk.inc}
 {$endif}
+
+procedure TLCLSocket.Free;
+begin
+  FDispose:=True;
+  if not FReferenced then
+    TObject(Self).Free;
+end;
 
 end.
 
