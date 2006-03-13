@@ -26,7 +26,7 @@ type
 
   { TLHandle }
 
-  TLHandle = class
+  TLHandle = class(TObject)
    protected
     FHandle: THandle;
     FEventer: TLEventer;     // "queue holder"
@@ -45,6 +45,7 @@ type
    public
     constructor Create; virtual;
     destructor Destroy; override;
+    procedure Free;          // this is a trick
     property Prev: TLHandle read FPrev write FPrev;
     property Next: TLHandle read FNext write FNext;
     property FreeNext: TLHandle read FFreeNext write FFreeNext;
@@ -142,6 +143,14 @@ destructor TLHandle.Destroy;
 begin
   if Assigned(FEventer) then
     FEventer.UnplugHandle(Self);
+end;
+
+procedure TLHandle.Free;
+begin
+  if Assigned(FEventer) and FEventer.FInLoop then
+    FEventer.AddForFree(Self)
+  else
+    inherited Free;
 end;
 
 { TLEventer }
@@ -243,10 +252,7 @@ end;
 
 procedure TLEventer.RemoveHandle(aHandle: TLHandle);
 begin
-  if FInLoop then
-    AddForFree(aHandle)
-  else
-    aHandle.Free;
+  aHandle.Free;
 end;
 
 procedure TLEventer.LoadFromEventer(aEventer: TLEventer);
@@ -265,10 +271,7 @@ begin
   while Assigned(Temp2) do begin
     Temp1:=Temp2;
     Temp2:=Temp1.FNext;
-    if FInLoop then
-      AddForFree(Temp1)
-    else
-      Temp1.Free;
+    Temp1.Free;
   end;
   FRoot:=nil;
 end;

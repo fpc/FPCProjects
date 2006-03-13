@@ -682,7 +682,7 @@ begin
   while Assigned(Tmp) do begin
     Tmp2:=Tmp;
     Tmp:=Tmp.NextSock;
-    Tmp2.FDispose:=True;
+    Tmp2.Free;
   end;
 end;
 
@@ -1011,7 +1011,7 @@ begin
       ReceiveEvent(aSocket);
       if not Connected then begin
         DisconnectEvent(aSocket);
-        aSocket.Dispose:=True;
+        aSocket.Free;
       end;
     end;
   end;
