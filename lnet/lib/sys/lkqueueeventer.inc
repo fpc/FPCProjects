@@ -80,6 +80,7 @@ begin
     Bail('Error on kqueue: ', LSocketError);
   Result:=n > 0;
   if Result then begin
+    FInLoop:=True;
     for i:=0 to n-1 do begin
       Temp:=TLHandle(FEvents[i].uData);
       Temp.FReferenced:=True;
@@ -101,7 +102,7 @@ begin
       if Temp.FDispose and not Temp.FDestroyed then
         AddForFree(Temp);
     end;
-    
+    FInLoop:=False;
     if Assigned(FFreeRoot) then
       FreeHandles;
   end;

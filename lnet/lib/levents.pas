@@ -70,6 +70,7 @@ type
     FReferences: Integer;
     FFreeRoot: TLHandle; // the root of "free" list if any
     FFreeIter: TLHandle; // the last of "free" list if any
+    FInLoop: Boolean;
     function GetTimeout: DWord; virtual;
     procedure SetTimeout(const Value: DWord); virtual;
     procedure UnplugHandle(aHandle: TLHandle); virtual;
@@ -150,6 +151,7 @@ begin
   FRoot:=nil;
   FFreeRoot:=nil;
   FFreeIter:=nil;
+  FInLoop:=False;
   FCount:=0;
   FReferences:=1;
 end;
@@ -241,7 +243,10 @@ end;
 
 procedure TLEventer.RemoveHandle(aHandle: TLHandle);
 begin
-  aHandle.Free;
+  if FInLoop then
+    AddForFree(aHandle)
+  else
+    aHandle.Free;
 end;
 
 procedure TLEventer.LoadFromEventer(aEventer: TLEventer);
@@ -260,7 +265,10 @@ begin
   while Assigned(Temp2) do begin
     Temp1:=Temp2;
     Temp2:=Temp1.FNext;
-    Temp1.Free;
+    if FInLoop then
+      AddForFree(Temp1)
+    else
+      Temp1.Free;
   end;
   FRoot:=nil;
 end;
@@ -312,6 +320,7 @@ var
   TempTime: TTimeVal;
 begin
   if Assigned(FRoot) then begin
+    FInLoop:=True;
     Temp:=FRoot;
     MaxHandle:=0;
     ClearSets;
@@ -361,6 +370,9 @@ begin
           Temp2.Free;
       end;
     end;
+    FInLoop:=False;
+    if Assigned(FFreeRoot) then
+      FreeHandles;
   end;
 end;
 

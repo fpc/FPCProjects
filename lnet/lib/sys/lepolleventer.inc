@@ -106,6 +106,7 @@ begin
     else
       Result:=Changes + ReadChanges > 0;
     if Result then begin
+      FInLoop:=True;
       for i:=0 to Max(Changes, ReadChanges)-1 do begin
         if i < Changes then begin
           Temp:=TLHandle(FEvents[i].data.ptr);
@@ -132,6 +133,7 @@ begin
             AddForFree(TempRead);
         end; // reads
       end;
+      FInLoop:=False;
       if Assigned(FFreeRoot) then
         FreeHandles;
     end;
