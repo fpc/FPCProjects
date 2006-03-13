@@ -109,7 +109,6 @@ begin
       for i:=0 to Max(Changes, ReadChanges)-1 do begin
         if i < Changes then begin
           Temp:=TLHandle(FEvents[i].data.ptr);
-          Temp.FReferenced:=True;
           if (FEvents[i].events and EPOLLERR = EPOLLERR)
           or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
             if Assigned(Temp.FOnError) then
@@ -119,19 +118,16 @@ begin
           or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then
             if Assigned(Temp.FOnWrite) then
               Temp.FOnWrite(Temp);
-          Temp.FReferenced:=False;
           if Temp.FDispose then
             AddForFree(Temp);
         end; // normals
         
         if i < ReadChanges then begin
           TempRead:=TLHandle(FEventsRead[i].data.ptr);
-          TempRead.FReferenced:=True;
 
           if FEventsRead[i].events and EPOLLIN = EPOLLIN then
             if Assigned(TempRead.FOnRead) then
               TempRead.FOnRead(TempRead);
-          TempRead.FReferenced:=False;
           if TempRead.FDispose then
             AddForFree(TempRead);
         end; // reads

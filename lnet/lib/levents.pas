@@ -37,8 +37,6 @@ type
     FIgnoreRead: Boolean;    // so we can do edge-triggered
     FIgnoreError: Boolean;   // so we can do edge-triggered
     FDispose: Boolean;       // will free in the after-cycle
-    FReferenced: Boolean;    // is being referenced by eventer in loop
-    FDestroyed: Boolean;     // used for making sure it's not going to get freed in bad time
     FFreeing: Boolean;       // used to see if it's in the "to be freed" list
     FPrev: TLHandle;
     FNext: TLHandle;
@@ -47,7 +45,6 @@ type
    public
     constructor Create; virtual;
     destructor Destroy; override;
-    procedure FreeInstance; override;
     property Prev: TLHandle read FPrev write FPrev;
     property Next: TLHandle read FNext write FNext;
     property FreeNext: TLHandle read FFreeNext write FFreeNext;
@@ -133,10 +130,8 @@ begin
   FPrev:=nil;
   FNext:=nil;
   FFreeNext:=nil;
-  FDestroyed:=False;
   FFreeing:=False;
   FDispose:=False;
-  FReferenced:=False;
   FIgnoreWrite:=False;
   FIgnoreRead:=False;
   FIgnoreError:=False;
@@ -144,19 +139,8 @@ end;
 
 destructor TLHandle.Destroy;
 begin
-  if not FReferenced and Assigned(FEventer) then
+  if Assigned(FEventer) then
     FEventer.UnplugHandle(Self);
-end;
-
-procedure TLHandle.FreeInstance;
-begin
-  { if self is referenced in main eventer loop, do not free memory yet }
-  if FReferenced then
-  begin
-    FDispose := true;
-    FDestroyed := true;
-  end else
-    inherited;
 end;
 
 { TLEventer }
@@ -362,7 +346,6 @@ begin
     if Result then begin
       Temp:=FRoot;
       while Assigned(Temp) do begin
-        Temp.FReferenced := true;
         if fpFD_ISSET(Temp.FHandle, FWriteFDSet) <> 0 then
           if Assigned(Temp.FOnWrite) then
             Temp.FOnWrite(Temp);
@@ -374,12 +357,8 @@ begin
             Temp.FOnError(Temp);
         Temp2:=Temp;
         Temp:=Temp.FNext;
-        Temp2.FReferenced := false;
         if Temp2.FDispose then
-          if Temp2.FDestroyed then
-            Temp2.FreeInstance
-          else
-            Temp2.Free;
+          Temp2.Free;
       end;
     end;
   end;

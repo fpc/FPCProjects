@@ -69,6 +69,7 @@ type
     FCanSend: Boolean;
     FCanReceive: Boolean;
     FServerSocket: Boolean;
+    FOnFree: TLProc;
    protected
     function DoSend(const TheData; const TheSize: Integer): Integer;
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
@@ -244,6 +245,7 @@ type
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle); override;
     procedure Bail(const msg: string; aSocket: TLSocket);
+    procedure SocketDisconnect(aSocket: TLSocket);
    public
     constructor Create(aOwner: TComponent); override;
     function Connect(const Address: string; const APort: Word): Boolean; override;
@@ -256,7 +258,6 @@ type
     procedure CallAction; override;
     procedure IterReset; override;
     procedure Disconnect; override;
-    procedure DisconnectSocket(var aSocket: TLSocket);
     property OnAccept: TLProc read FOnAccept write FOnAccept;
     property OnConnect: TLProc read FOnConnect write FOnConnect;
   end;
@@ -285,6 +286,8 @@ end;
 
 destructor TLSocket.Destroy;
 begin
+  if Assigned(FOnFree) then
+    FOnFree(Self);
   Disconnect;
   inherited Destroy;
 end;
@@ -679,7 +682,7 @@ begin
   while Assigned(Tmp) do begin
     Tmp2:=Tmp;
     Tmp:=Tmp.NextSock;
-    Tmp2.Free;
+    Tmp2.FDispose:=True;
   end;
 end;
 
@@ -886,9 +889,30 @@ procedure TLTcp.Bail(const msg: string; aSocket: TLSocket);
 begin
   ErrorEvent(msg, aSocket);
   if Assigned(aSocket) then
-    DisconnectSocket(aSocket)
+    aSocket.Disconnect
   else
     Disconnect;
+end;
+
+procedure TLTcp.SocketDisconnect(aSocket: TLSocket);
+begin
+  if aSocket = FIterator then begin
+    if Assigned(FIterator.NextSock) then
+      FIterator:=FIterator.NextSock
+    else if Assigned(FIterator.PrevSock) then
+      FIterator:=FIterator.PrevSock
+    else FIterator:=nil; // NOT iterreset, not reorganized yet
+    if Assigned(FIterator) and FIterator.FServerSocket then
+      FIterator:=nil;
+  end;
+
+  if aSocket = FRootSock then
+    FRootSock:=aSocket.NextSock;
+  if Assigned(aSocket.PrevSock) then
+    aSocket.PrevSock.NextSock:=aSocket.NextSock;
+  if Assigned(aSocket.NextSock) then
+    aSocket.NextSock.PrevSock:=aSocket.PrevSock;
+  Dec(FCount);
 end;
 
 function TLTcp.InitSocket(aSocket: TLSocket): TLSocket;
@@ -896,6 +920,7 @@ begin
   Result:=inherited InitSocket(aSocket);
   aSocket.SocketType:=SOCK_STREAM;
   aSocket.Protocol:=PROTO_TCP;
+  aSocket.FOnFree:=@SocketDisconnect;
 end;
 
 function TLTcp.IterNext: Boolean;
@@ -919,39 +944,10 @@ procedure TLTcp.Disconnect;
 var
   aSocket, Tmp: TLSocket;
 begin
-  aSocket:=FRootSock;
-  while Assigned(aSocket) do begin
-    Tmp:=aSocket;
-    DisconnectSocket(aSocket);
-    aSocket:=aSocket.NextSock;
-    Tmp.Free;
-  end;
-
+  FreeSocks;
   FRootSock:=nil;
   FCount:=0;
   FIterator:=nil;
-end;
-
-procedure TLTcp.DisconnectSocket(var aSocket: TLSocket);
-begin
-  if aSocket = FIterator then begin
-    if Assigned(FIterator.NextSock) then
-      FIterator:=FIterator.NextSock
-    else if Assigned(FIterator.PrevSock) then
-      FIterator:=FIterator.PrevSock
-    else FIterator:=nil; // NOT iterreset, not reorganized yet
-    if Assigned(FIterator) and FIterator.FServerSocket then
-      FIterator:=nil;
-  end;
-
-  if aSocket = FRootSock then
-    FRootSock:=aSocket.NextSock;
-  if Assigned(aSocket.PrevSock) then
-    aSocket.PrevSock.NextSock:=aSocket.NextSock;
-  if Assigned(aSocket.NextSock) then
-    aSocket.NextSock.PrevSock:=aSocket.PrevSock;
-  aSocket.Disconnect;
-  Dec(FCount);
 end;
 
 procedure TLTcp.CallAction;
@@ -1015,7 +1011,7 @@ begin
       ReceiveEvent(aSocket);
       if not Connected then begin
         DisconnectEvent(aSocket);
-        DisconnectSocket(TLSocket(aSocket));
+        aSocket.Dispose:=True;
       end;
     end;
   end;
