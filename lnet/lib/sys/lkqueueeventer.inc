@@ -83,7 +83,6 @@ begin
     FInLoop:=True;
     for i:=0 to n-1 do begin
       Temp:=TLHandle(FEvents[i].uData);
-      Temp.FReferenced:=True;
       
       if (FEvents[i].Flags and EV_ERROR) > 0 then
         if Assigned(Temp.FOnError) then
@@ -96,10 +95,8 @@ begin
       if FEvents[i].Filter = EVFILT_READ then
         if Assigned(Temp.FOnRead) then
           Temp.FOnRead(Temp);
-          
-      Temp.FReferenced:=False;
       
-      if Temp.FDispose and not Temp.FDestroyed then
+      if Temp.FDispose then
         AddForFree(Temp);
     end;
     FInLoop:=False;
