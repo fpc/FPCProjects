@@ -597,7 +597,7 @@ begin
     exit;
   end;
   
-  if ptruint(FBufferEnd-FBuffer) = FBufferSize then
+  if ptruint(FBufferEnd-FBuffer) = FBufferSize-1 then
   begin
     WriteError(hsRequestTooLong);
     exit;
@@ -1102,14 +1102,21 @@ begin
 end;
 
 function TLHTTPSocket.ParseBuffer: boolean;
+var
+  lParseFunc: TParseBufferMethod;
 begin
-  Result := FParseBuffer();
-  if not Result and not FRequestInputDone then
-  begin
-    FRequestInputDone := true;
-    if FCurrentInput <> nil then
-      FCurrentInput.DoneInput;
-  end;
+  repeat
+    lParseFunc := FParseBuffer;
+    Result := FParseBuffer();
+    if not Result and not FRequestInputDone then
+    begin
+      FRequestInputDone := true;
+      if FCurrentInput <> nil then
+        FCurrentInput.DoneInput;
+    end;
+    { if parse func changed mid-run, then we should continue calling the new 
+      one: header + data }
+  until (lParseFunc = FParseBuffer) or not Result;
 end;
 
 procedure TLHTTPSocket.WriteBlock;

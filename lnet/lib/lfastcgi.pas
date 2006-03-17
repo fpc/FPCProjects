@@ -301,15 +301,22 @@ end;
 
 function  TLFastCGIRequest.SendInput(const ABuffer: pchar; ASize: integer): integer;
 begin
+  { first send current buffer if any }
+  if FInputBuffer <> nil then
+  begin
+    Result := SendBuffer;
+    if FInputBuffer <> nil then exit;
+  end else Result := 0;
+  if Result >= ASize then exit;
   if FInputBuffer = nil then
   begin
-    FInputBuffer := ABuffer;
-    FInputSize := ASize;
+    FInputBuffer := ABuffer+Result;
+    FInputSize := ASize-Result;
     FHeader.ReqType := FCGI_STDIN;
-    SetContentLength(ASize);
+    SetContentLength(FInputSize);
     AppendString(FBuffer, @FHeader, sizeof(FHeader));
   end;
-  Result := SendBuffer;
+  Inc(Result, SendBuffer);
 end;
 
 function TLFastCGIRequest.SendPrivateBuffer: boolean;
@@ -339,6 +346,10 @@ function TLFastCGIRequest.SendBuffer: integer;
 var
   lWritten: integer;
 begin
+  { already a queue and we are not first in line ? no use in trying to send then }
+  if (FClient.FSendRequest <> nil) and (FClient.FSendRequest <> Self) then 
+    exit(0);
+
   { non-empty header to be sent? }
   if FBuffer.Pos <> FBuffer.Memory then
     if not SendPrivateBuffer then exit(0);
