@@ -376,14 +376,14 @@ begin
     {$endif}
     if Result = 0 then
       Disconnect;
-    if Result = INVALID_SOCKET then
+    if Result = INVALID_SOCKET then begin
       if LSocketError = BLOCK_ERROR then begin
         FCanReceive := False;
         FIgnoreRead := False;
       end else Bail('Receive Error', LSocketError);
+      Result:=0;
+    end;
   end;
-  if not Connected then
-    Result:=0; // if it failed subsequently
 end;
 
 function TLSocket.DoSend(const TheData; const TheSize: Integer): Integer;
@@ -491,6 +491,7 @@ begin
           Result:=0;
         end else
           Bail('Send error', LSocketError);
+        Result:=0;
       end else FIgnoreWrite:=False;
     end;
  end;
