@@ -22,6 +22,7 @@ type
   TLEventer = class;
 
   TLHandleEvent = procedure (aHandle: TLHandle) of object;
+  TLHandleErrorEvent = procedure (aHandle: TLHandle; const msg: string) of object;
   TLEventerErrorCallback = procedure (const msg: string; Sender: TLEventer) of object;
 
   { TLHandle }
@@ -32,7 +33,7 @@ type
     FEventer: TLEventer;     // "queue holder"
     FOnRead: TLHandleEvent;
     FOnWrite: TLHandleEvent;
-    FOnError: TLHandleEvent;
+    FOnError: TLHandleErrorEvent;
     FIgnoreWrite: Boolean;   // so we can do edge-triggered
     FIgnoreRead: Boolean;    // so we can do edge-triggered
     FIgnoreError: Boolean;   // so we can do edge-triggered
@@ -54,7 +55,7 @@ type
     property IgnoreError: Boolean read FIgnoreError write FIgnoreError;
     property OnRead: TLHandleEvent read FOnRead write FOnRead;
     property OnWrite: TLHandleEvent read FOnWrite write FOnWrite;
-    property OnError: TLHandleEvent read FOnError write FOnError;
+    property OnError: TLHandleErrorEvent read FOnError write FOnError;
     property UserData: Pointer read FUserData write FUserData;
     property Dispose: Boolean read FDispose write FDispose;
     property Handle: THandle read FHandle write FHandle;
@@ -366,7 +367,7 @@ begin
             Temp.FOnRead(Temp);
         if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FErrorFDSet) <> 0) then
           if Assigned(Temp.FOnError) then
-            Temp.FOnError(Temp);
+            Temp.FOnError(Temp, 'Handle error');
         Temp2:=Temp;
         Temp:=Temp.FNext;
         if Temp2.FDispose then
