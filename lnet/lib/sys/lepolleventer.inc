@@ -113,7 +113,7 @@ begin
           if (FEvents[i].events and EPOLLERR = EPOLLERR)
           or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
             if Assigned(Temp.FOnError) then
-              Temp.FOnError(Temp, 'Epoll error');
+              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
 
           if (FEvents[i].events and EPOLLOUT = EPOLLOUT)
           or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then

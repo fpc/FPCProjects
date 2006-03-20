@@ -86,7 +86,7 @@ begin
       
       if (FEvents[i].Flags and EV_ERROR) > 0 then
         if Assigned(Temp.FOnError) then
-          Temp.FOnError(Temp, 'Handle error');
+          Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
 
       if FEvents[i].Filter = EVFILT_WRITE then
         if Assigned(Temp.FOnWrite) then

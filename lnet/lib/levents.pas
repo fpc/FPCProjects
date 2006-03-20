@@ -367,7 +367,7 @@ begin
             Temp.FOnRead(Temp);
         if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FErrorFDSet) <> 0) then
           if Assigned(Temp.FOnError) then
-            Temp.FOnError(Temp, 'Handle error');
+            Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
         Temp2:=Temp;
         Temp:=Temp.FNext;
         if Temp2.FDispose then
