@@ -43,7 +43,7 @@ type
     FID: integer;
     FClient: TLFastCGIClient;
     FBuffer: TStringBuffer;
-    FBufferSendPos: pchar;
+    FBufferSendPos: integer;
     FHeader: FCGI_Header;
     FInputBuffer: pchar;
     FInputSize: integer;
@@ -327,15 +327,14 @@ begin
   if (FClient.FSendRequest <> nil) and (FClient.FSendRequest <> Self) then 
     exit(false);
 
-  if FBufferSendPos = nil then
-    FBufferSendPos := FBuffer.Memory;
-  lWritten := FClient.Send(FBufferSendPos^, FBuffer.Pos-FBufferSendPos);
+  lWritten := FClient.Send(FBuffer.Memory[FBufferSendPos], 
+    FBuffer.Pos-FBuffer.Memory-FBufferSendPos);
   Inc(FBufferSendPos, lWritten);
-  Result := FBufferSendPos = FBuffer.Pos;
+  Result := FBufferSendPos = FBuffer.Pos-FBuffer.Memory;
   if Result then
   begin
     { all of headers written }
-    FBufferSendPos := nil;
+    FBufferSendPos := 0;
     { rewind stringbuffer }
     FBuffer.Pos := FBuffer.Memory;
   end else
@@ -534,7 +533,7 @@ begin
         FReqType := lHeader^.ReqType;
         lReqIndex := (lHeader^.RequestIDB1 shl 8) or lHeader^.RequestIDB0;
         FContentLength := (lHeader^.ContentLengthB1 shl 8) or lHeader^.ContentLengthB0;
-        FPaddingLength := (lHeader^.PaddingLength);
+        FPaddingLength := lHeader^.PaddingLength;
         Inc(FBufferPos, sizeof(lHeader^));
         if lReqIndex > 0 then
           Dec(lReqIndex);
@@ -548,8 +547,10 @@ begin
       fsData: 
       begin
         FRequest.HandleReceive;
-        if FContentLength = 0 then Flush;
-        exit;
+        if FContentLength = 0 then 
+          Flush
+        else
+          exit;
       end;
       fsFlush: Flush;
     end;
