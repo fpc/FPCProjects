@@ -1,0 +1,20 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TForm1','FORMDATA',[
+  'TPF0'#6'TForm1'#5'Form1'#7'Caption'#6#20'EvalTest for Lazarus'#12'ClientHeig'
+  +'ht'#3','#1#11'ClientWidth'#3#144#1#13'PixelsPerInch'#2'`'#8'Position'#7#14
+  +'poScreenCenter'#18'HorzScrollBar.Page'#3#143#1#18'VertScrollBar.Page'#3'+'#1
+  +#4'Left'#3'`'#1#6'Height'#3','#1#3'Top'#3#175#0#5'Width'#3#144#1#0#7'TButton'
+  +#7'Button1'#5'Align'#7#5'alTop'#20'BorderSpacing.Around'#2#6#25'BorderSpacin'
+  +'g.InnerBorder'#2#2#7'Caption'#6#3'Go!'#7'OnClick'#7#12'Button1Click'#8'TabO'
+  +'rder'#2#0#4'Left'#2#6#6'Height'#2#25#3'Top'#2'#'#5'Width'#3#132#1#0#0#5'TEd'
+  +'it'#14'ExpressionEdit'#5'Align'#7#5'alTop'#20'BorderSpacing.Around'#2#6#12
+  +'Font.CharSet'#7#12'ANSI_CHARSET'#10'Font.Color'#7#7'clBlack'#11'Font.Height'
+  +#2#243#9'Font.Name'#6#7'Courier'#10'Font.Pitch'#7#7'fpFixed'#8'TabOrder'#2#1
+  +#4'Text'#6#31'pi*sin(x-x0)+x^(t-1)+exp(x*t)+5'#4'Left'#2#6#6'Height'#2#23#3
+  +'Top'#2#6#5'Width'#3#132#1#0#0#5'TMemo'#10'OutputMemo'#5'Align'#7#8'alClient'
+  +#20'BorderSpacing.Around'#2#6#12'Font.CharSet'#7#12'ANSI_CHARSET'#10'Font.Co'
+  +'lor'#7#7'clBlack'#11'Font.Height'#2#243#9'Font.Name'#6#11'Courier New'#10'F'
+  +'ont.Pitch'#7#7'fpFixed'#10'ScrollBars'#7#10'ssAutoBoth'#8'TabOrder'#2#2#4'L'
+  +'eft'#2#6#6'Height'#3#228#0#3'Top'#2'B'#5'Width'#3#132#1#0#0#0
+]);
