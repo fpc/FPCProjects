@@ -435,6 +435,12 @@ begin
   Move(FBufferPos^, ABuffer^, Result);
   Inc(FBufferPos, Result);
   Dec(FContentLength, Result);
+  { buffer empty? reset }
+  if FBufferPos = FBufferEnd then
+  begin
+    FBufferPos := FBuffer;
+    FBufferEnd := FBuffer;
+  end;
 end;
 
 procedure TLFastCGIClient.ConnectAction(ASocket: TLHandle);
