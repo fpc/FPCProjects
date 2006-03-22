@@ -449,7 +449,7 @@ begin
  NewFunc:=T;
 end;
 
-function TBaseExpression.NewFunc(fun:funcop;unknownIdent:longint):pnode;
+{function TBaseExpression.NewFunc(fun:funcop;unknownIdent:longint):pnode;
 
 var t : pnode;
 
@@ -463,7 +463,7 @@ begin
  if(ExprIsConstant IN son^.flags) and (ExprIsConstant IN son2^.flags) then
   Include(t^.flags,ExprIsConstant);
  NewFunc:=T;
-end;
+end;}
 
 
 

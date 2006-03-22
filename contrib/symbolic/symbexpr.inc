@@ -563,7 +563,8 @@ end;
 
 procedure TExpression.SimplifyConstants;
 
-procedure internalsimplify (expr:pnode;InCalc:Boolean;parent:pnode);
+//procedure internalsimplify (expr:pnode;InCalc:Boolean;parent:pnode);
+procedure internalsimplify (expr:pnode);
 
 function isconst(p:pnode):boolean;
 
@@ -716,7 +717,7 @@ begin
                         "subst" methods}
 
   calcnode : begin
-              If not
+              //If not
               internalsimplify(expr^.left); {Reduce left and right as much as possible}
               internalsimplify(expr^.right);
             if isconst(expr^.left) and isconst(expr^.right) then

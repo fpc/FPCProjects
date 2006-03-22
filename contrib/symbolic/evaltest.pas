@@ -19,7 +19,7 @@ program EvalTest;
 
 {$AppType Console}
 
-Uses Classes,Symbolic;
+Uses Classes,Symbolic, SysUtils;
 
 VAR Expr    : TExpression;
     SymVars : TStringList;
@@ -78,13 +78,17 @@ begin
   begin
    Vars[0]:=1/I *1.1;
    Vars[1]:=1/I*2;
-   Writeln(Eval.Evaluate(Vars));
+   Writeln(VarName.Strings[0] + '=' + FloatToStrF(Vars[0], ffFixed, 4, 4) + ' ' +
+           VarName.Strings[1] + '=' + FloatToStrF(Vars[1], ffFixed, 4, 4) + ' = ' +
+                                      FloatToStrF(Eval.Evaluate(Vars), ffFixed, 4, 4));
   end;
 
  Eval.Free;
  Expr.Free;
  SymVars.Free;
 // VarName.Free;  {Is freed by TEvaluator.Destroy. Should TEvaluator copy it?}
+
+  Readln;
 end.
 
 
