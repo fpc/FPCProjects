@@ -390,8 +390,8 @@ begin
   if not FOutputPending and not FEof then
   begin
     FEof := WriteData;
-    FOutputPending := true;
-    if FBufferPos - FBufferOffset > 0 then
+    FOutputPending := FBufferPos > FBufferOffset;
+    if FOutputPending then
     begin
       lOffset := HexReverse(FBufferPos-FBufferOffset, FBuffer+FBufferOffset-3);
       FBuffer[FBufferOffset-2] := #13;
@@ -406,6 +406,7 @@ begin
     end;
     if FEof then
     begin
+      FOutputPending := true;
       FBuffer[FBufferSize] := '0';
       FBuffer[FBufferSize+1] := #13;
       FBuffer[FBufferSize+2] := #10;
@@ -415,13 +416,15 @@ begin
       inc(FBufferSize, 5);
     end;
   end;
-  Result := inherited WriteData;
-  if Result then
+  if FOutputPending then
   begin
-    Result := FEof;
-    if not Result then
-      PrepareChunk;
+    Result := inherited WriteData;
+    if not Result then exit;
   end;
+
+  Result := FEof;
+  if not Result then
+    PrepareChunk;
 end;
   
 function TBufferOutput.WriteBuffer: boolean;
