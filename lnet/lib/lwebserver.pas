@@ -413,17 +413,10 @@ begin
   AddEnvironment('SCRIPT_NAME', FScriptName);
   AddEnvironment('SCRIPT_FILENAME', FScriptFileName);
   
-  case FSocket.RequestInfo.RequestType of
-    hrGet:
-    begin
-      AddEnvironment('QUERY_STRING', FSocket.RequestInfo.QueryParams);
-    end;
-    hrPost:
-    begin
-      AddHTTPParam('CONTENT_TYPE', hpContentType);
-      AddHTTPParam('CONTENT_LENGTH', hpContentLength);
-    end;
-  end;
+  AddEnvironment('QUERY_STRING', FSocket.RequestInfo.QueryParams);
+  AddHTTPParam('CONTENT_TYPE', hpContentType);
+  AddHTTPParam('CONTENT_LENGTH', hpContentLength);
+
   AddEnvironment('REMOTE_ADDR', FSocket.PeerAddress);
   AddEnvironment('REMOTE_PORT', IntToStr(FSocket.Port));
 
