@@ -7,7 +7,7 @@ unit lnetpackage;
 interface
 
 uses
-  lNetComponents, lnet, LCLNet; 
+  lNetComponents, LCLNet; 
 
 implementation
 

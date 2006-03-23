@@ -52,15 +52,15 @@ begin
         FOnWrite(Self);
 
     if Events.lNetworkEvents and FD_READ  = FD_READ then
-      if Assigned(FOnWrite) then
+      if Assigned(FOnRead) then
         FOnRead(Self);
 
     if Events.lNetworkEvents and FD_CLOSE = FD_CLOSE then
-      if Assigned(FOnWrite) then
+      if Assigned(FOnRead) then
         FOnRead(Self);
 
     if Events.lNetworkEvents and FD_ACCEPT = FD_ACCEPT then
-      if Assigned(FOnWrite) then
+      if Assigned(FOnRead) then
         FOnRead(Self);
 
     if Events.lNetworkEvents and FD_WRITE  = FD_WRITE then

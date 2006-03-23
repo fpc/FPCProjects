@@ -8,7 +8,7 @@
       <SearchPaths>
         <IncludeFiles Value="../lib/;../lib/sys/"/>
         <OtherUnitFiles Value="../lib/;../lib/sys/"/>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)/"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
         <SrcPath Value="../lib/;../lib/sys/"/>
       </SearchPaths>
       <Parsing>
@@ -41,25 +41,16 @@
 "/>
     <License Value="Modified LGPL. See files LICENSE and LICENSE.ADDON
 "/>
-    <Version Minor="3"/>
-    <Files Count="4">
+    <Version Minor="4"/>
+    <Files Count="2">
       <Item1>
         <Filename Value="lnetcomponents.pas"/>
         <UnitName Value="lNetComponents"/>
       </Item1>
       <Item2>
-        <Filename Value="tomwinsock.pas"/>
-        <AddToUsesPkgSection Value="False"/>
-        <UnitName Value="tomWINSOCK"/>
-      </Item2>
-      <Item3>
-        <Filename Value="lnet.pas"/>
-        <UnitName Value="lnet"/>
-      </Item3>
-      <Item4>
         <Filename Value="lclnet.pas"/>
         <UnitName Value="LCLNet"/>
-      </Item4>
+      </Item2>
     </Files>
     <RequiredPkgs Count="2">
       <Item1>

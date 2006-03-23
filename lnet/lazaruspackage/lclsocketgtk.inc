@@ -2,7 +2,7 @@
 { included by LCLNet.pas }
 
 uses
-  Sockets;
+  Sockets, lCommon;
 
 const
   G_IO_IN     = 1;
@@ -59,13 +59,10 @@ procedure TLCLSocket.HandleEvents(aData: PtrInt; aFlags: DWord);
 begin
   FReferenced:=True;
   if (aFlags and G_IO_ERR = G_IO_ERR)
-  or (aFlags and G_IO_NVAL = G_IO_NVAL) then
+  or (aFlags and G_IO_NVAL = G_IO_NVAL)
+  or (aFlags and G_IO_HUP = G_IO_HUP) then
     if Assigned(FOnError) then
-      FOnError(Self);
-
-  if aFlags and G_IO_HUP = G_IO_HUP then
-    if Assigned(FOnError) then
-      FOnError(Self);
+      FOnError(Self, 'Handle error' + LStrError(LSocketError));
 
   if aFlags and G_IO_OUT = G_IO_OUT then begin
     if not Connecting then begin
