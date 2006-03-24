@@ -6,7 +6,6 @@ unit lEvents;
 interface
 
 uses
-  Contnrs,
   {$ifdef Linux}
     {$undef nochoice} // undefine for all "Optimized" targets
     Linux,
@@ -46,7 +45,7 @@ type
    public
     constructor Create; virtual;
     destructor Destroy; override;
-    procedure Free;          // this is a trick
+    procedure Free; virtual;          // this is a trick
     property Prev: TLHandle read FPrev write FPrev;
     property Next: TLHandle read FNext write FNext;
     property FreeNext: TLHandle read FFreeNext write FFreeNext;
@@ -125,6 +124,7 @@ uses
 
 constructor TLHandle.Create;
 begin
+  Flush(output);
   FOnRead:=nil;
   FOnWrite:=nil;
   FOnError:=nil;

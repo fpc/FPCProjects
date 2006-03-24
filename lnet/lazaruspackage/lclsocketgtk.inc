@@ -75,8 +75,9 @@ begin
   end;
   
   if aFlags and G_IO_IN = G_IO_IN then begin
-    FFlags:=FFlags and (not G_IO_IN);
-    SetEventHandlerFlags(FEventHandle, FFlags);
+    {$warning Ensure this can be truly commented out}
+{    FFlags:=FFlags and (not G_IO_IN); // Make sure this is OK to be out
+    SetEventHandlerFlags(FEventHandle, FFlags);}
     FCanReceive:=True;
     if Assigned(FOnRead) then
       FOnRead(Self);

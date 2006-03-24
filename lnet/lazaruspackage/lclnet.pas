@@ -28,7 +28,7 @@ unit LCLNet;
 interface
 
 uses
-  InterfaceBase, LCLIntf, lNet, lFTP;
+  InterfaceBase, LCLIntf, lNet, lEvents;
   
 type
 
@@ -48,7 +48,7 @@ type
    public
     constructor Create; override;
     procedure Disconnect; override;
-    procedure Free;
+    procedure Free; override;
   end;
   
 implementation
@@ -63,7 +63,7 @@ procedure TLCLSocket.Free;
 begin
   FDispose:=True;
   if not FReferenced then
-    TObject(Self).Free;
+    inherited Free;
 end;
 
 end.
