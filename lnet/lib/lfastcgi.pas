@@ -105,7 +105,7 @@ type
     FContentLength: integer;
     FPaddingLength: integer;
 
-    procedure ConnectAction(ASocket: TLHandle); override;
+    procedure ConnectEvent(ASocket: TLHandle); override;
     function  CreateRequester: TLFastCGIRequest;
     procedure HandleGetValuesResult;
     procedure HandleReceive(ASocket: TLSocket);
@@ -409,8 +409,7 @@ begin
   FBufferEnd := FBuffer;
   FRequests := AllocMem(sizeof(TLFastCGIRequest));
   FRequestsCount := 1;
-  FRequest := CreateRequester;
-  FFreeRequest := FRequest;
+  FFreeRequest := CreateRequester;
   OnReceive := @HandleReceive;
   OnCanSend := @HandleSend;
 end;
@@ -443,14 +442,13 @@ begin
   end;
 end;
 
-procedure TLFastCGIClient.ConnectAction(ASocket: TLHandle);
+procedure TLFastCGIClient.ConnectEvent(ASocket: TLHandle);
 begin
-  inherited;
-  if not TLSocket(ASocket).Connected then exit;
-
   FRequest.SendGetValues;
   if FPool <> nil then
     FPool.AddToFreeClients(Self);
+
+  inherited;
 end;
 
 procedure TLFastCGIClient.HandleGetValuesResult;
@@ -598,6 +596,12 @@ end;
 
 function TLFastCGIClient.BeginRequest(AType: integer): TLFastCGIRequest;
 begin
+  if FRootSock = nil then
+  begin
+    Connect(FPool.Host, FPool.Port);
+    FRequest := FRequests[0];
+  end;
+
   if FFreeRequest <> nil then
   begin
     Result := FFreeRequest;
@@ -647,7 +651,6 @@ begin
   Result := TLFastCGIClient.Create(nil);
   Result.FPool := Self;
   Result.FEventer := FEventer;
-  Result.Connect(FHost, FPort);
   FClients[FClientsAvail] := Result;
   Inc(FClientsAvail);
 end;
