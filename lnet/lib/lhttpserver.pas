@@ -1178,14 +1178,17 @@ begin
   if AStatus >= hsBadRequest then
     FKeepAlive := false;
   lMessage := HTTPDescriptions[AStatus];
-  FRequestInfo.ContentType := 'text/html';
   FRequestInfo.Status := AStatus;
   FRequestInfo.ContentLength := Length(lMessage);
   FRequestInfo.TransferEncoding := teIdentity;
   if Length(lMessage) > 0 then
+  begin
+    FRequestInfo.ContentType := 'text/html';
     lMsgOutput := TMemoryOutput.Create(Self, PChar(lMessage), 0, Length(lMessage), false)
-  else
+  end else begin
+    FRequestInfo.ContentType := '';
     lMsgOutput := nil;
+  end;
   WriteHeaders(nil, lMsgOutput);
 end;
 
@@ -1203,37 +1206,39 @@ begin
   AppendString(lMessage, HTTPTexts[FRequestInfo.Status]);
   AppendString(lMessage, #13#10+'Date: ');
   AppendString(lMessage, FormatDateTime(HTTPDateFormat, FRequestInfo.DateTime));
-  AppendString(lMessage, ' GMT'+#13#10);
+  AppendString(lMessage, ' GMT');
+  if Length(FRequestInfo.ContentType) > 0 then
+  begin
+    AppendString(lMessage, #13#10+'Content-Type: ');
+    AppendString(lMessage, FRequestInfo.ContentType);
+    if Length(FRequestInfo.ContentCharset) > 0 then
+    begin
+      AppendString(lMessage, '; charset=');
+      AppendString(lMessage, FRequestInfo.ContentCharset);
+    end;
+  end;
   if FRequestInfo.ContentLength <> 0 then
   begin
-    AppendString(lMessage, 'Content-Length: ');
+    AppendString(lMessage, #13#10+'Content-Length: ');
     Str(FRequestInfo.ContentLength, lTemp);
     AppendString(lMessage, lTemp);
-    AppendString(lMessage, #13#10);
   end;
   if FRequestInfo.TransferEncoding <> teIdentity then
   begin
     { only other possibility: teChunked }
-    AppendString(lMessage, 'Transfer-Encoding: chunked'+#13#10);
+    AppendString(lMessage, #13#10+'Transfer-Encoding: chunked');
   end;
   if FRequestInfo.LastModified <> 0.0 then
   begin
-    AppendString(lMessage, 'Last-Modified: ');
+    AppendString(lMessage, #13#10+'Last-Modified: ');
     AppendString(lMessage, FormatDateTime(HTTPDateFormat, FRequestInfo.LastModified));
-    AppendString(lMessage, ' GMT'+#13#10);
+    AppendString(lMessage, ' GMT');
   end;
-  AppendString(lMessage, 'Connection: ');
+  AppendString(lMessage, #13#10+'Connection: ');
   if FKeepAlive then
     AppendString(lMessage, 'keep-alive')
   else
     AppendString(lMessage, 'close');
-  AppendString(lMessage, #13#10+'Content-Type: ');
-  AppendString(lMessage, FRequestInfo.ContentType);
-  if Length(FRequestInfo.ContentCharset) > 0 then
-  begin
-    AppendString(lMessage, '; charset=');
-    AppendString(lMessage, FRequestInfo.ContentCharset);
-  end;
   AppendString(lMessage, #13#10);
   AppendString(lMessage, FRequestInfo.ExtraHeaders);
   AppendString(lMessage, #13#10);
