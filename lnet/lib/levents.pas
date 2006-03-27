@@ -124,7 +124,6 @@ uses
 
 constructor TLHandle.Create;
 begin
-  Flush(output);
   FOnRead:=nil;
   FOnWrite:=nil;
   FOnError:=nil;
