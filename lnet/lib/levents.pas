@@ -74,7 +74,6 @@ type
     FInLoop: Boolean;
     function GetTimeout: DWord; virtual;
     procedure SetTimeout(const Value: DWord); virtual;
-    procedure UnplugHandle(aHandle: TLHandle); virtual;
     procedure Bail(const msg: string; const Ernum: Integer);
     procedure AddForFree(aHandle: TLHandle);
     procedure FreeHandles;
@@ -84,6 +83,7 @@ type
     function AddHandle(aHandle: TLHandle): Boolean; virtual;
     function CallAction: Boolean; virtual;
     procedure RemoveHandle(aHandle: TLHandle); virtual;
+    procedure UnplugHandle(aHandle: TLHandle); virtual;
     procedure LoadFromEventer(aEventer: TLEventer); virtual;
     procedure Clear;
     procedure AddRef;
@@ -179,20 +179,6 @@ procedure TLEventer.SetTimeout(const Value: DWord);
 begin
 end;
 
-procedure TLEventer.UnplugHandle(aHandle: TLHandle);
-begin
-  if Assigned(aHandle.FPrev) then begin
-    aHandle.FPrev.FNext:=aHandle.FNext;
-    if Assigned(aHandle.FNext) then
-      aHandle.FNext.FPrev:=aHandle.FPrev;
-  end else if Assigned(aHandle.FNext) then begin
-    aHandle.FNext.FPrev:=aHandle.FPrev;
-    if aHandle = FRoot then
-      FRoot:=aHandle.FNext;
-  end else FRoot:=nil;
-  Dec(FCount);
-end;
-
 procedure TLEventer.Bail(const msg: string; const Ernum: Integer);
 begin
   if Assigned(FOnError) then
@@ -253,6 +239,20 @@ end;
 procedure TLEventer.RemoveHandle(aHandle: TLHandle);
 begin
   aHandle.Free;
+end;
+
+procedure TLEventer.UnplugHandle(aHandle: TLHandle);
+begin
+  if Assigned(aHandle.FPrev) then begin
+    aHandle.FPrev.FNext:=aHandle.FNext;
+    if Assigned(aHandle.FNext) then
+      aHandle.FNext.FPrev:=aHandle.FPrev;
+  end else if Assigned(aHandle.FNext) then begin
+    aHandle.FNext.FPrev:=aHandle.FPrev;
+    if aHandle = FRoot then
+      FRoot:=aHandle.FNext;
+  end else FRoot:=nil;
+  Dec(FCount);
 end;
 
 procedure TLEventer.LoadFromEventer(aEventer: TLEventer);
