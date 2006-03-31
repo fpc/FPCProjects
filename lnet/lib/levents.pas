@@ -243,17 +243,19 @@ end;
 
 procedure TLEventer.UnplugHandle(aHandle: TLHandle);
 begin
-  aHandle.FEventer:=nil; // avoid recursive AV
-  if Assigned(aHandle.FPrev) then begin
-    aHandle.FPrev.FNext:=aHandle.FNext;
-    if Assigned(aHandle.FNext) then
+  if aHandle.FEventer = Self then begin
+    aHandle.FEventer:=nil; // avoid recursive AV
+    if Assigned(aHandle.FPrev) then begin
+      aHandle.FPrev.FNext:=aHandle.FNext;
+      if Assigned(aHandle.FNext) then
+        aHandle.FNext.FPrev:=aHandle.FPrev;
+    end else if Assigned(aHandle.FNext) then begin
       aHandle.FNext.FPrev:=aHandle.FPrev;
-  end else if Assigned(aHandle.FNext) then begin
-    aHandle.FNext.FPrev:=aHandle.FPrev;
-    if aHandle = FRoot then
-      FRoot:=aHandle.FNext;
-  end else FRoot:=nil;
-  Dec(FCount);
+      if aHandle = FRoot then
+        FRoot:=aHandle.FNext;
+    end else FRoot:=nil;
+    Dec(FCount);
+  end;
 end;
 
 procedure TLEventer.LoadFromEventer(aEventer: TLEventer);
