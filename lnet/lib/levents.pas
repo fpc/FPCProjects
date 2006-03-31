@@ -243,6 +243,7 @@ end;
 
 procedure TLEventer.UnplugHandle(aHandle: TLHandle);
 begin
+  aHandle.FEventer:=nil; // avoid recursive AV
   if Assigned(aHandle.FPrev) then begin
     aHandle.FPrev.FNext:=aHandle.FNext;
     if Assigned(aHandle.FNext) then
