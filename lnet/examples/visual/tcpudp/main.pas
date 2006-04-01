@@ -93,6 +93,7 @@ begin
   if aSocket.GetMessage(s) > 0 then begin
     TextArea.Append(s);
     TextArea.SelStart:=Length(TextArea.Lines.Text);
+    FNet.IterReset;
     if FIsServer then repeat
       FNet.SendMessage(s, FNet.Iterator);
     until not FNet.IterNext;
