@@ -82,6 +82,7 @@ type
     procedure CGIProcNeedInput(AHandle: TLHandle);
     procedure CGIProcHasOutput(AHandle: TLHandle);
     procedure CGIProcHasStderr(AHandle: TLHandle);
+    procedure DoneInput; override;
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
     procedure CGIOutputError; override;
     function  WriteCGIData: boolean; override;
@@ -429,7 +430,7 @@ begin
 //  AddEnvironment('AUTH_TYPE='+...);
 //  AddEnvironment('REMOTE_USER='+...);
   
-  AddEnvironment('DOCUMENT_ROOT=', DocumentRoot);
+  AddEnvironment('DOCUMENT_ROOT', DocumentRoot);
   AddEnvironment('REDIRECT_STATUS', '200');
   AddHTTPParam('HTTP_HOST', hpHost);
   AddHTTPParam('HTTP_COOKIE', hpCookie);
@@ -588,6 +589,7 @@ begin
   lRead := FProcess.Output.Read(FBuffer[FReadPos], FBufferSize-FReadPos);
   if lRead = 0 then exit(true);
   Inc(FReadPos, lRead);
+  Result := false;
 end;
 
 procedure TSimpleCGIOutput.AddEnvironment(const AName, AValue: string);
@@ -595,10 +597,18 @@ begin
   FProcess.Environment.Add(AName+'='+AValue);
 end;
 
+procedure TSimpleCGIOutput.DoneInput;
+begin
+  FProcess.CloseInput;
+end;
+
 function TSimpleCGIOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
 begin
-  Result := FProcess.Input.Write(ABuffer^, ASize);
-  FProcess.InputEvent.IgnoreWrite := false;
+  if ASize > 0 then
+    Result := FProcess.Input.Write(ABuffer^, ASize)
+  else
+    Result := 0;
+  FProcess.InputEvent.IgnoreWrite := ASize = 0;
 end;
 
 procedure TSimpleCGIOutput.StartRequest;
