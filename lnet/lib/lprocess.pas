@@ -28,14 +28,14 @@ unit lProcess;
 interface
 
 uses
-  classes, process, levents, pipes;
+  sysutils, classes, process, levents, pipes;
 
 type
   TLInputPipeStream = class(TInputPipeStream)
   protected
     FEvent: TLHandle;
   public
-    function Read(var Buffer; Count: longint): longint; override;          
+    function Read(var Buffer; Count: longint): longint; override;
   end;
 
   TLOutputPipeStream = class(TOutputPipeStream)
@@ -62,6 +62,9 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     
+    procedure CloseInput; override;
+    procedure CloseOutput; override;
+    procedure CloseStderr; override;
     procedure Execute; override;
 
     property InputEvent: TLHandle read FInputEvent;
@@ -102,6 +105,24 @@ begin
   FInputEvent.Free;
   FOutputEvent.Free;
   FStderrEvent.Free;
+end;
+
+procedure TLProcess.CloseInput;
+begin
+  FEventer.UnplugHandle(FInputEvent);
+  inherited;
+end;
+
+procedure TLProcess.CloseOutput;
+begin
+  FEventer.UnplugHandle(FOutputEvent);
+  inherited;
+end;
+
+procedure TLProcess.CloseStderr;
+begin
+  FEventer.UnplugHandle(FStderrEvent);
+  inherited;
 end;
 
 procedure TLProcess.Execute;
