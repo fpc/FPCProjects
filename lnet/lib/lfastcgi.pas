@@ -45,6 +45,8 @@ type
     FBuffer: TStringBuffer;
     FBufferSendPos: integer;
     FHeader: FCGI_Header;
+    FHeaderPos: integer;
+    FContentLength: integer;
     FInputBuffer: pchar;
     FInputSize: integer;
     FNextFree: TLFastCGIRequest;
@@ -158,6 +160,7 @@ begin
 
   FBuffer := InitStringBuffer(504);
   FHeader.Version := FCGI_VERSION_1;
+  FHeaderPos := -1;
 end;
 
 procedure TLFastCGIRequest.HandleReceive;
@@ -214,6 +217,7 @@ end;
 
 procedure TLFastCGIRequest.SetContentLength(NewLength: integer);
 begin
+  FContentLength := NewLength;
   FHeader.ContentLengthB0 := byte(NewLength and $FF);
   FHeader.ContentLengthB1 := byte((NewLength shr 8) and $FF);
   FHeader.PaddingLength := byte(7-((NewLength+7) and 7));
@@ -274,12 +278,24 @@ procedure TLFastCGIRequest.SendParam(const AName, AValue: string; AReqType: inte
 var
   lNameLen: TLFastCGIStringSize;
   lValueLen: TLFastCGIStringSize;
+  lTotalLen: integer;
 begin
   FillFastCGIStringSize(AName, lNameLen);
   FillFastCGIStringSize(AValue, lValueLen);
-  FHeader.ReqType := AReqType;
-  SetContentLength(lNameLen.Size+lValueLen.Size+Length(AName)+Length(AValue));
-  AppendString(FBuffer, @FHeader, sizeof(FHeader));
+  lTotalLen := lNameLen.Size+lValueLen.Size+Length(AName)+Length(AValue);
+  if (FHeader.ReqType = AReqType) and (FBufferSendPos = 0) 
+    and (0 <= FHeaderPos) and (FHeaderPos < FBuffer.Pos - FBuffer.Memory) then
+  begin
+    { undo padding }
+    Dec(FBuffer.Pos, FHeader.PaddingLength);
+    SetContentLength(FContentLength+lTotalLen);
+    Move(FHeader, FBuffer.Memory[FHeaderPos], sizeof(FHeader));
+  end else begin
+    FHeader.ReqType := AReqType;
+    SetContentLength(lTotalLen);
+    FHeaderPos := FBuffer.Pos - FBuffer.Memory;
+    AppendString(FBuffer, @FHeader, sizeof(FHeader));
+  end;
   AppendString(FBuffer, @lNameLen.SizeBuf[0], lNameLen.Size);
   AppendString(FBuffer, @lValueLen.SizeBuf[0], lValueLen.Size);
   AppendString(FBuffer, AName);
@@ -335,6 +351,7 @@ begin
   begin
     { all of headers written }
     FBufferSendPos := 0;
+    FHeaderPos := -1;
     { rewind stringbuffer }
     FBuffer.Pos := FBuffer.Memory;
   end else
