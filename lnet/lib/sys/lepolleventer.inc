@@ -143,13 +143,33 @@ begin
 end;
 
 function BestEventerClass: TLEventerClass;
+
+  function GetVersion(s: string): Integer;
+  const
+    Numbers = ['0'..'9'];
+  var
+    i: Integer;
+  begin
+    s:=StringReplace(s, '.', '', [rfReplaceAll]);
+    i:=1;
+    while (i <= Length(s)) and (s[i] in Numbers) do
+      Inc(i);
+    s:=Copy(s, 1, i - 1);
+    if Length(s) < 4 then // varies OS to OS
+      Insert('0', s, 3); // in linux, last part can be > 10
+    Result:=StrToInt(s);
+  end;
+
 var
   u: TUTSName;
 begin
   Result:=TLSelectEventer;
-  if fpUname(u) = 0 then   // check for 2.6+
-    if ParseVersion(u.release) then
-      Result:=TLEpollEventer;
+  try
+    if fpUname(u) = 0 then   // check for 2.6+
+      if GetVersion(u.release) >= 2600 then
+        Result:=TLEpollEventer;
+  except
+  end;
 end;
 
 {$else} // 2.0.3+ or 2.1.1+
