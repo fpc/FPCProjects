@@ -37,11 +37,39 @@ const
   LADDR_ANY = '0.0.0.0';
   LADDR_BR  = '255.255.255.255';
   LADDR_LO  = '127.0.0.1';
+  { ICMP }
+  LICMP_ECHOREPLY     = 0;
+  LICMP_UNREACH       = 3;
+  LICMP_ECHO          = 8;
+  LICMP_TIME_EXCEEDED = 11;
   { Protocols }
-  PROTO_TCP =  6;
-  PROTO_UDP = 17;
+  LPROTO_IP     =     0;
+  LPROTO_ICMP   =     1;
+  LPROTO_IGMP   =     2;
+  LPROTO_TCP    =     6;
+  LPROTO_UDP    =    17;
+  LPROTO_IPV6   =    41;
+  LPROTO_ICMPV6 =    58;
+  LPROTO_RAW    =   255;
+  LPROTO_MAX    =   256;
 
 type
+  PLIPHeader = ^TLIPHeader;
+  TLIPHeader = record
+      VerLen      : Byte;
+      TOS         : Byte;
+      TotalLen    : Word;
+      Identifer   : Word;
+      FragOffsets : Word;
+      TTL         : Byte;
+      Protocol    : Byte;
+      CheckSum    : Word;
+      SourceIp    : DWord;
+      DestIp      : DWord;
+      Options     : DWord;
+  end;  // TLIPHeader
+
+
   TLSocket = class;
   
   { CallBack Event procedure for errors }
@@ -281,7 +309,7 @@ begin
   FConnecting:=False;
   FIgnoreShutdown:=False;
   FSocketClass:=SOCK_STREAM;
-  FProtocol:=PROTO_TCP;
+  FProtocol:=LPROTO_TCP;
 end;
 
 destructor TLSocket.Destroy;
@@ -410,7 +438,7 @@ begin
   Result:=false;
   if not Connected then begin
     Done:=true;
-    FHandle:=fpsocket(AF_INET, FSocketClass, FProtocol);
+    FHandle:=fpSocket(AF_INET, FSocketClass, FProtocol);
     if FHandle = INVALID_SOCKET then
       Bail('Socket error', LSocketError);
     SetNonBlock;
@@ -752,7 +780,7 @@ begin
   if not Assigned(FRootSock) then begin
     Result:=inherited InitSocket(aSocket);
     aSocket.SocketType:=SOCK_DGRAM;
-    aSocket.Protocol:=PROTO_UDP;
+    aSocket.Protocol:=LPROTO_UDP;
   end;
 end;
 
@@ -923,7 +951,7 @@ function TLTcp.InitSocket(aSocket: TLSocket): TLSocket;
 begin
   Result:=inherited InitSocket(aSocket);
   aSocket.SocketType:=SOCK_STREAM;
-  aSocket.Protocol:=PROTO_TCP;
+  aSocket.Protocol:=LPROTO_TCP;
   aSocket.FOnFree:=@SocketDisconnect;
 end;
 

@@ -1,6 +1,9 @@
 {% lepolleventer.inc included by levents.pas }
 
 {$ifdef Linux}
+// only for 2.1.1+ or 2.0.3+
+{$if (defined(ver2) and (fpc_release = 0) and (fpc_patch > 2))
+  or (defined(ver2) and (fpc_release > 0)}
 
 { TLEpollEventer }
 
@@ -141,9 +144,21 @@ begin
 end;
 
 function BestEventerClass: TLEventerClass;
+var
+  u: TUTSName;
 begin
-  Result:=TLEpollEventer;
+  Result:=TLSelectEventer;
+  if fpUname(u) = 0 then   // check for 2.6+
+    if ParseVersion(u.release) then
+      Result:=TLEpollEventer;
+end;
+
+{$else} // 2.0.3+ or 2.1.1+
+
+function BestEventerClass: TLEventerClass;
+begin
+  Result:=TLSelectEventer;
 end;
 
 {$endif}
-
+{$endif} // Linux
