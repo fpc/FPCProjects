@@ -1,6 +1,8 @@
 {% lkqueueeventer.inc included by levents.pas }
 
 {$ifdef BSD}
+// only for 2.1.1+ or 2.0.3+
+{$if defined(ver2) and (fpc_release = 0) and (fpc_patch > 2)}
 
 { TLKQueueEventer }
 
@@ -110,5 +112,14 @@ begin
   Result:=TLKQueueEventer;
 end;
 
-{$endif}
+{$else}
+
+function BestEventerClass: TLEventerClass;
+begin
+  // 2.0.3- doesn't have kqueue
+  Result:=TLSelectEventer;
+end;
+
+{$endif} // version
+{$endif} // BSD
 

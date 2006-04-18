@@ -2,8 +2,8 @@
 
 {$ifdef Linux}
 // only for 2.1.1+ or 2.0.3+
-{$if (defined(ver2) and (fpc_release = 0) and (fpc_patch > 2))
-  or (defined(ver2) and (fpc_release > 0)}
+{$if defined(ver2) and (fpc_release = 0) and (fpc_patch > 2)}
+
   PEpollEvent = ^epoll_event;
   TEpollEvent = epoll_event;
   PEpollData = ^epoll_data;
