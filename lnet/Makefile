@@ -17,7 +17,6 @@ all:
 	$(PP) $(ARGS) $(TTCPS)
 	$(PP) $(ARGS) $(TTELNET)
 	$(PP) $(ARGS) $(TFTP)
-	$(PP) $(ARGS) $(THTTP)
 	$(PP) $(ARGS) $(TSMTP)
 
 clean:
@@ -36,3 +35,6 @@ debug:
 
 memcheck:
 	$(PP) $(BASEARGS) -ghl $(TLIB)
+
+http:
+	$(PP) $(ARGS) $(THTTP)
