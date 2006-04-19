@@ -215,19 +215,22 @@ end;
 
 function TLEventer.AddHandle(aHandle: TLHandle): Boolean;
 begin
-  if not Assigned(FRoot) then begin
-    FRoot:=aHandle;
-  end else begin
-    if Assigned(FRoot.FNext) then begin
-      FRoot.FNext.FPrev:=aHandle;
-      aHandle.FNext:=FRoot.FNext;
+  Result:=False;
+  if not Assigned(aHandle.FEventer) then begin
+    if not Assigned(FRoot) then begin
+      FRoot:=aHandle;
+    end else begin
+      if Assigned(FRoot.FNext) then begin
+        FRoot.FNext.FPrev:=aHandle;
+        aHandle.FNext:=FRoot.FNext;
+      end;
+      FRoot.FNext:=aHandle;
+      aHandle.FPrev:=FRoot;
     end;
-    FRoot.FNext:=aHandle;
-    aHandle.FPrev:=FRoot;
+    aHandle.FEventer:=Self;
+    Inc(FCount);
+    Result:=True;
   end;
-  aHandle.FEventer:=Self;
-  Inc(FCount);
-  Result:=True;
 end;
 
 function TLEventer.CallAction: Boolean;

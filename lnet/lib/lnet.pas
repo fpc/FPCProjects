@@ -729,8 +729,10 @@ end;
 
 procedure TLUdp.Disconnect;
 begin
-  if Assigned(FRootSock) then
+  if Assigned(FRootSock) then begin
     FRootSock.Disconnect;
+    FRootSock.Dispose:=False;
+  end;
 end;
 
 function TLUdp.Connect(const Address: string; const APort: Word): Boolean;
@@ -776,7 +778,7 @@ end;
 
 function TLUdp.InitSocket(aSocket: TLSocket): TLSocket;
 begin
-  Result:=nil;
+  Result:=FRootSock;
   if not Assigned(FRootSock) then begin
     Result:=inherited InitSocket(aSocket);
     aSocket.SocketType:=SOCK_DGRAM;
