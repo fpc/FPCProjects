@@ -101,7 +101,8 @@ type
    protected
     function DoSend(const TheData; const TheSize: Integer): Integer;
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
-    function GetPort: Word;
+    function GetLocalPort: Word;
+    function GetPeerPort: Word;
     function GetPeerAddress: string;
     function GetLocalAddress: string;
     function CanSend: Boolean; virtual;
@@ -126,8 +127,9 @@ type
     property Protocol: Integer read FProtocol write FProtocol;
     property SocketType: Integer read FSocketClass write FSocketClass;
     property PeerAddress: string read GetPeerAddress;
+    property PeerPort: Word read GetPeerPort;
     property LocalAddress: string read GetLocalAddress;
-    property Port: Word read GetPort;
+    property LocalPort: Word read GetLocalPort;
     property NextSock: TLSocket read FNextSock write FNextSock;
     property PrevSock: TLSocket read FPrevSock write FPrevSock;
   end;
@@ -455,9 +457,14 @@ begin
   end;
 end;
 
-function TLSocket.GetPort: Word;
+function TLSocket.GetLocalPort: Word;
 begin
   Result:=FAddress.sin_port;
+end;
+
+function TLSocket.GetPeerPort: Word;
+begin
+  Result:=FPeerAddress.sin_port;
 end;
 
 function TLSocket.Listen(const APort: Word): Boolean;
