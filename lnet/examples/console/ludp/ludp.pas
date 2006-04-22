@@ -84,8 +84,12 @@ begin
 
     if ParamStr(1) = '-s' then begin // if we're supposed to be the server
       Result:=FCon.Listen(port); // start listening
+      Writeln('Starting server...');
       FServer:=True;             // and remember the descision
-    end else Result:=FCon.Connect(Address, port); // otherwise connect
+    end else begin
+      Result:=FCon.Connect(Address, port); // otherwise connect
+      Writeln('Starting client...');
+    end;
 
     if Result then repeat // if listen/connect was successful
       FCon.CallAction;     // "eventize" the event loop in lNet
@@ -104,7 +108,7 @@ end;
 var
   UDP: TLUDPTest;
 begin
-  UDP.Create;
+  UDP:=TLUDPTest.Create;
   UDP.Run;
   UDP.Free;
 end.
