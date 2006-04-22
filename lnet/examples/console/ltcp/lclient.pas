@@ -7,123 +7,141 @@ uses
   
 type
 
-  { TLEvents }
+  { TLTCPTest }
 
-  TLEvents = class
+  TLTCPTest = class
+   private
+    FQuit: boolean;
+    FCon: TLTcp; // the connection
+    procedure OnDs(aSocket: TLSocket); // callbacks
+    procedure OnRe(aSocket: TLSocket);
+    procedure OnEr(const msg: string; aSocket: TLSocket);
    public
-    procedure DsProc(aSocket: TLSocket);
-    procedure ReProc(aSocket: TLSocket);
-    procedure ErProc(const msg: string; aSocket: TLSocket);
+    constructor Create;
+    destructor Destroy; override;
+    procedure Run;
   end;
-     
 
-var
-  con: TLTcp;
-  quit: boolean;
-  s: string;
-  c: char;
-  event: TLEvents;
+// implementation
 
-procedure TLEvents.DsProc(aSocket: TLSocket);
+procedure TLTCPTest.OnDs(aSocket: TLSocket);
 begin
   Writeln('Lost connection');
 end;
 
-procedure TLEvents.ReProc(aSocket: TLSocket);
+procedure TLTCPTest.OnRe(aSocket: TLSocket);
 var
   s: string;
 begin
-  aSocket.GetMessage(s);
-  Writeln(s);
+  if aSocket.GetMessage(s) > 0 then
+    Writeln(s);
 end;
 
-procedure TLEvents.ErProc(const msg: string; aSocket: TLSocket);
+procedure TLTCPTest.OnEr(const msg: string; aSocket: TLSocket);
 begin
-  writeln('ERROR: ', msg);
-  quit:=true;
+  Writeln('ERROR: ', msg); // if error occured, write it
+  FQuit:=true;             // and quit ASAP
 end;
 
-procedure MainLoop(const Address: string; const Port: Word);
+constructor TLTCPTest.Create;
+begin
+  FCon:=TLTCP.Create(nil); // create new TCP connection with no parent component
+  FCon.OnError:=@OnEr; // assign callbacks
+  FCon.OnReceive:=@OnRe;
+  FCOn.OnDisconnect:=@OnDs;
+end;
+
+destructor TLTCPTest.Destroy;
+begin
+  FCon.Free; // free the connection
+  inherited Destroy;
+end;
+
+
+
+
+
+procedure TLTCPTest.Run;
+var
+  s, Address: string; // message-to-send and address
+  c: char;
+  Port: Word;
 
   procedure Reconnect;
   begin
-    writeln('Reconnecting');
-    con.Disconnect;
-    if not con.Connect(Address, Port) then
-      begin
-        quit:=true;
-        writeln('Failure');
-      end;
-  end;
-
-begin
-  s:='';
-  event:=TLEvents.Create;
-  quit:=false;
-  con:=TLTcp.Create(nil);
-  con.OnReceive:=@event.ReProc;
-  con.OnDisconnect:=@event.DsProc;
-  con.OnError:=@event.ErProc;
-  if Con.Connect(Address, Port) then begin
-    Write('Connecting... ');
-    Quit:=False;
-    repeat
-      Con.CallAction;
-      Sleep(1);
-      if KeyPressed then
-        Quit:=True;
-    until Con.Connected or Quit;
-    if not Quit then begin
-      Writeln('Connected');
-      repeat
-        if keypressed then
-          begin
-            c:=readkey;
-            case c of
-              'r': Reconnect;
-              #8:  begin
-                     if Length(s) > 1 then
-                       delete(s, length(s)-1, 1)
-                     else
-                       s:='';
-                     gotoxy(WhereX-1, WhereY);
-                     write(' ');
-                     gotoxy(WhereX-1, WhereY);
-                   end;
-              #10, #13: begin
-                     con.SendMessage(s);
-                     s:='';
-                     Writeln;
-                  end;
-              #27: quit:=true;
-            else
-              begin
-                s:=s+c;
-                write(c);
-              end;
-            end;
-          end;
-        con.callaction;
-        delay(1);
-      until quit;
+    Writeln('Reconnecting...');
+    FCon.Disconnect;
+    if not FCon.Connect(Address, Port) then begin // try to connect again
+      FQuit:=True; // if it failed quit ASAP
+      Writeln('Failed to reconnect'); // write reason
     end;
   end;
-  con.free;
-  event.free;
-end;
 
-var
-  p: Word;
 begin
-  if ParamCount > 1 then begin
+  if ParamCount > 1 then begin // we need atleast one parameter
     try
-      p:=Word(StrToInt(ParamStr(2)));
+      Address:=ParamStr(1); // get address from argument
+      Port:=Word(StrToInt(ParamStr(2))); // try to parse port from argument
     except
       on e: Exception do begin
-        Writeln(e.message);
+        Writeln(e.message); // write error on failure
         Halt;
       end;
     end;
-    MainLoop(ParamStr(1), p);
+
+    s:='';
+
+    if FCon.Connect(Address, Port) then begin // if connect went ok
+      Write('Connecting... ');
+      FQuit:=False;
+      repeat
+        FCon.CallAction; // wait for "OnConnect"
+        Sleep(1);
+        if KeyPressed then // if user pressed anything, quit waiting
+          FQuit:=True;
+      until FCon.Connected or FQuit;
+      
+      if not FQuit then begin // if we connected succesfuly
+        Writeln('Connected');
+        repeat
+          if Keypressed then begin // if user provided inpur
+            c:=Readkey; // get key pressed
+            case c of
+              'r': Reconnect; // if it's 'r' do a reconnect
+              #8:  begin      // backspace deletes from message-to-send
+                     if Length(s) > 1 then
+                       Delete(s, Length(s)-1, 1)
+                     else
+                       s:='';
+                     GotoXY(WhereX-1, WhereY);
+                     Write(' ');
+                     GotoXY(WhereX-1, WhereY);
+                   end;
+              #10,
+              #13: begin // both "return" and "enter" send the message
+                     FCon.SendMessage(s);
+                     s:='';
+                     Writeln;
+                   end;
+              #27: FQuit:=true; // "escape" quits
+              else begin
+                s:=s + c; // other chars get added to "message-to-send"
+                Write(c); // and written so we know what we want to send
+              end;
+            end;
+          end;
+          FCon.Callaction; // eventize lNet loop
+          Sleep(1); // sleep so we don't hog the CPU
+        until FQuit; // repeat until user quit or error happened
+      end; // if not FQuit
+    end; // if Connect
   end else Writeln('Usage: ', ParamStr(0), ' <address> <port>');
+end;
+
+var
+  TCP: TLTCPTest;
+begin
+  TCP:=TLTCPTest.Create;
+  TCP.Run;
+  TCP.Free;
 end.

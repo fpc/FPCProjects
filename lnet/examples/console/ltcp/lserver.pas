@@ -7,95 +7,106 @@ uses
   
 type
 
-{ TLEvents }
+{ TLTCPTest }
 
-  TLEvents = class
+  TLTCPTest = class
+   private
+    FCon: TLTCP;
+    procedure OnEr(const msg: string; aSocket: TLSocket);
+    procedure OnAc(aSocket: TLSocket);
+    procedure OnRe(aSocket: TLSocket);
+    procedure OnDs(aSocket: TLSocket);
    public
-    procedure er(const msg: string; aSocket: TLSocket);
-    procedure ac(aSocket: TLSocket);
-    procedure re(aSocket: TLSocket);
-    procedure ds(aSocket: TLSocket);
+    constructor Create;
+    destructor Destroy; override;
+    procedure Run;
   end;
-     
-var quit: boolean;
-    con: TLTcp;
 
-procedure TLEvents.er(const msg: string; aSocket: TLSocket);
+procedure TLTCPTest.OnEr(const msg: string; aSocket: TLSocket);
 begin
-  writeln('ERROR: ', msg);
+  Writeln('ERROR: ', msg);  // if error occured, write it explicitly
 end;
 
-procedure TLEvents.re(aSocket: TLSocket);
+procedure TLTCPTest.OnAc(aSocket: TLSocket);
+begin
+  Writeln('Connection accepted from ', aSocket.PeerAddress); // on accept, write whom we accepted
+end;
+
+procedure TLTCPTest.OnRe(aSocket: TLSocket);
 var
   s: string;
 begin
-  if aSocket.GetMessage(s) > 0 then begin
-    writeln('Got: "', s, '" with length: ', Length(s));
-    if Assigned(Con.Iterator) then repeat
-      Con.CallAction;
-      if Con.SendMessage(s, Con.Iterator) < Length(s) then
-        writeln('Unsuccessful send');
-    until not Con.IterNext;
+  if aSocket.GetMessage(s) > 0 then begin // if we received anything (result is in s)
+    Writeln('Got: "', s, '" with length: ', Length(s)); // write message and it's length
+    if Assigned(FCon.Iterator) then repeat // if we have clients to echo to
+      if FCon.SendMessage(s, FCon.Iterator) < Length(s) then // try to send to each of them
+        Writeln('Unsuccessful send'); // if send fails write error
+    until not FCon.IterNext; // until all clients are parsed
   end;
 end;
 
-procedure TLEvents.ds(aSocket: TLSocket);
+procedure TLTCPTest.OnDs(aSocket: TLSocket);
 begin
-  Writeln('Lost connection');
+  Writeln('Lost connection'); // write info if connection was lost
 end;
 
-procedure TLEvents.ac(aSocket: TLSocket);
+constructor TLTCPTest.Create;
 begin
-  writeln('Connection accepted from ', aSocket.PeerAddress);
+  FCon:=TLTCP.Create(nil); // create new TCP connection
+  FCon.OnError:=@OnEr;     // assign all callbacks
+  FCon.OnReceive:=@OnRe;
+  FCon.OnDisconnect:=@OnDs;
+  FCon.OnAccept:=@OnAc;
 end;
 
-procedure bigloop(const port: Word);
+destructor TLTCPTest.Destroy;
+begin
+  FCon.Free; // free the TCP connection
+  inherited Destroy;
+end;
+
+procedure TLTCPTest.Run;
 var
-  event: TLEvents;
+  Quit: Boolean; // main loop control
+  Port: Word;    // the port to connect to
 begin
-  quit:=false;
-  event:=TLEvents.Create;
-  con:=TLTcp.Create(nil);
-  con.OnError:=@event.er;
-  con.OnAccept:=@event.ac;
-  con.OnReceive:=@event.re;
-  con.OnDisconnect:=@event.ds;
-  if con.Listen(port) then begin
-    Writeln('Server running!');
-    Writeln('Press ''escape'' to quit, ''r'' to restart');
-    repeat
-      con.callaction;
-      delay(1);
-      if keypressed then
-        case readkey of
-         #27: quit:=true;
-         'r': begin
-                writeln('Restarting...');
-                con.Disconnect;
-                con.Listen(port);
-                quit:=false;
-              end;
-        end;
-    until quit;
-  end;
-  con.free;
-  event.free;
-end;
-
-var
-  p: Word;
-begin
-//  if ParamCount > 0 then begin
+  if ParamCount > 0 then begin // we need one argument
     try
-//      p:=Word(StrToInt(ParamStr(1)));
-      p:=4665;
+      Port:=Word(StrToInt(ParamStr(1))); // try to parse port from argument
     except
       on e: Exception do begin
         Writeln(e.message);
         Halt;
       end;
     end;
-    bigloop(p);
-//  end else Writeln('Usage: ', ParamStr(0), ' <port>');
+    Quit:=false;
+
+    if FCon.Listen(Port) then begin // if listen went ok
+      Writeln('Server running!');
+      Writeln('Press ''escape'' to quit, ''r'' to restart');
+      repeat
+        FCon.Callaction; // eventize the lNet
+        Sleep(1);       // wait 1 ms to not hog CPU
+        if Keypressed then // if user provided input
+          case readkey of
+           #27: quit:=true; // if he pressed "escape" then quit
+           'r': begin       // if he pressed 'r' then restart the server
+                  Writeln('Restarting...');
+                  FCon.Disconnect;
+                  FCon.Listen(Port);
+                  Quit:=false;
+                end;
+          end;
+      until Quit; // until user quit
+    end; // listen
+  end else Writeln('Usage: ', ParamStr(0), ' <port>');
+end;
+
+var
+  TCP: TLTCPTest;
+begin
+  TCP:=TLTCPTest.Create;
+  TCP.Run;
+  TCP.Free;
 end.
 
