@@ -30,7 +30,7 @@ interface
 
 uses
   Classes, SysUtils,
-  LCLNet, lNet, lEvents, lFTP;
+  LCLNet, lNet, lEvents, lFTP, lSMTP;
 
 type
   TLSocket = lNet.TLSocket;
@@ -38,13 +38,16 @@ type
   TLNetComponent = TLConnection;
   TLTcp = lNet.TLTcp;
   TLUdp = lNet.TLUdp;
-  TLFtpClient = lFTP.TLFTPClient;
+  TLFTPClient = lFTP.TLFTPClient;
+  TLSMTPClient = lSMTP.TLSMTPClient;
 
   TLErrorProc = procedure(const msg: string; aSocket: TLSocket) of object;
   TLProc = procedure(aSocket: TLSocket) of object;
 
   TLFTPClientProgressCallback = procedure (Sender: TLFTPClient; const Bytes: Integer) of object;
   TLFTPClientCallback = procedure (Sender: TLFTPClient) of object;
+
+  TLSMTPClientCallback = procedure (Sender: TLSMTPClient) of object;
 
   { TLTCPComponent }
 
@@ -84,6 +87,19 @@ type
     property StartPort;
     property UsePORT;
   end;
+  
+  { TLSMTPCientComponent }
+
+  TLSMTPClientComponent = class(TLSMTPClient)
+  public
+    constructor Create(aOwner: TComponent); override;
+  published
+    property OnConnect;
+    property OnReceive;
+    property OnDisconnect;
+    property OnError;
+    property PipeLine;
+  end;
 
 implementation
 
@@ -116,6 +132,15 @@ begin
   SocketClass:=TLCLSocket;
   ControlConnection.Connection.Eventer:=LCLEventer;
   DataConnection.Eventer:=LCLEventer;
+end;
+
+{ TLSMTPCientComponent }
+
+constructor TLSMTPClientComponent.Create(aOwner: TComponent);
+begin
+  inherited Create(aOwner);
+  Connection.SocketClass:=TLCLSocket;
+  Eventer:=LCLEventer;
 end;
 
 initialization

@@ -11,13 +11,13 @@ type
 
   TClient = class
    private
-    procedure OnConnect(Sender: TLFTPClient);
+    procedure OnConnect(Sender: TLFTPClient); // callbacks
     procedure OnReceive(Sender: TLFTPClient);
     procedure OnControl(Sender: TLFTPClient);
     procedure OnSent(Sender: TLFTPClient; const Bytes: Integer);
     procedure OnError(const msg: string; aSocket: TLSocket);
    protected
-    FCon: TLFTPClient;
+    FCon: TLFTPClient; // the FTP connection
     FConnected: Boolean;
     FQuit: Boolean;
     FGetting: Boolean;

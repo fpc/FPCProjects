@@ -9,56 +9,34 @@ type
 
   { TDoer }
 
-  TDoer = class
-   public
+  { TLSMTPClientTest }
+
+  TLSMTPClientTest = class
+   private
+    FSMTP: TLSMTPClient;
+    FQuit: Boolean;
+    function GetAnswer(const s: string): string;
+    procedure PrintUsage(const Msg: string);
     procedure OnReceive(Sender: TLSMTPClient);
     procedure OnConnect(Sender: TLSMTPClient);
     procedure OnDisconnect(Sender: TLSMTPClient);
     procedure OnError(const msg: string; Sender: TLSocket);
+   public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Run;
   end;
-  
-var
-  SMTP: TLSMTPClient;
-  Quit: Boolean;
 
-{ TDoer }
+{ TLSMTPClientTest }
 
-procedure TDoer.OnReceive(Sender: TLSMTPClient);
-var
-  s: string;
-begin
-  Sender.GetMessage(s);
-  Write(s);
-end;
-
-procedure TDoer.OnConnect(Sender: TLSMTPClient);
-begin
-  Writeln('Connected');
-end;
-
-procedure TDoer.OnDisconnect(Sender: TLSMTPClient);
-begin
-  Writeln('Lost connection');
-end;
-
-procedure TDoer.OnError(const msg: string; Sender: TLSocket);
-begin
-  Writeln(msg);
-end;
-
-procedure PrintUsage(const Msg: string);
-begin
-  Writeln('Usage: ', ExtractFileName(ParamStr(0)), ' ', Msg);
-end;
-
-function GetAnswer(const s: string): string;
+function TLSMTPClientTest.GetAnswer(const s: string): string;
 var
   c: Char;
 begin
   Result:='';
   Write(s, ': ');
   while True do begin
-    SMTP.CallAction;
+    FSMTP.CallAction;
     if KeyPressed then begin
       c:=ReadKey;
       case c of
@@ -82,60 +60,98 @@ begin
   end;
 end;
 
-procedure Main(const Host: string; const Port: Word = 25);
+procedure TLSMTPClientTest.PrintUsage(const Msg: string);
+begin
+  Writeln('Usage: ', ExtractFileName(ParamStr(0)), ' ', Msg);
+end;
+
+procedure TLSMTPClientTest.OnReceive(Sender: TLSMTPClient);
+var
+  s: string;
+begin
+  Sender.GetMessage(s);
+  Write(s);
+end;
+
+procedure TLSMTPClientTest.OnConnect(Sender: TLSMTPClient);
+begin
+  Writeln('Connected');
+end;
+
+procedure TLSMTPClientTest.OnDisconnect(Sender: TLSMTPClient);
+begin
+  Writeln('Lost connection');
+end;
+
+procedure TLSMTPClientTest.OnError(const msg: string; Sender: TLSocket);
+begin
+  Writeln(msg);
+end;
+
+constructor TLSMTPClientTest.Create;
+begin
+  FQuit:=False;
+  FSMTP:=TLSMTPClient.Create(nil);
+  FSMTP.OnReceive:=@OnReceive;
+  FSMTP.OnConnect:=@OnConnect;
+  FSMTP.OnDisconnect:=@OnDisconnect;
+  FSMTP.OnError:=@OnError;
+end;
+
+destructor TLSMTPClientTest.Destroy;
+begin
+  FSMTP.Free;
+  inherited Destroy;
+end;
+
+procedure TLSMTPClientTest.Run;
 const
   MAX_RECIPIENTS = 10;
 var
-  Doer: TDoer;
-  Subject, Sender, Recipients, Message: string;
-begin
-  Quit:=False;
-  Doer:=TDoer.Create;
-  SMTP:=TLSMTPClient.Create(nil);
-  SMTP.OnReceive:=@Doer.OnReceive;
-  SMTP.OnConnect:=@Doer.OnConnect;
-  SMTP.OnDisconnect:=@Doer.OnDisconnect;
-  SMTP.OnError:=@Doer.OnError;
-  
-  if SMTP.Connect(Host, Port) then repeat
-    SMTP.CallAction;
-    if KeyPressed then
-      Quit:=True;
-    Sleep(1);
-  until Quit or SMTP.Connected;
-  
-  if not Quit then
-    SMTP.Helo;
-    
-  if not Quit then
-    Writeln('Press escape to quit or any other key to compose an email');
-  
-  while not Quit do begin
-    SetLength(Recipients, MAX_RECIPIENTS);
-    SMTP.CallAction;
-    if KeyPressed then
-      if ReadKey = #27 then
-        Quit:=True
-      else begin
-        Sender:=GetAnswer('From');
-        Recipients:=GetAnswer('Recipients');
-        Subject:=GetAnswer('Subject');
-        Message:=GetAnswer('Data');
-        
-        SMTP.SendMail(Sender, Recipients, Subject, Message);
-      end;
-    Sleep(1);
-  end;
-  
-  SMTP.Free;
-  Doer.Free;
-end;
-
+  Addr, Subject, Sender, Recipients, Message: string;
+  Port: Word = 25;
 begin
   if ParamCount > 0 then begin
+    Addr:=ParamStr(1);
     if ParamCount > 1 then
-      Main(ParamStr(1), StrToInt(ParamStr(2)))
-    else
-      Main(ParamStr(1));
+      Port:=Word(StrToInt(ParamStr(2)));
+
+    Write('Connecting to ', Addr, '... ');
+    if FSMTP.Connect(Addr, Port) then repeat  // try to connect
+      FSMTP.CallAction;  // if inital connect went ok, wait for "acknowlidgment" or otherwise
+      if KeyPressed then
+        FQuit:=True; // if user doesn't wish to wait, quit
+      Sleep(1);
+    until FQuit or FSMTP.Connected; // if user quit, or we connected, then continue
+    
+    if not FQuit then begin // if we connected send HELO
+      FSMTP.Helo;
+      Writeln('Press escape to quit or any other key to compose an email');
+    end;
+
+    while not FQuit do begin // if we connected, do main loop
+      SetLength(Recipients, MAX_RECIPIENTS);
+      FSMTP.CallAction;
+      if KeyPressed then
+        if ReadKey = #27 then
+          FQuit:=True
+        else begin
+          Sender:=GetAnswer('From');
+          Recipients:=GetAnswer('Recipients');
+          Subject:=GetAnswer('Subject');
+          Message:=GetAnswer('Data');
+
+          FSMTP.SendMail(Sender, Recipients, Subject, Message);
+        end;
+      Sleep(1);
+    end;
   end else PrintUsage('<SMTP server hostname/IP> [port]');
+end;
+
+var
+  SMTP: TLSMTPClientTest;
+begin
+  SMTP:=TLSMTPClientTest.Create;
+  SMTP.Run;
+  SMTP.Free;
 end.

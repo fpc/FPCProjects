@@ -244,6 +244,7 @@ type
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle; const msg: string); override;
     procedure Bail(const msg: string);
+    procedure SetAddress(const Address: string);
    public
     constructor Create(aOwner: TComponent); override;
     function Connect(const Address: string; const APort: Word): Boolean; override;
@@ -783,6 +784,22 @@ begin
   ErrorEvent(msg, FRootSock);
 end;
 
+procedure TLUdp.SetAddress(const Address: string);
+var
+  n: Integer;
+  s: string;
+  p: Word;
+begin
+  n:=Pos(':', Address);
+  if n > 0 then begin
+    s:=Copy(Address, 1, n-1);
+    p:=StrToInt(Copy(Address, n+1, Length(Address)));
+    FRootSock.FPeerAddress.Addr:=StrToNetAddr(s);
+    FRootSock.FPeerAddress.port:=p;
+  end else
+    FRootSock.FPeerAddress.Addr:=StrToNetAddr(Address);
+end;
+
 function TLUdp.InitSocket(aSocket: TLSocket): TLSocket;
 begin
   Result:=FRootSock;
@@ -862,7 +879,7 @@ function TLUdp.SendMessage(const msg: string; const Address: string): Integer;
 begin
   Result:=0;
   if Assigned(FRootSock) then begin
-    FRootSock.FPeerAddress.Addr:=StrToNetAddr(Address);
+    SetAddress(Address);
     Result:=FRootSock.SendMessage(msg)
   end;
 end;
@@ -879,7 +896,7 @@ function TLUdp.Send(const aData; const aSize: Integer; const Address: string
 begin
   Result:=0;
   if Assigned(FRootSock) then begin
-    FRootSock.FPeerAddress.Addr:=StrToNetAddr(Address);
+    SetAddress(Address);
     Result:=FRootSock.Send(aData, aSize);
   end;
 end;

@@ -16,6 +16,7 @@
           <CStyleOperator Value="False"/>
           <AllowLabel Value="False"/>
           <CPPInline Value="False"/>
+          <CStyleMacros Value="True"/>
         </SyntaxOptions>
       </Parsing>
       <CodeGeneration>
@@ -27,6 +28,7 @@
       </CodeGeneration>
       <Linking>
         <Debugging>
+          <GenerateDebugInfo Value="True"/>
           <UseLineInfoUnit Value="False"/>
         </Debugging>
       </Linking>

@@ -76,6 +76,7 @@ type
     property OnDisconnect: TLSMTPClientCallback read FOnDisconnect write FOnDisconnect;
     property OnError: TLErrorProc read FOnError write SetOnError;
     property Connected: Boolean read GetConnected;
+    property Connection: TLTcp read FConnection;
   end;
 
 implementation
@@ -113,6 +114,7 @@ begin
   FOnReceive:=nil;
   FOnConnect:=nil;
   FOnError:=nil;
+  FOnDisconnect:=nil;
   FStatus:=TLSMTPStatusFront.Create(EMPTY_REC);
   FCommandFront:=TLSMTPStatusFront.Create(EMPTY_REC);
 end;
