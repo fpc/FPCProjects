@@ -12,35 +12,40 @@ uses
   
 type
 
-  { TDoer }
+  { TLTelnetTest }
 
-  TDoer = class
-   public
+  TLTelnetTest = class
+   private
+    FCon: TLTelnetClient;
+    FQuit: Boolean;
     procedure OnError(const msg: string; aSocket: TLSocket);
+   public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Run;
   end;
 
-var
-  Con: TLTelnetClient;
-  Doer: TDoer;
+{ TLTelnetTest }
 
-procedure QuitProgram;
+constructor TLTelnetTest.Create;
 begin
-  Con.Free;
-  Doer.Free;
-  Halt;
+  FCon:=TLTelnetClient.Create(nil);
 end;
 
-{ TDoer }
+destructor TLTelnetTest.Destroy;
+begin
+  FCon.Free;
+  inherited Destroy;
+end;
 
-procedure TDoer.OnError(const msg: string; aSocket: TLSocket);
+procedure TLTelnetTest.OnError(const msg: string; aSocket: TLSocket);
 begin
   Writeln(msg);
-  QuitProgram;
+  FQuit:=True;
 end;
   
-procedure Main;
+procedure TLTelnetTest.Run;
 var
-  Quit: Boolean;
   s: string;
   c: Char;
   l: Longint; // length of line currently written
@@ -53,35 +58,33 @@ begin
       PORT:=Word(StrToInt(Paramstr(2)));
     except
       Writeln('Invalid command line parameters');
-      Halt;
+      Exit;
     end else begin
       Writeln('Usage: ', ExtractFileName(ParamStr(0)), ' IP PORT');
-      Halt;
+      Exit;
     end;
-  Con:=TLTelnetClient.Create(nil);
-  Doer:=TDoer.Create;
-  Con.OnError:=@Doer.OnError;
-  Quit:=False;
+  FQuit:=False;
   l:=0;
-  if Con.Connect(AD, PORT) then begin
+  if FCon.Connect(AD, PORT) then begin
     Writeln('Connecting... press any key to cancel');
     repeat
-      Con.CallAction;
+      FCon.CallAction;
       Sleep(1);
       if KeyPressed then
         Halt;
-    until Con.Connected;
-    while not Quit do begin
+    until FCon.Connected; // wait until timeout or we actualy connected
+    
+    while not FQuit do begin // if we connected, do main loop
       if KeyPressed then begin
         c:=ReadKey;
         case c of
-          #27: Quit:=True;
+          #27: FQuit:=True;
            #8: if l > 0 then
                  begin
                    GotoXY(WhereX-1, WhereY);
                    Write(' ');
                    Dec(l);
-                   Con.SendMessage(c);
+                   FCon.SendMessage(c);
                  end;
         else begin
                Inc(l);
@@ -89,22 +92,26 @@ begin
                  Writeln;
                l:=0;
                end;
-               Con.SendMessage(c);
+               FCon.SendMessage(c);
              end;
         end;
       end;
-      if Con.GetMessage(s) > 0 then
+      if FCon.GetMessage(s) > 0 then
         Write(s);
-      Con.CallAction;
+      FCon.CallAction;
       Delay(1);
     end;
   end;
-  if Con.GetMessage(s) > 0 then
+  
+  if FCon.GetMessage(s) > 0 then
     Write(s);
-  QuitProgram;
 end;
 
+var
+  Telnet: TLTelnetTest;
 begin
-  Main;
+  Telnet:=TLTelnetTest.Create;
+  Telnet.Run;
+  Telnet.Free;
 end.
 
