@@ -1,0 +1,258 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=""/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <LazDoc Paths=""/>
+    <Units Count="28">
+      <Unit0>
+        <CursorPos X="23" Y="228"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="lftpclient.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="112"/>
+        <UnitName Value="lFTPClient"/>
+        <UsageCount Value="63"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="1" Y="1"/>
+        <Filename Value="lftp.pas"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="lFTP"/>
+        <UsageCount Value="63"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="1" Y="425"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/ltelnet.pas"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="410"/>
+        <UnitName Value="lTelnet"/>
+        <UsageCount Value="63"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="48" Y="854"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/lnet.pas"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="835"/>
+        <UnitName Value="lNet"/>
+        <UsageCount Value="63"/>
+      </Unit3>
+      <Unit4>
+        <CursorPos X="1" Y="96"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/lfunc.inc"/>
+        <TopLine Value="70"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+      <Unit5>
+        <CursorPos X="15" Y="104"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/lftp.pas"/>
+        <TopLine Value="89"/>
+        <UnitName Value="lFTP"/>
+        <UsageCount Value="11"/>
+      </Unit5>
+      <Unit6>
+        <CursorPos X="3" Y="133"/>
+        <Filename Value="/home/ales/Desktop/fpc/networking/lnet/lnet.pas"/>
+        <TopLine Value="118"/>
+        <UnitName Value="lNet"/>
+        <UsageCount Value="24"/>
+      </Unit6>
+      <Unit7>
+        <CursorPos X="5" Y="21"/>
+        <Filename Value="/home/ales/fpc/rtl/unix/baseunix.pp"/>
+        <TopLine Value="6"/>
+        <UnitName Value="BaseUnix"/>
+        <UsageCount Value="10"/>
+      </Unit7>
+      <Unit8>
+        <CursorPos X="7" Y="31"/>
+        <Filename Value="/home/ales/fpc/rtl/unix/classes.pp"/>
+        <TopLine Value="20"/>
+        <UnitName Value="Classes"/>
+        <UsageCount Value="9"/>
+      </Unit8>
+      <Unit9>
+        <CursorPos X="15" Y="1286"/>
+        <Filename Value="/home/ales/fpc/rtl/objpas/classes/classesh.inc"/>
+        <TopLine Value="1271"/>
+        <UsageCount Value="10"/>
+      </Unit9>
+      <Unit10>
+        <CursorPos X="26" Y="163"/>
+        <Filename Value="/home/ales/Desktop/fpc/networking/lnet/lftp.pas"/>
+        <TopLine Value="32"/>
+        <UnitName Value="lFTP"/>
+        <UsageCount Value="26"/>
+      </Unit10>
+      <Unit11>
+        <CursorPos X="103" Y="14"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/lnetpackage/lnetpackage-0.2-st/lclnet.pas"/>
+        <TopLine Value="32"/>
+        <UnitName Value="LCLNet"/>
+        <UsageCount Value="9"/>
+      </Unit11>
+      <Unit12>
+        <CursorPos X="15" Y="66"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/lnetpackage/lnetpackage-0.2-st/lnetcomponents.pas"/>
+        <TopLine Value="51"/>
+        <UnitName Value="LNetComponents"/>
+        <UsageCount Value="9"/>
+      </Unit12>
+      <Unit13>
+        <CursorPos X="1" Y="1"/>
+        <Filename Value="/home/ales/Desktop/fpc/networking/lnet/tlconnectionlist.inc"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="9"/>
+      </Unit13>
+      <Unit14>
+        <CursorPos X="10" Y="96"/>
+        <Filename Value="/home/ales/Desktop/fpc/networking/lnet/lfunc.inc"/>
+        <TopLine Value="81"/>
+        <UsageCount Value="24"/>
+      </Unit14>
+      <Unit15>
+        <CursorPos X="14" Y="126"/>
+        <Filename Value="/home/ales/Desktop/fpc/networking/lnet/ltelnet.pas"/>
+        <TopLine Value="111"/>
+        <UnitName Value="lTelnet"/>
+        <UsageCount Value="22"/>
+      </Unit15>
+      <Unit16>
+        <CursorPos X="9" Y="25"/>
+        <Filename Value="/home/ales/fpc/rtl/unix/sockets.pp"/>
+        <TopLine Value="16"/>
+        <UnitName Value="Sockets"/>
+        <UsageCount Value="10"/>
+      </Unit16>
+      <Unit17>
+        <CursorPos X="3" Y="85"/>
+        <Filename Value="/home/ales/fpc/rtl/inc/socketsh.inc"/>
+        <TopLine Value="70"/>
+        <UsageCount Value="10"/>
+      </Unit17>
+      <Unit18>
+        <CursorPos X="18" Y="386"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/tomwinsock.pas"/>
+        <TopLine Value="374"/>
+        <UnitName Value="tomWINSOCK"/>
+        <UsageCount Value="10"/>
+      </Unit18>
+      <Unit19>
+        <CursorPos X="1" Y="59"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/ldatastructs.pas"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="41"/>
+        <UnitName Value="lDataStructs"/>
+        <UsageCount Value="49"/>
+      </Unit19>
+      <Unit20>
+        <CursorPos X="1" Y="11"/>
+        <Filename Value="/home/ales/Desktop/fpc/networking/lnet/ldatastructs.pas"/>
+        <TopLine Value="1"/>
+        <UnitName Value="lDataStructs"/>
+        <UsageCount Value="10"/>
+      </Unit20>
+      <Unit21>
+        <CursorPos X="10" Y="21"/>
+        <Filename Value="/home/ales/fpc/rtl/objpas/sysutils/diskh.inc"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit21>
+      <Unit22>
+        <CursorPos X="53" Y="2"/>
+        <Filename Value="/home/ales/Desktop/fpc/networking/lnet/lcontrolstack.pas"/>
+        <TopLine Value="1"/>
+        <UnitName Value="lControlStack"/>
+        <UsageCount Value="14"/>
+      </Unit22>
+      <Unit23>
+        <CursorPos X="6" Y="18"/>
+        <Filename Value="/home/ales/fpc/packages/base/netdb/netdb.pp"/>
+        <TopLine Value="146"/>
+        <UnitName Value="netdb"/>
+        <UsageCount Value="10"/>
+      </Unit23>
+      <Unit24>
+        <CursorPos X="22" Y="943"/>
+        <Filename Value="/home/ales/Desktop/fpc/networking/lnet/tomwinsock.pas"/>
+        <TopLine Value="1248"/>
+        <UnitName Value="tomWINSOCK"/>
+        <UsageCount Value="10"/>
+      </Unit24>
+      <Unit25>
+        <CursorPos X="13" Y="24"/>
+        <Filename Value="/home/ales/fpc/rtl/inc/wstringh.inc"/>
+        <TopLine Value="14"/>
+        <UsageCount Value="10"/>
+      </Unit25>
+      <Unit26>
+        <CursorPos X="27" Y="147"/>
+        <Filename Value="/home/ales/fpc/rtl/bsd/ostypes.inc"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit26>
+      <Unit27>
+        <CursorPos X="48" Y="68"/>
+        <Filename Value="/home/ales/fpc/rtl/unix/bunxovlh.inc"/>
+        <TopLine Value="53"/>
+        <UsageCount Value="10"/>
+      </Unit27>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <JumpHistory Count="0" HistoryIndex="-1"/>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <SearchPaths>
+      <IncludeFiles Value="../lnet/include/"/>
+      <OtherUnitFiles Value="../lnet/"/>
+      <SrcPath Value="../lnet/;../lnet/include/"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="True"/>
+      </Debugging>
+    </Linking>
+    <Other>
+      <Verbosity>
+        <ShowHints Value="False"/>
+      </Verbosity>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

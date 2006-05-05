@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=""/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <LazDoc Paths=""/>
+    <Units Count="12">
+      <Unit0>
+        <CursorPos X="14" Y="104"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="ltclient.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="77"/>
+        <UnitName Value="ltclient"/>
+        <UsageCount Value="23"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="20" Y="297"/>
+        <Filename Value="ltelnet.pas"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="286"/>
+        <UnitName Value="lTelnet"/>
+        <UsageCount Value="23"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="1" Y="27"/>
+        <Filename Value="lcontrolstack.pas"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="31"/>
+        <UnitName Value="lControlStack"/>
+        <UsageCount Value="23"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="1" Y="963"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/lnet.pas"/>
+        <TopLine Value="948"/>
+        <UnitName Value="lNet"/>
+        <UsageCount Value="20"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/lfunc.inc"/>
+        <SyntaxHighlighter Value="Text"/>
+        <UsageCount Value="20"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/lthreadnet.pas"/>
+        <SyntaxHighlighter Value="Text"/>
+        <UnitName Value="lthreadnet"/>
+        <UsageCount Value="20"/>
+      </Unit5>
+      <Unit6>
+        <CursorPos X="3" Y="12"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/tomwinsock.pas"/>
+        <TopLine Value="1"/>
+        <UnitName Value="tomWINSOCK"/>
+        <UsageCount Value="20"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/tlconnectionlist.inc"/>
+        <SyntaxHighlighter Value="Text"/>
+        <UsageCount Value="20"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/tlconnectionlisth.inc"/>
+        <SyntaxHighlighter Value="Text"/>
+        <UsageCount Value="20"/>
+      </Unit8>
+      <Unit9>
+        <CursorPos X="3" Y="525"/>
+        <Filename Value="/home/ales/fpc/rtl/objpas/classes/classesh.inc"/>
+        <TopLine Value="510"/>
+        <UsageCount Value="10"/>
+      </Unit9>
+      <Unit10>
+        <CursorPos X="15" Y="135"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/ltelnet.pas"/>
+        <TopLine Value="88"/>
+        <UnitName Value="lTelnet"/>
+        <UsageCount Value="10"/>
+      </Unit10>
+      <Unit11>
+        <CursorPos X="5" Y="21"/>
+        <Filename Value="/home/ales/fpc/rtl/unix/baseunix.pp"/>
+        <TopLine Value="6"/>
+        <UnitName Value="baseunix"/>
+        <UsageCount Value="10"/>
+      </Unit11>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <JumpHistory Count="0" HistoryIndex="-1"/>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <SearchPaths>
+      <IncludeFiles Value="../lnet/include/"/>
+      <OtherUnitFiles Value="../lnet/"/>
+      <SrcPath Value="../lnet/;../lnet/include/"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="True"/>
+        <UseLineInfoUnit Value="False"/>
+      </Debugging>
+    </Linking>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Watches Count="2">
+      <Item1>
+        <Expression Value="FParser.FStartState"/>
+      </Item1>
+      <Item2>
+        <Expression Value="Left"/>
+      </Item2>
+    </Watches>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

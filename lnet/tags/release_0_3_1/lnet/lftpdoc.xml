@@ -1,0 +1,1563 @@
+MakeSkel - FPDoc skeleton XML description file generator
+(c) 2000 - 2003 Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fpdoc-descriptions>
+<package name="lnet">
+
+<!--
+  ====================================================================
+    lFTP
+  ====================================================================
+-->
+
+<module name="lFTP">
+<short></short>
+<descr>
+</descr>
+
+<!-- unresolved type reference Visibility: default -->
+<element name="Classes">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- unresolved type reference Visibility: default -->
+<element name="lNet">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- unresolved type reference Visibility: default -->
+<element name="lTelnet">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="MAX_STATUSCOUNT">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- enumeration type Visibility: default -->
+<element name="TLFTPStatus">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsNone">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsCon">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsAuth">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsPasv">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsPort">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsList">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsRetr">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsStor">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsType">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsCWD">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsMKD">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsRMD">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsDEL">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsRNFR">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsRNTO">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsSYS">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsFeat">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsPWD">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsHEL">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLFTPStatus.fsLast">
+<short></short>
+</element>
+
+<!-- record type Visibility: default -->
+<element name="TLFTPStatusRec">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: default -->
+<element name="TLFTPStatusRec.Status">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: default -->
+<element name="TLFTPStatusRec.Args">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- object Visibility: default -->
+<element name="TLFTPClient">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure type Visibility: default -->
+<element name="TLFTPClientProgressCallback">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClientProgressCallback.Sender">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClientProgressCallback.Bytes">
+<short></short>
+</element>
+
+<!-- procedure type Visibility: default -->
+<element name="TLFTPClientCallback">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClientCallback.Sender">
+<short></short>
+</element>
+
+<!-- object Visibility: default -->
+<element name="TLFTPStatusFront">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPStatusFront.FItems">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPStatusFront.FTop">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPStatusFront.FBottom">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPStatusFront.FCount">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- function Visibility: protected -->
+<element name="TLFTPStatusFront.GetEmpty">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPStatusFront.GetEmpty.Result">
+<short></short>
+</element>
+
+<!-- constructor Visibility: public -->
+<element name="TLFTPStatusFront.Create">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPStatusFront.First">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPStatusFront.First.Result">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPStatusFront.Remove">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPStatusFront.Remove.Result">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPStatusFront.Insert">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPStatusFront.Insert.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPStatusFront.Insert.Value">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPStatusFront.Clear">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPStatusFront.Count">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPStatusFront.Empty">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- object Visibility: default -->
+<element name="TLFTPTelnetClient">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPTelnetClient.React">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPTelnetClient.React.Operation">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPTelnetClient.React.Command">
+<short></short>
+</element>
+
+<!-- object Visibility: default -->
+<element name="TLFTPClient">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: private -->
+<element name="TLFTPClient.GetStartPort">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FControl">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FData">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FStatus">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FCommandFront">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FStoreFile">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FTimeout">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FExpectedBinary">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FPipeLine">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FStatusFlags">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FSending">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FOnReceive">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FOnSent">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FOnControl">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FOnConnect">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FOnError">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FUsePORT">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FLastPort">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FStartPort">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLFTPClient.FSL">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- function Visibility: protected -->
+<element name="TLFTPClient.GetTransfer">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.GetTransfer.Result">
+<short></short>
+</element>
+
+<!-- function Visibility: protected -->
+<element name="TLFTPClient.GetEcho">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.GetEcho.Result">
+<short></short>
+</element>
+
+<!-- function Visibility: protected -->
+<element name="TLFTPClient.GetConnected">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.GetConnected.Result">
+<short></short>
+</element>
+
+<!-- function Visibility: protected -->
+<element name="TLFTPClient.GetBinary">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.GetBinary.Result">
+<short></short>
+</element>
+
+<!-- function Visibility: protected -->
+<element name="TLFTPClient.CanContinue">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.CanContinue.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.CanContinue.aStatus">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.CanContinue.Arg1">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.CanContinue.Arg2">
+<short></short>
+</element>
+
+<!-- function Visibility: protected -->
+<element name="TLFTPClient.CleanInput">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.CleanInput.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.CleanInput.s">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.SetStartPor">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.SetStartPor.Value">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.SetEcho">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.SetEcho.Value">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.SetBinary">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.SetBinary.Value">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.OnCo">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.OnCo.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.OnEr">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.OnEr.msg">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.OnEr.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.OnRe">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.OnRe.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.OnDs">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.OnDs.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.OnSe">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.OnSe.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.OnControlRe">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.OnControlRe.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.EvaluateAnswer">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.EvaluateAnswer.Ans">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.PasvPort">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.SendChunk">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.SendChunk.CallBack">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLFTPClient.ExecuteFrontCommand">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- constructor Visibility: public -->
+<element name="TLFTPClient.Create">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Create.aOwner">
+<short></short>
+</element>
+
+<!-- constructor Visibility: public -->
+<element name="TLFTPClient.Create">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Create.aOwner">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Create.SocketClass">
+<short></short>
+</element>
+
+<!-- destructor Visibility: public -->
+<element name="TLFTPClient.Destroy">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.Get">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.Get.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Get.aData">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Get.aSize">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Get.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.GetMessage">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.GetMessage.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.GetMessage.msg">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.GetMessage.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.Send">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.Send.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Send.aData">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Send.aSize">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Send.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.SendMessage">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.SendMessage.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.SendMessage.msg">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.SendMessage.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.Connect">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.Connect.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Connect.HostName">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Connect.Port">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.Authenticate">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.Authenticate.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Authenticate.aUsername">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Authenticate.aPassword">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.GetData">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.GetData.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.GetData.aData">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.GetData.aSize">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.GetDataMessage">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.GetDataMessage.Result">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.Retrieve">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.Retrieve.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Retrieve.FileName">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.Put">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.Put.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Put.FileName">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.ChangeDirectory">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.ChangeDirectory.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.ChangeDirectory.DestPath">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.MakeDirectory">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.MakeDirectory.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.MakeDirectory.DirName">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.RemoveDirectory">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.RemoveDirectory.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.RemoveDirectory.DirName">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.DeleteFile">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.DeleteFile.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.DeleteFile.FileName">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLFTPClient.Rename">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLFTPClient.Rename.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Rename.FromName">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Rename.ToName">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPClient.List">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.List.FileName">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPClient.Nlst">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Nlst.FileName">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPClient.SystemInfo">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPClient.FeatureList">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPClient.PresentWorkingDirectory">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPClient.Help">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLFTPClient.Help.Arg">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPClient.Disconnect">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLFTPClient.CallAction">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.Connected">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.Binary">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.PipeLine">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.Timeout">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.Echo">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.StartPort">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.Transfer">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.UsePORT">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.OnConnect">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.OnSent">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.OnReceive">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.OnControl">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLFTPClient.OnError">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+</module> <!-- lFTP -->
+</package>
+</fpdoc-descriptions>
+Done.

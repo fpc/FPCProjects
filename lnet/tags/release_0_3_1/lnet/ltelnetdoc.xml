@@ -1,0 +1,1225 @@
+MakeSkel - FPDoc skeleton XML description file generator
+(c) 2000 - 2003 Areca Systems GmbH / Sebastian Guenther, sg@freepascal.org
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fpdoc-descriptions>
+<package name="lnet">
+
+<!--
+  ====================================================================
+    lTelnet
+  ====================================================================
+-->
+
+<module name="lTelnet">
+<short></short>
+<descr>
+</descr>
+
+<!-- unresolved type reference Visibility: default -->
+<element name="Classes">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- unresolved type reference Visibility: default -->
+<element name="lNet">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- unresolved type reference Visibility: default -->
+<element name="lControlStack">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_NUL">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_ECHO">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_SGA">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_BEL">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_BS">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_HT">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_LF">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_VT">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_FF">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_CR">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_NAWS">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_DATA_MARK">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_BREAK">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_HYI">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_STDTELNET">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_TRANSPARENT">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_EBCDIC">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_SE">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_NOP">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_GA">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_SB">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_WILL">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_WONT">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_DO">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_DONT">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- constant Visibility: default -->
+<element name="TS_IAC">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- set type Visibility: default -->
+<element name="TLTelnetControlChars">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- enumeration type Visibility: default -->
+<element name="TLHowEnum">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLHowEnum.TE_WILL">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLHowEnum.TE_WONT">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLHowEnum.TE_DO">
+<short></short>
+</element>
+
+<!-- enumeration value Visibility: default -->
+<element name="TLHowEnum.TE_DONW">
+<short></short>
+</element>
+
+<!-- object Visibility: default -->
+<element name="TLBaseTelnet">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FStack">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FConnection">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FPossible">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FActive">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FOutput">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FOperation">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FCommandCharIndex">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FOnReceive">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FOnConnect">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FOnDisconnect">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FOnError">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FCommandArgs">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FOrders">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- variable Visibility: protected -->
+<element name="TLBaseTelnet.FConnected">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- function Visibility: protected -->
+<element name="TLBaseTelnet.Question">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLBaseTelnet.Question.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Question.Command">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Question.Value">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLBaseTelnet.StackFull">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLBaseTelnet.DoubleIAC">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.DoubleIAC.s">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLBaseTelnet.TelnetParse">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.TelnetParse.msg">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLBaseTelnet.React">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.React.Operation">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.React.Command">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLBaseTelnet.SendCommand">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.SendCommand.Command">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.SendCommand.Value">
+<short></short>
+</element>
+
+<!-- constructor Visibility: public -->
+<element name="TLBaseTelnet.Create">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Create.aOwner">
+<short></short>
+</element>
+
+<!-- constructor Visibility: public -->
+<element name="TLBaseTelnet.Create">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Create.aOwner">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Create.SocketClass">
+<short></short>
+</element>
+
+<!-- destructor Visibility: public -->
+<element name="TLBaseTelnet.Destroy">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLBaseTelnet.Get">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLBaseTelnet.Get.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Get.aData">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Get.aSize">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Get.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLBaseTelnet.GetMessage">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLBaseTelnet.GetMessage.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.GetMessage.msg">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.GetMessage.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLBaseTelnet.Send">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLBaseTelnet.Send.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Send.aData">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Send.aSize">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.Send.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLBaseTelnet.SendMessage">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLBaseTelnet.SendMessage.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.SendMessage.msg">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.SendMessage.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLBaseTelnet.OptionIsSet">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLBaseTelnet.OptionIsSet.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.OptionIsSet.Option">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLBaseTelnet.RegisterOption">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLBaseTelnet.RegisterOption.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.RegisterOption.aOption">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.RegisterOption.aCommand">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLBaseTelnet.SetOption">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.SetOption.Option">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLBaseTelnet.UnSetOption">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLBaseTelnet.UnSetOption.Option">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLBaseTelnet.CallAction">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLBaseTelnet.Disconnect">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLBaseTelnet.Output">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLBaseTelnet.Connected">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLBaseTelnet.OnReceive">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLBaseTelnet.OnDisconnect">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLBaseTelnet.OnConnect">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLBaseTelnet.OnError">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+
+<!-- object Visibility: default -->
+<element name="TLTelnetClient">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLTelnetClient.OnEr">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.OnEr.msg">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.OnEr.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLTelnetClient.OnDs">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.OnDs.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLTelnetClient.OnRe">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.OnRe.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLTelnetClient.OnCo">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.OnCo.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLTelnetClient.React">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.React.Operation">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.React.Command">
+<short></short>
+</element>
+
+<!-- procedure Visibility: protected -->
+<element name="TLTelnetClient.SendCommand">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.SendCommand.Command">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.SendCommand.Value">
+<short></short>
+</element>
+
+<!-- constructor Visibility: public -->
+<element name="TLTelnetClient.Create">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Create.aOwner">
+<short></short>
+</element>
+
+<!-- constructor Visibility: public -->
+<element name="TLTelnetClient.Create">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Create.aOwner">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Create.SocketClass">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLTelnetClient.Connect">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLTelnetClient.Connect.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Connect.anAddress">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Connect.aPort">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLTelnetClient.Get">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLTelnetClient.Get.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Get.aData">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Get.aSize">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Get.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLTelnetClient.GetMessage">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLTelnetClient.GetMessage.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.GetMessage.msg">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.GetMessage.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLTelnetClient.Send">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLTelnetClient.Send.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Send.aData">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Send.aSize">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.Send.aSocket">
+<short></short>
+</element>
+
+<!-- function Visibility: public -->
+<element name="TLTelnetClient.SendMessage">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- function result Visibility: default -->
+<element name="TLTelnetClient.SendMessage.Result">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.SendMessage.msg">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.SendMessage.aSocket">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLTelnetClient.SendCommand">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.SendCommand.aCommand">
+<short></short>
+</element>
+
+<!-- argument Visibility: default -->
+<element name="TLTelnetClient.SendCommand.How">
+<short></short>
+</element>
+
+<!-- procedure Visibility: public -->
+<element name="TLTelnetClient.CallAction">
+<short></short>
+<descr>
+</descr>
+<errors>
+</errors>
+<seealso>
+</seealso>
+</element>
+
+<!-- property Visibility: public -->
+<element name="TLTelnetClient.Connection">
+<short></short>
+<descr>
+</descr>
+<seealso>
+</seealso>
+</element>
+</module> <!-- lTelnet -->
+</package>
+</fpdoc-descriptions>
+Done.

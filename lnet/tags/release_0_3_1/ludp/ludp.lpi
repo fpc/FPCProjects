@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=""/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <LazDoc Paths=""/>
+    <Units Count="9">
+      <Unit0>
+        <CursorPos X="35" Y="52"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="ludp.pas"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="68"/>
+        <UnitName Value="ludp"/>
+        <UsageCount Value="21"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="1" Y="274"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/lnet.pas"/>
+        <TopLine Value="259"/>
+        <UnitName Value="lNet"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="1" Y="4"/>
+        <Filename Value="/home/ales/Documents/programming/fpc/networking/lnet/lfunc.inc"/>
+        <TopLine Value="80"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="10" Y="101"/>
+        <Filename Value="/home/ales/fpc/packages/base/netdb/netdb.pp"/>
+        <TopLine Value="86"/>
+        <UnitName Value="netdb"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+      <Unit4>
+        <CursorPos X="9" Y="66"/>
+        <Filename Value="/home/ales/fpc/rtl/unix/sockets.pp"/>
+        <TopLine Value="38"/>
+        <UnitName Value="Sockets"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+      <Unit5>
+        <CursorPos X="1" Y="1"/>
+        <Filename Value="/home/ales/fpc/rtl/freebsd/unixsock.inc"/>
+        <TopLine Value="80"/>
+        <UsageCount Value="10"/>
+      </Unit5>
+      <Unit6>
+        <CursorPos X="1" Y="1"/>
+        <Filename Value="/home/ales/fpc/rtl/inc/sockovl.inc"/>
+        <TopLine Value="60"/>
+        <UsageCount Value="10"/>
+      </Unit6>
+      <Unit7>
+        <CursorPos X="1" Y="1"/>
+        <Filename Value="/home/ales/fpc/rtl/inc/sockets.inc"/>
+        <TopLine Value="415"/>
+        <UsageCount Value="10"/>
+      </Unit7>
+      <Unit8>
+        <CursorPos X="3" Y="101"/>
+        <Filename Value="/home/ales/fpc/rtl/inc/socketsh.inc"/>
+        <TopLine Value="86"/>
+        <UsageCount Value="10"/>
+      </Unit8>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <JumpHistory Count="0" HistoryIndex="-1"/>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <SearchPaths>
+      <IncludeFiles Value="../lnet/include/"/>
+      <OtherUnitFiles Value="../lnet/"/>
+      <SrcPath Value="../lnet/;../lnet/include/"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>
