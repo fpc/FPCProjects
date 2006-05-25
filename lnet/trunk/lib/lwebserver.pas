@@ -57,7 +57,7 @@ type
     FScriptName: string;
    
     procedure AddEnvironment(const AName, AValue: string); virtual; abstract;
-    procedure AddHTTPParam(const AName: string; AParam: TLHTTPRequestParameter);
+    procedure AddHTTPParam(const AName: string; AParam: TLHTTPParameter);
     function  ParseHeaders: boolean;
     procedure CGIOutputError; virtual; abstract;
     procedure WriteCGIBlock;
@@ -119,11 +119,11 @@ type
 
   TCGIHandler = class(TURIHandler)
   public
-    function HandleURI(ASocket: TLHTTPSocket): TOutputItem; override;
+    function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
   end;
 
   TDocumentRequest = record
-    Socket: TLHTTPSocket;
+    Socket: TLHTTPServerSocket;
     Document: string;
     ExtraPath: string;
   end;
@@ -140,7 +140,7 @@ type
     FDocHandlerList: TDocumentHandler;
   public
     function HandleFile(const ARequest: TDocumentRequest): TOutputItem;
-    function HandleURI(ASocket: TLHTTPSocket): TOutputItem; override;
+    function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
     procedure RegisterHandler(AHandler: TDocumentHandler);
   end;
 
@@ -193,7 +193,7 @@ const
   CGIRoot = '/usr/lib/cgi-bin/';
   PHPCGIBinary = '/usr/lib/cgi-bin/php';
 
-function TCGIHandler.HandleURI(ASocket: TLHTTPSocket): TOutputItem;
+function TCGIHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var
   lOutput: TSimpleCGIOutput;
   lExecPath: string;
@@ -228,7 +228,7 @@ begin
   if Length(ARequest.ExtraPath) = 0 then
   begin
     lReqInfo := @ARequest.Socket.RequestInfo;
-    if not (lReqInfo^.RequestType in [hrHead, hrGet]) then
+    if not (lReqInfo^.RequestType in [hmHead, hmGet]) then
     begin
       lReqInfo^.Status := hsNotAllowed;
     end else begin
@@ -251,7 +251,7 @@ begin
   end;
 end;
 
-function TFileHandler.HandleURI(ASocket: TLHTTPSocket): TOutputItem;
+function TFileHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var
   lDocRequest: TDocumentRequest;
   lHandler: TDocumentHandler;
@@ -385,16 +385,18 @@ begin
   inherited;
 end;
 
-procedure TCGIOutput.AddHTTPParam(const AName: string; AParam: TLHTTPRequestParameter);
+procedure TCGIOutput.AddHTTPParam(const AName: string; AParam: TLHTTPParameter);
 var
   lValue: pchar;
 begin
-  lValue := FSocket.RequestInfo.Parameters[AParam];
+  lValue := FSocket.Parameters[AParam];
   if lValue = nil then exit;
   AddEnvironment(AName, lValue);
 end;
 
 procedure TCGIOutput.StartRequest;
+var
+  lServerSocket: TLHTTPServerSocket absolute FSocket;
 begin
 {
   FProcess.Environment.Add('SERVER_ADDR=');
@@ -405,9 +407,9 @@ begin
   AddEnvironment('SERVER_SOFTWARE', ServerSoftware);
 
   AddEnvironment('GATEWAY_INTERFACE', 'CGI/1.1'); 
-  AddEnvironment('SERVER_PROTOCOL', FSocket.RequestInfo.VersionStr);
-  AddEnvironment('REQUEST_METHOD', FSocket.RequestInfo.Method);
-  AddEnvironment('REQUEST_URI', '/'+FSocket.RequestInfo.Argument);
+  AddEnvironment('SERVER_PROTOCOL', lServerSocket.RequestInfo.VersionStr);
+  AddEnvironment('REQUEST_METHOD', lServerSocket.RequestInfo.Method);
+  AddEnvironment('REQUEST_URI', '/'+lServerSocket.RequestInfo.Argument);
 
   if Length(FExtraPath) > 0 then
   begin
@@ -419,7 +421,7 @@ begin
   AddEnvironment('SCRIPT_NAME', FScriptName);
   AddEnvironment('SCRIPT_FILENAME', FScriptFileName);
   
-  AddEnvironment('QUERY_STRING', FSocket.RequestInfo.QueryParams);
+  AddEnvironment('QUERY_STRING', lServerSocket.RequestInfo.QueryParams);
   AddHTTPParam('CONTENT_TYPE', hpContentType);
   AddHTTPParam('CONTENT_LENGTH', hpContentLength);
 
@@ -451,10 +453,11 @@ var
   iEnd, lCode: integer;
   lStatus, lLength: dword;
   pLineEnd, pNextLine, pValue: pchar;
+  lServerSocket: TLHTTPServerSocket absolute FSocket;
 
   procedure AddExtraHeader;
   begin
-    FSocket.RequestInfo.ExtraHeaders := FSocket.RequestInfo.ExtraHeaders +
+    lServerSocket.RequestInfo.ExtraHeaders := lServerSocket.RequestInfo.ExtraHeaders +
       FParsePos + ': ' + pValue + #13#10;
   end;
 
@@ -474,7 +477,7 @@ begin
       FBufferOffset := pNextLine-FBuffer;
       FBufferPos := FReadPos;
       FReadPos := 0;
-      FSocket.StartResponse(Self);
+      lServerSocket.StartResponse(Self);
       exit(false);
     end;
     iEnd := IndexByte(FParsePos^, iEnd, ord(':'));
@@ -484,13 +487,13 @@ begin
     pValue := FParsePos+iEnd+2;
     if StrIComp(FParsePos, 'Content-type') = 0 then
     begin
-      FSocket.RequestInfo.ContentType := pValue;
+      lServerSocket.RequestInfo.ContentType := pValue;
     end else 
     if StrIComp(FParsePos, 'Location') = 0 then
     begin
       if StrLIComp(pValue, 'http://', 7) = 0 then
       begin
-        FSocket.RequestInfo.Status := hsMovedPermanently;
+        lServerSocket.RequestInfo.Status := hsMovedPermanently;
         { add location header as-is to response }
         AddExtraHeader;
       end else
@@ -503,19 +506,19 @@ begin
         break;
       for lHttpStatus := Low(TLHTTPStatus) to High(TLHTTPStatus) do
         if HTTPStatusCodes[lHttpStatus] = lStatus then
-          FSocket.RequestInfo.Status := lHttpStatus;
+          lServerSocket.RequestInfo.Status := lHttpStatus;
     end else
     if StrIComp(FParsePos, 'Content-Length') = 0 then
     begin
       Val(pValue, lLength, lCode);
       if lCode <> 0 then
         break;
-      FSocket.RequestInfo.ContentLength := lLength;
+      lServerSocket.RequestInfo.ContentLength := lLength;
     end else
     if StrIComp(FParsePos, 'Last-Modified') = 0 then
     begin
       if not TryHTTPDateStrToDateTime(pValue, 
-          FSocket.RequestInfo.LastModified) then
+          lServerSocket.RequestInfo.LastModified) then
         writeln('WARNING: unable to parse last-modified string from CGI script: ', pValue);
     end else
       AddExtraHeader;
@@ -523,7 +526,7 @@ begin
   until false;
 
   { error happened }
-  FSocket.RequestInfo.Status := hsInternalError;
+  lServerSocket.RequestInfo.Status := hsInternalError;
   exit(true);
 end;
 
@@ -556,7 +559,7 @@ begin
       { still parsing headers ? something's wrong }
       FParsingHeaders := false;
       CGIOutputError;
-      FSocket.StartResponse(Self);
+      TLHTTPServerSocket(FSocket).StartResponse(Self);
       exit;
     end;
   end;
@@ -615,16 +618,18 @@ procedure TSimpleCGIOutput.StartRequest;
 begin
   inherited;
   
-  FProcess.Eventer := FSocket.Server.Eventer;
+  FProcess.Eventer := FSocket.Connection.Eventer;
   FProcess.Execute;
 end;
 
 procedure TSimpleCGIOutput.CGIOutputError;
+var
+  ServerSocket: TLHTTPServerSocket absolute FSocket;
 begin
   if FProcess.ExitStatus = 127 then
-    FSocket.RequestInfo.Status := hsNotFound
+    ServerSocket.RequestInfo.Status := hsNotFound
   else
-    FSocket.RequestInfo.Status := hsInternalError;
+    ServerSocket.RequestInfo.Status := hsInternalError;
 end;
 
 procedure TSimpleCGIOutput.CGIProcNeedInput(AHandle: TLHandle);
@@ -669,7 +674,7 @@ end;
 
 procedure TFastCGIOutput.CGIOutputError;
 begin
-  FSocket.RequestInfo.Status := hsNotFound;
+  TLHTTPServerSocket(FSocket).RequestInfo.Status := hsNotFound;
 end;
 
 procedure TFastCGIOutput.DoneInput;
