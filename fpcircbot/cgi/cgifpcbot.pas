@@ -203,6 +203,40 @@ begin
     end;
 end;
 
+function HighlightHyperlinks(const inStr: string): string;
+var
+  s, tmp: string;
+  n: Integer;
+
+  procedure Convert(const x: Integer; const aps: string);
+  var
+    i: Integer;
+  begin
+    if x > 0 then begin
+      for i:=x + 1 to Length(s) do
+        if s[i] = ' ' then Break;
+      tmp:=Copy(s, x + 1, i - x - 1);
+      s:=StringReplace(s, ' ' + tmp, ' <a href="' + aps + tmp + '">' + tmp + '</a>', [rfReplaceAll]);
+    end;
+  end;
+
+begin
+  s:=' ' + InStr;
+
+  n:=Pos(' http://', LowerCase(s));
+  Convert(n, '');
+
+  n:=Pos(' www.', LowerCase(s));
+  Convert(n, 'http://');
+
+  Delete(s, 1, 1);
+
+  if Pos(' www.', s) + Pos(' http://', s) > 0 then
+    Result:=HighlightHyperlinks(s)
+  else
+    Result:=s;
+end;
+
 function ValidRequest: Boolean;
 var
   d1, d2: TDateTime;
@@ -268,7 +302,7 @@ begin
                      '<td nowrap width="1%">[' +
                      FilterHtml(Copy(fieldbyname('logtime').asstring, 12, 5)) +
                      ']' + '</td><td nowrap width="1%">' + s +
-                     ': </td><td>' + smsg + '</td></tr>');
+                     ': </td><td>' + HighlightHyperLinks(smsg) + '</td></tr>');
 
         LN:=s;
         Next;
