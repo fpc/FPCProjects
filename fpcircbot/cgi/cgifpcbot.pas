@@ -3,7 +3,7 @@ program cgiFpcBot;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, Web, SqlDB, IBConnection, stringutils;
+  Classes, SysUtils, Web, SqlDB, PQConnection, stringutils;
   
 procedure Main;
 
@@ -18,7 +18,7 @@ const
   HTML_BLUE   = '#10109d';
 
 var
-  LogFBConnection : TIBConnection;
+  LogConnection   : TPQConnection;
   LogTransaction  : TSQLTransaction;
   LogQuery        : TSQLQuery;
   ChanQuery       : TSQLQuery;
@@ -33,26 +33,25 @@ var
   
 procedure InitDB;
 begin
-  LogFBConnection := tIBConnection.Create(nil);
-  with LogFBConnection do begin
-    DatabaseName := DBPath;
+  LogConnection := TPQConnection.Create(nil);
+  with LogConnection do begin
     UserName := CgiDBName;
     Password := CgiDBPass;
   end;
 
   LogTransaction := tsqltransaction.create(nil);
-  LogTransaction.database := LogFBConnection;
+  LogTransaction.database := LogConnection;
 
   LogQuery := tsqlquery.Create(nil);
   with LogQuery do begin
-    DataBase := LogFBConnection;
+    DataBase := LogConnection;
     transaction := LogTransaction;
     ReadOnly:=True;
   end;
 
   ChanQuery := tsqlquery.Create(nil);
   with ChanQuery do begin
-    DataBase := LogFBConnection;
+    DataBase := LogConnection;
     transaction := LogTransaction;
     ReadOnly:=True;
   end;
@@ -60,8 +59,8 @@ end;
 
 procedure FreeDB;
 begin
-  LogFBConnection.Close;
-  LogFBConnection.free;
+  LogConnection.Close;
+  LogConnection.free;
   LogTransaction.free;
   LogQuery.free;
   ChanQuery.Free;

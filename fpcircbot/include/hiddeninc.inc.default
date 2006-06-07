@@ -8,4 +8,3 @@ BotDBName = '$fpcbot';
 BotDBPass = '$botpass';
 CGIDBName = '$cgifpc';
 CGIDBPass = '$cgipass';
-DBPath    = '$dbpath';

@@ -87,7 +87,7 @@ begin
   if ParamCount > 0 then
     anAD:=ParamStr(1)
   else
-    anAD:='chat.freenode.net';
+    anAD:='irc.freenode.net';
 end;
 
 procedure Main;
@@ -163,6 +163,7 @@ begin
   Con.OnChannelJoin:=@Doer.OnChannelJoin;
   Con.OnChannelQuit:=@Doer.OnChannelQuit;
   Con.LogLine:=@Doer.OnRecieve;
+  
   if not Con.Connect(AD, PORT) then
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
   else begin
@@ -171,7 +172,7 @@ begin
       Sleep(1);
       Con.CallAction;
       Inc(TimeOut);
-      if KeyPressed then TimeOut:=MAX_TIME + 1;
+//      if KeyPressed then TimeOut:=MAX_TIME + 1;
     until Con.Connected or (TimeOut > MAX_TIME);
   end;
   

@@ -29,7 +29,7 @@ interface
 
 uses
   {$ifndef noDB}
-  SqlDB, IBConnection,
+  DB, SqlDB, PQConnection,
   {$endif}
   Classes, SysUtils,
   lIrcBot, StringUtils, Markov, InfixMath,
@@ -52,7 +52,7 @@ type
     FDefViewQuery: TSQLQuery;
     FChanQuery: TSQLQuery;
     FLogTransaction: TSQLTransaction;
-    FLogFBConnection: TSQLConnection;
+    FLogConnection: TSQLConnection;
     {$endif}
     FMarkov: TMarkov;
     FLL: TLIrcRec; // for speed purposes
@@ -146,35 +146,39 @@ begin
   MarkovOn:=False;
 
   {$ifndef nodb}
-  FLogFBConnection := tIBConnection.Create(nil);
-  with FLogFBConnection do begin
-    DatabaseName := DBPath;
+  FLogConnection := TPQConnection.Create(nil);
+  with FLogConnection do begin
+    DatabaseName:='fpcbot';
+    HostName:='127.0.0.1';
     UserName := BotDBName;
     Password := BotDBPass;
   end;
 
   FLogTransaction := tsqltransaction.create(nil);
-  FLogTransaction.database := FLogFBConnection;
+  FLogTransaction.database := FLogConnection;
 
   FLogQuery := tsqlquery.Create(nil);
   FLogQuery.ReadOnly:=True;
   with FLogQuery do begin
-    DataBase := FLogFBConnection;
+    DataBase := FLogConnection;
     transaction := FLogTransaction;
 
     sql.clear;
-    sql.add('insert into tbl_LogLines(loglineid,logtime,sender,reciever,msg) values (gen_id(GEN_LOGLINEID,1),current_timestamp,:sender,:reciever,:msg)');
-    prepare;
+{    sql.add('insert into tbl_LogLines(sender,reciever,msg) values (:sender,:reciever,:msg)');
+    params.parambyname('sender').datatype:=ftString;
+    params.parambyname('reciever').datatype:=ftString;
+    params.parambyname('msg').datatype:=ftString;
+    prepare;}
   end;
 
   FSeenQuery := tsqlquery.Create(nil);
-  FSeenQuery.DataBase := FLogFBConnection;
+  FSeenQuery.DataBase := FLogConnection;
   FSeenQuery.transaction := FLogTransaction;
   FSeenQuery.ParseSQL:=False;
 
   FDefinesQuery := tsqlquery.Create(nil);
   with FDefinesQuery do begin
-    DataBase := FLogFBConnection;
+    DataBase := FLogConnection;
     Transaction := FLogTransaction;
 
 {    sql.clear;
@@ -183,14 +187,14 @@ begin
   end;
 
   FDefViewQuery := tsqlquery.Create(nil);
-  FDefViewQuery.DataBase := FLogFBConnection;
+  FDefViewQuery.DataBase := FLogConnection;
   FDefViewQuery.transaction := FLogTransaction;
   FDefViewQuery.ParseSQL:=False;
   
   FChanQuery := tsqlquery.Create(nil);
   with FChanQuery do begin
 //    ReadOnly:=True;
-    DataBase := FLogFBConnection;
+    DataBase := FLogConnection;
     Transaction := FLogTransaction;
 
 {    sql.clear;
@@ -217,8 +221,8 @@ begin
     FDefinesQuery.Free;
     FDefViewQuery.Free;
     FLogTransaction.Free;
-    FLogFBConnection.Close;
-    FLogFBConnection.Free;
+    FLogConnection.Close;
+    FLogConnection.Free;
   except on e: Exception do
     Writeln(e.message);
   end;
@@ -497,7 +501,7 @@ var
                 ' -- defined by ' + LastLine.Sender +
                 ''' where definition=''' + DefWord + '''');
         ExecSQL;
-        FLogTransaction.CommitRetaining;
+        FLogTransaction.Commit;
         Respond(YESSIR);
       except
         Respond('DB update error');
@@ -508,10 +512,11 @@ var
   begin
     if not UpdateDef then with FDefinesQuery do try
       Sql.Clear;
-      Sql.Add('insert into tbl_definitions(definitionid,definition,description) ' +
-              'values (gen_id(GEN_DEFINITIONID,1),'''+ DefWord+''',''' +
+      Sql.Add('insert into tbl_definitions(definition,description) ' +
+              'values ('''+ DefWord+''',''' +
                Args + ' -- defined by ' + Caller.LastLine.Sender + ''')');
       ExecSQL;
+      FLogTransaction.Commit;
       Caller.Respond(YESSIR);
     except
       Caller.Respond('DB insert error');
@@ -939,18 +944,24 @@ var
       and (Length(Sender) < 50)
       and (Length(Reciever) < 50)
       and (Length(Msg) < 4096) then begin
-        FLogQuery.params.ParamByName('Sender').AsString:=Sender;
-        FLogQuery.params.ParamByName('Reciever').AsString:=Reciever;
-        FLogQuery.params.ParamByName('msg').AsString:=Msg;
+        FLogQuery.SQL.Clear;
+        FLogQuery.SQL.Add('insert into tbl_loglines(sender,reciever,msg) values(''' + Sender + ''',''' + Reciever + ''',''' + msg + ''')');
+        Writeln('Log MESSAGE: ', FLogQuery.SQL.Text);
         try
           FLogQuery.ExecSQL;
-          FLogTransaction.CommitRetaining;
+          FLogTransaction.Commit;
         except
-          Writeln('Error writing to FB. Following information isn''t stored:');
-          Writeln('Sender: ' + Sender);
-          Writeln('Reciever: ' + Reciever);
-          Writeln('MSg: ' + Msg);
-          Caller.Respond('Error writing to DB!');
+          on e: Exception do begin
+            Writeln('-----------------ERROR----------------');
+            Writeln(e.Message);
+            Writeln('Error writing to FB. Following information isn''t stored:');
+            Writeln('Sender: ' + Sender);
+            Writeln('Reciever: ' + Reciever);
+            Writeln('MSg: ' + Msg);
+            Writeln('----------------[ERROR]---------------');
+//            Caller.Respond('Error writing to DB: ' + e.Message);
+            Halt;
+          end;
         end;
       end;
     end;
@@ -1042,6 +1053,7 @@ begin
     SQL.Clear;
     SQL.Add('delete from tbl_channels');
     ExecSQL;
+    FLogTransaction.Commit;
   except on e: Exception do
     writeln('Error deleting channels list in DB: ', e.message);
   end;
@@ -1057,13 +1069,20 @@ begin
     if Bot.ChannelCount > 0 then
       for i:=0 to Bot.ChannelCount-1 do try
         Sql.Clear;
-        Sql.Add('insert into tbl_channels(channelid,channelname) ' +
-                'values (gen_id(GEN_CHANNELID,1),'''+ Bot.Channels[i] + ''')');
+        Sql.Add('insert into tbl_channels(channelname) ' +
+                'values ('''+ Bot.Channels[i] + ''')');
+        Writeln('Log CHANNEL: ', FLogQuery.SQL.Text);
         ExecSQL;
+        FLogTransaction.Commit;
       except
-        Writeln('Error writing to FB. Following information isn''t stored:');
-        Writeln('Channel: ' + Bot.Channels[i]);
-        Writeln('Highest probability is that the DB has this channel in already');
+        on e: Exception do begin
+          Writeln('-----------------ERROR----------------');
+          Writeln(e.message);
+          Writeln('Error writing to DB. Following information isn''t stored:');
+          Writeln('Channel: ' + Bot.Channels[i]);
+          Writeln('Highest probability is that the DB has this channel in already');
+          Writeln('----------------[ERROR]---------------');
+        end;
 //        Bot.Respond('Error writing to DB!');
       end;
   {$endif}

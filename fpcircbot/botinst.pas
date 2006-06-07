@@ -3,7 +3,7 @@ program BotInst;
 {$mode objfpc}{$H+}
 
 uses
-  Crt, Classes, SysUtils, Process;
+  Crt, Classes, SysUtils, Process, SQLDB, PQConnection;
   
 const
   Version = 'v0.1';
@@ -17,7 +17,8 @@ var
   List: TStringList;
   Proc: TProcess;
   s   : string;
-  
+  isql, gsec: string;
+
 procedure QuitInst;
 begin
   try
@@ -59,20 +60,78 @@ begin
     end;
     Delay(1);
   end;
-  s:=Result;
   Writeln;
+end;
+
+function Query(const Question, Defaults: string): string;
+begin
+  Write(Question, ' [', Defaults, ']: ');
+  Result:=ReadString;
+  if Length(Result) = 0 then
+    Result:=Defaults;
+  s:=Result;
 end;
   
 procedure GetInfo(const FieldName, RepStr: string);
+var
+  QResult: string;
 begin
-  Write(FieldName, ': ');
-  List.Text:=StringReplace(List.Text, RepStr, ReadString, [rfReplaceAll]);
+  QResult:=Query(FieldName, StringReplace(RepStr, '$', '', [rfReplaceAll]));
+  List.Text:=StringReplace(List.Text, RepStr, QResult, [rfReplaceAll]);
+end;
+
+procedure Confirm;
+begin
+  if Pos('n', Query('About to save data to disk, are you sure you want to continue?', 'y')) > 0 then
+    QuitInst;
+end;
+
+procedure ExecuteSQL;
+var
+  CON: TSQLConnection;
+  TRN: TSQLTransaction;
+  QUE: TSQLQuery;
+begin
+  Writeln('Adding DB, password required');
+  
+  Proc.CommandLine:=gsec + ' fpcbot';
+  Proc.Execute;
+  while Proc.Active do Sleep(1);
+  
+  CON:=TPQConnection.Create(nil);
+  with CON do begin
+    DatabaseName:='fpcbot';
+    HostName:='127.0.0.1';
+    UserName := Query('DB admin name', GetEnvironmentVariable('USER'));
+    Password := Query('DB admin password', '');
+  end;
+
+  TRN:=TSQLTransaction.create(nil);
+  TRN.DataBase:=CON;
+
+  QUE:=TSQLQuery.Create(nil);
+  with QUE do begin
+    DataBase:=CON;
+    Transaction:=TRN;
+    SQL:=List;
+  end;
+  
+  Writeln('Executing SQL commands');
+  
+  try
+    QUE.ExecSQL;
+    TRN.Commit;
+  except
+    on e: Exception do begin
+      Writeln('DB ERROR: ' + e.Message);
+      QuitInst;
+    end;
+  end;
 end;
   
 var
-  isql, gsec: string;
   f: TextFile;
-  CgiBin, DBFile, BotDBName, BotDBPass, CGIDBName, CGIDBPass, SysDBPass: string;
+  CgiBin, BotDBName, BotDBPass, CGIDBName, CGIDBPass: string;
 begin
   isql:='';
   gsec:='';
@@ -90,6 +149,7 @@ begin
     Writeln('FPCBot installer ', Version);
     Writeln('This installer will try to automaticly (with your input)');
     Writeln('install the required binaries and database setup for FPCBot.');
+    Writeln('WARNING: if you want DB support, you must run this as a db user with createdb and createuser rights!');
     Writeln('You can quit the installer at any time by pressing escape.');
     Writeln;
     Writeln('------------------------------BOT STATS---------------------------------');
@@ -100,30 +160,23 @@ begin
     GetInfo('NickPass', '$nickpass');
 
     Writeln('------------------------------DB STATS----------------------------------');
-    Write('Do you want DB support? (you need to have a web server and firebird2 installed) [y/n] ');
-    if Pos('y', LowerCase(ReadString)) > 0 then begin
+    if Pos('y', Query('Do you want DB support? (web server and pgSQL required)', 'y')) > 0 then begin
       AssignFile(f, 'include' + PathDelim + 'baseinc.inc');
       Rewrite(f);
       CloseFile(f);
       
-      Write('FireBird binary (example: /usr/bin/isql-fb): ');
-      isql:=ReadString;
+{      isql:=Query('PostgreSQL interpreter binary', '/usr/bin/psql');
       while not FileExists(isql) do begin
         Writeln('Invalid file or file not exist, try again');
-        Write('FireBird binary (example: /usr/bin/isql-fb): ');
-        isql:=ReadString;
-      end;
+        isql:=Query('PostgreSQL interpreter binary', '/usr/bin/psql');
+      end;}
 
-      Write('gsec binary (example: /usr/bin/gsec): ');
-      gsec:=ReadString;
-      while not FileExists(isql) do begin
+      gsec:=Query('createdb binary', '/usr/bin/createdb');
+      while not FileExists(gsec) do begin
         Writeln('Invalid file or file not exist, try again');
-        Write('gsec binary (example: /usr/bin/gsec): ');
-        gsec:=ReadString;
+        gsec:=Query('createdb binary', '/usr/bin/createdb');
       end;
 
-      GetInfo('DB sysdba password', '$bogus');
-      SysDBPass:=s;
       GetInfo('BotDBName', '$fpcbot');
       BotDBName:=s;
       GetInfo('BotDBPass', '$botpass');
@@ -132,24 +185,14 @@ begin
       CGIDBName:=s;
       GetInfo('CgiDBPass', '$cgipass');
       CGIDBPass:=s;
-      GetInfo('Path to db file (with filename, example: /var/firebird/fpcbot.fdb)', '$dbpath');
-      DBFile:=s;
 
-      Write('Path to your cgi-bin directory (example: /usr/lib/cgi-bin): ');
-      CgiBin:=ReadString;
+      CgiBin:=Query('Path to your cgi-bin directory', '/usr/lib/cgi-bin');
       while not DirectoryExists(CgiBin) do begin
         Write('Directory does not exist, try again: ');
-        CgiBin:=ReadString;
+        CgiBin:=Query('Path to your cgi-bin directory', '/usr/lib/cgi-bin');
       end;
       
-      // DB CREATION
-      if FileExists(DBFile) then begin
-        Writeln('WARNING WARNING WARNING');
-        Writeln('There is an already existing DB file in: ', DBFile);
-        Writeln('If you want to recreate(deletes ALL content) your DB, continue');
-        Writeln('otherwise press escape and chose another location');
-        ReadString;
-      end;
+      Confirm;
 
       Writeln('Writing hiddeninc.inc to hard disk');
       try
@@ -161,46 +204,29 @@ begin
         end;
       end;
 
-      Writeln('Creating DB..');
-      Proc.CommandLine:='rm -f ' + DBFile;
-      Proc.Execute;
-      while Proc.Active do Delay(1);
-      Proc.CommandLine:=gsec + ' -user sysdba -password ' +
-                        SysDBPass + ' -delete ' + BotDBName;
-      Proc.Execute;
-      while Proc.Active do Delay(1);
-      Proc.CommandLine:=gsec + ' -user sysdba -password ' +
-                        SysDBPass + ' -delete ' + CgiDBName;
-      Proc.Execute;
-      while Proc.Active do Delay(1);
-
+      Writeln('Creating DB construction script');
       List.Clear;
-      List.LoadFromFile('cgi' + PathDelim + 'create_database_script.sql');
-      List.Text:=StringReplace(List.Text, '$dbpath', DBFile, [rfReplaceall]);
-      List.Text:=StringReplace(List.Text, '$sysdbapass', SysDBPass, [rfReplaceall]);
+      List.LoadFromFile('common' + PathDelim + 'create_database_script.sql');
       List.Text:=StringReplace(List.Text, '$botdbname', BotDBName, [rfReplaceall]);
       List.Text:=StringReplace(List.Text, '$cgidbname', CGIDBName, [rfReplaceall]);
+      List.Text:=StringReplace(List.Text, '$botdbpass', BotDBPass, [rfReplaceall]);
+      List.Text:=StringReplace(List.Text, '$cgidbpass', CGIDBPass, [rfReplaceall]);
       List.SaveToFile('dbscr.sql');
 
-      Proc.CommandLine:=gsec + ' -user sysdba -password ' + SysDBPass + ' -add ' +
-                        BotDBName + ' -pw ' + BotDBPass + ' -fname ' + BotDBName;
-      Proc.Execute;
-      while Proc.Active do Delay(1);
-      Proc.CommandLine:=gsec + ' -user sysdba -password ' + SysDBPass + ' -add ' +
-                        CgiDBName + ' -pw ' + CgiDBPass + ' -fname ' + CgiDBName;
-      Proc.Execute;
-      while Proc.Active do Delay(1);
-      List.Clear;
-      List.Add(isql + ' < dbscr.sql');
+{      List.Clear;
+      List.Add(isql + ' fpcbot < dbscr.sql');
       List.SaveToFile('makedb.sh');
       Proc.CommandLine:='sh makedb.sh';
       Proc.Execute;
-      while Proc.Active do Delay(1);
+      while Proc.Active do Delay(1);}
+      ExecuteSQL;
+      
       List.Clear;
       List.Add(CgiBin);
       List.SaveToFile('cgibin_path.ipt');
 
     end else begin // {$define noDB}
+      Confirm;
       AssignFile(f, 'include' + PathDelim + 'baseinc.inc');
       Rewrite(f);
       Writeln(f, '{$define noDB}');
