@@ -113,7 +113,7 @@ type
    public
     constructor Create; override;
     destructor Destroy; override;
-    function Listen(const APort: Word): Boolean;
+    function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
     function Accept(const SerSock: Integer): Boolean;
     function Connect(const Address: string; const APort: Word): Boolean;
     function Send(const aData; const aSize: Integer): Integer; virtual;
@@ -154,7 +154,7 @@ type
   { Interface for all servers }
   
   ILServer = interface(ILBase)
-    function Listen(const APort: Word): Boolean;
+    function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
   end;
 
   { Interface for all clients }
@@ -208,7 +208,7 @@ type
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
     function Connect(const Address: string; const APort: Word): Boolean; virtual; abstract;
-    function Listen(const APort: Word): Boolean; virtual; abstract;
+    function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; virtual; abstract;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
@@ -248,7 +248,7 @@ type
    public
     constructor Create(aOwner: TComponent); override;
     function Connect(const Address: string; const APort: Word): Boolean; override;
-    function Listen(const APort: Word): Boolean; override;
+    function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; override;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; override;
@@ -280,7 +280,7 @@ type
    public
     constructor Create(aOwner: TComponent); override;
     function Connect(const Address: string; const APort: Word): Boolean; override;
-    function Listen(const aPort: Word): Boolean; override;
+    function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; override;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
@@ -468,11 +468,11 @@ begin
   Result:=FPeerAddress.sin_port;
 end;
 
-function TLSocket.Listen(const APort: Word): Boolean;
+function TLSocket.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
 begin
   if not Connected then begin
     Result:=false;
-    SetupSocket(APort, LADDR_ANY);
+    SetupSocket(APort, AIntf);
     if fpBind(FHandle, @FAddress, SizeOf(FAddress)) = INVALID_SOCKET then
       Bail('Error on bind', LSocketError)
     else
@@ -762,14 +762,14 @@ begin
     RegisterWithEventer;
 end;
 
-function TLUdp.Listen(const APort: Word): Boolean;
+function TLUdp.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
 begin
   Result:=False;
   FRootSock:=InitSocket(FSocketClass.Create);
   FIterator:=FRootSock;
   if FRootSock.Connected then
     Disconnect;
-  if FRootSock.Listen(APort) then begin
+  if FRootSock.Listen(APort, AIntf) then begin
     FRootSock.FPeerAddress:=FRootSock.FAddress;
     FRootSock.FPeerAddress.Addr:=StrToNetAddr(LADDR_BR);
     FRootSock.FConnected:=True;
@@ -928,13 +928,13 @@ begin
   end;
 end;
 
-function TLTcp.Listen(const aPort: Word): Boolean;
+function TLTcp.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
 begin
   Result:=false;
   if (aPort > 0) and not Assigned(FRootSock) then begin
     FRootSock:=InitSocket(FSocketClass.Create);
     FRootSock.FIgnoreShutdown:=True;
-    if FRootSock.Listen(APort) then begin
+    if FRootSock.Listen(APort, AIntf) then begin
       FRootSock.FConnected:=True;
       FRootSock.FServerSocket:=True;
       RegisterWithEventer;

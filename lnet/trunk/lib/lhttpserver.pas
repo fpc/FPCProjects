@@ -239,7 +239,7 @@ type
 
   TLHTTPClientSocket = class(TLHTTPSocket)
   protected
-    FMethod: THTTPMethod;
+    FMethod: TLHTTPMethod;
     
     procedure ParseLine(pLineEnd: pchar); virtual;
     procedure ProcessHeaders; virtual; abstract;
@@ -247,7 +247,7 @@ type
   public
     constructor Create; override;
 
-    property Method: THTTPMethod read FMethod write FMethod;
+    property Method: TLHTTPMethod read FMethod write FMethod;
     
   end;
 
