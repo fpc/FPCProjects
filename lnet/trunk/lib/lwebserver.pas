@@ -426,7 +426,7 @@ begin
   AddHTTPParam('CONTENT_LENGTH', hpContentLength);
 
   AddEnvironment('REMOTE_ADDR', FSocket.PeerAddress);
-  AddEnvironment('REMOTE_PORT', IntToStr(FSocket.Port));
+  AddEnvironment('REMOTE_PORT', IntToStr(FSocket.LocalPort));
 
   { used when user has authenticated in some way to server }
 //  AddEnvironment('AUTH_TYPE='+...);

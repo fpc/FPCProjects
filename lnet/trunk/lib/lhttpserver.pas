@@ -237,6 +237,8 @@ type
     property Parameters: TLHTTPParameterArray read FParameters;
   end;
 
+  { TLHTTPClientSocket }
+
   TLHTTPClientSocket = class(TLHTTPSocket)
   protected
     FMethod: TLHTTPMethod;
@@ -1445,6 +1447,24 @@ begin
   if AHandler = nil then exit;
   AHandler.FNext := FHandlerList;
   FHandlerList := AHandler;
+end;
+
+{ TLHTTPClientSocket }
+
+procedure TLHTTPClientSocket.ParseLine(pLineEnd: pchar);
+begin
+  // TODO
+end;
+
+procedure TLHTTPClientSocket.ResetDefaults;
+begin
+  // TODO
+end;
+
+constructor TLHTTPClientSocket.Create;
+begin
+  // TODO
+  inherited Create;
 end;
 
 end.
