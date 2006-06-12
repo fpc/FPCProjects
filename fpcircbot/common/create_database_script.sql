@@ -2,7 +2,7 @@
 BEGIN TRANSACTION;
 
 CREATE USER $botdbname PASSWORD '$botdbpass';
-CREATE USER $cgidbname PASSWORD '$botdbpass';
+CREATE USER $cgidbname PASSWORD '$cgidbpass';
 
 /******************************************************************************/
 /****                              Sequences                               ****/

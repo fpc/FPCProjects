@@ -28,7 +28,7 @@ begin
     Writeln(e.message);
   end;
   Writeln('Installation canceled');
-  Halt;
+  Halt(1);
 end;
   
 function ReadString: string;
@@ -213,12 +213,6 @@ begin
       List.Text:=StringReplace(List.Text, '$cgidbpass', CGIDBPass, [rfReplaceall]);
       List.SaveToFile('dbscr.sql');
 
-{      List.Clear;
-      List.Add(isql + ' fpcbot < dbscr.sql');
-      List.SaveToFile('makedb.sh');
-      Proc.CommandLine:='sh makedb.sh';
-      Proc.Execute;
-      while Proc.Active do Delay(1);}
       ExecuteSQL;
       
       List.Clear;
@@ -252,24 +246,27 @@ begin
   end else begin  // INSTALL
     if FileExists('cgibin_path.ipt') then begin
       // CPYING OF FILES
+      List.LoadFromFile('cgibin_path.ipt');
+      try
+        CgiBin:=List[0];
+	if not FileExists(CgiBin) then
+	  raise Exception.Create('Path does not exist');
+      except
+        on e: Exception do begin
+          Writeln('Error determining install path! Installaction canceled');
+          Writeln(e.Message);
+          Halt(1);
+	end;
+      end;
       Writeln('Copying files...');
       try
-        List.LoadFromFile('cgibin_path.ipt');
-        CgiBin:=List[0];
-        if not DirectoryExists(CgiBin) then begin
-          Writeln('Invalid install directory, this is a bug, contact author');
-          Halt;
-        end;
         Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'cgifpcbot ' + CgiBin;
         Proc.Execute;
         Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'psp.ini ' + CgiBin;
         Proc.Execute;
         if not DirectoryExists(CgiBin + PathDelim + 'html') then
           CreateDir(CgiBin + PathDelim + 'html');
-        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'html' + PathDelim + 'footer.html ' +
-                                        CgiBin + PathDelim + 'html';
-        Proc.Execute;
-        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'html' + PathDelim + 'header.html ' +
+        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'html' + PathDelim + '* ' +
                                         CgiBin + PathDelim + 'html';
         Proc.Execute;
         Writeln('Installation complete.');

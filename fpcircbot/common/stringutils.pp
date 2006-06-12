@@ -1,8 +1,16 @@
-{$mode objfpc}{$H+}
 unit stringutils;
 
+{$mode objfpc}{$H+}
+
 interface
-uses SysUtils;
+
+uses
+  SysUtils,
+{$IfDef LinkDynamically}
+  postgres3dyn;
+{$Else}
+  postgres3;
+{$EndIf}
 
 function RemoveOtherChars (const S : String; AllowedChars : TSysCharSet) : String; {$IFDEF USEINLINE} inline;{$ENDIF}
 //Remove chars that does not exists on the charset
@@ -54,17 +62,9 @@ end;
 
 function SQLEscape (const S : string) : string;
 begin
-  Result := S;
-	
-	if (Length(Result) > 0) then
-	  begin
-      Result := StringReplace(Result, #39, #39#39, [rfReplaceAll]); {Place '' on every '.}
-    	{If we are using unicode, then we should add it here as well}
-			Result := StringReplace (Result, '\', '\\', [rfReplaceAll]); {Escape every \ sign -> place it as the first escaping case.}
-			Result := StringReplace (Result, ':', '\:', [rfReplaceAll]); {Escape every : sign}
-			Result := StringReplace (Result, '%', '\%', [rfReplaceAll]); {Escape every % sign}
-			Result := StringReplace (Result, '"', '\"', [rfReplaceAll]); {Escape every " sign}
-	  end;
+  SetLength(Result, Length(S) * 2 + 1);
+  if Length(S) > 0 then
+    SetLength(Result, PQescapeString(@Result[1], @S[1], Length(S)));
 end;
 
 function FilterHtml(const s: string): string;

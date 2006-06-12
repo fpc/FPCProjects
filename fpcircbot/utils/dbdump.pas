@@ -6,7 +6,7 @@ program dbdump;
 
 {$ifndef noDB}
 uses
-  Classes, SqlDB, IBConnection;
+  Classes, SqlDB, PQConnection;
   
 const
   {$i hiddeninc.inc}
@@ -23,9 +23,9 @@ var
   
   procedure InitDB;
   begin
-    Con := tIBConnection.Create(nil);
+    Con := tPQConnection.Create(nil);
     with Con do begin
-      DatabaseName := DBPath;
+      Hostname := 'localhost';
       UserName := CgiDBName;
       Password := CgiDBPass;
     end;

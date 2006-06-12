@@ -35,6 +35,8 @@ procedure InitDB;
 begin
   LogConnection := TPQConnection.Create(nil);
   with LogConnection do begin
+    HostName := 'localhost';
+    DatabaseName := 'fpcbot';
     UserName := CgiDBName;
     Password := CgiDBPass;
   end;
@@ -179,7 +181,7 @@ begin
     end;
     close;
   except on e: Exception do
-    Writeln('<h1>Unable to fetch channel list.</h1>');
+    Writeln('<h1>Unable to fetch channel list: ' + e.Message + '</h1>');
   end;
 end;
 
@@ -278,9 +280,9 @@ begin
   if ValidRequest then begin
     with LogQuery do try
       sql.clear;
-      sql.add('select first ' + SQLEscape(Count) + ' sender, msg, cast(logtime as varchar(25)) ' +
-              'as logtime from tbl_loglines where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) +
-               s + ') order by loglineid desc');
+      sql.add('select sender, msg, logtime from tbl_loglines ' +
+              'where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) + s + ') ' +
+              'order by loglineid desc limit ' + SQLEscape(Count));
       open;
       Flip:=False;
       LN:=FilterHtml(fieldbyname('sender').asstring);
@@ -309,7 +311,8 @@ begin
       close;
 
     except
-      Writeln('<h1>Invalid input.</h1>');
+      on e: Exception do
+        Writeln('<h1>Invalid input: ' + e.Message + '</h1>');
     end;
   end else Writeln('<h1>Invalid input, date difference too big?</h1>');
 

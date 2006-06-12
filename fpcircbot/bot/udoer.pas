@@ -446,21 +446,21 @@ begin
       Sql.Clear;
       if (Length(Reciever) > 0) and (Reciever[1] = '#') then
       
-        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime, ' +
-                'cast(current_timestamp as varchar(25)) as curtime ' +
-                'from tbl_loglines where (reciever=''' + Reciever +
-                ''' and upper(sender)=''' + UpperCase(Args) + ''') order by logtime desc')
+        Sql.Add('select logtime from tbl_loglines ' +
+                'where (reciever=''' + Reciever +
+                ''' and upper(sender)=''' + UpperCase(Args) +
+                ''') order by logtime desc limit 1')
       else
-        Sql.Add('select first 1 cast(logtime as varchar(25)) as logtime, ' +
-                'cast (current_timestamp as varchar(25)) as curtime ' +
-                'from tbl_loglines where upper(sender)=''' + UpperCase(Args) +
-                ''' order by logtime desc');
-                
+        Sql.Add('select logtime from tbl_loglines where ' +
+                'upper(sender)=''' + UpperCase(Args) +
+                ''' order by logtime desc limit 1');
+      Writeln;
+      Writeln('SEEN: ', Sql.Text);
+      Writeln;
       Open;
       if not Eof then begin
-        Today:=StrToDateTime(SQLStrToDateTimeStr(FieldByName('curtime').AsString));
-        SeenStr:=fieldbyname('logtime').AsString;
-        Seen:=StrToDateTime(SQLStrToDateTimeStr(SeenStr));
+        Today:=Now;
+        Seen:=FSeenQuery.fieldbyname('logtime').AsDateTime;
         SeenStr:=CreateDiffStr(Seen, Today);
         if Length(SeenStr) > 0 then
           Respond(Args + ' last seen ' + SeenStr + 'ago.')
@@ -484,8 +484,8 @@ var
     Result:=False;
     with FDefViewQuery, Caller, Caller.LastLine do try
       Sql.Clear;
-      Sql.Add('select first 1 description from tbl_definitions where definition=''' +
-              DefWord + '''');
+      Sql.Add('select description from tbl_definitions where definition=''' +
+              DefWord + ''' limit 1');
 
       Open;
       if not Eof then Result:=True;
@@ -524,7 +524,7 @@ var
    end;
    
 begin
-  Args:=SQLEscape(StringReplace((Caller.LastLine.Arguments), ':', '`dd', [rfReplaceAll]));
+  Args:=SQLEscape(Caller.LastLine.Arguments);
   with Caller, Caller.LastLine do begin
     if Length(Args) < 256 then begin
       if Length(Args) > 0 then begin
@@ -551,15 +551,14 @@ var
 begin
 {$ifndef noDB}
   with FDefViewQuery, Caller, Caller.LastLine do try
-    Args:=StringReplace(SQLEscape(TrimQuestion(Arguments)), '`dd', ':', [rfReplaceAll]);
+    Args:=SQLEscape(TrimQuestion(Arguments));
     Sql.Clear;
-    Sql.Add('select first 1 description from tbl_definitions where definition=''' +
-            LowerCase(Args) + '''');
+    Sql.Add('select description from tbl_definitions where definition=''' +
+            LowerCase(Args) + ''' limit 1');
     
     Open;
     if not Eof then
-      Respond(Args + ' ' +
-              StringReplace(FieldByName('description').AsString, '`dd', ':', [rfReplaceAll]))
+      Respond(Args + ' ' + FieldByName('description').AsString)
     else
       Respond('I don''t have ' + Arguments + ' in my database');
     Close;
@@ -688,8 +687,8 @@ begin
     if Length(Arguments) > 0 then with FSeenQuery do try
       Args:=Trim(UpperCase(Arguments));
       Sql.Clear;
-      Sql.Add('select first 1 msg as msg from tbl_loglines where ' +
-              'upper(sender)=''' + Args + ''' order by logtime desc');
+      Sql.Add('select msg from tbl_loglines where ' +
+              'upper(sender)=''' + Args + ''' order by logtime desc limit 1');
 
       Open;
       if not Eof then
@@ -945,7 +944,7 @@ var
       and (Length(Reciever) < 50)
       and (Length(Msg) < 4096) then begin
         FLogQuery.SQL.Clear;
-        FLogQuery.SQL.Add('insert into tbl_loglines(sender,reciever,msg) values(''' + Sender + ''',''' + Reciever + ''',''' + msg + ''')');
+        FLogQuery.SQL.Add('insert into tbl_loglines(sender,reciever,msg) values(''' + Sender + ''',''' + Reciever + ''',''' + SQLEscape(msg) + ''')');
         Writeln('Log MESSAGE: ', FLogQuery.SQL.Text);
         try
           FLogQuery.ExecSQL;
