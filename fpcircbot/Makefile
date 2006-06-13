@@ -14,7 +14,7 @@ TOUCH=touch
 
 all:
 	$(PP) $(ARGS) $(INSTSRC)
-  $(RM) include/baseinc.inc
+	$(RM) include/baseinc.inc
 	$(TOUCH) include/baseinc.inc
 	$(INSTBIN1)
 	@$(ECHO) "Run make compile."
