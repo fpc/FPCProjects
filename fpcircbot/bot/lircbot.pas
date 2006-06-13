@@ -539,9 +539,7 @@ end;
 
 function TLIrcBot.GetConnected: Boolean;
 begin
-  Result:=False;
-  if FCon.Count > 0 then
-    Result:=FCon[1].Connected
+  Result:=FCon.Connected
 end;
 
 function TLIrcBot.GetChannel(const i: Longint): string;

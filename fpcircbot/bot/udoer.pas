@@ -164,11 +164,6 @@ begin
     transaction := FLogTransaction;
 
     sql.clear;
-{    sql.add('insert into tbl_LogLines(sender,reciever,msg) values (:sender,:reciever,:msg)');
-    params.parambyname('sender').datatype:=ftString;
-    params.parambyname('reciever').datatype:=ftString;
-    params.parambyname('msg').datatype:=ftString;
-    prepare;}
   end;
 
   FSeenQuery := tsqlquery.Create(nil);
@@ -181,9 +176,6 @@ begin
     DataBase := FLogConnection;
     Transaction := FLogTransaction;
 
-{    sql.clear;
-    sql.add('insert into tbl_definitions(definitionid,definition,description) values (gen_id(GEN_DEFINITIONID,1),:definition,:description)');
-    prepare;}
   end;
 
   FDefViewQuery := tsqlquery.Create(nil);
@@ -193,13 +185,8 @@ begin
   
   FChanQuery := tsqlquery.Create(nil);
   with FChanQuery do begin
-//    ReadOnly:=True;
     DataBase := FLogConnection;
     Transaction := FLogTransaction;
-
-{    sql.clear;
-    sql.add('insert into tbl_channels(channelid,channelname) values (gen_id(GEN_CHANNELID,1),:channelname)');
-    prepare;}
   end;
   {$endif}
 end;
@@ -485,7 +472,7 @@ var
     with FDefViewQuery, Caller, Caller.LastLine do try
       Sql.Clear;
       Sql.Add('select description from tbl_definitions where definition=''' +
-              DefWord + ''' limit 1');
+              SQLEscape(DefWord) + ''' limit 1');
 
       Open;
       if not Eof then Result:=True;
@@ -497,9 +484,9 @@ var
     if Result then
       with Caller, FDefinesQuery do try
         Sql.Clear;
-        Sql.Add('update tbl_definitions set description=''' + Args +
-                ' -- defined by ' + LastLine.Sender +
-                ''' where definition=''' + DefWord + '''');
+        Sql.Add('update tbl_definitions set description=''' + SQLEscape(Args) +
+                ' -- defined by ' + SQLEscape(LastLine.Sender) +
+                ''' where definition=''' + SQLEscape(DefWord) + '''');
         ExecSQL;
         FLogTransaction.Commit;
         Respond(YESSIR);
@@ -513,8 +500,8 @@ var
     if not UpdateDef then with FDefinesQuery do try
       Sql.Clear;
       Sql.Add('insert into tbl_definitions(definition,description) ' +
-              'values ('''+ DefWord+''',''' +
-               Args + ' -- defined by ' + Caller.LastLine.Sender + ''')');
+              'values ('''+ SQLEscape(DefWord) +''',''' + SQLEscape(Args) +
+              ' -- defined by ' + SQLEscape(Caller.LastLine.Sender) + ''')');
       ExecSQL;
       FLogTransaction.Commit;
       Caller.Respond(YESSIR);
@@ -554,7 +541,7 @@ begin
     Args:=SQLEscape(TrimQuestion(Arguments));
     Sql.Clear;
     Sql.Add('select description from tbl_definitions where definition=''' +
-            LowerCase(Args) + ''' limit 1');
+            SQLEscape(LowerCase(Args)) + ''' limit 1');
     
     Open;
     if not Eof then
@@ -688,13 +675,13 @@ begin
       Args:=Trim(UpperCase(Arguments));
       Sql.Clear;
       Sql.Add('select msg from tbl_loglines where ' +
-              'upper(sender)=''' + Args + ''' order by logtime desc limit 1');
+              'upper(sender)=''' + SQLEscape(Args) + ''' order by logtime desc limit 1');
 
       Open;
       if not Eof then
         Respond(FieldByName('msg').AsString)
       else
-        Respond('I don''t have ' + Arguments + ' in my database');
+        Respond('I don''t have ' + SQLEscape(Arguments) + ' in my database');
       Close;
     except on e: Exception do
       Respond(e.message);
@@ -707,10 +694,11 @@ end;
 
 procedure TDoer.OnFirstWord(Caller: TLIrcBot);
 const
-  RAR: array[0..2] of string = ('mommy', 'daddy', 'bobo');
+  WORD_COUNT = 5;
+  RAR: array[0..WORD_COUNT-1] of string = ('mommy', 'daddy', 'bobo', 'gugu', 'waaaah!');
 begin
   if Length(Caller.LastLine.Arguments) > 0 then
-    Caller.Respond(RAR[Random(3)])
+    Caller.Respond(RAR[Random(WORD_COUNT)])
   else
     Caller.Respond('Are you nuts?');
 end;
@@ -943,8 +931,10 @@ var
       and (Length(Sender) < 50)
       and (Length(Reciever) < 50)
       and (Length(Msg) < 4096) then begin
+        Writeln('CONNECTION: ', FLogQuery.Database.Connected);
         FLogQuery.SQL.Clear;
-        FLogQuery.SQL.Add('insert into tbl_loglines(sender,reciever,msg) values(''' + Sender + ''',''' + Reciever + ''',''' + SQLEscape(msg) + ''')');
+        FLogQuery.SQL.Add('insert into tbl_loglines(sender,reciever,msg) ' +
+                          'values(''' + SQLEscape(Sender) + ''',''' + SQLEscape(Reciever) + ''',''' + SQLEscape(msg) + ''')');
         Writeln('Log MESSAGE: ', FLogQuery.SQL.Text);
         try
           FLogQuery.ExecSQL;
@@ -1069,7 +1059,7 @@ begin
       for i:=0 to Bot.ChannelCount-1 do try
         Sql.Clear;
         Sql.Add('insert into tbl_channels(channelname) ' +
-                'values ('''+ Bot.Channels[i] + ''')');
+                'values ('''+ SQLEscape(Bot.Channels[i]) + ''')');
         Writeln('Log CHANNEL: ', FLogQuery.SQL.Text);
         ExecSQL;
         FLogTransaction.Commit;

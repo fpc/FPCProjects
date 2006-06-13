@@ -87,7 +87,7 @@ begin
   if ParamCount > 0 then
     anAD:=ParamStr(1)
   else
-    anAD:='irc.freenode.net';
+    anAD:='chat.freenode.net';
 end;
 
 procedure Main;
@@ -167,15 +167,17 @@ begin
   if not Con.Connect(AD, PORT) then
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
   else begin
-    Writeln('Connecting... press any key to cancel');
+    Writeln('Connecting... press escape to cancel');
     repeat
       Sleep(1);
       Con.CallAction;
       Inc(TimeOut);
-//      if KeyPressed then TimeOut:=MAX_TIME + 1;
+      if KeyPressed then
+       if ReadKey = #27 then
+         TimeOut:=MAX_TIME + 1;
     until Con.Connected or (TimeOut > MAX_TIME);
   end;
-  
+
   if TimeOut > MAX_TIME then
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
   else begin
