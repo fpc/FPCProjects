@@ -6,7 +6,7 @@ uses
   Crt, Classes, SysUtils, Process, SQLDB, PQConnection;
   
 const
-  Version = 'v0.1';
+  Version = 'v0.5';
   {$ifdef win32}
   CopyCommand = 'copy';
   {$else}
@@ -262,7 +262,7 @@ begin
       try
         Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'cgifpcbot ' + CgiBin;
         Proc.Execute;
-        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'psp.ini ' + CgiBin;
+        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'PWU.conf ' + CgiBin;
         Proc.Execute;
         if not DirectoryExists(CgiBin + PathDelim + 'html') then
           CreateDir(CgiBin + PathDelim + 'html');

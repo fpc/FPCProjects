@@ -8,20 +8,23 @@ LFILL=utils/fillmarkov.pas
 INSTSRC=botinst.pas
 INSTBIN1=./botinst
 INSTBIN2=./botinst inst
+ECHO=echo
+RM=rm -f
+TOUCH=touch
 
 all:
 	$(PP) $(ARGS) $(INSTSRC)
-	rm -f include/baseinc.inc
-	touch include/baseinc.inc
+  $(RM) include/baseinc.inc
+	$(TOUCH) include/baseinc.inc
 	$(INSTBIN1)
-	echo "Run make compile."
+	@$(ECHO) "Run make compile."
 
 compile:
 	$(PP) $(ARGS) $(LBOT)
 	$(PP) $(ARGS) $(LCGI)
 	$(PP) $(ARGS) $(LDUMP)
 	$(PP) $(ARGS) $(LFILL)
-	echo "Run make inst as root."
+	@$(ECHO) "Run make inst as root."
 
 inst:
 	$(INSTBIN2)
@@ -36,9 +39,15 @@ clean:
 	delp common
 	delp utils
 	delp .
-	rm -f cgibin_path.ipt
-	rm -f makedb.sh
-	rm -f dbscr.sql
+	$(RM) cgibin_path.ipt
+	$(RM) makedb.sh
+	$(RM) dbscr.sql
+
+clear:
+	$(MAKE) clean
+	$(RM) include/baseinc.inc
+	$(RM) include/hiddeninc.inc
+	$(RM) include/baseinc.inc
 
 debug:
 	$(PP) $(BASEARGS) -g $(LBOT)
