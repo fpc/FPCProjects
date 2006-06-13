@@ -47,6 +47,8 @@ CREATE TABLE TBL_PASTES (
     HIGHLIGHT	INTEGER
 );
 
+create index tbl_loglines_logtime on tbl_loglines(logtime);
+
 /******************************************************************************/
 /****                              Privileges                              ****/
 /******************************************************************************/
