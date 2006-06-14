@@ -126,10 +126,11 @@ begin
   Pass:=GetAnswer('PASS', True);
 
   if FCon.Connect(Host, PORT) then begin
-    Writeln('Connecting... press any key to cancel');
+    Writeln('Connecting... press escape to cancel');
     repeat
       FCon.CallAction;
-      if KeyPressed then Exit;
+      if KeyPressed then
+        if ReadKey = #27 then Exit;
     until FConnected;
   end else Halt;
 

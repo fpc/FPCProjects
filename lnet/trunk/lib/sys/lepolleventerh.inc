@@ -1,8 +1,6 @@
 {% lepolleventerh.inc included by levents.pas }
 
 {$ifdef Linux}
-// only for 2.1.1+ or 2.0.3+
-{$if defined(ver2) and (fpc_release = 0) and (fpc_patch > 2)}
 
   PEpollEvent = ^epoll_event;
   TEpollEvent = epoll_event;
@@ -30,5 +28,4 @@
     function CallAction: Boolean; override;
   end;
 
-{$endif} // versions 2.0.3+ or 2.1.1+
 {$endif} // linux

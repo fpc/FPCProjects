@@ -1,8 +1,6 @@
 {% lepolleventer.inc included by levents.pas }
 
 {$ifdef Linux}
-// only for 2.1.1+ or 2.0.3+
-{$if defined(ver2) and (fpc_release = 0) and (fpc_patch > 2)}
 
 { TLEpollEventer }
 
@@ -115,12 +113,12 @@ begin
           if (FEvents[i].events and EPOLLERR = EPOLLERR)
           or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
             if Assigned(Temp.FOnError) then
-              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
+              if not Temp.FIgnoreError then Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
 
           if (FEvents[i].events and EPOLLOUT = EPOLLOUT)
           or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then
             if Assigned(Temp.FOnWrite) then
-              Temp.FOnWrite(Temp);
+              if not Temp.FIgnoreWrite then Temp.FOnWrite(Temp);
           if Temp.FDispose then
             AddForFree(Temp);
         end; // normals
@@ -130,7 +128,7 @@ begin
 
           if FEventsRead[i].events and EPOLLIN = EPOLLIN then
             if Assigned(TempRead.FOnRead) then
-              TempRead.FOnRead(TempRead);
+              if not TempRead.FIgnoreRead then TempRead.FOnRead(TempRead);
           if TempRead.FDispose then
             AddForFree(TempRead);
         end; // reads
@@ -172,12 +170,4 @@ begin
   end;
 end;
 
-{$else} // 2.0.3+ or 2.1.1+
-
-function BestEventerClass: TLEventerClass;
-begin
-  Result:=TLSelectEventer;
-end;
-
-{$endif}
 {$endif} // Linux

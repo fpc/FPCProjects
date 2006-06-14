@@ -8,7 +8,7 @@ interface
 uses
   {$ifdef Linux}
     {$undef nochoice} // undefine for all "Optimized" targets
-    Linux,
+    Linux, Contnrs,
   {$endif}
   {$ifdef BSD}
     {$undef nochoice}
@@ -183,7 +183,7 @@ end;
 procedure TLEventer.Bail(const msg: string; const Ernum: Integer);
 begin
   if Assigned(FOnError) then
-    FOnError(msg + ': [' + IntToStr(Ernum) + '] ' + LStrError(Ernum), Self);
+    FOnError(msg + ': ' + LStrError(Ernum), Self);
 end;
 
 procedure TLEventer.AddForFree(aHandle: TLHandle);
