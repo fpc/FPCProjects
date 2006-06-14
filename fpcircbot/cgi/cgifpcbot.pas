@@ -3,7 +3,7 @@ program cgiFpcBot;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, Web, SqlDB, PQConnection, stringutils;
+  Classes, SysUtils, PWU, SqlDB, PQConnection, stringutils;
   
 procedure Main;
 
@@ -126,15 +126,15 @@ procedure GetWebVars;
     if (GetList.Count > 0) and ((Length(GetValue)) > 0) then begin
       LocalVar:=GetValue;
       if VarName = 'channel' then LocalVar:='#' + LocalVar;
-      Web_SetVar(VarName, LocalVar);
-    end else if Web_VarExists(VarName) then try
-      LocalVar:=Web_GetVar(VarName);
+      SetWebVar(VarName, LocalVar);
+    end else if Length(GetWebVar(VarName)) > 0 then try
+      LocalVar:=GetWebVar(VarName);
       if Length(LocalVar) = 0 then LocalVar:=DefValue;
       if VarName = 'channel' then LocalVar:='#' + LocalVar;
     except
       LocalVar:=DefValue;
     end else begin
-      Web_SetVar(VarName, DefValue);
+      SetWebVar(VarName, DefValue);
       LocalVar:=DefValue;
     end;
   end;
@@ -181,7 +181,7 @@ begin
     end;
     close;
   except on e: Exception do
-    Writeln('<h1>Unable to fetch channel list: ' + e.Message + '</h1>');
+    WebWriteln('<h1>Unable to fetch channel list: ' + e.Message + '</h1>');
   end;
 end;
 
@@ -254,20 +254,19 @@ begin
   LN:='';
   s:='';
 
-  Web_Header;
   FillChannels;
   GetWebVars;
 
   HTMLCode.LoadFromFile('html' + PathDelim + 'footer1.html');
   HTMLCode.Text:=StringReplace(HTMLCode.Text, '$channels', GetHTMLChannels, [rfReplaceAll]);
-  Web_OutLn(HTMLCode.Text);
+  WebWriteln(HTMLCode.Text);
   if Channel = '#' then
     if ChanList.Count > 0 then Channel:=ChanList[0];
   HTMLCode.Clear;
 
-  Web_TemplateOut('html' + PathDelim + 'footer2.html');
+  WebTemplateOut('html' + PathDelim + 'footer2.html', True);
 
-  writeln('<table class="body_style">');
+  WebWriteln('<table class="body_style">');
 
   if Length(Sender) > 0 then s:=s + ' and UPPER(sender)=' + UpperCase(AnsiQuotedStr(SQLEscape(Sender), #39));
   if Length(Msg) > 0 then s:=s + ' and msg like ''%' + SQLEscape(Msg) + '%''';
@@ -312,24 +311,24 @@ begin
 
     except
       on e: Exception do
-        Writeln('<h1>Invalid input: ' + e.Message + '</h1>');
+        WebWriteln('<h1>Invalid input: ' + e.Message + '</h1>');
     end;
-  end else Writeln('<h1>Invalid input, date difference too big?</h1>');
+  end else WebWriteln('<h1>Invalid input, date difference too big?</h1>');
 
   if HTMLCode.Count > 0 then
     for i:=HTMLCode.Count - 1 downto 0 do
-      Writeln(HTMLCode[i]);
+      WebWriteln(HTMLCode[i]);
 
-  writeln('</table><br>');
-  writeln('<p><a href="http://validator.w3.org/check?uri=referer"><img ' +
+  WebWriteln('</table><br>');
+  WebWriteln('<p><a href="http://validator.w3.org/check?uri=referer"><img ' +
           'style="border:0;width:88px;height:31px" ' +
           'src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 ' +
           'Transitional" height="31" width="88"></a>');
-  writeln('<a href="http://jigsaw.w3.org/css-validator/"> ' +
+  WebWriteln('<a href="http://jigsaw.w3.org/css-validator/"> ' +
           '<img style="border:0;width:88px;height:31px" ' +
           'src="http://jigsaw.w3.org/css-validator/images/vcss" ' +
           'alt="Valid CSS!"></a></p>');
-  writeln('</body></html>');
+  WebWriteln('</body></html>');
 
   Free;
 end;

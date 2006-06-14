@@ -36,7 +36,7 @@
  ------------------------------------------------------------------------------}
 
 
-{$IFDEF FPC}{$H+}{$MODE OBJFPC}
+{$IFDEF FPC}{$MODE OBJFPC}{$H+}
     {$IFDEF EXTRA_SECURE}
      {$R+}{$Q+}{$CHECKPOINTER ON}
     {$ENDIF}
