@@ -276,13 +276,19 @@ var
   lDocRequest: TDocumentRequest;
   lHandler: TDocumentHandler;
   lTempDoc: string;
-  lDirIndexFound: boolean;
+  lDocIsDir, lDirIndexFound: boolean;
   I: integer;
 begin
   Result := nil;
   lDocRequest.Socket := ASocket;
   lDocRequest.Document := ASocket.RequestInfo.Argument;
-  if DirectoryExists(lDocRequest.Document) then
+  if Length(lDocRequest.Document) = 0 then
+  begin
+    lDocRequest.Document := '.';
+    lDocIsDir := true;
+  end else
+    lDocIsDir := DirectoryExists(lDocRequest.Document);
+  if lDocIsDir then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
     lDirIndexFound := false;
