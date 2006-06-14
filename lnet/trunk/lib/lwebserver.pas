@@ -138,10 +138,16 @@ type
   TFileHandler = class(TURIHandler)
   protected
     FDocHandlerList: TDocumentHandler;
+    FDirIndexList: TStrings;
   public
+    constructor Create;
+    destructor Destroy; override;
+    
     function HandleFile(const ARequest: TDocumentRequest): TOutputItem;
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
     procedure RegisterHandler(AHandler: TDocumentHandler);
+
+    property DirIndexList: TStrings read FDirIndexList;
   end;
 
   TPHPCGIHandler = class(TDocumentHandler)
@@ -218,6 +224,20 @@ begin
     Result := nil;
 end;
 
+constructor TFileHandler.Create;
+begin
+  inherited;
+
+  FDirIndexList := TStringList.Create;
+end;
+
+destructor TFileHandler.Destroy;
+begin
+  FreeAndNil(FDirIndexList);
+
+  inherited;
+end;
+
 function TFileHandler.HandleFile(const ARequest: TDocumentRequest): TOutputItem;
 var
   lFileOutput: TFileOutput;
@@ -255,10 +275,30 @@ function TFileHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var
   lDocRequest: TDocumentRequest;
   lHandler: TDocumentHandler;
+  lTempDoc: string;
+  lDirIndexFound: boolean;
+  I: integer;
 begin
   Result := nil;
   lDocRequest.Socket := ASocket;
   lDocRequest.Document := ASocket.RequestInfo.Argument;
+  if DirectoryExists(lDocRequest.Document) then
+  begin
+    lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
+    lDirIndexFound := false;
+    for I := 0 to FDirIndexList.Count - 1 do
+    begin
+      lTempDoc := lDocRequest.Document + FDirIndexList.Strings[I];
+      if FileExists(lTempDoc) then
+      begin
+        lDocRequest.Document := lTempDoc;
+        lDirIndexFound := true;
+        break;
+      end;
+    end;
+    { requested a directory, but no source to show }
+    if not lDirIndexFound then exit;
+  end else
   if not SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath) then exit;
   
   lHandler := FDocHandlerList;
@@ -754,6 +794,10 @@ begin
 
   RegisterHandler(FFileHandler);
   RegisterHandler(FCGIHandler);
+  FFileHandler.DirIndexList.Add('index.html');
+  FFileHandler.DirIndexList.Add('index.htm');
+  FFileHandler.DirIndexList.Add('index.php');
+  FFileHandler.DirIndexList.Add('index.cgi');
   FFileHandler.RegisterHandler(FPHPCGIHandler);
 end;
 
