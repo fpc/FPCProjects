@@ -8,7 +8,7 @@ interface
 uses
   {$ifdef Linux}
     {$undef nochoice} // undefine for all "Optimized" targets
-    Linux, Contnrs,
+    Linux,
   {$endif}
   {$ifdef BSD}
     {$undef nochoice}
