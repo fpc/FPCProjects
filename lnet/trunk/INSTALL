@@ -1,3 +1,5 @@
+LNET requires FPC 2.0.4 or greater.
+
 For LNET, LTCP, LUDP, LFTP and LSMTP all you need to do is type "make". (imake can make it too)
 Make.exe is shipped in win32 along with Free Pascal.
 Possible options are:
