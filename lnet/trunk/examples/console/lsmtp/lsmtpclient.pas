@@ -120,7 +120,8 @@ begin
     if FSMTP.Connect(Addr, Port) then repeat  // try to connect
       FSMTP.CallAction;  // if inital connect went ok, wait for "acknowlidgment" or otherwise
       if KeyPressed then
-        FQuit:=True; // if user doesn't wish to wait, quit
+        if ReadKey = #27 then
+          FQuit:=True;  // if user doesn't wish to wait, quit
       Sleep(1);
     until FQuit or FSMTP.Connected; // if user quit, or we connected, then continue
     
