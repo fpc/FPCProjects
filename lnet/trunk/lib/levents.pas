@@ -14,6 +14,7 @@ uses
     {$undef nochoice}
     BSD,
   {$endif}
+  contnrs,
   {$i sys/osunits.inc}
 
 type

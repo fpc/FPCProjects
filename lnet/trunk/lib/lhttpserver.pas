@@ -243,9 +243,9 @@ type
   protected
     FMethod: TLHTTPMethod;
     
-    procedure ParseLine(pLineEnd: pchar); virtual;
-    procedure ProcessHeaders; virtual; abstract;
-    procedure ResetDefaults; virtual;
+    procedure ParseLine(pLineEnd: pchar); override;
+    procedure ProcessHeaders; override;
+    procedure ResetDefaults; override;
   public
     constructor Create; override;
 
@@ -1416,7 +1416,7 @@ end;
 constructor TLHTTPServer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  SocketClass := TLHTTPSocket;
+  SocketClass := TLHTTPServerSocket;
   OnCanSend := @HandleSend;
   OnReceive := @HandleReceive;
 end;
@@ -1451,20 +1451,26 @@ end;
 
 { TLHTTPClientSocket }
 
+constructor TLHTTPClientSocket.Create;
+begin
+  // TODO
+  inherited Create;
+end;
+
 procedure TLHTTPClientSocket.ParseLine(pLineEnd: pchar);
+begin
+  // TODO
+end;
+
+procedure TLHTTPClientSocket.ProcessHeaders;
 begin
   // TODO
 end;
 
 procedure TLHTTPClientSocket.ResetDefaults;
 begin
+  inherited;
   // TODO
-end;
-
-constructor TLHTTPClientSocket.Create;
-begin
-  // TODO
-  inherited Create;
 end;
 
 end.
