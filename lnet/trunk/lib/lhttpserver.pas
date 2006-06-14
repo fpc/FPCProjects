@@ -642,7 +642,7 @@ begin
 
   FPendingData := false;
   lRead := Get(FBufferEnd^, FBufferSize-PtrUInt(FBufferEnd-FBuffer)-1);
-  if lRead = 0 then exit;
+  if lRead <= 0 then exit;
   Inc(FBufferEnd, lRead);
   FBufferEnd^ := #0;
   ParseBuffer;
