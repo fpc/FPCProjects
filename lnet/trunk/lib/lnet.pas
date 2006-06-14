@@ -531,7 +531,7 @@ begin
         end else
           Bail('Send error', LSocketError);
         Result:=0;
-      end else FIgnoreWrite:=False;
+      end;
     end;
  end;
 end;

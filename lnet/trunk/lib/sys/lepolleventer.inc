@@ -94,7 +94,7 @@ begin
   Result:=False;
   Changes:=0;
   ReadChanges:=0;
-  MasterChanges:=epoll_wait(FEpollMasterFD, @MasterEvents, 2, FTimeout);
+  MasterChanges:=epoll_wait(FEpollMasterFD, @MasterEvents[0], 2, FTimeout);
   if MasterChanges > 0 then begin
     for i:=0 to MasterChanges-1 do
       if MasterEvents[i].Data.fd = FEpollFD then
@@ -162,12 +162,9 @@ var
   u: TUTSName;
 begin
   Result:=TLSelectEventer;
-  try
-    if fpUname(u) = 0 then   // check for 2.6+
-      if GetVersion(u.release) >= 2600 then
-        Result:=TLEpollEventer;
-  except
-  end;
+  if fpUname(u) = 0 then   // check for 2.6+
+    if GetVersion(u.release) >= 2600 then
+      Result:=TLEpollEventer;
 end;
 
 {$endif} // Linux
