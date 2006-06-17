@@ -18,6 +18,7 @@ all:
 	$(PP) $(ARGS) $(TTELNET)
 	$(PP) $(ARGS) $(TFTP)
 	$(PP) $(ARGS) $(TSMTP)
+	$(PP) $(ARGS) $(THTTP)
 
 clean:
 	delp .
@@ -35,6 +36,3 @@ debug:
 
 memcheck:
 	$(PP) $(BASEARGS) -ghl $(TLIB)
-
-http:
-	$(PP) $(ARGS) $(THTTP)
