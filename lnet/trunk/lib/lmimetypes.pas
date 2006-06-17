@@ -41,7 +41,8 @@ var
 implementation
 
 const
-  MimeFileName: string = '/etc/mime.types';
+//  MimeFileName: string = '/etc/mime.types';
+  MimeFileName: string = 'mime.types';
 
 procedure InitMimeList;
 var
