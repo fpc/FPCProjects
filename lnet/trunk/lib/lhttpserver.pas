@@ -412,6 +412,46 @@ begin
   Result := hsUnknown;
 end;
 
+const
+   HexDigits: array[0..15] of char = '0123456789ABCDEF';
+
+function HexReverse(AValue: dword; ABuffer: pchar): integer;
+begin
+  Result := 0;
+  repeat
+    ABuffer^ := HexDigits[AValue and $F];
+    AValue := AValue shr 4;
+    Dec(ABuffer);
+    Inc(Result);
+  until AValue = 0;
+end;
+
+procedure HexToInt(ABuffer: pchar; var AValue: dword; var ACode: integer);
+var
+  Val, Incr: dword;
+  Start: pchar;
+begin
+  Val := 0;
+  Start := ABuffer;
+  while ABuffer^ <> #0 do
+  begin
+    if (ABuffer^ >= '0') and (ABuffer^ <= '9') then
+      Incr := ord(ABuffer^) - ord('0')
+    else if (ABuffer^ >= 'A') and (ABuffer^ <= 'F') then
+      Incr := ord(ABuffer^) - ord('A') + 10
+    else if (ABuffer^ >= 'a') and (ABuffer^ <= 'f') then
+      Incr := ord(ABuffer^) - ord('a') + 10
+    else begin
+      ACode := ABuffer - Start + 1;
+      exit;
+    end;
+    Val := (Val * 16) + Incr;
+    Inc(ABuffer);
+  end;
+  AValue := Val;
+  ACode := 0;
+end;
+
 { TOutputItem }
 
 constructor TOutputItem.Create(ASocket: TLHTTPSocket);
@@ -506,20 +546,6 @@ begin
   FBufferPos := 0;
   FBufferOffset := 0;
   FBufferSize := DataBufferSize;
-end;
-
-const
-   HexDigits: array[0..15] of char = '0123456789ABCDEF';
-
-function HexReverse(AValue: dword; ABuffer: pchar): integer;
-begin
-  Result := 0;
-  repeat
-    ABuffer^ := HexDigits[AValue and $F];
-    AValue := AValue shr 4;
-    Dec(ABuffer);
-    Inc(Result);
-  until AValue = 0;
 end;
 
 function TBufferOutput.WriteChunk: boolean;
@@ -846,7 +872,7 @@ begin
       csInitial:
       begin
         lLineEnd^ := #0;
-        Val(FBufferPos^, FInputRemaining, lCode);
+        HexToInt(FBufferPos, FInputRemaining, lCode);
         if lCode <> 0 then
         begin
           FChunkState := csFinished;
