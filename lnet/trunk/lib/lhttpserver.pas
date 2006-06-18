@@ -28,7 +28,7 @@ unit lhttpserver;
 interface
 
 uses
-  classes, sysutils, strutils, lnet, lhttputil, lstrbuffer;
+  classes, sysutils, strutils, lnet, levents, lhttputil, lstrbuffer;
 
 type
   TLHTTPMethod = (hmHead, hmGet, hmPost, hmUnknown);
@@ -40,6 +40,8 @@ type
     hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
     hsInternalError, hsNotImplemented, hsNotAllowed);
   TLHTTPTransferEncoding = (teIdentity, teChunked);
+  TLHTTPClientError = (ceOK, ceMalformedStatusLine, ceVersionNotSupported,
+    ceUnsupportedEncoding);
 
 const
   HTTPMethodStrings: array[TLHTTPMethod] of string =
@@ -109,26 +111,39 @@ const
 type
   TLHTTPSocket = class;
   TLHTTPConnection = class;
+  TLHTTPClient = class;
   
   PRequestInfo = ^TRequestInfo;
   TRequestInfo = record
-    { request }
     RequestType: TLHTTPMethod;
     DateTime: TDateTime;
     Method: pchar;
     Argument: pchar;
-    Status: TLHTTPStatus;
     QueryParams: pchar;
     VersionStr: pchar;
     Version: dword;
+  end;
 
-    { response }
-    ContentType: string;
-    ContentCharset: string;
+  TClientRequest = record
+    Method: TLHTTPMethod;
+    URI: string;
+    QueryParams: string;
+  end;
+
+  PHeaderOutInfo = ^THeaderOutInfo;
+  THeaderOutInfo = record
     ContentLength: integer;
     TransferEncoding: TLHTTPTransferEncoding;
-    LastModified: TDateTime;
     ExtraHeaders: string;
+    Version: dword;
+  end;
+
+  PResponseInfo = ^TResponseInfo;
+  TResponseInfo = record
+    Status: TLHTTPStatus;
+    ContentType: string;
+    ContentCharset: string;
+    LastModified: TDateTime;
   end;
 
   TWriteBlockMethod = function: boolean of object;
@@ -188,6 +203,19 @@ type
   TLHTTPParameterArray = array[TLHTTPParameter] of pchar;
   
   TParseBufferMethod = function: boolean of object;
+  TLInputEvent = function(AClient: TLHTTPClient; ABuffer: pchar; ASize: dword): dword of object;
+
+  TLHTTPConnection = class(TLTcp)
+  protected
+    FDelayFreeItems: TOutputItem;
+
+    procedure FreeDelayFreeItems;
+    procedure ReceiveEvent(aSocket: TLHandle); override;
+    procedure CanSendEvent(aSocket: TLHandle); override;
+  public
+    procedure DelayFree(AOutputItem: TOutputItem);
+    procedure LogAccess(const AMessage: string); virtual;
+  end;
 
   TLHTTPSocket = class(TLSocket)
   protected
@@ -207,11 +235,12 @@ type
     FCurrentOutput: TOutputItem;
     FLastOutput: TOutputItem;
     FKeepAlive: boolean;
+    FHeaderOut: THeaderOutInfo;
     FConnection: TLHTTPConnection;
     FParseBuffer: TParseBufferMethod;
     FParameters: TLHTTPParameterArray;
    
-    procedure AddContentLength(ALength: integer); virtual;
+    procedure AddContentLength(ALength: integer);
     procedure DoneBuffer(AOutput: TBufferOutput); virtual;
     procedure LogMessage; virtual;
     procedure FlushRequest; virtual;
@@ -222,8 +251,10 @@ type
     function  ParseEntityChunked: boolean;
     procedure ParseLine(pLineEnd: pchar); virtual;
     procedure ParseParameterLine(pLineEnd: pchar);
+    function  ProcessEncoding: boolean;
     procedure ProcessHeaders; virtual; abstract;
     procedure ResetDefaults; virtual;
+    function  SetupEncoding(AOutputItem: TBufferOutput): boolean;
     procedure WriteError(AStatus: TLHTTPStatus); virtual;
   public
     constructor Create; override;
@@ -236,33 +267,18 @@ type
     procedure WriteBlock;
     
     property Connection: TLHTTPConnection read FConnection;
+    property HeaderOut: THeaderOutInfo read FHeaderOut;
     property Parameters: TLHTTPParameterArray read FParameters;
   end;
 
-  { TLHTTPClientSocket }
-
-  TLHTTPClientSocket = class(TLHTTPSocket)
-  protected
-    FMethod: TLHTTPMethod;
-    FResponseStatus: TLHTTPStatus;
-    
-    procedure ParseLine(pLineEnd: pchar); override;
-    procedure ParseStatusLine(pLineEnd: pchar);
-    procedure ProcessHeaders; override;
-    procedure ResetDefaults; override;
-  public
-    constructor Create; override;
-
-    property Method: TLHTTPMethod read FMethod write FMethod;
-    
-  end;
-
+  { http server }
+  
   TLHTTPServerSocket = class(TLHTTPSocket)
   protected
     FLogMessage: TStringBuffer;
     FRequestInfo: TRequestInfo;
+    FResponseInfo: TResponseInfo;
 
-    procedure AddContentLength(ALength: integer); override;
     procedure DoneBuffer(AOutput: TBufferOutput); override;
     procedure FlushRequest; override;
     function  HandleURI: TOutputItem; virtual;
@@ -281,27 +297,14 @@ type
     procedure StartResponse(AOutputItem: TBufferOutput);
 
     property RequestInfo: TRequestInfo read FRequestInfo;
+    property ResponseInfo: TResponseInfo read FResponseInfo;
   end;
-  
-  { TLHTTPServer }
   
   TURIHandler = class(TObject)
   private
     FNext: TURIHandler;
   public
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; virtual; abstract;
-  end;
-
-  TLHTTPConnection = class(TLTcp)
-  protected
-    FDelayFreeItems: TOutputItem;
-
-    procedure FreeDelayFreeItems;
-  public
-    procedure DelayFree(AOutputItem: TOutputItem);
-    procedure LogAccess(const AMessage: string); virtual;
-    procedure HandleReceive(aSocket: TLSocket);
-    procedure HandleSend(aSocket: TLSocket);
   end;
 
   TLHTTPServer = class(TLHTTPConnection)
@@ -316,12 +319,94 @@ type
     procedure RegisterHandler(AHandler: TURIHandler);
   end;
 
+  { http client }
+
+  TLHTTPClientSocket = class(TLHTTPSocket)
+  protected
+    FRequest: TClientRequest;
+    FResponseStatus: TLHTTPStatus;
+    FResponseVersion: dword;
+    FResponseReason: pchar;
+    FError: TLHTTPClientError;
+    
+    procedure Cancel(AError: TLHTTPClientError);
+    procedure ParseLine(pLineEnd: pchar); override;
+    procedure ParseStatusLine(pLineEnd: pchar);
+    procedure ProcessHeaders; override;
+    procedure ResetDefaults; override;
+  public
+    constructor Create; override;
+    destructor Destroy; override;
+
+    procedure SendRequest;
+
+    property Error: TLHTTPClientError read FError write FError;
+    property Request: TClientRequest read FRequest write FRequest;
+  end;
+
+  TLHTTPClient = class(TLHTTPConnection)
+  protected
+    FHost: string;
+    FPort: integer;
+    FOutputEof: boolean;
+    FOnDoneInput: TNotifyEvent;
+    FOnInput: TLInputEvent;
+    FOnCanWrite: TNotifyEvent;
+    
+    procedure ConnectEvent(aSocket: TLHandle); override;
+    procedure DoDoneInput;
+    function  DoHandleInput(ABuffer: pchar; ASize: dword): dword;
+    function  DoWriteBlock: boolean;
+    function  InitSocket(aSocket: TLSocket): TLSocket; override;
+    procedure InternalSendRequest;
+  public
+    constructor Create(AOwner: TComponent); override;
+
+    procedure SendRequest;
+
+    property Host: string read FHost write FHost;
+    property Port: integer read FPort write FPort;
+    property OnDoneInput: TNotifyEvent read FOnDoneInput write FOnDoneInput;
+    property OnInput: TLInputEvent read FOnInput write FOnInput;
+    property OnCanWrite: TNotifyEvent read FOnCanWrite write FOnCanWrite;
+  end;
+
 implementation
 
 const
   PackBufferSize = 512;     { if less data than this, pack buffer }
   RequestBufferSize = 1024;
   DataBufferSize = 16*1024;
+
+{ helper functions }
+
+function TrySingleDigit(ADigit: char; out OutDigit: byte): boolean;
+begin
+  Result := (ord(ADigit) >= ord('0')) and (ord(ADigit) <= ord('9'));
+  if not Result then exit;
+  OutDigit := ord(ADigit) - ord('0');
+end;
+
+function HTTPVersionCheck(AStr, AStrEnd: pchar; out AVersion: dword): boolean;
+var
+  lMajorVersion, lMinorVersion: byte;
+begin
+  Result := ((AStrEnd-AStr) = 8) 
+    and CompareMem(AStr, pchar('HTTP/'), 5)
+    and TrySingleDigit(AStr[5], lMajorVersion) 
+    and (AStr[6] = '.')
+    and TrySingleDigit(AStr[7], lMinorVersion);
+  AVersion := lMajorVersion * 10 + lMinorVersion;
+end;
+
+function CodeToHTTPStatus(ACode: dword): TLHTTPStatus;
+begin
+  for Result := Low(TLHTTPStatus) to High(TLHTTPStatus) do
+    if HTTPStatusCodes[Result] = ACode then exit;
+  Result := hsUnknown;
+end;
+
+{ TOutputItem }
 
 constructor TOutputItem.Create(ASocket: TLHTTPSocket);
 begin
@@ -585,10 +670,6 @@ begin
   FreeMem(FBuffer);
 end;
 
-procedure TLHTTPSocket.AddContentLength(ALength: integer);
-begin
-end;
-
 procedure TLHTTPSocket.DoneBuffer(AOutput: TBufferOutput);
 begin
 end;
@@ -616,6 +697,11 @@ begin
   FLastOutput := AOutputItem;
 end;
 
+procedure TLHTTPSocket.AddContentLength(ALength: integer);
+begin
+  Inc(FHeaderOut.ContentLength, ALength);
+end;
+
 procedure TLHTTPSocket.ResetDefaults;
 begin
   FParseBuffer := @ParseRequest;
@@ -624,6 +710,13 @@ end;
 procedure TLHTTPSocket.FlushRequest;
 begin
   FillDWord(FParameters, sizeof(FParameters) div 4, 0);
+  with FHeaderOut do
+  begin
+    ContentLength := 0;
+    TransferEncoding := teIdentity;
+    ExtraHeaders := '';
+    Version := 0;
+  end;
   ResetDefaults;
 end;
 
@@ -801,13 +894,6 @@ begin
   until false;
 end;
 
-function TrySingleDigit(ADigit: char; out OutDigit: byte): boolean;
-begin
-  Result := (ord(ADigit) >= ord('0')) and (ord(ADigit) <= ord('9'));
-  if not Result then exit;
-  OutDigit := ord(ADigit) - ord('0');
-end;
-
 procedure TLHTTPSocket.ParseParameterLine(pLineEnd: pchar);
 var
   lPos: pchar;
@@ -915,6 +1001,59 @@ begin
   until (lParseFunc = FParseBuffer) or not Result;
 end;
 
+function TLHTTPSocket.ProcessEncoding: boolean;
+var
+  lCode: integer;
+begin
+  Result := true;
+  if FParameters[hpContentLength] <> nil then
+  begin
+    FParseBuffer := @ParseEntityPlain;
+    Val(FParameters[hpContentLength], FInputRemaining, lCode);
+    if lCode <> 0 then
+    begin
+      WriteError(hsBadRequest);
+      exit;
+    end;
+  end else 
+  if FParameters[hpTransferEncoding] <> nil then
+  begin
+    if (StrIComp(FParameters[hpTransferEncoding], 'chunked') = 0) then
+    begin
+      FParseBuffer := @ParseEntityChunked;
+      FChunkState := csInitial;
+    end else begin
+      Result := false;
+    end;
+  end else begin
+    FRequestInputDone := true;
+  end;
+end;
+  
+function TLHTTPSocket.SetupEncoding(AOutputItem: TBufferOutput): boolean;
+begin
+  if FHeaderOut.ContentLength = 0 then
+  begin
+    if FHeaderOut.Version >= 11 then
+    begin
+      { we can use chunked encoding }
+      FHeaderOut.TransferEncoding := teChunked;
+      AOutputItem.FWriteBlock := @AOutputItem.WriteChunk;
+    end else begin
+      { we need to buffer the response to find its length }
+      FHeaderOut.TransferEncoding := teIdentity;
+      AOutputItem.FWriteBlock := @AOutputItem.WriteBuffer;
+      { need to accumulate data before starting header output }
+      AddToOutput(AOutputItem);
+      exit(false);
+    end;
+  end else begin
+    FHeaderOut.TransferEncoding := teIdentity;
+    AOutputItem.FWriteBlock := @AOutputItem.WritePlain;
+  end;
+  Result := true;
+end;
+
 procedure TLHTTPSocket.WriteBlock;
 var
   lFreeOutput: TOutputItem;
@@ -980,11 +1119,6 @@ begin
   inherited;
 end;
 
-procedure TLHTTPServerSocket.AddContentLength(ALength: integer);
-begin
-  Inc(FRequestInfo.ContentLength, ALength);
-end;
-
 procedure TLHTTPServerSocket.DoneBuffer(AOutput: TBufferOutput);
 begin
   WriteHeaders(AOutput, nil);
@@ -999,9 +1133,9 @@ procedure TLHTTPServerSocket.LogMessage;
 begin
   { log a message about this request, 
     '<StatusCode> <Length> "<Referer>" "<User-Agent>"' }
-  AppendString(FLogMessage, IntToStr(HTTPStatusCodes[FRequestInfo.Status]));
+  AppendString(FLogMessage, IntToStr(HTTPStatusCodes[FResponseInfo.Status]));
   AppendChar(FLogMessage, ' ');
-  AppendString(FLogMessage, IntToStr(FRequestInfo.ContentLength));
+  AppendString(FLogMessage, IntToStr(FHeaderOut.ContentLength));
   AppendString(FLogMessage, ' "');
   AppendString(FLogMessage, FParameters[hpReferer]);
   AppendString(FLogMessage, '" "');
@@ -1014,10 +1148,14 @@ end;
 procedure TLHTTPServerSocket.ResetDefaults;
 begin
   inherited;
-  FRequestInfo.Status := hsOK;
   FRequestInfo.RequestType := hmUnknown;
-  FRequestInfo.TransferEncoding := teIdentity;
-  FRequestInfo.ContentType := 'application/octet-stream';
+  with FResponseInfo do
+  begin
+    Status := hsOK;
+    ContentType := 'application/octet-stream';
+    ContentCharset := '';
+    LastModified := 0.0;
+  end;
 end;
 
 procedure TLHTTPServerSocket.FlushRequest;
@@ -1029,11 +1167,6 @@ begin
     Argument := nil;
     QueryParams := nil;
     Version := 0;
-    { response }
-    ContentLength := 0;
-    ContentCharset := '';
-    LastModified := 0.0;
-    ExtraHeaders := '';
   end;
   inherited;
 end;
@@ -1052,7 +1185,6 @@ end;
 procedure TLHTTPServerSocket.ParseRequestLine(pLineEnd: pchar);
 var
   lPos: pchar;
-  lMajorVersion, lMinorVersion: byte;
   I: TLHTTPMethod;
 begin
   { make a timestamp for this request }
@@ -1081,17 +1213,13 @@ begin
   lPos^ := #0;
   inc(lPos);
   { lPos = version string }
-  if ((pLineEnd-lPos) <> 8) 
-    or not CompareMem(lPos, pchar('HTTP/'), 5)
-    or not TrySingleDigit(lPos[5], lMajorVersion) 
-    or (lPos[6] <> '.')
-    or not TrySingleDigit(lPos[7], lMinorVersion) then
+  if not HTTPVersionCheck(lPos, pLineEnd, FRequestInfo.Version) then
   begin
     WriteError(hsBadRequest);
     exit;
   end;
   FRequestInfo.VersionStr := lPos;
-  FRequestInfo.Version := lMajorVersion * 10 + lMinorVersion;
+  FHeaderOut.Version := FRequestInfo.Version;
   
   { trim spaces at end of URI }
   dec(lPos);
@@ -1157,7 +1285,6 @@ procedure TLHTTPServerSocket.ProcessHeaders;
   { process request }
 var
   lPos: pchar;
-  lCode: integer;
 begin
   { do HTTP/1.1 Host-field present check }
   if (FRequestInfo.Version > 10) and (FParameters[hpHost] = nil) then
@@ -1188,39 +1315,21 @@ begin
   begin
     WriteError(hsForbidden);
   end else begin
-    if FParameters[hpContentLength] <> nil then
+    if not ProcessEncoding then
     begin
-      FParseBuffer := @ParseEntityPlain;
-      Val(FParameters[hpContentLength], FInputRemaining, lCode);
-      if lCode <> 0 then
-      begin
-        WriteError(hsBadRequest);
-        exit;
-      end;
-    end else 
-    if FParameters[hpTransferEncoding] <> nil then
-    begin
-      if (StrIComp(FParameters[hpTransferEncoding], 'chunked') = 0) then
-      begin
-        FParseBuffer := @ParseEntityChunked;
-        FChunkState := csInitial;
-      end else begin
-        WriteError(hsNotImplemented);
-        exit;
-      end;
-    end else begin
-      FRequestInputDone := true;
+      WriteError(hsNotImplemented);
+      exit;
     end;
-   
+      
     FCurrentInput := HandleURI;
     { if we have a valid outputitem, wait until it is ready 
       to produce its response }
     if FCurrentInput = nil then
     begin
-      if FRequestInfo.Status = hsOK then
+      if FResponseInfo.Status = hsOK then
         WriteError(hsNotFound)
       else
-        WriteError(FRequestInfo.Status);
+        WriteError(FResponseInfo.Status);
     end else if FRequestInputDone then
       FCurrentInput.DoneInput;
   end;
@@ -1231,60 +1340,42 @@ var
   lDateTime: TDateTime;
 begin
   { check modification date }
-  if FRequestInfo.Status = hsOK then
+  if FResponseInfo.Status = hsOK then
   begin
     if (FParameters[hpIfModifiedSince] <> nil) 
-      and (FRequestInfo.LastModified <> 0.0) then
+      and (FResponseInfo.LastModified <> 0.0) then
     begin
       if TryHTTPDateStrToDateTime(FParameters[hpIfModifiedSince], lDateTime) then
       begin
         if lDateTime > FRequestInfo.DateTime then
-          FRequestInfo.Status := hsBadRequest
+          FResponseInfo.Status := hsBadRequest
         else
-        if FRequestInfo.LastModified <= lDateTime then
-          FRequestInfo.Status := hsNotModified;
+        if FResponseInfo.LastModified <= lDateTime then
+          FResponseInfo.Status := hsNotModified;
       end;
     end else
     if (FParameters[hpIfUnmodifiedSince] <> nil) then
     begin
       if TryHTTPDateStrToDateTime(FParameters[hpIfUnmodifiedSince], lDateTime) then
       begin
-        if (FRequestInfo.LastModified = 0.0) 
-          or (lDateTime < FRequestInfo.LastModified) then
-          FRequestInfo.Status := hsPreconditionFailed;
+        if (FResponseInfo.LastModified = 0.0) 
+          or (lDateTime < FResponseInfo.LastModified) then
+          FResponseInfo.Status := hsPreconditionFailed;
       end;
     end;
   end;
 
-  if FRequestInfo.Status = hsOK then
+  if FResponseInfo.Status = hsOK then
   begin
-    if FRequestInfo.ContentLength = 0 then
-    begin
-      if FRequestInfo.Version >= 11 then
-      begin
-        { we can use chunked encoding }
-        FRequestInfo.TransferEncoding := teChunked;
-        AOutputItem.FWriteBlock := @AOutputItem.WriteChunk;
-      end else begin
-        { we need to buffer the response to find its length }
-        FRequestInfo.TransferEncoding := teIdentity;
-        AOutputItem.FWriteBlock := @AOutputItem.WriteBuffer;
-        { need to accumulate data before starting header output }
-        AddToOutput(AOutputItem);
-        exit;
-      end;
-    end else begin
-      FRequestInfo.TransferEncoding := teIdentity;
-      AOutputItem.FWriteBlock := @AOutputItem.WritePlain;
-    end;
-    WriteHeaders(nil, AOutputItem);
+    if SetupEncoding(AOutputItem) then
+      WriteHeaders(nil, AOutputItem);
   end else begin
-    WriteError(FRequestInfo.Status);
+    WriteError(FResponseInfo.Status);
     FConnection.DelayFree(AOutputItem);
   end;
 end;
 
-function TLHTTPServerSocket.HandleURI: TOutputItem;
+function TLHTTPServerSocket.HandleURI: TOutputItem; {inline;} {<--- triggers IE}
 begin
   Result := TLHTTPServer(FConnection).HandleURI(Self);
 end;
@@ -1297,15 +1388,15 @@ begin
   if AStatus >= hsBadRequest then
     FKeepAlive := false;
   lMessage := HTTPDescriptions[AStatus];
-  FRequestInfo.Status := AStatus;
-  FRequestInfo.ContentLength := Length(lMessage);
-  FRequestInfo.TransferEncoding := teIdentity;
+  FResponseInfo.Status := AStatus;
+  FHeaderOut.ContentLength := Length(lMessage);
+  FHeaderOut.TransferEncoding := teIdentity;
   if Length(lMessage) > 0 then
   begin
-    FRequestInfo.ContentType := 'text/html';
+    FResponseInfo.ContentType := 'text/html';
     lMsgOutput := TMemoryOutput.Create(Self, PChar(lMessage), 0, Length(lMessage), false)
   end else begin
-    FRequestInfo.ContentType := '';
+    FResponseInfo.ContentType := '';
     lMsgOutput := nil;
   end;
   WriteHeaders(nil, lMsgOutput);
@@ -1313,44 +1404,44 @@ end;
 
 procedure TLHTTPServerSocket.WriteHeaders(AHeaderResponse, ADataResponse: TOutputItem);
 var
-  lTemp: shortstring;
+  lTemp: string[23];
   lMessage: TStringBuffer;
 begin
   lMessage := InitStringBuffer(504);
   
   AppendString(lMessage, 'HTTP/1.1 ');
-  Str(HTTPStatusCodes[FRequestInfo.Status], lTemp);
+  Str(HTTPStatusCodes[FResponseInfo.Status], lTemp);
   AppendString(lMessage, lTemp);
   AppendChar(lMessage, ' ');
-  AppendString(lMessage, HTTPTexts[FRequestInfo.Status]);
+  AppendString(lMessage, HTTPTexts[FResponseInfo.Status]);
   AppendString(lMessage, #13#10+'Date: ');
   AppendString(lMessage, FormatDateTime(HTTPDateFormat, FRequestInfo.DateTime));
   AppendString(lMessage, ' GMT');
-  if Length(FRequestInfo.ContentType) > 0 then
+  if Length(FResponseInfo.ContentType) > 0 then
   begin
     AppendString(lMessage, #13#10+'Content-Type: ');
-    AppendString(lMessage, FRequestInfo.ContentType);
-    if Length(FRequestInfo.ContentCharset) > 0 then
+    AppendString(lMessage, FResponseInfo.ContentType);
+    if Length(FResponseInfo.ContentCharset) > 0 then
     begin
       AppendString(lMessage, '; charset=');
-      AppendString(lMessage, FRequestInfo.ContentCharset);
+      AppendString(lMessage, FResponseInfo.ContentCharset);
     end;
   end;
-  if FRequestInfo.ContentLength <> 0 then
+  if FHeaderOut.ContentLength <> 0 then
   begin
     AppendString(lMessage, #13#10+'Content-Length: ');
-    Str(FRequestInfo.ContentLength, lTemp);
+    Str(FHeaderOut.ContentLength, lTemp);
     AppendString(lMessage, lTemp);
   end;
-  if FRequestInfo.TransferEncoding <> teIdentity then
+  if FHeaderOut.TransferEncoding <> teIdentity then
   begin
     { only other possibility: teChunked }
     AppendString(lMessage, #13#10+'Transfer-Encoding: chunked');
   end;
-  if FRequestInfo.LastModified <> 0.0 then
+  if FResponseInfo.LastModified <> 0.0 then
   begin
     AppendString(lMessage, #13#10+'Last-Modified: ');
-    AppendString(lMessage, FormatDateTime(HTTPDateFormat, FRequestInfo.LastModified));
+    AppendString(lMessage, FormatDateTime(HTTPDateFormat, FResponseInfo.LastModified));
     AppendString(lMessage, ' GMT');
   end;
   AppendString(lMessage, #13#10+'Connection: ');
@@ -1359,7 +1450,7 @@ begin
   else
     AppendString(lMessage, 'close');
   AppendString(lMessage, #13#10);
-  AppendString(lMessage, FRequestInfo.ExtraHeaders);
+  AppendString(lMessage, FHeaderOut.ExtraHeaders);
   AppendString(lMessage, #13#10);
   if AHeaderResponse <> nil then
   begin
@@ -1404,13 +1495,13 @@ procedure TLHTTPConnection.LogAccess(const AMessage: string);
 begin
 end;
 
-procedure TLHTTPConnection.HandleReceive(aSocket: TLSocket);
+procedure TLHTTPConnection.ReceiveEvent(aSocket: TLHandle);
 begin
   TLHTTPSocket(aSocket).HandleReceive;
   FreeDelayFreeItems;
 end;
 
-procedure TLHTTPConnection.HandleSend(aSocket: TLSocket);
+procedure TLHTTPConnection.CanSendEvent(aSocket: TLHandle);
 begin
   TLHTTPSocket(aSocket).WriteBlock;
   FreeDelayFreeItems;
@@ -1422,8 +1513,6 @@ constructor TLHTTPServer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   SocketClass := TLHTTPServerSocket;
-  OnCanSend := @HandleSend;
-  OnReceive := @HandleReceive;
 end;
 
 function TLHTTPServer.InitSocket(aSocket: TLSocket): TLSocket;
@@ -1441,7 +1530,7 @@ begin
   while lHandler <> nil do
   begin
     Result := lHandler.HandleURI(ASocket);
-    if ASocket.RequestInfo.Status <> hsOK then break;
+    if ASocket.ResponseInfo.Status <> hsOK then break;
     if Result <> nil then break;
     lHandler := lHandler.FNext;
   end;
@@ -1454,13 +1543,104 @@ begin
   FHandlerList := AHandler;
 end;
 
+{ TClientInput }
+
+type
+  TClientOutput = class(TOutputItem)
+  protected
+    FPersistent: boolean;
+    
+    procedure DoneInput; override;
+  public
+    constructor Create(ASocket: TLHTTPClientSocket);
+    destructor Destroy; override;
+    procedure FreeInstance; override;
+
+    function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
+    function  WriteBlock: boolean; override;
+  end;
+
+constructor TClientOutput.Create(ASocket: TLHTTPClientSocket);
+begin
+  inherited Create(ASocket);
+  FPersistent := true;
+end;
+
+destructor TClientOutput.Destroy;
+begin
+  if FPersistent then exit; 
+  inherited;
+end;
+
+procedure TClientOutput.FreeInstance;
+begin
+  if FPersistent then exit; 
+  inherited;
+end;
+
+procedure TClientOutput.DoneInput;
+begin
+  TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).DoDoneInput;
+end;
+
+function  TClientOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
+begin
+  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).DoHandleInput(ABuffer, ASize);
+end;
+
+function  TClientOutput.WriteBlock: boolean;
+begin
+  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).DoWriteBlock;
+end;
+
 { TLHTTPClientSocket }
 
 constructor TLHTTPClientSocket.Create;
 begin
   inherited Create;
-  
-  // TODO
+
+  FCurrentInput := TClientOutput.Create(Self);
+end;
+
+destructor TLHTTPClientSocket.Destroy;
+begin
+  TClientOutput(FCurrentInput).FPersistent := false;
+  FreeAndNil(FCurrentInput);
+  inherited;
+end;
+
+procedure TLHTTPClientSocket.Cancel(AError: TLHTTPClientError);
+begin
+  FError := AError;
+  Disconnect;
+end;
+
+procedure TLHTTPClientSocket.SendRequest;
+var
+  lMessage: TStringBuffer;
+  lTemp: string[23];
+begin
+  lMessage := InitStringBuffer(504);
+
+  AppendString(lMessage, HTTPMethodStrings[FRequest.Method]);
+  AppendChar(lMessage, ' ');
+  AppendString(lMessage, FRequest.URI);
+  AppendChar(lMessage, ' ');
+  AppendString(lMessage, 'HTTP/1.1'+#13#10);
+  AppendString(lMessage, 'Host: ');
+  AppendString(lMessage, TLHTTPClient(FConnection).Host);
+  if TLHTTPClient(FConnection).Port <> 80 then
+  begin
+    AppendChar(lMessage, ':');
+    Str(TLHTTPClient(FConnection).Port, lTemp);
+    AppendString(lMessage, lTemp);
+  end;
+  AppendString(lMessage, #13#10);
+  AppendString(lMessage, FHeaderOut.ExtraHeaders);
+  AppendString(lMessage, #13#10);
+  AddToOutput(TMemoryOutput.Create(Self, lMessage.Memory, 0,
+    lMessage.Pos-lMessage.Memory, true));
+  AddToOutput(FCurrentInput);
 end;
 
 procedure TLHTTPClientSocket.ParseLine(pLineEnd: pchar);
@@ -1475,18 +1655,117 @@ begin
 end;
 
 procedure TLHTTPClientSocket.ParseStatusLine(pLineEnd: pchar);
+var
+  lPos: pchar;
 begin
+  lPos := FBufferPos;
+  repeat
+    if lPos >= pLineEnd then
+    begin
+      Cancel(ceMalformedStatusLine);
+      exit;
+    end;
+    if lPos^ = ' ' then
+      break;
+    Inc(lPos);
+  until false;
+  if not HTTPVersionCheck(FBufferPos, lPos, FResponseVersion) then
+  begin
+    Cancel(ceMalformedStatusLine);
+    exit;
+  end;
+
+  if (FResponseVersion > 11) then
+  begin
+    Cancel(ceVersionNotSupported);
+    exit;
+  end;
+
+  { status code }
+  Inc(lPos);
+  if (lPos+3 >= pLineEnd) or (lPos[3] <> ' ') then
+  begin
+    Cancel(ceMalformedStatusLine);
+    exit;
+  end;
+  FResponseStatus := CodeToHTTPStatus((ord(lPos[0])-ord('0'))*100
+    + (ord(lPos[1])-ord('0'))*10 + (ord(lPos[2])-ord('0')));
+  if FResponseStatus = hsUnknown then
+  begin
+    Cancel(ceMalformedStatusLine);
+    exit;
+  end;
+
+  Inc(lPos, 4);
+  if lPos < pLineEnd then
+    FResponseReason := lPos;
 end;
 
 procedure TLHTTPClientSocket.ProcessHeaders;
 begin
-  // TODO
+  if not ProcessEncoding then
+    Cancel(ceUnsupportedEncoding);
 end;
 
 procedure TLHTTPClientSocket.ResetDefaults;
 begin
   inherited;
   // TODO
+end;
+
+{ TLHTTPClient }
+
+constructor TLHTTPClient.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  SocketClass := TLHTTPClientSocket;
+end;
+
+procedure TLHTTPClient.DoDoneInput;
+begin
+  if Assigned(FOnDoneInput) then
+    FOnDoneInput(Self);
+end;
+
+function  TLHTTPClient.DoHandleInput(ABuffer: pchar; ASize: dword): dword;
+begin
+  if Assigned(FOnInput) then
+    Result := FOnInput(Self, ABuffer, ASize)
+  else
+    Result := ASize;
+end;
+
+function  TLHTTPClient.DoWriteBlock: boolean;
+begin
+  if Assigned(FOnCanWrite) then
+    FOnCanWrite(Self);
+  Result := FOutputEof;
+end;
+
+function  TLHTTPClient.InitSocket(aSocket: TLSocket): TLSocket;
+begin
+  Result := inherited;
+  TLHTTPSocket(aSocket).FConnection := Self;
+end;
+
+procedure TLHTTPClient.InternalSendRequest;
+begin
+  FOutputEof := false;
+  TLHTTPClientSocket(FIterator).SendRequest;
+end;
+
+procedure TLHTTPClient.ConnectEvent(aSocket: TLHandle);
+begin
+  InternalSendRequest;
+end;
+
+procedure TLHTTPClient.SendRequest;
+begin
+  if not Connected then
+    Connect(FHost, FPort)
+  else
+    InternalSendRequest;
 end;
 
 end.

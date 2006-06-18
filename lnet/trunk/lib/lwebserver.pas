@@ -218,7 +218,7 @@ begin
         Length(lExecPath)-Length(CGIRoot)+1);
       lOutput.StartRequest;
     end else
-      ASocket.RequestInfo.Status := hsNotFound;
+      ASocket.ResponseInfo.Status := hsNotFound;
     Result := lOutput;
   end else
     Result := nil;
@@ -242,26 +242,30 @@ function TFileHandler.HandleFile(const ARequest: TDocumentRequest): TOutputItem;
 var
   lFileOutput: TFileOutput;
   lReqInfo: PRequestInfo;
+  lRespInfo: PResponseInfo;
+  lHeaderOut: PHeaderOutInfo;
   lIndex: integer;
   lInfo: TSearchRec;
 begin
   if Length(ARequest.ExtraPath) = 0 then
   begin
     lReqInfo := @ARequest.Socket.RequestInfo;
+    lRespInfo := @ARequest.Socket.RequestInfo;
+    lHeaderOut := @ARequest.Socket.HeaderOut;
     if not (lReqInfo^.RequestType in [hmHead, hmGet]) then
     begin
-      lReqInfo^.Status := hsNotAllowed;
+      lRespInfo^.Status := hsNotAllowed;
     end else begin
       lFileOutput := TFileOutput.Create(ARequest.Socket);
       FindFirst(ARequest.Document, 0, lInfo);
       if lFileOutput.Open(ARequest.Document) then
       begin
-        lReqInfo^.Status := hsOK;
-        lReqInfo^.ContentLength := lInfo.Size;
-        lReqInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
-        lIndex := MimeList.IndexOf(ExtractFileExt(lReqInfo^.Argument));
+        lRespInfo^.Status := hsOK;
+        lHeaderOut^.ContentLength := lInfo.Size;
+        lRespInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
+        lIndex := MimeList.IndexOf(ExtractFileExt(ARequest.Document));
         if lIndex >= 0 then
-          lReqInfo^.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
+          lRespInfo^.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
         Result := lFileOutput;
         ARequest.Socket.StartResponse(lFileOutput);
       end else
@@ -503,7 +507,7 @@ var
 
   procedure AddExtraHeader;
   begin
-    lServerSocket.RequestInfo.ExtraHeaders := lServerSocket.RequestInfo.ExtraHeaders +
+    lServerSocket.HeaderOut.ExtraHeaders := lServerSocket.HeaderOut.ExtraHeaders +
       FParsePos + ': ' + pValue + #13#10;
   end;
 
@@ -533,13 +537,13 @@ begin
     pValue := FParsePos+iEnd+2;
     if StrIComp(FParsePos, 'Content-type') = 0 then
     begin
-      lServerSocket.RequestInfo.ContentType := pValue;
+      lServerSocket.ResponseInfo.ContentType := pValue;
     end else 
     if StrIComp(FParsePos, 'Location') = 0 then
     begin
       if StrLIComp(pValue, 'http://', 7) = 0 then
       begin
-        lServerSocket.RequestInfo.Status := hsMovedPermanently;
+        lServerSocket.ResponseInfo.Status := hsMovedPermanently;
         { add location header as-is to response }
         AddExtraHeader;
       end else
@@ -552,19 +556,19 @@ begin
         break;
       for lHttpStatus := Low(TLHTTPStatus) to High(TLHTTPStatus) do
         if HTTPStatusCodes[lHttpStatus] = lStatus then
-          lServerSocket.RequestInfo.Status := lHttpStatus;
+          lServerSocket.ResponseInfo.Status := lHttpStatus;
     end else
     if StrIComp(FParsePos, 'Content-Length') = 0 then
     begin
       Val(pValue, lLength, lCode);
       if lCode <> 0 then
         break;
-      lServerSocket.RequestInfo.ContentLength := lLength;
+      lServerSocket.HeaderOut.ContentLength := lLength;
     end else
     if StrIComp(FParsePos, 'Last-Modified') = 0 then
     begin
       if not TryHTTPDateStrToDateTime(pValue, 
-          lServerSocket.RequestInfo.LastModified) then
+          lServerSocket.ResponseInfo.LastModified) then
         writeln('WARNING: unable to parse last-modified string from CGI script: ', pValue);
     end else
       AddExtraHeader;
@@ -572,7 +576,7 @@ begin
   until false;
 
   { error happened }
-  lServerSocket.RequestInfo.Status := hsInternalError;
+  lServerSocket.ResponseInfo.Status := hsInternalError;
   exit(true);
 end;
 
@@ -673,9 +677,9 @@ var
   ServerSocket: TLHTTPServerSocket absolute FSocket;
 begin
   if FProcess.ExitStatus = 127 then
-    ServerSocket.RequestInfo.Status := hsNotFound
+    ServerSocket.ResponseInfo.Status := hsNotFound
   else
-    ServerSocket.RequestInfo.Status := hsInternalError;
+    ServerSocket.ResponseInfo.Status := hsInternalError;
 end;
 
 procedure TSimpleCGIOutput.CGIProcNeedInput(AHandle: TLHandle);
@@ -720,7 +724,7 @@ end;
 
 procedure TFastCGIOutput.CGIOutputError;
 begin
-  TLHTTPServerSocket(FSocket).RequestInfo.Status := hsNotFound;
+  TLHTTPServerSocket(FSocket).ResponseInfo.Status := hsNotFound;
 end;
 
 procedure TFastCGIOutput.DoneInput;
