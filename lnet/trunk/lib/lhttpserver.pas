@@ -36,11 +36,11 @@ type
     hpAccept, hpAcceptCharset, hpAcceptEncoding, hpAcceptLanguage, hpHost,
     hpFrom, hpReferer, hpUserAgent, hpRange, hpTransferEncoding,
     hpIfModifiedSince, hpIfUnmodifiedSince, hpCookie);
-  TLHTTPStatus = (hsUnknown, hsOK, hsMovedPermanently, hsNotModified, hsBadRequest, 
-    hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
+  TLHTTPStatus = (hsUnknown, hsOK, hsMovedPermanently, hsFound, hsNotModified, 
+    hsBadRequest, hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
     hsInternalError, hsNotImplemented, hsNotAllowed);
   TLHTTPTransferEncoding = (teIdentity, teChunked);
-  TLHTTPClientError = (ceOK, ceMalformedStatusLine, ceVersionNotSupported,
+  TLHTTPClientError = (ceNone, ceMalformedStatusLine, ceVersionNotSupported,
     ceUnsupportedEncoding);
 
 const
@@ -52,9 +52,9 @@ const
      'FROM', 'REFERER', 'USER-AGENT', 'RANGE', 'TRANSFER-ENCODING',
      'IF-MODIFIED-SINCE', 'IF-UNMODIFIED-SINCE', 'COOKIE');
   HTTPStatusCodes: array[TLHTTPStatus] of dword =
-    (0, 200, 301, 304, 400, 403, 404, 412, 414, 500, 501, 504);
+    (0, 200, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 504);
   HTTPTexts: array[TLHTTPStatus] of string = 
-    ('', 'OK', 'Moved Permanently', 'Not Modified', 'Bad Request', 'Forbidden', 
+    ('', 'OK', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Forbidden', 
      'Not Found', 'Precondition Failed', 'Request Too Long', 'Internal Error',
      'Method Not Implemented', 'Method Not Allowed');
   HTTPDescriptions: array[TLHTTPStatus] of string = (
@@ -63,6 +63,8 @@ const
       { hsOK }
     '',
       { hsMovedPermanently }
+    '',
+      { hsFound }
     '',
       { hsNotModified }
     '',
@@ -111,7 +113,7 @@ const
 type
   TLHTTPSocket = class;
   TLHTTPConnection = class;
-  TLHTTPClient = class;
+  TLHTTPClientSocket = class;
   
   PRequestInfo = ^TRequestInfo;
   TRequestInfo = record
@@ -124,6 +126,7 @@ type
     Version: dword;
   end;
 
+  PClientRequest = ^TClientRequest;
   TClientRequest = record
     Method: TLHTTPMethod;
     URI: string;
@@ -203,7 +206,8 @@ type
   TLHTTPParameterArray = array[TLHTTPParameter] of pchar;
   
   TParseBufferMethod = function: boolean of object;
-  TLInputEvent = function(AClient: TLHTTPClient; ABuffer: pchar; ASize: dword): dword of object;
+  TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
+  TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: boolean);
 
   TLHTTPConnection = class(TLTcp)
   protected
@@ -323,7 +327,7 @@ type
 
   TLHTTPClientSocket = class(TLHTTPSocket)
   protected
-    FRequest: TClientRequest;
+    FRequest: PClientRequest;
     FResponseStatus: TLHTTPStatus;
     FResponseVersion: dword;
     FResponseReason: pchar;
@@ -341,22 +345,22 @@ type
     procedure SendRequest;
 
     property Error: TLHTTPClientError read FError write FError;
-    property Request: TClientRequest read FRequest write FRequest;
   end;
 
   TLHTTPClient = class(TLHTTPConnection)
   protected
     FHost: string;
     FPort: integer;
+    FRequest: TClientRequest;
     FOutputEof: boolean;
-    FOnDoneInput: TNotifyEvent;
+    FOnDoneInput: TLProc;
     FOnInput: TLInputEvent;
-    FOnCanWrite: TNotifyEvent;
+    FOnCanWrite: TLCanWriteEvent;
     
     procedure ConnectEvent(aSocket: TLHandle); override;
-    procedure DoDoneInput;
-    function  DoHandleInput(ABuffer: pchar; ASize: dword): dword;
-    function  DoWriteBlock: boolean;
+    procedure DoDoneInput(ASocket: TLHTTPClientSocket);
+    function  DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword;
+    function  DoWriteBlock(ASocket: TLHTTPClientSocket): boolean;
     function  InitSocket(aSocket: TLSocket): TLSocket; override;
     procedure InternalSendRequest;
   public
@@ -365,10 +369,12 @@ type
     procedure SendRequest;
 
     property Host: string read FHost write FHost;
+    property Method: TLHTTPMethod read FRequest.Method write FRequest.Method;
     property Port: integer read FPort write FPort;
-    property OnDoneInput: TNotifyEvent read FOnDoneInput write FOnDoneInput;
+    property URI: string read FRequest.URI write FRequest.URI;
+    property OnDoneInput: TLProc read FOnDoneInput write FOnDoneInput;
     property OnInput: TLInputEvent read FOnInput write FOnInput;
-    property OnCanWrite: TNotifyEvent read FOnCanWrite write FOnCanWrite;
+    property OnCanWrite: TLCanWriteEvent read FOnCanWrite write FOnCanWrite;
   end;
 
 implementation
@@ -1580,17 +1586,20 @@ end;
 
 procedure TClientOutput.DoneInput;
 begin
-  TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).DoDoneInput;
+  TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).
+    DoDoneInput(TLHTTPClientSocket(FSocket));
 end;
 
 function  TClientOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
 begin
-  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).DoHandleInput(ABuffer, ASize);
+  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).
+    DoHandleInput(TLHTTPClientSocket(FSocket), ABuffer, ASize);
 end;
 
 function  TClientOutput.WriteBlock: boolean;
 begin
-  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).DoWriteBlock;
+  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).
+    DoWriteBlock(TLHTTPClientSocket(FSocket));
 end;
 
 { TLHTTPClientSocket }
@@ -1600,6 +1609,7 @@ begin
   inherited Create;
 
   FCurrentInput := TClientOutput.Create(Self);
+  ResetDefaults;
 end;
 
 destructor TLHTTPClientSocket.Destroy;
@@ -1622,9 +1632,9 @@ var
 begin
   lMessage := InitStringBuffer(504);
 
-  AppendString(lMessage, HTTPMethodStrings[FRequest.Method]);
+  AppendString(lMessage, HTTPMethodStrings[FRequest^.Method]);
   AppendChar(lMessage, ' ');
-  AppendString(lMessage, FRequest.URI);
+  AppendString(lMessage, FRequest^.URI);
   AppendChar(lMessage, ' ');
   AppendString(lMessage, 'HTTP/1.1'+#13#10);
   AppendString(lMessage, 'Host: ');
@@ -1641,10 +1651,15 @@ begin
   AddToOutput(TMemoryOutput.Create(Self, lMessage.Memory, 0,
     lMessage.Pos-lMessage.Memory, true));
   AddToOutput(FCurrentInput);
+  
+  WriteBlock;
 end;
 
 procedure TLHTTPClientSocket.ParseLine(pLineEnd: pchar);
 begin
+  if FError <> ceNone then
+    exit;
+
   if FResponseStatus = hsUnknown then
   begin
     ParseStatusLine(pLineEnd);
@@ -1710,7 +1725,8 @@ end;
 procedure TLHTTPClientSocket.ResetDefaults;
 begin
   inherited;
-  // TODO
+
+  FError := ceNone;
 end;
 
 { TLHTTPClient }
@@ -1722,31 +1738,35 @@ begin
   SocketClass := TLHTTPClientSocket;
 end;
 
-procedure TLHTTPClient.DoDoneInput;
+procedure TLHTTPClient.DoDoneInput(ASocket: TLHTTPClientSocket);
 begin
   if Assigned(FOnDoneInput) then
-    FOnDoneInput(Self);
+    FOnDoneInput(ASocket);
 end;
 
-function  TLHTTPClient.DoHandleInput(ABuffer: pchar; ASize: dword): dword;
+function  TLHTTPClient.DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword;
 begin
   if Assigned(FOnInput) then
-    Result := FOnInput(Self, ABuffer, ASize)
+    Result := FOnInput(ASocket, ABuffer, ASize)
   else
     Result := ASize;
 end;
 
-function  TLHTTPClient.DoWriteBlock: boolean;
+function  TLHTTPClient.DoWriteBlock(ASocket: TLHTTPClientSocket): boolean;
 begin
-  if Assigned(FOnCanWrite) then
-    FOnCanWrite(Self);
+  if not FOutputEof then
+    if Assigned(FOnCanWrite) then
+      FOnCanWrite(ASocket, FOutputEof)
+    else
+      FOutputEof := true;
   Result := FOutputEof;
 end;
 
 function  TLHTTPClient.InitSocket(aSocket: TLSocket): TLSocket;
 begin
   Result := inherited;
-  TLHTTPSocket(aSocket).FConnection := Self;
+  TLHTTPClientSocket(aSocket).FConnection := Self;
+  TLHTTPClientSocket(aSocket).FRequest := @FRequest;
 end;
 
 procedure TLHTTPClient.InternalSendRequest;
@@ -1757,6 +1777,7 @@ end;
 
 procedure TLHTTPClient.ConnectEvent(aSocket: TLHandle);
 begin
+  inherited;
   InternalSendRequest;
 end;
 
