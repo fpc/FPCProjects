@@ -845,5 +845,6 @@ initialization
   CGIPath := GetCGIPath;
   CGIRoot := GetCGIRoot;
   PHPCGIBinary := GetPHPCGIBinary;
+  SetCurrentDir(DocumentRoot);
 
 end.
