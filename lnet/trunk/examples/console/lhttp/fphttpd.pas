@@ -21,24 +21,37 @@
   me at ales@chello.sk
 }
 
-program fpchttpd;
+program fphttpd;
 
 {$mode objfpc}{$h+}
 
 uses
-  classes, lnet, lwebserver;
+  classes, lnet, 
+{$ifdef UNIX}
+  baseunix, 
+{$endif}
+  lwebserver;
 
 var
   Server: TLWebServer;
   
 procedure MainLoop;
+var
+  lRuns: dword;
 begin
-  while Server.Connected do
+  lRuns := $FFFFFFFF;
+  while (lRuns > 0) and (Server.Connected) do
+  begin
     Server.CallAction;
+    dec(lruns);
+    if (lruns and $FFF) = 0 then
+      writeln(lruns);
+  end;
 end;
 
 begin
   Server := TLWebServer.Create(nil);
+  Server.TimeOut := 300000;
   if not Server.Listen(3880) then
   begin
     writeln('Error starting server.');
