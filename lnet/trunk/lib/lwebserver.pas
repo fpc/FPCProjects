@@ -28,7 +28,7 @@ unit lwebserver;
 interface
 
 uses
-  sysutils, classes, lnet, lhttpserver, lhttputil, lmimetypes, levents, 
+  sysutils, classes, lnet, lhttp, lhttputil, lmimetypes, levents, 
   lprocess, process, lfastcgi, fastcgi;
 
 type

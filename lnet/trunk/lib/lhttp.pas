@@ -1,4 +1,4 @@
-{ HTTP server component
+{ HTTP server and client components
 
   Copyright (C) 2006 Micha Nelissen
 
@@ -7,7 +7,7 @@
   the Free Software Foundation; either version 2 of the License, or (at your
   option) any later version.
 
-  This program is diStributed in the hope that it will be useful, but WITHOUT
+  This program is distributed in the hope that it will be useful, but WITHOUT
   ANY WARRANTY; withOut even the implied warranty of MERCHANTABILITY or
   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
   for more details.
@@ -21,7 +21,7 @@
   me at ales@chello.sk
 }
 
-unit lhttpserver;
+unit lhttp;
 
 {$mode objfpc}{$h+}
 
@@ -207,7 +207,8 @@ type
   
   TParseBufferMethod = function: boolean of object;
   TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
-  TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: boolean);
+  TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: boolean) of object;
+  TLHTTPClientProc = procedure(ASocket: TLHTTPClientSocket) of object;
 
   TLHTTPConnection = class(TLTcp)
   protected
@@ -345,6 +346,9 @@ type
     procedure SendRequest;
 
     property Error: TLHTTPClientError read FError write FError;
+    property ResponseStatus: TLHTTPStatus read FResponseStatus;
+    property ResponseVersion: dword read FResponseVersion;
+    property ResponseReason: pchar read FResponseReason;
   end;
 
   TLHTTPClient = class(TLHTTPConnection)
@@ -353,13 +357,15 @@ type
     FPort: integer;
     FRequest: TClientRequest;
     FOutputEof: boolean;
-    FOnDoneInput: TLProc;
-    FOnInput: TLInputEvent;
     FOnCanWrite: TLCanWriteEvent;
+    FOnDoneInput: TLHTTPClientProc;
+    FOnInput: TLInputEvent;
+    FOnProcessHeaders: TLHTTPClientProc;
     
     procedure ConnectEvent(aSocket: TLHandle); override;
     procedure DoDoneInput(ASocket: TLHTTPClientSocket);
     function  DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword;
+    procedure DoProcessHeaders(ASocket: TLHTTPClientSocket);
     function  DoWriteBlock(ASocket: TLHTTPClientSocket): boolean;
     function  InitSocket(aSocket: TLSocket): TLSocket; override;
     procedure InternalSendRequest;
@@ -372,9 +378,10 @@ type
     property Method: TLHTTPMethod read FRequest.Method write FRequest.Method;
     property Port: integer read FPort write FPort;
     property URI: string read FRequest.URI write FRequest.URI;
-    property OnDoneInput: TLProc read FOnDoneInput write FOnDoneInput;
-    property OnInput: TLInputEvent read FOnInput write FOnInput;
     property OnCanWrite: TLCanWriteEvent read FOnCanWrite write FOnCanWrite;
+    property OnDoneInput: TLHTTPClientProc read FOnDoneInput write FOnDoneInput;
+    property OnInput: TLInputEvent read FOnInput write FOnInput;
+    property OnProcessHeaders: TLHTTPClientProc read FOnProcessHeaders write FOnProcessHEaders;
   end;
 
 implementation
@@ -426,7 +433,7 @@ begin
   until AValue = 0;
 end;
 
-procedure HexToInt(ABuffer: pchar; var AValue: dword; var ACode: integer);
+procedure HexToInt(ABuffer: pchar; out AValue: dword; out ACode: integer);
 var
   Val, Incr: dword;
   Start: pchar;
@@ -1746,6 +1753,8 @@ procedure TLHTTPClientSocket.ProcessHeaders;
 begin
   if not ProcessEncoding then
     Cancel(ceUnsupportedEncoding);
+
+  TLHTTPClient(FConnection).DoProcessHeaders(Self);
 end;
 
 procedure TLHTTPClientSocket.ResetDefaults;
@@ -1776,6 +1785,12 @@ begin
     Result := FOnInput(ASocket, ABuffer, ASize)
   else
     Result := ASize;
+end;
+
+procedure TLHTTPClient.DoProcessHeaders(ASocket: TLHTTPClientSocket);
+begin
+  if Assigned(FOnProcessHeaders) then
+    FOnProcessHeaders(ASocket);
 end;
 
 function  TLHTTPClient.DoWriteBlock(ASocket: TLHTTPClientSocket): boolean;
