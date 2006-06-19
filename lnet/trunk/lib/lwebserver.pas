@@ -287,13 +287,8 @@ var
 begin
   Result := nil;
   lDocRequest.Socket := ASocket;
-  lDocRequest.Document := ASocket.RequestInfo.Argument;
-  if Length(lDocRequest.Document) = 0 then
-  begin
-    lDocRequest.Document := '.';
-    lDocIsDir := true;
-  end else
-    lDocIsDir := DirectoryExists(lDocRequest.Document);
+  lDocRequest.Document := DocumentRoot+ASocket.RequestInfo.Argument;
+  lDocIsDir := DirectoryExists(lDocRequest.Document);
   if lDocIsDir then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
@@ -841,7 +836,7 @@ end;
 
 initialization
   ScriptPathPrefix := GetScriptPathPrefix;
-  DocumentRoot := GetHTTPPath;
+  DocumentRoot := IncludeTrailingPathDelimiter(GetHTTPPath);
   CGIPath := GetCGIPath;
   CGIRoot := GetCGIRoot;
   PHPCGIBinary := GetPHPCGIBinary;
