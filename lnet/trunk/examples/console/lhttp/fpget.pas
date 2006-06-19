@@ -4,7 +4,7 @@ program fpget;
 {$h+}
 
 uses
-  sysutils, strutils, lnet, lhttpserver;
+  sysutils, strutils, lnet, lhttp;
 
 var
   HttpClient: TLHTTPClient;
@@ -15,20 +15,27 @@ type
   THTTPHandler = class
   public
     procedure ClientDisconnect(ASocket: TLSocket);
-    procedure ClientDoneInput(ASocket: TLSocket);
+    procedure ClientDoneInput(ASocket: TLHTTPClientSocket);
+    procedure ClientError(const Msg: string; aSocket: TLSocket);
     function ClientInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; 
       ASize: dword): dword;
+    procedure ClientProcessHeaders(ASocket: TLHTTPClientSocket);
   end;
+
+procedure THTTPHandler.ClientError(const Msg: string; aSocket: TLSocket);
+begin
+  writeln('Error: ', Msg);
+end;
 
 procedure THTTPHandler.ClientDisconnect(ASocket: TLSocket);
 begin
-  writeln('disconnected.');
+  writeln('Disconnected.');
   done := true;
 end;
   
-procedure THTTPHandler.ClientDoneInput(ASocket: TLSocket);
+procedure THTTPHandler.ClientDoneInput(ASocket: TLHTTPClientSocket);
 begin
-  writeln('...done');
+  writeln('done.');
   close(OutputFile);
   ASocket.Disconnect;
 end;
@@ -37,7 +44,13 @@ function THTTPHandler.ClientInput(ASocket: TLHTTPClientSocket;
   ABuffer: pchar; ASize: dword): dword;
 begin
   blockwrite(outputfile, ABuffer^, ASize, Result);
-  write('...' + IntToStr(ASize));
+  write(IntToStr(ASize) + '...');
+end;
+
+procedure THTTPHandler.ClientProcessHeaders(ASocket: TLHTTPClientSocket);
+begin
+  write('Response: ', HTTPStatusCodes[ASocket.ResponseStatus], ' ', 
+    ASocket.ResponseReason, ', data...');
 end;
 
 var
@@ -113,7 +126,9 @@ begin
   HttpClient.Timeout := 30000;
   HttpClient.OnDisconnect := @dummy.ClientDisconnect;
   HttpClient.OnDoneInput := @dummy.ClientDoneInput;
+  HttpClient.OnError := @dummy.ClientError;
   HttpClient.OnInput := @dummy.ClientInput;
+  HttpClient.OnProcessHeaders := @dummy.ClientProcessHeaders;
   HttpClient.SendRequest;
   Done := false;
   while not Done do
