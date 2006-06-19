@@ -21,7 +21,7 @@
   me at ales@chello.sk
 }
 
-unit lwebserver;
+unit lWebServer;
 
 {$mode objfpc}{$h+}
 
@@ -29,7 +29,7 @@ interface
 
 uses
   sysutils, classes, lnet, lhttp, lhttputil, lmimetypes, levents, 
-  lprocess, process, lfastcgi, fastcgi;
+  lprocess, process, lfastcgi, fastcgi, lHTTPSettings;
 
 type
   TFileOutput = class(TBufferOutput)
@@ -193,18 +193,20 @@ implementation
 
 const
   ServerSoftware = 'fpHTTPd/0.2';
-  ScriptPathPrefix = 'cgi-bin/';
-  DocumentRoot = '/var/www';
-  CGIPath = '/usr/local/bin:/usr/bin:/bin';
-  CGIRoot = '/usr/lib/cgi-bin/';
-  PHPCGIBinary = '/usr/lib/cgi-bin/php';
+  
+var
+  ScriptPathPrefix: string;
+  DocumentRoot: string;
+  CGIPath: string;
+  CGIRoot: string;
+  PHPCGIBinary: string;
 
 function TCGIHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var
   lOutput: TSimpleCGIOutput;
   lExecPath: string;
 begin
-  if StrLComp(ASocket.RequestInfo.Argument, ScriptPathPrefix, 
+  if StrLComp(ASocket.RequestInfo.Argument, PChar(ScriptPathPrefix),
       Length(ScriptPathPrefix)) = 0 then
   begin
     lOutput := TSimpleCGIOutput.Create(ASocket);
@@ -310,7 +312,6 @@ begin
     if not lDirIndexFound then exit;
   end else
   if not SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath) then exit;
-  
   lHandler := FDocHandlerList;
   while lHandler <> nil do
   begin
@@ -338,8 +339,8 @@ begin
   begin
     lOutput := TSimpleCGIOutput.Create(ARequest.Socket);
     lOutput.Process.CommandLine := PHPCGIBinary;
-    lOutput.ScriptName := '/'+ARequest.Document;
-    lOutput.ScriptFileName := DocumentRoot+lOutput.ScriptName;
+    lOutput.ScriptName := '/' + ARequest.Document;
+    lOutput.ScriptFileName := DocumentRoot + lOutput.ScriptName;
     lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.StartRequest;
     Result := lOutput;
@@ -367,7 +368,7 @@ begin
   begin
     lOutput := TFastCGIOutput.Create(ARequest.Socket);
     lOutput.ScriptName := '/'+ARequest.Document;
-    lOutput.ScriptFileName := DocumentRoot+lOutput.ScriptName;
+    lOutput.ScriptFileName := DocumentRoot + lOutput.ScriptName;
     lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.Request := FPool.BeginRequest(FCGI_RESPONDER);
     lOutput.StartRequest;
@@ -837,5 +838,12 @@ procedure TLWebServer.LogError(const AMessage: string; ASocket: TLSocket);
 begin
   writeln(AMessage);
 end;
+
+initialization
+  ScriptPathPrefix := GetScriptPathPrefix;
+  DocumentRoot := GetHTTPPath;
+  CGIPath := GetCGIPath;
+  CGIRoot := GetCGIRoot;
+  PHPCGIBinary := GetPHPCGIBinary;
 
 end.

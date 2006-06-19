@@ -40,12 +40,11 @@ var
 
 implementation
 
-const
-{$ifdef UNIX}
-  MimeFileName: string = '/etc/mime.types';
-{$else}
-  MimeFileName: string = 'mime.types';
-{$endif}
+uses
+  lHTTPSettings;
+
+var
+  MimeFileName: string;
 
 procedure InitMimeList;
 var
@@ -55,6 +54,7 @@ var
   lStrObj: TStringObject;
   lBuffer: array[1..32*1024] of byte;
 begin
+  MimeFileName := GetMimeFile;
   MimeList := TStringList.Create;
   if FileExists(MimeFileName) then
   begin

@@ -26,11 +26,11 @@ program fphttpd;
 {$mode objfpc}{$h+}
 
 uses
-  classes, lnet, 
+  Classes, lNet,
 {$ifdef UNIX}
-  baseunix, 
+  BaseUnix,
 {$endif}
-  lwebserver;
+  lWebserver, lHTTPSettings;
 
 var
   Server: TLWebServer;
@@ -52,7 +52,7 @@ end;
 begin
   Server := TLWebServer.Create(nil);
   Server.TimeOut := 300000;
-  if not Server.Listen(3880) then
+  if not Server.Listen(GetPort) then
   begin
     writeln('Error starting server.');
   end else begin
@@ -61,7 +61,6 @@ begin
     if fpfork = 0 then
     begin
 }
-      Server.Eventer.Timeout := 30000;
       MainLoop;
 {
     end else
