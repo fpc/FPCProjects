@@ -282,14 +282,13 @@ var
   lDocRequest: TDocumentRequest;
   lHandler: TDocumentHandler;
   lTempDoc: string;
-  lDocIsDir, lDirIndexFound: boolean;
+  lDirIndexFound: boolean;
   I: integer;
 begin
   Result := nil;
   lDocRequest.Socket := ASocket;
   lDocRequest.Document := DocumentRoot+ASocket.RequestInfo.Argument;
-  lDocIsDir := DirectoryExists(lDocRequest.Document);
-  if lDocIsDir then
+  if DirectoryExists(lDocRequest.Document) then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
     lDirIndexFound := false;
@@ -840,6 +839,5 @@ initialization
   CGIPath := GetCGIPath;
   CGIRoot := GetCGIRoot;
   PHPCGIBinary := GetPHPCGIBinary;
-  SetCurrentDir(DocumentRoot);
 
 end.
