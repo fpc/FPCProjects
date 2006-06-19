@@ -8,6 +8,9 @@ interface
   function GetPort: Word;
   function GetHTTPPath: string;
   function GetCGIPath: string;
+  function GetCGIRoot: string;
+  function GetScriptPathPrefix: string;
+  function GetPHPCGIBinary: string;
 
 implementation
 
@@ -24,10 +27,10 @@ var
   
 function CreateDefaultIni(const aFilePath: string): TIniFile;
 
-  procedure AddPath(const aName, aPath: string);
+  procedure AddPath(const aName, aPath: string; const CD: Boolean = True);
   begin
     Result.WriteString('PATH', aName, aPath);
-    if not DirectoryExists(aPath) then
+    if CD and not DirectoryExists(aPath) then
       if not CreateDir(aPath) then
         Writeln('Unable to create directory: ', aPath);
   end;
@@ -72,8 +75,19 @@ begin
   Result:=TIniFile.Create(aFilePath);
   
   AddPath('httpdir', HomeDir + PathDelim + 'http_docs');
-  AddPath('cgidir', HomeDir + PathDelim + 'cgi-bin');
+  AddPath('cgiroot', HomeDir + PathDelim + 'cgi-bin');
+ {$ifndef MSWINDOWS}
+  AddPath('cgipath', '/usr/local/bin:/usr/bin:/bin:' + HomeDir + '/bin', False);
+ {$else}
+  AddPath('cgipath', HomeDir + PathDelim + 'cgi-bin', False);
+ {$endif}
   AddFile('mimetypes', HomeDir + PathDelim + 'mime.types');
+  Result.WriteString('PATH', 'cgiprefix', 'cgi-bin' + PathDelim);
+ {$ifndef MSWINDOWS}
+  Result.WriteString('PATH', 'phpcgibin', '/usr/lib/cgi-bin/php');
+ {$else}
+  Result.WriteString('PATH', 'phpcgibin', 'php');
+ {$endif}
   Result.WriteString('NET', 'port', DEF_PORT);
   Result.UpdateFile;
 end;
@@ -121,12 +135,27 @@ end;
 
 function GetHTTPPath: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'httpdir', '');
+  Result:=SettingsFile.ReadString('PATH', 'httpdir', '') + PathDelim;
 end;
 
 function GetCGIPath: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'cgidir', '');
+  Result:=SettingsFile.ReadString('PATH', 'cgipath', '') + PathDelim;
+end;
+
+function GetCGIRoot: string;
+begin
+  Result:=SettingsFile.ReadString('PATH', 'cgiroot', '') + PathDelim;
+end;
+
+function GetScriptPathPrefix: string;
+begin
+  Result:=SettingsFile.ReadString('PATH', 'cgiprefix', '') + PathDelim;
+end;
+
+function GetPHPCGIBinary: string;
+begin
+  Result:=SettingsFile.ReadString('PATH', 'phpcgibin', '') + PathDelim;
 end;
   
 initialization
