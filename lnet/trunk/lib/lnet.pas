@@ -428,15 +428,9 @@ begin
   Result:=0;
   if CanReceive then begin
     if FSocketClass = SOCK_STREAM then
-    {$ifdef MSWINDOWS}
-      Result:=winsock2.Recv(FHandle, aData, aSize, LMSG)
-    else
-      Result:=winsock2.Recvfrom(FHandle, aData, aSize, LMSG, TSockAddrIn(FPeerAddress), AddressLength);
-    {$else}
       Result:=sockets.Recv(FHandle, aData, aSize, LMSG)
     else
       Result:=sockets.Recvfrom(FHandle, aData, aSize, LMSG, FPeerAddress, AddressLength);
-    {$endif}
     if Result = 0 then
       Disconnect;
     if Result = SOCKET_ERROR then begin
@@ -452,15 +446,9 @@ end;
 function TLSocket.DoSend(const TheData; const TheSize: Integer): Integer;
 begin
   if FSocketClass = SOCK_STREAM then
-  {$ifdef MSWINDOWS}
-    Result:=winsock2.send(FHandle, TheData, TheSize, LMSG)
-  else
-    Result:=winsock2.sendto(FHandle, TheData, TheSize, LMSG, TSockAddrIn(FPeerAddress), SizeOf(FPeerAddress));
-  {$else}
     Result:=sockets.send(FHandle, TheData, TheSize, LMSG)
   else
     Result:=sockets.sendto(FHandle, TheData, TheSize, LMSG, FPeerAddress, SizeOf(FPeerAddress));
-  {$endif}
 end;
 
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
