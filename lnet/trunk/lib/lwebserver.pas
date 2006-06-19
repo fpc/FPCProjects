@@ -243,31 +243,28 @@ end;
 function TFileHandler.HandleFile(const ARequest: TDocumentRequest): TOutputItem;
 var
   lFileOutput: TFileOutput;
-  lReqInfo: PRequestInfo;
-  lRespInfo: PResponseInfo;
-  lHeaderOut: PHeaderOutInfo;
+  lReqInfo: TRequestInfo absolute ARequest.Socket.RequestInfo;
+  lRespInfo: TResponseInfo absolute ARequest.Socket.RequestInfo;
+  lHeaderOut: THeaderOutInfo absolute ARequest.Socket.HeaderOut;
   lIndex: integer;
   lInfo: TSearchRec;
 begin
   if Length(ARequest.ExtraPath) = 0 then
   begin
-    lReqInfo := @ARequest.Socket.RequestInfo;
-    lRespInfo := @ARequest.Socket.RequestInfo;
-    lHeaderOut := @ARequest.Socket.HeaderOut;
-    if not (lReqInfo^.RequestType in [hmHead, hmGet]) then
+    if not (lReqInfo.RequestType in [hmHead, hmGet]) then
     begin
-      lRespInfo^.Status := hsNotAllowed;
+      lRespInfo.Status := hsNotAllowed;
     end else begin
       lFileOutput := TFileOutput.Create(ARequest.Socket);
       FindFirst(ARequest.Document, 0, lInfo);
       if lFileOutput.Open(ARequest.Document) then
       begin
-        lRespInfo^.Status := hsOK;
-        lHeaderOut^.ContentLength := lInfo.Size;
-        lRespInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
+        lRespInfo.Status := hsOK;
+        lHeaderOut.ContentLength := lInfo.Size;
+        lRespInfo.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
         lIndex := MimeList.IndexOf(ExtractFileExt(ARequest.Document));
         if lIndex >= 0 then
-          lRespInfo^.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
+          lRespInfo.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
         Result := lFileOutput;
         ARequest.Socket.StartResponse(lFileOutput);
       end else
