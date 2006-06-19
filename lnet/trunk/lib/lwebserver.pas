@@ -835,7 +835,7 @@ end;
 
 initialization
   ScriptPathPrefix := GetScriptPathPrefix;
-  DocumentRoot := IncludeTrailingPathDelimiter(GetHTTPPath);
+  DocumentRoot := GetHTTPPath;
   CGIPath := GetCGIPath;
   CGIRoot := GetCGIRoot;
   PHPCGIBinary := GetPHPCGIBinary;
