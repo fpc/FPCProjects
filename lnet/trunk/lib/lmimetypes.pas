@@ -41,8 +41,11 @@ var
 implementation
 
 const
-//  MimeFileName: string = '/etc/mime.types';
+{$ifdef UNIX}
+  MimeFileName: string = '/etc/mime.types';
+{$else}
   MimeFileName: string = 'mime.types';
+{$endif}
 
 procedure InitMimeList;
 var
