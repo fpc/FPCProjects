@@ -21,7 +21,7 @@
   me at ales@chello.sk
 }
 
-unit lWebServer;
+unit lwebserver;
 
 {$mode objfpc}{$h+}
 
@@ -243,28 +243,31 @@ end;
 function TFileHandler.HandleFile(const ARequest: TDocumentRequest): TOutputItem;
 var
   lFileOutput: TFileOutput;
-  lReqInfo: TRequestInfo absolute ARequest.Socket.RequestInfo;
-  lRespInfo: TResponseInfo absolute ARequest.Socket.RequestInfo;
-  lHeaderOut: THeaderOutInfo absolute ARequest.Socket.HeaderOut;
+  lReqInfo: PRequestInfo;
+  lRespInfo: PResponseInfo;
+  lHeaderOut: PHeaderOutInfo;
   lIndex: integer;
   lInfo: TSearchRec;
 begin
   if Length(ARequest.ExtraPath) = 0 then
   begin
-    if not (lReqInfo.RequestType in [hmHead, hmGet]) then
+    lReqInfo := @ARequest.Socket.RequestInfo;
+    lRespInfo := @ARequest.Socket.ResponseInfo;
+    lHeaderOut := @ARequest.Socket.HeaderOut;
+    if not (lReqInfo^.RequestType in [hmHead, hmGet]) then
     begin
-      lRespInfo.Status := hsNotAllowed;
+      lRespInfo^.Status := hsNotAllowed;
     end else begin
       lFileOutput := TFileOutput.Create(ARequest.Socket);
       FindFirst(ARequest.Document, 0, lInfo);
       if lFileOutput.Open(ARequest.Document) then
       begin
-        lRespInfo.Status := hsOK;
-        lHeaderOut.ContentLength := lInfo.Size;
-        lRespInfo.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
+        lRespInfo^.Status := hsOK;
+        lHeaderOut^.ContentLength := lInfo.Size;
+        lRespInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
         lIndex := MimeList.IndexOf(ExtractFileExt(ARequest.Document));
         if lIndex >= 0 then
-          lRespInfo.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
+          lRespInfo^.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
         Result := lFileOutput;
         ARequest.Socket.StartResponse(lFileOutput);
       end else
