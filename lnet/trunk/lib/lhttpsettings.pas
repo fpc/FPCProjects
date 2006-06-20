@@ -130,7 +130,7 @@ end;
 
 function GetPort: Word;
 begin
-  Result:=Word(StrToInt(SettingsFile.ReadString('NET', 'mimetypes', DEF_PORT)));
+  Result:=Word(StrToInt(SettingsFile.ReadString('NET', 'port', DEF_PORT)));
 end;
 
 function GetHTTPPath: string;
