@@ -172,7 +172,6 @@ type
     destructor Destroy; override;
 
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; virtual;
-    procedure LogAccess(const AMessage: string);
     procedure LogError(const AMessage: string);
     function  WriteBlock: boolean; virtual;
 
@@ -315,7 +314,8 @@ type
   TLHTTPServer = class(TLHTTPConnection)
   protected
     FHandlerList: TURIHandler;
-  
+    FLogMessageTZString: string;
+
     function InitSocket(aSocket: TLSocket): TLSocket; override;
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
   public
@@ -490,11 +490,6 @@ function TOutputItem.HandleInput(ABuffer: pchar; ASize: dword): dword;
 begin
   { discard input }
   Result := ASize;
-end;
-
-procedure TOutputItem.LogAccess(const AMessage: string);
-begin
-  FSocket.LogAccess(AMessage);
 end;
 
 procedure TOutputItem.LogError(const AMessage: string);
@@ -1225,15 +1220,17 @@ procedure TLHTTPServerSocket.ParseRequestLine(pLineEnd: pchar);
 var
   lPos: pchar;
   I: TLHTTPMethod;
+  NowLocal: TDateTime;
 begin
   { make a timestamp for this request }
-  FRequestInfo.DateTime := LocalTimeToGMT(Now);
+  NowLocal := Now;
+  FRequestInfo.DateTime := LocalTimeToGMT(NowLocal);
   { begin log message }
   FLogMessage.Pos := FLogMessage.Memory;
   AppendString(FLogMessage, PeerAddress);
   AppendString(FLogMessage, ' - [');
-  AppendString(FLogMessage, FormatDateTime('dd/mmm/yyyy:hh:nn:ss', FRequestInfo.DateTime));
-  AppendString(FLogMessage, ' GMT] "');
+  AppendString(FLogMessage, FormatDateTime('dd/mmm/yyyy:hh:nn:ss', NowLocal));
+  AppendString(FLogMessage, TLHTTPServer(FConnection).FLogMessageTZString);
   AppendString(FLogMessage, FBufferPos, pLineEnd-FBufferPos);
   AppendString(FLogMessage, '" ');
 
@@ -1549,9 +1546,25 @@ end;
 { TLHTTPServer }
 
 constructor TLHTTPServer.Create(AOwner: TComponent);
+var
+  TZSign, TZHour, TZMinute: string;
+  TZSecsAbs: integer;
 begin
   inherited Create(AOwner);
+
   SocketClass := TLHTTPServerSocket;
+  if TZSeconds >= 0 then
+    TZSign := ' +'
+  else
+    TZSign := ' -';
+  TZSecsAbs := Abs(TZSeconds);
+  Str(TZSecsAbs div 3600:2, TZHour);
+  if TZHour[1] = ' ' then
+    TZHour[1] := '0';
+  Str((TZSecsAbs div 60) mod 60:2, TZMinute);
+  if TZMinute[1] = ' ' then
+    TZMinute[1] := '0';
+  FLogMessageTZString := TZSign + TZHour + TZMinute + '] "';
 end;
 
 function TLHTTPServer.InitSocket(aSocket: TLSocket): TLSocket;
