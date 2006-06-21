@@ -45,32 +45,34 @@ procedure TLCLSocket.HandleEvents(aData: PtrInt; aFlags: DWord);
 var
   Events: TWSANetworkEvents;
 begin
-  FReferenced:=True;
-  if WSAEnumNetworkEvents(FHandle, FWinObject, @Events) = 0 then begin
-    if Events.lNetworkEvents and FD_CONNECT = FD_CONNECT then
-      if Assigned(FOnWrite) then
-        FOnWrite(Self);
+  if not FReferenced then begin
+    FReferenced:=True;
+    if WSAEnumNetworkEvents(FHandle, FWinObject, @Events) = 0 then begin
+      if Events.lNetworkEvents and FD_CONNECT = FD_CONNECT then
+        if Assigned(FOnWrite) then
+          FOnWrite(Self);
 
-    if Events.lNetworkEvents and FD_READ  = FD_READ then
-      if Assigned(FOnRead) then
-        FOnRead(Self);
+      if Events.lNetworkEvents and FD_READ  = FD_READ then
+        if Assigned(FOnRead) then
+          FOnRead(Self);
 
-    if Events.lNetworkEvents and FD_CLOSE = FD_CLOSE then
-      if Assigned(FOnRead) then
-        FOnRead(Self);
+      if Events.lNetworkEvents and FD_CLOSE = FD_CLOSE then
+        if Assigned(FOnRead) then
+          FOnRead(Self);
 
-    if Events.lNetworkEvents and FD_ACCEPT = FD_ACCEPT then
-      if Assigned(FOnRead) then
-        FOnRead(Self);
+      if Events.lNetworkEvents and FD_ACCEPT = FD_ACCEPT then
+        if Assigned(FOnRead) then
+          FOnRead(Self);
 
-    if Events.lNetworkEvents and FD_WRITE  = FD_WRITE then
-      if Assigned(FOnWrite) then
-        FOnWrite(Self);
-        
-    FReferenced:=False;
-    if FDispose then
-      Free;
-  end else Bail('EventEnum error', WSAGetLastError);
+      if Events.lNetworkEvents and FD_WRITE  = FD_WRITE then
+        if Assigned(FOnWrite) then
+          FOnWrite(Self);
+
+      FReferenced:=False;
+      if FDispose then
+        Free;
+    end else Bail('EventEnum error', WSAGetLastError);
+  end;
 end;
 
 procedure TLCLSocket.Disconnect;

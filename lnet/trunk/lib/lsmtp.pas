@@ -41,6 +41,9 @@ type
     FHostName: string;
     FMessage: string;
    protected
+    function GetSocketClass: TLSocketClass;
+    procedure SetSocketClass(const AValue: TLSocketClass);
+   protected
     procedure OnRe(Sender: TLSocket);
     procedure OnCo(Sender: TLSocket);
     procedure OnDs(Sender: TLSocket);
@@ -70,6 +73,7 @@ type
     procedure Disconnect;
     procedure CallAction; virtual;
     property PipeLine: Boolean read FPipeLine write FPipeLine;
+    property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
     property Eventer: TLEventer read GetEventer write SetEventer;
     property OnConnect: TLSMTPClientCallback read FOnConnect write FOnConnect;
     property OnReceive: TLSMTPClientCallback read FOnReceive write FOnReceive;
@@ -127,6 +131,16 @@ begin
   FStatus.Free;
   FCommandFront.Free;
   inherited Destroy;
+end;
+
+function TLSMTPClient.GetSocketClass: TLSocketClass;
+begin
+  Result:=FConnection.SocketClass;
+end;
+
+procedure TLSMTPClient.SetSocketClass(const AValue: TLSocketClass);
+begin
+  FConnection.SocketClass:=AValue;
 end;
 
 procedure TLSMTPClient.OnRe(Sender: TLSocket);

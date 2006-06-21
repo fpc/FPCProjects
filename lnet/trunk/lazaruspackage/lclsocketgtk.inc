@@ -57,34 +57,36 @@ procedure TLCLSocket.HandleEvents(aData: PtrInt; aFlags: DWord);
                  No instance variable or method must be accessed after this call.
 }
 begin
-  FReferenced:=True;
-  if (aFlags and G_IO_ERR = G_IO_ERR)
-  or (aFlags and G_IO_NVAL = G_IO_NVAL)
-  or (aFlags and G_IO_HUP = G_IO_HUP) then
-    if Assigned(FOnError) then
-      FOnError(Self, 'Handle error' + LStrError(LSocketError));
+  if not FReferenced then begin
+    FReferenced:=True;
+    if (aFlags and G_IO_ERR = G_IO_ERR)
+    or (aFlags and G_IO_NVAL = G_IO_NVAL)
+    or (aFlags and G_IO_HUP = G_IO_HUP) then
+      if Assigned(FOnError) then
+        FOnError(Self, 'Handle error' + LStrError(LSocketError));
 
-  if aFlags and G_IO_OUT = G_IO_OUT then begin
-    if not Connecting then begin
-      FFlags:=FFlags and (not G_IO_OUT);
-      SetEventHandlerFlags(FEventHandle, FFlags);
-      FCanSend:=True;
+    if aFlags and G_IO_OUT = G_IO_OUT then begin
+      if not Connecting then begin
+        FFlags:=FFlags and (not G_IO_OUT);
+        SetEventHandlerFlags(FEventHandle, FFlags);
+        FCanSend:=True;
+      end;
+      if Assigned(FOnWrite) then
+        FOnWrite(Self);
     end;
-    if Assigned(FOnWrite) then
-      FOnWrite(Self);
+
+    if aFlags and G_IO_IN = G_IO_IN then begin
+      {$warning Ensure this can be truly commented out}
+  {    FFlags:=FFlags and (not G_IO_IN); // Make sure this is OK to be out
+      SetEventHandlerFlags(FEventHandle, FFlags);}
+      FCanReceive:=True;
+      if Assigned(FOnRead) then
+        FOnRead(Self);
+    end;
+    FReferenced:=False;
+    if FDispose then
+      Free;
   end;
-  
-  if aFlags and G_IO_IN = G_IO_IN then begin
-    {$warning Ensure this can be truly commented out}
-{    FFlags:=FFlags and (not G_IO_IN); // Make sure this is OK to be out
-    SetEventHandlerFlags(FEventHandle, FFlags);}
-    FCanReceive:=True;
-    if Assigned(FOnRead) then
-      FOnRead(Self);
-  end;
-  FReferenced:=False;
-  if FDispose then
-    Free;
 end;
 
 procedure TLCLSocket.Disconnect;

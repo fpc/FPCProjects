@@ -139,7 +139,7 @@ end;
 constructor TLSMTPClientComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  Connection.SocketClass:=TLCLSocket;
+  SocketClass:=TLCLSocket;
   Eventer:=LCLEventer;
 end;
 
