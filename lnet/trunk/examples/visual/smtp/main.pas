@@ -24,6 +24,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure SMTPConnect(Sender: TLSMTPClient);
     procedure SMTPError(const msg: string; aSocket: TLSocket);
+    procedure SMTPReceive(Sender: TLSMTPClient);
   private
     { private declarations }
   public
@@ -56,6 +57,13 @@ procedure TMainForm.SMTPError(const msg: string;
   aSocket: TLSocket);
 begin
   ShowMessage(msg);
+end;
+
+procedure TMainForm.SMTPReceive(Sender: TLSMTPClient);
+var
+  s: string;
+begin
+  SMTP.GetMessage(s);
 end;
 
 initialization

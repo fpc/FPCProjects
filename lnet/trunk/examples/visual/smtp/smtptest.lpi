@@ -7,7 +7,7 @@
       <MainUnit Value="0"/>
       <IconPath Value="./"/>
       <TargetFileExt Value=""/>
-      <ActiveEditorIndexAtStart Value="4"/>
+      <ActiveEditorIndexAtStart Value="5"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -43,8 +43,8 @@
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="main.lrs"/>
         <UnitName Value="main"/>
-        <CursorPos X="102" Y="24"/>
-        <TopLine Value="14"/>
+        <CursorPos X="13" Y="64"/>
+        <TopLine Value="33"/>
         <EditorIndex Value="0"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
@@ -68,7 +68,7 @@
       <Unit4>
         <Filename Value="../../../lazaruspackage/lclnet.pas"/>
         <UnitName Value="LCLNet"/>
-        <CursorPos X="14" Y="59"/>
+        <CursorPos X="13" Y="57"/>
         <TopLine Value="30"/>
         <EditorIndex Value="3"/>
         <UsageCount Value="10"/>
@@ -76,9 +76,9 @@
       </Unit4>
       <Unit5>
         <Filename Value="../../../lazaruspackage/lclsocketgtk.inc"/>
-        <CursorPos X="1" Y="60"/>
-        <TopLine Value="44"/>
-        <EditorIndex Value="4"/>
+        <CursorPos X="1" Y="62"/>
+        <TopLine Value="64"/>
+        <EditorIndex Value="5"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
       </Unit5>
@@ -134,13 +134,15 @@
         <Filename Value="../../../lazaruspackage/lclsocketwin32.inc"/>
         <CursorPos X="7" Y="75"/>
         <TopLine Value="45"/>
+        <EditorIndex Value="4"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
       </Unit13>
     </Units>
     <JumpHistory Count="1" HistoryIndex="0">
       <Position1>
-        <Filename Value="main.pas"/>
-        <Caret Line="24" Column="1" TopLine="14"/>
+        <Filename Value="../../../lazaruspackage/lclsocketgtk.inc"/>
+        <Caret Line="15" Column="22" TopLine="1"/>
       </Position1>
     </JumpHistory>
   </ProjectOptions>

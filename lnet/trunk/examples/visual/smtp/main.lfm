@@ -60,6 +60,7 @@ object MainForm: TMainForm
   end
   object SMTP: TLSMTPClientComponent
     OnConnect = SMTPConnect
+    OnReceive = SMTPReceive
     left = 112
     top = 216
   end

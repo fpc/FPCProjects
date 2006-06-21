@@ -15,6 +15,6 @@ LazarusResources.Add('TMainForm','FORMDATA',[
   +#6#2'25'#0#0#7'TButton'#13'ConnectButton'#4'Left'#3#150#0#6'Height'#2#23#3'T'
   +'op'#2'/'#5'Width'#2'H'#25'BorderSpacing.InnerBorder'#2#4#7'Caption'#6#7'Con'
   +'nect'#7'OnClick'#7#18'ConnectButtonClick'#8'TabOrder'#2#2#0#0#0#21'TLSMTPCl'
-  +'ientComponent'#4'SMTP'#9'OnConnect'#7#11'SMTPConnect'#4'left'#2'p'#3'top'#3
-  +#216#0#0#0#0
+  +'ientComponent'#4'SMTP'#9'OnConnect'#7#11'SMTPConnect'#9'OnReceive'#7#11'SMT'
+  +'PReceive'#4'left'#2'p'#3'top'#3#216#0#0#0#0
 ]);
