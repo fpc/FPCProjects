@@ -24,9 +24,9 @@ type
     LDeletePopup: TMenuItem;
     LRenamePopup: TMenuItem;
     GetPupup: TMenuItem;
+    TextArea: TMemo;
     RenamePopup: TMenuItem;
     RightPopup: TPopupMenu;
-    TextArea: TMemo;
     RightView: TListBox;
     MainMenu: TMainMenu;
     FileMenuItem: TMenuItem;

@@ -44,6 +44,7 @@ type
     function CanReceive: Boolean; override;
     procedure SetNonBlock; override;
     procedure RegisterHandler(const aFlags: DWord);
+
     procedure HandleEvents(aData: PtrInt; aFlags: DWord);
    public
     constructor Create; override;

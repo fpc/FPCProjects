@@ -2,7 +2,7 @@
 { included by LCLNet.pas }
 
 uses
-  Sockets, lCommon;
+  Sockets, lCommon, Forms;
 
 const
   G_IO_IN     = 1;
@@ -59,7 +59,6 @@ procedure TLCLSocket.HandleEvents(aData: PtrInt; aFlags: DWord);
 begin
   FReferenced:=True;
   SetEventHandlerFlags(FEventHandle, 0);
-
   if (aFlags and G_IO_ERR = G_IO_ERR)
   or (aFlags and G_IO_NVAL = G_IO_NVAL)
   or (aFlags and G_IO_HUP = G_IO_HUP) then
@@ -77,8 +76,8 @@ begin
 
   if aFlags and G_IO_IN = G_IO_IN then begin
     {$warning Ensure this can be truly commented out}
-{    FFlags:=FFlags and (not G_IO_IN); // Make sure this is OK to be out
-    SetEventHandlerFlags(FEventHandle, FFlags);}
+//    FFlags:=FFlags and (not G_IO_IN); // Make sure this is OK to be out
+//    SetEventHandlerFlags(FEventHandle, FFlags);
     FCanReceive:=True;
     if Assigned(FOnRead) then
       FOnRead(Self);

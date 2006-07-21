@@ -336,7 +336,7 @@ begin
     if (FSocketClass = SOCK_STREAM) and (not FIgnoreShutdown) and FConnected then
       if ShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
-    if Closesocket(FHandle) <> 0 then
+    if CloseSocket(FHandle) <> 0 then
       LogError('Closesocket error', LSocketError);
   end;
 end;
@@ -454,6 +454,7 @@ end;
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
 var
   Done: Boolean;
+  Arg: Integer;
 begin
   Result:=false;
   if not Connected then begin
@@ -462,8 +463,11 @@ begin
     if FHandle = INVALID_SOCKET then
       Bail('Socket error', LSocketError);
     SetOptions;
-    if FSocketClass = SOCK_DGRAM then
-      SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, True, SizeOf(True));
+    if FSocketClass = SOCK_DGRAM then begin
+      Arg:=1;
+      if SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, Arg, Sizeof(Arg)) = SOCKET_ERROR then
+        Bail('SetSockOpt error', LSocketError);
+    end;
     FAddress.family:=AF_INET;
     FAddress.Port:=htons(APort);
     FAddress.Addr:=StrToNetAddr(Address);

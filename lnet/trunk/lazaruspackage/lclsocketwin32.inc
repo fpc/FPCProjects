@@ -2,7 +2,7 @@
 { included by LCLNet.pas }
 
 uses
- WinSock2;
+  WinSock2, Forms;
   
 const
   IOLCL_FLAGS = FD_ACCEPT or FD_READ or FD_CLOSE or FD_CONNECT or FD_WRITE;

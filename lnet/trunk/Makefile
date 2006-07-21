@@ -1,7 +1,7 @@
 PP=fpc
 OPT=
 BASEARGS=-Fulib -Fulib/sys -Filib -Filib/sys -Sm 
-ARGS=$(BASEARGS) $(OPT) -XX -Xs
+ARGS=$(BASEARGS) $(OPT) -O2 -XX -Xs
 TLIB=examples/console/lnet/lnet.pas
 TTCPS=examples/console/ltcp/lserver.pas
 TTCPC=examples/console/ltcp/lclient.pas

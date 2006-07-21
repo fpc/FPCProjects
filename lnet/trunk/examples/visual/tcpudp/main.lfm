@@ -7,24 +7,21 @@ object Form1: TForm1
   VertScrollBar.Page = 320
   ActiveControl = TextArea
   Caption = 'lNet Component Test'
-  ClientHeight = 321
-  ClientWidth = 389
   OnCreate = FormCreate
-  PixelsPerInch = 86
   object Label1: TLabel
     Left = 224
-    Height = 13
+    Height = 15
     Top = 11
-    Width = 31
+    Width = 30
     Caption = 'Port:'
     Color = clNone
     ParentColor = False
   end
   object Label2: TLabel
     Left = 179
-    Height = 13
+    Height = 15
     Top = 40
-    Width = 73
+    Width = 85
     Caption = 'Hostname/IP:'
     Color = clNone
     ParentColor = False
@@ -41,7 +38,7 @@ object Form1: TForm1
     Height = 25
     Top = 246
     Width = 75
-    BorderSpacing.InnerBorder = 2
+    BorderSpacing.InnerBorder = 4
     Caption = 'Send'
     OnClick = SendButtonClick
     TabOrder = 1
@@ -59,7 +56,7 @@ object Form1: TForm1
     Height = 25
     Top = 280
     Width = 75
-    BorderSpacing.InnerBorder = 2
+    BorderSpacing.InnerBorder = 4
     Caption = 'Connect'
     OnClick = ConnectButtonClick
     TabOrder = 3
@@ -69,7 +66,7 @@ object Form1: TForm1
     Height = 25
     Top = 280
     Width = 75
-    BorderSpacing.InnerBorder = 2
+    BorderSpacing.InnerBorder = 4
     Caption = 'Host'
     OnClick = ListenButtonClick
     TabOrder = 4
@@ -79,7 +76,7 @@ object Form1: TForm1
     Height = 25
     Top = 280
     Width = 75
-    BorderSpacing.InnerBorder = 2
+    BorderSpacing.InnerBorder = 4
     Caption = 'Diconnect'
     OnClick = DiconnectButtonClick
     TabOrder = 5
@@ -88,7 +85,7 @@ object Form1: TForm1
     Left = 32
     Height = 55
     Top = 1
-    Width = 125
+    Width = 144
     AutoFill = True
     Caption = 'Connection Type'
     ChildSizing.LeftRightSpacing = 6
@@ -104,7 +101,7 @@ object Form1: TForm1
       Left = 14
       Height = 27
       Top = 1
-      Width = 40
+      Width = 56
       Align = alCustom
       Caption = 'TCP'
       Checked = True
@@ -113,10 +110,10 @@ object Form1: TForm1
       TabOrder = 0
     end
     object RBUDP: TRadioButton
-      Left = 70
+      Left = 78
       Height = 27
       Top = 1
-      Width = 40
+      Width = 56
       Align = alCustom
       Caption = 'UDP'
       OnChange = RBUDPChange

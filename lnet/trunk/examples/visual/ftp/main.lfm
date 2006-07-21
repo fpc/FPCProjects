@@ -4,38 +4,35 @@ object MainForm: TMainForm
   Top = 55
   Width = 567
   HorzScrollBar.Page = 566
-  VertScrollBar.Page = 592
+  VertScrollBar.Page = 589
   ActiveControl = IPEdit
   Caption = 'FTP Test Client'
-  ClientHeight = 593
-  ClientWidth = 567
   Constraints.MinHeight = 618
   Constraints.MinWidth = 567
   Menu = MainMenu
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
-  PixelsPerInch = 86
   object HostLabel: TLabel
     Left = 8
-    Height = 13
+    Height = 15
     Top = 464
-    Width = 49
+    Width = 67
     Caption = 'HostName'
     Color = clNone
     ParentColor = False
   end
   object PortLabel: TLabel
-    Left = 224
-    Height = 13
+    Left = 245
+    Height = 15
     Top = 464
-    Width = 25
+    Width = 27
     Caption = 'Port'
     Color = clNone
     ParentColor = False
   end
   object IPEdit: TEdit
-    Left = 64
+    Left = 88
     Height = 23
     Top = 456
     Width = 144
@@ -43,7 +40,7 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object PortEdit: TEdit
-    Left = 256
+    Left = 288
     Height = 23
     Top = 456
     Width = 80
@@ -51,11 +48,10 @@ object MainForm: TMainForm
     Text = '21'
   end
   object ConnectButton: TButton
-    Left = 344
+    Left = 376
     Height = 23
     Top = 456
     Width = 75
-    BorderSpacing.InnerBorder = 2
     Caption = 'Connect'
     OnClick = ConnectButtonClick
     TabOrder = 2
@@ -65,7 +61,6 @@ object MainForm: TMainForm
     Width = 272
     ExtendedSelect = False
     FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
-    Mask = '*'
     OnDblClick = LeftViewDblClick
     PopupMenu = LeftPopup
     TabOrder = 3
@@ -81,26 +76,25 @@ object MainForm: TMainForm
     TabOrder = 4
     TopIndex = -1
   end
-  object TextArea: TMemo
-    Height = 108
-    Top = 485
-    Width = 567
-    Anchors = [akLeft, akRight, akBottom]
-    ReadOnly = True
-    TabOrder = 5
-  end
   object DisconnectButton: TButton
-    Left = 424
+    Left = 456
     Height = 23
     Top = 456
     Width = 75
-    BorderSpacing.InnerBorder = 2
     Caption = 'Disconnect'
     OnClick = DisconnectButtonClick
+    TabOrder = 5
+  end
+  object TextArea: TMemo
+    Height = 102
+    Top = 488
+    Width = 567
+    Align = alBottom
+    ReadOnly = True
     TabOrder = 6
   end
   object MainMenu: TMainMenu
-    left = 456
+    left = 488
     top = 504
     object FileMenuItem: TMenuItem
       Caption = '&File'
@@ -139,7 +133,7 @@ object MainForm: TMainForm
     OnControl = FTPControl
     OnError = FTPError
     StartPort = 1024
-    left = 456
+    left = 488
     top = 536
   end
   object LeftPopup: TPopupMenu
