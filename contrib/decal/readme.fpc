@@ -16,12 +16,14 @@ All fixes accepted for this directory are placed under LGPL/MPL dual
 license, since the package is originally MPL, and FPC tries to keep as much
 as possible LGPL too.
 
-Documentation is available on the original site.
+Documentation is available on the original site; but my own version is as latex in 
+sourcetree and compiled on http://www.stack.nl/~marcov/decal.pdf
 
 2004-04-02 Did some changes to get it compiling under FPC/Unix
 2004-04-12 Added one ^ somewhere, and the tests run. The trick is to find
 	   the place where to add the ^ btw ;-) (function JenkinshasString
 	   in decal.pas)
+2006-08-03 Doc translation added. (had this floating around)
 
 Marco van de Voort
 
