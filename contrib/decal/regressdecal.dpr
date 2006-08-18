@@ -2,11 +2,13 @@
 {$Id$}
 
 program RegressSDL;
-{$mode delphi}
-{$goto on}
+
 {$i decalh.inc}
 
 uses
+{$ifdef usesysthrds}
+  cthreads,
+{$endif}
   SysUtils,
   DeCALIO in 'DeCALIO.pas',
   DeCAL in 'DeCAL.pas',
@@ -14,6 +16,7 @@ uses
   RandomTesting in 'RandomTesting.pas',
   DeCALSamples in 'DeCALSamples.pas',
   DeCALTesting in 'DeCALTesting.pas',
+
   mwFixedRecSort in 'mwFixedRecSort.pas';
 
 const

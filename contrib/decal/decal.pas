@@ -81,7 +81,7 @@ interface
 
 uses {$ifdef win32}Windows,{$endif} Classes, SysUtils 
 {$ifdef UseSysThrds}
-   ,SysThrds
+   ,cthreads
 {$endif}
 {$IFDEF GC}
 			,gc
