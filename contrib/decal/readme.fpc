@@ -24,6 +24,7 @@ sourcetree and compiled on http://www.stack.nl/~marcov/decal.pdf
 	   the place where to add the ^ btw ;-) (function JenkinshasString
 	   in decal.pas)
 2006-08-03 Doc translation added. (had this floating around)
+2006-08-18 small compat fixes
 
 Marco van de Voort
 
