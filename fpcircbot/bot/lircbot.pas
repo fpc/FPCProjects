@@ -840,7 +840,8 @@ begin
   if Connected then begin
     i:=FChannels.IndexOf(Channel);
     if i >= 0 then
-      FChannels.Delete(i);
+      Exit;
+//      FChannels.Delete(i);
     Backup:=FLastLine.CloneSelf;
     FCon.SendMessage('JOIN ' + Channel + #13#10);
     FChannels.Add(Channel);

@@ -3,7 +3,7 @@ program cgiFpcBot;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, PWU, SqlDB, PQConnection, stringutils;
+  Classes, SysUtils, PWU, PWUEnvVar, SqlDB, PQConnection, stringutils;
   
 procedure Main;
 
@@ -27,10 +27,10 @@ var
   FromDate, ToDate: string;
   FromTime, ToTime: string;
   i               : Longint;
-  HTMLCode        : TStringList;
   ChanList        : TStringList;
   GetList         : TStringList;
-  
+  LineList        : TStringList;
+
 procedure InitDB;
 begin
   LogConnection := TPQConnection.Create(nil);
@@ -74,10 +74,10 @@ begin
   Sender:='';
   Count:='50';
   Msg:='';
-  HTMLCode:=TStringList.Create;
   ChanList:=TStringList.Create;
   GetList:=TStringList.Create;
-  GetList.CommaText:=StringReplace(GetEnvironmentVariable('QUERY_STRING'), '&', ',', [rfReplaceAll]);
+  GetList.CommaText:=StringReplace(CGIEnvVars.QueryString, '&', ',', [rfReplaceAll]);
+  LineList:=TStringList.Create;
 end;
 
 procedure Init;
@@ -88,9 +88,9 @@ end;
 
 procedure FreeCommon;
 begin
-  HTMLCode.Free;
   ChanList.Free;
   GetList.Free;
+  LineList.Free;
 end;
 
 procedure Free;
@@ -125,12 +125,15 @@ procedure GetWebVars;
   begin
     if (GetList.Count > 0) and ((Length(GetValue)) > 0) then begin
       LocalVar:=GetValue;
-      if VarName = 'channel' then LocalVar:='#' + LocalVar;
+      if VarName = 'channel' then
+        LocalVar:='#' + LocalVar;
       SetWebVar(VarName, LocalVar);
     end else if Length(GetWebVar(VarName)) > 0 then try
-      LocalVar:=GetWebVar(VarName);
-      if Length(LocalVar) = 0 then LocalVar:=DefValue;
-      if VarName = 'channel' then LocalVar:='#' + LocalVar;
+      LocalVar:=GetCGIVar(VarName);
+      if Length(LocalVar) = 0 then
+        LocalVar:=DefValue;
+      if VarName = 'channel' then
+        LocalVar:='#' + LocalVar;
     except
       LocalVar:=DefValue;
     end else begin
@@ -143,7 +146,8 @@ var
   DefChan: string;
 begin
   DefChan:='';
-  if ChanList.Count > 0 then DefChan:='#' + ChanList[0];
+  if ChanList.Count > 0 then
+    DefChan:='#' + ChanList[0];
 
   TryGetWebVar(Channel, 'channel', DefChan);
 	
@@ -202,6 +206,7 @@ begin
         Result:=Result + ' selected>';
       Result:=Result + '#' + s + '</option>';
     end;
+//  Result:=FilterHtml(Result);
 end;
 
 function HighlightHyperlinks(const inStr: string): string;
@@ -256,15 +261,12 @@ begin
 
   FillChannels;
   GetWebVars;
-
-  HTMLCode.LoadFromFile('html' + PathDelim + 'footer1.html');
-  HTMLCode.Text:=StringReplace(HTMLCode.Text, '$channels', GetHTMLChannels, [rfReplaceAll]);
-  WebWriteln(HTMLCode.Text);
+  
   if Channel = '#' then
     if ChanList.Count > 0 then Channel:=ChanList[0];
-  HTMLCode.Clear;
+  SetWebVar('channels', GetHTMLChannels);
 
-  WebTemplateOut('html' + PathDelim + 'footer2.html', True);
+  WebTemplateOut('html' + PathDelim + 'header.html', False);
 
   WebWriteln('<table class="body_style">');
 
@@ -279,9 +281,9 @@ begin
   if ValidRequest then begin
     with LogQuery do try
       sql.clear;
-      sql.add('select sender, msg, logtime from tbl_loglines ' +
+      sql.add('select * from (select sender, msg, logtime from tbl_loglines ' +
               'where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) + s + ') ' +
-              'order by loglineid desc limit ' + SQLEscape(Count));
+              'order by logtime desc limit ' + SQLEscape(Count) + ') as selection order by logtime');
       open;
       Flip:=False;
       LN:=FilterHtml(fieldbyname('sender').asstring);
@@ -297,12 +299,12 @@ begin
           if Pos('joins ' + Channel, smsg) = Length(s) + 2 then TheColor:=';color:' + HTML_GREEN;
           if Pos(s + ' is now known as ', smsg) = 1 then TheColor:=';color:' + HTML_ORANGE;
         end else if s = '*' then TheColor:=';color:' + HTML_BLUE;
-        
-        HTMLCode.Add('<tr style="background-color:' + ColorAr[Flip] + TheColor + '">' +
-                     '<td nowrap width="1%">[' +
-                     FilterHtml(Copy(fieldbyname('logtime').asstring, 12, 5)) +
-                     ']' + '</td><td nowrap width="1%">' + s +
-                     ': </td><td>' + HighlightHyperLinks(smsg) + '</td></tr>');
+
+        WebWriteln('<tr style="background-color:' + ColorAr[Flip] + TheColor + '">' +
+                   '<td nowrap width="1%">[' +
+                    fieldbyname('logtime').asstring +
+                   ']' + '</td><td nowrap width="1%">' + s +
+                   ': </td><td>' + HighlightHyperLinks(smsg) + '</td></tr>');
 
         LN:=s;
         Next;
@@ -314,10 +316,6 @@ begin
         WebWriteln('<h1>Invalid input: ' + e.Message + '</h1>');
     end;
   end else WebWriteln('<h1>Invalid input, date difference too big?</h1>');
-
-  if HTMLCode.Count > 0 then
-    for i:=HTMLCode.Count - 1 downto 0 do
-      WebWriteln(HTMLCode[i]);
 
   WebWriteln('</table><br>');
   WebWriteln('<p><a href="http://validator.w3.org/check?uri=referer"><img ' +

@@ -31,7 +31,7 @@ begin
   Halt(1);
 end;
   
-function ReadString: string;
+function ReadString(const MaskInput: Boolean = False): string;
 var
   c: Char;
   Quit: Boolean;
@@ -54,7 +54,10 @@ begin
         #13 : Quit:=True;
         #27 : QuitInst;
       else
-        Write(c);
+        if MaskInput then
+          Write('*')
+        else
+          Write(c);
         Result:=Result + c;
       end;
     end;
@@ -63,10 +66,10 @@ begin
   Writeln;
 end;
 
-function Query(const Question, Defaults: string): string;
+function Query(const Question, Defaults: string; const MaskInput: Boolean = False): string;
 begin
   Write(Question, ' [', Defaults, ']: ');
-  Result:=ReadString;
+  Result:=ReadString(MaskInput);
   if Length(Result) = 0 then
     Result:=Defaults;
   s:=Result;
@@ -103,7 +106,7 @@ begin
     DatabaseName:='fpcbot';
     HostName:='127.0.0.1';
     UserName := Query('DB admin name', GetEnvironmentVariable('USER'));
-    Password := Query('DB admin password', '');
+    Password := Query('DB admin password', '', True);
   end;
 
   TRN:=TSQLTransaction.create(nil);

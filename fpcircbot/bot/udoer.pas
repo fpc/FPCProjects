@@ -148,8 +148,8 @@ begin
   {$ifndef nodb}
   FLogConnection := TPQConnection.Create(nil);
   with FLogConnection do begin
-    DatabaseName:='fpcbot';
-    HostName:='127.0.0.1';
+    DatabaseName := 'fpcbot';
+    HostName :='localhost';
     UserName := BotDBName;
     Password := BotDBPass;
   end;
@@ -421,7 +421,6 @@ var
   Args: string;
   Seen: TDateTime;
   SeenStr: string;
-  Today: TDateTime;
 begin
   {$ifndef noDB}
   Args:=SQLEscape(TrimQuestion(Caller.LastLine.Arguments));
@@ -434,21 +433,20 @@ begin
       if (Length(Reciever) > 0) and (Reciever[1] = '#') then
       
         Sql.Add('select logtime from tbl_loglines ' +
-                'where (reciever=''' + Reciever +
-                ''' and upper(sender)=''' + UpperCase(Args) +
+                'where (reciever=''' + SQLEscape(Reciever) +
+                ''' and upper(sender)=''' + SQLEscape(UpperCase(Args)) +
                 ''') order by logtime desc limit 1')
       else
         Sql.Add('select logtime from tbl_loglines where ' +
-                'upper(sender)=''' + UpperCase(Args) +
+                'upper(sender)=''' + SQLEscape(UpperCase(Args)) +
                 ''' order by logtime desc limit 1');
       Writeln;
       Writeln('SEEN: ', Sql.Text);
       Writeln;
       Open;
       if not Eof then begin
-        Today:=Now;
         Seen:=FSeenQuery.fieldbyname('logtime').AsDateTime;
-        SeenStr:=CreateDiffStr(Seen, Today);
+        SeenStr:=CreateDiffStr(Seen, Now);
         if Length(SeenStr) > 0 then
           Respond(Args + ' last seen ' + SeenStr + 'ago.')
         else
@@ -483,6 +481,8 @@ var
     
     if Result then
       with Caller, FDefinesQuery do try
+        FLogTransaction.EndTransaction;
+        FLogTransaction.StartTransaction;
         Sql.Clear;
         Sql.Add('update tbl_definitions set description=''' + SQLEscape(Args) +
                 ' -- defined by ' + SQLEscape(LastLine.Sender) +
@@ -492,12 +492,15 @@ var
         Respond(YESSIR);
       except
         Respond('DB update error');
+        FlogTransaction.EndTransaction;
       end;
   end;
 
   procedure AddIt;
   begin
     if not UpdateDef then with FDefinesQuery do try
+      FLogTransaction.EndTransaction;
+      FLogTransaction.StartTransaction;
       Sql.Clear;
       Sql.Add('insert into tbl_definitions(definition,description) ' +
               'values ('''+ SQLEscape(DefWord) +''',''' + SQLEscape(Args) +
@@ -507,6 +510,7 @@ var
       Caller.Respond(YESSIR);
     except
       Caller.Respond('DB insert error');
+      FLogTransaction.EndTransaction;
     end;
    end;
    
@@ -723,7 +727,7 @@ begin
     if Trim(Arguments) = '' then args:=Reciever
     else args:=Arguments;
     if not Part(args) then begin
-      Respond('Unable to comply, I''m not in' + args);
+      Respond('Unable to comply, I''m not in ' + args);
       if ChannelCount > 0 then begin
         args:='';
         for i:=0 to ChannelCount - 1 do
@@ -931,12 +935,13 @@ var
       and (Length(Sender) < 50)
       and (Length(Reciever) < 50)
       and (Length(Msg) < 4096) then begin
-        Writeln('CONNECTION: ', FLogQuery.Database.Connected);
         FLogQuery.SQL.Clear;
         FLogQuery.SQL.Add('insert into tbl_loglines(sender,reciever,msg) ' +
                           'values(''' + SQLEscape(Sender) + ''',''' + SQLEscape(Reciever) + ''',''' + SQLEscape(msg) + ''')');
         Writeln('Log MESSAGE: ', FLogQuery.SQL.Text);
         try
+          FLogTransaction.EndTransaction;
+          FLogTransaction.StartTransaction;
           FLogQuery.ExecSQL;
           FLogTransaction.Commit;
         except
@@ -948,6 +953,7 @@ var
             Writeln('Reciever: ' + Reciever);
             Writeln('MSg: ' + Msg);
             Writeln('----------------[ERROR]---------------');
+            FLogTransaction.EndTransaction;
 //            Caller.Respond('Error writing to DB: ' + e.Message);
             Halt;
           end;
@@ -1039,12 +1045,17 @@ procedure TDoer.CleanChannels;
 begin
   {$ifndef noDB}
   with FChanQuery do try
+    FLogTransaction.EndTransaction;
+    FLogTransaction.StartTransaction;
     SQL.Clear;
     SQL.Add('delete from tbl_channels');
     ExecSQL;
     FLogTransaction.Commit;
-  except on e: Exception do
-    writeln('Error deleting channels list in DB: ', e.message);
+  except
+    on e: Exception do begin
+      Writeln('Error deleting channels list in DB: ', e.message);
+      FLogTransaction.EndTransaction;
+    end;
   end;
   {$endif}
 end;
@@ -1057,6 +1068,8 @@ begin
   with FChanQuery.params, FChanQuery do
     if Bot.ChannelCount > 0 then
       for i:=0 to Bot.ChannelCount-1 do try
+        FLogTransaction.EndTransaction;
+        FLogTransaction.StartTransaction;
         Sql.Clear;
         Sql.Add('insert into tbl_channels(channelname) ' +
                 'values ('''+ SQLEscape(Bot.Channels[i]) + ''')');
@@ -1071,6 +1084,7 @@ begin
           Writeln('Channel: ' + Bot.Channels[i]);
           Writeln('Highest probability is that the DB has this channel in already');
           Writeln('----------------[ERROR]---------------');
+          FLogTransaction.EndTransaction;
         end;
 //        Bot.Respond('Error writing to DB!');
       end;

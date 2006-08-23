@@ -77,7 +77,7 @@ begin
     Result:=StringReplace(Result, ',,', ',', [rfReplaceAll]);
 end;
 
-procedure GetADPORT(var anAD: string; var aPort: Word);
+procedure GetADPORT(out anAD: string; out aPort: Word);
 begin
   if ParamCount > 1 then try
     aPORT:=Word(StrToInt(ParamStr(2)));

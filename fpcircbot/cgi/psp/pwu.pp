@@ -1529,7 +1529,7 @@ end;
 // Default security level: 2
 function WebFormat(const str: string): string;
 begin
-  result:= WebFormat_SF(str, false, 0, 2);
+  result:= WebFormat_SF(str, false, 0, 0);
   // Uses the following default security settings:
   //   Filter HTML input: NO, see WebFormatAndfilter
   //   Filter security: level 0, not applicable
@@ -1589,7 +1589,7 @@ begin
   while i <= len do
   begin
     // Normal concat until chars of our attention
-    while (i <= len) and (str[i] <> '$') and (str[i] <> '{') do
+    while (i <= len) and (str[i] <> '$') do
     begin
       SetLength(result, length(result) + 1);
       result[length(result)]:= str[i];

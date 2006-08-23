@@ -3,8 +3,8 @@ program cgiPastebin;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, IBConnection, SqlDB,
-  Web, stringutils;
+  Classes, SysUtils, PQConnection, SqlDB,
+  PWU, PWUEnvVar;
   
 procedure Main;
 
@@ -13,7 +13,7 @@ const
   {$i hiddeninc.inc}
 
 var
-  LogFBConnection : TIBConnection;
+  LogFBConnection : TPQConnection;
   LogTransaction  : TSQLTransaction;
   LogQuery        : TSQLQuery;
   WriteQuery      : TSQLQuery;
@@ -28,9 +28,10 @@ var
   
 procedure InitDB;
 begin
-  LogFBConnection := tIBConnection.Create(nil);
+  LogFBConnection := TPQConnection.Create(nil);
   with LogFBConnection do begin
-    DatabaseName := DBPath;
+    HostName := 'localhost';
+    DatabaseName := 'fpcbot';
     UserName := CgiDBName;
     Password := CgiDBPass;
   end;
@@ -51,7 +52,7 @@ begin
     transaction := LogTransaction;
 
     sql.clear;
-    sql.add('insert into tbl_pastes(pasteid,title,sender,pastetext,highlight) ' +
+    sql.add('insert into tbl_pastes(pasteid, title, sender, pastetext,highlight) ' +
             'values (gen_id(GEN_PASTEID,1),:title,:sender,:ptext,:hl)');
     prepare;
   end;
@@ -128,15 +129,15 @@ procedure GetWebVars;
     if (GetList.Count > 0) and ((Length(GetValue)) > 0) then begin
       LocalVar:=GetValue;
       if VarName = 'channel' then LocalVar:='#' + LocalVar;
-      Web_SetVar(VarName, LocalVar);
-    end else if Web_VarExists(VarName) then try
-      LocalVar:=Web_GetVar(VarName);
+      SetWebVar(VarName, LocalVar);
+    end else if Length(GetWebVar(VarName)) > 0 then try
+      LocalVar:=GetWebVar(VarName);
       if Length(LocalVar) = 0 then LocalVar:=DefValue;
       if VarName = 'channel' then LocalVar:='#' + LocalVar;
     except
       LocalVar:=DefValue;
     end else begin
-      Web_SetVar(VarName, DefValue);
+      SetWebVar(VarName, DefValue);
       LocalVar:=DefValue;
     end;
   end;
@@ -148,16 +149,16 @@ begin
   if ChanList.Count > 0 then DefChan:='#' + ChanList[0];
 
   TryGetWebVar(Channel, 'channel', DefChan);
-  Channel := return_Channel_sanitize(Channel); //Make sure to have only allowed chars ... :)
+//  Channel := return_Channel_sanitize(Channel); //Make sure to have only allowed chars ... :)
 
   TryGetWebVar(Title, 'title', '');
-  Title := return_Nick_sanitize (Title); //Making sure that only RFC allowed chars exists
+//  Title := return_Nick_sanitize (Title); //Making sure that only RFC allowed chars exists
 
   TryGetWebVar(Sender, 'sender', '');
-  Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
+//  Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
   
   TryGetWebVar(PasteID, 'pasteid', '0');
-  PasteID:=return_Decimal_sanitize(PasteID);
+//  PasteID:=return_Decimal_sanitize(PasteID);
 
   TryGetWebVar(pText, 'ptext', '');
   pText:=FilterHTML(pText);
@@ -210,20 +211,20 @@ begin
   HL:='0';
   Init;
 
-  Web_Header;
+//  Web_Header;
   FillChannels;
   GetWebVars;
 
   HTMLCode.LoadFromFile('html' + PathDelim + 'pastebin1.html');
   HTMLCode.Text:=StringReplace(HTMLCode.Text, '$channels', GetHTMLChannels, [rfReplaceAll]);
   
-  Web_OutLn(HTMLCode.Text);
+  WebWriteln(HTMLCode.Text);
 
   if Channel = '#' then
     if ChanList.Count > 0 then Channel:=ChanList[0];
   HTMLCode.Clear;
   
-  Web_TemplateOut('html' + PathDelim + 'pastebin2.html');
+  WebTemplateOut('html' + PathDelim + 'pastebin2.html', False);
   if PasteID <> '0' then begin
     with LogQuery do try
       Sql.Clear;
@@ -260,7 +261,7 @@ begin
     except on e: Exception do
       Writeln(e.message);
     end;
-    Web_SetVar('pasteid', PasteID);
+    SetWebVar('pasteid', PasteID);
   end;
   
   Writeln('<input type="hidden" name="pasteid" value="', PasteID, '">');

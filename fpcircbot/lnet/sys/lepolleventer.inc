@@ -1,8 +1,6 @@
 {% lepolleventer.inc included by levents.pas }
 
 {$ifdef Linux}
-// only for 2.1.1+ or 2.0.3+
-{$if defined(ver2) and (fpc_release = 0) and (fpc_patch > 2)}
 
 { TLEpollEventer }
 
@@ -96,7 +94,7 @@ begin
   Result:=False;
   Changes:=0;
   ReadChanges:=0;
-  MasterChanges:=epoll_wait(FEpollMasterFD, @MasterEvents, 2, FTimeout);
+  MasterChanges:=epoll_wait(FEpollMasterFD, @MasterEvents[0], 2, FTimeout);
   if MasterChanges > 0 then begin
     for i:=0 to MasterChanges-1 do
       if MasterEvents[i].Data.fd = FEpollFD then
@@ -115,12 +113,12 @@ begin
           if (FEvents[i].events and EPOLLERR = EPOLLERR)
           or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
             if Assigned(Temp.FOnError) then
-              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
+              if not Temp.FIgnoreError then Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
 
           if (FEvents[i].events and EPOLLOUT = EPOLLOUT)
           or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then
             if Assigned(Temp.FOnWrite) then
-              Temp.FOnWrite(Temp);
+              if not Temp.FIgnoreWrite then Temp.FOnWrite(Temp);
           if Temp.FDispose then
             AddForFree(Temp);
         end; // normals
@@ -130,7 +128,7 @@ begin
 
           if FEventsRead[i].events and EPOLLIN = EPOLLIN then
             if Assigned(TempRead.FOnRead) then
-              TempRead.FOnRead(TempRead);
+              if not TempRead.FIgnoreRead then TempRead.FOnRead(TempRead);
           if TempRead.FDispose then
             AddForFree(TempRead);
         end; // reads
@@ -164,20 +162,9 @@ var
   u: TUTSName;
 begin
   Result:=TLSelectEventer;
-  try
-    if fpUname(u) = 0 then   // check for 2.6+
-      if GetVersion(u.release) >= 2600 then
-        Result:=TLEpollEventer;
-  except
-  end;
+  if fpUname(u) = 0 then   // check for 2.6+
+    if GetVersion(u.release) >= 2600 then
+      Result:=TLEpollEventer;
 end;
 
-{$else} // 2.0.3+ or 2.1.1+
-
-function BestEventerClass: TLEventerClass;
-begin
-  Result:=TLSelectEventer;
-end;
-
-{$endif}
 {$endif} // Linux

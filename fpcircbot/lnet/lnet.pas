@@ -344,7 +344,7 @@ procedure TLSocket.LogError(const msg: string; const ernum: Integer);
 begin
   if Assigned(FOnError) then
     if ernum > 0 then
-      FOnError(Self, msg + LStrError(ernum))
+      FOnError(Self, msg + ': ' + LStrError(ernum))
     else
       FOnError(Self, msg);
 end;
@@ -410,7 +410,7 @@ begin
     {$endif}
     if Result = 0 then
       Disconnect;
-    if Result = INVALID_SOCKET then begin
+    if Result = SOCKET_ERROR then begin
       if LSocketError = BLOCK_ERROR then begin
         FCanReceive := False;
         FIgnoreRead := False;
@@ -494,7 +494,7 @@ begin
       SetNonBlock;
       Result:=true;
       FConnected:=true;
-    end;
+    end else Bail('Error on accept', LSocketError);
   end;
 end;
 
@@ -523,7 +523,7 @@ begin
 
     if CanSend then begin
       Result:=DoSend(aData, aSize);
-      if Result <= 0 then begin
+      if Result = SOCKET_ERROR then begin
         if LSocketError = BLOCK_ERROR then begin
           FCanSend:=False;
           FIgnoreWrite:=False;
@@ -531,7 +531,7 @@ begin
         end else
           Bail('Send error', LSocketError);
         Result:=0;
-      end else FIgnoreWrite:=False;
+      end;
     end;
  end;
 end;
@@ -542,19 +542,19 @@ var
   opt: DWord;
 begin
    opt:=1;
-   if ioctlsocket(FHandle, FIONBIO, opt) = INVALID_SOCKET then
+   if ioctlsocket(FHandle, FIONBIO, opt) = SOCKET_ERROR then
      bail('Error on SetFD', wsaGetLasterror);
 {$else}
 var
   opt: cInt;
 begin
    opt:=fpfcntl(FHandle, F_GETFL);
-   if opt = INVALID_SOCKET then begin
+   if opt = SOCKET_ERROR then begin
      bail('ERROR on GetFD', LSocketError);
      Exit;
    end;
 
-   if fpfcntl(FHandle, F_SETFL, opt or O_NONBLOCK) = INVALID_SOCKET then
+   if fpfcntl(FHandle, F_SETFL, opt or O_NONBLOCK) = SOCKET_ERROR then
      bail('Error on SetFL', LSocketError);
 {$endif}
 end;

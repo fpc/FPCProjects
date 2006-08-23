@@ -198,7 +198,7 @@ begin
   if Day > 0 then Result:=Result + IntToStr(Day) + ' day' + MultiString(Day) + ' ';
   if Hour > 0 then Result:=Result + IntToStr(Hour) + ' hour' + MultiString(Hour) + ' ';
   if Minute > 0 then Result:=Result + IntToStr(Minute) + ' minute' + MultiString(Minute) + ' ';
-  if Length(Result) = 0 then Result:='Less than a minute';
+  if Length(Result) = 0 then Result:='Less than a minute ';
 end;
 
 end.
