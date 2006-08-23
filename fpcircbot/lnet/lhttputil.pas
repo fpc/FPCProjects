@@ -36,10 +36,8 @@ uses
 
 const
   HTTPDateFormat: string = 'ddd, dd mmm yyyy hh:nn:ss';
-  
-{$ifdef MSWINDOWS}
+
 function TZSeconds: integer;
-{$endif}
 function GMTToLocalTime(ADateTime: TDateTime): TDateTime;
 function LocalTimeToGMT(ADateTime: TDateTime): TDateTime;
 function TryHTTPDateStrToDateTime(ADateStr: pchar; var ADest: TDateTime): boolean;
@@ -62,6 +60,13 @@ begin
     Result := lInfo.Bias * 60
   else
     Result := 0;
+end;
+
+{$else}
+
+function TZSeconds: integer; inline;
+begin
+  Result := unixutil.TZSeconds;
 end;
 
 {$endif}

@@ -28,8 +28,8 @@ unit lwebserver;
 interface
 
 uses
-  sysutils, classes, lnet, lhttpserver, lhttputil, lmimetypes, levents, 
-  lprocess, process, lfastcgi, fastcgi;
+  sysutils, classes, lnet, lhttp, lhttputil, lmimetypes, levents, 
+  lprocess, process, lfastcgi, fastcgi, lHTTPSettings;
 
 type
   TFileOutput = class(TBufferOutput)
@@ -138,10 +138,16 @@ type
   TFileHandler = class(TURIHandler)
   protected
     FDocHandlerList: TDocumentHandler;
+    FDirIndexList: TStrings;
   public
+    constructor Create;
+    destructor Destroy; override;
+    
     function HandleFile(const ARequest: TDocumentRequest): TOutputItem;
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
     procedure RegisterHandler(AHandler: TDocumentHandler);
+
+    property DirIndexList: TStrings read FDirIndexList;
   end;
 
   TPHPCGIHandler = class(TDocumentHandler)
@@ -187,18 +193,20 @@ implementation
 
 const
   ServerSoftware = 'fpHTTPd/0.2';
-  ScriptPathPrefix = 'cgi-bin/';
-  DocumentRoot = '/var/www';
-  CGIPath = '/usr/local/bin:/usr/bin:/bin';
-  CGIRoot = '/usr/lib/cgi-bin/';
-  PHPCGIBinary = '/usr/lib/cgi-bin/php';
+  
+var
+  ScriptPathPrefix: string;
+  DocumentRoot: string;
+  CGIPath: string;
+  CGIRoot: string;
+  PHPCGIBinary: string;
 
 function TCGIHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var
   lOutput: TSimpleCGIOutput;
   lExecPath: string;
 begin
-  if StrLComp(ASocket.RequestInfo.Argument, ScriptPathPrefix, 
+  if StrLComp(ASocket.RequestInfo.Argument, PChar(ScriptPathPrefix),
       Length(ScriptPathPrefix)) = 0 then
   begin
     lOutput := TSimpleCGIOutput.Create(ASocket);
@@ -212,36 +220,54 @@ begin
         Length(lExecPath)-Length(CGIRoot)+1);
       lOutput.StartRequest;
     end else
-      ASocket.RequestInfo.Status := hsNotFound;
+      ASocket.ResponseInfo.Status := hsNotFound;
     Result := lOutput;
   end else
     Result := nil;
+end;
+
+constructor TFileHandler.Create;
+begin
+  inherited;
+
+  FDirIndexList := TStringList.Create;
+end;
+
+destructor TFileHandler.Destroy;
+begin
+  FreeAndNil(FDirIndexList);
+
+  inherited;
 end;
 
 function TFileHandler.HandleFile(const ARequest: TDocumentRequest): TOutputItem;
 var
   lFileOutput: TFileOutput;
   lReqInfo: PRequestInfo;
+  lRespInfo: PResponseInfo;
+  lHeaderOut: PHeaderOutInfo;
   lIndex: integer;
   lInfo: TSearchRec;
 begin
   if Length(ARequest.ExtraPath) = 0 then
   begin
     lReqInfo := @ARequest.Socket.RequestInfo;
+    lRespInfo := @ARequest.Socket.ResponseInfo;
+    lHeaderOut := @ARequest.Socket.HeaderOut;
     if not (lReqInfo^.RequestType in [hmHead, hmGet]) then
     begin
-      lReqInfo^.Status := hsNotAllowed;
+      lRespInfo^.Status := hsNotAllowed;
     end else begin
       lFileOutput := TFileOutput.Create(ARequest.Socket);
       FindFirst(ARequest.Document, 0, lInfo);
       if lFileOutput.Open(ARequest.Document) then
       begin
-        lReqInfo^.Status := hsOK;
-        lReqInfo^.ContentLength := lInfo.Size;
-        lReqInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
-        lIndex := MimeList.IndexOf(ExtractFileExt(lReqInfo^.Argument));
+        lRespInfo^.Status := hsOK;
+        lHeaderOut^.ContentLength := lInfo.Size;
+        lRespInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
+        lIndex := MimeList.IndexOf(ExtractFileExt(ARequest.Document));
         if lIndex >= 0 then
-          lReqInfo^.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
+          lRespInfo^.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
         Result := lFileOutput;
         ARequest.Socket.StartResponse(lFileOutput);
       end else
@@ -255,12 +281,31 @@ function TFileHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var
   lDocRequest: TDocumentRequest;
   lHandler: TDocumentHandler;
+  lTempDoc: string;
+  lDirIndexFound: boolean;
+  I: integer;
 begin
   Result := nil;
   lDocRequest.Socket := ASocket;
-  lDocRequest.Document := ASocket.RequestInfo.Argument;
+  lDocRequest.Document := DocumentRoot+ASocket.RequestInfo.Argument;
+  if DirectoryExists(lDocRequest.Document) then
+  begin
+    lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
+    lDirIndexFound := false;
+    for I := 0 to FDirIndexList.Count - 1 do
+    begin
+      lTempDoc := lDocRequest.Document + FDirIndexList.Strings[I];
+      if FileExists(lTempDoc) then
+      begin
+        lDocRequest.Document := lTempDoc;
+        lDirIndexFound := true;
+        break;
+      end;
+    end;
+    { requested a directory, but no source to show }
+    if not lDirIndexFound then exit;
+  end else
   if not SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath) then exit;
-  
   lHandler := FDocHandlerList;
   while lHandler <> nil do
   begin
@@ -288,8 +333,8 @@ begin
   begin
     lOutput := TSimpleCGIOutput.Create(ARequest.Socket);
     lOutput.Process.CommandLine := PHPCGIBinary;
-    lOutput.ScriptName := '/'+ARequest.Document;
-    lOutput.ScriptFileName := DocumentRoot+lOutput.ScriptName;
+    lOutput.ScriptName := '/' + ARequest.Document;
+    lOutput.ScriptFileName := DocumentRoot + lOutput.ScriptName;
     lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.StartRequest;
     Result := lOutput;
@@ -317,7 +362,7 @@ begin
   begin
     lOutput := TFastCGIOutput.Create(ARequest.Socket);
     lOutput.ScriptName := '/'+ARequest.Document;
-    lOutput.ScriptFileName := DocumentRoot+lOutput.ScriptName;
+    lOutput.ScriptFileName := DocumentRoot + lOutput.ScriptName;
     lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.Request := FPool.BeginRequest(FCGI_RESPONDER);
     lOutput.StartRequest;
@@ -457,7 +502,7 @@ var
 
   procedure AddExtraHeader;
   begin
-    lServerSocket.RequestInfo.ExtraHeaders := lServerSocket.RequestInfo.ExtraHeaders +
+    lServerSocket.HeaderOut.ExtraHeaders := lServerSocket.HeaderOut.ExtraHeaders +
       FParsePos + ': ' + pValue + #13#10;
   end;
 
@@ -487,13 +532,13 @@ begin
     pValue := FParsePos+iEnd+2;
     if StrIComp(FParsePos, 'Content-type') = 0 then
     begin
-      lServerSocket.RequestInfo.ContentType := pValue;
+      lServerSocket.ResponseInfo.ContentType := pValue;
     end else 
     if StrIComp(FParsePos, 'Location') = 0 then
     begin
       if StrLIComp(pValue, 'http://', 7) = 0 then
       begin
-        lServerSocket.RequestInfo.Status := hsMovedPermanently;
+        lServerSocket.ResponseInfo.Status := hsMovedPermanently;
         { add location header as-is to response }
         AddExtraHeader;
       end else
@@ -506,19 +551,19 @@ begin
         break;
       for lHttpStatus := Low(TLHTTPStatus) to High(TLHTTPStatus) do
         if HTTPStatusCodes[lHttpStatus] = lStatus then
-          lServerSocket.RequestInfo.Status := lHttpStatus;
+          lServerSocket.ResponseInfo.Status := lHttpStatus;
     end else
     if StrIComp(FParsePos, 'Content-Length') = 0 then
     begin
       Val(pValue, lLength, lCode);
       if lCode <> 0 then
         break;
-      lServerSocket.RequestInfo.ContentLength := lLength;
+      lServerSocket.HeaderOut.ContentLength := lLength;
     end else
     if StrIComp(FParsePos, 'Last-Modified') = 0 then
     begin
       if not TryHTTPDateStrToDateTime(pValue, 
-          lServerSocket.RequestInfo.LastModified) then
+          lServerSocket.ResponseInfo.LastModified) then
         writeln('WARNING: unable to parse last-modified string from CGI script: ', pValue);
     end else
       AddExtraHeader;
@@ -526,7 +571,7 @@ begin
   until false;
 
   { error happened }
-  lServerSocket.RequestInfo.Status := hsInternalError;
+  lServerSocket.ResponseInfo.Status := hsInternalError;
   exit(true);
 end;
 
@@ -627,9 +672,9 @@ var
   ServerSocket: TLHTTPServerSocket absolute FSocket;
 begin
   if FProcess.ExitStatus = 127 then
-    ServerSocket.RequestInfo.Status := hsNotFound
+    ServerSocket.ResponseInfo.Status := hsNotFound
   else
-    ServerSocket.RequestInfo.Status := hsInternalError;
+    ServerSocket.ResponseInfo.Status := hsInternalError;
 end;
 
 procedure TSimpleCGIOutput.CGIProcNeedInput(AHandle: TLHandle);
@@ -674,7 +719,7 @@ end;
 
 procedure TFastCGIOutput.CGIOutputError;
 begin
-  TLHTTPServerSocket(FSocket).RequestInfo.Status := hsNotFound;
+  TLHTTPServerSocket(FSocket).ResponseInfo.Status := hsNotFound;
 end;
 
 procedure TFastCGIOutput.DoneInput;
@@ -754,6 +799,10 @@ begin
 
   RegisterHandler(FFileHandler);
   RegisterHandler(FCGIHandler);
+  FFileHandler.DirIndexList.Add('index.html');
+  FFileHandler.DirIndexList.Add('index.htm');
+  FFileHandler.DirIndexList.Add('index.php');
+  FFileHandler.DirIndexList.Add('index.cgi');
   FFileHandler.RegisterHandler(FPHPCGIHandler);
 end;
 
@@ -783,5 +832,12 @@ procedure TLWebServer.LogError(const AMessage: string; ASocket: TLSocket);
 begin
   writeln(AMessage);
 end;
+
+initialization
+  ScriptPathPrefix := GetScriptPathPrefix;
+  DocumentRoot := GetHTTPPath;
+  CGIPath := GetCGIPath;
+  CGIRoot := GetCGIRoot;
+  PHPCGIBinary := GetPHPCGIBinary;
 
 end.

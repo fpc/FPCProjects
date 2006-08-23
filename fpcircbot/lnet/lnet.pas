@@ -1,4 +1,4 @@
-{ lNet v2.4.1
+{ lNet v0.4.0
 
   CopyRight (C) 2004-2006 Ales Katona
 
@@ -107,6 +107,7 @@ type
     function GetLocalAddress: string;
     function CanSend: Boolean; virtual;
     function CanReceive: Boolean; virtual;
+    procedure SetOptions; virtual;
     procedure SetNonBlock; virtual;
     procedure Bail(const msg: string; const ernum: Integer);
     procedure LogError(const msg: string; const ernum: Integer); virtual;
@@ -335,7 +336,7 @@ begin
     if (FSocketClass = SOCK_STREAM) and (not FIgnoreShutdown) and FConnected then
       if ShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
-    if Closesocket(FHandle) <> 0 then
+    if CloseSocket(FHandle) <> 0 then
       LogError('Closesocket error', LSocketError);
   end;
 end;
@@ -384,6 +385,34 @@ begin
   Result:=FCanReceive and FConnected;
 end;
 
+procedure TLSocket.SetOptions;
+begin
+  SetNonBlock;
+end;
+
+procedure TLSocket.SetNonBlock;
+{$ifdef MSWINDOWS}
+var
+  opt: DWord;
+begin
+   opt:=1;
+   if ioctlsocket(FHandle, FIONBIO, opt) = SOCKET_ERROR then
+     bail('Error on SetFD', wsaGetLasterror);
+{$else}
+var
+  opt: cInt;
+begin
+   opt:=fpfcntl(FHandle, F_GETFL);
+   if opt = SOCKET_ERROR then begin
+     bail('ERROR on GetFD', LSocketError);
+     Exit;
+   end;
+
+   if fpfcntl(FHandle, F_SETFL, opt or O_NONBLOCK) = SOCKET_ERROR then
+     bail('Error on SetFL', LSocketError);
+{$endif}
+end;
+
 function TLSocket.GetMessage(out msg: string): Integer;
 begin
   Result:=0;
@@ -399,15 +428,9 @@ begin
   Result:=0;
   if CanReceive then begin
     if FSocketClass = SOCK_STREAM then
-    {$ifdef MSWINDOWS}
-      Result:=winsock2.Recv(FHandle, aData, aSize, LMSG)
-    else
-      Result:=winsock2.Recvfrom(FHandle, aData, aSize, LMSG, TSockAddrIn(FPeerAddress), AddressLength);
-    {$else}
       Result:=sockets.Recv(FHandle, aData, aSize, LMSG)
     else
       Result:=sockets.Recvfrom(FHandle, aData, aSize, LMSG, FPeerAddress, AddressLength);
-    {$endif}
     if Result = 0 then
       Disconnect;
     if Result = SOCKET_ERROR then begin
@@ -423,20 +446,15 @@ end;
 function TLSocket.DoSend(const TheData; const TheSize: Integer): Integer;
 begin
   if FSocketClass = SOCK_STREAM then
-  {$ifdef MSWINDOWS}
-    Result:=winsock2.send(FHandle, TheData, TheSize, LMSG)
-  else
-    Result:=winsock2.sendto(FHandle, TheData, TheSize, LMSG, TSockAddrIn(FPeerAddress), SizeOf(FPeerAddress));
-  {$else}
     Result:=sockets.send(FHandle, TheData, TheSize, LMSG)
   else
     Result:=sockets.sendto(FHandle, TheData, TheSize, LMSG, FPeerAddress, SizeOf(FPeerAddress));
-  {$endif}
 end;
 
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
 var
   Done: Boolean;
+  Arg: Integer;
 begin
   Result:=false;
   if not Connected then begin
@@ -444,9 +462,12 @@ begin
     FHandle:=fpSocket(AF_INET, FSocketClass, FProtocol);
     if FHandle = INVALID_SOCKET then
       Bail('Socket error', LSocketError);
-    SetNonBlock;
-    if FSocketClass = SOCK_DGRAM then
-      SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, True, SizeOf(True));
+    SetOptions;
+    if FSocketClass = SOCK_DGRAM then begin
+      Arg:=1;
+      if SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, Arg, Sizeof(Arg)) = SOCKET_ERROR then
+        Bail('SetSockOpt error', LSocketError);
+    end;
     FAddress.family:=AF_INET;
     FAddress.Port:=htons(APort);
     FAddress.Addr:=StrToNetAddr(Address);
@@ -491,7 +512,7 @@ begin
   if not Connected then begin
     FHandle:=fpAccept(sersock, @FAddress, @AddressLength);
     if FHandle <> INVALID_SOCKET then begin
-      SetNonBlock;
+      SetOptions;
       Result:=true;
       FConnected:=true;
     end else Bail('Error on accept', LSocketError);
@@ -534,29 +555,6 @@ begin
       end;
     end;
  end;
-end;
-
-procedure TLSocket.SetNonBlock;
-{$ifdef MSWINDOWS}
-var
-  opt: DWord;
-begin
-   opt:=1;
-   if ioctlsocket(FHandle, FIONBIO, opt) = SOCKET_ERROR then
-     bail('Error on SetFD', wsaGetLasterror);
-{$else}
-var
-  opt: cInt;
-begin
-   opt:=fpfcntl(FHandle, F_GETFL);
-   if opt = SOCKET_ERROR then begin
-     bail('ERROR on GetFD', LSocketError);
-     Exit;
-   end;
-
-   if fpfcntl(FHandle, F_SETFL, opt or O_NONBLOCK) = SOCKET_ERROR then
-     bail('Error on SetFL', LSocketError);
-{$endif}
 end;
 
 //*******************************TLConnection*********************************
