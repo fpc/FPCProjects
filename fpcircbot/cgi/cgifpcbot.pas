@@ -82,6 +82,7 @@ end;
 
 procedure Init;
 begin
+  ShortDateFormat:='dd"-"mmm"-"yy';
   InitCommon;
   InitDB;
 end;
