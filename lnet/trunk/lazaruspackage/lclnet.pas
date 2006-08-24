@@ -1,6 +1,6 @@
-{ lNetComponents v0.3
+{ lNetComponents v0.4
 
-  CopyRight (C) 2004 Ales Katona
+  CopyRight (C) 2004-2006 Ales Katona
 
   This library is Free software; you can rediStribute it and/or modify it
   under the terms of the GNU Library General Public License as published by

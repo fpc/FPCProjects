@@ -75,7 +75,7 @@ begin
   end;
 
   if aFlags and G_IO_IN = G_IO_IN then begin
-    {$warning Ensure this can be truly commented out}
+//    {$warning Ensure this can be truly commented out}
 //    FFlags:=FFlags and (not G_IO_IN); // Make sure this is OK to be out
 //    SetEventHandlerFlags(FEventHandle, FFlags);
     FCanReceive:=True;

@@ -16,6 +16,7 @@
         </SyntaxOptions>
       </Parsing>
       <CodeGeneration>
+        <SmartLinkUnit Value="True"/>
         <Generate Value="Faster"/>
         <Optimizations>
           <OptimizationLevel Value="2"/>
@@ -23,7 +24,6 @@
       </CodeGeneration>
       <Linking>
         <Debugging>
-          <GenerateDebugInfo Value="True"/>
           <UseLineInfoUnit Value="False"/>
         </Debugging>
       </Linking>
@@ -31,7 +31,7 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Description Value="Lightweight networking components package.
+    <Description Value="Lightweight networking components package, IDE integration.
 "/>
     <License Value="Modified LGPL. See file LICENSE and LICENSE.ADDONS
 "/>

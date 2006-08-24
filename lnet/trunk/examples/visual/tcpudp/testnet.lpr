@@ -8,6 +8,7 @@ uses
   { add your units here }, main, lnetpackage, lnetidepackage;
 
 begin
+  Application.Title:='TCP/UDP Test case';
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);
   Application.Run;
