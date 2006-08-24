@@ -70,10 +70,14 @@ begin
 end;
 
 begin
+  {$ifdef MSWINDOWS}
+  Run(False);
+  {$else}
   if (LowerCase(ParamStr(1)) = '-h')
   or (LowerCase(ParamStr(1)) = '--help') then begin
     Writeln('Usage: ', ParamStr(0), ' [-f]');
     Writeln('       -f -- starts server without forking');
   end else
     Run(LowerCase(ParamStr(1)) <> '-f');
+  {$endif}
 end.
