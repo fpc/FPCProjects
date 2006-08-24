@@ -1,0 +1,168 @@
+object MainForm: TMainForm
+  Left = 342
+  Height = 360
+  Top = 202
+  Width = 444
+  HorzScrollBar.Page = 443
+  VertScrollBar.Page = 359
+  Caption = 'SMTP Client Test'
+  Constraints.MinHeight = 360
+  Constraints.MinWidth = 444
+  OnCreate = FormCreate
+  object GBConnection: TGroupBox
+    Height = 112
+    Width = 228
+    Align = alLeft
+    Anchors = [akTop]
+    Caption = 'Connection'
+    TabOrder = 0
+    object LabelServer: TLabel
+      Left = 6
+      Height = 15
+      Top = 15
+      Width = 59
+      Anchors = [akTop, akLeft, akRight]
+      Caption = 'Server:'
+      Color = clNone
+      ParentColor = False
+    end
+    object LabelPort: TLabel
+      Left = 6
+      Height = 15
+      Top = 38
+      Width = 43
+      Anchors = [akTop, akLeft, akRight]
+      Caption = 'Port:'
+      Color = clNone
+      ParentColor = False
+    end
+    object EditServer: TEdit
+      Left = 70
+      Height = 22
+      Top = 7
+      Width = 131
+      Anchors = [akTop, akLeft, akRight]
+      OnKeyPress = EditServerKeyPress
+      TabOrder = 0
+    end
+    object EditPort: TEdit
+      Left = 70
+      Height = 22
+      Top = 31
+      Width = 131
+      Anchors = [akTop, akLeft, akRight]
+      OnKeyPress = EditServerKeyPress
+      TabOrder = 1
+      Text = '25'
+    end
+    object ButtonConnect: TButton
+      Left = 70
+      Height = 22
+      Top = 63
+      Width = 131
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Connect'
+      OnClick = ButtonConnectClick
+      TabOrder = 2
+    end
+  end
+  object SB: TStatusBar
+    Height = 22
+    Top = 338
+    Width = 444
+    Panels = <>
+  end
+  object ButtonSend: TButton
+    Height = 24
+    Top = 314
+    Width = 444
+    Align = alBottom
+    BorderSpacing.InnerBorder = 4
+    Caption = 'Send'
+    Enabled = False
+    OnClick = ButtonSendClick
+    TabOrder = 1
+  end
+  object GBEmail: TGroupBox
+    Left = 232
+    Height = 112
+    Width = 212
+    Align = alRight
+    Anchors = [akTop]
+    Caption = 'e-mail'
+    TabOrder = 2
+    object LabelFrom: TLabel
+      Left = 6
+      Height = 15
+      Top = 12
+      Width = 43
+      Anchors = [akTop, akLeft, akRight]
+      Caption = 'From:'
+      Color = clNone
+      ParentColor = False
+    end
+    object LabelTo: TLabel
+      Left = 6
+      Height = 15
+      Top = 38
+      Width = 31
+      Anchors = [akTop, akLeft, akRight]
+      Caption = 'To:'
+      Color = clNone
+      ParentColor = False
+    end
+    object LabelSubject: TLabel
+      Left = 6
+      Height = 15
+      Top = 63
+      Width = 53
+      Anchors = [akTop, akLeft, akRight]
+      Caption = 'Subject:'
+      Color = clNone
+      ParentColor = False
+    end
+    object EditFrom: TEdit
+      Left = 62
+      Height = 23
+      Top = 4
+      Width = 131
+      Anchors = [akTop, akLeft, akRight]
+      OnKeyPress = EditFromKeyPress
+      TabOrder = 0
+    end
+    object EditTo: TEdit
+      Left = 62
+      Height = 23
+      Top = 30
+      Width = 131
+      Anchors = [akTop, akLeft, akRight]
+      OnKeyPress = EditFromKeyPress
+      TabOrder = 1
+    end
+    object EditSubject: TEdit
+      Left = 62
+      Height = 23
+      Top = 55
+      Width = 131
+      Anchors = [akTop, akLeft, akRight]
+      OnKeyPress = EditFromKeyPress
+      TabOrder = 2
+    end
+  end
+  object MemoText: TMemo
+    Height = 202
+    Top = 112
+    Width = 444
+    Align = alBottom
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    TabOrder = 3
+  end
+  object SMTP: TLSMTPClientComponent
+    OnConnect = SMTPConnect
+    OnReceive = SMTPReceive
+    OnDisconnect = SMTPDisconnect
+    left = 80
+    top = 8
+  end
+end
