@@ -39,6 +39,7 @@ procedure MainLoop;
 var
   lRuns: dword;
 begin
+  Writeln('Succesfully started server');
   lRuns := $FFFFFFFF;
   while (lRuns > 0) and (Server.Connected) do
   begin
@@ -49,23 +50,30 @@ begin
   end;
 end;
 
+procedure Run(const DoFork: Boolean);
 begin
   Server := TLWebServer.Create(nil);
   Server.TimeOut := 300000;
   if not Server.Listen(GetPort) then
   begin
-    writeln('Error starting server.');
+    Writeln('Error starting server.');
   end else begin
-{
-    writeln('Succesfully started server');
-    if fpfork = 0 then
-    begin
-}
-      MainLoop;
-{
+    if DoFork then begin
+      if fpfork = 0 then
+        MainLoop
+      else
+        fpExit(0);
     end else
-      fpexit(0);
-}
+      MainLoop;
   end;
   Server.Free;
+end;
+
+begin
+  if (LowerCase(ParamStr(1)) = '-h')
+  or (LowerCase(ParamStr(1)) = '--help') then begin
+    Writeln('Usage: ', ParamStr(0), ' [-f]');
+    Writeln('       -f -- starts server without forking');
+  end else
+    Run(LowerCase(ParamStr(1)) <> '-f');
 end.
