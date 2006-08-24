@@ -20,6 +20,6 @@ lNet units (units in lnet directory) are licensed under a modified LGPL license.
 
 The modification allows to static/smart - link lNet libraries into binary applications without providing sources.
 
-Only exception in lnet dir is the tomwinsock.pas unit which is provided under a BSD license.
-
 Example programs are provided under unmodified gnu GPL.
+
+See file INSTALL for more information.
