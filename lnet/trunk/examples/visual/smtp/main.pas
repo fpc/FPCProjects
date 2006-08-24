@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, lNetComponents, ComCtrls;
+  Buttons, lNetComponents, ComCtrls, Menus;
 
 type
 
@@ -20,10 +20,15 @@ type
     EditSubject: TEdit;
     EditTo: TEdit;
     GBEmail: TGroupBox;
+    MainMenu: TMainMenu;
     MemoText: TMemo;
     LabelSubject: TLabel;
     LabelTo: TLabel;
     LabelFrom: TLabel;
+    MenuItemAbout: TMenuItem;
+    MenuItemHelp: TMenuItem;
+    MenuItemExit: TMenuItem;
+    MenuItemFile: TMenuItem;
     SMTP: TLSMTPClientComponent;
     EditServer: TEdit;
     EditPort: TEdit;
@@ -35,6 +40,8 @@ type
     procedure EditFromKeyPress(Sender: TObject; var Key: Char);
     procedure EditServerKeyPress(Sender: TObject; var Key: Char);
     procedure FormCreate(Sender: TObject);
+    procedure MenuItemAboutClick(Sender: TObject);
+    procedure MenuItemExitClick(Sender: TObject);
     procedure SMTPConnect(Sender: TLSMTPClient);
     procedure SMTPDisconnect(Sender: TLSMTPClient);
     procedure SMTPError(const msg: string; aSocket: TLSocket);
@@ -78,6 +85,17 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   SMTP.OnError:=@SMTPError;
+end;
+
+procedure TMainForm.MenuItemAboutClick(Sender: TObject);
+begin
+  MessageDlg('SMTP example copyright (c) 2006 by Ales Katona. All rights deserved ;)',
+             mtInformation, [mbOK], 0);
+end;
+
+procedure TMainForm.MenuItemExitClick(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TMainForm.ButtonConnectClick(Sender: TObject);

@@ -6,28 +6,33 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Buttons, lNetComponents, ExtCtrls;
+  StdCtrls, Buttons, lNetComponents, ExtCtrls, Menus;
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
-    DiconnectButton: TButton;
-    ConnectButton: TButton;
-    ListenButton: TButton;
-    LTCPComponent: TLTCPComponent;
-    LUDPComponent: TLUDPComponent;
-    PortEdit: TEdit;
-    IPEdit: TEdit;
-    Label1: TLabel;
-    Label2: TLabel;
-    ConnectionGroup: TRadioGroup;
+    ButtonDiconnect: TButton;
+    ButtonConnect: TButton;
+    ButtonListen: TButton;
+    LTCP: TLTCPComponent;
+    LUDP: TLUDPComponent;
+    EditPort: TEdit;
+    EditIP: TEdit;
+    LabelPort: TLabel;
+    LabelHostName: TLabel;
+    GBConnection: TRadioGroup;
+    MainMenu1: TMainMenu;
+    MenuItemExit: TMenuItem;
+    MenuItemAbout: TMenuItem;
+    MenuItemHelp: TMenuItem;
+    MenuItemFile: TMenuItem;
     RBTCP: TRadioButton;
     RBUDP: TRadioButton;
-    SendButton: TButton;
-    SendEdit: TEdit;
-    TextArea: TMemo;
+    ButtonSend: TButton;
+    EditSend: TEdit;
+    MemoText: TMemo;
     procedure LTCPComponentConnect(aSocket: TLSocket);
     procedure ListenButtonClick(Sender: TObject);
     procedure ConnectButtonClick(Sender: TObject);
@@ -37,6 +42,8 @@ type
     procedure LTCPComponentAccept(aSocket: TLSocket);
     procedure LTCPComponentReceive(aSocket: TLSocket);
     procedure LTcpComponentDisconnect(aSocket: TLSocket);
+    procedure MenuItemAboutClick(Sender: TObject);
+    procedure MenuItemExitClick(Sender: TObject);
     procedure RBTCPChange(Sender: TObject);
     procedure RBUDPChange(Sender: TObject);
     procedure SendButtonClick(Sender: TObject);
@@ -57,33 +64,33 @@ implementation
 
 procedure TForm1.ConnectButtonClick(Sender: TObject);
 begin
-  if FNet.Connect(IPEdit.Text, StrToInt(PortEdit.Text)) then
+  if FNet.Connect(EditIP.Text, StrToInt(EditPort.Text)) then
     FIsServer:=False;
 end;
 
 procedure TForm1.ListenButtonClick(Sender: TObject);
 begin
-  if FNet.Listen(StrToInt(PortEdit.Text)) then begin
-    TextArea.Append('Accepting connections');
+  if FNet.Listen(StrToInt(EditPort.Text)) then begin
+    MemoText.Append('Accepting connections');
     FIsServer:=True;
   end;
 end;
 
 procedure TForm1.LTCPComponentConnect(aSocket: TLSocket);
 begin
-  TextArea.Append('Connected to remote host');
+  MemoText.Append('Connected to remote host');
 end;
 
 procedure TForm1.LTCPComponentError(const msg: string; aSocket: TLSocket);
 begin
-  TextArea.Append(msg);
-  TextArea.SelStart:=Length(TextArea.Lines.Text);
+  MemoText.Append(msg);
+  MemoText.SelStart:=Length(MemoText.Lines.Text);
 end;
 
 procedure TForm1.LTCPComponentAccept(aSocket: TLSocket);
 begin
-  TextArea.Append('Connection accepted');
-  TextArea.SelStart:=Length(TextArea.Lines.Text);
+  MemoText.Append('Connection accepted');
+  MemoText.SelStart:=Length(MemoText.Lines.Text);
 end;
 
 procedure TForm1.LTCPComponentReceive(aSocket: TLSocket);
@@ -91,8 +98,8 @@ var
   s: string;
 begin
   if aSocket.GetMessage(s) > 0 then begin
-    TextArea.Append(s);
-    TextArea.SelStart:=Length(TextArea.Lines.Text);
+    MemoText.Append(s);
+    MemoText.SelStart:=Length(MemoText.Lines.Text);
     FNet.IterReset;
     if FIsServer then repeat
       FNet.SendMessage(s, FNet.Iterator);
@@ -102,8 +109,19 @@ end;
 
 procedure TForm1.LTcpComponentDisconnect(aSocket: TLSocket);
 begin
-  TextArea.Append('Connection lost');
-  TextArea.SelStart:=Length(TextArea.Lines.Text);
+  MemoText.Append('Connection lost');
+  MemoText.SelStart:=Length(MemoText.Lines.Text);
+end;
+
+procedure TForm1.MenuItemAboutClick(Sender: TObject);
+begin
+  MessageDlg('TCP/UDP example copyright(c) 2005-2006 by Ales Katona. All rights deserved ;)',
+             mtInformation, [mbOK], 0);
+end;
+
+procedure TForm1.MenuItemExitClick(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TForm1.SendButtonClick(Sender: TObject);
@@ -111,43 +129,43 @@ var
   AllOK: Boolean;
   n: Integer;
 begin
-  if Length(SendEdit.Text) > 0 then begin
+  if Length(EditSend.Text) > 0 then begin
     AllOk:=True;
     if Assigned(FNet.Iterator) then repeat
-      n:=FNet.SendMessage(SendEdit.Text, FNet.Iterator);
-      if n < Length(SendEdit.Text) then begin
-        TextArea.Append('Error on send [' + IntToStr(n) + ']');
+      n:=FNet.SendMessage(EditSend.Text, FNet.Iterator);
+      if n < Length(EditSend.Text) then begin
+        MemoText.Append('Error on send [' + IntToStr(n) + ']');
         AllOK:=False;
       end;
     until not FNet.IterNext;
     if FIsServer and AllOK then
-      TextArea.Append(SendEdit.Text);
-    SendEdit.Text:='';
+      MemoText.Append(EditSend.Text);
+    EditSend.Text:='';
   end;
 end;
 
 procedure TForm1.DiconnectButtonClick(Sender: TObject);
 begin
   FNet.Disconnect;
-  TextArea.Append('Disconnected');
+  MemoText.Append('Disconnected');
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  FNet:=LTcpComponent;
+  FNet:=LTCP;
   FIsServer:=False;
 end;
 
 procedure TForm1.RBTCPChange(Sender: TObject);
 begin
   FNet.Disconnect;
-  FNet:=LTcpComponent;
+  FNet:=LTCP;
 end;
 
 procedure TForm1.RBUDPChange(Sender: TObject);
 begin
   FNet.Disconnect;
-  FNet:=LUdpComponent;
+  FNet:=LUDP;
 end;
 
 procedure TForm1.SendEditKeyPress(Sender: TObject; var Key: char);

@@ -5,15 +5,17 @@ object MainForm: TMainForm
   Width = 567
   HorzScrollBar.Page = 566
   VertScrollBar.Page = 589
-  ActiveControl = IPEdit
+  ActiveControl = EditIP
   Caption = 'FTP Test Client'
+  Constraints.MaxHeight = 618
+  Constraints.MaxWidth = 567
   Constraints.MinHeight = 618
   Constraints.MinWidth = 567
   Menu = MainMenu
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
-  object HostLabel: TLabel
+  object LabelHost: TLabel
     Left = 8
     Height = 15
     Top = 464
@@ -22,7 +24,7 @@ object MainForm: TMainForm
     Color = clNone
     ParentColor = False
   end
-  object PortLabel: TLabel
+  object LabelPort: TLabel
     Left = 245
     Height = 15
     Top = 464
@@ -31,7 +33,7 @@ object MainForm: TMainForm
     Color = clNone
     ParentColor = False
   end
-  object IPEdit: TEdit
+  object EditIP: TEdit
     Left = 88
     Height = 23
     Top = 456
@@ -39,7 +41,7 @@ object MainForm: TMainForm
     OnKeyPress = IPEditKeyPress
     TabOrder = 0
   end
-  object PortEdit: TEdit
+  object EditPort: TEdit
     Left = 288
     Height = 23
     Top = 456
@@ -47,11 +49,12 @@ object MainForm: TMainForm
     TabOrder = 1
     Text = '21'
   end
-  object ConnectButton: TButton
+  object ButtonConnect: TButton
     Left = 376
     Height = 23
     Top = 456
     Width = 75
+    BorderSpacing.InnerBorder = 4
     Caption = 'Connect'
     OnClick = ConnectButtonClick
     TabOrder = 2
@@ -62,7 +65,7 @@ object MainForm: TMainForm
     ExtendedSelect = False
     FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
     OnDblClick = LeftViewDblClick
-    PopupMenu = LeftPopup
+    PopupMenu = PopupLeft
     TabOrder = 3
   end
   object RightView: TListBox
@@ -71,21 +74,22 @@ object MainForm: TMainForm
     Width = 272
     Anchors = [akTop, akRight]
     OnDblClick = RightViewDblClick
-    PopupMenu = RightPopup
+    PopupMenu = PopupRight
     Sorted = True
     TabOrder = 4
     TopIndex = -1
   end
-  object DisconnectButton: TButton
+  object ButtonDisconnect: TButton
     Left = 456
     Height = 23
     Top = 456
     Width = 75
+    BorderSpacing.InnerBorder = 4
     Caption = 'Disconnect'
     OnClick = DisconnectButtonClick
     TabOrder = 5
   end
-  object TextArea: TMemo
+  object MemoText: TMemo
     Height = 102
     Top = 488
     Width = 567
@@ -96,32 +100,32 @@ object MainForm: TMainForm
   object MainMenu: TMainMenu
     left = 488
     top = 504
-    object FileMenuItem: TMenuItem
+    object MenuItemFile: TMenuItem
       Caption = '&File'
-      object ExitMenuItem: TMenuItem
+      object MenuItemExit: TMenuItem
         Caption = 'E&xit'
         OnClick = ExitMenuItemClick
       end
     end
-    object HelpMenuItem: TMenuItem
+    object MenuItemHelp: TMenuItem
       Caption = '&Help'
-      object AboutMenuItem: TMenuItem
+      object MenuItemAbout: TMenuItem
         Caption = '&About'
         OnClick = AboutMenuItemClick
       end
     end
   end
-  object RightPopup: TPopupMenu
+  object PopupRight: TPopupMenu
     top = 272
-    object GetPupup: TMenuItem
+    object PupupGet: TMenuItem
       Caption = 'Get'
       OnClick = GetPupupClick
     end
-    object DeletePopup: TMenuItem
+    object PopupDelete: TMenuItem
       Caption = 'Delete'
       OnClick = DeletePopupClick
     end
-    object RenamePopup: TMenuItem
+    object PopupRename: TMenuItem
       Caption = 'Rename'
       OnClick = RenamePopupClick
     end
@@ -136,18 +140,18 @@ object MainForm: TMainForm
     left = 488
     top = 536
   end
-  object LeftPopup: TPopupMenu
+  object PopupLeft: TPopupMenu
     left = 32
     top = 272
-    object LInfoPopup: TMenuItem
+    object PopupLInfo: TMenuItem
       Caption = 'Info'
       OnClick = LInfoPopupClick
     end
-    object LDeletePopup: TMenuItem
+    object PopupLDelete: TMenuItem
       Caption = 'Delete'
       OnClick = LDeletePopupClick
     end
-    object LRenamePopup: TMenuItem
+    object PopupLRename: TMenuItem
       Caption = 'Rename'
       OnClick = LRenamePopupClick
     end

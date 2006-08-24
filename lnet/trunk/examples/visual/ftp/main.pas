@@ -13,29 +13,29 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
-    DisconnectButton: TButton;
-    ConnectButton: TButton;
+    ButtonDisconnect: TButton;
+    ButtonConnect: TButton;
     LeftView: TFileListBox;
-    HostLabel: TLabel;
-    DeletePopup: TMenuItem;
+    LabelHost: TLabel;
+    PopupDelete: TMenuItem;
     FTP: TLFTPClientComponent;
-    LeftPopup: TPopupMenu;
-    LInfoPopup: TMenuItem;
-    LDeletePopup: TMenuItem;
-    LRenamePopup: TMenuItem;
-    GetPupup: TMenuItem;
-    TextArea: TMemo;
-    RenamePopup: TMenuItem;
-    RightPopup: TPopupMenu;
+    PopupLeft: TPopupMenu;
+    PopupLInfo: TMenuItem;
+    PopupLDelete: TMenuItem;
+    PopupLRename: TMenuItem;
+    PupupGet: TMenuItem;
+    MemoText: TMemo;
+    PopupRename: TMenuItem;
+    PopupRight: TPopupMenu;
     RightView: TListBox;
     MainMenu: TMainMenu;
-    FileMenuItem: TMenuItem;
-    HelpMenuItem: TMenuItem;
-    ExitMenuItem: TMenuItem;
-    AboutMenuItem: TMenuItem;
-    PortLabel: TLabel;
-    PortEdit: TEdit;
-    IPEdit: TEdit;
+    MenuItemFile: TMenuItem;
+    MenuItemHelp: TMenuItem;
+    MenuItemExit: TMenuItem;
+    MenuItemAbout: TMenuItem;
+    LabelPort: TLabel;
+    EditPort: TEdit;
+    EditIP: TEdit;
     procedure AboutMenuItemClick(Sender: TObject);
     procedure ConnectButtonClick(Sender: TObject);
     procedure DeletePopupClick(Sender: TObject);
@@ -104,14 +104,14 @@ var
   s: string;
 begin
   if Sender.GetMessage(s) > 0 then begin
-    TextArea.Lines.Append(s);
-    TextArea.SelStart:=Length(TextArea.Text);
+    MemoText.Lines.Append(s);
+    MemoText.SelStart:=Length(MemoText.Text);
   end;
 end;
 
 procedure TMainForm.FTPError(const msg: string; aSocket: TLSocket);
 begin
-  TextArea.Append(msg);
+  MemoText.Append(msg);
   CreateFilePath:='';
 end;
 
@@ -188,8 +188,8 @@ begin
       DoList('');
     end;
     Inc(FDLDone, i);
-    if TextArea.Lines.Count > 0 then
-      TextArea.Lines[TextArea.Lines.Count-1]:=IntToStr(Round(FDLDone / FDLSize * 100)) + '%';
+    if MemoText.Lines.Count > 0 then
+      MemoText.Lines[MemoText.Lines.Count-1]:=IntToStr(Round(FDLDone / FDLSize * 100)) + '%';
   end;
 end;
 
@@ -197,11 +197,11 @@ procedure TMainForm.FTPSent(Sender: TLFTPClient; const Bytes: Integer);
 begin
   if Bytes > 0 then begin
     Inc(FDLDone, Bytes);
-    if TextArea.Lines.Count > 0 then
-      TextArea.Lines[TextArea.Lines.Count-1]:=IntToStr(Round(FDLDone / FDLSize * 100)) + '%';
+    if MemoText.Lines.Count > 0 then
+      MemoText.Lines[MemoText.Lines.Count-1]:=IntToStr(Round(FDLDone / FDLSize * 100)) + '%';
   end else begin
-    if TextArea.Lines.Count > 0 then
-      TextArea.Lines[TextArea.Lines.Count-1]:='100%';
+    if MemoText.Lines.Count > 0 then
+      MemoText.Lines[MemoText.Lines.Count-1]:='100%';
     DoList('');
   end;
 end;
@@ -214,17 +214,18 @@ end;
 
 procedure TMainForm.ConnectButtonClick(Sender: TObject);
 begin
-  if Length(IPEdit.Text) > 0 then begin
-    if Length(PortEdit.Text) = 0 then
-      PortEdit.Text:='21';
+  if Length(EditIP.Text) > 0 then begin
+    if Length(EditPort.Text) = 0 then
+      EditPort.Text:='21';
 
-    FTP.Connect(IPEdit.Text, StrToInt(PortEdit.Text));
+    FTP.Connect(EditIP.Text, StrToInt(EditPort.Text));
   end else ShowMessage('Please specify IP or hostname for ftp server');
 end;
 
 procedure TMainForm.AboutMenuItemClick(Sender: TObject);
 begin
-  ShowMessage('lFTP test program copyright (c) 2005-2006 by Ales Katona. All rights deserved :)');
+  MessageDlg('lFTP test program copyright (c) 2005-2006 by Ales Katona. All rights deserved :)',
+             mtInformation, [mbOK], 0);
 end;
 
 procedure TMainForm.DeletePopupClick(Sender: TObject);
@@ -237,7 +238,7 @@ procedure TMainForm.DisconnectButtonClick(Sender: TObject);
 begin
   FTP.Disconnect;
   RightView.Clear;
-  TextArea.Clear;
+  MemoText.Clear;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);

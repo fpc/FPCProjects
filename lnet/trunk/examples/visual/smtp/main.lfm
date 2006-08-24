@@ -4,10 +4,13 @@ object MainForm: TMainForm
   Top = 202
   Width = 444
   HorzScrollBar.Page = 443
-  VertScrollBar.Page = 359
+  VertScrollBar.Page = 331
   Caption = 'SMTP Client Test'
+  Constraints.MaxHeight = 360
+  Constraints.MaxWidth = 444
   Constraints.MinHeight = 360
   Constraints.MinWidth = 444
+  Menu = MainMenu
   OnCreate = FormCreate
   object GBConnection: TGroupBox
     Height = 112
@@ -20,7 +23,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 15
       Top = 15
-      Width = 59
+      Width = 51
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Server:'
       Color = clNone
@@ -30,7 +33,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 15
       Top = 38
-      Width = 43
+      Width = 35
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Port:'
       Color = clNone
@@ -40,7 +43,7 @@ object MainForm: TMainForm
       Left = 70
       Height = 22
       Top = 7
-      Width = 131
+      Width = 123
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditServerKeyPress
       TabOrder = 0
@@ -49,7 +52,7 @@ object MainForm: TMainForm
       Left = 70
       Height = 22
       Top = 31
-      Width = 131
+      Width = 123
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditServerKeyPress
       TabOrder = 1
@@ -59,7 +62,7 @@ object MainForm: TMainForm
       Left = 70
       Height = 22
       Top = 63
-      Width = 131
+      Width = 123
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.InnerBorder = 4
       Caption = 'Connect'
@@ -69,13 +72,13 @@ object MainForm: TMainForm
   end
   object SB: TStatusBar
     Height = 22
-    Top = 338
+    Top = 310
     Width = 444
     Panels = <>
   end
   object ButtonSend: TButton
     Height = 24
-    Top = 314
+    Top = 286
     Width = 444
     Align = alBottom
     BorderSpacing.InnerBorder = 4
@@ -96,7 +99,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 15
       Top = 12
-      Width = 43
+      Width = 35
       Anchors = [akTop, akLeft, akRight]
       Caption = 'From:'
       Color = clNone
@@ -106,7 +109,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 15
       Top = 38
-      Width = 31
+      Width = 23
       Anchors = [akTop, akLeft, akRight]
       Caption = 'To:'
       Color = clNone
@@ -116,7 +119,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 15
       Top = 63
-      Width = 53
+      Width = 45
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Subject:'
       Color = clNone
@@ -126,7 +129,7 @@ object MainForm: TMainForm
       Left = 62
       Height = 23
       Top = 4
-      Width = 131
+      Width = 123
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 0
@@ -135,7 +138,7 @@ object MainForm: TMainForm
       Left = 62
       Height = 23
       Top = 30
-      Width = 131
+      Width = 123
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 1
@@ -144,14 +147,14 @@ object MainForm: TMainForm
       Left = 62
       Height = 23
       Top = 55
-      Width = 131
+      Width = 123
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 2
     end
   end
   object MemoText: TMemo
-    Height = 202
+    Height = 174
     Top = 112
     Width = 444
     Align = alBottom
@@ -164,5 +167,23 @@ object MainForm: TMainForm
     OnDisconnect = SMTPDisconnect
     left = 80
     top = 8
+  end
+  object MainMenu: TMainMenu
+    left = 80
+    top = 41
+    object MenuItemFile: TMenuItem
+      Caption = '&File'
+      object MenuItemExit: TMenuItem
+        Caption = 'E&xit'
+        OnClick = MenuItemExitClick
+      end
+    end
+    object MenuItemHelp: TMenuItem
+      Caption = '&Help'
+      object MenuItemAbout: TMenuItem
+        Caption = '&About'
+        OnClick = MenuItemAboutClick
+      end
+    end
   end
 end
