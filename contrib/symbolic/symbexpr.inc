@@ -381,8 +381,9 @@ begin
      FuncNode: begin
                  case fun of
                    invx:  Deriv:=NewCalc(dvdo,
-                                  NewFunc(Minus,NewCalc(mulo,Deriv(right),copytree(left))),
-                                   NewFunc(sqrx,CopyTree(right)));
+					  NewFunc(Minus,Deriv(son)),
+		          		  NewFunc(sqrx,CopyTree(son)));
+
                    minus: Deriv:=NewFunc(minus,Deriv(son));
                    sinx:  Deriv:=NewCalc(Mulo,
                             NewFunc(cosx,Copytree(son)),
