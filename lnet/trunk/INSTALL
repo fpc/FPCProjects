@@ -32,8 +32,4 @@ You need to install the visual lnetpackage.lpk and lnetidepackage.lpk for that.
 
 Lazarus package installation:
 
-First open Lazarus. Go to Components/Open package file(.lpk) submenu and chose lnetpackage.lpk.
-Compile the package. Then do the same and open lnetidepackage.lpk. This time chose install.
-
-After Lazarus restarts you should get a new tab with lNet components in it.
-You can compile all the visual examples by just opening them in Lazarus and pressing f9.
+See lazaruspackage/INSTALL
