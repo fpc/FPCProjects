@@ -3,7 +3,9 @@ program cgiFpcBot;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, PWU, PWUEnvVar, SqlDB, PQConnection, stringutils;
+  Classes, SysUtils,
+  SqlDB, PQConnection,
+  PWU, PWUEnvVar, StringUtils;
   
 procedure Main;
 
