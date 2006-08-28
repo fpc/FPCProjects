@@ -97,14 +97,14 @@ begin
     CreateDir(ExtractFilePath(aFilePath));
   Result:=TIniFile.Create(aFilePath);
   
-  AddPath('httpdir', HomeDir + PathDelim + 'http_docs');
-  AddPath('cgiroot', HomeDir + PathDelim + 'cgi-bin');
+  AddPath('httpdir', HomeDir + 'http_docs');
+  AddPath('cgiroot', HomeDir + 'cgi-bin');
  {$ifndef MSWINDOWS}
   AddPath('cgipath', '/usr/local/bin:/usr/bin:/bin:' + HomeDir + '/bin', False);
  {$else}
-  AddPath('cgipath', HomeDir + PathDelim + 'cgi-bin', False);
+  AddPath('cgipath', HomeDir + 'cgi-bin', False);
  {$endif}
-  AddFile('mimetypes', HomeDir + PathDelim + 'mime.types');
+  AddFile('mimetypes', HomeDir + 'mime.types');
   Result.WriteString('PATH', 'cgiprefix', 'cgi-bin' + PathDelim);
  {$ifndef MSWINDOWS}
   Result.WriteString('PATH', 'phpcgibin', '/usr/lib/cgi-bin/php');
@@ -136,8 +136,7 @@ begin
       Exit;
     end;
   // no file found, create default one in home
-  SettingsFile:=CreateDefaultIni(GetEnvironmentVariable('HOME') + PathDelim +
-                                 '.fphttpd' + PathDelim + INI_NAME);
+  SettingsFile:=CreateDefaultIni(HomeDir + INI_NAME);
   SearchPaths.Free;
 end;
 
@@ -183,7 +182,12 @@ end;
   
 initialization
   CurDir:=ExtractFilePath(ParamStr(0));
-  HomeDir:=GetEnvironmentVariable('HOME') + PathDelim + '.fphttpd';
+  {$ifdef MSWINDOWS}
+  HomeDir:=GetEnvironmentVariable('HOMEDRIVE') + PathDelim +
+           GetEnvironmentVariable('HOMEPATH') + PathDelim + 'fphttpd' + PathDelim;
+  {$else}
+  HomeDir:=GetEnvironmentVariable('HOME') + PathDelim + '.fphttpd' + PathDelim;
+  {$endif}
   InitSettings;
 
 finalization
