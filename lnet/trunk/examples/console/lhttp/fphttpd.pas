@@ -52,21 +52,35 @@ end;
 
 procedure Run(const DoFork: Boolean);
 begin
+  {$ifdef MSWINDOWS}
   Server := TLWebServer.Create(nil);
   Server.TimeOut := 300000;
   if not Server.Listen(GetPort) then
-  begin
-    Writeln('Error starting server.');
-  end else begin
-    if DoFork then begin
-      if fpfork = 0 then
-        MainLoop
+    Writeln('Error starting server.')
+  else
+    MainLoop;
+  Server.Free;
+  {$else}
+  if DoFork then begin
+    if fpfork = 0 then begin
+      Server := TLWebServer.Create(nil);
+      Server.TimeOut := 300000;
+      if not Server.Listen(GetPort) then
+        Writeln('Error starting server.')
       else
-        fpExit(0);
+        MainLoop
     end else
-      MainLoop;
+      fpExit(0);
+  end else begin
+    Server := TLWebServer.Create(nil);
+    Server.TimeOut := 300000;
+    if not Server.Listen(GetPort) then
+      Writeln('Error starting server.')
+    else
+      MainLoop
   end;
   Server.Free;
+  {$endif}
 end;
 
 begin
