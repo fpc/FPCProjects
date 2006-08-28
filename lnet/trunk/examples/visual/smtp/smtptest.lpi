@@ -23,7 +23,7 @@
     <RequiredPackages Count="3">
       <Item1>
         <PackageName Value="lnetpackage"/>
-        <MinVersion Minor="3" Valid="True"/>
+        <MinVersion Minor="4" Valid="True"/>
       </Item1>
       <Item2>
         <PackageName Value="lnetidepackage"/>
