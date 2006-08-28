@@ -45,7 +45,6 @@ procedure TLCLSocket.HandleEvents(aData: PtrInt; aFlags: DWord);
 var
   Events: TWSANetworkEvents;
 begin
-  if not FReferenced then begin
     FReferenced:=True;
     if WSAEnumNetworkEvents(FHandle, FWinObject, @Events) = 0 then begin
       if Events.lNetworkEvents and FD_CONNECT = FD_CONNECT then
@@ -72,7 +71,6 @@ begin
       if FDispose then
         Free;
     end else Bail('EventEnum error', WSAGetLastError);
-  end;
 end;
 
 procedure TLCLSocket.Disconnect;
