@@ -1,0 +1,19 @@
+fphttpd is a full-featured HTTP 1.1 server.
+
+Fast-CGI support enables use of php and other pre-processors.
+
+fphttpd creates default config files and directories on first run in:
+For windows: HOMEDRIVE:\HOMEPATH\fphttpd (usualy Documents and settings\username)
+For unix: $HOME/.fphttpd
+
+The directory consists of:
+cgi-bin -- place your cgi scripts and binaries here
+http_docs -- place your html files here
+fphttpd.ini -- configure file with various settings
+mime.types -- mime types file for various file types
+
+Currently, fphttpd doesn't support fastCGI in windows. This is being worked on.
+
+In unix, external "CGI apps" like php need to be "fastcgi-spawned" for the server.
+
+You do this with the spawn-fcgi program.
