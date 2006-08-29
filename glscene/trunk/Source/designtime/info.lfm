@@ -1,0 +1,892 @@
+object InfoForm: TInfoForm
+  ActiveControl = Sheet3
+  BorderStyle = bsToolWindow
+  Caption = 'OpenGL Driver Info'
+  ClientHeight = 256
+  ClientWidth = 405
+  Font.Height = -10
+  Font.Name = 'Arial'
+  KeyPreview = True
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnKeyPress = FormKeyPress
+  PixelsPerInch = 96
+  Position = poScreenCenter
+  ShowHint = True
+  TextHeight = 13
+  HorzScrollBar.Page = 404
+  VertScrollBar.Page = 255
+  Left = 337
+  Height = 256
+  Top = 107
+  Width = 405
+  object CloseButton: TSpeedButton
+    BorderSpacing.OnChange = nil
+    Caption = '&Close'
+    Flat = True
+    Glyph.Data = {
+      36080000424D3608000000000000360000002800000020000000100000000100
+      200000000000000200006400000064000000000000000000000000F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF7878F9FFB100
+      00FF000000FF000000FFF10800FF185810FF5000A9FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000
+      00FF000000FF000000FFF10800FF085810FF50F9A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF78B9F9FFB100
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FF105810FFF1F9A1FF502808FFA910F1FFF9B1
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FF005810FFF1F9A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF13800FF50A900FFF108A9FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF507800FF085000FF5038A9FF502808FF000000FF0000
+      00FF000000FF000000FFF10800FFF95010FF50F1A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF28A9F9FF3828
+      08FF000000FF000000FFF10800FFF95010FF50B9A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA9B9F9FF3828
+      08FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FFF95010FFF1F1A1FF502808FFA9F9F9FFF9B1
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FFF95010FFF1A9A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FFF13800FF58A900FF50F9A1FF502808FF000000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF00F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA9F9F9FFF9B1
+      00FF000000FF000000FFF10800FFF95010FF50A9A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA95858FFF9B9
+      00FF000000FF000000FFF10800FFF95010FF50A9A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA9B9F9FFF9B1
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FFF15010FFF1B1A1FF502808FFA9B9F9FFF9B1
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FFF15010FFF178A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF00F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA9A1F9FFF9B1
+      00FF000000FF000000FFF10800FFB95010FF5078A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA978F9FFF9B1
+      00FF000000FF000000FFF10800FFA95010FF5058A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF507800FF005000FF50F1A1FF502808FF000000FF0000
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FFB95010FFF178A1FF502808FF000000FF0000
+      00FF000000FF000000FFF13800FF38A900FF5078A1FF502808FF000000FF0000
+      00FF000000FF000000FFF10800FFA95010FFF158A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF00F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA950F9FFF9B1
+      00FF000000FF000000FFF10800FFB95010FF5050A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA938F9FFF9B1
+      00FF000000FF000000FFF10800FFA95010FF5028A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FFB15010FFF138A1FF502808FF000000FF0000
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FFF10800FFA15010FFF118A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FF0078F1FFF9A9
+      00FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9F9FF280000FF0000
+      00FF000000FF000000FF000000FF000000FF000000FF000000FFA908F9FFF9B1
+      00FF000000FF000000FFF10800FF785010FF5010A1FF502808FF00F9F1FFB9B9
+      00FF000000FF000000FFF13800FF38A900FFF138A1FF502808FF
+    }
+    NumGlyphs = 2
+    OnClick = CloseButtonClick
+    Height = 23
+    Top = 232
+    Width = 404
+  end
+  object PageControl: TPageControl
+    ActivePage = Sheet3
+    BorderSpacing.OnChange = nil
+    TabIndex = 2
+    TabOrder = 0
+    Height = 225
+    Width = 404
+    object Sheet1: TTabSheet
+      Caption = 'Common'
+      ClientHeight = 199
+      ClientWidth = 396
+      Height = 199
+      Width = 396
+      object Image1: TImage
+        Align = alClient
+        BorderSpacing.OnChange = nil
+        Transparent = True
+        Height = 199
+        Width = 396
+      end
+      object Label1: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'OpenGL vendor :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 10
+        Width = 92
+      end
+      object Label2: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Acceleration :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 54
+        Width = 75
+      end
+      object Label3: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Version Info :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 77
+        Width = 74
+      end
+      object Label5: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Double buffered :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 99
+        Width = 95
+      end
+      object Label6: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Buffer switch mode :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 144
+        Width = 115
+      end
+      object VendorLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 10
+        Width = 251
+      end
+      object AccLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 54
+        Width = 251
+      end
+      object VersionLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 77
+        Width = 251
+      end
+      object CopyLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 144
+        Width = 251
+      end
+      object DoubleLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 99
+        Width = 251
+      end
+      object Label7: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Stereo enabled :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 121
+        Width = 90
+      end
+      object StereoLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 121
+        Width = 251
+      end
+      object Label13: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Renderer :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 32
+        Width = 58
+      end
+      object RendererLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 32
+        Width = 251
+      end
+    end
+    object Sheet2: TTabSheet
+      Caption = 'Buffer and pixel depths'
+      ClientHeight = 199
+      ClientWidth = 396
+      Height = 199
+      Width = 396
+      object Image2: TImage
+        Align = alClient
+        BorderSpacing.OnChange = nil
+        Transparent = True
+        Height = 195
+        Width = 400
+      end
+      object Label8: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Color buffer :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 10
+        Width = 73
+      end
+      object Label9: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Depth buffer :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 33
+        Width = 75
+      end
+      object Label10: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Stencil buffer :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 55
+        Width = 80
+      end
+      object Label11: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Accumulation buffer :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 78
+        Width = 118
+      end
+      object Label12: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Auxilliary buffers :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 101
+        Width = 100
+      end
+      object ColorLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 10
+        Width = 251
+      end
+      object DepthLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 33
+        Width = 251
+      end
+      object StencilLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 55
+        Width = 251
+      end
+      object AuxLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 101
+        Width = 251
+      end
+      object AccumLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 78
+        Width = 251
+      end
+      object SubLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 124
+        Width = 251
+      end
+      object Label37: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Subpixels :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 124
+        Width = 60
+      end
+      object Label18: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'supported overlays :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 146
+        Width = 114
+      end
+      object OverlayLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 146
+        Width = 251
+      end
+      object UnderlayLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 170
+        Width = 251
+      end
+      object Label20: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'supported underlays :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 170
+        Width = 122
+      end
+    end
+    object Sheet3: TTabSheet
+      Caption = 'Maximum values'
+      ClientHeight = 199
+      ClientWidth = 396
+      Height = 199
+      Width = 396
+      object Image3: TImage
+        Align = alClient
+        BorderSpacing.OnChange = nil
+        Transparent = True
+        Height = 199
+        Width = 396
+      end
+      object Label14: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Clip planes :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 10
+        Width = 67
+      end
+      object Label15: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Evaluation order :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 33
+        Width = 95
+      end
+      object Label16: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Light sources :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 55
+        Width = 83
+      end
+      object Label17: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'List nesting :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 78
+        Width = 72
+      end
+      object ClipLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 10
+        Width = 51
+      end
+      object EvalLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 33
+        Width = 51
+      end
+      object ListLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 78
+        Width = 51
+      end
+      object LightLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 55
+        Width = 51
+      end
+      object Label23: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Modelview stack :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 101
+        Width = 99
+      end
+      object ModelLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 101
+        Width = 51
+      end
+      object Label25: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Name stack :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 195
+        Height = 14
+        Top = 10
+        Width = 70
+      end
+      object Label26: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Pixel map table:'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 195
+        Height = 14
+        Top = 33
+        Width = 86
+      end
+      object Label27: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Projection stack :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 195
+        Height = 14
+        Top = 55
+        Width = 95
+      end
+      object Label28: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Texture size:'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 195
+        Height = 14
+        Top = 78
+        Width = 72
+      end
+      object Label29: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Texture stack :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 195
+        Height = 14
+        Top = 101
+        Width = 82
+      end
+      object NameLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 322
+        Height = 13
+        Top = 10
+        Width = 58
+      end
+      object PixelLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 322
+        Height = 13
+        Top = 33
+        Width = 58
+      end
+      object ProjLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 322
+        Height = 13
+        Top = 55
+        Width = 58
+      end
+      object TexStackLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 322
+        Height = 13
+        Top = 101
+        Width = 58
+      end
+      object TexSizeLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 322
+        Height = 13
+        Top = 78
+        Width = 58
+      end
+      object Label35: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Viewport Dimensions :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 10
+        Height = 14
+        Top = 124
+        Width = 126
+      end
+      object ViewLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 137
+        Height = 13
+        Top = 124
+        Width = 51
+      end
+      object Label4: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = 'Texture units :'
+        Color = clNone
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        Left = 195
+        Height = 14
+        Top = 124
+        Width = 80
+      end
+      object TexUnitsLabel: TLabel
+        BorderSpacing.OnChange = nil
+        Caption = '???'
+        Color = clNone
+        Font.Color = clTeal
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Left = 322
+        Height = 13
+        Top = 124
+        Width = 58
+      end
+    end
+    object TabSheet1: TTabSheet
+      Caption = 'Supported extensions'
+      ClientHeight = 199
+      ClientWidth = 396
+      ImageIndex = 3
+      Height = 199
+      Width = 396
+      object Extensions: TListBox
+        Align = alClient
+        BorderSpacing.OnChange = nil
+        BorderStyle = bsNone
+        ClickOnSelChange = False
+        Font.Color = cl3DDkShadow
+        Font.Height = -12
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ItemHeight = 15
+        OnClick = ExtensionsClick
+        OnDblClick = ExtensionsDblClick
+        OnKeyPress = ExtensionsKeyPress
+        TabOrder = 0
+        TopIndex = -1
+        Height = 195
+        Hint = 'Double-click and extension to go to its OpenGL Extension registry page'
+        Width = 400
+      end
+    end
+  end
+  object PMWebLink: TPopupMenu
+    left = 24
+    top = 48
+    object MIRegistryLink: TMenuItem
+      Caption = 'MIRegistryLink'
+      OnClick = ExtensionsDblClick
+    end
+    object MIDelphi3D: TMenuItem
+      Caption = 'MIDelphi3D'
+      OnClick = MIDelphi3DClick
+    end
+  end
+end

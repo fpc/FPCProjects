@@ -1,0 +1,569 @@
+object GUISkinEditor: TGUISkinEditor
+  ActiveControl = Button5
+  Caption = 'Skin Editor'
+  ClientHeight = 394
+  ClientWidth = 772
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnResize = FormResize
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 771
+  VertScrollBar.Page = 393
+  Left = 192
+  Height = 394
+  Top = 255
+  Width = 772
+  object StatusBar: TStatusBar
+    Panels = <    
+      item
+        Text = 'x:'
+        Width = 50
+      end    
+      item
+        Text = 'y:'
+        Width = 50
+      end    
+      item
+        Text = 'dx:'
+        Width = 50
+      end    
+      item
+        Text = 'dy:'
+        Width = 50
+      end    
+      item
+        Width = 50
+      end>
+    Height = 20
+    Top = 374
+    Width = 772
+  end
+  object panBottom: TPanel
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 32
+    ClientWidth = 772
+    TabOrder = 0
+    Height = 32
+    Top = 342
+    Width = 772
+    object Button5: TButton
+      Anchors = [akTop, akRight]
+      BorderSpacing.InnerBorder = 2
+      Caption = 'OK'
+      ModalResult = 1
+      TabOrder = 0
+      Left = 608
+      Height = 25
+      Top = 5
+      Width = 75
+    end
+    object Button6: TButton
+      Anchors = [akTop, akRight]
+      BorderSpacing.InnerBorder = 2
+      Caption = 'Cancel'
+      ModalResult = 2
+      TabOrder = 1
+      Left = 690
+      Height = 25
+      Top = 5
+      Width = 75
+    end
+  end
+  object panZoomImage: TPanel
+    Align = alClient
+    BevelOuter = bvNone
+    ClientHeight = 342
+    ClientWidth = 338
+    TabOrder = 1
+    Left = 285
+    Height = 342
+    Width = 338
+    object imgFull: TImage
+      OnMouseDown = imgFullMouseDown
+      OnMouseMove = imgFullMouseMove
+      OnMouseUp = imgFullMouseUp
+      Transparent = True
+      Left = 1
+      Height = 285
+      Top = 1
+      Width = 309
+    end
+    object sbarHorizontal: TScrollBar
+      LargeChange = 64
+      Max = 256
+      Min = 1
+      PageSize = 256
+      Position = 1
+      TabOrder = 0
+      OnChange = ScrollbarChange
+      OnScroll = ScrollBarScroll
+      Left = 1
+      Height = 16
+      Top = 286
+      Width = 308
+    end
+    object sbarVertical: TScrollBar
+      Kind = sbVertical
+      LargeChange = 64
+      Max = 256
+      Min = 1
+      PageSize = 256
+      Position = 1
+      TabOrder = 1
+      OnChange = ScrollbarChange
+      OnScroll = ScrollBarScroll
+      Left = 310
+      Height = 17
+      Top = 1
+      Width = 16
+    end
+  end
+  object panImageProperties: TPanel
+    Align = alRight
+    ClientHeight = 342
+    ClientWidth = 149
+    TabOrder = 2
+    Left = 623
+    Height = 342
+    Width = 149
+    object Label5: TLabel
+      Caption = 'Width'
+      Color = clNone
+      ParentColor = False
+      Left = 12
+      Height = 14
+      Top = 212
+      Width = 29
+    end
+    object Label6: TLabel
+      Caption = 'Height'
+      Color = clNone
+      ParentColor = False
+      Left = 12
+      Height = 14
+      Top = 236
+      Width = 32
+    end
+    object Panel2: TPanel
+      ClientHeight = 130
+      ClientWidth = 130
+      TabOrder = 0
+      Left = 11
+      Height = 130
+      Top = 3
+      Width = 130
+      object imgPreview: TImage
+        Align = alClient
+        OnMouseDown = imgPreviewMouseDown
+        OnMouseMove = imgPreviewMouseMove
+        Transparent = True
+        Cursor = crHandPoint
+        Left = 1
+        Height = 128
+        Top = 1
+        Width = 128
+      end
+    end
+    object Panel3: TPanel
+      BevelOuter = bvLowered
+      ClientHeight = 27
+      ClientWidth = 129
+      TabOrder = 1
+      Left = 12
+      Height = 27
+      Top = 140
+      Width = 129
+      object Label2: TLabel
+        Alignment = taRightJustify
+        Caption = '1.0'
+        Color = clNone
+        ParentColor = False
+        Left = 80
+        Height = 14
+        Top = 7
+        Width = 17
+      end
+      object Label1: TLabel
+        Caption = 'Zoom:'
+        Color = clNone
+        ParentColor = False
+        Left = 12
+        Height = 14
+        Top = 7
+        Width = 31
+      end
+      object Button3: TButton
+        BorderSpacing.InnerBorder = 2
+        Caption = '+'
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        OnClick = Button3Click
+        TabOrder = 0
+        Left = 113
+        Height = 12
+        Top = 1
+        Width = 15
+      end
+      object Button4: TButton
+        BorderSpacing.InnerBorder = 2
+        Caption = '-'
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        OnClick = Button4Click
+        TabOrder = 1
+        Left = 113
+        Height = 12
+        Top = 13
+        Width = 15
+      end
+    end
+    object CheckBox1: TCheckBox
+      Caption = 'Show Preview'
+      OnClick = CheckBox1Click
+      TabOrder = 2
+      Left = 12
+      Height = 13
+      Top = 180
+      Width = 88
+    end
+    object WidthEdit: TEdit
+      OnChange = WidthEditChange
+      TabOrder = 3
+      Text = '256'
+      Left = 48
+      Height = 21
+      Top = 208
+      Width = 95
+    end
+    object HeightEdit: TEdit
+      OnChange = HeightEditChange
+      TabOrder = 4
+      Text = '256'
+      Left = 48
+      Height = 21
+      Top = 232
+      Width = 95
+    end
+  end
+  object panElements: TPanel
+    Align = alLeft
+    ClientHeight = 342
+    ClientWidth = 285
+    TabOrder = 3
+    Height = 342
+    Width = 285
+    object Bevel2: TBevel
+      Height = 57
+      Left = 140
+      Name = 'Bevel2'
+      Top = 212
+      Width = 137
+      Left = 140
+      Height = 57
+      Top = 212
+      Width = 137
+    end
+    object Bevel1: TBevel
+      Height = 133
+      Left = 140
+      Name = 'Bevel1'
+      Top = 72
+      Width = 137
+      Left = 140
+      Height = 133
+      Top = 72
+      Width = 137
+    end
+    object Label3: TLabel
+      Caption = 'Skin Elements'
+      Color = clNone
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentColor = False
+      Left = 4
+      Height = 14
+      Top = 12
+      Width = 82
+    end
+    object Label4: TLabel
+      Alignment = taRightJustify
+      Caption = 'Skin Part'
+      Color = clNone
+      ParentColor = False
+      Left = 144
+      Height = 14
+      Top = 44
+      Width = 43
+      Tag = 1
+    end
+    object Label11: TLabel
+      Alignment = taRightJustify
+      Caption = 'Left'
+      Color = clNone
+      ParentColor = False
+      Left = 144
+      Height = 14
+      Top = 112
+      Width = 20
+      Tag = 1
+    end
+    object Label12: TLabel
+      Alignment = taRightJustify
+      Caption = 'Top'
+      Color = clNone
+      ParentColor = False
+      Left = 187
+      Height = 14
+      Top = 80
+      Width = 19
+      Tag = 1
+    end
+    object Label13: TLabel
+      Alignment = taRightJustify
+      Caption = 'Right'
+      Color = clNone
+      ParentColor = False
+      Left = 233
+      Height = 14
+      Top = 112
+      Width = 26
+      Tag = 1
+    end
+    object Label9: TLabel
+      Alignment = taRightJustify
+      Caption = 'Scale X'
+      Color = clNone
+      ParentColor = False
+      Left = 169
+      Height = 14
+      Top = 220
+      Width = 35
+      Tag = 1
+    end
+    object Label10: TLabel
+      Alignment = taRightJustify
+      Caption = 'Scale Y'
+      Color = clNone
+      ParentColor = False
+      Left = 169
+      Height = 14
+      Top = 248
+      Width = 35
+      Tag = 1
+    end
+    object Label14: TLabel
+      Alignment = taRightJustify
+      Caption = 'Bottom'
+      Color = clNone
+      ParentColor = False
+      Left = 189
+      Height = 14
+      Top = 156
+      Width = 35
+      Tag = 1
+    end
+    object lbElements: TListBox
+      ItemHeight = 13
+      OnClick = lbElementsClick
+      OnKeyDown = lbElementsKeyDown
+      TabOrder = 0
+      Left = 4
+      Height = 257
+      Top = 36
+      Width = 129
+    end
+    object btnAdd: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = '+'
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      OnClick = btnAddClick
+      TabOrder = 1
+      Left = 88
+      Height = 17
+      Top = 12
+      Width = 21
+    end
+    object btnDelete: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = '-'
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      OnClick = btnDeleteClick
+      TabOrder = 2
+      Left = 112
+      Height = 17
+      Top = 12
+      Width = 21
+      Tag = 1
+    end
+    object ComboBox1: TComboBox
+      ItemHeight = 13
+      Items.Strings = (
+        'TopLeft'
+        'Top'
+        'TopRight'
+        'Left'
+        'Center'
+        'Right'
+        'BottomLeft'
+        'Bottom'
+        'BottomRight'
+      )
+      MaxLength = 0
+      OnChange = ComboBox1Change
+      Style = csDropDownList
+      TabOrder = 3
+      Left = 196
+      Height = 21
+      Top = 40
+      Width = 81
+      Tag = 1
+    end
+    object LeftEdit: TEdit
+      OnChange = LeftEditChange
+      OnKeyPress = EditKeyPress
+      TabOrder = 4
+      Text = '256'
+      Left = 144
+      Height = 21
+      Top = 128
+      Width = 40
+      Tag = 1
+    end
+    object TopEdit: TEdit
+      OnChange = TopEditChange
+      OnKeyPress = EditKeyPress
+      TabOrder = 5
+      Text = '256'
+      Left = 188
+      Height = 21
+      Top = 96
+      Width = 40
+      Tag = 1
+    end
+    object RightEdit: TEdit
+      OnChange = RightEditChange
+      OnKeyPress = EditKeyPress
+      TabOrder = 6
+      Text = '256'
+      Left = 232
+      Height = 21
+      Top = 128
+      Width = 40
+      Tag = 1
+    end
+    object BottomEdit: TEdit
+      OnChange = BottomEditChange
+      OnKeyPress = EditKeyPress
+      TabOrder = 7
+      Text = '256'
+      Left = 188
+      Height = 21
+      Top = 172
+      Width = 40
+      Tag = 1
+    end
+    object ScaleXEdit: TEdit
+      OnChange = ScaleXEditChange
+      OnKeyPress = EditKeyPress
+      TabOrder = 8
+      Text = '1'
+      Left = 216
+      Height = 21
+      Top = 216
+      Width = 40
+      Tag = 1
+    end
+    object ScaleYEdit: TEdit
+      OnChange = ScaleYEditChange
+      OnKeyPress = EditKeyPress
+      TabOrder = 9
+      Text = '1'
+      Left = 216
+      Height = 21
+      Top = 244
+      Width = 40
+      Tag = 1
+    end
+  end
+  object popElements: TPopupMenu
+    left = 72
+    top = 68
+    object mnuTopLeft: TMenuItem
+      Caption = 'TopLeft'
+      OnClick = MenuItemClick
+    end
+    object mnuTop: TMenuItem
+      Caption = 'Top'
+      OnClick = MenuItemClick
+      Tag = 1
+    end
+    object mnuTopRight: TMenuItem
+      Caption = 'TopRight'
+      OnClick = MenuItemClick
+      Tag = 2
+    end
+    object mnuLeft: TMenuItem
+      Caption = 'Left'
+      OnClick = MenuItemClick
+      Tag = 3
+    end
+    object mnuCenter: TMenuItem
+      Caption = 'Center'
+      OnClick = MenuItemClick
+      Tag = 4
+    end
+    object mnuRight: TMenuItem
+      Caption = 'Right'
+      OnClick = MenuItemClick
+      Tag = 5
+    end
+    object mnuBottomLeft: TMenuItem
+      Caption = 'BottomLeft'
+      OnClick = MenuItemClick
+      Tag = 6
+    end
+    object mnuBottom: TMenuItem
+      Caption = 'Bottom'
+      OnClick = MenuItemClick
+      Tag = 7
+    end
+    object mnuBottomRight: TMenuItem
+      Caption = 'BottomRight'
+      OnClick = MenuItemClick
+      Tag = 8
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object mnuAddAll: TMenuItem
+      Caption = 'Add all'
+      OnClick = mnuAddAllClick
+    end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object mnuAllTop: TMenuItem
+      Caption = 'All Top'
+      OnClick = mnuAllTopClick
+    end
+    object mnuAllMiddle: TMenuItem
+      Caption = 'All Middle'
+      OnClick = mnuAllMiddleClick
+    end
+    object mnuAllBottom: TMenuItem
+      Caption = 'All Bottom'
+      OnClick = mnuAllBottomClick
+    end
+  end
+end
