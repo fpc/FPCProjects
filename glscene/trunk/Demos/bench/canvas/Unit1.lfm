@@ -1,0 +1,159 @@
+object Form1: TForm1
+  BorderStyle = bsDialog
+  Caption = 'GLCanvas vs GDI'
+  ClientHeight = 329
+  ClientWidth = 537
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 536
+  VertScrollBar.Page = 328
+  Left = 297
+  Height = 329
+  Top = 228
+  Width = 537
+  object PaintBox: TPaintBox
+    BorderSpacing.OnChange = nil
+    ParentColor = True
+    Left = 272
+    Height = 256
+    Top = 64
+    Width = 256
+  end
+  object LAGLCanvas: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'GLCanvas: N/A'
+    Color = clNone
+    Left = 8
+    Height = 13
+    Top = 48
+    Width = 76
+  end
+  object LAGDI: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'GDI: N/A'
+    Color = clNone
+    Left = 272
+    Height = 13
+    Top = 48
+    Width = 45
+  end
+  object Bevel1: TBevel
+    BorderSpacing.OnChange = nil
+    Height = 273
+    Left = 267
+    Name = 'Bevel1'
+    Top = 48
+    Width = 2
+    Left = 267
+    Height = 273
+    Top = 48
+    Width = 2
+  end
+  object BULines: TButton
+    BorderSpacing.OnChange = nil
+    BorderSpacing.InnerBorder = 2
+    Caption = '20k Lines'
+    OnClick = BULinesClick
+    TabOrder = 0
+    Left = 8
+    Height = 25
+    Top = 8
+    Width = 73
+  end
+  object BUEllipses: TButton
+    BorderSpacing.OnChange = nil
+    BorderSpacing.InnerBorder = 2
+    Caption = '20k Ellipses'
+    OnClick = BUEllipsesClick
+    TabOrder = 1
+    Left = 88
+    Height = 25
+    Top = 8
+    Width = 73
+  end
+  object GLSceneViewer: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.Lighting = False
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 137.32627868652344
+    Left = 8
+    Height = 256
+    Top = 64
+    Width = 256
+  end
+  object RBPenWidth1: TRadioButton
+    BorderSpacing.OnChange = nil
+    Caption = 'Pen Width = 1'
+    Checked = True
+    State = cbChecked
+    TabOrder = 2
+    Left = 432
+    Height = 17
+    Top = 8
+    Width = 89
+  end
+  object RBPenWidth2: TRadioButton
+    BorderSpacing.OnChange = nil
+    Caption = 'Pen Width = 2'
+    TabOrder = 3
+    Left = 432
+    Height = 17
+    Top = 24
+    Width = 89
+  end
+  object BUPoints: TButton
+    BorderSpacing.OnChange = nil
+    BorderSpacing.InnerBorder = 2
+    Caption = '200k Points'
+    OnClick = BUPointsClick
+    TabOrder = 4
+    Left = 248
+    Height = 25
+    Top = 8
+    Width = 73
+  end
+  object BURects: TButton
+    BorderSpacing.OnChange = nil
+    BorderSpacing.InnerBorder = 2
+    Caption = '20k Rects'
+    OnClick = BURectsClick
+    TabOrder = 5
+    Left = 168
+    Height = 25
+    Top = 8
+    Width = 73
+  end
+  object BUTextOut: TButton
+    BorderSpacing.OnChange = nil
+    BorderSpacing.InnerBorder = 2
+    Caption = '20k TextOut'
+    OnClick = BUTextOutClick
+    TabOrder = 6
+    Left = 328
+    Height = 25
+    Top = 8
+    Width = 73
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 72
+    object GLDirectOpenGL1: TGLDirectOpenGL
+      OnRender = GLDirectOpenGL1Render
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+    end
+  end
+  object WindowsBitmapFont: TGLWindowsBitmapFont
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'Arial'
+    left = 8
+    top = 168
+  end
+end

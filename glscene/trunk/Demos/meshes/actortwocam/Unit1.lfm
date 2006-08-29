@@ -1,0 +1,240 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 442
+  ClientWidth = 665
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  KeyPreview = True
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 664
+  VertScrollBar.Page = 441
+  Left = 308
+  Height = 442
+  Top = 117
+  Width = 665
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera2
+    Buffer.BackgroundColor = clGreen
+    FieldOfView = 128.75372314453125
+    Align = alClient
+    Height = 417
+    Top = 25
+    Width = 665
+  end
+  object Panel1: TPanel
+    Align = alTop
+    BevelOuter = bvLowered
+    ClientHeight = 25
+    ClientWidth = 665
+    Font.Height = -11
+    Font.Name = 'Arial'
+    FullRepaint = False
+    TabOrder = 0
+    Height = 25
+    Width = 665
+    object Label3: TLabel
+      Caption = 'F7 Third Person'
+      Color = clNone
+      ParentColor = False
+      Left = 352
+      Height = 14
+      Top = 6
+      Width = 76
+    end
+    object Label4: TLabel
+      Caption = 'F8 First Person'
+      Color = clNone
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+      Left = 448
+      Height = 14
+      Top = 6
+      Width = 83
+    end
+    object Label1: TLabel
+      Caption = 'Move with arrow keys, strafe with CTRL, run with SHIFT, ESC to exit'
+      Color = clNone
+      ParentColor = False
+      Left = 8
+      Height = 14
+      Top = 6
+      Width = 332
+    end
+    object CBMouseLook: TCheckBox
+      Caption = '&Mouse Look'
+      OnClick = CBMouseLookClick
+      TabOrder = 0
+      Left = 552
+      Height = 17
+      Top = 4
+      Width = 97
+    end
+  end
+  object GLScene1: TGLScene
+    ObjectsSorting = osNone
+    left = 40
+    top = 32
+    object SkyDome1: TGLSkyDome
+      Bands = <      
+        item
+          StartColor.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          StopAngle = 15
+        end      
+        item
+          StartAngle = 15
+          StopAngle = 90
+          StopColor.Color = {
+            938C0C3E938C0C3E938E0E3F0000803F
+          }
+          Stacks = 4
+        end>
+      Stars = <>
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        E9DC72BF000000009BE8A13E00000000
+      }
+    end
+    object Disk1: TGLDisk
+      Loops = 1
+      OuterRadius = 80
+      Slices = 7
+      SweepAngle = 360
+      Material.Texture.MinFilter = miLinear
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Material.Texture.Disabled = False
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        00000000000000000000803F00000000
+      }
+    end
+    object GLLightSource2: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000704200003443000000000000803F
+      }
+      LightStyle = lsOmni
+      SpotCutOff = 180
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      object FreeForm1: TGLFreeForm
+        NormalsOrientation = mnoInvert
+        Material.FrontProperties.Diffuse.Color = {
+          0AD7633FD7A3F03ECDCC4C3E0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Direction.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000803F0000803F000000000000803F
+        }
+        Scale.Coordinates = {
+          0AD7A33CCDCCCC3C4260E53C00000000
+        }
+        Up.Coordinates = {
+          00000000000000000000803F00000000
+        }
+      end
+    end
+    object DummyCube2: TGLDummyCube
+      CubeSize = 0.100000001490116
+      Position.Coordinates = {
+        000000000000803F000000000000803F
+      }
+      object GLCamera2: TGLCamera
+        DepthOfView = 500
+        FocalLength = 100
+        Position.Coordinates = {
+          000000000000003F000000000000803F
+        }
+        Direction.Coordinates = {
+          00000080000000000000803F00000000
+        }
+        left = 320
+        top = 192
+      end
+      object Actor1: TGLActor
+        Interval = 100
+        Material.FrontProperties.Emission.Color = {
+          0000803F0000803F0000803F0000803F
+        }
+        Material.Texture.MinFilter = miLinear
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Material.Texture.Disabled = False
+        Direction.Coordinates = {
+          000000800000803F0000000000000000
+        }
+        Up.Coordinates = {
+          0000803F000000000000000000000000
+        }
+        Visible = False
+        object Actor2: TGLActor
+          Interval = 100
+          Material.Texture.MinFilter = miLinear
+          Material.Texture.MappingTCoordinates.Coordinates = {
+            000000000000803F0000000000000000
+          }
+          Material.Texture.Disabled = False
+        end
+      end
+      object DummyCube3: TGLDummyCube
+        CubeSize = 1
+        object GLCamera1: TGLCamera
+          DepthOfView = 1000
+          FocalLength = 200
+          TargetObject = DummyCube2
+          Position.Coordinates = {
+            00000000000040400000A0C10000803F
+          }
+          Direction.Coordinates = {
+            00000000000000800000803F00000000
+          }
+        end
+      end
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    SleepLength = 0
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 32
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+    top = 64
+  end
+  object GLNavigator1: TGLNavigator
+    VirtualUp.Coordinates = {
+      000000000000803F000000000000803F
+    }
+    MovingObject = DummyCube2
+    UseVirtualUp = True
+    left = 40
+    top = 64
+  end
+  object GLUserInterface1: TGLUserInterface
+    MouseSpeed = 20
+    GLNavigator = GLNavigator1
+    left = 40
+    top = 96
+  end
+end

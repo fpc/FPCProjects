@@ -1,0 +1,53 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TfrmOctreeDemo','FORMDATA',[
+  'TPF0'#14'TfrmOctreeDemo'#13'frmOctreeDemo'#7'Caption'#6#11'Octree Demo'#12'C'
+  +'lientHeight'#3'D'#2#11'ClientWidth'#3#10#3#11'Font.Height'#2#245#9'Font.Nam'
+  +'e'#6#13'MS Sans Serif'#8'OnCreate'#7#10'FormCreate'#9'OnDestroy'#7#11'FormD'
+  +'estroy'#13'PixelsPerInch'#2'`'#8'Position'#7#14'poScreenCenter'#10'TextHeig'
+  +'ht'#2#13#18'HorzScrollBar.Page'#3#9#3#18'VertScrollBar.Page'#3'C'#2#4'Left'
+  +#3#190#0#6'Height'#3'D'#2#3'Top'#2'm'#5'Width'#3#10#3#0#6'TLabel'#6'Label1'#9
+  +'Alignment'#7#14'taRightJustify'#7'Anchors'#11#5'akTop'#7'akRight'#0#7'Capti'
+  +'on'#6#6'Label1'#5'Color'#7#6'clNone'#4'Left'#3#210#2#6'Height'#2#13#3'Top'#2
+  +#8#5'Width'#2' '#0#0#6'TLabel'#6'Label3'#7'Caption'#6#14'Leaf Threshold'#5'C'
+  +'olor'#7#6'clNone'#4'Left'#2#16#6'Height'#2#13#3'Top'#2#8#5'Width'#2'G'#0#0#6
+  +'TLabel'#6'Label2'#7'Caption'#6'S(Green = Colliding with other object, Red ='
+  +' inside query box/sphere, Yellow = both)'#5'Color'#7#6'clNone'#4'Left'#2'x'
+  +#6'Height'#2#13#3'Top'#2#8#5'Width'#3#132#1#0#0#14'TGLSceneViewer'#14'GLScen'
+  +'eViewer1'#6'Camera'#7#9'GLCamera1'#22'Buffer.BackgroundColor'#7#7'clWhite'
+  +#18'Buffer.FaceCulling'#8#11'FieldOfView'#5#0#0#0#0#0#180#228#145#6'@'#7'Anc'
+  +'hors'#11#5'akTop'#6'akLeft'#7'akRight'#8'akBottom'#0#11'OnMouseMove'#7#23'G'
+  +'LSceneViewer1MouseMove'#4'Left'#2#8#6'Height'#3#233#1#3'Top'#2'8'#5'Width'#3
+  +#238#2#0#0#9'TTrackBar'#22'TrackBar_LeafThreshold'#9'Frequency'#2#1#3'Max'#2
+  +#20#3'Min'#2#3#8'OnChange'#7#28'TrackBar_LeafThresholdChange'#8'Position'#2
+  +#10#8'ScalePos'#7#5'trTop'#8'TabOrder'#2#0#9'TickStyle'#7#6'tsNone'#9'Freque'
+  +'ncy'#2#1#3'Max'#2#20#3'Min'#2#3#8'OnChange'#7#28'TrackBar_LeafThresholdChan'
+  +'ge'#8'Position'#2#10#8'ScalePos'#7#5'trTop'#9'TickStyle'#7#6'tsNone'#4'Left'
+  +#2#8#6'Height'#2#25#3'Top'#2#24#5'Width'#3#150#0#0#0#7'TButton'#22'Button_Re'
+  +'setOctreeSize'#7'Caption'#6#17'Reset Octree Size'#7'OnClick'#7#27'Button_Re'
+  +'setOctreeSizeClick'#8'TabOrder'#2#1#4'Left'#3#160#0#6'Height'#2#21#3'Top'#2
+  +#24#5'Width'#2'i'#0#0#8'TGLScene'#8'GLScene1'#4'left'#2'`'#3'top'#2'@'#0#12
+  +'TGLDummyCube'#12'GLDummyCube1'#8'CubeSize'#5#0#0#0#0#0#0#0#128#255'?'#0#0#15
+  +'TGLDirectOpenGL'#15'GLDirectOpenGL1'#8'OnRender'#7#21'GLDirectOpenGL1Render'
+  +#0#0#7'TGLCube'#7'GLCube1&Material.FrontProperties.Diffuse.Color'#10#16#0#0#0
+  +#205#204'L?'#205#204'L?'#205#204'L?'#205#204#204'>'#21'Material.BlendingMode'
+  +#7#14'bmTransparency'#8'CubeSize'#10#12#0#0#0#0#0#160'@'#0#0#160'@'#0#0#0'A'
+  +#0#0#9'TGLSphere'#9'GLSphere1'#6'Radius'#5#0#0#0#0#0#0#0#160#0'@&Material.Fr'
+  +'ontProperties.Diffuse.Color'#10#16#0#0#0#205#204'L?'#205#204'L?'#205#204'L?'
+  +#205#204'L>'#21'Material.BlendingMode'#7#14'bmTransparency'#20'Position.Coor'
+  +'dinates'#10#16#0#0#0#0#0#192'@'#0#0#192'@'#0#0#192'@'#0#0#128'?'#0#0#8'TGLP'
+  +'lane'#8'GLPlane1'#6'Height'#5#0#0#0#0#0#0#0#160#4'@'#5'Width'#5#0#0#0#0#0#0
+  +#0#160#4'@&Material.FrontProperties.Diffuse.Color'#10#16#0#0#0#205#204'L?'
+  +#205#204'L?'#205#204'L?'#205#204'L>'#21'Material.BlendingMode'#7#14'bmTransp'
+  +'arency'#21'Direction.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#128#0#0#128#191
+  +#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0' A'#0#0#128
+  +'?'#14'Up.Coordinates'#10#16#0#0#0'jA2?'#217#189'7?'#0#0#0#0#0#0#0#0#7'Visib'
+  +'le'#8#0#0#8'TGLLines'#8'GLLines1'#5'Nodes'#14#0#0#0#9'TGLCamera'#9'GLCamera'
+  +'1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0
+  +#150#5'@'#12'TargetObject'#7#12'GLDummyCube1'#20'Position.Coordinates'#10#16
+  +#0#0#0#0#0'@A'#0#0#128'@'#0#0#0'A'#0#0#128'?'#0#14'TGLLightSource'#14'GLLigh'
+  +'tSource1'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#10'SpotCutOff'#5#0
+  +#0#0#0#0#0#0#180#6'@'#0#0#0#0#11'TGLCadencer'#11'GLCadencer1'#5'Scene'#7#8'G'
+  +'LScene1'#10'OnProgress'#7#19'GLCadencer1Progress'#4'left'#2'`'#3'top'#2'p'#0
+  +#0#0
+]);

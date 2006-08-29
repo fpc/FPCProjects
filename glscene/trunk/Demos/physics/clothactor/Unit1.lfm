@@ -1,0 +1,170 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 476
+  ClientWidth = 634
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 633
+  VertScrollBar.Page = 475
+  Left = 252
+  Height = 476
+  Top = 122
+  Width = 634
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.AmbientColor.Color = {
+      CDCCCC3ECDCCCC3ECDCCCC3E0000803F
+    }
+    Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow, roTwoSideLighting]
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 153.398193359375
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 423
+    Top = 24
+    Width = 626
+  end
+  object CheckBox_ShowOctree: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Show Octree'
+    TabOrder = 0
+    Height = 17
+    Width = 97
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLLightSource1: TGLLightSource
+      Ambient.Color = {
+        CDCC4C3ECDCC4C3ECDCC4C3E0000803F
+      }
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        000048420000C842000048C20000803F
+      }
+      Specular.Color = {
+        0000803F0000803F0000803F0000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLShadowVolume1: TGLShadowVolume
+      Lights = <      
+        item
+          LightSource = GLLightSource1
+          CastingMode = scmAlways
+        end>
+      Occluders = <      
+        item
+          Caster = GLActor1
+        end      
+        item
+          Caster = Cape
+        end>
+      Options = [svoScissorClips]
+      object ActorDummy: TGLDummyCube
+        CubeSize = 1
+        object GLActor1: TGLActor
+          Reference = aarSkeleton
+          AnimationMode = aamLoop
+          Interval = 75
+          MaterialLibrary = GLMaterialLibrary1
+          Direction.Coordinates = {
+            000000000000803F0000000000000000
+          }
+          Up.Coordinates = {
+            00000000000000000000803F00000000
+          }
+        end
+      end
+      object Cape: TGLActor
+        Interval = 100
+        Material.BackProperties.Ambient.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.BackProperties.Diffuse.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.BackProperties.Shininess = 48
+        Material.BackProperties.Specular.Color = {
+          0000003F0000003F0000003F0000803F
+        }
+        Material.FrontProperties.Ambient.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.FrontProperties.Diffuse.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.FrontProperties.Shininess = 48
+        Material.FrontProperties.Specular.Color = {
+          0000003F0000003F0000003F0000803F
+        }
+        Material.Texture.TextureMode = tmModulate
+        Material.FaceCulling = fcNoCull
+      end
+      object GLPlane1: TGLPlane
+        Height = 500
+        Width = 500
+        XTiles = 4
+        YTiles = 4
+        Material.FrontProperties.Ambient.Color = {
+          0000003F0000003F0000003F0000803F
+        }
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F0000803F0000803F0000803F
+        }
+        Material.Texture.TextureMode = tmModulate
+        Direction.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Up.Coordinates = {
+          00000000000000000000803F00000000
+        }
+      end
+    end
+    object OctreeRenderer: TGLDirectOpenGL
+      OnRender = OctreeRendererRender
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 1000
+      FocalLength = 50
+      TargetObject = GLActor1
+      Position.Coordinates = {
+        00004842000048420000A0C20000803F
+      }
+      Direction.Coordinates = {
+        00000000000000800000803F00000000
+      }
+      object GLLightSource2: TGLLightSource
+        ConstAttenuation = 1
+        Diffuse.Color = {
+          9A99193F9A99193F9A99193F0000803F
+        }
+        Specular.Color = {
+          0000803F0000803F0000803F0000803F
+        }
+        SpotCutOff = 180
+      end
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    left = 40
+    top = 8
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 40
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 96
+    top = 56
+  end
+end

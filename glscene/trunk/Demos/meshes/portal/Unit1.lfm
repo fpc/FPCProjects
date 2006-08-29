@@ -1,0 +1,226 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 457
+  ClientWidth = 708
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnActivate = FormActivate
+  PixelsPerInch = 96
+  Position = poDesktopCenter
+  TextHeight = 13
+  HorzScrollBar.Page = 707
+  VertScrollBar.Page = 456
+  Left = 216
+  Height = 457
+  Top = 140
+  Width = 708
+  object Label1: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'Maze Map'
+    Color = clNone
+    Font.CharSet = ANSI_CHARSET
+    Font.Height = -16
+    Font.Name = 'Arial'
+    Font.Style = [fsBold, fsItalic]
+    Left = 8
+    Height = 18
+    Top = 8
+    Width = 75
+  end
+  object Label2: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = '3D View'
+    Color = clNone
+    Font.CharSet = ANSI_CHARSET
+    Font.Height = -16
+    Font.Name = 'Arial'
+    Font.Style = [fsBold, fsItalic]
+    Left = 304
+    Height = 18
+    Top = 8
+    Width = 62
+  end
+  object Label3: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'To modify map, edit cells with keyboard :'#13#10'- any non-empty cell is a wall'#13#10'- click ''process'' to commit changes or check ''auto'''
+    Color = clNone
+    Font.CharSet = ANSI_CHARSET
+    Font.Height = -11
+    Font.Name = 'Arial'
+    Left = 24
+    Height = 42
+    Top = 312
+    Width = 241
+  end
+  object BUForward: TButton
+    BorderSpacing.OnChange = nil
+    Caption = 'Forward (Z/W)'
+    OnClick = BUForwardClick
+    TabOrder = 0
+    Left = 96
+    Height = 25
+    Top = 360
+    Width = 89
+  end
+  object BUTurnLeft: TButton
+    BorderSpacing.OnChange = nil
+    Caption = 'Turn Left (Q/A)'
+    OnClick = BUTurnLeftClick
+    TabOrder = 1
+    Left = 8
+    Height = 25
+    Top = 376
+    Width = 81
+  end
+  object BUTurnRight: TButton
+    BorderSpacing.OnChange = nil
+    Caption = 'TurnRight (D)'
+    OnClick = BUTurnRightClick
+    TabOrder = 2
+    Left = 192
+    Height = 25
+    Top = 376
+    Width = 89
+  end
+  object BUBackward: TButton
+    BorderSpacing.OnChange = nil
+    Caption = 'Backward (S)'
+    OnClick = BUBackwardClick
+    TabOrder = 3
+    Left = 96
+    Height = 25
+    Top = 392
+    Width = 89
+  end
+  object SGMap: TStringGrid
+    BorderSpacing.OnChange = nil
+    BorderStyle = bsNone
+    ColCount = 16
+    DefaultColWidth = 16
+    DefaultRowHeight = 16
+    FixedColor = clBtnFace
+    FixedCols = 0
+    FixedRows = 0
+    GridLineWidth = 0
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goAlwaysShowEditor]
+    RowCount = 16
+    TabOrder = 4
+    VisibleColCount = 16
+    VisibleRowCount = 16
+    OnSetEditText = SGMapSetEditText
+    Left = 16
+    Height = 272
+    Top = 32
+    Width = 272
+  end
+  object BBProcess: TButton
+    BorderSpacing.OnChange = nil
+    Caption = 'Process'
+    OnClick = BBProcessClick
+    TabOrder = 5
+    Left = 200
+    Height = 17
+    Top = 8
+    Width = 75
+  end
+  object CBAuto: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Auto'
+    Checked = True
+    OnChange = CBAutoChange
+    State = cbChecked
+    TabOrder = 6
+    Left = 152
+    Height = 17
+    Top = 8
+    Width = 41
+  end
+  object CBFog: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Fog'
+    OnClick = CBFogClick
+    TabOrder = 7
+    Left = 640
+    Height = 17
+    Top = 8
+    Width = 49
+  end
+  object Panel1: TPanel
+    BorderSpacing.OnChange = nil
+    Caption = 'Panel1'
+    ClientHeight = 400
+    ClientWidth = 410
+    FullRepaint = False
+    TabOrder = 8
+    Left = 294
+    Height = 400
+    Top = 32
+    Width = 410
+    object GLSceneViewer1: TGLSceneViewer
+      Camera = GLCamera1
+      Buffer.FogEnvironment.FogColor.Color = {
+        00000000000000008180003F0000803F
+      }
+      Buffer.FogEnvironment.FogStart = 1
+      Buffer.FogEnvironment.FogEnd = 10
+      Buffer.BackgroundColor = clNavy
+      Buffer.OnChange = nil
+      Buffer.OnStructuralChange = nil
+      FieldOfView = 151.79206848144531
+      Align = alClient
+      Left = 1
+      Height = 398
+      Top = 1
+      Width = 408
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    left = 430
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 430
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    SleepLength = 0
+    OnProgress = GLCadencer1Progress
+    left = 430
+  end
+  object GLScene1: TGLScene
+    object GLLightSource1: TGLLightSource
+      Ambient.Color = {
+        CDCC4C3ECDCC4C3ECDCC4C3E0000803F
+      }
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        000048420000C8420000C8420000803F
+      }
+      SpotCutOff = 180
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      Position.Coordinates = {
+        00000000000000000000C0400000803F
+      }
+      object GLCamera1: TGLCamera
+        DepthOfView = 100
+        FocalLength = 50
+        Position.Coordinates = {
+          000000000000003F000000000000803F
+        }
+        left = 264
+        top = 144
+      end
+    end
+    object Portal1: TGLPortal
+      MaterialLibrary = GLMaterialLibrary1
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Position.Coordinates = {
+        00000000000000BF000000000000803F
+      }
+    end
+  end
+end

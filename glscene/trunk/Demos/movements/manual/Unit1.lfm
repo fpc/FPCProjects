@@ -1,0 +1,134 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 343
+  ClientWidth = 457
+  Constraints.MinHeight = 200
+  Constraints.MinWidth = 320
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnResize = FormResize
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 456
+  VertScrollBar.Page = 342
+  Left = 240
+  Height = 343
+  Top = 133
+  Width = 457
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clSilver
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 107.54693603515625
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Left = 8
+    Height = 273
+    Top = 8
+    Width = 433
+  end
+  object TrackBar: TTrackBar
+    Anchors = [akLeft, akRight, akBottom]
+    BorderSpacing.OnChange = nil
+    Frequency = 10
+    Max = 360
+    OnChange = TrackBarChange
+    PageSize = 10
+    ScalePos = trTop
+    TabOrder = 0
+    Frequency = 10
+    Max = 360
+    OnChange = TrackBarChange
+    PageSize = 10
+    ScalePos = trTop
+    Left = 56
+    Height = 25
+    Top = 288
+    Width = 385
+  end
+  object CBPlay: TCheckBox
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.OnChange = nil
+    Caption = 'Play'
+    Checked = True
+    State = cbChecked
+    TabOrder = 1
+    Left = 8
+    Height = 17
+    Top = 292
+    Width = 41
+  end
+  object StaticText1: TStaticText
+    BorderSpacing.OnChange = nil
+    BorderStyle = sbsSingle
+    Caption = '??? FPS'
+    Left = 16
+    Height = 17
+    Top = 16
+    Width = 45
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 48
+    object Cube1: TGLCube
+      Material.FrontProperties.Ambient.Color = {
+        0000000000000000000000000000803F
+      }
+      Material.FrontProperties.Diffuse.Color = {
+        0000000000000000000000000000803F
+      }
+      Material.FrontProperties.Emission.Color = {
+        0000803F0000803F000000000000803F
+      }
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+    end
+    object Cube2: TGLCube
+      Material.FrontProperties.Diffuse.Color = {
+        8786063F8786063F0000803F0000803F
+      }
+      Material.FrontProperties.Emission.Color = {
+        0000000000000000A1A0203F0000803F
+      }
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Position.Coordinates = {
+        0000404000000000000000000000803F
+      }
+      CubeSize = {
+        0000003F0000003F0000003F
+      }
+    end
+    object Cube3: TGLCube
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Position.Coordinates = {
+        000040400000803F000000000000803F
+      }
+      CubeSize = {
+        CDCC4C3ECDCC4C3ECDCC4C3E
+      }
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 100
+      TargetObject = Cube1
+      Position.Coordinates = {
+        000020410000A040000020410000803F
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 16
+    top = 80
+  end
+end

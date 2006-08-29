@@ -1,0 +1,120 @@
+object Form1: TForm1
+  Caption = 'Cel Shading Demo'
+  ClientHeight = 434
+  ClientWidth = 408
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  Position = poScreenCenter
+  TextHeight = 13
+  HorzScrollBar.Page = 407
+  VertScrollBar.Page = 433
+  Left = 288
+  Height = 434
+  Top = 132
+  Width = 408
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    FieldOfView = 152.45680236816406
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 434
+    Width = 408
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLDummyCube1: TGLDummyCube
+      CubeSize = 1
+      object GLCamera1: TGLCamera
+        DepthOfView = 100
+        FocalLength = 50
+        TargetObject = GLDummyCube1
+        Position.Coordinates = {
+          00000000000000400000A0400000803F
+        }
+        Direction.Coordinates = {
+          00000000000000000000803F00000000
+        }
+        object GLLightSource1: TGLLightSource
+          ConstAttenuation = 1
+          LightStyle = lsOmni
+          SpotCutOff = 180
+        end
+      end
+    end
+    object GLActor1: TGLActor
+      Interval = 100
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'TexturedCellMat'
+      Direction.Coordinates = {
+        000000000000803F2EBD3BB300000000
+      }
+      PitchAngle = 90
+      Up.Coordinates = {
+        000000002EBD3BB3000080BF00000000
+      }
+    end
+    object GLTorus1: TGLTorus
+      MajorRadius = 2.5
+      MinorRadius = 0.25
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'ColoredCelMat'
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        00000000000000000000803F00000000
+      }
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = 'TexturedCellMat'
+        Material.FrontProperties.Emission.Color = {
+          0000803F0000003F000000000000803F
+        }
+        Material.MaterialOptions = [moNoLighting]
+        Material.Texture.Disabled = False
+        Shader = GLTexturedCelShader
+      end    
+      item
+        Name = 'ColoredCelMat'
+        Material.FrontProperties.Diffuse.Color = {
+          00000000000000000000803F0000803F
+        }
+        Shader = GLColoredCelShader
+      end>
+    left = 40
+    top = 8
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    Mode = cmApplicationIdle
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 40
+  end
+  object AsyncTimer1: TAsyncTimer
+    Enabled = True
+    OnTimer = AsyncTimer1Timer
+    ThreadPriority = tpNormal
+    left = 8
+    top = 72
+  end
+  object GLTexturedCelShader: TGLCelShader
+    CelShaderOptions = [csoOutlines, csoTextured]
+    OutlineWidth = 3
+    left = 40
+    top = 40
+  end
+  object GLColoredCelShader: TGLCelShader
+    CelShaderOptions = [csoOutlines]
+    OutlineWidth = 3
+    left = 40
+    top = 72
+  end
+end

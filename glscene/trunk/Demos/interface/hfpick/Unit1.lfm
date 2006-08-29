@@ -1,0 +1,140 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 362
+  ClientWidth = 558
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 557
+  VertScrollBar.Page = 361
+  Left = 249
+  Height = 362
+  Top = 136
+  Width = 558
+  object GLSceneViewer: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 149.1151123046875
+    Align = alClient
+    OnMouseDown = GLSceneViewerMouseDown
+    OnMouseMove = GLSceneViewerMouseMove
+    Height = 362
+    Width = 456
+  end
+  object Panel1: TPanel
+    Align = alRight
+    BorderSpacing.OnChange = nil
+    BevelOuter = bvLowered
+    ClientHeight = 362
+    ClientWidth = 102
+    Font.Height = -11
+    Font.Name = 'Arial'
+    FullRepaint = False
+    TabOrder = 0
+    Left = 456
+    Height = 362
+    Width = 102
+    object Label1: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'HeightField'
+      Color = clNone
+      Font.Height = -15
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      Left = 8
+      Height = 18
+      Top = 8
+      Width = 82
+    end
+    object Label2: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'picking'
+      Color = clNone
+      Font.Height = -15
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      Left = 24
+      Height = 18
+      Top = 32
+      Width = 51
+    end
+    object Label3: TLabel
+      AutoSize = False
+      BorderSpacing.OnChange = nil
+      Caption = 'This demo uses a crude method for heightfield picking based on the Z-Buffer. This method can be easily adapted for a variety of objects and 2.5D problems.'
+      Color = clNone
+      WordWrap = True
+      Left = 8
+      Height = 145
+      Top = 168
+      Width = 89
+    end
+    object RBPaint: TRadioButton
+      BorderSpacing.OnChange = nil
+      Caption = 'Paint'
+      Checked = True
+      State = cbChecked
+      TabOrder = 0
+      Left = 16
+      Height = 17
+      Top = 80
+      Width = 49
+    end
+    object RadioButton2: TRadioButton
+      BorderSpacing.OnChange = nil
+      Caption = 'Rotate'
+      TabOrder = 1
+      Left = 16
+      Height = 17
+      Top = 112
+      Width = 57
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 40
+    object HeightField: TGLHeightField
+      XSamplingScale.Min = -5.5
+      XSamplingScale.Max = 5.5
+      XSamplingScale.Step = 0.200000002980232
+      YSamplingScale.Min = -5.5
+      YSamplingScale.Max = 5.5
+      YSamplingScale.Step = 0.200000002980232
+      ColorMode = hfcmAmbientAndDiffuse
+      OnGetHeight = HeightFieldGetHeight
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Scale.Coordinates = {
+        9A99193F9A99193F0000003F00000000
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
+    end
+    object GLLightSource1: TGLLightSource
+      Ambient.Color = {
+        9A99193E9A99193E9A99193E0000803F
+      }
+      ConstAttenuation = 1
+      Diffuse.Color = {
+        9A99593F9A99593F9A99593F0000803F
+      }
+      Position.Coordinates = {
+        0000E040000070410000A0400000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = HeightField
+      Position.Coordinates = {
+        0000A04000008040000040400000803F
+      }
+    end
+  end
+end

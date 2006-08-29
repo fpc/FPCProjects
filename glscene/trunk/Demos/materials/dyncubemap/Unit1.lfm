@@ -1,0 +1,181 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 371
+  ClientWidth = 413
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = Form1Create
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 412
+  VertScrollBar.Page = 370
+  Left = 249
+  Height = 371
+  Top = 126
+  Width = 413
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    FieldOfView = 147.75958251953125
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 346
+    Top = 25
+    Width = 413
+  end
+  object Panel1: TPanel
+    Align = alTop
+    BevelOuter = bvLowered
+    ClientHeight = 25
+    ClientWidth = 413
+    FullRepaint = False
+    TabOrder = 0
+    Height = 25
+    Width = 413
+    object CBDynamic: TCheckBox
+      Caption = 'Animate && Dynamically generate cube map'
+      Checked = True
+      State = cbChecked
+      TabOrder = 0
+      Left = 8
+      Height = 17
+      Top = 4
+      Width = 273
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 32
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Diffuse.Color = {
+        E5D0623FE5D0623FE5D0623F0000803F
+      }
+      Position.Coordinates = {
+        0000484200004842000048420000803F
+      }
+      SpotCutOff = 180
+    end
+    object Torus1: TGLTorus
+      MajorRadius = 5
+      MinorRadius = 0.300000011920929
+      Rings = 32
+      Sides = 12
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        0000803F000000000000000000000000
+      }
+      object Cylinder1: TGLCylinder
+        TopRadius = 0.300000011920929
+        BottomRadius = 0.300000011920929
+        Height = 5
+        Slices = 12
+        Stacks = 1
+        Material.FrontProperties.Emission.Color = {
+          00000000000000000000803F0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Direction.Coordinates = {
+          000000800000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000A04000000000000000000000803F
+        }
+        Up.Coordinates = {
+          00000000000000000000803F00000000
+        }
+      end
+      object Sphere1: TGLSphere
+        Radius = 1
+        Slices = 12
+        Stacks = 12
+        Material.FrontProperties.Diffuse.Color = {
+          1283003F0000803F000000000000803F
+        }
+        Material.FrontProperties.Emission.Color = {
+          00000000448B0C3FBA490C3E0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000A0C000000000000000000000803F
+        }
+      end
+      object Cube1: TGLCube
+        Material.FrontProperties.Diffuse.Color = {
+          AE47613EAE47613EAE47613E0000803F
+        }
+        Material.FrontProperties.Emission.Color = {
+          1283003F00000000000000000000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          000000000000A040000000000000803F
+        }
+        CubeSize = {
+          0000C03F0000C03F0000C03F
+        }
+      end
+    end
+    object Teapot1: TGLTeapot
+      Material.Texture.ImageClassName = 'TGLCubeMapImage'
+      Material.Texture.MinFilter = miLinear
+      Material.Texture.TextureMode = tmReplace
+      Material.Texture.MappingMode = tmmCubeMapReflection
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Direction.Coordinates = {
+        F404353F00000000F204353F00000000
+      }
+      Scale.Coordinates = {
+        00000041000000410000004100000000
+      }
+      Visible = False
+      object CubeMapCamera: TGLCamera
+        DepthOfView = 50
+        FocalLength = 25
+        TargetObject = Sphere1
+      end
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = Torus1
+      Position.Coordinates = {
+        0000204100008040000000410000803F
+      }
+    end
+  end
+  object GLMemoryViewer1: TGLMemoryViewer
+    Camera = CubeMapCamera
+    Width = 128
+    Height = 128
+    Buffer.BackgroundColor = clMaroon
+    left = 40
+    top = 32
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    MaxDeltaTime = 20
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 64
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 40
+    top = 64
+  end
+end

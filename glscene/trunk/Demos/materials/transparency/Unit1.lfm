@@ -1,0 +1,212 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 355
+  ClientWidth = 508
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 507
+  VertScrollBar.Page = 354
+  Left = 200
+  Height = 355
+  Top = 110
+  Width = 508
+  object Label1: TLabel
+    Caption = 'With Transparency and  Z-Buffering, '#13#10'ordering your objects is important.'#13#10#13#10'In this sample, only the spheres are'#13#10'transparent.'#13#10#13#10'Try the various options and see the'#13#10'differences ordering and blending'#13#10'mode make.'
+    Color = clNone
+    Left = 312
+    Height = 117
+    Top = 8
+    Width = 175
+  end
+  object Label2: TLabel
+    Caption = 'Central objects :'
+    Color = clNone
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    Left = 312
+    Height = 13
+    Top = 136
+    Width = 94
+  end
+  object Label3: TLabel
+    Caption = 'Orbiting spheres :'
+    Color = clNone
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    Left = 312
+    Height = 13
+    Top = 240
+    Width = 101
+  end
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = 13224393
+    FieldOfView = 135.99859619140625
+    Left = 8
+    Height = 313
+    Top = 8
+    Width = 297
+  end
+  object RBSTC: TRadioButton
+    Caption = 'Sphere, Torus, Cone'
+    OnClick = RBSTCClick
+    TabOrder = 0
+    Left = 328
+    Height = 17
+    Top = 160
+    Width = 137
+  end
+  object RBTSC: TRadioButton
+    Caption = 'Torus, Sphere, Cone'
+    OnClick = RBTSCClick
+    TabOrder = 1
+    Left = 328
+    Height = 17
+    Top = 184
+    Width = 137
+  end
+  object RBTCS: TRadioButton
+    Caption = 'Torus, Cone, Sphere'
+    Checked = True
+    OnClick = RBTCSClick
+    State = cbChecked
+    TabOrder = 2
+    Left = 328
+    Height = 17
+    Top = 208
+    Width = 137
+  end
+  object CBSorting: TCheckBox
+    Caption = 'osFarthestFirst'
+    Checked = True
+    OnClick = CBSortingClick
+    State = cbChecked
+    TabOrder = 3
+    Left = 328
+    Height = 17
+    Top = 288
+    Width = 97
+  end
+  object CBAdditive: TCheckBox
+    Caption = 'Additive blending'
+    OnClick = CBAdditiveClick
+    TabOrder = 4
+    Left = 328
+    Height = 17
+    Top = 264
+    Width = 105
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 16
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000A041000048420000F0410000803F
+      }
+      SpotCutOff = 180
+    end
+    object BaseDummyCube: TGLDummyCube
+      CubeSize = 1
+      ObjectsSorting = osRenderFarthestFirst
+      object OrbitingSphere1: TGLSphere
+        Radius = 0.5
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F0000803F000000000000003F
+        }
+        Material.BlendingMode = bmTransparency
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000004000000000000000000000803F
+        }
+      end
+      object OrbitingSphere2: TGLSphere
+        Radius = 0.5
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F0000803F000000000000003F
+        }
+        Material.BlendingMode = bmTransparency
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          000000C000000000000000000000803F
+        }
+      end
+      object DCCentral: TGLDummyCube
+        CubeSize = 1
+        ObjectsSorting = osNone
+        object Torus1: TGLTorus
+          MajorRadius = 0.800000011920929
+          MinorRadius = 0.100000001490116
+          Material.FrontProperties.Diffuse.Color = {
+            CDCC4C3EA1A0203EFAF9793F0000803F
+          }
+          Material.FrontProperties.Emission.Color = {
+            CDCCCC3DCDCCCC3DCDCCCC3D0000803F
+          }
+          Material.Texture.MappingTCoordinates.Coordinates = {
+            000000000000803F0000000000000000
+          }
+          Direction.Coordinates = {
+            000000000000803F2EBD3BB300000000
+          }
+          Up.Coordinates = {
+            000000002EBD3BB3000080BF00000000
+          }
+        end
+        object Cone1: TGLCone
+          BottomRadius = 0.300000011920929
+          Height = 2
+          Material.FrontProperties.Diffuse.Color = {
+            FBFA7A3FA5A4243EF9F8F83D0000803F
+          }
+          Material.FrontProperties.Emission.Color = {
+            E5E4E43EC1C0403CE1E0603D0000803F
+          }
+          Material.Texture.MappingTCoordinates.Coordinates = {
+            000000000000803F0000000000000000
+          }
+          Position.Coordinates = {
+            000000009A99993E000000000000803F
+          }
+        end
+        object CentralSphere: TGLSphere
+          Radius = 0.600000023841858
+          Material.FrontProperties.Diffuse.Color = {
+            D3D2523FCCCB4B3FFFFE7E3F9A99193F
+          }
+          Material.FrontProperties.Emission.Color = {
+            CDCC4C3ECDCC4C3ECDCC4C3E0000803F
+          }
+          Material.BlendingMode = bmTransparency
+          Material.Texture.MappingTCoordinates.Coordinates = {
+            000000000000803F0000000000000000
+          }
+        end
+      end
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 60
+      TargetObject = DCCentral
+      Position.Coordinates = {
+        0000A04000002040000020400000803F
+      }
+      left = 240
+      top = 144
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 16
+    top = 48
+  end
+end

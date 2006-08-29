@@ -1,0 +1,146 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 375
+  ClientWidth = 544
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 543
+  VertScrollBar.Page = 374
+  Left = 290
+  Height = 375
+  Top = 134
+  Width = 544
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    BeforeRender = GLSceneViewer1BeforeRender
+    Buffer.FaceCulling = False
+    FieldOfView = 161.81944274902344
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 375
+    Width = 544
+  end
+  object GLScene1: TGLScene
+    left = 24
+    top = 24
+    object GLSphere1: TGLSphere
+      Radius = 50
+      Slices = 9
+      Stacks = 9
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'CubeMap'
+    end
+    object DCTarget: TGLDummyCube
+      CubeSize = 1
+      Position.Coordinates = {
+        00000040000000000000803F0000803F
+      }
+    end
+    object GLDirectOpenGL1: TGLDirectOpenGL
+      OnRender = GLDirectOpenGL1Render
+    end
+    object GLHeightField1: TGLHeightField
+      XSamplingScale.Min = -63
+      XSamplingScale.Max = 63
+      XSamplingScale.Step = 2
+      YSamplingScale.Min = -63
+      YSamplingScale.Max = 63
+      YSamplingScale.Step = 2
+      OnGetHeight = GLHeightField1GetHeight
+      Material.Texture.MappingMode = tmmObjectLinear
+      Material.Texture.MappingSCoordinates.Coordinates = {
+        CDCC4C3D000000000000000000000000
+      }
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        00000000CDCC4C3D0000000000000000
+      }
+      Material.Texture.Disabled = False
+      Direction.Coordinates = {
+        00000000FFFF7F3F0100003300000000
+      }
+      Position.Coordinates = {
+        00000000000080BF000000000000803F
+      }
+      Scale.Coordinates = {
+        1F85EB3D1F85EB3D0000003F00000000
+      }
+      Up.Coordinates = {
+        2FBD3B3302000033000080BF00000000
+      }
+    end
+    object GLWaterPlane1: TGLWaterPlane
+      RainForce = 5000
+      Viscosity = 0.990000009536743
+      Elastic = 10
+      Resolution = 128
+      Options = []
+      SimulationFrequency = 100
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'CubeMap'
+      Position.Coordinates = {
+        00000000000080BF000000000000803F
+      }
+      Scale.Coordinates = {
+        000070410000803F0000704100000000
+      }
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000E04000007041000040400000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 30
+      TargetObject = DCTarget
+      Position.Coordinates = {
+        0000E04000008040000040400000803F
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 72
+    top = 24
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 24
+    top = 64
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = 'CubeMap'
+        Material.FrontProperties.Ambient.Color = {
+          0000803F0000803F0000803F0000803F
+        }
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F0000803F0000803F0000003F
+        }
+        Material.MaterialOptions = [moNoLighting]
+        Material.Texture.TextureMode = tmModulate
+        Material.Texture.TextureWrap = twNone
+        Material.Texture.MappingMode = tmmCubeMapReflection
+        Material.Texture.Disabled = False
+        Shader = GLUserShader1
+      end>
+    OnTextureNeeded = GLMaterialLibrary1TextureNeeded
+    left = 120
+    top = 24
+  end
+  object GLUserShader1: TGLUserShader
+    OnDoApply = GLUserShader1DoApply
+    OnDoUnApply = GLUserShader1DoUnApply
+    ShaderStyle = ssLowLevel
+    left = 120
+    top = 64
+  end
+end

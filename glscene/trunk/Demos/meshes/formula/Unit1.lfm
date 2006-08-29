@@ -1,0 +1,128 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 336
+  ClientWidth = 618
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 617
+  VertScrollBar.Page = 335
+  Left = 242
+  Height = 336
+  Top = 130
+  Width = 618
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    FieldOfView = 112.08729553222656
+    Align = alLeft
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 319
+    Top = 17
+    Width = 297
+  end
+  object GLSceneViewer2: TGLSceneViewer
+    Camera = GLCamera2
+    FieldOfView = 112.08729553222656
+    Align = alRight
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Left = 321
+    Height = 319
+    Top = 17
+    Width = 297
+  end
+  object Panel1: TPanel
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 17
+    ClientWidth = 618
+    FullRepaint = False
+    TabOrder = 0
+    Height = 17
+    Width = 618
+    object Label1: TLabel
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'Label1'
+      Color = clNone
+      Height = 13
+      Width = 297
+    end
+    object Label2: TLabel
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'Label2'
+      Color = clNone
+      Left = 304
+      Height = 13
+      Width = 297
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 32
+    object DummyCube1: TGLDummyCube
+      CubeSize = 10
+      object Mesh1: TGLMesh
+        Mode = mmTriangles
+        VertexMode = vmVNC
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        00008C42000048420000F0410000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 100
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        000048420000F0410000A0410000803F
+      }
+    end
+  end
+  object Timer1: TTimer
+    Interval = 5000
+    OnTimer = Timer1Timer
+    left = 280
+    top = 40
+  end
+  object GLScene2: TGLScene
+    left = 560
+    top = 40
+    object DummyCube2: TGLDummyCube
+      CubeSize = 10
+      object Mesh2: TGLMesh
+        Mode = mmTriangles
+        VertexMode = vmVNC
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+    end
+    object GLLightSource2: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        00008C42000048420000F0410000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera2: TGLCamera
+      DepthOfView = 100
+      FocalLength = 100
+      TargetObject = DummyCube2
+      Position.Coordinates = {
+        000048420000F0410000A0410000803F
+      }
+    end
+  end
+end

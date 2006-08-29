@@ -1,0 +1,103 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TForm1','FORMDATA',[
+  'TPF0'#6'TForm1'#5'Form1'#7'Caption'#6#5'Form1'#12'ClientHeight'#3#212#1#11'C'
+  +'lientWidth'#3'-'#2#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#8
+  +'OnCreate'#7#10'FormCreate'#13'PixelsPerInch'#2'`'#10'TextHeight'#2#13#18'Ho'
+  +'rzScrollBar.Page'#3','#2#18'VertScrollBar.Page'#3#211#1#4'Left'#3#19#1#6'He'
+  +'ight'#3#212#1#3'Top'#3#146#0#5'Width'#3'-'#2#0#14'TGLSceneViewer'#14'GLScen'
+  +'eViewer1'#6'Camera'#7#9'GLCamera1'#15'Buffer.OnChange'#13#25'Buffer.OnStruc'
+  +'turalChange'#13#11'FieldOfView'#5#0#0#0#0#0#223'I'#150#6'@'#5'Align'#7#8'al'
+  +'Client'#11'OnMouseDown'#7#23'GLSceneViewer1MouseDown'#11'OnMouseMove'#7#23
+  +'GLSceneViewer1MouseMove'#6'Height'#3'y'#1#5'Width'#3'-'#2#0#0#6'TPanel'#6'P'
+  +'anel1'#5'Align'#7#8'alBottom'#22'BorderSpacing.OnChange'#13#12'ClientHeight'
+  +#2'['#11'ClientWidth'#3'-'#2#11'FullRepaint'#8#8'TabOrder'#2#0#6'Height'#2'['
+  +#3'Top'#3'y'#1#5'Width'#3'-'#2#0#6'TLabel'#6'Label1'#22'BorderSpacing.OnChan'
+  +'ge'#13#7'Caption'#6#15'Camera Distance'#5'Color'#7#6'clNone'#12'Font.CharSe'
+  +'t'#7#12'ANSI_CHARSET'#11'Font.Height'#2#247#9'Font.Name'#6#11'Small Fonts'#4
+  +'Left'#3'O'#1#6'Height'#2#11#3'Top'#2':'#5'Width'#2'H'#0#0#6'TLabel'#6'Label'
+  +'6'#22'BorderSpacing.OnChange'#13#7'Caption'#6#10'Glow Alpha'#5'Color'#7#6'c'
+  +'lNone'#12'Font.CharSet'#7#12'ANSI_CHARSET'#11'Font.Height'#2#247#9'Font.Nam'
+  +'e'#6#11'Small Fonts'#4'Left'#3'X'#1#6'Height'#2#11#3'Top'#2#28#5'Width'#2'/'
+  +#0#0#6'TLabel'#6'Label4'#22'BorderSpacing.OnChange'#13#7'Caption'#6#9'Vibrat'
+  +'ion'#5'Color'#7#6'clNone'#12'Font.CharSet'#7#12'ANSI_CHARSET'#11'Font.Heigh'
+  +'t'#2#247#9'Font.Name'#6#11'Small Fonts'#4'Left'#3#176#1#6'Height'#2#11#3'To'
+  +'p'#2#28#5'Width'#2'%'#0#0#6'TLabel'#6'Label3'#22'BorderSpacing.OnChange'#13
+  +#7'Caption'#6#8'Wildness'#5'Color'#7#6'clNone'#12'Font.CharSet'#7#12'ANSI_CH'
+  +'ARSET'#11'Font.Height'#2#247#9'Font.Name'#6#11'Small Fonts'#4'Left'#3#184#1
+  +#6'Height'#2#11#5'Width'#2'%'#0#0#6'TLabel'#6'Label5'#22'BorderSpacing.OnCha'
+  +'nge'#13#7'Caption'#6#9'Glow Size'#5'Color'#7#6'clNone'#12'Font.CharSet'#7#12
+  +'ANSI_CHARSET'#11'Font.Height'#2#247#9'Font.Name'#6#11'Small Fonts'#4'Left'#3
+  +'X'#1#6'Height'#2#11#5'Width'#2'('#0#0#9'TTrackBar'#11'DistanceBar'#22'Borde'
+  +'rSpacing.OnChange'#13#9'Frequency'#2#1#3'Max'#2#20#3'Min'#2#1#8'OnChange'#7
+  +#17'DistanceBarChange'#8'Position'#2#5#8'ScalePos'#7#5'trTop'#8'TabOrder'#2#0
+  +#7'TabStop'#8#9'Frequency'#2#1#3'Max'#2#20#3'Min'#2#1#8'OnChange'#7#17'Dista'
+  +'nceBarChange'#8'Position'#2#5#8'ScalePos'#7#5'trTop'#7'TabStop'#8#4'Left'#3
+  +'8'#1#6'Height'#2#16#3'Top'#2'C'#5'Width'#2's'#0#0#9'TTrackBar'#5'GSbar'#22
+  +'BorderSpacing.OnChange'#13#9'Frequency'#2#1#3'Max'#2'2'#8'OnChange'#7#11'GS'
+  +'barChange'#8'Position'#2#10#8'ScalePos'#7#5'trTop'#8'TabOrder'#2#1#7'TabSto'
+  +'p'#8#9'Frequency'#2#1#3'Max'#2'2'#8'OnChange'#7#11'GSbarChange'#8'Position'
+  +#2#10#8'ScalePos'#7#5'trTop'#7'TabStop'#8#4'Left'#3'8'#1#6'Height'#2#16#3'To'
+  +'p'#2#10#5'Width'#2's'#0#0#9'TTrackBar'#5'GAbar'#22'BorderSpacing.OnChange'
+  +#13#9'Frequency'#2#1#3'Max'#2'2'#8'OnChange'#7#11'GAbarChange'#8'Position'#2
+  +#15#8'ScalePos'#7#5'trTop'#8'TabOrder'#2#2#7'TabStop'#8#9'Frequency'#2#1#3'M'
+  +'ax'#2'2'#8'OnChange'#7#11'GAbarChange'#8'Position'#2#15#8'ScalePos'#7#5'trT'
+  +'op'#7'TabStop'#8#4'Left'#3'8'#1#6'Height'#2#16#3'Top'#2'&'#5'Width'#2's'#0#0
+  +#9'TTrackBar'#7'WildBar'#22'BorderSpacing.OnChange'#13#9'Frequency'#2#1#3'Ma'
+  +'x'#2#20#8'OnChange'#7#13'WildBarChange'#8'Position'#2#4#8'ScalePos'#7#5'trT'
+  +'op'#8'TabOrder'#2#3#7'TabStop'#8#9'Frequency'#2#1#3'Max'#2#20#8'OnChange'#7
+  +#13'WildBarChange'#8'Position'#2#4#8'ScalePos'#7#5'trTop'#7'TabStop'#8#4'Lef'
+  +'t'#3#168#1#6'Height'#2#16#3'Top'#2#10#5'Width'#2's'#0#0#9'TTrackBar'#6'VibB'
+  +'ar'#22'BorderSpacing.OnChange'#13#9'Frequency'#2#1#3'Max'#2#20#8'OnChange'#7
+  +#12'VibBarChange'#8'ScalePos'#7#5'trTop'#8'TabOrder'#2#4#7'TabStop'#8#9'Freq'
+  +'uency'#2#1#3'Max'#2#20#8'OnChange'#7#12'VibBarChange'#8'ScalePos'#7#5'trTop'
+  +#7'TabStop'#8#4'Left'#3#168#1#6'Height'#2#16#3'Top'#2'&'#5'Width'#2's'#0#0#9
+  +'TCheckBox'#7'SpinBox'#22'BorderSpacing.OnChange'#13#7'Caption'#6#18'User Fo'
+  +'rmula(Spin)'#8'TabOrder'#2#5#4'Left'#3#180#1#6'Height'#2#17#3'Top'#2'I'#5'W'
+  +'idth'#2'e'#0#0#9'TCheckBox'#7'CoreBox'#22'BorderSpacing.OnChange'#13#7'Capt'
+  +'ion'#6#4'Core'#7'Checked'#9#7'OnClick'#7#12'CoreBoxClick'#5'State'#7#9'cbCh'
+  +'ecked'#8'TabOrder'#2#6#4'Left'#3#180#1#6'Height'#2#17#3'Top'#2':'#5'Width'#2
+  +'1'#0#0#5'TMemo'#5'Memo1'#22'BorderSpacing.OnChange'#13#12'Font.CharSet'#7#12
+  +'ANSI_CHARSET'#11'Font.Height'#2#247#9'Font.Name'#6#11'Small Fonts'#8'TabOrd'
+  +'er'#2#7#4'Left'#2#2#6'Height'#2'W'#3'Top'#2#255#5'Width'#3'7'#1#0#0#9'TChec'
+  +'kBox'#8'PauseBox'#22'BorderSpacing.OnChange'#13#7'Caption'#6#5'Pause'#7'OnC'
+  +'lick'#7#13'PauseBoxClick'#8'TabOrder'#2#8#4'Left'#3#232#1#6'Height'#2#17#3
+  +'Top'#2':'#5'Width'#2'1'#0#0#0#8'TGLScene'#8'GLScene1'#14'ObjectsSorting'#7#6
+  +'osNone'#4'left'#2#8#3'top'#2#8#0#14'TGLHeightField'#12'HeightField1'#18'XSa'
+  +'mplingScale.Min'#5#0#0#0#0#0#0#0#128#255#191#18'XSamplingScale.Max'#5#0#0#0
+  ,#0#0#0#0#128#255'?'#19'XSamplingScale.Step'#5#0#0#0#0#0#205#204#204#252'?'#18
+  +'YSamplingScale.Min'#5#0#0#0#0#0#0#0#128#255#191#18'YSamplingScale.Max'#5#0#0
+  +#0#0#0#0#0#128#255'?'#19'YSamplingScale.Step'#5#0#0#0#0#0#205#204#204#252'?'
+  +#7'Options'#11#21'hfoTextureCoordinates'#0#11'OnGetHeight'#7#21'HeightField1'
+  +'GetHeight'#26'Material.Texture.MinFilter'#7#22'miNearestMipmapNearest'#28'M'
+  +'aterial.Texture.TextureMode'#7#10'tmModulate0Material.Texture.MappingTCoord'
+  +'inates.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#25'Mater'
+  +'ial.Texture.Disabled'#8#21'Direction.Coordinates'#10#16#0#0#0#0#0#0#0#0#0
+  +#128'?'#0#0#0#0#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0#0#0#0#0#0#0'@'
+  +#192#0#0#0#0#0#0#128'?'#17'Scale.Coordinates'#10#16#0#0#0#0#0' A'#0#0' A'#0#0
+  +#128'?'#0#0#0#0#14'Up.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#128#191#0
+  +#0#0#0#0#0#12'TGLDummyCube'#7'Objects'#8'CubeSize'#5#0#0#0#0#0#0#0#128#255'?'
+  +#14'ObjectsSorting'#7#19'osRenderBlendedLast'#0#7'TGLCube'#10'TargetCube&Mat'
+  +'erial.FrontProperties.Diffuse.Color'#10#16#0#0#0#129#128#128'>'#129#128#128
+  +'>'#0#0#128'?'#0#0#128'?''Material.FrontProperties.Emission.Color'#10#16#0#0
+  +#0#0#0#0#0#0#0#0#0#129#128#0'>'#0#0#128'?0Material.Texture.MappingTCoordinat'
+  +'es.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#20'Position.'
+  +'Coordinates'#10#16#0#0#0#0#0'@@'#0#0#0#0#0#0#0#0#0#0#128'?'#0#0#7'TGLCube'#8
+  +'ThorCube'#20'Position.Coordinates'#10#16#0#0#0#0#0'@'#192#0#0#0#0#0#0#0#0#0
+  +#0#128'?'#0#0#14'TGLLightSource'#14'GLLightSource1'#16'ConstAttenuation'#5#0
+  +#0#0#0#0#0#0#128#255'?'#10'LightStyle'#7#6'lsOmni'#10'SpotCutOff'#5#0#0#0#0#0
+  +#0#0#180#6'@'#25'SpotDirection.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128#191#0
+  +#0#0#0#0#0#0#0#0#0#0#9'TGLCamera'#9'GLCamera1'#11'DepthOfView'#5#0#0#0#0#0#0
+  +#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0#200#4'@'#12'TargetObject'#7#7'Ob'
+  +'jects'#20'Position.Coordinates'#10#16#0#0#0#0#0'@@'#0#0#0'@'#0#0#160'@'#0#0
+  +#128'?'#4'left'#3#152#0#3'top'#2'h'#0#0#0#11'TGLCadencer'#11'GLCadencer1'#5
+  +'Scene'#7#8'GLScene1'#4'left'#2'('#3'top'#2#8#0#0#6'TTimer'#6'Timer1'#7'OnTi'
+  +'mer'#7#11'Timer1Timer'#4'left'#2#8#3'top'#2'('#0#0#16'TGLThorFXManager'#16
+  +'GLThorFXManager1'#18'Target.Coordinates'#10#16#0#0#0#0#0#192'@'#0#0#0#0#0#0
+  +#0#0#0#0#0#0#8'Cadencer'#7#11'GLCadencer1'#9'Maxpoints'#2'@'#8'GlowSize'#5#0
+  +#0#0#0#0#205#204#204#252'?'#16'InnerColor.Color'#10#16#0#0#0#0#0#128'?'#0#0
+  +#128'?'#0#0#128'?'#154#153#153'>'#16'OuterColor.Color'#10#16#0#0#0#0#0#0#0#0
+  +#0#0#0#0#0#128'?'#0#0#0#0#4'Core'#9#4'Glow'#9#8'Wildness'#5#0#0#0#0#0#0#0#128
+  +#255'?'#11'OnCalcPoint'#7#25'GLThorFXManager1CalcPoint'#4'left'#2'H'#3'top'#2
+  +#8#0#0#0
+]);

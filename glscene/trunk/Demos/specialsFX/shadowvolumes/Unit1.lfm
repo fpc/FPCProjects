@@ -1,0 +1,412 @@
+object Form1: TForm1
+  ActiveControl = CBShowVolumes
+  Caption = 'Form1'
+  ClientHeight = 485
+  ClientWidth = 703
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnResize = FormResize
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 702
+  VertScrollBar.Page = 484
+  Left = 241
+  Height = 485
+  Top = 134
+  Width = 703
+  object GLSceneViewer: TGLSceneViewer
+    Camera = GLCamera
+    Buffer.BackgroundColor = clBlack
+    Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
+    FieldOfView = 156.69940185546875
+    Align = alClient
+    OnMouseDown = GLSceneViewerMouseDown
+    OnMouseMove = GLSceneViewerMouseMove
+    Height = 485
+    Width = 568
+  end
+  object Panel1: TPanel
+    Align = alRight
+    BevelInner = bvLowered
+    BevelOuter = bvNone
+    ClientHeight = 485
+    ClientWidth = 135
+    Font.Height = -11
+    Font.Name = 'Arial'
+    FullRepaint = False
+    TabOrder = 0
+    OnClick = Panel1Click
+    Left = 568
+    Height = 485
+    Width = 135
+    object Label1: TLabel
+      Caption = 'Shadow Volumes'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -15
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+      Left = 8
+      Height = 18
+      Top = 8
+      Width = 120
+    end
+    object Label2: TLabel
+      Anchors = [akLeft, akBottom]
+      Caption = 'Shadow Resolution'
+      Color = clNone
+      ParentColor = False
+      Left = 16
+      Height = 14
+      Top = 445
+      Width = 94
+    end
+    object CBShowVolumes: TCheckBox
+      Caption = 'Show Volumes'
+      OnClick = CBShowVolumesClick
+      TabOrder = 0
+      Left = 16
+      Height = 17
+      Top = 192
+      Width = 97
+    end
+    object RBZFail: TRadioButton
+      Caption = 'Z-Fail (capped)'
+      Checked = True
+      OnClick = RBZFailClick
+      State = cbChecked
+      TabOrder = 1
+      Left = 16
+      Height = 17
+      Top = 88
+      Width = 97
+    end
+    object RBZPass: TRadioButton
+      Caption = 'Z-Pass'
+      OnClick = RBZFailClick
+      TabOrder = 2
+      Left = 16
+      Height = 17
+      Top = 112
+      Width = 73
+    end
+    object RBNoShadows: TRadioButton
+      Caption = 'No shadows'
+      OnClick = RBZFailClick
+      TabOrder = 3
+      Left = 16
+      Height = 17
+      Top = 56
+      Width = 97
+    end
+    object RBDarkening: TRadioButton
+      Caption = 'Darkening (faked)'
+      OnClick = RBZFailClick
+      TabOrder = 4
+      Left = 16
+      Height = 17
+      Top = 144
+      Width = 105
+    end
+    object CBMainLight: TCheckBox
+      Caption = 'Main Light'
+      Checked = True
+      OnClick = CBMainLightClick
+      State = cbChecked
+      TabOrder = 5
+      Left = 16
+      Height = 17
+      Top = 232
+      Width = 97
+    end
+    object CBBlueLight: TCheckBox
+      Caption = 'Blue Light'
+      OnClick = CBBlueLightClick
+      TabOrder = 6
+      Left = 16
+      Height = 17
+      Top = 256
+      Width = 97
+    end
+    object CBRedLight: TCheckBox
+      Caption = 'Red Light'
+      OnClick = CBRedLightClick
+      TabOrder = 7
+      Left = 16
+      Height = 17
+      Top = 280
+      Width = 97
+    end
+    object ScrollBar_ShadowResolution: TScrollBar
+      Anchors = [akLeft, akBottom]
+      Max = 21
+      Min = 3
+      Position = 3
+      TabOrder = 8
+      OnChange = ScrollBar_ShadowResolutionChange
+      Left = 16
+      Height = 17
+      Top = 461
+      Width = 89
+    end
+    object Button_GenerateSilhouette1: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = 'Generate Silhouette'
+      OnClick = Button_GenerateSilhouetteClick
+      TabOrder = 9
+      Left = 16
+      Height = 25
+      Top = 328
+      Width = 105
+    end
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 16
+    object DCLight1Turn: TGLDummyCube
+      CubeSize = 1
+      object DCLight1Pitch: TGLDummyCube
+        CubeSize = 1
+        object GLLightSource1: TGLLightSource
+          Ambient.Color = {
+            9A99193F9A99193F9A99193F0000803F
+          }
+          ConstAttenuation = 1
+          Diffuse.Color = {
+            9A99193F9A99193F9A99193F0000803F
+          }
+          Position.Coordinates = {
+            0000000000008040000000000000803F
+          }
+          SpotCutOff = 180
+          object GLSphere1: TGLSphere
+            Radius = 0.150000005960464
+            Slices = 11
+            Stacks = 11
+            Material.FrontProperties.Diffuse.Color = {
+              0000803F0000803F0000803F0000803F
+            }
+            Material.MaterialOptions = [moNoLighting]
+            ShowAxes = True
+          end
+        end
+      end
+    end
+    object DCCamera: TGLDummyCube
+      CubeSize = 1
+      object GLCamera: TGLCamera
+        DepthOfView = 1.00000001504747E+30
+        FocalLength = 50
+        TargetObject = DCCamera
+        CameraStyle = csInfinitePerspective
+        Position.Coordinates = {
+          000020410000E0400000A0400000803F
+        }
+      end
+    end
+    object DCLight2: TGLDummyCube
+      CubeSize = 1
+      Direction.Coordinates = {
+        000000006C61D83ECA03683F00000000
+      }
+      PitchAngle = 15
+      Up.Coordinates = {
+        00000000CA03683F6B61D8BE00000000
+      }
+      object GLLightSource2: TGLLightSource
+        ConstAttenuation = 1
+        Diffuse.Color = {
+          00000000000000000000803F0000803F
+        }
+        QuadraticAttenuation = 0.009999999776483
+        Position.Coordinates = {
+          00000000000000000000A0C00000803F
+        }
+        LightStyle = lsOmni
+        Shining = False
+        SpotCutOff = 180
+        object GLSphere2: TGLSphere
+          Radius = 0.150000005960464
+          Slices = 9
+          Stacks = 9
+          Material.FrontProperties.Diffuse.Color = {
+            00000000000000000000803F0000803F
+          }
+          Material.MaterialOptions = [moNoLighting]
+        end
+      end
+    end
+    object DCLight3: TGLDummyCube
+      CubeSize = 1
+      Direction.Coordinates = {
+        00000000421DAFBEB28F703F00000000
+      }
+      PitchAngle = -15
+      Up.Coordinates = {
+        00000000B28F703F431DAF3E00000000
+      }
+      object GLLightSource3: TGLLightSource
+        ConstAttenuation = 1
+        Diffuse.Color = {
+          0000803F00000000000000000000803F
+        }
+        QuadraticAttenuation = 0.009999999776483
+        Position.Coordinates = {
+          0000000000008040000000000000803F
+        }
+        Shining = False
+        SpotCutOff = 180
+        object GLSphere3: TGLSphere
+          Radius = 0.150000005960464
+          Material.FrontProperties.Diffuse.Color = {
+            0000803F00000000000000000000803F
+          }
+          Material.MaterialOptions = [moNoLighting]
+        end
+      end
+    end
+    object GLShadowVolume: TGLShadowVolume
+      Lights = <      
+        item
+          LightSource = GLLightSource1
+        end      
+        item
+          LightSource = GLLightSource2
+        end      
+        item
+          LightSource = GLLightSource3
+        end>
+      Occluders = <      
+        item
+          Caster = GLCube1
+        end      
+        item
+          Caster = GLCylinder1
+        end      
+        item
+          Caster = GLSphere_Shadow
+          CastingMode = scmParentVisible
+        end>
+      Options = [svoCacheSilhouettes, svoScissorClips, svoWorldScissorClip, svoDesignVisible]
+      object GLPlane1: TGLPlane
+        Height = 20
+        Width = 20
+        XTiles = 9
+        YTiles = 9
+        Style = [psTileTexture]
+        Material.FrontProperties.Ambient.Color = {
+          00000000000000001283003F0000803F
+        }
+        Position.Coordinates = {
+          000000000000A040000020C10000803F
+        }
+      end
+      object GLPlane2: TGLPlane
+        Height = 20
+        Width = 20
+        XTiles = 9
+        YTiles = 9
+        Style = [psTileTexture]
+        Material.FrontProperties.Ambient.Color = {
+          D7A3703E00000000000000000000803F
+        }
+        Direction.Coordinates = {
+          0000803F000000000000000000000000
+        }
+        Position.Coordinates = {
+          000020C10000A040000000000000803F
+        }
+        Up.Coordinates = {
+          00000000FFFF7F3F0000008000000000
+        }
+      end
+      object GLPlane3: TGLPlane
+        Height = 20
+        Width = 20
+        XTiles = 20
+        YTiles = 20
+        Style = [psTileTexture]
+        Material.FrontProperties.Ambient.Color = {
+          000000001283803E000000000000803F
+        }
+        Direction.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          00000000295C9FC0000000000000803F
+        }
+        Up.Coordinates = {
+          0000000000000000000080BF00000000
+        }
+      end
+      object GLFreeForm: TGLFreeForm
+        AutoCentering = [macCenterX, macCenterY, macCenterZ]
+        MaterialLibrary = GLMaterialLibrary1
+        Direction.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Scale.Coordinates = {
+          295C8F3D295C8F3D295C8F3D00000000
+        }
+        Up.Coordinates = {
+          0000000000000000000080BF00000000
+        }
+      end
+      object GLCube1: TGLCube
+        Position.Coordinates = {
+          00004040000000C0000000000000803F
+        }
+      end
+      object DCSpheres: TGLDummyCube
+        CubeSize = 1
+      end
+      object GLCylinder1: TGLCylinder
+        TopRadius = 0.800000011920929
+        BottomRadius = 0.600000023841858
+        Height = 6
+        Position.Coordinates = {
+          00004040000080C0000000000000803F
+        }
+        Up.Coordinates = {
+          0000803F000000000000000000000000
+        }
+      end
+      object GLSphere4: TGLSphere
+        Radius = 2
+        Position.Coordinates = {
+          00000000000000000000C0C00000803F
+        }
+        object GLSphere_Shadow: TGLSphere
+          Radius = 2
+          Slices = 5
+          Stacks = 5
+          Visible = False
+        end
+      end
+    end
+    object GLLines1: TGLLines
+      SplineMode = lsmSegments
+      Nodes = <>
+      NodesAspect = lnaInvisible
+      LineWidth = 2
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    Mode = cmapplicationidle
+    OnProgress = GLCadencer1Progress
+    left = 56
+    top = 16
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 96
+    top = 16
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    left = 16
+    top = 56
+  end
+end

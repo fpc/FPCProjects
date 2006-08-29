@@ -1,0 +1,123 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 435
+  ClientWidth = 666
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 665
+  VertScrollBar.Page = 434
+  Left = 258
+  Height = 435
+  Top = 160
+  Width = 666
+  object Panel1: TPanel
+    Align = alLeft
+    BorderSpacing.OnChange = nil
+    ClientHeight = 435
+    ClientWidth = 161
+    FullRepaint = False
+    TabOrder = 0
+    OnClick = Panel1Click
+    Height = 435
+    Width = 161
+    object Label1: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Resolution'
+      Color = clNone
+      Left = 16
+      Height = 13
+      Top = 32
+      Width = 50
+    end
+    object TrackBar1: TTrackBar
+      BorderSpacing.OnChange = nil
+      Frequency = 1
+      Max = 50
+      Min = 1
+      OnChange = TrackBar1Change
+      Position = 20
+      ScalePos = trTop
+      TabOrder = 0
+      TickStyle = tsManual
+      Frequency = 1
+      Max = 50
+      Min = 1
+      OnChange = TrackBar1Change
+      Position = 20
+      ScalePos = trTop
+      TickStyle = tsManual
+      Left = 16
+      Height = 25
+      Top = 48
+      Width = 129
+    end
+    object CheckBox1: TCheckBox
+      BorderSpacing.OnChange = nil
+      Caption = 'Wireframe'
+      OnClick = CheckBox1Click
+      TabOrder = 1
+      Left = 16
+      Height = 17
+      Top = 80
+      Width = 97
+    end
+  end
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 154.10697937011719
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Left = 161
+    Height = 435
+    Width = 505
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLDummyCube1: TGLDummyCube
+      CubeSize = 1
+      object GLCamera1: TGLCamera
+        DepthOfView = 100
+        FocalLength = 50
+        TargetObject = GLDummyCube1
+        Position.Coordinates = {
+          000040C000004040000040400000803F
+        }
+        Direction.Coordinates = {
+          00000000000080BF0000008000000000
+        }
+        Up.Coordinates = {
+          00000000000000000000803F00000000
+        }
+        object GLLightSource1: TGLLightSource
+          ConstAttenuation = 1
+          Specular.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          SpotCutOff = 180
+        end
+      end
+    end
+    object GLActor1: TGLActor
+      Interval = 100
+      Material.BackProperties.PolygonMode = pmLines
+      Material.FrontProperties.Diffuse.Color = {
+        0000803F0000803F000000000000803F
+      }
+      Material.FrontProperties.Shininess = 50
+      Material.FrontProperties.Specular.Color = {
+        0000803F0000803F0000803F0000803F
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    left = 112
+  end
+end

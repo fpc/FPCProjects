@@ -1,0 +1,85 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 304
+  ClientWidth = 382
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  Position = poScreenCenter
+  TextHeight = 13
+  HorzScrollBar.Page = 381
+  VertScrollBar.Page = 303
+  Left = 245
+  Height = 304
+  Top = 131
+  Width = 382
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 143.58303833007812
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 304
+    Width = 382
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLDummyCube1: TGLDummyCube
+      CubeSize = 1
+      object GLCamera1: TGLCamera
+        DepthOfView = 100
+        FocalLength = 50
+        TargetObject = GLDummyCube1
+        Position.Coordinates = {
+          0000803F000040400000A0C00000803F
+        }
+        object GLLightSource1: TGLLightSource
+          ConstAttenuation = 1
+          SpotCutOff = 180
+        end
+      end
+    end
+    object GLCube1: TGLCube
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'MultipassMat'
+      CubeSize = {
+        000000400000004000000040
+      }
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = 'MultipassMat'
+        Shader = GLMultiMaterialShader1
+      end>
+    left = 40
+    top = 8
+  end
+  object GLMaterialLibrary2: TGLMaterialLibrary
+    left = 40
+    top = 40
+  end
+  object GLMultiMaterialShader1: TGLMultiMaterialShader
+    MaterialLibrary = GLMaterialLibrary2
+    left = 8
+    top = 40
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 72
+  end
+  object GLTexCombineShader1: TGLTexCombineShader
+    Combiners.Strings = (
+      'Tex0:=PrimaryColor dot3 Tex0;'
+    )
+    left = 40
+    top = 72
+  end
+end

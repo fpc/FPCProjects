@@ -1,0 +1,175 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 316
+  ClientWidth = 457
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 456
+  VertScrollBar.Page = 315
+  Left = 302
+  Height = 316
+  Top = 132
+  Width = 457
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 144.87945556640625
+    Align = alClient
+    Height = 316
+    Width = 457
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 16
+    object DCSphere: TGLDummyCube
+      CubeSize = 1
+      object Sphere: TGLSphere
+        Radius = 0.5
+        Material.FrontProperties.Diffuse.Color = {
+          000000000000803F000000000000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000804000000000000000000000803F
+        }
+      end
+      object Lines2: TGLLines
+        Nodes = <        
+          item
+          end        
+          item
+          end>
+        NodesAspect = lnaInvisible
+        LineColor.Color = {
+          000000000000803F000000000000803F
+        }
+      end
+    end
+    object GLLightSource1: TGLLightSource
+      Ambient.Color = {
+        C1C0403FC1C0403FC1C0403F0000803F
+      }
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000A04100007041000040410000803F
+      }
+      SpotCutOff = 180
+    end
+    object DCArrow: TGLDummyCube
+      CubeSize = 1
+      object ArrowLine: TGLArrowLine
+        TopRadius = 0.100000001490116
+        TopArrowHeadHeight = 0.5
+        TopArrowHeadRadius = 0.200000002980232
+        BottomArrowHeadHeight = 0.5
+        BottomArrowHeadRadius = 0.200000002980232
+        BottomRadius = 0.100000001490116
+        Height = 1
+        Material.FrontProperties.Diffuse.Color = {
+          C9C8C83EC9C8C83E0000803F0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          000080BF00000000000000000000803F
+        }
+        object Lines1: TGLLines
+          Nodes = <          
+            item
+            end          
+            item
+            end>
+          NodesAspect = lnaInvisible
+          LineColor.Color = {
+            D6D5553FD6D5553F0000803F0000803F
+          }
+        end
+        object Plane1: TGLPlane
+          Height = 1
+          Width = 0.300000011920929
+          Material.FrontProperties.Diffuse.Color = {
+            00000000000000000000803F0000803F
+          }
+          Material.Texture.MappingTCoordinates.Coordinates = {
+            000000000000803F0000000000000000
+          }
+          Direction.Coordinates = {
+            000000800000803F0000000000000000
+          }
+          Position.Coordinates = {
+            0000000000000000CDCC4CBE0000803F
+          }
+          Up.Coordinates = {
+            0000803F000000000000000000000000
+          }
+        end
+      end
+    end
+    object Disk1: TGLDisk
+      InnerRadius = 0.899999976158142
+      Loops = 1
+      OuterRadius = 1
+      SweepAngle = 360
+      Material.FrontProperties.Diffuse.Color = {
+        00000000000000008180003F0000803F
+      }
+      Material.FrontProperties.Emission.Color = {
+        00000000000000008180003F0000803F
+      }
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        E9DC72BF000000009BE8A13E00000000
+      }
+    end
+    object Disk2: TGLDisk
+      InnerRadius = 3.900000095367432
+      Loops = 1
+      OuterRadius = 4
+      Slices = 32
+      SweepAngle = 360
+      Material.FrontProperties.Diffuse.Color = {
+        000000008180003F000000000000803F
+      }
+      Material.FrontProperties.Emission.Color = {
+        000000008180803E000000000000803F
+      }
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        E9DC72BF000000009BE8A13E00000000
+      }
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = DCSphere
+      Position.Coordinates = {
+        0000A0400000E040000000410000803F
+      }
+      left = 208
+      top = 128
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 56
+    top = 16
+  end
+end

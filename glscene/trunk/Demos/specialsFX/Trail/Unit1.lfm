@@ -1,0 +1,105 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 480
+  ClientWidth = 510
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 509
+  VertScrollBar.Page = 479
+  Left = 252
+  Height = 480
+  Top = 132
+  Width = 510
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = 4194304
+    FieldOfView = 154.77957153320312
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 447
+    Top = 33
+    Width = 510
+  end
+  object Panel1: TPanel
+    Align = alTop
+    Caption = ' '
+    ClientHeight = 33
+    ClientWidth = 510
+    FullRepaint = False
+    TabOrder = 0
+    Height = 33
+    Width = 510
+    object Label1: TLabel
+      Caption = 'Speed:'
+      Color = clNone
+      Left = 8
+      Height = 13
+      Top = 12
+      Width = 34
+    end
+    object TrackBarSpeed: TTrackBar
+      Frequency = 1
+      Position = 1
+      ScalePos = trTop
+      TabOrder = 0
+      Frequency = 1
+      Position = 1
+      ScalePos = trTop
+      Left = 48
+      Height = 25
+      Top = 4
+      Width = 133
+    end
+  end
+  object GLScene1: TGLScene
+    left = 60
+    top = 36
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        00000000E1A22B41000000000000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLSphere1: TGLSphere
+      Radius = 0.5
+      Position.Coordinates = {
+        000000008E2EBA3F8C2EBA3E0000803F
+      }
+    end
+    object Room: TGLSphere
+      Radius = 8
+      NormalDirection = ndInside
+      Material.FrontProperties.PolygonMode = pmLines
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = Room
+      Position.Coordinates = {
+        CFBD804073312F409AF80A410000803F
+      }
+      Direction.Coordinates = {
+        82FABBBE331FC9BE96D857BF00000000
+      }
+      Up.Coordinates = {
+        3F9720BE056C6B3FE965B8BE00000000
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 100
+    top = 36
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 140
+    top = 36
+  end
+end

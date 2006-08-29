@@ -1,0 +1,72 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 358
+  ClientWidth = 469
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 468
+  VertScrollBar.Page = 357
+  Left = 255
+  Height = 358
+  Top = 131
+  Width = 469
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 134.53317260742187
+    Align = alClient
+    Height = 358
+    Width = 469
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000484200002042000070420000803F
+      }
+      SpotCutOff = 180
+    end
+    object ExtrusionSolid: TGLExtrusionSolid
+      Parts = [espOutside, espStartPolygon, espStopPolygon]
+      Height = 1
+      MinSmoothAngle = 5
+      Contours = <>
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 75
+      TargetObject = ExtrusionSolid
+      Position.Coordinates = {
+        0000C04000000041000020410000803F
+      }
+      Direction.Coordinates = {
+        2EF964BF2EF9E43E0000000000000000
+      }
+      Up.Coordinates = {
+        00000000000000000000803F00000000
+      }
+      left = 216
+      top = 152
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 48
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+    top = 88
+  end
+end

@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <ActiveEditorIndexAtStart Value="1"/>
+    </General>
+    <Units Count="4">
+      <Unit0>
+        <CursorPos X="49" Y="9"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="fullscreen.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="fullscreen"/>
+        <UsageCount Value="21"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="49" Y="23"/>
+        <EditorIndex Value="1"/>
+        <Filename Value="unit1.pas"/>
+        <ComponentName Value="DataModule1"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <ResourceFilename Value="unit1.lrs"/>
+        <TopLine Value="3"/>
+        <UnitName Value="Unit1"/>
+        <UsageCount Value="21"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="22" Y="126"/>
+        <EditorIndex Value="2"/>
+        <Filename Value="C:\glenn\applications\lazarus\components\glscene\Source\Platform\GLWin32FullScreenViewer.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="30"/>
+        <UnitName Value="GLWin32FullScreenViewer"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="10" Y="89"/>
+        <EditorIndex Value="3"/>
+        <Filename Value="C:\glenn\applications\lazarus\components\glscene\Source\GLScreen.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="73"/>
+        <UnitName Value="GLScreen"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="GLSceneLazarus"/>
+        <MinVersion Minor="9" Release="1" Build="2" Valid="True"/>
+      </Item2>
+    </RequiredPackages>
+    <JumpHistory Count="20" HistoryIndex="19">
+      <Position1>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="25" Column="62" TopLine="24"/>
+      </Position1>
+      <Position2>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="24" Column="57" TopLine="23"/>
+      </Position2>
+      <Position3>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="59" Column="3" TopLine="57"/>
+      </Position3>
+      <Position4>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="64" Column="10" TopLine="48"/>
+      </Position4>
+      <Position5>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="9" Column="46" TopLine="1"/>
+      </Position5>
+      <Position6>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="71" Column="17" TopLine="55"/>
+      </Position6>
+      <Position7>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="87" Column="24" TopLine="75"/>
+      </Position7>
+      <Position8>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="98" Column="7" TopLine="76"/>
+      </Position8>
+      <Position9>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="57" Column="1" TopLine="52"/>
+      </Position9>
+      <Position10>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="24" Column="15" TopLine="8"/>
+      </Position10>
+      <Position11>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="26" Column="24" TopLine="24"/>
+      </Position11>
+      <Position12>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="62" Column="23" TopLine="46"/>
+      </Position12>
+      <Position13>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="20" Column="31" TopLine="15"/>
+      </Position13>
+      <Position14>
+        <Filename Value="C:\glenn\applications\lazarus\components\glscene\Source\Platform\GLWin32FullScreenViewer.pas"/>
+        <Caret Line="45" Column="4" TopLine="137"/>
+      </Position14>
+      <Position15>
+        <Filename Value="C:\glenn\applications\lazarus\components\glscene\Source\Platform\GLWin32FullScreenViewer.pas"/>
+        <Caret Line="66" Column="22" TopLine="50"/>
+      </Position15>
+      <Position16>
+        <Filename Value="C:\glenn\applications\lazarus\components\glscene\Source\Platform\GLWin32FullScreenViewer.pas"/>
+        <Caret Line="150" Column="77" TopLine="134"/>
+      </Position16>
+      <Position17>
+        <Filename Value="C:\glenn\applications\lazarus\components\glscene\Source\Platform\GLWin32FullScreenViewer.pas"/>
+        <Caret Line="1" Column="42" TopLine="1"/>
+      </Position17>
+      <Position18>
+        <Filename Value="C:\glenn\applications\lazarus\components\glscene\Source\Platform\GLWin32FullScreenViewer.pas"/>
+        <Caret Line="346" Column="16" TopLine="330"/>
+      </Position18>
+      <Position19>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="16" Column="30" TopLine="1"/>
+      </Position19>
+      <Position20>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="62" Column="23" TopLine="46"/>
+      </Position20>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <PathDelim Value="\"/>
+    <SearchPaths>
+      <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Linking>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

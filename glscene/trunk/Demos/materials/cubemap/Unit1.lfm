@@ -1,0 +1,66 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 334
+  ClientWidth = 316
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 315
+  VertScrollBar.Page = 333
+  Left = 294
+  Height = 334
+  Top = 130
+  Width = 316
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 55.548561096191406
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 334
+    Width = 316
+  end
+  object Button1: TButton
+    BorderSpacing.OnChange = nil
+    Caption = 'Apply Cube Environment Map'
+    OnClick = Button1Click
+    TabOrder = 0
+    Left = 136
+    Height = 25
+    Top = 8
+    Width = 163
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object DummyCube1: TGLDummyCube
+      CubeSize = 0.800000011920929
+      VisibleAtRunTime = True
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000E0400000A040000040400000803F
+      }
+      SpotCutOff = 180
+    end
+    object Teapot1: TGLTeapot
+      Material.Texture.TextureMode = tmReplace
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 300
+      TargetObject = Teapot1
+      Position.Coordinates = {
+        000040400000A0400000E0400000803F
+      }
+    end
+  end
+end

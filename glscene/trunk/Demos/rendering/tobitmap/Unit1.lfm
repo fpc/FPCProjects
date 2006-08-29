@@ -1,0 +1,176 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 335
+  ClientWidth = 465
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnResize = FormResize
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 464
+  VertScrollBar.Page = 334
+  Left = 285
+  Height = 335
+  Top = 113
+  Width = 465
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.AntiAliasing = aaNone
+    FieldOfView = 146.75848388671875
+    Align = alClient
+    Height = 335
+    Width = 352
+  end
+  object Panel1: TPanel
+    Align = alRight
+    ClientHeight = 335
+    ClientWidth = 113
+    FullRepaint = False
+    TabOrder = 0
+    Left = 352
+    Height = 335
+    Width = 113
+    object BUSnapShot: TButton
+      Caption = 'Buffer SnapShot'
+      OnClick = BUSnapShotClick
+      TabOrder = 0
+      Left = 8
+      Height = 25
+      Top = 40
+      Width = 97
+    end
+    object BURenderToBitmap: TButton
+      Caption = 'Render To Bitmap'
+      OnClick = BURenderToBitmapClick
+      TabOrder = 1
+      Left = 8
+      Height = 25
+      Top = 72
+      Width = 97
+    end
+    object BUBitmapx2: TButton
+      Caption = 'Bitmap x2'
+      OnClick = BUBitmapx2Click
+      TabOrder = 2
+      Left = 8
+      Height = 25
+      Top = 120
+      Width = 97
+    end
+    object BUBitmap600: TButton
+      Caption = 'Bitmap 600 dpi'
+      OnClick = BUBitmap600Click
+      TabOrder = 3
+      Left = 8
+      Height = 25
+      Top = 200
+      Width = 97
+    end
+    object BUBitmap300: TButton
+      Caption = 'Bitmap 300 dpi'
+      OnClick = BUBitmap300Click
+      TabOrder = 4
+      Left = 8
+      Height = 25
+      Top = 160
+      Width = 97
+    end
+    object BUViewerSnapShot1: TButton
+      BorderSpacing.OnChange = nil
+      Caption = 'Viewer SnapShot'
+      OnClick = BUViewerSnapShotClick
+      TabOrder = 5
+      Left = 8
+      Height = 25
+      Top = 8
+      Width = 97
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000B4420000B442000048420000803F
+      }
+      Specular.Color = {
+        B072083FB072083FB072083F0000803F
+      }
+      SpotCutOff = 180
+    end
+    object HUDSprite1: TGLHUDSprite
+      Width = 16
+      Height = 16
+      NoZWrite = True
+      Material.Texture.Disabled = False
+    end
+    object Plane1: TGLPlane
+      Height = 6
+      Width = 6
+      Material.Texture.TextureMode = tmReplace
+      Material.Texture.Disabled = False
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        E9DC72BF000000009BE8A13E00000000
+      }
+      object SpaceText1: TGLSpaceText
+        Extrusion = 0.050000000745058
+        Font.Height = -8
+        Font.Name = 'Arial'
+        Text = 'Render to Bitmap'
+        AllowedDeviation = 1
+        CharacterRange = stcrAlphaNum
+        AspectRatio = 1.299999952316284
+        TextHeight = 0.400000005960465
+        Adjust.Horz = haCenter
+        Adjust.Vert = vaCenter
+        Material.FrontProperties.Diffuse.Color = {
+          00000000000000000000803F0000803F
+        }
+        Material.FrontProperties.Specular.Color = {
+          FA7EAA3EFA7EAA3E000000000000803F
+        }
+        Position.Coordinates = {
+          000020C000000000CDCC4C3D0000803F
+        }
+        Up.Coordinates = {
+          0000803F000000800000000000000000
+        }
+      end
+    end
+    object Sphere1: TGLSphere
+      Radius = 1
+      Slices = 24
+      Material.FrontProperties.Diffuse.Color = {
+        9A99393F9A99393F0000803F0000803F
+      }
+      Material.Texture.TextureMode = tmModulate
+      Material.Texture.MappingMode = tmmSphere
+      Material.Texture.Disabled = False
+      OnProgress = Sphere1Progress
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      Position.Coordinates = {
+        0000000000000040000000000000803F
+      }
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        0000E0400000C040000000410000803F
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    left = 40
+    top = 8
+  end
+end
