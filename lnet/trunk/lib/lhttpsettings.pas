@@ -130,7 +130,7 @@ begin
 
   for i:=0 to SearchPaths.Count-1 do
     if FileExists(SearchPaths[i] + PathDelim + INI_NAME) then begin
-      Writeln('Loading settings from file: ', SearchPaths[i] + PathDelim + INI_NAME);
+      Writeln('Loading settings from file: ', SearchPaths[i] + INI_NAME);
       SettingsFile:=TIniFile.Create(SearchPaths[i] + PathDelim + INI_NAME);
       SearchPaths.Free;
       Exit;
