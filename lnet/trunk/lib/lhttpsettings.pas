@@ -100,7 +100,7 @@ begin
   AddPath('httpdir', HomeDir + 'http_docs');
   AddPath('cgiroot', HomeDir + 'cgi-bin');
  {$ifndef MSWINDOWS}
-  AddPath('cgipath', '/usr/local/bin:/usr/bin:/bin:' + HomeDir + '/bin', False);
+  AddPath('cgipath', '/usr/local/bin:/usr/bin:/bin:' + HomeDir + 'bin', False);
  {$else}
   AddPath('cgipath', HomeDir + 'cgi-bin', False);
  {$endif}
