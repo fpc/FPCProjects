@@ -3762,16 +3762,14 @@ begin
     if ((Field and RelVertexArray3DS) <> 0) and
        Assigned(VertexArray)           then
     begin
-      //FreeMem(VertexArray);
+      FreeMem(VertexArray);
       VertexArray := nil;
     end;
 
     if ((Field and RelTextArray3DS) <> 0) and
        Assigned(TextArray)           then
     begin
-      // I know it is not the ideal bug lazarus don't like it in the moment k00m.
-      // I try to find from where it coming.
-      //FreeMem(TextArray);
+      FreeMem(TextArray);
       TextArray := nil;
     end;
 
@@ -3788,32 +3786,32 @@ begin
     for I := 0 to NMats - 1 do
       if Assigned(MatArray^[I].FaceIndex) then
       begin
-        //FreeMem(MatArray^[I].FaceIndex);
+        FreeMem(MatArray^[I].FaceIndex);
         MatArray^[I].FaceIndex := nil;
         MatArray^[I].NameStr:='';
       end;
-     //FreeMem(MatArray);
+     FreeMem(MatArray);
      MatArray := nil;
     end;
 
     if ((Field and RelSmoothArray3DS) <> 0) and
       Assigned(SmoothArray)           then
     begin
-      //FreeMem(SmoothArray);
+      FreeMem(SmoothArray);
       SmoothArray := nil;
     end;
 
     if ((Field and RelProcData3DS) <> 0) and
       Assigned(ProcData)           then
     begin
-      //FreeMem(ProcData);
+      FreeMem(ProcData);
       ProcData := nil;
     end;
 
     if ((Field and RelVFlagArray3DS) <> 0) and
       Assigned(VFlagArray)           then
     begin
-      //FreeMem(VFlagArray);
+      FreeMem(VFlagArray);
       VFlagArray := nil;
     end;
   end;
@@ -3833,7 +3831,7 @@ begin
     begin
       // if the vertex count is 0 then free the array
       if NVertices= 0 then RelMeshObjField(Result, RelVertexArray3DS)
-                       else
+      else
       begin
         // if this is the very first allocation
         if VertexArray = nil then
@@ -3848,10 +3846,7 @@ begin
         end
         else // else this is an existing block
         begin
-          // just resize it
-          // I know it is not the ideal bug lazarus don't like it in the moment k00m.
-          //ReallocMem(VertexArray, SizeOf(TPoint3DS) * NVertices); // k00m
-          getmem(VertexArray,SizeOf(TPoint3DS) * NVertices); // k00m
+          ReallocMem(VertexArray, SizeOf(TPoint3DS) * NVertices);
           if VertexArray = nil then ShowError(Error3DS_NO_MEM);
         end;
       end;
@@ -3860,20 +3855,19 @@ begin
     if (Field and InitTextArray3DS) <> 0 then
     begin
       if NTextVerts = 0 then RelMeshObjField(Result, RelTextArray3DS)
-                        else
+      else
       begin
         if TextArray = nil then
         begin
           TextArray := Allocmem(NTextVerts * SizeOf(TTexVert3DS));
           if TextArray = nil then ShowError(Error3DS_NO_MEM);
-
-          for I := 0 to NTextVerts - 1 do TextArray^[I] := DefTextVert3DS;
+          // this is done by AllocMem already
+          // initialize the new block
+          //for I := 0 to NTextVerts - 1 do TextArray^[I] := DefTextVert3DS;
         end
         else
         begin
-          // I know it is not the ideal bug lazarus don't like it in the moment k00m.
-          //Reallocmem(TextArray, SizeOf(TTexVert3DS) * NTextVerts); // k00m
-          getmem(TextArray, SizeOf(TTexVert3DS) * NTextVerts); // k00m
+          Reallocmem(TextArray, SizeOf(TTexVert3DS) * NTextVerts);
           if TextArray = nil then ShowError(Error3DS_NO_MEM);
         end;
       end;
@@ -3882,20 +3876,19 @@ begin
     if (Field and InitFaceArray3DS) <> 0 then
     begin
       if NFaces = 0 then RelMeshObjField(Result, RelFaceArray3DS)
-                    else
+      else
       begin
         if FaceArray = nil then
         begin
           FaceArray := AllocMem(NFaces * SizeOf(TFace3DS));
           if FaceArray = nil then ShowError(Error3DS_NO_MEM);
-
-          for I := 0  to NFaces - 1 do FaceArray^[I] := DefFace3DS;
+          // this is done by AllocMem already
+          // initialize the new block
+          //for I := 0  to NFaces - 1 do FaceArray^[I] := DefFace3DS;
         end  
         else
         begin
-          // I know it is not the ideal bug lazarus don't like it in the moment k00m.
-          //ReallocMem(FaceArray, SizeOf(TFace3DS) * NFaces); // k00m
-          getmem(FaceArray,SizeOf(TFace3DS) * NFaces); // k00m
+          ReallocMem(FaceArray, SizeOf(TFace3DS) * NFaces);
           if FaceArray = nil then ShowError(Error3DS_NO_MEM);
         end;
       end;
@@ -3904,20 +3897,19 @@ begin
     if (Field and InitMatArray3DS) <> 0 then
     begin
       if NMats = 0 then RelMeshObjField(Result, RelMatArray3DS)
-                   else
+      else
       begin
         if Matarray = nil then
         begin
           MatArray := AllocMem(NMats * SizeOf(TObjmat3DS));
           if MatArray = nil then ShowError(Error3DS_NO_MEM);
-
-          for I := 0 to NMats - 1 do MatArray^[I] := DefObjMat3DS;
+          // this is done by AllocMem already
+          // initialize the new block
+          //for I := 0 to NMats - 1 do MatArray^[I] := DefObjMat3DS;
         end
         else
         begin
-          // I know it is not the ideal bug lazarus don't like it in the moment k00m.
-          //ReallocMem(MatArray, SizeOf(TObjmat3DS) * NMats); // k00m
-          getmem(MatArray, SizeOf(TObjmat3DS) * NMats); // k00m
+          ReallocMem(MatArray, SizeOf(TObjmat3DS) * NMats);
           if MatArray = nil then ShowError(Error3DS_NO_MEM);
         end;
       end;
@@ -3926,21 +3918,18 @@ begin
     if (Field and InitSmoothArray3DS) <> 0 then
     begin
       if NFaces = 0 then RelMeshObjField(Result, RelSmoothArray3DS)
-                    else
+      else
       begin
         if SmoothArray = nil then
         begin
           SmoothArray := AllocMem(NFaces * SizeOf(Integer));
           if SmoothArray = nil then ShowError(Error3DS_NO_MEM);
-
           // done by AllocMem
           // for I := 0 to NFaces - 1 do SmoothArray[I] := 0;
         end
         else
         begin
-          // I know it is not the ideal bug lazarus don't like it in the moment k00m.
-          //ReallocMem(SmoothArray, SizeOf(Integer) * NFaces); // k00m
-          getmem(SmoothArray, SizeOf(Integer) * NFaces); // k00m
+          ReallocMem(SmoothArray, SizeOf(Integer) * NFaces);
           if SmoothArray = nil then ShowError(Error3DS_NO_MEM);
         end;
       end;
@@ -3949,7 +3938,7 @@ begin
     if (Field and InitProcData3DS) <> 0 then
     begin
       if ProcSize = 0 then RelMeshObjField(Result, RelProcData3DS)
-                      else
+      else
       begin
         if ProcData = nil then
         begin
@@ -3958,9 +3947,7 @@ begin
         end
         else
         begin
-          // I know it is not the ideal bug lazarus don't like it in the moment k00m.
-          //ReallocMem(ProcData, SizeOf(Byte) * ProcSize); // k00m
-          getmem(ProcData, SizeOf(Byte) * ProcSize); // k00m
+          ReallocMem(ProcData, SizeOf(Byte) * ProcSize);
           if ProcData = nil then ShowError(Error3DS_NO_MEM);
         end;
       end;
@@ -3969,7 +3956,7 @@ begin
     if (Field and InitVFlagArray3DS) <> 0 then
     begin
       if NVertices = 0 then RelMeshObjField(Result, RelVFlagArray3DS)
-                       else
+      else
       begin
         if VFlagArray = nil then
         begin
@@ -3978,9 +3965,7 @@ begin
         end
         else
         begin
-          // I know it is not the ideal bug lazarus don't like it in the moment k00m.
-          //ReallocMem(VFlagArray, SizeOf(Word) * NVertices); // k00m
-          getmem(VFlagArray, SizeOf(Word) * NVertices); // k00m
+          ReallocMem(VFlagArray, SizeOf(Word) * NVertices);
           if VFlagArray = nil then ShowError(Error3DS_NO_MEM);
         end;
       end;
