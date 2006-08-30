@@ -38,7 +38,7 @@ interface
 implementation
 
 uses
-  Classes, SysUtils, IniFiles;
+  Classes, SysUtils, IniFiles, Process;
 
 const
   DEF_PORT = '3880';
@@ -90,6 +90,22 @@ function CreateDefaultIni(const aFilePath: string): TIniFile;
         Writeln('Warning! File does not exist: ', aFile);
     end;
   end;
+  
+  function GetPHPCGI: string;
+  const
+    DIRS: array[1..5] of string = ('/usr/bin/', '/usr/local/bin/', '/usr/lib/',
+                                   '/usr/lib/bin/', '/opt/bin/');
+    FILES: array[1..3] of string = ('php-cgi', 'php5-cgi', 'php4-cgi');
+  var
+    i, j: Integer;
+  begin
+    Result:='';
+    for i:=1 to High(DIRS) do
+      for j:=1 to High(FILES) do
+        if  FileExists(DIRS[i] + FILES[j])
+        and (FileGetAttr(DIRS[i] + FILES[j]) and faDirectory <> faDirectory) then
+          Exit(DIRS[i] + FILES[j]);
+  end;
 
 begin
   Writeln('Creating default configuration file in: ', aFilePath);
@@ -107,7 +123,7 @@ begin
   AddFile('mimetypes', HomeDir + 'mime.types');
   Result.WriteString('PATH', 'cgiprefix', 'cgi-bin' + PathDelim);
  {$ifndef MSWINDOWS}
-  Result.WriteString('PATH', 'phpcgibin', '/usr/lib/cgi-bin/php');
+  Result.WriteString('PATH', 'phpcgibin', GetPHPCGI);
  {$else}
   Result.WriteString('PATH', 'phpcgibin', 'php');
  {$endif}
