@@ -1547,24 +1547,19 @@ end;
 
 constructor TLHTTPServer.Create(AOwner: TComponent);
 var
-  TZSign, TZHour, TZMinute: string;
+  TZSign: char;
   TZSecsAbs: integer;
 begin
   inherited Create(AOwner);
 
   SocketClass := TLHTTPServerSocket;
   if TZSeconds >= 0 then
-    TZSign := ' +'
+    TZSign := '+'
   else
-    TZSign := ' -';
+    TZSign := '-';
   TZSecsAbs := Abs(TZSeconds);
-  Str(TZSecsAbs div 3600:2, TZHour);
-  if TZHour[1] = ' ' then
-    TZHour[1] := '0';
-  Str((TZSecsAbs div 60) mod 60:2, TZMinute);
-  if TZMinute[1] = ' ' then
-    TZMinute[1] := '0';
-  FLogMessageTZString := TZSign + TZHour + TZMinute + '] "';
+  FLogMessageTZString := Format(' %s%.2d%.2d] "', 
+    [TZSign, TZSecsAbs div 3600, (TZSecsAbs div 60) mod 60]);
 end;
 
 function TLHTTPServer.InitSocket(aSocket: TLSocket): TLSocket;

@@ -125,6 +125,7 @@ type
   TDocumentRequest = record
     Socket: TLHTTPServerSocket;
     Document: string;
+    URIPath: string;
     ExtraPath: string;
   end;
 
@@ -287,7 +288,8 @@ var
 begin
   Result := nil;
   lDocRequest.Socket := ASocket;
-  lDocRequest.Document := DocumentRoot+ASocket.RequestInfo.Argument;
+  lDocRequest.URIPath := ASocket.RequestInfo.Argument;
+  lDocRequest.Document := DocumentRoot+lDocRequest.URIPath;
   if DirectoryExists(lDocRequest.Document) then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
@@ -333,8 +335,8 @@ begin
   begin
     lOutput := TSimpleCGIOutput.Create(ARequest.Socket);
     lOutput.Process.CommandLine := PHPCGIBinary;
-    lOutput.ScriptName := '/' + ARequest.Document;
-    lOutput.ScriptFileName := DocumentRoot + lOutput.ScriptName;
+    lOutput.ScriptName := ARequest.URIPath;
+    lOutput.ScriptFileName := ARequest.Document;
     lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.StartRequest;
     Result := lOutput;
@@ -361,8 +363,8 @@ begin
   if ExtractFileExt(ARequest.Document) = '.php' then
   begin
     lOutput := TFastCGIOutput.Create(ARequest.Socket);
-    lOutput.ScriptName := '/'+ARequest.Document;
-    lOutput.ScriptFileName := DocumentRoot + lOutput.ScriptName;
+    lOutput.ScriptName := ARequest.URIPath;
+    lOutput.ScriptFileName := ARequest.Document;
     lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.Request := FPool.BeginRequest(FCGI_RESPONDER);
     lOutput.StartRequest;
