@@ -778,7 +778,11 @@ var
     case FpWaitpid(PID, Status, WNOHANG) of
       0: Exit(0);
      -1: Exit(fpGetErrno);
-    else Exit(fpGetErrno)
+    else begin
+           if not wifexited(Status) then
+             wifsignaled(Status);
+           Exit(Status)
+         end;
     end;
   end;
 
