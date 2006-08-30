@@ -11,7 +11,7 @@ begin
   Halt(-1);
 end;
 
-procedure Spawn(const AppName: string; const aPort: Word = 6000);
+procedure Spawn(const AppName, Enviro: string; const aPort: Word = 6000);
 var
   TheSocket: Integer;
   Addr: TInetSockAddr;
@@ -27,9 +27,9 @@ var
       fpdup2(TheSocket, 0);
       CloseSocket(TheSocket);
     end;
-    if ParamCount > 1 then begin
+    if Length(Enviro) > 0 then begin
       GetMem(pEnv, SizeOf(PChar) * 2);
-      pEnv[0]:=pChar(ParamStr(2));
+      pEnv[0]:=pChar(Enviro);
       pEnv[1]:=nil;
     end else
       pEnv:=nil;
@@ -85,9 +85,9 @@ begin
 end;
 
 begin
-  if ParamCount > 0 then
-    Spawn(ParamStr(1))
+  if ParamCount > 1 then
+    Spawn(ParamStr(1), ParamStr(2))
   else
-    Writeln('Usage: ', ParamStr(0), ' <appname> [environmental]');
+    Writeln('Usage: ', ParamStr(0), ' <appname> <environmental>');
 end.
 
