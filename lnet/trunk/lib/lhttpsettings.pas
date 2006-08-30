@@ -124,12 +124,14 @@ var
 begin
   SearchPaths:=TStringList.Create;
   SearchPaths.Add(HomeDir);
-  SearchPaths.Add('/etc');
-  SearchPaths.Add('/usr/local/etc');
-  SearchPaths.Add(ExtractFilePath(ParamStr(0)));
+  {$ifndef MSWINDOWS}
+  SearchPaths.Add('/etc/');
+  SearchPaths.Add('/usr/local/etc/');
+  {$endif}
+  SearchPaths.Add(ExtractFilePath(ParamStr(0)) + PathDelim);
 
   for i:=0 to SearchPaths.Count-1 do
-    if FileExists(SearchPaths[i] + PathDelim + INI_NAME) then begin
+    if FileExists(SearchPaths[i] + INI_NAME) then begin
       Writeln('Loading settings from file: ', SearchPaths[i] + INI_NAME);
       SettingsFile:=TIniFile.Create(SearchPaths[i] + INI_NAME);
       SearchPaths.Free;
