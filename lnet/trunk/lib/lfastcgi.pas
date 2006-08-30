@@ -150,7 +150,17 @@ type
     property Port: integer read FPort write FPort;
   end;
 
+  function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
+
 implementation
+
+uses
+  Sockets
+{$ifdef unix}
+  ,BaseUnix;
+{$else}
+  ;
+{$endif}
 
 { TLFastCGIRequest }
 
@@ -709,6 +719,77 @@ begin
     AClient.FNextFree := FFreeClient.FNextFree;
   FFreeClient.FNextFree := AClient;
   FFreeClient := AClient;
+end;
+
+function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
+var
+  PID: TPid;
+
+  procedure HandleChild;
+  var
+    TheSocket: Integer;
+    i: Integer = 1;
+    Addr: TInetSockAddr;
+    pEnv: ppChar;
+  begin
+    if CloseSocket(StdInputHandle) <> 0 then
+      Halt(fpGetErrno);
+      
+    Addr.sin_family:=AF_INET;
+    Addr.sin_addr.s_addr:=htonl(INADDR_ANY);
+    Addr.sin_port:=htons(aPort);
+
+    TheSocket:=fpSocket(AF_INET, SOCK_STREAM, 0);
+    if TheSocket <> 0 then
+      Halt(fpGetErrno);
+
+    if SetSocketOptions(TheSocket, SOL_SOCKET, SO_REUSEADDR, i, SizeOf(i)) < 0 then
+      Halt(fpGetErrno);
+
+    if fpBind(TheSocket, @Addr, SizeOf(Addr)) < 0 then
+      Halt(fpGetErrno);
+
+    if fpListen(TheSocket, 1024) < 0 then
+      Halt(fpGetErrno);
+
+    if TheSocket <> 0 then begin
+      if CloseSocket(0) <> 0 then
+        Halt(fpGetErrno);
+      if fpdup2(TheSocket, 0) <> 0 then
+        Halt(fpGetErrno);
+      if CloseSocket(TheSocket) <> 0 then
+        Halt(fpGetErrno);
+    end;
+    if Length(Enviro) > 0 then begin
+      GetMem(pEnv, SizeOf(PChar) * 2);
+      pEnv[0]:=pChar(Enviro);
+      pEnv[1]:=nil;
+    end else
+      pEnv:=nil;
+    FpExecve(ParamStr(1), nil, pEnv);
+    Halt(fpgeterrno);
+  end;
+
+  function HandleParent: Integer;
+  var
+    Status: Integer;
+  begin
+    Sleep(100);
+    case FpWaitpid(PID, Status, WNOHANG) of
+      0: Exit(0);
+     -1: Exit(fpGetErrno);
+    else Exit(fpGetErrno)
+    end;
+  end;
+
+begin
+  PID:=fpFork;
+  if PID = 0 then
+    HandleChild
+  else if PID < 0 then
+    Exit(fpGetErrno)
+  else
+    Result:=HandleParent;
 end;
     
 end.
