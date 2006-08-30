@@ -9,7 +9,7 @@
       <li>09/12/04 - LR - Add Integer cast line 94 for Linux
       <li>25/10/04 - SG - Added lightmap (3DS IllumMap) support
       <li>05/06/03 - SG - Separated from GLVectorFileObjects.pas
-	</ul></font>
+       </ul></font>
 }
 unit glfile3ds;
 
@@ -152,25 +152,46 @@ var
 
    //----------------------------------------------------------------------
 
+   (*
    function IsVertexMarked(P: Pointer; Index: Integer): Boolean; assembler;
       // tests the Index-th bit, returns True if set else False
    asm
                      BT [EAX], EDX
                      SETC AL
+   end;*)
+
+   function IsVertexMarked(P: PByteArray; Index: word): Boolean; inline;
+      // tests the Index-th bit, returns True if set else False
+   var mi : word;
+   begin
+     DivMod(index,8,mi,index);
+     result:=(((p^[mi] shr Index) and 1) = 1);
    end;
+
 
    //---------------------------------------------------------------------------
 
+(*
    function MarkVertex(P: Pointer; Index: Integer): Boolean; assembler;
       // sets the Index-th bit and return True if it was already set else False
    asm
                      BTS [EAX], EDX
                      SETC AL
    end;
+*)
+
+   function MarkVertex(P: PByteArray; Index: word): Boolean;  inline;
+      // sets the Index-th bit and return True if it was already set else False
+   var mi : word;
+   begin
+     DivMod(index,8,mi,index);
+     result:=(((p^[mi] shr Index) and 1) = 1);
+     if not(result) then p^[mi]:=p^[mi] or (1 shl index);
+   end;
 
    //---------------------------------------------------------------------------
 
-   procedure StoreSmoothIndex(ThisIndex, SmoothingGroup, NewIndex: Cardinal; P: Pointer);
+   procedure StoreSmoothIndex(ThisIndex, SmoothingGroup, NewIndex: Cardinal; P: PSmoothIndexArray); inline;
       // Stores new vertex index (NewIndex) into the smooth index array of vertex ThisIndex
       // using field SmoothingGroup, which must not be 0.
       // For each vertex in the vertex array (also for duplicated vertices) an array of 32 cardinals
@@ -181,23 +202,35 @@ var
       // Note: Only one smoothing must be assigned per vertex. Some available models break this rule and
       //       have more than one group assigned to a face. To make the code fail safe the group ID
       //       is scanned for the lowest bit set.
-   asm
+   var i : word;
+   begin
+     i:=0;
+     while SmoothingGroup and (1 shl i) = 0 do inc(i);
+     p^[ThisIndex,i]:=NewIndex;
+   end;
+(*   asm
                    PUSH EBX
                    BSF EBX, EDX                  // determine smoothing group index (convert flag into an index)
                    MOV EDX, [P]                  // get address of index array
                    SHL EAX, 7                    // ThisIndex * SizeOf(TSmoothIndexEntry)
                    ADD EAX, EDX
                    LEA EDX, [4 * EBX + EAX]      // Address of array + vertex index + smoothing group index
-                   MOV [EDX], EBX
+                   MOV [EDX], ECX
                    POP EBX
-   end;
+   end;*)
 
    //---------------------------------------------------------------------------
 
-   function GetSmoothIndex(ThisIndex, SmoothingGroup: Cardinal; P: Pointer): Integer;
+   function GetSmoothIndex(ThisIndex, SmoothingGroup: Cardinal; P: PSmoothIndexArray): Integer; inline;
       // Retrieves the vertex index for the given index and smoothing group.
       // This redirection is necessary because a vertex might have been duplicated.
-   asm
+   var i : word;
+   begin
+     i:=0;
+     while SmoothingGroup and (1 shl i) = 0 do inc(i);
+     result:=integer(p^[ThisIndex,i]);
+   end;
+{   asm
                    PUSH EBX
                    BSF EBX, EDX                  // determine smoothing group index
                    SHL EAX, 7                    // ThisIndex * SizeOf(TSmoothIndexEntry)
@@ -206,7 +239,7 @@ var
                    MOV EAX, [ECX]
                    POP EBX
    end;
-
+}
    //---------------------------------------------------------------------------
 
    procedure DuplicateVertex(Index: Integer);
@@ -217,11 +250,12 @@ var
       with mesh.Vertices do Add(Items[index]);
       mesh.Normals.Add(NullVector);
       // enhance smooth index array
-      GetMem(SmoothIndices, (CurrentVertexCount + 1) * SizeOf(TSmoothIndexEntry));
+      ReallocMem(SmoothIndices, (CurrentVertexCount + 1) * SizeOf(TSmoothIndexEntry));
       FillChar(SmoothIndices[CurrentVertexCount], SizeOf(TSmoothIndexEntry), $FF);
       // enhance marker array
       if (CurrentVertexCount div 8) <> ((CurrentVertexCount + 1) div 8) then begin
-         GetMem(Marker, ((CurrentVertexCount + 1) div 8) + 1);
+         ReallocMem(Marker, ((CurrentVertexCount + 1) div 8) + 1);
+         //writeln('******ENHANCE MARKER ALOCATED MEM FOR ',CurrentVertexCount,' VERTICES');
          Marker[(CurrentVertexCount div 8) + 1]:=0;
       end;
       with mesh.TexCoords do if Count>0 then Add(Items[index]);
@@ -238,8 +272,8 @@ var
   CurrentIndex: Word;
   Vector1, Vector2, Normal : TAffineVector;
   standardNormalsOrientation : Boolean;
-  TexVert:TTexVert3DS;
-  TexPoint:TTexPoint;
+  //TexVert:TTexVert3DS;
+  //TexPoint:TTexPoint;
 begin
    with TFile3DS.Create do try
       LoadFromStream(aStream);
@@ -260,12 +294,7 @@ begin
                TexCoords.Capacity:=NVertices;
                for j:=0 to NVertices-1 do begin
                   Vertices.Add(PAffineVector(@VertexArray[j])^);
-                  TexVert:=TextArray[j];
-                  TexPoint.s:=TexVert.U;
-                  TexPoint.t:=TexVert.V;
-                  TexCoords.Add(TexPoint);
-
-                  //TexCoords.Add(PTexPoint(@TextArray[j])^);  //k00m
+                  TexCoords.Add(PTexPoint(@TextArray[j])^);  //k00m
                end;
             end else begin
                for j:=0 to NVertices-1 do
@@ -275,7 +304,8 @@ begin
          // allocate memory for the smoothindices and the marker array
          CurrentVertexCount:=NVertices;
          Marker:=AllocMem((NVertices div 8) + 1); // one bit for each vertex
-         GetMem(SmoothIndices, NVertices * SizeOf(TSmoothIndexEntry));
+         //writeln('******MARKER ALOCATED MEM FOR ',NVertices,' VERTICES');
+         SmoothIndices:=AllocMem(NVertices * SizeOf(TSmoothIndexEntry));
 
          if SmoothArray=nil then begin
             // no smoothing groups to consider
@@ -307,7 +337,7 @@ begin
             end;
          end else begin
             // smoothing groups are to be considered
-            for Face:=0 to NFaces-1 do with FaceArray[Face] do begin
+            for Face:=0 to NFaces-1 do with FaceArray^[Face] do begin
                // normal vector for the face
                with mesh.Vertices do begin
                   VectorSubtract(Items[V1], Items[V2], vector1);
@@ -316,7 +346,7 @@ begin
                if standardNormalsOrientation then
                   Normal:=VectorCrossProduct(Vector1, Vector2)
                else Normal:=VectorCrossProduct(Vector2, Vector1);
-               SmoothingGroup:=SmoothArray[Face];
+               SmoothingGroup:=SmoothArray^[Face];
                // go for each vertex in the current face
                for Vertex:=0 to 2 do begin
                   // copy current index for faster access
@@ -341,14 +371,14 @@ begin
                            DuplicateVertex(CurrentIndex);
                            FaceRec[Vertex]:=CurrentVertexCount - 1;
                            mesh.Normals[CurrentVertexCount - 1]:=Normal;
-                           //StoreSmoothIndex(CurrentIndex, SmoothingGroup, CurrentVertexCount - 1, SmoothIndices);
-                           //StoreSmoothIndex(CurrentVertexCount - 1, SmoothingGroup, CurrentVertexCount - 1, SmoothIndices);
+                           StoreSmoothIndex(CurrentIndex, SmoothingGroup, CurrentVertexCount - 1, SmoothIndices);
+                           StoreSmoothIndex(CurrentVertexCount - 1, SmoothingGroup, CurrentVertexCount - 1, SmoothIndices);
                            // mark new vertex also as touched
-                           //MarkVertex(Marker, CurrentVertexCount - 1);
+                           MarkVertex(Marker, CurrentVertexCount - 1);
                         end else begin
                            // vertex has already been duplicated,
                            // so just add normal vector to other vertex...
-                           //mesh.Normals[TargetVertex]:=VectorAdd(mesh.Normals[TargetVertex], Normal);
+                           mesh.Normals[TargetVertex]:=VectorAdd(mesh.Normals[TargetVertex], Normal);
                            // ...and tell which new vertex has to be used from now on
                            FaceRec[Vertex]:=TargetVertex;
                         end;
@@ -357,10 +387,10 @@ begin
                      // vertex not yet touched, so just store the normal
                      mesh.Normals[CurrentIndex]:=Normal;
                      // initialize smooth indices for this vertex
-                     //FillChar(SmoothIndices[CurrentIndex], SizeOf(TSmoothIndexEntry), $FF);
-                     //if SmoothingGroup <> 0 then
-                        //StoreSmoothIndex(CurrentIndex, SmoothingGroup, CurrentIndex, SmoothIndices);
-                     //MarkVertex(Marker, CurrentIndex);
+                     FillChar(SmoothIndices[CurrentIndex], SizeOf(TSmoothIndexEntry), $FF);
+                     if SmoothingGroup <> 0 then
+                        StoreSmoothIndex(CurrentIndex, SmoothingGroup, CurrentIndex, SmoothIndices);
+                     MarkVertex(Marker, CurrentIndex);
                   end;
                end;
             end;
