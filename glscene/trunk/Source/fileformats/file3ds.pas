@@ -768,6 +768,7 @@ begin
       FreeChunkData(InstChunk);
     end;
   end;
+  HdrChunk.Data.NodeHdr.ObjNameStr:='';
   FreeChunkData(HdrChunk);
 end;
 
