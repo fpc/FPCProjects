@@ -19,11 +19,39 @@ var
   PID: TPid;
   
   procedure HandleChild;
+  var
+    pEnv: ppChar;
   begin
+    if TheSocket <> 0 then begin
+      CloseSocket(0);
+      fpdup2(TheSocket, 0);
+      CloseSocket(TheSocket);
+    end;
+    if ParamCount > 1 then begin
+      GetMem(pEnv, SizeOf(PChar) * 2);
+      pEnv[0]:=pChar(ParamStr(2));
+      pEnv[1]:=nil;
+    end else
+      pEnv:=nil;
+    FpExecve(ParamStr(1), nil, pEnv);
+    Halt(fpgeterrno);
   end;
   
   procedure HandleParent;
+  var
+    Status: Integer;
   begin
+    Sleep(100);
+    case FpWaitpid(PID, Status, WNOHANG) of
+      0: Writeln('SUCCESS');
+     -1: Bail('WaitPID error');
+    else if wifexited(Status) then
+           Writeln('Child exited with: ', wexitStatus(status))
+         else if wifsignaled(Status) then
+           Writeln('Child signalled: ', wtermsig(Status))
+         else
+           Writeln('Child died somehow: ', Status);
+    end;
   end;
   
 begin
@@ -50,17 +78,16 @@ begin
   
   if PID = 0 then
     HandleChild
+  else if PID < 0 then
+    Bail('Fork error')
   else
     HandleParent;
 end;
 
 begin
-  if ParamCount > 0 then begin
-    if ParamCount > 1 then
-      Spawn(ParamStr(1), StrToInt(ParamStr(2)))
-    else
-      Spawn(ParamStr(1));
-  end else
-    Writeln('Usage: ', ParamStr(0), ' <appname> [port]');
+  if ParamCount > 0 then
+    Spawn(ParamStr(1))
+  else
+    Writeln('Usage: ', ParamStr(0), ' <appname> [environmental]');
 end.
 
