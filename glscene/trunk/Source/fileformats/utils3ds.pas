@@ -2706,7 +2706,7 @@ begin
     begin
       ChildOut^ := CopyChunk(ChildIn);
       ChildIn := ChildIn^.Sibling;
-//      ChildOut := @ChildOut.Sibling;
+      ChildOut := @ChildOut^.Sibling;
     end;
   end;  
 end;
@@ -3757,63 +3757,60 @@ procedure RelMeshObjField(var Mesh : TMesh3DS; Field: Integer);
 var I: Integer;
 
 begin
-  with Mesh do
+  if ((Field and RelVertexArray3DS) <> 0) and
+     Assigned(Mesh.VertexArray)           then
   begin
-    if ((Field and RelVertexArray3DS) <> 0) and
-       Assigned(VertexArray)           then
-    begin
-      FreeMem(VertexArray);
-      VertexArray := nil;
-    end;
+    FreeMem(Mesh.VertexArray);
+    Mesh.VertexArray := nil;
+  end;
 
-    if ((Field and RelTextArray3DS) <> 0) and
-       Assigned(TextArray)           then
-    begin
-      FreeMem(TextArray);
-      TextArray := nil;
-    end;
+  if ((Field and RelTextArray3DS) <> 0) and
+     Assigned(Mesh.TextArray)           then
+  begin
+    FreeMem(Mesh.TextArray);
+    Mesh.TextArray := nil;
+  end;
 
-    if ((Field and RelFaceArray3DS) <> 0) and
-     Assigned(FaceArray)           then
-    begin
-      FreeMem(FaceArray);
-      FaceArray := nil;
-    end;
+  if ((Field and RelFaceArray3DS) <> 0) and
+     Assigned(Mesh.FaceArray)           then
+  begin
+    FreeMem(Mesh.FaceArray);
+    Mesh.FaceArray := nil;
+  end;
 
-    if ((Field and RelMatArray3DS) <> 0) and
-      Assigned(MatArray)           then
-    begin
-    for I := 0 to NMats - 1 do
-      if Assigned(MatArray^[I].FaceIndex) then
+  if ((Field and RelMatArray3DS) <> 0) and
+     Assigned(Mesh.MatArray)           then
+  begin
+    for I := 0 to Mesh.NMats - 1 do
+      if Assigned(Mesh.MatArray^[I].FaceIndex) then
       begin
-        FreeMem(MatArray^[I].FaceIndex);
-        MatArray^[I].FaceIndex := nil;
-        MatArray^[I].NameStr:='';
+        FreeMem(Mesh.MatArray^[I].FaceIndex);
+        Mesh.MatArray^[I].FaceIndex := nil;
+        Mesh.MatArray^[I].NameStr:='';
       end;
-     FreeMem(MatArray);
-     MatArray := nil;
-    end;
+    FreeMem(Mesh.MatArray);
+    Mesh.MatArray := nil;
+  end;
 
-    if ((Field and RelSmoothArray3DS) <> 0) and
-      Assigned(SmoothArray)           then
-    begin
-      FreeMem(SmoothArray);
-      SmoothArray := nil;
-    end;
+  if ((Field and RelSmoothArray3DS) <> 0) and
+     Assigned(Mesh.SmoothArray)           then
+  begin
+    FreeMem(Mesh.SmoothArray);
+    Mesh.SmoothArray := nil;
+  end;
 
-    if ((Field and RelProcData3DS) <> 0) and
-      Assigned(ProcData)           then
-    begin
-      FreeMem(ProcData);
-      ProcData := nil;
-    end;
+  if ((Field and RelProcData3DS) <> 0) and
+     Assigned(Mesh.ProcData)           then
+  begin
+    FreeMem(Mesh.ProcData);
+    Mesh.ProcData := nil;
+  end;
 
-    if ((Field and RelVFlagArray3DS) <> 0) and
-      Assigned(VFlagArray)           then
-    begin
-      FreeMem(VFlagArray);
-      VFlagArray := nil;
-    end;
+  if ((Field and RelVFlagArray3DS) <> 0) and
+     Assigned(Mesh.VFlagArray)           then
+  begin
+    FreeMem(Mesh.VFlagArray);
+    Mesh.VFlagArray := nil;
   end;
 end;
 
