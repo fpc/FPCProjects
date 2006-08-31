@@ -46,6 +46,8 @@ type
   TLHandleEvent = procedure (aHandle: TLHandle) of object;
   TLHandleErrorEvent = procedure (aHandle: TLHandle; const msg: string) of object;
   TLEventerErrorCallback = procedure (const msg: string; Sender: TLEventer) of object;
+  
+  TArrayP = array of Pointer;
 
   { TLHandle }
 
@@ -65,6 +67,7 @@ type
     FNext: TLHandle;
     FFreeNext: TLHandle;
     FUserData: Pointer;
+    FHandleData: TArrayP;    // internal usage (kqueue for example)
     procedure SetIgnoreError(const aValue: Boolean);
     procedure SetIgnoreWrite(const aValue: Boolean);
     procedure SetIgnoreRead(const aValue: Boolean);
@@ -85,6 +88,7 @@ type
     property Dispose: Boolean read FDispose write FDispose;
     property Handle: THandle read FHandle write FHandle;
     property Eventer: TLEventer read FEventer;
+    property HandleData: TArrayP read FHandleData;
   end;
 
   { TLEventer }
@@ -174,6 +178,7 @@ end;
 
 constructor TLHandle.Create;
 begin
+  FHandleData:=nil;
   FOnRead:=nil;
   FOnWrite:=nil;
   FOnError:=nil;
@@ -400,15 +405,15 @@ begin
     ClearSets;
     while Assigned(Temp) do begin
       if  (not Temp.FDispose         ) // handle still valid
-      and (   (not Temp.FIgnoreWrite)  // check write or
-           or (not Temp.FIgnoreRead )  // check read or
-           or (not Temp.FIgnoreError)) // check for errors
+      and (   (not Temp.IgnoreWrite)  // check write or
+           or (not Temp.IgnoreRead )  // check read or
+           or (not Temp.IgnoreError)) // check for errors
       then begin
-        if not Temp.FIgnoreWrite then
+        if not Temp.IgnoreWrite then
           fpFD_SET(Temp.FHandle, FWriteFDSet);
-        if not Temp.FIgnoreRead then
+        if not Temp.IgnoreRead then
           fpFD_SET(Temp.FHandle, FReadFDSet);
-        if not Temp.FIgnoreError then
+        if not Temp.IgnoreError then
           fpFD_SET(Temp.FHandle, FErrorFDSet);
         if Temp.FHandle > MaxHandle then
           MaxHandle:=Temp.FHandle;
