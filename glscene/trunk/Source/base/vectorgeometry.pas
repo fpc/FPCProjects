@@ -205,7 +205,7 @@ type
    PExtended = ^Extended;
    PPointer = ^Pointer;
 {$endif}
-   PFloat = ^Single;
+//   PFloat = ^Single; This might conflict with fpc math, which defines PFloat = ^TFloat and TFloat = extended;
 
   	PTexPoint = ^TTexPoint;
 	TTexPoint = packed record
@@ -572,7 +572,7 @@ procedure SubtractVector(var V1 : TVector; const V2 : TVector); overload;
 
 //: Combine the first vector with the second : vr:=vr+v*f
 procedure CombineVector(var vr : TAffineVector; const v : TAffineVector; var f : Single); overload;
-procedure CombineVector(var vr : TAffineVector; const v : TAffineVector; pf : PFloat); overload;
+procedure CombineVector(var vr : TAffineVector; const v : TAffineVector; pf : PSingle); overload;
 //: Makes a linear combination of two texpoints
 function TexPointCombine(const t1, t2 : TTexPoint; f1, f2 : Single) : TTexPoint;
 //: Makes a linear combination of two vectors and return the result
@@ -2626,7 +2626,7 @@ end;
 
 // CombineVector (pointer)
 //
-procedure CombineVector(var vr : TAffineVector; const v : TAffineVector; pf : PFloat);
+procedure CombineVector(var vr : TAffineVector; const v : TAffineVector; pf : PSingle);
 begin
  // EAX contains address of vr
  // EDX contains address of v
