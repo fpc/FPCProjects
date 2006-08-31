@@ -65,6 +65,9 @@ type
     FNext: TLHandle;
     FFreeNext: TLHandle;
     FUserData: Pointer;
+    procedure SetIgnoreError(const aValue: Boolean);
+    procedure SetIgnoreWrite(const aValue: Boolean);
+    procedure SetIgnoreRead(const aValue: Boolean);
    public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -72,9 +75,9 @@ type
     property Prev: TLHandle read FPrev write FPrev;
     property Next: TLHandle read FNext write FNext;
     property FreeNext: TLHandle read FFreeNext write FFreeNext;
-    property IgnoreWrite: Boolean read FIgnoreWrite write FIgnoreWrite;
-    property IgnoreRead: Boolean read FIgnoreRead write FIgnoreRead;
-    property IgnoreError: Boolean read FIgnoreError write FIgnoreError;
+    property IgnoreWrite: Boolean read FIgnoreWrite write SetIgnoreWrite;
+    property IgnoreRead: Boolean read FIgnoreRead write SetIgnoreRead;
+    property IgnoreError: Boolean read FIgnoreError write SetIgnoreError;
     property OnRead: TLHandleEvent read FOnRead write FOnRead;
     property OnWrite: TLHandleEvent read FOnWrite write FOnWrite;
     property OnError: TLHandleErrorEvent read FOnError write FOnError;
@@ -100,6 +103,9 @@ type
     procedure Bail(const msg: string; const Ernum: Integer);
     procedure AddForFree(aHandle: TLHandle);
     procedure FreeHandles;
+    procedure HandleIgnoreError(aHandle: TLHandle); virtual;
+    procedure HandleIgnoreWrite(aHandle: TLHandle); virtual;
+    procedure HandleIgnoreRead(aHandle: TLHandle); virtual;
    public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -144,6 +150,27 @@ uses
   lCommon;
   
 { TLHandle }
+
+procedure TLHandle.SetIgnoreError(const aValue: Boolean);
+begin
+  FIgnoreError:=aValue;
+  if Assigned(FEventer) then
+    FEventer.HandleIgnoreError(Self);
+end;
+
+procedure TLHandle.SetIgnoreWrite(const aValue: Boolean);
+begin
+  FIgnoreWrite:=aValue;
+  if Assigned(FEventer) then
+    FEventer.HandleIgnoreWrite(Self);
+end;
+
+procedure TLHandle.SetIgnoreRead(const aValue: Boolean);
+begin
+  FIgnoreRead:=aValue;
+  if Assigned(FEventer) then
+    FEventer.HandleIgnoreRead(Self);
+end;
 
 constructor TLHandle.Create;
 begin
@@ -234,6 +261,21 @@ begin
   end;
   FFreeRoot:=nil;
   FFreeIter:=nil;
+end;
+
+procedure TLEventer.HandleIgnoreError(aHandle: TLHandle);
+begin
+
+end;
+
+procedure TLEventer.HandleIgnoreWrite(aHandle: TLHandle);
+begin
+
+end;
+
+procedure TLEventer.HandleIgnoreRead(aHandle: TLHandle);
+begin
+
 end;
 
 function TLEventer.AddHandle(aHandle: TLHandle): Boolean;

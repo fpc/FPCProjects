@@ -20,6 +20,9 @@
     FFreeList: TFPObjectList;
     function GetTimeout: DWord; override;
     procedure SetTimeout(const Value: DWord); override;
+    procedure HandleIgnoreError(aHandle: TLHandle); override;
+    procedure HandleIgnoreWrite(aHandle: TLHandle); override;
+    procedure HandleIgnoreRead(aHandle: TLHandle); override;
     procedure Inflate;
    public
     constructor Create; override;

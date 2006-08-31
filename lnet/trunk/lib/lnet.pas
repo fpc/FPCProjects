@@ -436,7 +436,7 @@ begin
     if Result = SOCKET_ERROR then begin
       if LSocketError = BLOCK_ERROR then begin
         FCanReceive := False;
-        FIgnoreRead := False;
+        IgnoreRead := False;
       end else Bail('Receive Error', LSocketError);
       Result:=0;
     end;

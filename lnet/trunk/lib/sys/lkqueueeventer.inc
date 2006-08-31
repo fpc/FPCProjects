@@ -33,6 +33,14 @@ begin
   FTimeout.tv_nsec:=(Value mod 1000) * 1000;
 end;
 
+procedure TLKQueueEventer.HandleIgnoreWrite(aHandle: TLHandle);
+begin
+end;
+
+procedure TLKQueueEventer.HandleIgnoreRead(aHandle: TLHandle);
+begin
+end;
+
 procedure TLKQueueEventer.Inflate;
 const
   BASE_SIZE = 100;

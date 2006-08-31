@@ -46,6 +46,34 @@ begin
   FTimeout:=cInt(Value);
 end;
 
+procedure TLEpollEventer.HandleIgnoreError(aHandle: TLHandle);
+const
+  BASE_BOOL = EPOLLHUP or EPOLLPRI or EPOLLET;
+  ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
+var
+  lEvent: TEpollEvent;
+begin
+  lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or ERBOOL[aHandle.IgnoreWrite];
+  if epoll_ctl(FEpollReadFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
+    Bail('Error adding handle to epoll', LSocketError);
+end;
+
+procedure TLEpollEventer.HandleIgnoreWrite(aHandle: TLHandle);
+begin
+  HandleIgnoreWrite(aHandle);
+end;
+
+procedure TLEpollEventer.HandleIgnoreRead(aHandle: TLHandle);
+const
+  INBOOL: array[Boolean] of Integer = (EPOLLIN, 0);
+var
+  lEvent: TEpollEvent;
+begin
+  lEvent.events:=INBOOL[aHandle.IgnoreRead];
+  if epoll_ctl(FEpollReadFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
+    Bail('Error adding handle to epoll', LSocketError);
+end;
+
 procedure TLEpollEventer.Inflate;
 var
   OldLength: Integer;
@@ -59,17 +87,22 @@ begin
 end;
 
 function TLEpollEventer.AddHandle(aHandle: TLHandle): Boolean;
+const
+  BASE_BOOL = EPOLLHUP or EPOLLPRI or EPOLLET;
+  INBOOL: array[Boolean] of Integer = (EPOLLIN, 0);
+  ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
+  OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
 var
   lEvent: TEpollEvent;
 begin
   Result:=inherited AddHandle(aHandle);
   if Result then begin
     Result:=False;
-    lEvent.events:=EPOLLOUT or EPOLLERR or EPOLLHUP or EPOLLPRI or EPOLLET;
+    lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or OUBOOL[aHandle.IgnoreWrite];
     lEvent.data.ptr:=aHandle;
     if epoll_ctl(FEpollFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
       Bail('Error adding handle to epoll', LSocketError);
-    lEvent.events:=EPOLLIN;
+    lEvent.events:=INBOOL[aHandle.IgnoreRead];
     if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
       Bail('Error adding handle to epoll', LSocketError);
     if FCount > High(FEvents) then
@@ -113,12 +146,12 @@ begin
           if (FEvents[i].events and EPOLLERR = EPOLLERR)
           or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
             if Assigned(Temp.FOnError) then
-              if not Temp.FIgnoreError then Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
+              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
 
           if (FEvents[i].events and EPOLLOUT = EPOLLOUT)
           or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then
             if Assigned(Temp.FOnWrite) then
-              if not Temp.FIgnoreWrite then Temp.FOnWrite(Temp);
+              Temp.FOnWrite(Temp);
           if Temp.FDispose then
             AddForFree(Temp);
         end; // normals
@@ -128,7 +161,7 @@ begin
 
           if FEventsRead[i].events and EPOLLIN = EPOLLIN then
             if Assigned(TempRead.FOnRead) then
-              if not TempRead.FIgnoreRead then TempRead.FOnRead(TempRead);
+              TempRead.FOnRead(TempRead);
           if TempRead.FDispose then
             AddForFree(TempRead);
         end; // reads
