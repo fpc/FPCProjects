@@ -230,7 +230,6 @@ type
     FBufferSize: dword;
     FRequestBuffer: pchar;
     FRequestPos: pchar;
-    FPendingData: boolean;
     FRequestInputDone: boolean;
     FRequestHeaderDone: boolean;
     FOutputDone: boolean;
@@ -769,8 +768,7 @@ var
 begin
   if FRequestInputDone then 
   begin
-    FPendingData := true;
-    FIgnoreRead := true;
+    IgnoreRead := true;
     exit;
   end;
   
@@ -780,7 +778,7 @@ begin
     exit;
   end;
 
-  FPendingData := false;
+  IgnoreRead := false;
   lRead := Get(FBufferEnd^, FBufferSize-PtrUInt(FBufferEnd-FBuffer)-1);
   if lRead = 0 then exit;
   Inc(FBufferEnd, lRead);
@@ -1145,7 +1143,7 @@ begin
     if FBufferPos = FBufferEnd then
       PackRequestBuffer;
 
-    if ParseBuffer and FPendingData then 
+    if ParseBuffer and IgnoreRead then 
     begin
       { end of input buffer reached, try reading more }
       HandleReceive;
