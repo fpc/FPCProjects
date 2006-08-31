@@ -610,7 +610,7 @@ begin
   begin
     Result := WriteData;
     FEof := Result = wsDone;
-    FOutputPending := Result <> wsPendingData;
+    FOutputPending := FEof;
     if FOutputPending or (FBufferPos = FBufferSize) then
     begin
       if FBufferPos > FBufferOffset then
