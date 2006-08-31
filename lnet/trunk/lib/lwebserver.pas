@@ -37,7 +37,7 @@ type
     FFile: file;
 
     function GetSize: integer;
-    function WriteData: boolean; override;
+    function WriteData: TWriteBlockStatus; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -61,12 +61,12 @@ type
     function  ParseHeaders: boolean;
     procedure CGIOutputError; virtual; abstract;
     procedure WriteCGIBlock;
-    function  WriteCGIData: boolean; virtual; abstract;
+    function  WriteCGIData: TWriteBlockStatus; virtual; abstract;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
-    function  WriteData: boolean; override;
+    function  WriteData: TWriteBlockStatus; override;
     procedure StartRequest; virtual;
     
     property ExtraPath: string read FExtraPath write FExtraPath;
@@ -85,7 +85,7 @@ type
     procedure DoneInput; override;
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
     procedure CGIOutputError; override;
-    function  WriteCGIData: boolean; override;
+    function  WriteCGIData: TWriteBlockStatus; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -107,7 +107,7 @@ type
     procedure RequestHasOutput(ARequest: TLFastCGIRequest);
     procedure RequestHasStderr(ARequest: TLFastCGIRequest);
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
-    function  WriteCGIData: boolean; override;
+    function  WriteCGIData: TWriteBlockStatus; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -194,6 +194,9 @@ implementation
 
 const
   ServerSoftware = 'fpHTTPd/0.2';
+
+  InputBufferEmptyToWriteStatus: array[boolean] of TWriteBlockStatus =
+    (wsPendingData, wsWaitingData);
   
 var
   ScriptPathPrefix: string;
@@ -405,21 +408,21 @@ begin
   Result := FileSize(FFile);
 end;
 
-function TFileOutput.WriteData: boolean;
+function TFileOutput.WriteData: TWriteBlockStatus;
 var
   lRead: integer;
 begin
   if FEof then 
-    exit(true);
+    exit(wsDone);
   BlockRead(FFile, FBuffer[FBufferPos], FBufferSize-FBufferPos, lRead);
   Inc(FBufferPos, lRead);
   if lRead = 0 then
   begin
     { EOF reached }
     Close(FFile);
-    exit(true);
+    exit(wsDone);
   end;
-  exit(false);
+  exit(wsPendingData);
 end;
 
 constructor TCGIOutput.Create(ASocket: TLHTTPSocket);
@@ -577,23 +580,21 @@ begin
   exit(true);
 end;
 
-function TCGIOutput.WriteData: boolean;
+function TCGIOutput.WriteData: TWriteBlockStatus;
 begin
   if not FParsingHeaders then
     FReadPos := FBufferPos;
-  if WriteCGIData then
-    exit(true);
+  Result := WriteCGIData;
   if FParsingHeaders then
   begin
     if ParseHeaders then
     begin
       { error while parsing }
       FEof := true;
-      exit(true);
+      exit(wsDone);
     end;
   end else
     FBufferPos := FReadPos;
-  exit(false);
 end;
 
 procedure TCGIOutput.WriteCGIBlock;
@@ -601,7 +602,7 @@ begin
   { CGI process has output pending, we can write a block to socket }
   if FParsingHeaders then
   begin
-    if WriteData and FParsingHeaders then
+    if (WriteData = wsDone) and FParsingHeaders then
     begin
       { still parsing headers ? something's wrong }
       FParsingHeaders := false;
@@ -632,14 +633,14 @@ begin
   FProcess.Free;
 end;
 
-function TSimpleCGIOutput.WriteCGIData: boolean;
+function TSimpleCGIOutput.WriteCGIData: TWriteBlockStatus;
 var
   lRead: integer;
 begin
   lRead := FProcess.Output.Read(FBuffer[FReadPos], FBufferSize-FReadPos);
-  if lRead = 0 then exit(true);
+  if lRead = 0 then exit(wsDone);
   Inc(FReadPos, lRead);
-  Result := false;
+  Result := InputBufferEmptyToWriteStatus[lRead = 0];
 end;
 
 procedure TSimpleCGIOutput.AddEnvironment(const AName, AValue: string);
@@ -765,14 +766,15 @@ begin
   Result := FRequest.SendInput(ABuffer, ASize);
 end;
 
-function  TFastCGIOutput.WriteCGIData: boolean;
+function  TFastCGIOutput.WriteCGIData: TWriteBlockStatus;
 var
   lRead: integer;
 begin
-  if FRequest = nil then exit(true);
+  if FRequest = nil then exit(wsDone);
+  if FRequest.OutputDone then exit(wsDone);
   lRead := FRequest.Get(@FBuffer[FReadPos], FBufferSize-FReadPos);
   Inc(FReadPos, lRead);
-  Result := false;
+  Result := InputBufferEmptyToWriteStatus[lRead = 0];
 end;
 
 procedure TFastCGIOutput.StartRequest;

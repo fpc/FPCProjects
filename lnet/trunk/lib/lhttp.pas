@@ -149,7 +149,8 @@ type
     LastModified: TDateTime;
   end;
 
-  TWriteBlockMethod = function: boolean of object;
+  TWriteBlockStatus = (wsPendingData, wsWaitingData, wsDone);
+  TWriteBlockMethod = function: TWriteBlockStatus of object;
 
   TOutputItem = class(TObject)
   protected
@@ -166,14 +167,14 @@ type
     FWriteBlock: TWriteBlockMethod;
 
     procedure DoneInput; virtual;
-    function WriteData: boolean; virtual;
+    function WriteData: TWriteBlockStatus; virtual;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; virtual;
     procedure LogError(const AMessage: string);
-    function  WriteBlock: boolean; virtual;
+    function  WriteBlock: TWriteBlockStatus; virtual;
 
     property Socket: TLHTTPSocket read FSocket;
   end;
@@ -186,10 +187,10 @@ type
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
-    function WriteChunk: boolean;
-    function WriteBuffer: boolean;
-    function WritePlain: boolean;
-    function WriteBlock: boolean; override;
+    function WriteChunk: TWriteBlockStatus;
+    function WriteBuffer: TWriteBlockStatus;
+    function WritePlain: TWriteBlockStatus;
+    function WriteBlock: TWriteBlockStatus; override;
   end;
 
   TMemoryOutput = class(TOutputItem)
@@ -206,7 +207,7 @@ type
   
   TParseBufferMethod = function: boolean of object;
   TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
-  TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: boolean) of object;
+  TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
   TLHTTPClientProc = procedure(ASocket: TLHTTPClientSocket) of object;
 
   TLHTTPConnection = class(TLTcp)
@@ -366,7 +367,7 @@ type
     procedure DoDoneInput(ASocket: TLHTTPClientSocket);
     function  DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword;
     procedure DoProcessHeaders(ASocket: TLHTTPClientSocket);
-    function  DoWriteBlock(ASocket: TLHTTPClientSocket): boolean;
+    function  DoWriteBlock(ASocket: TLHTTPClientSocket): TWriteBlockStatus;
     function  InitSocket(aSocket: TLSocket): TLSocket; override;
     procedure InternalSendRequest;
   public
@@ -390,6 +391,11 @@ const
   PackBufferSize = 512;     { if less data than this, pack buffer }
   RequestBufferSize = 1024;
   DataBufferSize = 16*1024;
+
+  BufferEmptyToWriteStatus: array[boolean] of TWriteBlockStatus =
+    (wsPendingData, wsDone);
+  EofToWriteStatus: array[boolean] of TWriteBlockStatus =
+    (wsWaitingData, wsDone);
 
 { helper functions }
 
@@ -497,7 +503,7 @@ begin
   FSocket.LogError(AMessage, 0);
 end;
 
-function TOutputItem.WriteData: boolean;
+function TOutputItem.WriteData: TWriteBlockStatus;
 var
   lWritten: integer;
 begin
@@ -505,13 +511,13 @@ begin
   begin
     lWritten := FSocket.Send(FBuffer[FBufferPos], FBufferSize-FBufferPos);
     Inc(FBufferPos, lWritten);
-    Result := FBufferPos = FBufferSize;
-    FOutputPending := not Result;
+    FOutputPending := FBufferPos < FBufferSize;
+    Result := BufferEmptyToWriteStatus[not FOutputPending];
   end else
-    Result := FEof;
+    Result := EofToWriteStatus[FEof];
 end;
 
-function TOutputItem.WriteBlock: boolean;
+function TOutputItem.WriteBlock: TWriteBlockStatus;
 begin
   Result := WriteData;
 end;
@@ -550,13 +556,14 @@ begin
   FBufferSize := DataBufferSize;
 end;
 
-function TBufferOutput.WriteChunk: boolean;
+function TBufferOutput.WriteChunk: TWriteBlockStatus;
 var
   lOffset: integer;
 begin
   if not FOutputPending and not FEof then
   begin
-    FEof := WriteData;
+    Result := WriteData;
+    FEof := Result = wsDone;
     FOutputPending := FBufferPos > FBufferOffset;
     if FOutputPending then
     begin
@@ -567,13 +574,16 @@ begin
       FBuffer[FBufferPos+1] := #10;
       FBufferSize := FBufferPos+2;
       FBufferPos := FBufferOffset-lOffset-2;
-    end else begin
-      FBufferPos := 0;
-      FBufferSize := 0;
     end;
     if FEof then
     begin
-      FOutputPending := true;
+      if not FOutputPending then
+      begin
+        { FBufferPos/Size still in "read mode" }
+        FBufferSize := 0;
+        FBufferPos := 0;
+        FOutputPending := true;
+      end;
       FBuffer[FBufferSize] := '0';
       FBuffer[FBufferSize+1] := #13;
       FBuffer[FBufferSize+2] := #10;
@@ -582,25 +592,27 @@ begin
       FBuffer[FBufferSize+4] := #10;
       inc(FBufferSize, 5);
     end;
-  end;
+  end else   
+    Result := EofToWriteStatus[FEof];
   if FOutputPending then
   begin
     Result := inherited WriteData;
-    if not Result then exit;
+    if Result = wsDone then
+    begin
+      Result := wsPendingData;
+      PrepareChunk
+    end;
   end;
-
-  Result := FEof;
-  if not Result then
-    PrepareChunk;
 end;
   
-function TBufferOutput.WriteBuffer: boolean;
+function TBufferOutput.WriteBuffer: TWriteBlockStatus;
 begin
   if not FOutputPending then
   begin
-    FEof := WriteData;
-    FOutputPending := FEof;
-    if FEof or (FBufferPos = FBufferSize) then
+    Result := WriteData;
+    FEof := Result = wsDone;
+    FOutputPending := Result <> wsPendingData;
+    if FOutputPending or (FBufferPos = FBufferSize) then
     begin
       if FBufferPos > FBufferOffset then
       begin
@@ -619,17 +631,18 @@ begin
         FSocket.DoneBuffer(Self);
       end;
     end;
-  end;
-  Result := FEof;
-  if Result then
+  end else
+    Result := EofToWriteStatus[FEof];
+  if Result = wsDone then
     Result := inherited WriteData;
 end;
 
-function TBufferOutput.WritePlain: boolean;
+function TBufferOutput.WritePlain: TWriteBlockStatus;
 begin
   if not FOutputPending then
   begin
-    FEof := WriteData;
+    Result := WriteData;
+    FEof := Result = wsDone;
     if FBufferPos > FBufferOffset then
     begin
       FOutputPending := true;
@@ -641,15 +654,11 @@ begin
     end;
   end;
   Result := inherited WriteData;
-  if Result then
-  begin
-    Result := FEof;
-    if not Result then
-      PrepareBuffer;
-  end;
+  if Result = wsWaitingData then
+    PrepareBuffer;
 end;
 
-function TBufferOutput.WriteBlock: boolean;
+function TBufferOutput.WriteBlock: TWriteBlockStatus;
 begin
   Result := FWriteBlock();
 end;
@@ -1094,13 +1103,20 @@ var
 begin
   while FCurrentOutput <> nil do
   begin
-    if FCurrentOutput.WriteBlock then
-    begin
-      lFreeOutput := FCurrentOutput;
-      FCurrentOutput := FCurrentOutput.FNext;
-      if lFreeOutput = FLastOutput then
-        FLastOutput := nil;
-      lFreeOutput.Free;
+    case FCurrentOutput.WriteBlock of
+      wsDone:
+      begin
+        lFreeOutput := FCurrentOutput;
+        FCurrentOutput := FCurrentOutput.FNext;
+        if lFreeOutput = FLastOutput then
+          FLastOutput := nil;
+        lFreeOutput.Free;
+      end;
+      wsWaitingData:
+      begin
+        { wait for more data from external source }
+        break;
+      end;
     end;
     { nothing left to write, request was busy and now completed }
     if FCurrentOutput = nil then
@@ -1604,7 +1620,7 @@ type
     procedure FreeInstance; override;
 
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
-    function  WriteBlock: boolean; override;
+    function  WriteBlock: TWriteBlockStatus; override;
   end;
 
 constructor TClientOutput.Create(ASocket: TLHTTPClientSocket);
@@ -1637,7 +1653,7 @@ begin
     DoHandleInput(TLHTTPClientSocket(FSocket), ABuffer, ASize);
 end;
 
-function  TClientOutput.WriteBlock: boolean;
+function  TClientOutput.WriteBlock: TWriteBlockStatus;
 begin
   Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).
     DoWriteBlock(TLHTTPClientSocket(FSocket));
@@ -1801,14 +1817,12 @@ begin
     FOnProcessHeaders(ASocket);
 end;
 
-function  TLHTTPClient.DoWriteBlock(ASocket: TLHTTPClientSocket): boolean;
+function  TLHTTPClient.DoWriteBlock(ASocket: TLHTTPClientSocket): TWriteBlockStatus;
 begin
+  Result := wsDone;
   if not FOutputEof then
     if Assigned(FOnCanWrite) then
-      FOnCanWrite(ASocket, FOutputEof)
-    else
-      FOutputEof := true;
-  Result := FOutputEof;
+      FOnCanWrite(ASocket, Result)
 end;
 
 function  TLHTTPClient.InitSocket(aSocket: TLSocket): TLSocket;

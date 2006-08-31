@@ -49,6 +49,8 @@ type
     FContentLength: integer;
     FInputBuffer: pchar;
     FInputSize: integer;
+    FOutputDone: boolean;
+    FStderrDone: boolean;
     FNextFree: TLFastCGIRequest;
     FNextSend: TLFastCGIRequest;
     FOnEndRequest: TLFastCGIRequestEvent;
@@ -57,6 +59,7 @@ type
     FOnStderr: TLFastCGIRequestEvent;
 
     procedure HandleReceive;
+    procedure HandleReceiveEnd;
     function  HandleSend: boolean;
     procedure DoOutput;
     procedure DoStderr;
@@ -79,6 +82,8 @@ type
     procedure DoneInput;
 
     property ID: integer read FID write SetID;
+    property StderrDone: boolean read FStderrDone;
+    property OutputDone: boolean read FOutputDone;
     property OnEndRequest: TLFastCGIRequestEvent read FOnEndRequest write FOnEndRequest;
     property OnInput: TLFastCGIRequestEvent read FOnInput write FOnInput;
     property OnOutput: TLFastCGIRequestEvent read FOnOutput write FOnOutput;
@@ -185,6 +190,14 @@ begin
   end;
 end;
 
+procedure TLFastCGIRequest.HandleReceiveEnd;
+begin
+  case FClient.ReqType of
+    FCGI_STDOUT: FOutputDone := true;
+    FCGI_STDERR: FStderrDone := true;
+  end;
+end;
+
 function TLFastCGIRequest.HandleSend: boolean;
 begin
   if FOnInput <> nil then
@@ -208,6 +221,8 @@ procedure TLFastCGIRequest.EndRequest;
 begin
   if FOnEndRequest <> nil then
     FOnEndRequest(Self);
+  FOutputDone := false;
+  FStderrDone := false;
   FClient.EndRequest(Self);
   {$message warning TODO: do something useful with end request data }
   FClient.Flush;
@@ -571,7 +586,12 @@ begin
         if (lReqIndex < FRequestsCount) and (FRequests[lReqIndex] <> nil) then
         begin
           FRequest := FRequests[lReqIndex];
-          FState := fsData;
+          if FContentLength > 0 then
+            FState := fsData
+          else begin
+            FRequest.HandleReceiveEnd;
+            Flush;
+          end;
         end else
           Flush;
       end;
