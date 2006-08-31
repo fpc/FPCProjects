@@ -49,8 +49,9 @@ const
 begin
   EV_SET(aHandle.HandleData[1], aHandle.FHandle, EVFILT_READ,
          INBOOL[aHandle.IgnoreRead], 0, 0, Pointer(aHandle));
-  KEvent(FQueue, aHandle.HandleData[1], 1,
-         nil, 0, nil);
+  if KEvent(FQueue, aHandle.HandleData[1], 1,
+         nil, 0, nil) < 0 then
+    Bail('Error on KEvent/setignore', LSocketError);
 end;
 
 procedure TLKQueueEventer.Inflate;
