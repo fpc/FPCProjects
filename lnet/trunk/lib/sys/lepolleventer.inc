@@ -54,7 +54,7 @@ var
   lEvent: TEpollEvent;
 begin
   lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or ERBOOL[aHandle.IgnoreWrite];
-  if epoll_ctl(FEpollReadFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
+  if epoll_ctl(FEpollFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
     Bail('Error adding handle to epoll', LSocketError);
 end;
 
