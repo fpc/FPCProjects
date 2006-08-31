@@ -60,7 +60,7 @@ end;
 
 procedure TLEpollEventer.HandleIgnoreWrite(aHandle: TLHandle);
 begin
-  HandleIgnoreWrite(aHandle);
+  HandleIgnoreError(aHandle);
 end;
 
 procedure TLEpollEventer.HandleIgnoreRead(aHandle: TLHandle);
