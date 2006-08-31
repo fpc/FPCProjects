@@ -780,13 +780,15 @@ var
       if CloseSocket(TheSocket) <> 0 then
         Halt(fpGetErrno);
     end;
+
     if Length(Enviro) > 0 then begin
       GetMem(pEnv, SizeOf(PChar) * 2);
       pEnv[0]:=pChar(Enviro);
       pEnv[1]:=nil;
     end else
       pEnv:=nil;
-    FpExecve(ParamStr(1), nil, pEnv);
+
+    FpExecve(AppName, nil, pEnv);
     Halt(fpgeterrno);
   end;
 
