@@ -53,9 +53,9 @@ end;
 
 procedure TLEpollEventer.HandleIgnoreError(aHandle: TLHandle);
 const
-  BASE_BOOL = EPOLLHUP or EPOLLPRI or EPOLLET;
+  BASE_BOOL = EPOLLHUP or EPOLLET;
   ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
-  OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
+  OUBOOL: array[Boolean] of Integer = (EPOLLOUT or EPOLLPRI, 0);
 var
   lEvent: TEpollEvent;
 begin
@@ -155,7 +155,7 @@ begin
           or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
             if Assigned(Temp.FOnError) then
               Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
-
+              
           if (FEvents[i].events and EPOLLOUT = EPOLLOUT)
           or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then
             if Assigned(Temp.FOnWrite) then
