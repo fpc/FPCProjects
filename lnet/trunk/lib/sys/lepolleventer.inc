@@ -55,7 +55,7 @@ var
 begin
   lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or ERBOOL[aHandle.IgnoreWrite];
   if epoll_ctl(FEpollFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
-    Bail('Error adding handle to epoll', LSocketError);
+    Bail('Error modifying handle for errors/writes', LSocketError);
 end;
 
 procedure TLEpollEventer.HandleIgnoreWrite(aHandle: TLHandle);
@@ -71,7 +71,7 @@ var
 begin
   lEvent.events:=INBOOL[aHandle.IgnoreRead];
   if epoll_ctl(FEpollReadFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
-    Bail('Error adding handle to epoll', LSocketError);
+    Bail('Error modifying handle for reads', LSocketError);
 end;
 
 procedure TLEpollEventer.Inflate;
