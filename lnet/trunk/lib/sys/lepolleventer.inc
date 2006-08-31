@@ -6,6 +6,11 @@
 
 const
   BASE_SIZE = 100;
+  // bug in fpc 2.0.4-
+  EPOLL_CTL_ADD = 1;
+  EPOLL_CTL_DEL = 2;
+  EPOLL_CTL_MOD = 3;
+
 
 constructor TLEpollEventer.Create;
 var
@@ -50,10 +55,12 @@ procedure TLEpollEventer.HandleIgnoreError(aHandle: TLHandle);
 const
   BASE_BOOL = EPOLLHUP or EPOLLPRI or EPOLLET;
   ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
+  OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
 var
   lEvent: TEpollEvent;
 begin
-  lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or ERBOOL[aHandle.IgnoreWrite];
+  lEvent.data.ptr:=aHandle;
+  lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or OUBOOL[aHandle.IgnoreWrite];
   if epoll_ctl(FEpollFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
     Bail('Error modifying handle for errors/writes', LSocketError);
 end;
@@ -69,6 +76,7 @@ const
 var
   lEvent: TEpollEvent;
 begin
+  lEvent.data.ptr:=aHandle;
   lEvent.events:=INBOOL[aHandle.IgnoreRead];
   if epoll_ctl(FEpollReadFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
     Bail('Error modifying handle for reads', LSocketError);
