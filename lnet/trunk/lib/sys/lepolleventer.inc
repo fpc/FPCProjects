@@ -33,7 +33,7 @@ begin
   FEpollMasterFD:=epoll_create(2);
   if (FEPollFD < 0) or (FEpollReadFD < 0) or (FEpollMasterFD < 0) then
     raise Exception.Create('Unable to create epoll');
-  lEvent.events:=EPOLLIN or EPOLLOUT or EPOLLERR or EPOLLHUP or EPOLLET;
+  lEvent.events:=EPOLLIN or EPOLLOUT or EPOLLPRI or EPOLLERR or EPOLLHUP or EPOLLET;
   lEvent.data.fd:=FEpollFD;
   if epoll_ctl(FEpollMasterFD, EPOLL_CTL_ADD, FEpollFD, @lEvent) < 0 then
     raise Exception.Create('Unable to add FDs to master epoll FD');
@@ -80,7 +80,7 @@ end;
 
 procedure TLEpollEventer.HandleIgnoreRead(aHandle: TLHandle);
 const
-  INBOOL: array[Boolean] of Integer = (EPOLLIN, 0);
+  INBOOL: array[Boolean] of Integer = (EPOLLIN or EPOLLPRI, 0);
 var
   lEvent: TEpollEvent;
 begin
@@ -105,7 +105,7 @@ end;
 function TLEpollEventer.AddHandle(aHandle: TLHandle): Boolean;
 const
   BASE_BOOL = EPOLLHUP or EPOLLET;
-  INBOOL: array[Boolean] of Integer = (EPOLLIN, 0);
+  INBOOL: array[Boolean] of Integer = (EPOLLIN or EPOLLPRI, 0);
   ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
   OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
 var
@@ -174,7 +174,8 @@ begin
         if i < ReadChanges then begin
           TempRead:=TLHandle(FEventsRead[i].data.ptr);
 
-          if FEventsRead[i].events and EPOLLIN = EPOLLIN then
+          if (FEventsRead[i].events and EPOLLIN = EPOLLIN)
+          or (FEventsRead[i].events and EPOLLPRI = EPOLLPRI) then
             if Assigned(TempRead.FOnRead) then
               TempRead.FOnRead(TempRead);
           if TempRead.FDispose then
