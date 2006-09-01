@@ -468,6 +468,8 @@ begin
       if SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Bail('SetSockOpt error', LSocketError);
     end;
+    if SetSocketOptions(FHandle, SOL_SOCKET, SO_REUSEADDR, Arg, Sizeof(Arg)) = SOCKET_ERROR then
+      Bail('SetSockOpt error', LSocketError);
     FAddress.family:=AF_INET;
     FAddress.Port:=htons(APort);
     FAddress.Addr:=StrToNetAddr(Address);

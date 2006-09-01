@@ -10,6 +10,14 @@ const
   EPOLL_CTL_ADD = 1;
   EPOLL_CTL_DEL = 2;
   EPOLL_CTL_MOD = 3;
+  
+  EPOLLIN  = $01; { The associated file is available for read(2) operations. }
+  EPOLLPRI = $02; { There is urgent data available for read(2) operations. }
+  EPOLLOUT = $04; { The associated file is available for write(2) operations. }
+  EPOLLERR = $08; { Error condition happened on the associated file descriptor. }
+  EPOLLHUP = $10; { Hang up happened on the associated file descriptor. }
+  EPOLLONESHOT = 1 shl 30;
+  EPOLLET  = 1 shl 31; { Sets  the  Edge  Triggered  behaviour  for  the  associated file descriptor. }
 
 
 constructor TLEpollEventer.Create;
@@ -25,7 +33,7 @@ begin
   FEpollMasterFD:=epoll_create(2);
   if (FEPollFD < 0) or (FEpollReadFD < 0) or (FEpollMasterFD < 0) then
     raise Exception.Create('Unable to create epoll');
-  lEvent.events:=EPOLLIN or EPOLLOUT or EPOLLERR or EPOLLHUP or EPOLLPRI or EPOLLET;
+  lEvent.events:=EPOLLIN or EPOLLOUT or EPOLLERR or EPOLLHUP or EPOLLET;
   lEvent.data.fd:=FEpollFD;
   if epoll_ctl(FEpollMasterFD, EPOLL_CTL_ADD, FEpollFD, @lEvent) < 0 then
     raise Exception.Create('Unable to add FDs to master epoll FD');
@@ -55,7 +63,7 @@ procedure TLEpollEventer.HandleIgnoreError(aHandle: TLHandle);
 const
   BASE_BOOL = EPOLLHUP or EPOLLET;
   ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
-  OUBOOL: array[Boolean] of Integer = (EPOLLOUT or EPOLLPRI, 0);
+  OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
 var
   lEvent: TEpollEvent;
 begin
@@ -96,7 +104,7 @@ end;
 
 function TLEpollEventer.AddHandle(aHandle: TLHandle): Boolean;
 const
-  BASE_BOOL = EPOLLHUP or EPOLLPRI or EPOLLET;
+  BASE_BOOL = EPOLLHUP or EPOLLET;
   INBOOL: array[Boolean] of Integer = (EPOLLIN, 0);
   ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
   OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
@@ -155,9 +163,8 @@ begin
           or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
             if Assigned(Temp.FOnError) then
               Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
-              
-          if (FEvents[i].events and EPOLLOUT = EPOLLOUT)
-          or (FEvents[i].events and EPOLLPRI = EPOLLPRI) then
+
+          if FEvents[i].events and EPOLLOUT = EPOLLOUT then
             if Assigned(Temp.FOnWrite) then
               Temp.FOnWrite(Temp);
           if Temp.FDispose then
