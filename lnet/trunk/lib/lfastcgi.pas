@@ -750,8 +750,10 @@ var
     TheSocket: Integer;
     i: Integer = 1;
     Addr: TInetSockAddr;
-    pEnv: ppChar;
+    pEnv, pNil: ppChar;
   begin
+    pNil:=nil;
+    pNil:=@pNil;
     if CloseSocket(StdInputHandle) <> 0 then
       Halt(fpGetErrno);
       
@@ -786,9 +788,9 @@ var
       pEnv[0]:=pChar(Enviro);
       pEnv[1]:=nil;
     end else
-      pEnv:=nil;
+      pEnv:=pNil;
 
-    FpExecve(AppName, nil, pEnv);
+    FpExecve(AppName, pNil, pEnv);
     Halt(fpgeterrno);
   end;
 
