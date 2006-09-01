@@ -93,7 +93,7 @@ type
     property OnStderr: TLFastCGIRequestEvent read FOnStderr write FOnStderr;
   end;
 
-  TFastCGIParseState = (fsHeader, fsData, fsFlush);
+  TFastCGIClientState = (fsConnecting, fsStartingServer, fsHeader, fsData, fsFlush);
   
   PLFastCGIClient = ^TLFastCGIClient;
   TLFastCGIClient = class(TLTcp)
@@ -104,7 +104,7 @@ type
     FFreeRequest: TLFastCGIRequest;
     FSendRequest: TLFastCGIRequest;
     FRequest: TLFastCGIRequest;
-    FState: TFastCGIParseState;
+    FState: TFastCGIClientState;
     FNextFree: TLFastCGIClient;
     FPool: TLFastCGIPool;
     FBuffer: pchar;
@@ -116,6 +116,7 @@ type
     FPaddingLength: integer;
 
     procedure ConnectEvent(ASocket: TLHandle); override;
+    procedure ErrorEvent(const Msg: string; ASocket: TLHandle); override;
     function  CreateRequester: TLFastCGIRequest;
     procedure HandleGetValuesResult;
     procedure HandleReceive(ASocket: TLSocket);
@@ -141,6 +142,7 @@ type
     FClientsAvail: integer;
     FFreeClient: TLFastCGIClient;
     FEventer: TLEventer;
+    FAppName: string;
     FHost: string;
     FPort: integer;
     
@@ -153,6 +155,7 @@ type
     function  BeginRequest(AType: integer): TLFastCGIRequest;
     procedure EndRequest(AClient: TLFastCGIClient);
 
+    property AppName: string read FAppName write FAppName;
     property Eventer: TLEventer read FEventer write FEventer;
     property Host: string read FHost write FHost;
     property Port: integer read FPort write FPort;
@@ -498,11 +501,21 @@ end;
 
 procedure TLFastCGIClient.ConnectEvent(ASocket: TLHandle);
 begin
+  FState := fsHeader;
   FRequest.SendGetValues;
   if FPool <> nil then
     FPool.AddToFreeClients(Self);
 
   inherited;
+end;
+
+procedure TLFastCGIClient.ErrorEvent(const Msg: string; ASocket: TLHandle);
+begin
+  if FState = fsConnecting then
+  begin
+    FState := fsStartingServer;
+    SpawnFCGIProcess(FPool.AppName, '', FPool.Port);
+  end;
 end;
 
 procedure TLFastCGIClient.HandleGetValuesResult;
@@ -661,6 +674,7 @@ begin
   begin
     Connect(FPool.Host, FPool.Port);
     FRequest := FRequests[0];
+    FState := fsConnecting;
   end;
 
   if FFreeRequest <> nil then

@@ -174,6 +174,7 @@ type
     FFileHandler: TFileHandler;
     FCGIHandler: TCGIHandler;
     FPHPCGIHandler: TPHPFastCGIHandler;
+    FPHPCGIAppName: string;
     FPHPCGIHost: string;
     FPHPCGIPort: integer;
 
@@ -185,6 +186,7 @@ type
     procedure LogAccess(const AMessage: string); override;
     procedure LogError(const AMessage: string; ASocket: TLSocket);
 
+    property PHPCGIAppName: string read FPHPCGIAppName write FPHPCGIAppName;
     property PHPCGIHost: string read FPHPCGIHost write FPHPCGIHost;
     property PHPCGIPort: integer read FPHPCGIPort write FPHPCGIPort;
   end;
@@ -806,6 +808,7 @@ begin
 
   FPHPCGIHost := 'localhost';
   FPHPCGIPort := 6000;
+  FPHPCGIAppName := PHPCGIBinary;
 
   FFileHandler := TFileHandler.Create;
   FCGIHandler := TCGIHandler.Create;
@@ -834,6 +837,7 @@ procedure TLWebServer.RegisterWithEventer;
 begin
   inherited;
   FPHPCGIHandler.Pool.Eventer := Eventer;
+  FPHPCGIHandler.Pool.AppName := FPHPCGIAppName;
   FPHPCGIHandler.Pool.Host := FPHPCGIHost;
   FPHPCGIHandler.Pool.Port := FPHPCGIPort;
 end;
