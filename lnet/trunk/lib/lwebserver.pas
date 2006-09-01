@@ -108,6 +108,7 @@ type
     procedure RequestHasStderr(ARequest: TLFastCGIRequest);
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
     function  WriteCGIData: TWriteBlockStatus; override;
+    function  WriteBlock: TWriteBlockStatus; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -775,6 +776,16 @@ begin
   lRead := FRequest.Get(@FBuffer[FReadPos], FBufferSize-FReadPos);
   Inc(FReadPos, lRead);
   Result := InputBufferEmptyToWriteStatus[lRead = 0];
+end;
+
+function  TFastCGIOutput.WriteBlock: TWriteBlockStatus;
+begin
+  if (FRequest <> nil) and FRequest.OutputPending then
+  begin
+    FRequest.ParseClientBuffer;
+    Result := wsWaitingData;
+  end else
+    Result := inherited;
 end;
 
 procedure TFastCGIOutput.StartRequest;

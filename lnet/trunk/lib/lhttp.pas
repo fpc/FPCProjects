@@ -596,10 +596,10 @@ begin
   if FOutputPending then
   begin
     Result := inherited WriteData;
-    if Result = wsDone then
+    if (Result = wsDone) and not FEof then
     begin
       Result := wsPendingData;
-      PrepareChunk
+      PrepareChunk;
     end;
   end;
 end;
@@ -1096,19 +1096,17 @@ begin
 end;
 
 procedure TLHTTPSocket.WriteBlock;
-var
-  lFreeOutput: TOutputItem;
 begin
   while FCurrentOutput <> nil do
   begin
     case FCurrentOutput.WriteBlock of
       wsDone:
       begin
-        lFreeOutput := FCurrentOutput;
-        FCurrentOutput := FCurrentOutput.FNext;
-        if lFreeOutput = FLastOutput then
+        if FCurrentOutput = FLastOutput then
           FLastOutput := nil;
-        lFreeOutput.Free;
+        { some output items may trigger this parse/write loop }
+        FConnection.DelayFree(FCurrentOutput);
+        FCurrentOutput := FCurrentOutput.FNext;
       end;
       wsWaitingData:
       begin

@@ -51,6 +51,7 @@ type
     FInputSize: integer;
     FOutputDone: boolean;
     FStderrDone: boolean;
+    FOutputPending: boolean;
     FNextFree: TLFastCGIRequest;
     FNextSend: TLFastCGIRequest;
     FOnEndRequest: TLFastCGIRequestEvent;
@@ -73,6 +74,7 @@ type
     
     procedure AbortRequest;
     function  Get(ABuffer: pchar; ASize: integer): integer;
+    procedure ParseClientBuffer;
     function  SendBuffer: integer;
     function  SendPrivateBuffer: boolean;
     procedure SendBeginRequest(AType: integer);
@@ -84,6 +86,7 @@ type
     property ID: integer read FID write SetID;
     property StderrDone: boolean read FStderrDone;
     property OutputDone: boolean read FOutputDone;
+    property OutputPending: boolean read FOutputPending;
     property OnEndRequest: TLFastCGIRequestEvent read FOnEndRequest write FOnEndRequest;
     property OnInput: TLFastCGIRequestEvent read FOnInput write FOnInput;
     property OnOutput: TLFastCGIRequestEvent read FOnOutput write FOnOutput;
@@ -231,6 +234,15 @@ end;
 function TLFastCGIRequest.Get(ABuffer: pchar; ASize: integer): integer;
 begin
   Result := FClient.GetBuffer(ABuffer, ASize);
+end;
+
+procedure TLFastCGIRequest.ParseClientBuffer;
+begin
+  FOutputPending := false;
+  if (FClient.Iterator <> nil) and FClient.Iterator.IgnoreRead then
+    FClient.HandleReceive(nil)
+  else
+    FClient.ParseBuffer;
 end;
 
 procedure TLFastCGIRequest.SetID(const NewID: integer);
@@ -600,8 +612,10 @@ begin
         FRequest.HandleReceive;
         if FContentLength = 0 then 
           Flush
-        else
+        else begin
+          FRequest.FOutputPending := true;
           exit;
+        end;
       end;
       fsFlush: Flush;
     end;
