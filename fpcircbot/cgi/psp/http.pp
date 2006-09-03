@@ -1,4 +1,4 @@
-{$IFDEF FPC}{$H+}{$MODE OBJFPC}{$R+}{$Q+}{$CHECKPOINTER ON}{$ENDIF}
+{$IFDEF FPC}{$MODE OBJFPC} {$H+}{$R+}{$Q+}{$CHECKPOINTER ON}{$ENDIF}
 unit http;
 {
  *******************************************************************************

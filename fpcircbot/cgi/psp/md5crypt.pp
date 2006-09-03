@@ -1,4 +1,4 @@
-{$IFDEF FPC}{$H+}{$MODE OBJFPC}
+{$IFDEF FPC}{$MODE OBJFPC} {$H+}
 {$R-}{$Q-} // Strange bug fix
 {$CHECKPOINTER ON}{$ENDIF}
 unit md5crypt;

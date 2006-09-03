@@ -1,162 +1,24 @@
-{
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            PSP 1.5.x Merged with Pascal Web Unit project (PWU)
+                              PSP 1.5.0.1 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                        
 --------------------------------------------------------------------------------
  Main Web Unit
 --------------------------------------------------------------------------------
-
   This unit contains the main functions and procedures for web programs.
-
---------------------------------------------------------------------------------
- Developer Notes
---------------------------------------------------------------------------------
-
- PSP 1.5.x
- ---------
-
-  [24/OCT/2005 - L505]
-
-   - Chnaged the order of substring replace in filterHTML function so that
-     pound characters get filtered first, not in the middle, which could cause
-     characters to slip through as double or triple filtered.
-
-   - Changed GetWebvar_safehtml to GetCGIvar_safehtml
-
- 
-  [23/OCT/2005 - L505]
-
-   - Found possible memory leak/bug in sessions, added an sds free row call
-
-  [18/OCT/2005 - L505]
-
-   - Added TrimBadChars_file and _dir to safely trim all bad characters from
-     user input when that input will be in code accessing directories or
-     filenames.
-
-  [17/OCT/2005 - L505]
-
-   - Merged PWU with PSP
-     
-  [15/OCT/2005 - L505]
-
-   - Added GetCGIVar_SafeHTML function. This is used to get variables and turn
-     them into filtered html automatically. Default security level on this
-     function is level 2. To bypass default security, use GetCGIVar_SF
-     The _SafeHTML prefix stands for "Safe HTML". Special characters are
-     filtered for you into HTML equivilents. The SF suffix stands for
-     "specify filter" and security settings.
-
-  [8/OCT/2005 - L505]
-
-   -Added pwuEnvVar.pp unit to project which allows easy access to CGI
-    environment variables, such as ScriptName, UserAgent, RemoteAddr (IP)
-
-  [7/OCT/2005 - L505]
-
-   -Added WebWriteLnFF, WebWriteFF, WebFormat_SF, WebWriteF_Fi, WebWriteLnF_Fi
-    functions. Created a security.txt file in the /src/conf/ directory
-
-   -Version 1.0b released:
-     more functions, minor updates, and more examples included.
-
-
-  [6/OCT/2005 - L505]
-
-   -The _S suffix has been added to some functions, so we can now specify
-    security we want to use. _S suffix stands for "specify security"
-
-     - FilterHtml has 2 security levels, with defaulted at level 2. To bypass
-       the default, use FilterHTML_S(input, SecureLevel)
-
-     - GetWebVar has 2 security levels (plus level 0), defaulted at level 2.
-       To bypass the default, use GetWebVar_S(input, SecureLevel)
-
-     - TrimBadChar has have 2 security settings, defaulted at level 2. To bypass
-       the default, use TrimBadChar_S(input, SecureLevel)
-
-     - GetCGIVar has 2 security levels (plus level 0) defaulted at level 2. To
-       bypass the default, use GetCGIVar_S(input, SecureLevel)
-
-
-  [5/OCT/2005 -L505]
-
-    -Modified, converted, and refactored entire PSP project into the PWU project.
-     PWU is derived from the PSP project.
-
-    -PWU Version 1.0a released: first release.
-    
-
- PSP 1.4.3
- ---------
-
-  -notes are missing. Please fill in from previous file or archive them.
-
- PSP 1.4.2
- ---------
-
-  -notes are missing. Please fill in from previous file or archive them.
- 
-
- PSP 1.4.1
- ---------
- 
-  [22.09.2005 - Trustmaster]:
-
-   - changed unit interface, improved error reporting and made it more verbose.
-
-  [20.09.2005 - Trustmaster]:
-
-   - improved GZIP content encoding support.
-
-  [07.SEP.2005 - L505]:
-
-   - added web_trim_badchar functions
-
-  [27.08.05 - Trustmaster]:
-
-   - lots of debugging. But I'm not sure if that was all.
-
-  [26.08.05 - Trustmaster]:
-
-   - got new web unit compiled and working. 95% of code is new.
-
-
---------------------------------------------------------------------------------
-  Developer Todo
---------------------------------------------------------------------------------
-
-  [L505]:
-   -Trimming null character. Is it okay to trim the null character or does
-    it screw up ansistrings? Search source code for areas in question.
-
-   -Trim functions may be moved to another unit, such as a filtering/trimming
-    unit specifically for those type of functions.
-    
-   -security for CGI environment variables incase user injects javascript or
-    other malicious junk into a HTTP_USER_AGENT string or SCRIPT_NAME
     
 --------------------------------------------------------------------------------
-  Authors/Credits:
+  Authors/Credits/Bug Fixes:
 --------------------------------------------------------------------------------
-  -PSP Project
-  -Vladimir Sibirov
-  -L505 
+  PSP Project, Vladimir Sibirov (Trustmaster), Lars (L505), Anthony Henry, 
+  Ales (Almindor)
 
-
-  
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%}
 
 
  {$IFDEF WIN32}{$LINKLIB kernel32}{$ENDIF}{$IFDEF UNIX}{$LINKLIB c}{$ENDIF}
-
 
 // DEFAULT: ON
  {$DEFINE EXTRA_SECURE}
@@ -178,7 +40,7 @@
 // -dGZIP_ENABLED FPC compiler argument
 
 
-{$IFDEF FPC}{$MODE OBJFPC}{$H+}
+{$IFDEF FPC}{$MODE OBJFPC} {$H+}
   {$IFDEF EXTRA_SECURE}
    {$R+}{$Q+}{$CHECKPOINTER ON}
   {$ENDIF}
@@ -203,18 +65,16 @@ const
   PWU_SYSCONF_PATH = '/etc/';
 
   // Supply PWU version
-  PWU_VERSION = '1.0d';
+  PWU_VERSION = '1.5.0.2';
 
 
 type
   StrArray = array of string;
 
 
-
 {------------------------------------------------------------------------------}
 {--- Main Procedures/Functions ------------------------------------------------}
 {------------------------------------------------------------------------------}
-
 
  {-- CGI Variable Functions --}
 function CountCGIVars: longword;
@@ -227,7 +87,6 @@ function FetchCGIVarName(index: longword): string;
 function FetchCGIVarValue(index: longword): string;
 function IsCgiVar(const name: string): boolean;
 function GetCGIVar_SF(const name: string; const SecureLevel: integer): string;
-
 
  {-- Cookie Functions --}
 function CountCookies: longword;
@@ -246,7 +105,6 @@ function SetCookieAsIntEx(const name: string; value: longint; const path, domain
 function UnsetCookie(const name: string): boolean;
 function UnsetCookieEx(const name, path, domain: string): boolean;
 
-
  {-- Config Functions --}
 function CountWebConfigVars: longword;
 function FetchWebConfigVarName(index: longword): string;
@@ -254,7 +112,6 @@ function FetchWebConfigVarValue(index: longword): string;
 function GetWebConfigVar(const name: string): string;
 function IsWebConfigVar(const name: string): boolean;
 function SetWebConfigVar(const name, value: string): boolean;
-
 
  {-- Environment Variable Functions --}
 function CountEnvVars: longword;
@@ -264,7 +121,6 @@ function GetEnvVar(const name: string): string;
 function IsEnvVar(const name: string): boolean;
 function SetEnvVar(const name, value: string): boolean;
 
-
  {-- Filtering Functions --}
 function FilterHTML(const input: string): string;
 function FilterHTML_S(const input: string; const SecureLevel: integer): string;
@@ -272,7 +128,6 @@ function TrimBadChars(const input: string): string;
 function TrimBadChars_file(const input: string): string;
 function TrimBadChars_dir(const input: string): string;
 function TrimBadChars_S(const input: string; const SecureLevel: integer): string;
-
 
  {-- Header Functions --}
 function CountWebheaders: longword;
@@ -283,7 +138,6 @@ function IsWebHeader(const name: string): boolean;
 function SetWebHeader(const name, value: string): boolean;
 function UnsetWebHeader(const name: string): boolean;
 function PutWebHeader(const header: string): boolean;
-
 
  {-- Output/Write Out Functions/Procedures --}
 procedure WebWrite(const str: string);
@@ -314,7 +168,6 @@ function GetRTIAsFloat(const name: string): double;
 function GetRTIAsInt(const name: string): longint;
 function IsRTI(const name: string): boolean;
 
-
  {-- Session Functions --}
 function CountSessVars: longword;
 function FetchSessName(index: longword): string;
@@ -329,7 +182,6 @@ function SetSessAsFloat(const name: string; value: double): boolean;
 function SetSessAsInt(const name: string; value: longint): boolean;
 function UnsetSess(const name: string): boolean;
 
-
  {-- Upload File Functions --}
 function FetchUpfileName(index: longword): string;
 function GetUpFileName(const name: string): string;
@@ -338,7 +190,6 @@ function GetUpFileType(const name: string): string;
 function CountUpFiles: longword;
 function IsUpFile(const name: string): boolean;
 function SaveUpFile(const name, fname: string): boolean;
-
 
  {-- Web Variable Functions/Procedures --}
 function CountWebVars: longword;
@@ -354,12 +205,10 @@ procedure SetWebVarAsInt(const name: string; value: longint);
 function IsWebVar(const name: string): byte;
 procedure UnsetWebVar(const name: string);
 
-
  {-- Utility/Tools Functions --}
 function LineEndToBR(const str: string): string;
 function RandomStr(len: longint): string;
 function XORCrypt(const str: string; key: byte): string;
-
 
  {-- Error Functions --}
 function ThrowWebError(const message: string): boolean;
@@ -414,7 +263,7 @@ type
   MP_Line = array[1..6] of string;
 
   // Multipart/Form-Data form type
-  MP_Form = array of string;
+  MP_Form = array of string;                      
 
   // Pointer to MP_Form
   MP_PForm = ^MP_Form;
@@ -473,7 +322,7 @@ procedure InitWebHeaders;
 begin
   SetLength(hdr, 2);
   hdr[0].name:= 'X-Powered-By';
-  hdr[0].value:= 'PWU/' + PWU_VERSION;
+  hdr[0].value:= 'PSP/PWU ' + PWU_VERSION;
   hdr[1].name:= 'Content-Type';
   hdr[1].value:= 'text/html; charset=' + GetWebConfigVar('header_charset');
  {$IFDEF GZIP_ENABLED}
@@ -1338,13 +1187,12 @@ begin
     result:= substr_replace(result, '>', '&gt;');    //greater than
     result:= substr_replace(result, '|', '&#124;');  //pipe
     result:= substr_replace(result, '%', '&#37;');   //percent sign
-//    result:= substr_replace(result,  #0, '');        //null character okay to trim?? MUST CONFIRM
+    result:= substr_replace(result,  #0, '');        //null character bad
     result:= substr_replace(result, '(', '&#40;');   //open bracket
     result:= substr_replace(result, ')', '&#41;');   //closed bracket
-    result:= substr_replace(result, '{', '&#123;');  //open parenthesis
-    result:= substr_replace(result, '}', '&#125;');  //closed parenthesis
     result:= substr_replace(result, '$', '&#36;');   //dollar sign
     result:= substr_replace(result, '?', '&#63;');   //question mark
+//  Note: Curly braces needed for embedded CSS { }, not trimmed
   end;
   
 end;
@@ -1529,11 +1377,11 @@ end;
 // Default security level: 2
 function WebFormat(const str: string): string;
 begin
-  result:= WebFormat_SF(str, false, 0, 0);
+  result:= WebFormat_SF(str, false, 0, 2);
   // Uses the following default security settings:
   //   Filter HTML input: NO, see WebFormatAndfilter
   //   Filter security: level 0, not applicable
-  //   Trim security: level 2
+  //   Trim security: level 2             
 
 end;
 
@@ -1589,7 +1437,7 @@ begin
   while i <= len do
   begin
     // Normal concat until chars of our attention
-    while (i <= len) and (str[i] <> '$') do
+    while (i <= len) and (str[i] <> '$') and (str[i] <> '{') do
     begin
       SetLength(result, length(result) + 1);
       result[length(result)]:= str[i];
@@ -1635,7 +1483,7 @@ begin
           if FilterSecureLevel = 2 then
           begin
             lex:= FilterHTML_S(GetWebVar_S(lex, 0), 2) //must use GetWebVar security level 0 here since we are implementing our own security with filterHTML.
-          end;
+          end;            
         end
           else
         begin
@@ -1673,6 +1521,13 @@ begin
       if ((i - 1) > 0) and (str[i - 1] = '\') then
       begin
         // Escaped, ignoring
+        SetLength(result, length(result) + 1);
+        result[length(result)]:= str[i];
+        inc(i);
+      end
+        else
+      if i = len then // at end of line
+      begin
         SetLength(result, length(result) + 1);
         result[length(result)]:= str[i];
         inc(i);
@@ -2708,7 +2563,7 @@ begin
   reset(fh);
   while not eof(fh) do
   begin
-    readln(fh, s);
+    readln(fh, s); 
    {$IFDEF GZIP_ENABLED}
     if output_buffering then
     begin
@@ -3294,7 +3149,7 @@ begin
 
   if SecureLevel = 1 then
   begin
-//  result:= substr_replace(result, #0, '');   //okay to trim null character or does this screw up ansistrings?
+    result:= substr_replace(result, #0, '');   //okay to trim null character or does this screw up ansistrings?
     result:= substr_replace(input, '/', '');   //slashes bad
     result:= substr_replace(result, '\', '');
     result:= substr_replace(result, '|', '');  //pipe character bad
@@ -3308,7 +3163,7 @@ begin
 
   if SecureLevel = 2 then
   begin
-//  result:= substr_replace(result,  #0, '');  // okay to trim null character or does this screw up ansistrings????
+    result:= substr_replace(result,  #0, '');
     result:= substr_replace(input, '/', '');   // slashes bad
     result:= substr_replace(result, '\', '');
     result:= substr_replace(result, '|', '');  // pipe character bad
@@ -3325,8 +3180,6 @@ begin
     result:= substr_replace(result, '*', '');
     result:= substr_replace(result, '=', '');
     result:= substr_replace(result, '~', '');
-    result:= substr_replace(result, '{', '');
-    result:= substr_replace(result, '}', '');
     result:= substr_replace(result, '(', '');
     result:= substr_replace(result, ')', '');
     result:= substr_replace(result, '[', '');    
@@ -3338,7 +3191,6 @@ begin
   end;
   
 end;
-
 
 // Unsets a cookie
 function UnsetCookie(const name: string): boolean;
@@ -3369,7 +3221,6 @@ begin
   hdr[length(hdr) - 1].value:= url_encode(name) + '=;path=/;expires=Fri, 26 Aug 2005 12:00:00 GMT';
   result:= true;
 end;
-
 
 // Unsets extended cookie
 function UnsetCookieEx(const name, path, domain: string): boolean;
@@ -3427,7 +3278,6 @@ begin
   hdr:= tmp;
   result:= true;
 end;
-
 
 // Unsets session variable
 function UnsetSess(const name: string): boolean;
@@ -3547,16 +3397,13 @@ initialization
       ThrowWebError('Failed to recieve data from webserver');
 
 
-
 finalization
    {$IFDEF GZIP_ENABLED}
     // Set content length if it can be set this way
     if (not headers_sent) and (length(ob) > 0) then
     begin
-
       if output_buffering and output_compression then
         DoWebCompress;
-
       str(length(ob), tmp);
       SetWebHeader('Content-Length', tmp);
     end;

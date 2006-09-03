@@ -8,18 +8,14 @@
  ------------------------------------------------------------------------------
   Main Web Unit
  ------------------------------------------------------------------------------
-
   This unit contains the main functions and procedures for web programs.
 
  ------------------------------------------------------------------------------
   Developer Notes
  ------------------------------------------------------------------------------
-
-  [ 10/OCT/2005 -L505 ]
-
-    -Modified, converted, and refactored entire unit for PWU .
-     PWU is derived from the PSP project, but has different goals.
-
+  This unit was Modified from the Pascal Server Pages project 1.4.X, mainly 
+  syntax changes
+  
  ------------------------------------------------------------------------------
   Developer Todo
  ------------------------------------------------------------------------------
@@ -27,15 +23,7 @@
  ------------------------------------------------------------------------------
   Credits:
  ------------------------------------------------------------------------------
-
-  -PSP Project
-  -Vladimir Sibirov
-
-  This unit was Modified from the Pascal Server Pages project for use with PWU
-  project. PWU is derived from the Pascal Server Pages project, but has
-  different goals, geared more toward Pascal users with Pascal syntax, Pascal
-  standards and structures, and an integrated development and code philosophy.
-
+  PSP Project, Vladimir Sibirov
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -43,7 +31,7 @@
 }
 
 
-{$IFDEF FPC}{$H+}{$MODE OBJFPC}{$R+}{$Q+}{$CHECKPOINTER ON}{$ENDIF}
+{$IFDEF FPC}{$MODE OBJFPC} {$H+}{$R+}{$Q+}{$CHECKPOINTER ON}{$ENDIF}
 unit smtp;
 
 {------------------------------------------------------------------------------}
