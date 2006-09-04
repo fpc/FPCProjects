@@ -24,6 +24,7 @@
 unit lhttp;
 
 {$mode objfpc}{$h+}
+{$inline on}
 
 interface
 

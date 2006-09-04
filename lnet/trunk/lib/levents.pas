@@ -24,6 +24,7 @@
 unit lEvents;
 
 {$mode objfpc}{$H+}
+{$inline on}
 {$define nochoice}  // let's presume we don't have "optimized" eventer
 
 interface

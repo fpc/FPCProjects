@@ -24,6 +24,7 @@
 unit lwebserver;
 
 {$mode objfpc}{$h+}
+{$inline on}
 
 interface
 

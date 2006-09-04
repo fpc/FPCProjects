@@ -24,6 +24,7 @@
 unit lCommon;
 
 {$mode objfpc}{$H+}
+{$inline on}
 
 interface
 
