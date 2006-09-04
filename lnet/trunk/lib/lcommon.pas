@@ -70,7 +70,7 @@ const
 
 implementation
 
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
 
 uses
   Windows;
