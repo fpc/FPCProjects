@@ -770,6 +770,7 @@ begin
 end;
 
 function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
+{$ifndef MSWINDOWS}
 var
   PID: TPid;
 
@@ -847,6 +848,10 @@ begin
     Exit(fpGetErrno)
   else
     Result:=HandleParent;
+{$else}
+begin
+  Result:=-1;
+{$endif}
 end;
     
 end.
