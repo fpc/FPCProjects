@@ -1,3 +1,26 @@
+{ Web server settings
+
+  Copyright (C) 2006 Micha Nelissen
+
+  This library is Free software; you can redistribute it and/or modify it
+  under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  This program is diStributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; withOut even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a Copy of the GNU Library General Public License
+  along with This library; if not, Write to the Free Software Foundation,
+  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  
+  This license has been modified. See file LICENSE.ADDON for more information.
+  Should you find these sources without a LICENSE File, please contact
+  me at ales@chello.sk
+}
+
 unit lHTTPSettings;
 
 {$mode objfpc}{$H+}
@@ -15,7 +38,7 @@ interface
 implementation
 
 uses
-  Classes, SysUtils, IniFiles;
+  Classes, SysUtils, IniFiles, Process;
 
 const
   DEF_PORT = '3880';
@@ -67,6 +90,22 @@ function CreateDefaultIni(const aFilePath: string): TIniFile;
         Writeln('Warning! File does not exist: ', aFile);
     end;
   end;
+  
+  function GetPHPCGI: string;
+  const
+    DIRS: array[1..5] of string = ('/usr/bin/', '/usr/local/bin/', '/usr/lib/',
+                                   '/usr/lib/bin/', '/opt/bin/');
+    FILES: array[1..3] of string = ('php-cgi', 'php5-cgi', 'php4-cgi');
+  var
+    i, j: Integer;
+  begin
+    Result:='';
+    for i:=1 to High(DIRS) do
+      for j:=1 to High(FILES) do
+        if  FileExists(DIRS[i] + FILES[j])
+        and (FileGetAttr(DIRS[i] + FILES[j]) and faDirectory <> faDirectory) then
+          Exit(DIRS[i] + FILES[j]);
+  end;
 
 begin
   Writeln('Creating default configuration file in: ', aFilePath);
@@ -74,17 +113,17 @@ begin
     CreateDir(ExtractFilePath(aFilePath));
   Result:=TIniFile.Create(aFilePath);
   
-  AddPath('httpdir', HomeDir + PathDelim + 'http_docs');
-  AddPath('cgiroot', HomeDir + PathDelim + 'cgi-bin');
+  AddPath('httpdir', HomeDir + 'http_docs');
+  AddPath('cgiroot', HomeDir + 'cgi-bin');
  {$ifndef MSWINDOWS}
-  AddPath('cgipath', '/usr/local/bin:/usr/bin:/bin:' + HomeDir + '/bin', False);
+  AddPath('cgipath', '/usr/local/bin:/usr/bin:/bin:' + HomeDir + 'bin', False);
  {$else}
-  AddPath('cgipath', HomeDir + PathDelim + 'cgi-bin', False);
+  AddPath('cgipath', HomeDir + 'cgi-bin', False);
  {$endif}
-  AddFile('mimetypes', HomeDir + PathDelim + 'mime.types');
+  AddFile('mimetypes', HomeDir + 'mime.types');
   Result.WriteString('PATH', 'cgiprefix', 'cgi-bin' + PathDelim);
  {$ifndef MSWINDOWS}
-  Result.WriteString('PATH', 'phpcgibin', '/usr/lib/cgi-bin/php');
+  Result.WriteString('PATH', 'phpcgibin', GetPHPCGI);
  {$else}
   Result.WriteString('PATH', 'phpcgibin', 'php');
  {$endif}
@@ -101,20 +140,21 @@ var
 begin
   SearchPaths:=TStringList.Create;
   SearchPaths.Add(HomeDir);
-  SearchPaths.Add('/etc');
-  SearchPaths.Add('/usr/local/etc');
-  SearchPaths.Add(ExtractFilePath(ParamStr(0)));
+  {$ifndef MSWINDOWS}
+  SearchPaths.Add('/etc/');
+  SearchPaths.Add('/usr/local/etc/');
+  {$endif}
+  SearchPaths.Add(ExtractFilePath(ParamStr(0)) + PathDelim);
 
   for i:=0 to SearchPaths.Count-1 do
-    if FileExists(SearchPaths[i] + PathDelim + INI_NAME) then begin
-      Writeln('Loading settings from file: ', SearchPaths[i] + PathDelim + INI_NAME);
-      SettingsFile:=TIniFile.Create(SearchPaths[i] + PathDelim + INI_NAME);
+    if FileExists(SearchPaths[i] + INI_NAME) then begin
+      Writeln('Loading settings from file: ', SearchPaths[i] + INI_NAME);
+      SettingsFile:=TIniFile.Create(SearchPaths[i] + INI_NAME);
       SearchPaths.Free;
       Exit;
     end;
   // no file found, create default one in home
-  SettingsFile:=CreateDefaultIni(GetEnvironmentVariable('HOME') + PathDelim +
-                                 '.fphttpd' + PathDelim + INI_NAME);
+  SettingsFile:=CreateDefaultIni(HomeDir + INI_NAME);
   SearchPaths.Free;
 end;
 
@@ -160,7 +200,12 @@ end;
   
 initialization
   CurDir:=ExtractFilePath(ParamStr(0));
-  HomeDir:=GetEnvironmentVariable('HOME') + PathDelim + '.fphttpd';
+  {$ifdef MSWINDOWS}
+  HomeDir:=GetEnvironmentVariable('HOMEDRIVE') + PathDelim +
+           GetEnvironmentVariable('HOMEPATH') + PathDelim + 'fphttpd' + PathDelim;
+  {$else}
+  HomeDir:=GetEnvironmentVariable('HOME') + PathDelim + '.fphttpd' + PathDelim;
+  {$endif}
   InitSettings;
 
 finalization

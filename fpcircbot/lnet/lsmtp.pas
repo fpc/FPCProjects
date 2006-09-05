@@ -1,6 +1,30 @@
+{ lNet SMTP unit
+
+  CopyRight (C) 2005-2006 Ales Katona
+
+  This library is Free software; you can rediStribute it and/or modify it
+  under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  This program is diStributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; withOut even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a Copy of the GNU Library General Public License
+  along with This library; if not, Write to the Free Software Foundation,
+  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  
+  This license has been modified. See File LICENSE.ADDON for more inFormation.
+  Should you find these sources without a LICENSE File, please contact
+  me at ales@chello.sk
+}
+
 unit lsmtp;
 
 {$mode objfpc}{$H+}
+{$inline on}
 
 interface
 
@@ -94,6 +118,14 @@ const
   
 {$i lcontainers.inc}
 
+function StatusToStr(const aStatus: TLSMTPStatus): string;
+const
+  STATAR: array[ssNone..ssQuit] of string = ('ssNone', 'ssCon', 'ssHelo', 'ssEhlo', 'ssMail',
+                                             'ssRcpt', 'ssData', 'ssRset', 'ssQuit');
+begin
+  Result:=STATAR[aStatus];
+end;
+
 function MakeStatusRec(const aStatus: TLSMTPStatus; const Arg1, Arg2: string): TLSMTPStatusRec;
 begin
   Result.Status:=aStatus;
@@ -109,7 +141,7 @@ begin
   FSL:=TStringList.Create;
   FHostName:='';
   FMessage:='';
-  {$warning TODO: fix pipelining support when server does it}
+//  {$warning TODO: fix pipelining support when server does it}
   FPipeLine:=False;
   FConnection:=TLTcp.Create(nil);
   FConnection.OnReceive:=@OnRe;
@@ -235,7 +267,7 @@ begin
       ssHelo,
       ssEhlo: case x of
                 200..299: FStatus.Remove;
-              else        Disconnect;
+              else      Disconnect;
               end;
                
       ssMail,
@@ -249,6 +281,7 @@ begin
                           end;
               else        FStatus.Remove;
               end;
+      ssRset: FStatus.Remove;
     end;
   if FStatus.Empty and not FCommandFront.Empty then
     ExecuteFrontCommand;
@@ -308,7 +341,7 @@ begin
     FSL.CommaText:=StringReplace(Recipients, ' ', ',', [rfReplaceAll]);
     for i:=0 to FSL.Count-1 do
       Rcpt(FSL[i]);
-    Data('Subject: ' + Subject + SLE + 'To: ' + FSL.CommaText + SLE + Msg);
+    Data('From: ' + From + SLE + 'Subject: ' + Subject + SLE + 'To: ' + FSL.CommaText + SLE + Msg);
     Rset;
   end;
 end;

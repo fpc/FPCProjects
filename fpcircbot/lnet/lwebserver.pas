@@ -24,6 +24,7 @@
 unit lwebserver;
 
 {$mode objfpc}{$h+}
+{$inline on}
 
 interface
 
@@ -37,7 +38,7 @@ type
     FFile: file;
 
     function GetSize: integer;
-    function WriteData: boolean; override;
+    function WriteData: TWriteBlockStatus; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -61,12 +62,12 @@ type
     function  ParseHeaders: boolean;
     procedure CGIOutputError; virtual; abstract;
     procedure WriteCGIBlock;
-    function  WriteCGIData: boolean; virtual; abstract;
+    function  WriteCGIData: TWriteBlockStatus; virtual; abstract;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
-    function  WriteData: boolean; override;
+    function  WriteData: TWriteBlockStatus; override;
     procedure StartRequest; virtual;
     
     property ExtraPath: string read FExtraPath write FExtraPath;
@@ -85,7 +86,7 @@ type
     procedure DoneInput; override;
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
     procedure CGIOutputError; override;
-    function  WriteCGIData: boolean; override;
+    function  WriteCGIData: TWriteBlockStatus; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -107,7 +108,8 @@ type
     procedure RequestHasOutput(ARequest: TLFastCGIRequest);
     procedure RequestHasStderr(ARequest: TLFastCGIRequest);
     function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
-    function  WriteCGIData: boolean; override;
+    function  WriteCGIData: TWriteBlockStatus; override;
+    function  WriteBlock: TWriteBlockStatus; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -125,6 +127,7 @@ type
   TDocumentRequest = record
     Socket: TLHTTPServerSocket;
     Document: string;
+    URIPath: string;
     ExtraPath: string;
   end;
 
@@ -172,6 +175,7 @@ type
     FFileHandler: TFileHandler;
     FCGIHandler: TCGIHandler;
     FPHPCGIHandler: TPHPFastCGIHandler;
+    FPHPCGIAppName: string;
     FPHPCGIHost: string;
     FPHPCGIPort: integer;
 
@@ -183,6 +187,7 @@ type
     procedure LogAccess(const AMessage: string); override;
     procedure LogError(const AMessage: string; ASocket: TLSocket);
 
+    property PHPCGIAppName: string read FPHPCGIAppName write FPHPCGIAppName;
     property PHPCGIHost: string read FPHPCGIHost write FPHPCGIHost;
     property PHPCGIPort: integer read FPHPCGIPort write FPHPCGIPort;
   end;
@@ -193,6 +198,9 @@ implementation
 
 const
   ServerSoftware = 'fpHTTPd/0.2';
+
+  InputBufferEmptyToWriteStatus: array[boolean] of TWriteBlockStatus =
+    (wsPendingData, wsWaitingData);
   
 var
   ScriptPathPrefix: string;
@@ -287,7 +295,8 @@ var
 begin
   Result := nil;
   lDocRequest.Socket := ASocket;
-  lDocRequest.Document := DocumentRoot+ASocket.RequestInfo.Argument;
+  lDocRequest.URIPath := ASocket.RequestInfo.Argument;
+  lDocRequest.Document := DocumentRoot+lDocRequest.URIPath;
   if DirectoryExists(lDocRequest.Document) then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
@@ -333,8 +342,8 @@ begin
   begin
     lOutput := TSimpleCGIOutput.Create(ARequest.Socket);
     lOutput.Process.CommandLine := PHPCGIBinary;
-    lOutput.ScriptName := '/' + ARequest.Document;
-    lOutput.ScriptFileName := DocumentRoot + lOutput.ScriptName;
+    lOutput.ScriptName := ARequest.URIPath;
+    lOutput.ScriptFileName := ARequest.Document;
     lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.StartRequest;
     Result := lOutput;
@@ -361,8 +370,8 @@ begin
   if ExtractFileExt(ARequest.Document) = '.php' then
   begin
     lOutput := TFastCGIOutput.Create(ARequest.Socket);
-    lOutput.ScriptName := '/'+ARequest.Document;
-    lOutput.ScriptFileName := DocumentRoot + lOutput.ScriptName;
+    lOutput.ScriptName := ARequest.URIPath;
+    lOutput.ScriptFileName := ARequest.Document;
     lOutput.ExtraPath := ARequest.ExtraPath;
     lOutput.Request := FPool.BeginRequest(FCGI_RESPONDER);
     lOutput.StartRequest;
@@ -403,21 +412,21 @@ begin
   Result := FileSize(FFile);
 end;
 
-function TFileOutput.WriteData: boolean;
+function TFileOutput.WriteData: TWriteBlockStatus;
 var
   lRead: integer;
 begin
   if FEof then 
-    exit(true);
+    exit(wsDone);
   BlockRead(FFile, FBuffer[FBufferPos], FBufferSize-FBufferPos, lRead);
   Inc(FBufferPos, lRead);
   if lRead = 0 then
   begin
     { EOF reached }
     Close(FFile);
-    exit(true);
+    exit(wsDone);
   end;
-  exit(false);
+  exit(wsPendingData);
 end;
 
 constructor TCGIOutput.Create(ASocket: TLHTTPSocket);
@@ -575,23 +584,21 @@ begin
   exit(true);
 end;
 
-function TCGIOutput.WriteData: boolean;
+function TCGIOutput.WriteData: TWriteBlockStatus;
 begin
   if not FParsingHeaders then
     FReadPos := FBufferPos;
-  if WriteCGIData then
-    exit(true);
+  Result := WriteCGIData;
   if FParsingHeaders then
   begin
     if ParseHeaders then
     begin
       { error while parsing }
       FEof := true;
-      exit(true);
+      exit(wsDone);
     end;
   end else
     FBufferPos := FReadPos;
-  exit(false);
 end;
 
 procedure TCGIOutput.WriteCGIBlock;
@@ -599,7 +606,7 @@ begin
   { CGI process has output pending, we can write a block to socket }
   if FParsingHeaders then
   begin
-    if WriteData and FParsingHeaders then
+    if (WriteData = wsDone) and FParsingHeaders then
     begin
       { still parsing headers ? something's wrong }
       FParsingHeaders := false;
@@ -630,14 +637,14 @@ begin
   FProcess.Free;
 end;
 
-function TSimpleCGIOutput.WriteCGIData: boolean;
+function TSimpleCGIOutput.WriteCGIData: TWriteBlockStatus;
 var
   lRead: integer;
 begin
   lRead := FProcess.Output.Read(FBuffer[FReadPos], FBufferSize-FReadPos);
-  if lRead = 0 then exit(true);
+  if lRead = 0 then exit(wsDone);
   Inc(FReadPos, lRead);
-  Result := false;
+  Result := InputBufferEmptyToWriteStatus[lRead = 0];
 end;
 
 procedure TSimpleCGIOutput.AddEnvironment(const AName, AValue: string);
@@ -763,14 +770,25 @@ begin
   Result := FRequest.SendInput(ABuffer, ASize);
 end;
 
-function  TFastCGIOutput.WriteCGIData: boolean;
+function  TFastCGIOutput.WriteCGIData: TWriteBlockStatus;
 var
   lRead: integer;
 begin
-  if FRequest = nil then exit(true);
+  if FRequest = nil then exit(wsDone);
+  if FRequest.OutputDone then exit(wsDone);
   lRead := FRequest.Get(@FBuffer[FReadPos], FBufferSize-FReadPos);
   Inc(FReadPos, lRead);
-  Result := false;
+  Result := InputBufferEmptyToWriteStatus[lRead = 0];
+end;
+
+function  TFastCGIOutput.WriteBlock: TWriteBlockStatus;
+begin
+  if (FRequest <> nil) and FRequest.OutputPending then
+  begin
+    FRequest.ParseClientBuffer;
+    Result := wsWaitingData;
+  end else
+    Result := inherited;
 end;
 
 procedure TFastCGIOutput.StartRequest;
@@ -791,6 +809,7 @@ begin
 
   FPHPCGIHost := 'localhost';
   FPHPCGIPort := 6000;
+  FPHPCGIAppName := PHPCGIBinary;
 
   FFileHandler := TFileHandler.Create;
   FCGIHandler := TCGIHandler.Create;
@@ -819,6 +838,7 @@ procedure TLWebServer.RegisterWithEventer;
 begin
   inherited;
   FPHPCGIHandler.Pool.Eventer := Eventer;
+  FPHPCGIHandler.Pool.AppName := FPHPCGIAppName;
   FPHPCGIHandler.Pool.Host := FPHPCGIHost;
   FPHPCGIHandler.Pool.Port := FPHPCGIPort;
 end;

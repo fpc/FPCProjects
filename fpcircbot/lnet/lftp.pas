@@ -22,6 +22,7 @@
 unit lFTP;
 
 {$mode objfpc}{$H+}
+{$inline on}
 {$macro on}
 //{$define debug}
 

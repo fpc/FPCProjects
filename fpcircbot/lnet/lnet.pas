@@ -436,7 +436,7 @@ begin
     if Result = SOCKET_ERROR then begin
       if LSocketError = BLOCK_ERROR then begin
         FCanReceive := False;
-        FIgnoreRead := False;
+        IgnoreRead := False;
       end else Bail('Receive Error', LSocketError);
       Result:=0;
     end;
@@ -547,7 +547,7 @@ begin
       if Result = SOCKET_ERROR then begin
         if LSocketError = BLOCK_ERROR then begin
           FCanSend:=False;
-          FIgnoreWrite:=False;
+          IgnoreWrite:=False;
           Result:=0;
         end else
           Bail('Send error', LSocketError);
@@ -820,7 +820,7 @@ procedure TLUdp.SendAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
     FCanSend:=True;
-    FIgnoreWrite:=True;
+    IgnoreWrite:=True;
     CanSendEvent(aSocket);
   end;
 end;
@@ -1078,7 +1078,7 @@ begin
       ConnectAction(aSocket)
     else begin
       FCanSend:=True;
-      FIgnoreWrite:=True;
+      IgnoreWrite:=True;
       CanSendEvent(aSocket);
     end;
   end;

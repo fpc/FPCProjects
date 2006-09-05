@@ -49,6 +49,9 @@ type
     FContentLength: integer;
     FInputBuffer: pchar;
     FInputSize: integer;
+    FOutputDone: boolean;
+    FStderrDone: boolean;
+    FOutputPending: boolean;
     FNextFree: TLFastCGIRequest;
     FNextSend: TLFastCGIRequest;
     FOnEndRequest: TLFastCGIRequestEvent;
@@ -57,6 +60,7 @@ type
     FOnStderr: TLFastCGIRequestEvent;
 
     procedure HandleReceive;
+    procedure HandleReceiveEnd;
     function  HandleSend: boolean;
     procedure DoOutput;
     procedure DoStderr;
@@ -70,6 +74,7 @@ type
     
     procedure AbortRequest;
     function  Get(ABuffer: pchar; ASize: integer): integer;
+    procedure ParseClientBuffer;
     function  SendBuffer: integer;
     function  SendPrivateBuffer: boolean;
     procedure SendBeginRequest(AType: integer);
@@ -79,13 +84,16 @@ type
     procedure DoneInput;
 
     property ID: integer read FID write SetID;
+    property StderrDone: boolean read FStderrDone;
+    property OutputDone: boolean read FOutputDone;
+    property OutputPending: boolean read FOutputPending;
     property OnEndRequest: TLFastCGIRequestEvent read FOnEndRequest write FOnEndRequest;
     property OnInput: TLFastCGIRequestEvent read FOnInput write FOnInput;
     property OnOutput: TLFastCGIRequestEvent read FOnOutput write FOnOutput;
     property OnStderr: TLFastCGIRequestEvent read FOnStderr write FOnStderr;
   end;
 
-  TFastCGIParseState = (fsHeader, fsData, fsFlush);
+  TFastCGIClientState = (fsConnecting, fsStartingServer, fsHeader, fsData, fsFlush);
   
   PLFastCGIClient = ^TLFastCGIClient;
   TLFastCGIClient = class(TLTcp)
@@ -96,7 +104,7 @@ type
     FFreeRequest: TLFastCGIRequest;
     FSendRequest: TLFastCGIRequest;
     FRequest: TLFastCGIRequest;
-    FState: TFastCGIParseState;
+    FState: TFastCGIClientState;
     FNextFree: TLFastCGIClient;
     FPool: TLFastCGIPool;
     FBuffer: pchar;
@@ -108,6 +116,7 @@ type
     FPaddingLength: integer;
 
     procedure ConnectEvent(ASocket: TLHandle); override;
+    procedure ErrorEvent(const Msg: string; ASocket: TLHandle); override;
     function  CreateRequester: TLFastCGIRequest;
     procedure HandleGetValuesResult;
     procedure HandleReceive(ASocket: TLSocket);
@@ -133,6 +142,7 @@ type
     FClientsAvail: integer;
     FFreeClient: TLFastCGIClient;
     FEventer: TLEventer;
+    FAppName: string;
     FHost: string;
     FPort: integer;
     
@@ -145,12 +155,23 @@ type
     function  BeginRequest(AType: integer): TLFastCGIRequest;
     procedure EndRequest(AClient: TLFastCGIClient);
 
+    property AppName: string read FAppName write FAppName;
     property Eventer: TLEventer read FEventer write FEventer;
     property Host: string read FHost write FHost;
     property Port: integer read FPort write FPort;
   end;
 
+  function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
+
 implementation
+
+uses
+  Sockets
+{$ifdef unix}
+  ,BaseUnix;
+{$else}
+  ;
+{$endif}
 
 { TLFastCGIRequest }
 
@@ -172,6 +193,14 @@ begin
     FCGI_GET_VALUES_RESULT: FClient.HandleGetValuesResult;
   else
     FClient.Flush;
+  end;
+end;
+
+procedure TLFastCGIRequest.HandleReceiveEnd;
+begin
+  case FClient.ReqType of
+    FCGI_STDOUT: FOutputDone := true;
+    FCGI_STDERR: FStderrDone := true;
   end;
 end;
 
@@ -198,6 +227,8 @@ procedure TLFastCGIRequest.EndRequest;
 begin
   if FOnEndRequest <> nil then
     FOnEndRequest(Self);
+  FOutputDone := false;
+  FStderrDone := false;
   FClient.EndRequest(Self);
   {$message warning TODO: do something useful with end request data }
   FClient.Flush;
@@ -206,6 +237,15 @@ end;
 function TLFastCGIRequest.Get(ABuffer: pchar; ASize: integer): integer;
 begin
   Result := FClient.GetBuffer(ABuffer, ASize);
+end;
+
+procedure TLFastCGIRequest.ParseClientBuffer;
+begin
+  FOutputPending := false;
+  if (FClient.Iterator <> nil) and FClient.Iterator.IgnoreRead then
+    FClient.HandleReceive(nil)
+  else
+    FClient.ParseBuffer;
 end;
 
 procedure TLFastCGIRequest.SetID(const NewID: integer);
@@ -461,11 +501,21 @@ end;
 
 procedure TLFastCGIClient.ConnectEvent(ASocket: TLHandle);
 begin
+  FState := fsHeader;
   FRequest.SendGetValues;
   if FPool <> nil then
     FPool.AddToFreeClients(Self);
 
   inherited;
+end;
+
+procedure TLFastCGIClient.ErrorEvent(const Msg: string; ASocket: TLHandle);
+begin
+  if FState = fsConnecting then
+  begin
+    FState := fsStartingServer;
+    SpawnFCGIProcess(FPool.AppName, '', FPool.Port);
+  end;
 end;
 
 procedure TLFastCGIClient.HandleGetValuesResult;
@@ -561,7 +611,12 @@ begin
         if (lReqIndex < FRequestsCount) and (FRequests[lReqIndex] <> nil) then
         begin
           FRequest := FRequests[lReqIndex];
-          FState := fsData;
+          if FContentLength > 0 then
+            FState := fsData
+          else begin
+            FRequest.HandleReceiveEnd;
+            Flush;
+          end;
         end else
           Flush;
       end;
@@ -570,8 +625,10 @@ begin
         FRequest.HandleReceive;
         if FContentLength = 0 then 
           Flush
-        else
+        else begin
+          FRequest.FOutputPending := true;
           exit;
+        end;
       end;
       fsFlush: Flush;
     end;
@@ -617,6 +674,7 @@ begin
   begin
     Connect(FPool.Host, FPool.Port);
     FRequest := FRequests[0];
+    FState := fsConnecting;
   end;
 
   if FFreeRequest <> nil then
@@ -709,6 +767,91 @@ begin
     AClient.FNextFree := FFreeClient.FNextFree;
   FFreeClient.FNextFree := AClient;
   FFreeClient := AClient;
+end;
+
+function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
+{$ifndef MSWINDOWS}
+var
+  PID: TPid;
+
+  procedure HandleChild;
+  var
+    TheSocket: Integer;
+    i: Integer = 1;
+    Addr: TInetSockAddr;
+    ppEnv, ppNil: ppChar;
+    pNil: pChar;
+  begin
+    pNil:=nil;
+    ppNil:=@pNil;
+    if CloseSocket(StdInputHandle) <> 0 then
+      Halt(fpGetErrno);
+      
+    Addr.sin_family:=AF_INET;
+    Addr.sin_addr.s_addr:=htonl(INADDR_ANY);
+    Addr.sin_port:=htons(aPort);
+
+    TheSocket:=fpSocket(AF_INET, SOCK_STREAM, 0);
+    if TheSocket <> 0 then
+      Halt(fpGetErrno);
+
+    if SetSocketOptions(TheSocket, SOL_SOCKET, SO_REUSEADDR, i, SizeOf(i)) < 0 then
+      Halt(fpGetErrno);
+
+    if fpBind(TheSocket, @Addr, SizeOf(Addr)) < 0 then
+      Halt(fpGetErrno);
+
+    if fpListen(TheSocket, 1024) < 0 then
+      Halt(fpGetErrno);
+
+    if TheSocket <> 0 then begin
+      if CloseSocket(0) <> 0 then
+        Halt(fpGetErrno);
+      if fpdup2(TheSocket, 0) <> 0 then
+        Halt(fpGetErrno);
+      if CloseSocket(TheSocket) <> 0 then
+        Halt(fpGetErrno);
+    end;
+
+    if Length(Enviro) > 0 then begin
+      GetMem(ppEnv, SizeOf(PChar) * 2);
+      ppEnv[0]:=pChar(Enviro);
+      ppEnv[1]:=nil;
+    end else
+      ppEnv:=ppNil;
+
+    FpExecve(AppName, ppNil, ppEnv);
+    Halt(fpgeterrno);
+  end;
+
+  function HandleParent: Integer;
+  var
+    Status: Integer;
+  begin
+    Sleep(100);
+    case FpWaitpid(PID, Status, WNOHANG) of
+      0: Exit(0);
+     -1: Exit(fpGetErrno);
+    else begin
+           if not wifexited(Status) then
+             wifsignaled(Status);
+           Exit(Status)
+         end;
+    end;
+  end;
+
+begin
+  PID:=fpFork;
+  if PID = 0 then
+    HandleChild
+  else if PID < 0 then
+    Exit(fpGetErrno)
+  else
+    Result:=HandleParent;
+{$else}
+begin
+  Result:=-1;
+{$endif}
 end;
     
 end.

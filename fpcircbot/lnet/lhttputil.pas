@@ -24,6 +24,7 @@
 unit lHTTPUtil;
 
 {$mode objfpc}{$h+}
+{$inline on}
 
 interface
 
