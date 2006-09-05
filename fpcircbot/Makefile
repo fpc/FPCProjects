@@ -41,15 +41,15 @@ clean:
 	delp common
 	delp utils
 	delp .
-	$(RM) cgibin_path.ipt
-	$(RM) makedb.sh
-	$(RM) dbscr.sql
 
 clear:
 	$(MAKE) clean
 	$(RM) include/baseinc.inc
 	$(RM) include/hiddeninc.inc
 	$(RM) include/baseinc.inc
+	$(RM) cgibin_path.ipt
+	$(RM) makedb.sh
+	$(RM) dbscr.sql
 
 debug:
 	$(PP) $(BASEARGS) -g $(LBOT)
