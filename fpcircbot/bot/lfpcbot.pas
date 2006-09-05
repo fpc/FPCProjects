@@ -111,16 +111,16 @@ begin
     Writeln('Unable to work with config file');
     Halt;
   end;
+  Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   ChannelsUsers:=TStringList.Create;
   ChannelsUsers.CommaText:=ConfigList[0];
   ConfigList.Delete(0);
-  Doer:=TDoer.Create;
+  Doer:=TDoer.Create(Con);
   Doer.Logging:=True;
   Doer.MarkovOn:=True;
   SetGreetings(Doer.Greetings, ConfigList[0]);
   ConfigList.Delete(0);
   Doer.GreetList:=ConfigList;
-  Con:=TLIrcBot.Create(BotName, 'SomeLogin');
   Con.NickServPassword:=NickPass;
 
   // Normal commands
@@ -137,6 +137,7 @@ begin
   Con.AddCommand('firstword', @Doer.OnFirstWord, 'Syntax: firstword <nick> Info: makes me tell you the 1st thing someone sayed');
   Con.AddCommand('lastword', @Doer.OnLastWord, 'Syntax: lastword <nick> Info: makes me tell you the last thing someone sayed');
   Con.AddCommand('logurl', @Doer.OnLogUrl, 'Syntax: logurl Info: makes me tell you where the log is (don''t use in private');
+  Con.AddCommand('pasteurl', @Doer.OnPasteUrl, 'Syntax: pasteurl [title] Info: makes me tell you where the pastebin is (don''t use in private)');
   Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Syntax: listpusers Info: makes me list power users');
   Con.AddCommand('markov', @Doer.OnMarkov, 'Syntax: markov [on/off] Info: if parameter is empty, I will display info about the markov generator. If parameter is on/off it will start/shutdown the markov response generator (starting and shuting down the generator works only for power users).');
 
@@ -197,6 +198,7 @@ begin
       if  KeyPressed
       and (ReadKey = #27) then Doer.Quit:=True;
       Con.CallAction;
+      Doer.CallAction;
       Delay(1);
     end;
   end;

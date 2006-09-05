@@ -32,7 +32,7 @@ uses
   DB, SqlDB, PQConnection,
   {$endif}
   Classes, SysUtils,
-  lIrcBot, StringUtils, Markov, InfixMath,
+  lNet, lIrcBot, StringUtils, Markov, InfixMath,
   PasDoc_Aspell, ObjectVector;
 
 const
@@ -43,6 +43,9 @@ const
   {$i hiddeninc.inc} // create this file with your nickserv password there
 
 type
+
+  { TDoer }
+
   TDoer = class
    protected
     {$ifndef noDB}
@@ -53,6 +56,7 @@ type
     FChanQuery: TSQLQuery;
     FLogTransaction: TSQLTransaction;
     FLogConnection: TSQLConnection;
+    FPasteUDP: TLUdp;
     {$endif}
     FMarkov: TMarkov;
     FLL: TLIrcRec; // for speed purposes
@@ -61,6 +65,7 @@ type
     FSList: TStringList;
     FGreetList: TStringList;
     FGreetings: TStringList; // for each channel
+    FIrcBot: TLIrcBot;
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
     function SpellCheck(const s: string): string;
@@ -68,13 +73,17 @@ type
     procedure SetGreetList(const Value: TStringList);
     procedure CleanChannels;
     procedure AddChannels(Bot: TLIrcBot);
+    {$ifndef nodb}
+    procedure UDPError(const msg: string; aSocket: TLSocket);
+    procedure UDPReceive(aSocket: TLSocket);
+    {$endif}
    public
     Quit: Boolean;
     TimeStarted: TDateTime;
     Logging: Boolean;
     MarkovOn: Boolean;
     SpellCount: Integer;
-    constructor Create;
+    constructor Create(aBot: TLIrcBot);
     destructor Destroy; override;
     procedure OnHelp(Caller: TLIrcBot);
     procedure OnStatus(Caller: TLIrcBot);
@@ -85,6 +94,7 @@ type
     procedure OnCalc(Caller: TLIrcBot);
     procedure OnGoogle(Caller: TLIrcBot);
     procedure OnLogUrl(Caller: TLIrcBot);
+    procedure OnPasteUrl(Caller: TLIrcBot);
     procedure OnSpell(Caller: TLIrcBot);
     procedure OnLSpell(Caller: TLIrcBot);
     procedure OnSpellCount(Caller: TLIrcBot);
@@ -111,13 +121,14 @@ type
     procedure OnUserJoin(Caller: TLIrcBot);
     procedure OnChannelJoin(Caller: TLIrcBot);
     procedure OnChannelQuit(Caller: TLIrcBot);
+    procedure CallAction;
     property GreetList: TStringList read FGreetList write SetGreetList;
     property Greetings: TStringList read FGreetings write SetGreetings;
   end;
 
 implementation
 
-constructor TDoer.Create;
+constructor TDoer.Create(aBot: TLIrcBot);
 
   procedure CreateMarkov(const Filename: string; const n, m: Byte);
   var
@@ -131,6 +142,7 @@ constructor TDoer.Create;
   end;
 
 begin
+  FIrcBot:=aBot;
   Quit:=False;
   SpellCount:=3;
   FAP:=TAspellProcess.Create('', 'en');
@@ -146,6 +158,11 @@ begin
   MarkovOn:=False;
 
   {$ifndef nodb}
+  FPasteUDP:=TLUdp.Create(nil);
+  FPasteUDP.Listen(PastePort, LADDR_LO);
+  FPasteUDP.OnReceive:=@UDPReceive;
+  FPasteUDP.OnError:=@UDPError;
+
   FLogConnection := TPQConnection.Create(nil);
   with FLogConnection do begin
     DatabaseName := 'fpcbot';
@@ -202,6 +219,7 @@ begin
   Greetings.Free;
   {$ifndef noDB}
   try
+    FPasteUDP.Free;
     FLogQuery.Free;
     FSeenQuery.Free;
     FChanQuery.Free;
@@ -606,12 +624,31 @@ begin
   with Caller, Caller.LastLine do
     if Length(Reciever) > 0 then begin
       if Reciever[1] = '#' then
-        Respond('see yourself chat ' + LogURL + '?channel=' + Copy(Reciever, 2, Length(Reciever)))
+        Respond('see yourself chat ' + CGIURL + 'cgifpcbot?channel=' + Copy(Reciever, 2, Length(Reciever)))
       else
-        Respond('see yourself chat ' + LogURL + '?channel=' + Reciever)
+        Respond('see yourself chat ' + CGIURL + 'cgifpcbot?channel=' + Reciever)
     end;
   {$else}
   Caller.Respond('I have no DB compiled in, I cannot log the chat');
+  {$endif}
+end;
+
+procedure TDoer.OnPasteUrl(Caller: TLIrcBot);
+var
+  Args: string;
+begin
+  {$ifndef noDB}
+  with Caller, Caller.LastLine do begin
+    Args:=StringReplace(Arguments, ' ', '+', [rfReplaceAll]);
+    if Length(Reciever) > 0 then begin
+      if Reciever[1] = '#' then
+        Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' + Copy(Reciever, 2, Length(Reciever)) + '&sender=' + Sender + '&title=' + Args)
+      else
+        Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' + Reciever + '&sender=' + Sender + '&title=' + Args);
+    end;
+  end;
+  {$else}
+  Caller.Respond('I have no DB compiled in, I cannot paste the bin');
   {$endif}
 end;
 
@@ -1091,6 +1128,44 @@ begin
   {$endif}
 end;
 
+{$ifndef nodb}
+
+procedure TDoer.UDPError(const msg: string; aSocket: TLSocket);
+begin
+  Writeln('UDP ERROR: ', msg);
+end;
+
+procedure TDoer.UDPReceive(aSocket: TLSocket);
+var
+  s: string;
+
+  function GetChannel: string;
+  var
+    n: Integer;
+  begin
+    Result:='';
+    n:=Pos('~', s);
+    if n > 1 then
+      Result:=Copy(s, 1, n - 1);
+  end;
+  
+  function GetMessage: string;
+  var
+    n: Integer;
+  begin
+    Result:='';
+    n:=Pos('~', s);
+    if (n > 0) and (Length(s) >= n + 1) then
+      Result:=Copy(s, n + 1, Length(s));
+  end;
+
+begin
+  if aSocket.GetMessage(s) > 0 then
+    FIrcBot.SendMessage(GetMessage, GetChannel);
+end;
+
+{$endif}
+
 procedure TDoer.OnChannelJoin(Caller: TLIrcBot);
 begin
   AddChannels(Caller);
@@ -1099,6 +1174,13 @@ end;
 procedure TDoer.OnChannelQuit(Caller: TLIrcBot);
 begin
   // no, I didn't forget to put anything here
+end;
+
+procedure TDoer.CallAction;
+begin
+  {$ifndef nodb}
+  FPasteUDP.CallAction;
+  {$endif}
 end;
 
 end.

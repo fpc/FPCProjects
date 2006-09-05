@@ -134,7 +134,7 @@ end;
   
 var
   f: TextFile;
-  CgiBin, BotDBName, BotDBPass, CGIDBName, CGIDBPass: string;
+  CgiBin, BotDBName, BotDBPass, CGIDBName, CGIDBPass, PastePort: string;
 begin
   isql:='';
   gsec:='';
@@ -159,7 +159,7 @@ begin
 
     // BOTSTATS
     GetInfo('BotName', '$botname');
-    GetInfo('LogUrl', '$logurl');
+    GetInfo('CGIURL', '$cgiurl');
     GetInfo('NickPass', '$nickpass');
 
     Writeln('------------------------------DB STATS----------------------------------');
@@ -188,6 +188,8 @@ begin
       CGIDBName:=s;
       GetInfo('CgiDBPass', '$cgipass');
       CGIDBPass:=s;
+      GetInfo('PastePort', '$4667');
+      PastePort:=s;
 
       CgiBin:=Query('Path to your cgi-bin directory', '/usr/lib/cgi-bin');
       while not DirectoryExists(CgiBin) do begin
@@ -263,14 +265,16 @@ begin
       end;
       Writeln('Copying files...');
       try
-        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'cgifpcbot ' + CgiBin;
+        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'cgifpcbot ' +
+					' cgi' + PathDelim + 'cgipastebin ' + 
+					' cgi' + PathDelim + 'PWU.conf ' + CgiBin;
         Proc.Execute;
-        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'PWU.conf ' + CgiBin;
-        Proc.Execute;
+	
         if not DirectoryExists(CgiBin + PathDelim + 'html') then
           CreateDir(CgiBin + PathDelim + 'html');
-        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'html' + PathDelim + '* ' +
-                                        CgiBin + PathDelim + 'html';
+	  
+        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'html' + PathDelim + '*.html ' +
+                                        CgiBin + PathDelim + 'html' + PathDelim;
         Proc.Execute;
         Writeln('Installation complete.');
       except

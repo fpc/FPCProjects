@@ -1,4 +1,4 @@
-unit stringutils;
+unit StringUtils;
 
 {$mode objfpc}{$H+}
 
@@ -19,6 +19,9 @@ function SQLEscape (const S : string) : string;
 //This function make a string good for database.
 
 function FilterHtml(const s: string): string;
+//This function convert chars that are used in html and convert them to char codes.
+
+function FilterHtmlWeak(const s: string): string;
 //This function convert chars that are used in html and convert them to char codes.
 
 function return_Number_sanitize (const Number : String) : String;
@@ -62,9 +65,10 @@ end;
 
 function SQLEscape (const S : string) : string;
 begin
-  SetLength(Result, Length(S) * 2 + 1);
-  if Length(S) > 0 then
-    SetLength(Result, PQescapeString(@Result[1], @S[1], Length(S)));
+  if Length(S) > 0 then begin
+    SetLength(Result, Length(S) * 2 + 1);
+    SetLength(Result, PQescapeString(pChar(Result), pChar(S), Length(S)));
+  end;
 end;
 
 function FilterHtml(const s: string): string;
@@ -92,6 +96,34 @@ begin
     Result := StringReplace (Result, #$9b,     '&#8250;', [rfReplaceAll]);
     Result := StringReplace (Result, chr(&12), '&#10;',   [rfReplaceAll]);
     Result := StringReplace (Result, chr(&15), '&#13;',   [rfReplaceAll]);
+  end;
+end;
+
+function FilterHtmlWeak(const s: string): string;
+begin
+  Result:=s;
+  if Length(Result) > 0 then begin
+{
+< = &lt;
+> = &gt;
+" = &quot;
+" = &#34;
+' = &#39;
+\x8b = &#8249;
+\x9b = &#8250;
+\012 = &#10;
+\015 = &#13;
+& = &amp;
+}
+    Result := StringReplace (Result, '&',      '&amp;',   [rfReplaceAll]); // Keep this the first or the rest of the changes will scrow up :)
+    Result := StringReplace (Result, '<',      '&lt;',    [rfReplaceAll]);
+    Result := StringReplace (Result, '>',      '&gt;',    [rfReplaceAll]);
+    Result := StringReplace (Result, '"',      '&quot;',  [rfReplaceAll]);
+    Result := StringReplace (Result, #39,      '&#39;',   [rfReplaceAll]);
+    Result := StringReplace (Result, #$8b,     '&#8249;', [rfReplaceAll]);
+    Result := StringReplace (Result, #$9b,     '&#8250;', [rfReplaceAll]);
+{    Result := StringReplace (Result, chr(&12), '&#10;',   [rfReplaceAll]);
+    Result := StringReplace (Result, chr(&15), '&#13;',   [rfReplaceAll]);}
   end;
 end;
 
@@ -174,7 +206,6 @@ var
   DiffTIme: Integer;
 begin
   Result:='';
-  Writeln('Doing diff between: ', DateTimeToStr(DT1), ' | ', DateTimeToStr(DT2));
   DiffTime  := Abs(DateTimeToTimeStamp(DT1).Time - DateTimeToTimeStamp(DT2).Time);
 
   Day       := Abs(DateTimeToTimeStamp(DT1).Date - DateTimeToTimeStamp(DT2).Date);

@@ -28,9 +28,7 @@ var
   Count, Msg      : string;
   FromDate, ToDate: string;
   FromTime, ToTime: string;
-  i               : Longint;
   ChanList        : TStringList;
-  GetList         : TStringList;
   LineList        : TStringList;
 
 procedure InitDB;
@@ -77,8 +75,6 @@ begin
   Count:='50';
   Msg:='';
   ChanList:=TStringList.Create;
-  GetList:=TStringList.Create;
-  GetList.CommaText:=StringReplace(CGIEnvVars.QueryString, '&', ',', [rfReplaceAll]);
   LineList:=TStringList.Create;
 end;
 
@@ -92,7 +88,6 @@ end;
 procedure FreeCommon;
 begin
   ChanList.Free;
-  GetList.Free;
   LineList.Free;
 end;
 
@@ -105,34 +100,14 @@ end;
 procedure GetWebVars;
 
   procedure TryGetWebVar(var LocalVar: string; const VarName, DefValue: string);
-  
-    function GetValue: string;
-    var
-      m, n, i: Integer;
-      From: string;
-    begin
-      Result:='';
-      for i:=0 to GetList.Count-1 do begin
-        From:=GetList[i];
-        n:=Pos(VarName, From);
-        m:=Pos('=', From);
-        if (m > 0) and (Length(From) > m)
-        and (n > 0) then begin
-          Result:=Copy(From, m+1, Length(From));
-          Result:=StringReplace(Result, '%3A', ':', [rfReplaceAll]);
-          Exit;
-        end;
-      end;
-    end;
-
   begin
-    if (GetList.Count > 0) and ((Length(GetValue)) > 0) then begin
-      LocalVar:=GetValue;
+    if Length(GetCGIVar(VarName)) > 0 then begin
+      LocalVar:=GetCGIVar(VarName);
       if VarName = 'channel' then
         LocalVar:='#' + LocalVar;
       SetWebVar(VarName, LocalVar);
     end else if Length(GetWebVar(VarName)) > 0 then try
-      LocalVar:=GetCGIVar(VarName);
+      LocalVar:=GetWebVar(VarName);
       if Length(LocalVar) = 0 then
         LocalVar:=DefValue;
       if VarName = 'channel' then
@@ -156,7 +131,7 @@ begin
 	
 	Channel := return_Channel_sanitize(Channel); //Make sure to have only allowed chars ... :)
 
-  TryGetWebVar(FromDate, 'fromdate', FormatDateTime('yyyy-mm-dd', SysUtils.Date));
+  TryGetWebVar(FromDate, 'fromdate', '');
 	FromDate := return_datetimestamp_sanitize (FromDate); //Making sure that only allowed chars can be for the date
   TryGetWebVar(ToDate, 'todate', '');
 	ToDate := return_datetimestamp_sanitize (ToDate); //Making sure that only allowed chars can be for the date
@@ -209,7 +184,6 @@ begin
         Result:=Result + ' selected>';
       Result:=Result + '#' + s + '</option>';
     end;
-//  Result:=FilterHtml(Result);
 end;
 
 function HighlightHyperlinks(const inStr: string): string;
@@ -267,9 +241,12 @@ begin
   
   if Channel = '#' then
     if ChanList.Count > 0 then Channel:=ChanList[0];
-  SetWebVar('channels', GetHTMLChannels);
 
-  WebTemplateOut('html' + PathDelim + 'header.html', False);
+  WebTemplateOut('html' + PathDelim + 'header1.html', False);
+
+  WebWriteln(GetHTMLChannels);
+
+  WebTemplateOut('html' + PathDelim + 'header2.html', False);
 
   WebWriteln('<table class="body_style">');
 

@@ -1,6 +1,7 @@
 Version        = '0.9';
 BotName        = '$botname';
-LogURL         = '$logurl';
+CGIURL         = '$cgiurl';
+PastePort      = $4667;
 
 NickPass  = '$nickpass';
 
