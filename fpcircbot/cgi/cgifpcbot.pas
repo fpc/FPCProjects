@@ -221,9 +221,9 @@ begin
 end;
 
 function ValidRequest: Boolean;
-var
+{var
   d1, d2: TDateTime;
-  i: Integer;
+  i: Integer;}
 begin
   Result:=True;
 end;

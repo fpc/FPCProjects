@@ -2,7 +2,8 @@ PP=fpc
 BASEARGS=-Fucommon -Fulnet -Fubot/pasdoc -Fubot/markov -Filnet/include -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
 ARGS=$(BASEARGS) -O2p2 -XX -Xs
 LBOT=bot/lfpcbot.pas
-LCGI=cgi/cgifpcbot.pas
+LCGI1=cgi/cgifpcbot.pas
+LCGI2=cgi/cgipastebin.pas
 LDUMP=utils/dbdump.pas
 LFILL=utils/fillmarkov.pas
 INSTSRC=botinst.pas
@@ -21,7 +22,8 @@ all:
 
 compile:
 	$(PP) $(ARGS) $(LBOT)
-	$(PP) $(ARGS) $(LCGI)
+	$(PP) $(ARGS) $(LCGI1)
+	$(PP) $(ARGS) $(LCGI2)
 	$(PP) $(ARGS) $(LDUMP)
 	$(PP) $(ARGS) $(LFILL)
 	@$(ECHO) "Run make inst as root."
@@ -51,6 +53,7 @@ clear:
 
 debug:
 	$(PP) $(BASEARGS) -g $(LBOT)
-	$(PP) $(BASEARGS) -g $(LCGI)
+	$(PP) $(BASEARGS) -g $(LCGI1)
+	$(PP) $(BASEARGS) -g $(LCGI2)
 	$(PP) $(BASEARGS) -g $(LDUMP)
 	$(PP) $(BASEARGS) -g $(LFILL)

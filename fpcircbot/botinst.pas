@@ -265,11 +265,13 @@ begin
       end;
       Writeln('Copying files...');
       try
-        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'cgifpcbot ' +
-					' cgi' + PathDelim + 'cgipastebin ' + 
-					' cgi' + PathDelim + 'PWU.conf ' + CgiBin;
+        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'cgifpcbot ' + CgiBin;
         Proc.Execute;
-	
+        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'cgipastebin ' + CgiBin;
+        Proc.Execute;
+        Proc.CommandLine:=CopyCommand + ' cgi' + PathDelim + 'PWU.conf ' + CgiBin;
+        Proc.Execute;
+
         if not DirectoryExists(CgiBin + PathDelim + 'html') then
           CreateDir(CgiBin + PathDelim + 'html');
 	  
