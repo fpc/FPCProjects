@@ -62,6 +62,7 @@ type
     procedure HandleReceive;
     procedure HandleReceiveEnd;
     function  HandleSend: boolean;
+    procedure DoEndRequest;
     procedure DoOutput;
     procedure DoStderr;
     procedure EndRequest;
@@ -93,7 +94,8 @@ type
     property OnStderr: TLFastCGIRequestEvent read FOnStderr write FOnStderr;
   end;
 
-  TFastCGIClientState = (fsConnecting, fsStartingServer, fsHeader, fsData, fsFlush);
+  TFastCGIClientState = (fsIdle, fsConnecting, fsConnectingAgain, 
+    fsStartingServer, fsHeader, fsData, fsFlush);
   
   PLFastCGIClient = ^TLFastCGIClient;
   TLFastCGIClient = class(TLTcp)
@@ -229,10 +231,15 @@ begin
     FOnStderr(Self);
 end;
 
-procedure TLFastCGIRequest.EndRequest;
+procedure TLFastCGIRequest.DoEndRequest;
 begin
   if FOnEndRequest <> nil then
     FOnEndRequest(Self);
+end;
+
+procedure TLFastCGIRequest.EndRequest;
+begin
+  DoEndRequest;
   FOutputDone := false;
   FStderrDone := false;
   FClient.EndRequest(Self);
@@ -521,6 +528,12 @@ begin
   begin
     FPool.StartServer;
     FState := fsStartingServer;
+  end else
+  if FState = fsConnectingAgain then
+  begin
+    FRequest.DoEndRequest;
+    EndRequest(FRequest);
+    FState := fsIdle;
   end;
 end;
 
@@ -677,13 +690,17 @@ end;
 procedure TLFastCGIClient.Connect;
 begin
   Connect(FPool.Host, FPool.Port);
-  FState := fsConnecting;
+  if FState <> fsStartingServer then
+    FState := fsConnecting
+  else
+    FState := fsConnectingAgain;
 end;
 
 function TLFastCGIClient.BeginRequest(AType: integer): TLFastCGIRequest;
 begin
   if FRootSock = nil then
   begin
+    Connect;
     FRequest := FRequests[0];
   end;
 

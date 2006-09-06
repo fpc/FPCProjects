@@ -45,6 +45,8 @@ type
     ceUnsupportedEncoding);
 
 const
+  HTTPDisconnectStatuses = [hsBadRequest, hsRequestTooLong, hsForbidden, 
+    hsInternalError, hsNotAllowed];
   HTTPMethodStrings: array[TLHTTPMethod] of string =
     ('HEAD', 'GET', 'POST', '');
   HTTPParameterStrings: array[TLHTTPParameter] of string =
@@ -1434,7 +1436,7 @@ var
   lMessage: string;
   lMsgOutput: TMemoryOutput;
 begin
-  if AStatus >= hsBadRequest then
+  if AStatus in HTTPDisconnectStatuses then
     FKeepAlive := false;
   lMessage := HTTPDescriptions[AStatus];
   FResponseInfo.Status := AStatus;

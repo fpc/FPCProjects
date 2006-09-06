@@ -613,7 +613,6 @@ begin
       FParsingHeaders := false;
       CGIOutputError;
       TLHTTPServerSocket(FSocket).StartResponse(Self);
-      exit;
     end;
   end;
   if not FParsingHeaders then
