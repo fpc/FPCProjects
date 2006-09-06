@@ -125,7 +125,7 @@ begin
  {$ifndef MSWINDOWS}
   Result.WriteString('PATH', 'phpcgibin', GetPHPCGI);
  {$else}
-  Result.WriteString('PATH', 'phpcgibin', 'php');
+  Result.WriteString('PATH', 'phpcgibin', 'php-cgi.exe');
  {$endif}
   Result.WriteString('NET', 'port', DEF_PORT);
   Result.UpdateFile;
