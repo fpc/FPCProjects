@@ -190,6 +190,7 @@ type
     property PHPCGIAppName: string read FPHPCGIAppName write FPHPCGIAppName;
     property PHPCGIHost: string read FPHPCGIHost write FPHPCGIHost;
     property PHPCGIPort: integer read FPHPCGIPort write FPHPCGIPort;
+    property PHPCGIHandler: TPHPFastCGIHandler read FPHPCGIHandler;
   end;
 
 implementation

@@ -28,7 +28,7 @@ unit lfastcgi;
 interface
 
 uses
-  classes, sysutils, fastcgi, lnet, levents, lstrbuffer;
+  classes, sysutils, fastcgi, lnet, levents, lstrbuffer, ltimer;
 
 type
   TLFastCGIClient = class;
@@ -115,6 +115,7 @@ type
     FContentLength: integer;
     FPaddingLength: integer;
 
+    procedure Connect; overload;
     procedure ConnectEvent(ASocket: TLHandle); override;
     procedure ErrorEvent(const Msg: string; ASocket: TLHandle); override;
     function  CreateRequester: TLFastCGIRequest;
@@ -141,13 +142,17 @@ type
     FClientsCount: integer;
     FClientsAvail: integer;
     FFreeClient: TLFastCGIClient;
+    FTimer: TLTimer;
     FEventer: TLEventer;
     FAppName: string;
     FHost: string;
     FPort: integer;
+    FStartingServer: boolean;
     
     procedure AddToFreeClients(AClient: TLFastCGIClient);
     function  CreateClient: TLFastCGIClient;
+    procedure ConnectClients(Sender: TObject);
+    procedure StartServer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -159,6 +164,7 @@ type
     property Eventer: TLEventer read FEventer write FEventer;
     property Host: string read FHost write FHost;
     property Port: integer read FPort write FPort;
+    property Timer: TLTimer read FTimer;
   end;
 
   function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
@@ -513,8 +519,8 @@ procedure TLFastCGIClient.ErrorEvent(const Msg: string; ASocket: TLHandle);
 begin
   if FState = fsConnecting then
   begin
+    FPool.StartServer;
     FState := fsStartingServer;
-    SpawnFCGIProcess(FPool.AppName, '', FPool.Port);
   end;
 end;
 
@@ -668,13 +674,17 @@ begin
   Result.ID := FNextRequestID;  { request ids start at 1 }
 end;
 
+procedure TLFastCGIClient.Connect;
+begin
+  Connect(FPool.Host, FPool.Port);
+  FState := fsConnecting;
+end;
+
 function TLFastCGIClient.BeginRequest(AType: integer): TLFastCGIRequest;
 begin
   if FRootSock = nil then
   begin
-    Connect(FPool.Host, FPool.Port);
     FRequest := FRequests[0];
-    FState := fsConnecting;
   end;
 
   if FFreeRequest <> nil then
@@ -713,6 +723,8 @@ begin
   for I := 0 to FClientsAvail-1 do
     FClients[I].Free;
   FreeMem(FClients);
+  if FTimer <> nil then
+    FTimer.Free;
   inherited;
 end;
 
@@ -767,6 +779,28 @@ begin
     AClient.FNextFree := FFreeClient.FNextFree;
   FFreeClient.FNextFree := AClient;
   FFreeClient := AClient;
+end;
+
+procedure TLFastCGIPool.ConnectClients(Sender: TObject);
+var
+  I: integer;
+begin
+  FStartingServer := false;
+  for I := 0 to FClientsAvail-1 do
+    if FClients[I].FState = fsStartingServer then
+      FClients[I].Connect;
+end;
+
+procedure TLFastCGIPool.StartServer;
+begin
+  if FStartingServer then exit;
+  FStartingServer := true;
+  SpawnFCGIProcess(FAppName, '', FPort);
+  if FTimer = nil then
+    FTimer := TLTimer.Create;
+  FTimer.Interval := 2000;
+  FTimer.OneShot := true;
+  FTimer.OnTimer := @ConnectClients;
 end;
 
 function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
