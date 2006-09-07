@@ -195,7 +195,7 @@ end;
 
 function GetPHPCGIBinary: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'phpcgibin', '') + PathDelim;
+  Result:=SettingsFile.ReadString('PATH', 'phpcgibin', '');
 end;
   
 initialization
