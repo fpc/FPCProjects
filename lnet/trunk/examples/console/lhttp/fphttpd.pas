@@ -44,6 +44,11 @@ begin
   while (lRuns > 0) and (Server.Connected) do
   begin
     Server.CallAction;
+    if Assigned(Server.PHPCGIHandler.Pool.Timer) then
+    begin
+      Server.Eventer.Timeout := 2000;
+      Server.PHPCGIHandler.Pool.Timer.CallAction;
+    end;
     dec(lruns);
     if (lruns and $FFF) = 0 then
       writeln(lruns);
