@@ -326,17 +326,17 @@ end;
 
 procedure TLSocket.Disconnect;
 var
-  FWasConnected: Boolean;
+  WasConnected: Boolean;
 begin
-  FWasConnected:=FConnected;
+  WasConnected:=FConnected;
   FDispose:=True;
   FCanSend:=True;
   FCanReceive:=True;
   FIgnoreWrite:=True;
   if Connected or FConnecting then begin
-    FConnected:=false;
+    FConnected:=False;
     FConnecting:=False;
-    if (FSocketClass = SOCK_STREAM) and (not FIgnoreShutdown) and FWasConnected then
+    if (FSocketClass = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
       if ShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
     if CloseSocket(FHandle) <> 0 then
@@ -1069,7 +1069,7 @@ begin
         DisconnectEvent(aSocket);
         aSocket.Free;
       end;
-    end else Readln;
+    end;
   end;
 end;
 

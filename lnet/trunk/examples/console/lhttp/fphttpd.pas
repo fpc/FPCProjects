@@ -36,10 +36,9 @@ var
   Server: TLWebServer;
   Quit: Boolean = False;
   
-procedure DoQuit(sig: longint); cdecl;
+procedure HandleTermSignal(sig: longint); cdecl;
 begin
-  Writeln('Cought signal, quitting...');
-  Quit:=True;
+  Quit := true;
 end;
   
 procedure MainLoop;
@@ -73,8 +72,8 @@ end;
 procedure HandleSignals;
 begin
   {$ifndef MSWINDOWS}
-  FpSignal(SIGTERM, @DoQuit);
-  FpSignal(SIGINT, @DoQuit);
+  FpSignal(SIGTERM, @HandleTermSignal);
+  FpSignal(SIGINT, @HandleTermSignal);
   {$else}
   {$endif}
 end;
