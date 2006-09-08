@@ -136,14 +136,16 @@ end;
 
 function TLEpollEventer.CallAction: Boolean;
 var
-  i, MasterChanges, Changes, ReadChanges: Integer;
+  i, MasterChanges, Changes, ReadChanges, Tmp: Integer;
   Temp, TempRead: TLHandle;
   MasterEvents: array[0..1] of TEpollEvent;
 begin
   Result:=False;
   Changes:=0;
   ReadChanges:=0;
+
   MasterChanges:=epoll_wait(FEpollMasterFD, @MasterEvents[0], 2, FTimeout);
+
   if MasterChanges > 0 then begin
     for i:=0 to MasterChanges-1 do
       if MasterEvents[i].Data.fd = FEpollFD then
@@ -154,30 +156,37 @@ begin
       Bail('Error on epoll: ', LSocketError)
     else
       Result:=Changes + ReadChanges > 0;
+      
     if Result then begin
       FInLoop:=True;
       for i:=0 to Max(Changes, ReadChanges)-1 do begin
         if i < Changes then begin
           Temp:=TLHandle(FEvents[i].data.ptr);
-          if (FEvents[i].events and EPOLLERR = EPOLLERR)
-          or (FEvents[i].events and EPOLLHUP = EPOLLHUP) then
+
+          if  (not Temp.FDispose)
+          and ((FEvents[i].events and EPOLLERR = EPOLLERR)
+          or  (FEvents[i].events and EPOLLHUP = EPOLLHUP)) then
             if Assigned(Temp.FOnError) then
               Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
-
-          if FEvents[i].events and EPOLLOUT = EPOLLOUT then
+              
+          if  (not Temp.FDispose)
+          and (FEvents[i].events and EPOLLOUT = EPOLLOUT) then
             if Assigned(Temp.FOnWrite) then
               Temp.FOnWrite(Temp);
+
           if Temp.FDispose then
             AddForFree(Temp);
         end; // normals
-        
+
         if i < ReadChanges then begin
           TempRead:=TLHandle(FEventsRead[i].data.ptr);
 
-          if (FEventsRead[i].events and EPOLLIN = EPOLLIN)
-          or (FEventsRead[i].events and EPOLLPRI = EPOLLPRI) then
+          if  (not TempRead.FDispose)
+          and ((FEventsRead[i].events and EPOLLIN = EPOLLIN)
+          or  (FEventsRead[i].events and EPOLLPRI = EPOLLPRI)) then
             if Assigned(TempRead.FOnRead) then
               TempRead.FOnRead(TempRead);
+
           if TempRead.FDispose then
             AddForFree(TempRead);
         end; // reads

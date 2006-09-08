@@ -1124,7 +1124,8 @@ begin
       FOutputDone := true;
     end;
     { if not ignoring, then the send buffer is full }
-    if not FIgnoreWrite then break;
+    if not FIgnoreWrite or not FConnected then
+      break;
   end;
   if FOutputDone and (FRequestInputDone or not FKeepAlive) then
   begin

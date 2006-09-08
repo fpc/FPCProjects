@@ -405,7 +405,7 @@ begin
     MaxHandle:=0;
     ClearSets;
     while Assigned(Temp) do begin
-      if  (not Temp.FDispose         ) // handle still valid
+      if  (not Temp.FDispose        ) // handle still valid
       and (   (not Temp.IgnoreWrite)  // check write or
            or (not Temp.IgnoreRead )  // check read or
            or (not Temp.IgnoreError)) // check for errors

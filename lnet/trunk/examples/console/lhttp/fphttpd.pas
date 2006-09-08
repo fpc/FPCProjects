@@ -28,12 +28,19 @@ program fphttpd;
 uses
   Classes, lNet,
 {$ifdef UNIX}
-  BaseUnix,
+  BaseUnix, Errors,
 {$endif}
   lWebserver, lHTTPSettings;
 
 var
   Server: TLWebServer;
+  Quit: Boolean = False;
+  
+procedure DoQuit(sig: longint); cdecl;
+begin
+  Writeln('Cought signal, quitting...');
+  Quit:=True;
+end;
   
 procedure MainLoop;
 var
@@ -41,7 +48,7 @@ var
 begin
   Writeln('Succesfully started server');
   lRuns := $FFFFFFFF;
-  while (lRuns > 0) and (Server.Connected) do
+  while (lRuns > 0) and (Server.Connected) and (not Quit) do
   begin
     Server.CallAction;
     if Assigned(Server.PHPCGIHandler.Pool.Timer) then
@@ -55,48 +62,51 @@ begin
   end;
 end;
 
-procedure Run(const DoFork: Boolean);
+function SetServer: Boolean;
 begin
-  {$ifdef MSWINDOWS}
   Server := TLWebServer.Create(nil);
   Server.TimeOut := 300000;
   if not Server.Listen(GetPort) then
     Writeln('Error starting server.')
-  else
-    MainLoop;
-  Server.Free;
+end;
+
+procedure HandleSignals;
+begin
+  {$ifndef MSWINDOWS}
+  FpSignal(SIGTERM, @DoQuit);
+  FpSignal(SIGINT, @DoQuit);
   {$else}
-  if DoFork then begin
-    if fpfork = 0 then begin
-      Server := TLWebServer.Create(nil);
-      Server.TimeOut := 300000;
-      if not Server.Listen(GetPort) then
-        Writeln('Error starting server.')
-      else
-        MainLoop
-    end else
-      fpExit(0);
-  end else begin
-    Server := TLWebServer.Create(nil);
-    Server.TimeOut := 300000;
-    if not Server.Listen(GetPort) then
-      Writeln('Error starting server.')
-    else
-      MainLoop
-  end;
-  Server.Free;
   {$endif}
 end;
 
+function Daemonize: Boolean;
 begin
-  {$ifdef MSWINDOWS}
-  Run(False);
+  Result:=False;
+  {$ifndef MSWINDOWS}
+  if fpfork = 0 then
+    Result:=SetServer
+  else
+    Writeln('Error on fork: ', StrError(fpGetErrno));
   {$else}
+  {$endif}
+end;
+
+procedure Run(const BG: Boolean);
+begin
+  if BG then begin
+    if Daemonize then
+      MainLoop;
+  end else if SetServer then
+    MainLoop;
+  Server.Free;
+end;
+
+begin
+  HandleSignals;
   if (LowerCase(ParamStr(1)) = '-h')
   or (LowerCase(ParamStr(1)) = '--help') then begin
-    Writeln('Usage: ', ParamStr(0), ' [-f]');
-    Writeln('       -f -- starts server without forking');
+    Writeln('Usage: ', ParamStr(0), ' [-c]');
+    Writeln('       -c -- starts server in console (not as daemon/service)');
   end else
-    Run(LowerCase(ParamStr(1)) <> '-f');
-  {$endif}
+    Run(LowerCase(ParamStr(1)) <> '-c');
 end.
