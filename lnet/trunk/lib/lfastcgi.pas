@@ -754,7 +754,7 @@ begin
   end;
   Result := TLFastCGIClient.Create(nil);
   Result.FPool := Self;
-  Result.FEventer := FEventer;
+  Result.Eventer := FEventer;
   FClients[FClientsAvail] := Result;
   Inc(FClientsAvail);
 end;
