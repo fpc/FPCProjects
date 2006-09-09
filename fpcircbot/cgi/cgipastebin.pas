@@ -174,6 +174,33 @@ var
         Result:=StringReplace(Result, #13#10'\@', #13#10, [rfReplaceAll]); // for subsequents
       end;
     end;
+    
+    function WordWrap(s: string): string;
+    const
+      SEARCH_STRING = '&nbsp;';
+    var
+      i, n: Integer;
+    begin
+      i:=0;
+      Result:='';
+      if Length(s) <= 80 then
+        Result:=s
+      else repeat
+        n:=Pos(SEARCH_STRING, s);
+        if (n > 0) and (n + i <= 80) then begin // copy space to space until space behind 80
+          Result:=Result + Copy(s, 1, n + Length(SEARCH_STRING) - 1);
+          Delete(s, 1, n + Length(SEARCH_STRING) - 1);
+          Inc(i, n + Length(SEARCH_STRING) - 1);
+        end else if n + i > 80 then begin // if space behind 80, add newline and reset counter
+          Result:=Result + #13#10;
+          i:=0;
+        end else begin // no spaces in part, copy 80, reset counter
+          Result:=Result + Copy(s, 1, 80) + #13#10;
+          Delete(s, 1, 80);
+          i:=0;
+        end;
+      until Length(s) = 0;
+    end;
   
   var
     i: Integer;
@@ -194,7 +221,7 @@ var
                            IntToStr(i + 1) + '. </span></td>'#13#10;
         end else
           Result:=Result + '<tr><td width="3%">' + IntToStr(i + 1) + '. </td>'#13#10;
-        Result:=Result + '<td>' + s + '</td></tr>'#13#10;
+        Result:=Result + '<td>' + WordWrap(s) + '</td></tr>'#13#10;
       end;
       Result:=Result + #13#10'</table>'#13#10;
       // "paste textarea"
