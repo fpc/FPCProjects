@@ -259,11 +259,11 @@ var
     end else if (Length(s) > 0) and (Length(CleanVar('sender')) > 0) then begin
       with PasteQuery do try
         PasteTransaction.EndTransaction;
-        PasteTransaction.StartTransaction; // delete all "old" pastes when pasting new one
+{        PasteTransaction.StartTransaction; // delete all "old" pastes when pasting new one
         SQL.Clear;
         SQL.Add('delete from tbl_pastes where pastetime < now() - ''1 month''::interval');
         ExecSQL;
-        PasteTransaction.Commit;
+        PasteTransaction.Commit;}
 
         PasteTransaction.StartTransaction;
         SQL.Clear;
