@@ -12,8 +12,8 @@ http_docs -- place your html files here
 fphttpd.ini -- configure file with various settings
 mime.types -- mime types file for various file types
 
-Currently, fphttpd doesn't support fastCGI in windows. This is being worked on.
+fphttpd tries to automaticly spawn php using the fpfcgi spawner program.
 
-In unix, external "CGI apps" like php need to be "fastcgi-spawned" for the server.
+You can pre-spawn your fCGI apps to get some initial boost.
 
-You do this with the spawn-fcgi program.
+On Windows it is REQUIRED to edit fphttpd.ini and set path to "php-cgi.exe" as this one has not got a default install location (in unix it's searched in some default dirs like /usr/bin and so on)
