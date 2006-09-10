@@ -33,6 +33,8 @@ uses
   {$i sys/osunits.inc}
 
 const
+  { Some internal defaults }
+  LDEFAULT_BACKLOG = 5;
   { Address constants }
   LADDR_ANY = '0.0.0.0';
   LADDR_BR  = '255.255.255.255';
@@ -98,6 +100,7 @@ type
     FCanReceive: Boolean;
     FServerSocket: Boolean;
     FOnFree: TLProc;
+    FListenBacklog: Integer;
    protected
     function DoSend(const TheData; const TheSize: Integer): Integer;
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
@@ -125,6 +128,7 @@ type
    public
     property Connected: Boolean read FConnected;
     property Connecting: Boolean read FConnecting;
+    property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
     property Protocol: Integer read FProtocol write FProtocol;
     property SocketType: Integer read FSocketClass write FSocketClass;
     property PeerAddress: string read GetPeerAddress;
@@ -184,6 +188,8 @@ type
     FEventer: TLEventer;
     FEventerClass: TLEventerClass;
     FTimeout: DWord;
+    FListenBacklog: Integer;
+   protected
     function InitSocket(aSocket: TLSocket): TLSocket; virtual;
     function GetConnected: Boolean; virtual; abstract;
     function GetCount: Integer; virtual;
@@ -226,6 +232,7 @@ type
     property Socks[index: Integer]: TLSocket read GetItem; default;
     property Count: Integer read GetCount;
     property Connected: Boolean read GetConnected;
+    property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
     property Iterator: TLSocket read FIterator;
     property Timeout: DWord read GetTimeout write SetTimeout;
     property SocketClass: TLSocketClass read FSocketClass write FSocketClass;
@@ -304,6 +311,7 @@ uses
 constructor TLSocket.Create;
 begin
   inherited Create;
+  FListenBacklog:=LDEFAULT_BACKLOG;
   FServerSocket:=False;
   FPrevSock:=nil;
   FNextSock:=nil;
@@ -502,7 +510,7 @@ begin
     else
       Result:=true;
     if (FSocketClass = SOCK_STREAM) and Result then
-      if fpListen(FHandle, 1024) = INVALID_SOCKET then
+      if fpListen(FHandle, FListenBacklog) = INVALID_SOCKET then
         Bail('Error on Listen', LSocketError)
       else
         Result:=true;
@@ -566,6 +574,7 @@ end;
 constructor TLConnection.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
+  FListenBacklog:=LDEFAULT_BACKLOG;
   FTimeout:=0;
   FSocketClass:=TLSocket;
   FOnReceive:=nil;
@@ -594,6 +603,7 @@ begin
   aSocket.OnRead:=@ReceiveAction;
   aSocket.OnWrite:=@SendAction;
   aSocket.OnError:=@ErrorAction;
+  aSocket.ListenBacklog:=FListenBacklog;
   Result:=aSocket;
 end;
 
