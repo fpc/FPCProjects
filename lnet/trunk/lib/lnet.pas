@@ -502,8 +502,10 @@ begin
     else
       Result:=true;
     if (FSocketClass = SOCK_STREAM) and Result then
-      if fpListen(FHandle, 5) = INVALID_SOCKET then
-        Bail('Error on Listen', LSocketError) else Result:=true;
+      if fpListen(FHandle, 1024) = INVALID_SOCKET then
+        Bail('Error on Listen', LSocketError)
+      else
+        Result:=true;
   end;
 end;
 
