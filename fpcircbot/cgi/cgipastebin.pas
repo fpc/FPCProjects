@@ -291,14 +291,16 @@ var
 
         WebWriteln('You can view your paste at: <a href="' + s + '">' + s + '</a>');
 
-        Doer:=TDoer.Create;
-        UDP:=TLUdp.Create(nil);
-        UDP.OnError:=@Doer.OnError;
-        UDP.Connect('localhost', PastePort);
-        UDP.SendMessage('#' + GetCGIVar('channel') + '~' + GetCGIVar('sender') +
-                        ' pasted "' + GetCGIVar('title') + '" at: ' + s);
-        UDP.Free;
-        Doer.Free;
+        if GetCGIVar('ancheck') = 'on' then begin
+          Doer:=TDoer.Create;
+          UDP:=TLUdp.Create(nil);
+          UDP.OnError:=@Doer.OnError;
+          UDP.Connect('localhost', PastePort);
+          UDP.SendMessage('#' + GetCGIVar('channel') + '~' + GetCGIVar('sender') +
+                          ' pasted "' + GetCGIVar('title') + '" at: ' + s);
+          UDP.Free;
+          Doer.Free;
+        end;
       except on e: Exception do
         begin
           WebWriteln(e.Message);
