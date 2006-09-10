@@ -256,7 +256,11 @@ begin
   if Length(ToDate) > 0 then s:=s + ' and CAST (logtime as date) <= ' + AnsiQuotedStr(SQLEscape (ToDate), #39) ;
   if Length(FromTime) > 0 then s:=s + ' and CAST (logtime as time) >= ' + AnsiQuotedStr(SQLEscape (FromTime), #39) ;
   if Length(ToTime) > 0 then s:=s + ' and CAST (logtime as time) <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) ;
-  
+
+  if  (Count = '9999')
+  and (Length(FromDate) = 0)
+  and (Length(ToDate) = 0) then
+    s:=s + ' and CAST (logtime as date) >= ' + AnsiQuotedStr(SQLEscape (DateTimeToStr(Now)), #39) ;
 
   if ValidRequest then begin
     with LogQuery do try
