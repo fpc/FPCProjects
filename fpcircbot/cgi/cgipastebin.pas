@@ -3,7 +3,7 @@ program cgiPasteBin;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, Math, DB,
+  Classes, SysUtils, Math,
   SqlDB, PQConnection,
   PWU, PWUEnvVar,
   lNet, StringUtils;
@@ -24,12 +24,6 @@ procedure Main;
 const
   {$Warning Don't forget to make hiddeninc.inc file!}
   {$i hiddeninc.inc}
-  ColorAr: array[Boolean] of string = ('#FFFFFF', '#E0E0E0');
-  HTML_GRAY   = '#cccccc';
-  HTML_RED    = '#9d1010';
-  HTML_ORANGE = '#ad10ad';
-  HTML_GREEN  = '#109d10';
-  HTML_BLUE   = '#10109d';
   { highlighters }
   HL_NONE     = 0;
   HL_PAS      = 1;
@@ -278,20 +272,9 @@ var
     
     s:=CleanVar('pastetext', False);
     
-    if Length(s) >= dsMaxStringSize then begin
-      WebWriteln('Paste text too long (will be fixed in future)<br>'#13#10);
-      WebWriteln('<textarea name="pastetext" rows="15" cols="80">'#13#10 +
-                 s + #13#10'</textarea><br>'#13#10);
-      Webwriteln('<input type="submit" value="Paste">'#13#10);
-    end else if (Length(s) > 0) and (Length(CleanVar('sender')) > 0) then begin
+    if (Length(s) > 0) and (Length(CleanVar('sender')) > 0) then begin
       with PasteQuery do try
         PasteTransaction.EndTransaction;
-{        PasteTransaction.StartTransaction; // delete all "old" pastes when pasting new one
-        SQL.Clear;
-        SQL.Add('delete from tbl_pastes where pastetime < now() - ''1 month''::interval');
-        ExecSQL;
-        PasteTransaction.Commit;}
-
         PasteTransaction.StartTransaction;
         SQL.Clear;
         SQL.Add('insert into tbl_pastes(title, sender, pastetext, highlight) values(' +
@@ -369,6 +352,15 @@ begin
     WebWriteLn('</form>');
   end;
   
+  WebWriteln('<p><a href="http://validator.w3.org/check?uri=referer"><img ' +
+          'style="border:0;width:88px;height:31px" ' +
+          'src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 ' +
+          'Transitional" height="31" width="88"></a>');
+  WebWriteln('<a href="http://jigsaw.w3.org/css-validator/"> ' +
+          '<img style="border:0;width:88px;height:31px" ' +
+          'src="http://jigsaw.w3.org/css-validator/images/vcss" ' +
+          'alt="Valid CSS!"></a></p>');
+
   WebWriteLn('</body>');
   WebWriteLn('</html>');
 
