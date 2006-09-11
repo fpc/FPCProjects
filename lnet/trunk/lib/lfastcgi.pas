@@ -493,6 +493,7 @@ begin
   for I := 0 to FNextRequestID-1 do
     FRequests[I].Free;
   FreeMem(FRequests);
+  FreeMem(FBuffer);
   inherited;
 end;
 
