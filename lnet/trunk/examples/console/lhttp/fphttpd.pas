@@ -63,10 +63,13 @@ end;
 
 function SetServer: Boolean;
 begin
+  Result:=False;
   Server := TLWebServer.Create(nil);
   Server.TimeOut := 300000;
   if not Server.Listen(GetPort) then
     Writeln('Error starting server.')
+  else
+    Result:=True;
 end;
 
 procedure HandleSignals;
