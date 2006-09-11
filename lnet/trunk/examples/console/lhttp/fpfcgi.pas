@@ -25,6 +25,7 @@ var
   TheSocket: TLBlockingSocket;
   p: TProcess;
   aPort: Word;
+  i: Integer;
 begin
   if ParamCount > 1 then begin
     aPort:=StrToInt(ParamStr(2));
@@ -33,6 +34,8 @@ begin
     TheSocket.Protocol:=LPROTO_TCP;
     TheSocket.SocketType:=SOCK_STREAM;
 
+    for i:=3 to 10000 do
+      CloseSocket(i);
     if CloseSocket(StdInputHandle) <> 0 then
       Halt(LSocketError);
 
