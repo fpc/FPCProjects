@@ -72,6 +72,7 @@ type
     procedure SetID(const NewID: integer);
   public
     constructor Create;
+    destructor Destroy; override;
     
     procedure AbortRequest;
     function  Get(ABuffer: pchar; ASize: integer): integer;
@@ -185,6 +186,12 @@ begin
   FBuffer := InitStringBuffer(504);
   FHeader.Version := FCGI_VERSION_1;
   FHeaderPos := -1;
+end;
+
+destructor TLFastCGIRequest.Destroy;
+begin
+  inherited;
+  FreeMem(FBuffer.Memory);
 end;
 
 procedure TLFastCGIRequest.HandleReceive;
