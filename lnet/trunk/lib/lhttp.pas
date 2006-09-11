@@ -221,6 +221,8 @@ type
     procedure ReceiveEvent(aSocket: TLHandle); override;
     procedure CanSendEvent(aSocket: TLHandle); override;
   public
+    destructor Destroy; override;
+
     procedure DelayFree(AOutputItem: TOutputItem);
     procedure LogAccess(const AMessage: string); virtual;
   end;
@@ -1522,6 +1524,12 @@ begin
 end;
 
 { TLHTTPConnection }
+
+destructor TLHTTPConnection.Destroy;
+begin
+  FreeDelayFreeItems;
+  inherited;
+end;
 
 procedure TLHTTPConnection.FreeDelayFreeItems;
 var
