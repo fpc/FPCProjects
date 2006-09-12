@@ -73,9 +73,9 @@
       <li>07/06/00 - eg - added removefreenotification for delphi 4
       <li>29/05/00 - eg - added tglnode/tglnodes
       <li>26/05/00 - eg - tmeshmode & tvertexmode moved in
-		<li>22/03/00 - eg - added setglstate/unsetglstate
-		<li>21/03/00 - eg - added savestringtofile/loadstringfromfile
-		<li>18/03/00 - eg - added getsqrt255array
+      <li>22/03/00 - eg - added setglstate/unsetglstate
+      <li>21/03/00 - eg - added savestringtofile/loadstringfromfile
+      <li>18/03/00 - eg - added getsqrt255array
       <li>06/02/00 - eg - javadocisation, rounduptopowerof2,
                           rounddowntopowerof2 and ispowerof2 moved in
    </ul></font>

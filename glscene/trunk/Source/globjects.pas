@@ -121,16 +121,16 @@
                           added mmtrianglestrip support in calcnormals
       <li>08/05/00 - eg - uncommented disableautotexture in tglspacetext.buildlist
       <li>07/05/00 - roc - tgllines added, to show a list of vertex
-		<li>26/04/00 - eg - reactivated stuff in setupquadricparams (thanks nelson chu)
-		<li>18/04/00 - eg - overriden tgldummycube.render
-		<li>16/04/00 - eg - fontmanager now published and auto-creating
-		<li>12/04/00 - eg - added tglcylinderbase.loops (fixes a bug, thanks uwe)
+      <li>26/04/00 - eg - reactivated stuff in setupquadricparams (thanks nelson chu)
+      <li>18/04/00 - eg - overriden tgldummycube.render
+      <li>16/04/00 - eg - fontmanager now published and auto-creating
+      <li>12/04/00 - eg - added tglcylinderbase.loops (fixes a bug, thanks uwe)
       <li>24/03/00 - eg - added rotation to tglsprite, fixed sprite size
-		<li>20/03/00 - eg - enhanced fontmanager
-		<li>17/03/00 - eg - fixed spacetext glbaselist bug,
+      <li>20/03/00 - eg - enhanced fontmanager
+      <li>17/03/00 - eg - fixed spacetext glbaselist bug,
 								  tglsprite now uses a transposition of the globalmatrix
-		<li>16/03/00 - eg - enhanced tfontmanager to allow lower quality
-		<li>14/03/00 - eg - added subobjects barycenter support for tgldummycube
+      <li>16/03/00 - eg - enhanced tfontmanager to allow lower quality
+      <li>14/03/00 - eg - added subobjects barycenter support for tgldummycube
       <li>09/02/00 - eg - objectmanager stuff moved to glsceneregister,
                           freeform and vector file stuff moved to new glvectorfileobjects
       <li>08/02/00 - eg - added tgldummycube
