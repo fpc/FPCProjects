@@ -166,12 +166,12 @@ begin
           if  (not Temp.FDispose)
           and ((FEvents[i].events and EPOLLERR = EPOLLERR)
           or  (FEvents[i].events and EPOLLHUP = EPOLLHUP)) then
-            if Assigned(Temp.FOnError) then
+            if Assigned(Temp.FOnError) and not Temp.IgnoreError then
               Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
               
           if  (not Temp.FDispose)
           and (FEvents[i].events and EPOLLOUT = EPOLLOUT) then
-            if Assigned(Temp.FOnWrite) then
+            if Assigned(Temp.FOnWrite) and not Temp.IgnoreWrite then
               Temp.FOnWrite(Temp);
 
           if Temp.FDispose then
@@ -184,7 +184,7 @@ begin
           if  (not TempRead.FDispose)
           and ((FEventsRead[i].events and EPOLLIN = EPOLLIN)
           or  (FEventsRead[i].events and EPOLLPRI = EPOLLPRI)) then
-            if Assigned(TempRead.FOnRead) then
+            if Assigned(TempRead.FOnRead) and not TempRead.IgnoreRead then
               TempRead.FOnRead(TempRead);
 
           if TempRead.FDispose then

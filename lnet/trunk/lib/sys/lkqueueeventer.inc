@@ -108,16 +108,19 @@ begin
     for i:=0 to n-1 do begin
       Temp:=TLHandle(FEvents[i].uData);
       
-      if (FEvents[i].Flags and EV_ERROR) > 0 then
-        if Assigned(Temp.FOnError) then
+      if  (not Temp.FDispose)
+      and ((FEvents[i].Flags and EV_ERROR) > 0) then
+        if Assigned(Temp.FOnError) and not Temp.IgnoreError then
           Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
 
-      if FEvents[i].Filter = EVFILT_WRITE then
-        if Assigned(Temp.FOnWrite) then
+      if  (not Temp.FDispose)
+      and (FEvents[i].Filter = EVFILT_WRITE) then
+        if Assigned(Temp.FOnWrite) and not Temp.IgnoreWrite then
           Temp.FOnWrite(Temp);
 
-      if FEvents[i].Filter = EVFILT_READ then
-        if Assigned(Temp.FOnRead) then
+      if  (not Temp.FDispose)
+      and (FEvents[i].Filter = EVFILT_READ) then
+        if Assigned(Temp.FOnRead) and not Temp.IgnoreRead then
           Temp.FOnRead(Temp);
       
       if Temp.FDispose then

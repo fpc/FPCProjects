@@ -528,14 +528,16 @@ begin
       SetOptions;
       Result:=true;
       FConnected:=true;
-    end else Bail('Error on accept', LSocketError);
+    end else
+      Bail('Error on accept', LSocketError);
   end;
 end;
 
 function TLSocket.Connect(const Address: string; const aPort: Word): Boolean;
 begin
   Result:=False;
-  if Connected or FConnecting then Disconnect;
+  if Connected or FConnecting then
+    Disconnect;
   if SetupSocket(APort, Address) then begin
     fpConnect(FHandle, @FAddress, SizeOf(FAddress));
     FConnecting:=True;

@@ -827,12 +827,15 @@ function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Int
 var
   p: TProcess;
 begin
-  p:=TProcess.Create(nil);
-  p.CommandLine:=ExtractFilePath(ParamStr(0)) + 'fpfcgi ' + AppName + ' ' + IntToStr(aPort) + ' ' + Enviro;
-  p.Execute;
-  if p.Running then
-    Result:=0;
-  p.Free;
+  if FileExists(ExtractFilePath(ParamStr(0)) + 'fpfcgi') then begin
+    p:=TProcess.Create(nil);
+    p.CommandLine:=ExtractFilePath(ParamStr(0)) + 'fpfcgi ' + AppName + ' ' + IntToStr(aPort) + ' ' + Enviro;
+    p.Execute;
+    if p.Running then
+      Result:=0;
+    p.Free;
+  end else
+    raise Exception.Create('File not found: ' + ExtractFilePath(ParamStr(0)) + 'fpfcgi');
 end;
     
 end.

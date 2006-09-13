@@ -158,23 +158,29 @@ uses
 
 procedure TLHandle.SetIgnoreError(const aValue: Boolean);
 begin
-  FIgnoreError:=aValue;
-  if Assigned(FEventer) then
-    FEventer.HandleIgnoreError(Self);
+  if FIgnoreError <> aValue then begin
+    FIgnoreError:=aValue;
+    if Assigned(FEventer) then
+      FEventer.HandleIgnoreError(Self);
+  end;
 end;
 
 procedure TLHandle.SetIgnoreWrite(const aValue: Boolean);
 begin
-  FIgnoreWrite:=aValue;
-  if Assigned(FEventer) then
-    FEventer.HandleIgnoreWrite(Self);
+  if FIgnoreWrite <> aValue then begin
+    FIgnoreWrite:=aValue;
+    if Assigned(FEventer) then
+      FEventer.HandleIgnoreWrite(Self);
+  end;
 end;
 
 procedure TLHandle.SetIgnoreRead(const aValue: Boolean);
 begin
-  FIgnoreRead:=aValue;
-  if Assigned(FEventer) then
-    FEventer.HandleIgnoreRead(Self);
+  if FIgnoreRead <> aValue then begin
+    FIgnoreRead:=aValue;
+    if Assigned(FEventer) then
+      FEventer.HandleIgnoreRead(Self);
+  end;
 end;
 
 constructor TLHandle.Create;
@@ -435,14 +441,14 @@ begin
     if Result then begin
       Temp:=FRoot;
       while Assigned(Temp) do begin
-        if fpFD_ISSET(Temp.FHandle, FWriteFDSet) <> 0 then
-          if Assigned(Temp.FOnWrite) then
+        if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FWriteFDSet) <> 0) then
+          if Assigned(Temp.FOnWrite) and not Temp.IgnoreWrite then
             Temp.FOnWrite(Temp);
         if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FReadFDSet) <> 0) then
-          if Assigned(Temp.FOnRead) then
+          if Assigned(Temp.FOnRead) and not Temp.IgnoreRead then
             Temp.FOnRead(Temp);
         if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FErrorFDSet) <> 0) then
-          if Assigned(Temp.FOnError) then
+          if Assigned(Temp.FOnError) and not Temp.IgnoreError then
             Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
         Temp2:=Temp;
         Temp:=Temp.FNext;
