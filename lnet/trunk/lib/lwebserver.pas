@@ -808,7 +808,7 @@ begin
   inherited;
 
   FPHPCGIHost := 'localhost';
-  FPHPCGIPort := 6000;
+  FPHPCGIPort := GetPHPCGIPort;
   FPHPCGIAppName := PHPCGIBinary;
 
   FFileHandler := TFileHandler.Create;
