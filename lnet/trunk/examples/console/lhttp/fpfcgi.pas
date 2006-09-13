@@ -3,7 +3,7 @@ program fpFCGI;
 {$mode objfpc}{$H+}
 
 uses
-  SysUtils, Process, lNet, lCommon, Sockets;
+  SysUtils, Process, lNet, lEvents, lCommon, Sockets;
 
 type
 
@@ -14,6 +14,15 @@ type
     procedure SetNonBlock; override;
   end;
   
+  { TSpawner }
+
+  TSpawner = class
+   protected
+    procedure OnError(aHandle: TLHandle; const msg: string);
+   public
+    procedure Spawn;
+  end;
+
 { TLBlockingSocket }
 
 procedure TLBlockingSocket.SetNonBlock;
@@ -21,6 +30,15 @@ begin
   // do nothing
 end;
 
+{ TSpawner }
+
+procedure TSpawner.OnError(aHandle: TLHandle; const msg: string);
+begin
+  Writeln(msg);
+  Halt(1);
+end;
+
+procedure TSpawner.Spawn;
 var
   TheSocket: TLBlockingSocket;
   p: TProcess;
@@ -31,6 +49,7 @@ begin
     aPort:=StrToInt(ParamStr(2));
     p:=TProcess.Create(nil);
     TheSocket:=TLBlockingSocket.Create;
+    TheSocket.OnError:=@OnError;
     TheSocket.Protocol:=LPROTO_TCP;
     TheSocket.SocketType:=SOCK_STREAM;
 
@@ -51,5 +70,13 @@ begin
     p.Free;
   end else
     Writeln('Usage: ', ExtractFileName(ParamStr(0)), ' <appname> <port> [environment]');
+end;
+
+var
+  Spawner: TSpawner;
+begin
+  Spawner:=TSpawner.Create;
+  Spawner.Spawn;
+  Spawner.Free;
 end.
 
