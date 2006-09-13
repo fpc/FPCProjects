@@ -34,6 +34,7 @@ interface
   function GetCGIRoot: string;
   function GetScriptPathPrefix: string;
   function GetPHPCGIBinary: string;
+  function GetPHPCGIPort: Word;
 
 implementation
 
@@ -42,7 +43,8 @@ uses
 
 const
   DEF_PORT = '3880';
-  
+  DEF_PHPCGI_PORT = '4665';
+
 var
   SettingsFile: TIniFile;
   HomeDir: string;
@@ -128,6 +130,7 @@ begin
   Result.WriteString('PATH', 'phpcgibin', 'php-cgi.exe');
  {$endif}
   Result.WriteString('NET', 'port', DEF_PORT);
+  Result.WriteString('NET', 'phpcgiport', DEF_PHPCGI_PORT);
   Result.UpdateFile;
 end;
   
@@ -196,6 +199,11 @@ end;
 function GetPHPCGIBinary: string;
 begin
   Result:=SettingsFile.ReadString('PATH', 'phpcgibin', '');
+end;
+
+function GetPHPCGIPort: Word;
+begin
+  Result:=Word(StrToInt(SettingsFile.ReadString('NET', 'phpcgiport', DEF_PORT)));
 end;
   
 initialization
