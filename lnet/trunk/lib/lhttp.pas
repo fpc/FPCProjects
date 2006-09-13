@@ -1102,7 +1102,8 @@ end;
 
 procedure TLHTTPSocket.WriteBlock;
 begin
-  while FCurrentOutput <> nil do
+  if FCurrentOutput = nil then exit;
+  while true do
   begin
     case FCurrentOutput.WriteBlock of
       wsDone:
@@ -1128,29 +1129,36 @@ begin
     { if not ignoring, then the send buffer is full }
     if not FIgnoreWrite or not FConnected then
       break;
-  end;
-  if FOutputDone and (FRequestInputDone or not FKeepAlive) then
-  begin
-    if not FKeepAlive then
-    begin
-      Disconnect;
-      exit;
-    end;
 
-    { next request }
-    FRequestInputDone := false;
-    FRequestHeaderDone := false;
-    FOutputDone := false;
-    FRequestPos := FBufferPos;
-    FlushRequest;
-    { rewind buffer pointers if at end of buffer anyway }
-    if FBufferPos = FBufferEnd then
-      PackRequestBuffer;
-
-    if ParseBuffer and IgnoreRead then 
+    if FCurrentOutput = nil then
     begin
-      { end of input buffer reached, try reading more }
-      HandleReceive;
+      if not FOutputDone or (not FRequestInputDone and FKeepAlive) then
+        break;
+
+      if not FKeepAlive then
+      begin
+        Disconnect;
+        exit;
+      end;
+
+      { next request }
+      FRequestInputDone := false;
+      FRequestHeaderDone := false;
+      FOutputDone := false;
+      FRequestPos := FBufferPos;
+      FlushRequest;
+      { rewind buffer pointers if at end of buffer anyway }
+      if FBufferPos = FBufferEnd then
+        PackRequestBuffer;
+
+      if ParseBuffer and IgnoreRead then 
+      begin
+        { end of input buffer reached, try reading more }
+        HandleReceive;
+      end;
+
+      if FCurrentOutput = nil then 
+        break;
     end;
   end;
 end;
@@ -1442,6 +1450,7 @@ begin
   if AStatus in HTTPDisconnectStatuses then
     FKeepAlive := false;
   lMessage := HTTPDescriptions[AStatus];
+  FRequestHeaderDone := true;
   FResponseInfo.Status := AStatus;
   FHeaderOut.ContentLength := Length(lMessage);
   FHeaderOut.TransferEncoding := teIdentity;
