@@ -139,6 +139,8 @@ type
     property ReqType: byte read FReqType;
   end;
 
+  TSpawnState = (ssNone, ssSpawning, ssSpawned);
+
   TLFastCGIPool = class(TObject)
   protected
     FClients: PLFastCGIClient;
@@ -150,7 +152,7 @@ type
     FAppName: string;
     FHost: string;
     FPort: integer;
-    FStartingServer: boolean;
+    FSpawnState: TSpawnState;
     
     procedure AddToFreeClients(AClient: TLFastCGIClient);
     function  CreateClient: TLFastCGIClient;
@@ -518,6 +520,8 @@ end;
 
 procedure TLFastCGIClient.ConnectEvent(ASocket: TLHandle);
 begin
+  if FState = fsStartingServer then
+    FPool.FSpawnState := ssSpawned;
   FState := fsHeader;
   FRequest.SendGetValues;
   if FPool <> nil then
@@ -528,16 +532,17 @@ end;
 
 procedure TLFastCGIClient.ErrorEvent(const Msg: string; ASocket: TLHandle);
 begin
-  if FState = fsConnecting then
-  begin
-    FPool.StartServer;
-    FState := fsStartingServer;
-  end else
-  if FState = fsConnectingAgain then
+  if (FState = fsConnectingAgain) 
+    or ((FState = fsConnecting) and (FPool.FSpawnState = ssSpawned)) then
   begin
     FRequest.DoEndRequest;
     EndRequest(FRequest);
     FState := fsIdle;
+  end else
+  if FState = fsConnecting then
+  begin
+    FPool.StartServer;
+    FState := fsStartingServer;
   end;
 end;
 
@@ -806,7 +811,6 @@ procedure TLFastCGIPool.ConnectClients(Sender: TObject);
 var
   I: integer;
 begin
-  FStartingServer := false;
   for I := 0 to FClientsAvail-1 do
     if FClients[I].FState = fsStartingServer then
       FClients[I].Connect;
@@ -814,14 +818,16 @@ end;
 
 procedure TLFastCGIPool.StartServer;
 begin
-  if FStartingServer then exit;
-  FStartingServer := true;
-  SpawnFCGIProcess(FAppName, '', FPort);
-  if FTimer = nil then
-    FTimer := TLTimer.Create;
+  if FSpawnState = ssNone then
+  begin
+    FSpawnState := ssSpawning;
+    SpawnFCGIProcess(FAppName, '', FPort);
+    if FTimer = nil then
+      FTimer := TLTimer.Create;
+    FTimer.OneShot := true;
+    FTimer.OnTimer := @ConnectClients;
+  end;
   FTimer.Interval := 2000;
-  FTimer.OneShot := true;
-  FTimer.OnTimer := @ConnectClients;
 end;
 
 function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
