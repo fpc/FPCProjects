@@ -160,15 +160,10 @@ begin
     if Result then begin
       FInLoop:=True;
       for i:=0 to Max(Changes, ReadChanges)-1 do begin
+        Temp:=nil;
         if i < Changes then begin
           Temp:=TLHandle(FEvents[i].data.ptr);
 
-          if  (not Temp.FDispose)
-          and ((FEvents[i].events and EPOLLERR = EPOLLERR)
-          or  (FEvents[i].events and EPOLLHUP = EPOLLHUP)) then
-            if Assigned(Temp.FOnError) and not Temp.IgnoreError then
-              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
-              
           if  (not Temp.FDispose)
           and (FEvents[i].events and EPOLLOUT = EPOLLOUT) then
             if Assigned(Temp.FOnWrite) and not Temp.IgnoreWrite then
@@ -176,7 +171,7 @@ begin
 
           if Temp.FDispose then
             AddForFree(Temp);
-        end; // normals
+        end; // writes
 
         if i < ReadChanges then begin
           TempRead:=TLHandle(FEventsRead[i].data.ptr);
@@ -190,6 +185,20 @@ begin
           if TempRead.FDispose then
             AddForFree(TempRead);
         end; // reads
+        
+        if i < Changes then begin
+          if not Assigned(Temp) then
+            Temp:=TLHandle(FEvents[i].data.ptr);
+
+          if  (not Temp.FDispose)
+          and ((FEvents[i].events and EPOLLERR = EPOLLERR)
+          or  (FEvents[i].events and EPOLLHUP = EPOLLHUP)) then
+            if Assigned(Temp.FOnError) and not Temp.IgnoreError then
+              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
+
+          if Temp.FDispose then
+            AddForFree(Temp);
+        end;
       end;
       FInLoop:=False;
       if Assigned(FFreeRoot) then
