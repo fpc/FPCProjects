@@ -38,14 +38,14 @@ const
   OUBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
 begin
   if not Assigned(aHandle.HandleData[0]) then begin
-    aHandle.HandleData[0]:=FChanges[FFreeSlot];
+    aHandle.HandleData[0]:=@FChanges[FFreeSlot];
     Inc(FFreeSlot);
     if FFreeSlot > Length(FChanges) then
       Inflate;
   end;
 
   EV_SET(aHandle.HandleData[0], aHandle.FHandle, EVFILT_WRITE,
-         OUBOOL[aHandle.IgnoreWrite], 0, 0, Pointer(aHandle))
+         OUBOOL[aHandle.IgnoreWrite], 0, 0, Pointer(aHandle));
 
   if KEvent(FQueue, aHandle.HandleData[0], 1, nil, 0, nil) < 0 then
     Bail('Error on KEvent/setignore', LSocketError);
@@ -56,14 +56,14 @@ const
   INBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
 begin
   if not Assigned(aHandle.HandleData[1]) then begin
-    aHandle.HandleData[1]:=FChanges[FFreeSlot];
+    aHandle.HandleData[1]:=@FChanges[FFreeSlot];
     Inc(FFreeSlot);
     if FFreeSlot > Length(FChanges) then
       Inflate;
   end;
 
   EV_SET(aHandle.HandleData[1], aHandle.FHandle, EVFILT_READ,
-         INBOOL[aHandle.IgnoreRead], 0, 0, Pointer(aHandle))
+         INBOOL[aHandle.IgnoreRead], 0, 0, Pointer(aHandle));
 
   if KEvent(FQueue, aHandle.HandleData[1], 1, nil, 0, nil) < 0 then
     Bail('Error on KEvent/setignore', LSocketError);
