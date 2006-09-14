@@ -128,11 +128,6 @@ begin
       Temp:=TLHandle(FEvents[i].uData);
       
       if  (not Temp.FDispose)
-      and ((FEvents[i].Flags and EV_ERROR) > 0) then
-        if Assigned(Temp.FOnError) and not Temp.IgnoreError then
-          Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
-
-      if  (not Temp.FDispose)
       and (FEvents[i].Filter = EVFILT_WRITE) then
         if Assigned(Temp.FOnWrite) and not Temp.IgnoreWrite then
           Temp.FOnWrite(Temp);
@@ -142,6 +137,11 @@ begin
         if Assigned(Temp.FOnRead) and not Temp.IgnoreRead then
           Temp.FOnRead(Temp);
       
+      if  (not Temp.FDispose)
+      and ((FEvents[i].Flags and EV_ERROR) > 0) then
+        if Assigned(Temp.FOnError) and not Temp.IgnoreError then
+          Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
+
       if Temp.FDispose then
         AddForFree(Temp);
     end;
