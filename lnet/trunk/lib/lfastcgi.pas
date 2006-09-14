@@ -394,6 +394,9 @@ function TLFastCGIRequest.SendPrivateBuffer: boolean;
 var
   lWritten: integer;
 begin
+  { nothing to send ? }
+  if FBuffer.Pos-FBuffer.Memory = FBufferSendPos then
+    exit(true);
   { already a queue and we are not first in line ? no use in trying to send then }
   if (FClient.FSendRequest <> nil) and (FClient.FSendRequest <> Self) then 
     exit(false);
@@ -421,10 +424,8 @@ begin
   if (FClient.FSendRequest <> nil) and (FClient.FSendRequest <> Self) then 
     exit(0);
 
-  { non-empty header to be sent? }
-  if FBuffer.Pos <> FBuffer.Memory then
-    if not SendPrivateBuffer then exit(0);
-
+  { header to be sent? }
+  if not SendPrivateBuffer then exit(0);
   if FInputBuffer = nil then exit(0);
 
   lWritten := FClient.Send(FInputBuffer^, FInputSize);
