@@ -70,13 +70,16 @@ end;
 procedure TGetter.Run;
 const
   GET_STR = 'GET /info.php HTTP/1.1'#13#10'Host: ps1:3880'#13#10#13#10;
+  GET_BAD = 'GET info.php';
+var
+  TheString: string = GET_STR;
 begin
   FTCP.Connect('localhost', 3880);
   while true do begin
     FTCP.CallAction;
     Sleep(1);
     if FTCP.Connected and not FSent then begin
-      if FTCP.SendMessage(GET_STR) = Length(GET_STR) then
+      if FTCP.SendMessage(TheString) = Length(TheString) then
         Writeln('SENT MESSAGE');
       FSent:=True;
     end;
