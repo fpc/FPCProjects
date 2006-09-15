@@ -1554,6 +1554,7 @@ end;
 
 procedure TLHTTPConnection.DelayFree(AOutputItem: TOutputItem);
 begin
+  if AOutputItem = nil then exit;
   if FDelayFreeItems <> nil then
     FDelayFreeItems.FPrevDelayFree := AOutputItem;
   AOutputItem.FNextDelayFree := FDelayFreeItems;
