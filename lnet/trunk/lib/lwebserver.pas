@@ -367,16 +367,22 @@ end;
 function TPHPFastCGIHandler.HandleDocument(const ARequest: TDocumentRequest): TOutputItem;
 var
   lOutput: TFastCGIOutput;
+  fcgiRequest: TLFastCGIRequest;
 begin
   if ExtractFileExt(ARequest.Document) = '.php' then
   begin
-    lOutput := TFastCGIOutput.Create(ARequest.Socket);
-    lOutput.ScriptName := ARequest.URIPath;
-    lOutput.ScriptFileName := ARequest.Document;
-    lOutput.ExtraPath := ARequest.ExtraPath;
-    lOutput.Request := FPool.BeginRequest(FCGI_RESPONDER);
-    lOutput.StartRequest;
-    Result := lOutput;
+    fcgiRequest := FPool.BeginRequest(FCGI_RESPONDER);
+    if fcgiRequest <> nil then
+    begin
+      lOutput := TFastCGIOutput.Create(ARequest.Socket);
+      lOutput.ScriptName := ARequest.URIPath;
+      lOutput.ScriptFileName := ARequest.Document;
+      lOutput.ExtraPath := ARequest.ExtraPath;
+      lOutput.Request := fcgiRequest;
+      lOutput.StartRequest;
+      Result := lOutput;
+    end else
+      Result := nil;
   end else
     Result := nil;
 end;

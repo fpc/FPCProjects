@@ -146,6 +146,7 @@ type
     FClients: PLFastCGIClient;
     FClientsCount: integer;
     FClientsAvail: integer;
+    FClientsMax: integer;
     FFreeClient: TLFastCGIClient;
     FTimer: TLTimer;
     FEventer: TLEventer;
@@ -166,6 +167,7 @@ type
     procedure EndRequest(AClient: TLFastCGIClient);
 
     property AppName: string read FAppName write FAppName;
+    property ClientsMax: integer read FClientsMax write FClientsMax;
     property Eventer: TLEventer read FEventer write FEventer;
     property Host: string read FHost write FHost;
     property Port: integer read FPort write FPort;
@@ -368,6 +370,9 @@ begin
   lRequestID := ID;
   ID := 0;
   SendParam('FCGI_MAX_REQS', '', FCGI_GET_VALUES);
+  { if we're the first connection, ask max. # connections }
+  if FClient.FPool.FClientsAvail = 1 then
+    SendParam('FCGI_MAX_CONNS', '', FCGI_GET_VALUES);
   ID := lRequestID;
   SendPrivateBuffer;
 end;
@@ -548,9 +553,18 @@ end;
 
 procedure TLFastCGIClient.HandleGetValuesResult;
 var
-  lNameLen, lValueLen, lMaxReqs, lCode: integer;
+  lNameLen, lValueLen, lIntVal, lCode: integer;
   lBufferPtr: pchar;
   lPrevChar: char;
+
+  procedure GetIntVal;
+  begin
+    lPrevChar := lBufferPtr[lNameLen+lValueLen];
+    lBufferPtr[lNameLen+lValueLen] := #0;
+    Val(lBufferPtr+lNameLen, lIntVal, lCode);
+    lBufferPtr[lNameLen+lValueLen] := lPrevChar;
+  end;
+
 begin
   lBufferPtr := FBufferPos;
   Inc(lBufferPtr, GetFastCGIStringSize(PByte(lBufferPtr), lNameLen));
@@ -558,15 +572,18 @@ begin
   if lBufferPtr + lNameLen + lValueLen > FBufferEnd then exit;
   if StrLComp(lBufferPtr, 'FCGI_MAX_REQS', lNameLen) = 0 then
   begin
-    lPrevChar := lBufferPtr[lNameLen+lValueLen];
-    lBufferPtr[lNameLen+lValueLen] := #0;
-    Val(lBufferPtr+lNameLen, lMaxReqs, lCode);
-    lBufferPtr[lNameLen+lValueLen] := lPrevChar;
-    if (lCode = 0) and (FRequestsCount <> lMaxReqs) then
+    GetIntVal;
+    if (lCode = 0) and (FRequestsCount <> lIntVal) then
     begin
-      FRequestsCount := lMaxReqs;
-      ReallocMem(FRequests, sizeof(TLFastCGIRequest)*lMaxReqs);
+      FRequestsCount := lIntVal;
+      ReallocMem(FRequests, sizeof(TLFastCGIRequest)*lIntVal);
     end;
+  end else
+  if StrLComp(lBufferPtr, 'FCGI_MAX_CONNS', lNameLen) = 0 then
+  begin
+    GetIntVal;
+    if lCode = 0 then
+      FPool.ClientsMax := lIntVal;
   end;
   Inc(lBufferPtr, lNameLen+lValueLen);
   Dec(FContentLength, lBufferPtr-FBufferPos);
@@ -787,7 +804,8 @@ begin
 
   { all clients busy }
   if Result = nil then
-    Result := CreateClient.BeginRequest(AType);
+    if FClientsAvail < FClientsMax then
+      Result := CreateClient.BeginRequest(AType);
 end;
 
 procedure TLFastCGIPool.EndRequest(AClient: TLFastCGIClient);
