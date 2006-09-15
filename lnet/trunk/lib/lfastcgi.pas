@@ -756,6 +756,7 @@ end;
 
 constructor TLFastCGIPool.Create;
 begin
+  FClientsMax := $FFFFFF;
   inherited;
 end;
 

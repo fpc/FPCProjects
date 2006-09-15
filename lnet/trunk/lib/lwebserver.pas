@@ -321,6 +321,7 @@ begin
   begin
     Result := lHandler.HandleDocument(lDocRequest);
     if Result <> nil then exit;
+    if ASocket.ResponseInfo.Status <> hsOK then exit;
     lHandler := lHandler.FNext;
   end;
 
@@ -381,8 +382,11 @@ begin
       lOutput.Request := fcgiRequest;
       lOutput.StartRequest;
       Result := lOutput;
-    end else
+    end else begin
+      ARequest.Socket.ResponseInfo.Status := hsInternalError;
+      ARequest.Socket.StartResponse(nil);
       Result := nil;
+    end;
   end else
     Result := nil;
 end;
