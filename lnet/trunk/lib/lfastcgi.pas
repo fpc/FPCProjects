@@ -716,6 +716,7 @@ end;
 procedure TLFastCGIClient.Connect;
 begin
   Connect(FPool.Host, FPool.Port);
+  FRequest := FRequests[0];
   if FState <> fsStartingServer then
     FState := fsConnecting
   else
@@ -724,11 +725,8 @@ end;
 
 function TLFastCGIClient.BeginRequest(AType: integer): TLFastCGIRequest;
 begin
-  if FRootSock = nil then
-  begin
+  if not Connected then
     Connect;
-    FRequest := FRequests[0];
-  end;
 
   if FFreeRequest <> nil then
   begin
