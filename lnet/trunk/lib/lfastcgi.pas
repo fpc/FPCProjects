@@ -245,10 +245,10 @@ end;
 
 procedure TLFastCGIRequest.EndRequest;
 begin
-  DoEndRequest;
   FOutputDone := false;
   FStderrDone := false;
   FClient.EndRequest(Self);
+  DoEndRequest;
   {$message warning TODO: do something useful with end request data }
   FClient.Flush;
 end;
@@ -793,13 +793,14 @@ begin
   Result := nil;
   while FFreeClient <> nil do
   begin
-    Result := FFreeClient.BeginRequest(AType);
-    lTempClient := FFreeClient;
-    if FFreeClient.FNextFree = FFreeClient then
+    lTempClient := FFreeClient.FNextFree;
+    Result := lTempClient.BeginRequest(AType);
+    if Result <> nil then break;
+    { Result = nil -> no free requesters on next free client }
+    if lTempClient = FFreeClient then
       FFreeClient := nil
     else
-      FFreeClient := FFreeClient.FNextFree;
-    if Result <> nil then break;
+      FFreeClient.FNextFree := lTempClient.FNextFree;
     lTempClient.FNextFree := nil;
   end;
 
