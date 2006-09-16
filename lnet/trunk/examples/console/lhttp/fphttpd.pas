@@ -27,7 +27,7 @@ program fphttpd;
 
 uses
   Classes, lNet,
-{$ifdef UNIX}
+{$ifndef MSWINDOWS}
   BaseUnix, Errors,
 {$endif}
   lWebserver, lHTTPSettings;
@@ -77,19 +77,26 @@ begin
   {$ifndef MSWINDOWS}
   FpSignal(SIGTERM, @HandleTermSignal);
   FpSignal(SIGINT, @HandleTermSignal);
+  FpSignal(SIGHUP, signalhandler(SIG_IGN));
   {$else}
   {$endif}
 end;
 
 function Daemonize: Boolean;
-begin
-  Result:=False;
   {$ifndef MSWINDOWS}
-  if fpfork = 0 then
-    Result:=SetServer
-  else
+var
+  PID: TPid;
+begin
+  PID:=fpFork;
+  if PID = 0 then begin
+    Result:=SetServer;
+    if Result then
+      EnableWriteln:=False;
+  end else if PID < 0 then
     Writeln('Error on fork: ', StrError(fpGetErrno));
   {$else}
+begin
+  Result:=False;
   {$endif}
 end;
 

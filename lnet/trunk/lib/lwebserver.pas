@@ -193,6 +193,9 @@ type
     property PHPCGIHandler: TPHPFastCGIHandler read FPHPCGIHandler;
   end;
 
+var
+  EnableWriteln: Boolean = True;
+
 implementation
 
 { Example handlers }
@@ -209,6 +212,12 @@ var
   CGIPath: string;
   CGIRoot: string;
   PHPCGIBinary: string;
+  
+procedure InternalWrite(const s: string);
+begin
+  if EnableWriteln then
+    Writeln(s);
+end;
 
 function TCGIHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var
@@ -562,7 +571,7 @@ begin
         { add location header as-is to response }
         AddExtraHeader;
       end else
-        writeln('WARNING: unimplemented ''Location'' response received from CGI script');
+        InternalWrite('WARNING: unimplemented ''Location'' response received from CGI script');
     end else 
     if StrIComp(FParsePos, 'Status') = 0 then
     begin
@@ -584,7 +593,7 @@ begin
     begin
       if not TryHTTPDateStrToDateTime(pValue, 
           lServerSocket.ResponseInfo.LastModified) then
-        writeln('WARNING: unable to parse last-modified string from CGI script: ', pValue);
+        InternalWrite('WARNING: unable to parse last-modified string from CGI script: ' + pValue);
     end else
       AddExtraHeader;
     FParsePos := pNextLine;
@@ -855,12 +864,12 @@ end;
 
 procedure TLWebServer.LogAccess(const AMessage: string);
 begin
-  writeln(AMessage);
+  InternalWrite(AMessage);
 end;
 
 procedure TLWebServer.LogError(const AMessage: string; ASocket: TLSocket);
 begin
-  writeln(AMessage);
+  InternalWrite(AMessage);
 end;
 
 initialization
