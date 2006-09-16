@@ -57,6 +57,7 @@ var
   p: TProcess;
   aPort: Word;
   i: Integer;
+  Enviro, s: string;
 begin
   if ParamCount > 1 then begin
     aPort:=StrToInt(ParamStr(2));
@@ -68,6 +69,7 @@ begin
 
     for i:=3 to 10000 do
       CloseSocket(i);
+      
     if CloseSocket(StdInputHandle) <> 0 then
       Halt(LSocketError);
 
@@ -75,8 +77,18 @@ begin
       Halt(LSocketError);
 
     p.CommandLine:=ParamStr(1);
-    if ParamCount > 2 then
-      p.Environment.Add(ParamStr(3));
+    if ParamCount > 2 then begin
+      Enviro:=ParamStr(3);
+      repeat
+        i:=Pos(':', Enviro);
+        if i > 0 then begin
+          s:=Copy(Enviro, 1, i - 1);
+          Delete(Enviro, 1, i);
+        end else
+          s:=Enviro;
+        p.Environment.Add(s);
+      until i = 0;
+    end;
     p.Execute;
 
     TheSocket.Free;
