@@ -3,6 +3,9 @@ program fpFCGI;
 {$mode objfpc}{$H+}
 
 uses
+  {$ifdef MSWINDOWS}
+  WinSock2,
+  {$endif}
   SysUtils, Process, lNet, lEvents, lCommon, Sockets;
 
 type
@@ -30,7 +33,7 @@ procedure TLBlockingSocket.SetOptions;
 var
   Arg: Integer = 1;
 begin
-  if SetSocketOptions(FHandle, SOL_SOCKET, SO_REUSEADDr, Arg, Sizeof(Arg)) = SOCKET_ERROR then
+  if SetSocketOptions(FHandle, SOL_SOCKET, SO_REUSEADDR, Arg, Sizeof(Arg)) = SOCKET_ERROR then
     Bail('SetSockOpt error', LSocketError);
   inherited SetOptions;
 end;
