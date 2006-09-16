@@ -120,6 +120,7 @@ type
 
     procedure Connect; overload;
     procedure ConnectEvent(ASocket: TLHandle); override;
+    procedure DisconnectEvent(ASocket: TLHandle); override;
     procedure ErrorEvent(const Msg: string; ASocket: TLHandle); override;
     function  CreateRequester: TLFastCGIRequest;
     procedure HandleGetValuesResult;
@@ -248,9 +249,9 @@ begin
   FOutputDone := false;
   FStderrDone := false;
   FClient.EndRequest(Self);
-  DoEndRequest;
   {$message warning TODO: do something useful with end request data }
   FClient.Flush;
+  DoEndRequest;
 end;
 
 function TLFastCGIRequest.Get(ABuffer: pchar; ASize: integer): integer;
@@ -489,7 +490,7 @@ begin
   FBufferEnd := FBuffer;
   FRequests := AllocMem(sizeof(TLFastCGIRequest));
   FRequestsCount := 1;
-  FFreeRequest := CreateRequester;
+  FFreeRequest := nil;
   OnReceive := @HandleReceive;
   OnCanSend := @HandleSend;
 end;
@@ -532,6 +533,16 @@ begin
   if FPool <> nil then
     FPool.AddToFreeClients(Self);
 
+  inherited;
+end;
+
+procedure TLFastCGIClient.DisconnectEvent(ASocket: TLHandle);
+var
+  I: integer;
+begin
+  for I := 0 to FNextRequestID-1 do
+    if FRequests[I].FNextFree = nil then
+      FRequests[I].EndRequest;
   inherited;
 end;
 
@@ -725,13 +736,14 @@ end;
 
 function TLFastCGIClient.BeginRequest(AType: integer): TLFastCGIRequest;
 begin
-  if not Connected then
-    Connect;
-
   if FFreeRequest <> nil then
   begin
-    Result := FFreeRequest;
-    FFreeRequest := FFreeRequest.FNextFree;
+    Result := FFreeRequest.FNextFree;
+    if FFreeRequest = FFreeRequest.FNextFree then
+      FFreeRequest := nil
+    else
+      FFreeRequest.FNextFree := FFreeRequest.FNextFree.FNextFree;
+    Result.FNextFree := nil;
   end else
   if FNextRequestID = FRequestsCount then
     exit(nil)
@@ -739,13 +751,19 @@ begin
     Result := CreateRequester;
   end;
 
+  if not Connected then
+    Connect;
+
   Result.SendBeginRequest(AType);
 end;
 
 procedure TLFastCGIClient.EndRequest(ARequest: TLFastCGIRequest);
 begin
-  ARequest.FNextFree := FFreeRequest;
-  FFreeRequest := ARequest;
+  if FFreeRequest <> nil then
+    ARequest.FNextFree := FFreeRequest.FNextFree
+  else
+    FFreeRequest := ARequest;
+  FFreeRequest.FNextFree := ARequest;
   if FPool <> nil then
     FPool.EndRequest(Self);
 end;
@@ -822,7 +840,6 @@ begin
   else
     AClient.FNextFree := FFreeClient.FNextFree;
   FFreeClient.FNextFree := AClient;
-  FFreeClient := AClient;
 end;
 
 procedure TLFastCGIPool.ConnectClients(Sender: TObject);
