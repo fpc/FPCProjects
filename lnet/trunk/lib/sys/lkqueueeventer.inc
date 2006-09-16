@@ -37,7 +37,7 @@ procedure TLKQueueEventer.HandleIgnoreWrite(aHandle: TLHandle);
 const
   OUBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
 begin
-  EV_SET(FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
+  EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
          OUBOOL[aHandle.IgnoreWrite], 0, 0, Pointer(aHandle));
 
   Inc(FFreeSlot);
@@ -49,7 +49,7 @@ procedure TLKQueueEventer.HandleIgnoreRead(aHandle: TLHandle);
 const
   INBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
 begin
-  EV_SET(FChanges[FFreeSlot], aHandle.FHandle, EVFILT_READ,
+  EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_READ,
          INBOOL[aHandle.IgnoreRead], 0, 0, Pointer(aHandle));
 
   Inc(FFreeSlot);
@@ -77,10 +77,6 @@ function TLKQueueEventer.AddHandle(aHandle: TLHandle): Boolean;
 begin
   Result:=inherited AddHandle(aHandle);
 
-  SetLength(aHandle.HandleData, 2);
-  aHandle.HandleData[0]:=nil;
-  aHandle.HandleData[1]:=nil;
-
   if FFreeSlot > Length(FChanges) then
     Inflate;
   if not aHandle.FIgnoreWrite then begin
@@ -88,6 +84,7 @@ begin
            EV_ADD or EV_CLEAR, 0, 0, Pointer(aHandle));
     Inc(FFreeSlot);
   end;
+
   if FFreeSlot > Length(FChanges) then
     Inflate;
   if not aHandle.FIgnoreRead then begin
