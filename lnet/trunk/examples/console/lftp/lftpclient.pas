@@ -25,6 +25,7 @@ type
     function UserString: string;
     function GetAnswer(const s: string; const NoEcho: Boolean = False): string;
     procedure PrintHelp;
+    procedure CleanGetting;
    public
     constructor Create;
     destructor Destroy; override;
@@ -113,6 +114,13 @@ begin
   Writeln('f/F - Feature list');
 end;
 
+procedure TClient.CleanGetting;
+begin
+  if FGetting then
+    FreeAndNil(FFile);
+  FGetting:=False;
+end;
+
 procedure TClient.Run(const Host: string; const Port: Word);
 var
   s, Name, Pass, Dir: string;
@@ -141,8 +149,6 @@ begin
     while not FQuit do begin
       if KeyPressed then case ReadKey of
              #27: FQuit:=True;
-        'l': FCon.List;
-        'L': FCon.Nlst;
              '?': PrintHelp;
         'g', 'G': begin
                     s:=GetAnswer('Filename');
@@ -156,24 +162,66 @@ begin
                       FCon.Retrieve(s);
                     end;
                   end;
+             'l': begin
+                    CleanGetting;
+                    FCon.List;
+                  end;
+             'L': begin
+                    CleanGetting;
+                    FCon.Nlst;
+                  end;
         'p', 'P': begin
+                    CleanGetting;
                     s:=GetAnswer('Filename');
                     if FileExists(Dir + s) then
                       FCon.Put(Dir + s)
                     else
                       Writeln('No such file "', s, '"');
                   end;
-        'b', 'B': FCon.Binary:=not FCon.Binary;
-        's', 'S': FCon.SystemInfo;
-        'h', 'H': FCon.Help(GetAnswer('Help verb'));
-        'x', 'X': FCon.PresentWorkingDirectory;
-        'c', 'C': FCon.ChangeDirectory(GetAnswer('New dir'));
-        'm', 'M': FCon.MakeDirectory(GetAnswer('New dir'));
-        'n', 'N': FCon.Rename(GetAnswer('From'), GetAnswer('To'));
-        'r', 'R': FCon.RemoveDirectory(GetAnswer('Dirname'));
-        'd', 'D': FCon.DeleteFile(GetAnswer('Filename'));
-        'e', 'E': FCon.Echo:=not FCon.Echo;
-        'f', 'F': FCon.FeatureList;
+        'b', 'B': begin
+                    CleanGetting;
+                    FCon.Binary:=not FCon.Binary;
+                  end;
+        's', 'S': begin
+                    CleanGetting;
+                    FCon.SystemInfo;
+                  end;
+        'h', 'H': begin
+                    CleanGetting;
+                    FCon.Help(GetAnswer('Help verb'));
+                  end;
+        'x', 'X': begin
+                    CleanGetting;
+                    FCon.PresentWorkingDirectory;
+                  end;
+        'c', 'C': begin
+                    CleanGetting;
+                    FCon.ChangeDirectory(GetAnswer('New dir'));
+                  end;
+        'm', 'M': begin
+                    CleanGetting;
+                    FCon.MakeDirectory(GetAnswer('New dir'));
+                  end;
+        'n', 'N': begin
+                    CleanGetting;
+                    FCon.Rename(GetAnswer('From'), GetAnswer('To'));
+                  end;
+        'r', 'R': begin
+                    CleanGetting;
+                    FCon.RemoveDirectory(GetAnswer('Dirname'));
+                  end;
+        'd', 'D': begin
+                    CleanGetting;
+                    FCon.DeleteFile(GetAnswer('Filename'));
+                  end;
+        'e', 'E': begin
+                    CleanGetting;
+                    FCon.Echo:=not FCon.Echo;
+                  end;
+        'f', 'F': begin
+                    CleanGetting;
+                    FCon.FeatureList;
+                  end;
       end;
       FCon.CallAction;
     end;

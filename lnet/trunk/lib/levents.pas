@@ -68,7 +68,6 @@ type
     FNext: TLHandle;
     FFreeNext: TLHandle;
     FUserData: Pointer;
-    FHandleData: TArrayP;    // internal usage (kqueue for example)
     procedure SetIgnoreError(const aValue: Boolean);
     procedure SetIgnoreWrite(const aValue: Boolean);
     procedure SetIgnoreRead(const aValue: Boolean);
@@ -89,7 +88,6 @@ type
     property Dispose: Boolean read FDispose write FDispose;
     property Handle: THandle read FHandle write FHandle;
     property Eventer: TLEventer read FEventer;
-    property HandleData: TArrayP read FHandleData;
   end;
 
   { TLEventer }
@@ -185,7 +183,6 @@ end;
 
 constructor TLHandle.Create;
 begin
-  FHandleData:=nil;
   FOnRead:=nil;
   FOnWrite:=nil;
   FOnError:=nil;

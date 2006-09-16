@@ -37,36 +37,24 @@ procedure TLKQueueEventer.HandleIgnoreWrite(aHandle: TLHandle);
 const
   OUBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
 begin
-  if not Assigned(aHandle.HandleData[0]) then begin
-    aHandle.HandleData[0]:=@FChanges[FFreeSlot];
-    Inc(FFreeSlot);
-    if FFreeSlot > Length(FChanges) then
-      Inflate;
-  end;
-
-  EV_SET(aHandle.HandleData[0], aHandle.FHandle, EVFILT_WRITE,
+  EV_SET(FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
          OUBOOL[aHandle.IgnoreWrite], 0, 0, Pointer(aHandle));
 
-  if KEvent(FQueue, aHandle.HandleData[0], 1, nil, 0, nil) < 0 then
-    Bail('Error on KEvent/setignore', LSocketError);
+  Inc(FFreeSlot);
+  if FFreeSlot > Length(FChanges) then
+    Inflate;
 end;
 
 procedure TLKQueueEventer.HandleIgnoreRead(aHandle: TLHandle);
 const
   INBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
 begin
-  if not Assigned(aHandle.HandleData[1]) then begin
-    aHandle.HandleData[1]:=@FChanges[FFreeSlot];
-    Inc(FFreeSlot);
-    if FFreeSlot > Length(FChanges) then
-      Inflate;
-  end;
-
-  EV_SET(aHandle.HandleData[1], aHandle.FHandle, EVFILT_READ,
+  EV_SET(FChanges[FFreeSlot], aHandle.FHandle, EVFILT_READ,
          INBOOL[aHandle.IgnoreRead], 0, 0, Pointer(aHandle));
 
-  if KEvent(FQueue, aHandle.HandleData[1], 1, nil, 0, nil) < 0 then
-    Bail('Error on KEvent/setignore', LSocketError);
+  Inc(FFreeSlot);
+  if FFreeSlot > Length(FChanges) then
+    Inflate;
 end;
 
 procedure TLKQueueEventer.Inflate;
@@ -98,7 +86,6 @@ begin
   if not aHandle.FIgnoreWrite then begin
     EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
            EV_ADD or EV_CLEAR, 0, 0, Pointer(aHandle));
-    aHandle.HandleData[0]:=@FChanges[FFreeSlot];
     Inc(FFreeSlot);
   end;
   if FFreeSlot > Length(FChanges) then
@@ -106,7 +93,6 @@ begin
   if not aHandle.FIgnoreRead then begin
     EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_READ,
            EV_ADD, 0, 0, Pointer(aHandle));
-    aHandle.HandleData[1]:=@FChanges[FFreeSlot];
     Inc(FFreeSlot);
   end;
 end;
