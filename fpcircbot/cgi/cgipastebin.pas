@@ -171,10 +171,12 @@ var
     
     function WordWrap(s: string): string;
     const
-      SEARCH_STRING = '&nbsp;';
+      SEARCH_STRING = '&nbsp;&nbsp;';
     var
       i, n: Integer;
+      Spaced: Boolean;
     begin
+      Spaced:=False;
       i:=0;
       Result:='';
       if Length(s) <= 80 then
@@ -185,13 +187,16 @@ var
           Result:=Result + Copy(s, 1, n + Length(SEARCH_STRING) - 1);
           Delete(s, 1, n + Length(SEARCH_STRING) - 1);
           Inc(i, n + Length(SEARCH_STRING) - 1);
-        end else if n + i > 80 then begin // if space behind 80, add newline and reset counter
+          Spaced:=False;
+        end else if (n + i > 80) and not Spaced then begin // if space behind 80, add newline and reset counter
           Result:=Result + #13#10;
           i:=0;
+          Spaced:=True;
         end else begin // no spaces in part, copy 80, reset counter
           Result:=Result + Copy(s, 1, 80) + #13#10;
           Delete(s, 1, 80);
           i:=0;
+          Spaced:=False;
         end;
       until Length(s) = 0;
     end;
@@ -208,7 +213,7 @@ var
       Result:=#13#10'<br>'#13#10'<a href="cgipastebin">Add new paste</a>'#13#10 +
               '<table summary="paste text" class="paste" width="80%">'#13#10;
       for i:=0 to List.Count-1 do begin
-        s:=StringReplace(List[i], ' ', '&nbsp;', [rfReplaceAll]);
+        s:=StringReplace(List[i], ' ', '&nbsp;&nbsp;', [rfReplaceAll]);
         if (Length(s) > 2) and (s[1] = '\') and (s[2] = '@') then begin
           s:='<span class="selected">' + Copy(s, 3, Length(s)) + '</span>';
           Result:=Result + '<tr><td width="3%"><span class="selected">' +
@@ -271,8 +276,10 @@ var
     WebTemplateOut('html' + PathDelim + 'pastebin2.html', False);
     
     s:=CleanVar('pastetext', False);
-    
-    if (Length(s) > 0) and (Length(CleanVar('sender')) > 0) then begin
+
+    if  (Length(s) > 0)
+    and (Length(CleanVar('sender')) > 0)
+    and (Length(CleanVar('title')) <= 100) then begin
       with PasteQuery do try
         PasteTransaction.EndTransaction;
         PasteTransaction.StartTransaction;
@@ -308,7 +315,7 @@ var
         end;
       end;
     end else begin
-      WebWriteln('No text to paste or no sender<br>'#13#10);
+      WebWriteln('No text to paste or no sender or title too long (max 100)<br>'#13#10);
       WebWriteln('<textarea name="pastetext" rows="15" cols="80">'#13#10 +
                  GetCGIVar_S('pastetext', 0) + #13#10'</textarea><br>'#13#10);
       Webwriteln('<input type="submit" value="Paste">'#13#10);
@@ -336,7 +343,7 @@ begin
   Init;
   
   FillChannels;
-  
+
   if GetCGIVar('dopaste') = 'yes' then
     DoPaste
   else if GetMsgID >= 0 then

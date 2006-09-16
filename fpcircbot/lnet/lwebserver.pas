@@ -190,6 +190,7 @@ type
     property PHPCGIAppName: string read FPHPCGIAppName write FPHPCGIAppName;
     property PHPCGIHost: string read FPHPCGIHost write FPHPCGIHost;
     property PHPCGIPort: integer read FPHPCGIPort write FPHPCGIPort;
+    property PHPCGIHandler: TPHPFastCGIHandler read FPHPCGIHandler;
   end;
 
 implementation
@@ -320,6 +321,7 @@ begin
   begin
     Result := lHandler.HandleDocument(lDocRequest);
     if Result <> nil then exit;
+    if ASocket.ResponseInfo.Status <> hsOK then exit;
     lHandler := lHandler.FNext;
   end;
 
@@ -366,16 +368,25 @@ end;
 function TPHPFastCGIHandler.HandleDocument(const ARequest: TDocumentRequest): TOutputItem;
 var
   lOutput: TFastCGIOutput;
+  fcgiRequest: TLFastCGIRequest;
 begin
   if ExtractFileExt(ARequest.Document) = '.php' then
   begin
-    lOutput := TFastCGIOutput.Create(ARequest.Socket);
-    lOutput.ScriptName := ARequest.URIPath;
-    lOutput.ScriptFileName := ARequest.Document;
-    lOutput.ExtraPath := ARequest.ExtraPath;
-    lOutput.Request := FPool.BeginRequest(FCGI_RESPONDER);
-    lOutput.StartRequest;
-    Result := lOutput;
+    fcgiRequest := FPool.BeginRequest(FCGI_RESPONDER);
+    if fcgiRequest <> nil then
+    begin
+      lOutput := TFastCGIOutput.Create(ARequest.Socket);
+      lOutput.ScriptName := ARequest.URIPath;
+      lOutput.ScriptFileName := ARequest.Document;
+      lOutput.ExtraPath := ARequest.ExtraPath;
+      lOutput.Request := fcgiRequest;
+      lOutput.StartRequest;
+      Result := lOutput;
+    end else begin
+      ARequest.Socket.ResponseInfo.Status := hsInternalError;
+      ARequest.Socket.StartResponse(nil);
+      Result := nil;
+    end;
   end else
     Result := nil;
 end;
@@ -612,7 +623,6 @@ begin
       FParsingHeaders := false;
       CGIOutputError;
       TLHTTPServerSocket(FSocket).StartResponse(Self);
-      exit;
     end;
   end;
   if not FParsingHeaders then
@@ -808,7 +818,7 @@ begin
   inherited;
 
   FPHPCGIHost := 'localhost';
-  FPHPCGIPort := 6000;
+  FPHPCGIPort := GetPHPCGIPort;
   FPHPCGIAppName := PHPCGIBinary;
 
   FFileHandler := TFileHandler.Create;

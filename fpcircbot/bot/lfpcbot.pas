@@ -176,7 +176,7 @@ begin
       if KeyPressed then
        if ReadKey = #27 then
          TimeOut:=MAX_TIME + 1;
-    until Con.Connected or (TimeOut > MAX_TIME);
+    until Con.Connected or (TimeOut > MAX_TIME) or Doer.Quit;
   end;
 
   if TimeOut > MAX_TIME then

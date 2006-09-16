@@ -28,7 +28,7 @@ unit lfastcgi;
 interface
 
 uses
-  classes, sysutils, fastcgi, lnet, levents, lstrbuffer;
+  classes, sysutils, fastcgi, lnet, levents, lstrbuffer, ltimer;
 
 type
   TLFastCGIClient = class;
@@ -62,6 +62,7 @@ type
     procedure HandleReceive;
     procedure HandleReceiveEnd;
     function  HandleSend: boolean;
+    procedure DoEndRequest;
     procedure DoOutput;
     procedure DoStderr;
     procedure EndRequest;
@@ -71,6 +72,7 @@ type
     procedure SetID(const NewID: integer);
   public
     constructor Create;
+    destructor Destroy; override;
     
     procedure AbortRequest;
     function  Get(ABuffer: pchar; ASize: integer): integer;
@@ -93,7 +95,8 @@ type
     property OnStderr: TLFastCGIRequestEvent read FOnStderr write FOnStderr;
   end;
 
-  TFastCGIClientState = (fsConnecting, fsStartingServer, fsHeader, fsData, fsFlush);
+  TFastCGIClientState = (fsIdle, fsConnecting, fsConnectingAgain, 
+    fsStartingServer, fsHeader, fsData, fsFlush);
   
   PLFastCGIClient = ^TLFastCGIClient;
   TLFastCGIClient = class(TLTcp)
@@ -115,6 +118,7 @@ type
     FContentLength: integer;
     FPaddingLength: integer;
 
+    procedure Connect; overload;
     procedure ConnectEvent(ASocket: TLHandle); override;
     procedure ErrorEvent(const Msg: string; ASocket: TLHandle); override;
     function  CreateRequester: TLFastCGIRequest;
@@ -135,19 +139,26 @@ type
     property ReqType: byte read FReqType;
   end;
 
+  TSpawnState = (ssNone, ssSpawning, ssSpawned);
+
   TLFastCGIPool = class(TObject)
   protected
     FClients: PLFastCGIClient;
     FClientsCount: integer;
     FClientsAvail: integer;
+    FClientsMax: integer;
     FFreeClient: TLFastCGIClient;
+    FTimer: TLTimer;
     FEventer: TLEventer;
     FAppName: string;
     FHost: string;
     FPort: integer;
+    FSpawnState: TSpawnState;
     
     procedure AddToFreeClients(AClient: TLFastCGIClient);
     function  CreateClient: TLFastCGIClient;
+    procedure ConnectClients(Sender: TObject);
+    procedure StartServer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -156,9 +167,11 @@ type
     procedure EndRequest(AClient: TLFastCGIClient);
 
     property AppName: string read FAppName write FAppName;
+    property ClientsMax: integer read FClientsMax write FClientsMax;
     property Eventer: TLEventer read FEventer write FEventer;
     property Host: string read FHost write FHost;
     property Port: integer read FPort write FPort;
+    property Timer: TLTimer read FTimer;
   end;
 
   function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
@@ -166,12 +179,7 @@ type
 implementation
 
 uses
-  Sockets
-{$ifdef unix}
-  ,BaseUnix;
-{$else}
-  ;
-{$endif}
+  Process;
 
 { TLFastCGIRequest }
 
@@ -182,6 +190,12 @@ begin
   FBuffer := InitStringBuffer(504);
   FHeader.Version := FCGI_VERSION_1;
   FHeaderPos := -1;
+end;
+
+destructor TLFastCGIRequest.Destroy;
+begin
+  inherited;
+  FreeMem(FBuffer.Memory);
 end;
 
 procedure TLFastCGIRequest.HandleReceive;
@@ -223,13 +237,18 @@ begin
     FOnStderr(Self);
 end;
 
-procedure TLFastCGIRequest.EndRequest;
+procedure TLFastCGIRequest.DoEndRequest;
 begin
   if FOnEndRequest <> nil then
     FOnEndRequest(Self);
+end;
+
+procedure TLFastCGIRequest.EndRequest;
+begin
   FOutputDone := false;
   FStderrDone := false;
   FClient.EndRequest(Self);
+  DoEndRequest;
   {$message warning TODO: do something useful with end request data }
   FClient.Flush;
 end;
@@ -351,6 +370,9 @@ begin
   lRequestID := ID;
   ID := 0;
   SendParam('FCGI_MAX_REQS', '', FCGI_GET_VALUES);
+  { if we're the first connection, ask max. # connections }
+  if FClient.FPool.FClientsAvail = 1 then
+    SendParam('FCGI_MAX_CONNS', '', FCGI_GET_VALUES);
   ID := lRequestID;
   SendPrivateBuffer;
 end;
@@ -379,6 +401,9 @@ function TLFastCGIRequest.SendPrivateBuffer: boolean;
 var
   lWritten: integer;
 begin
+  { nothing to send ? }
+  if FBuffer.Pos-FBuffer.Memory = FBufferSendPos then
+    exit(true);
   { already a queue and we are not first in line ? no use in trying to send then }
   if (FClient.FSendRequest <> nil) and (FClient.FSendRequest <> Self) then 
     exit(false);
@@ -406,10 +431,8 @@ begin
   if (FClient.FSendRequest <> nil) and (FClient.FSendRequest <> Self) then 
     exit(0);
 
-  { non-empty header to be sent? }
-  if FBuffer.Pos <> FBuffer.Memory then
-    if not SendPrivateBuffer then exit(0);
-
+  { header to be sent? }
+  if not SendPrivateBuffer then exit(0);
   if FInputBuffer = nil then exit(0);
 
   lWritten := FClient.Send(FInputBuffer^, FInputSize);
@@ -478,6 +501,7 @@ begin
   for I := 0 to FNextRequestID-1 do
     FRequests[I].Free;
   FreeMem(FRequests);
+  FreeMem(FBuffer);
   inherited;
 end;
 
@@ -501,6 +525,8 @@ end;
 
 procedure TLFastCGIClient.ConnectEvent(ASocket: TLHandle);
 begin
+  if FState = fsStartingServer then
+    FPool.FSpawnState := ssSpawned;
   FState := fsHeader;
   FRequest.SendGetValues;
   if FPool <> nil then
@@ -511,18 +537,34 @@ end;
 
 procedure TLFastCGIClient.ErrorEvent(const Msg: string; ASocket: TLHandle);
 begin
+  if (FState = fsConnectingAgain) 
+    or ((FState = fsConnecting) and (FPool.FSpawnState = ssSpawned)) then
+  begin
+    FRequest.DoEndRequest;
+    EndRequest(FRequest);
+    FState := fsIdle;
+  end else
   if FState = fsConnecting then
   begin
+    FPool.StartServer;
     FState := fsStartingServer;
-    SpawnFCGIProcess(FPool.AppName, '', FPool.Port);
   end;
 end;
 
 procedure TLFastCGIClient.HandleGetValuesResult;
 var
-  lNameLen, lValueLen, lMaxReqs, lCode: integer;
+  lNameLen, lValueLen, lIntVal, lCode: integer;
   lBufferPtr: pchar;
   lPrevChar: char;
+
+  procedure GetIntVal;
+  begin
+    lPrevChar := lBufferPtr[lNameLen+lValueLen];
+    lBufferPtr[lNameLen+lValueLen] := #0;
+    Val(lBufferPtr+lNameLen, lIntVal, lCode);
+    lBufferPtr[lNameLen+lValueLen] := lPrevChar;
+  end;
+
 begin
   lBufferPtr := FBufferPos;
   Inc(lBufferPtr, GetFastCGIStringSize(PByte(lBufferPtr), lNameLen));
@@ -530,15 +572,18 @@ begin
   if lBufferPtr + lNameLen + lValueLen > FBufferEnd then exit;
   if StrLComp(lBufferPtr, 'FCGI_MAX_REQS', lNameLen) = 0 then
   begin
-    lPrevChar := lBufferPtr[lNameLen+lValueLen];
-    lBufferPtr[lNameLen+lValueLen] := #0;
-    Val(lBufferPtr+lNameLen, lMaxReqs, lCode);
-    lBufferPtr[lNameLen+lValueLen] := lPrevChar;
-    if (lCode = 0) and (FRequestsCount <> lMaxReqs) then
+    GetIntVal;
+    if (lCode = 0) and (FRequestsCount <> lIntVal) then
     begin
-      FRequestsCount := lMaxReqs;
-      ReallocMem(FRequests, sizeof(TLFastCGIRequest)*lMaxReqs);
+      FRequestsCount := lIntVal;
+      ReallocMem(FRequests, sizeof(TLFastCGIRequest)*lIntVal);
     end;
+  end else
+  if StrLComp(lBufferPtr, 'FCGI_MAX_CONNS', lNameLen) = 0 then
+  begin
+    GetIntVal;
+    if lCode = 0 then
+      FPool.ClientsMax := lIntVal;
   end;
   Inc(lBufferPtr, lNameLen+lValueLen);
   Dec(FContentLength, lBufferPtr-FBufferPos);
@@ -668,14 +713,20 @@ begin
   Result.ID := FNextRequestID;  { request ids start at 1 }
 end;
 
+procedure TLFastCGIClient.Connect;
+begin
+  Connect(FPool.Host, FPool.Port);
+  FRequest := FRequests[0];
+  if FState <> fsStartingServer then
+    FState := fsConnecting
+  else
+    FState := fsConnectingAgain;
+end;
+
 function TLFastCGIClient.BeginRequest(AType: integer): TLFastCGIRequest;
 begin
-  if FRootSock = nil then
-  begin
-    Connect(FPool.Host, FPool.Port);
-    FRequest := FRequests[0];
-    FState := fsConnecting;
-  end;
+  if not Connected then
+    Connect;
 
   if FFreeRequest <> nil then
   begin
@@ -703,6 +754,7 @@ end;
 
 constructor TLFastCGIPool.Create;
 begin
+  FClientsMax := 1;
   inherited;
 end;
 
@@ -713,6 +765,8 @@ begin
   for I := 0 to FClientsAvail-1 do
     FClients[I].Free;
   FreeMem(FClients);
+  if FTimer <> nil then
+    FTimer.Free;
   inherited;
 end;
 
@@ -725,7 +779,7 @@ begin
   end;
   Result := TLFastCGIClient.Create(nil);
   Result.FPool := Self;
-  Result.FEventer := FEventer;
+  Result.Eventer := FEventer;
   FClients[FClientsAvail] := Result;
   Inc(FClientsAvail);
 end;
@@ -737,19 +791,21 @@ begin
   Result := nil;
   while FFreeClient <> nil do
   begin
-    Result := FFreeClient.BeginRequest(AType);
-    lTempClient := FFreeClient;
-    if FFreeClient.FNextFree = FFreeClient then
+    lTempClient := FFreeClient.FNextFree;
+    Result := lTempClient.BeginRequest(AType);
+    if Result <> nil then break;
+    { Result = nil -> no free requesters on next free client }
+    if lTempClient = FFreeClient then
       FFreeClient := nil
     else
-      FFreeClient := FFreeClient.FNextFree;
-    if Result <> nil then break;
+      FFreeClient.FNextFree := lTempClient.FNextFree;
     lTempClient.FNextFree := nil;
   end;
 
   { all clients busy }
   if Result = nil then
-    Result := CreateClient.BeginRequest(AType);
+    if FClientsAvail < FClientsMax then
+      Result := CreateClient.BeginRequest(AType);
 end;
 
 procedure TLFastCGIPool.EndRequest(AClient: TLFastCGIClient);
@@ -769,89 +825,42 @@ begin
   FFreeClient := AClient;
 end;
 
-function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
-{$ifndef MSWINDOWS}
+procedure TLFastCGIPool.ConnectClients(Sender: TObject);
 var
-  PID: TPid;
-
-  procedure HandleChild;
-  var
-    TheSocket: Integer;
-    i: Integer = 1;
-    Addr: TInetSockAddr;
-    ppEnv, ppNil: ppChar;
-    pNil: pChar;
-  begin
-    pNil:=nil;
-    ppNil:=@pNil;
-    if CloseSocket(StdInputHandle) <> 0 then
-      Halt(fpGetErrno);
-      
-    Addr.sin_family:=AF_INET;
-    Addr.sin_addr.s_addr:=htonl(INADDR_ANY);
-    Addr.sin_port:=htons(aPort);
-
-    TheSocket:=fpSocket(AF_INET, SOCK_STREAM, 0);
-    if TheSocket <> 0 then
-      Halt(fpGetErrno);
-
-    if SetSocketOptions(TheSocket, SOL_SOCKET, SO_REUSEADDR, i, SizeOf(i)) < 0 then
-      Halt(fpGetErrno);
-
-    if fpBind(TheSocket, @Addr, SizeOf(Addr)) < 0 then
-      Halt(fpGetErrno);
-
-    if fpListen(TheSocket, 1024) < 0 then
-      Halt(fpGetErrno);
-
-    if TheSocket <> 0 then begin
-      if CloseSocket(0) <> 0 then
-        Halt(fpGetErrno);
-      if fpdup2(TheSocket, 0) <> 0 then
-        Halt(fpGetErrno);
-      if CloseSocket(TheSocket) <> 0 then
-        Halt(fpGetErrno);
-    end;
-
-    if Length(Enviro) > 0 then begin
-      GetMem(ppEnv, SizeOf(PChar) * 2);
-      ppEnv[0]:=pChar(Enviro);
-      ppEnv[1]:=nil;
-    end else
-      ppEnv:=ppNil;
-
-    FpExecve(AppName, ppNil, ppEnv);
-    Halt(fpgeterrno);
-  end;
-
-  function HandleParent: Integer;
-  var
-    Status: Integer;
-  begin
-    Sleep(100);
-    case FpWaitpid(PID, Status, WNOHANG) of
-      0: Exit(0);
-     -1: Exit(fpGetErrno);
-    else begin
-           if not wifexited(Status) then
-             wifsignaled(Status);
-           Exit(Status)
-         end;
-    end;
-  end;
-
+  I: integer;
 begin
-  PID:=fpFork;
-  if PID = 0 then
-    HandleChild
-  else if PID < 0 then
-    Exit(fpGetErrno)
-  else
-    Result:=HandleParent;
-{$else}
+  for I := 0 to FClientsAvail-1 do
+    if FClients[I].FState = fsStartingServer then
+      FClients[I].Connect;
+end;
+
+procedure TLFastCGIPool.StartServer;
 begin
-  Result:=-1;
-{$endif}
+  if FSpawnState = ssNone then
+  begin
+    FSpawnState := ssSpawning;
+    SpawnFCGIProcess(FAppName, '', FPort);
+    if FTimer = nil then
+      FTimer := TLTimer.Create;
+    FTimer.OneShot := true;
+    FTimer.OnTimer := @ConnectClients;
+  end;
+  FTimer.Interval := 2000;
+end;
+
+function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
+var
+  p: TProcess;
+begin
+  if FileExists(ExtractFilePath(ParamStr(0)) + 'fpfcgi') then begin
+    p:=TProcess.Create(nil);
+    p.CommandLine:=ExtractFilePath(ParamStr(0)) + 'fpfcgi ' + AppName + ' ' + IntToStr(aPort) + ' ' + Enviro;
+    p.Execute;
+    if p.Running then
+      Result:=0;
+    p.Free;
+  end else
+    raise Exception.Create('File not found: ' + ExtractFilePath(ParamStr(0)) + 'fpfcgi');
 end;
     
 end.

@@ -642,9 +642,12 @@ begin
     Args:=StringReplace(Arguments, ' ', '+', [rfReplaceAll]);
     if Length(Reciever) > 0 then begin
       if Reciever[1] = '#' then
-        Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' + Copy(Reciever, 2, Length(Reciever)) + '&sender=' + Sender + '&title=' + Args)
+        Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' +
+                Copy(Reciever, 2, Length(Reciever)) + '&sender=' + Sender +
+                '&ancheck=on&title=' + Args)
       else
-        Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' + Reciever + '&sender=' + Sender + '&title=' + Args);
+        Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' +
+                Reciever + '&sender=' + Sender + '&ancheck=on&title=' + Args);
     end;
   end;
   {$else}

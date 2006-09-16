@@ -37,21 +37,24 @@ procedure TLKQueueEventer.HandleIgnoreWrite(aHandle: TLHandle);
 const
   OUBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
 begin
-  EV_SET(aHandle.HandleData[0], aHandle.FHandle, EVFILT_WRITE,
+  EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
          OUBOOL[aHandle.IgnoreWrite], 0, 0, Pointer(aHandle));
-  KEvent(FQueue, aHandle.HandleData[0], 1,
-         nil, 0, nil);
+
+  Inc(FFreeSlot);
+  if FFreeSlot > Length(FChanges) then
+    Inflate;
 end;
 
 procedure TLKQueueEventer.HandleIgnoreRead(aHandle: TLHandle);
 const
   INBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
 begin
-  EV_SET(aHandle.HandleData[1], aHandle.FHandle, EVFILT_READ,
+  EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_READ,
          INBOOL[aHandle.IgnoreRead], 0, 0, Pointer(aHandle));
-  if KEvent(FQueue, aHandle.HandleData[1], 1,
-         nil, 0, nil) < 0 then
-    Bail('Error on KEvent/setignore', LSocketError);
+
+  Inc(FFreeSlot);
+  if FFreeSlot > Length(FChanges) then
+    Inflate;
 end;
 
 procedure TLKQueueEventer.Inflate;
@@ -73,21 +76,20 @@ end;
 function TLKQueueEventer.AddHandle(aHandle: TLHandle): Boolean;
 begin
   Result:=inherited AddHandle(aHandle);
-  SetLength(aHandle.HandleData, 2);
+
   if FFreeSlot > Length(FChanges) then
     Inflate;
   if not aHandle.FIgnoreWrite then begin
     EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
            EV_ADD or EV_CLEAR, 0, 0, Pointer(aHandle));
-    aHandle.HandleData[0]:=@FChanges[FFreeSlot];
     Inc(FFreeSlot);
   end;
+
   if FFreeSlot > Length(FChanges) then
     Inflate;
   if not aHandle.FIgnoreRead then begin
     EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_READ,
            EV_ADD, 0, 0, Pointer(aHandle));
-    aHandle.HandleData[1]:=@FChanges[FFreeSlot];
     Inc(FFreeSlot);
   end;
 end;
@@ -108,18 +110,21 @@ begin
     for i:=0 to n-1 do begin
       Temp:=TLHandle(FEvents[i].uData);
       
-      if (FEvents[i].Flags and EV_ERROR) > 0 then
-        if Assigned(Temp.FOnError) then
-          Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
-
-      if FEvents[i].Filter = EVFILT_WRITE then
-        if Assigned(Temp.FOnWrite) then
+      if  (not Temp.FDispose)
+      and (FEvents[i].Filter = EVFILT_WRITE) then
+        if Assigned(Temp.FOnWrite) and not Temp.IgnoreWrite then
           Temp.FOnWrite(Temp);
 
-      if FEvents[i].Filter = EVFILT_READ then
-        if Assigned(Temp.FOnRead) then
+      if  (not Temp.FDispose)
+      and (FEvents[i].Filter = EVFILT_READ) then
+        if Assigned(Temp.FOnRead) and not Temp.IgnoreRead then
           Temp.FOnRead(Temp);
       
+      if  (not Temp.FDispose)
+      and ((FEvents[i].Flags and EV_ERROR) > 0) then
+        if Assigned(Temp.FOnError) and not Temp.IgnoreError then
+          Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
+
       if Temp.FDispose then
         AddForFree(Temp);
     end;

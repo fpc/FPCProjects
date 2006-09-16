@@ -45,6 +45,8 @@ type
     ceUnsupportedEncoding);
 
 const
+  HTTPDisconnectStatuses = [hsBadRequest, hsRequestTooLong, hsForbidden, 
+    hsInternalError, hsNotAllowed];
   HTTPMethodStrings: array[TLHTTPMethod] of string =
     ('HEAD', 'GET', 'POST', '');
   HTTPParameterStrings: array[TLHTTPParameter] of string =
@@ -219,6 +221,8 @@ type
     procedure ReceiveEvent(aSocket: TLHandle); override;
     procedure CanSendEvent(aSocket: TLHandle); override;
   public
+    destructor Destroy; override;
+
     procedure DelayFree(AOutputItem: TOutputItem);
     procedure LogAccess(const AMessage: string); virtual;
   end;
@@ -1098,7 +1102,8 @@ end;
 
 procedure TLHTTPSocket.WriteBlock;
 begin
-  while FCurrentOutput <> nil do
+  if FCurrentOutput = nil then exit;
+  while true do
   begin
     case FCurrentOutput.WriteBlock of
       wsDone:
@@ -1122,30 +1127,38 @@ begin
       FOutputDone := true;
     end;
     { if not ignoring, then the send buffer is full }
-    if not FIgnoreWrite then break;
-  end;
-  if FOutputDone and (FRequestInputDone or not FKeepAlive) then
-  begin
-    if not FKeepAlive then
-    begin
-      Disconnect;
-      exit;
-    end;
+    if not FIgnoreWrite or not FConnected then
+      break;
 
-    { next request }
-    FRequestInputDone := false;
-    FRequestHeaderDone := false;
-    FOutputDone := false;
-    FRequestPos := FBufferPos;
-    FlushRequest;
-    { rewind buffer pointers if at end of buffer anyway }
-    if FBufferPos = FBufferEnd then
-      PackRequestBuffer;
-
-    if ParseBuffer and IgnoreRead then 
+    if FCurrentOutput = nil then
     begin
-      { end of input buffer reached, try reading more }
-      HandleReceive;
+      if not FOutputDone or (not FRequestInputDone and FKeepAlive) then
+        break;
+
+      if not FKeepAlive then
+      begin
+        Disconnect;
+        exit;
+      end;
+
+      { next request }
+      FRequestInputDone := false;
+      FRequestHeaderDone := false;
+      FOutputDone := false;
+      FRequestPos := FBufferPos;
+      FlushRequest;
+      { rewind buffer pointers if at end of buffer anyway }
+      if FBufferPos = FBufferEnd then
+        PackRequestBuffer;
+
+      if ParseBuffer and IgnoreRead then 
+      begin
+        { end of input buffer reached, try reading more }
+        HandleReceive;
+      end;
+
+      if FCurrentOutput = nil then 
+        break;
     end;
   end;
 end;
@@ -1434,9 +1447,10 @@ var
   lMessage: string;
   lMsgOutput: TMemoryOutput;
 begin
-  if AStatus >= hsBadRequest then
+  if AStatus in HTTPDisconnectStatuses then
     FKeepAlive := false;
   lMessage := HTTPDescriptions[AStatus];
+  FRequestHeaderDone := true;
   FResponseInfo.Status := AStatus;
   FHeaderOut.ContentLength := Length(lMessage);
   FHeaderOut.TransferEncoding := teIdentity;
@@ -1520,6 +1534,12 @@ end;
 
 { TLHTTPConnection }
 
+destructor TLHTTPConnection.Destroy;
+begin
+  FreeDelayFreeItems;
+  inherited;
+end;
+
 procedure TLHTTPConnection.FreeDelayFreeItems;
 var
   lItem: TOutputItem;
@@ -1534,6 +1554,7 @@ end;
 
 procedure TLHTTPConnection.DelayFree(AOutputItem: TOutputItem);
 begin
+  if AOutputItem = nil then exit;
   if FDelayFreeItems <> nil then
     FDelayFreeItems.FPrevDelayFree := AOutputItem;
   AOutputItem.FNextDelayFree := FDelayFreeItems;
