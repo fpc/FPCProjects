@@ -136,7 +136,7 @@ end;
 
 function TLEpollEventer.CallAction: Boolean;
 var
-  i, MasterChanges, Changes, ReadChanges, Tmp: Integer;
+  i, MasterChanges, Changes, ReadChanges: Integer;
   Temp, TempRead: TLHandle;
   MasterEvents: array[0..1] of TEpollEvent;
 begin
@@ -198,7 +198,7 @@ begin
 
           if Temp.FDispose then
             AddForFree(Temp);
-        end;
+        end; // errors
       end;
       FInLoop:=False;
       if Assigned(FFreeRoot) then
