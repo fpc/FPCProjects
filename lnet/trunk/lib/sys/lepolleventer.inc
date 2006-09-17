@@ -204,7 +204,8 @@ begin
       if Assigned(FFreeRoot) then
         FreeHandles;
     end;
-  end;
+  end else if MasterChanges < 0 then
+    Bail('Error on epoll: ', LSocketError);
 end;
 
 function BestEventerClass: TLEventerClass;

@@ -898,6 +898,7 @@ var
 begin
   if FileExists(ExtractFilePath(ParamStr(0)) + 'fpfcgi') then begin
     p:=TProcess.Create(nil);
+    p.InheritHandles:=False; // for windblows
     p.CommandLine:=ExtractFilePath(ParamStr(0)) + 'fpfcgi ' + AppName + ' ' + IntToStr(aPort) + ' ' + Enviro;
     p.Execute;
     if p.Running then
