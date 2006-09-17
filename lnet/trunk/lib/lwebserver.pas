@@ -748,7 +748,7 @@ end;
 
 procedure TFastCGIOutput.CGIOutputError;
 begin
-  TLHTTPServerSocket(FSocket).ResponseInfo.Status := hsNotFound;
+  TLHTTPServerSocket(FSocket).ResponseInfo.Status := hsInternalError;
 end;
 
 procedure TFastCGIOutput.DoneInput;

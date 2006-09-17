@@ -555,7 +555,8 @@ begin
     if FRequests[I].FNextFree = nil then
     begin
       { see if buffer contains request, then assume we can resend that }
-      if FRequests[I].FBufferSendPos > 0 then
+      if (FRequests[I].FBufferSendPos > 0) 
+        or (FRequests[I].FBuffer.Memory = FRequests[I].FBuffer.Pos) then
       begin
         needReconnect := true;
         FRequests[I].FBufferSendPos := 0;
