@@ -251,6 +251,7 @@ type
    
     procedure AddContentLength(ALength: integer);
     function  CalcAvailableBufferSpace: integer;
+    procedure Disconnect; override;
     procedure DoneBuffer(AOutput: TBufferOutput); virtual;
     procedure LogMessage; virtual;
     procedure FlushRequest; virtual;
@@ -705,6 +706,12 @@ begin
 end;
 
 destructor TLHTTPSocket.Destroy;
+begin
+  inherited;
+  FreeMem(FBuffer);
+end;
+
+procedure TLHTTPSocket.Disconnect;
 var
   lOutput: TOutputItem;
 begin
@@ -716,9 +723,6 @@ begin
   end;
   if FCurrentInput <> nil then
     FreeAndNil(FCurrentInput);
-  
-  inherited;
-  FreeMem(FBuffer);
 end;
 
 procedure TLHTTPSocket.DoneBuffer(AOutput: TBufferOutput);

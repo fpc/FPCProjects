@@ -734,7 +734,10 @@ end;
 destructor TFastCGIOutput.Destroy;
 begin
   if FRequest <> nil then
+  begin
+    FRequest.OnEndRequest := nil;
     FRequest.AbortRequest;
+  end;
   inherited;
 end;
 
