@@ -250,6 +250,7 @@ type
     FParameters: TLHTTPParameterArray;
    
     procedure AddContentLength(ALength: integer);
+    function  CalcAvailableBufferSpace: integer;
     procedure DoneBuffer(AOutput: TBufferOutput); virtual;
     procedure LogMessage; virtual;
     procedure FlushRequest; virtual;
@@ -262,6 +263,8 @@ type
     procedure ParseParameterLine(pLineEnd: pchar);
     function  ProcessEncoding: boolean;
     procedure ProcessHeaders; virtual; abstract;
+    procedure RelocateVariable(var AVar: pchar);
+    procedure RelocateVariables; virtual;
     procedure ResetDefaults; virtual;
     function  SetupEncoding(AOutputItem: TBufferOutput): boolean;
     procedure WriteError(AStatus: TLHTTPStatus); virtual;
@@ -292,6 +295,7 @@ type
     procedure FlushRequest; override;
     function  HandleURI: TOutputItem; virtual;
     procedure LogMessage; override;
+    procedure RelocateVariables; override;
     procedure ResetDefaults; override;
     procedure ParseLine(pLineEnd: pchar); override;
     procedure ParseRequestLine(pLineEnd: pchar);
@@ -767,6 +771,11 @@ begin
   ResetDefaults;
 end;
 
+function TLHTTPSocket.CalcAvailableBufferSpace: integer;
+begin
+  Result := FBufferSize-PtrUInt(FBufferEnd-FBuffer)-1;
+end;
+
 procedure TLHTTPSocket.HandleReceive;
 var
   lRead: integer;
@@ -777,14 +786,8 @@ begin
     exit;
   end;
   
-  if ptruint(FBufferEnd-FBuffer) = FBufferSize-1 then
-  begin
-    WriteError(hsRequestTooLong);
-    exit;
-  end;
-
   IgnoreRead := false;
-  lRead := Get(FBufferEnd^, FBufferSize-PtrUInt(FBufferEnd-FBuffer)-1);
+  lRead := Get(FBufferEnd^, CalcAvailableBufferSpace);
   if lRead = 0 then exit;
   Inc(FBufferEnd, lRead);
   FBufferEnd^ := #0;
@@ -792,6 +795,20 @@ begin
 
   if FIgnoreWrite then
     WriteBlock;
+end;
+
+procedure TLHTTPSocket.RelocateVariable(var AVar: pchar);
+begin
+  if AVar = nil then exit;
+  AVar := FBuffer + (AVar - FRequestPos);
+end;
+
+procedure TLHTTPSocket.RelocateVariables;
+var
+  I: TLHTTPParameter;
+begin
+  for I := Low(TLHTTPParameter) to High(TLHTTPParameter) do
+    RelocateVariable(FParameters[I]);
 end;
 
 procedure TLHTTPSocket.PackRequestBuffer;
@@ -812,12 +829,11 @@ begin
   begin
     lBytesLeft := FBufferEnd-FRequestPos;
     FBufferEnd := FBuffer+lBytesLeft;
-    FBufferPos := FBuffer;
+    RelocateVariable(FBufferPos);
     if lBytesLeft > 0 then
     begin
       Move(FRequestPos^, FBuffer^, lBytesLeft);
-      { restart parsing of request }
-      FlushRequest;
+      RelocateVariables;
     end;
     FRequestPos := nil;
   end;
@@ -925,7 +941,10 @@ begin
     pLineEnd := StrScan(FBufferPos, #10);
     if pLineEnd = nil then
     begin
-      PackRequestBuffer;
+      if (FRequestBuffer <> nil) or (FRequestPos <> nil) then
+        PackRequestBuffer
+      else if CalcAvailableBufferSpace = 0 then
+        WriteError(hsRequestTooLong);
       exit(true);
     end;
   
@@ -1231,6 +1250,15 @@ begin
   inherited;
 end;
   
+procedure TLHTTPServerSocket.RelocateVariables;
+begin
+  RelocateVariable(FRequestInfo.Method);
+  RelocateVariable(FRequestInfo.Argument);
+  RelocateVariable(FRequestInfo.QueryParams);
+  RelocateVariable(FRequestInfo.VersionStr);
+  inherited;
+end;
+
 procedure TLHTTPServerSocket.ParseLine(pLineEnd: pchar);
 begin
   if FRequestInfo.RequestType = hmUnknown then
