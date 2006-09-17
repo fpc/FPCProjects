@@ -79,15 +79,18 @@ begin
 end;
 
 procedure TLEpollEventer.HandleIgnoreRead(aHandle: TLHandle);
-const
-  INBOOL: array[Boolean] of Integer = (EPOLLIN or EPOLLPRI, 0);
 var
   lEvent: TEpollEvent;
 begin
   lEvent.data.ptr:=aHandle;
-  lEvent.events:=INBOOL[aHandle.IgnoreRead];
-  if epoll_ctl(FEpollReadFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
-    Bail('Error modifying handle for reads', LSocketError);
+  lEvent.events:=EPOLLIN or EPOLLPRI;
+  if not aHandle.IgnoreRead then begin
+    if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
+      Bail('Error modifying handle for reads', LSocketError);
+  end else begin
+    if epoll_ctl(FEpollReadFD, EPOLL_CTL_DEL, aHandle.FHandle, @lEvent) < 0 then
+      Bail('Error modifying handle for reads', LSocketError);
+  end;
 end;
 
 procedure TLEpollEventer.Inflate;
@@ -105,7 +108,6 @@ end;
 function TLEpollEventer.AddHandle(aHandle: TLHandle): Boolean;
 const
   BASE_BOOL = EPOLLHUP or EPOLLET;
-  INBOOL: array[Boolean] of Integer = (EPOLLIN or EPOLLPRI, 0);
   ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
   OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
 var
@@ -118,9 +120,11 @@ begin
     lEvent.data.ptr:=aHandle;
     if epoll_ctl(FEpollFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
       Bail('Error adding handle to epoll', LSocketError);
-    lEvent.events:=INBOOL[aHandle.IgnoreRead];
-    if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
-      Bail('Error adding handle to epoll', LSocketError);
+    lEvent.events:=EPOLLIN or EPOLLPRI;
+    if not aHandle.IgnoreRead then begin
+      if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
+        Bail('Error adding handle to epoll', LSocketError);
+    end;
     if FCount > High(FEvents) then
       Inflate;
   end;
@@ -194,7 +198,7 @@ begin
           and ((FEvents[i].events and EPOLLERR = EPOLLERR)
           or  (FEvents[i].events and EPOLLHUP = EPOLLHUP)) then
             if Assigned(Temp.FOnError) and not Temp.IgnoreError then
-              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
+              Temp.FOnError(Temp, 'Handle error: ' + LStrError(LSocketError));
 
           if Temp.FDispose then
             AddForFree(Temp);
