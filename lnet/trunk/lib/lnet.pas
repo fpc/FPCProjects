@@ -278,6 +278,7 @@ type
     FCount: Integer;
     function InitSocket(aSocket: TLSocket): TLSocket; override;
     function GetConnected: Boolean; override;
+    function GetConnecting: Boolean;
     procedure ConnectAction(aSocket: TLHandle); override;
     procedure AcceptAction(aSocket: TLHandle); override;
     procedure ReceiveAction(aSocket: TLHandle); override;
@@ -297,6 +298,7 @@ type
     procedure CallAction; override;
     procedure IterReset; override;
     procedure Disconnect; override;
+    property Connecting: Boolean read GetConnecting;
     property OnAccept: TLProc read FOnAccept write FOnAccept;
     property OnConnect: TLProc read FOnConnect write FOnConnect;
   end;
@@ -1122,6 +1124,13 @@ begin
       Exit;
     end else Tmp:=Tmp.NextSock;
   end;
+end;
+
+function TLTcp.GetConnecting: Boolean;
+begin
+  Result:=False;
+  if Assigned(FRootSock) then
+    Result:=FRootSock.Connecting;
 end;
 
 function TLTcp.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
