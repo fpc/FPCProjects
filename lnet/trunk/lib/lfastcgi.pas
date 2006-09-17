@@ -52,6 +52,7 @@ type
     FOutputDone: boolean;
     FStderrDone: boolean;
     FOutputPending: boolean;
+    FHadCanWriteEvent: boolean;
     FNextFree: TLFastCGIRequest;
     FNextSend: TLFastCGIRequest;
     FOnEndRequest: TLFastCGIRequestEvent;
@@ -66,6 +67,7 @@ type
     procedure DoOutput;
     procedure DoStderr;
     procedure EndRequest;
+    procedure RewindBuffer;
     procedure SetContentLength(NewLength: integer);
     procedure SendEmptyRec(AType: integer);
     procedure SendGetValues;
@@ -249,8 +251,8 @@ begin
   FOutputDone := false;
   FStderrDone := false;
   FClient.EndRequest(Self);
-  {$message warning TODO: do something useful with end request data }
   FClient.Flush;
+  RewindBuffer;
   DoEndRequest;
 end;
 
@@ -332,6 +334,7 @@ begin
   SetContentLength(sizeof(lBody));
   AppendString(FBuffer, @FHeader, sizeof(FHeader));
   AppendString(FBuffer, @lBody, sizeof(lBody));
+  FHadCanWriteEvent := false;
 end;
 
 procedure TLFastCGIRequest.SendParam(const AName, AValue: string; AReqType: integer = FCGI_PARAMS);
@@ -375,7 +378,6 @@ begin
   if FClient.FPool.FClientsAvail = 1 then
     SendParam('FCGI_MAX_CONNS', '', FCGI_GET_VALUES);
   ID := lRequestID;
-  SendPrivateBuffer;
 end;
 
 function  TLFastCGIRequest.SendInput(const ABuffer: pchar; ASize: integer): integer;
@@ -398,6 +400,14 @@ begin
   Inc(Result, SendBuffer);
 end;
 
+procedure TLFastCGIRequest.RewindBuffer;
+begin
+  FBufferSendPos := 0;
+  FHeaderPos := -1;
+  { rewind stringbuffer }
+  FBuffer.Pos := FBuffer.Memory;
+end;
+
 function TLFastCGIRequest.SendPrivateBuffer: boolean;
 var
   lWritten: integer;
@@ -406,21 +416,18 @@ begin
   if FBuffer.Pos-FBuffer.Memory = FBufferSendPos then
     exit(true);
   { already a queue and we are not first in line ? no use in trying to send then }
-  if (FClient.FSendRequest <> nil) and (FClient.FSendRequest <> Self) then 
-    exit(false);
-
-  lWritten := FClient.Send(FBuffer.Memory[FBufferSendPos], 
-    FBuffer.Pos-FBuffer.Memory-FBufferSendPos);
-  Inc(FBufferSendPos, lWritten);
-  Result := FBufferSendPos = FBuffer.Pos-FBuffer.Memory;
-  if Result then
+  if (FClient.FSendRequest = nil) or (FClient.FSendRequest = Self) then
   begin
-    { all of headers written }
-    FBufferSendPos := 0;
-    FHeaderPos := -1;
-    { rewind stringbuffer }
-    FBuffer.Pos := FBuffer.Memory;
+    lWritten := FClient.Send(FBuffer.Memory[FBufferSendPos], 
+      FBuffer.Pos-FBuffer.Memory-FBufferSendPos);
+    Inc(FBufferSendPos, lWritten);
+    Result := FBufferSendPos = FBuffer.Pos-FBuffer.Memory;
+    { do not rewind buffer, unless remote side has had chance to disconnect }
+    if Result and FHadCanWriteEvent then
+      RewindBuffer;
   end else
+    Result := false;
+  if not Result then
     FClient.AddToSendQueue(Self);
 end;
 
@@ -434,6 +441,8 @@ begin
 
   { header to be sent? }
   if not SendPrivateBuffer then exit(0);
+  { first write request header, then wait for possible disconnect }
+  if FBufferSendPos > 0 then exit(0);
   if FInputBuffer = nil then exit(0);
 
   lWritten := FClient.Send(FInputBuffer^, FInputSize);
@@ -529,7 +538,6 @@ begin
   if FState = fsStartingServer then
     FPool.FSpawnState := ssSpawned;
   FState := fsHeader;
-  FRequest.SendGetValues;
   if FPool <> nil then
     FPool.AddToFreeClients(Self);
 
@@ -539,11 +547,24 @@ end;
 procedure TLFastCGIClient.DisconnectEvent(ASocket: TLHandle);
 var
   I: integer;
+  needReconnect: boolean;
 begin
+  inherited;
+  needReconnect := false;
   for I := 0 to FNextRequestID-1 do
     if FRequests[I].FNextFree = nil then
-      FRequests[I].EndRequest;
-  inherited;
+    begin
+      { see if buffer contains request, then assume we can resend that }
+      if FRequests[I].FBufferSendPos > 0 then
+      begin
+        needReconnect := true;
+        FRequests[I].FBufferSendPos := 0;
+        FRequests[I].SendPrivateBuffer;
+      end else
+        FRequests[I].EndRequest;
+    end;
+  if needReconnect then 
+    Connect;
 end;
 
 procedure TLFastCGIClient.ErrorEvent(const Msg: string; ASocket: TLHandle);
@@ -577,28 +598,30 @@ var
   end;
 
 begin
-  lBufferPtr := FBufferPos;
-  Inc(lBufferPtr, GetFastCGIStringSize(PByte(lBufferPtr), lNameLen));
-  Inc(lBufferPtr, GetFastCGIStringSize(PByte(lBufferPtr), lValueLen));
-  if lBufferPtr + lNameLen + lValueLen > FBufferEnd then exit;
-  if StrLComp(lBufferPtr, 'FCGI_MAX_REQS', lNameLen) = 0 then
-  begin
-    GetIntVal;
-    if (lCode = 0) and (FRequestsCount <> lIntVal) then
+  repeat
+    lBufferPtr := FBufferPos;
+    Inc(lBufferPtr, GetFastCGIStringSize(PByte(lBufferPtr), lNameLen));
+    Inc(lBufferPtr, GetFastCGIStringSize(PByte(lBufferPtr), lValueLen));
+    if lBufferPtr + lNameLen + lValueLen > FBufferEnd then exit;
+    if StrLComp(lBufferPtr, 'FCGI_MAX_REQS', lNameLen) = 0 then
     begin
-      FRequestsCount := lIntVal;
-      ReallocMem(FRequests, sizeof(TLFastCGIRequest)*lIntVal);
+      GetIntVal;
+      if (lCode = 0) and (FRequestsCount <> lIntVal) then
+      begin
+        FRequestsCount := lIntVal;
+        ReallocMem(FRequests, sizeof(TLFastCGIRequest)*lIntVal);
+      end;
+    end else
+    if StrLComp(lBufferPtr, 'FCGI_MAX_CONNS', lNameLen) = 0 then
+    begin
+      GetIntVal;
+      if lCode = 0 then
+        FPool.ClientsMax := lIntVal;
     end;
-  end else
-  if StrLComp(lBufferPtr, 'FCGI_MAX_CONNS', lNameLen) = 0 then
-  begin
-    GetIntVal;
-    if lCode = 0 then
-      FPool.ClientsMax := lIntVal;
-  end;
-  Inc(lBufferPtr, lNameLen+lValueLen);
-  Dec(FContentLength, lBufferPtr-FBufferPos);
-  FBufferPos := lBufferPtr;
+    Inc(lBufferPtr, lNameLen+lValueLen);
+    Dec(FContentLength, lBufferPtr-FBufferPos);
+    FBufferPos := lBufferPtr;
+  until FContentLength = 0;
 end;
 
 procedure TLFastCGIClient.HandleReceive(ASocket: TLSocket);
@@ -618,15 +641,18 @@ begin
   if FSendRequest = nil then exit;
   lRequest := FSendRequest.FNextSend;
   repeat
+    { assume remote side has had chance to disconnect, clear buffer }
+    lRequest.FHadCanWriteEvent := true;
     if not lRequest.SendPrivateBuffer or not lRequest.HandleSend then
       exit;
+
+    lRequest.FNextSend := nil;
     { only this one left in list ? }
     if FSendRequest = lRequest then
     begin
       FSendRequest := nil;
       exit;
     end else begin
-      lRequest.FNextSend := nil;
       lRequest := lRequest.FNextSend;
       FSendRequest.FNextSend := lRequest;
     end;
@@ -642,7 +668,6 @@ begin
   else
     ARequest.FNextSend := FSendRequest.FNextSend;
   FSendRequest.FNextSend := ARequest;
-  FSendRequest := ARequest;
 end;
 
 procedure TLFastCGIClient.ParseBuffer;
@@ -728,6 +753,8 @@ procedure TLFastCGIClient.Connect;
 begin
   Connect(FPool.Host, FPool.Port);
   FRequest := FRequests[0];
+  if FRequest.FBuffer.Pos = FRequest.FBuffer.Memory then
+    FRequest.SendGetValues;
   if FState <> fsStartingServer then
     FState := fsConnecting
   else
