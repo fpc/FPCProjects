@@ -33,8 +33,6 @@ uses
   {$i sys/osunits.inc}
 
 const
-  { Some internal defaults }
-  LDEFAULT_BACKLOG = 5;
   { Address constants }
   LADDR_ANY = '0.0.0.0';
   LADDR_BR  = '255.255.255.255';

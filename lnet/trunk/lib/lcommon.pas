@@ -40,14 +40,16 @@ const
   {$ELSE}
   INVALID_SOCKET = -1;
   SOCKET_ERROR = -1;
-  LMSG = MSG_NOSIGNAL;
     {$IFDEF LINUX}
+    LMSG = MSG_NOSIGNAL;
     BLOCK_ERROR = 11;
     {$ELSE}
+    LMSG = $20000; // FPC BUG in 2.0.4-
     BLOCK_ERROR = 35;
     {$ENDIF}
   {$ENDIF}
   { Default Values }
+  LDEFAULT_BACKLOG = 5;
   BUFFER_SIZE = 65536;
   
   { Base functions }

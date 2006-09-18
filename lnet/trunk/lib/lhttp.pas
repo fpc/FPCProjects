@@ -715,6 +715,7 @@ procedure TLHTTPSocket.Disconnect;
 var
   lOutput: TOutputItem;
 begin
+  inherited Disconnect;
   while FCurrentOutput <> nil do
   begin
     lOutput := FCurrentOutput;
