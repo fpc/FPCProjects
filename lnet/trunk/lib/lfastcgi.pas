@@ -555,13 +555,15 @@ begin
     if FRequests[I].FNextFree = nil then
     begin
       { see if buffer contains request, then assume we can resend that }
-      if (FRequests[I].FBufferSendPos > 0) 
-        or (FRequests[I].FBuffer.Memory = FRequests[I].FBuffer.Pos) then
+      if FRequests[I].FBufferSendPos > 0 then
       begin
         needReconnect := true;
         FRequests[I].FBufferSendPos := 0;
         FRequests[I].SendPrivateBuffer;
       end else
+      if FRequests[I].FBuffer.Memory = FRequests[I].FBuffer.Pos then
+        needReconnect := true
+      else
         FRequests[I].EndRequest;
     end;
   if needReconnect then 
@@ -735,6 +737,12 @@ begin
   FState := fsFlush;
   if FlushSize(FContentLength) and FlushSize(FPaddingLength) then
   begin
+    { buffer empty? reset }
+    if FBufferPos = FBufferEnd then
+    begin
+      FBufferPos := FBuffer;
+      FBufferEnd := FBuffer;
+    end;
     FState := fsHeader;
     FRequest := nil;
   end;
