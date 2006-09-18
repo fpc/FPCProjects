@@ -59,25 +59,6 @@ begin
   FTimeout:=cInt(Value);
 end;
 
-procedure TLEpollEventer.HandleIgnoreError(aHandle: TLHandle);
-const
-  BASE_BOOL = EPOLLHUP or EPOLLET;
-  ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
-  OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
-var
-  lEvent: TEpollEvent;
-begin
-  lEvent.data.ptr:=aHandle;
-  lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or OUBOOL[aHandle.IgnoreWrite];
-  if epoll_ctl(FEpollFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
-    Bail('Error modifying handle for errors/writes', LSocketError);
-end;
-
-procedure TLEpollEventer.HandleIgnoreWrite(aHandle: TLHandle);
-begin
-  HandleIgnoreError(aHandle);
-end;
-
 procedure TLEpollEventer.HandleIgnoreRead(aHandle: TLHandle);
 var
   lEvent: TEpollEvent;
@@ -85,10 +66,10 @@ begin
   lEvent.data.ptr:=aHandle;
   lEvent.events:=EPOLLIN or EPOLLPRI;
   if not aHandle.IgnoreRead then begin
-    if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
+    if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.Handle, @lEvent) < 0 then
       Bail('Error modifying handle for reads', LSocketError);
   end else begin
-    if epoll_ctl(FEpollReadFD, EPOLL_CTL_DEL, aHandle.FHandle, @lEvent) < 0 then
+    if epoll_ctl(FEpollReadFD, EPOLL_CTL_DEL, aHandle.Handle, @lEvent) < 0 then
       Bail('Error modifying handle for reads', LSocketError);
   end;
 end;
