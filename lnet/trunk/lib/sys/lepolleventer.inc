@@ -87,17 +87,14 @@ begin
 end;
 
 function TLEpollEventer.AddHandle(aHandle: TLHandle): Boolean;
-const
-  BASE_BOOL = EPOLLHUP or EPOLLET;
-  ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
-  OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
+
 var
   lEvent: TEpollEvent;
 begin
   Result:=inherited AddHandle(aHandle);
   if Result then begin
     Result:=False;
-    lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or OUBOOL[aHandle.IgnoreWrite];
+    lEvent.events:=EPOLLHUP or EPOLLET or EPOLLERR or EPOLLOUT;
     lEvent.data.ptr:=aHandle;
     if epoll_ctl(FEpollFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
       Bail('Error adding handle to epoll', LSocketError);
