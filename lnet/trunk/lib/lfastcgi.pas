@@ -52,7 +52,7 @@ type
     FOutputDone: boolean;
     FStderrDone: boolean;
     FOutputPending: boolean;
-    FHadCanWriteEvent: boolean;
+    FMightDisconnect: boolean;
     FNextFree: TLFastCGIRequest;
     FNextSend: TLFastCGIRequest;
     FOnEndRequest: TLFastCGIRequestEvent;
@@ -203,6 +203,7 @@ end;
 
 procedure TLFastCGIRequest.HandleReceive;
 begin
+  FMightDisconnect := false;
   case FClient.ReqType of
     FCGI_STDOUT: DoOutput;
     FCGI_STDERR: DoStderr;
@@ -334,7 +335,7 @@ begin
   SetContentLength(sizeof(lBody));
   AppendString(FBuffer, @FHeader, sizeof(FHeader));
   AppendString(FBuffer, @lBody, sizeof(lBody));
-  FHadCanWriteEvent := false;
+  FMightDisconnect := true;
 end;
 
 procedure TLFastCGIRequest.SendParam(const AName, AValue: string; AReqType: integer = FCGI_PARAMS);
@@ -423,7 +424,7 @@ begin
     Inc(FBufferSendPos, lWritten);
     Result := FBufferSendPos = FBuffer.Pos-FBuffer.Memory;
     { do not rewind buffer, unless remote side has had chance to disconnect }
-    if Result and FHadCanWriteEvent then
+    if Result and not FMightDisconnect then
       RewindBuffer;
   end else
     Result := false;
@@ -468,7 +469,6 @@ end;
 procedure TLFastCGIRequest.DoneParams;
 begin
   SendEmptyRec(FCGI_PARAMS);
-  SendPrivateBuffer;
 end;
 
 procedure TLFastCGIRequest.DoneInput;
@@ -633,6 +633,7 @@ var
 begin
   lRead := Get(FBufferEnd^, DataBufferSize-PtrUInt(FBufferEnd-FBuffer));
   if lRead = 0 then exit;
+  { remote side has had chance to disconnect, clear buffer }
   Inc(FBufferEnd, lRead);
   ParseBuffer;
 end;
@@ -644,8 +645,6 @@ begin
   if FSendRequest = nil then exit;
   lRequest := FSendRequest.FNextSend;
   repeat
-    { assume remote side has had chance to disconnect, clear buffer }
-    lRequest.FHadCanWriteEvent := true;
     if not lRequest.SendPrivateBuffer or not lRequest.HandleSend then
       exit;
 
