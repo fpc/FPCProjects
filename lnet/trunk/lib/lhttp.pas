@@ -790,12 +790,17 @@ begin
     IgnoreRead := true;
     exit;
   end;
-  
-  IgnoreRead := false;
-  lRead := Get(FBufferEnd^, CalcAvailableBufferSpace);
-  if lRead = 0 then exit;
-  Inc(FBufferEnd, lRead);
-  FBufferEnd^ := #0;
+
+  lRead := CalcAvailableBufferSpace;
+  { if buffer has filled up, keep ignoring and continue parsing requests }
+  if lRead > 0 then
+  begin
+    IgnoreRead := false;
+    lRead := Get(FBufferEnd^, lRead);
+    if lRead = 0 then exit;
+    Inc(FBufferEnd, lRead);
+    FBufferEnd^ := #0;
+  end;
   ParseBuffer;
 
   if FIgnoreWrite then
