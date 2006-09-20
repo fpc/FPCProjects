@@ -68,6 +68,7 @@ type
     FNext: TLHandle;
     FFreeNext: TLHandle;
     FUserData: Pointer;
+    FInternalData: Pointer;
     procedure SetIgnoreError(const aValue: Boolean);
     procedure SetIgnoreWrite(const aValue: Boolean);
     procedure SetIgnoreRead(const aValue: Boolean);
@@ -109,6 +110,9 @@ type
     procedure HandleIgnoreError(aHandle: TLHandle); virtual;
     procedure HandleIgnoreWrite(aHandle: TLHandle); virtual;
     procedure HandleIgnoreRead(aHandle: TLHandle); virtual;
+    function GetInternalData(aHandle: TLHandle): Pointer;
+    procedure SetInternalData(aHandle: TLHandle; const aData: Pointer);
+    procedure SetHandleEventer(aHandle: TLHandle);
    public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -165,6 +169,7 @@ end;
 
 procedure TLHandle.SetIgnoreWrite(const aValue: Boolean);
 begin
+  Writeln('Set ignore write: ', aValue, ' from: ', FIgnoreWrite);
   if FIgnoreWrite <> aValue then begin
     FIgnoreWrite:=aValue;
     if Assigned(FEventer) then
@@ -265,7 +270,7 @@ begin
   Temp:=FFreeRoot;
   while Assigned(Temp) do begin
     Temp2:=Temp.FreeNext;
-    Temp.Free;
+    RemoveHandle(Temp);
     Temp:=Temp2;
   end;
   FFreeRoot:=nil;
@@ -285,6 +290,21 @@ end;
 procedure TLEventer.HandleIgnoreRead(aHandle: TLHandle);
 begin
 
+end;
+
+function TLEventer.GetInternalData(aHandle: TLHandle): Pointer;
+begin
+  Result:=aHandle.FInternalData;
+end;
+
+procedure TLEventer.SetInternalData(aHandle: TLHandle; const aData: Pointer);
+begin
+  aHandle.FInternalData:=aData;
+end;
+
+procedure TLEventer.SetHandleEventer(aHandle: TLHandle);
+begin
+  aHandle.FEventer:=Self;
 end;
 
 function TLEventer.AddHandle(aHandle: TLHandle): Boolean;
@@ -450,7 +470,7 @@ begin
         Temp2:=Temp;
         Temp:=Temp.FNext;
         if Temp2.FDispose then
-          Temp2.Free;
+          AddForFree(Temp2);
       end;
     end;
     FInLoop:=False;
