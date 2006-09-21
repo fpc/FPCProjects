@@ -64,7 +64,7 @@ var
   lEvent: TEpollEvent;
 begin
   lEvent.data.ptr:=aHandle;
-  lEvent.events:=EPOLLIN or EPOLLPRI;
+  lEvent.events:=EPOLLIN or EPOLLPRI or EPOLLHUP;
   if not aHandle.IgnoreRead then begin
     if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.Handle, @lEvent) < 0 then
       Bail('Error modifying handle for reads', LSocketError);
@@ -94,11 +94,11 @@ begin
   Result:=inherited AddHandle(aHandle);
   if Result then begin
     Result:=False;
-    lEvent.events:=EPOLLHUP or EPOLLET or EPOLLERR or EPOLLOUT;
+    lEvent.events:=EPOLLET or EPOLLOUT or EPOLLERR;
     lEvent.data.ptr:=aHandle;
     if epoll_ctl(FEpollFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
       Bail('Error adding handle to epoll', LSocketError);
-    lEvent.events:=EPOLLIN or EPOLLPRI;
+    lEvent.events:=EPOLLIN or EPOLLPRI or EPOLLHUP;
     if not aHandle.IgnoreRead then begin
       if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
         Bail('Error adding handle to epoll', LSocketError);
@@ -160,6 +160,7 @@ begin
 
           if  (not TempRead.FDispose)
           and ((FEventsRead[i].events and EPOLLIN = EPOLLIN)
+          or  (FEventsRead[i].events and EPOLLHUP = EPOLLHUP)
           or  (FEventsRead[i].events and EPOLLPRI = EPOLLPRI)) then
             if Assigned(TempRead.FOnRead) and not TempRead.IgnoreRead then
               TempRead.FOnRead(TempRead);
@@ -173,8 +174,7 @@ begin
             Temp:=TLHandle(FEvents[i].data.ptr);
 
           if  (not Temp.FDispose)
-          and ((FEvents[i].events and EPOLLERR = EPOLLERR)
-          or  (FEvents[i].events and EPOLLHUP = EPOLLHUP)) then
+          and (FEvents[i].events and EPOLLERR = EPOLLERR) then
             if Assigned(Temp.FOnError) and not Temp.IgnoreError then
               Temp.FOnError(Temp, 'Handle error: ' + LStrError(LSocketError));
 
