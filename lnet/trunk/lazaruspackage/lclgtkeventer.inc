@@ -1,6 +1,6 @@
 
 uses
-  SysUtils, lCommon;
+  lCommon;
 
 const
   G_IO_IN   =  1;

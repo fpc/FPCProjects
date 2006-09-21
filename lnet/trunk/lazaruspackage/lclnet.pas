@@ -53,10 +53,13 @@ type
 
 implementation
 
-{$ifdef LCLWIN}
+{$ifdef LCLWIN32}
   {$i lclwineventer.inc}
 {$endif}
 {$ifdef LCLGTK}
+  {$i lclgtkeventer.inc}
+{$endif}
+{$ifdef LCLGTK2}
   {$i lclgtkeventer.inc}
 {$endif}
 
