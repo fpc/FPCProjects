@@ -840,11 +840,9 @@ begin
     lBytesLeft := FBufferEnd-FRequestPos;
     FBufferEnd := FBuffer+lBytesLeft;
     RelocateVariable(FBufferPos);
-    if lBytesLeft > 0 then
-    begin
-      Move(FRequestPos^, FBuffer^, lBytesLeft);
-      RelocateVariables;
-    end;
+    RelocateVariables;
+    { include null-terminator, where FBufferEnd is pointing at }
+    Move(FRequestPos^, FBuffer^, lBytesLeft+1);
     FRequestPos := nil;
   end;
   if lFreeBuffer <> nil then
