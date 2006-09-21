@@ -169,7 +169,6 @@ end;
 
 procedure TLHandle.SetIgnoreWrite(const aValue: Boolean);
 begin
-  Writeln('Set ignore write: ', aValue, ' from: ', FIgnoreWrite);
   if FIgnoreWrite <> aValue then begin
     FIgnoreWrite:=aValue;
     if Assigned(FEventer) then
@@ -270,7 +269,7 @@ begin
   Temp:=FFreeRoot;
   while Assigned(Temp) do begin
     Temp2:=Temp.FreeNext;
-    RemoveHandle(Temp);
+    Temp.Free;
     Temp:=Temp2;
   end;
   FFreeRoot:=nil;
@@ -351,7 +350,8 @@ begin
       if aHandle = FRoot then
         FRoot:=aHandle.FNext;
     end else FRoot:=nil;
-    Dec(FCount);
+    if FCount > 0 then
+      Dec(FCount);
   end;
 end;
 
@@ -428,7 +428,7 @@ begin
     MaxHandle:=0;
     ClearSets;
     while Assigned(Temp) do begin
-      if  (not Temp.FDispose        ) // handle still valid
+      if  (not Temp.FDispose       )  // handle still valid
       and (   (not Temp.IgnoreWrite)  // check write or
            or (not Temp.IgnoreRead )  // check read or
            or (not Temp.IgnoreError)) // check for errors
