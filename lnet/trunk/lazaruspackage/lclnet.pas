@@ -29,13 +29,14 @@ interface
 
 uses
   InterfaceBase, LCLIntf, lNet, lEvents;
-  
+
 type
   PLCLHandleInfo = ^TLCLHandleInfo;
   TLCLHandleInfo = record
     Handle: TLHandle;
     Flags: DWord;
     EventHandle: PEventHandler;
+    WinObject: THandle;
   end;
 
   { TLCLEventer }
