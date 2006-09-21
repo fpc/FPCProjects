@@ -59,6 +59,7 @@ type
     procedure RenamePopupClick(Sender: TObject);
     procedure RightViewDblClick(Sender: TObject);
   private
+    FLastN: Integer;
     FList: TStringList;
     FFile: TFileStream;
     FInfoExpected: Boolean;
@@ -194,11 +195,18 @@ begin
 end;
 
 procedure TMainForm.FTPSent(Sender: TLFTPClient; const Bytes: Integer);
+var
+  n: Integer;
 begin
   if Bytes > 0 then begin
     Inc(FDLDone, Bytes);
-    if MemoText.Lines.Count > 0 then
-      MemoText.Lines[MemoText.Lines.Count-1]:=IntToStr(Round(FDLDone / FDLSize * 100)) + '%';
+    if MemoText.Lines.Count > 0 then begin
+      n:=Round(FDLDone / FDLSize * 100);
+      if n <> FLastN then begin
+        MemoText.Lines[MemoText.Lines.Count-1]:=IntToStr(n) + '%';
+        FLastN:=n;
+      end;
+    end;
   end else begin
     if MemoText.Lines.Count > 0 then
       MemoText.Lines[MemoText.Lines.Count-1]:='100%';
@@ -323,21 +331,9 @@ procedure TMainForm.LeftViewDblClick(Sender: TObject);
     Result:=Path;
   end;
 
-  function GetFileSize: Integer;
-  var
-    f: file;
-  begin
-    Result:=1;
-    if FileExists(LeftView.Directory + LeftView.Items[LeftView.ItemIndex]) then begin
-      AssignFile(f, LeftView.Directory + LeftView.Items[LeftView.ItemIndex]);
-      Reset(f, 1);
-      Result:=FileSize(f);
-      CloseFile(f);
-    end;
-  end;
-
 var
   s: string;
+  FF: TFileStream;
 begin
   if ExtractFileName(LeftView.FileName) = '[.]' then
     Exit;
@@ -353,7 +349,10 @@ begin
     LeftView.Directory:=s
   else if FTP.Connected then begin
     FDLDone:=0;
-    FDLSize:=GetFileSize;
+    FF:=TFileStream.Create(LeftView.FileName, fmOpenRead);
+    FDLSize:=FF.Size;
+    FF.Free;
+    FLastN:=0;
     FTP.Put(LeftView.FileName);
   end;
 end;
