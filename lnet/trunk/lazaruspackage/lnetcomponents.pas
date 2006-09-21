@@ -104,14 +104,13 @@ type
 implementation
 
 var
-  LCLEventer: TLEventer;
+  LCLEventer: TLCLEventer;
 
 { TLTCPComponent }
 
 constructor TLTCPComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  SocketClass:=TLCLSocket;
   Eventer:=LCLEventer;
 end;
 
@@ -120,7 +119,6 @@ end;
 constructor TLUDPComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  SocketClass:=TLCLSocket;
   Eventer:=LCLEventer;
 end;
 
@@ -129,7 +127,6 @@ end;
 constructor TLFTPClientComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  SocketClass:=TLCLSocket;
   ControlConnection.Connection.Eventer:=LCLEventer;
   DataConnection.Eventer:=LCLEventer;
 end;
@@ -139,12 +136,11 @@ end;
 constructor TLSMTPClientComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  SocketClass:=TLCLSocket;
   Eventer:=LCLEventer;
 end;
 
 initialization
-  LCLEventer:=TLEventer.Create;
+  LCLEventer:=TLCLEventer.Create;
   
 finalization
   LCLEventer.Free; // it IS required because refcount is +1

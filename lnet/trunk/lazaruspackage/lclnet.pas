@@ -31,41 +31,34 @@ uses
   InterfaceBase, LCLIntf, lNet, lEvents;
   
 type
+  PLCLHandleInfo = ^TLCLHandleInfo;
+  TLCLHandleInfo = record
+    Handle: TLHandle;
+    Flags: DWord;
+    EventHandle: PEventHandler;
+  end;
 
-  { TLCLSocket }
+  { TLCLEventer }
 
-  TLCLSocket = class(TLSocket)
+  TLCLEventer = class(TLEventer)
    protected
-    FEventHandle: PEventHandler;
-    FWinObject: THandle;   // for win32
-    FFlags: DWord;
-    FReferenced: Boolean;
-    function CanSend: Boolean; override;
-    function CanReceive: Boolean; override;
-    procedure SetNonBlock; override;
-    procedure RegisterHandler(const aFlags: DWord);
-
+    procedure HandleIgnoreError(aHandle: TLHandle); override;
+    procedure HandleIgnoreWrite(aHandle: TLHandle); override;
+    procedure HandleIgnoreRead(aHandle: TLHandle); override;
     procedure HandleEvents(aData: PtrInt; aFlags: DWord);
    public
-    constructor Create; override;
-    procedure Disconnect; override;
-    procedure Free; override;
+    function AddHandle(aHandle: TLHandle): Boolean; override;
+    procedure UnplugHandle(aHandle: TLHandle); override;
   end;
-  
+
 implementation
 
-{$ifdef win32}
-  {$i lclsocketwin32.inc}
-{$else}
-  {$i lclsocketgtk.inc}
+{$ifdef LCLWIN}
+  {$i lclwineventer.inc}
 {$endif}
-
-procedure TLCLSocket.Free;
-begin
-  FDispose:=True;
-  if not FReferenced then
-    inherited Free;
-end;
+{$ifdef LCLGTK}
+  {$i lclgtkeventer.inc}
+{$endif}
 
 end.
 
