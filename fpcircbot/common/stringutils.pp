@@ -177,7 +177,7 @@ end;
 
 function return_datetimestamp_sanitize (const DateTimeStamp : String) : String;
 begin
-  Result:=StringReplace(DateTimeStamp, ':', '-', [rfReplaceAll]);
+  Result:=DateTimeStamp;
 	if Length (Result) > 0 then
 	  Result := RemoveOtherChars (Result, ['0'..'9', '-', #32, ':']);
 end;
