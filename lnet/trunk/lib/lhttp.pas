@@ -215,15 +215,11 @@ type
 
   TLHTTPConnection = class(TLTcp)
   protected
-    FDelayFreeItems: TOutputItem;
-
-    procedure FreeDelayFreeItems;
     procedure ReceiveEvent(aSocket: TLHandle); override;
     procedure CanSendEvent(aSocket: TLHandle); override;
   public
     destructor Destroy; override;
 
-    procedure DelayFree(AOutputItem: TOutputItem);
     procedure LogAccess(const AMessage: string); virtual;
   end;
 
@@ -248,11 +244,14 @@ type
     FConnection: TLHTTPConnection;
     FParseBuffer: TParseBufferMethod;
     FParameters: TLHTTPParameterArray;
-   
+    FDelayFreeItems: TOutputItem;
+
     procedure AddContentLength(ALength: integer);
     function  CalcAvailableBufferSpace: integer;
+    procedure DelayFree(AOutputItem: TOutputItem);
     procedure Disconnect; override;
     procedure DoneBuffer(AOutput: TBufferOutput); virtual;
+    procedure FreeDelayFreeItems;
     procedure LogMessage; virtual;
     procedure FlushRequest; virtual;
     procedure PackRequestBuffer;
@@ -488,7 +487,7 @@ begin
     FSocket.FCurrentInput := nil;
     
   if FPrevDelayFree = nil then
-    FSocket.FConnection.FDelayFreeItems := FNextDelayFree
+    FSocket.FDelayFreeItems := FNextDelayFree
   else
     FPrevDelayFree.FNextDelayFree := FNextDelayFree;
   if FNextDelayFree <> nil then
@@ -707,6 +706,7 @@ end;
 
 destructor TLHTTPSocket.Destroy;
 begin
+  FreeDelayFreeItems;
   inherited;
   FreeMem(FBuffer);
 end;
@@ -724,6 +724,27 @@ begin
   end;
   if FCurrentInput <> nil then
     FreeAndNil(FCurrentInput);
+end;
+
+procedure TLHTTPSocket.FreeDelayFreeItems;
+var
+  lItem: TOutputItem;
+begin
+  while FDelayFreeItems <> nil do
+  begin
+    lItem := FDelayFreeItems;
+    FDelayFreeItems := FDelayFreeItems.FNextDelayFree;
+    lItem.Free;
+  end;
+end;
+
+procedure TLHTTPSocket.DelayFree(AOutputItem: TOutputItem);
+begin
+  if AOutputItem = nil then exit;
+  if FDelayFreeItems <> nil then
+    FDelayFreeItems.FPrevDelayFree := AOutputItem;
+  AOutputItem.FNextDelayFree := FDelayFreeItems;
+  FDelayFreeItems := AOutputItem;
 end;
 
 procedure TLHTTPSocket.DoneBuffer(AOutput: TBufferOutput);
@@ -1138,7 +1159,7 @@ begin
         if FCurrentOutput = FLastOutput then
           FLastOutput := nil;
         { some output items may trigger this parse/write loop }
-        FConnection.DelayFree(FCurrentOutput);
+        DelayFree(FCurrentOutput);
         FCurrentOutput := FCurrentOutput.FNext;
       end;
       wsWaitingData:
@@ -1469,7 +1490,7 @@ begin
       WriteHeaders(nil, AOutputItem);
   end else begin
     WriteError(FResponseInfo.Status);
-    FConnection.DelayFree(AOutputItem);
+    DelayFree(AOutputItem);
   end;
 end;
 
@@ -1562,7 +1583,7 @@ begin
   if ADataResponse <> nil then
   begin
     if FRequestInfo.RequestType = hmHead then
-      FConnection.DelayFree(ADataResponse)
+      DelayFree(ADataResponse)
     else
       AddToOutput(ADataResponse);
   end;
@@ -1572,29 +1593,7 @@ end;
 
 destructor TLHTTPConnection.Destroy;
 begin
-  FreeDelayFreeItems;
   inherited;
-end;
-
-procedure TLHTTPConnection.FreeDelayFreeItems;
-var
-  lItem: TOutputItem;
-begin
-  while FDelayFreeItems <> nil do
-  begin
-    lItem := FDelayFreeItems;
-    FDelayFreeItems := FDelayFreeItems.FNextDelayFree;
-    lItem.Free;
-  end;
-end;
-
-procedure TLHTTPConnection.DelayFree(AOutputItem: TOutputItem);
-begin
-  if AOutputItem = nil then exit;
-  if FDelayFreeItems <> nil then
-    FDelayFreeItems.FPrevDelayFree := AOutputItem;
-  AOutputItem.FNextDelayFree := FDelayFreeItems;
-  FDelayFreeItems := AOutputItem;
 end;
 
 procedure TLHTTPConnection.LogAccess(const AMessage: string);
@@ -1604,13 +1603,13 @@ end;
 procedure TLHTTPConnection.ReceiveEvent(aSocket: TLHandle);
 begin
   TLHTTPSocket(aSocket).HandleReceive;
-  FreeDelayFreeItems;
+  TLHTTPSocket(aSocket).FreeDelayFreeItems;
 end;
 
 procedure TLHTTPConnection.CanSendEvent(aSocket: TLHandle);
 begin
   TLHTTPSocket(aSocket).WriteBlock;
-  FreeDelayFreeItems;
+  TLHTTPSocket(aSocket).FreeDelayFreeItems;
 end;
 
 { TLHTTPServer }
