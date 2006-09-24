@@ -30,16 +30,23 @@ interface
 
 uses
   Classes, SysUtils,
-  LCLNet, lNet, lEvents, lFTP, lSMTP;
-
+  LCLNet, lNet, lEvents, lFTP, lSMTP, lHTTP;
+  
 type
   TLSocket = lNet.TLSocket;
   TLConnection = lNet.TLConnection;
   TLNetComponent = TLConnection;
+  
   TLTcp = lNet.TLTcp;
   TLUdp = lNet.TLUdp;
+  
   TLFTPClient = lFTP.TLFTPClient;
+  
   TLSMTPClient = lSMTP.TLSMTPClient;
+  
+  TLHTTPClientSocket = lHTTP.TLHTTPClientSocket;
+  TLHTTPClient = lHTTP.TLHTTPClient;
+  TLHTTPMethod = lHTTP.TLHTTPMethod;
 
   TLErrorProc = procedure(const msg: string; aSocket: TLSocket) of object;
   TLProc = procedure(aSocket: TLSocket) of object;
@@ -48,6 +55,10 @@ type
   TLFTPClientCallback = procedure (Sender: TLFTPClient) of object;
 
   TLSMTPClientCallback = procedure (Sender: TLSMTPClient) of object;
+  
+  TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
+  TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
+  TLHTTPClientProc = procedure(ASocket: TLHTTPClientSocket) of object;
 
   { TLTCPComponent }
 
@@ -100,6 +111,24 @@ type
     property OnError;
     property PipeLine;
   end;
+  
+  { TLHTTPClientComponent }
+
+  TLHTTPClientComponent = class(TLHTTPClient)
+   public
+    constructor Create(aOwner: TComponent); override;
+   published
+    property Host;
+    property Method;
+    property Port;
+    property URI;
+    property OnCanWrite;
+    property OnDoneInput;
+    property OnInput;
+    property OnProcessHeaders;
+    property OnDisconnect;
+    property OnError;
+  end;
 
 implementation
 
@@ -134,6 +163,14 @@ end;
 { TLSMTPCientComponent }
 
 constructor TLSMTPClientComponent.Create(aOwner: TComponent);
+begin
+  inherited Create(aOwner);
+  Eventer:=LCLEventer;
+end;
+
+{ TLHTTPClientComponent }
+
+constructor TLHTTPClientComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   Eventer:=LCLEventer;

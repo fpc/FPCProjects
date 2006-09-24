@@ -1724,8 +1724,10 @@ end;
 
 destructor TLHTTPClientSocket.Destroy;
 begin
-  TClientOutput(FCurrentInput).FPersistent := false;
-  FreeAndNil(FCurrentInput);
+  if Assigned(FCurrentInput) then begin
+    TClientOutput(FCurrentInput).FPersistent := false;
+    FreeAndNil(FCurrentInput);
+  end;
   inherited;
 end;
 
@@ -1845,6 +1847,7 @@ end;
 
 constructor TLHTTPClient.Create(AOwner: TComponent);
 begin
+  FPort:=80;
   inherited;
 
   SocketClass := TLHTTPClientSocket;
