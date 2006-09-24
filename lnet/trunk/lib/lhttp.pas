@@ -1486,7 +1486,7 @@ begin
 
   if FResponseInfo.Status = hsOK then
   begin
-    if SetupEncoding(AOutputItem) then
+    if (FRequestInfo.RequestType = hmHead) or SetupEncoding(AOutputItem) then
       WriteHeaders(nil, AOutputItem);
   end else begin
     WriteError(FResponseInfo.Status);
