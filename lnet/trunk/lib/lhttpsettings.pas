@@ -209,7 +209,7 @@ end;
 initialization
   CurDir:=ExtractFilePath(ParamStr(0));
   {$ifdef MSWINDOWS}
-  HomeDir:=GetEnvironmentVariable('HOMEDRIVE') + PathDelim +
+  HomeDir:=GetEnvironmentVariable('HOMEDRIVE') +
            GetEnvironmentVariable('HOMEPATH') + PathDelim + 'fphttpd' + PathDelim;
   {$else}
   HomeDir:=GetEnvironmentVariable('HOME') + PathDelim + '.fphttpd' + PathDelim;

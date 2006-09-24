@@ -104,7 +104,9 @@ procedure Run(const BG: Boolean);
 begin
   if BG then begin
     if Daemonize then
-      MainLoop;
+      MainLoop
+    else
+      Writeln('Unable to start daemon/service, please try with -c');
   end else if SetServer then
     MainLoop;
   Server.Free;
