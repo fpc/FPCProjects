@@ -1851,6 +1851,7 @@ begin
   inherited;
 
   SocketClass := TLHTTPClientSocket;
+  FRequest.Method := hmGet;
 end;
 
 procedure TLHTTPClient.DoDoneInput(ASocket: TLHTTPClientSocket);
