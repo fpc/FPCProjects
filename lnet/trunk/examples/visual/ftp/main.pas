@@ -255,6 +255,7 @@ begin
   FInfoExpected:=False;
   FList:=TStringList.Create;
   FFile:=nil;
+  LeftView.Mask:='*';
   LeftView.Directory:=Dir;
   CreateFilePath:='';
 end;

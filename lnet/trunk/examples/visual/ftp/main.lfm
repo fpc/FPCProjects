@@ -4,9 +4,11 @@ object MainForm: TMainForm
   Top = 55
   Width = 567
   HorzScrollBar.Page = 566
-  VertScrollBar.Page = 589
+  VertScrollBar.Page = 598
   ActiveControl = EditIP
   Caption = 'FTP Test Client'
+  ClientHeight = 599
+  ClientWidth = 567
   Constraints.MaxHeight = 618
   Constraints.MaxWidth = 567
   Constraints.MinHeight = 618
@@ -17,18 +19,18 @@ object MainForm: TMainForm
   OnKeyDown = FormKeyDown
   object LabelHost: TLabel
     Left = 8
-    Height = 15
+    Height = 14
     Top = 464
-    Width = 67
+    Width = 51
     Caption = 'HostName'
     Color = clNone
     ParentColor = False
   end
   object LabelPort: TLabel
     Left = 245
-    Height = 15
+    Height = 14
     Top = 464
-    Width = 27
+    Width = 20
     Caption = 'Port'
     Color = clNone
     ParentColor = False
@@ -64,6 +66,7 @@ object MainForm: TMainForm
     Width = 272
     ExtendedSelect = False
     FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
+    Mask = '*'
     OnDblClick = LeftViewDblClick
     PopupMenu = PopupLeft
     TabOrder = 3
@@ -77,7 +80,6 @@ object MainForm: TMainForm
     PopupMenu = PopupRight
     Sorted = True
     TabOrder = 4
-    TopIndex = -1
   end
   object ButtonDisconnect: TButton
     Left = 456
@@ -91,10 +93,11 @@ object MainForm: TMainForm
   end
   object MemoText: TMemo
     Height = 102
-    Top = 488
+    Top = 497
     Width = 567
     Align = alBottom
     ReadOnly = True
+    ScrollBars = ssAutoVertical
     TabOrder = 6
   end
   object MainMenu: TMainMenu
