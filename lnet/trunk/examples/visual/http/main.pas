@@ -33,6 +33,7 @@ type
       ASize: dword): dword;
     procedure HTTPClientProcessHeaders(ASocket: TLHTTPClientSocket);
   private
+    procedure AppendToMemo(aMemo: TMemo; const aText: string);
     { private declarations }
   public
     { public declarations }
@@ -55,7 +56,7 @@ end;
 
 procedure TMainForm.HTTPClientDisconnect(aSocket: TLSocket);
 begin
-  MemoStatus.Append('Disconnected.');
+  AppendToMemo(MemoStatus, 'Disconnected.');
 end;
 
 procedure TMainForm.ButtonSendRequestClick(Sender: TObject);
@@ -75,29 +76,31 @@ end;
 procedure TMainForm.HTTPClientDoneInput(ASocket: TLHTTPClientSocket);
 begin
   aSocket.Disconnect;
-  MemoStatus.Append('Finished.');
+  AppendToMemo(MemoStatus, 'Finished.');
 end;
 
 function TMainForm.HTTPClientInput(ASocket: TLHTTPClientSocket; ABuffer: pchar;
   ASize: dword): dword;
-var
-  s: string;
 begin
-  SetLength(s, aSize);
-  Move(aBuffer^, s[1], aSize);
-  MemoHTML.Append(s);
-  MemoStatus.Append(IntToStr(ASize) + '...');
+  AppendToMemo(MemoHTML, aBuffer);
+  AppendToMemo(MemoStatus, IntToStr(ASize) + '...');
+  Result:=aSize; // tell the http buffer we read it all
 end;
 
 procedure TMainForm.HTTPClientProcessHeaders(ASocket: TLHTTPClientSocket);
 begin
-  MemoStatus.Append('Response: ' + IntToStr(HTTPStatusCodes[ASocket.ResponseStatus]) +
+  AppendToMemo(MemoStatus, 'Response: ' + IntToStr(HTTPStatusCodes[ASocket.ResponseStatus]) +
                     ' ' + ASocket.ResponseReason + ', data...');
+end;
+
+procedure TMainForm.AppendToMemo(aMemo: TMemo; const aText: string);
+begin
+  aMemo.Append(aText);
+  aMemo.SelStart:=Length(aMemo.Text);
 end;
 
 initialization
   {$I main.lrs}
-  {$error Bugged, wait for new release shortly}
 
 end.
 
