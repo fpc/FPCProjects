@@ -1,0 +1,13 @@
+24.08.2006 - 0.4.0 preparations for 0.4 release, cleanification of examples
+
+12.03.2006 - 0.4.0 fixed epoll and kqueue
+
+16.02.2006 - 0.4.0 added eventer support with kqueue and epoll for BSDs and Linux. Changed internal layout a bit and added SMTP and PING protocols. Neli added http server class/component and fphttpd daemon.
+
+22.01.2006 - 0.3.1 "stable" is out now. Unified handling of events between platforms and visual/non-visual lnet. Added documentation and FAQ to page. Fixed disconnect bug.
+
+14.01.2006 - Prerelease has been overhauled. New style of socket event handling permitted simplifications between LCL and Select models. Removed CallConnections and connectionlist.
+
+05.01.2006 - Prerelease for "visual" 0.3/2.4.0 version. Lots of API changes (post 2.4.0 will be STABLE, no more changes) and fixed send issues. OnReceive now only informes of possible Receive call. User must use Get<> functions. (saves time and memory because no internal buffer is used)
+
+22.12.2005 - Fixed ugly send bug which cause data loss on network overload 
