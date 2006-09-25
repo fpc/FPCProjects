@@ -48,6 +48,7 @@ object MainForm: TMainForm
       Height = 23
       Top = 40
       Width = 144
+      OnKeyPress = EditHostKeyPress
       TabOrder = 0
     end
     object EditURI: TEdit
@@ -55,6 +56,7 @@ object MainForm: TMainForm
       Height = 23
       Top = 93
       Width = 144
+      OnKeyPress = EditHostKeyPress
       TabOrder = 1
     end
     object ButtonSendRequest: TButton
@@ -72,6 +74,7 @@ object MainForm: TMainForm
       Height = 23
       Top = 144
       Width = 144
+      OnKeyPress = EditHostKeyPress
       TabOrder = 3
       Text = '80'
     end

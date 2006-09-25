@@ -12,18 +12,20 @@ LazarusResources.Add('TMainForm','FORMDATA',[
   +'Width'#2#22#7'Caption'#6#3'URI'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#6
   +'TLabel'#9'LabelPort'#4'Left'#2#11#6'Height'#2#14#3'Top'#3#128#0#5'Width'#2
   +#25#7'Caption'#6#4'Port'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#5'TEdit'
-  +#8'EditHost'#4'Left'#2#11#6'Height'#2#23#3'Top'#2'('#5'Width'#3#144#0#8'TabO'
-  +'rder'#2#0#0#0#5'TEdit'#7'EditURI'#4'Left'#2#11#6'Height'#2#23#3'Top'#2']'#5
-  +'Width'#3#144#0#8'TabOrder'#2#1#0#0#7'TButton'#17'ButtonSendRequest'#4'Left'
-  +#2#11#6'Height'#2#25#3'Top'#3#176#0#5'Width'#3#144#0#25'BorderSpacing.InnerB'
-  +'order'#2#4#7'Caption'#6#12'Send Request'#7'OnClick'#7#22'ButtonSendRequestC'
-  +'lick'#8'TabOrder'#2#2#0#0#5'TEdit'#8'EditPort'#4'Left'#2#11#6'Height'#2#23#3
-  +'Top'#3#144#0#5'Width'#3#144#0#8'TabOrder'#2#3#4'Text'#6#2'80'#0#0#0#5'TMemo'
-  +#10'MemoStatus'#6'Height'#2'g'#3'Top'#3#200#1#5'Width'#3#221#1#7'Anchors'#11
-  +#6'akLeft'#8'akBottom'#0#8'TabOrder'#2#1#0#0#5'TMemo'#8'MemoHTML'#6'Height'#3
-  +#200#1#5'Width'#3#221#1#8'TabOrder'#2#2#0#0#21'TLHTTPClientComponent'#10'HTT'
-  +'PClient'#4'Port'#2'P'#11'OnDoneInput'#7#19'HTTPClientDoneInput'#7'OnInput'#7
-  +#15'HTTPClientInput'#16'OnProcessHeaders'#7#24'HTTPClientProcessHeaders'#12
-  +'OnDisconnect'#7#20'HTTPClientDisconnect'#7'OnError'#7#15'HTTPClientError'#4
-  +'left'#3#16#2#3'top'#3'h'#2#0#0#0
+  +#8'EditHost'#4'Left'#2#11#6'Height'#2#23#3'Top'#2'('#5'Width'#3#144#0#10'OnK'
+  +'eyPress'#7#16'EditHostKeyPress'#8'TabOrder'#2#0#0#0#5'TEdit'#7'EditURI'#4'L'
+  +'eft'#2#11#6'Height'#2#23#3'Top'#2']'#5'Width'#3#144#0#10'OnKeyPress'#7#16'E'
+  +'ditHostKeyPress'#8'TabOrder'#2#1#0#0#7'TButton'#17'ButtonSendRequest'#4'Lef'
+  +'t'#2#11#6'Height'#2#25#3'Top'#3#176#0#5'Width'#3#144#0#25'BorderSpacing.Inn'
+  +'erBorder'#2#4#7'Caption'#6#12'Send Request'#7'OnClick'#7#22'ButtonSendReque'
+  +'stClick'#8'TabOrder'#2#2#0#0#5'TEdit'#8'EditPort'#4'Left'#2#11#6'Height'#2
+  +#23#3'Top'#3#144#0#5'Width'#3#144#0#10'OnKeyPress'#7#16'EditHostKeyPress'#8
+  +'TabOrder'#2#3#4'Text'#6#2'80'#0#0#0#5'TMemo'#10'MemoStatus'#6'Height'#2'g'#3
+  +'Top'#3#200#1#5'Width'#3#221#1#7'Anchors'#11#6'akLeft'#8'akBottom'#0#8'TabOr'
+  +'der'#2#1#0#0#5'TMemo'#8'MemoHTML'#6'Height'#3#200#1#5'Width'#3#221#1#8'TabO'
+  +'rder'#2#2#0#0#21'TLHTTPClientComponent'#10'HTTPClient'#4'Port'#2'P'#11'OnDo'
+  +'neInput'#7#19'HTTPClientDoneInput'#7'OnInput'#7#15'HTTPClientInput'#16'OnPr'
+  +'ocessHeaders'#7#24'HTTPClientProcessHeaders'#12'OnDisconnect'#7#20'HTTPClie'
+  +'ntDisconnect'#7'OnError'#7#15'HTTPClientError'#4'left'#3#16#2#3'top'#3'h'#2
+  +#0#0#0
 ]);
