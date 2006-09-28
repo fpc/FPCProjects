@@ -382,6 +382,7 @@ type
 	end;
 
 {$ifdef FPC}
+(*Since fpc-2.1.1 r4618 this is not necessary anymore, because TCollection.BeginUpdate .EndUpdate are virtual now.
    TOwnedCollection = class(TCollection)
       private
 	      { Private Declarations }
@@ -400,6 +401,7 @@ type
          procedure BeginUpdate; virtual;
          procedure EndUpdate; virtual;
    end;
+ *)
 {$endif}
 
 	// TGLNodes
@@ -1073,6 +1075,7 @@ end;
 // ------------------ TOwnedCollection ------------------
 // ------------------
 {$ifdef FPC}
+(*Since fpc-2.1.1 r4618 this is not necessary anymore, because TCollection.BeginUpdate .EndUpdate ar virtual now.
 // Create
 //
 constructor TOwnedCollection.Create(AOwner: TPersistent; ItemClas: TCollectionItemClass);
@@ -1102,6 +1105,7 @@ begin
    Dec(FUpdateCount);
    Assert(FUpdateCount>=0, 'Unabalanced Begin/EndUpdate');
 end;
+*)
 {$endif}
 // ------------------
 // ------------------ TGLNodes ------------------
