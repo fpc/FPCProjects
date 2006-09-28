@@ -1,0 +1,104 @@
+object MainForm: TMainForm
+  Left = 264
+  Height = 559
+  Top = 143
+  Width = 647
+  HorzScrollBar.Page = 646
+  VertScrollBar.Page = 558
+  Caption = 'HTTP Client Test'
+  ClientHeight = 559
+  ClientWidth = 647
+  object MenuPanel: TPanel
+    Left = 477
+    Height = 559
+    Width = 170
+    Align = alRight
+    ClientHeight = 559
+    ClientWidth = 170
+    TabOrder = 0
+    object LabelHost: TLabel
+      Left = 11
+      Height = 14
+      Top = 16
+      Width = 60
+      Caption = 'Hostname'
+      Color = clNone
+      ParentColor = False
+    end
+    object LabelURI: TLabel
+      Left = 11
+      Height = 14
+      Top = 72
+      Width = 22
+      Caption = 'URI'
+      Color = clNone
+      ParentColor = False
+    end
+    object LabelPort: TLabel
+      Left = 11
+      Height = 14
+      Top = 128
+      Width = 25
+      Caption = 'Port'
+      Color = clNone
+      ParentColor = False
+    end
+    object EditHost: TEdit
+      Left = 11
+      Height = 23
+      Top = 40
+      Width = 144
+      OnKeyPress = EditHostKeyPress
+      TabOrder = 0
+    end
+    object EditURI: TEdit
+      Left = 11
+      Height = 23
+      Top = 93
+      Width = 144
+      OnKeyPress = EditHostKeyPress
+      TabOrder = 1
+    end
+    object ButtonSendRequest: TButton
+      Left = 11
+      Height = 25
+      Top = 176
+      Width = 144
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Send Request'
+      OnClick = ButtonSendRequestClick
+      TabOrder = 2
+    end
+    object EditPort: TEdit
+      Left = 11
+      Height = 23
+      Top = 144
+      Width = 144
+      OnKeyPress = EditHostKeyPress
+      TabOrder = 3
+      Text = '80'
+    end
+  end
+  object MemoStatus: TMemo
+    Height = 103
+    Top = 456
+    Width = 477
+    Anchors = [akLeft, akBottom]
+    TabOrder = 1
+  end
+  object MemoHTML: TMemo
+    Height = 456
+    Width = 477
+    TabOrder = 2
+  end
+  object HTTPClient: TLHTTPClientComponent
+    Port = 80
+    OnDoneInput = HTTPClientDoneInput
+    OnInput = HTTPClientInput
+    OnProcessHeaders = HTTPClientProcessHeaders
+    OnDisconnect = HTTPClientDisconnect
+    OnError = HTTPClientError
+    left = 528
+    top = 616
+  end
+end
