@@ -1,0 +1,212 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 362
+  ClientWidth = 471
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 470
+  VertScrollBar.Page = 361
+  Left = 251
+  Height = 362
+  Top = 152
+  Width = 471
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = 8421440
+    Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
+    FieldOfView = 149.1151123046875
+    Align = alClient
+    Height = 362
+    Width = 471
+  end
+  object Panel1: TPanel
+    ClientHeight = 57
+    ClientWidth = 121
+    FullRepaint = False
+    TabOrder = 0
+    Left = 8
+    Height = 57
+    Top = 8
+    Width = 121
+    object CBShadows: TCheckBox
+      Caption = 'Shadows'
+      Checked = True
+      OnClick = CBShadowsClick
+      State = cbChecked
+      TabOrder = 0
+      Left = 16
+      Height = 17
+      Top = 8
+      Width = 97
+    end
+    object CBStencil: TCheckBox
+      Caption = 'Stencil Buffer'
+      Checked = True
+      OnClick = CBStencilClick
+      State = cbChecked
+      TabOrder = 1
+      Left = 16
+      Height = 17
+      Top = 32
+      Width = 97
+    end
+  end
+  object GLScene1: TGLScene
+    left = 344
+    top = 8
+    object DCShadowing: TGLDummyCube
+      CubeSize = 1
+      object Cube1: TGLCube
+        Position.Coordinates = {
+          000000000000003F000000000000803F
+        }
+        Up.Coordinates = {
+          00000000FFFF7F3F1AF6953100000000
+        }
+        CubeSize = {
+          00000040CDCC4C3E3333333F
+        }
+      end
+      object Sphere1: TGLSphere
+        Radius = 0.200000002980232
+        Position.Coordinates = {
+          000000000000803F0000C0BF0000803F
+        }
+      end
+      object Torus1: TGLTorus
+        MajorRadius = 0.300000011920929
+        MinorRadius = 0.100000001490116
+        Rings = 24
+        Sides = 12
+        Direction.Coordinates = {
+          00000000B28F703F441DAF3E00000000
+        }
+        Position.Coordinates = {
+          000000000000803F0000C03F0000803F
+        }
+        Up.Coordinates = {
+          00000000441DAF3EB28F70BF00000000
+        }
+      end
+    end
+    object DCLight: TGLDummyCube
+      CubeSize = 1
+      object GLLightSource1: TGLLightSource
+        ConstAttenuation = 1
+        Position.Coordinates = {
+          0000000000004040000000000000803F
+        }
+        SpotCutOff = 180
+        object Sphere2: TGLSphere
+          Radius = 0.100000001490116
+          Slices = 8
+          Stacks = 8
+          Material.FrontProperties.Ambient.Color = {
+            0000000000000000000000000000803F
+          }
+          Material.FrontProperties.Diffuse.Color = {
+            0000000000000000000000000000803F
+          }
+          Material.FrontProperties.Emission.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+        end
+      end
+    end
+    object DCCameraTarget: TGLDummyCube
+      CubeSize = 1
+      Position.Coordinates = {
+        000000003333333F000000000000803F
+      }
+      object GLCamera1: TGLCamera
+        DepthOfView = 100
+        FocalLength = 50
+        TargetObject = DCCameraTarget
+        Position.Coordinates = {
+          0000A04000008040000040400000803F
+        }
+      end
+    end
+    object GLShadowPlane1: TGLShadowPlane
+      ShadowingObject = DCShadowing
+      ShadowedLight = GLLightSource1
+      Height = 8
+      Width = 4
+      XTiles = 4
+      YTiles = 8
+      Style = [psTileTexture]
+      Material.MaterialLibrary = GLMaterialLibrary
+      Material.LibMaterialName = 'Marble'
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
+    end
+    object GLShadowPlane2: TGLShadowPlane
+      ShadowingObject = DCShadowing
+      ShadowedLight = GLLightSource1
+      Height = 4
+      Width = 4
+      XTiles = 4
+      YTiles = 4
+      Style = [psTileTexture]
+      Material.MaterialLibrary = GLMaterialLibrary
+      Material.LibMaterialName = 'Marble'
+      Position.Coordinates = {
+        0000000000000040000080C00000803F
+      }
+    end
+    object GLShadowPlane3: TGLShadowPlane
+      ShadowingObject = DCShadowing
+      ShadowedLight = GLLightSource1
+      Height = 8
+      Width = 4
+      XTiles = 4
+      YTiles = 8
+      Style = [psTileTexture]
+      Material.MaterialLibrary = GLMaterialLibrary
+      Material.LibMaterialName = 'Marble'
+      Direction.Coordinates = {
+        0000803F000000800000000000000000
+      }
+      Position.Coordinates = {
+        000000C000000040000000000000803F
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 384
+    top = 8
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 424
+    top = 8
+  end
+  object GLMaterialLibrary: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = 'Marble'
+        Material.FrontProperties.Emission.Color = {
+          CDCC4C3ECDCC4C3ECDCC4C3E0000803F
+        }
+        Material.Texture.TextureMode = tmModulate
+        Material.Texture.Disabled = False
+        TextureScale.Coordinates = {
+          0000003F0000003F0000803F00000000
+        }
+      end>
+    left = 304
+    top = 8
+  end
+end

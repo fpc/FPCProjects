@@ -1,0 +1,177 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 341
+  ClientWidth = 542
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 541
+  VertScrollBar.Page = 340
+  Left = 297
+  Height = 341
+  Top = 156
+  Width = 542
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.ContextOptions = [roDoubleBuffer, roRenderToWindow, roDestinationAlpha]
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 135.35809326171875
+    Align = alClient
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 341
+    Width = 415
+  end
+  object Panel1: TPanel
+    Align = alRight
+    BorderSpacing.OnChange = nil
+    BevelOuter = bvLowered
+    ClientHeight = 341
+    ClientWidth = 127
+    FullRepaint = False
+    TabOrder = 0
+    Left = 415
+    Height = 341
+    Width = 127
+    object Label1: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Label1'
+      Color = clNone
+      Left = 8
+      Height = 13
+      Top = 8
+      Width = 32
+    end
+    object Label2: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Sample Size'
+      Color = clNone
+      Left = 8
+      Height = 13
+      Top = 80
+      Width = 58
+    end
+    object CBShowTeapot: TCheckBox
+      BorderSpacing.OnChange = nil
+      Caption = 'Show Teapot'
+      Checked = True
+      OnClick = CBShowTeapotClick
+      State = cbChecked
+      TabOrder = 0
+      Left = 8
+      Height = 17
+      Top = 32
+      Width = 97
+    end
+    object CBShowImposter: TCheckBox
+      BorderSpacing.OnChange = nil
+      Caption = 'Show Imposters'
+      Checked = True
+      OnClick = CBShowImposterClick
+      State = cbChecked
+      TabOrder = 1
+      Left = 8
+      Height = 17
+      Top = 52
+      Width = 97
+    end
+    object CBSampleSize: TComboBox
+      BorderSpacing.OnChange = nil
+      ItemHeight = 13
+      Items.Strings = (
+        '8'
+        '16'
+        '32'
+        '64'
+        '128'
+        '256'
+      )
+      ItemIndex = 3
+      MaxLength = 0
+      OnChange = CBSampleSizeChange
+      Style = csDropDownList
+      TabOrder = 2
+      Text = '64'
+      Left = 72
+      Height = 21
+      Top = 76
+      Width = 49
+    end
+  end
+  object GLScene1: TGLScene
+    left = 24
+    top = 24
+    object GLDummyCube1: TGLDummyCube
+      CubeSize = 1
+    end
+    object GLSkyDome1: TGLSkyDome
+      Bands = <      
+        item
+          StartColor.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          StopAngle = 15
+        end      
+        item
+          StartAngle = 15
+          StopAngle = 90
+          StopColor.Color = {
+            938C0C3E938C0C3E938E0E3F0000803F
+          }
+          Stacks = 4
+        end      
+        item
+          StartAngle = -90
+          StartColor.Color = {
+            0000000000000000000000000000803F
+          }
+          StopColor.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+        end>
+      Stars = <>
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
+    end
+    object GLDirectOpenGL1: TGLDirectOpenGL
+      OnRender = GLDirectOpenGL1Render
+    end
+    object GLTeapot1: TGLTeapot
+      Scale.Coordinates = {
+        00000040000000400000004000000000
+      }
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        00004842000034420000F0410000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 200
+      FocalLength = 70
+      TargetObject = GLDirectOpenGL1
+      Position.Coordinates = {
+        00004040000000400000A0400000803F
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 72
+    top = 24
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 48
+    top = 64
+  end
+end

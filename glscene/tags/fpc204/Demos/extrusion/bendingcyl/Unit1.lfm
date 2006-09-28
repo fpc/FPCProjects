@@ -1,0 +1,91 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 308
+  ClientWidth = 356
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 355
+  VertScrollBar.Page = 307
+  Left = 293
+  Height = 308
+  Top = 125
+  Width = 356
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 144.02532958984375
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 308
+    Width = 356
+  end
+  object CBSpline: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Splines'
+    OnClick = CBSplineClick
+    TabOrder = 0
+    Left = 272
+    Height = 17
+    Top = 8
+    Width = 57
+  end
+  object CBFat: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Fat/Slim'
+    TabOrder = 1
+    Left = 272
+    Height = 17
+    Top = 32
+    Width = 57
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000484200004842000048420000803F
+      }
+      SpotCutOff = 180
+    end
+    object Pipe1: TGLPipe
+      Parts = [ppOutside, ppStartDisk, ppStopDisk]
+      Radius = 0.200000002980232
+      Nodes = <>
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Position.Coordinates = {
+        00000000000080BF000000000000803F
+      }
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        0000803F00004040000080400000803F
+      }
+      left = 160
+      top = 120
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 40
+    top = 8
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+    top = 40
+  end
+end

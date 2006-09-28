@@ -1,0 +1,61 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TForm1','FORMDATA',[
+  'TPF0'#6'TForm1'#5'Form1'#7'Caption'#6#5'Form1'#12'ClientHeight'#3#194#1#11'C'
+  +'lientWidth'#3#254#1#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#8
+  +'OnCreate'#7#10'FormCreate'#13'PixelsPerInch'#2'`'#10'TextHeight'#2#13#18'Ho'
+  +'rzScrollBar.Page'#3#253#1#18'VertScrollBar.Page'#3#193#1#4'Left'#3#192#0#6
+  +'Height'#3#194#1#3'Top'#2'w'#5'Width'#3#254#1#0#6'TLabel'#9'LFogStart'#7'Cap'
+  +'tion'#6#9'fog start'#5'Color'#7#6'clNone'#4'Left'#2#8#6'Height'#2#13#3'Top'
+  +#3'8'#1#5'Width'#2'&'#0#0#6'TLabel'#7'LFogEnd'#7'Caption'#6#7'fog end'#5'Col'
+  +'or'#7#6'clNone'#4'Left'#2#8#6'Height'#2#13#3'Top'#3'X'#1#5'Width'#2'$'#0#0#6
+  +'TLabel'#9'LFogColor'#7'Caption'#6#9'fog color'#5'Color'#7#6'clNone'#4'Left'
+  +#3'X'#1#6'Height'#2#13#3'Top'#3' '#1#5'Width'#2')'#0#0#6'TShape'#9'SFogColor'
+  +#11'OnMouseDown'#7#18'SFogColorMouseDown'#4'Left'#3#136#1#6'Height'#2#16#3'T'
+  +'op'#3' '#1#5'Width'#2'9'#0#0#6'TLabel'#11'LFogDensity'#7'Caption'#6#30'fog '
+  +'density (for fmExp/fmExp2)'#5'Color'#7#6'clNone'#4'Left'#3'X'#1#6'Height'#2
+  +#13#3'Top'#3'P'#1#5'Width'#3#144#0#0#0#14'TGLSceneViewer'#14'GLSceneViewer1'
+  +#6'Camera'#7#9'GLCamera1'#11'FieldOfView'#5#0#0#0#0#0'G'#230#139#6'@'#7'Anch'
+  +'ors'#11#5'akTop'#6'akLeft'#7'akRight'#0#11'OnMouseDown'#7#23'GLSceneViewer1'
+  +'MouseDown'#11'OnMouseMove'#7#23'GLSceneViewer1MouseMove'#4'Left'#2#8#6'Heig'
+  +'ht'#3#18#1#3'Top'#2#8#5'Width'#3#246#1#0#0#9'TCheckBox'#11'CBFogEnable'#7'C'
+  +'aption'#6#10'fog on/off'#7'OnClick'#7#16'CBFogEnableClick'#8'TabOrder'#2#1#4
+  +'Left'#2#8#6'Height'#2#17#3'Top'#3' '#1#5'Width'#2'I'#0#0#11'TRadioGroup'#13
+  +'RGFogDistance'#7'Caption'#6#12'[ fog mode ]'#9'ItemIndex'#2#0#13'Items.Stri'
+  +'ngs'#1#6#9'fdDefault'#6#10'fdEyePlane'#6#11'fdEyeRadial'#0#7'OnClick'#7#14
+  +'RGFogModeClick'#11'ParentColor'#9#4'Left'#2'x'#6'Height'#2'I'#3'Top'#3' '#1
+  +#5'Width'#2'i'#0#0#11'TRadioGroup'#9'RGFogMode'#7'Caption'#6#12'[ fog mode ]'
+  +#9'ItemIndex'#2#0#13'Items.Strings'#1#6#8'fmLinear'#6#5'fmExp'#6#6'fmExp2'#0
+  +#7'OnClick'#7#14'RGFogModeClick'#11'ParentColor'#9#4'Left'#3#232#0#6'Height'
+  +#2'I'#3'Top'#3' '#1#5'Width'#2'i'#0#0#9'TCheckBox'#19'CBApplyToBackground'#7
+  +'Caption'#6#16'background too ?'#7'Checked'#9#7'OnClick'#7#24'CBApplyToBackg'
+  +'roundClick'#5'State'#7#9'cbChecked'#8'TabOrder'#2#3#4'Left'#3'x'#1#6'Height'
+  +#2#17#3'Top'#3'0'#1#5'Width'#2'i'#0#0#9'TGroupBox'#9'GBTexture'#7'Caption'#6
+  +#11'[ texture ]'#12'ClientHeight'#2#23#11'ClientWidth'#3#213#0#11'ParentColo'
+  +'r'#9#8'TabOrder'#2#4#4'Left'#2'x'#6'Height'#2')'#3'Top'#3'p'#1#5'Width'#3
+  +#217#0#0#9'TCheckBox'#16'CBTextureEnabled'#7'Caption'#6#7'enabled'#7'Checked'
+  +#9#7'OnClick'#7#21'CBTextureEnabledClick'#5'State'#7#9'cbChecked'#8'TabOrder'
+  +#2#0#4'Left'#2#8#6'Height'#2#17#5'Width'#2'A'#0#0#9'TCheckBox'#18'CBTextureI'
+  +'gnoreFog'#7'Caption'#6#10'ignore fog'#7'OnClick'#7#23'CBTextureIgnoreFogCli'
+  +'ck'#8'TabOrder'#2#1#4'Left'#2'N'#6'Height'#2#17#5'Width'#2'I'#0#0#0#5'TEdit'
+  +#9'EFogStart'#8'OnChange'#7#15'EFogStartChange'#8'TabOrder'#2#5#4'Text'#6#3
+  +'-30'#4'Left'#2'8'#6'Height'#2#21#3'Top'#3'8'#1#5'Width'#2'9'#0#0#5'TEdit'#7
+  +'EFogEnd'#8'OnChange'#7#15'EFogStartChange'#8'TabOrder'#2#6#4'Text'#6#2'30'#4
+  +'Left'#2'8'#6'Height'#2#21#3'Top'#3'X'#1#5'Width'#2'9'#0#0#5'TEdit'#11'EFogD'
+  +'ensity'#8'OnChange'#7#15'EFogStartChange'#8'TabOrder'#2#7#4'Text'#6#3'100'#4
+  +'Left'#3#136#1#6'Height'#2#21#3'Top'#3'`'#1#5'Width'#2'9'#0#0#8'TGLScene'#8
+  +'GLScene1'#4'left'#2#16#3'top'#2#16#0#12'TGLDummyCube'#12'GLDummyCube1'#8'Cu'
+  +'beSize'#5#0#0#0#0#0#0#0#128#255'?'#0#0#14'TGLLightSource'#14'GLLightSource1'
+  +#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Coordinates'#10
+  +#16#0#0#0#0#0#150'C'#0#0#250'C'#0#0#200'C'#0#0#128'?'#10'SpotCutOff'#5#0#0#0
+  +#0#0#0#0#180#6'@'#0#0#9'TGLSphere'#9'GLSphere1'#6'Radius'#5#0#0#0#0#0#0#0#128
+  +#254'?'#20'Position.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#160#193#0#0#0#0#0#0
+  +#128'?'#0#0#9'TGLCamera'#9'GLCamera1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5
+  +'@'#11'FocalLength'#5#0#0#0#0#0#0#0#200#4'@'#12'TargetObject'#7#12'GLDummyCu'
+  +'be1'#20'Position.Coordinates'#10#16#0#0#0#0#0#192'@'#0#0#128'@'#0#0#0'A'#0#0
+  +#128'?'#0#0#0#11'TGLCadencer'#11'GLCadencer1'#5'Scene'#7#8'GLScene1'#11'Slee'
+  +'pLength'#2#1#10'OnProgress'#7#19'GLCadencer1Progress'#4'left'#2'0'#3'top'#2
+  +#16#0#0#12'TColorDialog'#12'ColorDialog1'#5'Title'#6#12'Select color'#5'Titl'
+  +'e'#6#12'Select color'#4'left'#2'P'#3'top'#2#16#0#0#18'TGLMaterialLibrary'#18
+  +'GLMaterialLibrary1'#4'left'#2'p'#3'top'#2#16#0#0#0
+]);

@@ -1,0 +1,342 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 468
+  ClientWidth = 557
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 556
+  VertScrollBar.Page = 467
+  Left = 275
+  Height = 468
+  Top = 146
+  Width = 557
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 150.28855895996094
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 377
+    Width = 557
+  end
+  object Panel1: TPanel
+    Align = alBottom
+    BorderSpacing.OnChange = nil
+    ClientHeight = 91
+    ClientWidth = 557
+    FullRepaint = False
+    TabOrder = 0
+    Height = 91
+    Top = 377
+    Width = 557
+    object Label1: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Camera Distance'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -9
+      Font.Name = 'Small Fonts'
+      Left = 335
+      Height = 11
+      Top = 58
+      Width = 72
+    end
+    object Label6: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Glow Alpha'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -9
+      Font.Name = 'Small Fonts'
+      Left = 344
+      Height = 11
+      Top = 28
+      Width = 47
+    end
+    object Label4: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Vibration'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -9
+      Font.Name = 'Small Fonts'
+      Left = 432
+      Height = 11
+      Top = 28
+      Width = 37
+    end
+    object Label3: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Wildness'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -9
+      Font.Name = 'Small Fonts'
+      Left = 440
+      Height = 11
+      Width = 37
+    end
+    object Label5: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Glow Size'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -9
+      Font.Name = 'Small Fonts'
+      Left = 344
+      Height = 11
+      Width = 40
+    end
+    object DistanceBar: TTrackBar
+      BorderSpacing.OnChange = nil
+      Frequency = 1
+      Max = 20
+      Min = 1
+      OnChange = DistanceBarChange
+      Position = 5
+      ScalePos = trTop
+      TabOrder = 0
+      TabStop = False
+      Frequency = 1
+      Max = 20
+      Min = 1
+      OnChange = DistanceBarChange
+      Position = 5
+      ScalePos = trTop
+      TabStop = False
+      Left = 312
+      Height = 16
+      Top = 67
+      Width = 115
+    end
+    object GSbar: TTrackBar
+      BorderSpacing.OnChange = nil
+      Frequency = 1
+      Max = 50
+      OnChange = GSbarChange
+      Position = 10
+      ScalePos = trTop
+      TabOrder = 1
+      TabStop = False
+      Frequency = 1
+      Max = 50
+      OnChange = GSbarChange
+      Position = 10
+      ScalePos = trTop
+      TabStop = False
+      Left = 312
+      Height = 16
+      Top = 10
+      Width = 115
+    end
+    object GAbar: TTrackBar
+      BorderSpacing.OnChange = nil
+      Frequency = 1
+      Max = 50
+      OnChange = GAbarChange
+      Position = 15
+      ScalePos = trTop
+      TabOrder = 2
+      TabStop = False
+      Frequency = 1
+      Max = 50
+      OnChange = GAbarChange
+      Position = 15
+      ScalePos = trTop
+      TabStop = False
+      Left = 312
+      Height = 16
+      Top = 38
+      Width = 115
+    end
+    object WildBar: TTrackBar
+      BorderSpacing.OnChange = nil
+      Frequency = 1
+      Max = 20
+      OnChange = WildBarChange
+      Position = 4
+      ScalePos = trTop
+      TabOrder = 3
+      TabStop = False
+      Frequency = 1
+      Max = 20
+      OnChange = WildBarChange
+      Position = 4
+      ScalePos = trTop
+      TabStop = False
+      Left = 424
+      Height = 16
+      Top = 10
+      Width = 115
+    end
+    object VibBar: TTrackBar
+      BorderSpacing.OnChange = nil
+      Frequency = 1
+      Max = 20
+      OnChange = VibBarChange
+      ScalePos = trTop
+      TabOrder = 4
+      TabStop = False
+      Frequency = 1
+      Max = 20
+      OnChange = VibBarChange
+      ScalePos = trTop
+      TabStop = False
+      Left = 424
+      Height = 16
+      Top = 38
+      Width = 115
+    end
+    object SpinBox: TCheckBox
+      BorderSpacing.OnChange = nil
+      Caption = 'User Formula(Spin)'
+      TabOrder = 5
+      Left = 436
+      Height = 17
+      Top = 73
+      Width = 101
+    end
+    object CoreBox: TCheckBox
+      BorderSpacing.OnChange = nil
+      Caption = 'Core'
+      Checked = True
+      OnClick = CoreBoxClick
+      State = cbChecked
+      TabOrder = 6
+      Left = 436
+      Height = 17
+      Top = 58
+      Width = 49
+    end
+    object Memo1: TMemo
+      BorderSpacing.OnChange = nil
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -9
+      Font.Name = 'Small Fonts'
+      TabOrder = 7
+      Left = 2
+      Height = 87
+      Top = -1
+      Width = 311
+    end
+    object PauseBox: TCheckBox
+      BorderSpacing.OnChange = nil
+      Caption = 'Pause'
+      OnClick = PauseBoxClick
+      TabOrder = 8
+      Left = 488
+      Height = 17
+      Top = 58
+      Width = 49
+    end
+  end
+  object GLScene1: TGLScene
+    ObjectsSorting = osNone
+    left = 8
+    top = 8
+    object HeightField1: TGLHeightField
+      XSamplingScale.Min = -1
+      XSamplingScale.Max = 1
+      XSamplingScale.Step = 0.200000002980232
+      YSamplingScale.Min = -1
+      YSamplingScale.Max = 1
+      YSamplingScale.Step = 0.200000002980232
+      Options = [hfoTextureCoordinates]
+      OnGetHeight = HeightField1GetHeight
+      Material.Texture.MinFilter = miNearestMipmapNearest
+      Material.Texture.TextureMode = tmModulate
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Material.Texture.Disabled = False
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Position.Coordinates = {
+        00000000000040C0000000000000803F
+      }
+      Scale.Coordinates = {
+        00002041000020410000803F00000000
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
+    end
+    object Objects: TGLDummyCube
+      CubeSize = 1
+      ObjectsSorting = osRenderBlendedLast
+      object TargetCube: TGLCube
+        Material.FrontProperties.Diffuse.Color = {
+          8180803E8180803E0000803F0000803F
+        }
+        Material.FrontProperties.Emission.Color = {
+          00000000000000008180003E0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000404000000000000000000000803F
+        }
+      end
+      object ThorCube: TGLCube
+        Position.Coordinates = {
+          000040C000000000000000000000803F
+        }
+      end
+      object GLLightSource1: TGLLightSource
+        ConstAttenuation = 1
+        LightStyle = lsOmni
+        SpotCutOff = 180
+        SpotDirection.Coordinates = {
+          00000000000080BF0000000000000000
+        }
+      end
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = Objects
+      Position.Coordinates = {
+        00004040000000400000A0400000803F
+      }
+      left = 152
+      top = 104
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    left = 40
+    top = 8
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+    top = 40
+  end
+  object GLThorFXManager1: TGLThorFXManager
+    Target.Coordinates = {
+      0000C040000000000000000000000000
+    }
+    Cadencer = GLCadencer1
+    Maxpoints = 64
+    GlowSize = 0.200000002980232
+    InnerColor.Color = {
+      0000803F0000803F0000803F9A99993E
+    }
+    OuterColor.Color = {
+      00000000000000000000803F00000000
+    }
+    Core = True
+    Glow = True
+    Wildness = 1
+    OnCalcPoint = GLThorFXManager1CalcPoint
+    left = 72
+    top = 8
+  end
+end

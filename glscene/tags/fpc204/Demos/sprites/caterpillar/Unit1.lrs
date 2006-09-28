@@ -1,0 +1,41 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TForm1','FORMDATA',[
+  'TPF0'#6'TForm1'#5'Form1'#7'Caption'#6#5'Form1'#12'ClientHeight'#3#246#0#11'C'
+  +'lientWidth'#3'`'#1#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#8
+  +'OnCreate'#7#10'FormCreate'#8'OnResize'#7#10'FormResize'#13'PixelsPerInch'#2
+  +'`'#10'TextHeight'#2#13#18'HorzScrollBar.Page'#3'_'#1#18'VertScrollBar.Page'
+  +#3#245#0#4'Left'#2'l'#6'Height'#3#246#0#3'Top'#3'='#1#5'Width'#3'`'#1#0#14'T'
+  +'GLSceneViewer'#14'GLSceneViewer1'#6'Camera'#7#9'GLCamera1'#22'Buffer.Backgr'
+  +'oundColor'#7#7'clBlack'#16'Buffer.DepthTest'#8#15'Buffer.OnChange'#13#25'Bu'
+  +'ffer.OnStructuralChange'#13#11'FieldOfView'#5#0#0#0#0#0#145#193#135#6'@'#5
+  +'Align'#7#8'alClient'#6'Height'#3#246#0#5'Width'#3'`'#1#0#0#8'TGLScene'#8'GL'
+  +'Scene1'#14'ObjectsSorting'#7#21'osRenderFarthestFirst'#4'left'#2#8#3'top'#2
+  +#24#0#12'TGLDummyCube'#10'DummyCube1'#8'CubeSize'#5#0#0#0#0#0#0#0#128#255'?'
+  +#14'ObjectsSorting'#7#6'osNone'#0#9'TGLSprite'#7'Sprite2'#5'Width'#5#0#0#0#0
+  +#0#0#0#128#0'@'#6'Height'#5#0#0#0#0#0#0#0#128#0'@'#8'NoZWrite'#9#24'Material'
+  +'.MaterialLibrary'#7#18'GLMaterialLibrary1'#24'Material.LibMaterialName'#6#8
+  +'BlueBall'#20'Position.Coordinates'#10#16#0#0#0#0#0#160'@'#0#0#0#0#0#0#0#0#0
+  +#0#128'?'#0#0#0#9'TGLSprite'#7'Sprite1'#5'Width'#5#0#0#0#0#0#0#0#128#1'@'#6
+  +'Height'#5#0#0#0#0#0#0#0#128#1'@'#24'Material.MaterialLibrary'#7#18'GLMateri'
+  +'alLibrary1'#24'Material.LibMaterialName'#6#7'RedBell'#0#0#9'TGLCamera'#9'GL'
+  +'Camera1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0
+  +#0#0#0#200#4'@'#12'TargetObject'#7#10'DummyCube1'#20'Position.Coordinates'#10
+  +#16#0#0#0#0#0' A'#0#0#160'@'#0#0' A'#0#0#128'?'#0#0#0#18'TGLMaterialLibrary'
+  +#18'GLMaterialLibrary1'#9'Materials'#14#1#4'Name'#6#8'BlueBall&Material.Fron'
+  +'tProperties.Ambient.Color'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#128'?&Ma'
+  +'terial.FrontProperties.Diffuse.Color'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0
+  +#0#128'?''Material.FrontProperties.Emission.Color'#10#16#0#0#0#243#242#242'>'
+  +#243#242#242'>'#0#0#128'?'#0#0#128'?'#21'Material.BlendingMode'#7#10'bmaddit'
+  +'ive'#26'Material.Texture.MinFilter'#7#8'miLinear'#28'Material.Texture.Textu'
+  +'reMode'#7#10'tmModulate0Material.Texture.MappingTCoordinates.Coordinates'#10
+  +#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#0#1#4'Name'#6#7'RedBell''Materi'
+  +'al.FrontProperties.Emission.Color'#10#16#0#0#0#0#0#128'?'#0#0#128'?'#226#225
+  +'a?'#0#0#128'?'#21'Material.BlendingMode'#7#10'bmadditive'#28'Material.Textu'
+  +'re.TextureMode'#7#10'tmModulate'#25'Material.Texture.Disabled'#8#0#0#15'OnT'
+  +'extureNeeded'#7#31'GLMaterialLibrary1TextureNeeded'#4'left'#2#8#3'top'#2'@'
+  +#0#0#6'TTimer'#6'Timer1'#8'Interval'#3#160#15#7'OnTimer'#7#11'Timer1Timer'#4
+  +'left'#2#8#3'top'#2'h'#0#0#11'TGLCadencer'#11'GLCadencer1'#5'Scene'#7#8'GLSc'
+  +'ene1'#10'OnProgress'#7#19'GLCadencer1Progress'#4'left'#2'0'#3'top'#2#24#0#0
+  +#0
+]);

@@ -1,0 +1,20 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TDataModule1','FORMDATA',[
+  'TPF0'#12'TDataModule1'#11'DataModule1'#8'OnCreate'#7#16'DataModuleCreate'#6
+  +'Height'#3','#1#16'HorizontalOffset'#2#162#14'VerticalOffset'#3#219#0#5'Widt'
+  +'h'#3#144#1#0#8'TGLScene'#8'GLScene1'#4'left'#2#28#3'top'#2#13#0#14'TGLLight'
+  +'Source'#14'GLLightSource1'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'
+  +#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#9'TGLTeapot'#9'GLTeapot1'#0#0#12
+  +'TGLDummyCube'#11'DCBlueLight'#8'CubeSize'#5#0#0#0#0#0#0#0#128#255'?'#0#14'T'
+  +'GLLightSource'#14'GLLightSource2'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128
+  +#255'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#0#9'TGLCamera'#9'GLCamer'
+  +'a1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0
+  +#200#4'@'#12'TargetObject'#7#9'GLTeapot1'#20'Position.Coordinates'#10#16#0#0
+  +#0#0#0'@@'#0#0#0'@'#0#0#0'@'#0#0#128'?'#0#0#0#19'TGLFullScreenViewer'#19'GLF'
+  +'ullScreenViewer1'#9'StayOnTop'#9#11'RefreshRate'#2'd'#10'OnKeyPress'#7#27'G'
+  +'LFullScreenViewer1KeyPress'#6'Camera'#7#9'GLCamera1'#5'Width'#3' '#3#6'Heig'
+  +'ht'#3'X'#2#10'PostRender'#7#29'GLFullScreenViewer1PostRender'#22'Buffer.Bac'
+  +'kgroundColor'#7#7'clBlack'#15'Buffer.OnChange'#13#25'Buffer.OnStructuralCha'
+  +'nge'#13#4'left'#2'j'#3'top'#2#18#0#0#0
+]);

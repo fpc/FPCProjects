@@ -1,0 +1,137 @@
+object Form1: TForm1
+  BorderStyle = bsDialog
+  Caption = 'Form1'
+  ClientHeight = 193
+  ClientWidth = 544
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 543
+  VertScrollBar.Page = 192
+  Left = 285
+  Height = 193
+  Top = 94
+  Width = 544
+  object Label1: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'Move your mouse'#13#10'over an object and'#13#10'it will start spinning'
+    Color = clNone
+    Left = 448
+    Height = 39
+    Top = 88
+    Width = 89
+  end
+  object Label2: TLabel
+    Alignment = taCenter
+    BorderSpacing.OnChange = nil
+    Caption = 'Cube has a small constant'#13#10'and linear damping'
+    Color = clNone
+    Left = 8
+    Height = 26
+    Top = 8
+    Width = 124
+  end
+  object Label3: TLabel
+    Alignment = taCenter
+    BorderSpacing.OnChange = nil
+    Caption = 'Dodecahedron has a'#13#10'small constant and'#13#10'quadratic damping'
+    Color = clNone
+    Left = 168
+    Height = 39
+    Width = 100
+  end
+  object Label4: TLabel
+    Alignment = taCenter
+    BorderSpacing.OnChange = nil
+    Caption = 'Octahedron has a'#13#10'only quadratic damping'
+    Color = clNone
+    Left = 328
+    Height = 26
+    Top = 8
+    Width = 109
+  end
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 62.347877502441406
+    OnMouseMove = GLSceneViewer1MouseMove
+    Left = 1
+    Height = 121
+    Top = 48
+    Width = 441
+  end
+  object CheckBox1: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Double Mass'
+    OnClick = CheckBox1Click
+    TabOrder = 0
+    Left = 448
+    Height = 17
+    Top = 144
+    Width = 81
+  end
+  object GLScene1: TGLScene
+    left = 480
+    top = 16
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000704100002041000020C10000803F
+      }
+      SpotCutOff = 180
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      object Cube: TGLCube
+        Material.FrontProperties.Diffuse.Color = {
+          F8FEFE3E0000803F000000000000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000000000000000000000400000803F
+        }
+      end
+      object Dodecahedron: TGLDodecahedron
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F00000000000000000000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+      object Octahedron: TGLSphere
+        Radius = 0.5
+        Slices = 4
+        Stacks = 2
+        Material.FrontProperties.Diffuse.Color = {
+          ABAA2A3FABAA2A3F0000803F0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000000000000000000000C00000803F
+        }
+      end
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 100
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        000020410000A040000000000000803F
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 480
+    top = 48
+  end
+end

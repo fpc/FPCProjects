@@ -1,0 +1,99 @@
+object Form1: TForm1
+  Caption = 'Phong Shader'
+  ClientHeight = 373
+  ClientWidth = 397
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 396
+  VertScrollBar.Page = 372
+  Left = 306
+  Height = 373
+  Top = 135
+  Width = 397
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 149.9842529296875
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 373
+    Width = 397
+  end
+  object CheckBox1: TCheckBox
+    Anchors = [akTop, akRight]
+    BorderSpacing.OnChange = nil
+    Caption = 'Shader'
+    OnClick = CheckBox1Click
+    TabOrder = 0
+    Left = 312
+    Height = 17
+    Top = 8
+    Width = 65
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLDummyCube1: TGLDummyCube
+      CubeSize = 1
+      object GLCamera1: TGLCamera
+        DepthOfView = 100
+        FocalLength = 50
+        TargetObject = GLDummyCube1
+        Position.Coordinates = {
+          0000803F00000040000040400000803F
+        }
+        object GLLightSource1: TGLLightSource
+          ConstAttenuation = 1
+          Specular.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          SpotCutOff = 180
+        end
+      end
+    end
+    object GLTeapot1: TGLTeapot
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'phong'
+      Scale.Coordinates = {
+        00004040000040400000404000000000
+      }
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = 'phong'
+        Material.FrontProperties.Shininess = 16
+        Material.FrontProperties.Specular.Color = {
+          CDCC4C3ECDCC4C3ECDCC4C3E0000803F
+        }
+        Shader = GLPhongShader1
+      end>
+    left = 40
+    top = 8
+  end
+  object GLPhongShader1: TGLPhongShader
+    Enabled = False
+    left = 72
+    top = 8
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    Mode = cmApplicationIdle
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 40
+  end
+  object AsyncTimer1: TAsyncTimer
+    Enabled = True
+    OnTimer = AsyncTimer1Timer
+    ThreadPriority = tpHigher
+    left = 40
+    top = 40
+  end
+end

@@ -1,0 +1,172 @@
+object Form1: TForm1
+  Caption = 'Constructive Solid Geometry Demo'
+  ClientHeight = 611
+  ClientWidth = 624
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 623
+  VertScrollBar.Page = 610
+  Left = 405
+  Height = 611
+  Top = 99
+  Width = 624
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clTeal
+    FieldOfView = 160.06446838378906
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    OnMouseUp = GLSceneViewer1MouseUp
+    Height = 569
+    Width = 624
+  end
+  object Panel1: TPanel
+    Align = alBottom
+    ClientHeight = 42
+    ClientWidth = 624
+    FullRepaint = False
+    TabOrder = 0
+    Height = 42
+    Top = 569
+    Width = 624
+    object Button1: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = 'Clear'
+      OnClick = Button1Click
+      TabOrder = 0
+      Left = 8
+      Height = 25
+      Top = 7
+      Width = 75
+    end
+    object Button2: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = 'Union'
+      OnClick = Button2Click
+      TabOrder = 1
+      Left = 88
+      Height = 25
+      Top = 8
+      Width = 75
+    end
+    object Button3: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = 'Subtract A-B'
+      OnClick = Button3Click
+      TabOrder = 2
+      Left = 168
+      Height = 25
+      Top = 8
+      Width = 75
+    end
+    object Button4: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = 'Subtract B-A'
+      OnClick = Button4Click
+      TabOrder = 3
+      Left = 248
+      Height = 25
+      Top = 8
+      Width = 75
+    end
+    object Button5: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = 'Intersection'
+      OnClick = Button5Click
+      TabOrder = 4
+      Left = 328
+      Height = 25
+      Top = 8
+      Width = 75
+    end
+    object CheckBox1: TCheckBox
+      Caption = 'Solid Result'
+      Checked = True
+      OnClick = CheckBox1Click
+      State = cbChecked
+      TabOrder = 5
+      Left = 408
+      Height = 17
+      Top = 12
+      Width = 97
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLFreeForm3: TGLFreeForm
+      MaterialLibrary = GLMaterialLibrary1
+    end
+    object GLFreeForm1: TGLFreeForm
+      AutoCentering = [macCenterX, macCenterY, macCenterZ]
+      MaterialLibrary = GLMaterialLibrary1
+      Material.FrontProperties.Ambient.Color = {
+        B1A8A83EB1A8A83EB1A8A83E0000803F
+      }
+      Material.FrontProperties.Diffuse.Color = {
+        9484843E9484843EDBDEDE3E0000803F
+      }
+      Material.FrontProperties.Emission.Color = {
+        EBE0E03EE4DB5B3F9A93133F0000803F
+      }
+      Material.FrontProperties.Specular.Color = {
+        9A99593F9A99593FCDCCCC3D0000803F
+      }
+      Scale.Coordinates = {
+        00002042000020420000204200000000
+      }
+    end
+    object GLFreeForm2: TGLFreeForm
+      AutoCentering = [macCenterX, macCenterY, macCenterZ]
+      Material.FrontProperties.Ambient.Color = {
+        029F1F3FBEBEBE3E999F1F3F0000803F
+      }
+      Material.FrontProperties.Specular.Color = {
+        BEBEBE3E999F1F3F999F1F3F0000803F
+      }
+      Position.Coordinates = {
+        0000804100000000000000000000803F
+      }
+      Scale.Coordinates = {
+        0000A0410000A0410000A04100000000
+      }
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 5000
+      FocalLength = 50
+      TargetObject = GLFreeForm3
+      Position.Coordinates = {
+        0000000000000000000096C30000803F
+      }
+      Direction.Coordinates = {
+        00000000000000000000803F00000000
+      }
+      object GLLightSource1: TGLLightSource
+        ConstAttenuation = 1
+        Diffuse.Color = {
+          CDCC4C3FCDCC4C3FCDCC4C3F0000803F
+        }
+        LightStyle = lsOmni
+        SpotCutOff = 180
+      end
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = '1'
+      end    
+      item
+        Name = '2'
+        Material.FrontProperties.Diffuse.Color = {
+          6666E63E6666E63E6666E63E0000803F
+        }
+      end>
+    left = 48
+    top = 8
+  end
+end

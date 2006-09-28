@@ -1,0 +1,515 @@
+object GLSceneEditorForm: TGLSceneEditorForm
+  BorderStyle = bsSizeToolWin
+  Caption = 'GLScene editor'
+  ClientHeight = 311
+  ClientWidth = 374
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 373
+  VertScrollBar.Page = 310
+  Left = 239
+  Height = 311
+  Top = 384
+  Width = 374
+  object Splitter: TSplitter
+    Align = alRight
+    Anchors = [akTop, akRight]
+    Height = 287
+    ParentColor = True
+    Visible = False
+    Width = 4
+    Cursor = crHSplit
+    Left = 212
+    Height = 287
+    Top = 24
+    Width = 4
+  end
+  object Tree: TTreeView
+    Align = alClient
+    DefaultItemHeight = 15
+    Font.CharSet = ANSI_CHARSET
+    Font.Height = -11
+    Font.Name = 'Microsoft Sans Serif'
+    HideSelection = False
+    Indent = 19
+    PopupMenu = PopupMenu
+    RightClickSelect = True
+    TabOrder = 0
+    OnChange = TreeChange
+    OnDragDrop = TreeDragDrop
+    OnDragOver = TreeDragOver
+    OnEditing = TreeEditing
+    OnEnter = TreeEnter
+    OnMouseDown = TreeMouseDown
+    OnMouseMove = TreeMouseMove
+    Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoRightClickSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips]
+    Height = 287
+    Top = 24
+    Width = 212
+  end
+  object ToolBar: TToolBar
+    AutoSize = True
+    BorderWidth = 1
+    ButtonWidth = 29
+    Caption = 'ToolBar'
+    EdgeBorders = []
+    Flat = True
+    Height = 24
+    Images = ImageList
+    ParentColor = True
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 1
+    Height = 24
+    Width = 374
+    object ToolButton8: TToolButton
+      Action = ACLoadScene
+      Left = 9
+      Height = 22
+      Hint = 'Load whole scene'
+      Width = 29
+    end
+    object ToolButton9: TToolButton
+      Action = ACSaveScene
+      Left = 38
+      Height = 22
+      Hint = 'Save whole scene'
+      Width = 29
+    end
+    object TBEffectsPanel: TToolButton
+      Caption = 'Show Behaviours/Effects'
+      ImageIndex = 11
+      Style = tbsCheck
+      OnClick = TBEffectsPanelClick
+      Left = 67
+      Height = 22
+      Hint = 'Show Behaviours/Effects'
+      Width = 29
+    end
+    object ToolButton11: TToolButton
+      Action = ACInfo
+      Left = 96
+      Height = 22
+      Hint = 'OpenGL Info'
+      Width = 29
+    end
+    object ToolButton2: TToolButton
+      Caption = 'ToolButton2'
+      ImageIndex = 2
+      Style = tbsSeparator
+      Width = 8
+      Left = 125
+      Height = 22
+      Width = 8
+    end
+    object ToolButton1: TToolButton
+      Action = ACAddCamera
+      Left = 133
+      Height = 22
+      Hint = 'Add camera'
+      Width = 29
+    end
+    object TBAddObjects: TToolButton
+      Action = ACAddObject
+      DropdownMenu = PMToolBar
+      Style = tbsDropDown
+      Left = 162
+      Height = 22
+      Hint = 'Add object'
+      Width = 29
+    end
+    object ToolButton3: TToolButton
+      Caption = 'ToolButton3'
+      ImageIndex = 2
+      Wrap = True
+      Style = tbsSeparator
+      Width = 8
+      Left = 1
+      Height = 22
+      Width = 8
+    end
+    object ToolButton4: TToolButton
+      Action = ACMoveUp
+      Left = 191
+      Height = 22
+      Hint = 'Move object up'
+      Width = 29
+    end
+    object ToolButton7: TToolButton
+      Action = ACMoveDown
+      Left = 220
+      Height = 22
+      Hint = 'Move object down'
+      Width = 29
+    end
+    object ToolButton6: TToolButton
+      Caption = 'ToolButton6'
+      ImageIndex = 4
+      Style = tbsSeparator
+      Width = 8
+      Left = 249
+      Height = 22
+      Width = 8
+    end
+    object ToolButton12: TToolButton
+      Action = ACCut
+      Left = 257
+      Height = 22
+      Hint = 'Cut'
+      Width = 29
+    end
+    object ToolButton13: TToolButton
+      Action = ACCopy
+      Left = 286
+      Height = 22
+      Hint = 'Copy'
+      Width = 29
+    end
+    object ToolButton14: TToolButton
+      Action = ACPaste
+      Left = 315
+      Height = 22
+      Hint = 'Paste'
+      Width = 29
+    end
+    object ToolButton5: TToolButton
+      Action = ACDeleteObject
+      Left = 344
+      Height = 22
+      Hint = 'Delete object'
+      Width = 29
+    end
+  end
+  object PABehaviours: TPanel
+    Align = alRight
+    Caption = 'PABehaviours'
+    ClientHeight = 287
+    ClientWidth = 158
+    Constraints.MinWidth = 1
+    FullRepaint = False
+    TabOrder = 2
+    Visible = False
+    Left = 216
+    Height = 287
+    Top = 24
+    Width = 158
+    object Label1: TLabel
+      Align = alTop
+      Alignment = taCenter
+      Caption = 'Behaviours'
+      Color = clNone
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Left = 1
+      Height = 14
+      Top = 30
+      Width = 156
+    end
+    object Label2: TLabel
+      Align = alTop
+      Alignment = taCenter
+      Caption = 'Effects'
+      Color = clNone
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Left = 1
+      Height = 14
+      Top = 159
+      Width = 156
+    end
+    object Splitter3: TSplitter
+      Align = alTop
+      Cursor = crVSplit
+      Height = 5
+      ParentColor = True
+      Width = 156
+      Cursor = crVSplit
+      Left = 1
+      Height = 5
+      Top = 154
+      Width = 156
+    end
+    object BehavioursListView: TListView
+      Align = alTop
+      Columns = <>
+      PopupMenu = BehavioursPopupMenu
+      ViewStyle = vsList
+      OnSelectItem = BehavioursListViewSelectItem
+      Left = 1
+      Height = 110
+      Top = 44
+      Width = 156
+    end
+    object EffectsListView: TListView
+      Align = alClient
+      Columns = <>
+      PopupMenu = BehavioursPopupMenu
+      ViewStyle = vsList
+      OnSelectItem = BehavioursListViewSelectItem
+      Left = 1
+      Height = 113
+      Top = 173
+      Width = 156
+    end
+    object ToolBar1: TToolBar
+      ButtonWidth = 62
+      Caption = 'ToolBar1'
+      Flat = True
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Height = 29
+      ParentColor = True
+      ParentShowHint = False
+      ShowCaptions = True
+      TabOrder = 2
+      Left = 1
+      Height = 29
+      Top = 1
+      Width = 156
+      object TBAddBehaviours: TToolButton
+        Action = ACAddBehaviour
+        Caption = 'Behaviours'
+        DropdownMenu = PMBehavioursToolbar
+        ParentShowHint = False
+        ShowHint = True
+        Style = tbsDropDown
+        Left = 1
+        Height = 22
+        Hint = 'Add behaviour'
+        Top = 2
+        Width = 62
+      end
+      object TBAddEffects: TToolButton
+        Action = ACAddEffect
+        Caption = 'Effects'
+        DropdownMenu = PMEffectsToolbar
+        ParentShowHint = False
+        ShowHint = True
+        Style = tbsDropDown
+        Left = 63
+        Height = 22
+        Hint = 'Add effect'
+        Top = 2
+        Width = 62
+      end
+    end
+  end
+  object PopupMenu: TPopupMenu
+    OnPopup = PopupMenuPopup
+    Images = ImageList
+    left = 232
+    top = 40
+    object MIAddCamera: TMenuItem
+      Action = ACAddCamera
+      OnClick = ACAddCameraExecute
+    end
+    object MIAddObject: TMenuItem
+      Action = ACAddObject
+      OnClick = ACAddObjectExecute
+    end
+    object MIBehaviourSeparator: TMenuItem
+      Caption = '-'
+    end
+    object MIAddBehaviour: TMenuItem
+      Action = ACAddBehaviour
+      Caption = 'Add behaviour'
+      ImageIndex = 11
+      OnClick = ACAddBehaviourExecute
+    end
+    object MIAddEffect: TMenuItem
+      Action = ACAddEffect
+      Caption = 'Add effect'
+      Hint = 'Add effect'
+      ImageIndex = 11
+      OnClick = ACAddEffectExecute
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object Cut1: TMenuItem
+      Action = ACCut
+      OnClick = ACCutExecute
+    end
+    object Copy1: TMenuItem
+      Action = ACCopy
+      OnClick = ACCopyExecute
+    end
+    object Paste1: TMenuItem
+      Action = ACPaste
+      OnClick = ACPasteExecute
+    end
+    object MIDelObject: TMenuItem
+      Action = ACDeleteObject
+      OnClick = ACDeleteObjectExecute
+    end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object Moveobjectup1: TMenuItem
+      Action = ACMoveUp
+      OnClick = ACMoveUpExecute
+    end
+    object Moveobjectdown1: TMenuItem
+      Action = ACMoveDown
+      OnClick = ACMoveDownExecute
+    end
+  end
+  object ActionList: TActionList
+    Images = ImageList
+    left = 72
+    top = 40
+    object ACAddCamera: TAction
+      Caption = 'Add camera'
+      Hint = 'Add camera'
+      ImageIndex = 2
+      OnExecute = ACAddCameraExecute
+    end
+    object ACAddObject: TAction
+      Caption = 'Add object'
+      Hint = 'Add object'
+      ImageIndex = 3
+      OnExecute = ACAddObjectExecute
+    end
+    object ACAddBehaviour: TAction
+      Caption = 'ACAddBehaviour'
+      Hint = 'Add behaviour'
+      ImageIndex = 3
+      OnExecute = ACAddBehaviourExecute
+    end
+    object ACAddEffect: TAction
+      Caption = 'ACAddEffect'
+      ImageIndex = 3
+      OnExecute = ACAddEffectExecute
+    end
+    object ACDeleteObject: TAction
+      Caption = 'Delete object'
+      Hint = 'Delete object'
+      ImageIndex = 4
+      OnExecute = ACDeleteObjectExecute
+    end
+    object ACDeleteBehaviour: TAction
+      Caption = 'ACDeleteBehaviour'
+      Hint = 'Delete behaviour'
+      ImageIndex = 4
+    end
+    object ACMoveUp: TAction
+      Caption = 'Move object up'
+      Hint = 'Move object up'
+      ImageIndex = 0
+      OnExecute = ACMoveUpExecute
+      ShortCut = 16469
+    end
+    object ACMoveDown: TAction
+      Caption = 'Move object down'
+      Hint = 'Move object down'
+      ImageIndex = 1
+      OnExecute = ACMoveDownExecute
+      ShortCut = 16452
+    end
+    object ACSaveScene: TAction
+      Caption = 'ACSaveScene'
+      Hint = 'Save whole scene'
+      ImageIndex = 6
+      OnExecute = ACSaveSceneExecute
+    end
+    object ACLoadScene: TAction
+      Caption = 'ACLoadScene'
+      Hint = 'Load whole scene'
+      ImageIndex = 5
+      OnExecute = ACLoadSceneExecute
+    end
+    object ACInfo: TAction
+      Caption = 'ACInfo'
+      Hint = 'OpenGL Info'
+      ImageIndex = 7
+      OnExecute = ACInfoExecute
+    end
+    object ACCopy: TAction
+      Caption = 'Copy'
+      Hint = 'Copy'
+      ImageIndex = 10
+      OnExecute = ACCopyExecute
+      ShortCut = 16451
+    end
+    object ACCut: TAction
+      Caption = 'Cut'
+      Hint = 'Cut'
+      ImageIndex = 9
+      OnExecute = ACCutExecute
+      ShortCut = 16472
+    end
+    object ACPaste: TAction
+      Caption = 'Paste'
+      Hint = 'Paste'
+      ImageIndex = 8
+      OnExecute = ACPasteExecute
+      ShortCut = 16470
+    end
+  end
+  object PMToolBar: TPopupMenu
+    left = 104
+    top = 40
+  end
+  object ImageList: TImageList
+    left = 40
+    top = 40
+  end
+  object OpenDialog: TOpenDialog
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Title = 'Open existing file'
+    DefaultExt = '.gls'
+    Filter = 'GLScene file (*.gls)|*.gls|All files (*.*)|*.*'
+    FilterIndex = 0
+    Title = 'Open existing file'
+    left = 40
+    top = 72
+  end
+  object SaveDialog: TSaveDialog
+    Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Title = 'Save file as'
+    DefaultExt = '.gls'
+    Filter = 'GLScene file (*.gls)|*.gls|All files (*.*)|*.*'
+    FilterIndex = 0
+    Title = 'Save file as'
+    left = 40
+    top = 104
+  end
+  object PMBehavioursToolbar: TPopupMenu
+    OnPopup = PMBehavioursToolbarPopup
+    Images = ImageList
+    left = 136
+    top = 40
+  end
+  object BehavioursPopupMenu: TPopupMenu
+    Images = ImageList
+    left = 200
+    top = 40
+    object Delete1: TMenuItem
+      Action = ACDeleteObject
+      OnClick = ACDeleteObjectExecute
+    end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object MoveUp1: TMenuItem
+      Action = ACMoveUp
+      Caption = 'Move up'
+      OnClick = ACMoveUpExecute
+    end
+    object MoveDown1: TMenuItem
+      Action = ACMoveDown
+      Caption = 'Move down'
+      OnClick = ACMoveDownExecute
+    end
+  end
+  object PMEffectsToolbar: TPopupMenu
+    OnPopup = PMEffectsToolbarPopup
+    Images = ImageList
+    left = 168
+    top = 40
+  end
+end

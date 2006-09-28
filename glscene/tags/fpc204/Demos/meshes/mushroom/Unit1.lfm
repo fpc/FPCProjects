@@ -1,0 +1,131 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 284
+  ClientWidth = 414
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnResize = FormResize
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 413
+  VertScrollBar.Page = 283
+  Left = 256
+  Height = 284
+  Top = 136
+  Width = 414
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.FogEnvironment.FogColor.Color = {
+      CECD4D3FCECD4D3FCECD4D3F0000803F
+    }
+    Buffer.FogEnvironment.FogStart = 30
+    Buffer.FogEnvironment.FogEnd = 90
+    Buffer.BackgroundColor = 13487565
+    Buffer.FogEnable = True
+    FieldOfView = 141.20437622070312
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 284
+    Width = 414
+  end
+  object Button1: TButton
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.InnerBorder = 2
+    Caption = 'I want more mushrooms !'
+    Font.CharSet = ANSI_CHARSET
+    Font.Height = -11
+    Font.Name = 'Arial'
+    OnClick = Button1Click
+    TabOrder = 0
+    Left = 144
+    Height = 17
+    Top = 232
+    Width = 137
+  end
+  object GLScene1: TGLScene
+    VisibilityCulling = vcObjectBased
+    left = 16
+    top = 16
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000FA4400409C4500007A450000803F
+      }
+      SpotCutOff = 180
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      object Disk1: TGLDisk
+        Loops = 3
+        OuterRadius = 75
+        Slices = 9
+        SweepAngle = 360
+        Material.FrontProperties.Diffuse.Color = {
+          938C0C3E938E0E3F938C0C3E0000803F
+        }
+        Material.FrontProperties.Emission.Color = {
+          0000803E0000803E0000803E0000803F
+        }
+        Material.Texture.ImageAlpha = tiaopaque
+        Material.Texture.MinFilter = miLinear
+        Material.Texture.TextureMode = tmReplace
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Material.Texture.Disabled = False
+        Direction.Coordinates = {
+          000000000000803F2EBD3BB300000000
+        }
+        Up.Coordinates = {
+          000000002EBD3BB3000080BF00000000
+        }
+      end
+      object FreeForm1: TGLFreeForm
+        AutoCentering = [macCenterX, macCenterY, macCenterZ]
+        UseMeshMaterials = False
+        NormalsOrientation = mnoInvert
+        Material.FrontProperties.Diffuse.Color = {
+          0AD7633FD7A3F03ECDCC4C3E0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Direction.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000000000004040000000000000803F
+        }
+        Scale.Coordinates = {
+          CDCCCC3DCDCCCC3DCDCCCC3D00000000
+        }
+        Up.Coordinates = {
+          0000803F000000000000008000000000
+        }
+      end
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 500
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        0000A041000040410000F0410000803F
+      }
+      left = 200
+      top = 104
+    end
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 48
+    top = 16
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 16
+    top = 48
+  end
+end

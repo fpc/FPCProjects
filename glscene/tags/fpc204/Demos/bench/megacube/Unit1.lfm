@@ -1,0 +1,62 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 302
+  ClientWidth = 344
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 90
+  TextHeight = 13
+  HorzScrollBar.Page = 343
+  VertScrollBar.Page = 301
+  Left = 331
+  Height = 302
+  Top = 294
+  Width = 344
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    FieldOfView = 143.35792541503906
+    Align = alClient
+    Height = 302
+    Width = 344
+  end
+  object GLScene1: TGLScene
+    ObjectsSorting = osNone
+    left = 8
+    top = 8
+    object DummyCube1: TGLDummyCube
+      CubeSize = 10
+      Amalgamate = True
+      ObjectsSorting = osNone
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000C842000048420000C8420000803F
+      }
+      LightStyle = lsOmni
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 500
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        000048420000C8410000C8420000803F
+      }
+    end
+  end
+  object Timer1: TTimer
+    Interval = 4000
+    OnTimer = Timer1Timer
+    left = 8
+    top = 40
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 72
+  end
+end

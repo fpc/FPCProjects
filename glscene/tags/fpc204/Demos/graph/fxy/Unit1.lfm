@@ -1,0 +1,157 @@
+object Form1: TForm1
+  AutoSize = True
+  Caption = 'Form1'
+  ClientHeight = 334
+  ClientWidth = 497
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 496
+  VertScrollBar.Page = 333
+  Left = 259
+  Height = 334
+  Top = 125
+  Width = 497
+  object Label1: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'XY Grid position'
+    Color = clNone
+    Left = 392
+    Height = 13
+    Top = 32
+    Width = 75
+  end
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 99.821952819824219
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 297
+    Width = 377
+  end
+  object CBCentered: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Centered grids'
+    Checked = True
+    OnClick = CBCenteredClick
+    State = cbChecked
+    TabOrder = 0
+    Left = 384
+    Height = 17
+    Width = 97
+  end
+  object TBXYPosition: TTrackBar
+    BorderSpacing.OnChange = nil
+    Frequency = 1
+    Min = -10
+    OnChange = TBXYPositionChange
+    Orientation = trVertical
+    ScalePos = trTop
+    TabOrder = 1
+    TickMarks = tmBoth
+    Frequency = 1
+    Min = -10
+    OnChange = TBXYPositionChange
+    Orientation = trVertical
+    ScalePos = trTop
+    TickMarks = tmBoth
+    Left = 408
+    Height = 249
+    Top = 48
+    Width = 45
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 16
+    object HeightField1: TGLHeightField
+      XSamplingScale.Min = -1
+      XSamplingScale.Max = 1
+      XSamplingScale.Step = 0.019999999552965
+      YSamplingScale.Min = -1
+      YSamplingScale.Max = 1
+      YSamplingScale.Step = 0.019999999552965
+      OnGetHeight = HeightField1GetHeight
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Direction.Coordinates = {
+        0044F4970000803F2EBD3BB300000000
+      }
+      ShowAxes = True
+      Up.Coordinates = {
+        0000803F583DAF262EBD3B3300000000
+      }
+      object YZGrid: TGLXYZGrid
+        XSamplingScale.Min = -1
+        XSamplingScale.Max = 1
+        XSamplingScale.Step = 0.100000001490116
+        YSamplingScale.Min = -1
+        YSamplingScale.Max = 1
+        YSamplingScale.Step = 0.100000001490116
+        ZSamplingScale.Min = -1
+        ZSamplingScale.Max = 1
+        ZSamplingScale.Step = 0.100000001490116
+        Parts = [gpY, gpZ]
+        LineColor.Color = {
+          0000803F00000000000000000000803F
+        }
+      end
+      object XZGrid: TGLXYZGrid
+        XSamplingScale.Min = -1
+        XSamplingScale.Max = 1
+        XSamplingScale.Step = 0.100000001490116
+        YSamplingScale.Min = -1
+        YSamplingScale.Max = 1
+        YSamplingScale.Step = 0.100000001490116
+        ZSamplingScale.Min = -1
+        ZSamplingScale.Max = 1
+        ZSamplingScale.Step = 0.100000001490116
+        Parts = [gpX, gpZ]
+        LineColor.Color = {
+          000000000000803F000000000000803F
+        }
+      end
+      object XYGrid: TGLXYZGrid
+        XSamplingScale.Min = -1
+        XSamplingScale.Max = 1
+        XSamplingScale.Step = 0.100000001490116
+        YSamplingScale.Min = -1
+        YSamplingScale.Max = 1
+        YSamplingScale.Step = 0.100000001490116
+        ZSamplingScale.Min = -1
+        ZSamplingScale.Max = 1
+        ZSamplingScale.Step = 0.100000001490116
+        LineColor.Color = {
+          00000000000000000000803F0000803F
+        }
+      end
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000F041000048420000C8420000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 125
+      TargetObject = HeightField1
+      Position.Coordinates = {
+        0000404000008040000000410000803F
+      }
+      left = 208
+      top = 168
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    left = 54
+    top = 18
+  end
+end

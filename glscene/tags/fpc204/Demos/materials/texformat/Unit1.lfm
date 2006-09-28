@@ -1,0 +1,213 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 381
+  ClientWidth = 532
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnResize = FormResize
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 531
+  VertScrollBar.Page = 380
+  Left = 200
+  Height = 381
+  Top = 104
+  Width = 532
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    AfterRender = GLSceneViewer1AfterRender
+    FieldOfView = 179.29264831542969
+    Align = alClient
+    Height = 381
+    Width = 324
+  end
+  object Panel1: TPanel
+    Align = alRight
+    BevelOuter = bvLowered
+    ClientHeight = 381
+    ClientWidth = 208
+    FullRepaint = False
+    TabOrder = 0
+    Left = 324
+    Height = 381
+    Width = 208
+    object Label1: TLabel
+      Align = alTop
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'TexFormat'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -27
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      Layout = tlCenter
+      Left = 1
+      Height = 56
+      Top = 1
+      Width = 206
+    end
+    object Label2: TLabel
+      Caption = 'Format'
+      Color = clNone
+      Left = 16
+      Height = 13
+      Top = 148
+      Width = 32
+    end
+    object Label3: TLabel
+      Caption = 'Compression'
+      Color = clNone
+      Left = 16
+      Height = 13
+      Top = 180
+      Width = 60
+    end
+    object Label4: TLabel
+      Caption = 'Image'
+      Color = clNone
+      Left = 16
+      Height = 13
+      Top = 84
+      Width = 29
+    end
+    object LAPicSize: TLabel
+      Caption = 'LAPicSize'
+      Color = clNone
+      Left = 88
+      Height = 13
+      Top = 112
+      Width = 48
+    end
+    object Label5: TLabel
+      Caption = 'Render Size'
+      Color = clNone
+      Left = 16
+      Height = 13
+      Top = 272
+      Width = 58
+    end
+    object LAUsedMemory: TLabel
+      Caption = 'Used Memory'
+      Color = clNone
+      Left = 16
+      Height = 13
+      Top = 228
+      Width = 65
+    end
+    object LARGB32: TLabel
+      Caption = 'Used Memory'
+      Color = clNone
+      Left = 16
+      Height = 13
+      Top = 212
+      Width = 65
+    end
+    object LACompression: TLabel
+      Caption = 'Used Memory'
+      Color = clNone
+      Left = 16
+      Height = 13
+      Top = 244
+      Width = 65
+    end
+    object CBFormat: TComboBox
+      ItemHeight = 13
+      Items.Strings = (
+        'RGB    (24 bits)'
+        'RGBA  (32 bits)'
+        'RGB    (16 bits)'
+        'RGBA  (16 bits)'
+      )
+      MaxLength = 0
+      OnChange = CBImageChange
+      Style = csDropDownList
+      TabOrder = 0
+      Left = 88
+      Height = 21
+      Top = 144
+      Width = 105
+    end
+    object CBCompression: TComboBox
+      ItemHeight = 13
+      Items.Strings = (
+        'None'
+        'Standard'
+        'Nicest'
+        'Fastest'
+      )
+      MaxLength = 0
+      OnChange = CBImageChange
+      Style = csDropDownList
+      TabOrder = 1
+      Left = 88
+      Height = 21
+      Top = 176
+      Width = 105
+    end
+    object CBImage: TComboBox
+      ItemHeight = 13
+      MaxLength = 0
+      OnChange = CBImageChange
+      Style = csDropDownList
+      TabOrder = 2
+      Left = 88
+      Height = 21
+      Top = 80
+      Width = 105
+    end
+    object RBDefault: TRadioButton
+      Caption = '100 %'
+      Checked = True
+      OnClick = CBImageChange
+      State = cbChecked
+      TabOrder = 3
+      Left = 88
+      Height = 17
+      Top = 270
+      Width = 57
+    end
+    object RBDouble: TRadioButton
+      Caption = '200 %'
+      OnClick = CBImageChange
+      TabOrder = 4
+      Left = 87
+      Height = 17
+      Top = 294
+      Width = 58
+    end
+    object RBQuad: TRadioButton
+      Caption = '400 %'
+      OnClick = CBImageChange
+      TabOrder = 5
+      Left = 87
+      Height = 17
+      Top = 318
+      Width = 58
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 16
+    object HUDSprite1: TGLHUDSprite
+      Width = 256
+      Height = 256
+      Material.Texture.MinFilter = miLinear
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Material.Texture.Disabled = False
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 1
+      CameraStyle = csOrthogonal
+      Position.Coordinates = {
+        0000000000000000000070410000803F
+      }
+      left = 256
+      top = 160
+    end
+  end
+end

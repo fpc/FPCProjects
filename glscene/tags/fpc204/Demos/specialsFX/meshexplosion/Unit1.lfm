@@ -1,0 +1,166 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 462
+  ClientWidth = 582
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 581
+  VertScrollBar.Page = 461
+  Left = 285
+  Height = 462
+  Top = 145
+  Width = 582
+  object viewer: TGLSceneViewer
+    Camera = Camera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 149.35697937011719
+    Align = alClient
+    OnMouseDown = viewerMouseDown
+    OnMouseMove = viewerMouseMove
+    Height = 365
+    Width = 582
+  end
+  object Panel1: TPanel
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 97
+    ClientWidth = 582
+    FullRepaint = False
+    TabOrder = 0
+    Height = 97
+    Top = 365
+    Width = 582
+    object Label2: TLabel
+      Caption = 'Step'
+      Color = clNone
+      ParentColor = False
+      Left = 8
+      Height = 13
+      Top = 56
+      Width = 22
+    end
+    object Label1: TLabel
+      Caption = 'MaxSteps'
+      Color = clNone
+      ParentColor = False
+      Left = 8
+      Height = 13
+      Top = 8
+      Width = 47
+    end
+    object Label3: TLabel
+      Caption = 'Speed'
+      Color = clNone
+      ParentColor = False
+      Left = 424
+      Height = 13
+      Top = 8
+      Width = 31
+    end
+    object CheckOn: TCheckBox
+      Caption = 'On'
+      OnClick = CheckOnClick
+      TabOrder = 0
+      Left = 488
+      Height = 17
+      Top = 64
+      Width = 41
+    end
+    object StepBar: TProgressBar
+      Max = 200
+      Smooth = True
+      TabOrder = 1
+      Left = 8
+      Height = 16
+      Top = 72
+      Width = 393
+    end
+    object MaxStepsBar: TTrackBar
+      Frequency = 1
+      Max = 200
+      OnChange = MaxStepsBarChange
+      ScalePos = trTop
+      TabOrder = 2
+      Frequency = 1
+      Max = 200
+      OnChange = MaxStepsBarChange
+      ScalePos = trTop
+      Height = 25
+      Top = 24
+      Width = 409
+    end
+    object SpeedBar: TTrackBar
+      Frequency = 1
+      Max = 20
+      OnChange = SpeedBarChange
+      Position = 1
+      ScalePos = trTop
+      TabOrder = 3
+      Frequency = 1
+      Max = 20
+      OnChange = SpeedBarChange
+      Position = 1
+      ScalePos = trTop
+      Left = 416
+      Height = 25
+      Top = 24
+      Width = 121
+    end
+    object Button1: TButton
+      BorderSpacing.InnerBorder = 2
+      Caption = 'Reset'
+      OnClick = Button1Click
+      TabOrder = 4
+      Left = 408
+      Height = 25
+      Top = 64
+      Width = 75
+    end
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 16
+    object mesh: TGLFreeForm
+      NormalsOrientation = mnoInvert
+      Scale.Coordinates = {
+        CDCCCC3ECDCCCC3ECDCCCC3E00000000
+      }
+      EffectsData = {
+        0201060F54474C424578706C6F73696F6E46580200
+      }
+    end
+    object Camera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = mesh
+      Position.Coordinates = {
+        0000000000004842000000000000803F
+      }
+      Direction.Coordinates = {
+        00000000000080BF0000000000000000
+      }
+      Up.Coordinates = {
+        E8DC723F000000009BE8A1BE00000000
+      }
+      left = 328
+      top = 216
+      object GLLightSource1: TGLLightSource
+        ConstAttenuation = 1
+        SpotCutOff = 180
+        SpotDirection.Coordinates = {
+          00000000000000000000803F00000000
+        }
+      end
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 16
+    top = 48
+  end
+end

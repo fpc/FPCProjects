@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="5"/>
+    <General>
+      <Flags>
+        <MainUnitHasUsesSectionForAllUnits Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+      </Flags>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <ActiveEditorIndexAtStart Value="3"/>
+    </General>
+    <Units Count="4">
+      <Unit0>
+        <CursorPos X="65" Y="5"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="nutsnbolts.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="20"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="16" Y="22"/>
+        <EditorIndex Value="1"/>
+        <Filename Value="Unit1.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="12"/>
+        <UnitName Value="Unit1"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="53" Y="131"/>
+        <EditorIndex Value="2"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLObjects.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="111"/>
+        <UnitName Value="GLObjects"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="20" Y="457"/>
+        <EditorIndex Value="3"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLMisc.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="430"/>
+        <UnitName Value="GLMisc"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="GLSceneLazarus"/>
+      </Item2>
+    </RequiredPackages>
+    <JumpHistory Count="1" HistoryIndex="0">
+      <Position1>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLObjects.pas"/>
+        <Caret Line="131" Column="53" TopLine="111"/>
+      </Position1>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <PathDelim Value="\"/>
+    <SearchPaths>
+      <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Linking>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

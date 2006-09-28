@@ -1,0 +1,142 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 302
+  ClientWidth = 562
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 561
+  VertScrollBar.Page = 301
+  Left = 250
+  Height = 302
+  Top = 127
+  Width = 562
+  object Label1: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'Orthogonal View'
+    Color = clNone
+    Left = 8
+    Height = 13
+    Top = 8
+    Width = 78
+  end
+  object Label2: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'Perspective View'
+    Color = clNone
+    Left = 280
+    Height = 13
+    Top = 8
+    Width = 82
+  end
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clGray
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 170.51206970214844
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Left = 8
+    Height = 241
+    Top = 24
+    Width = 265
+  end
+  object GLSceneViewer2: TGLSceneViewer
+    Camera = GLCamera2
+    Buffer.BackgroundColor = clGray
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 134.92918395996094
+    OnMouseDown = GLSceneViewer2MouseDown
+    OnMouseMove = GLSceneViewer2MouseMove
+    Left = 280
+    Height = 241
+    Top = 24
+    Width = 265
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 16
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        000048420000704200008C420000803F
+      }
+      SpotCutOff = 180
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      object FreeForm1: TGLFreeForm
+        NormalsOrientation = mnoInvert
+        Direction.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Scale.Coordinates = {
+          CDCCCC3DCDCCCC3DCDCCCC3D00000000
+        }
+        ShowAxes = True
+        Up.Coordinates = {
+          00000000000000000000803F00000000
+        }
+      end
+    end
+    object Sphere1: TGLSphere
+      Radius = 0.300000011920929
+      Slices = 6
+      Stacks = 6
+      Material.FrontProperties.Emission.Color = {
+        0000803F0000803F000000000000803F
+      }
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        E9DC72BF000000009BE8A13E00000000
+      }
+      object ArrowLine1: TGLArrowLine
+        TopRadius = 0.100000001490116
+        TopArrowHeadHeight = 0.5
+        TopArrowHeadRadius = 0.200000002980232
+        BottomArrowHeadHeight = 0.5
+        BottomArrowHeadRadius = 0.200000002980232
+        BottomRadius = 0.050000000745058
+        Height = 1
+        Material.FrontProperties.Diffuse.Color = {
+          CDCC4C3FCDCC4C3FCDCC4C3F9A99193F
+        }
+        Material.FrontProperties.Emission.Color = {
+          1283803E1283803E000000000000803F
+        }
+        Material.BlendingMode = bmTransparency
+        Position.Coordinates = {
+          0000000000000000CDCCCC3D0000803F
+        }
+      end
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 10
+      TargetObject = DummyCube1
+      CameraStyle = csOrthogonal
+      Position.Coordinates = {
+        0000504100004040000010410000803F
+      }
+    end
+    object GLCamera2: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        0000204100002041000020410000803F
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    left = 48
+    top = 16
+  end
+end

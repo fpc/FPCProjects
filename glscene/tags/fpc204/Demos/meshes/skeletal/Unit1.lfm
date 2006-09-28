@@ -1,0 +1,223 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 445
+  ClientWidth = 523
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 522
+  VertScrollBar.Page = 444
+  Left = 295
+  Height = 445
+  Top = 158
+  Width = 523
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clSilver
+    Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
+    Buffer.Lighting = False
+    FieldOfView = 152.19462585449219
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 404
+    Width = 416
+  end
+  object Panel1: TPanel
+    Align = alRight
+    BevelOuter = bvNone
+    ClientHeight = 404
+    ClientWidth = 107
+    Font.CharSet = ANSI_CHARSET
+    Font.Height = -13
+    Font.Name = 'Arial'
+    FullRepaint = False
+    TabOrder = 0
+    Left = 416
+    Height = 404
+    Width = 107
+    object Label1: TLabel
+      Align = alTop
+      Alignment = taCenter
+      Caption = #13#10'Basic Skeletal'#13#10'Animation'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      Height = 48
+      Width = 107
+    end
+    object CheckBox1: TCheckBox
+      Caption = 'Skeleton'
+      Checked = True
+      OnClick = CheckBox1Click
+      State = cbChecked
+      TabOrder = 0
+      Left = 16
+      Height = 17
+      Top = 240
+      Width = 81
+    end
+    object BUHighJump: TButton
+      Caption = 'High Jump'
+      OnClick = BUHighJumpClick
+      TabOrder = 1
+      Left = 16
+      Height = 25
+      Top = 192
+      Width = 81
+    end
+    object RBWalk: TRadioButton
+      Caption = 'Walk'
+      Checked = True
+      OnClick = RBWalkClick
+      State = cbChecked
+      TabOrder = 2
+      Left = 16
+      Height = 17
+      Top = 88
+      Width = 65
+    end
+    object RBRun: TRadioButton
+      Caption = 'Run'
+      OnClick = RBRunClick
+      TabOrder = 3
+      Left = 16
+      Height = 17
+      Top = 112
+      Width = 73
+    end
+    object BULongJump1: TButton
+      BorderSpacing.OnChange = nil
+      Caption = 'Long Jump'
+      OnClick = BULongJumpClick
+      TabOrder = 4
+      Left = 16
+      Height = 25
+      Top = 152
+      Width = 81
+    end
+  end
+  object Panel2: TPanel
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 41
+    ClientWidth = 523
+    FullRepaint = False
+    TabOrder = 1
+    Height = 41
+    Top = 404
+    Width = 523
+    object TrackBar1: TTrackBar
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      Frequency = 1
+      Max = 100
+      OnChange = TrackBar1Change
+      Position = 50
+      ScalePos = trTop
+      TabOrder = 0
+      TickMarks = tmBoth
+      Frequency = 1
+      Max = 100
+      OnChange = TrackBar1Change
+      Position = 50
+      ScalePos = trTop
+      TickMarks = tmBoth
+      Left = 64
+      Height = 34
+      Width = 459
+    end
+    object CBBlend: TCheckBox
+      Caption = 'Blend'
+      OnClick = CBBlendClick
+      TabOrder = 1
+      Left = 8
+      Height = 17
+      Top = 12
+      Width = 49
+    end
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 8
+    object GLLightSource1: TGLLightSource
+      Ambient.Color = {
+        0000803F0000803F0000803F0000803F
+      }
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000C8420000C8420000C8420000803F
+      }
+      SpotCutOff = 180
+    end
+    object Actor1: TGLActor
+      AnimationMode = aamLoop
+      Interval = 100
+      OnEndFrameReached = Actor1EndFrameReached
+      MaterialLibrary = GLMaterialLibrary1
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Scale.Coordinates = {
+        0000003F0000003F0000003F00000000
+      }
+      Up.Coordinates = {
+        0000000000000080000080BF00000000
+      }
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+    end
+    object XYZGrid1: TGLXYZGrid
+      XSamplingScale.Min = -12
+      XSamplingScale.Max = 12
+      XSamplingScale.Step = 4
+      YSamplingScale.Step = 1
+      ZSamplingScale.Min = -20
+      ZSamplingScale.Max = 20
+      ZSamplingScale.Step = 4
+      Parts = [gpX, gpZ]
+      LineColor.Color = {
+        1283803E1283003F1283003F0000803F
+      }
+      Position.Coordinates = {
+        00000000000090C1000000000000803F
+      }
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 500
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        000048420000A0410000A0400000803F
+      }
+      Direction.Coordinates = {
+        00000000000000000000803F00000000
+      }
+      left = 224
+      top = 160
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    left = 16
+    top = 40
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 56
+    top = 8
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 56
+    top = 40
+  end
+  object AnimationControler1: TGLAnimationControler
+    left = 40
+    top = 80
+  end
+end
