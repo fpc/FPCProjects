@@ -38,7 +38,7 @@ unit xcollection;
 
 interface
 
-uses classes, sysutils, persistentclasses;
+uses classes, sysutils {crossbuilder persistentclasses};
 
 {$i GLScene.inc}
 
@@ -70,9 +70,9 @@ type
          function GetOwner : TPersistent; override;
 
          {: Override this function to write subclass data. }
-         procedure WriteToFiler(writer : TVirtualWriter); virtual;
+         procedure WriteToFiler(writer : TWriter); virtual;
          {: Override this function to read subclass data. }
-         procedure ReadFromFiler(reader : TVirtualReader); virtual;
+         procedure ReadFromFiler(reader : TReader); virtual;
          {: Override to perform things when owner form has been loaded. }
          procedure Loaded; dynamic;
 
@@ -147,8 +147,8 @@ type
 			function GetItems(index : Integer) : TXCollectionItem;
          function GetOwner : TPersistent; override;
 
-			procedure ReadFromFiler(reader : TVirtualReader);
-			procedure WriteToFiler(writer : TVirtualWriter);
+			procedure ReadFromFiler(reader : TReader);
+			procedure WriteToFiler(writer : TWriter);
 
 		public
 			{ Public Declarations }
@@ -340,7 +340,7 @@ end;
 
 // WriteToFiler
 //
-procedure TXCollectionItem.WriteToFiler(writer : TVirtualWriter);
+procedure TXCollectionItem.WriteToFiler(writer : TWriter);
 begin
    with writer do begin
       WriteInteger(0); // Archive Version 0
@@ -350,7 +350,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TXCollectionItem.ReadFromFiler(reader : TVirtualReader);
+procedure TXCollectionItem.ReadFromFiler(reader : TReader);
 begin
    with reader do begin
       Assert(ReadInteger=0);
@@ -503,7 +503,7 @@ end;
 
 // WriteToFiler
 //
-procedure TXCollection.WriteToFiler(writer : TVirtualWriter);
+procedure TXCollection.WriteToFiler(writer : TWriter);
 var
 	i, n : Integer;
 	classList : TList;
@@ -537,7 +537,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TXCollection.ReadFromFiler(reader : TVirtualReader);
+procedure TXCollection.ReadFromFiler(reader : TReader);
 var
 	n : Integer;
 	classList : TList;

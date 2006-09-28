@@ -63,8 +63,8 @@ type
       procedure SetOffsetY(const Value : Integer);
       procedure SetWidth(const Value : Integer);
       procedure SetHeight(const Value : Integer);
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
     public
       class function FriendlyName : String; override;
@@ -149,8 +149,8 @@ type
       procedure SetCurrentFrame(const Value : Integer);
       procedure SetFrameWidth(const Value : Integer);
       procedure SetFrameHeight(const Value : Integer);
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
       procedure SetDimensions(const Value: TSpriteFrameDimensions);
       procedure SetLibMaterialName(const val : TGLLibMaterialName);
       function GetLibMaterialCached : TGLLibMaterial;
@@ -358,7 +358,7 @@ end;
 
 // WriteToFiler
 //
-procedure TSpriteAnimFrame.WriteToFiler(writer : TVirtualWriter);
+procedure TSpriteAnimFrame.WriteToFiler(writer : TWriter);
 begin
   inherited;
   writer.WriteInteger(0); // Archive version number
@@ -372,7 +372,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TSpriteAnimFrame.ReadFromFiler(reader : TVirtualReader);
+procedure TSpriteAnimFrame.ReadFromFiler(reader : TReader);
 var
   archiveVersion : Integer;
 begin
@@ -546,7 +546,7 @@ end;
 
 // WriteToFiler
 //
-procedure TSpriteAnimation.WriteToFiler(writer : TVirtualWriter);
+procedure TSpriteAnimation.WriteToFiler(writer : TWriter);
 begin
   inherited;
   writer.WriteInteger(2); // Archive version number
@@ -574,7 +574,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TSpriteAnimation.ReadFromFiler(reader : TVirtualReader);
+procedure TSpriteAnimation.ReadFromFiler(reader : TReader);
 var
   archiveVersion : Integer;
 begin
@@ -918,9 +918,10 @@ end;
 //
 procedure TGLAnimatedSprite.WriteAnimations(Stream : TStream);
 var
-  writer : TVirtualWriter;
+  writer : TWriter;
 begin
-  writer:=TBinaryWriter.Create(stream);
+{crossbuilder  writer:=TBinaryWriter.Create(stream);}
+  writer:=TWriter.Create(stream, 16384);
   try
     Animations.WriteToFiler(writer);
   finally
@@ -932,9 +933,10 @@ end;
 //
 procedure TGLAnimatedSprite.ReadAnimations(Stream : TStream);
 var
-  reader : TVirtualReader;
+  reader : TReader;
 begin
-  reader:=TBinaryReader.Create(stream);
+{crossbuilder  reader:=TBinaryReader.Create(stream);}
+  reader:=TReader.Create(stream, 16384);
   try
     Animations.ReadFromFiler(reader);
   finally

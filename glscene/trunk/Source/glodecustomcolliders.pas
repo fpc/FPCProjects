@@ -55,7 +55,7 @@ interface
 uses
   classes, sysutils, glodemanager, dynode, dynodegl, vectorgeometry,
   vectorlists, glscene, glterrainrenderer, glplot, xcollection,
-  opengl1x, gltexture, persistentclasses;
+  opengl1x, gltexture {crossbuilder, persistentclasses};
 
 type
   TContactPoint = class
@@ -92,8 +92,8 @@ type
       procedure Initialize; override;
       procedure Finalize; override;
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       //: Test a position for a collision and fill out the contact information.
       function Collide(aPos : TAffineVector; var Depth : Single;
@@ -152,8 +152,8 @@ type
   TGLODEHeightField = class (TGLODECustomCollider)
     protected
       { Protected Declarations }
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       function Collide(aPos : TAffineVector; var Depth : Single;
         var cPos, cNorm : TAffineVector) : Boolean; override;
@@ -588,7 +588,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLODECustomCollider.WriteToFiler(writer : TVirtualWriter);
+procedure TGLODECustomCollider.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -596,13 +596,14 @@ begin
     WriteFloat(FContactResolution);
     WriteBoolean(FRenderContacts);
     WriteFloat(FPointSize);
-    Write(PByte(FContactColor.AsAddress)^, 4);
+    {$warning: - crossbuilder - this should get back in, if possible:}
+    //crossbuilder:         Write(PByte(FContactColor.AsAddress)^, 4);
   end;
 end;
 
 // ReadFromFiler
 //
-procedure TGLODECustomCollider.ReadFromFiler(reader : TVirtualReader);
+procedure TGLODECustomCollider.ReadFromFiler(reader : TReader);
 var
   archiveVersion : Integer;
 begin
@@ -613,7 +614,8 @@ begin
     FContactResolution:=ReadFloat;
     FRenderContacts:=ReadBoolean;
     FPointSize:=ReadFloat;
-    Read(PByte(FContactColor.AsAddress)^, 4);
+    {$warning: - crossbuilder - this should get back in, if possible:}
+    //crossbuilder:     Read(PByte(FContactColor.AsAddress)^, 4);
   end;
 end;
 
@@ -780,7 +782,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLODEHeightField.WriteToFiler(writer : TVirtualWriter);
+procedure TGLODEHeightField.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -790,7 +792,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLODEHeightField.ReadFromFiler(reader : TVirtualReader);
+procedure TGLODEHeightField.ReadFromFiler(reader : TReader);
 var
   archiveVersion : Integer;
 begin

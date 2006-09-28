@@ -37,7 +37,7 @@ unit glcollision;
 interface
 
 uses classes, glscene, xcollection, vectorgeometry, vectorlists, glvectorfileobjects,
-   geometrybb, glcrossplatform,persistentclasses;
+   geometrybb, glcrossplatform {crossbuilder ,persistentclasses};
 
 type
 
@@ -109,8 +109,8 @@ type
          procedure SetGroupIndex(const value : Integer);
          procedure SetManager(const val : TCollisionManager);
 
-         procedure WriteToFiler(writer : TVirtualWriter); override;
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
          procedure Loaded; override;
 
 		public
@@ -1145,7 +1145,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLBCollision.WriteToFiler(writer : TVirtualWriter);
+procedure TGLBCollision.WriteToFiler(writer : TWriter);
 begin
    with writer do begin
       WriteInteger(1); // ArchiveVersion 1, added FGroupIndex
@@ -1159,7 +1159,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLBCollision.ReadFromFiler(reader : TVirtualReader);
+procedure TGLBCollision.ReadFromFiler(reader : TReader);
 var
    archiveVersion : Integer;
 begin

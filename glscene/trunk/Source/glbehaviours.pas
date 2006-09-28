@@ -32,7 +32,7 @@ unit glbehaviours;
 
 interface
 
-uses classes, glscene, vectorgeometry, glmisc, xcollection,persistentclasses;
+uses classes, glscene, vectorgeometry, glmisc, xcollection {crossbuilder ,persistentclasses};
 
 type
 
@@ -65,8 +65,8 @@ type
 	      constructor Create(aOwner: TPersistent); override;
          destructor Destroy; override;
 
-         procedure WriteToFiler(writer : TVirtualWriter);
-			procedure ReadFromFiler(reader : TVirtualReader);
+         procedure WriteToFiler(writer : TWriter);
+			procedure ReadFromFiler(reader : TReader);
 
 			procedure Assign(source : TPersistent); override;
 			{: Calculates attenuated speed over deltaTime.<p>
@@ -110,8 +110,8 @@ type
          procedure SetTranslationDamping(const val : TGLDamping);
 			procedure SetRotationDamping(const val : TGLDamping);
 
-         procedure WriteToFiler(writer : TVirtualWriter); override;
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+			procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
 
 		public
 			{ Public Declarations }
@@ -179,8 +179,8 @@ type
 			{ Protected Declarations }
          procedure SetAcceleration(const val : TGLCoordinates);
 
-         procedure WriteToFiler(writer : TVirtualWriter); override;
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+			procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
 
 		public
 			{ Public Declarations }
@@ -287,7 +287,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLDamping.WriteToFiler(writer : TVirtualWriter);
+procedure TGLDamping.WriteToFiler(writer : TWriter);
 var
    writeStuff : Boolean;
 begin
@@ -305,7 +305,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLDamping.ReadFromFiler(reader : TVirtualReader);
+procedure TGLDamping.ReadFromFiler(reader : TReader);
 begin
    with reader do begin
       ReadInteger; // ignore Archive Version
@@ -402,7 +402,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLBInertia.WriteToFiler(writer : TVirtualWriter);
+procedure TGLBInertia.WriteToFiler(writer : TWriter);
 begin
    inherited;
    with writer do begin
@@ -420,7 +420,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLBInertia.ReadFromFiler(reader : TVirtualReader);
+procedure TGLBInertia.ReadFromFiler(reader : TReader);
 begin
    inherited;
    with reader do begin
@@ -610,7 +610,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLBAcceleration.WriteToFiler(writer : TVirtualWriter);
+procedure TGLBAcceleration.WriteToFiler(writer : TWriter);
 begin
    inherited;
    with writer do begin
@@ -621,7 +621,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLBAcceleration.ReadFromFiler(reader : TVirtualReader);
+procedure TGLBAcceleration.ReadFromFiler(reader : TReader);
 begin
    inherited;
    with reader do begin

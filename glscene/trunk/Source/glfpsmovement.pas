@@ -40,7 +40,7 @@ interface
 uses
      opengl1x, vectorgeometry, glmisc, glscene, glvectorfileobjects, gltexture,
      vectorlists, xcollection, classes, glgeomobjects, sysutils,
-     glnavigator,persistentclasses;
+     glnavigator {crossbuilder ,persistentclasses};
 
 type
      TContactPoint = record
@@ -66,8 +66,8 @@ type
 
           procedure setMap(value: TGLFreeForm);
      protected
-         procedure WriteToFiler(writer : TVirtualWriter); override;
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
          procedure loaded; override;
      public
           constructor Create(aOwner : TXCollection); override;
@@ -162,8 +162,8 @@ type
           procedure RenderArrowLines(Sender: TObject;
                                      var rci: TRenderContextInfo);
      protected
-         procedure WriteToFiler(writer : TVirtualWriter); override;
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
          procedure loaded; override;
      public
           velocity: TVector;
@@ -269,7 +269,7 @@ begin
      if assigned(FMap) then FMap.FreeNotification(TComponent(owner.Owner));
 end;
 
-procedure TGLMapCollectionItem.WriteToFiler(writer : TVirtualWriter);
+procedure TGLMapCollectionItem.WriteToFiler(writer : TWriter);
 begin
      inherited WriteToFiler(writer);
      with writer do begin
@@ -282,7 +282,7 @@ begin
      end;
 end;
 
-procedure TGLMapCollectionItem.ReadFromFiler(reader : TVirtualReader);
+procedure TGLMapCollectionItem.ReadFromFiler(reader : TReader);
 var
 archiveVersion: integer;
 begin
@@ -389,9 +389,9 @@ end;
 //
 procedure TGLFPSMovementManager.WriteMaps(stream : TStream);
 var
-   writer : TVirtualWriter;
+   writer : TWriter;
 begin
-   writer:=TBinaryWriter.Create(stream);
+   writer:=TWriter.Create(stream, 16384);
    try
       Maps.WriteToFiler(writer);
    finally
@@ -403,9 +403,9 @@ end;
 //
 procedure TGLFPSMovementManager.ReadMaps(stream : TStream);
 var
-   reader : TVirtualReader;
+   reader : TReader;
 begin
-   reader:=TBinaryReader.Create(stream);
+   reader:=TReader.Create(stream, 16384);
     try
        Maps.ReadFromFiler(reader);
     finally
@@ -656,7 +656,7 @@ begin
    Result:='FPS Movement';
 end;
 
-procedure TGLBFPSMovement.WriteToFiler(writer : TVirtualWriter);
+procedure TGLBFPSMovement.WriteToFiler(writer : TWriter);
 begin
      inherited WriteToFiler(writer);
      with writer do begin
@@ -672,7 +672,7 @@ begin
      end;
 end;
 
-procedure TGLBFPSMovement.ReadFromFiler(reader : TVirtualReader);
+procedure TGLBFPSMovement.ReadFromFiler(reader : TReader);
 var
 archiveVersion: integer;
 begin

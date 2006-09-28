@@ -92,7 +92,7 @@ unit glmisc;
 
 interface
 
-uses classes, vectorgeometry, opengl1x, spline, vectorlists, persistentclasses;
+uses classes, vectorgeometry, opengl1x, spline, vectorlists;
 
 {$i GLScene.inc}
 
@@ -242,8 +242,8 @@ type
                                        const aStyle : TGLCoordinatesStyle = csUnknown);
          destructor Destroy; override;
 			procedure Assign(Source: TPersistent); override;
-         procedure WriteToFiler(writer : TVirtualWriter);
-         procedure ReadFromFiler(reader : TVirtualReader);
+         procedure WriteToFiler(writer : TWriter);
+         procedure ReadFromFiler(reader : TReader);
 
          procedure Initialize(const value : TVector);
 			procedure NotifyChange(Sender : TObject); override;
@@ -674,7 +674,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLCoordinates.WriteToFiler(writer : TVirtualWriter);
+procedure TGLCoordinates.WriteToFiler(writer : TWriter);
 var
    writeCoords : Boolean;
 begin
@@ -691,7 +691,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLCoordinates.ReadFromFiler(reader : TVirtualReader);
+procedure TGLCoordinates.ReadFromFiler(reader : TReader);
 var
    n : Integer;
 begin

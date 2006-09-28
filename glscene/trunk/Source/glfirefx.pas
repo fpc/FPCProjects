@@ -36,8 +36,8 @@ unit glfirefx;
 
 interface
 
-uses classes, glscene, glmisc, xcollection, vectorgeometry, gltexture, glcadencer,
-     persistentclasses;
+uses classes, glscene, glmisc, xcollection, vectorgeometry, gltexture, glcadencer {, crossbuilder
+     persistentclasses};
 
 type
 
@@ -189,8 +189,8 @@ type
 			{ Protected Declarations }
          procedure SetManager(const val : TGLFireFXManager);
 
-         procedure WriteToFiler(writer : TVirtualWriter); override;
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
          procedure Loaded; override;
 
 		public
@@ -629,7 +629,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLBFireFX.WriteToFiler(writer : TVirtualWriter);
+procedure TGLBFireFX.WriteToFiler(writer : TWriter);
 begin
    with writer do begin
       WriteInteger(0); // ArchiveVersion 0
@@ -641,7 +641,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLBFireFX.ReadFromFiler(reader : TVirtualReader);
+procedure TGLBFireFX.ReadFromFiler(reader : TReader);
 begin
    with reader do begin
       Assert(ReadInteger=0);

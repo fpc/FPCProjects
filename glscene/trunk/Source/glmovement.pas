@@ -34,7 +34,7 @@ interface
 
 uses
   classes, glscene, vectorgeometry, glmisc, xcollection, opengl1x, spline, globjects
-  ,persistentclasses;
+  {crossbuilder ,persistentclasses};
 
 type
 
@@ -58,8 +58,8 @@ type
     procedure SetSpeed(Value: single);
   protected
     function GetDisplayName: string; override;
-    procedure WriteToFiler(writer : TVirtualWriter);
-    procedure ReadFromFiler(reader : TVirtualReader);
+    procedure WriteToFiler(writer : TWriter);
+    procedure ReadFromFiler(reader : TReader);
   public
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
@@ -149,8 +149,8 @@ type
     procedure SetShowPath(Value: Boolean);
     procedure SetPathSplineMode(Value: TLineSplineMode);
   protected
-    procedure WriteToFiler(writer : TVirtualWriter);
-    procedure ReadFromFiler(reader : TVirtualReader);
+    procedure WriteToFiler(writer : TWriter);
+    procedure ReadFromFiler(reader : TReader);
     function CanTravel: boolean;
   public
     constructor Create(Collection: TCollection); override;
@@ -246,8 +246,8 @@ type
     function GetActivePath: TGLMovementPath;
     procedure SetActivePath(Value: TGLMovementPath);
   protected
-    procedure WriteToFiler(writer : TVirtualWriter); override;
-    procedure ReadFromFiler(reader : TVirtualReader); override;
+    procedure WriteToFiler(writer : TWriter); override;
+    procedure ReadFromFiler(reader : TReader); override;
     procedure PathTravelStart(Sender: TObject);
     procedure PathTravelStop(Sender: TObject);
   public
@@ -362,7 +362,7 @@ begin
   Result := @FScale;
 end;
 
-procedure TGLPathNode.WriteToFiler(writer : TVirtualWriter);
+procedure TGLPathNode.WriteToFiler(writer : TWriter);
 var
   WriteStuff: boolean;
 begin
@@ -374,24 +374,26 @@ begin
     WriteBoolean(writeStuff);
     if WriteStuff then
     begin
-      Write(FPosition, sizeof(FPosition));
-      Write(FRotation, sizeof(FRotation));
-      Write(FScale, sizeof(FScale));
+      {$warning: - crossbuilder - this should get back in, if possible:}
+      //crossbuilder:       Write(FPosition, sizeof(FPosition));
+      //crossbuilder:       Write(FRotation, sizeof(FRotation));
+      //crossbuilder:       Write(FScale, sizeof(FScale));
       WriteFloat(FSpeed);
     end;
   end;
 end;
 
-procedure TGLPathNode.ReadFromFiler(reader : TVirtualReader);
+procedure TGLPathNode.ReadFromFiler(reader : TReader);
 begin
   with Reader do
   begin
     ReadInteger; //Achive Version 0
     if ReadBoolean then
     begin
-      Read(FPosition, sizeof(FPosition));
-      Read(FRotation, sizeof(FRotation));
-      Read(FScale, sizeof(FScale));
+      {$warning: - crossbuilder - this should get back in, if possible:}
+      //crossbuilder:       Read(FPosition, sizeof(FPosition));
+      //crossbuilder:       Read(FRotation, sizeof(FRotation));
+      //crossbuilder:       Read(FScale, sizeof(FScale));
       FSpeed := ReadFloat;
     end else
     begin
@@ -518,7 +520,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TGLMovementPath.WriteToFiler(writer : TVirtualWriter);
+procedure TGLMovementPath.WriteToFiler(writer : TWriter);
 var
   WriteStuff: boolean;
   I: Integer;
@@ -534,7 +536,8 @@ begin
       WriteBoolean(FLooped);
       WriteInteger(FCurrentNodeIndex);
       WriteBoolean(FShowPath);
-      Write(FPathSplineMode, sizeof(FPathSplineMode));
+      {$warning: - crossbuilder - this should get back in, if possible:}
+      //crossbuilder:       Write(FPathSplineMode, sizeof(FPathSplineMode));
       WriteInteger(FNodes.Count);
       for I:=0 to FNodes.Count-1 do
         FNodes.Items[I].WriteToFiler(Writer);
@@ -542,7 +545,7 @@ begin
   end;
 end;
 
-procedure TGLMovementPath.ReadFromFiler(reader : TVirtualReader);
+procedure TGLMovementPath.ReadFromFiler(reader : TReader);
 var
   I: Integer;
   Count: Integer;
@@ -557,7 +560,8 @@ begin
       FLooped := ReadBoolean;
       FCurrentNodeIndex := ReadInteger;
       ShowPath := ReadBoolean;
-      Read(FPathSplineMode, sizeof(FPathSplineMode));
+      {$warning: - crossbuilder - this should get back in, if possible:}
+      //crossbuilder:       Read(FPathSplineMode, sizeof(FPathSplineMode));
 
       Count := ReadInteger;
       for I:=0 to Count-1 do
@@ -1183,7 +1187,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TGLMovement.WriteToFiler(writer : TVirtualWriter);
+procedure TGLMovement.WriteToFiler(writer : TWriter);
 var
   WriteStuff: boolean;
   I: Integer;
@@ -1205,7 +1209,7 @@ begin
   end;
 end;
 
-procedure TGLMovement.ReadFromFiler(reader : TVirtualReader);
+procedure TGLMovement.ReadFromFiler(reader : TReader);
 var
   I: Integer;
   Count: Integer;

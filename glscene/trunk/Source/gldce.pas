@@ -57,8 +57,8 @@ unit gldce;
 interface
 
 uses classes, glscene, xcollection, vectorgeometry, vectorlists, glvectorfileobjects,
-   geometrybb, glcrossplatform, glmisc, gldcemisc, glellipsecollision, glterrainrenderer,
-   persistentclasses;
+   geometrybb, glcrossplatform, glmisc, gldcemisc, glellipsecollision, glterrainrenderer {crossbuilder,
+   persistentclasses};
 
 type
   {Only csEllipsoid can have dynamic behaviour}
@@ -160,8 +160,8 @@ type
   protected
     { Protected Declarations }
     procedure SetManager(const val : TGLDCEManager);
-    procedure WriteToFiler(writer : TVirtualWriter); override;
-    procedure ReadFromFiler(reader : TVirtualReader); override;
+    procedure WriteToFiler(writer : TWriter); override;
+    procedure ReadFromFiler(reader : TReader); override;
     procedure Loaded; override;
   public
     { Public Declarations }
@@ -218,8 +218,8 @@ type
   protected
     { Protected Declarations }
     procedure SetManager(const val : TGLDCEManager);
-    procedure WriteToFiler(writer : TVirtualWriter); override;
-    procedure ReadFromFiler(reader : TVirtualReader); override;
+    procedure WriteToFiler(writer : TWriter); override;
+    procedure ReadFromFiler(reader : TReader); override;
     procedure Loaded; override;
   public
     { Public Declarations }
@@ -656,7 +656,7 @@ begin
    end;
 end;
 
-procedure TGLDCEStatic.WriteToFiler(writer: TVirtualWriter);
+procedure TGLDCEStatic.WriteToFiler(writer: TWriter);
 begin
    with writer do begin
       WriteInteger(0); // ArchiveVersion 0
@@ -673,7 +673,7 @@ begin
    end;
 end;
 
-procedure TGLDCEStatic.ReadFromFiler(reader: TVirtualReader);
+procedure TGLDCEStatic.ReadFromFiler(reader: TReader);
 var
    archiveVersion : Integer;
 begin
@@ -959,7 +959,7 @@ begin
   Move(position,Amount);
 end;
 
-procedure TGLDCEDynamic.WriteToFiler(writer: TVirtualWriter);
+procedure TGLDCEDynamic.WriteToFiler(writer: TWriter);
 begin
    with writer do begin
       WriteInteger(0); // ArchiveVersion 0
@@ -980,7 +980,7 @@ begin
    end;
 end;
 
-procedure TGLDCEDynamic.ReadFromFiler(reader: TVirtualReader);
+procedure TGLDCEDynamic.ReadFromFiler(reader: TReader);
 var
    archiveVersion : Integer;
 begin

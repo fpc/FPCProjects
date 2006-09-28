@@ -103,7 +103,6 @@
     <li>01/03/03 - SG - Creation.
   </ul>
 }
-
 unit glodemanager;
 
 interface
@@ -225,8 +224,8 @@ type
 
     protected
       { Protected Declarations }
-      procedure WriteToFiler(writer : TVirtualWriter);
-      procedure ReadFromFiler(reader : TVirtualReader);
+      procedure WriteToFiler(writer : TWriter);
+      procedure ReadFromFiler(reader : TReader);
 
       function GetSurfaceMode : TSurfaceModes;
       function GetMu : TdReal;
@@ -295,8 +294,8 @@ type
       procedure Initialize; virtual;
       procedure Finalize; virtual;
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
       procedure Loaded; override;
 
       procedure SetManager(Value : TGLODEManager);
@@ -338,8 +337,8 @@ type
       { Protected Declarations}
       procedure Initialize; override;
       procedure Finalize; override;
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure SetMass(const Value : TdMass);
       function GetMass : TdMass;
@@ -395,8 +394,8 @@ type
       { Protected Declarations }
       procedure Initialize; override;
       procedure Finalize; override;
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
       procedure AlignElements;
 
     public
@@ -466,8 +465,8 @@ type
       procedure NotifyChange(Sender:TObject);
       procedure CoordinateChanged(Sender : TObject);
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       function IsODEInitialized : Boolean;
       procedure AlignGeomElementToMatrix(Mat:TMatrix); virtual;
@@ -523,8 +522,8 @@ type
       procedure Initialize; override;
       function CalculateMass : TdMass; override;
       procedure ODERebuild; override;
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       function GetBoxWidth  : TdReal;
       function GetBoxHeight : TdReal;
@@ -563,8 +562,8 @@ type
       function CalculateMass : TdMass; override;
       procedure ODERebuild; override;
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       function GetRadius : TdReal;
       procedure SetRadius(const Value: TdReal);
@@ -600,8 +599,8 @@ type
       function CalculateMass : TdMass; override;
       procedure ODERebuild; override;
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       function GetRadius : TdReal;
       function GetLength : TdReal;
@@ -640,8 +639,8 @@ type
       function CalculateMass : TdMass; override;
       procedure ODERebuild; override;
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       function GetRadius : TdReal;
       function GetLength : TdReal;
@@ -680,8 +679,8 @@ type
       function CalculateMass : TdMass; override;
       procedure ODERebuild; override;
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       function GetRadius : TdReal;
       function GetLength : TdReal;
@@ -721,8 +720,8 @@ type
       procedure Finalize; override;
       function CalculateMass : TdMass; override;
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure SetVertices(const Value : TAffineVectorList);
       procedure SetIndices(const Value : TIntegerList);
@@ -751,8 +750,8 @@ type
       { Protected Declarations }
       procedure Initialize; override;
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure AlignGeomElementToMatrix(Mat:TMatrix); override;
 
@@ -835,8 +834,8 @@ type
     protected
       { Protected Declarations }
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure Loaded; override;
 
@@ -939,8 +938,8 @@ type
       procedure SetSuspensionERP(const Value : TdReal);
       procedure SetSuspensionCFM(const Value : TdReal);
 
-      procedure WriteToFiler(writer : TVirtualWriter);
-      procedure ReadFromFiler(reader : TVirtualReader);
+      procedure WriteToFiler(writer : TWriter);
+      procedure ReadFromFiler(reader : TReader);
 
     public
       { Public Declarations }
@@ -982,8 +981,8 @@ type
     protected
       { Protected Declarations }
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure SetAnchor(const Value : TGLCoordinates);
       procedure SetAxis(const Value : TGLCoordinates);
@@ -1023,8 +1022,8 @@ type
     protected
       { Protected Declarations }
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure SetAnchor(const Value : TGLCoordinates);
       procedure AnchorChange(Sender : TObject);
@@ -1058,8 +1057,8 @@ type
     protected
       { Protected Declarations }
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure SetAxis(const Value : TGLCoordinates);
       procedure AxisChange(Sender : TObject);
@@ -1093,8 +1092,8 @@ type
     protected
       { Protected Declarations }
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
     public
       { Public Declarations }
@@ -1119,8 +1118,8 @@ type
     protected
       { Protected Declarations }
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure SetAnchor(const Value : TGLCoordinates);
       procedure SetAxis1(const Value : TGLCoordinates);
@@ -1172,8 +1171,8 @@ type
     protected
       { Protected Declarations }
 
-      procedure WriteToFiler(writer : TVirtualWriter); override;
-      procedure ReadFromFiler(reader : TVirtualReader); override;
+      procedure WriteToFiler(writer : TWriter); override;
+      procedure ReadFromFiler(reader : TReader); override;
 
       procedure SetAnchor(const Value : TGLCoordinates);
       procedure SetAxis1(const Value : TGLCoordinates);
@@ -1767,7 +1766,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODECollisionSurface.WriteToFiler(writer: TVirtualWriter);
+procedure TODECollisionSurface.WriteToFiler(writer: TWriter);
 var
   mode : TSurfaceModes;
 begin
@@ -1776,7 +1775,8 @@ begin
     WriteFloat(RollingFrictionCoeff);
     WriteBoolean(RollingFrictionEnabled);
     mode:=SurfaceMode;
-    Write(mode, SizeOf(TSurfaceModes));
+    {$warning: - crossbuilder - this should get back in, if possible:}
+    //crossbuilder: Write(mode, SizeOf(TSurfaceModes));
     WriteFloat(Mu);
     WriteFloat(Mu2);
     WriteFloat(Bounce);
@@ -1792,7 +1792,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODECollisionSurface.ReadFromFiler(reader: TVirtualReader);
+procedure TODECollisionSurface.ReadFromFiler(reader: TReader);
 var
   archiveVersion : Integer;
   mode : TSurfaceModes;
@@ -1802,8 +1802,9 @@ begin
     Assert(archiveVersion = 0);
     RollingFrictionCoeff:=ReadFloat;
     RollingFrictionEnabled:=ReadBoolean;
-    Read(mode, SizeOf(TSurfaceModes));
-    SurfaceMode:=mode;
+    {$warning: - crossbuilder - this should get back in, if possible:}
+    //crossbuilder: Read(mode, SizeOf(TSurfaceModes));
+    //crossbuilder: SurfaceMode:=mode;
     Mu:=ReadFloat;
     Mu2:=ReadFloat;
     Bounce:=ReadFloat;
@@ -2029,7 +2030,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLODEBehaviour.WriteToFiler(writer : TVirtualWriter);
+procedure TGLODEBehaviour.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -2043,7 +2044,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLODEBehaviour.ReadFromFiler(reader : TVirtualReader);
+procedure TGLODEBehaviour.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -2212,7 +2213,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLODEDynamic.WriteToFiler(writer : TVirtualWriter);
+procedure TGLODEDynamic.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -2224,7 +2225,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLODEDynamic.ReadFromFiler(reader : TVirtualReader);
+procedure TGLODEDynamic.ReadFromFiler(reader : TReader);
 var
   archiveVersion : Integer;
 begin
@@ -2517,7 +2518,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLODEStatic.WriteToFiler(writer : TVirtualWriter);
+procedure TGLODEStatic.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -2528,7 +2529,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLODEStatic.ReadFromFiler(reader : TVirtualReader);
+procedure TGLODEStatic.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -2723,7 +2724,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEElementBase.WriteToFiler(writer : TVirtualWriter);
+procedure TODEElementBase.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -2737,7 +2738,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEElementBase.ReadFromFiler(reader : TVirtualReader);
+procedure TODEElementBase.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -3010,7 +3011,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEElementBox.WriteToFiler(writer : TVirtualWriter);
+procedure TODEElementBox.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -3023,7 +3024,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEElementBox.ReadFromFiler(reader : TVirtualReader);
+procedure TODEElementBox.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -3228,7 +3229,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEElementSphere.WriteToFiler(writer : TVirtualWriter);
+procedure TODEElementSphere.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -3239,7 +3240,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEElementSphere.ReadFromFiler(reader : TVirtualReader);
+procedure TODEElementSphere.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -3383,7 +3384,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEElementCapsule.WriteToFiler(writer : TVirtualWriter);
+procedure TODEElementCapsule.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -3395,7 +3396,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEElementCapsule.ReadFromFiler(reader : TVirtualReader);
+procedure TODEElementCapsule.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -3560,7 +3561,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEElementCylinder.WriteToFiler(writer : TVirtualWriter);
+procedure TODEElementCylinder.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -3572,7 +3573,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEElementCylinder.ReadFromFiler(reader : TVirtualReader);
+procedure TODEElementCylinder.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -3736,7 +3737,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEElementCone.WriteToFiler(writer : TVirtualWriter);
+procedure TODEElementCone.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -3748,7 +3749,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEElementCone.ReadFromFiler(reader : TVirtualReader);
+procedure TODEElementCone.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -3916,7 +3917,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEElementTriMesh.WriteToFiler(writer : TVirtualWriter);
+procedure TODEElementTriMesh.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -3926,7 +3927,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEElementTriMesh.ReadFromFiler(reader : TVirtualReader);
+procedure TODEElementTriMesh.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -4014,14 +4015,14 @@ end;
 
 // WriteToFiler
 //
-procedure TODEElementPlane.WriteToFiler(writer : TVirtualWriter);
+procedure TODEElementPlane.WriteToFiler(writer : TWriter);
 begin
   writer.WriteInteger(0);
 end;
 
 // ReadFromFiler
 //
-procedure TODEElementPlane.ReadFromFiler(reader : TVirtualReader);
+procedure TODEElementPlane.ReadFromFiler(reader : TReader);
 var
   archiveVersion : Integer;
 begin
@@ -4145,9 +4146,9 @@ end;
 //
 procedure TGLODEJointList.WriteJoints(stream : TStream);
 var
-  writer : TVirtualWriter;
+  writer : TWriter;
 begin
-  writer:=TBinaryWriter.Create(stream);
+  writer:=TWriter.Create(stream, 16384);
   try
     Joints.WriteToFiler(writer);
   finally
@@ -4159,9 +4160,9 @@ end;
 //
 procedure TGLODEJointList.ReadJoints(stream : TStream);
 var
-  reader : TVirtualReader;
+  reader : TReader;
 begin
-  reader:=TBinaryReader.Create(stream);
+  reader:=TReader.Create(stream, 16384);
   try
     Joints.ReadFromFiler(reader);
   finally
@@ -4251,7 +4252,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEJointBase.WriteToFiler(writer : TVirtualWriter);
+procedure TODEJointBase.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -4271,7 +4272,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEJointBase.ReadFromFiler(reader : TVirtualReader);
+procedure TODEJointBase.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -4517,7 +4518,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEJointParams.WriteToFiler(writer : TVirtualWriter);
+procedure TODEJointParams.WriteToFiler(writer : TWriter);
 begin
   with writer do begin
     WriteInteger(0); // Archive version
@@ -4537,7 +4538,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEJointParams.ReadFromFiler(reader : TVirtualReader);
+procedure TODEJointParams.ReadFromFiler(reader : TReader);
 var
   archiveVersion : Integer;
 begin
@@ -4858,7 +4859,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEJointHinge.WriteToFiler(writer : TVirtualWriter);
+procedure TODEJointHinge.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -4871,7 +4872,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEJointHinge.ReadFromFiler(reader : TVirtualReader);
+procedure TODEJointHinge.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -5001,7 +5002,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEJointBall.WriteToFiler(writer : TVirtualWriter);
+procedure TODEJointBall.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -5012,7 +5013,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEJointBall.ReadFromFiler(reader : TVirtualReader);
+procedure TODEJointBall.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -5093,7 +5094,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEJointSlider.WriteToFiler(writer : TVirtualWriter);
+procedure TODEJointSlider.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -5105,7 +5106,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEJointSlider.ReadFromFiler(reader : TVirtualReader);
+procedure TODEJointSlider.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -5202,7 +5203,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEJointFixed.WriteToFiler(writer : TVirtualWriter);
+procedure TODEJointFixed.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -5212,7 +5213,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEJointFixed.ReadFromFiler(reader : TVirtualReader);
+procedure TODEJointFixed.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -5282,7 +5283,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEJointHinge2.WriteToFiler(writer : TVirtualWriter);
+procedure TODEJointHinge2.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -5297,7 +5298,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEJointHinge2.ReadFromFiler(reader : TVirtualReader);
+procedure TODEJointHinge2.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin
@@ -5496,7 +5497,7 @@ end;
 
 // WriteToFiler
 //
-procedure TODEJointUniversal.WriteToFiler(writer : TVirtualWriter);
+procedure TODEJointUniversal.WriteToFiler(writer : TWriter);
 begin
   inherited;
   with writer do begin
@@ -5511,7 +5512,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TODEJointUniversal.ReadFromFiler(reader : TVirtualReader);
+procedure TODEJointUniversal.ReadFromFiler(reader : TReader);
 begin
   inherited;
   with reader do begin

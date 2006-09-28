@@ -813,9 +813,9 @@ type
          procedure SetName(const val : String); override;
 
          {: Override this function to write subclass data. }
-         procedure WriteToFiler(writer : TVirtualWriter); override;
+         procedure WriteToFiler(writer : TWriter); override;
          {: Override this function to read subclass data. }
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure ReadFromFiler(reader : TReader); override;
 
          {: Returns the TGLBaseSceneObject on which the behaviour should be applied.<p>
             Does NOT check for nil owners. }
@@ -890,9 +890,9 @@ type
       protected
          { Protected Declarations }
          {: Override this function to write subclass data. }
-         procedure WriteToFiler(writer : TVirtualWriter); override;
+         procedure WriteToFiler(writer : TWriter); override;
          {: Override this function to read subclass data. }
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure ReadFromFiler(reader : TReader); override;
 
       public
          { Public Declarations }
@@ -2656,9 +2656,10 @@ end;
 //
 procedure TGLBaseSceneObject.WriteBehaviours(stream : TStream);
 var
-   writer : TVirtualWriter;
+   writer : TWriter;
 begin
-   writer:=TBinaryWriter.Create(stream);
+   {crossbuilder   writer:=TBinaryWriter.Create(stream); }
+   writer:=TWriter.Create(stream, 16384);
    try
       Behaviours.WriteToFiler(writer);
    finally
@@ -2670,9 +2671,10 @@ end;
 //
 procedure TGLBaseSceneObject.ReadBehaviours(stream : TStream);
 var
-   reader : TVirtualReader;
+   reader : TReader;
 begin
-   reader:=TBinaryReader.Create(stream);
+   {crossbuilder  reader:=TBinaryReader.Create(stream);  }
+   reader:=TReader.Create(stream, 16384);
    { with TReader(FOriginalFiler) do  }
     try
      {  reader.Root                 := Root;
@@ -2693,9 +2695,10 @@ end;
 //
 procedure TGLBaseSceneObject.WriteEffects(stream : TStream);
 var
-   writer : TVirtualWriter;
+   writer : TWriter;
 begin
-   writer:=TBinaryWriter.Create(stream);
+{crossbuilder   writer:=TBinaryWriter.Create(stream);}
+   writer:=TWriter.Create(stream, 16384);
    try
       Effects.WriteToFiler(writer);
    finally
@@ -2707,9 +2710,10 @@ end;
 //
 procedure TGLBaseSceneObject.ReadEffects(stream : TStream);
 var
-   reader : TVirtualReader;
+   reader : TReader;
 begin
-   reader:=TBinaryReader.Create(stream);
+{crossbuilder   reader:=TBinaryReader.Create(stream);}
+   reader:=TReader.Create(stream, 16384);
     {with TReader(FOriginalFiler) do }
     try
       { reader.Root                 := Root;
@@ -4401,7 +4405,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLBaseBehaviour.WriteToFiler(writer : TVirtualWriter);
+procedure TGLBaseBehaviour.WriteToFiler(writer : TWriter);
 begin
    with writer do begin
       WriteInteger(0); // Archive Version 0
@@ -4411,7 +4415,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLBaseBehaviour.ReadFromFiler(reader : TVirtualReader);
+procedure TGLBaseBehaviour.ReadFromFiler(reader : TReader);
 begin
    with reader do begin
       if ReadInteger<>0 then
@@ -4496,7 +4500,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLObjectEffect.WriteToFiler(writer : TVirtualWriter);
+procedure TGLObjectEffect.WriteToFiler(writer : TWriter);
 begin
    with writer do begin
       WriteInteger(0); // Archive Version 0
@@ -4506,7 +4510,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLObjectEffect.ReadFromFiler(reader : TVirtualReader);
+procedure TGLObjectEffect.ReadFromFiler(reader : TReader);
 begin
    with reader do begin
       if ReadInteger<>0 then
@@ -5916,6 +5920,7 @@ begin
    FreeAndNil(FLights);
    FreeAndNil(FObjects);
    {$ENDIF}
+   {$warning: - crossbuilder BugSpot - why is this freed twice in fpc ? }
    FCameras.Free;
    FLights.Free;
    FObjects.Free;

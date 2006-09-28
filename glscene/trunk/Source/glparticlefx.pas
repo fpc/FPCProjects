@@ -313,8 +313,8 @@ type
          { Protected Declarations }
          procedure SetManager(val : TGLParticleFXManager);
 
-         procedure WriteToFiler(writer : TVirtualWriter); override;
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
 
          procedure Loaded; override;
          
@@ -465,8 +465,8 @@ type
          procedure SetInitialPosition(const val : TGLCoordinates);
          procedure SetPositionDispersionRange(const val : TGLCoordinates);
          procedure SetParticleInterval(const val : Single);
-         procedure WriteToFiler(writer : TVirtualWriter); override;
-         procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
 
          function ParticleAbsoluteInitialPos : TAffineVector;
 
@@ -1358,7 +1358,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLParticleFXEffect.WriteToFiler(writer : TVirtualWriter);
+procedure TGLParticleFXEffect.WriteToFiler(writer : TWriter);
 var
    st: string;
 begin
@@ -1376,7 +1376,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLParticleFXEffect.ReadFromFiler(reader : TVirtualReader);
+procedure TGLParticleFXEffect.ReadFromFiler(reader : TReader);
 var
    archiveVersion : integer;
 begin
@@ -1554,6 +1554,8 @@ var
       end;
    end;
 
+   // !! WARNING !! This may cause incorrect behaviour if optimization is turned
+   // off for the project.
    procedure DistToRegionIdx; register;
 begin
    asm
@@ -1788,7 +1790,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLSourcePFXEffect.WriteToFiler(writer : TVirtualWriter);
+procedure TGLSourcePFXEffect.WriteToFiler(writer : TWriter);
 begin
    inherited;
    with writer do begin
@@ -1815,7 +1817,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLSourcePFXEffect.ReadFromFiler(reader : TVirtualReader);
+procedure TGLSourcePFXEffect.ReadFromFiler(reader : TReader);
 var
    archiveVersion : Integer;
 begin

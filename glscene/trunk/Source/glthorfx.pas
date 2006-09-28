@@ -34,7 +34,7 @@ unit glthorfx;
 interface
 
 uses classes, glscene, glmisc, xcollection, vectorgeometry, gltexture, glcadencer
-     ,persistentclasses;
+     {crossbuilder ,persistentclasses};
 
 type
   PThorpoint = ^TThorpoint;
@@ -119,8 +119,8 @@ type
   protected
   { Protected Declarations }
     procedure SetManager(const val : TGLThorFXManager);
-    procedure WriteToFiler(writer : TVirtualWriter); override;
-    procedure ReadFromFiler(reader : TVirtualReader); override;
+    procedure WriteToFiler(writer : TWriter); override;
+    procedure ReadFromFiler(reader : TReader); override;
     procedure Loaded; override;
     procedure SetTarget(const val: TGLCoordinates);
   public
@@ -434,7 +434,7 @@ end;
 
 // WriteToFiler
 //
-procedure TGLBThorFX.WriteToFiler(writer : TVirtualWriter);
+procedure TGLBThorFX.WriteToFiler(writer : TWriter);
 begin
   with writer do begin
     WriteInteger(0); // ArchiveVersion 0
@@ -447,7 +447,7 @@ end;
 
 // ReadFromFiler
 //
-procedure TGLBThorFX.ReadFromFiler(reader : TVirtualReader);
+procedure TGLBThorFX.ReadFromFiler(reader : TReader);
 begin
   with reader do begin
     Assert(ReadInteger=0);
