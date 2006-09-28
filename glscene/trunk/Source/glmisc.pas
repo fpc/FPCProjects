@@ -302,10 +302,10 @@ type
          property DirectZ : TGLFloat read FCoords[2] write FCoords[2];
          property DirectW : TGLFloat read FCoords[3] write FCoords[3];
 
-{$ifndef FPC}
+{.(crossbuilder) should not be necessary anyore: $ifndef FPC}
 		published
 			{ Published Declarations }
-{$endif}
+{.(crossbuilder) should not be necessary anyore: $endif}
 			property X: TGLFloat index 0 read FCoords[0] write SetCoordinate stored False;
 			property Y: TGLFloat index 1 read FCoords[1] write SetCoordinate stored False;
 			property Z: TGLFloat index 2 read FCoords[2] write SetCoordinate stored False;
@@ -316,11 +316,11 @@ type
    //
    {: A TGLCoordinates that publishes W property. }
 	TGLCoordinates4 = class (TGLCoordinates)
-{$ifndef FPC}
+{.(crossbuilder) should not be necessary anyore: $ifndef FPC}
 		published
 			{ Published Declarations }
          property W;
-{$endif}
+{.(crossbuilder) should not be necessary anyore: $endif}
    end;
 
    // TGLCoordinatesUpdateAbleComponent
@@ -365,7 +365,7 @@ type
             The W component is automatically adjustes depending on style. }
 			property AsAffineVector : TAffineVector read GetAsAffineVector write SetAsAffineVector;
 
-{$ifndef FPC}
+{.(crossbuilder) should not be necessary anyore: $ifndef FPC}
 			property W: TGLFloat index 3 read FCoords[3] write SetCoordinate stored StoreCoordinate;
 
 	   published
@@ -373,12 +373,12 @@ type
 			property X: TGLFloat index 0 read FCoords[0] write SetCoordinate stored StoreCoordinate;
 			property Y: TGLFloat index 1 read FCoords[1] write SetCoordinate stored StoreCoordinate;
 			property Z: TGLFloat index 2 read FCoords[2] write SetCoordinate stored StoreCoordinate;
-{$else}
-			property X: TGLFloat index 0 read FCoords[0] write SetCoordinate stored False;
+{.(crossbuilder) should not be necessary anyore: $else}
+(*			property X: TGLFloat index 0 read FCoords[0] write SetCoordinate stored False;
 			property Y: TGLFloat index 1 read FCoords[1] write SetCoordinate stored False;
 			property Z: TGLFloat index 2 read FCoords[2] write SetCoordinate stored False;
-			property W: TGLFloat index 3 read FCoords[3] write SetCoordinate stored False;
-{$endif}
+			property W: TGLFloat index 3 read FCoords[3] write SetCoordinate stored False;  *)
+{.(crossbuilder) should not be necessary anyore: $endif}
 	end;
 
 {$ifdef FPC}
