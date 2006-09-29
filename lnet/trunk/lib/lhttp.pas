@@ -21,6 +21,9 @@
   me at ales@chello.sk
 }
 
+{ TODO: add State to HTTPClient, so that user can know whether all requests
+  have been sent+received }
+
 unit lhttp;
 
 {$mode objfpc}{$h+}
@@ -134,6 +137,15 @@ type
     Method: TLHTTPMethod;
     URI: string;
     QueryParams: string;
+    RangeStart: qword;
+    RangeEnd: qword;
+  end;
+
+  PClientResponse = ^TClientResponse;
+  TClientResponse = record
+    Status: TLHTTPStatus;
+    Version: dword;
+    Reason: string;
   end;
 
   PHeaderOutInfo = ^THeaderOutInfo;
@@ -240,13 +252,12 @@ type
     FCurrentOutput: TOutputItem;
     FLastOutput: TOutputItem;
     FKeepAlive: boolean;
-    FHeaderOut: THeaderOutInfo;
     FConnection: TLHTTPConnection;
     FParseBuffer: TParseBufferMethod;
     FParameters: TLHTTPParameterArray;
     FDelayFreeItems: TOutputItem;
 
-    procedure AddContentLength(ALength: integer);
+    procedure AddContentLength(ALength: integer); virtual; abstract;
     function  CalcAvailableBufferSpace: integer;
     procedure DelayFree(AOutputItem: TOutputItem);
     procedure Disconnect; override;
@@ -266,7 +277,7 @@ type
     procedure RelocateVariable(var AVar: pchar);
     procedure RelocateVariables; virtual;
     procedure ResetDefaults; virtual;
-    function  SetupEncoding(AOutputItem: TBufferOutput): boolean;
+    function  SetupEncoding(AOutputItem: TBufferOutput; AHeaderOut: PHeaderOutInfo): boolean;
     procedure WriteError(AStatus: TLHTTPStatus); virtual;
   public
     constructor Create; override;
@@ -279,7 +290,6 @@ type
     procedure WriteBlock;
     
     property Connection: TLHTTPConnection read FConnection;
-    property HeaderOut: THeaderOutInfo read FHeaderOut;
     property Parameters: TLHTTPParameterArray read FParameters;
   end;
 
@@ -290,7 +300,9 @@ type
     FLogMessage: TStringBuffer;
     FRequestInfo: TRequestInfo;
     FResponseInfo: TResponseInfo;
+    FHeaderOut: THeaderOutInfo;
 
+    procedure AddContentLength(ALength: integer); override;
     procedure DoneBuffer(AOutput: TBufferOutput); override;
     procedure FlushRequest; override;
     function  HandleURI: TOutputItem; virtual;
@@ -309,6 +321,7 @@ type
     procedure LogAccess(const AMessage: string); override;
     procedure StartResponse(AOutputItem: TBufferOutput);
 
+    property HeaderOut: THeaderOutInfo read FHeaderOut;
     property RequestInfo: TRequestInfo read FRequestInfo;
     property ResponseInfo: TResponseInfo read FResponseInfo;
   end;
@@ -338,11 +351,11 @@ type
   TLHTTPClientSocket = class(TLHTTPSocket)
   protected
     FRequest: PClientRequest;
-    FResponseStatus: TLHTTPStatus;
-    FResponseVersion: dword;
-    FResponseReason: pchar;
+    FResponse: PClientResponse;
+    FHeaderOut: PHeaderOutInfo;
     FError: TLHTTPClientError;
     
+    procedure AddContentLength(ALength: integer); override;
     procedure Cancel(AError: TLHTTPClientError);
     procedure ParseLine(pLineEnd: pchar); override;
     procedure ParseStatusLine(pLineEnd: pchar);
@@ -355,9 +368,6 @@ type
     procedure SendRequest;
 
     property Error: TLHTTPClientError read FError write FError;
-    property ResponseStatus: TLHTTPStatus read FResponseStatus;
-    property ResponseVersion: dword read FResponseVersion;
-    property ResponseReason: pchar read FResponseReason;
   end;
 
   TLHTTPClient = class(TLHTTPConnection)
@@ -365,6 +375,8 @@ type
     FHost: string;
     FPort: integer;
     FRequest: TClientRequest;
+    FResponse: TClientResponse;
+    FHeaderOut: THeaderOutInfo;
     FOutputEof: boolean;
     FOnCanWrite: TLCanWriteEvent;
     FOnDoneInput: TLHTTPClientProc;
@@ -383,14 +395,20 @@ type
 
     procedure SendRequest;
 
+    property ContentLength: integer read FHeaderOut.ContentLength write FHeaderOut.ContentLength;
+    property ExtraHeaders: string read FHeaderOut.ExtraHeaders write FHeaderOut.ExtraHeaders;
     property Host: string read FHost write FHost;
     property Method: TLHTTPMethod read FRequest.Method write FRequest.Method;
     property Port: integer read FPort write FPort;
+    property RangeStart: qword read FRequest.RangeStart write FRequest.RangeStart;
+    property RangeEnd: qword read FRequest.RangeEnd write FRequest.RangeEnd;
+    property Request: TClientRequest read FRequest;
     property URI: string read FRequest.URI write FRequest.URI;
+    property Response: TClientResponse read FResponse;
     property OnCanWrite: TLCanWriteEvent read FOnCanWrite write FOnCanWrite;
     property OnDoneInput: TLHTTPClientProc read FOnDoneInput write FOnDoneInput;
     property OnInput: TLInputEvent read FOnInput write FOnInput;
-    property OnProcessHeaders: TLHTTPClientProc read FOnProcessHeaders write FOnProcessHEaders;
+    property OnProcessHeaders: TLHTTPClientProc read FOnProcessHeaders write FOnProcessHeaders;
   end;
 
 implementation
@@ -774,11 +792,6 @@ begin
   FLastOutput := AOutputItem;
 end;
 
-procedure TLHTTPSocket.AddContentLength(ALength: integer);
-begin
-  Inc(FHeaderOut.ContentLength, ALength);
-end;
-
 procedure TLHTTPSocket.ResetDefaults;
 begin
   FParseBuffer := @ParseRequest;
@@ -787,13 +800,6 @@ end;
 procedure TLHTTPSocket.FlushRequest;
 begin
   FillDWord(FParameters, sizeof(FParameters) div 4, 0);
-  with FHeaderOut do
-  begin
-    ContentLength := 0;
-    TransferEncoding := teIdentity;
-    ExtraHeaders := '';
-    Version := 0;
-  end;
   ResetDefaults;
 end;
 
@@ -1124,25 +1130,25 @@ begin
   end;
 end;
   
-function TLHTTPSocket.SetupEncoding(AOutputItem: TBufferOutput): boolean;
+function TLHTTPSocket.SetupEncoding(AOutputItem: TBufferOutput; AHeaderOut: PHeaderOutInfo): boolean;
 begin
-  if FHeaderOut.ContentLength = 0 then
+  if AHeaderOut^.ContentLength = 0 then
   begin
-    if FHeaderOut.Version >= 11 then
+    if AHeaderOut^.Version >= 11 then
     begin
       { we can use chunked encoding }
-      FHeaderOut.TransferEncoding := teChunked;
+      AHeaderOut^.TransferEncoding := teChunked;
       AOutputItem.FWriteBlock := @AOutputItem.WriteChunk;
     end else begin
       { we need to buffer the response to find its length }
-      FHeaderOut.TransferEncoding := teIdentity;
+      AHeaderOut^.TransferEncoding := teIdentity;
       AOutputItem.FWriteBlock := @AOutputItem.WriteBuffer;
       { need to accumulate data before starting header output }
       AddToOutput(AOutputItem);
       exit(false);
     end;
   end else begin
-    FHeaderOut.TransferEncoding := teIdentity;
+    AHeaderOut^.TransferEncoding := teIdentity;
     AOutputItem.FWriteBlock := @AOutputItem.WritePlain;
   end;
   Result := true;
@@ -1227,6 +1233,11 @@ begin
   inherited;
 end;
 
+procedure TLHTTPServerSocket.AddContentLength(ALength: integer);
+begin
+  Inc(FHeaderOut.ContentLength, ALength);
+end;
+
 procedure TLHTTPServerSocket.DoneBuffer(AOutput: TBufferOutput);
 begin
   WriteHeaders(AOutput, nil);
@@ -1274,6 +1285,13 @@ begin
     { request }
     Argument := nil;
     QueryParams := nil;
+    Version := 0;
+  end;
+  with FHeaderOut do
+  begin
+    ContentLength := 0;
+    TransferEncoding := teIdentity;
+    ExtraHeaders := '';
     Version := 0;
   end;
   inherited;
@@ -1486,7 +1504,7 @@ begin
 
   if FResponseInfo.Status = hsOK then
   begin
-    if (FRequestInfo.RequestType = hmHead) or SetupEncoding(AOutputItem) then
+    if (FRequestInfo.RequestType = hmHead) or SetupEncoding(AOutputItem, @FHeaderOut) then
       WriteHeaders(nil, AOutputItem);
   end else begin
     WriteError(FResponseInfo.Status);
@@ -1731,6 +1749,11 @@ begin
   inherited;
 end;
 
+procedure TLHTTPClientSocket.AddContentLength(ALength: integer);
+begin
+  Inc(TLHTTPClient(FConnection).FHeaderOut.ContentLength, ALength);
+end;
+
 procedure TLHTTPClientSocket.Cancel(AError: TLHTTPClientError);
 begin
   FError := AError;
@@ -1741,6 +1764,7 @@ procedure TLHTTPClientSocket.SendRequest;
 var
   lMessage: TStringBuffer;
   lTemp: string[23];
+  hasRangeStart, hasRangeEnd: boolean;
 begin
   lMessage := InitStringBuffer(504);
 
@@ -1748,8 +1772,7 @@ begin
   AppendChar(lMessage, ' ');
   AppendString(lMessage, FRequest^.URI);
   AppendChar(lMessage, ' ');
-  AppendString(lMessage, 'HTTP/1.1'+#13#10);
-  AppendString(lMessage, 'Host: ');
+  AppendString(lMessage, 'HTTP/1.1'+#13#10+'Host: ');
   AppendString(lMessage, TLHTTPClient(FConnection).Host);
   if TLHTTPClient(FConnection).Port <> 80 then
   begin
@@ -1758,7 +1781,24 @@ begin
     AppendString(lMessage, lTemp);
   end;
   AppendString(lMessage, #13#10);
-  AppendString(lMessage, FHeaderOut.ExtraHeaders);
+  hasRangeStart := TLHTTPClient(FConnection).RangeStart <> high(qword);
+  hasRangeEnd := TLHTTPClient(FConnection).RangeEnd <> high(qword);
+  if hasRangeStart or hasRangeEnd then
+  begin
+    AppendString(lMessage, 'Range: bytes=');
+    if hasRangeStart then
+    begin
+      Str(TLHTTPClient(FConnection).RangeStart, lTemp);
+      AppendString(lMessage, lTemp);
+    end;
+    AppendChar(lMessage, '-');
+    if hasRangeEnd then
+    begin
+      Str(TLHTTPClient(FConnection).RangeEnd, lTemp);
+      AppendString(lMessage, lTemp);
+    end;
+  end;
+  AppendString(lMessage, TLHTTPClient(FConnection).ExtraHeaders);
   AppendString(lMessage, #13#10);
   AddToOutput(TMemoryOutput.Create(Self, lMessage.Memory, 0,
     lMessage.Pos-lMessage.Memory, true));
@@ -1772,7 +1812,7 @@ begin
   if FError <> ceNone then
     exit;
 
-  if FResponseStatus = hsUnknown then
+  if FResponse^.Status = hsUnknown then
   begin
     ParseStatusLine(pLineEnd);
     exit;
@@ -1796,13 +1836,13 @@ begin
       break;
     Inc(lPos);
   until false;
-  if not HTTPVersionCheck(FBufferPos, lPos, FResponseVersion) then
+  if not HTTPVersionCheck(FBufferPos, lPos, FResponse^.Version) then
   begin
     Cancel(ceMalformedStatusLine);
     exit;
   end;
 
-  if (FResponseVersion > 11) then
+  if (FResponse^.Version > 11) then
   begin
     Cancel(ceVersionNotSupported);
     exit;
@@ -1815,9 +1855,9 @@ begin
     Cancel(ceMalformedStatusLine);
     exit;
   end;
-  FResponseStatus := CodeToHTTPStatus((ord(lPos[0])-ord('0'))*100
+  FResponse^.Status := CodeToHTTPStatus((ord(lPos[0])-ord('0'))*100
     + (ord(lPos[1])-ord('0'))*10 + (ord(lPos[2])-ord('0')));
-  if FResponseStatus = hsUnknown then
+  if FResponse^.Status = hsUnknown then
   begin
     Cancel(ceMalformedStatusLine);
     exit;
@@ -1825,7 +1865,7 @@ begin
 
   Inc(lPos, 4);
   if lPos < pLineEnd then
-    FResponseReason := lPos;
+    FResponse^.Reason := lPos;
 end;
 
 procedure TLHTTPClientSocket.ProcessHeaders;
@@ -1852,6 +1892,8 @@ begin
 
   SocketClass := TLHTTPClientSocket;
   FRequest.Method := hmGet;
+  FRequest.RangeStart := High(FRequest.RangeStart);
+  FRequest.RangeEnd := High(FRequest.RangeEnd);
 end;
 
 procedure TLHTTPClient.DoDoneInput(ASocket: TLHTTPClientSocket);
@@ -1887,6 +1929,7 @@ begin
   Result := inherited;
   TLHTTPClientSocket(aSocket).FConnection := Self;
   TLHTTPClientSocket(aSocket).FRequest := @FRequest;
+  TLHTTPClientSocket(aSocket).FResponse := @FResponse;
 end;
 
 procedure TLHTTPClient.InternalSendRequest;
