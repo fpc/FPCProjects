@@ -393,6 +393,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
 
+    procedure ResetRange;
     procedure SendRequest;
 
     property ContentLength: integer read FHeaderOut.ContentLength write FHeaderOut.ContentLength;
@@ -1892,8 +1893,13 @@ begin
 
   SocketClass := TLHTTPClientSocket;
   FRequest.Method := hmGet;
-  FRequest.RangeStart := High(FRequest.RangeStart);
-  FRequest.RangeEnd := High(FRequest.RangeEnd);
+  ResetRange;
+end;
+
+procedure TLHTTPClient.ConnectEvent(aSocket: TLHandle);
+begin
+  inherited;
+  InternalSendRequest;
 end;
 
 procedure TLHTTPClient.DoDoneInput(ASocket: TLHTTPClientSocket);
@@ -1938,10 +1944,10 @@ begin
   TLHTTPClientSocket(FIterator).SendRequest;
 end;
 
-procedure TLHTTPClient.ConnectEvent(aSocket: TLHandle);
+procedure TLHTTPClient.ResetRange;
 begin
-  inherited;
-  InternalSendRequest;
+  FRequest.RangeStart := High(FRequest.RangeStart);
+  FRequest.RangeEnd := High(FRequest.RangeEnd);
 end;
 
 procedure TLHTTPClient.SendRequest;
