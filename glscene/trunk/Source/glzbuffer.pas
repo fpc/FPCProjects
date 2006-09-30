@@ -15,7 +15,7 @@
       renamed everything to lowercase to get better codetools support and avoid unit finding bugs
 
       Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
+      *** empty  log message ***
 
       Revision 1.5  2005/11/14 21:38:07  z0m3ie
       making this stuff again Linux compatible please dont break multi platform support again
