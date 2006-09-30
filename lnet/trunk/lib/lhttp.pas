@@ -356,6 +356,8 @@ type
     FError: TLHTTPClientError;
     
     procedure AddContentLength(ALength: integer); override;
+    function  GetResponseReason: string;
+    function  GetResponseStatus: TLHTTPStatus;
     procedure Cancel(AError: TLHTTPClientError);
     procedure ParseLine(pLineEnd: pchar); override;
     procedure ParseStatusLine(pLineEnd: pchar);
@@ -368,6 +370,9 @@ type
     procedure SendRequest;
 
     property Error: TLHTTPClientError read FError write FError;
+    property Response: PClientResponse read FResponse;
+    property ResponseReason: string read GetResponseReason;
+    property ResponseStatus: TLHTTPStatus read GetResponseStatus;
   end;
 
   TLHTTPClient = class(TLHTTPConnection)
@@ -1759,6 +1764,16 @@ procedure TLHTTPClientSocket.Cancel(AError: TLHTTPClientError);
 begin
   FError := AError;
   Disconnect;
+end;
+
+function TLHTTPClientSocket.GetResponseReason: string;
+begin
+  Result := FResponse^.Reason;
+end;
+
+function TLHTTPClientSocket.GetResponseStatus: TLHTTPStatus;
+begin
+  Result := FResponse^.Status;
 end;
 
 procedure TLHTTPClientSocket.SendRequest;
