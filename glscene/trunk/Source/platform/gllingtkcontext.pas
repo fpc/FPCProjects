@@ -167,7 +167,9 @@ begin
     vi := XGetVisualInfo(CurXDisplay, VisualIDMask, @vitemp, @nret);
     CurScreen := vi^.screen;
 
-    vi := nil;
+    {crossbuilder: better free vi instead of just nil it to avoid leak
+    vi := nil;}
+    XFree(vi);
 
     AddIAttrib(GLX_RGBA,GL_TRUE);
     
@@ -204,7 +206,9 @@ begin
       end;
     if not Assigned(vi) then
       vi := XGetVisualInfo(CurXDisplay, VisualIDMask, @vitemp, @nret);
-    FRenderingContext := glXCreateContext(CurXDisplay, vi, nil, false); //Last Param (Direct Draw) schoud be true but guves some strange errors
+    //FRenderingContext := glXCreateContext(CurXDisplay, vi, nil, false); //Last Param (Direct Draw) schoud be true but guves some strange errors
+    FRenderingContext := glXCreateContext(CurXDisplay, vi, nil, true); //Last Param (Direct Draw) schoud MUST true, otherwise I get
+                                                                       //GdK-Error on machines with HW-Accel. Not at this line, but somwhere latere (didn't find where)
     XFree(vi);
     if RenderingContext = nil then
       raise Exception.Create('Failed to create rendering context');
