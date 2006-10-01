@@ -21,9 +21,6 @@
   me at ales@chello.sk
 }
 
-{ TODO: add State to HTTPClient, so that user can know whether all requests
-  have been sent+received }
-
 unit lhttp;
 
 {$mode objfpc}{$h+}
@@ -375,6 +372,8 @@ type
     property ResponseStatus: TLHTTPStatus read GetResponseStatus;
   end;
 
+  TLHTTPClientState = (hcsIdle, hcsWaiting, hcsReceiving);
+
   TLHTTPClient = class(TLHTTPConnection)
   protected
     FHost: string;
@@ -382,6 +381,8 @@ type
     FRequest: TClientRequest;
     FResponse: TClientResponse;
     FHeaderOut: THeaderOutInfo;
+    FState: TLHTTPClientState;
+    FPendingResponses: integer;
     FOutputEof: boolean;
     FOnCanWrite: TLCanWriteEvent;
     FOnDoneInput: TLHTTPClientProc;
@@ -405,10 +406,12 @@ type
     property ExtraHeaders: string read FHeaderOut.ExtraHeaders write FHeaderOut.ExtraHeaders;
     property Host: string read FHost write FHost;
     property Method: TLHTTPMethod read FRequest.Method write FRequest.Method;
+    property PendingResponses: integer read FPendingResponses;
     property Port: integer read FPort write FPort;
     property RangeStart: qword read FRequest.RangeStart write FRequest.RangeStart;
     property RangeEnd: qword read FRequest.RangeEnd write FRequest.RangeEnd;
     property Request: TClientRequest read FRequest;
+    property State: TLHTTPClientState read FState;
     property URI: string read FRequest.URI write FRequest.URI;
     property Response: TClientResponse read FResponse;
     property OnCanWrite: TLCanWriteEvent read FOnCanWrite write FOnCanWrite;
@@ -1919,12 +1922,18 @@ end;
 
 procedure TLHTTPClient.DoDoneInput(ASocket: TLHTTPClientSocket);
 begin
+  Dec(FPendingResponses);
+  if FPendingResponses = 0 then
+    FState := hcsIdle
+  else
+    FState := hcsWaiting;
   if Assigned(FOnDoneInput) then
     FOnDoneInput(ASocket);
 end;
 
 function  TLHTTPClient.DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword;
 begin
+  FState := hcsReceiving;
   if Assigned(FOnInput) then
     Result := FOnInput(ASocket, ABuffer, ASize)
   else
@@ -1957,6 +1966,9 @@ procedure TLHTTPClient.InternalSendRequest;
 begin
   FOutputEof := false;
   TLHTTPClientSocket(FIterator).SendRequest;
+  Inc(FPendingResponses);
+  if FState = hcsIdle then
+    FState := hcsWaiting;
 end;
 
 procedure TLHTTPClient.ResetRange;
