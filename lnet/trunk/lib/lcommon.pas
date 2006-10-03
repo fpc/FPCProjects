@@ -35,18 +35,17 @@ const
   {$IFDEF MSWINDOWS}
   SOL_SOCKET = $ffff;
   LMSG = 0;
-  BLOCK_ERROR = WSAEWOULDBLOCK;
-  SOCKET_ERROR = WinSock2.SOCKET_ERROR;
+  BLOCK_ERROR: array[1..1] of Integer = (WSAEWOULDBLOCK);
+  SOCKET_ERRORS = WinSock2.SOCKET_ERROR;
   {$ELSE}
   INVALID_SOCKET = -1;
   SOCKET_ERROR = -1;
-    {$IFDEF LINUX}
+    {$IFDEF LINUX} // TODO: fix this crap, some don't even have MSD_NOSIGNAL
     LMSG = MSG_NOSIGNAL;
-    BLOCK_ERROR = 11;
     {$ELSE}
     LMSG = $20000; // FPC BUG in 2.0.4-
-    BLOCK_ERROR = 35;
     {$ENDIF}
+    BLOCK_ERRORS: array[1..2] of Integer = (ESysEWOULDBLOCK, ESysENOBUFS);
   {$ENDIF}
   { Default Values }
   LDEFAULT_BACKLOG = 5;
@@ -70,6 +69,8 @@ const
 
   function LStrError(const Ernum: Longint; const UseUTF8: Boolean = False): string;
   function LSocketError: Longint;
+  
+  function IsBlockError(const anError: Integer): Boolean;
 
 implementation
 
@@ -175,6 +176,16 @@ end;
 function LSocketError: Longint;
 begin
   Result:=fpgeterrno;
+end;
+
+function IsBlockError(const anError: Integer): Boolean;
+var
+  i: Integer;
+begin
+  Result:=False;
+  for i:=Low(BLOCK_ERRORS) to High(BLOCK_ERRORS) do
+    if anError = BLOCK_ERRORS[i] then
+      Exit(True);
 end;
 
 function CleanError(const Ernum: Longint): Longint; inline;

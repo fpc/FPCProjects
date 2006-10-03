@@ -71,6 +71,7 @@ type
     FStoreFile: TFileStream;
     FExpectedBinary: Boolean;
     FPipeLine: Boolean;
+    FPassword: string;
     FStatusFlags: array[TLFTPStatus] of Boolean;
     FSending: Boolean;
     FOnReceive: TLFTPClientCallback;
@@ -219,6 +220,7 @@ var
   s: TLFTPStatus;
 begin
   inherited Create(aOwner);
+  FPassWord:='';
   FChunkSize:=DEFAULT_CHUNK;
   FStartPort:=DEFAULT_PORT;
   FSL:=TStringList.Create;
@@ -481,7 +483,10 @@ begin
                        FStatus.Remove;
                      end;
                    331,
-                   332: FStatusFlags[FStatus.First.Status]:=False;
+                   332: begin
+                          FStatusFlags[FStatus.First.Status]:=False;
+                          FControl.SendMessage('PASS ' + FPassword + FLE);
+                        end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status]:=False;
@@ -725,6 +730,7 @@ function TLFTPClient.Authenticate(const aUsername, aPassword: string): Boolean;
 begin
   Result:=not FPipeLine;
   if CanContinue(fsAuth, aUserName, aPassword) then begin
+    FPassword:=aPassword;
     FControl.SendMessage('USER ' + aUserName + FLE + 'PASS ' + aPassword + FLE);
     FStatus.Insert(MakeStatusRec(fsAuth, '', ''));
     Result:=True;

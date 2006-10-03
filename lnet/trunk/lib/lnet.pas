@@ -445,7 +445,7 @@ begin
     if Result = 0 then
       Disconnect;
     if Result = SOCKET_ERROR then begin
-      if LSocketError = BLOCK_ERROR then begin
+      if IsBlockError(LSocketError) then begin
         FCanReceive := False;
         IgnoreRead := False;
       end else Bail('Receive Error', LSocketError);
@@ -560,7 +560,7 @@ begin
     if CanSend then begin
       Result:=DoSend(aData, aSize);
       if Result = SOCKET_ERROR then begin
-        if LSocketError = BLOCK_ERROR then begin
+        if IsBlockError(LSocketError) then begin
           FCanSend:=False;
           IgnoreWrite:=False;
         end else
