@@ -23,7 +23,7 @@
 
 unit lNet;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H+}{$T-}
 {$interfaces corba}
 
 interface
