@@ -35,7 +35,7 @@ const
   {$IFDEF MSWINDOWS}
   SOL_SOCKET = $ffff;
   LMSG = 0;
-  BLOCK_ERROR: array[1..1] of Integer = (WSAEWOULDBLOCK);
+  BLOCK_ERRORS: array[1..1] of Integer = (WSAEWOULDBLOCK);
   SOCKET_ERRORS = WinSock2.SOCKET_ERROR;
   {$ELSE}
   INVALID_SOCKET = -1;
@@ -81,7 +81,8 @@ uses
 
 function LStrError(const Ernum: Longint; const UseUTF8: Boolean = False): string;
 var
-  Tmp, TmpW: string;
+  Tmp: string;
+  TmpW: widestring;
 begin
   Result:='[' + IntToStr(Ernum) + '] ';
   if USEUtf8 then begin
@@ -178,16 +179,6 @@ begin
   Result:=fpgeterrno;
 end;
 
-function IsBlockError(const anError: Integer): Boolean;
-var
-  i: Integer;
-begin
-  Result:=False;
-  for i:=Low(BLOCK_ERRORS) to High(BLOCK_ERRORS) do
-    if anError = BLOCK_ERRORS[i] then
-      Exit(True);
-end;
-
 function CleanError(const Ernum: Longint): Longint; inline;
 begin
   Result:=Byte(Ernum);
@@ -228,6 +219,16 @@ begin
 end;
 
 {$ENDIF}
+
+function IsBlockError(const anError: Integer): Boolean;
+var
+  i: Integer;
+begin
+  Result:=False;
+  for i:=Low(BLOCK_ERRORS) to High(BLOCK_ERRORS) do
+    if anError = BLOCK_ERRORS[i] then
+      Exit(True);
+end;
 
 function NetAddrToStr (Entry : Cardinal) : string;
 

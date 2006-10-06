@@ -505,7 +505,7 @@ begin
   if not Connected then begin
     Result:=false;
     SetupSocket(APort, AIntf);
-    if fpBind(FHandle, @FAddress, SizeOf(FAddress)) = INVALID_SOCKET then
+    if fpBind(FHandle, psockaddr(@FAddress), SizeOf(FAddress)) = INVALID_SOCKET then
       Bail('Error on bind', LSocketError)
     else
       Result:=true;
@@ -519,11 +519,11 @@ end;
 
 function TLSocket.Accept(const sersock: Integer): Boolean;
 var
-  AddressLength: Integer = SizeOf(FAddress);
+  AddressLength: tsocklen = SizeOf(FAddress);
 begin
   Result:=false;
   if not Connected then begin
-    FHandle:=fpAccept(sersock, @FAddress, @AddressLength);
+    FHandle:=fpAccept(sersock, psockaddr(@FAddress), @AddressLength);
     if FHandle <> INVALID_SOCKET then begin
       SetOptions;
       Result:=true;
@@ -539,7 +539,7 @@ begin
   if Connected or FConnecting then
     Disconnect;
   if SetupSocket(APort, Address) then begin
-    fpConnect(FHandle, @FAddress, SizeOf(FAddress));
+    fpConnect(FHandle, psockaddr(@FAddress), SizeOf(FAddress));
     FConnecting:=True;
     Result:=FConnecting;
   end;
@@ -1033,12 +1033,12 @@ var
   {$else}
   a: TInetSockAddr;
   {$endif}
-  l: Integer;
+  l: tsocklen;
 begin
   with TLSocket(aSocket) do begin
     l:=SizeOf(a);
     {$ifndef mswindows}
-    if fpgetpeername(FHandle, @a, @l) <> 0 then
+    if fpgetpeername(FHandle, psockaddr(@a), @l) <> 0 then
     {$else}
     if winsock2.getpeername(FHandle, a, l) <> 0 then
     {$endif}

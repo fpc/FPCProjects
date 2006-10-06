@@ -36,7 +36,7 @@ type
 function  InitStringBuffer(InitialSize: integer): TStringBuffer;
 procedure AppendString(var ABuffer: TStringBuffer; const ASource: string); overload;
 procedure AppendString(var ABuffer: TStringBuffer; const ASource: shortstring); overload;
-procedure AppendString(var ABuffer: TStringBuffer; ASource: pchar; ALength: PtrUInt); overload;
+procedure AppendString(var ABuffer: TStringBuffer; ASource: pointer; ALength: PtrUInt); overload;
 procedure AppendString(var ABuffer: TStringBuffer; ASource: pchar); overload;
 procedure AppendChar(var ABuffer: TStringBuffer; AChar: char);
 
@@ -48,7 +48,7 @@ begin
   Result.Pos := Result.Memory;
 end;
 
-procedure AppendString(var ABuffer: TStringBuffer; ASource: pchar; ALength: PtrUInt);
+procedure AppendString(var ABuffer: TStringBuffer; ASource: pointer; ALength: PtrUInt);
 var
   lPos, lSize: PtrUInt;
 begin
