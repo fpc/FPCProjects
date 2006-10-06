@@ -35,8 +35,7 @@ const
   {$IFDEF MSWINDOWS}
   SOL_SOCKET = $ffff;
   LMSG = 0;
-  BLOCK_ERRORS: array[1..1] of Integer = (WSAEWOULDBLOCK);
-  SOCKET_ERRORS = WinSock2.SOCKET_ERROR;
+  SOCKET_ERROR = WinSock2.SOCKET_ERROR;
   {$ELSE}
   INVALID_SOCKET = -1;
   SOCKET_ERROR = -1;
@@ -45,7 +44,6 @@ const
     {$ELSE}
     LMSG = $20000; // FPC BUG in 2.0.4-
     {$ENDIF}
-    BLOCK_ERRORS: array[1..2] of Integer = (ESysEWOULDBLOCK, ESysENOBUFS);
   {$ENDIF}
   { Default Values }
   LDEFAULT_BACKLOG = 5;
@@ -164,6 +162,11 @@ begin
   end;
 end;
 
+function IsBlockError(const anError: Integer): Boolean; inline;
+begin
+  Result:=anError = WSAEWOULDBLOCK;
+end;
+
 {$ELSE}
 
 uses
@@ -216,6 +219,11 @@ begin
   {$endif}
   else if ResolveHostByName(Name, HE) then
     Result:=HostAddrToStr(Cardinal(HE.Addr));
+end;
+
+function IsBlockError(const anError: Integer): Boolean; inline;
+begin
+  Result:=(anError = ESysEWOULDBLOCK) or (anError = ESysENOBUFS);
 end;
 
 {$ENDIF}
@@ -300,16 +308,6 @@ begin
   If J <> 0 then Exit;
   end;
  Result:=Cardinal(Temp);
-end;
-
-function IsBlockError(const anError: Integer): Boolean; inline;
-var
-  i: Integer;
-begin
-  Result:=False;
-  for i:=Low(BLOCK_ERRORS) to High(BLOCK_ERRORS) do
-    if anError = BLOCK_ERRORS[i] then
-      Exit(True);
 end;
 
 end.
