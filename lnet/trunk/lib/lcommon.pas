@@ -70,7 +70,7 @@ const
   function LStrError(const Ernum: Longint; const UseUTF8: Boolean = False): string;
   function LSocketError: Longint;
   
-  function IsBlockError(const anError: Integer): Boolean;
+  function IsBlockError(const anError: Integer): Boolean; inline;
 
 implementation
 
@@ -220,16 +220,6 @@ end;
 
 {$ENDIF}
 
-function IsBlockError(const anError: Integer): Boolean;
-var
-  i: Integer;
-begin
-  Result:=False;
-  for i:=Low(BLOCK_ERRORS) to High(BLOCK_ERRORS) do
-    if anError = BLOCK_ERRORS[i] then
-      Exit(True);
-end;
-
 function NetAddrToStr (Entry : Cardinal) : string;
 
 type THostAddr = array[1..4] of Byte;
@@ -310,6 +300,16 @@ begin
   If J <> 0 then Exit;
   end;
  Result:=Cardinal(Temp);
+end;
+
+function IsBlockError(const anError: Integer): Boolean; inline;
+var
+  i: Integer;
+begin
+  Result:=False;
+  for i:=Low(BLOCK_ERRORS) to High(BLOCK_ERRORS) do
+    if anError = BLOCK_ERRORS[i] then
+      Exit(True);
 end;
 
 end.
