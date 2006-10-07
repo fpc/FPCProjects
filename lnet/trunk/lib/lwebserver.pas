@@ -129,6 +129,8 @@ type
     Document: string;
     URIPath: string;
     ExtraPath: string;
+    Info: TSearchRec;
+    InfoValid: boolean;
   end;
 
   TDocumentHandler = class(TObject)
@@ -265,7 +267,6 @@ var
   lRespInfo: PResponseInfo;
   lHeaderOut: PHeaderOutInfo;
   lIndex: integer;
-  lInfo: TSearchRec;
 begin
   if Length(ARequest.ExtraPath) = 0 then
   begin
@@ -277,12 +278,11 @@ begin
       lRespInfo^.Status := hsNotAllowed;
     end else begin
       lFileOutput := TFileOutput.Create(ARequest.Socket);
-      FindFirst(ARequest.Document, 0, lInfo);
       if lFileOutput.Open(ARequest.Document) then
       begin
         lRespInfo^.Status := hsOK;
-        lHeaderOut^.ContentLength := lInfo.Size;
-        lRespInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(lInfo.Time));
+        lHeaderOut^.ContentLength := ARequest.Info.Size;
+        lRespInfo^.LastModified := LocalTimeToGMT(FileDateToDateTime(ARequest.Info.Time));
         lIndex := MimeList.IndexOf(ExtractFileExt(ARequest.Document));
         if lIndex >= 0 then
           lRespInfo^.ContentType := TStringObject(MimeList.Objects[lIndex]).Str;
@@ -290,7 +290,6 @@ begin
         ARequest.Socket.StartResponse(lFileOutput);
       end else
         lFileOutput.Free;
-      FindClose(lInfo);
     end;
   end;
 end;
@@ -307,14 +306,19 @@ begin
   lDocRequest.Socket := ASocket;
   lDocRequest.URIPath := ASocket.RequestInfo.Argument;
   lDocRequest.Document := DocumentRoot+lDocRequest.URIPath;
-  if DirectoryExists(lDocRequest.Document) then
+  lDocRequest.InfoValid := FindFirst(lDocRequest.Document, faAnyFile, lDocRequest.Info) = 0;
+  FindClose(lDocRequest.Info);
+  if lDocRequest.InfoValid and ((lDocRequest.Info.Attr and faDirectory) <> 0) then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
     lDirIndexFound := false;
     for I := 0 to FDirIndexList.Count - 1 do
     begin
       lTempDoc := lDocRequest.Document + FDirIndexList.Strings[I];
-      if FileExists(lTempDoc) then
+      lDocRequest.InfoValid := FindFirst(lTempDoc, 
+        faAnyFile and not faDirectory, lDocRequest.Info) = 0;
+      FindClose(lDocRequest.Info);
+      if lDocRequest.InfoValid and ((lDocRequest.Info.Attr and faDirectory) = 0) then
       begin
         lDocRequest.Document := lTempDoc;
         lDirIndexFound := true;
@@ -323,8 +327,12 @@ begin
     end;
     { requested a directory, but no source to show }
     if not lDirIndexFound then exit;
-  end else
-  if not SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath) then exit;
+  end else begin
+    lDocRequest.InfoValid := SeparatePath(lDocRequest.Document, 
+      lDocRequest.ExtraPath, @lDocRequest.Info);
+    if not lDocRequest.InfoValid then 
+      exit;
+  end;
   lHandler := FDocHandlerList;
   while lHandler <> nil do
   begin

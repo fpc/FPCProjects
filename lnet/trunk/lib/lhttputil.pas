@@ -38,12 +38,15 @@ uses
 const
   HTTPDateFormat: string = 'ddd, dd mmm yyyy hh:nn:ss';
 
+type
+  PSearchRec = ^TSearchRec;
+
 function TZSeconds: integer;
 function GMTToLocalTime(ADateTime: TDateTime): TDateTime;
 function LocalTimeToGMT(ADateTime: TDateTime): TDateTime;
 function TryHTTPDateStrToDateTime(ADateStr: pchar; var ADest: TDateTime): boolean;
 
-function SeparatePath(var InPath: string; out ExtraPath: string): boolean;
+function SeparatePath(var InPath: string; out ExtraPath: string; ASearchRec: PSearchRec = nil): boolean;
 
 implementation
 
@@ -127,22 +130,26 @@ begin
   Result := true;
 end;
 
-function SeparatePath(var InPath: string; out ExtraPath: string): boolean;
+function SeparatePath(var InPath: string; out ExtraPath: string; ASearchRec: PSearchRec = nil): boolean;
 var
   lFullPath: string;
   lPos: integer;
+  lSearchRec: TSearchRec;
 begin
+  if ASearchRec = nil then
+    ASearchRec := @lSearchRec;
   ExtraPath := '';
   if Length(InPath) <= 2 then exit(false);
   lFullPath := InPath;
   if InPath[Length(InPath)] = '/' then
     SetLength(InPath, Length(InPath)-1);
-  Result := false;
   repeat
-    if FileExists(InPath) then
+    Result := FindFirst(InPath, faAnyFile and not faDirectory, ASearchRec^) = 0;
+    FindClose(ASearchRec^);
+    if Result then
     begin
       ExtraPath := Copy(lFullPath, Length(InPath)+1, Length(lFullPath)-Length(InPath));
-      exit(true);
+      break;
     end;
     lPos := RPos('/', InPath);
     if lPos > 0 then
