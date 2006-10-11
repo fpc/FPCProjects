@@ -209,12 +209,15 @@ begin
   n:=Pos(' http://', LowerCase(s));
   Convert(n, '');
 
+  n:=Pos(' https://', LowerCase(s));
+  Convert(n, '');
+
   n:=Pos(' www.', LowerCase(s));
   Convert(n, 'http://');
 
   s:=Trim(s);
 
-  if Pos(' www.', s) + Pos(' http://', s) > 0 then
+  if Pos(' www.', s) + Pos(' http://', s) + Pos(' https://', s) > 0 then
     Result:=HighlightHyperlinks(s)
   else
     Result:=s;
