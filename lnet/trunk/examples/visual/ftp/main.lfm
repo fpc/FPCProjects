@@ -1,110 +1,175 @@
 object MainForm: TMainForm
-  Left = 325
-  Height = 618
-  Top = 55
-  Width = 567
-  HorzScrollBar.Page = 566
-  VertScrollBar.Page = 598
-  ActiveControl = EditIP
+  Left = 117
+  Height = 548
+  Top = 60
+  Width = 696
+  HorzScrollBar.Page = 695
+  VertScrollBar.Page = 527
+  ActiveControl = MemoText
+  BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
-  ClientHeight = 599
-  ClientWidth = 567
-  Constraints.MaxHeight = 618
-  Constraints.MaxWidth = 567
-  Constraints.MinHeight = 618
-  Constraints.MinWidth = 567
+  ClientHeight = 528
+  ClientWidth = 696
   Menu = MainMenu
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  object LabelHost: TLabel
-    Left = 8
-    Height = 14
-    Top = 464
-    Width = 51
-    Caption = 'HostName'
-    Color = clNone
-    ParentColor = False
-  end
-  object LabelPort: TLabel
-    Left = 245
-    Height = 14
-    Top = 464
-    Width = 20
-    Caption = 'Port'
-    Color = clNone
-    ParentColor = False
-  end
-  object EditIP: TEdit
-    Left = 88
-    Height = 23
-    Top = 456
-    Width = 144
-    OnKeyPress = IPEditKeyPress
-    TabOrder = 0
-  end
-  object EditPort: TEdit
-    Left = 288
-    Height = 23
-    Top = 456
-    Width = 80
-    TabOrder = 1
-    Text = '21'
-  end
-  object ButtonConnect: TButton
-    Left = 376
-    Height = 23
-    Top = 456
-    Width = 75
-    BorderSpacing.InnerBorder = 4
-    Caption = 'Connect'
-    OnClick = ConnectButtonClick
-    TabOrder = 2
-  end
-  object LeftView: TFileListBox
-    Height = 448
-    Width = 272
-    ExtendedSelect = False
-    FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
-    Mask = '*'
-    OnDblClick = LeftViewDblClick
-    PopupMenu = PopupLeft
-    TabOrder = 3
-  end
-  object RightView: TListBox
-    Left = 296
-    Height = 448
-    Width = 272
-    Anchors = [akTop, akRight]
-    OnDblClick = RightViewDblClick
-    PopupMenu = PopupRight
-    Sorted = True
-    TabOrder = 4
-  end
-  object ButtonDisconnect: TButton
-    Left = 456
-    Height = 23
-    Top = 456
-    Width = 75
-    BorderSpacing.InnerBorder = 4
-    Caption = 'Disconnect'
-    OnClick = DisconnectButtonClick
-    TabOrder = 5
-  end
   object MemoText: TMemo
-    Height = 102
-    Top = 497
-    Width = 567
+    Height = 103
+    Top = 402
+    Width = 696
     Align = alBottom
     ReadOnly = True
     ScrollBars = ssAutoVertical
-    TabOrder = 6
+    TabOrder = 0
+  end
+  object Panel1: TPanel
+    Height = 371
+    Top = 26
+    Width = 696
+    Align = alClient
+    ClientHeight = 371
+    ClientWidth = 696
+    TabOrder = 1
+    object LeftView: TFileListBox
+      Left = 1
+      Height = 369
+      Top = 1
+      Width = 183
+      Align = alLeft
+      ExtendedSelect = False
+      FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
+      OnDblClick = LeftViewDblClick
+      PopupMenu = PopupLeft
+      TabOrder = 0
+    end
+    object Splitter2: TSplitter
+      Left = 184
+      Height = 369
+      Top = 1
+      Width = 5
+    end
+    object rmtGrid: TStringGrid
+      Left = 189
+      Height = 369
+      Top = 1
+      Width = 506
+      Align = alClient
+      ColCount = 6
+      Columns = <      
+        item
+          Title.Caption = ' '
+          Width = 18
+        end      
+        item
+          Title.Caption = 'File'
+          Width = 220
+        end      
+        item
+          Title.Caption = 'Size'
+          Width = 80
+        end      
+        item
+          Title.Caption = 'Date'
+          Width = 100
+        end      
+        item
+          Title.Caption = 'Attributes'
+        end      
+        item
+          Title.Caption = 'Links'
+          Width = 0
+        end>
+      DefaultRowHeight = 16
+      FixedColor = clBtnFace
+      FixedCols = 0
+      GridLineWidth = 0
+      Options = [goFixedVertLine, goFixedHorzLine, goColSizing, goRowSelect]
+      PopupMenu = PopupRight
+      RowCount = 1
+      ScrollBars = ssAutoBoth
+      TabOrder = 1
+      TabStop = True
+      OnCompareCells = rmtGridCompareCells
+      OnDblClick = rmtGridDblClick
+      OnDrawCell = rmtGridDrawCell
+      OnKeyDown = rmtGridKeyDown
+    end
+  end
+  object Splitter1: TSplitter
+    Cursor = crVSplit
+    Height = 5
+    Top = 397
+    Width = 696
+    Align = alBottom
+    ResizeAnchor = akBottom
+  end
+  object SBar: TStatusBar
+    Height = 23
+    Top = 505
+    Width = 696
+    Panels = <    
+      item
+        Width = 150
+      end    
+      item
+        Width = 100
+      end    
+      item
+        Width = 250
+      end    
+      item
+        Width = 50
+      end>
+    SimplePanel = False
+  end
+  object ToolBar1: TToolBar
+    Height = 26
+    Width = 696
+    Caption = 'ToolBar1'
+    ShowCaptions = True
+    TabOrder = 2
+    OnClick = ToolBar1Click
+    object ToolButton1: TToolButton
+      Left = 1
+      Top = 2
+      Action = accSiteManager
+    end
+    object ToolButton3: TToolButton
+      Left = 72
+      Top = 2
+      Width = 13
+      Caption = 'ToolButton3'
+      Style = tbsDivider
+    end
+    object ToolButton4: TToolButton
+      Left = 85
+      Top = 2
+      Action = accConnect
+      Grouped = True
+      Style = tbsCheck
+    end
+    object ToolButton2: TToolButton
+      Left = 133
+      Top = 2
+      Action = accDisconnect
+      Down = True
+      Grouped = True
+      Style = tbsCheck
+    end
   end
   object MainMenu: TMainMenu
-    left = 488
-    top = 504
+    top = 335
     object MenuItemFile: TMenuItem
       Caption = '&File'
+      object MenuSiteManager: TMenuItem
+        Action = accSiteManager
+        OnClick = accSiteManagerExecute
+      end
+      object MenuItem1: TMenuItem
+        Caption = '-'
+      end
       object MenuItemExit: TMenuItem
         Caption = 'E&xit'
         OnClick = ExitMenuItemClick
@@ -140,11 +205,10 @@ object MainForm: TMainForm
     OnControl = FTPControl
     OnError = FTPError
     StartPort = 1024
-    left = 488
-    top = 536
+    top = 300
   end
   object PopupLeft: TPopupMenu
-    left = 32
+    left = 30
     top = 272
     object PopupLInfo: TMenuItem
       Caption = 'Info'
@@ -157,6 +221,21 @@ object MainForm: TMainForm
     object PopupLRename: TMenuItem
       Caption = 'Rename'
       OnClick = LRenamePopupClick
+    end
+  end
+  object ActionList1: TActionList
+    top = 370
+    object accSiteManager: TAction
+      Caption = 'Site Manager'
+      OnExecute = accSiteManagerExecute
+    end
+    object accConnect: TAction
+      Caption = 'Connect'
+      OnExecute = accConnectExecute
+    end
+    object accDisconnect: TAction
+      Caption = 'Disconnect'
+      OnExecute = accDisconnectExecute
     end
   end
 end
