@@ -32,7 +32,7 @@ uses
   {$i sys/osunits.inc}
 
 const
-  {$IFDEF MSWINDOWS}
+  {$IFDEF WINDOWS}
   SOL_SOCKET = $ffff;
   LMSG = 0;
   SOCKET_ERROR = WinSock2.SOCKET_ERROR;
@@ -49,12 +49,19 @@ const
   LDEFAULT_BACKLOG = 5;
   BUFFER_SIZE = 65536;
   
+  {$IFDEF WINDOWS}
+type
+  TInetSockAddr = TSockAddrin;
+  {$else}
+
+  {$ENDIF}
+  
   { Base functions }
   function StrToHostAddr(IP: string): Cardinal;
   function HostAddrToStr(Entry: Cardinal): string;
   function StrToNetAddr(IP: string): Cardinal;
   function NetAddrToStr(Entry: Cardinal): string;
-  {$IFDEF MSWINDOWS}
+  {$IFDEF WINDOWS}
   function fpSelect(const nfds: Integer; const readfds, writefds, exceptfds: PFDSet;
                     const timeout: PTimeVal): Integer; inline;
   function fpFD_ISSET(const Socket: Integer; var FDSet: TFDSet): Integer; inline;
@@ -68,11 +75,13 @@ const
   function LStrError(const Ernum: Longint; const UseUTF8: Boolean = False): string;
   function LSocketError: Longint;
   
+  function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
+
   function IsBlockError(const anError: Integer): Boolean; inline;
 
 implementation
 
-{$IFDEF MSWINDOWS}
+{$IFDEF WINDOWS}
 
 uses
   Windows;
@@ -162,6 +171,16 @@ begin
   end;
 end;
 
+function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
+var
+  opt: DWord;
+begin
+  opt:=1;
+  if ioctlsocket(aHandle, FIONBIO, opt) = SOCKET_ERROR then
+    Exit(False);
+  Result:=True;
+end;
+
 function IsBlockError(const anError: Integer): Boolean; inline;
 begin
   Result:=anError = WSAEWOULDBLOCK;
@@ -219,6 +238,19 @@ begin
   {$endif}
   else if ResolveHostByName(Name, HE) then
     Result:=HostAddrToStr(Cardinal(HE.Addr));
+end;
+
+function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
+var
+  opt: cInt;
+begin
+  opt:=fpfcntl(aHandle, F_GETFL);
+  if opt = SOCKET_ERROR then
+    Exit(False);
+
+  if fpfcntl(aHandle, F_SETFL, opt or O_NONBLOCK) = SOCKET_ERROR then
+    Exit(False);
+  Result:=True;
 end;
 
 function IsBlockError(const anError: Integer): Boolean; inline;

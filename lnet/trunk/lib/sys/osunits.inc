@@ -1,4 +1,4 @@
-{$ifdef mswindows}
+{$ifdef WINDOWS}
   Winsock2,
 {$else}
   BaseUnix, NetDB,

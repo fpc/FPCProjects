@@ -3,7 +3,7 @@ program fpFCGI;
 {$mode objfpc}{$H+}
 
 uses
-  {$ifdef MSWINDOWS}
+  {$ifdef WINDOWS}
   WinSock2,
   {$endif}
   SysUtils, Process, lNet, lEvents, lCommon, Sockets;

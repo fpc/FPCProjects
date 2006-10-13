@@ -402,26 +402,9 @@ begin
 end;
 
 procedure TLSocket.SetNonBlock;
-{$ifdef MSWINDOWS}
-var
-  opt: DWord;
 begin
-   opt:=1;
-   if ioctlsocket(FHandle, FIONBIO, opt) = SOCKET_ERROR then
-     bail('Error on SetFD', wsaGetLasterror);
-{$else}
-var
-  opt: cInt;
-begin
-   opt:=fpfcntl(FHandle, F_GETFL);
-   if opt = SOCKET_ERROR then begin
-     bail('ERROR on GetFD', LSocketError);
-     Exit;
-   end;
-
-   if fpfcntl(FHandle, F_SETFL, opt or O_NONBLOCK) = SOCKET_ERROR then
-     bail('Error on SetFL', LSocketError);
-{$endif}
+  if not SetBlocking(FHandle, False) then
+    Bail('Error on setnonblock', LSocketError);
 end;
 
 function TLSocket.GetMessage(out msg: string): Integer;
@@ -1028,20 +1011,12 @@ end;
 
 procedure TLTcp.ConnectAction(aSocket: TLHandle);
 var
-  {$ifdef MSWINDOWS}
-  a: TSockAddrin;
-  {$else}
   a: TInetSockAddr;
-  {$endif}
-  l: tsocklen;
+  l: Longint;
 begin
   with TLSocket(aSocket) do begin
     l:=SizeOf(a);
-    {$ifndef mswindows}
-    if fpgetpeername(FHandle, psockaddr(@a), @l) <> 0 then
-    {$else}
-    if winsock2.getpeername(FHandle, a, l) <> 0 then
-    {$endif}
+    if Sockets.GetPeerName(FHandle, a, l) <> 0 then
       Self.Bail('Error on connect: connection refused', TLSocket(aSocket))
     else begin
       FConnected:=True;
