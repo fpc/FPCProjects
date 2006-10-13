@@ -45,7 +45,6 @@ procedure MainLoop;
 var
   lRuns: dword;
 begin
-  Writeln('Succesfully started server');
   lRuns := $FFFFFFFF;
   while (lRuns > 0) and (Server.Connected) and (not Quit) do
   begin
@@ -82,18 +81,22 @@ begin
   {$endif}
 end;
 
-function Daemonize: Boolean;
+function Daemonize: Integer;
   {$ifndef MSWINDOWS}
 var
   PID: TPid;
 begin
+  Result:=-1;
   PID:=fpFork;
   if PID = 0 then begin
-    Result:=SetServer;
-    if Result then
+    if SetServer then
+      Result:=1;
+    if Result > 0 then
       EnableWriteln:=False;
   end else if PID < 0 then
-    Writeln('Error on fork: ', StrError(fpGetErrno));
+    Writeln('Error on fork: ', StrError(fpGetErrno))
+  else
+    Result:=0;
   {$else}
 begin
   Result:=False;
@@ -103,12 +106,15 @@ end;
 procedure Run(const BG: Boolean);
 begin
   if BG then begin
-    if Daemonize then
-      MainLoop
-    else
-      Writeln('Unable to start daemon/service, please try with -c');
-  end else if SetServer then
+    case Daemonize of
+      1: MainLoop;
+      0: Writeln('Succesfully started server');
+     -1: Writeln('Unable to start daemon/service, please try with -c');
+    end;
+  end else if SetServer then begin
     MainLoop;
+    Writeln('Succesfully started server');
+  end;
   Server.Free;
 end;
 
