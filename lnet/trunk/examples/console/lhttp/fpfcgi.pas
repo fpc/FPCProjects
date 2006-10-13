@@ -15,7 +15,6 @@ type
   TLBlockingSocket = class(TLSocket)
    protected
     procedure SetOptions; override;
-    procedure SetNonBlock; override;
   end;
   
   { TSpawner }
@@ -35,12 +34,7 @@ var
 begin
   if SetSocketOptions(FHandle, SOL_SOCKET, SO_REUSEADDR, Arg, Sizeof(Arg)) = SOCKET_ERROR then
     Bail('SetSockOpt error', LSocketError);
-  inherited SetOptions;
-end;
-
-procedure TLBlockingSocket.SetNonBlock;
-begin
-  // do nothing
+  // don't call inherited, remain blocking
 end;
 
 { TSpawner }

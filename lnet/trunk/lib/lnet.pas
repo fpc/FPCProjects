@@ -98,6 +98,7 @@ type
     FCanReceive: Boolean;
     FServerSocket: Boolean;
     FOnFree: TLProc;
+    FBlocking: Boolean;
     FListenBacklog: Integer;
    protected
     function DoSend(const TheData; const TheSize: Integer): Integer;
@@ -108,8 +109,8 @@ type
     function GetLocalAddress: string;
     function CanSend: Boolean; virtual;
     function CanReceive: Boolean; virtual;
+    procedure SetBlocking(const aValue: Boolean);
     procedure SetOptions; virtual;
-    procedure SetNonBlock; virtual;
     procedure Bail(const msg: string; const ernum: Integer);
     procedure LogError(const msg: string; const ernum: Integer); virtual;
    public
@@ -129,6 +130,7 @@ type
     property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
     property Protocol: Integer read FProtocol write FProtocol;
     property SocketType: Integer read FSocketClass write FSocketClass;
+    property Blocking: Boolean read FBlocking write SetBlocking;
     property PeerAddress: string read GetPeerAddress;
     property PeerPort: Word read GetPeerPort;
     property LocalAddress: string read GetLocalAddress;
@@ -311,6 +313,7 @@ uses
 constructor TLSocket.Create;
 begin
   inherited Create;
+  FBlocking:=True;
   FListenBacklog:=LDEFAULT_BACKLOG;
   FServerSocket:=False;
   FPrevSock:=nil;
@@ -396,15 +399,16 @@ begin
   Result:=FCanReceive and FConnected;
 end;
 
-procedure TLSocket.SetOptions;
+procedure TLSocket.SetBlocking(const aValue: Boolean);
 begin
-  SetNonBlock;
+  FBlocking:=aValue;
+  if not lCommon.SetBlocking(FHandle, aValue) then
+    Bail('Error on setnonblock', LSocketError);
 end;
 
-procedure TLSocket.SetNonBlock;
+procedure TLSocket.SetOptions;
 begin
-  if not SetBlocking(FHandle, False) then
-    Bail('Error on setnonblock', LSocketError);
+  SetBlocking(False);
 end;
 
 function TLSocket.GetMessage(out msg: string): Integer;
