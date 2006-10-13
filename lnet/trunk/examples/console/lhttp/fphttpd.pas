@@ -112,8 +112,8 @@ begin
      -1: Writeln('Unable to start daemon/service, please try with -c');
     end;
   end else if SetServer then begin
-    MainLoop;
     Writeln('Succesfully started server');
+    MainLoop;
   end;
   Server.Free;
 end;

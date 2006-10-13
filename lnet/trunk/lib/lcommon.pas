@@ -209,17 +209,9 @@ var
   HE: THostEntry;
 begin
   Result:='';
-  {$ifdef darwin}
-  if GetHostbyAddr(in_addr(StrToNetAddr(Address)), HE) then
-  {$else}
   if GetHostbyAddr(in_addr(StrToHostAddr(Address)), HE) then
-  {$endif}
     Result:=HE.Name
-  {$ifdef darwin}
   else if ResolveHostbyAddr(in_addr(StrToNetAddr(Address)), HE) then
-  {$else}
-  else if ResolveHostbyAddr(in_addr(StrToHostAddr(Address)), HE) then
-  {$endif}
     Result:=HE.Name;
 end;
 
@@ -229,13 +221,9 @@ var
 begin
   Result:='';
   if GetHostByName(Name, HE) then
-  {$ifdef darwin}
     Result:=HostAddrToStr(Cardinal(HE.Addr)) // for localhost
-  {$else}
-    Result:=NetAddrToStr(Cardinal(HE.Addr)) // for localhost
-  {$endif}
   else if ResolveHostByName(Name, HE) then
-    Result:=HostAddrToStr(Cardinal(HE.Addr));
+    Result:=NetAddrToStr(Cardinal(HE.Addr));
 end;
 
 function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
