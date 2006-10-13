@@ -55,10 +55,10 @@ type
   {$ENDIF}
   
   { Base functions }
-  function StrToHostAddr(IP: string): Cardinal;
-  function HostAddrToStr(Entry: Cardinal): string;
-  function StrToNetAddr(IP: string): Cardinal;
-  function NetAddrToStr(Entry: Cardinal): string;
+  function StrToHostAddr(const IP: string): Cardinal; inline;
+  function HostAddrToStr(const Entry: Cardinal): string; inline;
+  function StrToNetAddr(const IP: string): Cardinal; inline;
+  function NetAddrToStr(const Entry: Cardinal): string; inline;
   {$IFDEF WINDOWS}
   function fpSelect(const nfds: Integer; const readfds, writefds, exceptfds: PFDSet;
                     const timeout: PTimeVal): Integer; inline;
@@ -258,86 +258,24 @@ end;
 
 {$ENDIF}
 
-function NetAddrToStr (Entry : Cardinal) : string;
-
-type THostAddr = array[1..4] of Byte;
-Var Dummy : string[4];
-    I : LongInt;
-
+function NetAddrToStr(const Entry: Cardinal): string; inline;
 begin
-  NetAddrToStr:='';
-  For I:=4 Downto 1 do
-   begin
-   Dummy:='';
-   Str(THostAddr(Entry)[I],Dummy);
-   NetAddrToStr:=NetAddrToStr+Dummy;
-   If I>1 Then NetAddrToStr:=NetAddrToStr+'.';
-   end;
+  Result:=Sockets.NetAddrToStr(in_addr(Entry));
 end;
 
-function StrToNetAddr(IP : string) : Cardinal;
-type THostAddr = array[1..4] of Byte;
-Var Dummy : string[4];
-   I : LongInt;
-   J : Integer;
-   Temp : THostAddr;
+function StrToNetAddr(const IP: string): Cardinal; inline;
 begin
- Result:=0;
- For I:=1 to 4 do
-  begin
-  If I<4 Then
-    begin
-    J:=Pos('.',IP);
-    If J=0 then exit;
-    Dummy:=Copy(IP,1,J-1);
-    Delete (IP,1,J);
-    end
-  else
-    Dummy:=IP;
-  Val (Dummy, Temp[I], J);
-  If J<>0 then Exit;
-  end;
- Result:=Cardinal(Temp);
+  Result:=Cardinal(Sockets.StrToNetAddr(IP));
 end;
 
-function HostAddrToStr (Entry : Cardinal) : string;
-type THostAddr = array[1..4] of Byte;
-var Dummy : string[4];
-    I : LongInt;
+function HostAddrToStr(const Entry: Cardinal): string; inline;
 begin
-  HostAddrToStr:='';
-  For I:=1 to 4 do
-   begin
-   Dummy:='';
-   Str(THostAddr(Entry)[I],Dummy);
-   HostAddrToStr:=HostAddrToStr+Dummy;
-   If I < 4 Then HostAddrToStr:=HostAddrToStr+'.';
-   end;
+  Result:=Sockets.HostAddrToStr(in_addr(Entry));
 end;
 
-function StrToHostAddr(IP: string): Cardinal;
-type THostAddr = array[1..4] of Byte;
-var Dummy : string[4];
-   I : LongInt;
-   J : Integer;
-   Temp : THostAddr;
+function StrToHostAddr(const IP: string): Cardinal; inline;
 begin
- Result:=0;
- For I:=4 downto 1 do
-  begin
-  If I > 1 Then
-    begin
-    J:=Pos('.',IP);
-    If J=0 then exit;
-    Dummy:=Copy(IP,1,J-1);
-    Delete (IP,1,J);
-    end
-  else
-    Dummy:=IP;
-  Val (Dummy, Temp[I], J);
-  If J <> 0 then Exit;
-  end;
- Result:=Cardinal(Temp);
+  Result:=Cardinal(Sockets.StrToHostAddr(IP));
 end;
 
 end.
