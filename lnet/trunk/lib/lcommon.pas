@@ -52,8 +52,6 @@ const
   {$IFDEF WINDOWS}
 type
   TInetSockAddr = TSockAddrin;
-  {$else}
-
   {$ENDIF}
   
   { Base functions }
