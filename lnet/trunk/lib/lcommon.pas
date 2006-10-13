@@ -211,7 +211,7 @@ begin
   Result:='';
   if GetHostbyAddr(in_addr(StrToHostAddr(Address)), HE) then
     Result:=HE.Name
-  else if ResolveHostbyAddr(in_addr(StrToNetAddr(Address)), HE) then
+  else if ResolveHostbyAddr(in_addr(StrToHostAddr(Address)), HE) then
     Result:=HE.Name;
 end;
 
