@@ -313,7 +313,8 @@ uses
 constructor TLSocket.Create;
 begin
   inherited Create;
-  FBlocking:=True;
+  FHandle:=-1;
+  FBlocking:=False;
   FListenBacklog:=LDEFAULT_BACKLOG;
   FServerSocket:=False;
   FPrevSock:=nil;
@@ -344,7 +345,7 @@ begin
   FCanSend:=True;
   FCanReceive:=True;
   FIgnoreWrite:=True;
-  if Connected or FConnecting then begin
+  if FConnected or FConnecting then begin
     FConnected:=False;
     FConnecting:=False;
     if (FSocketClass = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
@@ -352,6 +353,7 @@ begin
         LogError('Shutdown error', LSocketError);
     if CloseSocket(FHandle) <> 0 then
       LogError('Closesocket error', LSocketError);
+    FHandle:=-1;
   end;
 end;
 
@@ -402,13 +404,14 @@ end;
 procedure TLSocket.SetBlocking(const aValue: Boolean);
 begin
   FBlocking:=aValue;
-  if not lCommon.SetBlocking(FHandle, aValue) then
-    Bail('Error on setnonblock', LSocketError);
+  if FHandle >= 0 then // we already set our socket
+    if not lCommon.SetBlocking(FHandle, aValue) then
+      Bail('Error on SetBlocking', LSocketError);
 end;
 
 procedure TLSocket.SetOptions;
 begin
-  SetBlocking(False);
+  SetBlocking(FBlocking);
 end;
 
 function TLSocket.GetMessage(out msg: string): Integer;
@@ -455,7 +458,7 @@ var
   Arg: Integer;
 begin
   Result:=false;
-  if not Connected then begin
+  if not FConnected and not FConnecting then begin
     Done:=true;
     FHandle:=fpSocket(AF_INET, FSocketClass, FProtocol);
     if FHandle = INVALID_SOCKET then
