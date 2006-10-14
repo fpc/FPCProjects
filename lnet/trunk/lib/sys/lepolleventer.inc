@@ -208,13 +208,17 @@ function BestEventerClass: TLEventerClass;
     Result:=StrToInt(s);
   end;
 
+{$ifndef DISABLE_EPOLL}
 var
   u: TUTSName;
+{$endif}
 begin
   Result:=TLSelectEventer;
+{$ifndef DISABLE_EPOLL}
   if fpUname(u) = 0 then   // check for 2.6+
     if GetVersion(u.release) >= 2600 then
       Result:=TLEpollEventer;
+{$endif}
 end;
 
 {$endif} // Linux
