@@ -423,7 +423,6 @@ type
 implementation
 
 const
-  PackBufferSize = 512;     { if less data than this, pack buffer }
   RequestBufferSize = 1024;
   DataBufferSize = 16*1024;
 
@@ -917,7 +916,7 @@ begin
   dec(FInputRemaining, lNumBytes);
   Result := FInputRemaining > 0;
   { prepare for more data, if more data coming }
-  if Result and ((FBufferEnd-FBufferPos) < PackBufferSize) then
+  if Result and (FBufferPos+FInputRemaining > FBuffer+FBufferSize) then
     PackInputBuffer;
 end;
 
@@ -1165,34 +1164,8 @@ end;
 
 procedure TLHTTPSocket.WriteBlock;
 begin
-  if FCurrentOutput = nil then exit;
   while true do
   begin
-    case FCurrentOutput.WriteBlock of
-      wsDone:
-      begin
-        if FCurrentOutput = FLastOutput then
-          FLastOutput := nil;
-        { some output items may trigger this parse/write loop }
-        DelayFree(FCurrentOutput);
-        FCurrentOutput := FCurrentOutput.FNext;
-      end;
-      wsWaitingData:
-      begin
-        { wait for more data from external source }
-        break;
-      end;
-    end;
-    { nothing left to write, request was busy and now completed }
-    if FCurrentOutput = nil then
-    begin
-      LogMessage;
-      FOutputDone := true;
-    end;
-    { if not ignoring, then the send buffer is full }
-    if not FIgnoreWrite or not FConnected then
-      break;
-
     if FCurrentOutput = nil then
     begin
       if not FOutputDone or (not FRequestInputDone and FKeepAlive) then
@@ -1222,6 +1195,32 @@ begin
 
       if FCurrentOutput = nil then 
         break;
+    end;
+
+    { if we cannot send, then the send buffer is full }
+    if not FCanSend or not FConnected then
+      break;
+
+    case FCurrentOutput.WriteBlock of
+      wsDone:
+      begin
+        if FCurrentOutput = FLastOutput then
+          FLastOutput := nil;
+        { some output items may trigger this parse/write loop }
+        DelayFree(FCurrentOutput);
+        FCurrentOutput := FCurrentOutput.FNext;
+      end;
+      wsWaitingData:
+      begin
+        { wait for more data from external source }
+        break;
+      end;
+    end;
+    { nothing left to write, request was busy and now completed }
+    if FCurrentOutput = nil then
+    begin
+      LogMessage;
+      FOutputDone := true;
     end;
   end;
 end;

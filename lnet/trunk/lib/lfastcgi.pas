@@ -52,7 +52,6 @@ type
     FOutputDone: boolean;
     FStderrDone: boolean;
     FOutputPending: boolean;
-    FMightDisconnect: boolean;
     FNextFree: TLFastCGIRequest;
     FNextSend: TLFastCGIRequest;
     FOnEndRequest: TLFastCGIRequestEvent;
@@ -106,6 +105,7 @@ type
     FRequests: PLFastCGIRequest;
     FRequestsCount: integer;
     FNextRequestID: integer;
+    FRequestsSent: integer;
     FFreeRequest: TLFastCGIRequest;
     FSendRequest: TLFastCGIRequest;
     FRequest: TLFastCGIRequest;
@@ -140,6 +140,7 @@ type
     function  GetBuffer(ABuffer: pchar; ASize: integer): integer;
 
     property ReqType: byte read FReqType;
+    property RequestsSent: integer read FRequestsSent;
   end;
 
   TSpawnState = (ssNone, ssSpawning, ssSpawned);
@@ -150,6 +151,7 @@ type
     FClientsCount: integer;
     FClientsAvail: integer;
     FClientsMax: integer;
+    FMaxRequestsConn: integer;
     FFreeClient: TLFastCGIClient;
     FTimer: TLTimer;
     FEventer: TLEventer;
@@ -172,6 +174,7 @@ type
     property AppName: string read FAppName write FAppName;
     property ClientsMax: integer read FClientsMax write FClientsMax;
     property Eventer: TLEventer read FEventer write FEventer;
+    property MaxRequestsConn: integer read FMaxRequestsConn write FMaxRequestsConn;
     property Host: string read FHost write FHost;
     property Port: integer read FPort write FPort;
     property Timer: TLTimer read FTimer;
@@ -203,7 +206,6 @@ end;
 
 procedure TLFastCGIRequest.HandleReceive;
 begin
-  FMightDisconnect := false;
   case FClient.ReqType of
     FCGI_STDOUT: DoOutput;
     FCGI_STDERR: DoStderr;
@@ -335,7 +337,6 @@ begin
   SetContentLength(sizeof(lBody));
   AppendString(FBuffer, @FHeader, sizeof(FHeader));
   AppendString(FBuffer, @lBody, sizeof(lBody));
-  FMightDisconnect := true;
 end;
 
 procedure TLFastCGIRequest.SendParam(const AName, AValue: string; AReqType: integer = FCGI_PARAMS);
@@ -424,7 +425,7 @@ begin
     Inc(FBufferSendPos, lWritten);
     Result := FBufferSendPos = FBuffer.Pos-FBuffer.Memory;
     { do not rewind buffer, unless remote side has had chance to disconnect }
-    if Result and not FMightDisconnect then
+    if Result then
       RewindBuffer;
   end else
     Result := false;
@@ -550,6 +551,7 @@ var
   needReconnect: boolean;
 begin
   inherited;
+  FRequestsSent := 0;
   needReconnect := false;
   for I := 0 to FNextRequestID-1 do
     if FRequests[I].FNextFree = nil then
@@ -790,6 +792,7 @@ begin
     Connect;
 
   Result.SendBeginRequest(AType);
+  Inc(FRequestsSent);
 end;
 
 procedure TLFastCGIClient.EndRequest(ARequest: TLFastCGIRequest);
@@ -808,6 +811,7 @@ end;
 constructor TLFastCGIPool.Create;
 begin
   FClientsMax := 1;
+  FMaxRequestsConn := 1;
   inherited;
 end;
 
@@ -863,6 +867,9 @@ end;
 
 procedure TLFastCGIPool.EndRequest(AClient: TLFastCGIClient);
 begin
+  { TODO: wait for other requests to be completed }
+  if AClient.RequestsSent = FMaxRequestsConn then
+    AClient.Disconnect;
   AddToFreeClients(AClient);
 end;
 
