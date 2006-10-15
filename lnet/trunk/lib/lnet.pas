@@ -376,9 +376,9 @@ function TLSocket.GetPeerAddress: string;
 begin
   Result:='';
   if FSocketClass = SOCK_STREAM then
-    Result:=HostAddrtoStr(FAddress.Addr)
+    Result:=NetAddrtoStr(FAddress.Addr)
   else
-    Result:=HostAddrtoStr(FPeerAddress.Addr);
+    Result:=NetAddrtoStr(FPeerAddress.Addr);
 end;
 
 function TLSocket.GetLocalAddress: string;
