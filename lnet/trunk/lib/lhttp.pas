@@ -226,12 +226,11 @@ type
 
   TLHTTPConnection = class(TLTcp)
   protected
-    procedure ReceiveEvent(aSocket: TLHandle); override;
     procedure CanSendEvent(aSocket: TLHandle); override;
+    procedure LogAccess(const AMessage: string); virtual;
+    procedure ReceiveEvent(aSocket: TLHandle); override;
   public
     destructor Destroy; override;
-
-    procedure LogAccess(const AMessage: string); virtual;
   end;
 
   TLHTTPSocket = class(TLSocket)
@@ -262,6 +261,7 @@ type
     procedure Disconnect; override;
     procedure DoneBuffer(AOutput: TBufferOutput); virtual;
     procedure FreeDelayFreeItems;
+    procedure LogAccess(const AMessage: string); virtual;
     procedure LogMessage; virtual;
     procedure FlushRequest; virtual;
     procedure PackRequestBuffer;
@@ -284,7 +284,6 @@ type
 
     procedure AddToOutput(AOutputItem: TOutputItem);
     procedure HandleReceive;
-    procedure LogAccess(const AMessage: string); virtual;
     function  ParseBuffer: boolean;
     procedure WriteBlock;
     
@@ -305,6 +304,7 @@ type
     procedure DoneBuffer(AOutput: TBufferOutput); override;
     procedure FlushRequest; override;
     function  HandleURI: TOutputItem; virtual;
+    procedure LogAccess(const AMessage: string); override;
     procedure LogMessage; override;
     procedure RelocateVariables; override;
     procedure ResetDefaults; override;
@@ -317,7 +317,6 @@ type
     constructor Create; override;
     destructor Destroy; override;
 
-    procedure LogAccess(const AMessage: string); override;
     procedure StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
 
     property HeaderOut: THeaderOutInfo read FHeaderOut;
@@ -328,21 +327,31 @@ type
   TURIHandler = class(TObject)
   private
     FNext: TURIHandler;
+  protected
+    procedure RegisterWithEventer(AEventer: TLEventer); virtual;
   public
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; virtual; abstract;
   end;
+
+  TLAccessEvent = procedure(AMessage: string) of object;
 
   TLHTTPServer = class(TLHTTPConnection)
   protected
     FHandlerList: TURIHandler;
     FLogMessageTZString: string;
+    FOnAccess: TLAccessEvent;
 
     function InitSocket(aSocket: TLSocket): TLSocket; override;
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
+  protected
+    procedure LogAccess(const AMessage: string); override;
+    procedure RegisterWithEventer; override;
   public
     constructor Create(AOwner: TComponent); override;
 
     procedure RegisterHandler(AHandler: TURIHandler);
+
+    property OnAccess: TLAccessEvent read FOnAccess write FOnAccess;
   end;
 
   { http client }
@@ -499,6 +508,12 @@ begin
   end;
   AValue := Val;
   ACode := 0;
+end;
+
+{ TURIHandler }
+
+procedure TURIHandler.RegisterWithEventer(AEventer: TLEventer);
+begin
 end;
 
 { TOutputItem }
@@ -1689,11 +1704,31 @@ begin
   end;
 end;
 
+procedure TLHTTPServer.LogAccess(const AMessage: string);
+begin
+  if Assigned(FOnAccess) then
+    FOnAccess(AMessage);
+end;
+
 procedure TLHTTPServer.RegisterHandler(AHandler: TURIHandler);
 begin
   if AHandler = nil then exit;
   AHandler.FNext := FHandlerList;
   FHandlerList := AHandler;
+  if Eventer <> nil then
+    AHandler.RegisterWithEventer(Eventer);
+end;
+
+procedure TLHTTPServer.RegisterWithEventer;
+var
+  lHandler: TURIHandler;
+begin
+  lHandler := FHandlerList;
+  while lHandler <> nil do
+  begin
+    lHandler.RegisterWithEventer(Eventer);
+    lHandler := lHandler.FNext;
+  end;
 end;
 
 { TClientInput }

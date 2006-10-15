@@ -33,6 +33,9 @@ uses
   lprocess, process, lfastcgi, fastcgi, lHTTPSettings;
 
 type
+  TDocumentHandler = class;
+  TFileHandler = class;
+
   TFileOutput = class(TBufferOutput)
   protected
     FFile: file;
@@ -54,8 +57,10 @@ type
     FReadPos: integer;
     FParsingHeaders: boolean;
     FExtraPath: string;
+    FEnvPath: string;
     FScriptFileName: string;
     FScriptName: string;
+    FDocumentHandler: TDocumentHandler;
    
     procedure AddEnvironment(const AName, AValue: string); virtual; abstract;
     procedure AddHTTPParam(const AName: string; AParam: TLHTTPParameter);
@@ -69,7 +74,8 @@ type
 
     function  WriteData: TWriteBlockStatus; override;
     procedure StartRequest; virtual;
-    
+   
+    property EnvPath: string read FEnvPath write FEnvPath;
     property ExtraPath: string read FExtraPath write FExtraPath;
     property ScriptFileName: string read FScriptFileName write FScriptFileName;
     property ScriptName: string read FScriptName write FScriptName;
@@ -120,8 +126,16 @@ type
   end;
 
   TCGIHandler = class(TURIHandler)
+  protected
+    FScriptPathPrefix: string;
+    FEnvPath: string;
+    FRoot: string;
   public
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
+
+    property EnvPath: string read FEnvPath write FEnvPath;
+    property Root: string read FRoot write FRoot;
+    property ScriptPathPrefix: string read FScriptPathPrefix write FScriptPathPrefix;
   end;
 
   TDocumentRequest = record
@@ -136,14 +150,24 @@ type
   TDocumentHandler = class(TObject)
   private
     FNext: TDocumentHandler;
+  protected
+    FFileHandler: TFileHandler;
+
+    procedure RegisterWithEventer(AEventer: TLEventer); virtual;
   public
     function HandleDocument(const ARequest: TDocumentRequest): TOutputItem; virtual; abstract;
+
+    property FileHandler: TFileHandler read FFileHandler;
   end;
 
   TFileHandler = class(TURIHandler)
   protected
     FDocHandlerList: TDocumentHandler;
     FDirIndexList: TStrings;
+  protected
+    FDocumentRoot: string;
+
+    procedure RegisterWithEventer(AEventer: TLEventer); override;
   public
     constructor Create;
     destructor Destroy; override;
@@ -153,46 +177,43 @@ type
     procedure RegisterHandler(AHandler: TDocumentHandler);
 
     property DirIndexList: TStrings read FDirIndexList;
+    property DocumentRoot: string read FDocumentRoot write FDocumentRoot;
   end;
 
   TPHPCGIHandler = class(TDocumentHandler)
+  protected
+    FAppName: string;
+    FEnvPath: string;
   public
     function HandleDocument(const ARequest: TDocumentRequest): TOutputItem; override;
+
+    property AppName: string read FAppName write FAppName;
+    property EnvPath: string read FEnvPath write FEnvPath;
   end;
 
   TPHPFastCGIHandler = class(TDocumentHandler)
   protected
     FPool: TLFastCGIPool;
+    FEnvPath: string;
+
+    function  GetAppName: string;
+    function  GetHost: string;
+    function  GetPort: integer;
+    procedure RegisterWithEventer(AEventer: TLEventer); override;
+    procedure SetAppName(NewName: string);
+    procedure SetHost(NewHost: string);
+    procedure SetPort(NewPort: integer);
   public
     constructor Create;
     destructor Destroy; override;
 
     function HandleDocument(const ARequest: TDocumentRequest): TOutputItem; override;
 
+    property AppName: string read GetAppName write SetAppName;
+    property EnvPath: string read FEnvPath write FEnvPath;
+    property Host: string read GetHost write SetHost;
     property Pool: TLFastCGIPool read FPool;
-  end;
-
-  TLWebServer = class(TLHTTPServer)
-  protected
-    FFileHandler: TFileHandler;
-    FCGIHandler: TCGIHandler;
-    FPHPCGIHandler: TPHPFastCGIHandler;
-    FPHPCGIAppName: string;
-    FPHPCGIHost: string;
-    FPHPCGIPort: integer;
-
-    procedure RegisterWithEventer; override;
-  public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
-
-    procedure LogAccess(const AMessage: string); override;
-    procedure LogError(const AMessage: string; ASocket: TLSocket);
-
-    property PHPCGIAppName: string read FPHPCGIAppName write FPHPCGIAppName;
-    property PHPCGIHost: string read FPHPCGIHost write FPHPCGIHost;
-    property PHPCGIPort: integer read FPHPCGIPort write FPHPCGIPort;
-    property PHPCGIHandler: TPHPFastCGIHandler read FPHPCGIHandler;
+    property Port: integer read GetPort write SetPort;
   end;
 
 var
@@ -208,17 +229,14 @@ const
   InputBufferEmptyToWriteStatus: array[boolean] of TWriteBlockStatus =
     (wsPendingData, wsWaitingData);
   
-var
-  ScriptPathPrefix: string;
-  DocumentRoot: string;
-  CGIPath: string;
-  CGIRoot: string;
-  PHPCGIBinary: string;
-  
 procedure InternalWrite(const s: string);
 begin
   if EnableWriteln then
     Writeln(s);
+end;
+
+procedure TDocumentHandler.RegisterWithEventer(AEventer: TLEventer);
+begin
 end;
 
 function TCGIHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
@@ -230,14 +248,15 @@ begin
       Length(ScriptPathPrefix)) = 0 then
   begin
     lOutput := TSimpleCGIOutput.Create(ASocket);
-    lOutput.Process.CurrentDirectory := CGIRoot;
-    lExecPath := CGIRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
+    lOutput.EnvPath := FEnvPath;
+    lOutput.Process.CurrentDirectory := FRoot;
+    lExecPath := FRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
     if SeparatePath(lExecPath, lOutput.ExtraPath) then
     begin
       lOutput.Process.CommandLine := lExecPath;
       lOutput.ScriptFileName := lExecPath;
-      lOutput.ScriptName := Copy(lExecPath, Length(CGIRoot), 
-        Length(lExecPath)-Length(CGIRoot)+1);
+      lOutput.ScriptName := Copy(lExecPath, Length(FRoot), 
+        Length(lExecPath)-Length(FRoot)+1);
       lOutput.StartRequest;
     end else
       ASocket.ResponseInfo.Status := hsNotFound;
@@ -258,6 +277,18 @@ begin
   FreeAndNil(FDirIndexList);
 
   inherited;
+end;
+
+procedure TFileHandler.RegisterWithEventer(AEventer: TLEventer);
+var
+  lHandler: TDocumentHandler;
+begin
+  lHandler := FDocHandlerList;
+  while lHandler <> nil do
+  begin
+    lHandler.RegisterWithEventer(AEventer);
+    lHandler := lHandler.FNext;
+  end;
 end;
 
 function TFileHandler.HandleFile(const ARequest: TDocumentRequest): TOutputItem;
@@ -305,7 +336,7 @@ begin
   Result := nil;
   lDocRequest.Socket := ASocket;
   lDocRequest.URIPath := ASocket.RequestInfo.Argument;
-  lDocRequest.Document := DocumentRoot+lDocRequest.URIPath;
+  lDocRequest.Document := FDocumentRoot+lDocRequest.URIPath;
   lDocRequest.InfoValid := SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath, @lDocRequest.Info);
   if not lDocRequest.InfoValid then 
     exit;
@@ -346,6 +377,7 @@ end;
 procedure TFileHandler.RegisterHandler(AHandler: TDocumentHandler);
 begin
   if AHandler = nil then exit;
+  AHandler.FFileHandler := Self;
   AHandler.FNext := FDocHandlerList;
   FDocHandlerList := AHandler;
 end;
@@ -357,10 +389,11 @@ begin
   if ExtractFileExt(ARequest.Document) = '.php' then
   begin
     lOutput := TSimpleCGIOutput.Create(ARequest.Socket);
-    lOutput.Process.CommandLine := PHPCGIBinary;
+    lOutput.Process.CommandLine := FAppName;
     lOutput.ScriptName := ARequest.URIPath;
     lOutput.ScriptFileName := ARequest.Document;
     lOutput.ExtraPath := ARequest.ExtraPath;
+    lOutput.EnvPath := FEnvPath;
     lOutput.StartRequest;
     Result := lOutput;
   end else
@@ -379,6 +412,41 @@ begin
   FPool.Free;
 end;
 
+function  TPHPFastCGIHandler.GetAppName: string;
+begin
+  Result := FPool.AppName;
+end;
+
+function  TPHPFastCGIHandler.GetHost: string;
+begin
+  Result := FPool.Host;
+end;
+
+function  TPHPFastCGIHandler.GetPort: integer;
+begin
+  Result := FPool.Port;
+end;
+
+procedure TPHPFastCGIHandler.SetAppName(NewName: string);
+begin
+  FPool.AppName := NewName;
+end;
+
+procedure TPHPFastCGIHandler.SetHost(NewHost: string);
+begin
+  FPool.Host := NewHost;
+end;
+
+procedure TPHPFastCGIHandler.SetPort(NewPort: integer);
+begin
+  FPool.Port := NewPort;
+end;
+
+procedure TPHPFastCGIHandler.RegisterWithEventer(AEventer: TLEventer);
+begin
+  FPool.Eventer := AEventer;
+end;
+
 function TPHPFastCGIHandler.HandleDocument(const ARequest: TDocumentRequest): TOutputItem;
 var
   lOutput: TFastCGIOutput;
@@ -393,12 +461,13 @@ begin
       lOutput.ScriptName := ARequest.URIPath;
       lOutput.ScriptFileName := ARequest.Document;
       lOutput.ExtraPath := ARequest.ExtraPath;
+      lOutput.EnvPath := FEnvPath;
       lOutput.Request := fcgiRequest;
       lOutput.StartRequest;
       Result := lOutput;
     end else begin
       ARequest.Socket.ResponseInfo.Status := hsInternalError;
-      ARequest.Socket.StartResponse(nil, true);
+      ARequest.Socket.StartResponse(nil);
       Result := nil;
     end;
   end else
@@ -494,7 +563,7 @@ begin
   begin
     AddEnvironment('PATH_INFO', FExtraPath);
     { do not set PATH_TRANSLATED: bug in PHP }
-//    AddEnvironment('PATH_TRANSLATED', DocumentRoot+FExtraPath);
+//    AddEnvironment('PATH_TRANSLATED', FDocumentRoot+FExtraPath);
   end;
 
   AddEnvironment('SCRIPT_NAME', FScriptName);
@@ -511,7 +580,7 @@ begin
 //  AddEnvironment('AUTH_TYPE='+...);
 //  AddEnvironment('REMOTE_USER='+...);
   
-  AddEnvironment('DOCUMENT_ROOT', DocumentRoot);
+  AddEnvironment('DOCUMENT_ROOT', FDocumentHandler.FileHandler.DocumentRoot);
   AddEnvironment('REDIRECT_STATUS', '200');
   AddHTTPParam('HTTP_HOST', hpHost);
   AddHTTPParam('HTTP_COOKIE', hpCookie);
@@ -519,7 +588,7 @@ begin
   AddHTTPParam('HTTP_REFERER', hpReferer);
   AddHTTPParam('HTTP_USER_AGENT', hpUserAgent);
   AddHTTPParam('HTTP_ACCEPT', hpAccept);
-  AddEnvironment('PATH', CGIPath);
+  AddEnvironment('PATH', FEnvPath);
 
   FParsingHeaders := true;
   FReadPos := FBufferPos;
@@ -835,63 +904,12 @@ begin
   FRequest.DoneParams;
 end;
 
-{ TLWebServer }
-
-constructor TLWebServer.Create(AOwner: TComponent);
-begin
-  inherited;
-
-  FPHPCGIHost := 'localhost';
-  FPHPCGIPort := GetPHPCGIPort;
-  FPHPCGIAppName := PHPCGIBinary;
-
-  FFileHandler := TFileHandler.Create;
-  FCGIHandler := TCGIHandler.Create;
-  FPHPCGIHandler := TPHPFastCGIHandler.Create;
-  FOnError := @LogError;
-
-  RegisterHandler(FFileHandler);
-  RegisterHandler(FCGIHandler);
-  FFileHandler.DirIndexList.Add('index.html');
-  FFileHandler.DirIndexList.Add('index.htm');
-  FFileHandler.DirIndexList.Add('index.php');
-  FFileHandler.DirIndexList.Add('index.cgi');
-  FFileHandler.RegisterHandler(FPHPCGIHandler);
-end;
-
-destructor TLWebServer.Destroy;
-begin
-  inherited;
-
-  FFileHandler.Free;
-  FCGIHandler.Free;
-  FPHPCGIHandler.Free;
-end;
-
-procedure TLWebServer.RegisterWithEventer;
-begin
-  inherited;
-  FPHPCGIHandler.Pool.Eventer := Eventer;
-  FPHPCGIHandler.Pool.AppName := FPHPCGIAppName;
-  FPHPCGIHandler.Pool.Host := FPHPCGIHost;
-  FPHPCGIHandler.Pool.Port := FPHPCGIPort;
-end;
-
-procedure TLWebServer.LogAccess(const AMessage: string);
-begin
-  InternalWrite(AMessage);
-end;
-
-procedure TLWebServer.LogError(const AMessage: string; ASocket: TLSocket);
-begin
-  InternalWrite(AMessage);
-end;
-
 initialization
+{
   ScriptPathPrefix := GetScriptPathPrefix;
   DocumentRoot := GetHTTPPath;
   CGIPath := GetCGIPath;
   CGIRoot := GetCGIRoot;
   PHPCGIBinary := GetPHPCGIBinary;
-
+}
 end.
