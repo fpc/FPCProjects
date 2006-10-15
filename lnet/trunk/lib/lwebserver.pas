@@ -306,9 +306,10 @@ begin
   lDocRequest.Socket := ASocket;
   lDocRequest.URIPath := ASocket.RequestInfo.Argument;
   lDocRequest.Document := DocumentRoot+lDocRequest.URIPath;
-  lDocRequest.InfoValid := FindFirst(lDocRequest.Document, faAnyFile, lDocRequest.Info) = 0;
-  FindClose(lDocRequest.Info);
-  if lDocRequest.InfoValid and ((lDocRequest.Info.Attr and faDirectory) <> 0) then
+  lDocRequest.InfoValid := SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath, @lDocRequest.Info);
+  if not lDocRequest.InfoValid then 
+    exit;
+  if (lDocRequest.Info.Attr and faDirectory) <> 0 then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
     lDirIndexFound := false;
@@ -327,12 +328,8 @@ begin
     end;
     { requested a directory, but no source to show }
     if not lDirIndexFound then exit;
-  end else begin
-    lDocRequest.InfoValid := SeparatePath(lDocRequest.Document, 
-      lDocRequest.ExtraPath, @lDocRequest.Info);
-    if not lDocRequest.InfoValid then 
-      exit;
   end;
+
   lHandler := FDocHandlerList;
   while lHandler <> nil do
   begin
@@ -401,7 +398,7 @@ begin
       Result := lOutput;
     end else begin
       ARequest.Socket.ResponseInfo.Status := hsInternalError;
-      ARequest.Socket.StartResponse(nil);
+      ARequest.Socket.StartResponse(nil, true);
       Result := nil;
     end;
   end else
@@ -454,7 +451,7 @@ begin
     Close(FFile);
     exit(wsDone);
   end;
-  exit(wsPendingData);
+  Result := wsPendingData;
 end;
 
 constructor TCGIOutput.Create(ASocket: TLHTTPSocket);
@@ -559,7 +556,7 @@ begin
       FBufferOffset := pNextLine-FBuffer;
       FBufferPos := FReadPos;
       FReadPos := 0;
-      lServerSocket.StartResponse(Self);
+      lServerSocket.StartResponse(Self, true);
       exit(false);
     end;
     iEnd := IndexByte(FParsePos^, iEnd, ord(':'));
@@ -583,6 +580,10 @@ begin
     end else 
     if StrIComp(FParsePos, 'Status') = 0 then
     begin
+      { sometimes we get '<status code> space <reason>' }
+      iEnd := IndexByte(pValue^, pLineEnd-pValue, ord(' '));
+      if iEnd <> -1 then
+        pValue[iEnd] := #0;
       Val(pValue, lStatus, lCode);
       if lCode <> 0 then
         break;

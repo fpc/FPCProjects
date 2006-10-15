@@ -37,7 +37,7 @@ type
     hpAccept, hpAcceptCharset, hpAcceptEncoding, hpAcceptLanguage, hpHost,
     hpFrom, hpReferer, hpUserAgent, hpRange, hpTransferEncoding,
     hpIfModifiedSince, hpIfUnmodifiedSince, hpCookie);
-  TLHTTPStatus = (hsUnknown, hsOK, hsMovedPermanently, hsFound, hsNotModified, 
+  TLHTTPStatus = (hsUnknown, hsOK, hsNoContent, hsMovedPermanently, hsFound, hsNotModified, 
     hsBadRequest, hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
     hsInternalError, hsNotImplemented, hsNotAllowed);
   TLHTTPTransferEncoding = (teIdentity, teChunked);
@@ -55,15 +55,17 @@ const
      'FROM', 'REFERER', 'USER-AGENT', 'RANGE', 'TRANSFER-ENCODING',
      'IF-MODIFIED-SINCE', 'IF-UNMODIFIED-SINCE', 'COOKIE');
   HTTPStatusCodes: array[TLHTTPStatus] of dword =
-    (0, 200, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 504);
+    (0, 200, 204, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 504);
   HTTPTexts: array[TLHTTPStatus] of string = 
-    ('', 'OK', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Forbidden', 
+    ('', 'OK', 'No Content', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Forbidden', 
      'Not Found', 'Precondition Failed', 'Request Too Long', 'Internal Error',
      'Method Not Implemented', 'Method Not Allowed');
   HTTPDescriptions: array[TLHTTPStatus] of string = (
       { hsUnknown }
     '',
       { hsOK }
+    '',
+      { hsNoContent }
     '',
       { hsMovedPermanently }
     '',
@@ -316,7 +318,7 @@ type
     destructor Destroy; override;
 
     procedure LogAccess(const AMessage: string); override;
-    procedure StartResponse(AOutputItem: TBufferOutput);
+    procedure StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
 
     property HeaderOut: THeaderOutInfo read FHeaderOut;
     property RequestInfo: TRequestInfo read FRequestInfo;
@@ -688,8 +690,12 @@ begin
     end;
   end;
   Result := inherited WriteData;
-  if Result = wsWaitingData then
+  if Result <> wsPendingData then
+  begin
     PrepareBuffer;
+    if not FEof then
+      Result := wsPendingData;
+  end;
 end;
 
 function TBufferOutput.WriteBlock: TWriteBlockStatus;
@@ -1480,12 +1486,12 @@ begin
   end;
 end;
 
-procedure TLHTTPServerSocket.StartResponse(AOutputItem: TBufferOutput);
+procedure TLHTTPServerSocket.StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
 var
   lDateTime: TDateTime;
 begin
   { check modification date }
-  if FResponseInfo.Status = hsOK then
+  if FResponseInfo.Status < hsBadRequest then
   begin
     if (FParameters[hpIfModifiedSince] <> nil) 
       and (FResponseInfo.LastModified <> 0.0) then
@@ -1510,7 +1516,14 @@ begin
     end;
   end;
 
-  if FResponseInfo.Status = hsOK then
+  if (FResponseInfo.Status < hsOK) or (FResponseInfo.Status in [hsNoContent, hsNotModified]) then
+  begin
+    { RFC says we MUST not include a response for these statuses }
+    ACustomErrorMessage := false;
+    FHeaderOut.ContentLength := 0;
+  end;
+
+  if (FResponseInfo.Status = hsOK) or ACustomErrorMessage then
   begin
     if (FRequestInfo.RequestType = hmHead) or SetupEncoding(AOutputItem, @FHeaderOut) then
       WriteHeaders(nil, AOutputItem);
@@ -1573,14 +1586,12 @@ begin
       AppendString(lMessage, FResponseInfo.ContentCharset);
     end;
   end;
-  if FHeaderOut.ContentLength <> 0 then
+  if FHeaderOut.TransferEncoding = teIdentity then
   begin
     AppendString(lMessage, #13#10+'Content-Length: ');
     Str(FHeaderOut.ContentLength, lTemp);
     AppendString(lMessage, lTemp);
-  end;
-  if FHeaderOut.TransferEncoding <> teIdentity then
-  begin
+  end else begin
     { only other possibility: teChunked }
     AppendString(lMessage, #13#10+'Transfer-Encoding: chunked');
   end;
