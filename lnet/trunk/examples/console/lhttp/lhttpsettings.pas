@@ -35,6 +35,7 @@ interface
   function GetScriptPathPrefix: string;
   function GetPHPCGIBinary: string;
   function GetPHPCGIPort: Word;
+  function GetPHPCGIEnv: string;
 
 implementation
 
@@ -44,6 +45,7 @@ uses
 const
   DEF_PORT = '3880';
   DEF_PHPCGI_PORT = '4665';
+  DEF_PHPCGI_ENV = 'PHP_FCGI_CHILDREN=5:PHP_FCGI_MAX_REQUESTS=10000';
 
 var
   SettingsFile: TIniFile;
@@ -131,6 +133,7 @@ begin
  {$endif}
   Result.WriteString('NET', 'port', DEF_PORT);
   Result.WriteString('NET', 'phpcgiport', DEF_PHPCGI_PORT);
+  Result.WriteString('NET', 'phpcgienv', DEF_PHPCGI_ENV);
   Result.UpdateFile;
 end;
   
@@ -204,6 +207,11 @@ end;
 function GetPHPCGIPort: Word;
 begin
   Result:=Word(StrToInt(SettingsFile.ReadString('NET', 'phpcgiport', DEF_PORT)));
+end;
+
+function GetPHPCGIEnv: string;
+begin
+  Result:=SettingsFile.ReadString('ENV', 'phpcgienv', DEF_PHPCGI_ENV);
 end;
   
 initialization
