@@ -30,10 +30,13 @@ uses
 {$ifndef WINDOWS}
   BaseUnix, Errors,
 {$endif}
-  lWebserver, lHTTPSettings;
+  lhttp, lwebserver, lHTTPSettings;
 
 var
-  Server: TLWebServer;
+  Server: TLHTTPServer;
+  FileHandler: TFileHandler;
+  CGIHandler: TCGIHandler;
+  PHPCGIHandler: TPHPFastCGIHandler;
   Quit: Boolean = False;
   
 procedure HandleTermSignal(sig: longint); cdecl;
@@ -49,10 +52,10 @@ begin
   while (lRuns > 0) and (Server.Connected) and (not Quit) do
   begin
     Server.CallAction;
-    if Assigned(Server.PHPCGIHandler.Pool.Timer) then
+    if Assigned(PHPCGIHandler.Pool.Timer) then
     begin
       Server.Eventer.Timeout := 2000;
-      Server.PHPCGIHandler.Pool.Timer.CallAction;
+      PHPCGIHandler.Pool.Timer.CallAction;
     end;
     dec(lruns);
     if (lruns and $FFF) = 0 then
@@ -63,7 +66,27 @@ end;
 function SetServer: Boolean;
 begin
   Result:=False;
-  Server := TLWebServer.Create(nil);
+  Server := TLHTTPServer.Create(nil);
+  FileHandler := TFileHandler.Create;
+  FileHandler.DocumentRoot := GetHTTPPath;
+  CGIHandler := TCGIHandler.Create;
+  CGIHandler.CGIRoot := GetCGIRoot;
+  CGIHandler.DocumentRoot := GetHTTPPath;
+  CGIHandler.EnvPath := GetCGIPath;
+  CGIHandler.ScriptPathPrefix := GetScriptPathPrefix;
+  PHPCGIHandler := TPHPFastCGIHandler.Create;
+  PHPCGIHandler.Host := 'localhost';
+  PHPCGIHandler.Port := GetPHPCGIPort;
+  PHPCGIHandler.AppEnv := GetPHPCGIEnv;
+  PHPCGIHandler.AppName := GetPHPCGIBinary;
+  PHPCGIHandler.EnvPath := GetCGIPath;
+  Server.RegisterHandler(FileHandler);
+  Server.RegisterHandler(CGIHandler);
+  FileHandler.DirIndexList.Add('index.html');
+  FileHandler.DirIndexList.Add('index.htm');
+  FileHandler.DirIndexList.Add('index.php');
+  FileHandler.DirIndexList.Add('index.cgi');
+  FileHandler.RegisterHandler(PHPCGIHandler);
   Server.TimeOut := 300000;
   if not Server.Listen(GetPort) then
     Writeln('Error starting server.')
@@ -115,6 +138,9 @@ begin
     Writeln('Succesfully started server');
     MainLoop;
   end;
+  FileHandler.Free;
+  CGIHandler.Free;
+  PHPCGIHandler.Free;
   Server.Free;
 end;
 
