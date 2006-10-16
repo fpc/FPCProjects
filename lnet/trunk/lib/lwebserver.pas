@@ -30,7 +30,7 @@ interface
 
 uses
   sysutils, classes, lnet, lhttp, lhttputil, lmimetypes, levents, 
-  lprocess, process, lfastcgi, fastcgi, lHTTPSettings;
+  lprocess, process, lfastcgi, fastcgi;
 
 type
   TDocumentHandler = class;
@@ -56,11 +56,11 @@ type
     FParsePos: pchar;
     FReadPos: integer;
     FParsingHeaders: boolean;
+    FDocumentRoot: string;
     FExtraPath: string;
     FEnvPath: string;
     FScriptFileName: string;
     FScriptName: string;
-    FDocumentHandler: TDocumentHandler;
    
     procedure AddEnvironment(const AName, AValue: string); virtual; abstract;
     procedure AddHTTPParam(const AName: string; AParam: TLHTTPParameter);
@@ -75,6 +75,7 @@ type
     function  WriteData: TWriteBlockStatus; override;
     procedure StartRequest; virtual;
    
+    property DocumentRoot: string read FDocumentRoot write FDocumentRoot;
     property EnvPath: string read FEnvPath write FEnvPath;
     property ExtraPath: string read FExtraPath write FExtraPath;
     property ScriptFileName: string read FScriptFileName write FScriptFileName;
@@ -128,13 +129,15 @@ type
   TCGIHandler = class(TURIHandler)
   protected
     FScriptPathPrefix: string;
+    FCGIRoot: string;
+    FDocumentRoot: string;
     FEnvPath: string;
-    FRoot: string;
   public
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
 
+    property CGIRoot: string read FCGIRoot write FCGIRoot;
+    property DocumentRoot: string read FDocumentRoot write FDocumentRoot;
     property EnvPath: string read FEnvPath write FEnvPath;
-    property Root: string read FRoot write FRoot;
     property ScriptPathPrefix: string read FScriptPathPrefix write FScriptPathPrefix;
   end;
 
@@ -248,15 +251,16 @@ begin
       Length(ScriptPathPrefix)) = 0 then
   begin
     lOutput := TSimpleCGIOutput.Create(ASocket);
+    lOutput.DocumentRoot := FDocumentRoot;
     lOutput.EnvPath := FEnvPath;
-    lOutput.Process.CurrentDirectory := FRoot;
-    lExecPath := FRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
+    lOutput.Process.CurrentDirectory := FCGIRoot;
+    lExecPath := FCGIRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
     if SeparatePath(lExecPath, lOutput.ExtraPath) then
     begin
       lOutput.Process.CommandLine := lExecPath;
       lOutput.ScriptFileName := lExecPath;
-      lOutput.ScriptName := Copy(lExecPath, Length(FRoot), 
-        Length(lExecPath)-Length(FRoot)+1);
+      lOutput.ScriptName := Copy(lExecPath, Length(FCGIRoot), 
+        Length(lExecPath)-Length(FCGIRoot)+1);
       lOutput.StartRequest;
     end else
       ASocket.ResponseInfo.Status := hsNotFound;
@@ -389,6 +393,7 @@ begin
   if ExtractFileExt(ARequest.Document) = '.php' then
   begin
     lOutput := TSimpleCGIOutput.Create(ARequest.Socket);
+    lOutput.DocumentRoot := FFileHandler.DocumentRoot;
     lOutput.Process.CommandLine := FAppName;
     lOutput.ScriptName := ARequest.URIPath;
     lOutput.ScriptFileName := ARequest.Document;
@@ -458,6 +463,7 @@ begin
     if fcgiRequest <> nil then
     begin
       lOutput := TFastCGIOutput.Create(ARequest.Socket);
+      lOutput.DocumentRoot := FFileHandler.DocumentRoot;
       lOutput.ScriptName := ARequest.URIPath;
       lOutput.ScriptFileName := ARequest.Document;
       lOutput.ExtraPath := ARequest.ExtraPath;
@@ -580,7 +586,7 @@ begin
 //  AddEnvironment('AUTH_TYPE='+...);
 //  AddEnvironment('REMOTE_USER='+...);
   
-  AddEnvironment('DOCUMENT_ROOT', FDocumentHandler.FileHandler.DocumentRoot);
+  AddEnvironment('DOCUMENT_ROOT', FDocumentRoot);
   AddEnvironment('REDIRECT_STATUS', '200');
   AddHTTPParam('HTTP_HOST', hpHost);
   AddHTTPParam('HTTP_COOKIE', hpCookie);
@@ -904,12 +910,4 @@ begin
   FRequest.DoneParams;
 end;
 
-initialization
-{
-  ScriptPathPrefix := GetScriptPathPrefix;
-  DocumentRoot := GetHTTPPath;
-  CGIPath := GetCGIPath;
-  CGIRoot := GetCGIRoot;
-  PHPCGIBinary := GetPHPCGIBinary;
-}
 end.
