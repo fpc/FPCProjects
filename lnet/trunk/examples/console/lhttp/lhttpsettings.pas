@@ -132,8 +132,8 @@ begin
   Result.WriteString('PATH', 'phpcgibin', 'php-cgi.exe');
  {$endif}
   Result.WriteString('NET', 'port', DEF_PORT);
-  Result.WriteString('ENV', 'phpcgiport', DEF_PHPCGI_PORT);
-  Result.WriteString('END', 'phpcgienv', DEF_PHPCGI_ENV);
+  Result.WriteString('NET', 'phpcgiport', DEF_PHPCGI_PORT);
+  Result.WriteString('ENV', 'phpcgienv', DEF_PHPCGI_ENV);
   Result.UpdateFile;
 end;
   
