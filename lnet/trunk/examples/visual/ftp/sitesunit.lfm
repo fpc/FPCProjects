@@ -13,9 +13,9 @@ object frmSites: TfrmSites
   OnShow = FormShow
   object Label1: TLabel
     Left = 8
-    Height = 14
+    Height = 13
     Top = 4
-    Width = 28
+    Width = 31
     Caption = 'Sites:'
     Color = clNone
     ParentColor = False
@@ -27,19 +27,13 @@ object frmSites: TfrmSites
     Width = 156
     OnSelectionChange = lbSitesSelectionChange
     TabOrder = 0
+    TopIndex = -1
   end
   object txtHost: TLabeledEdit
     Left = 172
     Height = 25
     Top = 68
     Width = 228
-    EditLabel.Left = 172
-    EditLabel.Height = 14
-    EditLabel.Top = 51
-    EditLabel.Width = 27
-    EditLabel.Caption = 'Host:'
-    EditLabel.Color = clNone
-    EditLabel.ParentColor = False
     ParentColor = False
     TabOrder = 2
     OnChange = txtSiteChange
@@ -49,22 +43,15 @@ object frmSites: TfrmSites
     Height = 25
     Top = 116
     Width = 356
-    EditLabel.Left = 172
-    EditLabel.Height = 14
-    EditLabel.Top = 100
-    EditLabel.Width = 62
-    EditLabel.Caption = 'Target Path:'
-    EditLabel.Color = clNone
-    EditLabel.ParentColor = False
     ParentColor = False
     TabOrder = 4
     OnChange = txtSiteChange
   end
   object chkAnonymous: TCheckBox
     Left = 172
-    Height = 13
+    Height = 23
     Top = 165
-    Width = 75
+    Width = 90
     Caption = 'Anonymous'
     OnClick = chkAnonymousClick
     TabOrder = 5
@@ -74,13 +61,6 @@ object frmSites: TfrmSites
     Height = 25
     Top = 165
     Width = 146
-    EditLabel.Left = 254
-    EditLabel.Height = 14
-    EditLabel.Top = 148
-    EditLabel.Width = 27
-    EditLabel.Caption = 'User:'
-    EditLabel.Color = clNone
-    EditLabel.ParentColor = False
     ParentColor = False
     TabOrder = 6
     OnChange = txtSiteChange
@@ -90,13 +70,6 @@ object frmSites: TfrmSites
     Height = 25
     Top = 165
     Width = 120
-    EditLabel.Left = 408
-    EditLabel.Height = 14
-    EditLabel.Top = 148
-    EditLabel.Width = 51
-    EditLabel.Caption = 'Password:'
-    EditLabel.Color = clNone
-    EditLabel.ParentColor = False
     ParentColor = False
     PasswordChar = '+'
     TabOrder = 7
@@ -107,13 +80,6 @@ object frmSites: TfrmSites
     Height = 25
     Top = 20
     Width = 356
-    EditLabel.Left = 172
-    EditLabel.Height = 14
-    EditLabel.Top = 4
-    EditLabel.Width = 23
-    EditLabel.Caption = 'Site:'
-    EditLabel.Color = clNone
-    EditLabel.ParentColor = False
     ParentColor = False
     TabOrder = 1
     OnChange = txtSiteChange
@@ -163,14 +129,8 @@ object frmSites: TfrmSites
     Height = 25
     Top = 68
     Width = 120
-    EditLabel.Left = 408
-    EditLabel.Height = 14
-    EditLabel.Top = 51
-    EditLabel.Width = 25
-    EditLabel.Caption = 'Port:'
-    EditLabel.Color = clNone
-    EditLabel.ParentColor = False
     ParentColor = False
     TabOrder = 3
+    Text = '21'
   end
 end

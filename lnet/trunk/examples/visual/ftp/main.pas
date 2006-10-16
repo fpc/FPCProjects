@@ -346,8 +346,11 @@ end;
 
 procedure TMainForm.accConnectExecute(Sender: TObject);
 begin
-  FTP.Connect(Site.Host, Word(StrToInt(Site.Port)));
-  ToolButton4.Down := True;
+  if Length(Site.Host) > 0 then begin
+    FTP.Connect(Site.Host, Word(StrToInt(Site.Port)));
+    ToolButton4.Down := True;
+  end else
+    MessageDlg('Please add some sites to the site manager', mtInformation, [mbOK], 0);
 end;
 
 procedure TMainForm.accDisconnectExecute(Sender: TObject);
