@@ -156,6 +156,7 @@ type
     FTimer: TLTimer;
     FEventer: TLEventer;
     FAppName: string;
+    FAppEnv: string;
     FHost: string;
     FPort: integer;
     FSpawnState: TSpawnState;
@@ -171,6 +172,7 @@ type
     function  BeginRequest(AType: integer): TLFastCGIRequest;
     procedure EndRequest(AClient: TLFastCGIClient);
 
+    property AppEnv: string read FAppEnv write FAppEnv;
     property AppName: string read FAppName write FAppName;
     property ClientsMax: integer read FClientsMax write FClientsMax;
     property Eventer: TLEventer read FEventer write FEventer;
@@ -898,7 +900,7 @@ begin
   if FSpawnState = ssNone then
   begin
     FSpawnState := ssSpawning;
-    SpawnFCGIProcess(FAppName, '', FPort);
+    SpawnFCGIProcess(FAppName, FAppEnv, FPort);
     if FTimer = nil then
       FTimer := TLTimer.Create;
     FTimer.OneShot := true;

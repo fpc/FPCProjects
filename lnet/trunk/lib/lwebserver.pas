@@ -199,10 +199,12 @@ type
     FPool: TLFastCGIPool;
     FEnvPath: string;
 
+    function  GetAppEnv: string;
     function  GetAppName: string;
     function  GetHost: string;
     function  GetPort: integer;
     procedure RegisterWithEventer(AEventer: TLEventer); override;
+    procedure SetAppEnv(NewEnv: string);
     procedure SetAppName(NewName: string);
     procedure SetHost(NewHost: string);
     procedure SetPort(NewPort: integer);
@@ -212,6 +214,7 @@ type
 
     function HandleDocument(const ARequest: TDocumentRequest): TOutputItem; override;
 
+    property AppEnv: string read GetAppEnv write SetAppEnv;
     property AppName: string read GetAppName write SetAppName;
     property EnvPath: string read FEnvPath write FEnvPath;
     property Host: string read GetHost write SetHost;
@@ -417,6 +420,11 @@ begin
   FPool.Free;
 end;
 
+function  TPHPFastCGIHandler.GetAppEnv: string;
+begin
+  Result := FPool.AppEnv;
+end;
+
 function  TPHPFastCGIHandler.GetAppName: string;
 begin
   Result := FPool.AppName;
@@ -430,6 +438,11 @@ end;
 function  TPHPFastCGIHandler.GetPort: integer;
 begin
   Result := FPool.Port;
+end;
+
+procedure TPHPFastCGIHandler.SetAppEnv(NewEnv: string);
+begin
+  FPool.AppEnv := NewEnv;
 end;
 
 procedure TPHPFastCGIHandler.SetAppName(NewName: string);
