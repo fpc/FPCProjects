@@ -347,7 +347,7 @@ begin
   lDocRequest.InfoValid := SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath, @lDocRequest.Info);
   if not lDocRequest.InfoValid then 
     exit;
-  if (lDocRequest.Info.Attr and faDirectory) <> 0 then
+  if ((lDocRequest.Info.Attr and faDirectory) <> 0) and (Length(lDocRequest.ExtraPath) = 0) then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
     lDirIndexFound := false;
