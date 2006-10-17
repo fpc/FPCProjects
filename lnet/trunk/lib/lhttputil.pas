@@ -144,8 +144,8 @@ begin
   if InPath[Length(InPath)] = '/' then
     SetLength(InPath, Length(InPath)-1);
   repeat
-    Result := FindFirst(InPath, faAnyFile and not faDirectory, ASearchRec^) = 0;
-    FindClose(ASearchRec^);
+    Result := SysUtils.FindFirst(InPath, faAnyFile and not faDirectory, ASearchRec^) = 0;
+    SysUtils.FindClose(ASearchRec^);
     if Result then
     begin
       ExtraPath := Copy(lFullPath, Length(InPath)+1, Length(lFullPath)-Length(InPath));

@@ -122,7 +122,7 @@ begin
     Result:=0;
   {$else}
 begin
-  Result:=False;
+  Result:=-1;
   {$endif}
 end;
 
