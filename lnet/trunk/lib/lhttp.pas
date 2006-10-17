@@ -1723,6 +1723,7 @@ procedure TLHTTPServer.RegisterWithEventer;
 var
   lHandler: TURIHandler;
 begin
+  inherited;
   lHandler := FHandlerList;
   while lHandler <> nil do
   begin
