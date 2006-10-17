@@ -50,7 +50,7 @@ function SeparatePath(var InPath: string; out ExtraPath: string; ASearchRec: PSe
 
 implementation
 
-{$ifdef MSWINDOWS}
+{$ifdef WINDOWS}
 
 uses
   windows;

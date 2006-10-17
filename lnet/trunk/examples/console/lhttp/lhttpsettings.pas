@@ -119,14 +119,14 @@ begin
   
   AddPath('httpdir', HomeDir + 'http_docs');
   AddPath('cgiroot', HomeDir + 'cgi-bin');
- {$ifndef MSWINDOWS}
+ {$ifndef WINDOWS}
   AddPath('cgipath', '/usr/local/bin:/usr/bin:/bin:' + HomeDir + 'bin', False);
  {$else}
   AddPath('cgipath', HomeDir + 'cgi-bin', False);
  {$endif}
   AddFile('mimetypes', HomeDir + 'mime.types');
   Result.WriteString('PATH', 'cgiprefix', 'cgi-bin' + PathDelim);
- {$ifndef MSWINDOWS}
+ {$ifndef WINDOWS}
   Result.WriteString('PATH', 'phpcgibin', GetPHPCGI);
  {$else}
   Result.WriteString('PATH', 'phpcgibin', 'php-cgi.exe');
@@ -146,7 +146,7 @@ var
 begin
   SearchPaths:=TStringList.Create;
   SearchPaths.Add(HomeDir);
-  {$ifndef MSWINDOWS}
+  {$ifndef WINDOWS}
   SearchPaths.Add('/etc/');
   SearchPaths.Add('/usr/local/etc/');
   {$endif}
@@ -216,7 +216,7 @@ end;
   
 initialization
   CurDir:=ExtractFilePath(ParamStr(0));
-  {$ifdef MSWINDOWS}
+  {$ifdef WINDOWS}
   HomeDir:=GetEnvironmentVariable('HOMEDRIVE') +
            GetEnvironmentVariable('HOMEPATH') + PathDelim + 'fphttpd' + PathDelim;
   {$else}
