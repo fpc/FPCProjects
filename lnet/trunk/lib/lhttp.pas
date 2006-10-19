@@ -181,14 +181,14 @@ type
     FWriteBlock: TWriteBlockMethod;
 
     procedure DoneInput; virtual;
-    function WriteData: TWriteBlockStatus; virtual;
+    function  HandleInput(ABuffer: pchar; ASize: integer): integer; virtual;
+    function  WriteBlock: TWriteBlockStatus; virtual;
+    function  WriteData: TWriteBlockStatus; virtual;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
-    function  HandleInput(ABuffer: pchar; ASize: dword): dword; virtual;
     procedure LogError(const AMessage: string);
-    function  WriteBlock: TWriteBlockStatus; virtual;
 
     property Socket: TLHTTPSocket read FSocket;
   end;
@@ -197,14 +197,13 @@ type
   protected
     procedure PrepareChunk;
     procedure PrepareBuffer;
-  public
-    constructor Create(ASocket: TLHTTPSocket);
-    destructor Destroy; override;
-
     function WriteChunk: TWriteBlockStatus;
     function WriteBuffer: TWriteBlockStatus;
     function WritePlain: TWriteBlockStatus;
     function WriteBlock: TWriteBlockStatus; override;
+  public
+    constructor Create(ASocket: TLHTTPSocket);
+    destructor Destroy; override;
   end;
 
   TMemoryOutput = class(TOutputItem)
@@ -220,7 +219,7 @@ type
   TLHTTPParameterArray = array[TLHTTPParameter] of pchar;
   
   TParseBufferMethod = function: boolean of object;
-  TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
+  TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: integer): integer of object;
   TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
   TLHTTPClientProc = procedure(ASocket: TLHTTPClientSocket) of object;
 
@@ -238,13 +237,13 @@ type
     FBuffer: pchar;
     FBufferPos: pchar;
     FBufferEnd: pchar;
-    FBufferSize: dword;
+    FBufferSize: integer;
     FRequestBuffer: pchar;
     FRequestPos: pchar;
     FRequestInputDone: boolean;
     FRequestHeaderDone: boolean;
     FOutputDone: boolean;
-    FInputRemaining: dword;
+    FInputRemaining: integer;
     FChunkState: TChunkState;
     FCurrentInput: TOutputItem;
     FCurrentOutput: TOutputItem;
@@ -310,6 +309,7 @@ type
     procedure ResetDefaults; override;
     procedure ParseLine(pLineEnd: pchar); override;
     procedure ParseRequestLine(pLineEnd: pchar);
+    function  PrepareResponse(AOutputItem: TOutputItem; ACustomErrorMessage: boolean): boolean;
     procedure ProcessHeaders; override;
     procedure WriteError(AStatus: TLHTTPStatus); override;
     procedure WriteHeaders(AHeaderResponse, ADataResponse: TOutputItem);
@@ -317,6 +317,7 @@ type
     constructor Create; override;
     destructor Destroy; override;
 
+    procedure StartMemoryResponse(AOutputItem: TMemoryOutput; ACustomErrorMessage: boolean = false);
     procedure StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
 
     property HeaderOut: THeaderOutInfo read FHeaderOut;
@@ -328,9 +329,8 @@ type
   private
     FNext: TURIHandler;
   protected
-    procedure RegisterWithEventer(AEventer: TLEventer); virtual;
-  public
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; virtual; abstract;
+    procedure RegisterWithEventer(AEventer: TLEventer); virtual;
   end;
 
   TLAccessEvent = procedure(AMessage: string) of object;
@@ -402,7 +402,7 @@ type
     
     procedure ConnectEvent(aSocket: TLHandle); override;
     procedure DoDoneInput(ASocket: TLHTTPClientSocket);
-    function  DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword;
+    function  DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: integer): integer;
     procedure DoProcessHeaders(ASocket: TLHTTPClientSocket);
     function  DoWriteBlock(ASocket: TLHTTPClientSocket): TWriteBlockStatus;
     function  InitSocket(aSocket: TLSocket): TLSocket; override;
@@ -543,7 +543,7 @@ procedure TOutputItem.DoneInput;
 begin
 end;
 
-function TOutputItem.HandleInput(ABuffer: pchar; ASize: dword): dword;
+function TOutputItem.HandleInput(ABuffer: pchar; ASize: integer): integer;
 begin
   { discard input }
   Result := ASize;
@@ -834,7 +834,7 @@ end;
 
 function TLHTTPSocket.CalcAvailableBufferSpace: integer;
 begin
-  Result := FBufferSize-PtrUInt(FBufferEnd-FBuffer)-1;
+  Result := FBufferSize-(FBufferEnd-FBuffer)-1;
 end;
 
 procedure TLHTTPSocket.HandleReceive;
@@ -879,7 +879,7 @@ end;
 
 procedure TLHTTPSocket.PackRequestBuffer;
 var
-  lBytesLeft: dword;
+  lBytesLeft: integer;
   lFreeBuffer: pchar;
 begin
   if (FRequestBuffer <> nil) and (FBufferEnd-FBufferPos <= RequestBufferSize) then
@@ -907,7 +907,7 @@ end;
 
 procedure TLHTTPSocket.PackInputBuffer;
 var
-  lBytesLeft: dword;
+  lBytesLeft: integer;
 begin
   { use bigger buffer for more speed }
   if FRequestBuffer = nil then
@@ -925,7 +925,7 @@ end;
 
 function TLHTTPSocket.ParseEntityPlain: boolean;
 var
-  lNumBytes: dword;
+  lNumBytes: integer;
 begin
   lNumBytes := FBufferEnd - FBufferPos;
   if lNumBytes > FInputRemaining then
@@ -966,7 +966,7 @@ begin
       csInitial:
       begin
         lLineEnd^ := #0;
-        HexToInt(FBufferPos, FInputRemaining, lCode);
+        HexToInt(FBufferPos, dword(FInputRemaining), lCode);
         if lCode <> 0 then
         begin
           FChunkState := csFinished;
@@ -1501,7 +1501,7 @@ begin
   end;
 end;
 
-procedure TLHTTPServerSocket.StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
+function TLHTTPServerSocket.PrepareResponse(AOutputItem: TOutputItem; ACustomErrorMessage: boolean): boolean;
 var
   lDateTime: TDateTime;
 begin
@@ -1537,15 +1537,32 @@ begin
     ACustomErrorMessage := false;
     FHeaderOut.ContentLength := 0;
   end;
-
-  if (FResponseInfo.Status = hsOK) or ACustomErrorMessage then
+  
+  Result := (FResponseInfo.Status = hsOK) or ACustomErrorMessage;
+  if not Result then
   begin
-    if (FRequestInfo.RequestType = hmHead) or SetupEncoding(AOutputItem, @FHeaderOut) then
-      WriteHeaders(nil, AOutputItem);
-  end else begin
     WriteError(FResponseInfo.Status);
     DelayFree(AOutputItem);
   end;
+end;
+
+procedure TLHTTPServerSocket.StartMemoryResponse(AOutputItem: TMemoryOutput; ACustomErrorMessage: boolean = false);
+begin
+  if PrepareResponse(AOutputItem, ACustomErrorMessage) then
+  begin
+    if FRequestInfo.RequestType <> hmHead then
+      FHeaderOut.ContentLength := AOutputItem.FBufferSize
+    else
+      FHeaderOut.ContentLength := 0;
+    WriteHeaders(nil, AOutputItem);
+  end;
+end;
+
+procedure TLHTTPServerSocket.StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
+begin
+  if PrepareResponse(AOutputItem, ACustomErrorMessage) then
+    if (FRequestInfo.RequestType = hmHead) or SetupEncoding(AOutputItem, @FHeaderOut) then
+      WriteHeaders(nil, AOutputItem);
 end;
 
 function TLHTTPServerSocket.HandleURI: TOutputItem; {inline;} {<--- triggers IE}
@@ -1745,7 +1762,7 @@ type
     destructor Destroy; override;
     procedure FreeInstance; override;
 
-    function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
+    function  HandleInput(ABuffer: pchar; ASize: integer): integer; override;
     function  WriteBlock: TWriteBlockStatus; override;
   end;
 
@@ -1773,7 +1790,7 @@ begin
     DoDoneInput(TLHTTPClientSocket(FSocket));
 end;
 
-function  TClientOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
+function  TClientOutput.HandleInput(ABuffer: pchar; ASize: integer): integer;
 begin
   Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).
     DoHandleInput(TLHTTPClientSocket(FSocket), ABuffer, ASize);
@@ -1977,7 +1994,7 @@ begin
     FOnDoneInput(ASocket);
 end;
 
-function  TLHTTPClient.DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword;
+function  TLHTTPClient.DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: integer): integer;
 begin
   FState := hcsReceiving;
   if Assigned(FOnInput) then
