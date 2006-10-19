@@ -165,7 +165,7 @@ begin
   HE:=gethostbyname(PChar(Name));
   if Assigned(HE) then begin
     P:=Pointer(HE^.h_addr_list[0]);
-    Result:=HostAddrToStr(P^);
+    Result:=NetAddrToStr(P^);
   end;
 end;
 
