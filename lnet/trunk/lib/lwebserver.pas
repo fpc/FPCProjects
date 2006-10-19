@@ -32,6 +32,10 @@ uses
   sysutils, classes, lnet, lhttp, lhttputil, lmimetypes, levents, 
   lprocess, process, lfastcgi, fastcgi;
 
+const
+  URIParamSepChar: char = '&';
+  CookieSepChar: char = ';';
+
 type
   TDocumentHandler = class;
   TFileHandler = class;
@@ -91,7 +95,7 @@ type
     procedure CGIProcHasOutput(AHandle: TLHandle);
     procedure CGIProcHasStderr(AHandle: TLHandle);
     procedure DoneInput; override;
-    function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
+    function  HandleInput(ABuffer: pchar; ASize: integer): integer; override;
     procedure CGIOutputError; override;
     function  WriteCGIData: TWriteBlockStatus; override;
   public
@@ -114,7 +118,7 @@ type
     procedure RequestNeedInput(ARequest: TLFastCGIRequest);
     procedure RequestHasOutput(ARequest: TLFastCGIRequest);
     procedure RequestHasStderr(ARequest: TLFastCGIRequest);
-    function  HandleInput(ABuffer: pchar; ASize: dword): dword; override;
+    function  HandleInput(ABuffer: pchar; ASize: integer): integer; override;
     function  WriteCGIData: TWriteBlockStatus; override;
     function  WriteBlock: TWriteBlockStatus; override;
   public
@@ -132,9 +136,9 @@ type
     FCGIRoot: string;
     FDocumentRoot: string;
     FEnvPath: string;
-  public
-    function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
 
+    function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
+  public
     property CGIRoot: string read FCGIRoot write FCGIRoot;
     property DocumentRoot: string read FDocumentRoot write FDocumentRoot;
     property EnvPath: string read FEnvPath write FEnvPath;
@@ -170,13 +174,13 @@ type
   protected
     FDocumentRoot: string;
 
+    function HandleFile(const ARequest: TDocumentRequest): TOutputItem;
+    function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
     procedure RegisterWithEventer(AEventer: TLEventer); override;
   public
     constructor Create;
     destructor Destroy; override;
     
-    function HandleFile(const ARequest: TDocumentRequest): TOutputItem;
-    function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
     procedure RegisterHandler(AHandler: TDocumentHandler);
 
     property DirIndexList: TStrings read FDirIndexList;
@@ -220,6 +224,32 @@ type
     property Host: string read GetHost write SetHost;
     property Pool: TLFastCGIPool read FPool;
     property Port: integer read GetPort write SetPort;
+  end;
+
+  { Forms }
+
+  TFormOutput = class(TBufferOutput)
+  protected
+    FRequestVars: TStrings;
+
+    procedure DoneInput; override;
+    function  HandleInput(ABuffer: pchar; ASize: integer): integer; override;
+  public
+    constructor Create(ASocket: TLHTTPSocket);
+    destructor Destroy; override;
+
+    function AddVariables(Variables: pchar; ASize: integer; SepChar: char): integer;
+  end;
+
+  THandleURIEvent = function(ASocket: TLHTTPServerSocket): TFormOutput;
+
+  TFormHandler = class(TURIHandler)
+  protected
+    FOnHandleURI: THandleURIEvent;
+
+    function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
+  public
+    property OnHandleURI: THandleURIEvent read FOnHandleURI write FOnHandleURI;
   end;
 
 var
@@ -773,7 +803,7 @@ begin
   FProcess.CloseInput;
 end;
 
-function TSimpleCGIOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
+function TSimpleCGIOutput.HandleInput(ABuffer: pchar; ASize: integer): integer;
 begin
   if ASize > 0 then
     Result := FProcess.Input.Write(ABuffer^, ASize)
@@ -887,7 +917,7 @@ begin
   write(pchar(@lBuf[0]));
 end;
 
-function  TFastCGIOutput.HandleInput(ABuffer: pchar; ASize: dword): dword;
+function  TFastCGIOutput.HandleInput(ABuffer: pchar; ASize: integer): integer;
 begin
   Result := FRequest.SendInput(ABuffer, ASize);
 end;
@@ -921,6 +951,85 @@ begin
   FRequest.OnStderr := @RequestHasStderr;
   inherited;
   FRequest.DoneParams;
+end;
+
+{ TFormHandler } 
+
+constructor TFormOutput.Create(ASocket: TLHTTPSocket);
+begin
+  inherited;
+  FRequestVars := TStringList.Create;
+end;
+
+destructor TFormOutput.Destroy;
+begin
+  FRequestVars.Free;
+  inherited;
+end;
+
+procedure TFormOutput.DoneInput;
+begin
+end;
+
+function TFormOutput.HandleInput(ABuffer: pchar; ASize: integer): integer;
+begin
+  Result := ASize-AddVariables(ABuffer, ASize, URIParamSepChar);
+end;
+
+function TFormOutput.AddVariables(Variables: pchar; ASize: integer; SepChar: char): integer;
+var
+  varname, sep, next: pchar;
+  strName, strValue: string;
+  tmpObj: TObject;
+  i: integer;
+begin
+  if ASize = -1 then
+    ASize := StrLen(Variables);
+  varname := Variables;
+  repeat
+    sep := varname + IndexChar(varname^, ASize, '=');
+    if sep < varname then
+      break;
+    dec(ASize, sep-varname);
+    next := sep + IndexChar(sep^, ASize, SepChar);
+    if next < sep then
+    begin
+      next := sep + ASize;
+      ASize := 0;
+    end else
+      dec(ASize, next+1-sep);
+    if sep > varname then
+    begin
+      setlength(strName, sep-varname+1);
+      move(varname[0], strName[1], sep-varname);
+      strName[sep-varname+1] := #0;
+      setlength(strValue, next-sep);
+      move(sep[1], strValue[1], next-sep-1);
+      strValue[next-sep] := #0; 
+      i := FRequestVars.Add(strName);
+      string(tmpObj) := strValue;
+      FRequestVars.Objects[i] := tmpObj; 
+    end;
+    varname := next+1;
+  until false;
+  Result := ASize;
+end;
+
+function TFormHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
+var
+  newFormOutput: TFormOutput;
+begin
+  if not Assigned(FOnHandleURI) then
+    exit(nil);
+
+  newFormOutput := FOnHandleURI(ASocket);
+  if newFormOutput = nil then
+    exit(nil);
+
+  newFormOutput.AddVariables(ASocket.RequestInfo.QueryParams, -1, URIParamSepChar);
+  newFormOutput.AddVariables(ASocket.Parameters[hpCookie], -1, CookieSepChar);
+
+  Result := newFormOutput;
 end;
 
 end.
