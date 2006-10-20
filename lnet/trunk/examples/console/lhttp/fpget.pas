@@ -18,7 +18,7 @@ type
     procedure ClientDoneInput(ASocket: TLHTTPClientSocket);
     procedure ClientError(const Msg: string; aSocket: TLSocket);
     function ClientInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; 
-      ASize: dword): dword;
+      ASize: Integer): Integer;
     procedure ClientProcessHeaders(ASocket: TLHTTPClientSocket);
   end;
 
@@ -41,7 +41,7 @@ begin
 end;
 
 function THTTPHandler.ClientInput(ASocket: TLHTTPClientSocket;
-  ABuffer: pchar; ASize: dword): dword;
+  ABuffer: pchar; ASize: Integer): Integer;
 begin
   blockwrite(outputfile, ABuffer^, ASize, Result);
   write(IntToStr(ASize) + '...');

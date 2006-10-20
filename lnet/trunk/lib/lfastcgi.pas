@@ -182,12 +182,12 @@ type
     property Timer: TLTimer read FTimer;
   end;
 
-  function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
+  procedure SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word);
 
 implementation
 
 uses
-  Process;
+  lSpawnFCGI;
 
 { TLFastCGIRequest }
 
@@ -909,20 +909,13 @@ begin
   FTimer.Interval := 2000;
 end;
 
-function SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word): Integer;
+procedure SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word);
 var
-  p: TProcess;
+  Spawner: TSpawner;
 begin
-  if FileExists(ExtractFilePath(ParamStr(0)) + 'fpfcgi') then begin
-    p:=TProcess.Create(nil);
-    p.InheritHandles:=False; // for windblows
-    p.CommandLine:=ExtractFilePath(ParamStr(0)) + 'fpfcgi ' + AppName + ' ' + IntToStr(aPort) + ' ' + Enviro;
-    p.Execute;
-    if p.Running then
-      Result:=0;
-    p.Free;
-  end else
-    raise Exception.Create('File not found: ' + ExtractFilePath(ParamStr(0)) + 'fpfcgi');
+  Spawner:=TSpawner.Create;
+  Spawner.Spawn(AppName, Enviro, aPort);
+  Spawner.Free;
 end;
     
 end.
