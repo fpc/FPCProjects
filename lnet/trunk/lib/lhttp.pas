@@ -339,6 +339,7 @@ type
   protected
     FHandlerList: TURIHandler;
     FLogMessageTZString: string;
+    FServerSoftware: string;
     FOnAccess: TLAccessEvent;
 
     function InitSocket(aSocket: TLSocket): TLSocket; override;
@@ -351,6 +352,7 @@ type
 
     procedure RegisterHandler(AHandler: TURIHandler);
 
+    property ServerSoftware: string read FServerSoftware write FServerSoftware;
     property OnAccess: TLAccessEvent read FOnAccess write FOnAccess;
   end;
 
@@ -1597,6 +1599,7 @@ procedure TLHTTPServerSocket.WriteHeaders(AHeaderResponse, ADataResponse: TOutpu
 var
   lTemp: string[23];
   lMessage: TStringBuffer;
+  tempStr: string;
 begin
   lMessage := InitStringBuffer(504);
   
@@ -1608,6 +1611,12 @@ begin
   AppendString(lMessage, #13#10+'Date: ');
   AppendString(lMessage, FormatDateTime(HTTPDateFormat, FRequestInfo.DateTime));
   AppendString(lMessage, ' GMT');
+  tempStr := TLHTTPServer(FConnection).ServerSoftware;
+  if Length(tempStr) > 0 then
+  begin
+    AppendString(lMessage, #13#10+'Server: ');
+    AppendString(lMessage, tempStr);
+  end;
   if Length(FResponseInfo.ContentType) > 0 then
   begin
     AppendString(lMessage, #13#10+'Content-Type: ');

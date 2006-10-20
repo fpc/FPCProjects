@@ -260,8 +260,6 @@ implementation
 { Example handlers }
 
 const
-  ServerSoftware = 'fpHTTPd/0.2';
-
   InputBufferEmptyToWriteStatus: array[boolean] of TWriteBlockStatus =
     (wsPendingData, wsWaitingData);
   
@@ -594,6 +592,7 @@ end;
 procedure TCGIOutput.StartRequest;
 var
   lServerSocket: TLHTTPServerSocket absolute FSocket;
+  tempStr: string;
 begin
 {
   FProcess.Environment.Add('SERVER_ADDR=');
@@ -601,7 +600,9 @@ begin
   FProcess.Environment.Add('SERVER_NAME=');
   FProcess.Environment.Add('SERVER_PORT=');
 }
-  AddEnvironment('SERVER_SOFTWARE', ServerSoftware);
+  tempStr := TLHTTPServer(lServerSocket.Connection).ServerSoftware;
+  if Length(tempStr) > 0 then
+    AddEnvironment('SERVER_SOFTWARE', tempStr);
 
   AddEnvironment('GATEWAY_INTERFACE', 'CGI/1.1'); 
   AddEnvironment('SERVER_PROTOCOL', lServerSocket.RequestInfo.VersionStr);

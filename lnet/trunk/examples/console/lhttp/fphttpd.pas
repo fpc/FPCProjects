@@ -67,6 +67,7 @@ function SetServer: Boolean;
 begin
   Result:=False;
   Server := TLHTTPServer.Create(nil);
+  Server.ServerSoftware := 'fpHTTPd/0.4';
   FileHandler := TFileHandler.Create;
   FileHandler.DocumentRoot := GetHTTPPath;
   CGIHandler := TCGIHandler.Create;
