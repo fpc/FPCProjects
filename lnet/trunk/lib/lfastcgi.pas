@@ -182,8 +182,6 @@ type
     property Timer: TLTimer read FTimer;
   end;
 
-  procedure SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word);
-
 implementation
 
 uses
@@ -909,13 +907,4 @@ begin
   FTimer.Interval := 2000;
 end;
 
-procedure SpawnFCGIProcess(const AppName, Enviro: string; const aPort: Word);
-var
-  Spawner: TSpawner;
-begin
-  Spawner:=TSpawner.Create;
-  Spawner.Spawn(AppName, Enviro, aPort);
-  Spawner.Free;
-end;
-    
 end.

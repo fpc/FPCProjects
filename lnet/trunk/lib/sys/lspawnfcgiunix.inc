@@ -1,14 +1,7 @@
-{ TSpawner }
-
 uses
   Classes, BaseUnix;
 
-procedure TSpawner.OnError(aHandle: TLHandle; const msg: string);
-begin
-  raise Exception.Create(msg);
-end;
-
-function TSpawner.Spawn(App, Enviro: string; const aPort: Word): Integer;
+function SpawnFCGIProcess(App, Enviro: string; const aPort: Word): Integer;
 var
   TheSocket: TLBlockingSocket;
   i: Integer;
@@ -23,7 +16,6 @@ begin
     ppArgs:=@aNil;
 
     TheSocket:=TLBlockingSocket.Create;
-    TheSocket.OnError:=@OnError;
     TheSocket.Protocol:=LPROTO_TCP;
     TheSocket.SocketType:=SOCK_STREAM;
 
