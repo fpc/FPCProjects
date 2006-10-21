@@ -26,11 +26,11 @@ program fphttpd;
 {$mode objfpc}{$h+}
 
 uses
-  Classes, lNet,
+  SysUtils, Classes, lNet,
 {$ifndef WINDOWS}
   BaseUnix, Errors,
 {$endif}
-  lhttp, lwebserver, lHTTPSettings;
+  lhttp, lwebserver, lHTTPSettings, lSpawnFCGI;
 
 var
   Server: TLHTTPServer;
@@ -69,6 +69,7 @@ begin
   Server := TLHTTPServer.Create(nil);
   Server.ServerSoftware := 'fpHTTPd/0.4';
   FileHandler := TFileHandler.Create;
+  FileHandler.MimeTypeFile := GetMimeFile;
   FileHandler.DocumentRoot := GetHTTPPath;
   CGIHandler := TCGIHandler.Create;
   CGIHandler.CGIRoot := GetCGIRoot;
@@ -129,6 +130,8 @@ end;
 
 procedure Run(const BG: Boolean);
 begin
+  HandleSignals;
+  InitSettings;
   if BG then begin
     case Daemonize of
       1: MainLoop;
@@ -145,12 +148,34 @@ begin
   Server.Free;
 end;
 
+procedure Spawn;
 begin
-  HandleSignals;
-  if (LowerCase(ParamStr(1)) = '-h')
-  or (LowerCase(ParamStr(1)) = '--help') then begin
-    Writeln('Usage: ', ParamStr(0), ' [-c]');
-    Writeln('       -c -- starts server in console (not as daemon/service)');
+  SpawnFCGIProcess(ParamStr(2), ParamStr(4), StrToInt(ParamStr(3)));
+end;
+
+procedure WriteUsage;
+begin
+  Writeln('Usage: ', ExtractFileName(ParamStr(0)), ' [-h|-c|-s <fcgi port [enviro]>]');
+  Writeln('       -h -- write this help message');
+  Writeln('       -c -- starts server in console (not as daemon/service)');
+  Writeln('       -s -- spawn a fastcgi process');
+  Writeln('          ++ <args>');
+  Writeln('             -- fcgi is the name of the fastcgi app, with full path');
+  Writeln('             -- port is the port on which fastcgi will listen');
+  Writeln('             -- enviro is the environment variable string with ":" as separator');
+  Writeln('Example:');
+  Writeln('        to spawn a php-cgi located in /usr/local/bin/php-cgi with 5 children on port 6000:');
+  Writeln('        ', ExtractFileName(ParamStr(0)), ' -s /usr/local/bin/php-cgi 6000 PHP_FCGI_CHILDREN=5');
+end;
+
+begin
+  if ParamStr(1) = '-c' then
+    Run(LowerCase(ParamStr(1)) <> '-c')
+  else if ParamStr(1) = '-s' then begin
+    if ParamCount >= 3 then
+      Spawn
+    else
+      WriteUsage;
   end else
-    Run(LowerCase(ParamStr(1)) <> '-c');
+   WriteUsage;
 end.

@@ -3,7 +3,7 @@ uses
 
 function SpawnFCGIProcess(App, Enviro: string; const aPort: Word): Integer;
 var
-  TheSocket: TLBlockingSocket;
+  TheSocket: TLSocket;
   i: Integer;
   p: TPid;
   SL: TStringList;
@@ -15,15 +15,14 @@ begin
   if Result = 0 then begin
     ppArgs:=@aNil;
 
-    TheSocket:=TLBlockingSocket.Create;
-    TheSocket.Protocol:=LPROTO_TCP;
-    TheSocket.SocketType:=SOCK_STREAM;
-
     for i:=3 to 10000 do
       CloseSocket(i);
 
     if CloseSocket(StdInputHandle) <> 0 then
       Exit(LSocketError);
+
+    TheSocket:=TLSocket.Create;
+    TheSocket.Blocking:=True;
 
     if not TheSocket.Listen(aPort) then
       Exit(LSocketError);
@@ -40,7 +39,7 @@ begin
         end else
           SL.Add(Enviro);
       until i = 0;
-      GetMem(ppEnv, SizeOf(pChar) * SL.Count + 1);
+      GetMem(ppEnv, SizeOf(pChar) * (SL.Count + 1));
       for i:=0 to SL.Count-1 do
         ppEnv[i]:=pChar(SL[i]);
       ppEnv[SL.Count]:=nil;

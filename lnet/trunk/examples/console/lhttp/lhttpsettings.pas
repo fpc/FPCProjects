@@ -36,6 +36,8 @@ interface
   function GetPHPCGIBinary: string;
   function GetPHPCGIPort: Word;
   function GetPHPCGIEnv: string;
+  
+  procedure InitSettings;
 
 implementation
 
@@ -51,6 +53,7 @@ var
   SettingsFile: TIniFile;
   HomeDir: string;
   CurDir: string;
+  InitedSettings: Boolean = False;
   
 function CreateDefaultIni(const aFilePath: string): TIniFile;
 
@@ -144,29 +147,33 @@ var
   SearchPaths: TStringList;
   i: Integer;
 begin
-  SearchPaths:=TStringList.Create;
-  SearchPaths.Add(HomeDir);
-  {$ifndef WINDOWS}
-  SearchPaths.Add('/etc/');
-  SearchPaths.Add('/usr/local/etc/');
-  {$endif}
-  SearchPaths.Add(ExtractFilePath(ParamStr(0)) + PathDelim);
+  if not InitedSettings then begin
+    SearchPaths:=TStringList.Create;
+    SearchPaths.Add(HomeDir);
+    {$ifndef WINDOWS}
+    SearchPaths.Add('/etc/');
+    SearchPaths.Add('/usr/local/etc/');
+    {$endif}
+    SearchPaths.Add(ExtractFilePath(ParamStr(0)) + PathDelim);
 
-  for i:=0 to SearchPaths.Count-1 do
-    if FileExists(SearchPaths[i] + INI_NAME) then begin
-      Writeln('Loading settings from file: ', SearchPaths[i] + INI_NAME);
-      SettingsFile:=TIniFile.Create(SearchPaths[i] + INI_NAME);
-      SearchPaths.Free;
-      Exit;
-    end;
-  // no file found, create default one in home
-  SettingsFile:=CreateDefaultIni(HomeDir + INI_NAME);
-  SearchPaths.Free;
+    for i:=0 to SearchPaths.Count-1 do
+      if FileExists(SearchPaths[i] + INI_NAME) then begin
+        Writeln('Loading settings from file: ', SearchPaths[i] + INI_NAME);
+        SettingsFile:=TIniFile.Create(SearchPaths[i] + INI_NAME);
+        SearchPaths.Free;
+        Exit;
+      end;
+    // no file found, create default one in home
+    SettingsFile:=CreateDefaultIni(HomeDir + INI_NAME);
+    SearchPaths.Free;
+    InitedSettings:=True;
+  end;
 end;
 
 procedure FreeSettings;
 begin
-  SettingsFile.Free;
+  if InitedSettings then
+    SettingsFile.Free;
 end;
 
 function GetMimeFile: string;
@@ -222,7 +229,6 @@ initialization
   {$else}
   HomeDir:=GetEnvironmentVariable('HOME') + PathDelim + '.fphttpd' + PathDelim;
   {$endif}
-  InitSettings;
 
 finalization
   FreeSettings;

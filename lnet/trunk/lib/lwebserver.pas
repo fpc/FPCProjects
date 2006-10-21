@@ -167,13 +167,17 @@ type
     property FileHandler: TFileHandler read FFileHandler;
   end;
 
+  { TFileHandler }
+
   TFileHandler = class(TURIHandler)
   protected
     FDocHandlerList: TDocumentHandler;
     FDirIndexList: TStrings;
   protected
     FDocumentRoot: string;
+    FMimeTypeFile: string;
 
+    procedure SetMimeTypeFile(const AValue: string);
     function HandleFile(const ARequest: TDocumentRequest): TOutputItem;
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem; override;
     procedure RegisterWithEventer(AEventer: TLEventer); override;
@@ -185,6 +189,7 @@ type
 
     property DirIndexList: TStrings read FDirIndexList;
     property DocumentRoot: string read FDocumentRoot write FDocumentRoot;
+    property MimeTypeFile: string read FMimeTypeFile write SetMimeTypeFile;
   end;
 
   TPHPCGIHandler = class(TDocumentHandler)
@@ -324,6 +329,12 @@ begin
     lHandler.RegisterWithEventer(AEventer);
     lHandler := lHandler.FNext;
   end;
+end;
+
+procedure TFileHandler.SetMimeTypeFile(const AValue: string);
+begin
+  FMimeTypeFile:=AValue;
+  InitMimeList(aValue);
 end;
 
 function TFileHandler.HandleFile(const ARequest: TDocumentRequest): TOutputItem;
