@@ -184,7 +184,6 @@ type
     procedure DoneInput; virtual;
     function  HandleInput(ABuffer: pchar; ASize: integer): integer; virtual;
     function  WriteBlock: TWriteBlockStatus; virtual;
-    function  SendBuffer: TWriteBlockStatus;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -605,7 +604,7 @@ begin
   FSocket.LogError(AMessage, 0);
 end;
 
-function TOutputItem.SendBuffer: TWriteBlockStatus;
+function TOutputItem.WriteBlock: TWriteBlockStatus;
 var
   lWritten: integer;
 begin
@@ -617,11 +616,6 @@ begin
     Result := BufferEmptyToWriteStatus[not FOutputPending];
   end else
     Result := EofToWriteStatus[FEof];
-end;
-
-function TOutputItem.WriteBlock: TWriteBlockStatus;
-begin
-  Result := SendBuffer;
 end;
 
 const
@@ -774,7 +768,7 @@ begin
     Result := EofToWriteStatus[FEof];
   if FOutputPending then
   begin
-    Result := SendBuffer;
+    Result := inherited WriteBlock;
     if (Result = wsDone) and not FEof then
     begin
       Result := wsPendingData;
@@ -811,7 +805,7 @@ begin
   end else
     Result := EofToWriteStatus[FEof];
   if Result = wsDone then
-    Result := SendBuffer;
+    Result := inherited WriteBlock;
 end;
 
 function TBufferOutput.WritePlain: TWriteBlockStatus;
@@ -830,7 +824,7 @@ begin
       FBufferPos := 0;
     end;
   end;
-  Result := SendBuffer;
+  Result := inherited WriteBlock;
   if Result <> wsPendingData then
   begin
     PrepareBuffer;
