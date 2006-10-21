@@ -174,6 +174,7 @@ type
     FBufferOffset: integer;
     FOutputPending: boolean;
     FEof: boolean;
+    FPrev: TOutputItem;
     FNext: TOutputItem;
     FPrevDelayFree: TOutputItem;
     FNextDelayFree: TOutputItem;
@@ -193,10 +194,23 @@ type
     property Socket: TLHTTPSocket read FSocket;
   end;
 
+  TProcMethod = procedure of object;
+
   TBufferOutput = class(TOutputItem)
   protected
-    procedure PrepareChunk;
+    FPrepareBuffer: TProcMethod;
+    FFinishBuffer: TProcMethod;
+    FBufferMemSize: integer;
+
     procedure PrepareBuffer;
+    procedure PrepareChunk;
+    procedure FinishBuffer;
+    procedure FinishChunk;
+    procedure SelectChunked;
+    procedure SelectBuffered;
+    procedure SelectPlain;
+    procedure PrependBufferOutput(MinBufferSize: integer);
+    procedure PrependStreamOutput(AStream: TStream; AFree: boolean);
     function FillBuffer: TWriteBlockStatus; virtual; abstract;
     function WriteChunk: TWriteBlockStatus;
     function WriteBuffer: TWriteBlockStatus;
@@ -205,6 +219,10 @@ type
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
+
+    procedure Add(ABuf: pointer; ASize: integer);
+    procedure Add(const AStr: string);
+    procedure Add(AStream: TStream; AQueue: boolean = false; AFree: boolean = true);
   end;
 
   TMemoryOutput = class(TOutputItem)
@@ -213,6 +231,29 @@ type
   public
     constructor Create(ASocket: TLHTTPSocket; ABuffer: pointer; 
       ABufferOffset, ABufferSize: integer; AFreeBuffer: boolean);
+    destructor Destroy; override;
+  end;
+
+  TStreamOutput = class(TBufferOutput)
+  protected
+    FStream: TStream;
+    FFreeStream: boolean;
+    FStreamSize: integer;
+
+    function FillBuffer: TWriteBlockStatus; override;
+  public
+    constructor Create(ASocket: TLHTTPSocket; AStream: TStream; AFreeStream: boolean);
+    destructor Destroy; override;
+  end;
+  
+  TMemoryStreamOutput = class(TOutputItem)
+  protected
+    FFreeStream: boolean;
+    FStream: TMemoryStream;
+
+    function WriteBlock: TWriteBlockStatus; override;
+  public
+    constructor Create(ASocket: TLHTTPSocket; AStream: TMemoryStream; AFreeStream: boolean);
     destructor Destroy; override;
   end;
 
@@ -283,6 +324,8 @@ type
     destructor Destroy; override;
 
     procedure AddToOutput(AOutputItem: TOutputItem);
+    procedure PrependOutput(ANewItem, AItem: TOutputItem);
+    procedure RemoveOutput(AOutputItem: TOutputItem);
     procedure HandleReceive;
     function  ParseBuffer: boolean;
     procedure WriteBlock;
@@ -292,6 +335,8 @@ type
   end;
 
   { http server }
+
+  TSetupEncodingState = (seNone, seWaitHeaders, seStartHeaders);
   
   TLHTTPServerSocket = class(TLHTTPSocket)
   protected
@@ -299,6 +344,7 @@ type
     FRequestInfo: TRequestInfo;
     FResponseInfo: TResponseInfo;
     FHeaderOut: THeaderOutInfo;
+    FSetupEncodingState: TSetupEncodingState;
 
     procedure AddContentLength(ALength: integer); override;
     procedure DoneBuffer(AOutput: TBufferOutput); override;
@@ -318,6 +364,7 @@ type
     constructor Create; override;
     destructor Destroy; override;
 
+    function  SetupEncoding(AOutputItem: TBufferOutput): boolean;
     procedure StartMemoryResponse(AOutputItem: TMemoryOutput; ACustomErrorMessage: boolean = false);
     procedure StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
 
@@ -585,8 +632,9 @@ begin
   inherited;
   GetMem(FBuffer, DataBufferSize);
   FWriteBlock := @WritePlain;
-  { prepare for "worst case" data needed }
-  PrepareChunk;
+  FPrepareBuffer := @PrepareBuffer;
+  FFinishBuffer := @FinishBuffer;
+  FBufferMemSize := DataBufferSize;
 end;
 
 destructor TBufferOutput.Destroy;
@@ -595,12 +643,80 @@ begin
   FreeMem(FBuffer);
 end;
 
+procedure TBufferOutput.Add(ABuf: pointer; ASize: integer);
+var
+  copySize: integer;
+begin
+  repeat
+    copySize := FBufferSize-FBufferPos;
+    if copySize > ASize then
+      copySize := ASize;
+    Move(ABuf^, FBuffer[FBufferPos], copySize);
+    Inc(FBufferPos, copySize);
+    Dec(ASize, copySize);
+    if ASize = 0 then
+      break;
+    PrependBufferOutput(ASize);
+  until false;
+end;
+
+procedure TBufferOutput.Add(const AStr: string);
+begin
+  Add(PChar(AStr), Length(AStr));
+end;
+
+procedure TBufferOutput.PrependStreamOutput(AStream: TStream; AFree: boolean);
+begin
+  if AStream is TMemoryStream then
+    FSocket.PrependOutput(TMemoryStreamOutput.Create(FSocket, TMemoryStream(AStream), AFree), Self)
+  else
+    FSocket.PrependOutput(TStreamOutput.Create(FSocket, AStream, AFree), Self);
+end;
+
+procedure TBufferOutput.Add(AStream: TStream; AQueue: boolean = false; 
+  AFree: boolean = true);
+var
+  size, copySize: integer;
+begin
+  size := AStream.Size - AStream.Position;
+  repeat
+    copySize := FBufferSize-FBufferPos;
+    if copySize > size then
+      copySize := size;
+    AStream.Read(FBuffer[FBufferPos], copySize);
+    Inc(FBufferPos, copySize);
+    Dec(size, copySize);
+    if size = 0 then
+      break;
+    if AQueue then
+    begin
+      PrependBufferOutput(0);
+      PrependStreamOutput(AStream, AFree);
+    end else begin
+      PrependBufferOutput(size);
+    end;
+  until false;
+end;
+
 procedure TBufferOutput.PrepareChunk;
 begin
   { 12 bytes for starting space, 7 bytes to end: <CR><LF>0<CR><LF><CR><LF> }
   FBufferPos := ReserveChunkBytes;
   FBufferOffset := FBufferPos;
-  FBufferSize := DataBufferSize-7;
+  FBufferSize := FBufferMemSize-7;
+end;
+
+procedure TBufferOutput.FinishChunk;
+var
+  lOffset: integer;
+begin
+  lOffset := HexReverse(FBufferPos-FBufferOffset, FBuffer+FBufferOffset-3);
+  FBuffer[FBufferOffset-2] := #13;
+  FBuffer[FBufferOffset-1] := #10;
+  FBuffer[FBufferPos] := #13;
+  FBuffer[FBufferPos+1] := #10;
+  FBufferSize := FBufferPos+2;
+  FBufferPos := FBufferOffset-lOffset-2;
 end;
 
 procedure TBufferOutput.PrepareBuffer;
@@ -608,12 +724,27 @@ procedure TBufferOutput.PrepareBuffer;
 begin
   FBufferPos := 0;
   FBufferOffset := 0;
-  FBufferSize := DataBufferSize;
+  FBufferSize := FBufferMemSize;
+end;
+
+procedure TBufferOutput.FinishBuffer;
+begin
+  { nothing to do }
+end;
+
+procedure TBufferOutput.PrependBufferOutput(MinBufferSize: integer);
+begin
+  FFinishBuffer();
+  FSocket.PrependOutput(TMemoryOutput.Create(FSocket, FBuffer, FBufferOffset,
+    FBufferPos, true), Self);
+  FBufferMemSize := MinBufferSize;
+  if FBufferMemSize < DataBufferSize then
+    FBufferMemSize := DataBufferSize;
+  FBuffer := GetMem(FBufferMemSize);
+  FPrepareBuffer();
 end;
 
 function TBufferOutput.WriteChunk: TWriteBlockStatus;
-var
-  lOffset: integer;
 begin
   if not FOutputPending and not FEof then
   begin
@@ -621,20 +752,12 @@ begin
     FEof := Result = wsDone;
     FOutputPending := FBufferPos > FBufferOffset;
     if FOutputPending then
-    begin
-      lOffset := HexReverse(FBufferPos-FBufferOffset, FBuffer+FBufferOffset-3);
-      FBuffer[FBufferOffset-2] := #13;
-      FBuffer[FBufferOffset-1] := #10;
-      FBuffer[FBufferPos] := #13;
-      FBuffer[FBufferPos+1] := #10;
-      FBufferSize := FBufferPos+2;
-      FBufferPos := FBufferOffset-lOffset-2;
-    end;
+      FinishChunk;
     if FEof then
     begin
       if not FOutputPending then
       begin
-        { FBufferPos/Size still in "read mode" }
+        { FBufferPos/Size still in "fill mode" }
         FBufferSize := 0;
         FBufferPos := 0;
         FOutputPending := true;
@@ -671,20 +794,19 @@ begin
     begin
       if FBufferPos > FBufferOffset then
       begin
-        FSocket.AddToOutput(TMemoryOutput.Create(FSocket, FBuffer, FBufferOffset,
-          FBufferPos, true));
         FSocket.AddContentLength(FBufferPos-FBufferOffset);
-      end;
-      if not FEof then
-      begin
-        FBuffer := GetMem(DataBufferSize);
-        PrepareBuffer;
+        if not FEof then
+          PrependBufferOutput(0)
+        else begin
+          FBufferSize := FBufferPos;
+          FBufferPos := FBufferOffset;
+        end;
       end else begin
-        FBuffer := nil;
         FBufferPos := 0;
         FBufferSize := 0;
-        FSocket.DoneBuffer(Self);
       end;
+      if FEof then
+        FSocket.DoneBuffer(Self);
     end;
   end else
     Result := EofToWriteStatus[FEof];
@@ -722,6 +844,32 @@ begin
   Result := FWriteBlock();
 end;
 
+procedure TBufferOutput.SelectChunked;
+begin
+  FPrepareBuffer := @PrepareChunk;
+  FWriteBlock := @WriteChunk;
+  FFinishBuffer := @FinishChunk;
+  PrepareChunk;
+end;
+  
+procedure TBufferOutput.SelectBuffered;
+begin
+  FPrepareBuffer := @PrepareBuffer;
+  FWriteBlock := @WriteBuffer;
+  FFinishBuffer := @FinishBuffer;
+  PrepareBuffer;
+end;
+  
+procedure TBufferOutput.SelectPlain;
+begin
+  FPrepareBuffer := @PrepareBuffer;
+  FWriteBlock := @WritePlain;
+  FFinishBuffer := @FinishBuffer;
+  PrepareBuffer;
+end;
+
+{ TMemoryOutput }
+
 constructor TMemoryOutput.Create(ASocket: TLHTTPSocket; ABuffer: pointer; 
   ABufferOffset, ABufferSize: integer; AFreeBuffer: boolean);
 begin
@@ -739,6 +887,64 @@ begin
   inherited;
   if FFreeBuffer then
     FreeMem(FBuffer);
+end;
+
+{ TStreamOutput }
+
+constructor TStreamOutput.Create(ASocket: TLHTTPSocket; AStream: TStream; AFreeStream: boolean);
+begin
+  inherited Create(ASocket);
+  FStream := AStream;
+  FFreeStream := AFreeStream;
+  FStreamSize := AStream.Size;
+end;
+
+destructor TStreamOutput.Destroy;
+begin
+  if FFreeStream then
+    FStream.Free;
+  inherited;
+end;
+
+function TStreamOutput.FillBuffer: TWriteBlockStatus;
+var
+  lRead: integer;
+begin
+  lRead := FStream.Read(FBuffer[FBufferPos], FBufferSize-FBufferPos);
+  Inc(FBufferPos, lRead);
+  Result := BufferEmptyToWriteStatus[FStream.Position >= FStreamSize];
+end;
+
+{ TMemoryStreamOutput }
+
+constructor TMemoryStreamOutput.Create(ASocket: TLHTTPSocket; AStream: TMemoryStream; 
+  AFreeStream: boolean);
+begin
+  inherited Create(ASocket);
+  FStream := AStream;
+  FFreeStream := AFreeStream;
+  FOutputPending := true;
+end;
+
+destructor TMemoryStreamOutput.Destroy;
+begin
+  if FFreeStream then
+    FStream.Free;
+  inherited;
+end;
+
+function TMemoryStreamOutput.WriteBlock: TWriteBlockStatus;
+var
+  lWritten: integer;
+begin
+  if not FOutputPending then
+    exit(wsDone);
+
+  lWritten := FSocket.Send(FStream.Memory[FStream.Position], FStream.Size-FStream.Position);
+  FStream.Position := FStream.Position + lWritten;
+  FOutputPending := FStream.Position < FStream.Size;
+  FEof := not FOutputPending;
+  Result := EofToWriteStatus[FEof];
 end;
 
 { TLHTTPSocket }
@@ -816,6 +1022,7 @@ end;
 
 procedure TLHTTPSocket.AddToOutput(AOutputItem: TOutputItem);
 begin
+  AOutputItem.FPrev := FLastOutput;
   if FLastOutput <> nil then
   begin
     FLastOutput.FNext := AOutputItem;
@@ -823,6 +1030,29 @@ begin
     FCurrentOutput := AOutputItem;
   end;
   FLastOutput := AOutputItem;
+end;
+
+procedure TLHTTPSocket.PrependOutput(ANewItem, AItem: TOutputItem);
+begin
+  ANewItem.FPrev := AItem.FPrev;
+  ANewItem.FNext := AItem;
+  AItem.FPrev := ANewItem;
+  if FCurrentOutput = AItem then
+    FCurrentOutput := ANewItem;
+end;
+
+procedure TLHTTPSocket.RemoveOutput(AOutputItem: TOutputItem);
+begin
+  if AOutputItem.FPrev <> nil then
+    AOutputItem.FPrev.FNext := AOutputItem.FNext;
+  if AOutputItem.FNext <> nil then
+    AOutputItem.FNext.FPrev := AOutputItem.FPrev;
+  if FLastOutput = AOutputItem then
+    FLastOutput := AOutputItem.FPrev;
+  if FCurrentOutput = AOutputItem then
+    FCurrentOutput := AOutputItem.FNext;
+  AOutputItem.FPrev := nil;
+  AOutputItem.FNext := nil;
 end;
 
 procedure TLHTTPSocket.ResetDefaults;
@@ -1112,7 +1342,7 @@ begin
     FRequestInputDone := true;
   end;
 end;
-  
+
 function TLHTTPSocket.SetupEncoding(AOutputItem: TBufferOutput; AHeaderOut: PHeaderOutInfo): boolean;
 begin
   if AHeaderOut^.ContentLength = 0 then
@@ -1121,18 +1351,18 @@ begin
     begin
       { we can use chunked encoding }
       AHeaderOut^.TransferEncoding := teChunked;
-      AOutputItem.FWriteBlock := @AOutputItem.WriteChunk;
+      AOutputItem.SelectChunked;
     end else begin
       { we need to buffer the response to find its length }
       AHeaderOut^.TransferEncoding := teIdentity;
-      AOutputItem.FWriteBlock := @AOutputItem.WriteBuffer;
+      AOutputItem.SelectBuffered;
       { need to accumulate data before starting header output }
       AddToOutput(AOutputItem);
       exit(false);
     end;
   end else begin
     AHeaderOut^.TransferEncoding := teIdentity;
-    AOutputItem.FWriteBlock := @AOutputItem.WritePlain;
+    AOutputItem.SelectPlain;
   end;
   Result := true;
 end;
@@ -1225,6 +1455,12 @@ end;
 
 procedure TLHTTPServerSocket.DoneBuffer(AOutput: TBufferOutput);
 begin
+  if FCurrentOutput <> AOutput then
+  begin
+    RemoveOutput(AOutput);
+    AOutput.FNext := FCurrentOutput;
+    FCurrentOutput := AOutput;
+  end;
   WriteHeaders(AOutput, nil);
 end;
 
@@ -1253,6 +1489,7 @@ procedure TLHTTPServerSocket.ResetDefaults;
 begin
   inherited;
   FRequestInfo.RequestType := hmUnknown;
+  FSetupEncodingState := seNone;
   with FResponseInfo do
   begin
     Status := hsOK;
@@ -1514,10 +1751,20 @@ begin
   end;
 end;
 
+function TLHTTPServerSocket.SetupEncoding(AOutputItem: TBufferOutput): boolean;
+const
+  SetupEncodingToState: array[boolean] of TSetupEncodingState = (seWaitHeaders, seStartHeaders);
+begin
+  if FSetupEncodingState > seNone then
+    exit(FSetupEncodingState = seStartHeaders);
+  Result := inherited SetupEncoding(AOutputItem, @FHeaderOut);
+  FSetupEncodingState := SetupEncodingToState[Result];
+end;
+
 procedure TLHTTPServerSocket.StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
 begin
   if PrepareResponse(AOutputItem, ACustomErrorMessage) then
-    if (FRequestInfo.RequestType = hmHead) or SetupEncoding(AOutputItem, @FHeaderOut) then
+    if (FRequestInfo.RequestType = hmHead) or SetupEncoding(AOutputItem) then
       WriteHeaders(nil, AOutputItem);
 end;
 

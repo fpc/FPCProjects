@@ -539,6 +539,7 @@ begin
       lOutput.ExtraPath := ARequest.ExtraPath;
       lOutput.EnvPath := FEnvPath;
       lOutput.Request := fcgiRequest;
+      ARequest.Socket.SetupEncoding(lOutput);
       lOutput.StartRequest;
       Result := lOutput;
     end else begin
