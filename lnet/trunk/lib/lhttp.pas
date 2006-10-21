@@ -29,7 +29,7 @@ unit lhttp;
 interface
 
 uses
-  classes, sysutils, strutils, lnet, levents, lhttputil, lstrbuffer;
+  classes, sysutils, lnet, levents, lhttputil, lstrbuffer;
 
 type
   TLHTTPMethod = (hmHead, hmGet, hmPost, hmUnknown);
@@ -151,7 +151,7 @@ type
   THeaderOutInfo = record
     ContentLength: integer;
     TransferEncoding: TLHTTPTransferEncoding;
-    ExtraHeaders: string;
+    ExtraHeaders: TStringBuffer;
     Version: dword;
   end;
 
@@ -183,7 +183,7 @@ type
     procedure DoneInput; virtual;
     function  HandleInput(ABuffer: pchar; ASize: integer): integer; virtual;
     function  WriteBlock: TWriteBlockStatus; virtual;
-    function  WriteData: TWriteBlockStatus; virtual;
+    function  SendBuffer: TWriteBlockStatus;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -197,6 +197,7 @@ type
   protected
     procedure PrepareChunk;
     procedure PrepareBuffer;
+    function FillBuffer: TWriteBlockStatus; virtual; abstract;
     function WriteChunk: TWriteBlockStatus;
     function WriteBuffer: TWriteBlockStatus;
     function WritePlain: TWriteBlockStatus;
@@ -411,12 +412,13 @@ type
     procedure InternalSendRequest;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
 
+    procedure AddExtraHeader(const AHeader: string);
     procedure ResetRange;
     procedure SendRequest;
 
     property ContentLength: integer read FHeaderOut.ContentLength write FHeaderOut.ContentLength;
-    property ExtraHeaders: string read FHeaderOut.ExtraHeaders write FHeaderOut.ExtraHeaders;
     property Host: string read FHost write FHost;
     property Method: TLHTTPMethod read FRequest.Method write FRequest.Method;
     property PendingResponses: integer read FPendingResponses;
@@ -556,7 +558,7 @@ begin
   FSocket.LogError(AMessage, 0);
 end;
 
-function TOutputItem.WriteData: TWriteBlockStatus;
+function TOutputItem.SendBuffer: TWriteBlockStatus;
 var
   lWritten: integer;
 begin
@@ -572,7 +574,7 @@ end;
 
 function TOutputItem.WriteBlock: TWriteBlockStatus;
 begin
-  Result := WriteData;
+  Result := SendBuffer;
 end;
 
 const
@@ -615,7 +617,7 @@ var
 begin
   if not FOutputPending and not FEof then
   begin
-    Result := WriteData;
+    Result := FillBuffer;
     FEof := Result = wsDone;
     FOutputPending := FBufferPos > FBufferOffset;
     if FOutputPending then
@@ -649,7 +651,7 @@ begin
     Result := EofToWriteStatus[FEof];
   if FOutputPending then
   begin
-    Result := inherited WriteData;
+    Result := SendBuffer;
     if (Result = wsDone) and not FEof then
     begin
       Result := wsPendingData;
@@ -662,7 +664,7 @@ function TBufferOutput.WriteBuffer: TWriteBlockStatus;
 begin
   if not FOutputPending then
   begin
-    Result := WriteData;
+    Result := FillBuffer;
     FEof := Result = wsDone;
     FOutputPending := FEof;
     if FOutputPending or (FBufferPos = FBufferSize) then
@@ -687,14 +689,14 @@ begin
   end else
     Result := EofToWriteStatus[FEof];
   if Result = wsDone then
-    Result := inherited WriteData;
+    Result := SendBuffer;
 end;
 
 function TBufferOutput.WritePlain: TWriteBlockStatus;
 begin
   if not FOutputPending then
   begin
-    Result := WriteData;
+    Result := FillBuffer;
     FEof := Result = wsDone;
     if FBufferPos > FBufferOffset then
     begin
@@ -706,7 +708,7 @@ begin
       FBufferPos := 0;
     end;
   end;
-  Result := inherited WriteData;
+  Result := SendBuffer;
   if Result <> wsPendingData then
   begin
     PrepareBuffer;
@@ -1064,56 +1066,6 @@ begin
     ParseParameterLine(pLineEnd);
 end;
         
-function HexToNum(AChar: char): byte;
-begin
-  if ('0' <= AChar) and (AChar <= '9') then
-    Result := ord(AChar) - ord('0')
-  else if ('A' <= AChar) and (AChar <= 'F') then
-    Result := ord(AChar) - (ord('A') - 10)
-  else if ('a' <= AChar) and (AChar <= 'f') then
-    Result := ord(AChar) - (ord('a') - 10)
-  else
-    Result := 0;
-end;
-
-procedure DecodeUrl(AStr: pchar);
-var
-  lPos, lNext, lDest, lEnd: pchar;
-begin
-  lDest := AStr;
-  lEnd := AStr + StrLen(AStr);
-  repeat
-    lPos := StrScan(AStr, '%');
-    if (lPos <> nil) and (lPos[1] <> #0) and (lPos[2] <> #0) then
-    begin
-      lPos^ := char(HexToNum(lPos[1])*16 + HexToNum(lPos[2]));
-      Inc(lPos);
-      lNext := lPos+2;
-    end else begin
-      lPos := lEnd;
-      lNext := nil;
-    end;
-    if lDest <> AStr then
-      Move(AStr^, lDest^, lPos-AStr);
-    Inc(lDest, lPos-AStr);
-    AStr := lNext;
-  until lNext = nil;
-end;
-
-function CheckPermission(const ADocument: pchar): boolean;
-var
-  lPos: pchar;
-begin
-  lPos := ADocument;
-  repeat
-    lPos := StrScan(lPos, '/');
-    if lPos = nil then exit(true);
-    if (lPos[1] = '.') and (lPos[2] = '.') and ((lPos[3] = '/') or (lPos[3] = #0)) then
-      exit(false);
-    inc(lPos);
-  until false;
-end;
-
 function TLHTTPSocket.ParseBuffer: boolean;
 var
   lParseFunc: TParseBufferMethod;
@@ -1255,12 +1207,14 @@ begin
   inherited;
 
   FLogMessage := InitStringBuffer(256);
+  FHeaderOut.ExtraHeaders := InitStringBuffer(256);
   ResetDefaults;
 end;
 
 destructor TLHTTPServerSocket.Destroy;
 begin
   FreeMem(FLogMessage.Memory);
+  FreeMem(FHeaderOut.ExtraHeaders.Memory);
   inherited;
 end;
 
@@ -1322,7 +1276,7 @@ begin
   begin
     ContentLength := 0;
     TransferEncoding := teIdentity;
-    ExtraHeaders := '';
+    ExtraHeaders.Pos := ExtraHeaders.Memory;
     Version := 0;
   end;
   inherited;
@@ -1478,7 +1432,7 @@ begin
       FKeepAlive := false;
   end;
   
-  DecodeUrl(FRequestInfo.Argument);
+  HTTPDecode(FRequestInfo.Argument);
   if not CheckPermission(FRequestInfo.Argument) then
   begin
     WriteError(hsForbidden);
@@ -1648,7 +1602,8 @@ begin
   else
     AppendString(lMessage, 'close');
   AppendString(lMessage, #13#10);
-  AppendString(lMessage, FHeaderOut.ExtraHeaders);
+  with FHeaderOut.ExtraHeaders do
+    AppendString(lMessage, Memory, Pos-Memory);
   AppendString(lMessage, #13#10);
   if AHeaderResponse <> nil then
   begin
@@ -1889,7 +1844,8 @@ begin
       AppendString(lMessage, lTemp);
     end;
   end;
-  AppendString(lMessage, TLHTTPClient(FConnection).ExtraHeaders);
+  with FHeaderOut^.ExtraHeaders do
+    AppendString(lMessage, Memory, Pos-Memory);
   AppendString(lMessage, #13#10);
   AddToOutput(TMemoryOutput.Create(Self, lMessage.Memory, 0,
     lMessage.Pos-lMessage.Memory, true));
@@ -1983,7 +1939,20 @@ begin
 
   SocketClass := TLHTTPClientSocket;
   FRequest.Method := hmGet;
+  FHeaderOut.ExtraHeaders := InitStringBuffer(256);
   ResetRange;
+end;
+
+destructor TLHTTPClient.Destroy;
+begin
+  FreeMem(FHeaderOut.ExtraHeaders.Memory);
+  inherited;
+end;
+
+procedure TLHTTPClient.AddExtraHeader(const AHeader: string);
+begin
+  AppendString(FHeaderOut.ExtraHeaders, AHeader);
+  AppendString(FHeaderOut.ExtraHeaders, #13#10);
 end;
 
 procedure TLHTTPClient.ConnectEvent(aSocket: TLHandle);

@@ -35,6 +35,7 @@ uses
 const
   URIParamSepChar: char = '&';
   CookieSepChar: char = ';';
+  FormURLContentType: pchar = 'application/x-www-form-urlencoded';
 
 type
   TDocumentHandler = class;
@@ -45,7 +46,7 @@ type
     FFile: file;
 
     function GetSize: integer;
-    function WriteData: TWriteBlockStatus; override;
+    function FillBuffer: TWriteBlockStatus; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
@@ -76,7 +77,7 @@ type
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
-    function  WriteData: TWriteBlockStatus; override;
+    function  FillBuffer: TWriteBlockStatus; override;
     procedure StartRequest; virtual;
    
     property DocumentRoot: string read FDocumentRoot write FDocumentRoot;
@@ -233,17 +234,31 @@ type
 
   { Forms }
 
+  TFormOutput = class;
+
+  TFillBufferEvent = procedure(AFormOutput: TFormOutput; var AStatus: TWriteBlockStatus);
+
   TFormOutput = class(TBufferOutput)
   protected
     FRequestVars: TStrings;
+    FOnExtraHeaders: TNotifyEvent;
+    FOnFillBuffer: TFillBufferEvent;
 
     procedure DoneInput; override;
+    function FillBuffer: TWriteBlockStatus; override;
     function  HandleInput(ABuffer: pchar; ASize: integer): integer; override;
   public
     constructor Create(ASocket: TLHTTPSocket);
     destructor Destroy; override;
 
     function AddVariables(Variables: pchar; ASize: integer; SepChar: char): integer;
+    procedure DeleteCookie(const AName: string; const APath: string = '/'; 
+        const ADomain: string = '');
+    procedure SetCookie(const AName, AValue: string; const AExpires: TDateTime; 
+        const APath: string = '/'; const ADomain: string = '');
+
+    property OnExtraHeaders: TNotifyEvent read FOnExtraHeaders write FOnExtraHeaders;
+    property OnFillBuffer: TFillBufferEvent read FOnFillBuffer write FOnFillBuffer;
   end;
 
   THandleURIEvent = function(ASocket: TLHTTPServerSocket): TFormOutput;
@@ -261,6 +276,9 @@ var
   EnableWriteln: Boolean = True;
 
 implementation
+
+uses
+  lstrbuffer;
 
 { Example handlers }
 
@@ -564,7 +582,7 @@ begin
   Result := FileSize(FFile);
 end;
 
-function TFileOutput.WriteData: TWriteBlockStatus;
+function TFileOutput.FillBuffer: TWriteBlockStatus;
 var
   lRead: integer;
 begin
@@ -666,8 +684,7 @@ var
 
   procedure AddExtraHeader;
   begin
-    lServerSocket.HeaderOut.ExtraHeaders := lServerSocket.HeaderOut.ExtraHeaders +
-      FParsePos + ': ' + pValue + #13#10;
+    AppendString(lServerSocket.HeaderOut.ExtraHeaders, FParsePos + ': ' + pValue + #13#10);
   end;
 
 begin
@@ -743,7 +760,7 @@ begin
   exit(true);
 end;
 
-function TCGIOutput.WriteData: TWriteBlockStatus;
+function TCGIOutput.FillBuffer: TWriteBlockStatus;
 begin
   if not FParsingHeaders then
     FReadPos := FBufferPos;
@@ -765,7 +782,7 @@ begin
   { CGI process has output pending, we can write a block to socket }
   if FParsingHeaders then
   begin
-    if (WriteData = wsDone) and FParsingHeaders then
+    if (FillBuffer = wsDone) and FParsingHeaders then
     begin
       { still parsing headers ? something's wrong }
       FParsingHeaders := false;
@@ -965,7 +982,7 @@ begin
   FRequest.DoneParams;
 end;
 
-{ TFormHandler } 
+{ TFormOutput } 
 
 constructor TFormOutput.Create(ASocket: TLHTTPSocket);
 begin
@@ -977,15 +994,6 @@ destructor TFormOutput.Destroy;
 begin
   FRequestVars.Free;
   inherited;
-end;
-
-procedure TFormOutput.DoneInput;
-begin
-end;
-
-function TFormOutput.HandleInput(ABuffer: pchar; ASize: integer): integer;
-begin
-  Result := ASize-AddVariables(ABuffer, ASize, URIParamSepChar);
 end;
 
 function TFormOutput.AddVariables(Variables: pchar; ASize: integer; SepChar: char): integer;
@@ -1026,6 +1034,53 @@ begin
   until false;
   Result := ASize;
 end;
+
+procedure TFormOutput.DoneInput;
+begin
+  if Assigned(FOnExtraHeaders) then
+    FOnExtraHeaders(Self);
+  TLHTTPServerSocket(FSocket).StartResponse(Self);
+end;
+
+function TFormOutput.HandleInput(ABuffer: pchar; ASize: integer): integer;
+begin
+  if StrIComp(TLHTTPServerSocket(FSocket).Parameters[hpContentType], FormURLContentType) = 0 then
+    Result := ASize-AddVariables(ABuffer, ASize, URIParamSepChar)
+  else
+    Result := 0;
+end;
+
+function TFormOutput.FillBuffer: TWriteBlockStatus;
+begin
+  Result := wsDone;
+  if Assigned(FOnFillBuffer) then
+    FOnFillBuffer(Self, Result);
+end;
+
+procedure TFormOutput.DeleteCookie(const AName: string; const APath: string = '/'; 
+  const ADomain: string = '');
+begin
+  { cookies expire when expires is in the past, duh }
+  SetCookie(AName, '', Now - 7.0, APath, ADomain);
+end;
+
+procedure TFormOutput.SetCookie(const AName, AValue: string; const AExpires: TDateTime;
+  const APath: string = '/'; const ADomain: string = '');
+var
+  headers: PStringBuffer;
+begin
+  headers := @TLHTTPServerSocket(FSocket).HeaderOut.ExtraHeaders;
+  AppendString(headers^, 'Set-Cookie: ' + HTTPEncode(AName) + '=' + HTTPEncode(AValue));
+  AppendString(headers^, ';path=' + APath + ';expires=' + FormatDateTime(HTTPDateFormat, AExpires));
+  if Length(ADomain) > 0 then
+  begin
+    AppendString(headers^, ';domain=');
+    AppendString(headers^, ADomain);
+  end;
+  AppendString(headers^, #13#10);
+end;
+
+{ TFormHandler }
 
 function TFormHandler.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var

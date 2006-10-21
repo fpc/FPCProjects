@@ -28,6 +28,7 @@ unit lStrBuffer;
 interface
 
 type
+  PStringBuffer = ^TStringBuffer;
   TStringBuffer = record
     Memory: pchar;
     Pos: pchar;

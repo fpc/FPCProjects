@@ -37,6 +37,8 @@ uses
 
 const
   HTTPDateFormat: string = 'ddd, dd mmm yyyy hh:nn:ss';
+  HTTPAllowedChars = ['A'..'Z','a'..'z', '*','@','.','_','-', 
+      '0'..'9', '$','!','''','(',')'];
 
 type
   PSearchRec = ^TSearchRec;
@@ -47,6 +49,10 @@ function LocalTimeToGMT(ADateTime: TDateTime): TDateTime;
 function TryHTTPDateStrToDateTime(ADateStr: pchar; var ADest: TDateTime): boolean;
 
 function SeparatePath(var InPath: string; out ExtraPath: string; ASearchRec: PSearchRec = nil): boolean;
+function CheckPermission(const ADocument: pchar): boolean;
+function HTTPDecode(AStr: pchar): pchar;
+function HTTPEncode(const AStr: string): string;
+function HexToNum(AChar: char): byte;
 
 implementation
 
@@ -156,6 +162,94 @@ begin
       SetLength(InPath, lPos-1)
     else
       break;
+  until false;
+end;
+
+function HexToNum(AChar: char): byte;
+begin
+  if ('0' <= AChar) and (AChar <= '9') then
+    Result := ord(AChar) - ord('0')
+  else if ('A' <= AChar) and (AChar <= 'F') then
+    Result := ord(AChar) - (ord('A') - 10)
+  else if ('a' <= AChar) and (AChar <= 'f') then
+    Result := ord(AChar) - (ord('a') - 10)
+  else
+    Result := 0;
+end;
+
+function HTTPDecode(AStr: pchar): pchar;
+var
+  lPos, lNext, lDest: pchar;
+begin
+  lDest := AStr;
+  repeat
+    lPos := AStr;
+    while not (lPos^ in ['%', '+', #0]) do
+      Inc(lPos);
+    if (lPos[0]='%') and (lPos[1] <> #0) and (lPos[2] <> #0) then
+    begin
+      lPos^ := char((HexToNum(lPos[1]) shl 4) + HexToNum(lPos[2]));
+      lNext := lPos+2;
+    end else if lPos[0] = '+' then
+    begin
+      lPos^ := ' ';
+      lNext := lPos+1;
+    end else
+      lNext := nil;
+    Inc(lPos);
+    if lDest <> AStr then
+      Move(AStr^, lDest^, lPos-AStr);
+    Inc(lDest, lPos-AStr);
+    AStr := lNext;
+  until lNext = nil;
+  Result := lDest;
+end;
+
+function HTTPEncode(const AStr: string): string;
+  { code from MvC's web }
+var
+  src, srcend, dest: pchar;
+  hex: string[2];
+  len: integer;
+begin
+  len := Length(AStr);
+  SetLength(Result, len*3); // Worst case scenario
+  if len = 0 then
+    exit;
+  dest := pchar(Result);
+  src := pchar(AStr);
+  srcend := src + len; 
+  while src < srcend do
+  begin 
+    if src^ in HTTPAllowedChars then
+      dest^ := src^
+    else if src^ = ' ' then
+      dest^ := '+'
+    else begin
+      dest^ := '%';
+      inc(dest);
+      hex := HexStr(Ord(src^),2);
+      dest^ := hex[1];
+      inc(dest);
+      dest^ := hex[2];
+    end;
+    inc(dest);
+    inc(src);
+  end;
+  SetLength(Result, dest - pchar(Result));
+end;
+
+function CheckPermission(const ADocument: pchar): boolean;
+var
+  lPos: pchar;
+begin
+  lPos := ADocument;
+  repeat
+    lPos := StrScan(lPos, '/');
+    if lPos = nil then exit(true);
+    if (lPos[1] = '.') and (lPos[2] = '.') and ((lPos[3] = '/') or (lPos[3] = #0)) then
+      exit(false);
+    inc(lPos);
   until false;
 end;
 
