@@ -170,10 +170,12 @@ begin
 end;
 
 function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
+const
+  BlockAr: array[Boolean] of DWord = (1, 0);
 var
   opt: DWord;
 begin
-  opt:=1;
+  opt:=BlockAr[aValue];
   if ioctlsocket(aHandle, FIONBIO, opt) = SOCKET_ERROR then
     Exit(False);
   Result:=True;
@@ -233,8 +235,13 @@ begin
   opt:=fpfcntl(aHandle, F_GETFL);
   if opt = SOCKET_ERROR then
     Exit(False);
+    
+  if aValue then
+    opt:=opt and not O_NONBLOCK
+  else
+    opt:=opt or O_NONBLOCK;
 
-  if fpfcntl(aHandle, F_SETFL, opt or O_NONBLOCK) = SOCKET_ERROR then
+  if fpfcntl(aHandle, F_SETFL, opt) = SOCKET_ERROR then
     Exit(False);
   Result:=True;
 end;
