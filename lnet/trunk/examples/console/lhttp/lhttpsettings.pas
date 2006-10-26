@@ -161,6 +161,7 @@ begin
         Writeln('Loading settings from file: ', SearchPaths[i] + INI_NAME);
         SettingsFile:=TIniFile.Create(SearchPaths[i] + INI_NAME);
         SearchPaths.Free;
+        InitedSettings:=True;
         Exit;
       end;
     // no file found, create default one in home
