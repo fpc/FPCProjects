@@ -103,10 +103,8 @@ begin
   if (not SMTP.Connected) and (ButtonConnect.Caption = 'Connect') then begin
     SMTP.Connect(EditServer.Text, Word(StrToInt(EditPort.Text)));
     ButtonConnect.Caption:='Connecting';
-  end else begin
-    SMTP.Disconnect;
-    SMTPDisconnect(nil);
-  end;
+  end else
+    SMTP.Quit; // server will respond and we'll make a clean disconnect (see SMTP rfc)
 end;
 
 procedure TMainForm.ButtonSendClick(Sender: TObject);

@@ -282,6 +282,12 @@ begin
               else        FStatus.Remove;
               end;
       ssRset: FStatus.Remove;
+      ssQuit: begin
+                FStatus.Remove;
+                Disconnect;
+                if Assigned(FOnDisconnect) then
+                  FOnDisconnect(Self);
+              end;
     end;
   if FStatus.Empty and not FCommandFront.Empty then
     ExecuteFrontCommand;
