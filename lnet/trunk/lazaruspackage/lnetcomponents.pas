@@ -51,14 +51,21 @@ type
   TLErrorProc = procedure(const msg: string; aSocket: TLSocket) of object;
   TLProc = procedure(aSocket: TLSocket) of object;
 
-  TLFTPClientProgressCallback = procedure (Sender: TLFTPClient; const Bytes: Integer) of object;
+  TLFTPClientProgressCallback = procedure (Sender: TLFTPClient;
+                                           const Bytes: Integer) of object;
   TLFTPClientCallback = procedure (Sender: TLFTPClient) of object;
+  TLFTPStatusCallback = procedure (Sender: TLFTPClient;
+                                   const aStatus: TLFTPStatus) of object;
+
 
   TLSMTPClientCallback = procedure (Sender: TLSMTPClient) of object;
   
   TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
   TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
   TLHTTPClientProc = procedure(ASocket: TLHTTPClientSocket) of object;
+  
+  TLSMTPStatus = lSMTP.TLSMTPStatus;
+  TLSMTPStatusSet = lSMTP.TLSMTPStatusSet;
 
   { TLTCPComponent }
 
@@ -66,6 +73,8 @@ type
   public
     constructor Create(aOwner: TComponent); override;
   published
+    property Host;
+    property Port;
     property OnReceive;
     property OnError;
     property OnDisconnect;
@@ -79,6 +88,8 @@ type
   public
     constructor Create(aOwner: TComponent); override;
   published
+    property Host;
+    property Port;
     property OnReceive;
     property OnError;
   end;
@@ -89,11 +100,16 @@ type
   public
     constructor Create(aOwner: TComponent); override;
   published
+    property Host;
+    property Port;
     property OnConnect;
     property OnSent;
     property OnReceive;
     property OnControl;
     property OnError;
+    property OnSuccess;
+    property OnFailure;
+    property StatusSet;
     property PipeLine;
     property StartPort;
     property UsePORT;
@@ -105,10 +121,15 @@ type
   public
     constructor Create(aOwner: TComponent); override;
   published
+    property Host;
+    property Port;
     property OnConnect;
     property OnReceive;
     property OnDisconnect;
     property OnError;
+    property OnSuccess;
+    property OnFailure;
+    property StatusSet;
     property PipeLine;
   end;
   

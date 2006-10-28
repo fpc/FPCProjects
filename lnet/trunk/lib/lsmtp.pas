@@ -36,7 +36,9 @@ type
   
   TLSMTPStatus = (ssNone, ssCon, ssHelo, ssEhlo, ssMail,
                   ssRcpt, ssData, ssRset, ssQuit);
-  
+
+  TLSMTPStatusSet = set of TLSMTPStatus;
+
   TLSMTPStatusRec = record
     Status: TLSMTPStatus;
     Args: array[1..2] of string;
@@ -48,6 +50,8 @@ type
   TLSMTPStatusFront = TLFront;
 
   TLSMTPClientCallback = procedure (Sender: TLSMTPClient) of object;
+  TLSMTPStatusCallback = procedure (Sender: TLSMTPClient;
+                                    const aStatus: TLSMTPStatus) of object;
 
   { TLSMTPClient }
 
@@ -61,9 +65,13 @@ type
     FOnConnect: TLSMTPClientCallback;
     FOnReceive: TLSMTPClientCallback;
     FOnDisconnect: TLSMTPClientCallback;
+    FOnSuccess: TLSMTPStatusCallback;
+    FOnFailure: TLSMTPStatusCallback;
     FSL: TStringList;
-    FHostName: string;
+    FStatusSet: TLSMTPStatusSet;
+    FHost: string;
     FMessage: string;
+    FPort: Word;
    protected
     function GetSocketClass: TLSocketClass;
     procedure SetSocketClass(const AValue: TLSocketClass);
@@ -83,12 +91,13 @@ type
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
-    function Connect(const HostName: string; const Port: Word = 25): Boolean; virtual;
+    function Connect(const aHost: string; const aPort: Word = 25): Boolean; virtual;
+    function Connect: Boolean; virtual;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer;
     procedure SendMail(const From, Recipients, Subject, Msg: string);
-    procedure Helo(HostName: string = '');
-    procedure Ehlo(HostName: string = '');
+    procedure Helo(aHost: string = '');
+    procedure Ehlo(aHost: string = '');
     procedure Mail(const From: string);
     procedure Rcpt(const RcptTo: string);
     procedure Data(const Msg: string);
@@ -96,12 +105,18 @@ type
     procedure Quit;
     procedure Disconnect;
     procedure CallAction; virtual;
+   public
+    property Host: string read FHost write FHost;
+    property Port: Word read FPort write FPort;
     property PipeLine: Boolean read FPipeLine write FPipeLine;
     property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
     property Eventer: TLEventer read GetEventer write SetEventer;
+    property StatusSet: TLSMTPStatusSet read FStatusSet write FStatusSet;
     property OnConnect: TLSMTPClientCallback read FOnConnect write FOnConnect;
     property OnReceive: TLSMTPClientCallback read FOnReceive write FOnReceive;
     property OnDisconnect: TLSMTPClientCallback read FOnDisconnect write FOnDisconnect;
+    property OnSuccess: TLSMTPStatusCallback read FOnSuccess write FOnSuccess;
+    property OnFailure: TLSMTPStatusCallback read FOnFailure write FOnFailure;
     property OnError: TLErrorProc read FOnError write SetOnError;
     property Connected: Boolean read GetConnected;
     property Connection: TLTcp read FConnection;
@@ -138,8 +153,10 @@ end;
 constructor TLSMTPClient.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
+  FPort:=25;
+  FStatusSet:=[]; // empty set for "ok/not-ok" callback
   FSL:=TStringList.Create;
-  FHostName:='';
+  FHost:='';
   FMessage:='';
 //  {$warning TODO: fix pipelining support when server does it}
   FPipeLine:=False;
@@ -257,6 +274,17 @@ procedure TLSMTPClient.EvaluateAnswer(const Ans: string);
       Result:=(Length(Ans) = 3) or ((Length(Ans) > 3) and (Ans[4] = ' '));
   end;
   
+  procedure Eventize(const aStatus: TLSMTPStatus; const Res: Boolean);
+  begin
+    if Res then begin
+      if Assigned(FOnSuccess) and (aStatus in FStatusSet) then
+        FOnSuccess(Self, aStatus);
+    end else begin
+      if Assigned(FOnFailure) and (aStatus in FStatusSet) then
+        FOnFailure(Self, aStatus);
+    end;
+  end;
+  
 var
   x: Integer;
 begin
@@ -266,23 +294,44 @@ begin
       ssCon,
       ssHelo,
       ssEhlo: case x of
-                200..299: FStatus.Remove;
-              else      Disconnect;
+                200..299: begin
+                            Eventize(FStatus.First.Status, True);
+                            FStatus.Remove;
+                          end;
+              else        begin
+                            Eventize(FStatus.First.Status, False);
+                            Disconnect;
+                          end;
               end;
                
       ssMail,
-      ssRcpt: FStatus.Remove;
+      ssRcpt: begin
+                Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
+                FStatus.Remove;
+              end;
 
       ssData: case x of
-                200..299: FStatus.Remove;
+                200..299: begin
+                            Eventize(FStatus.First.Status, True);
+                            FStatus.Remove;
+                          end;
                 300..399: if Length(FMessage) > 0 then begin
                             FConnection.SendMessage(FMessage);
                             FMessage:='';
                           end;
-              else        FStatus.Remove;
+              else        begin
+                            Eventize(FStatus.First.Status, False);
+                            FStatus.Remove;
+                          end;
               end;
-      ssRset: FStatus.Remove;
+              
+      ssRset: begin
+                Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
+                FStatus.Remove;
+              end;
+              
       ssQuit: begin
+                Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
                 FStatus.Remove;
                 Disconnect;
                 if Assigned(FOnDisconnect) then
@@ -308,15 +357,21 @@ begin
   FCommandFront.Remove;
 end;
 
-function TLSMTPClient.Connect(const HostName: string; const Port: Word = 25): Boolean;
+function TLSMTPClient.Connect(const aHost: string; const aPort: Word = 25): Boolean;
 begin
   Result:=False;
   Disconnect;
-  if FConnection.Connect(HostName, Port) then begin
-    FHostName:=HostName;
+  if FConnection.Connect(aHost, aPort) then begin
+    FHost:=aHost;
+    FPort:=aPort;
     FStatus.Insert(MakeStatusRec(ssCon, '', ''));
     Result:=True;
   end;
+end;
+
+function TLSMTPClient.Connect: Boolean;
+begin
+  Result:=Connect(FHost, FPort);
 end;
 
 function TLSMTPClient.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
@@ -352,22 +407,22 @@ begin
   end;
 end;
 
-procedure TLSMTPClient.Helo(HostName: string = '');
+procedure TLSMTPClient.Helo(aHost: string = '');
 begin
-  if Length(Hostname) = 0 then
-    HostName:=FHostName;
-  if CanContinue(ssHelo, HostName, '') then begin
-    FConnection.SendMessage('HELO ' + HostName + SLE);
+  if Length(Host) = 0 then
+    aHost:=FHost;
+  if CanContinue(ssHelo, aHost, '') then begin
+    FConnection.SendMessage('HELO ' + aHost + SLE);
     FStatus.Insert(MakeStatusRec(ssHelo, '', ''));
   end;
 end;
 
-procedure TLSMTPClient.Ehlo(HostName: string = '');
+procedure TLSMTPClient.Ehlo(aHost: string = '');
 begin
-  if Length(Hostname) = 0 then
-    HostName:=FHostName;
-  if CanContinue(ssEhlo, HostName, '') then begin
-    FConnection.SendMessage('EHLO ' + HostName + SLE);
+  if Length(aHost) = 0 then
+    aHost:=FHost;
+  if CanContinue(ssEhlo, aHost, '') then begin
+    FConnection.SendMessage('EHLO ' + aHost + SLE);
     FStatus.Insert(MakeStatusRec(ssEhlo, '', ''));
   end;
 end;

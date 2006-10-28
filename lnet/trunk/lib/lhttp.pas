@@ -436,8 +436,6 @@ type
 
   TLHTTPClient = class(TLHTTPConnection)
   protected
-    FHost: string;
-    FPort: integer;
     FRequest: TClientRequest;
     FResponse: TClientResponse;
     FHeaderOut: THeaderOutInfo;
@@ -465,10 +463,8 @@ type
     procedure SendRequest;
 
     property ContentLength: integer read FHeaderOut.ContentLength write FHeaderOut.ContentLength;
-    property Host: string read FHost write FHost;
     property Method: TLHTTPMethod read FRequest.Method write FRequest.Method;
     property PendingResponses: integer read FPendingResponses;
-    property Port: integer read FPort write FPort;
     property RangeStart: qword read FRequest.RangeStart write FRequest.RangeStart;
     property RangeEnd: qword read FRequest.RangeEnd write FRequest.RangeEnd;
     property Request: TClientRequest read FRequest;

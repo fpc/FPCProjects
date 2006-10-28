@@ -189,6 +189,8 @@ type
     FEventerClass: TLEventerClass;
     FTimeout: DWord;
     FListenBacklog: Integer;
+    FHost: string;
+    FPort: Word;
    protected
     function InitSocket(aSocket: TLSocket): TLSocket; virtual;
     function GetConnected: Boolean; virtual; abstract;
@@ -214,7 +216,8 @@ type
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
-    function Connect(const Address: string; const APort: Word): Boolean; virtual; abstract;
+    function Connect(const Address: string; const APort: Word): Boolean; virtual;
+    function Connect: Boolean; virtual;
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; virtual; abstract;
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
@@ -225,6 +228,8 @@ type
     procedure IterReset; virtual; abstract;
     procedure CallAction; virtual; abstract;
    public
+    property Host: string read FHost write FHost;
+    property Port: Word read FPort write FPort;
     property OnError: TLErrorProc read FOnError write FOnError;
     property OnReceive: TLProc read FOnReceive write FOnReceive;
     property OnDisconnect: TLProc read FOnDisconnect write FOnDisconnect;
@@ -566,6 +571,8 @@ end;
 constructor TLConnection.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
+  FHost:='';
+  FPort:=0;
   FListenBacklog:=LDEFAULT_BACKLOG;
   FTimeout:=0;
   FSocketClass:=TLSocket;
@@ -588,6 +595,19 @@ begin
   if Assigned(FEventer) then
     FEventer.DeleteRef;
   inherited Destroy;
+end;
+
+function TLConnection.Connect(const Address: string; const APort: Word
+  ): Boolean;
+begin
+  FHost:=Address;
+  FPort:=aPort;
+  Result:=False;
+end;
+
+function TLConnection.Connect: Boolean;
+begin
+  Result:=Connect(FHost, FPort);
 end;
 
 function TLConnection.InitSocket(aSocket: TLSocket): TLSocket;
@@ -751,7 +771,7 @@ function TLUdp.Connect(const Address: string; const APort: Word): Boolean;
 var
   IP: string;
 begin
-  Result:=False;
+  Result:=inherited Connect(Address, aPort);
   FRootSock:=InitSocket(FSocketClass.Create);
   FIterator:=FRootSock;
   if FRootSock.Connected then Disconnect;
@@ -917,7 +937,7 @@ end;
 
 function TLTcp.Connect(const Address: string; const APort: Word): Boolean;
 begin
-  Result:=False;
+  Result:=inherited Connect(Address, aPort);
   if Assigned(FRootSock) then
     Disconnect;
   FRootSock:=InitSocket(FSocketClass.Create);

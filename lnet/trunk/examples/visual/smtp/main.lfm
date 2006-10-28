@@ -5,6 +5,7 @@ object MainForm: TMainForm
   Width = 444
   HorzScrollBar.Page = 443
   VertScrollBar.Page = 330
+  ActiveControl = EditServer
   Caption = 'SMTP Client Test'
   ClientHeight = 331
   ClientWidth = 444
@@ -13,6 +14,7 @@ object MainForm: TMainForm
   Constraints.MinHeight = 360
   Constraints.MinWidth = 444
   Menu = MainMenu
+  OnClose = FormClose
   OnCreate = FormCreate
   object GBConnection: TGroupBox
     Height = 112
@@ -25,7 +27,7 @@ object MainForm: TMainForm
     TabOrder = 0
     object LabelServer: TLabel
       Left = 6
-      Height = 14
+      Height = 13
       Top = 15
       Width = 43
       Anchors = [akTop, akLeft, akRight]
@@ -35,7 +37,7 @@ object MainForm: TMainForm
     end
     object LabelPort: TLabel
       Left = 6
-      Height = 14
+      Height = 13
       Top = 38
       Width = 27
       Anchors = [akTop, akLeft, akRight]
@@ -103,7 +105,7 @@ object MainForm: TMainForm
     TabOrder = 2
     object LabelFrom: TLabel
       Left = 6
-      Height = 14
+      Height = 13
       Top = 12
       Width = 43
       Anchors = [akTop, akLeft, akRight]
@@ -113,7 +115,7 @@ object MainForm: TMainForm
     end
     object LabelTo: TLabel
       Left = 6
-      Height = 14
+      Height = 13
       Top = 38
       Width = 45
       Anchors = [akTop, akLeft, akRight]
@@ -123,7 +125,7 @@ object MainForm: TMainForm
     end
     object LabelSubject: TLabel
       Left = 6
-      Height = 14
+      Height = 13
       Top = 63
       Width = 48
       Anchors = [akTop, akLeft, akRight]
@@ -171,6 +173,9 @@ object MainForm: TMainForm
     OnConnect = SMTPConnect
     OnReceive = SMTPReceive
     OnDisconnect = SMTPDisconnect
+    OnSuccess = SMTPSuccess
+    OnFailure = SMTPFailure
+    StatusSet = [ssMail, ssQuit]
     left = 80
     top = 8
   end

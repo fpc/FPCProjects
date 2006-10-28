@@ -81,6 +81,7 @@ end;
 procedure TLSMTPClientTest.OnDisconnect(Sender: TLSMTPClient);
 begin
   Writeln('Lost connection');
+  FQuit:=True;
 end;
 
 procedure TLSMTPClientTest.OnError(const msg: string; Sender: TLSocket);
@@ -124,7 +125,6 @@ begin
           FQuit:=True;  // if user doesn't wish to wait, quit
       Sleep(1);
     until FQuit or FSMTP.Connected; // if user quit, or we connected, then continue
-    
     if not FQuit then begin // if we connected send HELO
       FSMTP.Helo;
       Writeln('Press escape to quit or any other key to compose an email');
@@ -134,9 +134,12 @@ begin
       SetLength(Recipients, MAX_RECIPIENTS);
       FSMTP.CallAction;
       if KeyPressed then
-        if ReadKey = #27 then
-          FQuit:=True
-        else begin
+        if ReadKey = #27 then begin
+          if FSMTP.Connected then
+            FSMTP.Quit
+          else
+            FQuit:=True;
+        end else begin
           Sender:=GetAnswer('From');
           Recipients:=GetAnswer('Recipients');
           Subject:=GetAnswer('Subject');
