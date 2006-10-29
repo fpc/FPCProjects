@@ -2236,6 +2236,7 @@ function  TLHTTPClient.InitSocket(aSocket: TLSocket): TLSocket;
 begin
   Result := inherited;
   TLHTTPClientSocket(aSocket).FConnection := Self;
+  TLHTTPClientSocket(aSocket).FHeaderOut := @FHeaderOut;
   TLHTTPClientSocket(aSocket).FRequest := @FRequest;
   TLHTTPClientSocket(aSocket).FResponse := @FResponse;
 end;
