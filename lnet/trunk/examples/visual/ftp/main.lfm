@@ -4,12 +4,10 @@ object MainForm: TMainForm
   Top = 84
   Width = 696
   HorzScrollBar.Page = 695
-  VertScrollBar.Page = 518
+  VertScrollBar.Page = 521
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
-  ClientHeight = 519
-  ClientWidth = 696
   Menu = MainMenu
   OnClose = FormClose
   OnCreate = FormCreate
@@ -17,7 +15,7 @@ object MainForm: TMainForm
   OnKeyDown = FormKeyDown
   object MemoText: TMemo
     Height = 103
-    Top = 393
+    Top = 399
     Width = 696
     Align = alBottom
     ReadOnly = True
@@ -25,16 +23,14 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 362
+    Height = 368
     Top = 26
     Width = 696
     Align = alClient
-    ClientHeight = 362
-    ClientWidth = 696
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 360
+      Height = 366
       Top = 1
       Width = 183
       Align = alLeft
@@ -46,13 +42,13 @@ object MainForm: TMainForm
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 360
+      Height = 366
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 360
+      Height = 366
       Top = 1
       Width = 506
       Align = alClient
@@ -100,14 +96,14 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 388
+    Top = 394
     Width = 696
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
-    Height = 23
-    Top = 496
+    Height = 20
+    Top = 502
     Width = 696
     Panels = <    
       item

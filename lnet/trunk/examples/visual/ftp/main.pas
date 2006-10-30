@@ -93,12 +93,13 @@ type
     FLastN: Integer;
     FList: TStringList;
     FFile: TFileStream;
-    FInfoExpected: Boolean;
+    FDirListingExpected: Boolean;
     FDLSize: Int64;
     FDLDone: Int64;
     FIcons: array of TIconRec;
     CreateFilePath: string;
     FTmpStrList: TStringList;
+    FDirListing: string;
     procedure DoList(const FileName: string);
     procedure UpdateSite;
     function CurrentName: string;
@@ -284,13 +285,14 @@ var
   i: Integer;
   Buf: array[0..65535] of Byte;
 begin
-  if FInfoExpected then begin
+  if FDirListingExpected then begin
     s:=Sender.GetDataMessage;
-    if Length(s) > 0 then begin
-      FList.Text:=FList.Text + s;
-    end else begin
+    if Length(s) > 0 then
+      FDirListing:=FDirListing+s
+    else begin
+      FList.Text:=FDirListing;
       FindNames;
-      FInfoExpected:=False;
+      FDirListingExpected:=False;
       FList.Clear;
     end;
   end else begin
@@ -385,7 +387,7 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   Dir:=ExtractFilePath(ParamStr(0));
-  FInfoExpected:=False;
+  FDirListingExpected:=False;
   FList:=TStringList.Create;
   FFile:=nil;
   LeftView.Mask:='*';
@@ -616,7 +618,8 @@ end;
 
 procedure TMainForm.DoList(const FileName: string);
 begin
-  FInfoExpected:=True;
+  FDirListingExpected:=True;
+  FDirListing:='';
   FTP.List(FileName);
 end;
 

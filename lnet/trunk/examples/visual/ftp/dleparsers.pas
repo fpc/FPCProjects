@@ -52,11 +52,16 @@ type
     property Date: TDateTime read FDate;
   end;
   
-  { TDirEntryUnixParser }
-
   { TUnixDirEntryParser }
 
   TUnixDirEntryParser=class(TDirEntryParser)
+  protected
+    function Parse(Entry: PChar): boolean; override;
+    function Description: string; override;
+  end;
+  
+  { TDosStyleEntryParser }
+  TDosStyleEntryParser=class(TDirEntryParser)
   protected
     function Parse(Entry: PChar): boolean; override;
     function Description: string; override;
@@ -212,8 +217,57 @@ begin
 end;
 
 
+{ TDosStyleEntryParser }
+
+function TDosStyleEntryParser.Parse(Entry: PChar): boolean;
+var
+  OldDateFormat: string;
+  TempStr:string;
+  tmpDate,tmpTime:TDateTime;
+begin
+  Result:= False;
+  Start := Entry;
+  if Start^ in ['0'..'9'] then begin
+    try
+      OldDateFormat:=ShortDateFormat;
+      ShortDateFormat:='mm-dd-yy';
+      if TryStrToDate(GetString, tmpDate) then begin
+        TempStr:=GetString;
+        Insert(' ', TempStr, 6);
+        if TryStrToTime(TempStr, tmpTime) then begin
+          FDate:=ComposeDateTime(tmpDate,tmpTime);
+          TempStr:=GetString;
+          FIsDir:=(TempStr<>'') and (TempStr[1]='<');
+          FIsLink:=False;
+          if FIsDir then
+            FSize:=0
+          else
+            FSize:=StrToInt64Def(TempStr, -1);
+          if FSize>=0 then
+            FName:=GetString
+          else
+            FName:='';
+          Result :=(FSize>=0)and(FName<>'');
+        end else begin
+          WriteLn('Failed to parse time: ',TempStr);
+        end;
+      end;
+      if not result then
+        WriteLn('  Failed to parse: ',Entry);
+    finally
+      ShortDateFormat:=OldDateFormat;
+    end;
+  end;
+end;
+
+function TDosStyleEntryParser.Description: string;
+begin
+  Result:='DOS style listing entry parser';
+end;
+
 initialization
   DirParser := TDirParser.Create;
   TUnixDirEntryParser.Create(DirParser);
+  TDosStyleEntryParser.Create(DirParser);
 end.
 
