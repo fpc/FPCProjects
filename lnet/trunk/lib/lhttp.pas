@@ -930,7 +930,7 @@ begin
   if not FOutputPending then
     exit(wsDone);
 
-  lWritten := FSocket.Send(FStream.Memory[FStream.Position], FStream.Size-FStream.Position);
+  lWritten := FSocket.Send(PByte(FStream.Memory)[FStream.Position], FStream.Size-FStream.Position);
   FStream.Position := FStream.Position + lWritten;
   FOutputPending := FStream.Position < FStream.Size;
   FEof := not FOutputPending;
