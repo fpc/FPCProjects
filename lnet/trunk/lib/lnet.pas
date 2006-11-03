@@ -71,6 +71,7 @@ type
 
 
   TLSocket = class;
+  TLConnection = class;
   
   { CallBack Event procedure for errors }
   TLErrorProc = procedure(const msg: string; aSocket: TLSocket) of object;
@@ -100,6 +101,7 @@ type
     FOnFree: TLProc;
     FBlocking: Boolean;
     FListenBacklog: Integer;
+    FConnection: TLConnection;
    protected
     function DoSend(const TheData; const TheSize: Integer): Integer;
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
@@ -137,6 +139,7 @@ type
     property LocalPort: Word read GetLocalPort;
     property NextSock: TLSocket read FNextSock write FNextSock;
     property PrevSock: TLSocket read FPrevSock write FPrevSock;
+    property Connection: TLConnection read FConnection write FConnection;
   end;
   TLSocketClass = class of TLSocket;
 
@@ -616,6 +619,7 @@ begin
   aSocket.OnWrite:=@SendAction;
   aSocket.OnError:=@ErrorAction;
   aSocket.ListenBacklog:=FListenBacklog;
+  aSocket.Connection:=Self;
   Result:=aSocket;
 end;
 
