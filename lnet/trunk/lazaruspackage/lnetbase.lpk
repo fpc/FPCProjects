@@ -1,14 +1,16 @@
 <?xml version="1.0"?>
 <CONFIG>
   <Package Version="2">
+    <PathDelim Value="\"/>
     <Name Value="lnetbase"/>
     <CompilerOptions>
       <Version Value="5"/>
+      <PathDelim Value="\"/>
       <SearchPaths>
-        <IncludeFiles Value="../lib/sys/"/>
-        <OtherUnitFiles Value="../lib/"/>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)/"/>
-        <SrcPath Value="../lib/;../lib/sys/"/>
+        <IncludeFiles Value="..\lib\sys\"/>
+        <OtherUnitFiles Value="..\lib\"/>
+        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+        <SrcPath Value="..\lib\;..\lib\sys\"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -24,46 +26,40 @@
     </CompilerOptions>
     <Files Count="7">
       <Item1>
-        <Filename Value="../lib/lnet.pas"/>
+        <Filename Value="..\lib\lnet.pas"/>
         <UnitName Value="lNet"/>
       </Item1>
       <Item2>
-        <Filename Value="../lib/levents.pas"/>
+        <Filename Value="..\lib\levents.pas"/>
         <UnitName Value="lEvents"/>
       </Item2>
       <Item3>
-        <Filename Value="../lib/lcommon.pas"/>
+        <Filename Value="..\lib\lcommon.pas"/>
         <UnitName Value="lCommon"/>
       </Item3>
       <Item4>
-        <Filename Value="../lib/lftp.pas"/>
+        <Filename Value="..\lib\lftp.pas"/>
         <UnitName Value="lFTP"/>
       </Item4>
       <Item5>
-        <Filename Value="../lib/lsmtp.pas"/>
+        <Filename Value="..\lib\lsmtp.pas"/>
         <UnitName Value="lsmtp"/>
       </Item5>
       <Item6>
-        <Filename Value="../lib/ltelnet.pas"/>
+        <Filename Value="..\lib\ltelnet.pas"/>
         <UnitName Value="lTelnet"/>
       </Item6>
       <Item7>
-        <Filename Value="../lib/lhttp.pas"/>
+        <Filename Value="..\lib\lhttp.pas"/>
         <UnitName Value="lhttp"/>
       </Item7>
     </Files>
-    <Type Value="RunAndDesignTime"/>
-    <RequiredPkgs Count="1">
-      <Item1>
-        <PackageName Value="FCL"/>
-        <MinVersion Major="1" Valid="True"/>
-      </Item1>
-    </RequiredPkgs>
     <UsageOptions>
-      <UnitPath Value="$(PkgOutDir)"/>
+      <UnitPath Value="$(PkgOutDir)\"/>
     </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>
+      <DestinationDirectory Value="$(TestDir)\publishedpackage\"/>
       <IgnoreBinaries Value="False"/>
     </PublishOptions>
   </Package>

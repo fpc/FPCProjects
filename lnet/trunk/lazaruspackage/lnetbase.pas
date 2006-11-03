@@ -7,14 +7,8 @@ unit lnetbase;
 interface
 
 uses
-  lNet, lEvents, lCommon, lFTP, lsmtp, lTelnet, lhttp, LazarusPackageIntf; 
+  lNet, lEvents, lCommon, lFTP, lsmtp, lTelnet, lhttp; 
 
 implementation
 
-procedure Register; 
-begin
-end; 
-
-initialization
-  RegisterPackage('lnetbase', @Register); 
 end.
