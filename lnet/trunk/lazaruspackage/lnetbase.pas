@@ -2,7 +2,7 @@
 This source is only used to compile and install the package.
  }
 
-unit lnetpkg; 
+unit lnetbase; 
 
 interface
 
@@ -16,5 +16,5 @@ begin
 end; 
 
 initialization
-  RegisterPackage('lnetpkg', @Register); 
+  RegisterPackage('lnetbase', @Register); 
 end.
