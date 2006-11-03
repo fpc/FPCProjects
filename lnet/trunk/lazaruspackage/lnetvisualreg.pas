@@ -14,7 +14,7 @@
   
   This unit registers the lnet components.
 }
-unit RegisterlNet;
+unit LNetVisualReg;
 
 interface
 
@@ -34,7 +34,7 @@ begin
 end;
 
 initialization
- {$i registerlnet.lrs}
+ {$i lnetvisualreg.lrs}
 
 end.
  

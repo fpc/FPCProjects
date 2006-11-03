@@ -2,20 +2,20 @@
 This source is only used to compile and install the package.
  }
 
-unit lnetidepackage; 
+unit lnetvisual; 
 
 interface
 
 uses
-  RegisterlNet, LazarusPackageIntf; 
+  LCLNet, lNetComponents, LNetVisualReg, LazarusPackageIntf; 
 
 implementation
 
 procedure Register; 
 begin
-  RegisterUnit('RegisterlNet', @RegisterlNet.Register); 
+  RegisterUnit('LNetVisualReg', @LNetVisualReg.Register); 
 end; 
 
 initialization
-  RegisterPackage('lnetidepackage', @Register); 
+  RegisterPackage('lnetvisual', @Register); 
 end.
