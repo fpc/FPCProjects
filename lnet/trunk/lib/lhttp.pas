@@ -290,7 +290,6 @@ type
     FCurrentOutput: TOutputItem;
     FLastOutput: TOutputItem;
     FKeepAlive: boolean;
-    FConnection: TLHTTPConnection;
     FParseBuffer: TParseBufferMethod;
     FParameters: TLHTTPParameterArray;
     FDelayFreeItems: TOutputItem;
@@ -329,7 +328,6 @@ type
     function  ParseBuffer: boolean;
     procedure WriteBlock;
     
-    property Connection: TLHTTPConnection read FConnection;
     property Parameters: TLHTTPParameterArray read FParameters;
   end;
 
@@ -1456,7 +1454,7 @@ end;
 
 procedure TLHTTPServerSocket.LogAccess(const AMessage: string);
 begin
-  FConnection.LogAccess(AMessage);
+  TLHTTPConnection(FConnection).LogAccess(AMessage);
 end;
 
 procedure TLHTTPServerSocket.LogMessage;
