@@ -5,7 +5,7 @@ program testnet;
 uses
   Interfaces, // this includes the LCL widgetset
   Forms
-  { add your units here }, main, lnetpackage, lnetidepackage;
+  { add your units here }, main, lnetvisual;
 
 begin
   Application.Title:='TCP/UDP Test case';

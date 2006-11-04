@@ -25,18 +25,14 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="3">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="lnetpackage"/>
-        <MinVersion Minor="3" Valid="True"/>
+        <PackageName Value="lnetvisual"/>
+        <MinVersion Minor="4" Release="1" Valid="True"/>
       </Item1>
       <Item2>
-        <PackageName Value="lnetidepackage"/>
-        <MinVersion Minor="3" Valid="True"/>
-      </Item2>
-      <Item3>
         <PackageName Value="LCL"/>
-      </Item3>
+      </Item2>
     </RequiredPackages>
     <Units Count="3">
       <Unit0>

@@ -5,8 +5,8 @@ program ftptest;
 uses
   Interfaces, // this includes the LCL widgetset
   Forms
-  { add your units here }, Main, lnetpackage, lnetidepackage, sitesunit, 
-dleparsers;
+  { add your units here }, Main, sitesunit, 
+dleparsers, lnetvisual;
 
 begin
   Application.Title:='FTP Test case';
