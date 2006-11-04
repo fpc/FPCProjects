@@ -3,10 +3,10 @@ BASEARGS=-Fu../../../lib -Fi../../../lib/sys -Sm
 ARGS=$(BASEARGS) $(OPT) -O2 -XX -Xs
 
 all:
-	$(PP) $(ARGS) lftpclient.pas
+	$(PP) $(ARGS) lftpclient
 
 argless:
-	$(PP) $(BASEARGS) $(OPT) lftpclient.pas	
+	$(PP) $(BASEARGS) $(OPT) lftpclient
 
 clean:
 	delp .

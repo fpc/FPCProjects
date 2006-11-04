@@ -3,12 +3,12 @@ BASEARGS=-Fu../../../lib -Fi../../../lib/sys -Sm
 ARGS=$(BASEARGS) $(OPT) -O2 -XX -Xs
 
 all:
-	$(PP) $(ARGS) fphttpd.pas
-	$(PP) $(ARGS) fpget.pas
+	$(PP) $(ARGS) fphttpd
+	$(PP) $(ARGS) fpget
 
 argless:
-	$(PP) $(BASEARGS) $(OPT) fphttpd.pas	
-	$(PP) $(BASEARGS) $(OPT) fpget.pas
+	$(PP) $(BASEARGS) $(OPT) fphttpd
+	$(PP) $(BASEARGS) $(OPT) fpget
 
 clean:
 	delp .

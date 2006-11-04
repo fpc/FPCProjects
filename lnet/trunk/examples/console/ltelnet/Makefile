@@ -3,10 +3,10 @@ BASEARGS=-Fu../../../lib -Fi../../../lib/sys -Sm
 ARGS=$(BASEARGS) $(OPT) -O2 -XX -Xs
 
 all:
-	$(PP) $(ARGS) ltclient.pas
+	$(PP) $(ARGS) ltclient
 
 argless:
-	$(PP) $(BASEARGS) $(OPT) ltclient.pas	
+	$(PP) $(BASEARGS) $(OPT) ltclient
 
 clean:
 	delp .

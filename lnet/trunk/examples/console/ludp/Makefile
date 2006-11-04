@@ -3,10 +3,10 @@ BASEARGS=-Fu../../../lib -Fi../../../lib/sys -Sm
 ARGS=$(BASEARGS) $(OPT) -O2 -XX -Xs
 
 all:
-	$(PP) $(ARGS) ludp.pas
+	$(PP) $(ARGS) ludp
 
 argless:
-	$(PP) $(BASEARGS) $(OPT) ludp.pas	
+	$(PP) $(BASEARGS) $(OPT) ludp
 
 clean:
 	delp .

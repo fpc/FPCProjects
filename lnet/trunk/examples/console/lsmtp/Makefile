@@ -3,10 +3,10 @@ BASEARGS=-Fu../../../lib -Fi../../../lib/sys -Sm
 ARGS=$(BASEARGS) $(OPT) -O2 -XX -Xs
 
 all:
-	$(PP) $(ARGS) lsmtpclient.pas
+	$(PP) $(ARGS) lsmtpclient
 
 argless:
-	$(PP) $(BASEARGS) $(OPT) lsmtpclient.pas	
+	$(PP) $(BASEARGS) $(OPT) lsmtpclient
 
 clean:
 	delp .
