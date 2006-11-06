@@ -503,7 +503,6 @@ var
         FLogTransaction.StartTransaction;
         Sql.Clear;
         Sql.Add('update tbl_definitions set description=''' + SQLEscape(Args) +
-                ' -- defined by ' + SQLEscape(LastLine.Sender) +
                 ''' where definition=''' + SQLEscape(DefWord) + '''');
         ExecSQL;
         FLogTransaction.Commit;
@@ -521,8 +520,7 @@ var
       FLogTransaction.StartTransaction;
       Sql.Clear;
       Sql.Add('insert into tbl_definitions(definition,description) ' +
-              'values ('''+ SQLEscape(DefWord) +''',''' + SQLEscape(Args) +
-              ' -- defined by ' + SQLEscape(Caller.LastLine.Sender) + ''')');
+              'values ('''+ SQLEscape(DefWord) +''',''' + SQLEscape(Args) + ''')');
       ExecSQL;
       FLogTransaction.Commit;
       Caller.Respond(YESSIR);
