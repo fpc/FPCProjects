@@ -22,37 +22,38 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
+    <Version Minor="4" Release="1"/>
     <Files Count="8">
       <Item1>
-        <Filename Value="../lib/lnet.pas"/>
-        <UnitName Value="lNet"/>
+        <Filename Value="../lib/lnet.pp"/>
+        <UnitName Value="lnet"/>
       </Item1>
       <Item2>
-        <Filename Value="../lib/levents.pas"/>
-        <UnitName Value="lEvents"/>
+        <Filename Value="../lib/levents.pp"/>
+        <UnitName Value="levents"/>
       </Item2>
       <Item3>
-        <Filename Value="../lib/lcommon.pas"/>
-        <UnitName Value="lCommon"/>
+        <Filename Value="../lib/lcommon.pp"/>
+        <UnitName Value="lcommon"/>
       </Item3>
       <Item4>
-        <Filename Value="../lib/lftp.pas"/>
-        <UnitName Value="lFTP"/>
+        <Filename Value="../lib/lftp.pp"/>
+        <UnitName Value="lftp"/>
       </Item4>
       <Item5>
-        <Filename Value="../lib/lsmtp.pas"/>
+        <Filename Value="../lib/lsmtp.pp"/>
         <UnitName Value="lsmtp"/>
       </Item5>
       <Item6>
-        <Filename Value="../lib/ltelnet.pas"/>
-        <UnitName Value="lTelnet"/>
+        <Filename Value="../lib/ltelnet.pp"/>
+        <UnitName Value="ltelnet"/>
       </Item6>
       <Item7>
-        <Filename Value="../lib/lhttp.pas"/>
+        <Filename Value="../lib/lhttp.pp"/>
         <UnitName Value="lhttp"/>
       </Item7>
       <Item8>
-        <Filename Value="../lib/lwebserver.pas"/>
+        <Filename Value="../lib/lwebserver.pp"/>
         <UnitName Value="lwebserver"/>
       </Item8>
     </Files>
