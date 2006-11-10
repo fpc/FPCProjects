@@ -16,8 +16,17 @@
         </SyntaxOptions>
       </Parsing>
       <CodeGeneration>
+        <SmartLinkUnit Value="True"/>
         <Generate Value="Faster"/>
+        <Optimizations>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
       </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <UseLineInfoUnit Value="False"/>
+        </Debugging>
+      </Linking>
       <Other>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
@@ -26,19 +35,19 @@
     <Files Count="8">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
-        <UnitName Value="lnet"/>
+        <UnitName Value="lNet"/>
       </Item1>
       <Item2>
         <Filename Value="../lib/levents.pp"/>
-        <UnitName Value="levents"/>
+        <UnitName Value="lEvents"/>
       </Item2>
       <Item3>
         <Filename Value="../lib/lcommon.pp"/>
-        <UnitName Value="lcommon"/>
+        <UnitName Value="lCommon"/>
       </Item3>
       <Item4>
         <Filename Value="../lib/lftp.pp"/>
-        <UnitName Value="lftp"/>
+        <UnitName Value="lFTP"/>
       </Item4>
       <Item5>
         <Filename Value="../lib/lsmtp.pp"/>
@@ -46,7 +55,7 @@
       </Item5>
       <Item6>
         <Filename Value="../lib/ltelnet.pp"/>
-        <UnitName Value="ltelnet"/>
+        <UnitName Value="lTelnet"/>
       </Item6>
       <Item7>
         <Filename Value="../lib/lhttp.pp"/>

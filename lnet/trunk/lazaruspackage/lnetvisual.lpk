@@ -5,11 +5,20 @@
     <CompilerOptions>
       <Version Value="5"/>
       <SearchPaths>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)/"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <CodeGeneration>
+        <SmartLinkUnit Value="True"/>
         <Generate Value="Faster"/>
+        <Optimizations>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
       </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <UseLineInfoUnit Value="False"/>
+        </Debugging>
+      </Linking>
       <Other>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
@@ -37,10 +46,10 @@
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="3">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetbase"/>
       </Item1>
       <Item2>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="LCL"/>
       </Item2>
       <Item3>
         <PackageName Value="FCL"/>
