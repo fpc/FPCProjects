@@ -328,8 +328,10 @@ begin
     lOutput.DocumentRoot := FDocumentRoot;
     lOutput.EnvPath := FEnvPath;
     lOutput.Process.CurrentDirectory := FCGIRoot;
-    lExecPath := FCGIRoot+(ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
-    if SeparatePath(lExecPath, lOutput.ExtraPath) then
+    lExecPath := (ASocket.RequestInfo.Argument+Length(ScriptPathPrefix));
+    DoDirSeparators(lExecPath);
+    lExecPath := FCGIRoot+lExecPath;
+    if SeparatePath(lExecPath, lOutput.ExtraPath, faAnyFile and not faDirectory) then
     begin
       lOutput.Process.CommandLine := lExecPath;
       lOutput.ScriptFileName := lExecPath;
@@ -383,7 +385,8 @@ var
   lHeaderOut: PHeaderOutInfo;
   lIndex: integer;
 begin
-  if Length(ARequest.ExtraPath) = 0 then
+  Result := nil;
+  if ARequest.InfoValid then
   begin
     lReqInfo := @ARequest.Socket.RequestInfo;
     lRespInfo := @ARequest.Socket.ResponseInfo;
@@ -420,11 +423,14 @@ begin
   Result := nil;
   lDocRequest.Socket := ASocket;
   lDocRequest.URIPath := ASocket.RequestInfo.Argument;
-  lDocRequest.Document := FDocumentRoot+lDocRequest.URIPath;
-  lDocRequest.InfoValid := SeparatePath(lDocRequest.Document, lDocRequest.ExtraPath, @lDocRequest.Info);
-  if not lDocRequest.InfoValid then 
+  lDocRequest.Document := lDocRequest.URIPath;
+  DoDirSeparators(LDocRequest.Document);
+  lDocRequest.Document := IncludeTrailingPathDelimiter(FDocumentRoot)+lDocRequest.Document;
+  lDocRequest.InfoValid := SeparatePath(lDocRequest.Document,lDocRequest.ExtraPath, 
+    faAnyFile, @lDocRequest.Info);
+  if not lDocRequest.InfoValid then
     exit;
-  if ((lDocRequest.Info.Attr and faDirectory) <> 0) and (Length(lDocRequest.ExtraPath) = 0) then
+  if ((lDocRequest.Info.Attr and faDirectory) <> 0) and (lDocRequest.ExtraPath = PathDelim) then
   begin
     lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
     lDirIndexFound := false;
