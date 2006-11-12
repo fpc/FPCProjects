@@ -148,7 +148,8 @@ begin
   Result := true;
 end;
 
-function SeparatePath(var InPath: string; out ExtraPath: string; const Mode:Longint; ASearchRec: PSearchRec = nil): boolean;
+function SeparatePath(var InPath: string; out ExtraPath: string; const Mode:Longint; 
+  ASearchRec: PSearchRec = nil): boolean;
 var
   lFullPath: string;
   lPos: integer;
