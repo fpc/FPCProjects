@@ -449,6 +449,11 @@ begin
     end;
     { requested a directory, but no source to show }
     if not lDirIndexFound then exit;
+  end else
+  if Length(lDocRequest.ExtraPath)<>0 then
+  begin
+    // requested a nonexistent file, found only a directory.
+    exit;
   end;
 
   lHandler := FDocHandlerList;
