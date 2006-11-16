@@ -607,8 +607,11 @@ var
 begin
   if FOutputPending then
   begin
-    lWritten := FSocket.Send(FBuffer[FBufferPos], FBufferSize-FBufferPos);
-    Inc(FBufferPos, lWritten);
+    if FBufferSize > FBufferPos then
+    begin
+      lWritten := FSocket.Send(FBuffer[FBufferPos], FBufferSize-FBufferPos);
+      Inc(FBufferPos, lWritten);
+    end;
     FOutputPending := FBufferPos < FBufferSize;
     Result := BufferEmptyToWriteStatus[not FOutputPending];
   end else
