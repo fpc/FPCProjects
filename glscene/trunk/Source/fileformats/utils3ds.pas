@@ -3781,13 +3781,15 @@ begin
   if ((Field and RelMatArray3DS) <> 0) and
      Assigned(Mesh.MatArray)           then
   begin
-    for I := 0 to Mesh.NMats - 1 do
+    for I := 0 to Mesh.NMats - 1 do begin
+      // name is allways assigned
+      Mesh.MatArray^[I].NameStr:='';
       if Assigned(Mesh.MatArray^[I].FaceIndex) then
       begin
         FreeMem(Mesh.MatArray^[I].FaceIndex);
         Mesh.MatArray^[I].FaceIndex := nil;
-        Mesh.MatArray^[I].NameStr:='';
       end;
+    end;
     FreeMem(Mesh.MatArray);
     Mesh.MatArray := nil;
   end;
