@@ -430,21 +430,26 @@ begin
     faAnyFile, @lDocRequest.Info);
   if not lDocRequest.InfoValid then
     exit;
-  if ((lDocRequest.Info.Attr and faDirectory) <> 0) and (lDocRequest.ExtraPath = PathDelim) then
+  if (lDocRequest.Info.Attr and faDirectory) <> 0 then
   begin
-    lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
     lDirIndexFound := false;
-    for I := 0 to FDirIndexList.Count - 1 do
+    { if non-trivial ExtraPath, then it's not a pure directory request, so do
+      not show default directory document }
+    if lDocRequest.ExtraPath = PathDelim then
     begin
-      lTempDoc := lDocRequest.Document + FDirIndexList.Strings[I];
-      lDocRequest.InfoValid := FindFirst(lTempDoc, 
-        faAnyFile and not faDirectory, lDocRequest.Info) = 0;
-      FindClose(lDocRequest.Info);
-      if lDocRequest.InfoValid and ((lDocRequest.Info.Attr and faDirectory) = 0) then
+      lDocRequest.Document := IncludeTrailingPathDelimiter(lDocRequest.Document);
+      for I := 0 to FDirIndexList.Count - 1 do
       begin
-        lDocRequest.Document := lTempDoc;
-        lDirIndexFound := true;
-        break;
+        lTempDoc := lDocRequest.Document + FDirIndexList.Strings[I];
+        lDocRequest.InfoValid := FindFirst(lTempDoc, 
+          faAnyFile and not faDirectory, lDocRequest.Info) = 0;
+        FindClose(lDocRequest.Info);
+        if lDocRequest.InfoValid and ((lDocRequest.Info.Attr and faDirectory) = 0) then
+        begin
+          lDocRequest.Document := lTempDoc;
+          lDirIndexFound := true;
+          break;
+        end;
       end;
     end;
     { requested a directory, but no source to show }
