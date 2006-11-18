@@ -41,6 +41,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/10/06 - LC - Fixed IcosahedronBuildList. Bugtracker ID=1490784 (thanks EPA_Couzijn)
+      <li>19/10/06 - LC - Fixed TGLLineBase.Assign problem. Bugtracker ID=1549354 (thanks Zapology)
       <li>17/01/05 - SG - Added color support for bezier style TGLLines
       <li>03/12/04 - MF - Added TGLSprite.AxisAlignedDimensionsUnscaled override
       <li>06/07/04 - SG - TGLCube.RayCastIntersect fix (Eric Pascual)
@@ -991,7 +993,7 @@ const
    B = 0.30901699437; // 1/(1+Sqrt(5))
 const
    vertices : packed array [0..11] of TAffineVector =
-      (( 0,-A,-A), ( 0,-B, A), ( 0, B,-A), ( 0, B, A),
+      (( 0,-B,-A), ( 0,-B, A), ( 0, B,-A), ( 0, B, A),
        (-A, 0,-B), (-A, 0, B), ( A, 0,-B), ( A, 0, B),
        (-B,-A, 0), (-B, A, 0), ( B,-A, 0), ( B, A, 0));
 
@@ -2112,7 +2114,8 @@ begin
       FLinePattern:=TGLLineBase(Source).FLinePattern;
       FLineWidth:=TGLLineBase(Source).FLineWidth;
       FAntiAliased:=TGLLineBase(Source).FAntiAliased;
-   end else inherited Assign(Source);
+   end;
+   inherited Assign(Source);
 end;
 
 // SetupLineStyle
