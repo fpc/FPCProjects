@@ -156,7 +156,7 @@ begin
    end;
    if Assigned(FBumpmapLibrary) and (heightData.DataState<>hdsNone) then begin
       libMat:=FBumpmapLibrary.Materials.Add;
-      //libMat.Name:='BumpHDS_'+IntToHex(Int64(heightData), 16);
+      libMat.Name:='BumpHDS_'+IntToHex(Int64(pointer(heightData)), 16);
       with libMat.Material.Texture do begin
          ImageClassName:=TGLBlankImage.ClassName;
          Enabled:=True;
@@ -187,7 +187,7 @@ var
    libMat : TGLLibMaterial;
 begin
    if Assigned(FBumpmapLibrary) then begin
-      //libMat:=FBumpmapLibrary.LibMaterialByName('BumpHDS_'+IntToHex(Int64(aHeightData), 16));
+      libMat:=FBumpmapLibrary.LibMaterialByName('BumpHDS_'+IntToHex(Int64(pointer(aHeightData)), 16));
       libMat.Free;      
    end;
    inherited;
