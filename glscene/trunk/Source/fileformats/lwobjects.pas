@@ -851,7 +851,7 @@ begin
 
   L:=Length(Src);
   if (L=0) or (Dst=nil) then Exit;
-
+  SubStr:='';
   for i:=1 to L do
   begin
     if (Src[i]<>Delimiter) then SubStr:=SubStr+Src[i] else
