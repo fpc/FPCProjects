@@ -9,6 +9,7 @@
    You can change current PAK file by ActivePak variable.<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>26/10/2006 - LC - Fixed memory leak in TGLVfsPAK.LoadFromFile. Bugtracker ID=1585215 (thanks Da Stranger)
       <li>18/10/2004 - Orchestraman - PAKCreateFileStream, Fixed an error when trying to load an image file in material editor during design time. It Loads the file from the Hard Disk. 
       <li>14/10/2004 - Orchestraman - PAKCreateFileStream, PAKFileStreamExists procedures redirect the streaming to hard disk if pack file does not exist.
       <li>04/10/2004 - Orchestraman - Fixed bug in LoadFromFile. The compressor object is created when the file is signed as compressed.
@@ -286,7 +287,7 @@ var
    l: integer;
 begin
    FFileName := FileName;
-   FPakFiles := TStringList.Create;
+   FPakFiles.Clear;
    FPakFiles.Add(FileName);
    FFiles := TStringList.Create;
    FStream := TFileStream.Create(FileName, Mode);
