@@ -50,114 +50,114 @@
                           Added BuildTangentSpace function (experimental).
       <li>23/07/04 - SG - Added fgmmQuad case for TFGVertexIndexList.TraingleCount
                           (Thanks fig).
-      <li>18/07/04 - lr - suppress consts in uses
-      <li>20/06/04 - mrqzzz - added autoscaling property to glbasemesh to scale a mesh after loading (like autocentering) 
-      <li>30/03/04 - eg - added tskeletonbonelist.bonecount
-      <li>23/03/04 - sg - external positions added to skeleton blended lerps.
-                          autoupdate flag added to skeleton collider list.
-      <li>09/03/04 - sg - tfgindextexcoordlist.buildlist can now use per vertex color
-      <li>29/01/04 - sg - fix for applycurrentskeletonframe with multiple bones per vertex. 
-                          mesh reassembles correctly now (tested up to 4 bones per vertex).
-      <li>03/12/03 - sg - added tskeletoncollider and tskeletoncolliderlist
-                          added colliders (tskeletoncolliderlist) to tskeleton
-      <li>24/10/03 - sg - various fixes for multiple bones per vertex
-      <li>21/09/03 - mrqzzz - added "aamloopbackward" to animationmode property
-      <li>19/09/03 - eg - "lighmap" -&gt; "lightmap"
-      <li>01/09/03 - sg - added skeleton frame conversion methods to convert between
-                          rotations and quaternions.
-      <li>27/08/03 - sg - fixed addweightedbone for multiple bones per vertex
-      <li>13/08/03 - sg - added quaternion transforms for skeletal animation
-      <li>12/08/03 - sg - fixed a tiny bug in tskeleton.morphmesh
-      <li>08/07/03 - eg - fixed puny bug in skeletal normals transformation 
-      <li>05/06/03 - sg - split smd, md2, 3ds, ply, tin and gts code into separate units,
-                          fileformats\glfile???.pas
-      <li>16/05/03 - sg - fixed opengl error caused by glcolormaterial in tmeshobject.buildlist
-      <li>08/05/03 - danb - added octreeaabbintersect (matheus degiovani)
-      <li>07/05/03 - sg - added tglsmdvectorfile.savetofile method and [read,write] capabilities
-      <li>17/04/03 - sg - added tmeshobjectlist.findmeshbyname method
-      <li>01/04/03 - sg - fixed tglbasemesh.assign
-      <li>13/02/03 - danb - added axisaligneddimensionsunscaled
-      <li>03/02/03 - eg - faster preparebuildlist logic
-      <li>31/01/03 - eg - added materialcache logic
-      <li>30/01/03 - eg - fixed color array enable/disable (nelson chu),
-                          normals extraction and extraction standardization
-      <li>27/01/03 - eg - assign support, fixed morphablemeshobjects persistence
-      <li>16/01/03 - eg - updated multiples bones per vertex transformation code,
-                          now makes use of cvas 
-      <li>14/01/03 - eg - added disableopenglarrays
-      <li>09/01/03 - eg - added clear methods for meshobjects
-      <li>25/11/02 - eg - colors and texcoords lists now disabled if ignorematerials is true
-      <li>23/10/02 - eg - faster .gts and .ply imports (parsing)
-      <li>22/10/02 - eg - added actor options, fixed skeleton normals transform (thx marcus)
-      <li>21/10/02 - eg - read support for .gts (gnu triangulated surface library) 
-      <li>18/10/02 - eg - findextbyindex (adem)
-      <li>17/10/02 - eg - tglstlvectorfile moved to new glfilestl unit
-      <li>04/09/02 - eg - fixed tglbasemesh.axisaligneddimensions
-      <li>23/08/02 - eg - added tglbasemesh.visible
-      <li>23/07/02 - eg - tglbasemesh.loadfromstream fix (d. angilella)
-      <li>13/07/02 - eg - autocenter on barycenter
-      <li>22/03/02 - eg - tglanimationcontroler basics now functional
-      <li>13/03/02 - eg - octree support (experimental)
-      <li>18/02/02 - eg - fixed persistence of skeletal meshes
-      <li>04/01/02 - eg - added basic raycastintersect implementation
-      <li>17/12/01 - eg - upgraded tglactor.synchronize (smooth transitions support)
-      <li>30/11/01 - eg - added smooth transitions (based on mrqzzz code)
-      <li>14/09/01 - eg - use of vfilestreamclass
-      <li>18/08/01 - eg - added trianglecount methods, stl export, ply import
-      <li>15/08/01 - eg - facegroups can now be rendered by material group
-                          (activate with renderingoption "morogroupbymaterial")
-      <li>14/08/01 - eg - added tskeletonbonelist and support for skeleton with
-                          multiple root bones, updated smd loader
-      <li>13/08/01 - eg - improved/fixed smd loader
-      <li>12/08/01 - eg - completely rewritten handles management,
-                          fixed tactoranimation.assign,
-                          fixed persistence
-      <li>08/08/01 - eg - added tglbasemesh.axisaligneddimensions
-      <li>19/07/01 - eg - autocentering is now a property of tglbasemesh,
-                          3ds loader no longer auto-centers,
-                          added extracttriangles and related methods
-      <li>18/07/01 - eg - visibilityculling compatibility changes
-      <li>19/06/01 - eg - strtofloat outlawed and replaced by strtofloatdef
-      <li>25/03/01 - eg - added tglanimationcontroler
-      <li>18/03/01 - eg - added basic skeleton structures & smd importer
-      <li>16/03/01 - eg - introduced new persistentclasses
-      <li>15/03/01 - eg - fix in tactoranimation.setendframe (thx david costa)
-      <li>08/03/01 - eg - tgl3dsvectorfile now loads materials for tglbasemesh
-      <li>26/02/01 - eg - added tbasemeshobject & buildnormals, md2 normals auto-builded
-      <li>21/02/01 - eg - now xopengl based (multitexture)
-      <li>15/01/01 - eg - added translate methods
-      <li>10/01/01 - eg - fixed in tglbasemesh.dorender for renderchildren states
-      <li>08/01/01 - eg - fixed tglbasemesh.buildlist messup of attrib states
-      <li>22/12/00 - eg - fixed non-interpolated tglactor animation (was freezing),
-                          fixed tglbasemesh.dorender messup of attrib states
-      <li>18/12/00 - eg - tfgindextexcoordlist now supports normals (automatically),
-                          normalsorientation code moved to tglbasemesh
-      <li>11/12/00 - eg - fix for normalorientation (3ds importer)
-      <li>06/12/00 - eg - added preparebuildlist mechanism
-      <li>08/10/00 - eg - removed tglobjvectorfile, use glfileobj instead
-      <li>13/08/00 - eg - enhancements for portal rendering support,
-                          added utility methods & triangle fans
-      <li>10/08/00 - eg - added currentanimation, fixed tmeshobject.getextents
-      <li>21/07/00 - eg - vastly improved memory use and mechanisms for md2/tglactor
-      <li>19/07/00 - eg - introduced enhanced mesh structure
-      <li>16/07/00 - eg - made use of new tdatafile class
-      <li>15/07/00 - eg - freeform can now handle 3ds files with multiple textures,
-                          added tglbasemesh.getextents
-      <li>28/06/00 - eg - support for "objectstyle"
-      <li>23/06/00 - eg - reversed "t" texture coord for md2,
-                          tactoranimations can now load/save
-      <li>21/06/00 - eg - added frame change events to tglactor,
-                          added tactoranimations collection
-      <li>19/06/00 - eg - completed smooth movement interpolation for tglactor
-      <li>07/06/00 - eg - tvectorfile now longers assumes a tglfreeform as owner,
-                          added generic tvectorfile.loadfromfile
-      <li>26/05/00 - eg - removed dependency to globjects,
-                          tglfreeform now may use interleavedarrays instead of
-                          indexedarrays (better buildlist compatibility)
-      <li>22/04/00 - eg - fixed material handlings in tglfreeform, inverted ccw/cw
-                          convention for 3ds release3
-		 <li>11/04/00 - eg - removed unnecessary code in finalization (thanks uwe)
-	   <li>09/02/00 - eg - creation from split of globjects,
+      <li>18/07/04 - LR - Suppress Consts in uses
+      <li>20/06/04 - MRQZZZ - Added AutoScaling property to GLBaseMesh to scale a mesh after loading (like Autocentering) 
+      <li>30/03/04 - EG - Added TSkeletonBoneList.BoneCount
+      <li>23/03/04 - SG - External positions added to skeleton blended lerps.
+                          AutoUpdate flag added to skeleton collider list.
+      <li>09/03/04 - SG - TFGIndexTexCoordList.BuildList can now use per vertex color
+      <li>29/01/04 - SG - Fix for ApplyCurrentSkeletonFrame with multiple bones per vertex. 
+                          Mesh reassembles correctly now (tested up to 4 bones per vertex).
+      <li>03/12/03 - SG - Added TSkeletonCollider and TSkeletonColliderList
+                          Added Colliders (TSkeletonColliderList) to TSkeleton
+      <li>24/10/03 - SG - Various fixes for multiple bones per vertex
+      <li>21/09/03 - MRQZZZ - Added "aamLoopBackward" to AnimationMode property
+      <li>19/09/03 - EG - "Lighmap" -&gt; "LightMap"
+      <li>01/09/03 - SG - Added skeleton frame conversion methods to convert between
+                          Rotations and Quaternions.
+      <li>27/08/03 - SG - Fixed AddWeightedBone for multiple bones per vertex
+      <li>13/08/03 - SG - Added quaternion transforms for skeletal animation
+      <li>12/08/03 - SG - Fixed a tiny bug in TSkeleton.MorphMesh
+      <li>08/07/03 - EG - Fixed puny bug in skeletal normals transformation 
+      <li>05/06/03 - SG - Split SMD, MD2, 3DS, PLY, TIN and GTS code into separate units,
+                          FileFormats\GLFile???.pas
+      <li>16/05/03 - SG - Fixed OpenGL error caused by glColorMaterial in TMeshObject.BuildList
+      <li>08/05/03 - DanB - added OctreeAABBIntersect (Matheus Degiovani)
+      <li>07/05/03 - SG - Added TGLSMDVectorFile.SaveToFile method and [read,write] capabilities
+      <li>17/04/03 - SG - Added TMeshObjectList.FindMeshByName method
+      <li>01/04/03 - SG - Fixed TGLBaseMesh.Assign
+      <li>13/02/03 - DanB - added AxisAlignedDimensionsUnscaled
+      <li>03/02/03 - EG - Faster PrepareBuildList logic
+      <li>31/01/03 - EG - Added MaterialCache logic
+      <li>30/01/03 - EG - Fixed color array enable/disable (Nelson Chu),
+                          Normals extraction and extraction standardization
+      <li>27/01/03 - EG - Assign support, fixed MorphableMeshObjects persistence
+      <li>16/01/03 - EG - Updated multiples Bones per vertex transformation code,
+                          now makes use of CVAs 
+      <li>14/01/03 - EG - Added DisableOpenGLArrays
+      <li>09/01/03 - EG - Added Clear methods for MeshObjects
+      <li>25/11/02 - EG - Colors and TexCoords lists now disabled if ignoreMaterials is true
+      <li>23/10/02 - EG - Faster .GTS and .PLY imports (parsing)
+      <li>22/10/02 - EG - Added actor options, fixed skeleton normals transform (thx Marcus)
+      <li>21/10/02 - EG - Read support for .GTS (GNU Triangulated Surface library) 
+      <li>18/10/02 - EG - FindExtByIndex (Adem)
+      <li>17/10/02 - EG - TGLSTLVectorFile moved to new GLFileSTL unit
+      <li>04/09/02 - EG - Fixed TGLBaseMesh.AxisAlignedDimensions
+      <li>23/08/02 - EG - Added TGLBaseMesh.Visible
+      <li>23/07/02 - EG - TGLBaseMesh.LoadFromStream fix (D. Angilella)
+      <li>13/07/02 - EG - AutoCenter on barycenter
+      <li>22/03/02 - EG - TGLAnimationControler basics now functional
+      <li>13/03/02 - EG - Octree support (experimental)
+      <li>18/02/02 - EG - Fixed persistence of skeletal meshes
+      <li>04/01/02 - EG - Added basic RayCastIntersect implementation
+      <li>17/12/01 - EG - Upgraded TGLActor.Synchronize (smooth transitions support)
+      <li>30/11/01 - EG - Added smooth transitions (based on Mrqzzz code)
+      <li>14/09/01 - EG - Use of vFileStreamClass
+      <li>18/08/01 - EG - Added TriangleCount methods, STL export, PLY import
+      <li>15/08/01 - EG - FaceGroups can now be rendered by material group
+                          (activate with RenderingOption "moroGroupByMaterial")
+      <li>14/08/01 - EG - Added TSkeletonBoneList and support for skeleton with
+                          multiple root bones, updated SMD loader
+      <li>13/08/01 - EG - Improved/fixed SMD loader
+      <li>12/08/01 - EG - Completely rewritten handles management,
+                          Fixed TActorAnimation.Assign,
+                          Fixed persistence
+      <li>08/08/01 - EG - Added TGLBaseMesh.AxisAlignedDimensions
+      <li>19/07/01 - EG - AutoCentering is now a property of TGLBaseMesh,
+                          3DS loader no longer auto-centers,
+                          Added ExtractTriangles and related methods
+      <li>18/07/01 - EG - VisibilityCulling compatibility changes
+      <li>19/06/01 - EG - StrToFloat outlawed and replaced by StrToFloatDef
+      <li>25/03/01 - EG - Added TGLAnimationControler
+      <li>18/03/01 - EG - Added basic Skeleton structures & SMD importer
+      <li>16/03/01 - EG - Introduced new PersistentClasses
+      <li>15/03/01 - EG - Fix in TActorAnimation.SetEndFrame (thx David Costa)
+      <li>08/03/01 - EG - TGL3DSVectorFile now loads materials for TGLBaseMesh
+      <li>26/02/01 - EG - Added TBaseMeshObject & BuildNormals, MD2 normals auto-builded
+      <li>21/02/01 - EG - Now XOpenGL based (multitexture)
+      <li>15/01/01 - EG - Added Translate methods
+      <li>10/01/01 - EG - Fixed in TGLBaseMesh.DoRender for RenderChildren states
+      <li>08/01/01 - EG - Fixed TGLBaseMesh.BuildList messup of attrib states
+      <li>22/12/00 - EG - Fixed non-interpolated TGLActor animation (was freezing),
+                          Fixed TGLBaseMesh.DoRender messup of attrib states
+      <li>18/12/00 - EG - TFGIndexTexCoordList now supports normals (automatically),
+                          NormalsOrientation code moved to TGLBaseMesh
+      <li>11/12/00 - EG - Fix for NormalOrientation (3DS importer)
+      <li>06/12/00 - EG - Added PrepareBuildList mechanism
+      <li>08/10/00 - EG - Removed TGLOBJVectorFile, use GLFileOBJ instead
+      <li>13/08/00 - EG - Enhancements for Portal Rendering support,
+                          Added utility methods & triangle fans
+      <li>10/08/00 - EG - Added CurrentAnimation, fixed TMeshObject.GetExtents
+      <li>21/07/00 - EG - Vastly improved memory use and mechanisms for MD2/TGLActor
+      <li>19/07/00 - EG - Introduced enhanced mesh structure
+      <li>16/07/00 - EG - Made use of new TDataFile class
+      <li>15/07/00 - EG - FreeForm can now handle 3DS files with multiple textures,
+                          Added TGLBaseMesh.GetExtents
+      <li>28/06/00 - EG - Support for "ObjectStyle"
+      <li>23/06/00 - EG - Reversed "t" texture coord for MD2,
+                          TActorAnimations can now load/save
+      <li>21/06/00 - EG - Added frame change events to TGLActor,
+                          Added TActorAnimations collection
+      <li>19/06/00 - EG - Completed smooth movement interpolation for TGLActor
+      <li>07/06/00 - EG - TVectorFile now longers assumes a TGLFreeForm as Owner,
+                          Added generic TVectorFile.LoadFromFile
+      <li>26/05/00 - EG - Removed dependency to GLObjects,
+                          TGLFreeForm now may use InterleavedArrays instead of
+                          IndexedArrays (better BuildList compatibility)
+      <li>22/04/00 - EG - Fixed Material handlings in TGLFreeForm, inverted CCW/CW
+                          convention for 3DS Release3
+		 <li>11/04/00 - EG - Removed unnecessary code in finalization (thanks Uwe)
+	   <li>09/02/00 - EG - Creation from split of GLObjects,
                           fixed class registrations and formats unregistration
 	</ul></font>
 }
@@ -371,7 +371,7 @@ type
          function BoneByID(anID : Integer) : TSkeletonBone; virtual;
          {: Returns a bone by its Name, nil if not found. }
          function BoneByName(const aName : String) : TSkeletonBone; virtual;
-         {: Number of bones (luding all children and self). }
+         {: Number of bones (including all children and self). }
          function BoneCount : Integer;
 
          //: Render skeleton wireframe
@@ -1243,7 +1243,6 @@ type
          FConnectivity : TObject;
          FLastLoadedFilename: string;
 
-
       protected
          { Protected Declarations }
          FMeshObjects : TMeshObjectList;     // a list of mesh objects
@@ -1291,7 +1290,7 @@ type
 
          procedure BuildList(var rci : TRenderContextInfo); override;
 			procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+                            renderSelf, renderChildren : Boolean); override;
          procedure StructureChanged; override;
          {: Notifies that geometry data changed, but no re-preparation is needed.<p>
             Using this method will usually be faster, but may result in incorrect
@@ -1356,6 +1355,7 @@ type
             take into account the data added to the mesh (through AddDataFromFile)
             or saved files.}
          function LastLoadedFilename: string;
+
          {: Determines if a mesh should be centered and how.<p>
             AutoCentering is performed <b>only</b> after loading a mesh, it has
             no effect on already loaded mesh data or when adding from a file/stream.<br>
@@ -1380,7 +1380,7 @@ type
          property UseMeshMaterials : Boolean read FUseMeshMaterials write SetUseMeshMaterials default True;
          {: LightMap library where lightmaps will be stored/retrieved.<p>
             If this property is not defined, lightmaps won't be used.
-            lightmaps currently *always* use the second texture unit (unit 1),
+            Lightmaps currently *always* use the second texture unit (unit 1),
             and may interfere with multi-texture materials. }
          property LightmapLibrary : TGLMaterialLibrary read FLightmapLibrary write SetLightmapLibrary;
          {: If True, exceptions about missing textures will be ignored.<p>
@@ -1497,7 +1497,7 @@ type
 
       public
 	      { Public Declarations }
-	      constructor Create(Collectio : TCollection); override;
+	      constructor Create(Collection : TCollection); override;
 	      destructor Destroy; override;
 	      procedure Assign(Source: TPersistent); override;
 
@@ -1716,6 +1716,7 @@ type
          {: Indicates whether the actor is currently swithing animations (with
             smooth interpolation).}
          function isSwitchingAnimation: boolean;
+
       published
          { Published Declarations }
          property StartFrame : Integer read FStartFrame write SetStartFrame default 0;
@@ -3100,6 +3101,7 @@ function TSkeleton.BoneCount : Integer;
 begin
    Result:=RootBones.BoneCount;
 end;
+
 // MorphTo
 //
 procedure TSkeleton.MorphTo(frameIndex : Integer);
@@ -4802,9 +4804,7 @@ begin
    //FLastBonesPerVertex:=FBonesPerVertex;
    FLastVerticeBoneWeightCount:=FVerticeBoneWeightCount;
    FLastBonesPerVertex:=FBonesPerVertex;
-
 end;
-
 
 // AddWeightedBone
 //
@@ -5564,13 +5564,13 @@ var
   gotColor: boolean;
    
 begin
-   Assert(VertexIndices.Count=TexCoords.Count);
-   texCoordPool:=TexCoords.List;
-   vertexPool:=Owner.Owner.Vertices.List;
-   indicesPool:=@VertexIndices.List[0];
-   colorPool:=@Owner.Owner.Colors.List[0];
-   gotColor:=(Owner.Owner.Vertices.Count=Owner.Owner.Colors.Count);
-   case Mode of
+  Assert(VertexIndices.Count = TexCoords.Count);
+  texCoordPool := TexCoords.List;
+  vertexPool := Owner.Owner.Vertices.List;
+  indicesPool := @VertexIndices.List[0];
+  colorPool := @Owner.Owner.Colors.List[0];
+  gotColor := (Owner.Owner.Vertices.Count = Owner.Owner.Colors.Count);
+  case Mode of
     fgmmTriangles: glBegin(GL_TRIANGLES);
     fgmmFlatTriangles: glBegin(GL_TRIANGLES);
     fgmmTriangleStrip: glBegin(GL_TRIANGLE_STRIP);
@@ -6072,6 +6072,7 @@ begin
    result:= FLastLoadedFilename;
 end;
 
+
 // SetMaterialLibrary
 //
 procedure TGLBaseMesh.SetMaterialLibrary(const val : TGLMaterialLibrary);
@@ -6126,14 +6127,12 @@ begin
    end;
 end;
 
-
 // SetAutoScaling
 //
 procedure TGLBaseMesh.SetAutoScaling(const Value: TGLCoordinates);
 begin
-  FAutoScaling.SetPoint(Value.DirectX, Value.DirectY, Value.DirectZ);
+   FAutoScaling.SetPoint(Value.DirectX, Value.DirectY, Value.DirectZ);
 end;
-
 
 // Notification
 //
@@ -6297,7 +6296,7 @@ end;
 // DoRender
 //
 procedure TGLBaseMesh.DoRender(var rci : TRenderContextInfo;
-                               renderSelf, renderChildre : Boolean);
+                               renderSelf, renderChildren : Boolean);
 begin
    if Assigned(LightmapLibrary) then
       xglForbidSecondTextureUnit;
@@ -6338,7 +6337,7 @@ begin
    end;
    if Assigned(LightmapLibrary) then
       xglAllowSecondTextureUnit;
-   if renderChildre and (Count>0) then
+   if renderChildren and (Count>0) then
       Self.RenderChildren(0, Count-1, rci);
 end;
 
@@ -6645,9 +6644,9 @@ end;
 
 // Create
 //
-constructor TActorAnimation.Create(Collectio : TCollection);
+constructor TActorAnimation.Create(Collection : TCollection);
 begin
-  inherited Create(Collectio);
+	inherited Create(Collection);
 end;
 
 // Destroy
@@ -7527,6 +7526,8 @@ function TGLActor.isSwitchingAnimation: boolean;
 begin
    result:= FTargetSmoothAnimation <> nil;
 end;
+
+
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
