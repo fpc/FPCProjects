@@ -449,24 +449,24 @@ type
 	TGLTextureChanges = set of TGLTextureChange;
 
 	{: Defines how and if Alpha channel is defined for a texture image.<ul>
-		<li>tiadefault : uses the alpha channel in the image if any
-		<li>tiaalphafromintensity : the alpha channel value is deduced from other
-			rgb components intensity (the brighter, the more opaque)
-		<li>tiasuperblacktransparent : pixels with a rgb color of (0, 0, 0) are
+		<li>tiaDefault : uses the alpha channel in the image if any
+		<li>tiaAlphaFromIntensity : the alpha channel value is deduced from other
+			RGB components intensity (the brighter, the more opaque)
+		<li>tiaSuperBlackTransparent : pixels with a RGB color of (0, 0, 0) are
 			completely transparent, others are completely opaque
-		<li>tialuminance : the luminance value is calculated for each pixel
-			and used for rgb and alpha values
-		<li>tialuminancesqrt : same as tialuminance but with an sqrt(luminance)
-      <li>tiaopaque : alpha channel is uniformously set to 1.0
-      <li>tiatopleftpointcolortransparent : points of the same color as the
+		<li>tiaLuminance : the luminance value is calculated for each pixel
+			and used for RGB and Alpha values
+		<li>tiaLuminanceSqrt : same as tiaLuminance but with an Sqrt(Luminance)
+      <li>tiaOpaque : alpha channel is uniformously set to 1.0
+      <li>tiaTopLeftPointColorTransparent : points of the same color as the
          top left point of the bitmap are transparent, others are opaque.
       </ul>
    }
-	tgltextureimagealpha = (tiadefault, tiaalphafromintensity,
-									tiasuperblacktransparent, tialuminance,
-									tialuminancesqrt, tiaopaque,
-                           tiatopleftpointcolortransparent,
-                           tiainverseluminance, tiainverseluminancesqrt);
+	TGLTextureImageAlpha = (tiaDefault, tiaAlphaFromIntensity,
+									tiaSuperBlackTransparent, tiaLuminance,
+									tiaLuminanceSqrt, tiaOpaque,
+                           tiaTopLeftPointColorTransparent,
+                           tiaInverseLuminance, tiaInverseLuminanceSqrt);
 
 	// TGLTextureImage
 	//
@@ -661,12 +661,12 @@ type
 
 	// TGLPicFileImage
 	//
-	{: uses a picture whose data is found in a file (only filename is stored).<p>
-      the image is unloaded after upload to opengl. }
-	tglpicfileimage = class(tglpictureimage)
+	{: Uses a picture whose data is found in a file (only filename is stored).<p>
+      The image is unloaded after upload to OpenGL. }
+	TGLPicFileImage = class(TGLPictureImage)
 		private
-			fpicturefilename : string;
-         falreadywarnedaboutmissingfile : boolean;
+			FPictureFileName : String;
+         FAlreadyWarnedAboutMissingFile : Boolean;
 
 		protected
 			procedure SetPictureFileName(const val : String);
@@ -893,35 +893,35 @@ type
    {: Texture format for OpenGL (rendering) use.<p>
       Internally, GLScene handles all "base" images as 32 Bits RGBA, but you can
       specify a generic format to reduce OpenGL texture memory use:<ul>
-      <li>tfdefault : uses global default format
-      <li>tfrgb : 24 bits rgb, 8 bits per component
-      <li>tfrgba : 32 bits rgba, 8 bits per component
-      <li>tfrgb16 : 16 bits rgb (5, 5, 5)
-      <li>tfrgba16 : 16 bits rgba (4, 4, 4, 4)
-      <li>tfalpha : 8 bits alpha-channel only
-      <li>tfluminance : 8 bits luminance only
-      <li>tfluminancealpha : 16 bits luminance and alpha channel (8, 8)
-      <li>tfintensity : 8 bits intensity only
-      <li>tfnormalmap : 24 bits rgb normal map, which is computed from the
+      <li>tfDefault : uses global default format
+      <li>tfRGB : 24 bits RGB, 8 bits per component
+      <li>tfRGBA : 32 bits RGBA, 8 bits per component
+      <li>tfRGB16 : 16 bits RGB (5, 5, 5)
+      <li>tfRGBA16 : 16 bits RGBA (4, 4, 4, 4)
+      <li>tfAlpha : 8 Bits Alpha-channel only
+      <li>tfLuminance : 8 bits Luminance only
+      <li>tfLuminanceAlpha : 16 bits Luminance and Alpha channel (8, 8)
+      <li>tfIntensity : 8 bits Intensity only
+      <li>tfNormalMap : 24 bits RGB normal map, which is computed from the
          original texture (assumed to be an hightmap)
-      </ul><br>the actual representation may differ, f.i. old 16bits boards
-      may convert everything to 16bit formats, geforce boards don't have
+      </ul><br>The actual representation may differ, f.i. old 16bits boards
+      may convert everything to 16bit formats, GeForce boards don't have
       a 24 bits format internally and will convert to 32 bits, etc. }
-   tgltextureformat = (tfdefault, tfrgb, tfrgba, tfrgb16, tfrgba16, tfalpha,
-                       tfluminance, tfluminancealpha, tfintensity, tfnormalmap,
-                       tfrgbafloat16, tfrgbafloat32); // float_type
+   TGLTextureFormat = (tfDefault, tfRGB, tfRGBA, tfRGB16, tfRGBA16, tfAlpha,
+                       tfLuminance, tfLuminanceAlpha, tfIntensity, tfNormalMap,
+                       tfRGBAFloat16, tfRGBAFloat32); // float_type
 
    // TGLTextureCompression
    //
    {: Texture compression option.<p>
       If OpenGL supports it, this will activate a compressed texture format:<ul>
-      <li>tcdefault : uses global default compression option
-      <li>tcnone : do not use compression
-      <li>tcstandard : use standard compression, average quality, average rate
-      <li>tchighquality : choose a high-quality, low-speed compression
-      <li>tchighspeed : choose a high-speed, low-quality compression
+      <li>tcDefault : uses global default compression option
+      <li>tcNone : do not use compression
+      <li>tcStandard : use standard compression, average quality, average rate
+      <li>tcHighQuality : choose a high-quality, low-speed compression
+      <li>tcHighSpeed : choose a high-speed, low-quality compression
       </ul>. }
-   tgltexturecompression = (tcdefault, tcnone, tcstandard, tchighquality, tchighspeed);
+   TGLTextureCompression = (tcDefault, tcNone, tcStandard, tcHighQuality, tcHighSpeed);
 
    // TGLTextureFilteringQuality
    //
@@ -1269,14 +1269,14 @@ type
    //
    {: Simplified blending options.<p>
       bmOpaque : disable blending<br>
-      bmtransparency : uses standard alpha blending<br>
-      bmadditive : activates additive blending (with saturation)<br>
-      bmalphatest50 : uses opaque blending, with alpha-testing at 50% (full
+      bmTransparency : uses standard alpha blending<br>
+      bmAdditive : activates additive blending (with saturation)<br>
+      bmAlphaTest50 : uses opaque blending, with alpha-testing at 50% (full
          transparency if alpha is below 0.5, full opacity otherwise)<br>
-      bmalphatest100 : uses opaque blending, with alpha-testing at 100%<br>
-      bmmodulate : uses modulation blending }
-   tblendingmode = (bmopaque, bmtransparency, bmadditive,
-                    bmalphatest50, bmalphatest100, bmmodulate);
+      bmAlphaTest100 : uses opaque blending, with alpha-testing at 100%<br>
+      bmModulate : uses modulation blending }
+   TBlendingMode = (bmOpaque, bmTransparency, bmAdditive,
+                    bmAlphaTest50, bmAlphaTest100, bmModulate);
 
    // TFaceCulling
    //
@@ -1421,7 +1421,7 @@ type
 
       public
 	      { Public Declarations }
-	      constructor Create(Collection  : TCollection); override;
+	      constructor Create(Collection : TCollection); override;
 	      destructor Destroy; override;
 
 	      procedure Assign(Source: TPersistent); override;
