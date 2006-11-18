@@ -37,6 +37,13 @@
       - added automatical generated History from CVS
 
 	<b>History :</b><font size=-1><ul>
+    <li>19/10/06 - LC - Fixed bug in TGLActor.SetCurrentFrame. Bugtracker ID=1580511
+	  <li>04/10/06 - PhP - fixed TGLActor.SetCurrentFrame (thanks dikoe)
+	  <li>05/12/05 - PhP - fixed TFGIndexTexCoordList.BuildList (thanks fig) 
+      <li>10/11/05 - Mathx - Added LastLoadedFilename to TGLBaseMesh (RFE 955083).
+      <li>09/11/05 - Mathx - Added isSwitchingAnimation to TGLActor.
+      <li>05/09/05 - Mathx - Fixed TSkeletonMeshObject read/write filer (thanks to Zapology)
+      <li>04/07/05 - Mathx - Protection against picking mode texture mapping errors
       <li>27/01/05 - Mathx - BuildOctree can now specify an (optional) TreeDepth.
       <li>11/01/05 - SG - Another fix for TGLBaseMesh.Assign (dikoe Kenguru)
       <li>11/01/05 - SG - Fix for TGLBaseMesh.Assign when assigning actors
@@ -4801,8 +4808,7 @@ begin
       end;
       FVerticesBonesWeights:=newArea;
    end;
-   //FLastBonesPerVertex:=FBonesPerVertex;
-   FLastVerticeBoneWeightCount:=FVerticeBoneWeightCount;
+   //crossbuilder: this is not in cvs and I don't see the sense in this, so commented it: FLastVerticeBoneWeightCount:=FVerticeBoneWeightCount;
    FLastBonesPerVertex:=FBonesPerVertex;
 end;
 
@@ -7154,24 +7160,23 @@ end;
 //
 procedure TGLActor.SetCurrentFrame(val : Integer);
 begin
-   if val<>CurrentFrame then begin
-      if val>FrameCount-1 then
-         FCurrentFrame:=FrameCount-1
-      else if val<0 then
-         FCurrentFrame:=0
-      else FCurrentFrame:=val;
-      FCurrentFrameDelta:=0;
-      case AnimationMode of
-         aamPlayOnce :
-            if CurrentFrame=EndFrame then FAnimationMode:=aamNone;
-         aamBounceForward :
-            if CurrentFrame=EndFrame then FAnimationMode:=aamBounceBackward;
-         aamBounceBackward :
-            if CurrentFrame=StartFrame then FAnimationMode:=aamBounceForward;
-      end;
-      StructureChanged;
-      if Assigned(FOnFrameChanged) then FOnFrameChanged(Self);
-   end;
+  if val<>CurrentFrame then begin
+    if val>FrameCount-1 then
+      FCurrentFrame:=FrameCount-1
+    else if val<0 then
+      FCurrentFrame:=0
+    else 
+      FCurrentFrame:=val;
+    FCurrentFrameDelta:=0;
+    case AnimationMode of
+      aamPlayOnce: if (CurrentFrame=EndFrame) and (FTargetSmoothAnimation = nil) then FAnimationMode:=aamNone;
+      aamBounceForward: if CurrentFrame=EndFrame then FAnimationMode:=aamBounceBackward;
+      aamBounceBackward: if CurrentFrame=StartFrame then FAnimationMode:=aamBounceForward;
+    end;
+    StructureChanged;
+    if Assigned(FOnFrameChanged) then 
+      FOnFrameChanged(Self);
+  end;
 end;
 
 // SetStartFrame
