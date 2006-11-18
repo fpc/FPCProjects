@@ -1045,7 +1045,7 @@ var
 begin
 
   Stream.Read(Buf,2);
-
+  StrBuf:='';
   while Buf[1] <> #0 do
   begin
     StrBuf := StrBuf + string(Buf);
