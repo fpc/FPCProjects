@@ -22,6 +22,9 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/10/06 - LC - Fixed TGLLibMaterial.UnApply so it doesn't unapply a 2nd
+                          texture that was never applied. Bugtracker ID=1234085
+      <li>19/10/06 - LC - Fixed TGLLibMaterial.Assign. Bugtracker ID=1549843 (thanks Zapology)
       <li>15/09/06 - NC - TGLShader.handle as Integer -> Cardinal
       <li>12/09/06 - NC - Added GetFloatTexImage and SetFloatTexImage
       <li>06/03/05 - EG - FTextureEx now autocreated (like FTexture)
@@ -4822,6 +4825,7 @@ begin
       FTextureOffset.Assign(TGLLibMaterial(Source).TextureOffset);
       FTextureScale.Assign(TGLLibMaterial(Source).TextureScale);
       FTexture2Name:=TGLLibMaterial(Source).Texture2Name;
+      FShader := TGLLibMaterial(Source).Shader;
       CalculateTextureMatrix;
 	end else inherited;
 end;
@@ -4929,7 +4933,7 @@ begin
       // if multipassing, this will occur upon last pass only
 {      if Assigned(Material.FTextureEx) then begin
          if not Material.TextureEx.IsTextureEnabled(1) then begin}
-            if Assigned(libMatTexture2) and (not vSecondTextureUnitForbidden) then begin
+            if Assigned(libMatTexture2) and GL_ARB_multitexture and (not vSecondTextureUnitForbidden) then begin
                libMatTexture2.Material.Texture.UnApplyAsTexture2(rci, libMatTexture2);
                xglMapTexCoordToMain;
             end;
