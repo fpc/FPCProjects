@@ -8,6 +8,9 @@
    These provide a mechanism to render heterogenous particles systems with per
    particle depth-sorting (allowing correct rendering of interwoven separate
    fire and smoke particle systems for instance).<p>
+   
+      2006-11-18 crossbuilder: bugfixes from main tree - this unit is now
+         functional identical with rev. 1.68 of glscene cvs
 
       $Log: glparticlefx.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
@@ -32,6 +35,11 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
+      <li>28/10/06 - LC - Fixed access violation in TGLParticleFXRenderer. Bugtracker ID=1585907 (thanks Da Stranger)
+      <li>19/10/06 - LC - Fixed memory leak in TGLParticleFXManager. Bugtracker ID=1551866 (thanks Dave Gravel)
+      <li>08/10/05 - Mathx - Fixed access violation when a PFXManager was removed from
+                             form but a particleFX still had a reference to it (added
+                             the FUsers property). Butracker ID=783625. 
       <li>17/02/05 - EG - Restored correct PFXSource.Burst relative/absolute behaviour,
                           EffectsScale support not added back (no clue what it does... Mrqz?)
       <li>23/11/04 - SG - Fixed memory leak in TGLLifeColoredPFXManager (kenguru)
@@ -207,6 +215,7 @@ type
          FAutoFreeWhenEmpty : Boolean;
 
          FUsers: TList; //list of objects that use this manager
+
       protected
          { Protected Declarations }
          procedure SetRenderer(const val : TGLParticleFXRenderer);
@@ -257,6 +266,7 @@ type
 
          procedure registerUser(obj: TGLParticleFXEffect);
          procedure unregisterUser(obj: TGLParticleFXEffect);
+
       public
          { Public Declarations }
          constructor Create(aOwner : TComponent); override;
@@ -317,8 +327,9 @@ type
          procedure ReadFromFiler(reader : TReader); override;
 
          procedure Loaded; override;
-         
+
          procedure managerNotification(aManager: TGLParticleFXManager; Operation: TOperation);
+
       public
          { Public Declarations }
          constructor Create(aOwner : TXCollection); override;
@@ -1180,6 +1191,7 @@ begin
    DeRegisterManager(Self);
    Renderer:=nil;
    FParticles.Free;
+   FUsers.Free;
 end;
 
 // NotifyChange
@@ -1335,6 +1347,7 @@ procedure TGLParticleFXManager.unregisterUser(obj: TGLParticleFXEffect);
 begin
      FUsers.Remove(obj);
 end;
+
 // ------------------
 // ------------------ TGLParticleFXEffect ------------------
 // ------------------
@@ -1437,6 +1450,7 @@ begin
       manager:= nil;
 end;
 
+
 // ------------------
 // ------------------ TGLParticleFXRenderer ------------------
 // ------------------
@@ -1502,20 +1516,20 @@ procedure TGLParticleFXRenderer.BuildList(var rci : TRenderContextInfo);
    render them back to front. The rendering part is not particularly complex,
    it just invokes the various PFX managers involved and request particle
    renderings.
-   the sort uses a first-pass region partition (the depth range is split into
+   The sort uses a first-pass region partition (the depth range is split into
    regions, and particles are assigned directly to the region they belong to),
-   then each region is sorted with a quicksort.
-   the quicksort itself is the regular classic variant, but the comparison is
-   made on singles as if they were integers, this is allowed by the ieee format
+   then each region is sorted with a QuickSort.
+   The QuickSort itself is the regular classic variant, but the comparison is
+   made on singles as if they were integers, this is allowed by the IEEE format
    in a very efficient manner if all values are superior to 1, which is ensured
    by the distance calculation and a fixed offset of 1.
 }
 type
-   pinteger = ^integer;
-   psingle = ^single;
+   PInteger = ^Integer;
+   PSingle = ^Single;
 var
-   dist, distdelta, invregionsize : single;
-   manageridx, particleidx, regionidx : integer;
+   dist, distDelta, invRegionSize : Single;
+   managerIdx, particleIdx, regionIdx : Integer;
 
    procedure QuickSortRegion(startIndex, endIndex : Integer; region : PPFXRegion);
    var
@@ -1554,21 +1568,24 @@ var
       end;
    end;
 
+   procedure DistToRegionIdx; register;
+   {$IFOPT O-}
+   begin
+      regionIdx := Trunc((dist - distDelta) * invRegionSize);
+   {$ELSE}
    // !! WARNING !! This may cause incorrect behaviour if optimization is turned
    // off for the project.
-   procedure DistToRegionIdx; register;
-begin
    asm
- //   begin
-      // fast version of
- //      regionIdx := Trunc((dist - distDelta) * invRegionSize);
       FLD     dist
       FSUB    distDelta
       FMUL    invRegionSize
       FISTP   regionIdx
+   {$ENDIF}
    end;
-end;
- var
+
+
+
+var
    minDist, maxDist, sortMaxRegion : Integer;
    curManager : TGLParticleFXManager;
    curList : PGLParticleArray;
