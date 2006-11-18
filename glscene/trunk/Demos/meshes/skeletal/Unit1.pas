@@ -33,7 +33,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLVectorFileObjects, GLMisc, GLScene, StdCtrls, GLObjects, GLTexture,
-  ExtCtrls, GLWin32Viewer, GLGraph, ComCtrls, GLFileSMD, LResources,
+  ExtCtrls, GLLCLViewer, GLGraph, ComCtrls, GLFileSMD, LResources,
   GLCadencer, Buttons, JPEG;
 
 type
@@ -94,14 +94,14 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-   SetCurrentDir(ExtractFilePath(Application.ExeName)+'..\..\media');
+   SetCurrentDir(ExtractFilePath(Application.ExeName)+'../../media');
    // We load the SMD model here
    // Note the actor was linked to a material library, and textures are loaded
    // automatically (4 textures are used by this model)
    //
    // Kind thanks to ~A.u.s.t.i.n. & Neal 'Guplik' Corbett for the model
    // and allowing its use ;)
-   Actor1.LoadFromFile('trinityRage.smd');
+   Actor1.LoadFromFile('TRINITYrage.smd');
    // Now we load the walk & run animations and "fix" their translation
    // (HL walk/run animations have a built-in "slide" that we don't want here)
    Actor1.AddDataFromFile('walk.smd');
