@@ -14,7 +14,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, GLVectorFileObjects, GLObjects, GLTexture,
   GLMisc, VectorLists, ComCtrls, ExtCtrls,
-  LResources, GLScene, GLCadencer, Buttons, GLWin32Viewer;
+  LResources, GLScene, GLCadencer, Buttons, GLLCLViewer;
 
 type
 
@@ -70,7 +70,7 @@ procedure TForm1.BULoadClick(Sender: TObject);
 begin
    BUSubdivide.Enabled:=True;
 
-   GLMaterialLibrary1.TexturePaths:='..\..\media';
+   GLMaterialLibrary1.TexturePaths:='../../media';
 
 //   GLFreeForm1.LoadFromFile('e:\sf\glscene\demos\media\polyhedron.3ds');
 //   GLFreeForm1.LoadFromFile('e:\sf\glscene\demos\media\mushroom.3ds');
@@ -81,8 +81,8 @@ begin
    GLActor1.Animations[1].MakeSkeletalTranslationStatic;
    GLActor1.SwitchToAnimation(GLActor1.Animations[1]);}
 
-   GLActor1.LoadFromFile('..\..\media\waste.md2');
-   GLActor1.Material.Texture.Image.LoadFromFile('..\..\media\waste.jpg');
+   GLActor1.LoadFromFile('../../media/waste.md2');
+   GLActor1.Material.Texture.Image.LoadFromFile('../../media/waste.jpg');
    GLActor1.Material.Texture.Enabled:=True;
    GLActor1.SwitchToAnimation(GLActor1.Animations[0]); 
 
