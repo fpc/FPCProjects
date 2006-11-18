@@ -1969,16 +1969,16 @@ begin
             end;
             if (Description='') and (DescResID<>0) then
                Description:=LoadStr(DescResID);
-//            FmtStr(descriptions, '%s%s (*.%s)|*.%2:s',
-//                   [descriptions, Description, Extension]);
+            FmtStr(descriptions, '%s%s (*.%s)|*.%2:s',
+                   [descriptions, Description, Extension]);
             filters:=filters+'*.'+Extension;
             Inc(k);
          end;
       end;
    end;
    if (k>1) and (not formatsThatCanBeSaved) then
-//      FmtStr(descriptions, '%s (%s)|%1:s|%s',
-//             [glsAllFilter, filters, descriptions]);
+      FmtStr(descriptions, '%s (%s)|%1:s|%s',
+             [glsAllFilter, filters, descriptions]);
 end;
 
 // FindExtByIndex
