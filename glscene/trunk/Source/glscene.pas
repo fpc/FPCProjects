@@ -61,6 +61,8 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>19/10/06 - LC - Fixed TGLSceneBuffer.OrthoScreenToWorld. Bugtracker ID=1537765 (thanks dikoe)
+      
       <li>04/12/10 - MF - Changed FieldOfView to work with degrees (not radians)
       <li>04/12/04 - MF - Added GLCamera.SetFieldOfView and GLCamera.GetFieldOfView,
                           formula by Ivan Sivak Jr.
@@ -7274,7 +7276,7 @@ begin
          SetVector(camUp, Camera.AbsoluteUp);
          SetVector(camRight, Camera.AbsoluteRight);
       end;
-      f:=FCamera.FocalLength*FCamera.SceneScale;
+      f:=100 * FCamera.NearPlaneBias / (FCamera.FocalLength*FCamera.SceneScale);
       if FViewPort.Width>FViewPort.Height then
          f:=f/FViewPort.Width
       else f:=f/FViewPort.Height;
