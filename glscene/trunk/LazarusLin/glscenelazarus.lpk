@@ -469,8 +469,8 @@
         <UnitName Value="GLPerlinPFX"/>
       </Item104>
       <Item105>
-        <Filename Value="..\Source\glplot.pas"/>
-        <UnitName Value="glplot"/>
+        <Filename Value="..\Source\glgraph.pas"/>
+        <UnitName Value="glgraph"/>
       </Item105>
       <Item106>
         <Filename Value="..\Source\glpolyhedron.pas"/>

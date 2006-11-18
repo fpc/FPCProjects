@@ -716,8 +716,8 @@
         <UnitName Value="fmod"/>
       </Item159>
       <Item160>
-        <Filename Value="..\Source\glplot.pas"/>
-        <UnitName Value="glplot"/>
+        <Filename Value="..\Source\glgraph.pas"/>
+        <UnitName Value="glgraph"/>
       </Item160>
       <Item161>
         <Filename Value="..\Source\physicsapis\odegl.pas"/>

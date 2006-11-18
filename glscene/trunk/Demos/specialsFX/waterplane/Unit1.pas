@@ -11,7 +11,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLMisc, GLWin32Viewer, GLWaterPlane,
   GLCadencer, ExtCtrls, Jpeg, GLTexture, GLUserShader, OpenGL1x,
-  VectorGeometry, GLPlot, VectorTypes, GLState, LResources, GLScene;
+  VectorGeometry, GLGraph, VectorTypes, GLState, LResources, GLScene;
 
 type
 

@@ -22,7 +22,7 @@ interface
 
 uses
   LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  GLPlot, GLMisc, ExtDlgs, Menus, GLObjects, VectorGeometry, VectorTypes,
+  GLGraph, GLMisc, ExtDlgs, Menus, GLObjects, VectorGeometry, VectorTypes,
   GLWin32Viewer, LResources, GLScene;
 
 type

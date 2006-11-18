@@ -144,7 +144,7 @@ uses
    glbitmapfont,glwindowsfont,glparticlefx,glperlinpfx,gllinepfx,glfirefx,
    glthorfx,asynctimer,globjects, glgeomobjects, glteapot, glimposter,
    glcollision,glpolyhedron,glanimatedsprite,glmultipolygon,gltileplane,
-   glportal,glplot,glparticles,glskydome,glskybox,glhudobjects,glwindows,
+   glportal,glgraph,glparticles,glskydome,glskybox,glhudobjects,glwindows,
    gllensflare,gltexlensflare,glmirror,glshadowplane,glshadowvolume,
    glzbuffer,glprojectedtextures,glblur,gltrail,gltree,glmultiproxy,
    glfeedback,glextrusion,glbumpmaphds,glheighttilefilehds,

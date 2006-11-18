@@ -10,7 +10,7 @@ interface
 uses
   LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLFireFX, GLCadencer, GLScene, GLMisc, GLObjects, GLBehaviours, ExtCtrls,
-  VectorGeometry, GLThorFX, GLSkydome, StdCtrls, ComCtrls, GLPlot, VectorTypes,
+  VectorGeometry, GLThorFX, GLSkydome, StdCtrls, ComCtrls, GLGraph, VectorTypes,
   GLWin32Viewer, LResources;
 
 type

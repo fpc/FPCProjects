@@ -11,7 +11,7 @@ interface
 
 uses
   LCLIntf, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
-  Classes, Controls, GLBehaviours, Buttons, GLPlot, GLMovement,
+  Classes, Controls, GLBehaviours, Buttons, GLGraph, GLMovement,
   GLWin32Viewer, LResources, GLScene, GLCadencer;
 
 type

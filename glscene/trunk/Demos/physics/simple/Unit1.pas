@@ -8,7 +8,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLGeomObjects, GLCadencer,
   GLWin32Viewer, GLMisc, GLShadowPlane, StdCtrls, ComCtrls,
-  ExtCtrls, GLPlot, VectorTypes, VectorGeometry, GLODECustomColliders,
+  ExtCtrls, GLGraph, VectorTypes, VectorGeometry, GLODECustomColliders,
   LResources, GLODEManager, Buttons;
 
 type

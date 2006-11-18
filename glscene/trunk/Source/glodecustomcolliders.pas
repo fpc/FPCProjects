@@ -54,7 +54,7 @@ interface
 
 uses
   classes, sysutils, glodemanager, dynode, dynodegl, vectorgeometry,
-  vectorlists, glscene, glterrainrenderer, glplot, xcollection,
+  vectorlists, glscene, glterrainrenderer, glgraph, xcollection,
   opengl1x, gltexture {crossbuilder, persistentclasses};
 
 type

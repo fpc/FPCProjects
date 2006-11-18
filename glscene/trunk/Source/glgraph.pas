@@ -1,6 +1,9 @@
 {: glgraph<p>
 
 	Graph plotting objects for GLScene<p>
+ 
+      2006/11/18 crossbuilder
+        renamed file to from glplot.pas to glgraph.pas as it is called in cvs
 
       $Log: glplot.pas,v $
       Revision 1.1  2006/02/11 10:31:27  z0m3ie
@@ -44,7 +47,7 @@
 	   <li>06/07/00 - EG - Creation (TGLSamplingScale & TGLHeightField)
 	</ul></font>
 }
-unit glplot;
+unit glgraph;
 
 interface
 
