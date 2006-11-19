@@ -1,5 +1,5 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
 {: glscene<p>
 
@@ -267,40 +267,40 @@
       <li>22/03/00 - Egg - TGLStates moved to GLMisc,
                            Removed TGLCamera.FModified stuff,
                            Fixed position bug in TGLScene.SetupLights
-      <li>20/03/00 - egg - pickobjects now uses "const" and has helper funcs,
-                           dissolved tglrenderoptions into material and face props (rip),
-                           joystick stuff moved to a separate unit and component
-      <li>19/03/00 - egg - added doprogress method and event
-      <li>18/03/00 - egg - fixed a few "assign" i forgot to update after adding props,
-                           added bmadditive blending mode
-      <li>14/03/00 - egg - added registerglbasesceneobjectnamechangeevent,
-                           added barycenterxxx and sqrdistance funcs,
-                           fixed (?) absoluteposition,
-                           added resetperformancemonitor
-      <li>14/03/00 - egg - added savetofile, loadfromfile to glscene,
-      <li>03/03/00 - egg - disabled wotransparent handling
-      <li>12/02/00 - egg - added material library
-      <li>10/02/00 - egg - added initialize to tglcoordinates
-      <li>09/02/00 - egg - all glscene objects now begin with 'tgl',
-                           opengl now initialized upon first create of a tglsceneviewer
-      <li>07/02/00 - egg - added immaterialsceneobject,
-                           added camera handling funcs : movearoundtarget,
-                           adjustdistancetotarget, distancetotarget,
-                           screendeltatovector, tglcoordinates.translate,
-                           deactivated "specials" (ain't working yet),
-                           scaling now a tglcoordinates
-      <li>06/02/00 - egg - balanced & secured all context activations,
-                           added assert & try..finally & default galore,
-                           openglerror renamed to eopenglerror,
-                           showerrorxxx funcs renamed to raiseopenglerror,
-                           fixed createsceneobject (was wrongly requiring a tcustomform),
-                           fixed dojoystickcapture error handling,
-                           added tglupdateableobject
-      <li>05/02/00 - egg - javadocisation, fixes and enhancements :<br>
-                           tglsceneviewer.setcontextoptions,
-                           tactivemode -> tjoystickdesignmode,
-                           tglcamera.targetobject and tglcamera.autoleveling,
-                           tglbasesceneobject.coordinatechanged
+      <li>20/03/00 - Egg - PickObjects now uses "const" and has helper funcs,
+                           Dissolved TGLRenderOptions into material and face props (RIP),
+                           Joystick stuff moved to a separate unit and component
+      <li>19/03/00 - Egg - Added DoProgress method and event
+      <li>18/03/00 - Egg - Fixed a few "Assign" I forgot to update after adding props,
+                           Added bmAdditive blending mode
+      <li>14/03/00 - Egg - Added RegisterGLBaseSceneObjectNameChangeEvent,
+                           Added BarycenterXxx and SqrDistance funcs,
+                           Fixed (?) AbsolutePosition,
+                           Added ResetPerformanceMonitor
+      <li>14/03/00 - Egg - Added SaveToFile, LoadFromFile to GLScene,
+      <li>03/03/00 - Egg - Disabled woTransparent handling
+      <li>12/02/00 - Egg - Added Material Library
+      <li>10/02/00 - Egg - Added Initialize to TGLCoordinates
+      <li>09/02/00 - Egg - All GLScene objects now begin with 'TGL',
+                           OpenGL now initialized upon first create of a TGLSceneViewer
+      <li>07/02/00 - Egg - Added ImmaterialSceneObject,
+                           Added Camera handling funcs : MoveAroundTarget,
+                           AdjustDistanceToTarget, DistanceToTarget,
+                           ScreenDeltaToVector, TGLCoordinates.Translate,
+                           Deactivated "specials" (ain't working yet),
+                           Scaling now a TGLCoordinates
+      <li>06/02/00 - Egg - balanced & secured all context activations,
+                           added Assert & try..finally & default galore,
+                           OpenGLError renamed to EOpenGLError,
+                           ShowErrorXxx funcs renamed to RaiseOpenGLError,
+                           fixed CreateSceneObject (was wrongly requiring a TCustomForm),
+                           fixed DoJoystickCapture error handling,
+                           added TGLUpdateAbleObject
+      <li>05/02/00 - Egg - Javadocisation, fixes and enhancements :<br>
+                           TGLSceneViewer.SetContextOptions,
+                           TActiveMode -> TJoystickDesignMode,
+                           TGLCamera.TargetObject and TGLCamera.AutoLeveling,
+                           TGLBaseSceneObject.CoordinateChanged
    </ul></font>
 }
 unit glscene;
@@ -572,7 +572,7 @@ type
 
          {: Calculates the object's absolute inverse matrix.<p>
             Multiplying an absolute coordinate with this matrix gives a local coordinate.<p>
-            the current implem uses transposition(absolutematrix), which is true
+            The current implem uses transposition(AbsoluteMatrix), which is true
             unless you're using some scaling... }
          function InvAbsoluteMatrix : TMatrix;
          {: See InvAbsoluteMatrix. }
@@ -775,11 +775,11 @@ type
          property Behaviours : TGLBehaviours read GetBehaviours write SetBehaviours stored False;
          property Effects : TGLObjectEffects read GetEffects write SetEffects stored False;
          {$ifdef GLS_WANT_DATA}
-         {: a pointer to attach your data to glscene. uses tag as a pointer.<p>
-            note: for temporary backward compatibility only, migrate code!!!}
-         property data : pointer read getdata write setdata;
+         {: A pointer to attach your data to GLScene. Uses Tag as a pointer.<p>
+            Note: for temporary backward compatibility only, migrate code!!!}
+         property Data : pointer read GetData write SetData;
          {$endif}
-         property tagobject : tobject read ftagobject write ftagobject;
+         property TagObject : TObject read FTagObject write FTagObject;
 
       published
          { Published Declarations }
@@ -845,7 +845,7 @@ type
 
    // TGLBehaviours
    //
-   {: Holds a list of TGLBei'm tired of this lies it is all time same.haviour objects.<p>
+   {: Holds a list of TGLBehaviour objects.<p>
       This object expects itself to be owned by a TGLBaseSceneObject.<p>
       As a TXCollection (and contrary to a TCollection), this list can contain
       objects of varying class, the only constraint being that they should all
@@ -859,7 +859,7 @@ type
          { Public Declarations }
          constructor Create(aOwner : TPersistent); override;
 
-         function GetNamePath : String; override;
+         function GetNamePath : String;override;
 
          class function ItemsClass : TXCollectionItemClass; override;
 
@@ -936,7 +936,7 @@ type
          { Public Declarations }
          constructor Create(aOwner : TPersistent); override;
 
-         function GetNamePath : String; override;
+         function GetNamePath : String;override;
 
          class function ItemsClass : TXCollectionItemClass; override;
 
@@ -1127,10 +1127,10 @@ type
             entering, or exclusively use the GLMisc utility functions to alter
             the states.<br> }
          property OnRender : TDirectRenderEvent read FOnRender write FOnRender;
-         {: defines if the object uses blending.<p>
-            this property will allow direct opengl objects to be flagged as
+         {: Defines if the object uses blending.<p>
+            This property will allow direct opengl objects to be flagged as
             blended for object sorting purposes.<br> }
-         property blend : boolean read fblend write setblend;
+         property Blend : Boolean read FBlend write SetBlend;
    end;
 
    // TGLRenderPoint
@@ -1168,14 +1168,14 @@ type
    // TGLProxyObject
    //
    {: A full proxy object.<p>
-      this object literally uses another object's render method to do its own
+      This object literally uses another object's Render method to do its own
       rendering, however, it has a coordinate system and a life of its own.<br>
-      use it for duplicates of an object. }
-   tglproxyobject = class (tglbasesceneobject)
+      Use it for duplicates of an object. }
+   TGLProxyObject = class (TGLBaseSceneObject)
       private
-         { private declarations }
-         fmasterobject : tglbasesceneobject;
-         fproxyoptions : tglproxyobjectoptions;
+         { Private Declarations }
+         FMasterObject : TGLBaseSceneObject;
+         FProxyOptions : TGLProxyObjectOptions;
 
       protected
          { Protected Declarations }
@@ -1649,12 +1649,12 @@ type
    {: Fog distance calculation mode.<p>
       <ul>
       <li>fdDefault: let OpenGL use its default formula
-      <li>fdeyeradial: uses radial "true" distance (best quality)
-      <li>fdeyeplane: uses the distance to the projection plane
-                  (same as z-buffer, faster)
-      </ul>requires support of gl_nv_fog_distance extension, otherwise,
+      <li>fdEyeRadial: uses radial "true" distance (best quality)
+      <li>fdEyePlane: uses the distance to the projection plane
+                  (same as Z-Buffer, faster)
+      </ul>Requires support of GL_NV_fog_distance extension, otherwise,
       it is ignored. }
-   tfogdistance = (fddefault, fdeyeradial, fdeyeplane);
+   TFogDistance = (fdDefault, fdEyeRadial, fdEyePlane);
 
    // TGLFogEnvironment
    //
@@ -1703,11 +1703,11 @@ type
             This option is honoured if and only if the OpenGL ICD supports the
             GL_NV_fog_distance extension, otherwise, it is ignored.<ul>
                <li>fdDefault: let OpenGL use its default formula
-               <li>fdeyeradial: uses radial "true" distance (best quality)
-               <li>fdeyeplane: uses the distance to the projection plane
-                  (same as z-buffer, faster)
+               <li>fdEyeRadial: uses radial "true" distance (best quality)
+               <li>fdEyePlane: uses the distance to the projection plane
+                  (same as Z-Buffer, faster)
             </ul> }
-         property fogdistance : tfogdistance read ffogdistance write setfogdistance default fddefault;
+         property FogDistance : TFogDistance read FFogDistance write SetFogDistance default fdDefault;
    end;
 
    // TGLDepthPrecision
@@ -1888,8 +1888,8 @@ type
                                  xDest, yDest : Integer; target : Integer = 0;
                                  forceCreateTexture : Boolean = False); overload;
 
-         {: event reserved for viewer-specific uses.<br> }
-         property viewerbeforerender : tnotifyevent read fviewerbeforerender write fviewerbeforerender;
+         {: Event reserved for viewer-specific uses.<br> }
+         property ViewerBeforeRender : TNotifyEvent read FViewerBeforeRender write FViewerBeforeRender;
          procedure SetViewPort(X, Y, W, H: Integer);
          function Width : Integer;
          function Height : Integer;
@@ -2037,7 +2037,7 @@ type
          {: Context options allows to setup specifics of the rendering context.<p>
             Not all contexts support all options. }
          property ContextOptions: TContextOptions read FContextOptions write SetContextOptions default [roDoubleBuffer, roRenderToWindow];
-         {: Number of precision bits for the accumulation buffer. }         
+         {: Number of precision bits for the accumulation buffer. }
          property AccumBufferBits : Integer read FAccumBufferBits write SetAccumBufferBits default 0;
 
          {: DepthTest enabling.<p>
@@ -2162,7 +2162,6 @@ type
          procedure RenderCubeMapTextures(cubeMapTexture : TGLTexture;
                                          zNear : Single = 0;
                                          zFar : Single = 0);
-
       published
          { Public Declarations }
          {: Camera from which the scene is rendered. }
@@ -2650,7 +2649,6 @@ begin
    Filer.DefineBinaryProperty('EffectsData',
                               ReadEffects, WriteEffects,
                               (Assigned(FGLObjectEffects) and (FGLObjectEffects.Count>0)));
-
    {FOriginalFiler:=nil;}
 end;
 
@@ -3930,6 +3928,7 @@ begin
       FIsCalculating:=False;
    end;
 end;
+
 
 // DoProgress
 //
@@ -5909,6 +5908,7 @@ begin
 end;
 
 // Destroy
+//
 destructor TGLScene.Destroy;
 begin
    FObjects.DestroyHandles;
@@ -7543,51 +7543,51 @@ begin
             if hits < 0 then begin
                // Allocate 4 integers per row
                // Add 32 integers of slop (an extra cache line) to end for buggy
-               // hardware that uses dma to return select results but that sometimes
-               // overrun the buffer.  yuck.
-               inc(objectcountguess, objectcountguess); // double buffer size
-               reallocmem(buffer, objectcountguess * 4 * sizeof(integer) + 32 * 4);
+               // hardware that uses DMA to return select results but that sometimes
+               // overrun the buffer.  Yuck.
+               Inc(objectCountGuess, objectCountGuess); // double buffer size
+               ReallocMem(buffer, objectCountGuess * 4 * SizeOf(Integer) + 32 * 4);
             end;
             // pass buffer to opengl and prepare render
-            glselectbuffer(objectcountguess*4, @buffer^);
-            glrendermode(gl_select);
-            glinitnames;
-            glpushname(0);
+            glSelectBuffer(objectCountGuess*4, @Buffer^);
+            glRenderMode(GL_SELECT);
+            glInitNames;
+            glPushName(0);
             // render the scene (in select mode, nothing is drawn)
-            frenderdpi:=96;
-            if assigned(fcamera) and assigned(fcamera.fscene) then
-               fcamera.fscene.renderscene(self, fviewport.width, fviewport.height,
-                                          dspicking, nil);
-            glflush;
-            hits:=glrendermode(gl_render);
-         until hits>-1; // try again with larger selection buffer
+            FRenderDPI:=96;
+            if Assigned(FCamera) and Assigned(FCamera.FScene) then
+               FCamera.FScene.RenderScene(Self, FViewPort.Width, FViewPort.Height,
+                                          dsPicking, nil);
+            glFlush;
+            Hits:=glRenderMode(GL_RENDER);
+         until Hits>-1; // try again with larger selection buffer
          next:=0;
-         picklist.clear;
-         picklist.capacity:=hits;
-         for i:=0 to hits-1 do begin
+         PickList.Clear;
+         PickList.Capacity:=Hits;
+         for I:=0 to Hits-1 do begin
             current:=next;
             next:=current + buffer^[current] + 3;
-            szmin:=(buffer^[current + 1] shr 1) * (1/maxint);
-            szmax:=(buffer^[current + 2] shr 1) * (1/maxint);
-            subobj:=nil;
-            subobjindex:=current+4;
-            if subobjindex<next then begin
-               setlength(subobj, buffer^[current]-1);
-               while subobjindex<next do begin
-                  subobj[subobjindex-current-4]:=buffer^[subobjindex];
-                  inc(subobjindex);
+            szmin:=(buffer^[current + 1] shr 1) * (1/MaxInt);
+            szmax:=(buffer^[current + 2] shr 1) * (1/MaxInt);
+            subObj:=nil;
+            subObjIndex:=current+4;
+            if subObjIndex<next then begin
+               SetLength(subObj, buffer[current]-1);
+               while subObjIndex<next do begin
+                  subObj[subObjIndex-current-4]:=buffer[subObjIndex];
+                  inc(subObjIndex);
                end;
             end;
-            picklist.addhit(tglcustomsceneobject(buffer^[current+3]),
-                            subobj, szmin, szmax);
+            PickList.AddHit(TGLCustomSceneObject(buffer[current+3]),
+                            subObj, szmin, szmax);
          end;
       finally
-         fprojectionmatrix:=backupprojectionmatrix;
-         freemem(buffer);
+         FProjectionMatrix:=backupProjectionMatrix;
+         FreeMem(buffer);
       end;
    finally
-      frendering:=false;
-      frenderingcontext.deactivate;
+      FRendering:=False;
+      FRenderingContext.Deactivate;
    end;
 end;
 
@@ -8002,8 +8002,8 @@ end;
 //
 procedure TGLSceneBuffer.DoChange;
 begin
-  if (not FRendering) and Assigned(FOnChange) then
-    FOnChange(Self);
+   if (not FRendering) and Assigned(FOnChange) then
+      FOnChange(Self);
 end;
 
 // DoStructuralChange
@@ -8272,7 +8272,6 @@ end;
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-
 initialization
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
