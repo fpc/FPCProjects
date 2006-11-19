@@ -1044,6 +1044,8 @@ var
   tmpObj: TObject;
   i: integer;
 begin
+  if Variables = nil then
+    exit(0);
   if ASize = -1 then
     ASize := StrLen(Variables);
   varname := Variables;
