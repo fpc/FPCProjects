@@ -1023,7 +1023,16 @@ begin
 end;
 
 destructor TFormOutput.Destroy;
+var
+  I: integer;
+  tmpObj: TObject;
 begin
+  for I := 0 to FRequestVars.Count - 1 do
+  begin
+    tmpObj := FRequestVars.Objects[I];
+    Finalize(string(tmpObj));
+    FRequestVars.Objects[I] := nil;
+  end;
   FRequestVars.Free;
   inherited;
 end;
@@ -1059,6 +1068,7 @@ begin
       move(sep[1], strValue[1], next-sep-1);
       strValue[next-sep] := #0; 
       i := FRequestVars.Add(strName);
+      tmpObj := nil;
       string(tmpObj) := strValue;
       FRequestVars.Objects[i] := tmpObj; 
     end;
