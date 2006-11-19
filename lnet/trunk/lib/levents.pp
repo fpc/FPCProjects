@@ -92,7 +92,7 @@ type
   end;
 
   { TLTimer }
-
+{
   TLTimer = class(TObject)
   protected
     FOnTimer: TNotifyEvent;
@@ -112,9 +112,9 @@ type
     property Periodic: Boolean read FPeriodic write FPeriodic;
     property OnTimer: TNotifyEvent read FOnTimer write FOnTimer;
   end;
-
+}
   { TLTimeoutManager }
-
+{
   TLSetTimeout = procedure(NewTimeout: DWord) of object;
 
   TLTimeoutManager = class
@@ -131,7 +131,7 @@ type
 
     procedure CallAction;
   end;
-
+}
   { TLEventer }
 
   TLEventer = class
@@ -258,7 +258,7 @@ begin
 end;
 
 { TLTimer }
-
+{
 function TLTimer.GetInterval: Integer;
 begin
   Result := Round(FInterval * MSecsPerDay);
@@ -286,7 +286,7 @@ begin
       FEnabled := false;
   end;
 end;
-
+}
 { TLEventer }
 
 constructor TLEventer.Create;
