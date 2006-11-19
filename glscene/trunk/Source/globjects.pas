@@ -12,6 +12,10 @@
    units where they can grow and prosper untammed. "Generic" geometrical
    objects can be found GLGeomObjects.<p>
 
+      2006/11/19 - crossbuilder : bugfixes from main tree
+      This unit is now (functional) identical with rev. 1.104 of glscene cvs
+
+
       $Log: globjects.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
       recheckin to make shure that all is lowercase
@@ -43,6 +47,10 @@
 	<b>History : </b><font size=-1><ul>
       <li>19/10/06 - LC - Fixed IcosahedronBuildList. Bugtracker ID=1490784 (thanks EPA_Couzijn)
       <li>19/10/06 - LC - Fixed TGLLineBase.Assign problem. Bugtracker ID=1549354 (thanks Zapology)
+      <li>08/10/05 - Mathx - Fixed TGLLines.nodes.assign problem (thanks to  Yong Yoon Kit);
+                             Also fixed a TGLLineBase.assign problem (object being assigned to
+                             was refering the base lists, not copying them). 
+                             Bugtracker ID=830846
       <li>17/01/05 - SG - Added color support for bezier style TGLLines
       <li>03/12/04 - MF - Added TGLSprite.AxisAlignedDimensionsUnscaled override
       <li>06/07/04 - SG - TGLCube.RayCastIntersect fix (Eric Pascual)
@@ -524,7 +532,8 @@ type
    TGLLinesNodes = class(TGLNodes)
       public
         { Public Declarations }
-         constructor Create(AOwner : TComponent);
+	      constructor Create(AOwner : TComponent); overload;
+
          procedure NotifyChange; override;
    end;
 
@@ -2110,10 +2119,10 @@ end;
 procedure TGLLineBase.Assign(Source: TPersistent);
 begin
    if Source is TGLLineBase then begin
-      FLineColor:=TGLLineBase(Source).FLineColor;
-      FLinePattern:=TGLLineBase(Source).FLinePattern;
-      FLineWidth:=TGLLineBase(Source).FLineWidth;
-      FAntiAliased:=TGLLineBase(Source).FAntiAliased;
+      LineColor:=TGLLineBase(Source).FLineColor;
+      LinePattern:=TGLLineBase(Source).FLinePattern;
+      LineWidth:=TGLLineBase(Source).FLineWidth;
+      AntiAliased:=TGLLineBase(Source).FAntiAliased;
    end;
    inherited Assign(Source);
 end;
@@ -2178,9 +2187,9 @@ end;
 //
 procedure TGLLinesNode.Assign(Source: TPersistent);
 begin
-	if Source is TGLNode then begin
+	if Source is TGLLinesNode then 
       FColor.Assign(TGLLinesNode(Source).FColor);
-	end else inherited;
+	inherited;
 end;
 
 // SetColor
@@ -2315,6 +2324,7 @@ begin
       SetNodes(TGLNodedLines(Source).FNodes);
       FNodesAspect:=TGLNodedLines(Source).FNodesAspect;
       FNodeColor.Color:=TGLNodedLines(Source).FNodeColor.Color;
+      FNodeSize:= TGLNodedLines(source).FNodeSize;
    end;
    inherited Assign(Source);
 end;
@@ -2488,6 +2498,7 @@ begin
    if Source is TGLLines then begin
       FDivision:=TGLLines(Source).FDivision;
       FSplineMode:=TGLLines(Source).FSplineMode;
+      FOptions:= TGLLines(source).FOptions;
    end;
    inherited Assign(Source);
 end;
@@ -2557,8 +2568,7 @@ begin
             // standard line(s), draw directly
             if loUseNodeColorForLines in Options then begin
                // node color interpolation
-               for i:=0 to Nodes.Count-1 do
-                 with TGLLinesNode(Nodes[i]) do begin
+               for i:=0 to Nodes.Count-1 do with TGLLinesNode(Nodes[i]) do begin
                   glColor4fv(Color.AsAddress);
                   glVertex3f(X, Y, Z);
                end;
