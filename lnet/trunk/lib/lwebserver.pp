@@ -1063,12 +1063,10 @@ begin
       dec(ASize, next+1-sep);
     if sep > varname then
     begin
-      setlength(strName, sep-varname+1);
+      setlength(strName, sep-varname);
       move(varname[0], strName[1], sep-varname);
-      strName[sep-varname+1] := #0;
-      setlength(strValue, next-sep);
+      setlength(strValue, next-sep-1);
       move(sep[1], strValue[1], next-sep-1);
-      strValue[next-sep] := #0; 
       i := FRequestVars.Add(strName);
       tmpObj := nil;
       string(tmpObj) := strValue;

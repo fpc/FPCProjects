@@ -91,6 +91,47 @@ type
     property Eventer: TLEventer read FEventer;
   end;
 
+  { TLTimer }
+
+  TLTimer = class(TObject)
+  protected
+    FOnTimer: TNotifyEvent;
+    FInterval: TDateTime;
+    FTimeout: TDateTime;
+    FPeriodic: Boolean;
+    FEnabled: Boolean;
+    FNext: TLTimer;
+
+    function  GetInterval: Integer;
+    procedure SetEnabled(NewEnabled: Boolean);
+    procedure SetInterval(NewInterval: Integer);
+  public
+    procedure CallAction;
+    property Enabled: Boolean read FEnabled write SetEnabled;
+    property Interval: Integer read GetInterval write SetInterval;
+    property Periodic: Boolean read FPeriodic write FPeriodic;
+    property OnTimer: TNotifyEvent read FOnTimer write FOnTimer;
+  end;
+
+  { TLTimeoutManager }
+
+  TLSetTimeout = procedure(NewTimeout: DWord) of object;
+
+  TLTimeoutManager = class
+  protected
+    FFirst: TLTimer;
+    FLast: TLTimer;
+    FTimeout: DWord;
+    FSetTimeout: TLSetTimeout;
+  public
+    destructor Destroy; override;
+
+    procedure AddTimer(ATimer: TLTimer);
+    procedure RemoveTimer(ATimer: TLTimer);
+
+    procedure CallAction;
+  end;
+
   { TLEventer }
 
   TLEventer = class
@@ -214,6 +255,36 @@ begin
     FEventer.AddForFree(Self)
   else
     inherited Free;
+end;
+
+{ TLTimer }
+
+function TLTimer.GetInterval: Integer;
+begin
+  Result := Round(FInterval * MSecsPerDay);
+end;
+
+procedure TLTimer.SetEnabled(NewEnabled: integer);
+begin
+  FTimeout := Now + Interval;
+  FEnabled := true;
+end;
+
+procedure TLTimer.SetInterval(const aValue: Integer);
+begin
+  FInterval := AValue / MSecsPerDay;
+end;
+
+procedure TLTimer.CallAction;
+begin
+  if FEnabled and Assigned(FOnTimer) and (Now - FStarted >= FInterval) then 
+  begin
+    FOnTimer(Self);
+    if not FOneShot then
+      FStarted := Now
+    else
+      FEnabled := false;
+  end;
 end;
 
 { TLEventer }
