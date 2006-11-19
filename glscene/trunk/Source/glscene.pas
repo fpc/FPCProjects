@@ -5959,17 +5959,12 @@ destructor TGLScene.Destroy;
 begin
    FObjects.DestroyHandles;
    {$IFDEF FPC}
+   {$hint: - crossbuilder is this still needed? for me it works without that hack. }
+   { note: The ifdef fpc block is completely missing in cvs }
    //Scene is destroyed earlyer then Viewer in Lazarus so prevent to try free Unassigned buffer
    Objects.DeleteChildCameras;
    Objects.DeleteChildren;
-   //if Assigned(FCameras) and Assigned(FCameras.FScene.FCurrentBuffer) then
-   //  FCameras.FScene.RemoveBuffer(FCameras.FScene.FCurrentBuffer);
-   FreeAndNil(FCameras);
-   FreeAndNil(FLights);
-   FreeAndNil(FObjects);
    {$ENDIF}
-   {$warning: - crossbuilder BugSpot - why is this freed twice in fpc ? }
-   { note: The ifdef fpc block is completely missing in cvs }
    FCameras.Free;
    FLights.Free;
    FObjects.Free;
