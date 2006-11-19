@@ -1,11 +1,11 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
 {: globjects<p>
 
    Implementation of basic scene objects plus some management routines.<p>
 
-   all objects declared in this unit are part of the basic glscene package,
+   All objects declared in this unit are part of the basic GLScene package,
    these are only simple objects and should be kept simple and lightweight.<br>
 
    More complex or more specialized versions should be placed in dedicated
@@ -101,43 +101,43 @@
       <li>18/07/00 - EG - Added TGLRevolutionSolid
       <li>15/07/00 - EG - Code reduction and minor speedup for all quadric objects,
                           Added TGLLineBase (split of TGLLines),
-                          tgldummycube now uses osdirectdraw instead of special behaviour
-      <li>13/07/00 - eg - added tglarrowline (code by aaron hochwimmer)
-      <li>28/06/00 - eg - support for "objectstyle"
-      <li>23/06/00 - eg - reduced default loop count for tgldisk
-      <li>18/06/00 - eg - tglmesh and accompanying stuff moved to glmesh
-      <li>14/06/00 - eg - added capacity to tvertexlist
-      <li>09/06/00 - eg - first row of geometry-related upgrades
-      <li>08/06/00 - eg - added releasefontmanager, fixed tglspacetext destroylist,
-      <li>01/06/00 - eg - added tglannulus (code by aaron hochwimmer)
-      <li>29/05/00 - eg - tgllines now uses tglnode/tglnodes
-      <li>28/05/00 - eg - added persistence ability to tgllines,
-                          added defaults for all tgllines properties
-      <li>27/05/00 - eg - moved in rogercao's tgllines object, added a tlinenode
+                          TGLDummyCube now uses osDirectDraw instead of special behaviour
+      <li>13/07/00 - EG - Added TGLArrowLine (code by Aaron Hochwimmer)
+      <li>28/06/00 - EG - Support for "ObjectStyle"
+      <li>23/06/00 - EG - Reduced default Loop count for TGLDisk
+      <li>18/06/00 - EG - TGLMesh and accompanying stuff moved to GLMesh
+      <li>14/06/00 - EG - Added Capacity to TVertexList
+      <li>09/06/00 - EG - First row of Geometry-related upgrades
+      <li>08/06/00 - EG - Added ReleaseFontManager, fixed TGLSpaceText DestroyList,
+      <li>01/06/00 - EG - Added TGLAnnulus (code by Aaron Hochwimmer)
+      <li>29/05/00 - EG - TGLLines now uses TGLNode/TGLNodes
+      <li>28/05/00 - EG - Added persistence ability to TGLLines,
+                          Added defaults for all TGLLines properties
+      <li>27/05/00 - EG - Moved in RogerCao's TGLLines object, added a TLineNode
                           class (currently private) and various enhancements + fixes,
-                          dodecahedronbuildlist now available as a procedure,
-                          cubewireframebuildlist now available as a procedure
-      <li>26/05/00 - roc - added division property to tgllines, and spline supported
-      <li>26/05/00 - eg - moved vectorfile remnants to glvectorfiles
-      <li>14/05/00 - eg - removed top/bottom checks for tglsphere,
-                          added mmtrianglestrip support in calcnormals
-      <li>08/05/00 - eg - uncommented disableautotexture in tglspacetext.buildlist
-      <li>07/05/00 - roc - tgllines added, to show a list of vertex
-      <li>26/04/00 - eg - reactivated stuff in setupquadricparams (thanks nelson chu)
-      <li>18/04/00 - eg - overriden tgldummycube.render
-      <li>16/04/00 - eg - fontmanager now published and auto-creating
-      <li>12/04/00 - eg - added tglcylinderbase.loops (fixes a bug, thanks uwe)
-      <li>24/03/00 - eg - added rotation to tglsprite, fixed sprite size
-      <li>20/03/00 - eg - enhanced fontmanager
-      <li>17/03/00 - eg - fixed spacetext glbaselist bug,
-								  tglsprite now uses a transposition of the globalmatrix
-      <li>16/03/00 - eg - enhanced tfontmanager to allow lower quality
-      <li>14/03/00 - eg - added subobjects barycenter support for tgldummycube
-      <li>09/02/00 - eg - objectmanager stuff moved to glsceneregister,
-                          freeform and vector file stuff moved to new glvectorfileobjects
-      <li>08/02/00 - eg - added tgldummycube
-      <li>05/02/00 - eg - javadocisation, fixes and enhancements :
-                          tvertexlist.addvertex, "default"s to properties
+                          DodecahedronBuildList now available as a procedure,
+                          CubeWireframeBuildList now available as a procedure
+      <li>26/05/00 - RoC - Added division property to TGLLines, and Spline supported
+      <li>26/05/00 - EG - Moved vectorfile remnants to GLVectorFiles
+      <li>14/05/00 - EG - Removed Top/Bottom checks for TGLSphere,
+                          Added mmTriangleStrip support in CalcNormals
+      <li>08/05/00 - EG - Uncommented DisableAutoTexture in TGLSpaceText.BuildList
+      <li>07/05/00 - RoC - TGLLines added, to show a list of vertex
+		<li>26/04/00 - EG - Reactivated stuff in SetupQuadricParams (thanks Nelson Chu)
+		<li>18/04/00 - EG - Overriden TGLDummyCube.Render
+		<li>16/04/00 - EG - FontManager now published and auto-creating
+		<li>12/04/00 - EG - Added TGLCylinderBase.Loops (fixes a bug, thanks Uwe)
+      <li>24/03/00 - EG - Added Rotation to TGLSprite, fixed sprite size
+		<li>20/03/00 - EG - Enhanced FontManager
+		<li>17/03/00 - EG - Fixed SpaceText glBaseList bug,
+								  TGLSprite now uses a transposition of the globalmatrix
+		<li>16/03/00 - EG - Enhanced TFontManager to allow lower quality
+		<li>14/03/00 - EG - Added subobjects Barycenter support for TGLDummyCube
+      <li>09/02/00 - EG - ObjectManager stuff moved to GLSceneRegister,
+                          FreeForm and vector file stuff moved to new GLVectorFileObjects
+      <li>08/02/00 - EG - Added TGLDummyCube
+      <li>05/02/00 - EG - Javadocisation, fixes and enhancements :
+                          TVertexList.AddVertex, "default"s to properties
    </ul></font>
 }
 unit globjects;
@@ -196,7 +196,7 @@ type
                                    intersectNormal : PVector = nil) : Boolean; override;
 			procedure BuildList(var rci : TRenderContextInfo); override;
          procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+                            renderSelf, renderChildren : Boolean); override;
          procedure StructureChanged; override;
 			function BarycenterAbsolutePosition : TVector; override;
 
@@ -1095,7 +1095,7 @@ end;
 // DoRender
 //
 procedure TGLDummyCube.DoRender(var rci : TRenderContextInfo;
-                                renderSelf, renderChildre : Boolean);
+                                renderSelf, renderChildren : Boolean);
 begin
    if Assigned(FOnVisibilityDetermination) then
       if not FOnVisibilityDetermination(Self, rci) then
