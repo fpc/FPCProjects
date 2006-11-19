@@ -109,7 +109,7 @@ type
          procedure PropagateSharedContext;
 
          procedure DoCreateContext(outputDevice : Integer); dynamic; abstract;
-         procedure DoCreateMemoryContext(outputDevice, width, height : Integer); dynamic; abstract;
+         procedure DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer = 1); dynamic; abstract;
          procedure DoShareLists(aContext : TGLContext); dynamic; abstract;
          procedure DoDestroyContext; dynamic; abstract;
          procedure DoActivate; virtual; abstract;
@@ -159,7 +159,7 @@ type
             The function should fail if no hardware-accelerated memory context
             can be created (the CreateContext method can handle software OpenGL
             contexts). }
-         procedure CreateMemoryContext(outputDevice, width, height : Integer);
+         procedure CreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer = 1);
          {: Setup display list sharing between two rendering contexts.<p>
             Both contexts must have the same pixel format. }
          procedure ShareLists(aContext : TGLContext);
@@ -826,12 +826,12 @@ end;
 
 // CreateMemoryContext
 //
-procedure TGLContext.CreateMemoryContext(outputDevice, width, height : Integer);
+procedure TGLContext.CreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer);
 begin
    if IsValid then
       raise EGLContext.Create(cContextAlreadyCreated);
    FAcceleration:=chaUnknown;
-   DoCreateMemoryContext(outputDevice, width, height);
+   DoCreateMemoryContext(outputDevice, width, height, BufferCount);
    FSharedContexts.Add(Self);
    Manager.ContextCreatedBy(Self);
 end;

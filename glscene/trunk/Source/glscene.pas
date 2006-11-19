@@ -62,8 +62,14 @@
 
    <b>History : </b><font size=-1><ul>
       <li>19/10/06 - LC - Fixed TGLSceneBuffer.OrthoScreenToWorld. Bugtracker ID=1537765 (thanks dikoe)
-      
-      <li>04/12/10 - MF - Changed FieldOfView to work with degrees (not radians)
+      <li>19/10/06 - LC - Removed unused assignment in TGLSceneBuffer.SaveAsFloatToFile
+      <li>13/09/06 - NelC Added TGLSceneBuffer.SaveAsFloatToFile
+      <li>12/09/06 - NelC Added roNoDepthBufferClear, support for Multiple-Render-Target
+      <li>17/07/06 - PvD - Fixed TGLSceneBuffer.OrthoScreenToWorld sometimes translates screen coordinates incorrectly
+      <li>08/03/06 - ur - added global OptSaveGLStack variable for "arbitrary"
+                          deep scene trees
+      <li>06/03/06 - Mathx - Fixed Freeze/Melt (thanks Fig)
+      <li>04/12/04 - MF - Changed FieldOfView to work with degrees (not radians)
       <li>04/12/04 - MF - Added GLCamera.SetFieldOfView and GLCamera.GetFieldOfView,
                           formula by Ivan Sivak Jr.
       <li>04/10/04 - NelC - Added support for 64bit and 128bit color depth (float pbuffer)
@@ -333,6 +339,7 @@ type
 
 const
    cDefaultProxyOptions = [pooEffects, pooObjects, pooTransformation];
+   GLSCENE_VERSION = '1.0.0.0714';
 
 type
   TNormalDirection = (ndInside, ndOutside);
@@ -360,11 +367,13 @@ type
      roNoColorBuffer: don't request a color buffer (color depth setting ignored)<br>
      roNoColorBufferClear: do not clear the color buffer automatically, if the
          whole viewer is fully repainted each frame, this can improve framerate<br>
-     roNoSwapBuffers: don't perform RenderingContext.SwapBuffers after rendering }
+     roNoSwapBuffers: don't perform RenderingContext.SwapBuffers after rendering
+     roNoDepthBufferClear: do not clear the depth buffer automatically. Useful for
+         early-z culling.<br> }
   TContextOption = (roDoubleBuffer, roStencilBuffer,
                     roRenderToWindow, roTwoSideLighting, roStereo,
                     roDestinationAlpha, roNoColorBuffer, roNoColorBufferClear,
-                    roNoSwapBuffers);
+                    roNoSwapBuffers, roNoDepthBufferClear);
   TContextOptions = set of TContextOption;
 
   // IDs for limit determination
@@ -1823,7 +1832,7 @@ type
 
          procedure NotifyChange(Sender : TObject); override;
 
-         procedure CreateRC(deviceHandle : Cardinal; memoryContext : Boolean);
+         procedure CreateRC(deviceHandle : Cardinal; memoryContext : Boolean; BufferCount : integer = 1);
          procedure ClearBuffers;
          procedure DestroyRC;
          function  RCInstantiated : Boolean;
@@ -1887,7 +1896,8 @@ type
          procedure CopyToTexture(aTexture : TGLTexture; xSrc, ySrc, width, height : Integer;
                                  xDest, yDest : Integer; target : Integer = 0;
                                  forceCreateTexture : Boolean = False); overload;
-
+         {: Save as raw float data to a file }
+         procedure SaveAsFloatToFile(const aFilename: String);
          {: Event reserved for viewer-specific uses.<br> }
          property ViewerBeforeRender : TNotifyEvent read FViewerBeforeRender write FViewerBeforeRender;
          procedure SetViewPort(X, Y, W, H: Integer);
@@ -1896,9 +1906,11 @@ type
 
          {: Experimental frame freezing code, not operationnal yet. }
          property Freezed : Boolean read FFreezed;
-         {: Experimental frame freezing code, not operationnal yet. }
+         {: Freezes rendering leaving the last rendered scene on the buffer. This
+            is usefull in windowed applications for temporarily stoping rendering
+            (when moving the window, for example). }
          procedure Freeze;
-         {: Experimental frame freezing code, not operationnal yet. }
+         {: Restarts rendering after it was freezed. }
          procedure Melt;
 
          {: Displays a window with info on current OpenGL ICD and context. }
@@ -2153,6 +2165,10 @@ type
          procedure CopyToTexture(aTexture : TGLTexture); overload; virtual;
          procedure CopyToTexture(aTexture : TGLTexture; xSrc, ySrc, width, height : Integer;
                                  xDest, yDest : Integer); overload;
+         {: CopyToTexture for Multiple-Render-Target }
+         procedure CopyToTextureMRT(aTexture : TGLTexture; BufferIndex : integer); overload; virtual;
+         procedure CopyToTextureMRT(aTexture : TGLTexture; xSrc, ySrc, width, height : Integer;
+                                    xDest, yDest : Integer; BufferIndex : integer); overload;
          {: Renders the 6 texture maps from a scene.<p>
             The viewer is used to render the 6 images, one for each face
             of the cube, from the absolute position of the camera.<p>
@@ -2194,6 +2210,8 @@ type
    TGLMemoryViewer = class (TGLNonVisualViewer)
       private
          { Private Declarations }
+         FBufferCount: integer;
+         procedure SetBufferCount(const Value: integer);
 
       protected
          { Protected Declarations }
@@ -2208,6 +2226,10 @@ type
 
       published
          { Public Declarations }
+         {: Set BufferCount > 1 for multiple render targets. <p>
+            Users should check if the corresponding extension (GL_ATI_draw_buffers)
+            is supported. Current hardware limit is BufferCount = 4. }
+         property BufferCount : integer read FBufferCount write SetBufferCount default 1;
    end;
 
    TInvokeInfoForm  = procedure (aSceneBuffer : TGLSceneBuffer; Modal : boolean);
@@ -2233,6 +2255,12 @@ procedure AxesBuildList(var rci : TRenderContextInfo; pattern: Word; AxisLen: Si
 {: Registers the procedure call used to invoke the info form. }
 procedure RegisterInfoForm(infoForm : TInvokeInfoForm);
 procedure InvokeInfoForm(aSceneBuffer : TGLSceneBuffer; Modal : boolean);
+
+var
+{: If OptSaveGLStack is true, the scene tree can be any levels deep without
+   overflowing the drives matrix stack. Of course this will slow down
+   performance, so it is switched of by default. }
+  OptSaveGLStack: Boolean = false;
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -2967,7 +2995,7 @@ end;
 //
 function TGLBaseSceneObject.GetAbsolutePosition : TVector;
 begin
-   Result:= AbsoluteMatrixAsAddress^[3];
+   Result:=AbsoluteMatrixAsAddress^[3];
 end;
 
 // SetAbsolutePosition
@@ -4052,6 +4080,8 @@ procedure TGLBaseSceneObject.Render(var rci : TRenderContextInfo);
 var
    shouldRenderSelf, shouldRenderChildren : Boolean;
    aabb : TAABB;
+   saveMatrixParent,
+   saveMatrixSelf: TMatrix;
 begin
    // visibility culling determination
    if rci.visibilityCulling in [vcObjectBased, vcHierarchical] then begin
@@ -4075,7 +4105,10 @@ begin
       shouldRenderChildren:=Assigned(FChildren);
    end;
    // Prepare Matrix and PickList stuff
-   glPushMatrix;
+   if OptSaveGLStack then
+      glGetFloatv(GL_MODELVIEW_MATRIX, @saveMatrixParent[0])
+   else
+      glPushMatrix;
    if ocTransformation in FChanges then
       RebuildMatrix;
    glMultMatrixf(PGLfloat(FLocalMatrix));
@@ -4088,10 +4121,17 @@ begin
       if FShowAxes then
          DrawAxes(rci, $CCCC);
       if Assigned(FGLObjectEffects) and (FGLObjectEffects.Count>0) then begin
-         glPushMatrix;
+         if OptSaveGLStack then
+            glGetFloatv(GL_MODELVIEW_MATRIX, @saveMatrixSelf[0])
+         else
+            glPushMatrix;
          FGLObjectEffects.RenderPreEffects(Scene.CurrentBuffer, rci);
-         glPopMatrix;
-         glPushMatrix;
+         if OptSaveGLStack then
+            glLoadMatrixf(@saveMatrixSelf[0])
+         else begin
+            glPopMatrix;
+            glPushMatrix;
+         end;
          if osIgnoreDepthBuffer in ObjectStyle then begin
             rci.GLStates.UnSetGLState(stDepthTest);
             DoRender(rci, True, shouldRenderChildren);
@@ -4100,7 +4140,10 @@ begin
          if osDoesTemperWithColorsOrFaceWinding in ObjectStyle then
             rci.GLStates.ResetAll;
          FGLObjectEffects.RenderPostEffects(Scene.CurrentBuffer, rci);
-         glPopMatrix;
+         if OptSaveGLStack then
+            glLoadMatrixf(@saveMatrixSelf[0])
+         else
+            glPopMatrix;
       end else begin
          if osIgnoreDepthBuffer in ObjectStyle then begin
             rci.GLStates.UnSetGLState(stDepthTest);
@@ -4121,7 +4164,10 @@ begin
    if rci.drawState=dsPicking then
       if rci.proxySubObject then
          glPopName;
-   glPopMatrix;
+   if OptSaveGLStack then
+      glLoadMatrixf(@saveMatrixParent[0])
+   else
+      glPopMatrix;
 end;
 
 // DoRender
@@ -5923,6 +5969,7 @@ begin
    FreeAndNil(FObjects);
    {$ENDIF}
    {$warning: - crossbuilder BugSpot - why is this freed twice in fpc ? }
+   { note: The ifdef fpc block is completely missing in cvs }
    FCameras.Free;
    FLights.Free;
    FObjects.Free;
@@ -6117,7 +6164,6 @@ begin
   finally
     Reader.Root := SaveRoot;
   end;
-  SaveRoot := nil;
 end;
 
 // RenderScene
@@ -6394,6 +6440,7 @@ begin
       for i:=0 to FBuffers.Count-1 do
       begin
          TGLSceneBuffer(FBuffers[i]).NotifyChange(Self);
+         {$HINT: - crossbuilder - Please check if the following lines are still needed, they are not in cvs }
          // Lazarus invalidate all scenes. k00m
          if (not TGLSceneBuffer(FBuffers[i]).Rendering)
          and (not TGLSceneBuffer(FBuffers[i]).Freezed) then
@@ -6667,6 +6714,11 @@ destructor TGLSceneBuffer.Destroy;
 begin
    Melt;
    FGLStates.Free;
+   // clean up and terminate
+   if Assigned(FCamera) and Assigned(FCamera.FScene) then begin
+      FCamera.FScene.RemoveBuffer(Self);
+      FCamera:=nil;
+   end;
    DestroyRC;
    FAmbientColor.Free;
    FAfterRenderEffects.Free;
@@ -6723,7 +6775,7 @@ end;
 
 // CreateRC
 //
-procedure TGLSceneBuffer.CreateRC(deviceHandle : Cardinal; memoryContext : Boolean);
+procedure TGLSceneBuffer.CreateRC(deviceHandle : Cardinal; memoryContext : Boolean; BufferCount : integer);
 var
    backColor: TColorVector;
 begin
@@ -6738,7 +6790,7 @@ begin
       with FRenderingContext do begin
          try
             if memoryContext then
-               CreateMemoryContext(deviceHandle, FViewPort.Width, FViewPort.Height)
+              CreateMemoryContext(deviceHandle, FViewPort.Width, FViewPort.Height, BufferCount)
             else CreateContext(deviceHandle);
          except
             FreeAndNil(FRenderingContext);
@@ -6944,7 +6996,7 @@ begin
       RenderToBitmap(ABitmap, DPI);
       fileName:=aFile;
       if fileName='' then
-//         saveAllowed:=SavePictureDialog(fileName)
+         saveAllowed:=SavePictureDialog(fileName)
       else saveAllowed:=True;
       if saveAllowed then begin
          if FileExists(fileName) then
@@ -6974,7 +7026,7 @@ begin
       RenderToBitmap(aBitmap, (GetDeviceLogicalPixelsX(Cardinal(ABitmap.Canvas.Handle))*bmpWidth) div FViewPort.Width);
       fileName:=AFile;
       if fileName='' then
-//         saveAllowed:=SavePictureDialog(fileName)
+         saveAllowed:=SavePictureDialog(fileName)
       else saveAllowed:=True;
       if saveAllowed then begin
          if FileExists(fileName) then
@@ -7049,6 +7101,10 @@ begin
             else bindTarget:=target;
          end;
          createTexture:=not aTexture.IsHandleAllocated;
+
+         if aTexture.IsFloatType then // float_type special treatment
+            CreateTexture:=false;
+
          if createTexture then
             handle:=aTexture.AllocateHandle
          else handle:=aTexture.Handle;
@@ -7087,6 +7143,36 @@ begin
    end;
 end;
 
+procedure TGLSceneBuffer.SaveAsFloatToFile(const aFilename: String);
+var
+   Data : pointer;
+   DataSize : integer;
+   Stream : TMemoryStream;
+const
+   FloatSize = 4;
+begin
+   if Assigned(Camera) and Assigned(Camera.Scene) then begin
+      DataSize := Width * Height * FloatSize * FloatSize;
+      GetMem(Data, DataSize);
+      FRenderingContext.Activate;
+      try
+        glReadPixels(0, 0, Width, Height, GL_RGBA, GL_FLOAT, Data);
+        CheckOpenGLError;
+
+        Stream:=TMemoryStream.Create;
+        try
+          Stream.Write(Data^, DataSize);
+          Stream.SaveToFile(aFilename);
+        finally
+          Stream.Free;
+        end;
+      finally
+        FRenderingContext.DeActivate;
+        FreeMem(Data);
+      end;
+   end;
+end;
+
 // SetViewPort
 //
 procedure TGLSceneBuffer.SetViewPort(X, Y, W, H: Integer);
@@ -7119,9 +7205,10 @@ end;
 procedure TGLSceneBuffer.Freeze;
 begin
    if Freezed then Exit;
-   FFreezed:=True;
+   {FFreezed:=True;}
    if RenderingContext=nil then Exit;
    Render;
+   FFreezed:=True;
    RenderingContext.Activate;
    try
       FFreezeBuffer:=AllocMem(FViewPort.Width*FViewPort.Height*4);
@@ -7139,6 +7226,7 @@ procedure TGLSceneBuffer.Melt;
 begin
    if not Freezed then Exit;
    FreeMem(FFreezeBuffer);
+   FFreezeBuffer:=nil;
    FFreezed:=False;
 end;
 
@@ -7496,7 +7584,10 @@ procedure TGLSceneBuffer.ClearBuffers;
 var
    bufferBits : TGLBitfield;
 begin
-   bufferBits:=GL_DEPTH_BUFFER_BIT;
+   if roNoDepthBufferClear in ContextOptions then
+     bufferBits:=0
+   else
+     bufferBits:=GL_DEPTH_BUFFER_BIT;
    if ContextOptions*[roNoColorBuffer, roNoColorBufferClear]=[] then
       bufferBits:=bufferBits or GL_COLOR_BUFFER_BIT;
    if roStencilBuffer in ContextOptions then
@@ -8064,6 +8155,90 @@ begin
    Buffer.CopyToTexture(aTexture, xSrc, ySrc, width, height, xDest, yDest);
 end;
 
+// CopyToTextureMRT
+//
+procedure TGLNonVisualViewer.CopyToTextureMRT(aTexture: TGLTexture;
+  BufferIndex: integer);
+begin
+  CopyToTextureMRT(aTexture, 0, 0, Width, Height, 0, 0, BufferIndex);
+end;
+
+// CopyToTextureMRT
+//
+procedure TGLNonVisualViewer.CopyToTextureMRT(aTexture: TGLTexture; xSrc,
+  ySrc, width, height, xDest, yDest, BufferIndex: integer);
+var
+   target, handle : Integer;
+   buf : PChar;
+   createTexture : Boolean;
+
+   procedure CreateNewTexture;
+   begin
+      GetMem(buf, Width*Height*4);
+      try // float_type
+         glReadPixels(0, 0, Width, Height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+         case aTexture.MinFilter of
+            miNearest, miLinear :
+        	   	glTexImage2d(target, 0, aTexture.OpenGLTextureFormat, Width, Height,
+                                  0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+               else
+                  if GL_SGIS_generate_mipmap and (target=GL_TEXTURE_2D) then begin
+                     // hardware-accelerated when supported
+                     glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+              	   	glTexImage2d(target, 0, aTexture.OpenGLTextureFormat, Width, Height,
+                                  0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+                  end else begin
+                     // slower (software mode)
+                     gluBuild2DMipmaps(target, aTexture.OpenGLTextureFormat, Width, Height,
+                                 GL_RGBA, GL_UNSIGNED_BYTE, buf);
+            end;
+         end;
+      finally
+         FreeMem(buf);
+      end;
+   end;
+
+begin
+   if Buffer.RenderingContext<>nil then begin
+      Buffer.RenderingContext.Activate;
+      try
+         target:=aTexture.Image.NativeTextureTarget;
+
+         CreateTexture:=true;
+
+         if aTexture.IsFloatType then begin // float_type special treatment
+             CreateTexture:=false;
+             handle:=aTexture.Handle;
+           end
+         else
+           if (target<>GL_TEXTURE_CUBE_MAP_ARB) or (FCubeMapRotIdx=0) then begin
+                CreateTexture:=not aTexture.IsHandleAllocated;
+                if CreateTexture then
+                   handle:=aTexture.AllocateHandle
+                else handle:=aTexture.Handle;
+              end
+           else handle:=aTexture.Handle;
+
+         // For MRT
+         glReadBuffer(MRT_BUFFERS[BufferIndex]);
+
+         Buffer.GLStates.SetGLCurrentTexture(0, target, handle);
+
+         if target=GL_TEXTURE_CUBE_MAP_ARB then
+            target:=GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB+FCubeMapRotIdx;
+
+         if CreateTexture then
+            CreateNewTexture
+         else
+            glCopyTexSubImage2D(target, 0, xDest, yDest, xSrc, ySrc, Width, Height);
+
+         ClearGLError;
+      finally
+         Buffer.RenderingContext.Deactivate;
+      end;
+   end;
+end;
+
 // SetupCubeMapCamera
 //
 procedure TGLNonVisualViewer.SetupCubeMapCamera(Sender : TObject);
@@ -8249,6 +8424,7 @@ begin
    inherited Create(AOwner);
    Width:=256;
    Height:=256;
+   FBufferCount:=1;
 end;
 
 // InstantiateRenderingContext
@@ -8257,7 +8433,7 @@ procedure TGLMemoryViewer.InstantiateRenderingContext;
 begin
    if FBuffer.RenderingContext=nil then begin
       FBuffer.SetViewPort(0, 0, Width, Height);
-      FBuffer.CreateRC(0, True);
+      FBuffer.CreateRC(0, True, FBufferCount);
    end;
 end;
 
@@ -8269,6 +8445,25 @@ begin
    FBuffer.Render(baseObject);
 end;
 
+// SetBufferCount
+//
+procedure TGLMemoryViewer.SetBufferCount(const Value: integer);
+//var
+//   MaxAxuBufCount : integer;
+const
+  MaxAxuBufCount = 4; // Current hardware limit = 4
+begin
+   if FBufferCount=Value then exit;
+   FBufferCount:=Value;
+
+   if FBufferCount < 1 then FBufferCount:=1;
+//   glGetIntegerv(GL_AUX_BUFFERS, @MaxAxuBufCount);
+//   MaxAxuBufCount:=MaxAxuBufCount + 1; // + 1 front buffer
+   if FBufferCount > MaxAxuBufCount then FBufferCount:=MaxAxuBufCount;
+
+   // Request a new Instantiation of RC on next render
+   FBuffer.DestroyRC;
+end;
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------

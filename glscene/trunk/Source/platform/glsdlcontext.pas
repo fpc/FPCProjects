@@ -9,6 +9,7 @@
          automatic releases)<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>11/09/06 - NC - Changes for Multiple-Render-Target
       <li>12/12/01 - EG - Creation
    </ul></font>
 }
@@ -86,7 +87,7 @@ type
       protected
          { Protected Declarations }
          procedure DoCreateContext(outputDevice : Integer); override;
-         procedure DoCreateMemoryContext(outputDevice, width, height : Integer); override;
+         procedure DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer = 1); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -307,7 +308,7 @@ end;
 
 // DoCreateMemoryContext
 //
-procedure TGLSDLContext.DoCreateMemoryContext(outputDevice, width, height : Integer);
+procedure TGLSDLContext.DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer);
 begin
    raise Exception.Create(ClassName+': Memory contexts not supported');
 end;

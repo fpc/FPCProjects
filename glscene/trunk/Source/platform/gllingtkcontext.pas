@@ -38,7 +38,7 @@ type
          procedure DestructionEarlyWarning(sender : TObject);
 
          procedure DoCreateContext(outputDevice : Integer); override;
-         procedure DoCreateMemoryContext(outputDevice, width, height : Integer); override;
+         procedure DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -218,7 +218,7 @@ end;
 
 // DoCreateMemoryContext
 //
-procedure TGLGTKContext.DoCreateMemoryContext(outputDevice, width, height : Integer);
+procedure TGLGTKContext.DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer);
 begin
   {$MESSAGE Warn 'DoCreateMemoryContext: Needs to be implemented'}
 end;
