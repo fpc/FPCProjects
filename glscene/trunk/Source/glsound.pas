@@ -17,7 +17,7 @@ unit glsound;
 interface
 
 uses classes, glsoundfileobjects, glscene, xcollection, vectorgeometry, glcadencer,
-     glmisc, persistentclasses;
+     glmisc {, persistentclasses};
 
 {$i GLScene.inc}
 
@@ -137,7 +137,7 @@ type
 
 	   protected
 	      { Protected Declarations }
-	 procedure WriteToFiler(writer : TWriter);
+			procedure WriteToFiler(writer : TWriter);
          procedure ReadFromFiler(reader : TReader);
 
          function GetDisplayName : String; override;
@@ -339,12 +339,12 @@ type
             with "False" as parameter. }
 	      procedure DoUnMute; dynamic;
          {: Effect pause of all sounds.<p>
-            default implementation call pausesource for all non-paused sources
-            with "true" as parameter. }
+            Default implementation call PauseSource for all non-paused sources
+            with "True" as parameter. }
 	      function DoPause : Boolean; dynamic;
          {: Effect un-pause of all sounds.<p>
-            default implementation call pausesource for all non-paused sources
-            with "true" as parameter. }
+            Default implementation call PauseSource for all non-paused sources
+            with "True" as parameter. }
 	      procedure DoUnPause; dynamic;
 
          procedure NotifyMasterVolumeChange; dynamic;
@@ -458,8 +458,8 @@ type
 
 		protected
 			{ Protected Declarations }
-         procedure WriteToFiler(writer : TVirtualWriter); overload;
-         procedure ReadFromFiler(reader : TVirtualReader); overload;
+			procedure WriteToFiler(writer : TWriter); override;
+         procedure ReadFromFiler(reader : TReader); override;
          procedure Loaded; override;
 
          procedure SetSource(const val : TGLBaseSoundSource);
@@ -1075,7 +1075,7 @@ begin
    if val<>FPause then begin
       FPause:=val;
       if Collection<>nil then
-         tglsoundmanager(tglsoundsources(collection).owner).pausesource(self, fpause);
+         TGLSoundManager(TGLSoundSources(Collection).owner).PauseSource(Self, FPause);
    end;
 end;
 
@@ -1330,8 +1330,8 @@ var
    i : Integer;
 begin
    for i:=0 to Sources.Count-1 do if not Sources[i].Pause then
-      pausesource(sources[i], true);
-	result:=true;
+      PauseSource(Sources[i], True);
+	Result:=True;
 end;
 
 // DoUnPause
@@ -1341,7 +1341,7 @@ var
    i : Integer;
 begin
    for i:=0 to Sources.Count-1 do if not Sources[i].Pause then
-      pausesource(sources[i], false);
+      PauseSource(Sources[i], False);
 end;
 
 // SetMasterVolume
@@ -1553,7 +1553,7 @@ begin
    // nothing
 end;
 
-// pausesource
+// PauseSource
 //
 procedure TGLSoundManager.PauseSource(aSource : TGLBaseSoundSource; paused : Boolean);
 begin
@@ -1642,24 +1642,26 @@ end;
 
 // WriteToFiler
 //
-procedure TGLBSoundEmitter.WriteToFiler(writer : TVirtualWriter);
+procedure TGLBSoundEmitter.WriteToFiler(writer : TWriter);
 begin
    inherited;
    with writer do begin
       WriteInteger(0); // Archive Version 0
-      FSource.WriteToFiler(@writer.Stream);
+      //FSource.WriteToFiler(@writer.Stream);
+      FSource.WriteToFiler(writer);
       WriteBoolean(FPlaying);
    end;
 end;
 
 // ReadFromFiler
 //
-procedure TGLBSoundEmitter.ReadFromFiler(reader : TVirtualReader);
+procedure TGLBSoundEmitter.ReadFromFiler(reader : TReader);
 begin
    inherited;
    with reader do begin
       ReadInteger; // ignore archiveVersion
-      FSource.ReadFromFiler(@reader.Stream);
+      //FSource.ReadFromFiler(@reader.Stream);
+      FSource.ReadFromFiler(reader);
       FPlaying:=ReadBoolean;
    end;
 end;
@@ -1804,7 +1806,8 @@ end;
 procedure TGLSMWaveOut.UpdateSource(aSource : TGLBaseSoundSource);
 var
    i, n : Integer;
-   wfx : TPCMWaveFormat;
+   //wfx : TPCMWaveFormat; 
+   wfx : TWaveFormatEx;
    smp : TGLSoundSample;
    wh : wavehdr;
    mmres : MMRESULT;
