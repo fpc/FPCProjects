@@ -12,7 +12,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   VectorGeometry, GLTexture, GLScene, GLObjects, GLGeomObjects, GLMisc, GLMultiPolygon,
-  LResources, GLWin32Viewer;
+  LResources, GLLCLViewer;
 
 type
   TVektor = record
