@@ -1,137 +1,119 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 357
-  ClientWidth = 511
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  PixelsPerInch = 96
-  ShowHint = True
-  TextHeight = 13
-  HorzScrollBar.Page = 510
-  VertScrollBar.Page = 356
   Left = 229
   Height = 357
   Top = 120
   Width = 511
+  HorzScrollBar.Page = 510
+  VertScrollBar.Page = 356
+  ActiveControl = TrackBar1
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  ShowHint = True
   object Label1: TLabel
-    Align = alRight
-    AutoSize = False
-    BorderSpacing.OnChange = nil
-    Color = clNone
     Left = 394
     Height = 357
     Width = 2
+    Align = alRight
+    AutoSize = False
+    Color = clNone
+    ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer
+    Height = 357
+    Width = 394
     Camera = GLCamera1
     Buffer.BackgroundColor = 13619151
     Buffer.FaceCulling = False
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 148.70359802246094
+    FieldOfView = 148.70359802246
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 357
-    Width = 394
   end
   object Panel1: TPanel
-    Align = alRight
-    BorderSpacing.OnChange = nil
-    BevelOuter = bvLowered
-    ClientHeight = 357
-    ClientWidth = 115
-    FullRepaint = False
-    TabOrder = 0
     Left = 396
     Height = 357
     Width = 115
+    Align = alRight
+    BevelOuter = bvLowered
+    FullRepaint = False
+    TabOrder = 0
     object LASubdivideTime: TLabel
-      Alignment = taCenter
-      AutoSize = False
-      BorderSpacing.OnChange = nil
-      Caption = 'LASubdivideTime'
-      Color = clNone
       Left = 8
       Height = 13
-      Top = 168
+      Top = 200
       Width = 97
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'LASubdivideTime'
+      Color = clNone
+      ParentColor = False
     end
     object BUSubdivide: TButton
-      BorderSpacing.OnChange = nil
-      Caption = 'Subdivide'
-      Enabled = False
-      OnClick = BUSubdivideClick
-      TabOrder = 0
       Left = 8
       Height = 25
       Top = 112
       Width = 99
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Subdivide'
+      Enabled = False
+      OnClick = BUSubdivideClick
+      TabOrder = 0
     end
     object TrackBar1: TTrackBar
-      BorderSpacing.OnChange = nil
-      Frequency = 1
+      Left = 8
+      Height = 33
       Hint = 'Subdivision smoothness'
+      Top = 152
+      Width = 97
       Position = 5
       ScalePos = trTop
       TabOrder = 1
-      Frequency = 1
-      Position = 5
-      ScalePos = trTop
-      Left = 8
-      Height = 17
-      Hint = 'Subdivision smoothness'
-      Top = 144
-      Width = 97
     end
     object RBWireFrame: TRadioButton
-      BorderSpacing.OnChange = nil
+      Left = 16
+      Height = 24
+      Top = 40
+      Width = 81
       Caption = 'Wireframe'
       OnClick = RBWireFrameClick
       TabOrder = 2
-      Left = 16
-      Height = 17
-      Top = 40
-      Width = 81
     end
     object RBSolid: TRadioButton
-      BorderSpacing.OnChange = nil
+      Left = 16
+      Height = 24
+      Top = 56
+      Width = 52
       Caption = 'Solid'
       Checked = True
       OnClick = RBSolidClick
       State = cbChecked
       TabOrder = 3
-      Left = 16
-      Height = 17
-      Top = 56
-      Width = 89
     end
     object CBAnimate: TCheckBox
-      BorderSpacing.OnChange = nil
+      Left = 16
+      Height = 24
+      Top = 80
+      Width = 69
       Caption = 'Animate'
       OnClick = CBAnimateClick
       TabOrder = 4
-      Left = 16
-      Height = 17
-      Top = 80
-      Width = 81
     end
     object BULoad1: TButton
-      Caption = 'Load'
-      OnClick = BULoadClick
-      TabOrder = 5
       Left = 16
       Height = 25
       Top = 8
       Width = 83
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Load'
+      OnClick = BULoadClick
+      TabOrder = 5
     end
   end
   object GLScene1: TGLScene
     left = 16
     top = 16
     object GLActor1: TGLActor
-      Interval = 100
-      AutoCentering = [macCenterX, macCenterY, macCenterZ]
       Material.Texture.TextureMode = tmReplace
       Direction.Coordinates = {
         000000000000803F0000000000000000
@@ -142,6 +124,8 @@ object Form1: TForm1
       Up.Coordinates = {
         0000000000000000000080BF00000000
       }
+      Interval = 100
+      AutoCentering = [macCenterX, macCenterY, macCenterZ]
     end
     object GLLightSource1: TGLLightSource
       ConstAttenuation = 1
