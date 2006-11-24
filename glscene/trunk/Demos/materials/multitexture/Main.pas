@@ -29,7 +29,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLScene, GLMisc, GLObjects, GLTexture, ComCtrls, StdCtrls, ExtCtrls,
-  ExtDlgs, LResources, GLWin32Viewer;
+  ExtDlgs, LResources, GLLCLViewer;
 
 type
 
@@ -74,9 +74,9 @@ begin
    SetCurrentDir(ExtractFilePath(Application.ExeName));
    // prepare images to merge in the multitexture
    with GLMaterialLibrary1 do begin
-      Image1.Picture.LoadFromFile('..\..\media\ashwood.jpg');
+      Image1.Picture.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'ashwood.jpg');
       Materials[0].Material.Texture.Image.Assign(Image1.Picture);
-      Image2.Picture.LoadFromFile('..\..\media\Flare1.bmp');
+      Image2.Picture.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'Flare1.bmp');
       Materials[1].Material.Texture.Image.Assign(Image2.Picture);
    end;
 end;

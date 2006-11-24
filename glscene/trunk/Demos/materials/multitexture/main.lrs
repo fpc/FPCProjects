@@ -1,59 +1,47 @@
 { Dies ist eine automatisch erzeugte Lazarus-Ressourcendatei }
 
 LazarusResources.Add('TForm1','FORMDATA',[
-  'TPF0'#6'TForm1'#5'Form1'#11'BorderStyle'#7#8'bsSingle'#7'Caption'#6#12'Multi'
-  +'texture'#12'ClientHeight'#3#153#1#11'ClientWidth'#3'/'#2#11'Font.Height'#2
-  +#245#9'Font.Name'#6#13'MS Sans Serif'#8'OnCreate'#7#10'FormCreate'#13'Pixels'
-  +'PerInch'#2'`'#8'Position'#7#14'poScreenCenter'#10'TextHeight'#2#13#18'HorzS'
-  +'crollBar.Page'#3'.'#2#18'VertScrollBar.Page'#3#152#1#4'Left'#3#20#1#6'Heigh'
-  +'t'#3#153#1#3'Top'#3#149#0#5'Width'#3'/'#2#0#6'TImage'#6'Image1'#22'BorderSp'
-  +'acing.OnChange'#13#7'OnClick'#7#11'Image1Click'#11'Transparent'#9#4'Left'#3
-  +#160#1#6'Height'#3#128#0#3'Top'#2'8'#5'Width'#3#128#0#0#0#6'TImage'#6'Image2'
-  +#22'BorderSpacing.OnChange'#13#7'OnClick'#7#11'Image2Click'#11'Transparent'#9
-  +#4'Left'#3#160#1#6'Height'#3#128#0#3'Top'#3#208#0#5'Width'#3#128#0#0#0#6'TLa'
-  +'bel'#6'Label1'#22'BorderSpacing.OnChange'#13#7'Caption'#6#13'Texture Map 1'
-  +#5'Color'#7#6'clNone'#4'Left'#3#160#1#6'Height'#2#13#3'Top'#2'('#5'Width'#2
-  +'E'#0#0#6'TLabel'#6'Label2'#22'BorderSpacing.OnChange'#13#7'Caption'#6#13'Te'
-  +'xture Map 2'#5'Color'#7#6'clNone'#4'Left'#3#160#1#6'Height'#2#13#3'Top'#3
-  +#192#0#5'Width'#2'E'#0#0#6'TLabel'#6'Label3'#22'BorderSpacing.OnChange'#13#7
-  +'Caption'#6#11'Map 2 Scale'#5'Color'#7#6'clNone'#4'Left'#3#160#1#6'Height'#2
-  +#13#3'Top'#3'p'#1#5'Width'#2'<'#0#0#6'TLabel'#6'Label4'#22'BorderSpacing.OnC'
-  +'hange'#13#7'Caption'#6#12'MultiTexture'#5'Color'#7#6'clNone'#12'Font.CharSe'
-  +'t'#7#12'ANSI_CHARSET'#11'Font.Height'#2#240#9'Font.Name'#6#5'Arial'#10'Font'
-  +'.Style'#11#6'fsBold'#0#4'Left'#3#176#1#6'Height'#2#19#3'Top'#2#8#5'Width'#2
-  +'^'#0#0#14'TGLSceneViewer'#14'GLSceneViewer1'#6'Camera'#7#9'GLCamera1'#15'Bu'
-  +'ffer.OnChange'#13#25'Buffer.OnStructuralChange'#13#11'FieldOfView'#5#0#0#0#0
-  +#0#161'r'#151#6'@'#7'Enabled'#8#4'Left'#2#8#6'Height'#3#137#1#3'Top'#2#8#5'W'
-  +'idth'#3#137#1#0#0#9'TTrackBar'#9'TrackBar1'#22'BorderSpacing.OnChange'#13#9
-  +'Frequency'#2#1#3'Max'#2#30#3'Min'#2#5#8'OnChange'#7#15'TrackBar1Change'#8'P'
-  +'osition'#2#10#8'ScalePos'#7#5'trTop'#8'TabOrder'#2#0#9'Frequency'#2#1#3'Max'
-  +#2#30#3'Min'#2#5#8'OnChange'#7#15'TrackBar1Change'#8'Position'#2#10#8'ScaleP'
-  +'os'#7#5'trTop'#4'Left'#3#160#1#6'Height'#2#25#3'Top'#3#128#1#5'Width'#2'~'#0
-  +#0#9'TCheckBox'#11'CBClampTex2'#22'BorderSpacing.OnChange'#13#7'Caption'#6#15
-  +'Clamp Texture 2'#7'OnClick'#7#16'CBClampTex2Click'#8'TabOrder'#2#1#4'Left'#3
-  +#160#1#6'Height'#2#17#3'Top'#3'X'#1#5'Width'#2'a'#0#0#8'TGLScene'#8'GLScene1'
-  +#4'left'#2'0'#3'top'#2' '#0#8'TGLPlane'#6'Plane1'#6'Height'#5#0#0#0#0#0#0#0
-  +#128#255'?'#5'Width'#5#0#0#0#0#0#0#0#128#255'?'#24'Material.MaterialLibrary'
-  +#7#18'GLMaterialLibrary1'#24'Material.LibMaterialName'#6#4'Base'#20'Position'
-  +'.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#128#191#0#0#128'?'#0#0#9'TGLC'
-  +'amera'#9'GLCamera1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'
-  +#5#0#0#0#0#0#0#0#200#4'@'#4'left'#3#192#0#3'top'#3#192#0#0#0#0#18'TGLMateria'
-  +'lLibrary'#18'GLMaterialLibrary1'#9'Materials'#14#1#4'Name'#6#4'Base'#28'Mat'
-  +'erial.Texture.TextureMode'#7#9'tmReplace'#25'Material.Texture.Disabled'#8#12
-  +'Texture2Name'#6#6'Second'#0#1#4'Name'#6#6'Second'#28'Material.Texture.Textu'
-  +'reMode'#7#10'tmModulate'#25'Material.Texture.Disabled'#8#0#0#4'left'#2'0'#3
-  +'top'#2'@'#0#0#18'TOpenPictureDialog'#18'OpenPictureDialog1'#6'Filter'#12#141
-  +#1#0#0'Graphic (*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp)|*.jp'
-  +'eg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp|JPEG Image File (*.jpeg)'
-  +'|*.jpeg|JPEG Image File (*.jpg)|*.jpg|Icon (*.ico)|*.ico|Portable PixMap (*'
-  +'.ppm)|*.ppm|Portable GrayMap (*.pgm)|*.pgm|Portable BitMap (*.pbm)|*.pbm|Po'
-  +'rtable Network Graphic (*.png)|*.png|Pixmap (*.xpm)|*.xpm|Bitmaps (*.bmp)|*'
-  +'.bmp|Alle Dateien (*.*)|*.*|'#5'Title'#6#23'Vorhandene Datei '#246'ffnen'#6
-  +'Filter'#12#141#1#0#0'Graphic (*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.'
-  +'xpm;*.bmp)|*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp|JPEG Imag'
-  +'e File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|Icon (*.ico)|*.ico|Por'
-  +'table PixMap (*.ppm)|*.ppm|Portable GrayMap (*.pgm)|*.pgm|Portable BitMap ('
-  +'*.pbm)|*.pbm|Portable Network Graphic (*.png)|*.png|Pixmap (*.xpm)|*.xpm|Bi'
-  +'tmaps (*.bmp)|*.bmp|Alle Dateien (*.*)|*.*|'#11'FilterIndex'#2#0#5'Title'#6
-  +#23'Vorhandene Datei '#246'ffnen'#4'left'#3#224#1#3'top'#2#8#0#0#0
+  'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#20#1#6'Height'#3#153#1#3'Top'#3#149#0#5'W'
+  +'idth'#3'/'#2#18'HorzScrollBar.Page'#3'.'#2#18'VertScrollBar.Page'#3#152#1#13
+  +'ActiveControl'#7#9'TrackBar1'#11'BorderStyle'#7#8'bsSingle'#7'Caption'#6#12
+  +'Multitexture'#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#8'OnCr'
+  +'eate'#7#10'FormCreate'#8'Position'#7#14'poScreenCenter'#0#6'TImage'#6'Image'
+  +'1'#4'Left'#3#160#1#6'Height'#3#128#0#3'Top'#2'8'#5'Width'#3#128#0#7'OnClick'
+  +#7#11'Image1Click'#0#0#6'TImage'#6'Image2'#4'Left'#3#160#1#6'Height'#3#128#0
+  +#3'Top'#3#208#0#5'Width'#3#128#0#7'OnClick'#7#11'Image2Click'#0#0#6'TLabel'#6
+  +'Label1'#4'Left'#3#160#1#6'Height'#2#14#3'Top'#2'('#5'Width'#2'P'#7'Caption'
+  +#6#13'Texture Map 1'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#6'TLabel'#6
+  +'Label2'#4'Left'#3#160#1#6'Height'#2#14#3'Top'#3#192#0#5'Width'#2'P'#7'Capti'
+  +'on'#6#13'Texture Map 2'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#6'TLabel'
+  +#6'Label3'#4'Left'#3#160#1#6'Height'#2#14#3'Top'#3'p'#1#5'Width'#2'E'#7'Capt'
+  +'ion'#6#11'Map 2 Scale'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#6'TLabel'
+  +#6'Label4'#4'Left'#3#176#1#6'Height'#2#14#3'Top'#2#8#5'Width'#2'y'#7'Caption'
+  +#6#12'MultiTexture'#5'Color'#7#6'clNone'#12'Font.CharSet'#7#12'ANSI_CHARSET'
+  +#11'Font.Height'#2#240#9'Font.Name'#6#5'Arial'#10'Font.Style'#11#6'fsBold'#0
+  +#11'ParentColor'#8#0#0#14'TGLSceneViewer'#14'GLSceneViewer1'#4'Left'#2#8#6'H'
+  +'eight'#3#137#1#3'Top'#2#8#5'Width'#3#137#1#6'Camera'#7#9'GLCamera1'#11'Fiel'
+  +'dOfView'#5#0#0#0#0#0#161'r'#151#6'@'#7'Enabled'#8#0#0#9'TTrackBar'#9'TrackB'
+  +'ar1'#4'Left'#3#160#1#6'Height'#2'!'#3'Top'#3#128#1#5'Width'#2'~'#3'Max'#2#30
+  +#3'Min'#2#5#8'OnChange'#7#15'TrackBar1Change'#8'Position'#2#10#8'ScalePos'#7
+  +#5'trTop'#8'TabOrder'#2#0#0#0#9'TCheckBox'#11'CBClampTex2'#4'Left'#3#160#1#6
+  +'Height'#2#24#3'Top'#3'X'#1#5'Width'#2's'#7'Caption'#6#15'Clamp Texture 2'#7
+  +'OnClick'#7#16'CBClampTex2Click'#8'TabOrder'#2#1#0#0#8'TGLScene'#8'GLScene1'
+  +#4'left'#2'0'#3'top'#2' '#0#8'TGLPlane'#6'Plane1'#24'Material.MaterialLibrar'
+  +'y'#7#18'GLMaterialLibrary1'#24'Material.LibMaterialName'#6#4'Base'#20'Posit'
+  +'ion.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#128#191#0#0#128'?'#6'Heigh'
+  +'t'#5#0#0#0#0#0#0#0#128#255'?'#5'Width'#5#0#0#0#0#0#0#0#128#255'?'#0#0#9'TGL'
+  +'Camera'#9'GLCamera1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLengt'
+  +'h'#5#0#0#0#0#0#0#0#200#4'@'#4'left'#3#192#0#3'top'#3#192#0#0#0#0#18'TGLMate'
+  +'rialLibrary'#18'GLMaterialLibrary1'#9'Materials'#14#1#4'Name'#6#4'Base'#28
+  +'Material.Texture.TextureMode'#7#9'tmReplace'#25'Material.Texture.Disabled'#8
+  +#12'Texture2Name'#6#6'Second'#0#1#4'Name'#6#6'Second'#28'Material.Texture.Te'
+  +'xtureMode'#7#10'tmModulate'#25'Material.Texture.Disabled'#8#0#0#4'left'#2'0'
+  +#3'top'#2'@'#0#0#18'TOpenPictureDialog'#18'OpenPictureDialog1'#5'Title'#6#23
+  +'Vorhandene Datei '#246'ffnen'#6'Filter'#12#141#1#0#0'Graphic (*.jpeg;*.jpg;'
+  +'*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp)|*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*'
+  +'.pbm;*.png;*.xpm;*.bmp|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.j'
+  +'pg)|*.jpg|Icon (*.ico)|*.ico|Portable PixMap (*.ppm)|*.ppm|Portable GrayMap'
+  +' (*.pgm)|*.pgm|Portable BitMap (*.pbm)|*.pbm|Portable Network Graphic (*.pn'
+  +'g)|*.png|Pixmap (*.xpm)|*.xpm|Bitmaps (*.bmp)|*.bmp|Alle Dateien (*.*)|*.*|'
+  +#11'FilterIndex'#2#0#4'left'#3#224#1#3'top'#2#8#0#0#0
 ]);
