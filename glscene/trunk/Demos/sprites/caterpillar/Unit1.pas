@@ -26,8 +26,8 @@ unit Unit1;
 interface
 
 uses
-  Forms, Windows, GLObjects, GLMisc, StdCtrls, Classes, Controls,
-  ExtCtrls, GLWin32Viewer, LResources, GLScene,
+  Forms, GLObjects, GLMisc, StdCtrls, Classes, Controls,
+  ExtCtrls, GLLCLViewer, LResources, GLScene,
   GLTexture, GLCadencer;
 
 type
@@ -75,7 +75,7 @@ begin
 	// Sprite1 uses a PicFileImage, and so the image is automagically loaded by
 	// GLScene when necessary (no code is required).
 	// (Had I used two PicFileImage, I would have avoided this code)
-	picName:='..\..\media\flare1.bmp';
+	picName:='..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'Flare1.bmp';
 	GLMaterialLibrary1.Materials[0].Material.Texture.Image.LoadFromFile(picName);
 	GLMaterialLibrary1.Materials[0].Material.Texture.disabled:=false;
 	GLMaterialLibrary1.Materials[1].Material.Texture.Image.LoadFromFile(picName);
