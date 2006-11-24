@@ -17,7 +17,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLTexture, GLMisc, OpenGL1x,
   GLCadencer, GLMultiMaterialShader, GLTexCombineShader, LResources,
-  GLWin32Viewer;
+  GLLCLViewer;
 
 type
 
@@ -61,11 +61,11 @@ uses JPEG;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  SetCurrentDir(ExtractFilePath(Application.ExeName)+'..\..\media');
+  SetCurrentDir(ExtractFilePath(Application.ExeName)+'..' + PathDelim + '..' + PathDelim + 'media');
 
   with GLMaterialLibrary1 do begin
     // Add the specular pass
-    with AddTextureMaterial('specular','glscene_alpha.bmp') do begin
+    with AddTextureMaterial('specular','GLScene_alpha.bmp') do begin
       // tmBlend for shiny background
       //Material.Texture.TextureMode:=tmBlend;
       // tmModulate for shiny text
@@ -84,7 +84,7 @@ begin
   // passes.
   with GLMaterialLibrary2 do begin
     // Pass 1 : Base texture
-    AddTextureMaterial('Pass1','glscene.bmp');//}
+    AddTextureMaterial('Pass1','GLScene.bmp');//}
 
     // Pass 2 : Add a bit of detail
 {    with AddTextureMaterial('Pass2','detailmap.jpg') do begin
