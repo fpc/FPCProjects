@@ -28,8 +28,8 @@ unit Unit1;
 interface
 
 uses
-  Forms, Windows, GLMisc, GLObjects, GLParticles, StdCtrls, ExtCtrls,
-  GLBehaviours, Classes, Controls, VectorGeometry, SysUtils, GLWin32Viewer,
+  Forms, GLMisc, GLObjects, GLParticles, StdCtrls, ExtCtrls,
+  GLBehaviours, Classes, Controls, VectorGeometry, SysUtils, GLLCLViewer,
   LResources, GLScene, GLCadencer;
 
 type
@@ -84,7 +84,7 @@ begin
          Diffuse.Alpha:=0;
       end;
       // this is our "birth time"
-      material.texture.image.LoadFromFile('..\..\media\flare1.bmp');
+      material.texture.image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'Flare1.bmp');
       TagFloat:=GLCadencer1.CurrentTime;
    end;
 end;
