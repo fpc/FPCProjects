@@ -1,110 +1,92 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 362
-  ClientWidth = 558
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 557
-  VertScrollBar.Page = 361
   Left = 249
   Height = 362
   Top = 136
   Width = 558
+  HorzScrollBar.Page = 557
+  VertScrollBar.Page = 361
+  ActiveControl = RBPaint
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
   object GLSceneViewer: TGLSceneViewer
+    Height = 362
+    Width = 456
     Camera = GLCamera1
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 149.1151123046875
+    FieldOfView = 149.115112304687
     Align = alClient
     OnMouseDown = GLSceneViewerMouseDown
     OnMouseMove = GLSceneViewerMouseMove
-    Height = 362
-    Width = 456
   end
   object Panel1: TPanel
+    Left = 456
+    Height = 362
+    Width = 102
     Align = alRight
-    BorderSpacing.OnChange = nil
     BevelOuter = bvLowered
-    ClientHeight = 362
-    ClientWidth = 102
     Font.Height = -11
     Font.Name = 'Arial'
     FullRepaint = False
     TabOrder = 0
-    Left = 456
-    Height = 362
-    Width = 102
     object Label1: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 15
+      Top = 8
+      Width = 100
       Caption = 'HeightField'
       Color = clNone
       Font.Height = -15
       Font.Name = 'Arial'
       Font.Style = [fsBold]
-      Left = 8
-      Height = 18
-      Top = 8
-      Width = 82
+      ParentColor = False
     end
     object Label2: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 24
+      Height = 15
+      Top = 32
+      Width = 64
       Caption = 'picking'
       Color = clNone
       Font.Height = -15
       Font.Name = 'Arial'
       Font.Style = [fsBold]
-      Left = 24
-      Height = 18
-      Top = 32
-      Width = 51
+      ParentColor = False
     end
     object Label3: TLabel
-      AutoSize = False
-      BorderSpacing.OnChange = nil
-      Caption = 'This demo uses a crude method for heightfield picking based on the Z-Buffer. This method can be easily adapted for a variety of objects and 2.5D problems.'
-      Color = clNone
-      WordWrap = True
       Left = 8
       Height = 145
       Top = 168
       Width = 89
+      AutoSize = False
+      Caption = 'This demo uses a crude method for heightfield picking based on the Z-Buffer. This method can be easily adapted for a variety of objects and 2.5D problems.'
+      Color = clNone
+      ParentColor = False
+      WordWrap = True
     end
     object RBPaint: TRadioButton
-      BorderSpacing.OnChange = nil
+      Left = 16
+      Height = 24
+      Top = 80
+      Width = 52
       Caption = 'Paint'
       Checked = True
       State = cbChecked
       TabOrder = 0
-      Left = 16
-      Height = 17
-      Top = 80
-      Width = 49
     end
     object RadioButton2: TRadioButton
-      BorderSpacing.OnChange = nil
+      Left = 16
+      Height = 24
+      Top = 112
+      Width = 60
       Caption = 'Rotate'
       TabOrder = 1
-      Left = 16
-      Height = 17
-      Top = 112
-      Width = 57
     end
   end
   object GLScene1: TGLScene
     left = 8
     top = 40
     object HeightField: TGLHeightField
-      XSamplingScale.Min = -5.5
-      XSamplingScale.Max = 5.5
-      XSamplingScale.Step = 0.200000002980232
-      YSamplingScale.Min = -5.5
-      YSamplingScale.Max = 5.5
-      YSamplingScale.Step = 0.200000002980232
-      ColorMode = hfcmAmbientAndDiffuse
-      OnGetHeight = HeightFieldGetHeight
       Direction.Coordinates = {
         000000000000803F0000000000000000
       }
@@ -114,6 +96,14 @@ object Form1: TForm1
       Up.Coordinates = {
         0000000000000000000080BF00000000
       }
+      XSamplingScale.Min = -5.5
+      XSamplingScale.Max = 5.5
+      XSamplingScale.Step = 0.20000000298023
+      YSamplingScale.Min = -5.5
+      YSamplingScale.Max = 5.5
+      YSamplingScale.Step = 0.20000000298023
+      ColorMode = hfcmAmbientAndDiffuse
+      OnGetHeight = HeightFieldGetHeight
     end
     object GLLightSource1: TGLLightSource
       Ambient.Color = {

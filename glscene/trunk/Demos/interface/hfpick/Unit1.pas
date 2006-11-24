@@ -30,7 +30,7 @@ interface
 
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLGraph, GLWin32Viewer, GLMisc, VectorGeometry, VectorTypes,
+  Dialogs, GLGraph, GLLCLViewer, GLMisc, VectorGeometry, VectorTypes,
   GLTexture, GLObjects, StdCtrls, ExtCtrls, LResources, GLScene;
 
 type
