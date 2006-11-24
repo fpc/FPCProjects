@@ -1,115 +1,105 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 429
-  ClientWidth = 562
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 561
-  VertScrollBar.Page = 428
   Left = 273
   Height = 429
   Top = 139
   Width = 562
+  HorzScrollBar.Page = 561
+  VertScrollBar.Page = 428
+  ActiveControl = CheckBox1
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
   object GLSceneViewer2: TGLSceneViewer
-    Camera = GLCamera2
-    Buffer.BackgroundColor = 8404992
-    Buffer.ShadeModel = smSmooth
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 150.51287841796875
-    Align = alClient
-    OnMouseDown = GLSceneViewer2MouseDown
-    OnMouseMove = GLSceneViewer2MouseMove
     Height = 380
     Top = 49
     Width = 562
+    Camera = GLCamera2
+    Buffer.BackgroundColor = 8404992
+    Buffer.ShadeModel = smSmooth
+    FieldOfView = 150.512878417968
+    Align = alClient
+    OnMouseDown = GLSceneViewer2MouseDown
+    OnMouseMove = GLSceneViewer2MouseMove
   end
   object Panel1: TPanel
-    Align = alTop
-    BorderSpacing.OnChange = nil
-    BevelOuter = bvNone
-    ClientHeight = 49
-    ClientWidth = 562
-    FullRepaint = False
-    TabOrder = 0
     Height = 49
     Width = 562
+    Align = alTop
+    BevelOuter = bvNone
+    FullRepaint = False
+    TabOrder = 0
     object Label1: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 360
+      Height = 14
+      Width = 39
       Caption = 'Label1'
       Color = clNone
-      Left = 360
-      Height = 13
-      Width = 32
+      ParentColor = False
     end
     object Label2: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 360
+      Height = 14
+      Top = 16
+      Width = 39
       Caption = 'Label2'
       Color = clNone
-      Left = 360
-      Height = 13
-      Top = 16
-      Width = 32
+      ParentColor = False
     end
     object Label3: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 360
+      Height = 14
+      Top = 32
+      Width = 39
       Caption = 'Label3'
       Color = clNone
-      Left = 360
-      Height = 13
-      Top = 32
-      Width = 32
+      ParentColor = False
     end
     object Label5: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 14
+      Top = 8
+      Width = 39
       Caption = 'Label5'
       Color = clNone
-      Left = 8
-      Height = 13
-      Top = 8
-      Width = 32
+      ParentColor = False
     end
     object LABuild: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 14
+      Top = 24
+      Width = 44
       Caption = 'LABuild'
       Color = clNone
-      Left = 8
-      Height = 13
-      Top = 24
-      Width = 36
+      ParentColor = False
     end
     object Label4: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 168
+      Height = 14
+      Top = 32
+      Width = 39
       Caption = 'Label4'
       Color = clNone
-      Left = 168
-      Height = 13
-      Top = 32
-      Width = 32
+      ParentColor = False
     end
     object CheckBox1: TCheckBox
-      BorderSpacing.OnChange = nil
+      Left = 168
+      Height = 24
+      Top = 16
+      Width = 88
       Caption = 'Auto collide'
       Checked = True
       State = cbChecked
       TabOrder = 0
-      Left = 168
-      Height = 17
-      Top = 16
-      Width = 97
     end
     object CBOctree: TCheckBox
-      BorderSpacing.OnChange = nil
+      Left = 168
+      Height = 24
+      Width = 109
       Caption = 'Octree enabled'
       Checked = True
       State = cbChecked
       TabOrder = 1
-      Left = 168
-      Height = 17
-      Width = 97
     end
   end
   object GLScene1: TGLScene
@@ -147,9 +137,6 @@ object Form1: TForm1
       end
     end
     object Sphere1: TGLSphere
-      Radius = 0.300000011920929
-      Slices = 6
-      Stacks = 6
       Material.FrontProperties.Emission.Color = {
         0000803F0000803F000000000000803F
       }
@@ -162,14 +149,10 @@ object Form1: TForm1
       Up.Coordinates = {
         E9DC72BF000000009BE8A13E00000000
       }
+      Radius = 0.30000001192092
+      Slices = 6
+      Stacks = 6
       object ArrowLine1: TGLArrowLine
-        TopRadius = 0.100000001490116
-        TopArrowHeadHeight = 0.5
-        TopArrowHeadRadius = 0.200000002980232
-        BottomArrowHeadHeight = 0.5
-        BottomArrowHeadRadius = 0.200000002980232
-        BottomRadius = 0.050000000745058
-        Height = 1
         Material.FrontProperties.Diffuse.Color = {
           CDCC4C3FCDCC4C3FCDCC4C3F9A99193F
         }
@@ -183,6 +166,13 @@ object Form1: TForm1
         Position.Coordinates = {
           0000000000000000CDCCCC3D0000803F
         }
+        BottomRadius = 0.05000000074505
+        Height = 1
+        TopRadius = 0.10000000149011
+        TopArrowHeadHeight = 0.5
+        TopArrowHeadRadius = 0.20000000298023
+        BottomArrowHeadHeight = 0.5
+        BottomArrowHeadRadius = 0.20000000298023
       end
     end
     object GLCamera2: TGLCamera

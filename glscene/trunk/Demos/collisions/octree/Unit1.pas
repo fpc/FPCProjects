@@ -18,7 +18,7 @@ interface
 
 uses
   LCLIntf, SysUtils, Classes, Controls, Forms,
-  GLMisc, GLScene, GLVectorFileObjects, GLObjects, GLWin32Viewer,
+  GLMisc, GLScene, GLVectorFileObjects, GLObjects, GLLCLViewer,
   GLCadencer, ExtCtrls, StdCtrls, GLGeomObjects, LResources;
 
 type
@@ -70,7 +70,7 @@ var
    t : Int64;
 begin
    // Load high poly mesh (10,000 triangles).
-   FreeForm1.LoadFromFile('..\..\media\HighPolyObject.3ds');
+   FreeForm1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'HighPolyObject.3ds');
 
    t:=StartPrecisionTimer;
 
