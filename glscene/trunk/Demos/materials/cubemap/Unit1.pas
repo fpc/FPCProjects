@@ -20,7 +20,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLMisc, GLObjects, StdCtrls, GLTeapot,
-  LResources,Buttons, GLWin32Viewer;
+  LResources,Buttons, GLLCLViewer;
 
 type
 
@@ -65,7 +65,7 @@ begin
       Exit;
    end;
    // Our cube map images are here
-   SetCurrentDir(ExtractFilePath(Application.ExeName)+'..\..\media');
+   SetCurrentDir(ExtractFilePath(Application.ExeName)+'..' + PathDelim + '..' + PathDelim + 'media');
 
    with Teapot1.Material.Texture do begin
       // We need a CubeMapImage, which unlike the "regular Images" stores
