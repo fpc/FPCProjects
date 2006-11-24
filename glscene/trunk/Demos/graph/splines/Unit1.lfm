@@ -1,35 +1,29 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 372
-  ClientWidth = 353
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 352
-  VertScrollBar.Page = 371
   Left = 262
   Height = 372
   Top = 150
   Width = 353
+  HorzScrollBar.Page = 352
+  VertScrollBar.Page = 371
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
   object GLSceneViewer1: TGLSceneViewer
+    Height = 372
+    Width = 353
     Camera = GLCamera1
     Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 163.87615966796875
+    FieldOfView = 163.876159667968
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 372
-    Width = 353
   end
   object GLScene1: TGLScene
     left = 16
     top = 16
     object Lines1: TGLLines
-      SplineMode = lsmCubicSpline
-      Options = [loUseNodeColorForLines]
+      AntiAliased = True
+      LineWidth = 6
       Nodes = <      
         item
         end      
@@ -45,8 +39,8 @@ object Form1: TForm1
         end>
       NodesAspect = lnaCube
       NodeSize = 0.5
-      AntiAliased = True
-      LineWidth = 6
+      SplineMode = lsmCubicSpline
+      Options = [loUseNodeColorForLines]
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100
