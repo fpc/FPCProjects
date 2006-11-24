@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="\"/>
+    <PathDelim Value="/"/>
     <Version Value="5"/>
     <General>
       <Flags>
@@ -14,50 +14,6 @@
       <TargetFileExt Value=".exe"/>
       <ActiveEditorIndexAtStart Value="1"/>
     </General>
-    <Units Count="5">
-      <Unit0>
-        <CursorPos X="28" Y="9"/>
-        <EditorIndex Value="0"/>
-        <Filename Value="PathControl.lpr"/>
-        <IsPartOfProject Value="True"/>
-        <Loaded Value="True"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="20"/>
-      </Unit0>
-      <Unit1>
-        <CursorPos X="1" Y="1"/>
-        <EditorIndex Value="1"/>
-        <Filename Value="Unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <Loaded Value="True"/>
-        <ResourceFilename Value="Unit1.lrs"/>
-        <TopLine Value="1"/>
-        <UnitName Value="Unit1"/>
-        <UsageCount Value="10"/>
-      </Unit1>
-      <Unit2>
-        <CursorPos X="1" Y="1"/>
-        <Filename Value="C:\lazarus\components\GLScene\Source\Platform\GLWin32Viewer.pas"/>
-        <TopLine Value="61"/>
-        <UnitName Value="GLWin32Viewer"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-      <Unit3>
-        <CursorPos X="95" Y="6162"/>
-        <Filename Value="C:\lazarus\components\GLScene\Source\GLScene.pas"/>
-        <TopLine Value="6144"/>
-        <UnitName Value="GLScene"/>
-        <UsageCount Value="10"/>
-      </Unit3>
-      <Unit4>
-        <CursorPos X="1" Y="1"/>
-        <Filename Value="C:\lazarus\components\GLScene\LazarusWin\glscenelazarus.pas"/>
-        <TopLine Value="1"/>
-        <UnitName Value="GLSceneLazarus"/>
-        <UsageCount Value="10"/>
-      </Unit4>
-    </Units>
     <PublishOptions>
       <Version Value="2"/>
       <IgnoreBinaries Value="False"/>
@@ -78,13 +34,56 @@
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
+    <Units Count="5">
+      <Unit0>
+        <Filename Value="PathControl.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="28" Y="9"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="Unit1.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceFilename Value="unit1.lrs"/>
+        <UnitName Value="Unit1"/>
+        <CursorPos X="21" Y="11"/>
+        <TopLine Value="104"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="C:/lazarus/components/GLScene/Source/Platform/GLWin32Viewer.pas"/>
+        <UnitName Value="GLWin32Viewer"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="61"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="C:/lazarus/components/GLScene/Source/GLScene.pas"/>
+        <UnitName Value="GLScene"/>
+        <CursorPos X="95" Y="6162"/>
+        <TopLine Value="6144"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="C:/lazarus/components/GLScene/LazarusWin/glscenelazarus.pas"/>
+        <UnitName Value="GLSceneLazarus"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+    </Units>
     <JumpHistory Count="0" HistoryIndex="-1"/>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
-    <PathDelim Value="\"/>
     <SearchPaths>
-      <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
+      <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
     <CodeGeneration>
       <Generate Value="Faster"/>
