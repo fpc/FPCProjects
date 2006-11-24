@@ -1,40 +1,37 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 425
-  ClientWidth = 565
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 564
-  VertScrollBar.Page = 424
   Left = 315
   Height = 425
   Top = 119
   Width = 565
+  HorzScrollBar.Page = 564
+  VertScrollBar.Page = 424
+  ActiveControl = CBFormat
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
   object GLSceneViewer1: TGLSceneViewer
+    Height = 425
+    Width = 357
     Camera = GLCamera1
     AfterRender = GLSceneViewer1AfterRender
     Buffer.BackgroundColor = clInactiveCaptionText
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 179.3580322265625
+    FieldOfView = 179.358032226562
     Align = alClient
-    Height = 425
-    Width = 357
   end
   object Panel1: TPanel
-    Align = alRight
-    BevelOuter = bvLowered
-    ClientHeight = 425
-    ClientWidth = 208
-    FullRepaint = False
-    TabOrder = 0
     Left = 357
     Height = 425
     Width = 208
+    Align = alRight
+    BevelOuter = bvLowered
+    FullRepaint = False
+    TabOrder = 0
     object Label1: TLabel
+      Left = 1
+      Height = 64
+      Top = 1
+      Width = 206
       Align = alTop
       Alignment = taCenter
       AutoSize = False
@@ -47,84 +44,86 @@ object Form1: TForm1
       Layout = tlCenter
       ParentColor = False
       WordWrap = True
-      Left = 1
-      Height = 64
-      Top = 1
-      Width = 206
     end
     object Label2: TLabel
+      Left = 16
+      Height = 14
+      Top = 148
+      Width = 40
       Caption = 'Format'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 148
-      Width = 32
     end
     object Label3: TLabel
+      Left = 16
+      Height = 14
+      Top = 180
+      Width = 74
       Caption = 'Compression'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 180
-      Width = 60
     end
     object Label5: TLabel
+      Left = 16
+      Height = 14
+      Top = 272
+      Width = 69
       Caption = 'Render Size'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 272
-      Width = 58
     end
     object LAUsedMemory: TLabel
+      Left = 16
+      Height = 14
+      Top = 228
+      Width = 77
       Caption = 'Used Memory'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 228
-      Width = 65
     end
     object LARGB32: TLabel
+      Left = 16
+      Height = 14
+      Top = 212
+      Width = 77
       Caption = 'Used Memory'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 212
-      Width = 65
     end
     object LACompression: TLabel
+      Left = 16
+      Height = 14
+      Top = 244
+      Width = 77
       Caption = 'Used Memory'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 244
-      Width = 65
     end
     object Label4: TLabel
+      Left = 16
+      Height = 14
+      Top = 96
+      Width = 43
       Caption = 'MinCut:'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 96
-      Width = 36
     end
     object Label6: TLabel
+      Left = 16
+      Height = 14
+      Top = 72
+      Width = 63
       Caption = 'Sharpness:'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 72
-      Width = 53
     end
     object CloudFileOpenBtn: TSpeedButton
+      Left = 15
+      Height = 21
+      Hint = 'Load Cloud File'
+      Top = 360
+      Width = 25
+      Color = clBtnFace
       Glyph.Data = {
         36060000424D3606000000000000360000002800000020000000100000000100
         1800000000000006000064000000640000000000000000000000675E576B7731
@@ -179,31 +178,31 @@ object Form1: TForm1
       }
       NumGlyphs = 2
       OnClick = CloudFileOpenBtnClick
-      Left = 15
-      Height = 21
-      Hint = 'Load Cloud File'
-      Top = 360
-      Width = 25
     end
     object MakeAndSaveCloudNoiseFile: TSpeedButton
-      NumGlyphs = 0
-      OnClick = MakeAndSaveCloudNoiseFileClick
       Left = 161
       Height = 22
       Hint = 'Make And Save Cloud'
       Top = 360
       Width = 40
+      Color = clBtnFace
+      NumGlyphs = 0
+      OnClick = MakeAndSaveCloudNoiseFileClick
     end
     object Label61: TLabel
+      Left = 178
+      Height = 14
+      Top = 336
+      Width = 8
       Caption = '0'
       Color = clNone
       ParentColor = False
-      Left = 178
-      Height = 13
-      Top = 336
-      Width = 6
     end
     object CBFormat: TComboBox
+      Left = 88
+      Height = 21
+      Top = 144
+      Width = 105
       AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
       ItemHeight = 13
       Items.Strings = (
@@ -216,12 +215,12 @@ object Form1: TForm1
       OnChange = CBFormatChange
       Style = csDropDownList
       TabOrder = 0
-      Left = 88
-      Height = 21
-      Top = 144
-      Width = 105
     end
     object CBCompression: TComboBox
+      Left = 88
+      Height = 21
+      Top = 176
+      Width = 105
       AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
       ItemHeight = 13
       Items.Strings = (
@@ -234,143 +233,127 @@ object Form1: TForm1
       OnChange = CBFormatChange
       Style = csDropDownList
       TabOrder = 1
-      Left = 88
-      Height = 21
-      Top = 176
-      Width = 105
     end
     object RBDefault: TRadioButton
+      Left = 16
+      Height = 24
+      Top = 286
+      Width = 59
       Caption = '100 %'
       Checked = True
       OnClick = CBFormatChange
       State = cbChecked
       TabOrder = 2
-      Left = 16
-      Height = 17
-      Top = 286
-      Width = 57
     end
     object RBDouble: TRadioButton
+      Left = 79
+      Height = 24
+      Top = 286
+      Width = 59
       Caption = '200 %'
       OnClick = CBFormatChange
       TabOrder = 3
-      Left = 79
-      Height = 17
-      Top = 286
-      Width = 58
     end
     object RBQuad: TRadioButton
+      Left = 143
+      Height = 24
+      Top = 286
+      Width = 59
       Caption = '400 %'
       OnClick = CBFormatChange
       TabOrder = 4
-      Left = 143
-      Height = 17
-      Top = 286
-      Width = 58
     end
     object CheckBox1: TCheckBox
+      Left = 120
+      Height = 24
+      Top = 120
+      Width = 76
       Caption = 'Animated'
       TabOrder = 5
-      Left = 120
-      Height = 17
-      Top = 120
-      Width = 73
     end
     object SpinEdit1: TSpinEdit
-      MaxValue = 255
-      OnChange = CBFormatChange
-      TabOrder = 6
-      Value = 98
       Left = 88
       Height = 22
       Top = 96
       Width = 107
+      MaxValue = 255
+      OnChange = CBFormatChange
+      TabOrder = 6
+      Value = 98
     end
     object SpinEdit2: TSpinEdit
+      Left = 88
+      Height = 22
+      Top = 72
+      Width = 107
       MaxValue = 99
       MinValue = 1
       OnChange = CBFormatChange
       TabOrder = 7
       Value = 98
-      Left = 88
-      Height = 22
-      Top = 72
-      Width = 107
     end
     object CheckBox2: TCheckBox
+      Left = 16
+      Height = 24
+      Top = 120
+      Width = 78
       Caption = 'Seamless'
       Checked = True
       OnClick = CBFormatChange
       State = cbChecked
       TabOrder = 8
-      Left = 16
-      Height = 17
-      Top = 120
-      Width = 81
     end
     object TrackBar1: TTrackBar
-      Frequency = 1
+      Left = 24
+      Height = 33
+      Top = 304
+      Width = 150
       Min = 1
       OnChange = TrackBar1Change
       Position = 2
       ScalePos = trTop
       TabOrder = 9
-      Frequency = 1
-      Min = 1
-      OnChange = TrackBar1Change
-      Position = 2
-      ScalePos = trTop
-      Left = 24
-      Height = 33
-      Top = 304
-      Width = 150
     end
     object CloudRandomSeedUsedEdit: TEdit
-      TabOrder = 10
-      Text = '12345'
       Left = 111
       Height = 21
       Hint = 'Cloud Random Seed'
       Top = 336
       Width = 49
+      TabOrder = 10
+      Text = '12345'
     end
     object CloudImageSizeUsedEdit: TEdit
-      TabOrder = 11
-      Text = '128'
       Left = 95
       Height = 21
       Hint = 'Cloud Image Size'
       Top = 264
       Width = 33
+      TabOrder = 11
+      Text = '128'
     end
     object UseCloudFileCB: TCheckBox
-      Caption = 'Use Cloud File'
-      Hint = 'Use File'
-      TabOrder = 12
       Left = 15
-      Height = 17
+      Height = 24
       Hint = 'Use File'
       Top = 339
-      Width = 90
+      Width = 106
+      Caption = 'Use Cloud File'
+      TabOrder = 12
     end
     object CloudFileUsedEdit: TEdit
-      TabOrder = 13
       Left = 55
       Height = 21
       Top = 360
       Width = 98
       HelpContext = 50
+      TabOrder = 13
     end
   end
   object GLScene1: TGLScene
     left = 8
     top = 16
     object GLPlane1: TGLPlane
-      Height = 50
-      Width = 50
-      XTiles = 2
-      YTiles = 2
-      Style = [psTileTexture]
       Material.FrontProperties.Ambient.Color = {
         00000000000000000000000000000000
       }
@@ -380,13 +363,18 @@ object Form1: TForm1
       Material.FrontProperties.Emission.Color = {
         00000000000000000000000000000000
       }
-      Material.BlendingMode = bmalphatest50
+      Material.BlendingMode = bmAlphaTest50
       Material.Texture.ImageClassName = 'TGLProcTextureNoise'
-      Material.Texture.Image.NoiseSharpness = 0.990000009536743
+      Material.Texture.Image.NoiseSharpness = 0.99000000953674
       Material.Texture.Image.Seamless = True
       Material.Texture.Image.NoiseRandSeed = 497075363
       Material.Texture.TextureMode = tmReplace
       Material.Texture.Disabled = False
+      Height = 50
+      Width = 50
+      XTiles = 2
+      YTiles = 2
+      Style = [psTileTexture]
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100
@@ -413,7 +401,6 @@ object Form1: TForm1
   object OpenDialog1: TOpenDialog
     Title = 'Vorhandene Datei öffnen'
     FilterIndex = 0
-    Title = 'Vorhandene Datei öffnen'
     left = 420
     top = 355
   end
@@ -422,7 +409,6 @@ object Form1: TForm1
     DefaultExt = '.rnd'
     Filter = 'Cloud base (*.clb)|*.clb'
     FilterIndex = 0
-    Title = 'Datei sichern als'
     left = 460
     top = 357
   end
