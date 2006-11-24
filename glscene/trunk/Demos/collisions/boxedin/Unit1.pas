@@ -15,9 +15,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Windows, SysUtils, Classes, Controls, Forms, GLKeyboard,
+  LCLIntf, SysUtils, Classes, Controls, Forms,{ GLKeyboard,}
   VectorGeometry, GLMisc, GLScene, GLVectorFileObjects, GLObjects,
-  GLWin32Viewer, GLCadencer, ExtCtrls, StdCtrls, GLNavigator, ComCtrls,
+  GLLCLViewer, GLCadencer, ExtCtrls, StdCtrls, GLNavigator, ComCtrls,
   GLGeomObjects, LResources, Buttons;
 
 type
@@ -71,7 +71,7 @@ uses GLCrossPlatform, GLFile3DS;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-   FreeForm1.LoadFromFile('..\..\media\BoxedIn.3ds');
+   FreeForm1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'BoxedIn.3ds');
 
    FreeForm1.BuildOctree;
    Label1.Caption:='Octree Nodes    : '+inttostr(FreeForm1.Octree.NodeCount);
@@ -91,7 +91,7 @@ var
    pNormal : TVector;
    t : Int64;
 begin
-   if IsKeyDown(VK_ESCAPE) then close;
+{   if IsKeyDown(VK_ESCAPE) then close;}
 
    Velocity:=Trackbar1.Position*deltaTime*50;
 
