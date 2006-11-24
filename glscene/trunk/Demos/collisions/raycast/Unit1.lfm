@@ -1,136 +1,113 @@
 object Form1: TForm1
+  Left = 285
+  Height = 258
+  Top = 123
+  Width = 513
+  HorzScrollBar.Page = 512
+  VertScrollBar.Page = 257
+  ActiveControl = BUCast
   AutoSize = True
   Caption = 'Form1'
-  ClientHeight = 287
-  ClientWidth = 513
   Font.Height = -11
   Font.Name = 'Arial'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 14
-  HorzScrollBar.Page = 512
-  VertScrollBar.Page = 286
-  Left = 285
-  Height = 287
-  Top = 123
-  Width = 513
   object Bevel2: TBevel
-    BorderSpacing.OnChange = nil
-    Height = 209
-    Left = 280
-    Name = 'Bevel2'
-    Top = 49
-    Width = 225
     Left = 280
     Height = 209
     Top = 49
     Width = 225
   end
   object Bevel1: TBevel
-    BorderSpacing.OnChange = nil
-    Height = 209
-    Name = 'Bevel1'
-    Top = 49
-    Width = 225
     Height = 209
     Top = 49
     Width = 225
   end
   object PaintBox1: TPaintBox
-    BorderSpacing.OnChange = nil
-    ParentColor = True
     Left = 288
     Height = 193
     Top = 56
     Width = 209
   end
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 125.21951293945312
     Left = 8
     Height = 193
     Top = 57
     Width = 209
+    Camera = GLCamera1
+    FieldOfView = 125.219512939453
   end
   object BUCast: TButton
-    BorderSpacing.OnChange = nil
-    Caption = 'Cast!'
-    OnClick = BUCastClick
-    TabOrder = 0
     Left = 232
     Height = 25
     Top = 89
     Width = 41
+    BorderSpacing.InnerBorder = 4
+    Caption = 'Cast!'
+    OnClick = BUCastClick
+    TabOrder = 0
   end
   object Panel1: TPanel
-    Align = alTop
-    BorderSpacing.OnChange = nil
-    BevelOuter = bvNone
-    ClientHeight = 49
-    ClientWidth = 513
-    FullRepaint = False
-    TabOrder = 1
     Height = 49
     Width = 513
+    Align = alTop
+    BevelOuter = bvNone
+    FullRepaint = False
+    TabOrder = 1
     object Label1: TLabel
+      Height = 22
+      Width = 513
       Align = alTop
       Alignment = taCenter
       AutoSize = False
-      BorderSpacing.OnChange = nil
       Caption = 'RayCasting demo/testbed'
       Color = clNone
       Font.Height = -13
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       Layout = tlCenter
-      Height = 22
-      Width = 513
+      ParentColor = False
     end
     object Label2: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 11
+      Top = 32
+      Width = 110
       Caption = 'OpenGL scene view'
       Color = clNone
       Font.Height = -11
       Font.Name = 'Arial'
-      Left = 8
-      Height = 14
-      Top = 32
-      Width = 100
+      ParentColor = False
     end
     object Label3: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 288
+      Height = 11
+      Top = 32
+      Width = 153
       Caption = 'RayCasted/RayTraced view'
       Color = clNone
       Font.Height = -11
       Font.Name = 'Arial'
-      Left = 288
-      Height = 14
-      Top = 32
-      Width = 136
+      ParentColor = False
     end
   end
   object GLScene1: TGLScene
     left = 16
     top = 64
     object Sphere1: TGLSphere
-      Radius = 0.200000002980232
       Material.FrontProperties.Diffuse.Color = {
         8D8C0C3F8D8C0C3F0000803F0000803F
       }
+      Radius = 0.20000000298023
     end
     object DummyCube1: TGLDummyCube
-      CubeSize = 1
       Direction.Coordinates = {
         00000000000080330000803F00000000
       }
       Up.Coordinates = {
         EE8384BEEA46773FEA4677B300000000
       }
+      CubeSize = 1
       object Torus1: TGLTorus
-        MajorRadius = 0.400000005960465
-        MinorRadius = 0.100000001490116
         Material.FrontProperties.Diffuse.Color = {
           0000803F00000000000000000000803F
         }
@@ -144,19 +121,18 @@ object Form1: TForm1
           00C02FB20000803F0000403200000000
         }
         Visible = False
+        MajorRadius = 0.40000000596046
+        MinorRadius = 0.10000000149011
       end
       object Plane1: TGLPlane
-        Height = 0.699999988079071
-        Width = 0.300000011920929
         Material.FrontProperties.Diffuse.Color = {
           0000803F0000803F000000000000803F
         }
         Material.FaceCulling = fcNoCull
+        Height = 0.69999998807907
+        Width = 0.30000001192092
       end
       object Cylinder1: TGLCylinder
-        TopRadius = 0.100000001490116
-        BottomRadius = 0.100000001490116
-        Height = 0.600000023841858
         Material.FrontProperties.Diffuse.Color = {
           0000803F0000803F8180003F0000803F
         }
@@ -169,15 +145,18 @@ object Form1: TForm1
         Up.Coordinates = {
           00000000D6B35D3F0100003F00000000
         }
+        BottomRadius = 0.10000000149011
+        Height = 0.60000002384185
+        TopRadius = 0.10000000149011
         object GLAnnulus1: TGLAnnulus
-          BottomInnerRadius = 0.180000007152557
-          TopInnerRadius = 0.180000007152557
-          TopRadius = 0.230000004172325
-          BottomRadius = 0.230000004172325
-          Height = 0.200000002980232
           Material.FrontProperties.Diffuse.Color = {
             00000000000000000000803F0000803F
           }
+          BottomRadius = 0.23000000417232
+          Height = 0.20000000298023
+          BottomInnerRadius = 0.18000000715255
+          TopInnerRadius = 0.18000000715255
+          TopRadius = 0.23000000417232
         end
       end
       object GLCube1: TGLCube
