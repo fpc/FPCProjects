@@ -22,7 +22,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLTexture, GLObjects, StdCtrls, jpeg, ExtCtrls,
   GLMisc, OpenGL1x, GLTexCombineShader, GLHUDObjects, LResources,Buttons,
-  GLWin32Viewer;
+  GLLCLViewer;
 
 type
 
@@ -78,11 +78,11 @@ uses GLTextureCombiners;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
    // load the textures
-   SetCurrentDir('..\..\media');
+   SetCurrentDir('..' + PathDelim + '..' + PathDelim + 'media');
    with GLMaterialLibrary.Materials do begin
       Image1.Picture.LoadFromFile('beigemarble.jpg');
       Items[0].Material.Texture.Image.Assign(Image1.Picture);
-      Image2.Picture.LoadFromFile('flare1.bmp');
+      Image2.Picture.LoadFromFile('Flare1.bmp');
       Items[1].Material.Texture.Image.Assign(Image2.Picture);
       Image3.Picture.LoadFromFile('clover.jpg');
       Items[2].Material.Texture.Image.Assign(Image3.Picture);

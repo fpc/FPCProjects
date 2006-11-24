@@ -1,232 +1,223 @@
 object Form1: TForm1
-  BorderStyle = bsDialog
-  Caption = 'TGLTexCombineShader demo'
-  ClientHeight = 422
-  ClientWidth = 581
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 580
-  VertScrollBar.Page = 421
   Left = 239
   Height = 422
   Top = 121
   Width = 581
+  HorzScrollBar.Page = 580
+  VertScrollBar.Page = 421
+  ActiveControl = BUApply
+  BorderStyle = bsDialog
+  Caption = 'TGLTexCombineShader demo'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
   object Image1: TImage
-    Stretch = True
-    Transparent = True
     Left = 8
     Height = 128
     Top = 80
     Width = 128
+    Stretch = True
   end
   object Image2: TImage
-    Stretch = True
-    Transparent = True
     Left = 152
     Height = 128
     Top = 80
     Width = 128
+    Stretch = True
   end
   object Image3: TImage
-    Stretch = True
-    Transparent = True
     Left = 296
     Height = 128
     Top = 80
     Width = 128
+    Stretch = True
   end
   object Label1: TLabel
+    Left = 8
+    Height = 14
+    Top = 6
+    Width = 171
     Caption = 'Texture Combiners'
     Color = clNone
     Font.Height = -17
     Font.Name = 'Arial'
     Font.Style = [fsBold]
-    Left = 8
-    Height = 19
-    Top = 6
-    Width = 150
+    ParentColor = False
   end
   object Image4: TImage
-    Stretch = True
-    Transparent = True
     Left = 440
     Height = 128
     Top = 80
     Width = 128
+    Stretch = True
   end
   object Label3: TLabel
+    Left = 8
+    Height = 14
+    Top = 216
+    Width = 36
     Caption = 'Result'
     Color = clNone
-    Left = 8
-    Height = 13
-    Top = 216
-    Width = 30
+    ParentColor = False
   end
   object Label4: TLabel
+    Left = 200
+    Height = 14
+    Top = 216
+    Width = 136
     Caption = 'Texture Combiners code'
     Color = clNone
-    Left = 200
-    Height = 13
-    Top = 216
-    Width = 115
+    ParentColor = False
   end
   object Label2: TLabel
+    Left = 8
+    Height = 14
+    Top = 40
+    Width = 82
     Caption = 'Primary Color :'
     Color = clNone
-    Left = 8
-    Height = 13
-    Top = 40
-    Width = 67
+    ParentColor = False
   end
   object SceneViewer: TGLSceneViewer
-    Camera = GLCamera
-    PostRender = SceneViewerPostRender
-    Buffer.BackgroundColor = clGray
-    Buffer.Lighting = False
-    FieldOfView = 121.89079284667969
     Left = 8
     Height = 180
     Top = 232
     Width = 180
+    Camera = GLCamera
+    PostRender = SceneViewerPostRender
+    Buffer.BackgroundColor = clGray
+    Buffer.Lighting = False
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 121.890792846679
   end
   object BUApply: TButton
-    Caption = 'Apply'
-    OnClick = BUApplyClick
-    TabOrder = 0
     Left = 200
     Height = 25
     Top = 387
     Width = 75
+    BorderSpacing.InnerBorder = 4
+    Caption = 'Apply'
+    OnClick = BUApplyClick
+    TabOrder = 0
   end
   object PATex1: TPanel
+    Left = 176
+    Height = 41
+    Top = 124
+    Width = 81
     BevelOuter = bvLowered
     Caption = 'Unavailable'
-    ClientHeight = 41
-    ClientWidth = 81
     Font.Color = 8421440
     Font.Height = -12
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
     FullRepaint = False
     TabOrder = 1
-    Left = 176
+  end
+  object PATex2: TPanel
+    Left = 320
     Height = 41
     Top = 124
     Width = 81
-  end
-  object PATex2: TPanel
     BevelOuter = bvLowered
     Caption = 'Unavailable'
-    ClientHeight = 41
-    ClientWidth = 81
     Font.Color = 8421440
     Font.Height = -12
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
     FullRepaint = False
     TabOrder = 2
-    Left = 320
+  end
+  object PATex3: TPanel
+    Left = 464
     Height = 41
     Top = 124
     Width = 81
-  end
-  object PATex3: TPanel
     BevelOuter = bvLowered
     Caption = 'Unavailable'
-    ClientHeight = 41
-    ClientWidth = 81
     Font.Color = 8421440
     Font.Height = -12
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
     FullRepaint = False
     TabOrder = 3
-    Left = 464
-    Height = 41
-    Top = 124
-    Width = 81
   end
   object CBTex0: TCheckBox
+    Left = 8
+    Height = 24
+    Top = 64
+    Width = 52
     Caption = 'Tex0'
     Checked = True
     OnClick = CBTex0Click
     State = cbChecked
     TabOrder = 4
-    Left = 8
-    Height = 16
-    Top = 64
-    Width = 57
   end
   object CBTex1: TCheckBox
+    Left = 152
+    Height = 24
+    Top = 64
+    Width = 52
     Caption = 'Tex1'
     Checked = True
     OnClick = CBTex0Click
     State = cbChecked
     TabOrder = 5
-    Left = 152
-    Height = 16
-    Top = 64
-    Width = 57
   end
   object CBTex2: TCheckBox
+    Left = 296
+    Height = 24
+    Top = 64
+    Width = 52
     Caption = 'Tex2'
     OnClick = CBTex0Click
     TabOrder = 6
-    Left = 296
-    Height = 16
-    Top = 64
-    Width = 57
   end
   object CBTex3: TCheckBox
+    Left = 440
+    Height = 24
+    Top = 64
+    Width = 52
     Caption = 'Tex3'
     OnClick = CBTex0Click
     TabOrder = 7
-    Left = 440
-    Height = 16
-    Top = 64
-    Width = 57
   end
   object Panel1: TPanel
-    BevelOuter = bvLowered
-    BorderWidth = 1
-    Caption = 'Panel1'
-    ClientHeight = 145
-    ClientWidth = 369
-    FullRepaint = False
-    TabOrder = 8
     Left = 200
     Height = 145
     Top = 232
     Width = 369
+    BevelOuter = bvLowered
+    BorderWidth = 1
+    Caption = 'Panel1'
+    FullRepaint = False
+    TabOrder = 8
     object MECombiner: TMemo
+      Left = 2
+      Height = 141
+      Hint = 'Syntax Examples:'#13#10#13#10'   Tex1:=Tex0;   // replace texture 1 with texture 0'#13#10'   Tex1:=Tex0+Tex1; // additive blending between textures 0 and 1'#13#10'   Tex1:=Tex0-Tex1; // subtractive blending between textures 0 and 1'#13#10'   Tex1:=Tex0*Tex1; // modulation between textures 0 and 1'#13#10'   Tex1:=Tex0+Tex1-0.5; // signed additive blending between textures 0 and 1'#13#10'   Tex1:=Interpolate(Tex0, Tex1, PrimaryColor); // interpolation between textures 0 and 1 using primary color as factor'#13#10'   Tex1:=Dot3(Tex0, Tex1); // dot3 product between textures 0 and 1'
+      Top = 2
+      Width = 365
       Align = alClient
       Font.CharSet = ANSI_CHARSET
       Font.Height = -11
       Font.Name = 'Courier New'
       ScrollBars = ssBoth
       TabOrder = 0
-      Left = 2
-      Height = 141
-      Hint = 'Syntax Examples:'#13#10#13#10'   Tex1:=Tex0;   // replace texture 1 with texture 0'#13#10'   Tex1:=Tex0+Tex1; // additive blending between textures 0 and 1'#13#10'   Tex1:=Tex0-Tex1; // subtractive blending between textures 0 and 1'#13#10'   Tex1:=Tex0*Tex1; // modulation between textures 0 and 1'#13#10'   Tex1:=Tex0+Tex1-0.5; // signed additive blending between textures 0 and 1'#13#10'   Tex1:=Interpolate(Tex0, Tex1, PrimaryColor); // interpolation between textures 0 and 1 using primary color as factor'#13#10'   Tex1:=Dot3(Tex0, Tex1); // dot3 product between textures 0 and 1'
-      Top = 2
-      Width = 365
     end
   end
   object PAPrimary: TPanel
-    ClientHeight = 17
-    ClientWidth = 65
-    Color = 13421772
-    FullRepaint = False
-    TabOrder = 9
-    OnClick = PAPrimaryClick
-    OnDblClick = PAPrimaryClick
     Left = 88
     Height = 17
     Top = 38
     Width = 65
+    Color = 13421772
+    FullRepaint = False
+    ParentColor = False
+    TabOrder = 9
+    OnClick = PAPrimaryClick
+    OnDblClick = PAPrimaryClick
   end
   object GLScene: TGLScene
     left = 64
@@ -235,13 +226,13 @@ object Form1: TForm1
       CubeSize = 1
     end
     object GLHUDSprite: TGLHUDSprite
-      Width = 128
-      Height = 128
       Material.MaterialLibrary = GLMaterialLibrary
       Material.LibMaterialName = 'Tex0'
       Position.Coordinates = {
         0000B4420000B442000000000000803F
       }
+      Width = 128
+      Height = 128
     end
     object GLCamera: TGLCamera
       DepthOfView = 100
@@ -283,7 +274,6 @@ object Form1: TForm1
     top = 272
   end
   object ColorDialog: TColorDialog
-    Title = 'Farbe auswählen'
     Title = 'Farbe auswählen'
     left = 184
     top = 16
