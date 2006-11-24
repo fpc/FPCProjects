@@ -25,7 +25,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, GLScene, GLObjects, GLMisc, GLTexture, GLHUDObjects,
-  GLCadencer, LResources, GLWin32Viewer;
+  GLCadencer, LResources, GLLCLViewer;
 
 type
 
@@ -78,7 +78,7 @@ var
 begin
    // collect JPeg textures from the demos' media directory
    SetCurrentDir(ExtractFilePath(Application.ExeName));
-   i:=FindFirst('..\..\media\*.jpg', faAnyFile, sr);
+   i:=FindFirst('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + '*.jpg', faAnyFile, sr);
    while i=0 do begin
       CBImage.Items.Add(sr.Name);
       i:=FindNext(sr);
@@ -98,7 +98,7 @@ begin
    with HUDSprite1.Material.Texture do begin
       TextureFormat:=TGLTextureFormat(Integer(tfRGB)+CBFormat.ItemIndex);
       Compression:=TGLTextureCompression(Integer(tcNone)+CBCompression.ItemIndex);
-      Image.LoadFromFile('..\..\media\'+CBImage.Text);
+      Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + CBImage.Text);
       LAPicSize.Caption:=IntToStr(Image.Width)+' x '+IntToStr(Image.Height);
       if RBDefault.Checked then begin
          HUDSprite1.Width:=Image.Width;
