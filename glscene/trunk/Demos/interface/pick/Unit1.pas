@@ -18,7 +18,7 @@ interface
 
 uses
   Forms, GLObjects, GLMisc, GLTexture, Classes, Controls, Dialogs,
-  GLGeomObjects, LResources, GLWin32Viewer, GLScene;
+  GLGeomObjects, LResources, GLLCLViewer, GLScene;
 
 type
 
