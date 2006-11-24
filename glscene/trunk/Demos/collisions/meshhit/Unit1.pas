@@ -12,7 +12,7 @@ interface
 
 uses
   LCLIntf, SysUtils, Classes, Controls, Forms,
-  GLMisc, GLScene, GLVectorFileObjects, GLObjects, GLWin32Viewer,
+  GLMisc, GLScene, GLVectorFileObjects, GLObjects, GLLCLViewer,
   GLGeomObjects, StdCtrls, LResources, GLCadencer;
 
 type
@@ -59,7 +59,7 @@ uses VectorGeometry, GLFile3DS;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
    // Load mushroom mesh
-   FreeForm1.LoadFromFile('..\..\media\mushroom.3ds');
+   FreeForm1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'mushroom.3ds');
 end;
 
 // Perform the raycasting for the perspective camera & viewer

@@ -1,61 +1,53 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 302
-  ClientWidth = 562
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 561
-  VertScrollBar.Page = 301
   Left = 250
   Height = 302
   Top = 127
   Width = 562
+  HorzScrollBar.Page = 561
+  VertScrollBar.Page = 301
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
   object Label1: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 14
+    Top = 8
+    Width = 93
     Caption = 'Orthogonal View'
     Color = clNone
-    Left = 8
-    Height = 13
-    Top = 8
-    Width = 78
+    ParentColor = False
   end
   object Label2: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 280
+    Height = 14
+    Top = 8
+    Width = 95
     Caption = 'Perspective View'
     Color = clNone
-    Left = 280
-    Height = 13
-    Top = 8
-    Width = 82
+    ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clGray
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 170.51206970214844
-    OnMouseDown = GLSceneViewer1MouseDown
-    OnMouseMove = GLSceneViewer1MouseMove
     Left = 8
     Height = 241
     Top = 24
     Width = 265
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clGray
+    FieldOfView = 170.512069702148
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
   end
   object GLSceneViewer2: TGLSceneViewer
-    Camera = GLCamera2
-    Buffer.BackgroundColor = clGray
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 134.92918395996094
-    OnMouseDown = GLSceneViewer2MouseDown
-    OnMouseMove = GLSceneViewer2MouseMove
     Left = 280
     Height = 241
     Top = 24
     Width = 265
+    Camera = GLCamera2
+    Buffer.BackgroundColor = clGray
+    FieldOfView = 134.92918395996
+    OnMouseDown = GLSceneViewer2MouseDown
+    OnMouseMove = GLSceneViewer2MouseMove
   end
   object GLScene1: TGLScene
     left = 16
@@ -70,7 +62,6 @@ object Form1: TForm1
     object DummyCube1: TGLDummyCube
       CubeSize = 1
       object FreeForm1: TGLFreeForm
-        NormalsOrientation = mnoInvert
         Direction.Coordinates = {
           000000000000803F0000000000000000
         }
@@ -81,12 +72,10 @@ object Form1: TForm1
         Up.Coordinates = {
           00000000000000000000803F00000000
         }
+        NormalsOrientation = mnoInvert
       end
     end
     object Sphere1: TGLSphere
-      Radius = 0.300000011920929
-      Slices = 6
-      Stacks = 6
       Material.FrontProperties.Emission.Color = {
         0000803F0000803F000000000000803F
       }
@@ -96,14 +85,10 @@ object Form1: TForm1
       Up.Coordinates = {
         E9DC72BF000000009BE8A13E00000000
       }
+      Radius = 0.30000001192092
+      Slices = 6
+      Stacks = 6
       object ArrowLine1: TGLArrowLine
-        TopRadius = 0.100000001490116
-        TopArrowHeadHeight = 0.5
-        TopArrowHeadRadius = 0.200000002980232
-        BottomArrowHeadHeight = 0.5
-        BottomArrowHeadRadius = 0.200000002980232
-        BottomRadius = 0.050000000745058
-        Height = 1
         Material.FrontProperties.Diffuse.Color = {
           CDCC4C3FCDCC4C3FCDCC4C3F9A99193F
         }
@@ -114,6 +99,13 @@ object Form1: TForm1
         Position.Coordinates = {
           0000000000000000CDCCCC3D0000803F
         }
+        BottomRadius = 0.05000000074505
+        Height = 1
+        TopRadius = 0.10000000149011
+        TopArrowHeadHeight = 0.5
+        TopArrowHeadRadius = 0.20000000298023
+        BottomArrowHeadHeight = 0.5
+        BottomArrowHeadRadius = 0.20000000298023
       end
     end
     object GLCamera1: TGLCamera
