@@ -8,7 +8,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, GLScene, GLObjects, GLMisc, GLTexture, GLHUDObjects,
-  GLCadencer, GLProcTextures, Spin, LResources, GLWin32Viewer;
+  GLCadencer, GLProcTextures, Spin, LResources, GLLCLViewer;
 
 type
 

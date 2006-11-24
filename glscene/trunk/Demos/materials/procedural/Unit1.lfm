@@ -1,39 +1,36 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 381
-  ClientWidth = 532
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = CBFormatChange
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 531
-  VertScrollBar.Page = 380
   Left = 334
   Height = 381
   Top = 136
   Width = 532
+  HorzScrollBar.Page = 531
+  VertScrollBar.Page = 380
+  ActiveControl = CBFormat
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = CBFormatChange
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    AfterRender = GLSceneViewer1AfterRender
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 179.29264831542969
-    Align = alClient
     Height = 381
     Width = 324
+    Camera = GLCamera1
+    AfterRender = GLSceneViewer1AfterRender
+    FieldOfView = 179.292648315429
+    Align = alClient
   end
   object Panel1: TPanel
-    Align = alRight
-    BevelOuter = bvLowered
-    ClientHeight = 381
-    ClientWidth = 208
-    FullRepaint = False
-    TabOrder = 0
     Left = 324
     Height = 381
     Width = 208
+    Align = alRight
+    BevelOuter = bvLowered
+    FullRepaint = False
+    TabOrder = 0
     object Label1: TLabel
+      Left = 1
+      Height = 64
+      Top = 1
+      Width = 206
       Align = alTop
       Alignment = taCenter
       AutoSize = False
@@ -46,84 +43,84 @@ object Form1: TForm1
       Layout = tlCenter
       ParentColor = False
       WordWrap = True
-      Left = 1
-      Height = 64
-      Top = 1
-      Width = 206
     end
     object Label2: TLabel
+      Left = 16
+      Height = 14
+      Top = 148
+      Width = 40
       Caption = 'Format'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 148
-      Width = 32
     end
     object Label3: TLabel
+      Left = 16
+      Height = 14
+      Top = 180
+      Width = 74
       Caption = 'Compression'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 180
-      Width = 60
     end
     object Label5: TLabel
+      Left = 16
+      Height = 14
+      Top = 272
+      Width = 69
       Caption = 'Render Size'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 272
-      Width = 58
     end
     object LAUsedMemory: TLabel
+      Left = 16
+      Height = 14
+      Top = 228
+      Width = 77
       Caption = 'Used Memory'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 228
-      Width = 65
     end
     object LARGB32: TLabel
+      Left = 16
+      Height = 14
+      Top = 212
+      Width = 77
       Caption = 'Used Memory'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 212
-      Width = 65
     end
     object LACompression: TLabel
+      Left = 16
+      Height = 14
+      Top = 244
+      Width = 77
       Caption = 'Used Memory'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 244
-      Width = 65
     end
     object Label4: TLabel
+      Left = 16
+      Height = 14
+      Top = 96
+      Width = 43
       Caption = 'MinCut:'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 96
-      Width = 36
     end
     object Label6: TLabel
+      Left = 16
+      Height = 14
+      Top = 72
+      Width = 63
       Caption = 'Sharpness:'
       Color = clNone
       ParentColor = False
-      Left = 16
-      Height = 13
-      Top = 72
-      Width = 53
     end
     object CBFormat: TComboBox
+      Left = 88
+      Height = 21
+      Top = 144
+      Width = 105
       AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
       ItemHeight = 13
       Items.Strings = (
@@ -136,12 +133,12 @@ object Form1: TForm1
       OnChange = CBFormatChange
       Style = csDropDownList
       TabOrder = 0
-      Left = 88
-      Height = 21
-      Top = 144
-      Width = 105
     end
     object CBCompression: TComboBox
+      Left = 88
+      Height = 21
+      Top = 176
+      Width = 105
       AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
       ItemHeight = 13
       Items.Strings = (
@@ -154,94 +151,90 @@ object Form1: TForm1
       OnChange = CBFormatChange
       Style = csDropDownList
       TabOrder = 1
-      Left = 88
-      Height = 21
-      Top = 176
-      Width = 105
     end
     object RBDefault: TRadioButton
+      Left = 88
+      Height = 24
+      Top = 270
+      Width = 59
       Caption = '100 %'
       Checked = True
       OnClick = CBFormatChange
       State = cbChecked
       TabOrder = 2
-      Left = 88
-      Height = 17
-      Top = 270
-      Width = 57
     end
     object RBDouble: TRadioButton
+      Left = 87
+      Height = 24
+      Top = 294
+      Width = 59
       Caption = '200 %'
       OnClick = CBFormatChange
       TabOrder = 3
-      Left = 87
-      Height = 17
-      Top = 294
-      Width = 58
     end
     object RBQuad: TRadioButton
+      Left = 87
+      Height = 24
+      Top = 318
+      Width = 59
       Caption = '400 %'
       OnClick = CBFormatChange
       TabOrder = 4
-      Left = 87
-      Height = 17
-      Top = 318
-      Width = 58
     end
     object CheckBox1: TCheckBox
+      Left = 120
+      Height = 24
+      Top = 120
+      Width = 76
       Caption = 'Animated'
       TabOrder = 5
-      Left = 120
-      Height = 17
-      Top = 120
-      Width = 73
     end
     object SpinEdit1: TSpinEdit
-      MaxValue = 255
-      MinValue = 120
-      OnChange = CBFormatChange
-      TabOrder = 6
-      Value = 120
       Left = 88
       Height = 22
       Top = 96
       Width = 107
+      MaxValue = 255
+      MinValue = 120
+      OnChange = CBFormatChange
+      TabOrder = 6
+      Value = 1
     end
     object SpinEdit2: TSpinEdit
-      MaxValue = 90
-      OnChange = CBFormatChange
-      TabOrder = 7
-      Value = 90
       Left = 88
       Height = 22
       Top = 72
       Width = 107
+      MaxValue = 90
+      OnChange = CBFormatChange
+      TabOrder = 7
+      Value = 90
     end
     object CheckBox2: TCheckBox
+      Left = 16
+      Height = 24
+      Top = 120
+      Width = 78
       Caption = 'Seamless'
       Checked = True
       OnClick = CBFormatChange
       State = cbChecked
       TabOrder = 8
-      Left = 16
-      Height = 17
-      Top = 120
-      Width = 81
     end
   end
   object GLScene1: TGLScene
     left = 8
     top = 16
     object GLPlane1: TGLPlane
+      Material.Texture.ImageClassName = 'TGLProcTextureNoise'
+      Material.Texture.Image.NoiseSharpness = 0.99000000953674
+      Material.Texture.Image.NoiseRandSeed = 1194230550
+      Material.Texture.Disabled = False
       Height = 50
       Width = 50
       XTiles = 2
       YTiles = 2
       Style = [psTileTexture]
-      Material.Texture.ImageClassName = 'TGLProcTextureNoise'
-      Material.Texture.Image.NoiseSharpness = 0.990000009536743
-      Material.Texture.Image.NoiseRandSeed = 1194230550
-      Material.Texture.Disabled = False
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100
