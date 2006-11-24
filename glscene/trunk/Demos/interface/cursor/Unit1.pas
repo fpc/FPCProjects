@@ -25,7 +25,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtDlgs, Menus, ComCtrls, GLObjects, GLParticles, GLMisc, GLTexture,
-  GLCadencer, ExtCtrls, GLHudObjects, GLWin32Viewer, LResources, GLScene;
+  GLCadencer, ExtCtrls, GLHudObjects, GLLCLViewer, LResources, GLScene;
 
 type
   TForm1 = class(TForm)
@@ -84,7 +84,7 @@ begin
    GLSceneViewer1.Cursor:=crNone;
    // and load my ugly cursor (size adjusted in design props)
    with GLMaterialLibrary1.Materials[0] do
-      Material.Texture.Image.LoadFromFile('..\..\media\cursor.bmp');
+      Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'cursor.bmp');
 end;
 
 procedure TForm1.MILoadImageClick(Sender: TObject);
