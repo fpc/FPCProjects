@@ -1,41 +1,37 @@
 { This is an automatically generated lazarus resource file }
 
 LazarusResources.Add('TForm1','FORMDATA',[
-  'TPF0'#6'TForm1'#5'Form1'#7'Caption'#6#5'Form1'#12'ClientHeight'#3'j'#1#11'Cl'
-  +'ientWidth'#3#202#1#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#8
-  +'OnCreate'#7#10'FormCreate'#13'PixelsPerInch'#2'`'#10'TextHeight'#2#13#18'Ho'
-  +'rzScrollBar.Page'#3#201#1#18'VertScrollBar.Page'#3'i'#1#4'Left'#3#29#1#6'He'
-  +'ight'#3'j'#1#3'Top'#2'}'#5'Width'#3#202#1#0#14'TGLSceneViewer'#14'GLSceneVi'
-  +'ewer1'#6'Camera'#7#9'GLCamera1'#15'Buffer.OnChange'#13#25'Buffer.OnStructur'
-  +'alChange'#13#11'FieldOfView'#5#0#0#0#0#0#197#251#144#6'@'#5'Align'#7#8'alCl'
-  +'ient'#6'Height'#3'='#1#5'Width'#3#202#1#0#0#9'TTrackBar'#9'TrackBar1'#5'Ali'
-  +'gn'#7#8'alBottom'#22'BorderSpacing.OnChange'#13#9'Frequency'#2#5#3'Max'#2#20
-  +#3'Min'#2#236#8'OnChange'#7#15'TrackBar1Change'#8'Position'#2#20#8'ScalePos'
-  +#7#5'trTop'#8'TabOrder'#2#0#9'TickMarks'#7#6'tmBoth'#9'Frequency'#2#5#3'Max'
-  +#2#20#3'Min'#2#236#8'OnChange'#7#15'TrackBar1Change'#8'Position'#2#20#8'Scal'
-  +'ePos'#7#5'trTop'#9'TickMarks'#7#6'tmBoth'#6'Height'#2'-'#3'Top'#3'='#1#5'Wi'
-  +'dth'#3#202#1#0#0#7'TButton'#7'Button1'#22'BorderSpacing.OnChange'#13#7'Capt'
-  +'ion'#6#15'Test collisions'#7'OnClick'#7#12'Button1Click'#8'TabOrder'#2#1#4
-  +'Left'#3'P'#1#6'Height'#2#25#3'Top'#2#16#5'Width'#2'['#0#0#8'TGLScene'#8'GLS'
-  +'cene1'#4'left'#2#16#3'top'#2#16#0#14'TGLLightSource'#14'GLLightSource1'#16
-  +'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Coordinates'#10#16
-  +#0#0#0#0#0#160'A'#0#0#160'A'#0#0#160'A'#0#0#128'?'#10'SpotCutOff'#5#0#0#0#0#0
-  +#0#0#180#6'@'#0#0#12'TGLDummyCube'#10'DummyCube1'#8'CubeSize'#5#0#0#0#0#0#0#0
-  +#128#255'?'#0#0#9'TGLSphere'#7'Sphere1'#6'Radius'#5#0#0#0#0#0#0#0#128#254'?&'
-  +'Material.FrontProperties.Diffuse.Color'#10#16#0#0#0#138#143#15'?'#190#188'<'
-  +'?'#138#143#15'?'#0#0#128'?0Material.Texture.MappingTCoordinates.Coordinates'
-  +#10#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#20'Position.Coordinates'#10
-  +#16#0#0#0#0#0#0#0#0#0#0#0#0#0#0'@'#0#0#128'?'#14'BehavioursData'#10'*'#0#0#0
-  +#2#1#6#13'TGLBCollision'#2#1#6#17'CollisionManager1'#2#1#2#0#0#0#9'TGLSphere'
-  +#7'Sphere2'#6'Radius'#5#0#0#0#0#0#0#0#128#254'?&Material.FrontProperties.Dif'
-  +'fuse.Color'#10#16#0#0#0#0#0#0#0#248#254#254'>'#0#0#128'?'#0#0#128'?0Materia'
-  +'l.Texture.MappingTCoordinates.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0
-  +#0#0#0#0#0#0#0#14'BehavioursData'#10'*'#0#0#0#2#1#6#13'TGLBCollision'#2#1#6
-  +#17'CollisionManager1'#2#1#2#0#0#0#9'TGLCamera'#9'GLCamera1'#11'DepthOfView'
-  +#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0#200#4'@'#12'Target'
-  +'Object'#7#10'DummyCube1'#20'Position.Coordinates'#10#16#0#0#0#0#0#160'@'#0#0
-  +'@@'#0#0#0'@'#0#0#128'?'#4'left'#3#0#1#3'top'#3#160#0#0#0#0#17'TCollisionMan'
-  +'ager'#17'CollisionManager1'#11'OnCollision'#7#26'CollisionManager1Collision'
-  +#4'left'#2#16#3'top'#2'0'#0#0#11'TGLCadencer'#11'GLCadencer1'#5'Scene'#7#8'G'
-  +'LScene1'#4'left'#2'0'#3'top'#2#16#0#0#0
+  'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#29#1#6'Height'#3'j'#1#3'Top'#2'}'#5'Width'
+  +#3#202#1#18'HorzScrollBar.Page'#3#201#1#18'VertScrollBar.Page'#3'i'#1#13'Act'
+  +'iveControl'#7#9'TrackBar1'#7'Caption'#6#5'Form1'#11'Font.Height'#2#245#9'Fo'
+  +'nt.Name'#6#13'MS Sans Serif'#8'OnCreate'#7#10'FormCreate'#0#14'TGLSceneView'
+  +'er'#14'GLSceneViewer1'#6'Height'#3'='#1#5'Width'#3#202#1#6'Camera'#7#9'GLCa'
+  +'mera1'#11'FieldOfView'#5#0#0#0#0#0#197#251#144#6'@'#5'Align'#7#8'alClient'#0
+  +#0#9'TTrackBar'#9'TrackBar1'#6'Height'#2'-'#3'Top'#3'='#1#5'Width'#3#202#1#9
+  +'Frequency'#2#5#3'Max'#2#20#3'Min'#2#236#8'OnChange'#7#15'TrackBar1Change'#8
+  +'Position'#2#20#8'ScalePos'#7#5'trTop'#9'TickMarks'#7#6'tmBoth'#5'Align'#7#8
+  +'alBottom'#8'TabOrder'#2#0#0#0#7'TButton'#7'Button1'#4'Left'#3'P'#1#6'Height'
+  +#2#25#3'Top'#2#16#5'Width'#2'['#25'BorderSpacing.InnerBorder'#2#4#7'Caption'
+  +#6#15'Test collisions'#7'OnClick'#7#12'Button1Click'#8'TabOrder'#2#1#0#0#8'T'
+  +'GLScene'#8'GLScene1'#4'left'#2#16#3'top'#2#16#0#14'TGLLightSource'#14'GLLig'
+  +'htSource1'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Coor'
+  +'dinates'#10#16#0#0#0#0#0#160'A'#0#0#160'A'#0#0#160'A'#0#0#128'?'#10'SpotCut'
+  +'Off'#5#0#0#0#0#0#0#0#180#6'@'#0#0#12'TGLDummyCube'#10'DummyCube1'#8'CubeSiz'
+  +'e'#5#0#0#0#0#0#0#0#128#255'?'#0#0#9'TGLSphere'#7'Sphere1&Material.FrontProp'
+  +'erties.Diffuse.Color'#10#16#0#0#0#138#143#15'?'#190#188'<?'#138#143#15'?'#0
+  +#0#128'?0Material.Texture.MappingTCoordinates.Coordinates'#10#16#0#0#0#0#0#0
+  +#0#0#0#128'?'#0#0#0#0#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0#0#0#0#0#0
+  +#0#0#0#0#0#0'@'#0#0#128'?'#6'Radius'#5#0#0#0#0#0#0#0#128#254'?'#14'Behaviour'
+  +'sData'#10'*'#0#0#0#2#1#6#13'TGLBCollision'#2#1#6#17'CollisionManager1'#2#1#2
+  +#0#0#0#9'TGLSphere'#7'Sphere2&Material.FrontProperties.Diffuse.Color'#10#16#0
+  +#0#0#0#0#0#0#248#254#254'>'#0#0#128'?'#0#0#128'?0Material.Texture.MappingTCo'
+  +'ordinates.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#6'Rad'
+  +'ius'#5#0#0#0#0#0#0#0#128#254'?'#14'BehavioursData'#10'*'#0#0#0#2#1#6#13'TGL'
+  +'BCollision'#2#1#6#17'CollisionManager1'#2#1#2#0#0#0#9'TGLCamera'#9'GLCamera'
+  +'1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0
+  +#200#4'@'#12'TargetObject'#7#10'DummyCube1'#20'Position.Coordinates'#10#16#0
+  +#0#0#0#0#160'@'#0#0'@@'#0#0#0'@'#0#0#128'?'#4'left'#3#0#1#3'top'#3#160#0#0#0
+  +#0#17'TCollisionManager'#17'CollisionManager1'#11'OnCollision'#7#26'Collisio'
+  +'nManager1Collision'#4'left'#2#16#3'top'#2'0'#0#0#11'TGLCadencer'#11'GLCaden'
+  +'cer1'#5'Scene'#7#8'GLScene1'#4'left'#2'0'#3'top'#2#16#0#0#0
 ]);
