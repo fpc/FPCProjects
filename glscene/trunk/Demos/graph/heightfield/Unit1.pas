@@ -29,7 +29,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, StdCtrls,
   ComCtrls, GLGraph, GLObjects, GLMisc, ExtCtrls, GLTexture,
-  GLCadencer, VectorGeometry, GLWin32Viewer, LResources, GLScene;
+  GLCadencer, VectorGeometry, GLLCLViewer, LResources, GLScene;
 
 type
   TForm1 = class(TForm)
