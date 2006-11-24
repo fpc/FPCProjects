@@ -56,7 +56,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   GLScene, GLObjects, GLMisc, GLExtrusion, GLMirror, GLMultiPolygon,
   ExtCtrls, GLCadencer, StdCtrls, GLTeapot, GLGeomObjects,
-  LResources, GLWin32Viewer;
+  LResources, GLLCLViewer;
 
 type
 
