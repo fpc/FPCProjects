@@ -43,7 +43,7 @@ interface
 uses
   SysUtils, Classes, Graphics, Controls, Forms, Dialogs, GLTexture,
   GLCadencer, GLMisc, GLObjects, GLParticles, ExtCtrls, GLBehaviours, VectorGeometry,
-  GLWin32Viewer, LResources, GLScene;
+  GLLCLViewer, LResources, GLScene;
 
 type
 
