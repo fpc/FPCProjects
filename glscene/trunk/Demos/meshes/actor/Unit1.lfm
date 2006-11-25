@@ -1,55 +1,52 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 441
-  ClientWidth = 526
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 525
-  VertScrollBar.Page = 440
   Left = 271
   Height = 441
   Top = 148
   Width = 526
+  HorzScrollBar.Page = 525
+  VertScrollBar.Page = 440
+  ActiveControl = CBAnimations
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
   object GLSceneViewer1: TGLSceneViewer
+    Height = 379
+    Top = 38
+    Width = 526
     Camera = GLCamera1
     Buffer.BackgroundColor = clSilver
     Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 51.165538787841797
+    FieldOfView = 50.6985092163085
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 383
-    Top = 38
-    Width = 526
   end
   object StatusBar1: TStatusBar
+    Height = 24
+    Top = 417
+    Width = 526
     Panels = <    
       item
         Width = 200
       end>
     SimplePanel = False
-    Height = 20
-    Top = 421
-    Width = 526
   end
   object Panel1: TPanel
+    Height = 38
+    Width = 526
     Align = alTop
-    BorderSpacing.OnChange = nil
     BevelOuter = bvLowered
-    ClientHeight = 38
-    ClientWidth = 526
     FullRepaint = False
     TabOrder = 0
     OnClick = Panel1Click
-    Height = 38
-    Width = 526
     object SBPlay: TSpeedButton
-      BorderSpacing.OnChange = nil
+      Left = 188
+      Height = 24
+      Hint = 'Play Actor'
+      Top = 8
+      Width = 23
+      Color = clBtnFace
       Glyph.Data = {
         36080000424D3608000000000000360000002800000020000000100000000100
         200000000000000800006400000064000000000000000000000000A5A5FF00A5
@@ -122,14 +119,14 @@ object Form1: TForm1
       OnClick = SBPlayClick
       ShowHint = True
       ParentShowHint = False
-      Left = 188
-      Height = 24
-      Hint = 'Play Actor'
-      Top = 8
-      Width = 23
     end
     object SBStop: TSpeedButton
-      BorderSpacing.OnChange = nil
+      Left = 214
+      Height = 24
+      Hint = 'Stop Actor'
+      Top = 8
+      Width = 23
+      Color = clBtnFace
       Enabled = False
       Glyph.Data = {
         36080000424D3608000000000000360000002800000020000000100000000100
@@ -203,14 +200,14 @@ object Form1: TForm1
       OnClick = SBStopClick
       ShowHint = True
       ParentShowHint = False
-      Left = 214
-      Height = 24
-      Hint = 'Stop Actor'
-      Top = 8
-      Width = 23
     end
     object SBFrameToFrame: TSpeedButton
-      BorderSpacing.OnChange = nil
+      Left = 240
+      Height = 24
+      Hint = 'Play Frame to Frame'
+      Top = 8
+      Width = 23
+      Color = clBtnFace
       Glyph.Data = {
         36080000424D3608000000000000360000002800000020000000100000000100
         200000000000000800006400000064000000000000000000000000A5A5FF00A5
@@ -283,23 +280,23 @@ object Form1: TForm1
       OnClick = SBFrameToFrameClick
       ShowHint = True
       ParentShowHint = False
-      Left = 240
-      Height = 24
-      Hint = 'Play Frame to Frame'
-      Top = 8
-      Width = 23
     end
     object Label1: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 14
+      Top = 14
+      Width = 62
       Caption = 'Animation :'
       Color = clNone
-      Left = 8
-      Height = 13
-      Top = 14
-      Width = 52
+      ParentColor = False
     end
     object CBAnimations: TComboBox
-      BorderSpacing.OnChange = nil
+      Left = 64
+      Height = 21
+      Hint = 'Change State'
+      Top = 8
+      Width = 109
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
       ItemHeight = 13
       MaxLength = 0
       OnChange = CBAnimationsChange
@@ -307,33 +304,27 @@ object Form1: TForm1
       ShowHint = True
       Style = csDropDownList
       TabOrder = 0
-      Left = 64
-      Height = 21
-      Hint = 'Change State'
-      Top = 8
-      Width = 109
     end
     object BBLoadWeapon: TBitBtn
-      BorderSpacing.OnChange = nil
-      Caption = 'Load Weapon'
-      OnClick = BBLoadWeaponClick
-      TabOrder = 1
       Left = 408
       Height = 24
       Top = 8
       Width = 89
+      Caption = 'Load Weapon'
+      NumGlyphs = 0
+      OnClick = BBLoadWeaponClick
+      TabOrder = 1
     end
     object CBSmooth: TCheckBox
-      BorderSpacing.OnChange = nil
+      Left = 280
+      Height = 24
+      Top = 12
+      Width = 66
       Caption = 'Smooth'
       Checked = True
       OnClick = CBSmoothClick
       State = cbChecked
       TabOrder = 2
-      Left = 280
-      Height = 17
-      Top = 12
-      Width = 65
     end
   end
   object GLScene1: TGLScene
@@ -367,33 +358,33 @@ object Form1: TForm1
         }
       end
       object Disk1: TGLDisk
-        Loops = 1
-        OuterRadius = 3
-        Slices = 8
-        SweepAngle = 360
         Material.Texture.MinFilter = miLinear
         Material.Texture.Disabled = False
         Position.Coordinates = {
           0000000000000000000080BF0000803F
         }
+        Loops = 1
+        OuterRadius = 3
+        Slices = 8
+        SweepAngle = 360
       end
     end
     object Actor1: TGLActor
-      Interval = 100
-      OnFrameChanged = Actor1FrameChanged
       Material.FrontProperties.Diffuse.Color = {
         0000803F0000803F0000803F0000803F
       }
       Material.Texture.MinFilter = miLinear
       Material.Texture.TextureMode = tmModulate
       Material.Texture.Disabled = False
+      Interval = 100
+      OnFrameChanged = Actor1FrameChanged
       object Actor2: TGLActor
-        Interval = 100
         Material.FrontProperties.Diffuse.Color = {
           0000803F0000803F0000803F0000803F
         }
         Material.Texture.MinFilter = miLinear
         Material.Texture.Disabled = False
+        Interval = 100
       end
     end
   end
