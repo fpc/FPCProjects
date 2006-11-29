@@ -7,7 +7,7 @@
       <Version Value="5"/>
       <SearchPaths>
         <IncludeFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/"/>
-        <OtherUnitFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/;../Source/shaders/;../Source/physicsapis/;../Source/soundapis/;../Source/gameapis/"/>
+        <OtherUnitFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/;../Source/shaders/;../Source/physicsapis/;../Source/soundapis/;../Source/gameapis/;../Source/cgshaders/"/>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
         <SrcPath Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/"/>
       </SearchPaths>
@@ -678,6 +678,7 @@
       </Item151>
       <Item152>
         <Filename Value="../Source/cgshaders/glcgshader.pas"/>
+        <HasRegisterProc Value="True"/>
         <UnitName Value="glcgshader"/>
       </Item152>
     </Files>
