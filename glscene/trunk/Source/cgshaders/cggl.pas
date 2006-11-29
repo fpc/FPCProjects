@@ -105,19 +105,27 @@
 unit cggl;
 
 {$Include GLScene.inc}
+
+{$ifdef windows}
+  {$DEFINE needs_windows}
+{$endif}
 {$ifdef GLS_DELPHI_6}
-  {$DEFINE COMPILER6_UP}
+  {$UNDEF needs_windows}
 {$endif}
 
 interface
 
 uses
-  opengl1x{$ifndef compiler6_up}, windows{$endif}, cg;
+  opengl1x {$ifdef needs_windows}, windows{$endif}, cg;
 
 (*$HPPEMIT '#include "cgGL.h"' *)
 
 const
+  {$ifndef windows}
+  CgGLlibrary = 'libCgGL.so';
+  {$else}
   CgGLlibrary = 'cgGL.dll';
+  {$endif}
 
 (*****************************************************************************)
 (*** cgGL Type Definitions                                                 ***)

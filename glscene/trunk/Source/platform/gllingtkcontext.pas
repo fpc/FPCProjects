@@ -270,17 +270,17 @@ end;
 //
 procedure TGLGTKContext.DoActivate;
 begin
-   if not glXMakeCurrent(CurXDisplay,CurXWindow,FRenderingContext) then
-     raise EGLContext.Create(cContextActivationFailed);
+  if not glXMakeCurrent(CurXDisplay,CurXWindow,FRenderingContext) then
+    raise EGLContext.Create(cContextActivationFailed);
 
    // The extension function addresses are unique for each pixel format. All rendering
    // contexts of a given pixel format share the same extension function addresses.
-   if glGetString(GL_VENDOR)<>vLastVendor then
-     begin
-       ReadExtensions;
-       ReadImplementationProperties;
-       vLastVendor:=glGetString(GL_VENDOR);
-     end
+  if glGetString(GL_VENDOR) <> vLastVendor then
+    begin
+      ReadExtensions;
+      ReadImplementationProperties;
+      vLastVendor:=glGetString(GL_VENDOR);
+    end
 end;
 
 // Deactivate

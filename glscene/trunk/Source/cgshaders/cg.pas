@@ -107,11 +107,14 @@
 
 unit cg;
 
+{$Include GLScene.inc}
+
 interface
 
+{$ifdef windows}
 uses windows;
+{$endif}
 
-{$Include GLScene.inc}
 {$ifdef GLS_DELPHI_6_UP}
   {$DEFINE COMPILER6_UP}
 {$endif}
@@ -121,7 +124,11 @@ uses windows;
 (*$HPPEMIT '#include "cg.h"' *)
 
 const
+  {$ifndef windows}
+  CgLibrary = 'libCg.so';
+  {$else}
   CgLibrary = 'cg.dll';
+  {$endif}
 
 const
   CG_VERSION_1_2                = 1;
@@ -1513,7 +1520,7 @@ function cgGetParameterDirection(param: PCGparameter): TCGenum; cdecl; external 
 function cgIsParameterReferenced(param: PCGparameter): TCGbool; cdecl; external CgLibrary;
 {$EXTERNALSYM cgIsParameterReferenced}
 function cgGetParameterValues(param: PCGparameter; value_type: TCGenum;
-  out nvalues: Integer): PDouble{ const }; cdecl; external CgLibrary;
+  var nvalues: Integer): PDouble{ const }; cdecl; external CgLibrary;
 {$EXTERNALSYM cgGetParameterValues}
 function cgGetParameterOrdinalNumber(param: PCGparameter): Integer; cdecl; external CgLibrary;
 {$EXTERNALSYM cgGetParameterOrdinalNumber}

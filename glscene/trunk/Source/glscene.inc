@@ -32,8 +32,10 @@
   {$DEFINE MSWINDOWS}
 {$ELSE}
   {$IFNDEF LINUX}
-    {$DEFINE GLS_WIN16}
-    {$DEFINE MSWINDOWS}
+    {$ifndef fpc} // delphi, fpc has no win16 crap
+      {$DEFINE GLS_WIN16}
+      {$DEFINE MSWINDOWS}
+    {$endif}
   {$ENDIF LINUX}
 {$ENDIF}
 
@@ -54,9 +56,9 @@
 {$ENDIF}
 
 {$IFDEF FPC}
-  {$IFNDEF i386}
+//  {$IFNDEF cpu386} // bugged asm
   {$DEFINE GEOMETRY_NO_ASM}
-  {$ENDIF}
+//  {$ENDIF}
   {$TYPEINFO ON}
   {$INLINE ON}
 {$ENDIF}
