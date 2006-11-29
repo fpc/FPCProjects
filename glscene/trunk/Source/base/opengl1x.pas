@@ -72,7 +72,8 @@ uses
   {$ifdef UNIX}
     {$IFDEF FPC}
     X, XUtil, dynlibs, dl, ctypes,
-    Libc, 
+    {$ELSE}  // kylix
+    Libc,
     {$ENDIF}
     Xlib, Types
   {$endif}
@@ -4222,15 +4223,8 @@ begin
    Result := False;
    CloseOpenGL;
 
-   {$ifdef Win32}
-   GLHandle:=LoadLibrary(PChar(GLName));
-   GLUHandle:=LoadLibrary(PChar(GLUName));
-   {$endif}
-
-   {$ifdef unix}
-   GLHandle:=dlopen(PChar(GLName), RTLD_GLOBAL or RTLD_LAZY);
-   GLUHandle:=dlopen(PChar(GLUName), RTLD_GLOBAL or RTLD_LAZY);
-   {$endif}
+   GLHandle:=Pointer(LoadLibrary(PChar(GLName)));
+   GLUHandle:=Pointer(LoadLibrary(PChar(GLUName)));
 
    if (GLHandle<>INVALID_MODULEHANDLE) and (GLUHandle<>INVALID_MODULEHANDLE) then
      Result:=True
