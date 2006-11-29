@@ -14,7 +14,12 @@ interface
 
 uses
   xlib, classes, sysutils, glcontext, lclproc, forms, controls, opengl1x,
-  gtk,gdk,x,xutil,gllclviewer,gtkproc;
+  x,xutil,gllclviewer,gtkproc,
+{$ifdef LCLGTK2}
+  gtk2, gdk2, gdk2x;
+{$else}
+  gtk, gdk;
+{$endif}
 
 type
    // TGLGTKContext
@@ -159,8 +164,17 @@ begin
     fGTKWidget := GetFixedWidget(pgtkwidget(CurWinControl.Handle));
     // Dirty workaround: force realize
     gtk_widget_realize(FGTKWidget);
+    
+    // GTK1 -- old
+    {$ifdef LCLGTK2}
+    CurXDisplay:=GDK_WINDOW_XDISPLAY (PGdkDrawable(fGTKWidget^.window));
+    CurXWindow:=GDK_WINDOW_XWINDOW (PGdkDrawable(fGTKWidget^.window));
+    {$else}
     CurXDisplay:=GDK_WINDOW_XDISPLAY (PGdkWindowPrivate(fGTKWidget^.window));
     CurXWindow:=GDK_WINDOW_XWINDOW (PGdkWindowPrivate(fGTKWidget^.window));
+    {$endif}
+
+    
     XGetWindowAttributes(CurXDisplay, CurXWindow, @winattr);
     vitemp.visual := winattr.visual;
     vitemp.visualid := XVisualIDFromVisual(vitemp.visual);
@@ -232,12 +246,22 @@ end;
 
 // DoDestroyContext
 //
-procedure TGLGTKContext.DoDestroyContext;
+{procedure TGLGTKContext.DoDestroyContext; // GTK1 - old
 begin
   if (glXGetCurrentContext() = RenderingContext) and
      (not glXMakeCurrent(PGDKWindowPrivate(fGTKWidget^.window)^.xdisplay, 0, nil)) then
     raise Exception.Create('Failed to deselect rendering context');
   glXDestroyContext(PGDKWindowPrivate(fGTKWidget^.window)^.xdisplay, RenderingContext);
+  FRenderingContext := nil;
+//  FOutputDevice := nil;
+end;}
+
+procedure TGLGTKContext.DoDestroyContext;
+begin
+  if (glXGetCurrentContext() = RenderingContext) and
+     (not glXMakeCurrent(CurXDisplay, 0, nil)) then
+    raise Exception.Create('Failed to deselect rendering context');
+  glXDestroyContext(CurXDisplay, RenderingContext);
   FRenderingContext := nil;
 //  FOutputDevice := nil;
 end;

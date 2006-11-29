@@ -180,10 +180,35 @@ implementation
 // ------------------------------------------------------------------
 
 uses opengl1x, sysutils, glcrossplatform
-     {$ifdef mswindows}
+     {$ifndef fpc} // delphi
      ,glwin32context
      {$else}
+     
+       {$ifdef LCLWIN32}
+         {$ifndef CONTEXT_INCLUDED}
+     ,glwin32context
+         {$define CONTEXT_INCLUDED}
+         {$endif}
+       {$endif}
+       
+       {$ifdef LCLGTK}
+         {$ifndef CONTEXT_INCLUDED}
      ,gllingtkcontext
+         {$define CONTEXT_INCLUDED}
+         {$endif}
+       {$endif}
+       
+       {$ifdef LCLGTK2}
+         {$ifndef CONTEXT_INCLUDED}
+     ,gllingtkcontext
+         {$define CONTEXT_INCLUDED}
+         {$endif}
+       {$endif}
+       
+       {$ifdef LCLQT}
+         {$error unimplemented QT context}
+       {$endif}
+       
      {$endif}
      ;
 
