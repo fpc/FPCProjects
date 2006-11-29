@@ -16,9 +16,9 @@ interface
 
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLMisc, GLWin32Viewer, GLTexture, OpenGL1x,
+  Dialogs, GLObjects, GLMisc, GLLCLViewer, GLTexture, OpenGL1x,
   GLCgShader, Cg, cgGL, StdCtrls, VectorGeometry, GLCadencer, ExtCtrls, ComCtrls,
-  GLVectorFileObjects, GLFile3DS, GLGraph, LResources, GLScene;
+  GLVectorFileObjects, GLFile3DS, GLGraph, LResources, GLScene, Buttons;
 
 type
   TForm1 = class(TForm)
@@ -142,10 +142,10 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
    // Load Cg proggy
    with CgShader1 do begin
-     VertexProgram.LoadFromFile('simple_vp.cg');
+     VertexProgram.LoadFromFile('Simple_vp.cg');
      MemoVertCode.Lines.Assign(VertexProgram.Code);
 
-     FragmentProgram.LoadFromFile('simple_fp.cg');
+     FragmentProgram.LoadFromFile('Simple_fp.cg');
      MemoFragCode.Lines.Assign(FragmentProgram.Code);
 
      VertexProgram.Enabled:=false;
@@ -162,7 +162,7 @@ begin
    // internally for GLScene objects like TGLCylinder & TGLSphere, and Cg shader
    // is not aware of that. If you apply a vertex shader on those objects, they
    // would appear scaled and/or rotated.
-   GLFreeForm1.LoadFromFile('..\..\media\Teapot.3ds');
+   GLFreeForm1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'teapot.3ds');
 end;
 
 procedure TForm1.CBVertexProgramClick(Sender: TObject);
