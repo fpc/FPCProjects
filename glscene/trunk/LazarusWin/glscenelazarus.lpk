@@ -9,7 +9,7 @@
       <PathDelim Value="\"/>
       <SearchPaths>
         <IncludeFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\"/>
-        <OtherUnitFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\;..\Source\Shaders\;..\Source\PhysicsAPIs\;..\Source\SoundAPIs\;..\Source\GameAPIs\"/>
+        <OtherUnitFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\;..\Source\Shaders\;..\Source\PhysicsAPIs\;..\Source\SoundAPIs\;..\Source\GameAPIs\;..\Source\cgshaders\"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
         <SrcPath Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\"/>
       </SearchPaths>
@@ -41,7 +41,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="162">
+    <Files Count="163">
       <Item1>
         <Filename Value="..\Source\Base\applicationfileio.pas"/>
         <HasRegisterProc Value="True"/>
@@ -727,6 +727,11 @@
         <Filename Value="..\Source\physicsapis\gloxode.pas"/>
         <UnitName Value="gloxode"/>
       </Item162>
+      <Item163>
+        <Filename Value="..\Source\cgshaders\glcgshader.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="glcgshader"/>
+      </Item163>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
