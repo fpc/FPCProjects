@@ -1,58 +1,52 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 480
-  ClientWidth = 510
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 509
-  VertScrollBar.Page = 479
   Left = 252
   Height = 480
   Top = 132
   Width = 510
+  HorzScrollBar.Page = 509
+  VertScrollBar.Page = 479
+  ActiveControl = TrackBarSpeed
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = 4194304
-    FieldOfView = 154.77957153320312
-    Align = alClient
-    OnMouseDown = GLSceneViewer1MouseDown
-    OnMouseMove = GLSceneViewer1MouseMove
     Height = 447
     Top = 33
     Width = 510
+    Camera = GLCamera1
+    Buffer.BackgroundColor = 4194304
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 154.779571533203
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
   end
   object Panel1: TPanel
-    Align = alTop
-    Caption = ' '
-    ClientHeight = 33
-    ClientWidth = 510
-    FullRepaint = False
-    TabOrder = 0
     Height = 33
     Width = 510
+    Align = alTop
+    Caption = ' '
+    FullRepaint = False
+    TabOrder = 0
     object Label1: TLabel
+      Left = 8
+      Height = 14
+      Top = 12
+      Width = 40
       Caption = 'Speed:'
       Color = clNone
-      Left = 8
-      Height = 13
-      Top = 12
-      Width = 34
+      ParentColor = False
     end
     object TrackBarSpeed: TTrackBar
-      Frequency = 1
+      Left = 48
+      Height = 33
+      Top = 4
+      Width = 133
       Position = 1
       ScalePos = trTop
       TabOrder = 0
-      Frequency = 1
-      Position = 1
-      ScalePos = trTop
-      Left = 48
-      Height = 25
-      Top = 4
-      Width = 133
     end
   end
   object GLScene1: TGLScene
@@ -66,15 +60,15 @@ object Form1: TForm1
       SpotCutOff = 180
     end
     object GLSphere1: TGLSphere
-      Radius = 0.5
       Position.Coordinates = {
         000000008E2EBA3F8C2EBA3E0000803F
       }
+      Radius = 0.5
     end
     object Room: TGLSphere
-      Radius = 8
-      NormalDirection = ndInside
       Material.FrontProperties.PolygonMode = pmLines
+      NormalDirection = ndInside
+      Radius = 8
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100

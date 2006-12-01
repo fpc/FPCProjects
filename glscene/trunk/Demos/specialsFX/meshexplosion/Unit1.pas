@@ -19,7 +19,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, GLVectorFileObjects, GLMisc, GLCadencer, GLExplosionFx,
   GLFile3DS, ExtCtrls, LResources,
-  GLScene, Buttons, GLWin32Viewer;
+  GLScene, Buttons, GLLCLViewer;
 
 type
 
@@ -71,7 +71,7 @@ var
 exp: TGLBExplosionFx;
 begin
      //load mesh
-     mesh.LoadFromFile('..\..\media\mushroom.3ds');
+     mesh.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'mushroom.3ds');
      //cache information
      cache:= TMeshObjectList.Create;
      cache.Assign(mesh.MeshObjects);

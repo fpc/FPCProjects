@@ -17,8 +17,8 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLCadencer, GLMisc, GLWin32Viewer, GLShadowVolume,
+  LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, GLObjects, GLCadencer, GLMisc, GLLCLViewer, GLShadowVolume,
   ExtCtrls, StdCtrls, GLVectorFileObjects, GLFileSMD, GLTexture,
   GLGeomObjects, GLSilhouette, VectorGeometry, LResources, GLScene, Buttons;
 
@@ -107,7 +107,7 @@ var
    x, y, z : Integer;
    sphere : TGLSphere;
 begin
-   SetCurrentDir(ExtractFilePath(Application.ExeName)+'..\..\media');
+   SetCurrentDir(ExtractFilePath(Application.ExeName)+'..' + PathDelim + '..' + PathDelim + 'media');
 
    // Dynamically construct an array of spheres, and make them shadow casters
    // Note that as the spheres are children of the shadowvolume component,
@@ -123,7 +123,7 @@ begin
             GLShadowVolume.Occluders.AddCaster(sphere, 0, scmParentVisible); 
          end;
    DCSpheres.MoveTo(GLShadowVolume);
-   GLFreeForm.LoadFromFile('trinityrage.smd');
+   GLFreeForm.LoadFromFile('TRINITYrage.smd');
    GLFreeForm.BuildSilhouetteConnectivityData;
    GLShadowVolume.Occluders.AddCaster(GLFreeForm);
 end;

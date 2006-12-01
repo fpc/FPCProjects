@@ -20,7 +20,7 @@ unit Unit1;
 
 interface
 
-uses LCLIntf, Windows, Forms, Classes, Controls, GLWin32Viewer, GLCadencer, GLScene, GLMisc,
+uses LCLtype, Forms, Classes, Controls, GLLCLViewer, GLCadencer, GLScene, GLMisc,
   GLObjects, GLTexture, GLHUDObjects, SysUtils, ExtCtrls, GLPolyhedron,
   GLGeomObjects, GLUtils, LResources;
 

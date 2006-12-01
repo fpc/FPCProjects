@@ -21,8 +21,8 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLShadowPlane, GLMisc, GLScene, GLWin32Viewer, GLObjects,
+  LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, GLShadowPlane, GLMisc, GLScene, GLLCLViewer, GLObjects,
   GLCadencer, StdCtrls, VectorGeometry, ExtCtrls, GLGeomObjects,
   LResources, GLTexture;
 
@@ -75,7 +75,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
    textureFileName : String;
 begin
-   textureFileName:=ExtractFilePath(Application.ExeName)+'..\..\Media\BeigeMarble.jpg';
+   textureFileName:=ExtractFilePath(Application.ExeName)+'..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'beigemarble.jpg';
    GLMaterialLibrary.Materials[0].Material.Texture.Image.LoadFromFile(textureFileName);
 end;
 

@@ -1,49 +1,44 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 341
-  ClientWidth = 527
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  OnResize = FormResize
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 526
-  VertScrollBar.Page = 340
   Left = 251
   Height = 341
   Top = 204
   Width = 527
+  HorzScrollBar.Page = 526
+  VertScrollBar.Page = 340
+  ActiveControl = Button1
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnResize = FormResize
   object GLSceneViewer1: TGLSceneViewer
+    Height = 341
+    Width = 527
     Camera = GLCamera1
     Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 147.31190490722656
+    FieldOfView = 147.311904907226
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 341
-    Width = 527
   end
   object Button1: TButton
-    BorderSpacing.OnChange = nil
-    Caption = 'Start'
-    OnClick = Button1Click
-    TabOrder = 0
     Left = 16
     Height = 25
     Top = 16
     Width = 35
+    BorderSpacing.InnerBorder = 4
+    Caption = 'Start'
+    OnClick = Button1Click
+    TabOrder = 0
   end
   object GLScene1: TGLScene
     left = 64
     top = 8
     object DummyCube1: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         0000000000007041000000000000803F
       }
+      CubeSize = 1
     end
     object GLLightSource1: TGLLightSource
       ConstAttenuation = 1
@@ -76,11 +71,11 @@ object Form1: TForm1
     Cadencer = GLCadencer1
     MaxParticles = 512
     ParticleSize = 0.5
-    FireDensity = 0.600000023841858
-    FireEvaporation = 0.860000014305115
+    FireDensity = 0.60000002384185
+    FireEvaporation = 0.86000001430511
     ParticleLife = 1
     FireRadius = 0.5
-    ParticleInterval = 0.009999999776483
+    ParticleInterval = 0.00999999977648
     UseInterval = True
     Reference = Sphere1
     left = 64
@@ -114,11 +109,11 @@ object Form1: TForm1
     OuterColor.Color = {
       0000000000000000000000000000803F
     }
-    FireDensity = 0.600000023841858
-    FireEvaporation = 0.860000014305115
+    FireDensity = 0.60000002384185
+    FireEvaporation = 0.86000001430511
     FireRadius = 1
     Disabled = True
-    ParticleInterval = 0.070000000298023
+    ParticleInterval = 0.07000000029802
     UseInterval = True
     Reference = Sphere1
     left = 64

@@ -1,34 +1,28 @@
 object Form1: TForm1
+  Left = 293
+  Height = 541
+  Top = 132
+  Width = 520
+  HorzScrollBar.Page = 519
+  VertScrollBar.Page = 540
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Motion Blur Demo'
-  ClientHeight = 541
-  ClientWidth = 520
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 519
-  VertScrollBar.Page = 540
-  Left = 293
-  Height = 541
-  Top = 132
-  Width = 520
   object GLSceneViewer: TGLSceneViewer
+    Height = 541
+    Width = 520
     Camera = Camera
     VSync = vsmSync
     PostRender = GLSceneViewerPostRender
     Buffer.BackgroundColor = clNavy
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 158.22894287109375
+    FieldOfView = 158.228942871093
     Align = alClient
     OnMouseDown = GLSceneViewerMouseDown
     OnMouseMove = GLSceneViewerMouseMove
-    Height = 541
-    Width = 520
   end
   object GLScene1: TGLScene
     ObjectsSorting = osNone
@@ -51,15 +45,14 @@ object Form1: TForm1
         EF83843EE946773F0000008000000000
       }
       object Torus: TGLTorus
-        MajorRadius = 0.400000005960465
-        MinorRadius = 0.100000001490116
         Scale.Coordinates = {
           0000A0400000A0400000A04000000000
         }
+        MajorRadius = 0.40000000596046
+        MinorRadius = 0.10000000149011
       end
     end
     object DummyCube: TGLDummyCube
-      CubeSize = 1
       Direction.Coordinates = {
         00000000441DAFBEB28F703F00000000
       }
@@ -67,6 +60,7 @@ object Form1: TForm1
       Up.Coordinates = {
         00008031B28F703F441DAF3E00000000
       }
+      CubeSize = 1
       object Dodecahedron: TGLDodecahedron
         Material.FrontProperties.Diffuse.Color = {
           0000803F0000803F000000000000803F
@@ -84,9 +78,6 @@ object Form1: TForm1
       end
     end
     object HUD: TGLHUDSprite
-      Width = 512
-      Height = 512
-      NoZWrite = True
       Material.FrontProperties.Diffuse.Color = {
         0000803F0000803F0000803F9A99193F
       }
@@ -101,6 +92,9 @@ object Form1: TForm1
       Position.Coordinates = {
         0000804300008043000000000000803F
       }
+      Width = 512
+      Height = 512
+      NoZWrite = True
     end
     object Camera: TGLCamera
       DepthOfView = 100

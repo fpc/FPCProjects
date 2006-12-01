@@ -18,7 +18,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   GLVectorFileObjects, GLObjects, GLMisc,GLFile3ds, GLCadencer, jpeg,
   GLGeomObjects, VectorGeometry, GLShadowPlane, GLParticleFX, GLPerlinPFX,
-  LResources, GLScene, GLWin32Viewer;
+  LResources, GLScene, GLLCLViewer;
 
 type
 
@@ -61,7 +61,7 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  SetCurrentDir('../../media');
+  SetCurrentDir('..' + PathDelim + '..' + PathDelim + 'media');
 
   GLFreeForm1.LoadFromFile('beer.3ds');
 

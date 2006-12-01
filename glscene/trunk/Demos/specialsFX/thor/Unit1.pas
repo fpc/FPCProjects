@@ -8,10 +8,10 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLFireFX, GLCadencer, GLScene, GLMisc, GLObjects, GLBehaviours, ExtCtrls,
   VectorGeometry, GLThorFX, GLSkydome, StdCtrls, ComCtrls, GLGraph, VectorTypes,
-  GLWin32Viewer, LResources;
+  GLLCLViewer, LResources;
 
 type
 
@@ -83,7 +83,7 @@ uses Jpeg;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
    SetCurrentDir(ExtractFilePath(Application.ExeName));
-   HeightField1.Material.Texture.Image.LoadFromFile('..\..\media\marbletiles.jpg');
+   HeightField1.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'marbletiles.jpg');
    GetOrCreateThorFX(ThorCube).Manager:=GLThorFXManager1;
    ThorCube.Material.FrontProperties.Diffuse.AsWinColor:=clblue;
 end;
@@ -174,7 +174,7 @@ end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
-   HeightField1.Material.Texture.Image.SaveToFile('c:\test.jpg');
+   HeightField1.Material.Texture.Image.SaveToFile('test.jpg');
 end;
 
 procedure TForm1.HeightField1GetHeight(const x, y: Single; var z: Single;
