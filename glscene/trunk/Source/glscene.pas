@@ -872,11 +872,13 @@ type
 
          class function ItemsClass : TXCollectionItemClass; override;
 
-         property Behaviour[index : Integer] : TGLBehaviour read GetBehaviour; default;
-
          function CanAdd(aClass : TXCollectionItemClass) : Boolean; override;
 
          procedure DoProgress(const progressTimes : TProgressTimes);
+         
+      published
+         { published declarations }
+         property Behaviour[index : Integer] : TGLBehaviour read GetBehaviour; default;
    end;
 
    // TGLObjectEffect

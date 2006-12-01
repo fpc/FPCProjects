@@ -63,7 +63,8 @@ unit gllazarusregister;
 interface
 
 uses
-   {$ifndef linux}windows,{$endif} classes, controls, stdctrls, dialogs, glscene, lresources;
+   {$ifdef windows}windows,{$endif}
+   classes, controls, stdctrls, dialogs, glscene, lresources;
 
 
 type
@@ -88,7 +89,7 @@ type
          {$IFNDEF FPC}
          FObjectIcons : TImageList;       // a list of icons for scene objects
          {$ENDIF}
-         {$ifdef WIN32}
+         {$ifdef WINDOWS}
          FOverlayIndex,                   // indices into the object icon list
          {$endif}
          FSceneRootIndex,
@@ -208,7 +209,7 @@ type
    end;
 //{$endif}
          
-{$ifdef WIN32}
+{$ifdef WINDOWS}
    // TSoundFileProperty
    //
    TSoundFileProperty = class (TClassProperty)
@@ -423,7 +424,7 @@ begin
          // There's a more direct way for loading images into the image list, but
          // the image quality suffers too much
          AddMasked(Pic.Bitmap, Pixels[0, 0]);
-         {$ifdef WIN32}
+         {$ifdef WINDOWS}
          FOverlayIndex:=Count-1;
          //Overlay(FOverlayIndex, 0); // used as indicator for disabled objects
          {$endif}
@@ -577,7 +578,7 @@ end;
 
 //----------------- TSoundFileProperty -----------------------------------------
 
-{$ifdef WIN32}
+{$ifdef WINDOWS}
 // GetAttributes
 //
 function TSoundFileProperty.GetAttributes: TPropertyAttributes;
@@ -639,7 +640,7 @@ begin
    if Assigned(source.SoundLibrary) then with source.SoundLibrary do
       for i:=0 to Samples.Count-1 do Proc(Samples[i].Name);
 end;
-{$endif WIN32}
+{$endif WINDOWS}
 
 //----------------- TGLCoordinatesProperty -------------------------------------
 
@@ -676,7 +677,7 @@ begin
                        TGLCadencer,
                        TGLGuiLayout,
                        TGLBitmapFont, TGLWindowsBitmapFont, TGLStoredBitmapFont
-                       {$ifdef WIN32}
+                       {$ifdef WINDOWS}
                        ,
                        TGLFullScreenViewer
                        {$endif}
@@ -704,7 +705,7 @@ begin
    
    RegisterPropertyEditor(TypeInfo(TGLColor), nil, '', TGLColorProperty);
    
-   {$ifdef WIN32}
+   {$ifdef WINDOWS}
    RegisterPropertyEditor(TypeInfo(TGLSoundFile), TGLSoundSample, '', TSoundFileProperty);
    RegisterPropertyEditor(TypeInfo(String), TGLBaseSoundSource, 'SoundName', TSoundNameProperty);
    {$endif}
@@ -826,7 +827,7 @@ initialization
       RegisterSceneObject(TGLImposter, 'Imposter Sprite', '');
       RegisterSceneObject(TGLFeedback, 'OpenGL Feedback', '');
 
-      {$IFNDEF LINUX}
+      {$IFDEF WINDOWS}
       RegisterSceneObject(TGLSpaceText, 'SpaceText', glsOCDoodad);
       {$ENDIF}
    end;
