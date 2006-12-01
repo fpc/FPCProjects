@@ -28,9 +28,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLScene, GLObjects, GLCadencer, GLMisc, GLVectorFileObjects, ExtCtrls,
-  StdCtrls, GLTexture, LResources, GLWin32Viewer;
+  StdCtrls, GLTexture, LResources, GLLCLViewer;
 
 type
 
@@ -93,8 +93,8 @@ begin
    // Actors are used as standalone, med-polycount objects
    // that aren't T&L friendly (all geometry must be sent to
    // the hardware at each frame)
-   GLMaterialLibrary.Materials[0].Material.Texture.Image.LoadFromFile('..\..\media\waste.jpg');
-   ACReference.LoadFromFile('..\..\media\waste.md2');
+   GLMaterialLibrary.Materials[0].Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'waste.jpg');
+   ACReference.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'waste.md2');
    for i:=-3 to 3 do for j:=-3 to 3 do begin
       newActor:=(DCActors.AddNewChild(TGLActor) as TGLActor);
       newActor.Assign(ACReference);

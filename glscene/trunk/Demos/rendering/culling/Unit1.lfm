@@ -1,112 +1,111 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 340
-  ClientWidth = 544
-  Font.Height = -11
-  Font.Name = 'Arial'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 14
-  HorzScrollBar.Page = 543
-  VertScrollBar.Page = 339
   Left = 188
   Height = 340
   Top = 112
   Width = 544
+  HorzScrollBar.Page = 543
+  VertScrollBar.Page = 339
+  ActiveControl = RBNone
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'Arial'
+  OnCreate = FormCreate
   object Label1: TLabel
+    Left = 436
+    Height = 13
+    Top = 8
+    Width = 79
     Anchors = [akTop, akRight]
     Caption = 'Culling Mode:'
     Color = clNone
     Font.Height = -12
     Font.Name = 'Arial'
     Font.Style = [fsBold]
-    Left = 440
-    Height = 15
-    Top = 8
-    Width = 75
+    ParentColor = False
   end
   object Label2: TLabel
+    Left = 438
+    Height = 13
+    Top = 120
+    Width = 49
     Anchors = [akTop, akRight]
     Caption = 'Objects:'
     Color = clNone
     Font.Height = -12
     Font.Name = 'Arial'
     Font.Style = [fsBold]
-    Left = 440
-    Height = 15
-    Top = 120
-    Width = 47
+    ParentColor = False
   end
   object Viewer: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = 12040119
-    FieldOfView = 142.783203125
-    Anchors = [akTop, akLeft, akRight, akBottom]
     Left = 8
     Height = 297
     Top = 8
     Width = 425
+    Camera = GLCamera1
+    Buffer.BackgroundColor = 12040119
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 142.783203125
+    Anchors = [akTop, akLeft, akRight, akBottom]
   end
   object RBNone: TRadioButton
+    Left = 475
+    Height = 24
+    Top = 32
+    Width = 54
     Anchors = [akTop, akRight]
     Caption = 'None'
     Checked = True
     OnClick = RBNoneClick
     State = cbChecked
     TabOrder = 0
-    Left = 440
-    Height = 17
-    Top = 32
-    Width = 89
   end
   object RBObject: TRadioButton
+    Left = 432
+    Height = 24
+    Top = 56
+    Width = 97
     Anchors = [akTop, akRight]
     Caption = 'Object based'
     OnClick = RBNoneClick
     TabOrder = 1
-    Left = 440
-    Height = 17
-    Top = 56
-    Width = 89
   end
   object RBHierarchical: TRadioButton
+    Left = 439
+    Height = 24
+    Top = 80
+    Width = 90
     Anchors = [akTop, akRight]
     Caption = 'Hierarchical'
     OnClick = RBNoneClick
     TabOrder = 2
     Visible = False
-    Left = 440
-    Height = 17
-    Top = 80
-    Width = 89
   end
   object Panel1: TPanel
-    Anchors = [akTop, akRight]
-    BevelOuter = bvNone
-    ClientHeight = 65
-    ClientWidth = 89
-    FullRepaint = False
-    TabOrder = 3
     Left = 440
     Height = 65
     Top = 144
     Width = 89
+    Anchors = [akTop, akRight]
+    BevelOuter = bvNone
+    FullRepaint = False
+    TabOrder = 3
     object RBSpheres: TRadioButton
+      Height = 24
+      Width = 70
       Caption = 'Spheres'
       Checked = True
       OnClick = RBSpheresClick
       State = cbChecked
       TabOrder = 0
-      Height = 17
-      Width = 81
     end
     object RBActors: TRadioButton
+      Height = 24
+      Top = 24
+      Width = 58
       Caption = 'Actors'
       OnClick = RBSpheresClick
       TabOrder = 1
-      Height = 17
-      Top = 24
-      Width = 81
     end
   end
   object GLScene: TGLScene
@@ -136,12 +135,10 @@ object Form1: TForm1
       CubeSize = 1
     end
     object DCActors: TGLDummyCube
-      CubeSize = 1
       Visible = False
+      CubeSize = 1
     end
     object ACReference: TGLActor
-      AnimationMode = aamLoop
-      Interval = 100
       Material.MaterialLibrary = GLMaterialLibrary
       Material.LibMaterialName = 'ActorTexture'
       Direction.Coordinates = {
@@ -156,11 +153,13 @@ object Form1: TForm1
       Up.Coordinates = {
         000000002EBD3BB3000080BF00000000
       }
+      AnimationMode = aamLoop
+      Interval = 100
     end
   end
   object GLCadencer: TGLCadencer
     Scene = GLScene
-    Mode = cmApplicationIdle
+    Mode = cmapplicationidle
     OnProgress = GLCadencerProgress
     left = 48
     top = 16
