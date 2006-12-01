@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="152">
+    <Files Count="154">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <HasRegisterProc Value="True"/>
@@ -681,6 +681,14 @@
         <HasRegisterProc Value="True"/>
         <UnitName Value="glcgshader"/>
       </Item152>
+      <Item153>
+        <Filename Value="../Source/physicsapis/odegl.pas"/>
+        <UnitName Value="odegl"/>
+      </Item153>
+      <Item154>
+        <Filename Value="../Source/physicsapis/gloxode.pas"/>
+        <UnitName Value="gloxode"/>
+      </Item154>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
