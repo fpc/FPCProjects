@@ -71,7 +71,7 @@ uses
   
   {$ifdef UNIX}
     {$IFDEF FPC}
-    X, XUtil, dl
+    X, XUtil, dl,
     {$ELSE}  // kylix
     Libc,
     {$ENDIF}
