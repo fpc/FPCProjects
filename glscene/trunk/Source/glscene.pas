@@ -876,8 +876,6 @@ type
 
          procedure DoProgress(const progressTimes : TProgressTimes);
          
-      published
-         { published declarations }
          property Behaviour[index : Integer] : TGLBehaviour read GetBehaviour; default;
    end;
 
