@@ -136,8 +136,13 @@ function ObjectManager : TObjectManager;
 implementation
 
 uses
-   {$ifdef linux} gllclviewer,  {$endif}
-   {$ifdef mswindows} glwin32viewer,glwin32fullscreenviewer,{$endif}
+   {$ifdef fpc}
+     gllclviewer,
+   {$else}
+     {$ifdef mswindows}
+       glwin32viewer,glwin32fullscreenviewer,glsound,glsoundfileobjects,glspacetext,
+     {$endif}
+   {$endif}
    typinfo,sysutils, graphics, componenteditors, propedits, glsceneeditnew,
    glvectorfileobjects,glscreen,glmesh, glmisc, glcrossplatform,
    fvectoreditor, vectorgeometry,glstrings,glcadencer,gltexture,glgui,
@@ -150,11 +155,8 @@ uses
    glfeedback,glextrusion,glbumpmaphds,glheighttilefilehds,
    glterrainrenderer,glgamemenu, gltextureimageeditors,
    glstate, glutils, glwaterplane,
-   glheightdata,glperlin
-   {glsdlcontext,gloxode,glscriptbase,}
-   {$ifdef mswindows}
-   ,glsound,glsoundfileobjects,glspacetext
-   {$endif}
+   glheightdata,glperlin,gloxode
+   {glsdlcontext,glscriptbase,}
    ;
 
 var
@@ -794,24 +796,24 @@ initialization
       RegisterSceneObject(TGLTrail, 'GLTrail', glsOCSpecialObjects);
       //////////////////////////////////////////////////////////////////////////
       // GLOxOde
-{      RegisterSceneObject(TGLSizableDummyCube, 'GLSizableDummyCube', glsOCSpecialObjects);
+      RegisterSceneObject(TGLSizableDummyCube, 'GLSizableDummyCube', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXOdeEngine, 'GLOXOdeEngine', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXStaBall, 'GLOXStaBall', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXStaCylinder, 'GLOXStaCylinder', glsOCSpecialObjects);
-      RegisterSceneObject(TGLOXStaCCylinder, 'GLOXStaCCylinder', glsOCSpecialObjects);
+//      RegisterSceneObject(TGLOXStaCCylinder, 'GLOXStaCCylinder', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXStaBox, 'GLOXStaBox', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXStaMesh, 'GLOXStaMesh', glsOCSpecialObjects);
-      RegisterSceneObject(TGLOXZStaTerrain, 'GLOXZStaTerrain', glsOCSpecialObjects);
-      RegisterSceneObject(TGLOXStaCone, 'GLOXStaCone', glsOCSpecialObjects);
+//      RegisterSceneObject(TGLOXZStaTerrain, 'GLOXZStaTerrain', glsOCSpecialObjects);
+//      RegisterSceneObject(TGLOXStaCone, 'GLOXStaCone', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXDynMesh , 'GLOXDynMesh ', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXDynBall, 'GLOXDynBall', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXDynBox, 'GLOXDynBox', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXDynCylinder, 'GLOXDynCylinder', glsOCSpecialObjects);
-      RegisterSceneObject(TGLOXDynCCylinder, 'GLOXDynCCylinder', glsOCSpecialObjects);
-      RegisterSceneObject(TGLOXDynCCylinder, 'GLOXDynCone', glsOCSpecialObjects);
-      RegisterSceneObject(TGLOXDynCar, 'GLOXDynCar', glsOCSpecialObjects);
+//      RegisterSceneObject(TGLOXDynCCylinder, 'GLOXDynCCylinder', glsOCSpecialObjects);
+//      RegisterSceneObject(TGLOXDynCone, 'GLOXDynCone', glsOCSpecialObjects);
+//      RegisterSceneObject(TGLOXDynCar, 'GLOXDynCar', glsOCSpecialObjects);
       RegisterSceneObject(TGLOXRagdoll, 'GLOXRagdoll', glsOCSpecialObjects);
-      RegisterSceneObject(TGLOXAMotor, 'GLOXAMotor', glsOCSpecialObjects);}
+      RegisterSceneObject(TGLOXAMotor, 'GLOXAMotor', glsOCSpecialObjects);
       //////////////////////////////////////////////////////////////////////////
       RegisterSceneObject(TGLTeapot, 'Teapot', glsOCDoodad);
       RegisterSceneObject(TGLTree, 'Tree', glsOCDoodad);

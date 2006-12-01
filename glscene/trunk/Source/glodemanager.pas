@@ -1106,7 +1106,7 @@ type
   // TODEJointHinge2
   //
   {: ODE hinge2 joint implementation. }
-  TODEJointHinge2 = class (TODEJointBase)
+(*  TODEJointHinge2 = class (TODEJointBase)
     private
       { Private Declarations }
       FAnchor,
@@ -1154,7 +1154,7 @@ type
       property Axis1Params : TODEJointParams read FAxis1Params write SetAxis1Params;
       property Axis2Params : TODEJointParams read FAxis2Params write SetAxis2Params;
 
-  end;
+  end;*)
 
   // TODEJointUniversal
   //
@@ -5242,7 +5242,7 @@ end;
 
 // Create
 //
-constructor TODEJointHinge2.Create(AOwner : TXCollection);
+(*constructor TODEJointHinge2.Create(AOwner : TXCollection);
 begin
   inherited;
   FAnchor:=TGLCoordinates.CreateInitialized(Self, NullHMGPoint, csPoint);
@@ -5447,7 +5447,7 @@ begin
     Result:=True;
   end else
     Result:=False;
-end;
+end;*)
 
 
 // ---------------
@@ -5690,7 +5690,7 @@ initialization
   RegisterXCollectionItemClass(TODEJointBall);
   RegisterXCollectionItemClass(TODEJointSlider);
   RegisterXCollectionItemClass(TODEJointFixed);
-  RegisterXCollectionItemClass(TODEJointHinge2);
+//  RegisterXCollectionItemClass(TODEJointHinge2);
   RegisterXCollectionItemClass(TODEJointUniversal);
 
 // ------------------------------------------------------------------
@@ -5718,7 +5718,7 @@ finalization
   UnregisterXCollectionItemClass(TODEJointBall);
   UnregisterXCollectionItemClass(TODEJointSlider);
   UnregisterXCollectionItemClass(TODEJointFixed);
-  UnregisterXCollectionItemClass(TODEJointHinge2);
+//  UnregisterXCollectionItemClass(TODEJointHinge2);
   UnregisterXCollectionItemClass(TODEJointUniversal);
 
   CloseODE;
