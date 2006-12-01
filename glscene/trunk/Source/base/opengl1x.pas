@@ -65,18 +65,21 @@ interface
 
 uses
   vectortypes,
-  {$ifdef mswindows}
-    windows
-  {$endif }
-
+  {$ifdef FPC}
+    dynlibs, ctypes,
+  {$endif}
+  
   {$ifdef UNIX}
     {$IFDEF FPC}
-    X, XUtil, dynlibs, dl, ctypes,
+    X, XUtil, dl
     {$ELSE}  // kylix
     Libc,
     {$ENDIF}
     Xlib, Types
+  {$else}
+    windows
   {$endif}
+
   ;
   
 {$ifdef fpc}
@@ -4223,9 +4226,14 @@ begin
    Result := False;
    CloseOpenGL;
 
+   {$ifdef WINDOWS}
+   GLHandle:=LoadLibrary(PChar(GLName));
+   GLUHandle:=LoadLibrary(PChar(GLUName));
+   {$else}
    GLHandle:=Pointer(LoadLibrary(PChar(GLName)));
    GLUHandle:=Pointer(LoadLibrary(PChar(GLUName)));
-
+   {$endif};
+   
    if (GLHandle<>INVALID_MODULEHANDLE) and (GLUHandle<>INVALID_MODULEHANDLE) then
      Result:=True
    else begin
