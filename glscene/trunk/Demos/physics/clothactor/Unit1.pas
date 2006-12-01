@@ -25,7 +25,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls,
   
-  GLVectorFileObjects, GLObjects, GLCadencer, GLTexture, GLWin32Viewer,
+  GLVectorFileObjects, GLObjects, GLCadencer, GLTexture, GLLCLViewer,
   GLMisc, GLFileSMD, GLFile3DS, GLVerletClothify, GLVerletSkeletonColliders,
   GLShadowVolume,
   
@@ -142,10 +142,10 @@ var
 begin
   Randomize;
 
-  SetCurrentDir(ExtractFilePath(Application.ExeName)+'..\..\media');
+  SetCurrentDir(ExtractFilePath(Application.ExeName)+'..' + PathDelim + '..' + PathDelim + 'media');
 
   // Load the actor and animations
-  GLActor1.LoadFromFile('trinityRAGE.smd');
+  GLActor1.LoadFromFile('TRINITYrage.smd');
   GLActor1.AddDataFromFile('walk.smd');
   GLActor1.Animations[1].MakeSkeletalTranslationStatic;
   GLActor1.SwitchToAnimation('walk');
@@ -194,7 +194,7 @@ begin
   // approximate collision boundary for actors and are controlled
   // by the actor's skeleton.
   with GLActor1.Skeleton.Colliders do begin
-    LoadFromFile('trinityRAGE.glsc');
+    LoadFromFile('TRINITYrage.glsc');
     AlignColliders;
   end;
 

@@ -1,41 +1,34 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 476
-  ClientWidth = 634
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 633
-  VertScrollBar.Page = 475
   Left = 252
   Height = 476
   Top = 122
   Width = 634
+  HorzScrollBar.Page = 633
+  VertScrollBar.Page = 475
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   object GLSceneViewer1: TGLSceneViewer
+    Height = 423
+    Top = 24
+    Width = 626
     Camera = GLCamera1
     Buffer.AmbientColor.Color = {
       CDCCCC3ECDCCCC3ECDCCCC3E0000803F
     }
     Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow, roTwoSideLighting]
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
     FieldOfView = 153.398193359375
     Anchors = [akTop, akLeft, akRight, akBottom]
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 423
-    Top = 24
-    Width = 626
   end
   object CheckBox_ShowOctree: TCheckBox
-    BorderSpacing.OnChange = nil
+    Height = 13
+    Width = 82
     Caption = 'Show Octree'
     TabOrder = 0
-    Height = 17
-    Width = 97
   end
   object GLScene1: TGLScene
     left = 8
@@ -56,8 +49,8 @@ object Form1: TForm1
     object GLShadowVolume1: TGLShadowVolume
       Lights = <      
         item
-          LightSource = GLLightSource1
           CastingMode = scmAlways
+          LightSource = GLLightSource1
         end>
       Occluders = <      
         item
@@ -70,20 +63,19 @@ object Form1: TForm1
       object ActorDummy: TGLDummyCube
         CubeSize = 1
         object GLActor1: TGLActor
-          Reference = aarSkeleton
-          AnimationMode = aamLoop
-          Interval = 75
-          MaterialLibrary = GLMaterialLibrary1
           Direction.Coordinates = {
             000000000000803F0000000000000000
           }
           Up.Coordinates = {
             00000000000000000000803F00000000
           }
+          Reference = aarSkeleton
+          AnimationMode = aamLoop
+          Interval = 75
+          MaterialLibrary = GLMaterialLibrary1
         end
       end
       object Cape: TGLActor
-        Interval = 100
         Material.BackProperties.Ambient.Color = {
           0000000000000000000000000000803F
         }
@@ -106,12 +98,9 @@ object Form1: TForm1
         }
         Material.Texture.TextureMode = tmModulate
         Material.FaceCulling = fcNoCull
+        Interval = 100
       end
       object GLPlane1: TGLPlane
-        Height = 500
-        Width = 500
-        XTiles = 4
-        YTiles = 4
         Material.FrontProperties.Ambient.Color = {
           0000003F0000003F0000003F0000803F
         }
@@ -125,6 +114,10 @@ object Form1: TForm1
         Up.Coordinates = {
           00000000000000000000803F00000000
         }
+        Height = 500
+        Width = 500
+        XTiles = 4
+        YTiles = 4
       end
     end
     object OctreeRenderer: TGLDirectOpenGL
