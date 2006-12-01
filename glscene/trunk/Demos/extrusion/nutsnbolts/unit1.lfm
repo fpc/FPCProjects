@@ -1,67 +1,67 @@
 object Form1: TForm1
   Left = 162
+  Height = 297
   Top = 77
-  Width = 463
-  Height = 332
+  Width = 449
+  HorzScrollBar.Page = 448
+  VertScrollBar.Page = 296
   AutoSize = True
-  BorderWidth = 3
   Caption = 'Form1'
-  Color = clBtnFace
-  Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
-  Font.Style = []
-  OldCreateOrder = False
-  OnMouseWheel = FormMouseWheel
-  PixelsPerInch = 96
-  TextHeight = 13
   object GLSceneViewer1: TGLSceneViewer
-    Left = 0
-    Top = 0
-    Width = 449
     Height = 297
+    Width = 449
     Camera = GLCamera1
     Buffer.BackgroundColor = clNavy
+    FieldOfView = 142.783203125
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
   end
   object GLScene1: TGLScene
-    Left = 8
-    Top = 8
+    left = 8
+    top = 8
     object GLLightSource1: TGLLightSource
       ConstAttenuation = 1
-      Position.Coordinates = {0000484200004842000048420000803F}
+      Position.Coordinates = {
+        0000484200004842000048420000803F
+      }
       SpotCutOff = 180
     end
     object DummyCube1: TGLDummyCube
       CubeSize = 1
       object Bolt: TGLDummyCube
-        Position.Coordinates = {000000009A9999BE0000803F0000803F}
+        Position.Coordinates = {
+          000000009A9999BE0000803F0000803F
+        }
         CubeSize = 1
         object RSBoltHead: TGLRevolutionSolid
-          Position.Coordinates = {000000001F856B3F000000000000803F}
-          Scale.Coordinates = {9A99193E9A99193E9A99193E00000000}
-          Nodes = <
+          Position.Coordinates = {
+            000000001F856B3F000000000000803F
+          }
+          Scale.Coordinates = {
+            9A99193E9A99193E9A99193E00000000
+          }
+          Nodes = <          
             item
               Y = 1.5
-            end
+            end          
             item
               X = 5.90000009536743
               Y = 1.5
-            end
+            end          
             item
               X = 6
               Y = 1.39999997615814
-            end
+            end          
             item
               X = 6
-              Y = -1.39999997615814
-            end
+              Y = -1.3999999761581
+            end          
             item
               X = 5.90000009536743
               Y = -1.5
-            end
+            end          
             item
               Y = -1.5
             end>
@@ -75,15 +75,17 @@ object Form1: TForm1
           TopRadius = 0.5
         end
         object RSBoltThreads: TGLRevolutionSolid
-          Scale.Coordinates = {CDCCCC3DCDCCCC3DCDCCCC3D00000000}
-          Nodes = <
+          Scale.Coordinates = {
+            CDCCCC3DCDCCCC3DCDCCCC3D00000000
+          }
+          Nodes = <          
             item
               X = 5
               Y = 0.5
-            end
+            end          
             item
               X = 5.5
-            end
+            end          
             item
               X = 5
               Y = -0.5
@@ -95,20 +97,28 @@ object Form1: TForm1
         end
       end
       object Nut: TGLDummyCube
-        Direction.Coordinates = {F304353FF30435BF33BF0D2800000000}
-        Position.Coordinates = {0000000000000000000080BF0000803F}
-        Up.Coordinates = {F404353FF304353F64C084B300000000}
+        Direction.Coordinates = {
+          F304353FF30435BF33BF0D2800000000
+        }
+        Position.Coordinates = {
+          0000000000000000000080BF0000803F
+        }
+        Up.Coordinates = {
+          F404353FF304353F64C084B300000000
+        }
         CubeSize = 1
         object RSNutThreads: TGLRevolutionSolid
-          Scale.Coordinates = {CDCCCC3DCDCCCC3DCDCCCC3D00000000}
-          Nodes = <
+          Scale.Coordinates = {
+            CDCCCC3DCDCCCC3DCDCCCC3D00000000
+          }
+          Nodes = <          
             item
               X = 5.5
               Y = 0.5
-            end
+            end          
             item
               X = 5
-            end
+            end          
             item
               X = 5.5
               Y = -0.5
@@ -116,32 +126,34 @@ object Form1: TForm1
           Parts = [rspInside, rspStartPolygon, rspStopPolygon]
           StartAngle = -475
           StopAngle = 460
-          YOffsetPerTurn = 1.45000004768372
+          YOffsetPerTurn = 1.45000004768371
           Slices = 24
         end
         object RSNutPans: TGLRevolutionSolid
-          Scale.Coordinates = {9A99193E9A99193E9A99193E00000000}
-          Nodes = <
+          Scale.Coordinates = {
+            9A99193E9A99193E9A99193E00000000
+          }
+          Nodes = <          
             item
               X = 4.5
               Y = 1.5
-            end
+            end          
             item
               X = 5.90000009536743
               Y = 1.5
-            end
+            end          
             item
               X = 6
               Y = 1.39999997615814
-            end
+            end          
             item
               X = 6
-              Y = -1.39999997615814
-            end
+              Y = -1.3999999761581
+            end          
             item
               X = 5.90000009536743
               Y = -1.5
-            end
+            end          
             item
               X = 4.5
               Y = -1.5
@@ -149,11 +161,11 @@ object Form1: TForm1
           Slices = 6
         end
         object Annulus1: TGLAnnulus
-          BottomRadius = 0.699999988079071
-          Height = 0.449999988079071
-          BottomInnerRadius = 0.550000011920929
-          TopInnerRadius = 0.550000011920929
-          TopRadius = 0.699999988079071
+          BottomRadius = 0.69999998807907
+          Height = 0.44999998807907
+          BottomInnerRadius = 0.55000001192092
+          TopInnerRadius = 0.55000001192092
+          TopRadius = 0.69999998807907
           Parts = [anInnerSides, anBottom, anTop]
         end
       end
@@ -162,9 +174,11 @@ object Form1: TForm1
       DepthOfView = 100
       FocalLength = 50
       TargetObject = DummyCube1
-      Position.Coordinates = {0000804000000000000000000000803F}
-      Left = 208
-      Top = 136
+      Position.Coordinates = {
+        0000804000000000000000000000803F
+      }
+      left = 208
+      top = 136
     end
   end
 end

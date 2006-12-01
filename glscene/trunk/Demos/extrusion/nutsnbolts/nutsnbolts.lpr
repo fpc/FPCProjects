@@ -5,7 +5,7 @@ program nutsnbolts;
 uses
   Interfaces,
   Forms,
-  Unit1 in 'Unit1.pas' {Form1};
+  Unit1 in 'Unit1.pas' {Form1}, glscenelazarus;
 
 begin
   Application.Initialize;
