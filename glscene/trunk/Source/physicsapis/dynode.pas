@@ -414,7 +414,7 @@ enum {
     dJointTypeHinge,
     dJointTypeSlider,
     dJointTypeContact,
-    dJointTypeHinge2,
+//    dJointTypeHinge2,
     dJointTypeFixed,
     dJointTypeNull,
     dJointTypeAMotor,
@@ -1010,7 +1010,7 @@ var
 
   dJointCreateFixed: function(const World : PdxWorld; dJointGroupID : TdJointGroupID):  TdJointID; cdecl;
   dJointCreateHinge: function(const World : PdxWorld; dJointGroupID : TdJointGroupID):  TdJointID; cdecl;
-  dJointCreateHinge2: function(const World : PdxWorld; dJointGroupID : TdJointGroupID):  TdJointID; cdecl;
+//  dJointCreateHinge2: function(const World : PdxWorld; dJointGroupID : TdJointGroupID):  TdJointID; cdecl;
   dJointCreateSlider: function(const World : PdxWorld; dJointGroupID : TdJointGroupID):  TdJointID; cdecl;
   dJointCreateUniversal: function(const World : PdxWorld; dJointGroupID : TdJointGroupID):  TdJointID; cdecl;
   dJointCreatePlane2D: function(const World : PdxWorld; dJointGroupID : TdJointGroupID):  TdJointID; cdecl;
@@ -1025,14 +1025,14 @@ var
   dJointGetBallAnchor: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
   dJointGetBallAnchor2: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
   dJointGetBody: function(const dJointID : TdJointID; const index: Integer):  PdxBody; cdecl;
-  dJointGetHinge2Anchor: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
-  dJointGetHinge2Anchor2: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
-  dJointGetHinge2Angle1: function(const dJointID : TdJointID):  TdReal; cdecl;
-  dJointGetHinge2Angle1Rate: function(const dJointID : TdJointID):  TdReal; cdecl;
-  dJointGetHinge2Angle2Rate: function(const dJointID : TdJointID):  TdReal; cdecl;
-  dJointGetHinge2Axis1: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
-  dJointGetHinge2Axis2: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
-  dJointGetHinge2Param: function(const dJointID : TdJointID; const parameter: TJointParams):  TdReal; cdecl;
+//  dJointGetHinge2Anchor: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
+//  dJointGetHinge2Anchor2: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
+//  dJointGetHinge2Angle1: function(const dJointID : TdJointID):  TdReal; cdecl;
+//  dJointGetHinge2Angle1Rate: function(const dJointID : TdJointID):  TdReal; cdecl;
+//  dJointGetHinge2Angle2Rate: function(const dJointID : TdJointID):  TdReal; cdecl;
+//  dJointGetHinge2Axis1: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
+//  dJointGetHinge2Axis2: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
+//  dJointGetHinge2Param: function(const dJointID : TdJointID; const parameter: TJointParams):  TdReal; cdecl;
   dJointGetHingeAnchor: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
   dJointGetHingeAnchor2: procedure(const dJointID : TdJointID; var result: TdVector3); cdecl;
   dJointGetHingeAngle: function(const dJointID : TdJointID):  TdReal; cdecl;
@@ -1063,10 +1063,10 @@ var
   dJointSetAMotorParam: procedure(const dJointID : TdJointID; const parameter: TJointParams; const value: TdReal); cdecl;
   dJointSetBallAnchor: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
   dJointSetFixed: procedure(const dJointID : TdJointID); cdecl;
-  dJointSetHinge2Anchor: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
-  dJointSetHinge2Axis1: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
-  dJointSetHinge2Axis2: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
-  dJointSetHinge2Param: procedure(const dJointID : TdJointID; const parameter: TJointParams; const value: TdReal); cdecl;
+//  dJointSetHinge2Anchor: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
+//  dJointSetHinge2Axis1: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
+//  dJointSetHinge2Axis2: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
+//  dJointSetHinge2Param: procedure(const dJointID : TdJointID; const parameter: TJointParams; const value: TdReal); cdecl;
   dJointSetHingeAnchor: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
   dJointSetHingeAxis: procedure(const dJointID : TdJointID; const x, y, z: TdReal); cdecl;
   dJointSetHingeParam: procedure(const dJointID : TdJointID; const parameter: TJointParams; const value: TdReal); cdecl;
@@ -1082,7 +1082,7 @@ var
   dJointGetData: function(const dJointID : TdJointID):  pointer; cdecl;
   dJointSetData: procedure(const dJointID : TdJointID; data : Pointer); cdecl;
   dJointAddAMotorTorques: procedure(const dJointID : TdJointID; torque1, torque2, torque3: TdReal); cdecl;
-  dJointAddHinge2Torques: procedure(const dJointID : TdJointID; torque1, torque2: TdReal); cdecl;
+//  dJointAddHinge2Torques: procedure(const dJointID : TdJointID; torque1, torque2: TdReal); cdecl;
   dJointAddHingeTorque: procedure(const dJointID : TdJointID; torque: TdReal); cdecl;
   dJointAddSliderForce: procedure(const dJointID : TdJointID; force: TdReal); cdecl;
   dJointAddUniversalTorques: procedure(const dJointID : TdJointID; torque1, torque2: TdReal); cdecl;
@@ -1090,7 +1090,7 @@ var
   // callback routines for feedback of joints
   dJointSetFeedback: procedure(const dJointID : TdJointID; Feedback : PTdJointFeedback); cdecl;
   dJointGetFeedback: function(const dJointID : TdJointID):  PTdJointFeedback; cdecl;
-  dJointCorrectHinge2: procedure(const dJointID : TdJointID); cdecl;
+//  dJointCorrectHinge2: procedure(const dJointID : TdJointID); cdecl;
 
   //* Auto-disable functions */
   dWorldGetAutoDisableLinearThreshold: function(const World: PdxWorld):  TdReal; cdecl;
@@ -1119,8 +1119,8 @@ var
   //----- dGeom -----
   dGeomBoxGetLengths: procedure(const Geom : PdxGeom; var result: TdVector3); cdecl;
   dGeomBoxSetLengths: procedure(const Geom : PdxGeom; const lx, ly, lz: TdReal); cdecl;
-  dGeomCCylinderGetParams: procedure(const Geom : PdxGeom; var radius, length: TdReal); cdecl;
-  dGeomCCylinderSetParams: procedure(const Geom : PdxGeom; const radius, length: TdReal); cdecl;
+//  dGeomCCylinderGetParams: procedure(const Geom : PdxGeom; var radius, length: TdReal); cdecl;
+//  dGeomCCylinderSetParams: procedure(const Geom : PdxGeom; const radius, length: TdReal); cdecl;
   dGeomDestroy: procedure(const Geom : PdxGeom); cdecl;
   dGeomGetAABB: procedure(const Geom : PdxGeom; var aabb: TdAABB); cdecl;
   dGeomGetBody: function(const Geom : PdxGeom):  PdxBody; cdecl;
@@ -1160,18 +1160,18 @@ var
   dGeomSpherePointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
   dGeomBoxPointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
   dGeomPlanePointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
-  dGeomCCylinderPointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
+//  dGeomCCylinderPointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
 
   // A strange fix, so the class ids can be updated
   // ***************
   function dCreateSphere(const Space : PdxSpace; const radius: TdReal): PdxGeom; cdecl;
   function dCreateBox(const Space : PdxSpace; const lx, ly, lz: TdReal): PdxGeom; cdecl;
   function dCreatePlane(const Space : PdxSpace; const a, b, c, d: TdReal): PdxGeom; cdecl;
-  function dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
+//  function dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
   function dCreateCylinder(const Space : PdxSpace; r, lz : TdReal) : PdxGeom; cdecl;
-  function dCreateCone(const Space : PdxSpace; radius, length: TdReal): PdxGeom; cdecl;
-  function dCreateTerrainY(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer): PdxGeom; cdecl;
-  function dCreateTerrainZ(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer): PdxGeom; cdecl;
+//  function dCreateCone(const Space : PdxSpace; radius, length: TdReal): PdxGeom; cdecl;
+//  function dCreateTerrainY(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer): PdxGeom; cdecl;
+//  function dCreateTerrainZ(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer): PdxGeom; cdecl;
   function dCreateRay(const Space : PdxSpace; length: TdReal) : PdxGeom; cdecl;
   function dCreateGeomTransform(const Space : PdxSpace): PdxGeom; cdecl;
   function dCreateTriMesh(const Space : PdxSpace; Data: PdxTriMeshData; Callback, ArrayCallback, RayCallback: Pointer): PdxGeom; cdecl;
@@ -1181,24 +1181,24 @@ var
   EXT_dCreateSphere: function(const Space : PdxSpace; const radius: TdReal):  PdxGeom; cdecl;
   EXT_dCreateBox: function(const Space : PdxSpace; const lx, ly, lz: TdReal):  PdxGeom; cdecl;
   EXT_dCreatePlane: function(const Space : PdxSpace; const a, b, c, d: TdReal):  PdxGeom; cdecl;
-  EXT_dCreateCCylinder: function(const Space : PdxSpace; const radius, length: TdReal):  PdxGeom; cdecl;
+//  EXT_dCreateCCylinder: function(const Space : PdxSpace; const radius, length: TdReal):  PdxGeom; cdecl;
   EXT_dCreateCylinder: function(const Space : PdxSpace; r, lz : TdReal):  PdxGeom; cdecl;
-  EXT_dCreateCone: function(const Space : PdxSpace; radius, length: TdReal):  PdxGeom; cdecl;
-  EXT_dCreateTerrainY: function(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer):  PdxGeom; cdecl;
-  EXT_dCreateTerrainZ: function(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer):  PdxGeom; cdecl;
+//  EXT_dCreateCone: function(const Space : PdxSpace; radius, length: TdReal):  PdxGeom; cdecl;
+//  EXT_dCreateTerrainY: function(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer):  PdxGeom; cdecl;
+//  EXT_dCreateTerrainZ: function(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer):  PdxGeom; cdecl;
   EXT_dCreateRay: function(const Space : PdxSpace; length : TdReal):  PdxGeom; cdecl;
   EXT_dCreateGeomTransform: function(const Space : PdxSpace):  PdxGeom; cdecl;
   EXT_dCreateTriMesh: function(const Space : PdxSpace; Data: PdxTriMeshData; Callback, ArrayCallback, RayCallback: Pointer):  PdxGeom; cdecl;
   // ***************
 
   // dCone
-  dGeomConeSetParams: procedure(const Geom: PdxGeom; radius, length: TdReal); cdecl;
+{  dGeomConeSetParams: procedure(const Geom: PdxGeom; radius, length: TdReal); cdecl;
   dGeomConeGetParams: procedure(const Geom: PdxGeom; var radius, length: TdReal); cdecl;
-  dGeomConePointDepth: function(const Geom: PdxGeom; const x, y, z: TdReal):  TdReal; cdecl;
+  dGeomConePointDepth: function(const Geom: PdxGeom; const x, y, z: TdReal):  TdReal; cdecl;}
 
   // dTerrain
-  dGeomTerrainYPointDepth: function(const Geom: PdxGeom; const x, y, z: TdReal):  TdReal; cdecl;
-  dGeomTerrainZPointDepth: function(const Geom: PdxGeom; const x, y, z: TdReal):  TdReal; cdecl;
+//  dGeomTerrainYPointDepth: function(const Geom: PdxGeom; const x, y, z: TdReal):  TdReal; cdecl;
+//  dGeomTerrainZPointDepth: function(const Geom: PdxGeom; const x, y, z: TdReal):  TdReal; cdecl;
 
   // dCylinder (not a capped cylinder).
   dGeomCylinderSetParams: procedure(const Geom : PdxGeom; radius, length : TdReal); cdecl;
@@ -1276,7 +1276,7 @@ var
   dMassSetTriMeshTotal: procedure(var m: TdMass; total_mass: TdReal; Vertices: PdVector3Array; nVertexStride, nVertices: Integer; Indices: PdIntegerArray; IndexCount: Integer); cdecl;
   dMassSetZero: procedure(var m: TdMass); cdecl;
   dMassTranslate: procedure(var m: TdMass; x, y, z: TdReal); cdecl;
-  procedure dMassSetCone(var m : TdMass; const density, radius, length : TdReal); cdecl;
+//  procedure dMassSetCone(var m : TdMass; const density, radius, length : TdReal); cdecl;
 
   //----- Rotation.h -----
 
@@ -1362,16 +1362,16 @@ var
   // be exported from the dll, but how does one export integers from dlls?
   dSphereClass : integer=-1;
   dBoxClass : integer=-1;
-  dCCylinderClass : integer=-1;
+//  dCCylinderClass : integer=-1;
   dGeomTransformClass : integer=-1;
   dPlaneClass : integer=-1;
   dCylinderClass : integer=-1;
   dRayClass : integer=-1;
   dGeomTransformGroupClass : integer=-1;
   dTriMeshClass : integer=-1;
-  dTerrainYClass : integer=-1;
-  dTerrainZClass : integer=-1;
-  dConeClass : integer=-1;
+//  dTerrainYClass : integer=-1;
+//  dTerrainZClass : integer=-1;
+//  dConeClass : integer=-1;
 
   IsODEInitialized : boolean = False;
   DisabledDebugGeom : boolean = False;
@@ -1614,7 +1614,7 @@ begin
 {$ENDIF}
 end;
 
-function dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
+(*function dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
 begin
   result := EXT_dCreateCCylinder(Space, radius, length);
 
@@ -1701,7 +1701,7 @@ begin
       ODEDebugGeomList.Add(result);
       End ;
 {$ENDIF}
-end;
+end;*)
 
 function dCreateGeomTransform(const Space : PdxSpace): PdxGeom; cdecl;
 begin
@@ -1916,7 +1916,7 @@ begin
   dJointCreateContact := GetModuleSymbol( vODEHandle, 'dJointCreateContact' );
   dJointCreateFixed := GetModuleSymbol( vODEHandle, 'dJointCreateFixed' );
   dJointCreateHinge := GetModuleSymbol( vODEHandle, 'dJointCreateHinge' );
-  dJointCreateHinge2 := GetModuleSymbol( vODEHandle, 'dJointCreateHinge2' );
+//  dJointCreateHinge2 := GetModuleSymbol( vODEHandle, 'dJointCreateHinge2' );
   dJointCreateSlider := GetModuleSymbol( vODEHandle, 'dJointCreateSlider' );
   dJointCreateUniversal := GetModuleSymbol( vODEHandle, 'dJointCreateUniversal' );
   dJointCreatePlane2D := GetModuleSymbol( vODEHandle, 'dJointCreatePlane2D' );
@@ -1931,14 +1931,14 @@ begin
   dJointGetBallAnchor := GetModuleSymbol( vODEHandle, 'dJointGetBallAnchor' );
   dJointGetBallAnchor2 := GetModuleSymbol( vODEHandle, 'dJointGetBallAnchor2' );
   dJointGetBody := GetModuleSymbol( vODEHandle, 'dJointGetBody' );
-  dJointGetHinge2Anchor := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Anchor' );
-  dJointGetHinge2Anchor2 := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Anchor2' );
-  dJointGetHinge2Angle1 := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Angle1' );
-  dJointGetHinge2Angle1Rate := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Angle1Rate' );
-  dJointGetHinge2Angle2Rate := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Angle2Rate' );
-  dJointGetHinge2Axis1 := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Axis1' );
-  dJointGetHinge2Axis2 := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Axis2' );
-  dJointGetHinge2Param := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Param' );
+//  dJointGetHinge2Anchor := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Anchor' );
+//  dJointGetHinge2Anchor2 := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Anchor2' );
+//  dJointGetHinge2Angle1 := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Angle1' );
+//  dJointGetHinge2Angle1Rate := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Angle1Rate' );
+//  dJointGetHinge2Angle2Rate := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Angle2Rate' );
+//  dJointGetHinge2Axis1 := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Axis1' );
+//  dJointGetHinge2Axis2 := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Axis2' );
+//  dJointGetHinge2Param := GetModuleSymbol( vODEHandle, 'dJointGetHinge2Param' );
   dJointGetHingeAnchor := GetModuleSymbol( vODEHandle, 'dJointGetHingeAnchor' );
   dJointGetHingeAnchor2 := GetModuleSymbol( vODEHandle, 'dJointGetHingeAnchor2' );
   dJointGetHingeAngle := GetModuleSymbol( vODEHandle, 'dJointGetHingeAngle' );
@@ -1969,10 +1969,10 @@ begin
   dJointSetAMotorParam := GetModuleSymbol( vODEHandle, 'dJointSetAMotorParam' );
   dJointSetBallAnchor := GetModuleSymbol( vODEHandle, 'dJointSetBallAnchor' );
   dJointSetFixed := GetModuleSymbol( vODEHandle, 'dJointSetFixed' );
-  dJointSetHinge2Anchor := GetModuleSymbol( vODEHandle, 'dJointSetHinge2Anchor' );
-  dJointSetHinge2Axis1 := GetModuleSymbol( vODEHandle, 'dJointSetHinge2Axis1' );
-  dJointSetHinge2Axis2 := GetModuleSymbol( vODEHandle, 'dJointSetHinge2Axis2' );
-  dJointSetHinge2Param := GetModuleSymbol( vODEHandle, 'dJointSetHinge2Param' );
+//  dJointSetHinge2Anchor := GetModuleSymbol( vODEHandle, 'dJointSetHinge2Anchor' );
+//  dJointSetHinge2Axis1 := GetModuleSymbol( vODEHandle, 'dJointSetHinge2Axis1' );
+//  dJointSetHinge2Axis2 := GetModuleSymbol( vODEHandle, 'dJointSetHinge2Axis2' );
+//  dJointSetHinge2Param := GetModuleSymbol( vODEHandle, 'dJointSetHinge2Param' );
   dJointSetHingeAnchor := GetModuleSymbol( vODEHandle, 'dJointSetHingeAnchor' );
   dJointSetHingeAxis := GetModuleSymbol( vODEHandle, 'dJointSetHingeAxis' );
   dJointSetHingeParam := GetModuleSymbol( vODEHandle, 'dJointSetHingeParam' );
@@ -1988,13 +1988,13 @@ begin
   dJointGetData := GetModuleSymbol( vODEHandle, 'dJointGetData' );
   dJointSetData := GetModuleSymbol( vODEHandle, 'dJointSetData' );
   dJointAddAMotorTorques := GetModuleSymbol( vODEHandle, 'dJointAddAMotorTorques' );
-  dJointAddHinge2Torques := GetModuleSymbol( vODEHandle, 'dJointAddHinge2Torques' );
+//  dJointAddHinge2Torques := GetModuleSymbol( vODEHandle, 'dJointAddHinge2Torques' );
   dJointAddHingeTorque := GetModuleSymbol( vODEHandle, 'dJointAddHingeTorque' );
   dJointAddSliderForce := GetModuleSymbol( vODEHandle, 'dJointAddSliderForce' );
   dJointAddUniversalTorques := GetModuleSymbol( vODEHandle, 'dJointAddUniversalTorques' );
   dJointSetFeedback := GetModuleSymbol( vODEHandle, 'dJointSetFeedback' );
   dJointGetFeedback := GetModuleSymbol( vODEHandle, 'dJointGetFeedback' );
-  dJointCorrectHinge2 := GetModuleSymbol( vODEHandle, 'dJointCorrectHinge2' );
+//  dJointCorrectHinge2 := GetModuleSymbol( vODEHandle, 'dJointCorrectHinge2' );
   dWorldGetAutoDisableLinearThreshold := GetModuleSymbol( vODEHandle, 'dWorldGetAutoDisableLinearThreshold' );
   dWorldSetAutoDisableLinearThreshold := GetModuleSymbol( vODEHandle, 'dWorldSetAutoDisableLinearThreshold' );
   dWorldGetAutoDisableAngularThreshold := GetModuleSymbol( vODEHandle, 'dWorldGetAutoDisableAngularThreshold' );
@@ -2018,8 +2018,8 @@ begin
   dBodySetAutoDisableDefaults := GetModuleSymbol( vODEHandle, 'dBodySetAutoDisableDefaults' );
   dGeomBoxGetLengths := GetModuleSymbol( vODEHandle, 'dGeomBoxGetLengths' );
   dGeomBoxSetLengths := GetModuleSymbol( vODEHandle, 'dGeomBoxSetLengths' );
-  dGeomCCylinderGetParams := GetModuleSymbol( vODEHandle, 'dGeomCCylinderGetParams' );
-  dGeomCCylinderSetParams := GetModuleSymbol( vODEHandle, 'dGeomCCylinderSetParams' );
+//  dGeomCCylinderGetParams := GetModuleSymbol( vODEHandle, 'dGeomCCylinderGetParams' );
+//  dGeomCCylinderSetParams := GetModuleSymbol( vODEHandle, 'dGeomCCylinderSetParams' );
   dGeomDestroy := GetModuleSymbol( vODEHandle, 'dGeomDestroy' );
   dGeomGetAABB := GetModuleSymbol( vODEHandle, 'dGeomGetAABB' );
   dGeomGetBody := GetModuleSymbol( vODEHandle, 'dGeomGetBody' );
@@ -2055,23 +2055,23 @@ begin
   dGeomSpherePointDepth := GetModuleSymbol( vODEHandle, 'dGeomSpherePointDepth' );
   dGeomBoxPointDepth := GetModuleSymbol( vODEHandle, 'dGeomBoxPointDepth' );
   dGeomPlanePointDepth := GetModuleSymbol( vODEHandle, 'dGeomPlanePointDepth' );
-  dGeomCCylinderPointDepth := GetModuleSymbol( vODEHandle, 'dGeomCCylinderPointDepth' );
+//  dGeomCCylinderPointDepth := GetModuleSymbol( vODEHandle, 'dGeomCCylinderPointDepth' );
   EXT_dCreateSphere := GetModuleSymbol( vODEHandle, 'dCreateSphere' );
   EXT_dCreateBox := GetModuleSymbol( vODEHandle, 'dCreateBox' );
   EXT_dCreatePlane := GetModuleSymbol( vODEHandle, 'dCreatePlane' );
-  EXT_dCreateCCylinder := GetModuleSymbol( vODEHandle, 'dCreateCCylinder' );
+//  EXT_dCreateCCylinder := GetModuleSymbol( vODEHandle, 'dCreateCCylinder' );
   EXT_dCreateCylinder := GetModuleSymbol( vODEHandle, 'dCreateCylinder' );
-  EXT_dCreateCone := GetModuleSymbol( vODEHandle, 'dCreateCone' );
-  EXT_dCreateTerrainY := GetModuleSymbol( vODEHandle, 'dCreateTerrainY' );
-  EXT_dCreateTerrainZ := GetModuleSymbol( vODEHandle, 'dCreateTerrainZ' );
+//  EXT_dCreateCone := GetModuleSymbol( vODEHandle, 'dCreateCone' );
+//  EXT_dCreateTerrainY := GetModuleSymbol( vODEHandle, 'dCreateTerrainY' );
+//  EXT_dCreateTerrainZ := GetModuleSymbol( vODEHandle, 'dCreateTerrainZ' );
   EXT_dCreateRay := GetModuleSymbol( vODEHandle, 'dCreateRay' );
   EXT_dCreateGeomTransform := GetModuleSymbol( vODEHandle, 'dCreateGeomTransform' );
   EXT_dCreateTriMesh := GetModuleSymbol( vODEHandle, 'dCreateTriMesh' );
-  dGeomConeSetParams := GetModuleSymbol( vODEHandle, 'dGeomConeSetParams' );
-  dGeomConeGetParams := GetModuleSymbol( vODEHandle, 'dGeomConeGetParams' );
-  dGeomConePointDepth := GetModuleSymbol( vODEHandle, 'dGeomConePointDepth' );
-  dGeomTerrainYPointDepth := GetModuleSymbol( vODEHandle, 'dGeomTerrainYPointDepth' );
-  dGeomTerrainZPointDepth := GetModuleSymbol( vODEHandle, 'dGeomTerrainZPointDepth' );
+//  dGeomConeSetParams := GetModuleSymbol( vODEHandle, 'dGeomConeSetParams' );
+//  dGeomConeGetParams := GetModuleSymbol( vODEHandle, 'dGeomConeGetParams' );
+//  dGeomConePointDepth := GetModuleSymbol( vODEHandle, 'dGeomConePointDepth' );
+//  dGeomTerrainYPointDepth := GetModuleSymbol( vODEHandle, 'dGeomTerrainYPointDepth' );
+//  dGeomTerrainZPointDepth := GetModuleSymbol( vODEHandle, 'dGeomTerrainZPointDepth' );
   dGeomCylinderSetParams := GetModuleSymbol( vODEHandle, 'dGeomCylinderSetParams' );
   dGeomCylinderGetParams := GetModuleSymbol( vODEHandle, 'dGeomCylinderGetParams' );
   dGeomRaySetLength := GetModuleSymbol( vODEHandle, 'dGeomRaySetLength' );

@@ -73,7 +73,7 @@ type
   //
   {: Capsule (sphere capped cylinder) shaped ODE geom in a skeleton 
      collider. }
-  TSCODECCylinder = class(TSCODEBase)
+{  TSCODECCylinder = class(TSCODEBase)
     private
       FRadius,
       FLength : Single;
@@ -90,7 +90,7 @@ type
 
       property Radius : Single read FRadius write SetRadius;
       property Length : Single read FLength write SetLength;
-  end;
+  end;}
 
   // TSCODEBox
   //
@@ -262,7 +262,7 @@ end;
 
 // Create
 //
-constructor TSCODECCylinder.Create;
+(*constructor TSCODECCylinder.Create;
 begin
   inherited;
   FRadius:=0.5;
@@ -325,7 +325,7 @@ begin
       dGeomCcylinderSetParams(FGeom,FRadius,FLength);
   end;
 end;
-
+  *)
 // ------------------
 // ------------------ TSCODEBox ------------------
 // ------------------
@@ -428,6 +428,6 @@ initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-  RegisterClasses([TSCODEBase,TSCODESphere,TSCODECCylinder,TSCODEBox]);
+  RegisterClasses([TSCODEBase,TSCODESphere{,TSCODECCylinder},TSCODEBox]);
 
 end.

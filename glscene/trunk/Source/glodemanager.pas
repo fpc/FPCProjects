@@ -667,7 +667,7 @@ type
   // TODEElementCone
   //
   {: ODE cone implementation. }
-  TODEElementCone = class (TODEElementBase)
+(*  TODEElementCone = class (TODEElementBase)
     private
       { Private Declarations }
       FRadius,
@@ -702,7 +702,7 @@ type
       property Radius : TdReal read GetRadius write SetRadius;
       property Length : TdReal read GetLength write SetLength;
 
-  end;
+  end;*)
 
   // TODEElementTriMesh
   //
@@ -3378,7 +3378,7 @@ begin
   if FInitialized then exit;
   if not IsODEInitialized then exit;
 
-  FGeomElement:=dCreateCCylinder(nil,FRadius,FLength);
+  FGeomElement:=dCreateCylinder(nil,FRadius,FLength);
   inherited;
 end;
 
@@ -3442,7 +3442,7 @@ var
   rad, len : TdReal;
 begin
   if Assigned(FGeomElement) then begin
-    dGeomCCylinderGetParams(Geom,rad,len);
+    dGeomCylinderGetParams(Geom,rad,len);
     FRadius:=rad;
   end;
   result:=FRadius;
@@ -3455,7 +3455,7 @@ var
   rad, len : TdReal;
 begin
   if Assigned(FGeomElement) then begin
-    dGeomCCylinderGetParams(Geom,rad,len);
+    dGeomCylinderGetParams(Geom,rad,len);
     FLength:=len;
   end;
   result:=FLength;
@@ -3466,7 +3466,7 @@ end;
 procedure TODEElementCapsule.ODERebuild;
 begin
   if Assigned(Geom) then
-    dGeomCCylinderSetParams(Geom,FRadius,FLength);
+    dGeomCylinderSetParams(Geom,FRadius,FLength);
   inherited;
 end;
 
@@ -3670,7 +3670,7 @@ end;
 
 // Render
 //
-procedure TODEElementCone.Render(var rci : TRenderContextInfo);
+(*procedure TODEElementCone.Render(var rci : TRenderContextInfo);
 var
   i,j,
   Stacks,
@@ -3864,7 +3864,7 @@ begin
   FLength:=Value;
   ODERebuild;
 end;
-
+  *)
 
 // ---------------
 // --------------- TODEElementTriMesh ---------------
@@ -5682,7 +5682,7 @@ initialization
   RegisterXCollectionItemClass(TODEElementSphere);
   RegisterXCollectionItemClass(TODEElementCapsule);
   RegisterXCollectionItemClass(TODEElementCylinder);
-  RegisterXCollectionItemClass(TODEElementCone);
+//  RegisterXCollectionItemClass(TODEElementCone);
   RegisterXCollectionItemClass(TODEElementTriMesh);
   RegisterXCollectionItemClass(TODEElementPlane);
 
@@ -5710,7 +5710,7 @@ finalization
   UnregisterXCollectionItemClass(TODEElementSphere);
   UnregisterXCollectionItemClass(TODEElementCapsule);
   UnregisterXCollectionItemClass(TODEElementCylinder);
-  UnregisterXCollectionItemClass(TODEElementCone);
+//  UnregisterXCollectionItemClass(TODEElementCone);
   UnregisterXCollectionItemClass(TODEElementTriMesh);
   UnregisterXCollectionItemClass(TODEElementPlane);
 

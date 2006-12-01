@@ -176,7 +176,7 @@ type
       FTypeSlider : boolean;
       FTypeContact : boolean;
       FTypeUniversal : boolean;
-      FTypeHinge2 : boolean;
+//      FTypeHinge2 : boolean;
       FTypeFixed : boolean;
       FTypeAMotor : boolean;
       FAreConnected : boolean;
@@ -193,7 +193,7 @@ type
       procedure SetTypeSlider( const val : boolean );
       procedure SetTypeContact( const val : boolean );
       procedure SetTypeUniversal( const val : boolean );
-      procedure SetTypeHinge2( const val : boolean );
+//      procedure SetTypeHinge2( const val : boolean );
       procedure SetTypeFixed( const val : boolean );
       procedure SetTypeAMotor( const val : boolean );
       procedure SetAreConnected( const val : boolean );
@@ -297,7 +297,7 @@ type
       SetTypeContact;
       property RemoveTypeUniversal : boolean read FTypeUniversal write
       SetTypeUniversal;
-      property RemoveTypeHinge2 : boolean read FTypeHinge2 write SetTypeHinge2;
+//      property RemoveTypeHinge2 : boolean read FTypeHinge2 write SetTypeHinge2;
       property RemoveTypeFixed : boolean read FTypeFixed write SetTypeFixed;
       property RemoveTypeAMotor : boolean read FTypeAMotor write SetTypeAMotor;
       property RemoveTypeAreConnected : boolean read FAreConnected write
@@ -377,7 +377,7 @@ type
 {******************************************************************************}
  // [2005-06-08]: GLOXStaCCylinder last change by Dave Gravel
 {******************************************************************************}
-type
+{type
   TGLOXStaCCylinder = class( TGLCylinder )
     private
       FManager : TGLOXOdeEngine;
@@ -402,7 +402,7 @@ type
       destructor Destroy; override;
     published
       property Manager : TGLOXOdeEngine read FManager write SetManager;
-  end;
+  end;}
 {******************************************************************************}
  // [2005-06-08]: GLOXZStaTerrain last change by Dave Gravel
 {******************************************************************************}
@@ -471,7 +471,7 @@ type
 {******************************************************************************}
  // [2005-06-08]: GLOXStaCone last change by Dave Gravel
 {******************************************************************************}
-type
+{type
   TGLOXStaCone = class( TGLCone )
     private
       FManager : TGLOXOdeEngine;
@@ -490,7 +490,7 @@ type
       destructor Destroy; override;
     published
       property Manager : TGLOXOdeEngine read FManager write SetManager;
-end;
+end;}
 {******************************************************************************}
  // [2005-06-08]: GLOXDynBall last change by Dave Gravel
 {******************************************************************************}
@@ -845,7 +845,7 @@ type
 {******************************************************************************}
  // [2005-06-08]: GLOXDynCCylinder last change by Dave Gravel
 {******************************************************************************}
-type
+{type
   TGLOXDynCCylinder = class( TGLCylinder )
     private
       FAutoDisable : boolean;
@@ -964,11 +964,11 @@ type
       property OnCallBack : TOnCallBack read FOnCallBack write FOnCallBack;
       property ObjectsSurfaceMode : TOXObjectsSurfaceMode read
       GetObjectsSurfaceMode write SetObjectsSurfaceMode;
-  end;
+  end;}
 {******************************************************************************}
  // [2005-06-08]: GLOXDynCone last change by Dave Gravel
 {******************************************************************************}
-type
+{type
   TGLOXDynCone = class( TGLCone )
     private
       FAutoDisable : boolean;
@@ -1083,7 +1083,7 @@ type
       property OnCallBack : TOnCallBack read FOnCallBack write FOnCallBack;
       property ObjectsSurfaceMode : TOXObjectsSurfaceMode read
       GetObjectsSurfaceMode write SetObjectsSurfaceMode;
-end;
+end;}
 {******************************************************************************}
  // [2005-06-08]: GLOXDynMesh last change by Dave Gravel
 {******************************************************************************}
@@ -1212,8 +1212,8 @@ type
 {******************************************************************************}
  // [2005-06-08]: GLOXDynCar last change by Dave Gravel
 {******************************************************************************}
-type
-  TGLOXDynCar = class( TGLSizableDummyCube )
+{type
+   TGLOXDynCar = class( TGLSizableDummyCube )
     private
       FAutoDisable : boolean;
       FManager : TGLOXOdeEngine;
@@ -1454,7 +1454,7 @@ type
       property OnCallBack : TOnCallBack read FOnCallBack write FOnCallBack;
       property ObjectsSurfaceMode : TOXObjectsSurfaceMode read
       GetObjectsSurfaceMode write SetObjectsSurfaceMode;
-end;
+end;}
 
 type
   TGLOXRagdoll = class( TGLSizableDummyCube )
@@ -2287,8 +2287,8 @@ begin
     ( dAreConnectedExcluding( b1, b2, dJointTypeContact ) <> 0 ) ) then exit;
   if ( FTypeUniversal ) and ( assigned( b1 ) and assigned( b2 ) and
     ( dAreConnectedExcluding( b1, b2, dJointTypeUniversal ) <> 0 ) ) then exit;
-  if ( FTypeHinge2 ) and ( assigned( b1 ) and assigned( b2 ) and
-    ( dAreConnectedExcluding( b1, b2, dJointTypeHinge2 ) <> 0 ) ) then exit;
+//  if ( FTypeHinge2 ) and ( assigned( b1 ) and assigned( b2 ) and
+//    ( dAreConnectedExcluding( b1, b2, dJointTypeHinge2 ) <> 0 ) ) then exit;
   if ( FTypeFixed ) and ( assigned( b1 ) and assigned( b2 ) and
     ( dAreConnectedExcluding( b1, b2, dJointTypeFixed ) <> 0 ) ) then exit;
   if ( FTypeAMotor ) and ( assigned( b1 ) and assigned( b2 ) and
@@ -2317,7 +2317,7 @@ begin
         if ( TGLCustomSceneObject( g1.data ) is TGLOXDynCylinder ) and
         ( TGLCustomSceneObject( g2.data ) is TGLOXDynCylinder ) then exit;
     end;
-    if ( TGLCustomSceneObject( g1.data ) is TGLOXDynCCylinder ) then
+{    if ( TGLCustomSceneObject( g1.data ) is TGLOXDynCCylinder ) then
     begin
       ObjContact := TGLOXDynCCylinder( g1.data ).FContactNum;
       if ( TGLOXDynCCylinder( g1.data ).FIgnoreSelfModel ) then
@@ -2330,7 +2330,7 @@ begin
       if ( TGLOXDynCone( g1.data ).FIgnoreSelfModel ) then
         if ( TGLCustomSceneObject( g1.data ) is TGLOXDynCone ) and
         ( TGLCustomSceneObject( g2.data ) is TGLOXDynCone ) then exit;
-    end;
+    end;}
     if ( TGLCustomSceneObject( g1.data ) is TGLOXDynMesh ) then
     begin
       ObjContact := TGLOXDynMesh( g1.data ).FContactNum;
@@ -2347,7 +2347,7 @@ begin
     end;
     if ( TGLCustomSceneObject( g1.data ) is TGLSizableDummyCube ) then
     begin
-      for h := 0 to 4 do
+(*      for h := 0 to 4 do
       if ( b1 = TGLOXDynCar( TGLSizableDummyCube( g1.data ).
         Parent ).Fbody[h] ) then begin
         ObjContact := TGLOXDynCar( TGLSizableDummyCube( g1.data ).
@@ -2356,7 +2356,7 @@ begin
         Parent ).FIgnoreSelfModel ) then
           if ( TGLCustomSceneObject( g1.data ) is TGLSizableDummyCube ) and
           ( TGLCustomSceneObject( g2.data ) is TGLSizableDummyCube ) then exit;
-      end;
+      end;*)
     end;
     if ( TGLCustomSceneObject( g1.data ) is TGLSizableDummyCube ) then
     begin
@@ -2442,7 +2442,7 @@ begin
              TGLOXDynCylinder( g1.data ).FOnCallBack( g1, g2 );
            FObjsColliding := True;
          end;
-         if ( TGLCustomSceneObject( g1.data ) is TGLOXDynCCylinder ) then
+{         if ( TGLCustomSceneObject( g1.data ) is TGLOXDynCCylinder ) then
          begin
            contact[i].surface := TGLOXDynCCylinder( g1.data ).FSurface;
            FMode := contact[i].surface.mode;
@@ -2479,7 +2479,7 @@ begin
            if assigned( TGLOXDynCone( g1.data ).FOnCallBack ) then
              TGLOXDynCone( g1.data ).FOnCallBack( g1, g2 );
            FObjsColliding := True;
-         end;
+         end;}
          if ( TGLCustomSceneObject( g1.data ) is TGLOXDynMesh ) then
          begin
            contact[i].surface := TGLOXDynMesh( g1.data ).FSurface;
@@ -2520,7 +2520,7 @@ begin
          end;
          if ( TGLCustomSceneObject( g1.data ) is TGLSizableDummyCube ) then
          begin
-           for h := 0 to 4 do
+(*           for h := 0 to 4 do
            if ( b1 = TGLOXDynCar( TGLSizableDummyCube( g1.data ).
            Parent ).Fbody[h] ) then
            begin
@@ -2547,7 +2547,7 @@ begin
                TGLOXDynCar( TGLSizableDummyCube( g1.data ).
              Parent ).FOnCallBack( g1, g2 );
              FObjsColliding := True;
-           end;
+           end;*)
          end;
          if ( TGLCustomSceneObject( g1.data ) is TGLSizableDummyCube ) then
          begin
@@ -2588,9 +2588,9 @@ begin
        if ( FObjsColliding ) then
        begin
          c := dJointCreateContact( FWorld, FContactgroup, @contact[i] );
-         if ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynCCylinder ) ) and
+         if// ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynCCylinder ) ) and
          ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynMesh ) ) and
-         ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynCone ) ) and
+//         ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynCone ) ) and
          ( not ( TGLCustomSceneObject( g1.data ) is TGLOXAMotor ) ) then
          begin
            dJointAttach( c, dGeomGetBody( contact[i].geom.g1 ),
@@ -2617,9 +2617,9 @@ begin
         if ( FApprox1 ) then
           contact[i].surface.mode := FMode or ord( dContactApprox1 );
           c := dJointCreateContact( FWorld, FContactgroup, @contact[i] );
-        if ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynCCylinder ) ) and
+        if// ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynCCylinder ) ) and
         ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynMesh ) ) and
-        ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynCone ) ) and
+//        ( not ( TGLCustomSceneObject( g1.data ) is TGLOXDynCone ) ) and
         ( not ( TGLCustomSceneObject( g1.data ) is TGLOXAMotor ) )  then
         begin
           dJointAttach( c, dGeomGetBody( contact[i].geom.g1 ),
@@ -2665,10 +2665,10 @@ begin
       end;
       for i := 0 to FObjsList.Count-1 do
       begin
-        if ( TGLCustomSceneObject( FObjsList.Items[i] ) is TGLOXDynCar )
+(*        if ( TGLCustomSceneObject( FObjsList.Items[i] ) is TGLOXDynCar )
         then begin
           TGLOXDynCar( FObjsList.Items[i] ).DoMotor( progressTime.deltaTime );
-        end;
+        end;*)
       end;
     end;      
     if Assigned( FOnStepRender ) then
@@ -2712,7 +2712,7 @@ begin
                     FContactSurfaceLayer := False; FTypeBall := True;
                     FTypeHinge := True; FTypeSlider := False;
                     FTypeContact := False; FTypeUniversal := False;
-                    FTypeHinge2 := True; FTypeFixed := True;
+//                    FTypeHinge2 := True; FTypeFixed := True;
                     FTypeAMotor := True; FAreConnected := True;
                   end;
   mdwHardSurface: begin
@@ -2733,7 +2733,7 @@ begin
                     FContactSurfaceLayer := False; FTypeBall := True;
                     FTypeHinge := True; FTypeSlider := False;
                     FTypeContact := False; FTypeUniversal := False;
-                    FTypeHinge2 := True; FTypeFixed := True;
+//                    FTypeHinge2 := True; FTypeFixed := True;
                     FTypeAMotor := True; FAreConnected := True;
                   end;
   mdwBoundSurface: begin
@@ -2755,7 +2755,7 @@ begin
                      FContactSurfaceLayer := False; FTypeBall := True;
                      FTypeHinge := True; FTypeSlider := False;
                      FTypeContact := False; FTypeUniversal := False;
-                     FTypeHinge2 := True; FTypeFixed := True;
+//                     FTypeHinge2 := True; FTypeFixed := True;
                      FTypeAMotor := True; FAreConnected := True;
                    end;
   mdwDefaultSurface: begin
@@ -2777,7 +2777,7 @@ begin
                        FContactSurfaceLayer := False; FTypeBall := True;
                        FTypeHinge := True; FTypeSlider := False;
                        FTypeContact := False; FTypeUniversal := False;
-                       FTypeHinge2 := True; FTypeFixed := True;
+//                       FTypeHinge2 := True; FTypeFixed := True;
                        FTypeAMotor := True; FAreConnected := True;
                     end;
   mdwNoneSurface: begin
@@ -2897,14 +2897,14 @@ end;
 {******************************************************************************}
  // [2005-06-08]: GLOXOdeEngine last change by Dave Gravel
 {******************************************************************************}
-procedure TGLOXOdeEngine.SetTypeHinge2( const val : boolean );
+{procedure TGLOXOdeEngine.SetTypeHinge2( const val : boolean );
 begin
   if ( FTypeHinge2 <> val ) then
   begin
     FTypeHinge2 := val;
     NotifyChange( self );
   end;
-end;
+end;}
 {******************************************************************************}
  // [2005-06-08]: GLOXOdeEngine last change by Dave Gravel
 {******************************************************************************}
@@ -3553,7 +3553,7 @@ end;
 {******************************************************************************}
  // [2005-06-08]: Collision last change by Dave Gravel
 {******************************************************************************}
-function CustomCollideCCylinder(o1, o2 : PdxGeom; flags : Integer;
+{function CustomCollideCCylinder(o1, o2 : PdxGeom; flags : Integer;
                                 contact : PdContactGeom;
                                 skip : Integer) : Integer; cdecl;
   procedure AddContact( x, y, z : Single; var nb : Integer );
@@ -3600,7 +3600,7 @@ begin
     Result := 0;
     AddContact( pos[0], pos[1], pos[2] -rad, Result );
   end;
-end;
+end;}
 {******************************************************************************}
  // [2005-06-08]: Collision last change by Dave Gravel
 {******************************************************************************}
@@ -3647,7 +3647,7 @@ begin
   if not ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then
   begin
     pos := dGeomGetPosition( o2 );
-    dGeomCCylinderGetParams(o2, rad, len);
+    dGeomCylinderGetParams(o2, rad, len);
     Result := 0;
     AddContact( pos[0], pos[1], pos[2] -rad, Result );
   end;
@@ -3655,7 +3655,7 @@ end;
 {******************************************************************************}
  // [2005-06-08]: Collision last change by Dave Gravel
 {******************************************************************************}
-function CustomCollideCone(o1, o2 : PdxGeom; flags : Integer;
+{function CustomCollideCone(o1, o2 : PdxGeom; flags : Integer;
                            contact : PdContactGeom;
                            skip : Integer) : Integer; cdecl;
   procedure AddContact( x, y, z : Single; var nb : Integer );
@@ -3695,14 +3695,14 @@ var
   pos : PdVector3;
   rad,len : Single;
 begin
-  if not ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then
+//  if not ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then
   begin
     pos := dGeomGetPosition( o2 );
     dGeomCCylinderGetParams(o2, rad, len);
     Result := 0;
     AddContact( pos[0], pos[1], pos[2] -rad, Result );
   end;
-end;
+end;}
 {******************************************************************************}
  // [2005-06-08]: Collision last change by Dave Gravel
 {******************************************************************************}
@@ -3749,7 +3749,7 @@ begin
   if not ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then
   begin
     pos := dGeomGetPosition( o2 );
-    dGeomCCylinderGetParams(o2, rad, len);
+    dGeomCylinderGetParams(o2, rad, len);
     Result := 0;
     AddContact( pos[0], pos[1], pos[2] -rad, Result );
   end;
@@ -3798,7 +3798,7 @@ var
   rad,len : Single;
 begin
   pos := dGeomGetPosition( o2 );
-  dGeomCCylinderGetParams(o2, rad, len);
+  dGeomCylinderGetParams(o2, rad, len);
   Result := 0;
   AddContact( pos[0], pos[1], pos[2] -rad, Result );
 end;
@@ -3813,15 +3813,15 @@ begin
   if ( num = dBoxClass ) then
     Result := CustomColliderFnBox
   else
-  if ( num = dCCylinderClass ) then
+{  if ( num = dCCylinderClass ) then
     Result := CustomCollideCCylinder
-  else
+  else                              }
   if ( num = dCylinderClass ) then
     Result := CustomCollideCylinder
   else
-  if ( num = dConeClass ) then
+{  if ( num = dConeClass ) then
     Result := CustomCollideCone
-  else
+  else                         }
   if ( num = dTriMeshClass ) then
     Result := CustomCollideTriMesh
   else
@@ -3841,12 +3841,12 @@ begin
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaBox ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBall ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBall ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBall ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBall ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBall ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBall ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBall ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXZStaTerrain ) then exit;
   //
@@ -3856,13 +3856,13 @@ begin
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaBall ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBox ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBox ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBox ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBox ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBox ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBox ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBox ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaBox ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXZStaTerrain ) then exit;
   //
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaMesh ) and
@@ -3872,11 +3872,11 @@ begin
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaMesh ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaBall ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaMesh ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaMesh ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaMesh ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaMesh ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaMesh ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaMesh ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXZStaTerrain ) then exit;
   //
@@ -3887,47 +3887,47 @@ begin
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCylinder ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaBall ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCylinder ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCylinder ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXZStaTerrain ) then exit;
   //
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaBox ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaBall ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXZStaTerrain ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaBox ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaBall ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCCylinder ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXZStaTerrain ) then exit;
   //
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaBox ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaBall ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXZStaTerrain ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaBox ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaBall ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXStaCone ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXZStaTerrain ) then exit;
   //
   if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaBox ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaBall ) then exit;
@@ -3935,10 +3935,10 @@ begin
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaCylinder ) then exit;
   if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
   ( TGLCustomSceneObject( o2.data ) is TGLOXStaMesh ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
-  if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
-  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCCylinder ) then exit;
+//  if ( TGLCustomSceneObject( o1.data ) is TGLOXZStaTerrain ) and
+//  ( TGLCustomSceneObject( o2.data ) is TGLOXStaCone ) then exit;
   //
   TGLOXOdeEngine( Data ).Callback( o1, o2 );
 end;
@@ -4555,7 +4555,7 @@ end;
 {******************************************************************************}
  // [2005-06-08]: GLOXStaCCylinder last change by Dave Gravel
 {******************************************************************************}
-constructor TGLOXStaCCylinder.create( AOwner : TComponent );
+(*constructor TGLOXStaCCylinder.create( AOwner : TComponent );
 begin
   inherited Create( AOwner );
   FActived := False;
@@ -4712,7 +4712,7 @@ begin
     FManager := nil
   end;;
   inherited Destroy;
-end;
+end;*)
 {******************************************************************************}
  // [2005-06-08]: GLOXStaMesh last change by Dave Gravel
 {******************************************************************************}
@@ -4861,7 +4861,7 @@ end;
 {******************************************************************************}
  // [2005-06-08]: GLOXStaCone last change by Dave Gravel
 {******************************************************************************}
-constructor TGLOXStaCone.create( AOwner : TComponent );
+(*constructor TGLOXStaCone.create( AOwner : TComponent );
 begin
   inherited Create( AOwner );
   FActived := False;
@@ -4961,7 +4961,7 @@ begin
   end;
   FManager := nil;
   inherited Destroy;
-end;
+end;*)
 {******************************************************************************}
  // [2005-06-08]: GLOXDynBall last change by Dave Gravel
 {******************************************************************************}
@@ -7097,7 +7097,7 @@ end;
 {******************************************************************************}
  // [2005-06-08]: GLOXDynCCylinder last change by Dave Gravel
 {******************************************************************************}
-constructor TGLOXDynCCylinder.create( AOwner : TComponent );
+(*constructor TGLOXDynCCylinder.create( AOwner : TComponent );
 begin
   inherited Create( AOwner );
   FObjectsSurfaceMode := mdoNoneSurface;
@@ -8462,7 +8462,7 @@ begin
     FManager := nil;
   end;
   inherited Destroy;
-end;
+end;*)
 {******************************************************************************}
  // [2005-06-08]: GLOXDynMesh last change by Dave Gravel
 {******************************************************************************}
@@ -9173,7 +9173,7 @@ end;
 {******************************************************************************}
  // [2005-06-08]: GLOXDynCar last change by Dave Gravel
 {******************************************************************************}
-constructor TGLOXDynCar.Create( AOwner : TComponent );
+(*constructor TGLOXDynCar.Create( AOwner : TComponent );
 begin
   inherited Create( AOwner );
   FObjectsSurfaceMode := mdoNoneSurface;
@@ -9445,37 +9445,37 @@ begin
         end;
       end;
       for i := 0 to 3 do begin
-        FJoint[i] := dJointCreateHinge2( FManager.FWorld, 0 );
+        FJoint[i] := dJointCreateHinge( FManager.FWorld, 0 );
         dJointAttach( FJoint[i], FBody[0], FBody[ i + 1 ] );
         A := dBodyGetPosition( FBody[ i + 1 ] );
-        dJointSetHinge2Anchor( FJoint[i], a[0], a[1], a[2] );
-        dJointSetHinge2Axis1( FJoint[i], 0, 0, 1 );
-        dJointSetHinge2Axis2( FJoint[i], 0, 1, 0 );
-        dJointSetHinge2Param( FJoint[i], dParamLoStop, -0 );
-        dJointSetHinge2Param( FJoint[i], dParamHiStop, 0 );
-        dJointSetHinge2Param( FJoint[i], dParamFMax, FWheelsParamFMax );
+        dJointSetHingeAnchor( FJoint[i], a[0], a[1], a[2] );
+        dJointSetHingeAxis1( FJoint[i], 0, 0, 1 );
+        dJointSetHingeAxis2( FJoint[i], 0, 1, 0 );
+        dJointSetHingeParam( FJoint[i], dParamLoStop, -0 );
+        dJointSetHingeParam( FJoint[i], dParamHiStop, 0 );
+        dJointSetHingeParam( FJoint[i], dParamFMax, FWheelsParamFMax );
         if ( i = 0 ) or ( i = 1 ) then begin
-          dJointSetHinge2Param( FJoint[i], dParamSuspensionERP,
+          dJointSetHingeParam( FJoint[i], dParamSuspensionERP,
           FFRONTSUSPENSION_ERP );
-          dJointSetHinge2Param( FJoint[i], dParamSuspensionCFM,
+          dJointSetHingeParam( FJoint[i], dParamSuspensionCFM,
           FFRONTSUSPENSION_CFM );
-          dJointSetHinge2Param( FJoint[i], dParamLoStop, -FWHEEL_WOBBLE );
-          dJointSetHinge2Param( FJoint[i], dParamHiStop, +FWHEEL_WOBBLE );
-          dJointSetHinge2Param( FJoint[i],
+          dJointSetHingeParam( FJoint[i], dParamLoStop, -FWHEEL_WOBBLE );
+          dJointSetHingeParam( FJoint[i], dParamHiStop, +FWHEEL_WOBBLE );
+          dJointSetHingeParam( FJoint[i],
           dParamLoStop, -FWheelsFrontLoHiStop );
-          dJointSetHinge2Param( FJoint[i],
+          dJointSetHingeParam( FJoint[i],
           dParamHiStop, FWheelsFrontLoHiStop );
         end else
         if ( i = 2 ) or ( i = 3 ) then begin
-          dJointSetHinge2Param( FJoint[i], dParamSuspensionERP,
+          dJointSetHingeParam( FJoint[i], dParamSuspensionERP,
           FBACKSUSPENSION_ERP );
-          dJointSetHinge2Param( FJoint[i], dParamSuspensionCFM,
+          dJointSetHingeParam( FJoint[i], dParamSuspensionCFM,
           FBACKSUSPENSION_CFM );
-          dJointSetHinge2Param( FJoint[i], dParamLoStop, -FWHEEL_WOBBLE );
-          dJointSetHinge2Param( FJoint[i], dParamHiStop, +FWHEEL_WOBBLE );
-          dJointSetHinge2Param( FJoint[i],
+          dJointSetHingeParam( FJoint[i], dParamLoStop, -FWHEEL_WOBBLE );
+          dJointSetHingeParam( FJoint[i], dParamHiStop, +FWHEEL_WOBBLE );
+          dJointSetHingeParam( FJoint[i],
           dParamLoStop, -FWheelsBackLoHiStop );
-          dJointSetHinge2Param( FJoint[i],
+          dJointSetHingeParam( FJoint[i],
           dParamHiStop, FWheelsBackLoHiStop );
         end;
       end;
@@ -10330,87 +10330,87 @@ end;
 {******************************************************************************}
 procedure TGLOXDynCar.DoMotor( delta : double );
 begin
-  dJointSetHinge2Param( joint[0], dParamLoStop, -FFrontWheelLimit );
-  dJointSetHinge2Param( FJoint[0], dParamVel, FFrontWheelTurnDegre
-  * ( ( FSteer * 45.0 * PI ) / 180 ) - dJointGetHinge2Angle1( FJoint[0] ) );
-  dJointSetHinge2Param( joint[0],dParamFudgeFactor,FFrontWheelBackUp );
-  dJointSetHinge2Param( joint[1], dParamHiStop, FFrontWheelLimit );
-  dJointSetHinge2Param( FJoint[1], dParamVel, FFrontWheelTurnDegre
-  * ( ( FSteer * 45.0 * PI ) / 180 ) - dJointGetHinge2Angle1( FJoint[1] ) );
-  dJointSetHinge2Param( joint[1],dParamFudgeFactor,FFrontWheelBackUp );
+  dJointSetHingeParam( joint[0], dParamLoStop, -FFrontWheelLimit );
+  dJointSetHingeParam( FJoint[0], dParamVel, FFrontWheelTurnDegre
+  * ( ( FSteer * 45.0 * PI ) / 180 ) - dJointGetHingeAngle1( FJoint[0] ) );
+  dJointSetHingeParam( joint[0],dParamFudgeFactor,FFrontWheelBackUp );
+  dJointSetHingeParam( joint[1], dParamHiStop, FFrontWheelLimit );
+  dJointSetHingeParam( FJoint[1], dParamVel, FFrontWheelTurnDegre
+  * ( ( FSteer * 45.0 * PI ) / 180 ) - dJointGetHingeAngle1( FJoint[1] ) );
+  dJointSetHingeParam( joint[1],dParamFudgeFactor,FFrontWheelBackUp );
   if FMotorRunning then
   begin
     case FModeTraction of
   mdFront: begin
-             dJointSetHinge2Param( FJoint[0], dParamVel2, -FSpeed );
-             dJointSetHinge2Param( FJoint[0], dParamFMax2,
+             dJointSetHingeParam( FJoint[0], dParamVel2, -FSpeed );
+             dJointSetHingeParam( FJoint[0], dParamFMax2,
              FFrontBackWheelRunForce * FZOOM_CUBED );
-             dJointSetHinge2Param( FJoint[1], dParamVel2, -FSpeed );
-             dJointSetHinge2Param( FJoint[1], dParamFMax2,
+             dJointSetHingeParam( FJoint[1], dParamVel2, -FSpeed );
+             dJointSetHingeParam( FJoint[1], dParamFMax2,
              FFrontBackWheelRunForce * FZOOM_CUBED );
           end;
   mdBack: begin
-            dJointSetHinge2Param( FJoint[2], dParamVel2, -FSpeed );
-            dJointSetHinge2Param( FJoint[2], dParamFMax2,
+            dJointSetHingeParam( FJoint[2], dParamVel2, -FSpeed );
+            dJointSetHingeParam( FJoint[2], dParamFMax2,
             FFrontBackWheelRunForce * FZOOM_CUBED );
-            dJointSetHinge2Param( FJoint[3], dParamVel2, -FSpeed );
-            dJointSetHinge2Param( FJoint[3], dParamFMax2,
+            dJointSetHingeParam( FJoint[3], dParamVel2, -FSpeed );
+            dJointSetHingeParam( FJoint[3], dParamFMax2,
             FFrontBackWheelRunForce * FZOOM_CUBED );
           end;
   mdBoth: begin
-            dJointSetHinge2Param( FJoint[0], dParamVel2, -FSpeed );
-            dJointSetHinge2Param( FJoint[0], dParamFMax2,
+            dJointSetHingeParam( FJoint[0], dParamVel2, -FSpeed );
+            dJointSetHingeParam( FJoint[0], dParamFMax2,
             FFrontBackWheelRunForce * FZOOM_CUBED );
-            dJointSetHinge2Param( FJoint[1], dParamVel2, -FSpeed );
-            dJointSetHinge2Param( FJoint[1], dParamFMax2,
+            dJointSetHingeParam( FJoint[1], dParamVel2, -FSpeed );
+            dJointSetHingeParam( FJoint[1], dParamFMax2,
             FFrontBackWheelRunForce * FZOOM_CUBED );
-            dJointSetHinge2Param( FJoint[2], dParamVel2, -FSpeed );
-            dJointSetHinge2Param( FJoint[2], dParamFMax2,
+            dJointSetHingeParam( FJoint[2], dParamVel2, -FSpeed );
+            dJointSetHingeParam( FJoint[2], dParamFMax2,
             FFrontBackWheelRunForce * FZOOM_CUBED );
-            dJointSetHinge2Param( FJoint[3], dParamVel2, -FSpeed );
-            dJointSetHinge2Param( FJoint[3], dParamFMax2,
+            dJointSetHingeParam( FJoint[3], dParamVel2, -FSpeed );
+            dJointSetHingeParam( FJoint[3], dParamFMax2,
             FFrontBackWheelRunForce * FZOOM_CUBED );
           end;
         end;
-  dJointCorrectHinge2( FJoint[2] );
-  dJointCorrectHinge2( FJoint[3] );
+  dJointCorrectHinge( FJoint[2] );
+  dJointCorrectHinge( FJoint[3] );
   end else
   if not FMotorRunning then
   begin
     case FModeTraction of
   mdFront: begin
-             dJointSetHinge2Param( FJoint[0], dParamVel2, 0.0 );
-             dJointSetHinge2Param( FJoint[0], dParamFMax2,
+             dJointSetHingeParam( FJoint[0], dParamVel2, 0.0 );
+             dJointSetHingeParam( FJoint[0], dParamFMax2,
              FFrontBackWheelAltForce );
-             dJointSetHinge2Param( FJoint[1], dParamVel2, 0.0 );
-             dJointSetHinge2Param( FJoint[1], dParamFMax2,
+             dJointSetHingeParam( FJoint[1], dParamVel2, 0.0 );
+             dJointSetHingeParam( FJoint[1], dParamFMax2,
              FFrontBackWheelAltForce );
           end;
   mdBack: begin
-            dJointSetHinge2Param( FJoint[2], dParamVel2, 0.0 );
-            dJointSetHinge2Param( FJoint[2], dParamFMax2,
+            dJointSetHingeParam( FJoint[2], dParamVel2, 0.0 );
+            dJointSetHingeParam( FJoint[2], dParamFMax2,
             FFrontBackWheelAltForce );
-            dJointSetHinge2Param( FJoint[3], dParamVel2, 0.0 );
-            dJointSetHinge2Param( FJoint[3], dParamFMax2,
+            dJointSetHingeParam( FJoint[3], dParamVel2, 0.0 );
+            dJointSetHingeParam( FJoint[3], dParamFMax2,
             FFrontBackWheelAltForce );
           end;
   mdBoth: begin
-            dJointSetHinge2Param( FJoint[0], dParamVel2, 0.0 );
-            dJointSetHinge2Param( FJoint[0], dParamFMax2,
+            dJointSetHingeParam( FJoint[0], dParamVel2, 0.0 );
+            dJointSetHingeParam( FJoint[0], dParamFMax2,
             FFrontBackWheelAltForce );
-            dJointSetHinge2Param( FJoint[1], dParamVel2, 0.0 );
-            dJointSetHinge2Param( FJoint[1], dParamFMax2,
+            dJointSetHingeParam( FJoint[1], dParamVel2, 0.0 );
+            dJointSetHingeParam( FJoint[1], dParamFMax2,
             FFrontBackWheelAltForce );
-            dJointSetHinge2Param( FJoint[2], dParamVel2, 0.0 );
-            dJointSetHinge2Param( FJoint[2], dParamFMax2,
+            dJointSetHingeParam( FJoint[2], dParamVel2, 0.0 );
+            dJointSetHingeParam( FJoint[2], dParamFMax2,
             FFrontBackWheelAltForce );
-            dJointSetHinge2Param( FJoint[3], dParamVel2, 0.0 );
-            dJointSetHinge2Param( FJoint[3], dParamFMax2,
+            dJointSetHingeParam( FJoint[3], dParamVel2, 0.0 );
+            dJointSetHingeParam( FJoint[3], dParamFMax2,
             FFrontBackWheelAltForce );
           end;
         end;
-  dJointCorrectHinge2( FJoint[2] );
-  dJointCorrectHinge2( FJoint[3] );        
+  dJointCorrectHinge( FJoint[2] );
+  dJointCorrectHinge( FJoint[3] );
   end;
 end;
 {******************************************************************************}
@@ -10468,7 +10468,7 @@ begin
   FWPosC.Free;
   FWPosD.Free;
   inherited Destroy;
-end;
+end;*)
 {******************************************************************************}
  // [2005-06-08]: GLOXRagdoll last change by Dave Gravel
 {******************************************************************************}
@@ -12798,13 +12798,13 @@ begin
   inherited Destroy;
 end;
 {******************************************************************************}
-{$D '[2005-06-08]: oxGLODE v1.0PRE by Dave Gravel under MPL-1.1 license.'}
+//{$D '[2005-06-08]: oxGLODE v1.0PRE by Dave Gravel under MPL-1.1 license.'}
 {******************************************************************************}
 initialization
   RegisterClasses( [ TGLSizableDummyCube, TGLOXOdeEngine, TGLOXStaBall, TGLOXStaBox,
-                     TGLOXStaCylinder, TGLOXStaCCylinder, TGLOXStaCone, TGLOXDynBall,
-                     TGLOXDynBox, TGLOXDynCylinder, TGLOXDynCCylinder, TGLOXDynCone,
-                     TGLOXZStaTerrain, TGLOXDynMesh, TGLOXDynCar, TGLOXStaMesh,
+                     TGLOXStaCylinder, TGLOXDynBall,
+                     TGLOXDynBox, TGLOXDynCylinder,
+                     TGLOXZStaTerrain, TGLOXDynMesh{, TGLOXDynCar}, TGLOXStaMesh,
                      TGLOXRagDoll, TGLOXAMotor ] );
 
 end.

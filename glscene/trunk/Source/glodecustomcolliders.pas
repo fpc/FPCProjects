@@ -349,7 +349,7 @@ end;
 
 // CollideCCylinder
 //
-function CollideCCylinder(o1, o2 : PdxGeom; flags : Integer;
+{function CollideCCylinder(o1, o2 : PdxGeom; flags : Integer;
   contact : PdContactGeom; skip : Integer) : Integer; cdecl;
 var
   Collider : TGLODECustomCollider;
@@ -397,7 +397,7 @@ begin
 
   Result:=Collider.ApplyContacts(o1, o2, flags, contact, skip);
   Collider.SetTransform(IdentityHMGMatrix);
-end;
+end;}
 
 // CollideCylinder
 //
@@ -452,7 +452,7 @@ end;
 
 // CollideCone
 //
-function CollideCone(o1, o2 : PdxGeom; flags : Integer;
+{function CollideCone(o1, o2 : PdxGeom; flags : Integer;
   contact : PdContactGeom; skip : Integer) : Integer; cdecl;
 var
   Collider : TGLODECustomCollider;
@@ -495,7 +495,7 @@ begin
 
   Result:=Collider.ApplyContacts(o1, o2, flags, contact, skip);
   Collider.SetTransform(IdentityHMGMatrix);
-end;
+end;}
 
 // GetCustomColliderFn
 //
@@ -505,12 +505,12 @@ begin
     Result:=CollideSphere
   else if num = dBoxClass then
     Result:=CollideBox
-  else if num = dCCylinderClass then
-    Result:=CollideCCylinder
+{  else if num = dCCylinderClass then
+    Result:=CollideCCylinder}
   else if num = dCylinderClass then
     Result:=CollideCylinder
-  else if num = dConeClass then
-    Result:=CollideCone
+{  else if num = dConeClass then
+    Result:=CollideCone}
   else
     Result:=nil;
 end;
