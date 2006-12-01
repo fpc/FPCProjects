@@ -1,131 +1,115 @@
 object frmFurBall: TfrmFurBall
+  Left = 245
+  Height = 452
+  Top = 121
+  Width = 667
+  HorzScrollBar.Page = 666
+  VertScrollBar.Page = 451
+  ActiveControl = CheckBox_LockBall
   Caption = 'Fur Ball'
-  ClientHeight = 437
-  ClientWidth = 640
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 639
-  VertScrollBar.Page = 436
-  Left = 245
-  Height = 437
-  Top = 121
-  Width = 640
   object Label1: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 288
+    Height = 14
+    Top = 35
+    Width = 175
     Caption = '(Steer with A/D W/S UP/DOWN)'
     Color = clNone
-    Left = 327
-    Height = 13
-    Top = 2
-    Width = 160
+    ParentColor = False
   end
   object Label_FPS: TLabel
+    Left = 464
+    Height = 14
+    Top = 8
+    Width = 79
     Alignment = taRightJustify
     Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.OnChange = nil
     Caption = 'FPS'
     Color = clNone
-    Left = 607
-    Height = 13
-    Top = 2
-    Width = 20
+    ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer
+    Left = 10
+    Height = 374
+    Top = 64
+    Width = 644
     Camera = GLCamera1
     Buffer.BackgroundColor = clSilver
     Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
     Buffer.AntiAliasing = aa4xHQ
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 137.39120483398437
+    FieldOfView = 138.955078125
     Anchors = [akTop, akLeft, akRight, akBottom]
     OnMouseMove = GLSceneViewer1MouseMove
-    Left = 8
-    Height = 359
-    Top = 40
-    Width = 617
   end
   object CheckBox_LockBall: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 26
+    Width = 74
     Caption = '&Lock Ball'
     TabOrder = 0
-    Left = 8
-    Height = 17
-    Width = 65
   end
   object CheckBox_FurGravity: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 96
+    Height = 26
+    Width = 85
     Caption = 'Fur &Gravity'
     Checked = True
     OnClick = CheckBox_FurGravityClick
     State = cbChecked
     TabOrder = 1
-    Left = 80
-    Height = 17
-    Width = 81
   end
   object CheckBox_WindResistence: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 192
+    Height = 26
+    Width = 117
     Caption = '&Wind Resistence'
     Checked = True
     OnClick = CheckBox_WindResistenceClick
     State = cbChecked
     TabOrder = 2
-    Left = 160
-    Height = 17
-    Width = 105
   end
   object CheckBox_Bald: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 328
+    Height = 26
+    Width = 49
     Caption = '&Bald'
     OnClick = CheckBox_BaldClick
     TabOrder = 3
-    Left = 272
-    Height = 17
-    Width = 49
   end
   object CheckBox_Shadows: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 488
+    Height = 26
+    Top = 24
+    Width = 75
     Caption = '&Shadows'
     OnClick = CheckBox_ShadowsClick
     TabOrder = 4
-    Left = 496
-    Height = 17
-    Width = 65
   end
   object CheckBox_Inertia: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 10
+    Height = 26
+    Top = 23
+    Width = 80
     Caption = 'Fur &Inertia'
     Checked = True
     OnClick = CheckBox_InertiaClick
     State = cbChecked
     TabOrder = 5
-    Left = 8
-    Height = 17
-    Top = 16
-    Width = 65
   end
   object TrackBar_WindForce: TTrackBar
-    BorderSpacing.OnChange = nil
-    Max = 100
-    OnChange = TrackBar_WindForceChange
-    Position = 50
-    ScalePos = trTop
-    TabOrder = 6
-    TickStyle = tsNone
-    Max = 100
-    OnChange = TrackBar_WindForceChange
-    Position = 50
-    ScalePos = trTop
-    TickStyle = tsNone
     Left = 160
-    Height = 17
-    Top = 16
+    Height = 33
+    Top = 23
     Width = 105
+    Max = 100
+    OnChange = TrackBar_WindForceChange
+    Position = 50
+    ScalePos = trTop
+    TickStyle = tsNone
+    TabOrder = 6
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
@@ -138,8 +122,8 @@ object frmFurBall: TfrmFurBall
     left = 48
     top = 48
     object DC_LightHolder: TGLDummyCube
-      CubeSize = 1
       OnProgress = DC_LightHolderProgress
+      CubeSize = 1
       object GLLightSource1: TGLLightSource
         ConstAttenuation = 1
         Position.Coordinates = {
@@ -147,7 +131,6 @@ object frmFurBall: TfrmFurBall
         }
         SpotCutOff = 180
         object Sphere1: TGLSphere
-          Radius = 0.100000001490116
           Material.BackProperties.Diffuse.Color = {
             0000803F0000803F0000803F0000803F
           }
@@ -160,13 +143,13 @@ object frmFurBall: TfrmFurBall
           Material.FrontProperties.Emission.Color = {
             0000803F0000803F0000803F0000803F
           }
+          Radius = 0.10000000149011
         end
       end
     end
     object DCShadowCaster: TGLDummyCube
       CubeSize = 1
       object FurBall: TGLSphere
-        Radius = 0.25
         Material.FrontProperties.Ambient.Color = {
           0000000000000000000000000000803F
         }
@@ -178,16 +161,10 @@ object frmFurBall: TfrmFurBall
         Position.Coordinates = {
           000000000000C0BF000040400000803F
         }
+        Radius = 0.25
       end
     end
     object GLShadowPlane_Floor: TGLShadowPlane
-      ShadowingObject = DCShadowCaster
-      ShadowOptions = [spoUseStencil]
-      Height = 8
-      Width = 8
-      XTiles = 10
-      YTiles = 10
-      Style = [psTileTexture]
       Material.BackProperties.Diffuse.Color = {
         1283003F1283003F000000000000803F
       }
@@ -200,15 +177,15 @@ object frmFurBall: TfrmFurBall
       Up.Coordinates = {
         00000000C2BA7E3FB6C8CBBD00000000
       }
-    end
-    object GLShadowPlane_Wall: TGLShadowPlane
-      ShadowingObject = DCShadowCaster
-      ShadowOptions = [spoUseStencil]
-      Height = 4
-      Width = 16
+      Height = 8
+      Width = 8
       XTiles = 10
       YTiles = 10
       Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
+    end
+    object GLShadowPlane_Wall: TGLShadowPlane
       Material.BackProperties.Diffuse.Color = {
         000000000000803F000000000000803F
       }
@@ -224,15 +201,15 @@ object frmFurBall: TfrmFurBall
       Up.Coordinates = {
         0000000000000000FFFF7FBF00000000
       }
-    end
-    object GLShadowPlane_Floor2: TGLShadowPlane
-      ShadowingObject = DCShadowCaster
-      ShadowOptions = [spoUseStencil]
-      Height = 10
-      Width = 8
+      Height = 4
+      Width = 16
       XTiles = 10
       YTiles = 10
       Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
+    end
+    object GLShadowPlane_Floor2: TGLShadowPlane
       Material.BackProperties.Diffuse.Color = {
         1283003F1283003F000000000000803F
       }
@@ -248,18 +225,18 @@ object frmFurBall: TfrmFurBall
       Up.Coordinates = {
         00000000C2BA7E3FB5C8CB3D00000000
       }
+      Height = 10
+      Width = 8
+      XTiles = 10
+      YTiles = 10
+      Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
     end
     object GLLines1: TGLLines
       Nodes = <>
     end
     object GLShadowPlane_Wall2: TGLShadowPlane
-      ShadowingObject = DCShadowCaster
-      ShadowOptions = [spoUseStencil]
-      Height = 4
-      Width = 8
-      XTiles = 10
-      YTiles = 10
-      Style = [psTileTexture]
       Material.BackProperties.Diffuse.Color = {
         000000000000803F000000000000803F
       }
@@ -275,15 +252,15 @@ object frmFurBall: TfrmFurBall
       Up.Coordinates = {
         0000000000000000000080BF00000000
       }
-    end
-    object GLShadowPlane_Wall3: TGLShadowPlane
-      ShadowingObject = DCShadowCaster
-      ShadowOptions = [spoUseStencil]
       Height = 4
       Width = 8
       XTiles = 10
       YTiles = 10
       Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
+    end
+    object GLShadowPlane_Wall3: TGLShadowPlane
       Material.BackProperties.Diffuse.Color = {
         000000000000803F000000000000803F
       }
@@ -299,6 +276,13 @@ object frmFurBall: TfrmFurBall
       Up.Coordinates = {
         0000000000000000000080BF00000000
       }
+      Height = 4
+      Width = 8
+      XTiles = 10
+      YTiles = 10
+      Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100
