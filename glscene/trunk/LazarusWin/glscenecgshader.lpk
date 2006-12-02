@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <Package Version="2">
+    <PathDelim Value="\"/>
+    <Name Value="glscenecgshader"/>
+    <CompilerOptions>
+      <Version Value="5"/>
+      <PathDelim Value="\"/>
+      <SearchPaths>
+        <IncludeFiles Value="..\Source\"/>
+        <OtherUnitFiles Value="..\Source\cgshaders\"/>
+        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)\"/>
+        <SrcPath Value="..\Source\;..\Source\cgshaders\"/>
+      </SearchPaths>
+      <Parsing>
+        <SyntaxOptions>
+          <DelphiCompat Value="True"/>
+        </SyntaxOptions>
+      </Parsing>
+      <CodeGeneration>
+        <SmartLinkUnit Value="True"/>
+        <Generate Value="Faster"/>
+      </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <GenerateDebugInfo Value="True"/>
+          <UseHeaptrc Value="True"/>
+        </Debugging>
+      </Linking>
+      <Other>
+        <CompilerPath Value="$(CompPath)"/>
+      </Other>
+    </CompilerOptions>
+    <Description Value="GLScene Cg shader support
+"/>
+    <Version Minor="9" Release="1" Build="6"/>
+    <Files Count="3">
+      <Item1>
+        <Filename Value="..\Source\cgshaders\glcgshader.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="glcgshader"/>
+      </Item1>
+      <Item2>
+        <Filename Value="..\Source\cgshaders\cggl.pas"/>
+        <UnitName Value="cggl"/>
+      </Item2>
+      <Item3>
+        <Filename Value="..\Source\cgshaders\cg.pas"/>
+        <UnitName Value="cg"/>
+      </Item3>
+    </Files>
+    <Type Value="DesignTime"/>
+    <RequiredPkgs Count="2">
+      <Item1>
+        <PackageName Value="GLSceneLazarus"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="LCL"/>
+      </Item2>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)\"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
