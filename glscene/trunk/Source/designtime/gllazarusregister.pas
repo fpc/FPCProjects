@@ -139,9 +139,13 @@ implementation
 uses
    {$ifdef fpc}
      gllclviewer,
+     {$ifdef windows}
+       glsound, glsoundfileobjects,
+       glwin32fullscreenviewer, glwin32viewer, glspacetext,
+     {$endif}
    {$else}
      {$ifdef mswindows}
-       glwin32viewer,glwin32fullscreenviewer,glsound,glsoundfileobjects,glspacetext,
+       glwin32viewer,glwin32fullscreenviewer,glspacetext,
      {$endif}
    {$endif}
    typinfo,sysutils, graphics, componenteditors, propedits, glsceneeditnew,
