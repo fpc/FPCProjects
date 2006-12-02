@@ -31,7 +31,7 @@
     </CompilerOptions>
     <Description Value="GLScene ODE support"/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="3">
+    <Files Count="6">
       <Item1>
         <Filename Value="../Source/physicsapis/odegl.pas"/>
         <UnitName Value="odegl"/>
@@ -45,6 +45,18 @@
         <HasRegisterProc Value="True"/>
         <UnitName Value="gloderegister"/>
       </Item3>
+      <Item4>
+        <Filename Value="../Source/glodecustomcolliders.pas"/>
+        <UnitName Value="glodecustomcolliders"/>
+      </Item4>
+      <Item5>
+        <Filename Value="../Source/glodemanager.pas"/>
+        <UnitName Value="glodemanager"/>
+      </Item5>
+      <Item6>
+        <Filename Value="../Source/glodeskeletoncolliders.pas"/>
+        <UnitName Value="glodeskeletoncolliders"/>
+      </Item6>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="2">
