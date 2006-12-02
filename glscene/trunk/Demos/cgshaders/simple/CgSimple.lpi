@@ -26,15 +26,18 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="3">
       <Item1>
         <PackageName Value="LCL"/>
       </Item1>
       <Item2>
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
+      <Item3>
+        <PackageName Value="glscenecgshader"/>
+      </Item3>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="7">
       <Unit0>
         <Filename Value="CgSimple.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -61,13 +64,36 @@
         <UsageCount Value="10"/>
         <SyntaxHighlighter Value="LFM"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="../../../Source/physicsapis/gloxode.pas"/>
+        <UnitName Value="gloxode"/>
+        <CursorPos X="41" Y="12782"/>
+        <TopLine Value="12775"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="../../../Source/base/opengl1x.pas"/>
+        <UnitName Value="opengl1x"/>
+        <CursorPos X="43" Y="2430"/>
+        <TopLine Value="2412"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="../../../Source/gldce.pas"/>
+        <UnitName Value="gldce"/>
+        <CursorPos X="45" Y="60"/>
+        <TopLine Value="42"/>
+        <UsageCount Value="10"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="../../../Source/gldcemisc.pas"/>
+        <UnitName Value="gldcemisc"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="19"/>
+        <UsageCount Value="10"/>
+      </Unit6>
     </Units>
-    <JumpHistory Count="1" HistoryIndex="0">
-      <Position1>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="19" Column="36" TopLine="1"/>
-      </Position1>
-    </JumpHistory>
+    <JumpHistory Count="0" HistoryIndex="-1"/>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
