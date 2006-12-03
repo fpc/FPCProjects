@@ -1,71 +1,58 @@
 object Form1: TForm1
+  Left = 240
+  Height = 343
+  Top = 133
+  Width = 457
+  HorzScrollBar.Page = 456
+  VertScrollBar.Page = 342
+  ActiveControl = TrackBar
   Caption = 'Form1'
-  ClientHeight = 343
-  ClientWidth = 457
   Constraints.MinHeight = 200
   Constraints.MinWidth = 320
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnResize = FormResize
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 456
-  VertScrollBar.Page = 342
-  Left = 240
-  Height = 343
-  Top = 133
-  Width = 457
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clSilver
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 107.54693603515625
-    Anchors = [akTop, akLeft, akRight, akBottom]
     Left = 8
     Height = 273
     Top = 8
     Width = 433
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clSilver
+    FieldOfView = 107.546936035156
+    Anchors = [akTop, akLeft, akRight, akBottom]
   end
   object TrackBar: TTrackBar
-    Anchors = [akLeft, akRight, akBottom]
-    BorderSpacing.OnChange = nil
-    Frequency = 10
-    Max = 360
-    OnChange = TrackBarChange
-    PageSize = 10
-    ScalePos = trTop
-    TabOrder = 0
-    Frequency = 10
-    Max = 360
-    OnChange = TrackBarChange
-    PageSize = 10
-    ScalePos = trTop
     Left = 56
-    Height = 25
+    Height = 33
     Top = 288
     Width = 385
+    Frequency = 10
+    Max = 360
+    OnChange = TrackBarChange
+    PageSize = 10
+    ScalePos = trTop
+    Anchors = [akLeft, akRight, akBottom]
+    TabOrder = 0
   end
   object CBPlay: TCheckBox
+    Left = 8
+    Height = 24
+    Top = 285
+    Width = 48
     Anchors = [akLeft, akBottom]
-    BorderSpacing.OnChange = nil
     Caption = 'Play'
     Checked = True
     State = cbChecked
     TabOrder = 1
-    Left = 8
-    Height = 17
-    Top = 292
-    Width = 41
   end
   object StaticText1: TStaticText
-    BorderSpacing.OnChange = nil
-    BorderStyle = sbsSingle
-    Caption = '??? FPS'
     Left = 16
     Height = 17
     Top = 16
     Width = 45
+    BorderStyle = sbsSingle
+    Caption = '??? FPS'
   end
   object GLScene1: TGLScene
     left = 16

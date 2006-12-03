@@ -18,8 +18,8 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
-  Classes, Controls, Dialogs, GLWin32Viewer, LResources,
+  LCLType, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
+  Classes, Controls, Dialogs, GLLCLViewer, LResources,
   GLScene, GLCadencer;
 
 type

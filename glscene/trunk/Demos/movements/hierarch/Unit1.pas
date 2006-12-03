@@ -17,9 +17,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
+  LCLType, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
   AsyncTimer, Classes, Controls,  LResources, GLScene,
-  GLCadencer, GLWin32Viewer;
+  GLCadencer, GLLCLViewer;
 
 type
 
