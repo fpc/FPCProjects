@@ -1490,7 +1490,7 @@ begin
    SetLength(FScanLineCache, size);   *)
 end;
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF UNIX}
 begin
   {$MESSAGE Warn 'CreateMonochromeBitmap: Needs to be implemented'}
 end;

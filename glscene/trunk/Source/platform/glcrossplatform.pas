@@ -51,7 +51,7 @@ uses
   windows, classes, sysutils,graphics, controls, forms,
   dialogs, stdctrls, extdlgs{$ifndef fpc}, consts{$endif};
 {$endif}
-{$ifdef linux}
+{$ifdef unix}
 uses
   {$ifdef fpc}
   graphics,controls,forms,dialogs,stdctrls,lcltype,buttons,unix,lclintf,
@@ -92,7 +92,7 @@ type
    EGLOSError = EWin32Error;
 {$else}
    {$ifdef FPC}
-   {$IFDEF LINUX}
+   {$IFDEF unix}
       EGLOSError = EOSError;
    {$ELSE}
       EGLOSError = EWin32Error;
@@ -109,7 +109,7 @@ const
    glpf32Bit = pf32bit;
    glpfDevice = pfDevice;
 {$endif}
-{$ifdef LINUX}
+{$ifdef unix}
    glpf8Bit = pf8bit;
    glpf24bit = pf32bit;
    glpf32Bit = pf32bit;
@@ -125,7 +125,7 @@ const
    clSilver = Graphics.clSilver;
    clBlack = Graphics.clBlack;
 {$endif}
-{$ifdef LINUX}
+{$ifdef unix}
 {$ifdef FPC}
    clBtnFace = Graphics.clBtnFace;
    clRed = Graphics.clRed;
@@ -157,7 +157,7 @@ const
   glKey_UP = VK_UP;
   glKey_DOWN = VK_DOWN;
 {$endif}
-{$ifdef LINUX}
+{$ifdef unix}
 {$IFDEF FPC}
   glKey_TAB = VK_TAB;
   glKey_SPACE = VK_SPACE;
@@ -315,7 +315,7 @@ implementation
 uses
   shellapi, gltexture;
 {$endif}
-{$ifdef linux}
+{$ifdef unix}
 
 {$ENDIF}
 
@@ -328,7 +328,7 @@ begin
 {$IFDEF MSWINDOWS}
   ABitmap.Handle := LoadBitmap(HInstance, PChar(AName));
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF unix}
   ABitmap.LoadFromResourceName(HInstance, PChar(AName));
 {$ENDIF}
 end;
@@ -338,7 +338,7 @@ begin
 {$IFDEF MSWINDOWS}
   result := Application.MessageBox(PChar(Text),PChar(Caption),MB_OK);
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF unix}
   {$ifdef fpc}
   result := Application.MessageBox(PChar(Text),PChar(Caption),MB_OK);
   {$ELSE}
@@ -352,7 +352,7 @@ begin
 {$IFDEF MSWINDOWS}
   ShowCursor(AShow);
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF unix}
   {$MESSAGE Warn 'ShowCursor: Needs to be implemented'}
 {$ENDIF}
 end;
@@ -362,7 +362,7 @@ begin
 {$IFDEF MSWINDOWS}
   SetCursorPos(AScreenX, AScreenY);
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF unix}
   {$MESSAGE Warn 'SetCursorPos: Needs to be implemented'}
 {$ENDIF}
 end;
@@ -372,7 +372,7 @@ begin
 {$IFDEF MSWINDOWS}
   GetCursorPos(point);
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF unix}
   {$MESSAGE Warn 'GetCursorPos: Needs to be implemented'}
 {$ENDIF}
 end;
@@ -392,12 +392,12 @@ begin
 {$IFDEF MSWINDOWS}
   result := GetTickCount;
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF unix}
   QueryPerformanceCounter(result);
 {$ENDIF}
 end;
 
-{$IFDEF LINUX}
+{$IFDEF unix}
 function QueryCombo(const ACaption, APrompt: string; Alist:TStringList;
                           var Index: integer; var Value: string): Boolean;
 var
@@ -554,7 +554,7 @@ end;
 {$ENDIF}
 
 procedure ShowHTMLUrl(Url: String);
-{$IFDEF LINUX}
+{$IFDEF unix}
 var
   TheBrowser: String;
 {$ENDIF}
@@ -562,7 +562,7 @@ begin
 {$IFDEF MSWINDOWS}
   ShellExecute(0, 'open', PChar(Url), Nil, Nil, SW_SHOW);
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF unix}
   TheBrowser := GetBrowser;
 {the ' &' means immediately continue:}
   if (Length(TheBrowser) > 0) then
@@ -841,7 +841,7 @@ begin
   end;
 end;
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF unix}
 {$IFNDEF FPC}
 var
   metrics: QPAintDeviceMetricsH;
