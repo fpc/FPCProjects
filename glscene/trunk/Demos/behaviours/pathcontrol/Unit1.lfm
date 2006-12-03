@@ -19,6 +19,8 @@ object Form1: TForm1
     Width = 489
     Camera = GLCamera1
     Buffer.BackgroundColor = clAppWorkspace
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
     FieldOfView = 149.751983642578
     Anchors = [akTop, akLeft, akRight, akBottom]
   end

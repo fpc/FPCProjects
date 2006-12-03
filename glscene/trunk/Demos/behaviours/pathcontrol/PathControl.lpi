@@ -50,7 +50,7 @@
         <HasResources Value="True"/>
         <ResourceFilename Value="unit1.lrs"/>
         <UnitName Value="Unit1"/>
-        <CursorPos X="21" Y="11"/>
+        <CursorPos X="10" Y="15"/>
         <TopLine Value="104"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
