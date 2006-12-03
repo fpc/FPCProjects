@@ -19,6 +19,7 @@
       - added automatical generated History from CVS
 
    <b>Historique : </b><font size=-1><ul>
+      <li>27/10/06 - LC - Fixed memory leak in TGLMovementPath. Bugtracker ID=1548615 (thanks Da Stranger)
       <li>28/09/04 - Mrqzzz - Fixed bug in proc. Interpolation (skipped a line from Carlos' code, oops)  
       <li>09/09/04 - Mrqzzz - CalculateState change by Carlos (NG) to make speed interpolated between nodes
       <li>20/11/01 - Egg - DoProgress fix suggested by Philipp Pammler (NG)
@@ -515,8 +516,12 @@ end;
 
 destructor TGLMovementPath.Destroy;
 begin
+  // make sure the splines are freed
+  FLooped:= false;
+  
   ClearNodes;
   FNodes.Free;
+
   inherited Destroy;
 end;
 
@@ -954,6 +959,7 @@ begin
     FreeMem(sy);
     FreeMem(sz);
 
+    FreeAndNil(FCurrentNode);
     FCurrentNode := TGLPathNode.Create(nil);
     FCurrentNode.Assign(Nodes[0]);
     FCurrentNodeIndex := -1;
@@ -967,9 +973,9 @@ begin
   end 
   else
   begin
-    MotionSplineControl.Free;
-    RotationSplineControl.Free;
-    ScaleSplineControl.Free;
+    FreeAndNil(MotionSplineControl);
+    FreeAndNil(RotationSplineControl);
+    FreeAndNil(ScaleSplineControl);
     if Assigned(FOnTravelStop) then
       FOnTravelStop(self);
   end;
