@@ -209,6 +209,10 @@ var
    GL_VERSION_1_3,
    GL_VERSION_1_4,
    GL_VERSION_1_5,
+   GL_VERSION_2_0,
+   GL_VERSION_2_1,
+   GL_VERSION_2_2,
+   
    GLU_VERSION_1_1,
    GLU_VERSION_1_2,
    GLU_VERSION_1_3: Boolean;
@@ -4043,6 +4047,9 @@ begin
    GL_VERSION_1_3:=(minorVersion>=3) or (majorVersion>1);
    GL_VERSION_1_4:=(minorVersion>=4) or (majorVersion>1);
    GL_VERSION_1_5:=(minorVersion>=5) or (majorVersion>1);
+   GL_VERSION_2_0:=majorVersion > 1;
+   GL_VERSION_2_1:=((minorVersion >= 1) and (majorVersion > 1)) or (majorVersion > 2);
+   GL_VERSION_2_2:=((minorVersion >= 2) and (majorVersion > 1)) or (majorVersion > 2);
 
    // GLU
    buffer:=gluGetString(GLU_VERSION);
