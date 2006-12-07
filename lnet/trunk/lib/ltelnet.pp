@@ -63,9 +63,17 @@ const
   TS_IAC         = #255;
   
 type
+  TLTelnet = class;
+
   TLTelnetControlChars = set of Char;
+
   TLHowEnum = (TE_WILL = 251, TE_WONT, TE_DO, TE_DONW);
   
+  TLTelnetCallback = procedure (Sender: TLTelnet) of object;
+
+  TLTelnetErrorCallback = procedure (const msg: string;
+                                     Sender: TLTelnet) of object;
+
   { TLTelnet }
 
   TLTelnet = class(TComponent, ILBase)
@@ -77,45 +85,64 @@ type
     FOutput: TMemoryStream;
     FOperation: Char;
     FCommandCharIndex: Byte;
-    FOnReceive: TLProc;
-    FOnConnect: TLProc;
-    FOnDisconnect: TLProc;
-    FOnError: TLErrorProc;
+    FOnReceive: TLTelnetCallback;
+    FOnConnect: TLTelnetCallback;
+    FOnDisconnect: TLTelnetCallback;
+    FOnError: TLTelnetErrorCallback;
     FCommandArgs: string[3];
     FOrders: TLTelnetControlChars;
     FConnected: Boolean;
+    FHost: string;
+    FPort: Word;
     function Question(const Command: Char; const Value: Boolean): Char;
-    function GetSocketClass: TLSocketClass;
+    
     function GetTimeout: DWord;
-    procedure SetSocketClass(Value: TLSocketClass);
     procedure SetTimeout(const Value: DWord);
+
+    function GetSocketClass: TLSocketClass;
+    procedure SetSocketClass(Value: TLSocketClass);
+    
     procedure StackFull;
+    
     procedure DoubleIAC(var s: string);
+    
     procedure TelnetParse(const msg: string);
+    
     procedure React(const Operation, Command: Char); virtual; abstract;
+    
     procedure SendCommand(const Command: Char; const Value: Boolean); virtual; abstract;
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
+    
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    
     function OptionIsSet(const Option: Char): Boolean;
     function RegisterOption(const aOption: Char; const aCommand: Boolean): Boolean;
     procedure SetOption(const Option: Char);
     procedure UnSetOption(const Option: Char);
+    
     procedure Disconnect; virtual;
+    
     procedure CallAction; virtual; abstract;
+    
+    procedure SendCommand(const aCommand: Char; const How: TLHowEnum); virtual;
+   public
     property Output: TMemoryStream read FOutput;
     property Connected: Boolean read FConnected;
     property Timeout: DWord read GetTimeout write SetTimeout;
-    property OnReceive: TLProc read FOnReceive write FOnReceive;
-    property OnDisconnect: TLProc read FOnDisconnect write FOnDisconnect;
-    property OnConnect: TLProc read FOnConnect write FOnConnect;
-    property OnError: TLErrorProc read FOnError write FOnError;
+    property OnReceive: TLTelnetCallback read FOnReceive write FOnReceive;
+    property OnDisconnect: TLTelnetCallback read FOnDisconnect write FOnDisconnect;
+    property OnConnect: TLTelnetCallback read FOnConnect write FOnConnect;
+    property OnError: TLTelnetErrorCallback read FOnError write FOnError;
     property Connection: TLTCP read FConnection;
     property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
+    property Host: string read FHost write FHost;
+    property Port: Word read FPort write FPort;
   end;
 
   { TLTelnetClient }
@@ -129,17 +156,24 @@ type
     procedure OnDs(aSocket: TLSocket);
     procedure OnRe(aSocket: TLSocket);
     procedure OnCo(aSocket: TLSocket);
+    
     procedure React(const Operation, Command: Char); override;
+    
     procedure SendCommand(const Command: Char; const Value: Boolean); override;
    public
     constructor Create(aOwner: TComponent); override;
+    
     function Connect(const anAddress: string; const aPort: Word): Boolean;
+    function Connect: Boolean;
+    
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
+    
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; override;
-    procedure SendCommand(const aCommand: Char; const How: TLHowEnum);
+    
     procedure CallAction; override;
+   public
     property LocalEcho: Boolean read FLocalEcho write FLocalEcho;
   end;
   
@@ -291,6 +325,14 @@ begin
   FConnected:=False;
 end;
 
+procedure TLTelnet.SendCommand(const aCommand: Char; const How: TLHowEnum);
+begin
+  {$ifdef debug}
+  Writeln('**SENT** ', TNames[Char(How)], ' ', TNames[aCommand]);
+  {$endif}
+  FConnection.SendMessage(TS_IAC + Char(How) + aCommand);
+end;
+
 //****************************TLTelnetClient*****************************
 
 constructor TLTelnetClient.Create(aOwner: TComponent);
@@ -309,7 +351,7 @@ end;
 procedure TLTelnetClient.OnEr(const msg: string; aSocket: TLSocket);
 begin
   if Assigned(FOnError) then
-    FOnError(msg, aSocket)
+    FOnError(msg, Self)
   else
     FOutput.Write(Pointer(msg)^, Length(msg));
 end;
@@ -317,7 +359,7 @@ end;
 procedure TLTelnetClient.OnDs(aSocket: TLSocket);
 begin
   if Assigned(FOnDisconnect) then
-    FOnDisconnect(aSocket);
+    FOnDisconnect(Self);
 end;
 
 procedure TLTelnetClient.OnRe(aSocket: TLSocket);
@@ -327,7 +369,7 @@ begin
   if aSocket.GetMessage(s) > 0 then begin
     TelnetParse(s);
     if Assigned(FOnReceive) then
-      FOnReceive(aSocket);
+      FOnReceive(Self);
   end;
 end;
 
@@ -335,7 +377,7 @@ procedure TLTelnetClient.OnCo(aSocket: TLSocket);
 begin
   FConnected:=True;
   if Assigned(FOnConnect) then
-    FOnConnect(aSocket);
+    FOnConnect(Self);
 end;
 
 procedure TLTelnetClient.React(const Operation, Command: Char);
@@ -393,6 +435,11 @@ begin
   Result:=FConnection.Connect(anAddress, aPort);
 end;
 
+function TLTelnetClient.Connect: Boolean;
+begin
+  Result := FConnection.Connect(FHost, FPort);
+end;
+
 function TLTelnetClient.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
   Result:=FOutput.Read(aData, aSize);
@@ -438,14 +485,6 @@ function TLTelnetClient.SendMessage(const msg: string; aSocket: TLSocket
   ): Integer;
 begin
   Result:=Send(PChar(msg)^, Length(msg));
-end;
-
-procedure TLTelnetClient.SendCommand(const aCommand: Char; const How: TLHowEnum);
-begin
-  {$ifdef debug}
-  Writeln('**SENT** ', TNames[Char(How)], ' ', TNames[aCommand]);
-  {$endif}
-  FConnection.SendMessage(TS_IAC + Char(How) + aCommand);
 end;
 
 procedure TLTelnetClient.CallAction;

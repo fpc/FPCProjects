@@ -32,6 +32,7 @@ uses
   Classes, lNet, lEvents, lCommon;
   
 type
+  TLSMTP = class;
   TLSMTPClient = class;
   
   TLSMTPStatus = (ssNone, ssCon, ssHelo, ssEhlo, ssMail,
@@ -52,16 +53,59 @@ type
   TLSMTPClientCallback = procedure (Sender: TLSMTPClient) of object;
   TLSMTPStatusCallback = procedure (Sender: TLSMTPClient;
                                     const aStatus: TLSMTPStatus) of object;
+  TLSMTPErrorCallback = procedure (const msg: string;
+                                    Sender: TLSMTP) of object;
+                                    
+  TLSMTP = class(TComponent, ILBase)
+   protected
+    FConnection: TLTcp;
+    FOnError: TLSMTPErrorCallback;
+    FHost: string;
+    FPort: Word;
+   protected
+    procedure OnEr(const msg: string; Sender: TLSocket);
+
+    function GetTimeout: DWord;
+    procedure SetTimeout(const AValue: DWord);
+    
+    function GetConnected: Boolean;
+
+    function GetSocketClass: TLSocketClass;
+    procedure SetSocketClass(const AValue: TLSocketClass);
+    
+    function GetEventer: TLEventer;
+    procedure SetEventer(Value: TLEventer);
+   public
+    constructor Create(aOwner: TComponent); override;
+    destructor Destroy; override;
+    
+    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    
+    function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    
+    procedure Disconnect; virtual; abstract;
+    
+    procedure CallAction; virtual; abstract;
+   public
+    property OnError: TLSMTPErrorCallback read FOnError write FOnError;
+    property Connected: Boolean read GetConnected;
+    property Connection: TLTcp read FConnection;
+    property Host: string read FHost write FHost;
+    property Port: Word read FPort write FPort;
+    property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
+    property Eventer: TLEventer read GetEventer write SetEventer;
+    property Timeout: DWord read GetTimeout write SetTimeout;
+  end;
 
   { TLSMTPClient }
 
-  TLSMTPClient = class(TComponent)
+  TLSMTPClient = class(TLSMTP, ILClient)
    protected
     FStatus: TLSMTPStatusFront;
     FCommandFront: TLSMTPStatusFront;
-    FConnection: TLTcp;
     FPipeLine: Boolean;
-    FOnError: TLErrorProc;
     FOnConnect: TLSMTPClientCallback;
     FOnReceive: TLSMTPClientCallback;
     FOnDisconnect: TLSMTPClientCallback;
@@ -69,32 +113,32 @@ type
     FOnFailure: TLSMTPStatusCallback;
     FSL: TStringList;
     FStatusSet: TLSMTPStatusSet;
-    FHost: string;
     FMessage: string;
-    FPort: Word;
-   protected
-    function GetSocketClass: TLSocketClass;
-    procedure SetSocketClass(const AValue: TLSocketClass);
    protected
     procedure OnRe(Sender: TLSocket);
     procedure OnCo(Sender: TLSocket);
     procedure OnDs(Sender: TLSocket);
    protected
     function CanContinue(const aStatus: TLSMTPStatus; const Arg1, Arg2: string): Boolean;
+    
     function CleanInput(var s: string): Integer;
-    function GetConnected: Boolean;
-    function GetEventer: TLEventer;
-    procedure SetEventer(Value: TLEventer);
-    procedure SetOnError(Value: TLErrorProc);
+    
     procedure EvaluateAnswer(const Ans: string);
+    
     procedure ExecuteFrontCommand;
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
+    
     function Connect(const aHost: string; const aPort: Word = 25): Boolean; virtual;
     function Connect: Boolean; virtual;
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
-    function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer;
+    
+    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
+    
+    function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; override;
+    
     procedure SendMail(const From, Recipients, Subject, Msg: string);
     procedure Helo(aHost: string = '');
     procedure Ehlo(aHost: string = '');
@@ -103,23 +147,19 @@ type
     procedure Data(const Msg: string);
     procedure Rset;
     procedure Quit;
-    procedure Disconnect;
-    procedure CallAction; virtual;
+    
+    procedure Disconnect; override;
+    
+    procedure CallAction; override;
    public
-    property Host: string read FHost write FHost;
-    property Port: Word read FPort write FPort;
     property PipeLine: Boolean read FPipeLine write FPipeLine;
-    property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
-    property Eventer: TLEventer read GetEventer write SetEventer;
     property StatusSet: TLSMTPStatusSet read FStatusSet write FStatusSet;
     property OnConnect: TLSMTPClientCallback read FOnConnect write FOnConnect;
     property OnReceive: TLSMTPClientCallback read FOnReceive write FOnReceive;
     property OnDisconnect: TLSMTPClientCallback read FOnDisconnect write FOnDisconnect;
     property OnSuccess: TLSMTPStatusCallback read FOnSuccess write FOnSuccess;
     property OnFailure: TLSMTPStatusCallback read FOnFailure write FOnFailure;
-    property OnError: TLErrorProc read FOnError write SetOnError;
-    property Connected: Boolean read GetConnected;
-    property Connection: TLTcp read FConnection;
+    property OnError: TLSMTPErrorCallback read FOnError write FOnError;
   end;
 
 implementation
@@ -148,6 +188,64 @@ begin
   Result.Args[2]:=Arg2;
 end;
 
+{ TLSMTP }
+
+function TLSMTP.GetTimeout: DWord;
+begin
+  Result := FConnection.Timeout;
+end;
+
+procedure TLSMTP.SetTimeout(const AValue: DWord);
+begin
+  FConnection.Timeout := aValue;
+end;
+
+procedure TLSMTP.OnEr(const msg: string; Sender: TLSocket);
+begin
+  if Assigned(FOnError) then
+    FOnError(msg, Self);
+end;
+
+function TLSMTP.GetConnected: Boolean;
+begin
+  Result:=FConnection.Connected;
+end;
+
+function TLSMTP.GetSocketClass: TLSocketClass;
+begin
+  Result:=FConnection.SocketClass;
+end;
+
+procedure TLSMTP.SetSocketClass(const AValue: TLSocketClass);
+begin
+  FConnection.SocketClass:=AValue;
+end;
+
+function TLSMTP.GetEventer: TLEventer;
+begin
+  Result:=FConnection.Eventer;
+end;
+
+procedure TLSMTP.SetEventer(Value: TLEventer);
+begin
+  FConnection.Eventer:=Value;
+end;
+
+constructor TLSMTP.Create(aOwner: TComponent);
+begin
+  inherited Create(aOwner);
+  
+  FConnection := TLTcp.Create(nil);
+  FConnection.OnError:=@OnEr;
+end;
+
+destructor TLSMTP.Destroy;
+begin
+  FConnection.Free;
+
+  inherited Destroy;
+end;
+
 { TLSMTPClient }
 
 constructor TLSMTPClient.Create(aOwner: TComponent);
@@ -160,14 +258,10 @@ begin
   FMessage:='';
 //  {$warning TODO: fix pipelining support when server does it}
   FPipeLine:=False;
-  FConnection:=TLTcp.Create(nil);
+  
   FConnection.OnReceive:=@OnRe;
   FConnection.OnConnect:=@OnCo;
-  FConnection.OnError:=nil;
-  FOnReceive:=nil;
-  FOnConnect:=nil;
-  FOnError:=nil;
-  FOnDisconnect:=nil;
+
   FStatus:=TLSMTPStatusFront.Create(EMPTY_REC);
   FCommandFront:=TLSMTPStatusFront.Create(EMPTY_REC);
 end;
@@ -175,21 +269,11 @@ end;
 destructor TLSMTPClient.Destroy;
 begin
   Quit;
-  FConnection.Free;
   FSL.Free;
   FStatus.Free;
   FCommandFront.Free;
+
   inherited Destroy;
-end;
-
-function TLSMTPClient.GetSocketClass: TLSocketClass;
-begin
-  Result:=FConnection.SocketClass;
-end;
-
-procedure TLSMTPClient.SetSocketClass(const AValue: TLSocketClass);
-begin
-  FConnection.SocketClass:=AValue;
 end;
 
 procedure TLSMTPClient.OnRe(Sender: TLSocket);
@@ -230,26 +314,6 @@ begin
   if i > 0 then
     s:=Copy(s, 1, i-1) + 'PASS';
   Result:=Length(s);
-end;
-
-function TLSMTPClient.GetConnected: Boolean;
-begin
-  Result:=FConnection.Connected;
-end;
-
-function TLSMTPClient.GetEventer: TLEventer;
-begin
-  Result:=FConnection.Eventer;
-end;
-
-procedure TLSMTPClient.SetEventer(Value: TLEventer);
-begin
-  FConnection.Eventer:=Value;
-end;
-
-procedure TLSMTPClient.SetOnError(Value: TLErrorProc);
-begin
-  FConnection.OnError:=Value;
 end;
 
 procedure TLSMTPClient.EvaluateAnswer(const Ans: string);
@@ -391,6 +455,19 @@ begin
   Result:=FConnection.GetMessage(msg, aSocket);
   if Result > 0 then
     Result:=CleanInput(msg);
+end;
+
+function TLSMTPClient.Send(const aData; const aSize: Integer; aSocket: TLSocket
+  ): Integer;
+begin
+  Result := 0;
+  raise Exception.Create('Send() is not valid for SMTP');
+end;
+
+function TLSMTPClient.SendMessage(const msg: string; aSocket: TLSocket
+  ): Integer;
+begin
+  Result := Send(msg, Length(msg), aSocket);
 end;
 
 procedure TLSMTPClient.SendMail(const From, Recipients, Subject, Msg: string);

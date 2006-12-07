@@ -32,6 +32,7 @@ uses
   Classes, lNet, lTelnet;
   
 type
+  TLFTP = class;
   TLFTPClient = class;
 
   TLFTPStatus = (fsNone, fsCon, fsAuth, fsPasv, fsPort, fsList, fsRetr, fsStor,
@@ -44,10 +45,14 @@ type
     Status: TLFTPStatus;
     Args: array[1..2] of string;
   end;
+  
+  TLFTPTransferMethod = (ftActive, ftPassive);
                  
   TLFTPClientProgressCallback = procedure (Sender: TLFTPClient; const Bytes: Integer) of object;
 
   TLFTPClientCallback = procedure (Sender: TLFTPClient) of object;
+
+  TLFTPErrorCallback = procedure (const msg: string; Sender: TLFTP) of object;
 
   TLFTPStatusCallback = procedure (Sender: TLFTPClient;
                                    const aStatus: TLFTPStatus) of object;
@@ -58,8 +63,53 @@ type
   {$DEFINE __front_type__ := TLFTPStatusRec}
   {$i lcontainersh.inc}
   TLFTPStatusFront = TLFront;
+  
+  TLFTP = class(TComponent, ILBase)
+   protected
+    FControl: TLTelnetClient;
+    FData: TLTcp;//TLTcpList;
+    FOnError: TLFTPErrorCallback;
+    FHost: string;
+    FPort: Word;
+    FSending: Boolean;
+    FTransferMethod: TLFTPTransferMethod;
+    procedure OnEr(const msg: string; aSocket: TLSocket);
+    procedure OnControlEr(const msg: string; Sender: TLTelnet);
+    
+    function GetConnected: Boolean; virtual;
+    
+    function GetTimeout: DWord;
+    procedure SetTimeout(const Value: DWord);
+    
+    function GetSocketClass: TLSocketClass;
+    procedure SetSocketClass(Value: TLSocketClass);
+   public
+    constructor Create(aOwner: TComponent); override;
+    destructor Destroy; override;
+    
+    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    
+    function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    
+    procedure Disconnect; virtual; abstract;
+    
+    procedure CallAction; virtual; abstract;
+   public
+    property Host: string read FHost write FHost;
+    property Port: Word read FPort write FPort;
+    property Connected: Boolean read GetConnected;
+    property OnError: TLFTPErrorCallback read FOnError write FOnError;
+    property Timeout: DWord read GetTimeout write SetTimeout;
+    property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
+    property ControlConnection: TLTelnetClient read FControl;
+    property DataConnection: TLTCP read FData;
+    property TransferMethod: TLFTPTransferMethod read FTransferMethod write FTransferMethod;
+  end;
 
   { TLFTPTelnetClient }
+  
   TLFTPTelnetClient = class(TLTelnetClient)
    protected
     procedure React(const Operation, Command: Char); override;
@@ -67,10 +117,8 @@ type
 
   { TLFTPClient }
 
-  TLFTPClient = class(TComponent, ILClient)
+  TLFTPClient = class(TLFTP, ILClient)
    protected
-    FControl: TLTelnetClient;
-    FData: TLTcp;//TLTcpList;
     FStatus: TLFTPStatusFront;
     FCommandFront: TLFTPStatusFront;
     FStoreFile: TFileStream;
@@ -78,63 +126,72 @@ type
     FPipeLine: Boolean;
     FPassword: string;
     FStatusFlags: array[TLFTPStatus] of Boolean;
-    FSending: Boolean;
     FOnReceive: TLFTPClientCallback;
     FOnSent: TLFTPClientProgressCallback;
     FOnControl: TLFTPClientCallback;
     FOnConnect: TLFTPClientCallback;
     FOnSuccess: TLFTPStatusCallback;
     FOnFailure: TLFTPStatusCallback;
-    FOnError: TLErrorProc;
-    FUsePORT: Boolean;
     FChunkSize: Word;
     FLastPort: Word;
     FStartPort: Word;
     FStatusSet: TLFTPStatusSet;
     FSL: TStringList; // for evaluation, I want to prevent constant create/free
-    FHost: string;
-    FPort: Word;
-    function GetTransfer: Boolean;
-    function GetEcho: Boolean;
-    function GetConnected: Boolean;
-    function GetBinary: Boolean;
-    function CanContinue(const aStatus: TLFTPStatus; const Arg1, Arg2: string): Boolean;
-    function CleanInput(var s: string): Integer;
-    function GetSocketClass: TLSocketClass;
-    function GetTimeout: DWord;
-    procedure SetTimeout(const Value: DWord);
-    procedure SetSocketClass(Value: TLSocketClass);
-    procedure SetStartPor(const Value: Word);
-    procedure SetEcho(const Value: Boolean);
-    procedure SetBinary(const Value: Boolean);
-    procedure OnCo(aSocket: TLSocket);
-    procedure OnEr(const msg: string; aSocket: TLSocket);
     procedure OnRe(aSocket: TLSocket);
     procedure OnDs(aSocket: TLSocket);
     procedure OnSe(aSocket: TLSocket);
-    procedure OnControlRe(aSocket: TLSocket);
+    
+    procedure OnControlRe(Sender: TLTelnet);
+    procedure OnControlCo(Sender: TLTelnet);
+    
+    function GetTransfer: Boolean;
+
+    function GetEcho: Boolean;
+    procedure SetEcho(const Value: Boolean);
+
+    function GetConnected: Boolean; override;
+
+    function GetBinary: Boolean;
+    procedure SetBinary(const Value: Boolean);
+
+    function CanContinue(const aStatus: TLFTPStatus; const Arg1, Arg2: string): Boolean;
+
+    function CleanInput(var s: string): Integer;
+
+    procedure SetStartPor(const Value: Word);
+
     procedure EvaluateAnswer(const Ans: string);
+
     procedure PasvPort;
+
     procedure SendChunk(const CallBack: Boolean);
+
     procedure ExecuteFrontCommand;
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
-   public
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
-    function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer;
-    function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
-    function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer;
+
+    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
+    
+    function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; override;
+    
     function Connect(const aHost: string; const aPort: Word = 21): Boolean; virtual;
     function Connect: Boolean; virtual;
+    
     function Authenticate(const aUsername, aPassword: string): Boolean;
+    
     function GetData(var aData; const aSize: Integer): Integer;
     function GetDataMessage: string;
+    
     function Retrieve(const FileName: string): Boolean;
     function Put(const FileName: string): Boolean; virtual; // because of LCLsocket
+    
     function ChangeDirectory(const DestPath: string): Boolean;
     function MakeDirectory(const DirName: string): Boolean;
     function RemoveDirectory(const DirName: string): Boolean;
+    
     function DeleteFile(const FileName: string): Boolean;
     function Rename(const FromName, ToName: string): Boolean;
    public
@@ -144,29 +201,22 @@ type
     procedure FeatureList;
     procedure PresentWorkingDirectory;
     procedure Help(const Arg: string);
-    procedure Disconnect;
-    procedure CallAction; virtual;
+    
+    procedure Disconnect; override;
+    
+    procedure CallAction; override;
    public
-    property Host: string read FHost write FHost;
-    property Port: Word read FPort write FPort;
-    property Connected: Boolean read GetConnected;
     property StatusSet: TLFTPStatusSet read FStatusSet write FStatusSet;
-    property ControlConnection: TLTelnetClient read FControl;
-    property DataConnection: TLTCP read FData;
-    property Timeout: DWord read GetTimeout write SetTimeout;
     property ChunkSize: Word read FChunkSize write FChunkSize;
     property Binary: Boolean read GetBinary write SetBinary;
     property PipeLine: Boolean read FPipeLine write FPipeLine;
     property Echo: Boolean read GetEcho write SetEcho;
     property StartPort: Word read FStartPort write FStartPort;
     property Transfer: Boolean read GetTransfer;
-    property UsePORT: Boolean read FUsePORT write FUsePORT;
-    property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
     property OnConnect: TLFTPClientCallback read FOnConnect write FOnConnect;
     property OnSent: TLFTPCLientProgressCallback read FOnSent write FOnSent;
     property OnReceive: TLFTPCLientCallback read FOnReceive write FOnReceive;
     property OnControl: TLFTPClientCallback read FOnControl write FOnControl;
-    property OnError: TLErrorProc read FOnError write FOnError;
     property OnSuccess: TLFTPStatusCallback read FOnSuccess write FOnSuccess;
     property OnFailure: TLFTPStatusCallback read FOnFailure write FOnFailure;
   end;
@@ -220,6 +270,73 @@ end;
 
 {$i lcontainers.inc}
 
+{ TLFTP }
+
+procedure TLFTP.OnEr(const msg: string; aSocket: TLSocket);
+begin
+  FSending:=False;
+  if Assigned(FOnError) then
+    FOnError(msg, Self);
+end;
+
+procedure TLFTP.OnControlEr(const msg: string; Sender: TLTelnet);
+begin
+  FSending:=False;
+  if Assigned(FOnError) then
+    FOnError(msg, Self);
+end;
+
+function TLFTP.GetConnected: Boolean;
+begin
+  Result := FControl.Connected;
+end;
+
+function TLFTP.GetTimeout: DWord;
+begin
+  Result:=FControl.Timeout;
+end;
+
+procedure TLFTP.SetTimeout(const Value: DWord);
+begin
+  FControl.Timeout:=Value;
+  FData.Timeout:=Value;
+end;
+
+function TLFTP.GetSocketClass: TLSocketClass;
+begin
+  Result:=FControl.SocketClass;
+end;
+
+procedure TLFTP.SetSocketClass(Value: TLSocketClass);
+begin
+  FControl.SocketClass:=Value;
+  FData.SocketClass:=Value;
+end;
+
+constructor TLFTP.Create(aOwner: TComponent);
+begin
+  inherited Create(aOwner);
+
+  FHost:='';
+  FPort:=21;
+
+  FControl:=TLFTPTelnetClient.Create(nil);
+  FControl.OnError:=@OnControlEr;
+
+  FData:=TLTcp.Create(nil);
+  FData.OnError:=@OnEr;
+  
+  FTransferMethod := ftPassive; // let's be modern
+end;
+
+destructor TLFTP.Destroy;
+begin
+  FControl.Free;
+  FData.Free;
+
+  inherited Destroy;
+end;
+
 { TLFTPTelnetClient }
 
 procedure TLFTPTelnetClient.React(const Operation, Command: Char);
@@ -236,48 +353,70 @@ var
   s: TLFTPStatus;
 begin
   inherited Create(aOwner);
-  FHost:='';
-  FPort:=21;
+
+  FControl.OnReceive:=@OnControlRe;
+  FControl.OnConnect:=@OnControlCo;
+
+  FData.OnReceive:=@OnRe;
+  FData.OnDisconnect:=@OnDs;
+  FData.OnCanSend:=@OnSe;
+
   FStatusSet:=[]; // empty callback set
   FPassWord:='';
   FChunkSize:=DEFAULT_CHUNK;
   FStartPort:=DEFAULT_PORT;
   FSL:=TStringList.Create;
   FLastPort:=FStartPort;
-  FUsePort:=False;
-  FSending:=False;
-  FData:=TLTcp.Create(nil);
-  FControl:=TLFTPTelnetClient.Create(nil);
-  FControl.OnReceive:=@OnControlRe;
-  FControl.OnConnect:=@OnCo;
-  FControl.OnError:=@OnEr;
-  FOnError:=nil;
-  FOnConnect:=nil;
-  FOnSent:=nil;
-  FOnReceive:=nil;
+
   for s:=fsNone to fsDEL do
     FStatusFlags[s]:=False;
+    
   FStatus:=TLFTPStatusFront.Create(EMPTY_REC);
   FCommandFront:=TLFTPStatusFront.Create(EMPTY_REC);
+  
   FStoreFile:=nil;
-  FData.OnReceive:=@OnRe;
-  FData.OnError:=@OnEr;
-  FData.OnDisconnect:=@OnDs;
-  FData.OnCanSend:=@OnSe;
-  FPipeLine:=False;
 end;
 
 destructor TLFTPClient.Destroy;
 begin
   Disconnect;
   FSL.Free;
-  FControl.Free;
   FStatus.Free;
   FCommandFront.Free;
-  FData.Free;
   if Assigned(FStoreFile) then
     FreeAndNil(FStoreFile);
   inherited Destroy;
+end;
+
+procedure TLFTPClient.OnRe(aSocket: TLSocket);
+begin
+  if Assigned(FOnReceive) then
+    FOnReceive(Self);
+end;
+
+procedure TLFTPClient.OnDs(aSocket: TLSocket);
+begin
+  // TODO: figure it out brainiac
+  FSending:=False;
+  Writedbg(['Disconnected']);
+end;
+
+procedure TLFTPClient.OnSe(aSocket: TLSocket);
+begin
+  if Connected and FSending then
+    SendChunk(True);
+end;
+
+procedure TLFTPClient.OnControlRe(Sender: TLTelnet);
+begin
+  if Assigned(FOnControl) then
+    FOnControl(Self);
+end;
+
+procedure TLFTPClient.OnControlCo(Sender: TLTelnet);
+begin
+  if Assigned(FOnConnect) then
+    FOnConnect(Self);
 end;
 
 function TLFTPClient.GetTransfer: Boolean;
@@ -292,7 +431,7 @@ end;
 
 function TLFTPClient.GetConnected: Boolean;
 begin
-  Result:=FStatusFlags[fsCon] and FControl.Connected;
+  Result := FStatusFlags[fsCon] and inherited;
 end;
 
 function TLFTPClient.GetBinary: Boolean;
@@ -323,28 +462,6 @@ begin
   Result:=Length(s);
 end;
 
-function TLFTPClient.GetSocketClass: TLSocketClass;
-begin
-  Result:=FControl.SocketClass;
-end;
-
-function TLFTPClient.GetTimeout: DWord;
-begin
-  Result:=FControl.Timeout;
-end;
-
-procedure TLFTPClient.SetTimeout(const Value: DWord);
-begin
-  FControl.Timeout:=Value;
-  FData.Timeout:=Value;
-end;
-
-procedure TLFTPClient.SetSocketClass(Value: TLSocketClass);
-begin
-  FControl.SocketClass:=Value;
-  FData.SocketClass:=Value;
-end;
-
 procedure TLFTPClient.SetStartPor(const Value: Word);
 begin
   FStartPort:=Value;
@@ -369,44 +486,6 @@ begin
     FControl.SendMessage('TYPE ' + TypeBool[Value] + FLE);
     FStatus.Insert(MakeStatusRec(fsType, '', ''));
   end;
-end;
-
-procedure TLFTPClient.OnCo(aSocket: TLSocket);
-begin
-  if Assigned(FOnConnect) then
-    FOnConnect(Self);
-end;
-
-procedure TLFTPClient.OnEr(const msg: string; aSocket: TLSocket);
-begin
-  FSending:=False;
-  if Assigned(FOnError) then
-    FOnError(msg, aSocket);
-end;
-
-procedure TLFTPClient.OnRe(aSocket: TLSocket);
-begin
-  if Assigned(FOnReceive) then
-    FOnReceive(Self);
-end;
-
-procedure TLFTPClient.OnDs(aSocket: TLSocket);
-begin
-  // TODO: figure it out brainiac
-  FSending:=False;
-  Writedbg(['Disconnected']);
-end;
-
-procedure TLFTPClient.OnSe(aSocket: TLSocket);
-begin
-  if Connected and FSending then
-    SendChunk(True);
-end;
-
-procedure TLFTPClient.OnControlRe(aSocket: TLSocket);
-begin
-  if Assigned(FOnControl) then
-    FOnControl(Self);
 end;
 
 procedure TLFTPClient.EvaluateAnswer(const Ans: string);
@@ -701,7 +780,7 @@ procedure TLFTPClient.PasvPort;
   end;
   
 begin
-  if FUsePORT then begin
+  if FTransferMethod = ftActive then begin
     Writedbg(['Sent PORT']);
     FData.Disconnect;
     FData.Listen(FLastPort);

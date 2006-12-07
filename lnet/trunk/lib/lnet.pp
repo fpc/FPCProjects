@@ -104,27 +104,37 @@ type
     FConnection: TLConnection;
    protected
     function DoSend(const TheData; const TheSize: Integer): Integer;
+    
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
+    
     function GetLocalPort: Word;
     function GetPeerPort: Word;
     function GetPeerAddress: string;
     function GetLocalAddress: string;
     function CanSend: Boolean; virtual;
     function CanReceive: Boolean; virtual;
+    
     procedure SetBlocking(const aValue: Boolean);
     procedure SetOptions; virtual;
+    
     function Bail(const msg: string; const ernum: Integer): Boolean;
+    
     procedure LogError(const msg: string; const ernum: Integer); virtual;
    public
     constructor Create; override;
     destructor Destroy; override;
+    
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
     function Accept(const SerSock: Integer): Boolean;
+    
     function Connect(const Address: string; const APort: Word): Boolean;
+    
     function Send(const aData; const aSize: Integer): Integer; virtual;
     function SendMessage(const msg: string): Integer;
+    
     function Get(var aData; const aSize: Integer): Integer; virtual;
     function GetMessage(out msg: string): Integer;
+    
     procedure Disconnect; virtual;
    public
     property Connected: Boolean read FConnected;
@@ -152,11 +162,16 @@ type
   ILBase = interface
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer;
+    
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer;
+    
     procedure Disconnect;
     procedure CallAction;
+    
     property SocketClass: TLSocketClass;
+    property Host: string;
+    property Port: Word;
   end;
   
   { Interface for all servers }
@@ -168,7 +183,8 @@ type
   { Interface for all clients }
   
   ILClient = interface(ILBase)
-    function Connect(const Address: string; const APort: Word): Boolean;
+    function Connect(const Address: string; const APort: Word): Boolean; overload;
+    function Connect: Boolean; overload;
   end;
   
   { TLConnection
@@ -196,39 +212,53 @@ type
     FPort: Word;
    protected
     function InitSocket(aSocket: TLSocket): TLSocket; virtual;
+    
     function GetConnected: Boolean; virtual; abstract;
     function GetCount: Integer; virtual;
     function GetItem(const i: Integer): TLSocket;
+    
     function GetTimeout: DWord;
+    procedure SetTimeout(const AValue: DWord);
+    
+    procedure SetEventer(Value: TLEventer);
+    
     procedure ConnectAction(aSocket: TLHandle); virtual;
     procedure AcceptAction(aSocket: TLHandle); virtual;
     procedure ReceiveAction(aSocket: TLHandle); virtual;
     procedure SendAction(aSocket: TLHandle); virtual;
     procedure ErrorAction(aSocket: TLHandle; const msg: string); virtual;
+    
     procedure ConnectEvent(aSocket: TLHandle); virtual;
     procedure DisconnectEvent(aSocket: TLHandle); virtual;
     procedure AcceptEvent(aSocket: TLHandle); virtual;
     procedure ReceiveEvent(aSocket: TLHandle); virtual;
     procedure CanSendEvent(aSocket: TLHandle); virtual;
     procedure ErrorEvent(const msg: string; aSocket: TLHandle); virtual;
-    procedure SetTimeout(const AValue: DWord);
-    procedure SetEventer(Value: TLEventer);
     procedure EventerError(const msg: string; Sender: TLEventer);
+    
     procedure RegisterWithEventer; virtual;
+    
     procedure FreeSocks; virtual;
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
+    
     function Connect(const Address: string; const APort: Word): Boolean; virtual;
     function Connect: Boolean; virtual;
+    
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; virtual; abstract;
+    
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    
     function IterNext: Boolean; virtual; abstract;
-    procedure Disconnect; virtual; abstract;
     procedure IterReset; virtual; abstract;
+
+    procedure Disconnect; virtual; abstract;
+    
     procedure CallAction; virtual; abstract;
    public
     property Host: string read FHost write FHost;
@@ -255,25 +285,36 @@ type
   TLUdp = class(TLConnection)
    protected
     function InitSocket(aSocket: TLSocket): TLSocket; override;
+    
     function GetConnected: Boolean; override;
+    
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle; const msg: string); override;
+    
     function Bail(const msg: string): Boolean;
+    
     procedure SetAddress(const Address: string);
    public
     constructor Create(aOwner: TComponent); override;
+    
     function Connect(const Address: string; const APort: Word): Boolean; override;
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; override;
+    
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
+    
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; override;
     function SendMessage(const msg: string; const Address: string): Integer; overload;
+    
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function Send(const aData; const aSize: Integer; const Address: string): Integer; overload;
+    
     function IterNext: Boolean; override;
-    procedure Disconnect; override;
     procedure IterReset; override;
+
+    procedure Disconnect; override;
+
     procedure CallAction; override;
   end;
   
@@ -285,27 +326,38 @@ type
    protected
     FCount: Integer;
     function InitSocket(aSocket: TLSocket): TLSocket; override;
+
     function GetConnected: Boolean; override;
     function GetConnecting: Boolean;
+
     procedure ConnectAction(aSocket: TLHandle); override;
     procedure AcceptAction(aSocket: TLHandle); override;
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle; const msg: string); override;
+
     function Bail(const msg: string; aSocket: TLSocket): Boolean;
+
     procedure SocketDisconnect(aSocket: TLSocket);
    public
     constructor Create(aOwner: TComponent); override;
+
     function Connect(const Address: string; const APort: Word): Boolean; override;
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; override;
+
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
+
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; override;
+
     function IterNext: Boolean; override;
-    procedure CallAction; override;
     procedure IterReset; override;
+
+    procedure CallAction; override;
+
     procedure Disconnect; override;
+   public
     property Connecting: Boolean read GetConnecting;
     property OnAccept: TLProc read FOnAccept write FOnAccept;
     property OnConnect: TLProc read FOnConnect write FOnConnect;
