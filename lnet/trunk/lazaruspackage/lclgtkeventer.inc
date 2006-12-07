@@ -82,6 +82,8 @@ function TLCLEventer.AddHandle(aHandle: TLHandle): Boolean;
 var
   LHI: PLCLHandleInfo;
 begin
+  Result := False;
+  
   SetHandleEventer(aHandle);
   LHI:=GetMem(SizeOf(TLCLHandleInfo));
   LHI^.Handle:=aHandle;
@@ -90,7 +92,9 @@ begin
                                     @HandleEvents, PtrInt(LHI));
   LHI^.Flags:=ALL_FLAGS;
   if not Assigned(LHI^.EventHandle) then
-    Bail('Error on handler', -1);
+    Bail('Error on handler', -1)
+  else
+    Result := True;
 end;
 
 procedure TLCLEventer.UnplugHandle(aHandle: TLHandle);
