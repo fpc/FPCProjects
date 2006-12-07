@@ -94,13 +94,18 @@ type
   function StrToNetAddr(const IP: string): Cardinal; inline;
   function NetAddrToStr(const Entry: Cardinal): string; inline;
   
+  procedure FillAddressInfo(var aAddrInfo: TInetSockAddr; const aFamily: sa_family_t;
+                            const Address: string; const aPort: Word); inline;
+
 implementation
 
+uses
+  lNet
+  
 {$IFNDEF UNIX}
 
 {$IFDEF WINDOWS}
-uses
-  Windows;
+  , Windows;
 
 function LStrError(const Ernum: Longint; const UseUTF8: Boolean = False): string;
 var
@@ -139,7 +144,8 @@ begin
 end;
 
 {$ELSE}
-
+  ; // uses
+  
 function LStrError(const Ernum: Longint; const UseUTF8: Boolean = False): string;
 begin
   Result:=IntToStr(Ernum); // TODO: fix for non-windows winsock users
@@ -230,9 +236,10 @@ begin
 end;
 
 {$ELSE}
+
 // unix
-uses
-  Errors, UnixUtil;
+
+  ,Errors, UnixUtil;
 
 function LStrError(const Ernum: Longint; const UseUTF8: Boolean = False): string;
 begin
@@ -319,6 +326,17 @@ end;
 function NetAddrToStr(const Entry: Cardinal): string; inline;
 begin
   Result:=Sockets.NetAddrToStr(in_addr(Entry));
+end;
+
+procedure FillAddressInfo(var aAddrInfo: TInetSockAddr; const aFamily: sa_family_t;
+  const Address: string; const aPort: Word); inline;
+begin
+  aAddrInfo.family:=AF_INET;
+  aAddrInfo.Port:=htons(aPort);
+  aAddrInfo.Addr:=StrToNetAddr(Address);
+  
+  if (Address <> LADDR_ANY) and (aAddrInfo.Addr = 0) then
+    aAddrInfo.Addr:=StrToNetAddr(GetHostIP(Address));
 end;
 
 end.

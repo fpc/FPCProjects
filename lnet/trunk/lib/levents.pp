@@ -145,7 +145,7 @@ type
     FInLoop: Boolean;
     function GetTimeout: DWord; virtual;
     procedure SetTimeout(const Value: DWord); virtual;
-    procedure Bail(const msg: string; const Ernum: Integer);
+    function Bail(const msg: string; const Ernum: Integer): Boolean;
     procedure AddForFree(aHandle: TLHandle);
     procedure FreeHandles;
     procedure HandleIgnoreError(aHandle: TLHandle); virtual;
@@ -313,8 +313,9 @@ procedure TLEventer.SetTimeout(const Value: DWord);
 begin
 end;
 
-procedure TLEventer.Bail(const msg: string; const Ernum: Integer);
+function TLEventer.Bail(const msg: string; const Ernum: Integer): Boolean;
 begin
+  Result := False; // always false, substitute for caller's result
   if Assigned(FOnError) then
     FOnError(msg + ': ' + LStrError(Ernum), Self);
 end;

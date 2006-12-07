@@ -120,7 +120,7 @@ type
     FContentLength: integer;
     FPaddingLength: integer;
 
-    procedure Connect; overload;
+    function Connect: Boolean; override;
     procedure ConnectEvent(ASocket: TLHandle); override;
     procedure DisconnectEvent(ASocket: TLHandle); override;
     procedure ErrorEvent(const Msg: string; ASocket: TLHandle); override;
@@ -759,9 +759,9 @@ begin
   Result.ID := FNextRequestID;  { request ids start at 1 }
 end;
 
-procedure TLFastCGIClient.Connect;
+function TLFastCGIClient.Connect: Boolean;
 begin
-  Connect(FPool.Host, FPool.Port);
+  Result := inherited Connect(FPool.Host, FPool.Port);
   FRequest := FRequests[0];
   if FRequest.FBuffer.Pos = FRequest.FBuffer.Memory then
     FRequest.SendGetValues;

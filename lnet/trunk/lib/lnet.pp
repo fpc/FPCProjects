@@ -113,7 +113,7 @@ type
     function CanReceive: Boolean; virtual;
     procedure SetBlocking(const aValue: Boolean);
     procedure SetOptions; virtual;
-    procedure Bail(const msg: string; const ernum: Integer);
+    function Bail(const msg: string; const ernum: Integer): Boolean;
     procedure LogError(const msg: string; const ernum: Integer); virtual;
    public
     constructor Create; override;
@@ -259,7 +259,7 @@ type
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle; const msg: string); override;
-    procedure Bail(const msg: string);
+    function Bail(const msg: string): Boolean;
     procedure SetAddress(const Address: string);
    public
     constructor Create(aOwner: TComponent); override;
@@ -292,7 +292,7 @@ type
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle; const msg: string); override;
-    procedure Bail(const msg: string; aSocket: TLSocket);
+    function Bail(const msg: string; aSocket: TLSocket): Boolean;
     procedure SocketDisconnect(aSocket: TLSocket);
    public
     constructor Create(aOwner: TComponent); override;
@@ -374,8 +374,10 @@ begin
       FOnError(Self, msg);
 end;
 
-procedure TLSocket.Bail(const msg: string; const ernum: Integer);
+function TLSocket.Bail(const msg: string; const ernum: Integer): Boolean;
 begin
+  Result := False; // return the result for the caller
+
   Disconnect;
   LogError(msg, ernum);
 end;
@@ -477,14 +479,12 @@ begin
       if SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Bail('SetSockOpt error', LSocketError);
     end;
-    FAddress.family:=AF_INET;
-    FAddress.Port:=htons(APort);
-    FAddress.Addr:=StrToNetAddr(Address);
-    if (Address <> LADDR_ANY) and (FAddress.Addr = 0) then
-      FAddress.Addr:=StrToNetAddr(GetHostIP(Address));
-    FPeerAddress:=FAddress;
-    FPeerAddress.addr:=StrToNetAddr(LADDR_BR);
-    Result:=Done;
+    
+    FillAddressInfo(FAddress, AF_INET, Address, aPort);
+
+    FillAddressInfo(FPeerAddress, AF_INET, LADDR_BR, aPort);
+
+    Result := Done;
   end;
 end;
 
@@ -509,7 +509,7 @@ begin
       Result:=true;
     if (FSocketClass = SOCK_STREAM) and Result then
       if fpListen(FHandle, FListenBacklog) = INVALID_SOCKET then
-        Bail('Error on Listen', LSocketError)
+        Result := Bail('Error on Listen', LSocketError)
       else
         Result:=true;
   end;
@@ -772,19 +772,18 @@ begin
 end;
 
 function TLUdp.Connect(const Address: string; const APort: Word): Boolean;
-var
-  IP: string;
 begin
   Result:=inherited Connect(Address, aPort);
   FRootSock:=InitSocket(FSocketClass.Create);
   FIterator:=FRootSock;
-  if FRootSock.Connected then Disconnect;
-  IP:=GetHostIP(Address);
-  if Length(IP) = 0 then
-    IP:=Address;
+
+  if FRootSock.Connected then
+    Disconnect;
+
   Result:=FRootSock.SetupSocket(APort, LADDR_ANY);
-  FRootSock.FPeerAddress:=FRootSock.FAddress;
-  FRootSock.FPeerAddress.Addr:=StrToNetAddr(IP);
+  
+  FillAddressInfo(FRootSock.FPeerAddress, AF_INET, Address, aPort);
+
   FRootSock.FConnected:=true;
   if Result then
     RegisterWithEventer;
@@ -798,16 +797,18 @@ begin
   if FRootSock.Connected then
     Disconnect;
   if FRootSock.Listen(APort, AIntf) then begin
-    FRootSock.FPeerAddress:=FRootSock.FAddress;
-    FRootSock.FPeerAddress.Addr:=StrToNetAddr(LADDR_BR);
+    FillAddressInfo(FRootSock.FPeerAddress, AF_INET, LADDR_BR, aPort);
+  
     FRootSock.FConnected:=True;
     RegisterWithEventer;
   end;
   Result:=FRootSock.Connected;
 end;
 
-procedure TLUdp.Bail(const msg: string);
+function TLUdp.Bail(const msg: string): Boolean;
 begin
+  Result := False;
+
   Disconnect;
   ErrorEvent(msg, FRootSock);
 end;
@@ -822,10 +823,11 @@ begin
   if n > 0 then begin
     s:=Copy(Address, 1, n-1);
     p:=StrToInt(Copy(Address, n+1, Length(Address)));
-    FRootSock.FPeerAddress.Addr:=StrToNetAddr(s);
-    FRootSock.FPeerAddress.port:=p;
+
+    FillAddressInfo(FRootSock.FPeerAddress, AF_INET, s, p);
   end else
-    FRootSock.FPeerAddress.Addr:=StrToNetAddr(Address);
+    FillAddressInfo(FRootSock.FPeerAddress, AF_INET, Address,
+                                            FRootSock.FPeerAddress.Port);
 end;
 
 function TLUdp.InitSocket(aSocket: TLSocket): TLSocket;
@@ -971,8 +973,10 @@ begin
   end else Bail('Error, already listening', nil);
 end;
 
-procedure TLTcp.Bail(const msg: string; aSocket: TLSocket);
+function TLTcp.Bail(const msg: string; aSocket: TLSocket): Boolean;
 begin
+  Result := False;
+  
   ErrorEvent(msg, aSocket);
   if Assigned(aSocket) then
     aSocket.Disconnect

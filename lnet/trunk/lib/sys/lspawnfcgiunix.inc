@@ -5,7 +5,6 @@ function SpawnFCGIProcess(App, Enviro: string; const aPort: Word): Integer;
 var
   TheSocket: TLSocket;
   i: Integer;
-  p: TPid;
   SL: TStringList;
   aNil: Pointer = nil;
   ppEnv, ppArgs: ppChar;
