@@ -30,7 +30,7 @@ interface
 
 uses
   Classes, SysUtils,
-  LCLNet, lNet, lEvents, lFTP, lSMTP, lHTTP;
+  LCLNet, lNet, lEvents, lTelnet, lFTP, lSMTP, lHTTP;
   
 type
   TLSocket = lNet.TLSocket;
@@ -40,8 +40,10 @@ type
   TLTcp = lNet.TLTcp;
   TLUdp = lNet.TLUdp;
   
+  TLFTP = lFTP.TLFTP;
   TLFTPClient = lFTP.TLFTPClient;
   
+  TLSMTP = lSMTP.TLSMTP;
   TLSMTPClient = lSMTP.TLSMTPClient;
   
   TLHTTPClientSocket = lHTTP.TLHTTPClientSocket;
@@ -50,16 +52,22 @@ type
 
   TLErrorProc = procedure(const msg: string; aSocket: TLSocket) of object;
   TLProc = procedure(aSocket: TLSocket) of object;
+  
+  TLTelnetCallback = procedure (Sender: TLTelnet) of object;
+  TLTelnetErrorCallback = procedure (const msg: string;
+                                     Sender: TLTelnet) of object;
 
   TLFTPClientProgressCallback = procedure (Sender: TLFTPClient;
                                            const Bytes: Integer) of object;
   TLFTPClientCallback = procedure (Sender: TLFTPClient) of object;
   TLFTPStatusCallback = procedure (Sender: TLFTPClient;
                                    const aStatus: TLFTPStatus) of object;
-
+  TLFTPErrorCallback = procedure (const msg: string; Sender: TLFTP) of object;
 
   TLSMTPClientCallback = procedure (Sender: TLSMTPClient) of object;
-  
+  TLSMTPErrorCallback = procedure (const msg: string;
+                                    Sender: TLSMTP) of object;
+
   TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
   TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
   TLHTTPClientProc = procedure(ASocket: TLHTTPClientSocket) of object;
@@ -80,6 +88,7 @@ type
     property OnDisconnect;
     property OnConnect;
     property OnAccept;
+    property Timeout;
   end;
   
   { TLUDPComponent }
@@ -92,6 +101,23 @@ type
     property Port;
     property OnReceive;
     property OnError;
+    property Timeout;
+  end;
+  
+  { TLTelnetClientComponent }
+  
+  TLTelnetClientComponent = class(TLTelnetClient)
+  public
+    constructor Create(aOwner: TComponent); override;
+  published
+    property Host;
+    property Port;
+    property OnConnect;
+    property OnDisconnect;
+    property OnReceive;
+    property OnError;
+    property Timeout;
+    property LocalEcho;
   end;
 
   { TLFTPClientComponent }
@@ -112,7 +138,8 @@ type
     property StatusSet;
     property PipeLine;
     property StartPort;
-    property UsePORT;
+    property TransferMethod;
+    property Timeout;
   end;
   
   { TLSMTPCientComponent }
@@ -131,6 +158,7 @@ type
     property OnFailure;
     property StatusSet;
     property PipeLine;
+    property Timeout;
   end;
   
   { TLHTTPClientComponent }
@@ -149,6 +177,7 @@ type
     property OnProcessHeaders;
     property OnDisconnect;
     property OnError;
+    property Timeout;
   end;
 
 implementation
@@ -161,7 +190,7 @@ var
 constructor TLTCPComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  Eventer:=LCLEventer;
+  Eventer := LCLEventer;
 end;
 
 { TLUDPComponent }
@@ -169,7 +198,15 @@ end;
 constructor TLUDPComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  Eventer:=LCLEventer;
+  Eventer :=LCLEventer;
+end;
+
+{ TLTelnetClientComponent }
+
+constructor TLTelnetClientComponent.Create(aOwner: TComponent);
+begin
+  inherited Create(aOwner);
+  Connection.Eventer := LCLEventer;
 end;
 
 { TLFTPClientComponent }
@@ -177,8 +214,8 @@ end;
 constructor TLFTPClientComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  ControlConnection.Connection.Eventer:=LCLEventer;
-  DataConnection.Eventer:=LCLEventer;
+  ControlConnection.Connection.Eventer := LCLEventer;
+  DataConnection.Eventer := LCLEventer;
 end;
 
 { TLSMTPCientComponent }
@@ -186,7 +223,7 @@ end;
 constructor TLSMTPClientComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  Eventer:=LCLEventer;
+  Eventer := LCLEventer;
 end;
 
 { TLHTTPClientComponent }
@@ -194,7 +231,7 @@ end;
 constructor TLHTTPClientComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  Eventer:=LCLEventer;
+  Eventer := LCLEventer;
 end;
 
 initialization

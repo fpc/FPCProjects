@@ -85,6 +85,7 @@ begin
   Result := False;
   
   SetHandleEventer(aHandle);
+  
   LHI:=GetMem(SizeOf(TLCLHandleInfo));
   LHI^.Handle:=aHandle;
   SetInternalData(aHandle, LHI);
