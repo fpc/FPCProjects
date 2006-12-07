@@ -734,8 +734,10 @@ begin
     FEventer:=FEventerClass.Create;
     FEventer.OnError:=@EventerError;
   end;
+
   if Assigned(FRootSock) then
     FEventer.AddHandle(FRootSock);
+
   if (FEventer.Timeout = 0) and (FTimeout > 0) then
     FEventer.Timeout:=FTimeout
   else
@@ -767,18 +769,19 @@ procedure TLUdp.Disconnect;
 begin
   if Assigned(FRootSock) then begin
     FRootSock.Disconnect;
-    FRootSock.Dispose:=False;
+    FreeAndNil(FRootSock);
   end;
 end;
 
 function TLUdp.Connect(const Address: string; const APort: Word): Boolean;
 begin
   Result:=inherited Connect(Address, aPort);
+
+  if Assigned(FRootSock) and FRootSock.Connected then
+    Disconnect;
+
   FRootSock:=InitSocket(FSocketClass.Create);
   FIterator:=FRootSock;
-
-  if FRootSock.Connected then
-    Disconnect;
 
   Result:=FRootSock.SetupSocket(APort, LADDR_ANY);
   
@@ -792,10 +795,13 @@ end;
 function TLUdp.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
 begin
   Result:=False;
+
+  if Assigned(FRootSock) and FRootSock.Connected then
+    Disconnect;
+
   FRootSock:=InitSocket(FSocketClass.Create);
   FIterator:=FRootSock;
-  if FRootSock.Connected then
-    Disconnect;
+  
   if FRootSock.Listen(APort, AIntf) then begin
     FillAddressInfo(FRootSock.FPeerAddress, AF_INET, LADDR_BR, aPort);
   
@@ -822,7 +828,7 @@ begin
   n:=Pos(':', Address);
   if n > 0 then begin
     s:=Copy(Address, 1, n-1);
-    p:=StrToInt(Copy(Address, n+1, Length(Address)));
+    p:=Word(StrToInt(Copy(Address, n+1, Length(Address))));
 
     FillAddressInfo(FRootSock.FPeerAddress, AF_INET, s, p);
   end else
@@ -944,10 +950,13 @@ end;
 function TLTcp.Connect(const Address: string; const APort: Word): Boolean;
 begin
   Result:=inherited Connect(Address, aPort);
+  
   if Assigned(FRootSock) then
     Disconnect;
+    
   FRootSock:=InitSocket(FSocketClass.Create);
   Result:=FRootSock.Connect(Address, aPort);
+  
   if Result then begin
     Inc(FCount);
     FIterator:=FRootSock;
@@ -961,16 +970,18 @@ end;
 function TLTcp.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
 begin
   Result:=false;
-  if (aPort > 0) and not Assigned(FRootSock) then begin
-    FRootSock:=InitSocket(FSocketClass.Create);
-    FRootSock.FIgnoreShutdown:=True;
-    if FRootSock.Listen(APort, AIntf) then begin
-      FRootSock.FConnected:=True;
-      FRootSock.FServerSocket:=True;
-      RegisterWithEventer;
-      Result:=true;
-    end;
-  end else Bail('Error, already listening', nil);
+  
+  if Assigned(FRootSock) then
+    Disconnect;
+  
+  FRootSock:=InitSocket(FSocketClass.Create);
+  FRootSock.FIgnoreShutdown:=True;
+  if FRootSock.Listen(APort, AIntf) then begin
+    FRootSock.FConnected:=True;
+    FRootSock.FServerSocket:=True;
+    RegisterWithEventer;
+    Result:=true;
+  end;
 end;
 
 function TLTcp.Bail(const msg: string; aSocket: TLSocket): Boolean;
