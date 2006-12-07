@@ -67,7 +67,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FTPConnect(Sender: TLFTPClient);
     procedure FTPControl(Sender: TLFTPClient);
-    procedure FTPError(const msg: string; aSocket: TLSocket);
+    procedure FTPError(const msg: string; Sender: TLFTP);
     procedure FTPReceive(Sender: TLFTPClient);
     procedure FTPSent(Sender: TLFTPClient; const Bytes: Integer);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -205,15 +205,14 @@ begin
   end;
 end;
 
-procedure TMainForm.FTPError(const msg: string; aSocket: TLSocket);
+procedure TMainForm.FTPError(const msg: string; Sender: TLFTP);
 begin
   MemoText.Append(msg);
-  if assigned(aSocket) then
-    if not aSocket.Connected then begin
-      // connection has been closed, update gui
-      Disconnect(false);
-      ToolButton2.Down:=True;
-    end;
+  if not Sender.Connected then begin
+    // connection has been closed, update gui
+    Disconnect(false);
+    ToolButton2.Down:=True;
+  end;
   CreateFilePath:='';
 end;
 
