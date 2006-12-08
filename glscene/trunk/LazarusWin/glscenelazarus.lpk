@@ -9,7 +9,7 @@
       <PathDelim Value="\"/>
       <SearchPaths>
         <IncludeFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\"/>
-        <OtherUnitFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\;..\Source\Shaders\;..\Source\PhysicsAPIs\;..\Source\SoundAPIs\;..\Source\GameAPIs\;..\Source\cgshaders\"/>
+        <OtherUnitFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\;..\Source\Shaders\;..\Source\SoundAPIs\;..\Source\GameAPIs\"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
         <SrcPath Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\"/>
       </SearchPaths>
