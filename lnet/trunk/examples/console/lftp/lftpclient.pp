@@ -15,7 +15,7 @@ type
     procedure OnReceive(Sender: TLFTPClient);
     procedure OnControl(Sender: TLFTPClient);
     procedure OnSent(Sender: TLFTPClient; const Bytes: Integer);
-    procedure OnError(const msg: string; aSocket: TLSocket);
+    procedure OnError(const msg: string; Sender: TLFTPClient);
    protected
     FCon: TLFTPClient; // the FTP connection
     FConnected: Boolean;
@@ -69,7 +69,7 @@ begin
   Write('.');
 end;
 
-procedure TClient.OnError(const msg: string; aSocket: TLSocket);
+procedure TClient.OnError(const msg: string; Sender: TLFTPClient);
 begin
   Writeln(msg);
 end;

@@ -20,7 +20,7 @@ type
     procedure OnReceive(Sender: TLSMTPClient);
     procedure OnConnect(Sender: TLSMTPClient);
     procedure OnDisconnect(Sender: TLSMTPClient);
-    procedure OnError(const msg: string; Sender: TLSocket);
+    procedure OnError(const msg: string; Sender: TLSMTPClient);
    public
     constructor Create;
     destructor Destroy; override;
@@ -84,7 +84,7 @@ begin
   FQuit:=True;
 end;
 
-procedure TLSMTPClientTest.OnError(const msg: string; Sender: TLSocket);
+procedure TLSMTPClientTest.OnError(const msg: string; Sender: TLSMTPClient);
 begin
   Writeln(msg);
 end;

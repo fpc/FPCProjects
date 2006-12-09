@@ -18,7 +18,7 @@ type
    private
     FCon: TLTelnetClient;
     FQuit: Boolean;
-    procedure OnError(const msg: string; aSocket: TLSocket);
+    procedure OnError(const msg: string; Sender: TLTelnetClient);
    public
     constructor Create;
     destructor Destroy; override;
@@ -39,7 +39,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TLTelnetTest.OnError(const msg: string; aSocket: TLSocket);
+procedure TLTelnetTest.OnError(const msg: string; Sender: TLTelnetClient);
 begin
   Writeln(msg);
   FQuit:=True;
