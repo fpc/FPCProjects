@@ -1,47 +1,43 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 371
-  ClientWidth = 413
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = Form1Create
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 412
-  VertScrollBar.Page = 370
   Left = 249
   Height = 371
   Top = 126
   Width = 413
+  HorzScrollBar.Page = 412
+  VertScrollBar.Page = 370
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = Form1Create
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clBlack
-    FieldOfView = 147.75958251953125
-    Align = alClient
-    OnMouseDown = GLSceneViewer1MouseDown
-    OnMouseMove = GLSceneViewer1MouseMove
     Height = 346
     Top = 25
     Width = 413
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 147.759582519531
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
   end
   object Panel1: TPanel
-    Align = alTop
-    BevelOuter = bvLowered
-    ClientHeight = 25
-    ClientWidth = 413
-    FullRepaint = False
-    TabOrder = 0
     Height = 25
     Width = 413
+    Align = alTop
+    BevelOuter = bvLowered
+    FullRepaint = False
+    TabOrder = 0
     object CBDynamic: TCheckBox
-      Caption = 'Animate && Dynamically generate cube map'
-      Checked = True
-      State = cbChecked
-      TabOrder = 0
       Left = 8
       Height = 17
       Top = 4
       Width = 273
+      Caption = 'Animate && Dynamically generate cube map'
+      Checked = True
+      State = cbChecked
+      TabOrder = 0
     end
   end
   object GLScene1: TGLScene
@@ -58,10 +54,6 @@ object Form1: TForm1
       SpotCutOff = 180
     end
     object Torus1: TGLTorus
-      MajorRadius = 5
-      MinorRadius = 0.300000011920929
-      Rings = 32
-      Sides = 12
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
@@ -71,12 +63,11 @@ object Form1: TForm1
       Up.Coordinates = {
         0000803F000000000000000000000000
       }
+      MajorRadius = 5
+      MinorRadius = 0.30000001192092
+      Rings = 32
+      Sides = 12
       object Cylinder1: TGLCylinder
-        TopRadius = 0.300000011920929
-        BottomRadius = 0.300000011920929
-        Height = 5
-        Slices = 12
-        Stacks = 1
         Material.FrontProperties.Emission.Color = {
           00000000000000000000803F0000803F
         }
@@ -92,11 +83,13 @@ object Form1: TForm1
         Up.Coordinates = {
           00000000000000000000803F00000000
         }
+        BottomRadius = 0.30000001192092
+        Height = 5
+        Slices = 12
+        Stacks = 1
+        TopRadius = 0.30000001192092
       end
       object Sphere1: TGLSphere
-        Radius = 1
-        Slices = 12
-        Stacks = 12
         Material.FrontProperties.Diffuse.Color = {
           1283003F0000803F000000000000803F
         }
@@ -109,6 +102,9 @@ object Form1: TForm1
         Position.Coordinates = {
           0000A0C000000000000000000000803F
         }
+        Radius = 1
+        Slices = 12
+        Stacks = 12
       end
       object Cube1: TGLCube
         Material.FrontProperties.Diffuse.Color = {
@@ -163,6 +159,8 @@ object Form1: TForm1
     Width = 128
     Height = 128
     Buffer.BackgroundColor = clMaroon
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
     left = 40
     top = 32
   end
