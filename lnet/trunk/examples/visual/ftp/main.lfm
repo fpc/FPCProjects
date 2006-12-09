@@ -4,7 +4,7 @@ object MainForm: TMainForm
   Top = 84
   Width = 696
   HorzScrollBar.Page = 695
-  VertScrollBar.Page = 521
+  VertScrollBar.Page = 517
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
@@ -15,7 +15,7 @@ object MainForm: TMainForm
   OnKeyDown = FormKeyDown
   object MemoText: TMemo
     Height = 103
-    Top = 399
+    Top = 391
     Width = 696
     Align = alBottom
     ReadOnly = True
@@ -23,14 +23,14 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 368
+    Height = 360
     Top = 26
     Width = 696
     Align = alClient
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 366
+      Height = 358
       Top = 1
       Width = 183
       Align = alLeft
@@ -42,13 +42,13 @@ object MainForm: TMainForm
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 366
+      Height = 358
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 366
+      Height = 358
       Top = 1
       Width = 506
       Align = alClient
@@ -96,14 +96,14 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 394
+    Top = 386
     Width = 696
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
-    Height = 20
-    Top = 502
+    Height = 24
+    Top = 494
     Width = 696
     Panels = <    
       item
@@ -133,21 +133,21 @@ object MainForm: TMainForm
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 84
+      Left = 82
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 97
+      Left = 95
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 152
+      Left = 149
       Top = 2
       Action = accDisconnect
       Down = True
@@ -195,12 +195,14 @@ object MainForm: TMainForm
     end
   end
   object FTP: TLFTPClientComponent
+    Port = 21
     OnConnect = FTPConnect
     OnSent = FTPSent
     OnReceive = FTPReceive
     OnControl = FTPControl
     OnError = FTPError
     StartPort = 1024
+    TransferMethod = ftPassive
     top = 300
   end
   object PopupLeft: TPopupMenu
@@ -222,14 +224,17 @@ object MainForm: TMainForm
     top = 370
     object accSiteManager: TAction
       Caption = 'Site Manager'
+      DisableIfNoHandler = True
       OnExecute = accSiteManagerExecute
     end
     object accConnect: TAction
       Caption = 'Connect'
+      DisableIfNoHandler = True
       OnExecute = accConnectExecute
     end
     object accDisconnect: TAction
       Caption = 'Disconnect'
+      DisableIfNoHandler = True
       OnExecute = accDisconnectExecute
     end
   end

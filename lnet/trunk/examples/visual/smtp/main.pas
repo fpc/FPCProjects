@@ -45,7 +45,7 @@ type
     procedure MenuItemExitClick(Sender: TObject);
     procedure SMTPConnect(Sender: TLSMTPClient);
     procedure SMTPDisconnect(Sender: TLSMTPClient);
-    procedure SMTPError(const msg: string; Sender: TLSMTP);
+    procedure SMTPError(const msg: string; Sender: TLSMTPClient);
     procedure SMTPFailure(Sender: TLSMTPClient; const aStatus: TLSMTPStatus);
     procedure SMTPReceive(Sender: TLSMTPClient);
     procedure SMTPSuccess(Sender: TLSMTPClient; const aStatus: TLSMTPStatus);
@@ -79,7 +79,7 @@ begin
   ButtonConnect.Caption:='Connect';
 end;
 
-procedure TMainForm.SMTPError(const msg: string; Sender: TLSMTP);
+procedure TMainForm.SMTPError(const msg: string; Sender: TLSMTPClient);
 begin
   SMTPDisconnect(nil);
   SB.SimpleText:=msg;

@@ -67,7 +67,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FTPConnect(Sender: TLFTPClient);
     procedure FTPControl(Sender: TLFTPClient);
-    procedure FTPError(const msg: string; Sender: TLFTP);
+    procedure FTPError(const msg: string; Sender: TLFTPClient);
     procedure FTPReceive(Sender: TLFTPClient);
     procedure FTPSent(Sender: TLFTPClient; const Bytes: Integer);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -205,7 +205,7 @@ begin
   end;
 end;
 
-procedure TMainForm.FTPError(const msg: string; Sender: TLFTP);
+procedure TMainForm.FTPError(const msg: string; Sender: TLFTPClient);
 begin
   MemoText.Append(msg);
   if not Sender.Connected then begin
