@@ -387,7 +387,6 @@ type
     FServerSoftware: string;
     FOnAccess: TLAccessEvent;
 
-    function InitSocket(aSocket: TLSocket): TLSocket; override;
     function HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
   protected
     procedure LogAccess(const AMessage: string); override;
@@ -1460,7 +1459,7 @@ end;
 
 procedure TLHTTPServerSocket.LogAccess(const AMessage: string);
 begin
-  TLHTTPConnection(FConnection).LogAccess(AMessage);
+  TLHTTPConnection(FCreator).LogAccess(AMessage);
 end;
 
 procedure TLHTTPServerSocket.LogMessage;
@@ -1547,7 +1546,7 @@ begin
   AppendString(FLogMessage, PeerAddress);
   AppendString(FLogMessage, ' - [');
   AppendString(FLogMessage, FormatDateTime('dd/mmm/yyyy:hh:nn:ss', NowLocal));
-  AppendString(FLogMessage, TLHTTPServer(FConnection).FLogMessageTZString);
+  AppendString(FLogMessage, TLHTTPServer(FCreator).FLogMessageTZString);
   AppendString(FLogMessage, FBufferPos, pLineEnd-FBufferPos);
   AppendString(FLogMessage, '" ');
 
@@ -1764,7 +1763,7 @@ end;
 
 function TLHTTPServerSocket.HandleURI: TOutputItem; {inline;} {<--- triggers IE}
 begin
-  Result := TLHTTPServer(FConnection).HandleURI(Self);
+  Result := TLHTTPServer(FCreator).HandleURI(Self);
 end;
 
 procedure TLHTTPServerSocket.WriteError(AStatus: TLHTTPStatus);
@@ -1806,7 +1805,7 @@ begin
   AppendString(lMessage, #13#10+'Date: ');
   AppendString(lMessage, FormatDateTime(HTTPDateFormat, FRequestInfo.DateTime));
   AppendString(lMessage, ' GMT');
-  tempStr := TLHTTPServer(FConnection).ServerSoftware;
+  tempStr := TLHTTPServer(FCreator).ServerSoftware;
   if Length(tempStr) > 0 then
   begin
     AppendString(lMessage, #13#10+'Server: ');
@@ -1905,12 +1904,6 @@ begin
     [TZSign, TZSecsAbs div 3600, (TZSecsAbs div 60) mod 60]);
 end;
 
-function TLHTTPServer.InitSocket(aSocket: TLSocket): TLSocket;
-begin
-  Result := inherited InitSocket(aSocket);
-  TLHTTPSocket(aSocket).FConnection := Self;
-end;
-
 function TLHTTPServer.HandleURI(ASocket: TLHTTPServerSocket): TOutputItem;
 var
   lHandler: TURIHandler;
@@ -1991,19 +1984,19 @@ end;
 
 procedure TClientOutput.DoneInput;
 begin
-  TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).
+  TLHTTPClient(TLHTTPClientSocket(FSocket).FCreator).
     DoDoneInput(TLHTTPClientSocket(FSocket));
 end;
 
 function  TClientOutput.HandleInput(ABuffer: pchar; ASize: integer): integer;
 begin
-  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).
+  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FCreator).
     DoHandleInput(TLHTTPClientSocket(FSocket), ABuffer, ASize);
 end;
 
 function  TClientOutput.WriteBlock: TWriteBlockStatus;
 begin
-  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FConnection).
+  Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FCreator).
     DoWriteBlock(TLHTTPClientSocket(FSocket));
 end;
 
@@ -2028,7 +2021,7 @@ end;
 
 procedure TLHTTPClientSocket.AddContentLength(ALength: integer);
 begin
-  Inc(TLHTTPClient(FConnection).FHeaderOut.ContentLength, ALength);
+  Inc(TLHTTPClient(FCreator).FHeaderOut.ContentLength, ALength);
 end;
 
 procedure TLHTTPClientSocket.Cancel(AError: TLHTTPClientError);
@@ -2060,28 +2053,28 @@ begin
   AppendString(lMessage, FRequest^.URI);
   AppendChar(lMessage, ' ');
   AppendString(lMessage, 'HTTP/1.1'+#13#10+'Host: ');
-  AppendString(lMessage, TLHTTPClient(FConnection).Host);
-  if TLHTTPClient(FConnection).Port <> 80 then
+  AppendString(lMessage, TLHTTPClient(FCreator).Host);
+  if TLHTTPClient(FCreator).Port <> 80 then
   begin
     AppendChar(lMessage, ':');
-    Str(TLHTTPClient(FConnection).Port, lTemp);
+    Str(TLHTTPClient(FCreator).Port, lTemp);
     AppendString(lMessage, lTemp);
   end;
   AppendString(lMessage, #13#10);
-  hasRangeStart := TLHTTPClient(FConnection).RangeStart <> high(qword);
-  hasRangeEnd := TLHTTPClient(FConnection).RangeEnd <> high(qword);
+  hasRangeStart := TLHTTPClient(FCreator).RangeStart <> high(qword);
+  hasRangeEnd := TLHTTPClient(FCreator).RangeEnd <> high(qword);
   if hasRangeStart or hasRangeEnd then
   begin
     AppendString(lMessage, 'Range: bytes=');
     if hasRangeStart then
     begin
-      Str(TLHTTPClient(FConnection).RangeStart, lTemp);
+      Str(TLHTTPClient(FCreator).RangeStart, lTemp);
       AppendString(lMessage, lTemp);
     end;
     AppendChar(lMessage, '-');
     if hasRangeEnd then
     begin
-      Str(TLHTTPClient(FConnection).RangeEnd, lTemp);
+      Str(TLHTTPClient(FCreator).RangeEnd, lTemp);
       AppendString(lMessage, lTemp);
     end;
   end;
@@ -2161,7 +2154,7 @@ begin
   if not ProcessEncoding then
     Cancel(ceUnsupportedEncoding);
 
-  TLHTTPClient(FConnection).DoProcessHeaders(Self);
+  TLHTTPClient(FCreator).DoProcessHeaders(Self);
 end;
 
 procedure TLHTTPClientSocket.ResetDefaults;
@@ -2239,7 +2232,6 @@ end;
 function  TLHTTPClient.InitSocket(aSocket: TLSocket): TLSocket;
 begin
   Result := inherited;
-  TLHTTPClientSocket(aSocket).FConnection := Self;
   TLHTTPClientSocket(aSocket).FHeaderOut := @FHeaderOut;
   TLHTTPClientSocket(aSocket).FRequest := @FRequest;
   TLHTTPClientSocket(aSocket).FResponse := @FResponse;

@@ -63,20 +63,20 @@ const
   TS_IAC         = #255;
   
 type
-  TLTelnet = class;
+  TLTelnetClient = class;
 
   TLTelnetControlChars = set of Char;
 
   TLHowEnum = (TE_WILL = 251, TE_WONT, TE_DO, TE_DONW);
   
-  TLTelnetCallback = procedure (Sender: TLTelnet) of object;
+  TLTelnetClientEvent = procedure (Sender: TLTelnetClient) of object;
 
-  TLTelnetErrorCallback = procedure (const msg: string;
-                                     Sender: TLTelnet) of object;
+  TLTelnetClientErrorEvent = procedure (const msg: string;
+                                     Sender: TLTelnetClient) of object;
 
   { TLTelnet }
 
-  TLTelnet = class(TComponent, ILBase)
+  TLTelnet = class(TLComponent, ILDirect)
    protected
     FStack: TLControlStack;
     FConnection: TLTcp;
@@ -85,15 +85,13 @@ type
     FOutput: TMemoryStream;
     FOperation: Char;
     FCommandCharIndex: Byte;
-    FOnReceive: TLTelnetCallback;
-    FOnConnect: TLTelnetCallback;
-    FOnDisconnect: TLTelnetCallback;
-    FOnError: TLTelnetErrorCallback;
+    FOnReceive: TLTelnetClientEvent;
+    FOnConnect: TLTelnetClientEvent;
+    FOnDisconnect: TLTelnetClientEvent;
+    FOnError: TLTelnetClientErrorEvent;
     FCommandArgs: string[3];
     FOrders: TLTelnetControlChars;
     FConnected: Boolean;
-    FHost: string;
-    FPort: Word;
     function Question(const Command: Char; const Value: Boolean): Char;
     
     function GetTimeout: DWord;
@@ -126,23 +124,19 @@ type
     procedure SetOption(const Option: Char);
     procedure UnSetOption(const Option: Char);
     
-    procedure Disconnect; virtual;
-    
-    procedure CallAction; virtual; abstract;
+    procedure Disconnect; override;
     
     procedure SendCommand(const aCommand: Char; const How: TLHowEnum); virtual;
    public
     property Output: TMemoryStream read FOutput;
     property Connected: Boolean read FConnected;
     property Timeout: DWord read GetTimeout write SetTimeout;
-    property OnReceive: TLTelnetCallback read FOnReceive write FOnReceive;
-    property OnDisconnect: TLTelnetCallback read FOnDisconnect write FOnDisconnect;
-    property OnConnect: TLTelnetCallback read FOnConnect write FOnConnect;
-    property OnError: TLTelnetErrorCallback read FOnError write FOnError;
+    property OnReceive: TLTelnetClientEvent read FOnReceive write FOnReceive;
+    property OnDisconnect: TLTelnetClientEvent read FOnDisconnect write FOnDisconnect;
+    property OnConnect: TLTelnetClientEvent read FOnConnect write FOnConnect;
+    property OnError: TLTelnetClientErrorEvent read FOnError write FOnError;
     property Connection: TLTCP read FConnection;
     property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
-    property Host: string read FHost write FHost;
-    property Port: Word read FPort write FPort;
   end;
 
   { TLTelnetClient }
@@ -191,15 +185,15 @@ var
 constructor TLTelnet.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  FOnReceive:=nil;
-  FOnDisconnect:=nil;
-  FOnError:=nil;
-  FOnConnect:=nil;
-  FConnection:=TLTCP.Create(aOwner);
-  FOutput:=TMemoryStream.Create;
-  FCommandCharIndex:=0;
-  FStack:=TLControlStack.Create;
-  FStack.OnFull:=@StackFull;
+  FOnReceive := nil;
+  FOnDisconnect := nil;
+  FOnError := nil;
+  FOnConnect := nil;
+  FConnection := TLTCP.Create(aOwner);
+  FOutput := TMemoryStream.Create;
+  FCommandCharIndex := 0;
+  FStack := TLControlStack.Create;
+  FStack.OnFull := @StackFull;
 end;
 
 destructor TLTelnet.Destroy;
@@ -213,38 +207,38 @@ end;
 
 function TLTelnet.Question(const Command: Char; const Value: Boolean): Char;
 begin
-  Result:=TS_NOP;
+  Result := TS_NOP;
   if Value then begin
     if Command in FOrders then
-      Result:=TS_DO
+      Result := TS_DO
     else
-      Result:=TS_WILL;
+      Result := TS_WILL;
   end else begin
     if Command in FOrders then
-      Result:=TS_DONT
+      Result := TS_DONT
     else
-      Result:=TS_WONT;
+      Result := TS_WONT;
   end;
 end;
 
 function TLTelnet.GetSocketClass: TLSocketClass;
 begin
-  Result:=FConnection.SocketClass;
+  Result := FConnection.SocketClass;
 end;
 
 function TLTelnet.GetTimeout: DWord;
 begin
-  Result:=FConnection.Timeout;
+  Result := FConnection.Timeout;
 end;
 
 procedure TLTelnet.SetSocketClass(Value: TLSocketClass);
 begin
-  FConnection.SocketClass:=Value;
+  FConnection.SocketClass := Value;
 end;
 
 procedure TLTelnet.SetTimeout(const Value: DWord);
 begin
-  FConnection.Timeout:=Value;
+  FConnection.Timeout := Value;
 end;
 
 procedure TLTelnet.StackFull;
@@ -264,7 +258,7 @@ procedure TLTelnet.DoubleIAC(var s: string);
 var
   i: Longint;
 begin
-  i:=0;
+  i := 0;
   if Length(s) > 0 then
     while i < Length(s) do begin
       Inc(i);
@@ -279,7 +273,7 @@ procedure TLTelnet.TelnetParse(const msg: string);
 var
   i: Longint;
 begin
-  for i:=1 to Length(msg) do
+  for i := 1 to Length(msg) do
     if (FStack.ItemIndex > 0) or (msg[i] = TS_IAC) then begin
       if msg[i] = TS_GA then
         FStack.Clear
@@ -291,19 +285,19 @@ end;
 
 function TLTelnet.OptionIsSet(const Option: Char): Boolean;
 begin
-  Result:=False;
-  Result:=Option in FActive;
+  Result := False;
+  Result := Option in FActive;
 end;
 
 function TLTelnet.RegisterOption(const aOption: Char;
                                      const aCommand: Boolean): Boolean;
 begin
-  Result:=False;
+  Result := False;
   if not (aOption in FPossible) then begin
-    FPossible:=FPossible + [aOption];
+    FPossible := FPossible + [aOption];
     if aCommand then
-      FOrders:=FOrders + [aOption];
-    Result:=True;
+      FOrders := FOrders + [aOption];
+    Result := True;
   end;
 end;
 
@@ -322,7 +316,7 @@ end;
 procedure TLTelnet.Disconnect;
 begin
   FConnection.Disconnect;
-  FConnected:=False;
+  FConnected := False;
 end;
 
 procedure TLTelnet.SendCommand(const aCommand: Char; const How: TLHowEnum);
@@ -338,14 +332,14 @@ end;
 constructor TLTelnetClient.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  FConnection.OnError:=@OnEr;
-  FConnection.OnDisconnect:=@OnDs;
-  FConnection.OnReceive:=@OnRe;
-  FConnection.OnConnect:=@OnCo;
-  FConnected:=False;
-  FPossible:=[TS_ECHO, TS_HYI, TS_SGA];
-  FActive:=[];
-  FOrders:=[];
+  FConnection.OnError := @OnEr;
+  FConnection.OnDisconnect := @OnDs;
+  FConnection.OnReceive := @OnRe;
+  FConnection.OnConnect := @OnCo;
+  FConnected := False;
+  FPossible := [TS_ECHO, TS_HYI, TS_SGA];
+  FActive := [];
+  FOrders := [];
 end;
 
 procedure TLTelnetClient.OnEr(const msg: string; aSocket: TLSocket);
@@ -375,7 +369,7 @@ end;
 
 procedure TLTelnetClient.OnCo(aSocket: TLSocket);
 begin
-  FConnected:=True;
+  FConnected := True;
   if Assigned(FOnConnect) then
     FOnConnect(Self);
 end;
@@ -384,7 +378,7 @@ procedure TLTelnetClient.React(const Operation, Command: Char);
 
   procedure Accept(const Operation, Command: Char);
   begin
-    FActive:=FActive + [Command];
+    FActive := FActive + [Command];
     {$ifdef debug}
     Writeln('**SENT** ', TNames[Operation], ' ', TNames[Command]);
     {$endif}
@@ -393,7 +387,7 @@ procedure TLTelnetClient.React(const Operation, Command: Char);
   
   procedure Refuse(const Operation, Command: Char);
   begin
-    FActive:=FActive - [Command];
+    FActive := FActive - [Command];
     {$ifdef debug}
     Writeln('**SENT** ', TNames[Operation], ' ', TNames[Command]);
     {$endif}
@@ -410,10 +404,10 @@ begin
               
     TS_DONT : if Command in FPossible then Refuse(TS_WONT, Command);
     
-    TS_WILL : if Command in FPossible then FActive:=FActive + [Command]
+    TS_WILL : if Command in FPossible then FActive := FActive + [Command]
               else Refuse(TS_DONT, Command);
                  
-    TS_WONT : if Command in FPossible then FActive:=FActive - [Command];
+    TS_WONT : if Command in FPossible then FActive := FActive - [Command];
   end;
 end;
 
@@ -424,7 +418,7 @@ begin
     Writeln('**SENT** ', TNames[Question(Command, Value)], ' ', TNames[Command]);
     {$endif}
     case Question(Command, Value) of
-      TS_WILL : FActive:=FActive + [Command];
+      TS_WILL : FActive := FActive + [Command];
     end;
     FConnection.SendMessage(TS_IAC + Question(Command, Value) + Command);
   end;
@@ -432,29 +426,29 @@ end;
 
 function TLTelnetClient.Connect(const anAddress: string; const aPort: Word): Boolean;
 begin
-  Result:=FConnection.Connect(anAddress, aPort);
+  Result := FConnection.Connect(anAddress, aPort);
 end;
 
 function TLTelnetClient.Connect: Boolean;
 begin
-  Result := FConnection.Connect(FHost, FPort);
+  Result  :=  FConnection.Connect(FHost, FPort);
 end;
 
 function TLTelnetClient.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
-  Result:=FOutput.Read(aData, aSize);
+  Result := FOutput.Read(aData, aSize);
   if FOutput.Position = FOutput.Size then
     FOutput.Clear;
 end;
 
 function TLTelnetClient.GetMessage(out msg: string; aSocket: TLSocket): Integer;
 begin
-  Result:=0;
-  msg:='';
+  Result := 0;
+  msg := '';
   if FOutput.Size > 0 then begin
-    FOutput.Position:=0;
+    FOutput.Position := 0;
     SetLength(msg, FOutput.Size);
-    Result:=FOutput.Read(PChar(msg)^, Length(msg));
+    Result := FOutput.Read(PChar(msg)^, Length(msg));
     FOutput.Clear;
   end;
 end;
@@ -467,14 +461,14 @@ begin
   {$ifdef debug}
   Writeln('**SEND START** ');
   {$endif}
-  Result:=0;
+  Result := 0;
   if aSize > 0 then begin
     SetLength(Tmp, aSize);
     Move(aData, PChar(Tmp)^, aSize);
     DoubleIAC(Tmp);
     if LocalEcho and (not OptionIsSet(TS_ECHO)) and (not OptionIsSet(TS_HYI)) then
       FOutput.Write(PChar(Tmp)^, Length(Tmp));
-    Result:=FConnection.SendMessage(Tmp);
+    Result := FConnection.SendMessage(Tmp);
   end;
   {$ifdef debug}
   Writeln('**SEND END** ');
@@ -484,7 +478,7 @@ end;
 function TLTelnetClient.SendMessage(const msg: string; aSocket: TLSocket
   ): Integer;
 begin
-  Result:=Send(PChar(msg)^, Length(msg));
+  Result := Send(PChar(msg)^, Length(msg));
 end;
 
 procedure TLTelnetClient.CallAction;
@@ -493,14 +487,14 @@ begin
 end;
 
 initialization
-  for zz:=#0 to #255 do
-    TNames[zz]:=IntToStr(Ord(zz));
-  TNames[#1]:='TS_ECHO';
-  TNames[#133]:='TS_HYI';
-  TNames[#251]:='TS_WILL';
-  TNames[#252]:='TS_WONT';
-  TNames[#253]:='TS_DO';
-  TNames[#254]:='TS_DONT';
+  for zz := #0 to #255 do
+    TNames[zz] := IntToStr(Ord(zz));
+  TNames[#1] := 'TS_ECHO';
+  TNames[#133] := 'TS_HYI';
+  TNames[#251] := 'TS_WILL';
+  TNames[#252] := 'TS_WONT';
+  TNames[#253] := 'TS_DO';
+  TNames[#254] := 'TS_DONT';
 
 end.
 

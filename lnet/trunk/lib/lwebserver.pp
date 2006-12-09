@@ -661,7 +661,7 @@ begin
   FProcess.Environment.Add('SERVER_NAME=');
   FProcess.Environment.Add('SERVER_PORT=');
 }
-  tempStr := TLHTTPServer(lServerSocket.Connection).ServerSoftware;
+  tempStr := TLHTTPServer(lServerSocket.Creator).ServerSoftware;
   if Length(tempStr) > 0 then
     AddEnvironment('SERVER_SOFTWARE', tempStr);
 
@@ -877,7 +877,7 @@ procedure TSimpleCGIOutput.StartRequest;
 begin
   inherited;
   
-  FProcess.Eventer := FSocket.Connection.Eventer;
+  FProcess.Eventer := FSocket.Eventer;
   FProcess.Execute;
 end;
 
