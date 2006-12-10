@@ -148,13 +148,17 @@ end;
 function ReadCRLFString(aStream : TStream) : String;
 var
    c : Char;
+   CR, LF: Char;
 begin
-   Result:='';
-   while Copy(Result, Length(Result)-1, 2)<>#13#10 do begin
-      aStream.Read(c, 1);
-      Result:=Result+c;
+   Result := '';
+   CR := #0;
+   LF := #0;
+   while ((CR <> #13) or (LF <> #10)) and (aStream.Read(c, 1) > 0) do begin
+     Result := Result + c;
+     CR := LF;
+     LF := c;
    end;
-   Result:=Copy(Result, 1, Length(Result)-2);
+   Result := Copy(Result, 1, Length(Result)-2);
 end;
 
 // WriteCRLFString

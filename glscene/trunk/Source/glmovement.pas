@@ -34,8 +34,7 @@ unit glmovement;
 interface
 
 uses
-  classes, glscene, vectorgeometry, glmisc, xcollection, opengl1x, spline, globjects
-  {crossbuilder ,persistentclasses};
+  classes, glscene, vectorgeometry, glmisc, xcollection, opengl1x, spline, globjects;
 
 type
 
@@ -375,10 +374,9 @@ begin
     WriteBoolean(writeStuff);
     if WriteStuff then
     begin
-      {$warning: - crossbuilder - this should get back in, if possible:}
-      //crossbuilder:       Write(FPosition, sizeof(FPosition));
-      //crossbuilder:       Write(FRotation, sizeof(FRotation));
-      //crossbuilder:       Write(FScale, sizeof(FScale));
+      Write(FPosition, sizeof(FPosition));
+      Write(FRotation, sizeof(FRotation));
+      Write(FScale, sizeof(FScale));
       WriteFloat(FSpeed);
     end;
   end;
@@ -391,10 +389,9 @@ begin
     ReadInteger; //Achive Version 0
     if ReadBoolean then
     begin
-      {$warning: - crossbuilder - this should get back in, if possible:}
-      //crossbuilder:       Read(FPosition, sizeof(FPosition));
-      //crossbuilder:       Read(FRotation, sizeof(FRotation));
-      //crossbuilder:       Read(FScale, sizeof(FScale));
+      Read(FPosition, sizeof(FPosition));
+      Read(FRotation, sizeof(FRotation));
+      Read(FScale, sizeof(FScale));
       FSpeed := ReadFloat;
     end else
     begin
@@ -541,8 +538,7 @@ begin
       WriteBoolean(FLooped);
       WriteInteger(FCurrentNodeIndex);
       WriteBoolean(FShowPath);
-      {$warning: - crossbuilder - this should get back in, if possible:}
-      //crossbuilder:       Write(FPathSplineMode, sizeof(FPathSplineMode));
+      Write(FPathSplineMode, sizeof(FPathSplineMode));
       WriteInteger(FNodes.Count);
       for I:=0 to FNodes.Count-1 do
         FNodes.Items[I].WriteToFiler(Writer);
@@ -565,8 +561,7 @@ begin
       FLooped := ReadBoolean;
       FCurrentNodeIndex := ReadInteger;
       ShowPath := ReadBoolean;
-      {$warning: - crossbuilder - this should get back in, if possible:}
-      //crossbuilder:       Read(FPathSplineMode, sizeof(FPathSplineMode));
+      Read(FPathSplineMode, sizeof(FPathSplineMode));
 
       Count := ReadInteger;
       for I:=0 to Count-1 do
