@@ -50,23 +50,24 @@ type
   TLHTTPClient = lHTTP.TLHTTPClient;
   TLHTTPMethod = lHTTP.TLHTTPMethod;
 
-  TLErrorProc = procedure(const msg: string; aSocket: TLSocket) of object;
-  TLProc = procedure(aSocket: TLSocket) of object;
+  TLSocketErrorEvent = procedure(const msg: string; aSocket: TLSocket) of object;
+  TLSocketEvent = procedure(aSocket: TLSocket) of object;
   
-  TLTelnetCallback = procedure (Sender: TLTelnet) of object;
-  TLTelnetErrorCallback = procedure (const msg: string;
-                                     Sender: TLTelnet) of object;
+  TLTelnetClientEvent = procedure (Sender: TLTelnetClient) of object;
+  TLTelnetClientErrorEvent = procedure (const msg: string;
+                                        Sender: TLTelnetClient) of object;
 
   TLFTPClientProgressCallback = procedure (Sender: TLFTPClient;
                                            const Bytes: Integer) of object;
   TLFTPClientCallback = procedure (Sender: TLFTPClient) of object;
-  TLFTPStatusCallback = procedure (Sender: TLFTPClient;
+  TLFTPClientStatusCallback = procedure (Sender: TLFTPClient;
                                    const aStatus: TLFTPStatus) of object;
-  TLFTPErrorCallback = procedure (const msg: string; Sender: TLFTP) of object;
+  TLFTPClientErrorCallback = procedure (const msg: string;
+                                   Sender: TLFTPClient) of object;
 
   TLSMTPClientCallback = procedure (Sender: TLSMTPClient) of object;
-  TLSMTPErrorCallback = procedure (const msg: string;
-                                    Sender: TLSMTP) of object;
+  TLSMTPClientErrorCallback = procedure (const msg: string;
+                                    Sender: TLSMTPClient) of object;
 
   TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
   TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
