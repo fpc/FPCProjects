@@ -246,8 +246,12 @@ begin
   // Update listbox
   if lbSites.items.Count = 0 then
     i := -1
-  else
-    i := lbSites.ItemIndex;
+  else begin
+    if lbSites.Enabled then
+      i := lbSites.ItemIndex
+    else
+      i := lbSites.Items.Count - 1;
+  end;
     
   if i = -1 then begin
     i := Length(FSites);
