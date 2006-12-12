@@ -152,6 +152,12 @@ type
 
    GLhandleARB = Cardinal;
    PGLhandleARB = ^GLhandleARB;
+   
+   GLcharARB = Char;
+   PGLcharARB = ^GLcharARB;
+   
+   GLchar = Char;
+   PGLchar = Pchar;
 
    PGLPCharArray = ^PChar;
 
@@ -2113,6 +2119,92 @@ const
    GL_DRAW_BUFFER13_ATI                             = $8832;
    GL_DRAW_BUFFER14_ATI                             = $8833;
    GL_DRAW_BUFFER15_ATI                             = $8834;
+   
+   // gl 2.0
+   GL_BLEND_EQUATION_RGB = $8009;
+   GL_VERTEX_ATTRIB_ARRAY_ENABLED = $8622;
+   GL_VERTEX_ATTRIB_ARRAY_SIZE = $8623;
+   GL_VERTEX_ATTRIB_ARRAY_STRIDE = $8624;
+   GL_VERTEX_ATTRIB_ARRAY_TYPE = $8625;
+   GL_CURRENT_VERTEX_ATTRIB = $8626;
+   GL_VERTEX_PROGRAM_POINT_SIZE = $8642;
+   GL_VERTEX_PROGRAM_TWO_SIDE = $8643;
+   GL_VERTEX_ATTRIB_ARRAY_POINTER = $8645;
+   GL_STENCIL_BACK_FUNC = $8800;
+   GL_STENCIL_BACK_FAIL = $8801;
+   GL_STENCIL_BACK_PASS_DEPTH_FAIL = $8802;
+   GL_STENCIL_BACK_PASS_DEPTH_PASS = $8803;
+   GL_MAX_DRAW_BUFFERS = $8824;
+   GL_DRAW_BUFFER0 = $8825;
+   GL_DRAW_BUFFER1 = $8826;
+   GL_DRAW_BUFFER2 = $8827;
+   GL_DRAW_BUFFER3 = $8828;
+   GL_DRAW_BUFFER4 = $8829;
+   GL_DRAW_BUFFER5 = $882A;
+   GL_DRAW_BUFFER6 = $882B;
+   GL_DRAW_BUFFER7 = $882C;
+   GL_DRAW_BUFFER8 = $882D;
+   GL_DRAW_BUFFER9 = $882E;
+   GL_DRAW_BUFFER10 = $882F;
+   GL_DRAW_BUFFER11 = $8830;
+   GL_DRAW_BUFFER12 = $8831;
+   GL_DRAW_BUFFER13 = $8832;
+   GL_DRAW_BUFFER14 = $8833;
+   GL_DRAW_BUFFER15 = $8834;
+   GL_BLEND_EQUATION_ALPHA = $883D;
+   GL_POINT_SPRITE = $8861;
+   GL_COORD_REPLACE = $8862;
+   GL_MAX_VERTEX_ATTRIBS = $8869;
+   GL_VERTEX_ATTRIB_ARRAY_NORMALIZED = $886A;
+   GL_MAX_TEXTURE_COORDS = $8871;
+   GL_MAX_TEXTURE_IMAGE_UNITS = $8872;
+   GL_FRAGMENT_SHADER = $8B30;
+   GL_VERTEX_SHADER = $8B31;
+   GL_MAX_FRAGMENT_UNIFORM_COMPONENTS = $8B49;
+   GL_MAX_VERTEX_UNIFORM_COMPONENTS = $8B4A;
+   GL_MAX_VARYING_FLOATS = $8B4B;
+   GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS = $8B4C;
+   GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = $8B4D;
+   GL_SHADER_TYPE = $8B4F;
+   GL_FLOAT_VEC2 = $8B50;
+   GL_FLOAT_VEC3 = $8B51;
+   GL_FLOAT_VEC4 = $8B52;
+   GL_INT_VEC2 = $8B53;
+   GL_INT_VEC3 = $8B54;
+   GL_INT_VEC4 = $8B55;
+   GL_BOOL = $8B56;
+   GL_BOOL_VEC2 = $8B57;
+   GL_BOOL_VEC3 = $8B58;
+   GL_BOOL_VEC4 = $8B59;
+   GL_FLOAT_MAT2 = $8B5A;
+   GL_FLOAT_MAT3 = $8B5B;
+   GL_FLOAT_MAT4 = $8B5C;
+   GL_SAMPLER_1D = $8B5D;
+   GL_SAMPLER_2D = $8B5E;
+   GL_SAMPLER_3D = $8B5F;
+   GL_SAMPLER_CUBE = $8B60;
+   GL_SAMPLER_1D_SHADOW = $8B61;
+   GL_SAMPLER_2D_SHADOW = $8B62;
+   GL_DELETE_STATUS = $8B80;
+   GL_COMPILE_STATUS = $8B81;
+   GL_LINK_STATUS = $8B82;
+   GL_VALIDATE_STATUS = $8B83;
+   GL_INFO_LOG_LENGTH = $8B84;
+   GL_ATTACHED_SHADERS = $8B85;
+   GL_ACTIVE_UNIFORMS = $8B86;
+   GL_ACTIVE_UNIFORM_MAX_LENGTH = $8B87;
+   GL_SHADER_SOURCE_LENGTH = $8B88;
+   GL_ACTIVE_ATTRIBUTES = $8B89;
+   GL_ACTIVE_ATTRIBUTE_MAX_LENGTH = $8B8A;
+   GL_FRAGMENT_SHADER_DERIVATIVE_HINT = $8B8B;
+   GL_SHADING_LANGUAGE_VERSION = $8B8C;
+   GL_CURRENT_PROGRAM = $8B8D;
+   GL_POINT_SPRITE_COORD_ORIGIN = $8CA0;
+   GL_LOWER_LEFT = $8CA1;
+   GL_UPPER_LEFT = $8CA2;
+   GL_STENCIL_BACK_REF = $8CA3;
+   GL_STENCIL_BACK_VALUE_MASK = $8CA4;
+   GL_STENCIL_BACK_WRITEMASK = $8CA5;
 
    // WGL_ARB_pbuffer
 type
@@ -3419,6 +3511,102 @@ var
 
    // GL_ATI_draw_buffers
    glDrawBuffersATI: procedure(n: GLsizei; const bufs: PGLenum); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+
+   // GL 2.0
+   glBlendEquationSeparate: procedure(modeRGB: GLenum; modeAlpha: GLenum); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glDrawBuffers: procedure(n: GLsizei; const bufs: PGLenum); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glStencilOpSeparate: procedure(face: GLenum; sfail: GLenum; dpfail: GLenum; dppass: GLenum); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glStencilFuncSeparate: procedure(frontfunc: GLenum; backfunc: GLenum; ref: GLint; mask: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glStencilMaskSeparate: procedure(face: GLenum; mask: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glAttachShader: procedure(_program: GLuint; shader: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glBindAttribLocation: procedure(_program: GLuint; index: GLuint; const name: PGLchar); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glCompileShader: procedure(shader: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glCreateProgram: function(): GLuint; {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glCreateShader: function(_type: GLenum): GLuint; {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glDeleteProgram: procedure(_program: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glDeleteShader: procedure(shader: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glDetachShader: procedure(_program: GLuint; shader: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glDisableVertexAttribArray: procedure(index: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glEnableVertexAttribArray: procedure(index: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetActiveAttrib: procedure(_program: GLuint; index: GLuint; bufSize: GLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PGLchar); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetActiveUniform: procedure(_program: GLuint; index: GLuint; bufSize: GLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PGLchar); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetAttachedShaders: procedure(_program: GLuint; maxCount: GLsizei; count: PGLsizei; obj: PGLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetAttribLocation: function(_program: GLuint; const name: PGLchar): GLint; {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetProgramiv: procedure(_program: GLuint; pname: GLenum; params: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetProgramInfoLog: procedure(_program: GLuint; bufSize: GLsizei; length: PGLsizei; infoLog: PGLchar); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetShaderiv: procedure(shader: GLuint; pname: GLenum; params: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetShaderInfoLog: procedure(shader: GLuint; bufSize: GLsizei; length: PGLsizei; infoLog: PGLchar); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetShaderSource: procedure(shader: GLuint; bufSize: GLsizei; length: PGLsizei; source: PGLchar); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetUniformLocation: function(_program: GLuint; const name: PGLchar): GLint; {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetUniformfv: procedure(_program: GLuint; location: GLint; params: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetUniformiv: procedure(_program: GLuint; location: GLint; params: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetVertexAttribdv: procedure(index: GLuint; pname: GLenum; params: PGLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetVertexAttribfv: procedure(index: GLuint; pname: GLenum; params: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetVertexAttribiv: procedure(index: GLuint; pname: GLenum; params: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glGetVertexAttribPointerv: procedure(index: GLuint; pname: GLenum; pointer: PGLvoid); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glIsProgram: function(_program: GLuint): GLboolean; {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glIsShader: function(shader: GLuint): GLboolean; {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glLinkProgram: procedure(_program: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glShaderSource: procedure(shader: GLuint; count: GLsizei; const _string: PGLchar; const length: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUseProgram: procedure(_program: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform1f: procedure(location: GLint; v0: GLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform2f: procedure(location: GLint; v0: GLfloat; v1: GLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform3f: procedure(location: GLint; v0: GLfloat; v1: GLfloat; v2: GLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform4f: procedure(location: GLint; v0: GLfloat; v1: GLfloat; v2: GLfloat; v3: GLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform1i: procedure(location: GLint; v0: GLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform2i: procedure(location: GLint; v0: GLint; v1: GLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform3i: procedure(location: GLint; v0: GLint; v1: GLint; v2: GLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform4i: procedure(location: GLint; v0: GLint; v1: GLint; v2: GLint; v3: GLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform1fv: procedure(location: GLint; count: GLsizei; const value: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform2fv: procedure(location: GLint; count: GLsizei; const value: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform3fv: procedure(location: GLint; count: GLsizei; const value: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform4fv: procedure(location: GLint; count: GLsizei; const value: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform1iv: procedure(location: GLint; count: GLsizei; const value: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform2iv: procedure(location: GLint; count: GLsizei; const value: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform3iv: procedure(location: GLint; count: GLsizei; const value: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniform4iv: procedure(location: GLint; count: GLsizei; const value: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniformMatrix2fv: procedure(location: GLint; count: GLsizei; transpose: GLboolean; const value: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniformMatrix3fv: procedure(location: GLint; count: GLsizei; transpose: GLboolean; const value: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glUniformMatrix4fv: procedure(location: GLint; count: GLsizei; transpose: GLboolean; const value: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glValidateProgram: procedure(_program: GLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib1d: procedure(index: GLuint; x: GLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib1dv: procedure(index: GLuint; const v: PGLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib1f: procedure(index: GLuint; x: GLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib1fv: procedure(index: GLuint; const v: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib1s: procedure(index: GLuint; x: GLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib1sv: procedure(index: GLuint; const v: PGLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib2d: procedure(index: GLuint; x: GLdouble; y: GLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib2dv: procedure(index: GLuint; const v: PGLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib2f: procedure(index: GLuint; x: GLfloat; y: GLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib2fv: procedure(index: GLuint; const v: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib2s: procedure(index: GLuint; x: GLshort; y: GLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib2sv: procedure(index: GLuint; const v: PGLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib3d: procedure(index: GLuint; x: GLdouble; y: GLdouble; z: GLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib3dv: procedure(index: GLuint; const v: PGLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib3f: procedure(index: GLuint; x: GLfloat; y: GLfloat; z: GLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib3fv: procedure(index: GLuint; const v: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib3s: procedure(index: GLuint; x: GLshort; y: GLshort; z: GLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib3sv: procedure(index: GLuint; const v: PGLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4Nbv: procedure(index: GLuint; const v: PGLbyte); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4Niv: procedure(index: GLuint; const v: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4Nsv: procedure(index: GLuint; const v: PGLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4Nub: procedure(index: GLuint; x: GLubyte; y: GLubyte; z: GLubyte; w: GLubyte); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4Nubv: procedure(index: GLuint; const v: PGLubyte); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4Nuiv: procedure(index: GLuint; const v: PGLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4Nusv: procedure(index: GLuint; const v: PGLushort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4bv: procedure(index: GLuint; const v: PGLbyte); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4d: procedure(index: GLuint; x: GLdouble; y: GLdouble; z: GLdouble; w: GLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4dv: procedure(index: GLuint; const v: PGLdouble); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4f: procedure(index: GLuint; x: GLfloat; y: GLfloat; z: GLfloat; w: GLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4fv: procedure(index: GLuint; const v: PGLfloat); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4iv: procedure(index: GLuint; const v: PGLint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4s: procedure(index: GLuint; x: GLshort; y: GLshort; z: GLshort; w: GLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4sv: procedure(index: GLuint; const v: PGLshort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4ubv: procedure(index: GLuint; const v: PGLubyte); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4uiv: procedure(index: GLuint; const v: PGLuint); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttrib4usv: procedure(index: GLuint; const v: PGLushort); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+   glVertexAttribPointer: procedure(index: GLuint; size: GLint; _type: GLenum; normalized: GLboolean; stride: GLsizei; const pointer: PGLvoid); {$ifdef MSWINDOWS} stdcall; {$endif} {$ifdef unix} cdecl; {$endif}
+
 
 //------------------------------------------------------------------------------
 
