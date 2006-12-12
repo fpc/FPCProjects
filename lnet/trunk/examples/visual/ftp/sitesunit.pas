@@ -6,11 +6,11 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, Buttons, IniFiles;
+  ExtCtrls, Buttons, IniFiles, Menus;
 
 type
 
-  TSiteInfo=record
+  TSiteInfo = record
     Site: string;
     Host: string;
     Port: string;
@@ -28,6 +28,8 @@ type
     btnConnect: TBitBtn;
     chkAnonymous: TCheckBox;
     Label1: TLabel;
+    MenuItemSiteDelete: TMenuItem;
+    PopupMenuSites: TPopupMenu;
     txtPort: TLabeledEdit;
     txtSite: TLabeledEdit;
     txtPass: TLabeledEdit;
@@ -35,6 +37,7 @@ type
     txtPath: TLabeledEdit;
     txtHost: TLabeledEdit;
     lbSites: TListBox;
+    procedure MenuItemSiteDeleteClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnConnectClick(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
@@ -50,6 +53,7 @@ type
     FNewSite: Boolean;
     function OkToClose: boolean;
     function  SaveChanges: boolean;
+    procedure DeleteSite(const i: Integer);
     procedure LoadSites;
     procedure SaveSites;
     procedure UpdateCurrentSite;
@@ -127,6 +131,7 @@ begin
   if SaveChanges then begin
     Modified(False);
     SaveLastSite;
+    LoadSites;
   end;
 end;
 
@@ -141,6 +146,25 @@ end;
 procedure TfrmSites.btnCloseClick(Sender: TObject);
 begin
   ModalResult := mrCancel;
+end;
+
+procedure TfrmSites.MenuItemSiteDeleteClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  i := lbSites.ItemIndex;
+  
+  if (i >= 0) and (i < Length(FSites)) then begin
+    lbSites.Items.Delete(i);
+    txtSite.Text := '';
+    txtPass.Text := '';
+    txtHost.Text := '';
+    txtPort.Text := '';
+    txtUser.Text := '';
+    chkAnonymous.Checked := False;
+    Modified(False);
+    DeleteSite(i);
+  end;
 end;
 
 procedure TfrmSites.chkAnonymousClick(Sender: TObject);
@@ -201,9 +225,9 @@ var
 begin
   result := True;
   if btnSave.Enabled then begin
-    res := QuestionDlg('Warning!','There are unsaved changes'^M'What do you want to do?'^M,
-      mtWarning, [mrOk, 'Save Changes', mrIgnore, 'Ignore changes', mrCancel, 'Don''t close'],0);
-    if res=mrOk then
+    res := QuestionDlg('Warning!', 'There are unsaved changes'^M'What do you want to do?'^M,
+      mtWarning, [mrOk, 'Save Changes', mrIgnore, 'Ignore changes', mrCancel, 'Don''t close'], 0);
+    if res = mrOk then
       result := SaveChanges else
     if res=mrCancel then
       result := False;
@@ -215,24 +239,25 @@ var
   i: Integer;
 begin
   // check consistency
-  result := CheckInfo=0;
+  result := CheckInfo = 0;
   if not result then
     exit;
     
   // Update listbox
-  if lbSites.items.Count=0 then
-    i:=-1
+  if lbSites.items.Count = 0 then
+    i := -1
   else
     i := lbSites.ItemIndex;
-  if i=-1 then begin
+    
+  if i = -1 then begin
     i := Length(FSites);
-    SetLength(FSites, i+1);
+    SetLength(FSites, i + 1);
     lbSites.Items.Add(txtSite.Text);
   end else begin
-    if i>(Length(FSites)-1) then
-      SetLength(FSites, i+1);
+    if i >= Length(FSites) then
+      SetLength(FSites, i + 1);
     lbSites.Items[i] := txtSite.Text;
-    lbSites.Items.Objects[i]:=nil;
+    lbSites.Items.Objects[i] := nil;
   end;
   
   // store site values
@@ -245,6 +270,16 @@ begin
   SaveSites;
 end;
 
+procedure TfrmSites.DeleteSite(const i: Integer);
+var
+  j: Integer;
+begin
+  for j := i to High(FSites) - 1 do
+    FSites[j] := FSites[j + 1];
+    
+  SetLength(FSites, Length(FSites) - 1);
+  SaveSites;
+end;
 
 procedure TfrmSites.LoadSites;
 var
@@ -252,14 +287,14 @@ var
   i,n: Integer;
   s  : string;
 begin
-  s := extractFilePath(Application.ExeName)+'sites.ini';
+  s := extractFilePath(Application.ExeName) + 'sites.ini';
   Ini := TIniFile.Create(s);
   try
     n:= Ini.ReadInteger('global', 'SiteCount', 0);
     SetLength(FSites, n);
     lbSites.Clear;
-    for i:=1 to n do
-    with FSites[i-1] do begin
+    for i := 1 to n do
+    with FSites[i - 1] do begin
       s := 'Site'+IntToStr(i);
       Site := Ini.ReadString(s, 'site', s);
       Host := Ini.ReadString(s, 'host', '');
@@ -280,12 +315,12 @@ var
   i,n: Integer;
   s  : string;
 begin
-  s := extractFilePath(Application.ExeName)+'sites.ini';
+  s := extractFilePath(Application.ExeName) + 'sites.ini';
   Ini := TIniFile.Create(s);
   try
     ini.WriteInteger('global', 'SiteCount', Length(Fsites));
-    for i:=0 to Length(FSites)-1 do begin
-      s :='Site'+IntToStr(i+1);
+    for i := 0 to High(FSites) do begin
+      s :='Site' + IntToStr(i + 1);
       ini.WriteString(s, 'site', FSites[i].Site);
       ini.WriteString(s, 'host', FSites[i].Host);
       ini.WriteString(s, 'Port', FSites[i].Port);
@@ -328,29 +363,29 @@ var
 begin
   result := 0;
   with lbSites.Items do
-  if txtSite.text='' then
+  if txtSite.text = '' then
     result := 1
   else
   if FNewSite and (Count>0) and
-     (Objects[lbSites.ItemIndex]=nil) and (IndexOf(txtSite.text)>=0)
+     (Objects[lbSites.ItemIndex] = nil) and (IndexOf(txtSite.text) >= 0)
   then
     result := 2
   else
-  if txtHost.Text='' then
+  if txtHost.Text = '' then
     result := 3
   else
-  if txtPort.Text='' then
+  if txtPort.Text = '' then
     result := 4
   else
   if not chkAnonymous.Checked then begin
-    if txtUser.Text='' then
+    if txtUser.Text = '' then
       result := 5;
   end;
   tmp := StrToIntDef(txtPort.Text, -1);
-  if tmp<0 then
+  if tmp < 0 then
     Result := 6
   else
-  if (tmp<1)or(tmp>65535) then
+  if (tmp < 1) or (tmp > 65535) then
     result := 7;
 
   //WriteLn('Checkinfo was: ', result);
@@ -385,10 +420,10 @@ begin
   Site.User := txtUser.Text;
   Site.Pass := txtPass.Text;
   
-  s := extractFilePath(Application.ExeName)+'sites.ini';
+  s := extractFilePath(Application.ExeName) + 'sites.ini';
   Ini := TIniFile.Create(s);
   try
-    Ini.WriteInteger('Global', 'LastSite', lbSites.ItemIndex+1);
+    Ini.WriteInteger('Global', 'LastSite', lbSites.ItemIndex + 1);
   finally
     Ini.Free;
   end;
