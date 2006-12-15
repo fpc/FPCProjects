@@ -73,10 +73,10 @@ type
   TLSocket = class;
   TLComponent = class;
   
-  { CallBack Event procedure for errors }
+  { Callback Event procedure for errors }
   TLSocketErrorEvent = procedure(const msg: string; aSocket: TLSocket) of object;
 
-  { CallBack Event procedure for others }
+  { Callback Event procedure for others }
   TLSocketEvent = procedure(aSocket: TLSocket) of object;
 
   { Base socket class, Holds Address and socket info, perForms basic

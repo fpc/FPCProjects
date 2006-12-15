@@ -50,10 +50,6 @@ type
                  
   TLFTPClientProgressEvent = procedure (Sender: TLFTPClient; const Bytes: Integer) of object;
 
-  TLFTPClientEvent = procedure (Sender: TLFTPClient) of object;
-
-  TLFTPClientErrorEvent = procedure (const msg: string; Sender: TLFTPClient) of object;
-
   TLFTPClientStatusEvent = procedure (Sender: TLFTPClient;
                                      const aStatus: TLFTPStatus) of object;
 
@@ -116,11 +112,11 @@ type
     FPassword: string;
     FStatusFlags: array[TLFTPStatus] of Boolean;
 
-    FOnError: TLFTPClientErrorEvent;
-    FOnReceive: TLFTPClientEvent;
+    FOnError: TLSocketErrorEvent;
+    FOnReceive: TLSocketEvent;
     FOnSent: TLFTPClientProgressEvent;
-    FOnControl: TLFTPClientEvent;
-    FOnConnect: TLFTPClientEvent;
+    FOnControl: TLSocketEvent;
+    FOnConnect: TLSocketEvent;
     FOnSuccess: TLFTPClientStatusEvent;
     FOnFailure: TLFTPClientStatusEvent;
 
@@ -134,9 +130,9 @@ type
     procedure OnSe(aSocket: TLSocket);
     procedure OnEr(const msg: string; aSocket: TLSocket);
 
-    procedure OnControlEr(const msg: string; Sender: TLTelnetClient);
-    procedure OnControlRe(Sender: TLTelnetClient);
-    procedure OnControlCo(Sender: TLTelnetClient);
+    procedure OnControlEr(const msg: string; aSocket: TLSocket);
+    procedure OnControlRe(aSocket: TLSocket);
+    procedure OnControlCo(aSocket: TLSocket);
     
     function GetTransfer: Boolean;
 
@@ -208,11 +204,11 @@ type
     property StartPort: Word read FStartPort write FStartPort;
     property Transfer: Boolean read GetTransfer;
 
-    property OnError: TLFTPClientErrorEvent read FOnError write FOnError;
-    property OnConnect: TLFTPClientEvent read FOnConnect write FOnConnect;
+    property OnError: TLSocketErrorEvent read FOnError write FOnError;
+    property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
     property OnSent: TLFTPCLientProgressEvent read FOnSent write FOnSent;
-    property OnReceive: TLFTPCLientEvent read FOnReceive write FOnReceive;
-    property OnControl: TLFTPClientEvent read FOnControl write FOnControl;
+    property OnReceive: TLSocketEvent read FOnReceive write FOnReceive;
+    property OnControl: TLSocketEvent read FOnControl write FOnControl;
     property OnSuccess: TLFTPClientStatusEvent read FOnSuccess write FOnSuccess;
     property OnFailure: TLFTPClientStatusEvent read FOnFailure write FOnFailure;
   end;
@@ -373,7 +369,7 @@ end;
 procedure TLFTPClient.OnRe(aSocket: TLSocket);
 begin
   if Assigned(FOnReceive) then
-    FOnReceive(Self);
+    FOnReceive(aSocket);
 end;
 
 procedure TLFTPClient.OnDs(aSocket: TLSocket);
@@ -393,26 +389,26 @@ procedure TLFTPClient.OnEr(const msg: string; aSocket: TLSocket);
 begin
   FSending := False;
   if Assigned(FOnError) then
-    FOnError(msg, Self);
+    FOnError(msg, aSocket);
 end;
 
-procedure TLFTPClient.OnControlEr(const msg: string; Sender: TLTelnetClient);
+procedure TLFTPClient.OnControlEr(const msg: string; aSocket: TLSocket);
 begin
   FSending := False;
   if Assigned(FOnError) then
-    FOnError(msg, Self);
+    FOnError(msg, aSocket);
 end;
 
-procedure TLFTPClient.OnControlRe(Sender: TLTelnetClient);
+procedure TLFTPClient.OnControlRe(aSocket: TLSocket);
 begin
   if Assigned(FOnControl) then
-    FOnControl(Self);
+    FOnControl(aSocket);
 end;
 
-procedure TLFTPClient.OnControlCo(Sender: TLTelnetClient);
+procedure TLFTPClient.OnControlCo(aSocket: TLSocket);
 begin
   if Assigned(FOnConnect) then
-    FOnConnect(Self);
+    FOnConnect(aSocket);
 end;
 
 function TLFTPClient.GetTransfer: Boolean;

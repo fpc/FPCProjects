@@ -262,7 +262,7 @@ type
   TParseBufferMethod = function: boolean of object;
   TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: integer): integer of object;
   TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
-  TLHTTPClientProc = procedure(ASocket: TLHTTPClientSocket) of object;
+  TLHTTPClientEvent = procedure(ASocket: TLHTTPClientSocket) of object;
 
   TLHTTPConnection = class(TLTcp)
   protected
@@ -440,9 +440,9 @@ type
     FPendingResponses: integer;
     FOutputEof: boolean;
     FOnCanWrite: TLCanWriteEvent;
-    FOnDoneInput: TLHTTPClientProc;
+    FOnDoneInput: TLHTTPClientEvent;
     FOnInput: TLInputEvent;
-    FOnProcessHeaders: TLHTTPClientProc;
+    FOnProcessHeaders: TLHTTPClientEvent;
     
     procedure ConnectEvent(aSocket: TLHandle); override;
     procedure DoDoneInput(ASocket: TLHTTPClientSocket);
@@ -469,9 +469,9 @@ type
     property URI: string read FRequest.URI write FRequest.URI;
     property Response: TClientResponse read FResponse;
     property OnCanWrite: TLCanWriteEvent read FOnCanWrite write FOnCanWrite;
-    property OnDoneInput: TLHTTPClientProc read FOnDoneInput write FOnDoneInput;
+    property OnDoneInput: TLHTTPClientEvent read FOnDoneInput write FOnDoneInput;
     property OnInput: TLInputEvent read FOnInput write FOnInput;
-    property OnProcessHeaders: TLHTTPClientProc read FOnProcessHeaders write FOnProcessHeaders;
+    property OnProcessHeaders: TLHTTPClientEvent read FOnProcessHeaders write FOnProcessHeaders;
   end;
 
 implementation

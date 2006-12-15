@@ -69,11 +69,6 @@ type
 
   TLHowEnum = (TE_WILL = 251, TE_WONT, TE_DO, TE_DONW);
   
-  TLTelnetClientEvent = procedure (Sender: TLTelnetClient) of object;
-
-  TLTelnetClientErrorEvent = procedure (const msg: string;
-                                     Sender: TLTelnetClient) of object;
-
   { TLTelnet }
 
   TLTelnet = class(TLComponent, ILDirect)
@@ -85,10 +80,10 @@ type
     FOutput: TMemoryStream;
     FOperation: Char;
     FCommandCharIndex: Byte;
-    FOnReceive: TLTelnetClientEvent;
-    FOnConnect: TLTelnetClientEvent;
-    FOnDisconnect: TLTelnetClientEvent;
-    FOnError: TLTelnetClientErrorEvent;
+    FOnReceive: TLSocketEvent;
+    FOnConnect: TLSocketEvent;
+    FOnDisconnect: TLSocketEvent;
+    FOnError: TLSocketErrorEvent;
     FCommandArgs: string[3];
     FOrders: TLTelnetControlChars;
     FConnected: Boolean;
@@ -131,10 +126,10 @@ type
     property Output: TMemoryStream read FOutput;
     property Connected: Boolean read FConnected;
     property Timeout: DWord read GetTimeout write SetTimeout;
-    property OnReceive: TLTelnetClientEvent read FOnReceive write FOnReceive;
-    property OnDisconnect: TLTelnetClientEvent read FOnDisconnect write FOnDisconnect;
-    property OnConnect: TLTelnetClientEvent read FOnConnect write FOnConnect;
-    property OnError: TLTelnetClientErrorEvent read FOnError write FOnError;
+    property OnReceive: TLSocketEvent read FOnReceive write FOnReceive;
+    property OnDisconnect: TLSocketEvent read FOnDisconnect write FOnDisconnect;
+    property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
+    property OnError: TLSocketErrorEvent read FOnError write FOnError;
     property Connection: TLTCP read FConnection;
     property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
   end;
@@ -185,10 +180,6 @@ var
 constructor TLTelnet.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  FOnReceive := nil;
-  FOnDisconnect := nil;
-  FOnError := nil;
-  FOnConnect := nil;
   FConnection := TLTCP.Create(aOwner);
   FOutput := TMemoryStream.Create;
   FCommandCharIndex := 0;
@@ -345,7 +336,7 @@ end;
 procedure TLTelnetClient.OnEr(const msg: string; aSocket: TLSocket);
 begin
   if Assigned(FOnError) then
-    FOnError(msg, Self)
+    FOnError(msg, aSocket)
   else
     FOutput.Write(Pointer(msg)^, Length(msg));
 end;
@@ -353,7 +344,7 @@ end;
 procedure TLTelnetClient.OnDs(aSocket: TLSocket);
 begin
   if Assigned(FOnDisconnect) then
-    FOnDisconnect(Self);
+    FOnDisconnect(aSocket);
 end;
 
 procedure TLTelnetClient.OnRe(aSocket: TLSocket);
@@ -363,7 +354,7 @@ begin
   if aSocket.GetMessage(s) > 0 then begin
     TelnetParse(s);
     if Assigned(FOnReceive) then
-      FOnReceive(Self);
+      FOnReceive(aSocket);
   end;
 end;
 
@@ -371,7 +362,7 @@ procedure TLTelnetClient.OnCo(aSocket: TLSocket);
 begin
   FConnected := True;
   if Assigned(FOnConnect) then
-    FOnConnect(Self);
+    FOnConnect(aSocket);
 end;
 
 procedure TLTelnetClient.React(const Operation, Command: Char);

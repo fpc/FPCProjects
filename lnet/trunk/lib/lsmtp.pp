@@ -50,12 +50,9 @@ type
   {$i lcontainersh.inc}
   TLSMTPStatusFront = TLFront;
 
-  TLSMTPClientEvent = procedure (Sender: TLSMTPClient) of object;
   TLSMTPClientStatusEvent = procedure (Sender: TLSMTPClient;
                                        const aStatus: TLSMTPStatus) of object;
-  TLSMTPClientErrorEvent = procedure (const msg: string;
-                                      Sender: TLSMTPClient) of object;
-                                    
+
   TLSMTP = class(TLComponent)
    protected
     FConnection: TLTcp;
@@ -90,21 +87,21 @@ type
     FCommandFront: TLSMTPStatusFront;
     FPipeLine: Boolean;
 
-    FOnConnect: TLSMTPClientEvent;
-    FOnReceive: TLSMTPClientEvent;
-    FOnDisconnect: TLSMTPClientEvent;
+    FOnConnect: TLSocketEvent;
+    FOnReceive: TLSocketEvent;
+    FOnDisconnect: TLSocketEvent;
     FOnSuccess: TLSMTPClientStatusEvent;
     FOnFailure: TLSMTPClientStatusEvent;
-    FOnError: TLSMTPClientErrorEvent;
+    FOnError: TLSocketErrorEvent;
 
     FSL: TStringList;
     FStatusSet: TLSMTPStatusSet;
     FMessage: string;
    protected
-    procedure OnEr(const msg: string; Sender: TLSocket);
-    procedure OnRe(Sender: TLSocket);
-    procedure OnCo(Sender: TLSocket);
-    procedure OnDs(Sender: TLSocket);
+    procedure OnEr(const msg: string; aSocket: TLSocket);
+    procedure OnRe(aSocket: TLSocket);
+    procedure OnCo(aSocket: TLSocket);
+    procedure OnDs(aSocket: TLSocket);
    protected
     function CanContinue(const aStatus: TLSMTPStatus; const Arg1, Arg2: string): Boolean;
     
@@ -138,12 +135,12 @@ type
    public
     property PipeLine: Boolean read FPipeLine write FPipeLine;
     property StatusSet: TLSMTPStatusSet read FStatusSet write FStatusSet;
-    property OnConnect: TLSMTPClientEvent read FOnConnect write FOnConnect;
-    property OnReceive: TLSMTPClientEvent read FOnReceive write FOnReceive;
-    property OnDisconnect: TLSMTPClientEvent read FOnDisconnect write FOnDisconnect;
+    property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
+    property OnReceive: TLSocketEvent read FOnReceive write FOnReceive;
+    property OnDisconnect: TLSocketEvent read FOnDisconnect write FOnDisconnect;
     property OnSuccess: TLSMTPClientStatusEvent read FOnSuccess write FOnSuccess;
     property OnFailure: TLSMTPClientStatusEvent read FOnFailure write FOnFailure;
-    property OnError: TLSMTPClientErrorEvent read FOnError write FOnError;
+    property OnError: TLSocketErrorEvent read FOnError write FOnError;
   end;
 
 implementation
@@ -254,28 +251,28 @@ begin
   inherited Destroy;
 end;
 
-procedure TLSMTPClient.OnEr(const msg: string; Sender: TLSocket);
+procedure TLSMTPClient.OnEr(const msg: string; aSocket: TLSocket);
 begin
   if Assigned(FOnError) then
-    FOnError(msg, Self);
+    FOnError(msg, aSocket);
 end;
 
-procedure TLSMTPClient.OnRe(Sender: TLSocket);
+procedure TLSMTPClient.OnRe(aSocket: TLSocket);
 begin
   if Assigned(FOnReceive) then
-    FOnReceive(Self);
+    FOnReceive(aSocket);
 end;
 
-procedure TLSMTPClient.OnCo(Sender: TLSocket);
+procedure TLSMTPClient.OnCo(aSocket: TLSocket);
 begin
   if Assigned(FOnConnect) then
-    FOnConnect(Self);
+    FOnConnect(aSocket);
 end;
 
-procedure TLSMTPClient.OnDs(Sender: TLSocket);
+procedure TLSMTPClient.OnDs(aSocket: TLSocket);
 begin
   if Assigned(FOnDisconnect) then
-    FOnDisconnect(Self);
+    FOnDisconnect(aSocket);
 end;
 
 function TLSMTPClient.CanContinue(const aStatus: TLSMTPStatus; const Arg1, Arg2: string): Boolean;
@@ -381,9 +378,9 @@ begin
       ssQuit: begin
                 Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
                 FStatus.Remove;
-                Disconnect;
                 if Assigned(FOnDisconnect) then
-                  FOnDisconnect(Self);
+                  FOnDisconnect(FConnection.Iterator);
+                Disconnect;
               end;
     end;
   if FStatus.Empty and not FCommandFront.Empty then
