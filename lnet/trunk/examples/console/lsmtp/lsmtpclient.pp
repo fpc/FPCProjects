@@ -17,10 +17,10 @@ type
     FQuit: Boolean;
     function GetAnswer(const s: string): string;
     procedure PrintUsage(const Msg: string);
-    procedure OnReceive(Sender: TLSMTPClient);
-    procedure OnConnect(Sender: TLSMTPClient);
-    procedure OnDisconnect(Sender: TLSMTPClient);
-    procedure OnError(const msg: string; Sender: TLSMTPClient);
+    procedure OnReceive(aSocket: TLSocket);
+    procedure OnConnect(aSocket: TLSocket);
+    procedure OnDisconnect(aSocket: TLSocket);
+    procedure OnError(const msg: string; aSocket: TLSocket);
    public
     constructor Create;
     destructor Destroy; override;
@@ -65,26 +65,26 @@ begin
   Writeln('Usage: ', ExtractFileName(ParamStr(0)), ' ', Msg);
 end;
 
-procedure TLSMTPClientTest.OnReceive(Sender: TLSMTPClient);
+procedure TLSMTPClientTest.OnReceive(aSocket: TLSocket);
 var
   s: string;
 begin
-  Sender.GetMessage(s);
+  FSMTP.GetMessage(s);
   Write(s);
 end;
 
-procedure TLSMTPClientTest.OnConnect(Sender: TLSMTPClient);
+procedure TLSMTPClientTest.OnConnect(aSocket: TLSocket);
 begin
   Writeln('Connected');
 end;
 
-procedure TLSMTPClientTest.OnDisconnect(Sender: TLSMTPClient);
+procedure TLSMTPClientTest.OnDisconnect(aSocket: TLSocket);
 begin
   Writeln('Lost connection');
   FQuit:=True;
 end;
 
-procedure TLSMTPClientTest.OnError(const msg: string; Sender: TLSMTPClient);
+procedure TLSMTPClientTest.OnError(const msg: string; aSocket: TLSocket);
 begin
   Writeln(msg);
 end;

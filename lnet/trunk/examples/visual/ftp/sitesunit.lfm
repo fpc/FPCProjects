@@ -7,13 +7,11 @@ object frmSites: TfrmSites
   VertScrollBar.Page = 267
   ActiveControl = lbSites
   Caption = 'Registered Sites'
-  ClientHeight = 268
-  ClientWidth = 540
   OnCloseQuery = FormCloseQuery
   OnShow = FormShow
   object Label1: TLabel
     Left = 8
-    Height = 13
+    Height = 14
     Top = 4
     Width = 31
     Caption = 'Sites:'
@@ -26,6 +24,7 @@ object frmSites: TfrmSites
     Top = 20
     Width = 156
     OnSelectionChange = lbSitesSelectionChange
+    PopupMenu = PopupMenuSites
     TabOrder = 0
     TopIndex = -1
   end
@@ -49,9 +48,9 @@ object frmSites: TfrmSites
   end
   object chkAnonymous: TCheckBox
     Left = 172
-    Height = 23
+    Height = 24
     Top = 165
-    Width = 90
+    Width = 89
     Caption = 'Anonymous'
     OnClick = chkAnonymousClick
     TabOrder = 5
@@ -132,5 +131,13 @@ object frmSites: TfrmSites
     ParentColor = False
     TabOrder = 3
     Text = '21'
+  end
+  object PopupMenuSites: TPopupMenu
+    left = 213
+    top = 332
+    object MenuItemSiteDelete: TMenuItem
+      Caption = '&Delete'
+      OnClick = MenuItemSiteDeleteClick
+    end
   end
 end

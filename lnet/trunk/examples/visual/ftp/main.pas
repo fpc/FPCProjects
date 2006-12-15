@@ -65,11 +65,11 @@ type
     procedure DeletePopupClick(Sender: TObject);
     procedure ExitMenuItemClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure FTPConnect(Sender: TLFTPClient);
-    procedure FTPControl(Sender: TLFTPClient);
-    procedure FTPError(const msg: string; Sender: TLFTPClient);
-    procedure FTPReceive(Sender: TLFTPClient);
-    procedure FTPSent(Sender: TLFTPClient; const Bytes: Integer);
+    procedure FTPConnect(aSocket: TLSocket);
+    procedure FTPControl(aSocket: TLSocket);
+    procedure FTPError(const msg: string; aSocket: TLSocket);
+    procedure FTPReceive(aSocket: TLSocket);
+    procedure FTPSent(aSocket: TLSocket; const Bytes: Integer);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -172,7 +172,7 @@ begin
   SetLength(FIcons, 0);
 end;
 
-procedure TMainForm.FTPConnect(Sender: TLFTPClient);
+procedure TMainForm.FTPConnect(aSocket: TLSocket);
 var
   aName, Pass: string;
 begin
@@ -195,20 +195,20 @@ begin
   DoList(aName);
 end;
 
-procedure TMainForm.FTPControl(Sender: TLFTPClient);
+procedure TMainForm.FTPControl(aSocket: TLSocket);
 var
   s: string;
 begin
-  if Sender.GetMessage(s) > 0 then begin
+  if FTP.GetMessage(s) > 0 then begin
     MemoText.Lines.Append(s);
     MemoText.SelStart:=Length(MemoText.Text);
   end;
 end;
 
-procedure TMainForm.FTPError(const msg: string; Sender: TLFTPClient);
+procedure TMainForm.FTPError(const msg: string; aSocket: TLSocket);
 begin
   MemoText.Append(msg);
-  if not Sender.Connected then begin
+  if not FTP.Connected then begin
     // connection has been closed, update gui
     Disconnect(false);
     ToolButton2.Down:=True;
@@ -216,7 +216,7 @@ begin
   CreateFilePath:='';
 end;
 
-procedure TMainForm.FTPReceive(Sender: TLFTPClient);
+procedure TMainForm.FTPReceive(aSocket: TLSocket);
   procedure FindNames;
   var
     i, j, n: Integer;
@@ -285,7 +285,7 @@ var
   Buf: array[0..65535] of Byte;
 begin
   if FDirListingExpected then begin
-    s:=Sender.GetDataMessage;
+    s := FTP.GetDataMessage;
     if Length(s) > 0 then
       FDirListing:=FDirListing+s
     else begin
@@ -295,7 +295,7 @@ begin
       FList.Clear;
     end;
   end else begin
-    i:=Sender.GetData(Buf, 65535);
+    i := FTP.GetData(Buf, 65535);
     if i > 0 then begin
       if Length(CreateFilePath) > 0 then begin
         FFile:=TFileStream.Create(CreateFilePath, fmCreate or fmOpenWrite);
@@ -313,7 +313,7 @@ begin
   end;
 end;
 
-procedure TMainForm.FTPSent(Sender: TLFTPClient; const Bytes: Integer);
+procedure TMainForm.FTPSent(aSocket: TLSocket; const Bytes: Integer);
 var
   n: Integer;
 begin

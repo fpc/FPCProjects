@@ -11,11 +11,11 @@ type
 
   TClient = class
    private
-    procedure OnConnect(Sender: TLFTPClient); // callbacks
-    procedure OnReceive(Sender: TLFTPClient);
-    procedure OnControl(Sender: TLFTPClient);
+    procedure OnConnect(aSocket: TLSocket); // callbacks
+    procedure OnReceive(aSocket: TLSocket);
+    procedure OnControl(aSocket: TLSocket);
     procedure OnSent(Sender: TLFTPClient; const Bytes: Integer);
-    procedure OnError(const msg: string; Sender: TLFTPClient);
+    procedure OnError(const msg: string; aSocket: TLSocket);
    protected
     FCon: TLFTPClient; // the FTP connection
     FConnected: Boolean;
@@ -32,13 +32,13 @@ type
     procedure Run(const Host: string; const Port: Word);
   end;
 
-procedure TClient.OnConnect(Sender: TLFTPClient);
+procedure TClient.OnConnect(aSocket: TLSocket);
 begin
   FConnected:=True;
   Writeln('Connected succesfuly');
 end;
 
-procedure TClient.OnReceive(Sender: TLFTPClient);
+procedure TClient.OnReceive(aSocket: TLSocket);
 const
   BUFFER_SIZE = 65535;
 var
@@ -56,11 +56,11 @@ begin
   end else Write(FCon.GetDataMessage);
 end;
 
-procedure TClient.OnControl(Sender: TLFTPClient);
+procedure TClient.OnControl(aSocket: TLSocket);
 var
   s: string;
 begin
-  if Sender.GetMessage(s) > 0 then
+  if FCon.GetMessage(s) > 0 then
     Writeln(s);
 end;
 
@@ -69,7 +69,7 @@ begin
   Write('.');
 end;
 
-procedure TClient.OnError(const msg: string; Sender: TLFTPClient);
+procedure TClient.OnError(const msg: string; aSocket: TLSocket);
 begin
   Writeln(msg);
 end;

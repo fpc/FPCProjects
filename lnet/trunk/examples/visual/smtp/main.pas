@@ -43,11 +43,11 @@ type
     procedure FormCreate(Sender: TObject);
     procedure MenuItemAboutClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
-    procedure SMTPConnect(Sender: TLSMTPClient);
-    procedure SMTPDisconnect(Sender: TLSMTPClient);
-    procedure SMTPError(const msg: string; Sender: TLSMTPClient);
+    procedure SMTPConnect(aSocket: TLSocket);
+    procedure SMTPDisconnect(aSocket: TLSocket);
+    procedure SMTPError(const msg: string; aSocket: TLSocket);
+    procedure SMTPReceive(aSocket: TLSocket);
     procedure SMTPFailure(Sender: TLSMTPClient; const aStatus: TLSMTPStatus);
-    procedure SMTPReceive(Sender: TLSMTPClient);
     procedure SMTPSuccess(Sender: TLSMTPClient; const aStatus: TLSMTPStatus);
   private
     { private declarations }
@@ -62,7 +62,7 @@ implementation
 
 { TMainForm }
 
-procedure TMainForm.SMTPConnect(Sender: TLSMTPClient);
+procedure TMainForm.SMTPConnect(aSocket: TLSocket);
 begin
   SB.SimpleText:='Connected to server...';
   SMTP.Helo('mail.chello.sk');
@@ -72,29 +72,17 @@ begin
   end;
 end;
 
-procedure TMainForm.SMTPDisconnect(Sender: TLSMTPClient);
+procedure TMainForm.SMTPDisconnect(aSocket: TLSocket);
 begin
   SB.SimpleText:='Disconnected from server';
   ButtonSend.Enabled:=SMTP.Connected;
   ButtonConnect.Caption:='Connect';
 end;
 
-procedure TMainForm.SMTPError(const msg: string; Sender: TLSMTPClient);
+procedure TMainForm.SMTPError(const msg: string; aSocket: TLSocket);
 begin
   SMTPDisconnect(nil);
   SB.SimpleText:=msg;
-end;
-
-procedure TMainForm.SMTPFailure(Sender: TLSMTPClient;
-  const aStatus: TLSMTPStatus);
-begin
-  case aStatus of
-    ssMail: MessageDlg('Error sending message', mtError, [mbOK], 0);
-    ssQuit: begin
-              SMTP.Disconnect;
-              Close;
-            end;
-  end;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -145,6 +133,14 @@ begin
     ButtonConnectClick(nil);
 end;
 
+procedure TMainForm.SMTPReceive(aSocket: TLSocket);
+var
+  s: string;
+begin
+  SMTP.GetMessage(s);
+  SB.SimpleText:=s;
+end;
+
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   CloseAction:=caFree;
@@ -154,12 +150,16 @@ begin
   end;
 end;
 
-procedure TMainForm.SMTPReceive(Sender: TLSMTPClient);
-var
-  s: string;
+procedure TMainForm.SMTPFailure(Sender: TLSMTPClient;
+  const aStatus: TLSMTPStatus);
 begin
-  SMTP.GetMessage(s);
-  SB.SimpleText:=s;
+  case aStatus of
+    ssMail: MessageDlg('Error sending message', mtError, [mbOK], 0);
+    ssQuit: begin
+              SMTP.Disconnect;
+              Close;
+            end;
+  end;
 end;
 
 procedure TMainForm.SMTPSuccess(Sender: TLSMTPClient;
