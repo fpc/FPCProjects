@@ -33,37 +33,6 @@ uses
   LCLNet, lNet, lEvents, lTelnet, lFTP, lSMTP, lHTTP;
   
 type
-  TLSocket = lNet.TLSocket;
-  TLConnection = lNet.TLConnection;
-  TLNetComponent = TLConnection;
-  
-  TLTcp = lNet.TLTcp;
-  TLUdp = lNet.TLUdp;
-  
-  TLFTP = lFTP.TLFTP;
-  TLFTPClient = lFTP.TLFTPClient;
-  
-  TLSMTP = lSMTP.TLSMTP;
-  TLSMTPClient = lSMTP.TLSMTPClient;
-  
-  TLHTTPClientSocket = lHTTP.TLHTTPClientSocket;
-  TLHTTPClient = lHTTP.TLHTTPClient;
-  TLHTTPMethod = lHTTP.TLHTTPMethod;
-
-  TLSocketErrorEvent = procedure(const msg: string; aSocket: TLSocket) of object;
-  TLSocketEvent = procedure(aSocket: TLSocket) of object;
-  
-  TLFTPClientProgressCallback = procedure (Sender: TLFTPClient;
-                                           const Bytes: Integer) of object;
-  TLFTPClientStatusCallback = procedure (Sender: TLFTPClient;
-                                   const aStatus: TLFTPStatus) of object;
-
-  TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
-  TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
-  TLHTTPClientProc = procedure(ASocket: TLHTTPClientSocket) of object;
-  
-  TLSMTPStatus = lSMTP.TLSMTPStatus;
-  TLSMTPStatusSet = lSMTP.TLSMTPStatusSet;
 
   { TLTCPComponent }
 
