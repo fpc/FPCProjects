@@ -53,21 +53,10 @@ type
   TLSocketErrorEvent = procedure(const msg: string; aSocket: TLSocket) of object;
   TLSocketEvent = procedure(aSocket: TLSocket) of object;
   
-  TLTelnetClientEvent = procedure (Sender: TLTelnetClient) of object;
-  TLTelnetClientErrorEvent = procedure (const msg: string;
-                                        Sender: TLTelnetClient) of object;
-
   TLFTPClientProgressCallback = procedure (Sender: TLFTPClient;
                                            const Bytes: Integer) of object;
-  TLFTPClientCallback = procedure (Sender: TLFTPClient) of object;
   TLFTPClientStatusCallback = procedure (Sender: TLFTPClient;
                                    const aStatus: TLFTPStatus) of object;
-  TLFTPClientErrorCallback = procedure (const msg: string;
-                                   Sender: TLFTPClient) of object;
-
-  TLSMTPClientCallback = procedure (Sender: TLSMTPClient) of object;
-  TLSMTPClientErrorCallback = procedure (const msg: string;
-                                    Sender: TLSMTPClient) of object;
 
   TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: dword): dword of object;
   TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
