@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LCLType,
-  LNetComponents, ComCtrls, ExtCtrls, Buttons, StdCtrls, Menus, FileCtrl, IniFiles,
+  LNetComponents, lNet, ComCtrls, ExtCtrls, Buttons, StdCtrls, Menus, FileCtrl, IniFiles,
   ActnList, Grids;
 
 type

@@ -14,7 +14,7 @@ type
     procedure OnConnect(aSocket: TLSocket); // callbacks
     procedure OnReceive(aSocket: TLSocket);
     procedure OnControl(aSocket: TLSocket);
-    procedure OnSent(Sender: TLFTPClient; const Bytes: Integer);
+    procedure OnSent(aSocket: TLSocket; const Bytes: Integer);
     procedure OnError(const msg: string; aSocket: TLSocket);
    protected
     FCon: TLFTPClient; // the FTP connection
@@ -64,7 +64,7 @@ begin
     Writeln(s);
 end;
 
-procedure TClient.OnSent(Sender: TLFTPClient; const Bytes: Integer);
+procedure TClient.OnSent(aSocket: TLSocket; const Bytes: Integer);
 begin
   Write('.');
 end;

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, lNetComponents, lSMTP, ComCtrls, Menus;
+  Buttons, lNetComponents, lSMTP, lNet, ComCtrls, Menus;
 
 type
 
@@ -47,8 +47,8 @@ type
     procedure SMTPDisconnect(aSocket: TLSocket);
     procedure SMTPError(const msg: string; aSocket: TLSocket);
     procedure SMTPReceive(aSocket: TLSocket);
-    procedure SMTPFailure(Sender: TLSMTPClient; const aStatus: TLSMTPStatus);
-    procedure SMTPSuccess(Sender: TLSMTPClient; const aStatus: TLSMTPStatus);
+    procedure SMTPFailure(aSocket: TLSocket; const aStatus: TLSMTPStatus);
+    procedure SMTPSuccess(aSocket: TLSocket; const aStatus: TLSMTPStatus);
   private
     { private declarations }
   public
@@ -150,7 +150,7 @@ begin
   end;
 end;
 
-procedure TMainForm.SMTPFailure(Sender: TLSMTPClient;
+procedure TMainForm.SMTPFailure(aSocket: TLSocket;
   const aStatus: TLSMTPStatus);
 begin
   case aStatus of
@@ -162,7 +162,7 @@ begin
   end;
 end;
 
-procedure TMainForm.SMTPSuccess(Sender: TLSMTPClient;
+procedure TMainForm.SMTPSuccess(aSocket: TLSocket;
   const aStatus: TLSMTPStatus);
 begin
   case aStatus of

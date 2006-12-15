@@ -4,7 +4,7 @@ object Form1: TForm1
   Top = 166
   Width = 390
   HorzScrollBar.Page = 389
-  VertScrollBar.Page = 321
+  VertScrollBar.Page = 319
   ActiveControl = MemoText
   Caption = 'lNet Component Test'
   Constraints.MaxHeight = 350
@@ -15,18 +15,18 @@ object Form1: TForm1
   OnCreate = FormCreate
   object LabelPort: TLabel
     Left = 224
-    Height = 15
+    Height = 14
     Top = 11
-    Width = 30
+    Width = 26
     Caption = 'Port:'
     Color = clNone
     ParentColor = False
   end
   object LabelHostName: TLabel
     Left = 179
-    Height = 15
+    Height = 14
     Top = 40
-    Width = 85
+    Width = 74
     Caption = 'Hostname/IP:'
     Color = clNone
     ParentColor = False

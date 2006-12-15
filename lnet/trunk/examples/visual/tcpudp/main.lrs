@@ -2,14 +2,14 @@
 
 LazarusResources.Add('TForm1','FORMDATA',[
   'TPF0'#6'TForm1'#5'Form1'#4'Left'#3'k'#1#6'Height'#3'^'#1#3'Top'#3#166#0#5'Wi'
-  +'dth'#3#134#1#18'HorzScrollBar.Page'#3#133#1#18'VertScrollBar.Page'#3'A'#1#13
+  +'dth'#3#134#1#18'HorzScrollBar.Page'#3#133#1#18'VertScrollBar.Page'#3'?'#1#13
   +'ActiveControl'#7#8'MemoText'#7'Caption'#6#19'lNet Component Test'#21'Constr'
   +'aints.MaxHeight'#3'^'#1#20'Constraints.MaxWidth'#3#134#1#21'Constraints.Min'
   +'Height'#3'^'#1#20'Constraints.MinWidth'#3#134#1#4'Menu'#7#9'MainMenu1'#8'On'
   +'Create'#7#10'FormCreate'#0#6'TLabel'#9'LabelPort'#4'Left'#3#224#0#6'Height'
-  +#2#15#3'Top'#2#11#5'Width'#2#30#7'Caption'#6#5'Port:'#5'Color'#7#6'clNone'#11
+  +#2#14#3'Top'#2#11#5'Width'#2#26#7'Caption'#6#5'Port:'#5'Color'#7#6'clNone'#11
   +'ParentColor'#8#0#0#6'TLabel'#13'LabelHostName'#4'Left'#3#179#0#6'Height'#2
-  +#15#3'Top'#2'('#5'Width'#2'U'#7'Caption'#6#12'Hostname/IP:'#5'Color'#7#6'clN'
+  +#14#3'Top'#2'('#5'Width'#2'J'#7'Caption'#6#12'Hostname/IP:'#5'Color'#7#6'clN'
   +'one'#11'ParentColor'#8#0#0#5'TMemo'#8'MemoText'#4'Left'#2'8'#6'Height'#3#176
   +#0#3'Top'#2'@'#5'Width'#3#24#1#8'TabOrder'#2#0#0#0#7'TButton'#10'ButtonSend'
   +#4'Left'#3#5#1#6'Height'#2#25#3'Top'#3#246#0#5'Width'#2'K'#25'BorderSpacing.'

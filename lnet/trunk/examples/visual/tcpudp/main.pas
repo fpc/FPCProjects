@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Buttons, lNetComponents, ExtCtrls, Menus;
+  StdCtrls, Buttons, lNetComponents, lNet, ExtCtrls, Menus;
 
 type
 
@@ -49,7 +49,7 @@ type
     procedure SendButtonClick(Sender: TObject);
     procedure SendEditKeyPress(Sender: TObject; var Key: char);
   private
-    FNet: TLNetComponent;
+    FNet: TLConnection;
     FIsServer: Boolean;
   public
     { public declarations }
