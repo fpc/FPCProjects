@@ -48,9 +48,7 @@ type
   
   TLFTPTransferMethod = (ftActive, ftPassive);
                  
-  TLFTPClientProgressEvent = procedure (Sender: TLFTPClient; const Bytes: Integer) of object;
-
-  TLFTPClientStatusEvent = procedure (Sender: TLFTPClient;
+  TLFTPClientStatusEvent = procedure (aSocket: TLSocket;
                                      const aStatus: TLFTPStatus) of object;
 
   { TLFTPStatusStack }
@@ -114,7 +112,7 @@ type
 
     FOnError: TLSocketErrorEvent;
     FOnReceive: TLSocketEvent;
-    FOnSent: TLFTPClientProgressEvent;
+    FOnSent: TLSocketProgressEvent;
     FOnControl: TLSocketEvent;
     FOnConnect: TLSocketEvent;
     FOnSuccess: TLFTPClientStatusEvent;
@@ -206,7 +204,7 @@ type
 
     property OnError: TLSocketErrorEvent read FOnError write FOnError;
     property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
-    property OnSent: TLFTPCLientProgressEvent read FOnSent write FOnSent;
+    property OnSent: TLSocketProgressEvent read FOnSent write FOnSent;
     property OnReceive: TLSocketEvent read FOnReceive write FOnReceive;
     property OnControl: TLSocketEvent read FOnControl write FOnControl;
     property OnSuccess: TLFTPClientStatusEvent read FOnSuccess write FOnSuccess;
@@ -548,10 +546,10 @@ procedure TLFTPClient.EvaluateAnswer(const Ans: string);
   begin
     if Res then begin
       if Assigned(FOnSuccess) and (aStatus in FStatusSet) then
-        FOnSuccess(Self, aStatus);
+        FOnSuccess(FData.Iterator, aStatus);
     end else begin
       if Assigned(FOnFailure) and (aStatus in FStatusSet) then
-        FOnFailure(Self, aStatus);
+        FOnFailure(FData.Iterator, aStatus);
     end;
   end;
   
@@ -801,12 +799,12 @@ begin
     if n > 0 then begin
       Sent := FData.Send(Buf, n);
       if Event and Assigned(FOnSent) and (Sent > 0) then
-        FOnSent(Self, Sent);
+        FOnSent(FData.Iterator, Sent);
       if Sent < n then
         FStoreFile.Position := FStoreFile.Position - (n - Sent); // so it's tried next time
     end else begin
       if Assigned(FOnSent) then
-        FOnSent(Self, 0);
+        FOnSent(FData.Iterator, 0);
       FreeAndNil(FStoreFile);
       FSending := False;
       {$hint this one calls freeinstance which doesn't pass}

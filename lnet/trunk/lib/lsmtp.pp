@@ -50,7 +50,7 @@ type
   {$i lcontainersh.inc}
   TLSMTPStatusFront = TLFront;
 
-  TLSMTPClientStatusEvent = procedure (Sender: TLSMTPClient;
+  TLSMTPClientStatusEvent = procedure (aSocket: TLSocket;
                                        const aStatus: TLSMTPStatus) of object;
 
   TLSMTP = class(TLComponent)
@@ -323,10 +323,10 @@ procedure TLSMTPClient.EvaluateAnswer(const Ans: string);
   begin
     if Res then begin
       if Assigned(FOnSuccess) and (aStatus in FStatusSet) then
-        FOnSuccess(Self, aStatus);
+        FOnSuccess(FConnection.Iterator, aStatus);
     end else begin
       if Assigned(FOnFailure) and (aStatus in FStatusSet) then
-        FOnFailure(Self, aStatus);
+        FOnFailure(FConnection.Iterator, aStatus);
     end;
   end;
   

@@ -79,6 +79,9 @@ type
   { Callback Event procedure for others }
   TLSocketEvent = procedure(aSocket: TLSocket) of object;
 
+  { Callback Event procedure for progress reports}
+  TLSocketProgressEvent = procedure (aSocket: TLSocket; const Bytes: Integer) of object;
+
   { Base socket class, Holds Address and socket info, perForms basic
     socket operations, uses select always to figure out if it can work (slow) }
 
