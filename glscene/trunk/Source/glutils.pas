@@ -158,7 +158,8 @@ begin
      CR := LF;
      LF := c;
    end;
-   Result := Copy(Result, 1, Length(Result)-2);
+   Result := StringReplace(Result, #13, '', [rfReplaceAll]);
+   Result := StringReplace(Result, #10, '', [rfReplaceAll]);
 end;
 
 // WriteCRLFString
