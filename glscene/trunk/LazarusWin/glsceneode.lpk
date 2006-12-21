@@ -8,8 +8,8 @@
       <PathDelim Value="\"/>
       <SearchPaths>
         <IncludeFiles Value="..\Source\"/>
-        <OtherUnitFiles Value="..\Source\physicsapis\;..\Source\designtime\"/>
-        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)\"/>
+        <OtherUnitFiles Value="..\Source\physicsapis\;..\Source\designtime\;..\Source\"/>
+        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
         <SrcPath Value="..\Source\;..\Source\physicsapis\;..\Source\designtime\"/>
       </SearchPaths>
       <Parsing>
@@ -34,7 +34,7 @@
     <Description Value="GLScene ODE package
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="3">
+    <Files Count="6">
       <Item1>
         <Filename Value="..\Source\physicsapis\gloxode.pas"/>
         <UnitName Value="gloxode"/>
@@ -48,14 +48,26 @@
         <HasRegisterProc Value="True"/>
         <UnitName Value="gloderegister"/>
       </Item3>
+      <Item4>
+        <Filename Value="..\Source\glodecustomcolliders.pas"/>
+        <UnitName Value="glodecustomcolliders"/>
+      </Item4>
+      <Item5>
+        <Filename Value="..\Source\glodemanager.pas"/>
+        <UnitName Value="glodemanager"/>
+      </Item5>
+      <Item6>
+        <Filename Value="..\Source\glodeskeletoncolliders.pas"/>
+        <UnitName Value="glodeskeletoncolliders"/>
+      </Item6>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="2">
       <Item1>
-        <PackageName Value="GLSceneLazarus"/>
+        <PackageName Value="LCL"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPkgs>
     <UsageOptions>
