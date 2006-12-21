@@ -13,9 +13,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLTeapot, GLMisc, GLTexture, GLPhongShader,
-  GLWin32Viewer, StdCtrls, LResources, GLScene, GLCadencer, AsyncTimer;
+  GLLCLViewer, StdCtrls, LResources, GLScene, GLCadencer, AsyncTimer, ExtCtrls;
 
 type
 
@@ -33,6 +33,7 @@ type
     GLCadencer1: TGLCadencer;
     AsyncTimer1: TAsyncTimer;
     CheckBox1: TCheckBox;
+    Panel1: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure GLSceneViewer1MouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);

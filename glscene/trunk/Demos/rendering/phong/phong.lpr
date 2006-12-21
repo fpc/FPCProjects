@@ -3,6 +3,9 @@ program phong;
 {$MODE Delphi}
 
 uses
+  {$ifdef unix}{$ifdef UseCThreads}
+  cThreads,
+  {$endif}{$endif}
   Interfaces,
   Forms,
   Unit1 in 'Unit1.pas' {Form1};
