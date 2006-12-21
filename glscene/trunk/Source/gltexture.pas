@@ -1896,7 +1896,8 @@ end;
 constructor TGLColor.CreateInitialized(AOwner : TPersistent; const color : TColorVector;
                                        changeEvent : TNotifyEvent = nil);
 begin
-   Create(AOwner);
+   // Create(AOwner); // leak, initialized creates defaultcolor 2x and frees only 1x
+   inherited Create(AOwner);
    Initialize(color);
    OnNotifyChange:=changeEvent;
 end;
