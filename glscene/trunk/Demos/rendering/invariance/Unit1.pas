@@ -5,9 +5,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLMisc, GLTexture, JPeg,
-  GLGeomObjects, LResources, GLWin32Viewer;
+  GLGeomObjects, LResources, GLLCLViewer;
 
 type
 
@@ -48,11 +48,11 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   i:Integer;
 begin
-   GLMaterialLibrary.TexturePaths:=ExtractFilePath(Application.ExeName)+'..\..\media';
+   GLMaterialLibrary.TexturePaths:=ExtractFilePath(ParamStr(0)) + '..' + PathDelim + '..' + PathDelim + 'media';
    for i:=0 to GLMaterialLibrary.Materials.Count-1 do
       with GLMaterialLibrary.Materials[i] do begin
          Material.Texture.ImageClassName:=TGLPersistentImage.ClassName;
-            Material.Texture.Image.LoadFromFile(Name+'.jpg');
+         Material.Texture.Image.LoadFromFile(ExtractFilePath(ParamStr(0)) + '..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + Name + '.jpg');
       end;
 end;
 

@@ -1,40 +1,38 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 380
-  ClientWidth = 429
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 428
-  VertScrollBar.Page = 379
   Left = 351
   Height = 380
   Top = 153
   Width = 429
+  HorzScrollBar.Page = 428
+  VertScrollBar.Page = 379
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
   object GLSceneViewer1: TGLSceneViewer
+    Height = 380
+    Width = 429
     Camera = GLCamera
     Buffer.BackgroundColor = clBlack
-    FieldOfView = 150.51287841796875
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 150.512878417968
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 380
-    Width = 429
   end
   object GLScene1: TGLScene
     left = 8
     top = 8
     object DCCamera: TGLDummyCube
-      CubeSize = 0.5
       Position.Coordinates = {
         000000400000803F0000803F0000803F
       }
+      CubeSize = 0.5
       object GLCamera: TGLCamera
         DepthOfView = 30
         FocalLength = 50
-        NearPlaneBias = 0.100000001490116
+        NearPlaneBias = 0.10000000149011
         TargetObject = DCCamera
         Position.Coordinates = {
           CDCCCC3E9A99993ECDCC4C3E0000803F
@@ -42,10 +40,6 @@ object Form1: TForm1
       end
     end
     object PLGround: TGLPlane
-      Height = 3
-      Width = 3
-      XTiles = 3
-      YTiles = 3
       Material.MaterialLibrary = GLMaterialLibrary
       Material.LibMaterialName = 'walkway'
       Direction.Coordinates = {
@@ -54,6 +48,10 @@ object Form1: TForm1
       Up.Coordinates = {
         0000000000000000000080BF00000000
       }
+      Height = 3
+      Width = 3
+      XTiles = 3
+      YTiles = 3
       object GLCube1: TGLCube
         Material.MaterialLibrary = GLMaterialLibrary
         Material.LibMaterialName = 'rawwall'
@@ -79,27 +77,20 @@ object Form1: TForm1
       CubeSize = 1
       CamInvarianceMode = cimPosition
       object GLCylinder1: TGLCylinder
-        TopRadius = 6
-        Parts = [cySides]
+        Material.MaterialLibrary = GLMaterialLibrary
+        Material.LibMaterialName = 'marbletiles'
+        NormalDirection = ndInside
         BottomRadius = 6
         Height = 3
         Slices = 24
-        NormalDirection = ndInside
-        Material.MaterialLibrary = GLMaterialLibrary
-        Material.LibMaterialName = 'marbletiles'
+        TopRadius = 6
+        Parts = [cySides]
       end
     end
     object DCOrientationInvariant: TGLDummyCube
       CubeSize = 1
       CamInvarianceMode = cimOrientation
       object GLArrowLine1: TGLArrowLine
-        TopRadius = 0.100000001490116
-        TopArrowHeadHeight = 0.5
-        TopArrowHeadRadius = 0.200000002980232
-        BottomArrowHeadHeight = 0.5
-        BottomArrowHeadRadius = 0.200000002980232
-        BottomRadius = 0.100000001490116
-        Height = 1
         Direction.Coordinates = {
           00000000000000BFD6B35D3F00000000
         }
@@ -113,6 +104,13 @@ object Form1: TForm1
         Up.Coordinates = {
           00000000D7B35D3F0100003F00000000
         }
+        BottomRadius = 0.10000000149011
+        Height = 1
+        TopRadius = 0.10000000149011
+        TopArrowHeadHeight = 0.5
+        TopArrowHeadRadius = 0.20000000298023
+        BottomArrowHeadHeight = 0.5
+        BottomArrowHeadRadius = 0.20000000298023
       end
     end
   end
