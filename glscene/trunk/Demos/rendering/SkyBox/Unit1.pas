@@ -20,9 +20,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, GLMisc, GLTexture,
-  GLCadencer, GLNavigator, GLWin32Viewer, GLKeyboard, GLLensFlare, GLObjects,
+  GLCadencer, GLNavigator, GLLCLViewer, GLKeyboard, GLLensFlare, GLObjects,
   JPeg,GLSkyBox, LResources, GLScene;
 
 type
@@ -71,7 +71,7 @@ implementation
 
 function mediaPath : string;
 begin
-   Result := ExtractFilePath(Paramstr(0))+'..\..\media\';
+   Result := ExtractFilePath(Paramstr(0))+'..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + '';
 end;
 
 function TForm1.LoadTexture(Matname,Filename : string) : TGLLibMaterial;
@@ -94,7 +94,7 @@ begin
      LoadTexture('Bottom','icecraterdn.jpg');
      LoadTexture('Front','icecraterft.jpg');
      LoadTexture('Back','icecraterbk.jpg');
-     with LoadTexture('Clouds','Clouds.jpg') do
+     with LoadTexture('Clouds','clouds.jpg') do
      begin
           // Add transparency to clouds
           Material.BlendingMode := bmTransparency;
