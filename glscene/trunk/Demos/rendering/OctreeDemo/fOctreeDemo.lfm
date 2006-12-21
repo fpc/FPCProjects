@@ -1,87 +1,82 @@
 object frmOctreeDemo: TfrmOctreeDemo
-  Caption = 'Octree Demo'
-  ClientHeight = 580
-  ClientWidth = 778
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnCreate = FormCreate
-  OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  Position = poScreenCenter
-  TextHeight = 13
-  HorzScrollBar.Page = 777
-  VertScrollBar.Page = 579
   Left = 190
   Height = 580
   Top = 109
   Width = 778
+  HorzScrollBar.Page = 777
+  VertScrollBar.Page = 579
+  ActiveControl = TrackBar_LeafThreshold
+  Caption = 'Octree Demo'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  Position = poScreenCenter
   object Label1: TLabel
+    Left = 568
+    Height = 14
+    Top = 31
+    Width = 39
     Alignment = taRightJustify
     Anchors = [akTop, akRight]
     Caption = 'Label1'
     Color = clNone
-    Left = 722
-    Height = 13
-    Top = 8
-    Width = 32
+    ParentColor = False
   end
   object Label3: TLabel
+    Left = 16
+    Height = 14
+    Top = 8
+    Width = 84
     Caption = 'Leaf Threshold'
     Color = clNone
-    Left = 16
-    Height = 13
-    Top = 8
-    Width = 71
+    ParentColor = False
   end
   object Label2: TLabel
+    Left = 120
+    Height = 14
+    Top = 8
+    Width = 451
     Caption = '(Green = Colliding with other object, Red = inside query box/sphere, Yellow = both)'
     Color = clNone
-    Left = 120
-    Height = 13
-    Top = 8
-    Width = 388
+    ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clWhite
-    Buffer.FaceCulling = False
-    FieldOfView = 145.89337158203125
-    Anchors = [akTop, akLeft, akRight, akBottom]
-    OnMouseMove = GLSceneViewer1MouseMove
     Left = 8
     Height = 489
     Top = 56
     Width = 750
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clWhite
+    Buffer.FaceCulling = False
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 145.893371582031
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    OnMouseMove = GLSceneViewer1MouseMove
   end
   object TrackBar_LeafThreshold: TTrackBar
-    Frequency = 1
-    Max = 20
-    Min = 3
-    OnChange = TrackBar_LeafThresholdChange
-    Position = 10
-    ScalePos = trTop
-    TabOrder = 0
-    TickStyle = tsNone
-    Frequency = 1
-    Max = 20
-    Min = 3
-    OnChange = TrackBar_LeafThresholdChange
-    Position = 10
-    ScalePos = trTop
-    TickStyle = tsNone
     Left = 8
-    Height = 25
+    Height = 33
     Top = 24
     Width = 150
+    Max = 20
+    Min = 3
+    OnChange = TrackBar_LeafThresholdChange
+    Position = 10
+    ScalePos = trTop
+    TickStyle = tsNone
+    TabOrder = 0
   end
   object Button_ResetOctreeSize: TButton
-    Caption = 'Reset Octree Size'
-    OnClick = Button_ResetOctreeSizeClick
-    TabOrder = 1
     Left = 160
     Height = 21
     Top = 24
     Width = 105
+    BorderSpacing.InnerBorder = 4
+    Caption = 'Reset Octree Size'
+    OnClick = Button_ResetOctreeSizeClick
+    TabOrder = 1
   end
   object GLScene1: TGLScene
     left = 96
@@ -102,7 +97,6 @@ object frmOctreeDemo: TfrmOctreeDemo
       }
     end
     object GLSphere1: TGLSphere
-      Radius = 2.5
       Material.FrontProperties.Diffuse.Color = {
         CDCC4C3FCDCC4C3FCDCC4C3FCDCC4C3E
       }
@@ -110,10 +104,9 @@ object frmOctreeDemo: TfrmOctreeDemo
       Position.Coordinates = {
         0000C0400000C0400000C0400000803F
       }
+      Radius = 2.5
     end
     object GLPlane1: TGLPlane
-      Height = 40
-      Width = 40
       Material.FrontProperties.Diffuse.Color = {
         CDCC4C3FCDCC4C3FCDCC4C3FCDCC4C3E
       }
@@ -128,6 +121,8 @@ object frmOctreeDemo: TfrmOctreeDemo
         6A41323FD9BD373F0000000000000000
       }
       Visible = False
+      Height = 40
+      Width = 40
     end
     object GLLines1: TGLLines
       Nodes = <>

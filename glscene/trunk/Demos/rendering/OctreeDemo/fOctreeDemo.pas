@@ -5,10 +5,10 @@ unit fOctreeDemo;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLScene, GLMisc, VectorGeometry, StdCtrls,
   GeometryBB, GLTexture, OpenGL1x, GLCadencer, SpatialPartitioning,
-  ComCtrls, LResources, Buttons, GLWin32Viewer;
+  ComCtrls, LResources, Buttons, GLLCLViewer;
 
 const
   cBOX_SIZE = 14.2;
