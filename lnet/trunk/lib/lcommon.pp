@@ -63,11 +63,6 @@ const
   LDEFAULT_BACKLOG = 5;
   BUFFER_SIZE = 65536;
   
-  {$IFNDEF UNIX}
-type
-  TInetSockAddr = TSockAddrin;
-  {$ENDIF}
-  
   { Base functions }
   {$IFNDEF UNIX}
   function fpSelect(const nfds: Integer; const readfds, writefds, exceptfds: PFDSet;
