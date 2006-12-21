@@ -392,7 +392,7 @@ uses
 constructor TLSocket.Create;
 begin
   inherited Create;
-  FHandle := -1;
+  FHandle := INVALID_SOCKET;
   FBlocking := False;
   FListenBacklog := LDEFAULT_BACKLOG;
   FServerSocket := False;
@@ -432,7 +432,7 @@ begin
         LogError('Shutdown error', LSocketError);
     if CloseSocket(FHandle) <> 0 then
       LogError('Closesocket error', LSocketError);
-    FHandle := -1;
+    FHandle := INVALID_SOCKET;
   end;
 end;
 
@@ -574,12 +574,12 @@ begin
   if not Connected then begin
     Result := false;
     SetupSocket(APort, AIntf);
-    if fpBind(FHandle, psockaddr(@FAddress), SizeOf(FAddress)) = INVALID_SOCKET then
+    if fpBind(FHandle, psockaddr(@FAddress), SizeOf(FAddress)) = SOCKET_ERROR then
       Bail('Error on bind', LSocketError)
     else
       Result := true;
     if (FSocketClass = SOCK_STREAM) and Result then
-      if fpListen(FHandle, FListenBacklog) = INVALID_SOCKET then
+      if fpListen(FHandle, FListenBacklog) = SOCKET_ERROR then
         Result  :=  Bail('Error on Listen', LSocketError)
       else
         Result := true;

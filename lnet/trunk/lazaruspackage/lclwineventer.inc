@@ -72,6 +72,7 @@ function TLCLEventer.AddHandle(aHandle: TLHandle): Boolean;
 var
   LHI: PLCLHandleInfo;
 begin
+  Result := True;
   SetHandleEventer(aHandle);
   LHI:=GetMem(SizeOf(TLCLHandleInfo));
   LHI^.Handle:=aHandle;
@@ -79,13 +80,13 @@ begin
   SetInternalData(aHandle, LHI);
   
   if WSAEventSelect(aHandle.Handle, LHI^.WinObject, ALL_FLAGS) <> 0 then
-    Bail('EventSelect error', WSAGetLastError);
+    Exit(Bail('EventSelect error', WSAGetLastError));
 
   LHI^.EventHandle:=AddEventHandler(LHI^.WinObject, ALL_FLAGS,
                                     @HandleEvents, PtrInt(LHI));
   LHI^.Flags:=ALL_FLAGS;
   if not Assigned(LHI^.EventHandle) then
-    Bail('Error on handler', -1);
+    Exit(Bail('Error on handler', -1));
 end;
 
 procedure TLCLEventer.UnplugHandle(aHandle: TLHandle);
