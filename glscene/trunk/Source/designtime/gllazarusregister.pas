@@ -416,11 +416,11 @@ procedure TObjectManager.CreateDefaultObjectIcons;
 var
    pic : TPicture;
 begin
+   {$IFNDEF FPC}
    pic:=TPicture.Create;
    // load first pic to get size
    GLLoadBitmapFromInstance(Pic.Bitmap,'gls_cross');
    //FObjectIcons:=TImageList.CreateSize(Pic.Width, Pic.height);
-   {$IFNDEF FPC}
    FObjectIcons:=TImageList.CreateSize(16, 16);
 
    with FObjectIcons, pic.Bitmap.Canvas do begin
