@@ -1,87 +1,83 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 389
-  ClientWidth = 491
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnClose = FormClose
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 490
-  VertScrollBar.Page = 388
   Left = 236
   Height = 389
   Top = 156
   Width = 491
+  HorzScrollBar.Page = 490
+  VertScrollBar.Page = 388
+  ActiveControl = RBUseLODs
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnClose = FormClose
+  OnCreate = FormCreate
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera
-    Buffer.BackgroundColor = clGray
-    FieldOfView = 117.408935546875
-    Align = alClient
     Height = 329
     Top = 60
     Width = 491
+    Camera = GLCamera
+    Buffer.BackgroundColor = clGray
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 117.408935546875
+    Align = alClient
   end
   object Panel1: TPanel
+    Height = 60
+    Width = 491
     Align = alTop
     BevelOuter = bvLowered
-    ClientHeight = 60
-    ClientWidth = 491
     Font.Height = -11
     Font.Name = 'Arial'
     FullRepaint = False
     TabOrder = 0
-    Height = 60
-    Width = 491
     object Label1: TLabel
+      Left = 8
+      Height = 10
+      Top = 8
+      Width = 71
       Caption = 'MultiProxy'
       Color = clNone
       Font.Height = -11
       Font.Name = 'Arial'
       Font.Style = [fsBold]
-      Left = 8
-      Height = 14
-      Top = 8
-      Width = 58
+      ParentColor = False
     end
     object RBUseLODs: TRadioButton
+      Left = 176
+      Height = 24
+      Top = 32
+      Width = 143
       Caption = 'Use 3 Levels of Detail'
       Checked = True
       OnClick = RBUseLODsClick
       State = cbChecked
       TabOrder = 0
-      Left = 88
-      Height = 17
-      Top = 8
-      Width = 129
     end
     object RBHighRes: TRadioButton
+      Left = 96
+      Height = 24
+      Width = 147
       Caption = 'Force High Resolution'
       OnClick = RBUseLODsClick
       TabOrder = 1
-      Left = 88
-      Height = 17
-      Top = 24
-      Width = 129
     end
     object CBColorize: TCheckBox
+      Left = 8
+      Height = 24
+      Top = 32
+      Width = 105
       Caption = 'Colorize LODs'
       OnClick = RBUseLODsClick
       TabOrder = 2
-      Left = 240
-      Height = 17
-      Top = 8
-      Width = 97
     end
     object RBLowRes: TRadioButton
+      Left = 272
+      Height = 24
+      Width = 144
       Caption = 'Force Low Resolution'
       OnClick = RBUseLODsClick
       TabOrder = 3
-      Left = 88
-      Height = 17
-      Top = 40
-      Width = 129
     end
   end
   object GLScene: TGLScene
@@ -90,7 +86,6 @@ object Form1: TForm1
     object DCTarget: TGLDummyCube
       CubeSize = 1
       object GLParticles: TGLParticles
-        CubeSize = 1
         Direction.Coordinates = {
           0000000000000000FFFF7F3F00000000
         }
@@ -101,7 +96,9 @@ object Form1: TForm1
         Up.Coordinates = {
           B97EB23D9E067F3F0000000000000000
         }
+        CubeSize = 1
         object MPSphere: TGLMultiProxy
+          OnProgress = MPSphereProgress
           MasterObjects = <          
             item
               MasterObject = SPHighRes
@@ -117,14 +114,12 @@ object Form1: TForm1
               DistanceMin = 60
               DistanceMax = 99999
             end>
-          OnProgress = MPSphereProgress
-          OnProgress = MPSphereProgress
         end
       end
     end
     object DCReferences: TGLDummyCube
-      CubeSize = 1
       Visible = False
+      CubeSize = 1
       object SPHighRes: TGLSphere
         Radius = 0.5
         Slices = 32
