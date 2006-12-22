@@ -26,7 +26,7 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, windows, GLCadencer, GLVectorFileObjects, GLScene, GLObjects, GLMisc,
+  LCLType, GLCadencer, GLVectorFileObjects, GLScene, GLObjects, GLMisc,
   StdCtrls, Buttons, Controls, ExtCtrls, ComCtrls, Classes, Forms, Graphics,
   GLSkydome,  GLNavigator, GLFileMD2, GLFile3DS,
   GLGeomObjects, LResources, GLLCLViewer, GLKeyboard;
@@ -92,19 +92,19 @@ const
 procedure TForm1.FormCreate(Sender: TObject);
 begin
    // Load mushroom mesh
-   FreeForm1.LoadFromFile('..\..\media\mushroom.3ds');
+   FreeForm1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'mushroom.3ds');
 
    // Duplicate our reference mushroom (but not its mesh data !)
    AddMushrooms;
 
    // Load Actor into GLScene
-   Actor1.LoadFromFile('..\..\media\waste.md2');
-   Actor1.Material.Texture.Image.LoadFromFile('..\..\media\waste.jpg');
-   Actor1.Animations.LoadFromFile('..\..\media\Quake2Animations.aaf');
+   Actor1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'waste.md2');
+   Actor1.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'waste.jpg');
+   Actor1.Animations.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'Quake2Animations.aaf');
    Actor1.Scale.SetVector(0.04, 0.04, 0.04, 0);
    // Load weapon model and texture
-   Actor2.LoadFromFile('..\..\media\WeaponWaste.md2');
-   Actor2.Material.Texture.Image.LoadFromFile('..\..\media\WeaponWaste.jpg');
+   Actor2.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'WeaponWaste.md2');
+   Actor2.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'WeaponWaste.jpg');
    Actor2.Animations.Assign(Actor1.Animations);
 
    // Define animation properties
@@ -114,7 +114,7 @@ begin
    Actor2.Synchronize(Actor1);
 
    // Load Texture for ground disk
-   Disk1.Material.Texture.Image.LoadFromFile('..\..\media\clover.jpg');
+   Disk1.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'clover.jpg');
 end;
 
 procedure TForm1.CBMouseLookClick(Sender: TObject);
