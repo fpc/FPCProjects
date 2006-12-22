@@ -405,25 +405,8 @@ end;
 // SetupSDLEnvironmentValues
 //
 procedure TSDLWindow.SetupSDLEnvironmentValues;
-var
-   envVal : String;
 begin
-   if FWindowHandle<>0 then begin
-      envVal:='';
-      {$IFDEF WIN32}
-         SDL_putenv('SDL_VIDEODRIVER=windib');
-         envVal:='SDL_WINDOWID='+IntToStr(Integer(FWindowHandle));
-      {$ELSE}
-         {$IFDEF Linux}
-            {$IFNDEF LCL}
-            EnvVal:='SDL_WINDOWID='+IntToStr(QWidget_WinId(FWindowHandle));
-            {$ENDIF}
-         {$ELSE}
-            ...Unsupported target. implement your target code here!...
-         {$ENDIF}
-      {$ENDIF}
-      SDL_putenv(PChar(envVal));
-   end;
+  raise Exception.Create('What ? There''s no valid reason to');
 end;
 
 // Open

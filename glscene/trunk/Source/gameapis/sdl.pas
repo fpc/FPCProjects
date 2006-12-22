@@ -149,24 +149,35 @@ interface
 
 
 uses
-{$ifdef win32}
+{$ifdef windows}
   windows;
 {$endif}
 
-{$IFDEF LINUX}
-Types,
-Libc;
+{$IFDEF UNIX}
+  pThreads, UnixType, BaseUnix, DynLibs;
 {$ENDIF}
 
 const
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   LibName = 'SDL.dll';
 {$ENDIF}
-{$IFDEF LINUX}
-  LibName = 'libSDL-1.2.so.0';
+
+{$IFDEF UNIX}
+{$IFDEF DARWIN}
+  LibName = 'libSDL.dylib';
+  {$define libdefined}
 {$ENDIF}
+{$ifdef FreeBSD}
+  LibName = 'libSDL.so';
+  {$define libdefined}
+{$ENDIF}
+{$ifndef libdefined}
+  LibName = 'libSDL.so';
+{$ENDIF}
+{$ENDIF}
+
 {$IFDEF MACOS}
-  LibName = 'libSDL-1.2.dylib';
+  LibName = 'SDL';
 {$ENDIF}
 
   // SDL.h constants
@@ -250,7 +261,7 @@ const
   {$DEFINE IA32}
 {$ENDIF}
 
-{$IFDEF LINUX}
+{$IFDEF UNIX}
   {$DEFINE IA32}
 {$ENDIF}
 
@@ -1769,14 +1780,14 @@ typedef struct {
 
 // SDL_mutex.h types
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   PSDL_Mutex = ^TSDL_Mutex;
   TSDL_Mutex = record
     id: THANDLE;
   end;
 {$ENDIF}
 
-{$IFDEF LINUX}
+{$IFDEF UNIX}
   PSDL_Mutex = ^TSDL_Mutex;
   TSDL_mutex = record
     id: pthread_mutex_t;
@@ -1795,7 +1806,7 @@ typedef struct {
   end;
 {$ENDIF}
 
-{$IFDEF LINUX}
+{$IFDEF UNIX}
   PSDL_semaphore = ^TSDL_semaphore;
   TSDL_semaphore = record
     sem: Pointer; //PSem_t;
@@ -1816,7 +1827,7 @@ typedef struct {
 
   PSDL_Cond = ^TSDL_Cond;
   TSDL_Cond = record
-{$IFDEF LINUX}
+{$IFDEF UNIX}
     cond: pthread_cond_t;
 {$ELSE}
     // Generic Cond structure
@@ -1833,7 +1844,7 @@ typedef struct {
   TSYS_ThreadHandle = THandle;
 {$ENDIF}
 
-{$IFDEF LINUX}
+{$IFDEF UNIX}
   TSYS_ThreadHandle = pthread_t;
 {$ENDIF}
 
@@ -3426,38 +3437,15 @@ LibName;
   The return code for the thread function is placed in the area
   pointed to by 'status', if 'status' is not NULL. }
 
-procedure SDL_WaitThread(thread: PSDL_Thread; var status: Integer); cdecl;
-external LibName;
+procedure SDL_WaitThread(thread: PSDL_Thread; var status: Integer); cdecl; external LibName;
 {$EXTERNALSYM SDL_WaitThread}
 
 { Forcefully kill a thread without worrying about its state }
 procedure SDL_KillThread(thread: PSDL_Thread); cdecl; external LibName;
 {$EXTERNALSYM SDL_KillThread}
 
-{------------------------------------------------------------------------------}
-{ Get Environment Routines                                                     }
-{------------------------------------------------------------------------------}
-{$IFDEF WIN32}
-function _putenv( const variable : Pchar ): integer; cdecl;
-{$ENDIF}
-
-{ Put a variable of the form "name=value" into the environment }
-//function SDL_putenv(const variable: PChar): integer; cdecl; external LibName;
-function SDL_putenv(const variable: PChar): integer;
-{$EXTERNALSYM SDL_putenv}
-
-// The following function has been commented out to encourage developers to use
-// SDL_putenv as it it more portable
-//function putenv(const variable: PChar): integer;
-//{$EXTERNALSYM putenv}
-
-{$IFDEF WIN32}
-function getenv( const name : Pchar ): PChar; cdecl;
-{$ENDIF}
-
 {* Retrieve a variable named "name" from the environment }
-//function SDL_getenv(const name: PChar): PChar; cdecl; external LibName;
-function SDL_getenv(const name: PChar): PChar;
+function SDL_getenv(const name: PChar): PChar; cdecl; external LibName;
 {$EXTERNALSYM SDL_getenv}
 
 // The following function has been commented out to encourage developers to use
@@ -3608,36 +3596,6 @@ end;
 function SDL_UnlockMutex(mutex: PSDL_mutex): Integer;
 begin
   Result := SDL_mutexV(mutex);
-end;
-
-{$IFDEF WIN32}
-function _putenv( const variable : Pchar ): Integer; cdecl; external 'MSVCRT.DLL';
-{$ENDIF}
-
-function SDL_putenv(const variable: PChar): Integer;
-begin
-  {$IFDEF WIN32}
-  Result := _putenv(variable);
-  {$ENDIF}
-
-  {$IFDEF LINUX}
-  Result := libc.putenv(variable);
-  {$ENDIF}
-end;
-
-{$IFDEF WIN32}
-function getenv( const name : Pchar ): PChar; cdecl; external 'MSVCRT.DLL';
-{$ENDIF}
-
-function SDL_getenv(const name: PChar): PChar;
-begin
-  {$IFDEF WIN32}
-  Result := getenv(name);
-  {$ENDIF}
-
-  {$IFDEF LINUX}
-  Result := libc.getenv(name);
-  {$ENDIF}
 end;
 
 function SDL_BUTTON( Button : Integer ) : Integer;
