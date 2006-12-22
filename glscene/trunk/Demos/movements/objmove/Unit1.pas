@@ -15,10 +15,10 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Windows, Forms, Dialogs, SysUtils, GLObjects, GLMisc, Classes, Controls, GLGraph,
+  LCLType, Forms, Dialogs, SysUtils, GLObjects, GLMisc, Classes, Controls, GLGraph,
   GLCollision, GLTexture, OpenGL1x, StdCtrls, ExtCtrls, VectorGeometry, Graphics,
-  GLVectorFileObjects, GLSpaceText, GLGeomObjects, LResources,
-  GLScene, GLWin32Viewer;
+  GLVectorFileObjects, GLGeomObjects, LResources,
+  GLScene, GLLCLViewer;
 
 type
 
@@ -39,12 +39,9 @@ type
     Panel1: TPanel;
     Label2: TLabel;
     Label1: TLabel;
-    TxtX: TGLSpaceText;
-    TxtY: TGLSpaceText;
     Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
-    TxtZ: TGLSpaceText;
     procedure FormMouseDown(Sender: TOBject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ScnMouseDown(Sender: TObject;

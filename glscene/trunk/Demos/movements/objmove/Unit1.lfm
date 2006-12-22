@@ -1,119 +1,111 @@
 object Form1: TForm1
+  Left = 255
+  Height = 414
+  Top = 133
+  Width = 696
+  HorzScrollBar.Page = 695
+  VertScrollBar.Page = 413
   Caption = 'Moving Objects with Mouse'
-  ClientHeight = 414
-  ClientWidth = 696
   Font.Height = -11
   Font.Name = 'Verdana'
   KeyPreview = True
   OnKeyPress = FormKeyPress
   OnKeyUp = FormKeyUp
-  PixelsPerInch = 96
   Position = poScreenCenter
-  TextHeight = 13
-  HorzScrollBar.Page = 695
-  VertScrollBar.Page = 413
-  Left = 255
-  Height = 414
-  Top = 133
-  Width = 696
   object Scn: TGLSceneViewer
-    Camera = GLCamera1
-    AfterRender = ScnAfterRender
-    Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 54.723129272460938
-    Align = alClient
-    OnMouseDown = ScnMouseDown
-    OnMouseMove = ScnMouseMove
     Left = 185
     Height = 414
     Width = 511
+    Camera = GLCamera1
+    AfterRender = ScnAfterRender
+    Buffer.BackgroundColor = clBlack
+    FieldOfView = 54.7231292724609
+    Align = alClient
+    OnMouseDown = ScnMouseDown
+    OnMouseMove = ScnMouseMove
   end
   object Panel1: TPanel
-    Align = alLeft
-    BorderSpacing.OnChange = nil
-    BevelOuter = bvNone
-    ClientHeight = 414
-    ClientWidth = 185
-    Color = 2960685
-    FullRepaint = False
-    TabOrder = 0
     Height = 414
     Width = 185
+    Align = alLeft
+    BevelOuter = bvNone
+    Color = 2960685
+    FullRepaint = False
+    ParentColor = False
+    TabOrder = 0
     object Label2: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 23
+      Top = 103
+      Width = 156
       Caption = 'Select and move with the mouse any of the two cubes.'
       Color = clNone
       Font.Color = clWhite
       Font.Height = -11
       Font.Name = 'Verdana'
+      ParentColor = False
       ShowAccelChar = False
       WordWrap = True
-      Left = 8
-      Height = 26
-      Top = 103
-      Width = 165
     end
     object Label1: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 11
+      Top = 6
+      Width = 127
       Caption = 'Author: Rado Stoyanov'
       Color = clNone
       Font.Color = clWhite
       Font.Height = -11
       Font.Name = 'Verdana'
+      ParentColor = False
       ShowAccelChar = False
       WordWrap = True
-      Left = 8
-      Height = 13
-      Top = 6
-      Width = 134
     end
     object Label3: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 23
+      Top = 143
+      Width = 148
       Caption = 'Default movement is on the XY plane.'
       Color = clNone
       Font.Color = clWhite
       Font.Height = -11
       Font.Name = 'Verdana'
+      ParentColor = False
       ShowAccelChar = False
       WordWrap = True
-      Left = 8
-      Height = 26
-      Top = 143
-      Width = 163
     end
     object Label4: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 23
+      Top = 183
+      Width = 152
       Caption = 'Shift + Drag moves on the XZ plane.'
       Color = clNone
       Font.Color = clWhite
       Font.Height = -11
       Font.Name = 'Verdana'
+      ParentColor = False
       ShowAccelChar = False
       WordWrap = True
-      Left = 8
-      Height = 26
-      Top = 183
-      Width = 157
     end
     object Label5: TLabel
-      BorderSpacing.OnChange = nil
+      Left = 8
+      Height = 11
+      Top = 22
+      Width = 156
       Caption = 'radostoyanov@softhome.net'
       Color = clNone
       Font.Color = clWhite
       Font.Height = -11
       Font.Name = 'Verdana'
+      ParentColor = False
       ShowAccelChar = False
       WordWrap = True
-      Left = 8
-      Height = 13
-      Top = 22
-      Width = 163
     end
   end
   object GLScene1: TGLScene
-    left = 190
+    left = 208
     top = 6
     object Floor: TGLCube
       Material.FrontProperties.Diffuse.Color = {
@@ -130,7 +122,7 @@ object Form1: TForm1
       Ambient.Color = {
         0000003F0000003F0000003F0000803F
       }
-      ConstAttenuation = 0.800000011920929
+      ConstAttenuation = 0.80000001192092
       Diffuse.Color = {
         EAE9693FEAE9693FEAE9693F0000803F
       }
@@ -168,22 +160,15 @@ object Form1: TForm1
       }
     end
     object DummyCube1: TGLDummyCube
-      CubeSize = 0.200000002980232
-      EdgeColor.Color = {
-        DEDD5D3FDEDD5D3FE9E8683F0000803F
-      }
       Position.Coordinates = {
         0000803F0000803F0000003F0000803F
       }
+      CubeSize = 0.20000000298023
+      EdgeColor.Color = {
+        DEDD5D3FDEDD5D3FE9E8683F0000803F
+      }
     end
     object XArrow: TGLArrowLine
-      TopRadius = 0.009999999776483
-      TopArrowHeadHeight = 0.200000002980232
-      TopArrowHeadRadius = 0.050000000745058
-      BottomArrowHeadHeight = 0.5
-      BottomArrowHeadRadius = 0.050000000745058
-      BottomRadius = 0.009999999776483
-      Height = 2.200000047683716
       Direction.Coordinates = {
         0000803F000000000000000000000000
       }
@@ -193,15 +178,15 @@ object Form1: TForm1
       Up.Coordinates = {
         000000002EBD3BB30000803F00000000
       }
+      BottomRadius = 0.00999999977648
+      Height = 2.20000004768371
+      TopRadius = 0.00999999977648
+      TopArrowHeadHeight = 0.20000000298023
+      TopArrowHeadRadius = 0.05000000074505
+      BottomArrowHeadHeight = 0.5
+      BottomArrowHeadRadius = 0.05000000074505
     end
     object YArrow: TGLArrowLine
-      TopRadius = 0.009999999776483
-      TopArrowHeadHeight = 0.200000002980232
-      TopArrowHeadRadius = 0.050000000745058
-      BottomArrowHeadHeight = 0.5
-      BottomArrowHeadRadius = 0.200000002980232
-      BottomRadius = 0.009999999776483
-      Height = 2.200000047683716
       Direction.Coordinates = {
         24DE4C320000803F2CBD3B3300000000
       }
@@ -211,75 +196,25 @@ object Form1: TForm1
       Up.Coordinates = {
         2EBD3BB32CBD3BB30000803F00000000
       }
+      BottomRadius = 0.00999999977648
+      Height = 2.20000004768371
+      TopRadius = 0.00999999977648
+      TopArrowHeadHeight = 0.20000000298023
+      TopArrowHeadRadius = 0.05000000074505
+      BottomArrowHeadHeight = 0.5
+      BottomArrowHeadRadius = 0.20000000298023
     end
     object ZArrow: TGLArrowLine
-      TopRadius = 0.009999999776483
-      TopArrowHeadHeight = 0.200000002980232
-      TopArrowHeadRadius = 0.050000000745058
-      BottomArrowHeadHeight = 0.5
-      BottomArrowHeadRadius = 0.050000000745058
-      BottomRadius = 0.009999999776483
-      Height = 1
       Position.Coordinates = {
         000080BF000080BF000000BF0000803F
       }
-    end
-    object TxtX: TGLSpaceText
-      Extrusion = 0.300000011920929
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Text = 'X'
-      CharacterRange = stcrAlphaNum
-      Direction.Coordinates = {
-        F30435BFF30435BF0000000000000000
-      }
-      Position.Coordinates = {
-        CDCCCC3F000080BF000080BF0000803F
-      }
-      Scale.Coordinates = {
-        9A99993E9A99993E9A99993E00000000
-      }
-      Up.Coordinates = {
-        00000000000000000000803F00000000
-      }
-    end
-    object TxtY: TGLSpaceText
-      Extrusion = 0.300000011920929
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Text = 'Y'
-      CharacterRange = stcrAlphaNum
-      Direction.Coordinates = {
-        F40435BFF20435BF0000000000000000
-      }
-      Position.Coordinates = {
-        000080BF9A99D93F000080BF0000803F
-      }
-      Scale.Coordinates = {
-        9A99993E9A99993E9A99993E00000000
-      }
-      Up.Coordinates = {
-        00000000000000000000803F00000000
-      }
-    end
-    object TxtZ: TGLSpaceText
-      Extrusion = 0.200000002980232
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Text = 'Z'
-      CharacterRange = stcrAlphaNum
-      Direction.Coordinates = {
-        F304353FF304353F0000000000000000
-      }
-      Position.Coordinates = {
-        9A99193ECDCCCCBD0000803F0000803F
-      }
-      Scale.Coordinates = {
-        9A99993E9A99993E9A99993E00000000
-      }
-      Up.Coordinates = {
-        00000080000000000000803F00000000
-      }
+      BottomRadius = 0.00999999977648
+      Height = 1
+      TopRadius = 0.00999999977648
+      TopArrowHeadHeight = 0.20000000298023
+      TopArrowHeadRadius = 0.05000000074505
+      BottomArrowHeadHeight = 0.5
+      BottomArrowHeadRadius = 0.05000000074505
     end
     object GLCamera1: TGLCamera
       DepthOfView = 1000

@@ -1,107 +1,84 @@
 { This is an automatically generated lazarus resource file }
 
 LazarusResources.Add('TForm1','FORMDATA',[
-  'TPF0'#6'TForm1'#5'Form1'#7'Caption'#6#25'Moving Objects with Mouse'#12'Clien'
-  +'tHeight'#3#158#1#11'ClientWidth'#3#184#2#11'Font.Height'#2#245#9'Font.Name'
-  +#6#7'Verdana'#10'KeyPreview'#9#10'OnKeyPress'#7#12'FormKeyPress'#7'OnKeyUp'#7
-  +#9'FormKeyUp'#13'PixelsPerInch'#2'`'#8'Position'#7#14'poScreenCenter'#10'Tex'
-  +'tHeight'#2#13#18'HorzScrollBar.Page'#3#183#2#18'VertScrollBar.Page'#3#157#1
-  +#4'Left'#3#255#0#6'Height'#3#158#1#3'Top'#3#133#0#5'Width'#3#184#2#0#14'TGLS'
-  +'ceneViewer'#3'Scn'#6'Camera'#7#9'GLCamera1'#11'AfterRender'#7#14'ScnAfterRe'
-  +'nder'#22'Buffer.BackgroundColor'#7#7'clBlack'#15'Buffer.OnChange'#13#25'Buf'
-  +'fer.OnStructuralChange'#13#11'FieldOfView'#5#0#0#0#0#0'|'#228#218#4'@'#5'Al'
-  +'ign'#7#8'alClient'#11'OnMouseDown'#7#12'ScnMouseDown'#11'OnMouseMove'#7#12
-  +'ScnMouseMove'#4'Left'#3#185#0#6'Height'#3#158#1#5'Width'#3#255#1#0#0#6'TPan'
-  +'el'#6'Panel1'#5'Align'#7#6'alLeft'#22'BorderSpacing.OnChange'#13#10'BevelOu'
-  +'ter'#7#6'bvNone'#12'ClientHeight'#3#158#1#11'ClientWidth'#3#185#0#5'Color'#4
-  +'---'#0#11'FullRepaint'#8#8'TabOrder'#2#0#6'Height'#3#158#1#5'Width'#3#185#0
-  +#0#6'TLabel'#6'Label2'#22'BorderSpacing.OnChange'#13#7'Caption'#6'4Select an'
-  +'d move with the mouse any of the two cubes.'#5'Color'#7#6'clNone'#10'Font.C'
-  +'olor'#7#7'clWhite'#11'Font.Height'#2#245#9'Font.Name'#6#7'Verdana'#13'ShowA'
-  +'ccelChar'#8#8'WordWrap'#9#4'Left'#2#8#6'Height'#2#26#3'Top'#2'g'#5'Width'#3
-  +#165#0#0#0#6'TLabel'#6'Label1'#22'BorderSpacing.OnChange'#13#7'Caption'#6#21
-  +'Author: Rado Stoyanov'#5'Color'#7#6'clNone'#10'Font.Color'#7#7'clWhite'#11
-  +'Font.Height'#2#245#9'Font.Name'#6#7'Verdana'#13'ShowAccelChar'#8#8'WordWrap'
-  +#9#4'Left'#2#8#6'Height'#2#13#3'Top'#2#6#5'Width'#3#134#0#0#0#6'TLabel'#6'La'
-  +'bel3'#22'BorderSpacing.OnChange'#13#7'Caption'#6'$Default movement is on th'
-  +'e XY plane.'#5'Color'#7#6'clNone'#10'Font.Color'#7#7'clWhite'#11'Font.Heigh'
-  +'t'#2#245#9'Font.Name'#6#7'Verdana'#13'ShowAccelChar'#8#8'WordWrap'#9#4'Left'
-  +#2#8#6'Height'#2#26#3'Top'#3#143#0#5'Width'#3#163#0#0#0#6'TLabel'#6'Label4'
-  +#22'BorderSpacing.OnChange'#13#7'Caption'#6'#Shift + Drag moves on the XZ pl'
-  +'ane.'#5'Color'#7#6'clNone'#10'Font.Color'#7#7'clWhite'#11'Font.Height'#2#245
-  +#9'Font.Name'#6#7'Verdana'#13'ShowAccelChar'#8#8'WordWrap'#9#4'Left'#2#8#6'H'
-  +'eight'#2#26#3'Top'#3#183#0#5'Width'#3#157#0#0#0#6'TLabel'#6'Label5'#22'Bord'
-  +'erSpacing.OnChange'#13#7'Caption'#6#25'radostoyanov@softhome.net'#5'Color'#7
-  +#6'clNone'#10'Font.Color'#7#7'clWhite'#11'Font.Height'#2#245#9'Font.Name'#6#7
-  +'Verdana'#13'ShowAccelChar'#8#8'WordWrap'#9#4'Left'#2#8#6'Height'#2#13#3'Top'
-  +#2#22#5'Width'#3#163#0#0#0#0#8'TGLScene'#8'GLScene1'#4'left'#3#190#0#3'top'#2
-  +#6#0#7'TGLCube'#5'Floor&Material.FrontProperties.Diffuse.Color'#10#16#0#0#0
-  +#197#196#196'>'#205#204#204'>'#131#130#2'?'#227#165';?'#20'Position.Coordina'
-  +'tes'#10#16#0#0#0#0#0#0#0#0#0#0#0'\'#143#130#191#0#0#128'?'#8'CubeSize'#10#12
-  +#0#0#0#0#0#0'@'#0#0#0'@'#10#215'#<'#0#0#14'TGLLightSource'#9'TopLight1'#13'A'
-  +'mbient.Color'#10#16#0#0#0#0#0#0'?'#0#0#0'?'#0#0#0'?'#0#0#128'?'#16'ConstAtt'
-  +'enuation'#5#0#0#0#0#0#205#204#204#254'?'#13'Diffuse.Color'#10#16#0#0#0#234
-  +#233'i?'#234#233'i?'#234#233'i?'#0#0#128'?'#20'Position.Coordinates'#10#16#0
-  +#0#0#0#0#128'A'#0#0'PA'#0#0'@A'#0#0#128'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180
-  +#6'@'#0#0#7'TGLCube'#5'Cube1%Material.BackProperties.Diffuse.Color'#10#16#0#0
-  +#0#131#130#2'?'#133#132#4'?'#177#176'0?'#129#149'c?&Material.FrontProperties'
-  +'.Diffuse.Color'#10#16#0#0#0#131#130#2'?'#133#132#4'?'#177#176'0?m'#231'[?'
-  +#21'Material.BlendingMode'#7#14'bmTransparency'#27'Material.Texture.ImageAlp'
-  +'ha'#7#21'tiaAlphaFromIntensity'#28'Material.Texture.TextureMode'#7#10'tmMod'
-  +'ulate'#21'Direction.Coordinates'#10#16#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#0#0
-  +#0#0#20'Position.Coordinates'#10#16#0#0#0#205#204#204'='#205#204#204'=fff'
-  +#191#0#0#128'?'#17'Scale.Coordinates'#10#16#0#0#0#205#204'L>'#205#204'L>'#205
-  +#204'L>'#0#0#0#0#0#0#7'TGLCube'#5'Cube2'#20'Position.Coordinates'#10#16#0#0#0
-  +#205#204#204#190#205#204#204'>'#0#0#0#191#0#0#128'?'#8'CubeSize'#10#12#0#0#0
-  +#0#0#128'>'#0#0#128'>'#0#0#128'>'#0#0#12'TGLDummyCube'#10'DummyCube1'#8'Cube'
-  +'Size'#5#0#0#0#0#0#205#204#204#252'?'#15'EdgeColor.Color'#10#16#0#0#0#222#221
-  +']?'#222#221']?'#233#232'h?'#0#0#128'?'#20'Position.Coordinates'#10#16#0#0#0
-  +#0#0#128'?'#0#0#128'?'#0#0#0'?'#0#0#128'?'#0#0#12'TGLArrowLine'#6'XArrow'#9
-  +'TopRadius'#5#0#0#0#0#0#10#215#163#248'?'#18'TopArrowHeadHeight'#5#0#0#0#0#0
-  +#205#204#204#252'?'#18'TopArrowHeadRadius'#5#0#0#0#0#0#205#204#204#250'?'#21
-  +'BottomArrowHeadHeight'#5#0#0#0#0#0#0#0#128#254'?'#21'BottomArrowHeadRadius'
-  +#5#0#0#0#0#0#205#204#204#250'?'#12'BottomRadius'#5#0#0#0#0#0#10#215#163#248
-  +'?'#6'Height'#5#0#0#0#0#0#205#204#140#0'@'#21'Direction.Coordinates'#10#16#0
-  +#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0
-  +#205#204#204'='#0#0#128#191#0#0#128#191#0#0#128'?'#14'Up.Coordinates'#10#16#0
-  +#0#0#0#0#0#0'.'#189';'#179#0#0#128'?'#0#0#0#0#0#0#12'TGLArrowLine'#6'YArrow'
-  ,#9'TopRadius'#5#0#0#0#0#0#10#215#163#248'?'#18'TopArrowHeadHeight'#5#0#0#0#0
-  +#0#205#204#204#252'?'#18'TopArrowHeadRadius'#5#0#0#0#0#0#205#204#204#250'?'
-  +#21'BottomArrowHeadHeight'#5#0#0#0#0#0#0#0#128#254'?'#21'BottomArrowHeadRadi'
-  +'us'#5#0#0#0#0#0#205#204#204#252'?'#12'BottomRadius'#5#0#0#0#0#0#10#215#163
-  +#248'?'#6'Height'#5#0#0#0#0#0#205#204#140#0'@'#21'Direction.Coordinates'#10
-  +#16#0#0#0'$'#222'L2'#0#0#128'?,'#189';3'#0#0#0#0#20'Position.Coordinates'#10
-  +#16#0#0#0#0#0#128#191#205#204#204'='#0#0#128#191#0#0#128'?'#14'Up.Coordinate'
-  +'s'#10#16#0#0#0'.'#189';'#179','#189';'#179#0#0#128'?'#0#0#0#0#0#0#12'TGLArr'
-  +'owLine'#6'ZArrow'#9'TopRadius'#5#0#0#0#0#0#10#215#163#248'?'#18'TopArrowHea'
-  +'dHeight'#5#0#0#0#0#0#205#204#204#252'?'#18'TopArrowHeadRadius'#5#0#0#0#0#0
-  +#205#204#204#250'?'#21'BottomArrowHeadHeight'#5#0#0#0#0#0#0#0#128#254'?'#21
-  +'BottomArrowHeadRadius'#5#0#0#0#0#0#205#204#204#250'?'#12'BottomRadius'#5#0#0
-  +#0#0#0#10#215#163#248'?'#6'Height'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Co'
-  +'ordinates'#10#16#0#0#0#0#0#128#191#0#0#128#191#0#0#0#191#0#0#128'?'#0#0#12
-  +'TGLSpaceText'#4'TxtX'#9'Extrusion'#5#0#0#0#0#0#154#153#153#253'?'#11'Font.H'
-  +'eight'#2#245#9'Font.Name'#6#5'Arial'#4'Text'#6#1'X'#14'CharacterRange'#7#12
-  +'stcrAlphaNum'#21'Direction.Coordinates'#10#16#0#0#0#243#4'5'#191#243#4'5'
-  +#191#0#0#0#0#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0#205#204#204'?'#0#0
-  +#128#191#0#0#128#191#0#0#128'?'#17'Scale.Coordinates'#10#16#0#0#0#154#153#153
-  +'>'#154#153#153'>'#154#153#153'>'#0#0#0#0#14'Up.Coordinates'#10#16#0#0#0#0#0
-  +#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#12'TGLSpaceText'#4'TxtY'#9'Extrusion'#5#0
-  +#0#0#0#0#154#153#153#253'?'#11'Font.Height'#2#245#9'Font.Name'#6#5'Arial'#4
-  +'Text'#6#1'Y'#14'CharacterRange'#7#12'stcrAlphaNum'#21'Direction.Coordinates'
-  +#10#16#0#0#0#244#4'5'#191#242#4'5'#191#0#0#0#0#0#0#0#0#20'Position.Coordinat'
-  +'es'#10#16#0#0#0#0#0#128#191#154#153#217'?'#0#0#128#191#0#0#128'?'#17'Scale.'
-  +'Coordinates'#10#16#0#0#0#154#153#153'>'#154#153#153'>'#154#153#153'>'#0#0#0
-  +#0#14'Up.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#12
-  +'TGLSpaceText'#4'TxtZ'#9'Extrusion'#5#0#0#0#0#0#205#204#204#252'?'#11'Font.H'
-  +'eight'#2#245#9'Font.Name'#6#5'Arial'#4'Text'#6#1'Z'#14'CharacterRange'#7#12
-  +'stcrAlphaNum'#21'Direction.Coordinates'#10#16#0#0#0#243#4'5?'#243#4'5?'#0#0
-  +#0#0#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0#154#153#25'>'#205#204#204
-  +#189#0#0#128'?'#0#0#128'?'#17'Scale.Coordinates'#10#16#0#0#0#154#153#153'>'
-  +#154#153#153'>'#154#153#153'>'#0#0#0#0#14'Up.Coordinates'#10#16#0#0#0#0#0#0
-  +#128#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#9'TGLCamera'#9'GLCamera1'#11'DepthOfView'
-  +#5#0#0#0#0#0#0#0#250#8'@'#11'FocalLength'#5#0#0#0#0#0#0#0#200#7'@'#12'Target'
-  +'Object'#7#10'DummyCube1'#20'Position.Coordinates'#10#16#0#0#0#0#0#184'A'#0#0
-  +#160'A'#0#0#128'A'#0#0#128'?'#21'Direction.Coordinates'#10#16#0#0#0'.'#249'd'
-  +#191'.'#249#228'>'#0#0#0#0#0#0#0#0#14'Up.Coordinates'#10#16#0#0#0#0#0#0#0#0#0
-  +#0#0#0#0#128'?'#0#0#0#0#0#0#0#0
+  'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#255#0#6'Height'#3#158#1#3'Top'#3#133#0#5
+  +'Width'#3#184#2#18'HorzScrollBar.Page'#3#183#2#18'VertScrollBar.Page'#3#157#1
+  +#7'Caption'#6#25'Moving Objects with Mouse'#11'Font.Height'#2#245#9'Font.Nam'
+  +'e'#6#7'Verdana'#10'KeyPreview'#9#10'OnKeyPress'#7#12'FormKeyPress'#7'OnKeyU'
+  +'p'#7#9'FormKeyUp'#8'Position'#7#14'poScreenCenter'#0#14'TGLSceneViewer'#3'S'
+  +'cn'#4'Left'#3#185#0#6'Height'#3#158#1#5'Width'#3#255#1#6'Camera'#7#9'GLCame'
+  +'ra1'#11'AfterRender'#7#14'ScnAfterRender'#22'Buffer.BackgroundColor'#7#7'cl'
+  +'Black'#11'FieldOfView'#5#0#0#0#0#0'|'#228#218#4'@'#5'Align'#7#8'alClient'#11
+  +'OnMouseDown'#7#12'ScnMouseDown'#11'OnMouseMove'#7#12'ScnMouseMove'#0#0#6'TP'
+  +'anel'#6'Panel1'#6'Height'#3#158#1#5'Width'#3#185#0#5'Align'#7#6'alLeft'#10
+  +'BevelOuter'#7#6'bvNone'#5'Color'#4'---'#0#11'FullRepaint'#8#11'ParentColor'
+  +#8#8'TabOrder'#2#0#0#6'TLabel'#6'Label2'#4'Left'#2#8#6'Height'#2#23#3'Top'#2
+  +'g'#5'Width'#3#156#0#7'Caption'#6'4Select and move with the mouse any of the'
+  +' two cubes.'#5'Color'#7#6'clNone'#10'Font.Color'#7#7'clWhite'#11'Font.Heigh'
+  +'t'#2#245#9'Font.Name'#6#7'Verdana'#11'ParentColor'#8#13'ShowAccelChar'#8#8
+  +'WordWrap'#9#0#0#6'TLabel'#6'Label1'#4'Left'#2#8#6'Height'#2#11#3'Top'#2#6#5
+  +'Width'#2''#7'Caption'#6#21'Author: Rado Stoyanov'#5'Color'#7#6'clNone'#10
+  +'Font.Color'#7#7'clWhite'#11'Font.Height'#2#245#9'Font.Name'#6#7'Verdana'#11
+  +'ParentColor'#8#13'ShowAccelChar'#8#8'WordWrap'#9#0#0#6'TLabel'#6'Label3'#4
+  +'Left'#2#8#6'Height'#2#23#3'Top'#3#143#0#5'Width'#3#148#0#7'Caption'#6'$Defa'
+  +'ult movement is on the XY plane.'#5'Color'#7#6'clNone'#10'Font.Color'#7#7'c'
+  +'lWhite'#11'Font.Height'#2#245#9'Font.Name'#6#7'Verdana'#11'ParentColor'#8#13
+  +'ShowAccelChar'#8#8'WordWrap'#9#0#0#6'TLabel'#6'Label4'#4'Left'#2#8#6'Height'
+  +#2#23#3'Top'#3#183#0#5'Width'#3#152#0#7'Caption'#6'#Shift + Drag moves on th'
+  +'e XZ plane.'#5'Color'#7#6'clNone'#10'Font.Color'#7#7'clWhite'#11'Font.Heigh'
+  +'t'#2#245#9'Font.Name'#6#7'Verdana'#11'ParentColor'#8#13'ShowAccelChar'#8#8
+  +'WordWrap'#9#0#0#6'TLabel'#6'Label5'#4'Left'#2#8#6'Height'#2#11#3'Top'#2#22#5
+  +'Width'#3#156#0#7'Caption'#6#25'radostoyanov@softhome.net'#5'Color'#7#6'clNo'
+  +'ne'#10'Font.Color'#7#7'clWhite'#11'Font.Height'#2#245#9'Font.Name'#6#7'Verd'
+  +'ana'#11'ParentColor'#8#13'ShowAccelChar'#8#8'WordWrap'#9#0#0#0#8'TGLScene'#8
+  +'GLScene1'#4'left'#3#208#0#3'top'#2#6#0#7'TGLCube'#5'Floor&Material.FrontPro'
+  +'perties.Diffuse.Color'#10#16#0#0#0#197#196#196'>'#205#204#204'>'#131#130#2
+  +'?'#227#165';?'#20'Position.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#0'\'#143
+  +#130#191#0#0#128'?'#8'CubeSize'#10#12#0#0#0#0#0#0'@'#0#0#0'@'#10#215'#<'#0#0
+  +#14'TGLLightSource'#9'TopLight1'#13'Ambient.Color'#10#16#0#0#0#0#0#0'?'#0#0#0
+  +'?'#0#0#0'?'#0#0#128'?'#16'ConstAttenuation'#5#0#0#0#0#0#205#204#204#254'?'
+  +#13'Diffuse.Color'#10#16#0#0#0#234#233'i?'#234#233'i?'#234#233'i?'#0#0#128'?'
+  +#20'Position.Coordinates'#10#16#0#0#0#0#0#128'A'#0#0'PA'#0#0'@A'#0#0#128'?'
+  +#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#7'TGLCube'#5'Cube1%Material.Bac'
+  +'kProperties.Diffuse.Color'#10#16#0#0#0#131#130#2'?'#133#132#4'?'#177#176'0?'
+  +#129#149'c?&Material.FrontProperties.Diffuse.Color'#10#16#0#0#0#131#130#2'?'
+  +#133#132#4'?'#177#176'0?m'#231'[?'#21'Material.BlendingMode'#7#14'bmTranspar'
+  +'ency'#27'Material.Texture.ImageAlpha'#7#21'tiaAlphaFromIntensity'#28'Materi'
+  +'al.Texture.TextureMode'#7#10'tmModulate'#21'Direction.Coordinates'#10#16#0#0
+  +#0#0#0#128'?'#0#0#0#0#0#0#0#0#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0
+  +#205#204#204'='#205#204#204'=fff'#191#0#0#128'?'#17'Scale.Coordinates'#10#16
+  +#0#0#0#205#204'L>'#205#204'L>'#205#204'L>'#0#0#0#0#0#0#7'TGLCube'#5'Cube2'#20
+  +'Position.Coordinates'#10#16#0#0#0#205#204#204#190#205#204#204'>'#0#0#0#191#0
+  +#0#128'?'#8'CubeSize'#10#12#0#0#0#0#0#128'>'#0#0#128'>'#0#0#128'>'#0#0#12'TG'
+  +'LDummyCube'#10'DummyCube1'#20'Position.Coordinates'#10#16#0#0#0#0#0#128'?'#0
+  +#0#128'?'#0#0#0'?'#0#0#128'?'#8'CubeSize'#5#0#0#0#0#0#205#204#204#252'?'#15
+  +'EdgeColor.Color'#10#16#0#0#0#222#221']?'#222#221']?'#233#232'h?'#0#0#128'?'
+  +#0#0#12'TGLArrowLine'#6'XArrow'#21'Direction.Coordinates'#10#16#0#0#0#0#0#128
+  +'?'#0#0#0#0#0#0#0#0#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0#205#204#204
+  +'='#0#0#128#191#0#0#128#191#0#0#128'?'#14'Up.Coordinates'#10#16#0#0#0#0#0#0#0
+  +'.'#189';'#179#0#0#128'?'#0#0#0#0#12'BottomRadius'#5#0#0#0#0#0#10#215#163#248
+  +'?'#6'Height'#5#0#0#0#0#0#205#204#140#0'@'#9'TopRadius'#5#0#0#0#0#0#10#215
+  +#163#248'?'#18'TopArrowHeadHeight'#5#0#0#0#0#0#205#204#204#252'?'#18'TopArro'
+  +'wHeadRadius'#5#0#0#0#0#0#205#204#204#250'?'#21'BottomArrowHeadHeight'#5#0#0
+  +#0#0#0#0#0#128#254'?'#21'BottomArrowHeadRadius'#5#0#0#0#0#0#205#204#204#250
+  +'?'#0#0#12'TGLArrowLine'#6'YArrow'#21'Direction.Coordinates'#10#16#0#0#0'$'
+  +#222'L2'#0#0#128'?,'#189';3'#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0#0#0
+  +#128#191#205#204#204'='#0#0#128#191#0#0#128'?'#14'Up.Coordinates'#10#16#0#0#0
+  +'.'#189';'#179','#189';'#179#0#0#128'?'#0#0#0#0#12'BottomRadius'#5#0#0#0#0#0
+  ,#10#215#163#248'?'#6'Height'#5#0#0#0#0#0#205#204#140#0'@'#9'TopRadius'#5#0#0
+  +#0#0#0#10#215#163#248'?'#18'TopArrowHeadHeight'#5#0#0#0#0#0#205#204#204#252
+  +'?'#18'TopArrowHeadRadius'#5#0#0#0#0#0#205#204#204#250'?'#21'BottomArrowHead'
+  +'Height'#5#0#0#0#0#0#0#0#128#254'?'#21'BottomArrowHeadRadius'#5#0#0#0#0#0#205
+  +#204#204#252'?'#0#0#12'TGLArrowLine'#6'ZArrow'#20'Position.Coordinates'#10#16
+  +#0#0#0#0#0#128#191#0#0#128#191#0#0#0#191#0#0#128'?'#12'BottomRadius'#5#0#0#0
+  +#0#0#10#215#163#248'?'#6'Height'#5#0#0#0#0#0#0#0#128#255'?'#9'TopRadius'#5#0
+  +#0#0#0#0#10#215#163#248'?'#18'TopArrowHeadHeight'#5#0#0#0#0#0#205#204#204#252
+  +'?'#18'TopArrowHeadRadius'#5#0#0#0#0#0#205#204#204#250'?'#21'BottomArrowHead'
+  +'Height'#5#0#0#0#0#0#0#0#128#254'?'#21'BottomArrowHeadRadius'#5#0#0#0#0#0#205
+  +#204#204#250'?'#0#0#9'TGLCamera'#9'GLCamera1'#11'DepthOfView'#5#0#0#0#0#0#0#0
+  +#250#8'@'#11'FocalLength'#5#0#0#0#0#0#0#0#200#7'@'#12'TargetObject'#7#10'Dum'
+  +'myCube1'#20'Position.Coordinates'#10#16#0#0#0#0#0#184'A'#0#0#160'A'#0#0#128
+  +'A'#0#0#128'?'#21'Direction.Coordinates'#10#16#0#0#0'.'#249'd'#191'.'#249#228
+  +'>'#0#0#0#0#0#0#0#0#14'Up.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#128'?'
+  +#0#0#0#0#0#0#0#0
 ]);
