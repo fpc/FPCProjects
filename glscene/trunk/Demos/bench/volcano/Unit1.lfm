@@ -1,30 +1,41 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 359
-  ClientWidth = 468
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnClose = FormClose
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 467
-  VertScrollBar.Page = 358
   Left = 250
   Height = 359
   Top = 130
   Width = 468
+  HorzScrollBar.Page = 467
+  VertScrollBar.Page = 358
+  ActiveControl = RadioGroup1.RadioButton1
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnClose = FormClose
+  OnCreate = FormCreate
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clBlack
-    FieldOfView = 148.86947631835937
-    Align = alClient
     Height = 359
     Width = 384
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 148.869476318359
+    Align = alClient
   end
   object RadioGroup1: TRadioGroup
+    Left = 384
+    Height = 359
+    Width = 84
     Align = alRight
+    AutoFill = True
     Caption = 'Mode'
+    ChildSizing.LeftRightSpacing = 6
+    ChildSizing.TopBottomSpacing = 6
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 1
     ItemIndex = 1
     Items.Strings = (
       'Sleepy'
@@ -35,10 +46,7 @@ object Form1: TForm1
       'Inferno'
     )
     OnClick = RadioGroup1Click
-    ParentColor = True
-    Left = 384
-    Height = 359
-    Width = 84
+    TabOrder = 0
   end
   object GLScene1: TGLScene
     left = 16
@@ -57,9 +65,6 @@ object Form1: TForm1
         0500000000008FC2F5F83F02000200090500000000000000000000080200
       }
       object Sphere1: TGLSphere
-        Radius = 0.300000011920929
-        Slices = 12
-        Stacks = 12
         Material.FrontProperties.Diffuse.Color = {
           00000000000000000000803F0000803F
         }
@@ -69,6 +74,9 @@ object Form1: TForm1
         Position.Coordinates = {
           0000000000000040000000400000803F
         }
+        Radius = 0.30000001192092
+        Slices = 12
+        Stacks = 12
         EffectsData = {
           0201061254474C536F7572636550465845666665637402010607504658426C75
           65050000000000000080FF3F0206020008020008020008050000000000CDCCCC
@@ -87,10 +95,10 @@ object Form1: TForm1
       SpotCutOff = 180
     end
     object DCCamera: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         0000000000004040000000000000803F
       }
+      CubeSize = 1
       object GLCamera1: TGLCamera
         DepthOfView = 30
         FocalLength = 50
@@ -102,6 +110,12 @@ object Form1: TForm1
     end
   end
   object PFXVolcano: TGLPolygonPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PFXRenderer
+    Acceleration.Coordinates = {
+      00000000000080BF0000000000000000
+    }
+    Friction = 1
     NbSides = 7
     ParticleSize = 0.25
     ColorOuter.Color = {
@@ -115,13 +129,6 @@ object Form1: TForm1
         LifeTime = 7
         SizeScale = 1
       end>
-    Acceleration.Coordinates = {
-      00000000000080BF0000000000000000
-    }
-    Friction = 1
-    Renderer = PFXRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 56
     top = 16
   end
@@ -137,7 +144,10 @@ object Form1: TForm1
     top = 16
   end
   object PFXBlue: TGLPolygonPFXManager
-    ParticleSize = 0.550000011920929
+    Cadencer = GLCadencer1
+    Renderer = PFXRenderer
+    Friction = 1
+    ParticleSize = 0.55000001192092
     ColorInner.Color = {
       00000000000000000000803F0000803F
     }
@@ -152,10 +162,6 @@ object Form1: TForm1
         LifeTime = 3
         SizeScale = 1
       end>
-    Friction = 1
-    Renderer = PFXRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 56
     top = 56
   end
