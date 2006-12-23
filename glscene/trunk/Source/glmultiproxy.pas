@@ -373,8 +373,8 @@ end;
 //
 destructor TGLMultiProxy.Destroy;
 begin
-   FMasterObjects.Free;
-	inherited Destroy;
+  inherited Destroy;
+  FMasterObjects.Free;
 end;
 
 // Notification
