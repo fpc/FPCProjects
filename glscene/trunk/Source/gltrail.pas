@@ -1,4 +1,4 @@
-{: gltrail<p>
+{: GLTrail<p>
 
 	Creates a trail-like mesh.
         Based on Jason Lanford's demo. <p>
@@ -20,25 +20,31 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-	<li>09/12/04 - lr - suppress windows uses
-        <li>12/10/2004 - mrqzzz - creation (based on jason lanford's demo - june 2003)
+        <li>19/12/06 - DaS - msRight (TMarkStyle) support added
+        <li>09/12/04 - LR  - Suppress windows uses
+        <li>12/10/04 - Mrqzzz - Creation (Based on Jason Lanford's demo - june 2003)
    </ul></font>
 }
 
-unit gltrail;
+unit GLTrail;
 
 interface
 
-uses  glscene, vectortypes, meshutils ,
-      vectorgeometry, glvectorfileobjects,
-      glmesh, globjects,classes, glmisc,  opengl1x, gltexture;
+{$I GLScene.inc}
+
+uses
+  //VCL
+  Classes, SysUtils,
+  //GLScene
+  GLScene, VectorTypes, MeshUtils, VectorGeometry, GLVectorFileObjects,
+  GLMesh, GLObjects, GLMisc,  OpenGL1x, GLTexture;
 
 
     const cMaxVerts = 2000;
 
 type
 
-TMarkStyle = (msUp, msDirection, msFaceCamera );
+TMarkStyle = (msUp, msDirection, msFaceCamera, msRight);
 
 TGLTrail = class(TGlMesh)
   private
@@ -171,6 +177,9 @@ begin
                          v := AffinevectorMake(obj.AbsoluteDirection);
 
                     end;
+     msRight:       begin
+                         v := AffinevectorMake(obj.AbsoluteRight);
+                    end;
      msFaceCamera: begin
                          c := Scene.CurrentGLCamera;
                          if c<>nil then
@@ -181,6 +190,7 @@ begin
 
                          end;
                     end;
+     else Assert(False, 'Unknown type!');
      end;
      v0 := AffinevectorMake(Obj.AbsolutePosition);
      VectorScale(v,width,v);
