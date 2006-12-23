@@ -1,33 +1,13 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glbitmapfont<p>
+{: GLBitmapFont<p>
 
   Bitmap Fonts management classes for GLScene<p>
 
-      $Log: glbitmapfont.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/09/21 04:56:44  k00m
-      *** empty log message ***
-
-      Revision 1.4  2005/08/22 00:00:02  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>22/12/06 - LC - Fixed TGLCustomBitmapFont.RenderString, it now unbinds the texture.
+                          Bugtracker ID=1619243 (thanks Da Stranger)
       <li>09/03/05 - EG - Fixed space width during rendering
       <li>12/15/04 - Eugene Kryukov - Moved FCharRects to protected declaration in TGLCustomBitmapFont
       <li>18/10/04 - NelC - Fixed a texture reset bug in RenderString
@@ -52,12 +32,12 @@
 	   <li>15/01/01 - EG - Creation
 	</ul></font>
 }
-unit glbitmapfont;
+unit GLBitmapFont;
 
 interface
 
-uses classes, glscene, vectorgeometry, glmisc, glcontext, glcrossplatform,
-   gltexture, glstate, glutils, glgraphics;
+uses Classes, GLScene, VectorGeometry, GLMisc, GLContext, GLCrossPlatform,
+   GLTexture, GLState, GLUtils, GLGraphics;
 
 type
 
@@ -269,17 +249,17 @@ type
    // TGLFlatText
    //
    {: A 2D text displayed and positionned in 3D coordinates.<p>
-      the flattext uses a character font defined and stored by a tglbitmapfont
-      component. default character scale is 1 font pixel = 1 space unit. }
-	tglflattext = class (tglimmaterialsceneobject)
+      The FlatText uses a character font defined and stored by a TGLBitmapFont
+      component. Default character scale is 1 font pixel = 1 space unit. }
+	TGLFlatText = class (TGLImmaterialSceneObject)
 	   private
-	      { private declarations }
-         fbitmapfont : tglcustombitmapfont;
-         ftext : string;
-         falignment : talignment;
-         flayout : tgltextlayout;
-         fmodulatecolor : tglcolor;
-         foptions : tglflattextoptions;
+	      { Private Declarations }
+         FBitmapFont : TGLCustomBitmapFont;
+         FText : String;
+         FAlignment : TAlignment;
+         FLayout : TGLTextLayout;
+         FModulateColor : TGLColor;
+         FOptions : TGLFlatTextOptions;
 
 	   protected
 	      { Protected Declarations }
@@ -298,7 +278,7 @@ type
          destructor Destroy; override;
 
          procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+                            renderSelf, renderChildren : Boolean); override;
 
 		     procedure Assign(Source: TPersistent); override;
 
@@ -335,7 +315,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, opengl1x, xopengl;
+uses SysUtils, OpenGL1x, XOpenGL;
 
 // ------------------
 // ------------------ TBitmapFontRange ------------------
@@ -746,7 +726,7 @@ var
 begin
    bitmap:=TGLBitmap.Create;
    with bitmap do begin
-      PixelFormat:=glpf32bit;
+      PixelFormat:=glpf24bit;
       Width:=RoundUpToPowerOf2(Glyphs.Width);
       Height:=RoundUpToPowerOf2(Glyphs.Height);
       Canvas.Draw(0, 0, Glyphs.Graphic);
@@ -770,7 +750,7 @@ begin
             SetAlphaToValue(255);
          tiaDefault,
          tiaTopLeftPointColorTransparent :
-            SetAlphaTransparentForColor(Data^[Width*(Height-1)]);
+            SetAlphaTransparentForColor(Data[Width*(Height-1)]);
       else
          Assert(False);
       end;
@@ -868,7 +848,7 @@ begin
    end;
    // precalcs
    if Assigned(position) then
-      MakePoint(vTopLeft, position^[0]+AlignmentAdjustement(1), position^[1]+LayoutAdjustement, 0)
+      MakePoint(vTopLeft, position[0]+AlignmentAdjustement(1), position[1]+LayoutAdjustement, 0)
    else MakePoint(vTopLeft, AlignmentAdjustement(1),  LayoutAdjustement, 0);
    deltaV:=-(CharHeight+VSpace);
    if reverseY then
@@ -894,7 +874,7 @@ begin
          #0..#12, #14..#31 : ; // ignore
          #13 : begin
             if Assigned(position) then
-               vTopLeft[0]:=position^[0]+AlignmentAdjustement(i+1)
+               vTopLeft[0]:=position[0]+AlignmentAdjustement(i+1)
             else vTopLeft[0]:=AlignmentAdjustement(i+1);
             vTopLeft[1]:=vTopLeft[1]+deltaV;
             if reverseY then
@@ -926,6 +906,8 @@ begin
    end;
    glEnd;
    glPopAttrib;
+   // unbind texture
+   rci.GLStates.SetGLCurrentTexture(0, GL_TEXTURE_2D, 0);
    rci.GLStates.ResetGLCurrentTexture;
 end;
 
@@ -987,19 +969,19 @@ begin
             p:=@FCharRects[j];
             carX:=(tileIndex mod CharactersPerRow)*(CharWidth+GlyphsIntervalX);
             carY:=(tileIndex div CharactersPerRow)*(CharHeight+GlyphsIntervalY);
-            p^[0]:=(carX+0.05)/FTextureWidth;
-            p^[1]:=(FTextureHeight-(carY+0.05))/FTextureHeight;
-            p^[2]:=(carX+GetCharWidth(Char(j))-0.05)/FTextureWidth;
-            p^[3]:=(FTextureHeight-(carY+CharHeight-0.05))/FTextureHeight;
+            p[0]:=(carX+0.05)/FTextureWidth;
+            p[1]:=(FTextureHeight-(carY+0.05))/FTextureHeight;
+            p[2]:=(carX+GetCharWidth(Char(j))-0.05)/FTextureWidth;
+            p[3]:=(FTextureHeight-(carY+CharHeight-0.05))/FTextureHeight;
             Inc(tileIndex);
          end;
       end;
    end;
    p:=@FCharRects[Integer(ch)];
-   topLeft.S:=p^[0];
-   topLeft.T:=p^[1];
-   bottomRight.S:=p^[2];
-   bottomRight.T:=p^[3];
+   topLeft.S:=p[0];
+   topLeft.T:=p[1];
+   bottomRight.S:=p[2];
+   bottomRight.T:=p[3];
 end;
 
 // InvalidateUsers
@@ -1120,7 +1102,7 @@ end;
 // DoRender
 //
 procedure TGLFlatText.DoRender(var rci : TRenderContextInfo;
-                               renderSelf, renderChildre : Boolean);
+                               renderSelf, renderChildren : Boolean);
 begin
    if Assigned(FBitmapFont) and (Text<>'') then begin
       rci.GLStates.SetGLPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
