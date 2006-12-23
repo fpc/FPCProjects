@@ -18,6 +18,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/10/06 - LC - Added TGLSpaceText.Assign. Bugtracker ID=1576445 (thanks Zapology)
       <li>16/09/06 - NC - TGLVirtualHandle update (thx Lionel Reynaud)
       <li>03/06/02 - EG - VirtualHandle notification fix (Sören Mühlbauer)
       <li>07/03/02 - EG - GetFontBase fix (Sören Mühlbauer)
@@ -125,6 +126,8 @@ type
 			{ Public Declarations }
          constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
+
+         procedure Assign(Source: TPersistent); override;
 
          procedure BuildList(var rci : TRenderContextInfo); override;
          procedure DoRender(var rci : TRenderContextInfo;
@@ -354,6 +357,25 @@ var
    w, mh : Single;
 begin
    TextMetrics(str, w, mh, Result);
+end;
+
+// Assign
+procedure TGLSpaceText.Assign(Source: TPersistent);
+begin
+   inherited Assign(Source);
+   if Source is TGLSpaceText then
+   begin
+      FAdjust.Assign(TGLSpaceText(Source).FAdjust);
+      FFont.Assign(TGLSpaceText(Source).FFont);
+      FAllowedDeviation := TGLSpaceText(Source).AllowedDeviation;
+      FAspectRatio := TGLSpaceText(Source).FAspectRatio;
+      FCharacterRange := TGLSpaceText(Source).CharacterRange;
+      FExtrusion := TGLSpaceText(Source).FExtrusion;
+      FOblique := TGLSpaceText(Source).FOblique;
+      FText := TGLSpaceText(Source).FText;
+      FTextHeight := TGLSpaceText(Source).FTextHeight;
+      StructureChanged;
+   end;
 end;
 
 // BuildList
