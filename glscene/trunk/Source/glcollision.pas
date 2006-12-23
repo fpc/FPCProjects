@@ -23,6 +23,7 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>19/10/06 - LC - Fixed memory leak in TCollisionManager.CheckCollisions. Bugtracker ID=1548618
       <li>09/05/03 - DanB - fixed for collisions with bounding-box unproperly defined (min>max)
       <li>09/05/03 - DanB - Added FastCheckCubeVsFace (Matheus Degiovani)
       <li>13/02/03 - DanB - New collision code, and support for scaled objects
@@ -37,7 +38,7 @@ unit glcollision;
 interface
 
 uses classes, glscene, xcollection, vectorgeometry, vectorlists, glvectorfileobjects,
-   geometrybb, glcrossplatform {crossbuilder ,persistentclasses};
+   geometrybb, glcrossplatform;
 
 type
 
@@ -55,7 +56,7 @@ type
       <li>cbmEllipsoid the object is defined by its bounding axis-aligned ellipsoid
       <li>cbmCube : the object is defined by a bounding axis-aligned "cube"
       <li>cbmFaces : the object is defined by its faces (needs object-level support,
-         if unavalaible, uses cbmcube code)
+         if unavalaible, uses cbmCube code)
       </ul> }
    tcollisionboundingmode = (cbmpoint, cbmsphere, cbmellipsoid, cbmcube, cbmfaces);
 
@@ -1021,62 +1022,64 @@ begin
 
   //this next bit of code would be faster if bounding box was stored
   NodeList:=TList.Create;
-  NodeList.Count:=0;
 
-  for i:=0 to FClients.Count-1 do begin
-    cli1:=TGLBCollision(FClients[i]);
-    grp1:=cli1.GroupIndex;
-    if grp1<0 then        //if groupindex is negative don't add to list
-      Continue;
-    obj1:=cli1.OwnerBaseSceneObject;
-    //TODO:  need to do different things for different objects, especially points (to improve speed)
-    box1:=obj1.AxisAlignedBoundingBoxUnscaled;         //get obj1 axis-aligned bounding box
-    if box1.min[2]>=box1.max[2] then continue;          //check for case where no bb exists
-    AABBTransform(box1,obj1.AbsoluteMatrix);           //& transform it to world axis
-    CollisionNode1:=TCollisionNode.Create(cli1,box1);
-    NodeList.Add(CollisionNode1);
-  end;
+  try
+     NodeList.Count:=0;
 
-  if NodeList.Count<2 then Exit;
-  NodeList.Sort(@CompareDistance);       //depth-sort bounding boxes (min bb.z values)
+     for i:=0 to FClients.Count-1 do begin
+       cli1:=TGLBCollision(FClients[i]);
+       grp1:=cli1.GroupIndex;
+       if grp1<0 then        //if groupindex is negative don't add to list
+         Continue;
+       obj1:=cli1.OwnerBaseSceneObject;
+       //TODO:  need to do different things for different objects, especially points (to improve speed)
+       box1:=obj1.AxisAlignedBoundingBoxUnscaled;         //get obj1 axis-aligned bounding box
+       if box1.min[2]>=box1.max[2] then continue;          //check for case where no bb exists
+       AABBTransform(box1,obj1.AbsoluteMatrix);           //& transform it to world axis
+       CollisionNode1:=TCollisionNode.Create(cli1,box1);
+       NodeList.Add(CollisionNode1);
+     end;
 
-   for i:=0 to NodeList.Count-2 do
-   begin
-     CollisionNode1:=TCollisionNode(NodeList[i]);
-     cli1:=CollisionNode1.Collision;
-     grp1:=cli1.GroupIndex;
+     if NodeList.Count<2 then Exit;
+     NodeList.Sort(@CompareDistance);       //depth-sort bounding boxes (min bb.z values)
 
-      for j:=i+1 to NodeList.Count-1 do begin
-       CollisionNode2:=TCollisionNode(NodeList[j]);
-       cli2:=CollisionNode2.Collision;
-       
-       //Check BBox1 and BBox2 overlap in the z-direction
-       if (CollisionNode2.AABB.min[2]>CollisionNode1.AABB.max[2]) then
-         Break;
+     for i:=0 to NodeList.Count-2 do begin
+        CollisionNode1:=TCollisionNode(NodeList[i]);
+        cli1:=CollisionNode1.Collision;
+        grp1:=cli1.GroupIndex;
 
-       grp2:=cli2.GroupIndex;
-       
-       // if either one GroupIndex=0 or both are different, check for collision
-       if ((grp1=0) or (grp2=0) or (grp1<>grp2))=false then Continue;
+        for j:=i+1 to NodeList.Count-1 do begin
+          CollisionNode2:=TCollisionNode(NodeList[j]);
+          cli2:=CollisionNode2.Collision;
 
-       //check whether box1 and box2 overlap in the XY Plane
-         if IntersectAABBsAbsoluteXY(CollisionNode1.AABB,CollisionNode2.AABB) then
-         begin
+          //Check BBox1 and BBox2 overlap in the z-direction
+          if (CollisionNode2.AABB.min[2]>CollisionNode1.AABB.max[2]) then
+            Break;
+
+          grp2:=cli2.GroupIndex;
+
+          // if either one GroupIndex=0 or both are different, check for collision
+          if ((grp1=0) or (grp2=0) or (grp1<>grp2))=false then Continue;
+
+          //check whether box1 and box2 overlap in the XY Plane
+          if IntersectAABBsAbsoluteXY(CollisionNode1.AABB,CollisionNode2.AABB) then begin
            obj1:=cli1.OwnerBaseSceneObject;
            obj2:=cli2.OwnerBaseSceneObject;
             if cFastCollisionChecker[cli1.BoundingMode, cli2.BoundingMode](obj1, obj2) then
               FOnCollision(Self, obj1, obj2);
-         end;
+          end;
+        end;
       end;
-   end;
 
-   for i:=0 to NodeList.Count-1 do
-   begin
-     CollisionNode1 := TCollisionNode(NodeList.Items[i]);
-     CollisionNode1.Free;
-   end;
+   finally
+      for i:=0 to NodeList.Count-1 do
+      begin
+        CollisionNode1 := TCollisionNode(NodeList.Items[i]);
+        CollisionNode1.Free;
+      end;
 
-   NodeList.Free;
+      NodeList.Free;
+  end;
 end;
 
 // new CheckCollisions / Dan Bartlett -----]
