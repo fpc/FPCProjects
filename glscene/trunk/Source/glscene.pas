@@ -6056,6 +6056,7 @@ begin
    if not Assigned(FBuffers) then
       FBuffers:=TPersistentObjectList.Create;
    if FBuffers.IndexOf(aBuffer)<0 then begin
+      {$warning - Ales: there's an "accumulation" (undetected leak) here with gtk2}
       FBuffers.Add(aBuffer);
       if FBaseContext=nil then
          FBaseContext:=TGLSceneBuffer(FBuffers[0]).RenderingContext;
