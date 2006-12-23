@@ -1,7 +1,11 @@
-// glroampatch
-{: class for managing a roam (square) patch.<p>
+// GLROAMPatch
+{: Class for managing a ROAM (square) patch.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/10/06 - LC - Added code to gracefully handle the case when MaxCLODTriangles is reached.
+                          It will now increase the buffer instead of not splitting. Bugtracker ID=1574111
+      <li>09/10/06 - Lin - Added OnMaxCLODTrianglesReached event.
+      <li>09/06/06 - Lin - Bugfix: Stop splitting Triangles when MaxCLODTriangles is reached (prevents Access Violations)
       <li>10/06/05 - Mathx - Protection against cards that have GL_EXT_compiled_vertex_array
                              but not GL_EXT_draw_range_elements
       <li>25/04/04 - EG - Occlusion testing support
@@ -12,11 +16,11 @@
       <li>10/09/01 - EG - Creation
 	</ul></font>
 }
-unit glroampatch;
+unit GLROAMPatch;
 
 interface
 
-uses vectorgeometry, glheightdata, vectorlists, glcrossplatform, glcontext;
+uses VectorGeometry, GLHeightData, VectorLists, GLCrossPlatform, GLContext, dialogs;
 
 type
 
@@ -46,7 +50,7 @@ type
          FID : Integer;
          FHeightData : THeightData; // Referred, not owned
          FHeightRaster : PSmallIntRaster;
-         FTLNode, FBRNode : PROAMTriangleNode;
+         FTLNode, FBRNode : integer;
          FTLVariance, FBRVariance : array of Cardinal;
          FPatchSize, FTriangleCount : Integer;
          FListHandle : TGLListHandle;
@@ -85,7 +89,7 @@ type
          procedure ResetTessellation;
          procedure ConnectToTheWest(westPatch : TGLROAMPatch);
          procedure ConnectToTheNorth(northPatch : TGLROAMPatch);
-         procedure Tesselate;
+         function  Tesselate :Boolean;     //Returns false if MaxCLODTriangles limit is reached(Lin)
 
          {: Render the patch in high-resolution.<p>
             The lists are assumed to have enough capacity to allow AddNC calls
@@ -137,6 +141,7 @@ type
 
 {: Specifies the maximum number of ROAM triangles that may be allocated. }
 procedure SetROAMTrianglesCapacity(nb : Integer);
+function GetROAMTrianglesCapacity: integer;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -146,7 +151,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses opengl1x, xopengl, sysutils;
+uses OpenGL1x, XOpenGL, SysUtils;
 
 var
    FVBOVertHandle, FVBOTexHandle : TGLVBOArrayBufferHandle;
@@ -177,20 +182,72 @@ begin
    end;
 end;
 
+function GetROAMTrianglesCapacity: integer;
+begin
+  result:= vTriangleNodesCapacity;
+end;
+
+procedure IncreaseTrianglesCapacity(NewCapacity: integer);
+   procedure FixNodePtr(var p: PROAMTriangleNode; const delta: int64);
+   begin
+      if p = nil then
+         exit;
+
+      inc(PByte(p), delta);
+   end;
+
+var
+   oldbase, newbase: pointer;
+   node: PROAMTriangleNode;
+   i, oldsize: integer;
+   delta: int64;
+begin
+   if NewCapacity <= vTriangleNodesCapacity then
+      exit;
+   
+   oldsize:= vTriangleNodesCapacity;
+   
+   oldbase:= pointer(vTriangleNodes);
+   SetLength(vTriangleNodes, NewCapacity);
+
+   vTriangleNodesCapacity:= NewCapacity;
+   
+   newbase:= pointer(vTriangleNodes);
+   
+   // Array has not been relocated, no need to fix
+   if oldbase = newbase then
+      exit; 
+      
+   // go through all the old nodes and 
+   // fix the pointers
+   delta:= int64(PChar(newbase) - PChar(oldbase));
+   for i := 0 to oldsize - 1 do
+   begin
+      node:= @vTriangleNodes[i];
+
+      FixNodePtr(node^.base, delta);
+      FixNodePtr(node^.left, delta);
+      FixNodePtr(node^.right, delta);
+      FixNodePtr(node^.leftChild, delta);
+      FixNodePtr(node^.rightChild, delta);
+   end;
+end;
+
 // AllocTriangleNode
 //
-function AllocTriangleNode : PROAMTriangleNode;
+function AllocTriangleNode : integer;
 var
    nilNode : PROAMTriangleNode;
 begin
    if vNbTris>=vTriangleNodesCapacity then begin
       // grow by 50%
-      vTriangleNodesCapacity:=vTriangleNodesCapacity+(vTriangleNodesCapacity shr 1);
-      SetLength(vTriangleNodes, vTriangleNodesCapacity);
+      IncreaseTrianglesCapacity(vTriangleNodesCapacity + (vTriangleNodesCapacity shr 1));
    end;
-   Result:=@vTriangleNodes[vNbTris];
-   with Result^ do begin
+   Result:= vNbTris;
+   with vTriangleNodes[vNbTris] do begin
       nilNode:=nil;
+      left:= nilNode;
+      right:= nilNode;
       leftChild:=nilNode;
       rightChild:=nilNode;
    end;
@@ -200,88 +257,61 @@ end;
 // Split
 //
 function Split(tri : PROAMTriangleNode) : Boolean;
-var
-   buf : PROAMTriangleNode;
-   n : Integer;
-   t : PROAMTriangleNode;
+var n : Integer;
+    lc,rc:PROAMTriangleNode;
 begin
-   with tri^ do if not Assigned(leftChild) then begin
-   	// If this triangle is not in a proper diamond, force split our base neighbor
-	   if Assigned(base) and (base^.base<>tri) then
-         Split(base);
+  result:=Assigned(tri.leftChild);
+  if result then exit;                            //dont split if tri already has a left child
+  with tri^ do begin
+    if Assigned(base)and(base.base<>tri) then Split(base); // If this triangle is not in a proper diamond, force split our base neighbor
+    n:=vNbTris;
 
-      n:=vNbTris;
-      if n>=vTriangleNodesCapacity then begin
-         // grow by 50%
-         vTriangleNodesCapacity:=vTriangleNodesCapacity+(vTriangleNodesCapacity shr 1);
-         SetLength(vTriangleNodes, vTriangleNodesCapacity);
-      end;
-      
-	   // Create children and cross-link them
-      t:=@vTriangleNodes[n];
-      leftChild:=t;
-      Inc(t);
-      rightChild:=t;
-      with rightChild^ do begin
-         base:=tri^.right;
-         leftChild:=nil;
-         t:=tri^.leftChild;
-         rightChild:=t;
-         right:=t;
-      end;
-      with leftChild^ do begin
-         base:=tri^.left;
-         leftChild:=nil;
-         rightChild:=tri^.leftChild;
-         left:=tri^.rightChild;
-      end;
-      Inc(vNbTris, 2);
+    if n>=vTriangleNodesCapacity then begin
+       // grow by 50%
+       IncreaseTrianglesCapacity(vTriangleNodesCapacity + (vTriangleNodesCapacity shr 1));
+    end;
 
-	   // Link our Left Neighbor to the new children
-       if Assigned(left) then begin
-         t:=leftChild;
-         if left^.base=tri then
-            left^.base:=t
-         else if left^.left=tri then
-            left^.left:=t
-         else left^.right:=t;
-      end;
 
-	   // Link our Right Neighbor to the new children
-	   if Assigned(right) then begin
-         t:=rightChild;
-         if right^.base=tri then
-            right^.base:=t
-         else if right^.left=tri then
-            right^.left:=t
-         else right^.right:=t;
-      end;
+  	// Create children and cross-link them
+    lc:=@vTriangleNodes[n];           //left child
+    rc:=@vTriangleNodes[n+1];         //right child
+    leftChild :=lc;
+    rightChild:=rc;
+    rc.base      :=right;         //right child
+    rc.leftChild :=nil;
+    rc.rightChild:=leftChild;
+    rc.right     :=leftChild;
+    lc.base      :=left;          //left child
+    lc.leftChild :=nil;
+    lc.rightChild:=leftChild;
+    lc.left      :=rightChild;
 
-      // Link our Base Neighbor to the new children
-      if Assigned(base) then begin
-         if Assigned(base^.leftChild) then begin
-            // base.leftChild.right:=rightChild
-            // rightChild.left:=base.leftChild
-            t:=base^.leftChild;
-            buf:=rightChild;
-            t^.right:=buf;
-            buf^.left:=t;
-            // base.rightChild.left:=leftChild
-            // leftChild.right:=base.rightChild
-            t:=base^.rightChild;
-            buf:=leftChild;
-            t^.left:=buf;
-            buf^.right:=t;
-         end else Split(base);
-      end else begin
-		   // An edge triangle, trivial case.
-         buf:=nil;
-		   leftChild^.right:=buf;
-		   rightChild^.left:=buf;
-      end;
-   end;
-   Result:=True;
+    Inc(vNbTris,2);
+
+    if Assigned(left) then   // Link our Left Neighbour to the new children
+      if      left.base=tri then left.base :=lc
+      else if left.left=tri then left.left :=lc
+                            else left.right:=lc;
+	  if Assigned(right) then  // Link our Right Neighbour to the new children
+      if      right.base=tri then right.base :=rc
+      else if right.left=tri then right.left :=rc
+                             else right.right:=rc;
+    // Link our Base Neighbor to the new children
+    if Assigned(base) then begin
+      if Assigned(base.leftChild) then begin
+        base.leftChild.right:=rightChild;
+        rightChild.left:=base.leftChild;
+        base.rightChild.left:=leftChild;
+        leftChild.right:=base.rightChild;
+      end else Split(base);
+    end else begin // An edge triangle, trivial case.
+      leftChild.right:=nil;
+      rightChild.left:=nil;
+    end;
+  end;
+  Result:=True;
 end;
+
 
 // ------------------
 // ------------------ TGLROAMPatch ------------------
@@ -333,8 +363,8 @@ procedure TGLROAMPatch.ConnectToTheWest(westPatch : TGLROAMPatch);
 begin
    if Assigned(westPatch) then begin
       if not (westPatch.HighRes or HighRes) then begin
-         FTLNode^.left:=westPatch.FBRNode;
-         westPatch.FBRNode^.left:=FTLNode;
+         vTriangleNodes[FTLNode].left:= @vTriangleNodes[westPatch.FBRNode];
+         vTriangleNodes[westPatch.FBRNode].left:= @vTriangleNodes[FTLNode];
       end;
       FWest:=westPatch;
       westPatch.FEast:=Self;
@@ -347,8 +377,8 @@ procedure TGLROAMPatch.ConnectToTheNorth(northPatch : TGLROAMPatch);
 begin
    if Assigned(northPatch) then begin
       if not (northPatch.HighRes or HighRes) then begin
-         FTLNode^.right:=northPatch.FBRNode;
-         northPatch.FBRNode^.right:=FTLNode;
+         vTriangleNodes[FTLNode].right:= @vTriangleNodes[northPatch.FBRNode];
+         vTriangleNodes[northPatch.FBRNode].right:= @vTriangleNodes[FTLNode];
       end;
       FNorth:=northPatch;
       northPatch.FSouth:=Self;
@@ -393,7 +423,7 @@ var
          v:=RecursComputeVariance(right, apex, half, 1+n2);
          if v>Result then Result:=v;
       end;
-      currentVariance^[node]:=Result;
+      currentVariance[node]:=Result;
    end;
 
    procedure ScaleVariance(n, d : Integer);
@@ -401,9 +431,9 @@ var
       newVal : Integer;
    begin
       if d>=0 then
-         newVal:=(currentVariance^[n] shl (d shr 1))
-      else newVal:=(currentVariance^[n] shr (-d shr 1));
-      currentVariance^[n]:=newVal;
+         newVal:=(currentVariance[n] shl (d shr 1))
+      else newVal:=(currentVariance[n] shr (-d shr 1));
+      currentVariance[n]:=newVal;
       if newVal>0 then
          if n>maxNonNullIndex then
             maxNonNullIndex:=n;
@@ -454,19 +484,15 @@ procedure TGLROAMPatch.ResetTessellation;
 begin
    FTLNode:=AllocTriangleNode;
    FBRNode:=AllocTriangleNode;
-   FTLNode^.base:=FBRNode;
-   FTLNode^.left:=nil;
-   FTLNode^.right:=nil;
-   FBRNode^.base:=FTLNode;
-   FBRNode^.left:=nil;
-   FBRNode^.right:=nil;
+   vTriangleNodes[FTLNode].base:= @vTriangleNodes[FBRNode];
+   vTriangleNodes[FBRNode].base:= @vTriangleNodes[FTLNode];
    FNorth:=nil;
    FSouth:=nil;
    FWest:=nil;
    FEast:=nil;
 end;
 
-// Tesselate
+// Tessellate
 //
 var
    tessMaxVariance : Cardinal;
@@ -474,25 +500,28 @@ var
    tessCurrentVariance : PIntegerArray;
    tessObserverPosX, tessObserverPosY : Integer;
 
-procedure RecursTessellate(tri : PROAMTriangleNode;
-                           n : Cardinal;
-                           const left, right, apex : Cardinal);
+function RecursTessellate(tri : PROAMTriangleNode; n : Cardinal;
+                           const left, right, apex : Cardinal):Boolean; //returns false if tessellation failed due to MaxCLODTriangles limit
 var
    d : Integer;
 begin
+   result:=true;
    d:=((left+right) shr 1);
-   if tessCurrentVariance^[n]>d then begin
+   if tessCurrentVariance[n]>d then begin
+      result:=false;
       if Split(tri) then begin
          n:=n shl 1;
          if n<tessMaxVariance then begin
-            RecursTessellate(tri^.leftChild,  n,   apex,  left, d);
-            RecursTessellate(tri^.rightChild, n+1, right, apex, d);
+            RecursTessellate(tri.leftChild,  n,   apex,  left, d);
+            result:=
+            RecursTessellate(tri.rightChild, n+1, right, apex, d);
          end;
       end;
    end;
 end;
 
-procedure TGLROAMPatch.Tesselate;
+function TGLROAMPatch.Tesselate:boolean; //Returns false if MaxCLODTriangles limit is reached.
+                                                       
 var
    tessFrameVarianceDelta : Integer;
 
@@ -515,7 +544,7 @@ var
       if Split(tri) then begin
          n:=n shl 1;
          if n<tessMaxDepth then
-            FullBaseTess(tri^.leftChild, n);
+            FullBaseTess(tri.leftChild, n);
       end;
    end;
 
@@ -524,7 +553,7 @@ var
       if Split(tri) then begin
          n:=n shl 1;
          if n<tessMaxDepth then
-            FullBaseTess(tri^.rightChild, n);
+            FullBaseTess(tri.rightChild, n);
       end;
    end;
 
@@ -533,8 +562,8 @@ var
       if Split(tri) then begin
          n:=n shl 1;
          if n<tessMaxDepth then begin
-            FullRightTess(tri^.leftChild, n);
-            FullLeftTess(tri^.rightChild, n);
+            FullRightTess(tri.leftChild, n);
+            FullLeftTess(tri.rightChild, n);
          end;
       end;
    end;
@@ -547,20 +576,20 @@ begin
    tessObserverPosY:=Round(FObserverPosition[1]);
 
    if HighRes then begin
-      FullRightTess(FTLNode, 1);
-      FullRightTess(FBRNode, 1);
-      FullLeftTess(FBRNode, 1);
-      FullLeftTess(FTLNode, 1);
+      FullRightTess(@vTriangleNodes[FTLNode], 1);
+      FullRightTess(@vTriangleNodes[FBRNode], 1);
+      FullLeftTess(@vTriangleNodes[FBRNode], 1);
+      FullLeftTess(@vTriangleNodes[FTLNode], 1);
       tessFrameVarianceDelta:=0;
    end else begin
       if Assigned(FNorth) and FNorth.HighRes then
-         FullRightTess(FTLNode, 1);
+         FullRightTess(@vTriangleNodes[FTLNode], 1);
       if Assigned(FSouth) and FSouth.HighRes then
-         FullRightTess(FBRNode, 1);
+         FullRightTess(@vTriangleNodes[FBRNode], 1);
       if Assigned(FEast) and FEast.HighRes then
-         FullLeftTess(FBRNode, 1);
+         FullLeftTess(@vTriangleNodes[FBRNode], 1);
       if Assigned(FWest) and FWest.HighRes then
-         FullLeftTess(FTLNode, 1);
+         FullLeftTess(@vTriangleNodes[FTLNode], 1);
       if FObserverPosition[2]>0 then
          tessFrameVarianceDelta:=Round(Sqr(FObserverPosition[2]*(1/16)))
       else tessFrameVarianceDelta:=0;
@@ -568,10 +597,12 @@ begin
    s:=FPatchSize;
    tessCurrentVariance:=@FTLVariance[0];
    tessMaxVariance:=FMaxTLVarianceDepth;
-   RecursTessellate(FTLNode, 1, VertexDist(0, s), VertexDist(s, 0), VertexDist(0, 0));
+   result:=
+      RecursTessellate(@vTriangleNodes[FTLNode], 1, VertexDist(0, s), VertexDist(s, 0), VertexDist(0, 0));
    tessCurrentVariance:=@FBRVariance[0];
    tessMaxVariance:=FMaxBRVarianceDepth;
-   RecursTessellate(FBRNode, 1, VertexDist(s, 0), VertexDist(0, s), VertexDist(s, s));
+   if result then result:=
+      RecursTessellate(@vTriangleNodes[FBRNode], 1, VertexDist(s, 0), VertexDist(0, s), VertexDist(s, s));
 end;
 
 // RenderHighRes
@@ -721,18 +752,18 @@ var
    half : TROAMRenderPoint;
    localIndices : PIntegerArray;
 begin
-   if Assigned(tri^.leftChild) then begin  // = if node is split
+   if Assigned(tri.leftChild) then begin  // = if node is split
       half.Y:=(left.Y+right.Y) shr 1;
       half.X:=(left.X+right.X) shr 1;
       renderTexCoords.AddNC(@half.X);
-      half.Idx:=renderVertices.AddNC(@half.X, renderRaster^[half.Y]^[half.X]);
-      RecursRender(tri^.leftChild , apex , left, half);
-      RecursRender(tri^.rightChild, right, apex, half);
+      half.Idx:=renderVertices.AddNC(@half.X, renderRaster[half.Y][half.X]);
+      RecursRender(tri.leftChild , apex , left, half);
+      RecursRender(tri.rightChild, right, apex, half);
    end else begin
       localIndices:=renderIndices;
-      localIndices^[0]:=left.Idx;
-      localIndices^[1]:=apex.Idx;
-      localIndices^[2]:=right.Idx;
+      localIndices[0]:=left.Idx;
+      localIndices[1]:=apex.Idx;
+      localIndices[2]:=right.Idx;
       renderIndices:=PIntegerArray(@localIndices[3]);
    end;
 end;
@@ -745,7 +776,7 @@ procedure TGLROAMPatch.RenderROAM(vertices : TAffineVectorList;
    begin
       p.X:=anX;
       p.Y:=anY;
-      p.Idx:=vertices.Add(anX, anY, renderRaster^[anY]^[anX]);
+      p.Idx:=vertices.Add(anX, anY, renderRaster[anY][anX]);
       texCoords.Add(anX, anY);
    end;
 
@@ -766,8 +797,8 @@ begin
    ROAMRenderPoint(rbl, 0,          FPatchSize);
    ROAMRenderPoint(rbr, FPatchSize, FPatchSize);
 
-   RecursRender(FTLNode, rbl, rtr, rtl);
-   RecursRender(FBRNode, rtr, rbl, rbr);
+   RecursRender(@vTriangleNodes[FTLNode], rbl, rtr, rtl);
+   RecursRender(@vTriangleNodes[FBRNode], rtr, rbl, rbr);
 
    vertexIndices.Count:=(Integer(renderIndices)-Integer(vertexIndices.List)) div SizeOf(Integer);
 end;
@@ -798,11 +829,11 @@ begin
    for y:=0 to FPatchSize do begin
       p[1]:=y;
       tex.T:=p[1];
-      row:=raster^[y];
+      row:=raster[y];
       for x:=0 to FPatchSize do begin
          p[0]:=x;
          tex.S:=p[0];
-         p[2]:=row^[x];
+         p[2]:=row[x];
          verticesList^:=p;
          Inc(verticesList);
          texCoordsList^:=tex;
@@ -820,16 +851,16 @@ begin
       end;
       for x:=baseTop+FPatchSize downto baseTop do begin
          indicesList^:=x;
-         PIntegerArray(indicesList)^[1]:=rowLength+x;
+         PIntegerArray(indicesList)[1]:=rowLength+x;
          Inc(indicesList, 2);
       end;
       indicesList^:=baseTop+rowLength;
       Inc(baseTop, rowLength);
-      PIntegerArray(indicesList)^[1]:=baseTop+rowLength;
+      PIntegerArray(indicesList)[1]:=baseTop+rowLength;
       Inc(indicesList, 2);
       for x:=baseTop to baseTop+FPatchSize do begin
          indicesList^:=rowLength+x;
-         PIntegerArray(indicesList)^[1]:=x;
+         PIntegerArray(indicesList)[1]:=x;
          Inc(indicesList, 2);
       end;
       indicesList^:=baseTop+FPatchSize;
