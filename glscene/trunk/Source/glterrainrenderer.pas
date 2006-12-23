@@ -1,11 +1,13 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glterrainrenderer<p>
+{: GLTerrainRenderer<p>
 
    GLScene's brute-force terrain renderer.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>19/10/06 - LC - Changed the behaviour of OnMaxCLODTrianglesReached
+      <li>09/10/06 - Lin - Added OnMaxCLODTrianglesReached event.(Rene Lindsay)
       <li>01/09/04 - SG - Fix for RayCastIntersect (Alan Rose)
       <li>25/04/04 - EG - Occlusion testing support
       <li>13/01/04 - EG - Leak fix (Phil Scadden)
@@ -28,12 +30,12 @@
    NOTA : multi-materials terrain support is not yet optimized to minimize
           texture switches (in case of resued tile textures).
 }
-unit glterrainrenderer;
+unit GLTerrainRenderer;
 
 interface
 
-uses classes, glscene, glheightdata, gltexture, vectorgeometry, glcontext,
-   glroampatch, vectorlists;
+uses Classes, GLScene, GLHeightData, GLTexture, VectorGeometry, GLContext,
+   GLROAMPatch, VectorLists;
 
 const
    cTilesHashSize = 511;
@@ -41,39 +43,43 @@ const
 type
 
    TGetTerrainBoundsEvent = procedure(var l, t, r, b : Single) of object;
-   TPatchPostRenderEvent = procedure (var rci : TRenderContextInfo; const patches : TList) of object;
-   THeightDataPostRenderEvent = procedure (var rci : TRenderContextInfo; const heightDatas : TList) of object;
+   TPatchPostRenderEvent = procedure(var rci : TRenderContextInfo; const patches : TList) of object;
+   THeightDataPostRenderEvent = procedure(var rci : TRenderContextInfo; const heightDatas : TList) of object;
+   TMaxCLODTrianglesReachedEvent = procedure(var rci:TRenderContextInfo) of object;
+
    TTerrainHighResStyle = (hrsFullGeometry, hrsTesselated);
    TTerrainOcclusionTesselate = (totTesselateAlways, totTesselateIfVisible);
 
 	// TGLTerrainRenderer
 	//
    {: Basic terrain renderer.<p>
-      this renderer uses no sophisticated meshing, it just builds and maintains
+      This renderer uses no sophisticated meshing, it just builds and maintains
       a set of terrain tiles, performs basic visibility culling and renders its
-      stuff. you can use it has a base class/sample for more specialized
+      stuff. You can use it has a base class/sample for more specialized
       terrain renderers.<p>
-      the terrain heightdata is retrieved directly from a theightdatasource, and
+      The Terrain heightdata is retrieved directly from a THeightDataSource, and
       expressed as z=f(x, y) data. }
-	tglterrainrenderer = class (tglsceneobject)
+	TGLTerrainRenderer = class (TGLSceneObject)
 	   private
-	      { private declarations }
-         fheightdatasource : theightdatasource;
-         ftilesize : integer;
-         fqualitydistance, finvtilesize : single;
-         flasttrianglecount : integer;
-         ftilespertexture : single;
-         fmaxclodtriangles, fclodprecision : integer;
-         fbuffervertices : taffinevectorlist;
-         fbuffertexpoints : ttexpointlist;
-         fbuffervertexindices : tintegerlist;
-         fmateriallibrary : tglmateriallibrary;
-         fongetterrainbounds : tgetterrainboundsevent;
-         fonpatchpostrender : tpatchpostrenderevent;
-         fonheightdatapostrender : theightdatapostrenderevent;
-         fqualitystyle : tterrainhighresstyle;
-         focclusionframeskip : integer;
-         focclusiontesselate : tterrainocclusiontesselate;
+	      { Private Declarations }
+         FHeightDataSource : THeightDataSource;
+         FTileSize : Integer;
+         FQualityDistance, FinvTileSize : Single;
+         FLastTriangleCount : Integer;
+         FTilesPerTexture : Single;
+         FMaxCLODTriangles, FCLODPrecision : Integer;
+         FBufferVertices : TAffineVectorList;
+         FBufferTexPoints : TTexPointList;
+         FBufferVertexIndices : TIntegerList;
+         FMaterialLibrary : TGLMaterialLibrary;
+         FOnGetTerrainBounds : TGetTerrainBoundsEvent;
+         FOnPatchPostRender : TPatchPostRenderEvent;
+         FOnHeightDataPostRender : THeightDataPostRenderEvent;
+         FOnMaxCLODTrianglesReached : TMaxCLODTrianglesReachedEvent;
+
+         FQualityStyle : TTerrainHighResStyle;
+         FOcclusionFrameSkip : Integer;
+         FOcclusionTesselate : TTerrainOcclusionTesselate;
 
 	   protected
 	      { Protected Declarations }
@@ -198,6 +204,13 @@ type
             post-processings, like waters, trees... It is invoked *after*
             OnPatchPostRender. }
          property OnHeightDataPostRender : THeightDataPostRenderEvent read FOnHeightDataPostRender write FOnHeightDataPostRender;
+         {: Invoked whenever the MaxCLODTriangles limit was reached during last rendering.<p>
+            This forced the terrain renderer to resize the buffer, which affects performance.
+            If this event is fired frequently, one should increase MaxCLODTriangles. 
+         }
+         property OnMaxCLODTrianglesReached : TMaxCLODTrianglesReachedEvent read FOnMaxCLODTrianglesReached write FOnMaxCLODTrianglesReached;
+
+
 	end;
 
 // ------------------------------------------------------------------
@@ -208,7 +221,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, opengl1x, glmisc, xopengl, glutils;
+uses SysUtils, OpenGL1x, GLMisc, XOpenGL, GLUtils;
 
 // HashKey
 //
@@ -427,6 +440,7 @@ var
    maxTilePosX, maxTilePosY, minTilePosX, minTilePosY : Single;
    t_l, t_t, t_r, t_b : Single;
    hd : THeightData;
+   TessDone:boolean;
 
    procedure ApplyMaterial(const materialName : String);
    begin
@@ -635,7 +649,7 @@ begin
             if    (patch.LastOcclusionTestPassed)
                or (patch.OcclusionCounter<=0)
                or (OcclusionTesselate=totTesselateAlways) then
-               patch.Tesselate;
+                 TessDone:=patch.Tesselate;
          end;
       end;
       if n>=rpIdxDelta then begin
@@ -647,7 +661,13 @@ begin
             Inc(FLastTriangleCount, patch.TriangleCount);
          end;
       end;
+
    end;
+
+   if (GetROAMTrianglesCapacity > MaxCLODTriangles) and Assigned(FOnMaxCLODTrianglesReached) then begin
+     FOnMaxCLODTrianglesReached(rci);           //Fire an event if the MaxCLODTriangles limit was reached
+   end;
+
    TGLROAMPatch.FlushAccum(FBufferVertices, FBufferVertexIndices, FBufferTexPoints);
 
    xglPushState;
