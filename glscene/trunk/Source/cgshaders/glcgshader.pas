@@ -1,6 +1,7 @@
 {: base cg shader classes.<p>
 
    <b>History :</b><font size=-1><ul>
+      <li>29/04/06 - PhP  - Fixed TCgProgram.Finalize (Achim Hannes)
       <li>24/10/04 - NelC - Added SetAsScalar for boolean input, IncludeFilePath
       <li>10/09/04 - NelC - Added global function IsCgProfileSupported
       <li>07/09/04 - NelC - Added TCgProgram.Precision (Cg 1.3)
@@ -632,6 +633,7 @@ begin
   ClearParamsList;
   cgDestroyContext(FCgContext);
   FCgContext := nil;
+  FHandle := nil; // $added - 29/04/2006 - PhP
   Dec(vCgContextCount);
 end;
 
