@@ -29,6 +29,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>11/09/06 - NC - Added GL_ARB_texture_float, GL_ARB_texture_non_power_of_two
       <li>13/10/04 - NC - Added GL_ATI_draw_buffers
       <li>08/10/04 - LR - Added const in the prototype of the following function for compatibility :
       TGLUTessCombineProc, TGLUTessCombineDataProc, gluPickMatrix
@@ -321,6 +322,8 @@ var
    GL_SGIX_shadow_ambient,
 
    GL_WIN_swap_hint,
+   GL_ARB_texture_float,
+   GL_ARB_texture_non_power_of_two,
 
    // WGL Extensions ----------------------------
    WGL_EXT_swap_control,
@@ -2119,6 +2122,30 @@ const
    GL_DRAW_BUFFER13_ATI                             = $8832;
    GL_DRAW_BUFFER14_ATI                             = $8833;
    GL_DRAW_BUFFER15_ATI                             = $8834;
+
+//***** GL_ARB_texture_float *****//
+const
+  GL_TEXTURE_RED_TYPE_ARB = $8C10;
+  GL_TEXTURE_GREEN_TYPE_ARB = $8C11;
+  GL_TEXTURE_BLUE_TYPE_ARB = $8C12;
+  GL_TEXTURE_ALPHA_TYPE_ARB = $8C13;
+  GL_TEXTURE_LUMINANCE_TYPE_ARB = $8C14;
+  GL_TEXTURE_INTENSITY_TYPE_ARB = $8C15;
+  GL_TEXTURE_DEPTH_TYPE_ARB = $8C16;
+  GL_UNSIGNED_NORMALIZED_ARB = $8C17;
+  GL_RGBA32F_ARB = $8814;
+  GL_RGB32F_ARB = $8815;
+  GL_ALPHA32F_ARB = $8816;
+  GL_INTENSITY32F_ARB = $8817;
+  GL_LUMINANCE32F_ARB = $8818;
+  GL_LUMINANCE_ALPHA32F_ARB = $8819;
+  GL_RGBA16F_ARB = $881A;
+  GL_RGB16F_ARB = $881B;
+  GL_ALPHA16F_ARB = $881C;
+  GL_INTENSITY16F_ARB = $881D;
+  GL_LUMINANCE16F_ARB = $881E;
+  GL_LUMINANCE_ALPHA16F_ARB = $881F;
+
    
    // gl 2.0
    GL_BLEND_EQUATION_RGB = $8009;
@@ -4369,6 +4396,9 @@ begin
    GL_ARB_vertex_shader := CheckExtension('GL_ARB_vertex_shader');
    GL_ARB_fragment_shader := CheckExtension('GL_ARB_fragment_shader');
    GL_ARB_fragment_program := CheckExtension('GL_ARB_fragment_program');
+   GL_ARB_texture_float := CheckExtension('GL_ARB_texture_float');
+   // NPOT
+   GL_ARB_texture_non_power_of_two := CheckExtension('GL_ARB_texture_non_power_of_two');
 
    GL_EXT_abgr := CheckExtension('GL_EXT_abgr');
    GL_EXT_bgra := CheckExtension('GL_EXT_bgra');
