@@ -1,79 +1,95 @@
 object Form1: TForm1
+  Left = 192
+  Height = 456
+  Top = 119
+  Width = 510
+  HorzScrollBar.Page = 509
+  VertScrollBar.Page = 455
+  ActiveControl = RGFogDistance.RadioButton0
   Caption = 'Form1'
-  ClientHeight = 450
-  ClientWidth = 510
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 509
-  VertScrollBar.Page = 449
-  Left = 192
-  Height = 450
-  Top = 119
-  Width = 510
   object LFogStart: TLabel
+    Left = 8
+    Height = 20
+    Top = 312
+    Width = 55
     Caption = 'fog start'
     Color = clNone
-    Left = 8
-    Height = 13
-    Top = 312
-    Width = 38
+    ParentColor = False
   end
   object LFogEnd: TLabel
+    Left = 8
+    Height = 20
+    Top = 365
+    Width = 49
     Caption = 'fog end'
     Color = clNone
-    Left = 8
-    Height = 13
-    Top = 344
-    Width = 36
+    ParentColor = False
   end
   object LFogColor: TLabel
+    Left = 425
+    Height = 20
+    Top = 292
+    Width = 56
     Caption = 'fog color'
     Color = clNone
-    Left = 344
-    Height = 13
-    Top = 288
-    Width = 41
+    ParentColor = False
   end
   object SFogColor: TShape
-    OnMouseDown = SFogColorMouseDown
-    Left = 392
+    Left = 424
     Height = 16
-    Top = 288
+    Top = 320
     Width = 57
+    OnMouseDown = SFogColorMouseDown
   end
   object LFogDensity: TLabel
+    Left = 283
+    Height = 20
+    Top = 391
+    Width = 198
     Caption = 'fog density (for fmExp/fmExp2)'
     Color = clNone
-    Left = 344
-    Height = 13
-    Top = 336
-    Width = 144
+    ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    FieldOfView = 139.89952087402344
-    Anchors = [akTop, akLeft, akRight]
-    OnMouseDown = GLSceneViewer1MouseDown
-    OnMouseMove = GLSceneViewer1MouseMove
     Left = 8
     Height = 274
     Top = 8
     Width = 502
+    Camera = GLCamera1
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 139.899520874023
+    Anchors = [akTop, akLeft, akRight]
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
   end
   object CBFogEnable: TCheckBox
+    Left = 8
+    Height = 22
+    Top = 288
+    Width = 85
     Caption = 'fog on/off'
     OnClick = CBFogEnableClick
     TabOrder = 1
-    Left = 8
-    Height = 17
-    Top = 288
-    Width = 73
   end
   object RGFogDistance: TRadioGroup
+    Left = 120
+    Height = 97
+    Top = 288
+    Width = 105
+    AutoFill = True
     Caption = '[ fog mode ]'
+    ChildSizing.LeftRightSpacing = 6
+    ChildSizing.TopBottomSpacing = 6
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 1
     ItemIndex = 0
     Items.Strings = (
       'fdDefault'
@@ -81,14 +97,23 @@ object Form1: TForm1
       'fdEyeRadial'
     )
     OnClick = RGFogModeClick
-    ParentColor = True
-    Left = 120
-    Height = 73
-    Top = 288
-    Width = 105
+    TabOrder = 0
   end
   object RGFogMode: TRadioGroup
+    Left = 232
+    Height = 97
+    Top = 288
+    Width = 105
+    AutoFill = True
     Caption = '[ fog mode ]'
+    ChildSizing.LeftRightSpacing = 6
+    ChildSizing.TopBottomSpacing = 6
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 1
     ItemIndex = 0
     Items.Strings = (
       'fmLinear'
@@ -96,78 +121,71 @@ object Form1: TForm1
       'fmExp2'
     )
     OnClick = RGFogModeClick
-    ParentColor = True
-    Left = 232
-    Height = 73
-    Top = 288
-    Width = 105
+    TabOrder = 2
   end
   object CBApplyToBackground: TCheckBox
+    Left = 345
+    Height = 22
+    Top = 344
+    Width = 136
     Caption = 'background too ?'
     Checked = True
     OnClick = CBApplyToBackgroundClick
     State = cbChecked
     TabOrder = 3
-    Left = 376
-    Height = 17
-    Top = 304
-    Width = 105
   end
   object GBTexture: TGroupBox
-    Caption = '[ texture ]'
-    ClientHeight = 23
-    ClientWidth = 213
-    ParentColor = True
-    TabOrder = 4
-    Left = 120
+    Left = 112
     Height = 41
-    Top = 368
+    Top = 409
     Width = 217
+    Caption = '[ texture ]'
+    TabOrder = 4
     object CBTextureEnabled: TCheckBox
+      Left = 8
+      Height = 22
+      Width = 76
       Caption = 'enabled'
       Checked = True
       OnClick = CBTextureEnabledClick
       State = cbChecked
       TabOrder = 0
-      Left = 8
-      Height = 17
-      Width = 65
     end
     object CBTextureIgnoreFog: TCheckBox
+      Left = 78
+      Height = 22
+      Width = 89
       Caption = 'ignore fog'
       OnClick = CBTextureIgnoreFogClick
       TabOrder = 1
-      Left = 78
-      Height = 17
-      Width = 73
     end
   end
   object EFogStart: TEdit
+    Left = 8
+    Height = 21
+    Top = 336
+    Width = 57
     OnChange = EFogStartChange
     TabOrder = 5
     Text = '-30'
-    Left = 56
-    Height = 21
-    Top = 312
-    Width = 57
   end
   object EFogEnd: TEdit
+    Left = 8
+    Height = 21
+    Top = 391
+    Width = 57
     OnChange = EFogStartChange
     TabOrder = 6
     Text = '30'
-    Left = 56
-    Height = 21
-    Top = 344
-    Width = 57
   end
   object EFogDensity: TEdit
+    Left = 424
+    Height = 21
+    Top = 424
+    Width = 57
     OnChange = EFogStartChange
     TabOrder = 7
     Text = '100'
-    Left = 392
-    Height = 21
-    Top = 352
-    Width = 57
   end
   object GLScene1: TGLScene
     left = 16
@@ -183,10 +201,10 @@ object Form1: TForm1
       SpotCutOff = 180
     end
     object GLSphere1: TGLSphere
-      Radius = 0.5
       Position.Coordinates = {
         000000000000A0C1000000000000803F
       }
+      Radius = 0.5
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100
@@ -205,7 +223,6 @@ object Form1: TForm1
     top = 16
   end
   object ColorDialog1: TColorDialog
-    Title = 'Select color'
     Title = 'Select color'
     left = 80
     top = 16

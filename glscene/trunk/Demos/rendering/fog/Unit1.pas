@@ -10,9 +10,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, GLScene, GLObjects, GLCadencer,
-  GLMisc, GLTexture, LResources, GLWin32Viewer;
+  GLMisc, GLTexture, LResources, GLLCLViewer;
 
 type
 
@@ -160,7 +160,8 @@ var
   Cube : TGLCube;
 
 begin
-  GLMaterialLibrary1.AddTextureMaterial('glscene', '..\..\media\glscene.bmp');
+  GLMaterialLibrary1.AddTextureMaterial('glscene', '..' + PathDelim +
+                     '..' + PathDelim + 'media' + PathDelim + 'GLScene.bmp');
   for X := -cNb to cNb do
     for Y := -cNb to cNb do
       for Z := -cNb to cNb do
