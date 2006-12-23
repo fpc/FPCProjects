@@ -1,5 +1,5 @@
-  // in gl windows management
-{: in gl windows management classes and structures<p>
+  // In GL windows management
+{: In GL windows management classes and structures<p>
 
       $Log: glwindows.pas,v $
       Revision 1.2  2006/01/11 05:28:33  z0m3ie
@@ -24,14 +24,17 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>24/05/02 - jaj - base unit built on basis of jan horn's demo at http://www.sulaco.co.za (http://www.sulaco.co.za/opengl/windows.zip)
+      <li>20/12/06 - DaStr - TGLEdit.ReadOnly, TGLScrollbar.Locked, TGLStringGrid.ColSelect added
+      <li>10/11/05 - Mathx - Fixed TGLPopupMenu stack overflow on method internalRender.
+                             Related to bug 1193909.
+      <li>24/05/02 - JAJ - Base Unit built on basis of Jan Horn's demo at http://www.sulaco.co.za (http://www.sulaco.co.za/opengl/windows.zip)
       <li>01/06/02 - JAJ - After not having received Jan Horn's blessing, the system have been revised all parts have been rewritten.
       <li>01/01/03 - JAJ - Updated so that focused controls pass focus on hide...
       <li>05/01/03 - JAJ - Cleaned up the DesignTime AccessViolations...
       <li>07/01/03 - JAJ - Jeremy Darling modified the TGLEdit's Render, more updates on TGLEdit expected...
       <li>18/01/03 - JAJ - Added TGLStringList, TGLScrollbar, TGLPopupMenu...
       <li>08/08/03 - PS  - Added Horizontal to GLScrollbar...
-      <li>14/08/03 - SG - Fixed TGLBaseComponent.SetGuiLayout (Joen Joensen)
+      <li>14/08/03 - SG  - Fixed TGLBaseComponent.SetGuiLayout (Joen Joensen)
       <li>08/08/03 - JAJ - Merged PS's and SG's update... Added TitleOffset...
       <li>03/07/04 - LR - Added constant for Keyboard (glKey_TAB, ...)
                           Added function GLOKMessageBox to avoid the uses of Forms
@@ -44,14 +47,16 @@
 	</ul></font>
 }
 
-unit glwindows;
+unit GLWindows;
 
 interface
 
+{$I GLScene.inc}
+
 uses
-   sysutils, classes, glmisc, glscene, glhudobjects,
-   gltexture, opengl1x, glbitmapfont, glwindowsfont, vectorgeometry,
-   glgui, glcrossplatform;
+   SysUtils, Classes, GLMisc, GLScene, GLHUDObjects,
+   GLTexture, OpenGL1x, GLBitmapFont, GLWindowsFont, VectorGeometry,
+   GLGui, GLCrossPlatform;
 
 type
 
@@ -79,8 +84,8 @@ type
     procedure SetGUIRedraw(value : Boolean);
 	procedure SetDoChangesOnProgress(const Value: Boolean);
   protected
-    Procedure RenderHeader(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
-    Procedure RenderFooter(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+    Procedure RenderHeader(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
+    Procedure RenderFooter(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
     procedure SetGuiLayout(NewGui : TGLGuiLayout); Virtual;
     procedure SetGuiLayoutName(NewName : TGLGuiComponentName);
@@ -103,11 +108,11 @@ type
     Procedure DoChanges; virtual;
     Procedure MoveGUI(XRel, YRel : Single);
     Procedure PlaceGUI(XPos, YPos : Single);
-	
+
     procedure DoProgress(const progressTime : TProgressTimes); override;
 
-    procedure DoRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
-    Procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); Virtual;
+    procedure DoRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
+    Procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); Virtual;
     property  GUIRedraw     : Boolean read FGUIRedraw write SetGUIRedraw;
     property  ReBuildGui    : Boolean read FReBuildGui write FReBuildGui;
   published
@@ -273,7 +278,7 @@ type
   public
     Constructor Create(AOwner : TComponent); override;
     Destructor  Destroy; override;
-    procedure   InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure   InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
     procedure   SetMaterial(AMaterial : TGLMaterial);
     property    CustomData   : Pointer            read FCustomData write FCustomData;
     property    CustomObject : TObject            read FCustomObject write FCustomObject;
@@ -309,8 +314,8 @@ type
     Constructor Create(AOwner : TComponent); override;
     Destructor  Destroy; override;
     Procedure   PopUp(Px,Py : Integer);
-    procedure   InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
-    procedure   DoRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure   InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
+    procedure   DoRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
     Function    MouseDown(Sender: TObject; Button: TGLMouseButton; Shift: TShiftState; X, Y: Integer) : Boolean; override;
   published
     property MenuItems : TStrings read FMenuItems write SetMenuItems;
@@ -353,7 +358,7 @@ type
     procedure NotifyHide; override;
     Function  MouseUp(Sender: TObject; Button: TGLMouseButton; Shift: TShiftState; X, Y: Integer) : Boolean; override;
     Function  MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer) : Boolean; override;
-    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
   published
     property  TitleColor    : TDelphiColor                 read GetTitleColor  write SetTitleColor;
     property  OnCanMove     : TGLFormCanRequest      read FOnCanMove     write FOnCanMove;
@@ -384,7 +389,7 @@ type
     Procedure SetGroup(const val : Integer);
   public
     constructor Create(AOwner: TComponent); override;
-    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
     procedure NotifyChange(Sender : TObject); override;
   published
     property  Group : Integer read FGroup write SetGroup;
@@ -425,7 +430,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
   published
     property Group : Integer read FGroup write SetGroup;
     property BitBtn : TGLMaterial read FBitBtn write SetBitBtn;
@@ -443,6 +448,7 @@ type
   private
     FOnChange  : TNotifyEvent;
     FSelStart  : Integer;
+    FReadOnly  : Boolean;
     FEditChar  : String;
   protected
     procedure InternalMouseDown(Shift: TShiftState; Button: TGLMouseButton; X, Y: Integer); override;
@@ -454,9 +460,10 @@ type
     Procedure SetEditChar(const Value : String);
   public
     Constructor Create(AOwner : TComponent); override;
-    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
   published
     property  EditChar : String read FEditChar write SetEditChar;
+    property  ReadOnly : Boolean read FReadOnly write FReadOnly default False;
     property  OnChange : TNotifyEvent read FOnChange write FOnChange;
     property  SelStart : Integer read FSelStart write SetSelStart;
   end;
@@ -470,7 +477,7 @@ type
   protected
   public
     Constructor Create(AOwner : TComponent); override;
-    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
   published
     property Alignment : TAlignment read FAlignment write SetAlignment;
     property TextLayout: TGLTextLayout read FTextLayout write SetTextLayout;
@@ -480,7 +487,7 @@ type
   private
   protected
   public
-    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
   published
   end;
 
@@ -498,6 +505,7 @@ type
     FScrollOffs  : Single;
     FScrolling   : Boolean;
     FHorizontal : Boolean;
+    FLocked:Boolean;
   protected
     Procedure SetMin(const val      : Single);
     Procedure SetMax(const val      : Single);
@@ -525,7 +533,7 @@ type
     Procedure PageDown;
     Function  MouseUp(Sender: TObject; Button: TGLMouseButton; Shift: TShiftState; X, Y: Integer) : Boolean; override;
     Function  MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer) : Boolean; override;
-    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
   published
     property Horizontal : Boolean read FHorizontal write SetHorizontal;
     property Pos      : Single read FPos write SetPos;
@@ -535,13 +543,15 @@ type
     property PageSize : Single read FPageSize write SetPageSize;
     property OnChange : TNotifyEvent read FOnChange write FOnChange;
     property GuiLayoutKnobName : TGLGuiComponentName read FGuiLayoutKnobName Write SetGuiLayoutKnobName;
+    property Locked : Boolean read FLocked write FLocked default False;
   End;
 
 
   TGLStringGrid = class(TGLFocusControl)
   private
-    FSelCol,FSelRow : Integer;
-    FRowSelect : Boolean;
+    FSelCol, FSelRow : Integer;
+    FRowSelect: Boolean;
+    FColSelect: Boolean;
     FColumns : TStrings;
     FRows    : TList;
     FHeaderColor : TColorVector;
@@ -554,8 +564,9 @@ type
     Function  GetCell(X,Y : Integer; out oCol,oRow : Integer) : Boolean;
     procedure InternalMouseDown(Shift: TShiftState; Button: TGLMouseButton; X, Y: Integer); override;
     Procedure SetColumns(const val : TStrings);
-    Function  GetRow (indx : Integer) : TStringList;
-    Procedure SetRow(indx : Integer; const val : TStringList);
+    Procedure SetColSelect(const val : Boolean);
+    Function  GetRow (index : Integer) : TStringList;
+    Procedure SetRow(index : Integer; const val : TStringList);
     Function  GetRowCount : Integer;
     Procedure SetRowCount(const val : Integer);
     Procedure SetSelCol(const val : Integer);
@@ -578,9 +589,9 @@ type
     procedure SetText(Data : String);
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure NotifyChange(Sender : TObject); override;
-    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+    procedure InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean); override;
     Procedure OnStringListChange(Sender : TObject);
-    property  Row[indx : Integer] : TStringList read GetRow write SetRow;
+    property  Row[index : Integer] : TStringList read GetRow write SetRow;
   published
     property HeaderColor : TDelphiColor read GetHeaderColor write SetHeaderColor;
     property Columns : TStrings read FColumns write SetColumns;
@@ -591,6 +602,7 @@ type
     property SelCol : Integer read FSelCol write SetSelCol;
     property SelRow : Integer read FSelRow write SetSelRow;
     property RowSelect : Boolean read FRowSelect write SetRowSelect;
+    property ColSelect : Boolean read FColSelect write SetColSelect;
     property DrawHeader : Boolean read FDrawHeader write SetDrawHeader;
     property Scrollbar : TGLScrollbar read FScrollbar write SetScrollbar;
   end;
@@ -599,7 +611,7 @@ Function  UnpressGroup(CurrentObject : TGLBaseSceneObject; AGroupID : Integer) :
 
 implementation
 
-uses globjects, glstate, glutils;
+uses GLObjects, GLState, GLUtils;
 
 Function  UnpressGroup(CurrentObject : TGLBaseSceneObject; AGroupID : Integer) : Boolean;
 
@@ -671,7 +683,7 @@ Begin
   BlockRendering := False;
 End;
 
-Procedure TGLBaseComponent.RenderHeader(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+Procedure TGLBaseComponent.RenderHeader(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Var
   f : Single;
@@ -699,7 +711,7 @@ Begin
    glDepthMask(False);
 End;
 
-Procedure TGLBaseComponent.RenderFooter(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+Procedure TGLBaseComponent.RenderFooter(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Begin
    glDepthMask(True);
@@ -935,7 +947,7 @@ Begin
   End;
 End;
 
-Procedure TGLBaseComponent.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+Procedure TGLBaseComponent.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Begin
   If Assigned(FGuiComponent) then
@@ -949,7 +961,7 @@ Begin
   End;
 End;
 
-procedure TGLBaseComponent.DoRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLBaseComponent.DoRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Var
   B : Boolean;
@@ -967,15 +979,15 @@ Begin
   If RenderSelf then
   If FGuiLayout <> nil then
   Begin
-    RenderHeader(rci,renderSelf,renderChildre);
+    RenderHeader(rci,renderSelf,renderChildren);
 
-    InternalRender(rci,RenderSelf,RenderChildre);
+    InternalRender(rci,RenderSelf,RenderChildren);
 
-    RenderFooter(rci,renderSelf,renderChildre);
+    RenderFooter(rci,renderSelf,renderChildren);
     FReBuildGui := False;
   End;
 
-  If renderChildre then
+  If renderChildren then
   if Count>0 then
     Self.RenderChildren(0, Count-1, rci);
   Dec(RenderingCount);
@@ -1296,7 +1308,7 @@ Procedure TGLFocusControl.NextControl;
 
 Var
   Host : TGLBaseComponent;
-  Indx : Integer;
+  Index : Integer;
   IndexedChild : TGLBaseComponent;
   RestartedLoop : Boolean;
 
@@ -1305,14 +1317,14 @@ Begin
   If Parent is TGLBaseComponent then
   Begin
     Host := Parent as TGLBaseComponent;
-    Indx := Host.IndexOfChild(Self);
+    Index := Host.IndexOfChild(Self);
     While not Host.RecursiveVisible do
     Begin
       If Host.Parent is TGLBaseComponent then
       Begin
         IndexedChild := Host;
         Host := Host.Parent as TGLBaseComponent;
-        Indx := Host.IndexOfChild(IndexedChild);
+        Index := Host.IndexOfChild(IndexedChild);
       End else
       Begin
         RootControl.FocusedControl := Nil;
@@ -1322,12 +1334,12 @@ Begin
 
     While true do
     Begin
-      If Indx > 0 then
+      If Index > 0 then
       Begin
-        Dec(Indx);
-        If Host.Children[Indx] is TGLFocusControl then
+        Dec(Index);
+        If Host.Children[Index] is TGLFocusControl then
         Begin
-          With (Host.Children[Indx] as TGLFocusControl) do
+          With (Host.Children[Index] as TGLFocusControl) do
           If RecursiveVisible then
           Begin
             SetFocus;
@@ -1335,13 +1347,13 @@ Begin
           End;
         End else
         Begin
-          If Host.Children[Indx] is TGLBaseComponent then
+          If Host.Children[Index] is TGLBaseComponent then
           Begin
-            IndexedChild := Host.Children[Indx] as TGLBaseComponent;
+            IndexedChild := Host.Children[Index] as TGLBaseComponent;
             If IndexedChild.RecursiveVisible then
             Begin
               Host := IndexedChild;
-              Indx := Host.Count;
+              Index := Host.Count;
             End;
           End;
         End;
@@ -1349,7 +1361,7 @@ Begin
       Begin
         If Host.Parent is TGLBaseComponent then
         Begin
-          Indx := Host.Parent.IndexOfChild(Host);
+          Index := Host.Parent.IndexOfChild(Host);
           Host := Host.Parent as TGLBaseComponent;
         End else
         Begin
@@ -1358,7 +1370,7 @@ Begin
             SetFocus;
             Exit;
           End;
-          Indx := Host.Count;
+          Index := Host.Count;
           RestartedLoop := True;
         End;
       End;
@@ -1370,7 +1382,7 @@ Procedure TGLFocusControl.PrevControl;
 
 Var
   Host : TGLBaseComponent;
-  Indx : Integer;
+  Index : Integer;
   IndexedChild : TGLBaseComponent;
   RestartedLoop : Boolean;
 
@@ -1379,14 +1391,14 @@ Begin
   If Parent is TGLBaseComponent then
   Begin
     Host := Parent as TGLBaseComponent;
-    Indx := Host.IndexOfChild(Self);
+    Index := Host.IndexOfChild(Self);
     While not Host.RecursiveVisible do
     Begin
       If Host.Parent is TGLBaseComponent then
       Begin
         IndexedChild := Host;
         Host := Host.Parent as TGLBaseComponent;
-        Indx := Host.IndexOfChild(IndexedChild);
+        Index := Host.IndexOfChild(IndexedChild);
       End else
       Begin
         RootControl.FocusedControl := Nil;
@@ -1396,26 +1408,26 @@ Begin
 
     While true do
     Begin
-      Inc(Indx);
+      Inc(Index);
 
-      If Indx < Host.Count then
+      If Index < Host.Count then
       Begin
-        If Host.Children[Indx] is TGLFocusControl then
+        If Host.Children[Index] is TGLFocusControl then
         Begin
-          With (Host.Children[Indx] as TGLFocusControl) do
+          With (Host.Children[Index] as TGLFocusControl) do
           If RecursiveVisible then
           Begin
             SetFocus;
             Exit;
           End;
         End;
-        If Host.Children[Indx] is TGLBaseComponent then
+        If Host.Children[Index] is TGLBaseComponent then
         Begin
-          IndexedChild := Host.Children[Indx] as TGLBaseComponent;
+          IndexedChild := Host.Children[Index] as TGLBaseComponent;
           If IndexedChild.RecursiveVisible then
           Begin
             Host := IndexedChild;
-            Indx := -1;
+            Index := -1;
           End;
         End;
       End else
@@ -1424,7 +1436,7 @@ Begin
         Begin
           IndexedChild := Host;
           Host := Host.Parent as TGLBaseComponent;
-          Indx := Host.IndexOfChild(IndexedChild);
+          Index := Host.IndexOfChild(IndexedChild);
         End else
         Begin
           If RestartedLoop then
@@ -1432,7 +1444,7 @@ Begin
             RootControl.FocusedControl := Nil;
             Exit;
           End;
-          Indx := -1;
+          Index := -1;
           RestartedLoop := True;
         End;
       End;
@@ -1582,28 +1594,28 @@ End;
 Procedure TGLBaseFontControl.WriteTextAt(var rci : TRenderContextInfo; Const X,Y : TGLFloat; Const Data : String; Const Color : TColorVector);
 
 Var
-  Positio : TVector;
+  Position : TVector;
 Begin
   If Assigned(BitmapFont) then
   Begin
-    Positio[0] := Round(X);
-    Positio[1] := Round(Y);
-    Positio[2] := 0;
-    Positio[3] := 0;
+    Position[0] := Round(X);
+    Position[1] := Round(Y);
+    Position[2] := 0;
+    Position[3] := 0;
     BitmapFont.RenderString(rci, Data,taLeftJustify,tlTop,Color, @Position);
   End;
 End;
 
 Procedure TGLBaseFontControl.WriteTextAt(var rci : TRenderContextInfo; Const X1,Y1,X2,Y2 : TGLFloat; Const Data : String; const Color : TColorVector);
 var
-  Positio : TVector;
+  Position : TVector;
 Begin
   If Assigned(BitmapFont) then
   Begin
-    Positio[0] := Round(((X2+X1-BitmapFont.CalcStringWidth(Data))*0.5));
-    Positio[1] := Round(-((Y2+Y1-GetFontHeight)*0.5))+2;
-    Positio[2] := 0;
-    Positio[3] := 0;
+    Position[0] := Round(((X2+X1-BitmapFont.CalcStringWidth(Data))*0.5));
+    Position[1] := Round(-((Y2+Y1-GetFontHeight)*0.5))+2;
+    Position[2] := 0;
+    Position[3] := 0;
     BitmapFont.RenderString(rci, Data,taLeftJustify,tlTop,Color,@Position);
   End;
 End;
@@ -1657,7 +1669,7 @@ Begin
   FBitmap.Assign(ABitmap);
 End;
 
-procedure   TGLCustomControl.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure   TGLCustomControl.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Var
   X1,X2,Y1,Y2 : Single;
@@ -1862,7 +1874,7 @@ Begin
   RootControl.ActiveControl := Self;
 End;
 
-procedure   TGLPopupMenu.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure   TGLPopupMenu.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Var
   CenterHeight : Single;
@@ -1895,7 +1907,7 @@ Begin
       changedHeight := Height + TextHeight-CenterHeight;
       if changedHeight <> newHeight then begin
         newHeight:= changedHeight;
-        InternalRender(rci,RenderSelf,RenderChildre);
+        InternalRender(rci,RenderSelf,RenderChildren);
       end;
     End else
     Begin
@@ -1913,7 +1925,7 @@ Begin
   End;
 End;
 
-procedure TGLPopupMenu.DoRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLPopupMenu.DoRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Begin
   inherited;
@@ -1951,7 +1963,7 @@ Begin
 {      If contains(Width-22,Width-6,XHere) and contains(8,24,YHere) then
       Begin
         Close;
-      End else}
+      End else{}
       Begin
         CanMove := True;
         If Assigned(FOnCanMove) then FOnCanMove(Self,CanMove);
@@ -2085,7 +2097,7 @@ Begin
   End else Result := Inherited MouseMove(Sender,Shift,X,Y);
 End;
 
-procedure TGLForm.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLForm.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 var
   ATitleColor: TColorVector;  
 Begin
@@ -2184,7 +2196,7 @@ Begin
   FGroup := -1;
 End;
 
-procedure TGLCheckBox.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLCheckBox.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 Begin
   If Checked then
   Begin
@@ -2398,7 +2410,7 @@ begin
    FBitBtn.Free;
 end;
 
-procedure TGLButton.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLButton.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Var
   B : Boolean;
@@ -2467,7 +2479,7 @@ Begin
     glVertex2f(X2, -Y2);
 
     glTexCoord2f(1,1);
-    glVertex2f(X2, -Y1);}
+    glVertex2f(X2, -Y1);{}
 
     glTexCoord2f(0,0);
     glVertex2f(X1-XOffSet, -Y1+YOffSet);
@@ -2508,14 +2520,15 @@ End;
 
 procedure TGLEdit.InternalMouseDown(Shift: TShiftState; Button: TGLMouseButton; X, Y: Integer);
 Begin
-  SetFocus;
+  if not FReadOnly then
+    SetFocus;
   inherited;
 End;
 
 Procedure TGLEdit.InternalKeyPress(var Key: Char);
 Begin
+  if FReadOnly then exit;
   inherited;
-
   Case Key of
     #8 :
     Begin
@@ -2539,10 +2552,9 @@ Begin
 End;
 
 Procedure TGLEdit.InternalKeyDown(var Key: Word; Shift: TShiftState);
-
 Begin
+  if FReadOnly then exit;
   inherited;
-
   Case Key of
     glKey_DELETE :
     Begin
@@ -2624,7 +2636,7 @@ Begin
 End;
 
 procedure TGLEdit.InternalRender(var rci : TRenderContextInfo; renderSelf,
-renderChildre : Boolean);
+renderChildren : Boolean);
 var
   Tekst : String;
   pBig  : Integer;
@@ -2699,7 +2711,7 @@ begin
   FTextLayout := tlCenter;
 end;
 
-procedure TGLLabel.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLLabel.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Var
   TekstPos : TVector;
@@ -2763,7 +2775,7 @@ begin
 end;
 
 
-procedure TGLAdvancedLabel.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLAdvancedLabel.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Begin
    If Assigned(BitmapFont) then
@@ -2900,7 +2912,9 @@ Var
   Tx, Ty : Single;
 
 Begin
-  if Button = mbLeft then
+  if (Button = mbLeft)
+   and not FLocked
+    then
   Begin
     Tx := x - left;
     Ty := y - top;
@@ -3038,7 +3052,7 @@ Begin
   End else Result := Inherited MouseMove(Sender,Shift,X,Y);
 End;
 
-procedure TGLScrollbar.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLScrollbar.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Var
   Start, Size : Integer;
@@ -3163,7 +3177,6 @@ Begin
 End;
 
 Procedure TGLStringGrid.SetColumns(const val : TStrings);
-
 Var
   XC : Integer;
 Begin
@@ -3172,7 +3185,13 @@ Begin
   Columns.Objects[XC] := TObject(ColumnSize);
 end;
 
-Function  TGLStringGrid.GetRow(indx : Integer) : TStringList;
+Procedure TGLStringGrid.SetColSelect(const val : Boolean);
+Begin
+  FColSelect := Val;
+  NotifyChange(Self);
+End;
+
+Function  TGLStringGrid.GetRow(index : Integer) : TStringList;
 
 Begin
   if (index >= 0) and (index < FRows.Count) then
@@ -3181,7 +3200,7 @@ Begin
     Result := Nil;
 End;
 
-Procedure TGLStringGrid.SetRow(indx : Integer; const val : TStringList);
+Procedure TGLStringGrid.SetRow(index : Integer; const val : TStringList);
 
 Begin
   if (index >= 0) then
@@ -3249,7 +3268,6 @@ Begin
 End;
 
 Procedure TGLStringGrid.SetRowSelect(const val : Boolean);
-
 Begin
   FRowSelect := Val;
   NotifyChange(Self);
@@ -3381,16 +3399,20 @@ Begin
   inherited;
 End;
 
-procedure TGLStringGrid.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean);
+procedure TGLStringGrid.InternalRender(var rci : TRenderContextInfo; renderSelf, renderChildren : Boolean);
 
 Function CellSelected(X,Y : Integer) : Boolean;
-
 Begin
-  if RowSelect then
+  if (RowSelect and ColSelect) then
+    Result := (Y = SelRow) or (x = SelCol)
+  else if RowSelect then
     Result := Y = SelRow
+  else if ColSelect then
+    Result := X = SelCol
   else
     Result := (Y = SelRow) and (x = SelCol);
 End;
+
 
 Function CellText(X,Y : Integer) : String;
 
