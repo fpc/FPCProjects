@@ -1,4 +1,4 @@
-{: glcontext<p>
+{: GLContext<p>
 
    Prototypes and base implementation of TGLContext.<p>
    Currently NOT thread-safe.<p>
@@ -41,11 +41,11 @@
       <li>22/07/01 - EG - Creation (glcontext.omm)
    </ul></font>
 }
-unit glcontext;
+unit GLContext;
 
 interface
 
-uses classes, sysutils, opengl1x, vectorgeometry, vectortypes;
+uses Classes, SysUtils, OpenGL1x, VectorGeometry, VectorTypes;
 
 {$i GLScene.inc}
 
@@ -972,7 +972,7 @@ var
 begin
    Result:=nil;
    for i:=0 to FSharedContexts.Count-1 do
-      if TGLContext(FSharedContexts[i])<>Self then begin
+      if FSharedContexts[i]<>Self then begin
          Result:=TGLContext(FSharedContexts[i]);
          Break;
       end;
@@ -1392,8 +1392,6 @@ procedure TGLShaderHandle.ShaderSource(const source : String);
 var
    p : PChar;
 begin
-   //crossbuilder: This is wrong, isn't it? : p:=PChar(@source);
-   //better: 
    p:=PChar(source);
    glShaderSourceARB(FHandle, 1, @p, nil);
 end;
@@ -1478,7 +1476,6 @@ end;
 //
 procedure TGLProgramHandle.BindAttribLocation(index : Integer; const name : String);
 begin
-   //crossbuilder: again, pchar(@string) seems wrong to me: glBindAttribLocationARB(FHandle, index, PChar(@name));
    glBindAttribLocationARB(FHandle, index, PChar(name));
 end;
 
@@ -1510,7 +1507,6 @@ end;
 //
 function TGLProgramHandle.GetAttribLocation(const name : String) : Integer;
 begin
-   //crossbuilder: again, pchar(@string) seems wrong to me: Result:=glGetAttribLocationARB(Handle, PChar(@name));
    Result:=glGetAttribLocationARB(Handle, PChar(name));
    Assert(Result>=0, 'Unknown attrib "'+name+'" or program not in use');
 end;
@@ -1519,7 +1515,6 @@ end;
 //
 function TGLProgramHandle.GetUniformLocation(const name : String) : Integer;
 begin
-   //crossbuilder: again, pchar(@string) seems wrong to me: Result:=glGetUniformLocationARB(Handle, PChar(@name)); 
    Result:=glGetUniformLocationARB(Handle, PChar(name));
    Assert(Result>=0, 'Unknown uniform "'+name+'" or program not in use');
 end;
