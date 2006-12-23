@@ -1,26 +1,7 @@
-// glcollision
-{: egg<p>
+// GLCollision
+{: Egg<p>
 
 	Collision-detection management for GLScene<p>
-
-      $Log: glcollision.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/08/20 08:28:29  k00m
-      <li>05/20/08 - D.G - Fix on the collision create worked now.
-
-      Revision 1.4  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
       <li>19/10/06 - LC - Fixed memory leak in TCollisionManager.CheckCollisions. Bugtracker ID=1548618
@@ -33,12 +14,12 @@
 	   <li>23/05/00 - Egg - Creation
 	</ul></font>
 }
-unit glcollision;
+unit GLCollision;
 
 interface
 
-uses classes, glscene, xcollection, vectorgeometry, vectorlists, glvectorfileobjects,
-   geometrybb, glcrossplatform;
+uses Classes, GLScene, XCollection, VectorGeometry, VectorLists, GLVectorFileObjects,
+   GeometryBB, GLCrossPlatform;
 
 type
 
@@ -58,7 +39,7 @@ type
       <li>cbmFaces : the object is defined by its faces (needs object-level support,
          if unavalaible, uses cbmCube code)
       </ul> }
-   tcollisionboundingmode = (cbmpoint, cbmsphere, cbmellipsoid, cbmcube, cbmfaces);
+   TCollisionBoundingMode = (cbmPoint, cbmSphere, cbmEllipsoid, cbmCube, cbmFaces);
 
    TFastCollisionChecker = function (obj1, obj2 : TGLBaseSceneObject) : Boolean;
    PFastCollisionChecker = ^TFastCollisionChecker;
@@ -110,7 +91,7 @@ type
          procedure SetGroupIndex(const value : Integer);
          procedure SetManager(const val : TCollisionManager);
 
-         procedure WriteToFiler(writer : TWriter); override;
+			procedure WriteToFiler(writer : TWriter); override;
          procedure ReadFromFiler(reader : TReader); override;
          procedure Loaded; override;
 
@@ -171,18 +152,18 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, glmisc, octree;
+uses SysUtils, GLMisc, Octree;
 
 const
    cEpsilon : Single = 1e-6;
 
 const
    cFastCollisionChecker : array [cbmPoint..cbmFaces, cbmPoint..cbmFaces] of TFastCollisionChecker = (
-       (@FastCheckPointVsPoint,      @FastCheckPointVsSphere,       @FastCheckPointVsEllipsoid,       @FastCheckPointVsCube,      @FastCheckPointVsCube),
-       (@FastCheckSphereVsPoint,     @FastCheckSphereVsSphere,      @FastCheckSphereVsEllipsoid,      @FastCheckSphereVsCube,     @FastCheckSphereVsCube),
-       (@FastCheckEllipsoidVsPoint,  @FastCheckEllipsoidVsSphere,   @FastCheckEllipsoidVsEllipsoid,   @FastCheckEllipsoidVsCube,  @FastCheckEllipsoidVsCube),
-       (@FastCheckCubeVsPoint,       @FastCheckCubeVsSphere,        @FastCheckCubeVsEllipsoid,        @FastCheckCubeVsCube,       @FastCheckCubeVsFace),
-       (@FastCheckCubeVsPoint,       @FastCheckCubeVsSphere,        @FastCheckCubeVsEllipsoid,        @FastCheckFaceVsCube,       @FastCheckFaceVsFace)
+       (FastCheckPointVsPoint,      FastCheckPointVsSphere,       FastCheckPointVsEllipsoid,       FastCheckPointVsCube,      FastCheckPointVsCube),
+       (FastCheckSphereVsPoint,     FastCheckSphereVsSphere,      FastCheckSphereVsEllipsoid,      FastCheckSphereVsCube,     FastCheckSphereVsCube),
+       (FastCheckEllipsoidVsPoint,  FastCheckEllipsoidVsSphere,   FastCheckEllipsoidVsEllipsoid,   FastCheckEllipsoidVsCube,  FastCheckEllipsoidVsCube),
+       (FastCheckCubeVsPoint,       FastCheckCubeVsSphere,        FastCheckCubeVsEllipsoid,        FastCheckCubeVsCube,       FastCheckCubeVsFace),
+       (FastCheckCubeVsPoint,       FastCheckCubeVsSphere,        FastCheckCubeVsEllipsoid,        FastCheckFaceVsCube,       FastCheckFaceVsFace)
       );
 
 // Collision utility routines
@@ -213,7 +194,7 @@ begin
 //   ScaleVector();
    v[3]:=0;
    // if norm is below 1, collision
-   result:=(vectornorm(v)<=1{sqr(obj2.boundingsphereradius)});  //danb - since radius*radius = 1/2*1/2 = 1/4 for unit sphere
+   Result:=(VectorNorm(v)<=1{Sqr(obj2.BoundingSphereRadius)});  //DanB - since radius*radius = 1/2*1/2 = 1/4 for unit sphere
 end;
 
 function FastCheckPointVsCube(obj1, obj2 : TGLBaseSceneObject) : Boolean;
@@ -580,7 +561,7 @@ begin
             // here we pass absolute coords, then these are transformed with Obj2's InvAbsoluteMatrix to match the local Obj2 System
             Tri:=@TriList.List[i];
             // the next function will check the given Triangle against only these ones that are close (using the octree of obj2)
-            if TGLFreeForm(obj2).OctreeTriangleIntersect(Tri^[0], Tri^[1], Tri^[2]) then begin
+            if TGLFreeForm(obj2).OctreeTriangleIntersect(Tri[0], Tri[1], Tri[2]) then begin
                Result:= true;
                { TODO : Optimize, exit was disabled for performance checks }
                Exit;
@@ -989,13 +970,13 @@ type
    TCollisionNode = class
       Collision:TGLBCollision;
       AABB:TAABB;
-      constructor Create(Collisio:TGLBCollision; AAB:TAABB);
+      constructor Create(Collision:TGLBCollision; AABB:TAABB);
    end;
 
-constructor TCollisionNode.Create(Collisio:TGLBCollision; AAB:TAABB);
+constructor TCollisionNode.Create(Collision:TGLBCollision; AABB:TAABB);
 begin
   inherited Create();
-  Self.Collision:=Collisio;
+  Self.Collision:=Collision;
   Self.AABB:=AABB;
 end;
 
@@ -1074,7 +1055,7 @@ begin
    finally
       for i:=0 to NodeList.Count-1 do
       begin
-        CollisionNode1 := TCollisionNode(NodeList.Items[i]);
+        CollisionNode1 := NodeList.Items[i];
         CollisionNode1.Free;
       end;
 
