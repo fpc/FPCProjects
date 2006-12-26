@@ -25,10 +25,10 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLCadencer, GLScene, GLObjects,
   GLMisc, GLBehaviours, ExtCtrls, VectorGeometry, GLCrossPlatform, Buttons,
-  LResources, GLParticleFX, GLWin32FullScreenViewer, GLWin32Viewer;
+  LResources, GLParticleFX, {GLWin32FullScreenViewer,} GLLCLViewer;
 
 type
 
@@ -45,7 +45,7 @@ type
     GLCamera: TGLCamera;
     Timer: TTimer;
     PFXRing: TGLPolygonPFXManager;
-    GLFullScreenViewer: TGLFullScreenViewer;
+//    GLFullScreenViewer: TGLFullScreenViewer;
     Panel1: TPanel;
     SpeedButton1: TSpeedButton;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -134,12 +134,12 @@ procedure TForm1.GLSceneViewerDblClick(Sender: TObject);
 begin
    // Switch to full-screen, but using the same screen resolution
    // If you uncomment the line below, it will switch to 800x600x32
-   GLFullScreenViewer.UseCurrentResolution;
-   GLFullScreenViewer.Active:=True;
+//   GLFullScreenViewer.UseCurrentResolution;
+//   GLFullScreenViewer.Active:=True;
    // Hide the windows viewer so it is no longer updated
-   GLSceneViewer.Visible:=False;
+//   GLSceneViewer.Visible:=False;
    // Apply proper scale
-   GLCamera.SceneScale:=GLFullScreenViewer.Height/350;
+//   GLCamera.SceneScale:=GLFullScreenViewer.Height/350;
 end;
 
 procedure TForm1.GLFullScreenViewerDblClick(Sender: TObject);
@@ -147,7 +147,7 @@ begin
    // Make the windows viewer visible again
    GLSceneViewer.Visible:=True;
    // Deactivate full-screen mode
-   GLFullScreenViewer.Active:=False;
+//   GLFullScreenViewer.Active:=False;
    // And apply back the adequate scale for the SceneViewer
    FormResize(Self);
 end;

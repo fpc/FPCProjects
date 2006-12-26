@@ -1,58 +1,49 @@
 object Form1: TForm1
-  BorderStyle = bsDialog
-  Caption = 'Form1'
-  ClientHeight = 357
-  ClientWidth = 437
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnClose = FormClose
-  OnResize = FormResize
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 436
-  VertScrollBar.Page = 356
   Left = 268
   Height = 357
   Top = 175
   Width = 437
+  HorzScrollBar.Page = 436
+  VertScrollBar.Page = 356
+  BorderStyle = bsDialog
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnClose = FormClose
+  OnResize = FormResize
   object GLSceneViewer: TGLSceneViewer
-    Camera = GLCamera
-    Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 146.47488403320312
-    Align = alClient
-    OnDblClick = GLSceneViewerDblClick
-    OnMouseMove = GLSceneViewerMouseMove
     Height = 332
     Top = 25
     Width = 437
+    Camera = GLCamera
+    Buffer.BackgroundColor = clBlack
+    FieldOfView = 146.474884033203
+    Align = alClient
+    OnDblClick = GLSceneViewerDblClick
+    OnMouseMove = GLSceneViewerMouseMove
   end
   object Panel1: TPanel
+    Height = 25
+    Width = 437
     Align = alTop
-    BorderSpacing.OnChange = nil
     BevelOuter = bvNone
     BorderWidth = 1
     Caption = 'Spiral / PFX Demo'
-    ClientHeight = 25
-    ClientWidth = 437
     Font.CharSet = ANSI_CHARSET
     Font.Height = -13
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
     FullRepaint = False
     TabOrder = 0
-    Height = 25
-    Width = 437
     object SpeedButton1: TSpeedButton
-      BorderSpacing.OnChange = nil
-      Caption = 'FullScreen'
-      NumGlyphs = 0
-      OnClick = GLSceneViewerDblClick
       Left = 363
       Height = 21
       Top = 2
       Width = 73
+      Caption = 'FullScreen'
+      Color = clBtnFace
+      NumGlyphs = 0
+      OnClick = GLSceneViewerDblClick
     end
   end
   object GLScene: TGLScene
@@ -72,10 +63,10 @@ object Form1: TForm1
         0000000000FA074002000201090500000000000000000000080200
       }
       object DCSrc: TGLDummyCube
-        CubeSize = 1
         Position.Coordinates = {
           0000803F00000040000000000000803F
         }
+        CubeSize = 1
         EffectsData = {
           0201061254474C536F7572636550465845666665637402010609504658537069
           72616C050000000000000080FF3F020602000900000000CDCC4CBE0000000000
@@ -96,8 +87,15 @@ object Form1: TForm1
     end
   end
   object PFXSpiral: TGLPolygonPFXManager
+    Cadencer = GLCadencer
+    Renderer = PFXRenderer
+    OnCreateParticle = PFXSpiralCreateParticle
+    Acceleration.Coordinates = {
+      00000000CDCC4CBE0000000000000000
+    }
+    Friction = 1
     NbSides = 9
-    ParticleSize = 0.300000011920929
+    ParticleSize = 0.30000001192092
     LifeColors = <    
       item
         ColorInner.Color = {
@@ -123,14 +121,6 @@ object Form1: TForm1
         LifeTime = 9
         SizeScale = 1
       end>
-    Acceleration.Coordinates = {
-      00000000CDCC4CBE0000000000000000
-    }
-    Friction = 1
-    Renderer = PFXRenderer
-    OnCreateParticle = PFXSpiralCreateParticle
-    Cadencer = GLCadencer
-    Cadencer = GLCadencer
     left = 88
     top = 16
   end
@@ -148,8 +138,12 @@ object Form1: TForm1
     top = 96
   end
   object PFXRing: TGLPolygonPFXManager
+    Cadencer = GLCadencer
+    Renderer = PFXRenderer
+    OnCreateParticle = PFXRingCreateParticle
+    Friction = 1
     NbSides = 9
-    ParticleSize = 0.200000002980232
+    ParticleSize = 0.20000000298023
     ColorInner.Color = {
       00000000000000001283203F0000803F
     }
@@ -165,27 +159,7 @@ object Form1: TForm1
         LifeTime = 3.5
         SizeScale = 1
       end>
-    Friction = 1
-    Renderer = PFXRenderer
-    OnCreateParticle = PFXRingCreateParticle
-    Cadencer = GLCadencer
-    Cadencer = GLCadencer
     left = 88
     top = 56
-  end
-  object GLFullScreenViewer: TGLFullScreenViewer
-    VSync = vsmNoSync
-    OnKeyPress = GLFullScreenViewerKeyPress
-    OnClick = GLFullScreenViewerClick
-    OnDblClick = GLFullScreenViewerDblClick
-    OnMouseMove = GLSceneViewerMouseMove
-    Camera = GLCamera
-    Width = 800
-    Height = 600
-    Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    left = 88
-    top = 96
   end
 end
