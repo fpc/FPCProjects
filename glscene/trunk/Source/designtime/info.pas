@@ -40,7 +40,7 @@ uses
   windows, forms, glscene, classes, controls, buttons, stdctrls, comctrls, 
   extctrls, graphics, menus;
 {$endif}
-{$ifdef linux}
+{$ifdef unix}
 uses
   glscene,classes,
 {$ifndef fpc}
@@ -143,7 +143,7 @@ uses
 {$IFDEF MSWINDOWS}
 {$R *.dfm}
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF LINUX} // kylix crap
 {$R *.xfm}
 {$ENDIF}
 
@@ -387,7 +387,9 @@ initialization
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-   {$IFDEF FPC}{$i Info.lrs}{$ENDIF}
+   {$IFDEF FPC}
+     {$i Info.lrs}
+   {$ENDIF}
 
    RegisterInfoForm(ShowInfoForm);
 
