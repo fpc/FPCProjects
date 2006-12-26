@@ -1,27 +1,25 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 319
-  ClientWidth = 433
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  Menu = MainMenu1
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 432
-  VertScrollBar.Page = 318
   Left = 275
   Height = 338
   Top = 162
   Width = 433
+  HorzScrollBar.Page = 432
+  VertScrollBar.Page = 309
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Menu = MainMenu1
+  OnCreate = FormCreate
   object GLSceneViewer: TGLSceneViewer
+    Height = 310
+    Width = 433
     Camera = GLCamera
-    FieldOfView = 179.64077758789062
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 179.63035583496
     Align = alClient
     OnMouseDown = GLSceneViewerMouseDown
     OnMouseMove = GLSceneViewerMouseMove
-    Height = 319
-    Width = 433
   end
   object MainMenu1: TMainMenu
     left = 8
@@ -50,63 +48,63 @@ object Form1: TForm1
     object MIQuality: TMenuItem
       Caption = 'Quality'
       object N1toomuch1: TMenuItem
+        Tag = 2
         Caption = '2 (too much)'
         RadioItem = True
         OnClick = MIQualityOptionClick
-        Tag = 2
       end
       object N4highquality1: TMenuItem
+        Tag = 4
         Caption = '4 (high quality)'
         RadioItem = True
         OnClick = MIQualityOptionClick
-        Tag = 4
       end
       object N8mediumquality1: TMenuItem
+        Tag = 8
         Caption = '8 (medium quality)'
         RadioItem = True
         OnClick = MIQualityOptionClick
-        Tag = 8
       end
       object N16lowquality1: TMenuItem
+        Tag = 16
         Caption = '16 (low quality)'
         Checked = True
         RadioItem = True
         OnClick = MIQualityOptionClick
-        Tag = 16
       end
       object MIQualityOption: TMenuItem
+        Tag = 32
         Caption = '32 (super fast)'
         RadioItem = True
         OnClick = MIQualityOptionClick
-        Tag = 32
       end
     end
     object MIRadius: TMenuItem
       Caption = 'Radius'
       object N10small1: TMenuItem
+        Tag = 10
         Caption = '10 (small)'
         RadioItem = True
         OnClick = MIRadiusSettingClick
-        Tag = 10
       end
       object N20medium1: TMenuItem
+        Tag = 20
         Caption = '20 (medium)'
         Checked = True
         RadioItem = True
         OnClick = MIRadiusSettingClick
-        Tag = 20
       end
       object MIRadiusSetting: TMenuItem
+        Tag = 40
         Caption = '40 (large)'
         RadioItem = True
         OnClick = MIRadiusSettingClick
-        Tag = 40
       end
       object N80extra1: TMenuItem
+        Tag = 80
         Caption = '80 (extra)'
         RadioItem = True
         OnClick = MIRadiusSettingClick
-        Tag = 80
       end
     end
     object MIEffect: TMenuItem
@@ -118,19 +116,17 @@ object Form1: TForm1
         OnClick = MIZoomEffectClick
       end
       object MISpin: TMenuItem
+        Tag = 1
         Caption = 'Spin'
         RadioItem = True
         OnClick = MIZoomEffectClick
-        Tag = 1
       end
     end
   end
   object OpenPictureDialog: TOpenPictureDialog
-    Filter = 'Graphic (*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp)|*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp|TGA Image File (*.tga)|*.tga|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|PNM Image File (*.pbm)|*.pbm|PNM Image File (*.pgm)|*.pgm|PNM Image File (*.ppm)|*.ppm|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|Icon (*.ico)|*.ico|Portable PixMap (*.ppm)|*.ppm|Portable GrayMap (*.pgm)|*.pgm|Portable BitMap (*.pbm)|*.pbm|Portable Network Graphic (*.png)|*.png|Pixmap (*.xpm)|*.xpm|Bitmaps (*.bmp)|*.bmp|All files (*.*)|*.*|'
     Title = 'Open existing file'
     Filter = 'Graphic (*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp)|*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp|TGA Image File (*.tga)|*.tga|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|PNM Image File (*.pbm)|*.pbm|PNM Image File (*.pgm)|*.pgm|PNM Image File (*.ppm)|*.ppm|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|Icon (*.ico)|*.ico|Portable PixMap (*.ppm)|*.ppm|Portable GrayMap (*.pgm)|*.pgm|Portable BitMap (*.pbm)|*.pbm|Portable Network Graphic (*.png)|*.png|Pixmap (*.xpm)|*.xpm|Bitmaps (*.bmp)|*.bmp|All files (*.*)|*.*|'
     FilterIndex = 0
-    Title = 'Open existing file'
     left = 64
     top = 8
   end
@@ -138,18 +134,18 @@ object Form1: TForm1
     left = 8
     top = 56
     object HeightField: TGLHeightField
-      XSamplingScale.Max = 16
-      XSamplingScale.Step = 8
-      YSamplingScale.Max = 16
-      YSamplingScale.Step = 8
-      Options = [hfoTextureCoordinates, hfoTwoSided]
-      OnGetHeight = HeightFieldGetHeight
       Material.Texture.MinFilter = miLinear
       Material.Texture.TextureMode = tmReplace
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
       Material.Texture.Disabled = False
+      XSamplingScale.Max = 16
+      XSamplingScale.Step = 8
+      YSamplingScale.Max = 16
+      YSamplingScale.Step = 8
+      Options = [hfoTextureCoordinates, hfoTwoSided]
+      OnGetHeight = HeightFieldGetHeight
     end
     object GLCamera: TGLCamera
       DepthOfView = 100
@@ -167,7 +163,6 @@ object Form1: TForm1
     DefaultExt = '.bmp'
     Filter = 'Bitmaps (*.bmp)|*.bmp|All files (*.*)|*.*'
     FilterIndex = 0
-    Title = 'Save file as'
     left = 104
     top = 8
   end

@@ -21,9 +21,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLGraph, GLMisc, ExtDlgs, Menus, GLObjects, VectorGeometry, VectorTypes,
-  GLWin32Viewer, LResources, GLScene;
+  GLLCLViewer, LResources, GLScene;
 
 type
 
