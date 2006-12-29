@@ -43,7 +43,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="156">
+    <Files Count="160">
       <Item1>
         <Filename Value="..\Source\Base\applicationfileio.pas"/>
         <HasRegisterProc Value="True"/>
@@ -704,6 +704,23 @@
         <Filename Value="..\Source\glgraph.pas"/>
         <UnitName Value="glgraph"/>
       </Item156>
+      <Item157>
+        <Filename Value="..\Source\designtime\fxcollectioneditor.lfm"/>
+        <Type Value="LFM"/>
+      </Item157>
+      <Item158>
+        <Filename Value="..\Source\designtime\fxcollectioneditor.lrs"/>
+        <Type Value="LRS"/>
+      </Item158>
+      <Item159>
+        <Filename Value="..\Source\designtime\fxcollectioneditor.pas"/>
+        <UnitName Value="FXCollectionEditor"/>
+      </Item159>
+      <Item160>
+        <Filename Value="..\Source\designtime\registerxcollection.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="registerxcollection"/>
+      </Item160>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
