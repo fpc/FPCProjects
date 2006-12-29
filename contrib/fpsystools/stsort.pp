@@ -110,7 +110,7 @@ interface
 
 uses
   ////TL Changed Libc to Linux
-  Linux, SysUtils,
+   SysUtils,
   StConst, StBase;
 
 const

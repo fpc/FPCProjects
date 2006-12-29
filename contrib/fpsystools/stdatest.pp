@@ -52,7 +52,7 @@ unit StDateSt;
 interface
 
 uses
-  Linux, SysUtils,
+  SysUtils,
   StConst, StBase, StUtils, StDate, StStr;
 
 const

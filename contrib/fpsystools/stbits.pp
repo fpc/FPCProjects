@@ -65,7 +65,7 @@ interface
 
 uses
   ////TL changed Libc to Linux
-  Linux, Classes, SysUtils,
+  Classes, SysUtils,
   StBase, StConst;
 
 type

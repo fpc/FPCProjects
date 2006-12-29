@@ -51,7 +51,7 @@ unit StBase;
 interface
 
 uses
-  Linux, SysUtils, Classes, StConst;
+  SysUtils, Classes, StConst;
 
 const
   StMaxBlockSize = MaxLongInt;

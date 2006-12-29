@@ -81,7 +81,7 @@ unit StPQueue;
 interface
 
 uses
-  Linux, SysUtils, Classes, ////TL changed Libc to Linux
+  SysUtils, Classes, ////TL changed Libc to Linux
   StConst, StBase;
 
 type

@@ -81,7 +81,7 @@ unit StDict;
 interface
 
 uses
-  Linux, SysUtils, Classes,
+   SysUtils, Classes,
   StConst, StBase;
 const
 

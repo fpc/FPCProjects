@@ -39,8 +39,11 @@
 {$ASMMODE INTEL}
 {$MODE DELPHI}
 {$endif}
+{$IFDEF LINUX}
+  {$DEFINE UNIX}
+{$ENDIF}
 
-{$IFNDEF LINUX}
+{$IFNDEF UNIX}
 {---Global compiler defines for 32-bit OS's---}
 {$A+} {Word Align Data}
 {$H+} {Huge string support}
@@ -51,7 +54,7 @@
 {$V-} {Var strings}
 {$B-} {Incomplete boolean evaluation}
 {$J+} {Writeable Typed Constants}
-{$ENDIF LINUX}
+{$ENDIF UNIX}
 
 {$DEFINE ThreadSafe}
 { This define determines whether SysTools operations are safe in a 32-bit   }
@@ -109,7 +112,7 @@
   {$ENDIF}
 {$ENDIF}
 
-{$IFNDEF LINUX}
+{$IFNDEF UNIX}
   {$IFNDEF WIN32}
     {$IFDEF VER80}
       {$DEFINE WIN16} { Delphi 1.0, 16-Bit Windows }
@@ -148,7 +151,7 @@
 {$IFDEF VERSION5}
  {$IFNDEF VER130}        { Delphi 5 }
   {$IFNDEF VER135}       { BCB 5 }
-    {$IFNDEF LINUX }
+    {$IFNDEF UNIX }
      {$DEFINE VERSION6} { Delphi 6.0 or higher }
     {$ENDIF}
   {$ENDIF}
@@ -157,7 +160,7 @@
 
 {$IFDEF VERSION6}
  {$IFNDEF VER140}        { Delphi 6 }
-   {$IFNDEF LINUX }
+   {$IFNDEF UNIX }
     {$DEFINE VERSION7} { Delphi 7.0 or higher }
    {$ENDIF}
  {$ENDIF}
@@ -167,7 +170,7 @@
   {$DEFINE HasLongWord}         { D4 and above have a true LongWord type }
   {$DEFINE HasInt64 }           { D4 and above have a 64-bit Integer }
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF UNIX}
   {$DEFINE HasLongWord}         { Kylix has a true LongWord type }
   {$DEFINE HasInt64 }           { Kylix has a 64-bit Integer }
 {$ENDIF}

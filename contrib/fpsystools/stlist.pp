@@ -62,7 +62,7 @@ unit StList;
 interface
 
 uses
-  Linux, SysUtils, Classes,
+  SysUtils, Classes,
   StConst,
   StBase;
 
