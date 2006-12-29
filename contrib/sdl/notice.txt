@@ -1,0 +1,8 @@
+ !!! NOTE!!!!
+
+I know this directory is older than current jedi-sdl status.
+
+However I keep it around since the bulk of the work were the demoes, not the
+base libraries!
+
+So if you commit a new version, don't forget to migrate the demoes!
