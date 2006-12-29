@@ -19,7 +19,7 @@ program EvalTest;
 
 {$AppType Console}
 
-Uses Classes,Symbolic,Cpu;
+Uses Classes,Symbolic;
 
 VAR Expr    : TExpression;
     SymVars : TStringList;
@@ -27,7 +27,6 @@ VAR Expr    : TExpression;
     VarName : TStringList;
     Eval    : TEvaluator;
     Vars    : Array[0..2] OF ArbFloat;
-    t       : pztimer;
 
 begin
  {Lets create in a nice equation. Totally nonsense. Don't try to
@@ -75,14 +74,10 @@ begin
   If your compiler (and hopefully FPC too) can inline the math unit functions,
   the speed gain could be dramatic.}
 
-Vars[0]:=2; Vars[1]:=3; Vars[2]:=4;
+ Vars[0]:=2; Vars[1]:=3; Vars[2]:=4;
  Writeln('Stackdepth needed for evaluation: ',eval.EvalDepth);
- new(t,Init);
- t^.start;
  FOR I:=1 TO 100000 DO
    Eval.Evaluate(Vars);
- T^.stop;
- Writeln(t^.count);
  Eval.Free;
  Expr.Free;
  SymVars.Free;
