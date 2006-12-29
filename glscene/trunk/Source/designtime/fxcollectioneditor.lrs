@@ -10,63 +10,64 @@ LazarusResources.Add('TXCollectionEditor','FORMDATA',[
   +'dth'#3#7#1#5'Align'#7#8'alClient'#7'Columns'#14#1#7'Caption'#6#4'Name'#5'Wi'
   +'dth'#2'd'#0#1#7'Caption'#6#4'Type'#5'Width'#3#150#0#0#0#9'PopupMenu'#7#10'P'
   +'MListView'#8'ReadOnly'#9#9'RowSelect'#9#8'TabOrder'#2#0#9'ViewStyle'#7#8'vs'
-  +'Report'#8'OnChange'#7#14'ListViewChange'#0#0#8'TToolBar'#8'ToolBar1'#6'Heig'
-  +'ht'#2#26#5'Width'#3#7#1#8'AutoSize'#9#11'BorderWidth'#2#1#7'Caption'#6#8'To'
-  +'olBar1'#11'EdgeBorders'#11#5'ebTop'#8'ebBottom'#0#4'Flat'#9#6'Images'#7#9'I'
-  +'mageList'#8'TabOrder'#2#1#0#11'TToolButton'#5'TBAdd'#4'Left'#2#1#4'Hint'#6#6
-  +'Add...'#3'Top'#2#2#7'Caption'#6#5'TBAdd'#12'DropdownMenu'#7#9'PMToolBar'#10
-  +'ImageIndex'#2#1#5'Style'#7#11'tbsDropDown'#7'OnClick'#7#10'TBAddClick'#0#0
-  +#11'TToolButton'#11'ToolButton5'#4'Left'#2#31#3'Top'#2#2#5'Width'#2#8#7'Capt'
-  +'ion'#6#11'ToolButton5'#10'ImageIndex'#2#4#5'Style'#7#12'tbsSeparator'#0#0#11
-  +'TToolButton'#11'ToolButton2'#4'Left'#2''''#4'Hint'#6#11'Remove item'#3'Top'
-  +#2#2#6'Action'#7#8'ACRemove'#0#0#11'TToolButton'#11'ToolButton6'#4'Left'#2'>'
-  +#3'Top'#2#2#5'Width'#2#8#7'Caption'#6#11'ToolButton6'#10'ImageIndex'#2#5#5'S'
-  +'tyle'#7#12'tbsSeparator'#0#0#11'TToolButton'#11'ToolButton3'#4'Left'#2'F'#4
-  +'Hint'#6#7'Move up'#3'Top'#2#2#6'Action'#7#8'ACMoveUp'#0#0#11'TToolButton'#11
-  +'ToolButton4'#4'Left'#2']'#4'Hint'#6#9'Move down'#3'Top'#2#2#6'Action'#7#10
-  +'ACMoveDown'#0#0#0#10'TPopupMenu'#10'PMListView'#6'Images'#7#9'ImageList'#7
-  +'OnPopup'#7#15'PMListViewPopup'#4'left'#2#24#3'top'#2'@'#0#9'TMenuItem'#5'MI'
-  +'Add'#7'Caption'#6#6'Add...'#10'ImageIndex'#2#1#0#0#9'TMenuItem'#2'N1'#7'Cap'
-  +'tion'#6#1'-'#0#0#9'TMenuItem'#16'Removebehaviour1'#6'Action'#7#8'ACRemove'#7
-  +'OnClick'#7#15'ACRemoveExecute'#0#0#9'TMenuItem'#2'N2'#7'Caption'#6#1'-'#0#0
-  +#9'TMenuItem'#7'Moveup1'#6'Action'#7#8'ACMoveUp'#7'OnClick'#7#15'ACMoveUpExe'
-  +'cute'#0#0#9'TMenuItem'#9'Movedown1'#6'Action'#7#10'ACMoveDown'#7'OnClick'#7
-  +#17'ACMoveDownExecute'#0#0#0#11'TActionList'#10'ActionList'#6'Images'#7#9'Im'
-  +'ageList'#4'left'#2'@'#3'top'#2'@'#0#7'TAction'#8'ACRemove'#7'Caption'#6#11
-  +'Remove item'#18'DisableIfNoHandler'#9#4'Hint'#6#11'Remove item'#10'ImageInd'
-  +'ex'#2#0#9'OnExecute'#7#15'ACRemoveExecute'#0#0#7'TAction'#8'ACMoveUp'#7'Cap'
-  +'tion'#6#7'Move up'#18'DisableIfNoHandler'#9#4'Hint'#6#7'Move up'#10'ImageIn'
-  +'dex'#2#3#9'OnExecute'#7#15'ACMoveUpExecute'#0#0#7'TAction'#10'ACMoveDown'#7
-  +'Caption'#6#9'Move down'#18'DisableIfNoHandler'#9#4'Hint'#6#9'Move down'#10
-  +'ImageIndex'#2#2#9'OnExecute'#7#17'ACMoveDownExecute'#0#0#0#10'TImageList'#9
-  +'ImageList'#4'left'#2'h'#3'top'#2'@'#6'Bitmap'#10#142#6#0#0'li'#4#0#0#0#16#0
-  +#0#0#16#0#0#0#156#1#0#0'/* XPM */'#10'static char *graphic[] = {'#10'"16 16 '
-  +'3 1",'#10'". c None",'#10'", c #000000",'#10'"- c #848400",'#10'"..........'
-  +'......",'#10'"................",'#10'"................",'#10'".............'
-  +'...",'#10'"................",'#10'"................",'#10'"...,,,,,,,,,....'
-  +'",'#10'"...,-------,....",'#10'"...,,,,,,,,,....",'#10'"................",'
-  +#10'"................",'#10'"................",'#10'"................",'#10
-  +'"................",'#10'"................",'#10'"................"}'#10#156
-  +#1#0#0'/* XPM */'#10'static char *graphic[] = {'#10'"16 16 3 1",'#10'". c No'
-  +'ne",'#10'", c #000000",'#10'"- c #848400",'#10'"................",'#10'"...'
-  +'.............",'#10'"................",'#10'"......,,,.......",'#10'"......'
-  +',-,.......",'#10'"......,-,.......",'#10'"...,,,,-,,,,....",'#10'"...,-----'
-  +'--,....",'#10'"...,,,,-,,,,....",'#10'"......,-,.......",'#10'"......,-,...'
-  +'....",'#10'"......,,,.......",'#10'"................",'#10'"...............'
-  +'.",'#10'"................",'#10'"................"}'#10#156#1#0#0'/* XPM */'
-  +#10'static char *graphic[] = {'#10'"16 16 3 1",'#10'". c None",'#10'", c #00'
-  +'0000",'#10'"- c #008484",'#10'"................",'#10'"................",'
-  +#10'".....,,,,,......",'#10'".....,---,......",'#10'".....,---,......",'#10
-  +'".....,---,......",'#10'"..,,,,---,,,,...",'#10'"...,-------,....",'#10'"..'
-  +'..,-----,.....",'#10'".....,---,......",'#10'"......,-,.......",'#10'".....'
-  +'..,........",'#10'"................",'#10'"................",'#10'"........'
-  +'........",'#10'"................"}'#10#156#1#0#0'/* XPM */'#10'static char '
-  +'*graphic[] = {'#10'"16 16 3 1",'#10'". c None",'#10'", c #000000",'#10'"- c'
-  +' #008484",'#10'"................",'#10'"................",'#10'".......,...'
-  +'.....",'#10'"......,-,.......",'#10'".....,---,......",'#10'"....,-----,...'
-  +'..",'#10'"...,-------,....",'#10'"..,,,,---,,,,...",'#10'".....,---,......"'
-  ,','#10'".....,---,......",'#10'".....,---,......",'#10'".....,,,,,......",'
-  +#10'"................",'#10'"................",'#10'"................",'#10
-  +'"................"}'#10#0#0#10'TPopupMenu'#9'PMToolBar'#7'OnPopup'#7#14'PMT'
-  +'oolBarPopup'#4'left'#2#24#3'top'#2'h'#0#0#0
+  +'Report'#8'OnChange'#7#14'ListViewChange'#7'OnClick'#7#13'ListViewClick'#0#0
+  +#8'TToolBar'#8'ToolBar1'#6'Height'#2#26#5'Width'#3#7#1#8'AutoSize'#9#11'Bord'
+  +'erWidth'#2#1#7'Caption'#6#8'ToolBar1'#11'EdgeBorders'#11#5'ebTop'#8'ebBotto'
+  +'m'#0#4'Flat'#9#6'Images'#7#9'ImageList'#8'TabOrder'#2#1#0#11'TToolButton'#5
+  +'TBAdd'#4'Left'#2#1#4'Hint'#6#6'Add...'#3'Top'#2#2#7'Caption'#6#5'TBAdd'#12
+  +'DropdownMenu'#7#9'PMToolBar'#10'ImageIndex'#2#1#5'Style'#7#11'tbsDropDown'#7
+  +'OnClick'#7#10'TBAddClick'#0#0#11'TToolButton'#11'ToolButton5'#4'Left'#2#31#3
+  +'Top'#2#2#5'Width'#2#8#7'Caption'#6#11'ToolButton5'#10'ImageIndex'#2#4#5'Sty'
+  +'le'#7#12'tbsSeparator'#0#0#11'TToolButton'#11'ToolButton2'#4'Left'#2''''#4
+  +'Hint'#6#11'Remove item'#3'Top'#2#2#6'Action'#7#8'ACRemove'#0#0#11'TToolButt'
+  +'on'#11'ToolButton6'#4'Left'#2'>'#3'Top'#2#2#5'Width'#2#8#7'Caption'#6#11'To'
+  +'olButton6'#10'ImageIndex'#2#5#5'Style'#7#12'tbsSeparator'#0#0#11'TToolButto'
+  +'n'#11'ToolButton3'#4'Left'#2'F'#4'Hint'#6#7'Move up'#3'Top'#2#2#6'Action'#7
+  +#8'ACMoveUp'#0#0#11'TToolButton'#11'ToolButton4'#4'Left'#2']'#4'Hint'#6#9'Mo'
+  +'ve down'#3'Top'#2#2#6'Action'#7#10'ACMoveDown'#0#0#0#10'TPopupMenu'#10'PMLi'
+  +'stView'#6'Images'#7#9'ImageList'#7'OnPopup'#7#15'PMListViewPopup'#4'left'#2
+  +#24#3'top'#2'@'#0#9'TMenuItem'#5'MIAdd'#7'Caption'#6#6'Add...'#10'ImageIndex'
+  +#2#1#0#0#9'TMenuItem'#2'N1'#7'Caption'#6#1'-'#0#0#9'TMenuItem'#16'Removebeha'
+  +'viour1'#6'Action'#7#8'ACRemove'#7'OnClick'#7#15'ACRemoveExecute'#0#0#9'TMen'
+  +'uItem'#2'N2'#7'Caption'#6#1'-'#0#0#9'TMenuItem'#7'Moveup1'#6'Action'#7#8'AC'
+  +'MoveUp'#7'OnClick'#7#15'ACMoveUpExecute'#0#0#9'TMenuItem'#9'Movedown1'#6'Ac'
+  +'tion'#7#10'ACMoveDown'#7'OnClick'#7#17'ACMoveDownExecute'#0#0#0#11'TActionL'
+  +'ist'#10'ActionList'#6'Images'#7#9'ImageList'#4'left'#2'@'#3'top'#2'@'#0#7'T'
+  +'Action'#8'ACRemove'#7'Caption'#6#11'Remove item'#18'DisableIfNoHandler'#9#4
+  +'Hint'#6#11'Remove item'#10'ImageIndex'#2#0#9'OnExecute'#7#15'ACRemoveExecut'
+  +'e'#0#0#7'TAction'#8'ACMoveUp'#7'Caption'#6#7'Move up'#18'DisableIfNoHandler'
+  +#9#4'Hint'#6#7'Move up'#10'ImageIndex'#2#3#9'OnExecute'#7#15'ACMoveUpExecute'
+  +#0#0#7'TAction'#10'ACMoveDown'#7'Caption'#6#9'Move down'#18'DisableIfNoHandl'
+  +'er'#9#4'Hint'#6#9'Move down'#10'ImageIndex'#2#2#9'OnExecute'#7#17'ACMoveDow'
+  +'nExecute'#0#0#0#10'TImageList'#9'ImageList'#4'left'#2'h'#3'top'#2'@'#6'Bitm'
+  +'ap'#10#142#6#0#0'li'#4#0#0#0#16#0#0#0#16#0#0#0#156#1#0#0'/* XPM */'#10'stat'
+  +'ic char *graphic[] = {'#10'"16 16 3 1",'#10'". c None",'#10'", c #000000",'
+  +#10'"- c #848400",'#10'"................",'#10'"................",'#10'"....'
+  +'............",'#10'"................",'#10'"................",'#10'".......'
+  +'.........",'#10'"...,,,,,,,,,....",'#10'"...,-------,....",'#10'"...,,,,,,,'
+  +',,....",'#10'"................",'#10'"................",'#10'".............'
+  +'...",'#10'"................",'#10'"................",'#10'"................'
+  +'",'#10'"................"}'#10#156#1#0#0'/* XPM */'#10'static char *graphic'
+  +'[] = {'#10'"16 16 3 1",'#10'". c None",'#10'", c #000000",'#10'"- c #848400'
+  +'",'#10'"................",'#10'"................",'#10'"................",'
+  +#10'"......,,,.......",'#10'"......,-,.......",'#10'"......,-,.......",'#10
+  +'"...,,,,-,,,,....",'#10'"...,-------,....",'#10'"...,,,,-,,,,....",'#10'"..'
+  +'....,-,.......",'#10'"......,-,.......",'#10'"......,,,.......",'#10'".....'
+  +'...........",'#10'"................",'#10'"................",'#10'"........'
+  +'........"}'#10#156#1#0#0'/* XPM */'#10'static char *graphic[] = {'#10'"16 1'
+  +'6 3 1",'#10'". c None",'#10'", c #000000",'#10'"- c #008484",'#10'"........'
+  +'........",'#10'"................",'#10'".....,,,,,......",'#10'".....,---,.'
+  +'.....",'#10'".....,---,......",'#10'".....,---,......",'#10'"..,,,,---,,,,.'
+  +'..",'#10'"...,-------,....",'#10'"....,-----,.....",'#10'".....,---,......"'
+  +','#10'"......,-,.......",'#10'".......,........",'#10'"................",'
+  +#10'"................",'#10'"................",'#10'"................"}'#10
+  +#156#1#0#0'/* XPM */'#10'static char *graphic[] = {'#10'"16 16 3 1",'#10'". '
+  +'c None",'#10'", c #000000",'#10'"- c #008484",'#10'"................",'#10
+  +'"................",'#10'".......,........",'#10'"......,-,.......",'#10'"..'
+  +'...,---,......",'#10'"....,-----,.....",'#10'"...,-------,....",'#10'"..,,,'
+  ,',---,,,,...",'#10'".....,---,......",'#10'".....,---,......",'#10'".....,--'
+  +'-,......",'#10'".....,,,,,......",'#10'"................",'#10'"...........'
+  +'.....",'#10'"................",'#10'"................"}'#10#0#0#10'TPopupMe'
+  +'nu'#9'PMToolBar'#7'OnPopup'#7#14'PMToolBarPopup'#4'left'#2#24#3'top'#2'h'#0
+  +#0#0
 ]);

@@ -22,6 +22,9 @@ uses
   Menus, ComCtrls, Propedits;
 
 type
+
+  { TXCollectionEditor }
+
   TXCollectionEditor = class(TForm)
 	 ListView: TListView;
     PMListView: TPopupMenu;
@@ -43,7 +46,8 @@ type
     ToolButton5: TToolButton;
     ToolButton6: TToolButton;
     PMToolBar: TPopupMenu;
-	 procedure TBAddClick(Sender: TObject);
+procedure ListViewClick(Sender: TObject);
+procedure TBAddClick(Sender: TObject);
 	 procedure ListViewChange(Sender: TObject; Item: TListItem;
 		Change: TItemChange);
     procedure ACRemoveExecute(Sender: TObject);
@@ -156,14 +160,11 @@ begin
 	TBAdd.CheckMenuDropdown;
 end;
 
-// ListViewChange
-//
-procedure TXCollectionEditor.ListViewChange(Sender: TObject;
-  Item: TListItem; Change: TItemChange);
+procedure TXCollectionEditor.ListViewClick(Sender: TObject);
 var
 	sel : Boolean;
 begin
-	if (Change=ctState) and Assigned(GlobalDesignHook) and (not updatingListView) then begin
+	if Assigned(GlobalDesignHook) and (not updatingListView) then begin
 		// setup enablings
 		sel:=(ListView.Selected<>nil);
       TBAdd.Enabled:=Assigned(GlobalDesignHook);
@@ -182,6 +183,34 @@ begin
          else Designer.SelectComponent(nil);
 {$endif} *)
 	end;
+end;
+
+// ListViewChange
+//
+procedure TXCollectionEditor.ListViewChange(Sender: TObject;
+  Item: TListItem; Change: TItemChange);
+{var
+	sel : Boolean;}
+begin
+(*	if (Change=ctState) and Assigned(GlobalDesignHook) and (not updatingListView) then begin
+		// setup enablings
+		sel:=(ListView.Selected<>nil);
+      TBAdd.Enabled:=Assigned(GlobalDesignHook);
+		ACRemove.Enabled:=sel;
+		ACMoveUp.Enabled:=sel and (ListView.Selected.Index>0);
+		ACMoveDown.Enabled:=sel and (ListView.Selected.Index<ListView.Items.Count-1);
+      if Assigned(GlobalDesignHook) then
+         if sel then
+           GlobalDesignHook.SelectOnlyThis(TXCollectionItem(ListView.Selected.Data))
+         else
+           GlobalDesignHook.SelectOnlyThis(nil);*)
+//            Designer.SelectComponent(TXCollectionItem(ListView.Selected.Data))
+//{$ifndef GLS_DELPHI_4}
+//         else Designer.NoSelection;
+//{$else}
+//         else Designer.SelectComponent(nil);
+//{$endif}
+//	end;
 end;
 
 // PrepareListView

@@ -33,6 +33,7 @@ object XCollectionEditor: TXCollectionEditor
     TabOrder = 0
     ViewStyle = vsReport
     OnChange = ListViewChange
+    OnClick = ListViewClick
   end
   object ToolBar1: TToolBar
     Height = 26
