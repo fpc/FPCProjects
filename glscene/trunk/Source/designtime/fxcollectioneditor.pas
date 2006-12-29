@@ -163,14 +163,14 @@ procedure TXCollectionEditor.ListViewChange(Sender: TObject;
 var
 	sel : Boolean;
 begin
-	if (Change=ctState) and Assigned(Designer) and (not updatingListView) then begin
+	if (Change=ctState) and Assigned(GlobalDesignHook) and (not updatingListView) then begin
 		// setup enablings
 		sel:=(ListView.Selected<>nil);
-      TBAdd.Enabled:=Assigned(Designer);
+      TBAdd.Enabled:=Assigned(GlobalDesignHook);
 		ACRemove.Enabled:=sel;
 		ACMoveUp.Enabled:=sel and (ListView.Selected.Index>0);
 		ACMoveDown.Enabled:=sel and (ListView.Selected.Index<ListView.Items.Count-1);
-      if Assigned(Designer) then
+      if Assigned(GlobalDesignHook) then
          if sel then
            GlobalDesignHook.SelectOnlyThis(TXCollectionItem(ListView.Selected.Data))
          else
@@ -287,7 +287,8 @@ begin
 	PrepareListView;
 //	ListView.Selected:=ListView.FindData(0, XCollectionItem, True, False);
 	ListView.Selected:=ListView.Items.FindData(XCollectionItem);
-   Designer.Modified;
+//   Designer.Modified;
+   GlobalDesignHook.Modified(Sender);
 end;
 
 // ACRemoveExecute
@@ -295,8 +296,8 @@ end;
 procedure TXCollectionEditor.ACRemoveExecute(Sender: TObject);
 begin
 	if ListView.Selected<>nil then begin
-      Designer.Modified;
-      Designer.SelectOnlyThisComponent(nil);
+      GlobalDesignHook.Modified(Sender);
+      GlobalDesignHook.SelectOnlyThis(nil);
 (*{$ifndef GLS_DELPHI_4}
       Designer.NoSelection;
 {$else}
@@ -315,7 +316,7 @@ begin
 	if ListView.Selected<>nil then begin
 		TXCollectionItem(ListView.Selected.Data).MoveUp;
 		PrepareListView;
-      Designer.Modified;
+      GlobalDesignHook.Modified(Sender);
 	end;
 end;
 
@@ -326,7 +327,7 @@ begin
 	if ListView.Selected<>nil then begin
 		TXCollectionItem(ListView.Selected.Data).MoveDown;
 		PrepareListView;
-      Designer.Modified;
+      GlobalDesignHook.Modified(Sender);
 	end;
 end;
 
