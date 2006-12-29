@@ -1,0 +1,5 @@
+[target]
+programs=rpnthing evaltest
+
+[compiler]
+unitdir=..
