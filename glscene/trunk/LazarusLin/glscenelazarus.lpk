@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="147">
+    <Files Count="151">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <HasRegisterProc Value="True"/>
@@ -286,11 +286,11 @@
       </Item60>
       <Item61>
         <Filename Value="../Source/glbehaviours.pas"/>
-        <UnitName Value="glbehaviours"/>
+        <UnitName Value="GLBehaviours"/>
       </Item61>
       <Item62>
         <Filename Value="../Source/glbitmapfont.pas"/>
-        <UnitName Value="glbitmapfont"/>
+        <UnitName Value="GLBitmapFont"/>
       </Item62>
       <Item63>
         <Filename Value="../Source/glblur.pas"/>
@@ -310,11 +310,11 @@
       </Item66>
       <Item67>
         <Filename Value="../Source/glcollision.pas"/>
-        <UnitName Value="glcollision"/>
+        <UnitName Value="GLCollision"/>
       </Item67>
       <Item68>
         <Filename Value="../Source/glcontext.pas"/>
-        <UnitName Value="glcontext"/>
+        <UnitName Value="GLContext"/>
       </Item68>
       <Item69>
         <Filename Value="../Source/gldce.pas"/>
@@ -359,7 +359,7 @@
       </Item77>
       <Item78>
         <Filename Value="../Source/glgraphics.pas"/>
-        <UnitName Value="glgraphics"/>
+        <UnitName Value="GLGraphics"/>
       </Item78>
       <Item79>
         <Filename Value="../Source/glgui.pas"/>
@@ -477,7 +477,7 @@
       </Item106>
       <Item107>
         <Filename Value="../Source/glroampatch.pas"/>
-        <UnitName Value="glroampatch"/>
+        <UnitName Value="GLROAMPatch"/>
       </Item107>
       <Item108>
         <Filename Value="../Source/glscanlinedgraphics.pas"/>
@@ -513,7 +513,7 @@
       </Item115>
       <Item116>
         <Filename Value="../Source/glspatialpartitioning.pas"/>
-        <UnitName Value="glspatialpartitioning"/>
+        <UnitName Value="GLSpatialPartitioning"/>
       </Item116>
       <Item117>
         <Filename Value="../Source/glstate.pas"/>
@@ -551,7 +551,7 @@
       </Item124>
       <Item125>
         <Filename Value="../Source/gltrail.pas"/>
-        <UnitName Value="gltrail"/>
+        <UnitName Value="GLTrail"/>
       </Item125>
       <Item126>
         <Filename Value="../Source/gltree.pas"/>
@@ -585,7 +585,7 @@
       </Item132>
       <Item133>
         <Filename Value="../Source/glwindows.pas"/>
-        <UnitName Value="glwindows"/>
+        <UnitName Value="GLWindows"/>
       </Item133>
       <Item134>
         <Filename Value="../Source/glzbuffer.pas"/>
@@ -659,6 +659,23 @@
         <Filename Value="../Source/base/glkeyboard.pas"/>
         <UnitName Value="glkeyboard"/>
       </Item147>
+      <Item148>
+        <Filename Value="../Source/designtime/fxcollectioneditor.lfm"/>
+        <Type Value="LFM"/>
+      </Item148>
+      <Item149>
+        <Filename Value="../Source/designtime/fxcollectioneditor.lrs"/>
+        <Type Value="LRS"/>
+      </Item149>
+      <Item150>
+        <Filename Value="../Source/designtime/fxcollectioneditor.pas"/>
+        <UnitName Value="FXCollectionEditor"/>
+      </Item150>
+      <Item151>
+        <Filename Value="../Source/designtime/registerxcollection.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="registerxcollection"/>
+      </Item151>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
