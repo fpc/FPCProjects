@@ -42,11 +42,7 @@ uses
   stsort,
   sysutils,
 {$IFDEF OS32}
- {$IFDEF WIN32}
-  windows;
- {$ELSE}
-  VPUtils;
- {$ENDIF}
+  TstUtil;
 {$ELSE}
   wintypes,
   winprocs,

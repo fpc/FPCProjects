@@ -42,7 +42,7 @@ uses
   stBase,
   stPQueue,
   stColl
-{$IFNDEF Win32}
+{$IFNDEF OS32}
   , WinCrt
 {$ENDIF}
   ;

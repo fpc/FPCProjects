@@ -38,7 +38,9 @@ program TExpr;
 
 uses
   SysUtils,
+  StBase,
   StExpr,
+  StConst,
 {$IFDEF os32}
   Math
 {$ELSE}

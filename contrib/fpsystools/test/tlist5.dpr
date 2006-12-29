@@ -29,16 +29,13 @@
 {*********************************************************}
 
 program TList5;
-
+{$i demodef.inc}
 {$IFDEF Win32}
  {$APPTYPE CONSOLE}
 {$ENDIF}
 
 uses
   sysutils, stbase, stlist
-{$IFNDEF Win32}
-  , wincrt
-{$ENDIF}
   ;
 const
   Nodes = 10;

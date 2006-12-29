@@ -30,9 +30,6 @@
 
 program TStat;
 
-{$IFNDEF Win32}
-  !! error: this program designed for 32-bit operation only
-{$ENDIF}
 
 {$APPTYPE CONSOLE}
 

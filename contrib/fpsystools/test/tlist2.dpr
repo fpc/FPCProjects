@@ -27,7 +27,6 @@
 {*                    TLIST2.DPR 1.05                    *}
 {*                     Test Program                      *}
 {*********************************************************}
-
 program TList2;
 
 {$IFDEF Win32}
@@ -69,7 +68,7 @@ var
   i : integer;
   Dest : PChar;
 begin
-{$IFDEF Win32}
+{$IFDEF OS32}
   SetLength(Result, NodeLen);
   Dest := Pointer(Result);
   for I := 1 to NodeLen do begin
