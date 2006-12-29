@@ -68,7 +68,7 @@ end;
 procedure TXCollectionProperty.Edit;
 begin
    with XCollectionEditor do begin
-      SetXCollection(TXCollection(GetOrdValue), Self.Designer);
+      SetXCollection(TXCollection(GetOrdValue));
       Show;
    end;
 end;

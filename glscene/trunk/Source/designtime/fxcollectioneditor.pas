@@ -17,18 +17,9 @@ interface
 
 {$i GLScene.inc}
 
-{$IFDEF MSWINDOWS}
 uses
-  Windows, Forms, XCollection, Messages, ImgList, Controls, Classes, ActnList, 
-  Menus, ComCtrls, ToolWin, 
-  {$ifdef GLS_DELPHI_6_UP} DesignEditors, DesignIntf {$else} DsgnIntf {$endif};
-{$ENDIF}
-{$IFDEF LINUX}
-uses
-  QForms, XCollection, QImgList, QControls, Classes, QActnList, 
-  QMenus, QComCtrls, DesignEditors, DesignIntf; 
-{$ENDIF}
-
+  LResources, Forms, XCollection, Messages, ImgList, Controls, Classes, ActnList,
+  Menus, ComCtrls, Propedits;
 
 type
   TXCollectionEditor = class(TForm)
@@ -67,7 +58,6 @@ type
 	 { Déclarations privées }
 	 FXCollection : TXCollection;
 //    ownerComponent : TComponent;
-    FDesigner : {$ifdef GLS_DELPHI_6_UP} IDesigner {$else} IFormDesigner {$endif};
     updatingListView : Boolean;
 	 procedure PrepareListView;
 	 procedure PrepareXCollectionItemPopup(parent : TMenuItem);
@@ -78,8 +68,7 @@ type
 	 procedure Notification(AComponent: TComponent; Operation: TOperation); override;
   public
 	 { Déclarations publiques }
-    procedure SetXCollection(aXCollection: TXCollection;
-         designer: {$ifdef GLS_DELPHI_6_UP} IDesigner {$else} IFormDesigner {$endif});
+    procedure SetXCollection(aXCollection: TXCollection);
   end;
 
 function XCollectionEditor : TXCollectionEditor;
@@ -93,22 +82,8 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-{$IFDEF MSWINDOWS}
-{$R *.dfm}
-{$ENDIF}
-{$IFDEF LINUX}
-{$R *.xfm}
-{$ENDIF}
-
-
 uses
-{$IFDEF MSWINDOWS}
-  GLMisc, SysUtils, GLBehaviours, GLScene, Dialogs; 
-{$ENDIF}
-{$IFDEF LINUX}
-  GLMisc, SysUtils, GLBehaviours, GLScene, QDialogs; 
-{$ENDIF}
-
+  GLMisc, SysUtils, GLBehaviours, GLScene, Dialogs;
 
 resourcestring
    cXCollectionEditor = 'XCollection editor';
@@ -150,19 +125,17 @@ end;
 //
 procedure TXCollectionEditor.FormHide(Sender: TObject);
 begin
-   SetXCollection(nil, nil);
+   SetXCollection(nil);
    ReleaseXCollectionEditor;
 end;
 
 // SetXCollection
 //
-procedure TXCollectionEditor.SetXCollection(aXCollection: TXCollection;
-   designer: {$ifdef GLS_DELPHI_6_UP} IDesigner {$else} IFormDesigner {$endif});
+procedure TXCollectionEditor.SetXCollection(aXCollection: TXCollection);
 begin
 //	if Assigned(ownerComponent) then
 //		ownerComponent.RemoveFreeNotification(Self);
 	FXCollection:=aXCollection;
-	FDesigner:=designer;
 	if Assigned(FXCollection) then begin
 //		if Assigned(FXCollection.Owner) and (FXCollection.Owner is TComponent) then
 //		ownerComponent:=TComponent(FXCollection.Owner);
@@ -190,21 +163,24 @@ procedure TXCollectionEditor.ListViewChange(Sender: TObject;
 var
 	sel : Boolean;
 begin
-	if (Change=ctState) and Assigned(FDesigner) and (not updatingListView) then begin
+	if (Change=ctState) and Assigned(Designer) and (not updatingListView) then begin
 		// setup enablings
 		sel:=(ListView.Selected<>nil);
-      TBAdd.Enabled:=Assigned(FDesigner);
+      TBAdd.Enabled:=Assigned(Designer);
 		ACRemove.Enabled:=sel;
 		ACMoveUp.Enabled:=sel and (ListView.Selected.Index>0);
 		ACMoveDown.Enabled:=sel and (ListView.Selected.Index<ListView.Items.Count-1);
-      if Assigned(FDesigner) then
+      if Assigned(Designer) then
          if sel then
-            FDesigner.SelectComponent(TXCollectionItem(ListView.Selected.Data))
+           GlobalDesignHook.SelectOnlyThis(TXCollectionItem(ListView.Selected.Data))
+         else
+           GlobalDesignHook.SelectOnlyThis(nil);
+(*            Designer.SelectComponent(TXCollectionItem(ListView.Selected.Data))
 {$ifndef GLS_DELPHI_4}
-         else FDesigner.NoSelection;
+         else Designer.NoSelection;
 {$else}
-         else FDesigner.SelectComponent(nil);
-{$endif}
+         else Designer.SelectComponent(nil);
+{$endif} *)
 	end;
 end;
 
@@ -222,7 +198,7 @@ begin
       if ListView.Selected<>nil then
          prevSelData:=ListView.Selected.Data
       else prevSelData:=nil;
-      with ListView.Items do begin
+      with ListView, ListView.Items do begin
          BeginUpdate;
          Clear;
          if Assigned(FXCollection) then begin
@@ -233,7 +209,8 @@ begin
                Data:=XCollectionItem;
             end;
             if prevSelData<>nil then
-               ListView.Selected:=ListView.FindData(0, prevSelData, True, False);
+//               ListView.Selected:=ListView.FindData(0, prevSelData, True, False);
+               ListView.Selected:=ListView.Items.FindData(prevSelData);
          end;
          EndUpdate;
       end;
@@ -254,11 +231,7 @@ var
 begin
 	list:=GetXCollectionItemClassesList(FXCollection.ItemsClass);
 	try
-{$ifdef GLS_DELPHI_5_UP}
 		parent.Clear;
-{$else}
-		for i:=parent.Count-1 downto 0 do parent.Delete(i); 
-{$endif}
 		for i:=0 to list.Count-1 do begin
 			XCollectionItemClass:=TXCollectionItemClass(list[i]);
 			mi:=TMenuItem.Create(owner);
@@ -312,8 +285,9 @@ begin
 	XCollectionItemClass:=TXCollectionItemClass((Sender as TMenuItem).Tag);
 	XCollectionItem:=XCollectionItemClass.Create(FXCollection);
 	PrepareListView;
-	ListView.Selected:=ListView.FindData(0, XCollectionItem, True, False);
-   FDesigner.Modified;
+//	ListView.Selected:=ListView.FindData(0, XCollectionItem, True, False);
+	ListView.Selected:=ListView.Items.FindData(XCollectionItem);
+   Designer.Modified;
 end;
 
 // ACRemoveExecute
@@ -321,12 +295,13 @@ end;
 procedure TXCollectionEditor.ACRemoveExecute(Sender: TObject);
 begin
 	if ListView.Selected<>nil then begin
-      FDesigner.Modified;
-{$ifndef GLS_DELPHI_4}
-      FDesigner.NoSelection;
+      Designer.Modified;
+      Designer.SelectOnlyThisComponent(nil);
+(*{$ifndef GLS_DELPHI_4}
+      Designer.NoSelection;
 {$else}
-      FDesigner.SelectComponent(nil);
-{$endif}
+      Designer.SelectComponent(nil);
+{$endif}*)
 		TXCollectionItem(ListView.Selected.Data).Free;
       ListView.Selected.Free;
       ListViewChange(Self, nil, ctState);
@@ -340,7 +315,7 @@ begin
 	if ListView.Selected<>nil then begin
 		TXCollectionItem(ListView.Selected.Data).MoveUp;
 		PrepareListView;
-      FDesigner.Modified;
+      Designer.Modified;
 	end;
 end;
 
@@ -351,7 +326,7 @@ begin
 	if ListView.Selected<>nil then begin
 		TXCollectionItem(ListView.Selected.Data).MoveDown;
 		PrepareListView;
-      FDesigner.Modified;
+      Designer.Modified;
 	end;
 end;
 
@@ -370,6 +345,7 @@ begin
 end;
 
 initialization
+  {$i fxcollectioneditor.lrs}
 
 finalization
 
