@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="149">
+    <Files Count="151">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <HasRegisterProc Value="True"/>
@@ -660,14 +660,22 @@
         <UnitName Value="glkeyboard"/>
       </Item147>
       <Item148>
-        <Filename Value="../Source/designtime/fxcollectioneditor.pas"/>
-        <UnitName Value="FXCollectionEditor"/>
+        <Filename Value="../Source/designtime/fxcollectioneditor.lfm"/>
+        <Type Value="LFM"/>
       </Item148>
       <Item149>
+        <Filename Value="../Source/designtime/fxcollectioneditor.lrs"/>
+        <Type Value="LRS"/>
+      </Item149>
+      <Item150>
+        <Filename Value="../Source/designtime/fxcollectioneditor.pas"/>
+        <UnitName Value="FXCollectionEditor"/>
+      </Item150>
+      <Item151>
         <Filename Value="../Source/designtime/registerxcollection.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="registerxcollection"/>
-      </Item149>
+      </Item151>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
