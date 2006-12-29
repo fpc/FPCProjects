@@ -1,5 +1,5 @@
 #
-#   Makefile.fpc for MySql bindings
+#   Makefile.fpc for Systools
 #
 
 [package]
@@ -7,6 +7,7 @@ name=fpsystools
 version=1.1
 
 [target]
+exampledirs=test
 units=stastro stastrop stbase stbcd stbits stcoll stconst stcrc stdate \
       stdatest stdict stdque steclpse stexpr stfin sthash stjup \
       stjupsat stlarr stlist stmars stmath stmerc stneptun stnvbits \

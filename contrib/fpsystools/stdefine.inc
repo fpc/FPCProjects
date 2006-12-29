@@ -35,9 +35,11 @@
 { by hardcoded options in the source file.                                  }
 
 {$ifdef FPC}
+
 {$GOTO ON}
 {$ASMMODE INTEL}
 {$MODE DELPHI}
+{$define OS32} // used in tests
 {$endif}
 {$IFDEF LINUX}
   {$DEFINE UNIX}

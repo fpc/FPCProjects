@@ -379,6 +379,153 @@ endif
 ifeq ($(FULL_TARGET),powerpc64-embedded)
 override TARGET_UNITS+=stastro stastrop stbase stbcd stbits stcoll stconst stcrc stdate stdatest stdict stdque steclpse stexpr stfin sthash stjup stjupsat stlarr stlist stmars stmath stmerc stneptun stnvbits stnvcoll stnvcont stnvdict stnvdq stnvlary stnvlist stnvlmat stnvscol stnvtree stostr stpluto stpqueue stptrns stregex streglin stsaturn stsort ststat ststr ststrms sttext sttohtml sttree sturanus stutils stvarr stvenus
 endif
+ifeq ($(FULL_TARGET),i386-linux)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-go32v2)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-win32)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-os2)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-freebsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-beos)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-netbsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-solaris)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-qnx)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-netware)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-openbsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-wdosx)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-darwin)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-emx)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-watcom)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-netwlibc)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-wince)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),i386-embedded)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),m68k-linux)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),m68k-freebsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),m68k-netbsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),m68k-amiga)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),m68k-atari)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),m68k-openbsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),m68k-palmos)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),m68k-embedded)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc-linux)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc-netbsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc-amiga)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc-macos)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc-darwin)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc-morphos)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc-embedded)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),sparc-linux)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),sparc-netbsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),sparc-solaris)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),sparc-embedded)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),x86_64-linux)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),x86_64-freebsd)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),x86_64-win64)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),x86_64-embedded)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),arm-linux)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),arm-palmos)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),arm-wince)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),arm-gba)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),arm-nds)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),arm-embedded)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc64-linux)
+override TARGET_EXAMPLEDIRS+=test
+endif
+ifeq ($(FULL_TARGET),powerpc64-embedded)
+override TARGET_EXAMPLEDIRS+=test
+endif
 override INSTALL_FPCPACKAGE=n
 ifdef REQUIRE_UNITSDIR
 override UNITSDIR+=$(REQUIRE_UNITSDIR)
@@ -1489,6 +1636,24 @@ ifdef TARGET_RSTS
 override RSTFILES=$(addsuffix $(RSTEXT),$(TARGET_RSTS))
 override CLEANRSTFILES+=$(RSTFILES)
 endif
+.PHONY: fpc_examples
+ifneq ($(TARGET_EXAMPLES),)
+HASEXAMPLES=1
+override EXAMPLESOURCEFILES:=$(wildcard $(addsuffix .pp,$(TARGET_EXAMPLES)) $(addsuffix .pas,$(TARGET_EXAMPLES)) $(addsuffix .lpr,$(TARGET_EXAMPLES)) $(addsuffix .dpr,$(TARGET_EXAMPLES)))
+override EXAMPLEFILES:=$(addsuffix $(EXEEXT),$(TARGET_EXAMPLES))
+override EXAMPLEOFILES:=$(addsuffix $(OEXT),$(TARGET_EXAMPLES)) $(addprefix $(STATICLIBPREFIX),$(addsuffix $(STATICLIBEXT),$(TARGET_EXAMPLES))) $(addprefix $(IMPORTLIBPREFIX),$(addsuffix $(STATICLIBEXT),$(TARGET_EXAMPLES)))
+override CLEANEXEFILES+=$(EXAMPLEFILES) $(EXAMPLEOFILES)
+ifeq ($(OS_TARGET),os2)
+override CLEANEXEFILES+=$(addsuffix $(AOUTEXT),$(TARGET_EXAMPLES))
+endif
+ifeq ($(OS_TARGET),emx)
+override CLEANEXEFILES+=$(addsuffix $(AOUTEXT),$(TARGET_EXAMPLES))
+endif
+endif
+ifneq ($(TARGET_EXAMPLEDIRS),)
+HASEXAMPLES=1
+endif
+fpc_examples: all $(EXAMPLEFILES) $(addsuffix _all,$(TARGET_EXAMPLEDIRS))
 .PHONY: fpc_all fpc_smart fpc_debug fpc_release fpc_shared
 $(FPCMADE): $(ALLDEPENDENCIES) $(ALLTARGET)
 	@$(ECHOREDIR) Compiled > $(FPCMADE)
@@ -1887,12 +2052,204 @@ endif
 fpc_makefile_sub2: $(addsuffix _makefile_dirs,$(TARGET_DIRS) $(TARGET_EXAMPLEDIRS))
 fpc_makefile_dirs: fpc_makefile_sub1 fpc_makefile_sub2
 fpc_makefiles: fpc_makefile fpc_makefile_dirs
+ifeq ($(FULL_TARGET),i386-linux)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-go32v2)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-win32)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-os2)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-freebsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-beos)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-netbsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-solaris)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-qnx)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-netware)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-openbsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-wdosx)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-darwin)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-emx)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-watcom)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-netwlibc)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-wince)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),i386-embedded)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),m68k-linux)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),m68k-freebsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),m68k-netbsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),m68k-amiga)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),m68k-atari)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),m68k-openbsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),m68k-palmos)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),m68k-embedded)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc-linux)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc-netbsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc-amiga)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc-macos)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc-darwin)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc-morphos)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc-embedded)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),sparc-linux)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),sparc-netbsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),sparc-solaris)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),sparc-embedded)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),x86_64-linux)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),x86_64-freebsd)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),x86_64-win64)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),x86_64-embedded)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),arm-linux)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),arm-palmos)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),arm-wince)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),arm-gba)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),arm-nds)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),arm-embedded)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc64-linux)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifeq ($(FULL_TARGET),powerpc64-embedded)
+TARGET_EXAMPLEDIRS_TEST=1
+endif
+ifdef TARGET_EXAMPLEDIRS_TEST
+test_all:
+	$(MAKE) -C test all
+test_debug:
+	$(MAKE) -C test debug
+test_smart:
+	$(MAKE) -C test smart
+test_release:
+	$(MAKE) -C test release
+test_units:
+	$(MAKE) -C test units
+test_examples:
+	$(MAKE) -C test examples
+test_shared:
+	$(MAKE) -C test shared
+test_install:
+	$(MAKE) -C test install
+test_sourceinstall:
+	$(MAKE) -C test sourceinstall
+test_exampleinstall:
+	$(MAKE) -C test exampleinstall
+test_distinstall:
+	$(MAKE) -C test distinstall
+test_zipinstall:
+	$(MAKE) -C test zipinstall
+test_zipsourceinstall:
+	$(MAKE) -C test zipsourceinstall
+test_zipexampleinstall:
+	$(MAKE) -C test zipexampleinstall
+test_zipdistinstall:
+	$(MAKE) -C test zipdistinstall
+test_clean:
+	$(MAKE) -C test clean
+test_distclean:
+	$(MAKE) -C test distclean
+test_cleanall:
+	$(MAKE) -C test cleanall
+test_info:
+	$(MAKE) -C test info
+test_makefiles:
+	$(MAKE) -C test makefiles
+test:
+	$(MAKE) -C test all
+.PHONY: test_all test_debug test_smart test_release test_units test_examples test_shared test_install test_sourceinstall test_exampleinstall test_distinstall test_zipinstall test_zipsourceinstall test_zipexampleinstall test_zipdistinstall test_clean test_distclean test_cleanall test_info test_makefiles test
+endif
 all: fpc_all
 debug: fpc_debug
 smart: fpc_smart
 release: fpc_release
 units: fpc_units
-examples:
+examples: fpc_examples
 shared: fpc_shared
 install: fpc_install
 sourceinstall: fpc_sourceinstall
@@ -1902,7 +2259,7 @@ zipinstall: fpc_zipinstall
 zipsourceinstall: fpc_zipsourceinstall
 zipexampleinstall: fpc_zipexampleinstall
 zipdistinstall: fpc_zipdistinstall
-clean: fpc_clean
+clean: fpc_clean $(addsuffix _clean,$(TARGET_EXAMPLEDIRS))
 distclean: fpc_distclean
 cleanall: fpc_cleanall
 info: fpc_info
