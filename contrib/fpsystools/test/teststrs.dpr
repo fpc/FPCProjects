@@ -46,7 +46,7 @@ uses
   WinTypes, WinProcs,
   {$ENDIF}
   STBase,
-  STStrS,
+  STStr,
   tstutil;
 
 var

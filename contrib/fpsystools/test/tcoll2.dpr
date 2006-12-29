@@ -39,13 +39,9 @@ program TColl2;
  {$APPTYPE CONSOLE}
 {$ENDIF}
 
-uses
+uses 
+  tstutil,
   sysutils, classes,
-{$IFDEF VirtualPascal}
-  VPUtils,
-{$ELSE}
-  winprocs,
-{$ENDIF}
   stbase, stlist, stcoll
 {$IFNDEF OS32}
   , wincrt
@@ -62,12 +58,6 @@ var
   t0, t1, t2 : longint;
   S : TFileStream;
 
-{$IFDEF VirtualPascal}
-function gettickcount : longint;
-begin
-  gettickcount := VPUtils.GetTimemSec;
-end;
-{$ENDIF}
 
 function LongCompare(Data1, Data2 : Pointer) : Integer; far;
 begin

@@ -42,9 +42,6 @@ uses
   classes,
   stbase,
   stbits
-{$IFNDEF OS32}
-  , wincrt
-{$ENDIF}
   ;
 
 const

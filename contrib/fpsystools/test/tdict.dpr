@@ -38,7 +38,7 @@ program TDict;
 
 uses
   sysutils, classes, stbase, stdict
-{$IFNDEF Win32}
+{$IFNDEF OS32}
   , wincrt
 {$ENDIF}
   ;

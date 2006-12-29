@@ -39,7 +39,7 @@ program TExpr;
 uses
   SysUtils,
   StExpr,
-{$IFDEF Win32}
+{$IFDEF os32}
   Math
 {$ELSE}
   StMath,

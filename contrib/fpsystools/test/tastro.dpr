@@ -1,3 +1,4 @@
+{$i demodef.inc}
 (* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1
  *
@@ -35,10 +36,6 @@
 program Tastro;
 
 uses
-{$IFNDEF Win32}
-WinCrt,
-{$ENDIF}
-
 StConst,
 StDate,
 StDateSt,

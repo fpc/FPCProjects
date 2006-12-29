@@ -41,7 +41,7 @@ uses
   windows,
 {$ENDIF}
   sysutils, stbase, stdict
-{$IFNDEF Win32}
+{$IFNDEF os32}
   , wincrt
 {$ENDIF}
   ;
@@ -57,7 +57,7 @@ function RandomStr : string;
 var
   i : integer;
 begin
-{$IFDEF Win32}
+{$IFDEF os32}
   SetLength(Result, NodeLen);
 {$ELSE}
   Result[0] := Char(NodeLen);

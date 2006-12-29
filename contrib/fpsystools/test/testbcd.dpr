@@ -30,7 +30,7 @@
 
 {***WARNING*** if running this app from within the IDE, turn off the
                Break on Exception flag}
-
+{$i demodef.inc}
 program Testbcd;
 
 uses

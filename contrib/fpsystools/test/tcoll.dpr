@@ -38,11 +38,7 @@ program TColl;
 
 uses
   sysutils, classes,
-{$IFDEF VirtualPascal}
-  VPUtils,
-{$ELSE}
-  winprocs,
-{$ENDIF}
+  tstutil,
   stbase, stlist, stcoll
 {$IFNDEF OS32}
   , wincrt
@@ -56,12 +52,7 @@ var
   i, l : longint;
   t0, t1, t2 : longint;
 
-{$IFDEF VirtualPascal}
-function gettickcount : longint;
-begin
-  gettickcount := VPUtils.GetTimemSec;
-end;
-{$ENDIF}
+
 
 procedure PackAndCheck;
 begin

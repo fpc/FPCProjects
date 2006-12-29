@@ -29,20 +29,13 @@
 {*********************************************************}
 
 program TestStrL;
-
-{$IFDEF Win32}
-{$APPTYPE CONSOLE}
-{$ELSE}
-  !! Error: 32-bit compilation only
-{$ENDIF}
-
+{$i demodef.inc}
 {$H+}
 
 uses
   SysUtils,
-  Windows,
   STBase,
-  STStrL,
+  STStr,
   tstutil in 'tstutil.pas';
 
 var

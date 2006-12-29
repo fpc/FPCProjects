@@ -50,7 +50,7 @@ uses
   WinTypes, WinProcs,
   {$ENDIF}
   STBase,
-  STStrS,
+  STStr,
   STOStr,
   tstutil;
 

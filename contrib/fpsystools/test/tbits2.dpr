@@ -40,9 +40,6 @@ program TBits2;
 uses
   stbase,
   stbits
-{$IFNDEF OS32}
-  , wincrt
-{$ENDIF}
   ;
 
 const
