@@ -6710,7 +6710,6 @@ begin
    Melt;
    FGLStates.Free;
    // clean up and terminate
-   {$warning - Ales: This causes an AV with -ghl in fpc, because it calls already freed glscene}
    {$ifndef FPC}
    if Assigned(FCamera) and Assigned(FCamera.FScene) then begin
       FCamera.FScene.RemoveBuffer(Self);
