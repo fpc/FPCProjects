@@ -493,12 +493,14 @@ begin
   if DirectoryExists(s) then
     LeftView.Directory:=s
   else if FTP.Connected then begin
+    s := StringReplace(LeftView.FileName, PathDelim + PathDelim,
+                       PathDelim, [rfReplaceAll]);
     FDLDone:=0;
-    FF:=TFileStream.Create(LeftView.FileName, fmOpenRead);
+    FF:=TFileStream.Create(s, fmOpenRead);
     FDLSize:=FF.Size;
     FF.Free;
     FLastN:=0;
-    FTP.Put(LeftView.FileName);
+    FTP.Put(s);
   end;
 end;
 
