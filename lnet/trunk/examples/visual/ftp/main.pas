@@ -385,6 +385,7 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  FDLSize := 1;
   Dir:=ExtractFilePath(ParamStr(0));
   FDirListingExpected:=False;
   FList:=TStringList.Create;
@@ -419,6 +420,10 @@ var
 begin
   s := CurrentName;
   FDLSize := CurrentSize;
+
+  if FDLSize = 0 then
+    FDLSize := 1;
+
   FDLDone:=0;
   FreeAndNil(FFile); // if the last get failed, we need to free memory here
   CreateFilePath:=Dir + s;
