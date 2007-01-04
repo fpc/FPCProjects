@@ -557,6 +557,8 @@ begin
   else
   if rmtGrid.Objects[0, rmtGrid.Row]<>itError then begin
     FDLSize := CurrentSize;
+    if FDLSize = 0 then
+      FDLSize := 1;
     FreeAndNil(FFile);
     CreateFilePath:=Dir + item;
     FTP.Retrieve(item);
