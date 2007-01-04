@@ -1,40 +1,44 @@
 object Form1: TForm1
-  Caption = 'EvalTest for Lazarus'
-  ClientHeight = 182
-  ClientWidth = 400
-  OnClose = FormClose
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  Position = poScreenCenter
-  HorzScrollBar.Page = 399
-  VertScrollBar.Page = 181
   Left = 352
   Height = 182
   Top = 175
   Width = 400
+  HorzScrollBar.Page = 399
+  VertScrollBar.Page = 181
+  ActiveControl = ExpressionEdit
+  Caption = 'EvalTest for Lazarus'
+  OnClose = FormClose
+  OnCreate = FormCreate
+  Position = poScreenCenter
   object Label1: TLabel
+    Left = 6
+    Height = 14
+    Top = 41
+    Width = 388
     Align = alTop
     BorderSpacing.Top = 6
     BorderSpacing.Around = 6
     Caption = 'x'
     Color = clNone
-    Left = 6
-    Height = 13
-    Top = 41
-    Width = 388
+    ParentColor = False
   end
   object Label2: TLabel
+    Left = 6
+    Height = 14
+    Top = 93
+    Width = 388
     Align = alTop
     BorderSpacing.Top = 6
     BorderSpacing.Around = 6
     Caption = 't'
     Color = clNone
-    Left = 6
-    Height = 13
-    Top = 92
-    Width = 388
+    ParentColor = False
   end
   object ExpressionEdit: TEdit
+    Left = 6
+    Height = 23
+    Top = 6
+    Width = 388
     Align = alTop
     BorderSpacing.Around = 6
     Font.CharSet = ANSI_CHARSET
@@ -44,12 +48,12 @@ object Form1: TForm1
     Font.Pitch = fpFixed
     TabOrder = 0
     Text = 'pi*sin(x-x0)+x^(t-1)+exp(x*t)+5'
-    Left = 6
-    Height = 23
-    Top = 6
-    Width = 388
   end
   object ResultEdit: TEdit
+    Left = 6
+    Height = 23
+    Top = 153
+    Width = 388
     Align = alBottom
     BorderSpacing.Around = 6
     Font.CharSet = ANSI_CHARSET
@@ -58,56 +62,36 @@ object Form1: TForm1
     Font.Name = 'Courier New'
     Font.Pitch = fpFixed
     TabOrder = 1
-    Left = 6
-    Height = 23
-    Top = 153
-    Width = 388
   end
   object TrackBar1: TTrackBar
-    Align = alTop
-    BorderSpacing.Around = 6
-    Frequency = 2
-    Max = 1000
-    Min = 1
-    OnChange = TrackBarChange
-    Position = 1
-    ScalePos = trTop
-    ShowScale = True
-    TabOrder = 2
-    Frequency = 2
-    Max = 1000
-    Min = 1
-    OnChange = TrackBarChange
-    Position = 1
-    ScalePos = trTop
-    ShowScale = True
     Left = 6
     Height = 20
-    Top = 60
+    Top = 61
     Width = 388
+    Frequency = 2
+    Max = 1000
+    Min = 1
+    OnChange = TrackBarChange
+    Position = 1
+    ScalePos = trTop
+    Align = alTop
+    BorderSpacing.Around = 6
+    TabOrder = 2
   end
   object TrackBar2: TTrackBar
-    Align = alTop
-    BorderSpacing.Around = 6
-    Max = 1000
-    Min = 1
-    OnChange = TrackBarChange
-    Position = 1
-    ScalePos = trTop
-    ShowScale = True
-    TabOrder = 3
-    TickStyle = tsManual
-    Max = 1000
-    Min = 1
-    OnChange = TrackBarChange
-    Position = 1
-    ScalePos = trTop
-    ShowScale = True
-    TickStyle = tsManual
+    Tag = 1
     Left = 6
     Height = 20
-    Top = 111
+    Top = 113
     Width = 388
-    Tag = 1
+    Max = 1000
+    Min = 1
+    OnChange = TrackBarChange
+    Position = 1
+    ScalePos = trTop
+    TickStyle = tsManual
+    Align = alTop
+    BorderSpacing.Around = 6
+    TabOrder = 3
   end
 end
