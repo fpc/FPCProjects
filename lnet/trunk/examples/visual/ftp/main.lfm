@@ -4,7 +4,7 @@ object MainForm: TMainForm
   Top = 84
   Width = 696
   HorzScrollBar.Page = 695
-  VertScrollBar.Page = 528
+  VertScrollBar.Page = 517
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
@@ -15,7 +15,7 @@ object MainForm: TMainForm
   OnKeyDown = FormKeyDown
   object MemoText: TMemo
     Height = 103
-    Top = 403
+    Top = 391
     Width = 696
     Align = alBottom
     ReadOnly = True
@@ -23,14 +23,14 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 372
+    Height = 360
     Top = 26
     Width = 696
     Align = alClient
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 370
+      Height = 358
       Top = 1
       Width = 183
       Align = alLeft
@@ -42,13 +42,13 @@ object MainForm: TMainForm
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 370
+      Height = 358
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 370
+      Height = 358
       Top = 1
       Width = 506
       Align = alClient
@@ -96,14 +96,14 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 398
+    Top = 386
     Width = 696
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
-    Height = 23
-    Top = 506
+    Height = 24
+    Top = 494
     Width = 696
     Panels = <    
       item
@@ -133,21 +133,21 @@ object MainForm: TMainForm
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 72
+      Left = 82
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 85
+      Left = 95
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 133
+      Left = 149
       Top = 2
       Action = accDisconnect
       Down = True

@@ -556,8 +556,9 @@ begin
     ChangeDirectory(CurrentNameLink)
   else
   if rmtGrid.Objects[0, rmtGrid.Row]<>itError then begin
+    FDLSize := CurrentSize;
     FreeAndNil(FFile);
-    CreateFilePath:=Dir+item;
+    CreateFilePath:=Dir + item;
     FTP.Retrieve(item);
   end;
 end;
