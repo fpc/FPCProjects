@@ -5,7 +5,6 @@ object InfoForm: TInfoForm
   Width = 405
   HorzScrollBar.Page = 404
   VertScrollBar.Page = 255
-  ActiveControl = Sheet3
   BorderStyle = bsToolWindow
   Caption = 'OpenGL Driver Info'
   Font.Height = -10

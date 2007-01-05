@@ -52,7 +52,7 @@ uses glscene, classes, glmisc, glcrossplatform,cadencerasap,
    {$ifdef win32}
    windows, controls, messages, stdctrls, forms
    {$endif}
-   {$ifdef linux}
+   {$ifdef unix}
    {$ifdef fpc}
    forms
    {$else}
@@ -248,7 +248,7 @@ implementation
 {$ifdef FPC}
 {$define FPC_ASAP}
 {$else}
-{$ifdef LINUX}
+{$ifdef unix}
 {$define NO_ASAP}
 {$endif}
 {$endif}

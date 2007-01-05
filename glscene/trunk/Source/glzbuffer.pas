@@ -83,12 +83,8 @@ uses classes, glmisc, opengl1x, glscene, vectorgeometry, glgraphics,
      {$ifdef mswindows}
      dialogs, glwin32viewer
      {$endif}
-     {$ifdef linux}
-     {$ifndef lcl}
-     qdialogs, gllinuxviewer
-     {$else}
+     {$ifdef unix}
      dialogs,gllclviewer
-     {$endif}
      {$endif}
      ;
 

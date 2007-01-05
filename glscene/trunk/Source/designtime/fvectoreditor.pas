@@ -29,7 +29,7 @@ uses
   forms, comctrls, stdctrls, toolwin, extctrls, buttons, graphics, controls, 
   classes;
 {$endif}
-{$ifdef linux}
+{$ifdef unix}
 uses
   {$ifndef fpc}
   qforms, qcomctrls, qstdctrls, qextctrls, qbuttons, qgraphics, qcontrols, 
@@ -97,13 +97,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
-{$IFDEF LINUX}
-{$IFNDEF FPC}
-{$R *.xfm}
-{$ENDIF}
-{$ENDIF}
-
 
 uses
   sysutils, vectorgeometry, glutils; 

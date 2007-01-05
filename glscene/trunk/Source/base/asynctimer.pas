@@ -40,7 +40,7 @@ uses classes;
 const
   cDEFAULT_TIMER_INTERVAL = 1000;
 
-{$IFDEF LINUX}
+{$IFDEF UNIX}
 {$IFNDEF FPC}
 type
   TThreadPriority = integer;

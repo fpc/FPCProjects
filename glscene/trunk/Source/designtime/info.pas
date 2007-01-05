@@ -140,14 +140,17 @@ uses
   opengl1x, sysutils, glcrossplatform;
 
 {$IFNDEF FPC}
+
 {$IFDEF MSWINDOWS}
 {$R *.dfm}
 {$ENDIF}
+
 {$IFDEF LINUX} // kylix crap
 {$R *.xfm}
 {$ENDIF}
 
 {$R Info.res}
+
 {$ENDIF}
 
 // ShowInfoForm

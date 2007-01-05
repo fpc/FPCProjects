@@ -1,21 +1,21 @@
 object VectorEditorForm: TVectorEditorForm
-  BorderStyle = bsDialog
-  Caption = 'XYZ editor'
-  ClientHeight = 171
-  ClientWidth = 265
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  PixelsPerInch = 96
-  Position = poScreenCenter
-  TextHeight = 13
-  HorzScrollBar.Page = 264
-  VertScrollBar.Page = 170
   Left = 480
   Height = 171
   Top = 98
   Width = 265
+  HorzScrollBar.Page = 264
+  VertScrollBar.Page = 170
+  ActiveControl = EDx
+  BorderStyle = bsDialog
+  Caption = 'XYZ editor'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Position = poScreenCenter
   object IMx: TImage
-    BorderSpacing.OnChange = nil
+    Left = 152
+    Height = 16
+    Top = 72
+    Width = 16
     Picture.Data = {
       07544269746D617036080000424D360800000000000036000000280000002000
       0000100000000100200000000000000200006400000064000000000000000000
@@ -85,15 +85,13 @@ object VectorEditorForm: TVectorEditorForm
       00FF000000FF000000FF000000FF000000FF580000FF000000FFF9F9F9FFF9F9
       F9FF
     }
-    Transparent = True
     Visible = False
-    Left = 152
-    Height = 16
-    Top = 72
-    Width = 16
   end
   object IMy: TImage
-    BorderSpacing.OnChange = nil
+    Left = 152
+    Height = 16
+    Top = 104
+    Width = 16
     Picture.Data = {
       07544269746D617036080000424D360800000000000036000000280000002000
       0000100000000100200000000000000200006400000064000000000000000000
@@ -163,15 +161,13 @@ object VectorEditorForm: TVectorEditorForm
       00FF000000FF000000FF000000FF000000FF000000FF000000FF002800FF0000
       00FF
     }
-    Transparent = True
     Visible = False
-    Left = 152
-    Height = 16
-    Top = 104
-    Width = 16
   end
   object IMz: TImage
-    BorderSpacing.OnChange = nil
+    Left = 152
+    Height = 16
+    Top = 136
+    Width = 16
     Picture.Data = {
       07544269746D617036080000424D360800000000000036000000280000002000
       0000100000000100200000000000000200006400000064000000000000000000
@@ -241,138 +237,130 @@ object VectorEditorForm: TVectorEditorForm
       00FF000000FF000000FF000000FF000000FF000000FF000000FF002800FF0000
       00FF
     }
-    Transparent = True
     Visible = False
-    Left = 152
-    Height = 16
-    Top = 136
-    Width = 16
   end
   object SpeedButton1: TSpeedButton
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 23
+    Top = 8
+    Width = 33
     Caption = '+ X'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
     OnClick = TBxClick
-    Left = 8
-    Height = 23
-    Top = 8
-    Width = 33
   end
   object SBmX: TSpeedButton
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 23
+    Top = 32
+    Width = 33
     Caption = '- X'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
     OnClick = SBmXClick
-    Left = 8
-    Height = 23
-    Top = 32
-    Width = 33
   end
   object SpeedButton3: TSpeedButton
-    BorderSpacing.OnChange = nil
+    Left = 42
+    Height = 23
+    Top = 8
+    Width = 33
     Caption = '+ Y'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
     OnClick = TByClick
-    Left = 42
-    Height = 23
-    Top = 8
-    Width = 33
   end
   object SBmY: TSpeedButton
-    BorderSpacing.OnChange = nil
+    Left = 42
+    Height = 23
+    Top = 32
+    Width = 33
     Caption = '- Y'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
     OnClick = SBmYClick
-    Left = 42
-    Height = 23
-    Top = 32
-    Width = 33
   end
   object SpeedButton5: TSpeedButton
-    BorderSpacing.OnChange = nil
+    Left = 76
+    Height = 23
+    Top = 8
+    Width = 33
     Caption = '+ Z'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
     OnClick = TBzClick
-    Left = 76
-    Height = 23
-    Top = 8
-    Width = 33
   end
   object SBmZ: TSpeedButton
-    BorderSpacing.OnChange = nil
+    Left = 76
+    Height = 23
+    Top = 32
+    Width = 33
     Caption = '- Z'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
     OnClick = SBmZClick
-    Left = 76
-    Height = 23
-    Top = 32
-    Width = 33
   end
   object SpeedButton7: TSpeedButton
-    BorderSpacing.OnChange = nil
+    Left = 130
+    Height = 23
+    Top = 8
+    Width = 47
     Caption = '0; 0; 0'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
     OnClick = TBnullClick
-    Left = 130
-    Height = 23
-    Top = 8
-    Width = 47
   end
   object SBUnit: TSpeedButton
-    BorderSpacing.OnChange = nil
+    Left = 130
+    Height = 23
+    Top = 32
+    Width = 47
     Caption = '1; 1; 1'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
     OnClick = SBUnitClick
-    Left = 130
-    Height = 23
-    Top = 32
-    Width = 47
   end
   object SpeedButton9: TSpeedButton
-    BorderSpacing.OnChange = nil
-    Caption = 'Normalize'
-    Flat = True
-    NumGlyphs = 0
-    OnClick = SpeedButton9Click
     Left = 194
     Height = 23
     Top = 8
     Width = 63
-  end
-  object Bevel1: TBevel
-    BorderSpacing.OnChange = nil
-    Height = 5
-    Left = 8
-    Name = 'Bevel1'
-    Shape = bsTopLine
-    Top = 62
-    Width = 249
-    Left = 8
-    Height = 5
-    Top = 62
-    Width = 249
-  end
-  object SBInvert: TSpeedButton
-    BorderSpacing.OnChange = nil
-    Caption = 'Invert'
+    Caption = 'Normalize'
+    Color = clBtnFace
     Flat = True
     NumGlyphs = 0
-    OnClick = SBInvertClick
+    OnClick = SpeedButton9Click
+  end
+  object Bevel1: TBevel
+    Left = 8
+    Height = 5
+    Top = 62
+    Width = 249
+    Shape = bsTopLine
+  end
+  object SBInvert: TSpeedButton
     Left = 194
     Height = 23
     Top = 32
     Width = 63
+    Caption = 'Invert'
+    Color = clBtnFace
+    Flat = True
+    NumGlyphs = 0
+    OnClick = SBInvertClick
   end
   object Label1: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 14
+    Top = 72
+    Width = 34
     Caption = 'X axis'
     Color = clNone
     Font.CharSet = ANSI_CHARSET
@@ -380,13 +368,13 @@ object VectorEditorForm: TVectorEditorForm
     Font.Height = -13
     Font.Name = 'Arial'
     Font.Style = [fsBold]
-    Left = 8
-    Height = 16
-    Top = 72
-    Width = 39
+    ParentColor = False
   end
   object Label2: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 14
+    Top = 104
+    Width = 34
     Caption = 'Y axis'
     Color = clNone
     Font.CharSet = ANSI_CHARSET
@@ -394,13 +382,13 @@ object VectorEditorForm: TVectorEditorForm
     Font.Height = -13
     Font.Name = 'Arial'
     Font.Style = [fsBold]
-    Left = 8
-    Height = 16
-    Top = 104
-    Width = 38
+    ParentColor = False
   end
   object Label3: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 14
+    Top = 136
+    Width = 34
     Caption = 'Z axis'
     Color = clNone
     Font.CharSet = ANSI_CHARSET
@@ -408,59 +396,53 @@ object VectorEditorForm: TVectorEditorForm
     Font.Height = -13
     Font.Name = 'Arial'
     Font.Style = [fsBold]
-    Left = 8
-    Height = 16
-    Top = 136
-    Width = 37
+    ParentColor = False
   end
   object EDx: TEdit
-    BorderSpacing.OnChange = nil
-    OnChange = EDxChange
-    TabOrder = 0
-    Text = '0'
     Left = 56
     Height = 21
     Top = 71
     Width = 89
+    OnChange = EDxChange
+    TabOrder = 0
+    Text = '0'
   end
   object EDy: TEdit
-    BorderSpacing.OnChange = nil
-    OnChange = EDyChange
-    TabOrder = 1
-    Text = '0'
     Left = 56
     Height = 21
     Top = 103
     Width = 89
+    OnChange = EDyChange
+    TabOrder = 1
+    Text = '0'
   end
   object EDz: TEdit
-    BorderSpacing.OnChange = nil
-    OnChange = EDzChange
-    TabOrder = 2
-    Text = '0'
     Left = 56
     Height = 21
     Top = 135
     Width = 89
+    OnChange = EDzChange
+    TabOrder = 2
+    Text = '0'
   end
   object BBok: TBitBtn
-    BorderSpacing.OnChange = nil
-    Kind = bkOK
-    ModalResult = 1
-    TabOrder = 3
     Left = 184
     Height = 25
     Top = 72
     Width = 75
+    Kind = bkOK
+    ModalResult = 1
+    NumGlyphs = 0
+    TabOrder = 3
   end
   object BBcancel: TBitBtn
-    BorderSpacing.OnChange = nil
-    Kind = bkCancel
-    ModalResult = 2
-    TabOrder = 4
     Left = 184
     Height = 25
     Top = 104
     Width = 75
+    Kind = bkCancel
+    ModalResult = 2
+    NumGlyphs = 0
+    TabOrder = 4
   end
 end

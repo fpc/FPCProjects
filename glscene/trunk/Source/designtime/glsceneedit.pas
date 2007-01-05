@@ -36,7 +36,6 @@ interface
 
 {$i GLScene.inc}
 
-{$IFDEF MSWINDOWS}
 uses
   xcollection, registry, controls, forms, comctrls, imglist, dialogs, menus,
   actnlist, toolwin, glscene, classes, sysutils, extctrls, stdctrls,
@@ -49,14 +48,6 @@ uses
   {$else}
     componenteditors, lclintf, lresources;
   {$endif}
-{$endif}
-{$ifdef linux}
-uses
-  xcollection, qdialogs, qimglist, qactnlist, qforms, qmenus, qtypes,
-  qcomctrls, qcontrols, types, glscene, classes, sysutils, qextctrls,
-  qstdctrls, designintf, vcleditors;
-{$endif}
-
 
 const
   SCENE_SELECTED=0;
@@ -223,7 +214,7 @@ type
     {$IFDEF MSWINDOWS}
     procedure TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
     {$ENDIF}
-    {$IFDEF LINUX}
+    {$IFDEF UNIX}
     procedure TreeEdited(Sender: TObject; Node: TTreeNode; var S: WideString);
     {$ENDIF}
 
@@ -249,16 +240,12 @@ implementation
 {$IFDEF MSWINDOWS}
 {$ifndef FPC}{$R *.dfm}{$endif}
 {$ENDIF}
-{$IFDEF LINUX}
-{$R *.xfm}
-{$ENDIF}
-
 
 uses
 {$ifdef mswindows}
   gllazarusregister, glstrings, info, opengl1x, clipbrd, gllclviewer;
 {$endif}
-{$ifdef linux}
+{$ifdef unix}
   glsceneregister, glstrings, info, opengl1x, qclipbrd, gllinuxviewer; 
 {$endif}
 
@@ -852,7 +839,7 @@ end;
 {$IFDEF MSWINDOWS}
 procedure TGLSceneEditorForm.TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF UNIX}
 procedure TGLSceneEditorForm.TreeEdited(Sender: TObject; Node: TTreeNode; var S: WideString);
 {$ENDIF}
 var
@@ -977,7 +964,7 @@ begin
          buttons:=[mbAll]+Buttons;
       end else confirmMsg:=confirmMsg+'?';
       {$ENDIF}
-      {$IFDEF LINUX}
+      {$IFDEF UNIX}
       confirmMsg:=confirmMsg+'?';
       {$ENDIF}
       case MessageDlg(confirmMsg, mtConfirmation, buttons, 0) of
