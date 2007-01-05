@@ -16,7 +16,7 @@ interface
 
 uses forms, messages, classes, glscene, controls, menus
      ,glwin32viewer,glwin32context
-     {$ifdef linux}
+     {$ifdef unix}
      , gllingtkcontext
      {$endif}
      {$ifdef mswindows}

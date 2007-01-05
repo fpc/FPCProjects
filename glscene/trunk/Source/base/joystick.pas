@@ -1,4 +1,4 @@
-//
+l//
 // this unit is part of the glscene project, http://glscene.org
 //
 {: joystick<p>
@@ -18,7 +18,7 @@ unit joystick;
 interface
 
 {$i GLScene.inc}
-{$ifdef linux}{$message error 'unit not supported'}{$endif linux}
+{$ifdef unix}{$message error 'unit not supported'}{$endif unix}
 
 uses windows, forms, classes, controls, messages;
 

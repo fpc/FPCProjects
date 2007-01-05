@@ -35,7 +35,7 @@ interface
 
 // each OS gets its own IFDEFed complete code block to make reading easier
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
 uses
   windows;
 
@@ -161,15 +161,10 @@ end;
 
 {$IFDEF Unix}
 uses
-{$ifdef linux}
-  types,
-  libc;
-{$else}
   dl,
   types,
   baseunix,
   unix;
-{$endif}
 type
   // handle to a loaded .so
   tmodulehandle = pointer;

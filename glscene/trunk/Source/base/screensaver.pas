@@ -22,7 +22,7 @@ unit screensaver;
 interface
 
 {$i GLScene.inc}
-{$ifdef linux}{$message error 'unit not supported'}{$endif linux}
+{$ifdef unix}{$message error 'unit not supported'}{$endif unix}
 
 uses windows, classes, controls, forms, extctrls;
 

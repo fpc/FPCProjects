@@ -33,7 +33,7 @@ unit glspacetext;
 interface
 
 {$i GLScene.inc}
-{$ifdef linux}{$message error 'unit not supported'}{$endif linux}
+{$ifdef unix}{$message error 'unit not supported'}{$endif unix}
 
 uses  windows,messages, classes, glscene, graphics, opengl1x, gltexture, glcontext;
 
