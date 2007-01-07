@@ -35,9 +35,9 @@ type
   TLFTP = class;
   TLFTPClient = class;
 
-  TLFTPStatus = (fsNone, fsCon, fsAuth, fsPasv, fsPort, fsList, fsRetr, fsStor,
-                 fsType, fsCWD, fsMKD, fsRMD, fsDEL, fsRNFR, fsRNTO, fsSYS,
-                 fsFeat, fsPWD, fsHelp, fsLast);
+  TLFTPStatus = (fsNone, fsCon, fsAuth, fsPass, fsPasv, fsPort, fsList, fsRetr,
+                 fsStor, fsType, fsCWD, fsMKD, fsRMD, fsDEL, fsRNFR, fsRNTO,
+                 fsSYS, fsFeat, fsPWD, fsHelp, fsLast);
                  
   TLFTPStatusSet = set of TLFTPStatus;
                  
@@ -170,6 +170,8 @@ type
     
     function Authenticate(const aUsername, aPassword: string): Boolean;
     
+    function SendPassword(const aPassword: string): Boolean;
+
     function GetData(var aData; const aSize: Integer): Integer;
     function GetDataMessage: string;
     
@@ -224,7 +226,7 @@ const
 
   EMPTY_REC: TLFTPStatusRec = (Status: fsNone; Args: ('', ''));
 
-  FTPStatusStr: array[TLFTPStatus] of string = ('None', 'Connect', 'Authenticate',
+  FTPStatusStr: array[TLFTPStatus] of string = ('None', 'Connect', 'Authenticate', 'Password',
                                                 'Passive', 'Active', 'List', 'Retrieve',
                                                 'Store', 'Type', 'CWD', 'MKDIR',
                                                 'RMDIR', 'Delete', 'RenameFrom',
@@ -593,10 +595,22 @@ begin
                        FStatus.Remove;
                      end;
                    331,
-                   332: begin
-                          FStatusFlags[FStatus.First.Status] := False;
-                          FControl.SendMessage('PASS ' + FPassword + FLE);
-                        end;
+                   332: SendPassword(FPassword);
+                   else
+                     begin
+                       FStatusFlags[FStatus.First.Status] := False;
+                       Eventize(FStatus.First.Status, False);
+                       FStatus.Remove;
+                     end;
+                 end;
+                 
+        fsPass : case x of
+                   230:
+                     begin
+                       FStatusFlags[FStatus.First.Status] := True;
+                       Eventize(FStatus.First.Status, True);
+                       FStatus.Remove;
+                     end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
@@ -826,6 +840,7 @@ begin
     case Status of
       fsNone : Exit;
       fsAuth : Authenticate(Args[1], Args[2]);
+      fsPass : SendPassword(Args[1]);
       fsList : List(Args[1]);
       fsRetr : Retrieve(Args[1]);
       fsStor : Put(Args[1]);
@@ -915,6 +930,17 @@ begin
     Result := True;
   end;
 end;
+
+function TLFTPClient.SendPassword(const aPassword: string): Boolean;
+begin
+  Result := not FPipeLine;
+  if CanContinue(fsPass, aPassword, '') then begin
+    FControl.SendMessage('PASS ' + aPassword + FLE);
+    FStatus.Insert(MakeStatusRec(fsPass, '', ''));
+    Result := True;
+  end;
+end;
+
 
 function TLFTPClient.Retrieve(const FileName: string): Boolean;
 begin
