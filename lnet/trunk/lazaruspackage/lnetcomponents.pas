@@ -138,6 +138,23 @@ type
     property OnError;
     property Timeout;
   end;
+  
+  { TLHTTPServerComponent }
+
+  TLHTTPServerComponent = class(TLHTTPServer)
+   public
+    constructor Create(aOwner: TComponent); override;
+   published
+    property Host;
+    property Port;
+    property ServerSoftware;
+    property OnAccess;
+    property OnReceive;
+    property OnError;
+    property OnDisconnect;
+    property OnAccept;
+    property Timeout;
+  end;
 
 implementation
 
@@ -188,6 +205,14 @@ end;
 { TLHTTPClientComponent }
 
 constructor TLHTTPClientComponent.Create(aOwner: TComponent);
+begin
+  inherited Create(aOwner);
+  Eventer := LCLEventer;
+end;
+
+{ TLHTTPServerComponent }
+
+constructor TLHTTPServerComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   Eventer := LCLEventer;

@@ -16,7 +16,7 @@
       </CodeGeneration>
       <Linking>
         <Debugging>
-          <UseLineInfoUnit Value="False"/>
+          <GenerateDebugInfo Value="True"/>
         </Debugging>
       </Linking>
       <Other>
