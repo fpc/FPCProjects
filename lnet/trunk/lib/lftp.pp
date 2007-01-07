@@ -211,6 +211,8 @@ type
     property OnFailure: TLFTPClientStatusEvent read FOnFailure write FOnFailure;
   end;
   
+  function FTPStatusToStr(const aStatus: TLFTPStatus): string;
+  
 implementation
 
 uses
@@ -258,13 +260,18 @@ begin
   Result.Args[2] := Arg2;
 end;
 
+function FTPStatusToStr(const aStatus: TLFTPStatus): string;
+begin
+  Result := FTPStatusStr[aStatus];
+end;
+
 {$i lcontainers.inc}
 
 { TLFTP }
 
 function TLFTP.GetConnected: Boolean;
 begin
-  Result  :=  FControl.Connected;
+  Result := FControl.Connected;
 end;
 
 function TLFTP.GetTimeout: DWord;
