@@ -131,6 +131,7 @@ type
     procedure OnControlEr(const msg: string; aSocket: TLSocket);
     procedure OnControlRe(aSocket: TLSocket);
     procedure OnControlCo(aSocket: TLSocket);
+    procedure OnControlDs(aSocket: TLSocket);
     
     function GetTransfer: Boolean;
 
@@ -340,6 +341,7 @@ begin
   FControl.OnReceive := @OnControlRe;
   FControl.OnConnect := @OnControlCo;
   FControl.OnError := @OnControlEr;
+  FControl.OnDisconnect := @OnControlDs;
 
   FData.OnReceive := @OnRe;
   FData.OnDisconnect := @OnDs;
@@ -381,7 +383,6 @@ end;
 
 procedure TLFTPClient.OnDs(aSocket: TLSocket);
 begin
-  // TODO: figure it out brainiac
   FSending := False;
   Writedbg(['Disconnected']);
 end;
@@ -416,6 +417,12 @@ procedure TLFTPClient.OnControlCo(aSocket: TLSocket);
 begin
   if Assigned(FOnConnect) then
     FOnConnect(aSocket);
+end;
+
+procedure TLFTPClient.OnControlDs(aSocket: TLSocket);
+begin
+  if Assigned(FOnError) then
+    FOnError('Connection lost', aSocket);
 end;
 
 function TLFTPClient.GetTransfer: Boolean;
