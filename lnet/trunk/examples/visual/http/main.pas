@@ -5,7 +5,7 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
+  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, lNet, lHTTP,
   lNetComponents, SynHighlighterHTML, SynEdit, ExtCtrls, StdCtrls, Buttons;
   
 type
@@ -43,9 +43,6 @@ var
   MainForm: TMainForm;
 
 implementation
-
-uses
-  lHTTP;
 
 { TMainForm }
 
