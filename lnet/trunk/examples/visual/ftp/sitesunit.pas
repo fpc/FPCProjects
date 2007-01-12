@@ -316,7 +316,7 @@ end;
 procedure TfrmSites.SaveSites;
 var
   Ini: TIniFile;
-  i,n: Integer;
+  i  : Integer;
   s  : string;
 begin
   s := extractFilePath(Application.ExeName) + 'sites.ini';

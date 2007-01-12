@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LCLType,
-  LNetComponents, lNet, ComCtrls, ExtCtrls, Buttons, StdCtrls, Menus, FileCtrl, IniFiles,
+  LNetComponents, lNet, ComCtrls, ExtCtrls, StdCtrls, Menus, FileCtrl,
   ActnList, Grids;
 
 type
@@ -219,10 +219,9 @@ end;
 procedure TMainForm.FTPReceive(aSocket: TLSocket);
   procedure FindNames;
   var
-    i, j, n: Integer;
+    i, n: Integer;
     Parser: TDirEntryParser;
     IndxObj: TObject;
-    k: boolean;
   begin
     rmtGrid.BeginUpdate;
     try
@@ -596,7 +595,6 @@ end;
 procedure TMainForm.ToolBar1Click(Sender: TObject);
   procedure Test(s:string);
   var
-    res:boolean;
     Parser: TDirEntryParser;
   begin
     Parser := DirParser.Parse(pchar(s));
