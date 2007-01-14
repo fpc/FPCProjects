@@ -13,7 +13,6 @@
     FQueue: THandle;
     function GetTimeout: DWord; override;
     procedure SetTimeout(const Value: DWord); override;
-    procedure HandleIgnoreWrite(aHandle: TLHandle); override;
     procedure HandleIgnoreRead(aHandle: TLHandle); override;
     procedure Inflate;
    public

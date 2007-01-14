@@ -33,18 +33,6 @@ begin
   FTimeout.tv_nsec:=(Value mod 1000) * 1000;
 end;
 
-procedure TLKQueueEventer.HandleIgnoreWrite(aHandle: TLHandle);
-const
-  OUBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
-begin
-  EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
-         OUBOOL[aHandle.IgnoreWrite], 0, 0, Pointer(aHandle));
-
-  Inc(FFreeSlot);
-  if FFreeSlot > Length(FChanges) then
-    Inflate;
-end;
-
 procedure TLKQueueEventer.HandleIgnoreRead(aHandle: TLHandle);
 const
   INBOOL: array[Boolean] of Integer = (EV_ENABLE, EV_DISABLE);
@@ -79,11 +67,9 @@ begin
 
   if FFreeSlot > Length(FChanges) then
     Inflate;
-  if not aHandle.FIgnoreWrite then begin
-    EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
-           EV_ADD or EV_CLEAR, 0, 0, Pointer(aHandle));
-    Inc(FFreeSlot);
-  end;
+  EV_SET(@FChanges[FFreeSlot], aHandle.FHandle, EVFILT_WRITE,
+         EV_ADD or EV_CLEAR, 0, 0, Pointer(aHandle));
+  Inc(FFreeSlot);
 
   if FFreeSlot > Length(FChanges) then
     Inflate;

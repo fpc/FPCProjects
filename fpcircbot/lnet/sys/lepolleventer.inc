@@ -59,35 +59,19 @@ begin
   FTimeout:=cInt(Value);
 end;
 
-procedure TLEpollEventer.HandleIgnoreError(aHandle: TLHandle);
-const
-  BASE_BOOL = EPOLLHUP or EPOLLET;
-  ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
-  OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
-var
-  lEvent: TEpollEvent;
-begin
-  lEvent.data.ptr:=aHandle;
-  lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or OUBOOL[aHandle.IgnoreWrite];
-  if epoll_ctl(FEpollFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
-    Bail('Error modifying handle for errors/writes', LSocketError);
-end;
-
-procedure TLEpollEventer.HandleIgnoreWrite(aHandle: TLHandle);
-begin
-  HandleIgnoreError(aHandle);
-end;
-
 procedure TLEpollEventer.HandleIgnoreRead(aHandle: TLHandle);
-const
-  INBOOL: array[Boolean] of Integer = (EPOLLIN or EPOLLPRI, 0);
 var
   lEvent: TEpollEvent;
 begin
   lEvent.data.ptr:=aHandle;
-  lEvent.events:=INBOOL[aHandle.IgnoreRead];
-  if epoll_ctl(FEpollReadFD, EPOLL_CTL_MOD, aHandle.FHandle, @lEvent) < 0 then
-    Bail('Error modifying handle for reads', LSocketError);
+  lEvent.events:=EPOLLIN or EPOLLPRI or EPOLLHUP;
+  if not aHandle.IgnoreRead then begin
+    if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.Handle, @lEvent) < 0 then
+      Bail('Error modifying handle for reads', LSocketError);
+  end else begin
+    if epoll_ctl(FEpollReadFD, EPOLL_CTL_DEL, aHandle.Handle, @lEvent) < 0 then
+      Bail('Error modifying handle for reads', LSocketError);
+  end;
 end;
 
 procedure TLEpollEventer.Inflate;
@@ -103,24 +87,22 @@ begin
 end;
 
 function TLEpollEventer.AddHandle(aHandle: TLHandle): Boolean;
-const
-  BASE_BOOL = EPOLLHUP or EPOLLET;
-  INBOOL: array[Boolean] of Integer = (EPOLLIN or EPOLLPRI, 0);
-  ERBOOL: array[Boolean] of Integer = (EPOLLERR, 0);
-  OUBOOL: array[Boolean] of Integer = (EPOLLOUT, 0);
+
 var
   lEvent: TEpollEvent;
 begin
   Result:=inherited AddHandle(aHandle);
   if Result then begin
     Result:=False;
-    lEvent.events:=BASE_BOOL or ERBOOL[aHandle.IgnoreError] or OUBOOL[aHandle.IgnoreWrite];
+    lEvent.events:=EPOLLET or EPOLLOUT or EPOLLERR;
     lEvent.data.ptr:=aHandle;
     if epoll_ctl(FEpollFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
       Bail('Error adding handle to epoll', LSocketError);
-    lEvent.events:=INBOOL[aHandle.IgnoreRead];
-    if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
-      Bail('Error adding handle to epoll', LSocketError);
+    lEvent.events:=EPOLLIN or EPOLLPRI or EPOLLHUP;
+    if not aHandle.IgnoreRead then begin
+      if epoll_ctl(FEpollReadFD, EPOLL_CTL_ADD, aHandle.FHandle, @lEvent) < 0 then
+        Bail('Error adding handle to epoll', LSocketError);
+    end;
     if FCount > High(FEvents) then
       Inflate;
   end;
@@ -136,7 +118,7 @@ end;
 
 function TLEpollEventer.CallAction: Boolean;
 var
-  i, MasterChanges, Changes, ReadChanges, Tmp: Integer;
+  i, MasterChanges, Changes, ReadChanges: Integer;
   Temp, TempRead: TLHandle;
   MasterEvents: array[0..1] of TEpollEvent;
 begin
@@ -178,6 +160,7 @@ begin
 
           if  (not TempRead.FDispose)
           and ((FEventsRead[i].events and EPOLLIN = EPOLLIN)
+          or  (FEventsRead[i].events and EPOLLHUP = EPOLLHUP)
           or  (FEventsRead[i].events and EPOLLPRI = EPOLLPRI)) then
             if Assigned(TempRead.FOnRead) and not TempRead.IgnoreRead then
               TempRead.FOnRead(TempRead);
@@ -191,20 +174,20 @@ begin
             Temp:=TLHandle(FEvents[i].data.ptr);
 
           if  (not Temp.FDispose)
-          and ((FEvents[i].events and EPOLLERR = EPOLLERR)
-          or  (FEvents[i].events and EPOLLHUP = EPOLLHUP)) then
+          and (FEvents[i].events and EPOLLERR = EPOLLERR) then
             if Assigned(Temp.FOnError) and not Temp.IgnoreError then
-              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
+              Temp.FOnError(Temp, 'Handle error: ' + LStrError(LSocketError));
 
           if Temp.FDispose then
             AddForFree(Temp);
-        end;
+        end; // errors
       end;
       FInLoop:=False;
       if Assigned(FFreeRoot) then
         FreeHandles;
     end;
-  end;
+  end else if MasterChanges < 0 then
+    Bail('Error on epoll: ', LSocketError);
 end;
 
 function BestEventerClass: TLEventerClass;
@@ -225,13 +208,17 @@ function BestEventerClass: TLEventerClass;
     Result:=StrToInt(s);
   end;
 
+{$ifndef DISABLE_EPOLL}
 var
   u: TUTSName;
+{$endif}
 begin
   Result:=TLSelectEventer;
+{$ifndef DISABLE_EPOLL}
   if fpUname(u) = 0 then   // check for 2.6+
     if GetVersion(u.release) >= 2600 then
       Result:=TLEpollEventer;
+{$endif}
 end;
 
 {$endif} // Linux
