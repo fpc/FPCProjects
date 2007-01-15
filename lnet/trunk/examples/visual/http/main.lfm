@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 264
+  Left = 450
   Height = 559
-  Top = 143
+  Top = 128
   Width = 647
   HorzScrollBar.Page = 646
   VertScrollBar.Page = 558
@@ -26,7 +26,7 @@ object MainForm: TMainForm
       Left = 11
       Height = 14
       Top = 72
-      Width = 20
+      Width = 19
       Caption = 'URI'
       Color = clNone
       ParentColor = False
@@ -35,7 +35,7 @@ object MainForm: TMainForm
       Left = 11
       Height = 14
       Top = 128
-      Width = 20
+      Width = 21
       Caption = 'Port'
       Color = clNone
       ParentColor = False
@@ -80,12 +80,15 @@ object MainForm: TMainForm
     Height = 103
     Top = 456
     Width = 477
-    Anchors = [akLeft, akBottom]
+    Anchors = [akLeft, akRight, akBottom]
+    ScrollBars = ssAutoVertical
     TabOrder = 1
   end
   object MemoHTML: TMemo
     Height = 456
     Width = 477
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    ScrollBars = ssAutoBoth
     TabOrder = 2
   end
   object HTTPClient: TLHTTPClientComponent

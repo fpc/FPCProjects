@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, lNet, lHTTP,
-  lNetComponents, SynHighlighterHTML, SynEdit, ExtCtrls, StdCtrls, Buttons;
+  lNetComponents, ExtCtrls, StdCtrls, Buttons;
   
 type
 
@@ -33,6 +33,7 @@ type
       ASize: dword): dword;
     procedure HTTPClientProcessHeaders(ASocket: TLHTTPClientSocket);
   private
+    HTTPBuffer: string;
     procedure AppendToMemo(aMemo: TMemo; const aText: string);
     { private declarations }
   public
@@ -58,6 +59,7 @@ end;
 
 procedure TMainForm.ButtonSendRequestClick(Sender: TObject);
 begin
+  HTTPBuffer := '';
   HTTPClient.Host:=EditHost.Text;
   HTTPClient.Port:=Word(StrToInt(EditPort.Text));
   HTTPClient.URI:=EditURI.Text;
@@ -78,8 +80,14 @@ end;
 
 function TMainForm.HTTPClientInput(ASocket: TLHTTPClientSocket; ABuffer: pchar;
   ASize: dword): dword;
+var
+  oldLength: dword;
 begin
-  AppendToMemo(MemoHTML, aBuffer);
+  oldLength:=Length(HTTPBuffer);
+  setlength(HTTPBuffer,oldLength + ASize);
+  move(ABuffer^,HTTPBuffer[oldLength+1], ASize);
+  MemoHTML.Text := HTTPBuffer;
+  MemoHTML.SelStart:=Length(HTTPBuffer);
   AppendToMemo(MemoStatus, IntToStr(ASize) + '...');
   Result:=aSize; // tell the http buffer we read it all
 end;
