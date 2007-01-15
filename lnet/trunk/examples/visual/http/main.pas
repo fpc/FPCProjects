@@ -60,9 +60,9 @@ end;
 procedure TMainForm.ButtonSendRequestClick(Sender: TObject);
 begin
   HTTPBuffer := '';
-  HTTPClient.Host:=EditHost.Text;
-  HTTPClient.Port:=Word(StrToInt(EditPort.Text));
-  HTTPClient.URI:=EditURI.Text;
+  HTTPClient.Host := EditHost.Text;
+  HTTPClient.Port := Word(StrToInt(EditPort.Text));
+  HTTPClient.URI := EditURI.Text;
   HTTPClient.SendRequest;
 end;
 
@@ -83,13 +83,13 @@ function TMainForm.HTTPClientInput(ASocket: TLHTTPClientSocket; ABuffer: pchar;
 var
   oldLength: dword;
 begin
-  oldLength:=Length(HTTPBuffer);
+  oldLength := Length(HTTPBuffer);
   setlength(HTTPBuffer,oldLength + ASize);
-  move(ABuffer^,HTTPBuffer[oldLength+1], ASize);
+  move(ABuffer^,HTTPBuffer[oldLength + 1], ASize);
   MemoHTML.Text := HTTPBuffer;
-  MemoHTML.SelStart:=Length(HTTPBuffer);
+  MemoHTML.SelStart := Length(HTTPBuffer);
   AppendToMemo(MemoStatus, IntToStr(ASize) + '...');
-  Result:=aSize; // tell the http buffer we read it all
+  Result := aSize; // tell the http buffer we read it all
 end;
 
 procedure TMainForm.HTTPClientProcessHeaders(ASocket: TLHTTPClientSocket);
@@ -101,7 +101,7 @@ end;
 procedure TMainForm.AppendToMemo(aMemo: TMemo; const aText: string);
 begin
   aMemo.Append(aText);
-  aMemo.SelStart:=Length(aMemo.Text);
+  aMemo.SelStart := Length(aMemo.Text);
 end;
 
 initialization
