@@ -32,9 +32,7 @@ uses
   DB, SqlDB, PQConnection,
   {$endif}
   Classes, SysUtils,
-  lNet, lIrcBot, StringUtils, Markov, InfixMath,
-  PasDoc_Aspell, ObjectVector;
-
+  lNet, lIrcBot, StringUtils, Markov, InfixMath;
 const
   BoolStr: array[Boolean] of string = ('Off', 'On');
   YESSIR = 'As ordered';
@@ -60,15 +58,13 @@ type
     {$endif}
     FMarkov: TMarkov;
     FLL: TLIrcRec; // for speed purposes
-    FAP: TAspellProcess;
-    FAPResult: TObjectVector;
     FSList: TStringList;
     FGreetList: TStringList;
     FGreetings: TStringList; // for each channel
     FIrcBot: TLIrcBot;
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
-    function SpellCheck(const s: string): string;
+    function SpellCheck(const Word, Lang: string): string;
     procedure SetGreetings(const Value: TStringList);
     procedure SetGreetList(const Value: TStringList);
     procedure CleanChannels;
@@ -128,6 +124,9 @@ type
 
 implementation
 
+uses
+  sCheck;
+
 constructor TDoer.Create(aBot: TLIrcBot);
 
   procedure CreateMarkov(const Filename: string; const n, m: Byte);
@@ -145,8 +144,6 @@ begin
   FIrcBot:=aBot;
   Quit:=False;
   SpellCount:=3;
-  FAP:=TAspellProcess.Create('', 'en');
-  FAPResult:=TObjectVector.Create(True);
   Greetings:=TStringList.Create;
   Greetings.Duplicates:=dupIgnore;
   FLL:=TLIrcRec.Create;
@@ -210,8 +207,6 @@ end;
 
 destructor TDoer.Destroy;
 begin
-  FAP.Free;
-  FAPResult.Free;
   FMarkov.Free;
   FSList.Free;
   FLL.Free;
@@ -296,40 +291,27 @@ begin
   end;
 end;
 
-function TDoer.SpellCheck(const s: string): string;
-
-  function GetCountSpaces(const AStr: string; Count: Integer): string;
-  var
-    i, n: Integer;
-  begin
-    Result:=AStr;
-    n:=0;
-    if Length(AStr) > 0 then begin
-      for i:=1 to Length(AStr) do begin
-        if AStr[i] = ' ' then Inc(n);
-        if n >= Count then begin
-          Result:=Copy(AStr, 1, i);
-          Exit;
-        end;
-      end;
-      if Result[i] <> ' ' then
-        Result:=AStr + ' ';
-    end;
-  end;
-
+function TDoer.SpellCheck(const Word, Lang: string): string;
 var
-  i: Integer;
+  Suggestions: TSuggestionArray;
+  Count, i: Integer;
 begin
-  Result:='';
-  if Length(s) > 0 then begin
-    FAP.CheckString(s, FAPResult);
-    if FAPResult.Count > 0 then begin
-      for i:=0 to FAPResult.Count-1 do try
-        Result:=Result + GetCountSpaces(Trim(TSpellingError(FAPResult[i]).Suggestions), SpellCount);
-      except on e: Exception do
-        Writeln(e.message);
-      end;
-    end;
+  Result := '';
+
+  Count := sCheck.SpellCheck(Word, Lang, Suggestions);
+  
+  case Count of
+    -1      : Result := 'Unknown language or error on spellcheck';
+     0      : Result := 'Your spelling is correct';
+     1..100 : begin
+                Result := 'Incorrect, try: ';
+                for i := Low(Suggestions) to High(Suggestions) do
+                  if i < High(Suggestions) then
+                    Result := Result + Suggestions[i] + ', '
+                  else
+                    Result := Result + Suggestions[i];
+              end;
+  else        Result := 'Too long suggestions list';
   end;
 end;
 
@@ -658,11 +640,11 @@ var
   s: string;
 begin
   if Length(Caller.LastLine.Arguments) > 0 then begin
-    s:=SpellCheck(Caller.LastLine.Arguments);
+    s := SpellCheck(Caller.LastLine.Arguments, 'en');
+    
     if Length(s) > 0 then
-      Caller.Respond('Incorrect, try: ' + s)
-    else
-      Caller.Respond('Your spelling is correct');
+      Caller.Respond(s);
+      
   end else Caller.Respond('Syntax: spell <sentence>');
 end;
 
@@ -673,22 +655,8 @@ begin
   with Caller, Caller.LastLine do
     if Length(Arguments) > 3 then begin
       if Arguments[3] = ' ' then begin
-        FreeAndNil(FAP);
-        try
-          FAP:=TAspellProcess.Create('', Copy(Arguments, 1, 2));
-        except
-          Respond('Unable to process language');
-          FreeAndNil(FAP);
-          FAP:=TAspellProcess.Create('', 'en');
-          Exit;
-        end;
-        s:=SpellCheck(Copy(Arguments, 4, Length(Arguments)));
-        FreeAndNil(FAP);
-        FAP:=TAspellProcess.Create('', 'en');
-        if Length(s) > 0 then
-          Respond('Incorrect, try: ' + s)
-        else
-          Respond('Your spelling is correct');
+        s := SpellCheck(Copy(Arguments, 4, Length(Arguments)), Copy(Arguments, 1, 2));
+        Respond(s);
       end else Respond('Syntax: lspell <language code> <sentence>');
     end else Respond('Syntax: lspell <language code> <sentence>');
 end;
