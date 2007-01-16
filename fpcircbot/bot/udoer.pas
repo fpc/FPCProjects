@@ -305,8 +305,8 @@ begin
      0      : Result := 'Your spelling is correct';
      1..100 : begin
                 Result := 'Incorrect, try: ';
-                for i := Low(Suggestions) to High(Suggestions) do
-                  if i < High(Suggestions) then
+                for i := 0 to Count - 1 do
+                  if i < Count - 1 then
                     Result := Result + Suggestions[i] + ', '
                   else
                     Result := Result + Suggestions[i];

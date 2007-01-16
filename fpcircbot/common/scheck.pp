@@ -54,10 +54,10 @@ begin
 
       tmp := aspell_string_enumeration_next(elm);
 
-      if tmp <> nil then
+      if tmp <> nil then begin
         Suggestions[i] := tmp;
-
-      Inc(i);
+        Inc(i);
+      end;
     until tmp = nil;
 
     SetLength(Suggestions, i);
