@@ -4,7 +4,7 @@ program fpget;
 {$h+}
 
 uses
-  sysutils, strutils, lnet, lhttp;
+  sysutils, strutils, lnet, lhttp, lCommon;
 
 var
   HttpClient: TLHTTPClient;
@@ -55,8 +55,9 @@ end;
 
 var
   URL, Host, URI, FileName, AltFileName: string;
-  index, Port: integer;
+  Port: Word;
   dummy: THTTPHandler;
+  index: Integer;
 begin
   if ParamCount = 0 then
   begin
@@ -66,33 +67,8 @@ begin
 
   { parse URL }
   URL := ParamStr(1);
-  if not (Copy(URL, 1, 7) = 'http://') then
-  begin
-    writeln('URL should start with http://.');
-    exit;
-  end;
-
-  index := PosEx('/', URL, 8);
-  if index = 0 then
-  begin
-    writeln('URL should have server/location');
-    exit;
-  end;
-
-  Host := Copy(URL, 8, index-8);
-  URI := Copy(URL, index, Length(URL)+1-index);
-  index := Pos(':', Host);
-  if index > 0 then
-  begin
-    Port := StrToIntDef(Copy(Host, index+1, Length(Host)-index), -1);
-    if (Port < 0) or (Port > 65535) then
-    begin
-      writeln('Port number out of range.');
-      exit;
-    end;
-    SetLength(Host, index-1);
-  end else
-    Port := 80;
+  
+  DecodeURL(URL, Host, URI, Port);
 
   if ParamCount >= 2 then
     FileName := ParamStr(2)
