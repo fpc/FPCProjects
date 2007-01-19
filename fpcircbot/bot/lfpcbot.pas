@@ -28,12 +28,12 @@ function LoadConfig(const FileName: string): TStringList;
 var
   i: Longint;
 begin
-  Result:=nil;
+  Result := nil;
   if FileExists(FileName) then begin
-    Result:=TStringList.Create;
+    Result := TStringList.Create;
     Result.LoadFromFile(FileName);
     if Result.Count > 0 then
-      for i:=Result.Count-1 downto 0 do begin
+      for i := Result.Count-1 downto 0 do begin
         if Length(Result[i]) = 0 then
           Result.Delete(i)
         else if Result[i][1] = '!' then
@@ -46,18 +46,18 @@ function GetAllUsers(Con: TLIrcBot): string;
 var
   i: Integer;
 begin
-  Result:='';
+  Result := '';
   if Con.PuserCount > 0 then
-    for i:=0 to Con.PuserCount-1 do Result:=Result + Con.PUsers[i] + ',';
+    for i := 0 to Con.PuserCount-1 do Result := Result + Con.PUsers[i] + ',';
 end;
 
 function GetAllChannels(Con: TLIrcBot): string;
 var
   i: Integer;
 begin
-  Result:='';
+  Result := '';
   if Con.ChannelCount > 0 then
-    for i:=0 to Con.ChannelCount-1 do Result:=Result + Con.Channels[i] + ',';
+    for i := 0 to Con.ChannelCount-1 do Result := Result + Con.Channels[i] + ',';
   if Length(Result) > 0 then
     Delete(Result, Length(Result), 1); // delete trailing ","
 end;
@@ -65,29 +65,29 @@ end;
 procedure SetGreetings(var aList: TStringList; const s: string);
 begin
   FreeAndNil(aList);
-  aList:=TStringList.Create;
+  aList := TStringList.Create;
   if Length(s) > 6 then
-    aList.CommaText:=Copy(s, 7, Length(s));
+    aList.CommaText := Copy(s, 7, Length(s));
 end;
 
 function CleanDoubles(const s: string): string;
 begin
-  Result:=s;
+  Result := s;
   while Pos(',,', Result) > 0 do
-    Result:=StringReplace(Result, ',,', ',', [rfReplaceAll]);
+    Result := StringReplace(Result, ',,', ',', [rfReplaceAll]);
 end;
 
 procedure GetADPORT(out anAD: string; out aPort: Word);
 begin
   if ParamCount > 1 then try
-    aPORT:=Word(StrToInt(ParamStr(2)));
+    aPORT := Word(StrToInt(ParamStr(2)));
   except
-    aPORT:=6667;
-  end else aPORT:=6667;
+    aPORT := 6667;
+  end else aPORT := 6667;
   if ParamCount > 0 then
-    anAD:=ParamStr(1)
+    anAD := ParamStr(1)
   else
-    anAD:='chat.freenode.net';
+    anAD := 'chat.freenode.net';
 end;
 
 procedure Main;
@@ -104,24 +104,32 @@ var
   WasConnected: Boolean = False;
   TimeOut: Integer;
 begin
-  TimeOut:=0;
+  TimeOut := 0;
   GetADPORT(AD, PORT);
-  ConfigList:=LoadConfig('botconfig.cfg');
+  ConfigList := LoadConfig('botconfig.cfg');
+  
   if ConfigList = nil then begin
     Writeln('Unable to work with config file');
     Halt;
   end;
-  Con:=TLIrcBot.Create(BotName, 'SomeLogin');
-  ChannelsUsers:=TStringList.Create;
-  ChannelsUsers.CommaText:=ConfigList[0];
-  ConfigList.Delete(0);
-  Doer:=TDoer.Create(Con);
-  Doer.Logging:=True;
-  Doer.MarkovOn:=True;
+  
+  Con := TLIrcBot.Create(BotName, 'SomeLogin');
+  
+  ChannelsUsers := TStringList.Create;
+  ChannelsUsers.CommaText := ConfigList[0];
+  
+  ConfigList.Delete(0); // "delete" channels/users now
+  
+  ConfigList.Delete(0); // "delete" SvN stuff now
+  
+  Doer := TDoer.Create(Con);
+  Doer.Logging := True;
+  Doer.MarkovOn := True;
+  
   SetGreetings(Doer.Greetings, ConfigList[0]);
-  ConfigList.Delete(0);
-  Doer.GreetList:=ConfigList;
-  Con.NickServPassword:=NickPass;
+  ConfigList.Delete(0); // "delete" first greetings line
+  Doer.GreetList := ConfigList;
+  Con.NickServPassword := NickPass;
 
   // Normal commands
   Con.AddCommand('help', @Doer.OnHelp, 'Syntax: help [command] Info: makes me display help. If [command] is an empty string I will display list of all possible commands.');
@@ -158,12 +166,12 @@ begin
   Con.AddPCommand('setmarkov', @Doer.OnSetMarkov, 'Syntax: setmarkov <deviation> <threshold> Info: makes me set the deviation and threshold of the markov generator. <deviation> and <threshold> are required. Both are ints <0..100>');
   Con.AddPCommand('cleanchans', @Doer.OnCleanChans, 'Syntax: cleanchans Info: makes me clean no longer occupied channels from the DB (so the CGI page doesn''t list them. They are still accesible via ?channelname in the URL).');
   // CALLBACKS
-  Con.OnRecieve:=@Doer.OnRecieve;
-  Con.OnDisconnect:=@Doer.OnDisconnect;
-  Con.OnUserJoin:=@Doer.OnUserJoin;
-  Con.OnChannelJoin:=@Doer.OnChannelJoin;
-  Con.OnChannelQuit:=@Doer.OnChannelQuit;
-  Con.LogLine:=@Doer.OnRecieve;
+  Con.OnRecieve := @Doer.OnRecieve;
+  Con.OnDisconnect := @Doer.OnDisconnect;
+  Con.OnUserJoin := @Doer.OnUserJoin;
+  Con.OnChannelJoin := @Doer.OnChannelJoin;
+  Con.OnChannelQuit := @Doer.OnChannelQuit;
+  Con.LogLine := @Doer.OnRecieve;
   
   if not Con.Connect(AD, PORT) then
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
@@ -175,28 +183,28 @@ begin
       Inc(TimeOut);
       if KeyPressed then
        if ReadKey = #27 then
-         TimeOut:=MAX_TIME + 1;
+         TimeOut := MAX_TIME + 1;
     until Con.Connected or (TimeOut > MAX_TIME) or Doer.Quit;
   end;
 
   if TimeOut > MAX_TIME then
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
   else begin
-    WasConnected:=True;
+    WasConnected := True;
     Con.RegisterSelf;
-    Doer.TimeStarted:=Now;
+    Doer.TimeStarted := Now;
 
     if ChannelsUsers.Count > 0 then begin
-      n:=ChannelsUsers.IndexOf('?');
+      n := ChannelsUsers.IndexOf('?');
       if n > 0 then
-        for i:=0 to n-1 do Con.AddPuser(ChannelsUsers[i]);
+        for i := 0 to n-1 do Con.AddPuser(ChannelsUsers[i]);
       if n < ChannelsUsers.Count-1 then
-        for i:=n+1 to ChannelsUsers.Count-1 do Con.Join(ChannelsUsers[i]);
+        for i := n+1 to ChannelsUsers.Count-1 do Con.Join(ChannelsUsers[i]);
     end;
 
     while not Doer.Quit do begin
       if  KeyPressed
-      and (ReadKey = #27) then Doer.Quit:=True;
+      and (ReadKey = #27) then Doer.Quit := True;
       Con.CallAction;
       Doer.CallAction;
       Delay(1);
@@ -207,7 +215,9 @@ begin
     // Save channels and power users as they are now for next use
     ConfigList.Clear;
     ConfigList.Add(GetAllUsers(Con));
-    ConfigList[0]:=ConfigList[0] + '?,' + GetAllChannels(Con);
+    ConfigList[0] := ConfigList[0] + '?,' + GetAllChannels(Con);
+    // Save "dummy" empty SVN info for now
+    ConfigList.Add('$none');
     // Save channels in which greetings are on
     ConfigList.Add('$none' + CleanDoubles(',' + Doer.Greetings.CommaText));
     // Save greetings list

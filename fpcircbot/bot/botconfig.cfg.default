@@ -8,7 +8,11 @@
 
 Almindor,?,#lentilwars
 
-!2nd line consists of channel list where greetings are set, enty $none is REQUIRED as 1st
+!2nd line consists of SVN info as: <port>, <channel1, channelx> where to report
+!$none means exactly that, just one $none means no reports on no port
+$none
+
+!3rd line consists of channel list where greetings are set, enty $none is REQUIRED as 1st
 !example: $none,#chan1,#chan2
 
 $none,
