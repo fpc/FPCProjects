@@ -4,7 +4,7 @@ program fpget;
 {$h+}
 
 uses
-  sysutils, strutils, lnet, lhttp, lCommon;
+  sysutils, strutils, lnet, lhttp, lHTTPUtil;
 
 var
   HttpClient: TLHTTPClient;
@@ -68,7 +68,7 @@ begin
   { parse URL }
   URL := ParamStr(1);
   
-  DecodeURL(URL, Host, URI, Port);
+  DecomposeURL(URL, Host, URI, Port);
 
   if ParamCount >= 2 then
     FileName := ParamStr(2)

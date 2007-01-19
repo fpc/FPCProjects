@@ -92,9 +92,6 @@ const
   procedure FillAddressInfo(var aAddrInfo: TInetSockAddr; const aFamily: sa_family_t;
                             const Address: string; const aPort: Word); inline;
                             
-  procedure DecodeURL(const URL: string; out Host, URI: string; out Port: Word);
-  function EncodeURL(Host, URI: string; const Port: Word): string;
-
 implementation
 
 uses
@@ -337,47 +334,6 @@ begin
     aAddrInfo.Addr:=StrToNetAddr(GetHostIP(Address));
 end;
 
-procedure DecodeURL(const URL: string; out Host, URI: string; out Port: Word);
-var
-  index: Integer;
-begin
-  index := PosEx('/', URL, 8);
-  Host := Copy(URL, 8, index-8);
-  URI := Copy(URL, index, Length(URL)+1-index);
-
-  index := Pos(':', Host);
-  if index > 0 then begin
-    Port := StrToIntDef(Copy(Host, index+1, Length(Host)-index), -1);
-    
-    if (Port < 0) or (Port > 65535) then
-      Port := 80;
-      
-    SetLength(Host, index-1);
-  end else
-    Port := 80;
-end;
-
-function EncodeURL(Host, URI: string; const Port: Word): string;
-begin
-  Host := Trim(Host);
-  URI := Trim(URI);
-  
-  if (Pos('http://', Host) <> 1)
-  and (Pos('https://', Host) <> 1) then
-    Host := 'http://' + Host;
-    
-  if URI[Length(URI)] = '/' then
-    Delete(URI, Length(URI), 1);
-
-  if  (Host[Length(Host)] = '/')
-  and (URI[1] = '/') then
-    Delete(Host, Length(Host), 1)
-  else if (URI[1] <> '/')
-  and     (Host[Length(Host)] <> '/') then
-    Host := Host + '/';
-    
-  Result := Host + URI + ':' + IntToStr(Port);
-end;
 
 end.
 
