@@ -29,9 +29,9 @@ type
 
 constructor TLUDPTest.Create;
 begin
-  FCon:=TLUdp.Create(nil); // create a new TLUDP component with no parent coponent
-  FCon.OnError:=@OnEr;     // assign callbacks
-  FCon.OnReceive:=@OnRe;
+  FCon := TLUdp.Create(nil); // create a new TLUDP component with no parent coponent
+  FCon.OnError := @OnEr;     // assign callbacks
+  FCon.OnReceive := @OnRe;
 end;
 
 destructor TLUDPTest.Destroy;
@@ -43,7 +43,7 @@ end;
 procedure TLUDPTest.OnEr(const msg: string; aSocket: TLSocket);
 begin
   Writeln(msg); // write the error message
-  FQuit:=true;  // and quit ASAP
+  FQuit := true;  // and quit ASAP
 end;
 
 procedure TLUDPTest.OnRe(aSocket: TLSocket);
@@ -65,11 +65,11 @@ var
   Address: string; // address to connect to
 begin
   if ParamCount > 1 then begin // we need atleast one argument
-    Result:=False;
-    FQuit:=False;  // initialize loop variables
+    Result := False;
+    FQuit := False;  // initialize loop variables
 
     try
-      Port:=Word(StrToInt(ParamStr(2))); // try to get port from argument if possible
+      Port := Word(StrToInt(ParamStr(2))); // try to get port from argument if possible
     except
       on e: Exception do begin // write error and quit if not
         Writeln(e.message);
@@ -78,16 +78,16 @@ begin
     end;
 
     if ParamCount > 2 then // if we got additional argument, then parse it as address
-      Address:=ParamStr(3)
+      Address := ParamStr(3)
     else
-      Address:=LADDR_BR;   // else use broadcast address
+      Address := LADDR_BR;   // else use broadcast address
 
     if ParamStr(1) = '-s' then begin // if we're supposed to be the server
-      Result:=FCon.Listen(port); // start listening
+      Result := FCon.Listen(port); // start listening
       Writeln('Starting server...');
-      FServer:=True;             // and remember the descision
+      FServer := True;             // and remember the descision
     end else begin
-      Result:=FCon.Connect(Address, port); // otherwise connect
+      Result := FCon.Connect(Address, port); // otherwise connect
       Writeln('Starting client...');
     end;
 
@@ -97,7 +97,7 @@ begin
         if ReadKey <> #27 then  // and he didn't pres "escape"
           FCon.SendMessage('Hello') // send the "Hello" message to other side
         else
-          FQuit:=true; // otherwise (if he pressed "escape") quit
+          FQuit := true; // otherwise (if he pressed "escape") quit
       Sleep(20); // 20 ms delay to not hog cpu (normaly, 1ms is used)
     until FQuit; // repeat this cycle until FQuit = true, due to error or user input
 
@@ -108,7 +108,7 @@ end;
 var
   UDP: TLUDPTest;
 begin
-  UDP:=TLUDPTest.Create;
+  UDP := TLUDPTest.Create;
   UDP.Run;
   UDP.Free;
 end.
