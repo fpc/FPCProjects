@@ -73,11 +73,11 @@ function CreateDefaultIni(const aFilePath: string): TIniFile;
     n: Integer;
     Buf: array[0..MAX_SIZE-1] of Byte;
   begin
-    f1:=TFileStream.Create(FromF, fmOpenRead);
-    f2:=TFileStream.Create(ToF, fmCreate);
+    f1 := TFileStream.Create(FromF, fmOpenRead);
+    f2 := TFileStream.Create(ToF, fmCreate);
     
     while f1.Position < f1.Size do begin
-      n:=f1.Read(Buf, MAX_SIZE);
+      n := f1.Read(Buf, MAX_SIZE);
       f2.Write(Buf, n);
     end;
     
@@ -106,9 +106,9 @@ function CreateDefaultIni(const aFilePath: string): TIniFile;
   var
     i, j: Integer;
   begin
-    Result:='';
-    for i:=1 to High(DIRS) do
-      for j:=1 to High(FILES) do
+    Result := '';
+    for i := 1 to High(DIRS) do
+      for j := 1 to High(FILES) do
         if  FileExists(DIRS[i] + FILES[j])
         and (FileGetAttr(DIRS[i] + FILES[j]) and faDirectory <> faDirectory) then
           Exit(DIRS[i] + FILES[j]);
@@ -118,7 +118,7 @@ begin
   Writeln('Creating default configuration file in: ', aFilePath);
   if not DirectoryExists(ExtractFilePath(aFilePath)) then
     CreateDir(ExtractFilePath(aFilePath));
-  Result:=TIniFile.Create(aFilePath);
+  Result := TIniFile.Create(aFilePath);
   
   AddPath('httpdir', HomeDir + 'http_docs');
   AddPath('cgiroot', HomeDir + 'cgi-bin');
@@ -148,7 +148,7 @@ var
   i: Integer;
 begin
   if not InitedSettings then begin
-    SearchPaths:=TStringList.Create;
+    SearchPaths := TStringList.Create;
     SearchPaths.Add(HomeDir);
     {$ifndef WINDOWS}
     SearchPaths.Add('/etc/');
@@ -156,18 +156,18 @@ begin
     {$endif}
     SearchPaths.Add(ExtractFilePath(ParamStr(0)) + PathDelim);
 
-    for i:=0 to SearchPaths.Count-1 do
+    for i := 0 to SearchPaths.Count-1 do
       if FileExists(SearchPaths[i] + INI_NAME) then begin
         Writeln('Loading settings from file: ', SearchPaths[i] + INI_NAME);
-        SettingsFile:=TIniFile.Create(SearchPaths[i] + INI_NAME);
+        SettingsFile := TIniFile.Create(SearchPaths[i] + INI_NAME);
         SearchPaths.Free;
-        InitedSettings:=True;
+        InitedSettings := True;
         Exit;
       end;
     // no file found, create default one in home
-    SettingsFile:=CreateDefaultIni(HomeDir + INI_NAME);
+    SettingsFile := CreateDefaultIni(HomeDir + INI_NAME);
     SearchPaths.Free;
-    InitedSettings:=True;
+    InitedSettings := True;
   end;
 end;
 
@@ -179,56 +179,56 @@ end;
 
 function GetMimeFile: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'mimetypes', '');
+  Result := SettingsFile.ReadString('PATH', 'mimetypes', '');
 end;
 
 function GetPort: Word;
 begin
-  Result:=Word(StrToInt(SettingsFile.ReadString('NET', 'port', DEF_PORT)));
+  Result := Word(StrToInt(SettingsFile.ReadString('NET', 'port', DEF_PORT)));
 end;
 
 function GetHTTPPath: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'httpdir', '') + PathDelim;
+  Result := SettingsFile.ReadString('PATH', 'httpdir', '') + PathDelim;
 end;
 
 function GetCGIPath: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'cgipath', '') + PathDelim;
+  Result := SettingsFile.ReadString('PATH', 'cgipath', '') + PathDelim;
 end;
 
 function GetCGIRoot: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'cgiroot', '') + PathDelim;
+  Result := SettingsFile.ReadString('PATH', 'cgiroot', '') + PathDelim;
 end;
 
 function GetScriptPathPrefix: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'cgiprefix', '') + PathDelim;
+  Result := SettingsFile.ReadString('PATH', 'cgiprefix', '') + PathDelim;
 end;
 
 function GetPHPCGIBinary: string;
 begin
-  Result:=SettingsFile.ReadString('PATH', 'phpcgibin', '');
+  Result := SettingsFile.ReadString('PATH', 'phpcgibin', '');
 end;
 
 function GetPHPCGIPort: Word;
 begin
-  Result:=Word(StrToInt(SettingsFile.ReadString('NET', 'phpcgiport', DEF_PORT)));
+  Result := Word(StrToInt(SettingsFile.ReadString('NET', 'phpcgiport', DEF_PORT)));
 end;
 
 function GetPHPCGIEnv: string;
 begin
-  Result:=SettingsFile.ReadString('ENV', 'phpcgienv', DEF_PHPCGI_ENV);
+  Result := SettingsFile.ReadString('ENV', 'phpcgienv', DEF_PHPCGI_ENV);
 end;
   
 initialization
-  CurDir:=ExtractFilePath(ParamStr(0));
+  CurDir := ExtractFilePath(ParamStr(0));
   {$ifdef WINDOWS}
-  HomeDir:=GetEnvironmentVariable('HOMEDRIVE') +
+  HomeDir := GetEnvironmentVariable('HOMEDRIVE') +
            GetEnvironmentVariable('HOMEPATH') + PathDelim + 'fphttpd' + PathDelim;
   {$else}
-  HomeDir:=GetEnvironmentVariable('HOME') + PathDelim + '.fphttpd' + PathDelim;
+  HomeDir := GetEnvironmentVariable('HOME') + PathDelim + '.fphttpd' + PathDelim;
   {$endif}
 
 finalization

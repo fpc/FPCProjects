@@ -52,11 +52,11 @@ end;
 
 constructor TLTCPTest.Create;
 begin
-  FCon:=TLTCP.Create(nil); // create new TCP connection
-  FCon.OnError:=@OnEr;     // assign all callbacks
-  FCon.OnReceive:=@OnRe;
-  FCon.OnDisconnect:=@OnDs;
-  FCon.OnAccept:=@OnAc;
+  FCon := TLTCP.Create(nil); // create new TCP connection
+  FCon.OnError := @OnEr;     // assign all callbacks
+  FCon.OnReceive := @OnRe;
+  FCon.OnDisconnect := @OnDs;
+  FCon.OnAccept := @OnAc;
 end;
 
 destructor TLTCPTest.Destroy;
@@ -72,14 +72,14 @@ var
 begin
   if ParamCount > 0 then begin // we need one argument
     try
-      Port:=Word(StrToInt(ParamStr(1))); // try to parse port from argument
+      Port := Word(StrToInt(ParamStr(1))); // try to parse port from argument
     except
       on e: Exception do begin
         Writeln(e.message);
         Halt;
       end;
     end;
-    Quit:=false;
+    Quit := false;
 
     if FCon.Listen(Port) then begin // if listen went ok
       Writeln('Server running!');
@@ -89,12 +89,12 @@ begin
         Sleep(1);       // wait 1 ms to not hog CPU
         if Keypressed then // if user provided input
           case readkey of
-           #27: quit:=true; // if he pressed "escape" then quit
+           #27: quit := true; // if he pressed "escape" then quit
            'r': begin       // if he pressed 'r' then restart the server
                   Writeln('Restarting...');
                   FCon.Disconnect;
                   FCon.Listen(Port);
-                  Quit:=false;
+                  Quit := false;
                 end;
           end;
       until Quit; // until user quit
@@ -105,7 +105,7 @@ end;
 var
   TCP: TLTCPTest;
 begin
-  TCP:=TLTCPTest.Create;
+  TCP := TLTCPTest.Create;
   TCP.Run;
   TCP.Free;
 end.

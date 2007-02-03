@@ -23,7 +23,7 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Version Minor="4" Release="1"/>
+    <Version Minor="5"/>
     <Files Count="4">
       <Item1>
         <Filename Value="lclnet.pas"/>

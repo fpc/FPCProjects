@@ -64,30 +64,30 @@ implementation
 
 procedure TMainForm.SMTPConnect(aSocket: TLSocket);
 begin
-  SB.SimpleText:='Connected to server...';
+  SB.SimpleText := 'Connected to server...';
   SMTP.Helo('mail.chello.sk');
   if SMTP.Connected then begin
-    ButtonSend.Enabled:=SMTP.Connected;
-    ButtonConnect.Caption:='Disconnect';
+    ButtonSend.Enabled := SMTP.Connected;
+    ButtonConnect.Caption := 'Disconnect';
   end;
 end;
 
 procedure TMainForm.SMTPDisconnect(aSocket: TLSocket);
 begin
-  SB.SimpleText:='Disconnected from server';
-  ButtonSend.Enabled:=SMTP.Connected;
-  ButtonConnect.Caption:='Connect';
+  SB.SimpleText := 'Disconnected from server';
+  ButtonSend.Enabled := SMTP.Connected;
+  ButtonConnect.Caption := 'Connect';
 end;
 
 procedure TMainForm.SMTPError(const msg: string; aSocket: TLSocket);
 begin
   SMTPDisconnect(nil);
-  SB.SimpleText:=msg;
+  SB.SimpleText := msg;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
-  SMTP.OnError:=@SMTPError;
+  SMTP.OnError := @SMTPError;
 end;
 
 procedure TMainForm.MenuItemAboutClick(Sender: TObject);
@@ -105,7 +105,7 @@ procedure TMainForm.ButtonConnectClick(Sender: TObject);
 begin
   if (not SMTP.Connected) and (ButtonConnect.Caption = 'Connect') then begin
     SMTP.Connect(EditServer.Text, Word(StrToInt(EditPort.Text)));
-    ButtonConnect.Caption:='Connecting';
+    ButtonConnect.Caption := 'Connecting';
   end else
     SMTP.Quit; // server will respond and we'll make a clean disconnect (see SMTP rfc)
 end;
@@ -113,9 +113,9 @@ end;
 procedure TMainForm.ButtonSendClick(Sender: TObject);
 begin
   if Length(EditFrom.Text) < 6 then
-    SB.SimpleText:='"Mail from" info is missing or irrelevant'
+    SB.SimpleText := '"Mail from" info is missing or irrelevant'
   else if Length(EditTo.Text) < 6 then
-    SB.SimpleText:='"Mail to" info is missing or irrelevant'
+    SB.SimpleText := '"Mail to" info is missing or irrelevant'
   else begin
     SMTP.SendMail(EditFrom.Text, EditTo.Text, EditSubject.Text, MemoText.Text);
   end;
@@ -138,14 +138,14 @@ var
   s: string;
 begin
   SMTP.GetMessage(s);
-  SB.SimpleText:=s;
+  SB.SimpleText := s;
 end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  CloseAction:=caFree;
+  CloseAction := caFree;
   if SMTP.Connected then begin
-    CloseAction:=caNone; // make sure we quit gracefuly
+    CloseAction := caNone; // make sure we quit gracefuly
     SMTP.Quit; // the quit success/failure CBs will close our form
   end;
 end;

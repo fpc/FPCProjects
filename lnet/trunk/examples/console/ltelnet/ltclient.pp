@@ -29,8 +29,8 @@ type
 
 constructor TLTelnetTest.Create;
 begin
-  FCon:=TLTelnetClient.Create(nil);
-  FCon.OnError:=@OnError;
+  FCon := TLTelnetClient.Create(nil);
+  FCon.OnError := @OnError;
 end;
 
 destructor TLTelnetTest.Destroy;
@@ -42,7 +42,7 @@ end;
 procedure TLTelnetTest.OnError(const msg: string; aSocket: TLSocket);
 begin
   Writeln(msg);
-  FQuit:=True;
+  FQuit := True;
 end;
   
 procedure TLTelnetTest.Run;
@@ -54,8 +54,8 @@ var
 begin
   if ParamCount > 1 then
     try
-      AD:=Paramstr(1);
-      PORT:=Word(StrToInt(Paramstr(2)));
+      AD := Paramstr(1);
+      PORT := Word(StrToInt(Paramstr(2)));
     except
       Writeln('Invalid command line parameters');
       Exit;
@@ -64,7 +64,7 @@ begin
       Exit;
     end;
 
-  FQuit:=False;
+  FQuit := False;
 
   if FCon.Connect(AD, PORT) then begin
     Writeln('Connecting... press any key to cancel');
@@ -76,13 +76,13 @@ begin
     until FCon.Connected; // wait until timeout or we actualy connected
     
     Writeln('Connected');
-    SendStr:='';
+    SendStr := '';
     
     while not FQuit do begin // if we connected, do main loop
       if KeyPressed then begin
-        c:=ReadKey;
+        c := ReadKey;
         case c of
-          #27: FQuit:=True;
+          #27: FQuit := True;
            #8: if Length(SendStr) > 0 then begin
                  GotoXY(WhereX-1, WhereY);
                  Write(' ');
@@ -92,9 +92,9 @@ begin
         else   if c = #13 then begin
                  Writeln;
                  FCon.SendMessage(SendStr + #13#10);
-                 SendStr:='';
+                 SendStr := '';
                end else begin
-                 SendStr:=SendStr + c;
+                 SendStr := SendStr + c;
                  if not FCon.OptionIsSet(TS_ECHO) then
                    Write(c);
                end;
@@ -114,7 +114,7 @@ end;
 var
   Telnet: TLTelnetTest;
 begin
-  Telnet:=TLTelnetTest.Create;
+  Telnet := TLTelnetTest.Create;
   Telnet.Run;
   Telnet.Free;
 end.

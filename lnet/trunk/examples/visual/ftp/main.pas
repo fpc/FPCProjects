@@ -139,9 +139,9 @@ var
   i,j: Integer;
 begin
   result := 0;
-  j:=Length(SubStr);
+  j := Length(SubStr);
   if (j>0)and(j<=Length(Str)) then begin
-    for i:=Length(Str) downto 1 do
+    for i := Length(Str) downto 1 do
       if Str[i]<>SubStr[j] then
         exit
       else begin
@@ -166,7 +166,7 @@ var
   i: Integer;
 begin
   FTmpStrList.Free;
-  for i:=0 to Length(FIcons)-1 do
+  for i := 0 to Length(FIcons)-1 do
     if FIcons[i].Bmp<>nil then
       FIcons[i].bmp.Free;
   SetLength(FIcons, 0);
@@ -183,14 +183,14 @@ begin
     exit;
   Pass := Site.Pass;
   if (Pass='') then
-    Pass:=PasswordBox('Password', 'Please type in your password');
+    Pass := PasswordBox('Password', 'Please type in your password');
 
   FTP.Authenticate(aName, Pass);
-  FTP.Binary:=True;
+  FTP.Binary := True;
   
-  aName:=Site.path;
+  aName := Site.path;
   if aName='/' then
-    aName:='';
+    aName := '';
     
   DoList(aName);
 end;
@@ -201,7 +201,7 @@ var
 begin
   if FTP.GetMessage(s) > 0 then begin
     MemoText.Lines.Append(s);
-    MemoText.SelStart:=Length(MemoText.Text);
+    MemoText.SelStart := Length(MemoText.Text);
   end;
 end;
 
@@ -211,9 +211,9 @@ begin
   if not FTP.Connected then begin
     // connection has been closed, update gui
     Disconnect(false);
-    ToolButton2.Down:=True;
+    ToolButton2.Down := True;
   end;
-  CreateFilePath:='';
+  CreateFilePath := '';
 end;
 
 procedure TMainForm.FTPReceive(aSocket: TLSocket);
@@ -235,8 +235,8 @@ procedure TMainForm.FTPReceive(aSocket: TLSocket);
       if FList.Count > 0 then begin
         rmtGrid.RowCount := FList.Count + 2;
         FList.SaveToFile('last.txt');
-        for i:=0 to FList.Count-1 do begin
-          n:=i+2;
+        for i := 0 to FList.Count-1 do begin
+          n := i+2;
           rmtGrid.Objects[2,n] := nil; // no special icon index
 
           Parser := DirParser.Parse(pchar(FList[i]));
@@ -286,29 +286,29 @@ begin
   if FDirListingExpected then begin
     s := FTP.GetDataMessage;
     if Length(s) > 0 then
-      FDirListing:=FDirListing+s
+      FDirListing := FDirListing+s
     else begin
-      FList.Text:=FDirListing;
+      FList.Text := FDirListing;
       FindNames;
-      FDirListingExpected:=False;
+      FDirListingExpected := False;
       FList.Clear;
     end;
   end else begin
     i := FTP.GetData(Buf, 65535);
     if i > 0 then begin
       if Length(CreateFilePath) > 0 then begin
-        FFile:=TFileStream.Create(CreateFilePath, fmCreate or fmOpenWrite);
-        CreateFilePath:='';
+        FFile := TFileStream.Create(CreateFilePath, fmCreate or fmOpenWrite);
+        CreateFilePath := '';
       end;
       FFile.Write(Buf, i);
     end else begin
       FreeAndNil(FFile);
-      CreateFilePath:='';
+      CreateFilePath := '';
       DoList('');
     end;
     Inc(FDLDone, i);
     if MemoText.Lines.Count > 0 then
-      MemoText.Lines[MemoText.Lines.Count-1]:=IntToStr(Round(FDLDone / FDLSize * 100)) + '%';
+      MemoText.Lines[MemoText.Lines.Count-1] := IntToStr(Round(FDLDone / FDLSize * 100)) + '%';
   end;
 end;
 
@@ -319,15 +319,15 @@ begin
   if Bytes > 0 then begin
     Inc(FDLDone, Bytes);
     if MemoText.Lines.Count > 0 then begin
-      n:=Integer(Round(FDLDone / FDLSize * 100));
+      n := Integer(Round(FDLDone / FDLSize * 100));
       if n <> FLastN then begin
-        MemoText.Lines[MemoText.Lines.Count-1]:=IntToStr(n) + '%';
-        FLastN:=n;
+        MemoText.Lines[MemoText.Lines.Count-1] := IntToStr(n) + '%';
+        FLastN := n;
       end;
     end;
   end else begin
     if MemoText.Lines.Count > 0 then
-      MemoText.Lines[MemoText.Lines.Count-1]:='100%';
+      MemoText.Lines[MemoText.Lines.Count-1] := '100%';
     DoList('');
   end;
 end;
@@ -385,16 +385,16 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   FDLSize := 1;
-  Dir:=ExtractFilePath(ParamStr(0));
-  FDirListingExpected:=False;
-  FList:=TStringList.Create;
-  FFile:=nil;
-  LeftView.Mask:='*';
-  LeftView.Directory:=Dir;
-  CreateFilePath:='';
+  Dir := ExtractFilePath(ParamStr(0));
+  FDirListingExpected := False;
+  FList := TStringList.Create;
+  FFile := nil;
+  LeftView.Mask := '*';
+  LeftView.Directory := Dir;
+  CreateFilePath := '';
   TFrmSites.LoadLastSite;
   UpdateSite;
-  FTmpStrList:=TStringList.Create;
+  FTmpStrList := TStringList.Create;
   // register our special icons
   RegisterExt('ftp_dirup',  '1');
   RegisterExt('ftp_dir',    '2');
@@ -423,9 +423,9 @@ begin
   if FDLSize = 0 then
     FDLSize := 1;
 
-  FDLDone:=0;
+  FDLDone := 0;
   FreeAndNil(FFile); // if the last get failed, we need to free memory here
-  CreateFilePath:=Dir + s;
+  CreateFilePath := Dir + s;
   FTP.Retrieve(s);
 end;
 
@@ -470,14 +470,14 @@ procedure TMainForm.LeftViewDblClick(Sender: TObject);
   var
     i: Integer;
   begin
-    Path:=StringReplace(Path, PathDelim + PathDelim, PathDelim, [rfReplaceAll]);
+    Path := StringReplace(Path, PathDelim + PathDelim, PathDelim, [rfReplaceAll]);
     if Length(Path) > 1 then
-      for i:=Length(Path)-1 downto 1 do
+      for i := Length(Path)-1 downto 1 do
         if Path[i] = PathDelim then begin
-          Result:=Copy(Path, 1, i);
+          Result := Copy(Path, 1, i);
           Exit;
         end;
-    Result:=Path;
+    Result := Path;
   end;
 
 var
@@ -488,22 +488,22 @@ begin
     Exit;
     
   if ExtractFileName(LeftView.FileName) = '[..]' then
-    s:=GetParentDirectory(LeftView.Directory)
+    s := GetParentDirectory(LeftView.Directory)
   else begin
-    s:=ExtractFileName(LeftView.FileName);
-    s:=LeftView.Directory + Copy(s, 2, Length(s)-2) + PathDelim;
+    s := ExtractFileName(LeftView.FileName);
+    s := LeftView.Directory + Copy(s, 2, Length(s)-2) + PathDelim;
   end;
 
   if DirectoryExists(s) then
-    LeftView.Directory:=s
+    LeftView.Directory := s
   else if FTP.Connected then begin
     s := StringReplace(LeftView.FileName, PathDelim + PathDelim,
                        PathDelim, [rfReplaceAll]);
-    FDLDone:=0;
-    FF:=TFileStream.Create(s, fmOpenRead);
-    FDLSize:=FF.Size;
+    FDLDone := 0;
+    FF := TFileStream.Create(s, fmOpenRead);
+    FDLSize := FF.Size;
     FF.Free;
-    FLastN:=0;
+    FLastN := 0;
     FTP.Put(s);
   end;
 end;
@@ -559,7 +559,7 @@ begin
     if FDLSize = 0 then
       FDLSize := 1;
     FreeAndNil(FFile);
-    CreateFilePath:=Dir + item;
+    CreateFilePath := Dir + item;
     FTP.Retrieve(item);
   end;
 end;
@@ -588,7 +588,7 @@ begin
   end else
   if Key=VK_RETURN then begin
     rmtGridDblClick(Sender);
-    Key:=0;
+    Key := 0;
   end;
 end;
 
@@ -625,8 +625,8 @@ end;
 
 procedure TMainForm.DoList(const FileName: string);
 begin
-  FDirListingExpected:=True;
-  FDirListing:='';
+  FDirListingExpected := True;
+  FDirListing := '';
   FTP.List(FileName);
 end;
 
@@ -672,11 +672,11 @@ function TMainForm.GetIconIndexObj(aName: string): TObject;
 var
   i,j: Integer;
 begin
-  result:=nil;
-  aName:=lowercase(aName);
-  for i:=5 to Length(FIcons)-1 do begin
+  result := nil;
+  aName := lowercase(aName);
+  for i := 5 to Length(FIcons)-1 do begin
     FtmpStrList.CommaText := FIcons[i].Ext;
-    for j:=0 to FtmpStrList.Count-1 do
+    for j := 0 to FtmpStrList.Count-1 do
       if RevPos(FtmpStrList[j],aName)<>0 then begin
         result := TObject(PtrInt(i));
         exit;
@@ -689,7 +689,7 @@ var
   i: Integer;
 begin
   result := -1;
-  for i:=5 to Length(FIcons)-1 do
+  for i := 5 to Length(FIcons)-1 do
     if CompareText(aExt, FIcons[i].Ext)=0 then begin
       result := i;
       break;
@@ -712,7 +712,7 @@ end;
 procedure TMainForm.Disconnect(ClearLog: boolean);
 begin
   FTP.Disconnect;
-  rmtGrid.RowCount:=1;
+  rmtGrid.RowCount := 1;
   if ClearLog then
     MemoText.Clear;
 end;
@@ -733,11 +733,11 @@ begin
 end;
 
 initialization
-  itDirUp:= TObject(ptrInt(1));
+  itDirUp := TObject(ptrInt(1));
   itDir  := TObject(ptrInt(2));
   itLink := TObject(ptrInt(3));
   itFile := TObject(ptrInt(4));
-  itError:= TObject(ptrInt(5));
+  itError := TObject(ptrInt(5));
   {$I main.lrs}
   {$I icons.lrs}
   //add additional icons in a new file iconsextra.lrs

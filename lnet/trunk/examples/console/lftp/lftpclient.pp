@@ -34,7 +34,7 @@ type
 
 procedure TClient.OnConnect(aSocket: TLSocket);
 begin
-  FConnected:=True;
+  FConnected := True;
   Writeln('Connected succesfuly');
 end;
 
@@ -47,9 +47,9 @@ var
 begin
   if FGetting then begin
     Write('.');
-    n:=FCon.GetData(Buf, BUFFER_SIZE);
+    n := FCon.GetData(Buf, BUFFER_SIZE);
     if n = 0 then begin
-      FGetting:=False;
+      FGetting := False;
       FreeAndNil(FFile);
     end else
       FFile.Write(Buf, n);
@@ -76,14 +76,14 @@ end;
 
 constructor TClient.Create;
 begin
-  FConnected:=False;
-  FCon:=TLFTPClient.Create(nil);
-  FCon.Timeout:=50;
-  FCon.OnConnect:=@OnConnect;
-  FCon.OnReceive:=@OnReceive;
-  FCon.OnControl:=@OnControl;
-  FCon.OnSent:=@OnSent;
-  FCon.OnError:=@OnError;
+  FConnected := False;
+  FCon := TLFTPClient.Create(nil);
+  FCon.Timeout := 50;
+  FCon.OnConnect := @OnConnect;
+  FCon.OnReceive := @OnReceive;
+  FCon.OnControl := @OnControl;
+  FCon.OnSent := @OnSent;
+  FCon.OnError := @OnError;
 end;
 
 destructor TClient.Destroy;
@@ -118,20 +118,20 @@ procedure TClient.CleanGetting;
 begin
   if FGetting then
     FreeAndNil(FFile);
-  FGetting:=False;
+  FGetting := False;
 end;
 
 procedure TClient.Run(const Host: string; const Port: Word);
 var
   s, Name, Pass, Dir: string;
 begin
-  Dir:=ExtractFilePath(ParamStr(0));
-  FFile:=nil;
-  FGetting:=False;
-  Name:=GetAnswer('USER [' + GetEnvironmentVariable(UserString) + ']', False);
+  Dir := ExtractFilePath(ParamStr(0));
+  FFile := nil;
+  FGetting := False;
+  Name := GetAnswer('USER [' + GetEnvironmentVariable(UserString) + ']', False);
   if Length(Name) = 0 then
-    Name:=GetEnvironmentVariable('USER');
-  Pass:=GetAnswer('PASS', True);
+    Name := GetEnvironmentVariable('USER');
+  Pass := GetAnswer('PASS', True);
 
   if FCon.Connect(Host, PORT) then begin
     Writeln('Connecting... press escape to cancel');
@@ -143,22 +143,22 @@ begin
   end else Halt;
 
   if FCon.Authenticate(Name, Pass) then begin
-    FCon.Binary:=True;
-    s:='';
+    FCon.Binary := True;
+    s := '';
     Writeln('Press "?" for help');
     while not FQuit do begin
       if KeyPressed then case ReadKey of
-             #27: FQuit:=True;
+             #27: FQuit := True;
              '?': PrintHelp;
         'g', 'G': begin
-                    s:=GetAnswer('Filename');
+                    s := GetAnswer('Filename');
                     if Length(s) > 0 then begin
-                      s:=ExtractFileName(s);
+                      s := ExtractFileName(s);
                       if FileExists(Dir + s) then
                         DeleteFile(Dir + s);
                       FreeAndNil(FFile);
-                      FFile:=TFileStream.Create(Dir + s, fmOpenWrite or fmCreate);
-                      FGetting:=True;
+                      FFile := TFileStream.Create(Dir + s, fmOpenWrite or fmCreate);
+                      FGetting := True;
                       FCon.Retrieve(s);
                     end;
                   end;
@@ -172,7 +172,7 @@ begin
                   end;
         'p', 'P': begin
                     CleanGetting;
-                    s:=GetAnswer('Filename');
+                    s := GetAnswer('Filename');
                     if FileExists(Dir + s) then
                       FCon.Put(Dir + s)
                     else
@@ -180,7 +180,7 @@ begin
                   end;
         'b', 'B': begin
                     CleanGetting;
-                    FCon.Binary:=not FCon.Binary;
+                    FCon.Binary := not FCon.Binary;
                   end;
         's', 'S': begin
                     CleanGetting;
@@ -216,7 +216,7 @@ begin
                   end;
         'e', 'E': begin
                     CleanGetting;
-                    FCon.Echo:=not FCon.Echo;
+                    FCon.Echo := not FCon.Echo;
                   end;
         'f', 'F': begin
                     CleanGetting;
@@ -234,9 +234,9 @@ end;
 function TClient.UserString: string;
 begin
   {$ifdef WINDOWS}
-    Result:='USERNAME';
+    Result := 'USERNAME';
   {$else}
-    Result:='USER';
+    Result := 'USER';
   {$endif}
 end;
 
@@ -244,13 +244,13 @@ function TClient.GetAnswer(const s: string; const NoEcho: Boolean = False): stri
 var
   c: Char;
 begin
-  Result:='';
+  Result := '';
   Write(s, ': ');
   while True do begin
     FCon.CallAction;
     Sleep(50);
     if KeyPressed then begin
-      c:=ReadKey;
+      c := ReadKey;
       case c of
         #13, #27 : begin
                      Writeln;
@@ -265,7 +265,7 @@ begin
                      end;
                    end;
         else begin
-          Result:=Result + c;
+          Result := Result + c;
           if not NoEcho then
             Write(c);
         end;
@@ -280,10 +280,10 @@ var
   Port: Word = 21;
 begin
   if Paramcount > 0 then begin
-    IP:=ParamStr(1);
-    PORT:=21;
+    IP := ParamStr(1);
+    PORT := 21;
     if ParamCount > 1 then try
-      Port:=Word(StrToInt(ParamStr(2)));
+      Port := Word(StrToInt(ParamStr(2)));
     except
       on e: Exception do begin
         Writeln(e.message);
@@ -291,7 +291,7 @@ begin
       end;
     end;
 
-    aClient:=TClient.Create;
+    aClient := TClient.Create;
     aClient.Run(IP, Port);
     aClient.Free;
   end else Writeln('Usage: ', ParamStr(0), ' IP [PORT]');

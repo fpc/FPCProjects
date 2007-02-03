@@ -25,7 +25,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 14
       Top = 15
-      Width = 35
+      Width = 48
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Server:'
       Color = clNone
@@ -34,8 +34,8 @@ object MainForm: TMainForm
     object LabelPort: TLabel
       Left = 6
       Height = 14
-      Top = 38
-      Width = 19
+      Top = 39
+      Width = 48
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Port:'
       Color = clNone
@@ -45,7 +45,7 @@ object MainForm: TMainForm
       Left = 70
       Height = 22
       Top = 7
-      Width = 107
+      Width = 103
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditServerKeyPress
       TabOrder = 0
@@ -54,7 +54,7 @@ object MainForm: TMainForm
       Left = 70
       Height = 22
       Top = 31
-      Width = 107
+      Width = 103
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditServerKeyPress
       TabOrder = 1
@@ -64,7 +64,7 @@ object MainForm: TMainForm
       Left = 70
       Height = 22
       Top = 63
-      Width = 107
+      Width = 103
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.InnerBorder = 4
       Caption = 'Connect'
@@ -101,7 +101,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 14
       Top = 12
-      Width = 35
+      Width = 44
       Anchors = [akTop, akLeft, akRight]
       Caption = 'From:'
       Color = clNone
@@ -111,7 +111,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 14
       Top = 38
-      Width = 37
+      Width = 48
       Anchors = [akTop, akLeft, akRight]
       Caption = 'To:'
       Color = clNone
@@ -121,7 +121,7 @@ object MainForm: TMainForm
       Left = 6
       Height = 14
       Top = 63
-      Width = 40
+      Width = 48
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Subject:'
       Color = clNone
@@ -131,7 +131,7 @@ object MainForm: TMainForm
       Left = 62
       Height = 23
       Top = 4
-      Width = 107
+      Width = 103
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 0
@@ -140,7 +140,7 @@ object MainForm: TMainForm
       Left = 62
       Height = 23
       Top = 30
-      Width = 107
+      Width = 103
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 1
@@ -149,7 +149,7 @@ object MainForm: TMainForm
       Left = 62
       Height = 23
       Top = 55
-      Width = 107
+      Width = 103
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 2
@@ -172,12 +172,12 @@ object MainForm: TMainForm
     OnSuccess = SMTPSuccess
     OnFailure = SMTPFailure
     StatusSet = [ssMail, ssQuit]
-    left = 80
-    top = 8
+    left = 408
+    top = 56
   end
   object MainMenu: TMainMenu
-    left = 80
-    top = 41
+    left = 408
+    top = 24
     object MenuItemFile: TMenuItem
       Caption = '&File'
       object MenuItemExit: TMenuItem

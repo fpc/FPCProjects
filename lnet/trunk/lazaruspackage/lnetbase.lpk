@@ -31,7 +31,7 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Version Minor="4" Release="1"/>
+    <Version Minor="5"/>
     <Files Count="8">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>

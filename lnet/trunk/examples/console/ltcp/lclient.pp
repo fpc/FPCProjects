@@ -40,15 +40,15 @@ end;
 procedure TLTCPTest.OnEr(const msg: string; aSocket: TLSocket);
 begin
   Writeln('ERROR: ', msg); // if error occured, write it
-  FQuit:=true;             // and quit ASAP
+  FQuit := true;             // and quit ASAP
 end;
 
 constructor TLTCPTest.Create;
 begin
-  FCon:=TLTCP.Create(nil); // create new TCP connection with no parent component
-  FCon.OnError:=@OnEr; // assign callbacks
-  FCon.OnReceive:=@OnRe;
-  FCOn.OnDisconnect:=@OnDs;
+  FCon := TLTCP.Create(nil); // create new TCP connection with no parent component
+  FCon.OnError := @OnEr; // assign callbacks
+  FCon.OnReceive := @OnRe;
+  FCOn.OnDisconnect := @OnDs;
 end;
 
 destructor TLTCPTest.Destroy;
@@ -72,7 +72,7 @@ var
     Writeln('Reconnecting...');
     FCon.Disconnect;
     if not FCon.Connect(Address, Port) then begin // try to connect again
-      FQuit:=True; // if it failed quit ASAP
+      FQuit := True; // if it failed quit ASAP
       Writeln('Failed to reconnect'); // write reason
     end;
   end;
@@ -80,8 +80,8 @@ var
 begin
   if ParamCount > 1 then begin // we need atleast one parameter
     try
-      Address:=ParamStr(1); // get address from argument
-      Port:=Word(StrToInt(ParamStr(2))); // try to parse port from argument
+      Address := ParamStr(1); // get address from argument
+      Port := Word(StrToInt(ParamStr(2))); // try to parse port from argument
     except
       on e: Exception do begin
         Writeln(e.message); // write error on failure
@@ -89,30 +89,30 @@ begin
       end;
     end;
 
-    s:='';
+    s := '';
 
     if FCon.Connect(Address, Port) then begin // if connect went ok
       Write('Connecting... ');
-      FQuit:=False;
+      FQuit := False;
       repeat
         FCon.CallAction; // wait for "OnConnect"
         Sleep(1);
         if KeyPressed then // if user pressed anything, quit waiting
-          FQuit:=True;
+          FQuit := True;
       until FCon.Connected or FQuit;
       
       if not FQuit then begin // if we connected succesfuly
         Writeln('Connected');
         repeat
           if Keypressed then begin // if user provided inpur
-            c:=Readkey; // get key pressed
+            c := Readkey; // get key pressed
             case c of
               'r': Reconnect; // if it's 'r' do a reconnect
               #8:  begin      // backspace deletes from message-to-send
                      if Length(s) > 1 then
                        Delete(s, Length(s)-1, 1)
                      else
-                       s:='';
+                       s := '';
                      GotoXY(WhereX-1, WhereY);
                      Write(' ');
                      GotoXY(WhereX-1, WhereY);
@@ -120,12 +120,12 @@ begin
               #10,
               #13: begin // both "return" and "enter" send the message
                      FCon.SendMessage(s);
-                     s:='';
+                     s := '';
                      Writeln;
                    end;
-              #27: FQuit:=true; // "escape" quits
+              #27: FQuit := true; // "escape" quits
               else begin
-                s:=s + c; // other chars get added to "message-to-send"
+                s := s + c; // other chars get added to "message-to-send"
                 Write(c); // and written so we know what we want to send
               end;
             end;
@@ -141,7 +141,7 @@ end;
 var
   TCP: TLTCPTest;
 begin
-  TCP:=TLTCPTest.Create;
+  TCP := TLTCPTest.Create;
   TCP.Run;
   TCP.Free;
 end.

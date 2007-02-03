@@ -65,14 +65,14 @@ implementation
 procedure TForm1.ConnectButtonClick(Sender: TObject);
 begin
   if FNet.Connect(EditIP.Text, StrToInt(EditPort.Text)) then
-    FIsServer:=False;
+    FIsServer := False;
 end;
 
 procedure TForm1.ListenButtonClick(Sender: TObject);
 begin
   if FNet.Listen(StrToInt(EditPort.Text)) then begin
     MemoText.Append('Accepting connections');
-    FIsServer:=True;
+    FIsServer := True;
   end;
 end;
 
@@ -84,13 +84,13 @@ end;
 procedure TForm1.LTCPComponentError(const msg: string; aSocket: TLSocket);
 begin
   MemoText.Append(msg);
-  MemoText.SelStart:=Length(MemoText.Lines.Text);
+  MemoText.SelStart := Length(MemoText.Lines.Text);
 end;
 
 procedure TForm1.LTCPComponentAccept(aSocket: TLSocket);
 begin
   MemoText.Append('Connection accepted');
-  MemoText.SelStart:=Length(MemoText.Lines.Text);
+  MemoText.SelStart := Length(MemoText.Lines.Text);
 end;
 
 procedure TForm1.LTCPComponentReceive(aSocket: TLSocket);
@@ -99,7 +99,7 @@ var
 begin
   if aSocket.GetMessage(s) > 0 then begin
     MemoText.Append(s);
-    MemoText.SelStart:=Length(MemoText.Lines.Text);
+    MemoText.SelStart := Length(MemoText.Lines.Text);
     FNet.IterReset;
     if FIsServer then repeat
       FNet.SendMessage(s, FNet.Iterator);
@@ -110,7 +110,7 @@ end;
 procedure TForm1.LTcpComponentDisconnect(aSocket: TLSocket);
 begin
   MemoText.Append('Connection lost');
-  MemoText.SelStart:=Length(MemoText.Lines.Text);
+  MemoText.SelStart := Length(MemoText.Lines.Text);
 end;
 
 procedure TForm1.MenuItemAboutClick(Sender: TObject);
@@ -130,17 +130,17 @@ var
   n: Integer;
 begin
   if Length(EditSend.Text) > 0 then begin
-    AllOk:=True;
+    AllOk := True;
     if Assigned(FNet.Iterator) then repeat
-      n:=FNet.SendMessage(EditSend.Text, FNet.Iterator);
+      n := FNet.SendMessage(EditSend.Text, FNet.Iterator);
       if n < Length(EditSend.Text) then begin
         MemoText.Append('Error on send [' + IntToStr(n) + ']');
-        AllOK:=False;
+        AllOK := False;
       end;
     until not FNet.IterNext;
     if FIsServer and AllOK then
       MemoText.Append(EditSend.Text);
-    EditSend.Text:='';
+    EditSend.Text := '';
   end;
 end;
 
@@ -152,20 +152,20 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  FNet:=LTCP;
-  FIsServer:=False;
+  FNet := LTCP;
+  FIsServer := False;
 end;
 
 procedure TForm1.RBTCPChange(Sender: TObject);
 begin
   FNet.Disconnect;
-  FNet:=LTCP;
+  FNet := LTCP;
 end;
 
 procedure TForm1.RBUDPChange(Sender: TObject);
 begin
   FNet.Disconnect;
-  FNet:=LUDP;
+  FNet := LUDP;
 end;
 
 procedure TForm1.SendEditKeyPress(Sender: TObject; var Key: char);

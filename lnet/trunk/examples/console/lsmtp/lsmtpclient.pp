@@ -33,12 +33,12 @@ function TLSMTPClientTest.GetAnswer(const s: string): string;
 var
   c: Char;
 begin
-  Result:='';
+  Result := '';
   Write(s, ': ');
   while True do begin
     FSMTP.CallAction;
     if KeyPressed then begin
-      c:=ReadKey;
+      c := ReadKey;
       case c of
         #13, #27 : begin
                      Writeln;
@@ -51,7 +51,7 @@ begin
                      GotoXY(WhereX-1, WhereY);
                    end;
         else begin
-          Result:=Result + c;
+          Result := Result + c;
           Write(c);
         end;
       end;
@@ -81,7 +81,7 @@ end;
 procedure TLSMTPClientTest.OnDisconnect(aSocket: TLSocket);
 begin
   Writeln('Lost connection');
-  FQuit:=True;
+  FQuit := True;
 end;
 
 procedure TLSMTPClientTest.OnError(const msg: string; aSocket: TLSocket);
@@ -91,12 +91,12 @@ end;
 
 constructor TLSMTPClientTest.Create;
 begin
-  FQuit:=False;
-  FSMTP:=TLSMTPClient.Create(nil);
-  FSMTP.OnReceive:=@OnReceive;
-  FSMTP.OnConnect:=@OnConnect;
-  FSMTP.OnDisconnect:=@OnDisconnect;
-  FSMTP.OnError:=@OnError;
+  FQuit := False;
+  FSMTP := TLSMTPClient.Create(nil);
+  FSMTP.OnReceive := @OnReceive;
+  FSMTP.OnConnect := @OnConnect;
+  FSMTP.OnDisconnect := @OnDisconnect;
+  FSMTP.OnError := @OnError;
 end;
 
 destructor TLSMTPClientTest.Destroy;
@@ -113,16 +113,16 @@ var
   Port: Word = 25;
 begin
   if ParamCount > 0 then begin
-    Addr:=ParamStr(1);
+    Addr := ParamStr(1);
     if ParamCount > 1 then
-      Port:=Word(StrToInt(ParamStr(2)));
+      Port := Word(StrToInt(ParamStr(2)));
 
     Write('Connecting to ', Addr, '... ');
     if FSMTP.Connect(Addr, Port) then repeat  // try to connect
       FSMTP.CallAction;  // if inital connect went ok, wait for "acknowlidgment" or otherwise
       if KeyPressed then
         if ReadKey = #27 then
-          FQuit:=True;  // if user doesn't wish to wait, quit
+          FQuit := True;  // if user doesn't wish to wait, quit
       Sleep(1);
     until FQuit or FSMTP.Connected; // if user quit, or we connected, then continue
     if not FQuit then begin // if we connected send HELO
@@ -138,12 +138,12 @@ begin
           if FSMTP.Connected then
             FSMTP.Quit
           else
-            FQuit:=True;
+            FQuit := True;
         end else begin
-          Sender:=GetAnswer('From');
-          Recipients:=GetAnswer('Recipients');
-          Subject:=GetAnswer('Subject');
-          Message:=GetAnswer('Data');
+          Sender := GetAnswer('From');
+          Recipients := GetAnswer('Recipients');
+          Subject := GetAnswer('Subject');
+          Message := GetAnswer('Data');
 
           FSMTP.SendMail(Sender, Recipients, Subject, Message);
         end;
@@ -155,7 +155,7 @@ end;
 var
   SMTP: TLSMTPClientTest;
 begin
-  SMTP:=TLSMTPClientTest.Create;
+  SMTP := TLSMTPClientTest.Create;
   SMTP.Run;
   SMTP.Free;
 end.
