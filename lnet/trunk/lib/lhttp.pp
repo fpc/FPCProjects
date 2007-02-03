@@ -1894,6 +1894,7 @@ var
 begin
   inherited Create(AOwner);
 
+  FPort := 80; // default port
   SocketClass := TLHTTPServerSocket;
   if TZSeconds >= 0 then
     TZSign := '+'
