@@ -2169,9 +2169,9 @@ end;
 
 constructor TLHTTPClient.Create(AOwner: TComponent);
 begin
-  FPort:=80;
   inherited;
 
+  FPort := 80;
   SocketClass := TLHTTPClientSocket;
   FRequest.Method := hmGet;
   FHeaderOut.ExtraHeaders := InitStringBuffer(256);
