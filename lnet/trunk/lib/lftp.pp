@@ -166,8 +166,8 @@ type
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; override;
     
-    function Connect(const aHost: string; const aPort: Word = 21): Boolean; virtual;
-    function Connect: Boolean; virtual;
+    function Connect(const aHost: string; const aPort: Word = 21): Boolean; virtual; overload;
+    function Connect: Boolean; virtual; overload;
     
     function Authenticate(const aUsername, aPassword: string): Boolean;
     

@@ -114,8 +114,8 @@ type
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
     
-    function Connect(const aHost: string; const aPort: Word = 25): Boolean; virtual;
-    function Connect: Boolean; virtual;
+    function Connect(const aHost: string; const aPort: Word = 25): Boolean; virtual; overload;
+    function Connect: Boolean; virtual; overload;
     
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual;
