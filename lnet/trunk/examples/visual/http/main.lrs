@@ -1,3 +1,5 @@
+{ This is an automatically generated lazarus resource file }
+
 LazarusResources.Add('TMainForm','FORMDATA',[
   'TPF0'#9'TMainForm'#8'MainForm'#4'Left'#3#204#0#6'Height'#3'/'#2#3'Top'#2'p'#5
   +'Width'#3#135#2#18'HorzScrollBar.Page'#3#134#2#18'VertScrollBar.Page'#3'.'#2
@@ -26,6 +28,6 @@ LazarusResources.Add('TMainForm','FORMDATA',[
   +'TLHTTPClientComponent'#10'HTTPClient'#6'Method'#7#5'hmGet'#4'Port'#2'P'#11
   +'OnDoneInput'#7#19'HTTPClientDoneInput'#7'OnInput'#7#15'HTTPClientInput'#16
   +'OnProcessHeaders'#7#24'HTTPClientProcessHeaders'#12'OnDisconnect'#7#20'HTTP'
-  +'ClientDisconnect'#7'OnError'#7#15'HTTPClientError'#4'left'#3#16#2#3'top'#3
-  +#20#2#0#0#0
+  +'ClientDisconnect'#7'OnError'#7#15'HTTPClientError'#4'left'#3'h'#2#3'top'#3
+  +#16#2#0#0#0
 ]);

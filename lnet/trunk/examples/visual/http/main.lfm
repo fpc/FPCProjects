@@ -101,7 +101,7 @@ object MainForm: TMainForm
     OnProcessHeaders = HTTPClientProcessHeaders
     OnDisconnect = HTTPClientDisconnect
     OnError = HTTPClientError
-    left = 528
-    top = 532
+    left = 616
+    top = 528
   end
 end
