@@ -53,14 +53,14 @@ var
     with PasteQuery do begin
       DataBase := PasteConnection;
       Transaction := PasteTransaction;
-      ReadOnly:=True;
+      ReadOnly := True;
     end;
 
     ChanQuery := tsqlquery.Create(nil);
     with ChanQuery do begin
       DataBase := PasteConnection;
       transaction := PasteTransaction;
-      ReadOnly:=True;
+      ReadOnly := True;
     end;
   end;
 
@@ -74,12 +74,12 @@ var
 
   procedure InitCommon;
   begin
-    ChanList:=TStringList.Create;
+    ChanList := TStringList.Create;
   end;
 
   procedure Init;
   begin
-    ShortDateFormat:='dd"-"mmm"-"yy';
+    ShortDateFormat := 'dd"-"mmm"-"yy';
     InitCommon;
     InitDB;
   end;
@@ -114,9 +114,9 @@ var
   function CheckOut(const Str: string): string;
   begin
     if LowerCase(str) = 'on' then
-      Result:='checked'
+      Result := 'checked'
     else
-      Result:='';
+      Result := '';
   end;
 
   function GetHTMLChannels: string;
@@ -124,37 +124,47 @@ var
     s: string;
     i: Integer;
   begin
-    Result:='';
+    Result := '';
     if ChanList.Count > 0 then
-      for i:=0 to ChanList.Count-1 do begin
-        s:=ChanList[i];
+      for i := 0 to ChanList.Count-1 do begin
+        s := ChanList[i];
         if Length(s) > 0 then System.Delete(s, 1, 1); // Delete #
-        Result:=Result + '<option value="' + s + '"';
+        Result := Result + '<option value="' + s + '"';
         if s = GetCGIVar('channel') then
-          Result:=Result + ' selected>'
+          Result := Result + ' selected>'
         else
-          Result:=Result + '>';
-        Result:=Result + '#' + s + '</option>';
+          Result := Result + '>';
+        Result := Result + '#' + s + '</option>';
       end;
-  //  Result:=FilterHtml(Result);
+  //  Result := FilterHtml(Result);
   end;
 
   function GetMsgID: Integer;
   begin
-    Result:=-1;
+    Result := -1;
     try
-      Result:=StrToInt(GetCGIVar('msgid'));
+      Result := StrToInt(GetCGIVar('msgid'));
     except
-      Result:=-1;
+      Result := -1;
+    end;
+  end;
+  
+  function GetListID: Integer;
+  begin
+    Result := -1;
+    try
+      Result := StrToInt(GetCGIVar('start'));
+    except
+      Result := -1;
     end;
   end;
 
   function CleanVar(const VarName: string; const CleanFully: Boolean = True): string;
   begin
     if CleanFully then
-      Result:=SQLEscape(FilterHTML(GetCGIVar(VarName)))
+      Result := SQLEscape(FilterHTML(GetCGIVar(VarName)))
     else
-      Result:=SQLEscape(FilterHTMLWeak(GetCGIVar_S(VarName, 0)));
+      Result := SQLEscape(FilterHTMLWeak(GetCGIVar_S(VarName, 0)));
   end;
   
   function ParsePaste(const aPaste: string): string;
@@ -162,10 +172,10 @@ var
     function RemoveSlashAt: string;
     begin
       if Length(aPaste) > 2 then begin
-        Result:=aPaste;
+        Result := aPaste;
         if Pos('\@', Result) = 1 then // if it's on 1st line
-          Result:=Copy(Result, 3, Length(Result));
-        Result:=StringReplace(Result, #13#10'\@', #13#10, [rfReplaceAll]); // for subsequents
+          Result := Copy(Result, 3, Length(Result));
+        Result := StringReplace(Result, #13#10'\@', #13#10, [rfReplaceAll]); // for subsequents
       end;
     end;
     
@@ -176,27 +186,27 @@ var
       i, n: Integer;
       Spaced: Boolean;
     begin
-      Spaced:=False;
-      i:=0;
-      Result:='';
+      Spaced := False;
+      i := 0;
+      Result := '';
       if Length(s) <= 80 then
-        Result:=s
+        Result := s
       else repeat
-        n:=Pos(SEARCH_STRING, s);
+        n := Pos(SEARCH_STRING, s);
         if (n > 0) and (n + i <= 80) then begin // copy space to space until space behind 80
-          Result:=Result + Copy(s, 1, n + Length(SEARCH_STRING) - 1);
+          Result := Result + Copy(s, 1, n + Length(SEARCH_STRING) - 1);
           Delete(s, 1, n + Length(SEARCH_STRING) - 1);
           Inc(i, n + Length(SEARCH_STRING) - 1);
-          Spaced:=False;
+          Spaced := False;
         end else if (n + i > 80) and not Spaced then begin // if space behind 80, add newline and reset counter
-          Result:=Result + #13#10;
-          i:=0;
-          Spaced:=True;
+          Result := Result + #13#10;
+          i := 0;
+          Spaced := True;
         end else begin // no spaces in part, copy 80, reset counter
-          Result:=Result + Copy(s, 1, 80) + #13#10;
+          Result := Result + Copy(s, 1, 80) + #13#10;
           Delete(s, 1, 80);
-          i:=0;
-          Spaced:=False;
+          i := 0;
+          Spaced := False;
         end;
       until Length(s) = 0;
     end;
@@ -206,29 +216,29 @@ var
     List: TStringList;
     s: string;
   begin
-    List:=TStringList.Create;
-    List.Text:=aPaste;
+    List := TStringList.Create;
+    List.Text := aPaste;
     if List.Count > 0 then begin
 
-      Result:=#13#10'<br>'#13#10'<a href="cgipastebin">Add new paste</a>'#13#10 +
+      Result := #13#10'<br>'#13#10'<a href="cgipastebin">Add new paste</a>'#13#10 +
               '<table summary="paste text" class="paste" width="80%">'#13#10;
-      for i:=0 to List.Count-1 do begin
-        s:=StringReplace(List[i], ' ', '&nbsp;&nbsp;', [rfReplaceAll]);
+      for i := 0 to List.Count-1 do begin
+        s := StringReplace(List[i], ' ', '&nbsp;&nbsp;', [rfReplaceAll]);
         if (Length(s) > 2) and (s[1] = '\') and (s[2] = '@') then begin
-          s:='<span class="selected">' + Copy(s, 3, Length(s)) + '</span>';
-          Result:=Result + '<tr><td width="3%"><span class="selected">' +
+          s := '<span class="selected">' + Copy(s, 3, Length(s)) + '</span>';
+          Result := Result + '<tr><td width="3%"><span class="selected">' +
                            IntToStr(i + 1) + '. </span></td>'#13#10;
         end else
-          Result:=Result + '<tr><td width="3%">' + IntToStr(i + 1) + '. </td>'#13#10;
-        Result:=Result + '<td>' + WordWrap(s) + '</td></tr>'#13#10;
+          Result := Result + '<tr><td width="3%">' + IntToStr(i + 1) + '. </td>'#13#10;
+        Result := Result + '<td>' + WordWrap(s) + '</td></tr>'#13#10;
       end;
-      Result:=Result + #13#10'</table>'#13#10;
+      Result := Result + #13#10'</table>'#13#10;
       // "paste textarea"
-      Result:=Result + '<textarea cols="80" rows="' +
+      Result := Result + '<textarea cols="80" rows="' +
                        IntToStr(Min(List.Count, 25)) + '">' +
               RemoveSlashAt + '</textarea>';
     end else
-      Result:='';
+      Result := '';
     List.Free;
   end;
 
@@ -243,7 +253,7 @@ var
   const
     StrAr: array[HL_NONE..HL_LAST] of string = ('None', 'Pascal', 'Last');
   begin
-    Result:='';
+    Result := '';
     with PasteQuery do try
       PasteTransaction.EndTransaction;
 
@@ -254,7 +264,7 @@ var
       SetWebVar('title', FieldByName('title').AsString);
       SetWebVar('sender', FieldByName('sender').AsString);
       SetWebVar('highlight', StrAr[FieldByName('highlight').AsInteger]);
-      Result:=ParsePaste(FieldByName('pastetext').AsString);
+      Result := ParsePaste(FieldByName('pastetext').AsString);
       Close;
     except on e: Exception do
       begin
@@ -275,7 +285,7 @@ var
     WebWriteln(GetHTMLChannels);
     WebTemplateOut('html' + PathDelim + 'pastebin2.html', False);
     
-    s:=CleanVar('pastetext', False);
+    s := CleanVar('pastetext', False);
 
     if  (Length(s) > 0)
     and (Length(CleanVar('sender')) > 0)
@@ -293,15 +303,15 @@ var
         SQL.Clear;
         SQL.Add('select pasteid from tbl_pastes order by pasteid desc limit 1');
         Open;
-        s:=CGIURL + 'cgipastebin?msgid=' + FieldByName('pasteid').AsString;
+        s := CGIURL + 'cgipastebin?msgid=' + FieldByName('pasteid').AsString;
         Close;
 
         WebWriteln('You can view your paste at: <a href="' + s + '">' + s + '</a>');
 
         if GetCGIVar('ancheck') = 'on' then begin
-          Doer:=TDoer.Create;
-          UDP:=TLUdp.Create(nil);
-          UDP.OnError:=@Doer.OnError;
+          Doer := TDoer.Create;
+          UDP := TLUdp.Create(nil);
+          UDP.OnError := @Doer.OnError;
           UDP.Connect('localhost', PastePort);
           UDP.SendMessage('#' + GetCGIVar('channel') + '~' + GetCGIVar('sender') +
                           ' pasted "' + GetCGIVar('title') + '" at: ' + s);
@@ -329,7 +339,7 @@ var
   var
     PT: string;
   begin
-    PT:=SetViewVars(MsgID);
+    PT := SetViewVars(MsgID);
     if Length(PT) > 0 then begin
       WebTemplateOut('html' + PathDelim + 'viewpaste.html', False);
       WebWriteln(PT);
@@ -337,6 +347,56 @@ var
       WebWriteln('No such paste');
     WebWriteln('<br><a href="cgipastebin">Add new paste</a>');
     WebWriteln('  </center>');
+  end;
+  
+  procedure DoList(const StartID: Integer);
+  const
+    MaxPerPage = 20;
+  var
+    URL, Title, Time, Sender: string;
+    i: Integer;
+  begin
+    WebFileOut('html' + PathDelim + 'viewall.html');
+    WebWriteln('<table class="header_style" width="80%">');
+    with PasteQuery do try
+      SQL.Clear;
+      SQL.Add('select pasteid, title, sender, pastetime from tbl_pastes ' +
+              ' where pasteid > ''' + IntToStr(StartID) + ''' order by pastetime limit ' + IntToStr(MaxPerPage));
+      
+      Open;
+      
+      i := -1;
+      while not Eof do begin
+        Title := FieldByName('title').AsString;
+        Sender := FieldByName('sender').AsString;
+        Time := FieldByName('pastetime').AsString;
+        URL := CGIURL + 'cgipastebin?msgid=' + FieldByName('pasteid').AsString;
+        
+        WebWrite('<tr><td width="20%">' + Time + '</td><td width="10%">' + Sender + '</td><td>');
+        
+        WebWriteln('<a href="' + URL + '">' + Title + '</a></td></tr>');
+        
+        Next;
+        if i = -MaxPerPage then
+          i := FieldByName('pasteid').AsInteger
+        else
+          Dec(i);
+      end;
+      
+      Close;
+      
+    except on e: Exception do
+      begin
+        WebWriteln(e.Message);
+        PasteTransaction.EndTransaction;
+      end;
+    end;
+    WebWriteln('</table>');
+
+    if StartID > 0 then
+      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(Max(StartID - MaxPerPage, 0)) + '">PREV</a>');
+    if i >= 0 then
+      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(i) + '">NEXT</a>');
   end;
 
 begin
@@ -346,6 +406,8 @@ begin
 
   if GetCGIVar('dopaste') = 'yes' then
     DoPaste
+  else if GetCGIVar('viewall') = 'yes' then
+    DoList(GetListID)
   else if GetMsgID >= 0 then
     DoView(GetMsgID)
   else begin
