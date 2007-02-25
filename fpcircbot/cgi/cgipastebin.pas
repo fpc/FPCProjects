@@ -349,7 +349,7 @@ var
     WebWriteln('  </center>');
   end;
   
-  procedure DoList(const StartID: Integer);
+  procedure DoList(StartID: Integer);
   const
     MaxPerPage = 20;
   var
@@ -358,6 +358,21 @@ var
   begin
     WebFileOut('html' + PathDelim + 'viewall.html');
     WebWriteln('<table class="header_style" width="80%">');
+    
+    if StartID < 0 then with PasteQuery do try
+      SQL.Clear;
+      SQL.Add('select pasteid from tbl_pastes order by pasteid limit 1');
+
+      Open;
+
+      StartID := FieldByName('pasteid').AsInteger;
+      StartID := Max(StartID - MaxPerPage, 0);
+
+      Close;
+    except
+      StartID := 0;
+    end;
+    
     with PasteQuery do try
       SQL.Clear;
       SQL.Add('select pasteid, title, sender, pastetime from tbl_pastes ' +
@@ -368,6 +383,8 @@ var
       i := -1;
       while not Eof do begin
         Title := FieldByName('title').AsString;
+        if Length(Trim(Title)) = 0 then
+          Title := 'no title';
         Sender := FieldByName('sender').AsString;
         Time := FieldByName('pastetime').AsString;
         URL := CGIURL + 'cgipastebin?msgid=' + FieldByName('pasteid').AsString;
