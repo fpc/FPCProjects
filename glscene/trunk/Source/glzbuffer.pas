@@ -71,7 +71,6 @@
 
 
 unit glzbuffer;
-{$asmmode att} {$asmmode intel}
 
 interface
 

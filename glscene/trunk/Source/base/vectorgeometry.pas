@@ -133,9 +133,6 @@
    </ul>
 }
 unit vectorgeometry;
-{$IFDEF FPC}
-{$asmmode att} {$asmmode intel}
-{$ENDIF}
 // this unit contains many needed types, functions and procedures for
 // quaternion, vector and matrix arithmetics. It is specifically designed
 // for geometric calculations within R3 (affine vector space)

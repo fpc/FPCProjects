@@ -56,9 +56,7 @@
 	</ul></font>
 }
 unit vectorlists;
-{$ifdef fpc}
-{$asmmode att} {$asmmode intel}
-{$endif}
+
 interface
 
 {$i glscene.inc}

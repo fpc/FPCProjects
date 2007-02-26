@@ -34,7 +34,6 @@
 	</ul></font>
 }
 unit glmesh;
-{$asmmode att} {$asmmode intel}
 
 interface
 

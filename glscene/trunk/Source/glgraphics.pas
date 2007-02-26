@@ -65,9 +65,6 @@
 	</ul></font>
 }
 unit GLGraphics;
-{$ifdef fpc}
-{$asmmode att} {$asmmode intel}
-{$endif}
 
 interface
 

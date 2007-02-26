@@ -21,7 +21,6 @@
              Lightwave3D is a registered trademark of Newtek Incorporated.
 -------------------------------------------------------------------------------}
 unit lwobjects;
-{$asmmode att} {$asmmode intel}
 
 interface
 

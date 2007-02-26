@@ -69,7 +69,6 @@
    </ul></font>
 }
 unit glparticlefx;
-{$asmmode att} {$asmmode intel}
 
 interface
 

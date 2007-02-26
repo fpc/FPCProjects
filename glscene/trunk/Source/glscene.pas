@@ -310,9 +310,6 @@
    </ul></font>
 }
 unit glscene;
-{$ifdef fpc}
-{$asmmode att} {$asmmode intel}
-{$endif}
 
 interface
 

@@ -59,6 +59,7 @@
 //  {$IFNDEF cpu386} // bugged asm
   {$DEFINE GEOMETRY_NO_ASM}
 //  {$ENDIF}
+  {$asmmode intel}
   {$TYPEINFO ON}
   {$INLINE ON}
 {$ENDIF}

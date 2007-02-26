@@ -26,9 +26,7 @@
    </ul></font>
 }
 unit glutils;
-{$IFDEF FPC}
-{$asmmode att} {$asmmode intel}
-{$ENDIF}
+
 interface
 
 uses classes, vectorgeometry, sysutils, opengl1x;
