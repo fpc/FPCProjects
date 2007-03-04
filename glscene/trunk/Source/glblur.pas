@@ -1,4 +1,7 @@
-{: glblur<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLBlur<p>
 
 	Applies a blur effect over the viewport.<p>
 
@@ -19,65 +22,117 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+        <li>25/02/07 - DaStr  - Added DesignTime check in TGLMotionBlur.DoRender
+        <li>23/02/07 - DaStr  - TGLMotionBlur.StoreIntensity bugfixed
+                                TGLBlur - default values added to all properties,
+                                Made some cosmetic and alignment changes
+        <li>20/02/07 - DaStr  - TGLMotionBlur added (based on ToxBlur by Dave Gravel)
+                                Added some default values to TGLBlur
         <li>11/06/04 - Mrqzzz - Creation
    </ul></font>
 }
-unit glblur;
+unit GLBlur;
 
 interface
 
 uses
-   classes, glscene, vectorgeometry, glmisc, stdctrls, globjects, glbitmapfont,
-   gltexture,glhudobjects;
+  // VCL
+  Classes, StdCtrls,
+
+  // GLScene
+  GLScene, VectorGeometry, GLMisc,  GLObjects, GLBitmapFont, GLTexture,
+  GLHudObjects;
 
 type
     TGLBlurPreset = (pNone,pGlossy,pBeastView,pOceanDepth,pDream,pOverBlur);
 
 type
-    TGLBlur = class (TGLHUDSprite)
-      private
-       FViewer : TGLMemoryViewer;
-       OldTime :  Double;
-       FDoingMemView : boolean;
+  TGLBlur = class (TGLHUDSprite)
+  private
+    FViewer : TGLMemoryViewer;
+    OldTime :  Double;
+    FDoingMemView : boolean;
     FBlurDeltaTime: Double;
-    FBlurTop: single;
-    FBlurBottom: single;
-    FBlurLeft: single;
-    FBlurRight: single;
-    FRenderHeight: integer;
-    FRenderWidth: integer;
+    FBlurTop: Single;
+    FBlurBottom: Single;
+    FBlurLeft: Single;
+    FBlurRight: Single;
+    FRenderHeight: Integer;
+    FRenderWidth: Integer;
     FPreset: TGLBlurPreset;
     procedure DoMemView(baseObject: TGLBaseSceneObject);
-    procedure SetBlurDeltaTime(const Value: Double);
-    procedure SetBlurBottom(const Value: single);
-    procedure SetBlurLeft(const Value: single);
-    procedure SetBlurRight(const Value: single);
-    procedure SetBlurTop(const Value: single);
-    procedure SetRenderHeight(const Value: integer);
-    procedure SetRenderWidth(const Value: integer);
+    procedure SetRenderHeight(const Value: Integer);
+    procedure SetRenderWidth(const Value: Integer);
     procedure UpdateImageSettings;
     procedure SetPreset(const Value: TGLBlurPreset);
-      public
-         constructor Create(AOwner: TComponent); override;
-         destructor Destroy; override;
 
-         procedure DoProgress(const progressTime : TProgressTimes); override;
-         procedure DoRender(var rci : TRenderContextInfo;
+    function StoreBlurBottom: Boolean;
+    function StoreBlurDeltaTime: Boolean;
+    function StoreBlurRight: Boolean;
+    function StoreBlurTop: Boolean;
+    function StoreBlurLeft: Boolean;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+
+    procedure DoProgress(const progressTime : TProgressTimes); override;
+    procedure DoRender(var rci : TRenderContextInfo;
                             renderSelf, renderChildre : Boolean); override;
-      published
-         property BlurDeltaTime : Double read FBlurDeltaTime write SetBlurDeltaTime;
-         property BlurLeft:single read FBlurLeft write SetBlurLeft;
-         property BlurTop:single read FBlurTop write SetBlurTop;
-         property BlurRight:single read FBlurRight write SetBlurRight;
-         property BlurBottom:single read FBlurBottom write SetBlurBottom;
-         property RenderWidth:integer read FRenderWidth write SetRenderWidth;
-         property RenderHeight:integer read FRenderHeight write SetRenderHeight;
-         property Preset : TGLBlurPreset read FPreset write SetPreset stored false;
-    end;
+  published
+    property BlurDeltaTime: Double read FBlurDeltaTime write FBlurDeltaTime stored StoreBlurDeltaTime;
+    property BlurLeft: Single read FBlurLeft write FBlurLeft stored StoreBlurLeft;
+    property BlurTop: Single read FBlurTop write FBlurTop stored StoreBlurTop;
+    property BlurRight: Single read FBlurRight write FBlurRight stored StoreBlurRight;
+    property BlurBottom: Single read FBlurBottom write FBlurBottom stored StoreBlurBottom;
+    property RenderWidth: Integer read FRenderWidth write SetRenderWidth default 256;
+    property RenderHeight: Integer read FRenderHeight write SetRenderHeight default 256;
+    property Preset: TGLBlurPreset read FPreset write SetPreset stored false;
+  end;
+
+{:
+  This component blurs everything thatis rendered BEFORE it. So if you want part
+  of your scene blured, the other not blured, make sure that the other part is
+  rendered after this component.
+  It is fast and does not require shaders.
+
+  Note: it is FPS-dependant. Also also can produce a "blury trail effect", which
+  stays on the screen until something new is rendered over it. It can be overcome
+  by changing the Material.FrontProperties.Diffuse property. This, however, also
+  has a drawback - the picture becomes more blured altogether. For example, if
+  your backgroud color is Black, set the Material.FrontProperties.Diffuse to White.
+  If it is White, set Material.FrontProperties.Diffuse to Black. I haven't tried
+  any others, but I hope you get the idea ;)
+
+  I've seen this effect in different Bruring components, even in shaders, but if
+  anyone knows another way to fix this issue - please post it on the glscene
+  newsgroup.
+}
+  TGLMotionBlur = class(TGLCustomSceneObject)
+  private
+    FIntensity: Single;
+    function StoreIntensity: Boolean;
+  public
+    procedure DoRender(var rci: TRenderContextInfo; renderSelf, renderChildren: Boolean); override;
+    constructor Create(aOwner: TComponent); override;
+    procedure Assign(Source: TPersistent); override;
+  published
+    // The more the intersity, the more blur you have
+    property Intensity: Single read FIntensity write FIntensity stored StoreIntensity;
+
+    // From TGLBaseSceneObject.
+    property Visible;
+    property OnProgress;
+    property Behaviours;
+    property Effects;
+    property Hint;
+  end;
 
 implementation
 
-uses sysutils, opengl1x, glgraphics, xopengl, glstate;
+uses SysUtils, OpenGL1x, GLGraphics, XOpenGL, GLState;
+
+const
+  EPS = 0.001;
 
 constructor TGLBlur.Create(AOwner: TComponent);
 begin
@@ -148,7 +203,7 @@ begin
      begin
           FDoingMemView := true;
 
-          //SCene.RenderScene(FViewer.Buffer,FViewer.Width,FViewer.Height,dsRendering,baseObject);
+          //Scene.RenderScene(FViewer.Buffer,FViewer.Width,FViewer.Height,dsRendering,baseObject);
           FViewer.Camera.BeginUpdate;
 
           OldFocalLength := FViewer.Camera.FocalLength;
@@ -175,8 +230,7 @@ begin
      end;
 end;
 
-
-
+{$Warnings Off} //Suppress "unsafe" warning
 procedure TGLBlur.DoRender(var rci : TRenderContextInfo;
                               renderSelf, renderChildre : Boolean);
 var
@@ -259,32 +313,7 @@ begin
    if Count>0 then
       Self.RenderChildren(0, Count-1, rci);
 end;
-
-
-procedure TGLBlur.SetBlurDeltaTime(const Value: Double);
-begin
-  FBlurDeltaTime := Value;
-end;
-
-procedure TGLBlur.SetBlurBottom(const Value: single);
-begin
-  FBlurBottom := Value;
-end;
-
-procedure TGLBlur.SetBlurLeft(const Value: single);
-begin
-  FBlurLeft := Value;
-end;
-
-procedure TGLBlur.SetBlurRight(const Value: single);
-begin
-  FBlurRight := Value;
-end;
-
-procedure TGLBlur.SetBlurTop(const Value: single);
-begin
-  FBlurTop := Value;
-end;
+{$Warnings On}
 
 procedure TGLBlur.SetRenderHeight(const Value: integer);
 begin
@@ -357,6 +386,97 @@ begin
 
 end;
 
+function TGLBlur.StoreBlurBottom: Boolean;
+begin
+  Result := Abs(FBlurBottom - 0.01) > EPS;
+end;
+
+function TGLBlur.StoreBlurDeltaTime: Boolean;
+begin
+  Result := Abs(FBlurDeltaTime - 0.02) > EPS;
+end;
+
+function TGLBlur.StoreBlurLeft: Boolean;
+begin
+  Result := Abs(FBlurLeft - 0.01) > EPS;
+end;
+
+function TGLBlur.StoreBlurRight: Boolean;
+begin
+  Result := Abs(FBlurRight - 0.01) > EPS;
+end;
+
+function TGLBlur.StoreBlurTop: Boolean;
+begin
+  Result := Abs(FBlurTop - 0.01) > EPS;
+end;
+
+{ TGLMotionBlur }
+
+procedure TGLMotionBlur.Assign(Source: TPersistent);
+begin
+  inherited;
+  if Source is TGLMotionBlur then
+  begin
+    FIntensity := TGLMotionBlur(Source).FIntensity;
+  end;
+end;
+
+constructor TGLMotionBlur.Create(aOwner: TComponent);
+begin
+  inherited Create(aOwner);
+  Material.FrontProperties.Diffuse.Initialize(clrBlack);
+  Material.MaterialOptions := [moNoLighting, moIgnoreFog];
+  Material.Texture.Disabled := False;
+  Material.BlendingMode := bmTransparency;
+  FIntensity := 0.975;
+end;
+
+{$Warnings Off}
+procedure TGLMotionBlur.DoRender(var rci: TRenderContextInfo; renderSelf, renderChildren: Boolean);
+begin
+  if rci.ignoreMaterials then Exit;
+  if csDesigning in ComponentState then Exit;
+
+  glPushMatrix;
+    glEnable( GL_TEXTURE_RECTANGLE_NV );
+    Material.Apply( rci );
+    glMatrixMode( GL_PROJECTION );
+    glPushMatrix;
+      glLoadIdentity;
+      glOrtho( 0, rci.viewPortSize.cx, rci.viewPortSize.cy, 0, 0, 1 );
+      glMatrixMode(GL_MODELVIEW);
+      glLoadMatrixf(@Scene.CurrentBuffer.BaseProjectionMatrix);
+      glLoadIdentity;
+      glDisable(GL_DEPTH_TEST);
+      glDepthMask( FALSE );
+      glBegin( GL_QUADS );
+        glTexCoord2f( 0.0, rci.viewPortSize.cy ); glVertex2f( 0, 0 );
+        glTexCoord2f( 0.0, 0.0); glVertex2f( 0, rci.viewPortSize.cy );
+        glTexCoord2f( rci.viewPortSize.cx, 0.0 ); glVertex2f( rci.viewPortSize.cx, rci.viewPortSize.cy );
+        glTexCoord2f( rci.viewPortSize.cx, rci.viewPortSize.cy ); glVertex2f( rci.viewPortSize.cx, 0 );
+      glEnd;
+      glDepthMask( TRUE );
+      glMatrixMode( GL_PROJECTION );
+    glPopMatrix;
+    glMatrixMode( GL_MODELVIEW );
+    Material.UnApply( rci );
+    glDisable( GL_TEXTURE_RECTANGLE_NV );
+  glPopMatrix;
+
+  glCopyTexImage2D( GL_TEXTURE_RECTANGLE_NV, 0, GL_RGB, 0, 0, rci.viewPortSize.cx, rci.viewPortSize.cy, 0 );
+  if Count>0 then Self.RenderChildren(0, Count-1, rci);
+
+  Material.FrontProperties.Diffuse.Alpha := FIntensity;
+  Material.FrontProperties.Diffuse.NotifyChange(Self);
+end;
+{$Warnings On}
+
+function TGLMotionBlur.StoreIntensity: Boolean;
+begin
+  Result := Abs(FIntensity - 0.975) > EPS;
+end;
+
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -367,7 +487,6 @@ initialization
 
    // class registrations
    RegisterClass(TGLBlur);
-
-
+   RegisterClass(TGLMotionBlur);
 
 end.
