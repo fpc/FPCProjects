@@ -363,7 +363,6 @@
       </Item77>
       <Item78>
         <Filename Value="..\Source\glfpsmovement.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glfpsmovement"/>
       </Item78>

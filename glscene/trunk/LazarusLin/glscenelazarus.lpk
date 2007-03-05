@@ -294,7 +294,7 @@
       </Item62>
       <Item63>
         <Filename Value="../Source/glblur.pas"/>
-        <UnitName Value="glblur"/>
+        <UnitName Value="GLBlur"/>
       </Item63>
       <Item64>
         <Filename Value="../Source/glbsp.pas"/>
@@ -302,7 +302,7 @@
       </Item64>
       <Item65>
         <Filename Value="../Source/glbumpmaphds.pas"/>
-        <UnitName Value="glbumpmaphds"/>
+        <UnitName Value="GLBumpmapHDS"/>
       </Item65>
       <Item66>
         <Filename Value="../Source/glcadencer.pas"/>
@@ -349,9 +349,8 @@
       </Item75>
       <Item76>
         <Filename Value="../Source/glfpsmovement.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
-        <UnitName Value="glfpsmovement"/>
+        <UnitName Value="GLFPSMovement"/>
       </Item76>
       <Item77>
         <Filename Value="../Source/glgeomobjects.pas"/>
@@ -403,7 +402,7 @@
       </Item88>
       <Item89>
         <Filename Value="../Source/glmisc.pas"/>
-        <UnitName Value="glmisc"/>
+        <UnitName Value="GLMisc"/>
       </Item89>
       <Item90>
         <Filename Value="../Source/glmovement.pas"/>
@@ -521,7 +520,7 @@
       </Item117>
       <Item118>
         <Filename Value="../Source/glstrings.pas"/>
-        <UnitName Value="glstrings"/>
+        <UnitName Value="GLStrings"/>
       </Item118>
       <Item119>
         <Filename Value="../Source/glteapot.pas"/>
@@ -533,7 +532,7 @@
       </Item120>
       <Item121>
         <Filename Value="../Source/gltexture.pas"/>
-        <UnitName Value="gltexture"/>
+        <UnitName Value="GLTexture"/>
       </Item121>
       <Item122>
         <Filename Value="../Source/glthorfx.pas"/>

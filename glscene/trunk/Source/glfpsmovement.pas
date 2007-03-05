@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfpsmovement<p>
+{: GLFPSMovement<p>
 
    FPS-like movement behaviour and manager.<p>
 
@@ -25,6 +25,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
+      <li>08/03/06 - ur - Fixed warnigs for Delphi 2006
       <li>02/12/04 - DB - Fixed memory leak, spotted by dikoe Kenguru
       <li>03/07/04 - LR - Corrections for Linux compatibility
                           Replace GetTickCount by GLGetTickCount
@@ -33,14 +35,14 @@
       <li>09/06/04 - Mathx - Creation
 	</ul></font>
 }
-unit glfpsmovement;
+unit GLFPSMovement;
 
 interface
 
 uses
-     opengl1x, vectorgeometry, glmisc, glscene, glvectorfileobjects, gltexture,
-     vectorlists, xcollection, classes, glgeomobjects, sysutils,
-     glnavigator {crossbuilder ,persistentclasses};
+     OpenGL1x, VectorGeometry, GLMisc, GLScene, GLVectorFileObjects, GLTexture,
+     VectorLists, XCollection, Classes, GLGeomObjects, SysUtils,
+     GLNavigator;
 
 type
      TContactPoint = record
@@ -68,7 +70,7 @@ type
      protected
          procedure WriteToFiler(writer : TWriter); override;
          procedure ReadFromFiler(reader : TReader); override;
-         procedure loaded; override;
+         procedure Loaded; override;
      public
           constructor Create(aOwner : TXCollection); override;
           class function FriendlyName : String; override;
@@ -105,15 +107,15 @@ type
           procedure DrawArrows(intPoint,intNormal,Ray:TVector;
                                Arrow1, Arrow2:TGLArrowLine);
      protected
-          procedure loaded; override;
+          procedure Loaded; override;
           procedure DefineProperties(Filer: TFiler); override;
           procedure WriteMaps(stream : TStream);
           procedure ReadMaps(stream : TStream);
           procedure Notification(AComponent: TComponent;
                                  Operation: TOperation); override;
      public
-          constructor create(aOwner: TComponent); override;
-          destructor destroy; override;
+          constructor Create(aOwner: TComponent); override;
+          destructor Destroy; override;
 
           // Basic idea is to OctreeSphereSweepIntersect to plane, update position then change
           //  velocity to slide along the plane
@@ -164,12 +166,12 @@ type
      protected
          procedure WriteToFiler(writer : TWriter); override;
          procedure ReadFromFiler(reader : TReader); override;
-         procedure loaded; override;
+         procedure Loaded; override;
      public
           velocity: TVector;
 
           constructor Create(aOwner : TXCollection); override;
-          destructor destroy; override;
+          destructor Destroy; override;
 
           procedure DoProgress(const progressTime : TProgressTimes); override;
 
@@ -208,16 +210,9 @@ function GetFPSMovement(obj: TGLBaseSceneObject): TGLBFPSMovement; overload;
 function GetOrCreateFPSMovement(behaviours: TGLBehaviours): TGLBFPSMovement; overload;
 function GetOrCreateFPSMovement(obj: TGLBaseSceneObject): TGLBFPSMovement; overload;
 
-procedure Register;
-
 implementation
 
-uses glcrossplatform;
-
-procedure register;
-begin
-     RegisterComponents('GLScene Utils', [TGLFPSMovementManager]);
-end;
+uses GLCrossPlatform;
 
 function GetFPSMovement(behaviours: TGLBehaviours): TGLBFPSMovement; overload;
 var
@@ -295,7 +290,7 @@ begin
      end;
 end;
 
-procedure TGLMapCollectionItem.loaded;
+procedure TGLMapCollectionItem.Loaded;
 begin
      if FMapName <> '' then begin
           assert(Owner.Owner.InheritsFrom(TGLFPSMovementManager));
@@ -349,7 +344,7 @@ end;
 // ------------------
 constructor TGLFPSMovementManager.Create(aOwner: TComponent);
 begin
-     inherited create(aOwner);
+     inherited Create(aOwner);
 
      Maps:= TGLMapCollection.Create(self);
 
@@ -359,16 +354,16 @@ begin
      RegisterManager(self);
 end;
 
-destructor TGLFPSMovementManager.destroy;
+destructor TGLFPSMovementManager.Destroy;
 begin
      DeRegisterManager(self);
      maps.Free;
-     inherited destroy;
+     inherited Destroy;
 end;
 
-procedure TGLFPSMovementManager.loaded;
+procedure TGLFPSMovementManager.Loaded;
 begin
-     inherited loaded;
+     inherited Loaded;
      if assigned(FMaps) then Maps.Loaded;
 end;
 
@@ -632,7 +627,7 @@ begin
      FManagerName:= '';
 end;
 
-destructor TGLBFPSMovement.destroy;
+destructor TGLBFPSMovement.Destroy;
 var
   i:integer;
 begin
@@ -648,7 +643,7 @@ begin
   FreeAndNil(ArrowLine5);
   FreeAndNil(ArrowLine6);
   FreeAndNil(dirGl);
-  inherited destroy;
+  inherited Destroy;
 end;
 
 class function TGLBFPSMovement.FriendlyName : String;
@@ -688,11 +683,11 @@ begin
      end;
 end;
 
-procedure TGLBFPSMovement.loaded;
+procedure TGLBFPSMovement.Loaded;
 var
    mng : TComponent;
 begin
-     inherited loaded;
+     inherited Loaded;
      if FManagerName <> '' then begin
           mng:=FindManager(TGLFPSMovementManager, FManagerName);
           if Assigned(mng) then

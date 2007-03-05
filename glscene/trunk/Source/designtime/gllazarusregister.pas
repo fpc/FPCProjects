@@ -157,6 +157,7 @@ uses
    glportal,glgraph,glparticles,glskydome,glskybox,glhudobjects,glwindows,
    gllensflare,gltexlensflare,glmirror,glshadowplane,glshadowvolume,
    glzbuffer,glprojectedtextures,glblur,gltrail,gltree,glmultiproxy,
+   GLFPSMovement,
    glfeedback,glextrusion,glbumpmaphds,glheighttilefilehds,
    glterrainrenderer,glgamemenu, gltextureimageeditors,
    glstate, glutils, glwaterplane,
@@ -699,7 +700,7 @@ begin
    RegisterComponents('GLScene Utils',
                       [TAsyncTimer,
                        TGLStaticImposterBuilder,
-                       TGLBitmapHDS,TGLCustomHDS, TGLHeightTileFileHDS,
+                       TGLBitmapHDS,TGLCustomHDS, TGLHeightTileFileHDS, TGLFPSMovementManager,
                        TGLBumpmapHDS, TGLPerlinHDS,
                        TCollisionManager, TGLAnimationControler
                       ]);
