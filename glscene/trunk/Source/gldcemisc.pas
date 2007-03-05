@@ -1,22 +1,6 @@
-{: gldcemisc<p>
+{: GLDCEMisc<p>
 
   Miscelaneous functions used by DCE (Dynamic Collision Engine).
-
-      $Log: gldcemisc.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
 
   <b>History : </b><font size=-1><ul>
     <li>23/01/05 - LucasG - Code reorganized, many fixes and some new features 
@@ -24,12 +8,12 @@
     <li>29/07/04 - LucasG - Creation
   </ul></font>
 }
-unit gldcemisc;
+unit GLDCEMisc;
 
 interface
 
-uses glvectorfileobjects, octree, glellipsecollision, vectorgeometry, vectorlists,
-  glscene, glterrainrenderer,glproxyobjects, glmultiproxy;
+uses GLVectorFileObjects, Octree, GLEllipseCollision, VectorGeometry, VectorLists,
+  GLScene, GLTerrainRenderer,GLProxyObjects, GLMultiProxy;
 
 //Calculate and set the collision range
 procedure ECSetCollisionRange(var MovePack: TECMovePack);
