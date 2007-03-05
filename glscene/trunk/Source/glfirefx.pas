@@ -1,4 +1,6 @@
-{: glfirefx<p>
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLFireFX<p>
 
 	Fire special effect<p>
 
@@ -19,6 +21,7 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>23/02/07 - DaStr - Fixed TGLFireFXManager.Create (TGLCoordinatesStyle stuff)
       <li>21/02/02 - EG - Added GetOrCreateFireFX helper functions
       <li>09/12/01 - EG - Added NoZWrite property
       <li>12/08/01 - EG - Fixed leak (color objects)
@@ -32,12 +35,11 @@
 	   <li>08/08/00 - EG - Creation, based on Roger Cao's "FireEffectUnit"
 	</ul></font>
 }
-unit glfirefx;
+unit GLFireFX;
 
 interface
 
-uses classes, glscene, glmisc, xcollection, vectorgeometry, gltexture, glcadencer {, crossbuilder
-     persistentclasses};
+uses Classes, GLScene, GLMisc, XCollection, VectorGeometry, GLTexture, GLCadencer;
 
 type
 
@@ -111,7 +113,7 @@ type
                                       nbParticles : Integer = -1);
          {: Spawns a large quantity of particles to simulate a ring explosion.<p>
             This method generates a ring explosion. The plane of the ring is described
-            by ringvectorx/y, which should be of unit length (but you may not
+            by ringVectorX/Y, which should be of unit length (but you may not
             make them of unit length if you want "elliptic" rings). }
          procedure RingExplosion(minInitialSpeed, maxInitialSpeed, lifeBoostFactor : Single;
                                  const ringVectorX, ringVectorY : TAffineVector;
@@ -189,7 +191,7 @@ type
 			{ Protected Declarations }
          procedure SetManager(const val : TGLFireFXManager);
 
-         procedure WriteToFiler(writer : TWriter); override;
+			procedure WriteToFiler(writer : TWriter); override;
          procedure ReadFromFiler(reader : TReader); override;
          procedure Loaded; override;
 
@@ -227,7 +229,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, opengl1x, vectorlists;
+uses SysUtils, OpenGL1x, VectorLists;
 
 // GetOrCreateFireFX (TGLObjectEffects)
 //
@@ -259,8 +261,8 @@ begin
    inherited Create(AOwner);
    FClients:=TList.Create;
    RegisterManager(Self);
-   FFireDir:=TGLCoordinates.CreateInitialized(Self, VectorMake(0, 0.5, 0));
-   FInitialDir:=TGLCoordinates.CreateInitialized(Self, YHmgVector);
+   FFireDir:=TGLCoordinates.CreateInitialized(Self, VectorMake(0, 0.5, 0), csPoint);
+   FInitialDir:=TGLCoordinates.CreateInitialized(Self, YHmgVector, csPoint);
    FMaxParticles:=256;
    FParticleSize:=1.0;
    FInnerColor:=TGLColor.Create(Self);
