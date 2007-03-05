@@ -278,7 +278,7 @@
         <Filename Value="../Source/glanimatedsprite.pas"/>
         <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
-        <UnitName Value="glanimatedsprite"/>
+        <UnitName Value="GLAnimatedSprite"/>
       </Item59>
       <Item60>
         <Filename Value="../Source/glbasemeshsilhouette.pas"/>
@@ -318,7 +318,6 @@
       </Item68>
       <Item69>
         <Filename Value="../Source/gldce.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="gldce"/>
       </Item69>
       <Item70>

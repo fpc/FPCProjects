@@ -332,7 +332,6 @@
       </Item70>
       <Item71>
         <Filename Value="..\Source\gldce.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="gldce"/>
       </Item71>
       <Item72>

@@ -1,4 +1,4 @@
-{: gldce<p>
+{: GLDCE<p>
 
   How to use:
   - Add a DCEManager to you form and configure its properties
@@ -17,23 +17,8 @@
   - SlideOrBounce: The object can bounce like a ball or slide like an FPS
   - BounceFactor: Restituition factor, 1 means that it will bounce forever
 
-      $Log: gldce.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
   <b>History : </b><font size=-1><ul>
+    <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
     <li>01/07/05 - MathX - Fixed memory leak on contactPoints (moveByDistance method)
     <li>23/01/05 - LucasG - Code reorganized, many fixes and some new features 
     <li>19/11/04 - GAK - Added standardised collision selection (optionally use same selection criteria as other collision system)
@@ -52,13 +37,12 @@
   </ul></font>
 }
 
-unit gldce;
+unit GLDCE;
 
 interface
 
-uses classes, glscene, xcollection, vectorgeometry, vectorlists, glvectorfileobjects,
-   geometrybb, glcrossplatform, glmisc, gldcemisc, glellipsecollision, glterrainrenderer {crossbuilder,
-   persistentclasses};
+uses Classes, GLScene, XCollection, VectorGeometry, VectorLists, GLVectorFileObjects,
+   GeometryBB, GLCrossPlatform, GLMisc, GLDCEMisc, GLEllipseCollision, GLTerrainRenderer;
 
 type
   {Only csEllipsoid can have dynamic behaviour}
@@ -263,16 +247,10 @@ function GetOrCreateDCEStatic(obj : TGLBaseSceneObject) : TGLDCEStatic; overload
 function GetOrCreateDCEDynamic(behaviours : TGLBehaviours) : TGLDCEDynamic; overload;
 function GetOrCreateDCEDynamic(obj : TGLBaseSceneObject) : TGLDCEDynamic; overload;
 
-procedure Register;
-
 implementation
 
-uses sysutils;
+uses SysUtils;
 
-procedure register;
-begin
-  RegisterComponents('GLScene Utils', [TGLDCEManager]);
-end;
 
 function RotateVectorByObject(Obj: TGLBaseSceneObject; v: TAffineVector): TAffineVector;
 var v2: TVector;
