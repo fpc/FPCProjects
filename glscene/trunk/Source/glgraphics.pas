@@ -1341,7 +1341,7 @@ begin
   for y:=0 to FHeight-1 do begin
     pSrc:=@PChar(FData)[y*(FWidth*4)];
     //pDest:=aBitmap.ScanLine[FHeight-1-y];
-    {$WARNING cvs version uses the above line instead of the following, but our TBitmap doesn't support Scanline}
+    {$WARNING Crossbuilder: cvs version uses the above line instead of the following, but our TBitmap doesn't support Scanline}
     pDest:=BitmapScanLine(aBitmap, FHeight-1-y); {$Note BitmapScanline will generate an Assertion in FPC }
     BGRA32ToRGBA32(pSrc, pDest, FWidth);
   end;
