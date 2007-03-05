@@ -42,8 +42,8 @@ type
 
          procedure DestructionEarlyWarning(sender : TObject);
 
-         procedure DoCreateContext(outputDevice : Integer); override;
-         procedure DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer); override;
+         procedure DoCreateContext(outputDevice : cardinal); override;
+         procedure DoCreateMemoryContext(outputDevice : cardinal;width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -146,7 +146,7 @@ end;
 
 // DoCreateContext
 //
-procedure TGLGTKContext.DoCreateContext(outputDevice : Integer);
+procedure TGLGTKContext.DoCreateContext(outputDevice : Cardinal);
 var
   winattr: TXWindowAttributes;
   vitemp: TXVisualInfo;
@@ -159,7 +159,7 @@ begin
    // Just in case it didn't happen already.
    if not InitOpenGL then RaiseLastOSError;
     { Create OpenGL context }
-    LCLObject:=TObject(Cardinal(outputDevice));
+    LCLObject:=TObject(outputDevice);
     CurWinControl:=TWinControl(LCLObject);
     fGTKWidget := GetFixedWidget(pgtkwidget(CurWinControl.Handle));
     // Dirty workaround: force realize
@@ -232,7 +232,7 @@ end;
 
 // DoCreateMemoryContext
 //
-procedure TGLGTKContext.DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer);
+procedure TGLGTKContext.DoCreateMemoryContext(outputDevice : Cardinal; width, height : Integer; BufferCount : integer);
 begin
   {$MESSAGE Warn 'DoCreateMemoryContext: Needs to be implemented'}
 end;

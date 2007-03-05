@@ -1,13 +1,30 @@
-unit gllinuxcontext;
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLLinuxContext<p>
+
+   Linux specific Context.<p>
+
+   <b>History : </b><font size=-1><ul>
+      <li>15/02/07 - DaStr - Integer -> Cardinal because $R- was removed in GLScene.pas
+                             Added a header and restored version history  
+      <li>05/07/04 - lirey - More corrections for Linux
+      <li>03/07/04 - lirey - Corrections for Linux
+      <li>23/07/03 - EG - OpenGL12 references changed to OpenGL1x
+      <li>30/05/03 - EG - Kylix compatibility changes (compiles, but untested)
+      <li>29/11/02 - EG - Access to outputDevice
+      <li>24/01/02 - EG - Initial version
+}
+unit GLLinuxContext;
 
 interface
 
 {$i GLScene.inc}
 
-{$ifndef linux} {$message error 'unit is linux specific'} {$endif}
+{$IFNDEF LINUX} {$MESSAGE Error 'Unit is Linux specific'} {$ENDIF}
 
 uses
-  xlib, classes, sysutils, glcontext, qforms, opengl1x, qt;
+  XLib, Classes, SysUtils, GLContext, QForms, OpenGL1x, Qt;
 
 type
 
@@ -21,8 +38,8 @@ type
          FOutputDevice: QWidgetH;
       protected
          { Protected Declarations }
-         procedure DoCreateContext(outputDevice : Integer); override;
-         procedure DoCreateMemoryContext(outputDevice, width, height : Integer); override;
+         procedure DoCreateContext(outputDevice : Cardinal); override;
+         procedure DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -44,7 +61,7 @@ implementation
 // ------------------------------------------------------------------
 
 uses
-  glcrossplatform;
+  GLCrossPlatform;
 
 resourcestring
    cContextActivationFailed =    'Context activation failed: %X';
@@ -59,7 +76,7 @@ var
 
 // DoCreateContext
 //
-procedure TGLLinuxContext.DoCreateContext(outputDevice : Integer);
+procedure TGLLinuxContext.DoCreateContext(outputDevice : Cardinal);
 var
   winattr: XWindowAttributes;
   vitemp: xlib.XVisualInfo;
@@ -79,13 +96,13 @@ begin
     FRenderingContext := glXCreateContext(Application.Display, vi, nil, True);
     if RenderingContext = nil then
       raise Exception.Create('Failed to create rendering context');
-    if integer(RenderingContext) = GLX_BAD_CONTEXT then
+    if RenderingContext = GLX_BAD_CONTEXT then
       raise Exception.Create('bad context');
 end;
 
 // DoCreateMemoryContext
 //
-procedure TGLLinuxContext.DoCreateMemoryContext(outputDevice, width, height : Integer);
+procedure TGLLinuxContext.DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer);
 begin
   {$MESSAGE Warn 'DoCreateMemoryContext: Needs to be implemented'}
 end;

@@ -3,23 +3,8 @@
    Prototypes and base implementation of TGLContext.<p>
    Currently NOT thread-safe.<p>
 
-      $Log: glcontext.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
+      <li>15/02/07 - DaStr - Integer -> Cardinal because $R- was removed in GLScene.pas
       <li>15/09/06 - NC - TGLContextHandle.handle as Integer -> Cardinal
       <li>11/09/06 - NC - Added TGLProgramHandle.Name, TGLProgramHandle.Uniform2f,
                           SetUniform*, support for Multiple-Render-Target
@@ -108,8 +93,8 @@ type
          procedure SetActive(const aActive : Boolean);
          procedure PropagateSharedContext;
 
-         procedure DoCreateContext(outputDevice : Integer); dynamic; abstract;
-         procedure DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer = 1); dynamic; abstract;
+         procedure DoCreateContext(outputDevice : Cardinal); dynamic; abstract;
+         procedure DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer = 1); dynamic; abstract;
          procedure DoShareLists(aContext : TGLContext); dynamic; abstract;
          procedure DoDestroyContext; dynamic; abstract;
          procedure DoActivate; virtual; abstract;
@@ -154,12 +139,12 @@ type
 
          {: Creates the context.<p>
             This method must be invoked before the context can be used. }
-         procedure CreateContext(outputDevice : Integer);
+         procedure CreateContext(outputDevice : Cardinal);
          {: Creates an in-memory context.<p>
             The function should fail if no hardware-accelerated memory context
             can be created (the CreateContext method can handle software OpenGL
             contexts). }
-         procedure CreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer = 1);
+         procedure CreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer = 1);
          {: Setup display list sharing between two rendering contexts.<p>
             Both contexts must have the same pixel format. }
          procedure ShareLists(aContext : TGLContext);
@@ -814,7 +799,7 @@ end;
 
 // CreateContext
 //
-procedure TGLContext.CreateContext(outputDevice : Integer);
+procedure TGLContext.CreateContext(outputDevice : Cardinal);
 begin
    if IsValid then
       raise EGLContext.Create(cContextAlreadyCreated);
@@ -826,7 +811,8 @@ end;
 
 // CreateMemoryContext
 //
-procedure TGLContext.CreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer);
+procedure TGLContext.CreateMemoryContext(outputDevice: Cardinal;
+  width, height : Integer; BufferCount : integer);
 begin
    if IsValid then
       raise EGLContext.Create(cContextAlreadyCreated);

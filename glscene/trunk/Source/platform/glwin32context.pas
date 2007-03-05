@@ -1,21 +1,9 @@
-{: glwin32context<p>
+{: GLWin32Context<p>
 
    Win32 specific Context.<p>
 
-      $Log: glwin32context.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:34  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
+      <li>15/02/07 - DaStr - Integer -> Cardinal because $R- was removed in GLScene.pas
       <li>11/09/06 - NC - Added support for Multiple-Render-Target
       <li>03/10/04 - NC - Added float texture support
       <li>03/07/02 - EG - ChooseWGLFormat Kyro fix (Patrick Chevalley)
@@ -39,13 +27,13 @@
       <li>22/07/01 - EG - Creation (glcontext.omm)
    </ul></font>
 }
-unit glwin32context;
+unit GLWin32Context;
 
 interface
 
 {$i ../GLScene.inc}
 
-uses windows, classes, sysutils, glcontext;
+uses Windows, Classes, SysUtils, GLContext;
 
 type
 
@@ -76,8 +64,8 @@ type
 
          procedure ChooseWGLFormat(DC: HDC; nMaxFormats: Cardinal; piFormats: PInteger;
                                    var nNumFormats: Integer; BufferCount : integer = 1);
-         procedure DoCreateContext(outputDevice : Integer); override;
-         procedure DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer); override;
+         procedure DoCreateContext(outputDevice : Cardinal); override;
+         procedure DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -115,7 +103,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses forms, opengl1x, glcrossplatform, messages;
+uses Forms, OpenGL1x, GLCrossPlatform, Messages;
 
 resourcestring
    cIncompatibleContexts =       'Incompatible contexts';
@@ -448,7 +436,7 @@ end;
 
 // DoCreateContext
 //
-procedure TGLWin32Context.DoCreateContext(outputDevice : Integer);
+procedure TGLWin32Context.DoCreateContext(outputDevice : Cardinal);
 const
    cMemoryDCs = [OBJ_MEMDC, OBJ_METADC, OBJ_ENHMETADC];
    cBoolToInt : array [False..True] of Integer = (GL_FALSE, GL_TRUE);
@@ -622,7 +610,7 @@ begin
    try
       FLegacyContextsOnly:=True;
       try
-         DoCreateContext(Integer(aDC));
+         DoCreateContext(aDC);
       finally
          FLegacyContextsOnly:=False;
       end;
@@ -636,7 +624,7 @@ end;
 
 // DoCreateMemoryContext
 //
-procedure TGLWin32Context.DoCreateMemoryContext(outputDevice, width, height : integer; BufferCount : integer);
+procedure TGLWin32Context.DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer);
 var
    nbFormats : Integer;
    iFormats : array [0..31] of Integer;

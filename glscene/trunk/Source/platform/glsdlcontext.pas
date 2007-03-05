@@ -1,4 +1,7 @@
-{: glsdlcontext<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLSDLContext<p>
 
    SDL specific Context and Viewer.<p>
 
@@ -9,15 +12,16 @@
          automatic releases)<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>15/02/07 - DaStr - Integer -> Cardinal because $R- was removed in GLScene.pas
       <li>11/09/06 - NC - Changes for Multiple-Render-Target
       <li>12/12/01 - EG - Creation
    </ul></font>
 }
-unit glsdlcontext;
+unit GLSDLContext;
 
 interface
 
-uses classes, sysutils, glcontext, sdlwindow, glscene, sdl;
+uses Classes, SysUtils, GLContext, SDLWindow, GLScene, SDL;
 
 type
 
@@ -86,8 +90,8 @@ type
 
       protected
          { Protected Declarations }
-         procedure DoCreateContext(outputDevice : Integer); override;
-         procedure DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer = 1); override;
+         procedure DoCreateContext(outputDevice : Cardinal); override;
+         procedure DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -116,7 +120,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses opengl1x, glcrossplatform, xopengl;
+uses OpenGL1x, GLCrossPlatform, XOpenGL;
 
 procedure Register;
 begin
@@ -274,7 +278,7 @@ end;
 
 // DoCreateContext
 //
-procedure TGLSDLContext.DoCreateContext(outputDevice : Integer);
+procedure TGLSDLContext.DoCreateContext(outputDevice : Cardinal);
 var
    sdlOpt : TSDLWindowOptions;
 begin
@@ -308,7 +312,7 @@ end;
 
 // DoCreateMemoryContext
 //
-procedure TGLSDLContext.DoCreateMemoryContext(outputDevice, width, height : Integer; BufferCount : integer);
+procedure TGLSDLContext.DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer);
 begin
    raise Exception.Create(ClassName+': Memory contexts not supported');
 end;
