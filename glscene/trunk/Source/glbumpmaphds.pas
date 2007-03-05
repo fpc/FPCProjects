@@ -154,9 +154,7 @@ var libMat : TGLLibMaterial;
 begin
   libMat:=aHeightData.LibMaterial;
   aHeightData.MaterialName:='';
-  {$WARNING Crossbuilder: we want the second line, update gltexture.pas to get it }
-  if (FMaxTextures>0)and(assigned(LibMat))
-  //if (FMaxTextures>0)and(assigned(LibMat))and(libMat.IsUsed=false)
+  if (FMaxTextures>0)and(assigned(LibMat))and(libMat.IsUsed=false)
     then LibMat.free;
   inherited;
 end;
@@ -189,10 +187,8 @@ begin
     i:=0;
     while (i<cnt)and(cnt>=MaxTextureCount) do begin
       libMat:=matlib.Materials[i];
-      {$WARNING Crossbuilder: we want the second line, update gltexture.pas to get it }
-      i:=i+1; //remove this line, if the next two lines are enabled!
-      //if libMat.IsUsed then i:=i+1
-      //else libmat.Free;
+      if libMat.IsUsed then i:=i+1
+      else libmat.Free;
       cnt:=matlib.Materials.Count;
     end;
   end;

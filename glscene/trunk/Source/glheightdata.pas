@@ -627,7 +627,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-//crossbuilder uses sysutils, glmisc, applicationfileio, glutils
 uses SysUtils, ApplicationFileIO, GLUtils, OpenGL1x   //, GMisc
   {$IFDEF MSWINDOWS}
   , Windows  // for CreateMonochromeBitmap
@@ -1746,17 +1745,7 @@ begin
       FScanLineCache[y]:=Result;
    end;
 end;
-(*
-function TGLBitmapHDS.GetScanLine(y : Integer) : PGLPixel32Array;
-begin
-   Result:=PGLPixel32Array(FScanLineCache[y]);
-   if not Assigned(Result) then begin
-      Result := FBmp32.ScanLine[y];
 
-      FScanLineCache[y]:=PByteArray(Result);
-   end;
-end;
-*)
 // StartPreparingData
 //
 procedure TGLBitmapHDS.StartPreparingData(heightData : THeightData);
