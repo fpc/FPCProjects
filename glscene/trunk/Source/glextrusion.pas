@@ -1,5 +1,5 @@
-// glextrusion
-{: egg<p>
+// GLExtrusion
+{: Egg<p>
 
 	Extrusion objects for GLScene. Extrusion objects are solids defined by the
    surface described by a moving curve.<p>
@@ -24,6 +24,7 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>02/01/06 - LC - Fixed TGLExtrusionSolid texuring. Bugtracker ID=1619318
       <li>02/11/01 - Egg - TGLPipe.BuildList now has a "persistent" cache
       <li>25/11/01 - Egg - TGLPipe nodes can now be colored
       <li>19/07/01 - Egg - Fix in TGLRevolutionSolid due to RotateAround change
@@ -44,11 +45,11 @@
        All extrusion objects use actually the same kind of "parts",
        one common type should do.
 }
-unit glextrusion;
+unit GLExtrusion;
 
 interface
 
-uses classes, opengl1x, globjects, glscene, glmisc, gltexture, glmultipolygon;
+uses Classes, OpenGL1x, GLObjects, GLScene, GLMisc, GLTexture, GLMultiPolygon;
 
 type
 
@@ -221,7 +222,7 @@ type
 
       public
 	      { Public Declarations }
-	      constructor Create(AOwner : TComponent);
+	      constructor Create(AOwner : TComponent); 
          function Add: TGLPipeNode;
 	      function FindItemID(ID: Integer): TGLPipeNode;
 	      property Items[index : Integer] : TGLPipeNode read GetItems write SetItems; default;
@@ -285,7 +286,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, vectorgeometry, spline, vectorlists, xopengl;
+uses SysUtils, VectorGeometry, Spline, VectorLists, XOpenGL;
 
 // ------------------
 // ------------------ TGLRevolutionSolid ------------------
@@ -726,11 +727,7 @@ end;
 
 constructor TGLPipeNodes.Create(AOwner : TComponent);
 begin
-{$ifndef FPC}
 	inherited Create(AOwner, TGLPipeNode);
-{$else}
-	inherited Create(AOwner{, TGLPipeNode});
-{$endif}
 end;
 
 procedure TGLPipeNodes.SetItems(index : Integer; const val : TGLPipeNode);
@@ -1158,6 +1155,7 @@ var
       topTPBase, topTPNext, bottomTPBase, bottomTPNext : TTexPoint;
       ptBuffer : TAffineVector;
       angle: Double;
+      dir: TAffineVector;
    begin
       // to invert normals, we just need to flip top & bottom
       if invertNormals then begin
@@ -1167,12 +1165,10 @@ var
       end;
       // generate triangle strip for a level
       // TODO : support for triangle fans (when ptTop or ptBottom is on the Y Axis)
-      topTPBase.S:=0;         bottomTPBase.S:=0;
+//      topTPBase.S:=0;         bottomTPBase.S:=0;
       topTPBase.T:=topT;      bottomTPBase.T:=bottomT;
       topBase:=ptTop;
       bottomBase:=ptBottom;
-      //topBase[2]:=FHeight;
-      //bottomBase[2]:=FHeight;
       CalcNormal(topBase,bottomBase,normal);
       if (FNormals=nsFlat) then
          lastNormal:=normal
@@ -1189,6 +1185,14 @@ var
          normTop:=lastNormal;
          normBottom:=normal;
       end;
+
+      dir:= VectorNormalize(VectorSubtract(bottomBase, topBase));
+
+      topTPBase.S:= VectorDotProduct(topBase, dir);
+      topTPBase.T:= topBase[2];
+      bottomTPBase.S:= VectorDotProduct(bottomBase, dir);
+      bottomTPBase.T:= bottomBase[2];
+
       lastNormal:=normal;
       topNext:=topBase;
       bottomNext:=bottomBase;
@@ -1202,10 +1206,10 @@ var
          glNormal3fv(@normBottom);
          xglTexCoord2fv(@bottomTPBase);
          glVertex3fv(@bottomBase);
-         topTPNext.S:=step*deltaS;
-         bottomTPNext.S:=step*deltaS;
          topNext[2]:=step*DeltaZ;
          bottomNext[2]:=topNext[2];
+         topTPNext.T:=topNext[2];
+         bottomTPNext.T:=bottomNext[2];
          xglTexCoord2fv(@topTPNext);
          glNormal3fv(@normTop);
          glVertex3fv(@topNext);
