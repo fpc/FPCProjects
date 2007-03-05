@@ -1,25 +1,6 @@
-{: glanimatedsprite<p>
+{: GLAnimatedSprite<p>
 
-  a sprite that uses a scrolling texture for animation.<p>
-
-      $Log: glanimatedsprite.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/08/04 17:34:56  z0m3ie
-      - fixed VirtualWriter issues (created by me :()
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
+  A sprite that uses a scrolling texture for animation.<p>
 
   <b>History : </b><font size=-1><ul>
     <li>21/07/04 - SG - Added Margins to Animations, Added comments.
@@ -30,13 +11,13 @@
     <li>13/07/04 - SG - Creation
   </ul></font>
 }
-unit glanimatedsprite;
+unit GLAnimatedSprite;
 
 interface
 
 uses
-  classes, sysutils, glscene, vectorgeometry, opengl1x, gltexture, glutils,
-  persistentclasses, xcollection, glmisc;
+  Classes, SysUtils, GLScene, VectorGeometry, OpenGL1x, GLTexture, GLUtils,
+  PersistentClasses, XCollection, GLMisc;
 
 type
   TSpriteAnimFrame = class;
@@ -920,7 +901,6 @@ procedure TGLAnimatedSprite.WriteAnimations(Stream : TStream);
 var
   writer : TWriter;
 begin
-{crossbuilder  writer:=TBinaryWriter.Create(stream);}
   writer:=TWriter.Create(stream, 16384);
   try
     Animations.WriteToFiler(writer);
@@ -935,7 +915,6 @@ procedure TGLAnimatedSprite.ReadAnimations(Stream : TStream);
 var
   reader : TReader;
 begin
-{crossbuilder  reader:=TBinaryReader.Create(stream);}
   reader:=TReader.Create(stream, 16384);
   try
     Animations.ReadFromFiler(reader);
