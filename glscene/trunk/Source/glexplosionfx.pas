@@ -1,27 +1,12 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glexplosionfx<p>
+{: GLExplosionFx<p>
 
   TGLBExplosionFX Effect<p>
 
-      $Log: glexplosionfx.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+    <li>23/02/07 - DaStr - Fixed TGLBExplosionFx.Create (TGLCoordinatesStyle stuff)
     <li>23/12/04 - PhP - GLScene Headerized, replaced some VectorXXX functions with XXXVector procedures
     <li>07/03/04 - Matheus Degiovani - Creation
   </ul></font>
@@ -40,13 +25,13 @@
   so if you'll need the mesh after exploding it, you'll have to save the
   MeshObjects property of the mesh, OR load it again.
 }
-unit glexplosionfx;
+unit GLExplosionFx;
 
 interface
 
 uses
-  opengl1x, vectorgeometry, glmisc, glscene, glvectorfileobjects,
-  gltexture, vectorlists, xcollection;
+  OpenGL1x, VectorGeometry, GLMisc, GLScene, GLVectorFileObjects,
+  GLTexture, VectorLists, XCollection;
 
 type
   TGLBExplosionFX = class(TGLObjectPreEffect)
@@ -86,7 +71,6 @@ type
     class function FriendlyName : String; override;
     class function FriendlyDescription : String; override;
   published
-    // property X: single index 0 read FDirection[0] write FDirection[0];
     property MaxSteps: integer read FMaxSteps write FMaxSteps;
     property Speed: single read FSpeed write FSpeed;
     property Direction: TGLCoordinates read FDirection write SetDirection;
@@ -105,8 +89,7 @@ begin
   FRotList := TAffineVectorList.Create;
   FDirList := TAffineVectorList.Create;
   FPosList := TAffineVectorList.Create;
-  FDirection := TGLCoordinates.CreateInitialized(Self, NullHmgVector);
-  FDirection.SetVector(0, 0, 0, 0);
+  FDirection := TGLCoordinates.CreateInitialized(Self, NullHmgVector, csPoint);
 end;
 
 // Destroy
