@@ -1,19 +1,24 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glgamemenu<p>
+{: GLGameMenu<p>
 
    Manages a basic game menu UI<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/02/07 - DaStr & DaveK - TGLGameMenu.MouseMenuSelect bugfixed (again)
+                             Component made descendant of TGLBaseSceneObject
+                             IGLMaterialLibrarySupported added
+      <li>20/12/06 - DaStr - TGLGameMenu.MouseMenuSelect bugfixed (thanks to Predator)
+      <li>03/27/06 - DaveK - added mouse selection support
       <li>03/03/05 - EG - Creation
    </ul></font>
 }
-unit glgamemenu;
+unit GLGameMenu;
 
 interface
 
-uses classes, glscene, gltexture, glbitmapfont, glcrossplatform;
+uses Classes, GLScene, GLTexture, GLBitmapFont, GLCrossPlatform;
 
 type
 
@@ -24,7 +29,7 @@ type
    // TGLGameMenu
    //
    {: Classic game menu interface made of several lines.<p> }
-   TGLGameMenu = class(TGLSceneObject)
+   TGLGameMenu = class(TGLBaseSceneObject, IGLMaterialLibrarySupported)
       private
          { Private Properties }
          FItems : TStrings;
@@ -35,10 +40,13 @@ type
          FBackColor : TGLColor;
          FInactiveColor, FActiveColor, FDisabledColor : TGLColor;
          FMaterialLibrary : TGLMaterialLibrary;
-         FTitleMaterialName : String;
+         FTitleMaterialName : TGLLibMaterialName;
          FTitleWidth, FTitleHeight : Integer;
          FOnSelectedChanged : TNotifyEvent;
-
+         FBoxTop, FBoxBottom, FBoxLeft, FBoxRight: Integer;
+         FMenuTop: integer;
+         //implementing IGLMaterialLibrarySupported
+         function GetMaterialLibrary: TGLMaterialLibrary;
 		protected
          { Protected Properties }
          procedure SetMenuScale(val : TGLGameMenuScale);
@@ -50,8 +58,8 @@ type
          procedure SetInactiveColor(val : TGLColor);
          procedure SetActiveColor(val : TGLColor);
          procedure SetDisabledColor(val : TGLColor);
-         function  GetEnabled(indx : Integer) : Boolean;
-         procedure SetEnabled(indx : Integer; val : Boolean);
+         function  GetEnabled(aIndex : Integer) : Boolean;
+         procedure SetEnabled(aIndex : Integer; aValue : Boolean);
          procedure SetItems(val : TStrings);
          procedure SetSelected(val : Integer);
          function  GetSelectedText : String;
@@ -70,12 +78,14 @@ type
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 		   procedure BuildList(var rci : TRenderContextInfo); override;
 
-         property Enabled[indx : Integer] : Boolean read GetEnabled write SetEnabled;
+         property Enabled[aIndex : Integer] : Boolean read GetEnabled write SetEnabled;
          property SelectedText : String read GetSelectedText;
 
          procedure SelectNext;
          procedure SelectPrev;
-         
+
+         procedure MouseMenuSelect(const X, Y: integer);
+
 		published
          { Published Properties }
          property MaterialLibrary : TGLMaterialLibrary read FMaterialLibrary write SetMaterialLibrary;
@@ -98,6 +108,23 @@ type
          property Items : TStrings read FItems write SetItems;
          property Selected : Integer read FSelected write SetSelected default -1;
          property OnSelectedChanged : TNotifyEvent read FOnSelectedChanged write FOnSelectedChanged;
+
+         // these are the extents of the menu
+         property BoxTop: integer read FBoxTop;
+         property BoxBottom: integer read FBoxBottom;
+         property BoxLeft: integer read FBoxLeft;
+         property BoxRight: integer read FBoxRight;
+         // this is the top of the first menu item
+         property MenuTop: integer read FMenuTop;
+
+        //publish other stuff from TGLBaseSceneObject
+         property ObjectsSorting;
+         property VisibilityCulling;
+         property Position;
+         property Visible;
+         property OnProgress;
+         property Behaviours;
+         property Effects;
    end;
 
 // ------------------------------------------------------------------
@@ -108,7 +135,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, glcanvas, opengl1x;
+uses SysUtils, GLCanvas, OpenGL1x;
 
 // ------------------
 // ------------------ TGLGameMenu ------------------
@@ -189,18 +216,23 @@ begin
       end;
       w:=w+2*MarginHorz;
 
+      // calculate boundaries for user
+      FBoxLeft   := Round(Position.X - w / 2);
+      FBoxTop    := Round(Position.Y - h / 2);
+      FBoxRight  := Round(Position.X + w / 2);
+      FBoxBottom := Round(Position.Y + h / 2);
+
       // paint back
       if BackColor.Alpha>0 then begin
          canvas.PenColor:=BackColor.AsWinColor;
          canvas.PenAlpha:=BackColor.Alpha;
-         canvas.FillRect(Position.X-w div 2, Position.Y-h div 2,
-                         Position.X+w div 2, Position.Y+h div 2);
+         canvas.FillRect(FBoxLeft, FBoxTop, FBoxRight, FBoxBottom);
       end;
 
       canvas.StopPrimitive;
-      
+
       // paint items
-      y:=Round(Position.Y-h div 2+MarginVert);
+      y:=Round(Position.Y-h / 2+MarginVert);
       if TitleHeight>0 then begin
          if (TitleMaterialName<>'') and (MaterialLibrary<>nil) and (TitleWidth>0) then begin
             libMat:=MaterialLibrary.LibMaterialByName(TitleMaterialName);
@@ -216,7 +248,11 @@ begin
             end;
          end;
          y:=y+TitleHeight+Spacing;
-      end;
+         FMenuTop := y;
+      end
+      else
+        FMenuTop := y + Spacing;
+
       for i:=0 to FItems.Count-1 do begin
          tw:=Font.TextWidth(FItems[i]);
          if not Enabled[i] then
@@ -342,20 +378,16 @@ end;
 
 // GetEnabled
 //
-function TGLGameMenu.GetEnabled(indx : Integer) : Boolean;
+function TGLGameMenu.GetEnabled(aIndex : Integer) : Boolean;
 begin
-  {$ifdef fpc}
-   Result:=not Assigned(FItems.Objects[indx]);
-  {$else}
-   Result:=not Boolean(FItems.Objects[indx]);
-  {$endif}
+   Result:=not Boolean(pointer(FItems.Objects[aIndex]));
 end;
 
 // SetEnabled
 //
-procedure TGLGameMenu.SetEnabled(indx : Integer; val : Boolean);
+procedure TGLGameMenu.SetEnabled(aIndex : Integer; aValue : Boolean);
 begin
-//   FItems.Objects[indx]:=TObject(not val);
+   FItems.Objects[aIndex]:=TObject(ord(not aValue));
    StructureChanged;
 end;
 
@@ -439,6 +471,26 @@ procedure TGLGameMenu.ItemsChanged(Sender : TObject);
 begin
    SetSelected(FSelected);
    StructureChanged;
+end;
+
+// MouseMenuSelect
+//
+procedure TGLGameMenu.MouseMenuSelect(const X, Y: integer);
+begin
+  if (X >= BoxLeft)  and (Y >= MenuTop) and
+     (X <= BoxRight) and (Y <= BoxBottom) then
+  begin
+    Selected := (Y - FMenuTop) div (Font.CharHeight + FSpacing);
+  end
+  else
+    Selected := -1;
+end;
+
+// GetMaterialLibrary
+//
+function TGLGameMenu.GetMaterialLibrary: TGLMaterialLibrary;
+begin
+  Result := FMaterialLibrary;
 end;
 
 // ------------------------------------------------------------------
