@@ -1,37 +1,21 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: verlethairclasses<p>
+{: VerletHairClasses<p>
 
    Creates a single strand of hair using verlet classes. Can be used to simulate
    ropes, fur or hair.<p>
-
-      $Log: verlethairclasses.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:43  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
       <li>06/03/04 - MF - Creation
    </ul>
 }
-unit verlethairclasses;
+unit VerletHairClasses;
 
 interface
 
 uses
-  classes, sysutils, verletclasses, vectortypes, vectorlists, vectorgeometry;
+  Classes, SysUtils, VerletClasses, VectorTypes, VectorLists, VectorGeometry;
 
 type
   TVHStiffness = (vhsFull, vhsSkip1Node, vhsSkip2Node, vhsSkip3Node,

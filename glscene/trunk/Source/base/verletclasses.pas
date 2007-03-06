@@ -1,30 +1,14 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: verletclasses<p>
+{: VerletClasses<p>
 
    Base Verlet modelling/simulation classes.<p>
-   this unit is generic, glscene-specific sub-classes are in glverletclasses.<p>
+   This unit is generic, GLScene-specific sub-classes are in GLVerletClasses.<p>
 
    Note that currently, the SatisfyConstraintForEdge methods push the nodes in
    the edge uniformly - it should push the closer node more for correct physics.
    It's a matter of leverage. <p>
-
-      $Log: verletclasses.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:43  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
       <li>14/04/04 - MF - Fixed force for springs, was referring to deltaP...
@@ -59,12 +43,12 @@
       <li>21/06/02 - EG - Creation (original code by Mattias Fagerlund)
    </ul>
 }
-unit verletclasses;
+unit VerletClasses;
 
 interface
 
-uses classes, vectorgeometry, sysutils, vectorlists, spatialpartitioning,
-  geometrybb;
+uses Classes, VectorGeometry, SysUtils, VectorLists, SpatialPartitioning,
+  GeometryBB;
 
 const
    G_DRAG = 0.0001;
@@ -506,7 +490,7 @@ type
          FConstraintsWithBeforeIterations: TVerletConstraintList;
          FVerletNodeClass: TVerletNodeClass;
          FInertia: Boolean;
-         finertapausesteps : integer;
+         FInertaPauseSteps : Integer;
 
 		protected
 			{ Protected Declarations }
@@ -1628,11 +1612,11 @@ begin
       AccumulateForces(vpt);
       SatisfyConstraints(vpt);
 
-      if finertapausesteps>0 then
+      if FInertaPauseSteps>0 then
       begin
-        dec(finertapausesteps);
-        if finertapausesteps=0 then
-          inertia := true;
+        dec(FInertaPauseSteps);
+        if FInertaPauseSteps=0 then
+          Inertia := true;
       end;
 
       Break;
@@ -1941,7 +1925,7 @@ var
 const
    cDefaultDelta : TAffineVector = (0.01, 0, 0);
 begin
-   assert((nodea<>nodeb), 'the nodes are identical - that causes division by zero!');
+   Assert((NodeA<>NodeB), 'The nodes are identical - that causes division by zero!');
 
    VectorSubtract(NodeB.Location, NodeA.Location, delta);
    deltaLength:=VectorLength(delta);
@@ -2139,7 +2123,7 @@ var
 const
    cDefaultDelta : TAffineVector = (0.01, 0, 0);
 begin
-   assert((nodea<>nodeb), 'the nodes are identical - that causes division by zero!');
+   Assert((NodeA<>NodeB), 'The nodes are identical - that causes division by zero!');
 
    // project B in the plane defined by A and SlideDirection
    projB:=VectorSubtract(NodeB.Location, NodeA.Location);
@@ -2694,8 +2678,8 @@ end;
 
 procedure TVerletWorld.PauseInertia(const IterationSteps: Integer);
 begin
-  finertapausesteps := iterationsteps+1;
-  inertia := false;
+  FInertaPauseSteps := IterationSteps+1;
+  Inertia := false;
 end;
 
 { TVerletGlobalFrictionConstraintBox }

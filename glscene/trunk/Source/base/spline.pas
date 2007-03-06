@@ -1,25 +1,9 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: spline<p>
+{: Spline<p>
 
    Cubic spline interpolation functions<p>
-
-      $Log: spline.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:43  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
            <li>08/07/04 - LR - Removed ../ from the GLScene.inc
@@ -30,11 +14,11 @@
 	   <li>20/05/00 - RoC - Created, based on the C source code from Eric
 	</ul></font>
 }
-unit spline;
+unit Spline;
 
 interface
 
-uses vectorgeometry;
+uses VectorGeometry;
 
 {$i GLScene.inc}
 

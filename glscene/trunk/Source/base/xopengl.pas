@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: xopengl<p>
+{: XOpenGL<p>
 
    "Alternate" OpenGL functions to handle multi-texturing.<p>
 
@@ -11,7 +11,7 @@
    Before using any of the xglTexCoordXxxx fonctions, call one of the
    xglMapTexCoordToXxxx functions to establish the redirectors.<p>
 
-   this unit is open-source under mpl<br>
+   This unit is Open-Source under MPL<br>
    Copyright 2001 - Eric Grange (egrange@glscene.org)<br>
    http://glscene.org<p>
 
@@ -47,7 +47,7 @@
       <li>21/02/01 - EG - Added TexGen and vertex arrays mappings
    </ul>
 }
-unit xopengl;
+unit XOpenGL;
 
 interface
 
@@ -55,7 +55,7 @@ interface
 
 {.$define MULTITHREADOPENGL}
 
-uses opengl1x;
+uses OpenGL1x;
 
 type
    TMapTexCoordMode = (mtcmUndefined, mtcmNull, mtcmMain, mtcmDual, mtcmSecond,
@@ -65,7 +65,7 @@ type
 procedure xglMapTexCoordToNull;
 {: xglTexCoord functions will define the main texture coordinates. }
 procedure xglMapTexCoordToMain;
-{: xgltexcoord functions will define the second texture unit coordinates. }
+{: xglTexCoord functions will define the second texture unit coordinates. }
 procedure xglMapTexCoordToSecond;
 {: xglTexCoord functions will define the two first texture units coordinates. }
 procedure xglMapTexCoordToDual;
@@ -87,10 +87,10 @@ procedure xglPushState;
 procedure xglPopState;
 
 {: Whenever called, 2nd texture units changes will be forbidden to xgl.<p>
-   use this function when you're using the 2nd texture unit for your own
+   Use this function when you're using the 2nd texture unit for your own
    purposes and don't want XOpenGL to alter it. }
 procedure xglForbidSecondTextureUnit;
-{: allow xopengl to use the second texture unit again. }
+{: Allow XOpenGL to use the second texture unit again. }
 procedure xglAllowSecondTextureUnit;
 {: Returns the complex mapping in bitwise form. }
 function xglGetBitWiseMapping : Cardinal;
@@ -295,7 +295,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-// --------- second unit texturing
+// --------- Second unit Texturing
 
 procedure glTexCoord2f_Second(s, t: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin

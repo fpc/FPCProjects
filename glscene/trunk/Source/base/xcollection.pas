@@ -1,25 +1,9 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: xcollection<p>
+{: XCollection<p>
 
 	A polymorphism-enabled TCollection-like set of classes<p>
-
-      $Log: xcollection.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:43  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
       <li>08/12/04 - SG - Added TXCollectionItem.CanAddTo class function
@@ -34,11 +18,11 @@
 	   <li>16/04/00 - EG - Creation from GLScene split
 	</ul></font>
 }
-unit xcollection;
+unit XCollection;
 
 interface
 
-uses classes, sysutils {crossbuilder persistentclasses};
+uses Classes, SysUtils;
 
 {$i GLScene.inc}
 
@@ -87,7 +71,7 @@ type
          function GetNamePath : String; override;
 			property Owner : TXCollection read FOwner;
 
-			{: default implementation uses writetofiler/readfromfiler.<p> }
+			{: Default implementation uses WriteToFiler/ReadFromFiler.<p> }
 			procedure Assign(Source: TPersistent); override;
 
 			procedure MoveUp;
@@ -555,17 +539,17 @@ begin
 					cName:=ReadString;
 					XCollectionItemClass:=FindXCollectionItemClass(cName);
 					Assert(Assigned(XCollectionItemClass),
-                      'class '+cname+' unknown. add the relevant unit to your "uses".');
-					classlist.add(xcollectionitemclass);
-				end else xcollectionitemclass:=txcollectionitemclass(classlist[readinteger]);
-				xcollectionitem:=xcollectionitemclass.create(self);
-            xcollectionitem.readfromfiler(reader);
+                      'Class '+cName+' unknown. Add the relevant unit to your "uses".');
+					classList.Add(XCollectionItemClass);
+				end else XCollectionItemClass:=TXCollectionItemClass(classList[ReadInteger]);
+				XCollectionItem:=XCollectionItemClass.Create(Self);
+            XCollectionItem.ReadFromFiler(reader);
 			end;
 		end;
 	finally
-		classlist.free;
+		classList.Free;
 	end;
-   fcount:=flist.count;
+   FCount:=FList.Count;
 end;
 
 // ItemsClass
