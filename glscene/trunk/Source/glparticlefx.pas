@@ -1,13 +1,16 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glparticlefx<p>
+{: GLParticleFX<p>
 
    Base classes for scene-wide blended particles FX.<p>
 
    These provide a mechanism to render heterogenous particles systems with per
    particle depth-sorting (allowing correct rendering of interwoven separate
    fire and smoke particle systems for instance).<p>
+   
+      2007-03-06 crossbuilder: bugfixes from main tree - this unit is now
+         functional identical with rev. 1.69 of glscene cvs
    
       2006-11-18 crossbuilder: bugfixes from main tree - this unit is now
          functional identical with rev. 1.68 of glscene cvs
@@ -35,6 +38,8 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
+      <li>24/01/07 - DaStr - TGLSourcePFXEffect.Burst and TGLBaseSpritePFXManager.RenderParticle bugfixed
+                             TGLLifeColoredPFXManager.RotateVertexBuf bugfixed (all based on old code)
       <li>28/10/06 - LC - Fixed access violation in TGLParticleFXRenderer. Bugtracker ID=1585907 (thanks Da Stranger)
       <li>19/10/06 - LC - Fixed memory leak in TGLParticleFXManager. Bugtracker ID=1551866 (thanks Dave Gravel)
       <li>08/10/05 - Mathx - Fixed access violation when a PFXManager was removed from
@@ -68,12 +73,12 @@
       <li>08/09/01 - EG - Creation (GLParticleFX.omm)
    </ul></font>
 }
-unit glparticlefx;
+unit GLParticleFX;
 
 interface
 
-uses classes, persistentclasses, glscene, vectorgeometry, xcollection, gltexture,
-     glcadencer, glmisc, vectorlists, glgraphics, glcontext;
+uses Classes, PersistentClasses, GLScene, VectorGeometry, XCollection, GLTexture,
+     GLCadencer, GLMisc, VectorLists, GLGraphics, GLContext;
 
 const
    cPFXNbRegions = 128;     // number of distance regions
@@ -780,11 +785,11 @@ type
    {: Sprite color modes.<p>
       <ul>
       <li>scmFade: vertex coloring is used to fade inner-outer
-      <li>scminner: vertex coloring uses inner color only
-      <li>scmouter: vertex coloring uses outer color only
-      <li>scmnone: vertex coloring is not used (colors are ignored).
+      <li>scmInner: vertex coloring uses inner color only
+      <li>scmOuter: vertex coloring uses outer color only
+      <li>scmNone: vertex coloring is NOT used (colors are ignored).
       </ul> }
-   tspritecolormode = (scmfade, scminner, scmouter, scmnone);
+   TSpriteColorMode = (scmFade, scmInner, scmOuter, scmNone);
 
    // TSpritesPerTexture
    //
@@ -941,7 +946,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, opengl1x, glcrossplatform, glstate, glutils, perlinnoise;
+uses SysUtils, OpenGL1x, GLCrossPlatform, GLState, GLUtils, PerlinNoise;
 
 // GetOrCreateSourcePFX
 //
@@ -1929,23 +1934,43 @@ end;
 // Burst
 //
 procedure TGLSourcePFXEffect.Burst(time : Double; nb : Integer);
+
 var
    particle : TGLParticle;
-   av, pos : TAffineVector;
+   av, pos: TAffineVector;
+   OwnerObjRelPos : TAffineVector;
 begin
    if Manager=nil then Exit;
-   pos:=ParticleAbsoluteInitialPos;
-   while nb>0 do begin
+
+   OwnerObjRelPos := OwnerBaseSceneObject.LocalToAbsolute(NullVector);
+   pos := ParticleAbsoluteInitialPos;
+
+   if FManager is TGLDynamicPFXManager then
+     TGLDynamicPFXManager(FManager).FRotationCenter := pos;
+
+   while nb>0 do
+   begin
       particle:=Manager.CreateParticle;
-      particle.FEffectScale:=EffectScale;
+      particle.FEffectScale := FEffectScale;
       RndVector(DispersionMode, av, FPositionDispersion, FPositionDispersionRange);
-      VectorAdd(pos, av, @particle.Position);
-      RndVector(DispersionMode, av, FVelocityDispersion, nil);
       if VelocityMode=svmRelative then
-         SetVector(particle.FVelocity, OwnerBaseSceneObject.LocalToAbsolute(InitialVelocity.AsVector))
-      else SetVector(particle.FVelocity, InitialVelocity.AsVector);
-      AddVector(particle.FVelocity, av);
+         av:=VectorSubtract(OwnerBaseSceneObject.LocalToAbsolute(av),OwnerObjRelPos);
+
+      ScaleVector(av,FEffectScale);
+      VectorAdd(pos, av, @particle.Position);
+
+      RndVector(DispersionMode, av, FVelocityDispersion, nil);
+      VectorAdd(InitialVelocity.AsAffineVector, av, @particle.Velocity);
+
+      particle.Velocity := VectorScale(particle.Velocity,FEffectScale);
+      if VelocityMode=svmRelative then
+         particle.FVelocity:=VectorSubtract(OwnerBaseSceneObject.LocalToAbsolute(particle.FVelocity),OwnerObjRelPos);
+
       particle.CreationTime:=time;
+      if FRotationDispersion <> 0 then
+        particle.FRotation := Random * FRotationDispersion
+      else
+        particle.FRotation := 0;
       Dec(nb);
    end;
 end;
@@ -2530,14 +2555,14 @@ var
    rotateAngle : Single;
    axis, p : TAffineVector;
    rotMatrix : TMatrix;
+   diff : Single;
 begin
    if ComputeRotateAngle(lifeTime, rotateAngle) then begin
-      MakeVector(axis, 0, 0, 1);
-      axis := VectorTransform(axis, Renderer.Scene.CurrentBuffer.ModelViewMatrix);
+      SetVector(axis, Renderer.Scene.CurrentGLCamera.AbsolutePosition);
+      SetVector(axis, VectorSubtract(axis, pos));
       NormalizeVector(axis);
-
-      // code below probably does it in the slowest fashion possible
-      rotMatrix := CreateRotationMatrix(axis, rotateAngle*c180divPI);
+      diff := DegToRad(rotateAngle);
+      rotMatrix := CreateRotationMatrix(axis, diff);
       p[0] := -pos[0];
       p[1] := -pos[1];
       p[2] := -pos[2];
@@ -2746,7 +2771,7 @@ begin
          glVertex3fv(@vertexList[i]);
 
       glVertex3fv(@vertexList[0]);
-   glEnd;                 
+   glEnd;
 end;
 
 // EndParticles
@@ -2959,12 +2984,14 @@ const
 var
    lifeTime, sizeScale : Single;
    inner, outer : TColorVector;
+   pos : TAffineVector;
    vertexList : PAffineVectorArray;
    i : Integer;
    tcs : PTexCoordsSet;
    spt : TSpritesPerTexture;
 
-   procedure IssueVertices(tcs : PTexCoordsSet; vertexList : PAffineVectorArray);
+
+   procedure IssueVertices;
    begin
       glTexCoord2fv(@tcs[0]);
       glVertex3fv(@vertexList[0]);
@@ -2988,18 +3015,20 @@ begin
       tcs:=@cBaseTexCoordsSet;
    end;
 
+   pos:=aParticle.Position;
    vertexList:=FVertBuf.List;
-   if aParticle.FEffectScale<>1 then begin
-      if ComputeSizeScale(lifeTime, sizeScale) then
-         sizeScale:=sizeScale*aParticle.FEffectScale
-      else sizeScale:=aParticle.FEffectScale;
+   sizeScale :=1;
+   if (aParticle.FEffectScale<>1) or ComputeSizeScale(lifeTime, sizeScale) then
+   begin
+      sizeScale := aParticle.FEffectScale;
       for i:=0 to FVertBuf.Count-1 do
-         vertexList^[i]:=VectorCombine(FVertices.List^[i], aParticle.Position, sizeScale, 1);
-   end else begin
-      if ComputeSizeScale(lifeTime, sizeScale) then begin
-         for i:=0 to FVertBuf.Count-1 do
-            vertexList^[i]:=VectorCombine(FVertices.List^[i], aParticle.Position, sizeScale, 1);
-      end else VectorArrayAdd(FVertices.List, aParticle.Position, FVertBuf.Count, vertexList);
+         vertexList^[i]:=VectorCombine(FVertices.List^[i], pos, sizeScale, 1);
+   end
+   else
+   begin
+      VectorArrayAdd(FVertices.List, pos, FVertBuf.Count, vertexList);
+      {for i:=0 to FVertBuf.Count-1 do
+          ScaleVector(vertexList^[i],aParticle.FEffectScale);}
    end;
 
    if FLifeRotations then
@@ -3011,9 +3040,9 @@ begin
          glBegin(GL_TRIANGLE_FAN);
             glColor4fv(@inner);
             glTexCoord2f((tcs^[0].S+tcs^[2].S)*0.5, (tcs^[0].T+tcs^[2].T)*0.5);
-            glVertex3fv(@aParticle.Position);
+            glVertex3fv(@pos);
             glColor4fv(@outer);
-            IssueVertices(tcs, vertexList);
+            IssueVertices;
             glTexCoord2fv(@tcs[0]);
             glVertex3fv(@vertexList[0]);
          glEnd;
@@ -3021,19 +3050,19 @@ begin
       scmInner : begin
          ComputeInnerColor(lifeTime, inner);
          glColor4fv(@inner);
-         IssueVertices(tcs, vertexList);
+         IssueVertices;
       end;
       scmOuter : begin
          ComputeOuterColor(lifeTime, outer);
          glColor4fv(@outer);
-         IssueVertices(tcs, vertexList);
+         IssueVertices;
       end;
       scmNone : begin
-         IssueVertices(tcs, vertexList);
+         IssueVertices;
       end;
    else
       Assert(False);
-   end;            
+   end;
 end;
 
 // EndParticles
