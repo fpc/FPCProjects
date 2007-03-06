@@ -1,24 +1,9 @@
-{: glmovement<p>
+{: GLMovement<p>
 
    Movement path behaviour by Roger Cao<p>
 
-      $Log: glmovement.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>Historique : </b><font size=-1><ul>
+      <li>15/02/07 - DaStr - Fixed TGLMovementPath.SetShowPath - SubComponent support
       <li>27/10/06 - LC - Fixed memory leak in TGLMovementPath. Bugtracker ID=1548615 (thanks Da Stranger)
       <li>28/09/04 - Mrqzzz - Fixed bug in proc. Interpolation (skipped a line from Carlos' code, oops)  
       <li>09/09/04 - Mrqzzz - CalculateState change by Carlos (NG) to make speed interpolated between nodes
@@ -29,12 +14,12 @@
       <li>24/08/00 - RoC - TGLMovement and relative class added
    </ul></font>
 }
-unit glmovement;
+unit GLMovement;
 
 interface
 
 uses
-  classes, glscene, vectorgeometry, glmisc, xcollection, opengl1x, spline, globjects;
+  Classes, GLScene, VectorGeometry, GLMisc, XCollection, OpenGL1x, Spline, GLObjects;
 
 type
 
@@ -311,7 +296,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils;
+uses SysUtils;
 
 //----------------------------------- Added by Roger ---------------------------
 //----------------------------- TGLPathNode ------------------------------------
@@ -609,7 +594,6 @@ end;
 procedure TGLMovementPath.SetShowPath(Value: Boolean);
 var
   OwnerObj: TGLBaseSceneObject;
-  LineObj: TGLLines;
 begin
   if FShowPath<>Value then
   begin
@@ -618,19 +602,14 @@ begin
     OwnerObj := (Collection as TGLMovementPaths).Owner{TGLMovement}.Owner{TGLBehavours}.Owner as TGLBaseSceneObject;
     if FShowPath then
     begin
-      //allways add the line object to the root
-      LineObj := OwnerObj.Scene.Objects.AddNewChild(TGLLines) as TGLLines;
-      //set the link
-      FPathLine := LineObj;
+      FPathLine := TGLLines.Create(OwnerObj);
+      FPathLine.SetSubComponent(True);
+      OwnerObj.Scene.Objects.AddChild(FPathLine);
       FPathLine.SplineMode := FPathSplineMode;
-
       UpdatePathLine;
-    end else
-    begin
-      OwnerObj.Scene.Objects.Remove(FPathLine, False);
-      FPathLine.free;
-      FPathLine := nil;
-    end;
+    end
+    else
+      FreeAndNil(FPathLine);
   end;
 end;
 

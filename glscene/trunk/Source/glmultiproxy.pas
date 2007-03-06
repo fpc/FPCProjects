@@ -1,36 +1,18 @@
-// glmultiproxy
-{: implements a multi-proxy objects, useful for discreet lod.<p>
-
-      $Log: glmultiproxy.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/08/22 00:02:30  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
+// GLMultiProxy
+{: Implements a multi-proxy objects, useful for discreet LOD.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/12/06 - DaS - Fixed a bug in TGLMultiProxy.Destroy
       <li>26/11/03 - EG - Added bounding, raycast and silhouette proxying
       <li>25/11/03 - EG - Added per-master visibility boolean
       <li>24/11/03 - EG - Creation
    </ul></font>
 }
-unit glmultiproxy;
+unit GLMultiProxy;
 
 interface
 
-uses classes, glscene, vectorgeometry, glmisc, gltexture, glsilhouette;
+uses Classes, GLScene, VectorGeometry, GLMisc, GLTexture, GLSilhouette;
 
 type
 
@@ -134,7 +116,7 @@ type
 
 	      procedure Assign(Source: TPersistent); override;
          procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+                            renderSelf, renderChildren : Boolean); override;
                             
          function AxisAlignedDimensionsUnscaled : TVector; override;
          function RayCastIntersect(const rayStart, rayVector : TVector;
@@ -168,7 +150,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses sysutils,opengl1x;
+uses SysUtils,OpenGL1x;
 
 // ------------------
 // ------------------ TGLMultiProxyMaster ------------------
@@ -407,7 +389,7 @@ end;
 // Render
 //
 procedure TGLMultiProxy.DoRender(var rci : TRenderContextInfo;
-                                  renderSelf, renderChildre : Boolean);
+                                  renderSelf, renderChildren : Boolean);
 var
    i : Integer;
    oldProxySubObject : Boolean;
@@ -433,7 +415,7 @@ begin
          end;
       end;
       // now render self stuff (our children, our effects, etc.)
-      if renderChildre and (Count>0) then
+      if renderChildren and (Count>0) then
          Self.RenderChildren(0, Count-1, rci);
 //      if masterGotEffects then
 //         FMasterObject.Effects.RenderPostEffects(Scene.CurrentBuffer, rci);
