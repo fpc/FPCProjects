@@ -1,5 +1,5 @@
-// glimposter
-{: imposter building and rendering implementation for glscene.<p>
+// GLImposter
+{: Imposter building and rendering implementation for GLScene.<p>
 
       $Log: glimposter.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
@@ -21,6 +21,7 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
+      <li>23/02/07 - DaStr - Fixed TGLFireFXManager.Create (TGLCoordinatesStyle stuff)
       <li>07/05/04 - EG - Perspective distortion properly applied
       <li>06/05/04 - EG - Fixes, improvements, clean ups
       <li>04/05/04 - EG - Reworked architecture
@@ -29,13 +30,13 @@
       <li>24/03/04 - SG - Initial.
    </ul></font><p>
 }
-unit glimposter;
+unit GLImposter;
 
 interface
 
 uses
-  classes, glscene, glcontext, gltexture, vectortypes, vectorgeometry,
-  geometrybb, glmisc, persistentclasses, glcrossplatform, glgraphics;
+  Classes, GLScene, GLContext, GLTexture, VectorTypes, VectorGeometry,
+  GeometryBB, GLMisc, PersistentClasses, GLCrossPlatform, GLGraphics;
 
 type
    // TImposterOptions
@@ -447,7 +448,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses sysutils, opengl1x, glutils;
+uses SysUtils, OpenGL1x, GLUtils;
 
 const
    cReferenceToPos : array [Low(TImposterReference)..High(TImposterReference)] of Single =
@@ -620,7 +621,7 @@ begin
    inherited;
    FImposterRegister:=TPersistentObjectList.Create;
    FBackColor:=TGLColor.CreateInitialized(Self, clrTransparent);
-   FBuildOffset:=TGLCoordinates.CreateInitialized(Self, NullHmgPoint);
+   FBuildOffset:=TGLCoordinates.CreateInitialized(Self, NullHmgPoint, CsPoint);
    FImposterOptions:=cDefaultImposterOptions;
    FAlphaTreshold:=0.5;
 end;

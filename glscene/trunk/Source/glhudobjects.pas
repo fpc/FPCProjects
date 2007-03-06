@@ -1,23 +1,9 @@
-// glhudobjects
-{: glscene objects that get rendered in 2d coordinates<p>
-
-      $Log: glhudobjects.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
+// GLHUDObjects
+{: GLScene objects that get rendered in 2D coordinates<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>23/02/07 - DaStr - Added default values to TGLHUDSprite.Width & Height
+      <li>15/02/07 - DaStr - Added default values to TGLHUDText.Alignment & Layout
       <li>28/06/04 - LR - Change TTextLayout to TGLTextLayout for Linux
       <li>27/11/02 - EG - HUDSprite and HUDText now honour renderDPI
       <li>23/11/02 - EG - Added X/YTiles to HUDSprite
@@ -26,16 +12,16 @@
       <li>18/07/01 - EG - VisibilityCulling compatibility changes
       <li>20/06/01 - EG - Default hud sprite size is now 16x16
       <li>21/02/01 - EG - Now XOpenGL based (multitexture)
-	   <li>15/01/01 - EG - Creation
+      <li>15/01/01 - EG - Creation
 	</ul></font>
 }
-unit glhudobjects;
+unit GLHUDObjects;
 
 interface
 
 uses
-   classes, glscene, vectorgeometry, glmisc, globjects, glbitmapfont,
-   gltexture, glcrossplatform;
+   Classes, GLScene, VectorGeometry, GLMisc, GLObjects, GLBitmapFont,
+   GLTexture, GLCrossPlatform;
 
 type
 
@@ -62,7 +48,8 @@ type
 	   private
 			{ Private Declarations }
          FXTiles, FYTiles : Integer;
-
+         function StoreWidth: Boolean;
+         function StoreHeight: Boolean;
 		protected
 			{ Protected Declarations }
          procedure SetXTiles(const val : Integer);
@@ -73,29 +60,32 @@ type
 			constructor Create(AOwner: TComponent); override;
 
          procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+                            renderSelf, renderChildren : Boolean); override;
 
 	   published
 	      { Published Declarations }
          property XTiles : Integer read FXTiles write SetXTiles default 1;
          property YTiles : Integer read FYTiles write SetYTiles default 1;
+         // Redeclare them with new default values.
+         property Width stored StoreWidth;
+         property Height stored StoreHeight;
    end;
 
    // TGLHUDText
    //
    {: A 2D text displayed and positionned in 2D coordinates.<p>
-      the hudtext uses a character font defined and stored by a tglbitmapfont
-      component. the text can be scaled and rotated (2d), the layout and
+      The HUDText uses a character font defined and stored by a TGLBitmapFont
+      component. The text can be scaled and rotated (2D), the layout and
       alignment can also be controled. }
-	tglhudtext = class (tglimmaterialsceneobject)
+	TGLHUDText = class (TGLImmaterialSceneObject)
 	   private
-	      { private declarations }
-         fbitmapfont : tglcustombitmapfont;
-         ftext : string;
-         frotation : single;
-         falignment : talignment;
-         flayout : tgltextlayout;
-         fmodulatecolor : tglcolor;
+	      { Private Declarations }
+         FBitmapFont : TGLCustomBitmapFont;
+         FText : String;
+         FRotation : Single;
+         FAlignment : TAlignment;
+         FLayout : TGLTextLayout;
+         FModulateColor : TGLColor;
 
 	   protected
 	      { Protected Declarations }
@@ -114,7 +104,7 @@ type
          destructor Destroy; override;
 
          procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+                            renderSelf, renderChildren : Boolean); override;
 
 	   published
 	      { Published Declarations }
@@ -130,10 +120,10 @@ type
          property Rotation : Single read FRotation write SetRotation;
          {: Controls the text alignment (horizontal).<p>
             Possible values : taLeftJustify, taRightJustify, taCenter }
-         property Alignment : TAlignment read FAlignment write SetAlignment;
+         property Alignment : TAlignment read FAlignment write SetAlignment default taLeftJustify;
          {: Controls the text layout (vertical).<p>
             Possible values : tlTop, tlCenter, tlBottom }
-         property Layout : TGLTextLayout read FLayout write SetLayout;
+         property Layout : TGLTextLayout read FLayout write SetLayout default tlTop;
          {: Color modulation, can be used for fade in/out too.}
          property ModulateColor : TGLColor read FModulateColor write SetModulateColor;
    end;
@@ -146,7 +136,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, opengl1x, glgraphics, xopengl, glstate;
+uses SysUtils, OpenGL1x, GLGraphics, XOpenGL, GLState;
 
 // ------------------
 // ------------------ TGLHUDSprite ------------------
@@ -187,7 +177,7 @@ end;
 // DoRender
 //
 procedure TGLHUDSprite.DoRender(var rci : TRenderContextInfo;
-                              renderSelf, renderChildre : Boolean);
+                              renderSelf, renderChildren : Boolean);
 var
 	vx, vy, vx1, vy1, f : Single;
 begin
@@ -238,6 +228,20 @@ begin
    until not Material.UnApply(rci);
    if Count>0 then
       Self.RenderChildren(0, Count-1, rci);
+end;
+
+// StoreHeight
+//
+function TGLHUDSprite.StoreHeight: Boolean;
+begin
+  Result := Abs(Height - 16) > 0.001;
+end;
+
+// StoreWidth
+//
+function TGLHUDSprite.StoreWidth: Boolean;
+begin
+  Result := Abs(Height - 16) > 0.001;
 end;
 
 // ------------------
@@ -329,7 +333,7 @@ end;
 // DoRender
 //
 procedure TGLHUDText.DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean);
+                            renderSelf, renderChildren : Boolean);
 var
    f : Single;
 begin

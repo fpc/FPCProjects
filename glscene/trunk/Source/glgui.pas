@@ -1,47 +1,32 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glgui<p>
+{: GLGui<p>
 
   In GL windows management classes and structures<p>
 
-      $Log: glgui.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/10 20:38:38  z0m3ie
-      bugfixes from main tree
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/08/22 00:00:43  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>17/02/07 - DaStr - TGLGuiElement.Create - vectors creation fixed
+                          Changed some types from TGLCoordinates to TGLCoordinates2
+                          Removed some empty lines
+      <li>16/12/05 - DK - Removed GuiSkinEditorFormUnit dependancy
       <li>30/11/04 - DB - Fixed memory leaks (thanks dikoe Kenguru)
       <li>16/07/03 - EG - TGLBaseGuiObject moved in along with RecursiveVisible mechanism
       <li>25/11/02 - EG - TGLGuiLayout.Clear fix (Sternas Stefanos)
       <li>06/09/02 - JAJ - Updated and added to CVS..
-      <li>01/06/02 - jaj - base unit built..
+      <li>01/06/02 - JAJ - Base Unit built..
 	</ul></font>
 }
-unit glgui;
+unit GLGui;
 
 interface
 
 uses
-  classes, glscene, glmisc, glbitmapfont, gltexture, glcrossplatform,
-  opengl1x, sysutils, persistentclasses;
+  //VCL
+  Classes, SysUtils,
+  //GLScene
+  GLScene, GLMisc, GLBitmapFont, GLTexture, GLCrossPlatform,
+  OpenGL1x, PersistentClasses, VectorGeometry;
 
 Type
 
@@ -97,9 +82,9 @@ Type
   TGLGuiElementName = String;
   TGLGuiElement    = class(TCollectionItem)
   private
-    FTopLeft      : TGLCoordinates;
-    FBottomRight  : TGLCoordinates;
-    FScale        : TGLCoordinates;
+    FTopLeft      : TGLCoordinates2;
+    FBottomRight  : TGLCoordinates2;
+    FScale        : TGLCoordinates2;
     FAlign        : TGUIAlignments;
     FName         : TGLGuiElementName;
   protected
@@ -110,9 +95,9 @@ Type
     destructor Destroy; override;
     procedure   AssignTo(Dest: TPersistent); override;
   published
-    property TopLeft      : TGLCoordinates read FTopLeft       write FTopLeft;
-    property BottomRight  : TGLCoordinates read FBottomRight   write FBottomRight;
-    property Scale        : TGLCoordinates read FScale         write FScale;
+    property TopLeft      : TGLCoordinates2 read FTopLeft       write FTopLeft;
+    property BottomRight  : TGLCoordinates2 read FBottomRight   write FBottomRight;
+    property Scale        : TGLCoordinates2 read FScale         write FScale;
     property Align        : TGUIAlignments read FAlign         write FAlign;
     property Name         : TGLGuiElementName read FName       write SetName;
   End;
@@ -208,9 +193,7 @@ Const
 
 Function IsInRect(Const R : TGUIRect; X,Y : Single) : Boolean;
 
-
 implementation
-
 
 Function IsInRect(Const R : TGUIRect; X,Y : Single) : Boolean;
 
@@ -362,7 +345,6 @@ begin
    end;
 end;
 
-
 Constructor TGLGuiLayout.Create(AOwner : TComponent);
 
 Begin
@@ -373,7 +355,6 @@ Begin
 End;
 
 Destructor  TGLGuiLayout.Destroy;
-
 Begin
   Clear;
   FMaterial.Free;
@@ -383,7 +364,6 @@ Begin
 End;
 
 Procedure   TGLGuiLayout.SetFileName(newName : String);
-
 Begin
   If newName <> FFileName then
   Begin
@@ -397,7 +377,6 @@ Begin
 End;
 
 Procedure   TGLGuiLayout.LoadFromFile(FN : String);
-
 Var
   Stream : TMemoryStream;
 
@@ -427,21 +406,18 @@ Begin
 End;
 
 Procedure   TGLGuiLayout.AddGuiComponent(Component : TGLUpdateableComponent);
-
 Begin
   FreeNotification(Component);
   FGuiComponentList.Add(Component);
 End;
 
 Procedure   TGLGuiLayout.RemoveGuiComponent(Component : TGLUpdateableComponent);
-
 Begin
   FGuiComponentList.Remove(Component);
   RemoveFreeNotification(Component);
 End;
 
 Procedure   TGLGuiLayout.Clear;
-
 Var
   XC : Integer;
 
@@ -517,7 +493,6 @@ Begin
 End;
 
 Procedure   TGLGuiLayout.SaveToStream(stream : TStream);
-
 Var
   TmpComponent : TGLGuiComponent;
   Alignments, XC, YC : Integer;
@@ -576,7 +551,6 @@ Begin
 End;
 
 Constructor TGLGuiComponentList.Create(AOwner : TGLGuiLayout);
-
 Begin
   inherited Create(AOwner, TGLGuiComponent);
   FLayout := AOwner;
@@ -593,7 +567,6 @@ begin
 end;
 
 function  TGLGuiComponentList.FindItem(name : TGLGuiComponentName) : TGLGuiComponent;
-
 Var
   XC : Integer;
   gc : TGLGuiComponent;
@@ -618,7 +591,6 @@ begin
 end;
 
 Procedure TGLGuiComponent.RenderToArea(X1,Y1,X2,Y2 : TGLFloat; Var Res : TGUIDrawResult; Refresh : Boolean = True; Scale : TGLFloat = 1);
-
 Var
   XC          : Integer;
   ThisElement : TGLGuiElement;
@@ -633,7 +605,6 @@ Var
   TmpElement  : TGLGuiElement;
 
 Procedure Prepare;
-
 Begin
   Len1 := (ThisElement.FTopLeft.x-ThisElement.FBottomRight.x)*ThisElement.Scale.X*Scale;
   Len2 := (ThisElement.FTopLeft.y-ThisElement.FBottomRight.y)*ThisElement.Scale.Y*Scale;
@@ -663,7 +634,6 @@ Begin
 End;
 
 Procedure RenderIt(Var ARect : TGuiRect; AElement : TGLGuiElement);
-
 Var
   XC : TGLFloat;
   YC : TGLFloat;
@@ -745,7 +715,6 @@ Begin
 End;
 
 Procedure RenderBorder(AElement : TGLGuiElement);
-
 Var
   TmpElement : TGLGuiElement;
 
@@ -1015,25 +984,21 @@ Begin
 End;
 
 Function TGLGuiComponent.GetOwnerList : TGLGuiComponentList;
-
 Begin
   Result := GetOwner as TGLGuiComponentList;
 End;
 
 function TGLGuiComponent.GetDisplayName : String;
-
 Begin
   Result := FName;
 End;
 
 procedure TGLGuiComponent.SetName(const val : TGLGuiComponentName);
-
 Begin
   FName := Val;
 End;
 
 constructor TGLGuiComponent.Create(Collection: TCollection);
-
 Begin
   inherited;
   FElements := TGLGuiElementList.Create(Self);
@@ -1046,7 +1011,6 @@ Begin
 End;
 
 Constructor TGLGuiElementList.Create(AOwner : TGLGuiComponent);
-
 Begin
   inherited Create(AOwner,TGLGuiElement);
   FGuiComponent := AOwner;
@@ -1059,38 +1023,31 @@ Begin
 End;
 
 procedure TGLGuiElementList.SetItems(index : Integer; const val : TGLGuiElement);
-
 Begin
   inherited Items[index]:=val;
 End;
 
 function TGLGuiElementList.GetItems(index : Integer) : TGLGuiElement;
-
 begin
   Result:=TGLGuiElement(inherited Items[index]);
 end;
 
 function TGLGuiElement.GetDisplayName : String;
-
 Begin
   Result := FName;
 End;
 
 procedure TGLGuiElement.SetName(const val : TGLGuiElementName);
-
 Begin
   FName := Val;
 End;
 
 constructor TGLGuiElement.Create(Collection: TCollection);
-
 Begin
-  inherited Create(Collection);
-  FTopLeft := TGLCoordinates.Create(Self);
-  FBottomRight := TGLCoordinates.Create(Self);
-  FScale := TGLCoordinates.Create(Self);
-  FScale.X := 1;
-  FScale.Y := 1;
+  inherited;
+  FTopLeft := TGLCoordinates2.CreateInitialized(Self, NullHmgVector, csPoint2D);
+  FBottomRight := TGLCoordinates2.CreateInitialized(Self, NullHmgVector, csPoint2D);
+  FScale := TGLCoordinates2.CreateInitialized(Self, XYHmgVector, csPoint2D);
 End;
 
 destructor TGLGuiElement.Destroy;
@@ -1121,7 +1078,6 @@ end;
 procedure TGLGuiElementList.AssignTo(Dest: TPersistent);
 Var
    i : Integer;
-   //element : TGLGuiElement;
 begin
    if Dest is TGLGuiElementList then
    Begin
@@ -1134,7 +1090,6 @@ end;
 
 procedure TGLGuiElement.AssignTo(Dest: TPersistent);
 Var
-   //i : Integer;
    element : TGLGuiElement;
 begin
    if Dest is TGLGuiElement then
