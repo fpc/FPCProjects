@@ -1,7 +1,7 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-{: globjects<p>
+{: GLObjects<p>
 
    Implementation of basic scene objects plus some management routines.<p>
 
@@ -11,6 +11,9 @@
    More complex or more specialized versions should be placed in dedicated
    units where they can grow and prosper untammed. "Generic" geometrical
    objects can be found GLGeomObjects.<p>
+
+      2007/03/06 - crossbuilder : bugfixes from main tree
+      This unit is now (functional) identical with rev. 1.107 of glscene cvs
 
       2006/11/19 - crossbuilder : bugfixes from main tree
       This unit is now (functional) identical with rev. 1.104 of glscene cvs
@@ -45,6 +48,9 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>15/02/07 - DaStr - Global $R- removed, added default values to
+                               TGLSprite.NoZWrite, MirrorU, MirrorV
+      <li>14/01/07 - DaStr - Fixed TGLCube.BuildList. Bugtracker ID=1623743 (Thanks Pete Jones)
       <li>19/10/06 - LC - Fixed IcosahedronBuildList. Bugtracker ID=1490784 (thanks EPA_Couzijn)
       <li>19/10/06 - LC - Fixed TGLLineBase.Assign problem. Bugtracker ID=1549354 (thanks Zapology)
       <li>08/10/05 - Mathx - Fixed TGLLines.nodes.assign problem (thanks to  Yong Yoon Kit);
@@ -148,16 +154,14 @@
                           TVertexList.AddVertex, "default"s to properties
    </ul></font>
 }
-unit globjects;
-
-{$R-}
+unit GLObjects;
 
 interface
 
 {$i GLScene.inc}
 
-uses classes, vectorgeometry, glscene, gltexture, glmisc, opengl1x, sysutils,
-   vectorlists, glcrossplatform, glcontext, glsilhouette;
+uses Classes, VectorGeometry, GLScene, GLTexture, GLMisc, OpenGL1x, SysUtils,
+   VectorLists, GLCrossPlatform, GLContext, GLSilhouette;
 
 type
 
@@ -362,11 +366,11 @@ type
          property AlphaChannel : Single read FAlphaChannel write SetAlphaChannel stored StoreAlphaChannel;
          {: If True, sprite will not write to Z-Buffer.<p>
             Sprite will STILL be maskable by ZBuffer test. }
-         property NoZWrite : Boolean read FNoZWrite write SetNoZWrite;
+         property NoZWrite : Boolean read FNoZWrite write SetNoZWrite default False;
          {: Reverses the texture coordinates in the U and V direction to mirror 
             the texture. }
-         property MirrorU : Boolean read FMirrorU write SetMirrorU;
-         property MirrorV : Boolean read FMirrorV write SetMirrorV;
+         property MirrorU : Boolean read FMirrorU write SetMirrorU default False;
+         property MirrorV : Boolean read FMirrorV write SetMirrorV default False;
 	end;
 
    // TGLPointStyle
@@ -900,7 +904,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses glstrings, spline, xopengl, glstate;
+uses GLStrings, Spline, XOpenGL, GLState;
 
 const
    cDefaultPointSize : Single = 1.0;
@@ -2662,45 +2666,45 @@ begin
    glBegin(GL_QUADS);
    if cpFront in FParts then begin
       glNormal3f(  0,  0, nd);
-      xglTexCoord2fv(@XYTexPoint);     glVertex3f( hw,  hh, hd);
-      xglTexCoord2fv(@YTexPoint);      glVertex3f(-hw,  hh, hd);
-      xglTexCoord2fv(@NullTexPoint);   glVertex3f(-hw, -hh, hd);
-      xglTexCoord2fv(@XTexPoint);      glVertex3f( hw, -hh, hd);
+      xglTexCoord2fv(@XYTexPoint);     glVertex3f( hw,      hh,    hd);
+      xglTexCoord2fv(@YTexPoint);      glVertex3f(-hw*nd,   hh*nd, hd);
+      xglTexCoord2fv(@NullTexPoint);   glVertex3f(-hw,     -hh,    hd);
+      xglTexCoord2fv(@XTexPoint);      glVertex3f( hw*nd,  -hh*nd, hd);
    end;
    if cpBack in FParts then begin
       glNormal3f(  0,  0, -nd);
-      xglTexCoord2fv(@YTexPoint);      glVertex3f( hw,  hh, -hd);
-      xglTexCoord2fv(@NullTexPoint);   glVertex3f( hw, -hh, -hd);
-      xglTexCoord2fv(@XTexPoint);      glVertex3f(-hw, -hh, -hd);
-      xglTexCoord2fv(@XYTexPoint);     glVertex3f(-hw,  hh, -hd);
+      xglTexCoord2fv(@YTexPoint);      glVertex3f( hw,     hh,    -hd);
+      xglTexCoord2fv(@NullTexPoint);   glVertex3f( hw*nd, -hh*nd, -hd);
+      xglTexCoord2fv(@XTexPoint);      glVertex3f(-hw,    -hh,    -hd);
+      xglTexCoord2fv(@XYTexPoint);     glVertex3f(-hw*nd,  hh*nd, -hd);
    end;
    if cpLeft in FParts then begin
       glNormal3f(-nd,  0,  0);
-      xglTexCoord2fv(@XYTexPoint);     glVertex3f(-hw,  hh,  hd);
-      xglTexCoord2fv(@YTexPoint);      glVertex3f(-hw,  hh, -hd);
-      xglTexCoord2fv(@NullTexPoint);   glVertex3f(-hw, -hh, -hd);
-      xglTexCoord2fv(@XTexPoint);      glVertex3f(-hw, -hh,  hd);
+      xglTexCoord2fv(@XYTexPoint);     glVertex3f(-hw,  hh,     hd);
+      xglTexCoord2fv(@YTexPoint);      glVertex3f(-hw,  hh*nd, -hd*nd);
+      xglTexCoord2fv(@NullTexPoint);   glVertex3f(-hw, -hh,    -hd);
+      xglTexCoord2fv(@XTexPoint);      glVertex3f(-hw, -hh*nd,  hd*nd);
    end;
    if cpRight in FParts then begin
       glNormal3f(nd,  0,  0);
-      xglTexCoord2fv(@YTexPoint);      glVertex3f(hw,  hh,  hd);
-      xglTexCoord2fv(@NullTexPoint);   glVertex3f(hw, -hh,  hd);
-      xglTexCoord2fv(@XTexPoint);      glVertex3f(hw, -hh, -hd);
-      xglTexCoord2fv(@XYTexPoint);     glVertex3f(hw,  hh, -hd);
+      xglTexCoord2fv(@YTexPoint);      glVertex3f(hw,  hh,     hd);
+      xglTexCoord2fv(@NullTexPoint);   glVertex3f(hw, -hh*nd,  hd*nd);
+      xglTexCoord2fv(@XTexPoint);      glVertex3f(hw, -hh,    -hd);
+      xglTexCoord2fv(@XYTexPoint);     glVertex3f(hw,  hh*nd, -hd*nd);
    end;
    if cpTop in FParts then begin
       glNormal3f(  0, nd,  0);
-      xglTexCoord2fv(@YTexPoint);      glVertex3f(-hw, hh, -hd);
-      xglTexCoord2fv(@NullTexPoint);   glVertex3f(-hw, hh,  hd);
-      xglTexCoord2fv(@XTexPoint);      glVertex3f( hw, hh,  hd);
-      xglTexCoord2fv(@XYTexPoint);     glVertex3f( hw, hh, -hd);
+      xglTexCoord2fv(@YTexPoint);      glVertex3f(-hw,    hh, -hd);
+      xglTexCoord2fv(@NullTexPoint);   glVertex3f(-hw*nd, hh,  hd*nd);
+      xglTexCoord2fv(@XTexPoint);      glVertex3f( hw,    hh,  hd);
+      xglTexCoord2fv(@XYTexPoint);     glVertex3f( hw*nd, hh, -hd*nd);
    end;
    if cpBottom in FParts then begin
       glNormal3f(  0, -nd,  0);
-      xglTexCoord2fv(@NullTexPoint);   glVertex3f(-hw, -hh, -hd);
-      xglTexCoord2fv(@XTexPoint);      glVertex3f( hw, -hh, -hd);
-      xglTexCoord2fv(@XYTexPoint);     glVertex3f( hw, -hh,  hd);
-      xglTexCoord2fv(@YTexPoint);      glVertex3f(-hw, -hh,  hd);
+      xglTexCoord2fv(@NullTexPoint);   glVertex3f(-hw,    -hh, -hd);
+      xglTexCoord2fv(@XTexPoint);      glVertex3f( hw*nd, -hh, -hd*nd);
+      xglTexCoord2fv(@XYTexPoint);     glVertex3f( hw,    -hh,  hd);
+      xglTexCoord2fv(@YTexPoint);      glVertex3f(-hw*nd, -hh,  hd*nd);
    end;
    glEnd;
 end;
