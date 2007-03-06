@@ -1,25 +1,9 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: gltexturecombiners<p>
+{: GLTextureCombiners<p>
 
    Texture combiners setup utility functions.<p>
-
-      $Log: gltexturecombiners.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:42  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:37  z0m3ie
-      - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
       <li>17/12/03 - EG - Alpha and RGB channels separate combination now supported
@@ -28,11 +12,11 @@
       <li>16/05/03 - EG - Creation
    </ul></font>
 }
-unit gltexturecombiners;
+unit GLTextureCombiners;
 
 interface
 
-uses sysutils;
+uses SysUtils;
 
 type
 
@@ -75,7 +59,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses classes, glcontext, opengl1x;
+uses Classes, GLContext, OpenGL1x;
 
 // TCAssertCheck
 //
@@ -196,7 +180,7 @@ begin
    end;
    if Copy(dest, 1, 3)='tex' then begin
       p:=StrToIntDef(Copy(dest, 4, MaxInt), -1);
-      tcassertcheck(p>=0, 'invalid destination texture unit "'+dest+'"');
+      TCAssertCheck(p>=0, 'Invalid destination texture unit "'+dest+'"');
       glActiveTextureARB(GL_TEXTURE0_ARB+p)
    end else TCAssertCheck(False, 'Invalid destination "'+dest+'"');
    // parse combiner operator

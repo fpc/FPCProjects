@@ -1,27 +1,11 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glcanvas<p>
+{: GLCanvas<p>
 
 	Implements a basic Canvas-like interface over for OpenGL.<p>
    This class can be used for generic OpenGL applications and has no dependencies
    to the GLScene core units (only to base units).<p>
-
-      $Log: glcanvas.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:42  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:37  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
       <li>08/07/04 - LR - Replace Graphics and TPoint by GLCrossPlatform for Linux
@@ -29,21 +13,21 @@
       <li>07/05/03 - EG - SetPenWidth now correctly stops the primitive
       <li>08/01/03 - EG - StopPrimitive now public
       <li>09/12/02 - EG - Now properly disables fog
-      <li>20/11/02 - eg - now uses types/windows tpoint (d5 & d6 tested only) 
-      <li>01/10/02 - eg - added polygon & polyline
-      <li>04/03/02 - eg - added framerect and fillrect
-      <li>31/01/02 - eg - texture3d/cubemap only disabled if supported
-      <li>24/01/02 - eg - added penalpha
-      <li>19/01/02 - eg - creation
+      <li>20/11/02 - EG - Now uses Types/Windows TPoint (D5 & D6 tested only) 
+      <li>01/10/02 - EG - Added Polygon & Polyline
+      <li>04/03/02 - EG - Added FrameRect and FillRect
+      <li>31/01/02 - EG - Texture3D/CubeMap only disabled if supported
+      <li>24/01/02 - EG - Added PenAlpha
+      <li>19/01/02 - EG - Creation
 	</ul></font>
 }
-unit glcanvas;
+unit GLCanvas;
 
 interface
 
 {$i GLScene.inc}
 
-uses classes, vectorgeometry, glcrossplatform;
+uses Classes, VectorGeometry, GLCrossPlatform;
 
 type
 
@@ -156,7 +140,7 @@ type
 
          {: Draws an ellipse with (x1,y1)-(x2, y2) bounding rectangle. }
 	      procedure Ellipse(const x1, y1, x2, y2 : Integer); overload;
-         {: draws and ellipse centered at (x, y) with given radiuses. }
+         {: Draws and ellipse centered at (x, y) with given radiuses. }
 	      procedure Ellipse(const x, y : Integer; const xRadius, yRadius : Single); overload;
 	      procedure Ellipse(x, y, xRadius, yRadius : Single); overload;
          {: Draw a filled ellipse. }
@@ -171,7 +155,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses opengl1x;
+uses OpenGL1x;
 
 const
    cNoPrimitive = MaxInt;

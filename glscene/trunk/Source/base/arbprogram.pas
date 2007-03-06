@@ -1,19 +1,19 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-// arbprogram
-{: some useful methods for setting up arb vertex and fragment programs.<p>
+// ARBProgram
+{: Some useful methods for setting up ARB vertex and fragment programs.<p>
 
    <b>History : </b><font size=-1><ul>
       <li>11/10/04 - SG - Creation
    </ul></font>
 }
-unit arbprogram;
+unit ARBProgram;
 
 interface
 
 uses
-   sysutils, opengl1x, glcontext;
+   SysUtils, OpenGL1x, GLContext;
 
 procedure LoadARBProgram(target : GLenum; programText : String; var handle : cardinal);
 

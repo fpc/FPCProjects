@@ -1,26 +1,10 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: applicationfileio<p>
+{: ApplicationFileIO<p>
 
    Components and fonction that abstract file I/O access for an application.<br>
    Allows re-routing file reads to reads from a single archive file f.i.<p>
-
-      $Log: applicationfileio.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:42  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:58  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:37  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
       <li>05/06/03 - EG - TDataFile moved in from GLMisc
@@ -28,11 +12,11 @@
 	   <li>21/11/02 - EG - Creation
 	</ul></font>
 }
-unit applicationfileio;
+unit ApplicationFileIO;
 
 interface
 
-uses classes, sysutils;
+uses Classes, SysUtils;
 
 type
 

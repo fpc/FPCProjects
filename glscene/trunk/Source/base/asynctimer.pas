@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: asynchronous timer component (actual 1 ms resolution).<p>
+{: Asynchronous timer component (actual 1 ms resolution).<p>
 
    This component is based on ThreadedTimer by Carlos Barbosa.<p>
 
@@ -29,13 +29,13 @@
       <li>01/04/00 - EG - Re-Creation, minor changes over Carlos's code
    </ul></font>
 }
-unit asynctimer;
+unit AsyncTimer;
 
 interface
 
 {$i GLScene.inc}
 
-uses classes;
+uses Classes;
 
 const
   cDEFAULT_TIMER_INTERVAL = 1000;
@@ -89,7 +89,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, glcrossplatform;
+uses SysUtils, GLCrossPlatform;
 
 type
 

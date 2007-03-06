@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: geometrybb<p>
+{: GeometryBB<p>
 
 	Calculations and manipulations on Bounding Boxes.<p>
 
@@ -32,16 +32,16 @@
       <li>04/09/03 - EG - New AABB functions
       <li>17/08/01 - EG - Removed "math" dependency
       <li>09/07/01 - EG - Added AABB types and functions
-	    <li>31/03/01 - eg - original unit by jacques tur
+	    <li>31/03/01 - EG - Original Unit by Jacques Tur
 	</ul></font>
 }
-unit geometrybb;
+unit GeometryBB;
 
 interface
 
 {$i GLScene.inc}
 
-uses vectorgeometry;
+uses VectorGeometry;
 
 type
 
