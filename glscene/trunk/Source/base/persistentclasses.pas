@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: persistentclasses<p>
+{: PersistentClasses<p>
 
    Base persistence classes.<p>
 
@@ -42,11 +42,11 @@
 	   <li>15/03/01 - EG - Creation
 	</ul></font><p>
 }
-unit persistentclasses;
+unit PersistentClasses;
 
 interface
 
-uses classes, sysutils;
+uses Classes, SysUtils;
 
 {$i GLScene.inc}
 
@@ -83,7 +83,6 @@ type
          function ReadBoolean : Boolean; virtual; abstract;
          function ReadString : String; virtual; abstract;
          function ReadFloat : Extended; virtual; abstract;
-         function ReadSingle : Single; virtual; abstract;
 
          procedure ReadListBegin; virtual; abstract;
          procedure ReadListEnd; virtual; abstract;
@@ -111,7 +110,6 @@ type
          procedure WriteBoolean(aBoolean : Boolean); virtual; abstract;
          procedure WriteString(const aString : String); virtual; abstract;
          procedure WriteFloat(const aFloat : Extended); virtual; abstract;
-         procedure WriteSingle(const aFloat : Single); virtual; abstract;
 
          procedure WriteListBegin; virtual; abstract;
          procedure WriteListEnd; virtual; abstract;
@@ -300,7 +298,6 @@ type
          function ReadBoolean : Boolean; override;
          function ReadString : String; override;
          function ReadFloat : Extended; override;
-         function ReadSingle : Single; override;
 
          procedure ReadListBegin; override;
          procedure ReadListEnd; override;
@@ -324,7 +321,6 @@ type
          procedure WriteBoolean(aBoolean : Boolean); override;
          procedure WriteString(const aString : String); override;
          procedure WriteFloat(const aFloat : Extended); override;
-         procedure WriteSingle(const aFloat : Single); override;
 
          procedure WriteListBegin; override;
          procedure WriteListEnd; override;
@@ -408,7 +404,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses applicationfileio;
+uses ApplicationFileIO;
 
 resourcestring
    cInvalidFileSignature = 'Invalid file signature';
@@ -1533,13 +1529,6 @@ begin
    else ReadTypeError;
 end;
 
-function TBinaryReader.ReadSingle : Single;
-begin
-   if ReadValue=vaSingle then
-      Read(Result, SizeOf(Result))
-   else ReadTypeError;
-end;
-
 // ReadListBegin
 //
 procedure TBinaryReader.ReadListBegin;
@@ -1643,20 +1632,6 @@ var
    str : TExtendedStruct;
 begin
    str.typ:=vaExtended;
-   str.val:=aFloat;
-   Write(str, SizeOf(str));
-end;
-
-procedure TBinaryWriter.WriteSingle(const aFloat : Single);
-type
-   TExtendedStruct = packed record
-      typ : TValueType;
-      val : Single;
-   end;
-var
-   str : TExtendedStruct;
-begin
-   str.typ:=vaSingle;
    str.val:=aFloat;
    Write(str, SizeOf(str));
 end;

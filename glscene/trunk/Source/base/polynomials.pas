@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: polynomials.<p>
+{: Polynomials.<p>
 
    ********* IN PROGRESS - LIMITED PRECISION **********
 
@@ -44,11 +44,11 @@
 	</ul></font>
 
 }
-unit polynomials;
+unit Polynomials;
 
 interface
 
-uses vectorgeometry;
+uses VectorGeometry;
 
 type
    TDoubleArray = array of Double;

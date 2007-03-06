@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: octree<p>
+{: Octree<p>
 
    Octree management classes and structures.<p>
 
@@ -36,11 +36,11 @@
 	   <li>13/03/02 - EG - Made in a standalone unit, based on Robert Hayes code
 	</ul></font>
 }
-unit octree;
+unit Octree;
 
 interface
 
-uses classes, vectorgeometry, vectorlists, geometrybb;
+uses Classes, VectorGeometry, VectorLists, GeometryBB;
 
 type
 

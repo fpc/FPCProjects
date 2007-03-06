@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: heighttilefile<p>
+{: HeightTileFile<p>
 
    Access to large tiled height data files.<p>
 
@@ -20,11 +20,11 @@
       <li>21/12/01 - Egg - Creation
    </ul></font>
 }
-unit heighttilefile;
+unit HeightTileFile;
 
 interface
 
-uses classes;
+uses Classes;
 
 type
 
@@ -163,7 +163,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, applicationfileio;
+uses SysUtils, ApplicationFileIO;
 
 const
    cFileVersion = 'HTF100';

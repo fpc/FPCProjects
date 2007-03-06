@@ -1,5 +1,5 @@
-// pictureregisteredformats
-{: egg<p>
+// PictureRegisteredFormats
+{: Egg<p>
 
    Hacks into the VCL to access the list of TPicture registered TGraphic formats<p>
 
@@ -20,20 +20,22 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
+      <li>08/03/06 - ur - added Delphi 2006 support
       <li>28/02/05 - EG - Added BPL support
       <li>24/02/05 - EG - Creation
    </ul></font>
 }
-unit pictureregisteredformats;
+unit PictureRegisteredFormats;
 
 interface
 
-uses classes, graphics;
+uses Classes, Graphics;
 
 {$ifdef VER130} {$define PRF_HACK_PASSES} {$endif} // Delphi 5
 {$ifdef VER140} {$define PRF_HACK_PASSES} {$endif} // Delphi 6
 {$ifdef VER150} {$define PRF_HACK_PASSES} {$endif} // Delphi 7
 {$ifdef VER170} {$define PRF_HACK_PASSES} {$endif} // Delphi 2005
+{$ifdef VER180} {$define PRF_HACK_PASSES} {$endif} // Delphi 2006
 {$ifdef LCL}    {$define PRF_HACK_PASSES} {$endif} // LCL
 
 {$ifndef PRF_HACK_PASSES} Error: hack not tested for this Delphi version! {$endif}

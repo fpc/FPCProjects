@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: screensaver<p>
+{: ScreenSaver<p>
 
 	Component for making screen-savers an easy task<p>
 
@@ -17,14 +17,14 @@
 	NB : The password stuff does NOT work under NT, dll references I found in
 			Tom's sample simply did not exist under my NT4...
 }
-unit screensaver;
+unit ScreenSaver;
 
 interface
 
 {$i GLScene.inc}
 {$ifdef unix}{$message error 'unit not supported'}{$endif unix}
 
-uses windows, classes, controls, forms, extctrls;
+uses Windows, Classes, Controls, Forms, Extctrls;
 
 type
 
@@ -41,11 +41,11 @@ type
          screen saver when mouse is moved (you mays have to handle other mouse
          move events manually if you have placed components on the form)
       <li>ssoEnhancedMouseMoveDetection : gets the mouse position every half-second
-         and closes the saver if position changed (uses getcursorpos and a ttimer)
+         and closes the saver if position changed (uses GetCursorPos and a TTimer)
       </ul> }
-   tscreensaveroption = (ssoautoadjustformproperties, ssoautohookkeyboardevents,
-                         ssoautohookmouseevents, ssoenhancedmousemovedetection);
-	tscreensaveroptions = set of tscreensaveroption;
+   TScreenSaverOption = (ssoAutoAdjustFormProperties, ssoAutoHookKeyboardEvents,
+                         ssoAutoHookMouseEvents, ssoEnhancedMouseMoveDetection);
+	TScreenSaverOptions = set of TScreenSaverOption;
 
 const
    cDefaultScreenSaverOptions = [ssoAutoAdjustFormProperties, ssoAutoHookKeyboardEvents,
@@ -167,7 +167,7 @@ implementation
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
 
-uses sysutils, registry, dialogs, messages;
+uses SysUtils, Registry, Dialogs, Messages;
 
 procedure Register;
 begin

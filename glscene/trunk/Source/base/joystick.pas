@@ -1,7 +1,7 @@
-l//
-// this unit is part of the glscene project, http://glscene.org
 //
-{: joystick<p>
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: Joystick<p>
 
 	Component for handling joystick messages<p>
 
@@ -13,14 +13,14 @@ l//
 	   <li>20/03/00 - Egg - Creation from GLScene's TGLJoystick
 	</ul></font>
 }
-unit joystick;
+unit Joystick;
 
 interface
 
 {$i GLScene.inc}
 {$ifdef unix}{$message error 'unit not supported'}{$endif unix}
 
-uses windows, forms, classes, controls, messages;
+uses Windows, Forms, Classes, Controls, Messages;
 
 type
 
@@ -106,7 +106,7 @@ implementation
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
 
-uses sysutils, mmsystem;
+uses SysUtils, MMSystem;
 
 const
   cJoystickIDToNative : array [jidNoJoystick..jidJoystick2] of Byte =
