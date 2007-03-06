@@ -1,6 +1,10 @@
-// glproxyobjects
-{: implements specific proxying classes.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLProxyObjects<p>
+   Implements specific proxying classes.<p>
 
+   
       $Log: glproxyobjects.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
       recheckin to make shure that all is lowercase
@@ -18,20 +22,30 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/02/07 - Made TGLActorProxy.SetAnimation a bit safer
+      <li>20/02/07 - DaStr - Redeclared MasterObject of TGLColorProxy and TGLFreeFormProxy
+                             Added TGLActorProxy (based on a demo published
+                             on the newsgroup by don't know who...)
       <li>18/12/03 - Dave - Dropped "Object" from "ProxyObject" class names
       <li>17/12/03 - Dave - Changed class check in Octree code to Assert
       <li>17/12/03 - Dave+Dan - Added OctreeSphereSweep
       <li>06/12/03 - EG - Creation from GLScene.pas split
    </ul></font>
 }
-unit glproxyobjects;
+unit GLProxyObjects;
 
 interface
 
-uses classes, glscene, vectorgeometry, glmisc, gltexture, glsilhouette,
-   glvectorfileobjects;
+uses
+  // VCL
+  Classes, SysUtils,
+
+  //GLScene
+  GLScene, VectorGeometry, GLMisc, GLTexture, GLSilhouette, GLVectorFileObjects,
+  GLStrings;
 
 type
+  EGLProxyException = class(Exception);
 
    // TGLColorProxy
    //
@@ -43,6 +57,8 @@ type
       private
          { Private Declarations }
          FFrontColor: TGLFaceProperties;
+         function GetMasterMaterialObject: TGLCustomSceneObject;
+         procedure SetMasterMaterialObject(const Value: TGLCustomSceneObject);
 
       public
          { Public Declarations }
@@ -54,15 +70,19 @@ type
       published
          { Published Declarations }
          property FrontColor: TGLFaceProperties read FFrontColor;
+        // Redeclare as TGLCustomSceneObject.
+        property MasterObject: TGLCustomSceneObject read GetMasterMaterialObject write SetMasterMaterialObject;
    end;
 
    // TGLFreeFormProxy
    //
    {: A proxy object specialized for FreeForms.<p> }
    TGLFreeFormProxy = class (TGLProxyObject)
+      private
+         function GetMasterFreeFormObject: TGLFreeForm;
+         procedure SetMasterFreeFormObject(const Value: TGLFreeForm);
       protected
          { Protected Declarations }
-         procedure SetMasterObject(const val : TGLBaseSceneObject); override;
 
       public
          { Public Declarations }
@@ -77,7 +97,46 @@ type
                                         const velocity, radius, modelscale: Single;
                                         intersectPoint : PVector = nil;
                                         intersectNormal : PVector = nil) : Boolean;
+      published
+         { Published Declarations }
+        // Redeclare as TGLFreeForm.
+        property MasterObject: TGLFreeForm read GetMasterFreeFormObject write SetMasterFreeFormObject;
    end;
+
+  // TGLActorProxy
+  //
+  {: A proxy object specialized for Actors.<p> }
+  TGLActorProxy = class(TGLProxyObject)
+  private
+    { Private Declarations }
+    FCurrentFrame: Integer;
+    FStartFrame: Integer;
+    FEndFrame: Integer;
+    FCurrentFrameDelta: Single;
+    FCurrentTime: TProgressTimes;
+    FInterval: Integer;
+    FAnimation: TActorAnimationName;
+    procedure SetAnimation(const Value: TActorAnimationName);
+    procedure SetMasterActorObject(const Value: TGLActor);
+    function GetMasterActorObject: TGLActor;
+  protected
+    { Protected Declarations }
+  public
+    { Public Declarations }
+    constructor Create(AOwner: TComponent); override;
+    procedure DoRender(var rci : TRenderContextInfo;
+                        renderSelf, renderChildren : Boolean); override;
+    procedure DoProgress(const progressTime : TProgressTimes); override;
+  published
+    { Published Declarations }
+    property Interval: Integer read FInterval write FInterval default 0;
+    property Animation: TActorAnimationName read FAnimation write SetAnimation;
+    // Redeclare as TGLActor.
+    property MasterObject: TGLActor read GetMasterActorObject write SetMasterActorObject;
+    // Redeclare without pooTransformation
+    // (Don't know why it causes the object to be oriented incorrecly.)
+    property ProxyOptions default [pooEffects, pooObjects];
+  end;
 
 //-------------------------------------------------------------
 //-------------------------------------------------------------
@@ -87,7 +146,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses sysutils,opengl1x;
+uses OpenGL1x;
 
 // ------------------
 // ------------------ TGLColorProxy ------------------
@@ -129,7 +188,7 @@ begin
             rci.proxySubObject:=True;
             if pooTransformation in ProxyOptions then
                glMultMatrixf(PGLFloat(MasterObject.MatrixAsAddress));
-            TGLCustomSceneObject(MasterObject).Material.FrontProperties.Assign(FFrontColor);
+            GetMasterMaterialObject.Material.FrontProperties.Assign(FFrontColor);
             MasterObject.DoRender(rci, renderSelf, RenderChildre);
             rci.proxySubObject:=oldProxySubObject;
          end;
@@ -145,18 +204,25 @@ begin
    ClearStructureChanged;
 end;
 
+// GetMasterMaterialObject
+//
+function TGLColorProxy.GetMasterMaterialObject: TGLCustomSceneObject;
+begin
+  Result := TGLCustomSceneObject(inherited MasterObject);
+end;
+
+// SetMasterMaterialObject
+//
+procedure TGLColorProxy.SetMasterMaterialObject(
+  const Value: TGLCustomSceneObject);
+begin
+  Assert(Value is TGLCustomSceneObject, ClassName + ' accepts only TGLCustomSceneObject as master!');
+  SetMasterObject(Value);
+end;
+
 // ------------------
 // ------------------ TGLFreeFormProxy ------------------
 // ------------------
-
-// SetMasterObject
-//
-procedure TGLFreeFormProxy.SetMasterObject(const val : TGLBaseSceneObject);
-begin
-   if Assigned(val) and not (val is TGLFreeForm) then
-      raise Exception.Create(ClassName+' accepts only FreeForms as master!');
-   inherited;
-end;
 
 // OctreeRayCastIntersect
 //
@@ -228,6 +294,137 @@ begin
    end;
 end;
 
+// GetMasterFreeFormObject
+//
+function TGLFreeFormProxy.GetMasterFreeFormObject: TGLFreeForm;
+begin
+  Result := TGLFreeForm(inherited MasterObject);
+end;
+
+// SetMasterFreeFormObject
+//
+procedure TGLFreeFormProxy.SetMasterFreeFormObject(
+  const Value: TGLFreeForm);
+begin
+  Assert(Value is TGLFreeForm, ClassName + ' accepts only TGLFreeForm as master!');
+  SetMasterObject(Value);
+end;
+
+// ------------------
+// ------------------ TGLActorProxy ------------------
+// ------------------
+
+// Create
+//
+constructor TGLActorProxy.Create(AOwner: TComponent);
+begin
+  inherited;
+  ProxyOptions := ProxyOptions - [pooTransformation];
+end;
+
+// DoProgress
+//
+procedure TGLActorProxy.DoProgress(const progressTime: TProgressTimes);
+begin
+  inherited;
+  FCurrentTime := progressTime;
+end;
+
+// DoRender
+//
+procedure TGLActorProxy.DoRender(var rci: TRenderContextInfo; renderSelf,
+  renderChildren: Boolean);
+var
+  // TGLActorProxy specific
+  cf, sf, ef: Integer;
+  cfd: Single;
+  // General proxy stuff.
+  gotMaster, masterGotEffects, oldProxySubObject: Boolean;
+  MasterActor: TGLActor;
+begin
+  try
+    MasterActor := GetMasterActorObject;
+    gotMaster := MasterActor <> nil;
+    masterGotEffects := gotMaster and (pooEffects in ProxyOptions) and (MasterObject.Effects.Count > 0);
+    if gotMaster then
+    begin
+      if pooObjects in ProxyOptions then
+      begin
+        oldProxySubObject := rci.proxySubObject;
+        rci.proxySubObject := True;
+        if pooTransformation in ProxyOptions then
+          glMultMatrixf(PGLFloat(MasterActor.MatrixAsAddress));
+
+        // At last TGLActorProxy specific stuff!
+        with MasterActor do
+        begin
+          cfd := CurrentFrameDelta;
+          cf := CurrentFrame;
+          sf := startframe;
+          ef := endframe;
+          CurrentFrameDelta := FCurrentFrameDelta;
+          SetCurrentFrameDirect(FCurrentFrame);
+          StartFrame := FStartFrame;
+          EndFrame := FEndFrame;
+          DoProgress(FCurrentTime);
+          DoRender(rci,renderSelf,Count>0);
+          FCurrentFrameDelta := CurrentFrameDelta;
+          FCurrentFrame := CurrentFrame;
+          CurrentFrameDelta := cfd;
+          SetCurrentFrameDirect(cf);
+          startframe := sf;
+          endframe := ef;
+        end;
+
+        rci.proxySubObject := oldProxySubObject;
+      end;
+    end;
+    // now render self stuff (our children, our effects, etc.)
+    if renderChildren and (Count > 0) then
+      Self.RenderChildren(0, Count - 1, rci);
+    if masterGotEffects then
+      MasterActor.Effects.RenderPostEffects(Scene.CurrentBuffer, rci);
+  finally
+    ClearStructureChanged;
+  end;
+end;
+
+// GetMasterObject
+//
+function TGLActorProxy.GetMasterActorObject: TGLActor;
+begin
+  Result := TGLActor(inherited MasterObject);
+end;
+
+// SetAnimation
+//
+procedure TGLActorProxy.SetAnimation(const Value: TActorAnimationName);
+var
+  anAnimation : TActorAnimation;
+begin
+  // We first assign the value (for persistency support), then check it.
+  FAnimation := Value;
+
+  if not Assigned(MasterObject) then
+    raise EGLProxyException.Create(glsErrorEx + 'No MasterObject defined!');
+
+  anAnimation := GetMasterActorObject.Animations.FindName(Value);
+  if Assigned(anAnimation) then
+  begin
+    FStartFrame := anAnimation.StartFrame;
+    FEndFrame := anAnimation.EndFrame;
+    FCurrentFrame := FStartFrame;
+  end;
+end;
+
+// SetMasterObject
+//
+procedure TGLActorProxy.SetMasterActorObject(const Value: TGLActor);
+begin
+  Assert(Value is TGLActor, ClassName + ' accepts only TGLActor as master!');
+  SetMasterObject(Value);
+end;
+
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 //-------------------------------------------------------------
@@ -236,6 +433,6 @@ initialization
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-   RegisterClasses([TGLColorProxy, TGLFreeFormProxy]);
+   RegisterClasses([TGLColorProxy, TGLFreeFormProxy, TGLActorProxy]);
 
 end.
