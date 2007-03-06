@@ -431,7 +431,6 @@
       </Item94>
       <Item95>
         <Filename Value="..\Source\glnavigator.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glnavigator"/>
       </Item95>

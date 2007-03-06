@@ -157,7 +157,7 @@ uses
    glportal,glgraph,glparticles,glskydome,glskybox,glhudobjects,glwindows,
    gllensflare,gltexlensflare,glmirror,glshadowplane,glshadowvolume,
    glzbuffer,glprojectedtextures,glblur,gltrail,gltree,glmultiproxy,
-   GLFPSMovement, GLDCE,
+   GLNavigator, GLFPSMovement, GLDCE,
    glfeedback,glextrusion,glbumpmaphds,glheighttilefilehds,
    glterrainrenderer,glgamemenu, gltextureimageeditors,
    glstate, glutils, glwaterplane,
@@ -701,6 +701,7 @@ begin
                       [TAsyncTimer,
                        TGLStaticImposterBuilder,
                        TGLBitmapHDS,TGLCustomHDS, TGLHeightTileFileHDS,
+                       TGLNavigator, TGLUserInterface,
                        TGLDCEManager, TGLFPSMovementManager,
                        TGLBumpmapHDS, TGLPerlinHDS,
                        TCollisionManager, TGLAnimationControler
