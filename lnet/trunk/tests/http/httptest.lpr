@@ -21,6 +21,7 @@ type
     FQuit: Boolean;
     FCount: Integer;
     procedure OnEr(const msg: string; aSocket: TLSocket);
+    procedure OnDs(aSocket: TLSocket);
     function OnInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: integer): integer;
     procedure OnDoneInput(aSocket: TLHTTPClientSocket);
    public
@@ -34,6 +35,12 @@ type
 procedure TTest.OnEr(const msg: string; aSocket: TLSocket);
 begin
   Writeln(msg);
+  FQuit := True;
+end;
+
+procedure TTest.OnDs(aSocket: TLSocket);
+begin
+  Writeln('Lost connection');
   FQuit := True;
 end;
 
@@ -69,6 +76,7 @@ begin
   FHTTP := TLHTTPClient.Create(nil);
   FHTTP.OnError := @OnEr;
   FHTTP.OnInput := @OnInput;
+  FHTTP.OnDisconnect := @OnDs;
   FHTTP.OnDoneInput := @OnDoneInput;
   
   FHTTP.Timeout := 1000;
@@ -92,10 +100,10 @@ end;
 procedure TTest.Get;
 begin
   FHTTP.SendRequest;
-  
+
   repeat
     FHTTP.CallAction;
-  until FQuit;
+  until FQuit or not FHTTP.Connected;
 end;
 
 var
