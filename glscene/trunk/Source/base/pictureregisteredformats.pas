@@ -20,7 +20,9 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
-      <li>08/03/06 - ur - added Delphi 2006 support
+      <li>20/12/06 - DaStr - Added a warning about optimization turned off
+                             in HackTPictureRegisteredFormats (BugTrackerID=1586936)
+      <li>08/03/06 - ur - Added Delphi 2006 support
       <li>28/02/05 - EG - Added BPL support
       <li>24/02/05 - EG - Creation
    </ul></font>
@@ -29,16 +31,22 @@ unit PictureRegisteredFormats;
 
 interface
 
+{$I GLScene.inc}
+
 uses Classes, Graphics;
 
-{$ifdef VER130} {$define PRF_HACK_PASSES} {$endif} // Delphi 5
-{$ifdef VER140} {$define PRF_HACK_PASSES} {$endif} // Delphi 6
-{$ifdef VER150} {$define PRF_HACK_PASSES} {$endif} // Delphi 7
-{$ifdef VER170} {$define PRF_HACK_PASSES} {$endif} // Delphi 2005
-{$ifdef VER180} {$define PRF_HACK_PASSES} {$endif} // Delphi 2006
+{$ifdef GLS_DELPHI_5} {$define PRF_HACK_PASSES}  {$endif} // Delphi 5
+{$ifdef GLS_DELPHI_6} {$define PRF_HACK_PASSES}  {$endif} // Delphi 6
+{$ifdef GLS_DELPHI_7} {$define PRF_HACK_PASSES}  {$endif} // Delphi 7
+                                                          // skip Delphi 8
+{$ifdef GLS_DELPHI_9} {$define PRF_HACK_PASSES}  {$endif} // Delphi 2005
+{$ifdef GLS_DELPHI_10}{$define PRF_HACK_PASSES}  {$endif} // Delphi 2006
 {$ifdef LCL}    {$define PRF_HACK_PASSES} {$endif} // LCL
 
-{$ifndef PRF_HACK_PASSES} Error: hack not tested for this Delphi version! {$endif}
+
+{$ifndef PRF_HACK_PASSES}
+  {$Message Warn 'PRF hack not tested for this Delphi version!'}
+{$endif}
 
 {: Returns the TGraphicClass associated to the extension, if any.<p>
    Accepts anExtension with or without the '.' }
@@ -103,6 +111,11 @@ var
    list : TList;
    fileFormat : PFileFormat;
 begin
+{$IFDEF GLS_DELPHI_7_DOWN}
+  {$IFOPT O-}
+    {$Message Warn 'This may crash when Graphics.pas is compiled with optimization Off'}
+  {$ENDIF}
+{$ENDIF}
    pRegisterFileFormat:=PChar(@TPicture.RegisterFileFormat);
    if pRegisterFileFormat[0]=#$FF then // in case of BPL redirector
       pRegisterFileFormat:=PChar(PInteger(PInteger(@pRegisterFileFormat[2])^)^);
@@ -114,7 +127,8 @@ begin
    if list<>nil then begin
       for i:=0 to list.Count-1 do begin
          fileFormat:=PFileFormat(list[i]);
-         destList.AddObject(fileFormat.Extension+'='+fileFormat.Description, TObject(fileFormat.GraphicClass));
+         destList.AddObject(fileFormat.Extension+'='+fileFormat.Description,
+                                              TObject(fileFormat.GraphicClass));
       end;
    end;
 end;
