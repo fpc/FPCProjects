@@ -8,4 +8,5 @@ all:
 	$(PP) $(ARGS) $(SRC)
 
 clean:
+	$(MAKE) clean -C ../..
 	$(RM) *~ *.o *.ppu

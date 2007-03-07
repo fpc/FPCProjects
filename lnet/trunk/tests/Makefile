@@ -1,7 +1,7 @@
 TESTS=http
 
 all:
-	make -C $(TESTS)
+	$(MAKE) -C $(TESTS)
 
 clean:
-	make clean -C $(TESTS)
+	$(MAKE) clean -C $(TESTS)
