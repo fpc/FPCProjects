@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <TargetFileExt Value=""/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+      <Language Value=""/>
+      <CharSet Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication Use="True" PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="1">
+      <Item1>
+        <PackageName Value="lnetbase"/>
+      </Item1>
+    </RequiredPackages>
+    <Units Count="3">
+      <Unit0>
+        <Filename Value="httptest.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="httptest"/>
+        <CursorPos X="20" Y="10"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="../../lib/lnet.pp"/>
+        <UnitName Value="lNet"/>
+        <CursorPos X="14" Y="286"/>
+        <TopLine Value="214"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="../../lib/lhttp.pp"/>
+        <UnitName Value="lhttp"/>
+        <CursorPos X="1" Y="263"/>
+        <TopLine Value="248"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit2>
+    </Units>
+    <JumpHistory Count="9" HistoryIndex="8">
+      <Position1>
+        <Filename Value="httptest.lpr"/>
+        <Caret Line="12" Column="3" TopLine="1"/>
+      </Position1>
+      <Position2>
+        <Filename Value="httptest.lpr"/>
+        <Caret Line="27" Column="1" TopLine="6"/>
+      </Position2>
+      <Position3>
+        <Filename Value="httptest.lpr"/>
+        <Caret Line="32" Column="10" TopLine="5"/>
+      </Position3>
+      <Position4>
+        <Filename Value="httptest.lpr"/>
+        <Caret Line="14" Column="14" TopLine="5"/>
+      </Position4>
+      <Position5>
+        <Filename Value="../../lib/lhttp.pp"/>
+        <Caret Line="473" Column="32" TopLine="452"/>
+      </Position5>
+      <Position6>
+        <Filename Value="httptest.lpr"/>
+        <Caret Line="33" Column="5" TopLine="5"/>
+      </Position6>
+      <Position7>
+        <Filename Value="httptest.lpr"/>
+        <Caret Line="41" Column="5" TopLine="7"/>
+      </Position7>
+      <Position8>
+        <Filename Value="httptest.lpr"/>
+        <Caret Line="66" Column="5" TopLine="32"/>
+      </Position8>
+      <Position9>
+        <Filename Value="httptest.lpr"/>
+        <Caret Line="45" Column="17" TopLine="29"/>
+      </Position9>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>
