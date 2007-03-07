@@ -29,6 +29,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/03/07 - DaStr - Added TGLOwnedPersistent
       <li>04/01/04 - EG - Fixed ReadString & ReadWideString for empty strings (thx Kenguru)
       <li>28/06/04 - LR - Removed ..\ from the GLScene.inc
       <li>08/12/03 - EG - TBinaryReader/Writer no longer rely on VCL TReader/TWriter 
@@ -39,7 +40,7 @@
       <li>14/08/01 - EG - Added AfterObjectCreatedByReader
       <li>03/08/01 - EG - Big update with addition of Virtual filers
       <li>24/07/01 - EG - D6-related changes
-	   <li>15/03/01 - EG - Creation
+      <li>15/03/01 - EG - Creation
 	</ul></font><p>
 }
 unit PersistentClasses;
@@ -379,6 +380,18 @@ type
 
          procedure WriteListBegin; override;
          procedure WriteListEnd; override;
+   end;
+
+   // TGLOwnedPersistent
+   //
+   {: TPersistent which has knowledge of its owner . }
+   TGLOwnedPersistent = class (TPersistent)
+   private
+     FOwner: TPersistent;
+   protected
+     function GetOwner: TPersistent; override;
+   public
+     constructor Create(AOwner: TPersistent); virtual;
    end;
 
    // EInvalidFileSignature
@@ -1913,6 +1926,24 @@ procedure TTextWriter.WriteListEnd;
 begin
    Dec(FIndentLevel, 3);
    WriteLine(cVTListEnd, '');
+end;
+
+// ------------------
+// ------------------ TGLOwnedPersistent ------------------
+// ------------------
+
+// Create
+//
+constructor TGLOwnedPersistent.Create(AOwner: TPersistent);
+begin
+  FOwner := AOwner;
+end;
+
+// GetOwner
+//
+function TGLOwnedPersistent.GetOwner: TPersistent;
+begin
+  Result := FOwner;
 end;
 
 // ------------------------------------------------------------------
