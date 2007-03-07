@@ -7,9 +7,10 @@
    Allows re-routing file reads to reads from a single archive file f.i.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>05/06/03 - EG - TDataFile moved in from GLMisc
       <li>31/01/03 - EG - Added FileExists mechanism
-	   <li>21/11/02 - EG - Creation
+      <li>21/11/02 - EG - Creation
 	</ul></font>
 }
 unit ApplicationFileIO;
@@ -131,8 +132,6 @@ function CreateFileStream(const fileName : String;
 {: Queries is a file stream corresponding to the fileName exists.<p> }
 function FileStreamExists(const fileName : String) : Boolean;
 
-procedure Register;
-
 var
    vAFIOCreateFileStream : TAFIOCreateFileStream = nil;
    vAFIOFileStreamExists : TAFIOFileStreamExists = nil;
@@ -147,11 +146,6 @@ implementation
 
 var
    vAFIO : TApplicationFileIO = nil;
-
-procedure Register;
-begin
-	RegisterComponents('GLScene Utils', [TApplicationFileIO]);
-end;
 
 // ApplicationFileIODefined
 //

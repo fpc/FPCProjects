@@ -46,7 +46,6 @@
     <Files Count="160">
       <Item1>
         <Filename Value="..\Source\Base\applicationfileio.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="applicationfileio"/>
       </Item1>
       <Item2>
