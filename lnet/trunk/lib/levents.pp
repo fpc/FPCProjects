@@ -494,61 +494,59 @@ var
   MaxHandle, n: Integer;
   TempTime: TTimeVal;
 begin
-  if Assigned(FRoot) then begin
-    FInLoop := True;
+  FInLoop := True;
+  Temp := FRoot;
+  MaxHandle := 0;
+  ClearSets;
+  while Assigned(Temp) do begin
+    if  (not Temp.FDispose       )  // handle still valid
+    and (   (not Temp.IgnoreWrite)  // check write or
+         or (not Temp.IgnoreRead )  // check read or
+         or (not Temp.IgnoreError)) // check for errors
+    then begin
+      if not Temp.IgnoreWrite then
+        fpFD_SET(Temp.FHandle, FWriteFDSet);
+      if not Temp.IgnoreRead then
+        fpFD_SET(Temp.FHandle, FReadFDSet);
+      if not Temp.IgnoreError then
+        fpFD_SET(Temp.FHandle, FErrorFDSet);
+      if Temp.FHandle > MaxHandle then
+        MaxHandle := Temp.FHandle;
+    end;
+    Temp2 := Temp;
+    Temp := Temp.FNext;
+    if Temp2.FDispose then
+      Temp2.Free;
+  end;
+
+  TempTime := FTimeout;
+  n := fpSelect(MaxHandle + 1, @FReadFDSet, @FWriteFDSet, @FErrorFDSet, @TempTime);
+  
+  if n < 0 then
+    Bail('Error on select', LSocketError);
+  Result := n > 0;
+  
+  if Result then begin
     Temp := FRoot;
-    MaxHandle := 0;
-    ClearSets;
     while Assigned(Temp) do begin
-      if  (not Temp.FDispose       )  // handle still valid
-      and (   (not Temp.IgnoreWrite)  // check write or
-           or (not Temp.IgnoreRead )  // check read or
-           or (not Temp.IgnoreError)) // check for errors
-      then begin
-        if not Temp.IgnoreWrite then
-          fpFD_SET(Temp.FHandle, FWriteFDSet);
-        if not Temp.IgnoreRead then
-          fpFD_SET(Temp.FHandle, FReadFDSet);
-        if not Temp.IgnoreError then
-          fpFD_SET(Temp.FHandle, FErrorFDSet);
-        if Temp.FHandle > MaxHandle then
-          MaxHandle := Temp.FHandle;
-      end;
+      if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FWriteFDSet) <> 0) then
+        if Assigned(Temp.FOnWrite) and not Temp.IgnoreWrite then
+          Temp.FOnWrite(Temp);
+      if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FReadFDSet) <> 0) then
+        if Assigned(Temp.FOnRead) and not Temp.IgnoreRead then
+          Temp.FOnRead(Temp);
+      if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FErrorFDSet) <> 0) then
+        if Assigned(Temp.FOnError) and not Temp.IgnoreError then
+          Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
       Temp2 := Temp;
       Temp := Temp.FNext;
       if Temp2.FDispose then
-        Temp2.Free;
+        AddForFree(Temp2);
     end;
-
-    TempTime := FTimeout;
-    n := fpSelect(MaxHandle + 1, @FReadFDSet, @FWriteFDSet, @FErrorFDSet, @TempTime);
-    
-    if n < 0 then
-      Bail('Error on select', LSocketError);
-    Result := n > 0;
-    
-    if Result then begin
-      Temp := FRoot;
-      while Assigned(Temp) do begin
-        if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FWriteFDSet) <> 0) then
-          if Assigned(Temp.FOnWrite) and not Temp.IgnoreWrite then
-            Temp.FOnWrite(Temp);
-        if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FReadFDSet) <> 0) then
-          if Assigned(Temp.FOnRead) and not Temp.IgnoreRead then
-            Temp.FOnRead(Temp);
-        if not Temp.FDispose and (fpFD_ISSET(Temp.FHandle, FErrorFDSet) <> 0) then
-          if Assigned(Temp.FOnError) and not Temp.IgnoreError then
-            Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
-        Temp2 := Temp;
-        Temp := Temp.FNext;
-        if Temp2.FDispose then
-          AddForFree(Temp2);
-      end;
-    end;
-    FInLoop := False;
-    if Assigned(FFreeRoot) then
-      FreeHandles;
   end;
+  FInLoop := False;
+  if Assigned(FFreeRoot) then
+    FreeHandles;
 end;
 
 {$i sys/lkqueueeventer.inc}
@@ -558,7 +556,7 @@ end;
 
 function BestEventerClass: TLEventerClass;
 begin
-  Result := TLSelectEventer;
+Result := TLSelectEventer;
 end;
 
 {$endif}
