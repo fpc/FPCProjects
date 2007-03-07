@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: keyboard<p>
+{: Keyboard<p>
 
 	Provides on demand state of any key on the keyboard as well as a set of
    utility functions for working with virtual keycodes.<p>
@@ -31,6 +31,7 @@ uses
 {$endif}
 
 type
+
    TVirtualKeyCode = Integer;
 
 const
@@ -83,7 +84,7 @@ implementation
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
 
-uses sysutils;
+uses SysUtils;
 
 const
    cLBUTTON = 'LBUTTON';
@@ -99,144 +100,9 @@ const
    cEND = 'END';
    cMOUSEWHEELUP = 'MWHEEL UP';
    cMOUSEWHEELDOWN = 'MWHEEL DOWN';
-   
-{$ifdef fpc}
-
-// IsKeyDown
-//
-function IsKeyDown(c : Char) : Boolean;
-begin
-  c := UpperCase(c)[1];
-  Result := GetKeyState(Ord(c)) < 0;
-end;
-
-// IsKeyDown
-//
-function IsKeyDown(vk : TVirtualKeyCode) : Boolean;
-begin
-   case vk of
-      VK_MOUSEWHEELUP : begin
-         Result := vLastWheelDelta > 0;
-         if Result then
-           vLastWheelDelta := 0;
-      end;
-      
-      VK_MOUSEWHEELDOWN : begin
-         Result := vLastWheelDelta < 0;
-         if Result then
-           vLastWheelDelta := 0;
-      end;
-   else
-      Result := GetKeyState(vk) < 0;
-   end;
-end;
-
-// KeyPressed
-//
-function KeyPressed(minVkCode : TVirtualKeyCode = 0) : TVirtualKeyCode;
-{var
-   i : Integer;
-   buf : TKeyboardState;}
-begin
-{   Assert(minVkCode>=0);
-   Result:=-1;
-   if GetKeyboardState(buf) then begin
-      for i:=minVkCode to High(buf) do begin
-         if (buf[i] and $80)<>0 then begin
-            Result:=i;
-            Exit;
-         end;
-      end;
-   end;
-   if vLastWheelDelta<>0 then begin
-      if vLastWheelDelta>0 then
-         Result:=VK_MOUSEWHEELUP
-      else Result:=VK_MOUSEWHEELDOWN;
-      vLastWheelDelta:=0;
-   end;}
-  raise Exception.Create('glKeyBoard.KeyPressed not implemented yet');
-end;
-
-// VirtualKeyCodeToKeyName
-//
-function VirtualKeyCodeToKeyName(vk : TVirtualKeyCode) : String;
-var
-   nSize : Integer;
-begin
-   // Win32 API can't translate mouse button virtual keys to string
-   case vk of
-      VK_LBUTTON : Result:=cLBUTTON;
-      VK_MBUTTON : Result:=cMBUTTON;
-      VK_RBUTTON : Result:=cRBUTTON;
-      VK_UP : Result:=cUP;
-      VK_DOWN : Result:=cDOWN;
-      VK_LEFT : Result:=cLEFT;
-      VK_RIGHT : Result:=cRIGHT;
-      VK_PRIOR : Result:=cPAGEUP;
-      VK_NEXT : Result:=cPAGEDOWN;
-      VK_HOME : Result:=cHOME;
-      VK_END : Result:=cEND;
-      VK_MOUSEWHEELUP : Result:=cMOUSEWHEELUP;
-      VK_MOUSEWHEELDOWN : Result:=cMOUSEWHEELDOWN;
-   else
-{      nSize:=32; // should be enough
-      SetLength(Result, nSize);
-      vk:=MapVirtualKey(vk, 0);
-      nSize:=GetKeyNameText((vk and $FF) shl 16, PChar(Result), nSize);
-      SetLength(Result, nSize);}
-     raise Exception.Create('glKeyBoard.VirtualKeyCodeToName not implemented yet for most keys');
-   end;
-end;
-
-// KeyNameToVirtualKeyCode
-//
-function KeyNameToVirtualKeyCode(const keyName : String) : TVirtualKeyCode;
-var
-   i : Integer;
-begin
-   if keyName=cLBUTTON then
-      Result:=VK_LBUTTON
-   else if keyName=cMBUTTON then
-      Result:=VK_MBUTTON
-   else if keyName=cRBUTTON then
-      Result:=VK_RBUTTON
-   else if keyName=cMOUSEWHEELUP then
-      Result:=VK_MOUSEWHEELUP
-   else if keyName=cMOUSEWHEELDOWN then
-      Result:=VK_MOUSEWHEELDOWN
-   else begin
-      // ok, I admit this is plain ugly. 8)
-{      Result:=-1;
-      for i:=0 to 255 do begin
-         if CompareText(VirtualKeyCodeToKeyName(i), keyName)=0 then begin
-            Result:=i;
-            Break;
-         end;
-      end;}
-     raise Exception.Create('glKeyBoard.VirtualKeyCodeToName not implemented yet for most keys');
-   end;
-end;
-
-// CharToVirtualKeyCode
-//
-function CharToVirtualKeyCode(c : Char) : TVirtualKeyCode;
-begin
-  c := UpperCase(c)[1];
-  Result := Ord(c);
-{   Result:=VkKeyScan(c) and $FF;
-   if Result=$FF then Result:=-1;}
-end;
-
-// KeyboardNotifyWheelMoved
-//
-procedure KeyboardNotifyWheelMoved(wheelDelta : Integer);
-begin
-   vLastWheelDelta:=wheelDelta;
-end;
-
-{$else}
 
 
+{$ifndef fpc}
 // IsKeyDown
 //
 function IsKeyDown(c : Char) : Boolean;
@@ -357,6 +223,140 @@ function CharToVirtualKeyCode(c : Char) : TVirtualKeyCode;
 begin
    Result:=VkKeyScan(c) and $FF;
    if Result=$FF then Result:=-1;
+end;
+
+// KeyboardNotifyWheelMoved
+//
+procedure KeyboardNotifyWheelMoved(wheelDelta : Integer);
+begin
+   vLastWheelDelta:=wheelDelta;
+end;
+
+{$else}
+
+// IsKeyDown
+//
+function IsKeyDown(c : Char) : Boolean;
+begin
+  c := UpperCase(c)[1];
+  Result := GetKeyState(Ord(c)) < 0;
+end;
+
+// IsKeyDown
+//
+function IsKeyDown(vk : TVirtualKeyCode) : Boolean;
+begin
+   case vk of
+      VK_MOUSEWHEELUP : begin
+         Result := vLastWheelDelta > 0;
+         if Result then
+           vLastWheelDelta := 0;
+      end;
+
+      VK_MOUSEWHEELDOWN : begin
+         Result := vLastWheelDelta < 0;
+         if Result then
+           vLastWheelDelta := 0;
+      end;
+   else
+      Result := GetKeyState(vk) < 0;
+   end;
+end;
+
+// KeyPressed
+//
+function KeyPressed(minVkCode : TVirtualKeyCode = 0) : TVirtualKeyCode;
+{var
+   i : Integer;
+   buf : TKeyboardState;}
+begin
+{   Assert(minVkCode>=0);
+   Result:=-1;
+   if GetKeyboardState(buf) then begin
+      for i:=minVkCode to High(buf) do begin
+         if (buf[i] and $80)<>0 then begin
+            Result:=i;
+            Exit;
+         end;
+      end;
+   end;
+   if vLastWheelDelta<>0 then begin
+      if vLastWheelDelta>0 then
+         Result:=VK_MOUSEWHEELUP
+      else Result:=VK_MOUSEWHEELDOWN;
+      vLastWheelDelta:=0;
+   end;}
+  raise Exception.Create('glKeyBoard.KeyPressed not implemented yet');
+end;
+
+// VirtualKeyCodeToKeyName
+//
+function VirtualKeyCodeToKeyName(vk : TVirtualKeyCode) : String;
+var
+   nSize : Integer;
+begin
+   // Win32 API can't translate mouse button virtual keys to string
+   case vk of
+      VK_LBUTTON : Result:=cLBUTTON;
+      VK_MBUTTON : Result:=cMBUTTON;
+      VK_RBUTTON : Result:=cRBUTTON;
+      VK_UP : Result:=cUP;
+      VK_DOWN : Result:=cDOWN;
+      VK_LEFT : Result:=cLEFT;
+      VK_RIGHT : Result:=cRIGHT;
+      VK_PRIOR : Result:=cPAGEUP;
+      VK_NEXT : Result:=cPAGEDOWN;
+      VK_HOME : Result:=cHOME;
+      VK_END : Result:=cEND;
+      VK_MOUSEWHEELUP : Result:=cMOUSEWHEELUP;
+      VK_MOUSEWHEELDOWN : Result:=cMOUSEWHEELDOWN;
+   else
+{      nSize:=32; // should be enough
+      SetLength(Result, nSize);
+      vk:=MapVirtualKey(vk, 0);
+      nSize:=GetKeyNameText((vk and $FF) shl 16, PChar(Result), nSize);
+      SetLength(Result, nSize);}
+     raise Exception.Create('glKeyBoard.VirtualKeyCodeToName not implemented yet for most keys');
+   end;
+end;
+
+// KeyNameToVirtualKeyCode
+//
+function KeyNameToVirtualKeyCode(const keyName : String) : TVirtualKeyCode;
+var
+   i : Integer;
+begin
+   if keyName=cLBUTTON then
+      Result:=VK_LBUTTON
+   else if keyName=cMBUTTON then
+      Result:=VK_MBUTTON
+   else if keyName=cRBUTTON then
+      Result:=VK_RBUTTON
+   else if keyName=cMOUSEWHEELUP then
+      Result:=VK_MOUSEWHEELUP
+   else if keyName=cMOUSEWHEELDOWN then
+      Result:=VK_MOUSEWHEELDOWN
+   else begin
+      // ok, I admit this is plain ugly. 8)
+{      Result:=-1;
+      for i:=0 to 255 do begin
+         if CompareText(VirtualKeyCodeToKeyName(i), keyName)=0 then begin
+            Result:=i;
+            Break;
+         end;
+      end;}
+     raise Exception.Create('glKeyBoard.VirtualKeyCodeToName not implemented yet for most keys');
+   end;
+end;
+
+// CharToVirtualKeyCode
+//
+function CharToVirtualKeyCode(c : Char) : TVirtualKeyCode;
+begin
+  c := UpperCase(c)[1];
+  Result := Ord(c);
+{   Result:=VkKeyScan(c) and $FF;
+   if Result=$FF then Result:=-1;}
 end;
 
 // KeyboardNotifyWheelMoved
