@@ -494,6 +494,11 @@ var
   MaxHandle, n: Integer;
   TempTime: TTimeVal;
 begin
+  if not Assigned(FRoot) then begin
+    Sleep(FTimeout.tv_sec * 1000 + FTimeout.tv_usec div 1000);
+    Exit;
+  end;
+
   FInLoop := True;
   Temp := FRoot;
   MaxHandle := 0;
@@ -556,7 +561,7 @@ end;
 
 function BestEventerClass: TLEventerClass;
 begin
-Result := TLSelectEventer;
+  Result := TLSelectEventer;
 end;
 
 {$endif}
