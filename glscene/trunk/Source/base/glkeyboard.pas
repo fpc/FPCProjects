@@ -12,16 +12,20 @@
    key code constants (VK_* constants are declared in the "Windows" unit).<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>19/12/06 - DaS - Added additional string constants and made all
+                             existing 'Mixed Case', not 'UPPERCASE'
+                           KeyNameToVirtualKeyCode optimized,
+                           Fixed comments to KeyNameToVirtualKeyCode() function
       <li>17/11/03 - Egg - Fixed IsKeyDown (VK) (A. P. Mohrenweiser)
       <li>09/10/00 - Egg - Fixed VirtualKeyCodeToKeyName
-	   <li>03/08/00 - Egg - Creation, partly based Silicon Commander code
+      <li>03/08/00 - Egg - Creation, partly based Silicon Commander code
 	</ul></font>
 }
 unit glkeyboard;
 
 interface
 
-{$i GLScene.inc}
+{$I GLScene.inc}
 
 uses
 {$ifdef fpc}
@@ -31,7 +35,6 @@ uses
 {$endif}
 
 type
-
    TVirtualKeyCode = Integer;
 
 const
@@ -59,7 +62,7 @@ function KeyPressed(minVkCode : TVirtualKeyCode = 0) : TVirtualKeyCode;
    The name is expressed using the locale windows options. }
 function VirtualKeyCodeToKeyName(vk : TVirtualKeyCode) : String;
 {: Converts a key name to its virtual key code.<p>
-   The comparison is case-sensitive, if no match is found, returns -1.<p>
+   The comparison is **NOT** case-sensitive, if no match is found, returns -1.<p>
    The name is expressed using the locale windows options, except for mouse
    buttons which are translated to 'LBUTTON', 'MBUTTON' and 'RBUTTON'. }
 function KeyNameToVirtualKeyCode(const keyName : String) : TVirtualKeyCode;
@@ -87,20 +90,42 @@ implementation
 uses SysUtils;
 
 const
-   cLBUTTON = 'LBUTTON';
-   cMBUTTON = 'MBUTTON';
-   cRBUTTON = 'RBUTTON';
-   cUP = 'UP';
-   cDOWN = 'DOWN';
-   cRIGHT = 'RIGHT';
-   cLEFT = 'LEFT';
-   cPAGEUP = 'PAGE UP';
-   cPAGEDOWN = 'PAGE DOWN';
-   cHOME = 'HOME';
-   cEND = 'END';
-   cMOUSEWHEELUP = 'MWHEEL UP';
-   cMOUSEWHEELDOWN = 'MWHEEL DOWN';
+   cLBUTTON = 'Left Mouse Button';
+   cMBUTTON = 'Middle Mouse Button';
+   cRBUTTON = 'Right Mouse Button';
 
+   cUP = 'Up';
+   cDOWN = 'Down';
+   cRIGHT = 'Right';
+   cLEFT = 'Left';
+   cPAGEUP = 'Page up';
+   cPAGEDOWN = 'Page down';
+   cHOME = 'Home';
+   cEND = 'End';
+   cMOUSEWHEELUP = 'Mouse Wheel Up';
+   cMOUSEWHEELDOWN = 'Mouse Wheel Down';
+
+   cPAUSE = 'Pause';
+   cSNAPSHOT = 'Print Screen';
+   cNUMLOCK = 'Num Lock';
+   cINSERT = 'Insert';
+   cDELETE = 'Delete';
+   cDIVIDE = 'Num /';
+
+
+   cLWIN	= 'Left Win';
+   cRWIN	= 'Right Win';
+   cAPPS	= 'Application Key';
+
+   c0 = '~';
+   c1 = '[';
+   c2 = ']';
+   c3 = ';';
+   c4 = '''';
+   c5 = '<';
+   c6 = '>';
+   c7 = '/';
+   c8 = '\';
 
 {$ifndef fpc}
 // IsKeyDown
@@ -180,6 +205,29 @@ begin
       VK_END : Result:=cEND;
       VK_MOUSEWHEELUP : Result:=cMOUSEWHEELUP;
       VK_MOUSEWHEELDOWN : Result:=cMOUSEWHEELDOWN;
+
+      VK_PAUSE : Result := cPAUSE;
+      VK_SNAPSHOT : Result := cSNAPSHOT;
+      VK_NUMLOCK : Result := cNUMLOCK;
+      VK_INSERT : Result := cINSERT;
+      VK_DELETE : Result := cDELETE;
+
+      VK_DIVIDE : Result := cDIVIDE;
+
+      VK_LWIN : Result := cLWIN;
+      VK_RWIN : Result := cRWIN;
+      VK_APPS : Result := cAPPS;
+
+      192 : Result := c0;
+      219 : Result := c1;
+      221 : Result := c2;
+      186 : Result := c3;
+      222 : Result := c4;
+      188 : Result := c5;
+      190 : Result := c6;
+      191 : Result := c7;
+      220 : Result := c8;
+
    else
       nSize:=32; // should be enough
       SetLength(Result, nSize);
@@ -195,26 +243,14 @@ function KeyNameToVirtualKeyCode(const keyName : String) : TVirtualKeyCode;
 var
    i : Integer;
 begin
-   if keyName=cLBUTTON then
-      Result:=VK_LBUTTON
-   else if keyName=cMBUTTON then
-      Result:=VK_MBUTTON
-   else if keyName=cRBUTTON then
-      Result:=VK_RBUTTON
-   else if keyName=cMOUSEWHEELUP then
-      Result:=VK_MOUSEWHEELUP
-   else if keyName=cMOUSEWHEELDOWN then
-      Result:=VK_MOUSEWHEELDOWN
-   else begin
-      // ok, I admit this is plain ugly. 8)
-      Result:=-1;
-      for i:=0 to 255 do begin
-         if CompareText(VirtualKeyCodeToKeyName(i), keyName)=0 then begin
-            Result:=i;
-            Break;
-         end;
-      end;
-   end;
+  // ok, I admit this is plain ugly. 8)
+  Result:=-1;
+  for i:=0 to 255 do begin
+     if SameText(VirtualKeyCodeToKeyName(i), keyName) then begin
+        Result:=i;
+        Break;
+     end;
+  end;
 end;
 
 // CharToVirtualKeyCode
