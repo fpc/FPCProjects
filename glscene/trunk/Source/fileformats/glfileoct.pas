@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfileoct<p>
+{: GLFileOCT<p>
 
     Support-code to load OCT Files into TGLFreeForm-Components in GLScene.<br>
     (OCT being the format output from FSRad, http://www.fluidstudios.com/fsrad.html).<p>
@@ -12,11 +12,11 @@
       <li>02/02/03 - EG     - Creation
    </ul><p>
 }
-unit glfileoct;
+unit GLFileOCT;
 
 interface
 
-uses classes, glvectorfileobjects, glmisc, vectorgeometry, applicationfileio, fileoct;
+uses Classes, GLVectorFileObjects, GLMisc, VectorGeometry, ApplicationFileIO, FileOCT;
 
 type
 
@@ -44,7 +44,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, gltexture, glgraphics, glcrossplatform, glstate, glutils;
+uses SysUtils, GLTexture, GLGraphics, GLCrossPlatform, GLState, GLUtils;
 
 // ------------------
 // ------------------ TGLOCTVectorFile ------------------

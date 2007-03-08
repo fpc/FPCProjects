@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfilelwo<p>
+{: GLFileLWO<p>
 
     Support-code to load Lightwave LWO Files (v6.0+, partial support).<p>
 
@@ -27,11 +27,11 @@
 
    Original code: "Brian Johns" <brianjohns1@hotmail.com>
 }
-unit glfilelwo;
+unit GLFileLWO;
 
 interface
 
-uses classes, glvectorfileobjects, lwobjects;
+uses Classes, GLVectorFileObjects, LWObjects;
 
 type
   TGLLWOVectorFile = class (TVectorFile)
@@ -49,7 +49,7 @@ type
 
 implementation
 
-uses sysutils, vectorgeometry, gltexture, vectortypes;
+uses SysUtils, VectorGeometry, GLTexture, VectorTypes;
 
 type
   PVector3f = ^TVector3f;

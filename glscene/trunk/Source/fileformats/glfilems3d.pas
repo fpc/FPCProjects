@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glvectorfileobjects<p>
+{: GLVectorFileObjects<p>
 
 	Vector File related objects for GLScene<p>
 
@@ -25,13 +25,13 @@
     <li>03/06/03 - EG - Added header, now self-registers
 	</ul></font>
 }
-unit glfilems3d;
+unit GLFileMS3D;
 
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects,  vectortypes, gltexture, vectorgeometry,
-  vectorlists, applicationfileio;
+  Classes, SysUtils, GLVectorFileObjects,  VectorTypes, GLTexture, VectorGeometry,
+  VectorLists, ApplicationFileIO;
 
 type
   // TGLMS3DVectorFile
@@ -47,7 +47,7 @@ type
 implementation
 
 uses
-  typesms3d;
+  TypesMS3D;
 
 { TGLMS3DVectorFile }
 

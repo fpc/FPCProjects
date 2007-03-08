@@ -1,4 +1,4 @@
-{: glfilegl2<p>
+{: GLFileGL2<p>
 
 	Vector file object loading of Ghoul2 model and animation 
 	files into GLScene.<p>
@@ -21,13 +21,13 @@
 	   <li>25/03/03 - SG - Creation.
 	</ul></font>
 }
-unit glfilegl2;
+unit GLFileGL2;
 
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects, applicationfileio, gltexture, vectorgeometry,
-  filegl2, vectortypes, vectorlists;
+  Classes, SysUtils, GLVectorFileObjects, ApplicationFileIO, GLTexture, VectorGeometry,
+  FileGL2, VectorTypes, VectorLists;
 
 type
 

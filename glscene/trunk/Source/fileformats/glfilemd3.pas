@@ -1,9 +1,9 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
 {
-  glfilemd3 - code for loading animated md3 files into glscene
-              freeforms and actors.
+  GLFileMD3 - Code for loading animated MD3 files into GLScene
+              FreeForms and Actors.
 
       $Log: glfilemd3.pas,v $
       Revision 1.1  2006/01/10 20:50:44  z0m3ie
@@ -22,13 +22,13 @@
     21/08/03 - EG - Fixed GetNormalFromMD3Normal (lat/lon were inverted)
     28/02/03 - SG - Creation
 }
-unit glfilemd3;
+unit GLFileMD3;
 
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects, glmisc, gltexture, applicationfileio,
-  vectorgeometry, filemd3;
+  Classes, SysUtils, GLVectorFileObjects, GLMisc, GLTexture, ApplicationFileIO,
+  VectorGeometry, FileMD3;
 
 type
 

@@ -1,16 +1,16 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfilemdc<p>
+{: GLFileMDC<p>
   
-    code for loading animated mdc files into glscene freeforms 
-    and actors.<p>
+    Code for loading animated MDC files into GLScene FreeForms 
+    and Actors.<p>
 
-    this file format uses in return to castle wolfenstein instead 
-    of md3 files. it has got all md3 features (such as tag frames) 
+    This file format uses in Return To Castle Wolfenstein instead 
+    of MD3 files. It has got all MD3 features (such as Tag frames) 
     plus very small data!<p>
     
-    original code by osman turan (osmanturancom@yahoo.com)<p>
+    Original code by Osman Turan (osmanturancom@yahoo.com)<p>
 
       $Log: glfilemdc.pas,v $
       Revision 1.1  2006/01/10 20:50:44  z0m3ie
@@ -30,13 +30,13 @@
       <li>07/02/04 - OT - Creation (Osman Turan)
 	</ul></font>
 }
-unit glfilemdc;
+unit GLFileMDC;
 
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects, glmisc, gltexture, applicationfileio,
-  vectorgeometry, typesmdc;
+  Classes, SysUtils, GLVectorFileObjects, GLMisc, GLTexture, ApplicationFileIO,
+  VectorGeometry, TypesMDC;
 
 type
 
@@ -242,12 +242,12 @@ begin
               //Osman Turan (osmanturancom@yahoo.com)
             end;
 
-            //all id sofware based games uses z axis as up instead of y. so, convert them
-            morphtarget.vertices.add(
+            //all id Sofware based games uses Z axis as up instead of Y. So, convert them
+            morphTarget.Vertices.Add(
               xyz[0],
               xyz[2],
               -xyz[1]);
-            morphtarget.normals.add(
+            morphTarget.Normals.Add(
               normal[0],
               normal[2],
               -normal[1]);

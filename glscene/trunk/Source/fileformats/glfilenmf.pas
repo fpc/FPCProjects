@@ -1,36 +1,23 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
 {
-  glfilenmf - normalmapper loading into glscene freeforms/actors
+  GLFileNMF - NormalMapper loading into GLScene FreeForms/Actors
   
-  notes:
-    normalmapper can be found at http://www.ati.com/developer/tools.html
-
-      $Log: glfilenmf.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:31  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/12/04 16:53:03  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
+  Notes:
+    NormalMapper can be found at http://www.ati.com/developer/tools.html
 
   History:
     20/05/2003 - SG - Fixed SaveToStream to use ExtractTriangles
     16/05/2003 - SG - Creation
 }
-unit glfilenmf;
+unit GLFileNMF;
 
 interface
 
 uses
-  classes, glvectorfileobjects, glmisc, vectorgeometry, vectorlists, applicationfileio,
-  filenmf;
+  Classes, GLVectorFileObjects, GLMisc, VectorGeometry, VectorLists, ApplicationFileIO,
+  FileNMF;
 
 type
   TGLNMFVectorFile = class (TVectorFile)

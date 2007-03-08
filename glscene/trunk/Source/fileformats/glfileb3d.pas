@@ -11,7 +11,7 @@ unit GLFileB3D;
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects, applicationfileio, fileb3d, typesb3d;
+  Classes, SysUtils, GLVectorFileObjects, ApplicationFileIO, FileB3D, TypesB3D;
 
 type
   TGLB3DVectorFile = class(TVectorFile)

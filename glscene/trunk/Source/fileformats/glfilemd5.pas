@@ -1,4 +1,4 @@
-{: glfilemd5<p>
+{: GLFileMD5<p>
 
    Doom3 MD5 mesh and animation vector file format implementation.<p>
 
@@ -21,13 +21,13 @@
       <li>01/06/04 - SG - Initial
    </ul></font>
 }
-unit glfilemd5;
+unit GLFileMD5;
 
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects, glutils, glmisc, applicationfileio,
-  vectorgeometry, vectorlists, gltexture;
+  Classes, SysUtils, GLVectorFileObjects, GLUtils, GLMisc, ApplicationFileIO,
+  VectorGeometry, VectorLists, GLTexture;
 
 type
 
