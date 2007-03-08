@@ -1,19 +1,19 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
 {
-  filemd3 - file loading methods for the md3 file format
+  FileMD3 - File loading methods for the MD3 file format
 
   History :
     19/12/04 - PhP - Replaced array definitions with predefined VectorTypes
     09/03/04 - SG - Small structure fixes (Osman Turan)
     28/02/03 - SG - Creation
 }
-unit filemd3;
+unit FileMD3;
 
 interface
 
-uses classes, vectortypes;
+uses Classes, VectorTypes;
 
 type
   // Quake3 MD3 structure types

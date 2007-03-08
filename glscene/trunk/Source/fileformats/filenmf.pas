@@ -1,21 +1,21 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
 {
-  filenmf - normalmapper vector file format loading/saving structures
+  FileNMF - NormalMapper vector file format loading/saving structures
   
-  notes:
-    normalmapper can be found at http://www.ati.com/developer/tools.html
+  Notes:
+    NormalMapper can be found at http://www.ati.com/developer/tools.html
     
-  history:
-    14/05/2003 - sg - creation
+  History:
+    14/05/2003 - SG - Creation
 }
-unit filenmf;
+unit FileNMF;
 
 interface
 
 uses
-  classes, vectorgeometry;
+  Classes, VectorGeometry;
 
 const
   NMF_HEADER_TAG   = 'NMF ';

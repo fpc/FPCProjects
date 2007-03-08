@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: fileoct<p>
+{: FileOCT<p>
 
 	Loader for FSRad OCT files.<p>
 
@@ -9,11 +9,11 @@
 	   <li>30/01/03 - Egg - Creation
 	</ul></font>
 }
-unit fileoct;
+unit FileOCT;
 
 interface
 
-uses classes, vectorgeometry, vectorlists;
+uses Classes, VectorGeometry, VectorLists;
 
 type
 
@@ -94,7 +94,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, meshutils;
+uses SysUtils, MeshUtils;
 
 // ------------------
 // ------------------ TOCTFile ------------------

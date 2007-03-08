@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: filemd2<p>
+{: FileMD2<p>
 
 	MD2 file loader<p>
 
@@ -13,13 +13,13 @@
                            some cleanup & optimizations
 	</ul></font>
 }
-unit filemd2;
+unit FileMD2;
 
 interface
 
 {$R-}
 
-uses classes, typesmd2;
+uses Classes, TypesMD2;
 
 type
   // TFileMD2
@@ -50,7 +50,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, vectorgeometry, vectortypes;
+uses SysUtils, VectorGeometry, VectorTypes;
 
 // ------------------
 // ------------------ TFileMD2 ------------------
