@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: q3bsp<p>
+{: Q3BSP<p>
 
 	Simple Quake III BSP file loader.<p>
 
@@ -10,11 +10,11 @@
                            bits from Jan Horn's loader 
 	</ul></font>
 }
-unit q3bsp;
+unit Q3BSP;
 
 interface
 
-uses classes, vectortypes;
+uses Classes, VectorTypes;
 
 const FACE_POLYGON = 1;
 const MAX_TEXTURES = 1000;
@@ -74,7 +74,7 @@ type
       lMapCorner : array [0..1] of Integer;  // The face's lightmap corner in the image
       lMapSize   : array [0..1] of Integer;  // The size of the lightmap section
       lMapPos  : TVector3f;                  // The 3D origin of lightmap.
-      lmapvecs : array [0..1] of tvector3f;  // the 3d space for s and t unit vectors.
+      lMapVecs : array [0..1] of TVector3f;  // The 3D space for s and t unit vectors.
       vNormal  : TVector3f;                  // The face normal.
       Size : array [0..1] of Integer;        // The bezier patch dimensions.
    end;
@@ -152,7 +152,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils;
+uses SysUtils;
 
 // ------------------
 // ------------------ TQ3BSP ------------------

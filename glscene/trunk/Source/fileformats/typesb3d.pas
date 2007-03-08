@@ -6,12 +6,12 @@
 	   <li>22/12/05 - Mathx - Added to the GLScene Project.
 	</ul></font>
 }
-unit typesb3d;
+unit TypesB3D;
 
 interface
 
 uses
-  vectortypes, vectorgeometry;
+  VectorTypes, VectorGeometry;
 
 type
   TB3DChunkType = (bctUnknown, bctHeader, bctTexture, bctBrush, bctNode, bctVertex, bctTriangle,

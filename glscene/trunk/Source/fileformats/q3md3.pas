@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: q3md3<p>
+{: Q3MD3<p>
 
    Helper classes and methods for Quake3 MD3 actors<p>
 
@@ -12,13 +12,13 @@
     01/04/03 - Mrqzzz - "LEGS_" animations read from .CFG fixed
     17/02/03 - SG - Creation
 }
-unit q3md3;
+unit Q3MD3;
 
 interface
 
 uses
-  classes,sysutils,applicationfileio,vectorgeometry,glvectorfileobjects,
-  vectorlists,gltexture,filemd3;
+  Classes,SysUtils,ApplicationFileIO,VectorGeometry,GLVectorFileObjects,
+  VectorLists,GLTexture,FileMD3;
 
 type
   // This class is used to extract the tag transform information
@@ -144,12 +144,12 @@ begin
         Reference:=aarMorph;
         // Need a way in TActorAnimation to tell whether it is
         // a looping type animation or a play once type and
-        // the framerate (interval) it uses. both of these can
+        // the framerate (interval) it uses. Both of these can
         // be determined here and loaded.
       end;
     end;
   end;
-  anim.free;
+  anim.Free;
 end;
 
 // LoadQ3Skin
@@ -283,23 +283,22 @@ end;
 
 // GetTransform
 //
-
 function TMD3TagList.GetTransform(TagName: string;
   Frame: integer): TMatrix;
 var
   TagIdx,i,j : integer;
   Tag : TMD3Tag;
-  strim : string;
 begin
   Result:=IdentityHMGMatrix;
   TagIdx:=-1;
   for i:=0 to FNumTags do
+  {$HINT crossbuilder: check, if the following bug still persists}
   //bug with lazarus if removed the application can run but the arctor is strange. k00m
                               //lowercase(trim(FTags[i].strName))
   if lowercase(trim(TagName))=lowercase(FTags[i].strName) then begin
-    TagIdx:=i;
-    Break;
-  end;
+      TagIdx:=i;
+      Break;
+    end;
   if TagIdx=-1 then exit;
   Tag:=FTags[TagIdx+Frame*FNumTags];
   for j:=0 to 2 do

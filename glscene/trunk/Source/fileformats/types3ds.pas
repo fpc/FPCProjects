@@ -1,12 +1,12 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-// 20/07/00 - egg - fixed array declarations (non null range to allow bound checks),
-//                  renamed "tintegerlist" to "tintegerarray" 
+// 20/07/00 - Egg - Fixed array declarations (non null range to allow bound checks),
+//                  Renamed "TIntegerList" to "TIntegerArray" 
 
-unit types3ds;
+unit Types3DS;
 
-// this unit contains all of the data types used by the core routines. most of these are only used
+// This unit contains all of the data types used by the core routines. Most of these are only used
 // with the internal database, created when a file is loaded.
 //
 // Last change - 03. October 1999
@@ -18,7 +18,7 @@ unit types3ds;
 
 interface                                                               
 
-uses classes; // for tstringlist
+uses Classes; // for TStringList
 
 //---------------- commonly used structures ----------------------------------
 
@@ -197,16 +197,16 @@ type TDumpLevel = (dlTerseDump, dlMediumDump, dlMaximumDump);
        CameraStr: String;                   // used for camera views
      end;
 
-     tshadowstyle3ds = (ssuseshadowmap,
-                        ssuseraytraceshadow);
+     TShadowStyle3DS = (ssUseShadowMap,
+                        ssUseRayTraceShadow);
 
      PShadowSets3DS = ^TShadowSets3DS;           // global Shadow settings
      TShadowSets3DS = record
-       atype: tshadowstyle3ds;                   // either useshadowmaps or useraytraceshadows
-       bias: single;                             // shadow bias factor.
-       raybias: single;                          // shadow ray bias factor, used in r3
-       mapsize: smallint;                        // shadow map size
-       filter: single;                           // shadow filter
+       AType: TShadowStyle3DS;                   // either UseShadowMaps or UseRayTraceShadows
+       Bias: Single;                             // Shadow Bias factor.
+       RayBias: Single;                          // Shadow ray Bias factor, Used in R3
+       MapSize: Smallint;                        // Shadow Map Size
+       Filter: Single;                           // Shadow Filter
      end;
 
      PMeshSet3DS = ^TMeshSet3DS;
@@ -267,9 +267,9 @@ type TDumpLevel = (dlTerseDump, dlMediumDump, dlMaximumDump);
 
      // enumerate list of possible backgrounds used in file
      TBackgroundType3DS = (btNoBgnd,
-                           btusesolidbgnd,
-                           btusevgradientbgnd,
-                           btusebitmapbgnd);
+                           btUseSolidBgnd,
+                           btUseVGradientBgnd,
+                           btUseBitmapBgnd);
 
      PBitmapBgnd3DS = ^TBitmapBgnd3DS;
      TBitmapBgnd3DS = String;                    // Name of background Bitmap
@@ -473,12 +473,12 @@ type TDumpLevel = (dlTerseDump, dlMediumDump, dlMaximumDump);
      PSpotShadow3DS = ^TSpotShadow3DS;
      TSpotShadow3DS = record
        Cast: Boolean;                            // True if spotlight casts shadows
-       atype: tshadowstyle3ds;                   // useshadow or useraytrace
-       local: boolean;                           // true if local shadow settings are being used
-       bias: single;                             // shadow bias
-       filter: single;                           // shadow filter
-       mapsize: word;                            // shadow map size
-       raybias: single;                          // ray tracing shadow bias
+       AType: TShadowStyle3DS;                   // UseShadow or UseRayTrace
+       Local: Boolean;                           // True if local shadow settings are being used
+       Bias: Single;                             // shadow bias
+       Filter: Single;                           // shadow filter
+       MapSize: Word;                            // shadow map size
+       RayBias: Single;                          // Ray tracing shadow bias
      end;
 
      // Cone visibility settings

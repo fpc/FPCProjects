@@ -1,11 +1,11 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-unit typesstl;
+unit TypesSTL;
 
 interface
 
-uses vectorgeometry;
+uses VectorGeometry;
 
 type
 

@@ -1,12 +1,12 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-unit typesms3d;
+unit TypesMS3D;
 
 interface
 
 uses
-  classes, vectortypes, gltexture;
+  Classes, VectorTypes, GLTexture;
 
 const
   MAX_MS3D_VERTICES  = 8192;

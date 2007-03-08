@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: typesmdc<p>
+{: TypesMDC<p>
 
     Types for Return to Castle Wolfenstein's MDC file format.<p>
 
@@ -13,12 +13,12 @@
       <li>07/02/04 - OT - Creation (Osman Turan)
 	</ul></font>
 }
-unit typesmdc;
+unit TypesMDC;
 
 interface
 
 uses
-  vectortypes;
+  VectorTypes;
 
 const
   MDCFILE_IDENTITY = 'IDPC';
