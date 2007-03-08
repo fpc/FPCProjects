@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glthorfx<p>
+{: GLThorFX<p>
 
       $Log: glthorfx.pas,v $
       Revision 1.1  2006/01/10 20:50:46  z0m3ie
@@ -20,21 +20,21 @@
       - added automatical generated History from CVS
 
   <b>History : </b><font size=-1><ul>
+    <li>13/02/07 - aidave - Updated Target.Style to csPoint 
     <li>23/12/04 - PhP - GLScenestyled Header
     <li>06/04/04 - PhP - Removed property Paused use of property Disabled instead
     <li>04/15/03 - Added initialization to CalcThor, to fix an error
                    Thanks to Martin Kirsch for this solution
     <li>12/08/01 - EG - Dropped unused Handle allocation (leftover from FirexFX)
                         Fixed leaks (colors)
-    <li>09/03/01 - rené lindsay - unit created
+    <li>09/03/01 - René Lindsay - unit created
   </ul></font>
 }
-unit glthorfx;
+unit GLThorFX;
 
 interface
 
-uses classes, glscene, glmisc, xcollection, vectorgeometry, gltexture, glcadencer
-     {crossbuilder ,persistentclasses};
+uses Classes, GLScene, GLMisc, XCollection, VectorGeometry, GLTexture, GLCadencer;
 
 type
   PThorpoint = ^TThorpoint;
@@ -148,7 +148,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, opengl1x, vectorlists;
+uses SysUtils, OpenGL1x, VectorLists;
 
 
 // ------------------
@@ -163,6 +163,7 @@ begin
   FClients := TList.Create;
   RegisterManager(Self);
   FTarget := TGLCoordinates.CreateInitialized(Self, VectorMake(0, 1, 0));
+  FTarget.Style := csPoint;
   FMaxpoints:=64;
   FGlowSize:=0.2;
   FVibrate:=0;
@@ -407,6 +408,7 @@ constructor TGLBThorFX.Create(aOwner : TXCollection);
 begin
   inherited Create(aOwner);
   FTarget := TGLCoordinates.CreateInitialized(Self, VectorMake(0, 1, 0));
+  FTarget.Style := csPoint;
 end;
 
 // Destroy
