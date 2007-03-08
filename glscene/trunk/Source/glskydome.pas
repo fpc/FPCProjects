@@ -1,13 +1,15 @@
-// glskydome
-{: skydome object<p>
+// GLSkydome
+{: Skydome object<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/12/06 - DaS - TSkyDomeStars.AddRandomStars() overloaded
+      <li>29/06/06 - PvD - Fixed small bug to properly deal with polygon fill
       <li>20/01/05 - Mathx - Added the ExtendedOptions of the EarthSkyDome
       <li>09/01/04 - EG - Now based on TGLCameraInvariantObject
       <li>04/08/03 - SG - Fixed small bug with random star creation
       <li>17/06/03 - EG - Fixed PolygonMode (Carlos Ferreira)
       <li>26/02/02 - EG - Enhanced star support (generation and twinkle),
-                          Skydome now 'exports' its coordinate system to children 
+                          Skydome now 'exports' its coordinate system to children
       <li>21/01/02 - EG - Skydome position now properly ignored
       <li>23/09/01 - EG - Fixed and improved TGLEarthSkyDome
       <li>26/08/01 - EG - Added SkyDomeStars
@@ -16,14 +18,14 @@
       <li>12/03/01 - EG - Reversed polar caps orientation
       <li>28/01/01 - EG - Fixed TSkyDomeBand rendering (vertex coordinates)
       <li>18/01/01 - EG - First working version of TGLEarthSkyDome
-	   <li>14/01/01 - EG - Creation
+      <li>14/01/01 - EG - Creation
 	</ul></font>
 }
-unit glskydome;
+unit GLSkydome;
 
 interface
 
-uses classes, glscene, glmisc, gltexture, vectorgeometry, glgraphics, glcrossplatform;
+uses Classes, GLScene, GLMisc, GLTexture, VectorGeometry, GLGraphics, glCrossPlatform, VectorTypes;
 
 type
 
@@ -148,8 +150,12 @@ type
          {: Adds nb random stars of the given color.<p>
             Stars are homogenously scattered on the complete sphere, not only the
             band defined or visible dome. }
-         procedure AddRandomStars(nb : Integer; color : TColor;
-                                  limitToTopDome : Boolean = False);
+         procedure AddRandomStars(const nb : Integer; const color : TColor;
+                                  const limitToTopDome : Boolean = False); overload;
+         procedure AddRandomStars(const nb : Integer; const ColorMin, ColorMax: TVector3b;
+                                  const Magnitude_min, Magnitude_max: Single;
+                                  const limitToTopDome : Boolean = False); overload;
+
          {: Load a 'stars' file, which is made of TGLStarRecord.<p>
             Not that '.stars' files should already be sorted by magnitude and color. }
          procedure LoadStarsFile(const starsFileName : String);
@@ -286,7 +292,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, opengl1x, glstarrecord, glstate;
+uses SysUtils, OpenGL1x, GLStarRecord, GLState;
 
 // ------------------
 // ------------------ TSkyDomeBand ------------------
@@ -700,8 +706,8 @@ end;
 
 // AddRandomStars
 //
-procedure TSkyDomeStars.AddRandomStars(nb : Integer; color : TColor;
-                                       limitToTopDome : Boolean = False);
+procedure TSkyDomeStars.AddRandomStars(const nb : Integer; const color : TColor;
+                                       const limitToTopDome : Boolean = False);
 var
    i : Integer;
    coord : TAffineVector;
@@ -720,6 +726,41 @@ begin
       star.Color:=color;
       // pick a magnitude
       star.Magnitude:=3;
+   end;
+end;
+
+// AddRandomStars
+//
+procedure TSkyDomeStars.AddRandomStars(const nb : Integer; const ColorMin, ColorMax: TVector3b;
+                                       const Magnitude_min, Magnitude_max: Single;
+                                       const limitToTopDome : Boolean = False);
+
+  function RandomTT(Min, Max: Byte): Byte;
+  begin
+    Result := Min + Random(Max - Min);
+  end;
+
+var
+   i : Integer;
+   coord : TAffineVector;
+   star : TSkyDomeStar;
+
+begin
+   for i:=1 to nb do begin
+      star:=Add;
+      // pick a point in the half-cube
+      if limitToTopDome then
+         coord[2]:=Random
+      else coord[2]:=Random*2-1;
+      // calculate RA and Dec
+      star.Dec:=ArcSin(coord[2])*c180divPI;
+      star.Ra:=Random*360-180;
+      // pick a color
+      star.Color := RGB(RandomTT(ColorMin[0], ColorMax[0]),
+                        RandomTT(ColorMin[1], ColorMax[1]),
+                        RandomTT(ColorMin[2], ColorMax[2]));
+      // pick a magnitude
+      star.Magnitude:=Magnitude_min + Random * (Magnitude_max - Magnitude_min);
    end;
 end;
 
@@ -839,12 +880,13 @@ var
 begin
    // setup states
    glPushMatrix;
-   glPushAttrib(GL_ENABLE_BIT);
+   glPushAttrib(GL_ENABLE_BIT or GL_POLYGON_BIT);
    glDisable(GL_LIGHTING);
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_FOG);
    glDisable(GL_CULL_FACE);
    glDepthMask(False);
+   glPolygonMode(GL_FRONT, GL_FILL);
 
    with Scene.CurrentGLCamera do
       f:=(NearPlane+DepthOfView)*0.90;
@@ -1019,13 +1061,14 @@ var
 begin
    // setup states
    glPushMatrix;
-   glPushAttrib(GL_ENABLE_BIT);
+   glPushAttrib(GL_ENABLE_BIT or GL_POLYGON_BIT);
    glDisable(GL_LIGHTING);
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_FOG);
    glDisable(GL_CULL_FACE);
    glDisable(GL_ALPHA_TEST);
    glDepthMask(False);
+   glPolygonMode(GL_FRONT, GL_FILL);
 
    with Scene.CurrentGLCamera do
       f:=(NearPlane+DepthOfView)*0.95;
