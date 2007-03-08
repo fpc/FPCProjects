@@ -1,35 +1,36 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfile3ds<p>
+{: GLFile3DS<p>
 
 	3DStudio 3DS vector file format implementation.<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>28/01/07 - DaStr - Added transparency and opacity texture support (thanks DIVON)
       <li>09/12/04 - LR - Add Integer cast line 94 for Linux
       <li>25/10/04 - SG - Added lightmap (3DS IllumMap) support
       <li>05/06/03 - SG - Separated from GLVectorFileObjects.pas
-       </ul></font>
+	</ul></font>
 }
-unit glfile3ds;
+unit GLFile3DS;
 
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects, gltexture, applicationfileio,
-  vectorgeometry, file3ds, types3ds;
+  Classes, SysUtils, GLVectorFileObjects, GLTexture, ApplicationFileIO,
+  VectorGeometry, File3DS, Types3DS;
 
 type
    // TGL3DSVectorFile
    //
    {: The 3DStudio vector file.<p>
-      uses 3ds import library by mike lischke (http://www.lishcke-online.de).<p>
-      a 3ds file may contain material information and require textures when
-      loading. only the primary texture map is used by glscene, transparency,
+      Uses 3DS import library by Mike Lischke (http://www.lishcke-online.de).<p>
+      A 3DS file may contain material information and require textures when
+      loading. Only the primary and opacity texture maps are used by GLScene,
       bump mapping, etc. are ignored as of now. }
-   tgl3dsvectorfile = class (tvectorfile)
+   TGL3DSVectorFile = class (TVectorFile)
       public
-         { public declarations }
+         { Public Declarations }
          class function Capabilities : TDataFileCapabilities; override;
          procedure LoadFromStream(aStream : TStream); override;
    end;
@@ -75,6 +76,7 @@ var
       specColor : TVector;
       matLib : TGLMaterialLibrary;
       libMat : TGLLibMaterial;
+      opacMat: TGLLibMaterial;
    begin
       material:=Materials.MaterialByName[Name];
       Assert(Assigned(material));
@@ -88,13 +90,17 @@ var
                libMat.Name:=name;
                with libMat.Material.FrontProperties do begin
                   Ambient.Color:=VectorMake(material.Ambient.R, material.Ambient.G, material.Ambient.B, 1);
-                  Diffuse.Color:=VectorMake(material.Diffuse.R, material.Diffuse.G, material.Diffuse.B, 1);
+                  //Yep, material transparency is stored as a negative value :P
+                  Diffuse.Color:=VectorMake(material.Diffuse.R, material.Diffuse.G, material.Diffuse.B,1 + material.Transparency);
                   specColor:=VectorMake(material.Specular.R, material.Specular.G, material.Specular.B, 1);
                   ScaleVector(specColor, 1 - material.Shininess);
                   Specular.Color:=specColor;
                   Shininess:=MaxInteger(0, Integer(Round((1 - material.ShinStrength) * 128)));
+                  if material.Transparency <> 0 then
+                    libMat.Material.BlendingMode:=bmTransparency;
                end;
-               if Trim(material.Texture.Map.NameStr)<>'' then begin
+
+               if Trim(material.Texture.Map.NameStr)<>'' then
                   try
                      with libMat.Material.Texture do begin
                         Image.LoadFromFile(material.Texture.Map.NameStr);
@@ -107,7 +113,23 @@ var
                            raise;
                      end;
                   end;
-               end;
+
+               if Trim(material.Opacity.Map.NameStr) <> '' then
+                 try
+                 OpacMat:=matLib.Materials.Add;
+                 OpacMat.Material.Texture.Image.LoadFromFile(material.Opacity.Map.NameStr);
+                 OpacMat.Material.Texture.Disabled:=false;
+                 OpacMat.Material.Texture.ImageAlpha:=tiaAlphaFromIntensity;
+                 OpacMat.Material.Texture.TextureMode:=tmModulate;
+                 OpacMat.Name:=material.Opacity.Map.NameStr;
+                 LibMat.Texture2Name:=OpacMat.Name;
+                 LibMat.Material.BlendingMode:=bmTransparency;
+                  except
+                     on E: ETexture do begin
+                        if not Owner.IgnoreMissingTextures then
+                           raise;
+                     end;
+                  end;
             end;
          end else Result:='';
       end else Result:='';
@@ -167,7 +189,6 @@ var
      DivMod(index,8,mi,index);
      result:=(((p^[mi] shr Index) and 1) = 1);
    end;
-
 
    //---------------------------------------------------------------------------
 
@@ -255,7 +276,6 @@ var
       // enhance marker array
       if (CurrentVertexCount div 8) <> ((CurrentVertexCount + 1) div 8) then begin
          ReallocMem(Marker, ((CurrentVertexCount + 1) div 8) + 1);
-         //writeln('******ENHANCE MARKER ALOCATED MEM FOR ',CurrentVertexCount,' VERTICES');
          Marker[(CurrentVertexCount div 8) + 1]:=0;
       end;
       with mesh.TexCoords do if Count>0 then Add(Items[index]);
@@ -272,8 +292,6 @@ var
   CurrentIndex: Word;
   Vector1, Vector2, Normal : TAffineVector;
   standardNormalsOrientation : Boolean;
-  //TexVert:TTexVert3DS;
-  //TexPoint:TTexPoint;
 begin
    with TFile3DS.Create do try
       LoadFromStream(aStream);
@@ -294,7 +312,7 @@ begin
                TexCoords.Capacity:=NVertices;
                for j:=0 to NVertices-1 do begin
                   Vertices.Add(PAffineVector(@VertexArray[j])^);
-                  TexCoords.Add(PTexPoint(@TextArray[j])^);  //k00m
+                  TexCoords.Add(PTexPoint(@TextArray[j])^);
                end;
             end else begin
                for j:=0 to NVertices-1 do
