@@ -1,30 +1,31 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-// 14/11/02 - eg - fixed warnings
-// 16/11/02 - bj - replaced tlwchunklist.findchunk search mechanism
-//          - bj - added v. method  tlwchunk.loaded. called on loading complete.
-//          - bj - added surface smooth normal generation
-// 18/11/02 - bj - added surface param inheritance
-//          - bj - added get and setcontentdir to unit
-// 20/11/02 - bj - moved paramaddr from tlwsurf to tlwparentchunk as v. method
+// 08/03/06 - ur - Fixed warnings for Delphi 2006
+// 14/11/02 - EG - Fixed warnings
+// 16/11/02 - BJ - Replaced TLWChunkList.FindChunk search mechanism
+//          - BJ - Added v. method  TLWChunk.Loaded. Called on Loading complete.
+//          - BJ - Added surface smooth normal generation
+// 18/11/02 - BJ - Added surface param inheritance
+//          - BJ - Added Get and SetContentDir to unit
+// 20/11/02 - BJ - Moved ParamAddr from TLWSurf to TLWParentChunk as v. method
 {-------------------------------------------------------------------------------
- unit name:  lightwave
- author:     brian johns brianjohns1@hotmail.com
- purpose:    lightwave object support unit for delphi.
+ Unit Name:  Lightwave
+ Author:     Brian Johns brianjohns1@hotmail.com
+ Purpose:    Lightwave object support unit for Delphi.
 
  Notes:      For the Lightwave Object File Format documentation please refer to
              http://www.lightwave3d.com/developer.
 
- license:    this unit is distributed under the mozilla public license.
+ License:    This unit is distributed under the Mozilla Public License.
              For license details, refer to http://www.mozilla.org
              Lightwave3D is a registered trademark of Newtek Incorporated.
 -------------------------------------------------------------------------------}
-unit lwobjects;
+unit LWObjects;
 
 interface
 
-uses classes;
+uses Classes;
 
 
 type
@@ -462,7 +463,7 @@ type
             override;
   public
     destructor Destroy; override;
-    class function GetId: TID4; override;
+    class function GetID: TID4; override;
     function TagToName(Tag: TU2): string;
     property Tags: TStrings read GetTags;
   end;
@@ -478,7 +479,7 @@ type
             override;
   public
     destructor Destroy; override;
-    class function GetId: TID4; override;
+    class function GetID: TID4; override;
     property SurfId: Integer read GetSurfId;
     property Name: string read FName;
     property Source: string read FSource;
@@ -496,7 +497,7 @@ type
             override;
   public
     destructor Destroy; override;
-    class function GetId: TID4; override;
+    class function GetID: TID4; override;
     property Flags: TU2 read FFlags;
     property Name: string read FName;
     property Number: TU2 read FNumber;
@@ -522,7 +523,7 @@ type
   public
     constructor Create;
     function GetPolsByTag(Tag: TU2; var PolyIndices: TU2DynArray): Integer;
-    class function GetId: TID4; override;
+    class function GetID: TID4; override;
     property MapType: TID4 read FMapType;
     property TagCount: Integer read GetTagCount;
     property TagMapCount: Integer read GetTagMapCount;
@@ -558,7 +559,7 @@ type
     procedure LoadData(AStream: TStream; DataStart, DataSize: LongWord);
             override;
   public
-    class function GetId: TID4; override;
+    class function GetID: TID4; override;
     property ClipIndex: TU4 read FClipIndex;
   end;
 
@@ -617,7 +618,7 @@ type
 
 implementation
 
-uses sysutils, applicationfileio;
+uses SysUtils, ApplicationFileIO;
 
 type
   PWord = ^Word;
@@ -1713,7 +1714,7 @@ begin
   FreeAndNil(FTags);
 end;
 
-class function TLWTags.GetId: TID4;
+class function TLWTags.GetID: TID4;
 begin
   result := ID_TAGS;
 end;
@@ -1781,7 +1782,7 @@ begin
   inherited;
 end;
 
-class function TLWLayr.GetId: TID4;
+class function TLWLayr.GetID: TID4;
 begin
   result := ID_LAYR;
 end;
@@ -1808,7 +1809,7 @@ begin
   inherited;
 end;
 
-class function TLWSurf.GetId: TID4;
+class function TLWSurf.GetID: TID4;
 begin
   result := ID_SURF;
 end;
@@ -1941,7 +1942,7 @@ begin
 
 end;
 
-class function TLWPTag.GetId: TID4;
+class function TLWPTag.GetID: TID4;
 begin
   result := ID_PTAG;
 end;
@@ -2305,7 +2306,7 @@ end;
 
 { TLWClip }
 
-class function TLWClip.GetId: TID4;
+class function TLWClip.GetID: TID4;
 begin
   result := ID_CLIP;
 end;
