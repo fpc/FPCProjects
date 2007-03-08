@@ -4,15 +4,13 @@
     <PathDelim Value="/"/>
     <Version Value="5"/>
     <General>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <IconPath Value="./"/>
       <TargetFileExt Value=""/>
-      <ActiveEditorIndexAtStart Value="0"/>
     </General>
     <VersionInfo>
       <ProjectVersion Value=""/>
-      <Language Value=""/>
-      <CharSet Value=""/>
     </VersionInfo>
     <PublishOptions>
       <Version Value="2"/>
@@ -31,73 +29,26 @@
         <PackageName Value="lnetbase"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="5">
+    <Units Count="1">
       <Unit0>
         <Filename Value="httptest.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="httptest"/>
-        <CursorPos X="18" Y="18"/>
-        <TopLine Value="10"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="20"/>
-        <Loaded Value="True"/>
       </Unit0>
-      <Unit1>
-        <Filename Value="../../lib/lnet.pp"/>
-        <UnitName Value="lNet"/>
-        <CursorPos X="15" Y="32"/>
-        <TopLine Value="13"/>
-        <UsageCount Value="10"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="../../lib/lhttp.pp"/>
-        <UnitName Value="lhttp"/>
-        <CursorPos X="43" Y="1132"/>
-        <TopLine Value="1132"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="../../lib/levents.pp"/>
-        <UnitName Value="lEvents"/>
-        <CursorPos X="1" Y="497"/>
-        <TopLine Value="483"/>
-        <UsageCount Value="10"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="../../lib/sys/lepolleventer.inc"/>
-        <CursorPos X="1" Y="132"/>
-        <TopLine Value="121"/>
-        <UsageCount Value="10"/>
-      </Unit4>
     </Units>
-    <JumpHistory Count="2" HistoryIndex="1">
-      <Position1>
-        <Filename Value="httptest.lpr"/>
-        <Caret Line="7" Column="6" TopLine="1"/>
-      </Position1>
-      <Position2>
-        <Filename Value="httptest.lpr"/>
-        <Caret Line="18" Column="18" TopLine="10"/>
-      </Position2>
-    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
     <CodeGeneration>
       <Generate Value="Faster"/>
     </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="True"/>
+      </Debugging>
+    </Linking>
     <Other>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>
