@@ -1,22 +1,22 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfileq3bsp<p>
+{: GLFileQ3BSP<p>
 
     Support-code to load Q3BSP Files into TGLFreeForm-Components in GLScene.<p>
-    note that you must manually add this unit to one of your project's uses
-    to enable support for obj & objf at run-time.<p>
+    Note that you must manually add this unit to one of your project's uses
+    to enable support for OBJ & OBJF at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
 	   <li>31/01/03 - EG - Materials support
       <li>30/01/03 - EG - Creation
    </ul><p>
 }
-unit glfileq3bsp;
+unit GLFileQ3BSP;
 
 interface
 
-uses classes, glvectorfileobjects, applicationfileio, glmisc;
+uses Classes, GLVectorFileObjects, ApplicationFileIO, GLMisc;
 
 type
 
@@ -44,8 +44,8 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses q3bsp, vectorgeometry, vectorlists, sysutils, glbsp, gltexture, glgraphics,
-   glcrossplatform, glstate, glutils;
+uses Q3BSP, VectorGeometry, VectorLists, SysUtils, GLBSP, GLTexture, GLGraphics,
+   GLCrossPlatform, GLState, GLUtils;
 
 // ------------------
 // ------------------ TGLSTLVectorFile ------------------
@@ -144,6 +144,7 @@ begin
                   GammaCorrectRGBArray(@bspLightMap.imageBits[0], 128*128,
                                        vQ3BSPLightmapGammaCorrection);
                // convert RAW RGB to BMP
+               {$WARNING crossbuilder: disabled call to BGR24ToRGB24. Please enable! }
                {for y:=0 to 127 do
                   BGR24ToRGB24(@bspLightMap.imageBits[y*128*3],
                                lightmapBmp.ScanLine[127-y], 128);}
