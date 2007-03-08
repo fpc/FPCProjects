@@ -35,9 +35,10 @@ interface
 uses
   //VCL
   Classes, SysUtils,
+
   //GLScene
   GLScene, VectorTypes, MeshUtils, VectorGeometry, GLVectorFileObjects,
-  GLMesh, GLObjects, GLMisc,  OpenGL1x, GLTexture;
+  GLMesh, GLObjects, GLMisc, OpenGL1x, GLTexture, GLStrings;
 
 
     const cMaxVerts = 2000;
@@ -51,7 +52,7 @@ TGLTrail = class(TGlMesh)
 
     fVertLimit: integer;
     fTimeLimit: single;
-    fMinDistance: single; // don't createmark unless moved atleast
+    fMinDistance: single;
     fAlpha: single;
     fAlphaFade: Boolean;
     fUVScale: Single;
@@ -101,6 +102,7 @@ TGLTrail = class(TGlMesh)
 
      property VertLimit: integer  read FVertLimit write SetVertLimit;
      property TimeLimit: single  read FTimeLimit write SetTimeLimit;
+     {: Don't create mark unless moved at least this distance. }
      property MinDistance: single  read FMinDistance write SetMinDistance;
      property Alpha: single  read FAlpha write SetAlpha;
      property AlphaFade: Boolean  read FAlphaFade write SetAlphaFade;
@@ -153,8 +155,6 @@ begin
   end;
 end;
 
-
-
 procedure TGLTrail.ClearMarks;
 begin
  Vertices.Clear;
@@ -190,7 +190,7 @@ begin
 
                          end;
                     end;
-     else Assert(False, 'Unknown type!');
+     else Assert(False, glsUnknownType);
      end;
      v0 := AffinevectorMake(Obj.AbsolutePosition);
      VectorScale(v,width,v);
