@@ -1,4 +1,4 @@
-{: glutils<p>
+{: GLUtils<p>
 
    Miscellaneous support utilities & classes.<p>
 
@@ -22,18 +22,26 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>07/02/07 - DaStr - StringToColorAdvanced() functions added
       <li>05/09/03 - EG - Creation from GLMisc split
    </ul></font>
 }
-unit glutils;
+unit GLUtils;
 
 interface
 
-uses classes, vectorgeometry, sysutils, opengl1x;
+uses
+  //VCL
+  Classes, SysUtils, Graphics, StrUtils,
+
+  //GLScene
+  VectorGeometry, OpenGL1x;
 
 {$i GLScene.inc}
 
 type
+  EGLUtilsException = class(Exception);
+
 	TGLMinFilter   = (miNearest, miLinear, miNearestMipmapNearest,
 							miLinearMipmapNearest, miNearestMipmapLinear,
 							miLinearMipmapLinear);
@@ -59,6 +67,13 @@ procedure WriteCRLFString(aStream : TStream; const aString : String);
 function TryStrToFloat(const strValue : String; var val : Extended) : Boolean;
 //: StrToFloatDef
 function StrToFloatDef(const strValue : String; defValue : Extended = 0) : Extended;
+
+//: Converts a string into color
+function StringToColorAdvancedSafe(const Str: string; const Default: TColor): TColor;
+//: Converts a string into color
+function TryStringToColorAdvanced(const Str: string; var OutColot: TColor): Boolean;
+//: Converts a string into color
+function StringToColorAdvanced(const Str: string): TColor;
 
 {: Parses the next integer in the string.<p>
    Initial non-numeric characters are skipper, p is altered, returns 0 if none
@@ -88,10 +103,13 @@ implementation
 //------------------------------------------------------
 //------------------------------------------------------
 
-uses applicationfileio;
+uses ApplicationFileIO;
 
 var
 	vSqrt255 : TSqrt255Array;
+
+resourcestring
+  gluInvalidColor = '''%s'' is not a valid color format!';
 
 // WordToIntegerArray
 //
@@ -114,7 +132,6 @@ asm
               POP ESI
 @@Finish:
 end;
-
 
 // RoundUpToPowerOf2
 //
@@ -256,6 +273,52 @@ begin
    if not TryStrToFloat(strValue, Result) then
       result:=defValue;
 end;
+
+// StringToColorAdvancedSafe
+//
+function StringToColorAdvancedSafe(const Str: string; const Default: TColor): TColor;
+begin
+  if not TryStringToColorAdvanced(Str, Result) then
+    Result := Default;
+end;
+
+// StringToColorAdvanced
+//
+function StringToColorAdvanced(const Str: string): TColor;
+begin
+  if not TryStringToColorAdvanced(Str, Result) then
+    raise EGLUtilsException.CreateResFmt(@gluInvalidColor, [Str]);
+end;
+
+// TryStringToColorAdvanced
+//
+function TryStringToColorAdvanced(const Str: string; var OutColot: TColor): Boolean;
+var
+  Code, I: Integer;
+  Temp:    string;
+begin
+  Result := True;
+  Temp := Str;
+
+  Val(Temp, I, Code); //to see if it is a number
+  if Code = 0 then
+    OutColot := TColor(I)                                       //Str = $0000FF
+  else
+  begin
+    if not IdentToColor(Temp, Longint(OutColot)) then           //Str = clRed
+    begin
+      if AnsiStartsText('clr', Temp) then                       //Str = clrRed
+      begin
+        Delete(Temp, 3, 1);
+        if not IdentToColor(Temp, Longint(OutColot)) then
+          Result := False;
+      end
+      else if not IdentToColor('cl' + Temp, Longint(OutColot)) then //Str = Red
+        Result := False;
+    end;
+  end;
+end;
+
 
 // ParseInteger
 //
