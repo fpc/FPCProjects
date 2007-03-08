@@ -6,14 +6,14 @@
 	   <li>22/12/05 - Mathx - Added to the GLScene Project.
 	</ul></font>
 }
-unit fileb3d;
+unit FileB3D;
 
 interface
 
 {$R-}
 
 uses
-  classes, typesb3d, vectorgeometry, vectortypes, vectorlists;
+  Classes, TypesB3D, VectorGeometry, VectorTypes, VectorLists;
 
 type
   TB3DMaterial = class

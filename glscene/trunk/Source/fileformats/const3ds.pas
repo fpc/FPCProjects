@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-unit const3ds;
+unit Const3DS;
 
 // All 3DS constant definitions used by the various routines (mainly in Utils3DS.pas). About one thousand
 // defined constants herein. The guys at Autodesk must be crazy...
@@ -12,7 +12,7 @@ unit const3ds;
 
 interface
 
-uses types3ds;
+uses Types3DS;
 
 resourcestring
   // error messages
@@ -57,11 +57,11 @@ const // Flags used by the flag field of the Mesh3DS structure
                                                  // a texture coord v wrap seam
 
       // flags used by the rflags field of the keyheader3DS structure
-      keyusestension3ds  = $01;
-      keyusescont3ds     = $02;
-      keyusesbias3ds     = $04;
-      keyuseseaseto3ds   = $08;
-      keyuseseasefrom3ds = $10;
+      KeyUsesTension3DS  = $01;
+      KeyUsesCont3DS     = $02;
+      KeyUsesBias3DS     = $04;
+      KeyUsesEaseTo3DS   = $08;
+      KeyUsesEaseFrom3DS = $10;
 
       // flags used by the track flags field
       TrackSingle3DS  = $0000;

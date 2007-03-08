@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: dxtc<p>
+{: DXTC<p>
 
    DXTC (also S3TC) decoding.<br>
    Adapted from DevIL image library (http://openil.sourceforge.net)<p>
@@ -11,12 +11,12 @@
       <li>01/09/04 - SG - Creation
    </ul></font>
 }
-unit dxtc;
+unit DXTC;
 
 interface
 
 uses
-   sysutils, vectorgeometry;
+   SysUtils, VectorGeometry;
 
 procedure DecodeDXT1toBitmap32(
    encData, decData : PByteArray;

@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: dds<p>
+{: DDS<p>
 
    Simple DDS (Microsoft DirectDraw Surface) format support
    for Delphi.<p>
@@ -28,13 +28,13 @@
       <li>31/08/04 - SG - Creation
    </ul></font>
 }
-unit dds;
+unit DDS;
 
 interface
 
 {$i GLScene.inc}
 
-uses classes, sysutils, glcrossplatform, vectorgeometry, dxtc;
+uses Classes, SysUtils, GLCrossPlatform, VectorGeometry, DXTC;
 
 type
 

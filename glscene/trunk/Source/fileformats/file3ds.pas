@@ -1,10 +1,10 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-// 08/06/00 - egg - loadfromstream no longer free the stream it was passed,
+// 08/06/00 - Egg - LoadFromStream no longer free the stream it was passed,
 //                  further fixing of the streaming mechanism is needed
 //
-unit file3ds;
+unit File3DS;
 
 // Implementation of an universal 3DS file reader (and writer). This is the main file of the
 // 3DS import library. Currently only loading of 3DS files (Mesh files  * .3ds, Project files  * .prj
@@ -31,7 +31,7 @@ unit file3ds;
 
 interface
 
-uses classes, types3ds;
+uses Classes, Types3DS;
 
 type TFile3DS = class;
 
@@ -254,7 +254,7 @@ type TFile3DS = class;
 
 implementation
 
-uses const3ds, utils3ds, sysutils, applicationfileio;
+uses Const3DS, Utils3DS, SysUtils, ApplicationFileIO;
 
 function StrPasFree(p : PAnsiChar) : String;
 begin
@@ -1815,11 +1815,11 @@ procedure TFile3DS.WriteKeyHeader(K: TKeyHeader3DS);
 begin
   WriteCardinal(K.time);
   WriteWord(K.rflags);
-  if (k.rflags and keyusestension3ds) > 0 then writesingle(k.tension);
-  if (k.rflags and keyusescont3ds) > 0 then writesingle(k.continuity);
-  if (k.rflags and keyusesbias3ds) > 0 then writesingle(k.bias);
-  if (k.rflags and keyuseseaseto3ds) > 0 then writesingle(k.easeto);
-  if (k.rflags and keyuseseasefrom3ds) > 0 then writesingle(k.easefrom);
+  if (K.rflags and KeyUsesTension3DS) > 0 then WriteSingle(K.tension);
+  if (K.rflags and KeyUsesCont3DS) > 0 then WriteSingle(K.continuity);
+  if (K.rflags and KeyUsesBias3DS) > 0 then WriteSingle(K.bias);
+  if (K.rflags and KeyUsesEaseTo3DS) > 0 then WriteSingle(K.easeto);
+  if (K.rflags and KeyUsesEaseFrom3DS) > 0 then WriteSingle(K.easefrom);
 end;
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -1830,11 +1830,11 @@ begin
   Result := DefKeyHeader3DS;
   Result.time := ReadCardinal;
   Result.rflags := ReadWord;
-  if (result.rflags and keyusestension3ds) > 0 then result.tension := readsingle;
-  if (result.rflags and keyusescont3ds) > 0 then result.continuity := readsingle;
-  if (result.rflags and keyusesbias3ds) > 0 then result.bias := readsingle;
-  if (result.rflags and keyuseseaseto3ds) > 0 then result.easeto := readsingle;
-  if (result.rflags and keyuseseasefrom3ds) > 0 then result.easefrom := readsingle;
+  if (Result.rflags and KeyUsesTension3DS) > 0 then Result.tension := ReadSingle;
+  if (Result.rflags and KeyUsesCont3DS) > 0 then Result.continuity := ReadSingle;
+  if (Result.rflags and KeyUsesBias3DS) > 0 then Result.bias := ReadSingle;
+  if (Result.rflags and KeyUsesEaseTo3DS) > 0 then Result.easeto := ReadSingle;
+  if (Result.rflags and KeyUsesEaseFrom3DS) > 0 then Result.easefrom := ReadSingle;
 end;
 
 //---------------------------------------------------------------------------------------------------------------------

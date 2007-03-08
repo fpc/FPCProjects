@@ -1,4 +1,4 @@
-{: filegl2<p>
+{: FileGL2<p>
 
 	Ghoul2 (GLM/GLA) file format loading structures<p>
 
@@ -11,12 +11,12 @@
 	   <li>25/03/03 - SG - Creation
 	</ul></font>
 }
-unit filegl2;
+unit FileGL2;
 
 interface
 
 uses
-  classes,vectortypes,sysutils,vectorgeometry;
+  Classes,VectorTypes,SysUtils,VectorGeometry;
 
 type
   TGLMHeader = record
