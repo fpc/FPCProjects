@@ -1,5 +1,5 @@
-// glwin32viewer
-{: win32 specific.<p>
+// GLWin32Viewer
+{: Win32 specific.<p>
 
 $Log: glwin32viewer.pas,v $
 Revision 1.1  2006/01/10 20:50:46  z0m3ie
@@ -19,28 +19,30 @@ making this stuff again Linux compatible please dont break multi platform suppor
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>04/12/04 - DaS - OnMouseWheel, OnMouseWheelDown, OnMouseWheelUp
+                           published in TGLSceneViewer
       <li>04/12/04 - MF - Added FieldOfView, formula by Ivan Sivak Jr.
       <li>24/07/03 - EG - FullScreen Viewer moved to GLWin32FullScreenViewer
-      <li>11/06/03 - eg - now uses viewerbeforechange to adjust vsync
-      <li>29/10/02 - eg - added mouseenter/leave/incontrol
-      <li>27/09/02 - eg - added ability to set display frequency
-      <li>22/08/02 - eg - added tglsceneviewer.recreatewnd
-      <li>19/08/02 - eg - added gethandle
-      <li>14/03/02 - eg - no longer invalidates while rendering
-      <li>11/02/02 - eg - fixed beforerender
-      <li>29/01/02 - eg - new stayontop/maximize logic (richard smuts)
-      <li>22/01/02 - eg - added tglfullscreenviewer
-      <li>28/12/01 - eg - event persistence change (gligli / dephi bug)
-	   <li>12/12/01 - eg - creation (split from glscene.pas)
+      <li>11/06/03 - EG - Now uses ViewerBeforeChange to adjust VSync
+      <li>29/10/02 - EG - Added MouseEnter/Leave/InControl
+      <li>27/09/02 - EG - Added Ability to set display frequency
+      <li>22/08/02 - EG - Added TGLSceneViewer.RecreateWnd
+      <li>19/08/02 - EG - Added GetHandle
+      <li>14/03/02 - EG - No longer invalidates while rendering
+      <li>11/02/02 - EG - Fixed BeforeRender
+      <li>29/01/02 - EG - New StayOnTop/Maximize logic (Richard Smuts)
+      <li>22/01/02 - EG - Added TGLFullScreenViewer
+      <li>28/12/01 - EG - Event persistence change (GliGli / Dephi bug)
+	    <li>12/12/01 - EG - Creation (split from GLScene.pas)
 	</ul></font>
 }
-unit glwin32viewer;
+unit GLWin32Viewer;
 
 interface
 
 {$i GLScene.inc}
 
-uses windows, graphics, forms, messages, classes, glscene, controls, menus,
+uses Windows, Graphics, Forms, Messages, Classes, GLScene, Controls, Menus,
      glcontext,
      {$ifdef lcl}
      lmessages,lcltype,
@@ -184,6 +186,10 @@ type
          property OnMouseDown;
          property OnMouseMove;
          property OnMouseUp;
+
+         property OnMouseWheel;
+         property OnMouseWheelDown;
+         property OnMouseWheelUp;
 {$ifdef GLS_COMPILER_5_UP}
          property OnContextPopup;
 {$endif}
@@ -199,7 +205,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses opengl1x, sysutils, glwin32context, glcrossplatform;
+uses OpenGL1x, SysUtils, GLWin32Context, GLCrossPlatform;
 
 // SetupVSync
 //
@@ -398,8 +404,8 @@ begin
    end;
    BeginPaint(Handle, @PS);
    try
-      if IsOpenGLAvailable then
-        FBuffer.Render;
+      if IsOpenGLAvailable and (Width>0) and (Height>0) then
+         FBuffer.Render;
    finally
       EndPaint(Handle, @PS);
       Message.Result:=0;
@@ -456,8 +462,8 @@ end;
 //
 procedure TGLSceneViewer.DoBufferChange(Sender : TObject);
 begin
-  if (not Buffer.Rendering) and (not Buffer.Freezed) then
-    Invalidate;
+   if (not Buffer.Rendering) and (not Buffer.Freezed) then
+      Invalidate;
 end;
 
 // DoBufferStructuralChange
