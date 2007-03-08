@@ -1,4 +1,4 @@
-{: glskybox<p>
+{: GLSkyBox<p>
 
    A TGLImmaterialSceneObject drawing 6 quads (plus another quad as "Cloud" plane)
    for use as a skybox always centered on the camera.<p>
@@ -20,19 +20,20 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>21/01/07 - DaStr - Added IGLMaterialLibrarySupported support
       <li>12/04/04 - EG - Added Style property, multipass support
       <li>27/11/03 - EG - Cleanup and fixes
       <li>09/11/03 - MRQZZZ - mandatory changes suggested by Eric.
       <li>02/09/03 - MRQZZZ - Creation
    </ul></font>
 }
-unit glskybox;
+unit GLSkyBox;
 
 interface
 
 uses
-   classes, glscene, gltexture, vectortypes, vectorgeometry, opengl1x, glmisc,
-   xopengl;
+   Classes, GLScene, GLTexture, VectorTypes, VectorGeometry, OpenGL1x, GLMisc,
+   XOpenGL;
 
 type
 
@@ -43,7 +44,7 @@ type
 
    // TGLSkyBox
    //
-   TGLSkyBox = class(TGLImmaterialSceneObject)
+   TGLSkyBox = class(TGLImmaterialSceneObject, IGLMaterialLibrarySupported)
 	   private
 	      { Private Declarations }
          FMatNameTop : String;
@@ -58,6 +59,8 @@ type
          FCloudsPlaneSize : Single;
          FStyle : TGLSkyBoxStyle;
 
+         //implementing IGLMaterialLibrarySupported
+         function GetMaterialLibrary: TGLMaterialLibrary;
 	   protected
 			{ Protected Declarations }
          procedure SetMaterialLibrary(const Value: TGLMaterialLibrary);
@@ -103,7 +106,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses glstate;
+uses GLState;
 
 // ------------------
 // ------------------ TGLSkyBox ------------------
@@ -124,6 +127,13 @@ end;
 destructor TGLSkyBox.Destroy;
 begin
    inherited;
+end;
+
+// GetMaterialLibrary
+//
+function TGLSkyBox.GetMaterialLibrary: TGLMaterialLibrary;
+begin
+  Result := FMaterialLibrary;
 end;
 
 // Notification
