@@ -1,29 +1,29 @@
-// glwindowsfont
-{: tfont import into a bitmapfont using variable width...<p>
+// GLWindowsFont
+{: TFont Import into a BitmapFont using variable width...<p>
 
 	<b>History : </b><font size=-1><ul>
       <li>12/15/04 - Eugene Kryukov - Added TGLStoredBitmapFont
-      <li>03/07/04 - lr - added ifdef for graphics uses
-      <li>29/09/02 - eg - fixed transparency, style fixes, prop defaults fixed,
+      <li>03/07/04 - LR - Added ifdef for Graphics uses
+      <li>29/09/02 - EG - Fixed transparency, style fixes, prop defaults fixed,
                           dropped interface dependency, texture size auto computed,
-                          fixed italics spacing, uses lum+alpha texture
-      <li>06/09/02 - jaj - fixed alot of bugs... expecially designtime updating bugs..
-      <li>12/08/02 - jaj - made into a standalone unit...
+                          fixed italics spacing, uses LUM+ALPHA texture
+      <li>06/09/02 - JAJ - Fixed alot of bugs... Expecially designtime updating bugs..
+      <li>12/08/02 - JAJ - Made into a standalone unit...
 	</ul></font>
 }
-unit glwindowsfont;
+unit GLWindowsFont;
 
 interface
 
 {$include GLScene.inc}
 
 uses
-  glbitmapfont, classes, glscene, gltexture, glcrossplatform,
+  GLBitmapFont, Classes, GLScene, GLTexture, GLCrossPlatform,
   {$ifndef gls_clx}
-  graphics
+  Graphics
   {$else}
-  qgraphics
-  {$endif}
+  QGraphics
+  {$ENDIF}
   ;
 
 type
@@ -102,7 +102,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, vectorgeometry, opengl1x, applicationfileio;
+uses SysUtils, VectorGeometry, OpenGL1x, ApplicationFileIO;
 
 // ------------------
 // ------------------ TGLWindowsBitmapFont ------------------

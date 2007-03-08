@@ -1,28 +1,6 @@
   // In GL windows management
 {: In GL windows management classes and structures<p>
 
-      $Log: glwindows.pas,v $
-      Revision 1.2  2006/01/11 05:28:33  z0m3ie
-      *** empty log message ***
-
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/10 20:38:38  z0m3ie
-      bugfixes from main tree
-
-      Revision 1.3  2006/01/09 20:45:51  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
       <li>20/12/06 - DaStr - TGLEdit.ReadOnly, TGLScrollbar.Locked, TGLStringGrid.ColSelect added
       <li>10/11/05 - Mathx - Fixed TGLPopupMenu stack overflow on method internalRender.
