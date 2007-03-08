@@ -1,5 +1,5 @@
-// glspacetext
-{: win32 specific context.<p>
+// GLSpaceText
+{: Win32 specific Context.<p>
 
       $Log: glspacetext.pas,v $
       Revision 1.1  2006/01/10 20:50:46  z0m3ie
@@ -28,14 +28,14 @@
 	   <li>12/12/01 - EG - Creation (split from GLScene.pas)
 	</ul></font>
 }
-unit glspacetext;
+unit GLSpaceText;
 
 interface
 
 {$i GLScene.inc}
 {$ifdef unix}{$message error 'unit not supported'}{$endif unix}
 
-uses  windows,messages, classes, glscene, graphics, opengl1x, gltexture, glcontext;
+uses Windows, Messages, Classes, GLScene, Graphics, OpenGL1x, GLTexture, GLContext;
 
 type
 
@@ -202,7 +202,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils;
+uses SysUtils;
 
 const
    cFontManagerMsg = 'GLScene FontManagerMessage';
