@@ -1,12 +1,12 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfileobj<p>
+{: GLFileOBJ<p>
 
     Support-Code to load Wavefront OBJ Files into TGLFreeForm-Components
     in GLScene.<p>
-    note that you must manually add this unit to one of your project's uses
-    to enable support for obj & objf at run-time.<p>
+    Note that you must manually add this unit to one of your project's uses
+    to enable support for OBJ & OBJF at run-time.<p>
 
       $Log: glfileobj.pas,v $
       Revision 1.1  2006/01/10 20:50:44  z0m3ie
@@ -22,6 +22,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>11/07/05 - Wet - Added multi meshobject support
       <li>09/09/03 - Jaj - Added TriangleStrip and TriangleFan support to save..
       <li>10/07/03 - Egg - Improved robustness of material loading
       <li>02/06/03 - Egg - Undone Jaj changes, they broke standard OBJ support
@@ -66,14 +67,14 @@
                   Midterm-goal: Import what Poser 4 exports and display it
                                 correctly in an GLScene.<br>
 }
-unit glfileobj;
+unit GLFileObj;
 
 {.$DEFINE STATS} { Define to display statistics after loading. }
 
 interface
 
-uses {$ifdef stats}dialogs, {$endif} classes, sysutils, glscene, applicationfileio,
-     vectorgeometry, glmisc, glvectorfileobjects, vectorlists, gltexture;
+uses {$IFDEF STATS}Dialogs, {$ENDIF} Classes, SysUtils, GLScene, ApplicationFileIO,
+     VectorGeometry, GLMisc, GLVectorFileObjects, VectorLists, GLTexture;
 
 const
    BufSize = 10240; { Load input data in chunks of BufSize Bytes. }
@@ -154,7 +155,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses opengl1x, meshutils, xopengl, glutils;
+uses OpenGL1x, MeshUtils, XOpenGL, GLUtils;
 
 // StreamEOF
 //
@@ -936,8 +937,7 @@ begin
 end;
 
 procedure TGLOBJVectorFile.SaveToStream(aStream:TStream);
-var Mesh:TMeshObject;
-    OldDecimalSeparator:char;
+var OldDecimalSeparator:char;
     
   procedure Write(s:string);
   begin
@@ -958,65 +958,80 @@ var Mesh:TMeshObject;
 
   procedure WriteVertices;
   var s:string;
-      i:integer;
+      j, i, n:integer;
   begin
-    WriteLn(Format('# %d Vertices:',[Mesh.Vertices.Count]));
-    with Mesh.Vertices do
+    n := 0;
+    for j:=0 to Owner.MeshObjects.Count-1 do begin
+      Writeln(Format('# Mesh %d',[j+1]));
+      with Owner.MeshObjects[j].Vertices do begin
       for i:=0 to Count-1 do
         begin
           s:=Format('v %g %g %g',[List^[i][0],List^[i][1],List^[i][2]]);
           Writeln(s);
         end;
+        Inc(n,Count);
+      end;
+    end;
+    WriteLn(Format('# %d Vertices',[n]));
     WriteLn('');
   end;
 
   procedure WriteNormals;
   var s:string;
-      i:integer;
+      j, i, n:integer;
   begin
-    WriteLn(Format('# %d Normals:',[Mesh.Normals.Count]));
-    with Mesh.Normals do
+    n := 0;
+    for j:=0 to Owner.MeshObjects.Count-1 do begin
+      Writeln(Format('# Mesh %d',[j+1]));
+      with Owner.MeshObjects[j].Normals do begin
       for i:=0 to Count-1 do
         begin
           s:=Format('vn %g %g %g',[List^[i][0],List^[i][1],List^[i][2]]);
           Writeln(s);
         end;
+        Inc(n,Count);
+      end;
+    end;
+    WriteLn(Format('# %d Normals',[n]));
     WriteLn('');
   end;
 
   procedure WriteTexCoords;
   var s:string;
-      i:integer;
+      j, i, n:integer;
   begin
-    WriteLn(Format('# %d Texture-Coordinates:',[Mesh.TexCoords.Count]));
-    with Mesh.TexCoords do
+    n := 0;
+    for j:=0 to Owner.MeshObjects.Count-1 do begin
+      Writeln(Format('# Mesh %d',[j+1]));
+      with Owner.MeshObjects[j].TexCoords do begin
       for i:=0 to Count-1 do
         begin
           s:=Format('vt %g %g',[List^[i][0],List^[i][1]]);
           Writeln(s);
         end;
+        Inc(n,Count);
+      end;
+    end;
+    WriteLn(Format('# %d Texture-Coordinates',[n]));
     WriteLn('');
   end;
 
-  procedure WriteOBJFaceGroup(aFaceGroup:TOBJFGVertexNormalTexIndexList);
+  procedure WriteOBJFaceGroup(aFaceGroup:TOBJFGVertexNormalTexIndexList; o : Integer = 0);
   var vIdx,nIdx,tIdx:integer;
       i,Index,Polygon:integer;
       Line,t:string;
   begin
     with aFaceGroup do
       begin
-        if Name=''
-          then Writeln('g')
-          else WriteLn('g '+Name);
         Index:=0;
         for Polygon:=0 to PolygonVertices.Count-1 do
           begin
             Line:='f ';
             for i:=1 to PolygonVertices[Polygon] do
               begin
-                vIdx:=VertexIndices[Index]+1;
-                nIdx:=NormalIndices[Index]+1;
-                tIdx:=TexCoordIndices[Index]+1;
+                vIdx:=VertexIndices[Index]+1+o;
+                nIdx:=NormalIndices[Index]+1+o;
+                tIdx:=TexCoordIndices[Index]+1+o;
                 t:=IntToStr(vIdx)+'/';
                 if tIdx=-1 then t:=t+'/' else t:=t+IntToStr(tIdx)+'/';
                 if nIdx=-1 then t:=t+'/' else t:=t+IntToStr(nIdx)+'/';
@@ -1029,45 +1044,42 @@ var Mesh:TMeshObject;
     Writeln('');
   end;
 
-   procedure WriteIndexTexCoordList(fg : TFGIndexTexCoordList);
+   procedure WriteVertexIndexList(fg : TFGVertexIndexList; o : Integer = 0);
    var
       i, n : Integer;
    begin
       case fg.Mode of
         fgmmTriangles :
         Begin
-          Writeln('g');
           n:=fg.VertexIndices.Count-3;
           i:=0; while i<=n do begin
              Writeln(Format('f %d/%0:d %d/%1:d %d/%2:d',
-                            [fg.VertexIndices[i]+1,
-                             fg.VertexIndices[i+1]+1,
-                             fg.VertexIndices[i+2]+1]));
+                            [fg.VertexIndices[i]+1+o,
+                             fg.VertexIndices[i+1]+1+o,
+                             fg.VertexIndices[i+2]+1+o]));
              Inc(i, 3);
           End;
         End;
         fgmmTriangleFan :
         Begin
-          Writeln('g');
           Write('f ');
           n:=fg.VertexIndices.Count-1;
           i:=0; while i<=n do begin
              If i<n then
-               Write(Format('%d/%0:d ',[fg.VertexIndices[i]+1]))
+               Write(Format('%d/%0:d ',[fg.VertexIndices[i]+1+o]))
              else
-               Writeln(Format('%d/%0:d',[fg.VertexIndices[i]+1]));
+               Writeln(Format('%d/%0:d',[fg.VertexIndices[i]+1+o]));
              Inc(i);
           End;
         End;
         fgmmTriangleStrip :
         Begin
-          Writeln('g');
           n:=fg.VertexIndices.Count-3;
           i:=0; while i<=n do begin
              Writeln(Format('f %d/%0:d %d/%1:d %d/%2:d',
-                            [fg.VertexIndices[i]+1,
-                             fg.VertexIndices[i+1]+1,
-                             fg.VertexIndices[i+2]+1]));
+                            [fg.VertexIndices[i]+1+o,
+                             fg.VertexIndices[i+1]+1+o,
+                             fg.VertexIndices[i+2]+1+o]));
 
              Inc(i);
           End;
@@ -1077,21 +1089,31 @@ var Mesh:TMeshObject;
 
    procedure WriteFaceGroups;
    var
-      i : Integer;
+      j, i, k: Integer;
       fg : TFaceGroup;
+      MoName: string;
    begin
-      for i:=0 to Mesh.FaceGroups.Count-1 do begin
-         fg:=Mesh.FaceGroups[i];
+     k := 0;
+     for j:=0 to Owner.MeshObjects.Count-1 do begin
+       MoName := Owner.MeshObjects[j].Name;
+       if MoName = '' then MoName := Format('Mesh%d',[j+1]);
+        Writeln('g ' + MoName);
+        for i:=0 to Owner.MeshObjects[j].FaceGroups.Count-1 do begin
+           Writeln(Format('s %d',[i+1]));
+           fg:=Owner.MeshObjects[j].FaceGroups[i];
          if fg is TOBJFGVertexNormalTexIndexList then
-            WriteOBJFaceGroup(TOBJFGVertexNormalTexIndexList(fg))
-         else if fg is TFGIndexTexCoordList then
-            WriteIndexTexCoordList(TFGIndexTexCoordList(fg));
+              WriteOBJFaceGroup(TOBJFGVertexNormalTexIndexList(fg),k)
+           else if fg is TFGVertexIndexList then
+              WriteVertexIndexList(TFGVertexIndexList(fg),k)
+           else Assert(False); //unsupported face group
+        end;
+        //advance vertex index offset
+        Inc(k,Owner.MeshObjects[j].Vertices.Count);
       end;
    end;
 
 begin
   Assert(Owner is TGLFreeForm,'Can only save FreeForms.');
-  Assert(Owner.MeshObjects.Count<=1,'Only single meshes supported.');
 
   OldDecimalSeparator:=DecimalSeparator;
   DecimalSeparator:='.';
@@ -1099,17 +1121,10 @@ begin
     from this block }
   try
     WriteHeader;
-
-    if Owner.MeshObjects.Count>0 then
-      begin
-        Mesh:=Owner.MeshObjects[0];
-
         WriteVertices;
         WriteNormals;
         WriteTexCoords;
-
         WriteFaceGroups;
-      end;
   finally
     DecimalSeparator:=OldDecimalSeparator;
   end;
