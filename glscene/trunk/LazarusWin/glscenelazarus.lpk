@@ -574,7 +574,6 @@
       </Item129>
       <Item130>
         <Filename Value="..\Source\gltimeeventsmgr.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="gltimeeventsmgr"/>
       </Item130>
