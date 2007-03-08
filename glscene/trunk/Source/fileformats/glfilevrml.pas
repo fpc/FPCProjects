@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfilevrml<p>
+{: GLFileVRML<p>
 
    Preliminary VRML vector file support for GLScene.<p>
 
@@ -30,13 +30,13 @@
       <li>14/01/05 - SG - Added to CVS
    </ul></font>
 }
-unit glfilevrml;
+unit GLFileVRML;
 
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects, glmisc, gltexture, applicationfileio,
-  vectorgeometry, vectorlists, vrmlparser, meshutils;
+  Classes, SysUtils, GLVectorFileObjects, GLMisc, GLTexture, ApplicationFileIO,
+  VectorGeometry, VectorLists, VRMLParser, MeshUtils;
 
 type
 

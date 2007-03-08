@@ -1,33 +1,20 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfiletin<p>
+{: GLFileTIN<p>
 
 	TIN (Triangular Irregular Network) vector file format implementation.<p>
-
-      $Log: glfiletin.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:31  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History :</b><font size=-1><ul>
       <li>05/06/03 - SG - Separated from GLVectorFileObjects.pas
 	</ul></font>
 }
-unit glfiletin;
+unit GLFileTIN;
 
 interface
 
 uses
-  classes, sysutils, glvectorfileobjects, applicationfileio, vectorgeometry;
+  Classes, SysUtils, GLVectorFileObjects, ApplicationFileIO, VectorGeometry;
 
 type
    // TGLTINVectorFile
@@ -51,7 +38,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses glmisc, glutils;
+uses GLMisc, GLUtils;
 
 // ------------------
 // ------------------ TGLTINVectorFile ------------------

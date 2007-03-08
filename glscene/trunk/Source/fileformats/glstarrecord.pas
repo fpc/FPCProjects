@@ -1,16 +1,16 @@
-{: glstarrecord<p>
+{: GLStarRecord<p>
 
-   unit to interface with simple star records aimed for background skies.<p>
+   Unit to interface with simple star records aimed for background skies.<p>
 
 	<b>History : </b><font size=-1><ul>
 	   <li>05/07/03 - EG - Creation
 	</ul></font>
 }
-unit glstarrecord;
+unit GLStarRecord;
 
 interface
 
-uses vectorgeometry;
+uses VectorGeometry;
 
 type
    TGLStarRecord = packed record
@@ -21,9 +21,9 @@ type
    end;
    PGLStarRecord = ^TGLStarRecord;
 
-{: computes position on the unit sphere of a star record (z=up). }
+{: Computes position on the unit sphere of a star record (Z=up). }
 function StarRecordPositionZUp(const starRecord : TGLStarRecord) : TAffineVector;
-{: computes position on the unit sphere of a star record (y=up). }
+{: Computes position on the unit sphere of a star record (Y=up). }
 function StarRecordPositionYUp(const starRecord : TGLStarRecord) : TAffineVector;
 {: Computes star color from BV index (RGB) and magnitude (alpha). }
 function StarRecordColor(const starRecord : TGLStarRecord; bias : Single) : TVector;

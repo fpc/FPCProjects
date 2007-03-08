@@ -1,24 +1,11 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glfilestl<p>
+{: GLFileSTL<p>
 
     Support-code to load STL Files into TGLFreeForm-Components in GLScene.<p>
-    note that you must manually add this unit to one of your project's uses
-    to enable support for stl files at run-time.<p>
-
-      $Log: glfilestl.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:31  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
+    Note that you must manually add this unit to one of your project's uses
+    to enable support for STL files at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
       <li>22/11/02 - EG - Write capability now properly declared
@@ -26,11 +13,11 @@
                           ASCII STL support (Adem)
    </ul><p>
 }
-unit glfilestl;
+unit GLFileSTL;
 
 interface
 
-uses classes, glvectorfileobjects, glmisc, applicationfileio;
+uses Classes, GLVectorFileObjects, GLMisc, ApplicationFileIO;
 
 type
 
@@ -59,7 +46,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses typesstl, vectorgeometry, vectorlists, sysutils, glutils;
+uses TypesSTL, VectorGeometry, VectorLists, SysUtils, GLUtils;
 
 const
   cSOLID_LABEL       = 'SOLID';
