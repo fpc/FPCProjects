@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="151">
+    <Files Count="152">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -191,59 +191,59 @@
       </Item37>
       <Item38>
         <Filename Value="../Source/fileformats/glfile3ds.pas"/>
-        <UnitName Value="glfile3ds"/>
+        <UnitName Value="GLFile3DS"/>
       </Item38>
       <Item39>
         <Filename Value="../Source/fileformats/glfilegl2.pas"/>
-        <UnitName Value="glfilegl2"/>
+        <UnitName Value="GLFileGL2"/>
       </Item39>
       <Item40>
         <Filename Value="../Source/fileformats/glfilegts.pas"/>
-        <UnitName Value="glfilegts"/>
+        <UnitName Value="GLFileGTS"/>
       </Item40>
       <Item41>
         <Filename Value="../Source/fileformats/glfilelwo.pas"/>
-        <UnitName Value="glfilelwo"/>
+        <UnitName Value="GLFileLWO"/>
       </Item41>
       <Item42>
         <Filename Value="../Source/fileformats/glfilemd2.pas"/>
-        <UnitName Value="glfilemd2"/>
+        <UnitName Value="GLFileMD2"/>
       </Item42>
       <Item43>
         <Filename Value="../Source/fileformats/glfilemd3.pas"/>
-        <UnitName Value="glfilemd3"/>
+        <UnitName Value="GLFileMD3"/>
       </Item43>
       <Item44>
         <Filename Value="../Source/fileformats/glfilemd5.pas"/>
-        <UnitName Value="glfilemd5"/>
+        <UnitName Value="GLFileMD5"/>
       </Item44>
       <Item45>
         <Filename Value="../Source/fileformats/glfilemdc.pas"/>
-        <UnitName Value="glfilemdc"/>
+        <UnitName Value="GLFileMDC"/>
       </Item45>
       <Item46>
         <Filename Value="../Source/fileformats/glfilems3d.pas"/>
-        <UnitName Value="glfilems3d"/>
+        <UnitName Value="GLFileMS3D"/>
       </Item46>
       <Item47>
         <Filename Value="../Source/fileformats/glfilenmf.pas"/>
-        <UnitName Value="glfilenmf"/>
+        <UnitName Value="GLFileNMF"/>
       </Item47>
       <Item48>
         <Filename Value="../Source/fileformats/glfilenurbs.pas"/>
-        <UnitName Value="glfilenurbs"/>
+        <UnitName Value="GLFileNurbs"/>
       </Item48>
       <Item49>
         <Filename Value="../Source/fileformats/glfileobj.pas"/>
-        <UnitName Value="glfileobj"/>
+        <UnitName Value="GLFileObj"/>
       </Item49>
       <Item50>
         <Filename Value="../Source/fileformats/glfileply.pas"/>
-        <UnitName Value="glfileply"/>
+        <UnitName Value="GLFilePLY"/>
       </Item50>
       <Item51>
         <Filename Value="../Source/fileformats/glfilesmd.pas"/>
-        <UnitName Value="glfilesmd"/>
+        <UnitName Value="GLFileSMD"/>
       </Item51>
       <Item52>
         <Filename Value="../Source/fileformats/glfilestl.pas"/>
@@ -505,7 +505,7 @@
       </Item114>
       <Item115>
         <Filename Value="../Source/glskydome.pas"/>
-        <UnitName Value="glskydome"/>
+        <UnitName Value="GLSkydome"/>
       </Item115>
       <Item116>
         <Filename Value="../Source/glspatialpartitioning.pas"/>
@@ -513,7 +513,7 @@
       </Item116>
       <Item117>
         <Filename Value="../Source/glstate.pas"/>
-        <UnitName Value="glstate"/>
+        <UnitName Value="GLState"/>
       </Item117>
       <Item118>
         <Filename Value="../Source/glstrings.pas"/>
@@ -533,7 +533,7 @@
       </Item121>
       <Item122>
         <Filename Value="../Source/glthorfx.pas"/>
-        <UnitName Value="glthorfx"/>
+        <UnitName Value="GLThorFX"/>
       </Item122>
       <Item123>
         <Filename Value="../Source/gltileplane.pas"/>
@@ -542,7 +542,7 @@
       <Item124>
         <Filename Value="../Source/gltimeeventsmgr.pas"/>
         <AddToUsesPkgSection Value="False"/>
-        <UnitName Value="gltimeeventsmgr"/>
+        <UnitName Value="GLTimeEventsMgr"/>
       </Item124>
       <Item125>
         <Filename Value="../Source/gltrail.pas"/>
@@ -552,11 +552,11 @@
         <Filename Value="../Source/gltree.pas"/>
         <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
-        <UnitName Value="gltree"/>
+        <UnitName Value="GLTree"/>
       </Item126>
       <Item127>
         <Filename Value="../Source/glutils.pas"/>
-        <UnitName Value="glutils"/>
+        <UnitName Value="GLUtils"/>
       </Item127>
       <Item128>
         <Filename Value="../Source/glvectorfileobjects.pas"/>
@@ -584,7 +584,7 @@
       </Item133>
       <Item134>
         <Filename Value="../Source/glzbuffer.pas"/>
-        <UnitName Value="glzbuffer"/>
+        <UnitName Value="GLzBuffer"/>
       </Item134>
       <Item135>
         <Filename Value="../Source/platform/cadencerasap.pas"/>
@@ -671,6 +671,10 @@
         <HasRegisterProc Value="True"/>
         <UnitName Value="registerxcollection"/>
       </Item151>
+      <Item152>
+        <Filename Value="../Source/fileformats/glvfspak.pas"/>
+        <UnitName Value="GLVfsPAK"/>
+      </Item152>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">

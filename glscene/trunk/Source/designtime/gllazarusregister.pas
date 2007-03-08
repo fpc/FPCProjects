@@ -158,7 +158,7 @@ uses
    gllensflare,gltexlensflare,glmirror,glshadowplane,glshadowvolume,
    glzbuffer,glprojectedtextures,glblur,gltrail,gltree,glmultiproxy,
    GLTimeEventsMgr, GLNavigator, GLFPSMovement, GLDCE,
-   ApplicationFileIO,
+   ApplicationFileIO, GLVfsPAK,
    glfeedback,glextrusion,glbumpmaphds,glheighttilefilehds,
    glterrainrenderer,glgamemenu, gltextureimageeditors,
    glstate, glutils, glwaterplane,
@@ -706,7 +706,7 @@ begin
                        TGLDCEManager, TGLFPSMovementManager,
                        TGLBumpmapHDS, TGLPerlinHDS,
                        TCollisionManager, TGLAnimationControler,
-                       TGLTimeEventsMGR, TApplicationFileIO
+                       TGLTimeEventsMGR, TApplicationFileIO, TGLVfsPAK
                       ]);
 
    RegisterComponentEditor(TGLSceneViewer, TGLSceneViewerEditor);

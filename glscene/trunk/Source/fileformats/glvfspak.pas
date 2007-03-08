@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glvfspak<p>
+{: GLVfsPAK<p>
 
 	Support-code for loading files from Quake II PAK Files.<p>
    When instance is created all LoadFromFile methods using
@@ -9,6 +9,7 @@
    You can change current PAK file by ActivePak variable.<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>29/01/2007 - DaStr - Moved registration to GLSceneRegister.pas
       <li>26/10/2006 - LC - Fixed memory leak in TGLVfsPAK.LoadFromFile. Bugtracker ID=1585215 (thanks Da Stranger)
       <li>18/10/2004 - Orchestraman - PAKCreateFileStream, Fixed an error when trying to load an image file in material editor during design time. It Loads the file from the Hard Disk. 
       <li>14/10/2004 - Orchestraman - PAKCreateFileStream, PAKFileStreamExists procedures redirect the streaming to hard disk if pack file does not exist.
@@ -23,7 +24,7 @@
 	</ul></font>
 
 }
-unit glvfspak;
+unit GLVfsPAK;
 
 // Activate support for LZRW1 compression. This line could be moved to GLScene.inc file.
 // Remove the "." characted in order to activate compression features.
@@ -31,8 +32,8 @@ unit glvfspak;
 
 interface
 
-uses classes, contnrs, sysutils, applicationfileio
-{$ifdef gls_lzrw_support},lzrw1{$endif};
+uses Classes, Contnrs, SysUtils, ApplicationFileIO
+{$IFDEF GLS_LZRW_SUPPORT},LZRW1{$ENDIF};
 
 const
    SIGN = 'PACK'; //Signature for uncompressed - raw pak.
@@ -124,8 +125,6 @@ type
 function PAKCreateFileStream(const fileName: string; mode: word): TStream;
 function PAKFileStreamExists(const fileName: string): boolean;
 
-procedure Register;
-
 var
    ActiveVfsPAK: TGLVfsPak;
 
@@ -133,11 +132,6 @@ implementation
 
 var
    Dir: TFileSection;
-
-procedure Register;
-begin
-	RegisterComponents('GLScene Utils', [TGLVfsPAK]);
-end;
 
 function BackToSlash(s: string): string;
 var
@@ -236,13 +230,13 @@ begin
    Self.Create(AOwner);
 {$IFDEF GLS_LZRW_SUPPORT}
    FCompressor := Tlzrw1.Create(nil);
-   fcompressor.usestream := true;
-   fcompressor.visible := false; //dont remove this, it will cause probs!!!!
-   fcompressionlevel := cbrmode;
-{$else}
-   fcompressionlevel := none;
-{$endif}
-   fcompressed := fcompressionlevel <> none;
+   FCompressor.UseStream := True;
+   FCompressor.Visible := False; //DONT remove this, it will cause probs!!!!
+   FCompressionLevel := CbrMode;
+{$ELSE}
+   FCompressionLevel := None;
+{$ENDIF}
+   FCompressed := FCompressionLevel <> None;
 end;
 
 // TGLVfsPAK.Destroy
@@ -327,17 +321,17 @@ begin
    if FCompressed then
     if not Assigned(FCompressor) then begin
       FCompressor := Tlzrw1.Create(nil);
-      fcompressor.usestream := true;
-      fcompressor.visible := false; //dont remove this, it will cause probs!!!!
-      fcompressionlevel := fcompressionlevel;
+      FCompressor.UseStream := True;
+      FCompressor.Visible := False; //DONT remove this, it will cause probs!!!!
+      FCompressionLevel := FCompressionLevel;
     end;
-{$else}
-   if fcompressed then begin
-    fstream.free;
-    raise exception.create(filename + ' - this is a compressed pak file. this version of software does not support compressed pak files.');
-    exit;
+{$ELSE}
+   if FCompressed then begin
+    FStream.Free;
+    raise Exception.Create(FileName + ' - This is a compressed PAK file. This version of software does not support Compressed Pak files.');
+    Exit;
    end;
-{$endif}
+{$ENDIF}
 
    if FileCount <> 0 then
       MakeFileList;
