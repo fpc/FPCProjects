@@ -1,36 +1,21 @@
-{: glstate<p>
+{: GLState<p>
 
    Miscellaneous support routines & classes.<p>
 
-      $Log: glstate.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>19/12/06 - DaS - GetGLCurrentTexture, ResetGLTexture added to TGLStateCache
       <li>04/10/04 - NC - Added stTextureRect (GL_TEXTURE_RECTANGLE_NV)
       <li>07/01/04 - EG - Introduced TGLStateCache
       <li>05/09/03 - EG - Creation from GLMisc split
    </ul></font>
 }
-unit glstate;
+unit GLState;
 
 interface
 
-uses classes, vectorgeometry, sysutils, opengl1x;
+uses Classes, VectorGeometry, SysUtils, OpenGL1x;
 
-{$i GLScene.inc}
+{$I GLScene.inc}
 
 type
 
@@ -93,10 +78,11 @@ type
          procedure ResetGLMaterialColors;
 
          {: Specify a new texture handle for the target of textureUnit.<p>
-            Does NOT perform glActiveTextureARB calls. } 
+            Does NOT perform glActiveTextureARB calls. }
          procedure SetGLCurrentTexture(const textureUnit, target, handle : Integer);
+         function GetGLCurrentTexture(const TextureUnit: Integer): Integer;
+         procedure ResetGLTexture(const TextureUnit: Integer);
          procedure ResetGLCurrentTexture;
-
          {: Defines the OpenGL texture matrix.<p>
             Assumed texture mode is GL_MODELVIEW. }
          procedure SetGLTextureMatrix(const matrix : TMatrix);
@@ -117,7 +103,6 @@ type
          procedure ResetAll;
 
          // read only properties
-
          property States : TGLStates read FStates;
    end;
 
@@ -271,6 +256,22 @@ begin
    FFrontBackShininess[1]:=0;
 end;
 
+// GetGLCurrentTexture
+//
+function TGLStateCache.GetGLCurrentTexture(
+  const TextureUnit: Integer): Integer;
+begin
+  Result := FTextureHandle[TextureUnit];
+end;
+
+// ResetGLTexture
+//
+procedure TGLStateCache.ResetGLTexture(const TextureUnit: Integer);
+begin
+  FTextureHandle[TextureUnit] := -1;
+end;
+
+
 // SetGLCurrentTexture
 //
 procedure TGLStateCache.SetGLCurrentTexture(const textureUnit, target, handle : Integer);
@@ -360,5 +361,6 @@ begin
    ResetGLCurrentTexture;
    ResetGLFrontFace;
 end;
+
 
 end.
