@@ -1,8 +1,10 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-// 12/08/02 - eg - readmatentrychunk fix / color_f chunk (coerni)
-unit utils3ds;
+// 09/03/07 - DaStr - Fixed a potential AV in two InitMeshObj procedures (thanks Burkhard Carstens)
+// 27/10/06 - LC - Fixed memory leak in RelMeshObjField. Bugtracker ID=1585639
+// 12/08/02 - EG - ReadMatEntryChunk fix / COLOR_F chunk (coerni)
+unit Utils3DS;
 
 
 {
@@ -39,7 +41,7 @@ interface
   {$PACKRECORDS C}
 {$ENDIF}
 
-uses classes, file3ds, types3ds, dialogs;
+uses Classes, File3DS, Types3DS;
 
 // functions to retrieve global settings of a specific 3DS database
 function GetAtmosphere(const Source: TFile3DS; var DB: TDatabase3DS): TAtmosphere3DS;
@@ -127,7 +129,7 @@ procedure ShowErrorFormatted(ErrorMessage: String; const Args: array of const);
 
 implementation
 
-uses sysutils, const3ds;
+uses SysUtils, Const3DS;
 
 type E3DSError = class(Exception);
 
@@ -589,9 +591,9 @@ begin
         if assigned(chunk) then bgndused := btusesolidbgnd
                            else
         begin
-          chunk := findchunk(mdatachunk, use_v_gradient);
-          if assigned(chunk) then bgndused := btusevgradientbgnd
-                             else bgndused := btnobgnd;
+          Chunk := FindChunk(MDataChunk, USE_V_GRADIENT);
+          if Assigned(Chunk) then BgndUsed := btUseVGradientBgnd
+                             else BgndUsed := btNoBgnd;
         end;
       end;
    end;
@@ -1467,12 +1469,12 @@ var Output : String;
 
 begin
    Output := Format('%sFrame %d', [Indent(IndentLevel), Key.Time]);
-   if (key.rflags and keyusestension3ds)  <> 0 then output := output + format(', tens %.2f', [key.tension]);
-   if (key.rflags and keyusescont3ds)     <> 0 then output := output + format(', cont %.2f', [key.continuity]);
-   if (key.rflags and keyusesbias3ds)     <> 0 then output := output + format(', bias %.2f', [key.bias]);
-   if (key.rflags and keyuseseaseto3ds)   <> 0 then output := output + format(', ease to %.2f', [key.easeto]);
-   if (key.rflags and keyuseseasefrom3ds) <> 0 then output := output + format(', ease from %.2f', [key.easefrom]);
-   strings.add(output);
+   if (Key.rflags and KeyUsesTension3DS)  <> 0 then Output := Output + Format(', Tens %.2f', [Key.Tension]);
+   if (Key.rflags and KeyUsesCont3DS)     <> 0 then Output := Output + Format(', Cont %.2f', [Key.Continuity]);
+   if (Key.rflags and KeyUsesBias3DS)     <> 0 then Output := Output + Format(', Bias %.2f', [Key.Bias]);
+   if (Key.rflags and KeyUsesEaseTo3DS)   <> 0 then Output := Output + Format(', Ease to %.2f', [Key.EaseTo]);
+   if (Key.rflags and KeyUsesEaseFrom3DS) <> 0 then Output := Output + Format(', Ease from %.2f', [Key.EaseFrom]);
+   Strings.Add(Output);
 end;
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -3845,6 +3847,7 @@ begin
         end
         else // else this is an existing block
         begin
+          // just resize it
           ReallocMem(VertexArray, SizeOf(TPoint3DS) * NVertices);
           if VertexArray = nil then ShowError(Error3DS_NO_MEM);
         end;
@@ -3923,6 +3926,7 @@ begin
         begin
           SmoothArray := AllocMem(NFaces * SizeOf(Integer));
           if SmoothArray = nil then ShowError(Error3DS_NO_MEM);
+
           // done by AllocMem
           // for I := 0 to NFaces - 1 do SmoothArray[I] := 0;
         end

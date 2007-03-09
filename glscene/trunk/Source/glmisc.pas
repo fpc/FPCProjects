@@ -28,6 +28,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>09/03/07 - DaStr - Removed obsolete FPC IFDEF's (thanks Burkhard Carstens)
       <li>29/01/07 - DaStr - TGLCustomCoordinates.SetVector - Added default value
                              to one of the procedure's parameters
                              Added TGLCustomCoordinates.AsPoint2D property
