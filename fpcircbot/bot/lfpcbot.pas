@@ -142,8 +142,8 @@ begin
   Con.AddCommand('google', @Doer.OnGoogle, 'Syntax: google <word> Info: makes me write a link to google search for you lazy asses');
   Con.AddCommand('spell', @Doer.OnSpell, 'Syntax: spell <sentence> Info: makes me tell you if your spelling is correct english and if not, suggest a better one. Encoding is UTF-8.');
   Con.AddCommand('lspell', @Doer.OnLSpell, 'Syntax: lspell <language code> <sentence> Info: makes me tell you if your spelling is correct in given language and if not, suggest a better one. Encoding is UTF-8. Example: lspell en mother goes shopping');
-  Con.AddCommand('firstword', @Doer.OnFirstWord, 'Syntax: firstword <nick> Info: makes me tell you the 1st thing someone sayed');
-  Con.AddCommand('lastword', @Doer.OnLastWord, 'Syntax: lastword <nick> Info: makes me tell you the last thing someone sayed');
+  Con.AddCommand('firstword', @Doer.OnFirstWord, 'Syntax: firstword <nick> Info: makes me tell you the 1st thing someone said');
+  Con.AddCommand('lastword', @Doer.OnLastWord, 'Syntax: lastword <nick> Info: makes me tell you the last thing someone said');
   Con.AddCommand('logurl', @Doer.OnLogUrl, 'Syntax: logurl Info: makes me tell you where the log is (don''t use in private');
   Con.AddCommand('pasteurl', @Doer.OnPasteUrl, 'Syntax: pasteurl [title] Info: makes me tell you where the pastebin is (don''t use in private)');
   Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Syntax: listpusers Info: makes me list power users');
