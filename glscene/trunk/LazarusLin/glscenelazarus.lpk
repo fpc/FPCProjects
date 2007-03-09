@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="152">
+    <Files Count="153">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -288,7 +288,7 @@
       </Item61>
       <Item62>
         <Filename Value="../Source/fileformats/q3md3.pas"/>
-        <UnitName Value="q3md3"/>
+        <UnitName Value="Q3MD3"/>
       </Item62>
       <Item63>
         <Filename Value="../Source/fileformats/tga.pas"/>
@@ -506,7 +506,7 @@
       </Item114>
       <Item115>
         <Filename Value="../Source/glscene.pas"/>
-        <UnitName Value="glscene"/>
+        <UnitName Value="GLScene"/>
       </Item115>
       <Item116>
         <Filename Value="../Source/glscreen.pas"/>
@@ -675,6 +675,9 @@
         <Filename Value="../Source/soundapis/fmod.pas"/>
         <UnitName Value="fmod"/>
       </Item152>
+      <Item153>
+        <Filename Value="../Source/glheightdata.pas"/>
+      </Item153>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
