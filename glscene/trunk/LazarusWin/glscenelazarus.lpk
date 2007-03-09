@@ -43,7 +43,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="161">
+    <Files Count="162">
       <Item1>
         <Filename Value="..\Source\Base\applicationfileio.pas"/>
         <UnitName Value="applicationfileio"/>
@@ -720,6 +720,10 @@
         <Filename Value="..\Source\fileformats\glvfspak.pas"/>
         <UnitName Value="GLVfsPAK"/>
       </Item161>
+      <Item162>
+        <Filename Value="..\Source\glheightdata.pas"/>
+        <UnitName Value="glheightdata"/>
+      </Item162>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">

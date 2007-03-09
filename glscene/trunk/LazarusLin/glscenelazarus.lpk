@@ -677,6 +677,7 @@
       </Item152>
       <Item153>
         <Filename Value="../Source/glheightdata.pas"/>
+        <UnitName Value="glheightdata"/>
       </Item153>
     </Files>
     <Type Value="DesignTime"/>
