@@ -333,22 +333,14 @@ type
 
    {: A TGLCustomCoordinates that publishes X, Y properties. }
     TGLCoordinates2 = class(TGLCustomCoordinates)
-//{$ifndef FPC}
     published
-//{$ELSE}
-//    public
-//{$endif}
       property X stored False;
       property Y stored False;
   	end;
 
    {: A TGLCustomCoordinates that publishes X, Y, Z properties. }
     TGLCoordinates3 = class(TGLCustomCoordinates)
-{$ifndef FPC}
     published
-{$ELSE}
-    public
-{$endif}
       property X stored False;
       property Y stored False;
       property Z stored False;
@@ -358,11 +350,7 @@ type
    //
    {: A TGLCustomCoordinates that publishes X, Y, Z, W properties. }
 	  TGLCoordinates4 = class (TGLCustomCoordinates)
-//{$ifndef FPC}
     published
-//{$ELSE}
-//    public
-//{$endif}
       property X stored False;
       property Y stored False;
       property Z stored False;
@@ -425,7 +413,6 @@ type
             The W component is automatically adjustes depending on style. }
 			property AsAffineVector : TAffineVector read GetAsAffineVector write SetAsAffineVector;
 
-{.(crossbuilder) should not be necessary anyore: $ifndef FPC}
 			property W: TGLFloat index 3 read FCoords[3] write SetCoordinate stored StoreCoordinate;
 
 	   published
@@ -433,36 +420,8 @@ type
 			property X: TGLFloat index 0 read FCoords[0] write SetCoordinate stored StoreCoordinate;
 			property Y: TGLFloat index 1 read FCoords[1] write SetCoordinate stored StoreCoordinate;
 			property Z: TGLFloat index 2 read FCoords[2] write SetCoordinate stored StoreCoordinate;
-{.(crossbuilder) should not be necessary anyore: $else}
-(*			property X: TGLFloat index 0 read FCoords[0] write SetCoordinate stored False;
-			property Y: TGLFloat index 1 read FCoords[1] write SetCoordinate stored False;
-			property Z: TGLFloat index 2 read FCoords[2] write SetCoordinate stored False;
-			property W: TGLFloat index 3 read FCoords[3] write SetCoordinate stored False;  *)
-{.(crossbuilder) should not be necessary anyore: $endif}
 	end;
 
-{$ifdef FPC}
-(*Since fpc-2.1.1 r4618 this is not necessary anymore, because TCollection.BeginUpdate .EndUpdate are virtual now.
-   TOwnedCollection = class(TCollection)
-      private
-	      { Private Declarations }
-         FOwner : TPersistent;
-         FUpdateCount : Integer;
-
-      protected
-	      { Protected Declarations }
-         function GetOwner : TPersistent; override;
-         property UpdateCount : Integer read FUpdateCount;
-
-      public
-	      { Public Declarations }
-         constructor Create(AOwner: TPersistent; ItemClas: TCollectionItemClass);
-
-         procedure BeginUpdate; virtual;
-         procedure EndUpdate; virtual;
-   end;
- *)
-{$endif}
 
 	// TGLNodes
 	//
@@ -1214,42 +1173,6 @@ begin
    Result:=(FCoords[Indx]<>0);
 end;
 
-// ------------------
-// ------------------ TOwnedCollection ------------------
-// ------------------
-{$ifdef FPC}
-(*Since fpc-2.1.1 r4618 this is not necessary anymore, because TCollection.BeginUpdate .EndUpdate ar virtual now.
-// Create
-//
-constructor TOwnedCollection.Create(AOwner: TPersistent; ItemClas: TCollectionItemClass);
-begin
-   inherited Create(ItemClas);
-   FOwner:=AOwner;
-end;
-
-// GetOwner
-//
-function TOwnedCollection.GetOwner : TPersistent;
-begin
-   Result:=FOwner;
-end;
-
-// BeginUpdate
-//
-procedure TOwnedCollection.BeginUpdate;
-begin
-   Inc(FUpdateCount);
-end;
-
-// EndUpdate
-//
-procedure TOwnedCollection.EndUpdate;
-begin
-   Dec(FUpdateCount);
-   Assert(FUpdateCount>=0, 'Unabalanced Begin/EndUpdate');
-end;
-*)
-{$endif}
 // ------------------
 // ------------------ TGLNodes ------------------
 // ------------------
