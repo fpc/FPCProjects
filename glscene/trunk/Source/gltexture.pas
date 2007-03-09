@@ -2056,8 +2056,7 @@ end;
 constructor TGLColor.CreateInitialized(AOwner : TPersistent; const color : TColorVector;
                                        changeEvent : TNotifyEvent = nil);
 begin
-   // Create(AOwner); // leak, initialized creates defaultcolor 2x and frees only 1x
-   inherited Create(AOwner);
+   Create(AOwner);
    Initialize(color);
    OnNotifyChange:=changeEvent;
 end;
@@ -2066,7 +2065,7 @@ end;
 //
 destructor TGLColor.Destroy;
 begin
-   Dispose(FPDefaultColor);
+   if assigned(FPDefaultColor) then Dispose(FPDefaultColor);
    inherited;
 end;
 
@@ -2074,10 +2073,11 @@ end;
 //
 procedure TGLColor.Initialize(const color : TColorVector);
 begin
-	SetVector(FColor, color);
+   SetVector(FColor, color);
    if vUseDefaultSets then begin
-      New(FPDefaultColor);
-   	SetVector(FPDefaultColor^, color);
+      if not assigned(FPDefaultColor) then
+         New(FPDefaultColor);
+      SetVector(FPDefaultColor^, color);
    end;
 end;
 
