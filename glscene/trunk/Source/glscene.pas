@@ -2310,8 +2310,13 @@ implementation
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-uses GLStrings, XOpenGL, VectorTypes, OpenGL1x, ApplicationFileIO, GLUtils;
-
+uses GLStrings, XOpenGL, VectorTypes, OpenGL1x, ApplicationFileIO, GLUtils
+      {$ifdef mswindows}
+      ,glwin32viewer, glwin32fullscreenviewer
+      {$else}
+      ,gllclviewer
+      {$endif}
+      ;
 var
    vCounterFrequency : Int64;
 
@@ -6617,16 +6622,16 @@ begin
       for i:=0 to FBuffers.Count-1 do
       begin
          TGLSceneBuffer(FBuffers[i]).NotifyChange(Self);
-         {$WARNING crossbuilder - removed the following hack, because it requires the viewer in uses. Seems to work good.}
+         {**No, it doesn't  $WARNING crossbuilder - removed the following hack, because it requires the viewer in uses. Seems to work good.}
          {$HINT crossbuilder - Please check if the following lines are still needed, they are not in cvs }
-         {
+
          // Lazarus invalidate all scenes. k00m
          if (not TGLSceneBuffer(FBuffers[i]).Rendering)
          and (not TGLSceneBuffer(FBuffers[i]).Freezed) then
            if (TGLSceneBuffer(FBuffers[i]).Owner is TGLSceneViewer) then
              TGLSceneViewer(TGLSceneBuffer(FBuffers[i]).Owner).Invalidate; //whait a fix k00m
              // TGLFullScreenViewer not working good need a fix too.
-          }
+
       end;
 end;
 

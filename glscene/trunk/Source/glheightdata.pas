@@ -1659,8 +1659,9 @@ end;
 // CreateMonochromeBitmap
 //
 procedure TGLBitmapHDS.CreateMonochromeBitmap(size : Integer);
-{$IFDEF MSWINDOWS}
-type
+{$HINT crossbuilder - removed the ifdef windows and commented the palette types, as they are not used anyway}
+{//$IFDEF MSWINDOWS}
+{type
    TPaletteEntryArray = array [0..255] of TPaletteEntry;
    PPaletteEntryArray = ^TPaletteEntryArray;
    TLogPal = record
@@ -1671,14 +1672,14 @@ type
 var
    x : Integer;
    logpal : TLogPal;
-   hPal : HPalette;
+   hPal : HPalette;}
 begin
    size:=RoundUpToPowerOf2(size);
    FBitmap:=TGLBitmap.Create;
   // FBitmap.PixelFormat:=glpf8bit;
    FBitmap.Width:=size;
    FBitmap.Height:=size;
-   FBitmap.Canvas.StretchDraw(Rect(0, 0, size, size), Picture.Graphic);
+   FBitmap.Canvas.StretchDraw(classes.Rect(0, 0, size, size), Picture.Graphic);
    FBmp32:= TGLBitmap32.Create;
    FBmp32.Assign(FBitmap);
    FBmp32.Width:=FBitmap.Width;
@@ -1712,14 +1713,10 @@ begin
    FBmp32.Height:=FBitmap.Height;
    SetLength(FScanLineCache, 0); // clear the cache
    SetLength(FScanLineCache, size);   *)
-end;
-{$ENDIF}
 {$IFDEF UNIX}
-begin
   {$MESSAGE Warn 'CreateMonochromeBitmap: Needs to be implemented'}
-end;
 {$ENDIF}
-
+end;
 
 // FreeMonochromeBitmap
 //
