@@ -1678,7 +1678,7 @@ begin
   // FBitmap.PixelFormat:=glpf8bit;
    FBitmap.Width:=size;
    FBitmap.Height:=size;
-   FBitmap.Canvas.StretchDraw(Types.Rect(0, 0, size, size), Picture.Graphic);
+   FBitmap.Canvas.StretchDraw(Rect(0, 0, size, size), Picture.Graphic);
    FBmp32:= TGLBitmap32.Create;
    FBmp32.Assign(FBitmap);
    FBmp32.Width:=FBitmap.Width;
