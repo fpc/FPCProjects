@@ -1939,7 +1939,7 @@ type
          {: Save as raw float data to a file }
          procedure SaveAsFloatToFile(const aFilename: String);
          {: Event reserved for viewer-specific uses.<br> }
-         property ViewerBeforeRender : TNotifyEvent read FViewerBeforeRender write FViewerBeforeRender;
+         property ViewerBeforeRender : TNotifyEvent read FViewerBeforeRender write FViewerBeforeRender stored false;
          procedure SetViewPort(X, Y, W, H: Integer);
          function Width : Integer;
          function Height : Integer;
@@ -2128,11 +2128,11 @@ type
 
          {: Indicates a change in the scene or buffer options.<p>
             A simple re-render is enough to take into account the changes. }
-         property OnChange : TNotifyEvent read FOnChange write FOnChange;
+         property OnChange : TNotifyEvent read FOnChange write FOnChange stored false;
          {: Indicates a structural change in the scene or buffer options.<p>
             A reconstruction of the RC is necessary to take into account the
             changes (this may lead to a driver switch or lengthy operations). }
-         property OnStructuralChange : TNotifyEvent read FOnStructuralChange write FOnStructuralChange;
+         property OnStructuralChange : TNotifyEvent read FOnStructuralChange write FOnStructuralChange stored false;
 
          {: Triggered before the scene's objects get rendered.<p>
             You may use this event to execute your own OpenGL rendering
@@ -2310,13 +2310,8 @@ implementation
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-uses GLStrings, XOpenGL, VectorTypes, OpenGL1x, ApplicationFileIO, GLUtils
-      {$ifdef mswindows}
-      ,glwin32viewer, glwin32fullscreenviewer
-      {$else}
-      ,gllclviewer
-      {$endif}
-      ;
+uses GLStrings, XOpenGL, VectorTypes, OpenGL1x, ApplicationFileIO, GLUtils;
+
 var
    vCounterFrequency : Int64;
 
@@ -6622,16 +6617,16 @@ begin
       for i:=0 to FBuffers.Count-1 do
       begin
          TGLSceneBuffer(FBuffers[i]).NotifyChange(Self);
-         {**No, it doesn't  $WARNING crossbuilder - removed the following hack, because it requires the viewer in uses. Seems to work good.}
+         {$WARNING crossbuilder - removed the following hack, because it requires the viewer in uses. Seems to work good.}
          {$HINT crossbuilder - Please check if the following lines are still needed, they are not in cvs }
-
+         {
          // Lazarus invalidate all scenes. k00m
          if (not TGLSceneBuffer(FBuffers[i]).Rendering)
          and (not TGLSceneBuffer(FBuffers[i]).Freezed) then
            if (TGLSceneBuffer(FBuffers[i]).Owner is TGLSceneViewer) then
              TGLSceneViewer(TGLSceneBuffer(FBuffers[i]).Owner).Invalidate; //whait a fix k00m
              // TGLFullScreenViewer not working good need a fix too.
-
+         }
       end;
 end;
 
