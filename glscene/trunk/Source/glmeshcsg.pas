@@ -1,41 +1,25 @@
-{: constructive solid geometry in glscene.
+{: Constructive Solid Geometry in GLScene.
 
-   the csg system uses bsp to optimize what triangles it considers.
-   its kept on a mesh basis to simplyfy things, it allways generates new bsp's,
-   even if the meshes allready had bsp optimization.
+   The CSG system uses BSP to optimize what triangles it considers.
+   Its kept on a mesh basis to simplyfy things, it allways generates new BSP's,
+   even if the meshes allready had BSP optimization.
 
    Author: Joen Joensen.
    Contributed to the GLScene community.
 
    Features: CSG_Union, CSG_Subtraction, CSG_Intersection.
 
-      $Log: glmeshcsg.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
       <li>18/07/04 - JAJ - Bug fix, causing triangles to dissapear, once in a while.
       <li>29/11/03 - JAJ - Created and Submitted to GLScene.
 	</ul></font>
 }
-unit glmeshcsg;
+unit GLMeshCSG;
 
 interface
 
 uses
-  sysutils, classes, glmisc, glscene, glvectorfileobjects, vectorgeometry, glbsp, vectorlists;
+  SysUtils, Classes, GLMisc, GLScene, GLVectorFileObjects, VectorGeometry, GLBSP, VectorLists;
 
 Type
   TCSGOperation = (CSG_Union, CSG_Subtraction, CSG_Intersection);
@@ -44,7 +28,7 @@ Procedure CSG_Operation(obj1, obj2 : TMeshObject; Operation : TCSGOperation; Res
 
 implementation
 
-uses math;
+uses Math;
 
 const
    cOwnTriangleEpsilon = 1e-5;

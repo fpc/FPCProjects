@@ -1,8 +1,8 @@
-{: glbsp<p>
+{: GLBSP<p>
 
 	Binary Space Partion mesh support for GLScene.<p>
 
-   the classes of this unit are designed to operate within a tglbasemesh.<p>
+   The classes of this unit are designed to operate within a TGLBaseMesh.<p>
 
       $Log: glbsp.pas,v $
       Revision 1.2  2006/05/12 14:51:18  z0m3ie
@@ -31,12 +31,12 @@
 	   <li>30/01/03 - EG - Creation
 	</ul></font>
 }
-unit glbsp;
+unit GLBSP;
 
 interface
 
-uses classes, glvectorfileobjects, glscene, gltexture, glmisc, vectorgeometry,
-   vectorlists;
+uses Classes, GLVectorFileObjects, GLScene, GLTexture, GLMisc, VectorGeometry,
+   VectorLists;
 
 type
 
@@ -218,7 +218,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils;
+uses SysUtils;
 
 const
    cOwnTriangleEpsilon = 1e-5;
@@ -692,25 +692,25 @@ begin
    vertices:=Owner.Owner.Vertices;
    if n>0 then for k:=0 to n div 4 do begin
       case Mode of
-          fgmmTriangles, fgmmFlatTriangles : begin
+         fgmmTriangles, fgmmFlatTriangles : begin
              i:=Random(n div 3)*3; //the last triangle was never chosen
-             evalPlane:=PlaneMake(vertices[VertexIndices[i]],
-                                  vertices[VertexIndices[i+1]],
-                                  vertices[VertexIndices[i+2]]);
-          end;
-          fgmmTriangleStrip : begin
-             i:=Random(n-2);
-             evalPlane:=PlaneMake(vertices[VertexIndices[i]],
-                                  vertices[VertexIndices[i+1]],
-                                  vertices[VertexIndices[i+2]]);
-          end;
-       else
-          // fgmmTriangleFan
+            evalPlane:=PlaneMake(vertices[VertexIndices[i]],
+                                 vertices[VertexIndices[i+1]],
+                                 vertices[VertexIndices[i+2]]);
+         end;
+         fgmmTriangleStrip : begin
+            i:=Random(n-2);
+            evalPlane:=PlaneMake(vertices[VertexIndices[i]],
+                                 vertices[VertexIndices[i+1]],
+                                 vertices[VertexIndices[i+2]]);
+         end;
+      else
+         // fgmmTriangleFan
           i:=Random(n-2)+1; //if "i=0" then triangle (0,0,1) was chosen 
-          evalPlane:=PlaneMake(vertices[VertexIndices[0]],
-                               vertices[VertexIndices[i]],
-                               vertices[VertexIndices[i+1]]);
-       end;
+         evalPlane:=PlaneMake(vertices[VertexIndices[0]],
+                              vertices[VertexIndices[i]],
+                              vertices[VertexIndices[i+1]]);
+      end;
       EvaluateSplitPlane(evalPlane, ns, np, nn);
       eval:=ns*triangleSplitCost+Abs(np-nn)*0.5*triangleImbalanceCost;
       if eval<bestEval then begin

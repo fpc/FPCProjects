@@ -1,32 +1,16 @@
-// glmeshoptimizer
-{: mesh optimization for glscene.<p>
-
-      $Log: glmeshoptimizer.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
+// GLMeshOptimizer
+{: Mesh optimization for GLScene.<p>
 
 	<b>History : </b><font size=-1><ul>
       <li>21/08/03 - EG - Added basic mooStandardize support
       <li>03/06/03 - EG - Creation
 	</ul></font>
 }
-unit glmeshoptimizer;
+unit GLMeshOptimizer;
 
 interface
 
-uses classes,sysutils,vectorgeometry, glvectorfileobjects;
+uses Classes,Sysutils,VectorGeometry, GLVectorFileObjects;
 
 type
 
@@ -55,7 +39,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses persistentclasses, vectorlists, meshutils;
+uses PersistentClasses, VectorLists, MeshUtils;
 
 // OptimizeMesh (list, default options)
 //

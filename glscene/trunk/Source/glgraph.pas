@@ -1,4 +1,4 @@
-{: glgraph<p>
+{: GLGraph<p>
 
 	Graph plotting objects for GLScene<p>
  
@@ -47,11 +47,11 @@
 	   <li>06/07/00 - EG - Creation (TGLSamplingScale & TGLHeightField)
 	</ul></font>
 }
-unit glgraph;
+unit GLGraph;
 
 interface
 
-uses classes, glscene, vectorgeometry, glmisc, gltexture, globjects, vectorlists;
+uses Classes, GLScene, VectorGeometry, GLMisc, GLTexture, GLObjects, VectorLists;
 
 type
 
@@ -250,7 +250,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, opengl1x, xopengl, glstate;
+uses SysUtils, OpenGL1x, XOpenGL, GLState;
 
 // ------------------
 // ------------------ TGLSamplingScale ------------------
