@@ -1,7 +1,7 @@
-// glmesh
-{: raw mesh support in glscene.<p>
+// GLMesh
+{: Raw Mesh support in GLScene.<p>
 
-   this unit is for simple meshes and legacy support, glvectorfileobjects
+   This unit is for simple meshes and legacy support, GLVectorFileObjects
    implements more efficient (though more complex) mesh tools.<p> 
 
       $Log: glmesh.pas,v $
@@ -29,15 +29,15 @@
       <li>19/07/00 - EG - Introduced enhanced mesh structure
       <li>11/07/00 - EG - Just discovered and made use of "fclex" :)
 	   <li>18/06/00 - EG - Creation from split of GLObjects,
-                          tvertexlist now uses tvertexdata,
-                          rewrite of tglmesh.calcnormals (smaller & faster)
+                          TVertexList now uses TVertexData,
+                          Rewrite of TGLMesh.CalcNormals (smaller & faster)
 	</ul></font>
 }
-unit glmesh;
+unit GLMesh;
 
 interface
 
-uses classes, glmisc, glscene, vectorgeometry, opengl1x, gltexture, glstate;
+uses Classes, GLMisc, GLScene, VectorGeometry, OpenGL1x, GLTexture, GLState;
 
 type
 
@@ -201,7 +201,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, glstrings, xopengl, glcontext;
+uses SysUtils, GLStrings, XOpenGL, GLContext;
 
 //----------------- TVertexList ------------------------------------------------
 
@@ -582,7 +582,7 @@ end;
 constructor TGLMesh.Create(AOwner:TComponent);
 begin
   inherited Create(AOwner);
-  ObjectStyle:=ObjectStyle+[osDirectDraw];
+//  ObjectStyle:=ObjectStyle+[osDirectDraw];
   FVertices := TVertexList.Create(Self);
   FVertices.AddVertex(XVector, ZVector, NullHmgVector, NullTexPoint);
   FVertices.AddVertex(YVector, ZVector, NullHmgVector, NullTexPoint);

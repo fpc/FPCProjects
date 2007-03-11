@@ -1,5 +1,5 @@
-// gllensflare
-{: lens flare object.<p>
+// GLLensFlare
+{: Lens flare object.<p>
 
       $Log: gllensflare.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
@@ -37,12 +37,12 @@
    eMail   : peirick@onlinehome.de<br>
    Homepage: http://www.TobSoft.de
 }
-unit gllensflare;
+unit GLLensFlare;
 
 interface
 
 uses
-   classes, glscene, vectorgeometry, globjects, gltexture, opengl1x, glmisc, glcontext;
+   Classes, GLScene, VectorGeometry, GLObjects, GLTexture, OpenGL1x, GLMisc, GLContext;
 
 type
 
@@ -228,7 +228,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses glutils;
+uses GLUtils;
 
 // ------------------
 // ------------------ TGLFlareGradient ------------------
