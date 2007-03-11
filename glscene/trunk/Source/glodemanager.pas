@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glodemanager<p>
+{: GLODEManager<p>
 
   An ODE Manager for GLScene.<p>
 
@@ -103,13 +103,14 @@
     <li>01/03/03 - SG - Creation.
   </ul>
 }
-unit glodemanager;
+
+unit GLODEManager;
 
 interface
 
 uses
-  classes, dynode, dynodegl, glscene, glmisc, vectorgeometry, gltexture, opengl1x,
-  xopengl, sysutils, globjects, xcollection, persistentclasses, vectorlists;
+  Classes, dynode, dynodegl, GLScene, GLMisc, VectorGeometry, GLTexture, OpenGL1x,
+  XOpenGL, SysUtils, GLObjects, XCollection, PersistentClasses, VectorLists;
 
 type
 
@@ -1775,8 +1776,7 @@ begin
     WriteFloat(RollingFrictionCoeff);
     WriteBoolean(RollingFrictionEnabled);
     mode:=SurfaceMode;
-    {$warning: - crossbuilder - this should get back in, if possible:}
-    //crossbuilder: Write(mode, SizeOf(TSurfaceModes));
+    Write(mode, SizeOf(TSurfaceModes));
     WriteFloat(Mu);
     WriteFloat(Mu2);
     WriteFloat(Bounce);
@@ -1802,9 +1802,8 @@ begin
     Assert(archiveVersion = 0);
     RollingFrictionCoeff:=ReadFloat;
     RollingFrictionEnabled:=ReadBoolean;
-    {$warning: - crossbuilder - this should get back in, if possible:}
-    //crossbuilder: Read(mode, SizeOf(TSurfaceModes));
-    //crossbuilder: SurfaceMode:=mode;
+    Read(mode, SizeOf(TSurfaceModes));
+    SurfaceMode:=mode;
     Mu:=ReadFloat;
     Mu2:=ReadFloat;
     Bounce:=ReadFloat;

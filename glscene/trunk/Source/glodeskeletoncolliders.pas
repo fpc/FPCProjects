@@ -1,4 +1,4 @@
-{: glodeskeletoncolliders<p>
+{: GLODESkeletonColliders<p>
 
    Skeleton colliders for defining and controlling ODE geoms.<p>
 
@@ -22,12 +22,12 @@
      <li>04/12/03 - SG - Creation.
    </ul></font>
 }
-unit glodeskeletoncolliders;
+unit GLODESkeletonColliders;
 
 interface
 
 uses
-  classes, persistentclasses, vectorgeometry, glvectorfileobjects,
+  Classes, PersistentClasses, VectorGeometry, GLVectorFileObjects,
   dynode;
 
 type

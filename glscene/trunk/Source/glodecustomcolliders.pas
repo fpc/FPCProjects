@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glodecustomcolliders<p>
+{: GLODECustomColliders<p>
 
   Custom ODE collider implementations.<p>
 
@@ -36,26 +36,26 @@
   <b>History : </b><font size=-1><ul>
     <li>08/12/04 - SG - Added contact point rendering to TGLODECustomCollider.
     <li>07/12/04 - SG - Added new TGLODECustomCollider class,
-                        geom collide code now uses resolution to determine the
+                        Geom collide code now uses Resolution to determine the
                         number of contact points to generate.
-    <li>19/11/04 - sg - changed tglodeterraincollider to tglodeheightfield
-                        which now inherits from tglodebehaviour and works for
-                        both tglterrainrenderer and tglheightfield objects.
-                        added ccylinder, cylinder and cone collider code for
+    <li>19/11/04 - SG - Changed TGLODETerrainCollider to TGLODEHeightField
+                        which now inherits from TGLODEBehaviour and works for
+                        both TGLTerrainRenderer and TGLHeightField objects.
+                        Added CCylinder, Cylinder and Cone collider code for
                         the heightfield collider.
-    <li>23/04/04 - sg - removed freeform static collider
-    <li>29/10/03 - sg - fix for glodeterraincollider (matheus degiovani)
-    <li>30/07/03 - sg - creation.
+    <li>23/04/04 - SG - Removed freeform static collider
+    <li>29/10/03 - SG - Fix for GLODETerrainCollider (Matheus Degiovani)
+    <li>30/07/03 - SG - Creation.
   </ul>
 }
-unit glodecustomcolliders;
+unit GLODECustomColliders;
 
 interface
 
 uses
-  classes, sysutils, glodemanager, dynode, dynodegl, vectorgeometry,
-  vectorlists, glscene, glterrainrenderer, glgraph, xcollection,
-  opengl1x, gltexture {crossbuilder, persistentclasses};
+  Classes, SysUtils, GLODEManager, dynode, dynodegl, VectorGeometry,
+  VectorLists, GLScene, GLTerrainRenderer, GLGraph, XCollection,
+  OpenGL1x, GLTexture;
 
 type
   TContactPoint = class
@@ -596,8 +596,7 @@ begin
     WriteFloat(FContactResolution);
     WriteBoolean(FRenderContacts);
     WriteFloat(FPointSize);
-    {$warning: - crossbuilder - this should get back in, if possible:}
-    //crossbuilder:         Write(PByte(FContactColor.AsAddress)^, 4);
+    Write(PByte(FContactColor.AsAddress)^, 4);
   end;
 end;
 
@@ -614,8 +613,7 @@ begin
     FContactResolution:=ReadFloat;
     FRenderContacts:=ReadBoolean;
     FPointSize:=ReadFloat;
-    {$warning: - crossbuilder - this should get back in, if possible:}
-    //crossbuilder:     Read(PByte(FContactColor.AsAddress)^, 4);
+    Read(PByte(FContactColor.AsAddress)^, 4);
   end;
 end;
 
