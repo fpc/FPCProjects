@@ -1,4 +1,4 @@
-{: glmultipolygon<p>
+{: GLMultiPolygon<p>
 
    Object with support for complex polygons.<p>
 
@@ -56,13 +56,13 @@
   If anyone feels responsible: it would be fine to have a method ImportFromFile (dxf?) in
   the TGLContour and TGLMultiPolygonBase objects...
 }
-unit glmultipolygon;
+unit GLMultiPolygon;
 
 interface
 
 uses
-   classes, opengl1x, spline, vectorgeometry, vectorlists, persistentclasses,
-   glscene, globjects, glmisc, gltexture, glgeomobjects;
+   Classes, OpenGL1x, Spline, VectorGeometry, VectorLists, PersistentClasses,
+   GLScene, GLObjects, GLMisc, GLTexture, GLGeomObjects;
 
 type
 
@@ -230,7 +230,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses sysutils, xopengl;
+uses SysUtils, XOpenGL;
 
 type
   { page oriented pointer array, with persistent pointer target memory.
