@@ -1,8 +1,8 @@
-{: build mesh objects.
+{: Build mesh objects.
 
    How often do you miss a BuildSphereMesh function for testing or editors?
 
-   well this unit is intended to solve that problem. we want fast,
+   Well this unit is intended to solve that problem. We want fast,
    flexible functions with lots of options...
 
    Original Author: Joen Joensen.
@@ -15,12 +15,12 @@
       <li>21/07/03 - JAJ - Added BuildCylinder2 submitted by Gorka?
 	</ul></font>
 }
-unit glmeshbuilder;
+unit GLMeshBuilder;
 
 interface
 
-uses
-  windows, sysutils, classes, glmisc, glscene, glvectorfileobjects, vectorgeometry, vectorlists;
+Uses
+  Windows, SysUtils, Classes, GLMisc, GLScene, GLVectorFileObjects, VectorGeometry, VectorLists;
 
 Procedure BuildCube(Mesh : TMeshObject; Position, Scale : TAffineVector);
 Procedure BuildCylinder(Mesh : TMeshObject; Position, Scale : TAffineVector; Slices : Integer);

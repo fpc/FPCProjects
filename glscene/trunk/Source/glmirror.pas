@@ -1,5 +1,5 @@
-// glmirror
-{: implements a basic, stencil-based mirror (as in mark kilgard's demo).<p>
+// GLMirror
+{: Implements a basic, stencil-based mirror (as in Mark Kilgard's demo).<p>
 
    It is strongly recommended to read and understand the explanations in the
    materials/mirror demo before using this component.<p>
@@ -32,21 +32,21 @@
       <li>07/12/01 - EG - Creation
    </ul></font>
 }
-unit glmirror;
+unit GLMirror;
 
 interface
 
-uses classes, glscene, vectorgeometry, opengl1x, glmisc, gltexture;
+uses Classes, GLScene, VectorGeometry, OpenGL1x, GLMisc, GLTexture;
 
 type
 
    // TMirrorOptions
    //
-   tmirroroption = (mousestencil, moopaque, momirrorplaneclip, moclearzbuffer);
-   tmirroroptions = set of tmirroroption;
+   TMirrorOption = (moUseStencil, moOpaque, moMirrorPlaneClip, moClearZBuffer);
+   TMirrorOptions = set of TMirrorOption;
 
 const
-   cdefaultmirroroptions = [mousestencil];
+   cDefaultMirrorOptions = [moUseStencil];
 
 type
 
@@ -111,19 +111,19 @@ type
          property MirrorObject : TGLBaseSceneObject read FMirrorObject write SetMirrorObject;
          {: Controls rendering options.<p>
             <ul>
-            <li>mousestencil: mirror area is stenciled, prevents reflected
+            <li>moUseStencil: mirror area is stenciled, prevents reflected
                objects to be visible on the sides of the mirror (stencil buffer
                must be active in the viewer)
-            <li>moopaque: mirror is opaque (ie. painted with background color)
-            <li>momirrorplaneclip: a clipplane is defined to prevent reflections
+            <li>moOpaque: mirror is opaque (ie. painted with background color)
+            <li>moMirrorPlaneClip: a ClipPlane is defined to prevent reflections
                from popping out of the mirror (for objects behind or halfway through)
-            <li>moclearzbuffer: mirror area's zbuffer is cleared so that background
+            <li>moClearZBuffer: mirror area's ZBuffer is cleared so that background
                objects don't interfere with reflected objects (reflected objects
-               must be rendered after the mirror in the hierarchy). works only
+               must be rendered AFTER the mirror in the hierarchy). Works only
                along with stenciling.
             </ul>
          }
-         property mirroroptions : tmirroroptions read fmirroroptions write setmirroroptions default cdefaultmirroroptions;
+         property MirrorOptions : TMirrorOptions read FMirrorOptions write SetMirrorOptions default cDefaultMirrorOptions;
 
 			property Height: TGLFloat read FHeight write SetHeight;
          property Width: TGLFloat read FWidth write SetWidth;
@@ -146,7 +146,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses glstate;
+uses GLState;
 
 // ------------------
 // ------------------ TGLMirror ------------------
@@ -192,28 +192,28 @@ begin
 
          // "Render" stencil mask
          if MirrorOptions<>[] then begin
-            if (mousestencil in mirroroptions) then begin
-               glclearstencil(0);
-               glclear(gl_stencil_buffer_bit);
-               glenable(gl_stencil_test);
-               glstencilfunc(gl_always, 1, 1);
-               glstencilop(gl_replace, gl_zero, gl_replace);
+            if (moUseStencil in MirrorOptions) then begin
+               glClearStencil(0);
+               glClear(GL_STENCIL_BUFFER_BIT);
+               glEnable(GL_STENCIL_TEST);
+               glStencilFunc(GL_ALWAYS, 1, 1);
+               glStencilOp(GL_REPLACE, GL_ZERO, GL_REPLACE);
             end;
-            if (moopaque in mirroroptions) then begin
-               bgcolor:=convertwincolor(scene.currentbuffer.backgroundcolor);
-               rci.glstates.setglmaterialcolors(gl_front, bgcolor, clrblack, clrblack, clrblack, 0);
-               rci.glstates.unsetglstate(sttexture2d);
+            if (moOpaque in MirrorOptions) then begin
+               bgColor:=ConvertWinColor(Scene.CurrentBuffer.BackgroundColor);
+               rci.GLStates.SetGLMaterialColors(GL_FRONT, bgColor, clrBlack, clrBlack, clrBlack, 0);
+               rci.GLStates.UnSetGLState(stTexture2D);
             end else begin
-               glcolormask(false, false, false, false);
+               glColorMask(False, False, False, False);
             end;
-            gldepthmask(false);
+            glDepthMask(False);
 
             BuildList(rci);
 
             glDepthMask(True);
-            if (mousestencil in mirroroptions) then begin
-               glstencilfunc(gl_equal, 1, 1);
-               glstencilop(gl_keep, gl_keep, gl_keep);
+            if (moUseStencil in MirrorOptions) then begin
+               glStencilFunc(GL_EQUAL, 1, 1);
+               glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             end;
 
             if (moClearZBuffer in MirrorOptions) then
