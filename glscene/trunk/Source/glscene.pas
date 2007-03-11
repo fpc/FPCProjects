@@ -61,6 +61,7 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>10/03/07 - DaStr - TGLSceneBuffer's Events are not stored now (thanks Burkhard Carstens)
       <li>15/02/07 - DaStr - TGLBaseSceneObject.GetChildren bugfixed (subcomponent support)
       <li>09/02/07 - DaStr - TGLBaseSceneObject.ExchangeChildren(Safe) added (thanks apo_pq)
                              Global $R- removed
@@ -1939,7 +1940,7 @@ type
          {: Save as raw float data to a file }
          procedure SaveAsFloatToFile(const aFilename: String);
          {: Event reserved for viewer-specific uses.<br> }
-         property ViewerBeforeRender : TNotifyEvent read FViewerBeforeRender write FViewerBeforeRender stored false;
+         property ViewerBeforeRender : TNotifyEvent read FViewerBeforeRender write FViewerBeforeRender stored False;
          procedure SetViewPort(X, Y, W, H: Integer);
          function Width : Integer;
          function Height : Integer;
@@ -2128,11 +2129,11 @@ type
 
          {: Indicates a change in the scene or buffer options.<p>
             A simple re-render is enough to take into account the changes. }
-         property OnChange : TNotifyEvent read FOnChange write FOnChange stored false;
+         property OnChange : TNotifyEvent read FOnChange write FOnChange stored False;
          {: Indicates a structural change in the scene or buffer options.<p>
             A reconstruction of the RC is necessary to take into account the
             changes (this may lead to a driver switch or lengthy operations). }
-         property OnStructuralChange : TNotifyEvent read FOnStructuralChange write FOnStructuralChange stored false;
+         property OnStructuralChange : TNotifyEvent read FOnStructuralChange write FOnStructuralChange stored False;
 
          {: Triggered before the scene's objects get rendered.<p>
             You may use this event to execute your own OpenGL rendering
