@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glparametricsurfaces<p>
+{: GLParametricSurfaces<p>
 
    Parametric surface implementation (like Bezier and BSpline surfaces)
    for GLScene.<p>
@@ -13,7 +13,7 @@
    Nurbs for BSplines) or through GLScene using the CurvesAndSurfaces.pas
    routines to generate the mesh vertices and then rendered through the
    standard TMeshObject render routine. Please note that BSplines aren't 
-   correctly handled yet in the curvesandsurfaces unit so the output mesh
+   correctly handled yet in the CurvesAndSurfaces unit so the output mesh
    in GLScene rendering mode is wrong. I'll have it fixed when I know 
    what's going wrong. The GLU Nurbs and glMeshEval Beziers work well 
    though.<p>
@@ -25,22 +25,6 @@
    parts of the bezier surface, which can be used to blend a patch with
    other patches.<p>
 
-      $Log: glparametricsurfaces.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
       <li>11/05/04 - SG - Mesh building and texture coord fixes.
       <li>05/02/04 - SG - Added FGBezierSurface facegroup descendant.
@@ -48,20 +32,20 @@
       <li>18/07/03 - SG - Creation.
    </ul></font>
 }
-unit glparametricsurfaces;
+unit GLParametricSurfaces;
 
 interface
 
 uses
-  glvectorfileobjects, curvesandsurfaces, vectorgeometry, vectorlists,
-  persistentclasses, gltexture, opengl1x, glstate;
+  GLVectorFileObjects, CurvesAndSurfaces, VectorGeometry, VectorLists,
+  PersistentClasses, GLTexture, OpenGL1x, GLState;
 
 type
 
   {: psrGLScene tells the surface to render using GLScene code to build
-     the mesh, whereas, psropengl uses glevalmesh2 or glunurbsrenderer
+     the mesh, whereas, psrOpenGL uses glEvalMesh2 or gluNurbsRenderer
      calls to render the surface. }
-  tparametricsurfacerenderer = (psrglscene, psropengl);
+  TParametricSurfaceRenderer = (psrGLScene, psrOpenGL);
 
   {: psbBezier indicates building the surface with Bernstein basis
      functions, no knot or order properties are used.
@@ -127,19 +111,19 @@ type
       property CountV : Integer read FCountV write FCountV;
       {: Defines how fine the resultant mesh will be. Higher values create
          finer meshes. Resolution = 50 would produce a 50x50 mesh.
-         the glu nurbs rendering uses resolution as the u_step and v_step
-         using the sampling method glu_domain_distance, so the resolution
+         The GLU Nurbs rendering uses resolution as the U_STEP and V_STEP
+         using the sampling method GLU_DOMAIN_DISTANCE, so the resolution
          works a little differently there. }
-      property resolution : integer read fresolution write fresolution;
-      {: automatically generate the knot vectors based on the continuity.
-         only applies to bspline surfaces. }
-      property autoknots : boolean read fautoknots write fautoknots;
-      property continuity : tbsplinecontinuity read fcontinuity write fcontinuity;
-      {: determines whether to use opengl calls (psropengl) or the glscene
-         mesh objects (psrglscene) to render the surface. }
-      property renderer : tparametricsurfacerenderer read frenderer write setrenderer;
-      //: basis determines the style of curve, psbbezier or psbbspline
-      property basis : tparametricsurfacebasis read fbasis write setbasis;
+      property Resolution : Integer read FResolution write FResolution;
+      {: Automatically generate the knot vectors based on the Continuity.
+         Only applies to BSpline surfaces. }
+      property AutoKnots : Boolean read FAutoKnots write FAutoKnots;
+      property Continuity : TBSplineContinuity read FContinuity write FContinuity;
+      {: Determines whether to use OpenGL calls (psrOpenGL) or the GLScene
+         mesh objects (psrGLScene) to render the surface. }
+      property Renderer : TParametricSurfaceRenderer read FRenderer write SetRenderer;
+      //: Basis determines the style of curve, psbBezier or psbBSpline
+      property Basis : TParametricSurfaceBasis read FBasis write SetBasis;
   end;
 
   // TFGBezierSurface

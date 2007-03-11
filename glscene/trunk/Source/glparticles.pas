@@ -1,5 +1,5 @@
-// glparticles
-{: particle systems for glscene, based on replication of full-featured scene objects.<p>
+// GLParticles
+{: Particle systems for GLScene, based on replication of full-featured scene objects.<p>
 
       $Log: glparticles.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
@@ -26,11 +26,11 @@
 	   <li>16/04/00 - EG - Creation
 	</ul></font>
 }
-unit glparticles;
+unit GLParticles;
 
 interface
 
-uses classes, glscene, vectorgeometry, opengl1x, gltexture, glmisc;
+uses Classes, GLScene, VectorGeometry, OpenGL1x, GLTexture, GLMisc;
 
 type
 
@@ -145,7 +145,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils;
+uses SysUtils;
 
 //----------------- TGLParticles -----------------------------------------------------
 
