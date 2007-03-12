@@ -1,5 +1,5 @@
-// glperlinbase
-{: functions for generating perlin noise.<p>
+// GLPerlinBase
+{: Functions for generating perlin noise.<p>
 
    Just some base functions for Perlin noise<p>
 
@@ -23,7 +23,7 @@
       <li>29/01/03 - JaJ - Submitted to GLScene.
 	</ul></font>
 }
-unit glperlinbase;
+unit GLPerlinBase;
 
 interface
 

@@ -1,4 +1,4 @@
-{: glperlinpfx<p>
+{: GLPerlinPFX<p>
 
    PFX particle effects revolving around the use of Perlin noise.<p>
 
@@ -23,11 +23,11 @@
       <li>15/04/04 - EG - Creation
    </ul></font>
 }
-unit glperlinpfx;
+unit GLPerlinPFX;
 
 interface
 
-uses classes, glparticlefx, glgraphics;
+uses Classes, GLParticleFX, GLGraphics;
 
 type
 
@@ -112,7 +112,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses perlinnoise, opengl1x, vectorgeometry;
+uses PerlinNoise, OpenGL1x, VectorGeometry;
 
 // ------------------
 // ------------------ TGLPerlinPFXManager ------------------

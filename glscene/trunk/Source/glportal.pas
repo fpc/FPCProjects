@@ -1,36 +1,20 @@
-{: glportal<p>
+{: GLPortal<p>
 
 	Portal Rendering support for GLScene.<p>
 
    The portal structures are subclasses of the Mesh structures, with a "sector"
    being assimilated to a "MeshObject" and sector polygons to facegroups.<p>
 
-      $Log: glportal.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>Historique : </b><font size=-1><ul>
       <li>30/01/03 - Egg - Completed class registration
 	   <li>13/08/00 - Egg - Creation
 	</ul></font>
 }
-unit glportal;
+unit GLPortal;
 
 interface
 
-uses classes, glvectorfileobjects, glscene, gltexture, glmisc, vectorgeometry;
+uses Classes, GLVectorFileObjects, GLScene, GLTexture, GLMisc, VectorGeometry;
 
 type
 
@@ -151,7 +135,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils;
+uses SysUtils;
 
 // ------------------
 // ------------------ TPortalMeshObjectList ------------------

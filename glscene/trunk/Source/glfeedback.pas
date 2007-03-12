@@ -1,5 +1,5 @@
-// glfeedback
-{: a scene object encapsulating the opengl feedback buffer.<p>
+// GLFeedback
+{: A scene object encapsulating the OpenGL feedback buffer.<p>
 
    This object, when Active, will render it's children using
    the GL_FEEDBACK render mode. This will render the children
@@ -31,13 +31,13 @@
    </ul></font>
 
 }
-unit glfeedback;
+unit GLFeedback;
 
 interface
 
 uses
-  classes, sysutils, vectorgeometry, vectorlists, glscene, glvectorfileobjects,
-  gltexture;
+  Classes, SysUtils, VectorGeometry, VectorLists, GLScene, GLVectorFileObjects,
+  GLTexture;
 
 type
   TFeedbackMode = (fm2D, fm3D, fm3DColor, fm3DColorTexture, fm4DColorTexture);
@@ -108,7 +108,7 @@ implementation
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 
-uses opengl1x, meshutils;
+uses OpenGL1x, MeshUtils;
 
 // Register
 //

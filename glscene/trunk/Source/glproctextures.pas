@@ -1,5 +1,5 @@
-// glproctextures
-{: procedural textures.<p>
+// GLProcTextures
+{: Procedural textures.<p>
 
       $Log: glproctextures.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
@@ -36,11 +36,11 @@
 
   Tobias Peirick
 }
-unit glproctextures;
+unit GLProcTextures;
 
 interface
 
-uses classes, gltexture, glgraphics, opengl1x, glcrossplatform, sysutils;
+uses Classes, GLTexture, GLGraphics, OpenGL1x, GLCrossPlatform, SysUtils;
 
 const
   GRADIENT_TABLE_SIZE = 256;
@@ -108,7 +108,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses vectorgeometry, glutils;
+uses VectorGeometry, GLUtils;
 
 constructor TGLProcTextureNoise.Create(AOwner: TPersistent);
   { PERM array Borrowed from Darwyn Peachey.
@@ -179,19 +179,19 @@ begin
 
        case FSeamless of
            // Take 4 octaves of noise and add them weighted for seamless.
-           // uses much ghz
-           true:  begin
-                    nf := noiseseamless(16)
-                        + noiseseamless(8)/2
-                        + noiseseamless(4)/4
-                        + noiseseamless(2)/8;
+           // uses much Ghz
+           True:  begin
+                    nf := NoiseSeamless(16)
+                        + NoiseSeamless(8)/2
+                        + NoiseSeamless(4)/4
+                        + NoiseSeamless(2)/8;
                   end;
-           // take 4  octaves of noise and add them.
-           false: begin
-                    nf := noise(x/16, y/16)
-                        + noise(x/8, y/8)/2
-                        + noise(x/4, y/4)/4
-                        + noise(x/2, y/2)/8;
+           // Take 4  octaves of noise and add them.
+           False: begin
+                    nf := Noise(x/16, y/16)
+                        + Noise(x/8, y/8)/2
+                        + Noise(x/4, y/4)/4
+                        + Noise(x/2, y/2)/8;
                   end;
       end;
 

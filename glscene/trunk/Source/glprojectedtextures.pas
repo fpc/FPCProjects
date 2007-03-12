@@ -1,4 +1,4 @@
-{: glprojectedtextures<p>
+{: GLProjectedTextures<p>
 
    Implements projected textures through a GLScene object.
 
@@ -27,12 +27,12 @@
       <li>01/10/04 - SG - Initial (by Matheus Degiovani)
    </ul></font>
 }
-unit glprojectedtextures;
+unit GLProjectedTextures;
 
 interface
 
 uses
-   classes, glscene, gltexture, opengl1x, vectorgeometry, xopengl;
+   Classes, GLScene, GLTexture, OpenGL1x, VectorGeometry, xopengl;
 
 type
    {: Possible styles of texture projection. Possible values:<ul>

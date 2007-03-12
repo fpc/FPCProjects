@@ -1,7 +1,7 @@
-// glperlin
-{: classes for generating perlin noise.<p>
+// GLPerlin
+{: Classes for generating perlin noise.<p>
 
-   the components and classes in the unit are a base to generate textures and heightmaps from,
+   The components and classes in the unit are a base to generate textures and heightmaps from,
    A Perlin Height Data Source have been included as an example. Use this combined with a terrain renderer for an infinite random landscape <p>
 
       $Log: glperlin.pas,v $
@@ -25,12 +25,12 @@
       <li>29/01/03 - JaJ - Submitted to GLScene.
 	</ul></font>
 }
-unit glperlin;
+unit GLPerlin;
 
 interface
 
 uses
-  classes, sysutils, vectorgeometry, glperlinbase, glheightdata, glcrossplatform;
+  Classes, SysUtils, VectorGeometry, GLPerlinBase, GLHeightData, GLCrossPlatform;
 
 Type
   TGLPerlinInterpolation = (pi_none, pi_simple, pi_linear,pi_Smoothed, pi_Cosine, pi_cubic);

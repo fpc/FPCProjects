@@ -1,5 +1,5 @@
-// glbasemeshsilhouette
-{: silhouette classes for glbasemesh and facegroups.<p>
+// GLBaseMeshSilhouette
+{: Silhouette classes for GLBaseMesh and FaceGroups.<p>
 
       $Log: glbasemeshsilhouette.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
@@ -23,11 +23,11 @@
    </ul></font>
 }
 
-unit glbasemeshsilhouette;
+unit GLBaseMeshSilhouette;
 
 interface
 
-uses classes, glmisc, vectorgeometry, vectorlists, glvectorfileobjects, glsilhouette;
+uses Classes, GLMisc, VectorGeometry, VectorLists, GLVectorFileObjects, GLSilhouette;
 
 type
    // TFaceGroupConnectivity
