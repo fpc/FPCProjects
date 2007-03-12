@@ -1,5 +1,5 @@
-// glshadowplane
-{: implements a basic shadow plane.<p>
+// GLShadowPlane
+{: Implements a basic shadow plane.<p>
 
    It is strongly recommended to read and understand the explanations in the
    materials/mirror demo before using this component.<p>
@@ -29,22 +29,22 @@
       <li>23/09/02 - EG - Creation (from GLMirror and Mattias FagerLund ShadowPlane.pas)
    </ul></font>
 }
-unit glshadowplane;
+unit GLShadowPlane;
 
 interface
 
-uses classes, glscene, vectorgeometry, opengl1x, glmisc, gltexture, globjects,
-   glcrossplatform;
+uses Classes, GLScene, VectorGeometry, OpenGL1x, GLMisc, GLTexture, GLObjects,
+   GLCrossPlatform;
 
 type
 
    // TShadowPlaneOptions
    //
-   tshadowplaneoption = (spousestencil, sposcissor, spotransparent, spoignorez);
-   tshadowplaneoptions = set of tshadowplaneoption;
+   TShadowPlaneOption = (spoUseStencil, spoScissor, spoTransparent, spoIgnoreZ);
+   TShadowPlaneOptions = set of TShadowPlaneOption;
 
 const
-   cdefaultshadowplaneoptions = [spousestencil, sposcissor];
+   cDefaultShadowPlaneOptions = [spoUseStencil, spoScissor];
 
 type
 
@@ -106,19 +106,19 @@ type
 
          {: Controls rendering options.<p>
             <ul>
-            <li>spousestencil: plane area is stenciled, prevents shadowing
+            <li>spoUseStencil: plane area is stenciled, prevents shadowing
                objects to be visible on the sides of the mirror (stencil buffer
-               must be active in the viewer too). it also allows shadows to
+               must be active in the viewer too). It also allows shadows to
                be partial (blended).
-            <li>sposcissor: plane area is 'scissored', this should improve
+            <li>spoScissor: plane area is 'scissored', this should improve
                rendering speed by limiting rendering operations and fill rate,
                may have adverse effects on old hardware in rare cases
-            <li>spotransparent: does not render the plane's material, may help
+            <li>spoTransparent: does not render the plane's material, may help
                improve performance if you're fillrate limited, are using the
                stencil, and your hardware has optimized stencil-only writes
             </ul>
          }
-         property shadowoptions : tshadowplaneoptions read fshadowoptions write setshadowoptions default cdefaultshadowplaneoptions;
+         property ShadowOptions : TShadowPlaneOptions read FShadowOptions write SetShadowOptions default cDefaultShadowPlaneOptions;
 
          {: Fired before the shadows are rendered. }
          property OnBeginRenderingShadows : TNotifyEvent read FOnBeginRenderingShadows write FOnBeginRenderingShadows;
@@ -185,12 +185,12 @@ begin
             glEnable(GL_SCISSOR_TEST);
          end;
 
-         if (spousestencil in shadowoptions) then begin
-            glclearstencil(0);
-            glclear(gl_stencil_buffer_bit);
-            glenable(gl_stencil_test);
-            glstencilfunc(gl_always, 1, 1);
-            glstencilop(gl_replace, gl_replace, gl_replace);
+         if (spoUseStencil in ShadowOptions) then begin
+            glClearStencil(0);
+            glClear(GL_STENCIL_BUFFER_BIT);
+            glEnable(GL_STENCIL_TEST);
+            glStencilFunc(GL_ALWAYS, 1, 1);
+            glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
          end;
 
          if spoIgnoreZ in ShadowOptions then
@@ -247,11 +247,11 @@ begin
 
             glColor4fv(ShadowColor.AsAddress);
 
-            if (spousestencil in shadowoptions) then begin
-               glenable(gl_blend);
-               glblendfunc(gl_src_alpha, gl_one_minus_src_alpha);
-               glstencilfunc(gl_equal, 1, 1);
-               glstencilop(gl_keep, gl_keep, gl_zero);
+            if (spoUseStencil in ShadowOptions) then begin
+               glEnable(GL_BLEND);
+               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               glStencilFunc(GL_EQUAL, 1, 1);
+               glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
             end;
 
             glMultMatrixf(@shadowMat);

@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glshadowvolumes<p>
+{: GLShadowVolumes<p>
 
    Implements basic shadow volumes support.<p>
 
@@ -43,12 +43,12 @@
       <li>04/06/03 - EG - Creation (based on code from Mattias Fagerlund)
   </ul></font>
 }
-unit glshadowvolume;
+unit GLShadowVolume;
 
 interface
 
-uses classes, glscene, vectorgeometry, opengl1x, glmisc, glsilhouette, gltexture,
-  glcrossplatform, persistentclasses, geometrybb;
+uses Classes, GLScene, VectorGeometry, OpenGL1x, GLMisc, GLSilhouette, GLTexture,
+  GLCrossPlatform, PersistentClasses, GeometryBB;
 
 type
 
@@ -308,7 +308,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses sysutils, vectorlists, glstate;
+uses SysUtils, VectorLists, GLState;
 
 // ------------------
 // ------------------ TGLShadowVolumeCaster ------------------
@@ -780,7 +780,7 @@ begin
             and ((caster.EffectiveRadius<=0)
                  or (obj.DistanceTo(rci.cameraPosition)<caster.EffectiveRadius)) then begin
             opaques.Add(obj);
-            opaqueCapping.Add( Pointer(   (caster.Capping=svcAlways)
+            opaqueCapping.Add(Pointer(   (caster.Capping=svcAlways)
                                       or ((caster.Capping=svcDefault)
                                           and (Capping=svcAlways))));
          end else begin

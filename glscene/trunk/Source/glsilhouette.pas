@@ -1,5 +1,5 @@
-// glsilhouette
-{: enhanced silhouette classes.<p>
+// GLSilhouette
+{: Enhanced silhouette classes.<p>
 
    Introduces more evolved/specific silhouette generation and management
    classes.<p>
@@ -28,13 +28,13 @@
       <li>10/06/03 - EG - Creation (based on code from Mattias Fagerlund)
    </ul></font>
 }
-unit glsilhouette;
+unit GLSilhouette;
 
 interface
 
 {$i GLScene.inc}
 
-uses classes, glmisc, vectorgeometry, vectorlists;
+uses Classes, GLMisc, VectorGeometry, VectorLists;
 
 type
    // TGLSilhouetteStyle
@@ -173,7 +173,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses sysutils;
+uses SysUtils;
 
 // ------------------
 // ------------------ TGLSilhouette ------------------
