@@ -1,4 +1,4 @@
-{: glsound<p>
+{: GLSound<p>
 
 	Base classes and interface for GLScene Sound System<p>
 
@@ -12,12 +12,12 @@
 	   <li>04/06/00 - EG - Creation
 	</ul></font>
 }
-unit glsound;
+unit GLSound;
 
 interface
 
-uses classes, glsoundfileobjects, glscene, xcollection, vectorgeometry, glcadencer,
-     glmisc {, persistentclasses};
+uses Classes, GLSoundFileObjects, GLScene, XCollection, VectorGeometry, GLCadencer,
+     GLMisc;
 
 {$i GLScene.inc}
 
@@ -541,7 +541,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, mmsystem, glcrossplatform;
+uses SysUtils, MMSystem, GLCrossPlatform;
 
 var
    vActiveSoundManager : TGLSoundManager;
@@ -1647,7 +1647,6 @@ begin
    inherited;
    with writer do begin
       WriteInteger(0); // Archive Version 0
-      //FSource.WriteToFiler(@writer.Stream);
       FSource.WriteToFiler(writer);
       WriteBoolean(FPlaying);
    end;
@@ -1660,7 +1659,6 @@ begin
    inherited;
    with reader do begin
       ReadInteger; // ignore archiveVersion
-      //FSource.ReadFromFiler(@reader.Stream);
       FSource.ReadFromFiler(reader);
       FPlaying:=ReadBoolean;
    end;

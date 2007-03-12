@@ -1,5 +1,5 @@
-// gltexlensflare
-{: texture-based lens flare object.<p>
+// GLTexLensFlare
+{: Texture-based Lens flare object.<p>
 
       $Log: gltexlensflare.pas,v $
       Revision 1.1  2006/01/10 20:50:46  z0m3ie
@@ -21,12 +21,12 @@
       <li>25/09/03 - EG - Creation from GLLensFlare split
 	</ul></font><p>
 }
-unit gltexlensflare;
+unit GLTexLensFlare;
 
 interface
 
 uses
-   classes, glscene, vectorgeometry, globjects, gltexture, opengl1x, glmisc, glcontext;
+   Classes, GLScene, VectorGeometry, GLObjects, GLTexture, OpenGL1x, GLMisc, GLContext;
 
 type
 

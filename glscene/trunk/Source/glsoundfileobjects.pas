@@ -1,18 +1,18 @@
-// glsoundfileformat
-{: revolution<p>
+// GLSoundFileFormat
+{: Revolution<p>
 
 	Support classes for loading various fileformats.<p>
    These classes work together like vector file formats or Delphi's TGraphic classes.<p>
 
 	<b>Historique : </b><font size=-1><ul>
       <li>26/01/05 - JAJ - Removed leak formed by never freeing vSoundFileFormats. Reported by Dikoe Kenguru.
-      <li>16/03/01 - Egg - TGLWAVFile.Capabilitiesoverload
+      <li>16/03/01 - Egg - TGLWAVFile.Capabilities
       <li>16/07/00 - Egg - Made use of new TDataFile class
       <li>09/06/00 - Egg - Added WAVDataSize
 	   <li>04/06/00 - Egg - Creation
 	</ul></font>
 }
-unit glsoundfileobjects;
+unit GLSoundFileObjects;
 
 interface
 
@@ -204,7 +204,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, glstrings{, consts};
+uses SysUtils, GLStrings{, consts};
 
 type
 
@@ -497,7 +497,7 @@ begin
    if totalSize>0 then
       stream.Read(data[1], totalSize);
    // update Sampling data
-   with waveFormat  do begin
+   with waveFormat do begin
       Sampling.Frequency:=wf.nSamplesPerSec;
       Sampling.NbChannels:=wf.nChannels;
       Sampling.BitsPerSample:= wBitsPerSample;
