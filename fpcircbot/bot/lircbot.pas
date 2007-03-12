@@ -332,7 +332,10 @@ procedure TLIrcBot.DoRe(const msg: string);
                 for j:=1 to FWords.Count-1 do
                   FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
-            end else SendMessage('Sorry but you are not a power user', FLastLine.Sender);
+            end else begin
+              SendMessage('Sorry but you are not a power user', FLastLine.Sender);
+              Exit;
+            end;
             Result:=i + 1000;
             Exit;
           end;
@@ -351,7 +354,10 @@ procedure TLIrcBot.DoRe(const msg: string);
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
               if FRIP then FRespondTo:=FLastLine.Sender
               else FRespondTo:=FLastLine.Reciever;
-            end else SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
+            end else begin
+              SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
+              Exit;
+            end;
             Result:=i + 1000;
             Exit;
           end;
