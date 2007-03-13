@@ -9,7 +9,7 @@
       <PathDelim Value="\"/>
       <SearchPaths>
         <IncludeFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\"/>
-        <OtherUnitFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\;..\Source\Shaders\;..\Source\SoundAPIs\;..\Source\GameAPIs\"/>
+        <OtherUnitFiles Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\;..\Source\Shaders\;..\Source\SoundAPIs\;..\Source\GameAPIs\;..\Source\glslshaders\"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
         <SrcPath Value="..\Source\;..\Source\Base\;..\Source\Platform\;..\Source\DesignTime\;..\Source\FileFormats\"/>
       </SearchPaths>
@@ -641,49 +641,41 @@
       </Item145>
       <Item146>
         <Filename Value="..\Source\Shaders\glbumpshader.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glbumpshader"/>
       </Item146>
       <Item147>
         <Filename Value="..\Source\Shaders\glcelshader.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glcelshader"/>
       </Item147>
       <Item148>
         <Filename Value="..\Source\Shaders\glhiddenlineshader.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glhiddenlineshader"/>
       </Item148>
       <Item149>
         <Filename Value="..\Source\Shaders\glmultimaterialshader.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glmultimaterialshader"/>
       </Item149>
       <Item150>
         <Filename Value="..\Source\Shaders\gloutlineshader.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="gloutlineshader"/>
       </Item150>
       <Item151>
         <Filename Value="..\Source\Shaders\glphongshader.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glphongshader"/>
       </Item151>
       <Item152>
         <Filename Value="..\Source\Shaders\gltexcombineshader.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="gltexcombineshader"/>
       </Item152>
       <Item153>
         <Filename Value="..\Source\Shaders\glusershader.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glusershader"/>
       </Item153>

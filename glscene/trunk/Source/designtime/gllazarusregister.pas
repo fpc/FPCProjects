@@ -135,6 +135,9 @@ procedure Register;
 function ObjectManager : TObjectManager;
 
 implementation
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
 
 uses
    {$ifdef fpc}
@@ -159,6 +162,29 @@ uses
    glzbuffer,glprojectedtextures,glblur,gltrail,gltree,glmultiproxy,
    GLTimeEventsMgr, GLNavigator, GLFPSMovement, GLDCE,
    ApplicationFileIO, GLVfsPAK,
+   gleparticlemasksmanager,
+   GLPostEffects,
+   GLProxyObjects,
+   GLMaterialScript,
+   GLMaterialMultiProxy,
+   GLSmoothNavigator,
+   GLSimpleNavigation,
+   GLTexturedHDS,
+   GLAsyncHDS,
+   GLShadowHDS,
+   GLTexCombineShader,
+   GLPhongShader,
+   GLUserShader,
+   GLHiddenLineShader,
+   GLCelShader,
+   GLOutlineShader,
+   GLMultiMaterialShader,
+   GLBumpShader,
+   GLAsmShader,
+   GLShaderCombiner,
+   GLSLShader,
+   GLSLBumpShader,
+   GLSLDiffuseSpecularShader,
    glfeedback,glextrusion,glbumpmaphds,glheighttilefilehds,
    glterrainrenderer,glgamemenu, gltextureimageeditors,
    glstate, glutils, glwaterplane,
@@ -695,18 +721,32 @@ begin
                        TGLPolygonPFXManager, TGLPointLightPFXManager,
                        TGLCustomSpritePFXManager,
                        TGLPerlinPFXManager, TGLLinePFXManager,
-                       TGLFireFXManager, TGLThorFXManager
+                       TGLFireFXManager, TGLThorFXManager,
+                       TGLEParticleMasksManager
                       ]);
 
    RegisterComponents('GLScene Utils',
-                      [TAsyncTimer,
-                       TGLStaticImposterBuilder,
-                       TGLBitmapHDS,TGLCustomHDS, TGLHeightTileFileHDS,
-                       TGLNavigator, TGLUserInterface,
-                       TGLDCEManager, TGLFPSMovementManager,
-                       TGLBumpmapHDS, TGLPerlinHDS,
+                      [TAsyncTimer, TGLStaticImposterBuilder,
                        TCollisionManager, TGLAnimationControler,
-                       TGLTimeEventsMGR, TApplicationFileIO, TGLVfsPAK
+                       {TAVIRecorder,} TGLDCEManager, TGLFPSMovementManager,
+                       TGLMaterialScripter, TGLUserInterface, TGLNavigator,
+                       TGLSmoothNavigator, TGLSmoothUserInterface,
+                       TGLTimeEventsMGR, TApplicationFileIO, TGLVfsPAK,
+                       TGLSimpleNavigation 
+                      ]);
+
+   RegisterComponents('GLScene Terrain',
+                      [TGLBitmapHDS, TGLCustomHDS, TGLHeightTileFileHDS,
+                       TGLBumpmapHDS, TGLPerlinHDS, TGLTexturedHDS, TGLAsyncHDS,
+                       TGLShadowHDS
+                      ]);
+
+   RegisterComponents('GLScene Shaders',
+                      [ TGLTexCombineShader, TGLPhongShader, TGLUserShader,
+                        TGLHiddenLineShader, TGLCelShader, TGLOutlineShader,
+                        TGLMultiMaterialShader, TGLBumpShader,
+                        TGLSLShader, TGLSLDiffuseSpecularShader, TGLSLBumpShader,
+                        TGLAsmShader,TGLShaderCombiner
                       ]);
 
    RegisterComponentEditor(TGLSceneViewer, TGLSceneViewerEditor);
@@ -724,8 +764,13 @@ begin
    RegisterPropertyEditor(TypeInfo(TGLCoordinates), nil, '', TGLCoordinatesProperty);
 end;
 
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
 initialization
-
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
 
    GLMisc.vUseDefaultSets:=True;
    //ReadVideoModes;
@@ -735,6 +780,7 @@ initialization
       RegisterSceneObject(TGLLightSource, 'LightSource', '');
       RegisterSceneObject(TGLDummyCube, 'DummyCube', '');
 
+      //Basic geometry
       RegisterSceneObject(TGLSprite, 'Sprite', glsOCBasicGeometry);
       RegisterSceneObject(TGLPoints, 'Points', glsOCBasicGeometry);
       RegisterSceneObject(TGLLines, 'Lines', glsOCBasicGeometry);
@@ -749,6 +795,7 @@ initialization
       RegisterSceneObject(TGLDodecahedron, 'Dodecahedron', glsOCBasicGeometry);
       RegisterSceneObject(TGLIcosahedron, 'Icosahedron', glsOCBasicGeometry);
 
+      //Advanced geometry
       RegisterSceneObject(TGLAnimatedSprite, 'Animated Sprite', glsOCAdvancedGeometry);
       RegisterSceneObject(TGLArrowLine, 'ArrowLine', glsOCAdvancedGeometry);
       RegisterSceneObject(TGLAnnulus, 'Annulus', glsOCAdvancedGeometry);
@@ -758,6 +805,7 @@ initialization
       RegisterSceneObject(TGLRevolutionSolid, 'RevolutionSolid', glsOCAdvancedGeometry);
       RegisterSceneObject(TGLTorus, 'Torus', glsOCAdvancedGeometry);
 
+      //Mesh objects
       RegisterSceneObject(TGLActor, 'Actor', glsOCMeshObjects);
       RegisterSceneObject(TGLFreeForm, 'FreeForm', glsOCMeshObjects);
       RegisterSceneObject(TGLMesh, 'Mesh', glsOCMeshObjects);
@@ -765,21 +813,28 @@ initialization
       RegisterSceneObject(TGLPortal, 'Portal', glsOCMeshObjects);
       RegisterSceneObject(TGLTerrainRenderer, 'TerrainRenderer', glsOCMeshObjects);
 
+      //Graph-plotting objects
       RegisterSceneObject(TGLFlatText, 'FlatText', glsOCGraphPlottingObjects);
       RegisterSceneObject(TGLHeightField, 'HeightField', glsOCGraphPlottingObjects);
       RegisterSceneObject(TGLXYZGrid, 'XYZGrid', glsOCGraphPlottingObjects);
 
+      //Particle systems
       RegisterSceneObject(TGLParticles, 'Particles', glsOCParticleSystems);
       RegisterSceneObject(TGLParticleFXRenderer, 'PFX Renderer', glsOCParticleSystems);
 
+      //Environment objects
       RegisterSceneObject(TGLEarthSkyDome, 'EarthSkyDome', glsOCEnvironmentObjects);
       RegisterSceneObject(TGLSkyDome, 'SkyDome', glsOCEnvironmentObjects);
       RegisterSceneObject(TGLSkyBox, 'SkyBox', glsOCEnvironmentObjects);
+{$WARNING crossbuilder      RegisterSceneObject(TGLAtmosphere, 'Atmosphere', glsOCEnvironmentObjects); }
 
+      //HUD objects
       RegisterSceneObject(TGLHUDSprite, 'HUDSprite', glsOCHUDObjects);
       RegisterSceneObject(TGLHUDText, 'HUDText', glsOCHUDObjects);
       RegisterSceneObject(TGLGameMenu, 'GameMenu', glsOCHUDObjects);
+{$WARNING crossbuilder            RegisterSceneObject(TGLConsole, 'Console', glsOCHUDObjects);}
 
+      //GUI objects
       RegisterSceneObject(TGLBaseControl, 'Root Control', glsOCGuiObjects);
       RegisterSceneObject(TGLPopupMenu, 'GLPopupMenu', glsOCGuiObjects);
       RegisterSceneObject(TGLForm, 'GLForm', glsOCGuiObjects);
@@ -793,6 +848,7 @@ initialization
       RegisterSceneObject(TGLStringGrid, 'GLStringGrid', glsOCGuiObjects);
       RegisterSceneObject(TGLCustomControl, 'GLBitmapControl', glsOCGuiObjects);
 
+      //Special objects
       RegisterSceneObject(TGLLensFlare, 'LensFlare', glsOCSpecialObjects);
       RegisterSceneObject(TGLTextureLensFlare, 'TextureLensFlare', glsOCSpecialObjects);
       RegisterSceneObject(TGLMirror, 'Mirror', glsOCSpecialObjects);
@@ -802,22 +858,35 @@ initialization
 
       RegisterSceneObject(TGLTextureEmitter, 'Texture Emitter', glsOCSpecialObjects);
       RegisterSceneObject(TGLProjectedTextures, 'Projected Textures', glsOCSpecialObjects);
-      RegisterSceneObject(TGLBlur, 'GLBlur', glsOCSpecialObjects);
+      RegisterSceneObject(TGLBlur, 'Blur', glsOCSpecialObjects);
+      RegisterSceneObject(TGLMotionBlur, 'MotionBlur', glsOCSpecialObjects);
+      {$IFDEF WINDOWS}
+      RegisterSceneObject(TGLSpaceText, 'SpaceText', glsOCDoodad);
+      {$ENDIF}
       RegisterSceneObject(TGLTrail, 'GLTrail', glsOCSpecialObjects);
+      //{.$endif}
+      RegisterSceneObject(TGLPostEffect, 'PostEffect', glsOCSpecialObjects);
+      RegisterSceneObject(TGLPostShaderHolder, 'PostShaderHolder', glsOCSpecialObjects);
+
+      // Doodad objects
       RegisterSceneObject(TGLTeapot, 'Teapot', glsOCDoodad);
       RegisterSceneObject(TGLTree, 'Tree', glsOCDoodad);
       RegisterSceneObject(TGLWaterPlane, 'WaterPlane', glsOCDoodad);
 
+      //Proxy objects
+      RegisterSceneObject(TGLProxyObject, 'ProxyObject', glsOCProxyObjects);
+      RegisterSceneObject(TGLColorProxy, 'ColorProxy', glsOCProxyObjects);
+      RegisterSceneObject(TGLFreeFormProxy, 'FreeFormProxy', glsOCProxyObjects);
+      RegisterSceneObject(TGLActorProxy, 'ActorProxy', glsOCProxyObjects);
+      RegisterSceneObject(TGLMultiProxy, 'MultiProxy', glsOCProxyObjects);
+      RegisterSceneObject(TGLMaterialMultiProxy, 'MaterialMultiProxy', glsOCProxyObjects);
+
+      //Other objects
       RegisterSceneObject(TGLDirectOpenGL, 'Direct OpenGL', '');
-      RegisterSceneObject(TGLProxyObject, 'ProxyObject', '');
-      RegisterSceneObject(TGLMultiProxy, 'MultiProxy', '');
       RegisterSceneObject(TGLRenderPoint, 'Render Point', '');
       RegisterSceneObject(TGLImposter, 'Imposter Sprite', '');
       RegisterSceneObject(TGLFeedback, 'OpenGL Feedback', '');
 
-      {$IFDEF WINDOWS}
-      RegisterSceneObject(TGLSpaceText, 'SpaceText', glsOCDoodad);
-      {$ENDIF}
    end;
 
   {$i GLLazarusRegister.lrs}
