@@ -61,13 +61,14 @@ type
          FEnabled: Boolean;
          FOnTimer: TNotifyEvent;
          FTimerThread: TThread;
+         FInterval: Word;
 
       protected
          procedure SetEnabled(Value: Boolean);
          function GetInterval: Word;
-         procedure SetInterval(Value: Word);
+         procedure SetInterval(AValue: Word);
          function GetThreadPriority: TThreadPriority;
-         procedure SetThreadPriority(Value: TThreadPriority);
+         procedure SetThreadPriority(AValue: TThreadPriority);
          procedure DoTimer;
 
       public
@@ -147,12 +148,15 @@ constructor TAsyncTimer.Create(AOwner: TComponent);
 begin
    inherited Create(AOwner);
    // create timer thread
-   FTimerThread:=TTimerThread.Create(True);
-   with TTimerThread(FTimerThread) do begin
-      FOwner:=Self;
-      FreeOnTerminate:=False;
-      {$IFDEF WINDOWS} Priority:=tpTimeCritical;{$ENDIF}
-      FInterval:=cDEFAULT_TIMER_INTERVAL;
+   FInterval:=cDEFAULT_TIMER_INTERVAL;
+   if not (csDesigning in ComponentState) then begin
+     FTimerThread:=TTimerThread.Create(True);
+     with TTimerThread(FTimerThread) do begin
+        FOwner:=Self;
+        FreeOnTerminate:=False;
+        {$IFDEF WINDOWS} Priority:=tpTimeCritical;{$ENDIF}
+        FInterval:=cDEFAULT_TIMER_INTERVAL;
+     end;
    end;
 end;
 
@@ -161,13 +165,15 @@ end;
 destructor TAsyncTimer.Destroy;
 begin
    Enabled:=False;
-   FTimerThread.Terminate;
-   // if stopped, resume
-   if FTimerThread.Suspended then
-      FTimerThread.Resume;
-   // wait & free
-   FTimerThread.WaitFor;
-   FTimerThread.Free;
+   if assigned(FTimerThread) then begin
+     FTimerThread.Terminate;
+     // if stopped, resume
+     if FTimerThread.Suspended then
+        FTimerThread.Resume;
+     // wait & free
+     FTimerThread.WaitFor;
+     FTimerThread.Free;
+   end;
    inherited Destroy;
 end;
 
@@ -187,36 +193,38 @@ begin
       FEnabled:=Value;
       if FEnabled then begin
          // When enabled resume thread
-         if TTimerThread(FTimerThread).FInterval > 0 then begin
+         if assigned(FTimerThread) and (TTimerThread(FTimerThread).FInterval > 0) then begin
             FTimerThread.Resume;
          end;
       end
    else
       // suspend thread
-      FTimerThread.Suspend;
+      if assigned(FTimerThread) then FTimerThread.Suspend;
    end;
 end;
 
 function TAsyncTimer.GetInterval: Word;
 begin
-  Result:=TTimerThread(FTimerThread).FInterval;
+  Result:=FInterval;
 end;
 
-procedure TAsyncTimer.SetInterval(Value: Word);
+procedure TAsyncTimer.SetInterval(AValue: Word);
 begin
-  if Value<>TTimerThread(FTimerThread).FInterval then begin
-    TTimerThread(FTimerThread).FInterval:=Value;
+  if AValue<> FInterval then begin
+    FInterval:=AValue;
+    if assigned(FTimerThread) then
+      TTimerThread(FTimerThread).FInterval:=FInterval;
   end;
 end;
 
 function TAsyncTimer.GetThreadPriority: TThreadPriority;
 begin
-  Result:=FTimerThread.Priority;
+  if assigned(FTimerThread) then Result:=FTimerThread.Priority;
 end;
 
-procedure TAsyncTimer.SetThreadPriority(Value: TThreadPriority);
+procedure TAsyncTimer.SetThreadPriority(AValue: TThreadPriority);
 begin
-  FTimerThread.Priority:=Value;
+  if assigned(FTimerThread) then FTimerThread.Priority:=AValue;
 end;
 
 end.
