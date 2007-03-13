@@ -62,7 +62,7 @@ type
          FOnTimer: TNotifyEvent;
          FTimerThread: TThread;
          FInterval: Word;
-
+         FPriority :TThreadPriority;
       protected
          procedure SetEnabled(Value: Boolean);
          function GetInterval: Word;
@@ -149,12 +149,17 @@ begin
    inherited Create(AOwner);
    // create timer thread
    FInterval:=cDEFAULT_TIMER_INTERVAL;
+   {$IFDEF WINDOWS}
+   FPriority:=tpTimeCritical;
+   {$ELSE}
+   FPriority:=tpNormal;
+   {$ENDIF}
    if not (csDesigning in ComponentState) then begin
      FTimerThread:=TTimerThread.Create(True);
      with TTimerThread(FTimerThread) do begin
         FOwner:=Self;
         FreeOnTerminate:=False;
-        {$IFDEF WINDOWS} Priority:=tpTimeCritical;{$ENDIF}
+        Priority:=FPriority;
         FInterval:=cDEFAULT_TIMER_INTERVAL;
      end;
    end;
@@ -219,12 +224,15 @@ end;
 
 function TAsyncTimer.GetThreadPriority: TThreadPriority;
 begin
-  if assigned(FTimerThread) then Result:=FTimerThread.Priority;
+  result:=FPriority;
 end;
 
 procedure TAsyncTimer.SetThreadPriority(AValue: TThreadPriority);
 begin
-  if assigned(FTimerThread) then FTimerThread.Priority:=AValue;
+  if (AValue <> FPriority) then begin
+    FPriority:=AValue;
+    if assigned(FTimerThread) then FTimerThread.Priority:=FPriority;
+  end;
 end;
 
 end.
