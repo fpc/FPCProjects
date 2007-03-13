@@ -1,4 +1,4 @@
-{: glbumpshader<p>
+{: GLBumpShader<p>
 
    A shader that applies bump mapping.<p>
 
@@ -17,58 +17,46 @@
    External tangent bump space expects tangent data under
    GL_TEXTURE1_ARB and binormal data under GL_TEXTURE2_ARB.<p>
 
-   the bousesecondarytexcoords bump option tells the shader to use 
+   The boUseSecondaryTexCoords bump option tells the shader to use 
    the secondary texture coordinates for the diffuse and specular
    texture lookups.<p>
 
-      $Log: glbumpshader.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:34  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
+      <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>15/04/05 - SG - Added parallax offset mapping for the BasicARBfp bump method (experimental)
                           Height data is expected in the normal map alpha channel.
       <li>21/12/04 - SG - Added light attenutation support through the 
                           boLightAttenutation option in the BumpOptions property.
-      <li>27/10/04 - sg - added bousesecondarytexcoords option to bumpoptions
-      <li>11/10/04 - sg - added specularmode to define the specular highlight equation,
-                          removed the bodisablespecular bump option (depricated).
-      <li>06/10/04 - sg - added special functions for generating the arb programs
+      <li>27/10/04 - SG - Added boUseSecondaryTexCoords option to BumpOptions
+      <li>11/10/04 - SG - Added SpecularMode to define the specular highlight equation,
+                          Removed the boDisableSpecular bump option (depricated).
+      <li>06/10/04 - SG - Added special functions for generating the ARB programs
                           which replace the string constants.
-      <li>02/10/04 - sg - changed render order a little, minimum texture units
+      <li>02/10/04 - SG - Changed render order a little, minimum texture units
                           is now 2 for dot3 texcombiner bump method.
-                          changed vertex programs to accept local program
+                          Changed vertex programs to accept local program
                           params, now only 1 vertex and 1 fragment program is
                           required for all lights.
-                          vertex programs now apply the primary texture matrix.
-      <li>30/09/04 - sg - added fragment program logic,
-                          added bmbasicarbfp bump method, bstangentexternal
-                          bump space and associated arb programs,
-                          various name changes and fixes
-      <li>28/09/04 - sg - vertex programs now use arb_position_invariant option.
-      <li>29/06/04 - sg - quaternion tangent space fix in tangent bump vertex
+                          Vertex programs now apply the primary texture matrix.
+      <li>30/09/04 - SG - Added fragment program logic,
+                          Added bmBasicARBFP bump method, bsTangentExternal
+                          bump space and associated ARB programs,
+                          Various name changes and fixes
+      <li>28/09/04 - SG - Vertex programs now use ARB_position_invariant option.
+      <li>29/06/04 - SG - Quaternion tangent space fix in tangent bump vertex
                           program.
-      <li>23/06/04 - sg - added bstangent option to tbumpspace,
-                          added tangent space light vector vertex program.
-      <li>22/06/04 - sg - creation.
+      <li>23/06/04 - SG - Added bsTangent option to TBumpSpace,
+                          Added tangent space light vector vertex program.
+      <li>22/06/04 - SG - Creation.
    </ul></font>
 }
-unit glbumpshader;
+unit GLBumpShader;
 
 interface
 
 uses
-   classes, sysutils, gltexture, glcontext, glgraphics, glutils,
-   vectorgeometry, opengl1x, vectorlists, arbprogram;
+   Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
+   VectorGeometry, OpenGL1x, VectorLists, ARBProgram;
 
 type
    TBumpMethod = (bmDot3TexCombiner, bmBasicARBFP);
@@ -77,11 +65,11 @@ type
 
    TBumpOption = ( boDiffuseTexture2,       // Use secondary texture as diffuse
                    boSpecularTexture3,      // Use tertiary texture as specular
-                   bousesecondarytexcoords, // pass through secondary texcoords
-                   bolightattenuation,      // use light attenuation
-                   boparallaxmapping        // enable parallax offset mapping
+                   boUseSecondaryTexCoords, // Pass through secondary texcoords
+                   boLightAttenuation,      // Use light attenuation
+                   boParallaxMapping        // Enable parallax offset mapping
                   );
-   tbumpoptions = set of tbumpoption;
+   TBumpOptions = set of TBumpOption;
 
    TSpecularMode = (smOff, smBlinn, smPhong);
 
@@ -137,8 +125,6 @@ type
 
    end;
 
-procedure Register;
-
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -146,13 +132,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
-// Register
-//
-procedure Register;
-begin
-  RegisterComponents('GLScene Shaders', [TGLBumpShader]);
-end;
 
 // ------------------
 // ------------------ TGLBumpShader ------------------
@@ -215,16 +194,16 @@ begin
    VP.Add('PARAM mvinv[4] = { state.matrix.modelview.inverse };');
    VP.Add('PARAM mvit[4] = { state.matrix.modelview.invtrans };');
    VP.Add('PARAM tex[4] = { state.matrix.texture[0] };');
-   if bousesecondarytexcoords in bumpoptions then
-     vp.add('param tex2[4] = { state.matrix.texture[1] };');
-   vp.add('param lightpos = program.local[0];');
-   vp.add('param lightatten = program.local[1];');
-   if bumpspace = bstangentexternal then begin
-      vp.add('attrib tangent = vertex.texcoord[1];');
-      vp.add('attrib binormal = vertex.texcoord[2];');
-      vp.add('attrib normal = vertex.normal;');
+   if boUseSecondaryTexCoords in BumpOptions then
+     VP.Add('PARAM tex2[4] = { state.matrix.texture[1] };');
+   VP.Add('PARAM lightPos = program.local[0];');
+   VP.Add('PARAM lightAtten = program.local[1];');
+   if BumpSpace = bsTangentExternal then begin
+      VP.Add('ATTRIB tangent = vertex.texcoord[1];');
+      VP.Add('ATTRIB binormal = vertex.texcoord[2];');
+      VP.Add('ATTRIB normal = vertex.normal;');
    end;
-   vp.add('temp temp, temp2, light, eye, atten;');
+   VP.Add('TEMP temp, temp2, light, eye, atten;');
 
    if (boLightAttenuation in BumpOptions) then begin
 
@@ -344,27 +323,27 @@ begin
    VP.Add('   MOV result.texcoord['+IntToStr(texcoord)+'], temp;');
    Inc(texcoord);
 
-   if bousesecondarytexcoords in bumpoptions then begin
-      vp.add('   dp4 temp.x, vertex.texcoord[1], tex2[0];');
-      vp.add('   dp4 temp.y, vertex.texcoord[1], tex2[1];');
-      vp.add('   dp4 temp.z, vertex.texcoord[1], tex2[2];');
-      vp.add('   dp4 temp.w, vertex.texcoord[1], tex2[3];');
-      vp.add('   mov result.texcoord['+inttostr(texcoord)+'], temp;');
-      inc(texcoord);
+   if boUseSecondaryTexCoords in BumpOptions then begin
+      VP.Add('   DP4 temp.x, vertex.texcoord[1], tex2[0];');
+      VP.Add('   DP4 temp.y, vertex.texcoord[1], tex2[1];');
+      VP.Add('   DP4 temp.z, vertex.texcoord[1], tex2[2];');
+      VP.Add('   DP4 temp.w, vertex.texcoord[1], tex2[3];');
+      VP.Add('   MOV result.texcoord['+IntToStr(texcoord)+'], temp;');
+      Inc(texcoord);
    end;
 
    if BumpMethod = bmDot3TexCombiner then begin
       if (boDiffuseTexture2 in BumpOptions)
-      and not (bousesecondarytexcoords in bumpoptions) then
-         vp.add('   mov result.texcoord['+inttostr(texcoord)+'], temp;');
+      and not (boUseSecondaryTexCoords in BumpOptions) then
+         VP.Add('   MOV result.texcoord['+IntToStr(texcoord)+'], temp;');
    end else begin
-      vp.add('   mov result.texcoord['+inttostr(texcoord)+'], light;');
-      inc(texcoord);
-      if dospecular then
-         vp.add('   mov result.texcoord['+inttostr(texcoord)+'], eye;');
+      VP.Add('   MOV result.texcoord['+IntToStr(texcoord)+'], light;');
+      Inc(texcoord);
+      if DoSpecular then
+         VP.Add('   MOV result.texcoord['+IntToStr(texcoord)+'], eye;');
    end;
    
-   vp.add('end');
+   VP.Add('END');
 
    FVertexProgram.Assign(VP);
    Result:=VP.Text;
@@ -392,14 +371,14 @@ begin
 
    texcoord:=0;
    normalTexCoords:=texcoord;
-   if bousesecondarytexcoords in bumpoptions then
-      inc(texcoord);
-   difftexcoords:=texcoord;
-   spectexcoords:=texcoord;
-   inc(texcoord);
-   lighttexcoords:=texcoord;
-   inc(texcoord);
-   eyetexcoords:=texcoord;
+   if boUseSecondaryTexCoords in BumpOptions then
+      Inc(texcoord);
+   diffTexCoords:=texcoord;
+   specTexCoords:=texcoord;
+   Inc(texcoord);
+   lightTexCoords:=texcoord;
+   Inc(texcoord);
+   eyeTexCoords:=texcoord;
 
    FP:=TStringList.Create;
 
@@ -608,9 +587,9 @@ begin
          raise Exception.Create('The current shader settings require 3 or more texture units.');
       if  (maxTextures<4) 
       and (BumpMethod<>bmDot3TexCombiner) 
-      and (bousesecondarytexcoords in bumpoptions) 
-      and (specularmode<>smoff) then
-         raise exception.create('the current shader settings require 4 or more texture units.');
+      and (boUseSecondaryTexCoords in BumpOptions) 
+      and (SpecularMode<>smOff) then
+         raise Exception.Create('The current shader settings require 4 or more texture units.');
 
       if Length(FVertexProgramHandles) = 0 then begin
          SetLength(FVertexProgramHandles, 1);

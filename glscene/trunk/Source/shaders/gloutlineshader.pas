@@ -1,4 +1,4 @@
-{: gloutlineshader<p>
+{: GLOutlineShader<p>
 
    A simple shader that adds an outline to an object. <p>
 
@@ -9,20 +9,8 @@
                    color array.
      <li> 3. Doesn't Works with visible backfaces.<p>
 
-      $Log: gloutlineshader.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:34  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
+      <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>05/06/04 - NelC - Fixed bug with textured object
       <li>14/12/03 - NelC - Removed BlendLine, automatically determine if blend   
       <li>20/10/03 - NelC - Removed unnecessary properties. Shader now honors
@@ -31,12 +19,12 @@
                             in the multipass demo.
    </ul></font>
 }
-unit gloutlineshader;
+unit GLOutlineShader;
 
 interface
 
 uses
-  classes, gltexture, glcrossplatform;
+  Classes, GLTexture, GLCrossPlatform;
 
 type
 
@@ -71,8 +59,6 @@ type
          property LineWidth : Single read FOutlineWidth write SetOutlineWidth;
    end;
 
-procedure Register;
-
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -81,12 +67,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses opengl1x, glstate;
-
-procedure Register;
-begin
-  RegisterComponents('GLScene Shaders', [TGLOutlineShader]);
-end;
+uses OpenGL1x, GLState;
 
 // ------------------
 // ------------------ TGLOutlineShader ------------------

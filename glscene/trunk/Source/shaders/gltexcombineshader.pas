@@ -1,30 +1,18 @@
-{: gltexcombineshader<p>
+{: GLTexCombineShader<p>
 
    A shader that allows texture combiner setup.<p>
 
-      $Log: gltexcombineshader.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:34  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
+      <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>23/05/03 - EG - Added support for binding two extra texture units
       <li>16/05/03 - EG - Creation
    </ul></font>
 }
-unit gltexcombineshader;
+unit GLTexCombineShader;
 
 interface
 
-uses classes, gltexture;
+uses Classes, GLTexture;
 
 type
 
@@ -79,7 +67,6 @@ type
 			property LibMaterial4Name : TGLLibMaterialName read FLibMaterial4Name write SetLibMaterial4Name;
    end;
 
-procedure Register;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -89,12 +76,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, gltexturecombiners, opengl1x, xopengl, glmisc, glcrossplatform;
-
-procedure Register;
-begin
-	RegisterComponents('GLScene Shaders', [TGLTexCombineShader]);
-end;
+uses SysUtils, GLTextureCombiners, OpenGL1x, XOpenGL, GLMisc, GLCrossPlatform;
 
 // ------------------
 // ------------------ TGLTexCombineShader ------------------

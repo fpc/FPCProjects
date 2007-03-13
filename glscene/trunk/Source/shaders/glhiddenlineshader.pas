@@ -1,24 +1,12 @@
-{: glhiddenlineshader<p>
+{: GLHiddenLineShader<p>
 
    A shader that renders hidden (back-faced) lines differently from visible
    (front) lines. Polygon offset is used to displace fragments depths a little
    so that there is no z-fighting in rendering the same geometry multiple times.<p>
 
-      $Log: glhiddenlineshader.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:34  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
-      <li>25/09/04 - NelC - Fixed bug of disabled blend (thx Carlos)   
+      <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
+      <li>25/09/04 - NelC - Fixed bug of disabled blend (thx Carlos)
       <li>05/02/04 - NelC - Fixed memory leak in TGLHiddenLineShader.Destroy (thx Achim Hammes)
       <li>13/12/03 - NelC - Added SurfaceLit, ShadeModel
       <li>05/12/03 - NelC - Added ForceMaterial
@@ -26,12 +14,12 @@
                             the multipass demo.
    </ul></font>
 }
-unit glhiddenlineshader;
+unit GLHiddenLineShader;
 
 interface
 
 uses
-  classes, gltexture, opengl1x, glmisc, glcrossplatform, glscene;
+  Classes, GLTexture, OpenGL1x, GLMisc, GLCrossPlatform, GLScene;
 
 type
   TGLLineSettings = class(TGLUpdateAbleObject)
@@ -112,8 +100,6 @@ type
       property ShadeModel : TGLShadeModel read FShadeModel write SetShadeModel default smDefault;
   end;
 
-procedure Register;
-
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -121,11 +107,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
-procedure Register;
-begin
-  RegisterComponents('GLScene Shaders', [TGLHiddenLineShader]);
-end;
 
 // ------------------
 // ------------------ TGLLineSettings ------------------

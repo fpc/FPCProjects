@@ -1,4 +1,4 @@
-{: glcelshader<p>
+{: GLCelShader<p>
 
    A shader that applies cel shading through a vertex program
    and shade definition texture.<p>
@@ -17,18 +17,19 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
-      <li>28/09/04 - sg - vertex program now uses arb_position_invariant option.
-      <li>09/06/04 - sg - added outlinecolor, vertex programs now use gl state.
-      <li>28/05/04 - sg - creation.
+      <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
+      <li>28/09/04 - SG - Vertex program now uses ARB_position_invariant option.
+      <li>09/06/04 - SG - Added OutlineColor, vertex programs now use GL state.
+      <li>28/05/04 - SG - Creation.
    </ul></font>
 }
-unit glcelshader;
+unit GLCelShader;
 
 interface
 
 uses
-   classes, sysutils, gltexture, glcontext, glgraphics, glutils,
-   vectorgeometry, opengl1x, arbprogram;
+   Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
+   VectorGeometry, OpenGL1x, ARBProgram;
 
 type
    // TGLCelShaderOption
@@ -85,8 +86,6 @@ type
          property OnGetIntensity : TGLCelShaderGetIntensity read FOnGetIntensity write FOnGetIntensity;
    end;
 
-procedure Register;
-
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -94,14 +93,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
-// Register
-//
-procedure Register;
-begin
-  RegisterComponents('GLScene Shaders', [TGLCelShader]);
-end;
-
 
 // ------------------
 // ------------------ TGLCelShader ------------------
