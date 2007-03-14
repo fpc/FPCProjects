@@ -1,29 +1,29 @@
 unit odeimport;
 {*************************************************************************
  *                                                                       *
- * open dynamics engine, copyright (c) 2001,2002 russell l. smith.       *
- * all rights reserved.  email: russ@q12.org   web: www.q12.org          *
+ * Open Dynamics Engine, Copyright (C) 2001,2002 Russell L. Smith.       *
+ * All rights reserved.  Email: russ@q12.org   Web: www.q12.org          *
  *                                                                       *
- * this library is free software; you can redistribute it and/or         *
- * modify it under the terms of either:                                  *
- *   (1) the gnu lesser general public license as published by the free  *
- *       software foundation; either version 2.1 of the license, or (at  *
- *       your option) any later version. the text of the gnu lesser      *
- *       general public license is included with this library in the     *
- *       file license.txt.                                               *
- *   (2) the bsd-style license that is included with this library in     *
- *       the file license-bsd.txt.                                       *
+ * This library is free software; you can redistribute it and/or         *
+ * modify it under the terms of EITHER:                                  *
+ *   (1) The GNU Lesser General Public License as published by the Free  *
+ *       Software Foundation; either version 2.1 of the License, or (at  *
+ *       your option) any later version. The text of the GNU Lesser      *
+ *       General Public License is included with this library in the     *
+ *       file LICENSE.TXT.                                               *
+ *   (2) The BSD-style license that is included with this library in     *
+ *       the file LICENSE-BSD.TXT.                                       *
  *                                                                       *
- * this library is distributed in the hope that it will be useful,       *
- * but without any warranty; without even the implied warranty of        *
- * merchantability or fitness for a particular purpose. see the files    *
- * license.txt and license-bsd.txt for more details.                     *
+ * This library is distributed in the hope that it will be useful,       *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the files    *
+ * LICENSE.TXT and LICENSE-BSD.TXT for more details.                     *
  *                                                                       *
  *************************************************************************}
 
 {*************************************************************************
  *                                                                       *
- * ode delphi import unit : 0.8.14                                       *
+ * ODE Delphi Import unit : 0.8.14                                       *
  *                                                                       *
  *   Created by Mattias Fagerlund ( mattias@cambrianlabs.com )  and      *
  *              Christophe ( chroma@skynet.be ) Hosten                   *
@@ -79,7 +79,7 @@ unit odeimport;
   2004.02.25 - CH - New single and double dll. Now handles breakable joints
   2004.02.18 - CH - New single and double dll
   2003.09.08 - CH - New single and double dll. Now handles cones and terrain
-  2003.09.01 - eg - tricollider bindings now dynamic to allow use of unit in delphi5
+  2003.09.01 - EG - TriCollider bindings now dynamic to allow use of unit in Delphi5
                     (compatibility with other platforms unknow)
   2003.07.23 - CH - New single dll, now handles Plane2D
   2003.07.18 - CH - Added set and get UniversalParam, new dll deployed
@@ -110,16 +110,16 @@ unit odeimport;
   DL = Dominique Louis
   EG = Eric Grange
  }
- 
+
 {$I delphiode.inc}
 
 interface
 
 uses
-{$ifdef __gpc__}
+{$IFDEF __GPC__}
   system,
   gpc,
-{$endif}
+{$ENDIF}
 
 {$IFDEF UNIX}
   {$IFDEF FPC}
@@ -145,10 +145,9 @@ uses
   Classes;
 
 const
-{$IFDEF WIN32}
-   ODEDLL = 'ode.dll';
-{$ENDIF}
-
+  {$IFDEF WIN32}
+  ODEDLL = 'ode.dll';
+  {$ENDIF}
 {$IFDEF UNIX}
 {$IFDEF DARWIN}
    ODEDLL = 'libode.dylib';
@@ -307,7 +306,7 @@ struct dObject : public dBase {
   dMatrix3 R;			  // rotation matrix, always corresponds to q
   dVector3 lvel,avel;		// linear and angular velocity of POR
   dVector3 facc,tacc;		// force and torque accululators
-  dvector3 finite_rot_axis;	// finite rotation axis, unit length or 0=none
+  dVector3 finite_rot_axis;	// finite rotation axis, unit length or 0=none
 }; *)
 
   PdxBody = ^TdxBody;
@@ -328,7 +327,7 @@ struct dObject : public dBase {
     R : TdMatrix3;			    // rotation matrix, always corresponds to q
     lvel,avel : TdVector3;	// linear and angular velocity of POR
     facc,tacc : TdVector3 ;	// force and torque accululators
-    finite_rot_axis : tdvector3 ;	// finite rotation axis, unit length or 0=none
+    finite_rot_axis : TdVector3 ;	// finite rotation axis, unit length or 0=none
   end;
 
   TBodyList = class(TList)
@@ -397,7 +396,6 @@ enum {
   dJointTypeHinge,
   dJointTypeSlider,
   dJointTypeContact,
-  dJointTypeUniversal,
   dJointTypeHinge2,
   dJointTypeFixed,
   dJointTypeNull,
@@ -410,8 +408,13 @@ enum {
     dJointTypeHinge,
     dJointTypeSlider,
     dJointTypeContact,
+    {$WARNING crossbuilder - check why this is different }
+    {$IFDEF FPC}
     dJointTypeUniversal,
 //    dJointTypeHinge2,
+    {$ELSE}
+    dJointTypeHinge2,
+    {$ENDIF FPC}
     dJointTypeFixed,
     dJointTypeNull,
     dJointTypeAMotor,
