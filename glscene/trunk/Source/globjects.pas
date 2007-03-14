@@ -12,42 +12,9 @@
    units where they can grow and prosper untammed. "Generic" geometrical
    objects can be found GLGeomObjects.<p>
 
-      2007/03/06 - crossbuilder : bugfixes from main tree
-      This unit is now (functional) identical with rev. 1.107 of glscene cvs
-
-      2006/11/19 - crossbuilder : bugfixes from main tree
-      This unit is now (functional) identical with rev. 1.104 of glscene cvs
-
-
-      $Log: globjects.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2006/01/08 21:04:12  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.6  2005/12/01 21:02:23  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/08/22 00:04:30  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.4  2005/08/20 08:04:57  k00m
-      <li>05/20/08 - D.G - Minor fix on node creation.
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>15/02/07 - DaStr - Global $R- removed, added default values to
                                TGLSprite.NoZWrite, MirrorU, MirrorV
       <li>14/01/07 - DaStr - Fixed TGLCube.BuildList. Bugtracker ID=1623743 (Thanks Pete Jones)

@@ -8,7 +8,7 @@
    These provide a mechanism to render heterogenous particles systems with per
    particle depth-sorting (allowing correct rendering of interwoven separate
    fire and smoke particle systems for instance).<p>
-   
+
       2007-03-06 crossbuilder: bugfixes from main tree - this unit is now
          functional identical with rev. 1.69 of glscene cvs
    
@@ -38,6 +38,8 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>24/01/07 - DaStr - TGLSourcePFXEffect.Burst and TGLBaseSpritePFXManager.RenderParticle bugfixed
                              TGLLifeColoredPFXManager.RotateVertexBuf bugfixed (all based on old code)
       <li>28/10/06 - LC - Fixed access violation in TGLParticleFXRenderer. Bugtracker ID=1585907 (thanks Da Stranger)

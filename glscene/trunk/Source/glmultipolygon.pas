@@ -1,33 +1,13 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLMultiPolygon<p>
 
    Object with support for complex polygons.<p>
 
-      $Log: glmultipolygon.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/10 20:38:38  z0m3ie
-      bugfixes from main tree
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/08/22 00:01:56  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.4  2005/08/21 04:54:34  k00m
-      <li>05/21/08 - D.G - Chance the TGLCoutours.create method.
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>18/11/04 - SG - Fixed TGLMultiPolygonBase.Destroy memory leak (Neil)
       <li>05/09/03 - EG - TNotifyCollection moved to GLMisc
       <li>14/07/02 - EG - Code cleanups, dropped 'absolutes', fixed mem leaks

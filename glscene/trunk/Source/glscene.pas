@@ -61,6 +61,8 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>10/03/07 - DaStr - TGLSceneBuffer's Events are not stored now
                               (thanks Burkhard Carstens) (BugtrackerID = 1678654)
       <li>15/02/07 - DaStr - TGLBaseSceneObject.GetChildren bugfixed (subcomponent support)
