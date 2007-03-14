@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLGraphics<p>
 
 	Utility class and functions to manipulate a bitmap in OpenGL's default
@@ -36,6 +39,8 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>23/01/07 - LIN- Added TGLBitmap32.AssignToBitmap : Converts a TGLBitmap32 back into a TBitmap
       <li>12/09/06 - NC - Added TGLBitmap32.Blank
       <li>18/10/05 - NC - GL_ARB_texture_non_power_of_two, GL_TEXTURE_2D for float

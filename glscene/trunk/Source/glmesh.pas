@@ -1,26 +1,15 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 // GLMesh
 {: Raw Mesh support in GLScene.<p>
 
    This unit is for simple meshes and legacy support, GLVectorFileObjects
    implements more efficient (though more complex) mesh tools.<p> 
 
-      $Log: glmesh.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>06/07/02 - EG - Mesh vertex lock only performed if context is active
       <li>18/03/02 - EG - Color "leak" fix (Nelson Chu)
       <li>21/01/02 - EG - TVertexList.OnNotifyChange now handled

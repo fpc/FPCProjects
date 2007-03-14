@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 // GLHeightData
 {: Classes for height data access.<p>
 
@@ -12,7 +15,10 @@
    holds the data a renderer needs.<p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>13/02/07 - LIN- Added THeightDataSource.TextureCoordinates - Called from TGLBitmapHDS and TGLHeightTileFileHDS
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
+      <li>13/02/07 - LIN- Added THeightDataSource.TextureCoordinates -
+                               Called from TGLBitmapHDS and TGLHeightTileFileHDS
                           Many tweaks and changes to threading. (I hope I havent broken anything)
       <li>02/02/07 - LIN- Added TGLHeightDataSourceFilter
       <li>30/01/07 - LIN- Added GLHeightData.LibMaterial. (Use instead of MaterialName)

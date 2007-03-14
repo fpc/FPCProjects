@@ -1,29 +1,14 @@
-// GLExtrusion
-{: Egg<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLExtrusion<p>
 
 	Extrusion objects for GLScene. Extrusion objects are solids defined by the
    surface described by a moving curve.<p>
 
-      $Log: glextrusion.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/08/22 00:00:25  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>Historique : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>02/01/06 - LC - Fixed TGLExtrusionSolid texuring. Bugtracker ID=1619318
       <li>02/11/01 - Egg - TGLPipe.BuildList now has a "persistent" cache
       <li>25/11/01 - Egg - TGLPipe nodes can now be colored

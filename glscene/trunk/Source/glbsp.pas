@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLBSP<p>
 
 	Binary Space Partion mesh support for GLScene.<p>
@@ -24,11 +27,13 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>07/03/03 - EG - T-junctions now properly supported and repaired
       <li>05/03/03 - EG - Preliminary BSP splitting support
-	   <li>31/01/03 - EG - Materials support, added CleanupUnusedNodes,
+      <li>31/01/03 - EG - Materials support, added CleanupUnusedNodes,
                           MaterialCache support
-	   <li>30/01/03 - EG - Creation
+      <li>30/01/03 - EG - Creation
 	</ul></font>
 }
 unit GLBSP;
