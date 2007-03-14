@@ -172,6 +172,8 @@ uses
    GLTexturedHDS,
    GLAsyncHDS,
    GLShadowHDS,
+   GLAtmosphere,
+   GLConsole,
    GLTexCombineShader,
    GLPhongShader,
    GLUserShader,
@@ -826,13 +828,13 @@ initialization
       RegisterSceneObject(TGLEarthSkyDome, 'EarthSkyDome', glsOCEnvironmentObjects);
       RegisterSceneObject(TGLSkyDome, 'SkyDome', glsOCEnvironmentObjects);
       RegisterSceneObject(TGLSkyBox, 'SkyBox', glsOCEnvironmentObjects);
-{$WARNING crossbuilder      RegisterSceneObject(TGLAtmosphere, 'Atmosphere', glsOCEnvironmentObjects); }
+      RegisterSceneObject(TGLAtmosphere, 'Atmosphere', glsOCEnvironmentObjects);
 
       //HUD objects
       RegisterSceneObject(TGLHUDSprite, 'HUDSprite', glsOCHUDObjects);
       RegisterSceneObject(TGLHUDText, 'HUDText', glsOCHUDObjects);
       RegisterSceneObject(TGLGameMenu, 'GameMenu', glsOCHUDObjects);
-{$WARNING crossbuilder            RegisterSceneObject(TGLConsole, 'Console', glsOCHUDObjects);}
+      RegisterSceneObject(TGLConsole, 'Console', glsOCHUDObjects);
 
       //GUI objects
       RegisterSceneObject(TGLBaseControl, 'Root Control', glsOCGuiObjects);

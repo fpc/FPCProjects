@@ -61,7 +61,8 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
-      <li>10/03/07 - DaStr - TGLSceneBuffer's Events are not stored now (thanks Burkhard Carstens)
+      <li>10/03/07 - DaStr - TGLSceneBuffer's Events are not stored now
+                              (thanks Burkhard Carstens) (BugtrackerID = 1678654)
       <li>15/02/07 - DaStr - TGLBaseSceneObject.GetChildren bugfixed (subcomponent support)
       <li>09/02/07 - DaStr - TGLBaseSceneObject.ExchangeChildren(Safe) added (thanks apo_pq)
                              Global $R- removed
@@ -4406,8 +4407,8 @@ begin
    FDirection.DirectVector:=VectorNormalize(FLocalMatrix^[2]);
    FUp.DirectVector:=VectorNormalize(FLocalMatrix^[1]);
    Scale.SetVector(VectorLength(FLocalMatrix^[0]),
-                      VectorLength(FLocalMatrix^[1]),
-                      VectorLength(FLocalMatrix^[2]), 0);
+                   VectorLength(FLocalMatrix^[1]),
+                   VectorLength(FLocalMatrix^[2]), 0);
    FPosition.DirectVector:=FLocalMatrix^[3];
    TransformationChanged;
 end;
