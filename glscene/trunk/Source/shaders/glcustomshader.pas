@@ -88,9 +88,10 @@ interface
 {$I GLScene.inc}
 
 uses
-  //VCL
+  // VCL
   Classes, SysUtils,
-  //GLScene
+
+  // GLScene
   VectorGeometry, VectorTypes, GLTexture, GLCadencer, OpenGL1x, GLScene,
   GLStrings, GLCrossPlatform, GLContext;
 
@@ -133,9 +134,9 @@ type
   {: Used in the TGLPostShaderHolder component }
   IGLPostShader = interface
   ['{68A62362-AF0A-4CE8-A9E1-714FE02AFA4A}']
-    {: Called to determine if it is compatible }
-    procedure DoUseTempTexture(const TempTexture: TGLTextureHandle; const TextureTarget: Cardinal);
     {: Called on every pass }
+    procedure DoUseTempTexture(const TempTexture: TGLTextureHandle; const TextureTarget: Cardinal);
+    {: Called to determine if it is compatible }
     function GetTextureTarget: TGLTextureTarget;
   end;
 

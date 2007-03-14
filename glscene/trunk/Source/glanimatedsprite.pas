@@ -1,8 +1,15 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLAnimatedSprite<p>
 
   A sprite that uses a scrolling texture for animation.<p>
 
   <b>History : </b><font size=-1><ul>
+    <li>14/03/07 - DaStr - Added IGLMaterialLibrarySupported to TSpriteAnimation
+                           Published TGLAnimatedSprite.Visible
+                           Fixed TGLAnimatedSprite.SetMaterialLibrary
+                                                    (subcribed for notification) 
     <li>21/07/04 - SG - Added Margins to Animations, Added comments.
     <li>20/07/04 - SG - Added FrameRate (alternative for Interval),
                         Added Interval to Animations, will override
@@ -110,7 +117,7 @@ type
   // TSpriteAnimation
   {: Animations define how the texture coordinates for each offset 
      are to be determined. }
-  TSpriteAnimation = class(TXCollectionItem)
+  TSpriteAnimation = class(TXCollectionItem, IGLMaterialLibrarySupported)
     private
       FCurrentFrame,
       FStartFrame,
@@ -139,6 +146,12 @@ type
       procedure SetFrameRate(const Value : Single);
       function GetFrameRate : Single;
 
+      // Implementing IGLMaterialLibrarySupported.
+      function GetMaterialLibrary: TGLMaterialLibrary; virtual;
+      // Implementing IInterface.
+      function QueryInterface(const IID: TGUID; out Obj): HResult; virtual; stdcall;
+      function _AddRef: Integer; virtual; stdcall;
+      function _Release: Integer; virtual; stdcall;
     public
       constructor Create(aOwner : TXCollection); override;
       destructor Destroy; override;
@@ -204,7 +217,7 @@ type
                           samBounceBackward, samLoopBackward);
 
   // TGLAnimatedSprite
-  {: An animated version of the TGLSprite using offset texture 
+  {: An animated version of the TGLSprite using offset texture
      coordinate animation. }
   TGLAnimatedSprite = class(TGLBaseSceneObject)
     private
@@ -237,7 +250,6 @@ type
       procedure SetMirrorV(const val : Boolean);
       procedure SetFrameRate(const Value : Single);
       function GetFrameRate : Single;
-
     public
       constructor Create(AOwner : TComponent); override;
       destructor Destroy; override;
@@ -281,6 +293,7 @@ type
 
       property Position;
       property Scale;
+      property Visible;
 
       //: An event fired when the animation changes to it's next frame.
       property OnFrameChanged : TNotifyEvent read FOnFrameChanged write FOnFrameChanged;
@@ -509,6 +522,43 @@ begin
   FFrames.Free;
   FMargins.Free;
   inherited;
+end;
+
+// _AddRef
+//
+function TSpriteAnimation._AddRef: Integer;
+begin
+  Result := -1; //ignore
+end;
+
+// _Release
+//
+function TSpriteAnimation._Release: Integer;
+begin
+  Result := -1; //ignore
+end;
+
+// GetMaterialLibrary
+//
+function TSpriteAnimation.GetMaterialLibrary: TGLMaterialLibrary;
+begin
+  if not (Owner is TSpriteAnimationList) then
+    Result := nil
+  else
+  begin
+    if not (TSpriteAnimationList(Owner).Owner is TGLAnimatedSprite) then
+      Result := nil
+    else
+      Result := TGLAnimatedSprite(TSpriteAnimationList(Owner).Owner).FMaterialLibrary;
+  end;
+end;
+
+// QueryInterface
+//
+function TSpriteAnimation.QueryInterface(const IID: TGUID;
+  out Obj): HResult;
+begin
+  if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
 
 // FriendlyName
@@ -744,6 +794,7 @@ begin
   inherited;
 end;
 
+{$Warnings Off}
 // BuildList
 //
 procedure TGLAnimatedSprite.BuildList(var rci : TRenderContextInfo);
@@ -853,6 +904,7 @@ begin
     end;
   end;
 end;
+{$Warnings On}
 
 // DoProgress
 //
@@ -881,7 +933,7 @@ end;
 procedure TGLAnimatedSprite.Notification(AComponent: TComponent; Operation: TOperation);
 begin
   if (Operation=opRemove) and (AComponent=FMaterialLibrary) then
-    MaterialLibrary:=nil;
+    FMaterialLibrary:=nil;
   inherited;
 end;
 
@@ -1059,7 +1111,9 @@ var
   i : Integer;
 begin
   if val<>FMaterialLibrary then begin
+    if FMaterialLibrary <> nil then FMaterialLibrary.RemoveFreeNotification(Self);
     FMaterialLibrary:=val;
+    if FMaterialLibrary <> nil then FMaterialLibrary.FreeNotification(Self);
     for i:=0 to Animations.Count-1 do
       TSpriteAnimation(Animations[i]).FLibMaterialCached:=nil;
     NotifyChange(Self);

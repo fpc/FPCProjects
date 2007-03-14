@@ -6,8 +6,10 @@
   A collection of components that generate post effects.<p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>07/03/07 - DaStr - Moved "Weird" effect to the demo.
-                             Added "Distort" effect.
+      <li>09/03/07 - DaStr - Added pepNightVision preset (thanks Roman Ganz)
+                             Changed back all Trunc() calls to Round()
+      <li>07/03/07 - DaStr - Moved "Weird" effect to the demo
+                             Added "Distort" effect
                              Modified "RedNoise" to simple monochrome noise
                                                    (preset renamed to "Noise")
                              Made "Negative" effect really negative,
@@ -90,7 +92,7 @@ type
     property TempTextureTarget: TGLTextureTarget read GetTempTextureTarget write SetTempTextureTarget default ttTexture2d;
     property Shaders: TGLPostShaderCollection read FShaders write SetShaders;
 
-    //: Publish some stuff from TGLBaseSCeneObject.
+    //: Publish some stuff from TGLBaseSceneObject.
     property Visible;
     property OnProgress;
   end;
@@ -109,10 +111,12 @@ type
        pepGray - makes picture gray.
        pepNegative - inverts all colors.
        pepDistort - simulates shaky TV image.
+       pepNightVision - simulates nightvision goggles.
        pepNoise - just adds random niose.
        pepCustom - calls the OnCustomEffect event.
   }
-  TGLPostEffectPreset = (pepNone, pepGray, pepNegative, pepDistort, pepNoise, pepCustom);
+  TGLPostEffectPreset = (pepNone, pepGray, pepNegative, pepDistort, pepNoise,
+                         pepNightVision, pepCustom);
 
   {: Provides a simple way to producing post-effects without shaders.<p>
      It is slow as hell, but it's worth it in some cases.}
@@ -127,6 +131,7 @@ type
     procedure MakeNegativeEffect; virtual;
     procedure MakeDistortEffect; virtual;
     procedure MakeNoiseEffect; virtual;
+    procedure MakeNightVisionEffect; virtual;
     procedure DoOnCustomEffect(var rci : TRenderContextInfo; var Buffer: TGLPostEffectBuffer); virtual;
   public
     procedure DoRender(var rci : TRenderContextInfo;
@@ -175,11 +180,12 @@ begin
     glReadPixels(0, 0, rci.viewPortSize.cx, rci.viewPortSize.cy, GL_RGBA, GL_UNSIGNED_BYTE, FRenderBuffer);
      case FPreset of
        // pepNone is handled in the first line.
-       pepGray:     MakeGrayEffect;
-       pepNegative: MakeNegativeEffect;
-       pepDistort:  MakeDistortEffect;
-       pepNoise:    MakeNoiseEffect;
-       pepCustom:   DoOnCustomEffect(rci, FRenderBuffer);
+       pepGray:        MakeGrayEffect;
+       pepNegative:    MakeNegativeEffect;
+       pepDistort:     MakeDistortEffect;
+       pepNoise:       MakeNoiseEffect;
+       pepNightVision: MakeNightVisionEffect;
+       pepCustom:      DoOnCustomEffect(rci, FRenderBuffer);
      else
        Assert(False, glsUnknownType);
      end;
@@ -242,24 +248,44 @@ end;
 
 procedure TGLPostEffect.MakeNoiseEffect;
 var
-  I:      Longword;
+  I:   Longword;
   rnd: Single;
 begin
   for I := 0 to High(FRenderBuffer) do
   begin
     rnd := 0.25 + Random(75)/100;
 
-    FRenderBuffer[I].r := trunc(FRenderBuffer[I].r * rnd);
-    FRenderBuffer[I].g := trunc(FRenderBuffer[I].g * rnd);
-    FRenderBuffer[I].b := trunc(FRenderBuffer[I].b * rnd);
+    FRenderBuffer[I].r := Round(FRenderBuffer[I].r * rnd);
+    FRenderBuffer[I].g := Round(FRenderBuffer[I].g * rnd);
+    FRenderBuffer[I].b := Round(FRenderBuffer[I].b * rnd);
   end;
+end;
+
+procedure TGLPostEffect.MakeNightVisionEffect;
+var
+   gray: Single;
+   I, rnd2: Integer;
+begin
+   for I := 0 to High(FRenderBuffer) do
+   begin
+     if i < 10 then
+       rnd2 := Random(10)
+     else
+       rnd2 := Random(20) - 10;
+     gray := 60+ (0.30 * FRenderBuffer[I + rnd2].r) +
+                 (0.59 * FRenderBuffer[I + rnd2].g) +
+                 (0.11 * FRenderBuffer[I + rnd2].b);
+
+     FRenderBuffer[I].r := Round(gray * 0.25);
+     FRenderBuffer[I].g := Round((gray + 4) * 0.6);
+     FRenderBuffer[I].b := Round((gray + 4) * 0.11);
+   end;
 end;
 
 {$IFDEF NEED_TO_RESTORE_RANGE_CHECK}
   {$R+}
   {$UNDEF NEED_TO_RESTORE_RANGE_CHECK}
 {$ENDIF}
-
 
 { TGLPostShaderCollectionItem }
 

@@ -1,7 +1,8 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-// 09/03/07 - DaStr - Fixed a potential AV in two InitMeshObj procedures (thanks Burkhard Carstens)
+// 09/03/07 - DaStr - Fixed a potential AV in two InitMeshObj procedures
+//                     (thanks Burkhard Carstens) (BugtrackerID = 1678649)
 // 27/10/06 - LC - Fixed memory leak in RelMeshObjField. Bugtracker ID=1585639
 // 12/08/02 - EG - ReadMatEntryChunk fix / COLOR_F chunk (coerni)
 unit Utils3DS;
