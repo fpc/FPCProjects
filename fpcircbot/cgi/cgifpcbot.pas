@@ -258,8 +258,14 @@ const
 var
   Method: TMethod = meMIRC;
   Code: Integer;
+  x: Integer;
 begin
   Result := False;
+  
+  if Length(Tmp) > 2 then
+    for x := Length(Tmp) downto 2 do
+      if not (Tmp[x] in ['0'..'9']) then
+        Delete(Tmp, x, 1);
 
   if Tmp[1] in Ctrls then begin
     Delete(s, i - Length(Tmp), Length(Tmp));
@@ -299,7 +305,7 @@ end;
 
 function DecodeColor(s: string): string;
 const
-  AllowedChars = [#3, #15, '0'..'9', ','];
+  AllowedChars = [#3, #15, #48..#75, ','];
 
 var
   i: Integer;
