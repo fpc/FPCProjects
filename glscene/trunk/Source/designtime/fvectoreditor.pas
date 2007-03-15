@@ -1,4 +1,4 @@
-{: fvectoreditor<p>
+{: FVectorEditor<p>
 
    Editor for a vector.<p>
 
@@ -17,7 +17,7 @@
       <li>?/?/? -  - Creation
    </ul></font>
 }
-unit fvectoreditor;
+unit FVectorEditor;
 
 interface
 
@@ -26,19 +26,19 @@ interface
 {$IFDEF MSWINDOWS}
 uses
   {$ifdef fpc}lresources,{$endif}
-  forms, comctrls, stdctrls, toolwin, extctrls, buttons, graphics, controls, 
-  classes;
-{$endif}
+  Forms, ComCtrls, StdCtrls, ToolWin, ExtCtrls, Buttons, Graphics, Controls, 
+  Classes;
+{$ENDIF}
 {$ifdef unix}
 uses
   {$ifndef fpc}
-  qforms, qcomctrls, qstdctrls, qextctrls, qbuttons, qgraphics, qcontrols, 
+  QForms, QComCtrls, QStdCtrls, QExtCtrls, QButtons, QGraphics, QControls, 
   {$else}
   lresources,
   forms,comctrls,stdctrls,extctrls,buttons,graphics,controls,
   {$endif}
-  classes; 
-{$endif}
+  Classes; 
+{$ENDIF}
 
 
 type
@@ -99,7 +99,7 @@ implementation
 // ------------------------------------------------------------------
 
 uses
-  sysutils, vectorgeometry, glutils; 
+  SysUtils, VectorGeometry, GLUtils; 
 
 
 var
@@ -241,13 +241,7 @@ initialization
 
   {$IFDEF FPC}{$i FVectorEditor.lrs}{$ENDIF}
 
-// ------------------------------------------------------------------
-// ------------------------------------------------------------------
-// ------------------------------------------------------------------
 finalization
-// ------------------------------------------------------------------
-// ------------------------------------------------------------------
-// ------------------------------------------------------------------
 
    ReleaseVectorEditorForm;
 

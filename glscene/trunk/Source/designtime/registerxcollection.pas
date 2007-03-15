@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: registerxcollection<p>
+{: RegisterXCollection<p>
 
 	Register TXCollection property editor<p>
 
@@ -10,20 +10,18 @@
 	   <li>16/04/00 - Egg - Creation
 	</ul></font>
 }
-unit registerxcollection;
+unit RegisterXCollection;
 
 interface
 
 {$i GLScene.inc}
 
-uses classes, xcollection
+uses Classes, XCollection,
    {$ifdef fpc}
-   ,componenteditors, propedits
+     componenteditors, propedits;
    {$else}
-   {$ifdef gls_delphi_6_up} ,designeditors, designintf
-   {$else} ,dsgnintf
+      {$ifdef GLS_DELPHI_6_UP} DesignEditors, DesignIntf {$else} DsgnIntf {$endif};
    {$endif}
-   {$endif};
 
 type
 
@@ -46,7 +44,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses fxcollectioneditor;
+uses FXCollectionEditor;
 
 
 procedure Register;

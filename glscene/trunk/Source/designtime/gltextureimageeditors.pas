@@ -1,4 +1,4 @@
-{: gltextureimageeditors<p>
+{: GLTextureImageEditors<p>
 
 	Standard texture image editors for standard texture image classes.<p>
 
@@ -7,14 +7,14 @@
       <li>24/07/03 - EG - Creation
    </ul></font>
 }
-unit gltextureimageeditors;
+unit GLTextureImageEditors;
 
 interface
 
 {$i GLScene.inc}
 
 uses
-  gltexture; 
+  GLTexture; 
 
 
 type
@@ -52,7 +52,7 @@ implementation
 //------------------------------------------------------------------------------
 
 uses
-  sysutils, glcrossplatform; 
+  SysUtils, GLCrossPlatform; 
 
 
 // ------------------
