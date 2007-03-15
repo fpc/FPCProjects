@@ -260,9 +260,9 @@ begin
    Indices.Count:=2*ni;
    iList:=Indices.List;
    i:=ni-2; while i>=0 do begin
-      iList2:=@iList[2*i];
-      iList2[0]:=iList[i];
-      iList2[1]:=iList[i+1];
+      iList2:=@iList^[2*i];
+      iList2^[0]:=iList^[i];
+      iList2^[1]:=iList^[i+1];
       iList2^[2]:=iList^[i+1]+nv;
       iList2^[3]:=iList^[i]+nv;
       Dec(i, 2);
