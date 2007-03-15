@@ -258,9 +258,11 @@ const
 var
   Method: TMethod = meMIRC;
   Code: Integer;
-  x: Integer;
+  x, l: Integer;
 begin
   Result := False;
+
+  l := Length(Tmp);
   
   if Length(Tmp) > 2 then
     for x := Length(Tmp) downto 2 do
@@ -268,14 +270,14 @@ begin
         Delete(Tmp, x, 1);
 
   if Tmp[1] in Ctrls then begin
-    Delete(s, i - Length(Tmp), Length(Tmp));
+    Delete(s, i - l, Length(Tmp));
     Dec(i, Length(Tmp));
     
     while (Length(Tmp) > 0) and (Tmp[1] in Crap) do
       Delete(Tmp, 1, 1);
 
     if Pos(',', Tmp) > 0 then
-      Delete(Tmp, Pos(',', Tmp), Length(Tmp)); // remove background color crap
+      Delete(Tmp, Pos(',', Tmp), l); // remove background color crap
 
     if Length(Tmp) = 0 then begin
       Insert('</font>', s, i);
