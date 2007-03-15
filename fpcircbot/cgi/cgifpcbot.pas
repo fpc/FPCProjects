@@ -271,7 +271,7 @@ begin
 
   if Tmp[1] in Ctrls then begin
     Delete(s, i - l, Length(Tmp));
-    Dec(i, Length(Tmp));
+    Dec(i, l);
     
     while (Length(Tmp) > 0) and (Tmp[1] in Crap) do
       Delete(Tmp, 1, 1);
