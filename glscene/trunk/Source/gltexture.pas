@@ -25,6 +25,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>14/03/07 - DaStr - TGLPicFileImage now provides correct Width and Height
+                                                        (BugtrackerID = 1680742)
       <li>09/03/07 - DaStr - Added TGLMaterial.GetActualPrimaryMaterial, GetLibMaterial
                              Bugfixed TGLColor.Initialize and TGLColor.Destroy
                               (thanks Burkhard Carstens) (BugtrackerID = 1678650)
@@ -700,17 +702,19 @@ type
 	TGLPicFileImage = class(TGLPictureImage)
 		private
 			FPictureFileName : String;
-         FAlreadyWarnedAboutMissingFile : Boolean;
-
+			FAlreadyWarnedAboutMissingFile : Boolean;
+      FWidth: Integer;
+      FHeight: Integer;
 		protected
 			procedure SetPictureFileName(const val : String);
-
+			function GetHeight: Integer; override;
+			function GetWidth: Integer; override;
 		public
          { Public Declarations }
 			constructor Create(AOwner: TPersistent); override;
 			destructor Destroy; override;
 
-  			procedure Assign(Source: TPersistent); override;
+			procedure Assign(Source: TPersistent); override;
 
 			//: Only picture file name is saved
 			procedure SaveToFile(const fileName : String); override;
@@ -2875,6 +2879,20 @@ begin
 	inherited;
 end;
 
+// GetHeight
+//
+function TGLPicFileImage.GetHeight: Integer;
+begin
+  Result := FHeight;
+end;
+
+// GetWidth
+//
+function TGLPicFileImage.GetWidth: Integer;
+begin
+  Result := FWidth;
+end;
+
 // GetBitmap32
 //
 function TGLPicFileImage.GetBitmap32(target : TGLUInt) : TGLBitmap32;
@@ -2900,6 +2918,8 @@ begin
             end;
          end;
          Result:=inherited GetBitmap32(target);
+         FWidth := Result.Width;
+         FHeight := Result.Height;
          Picture.Graphic:=nil;
 		finally
 			Picture.OnChange:=PictureChanged;
