@@ -260,7 +260,7 @@ var
   Code: Integer;
   x, l: Integer;
 begin
-  Result := True;
+  Result := False;
 
   l := Length(Tmp);
   
@@ -270,6 +270,7 @@ begin
         Delete(Tmp, x, 1);
 
   if Tmp[1] in Ctrls then begin
+    Result := True;
     Delete(s, i - l, Length(Tmp));
     Dec(i, l);
     
