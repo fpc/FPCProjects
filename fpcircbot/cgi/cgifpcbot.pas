@@ -231,7 +231,7 @@ begin
   Result := True;
 end;
 
-function ColorCodeToHtml(var s: string; Tmp: string; var i: Integer): Boolean;
+function ColorCodeToHtml(var s: string; Tmp: string; var i: Integer; const InFont: Boolean): Boolean;
 type
   TMethod = (meNormal, meMIRC);
 
@@ -290,6 +290,12 @@ begin
     else if Tmp[1] > '9' then
       Method := meNormal;
 
+    if InFont then begin
+      Insert('</font>', s, i);
+      Inc(i, Length('</font>'));
+    end;
+      
+
     if Method = meNormal then begin
       Insert('<font color="#' + ColorCodeAr[Tmp[1]] + '">', s, i);
       Inc(i, Length('<font color="#' + ColorCodeAr[Tmp[1]] + '">'));
@@ -323,7 +329,7 @@ begin
     if s[i] in AllowedChars then
       Tmp := Tmp + s[i]
     else if Length(Tmp) > 0 then begin
-      InFont := ColorCodeToHtml(s, Tmp, i);
+      InFont := ColorCodeToHtml(s, Tmp, i, InFont);
       Tmp := '';
     end;
     
