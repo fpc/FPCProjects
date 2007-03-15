@@ -260,7 +260,7 @@ var
   Code: Integer;
   x, l: Integer;
 begin
-  Result := False;
+  Result := True;
 
   l := Length(Tmp);
   
@@ -282,7 +282,7 @@ begin
     if Length(Tmp) = 0 then begin
       Insert('</font>', s, i);
       Inc(i, Length('</font>'));
-      Exit;
+      Exit(False);
     end;
 
     if Length(Tmp) > 1 then
