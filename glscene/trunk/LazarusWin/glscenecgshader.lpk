@@ -34,10 +34,9 @@
     <Description Value="GLScene Cg shader support
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="3">
+    <Files Count="5">
       <Item1>
         <Filename Value="..\Source\cgshaders\glcgshader.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="glcgshader"/>
       </Item1>
       <Item2>
@@ -48,6 +47,15 @@
         <Filename Value="..\Source\cgshaders\cg.pas"/>
         <UnitName Value="cg"/>
       </Item3>
+      <Item4>
+        <Filename Value="..\Source\cgshaders\glcgregister.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="GLCgRegister"/>
+      </Item4>
+      <Item5>
+        <Filename Value="..\Source\cgshaders\glcgbombshader.pas"/>
+        <UnitName Value="GLCgBombShader"/>
+      </Item5>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="2">
