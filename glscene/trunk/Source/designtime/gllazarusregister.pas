@@ -64,7 +64,7 @@ interface
 
 uses
    {$ifdef windows}windows,{$endif}
-   classes, controls, stdctrls, dialogs, glscene, lresources;
+   classes, controls, stdctrls, dialogs, glscene, lresources, propedits;
 
 
 type
@@ -129,11 +129,23 @@ type
 
    end;
 
+	// TGLLibMaterialNameProperty
+	//
+	TGLLibMaterialNameProperty = class(TStringProperty)
+		public
+			{ Protected Declarations }
+         function GetAttributes: TPropertyAttributes; override;
+			procedure Edit; override;
+	end;
+
 procedure Register;
 
 //: Auto-create for object manager
 function ObjectManager : TObjectManager;
 
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
 implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -151,7 +163,7 @@ uses
        glwin32viewer,glwin32fullscreenviewer,glspacetext,
      {$endif}
    {$endif}
-   typinfo,sysutils, graphics, componenteditors, propedits, glsceneeditnew,
+   typinfo,sysutils, graphics, componenteditors, glsceneeditnew,
    glvectorfileobjects,glscreen,glmesh, glmisc, glcrossplatform,
    fvectoreditor, vectorgeometry,glstrings,glcadencer,gltexture,glgui,
    glbitmapfont,glwindowsfont,glparticlefx,glperlinpfx,gllinepfx,glfirefx,
@@ -700,6 +712,42 @@ begin
       glc.AsVector:=VectorMake(x, y, z);
       Modified;
    end;
+end;
+
+//----------------- TGLLibMaterialNameProperty ---------------------------------
+
+// GetAttributes
+//
+function TGLLibMaterialNameProperty.GetAttributes: TPropertyAttributes;
+begin
+   Result:=[paDialog];
+end;
+
+// Edit
+//
+procedure TGLLibMaterialNameProperty.Edit;
+var
+  buf: string;
+  ml: TGLMaterialLibrary;
+  obj: TPersistent;
+  Int: IGLMaterialLibrarySupported;
+begin
+	buf := GetStrValue;
+  obj := GetComponent(0);
+  if Supports(Obj, IGLMaterialLibrarySupported, Int) then
+    ml := Int.GetMaterialLibrary
+  else
+  begin
+    ml := nil;
+    Assert(False, 'oops, unsupported...');
+  end;
+  {$WARNING crossbuilder - this needs more DesignTime units }
+  {
+	if not Assigned(ml) then
+		ShowMessage('Select the material library first.')
+	else if LibMaterialPicker.Execute(buf, ml) then
+		SetStrValue(buf);
+  }
 end;
 
 procedure Register;
