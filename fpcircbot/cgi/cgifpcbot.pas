@@ -259,11 +259,12 @@ var
   Method: TMethod = meMIRC;
   Code: Integer;
 begin
-  Delete(s, i - Length(Tmp), Length(Tmp));
-  Dec(i, Length(Tmp));
   Result := False;
 
   if Tmp[1] in Ctrls then begin
+    Delete(s, i - Length(Tmp), Length(Tmp));
+    Dec(i, Length(Tmp));
+    
     while (Length(Tmp) > 0) and (Tmp[1] in Crap) do
       Delete(Tmp, 1, 1);
 
