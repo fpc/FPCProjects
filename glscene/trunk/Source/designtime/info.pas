@@ -1,5 +1,5 @@
-// info
-{: informations on opengl driver.<p>
+// Info
+{: Informations on OpenGL driver.<p>
 
       $Log: info.pas,v $
       Revision 1.1  2006/01/10 20:50:44  z0m3ie
@@ -12,23 +12,23 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>08/07/04 - lr - suppress commctrl in the uses of linux		
-      <li>06/07/04 - lr - display some infos for linux	
-      <li>03/07/04 - lr - make change for linux
-      <li>21/02/04 - eg - added extensions popup menu and hyperlink to
-                          delphi3d's hardware registry
-      <li>08/02/04 - nelc - added option for modal
-      <li>09/09/03 - nelc - added renderer info
-      <li>26/06/03 - eg - double-clicking an extension will now go to its opengl
+      <li>08/07/04 - LR - Suppress CommCtrl in the uses of Linux		
+      <li>06/07/04 - LR - Display some infos for Linux	
+      <li>03/07/04 - LR - Make change for Linux
+      <li>21/02/04 - EG - Added extensions popup menu and hyperlink to
+                          Delphi3D's hardware registry
+      <li>08/02/04 - NelC - Added option for modal
+      <li>09/09/03 - NelC - Added Renderer info
+      <li>26/06/03 - EG - Double-clicking an extension will now go to its OpenGL
                           registry webpage 
-      <li>22/05/03 - eg - added texture units info
-      <li>21/07/02 - eg - no longer modal
-      <li>03/02/02 - eg - infoform registration mechanism
-      <li>24/08/01 - eg - compatibility with new buffer classes
-		<li>17/04/00 - eg - creation of header, minor layout changes
+      <li>22/05/03 - EG - Added Texture Units info
+      <li>21/07/02 - EG - No longer modal
+      <li>03/02/02 - EG - InfoForm registration mechanism
+      <li>24/08/01 - EG - Compatibility with new Buffer classes
+		<li>17/04/00 - EG - Creation of header, minor layout changes
 	</ul></font>
 }
-unit info;
+unit Info;
 
 interface
 
@@ -37,7 +37,7 @@ interface
 {$IFDEF MSWINDOWS}
 uses
   {$ifdef fpc}lresources,{$endif}
-  windows, forms, glscene, classes, controls, buttons, stdctrls, comctrls, 
+  Windows, Forms, GLScene, Classes, Controls, Buttons, StdCtrls, ComCtrls, 
   extctrls, graphics, menus;
 {$endif}
 {$ifdef unix}
@@ -45,7 +45,7 @@ uses
   glscene,classes,
 {$ifndef fpc}
   xlib,qforms, qcontrols, qbuttons, qstdctrls, qcomctrls,
-  qextctrls, qgraphics, qmenus; 
+  QExtCtrls, QGraphics, QMenus; 
 {$else}
   forms,controls,buttons,stdctrls,comctrls,extctrls,graphics,menus,lresources;
 {$endif}
@@ -137,7 +137,7 @@ type
 implementation
 
 uses
-  opengl1x, sysutils, glcrossplatform;
+  OpenGL1x, SysUtils, GLCrossPlatform;
 
 {$IFNDEF FPC}
 
