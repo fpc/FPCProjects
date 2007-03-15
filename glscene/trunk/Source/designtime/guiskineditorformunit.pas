@@ -1,15 +1,19 @@
-{: guiskineditorformunit<p>
+{: GuiSkinEditorFormUnit<p>
 
    Editor for Gui skin.<p>
 
    <b>Historique : </b><font size=-1><ul>
+      <li>18/02/07 - DaStr - Fixed range check error.
+      <li>22/02/05 - Mathx - Fixed Delphi 5 support.
+      <li>16/12/05 - aidave - moved GUIComponentDialog in from GLGui.pas<br>
+      <li>03/10/05 - adirex - XP styles and panels problem<br>
       <li>24/01/05 - adirex - Focus rect for selection<br>
                      Huge editor enchancements. Too many to write them all :)
       <li>03/07/04 - LR - Make change for Linux
       <li>?/?/? -  - Creation
    </ul></font>
 }
-unit guiskineditorformunit;
+unit GuiSkinEditorFormUnit;
 
 {$MODE Delphi}
 
@@ -20,7 +24,7 @@ interface
 {$IFNDEF GLS_CLX}
 uses
   sysutils, classes, graphics, controls, forms, dialogs,
-  stdctrls, comctrls, extctrls, gltexture, glscene, globjects, glwindows, glhudobjects,
+  StdCtrls, ComCtrls, ExtCtrls, GLTexture, GLScene, GLObjects, GLWindows, GLHUDObjects,
   glmisc, glgui, glgraphics, glutils, menus
   {$ifndef lcl}
   ,glwin32viewer
@@ -29,10 +33,10 @@ uses
   {$endif}
 {$else}
 uses
-  sysutils, classes, qgraphics, qcontrols, qforms, qdialogs,
-  qstdctrls, qcomctrls, qextctrls, gltexture, glscene, globjects, glwindows, glhudobjects,
-  glmisc, gllinuxviewer, glgui, glgraphics, glutils;
-{$endif}
+  SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,
+  QStdCtrls, QComCtrls, QExtCtrls, GLTexture, GLScene, GLObjects, GLWindows, GLHUDObjects,
+  GLMisc, GLLinuxViewer, GLGui, GLGraphics, GLUtils;
+{$ENDIF}
 
 
 type
@@ -181,6 +185,8 @@ type
 var
   GUISkinEditor: TGUISkinEditor;
 
+Function GUIComponentDialog(GuiComponent : TGLGuiElementList) : Boolean;
+
 implementation
 
 {$IFNDEF GLS_CLX}
@@ -188,8 +194,16 @@ implementation
 {$R *.xfm}
 {$ENDIF}
 
-uses glcrossplatform;
+uses GLCrossPlatform;
 
+Function GUIComponentDialog(GuiComponent : TGLGuiElementList) : Boolean;
+var
+  Editor : TGUISkinEditor;
+Begin
+  Editor := TGUISkinEditor.Create(Nil);
+  Result := Editor.Edit(GuiComponent);
+  Editor.Free;
+End;
 
 procedure TGUISkinEditor.FormCreate(Sender: TObject);
 begin
@@ -207,6 +221,26 @@ begin
   UpdateRegionEdits;
   DoubleBuffered := True;
   FullMousePoint := Point(-1, -1);
+
+  //this Delphi bug shows all panels transparent
+  //the code below is to avoid this bug in XP
+  {$IFDEF GLS_DELPHI_7_UP}
+  panElements.ParentBackground := False;
+  panElements.ParentBackground := True;
+  panElements.ParentBackground := False;
+  
+  panImageProperties.ParentBackground := False;
+  panImageProperties.ParentBackground := True;
+  panImageProperties.ParentBackground := False;
+
+  panBottom.ParentBackground := False;
+  panBottom.ParentBackground := True;
+  panBottom.ParentBackground := False;
+
+  panZoomImage.ParentBackground := False;
+  panZoomImage.ParentBackground := True;
+  panZoomImage.ParentBackground := False;
+  {$ENDIF}
 end;
 
 procedure TGUISkinEditor.FormDestroy(Sender: TObject);
@@ -279,7 +313,8 @@ end;
 
 procedure TGUISkinEditor.Button4Click(Sender: TObject);
 begin
-  Zoom := Zoom - 0.5;
+  if Abs(Zoom - 0.5) > 0.001 then
+    Zoom := Zoom - 0.5;
   Label2.Caption := FormatFloat('####0.0',Zoom);
 //  panel3.Invalidate;
 
@@ -350,6 +385,14 @@ begin
     imgPreview.Canvas.DrawFocusRect(VisibleRect);
     {$ENDIF}
 
+    if (PreviewWidth = 0) or (PreviewHeight = 0) then
+    begin
+      PreviewWidth := 2;
+      PreviewHeight := 2;
+    end;
+    if Zoom = 0 then
+      Zoom := 0.5;
+//    {$R-}
     VisibleRect := Rect(
         Round(sbarHorizontal.Position / PreviewWidth * imgPreview.Width),
         Round(sbarVertical.Position / PreviewHeight * imgPreview.Height),
