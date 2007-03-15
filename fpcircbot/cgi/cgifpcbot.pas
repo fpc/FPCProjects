@@ -279,7 +279,7 @@ begin
     if Pos(',', Tmp) > 0 then
       Delete(Tmp, Pos(',', Tmp), l); // remove background color crap
 
-    if Length(Tmp) = 0 then begin
+    if (Length(Tmp) = 0) and InFont then begin
       Insert('</font>', s, i);
       Inc(i, Length('</font>'));
       Exit(False);
@@ -294,7 +294,6 @@ begin
       Insert('</font>', s, i);
       Inc(i, Length('</font>'));
     end;
-      
 
     if Method = meNormal then begin
       Insert('<font color="#' + ColorCodeAr[Tmp[1]] + '">', s, i);
