@@ -19,18 +19,6 @@ const
   HTML_GREEN  = '#109d10';
   HTML_BLUE   = '#10109d';
   
-  CTRL_C = #3;
-
-  AllowedChars = [CTRL_C, #48..#75, ','];
-
-  ColorCodeAr: array[#48..#75] of string = ('FFFFFF', '000000', 'FF0000', 'FF8000',
-                                            'FFFF00', '80FF00', '00FF00', '00FF80',
-                                            '00FFFF', '0080FF', '0000FF', '8000FF',
-                                            'FF00FF', 'FF0080', 'C0C0C0', '404040',
-                                            '800000', '804000', '808000', '408000',
-                                            '008000', '008040', '008080', '004080',
-                                            '000080', '400080', '800080', '800040');
-
 var
   LogConnection   : TPQConnection;
   LogTransaction  : TSQLTransaction;
@@ -244,14 +232,38 @@ begin
 end;
 
 function ColorCodeToHtml(var s: string; Tmp: string; var i: Integer): Boolean;
+type
+  TMethod = (meNormal, meMIRC);
+
 const
-  Crap = [CTRL_C, '0'];
+  CTRL_C = #3;
+  CTRL_END = #15;
+
+  Crap = [CTRL_C, CTRL_END, '0'];
+  Ctrls = [CTRL_C, CTRL_END];
+
+  ColorCodeAr: array[#48..#75] of string = ('FFFFFF', '000000', 'FF0000', 'FF8000',
+                                            'FFFF00', '80FF00', '00FF00', '00FF80',
+                                            '00FFFF', '0080FF', '0000FF', '8000FF',
+                                            'FF00FF', 'FF0080', 'C0C0C0', '404040',
+                                            '800000', '804000', '808000', '408000',
+                                            '008000', '008040', '008080', '004080',
+                                            '000080', '400080', '800080', '800040');
+
+  ColorCodeMIRC: array[0..15] of string = ('white', 'black', 'blue', 'green', 'red',
+                                           'brown', 'purple', 'orange', 'yellow',
+                                           'lt.green', 'teal', 'cyan', 'lt.blue',
+                                           'pink', 'grey', 'lt.grey');
+                                                                  
+var
+  Method: TMethod = meMIRC;
+  Code: Integer;
 begin
   Delete(s, i - Length(Tmp), Length(Tmp));
   Dec(i, Length(Tmp));
   Result := False;
 
-  if Tmp[1] = CTRL_C then begin
+  if Tmp[1] in Ctrls then begin
     while (Length(Tmp) > 0) and (Tmp[1] in Crap) do
       Delete(Tmp, 1, 1);
 
@@ -264,20 +276,34 @@ begin
       Exit;
     end;
 
-    if Length(Tmp) <> 1 then
-      raise Exception.Create('WTFF? ' + Tmp);
+    if Length(Tmp) > 1 then
+      Method := meMIRC
+    else if Tmp[1] > '9' then
+      Method := meNormal;
 
-    Insert('<font color="#' + ColorCodeAr[Tmp[1]] + '">', s, i);
-    Inc(i, Length('<font color="#' + ColorCodeAr[Tmp[1]] + '">'));
+    if Method = meNormal then begin
+      Insert('<font color="#' + ColorCodeAr[Tmp[1]] + '">', s, i);
+      Inc(i, Length('<font color="#' + ColorCodeAr[Tmp[1]] + '">'));
+    end else try
+      Code := StrToInt(Tmp);
+      Insert('<font color="' + ColorCodeMIRC[Code] + '">', s, i);
+      Inc(i, Length('<font color="' + ColorCodeMIRC[Code] + '">'));
+    except
+      // wtff?
+    end;
     Result := True;
   end;
 end;
 
 function DecodeColor(s: string): string;
+const
+  AllowedChars = [#3, #15, #48..#75, ','];
+
 var
   i: Integer;
   Tmp: string;
   InFont: Boolean = False;
+  s2 : string;
 begin
   Result := '';
   i := 1;
@@ -290,9 +316,13 @@ begin
       InFont := ColorCodeToHtml(s, Tmp, i);
       Tmp := '';
     end;
+    
+//    Tmp := Tmp + IntToStr(Ord(s[i])) + ' '; /////
 
     Inc(i);
   end;
+  
+//  s:= Tmp; ////
 
   if InFont then
     s := s + '</font>';
