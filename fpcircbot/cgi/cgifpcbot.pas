@@ -290,7 +290,8 @@ begin
       Insert('<font color="' + ColorCodeMIRC[Code] + '">', s, i);
       Inc(i, Length('<font color="' + ColorCodeMIRC[Code] + '">'));
     except
-      // wtff?
+      on e: Exception do
+        Insert('<' + e.Message + '>', s, i);
     end;
     Result := True;
   end;
@@ -298,7 +299,7 @@ end;
 
 function DecodeColor(s: string): string;
 const
-  AllowedChars = [#3, #15, #48..#75, ','];
+  AllowedChars = [#3, #15, '0'..'9', ','];
 
 var
   i: Integer;
