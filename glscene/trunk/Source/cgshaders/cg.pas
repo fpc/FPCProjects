@@ -1,43 +1,43 @@
 {******************************************************************************}
 {*                                                                            *}
-{*  copyright (c) 2002, nvidia corporation.                                   *}
+{*  Copyright (c) 2002, NVIDIA Corporation.                                   *}
 {*                                                                            *}
-{*  files:    cg.h, cg_datatypes.h, cg_errors.h, cg_profiles.h,               *}
-{*            cggl_profiles.h, cg_bindlocations.h                             *}
-{*  content:  nvidia cg core include files                                    *}
+{*  Files:    cg.h, cg_datatypes.h, cg_errors.h, cg_profiles.h,               *}
+{*            cgGL_profiles.h, cg_bindlocations.h                             *}
+{*  Content:  NVIDIA Cg core include files                                    *}
 {*                                                                            *}
-{*  nvidia "cg" release 1.2 objectpascal adaptation by alexey barkovoy        *}
-{*  e-mail: clootie@ixbt.com                                                  *}
+{*  NVIDIA "Cg" Release 1.2 ObjectPascal adaptation by Alexey Barkovoy        *}
+{*  E-Mail: clootie@ixbt.com                                                  *}
 {*                                                                            *}
-{*  modified: 14-mar-2004                                                     *}
+{*  Modified: 14-Mar-2004                                                     *}
 {*                                                                            *}
-{*  latest version can be downloaded from:                                    *}
-{*     http://clootie.narod.ru                                                *}
+{*  Latest version can be downloaded from:                                    *}
+{*     http://www.clootie.ru/                                                 *}
 {*                                                                            *}
 {******************************************************************************}
 {                                                                              }
-{ obtained through: joint endeavour of delphi innovators (project jedi)        }
+{ Obtained through: Joint Endeavour of Delphi Innovators (Project JEDI)        }
 {                                                                              }
-{ the contents of this file are used with permission, subject to the mozilla   }
-{ public license version 1.1 (the "license"); you may not use this file except }
-{ in compliance with the license. you may obtain a copy of the license at      }
-{ http://www.mozilla.org/mpl/mpl-1.1.html                                      }
+{ The contents of this file are used with permission, subject to the Mozilla   }
+{ Public License Version 1.1 (the "License"); you may not use this file except }
+{ in compliance with the License. You may obtain a copy of the License at      }
+{ http://www.mozilla.org/MPL/MPL-1.1.html                                      }
 {                                                                              }
-{ software distributed under the license is distributed on an "as is" basis,   }
-{ without warranty of any kind, either express or implied. see the license for }
-{ the specific language governing rights and limitations under the license.    }
+{ Software distributed under the License is distributed on an "AS IS" basis,   }
+{ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for }
+{ the specific language governing rights and limitations under the License.    }
 {                                                                              }
-{ alternatively, the contents of this file may be used under the terms of the  }
-{ gnu lesser general public license (the  "lgpl license"), in which case the   }
-{ provisions of the lgpl license are applicable instead of those above.        }
-{ if you wish to allow use of your version of this file only under the terms   }
-{ of the lgpl license and not to allow others to use your version of this file }
-{ under the mpl, indicate your decision by deleting  the provisions above and  }
-{ replace  them with the notice and other provisions required by the lgpl      }
-{ license.  if you do not delete the provisions above, a recipient may use     }
-{ your version of this file under either the mpl or the lgpl license.          }
+{ Alternatively, the contents of this file may be used under the terms of the  }
+{ GNU Lesser General Public License (the  "LGPL License"), in which case the   }
+{ provisions of the LGPL License are applicable instead of those above.        }
+{ If you wish to allow use of your version of this file only under the terms   }
+{ of the LGPL License and not to allow others to use your version of this file }
+{ under the MPL, indicate your decision by deleting  the provisions above and  }
+{ replace  them with the notice and other provisions required by the LGPL      }
+{ License.  If you do not delete the provisions above, a recipient may use     }
+{ your version of this file under either the MPL or the LGPL License.          }
 {                                                                              }
-{ for more information about the lgpl: http://www.gnu.org/copyleft/lesser.html }
+{ For more information about the LGPL: http://www.gnu.org/copyleft/lesser.html }
 {                                                                              }
 {******************************************************************************}
 
@@ -107,14 +107,13 @@
 
 unit cg;
 
-{$Include GLScene.inc}
-
 interface
 
 {$ifdef windows}
-uses windows;
+uses Windows;
 {$endif}
 
+{$Include GLScene.inc}
 {$ifdef GLS_DELPHI_6_UP}
   {$DEFINE COMPILER6_UP}
 {$endif}
@@ -515,22 +514,22 @@ type
     //                               enum_int,addressable,param_type) \
     //  enum_name = enum_int,
 
-    cg_texunit0              =  2048, // cg_bindlocation_macro(texunit0,cg_texunit0,"texunit 0",2048,0,cgtexobjparam)
-    cg_texunit1              =  2049, // cg_bindlocation_macro(texunit1,cg_texunit1,"texunit 1",2049,0,cgtexobjparam)
-    cg_texunit2              =  2050, // cg_bindlocation_macro(texunit2,cg_texunit2,"texunit 2",2050,0,cgtexobjparam)
-    cg_texunit3              =  2051, // cg_bindlocation_macro(texunit3,cg_texunit3,"texunit 3",2051,0,cgtexobjparam)
-    cg_texunit4              =  2052, // cg_bindlocation_macro(texunit4,cg_texunit4,"texunit 4",2052,0,cgtexobjparam)
-    cg_texunit5              =  2053, // cg_bindlocation_macro(texunit5,cg_texunit5,"texunit 5",2053,0,cgtexobjparam)
-    cg_texunit6              =  2054, // cg_bindlocation_macro(texunit6,cg_texunit6,"texunit 6",2054,0,cgtexobjparam)
-    cg_texunit7              =  2055, // cg_bindlocation_macro(texunit7,cg_texunit7,"texunit 7",2055,0,cgtexobjparam)
-    cg_texunit8              =  2056, // cg_bindlocation_macro(texunit8,cg_texunit8,"texunit 8",2056,0,cgtexobjparam)
-    cg_texunit9              =  2057, // cg_bindlocation_macro(texunit9,cg_texunit9,"texunit 9",2057,0,cgtexobjparam)
-    cg_texunit10             =  2058, // cg_bindlocation_macro(texunit10,cg_texunit10,"texunit 10",2058,0,cgtexobjparam)
-    cg_texunit11             =  2059, // cg_bindlocation_macro(texunit11,cg_texunit11,"texunit 11",2059,0,cgtexobjparam)
-    cg_texunit12             =  2060, // cg_bindlocation_macro(texunit12,cg_texunit12,"texunit 12",2060,0,cgtexobjparam)
-    cg_texunit13             =  2061, // cg_bindlocation_macro(texunit13,cg_texunit13,"texunit 13",2061,0,cgtexobjparam)
-    cg_texunit14             =  2062, // cg_bindlocation_macro(texunit14,cg_texunit14,"texunit 14",2062,0,cgtexobjparam)
-    cg_texunit15             =  2063, // cg_bindlocation_macro(texunit15,cg_texunit15,"texunit 15",2063,0,cgtexobjparam)
+    CG_TEXUNIT0              =  2048, // CG_BINDLOCATION_MACRO(TexUnit0,CG_TEXUNIT0,"texunit 0",2048,0,cgTexObjParam)
+    CG_TEXUNIT1              =  2049, // CG_BINDLOCATION_MACRO(TexUnit1,CG_TEXUNIT1,"texunit 1",2049,0,cgTexObjParam)
+    CG_TEXUNIT2              =  2050, // CG_BINDLOCATION_MACRO(TexUnit2,CG_TEXUNIT2,"texunit 2",2050,0,cgTexObjParam)
+    CG_TEXUNIT3              =  2051, // CG_BINDLOCATION_MACRO(TexUnit3,CG_TEXUNIT3,"texunit 3",2051,0,cgTexObjParam)
+    CG_TEXUNIT4              =  2052, // CG_BINDLOCATION_MACRO(TexUnit4,CG_TEXUNIT4,"texunit 4",2052,0,cgTexObjParam)
+    CG_TEXUNIT5              =  2053, // CG_BINDLOCATION_MACRO(TexUnit5,CG_TEXUNIT5,"texunit 5",2053,0,cgTexObjParam)
+    CG_TEXUNIT6              =  2054, // CG_BINDLOCATION_MACRO(TexUnit6,CG_TEXUNIT6,"texunit 6",2054,0,cgTexObjParam)
+    CG_TEXUNIT7              =  2055, // CG_BINDLOCATION_MACRO(TexUnit7,CG_TEXUNIT7,"texunit 7",2055,0,cgTexObjParam)
+    CG_TEXUNIT8              =  2056, // CG_BINDLOCATION_MACRO(TexUnit8,CG_TEXUNIT8,"texunit 8",2056,0,cgTexObjParam)
+    CG_TEXUNIT9              =  2057, // CG_BINDLOCATION_MACRO(TexUnit9,CG_TEXUNIT9,"texunit 9",2057,0,cgTexObjParam)
+    CG_TEXUNIT10             =  2058, // CG_BINDLOCATION_MACRO(TexUnit10,CG_TEXUNIT10,"texunit 10",2058,0,cgTexObjParam)
+    CG_TEXUNIT11             =  2059, // CG_BINDLOCATION_MACRO(TexUnit11,CG_TEXUNIT11,"texunit 11",2059,0,cgTexObjParam)
+    CG_TEXUNIT12             =  2060, // CG_BINDLOCATION_MACRO(TexUnit12,CG_TEXUNIT12,"texunit 12",2060,0,cgTexObjParam)
+    CG_TEXUNIT13             =  2061, // CG_BINDLOCATION_MACRO(TexUnit13,CG_TEXUNIT13,"texunit 13",2061,0,cgTexObjParam)
+    CG_TEXUNIT14             =  2062, // CG_BINDLOCATION_MACRO(TexUnit14,CG_TEXUNIT14,"texunit 14",2062,0,cgTexObjParam)
+    CG_TEXUNIT15             =  2063, // CG_BINDLOCATION_MACRO(TexUnit15,CG_TEXUNIT15,"texunit 15",2063,0,cgTexObjParam)
 
     CG_ATTR0                 =  2113, // CG_BINDLOCATION_MACRO(Attr0,CG_ATTR0,"ATTR0",2113,0,cgConnectorMemberParam)
     CG_ATTR1                 =  2114, // CG_BINDLOCATION_MACRO(Attr1,CG_ATTR1,"ATTR1",2114,0,cgConnectorMemberParam)
@@ -783,22 +782,22 @@ const
   //                               enum_int,addressable,param_type) \
   //  enum_name = enum_int,
 
-  cg_texunit0              =  2048; // cg_bindlocation_macro(texunit0,cg_texunit0,"texunit 0",2048,0,cgtexobjparam)
-  cg_texunit1              =  2049; // cg_bindlocation_macro(texunit1,cg_texunit1,"texunit 1",2049,0,cgtexobjparam)
-  cg_texunit2              =  2050; // cg_bindlocation_macro(texunit2,cg_texunit2,"texunit 2",2050,0,cgtexobjparam)
-  cg_texunit3              =  2051; // cg_bindlocation_macro(texunit3,cg_texunit3,"texunit 3",2051,0,cgtexobjparam)
-  cg_texunit4              =  2052; // cg_bindlocation_macro(texunit4,cg_texunit4,"texunit 4",2052,0,cgtexobjparam)
-  cg_texunit5              =  2053; // cg_bindlocation_macro(texunit5,cg_texunit5,"texunit 5",2053,0,cgtexobjparam)
-  cg_texunit6              =  2054; // cg_bindlocation_macro(texunit6,cg_texunit6,"texunit 6",2054,0,cgtexobjparam)
-  cg_texunit7              =  2055; // cg_bindlocation_macro(texunit7,cg_texunit7,"texunit 7",2055,0,cgtexobjparam)
-  cg_texunit8              =  2056; // cg_bindlocation_macro(texunit8,cg_texunit8,"texunit 8",2056,0,cgtexobjparam)
-  cg_texunit9              =  2057; // cg_bindlocation_macro(texunit9,cg_texunit9,"texunit 9",2057,0,cgtexobjparam)
-  cg_texunit10             =  2058; // cg_bindlocation_macro(texunit10,cg_texunit10,"texunit 10",2058,0,cgtexobjparam)
-  cg_texunit11             =  2059; // cg_bindlocation_macro(texunit11,cg_texunit11,"texunit 11",2059,0,cgtexobjparam)
-  cg_texunit12             =  2060; // cg_bindlocation_macro(texunit12,cg_texunit12,"texunit 12",2060,0,cgtexobjparam)
-  cg_texunit13             =  2061; // cg_bindlocation_macro(texunit13,cg_texunit13,"texunit 13",2061,0,cgtexobjparam)
-  cg_texunit14             =  2062; // cg_bindlocation_macro(texunit14,cg_texunit14,"texunit 14",2062,0,cgtexobjparam)
-  cg_texunit15             =  2063; // cg_bindlocation_macro(texunit15,cg_texunit15,"texunit 15",2063,0,cgtexobjparam)
+  CG_TEXUNIT0              =  2048; // CG_BINDLOCATION_MACRO(TexUnit0,CG_TEXUNIT0,"texunit 0",2048,0,cgTexObjParam)
+  CG_TEXUNIT1              =  2049; // CG_BINDLOCATION_MACRO(TexUnit1,CG_TEXUNIT1,"texunit 1",2049,0,cgTexObjParam)
+  CG_TEXUNIT2              =  2050; // CG_BINDLOCATION_MACRO(TexUnit2,CG_TEXUNIT2,"texunit 2",2050,0,cgTexObjParam)
+  CG_TEXUNIT3              =  2051; // CG_BINDLOCATION_MACRO(TexUnit3,CG_TEXUNIT3,"texunit 3",2051,0,cgTexObjParam)
+  CG_TEXUNIT4              =  2052; // CG_BINDLOCATION_MACRO(TexUnit4,CG_TEXUNIT4,"texunit 4",2052,0,cgTexObjParam)
+  CG_TEXUNIT5              =  2053; // CG_BINDLOCATION_MACRO(TexUnit5,CG_TEXUNIT5,"texunit 5",2053,0,cgTexObjParam)
+  CG_TEXUNIT6              =  2054; // CG_BINDLOCATION_MACRO(TexUnit6,CG_TEXUNIT6,"texunit 6",2054,0,cgTexObjParam)
+  CG_TEXUNIT7              =  2055; // CG_BINDLOCATION_MACRO(TexUnit7,CG_TEXUNIT7,"texunit 7",2055,0,cgTexObjParam)
+  CG_TEXUNIT8              =  2056; // CG_BINDLOCATION_MACRO(TexUnit8,CG_TEXUNIT8,"texunit 8",2056,0,cgTexObjParam)
+  CG_TEXUNIT9              =  2057; // CG_BINDLOCATION_MACRO(TexUnit9,CG_TEXUNIT9,"texunit 9",2057,0,cgTexObjParam)
+  CG_TEXUNIT10             =  2058; // CG_BINDLOCATION_MACRO(TexUnit10,CG_TEXUNIT10,"texunit 10",2058,0,cgTexObjParam)
+  CG_TEXUNIT11             =  2059; // CG_BINDLOCATION_MACRO(TexUnit11,CG_TEXUNIT11,"texunit 11",2059,0,cgTexObjParam)
+  CG_TEXUNIT12             =  2060; // CG_BINDLOCATION_MACRO(TexUnit12,CG_TEXUNIT12,"texunit 12",2060,0,cgTexObjParam)
+  CG_TEXUNIT13             =  2061; // CG_BINDLOCATION_MACRO(TexUnit13,CG_TEXUNIT13,"texunit 13",2061,0,cgTexObjParam)
+  CG_TEXUNIT14             =  2062; // CG_BINDLOCATION_MACRO(TexUnit14,CG_TEXUNIT14,"texunit 14",2062,0,cgTexObjParam)
+  CG_TEXUNIT15             =  2063; // CG_BINDLOCATION_MACRO(TexUnit15,CG_TEXUNIT15,"texunit 15",2063,0,cgTexObjParam)
 
   CG_ATTR0                 =  2113; // CG_BINDLOCATION_MACRO(Attr0,CG_ATTR0,"ATTR0",2113,0,cgConnectorMemberParam)
   CG_ATTR1                 =  2114; // CG_BINDLOCATION_MACRO(Attr1,CG_ATTR1,"ATTR1",2114,0,cgConnectorMemberParam)
@@ -1520,7 +1519,7 @@ function cgGetParameterDirection(param: PCGparameter): TCGenum; cdecl; external 
 function cgIsParameterReferenced(param: PCGparameter): TCGbool; cdecl; external CgLibrary;
 {$EXTERNALSYM cgIsParameterReferenced}
 function cgGetParameterValues(param: PCGparameter; value_type: TCGenum;
-  var nvalues: Integer): PDouble{ const }; cdecl; external CgLibrary;
+  out nvalues: Integer): PDouble{ const }; cdecl; external CgLibrary;
 {$EXTERNALSYM cgGetParameterValues}
 function cgGetParameterOrdinalNumber(param: PCGparameter): Integer; cdecl; external CgLibrary;
 {$EXTERNALSYM cgGetParameterOrdinalNumber}

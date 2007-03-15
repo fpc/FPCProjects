@@ -1,42 +1,42 @@
 {******************************************************************************}
 {*                                                                            *}
-{*  copyright (c) 2002, nvidia corporation.                                   *}
+{*  Copyright (c) 2002, NVIDIA Corporation.                                   *}
 {*                                                                            *}
-{*  files:    cggl.h                                                          *}
-{*  content:  nvidia cg opengl interface include files                        *}
+{*  Files:    cgGL.h                                                          *}
+{*  Content:  NVIDIA Cg OpenGL interface include files                        *}
 {*                                                                            *}
-{*  nvidia "cg" release 1.2 objectpascal adaptation by alexey barkovoy        *}
-{*  e-mail: clootie@ixbt.com                                                  *}
+{*  NVIDIA "Cg" Release 1.2 ObjectPascal adaptation by Alexey Barkovoy        *}
+{*  E-Mail: clootie@ixbt.com                                                  *}
 {*                                                                            *}
-{*  modified: 14-mar-2004                                                     *}
+{*  Modified: 14-Mar-2004                                                     *}
 {*                                                                            *}
-{*  latest version can be downloaded from:                                    *}
-{*     http://clootie.narod.ru                                                *}
+{*  Latest version can be downloaded from:                                    *}
+{*     http://www.clootie.ru                                                  *}
 {*                                                                            *}
 {******************************************************************************}
 {                                                                              }
-{ obtained through: joint endeavour of delphi innovators (project jedi)        }
+{ Obtained through: Joint Endeavour of Delphi Innovators (Project JEDI)        }
 {                                                                              }
-{ the contents of this file are used with permission, subject to the mozilla   }
-{ public license version 1.1 (the "license"); you may not use this file except }
-{ in compliance with the license. you may obtain a copy of the license at      }
-{ http://www.mozilla.org/mpl/mpl-1.1.html                                      }
+{ The contents of this file are used with permission, subject to the Mozilla   }
+{ Public License Version 1.1 (the "License"); you may not use this file except }
+{ in compliance with the License. You may obtain a copy of the License at      }
+{ http://www.mozilla.org/MPL/MPL-1.1.html                                      }
 {                                                                              }
-{ software distributed under the license is distributed on an "as is" basis,   }
-{ without warranty of any kind, either express or implied. see the license for }
-{ the specific language governing rights and limitations under the license.    }
+{ Software distributed under the License is distributed on an "AS IS" basis,   }
+{ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for }
+{ the specific language governing rights and limitations under the License.    }
 {                                                                              }
-{ alternatively, the contents of this file may be used under the terms of the  }
-{ gnu lesser general public license (the  "lgpl license"), in which case the   }
-{ provisions of the lgpl license are applicable instead of those above.        }
-{ if you wish to allow use of your version of this file only under the terms   }
-{ of the lgpl license and not to allow others to use your version of this file }
-{ under the mpl, indicate your decision by deleting  the provisions above and  }
-{ replace  them with the notice and other provisions required by the lgpl      }
-{ license.  if you do not delete the provisions above, a recipient may use     }
-{ your version of this file under either the mpl or the lgpl license.          }
+{ Alternatively, the contents of this file may be used under the terms of the  }
+{ GNU Lesser General Public License (the  "LGPL License"), in which case the   }
+{ provisions of the LGPL License are applicable instead of those above.        }
+{ If you wish to allow use of your version of this file only under the terms   }
+{ of the LGPL License and not to allow others to use your version of this file }
+{ under the MPL, indicate your decision by deleting  the provisions above and  }
+{ replace  them with the notice and other provisions required by the LGPL      }
+{ License.  If you do not delete the provisions above, a recipient may use     }
+{ your version of this file under either the MPL or the LGPL License.          }
 {                                                                              }
-{ for more information about the lgpl: http://www.gnu.org/copyleft/lesser.html }
+{ For more information about the LGPL: http://www.gnu.org/copyleft/lesser.html }
 {                                                                              }
 {******************************************************************************}
 
@@ -102,7 +102,7 @@
 // 11-Jan-03 - Alexey Barkovoy:
 //   - Updated to Release 1.0 of Cg toolkit (published 20-Dec-2002)
 
-unit cggl;
+unit cgGL;
 
 {$Include GLScene.inc}
 
@@ -116,7 +116,7 @@ unit cggl;
 interface
 
 uses
-  opengl1x {$ifdef needs_windows}, windows{$endif}, cg;
+  OpenGL1x {$ifdef needs_windows}, Windows{$endif}, cg;
 
 (*$HPPEMIT '#include "cgGL.h"' *)
 
