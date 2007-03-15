@@ -68,7 +68,7 @@ object Form1: TForm1
           end
           object CBVertexProgram: TCheckBox
             Left = 6
-            Height = 20
+            Height = 24
             Top = 4
             Width = 70
             Caption = 'Enabled'
@@ -371,8 +371,6 @@ object Form1: TForm1
       Width = 383
       Camera = GLCamera1
       Buffer.AntiAliasing = aa4x
-      Buffer.OnChange = nil
-      Buffer.OnStructuralChange = nil
       FieldOfView = 150.73388671875
       Align = alClient
       OnMouseDown = GLSceneViewer1MouseDown

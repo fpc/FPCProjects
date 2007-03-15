@@ -90,7 +90,7 @@ type
     procedure ButtonApplyVPClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
-    procedure CgShader1Initialize(CgShader: TCustomCgShader);
+    procedure CgShader1Initialize(CgShader: TCgShader);
   private
     { Private declarations }
   public
@@ -129,7 +129,7 @@ begin
 end;
 
 
-procedure TForm1.CgShader1Initialize(CgShader: TCustomCgShader);
+procedure TForm1.CgShader1Initialize(CgShader: TCgShader);
 begin
   // Shows the profiles to be used. The latest support profiles would be detected
   // if you have CgShader1.VertexProgram.Profile set to vpDetectLatest (similarly
