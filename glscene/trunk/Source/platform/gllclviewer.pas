@@ -26,9 +26,12 @@ interface
 
 {$i GLScene.inc}
 
-uses {$ifdef mswindows}windows,
+uses
+    lcltype,
+    {$ifdef mswindows}windows,
      {$endif}
-     messages, graphics, forms, classes, glscene, controls, menus, glcontext, lmessages;
+     messages, graphics, forms, classes, glscene, controls, menus, glcontext,
+     lmessages;
 
 type
 
