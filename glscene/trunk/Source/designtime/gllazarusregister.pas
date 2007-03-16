@@ -155,7 +155,7 @@ uses
    gllclviewer,
    {$ifdef windows}
      glsound, glsoundfileobjects,
-     glwin32fullscreenviewer, glspacetext,
+     gllclfullscreenviewer, glspacetext,
    {$endif}
    typinfo,sysutils, graphics, componenteditors, glsceneeditnew,
    glvectorfileobjects,glscreen,glmesh, glmisc, glcrossplatform,

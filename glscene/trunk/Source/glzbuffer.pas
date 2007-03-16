@@ -86,13 +86,8 @@ interface
 
 uses  Classes, GLMisc, OpenGL1x, GLScene, VectorGeometry, GLGraphics,
      SysUtils, GLObjects, GLBitmapFont, XOpenGL, GLTexture, 
-     GLContext, GLBehaviours, XCollection, GLState,
-     {$IFDEF MSWINDOWS}
-     Dialogs, GLWin32Viewer
-     {$ENDIF}
-     {$ifdef unix}
-     dialogs,gllclviewer
-     {$endif}
+     GLContext, GLBehaviours, XCollection, GLState, Dialogs,
+     {$IFDEF LCL} gllclviewer {$ELSE} GLWin32Viewer {$ENDIF}
      ;
 
 type

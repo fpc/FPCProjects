@@ -20,7 +20,7 @@
 	    <li>12/12/01 - EG - Creation (split from GLScene.pas)
 	</ul></font>
 }
-unit gllclviewer;
+unit GLLCLViewer;
 
 interface
 

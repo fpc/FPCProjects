@@ -42,11 +42,7 @@ unit GLSpatialPartitioning;
 interface
 
 uses
-  {$ifdef mswindows}
-  glwin32viewer,
-  {$else}
-  gllclviewer,
-  {$endif}
+  {$IFDEF LCL} GLLCLViewer, {$ELSE} GLWin32Viewer, {$ENDIF}
   SpatialPartitioning, GLScene, VectorGeometry, OpenGL1x,
   GeometryBB;
 

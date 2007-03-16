@@ -8,7 +8,7 @@
       <li>24/07/03 - EG - Creation from GLWin32Viewer split
 	</ul></font>
 }
-unit gllclfullscreenviewer;
+unit GLLCLFullscreenViewer;
 
 interface
 
