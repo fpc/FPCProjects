@@ -27,6 +27,7 @@
       </Item1>
       <Item2>
         <Filename Value="../Source/glsmfmod.pas"/>
+        <HasRegisterProc Value="True"/>
         <UnitName Value="glsmfmod"/>
       </Item2>
     </Files>
