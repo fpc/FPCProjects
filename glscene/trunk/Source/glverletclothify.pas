@@ -1,6 +1,7 @@
-// this unit is part of the glscene project, http://glscene.org
 //
-{: glverletclothify<p>
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLVerletClothify<p>
 
    Methods for turning a TGLBaseMesh into a Verlet cloth / jelly<p>
 
@@ -21,19 +22,21 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>27/05/04 - MF - Added some length information to edges
       <li>24/06/03 - MF - Removed several embarrassing warnings
       <li>17/06/03 - MF - Creation
    </ul>
 }
 
-unit glverletclothify;
+unit GLVerletClothify;
 
 interface
 
 uses
-  classes,  glvectorfileobjects, verletclasses, vectortypes, vectorlists,
-  vectorgeometry, gltexture, opengl1x, sysutils;
+  Classes,  GLVectorFileObjects, VerletClasses, VectorTypes, VectorLists,
+  VectorGeometry, GLTexture, OpenGL1x, SysUtils;
 
 type
   {: Class that represents a face. This structure is not used for rendering, but

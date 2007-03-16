@@ -15,24 +15,10 @@
    Copyright 2001 - Eric Grange (egrange@glscene.org)<br>
    http://glscene.org<p>
 
-      $Log: xopengl.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:43  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History :</b><ul>
-      <li>08/07/04 - LR - Removed ../ from the GLScene.inc   
+      <li>16/03/07 - DaStr - Dropped Kylix support in favor of FPC
+                             (thanks Burkhard Carstens) (BugTracekrID=1681585)
+      <li>08/07/04 - LR - Removed ../ from the GLScene.inc
       <li>23/05/03 - EG - Support for arbitrary (complex) mappings
       <li>01/02/03 - EG - Added State stack
       <li>01/07/02 - EG - Added mtcmUndefined, fixed initial state

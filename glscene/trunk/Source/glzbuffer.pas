@@ -1,5 +1,9 @@
-// GLzBuffer
-{: ZBuffer retrieval and computations.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLzBuffer<p>
+
+   ZBuffer retrieval and computations.<p>
 
    See readme.txt in the Demos/SpecialsFX/Shadows directory.<br>
    By René Lindsay.<p>
@@ -27,6 +31,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>08/02/07 - Lin - LONG overdue bugfix: Now sets GL_BLEND to prevent black screen.(thanks Jurgen Linker)
       <li>08/03/06 - ur - Fixed warnigs for Delphi 2006
       <li>03/07/04 - LR - Added ifdef for Linux

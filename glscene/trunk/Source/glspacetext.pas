@@ -1,5 +1,7 @@
-// GLSpaceText
-{: Win32 specific Context.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLSpaceText<p>
 
       $Log: glspacetext.pas,v $
       Revision 1.1  2006/01/10 20:50:46  z0m3ie
@@ -18,6 +20,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>19/10/06 - LC - Added TGLSpaceText.Assign. Bugtracker ID=1576445 (thanks Zapology)
       <li>16/09/06 - NC - TGLVirtualHandle update (thx Lionel Reynaud)
       <li>03/06/02 - EG - VirtualHandle notification fix (Sören Mühlbauer)

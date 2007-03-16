@@ -40,7 +40,8 @@
       - added automatical generated History from CVS
 
 	<b>History :</b><font size=-1><ul>
-
+      <li>16/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>21/02/07 - DaStr - Added TMeshObjectList.BuildTangentSpace, UseVBO
                              Added TGLActor.SetCurrentFrameDirect
       <li>19/02/07 - LC - Added some VBO support

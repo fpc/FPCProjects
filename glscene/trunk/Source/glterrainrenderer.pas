@@ -6,6 +6,8 @@
    GLScene's brute-force terrain renderer.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>16/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>08/02/08 - Lin- Ignore tiles that are not hdsReady (Prevents crashes when threading)
       <li>30/01/07 - Lin- Added HashedTileCount - Counts the tiles in the buffer
       <li>19/10/06 - LC - Changed the behaviour of OnMaxCLODTrianglesReached

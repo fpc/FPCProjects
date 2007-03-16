@@ -1,5 +1,9 @@
-// GLSilhouette
-{: Enhanced silhouette classes.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLSilhouette<p>
+
+   Enhanced silhouette classes.<p>
 
    Introduces more evolved/specific silhouette generation and management
    classes.<p>
@@ -23,6 +27,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>26/09/03 - EG - Improved performance of TConnectivity data construction
       <li>19/06/03 - MF - Split up Connectivity classes
       <li>10/06/03 - EG - Creation (based on code from Mattias Fagerlund)

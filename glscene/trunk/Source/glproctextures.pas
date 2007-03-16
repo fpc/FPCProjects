@@ -1,23 +1,13 @@
-// GLProcTextures
-{: Procedural textures.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLProcTextures<p>
 
-      $Log: glproctextures.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
+  Procedural textures.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>01/10/04 - ilh - Added SetPermFromData and SetPermToDefault
                             moved PERM array to protected from inside Noise procedure
                             so it can be changed by SetPermFromData and SetPermToDefault

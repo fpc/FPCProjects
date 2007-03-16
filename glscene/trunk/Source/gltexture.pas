@@ -25,6 +25,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/03/07 - DaStr - Removed obsolete FPC IFDEF's
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678642)
       <li>14/03/07 - DaStr - TGLPicFileImage now provides correct Width and Height
                                                         (BugtrackerID = 1680742)
       <li>09/03/07 - DaStr - Added TGLMaterial.GetActualPrimaryMaterial, GetLibMaterial
@@ -1732,8 +1734,7 @@ type
          
          procedure AddColor(const aName: String; const aColor: TColorVector);
          procedure EnumColors(Proc: TGetStrProc); overload;
-         {$WARNING Crossbuilder: Enabling the following (new) overloaded function crashes the compiler (fpc-2.1.1-r5580)}
-         //procedure EnumColors(AValues: TStrings); overload;
+         procedure EnumColors(AValues: TStrings); overload;
 
          function  FindColor(const aName: String): TColorVector;
          {: Convert a clrXxxx or a '<red green blue alpha> to a color vector }
@@ -6374,7 +6375,7 @@ end;
 
 // EnumColors
 //
-procedure TGLColorManager.EnumColors(Proc: TGetStrProc); overload;
+procedure TGLColorManager.EnumColors(Proc: TGetStrProc);
 var
    i : Integer;
 begin
@@ -6384,16 +6385,14 @@ end;
 
 // EnumColors
 //
-{$WARNING Crossbuilder: Enabling the following (new) overloaded function crashes the compiler (fpc-2.1.1-r5580)}
-(*
-procedure TGLColorManager.EnumColors(AValues: TStrings); overload;
+procedure TGLColorManager.EnumColors(AValues: TStrings);
 var
    i : Integer;
 begin
    for i:=0 to Count-1 do
       AValues.Add(TColorEntry(Items[i]^).Name);
 end;
-*)
+
 
 // RegisterDefaultColors
 //

@@ -1,38 +1,22 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: glverletclasses<p>
+{: GLVerletClasses<p>
 
    Classes and functions that make integration between verlets and glscene
    objects easy.
 
-      $Log: glverletclasses.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:51  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
-      <li>13/04/04 - mf - verlet call now uses tverletprogresstimes
-      <li>06/03/04 - mf - creation
+      <li>13/04/04 - MF - Verlet call now uses TVerletProgressTimes
+      <li>06/03/04 - MF - Creation
    </ul>
 }
-unit glverletclasses;
+unit GLVerletClasses;
 
 interface
 
 uses
-  verletclasses, vectorgeometry, glscene, globjects;
+  VerletClasses, VectorGeometry, GLScene, GLObjects;
 
 type
   // TGLVerletNode

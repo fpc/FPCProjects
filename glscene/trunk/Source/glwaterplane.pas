@@ -1,5 +1,5 @@
-// glwaterplane
-{: a plane simulating animated water<p>
+// GLWaterPlane
+{: A plane simulating animated water<p>
 
 	<b>History : </b><font size=-1><ul>
 
@@ -16,12 +16,12 @@
    http://users.hol.gr/~sternas/<br>
    Sternas Stefanos 2003
 }
-unit glwaterplane;
+unit GLWaterPlane;
 
 interface
 
-uses classes, vectortypes, vectorgeometry, glscene, gltexture, glgraphics,
-   glmisc, opengl1x, vectorlists, glcrossplatform, persistentclasses;
+uses Classes, VectorTypes, VectorGeometry, GLScene, GLTexture, GLGraphics,
+   GLMisc, OpenGL1x, VectorLists, GLCrossPlatform, PersistentClasses;
 
 type
 
