@@ -1,8 +1,8 @@
 {
-  bass 2.0 multimedia library
+  BASS 2.0 Multimedia Library
   ---------------------------
-  (c) 1999-2003 ian luck.
-  please report bugs/suggestions/etc... to bass@un4seen.com
+  (c) 1999-2003 Ian Luck.
+  Please report bugs/suggestions/etc... to bass@un4seen.com
 
   See the BASS.CHM file for more complete documentation
 
@@ -11,12 +11,12 @@
   ----------------
   Copy BASS.PAS to the \LIB subdirectory of your Delphi path or your project dir
 }
-unit bass;
+unit Bass;
 
 interface
 
 uses
-  windows;
+  Windows;
 
 const
   // Use these to test for error from functions that return a DWORD or QWORD
@@ -125,11 +125,11 @@ const
   BASS_SAMPLE_3D          = 8;   // 3D functionality enabled
   BASS_SAMPLE_SOFTWARE    = 16;  // it's NOT using hardware mixing
   BASS_SAMPLE_MUTEMAX     = 32;  // muted at max distance (3D only)
-  bass_sample_vam         = 64;  // uses the dx7 voice allocation & management
-  bass_sample_fx          = 128; // old implementation of dx8 effects are enabled
-  bass_sample_over_vol    = $10000; // override lowest volume
-  bass_sample_over_pos    = $20000; // override longest playing
-  bass_sample_over_dist   = $30000; // override furthest from listener (3d only)
+  BASS_SAMPLE_VAM         = 64;  // uses the DX7 voice allocation & management
+  BASS_SAMPLE_FX          = 128; // old implementation of DX8 effects are enabled
+  BASS_SAMPLE_OVER_VOL    = $10000; // override lowest volume
+  BASS_SAMPLE_OVER_POS    = $20000; // override longest playing
+  BASS_SAMPLE_OVER_DIST   = $30000; // override furthest from listener (3D only)
 
   BASS_MP3_SETPOS         = $20000; // enable pin-point seeking on the MP3/MP2/MP1
 
@@ -289,10 +289,10 @@ const
   }
   BASS_3DALG_OFF                    = 1;
   {
-    uses normal left and right panning. the vertical axis is ignored except
-    for scaling of volume due to distance. doppler shift and volume scaling
-    are still applied, but the 3d filtering is not performed. this is the
-    most cpu efficient software implementation, but provides no virtual 3d
+    Uses normal left and right panning. The vertical axis is ignored except
+    for scaling of volume due to distance. Doppler shift and volume scaling
+    are still applied, but the 3D filtering is not performed. This is the
+    most CPU efficient software implementation, but provides no virtual 3D
     audio effect. Head Related Transfer Function processing will not be done.
     Since only normal stereo panning is used, a channel using this algorithm
     may be accelerated by a 2D hardware voice if no free 3D hardware voices
@@ -300,16 +300,16 @@ const
   }
   BASS_3DALG_FULL                   = 2;
   {
-    this algorithm gives the highest quality 3d audio effect, but uses more
-    cpu. requires windows 98 2nd edition or windows 2000 that uses wdm
-    drivers, if this mode is not available then bass_3dalg_off will be used
+    This algorithm gives the highest quality 3D audio effect, but uses more
+    CPU. Requires Windows 98 2nd Edition or Windows 2000 that uses WDM
+    drivers, if this mode is not available then BASS_3DALG_OFF will be used
     instead.
   }
-  bass_3dalg_light                  = 3;
+  BASS_3DALG_LIGHT                  = 3;
   {
-    this algorithm gives a good 3d audio effect, and uses less cpu than the
-    full mode. requires windows 98 2nd edition or windows 2000 that uses wdm
-    drivers, if this mode is not available then bass_3dalg_off will be used
+    This algorithm gives a good 3D audio effect, and uses less CPU than the
+    FULL mode. Requires Windows 98 2nd Edition or Windows 2000 that uses WDM
+    drivers, if this mode is not available then BASS_3DALG_OFF will be used
     instead.
   }
 
@@ -546,11 +546,11 @@ type
     oangle: DWORD;      // angle of outside projection cone
     outvol: DWORD;      // delta-volume outside the projection cone
     {
-      the following are the defaults used if the sample uses the directx 7
+      The following are the defaults used if the sample uses the DirectX 7
       voice allocation/management features.
     }
-    vam: dword;         // voice allocation/management flags (bass_vam_xxx)
-    priority: dword;    // priority (0=lowest, $ffffffff=highest)
+    vam: DWORD;         // voice allocation/management flags (BASS_VAM_xxx)
+    priority: DWORD;    // priority (0=lowest, $ffffffff=highest)
   end;
 
   // 3D vector (for 3D positions/velocities/orientations)
