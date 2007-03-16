@@ -37,7 +37,9 @@ making this stuff again Linux compatible please dont break multi platform suppor
 	</ul></font>
 }
 unit GLWin32Viewer;
-
+{$IFDEF FPC}
+  {$ERROR Please use LCLViewer instead of Win32Viewer when compiling with FreePascalLazarus }
+{$ENDIF}
 interface
 
 {$i GLScene.inc}

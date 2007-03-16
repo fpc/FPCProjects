@@ -1,18 +1,23 @@
 // gllclviewer
 {: lcl viewer.<p>
 
-      $Log: gllclviewer.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/09 21:02:33  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>04/06/04 - EG - Created from GLWin32Viewer
+      <li>04/12/04 - DaS - OnMouseWheel, OnMouseWheelDown, OnMouseWheelUp
+                           published in TGLSceneViewer
+      <li>04/12/04 - MF - Added FieldOfView, formula by Ivan Sivak Jr.
+      <li>24/07/03 - EG - FullScreen Viewer moved to GLWin32FullScreenViewer
+      <li>11/06/03 - EG - Now uses ViewerBeforeChange to adjust VSync
+      <li>29/10/02 - EG - Added MouseEnter/Leave/InControl
+      <li>27/09/02 - EG - Added Ability to set display frequency
+      <li>22/08/02 - EG - Added TGLSceneViewer.RecreateWnd
+      <li>19/08/02 - EG - Added GetHandle
+      <li>14/03/02 - EG - No longer invalidates while rendering
+      <li>11/02/02 - EG - Fixed BeforeRender
+      <li>29/01/02 - EG - New StayOnTop/Maximize logic (Richard Smuts)
+      <li>22/01/02 - EG - Added TGLFullScreenViewer
+      <li>28/12/01 - EG - Event persistence change (GliGli / Dephi bug)
+	    <li>12/12/01 - EG - Creation (split from GLScene.pas)
 	</ul></font>
 }
 unit gllclviewer;
@@ -56,10 +61,10 @@ type
          {$IFDEF MSWINDOWS}
          procedure EraseBackground(DC: HDC); override;
          {$ENDIF}
-         procedure LMEraseBkgnd(var Message: TLMEraseBkgnd); Message LM_ERASEBKGND;
-         procedure LMPaint(var Message: TLMPaint); Message LM_PAINT;
-         procedure LMSize(var Message: TLMSize); Message LM_SIZE;
-         procedure LMDestroy(var Message: TLMDestroy); message LM_DESTROY;
+         procedure WMEraseBkgnd(var Message: TLMEraseBkgnd); Message LM_ERASEBKGND;
+         procedure WMPaint(var Message: TLMPaint); Message LM_PAINT;
+         procedure WMSize(var Message: TLMSize); Message LM_SIZE;
+         procedure WMDestroy(var Message: TLMDestroy); message LM_DESTROY;
 
          procedure CMMouseEnter(var msg: TMessage); message CM_MOUSEENTER;
          procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
@@ -79,7 +84,9 @@ type
          function GetCamera : TGLCamera;
          procedure SetBuffer(const val : TGLSceneBuffer);
 
-//         procedure CreateParams(var Params: TCreateParams); override;
+         {$IFDEF WINDOWS}
+         procedure CreateParams(var Params: TCreateParams); override;
+         {$ENDIF}
          procedure CreateWnd; override;
          procedure DestroyWnd; override;
          procedure Loaded; override;
@@ -110,7 +117,7 @@ type
 
          property RenderDC : Cardinal read FOwnDC;
          property MouseInControl : Boolean read FMouseInControl;
-
+         Procedure Invalidate; override;
       published
          { Published Declarations }
          {: Camera from which the scene is rendered. }
@@ -142,8 +149,8 @@ type
          changed, FieldOfView is changed also. }
          property FieldOfView : single read GetFieldOfView write SetFieldOfView;
 
-			property OnMouseLeave : TNotifyEvent read FOnMouseLeave write FOnMouseLeave;
-			property OnMouseEnter : TNotifyEvent read FOnMouseEnter write FOnMouseEnter;
+         property OnMouseLeave : TNotifyEvent read FOnMouseLeave write FOnMouseLeave;
+	 property OnMouseEnter : TNotifyEvent read FOnMouseEnter write FOnMouseEnter;
          
          property Align;
          property Anchors;
@@ -164,6 +171,10 @@ type
          property OnMouseDown;
          property OnMouseMove;
          property OnMouseUp;
+
+         property OnMouseWheel;
+         property OnMouseWheelDown;
+         property OnMouseWheelUp;
 {$ifdef GLS_COMPILER_5_UP}
          property OnContextPopup;
 {$endif}
@@ -277,12 +288,6 @@ begin
    inherited;
 end;
 
-{$IFDEF MSWINDOWS}
-procedure TGLSceneViewer.EraseBackground(DC: HDC);
-begin
-end;
-{$ENDIF}
-
 // SetBeforeRender
 //
 procedure TGLSceneViewer.SetBeforeRender(const val : TNotifyEvent);
@@ -346,17 +351,18 @@ begin
    FBuffer.Assign(val);
 end;
 
+{$ifdef MSWINDOWS}
 // CreateParams
 //
-{procedure TGLSceneViewer.CreateParams(var Params: TCreateParams);
+procedure TGLSceneViewer.CreateParams(var Params: TCreateParams);
 begin
    inherited CreateParams(Params);
    with Params do begin
       Style:=Style or WS_CLIPCHILDREN or WS_CLIPSIBLINGS;
       WindowClass.Style:=WindowClass.Style or CS_OWNDC;
    end;
-end; }
-
+end;
+{$ENDIF}
 // CreateWnd
 //
 procedure TGLSceneViewer.CreateWnd;
@@ -391,26 +397,26 @@ begin
    inherited;
 end;
 
-// LMEraseBkgnd
+// WMEraseBkgnd
 //
-procedure TGLSceneViewer.LMEraseBkgnd(var Message: TLMEraseBkgnd);
+procedure TGLSceneViewer.WMEraseBkgnd(var Message: TLMEraseBkgnd);
 begin
    if IsOpenGLAvailable then
       Message.Result:=1
-   else inherited; 
+   else inherited;
 end;
 
-// LMSize
+// WMSize
 //
-procedure TGLSceneViewer.LMSize(var Message: TLMSize);
+procedure TGLSceneViewer.WMSize(var Message: TLMSize);
 begin
    inherited;
    FBuffer.Resize(Message.Width, Message.Height);
 end;
 
-// LMPaint
+// WMPaint
 //
-procedure TGLSceneViewer.LMPaint(var Message: TLMPaint);
+procedure TGLSceneViewer.WMPaint(var Message: TLMPaint);
 {$IFNDEF MSWINDOWS}
   begin
     Include(FControlState,csCustomPaint);
@@ -443,9 +449,9 @@ begin
 end;
 {$ENDIF}
 
-// LMDestroy
+// WMDestroy
 //
-procedure TGLSceneViewer.LMDestroy(var Message: TLMDestroy);
+procedure TGLSceneViewer.WMDestroy(var Message: TLMDestroy);
 begin
    FBuffer.DestroyRC;
    if FOwnDC<>0 then begin
@@ -475,30 +481,6 @@ begin
    inherited;
    FMouseInControl:=False;
    if Assigned(FOnMouseLeave) then FOnMouseLeave(Self);
-end;
-
-function TGLSceneViewer.GetFieldOfView: single;
-begin
-  if not Assigned(Camera) then
-    result := 0
-
-  else if Width<Height then
-    result := Camera.GetFieldOfView(Width)
-
-  else
-    result := Camera.GetFieldOfView(Height);
-end;
-
-procedure TGLSceneViewer.SetFieldOfView(const Value: single);
-begin
-  if Assigned(Camera) then
-  begin
-    if Width<Height then
-      Camera.SetFieldOfView(Value, Width)
-
-    else
-      Camera.SetFieldOfView(Value, Height);
-  end;
 end;
 
 // Loaded
@@ -574,9 +556,49 @@ begin
 {$endif}
 end;
 
+// GetFieldOfView
+//
+function TGLSceneViewer.GetFieldOfView: single;
+begin
+  if not Assigned(Camera) then
+    result := 0
+
+  else if Width<Height then
+    result := Camera.GetFieldOfView(Width)
+
+  else
+    result := Camera.GetFieldOfView(Height);
+end;
+
+procedure TGLSceneViewer.SetFieldOfView(const Value: single);
+begin
+  if Assigned(Camera) then
+  begin
+    if Width<Height then
+      Camera.SetFieldOfView(Value, Width)
+
+    else
+      Camera.SetFieldOfView(Value, Height);
+  end;
+end;
+
+Procedure TGLSceneViewer.Invalidate;
+begin
+  inherited;
+end;
+
+{$IFDEF MSWINDOWS}
+procedure TGLSceneViewer.EraseBackground(DC: HDC);
+begin
+
+end;
+{$ENDIF}
+
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
+
+
 initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

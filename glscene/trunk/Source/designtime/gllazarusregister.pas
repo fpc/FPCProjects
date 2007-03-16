@@ -1,4 +1,4 @@
-unit gllazarusregister;
+unit GLLazarusRegister;
 
 
 {
@@ -152,16 +152,10 @@ implementation
 // ------------------------------------------------------------------
 
 uses
-   {$ifdef fpc}
-     gllclviewer,
-     {$ifdef windows}
-       glsound, glsoundfileobjects,
-       glwin32fullscreenviewer, glwin32viewer, glspacetext,
-     {$endif}
-   {$else}
-     {$ifdef mswindows}
-       glwin32viewer,glwin32fullscreenviewer,glspacetext,
-     {$endif}
+   gllclviewer,
+   {$ifdef windows}
+     glsound, glsoundfileobjects,
+     glwin32fullscreenviewer, glspacetext,
    {$endif}
    typinfo,sysutils, graphics, componenteditors, glsceneeditnew,
    glvectorfileobjects,glscreen,glmesh, glmisc, glcrossplatform,
