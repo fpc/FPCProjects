@@ -29,7 +29,7 @@ uses
   {$ifndef lcl}
   ,glwin32viewer
   {$else}
-  ,lresources,lclintf,messages,lmessages,buttons;
+  ,GLLCLViewer ,lresources,lclintf,messages,lmessages,buttons;
   {$endif}
 {$else}
 uses
