@@ -1804,11 +1804,7 @@ end;
 procedure TGLSMWaveOut.UpdateSource(aSource : TGLBaseSoundSource);
 var
    i, n : Integer;
-   {$ifdef fpc}
-   wfx : TPCMWaveFormat;
-   {$else}
    wfx : TWaveFormatEx;
-   {$endif}
    smp : TGLSoundSample;
    wh : wavehdr;
    mmres : MMRESULT;

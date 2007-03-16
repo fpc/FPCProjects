@@ -49,7 +49,7 @@ type
          function BytesPerSec : Integer;
          function BytesPerSample : Integer;
 
-         function WaveFormat : TPCMWaveFormat;
+         function WaveFormat : TWaveFormatEx;
 
 	   published
 	      { Published Declarations }
@@ -112,7 +112,7 @@ type
    TGLWAVFile = class (TGLSoundFile)
       private
          { Public Declarations }
-         waveFormat : TPCMWaveFormat;
+         waveFormat : TWaveFormatEx;
          pcmOffset : Integer;
          data : String; // used to store WAVE bitstream
 
@@ -190,7 +190,7 @@ type
 procedure PlayOnWaveOut(pcmData : Pointer; lengthInBytes : Integer;
                         sampling : TGLSoundSampling); overload;
 function PlayOnWaveOut(pcmData : Pointer; lengthInBytes : Integer;
-                        waveFormat : TPCMWaveFormat) : HWaveOut; overload;
+                        waveFormat : TWaveFormatEx) : HWaveOut; overload;
 
 function GetGLSoundFileFormats : TGLSoundFileFormatsList;
 procedure RegisterSoundFileFormat(const AExtension, ADescription: String; AClass: TGLSoundFileClass);
@@ -257,7 +257,7 @@ end;
 procedure PlayOnWaveOut(pcmData : Pointer; lengthInBytes : Integer;
                         sampling : TGLSoundSampling);
 var
-   wfx : TPCMWaveFormat;
+   wfx : TWaveFormatEx;
    hwo : hwaveout;
    wh : wavehdr;
    mmres : MMRESULT;
@@ -279,7 +279,7 @@ end;
 // PlayOnWaveOut (waveformat)
 //
 function PlayOnWaveOut(pcmData : Pointer; lengthInBytes : Integer;
-                       waveFormat : TPCMWaveFormat) : HWaveOut;
+                       waveFormat : TWaveFormatEx) : HWaveOut;
 var
    hwo : hwaveout;
    wh : wavehdr;
@@ -356,15 +356,15 @@ end;
 
 // WaveFormat
 //
-function TGLSoundSampling.WaveFormat : TPCMWaveFormat;
+function TGLSoundSampling.WaveFormat : TWaveFormatEx;
 begin
-   Result.wf.nSamplesPerSec:=Frequency;
-   Result.wf.nChannels:=NbChannels;
-   Result.wf.wFormatTag:=Wave_Format_PCM;
-   Result.wf.nAvgBytesPerSec:=BytesPerSec;
+   Result.nSamplesPerSec:=Frequency;
+   Result.nChannels:=NbChannels;
+   Result.wFormatTag:=Wave_Format_PCM;
+   Result.nAvgBytesPerSec:=BytesPerSec;
    Result.wBitsPerSample:=BitsPerSample;
-   Result.wf.nBlockAlign:=1024;
-   //Result.wf.cbSize:=SizeOf(TPCMWaveFormat); k00m
+   Result.nBlockAlign:=1024;
+   Result.cbSize:=SizeOf(TWaveFormatEx);
 end;
 
 // ------------------
@@ -467,16 +467,16 @@ begin
       stream.Read(ck, SizeOf(TRIFFChunkInfo));
       bytesToGo:=ck.ckSize;
       if (ck.ckID = mmioStringToFourCC('fmt ',0)) then begin
-         if waveFormat.wf.wFormatTag=0 then begin
+         if waveFormat.wFormatTag=0 then begin
             dw:=ck.ckSize;
-            if dw>SizeOf(TPCMWaveFormat) then
-               dw:=SizeOf(TPCMWaveFormat);
+            if dw>SizeOf(TWaveFormatEx) then
+               dw:=SizeOf(TWaveFormatEx);
             stream.Read(waveFormat, dw);
             bytesToGo:=ck.ckSize-dw;
          end;
          // other 'fmt ' chunks are ignored (?)
       end else if (ck.ckID = mmioStringToFourCC('fact',0)) then begin
-         if (dwDataSamples = 0) and (waveFormat.wf.wFormatTag = WAVE_Format_ADPCM) then begin
+         if (dwDataSamples = 0) and (waveFormat.wFormatTag = WAVE_Format_ADPCM) then begin
             stream.Read(dwDataSamples, SizeOf(LongInt));
             Dec(bytesToGo, SizeOf(LongInt));
          end;
@@ -498,9 +498,9 @@ begin
       stream.Read(data[1], totalSize);
    // update Sampling data
    with waveFormat do begin
-      Sampling.Frequency:=wf.nSamplesPerSec;
-      Sampling.NbChannels:=wf.nChannels;
-      Sampling.BitsPerSample:= wBitsPerSample;
+      Sampling.Frequency:=nSamplesPerSec;
+      Sampling.NbChannels:=nChannels;
+      Sampling.BitsPerSample:=wBitsPerSample;
    end;
 end;
 
