@@ -1,4 +1,4 @@
-{: glsmopenal<p>
+{: GLSMOpenAL<p>
 
 	OpenAL based sound-manager (http://www.openal.org).<p>
    OpenAL drivers can be download from the OpenAL site or you soundcard
@@ -23,12 +23,12 @@
       <li>??/??/03 - Mrqzz - Creation
 	</ul></font>
 }
-unit glsmopenal;
+unit GLSMOpenAL;
 
 interface
 
 uses
-   classes, glsound, glscene, sysutils, glsoundfileobjects;
+   Classes, GLSound, GLScene, SysUtils, GLSoundFileObjects;
 
 type
 
@@ -74,7 +74,7 @@ implementation
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
 
-uses forms, vectorgeometry, dialogs{, al, alut, altypes};
+uses Forms, VectorGeometry, Dialogs{, al, alut, alTypes};
 
 procedure Register;
 begin
@@ -225,7 +225,7 @@ begin
      else alSourcef(aSource.ManagerTag, AL_MAX_GAIN, 1.0);
 end;
 
-// pausesource
+// PauseSource
 //
 procedure TGLSMOpenAL.PauseSource(aSource : TGLBaseSoundSource; paused : Boolean);
 begin

@@ -1,5 +1,5 @@
-// gltileplane
-{: implements a tiled texture plane.<p>
+// GLTilePlane
+{: Implements a tiled texture plane.<p>
 
       $Log: gltileplane.pas,v $
       Revision 1.1  2006/01/10 20:50:46  z0m3ie
@@ -21,16 +21,17 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/08/05 - Mathx - Made index of materials start from 0 not from 1 (thanks to uhfath)
       <li>23/03/04 - EG - Added NoZWrite
       <li>09/01/04 - EG - Creation
    </ul></font>
 }
-unit gltileplane;
+unit GLTilePlane;
 
 interface
 
-uses classes, glscene, vectorgeometry, opengl1x, glmisc, gltexture, globjects,
-   glcrossplatform, persistentclasses, vectorlists;
+uses Classes, GLScene, VectorGeometry, OpenGL1x, GLMisc, GLTexture, GLObjects,
+   GLCrossPlatform, PersistentClasses, VectorLists;
 
 type
 
@@ -171,7 +172,7 @@ implementation
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-uses xopengl;
+uses XOpenGL;
 
 // ------------------
 // ------------------ TGLTiledAreaRow ------------------
@@ -624,7 +625,7 @@ begin
       glDepthMask(False);
    if SortByMaterials then begin
       SetLength(quadInfos, MaterialLibrary.Materials.Count);
-      for i:=0 to High(quadInfos) do begin
+      for i:=0 to High(quadInfos) do begin //correction in (i:=0) from (i:=1)
          quadInfos[i].x:=TIntegerList.Create;
          quadInfos[i].y:=TIntegerList.Create;
       end;
@@ -634,7 +635,7 @@ begin
          if Assigned(r) then begin
             for col:=r.ColMin to r.ColMax do begin
                t:=r.Cell[col] and $FFFF;
-               if (t>-1) and (t<MaterialLibrary.Materials.Count) then begin
+               if (t>-1) and (t<MaterialLibrary.Materials.Count) then begin //correction in (t>-1) from (t>0)
                   quadInfos[t].x.Add(col);
                   quadInfos[t].y.Add(row);
                end;
@@ -642,7 +643,7 @@ begin
          end;
       end;
       // render and cleanup
-      for i:=0 to High(quadInfos) do begin
+      for i:=0 to High(quadInfos) do begin //correction in (i:=0) from (i:=1)
          if quadInfos[i].x.Count>0 then begin
             libMat:=MaterialLibrary.Materials[i];
             libMat.Apply(rci);
@@ -663,7 +664,7 @@ begin
          if Assigned(r) then begin
             for col:=r.ColMin to r.ColMax do begin
                t:=r.Cell[col] and $FFFF;
-               if (t>-1) and (t<MaterialLibrary.Materials.Count) then begin
+               if (t>-1) and (t<MaterialLibrary.Materials.Count) then begin //correction in (t>-1) from (t>0)
                   libMat:=MaterialLibrary.Materials[t];
                   libMat.Apply(rci);
                   repeat

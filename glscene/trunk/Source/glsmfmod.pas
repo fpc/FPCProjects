@@ -1,4 +1,4 @@
-{: glsmfmod<p>
+{: GLSMFMOD<p>
 
 	FMOD based sound-manager (http://www.fmod.org/, free for freeware).<p>
 
@@ -13,20 +13,20 @@
       <li>18/09/03 - ARH - updated for fmod 3.7
       <li>24/09/02 - EG - FMOD activation errors no longer result in Asserts (ignored)
       <li>28/08/02 - EG - Fixed EAX capability detection
-      <li>27/08/02 - eg - now uses dynamically linked version by steve williams,
-                          added support for eax environments
-      <li>26/08/02 - eg - updated to fmod 3.6
-      <li>27/02/02 - eg - updated to fmod 3.5, added 3d factors
-      <li>05/02/02 - eg - updated to fmod 3.4, now uses dsound by default
-      <li>13/01/01 - eg - updated for api 3.3 compatibility
-	   <li>09/06/00 - eg - creation
+      <li>27/08/02 - EG - Now uses dynamically linked version by Steve Williams,
+                          Added support for EAX environments
+      <li>26/08/02 - EG - Updated to FMOD 3.6
+      <li>27/02/02 - EG - Updated to FMOD 3.5, added 3D Factors
+      <li>05/02/02 - EG - Updated to FMOD 3.4, now uses DSound by default
+      <li>13/01/01 - EG - Updated for API 3.3 compatibility
+	   <li>09/06/00 - EG - Creation
 	</ul></font>
 }
-unit glsmfmod;
+unit GLSMFMOD;
 
 interface
 
-uses classes, glsound, glscene;
+uses Classes, GLSound, GLScene;
 
 type
 
@@ -79,7 +79,7 @@ implementation
 // ---------------------------------------------------------------------
 
 
-uses sysutils, fmod, vectorgeometry;
+uses SysUtils, FMod, VectorGeometry;
 
 type
    TFMODInfo =  record
@@ -295,7 +295,7 @@ begin
    end;
 end;
 
-// pausesource
+// PauseSource
 //
 procedure TGLSMFMOD.PauseSource(aSource : TGLBaseSoundSource; paused : Boolean);
 var
