@@ -490,36 +490,7 @@ type
 
 	end;
 
-	// TGLSMWaveOut
-	//
-   {: Basic sound manager based on WinMM <i>waveOut</i> function.<p>
-      This manager has NO 3D miximing capacity, this is merely a default manager
-      that should work on any system, and help showcasing/testing basic GLSS
-      core functionality.<p>
-      Apart from 3D, mute, pause, priority and volume are ignored too, and only
-      sampling conversions supported by the windows ACM driver are supported
-      (ie. no 4bits samples playback etc.). }
-	TGLSMWaveOut = class (TGLSoundManager)
-	   private
-	      { Private Declarations }
 
-	   protected
-	      { Protected Declarations }
-	      function DoActivate : Boolean; override;
-	      procedure DoDeActivate; override;
-
-         procedure KillSource(aSource : TGLBaseSoundSource); override;
-         procedure UpdateSource(aSource : TGLBaseSoundSource); override;
-
-      public
-	      { Public Declarations }
-	      constructor Create(AOwner : TComponent); override;
-	      destructor Destroy; override;
-
-      published
-	      { Published Declarations }
-         property MaxChannels default 4;
-	end;
 
 procedure Register;
 
@@ -541,7 +512,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, MMSystem, GLCrossPlatform;
+uses SysUtils, GLCrossPlatform;
 
 var
    vActiveSoundManager : TGLSoundManager;
@@ -551,7 +522,7 @@ var
 //
 procedure Register;
 begin
-  RegisterComponents('GLScene', [TGLSoundLibrary, TGLSMWaveOut]);
+  RegisterComponents('GLScene', [TGLSoundLibrary]);
 end;
 
 // ActiveSoundManager
@@ -1744,120 +1715,6 @@ begin
    FPlayingSource:=nil;
 end;
 
-// ------------------
-// ------------------ TGLSMWaveOut ------------------
-// ------------------
-
-// Create
-//
-constructor TGLSMWaveOut.Create(AOwner : TComponent);
-begin
-	inherited Create(AOwner);
-   MaxChannels:=4;
-end;
-
-// Destroy
-//
-destructor TGLSMWaveOut.Destroy;
-begin
-	inherited Destroy;
-end;
-
-// DoActivate
-//
-function TGLSMWaveOut.DoActivate : Boolean;
-begin
-   Result:=True;
-end;
-
-// DoDeActivate
-//
-procedure TGLSMWaveOut.DoDeActivate;
-var
-   i : Integer;
-begin
-   for i:=Sources.Count-1 downto 0 do
-      KillSource(Sources[i]);
-end;
-
-// KillSource
-//
-procedure TGLSMWaveOut.KillSource(aSource : TGLBaseSoundSource);
-begin
-   if aSource.ManagerTag<>0 then begin
-      waveOutClose(aSource.ManagerTag);
-      aSource.ManagerTag:=0;
-   end;
-end;
-
-procedure _waveOutCallBack(hwo : HWAVEOUT; uMsg : Cardinal;
-                           dwInstance, dwParam1, dwParam2 : Integer); stdcall;
-begin
-   if uMsg=WOM_DONE then begin
-      waveOutClose(hwo);
-      TGLSoundSource(dwInstance).ManagerTag:=-1;
-   end;
-end;
-
-// UpdateSource
-//
-procedure TGLSMWaveOut.UpdateSource(aSource : TGLBaseSoundSource);
-var
-   i, n : Integer;
-   wfx : TWaveFormatEx;
-   smp : TGLSoundSample;
-   wh : wavehdr;
-   mmres : MMRESULT;
-   hwo : hwaveout;
-begin
-   // count nb of playing sources and delete done ones
-   n:=0;
-   for i:=Sources.Count-1 downto 0 do
-      if Sources[i].ManagerTag>0 then
-         Inc(n)
-      else if Sources[i].ManagerTag=-1 then
-{$ifdef GLS_DELPHI_5_UP}
-			Sources.Delete(i);
-{$else}
-			Sources[i].Free;
-{$endif}
-	// start sources if some capacity remains, and forget the others
-   for i:=Sources.Count-1 downto 0 do if Sources[i].ManagerTag=0 then begin
-      if n<FMaxChannels then begin
-         smp:=Sources[i].Sample;
-         if Assigned(smp) and (smp.Data<>nil) then begin
-            wfx:=smp.Data.Sampling.WaveFormat;
-            mmres:=waveOutOpen(@hwo, WAVE_MAPPER, @wfx,
-                               Cardinal(@_waveOutCallBack), Integer(Sources[i]),
-                               CALLBACK_FUNCTION);
-            Assert(mmres=MMSYSERR_NOERROR, IntToStr(mmres));
-            wh.dwBufferLength:=smp.LengthInBytes;
-            wh.lpData:=smp.Data.PCMData;
-            wh.dwLoops:=Sources[i].NbLoops;
-            if wh.dwLoops>1 then
-               wh.dwFlags:=WHDR_BEGINLOOP+WHDR_ENDLOOP
-            else wh.dwFlags:=0;
-            wh.lpNext:=nil;
-            mmres:=waveOutPrepareHeader(hwo, @wh, SizeOf(wavehdr));
-            Assert(mmres=MMSYSERR_NOERROR, IntToStr(mmres));
-            mmres:=waveOutWrite(hwo, @wh, SizeOf(wavehdr));
-            Assert(mmres=MMSYSERR_NOERROR, IntToStr(mmres));
-            Sources[i].ManagerTag:=hwo;
-            Inc(n);
-			end else
-{$ifdef GLS_DELPHI_5_UP}
-				Sources.Delete(i);
-{$else}
-				Sources[i].Free;
-{$endif}
-		end else
-{$ifdef GLS_DELPHI_5_UP}
-			Sources.Delete(i);
-{$else}
-			Sources[i].Free;
-{$endif}
-	end;
-end;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

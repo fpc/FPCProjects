@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="152">
+    <Files Count="153">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -667,6 +667,11 @@
         <Filename Value="../Source/glheightdata.pas"/>
         <UnitName Value="GLHeightData"/>
       </Item152>
+      <Item153>
+        <Filename Value="../Source/glsound.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="GLSound"/>
+      </Item153>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">

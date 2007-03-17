@@ -17,10 +17,9 @@ unit GLSoundFileObjects;
 interface
 
 uses classes, glmisc, applicationfileio
-     {$ifdef mswindows}
-     ,mmsystem
-     {$else}
-     {$endif}
+     //{$ifdef mswindows}
+     //,mmsystem
+     //{$endif}
      ;
 
 type
@@ -49,7 +48,7 @@ type
          function BytesPerSec : Integer;
          function BytesPerSample : Integer;
 
-         function WaveFormat : TWaveFormatEx;
+         //function WaveFormat : TWaveFormatEx;
 
 	   published
 	      { Published Declarations }
@@ -105,7 +104,8 @@ type
    end;
 
    TGLSoundFileClass = class of TGLSoundFile;
-
+{$MESSAGE Warning 'Temporarily disabled TGLWAVFile to get this unit compile in linux' }
+(*
    // TGLWAVFile
    //
    {: Support for Windows WAV format. }
@@ -135,15 +135,15 @@ type
 	      function PCMData : Pointer; override;
 	      function LengthInBytes : Integer; override;
    end;
-
-   // TGLMP3File
+*)
+   // TGLGenericSoundFile
    //
-   {: Support for MP3 format.<p>
+   {: Support for generic sound files, as most libs detect filetype themselfs anyway.<p>
       *Partial* support only, access to PCMData is NOT supported. }
-   TGLMP3File = class (TGLSoundFile)
+   TGLGenericSoundFile = class (TGLSoundFile)
       private
          { Public Declarations }
-         data : String; // used to store MP3 bitstream
+         data : String; // used to store full bitstream including header
 
       protected
          { Protected Declarations }
@@ -163,6 +163,14 @@ type
          function WAVDataSize : Integer; override;
 	      function PCMData : Pointer; override;
 	      function LengthInBytes : Integer; override;
+   end;
+   // TGLMP3File
+   //
+   {: Support for MP3 format.<p>
+      *Partial* support only, access to PCMData is NOT supported. }
+   TGLMP3File = class (TGLGenericSoundFile)
+      public
+         procedure PlayOnWaveOut; override;
    end;
 
    // TGLSoundFileFormat
@@ -187,11 +195,13 @@ type
          procedure BuildFilterStrings(SoundFileClass: TGLSoundFileClass; var Descriptions, Filters: string);
    end;
 
+{$MESSAGE Warning 'Temporarily disabled WaveOut functions to get his unit compile in linux' }
+(*
 procedure PlayOnWaveOut(pcmData : Pointer; lengthInBytes : Integer;
                         sampling : TGLSoundSampling); overload;
 function PlayOnWaveOut(pcmData : Pointer; lengthInBytes : Integer;
                         waveFormat : TWaveFormatEx) : HWaveOut; overload;
-
+*)
 function GetGLSoundFileFormats : TGLSoundFileFormatsList;
 procedure RegisterSoundFileFormat(const AExtension, ADescription: String; AClass: TGLSoundFileClass);
 procedure UnregisterSoundFileClass(AClass: TGLSoundFileClass);
@@ -206,8 +216,8 @@ implementation
 
 uses SysUtils, GLStrings{, consts};
 
-type
-
+{$MESSAGE Warning 'Temporarily disabled to get his unit compile in linux' }
+(*
    TRIFFChunkInfo = packed record
       ckID : FOURCC;
       ckSize : LongInt;
@@ -215,6 +225,7 @@ type
 
 const
   WAVE_Format_ADPCM = 2;
+*)
 
 var
    vSoundFileFormats : TGLSoundFileFormatsList;
@@ -244,6 +255,8 @@ begin
 		vSoundFileFormats.Remove(AClass);
 end;
 
+{$MESSAGE Warning 'Temporarily disabled to get his unit compile in linux' }
+(*
 
 procedure _waveOutCallBack(hwo : HWAVEOUT; uMsg : Cardinal;
                            dwInstance, dwParam1, dwParam2 : Integer); stdcall;
@@ -299,6 +312,7 @@ begin
    Assert(mmres=MMSYSERR_NOERROR, IntToStr(mmres));
    Result:=hwo;
 end;
+*)
 
 // ------------------
 // ------------------ TGLSoundSampling ------------------
@@ -356,6 +370,8 @@ end;
 
 // WaveFormat
 //
+{$MESSAGE Warning 'Temporarily disabled to get this unit compile in linux' }
+(*
 function TGLSoundSampling.WaveFormat : TWaveFormatEx;
 begin
    Result.nSamplesPerSec:=Frequency;
@@ -366,7 +382,7 @@ begin
    Result.nBlockAlign:=1024;
    Result.cbSize:=SizeOf(TWaveFormatEx);
 end;
-
+*)
 // ------------------
 // ------------------ TGLSoundFile ------------------
 // ------------------
@@ -398,7 +414,8 @@ end;
 //
 procedure TGLSoundFile.PlayOnWaveOut;
 begin
-   GLSoundFileObjects.PlayOnWaveOut(PCMData, LengthInSamples, Sampling);
+  {$MESSAGE Warning 'Temporarily disabled TGLWAVFile to get this unit compile in linux' }
+  // GLSoundFileObjects.PlayOnWaveOut(PCMData, LengthInSamples, Sampling);
 end;
 
 // LengthInSamples
@@ -420,6 +437,8 @@ begin
 	Result:=LengthInBytes/Sampling.BytesPerSec;
 end;
 
+{$MESSAGE Warning 'Temporarily disabled TGLWAVFile to get this unit compile in linux' }
+(*
 // ------------------
 // ------------------ TGLWAVFile ------------------
 // ------------------
@@ -551,6 +570,7 @@ function TGLWAVFile.LengthInBytes : Integer;
 begin
    Result:=Length(data)-pcmOffset;
 end;
+*)
 
 // ------------------
 // ------------------ TGLMP3File ------------------
@@ -558,24 +578,24 @@ end;
 
 // CreateCopy
 //
-function TGLMP3File.CreateCopy(AOwner: TPersistent) : TDataFile;
+function TGLGenericSoundFile.CreateCopy(AOwner: TPersistent) : TDataFile;
 begin
    Result:=inherited CreateCopy(AOwner);
    if Assigned(Result) then begin
-      TGLMP3File(Result).data:=data;
+      TGLGenericSoundFile(Result).data:=data;
    end;
 end;
 
 // Capabilities
 //
-class function TGLMP3File.Capabilities : TDataFileCapabilities;
+class function TGLGenericSoundFile.Capabilities : TDataFileCapabilities;
 begin
    Result:=[dfcRead, dfcWrite];
 end;
 
 // LoadFromStream
 //
-procedure TGLMP3File.LoadFromStream(stream : TStream);
+procedure TGLGenericSoundFile.LoadFromStream(stream : TStream);
 begin
    // MP3 isn't actually, just loaded directly...
    Assert(Assigned(stream));
@@ -586,7 +606,7 @@ end;
 
 // SaveToStream
 //
-procedure TGLMP3File.SaveToStream(stream: TStream);
+procedure TGLGenericSoundFile.SaveToStream(stream: TStream);
 begin
    if Length(data)>0 then
       stream.Write(data[1], Length(data));
@@ -594,14 +614,14 @@ end;
 
 // PlayOnWaveOut
 //
-procedure TGLMP3File.PlayOnWaveOut;
+procedure TGLGenericSoundFile.PlayOnWaveOut;
 begin
    Assert(False, 'MP3 playback on WaveOut not supported.');
 end;
 
 // WAVData
 //
-function TGLMP3File.WAVData : Pointer;
+function TGLGenericSoundFile.WAVData : Pointer;
 begin
    if Length(data)>0 then
       Result:=@data[1]
@@ -610,23 +630,32 @@ end;
 
 // WAVDataSize
 //
-function TGLMP3File.WAVDataSize : Integer;
+function TGLGenericSoundFile.WAVDataSize : Integer;
 begin
    Result:=Length(data);
 end;
 
 // PCMData
 //
-function TGLMP3File.PCMData : Pointer;
+function TGLGenericSoundFile.PCMData : Pointer;
 begin
    Result:=nil;
 end;
 
 // LengthInBytes
 //
-function TGLMP3File.LengthInBytes : Integer;
+function TGLGenericSoundFile.LengthInBytes : Integer;
 begin
    Result:=0;
+end;
+
+// ------------------
+// ------------------ TGLMP3File ------------------
+// ------------------
+
+procedure TGLMP3File.PlayOnWaveOut;
+begin
+   Assert(False, 'MP3 playback on WaveOut not supported.');
 end;
 
 // ------------------
@@ -725,13 +754,17 @@ end;
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
+
+
 initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
 	// class registrations
-  RegisterSoundFileFormat('wav', 'Windows WAV files', TGLWAVFile);
+{$MESSAGE Warning 'Temporarily disabled TGLWAVFile to get this unit compile in linux' }
+//  RegisterSoundFileFormat('wav', 'Windows WAV files', TGLWAVFile);
+  RegisterSoundFileFormat('wav', 'Windows WAV files', TGLGenericSoundFile);
   RegisterSoundFileFormat('mp3', 'MPEG Layer3 files', TGLMP3File);
 finalization
 

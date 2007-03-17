@@ -154,9 +154,9 @@ implementation
 uses
    gllclviewer,
    {$ifdef windows}
-     glsound, glsoundfileobjects,
      gllclfullscreenviewer, glspacetext,
    {$endif}
+   glsound, glsoundfileobjects,
    typinfo,sysutils, graphics, componenteditors, glsceneeditnew,
    glvectorfileobjects,glscreen,glmesh, glmisc, glcrossplatform,
    fvectoreditor, vectorgeometry,glstrings,glcadencer,gltexture,glgui,
@@ -249,7 +249,6 @@ type
    end;
 //{$endif}
          
-{$ifdef WINDOWS}
    // TSoundFileProperty
    //
    TSoundFileProperty = class (TClassProperty)
@@ -268,7 +267,6 @@ type
          function GetAttributes : TPropertyAttributes; override;
       	procedure GetValues(Proc: TGetStrProc); override;
    end;
-{$endif}
 
 
    // TGLCoordinatesProperty
@@ -618,7 +616,6 @@ end;
 
 //----------------- TSoundFileProperty -----------------------------------------
 
-{$ifdef WINDOWS}
 // GetAttributes
 //
 function TSoundFileProperty.GetAttributes: TPropertyAttributes;
@@ -680,7 +677,6 @@ begin
    if Assigned(source.SoundLibrary) then with source.SoundLibrary do
       for i:=0 to Samples.Count-1 do Proc(Samples[i].Name);
 end;
-{$endif WINDOWS}
 
 //----------------- TGLCoordinatesProperty -------------------------------------
 
@@ -754,8 +750,7 @@ begin
                        TGLGuiLayout,
                        TGLBitmapFont, TGLWindowsBitmapFont, TGLStoredBitmapFont
                        {$ifdef WINDOWS}
-                       ,
-                       TGLFullScreenViewer
+                       ,TGLFullScreenViewer
                        {$endif}
                       ]);
 
@@ -798,10 +793,8 @@ begin
    
    RegisterPropertyEditor(TypeInfo(TGLColor), nil, '', TGLColorProperty);
    
-   {$ifdef WINDOWS}
    RegisterPropertyEditor(TypeInfo(TGLSoundFile), TGLSoundSample, '', TSoundFileProperty);
    RegisterPropertyEditor(TypeInfo(String), TGLBaseSoundSource, 'SoundName', TSoundNameProperty);
-   {$endif}
 
    RegisterClasses([TGLCoordinates]);
 
