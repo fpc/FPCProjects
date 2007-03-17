@@ -1,4 +1,4 @@
-{: glcrossplatform<p>
+{: GLCrossPlatform<p>
 
 	Cross platform support functions and types for GLScene.<p>
 
@@ -22,11 +22,12 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
-      <li>08/07/04 - LR - Added clBlack  
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
+      <li>08/07/04 - LR - Added clBlack
       <li>03/07/04 - LR - Added constant for Keyboard (glKey_TAB, ...)
                           Added function GLOKMessageBox to avoid the uses of Forms
                           Added other abstraction calls
-                          added procedure showhtmlurl for unit info.pas
+                          Added procedure ShowHTMLUrl for unit Info.pas
                           Added GLShowCursor, GLSetCursorPos, GLGetCursorPos,
                           GLGetScreenWidth, GLGetScreenHeight for GLNavigation
                           Added GLGetTickCount for GLFPSMovement
@@ -40,18 +41,18 @@
       <li>31/08/01 - EG - Creation
 	</ul></font>
 }
-unit glcrossplatform;
+unit GLCrossPlatform;
 
 interface
 
-{$include glscene.inc}
+{$include GLScene.inc}
 
 {$IFDEF MSWINDOWS}
 uses
-  windows, classes, sysutils,graphics, controls, forms,
-  dialogs, stdctrls, extdlgs{$ifndef fpc}, consts{$endif};
-{$endif}
-{$ifdef unix}
+  Windows, Classes, SysUtils, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtDlgs{$ifndef fpc}, Consts{$endif};
+{$ENDIF}
+{$IFDEF UNIX}
 uses
   {$ifdef fpc}
   graphics,controls,forms,dialogs,stdctrls,lcltype,buttons,unix,lclintf,
@@ -60,7 +61,7 @@ uses
   qdialogs, qstdctrls,qconsts,
   {$endif}
   libc, classes, sysutils,  types;
-{$endif}
+{$ENDIF}
 
 type
 
@@ -109,7 +110,7 @@ const
    glpf32Bit = pf32bit;
    glpfDevice = pfDevice;
 {$endif}
-{$ifdef unix}
+{$IFDEF UNIX}
    glpf8Bit = pf8bit;
    glpf24bit = pf32bit;
    glpf32Bit = pf32bit;
@@ -125,7 +126,7 @@ const
    clSilver = Graphics.clSilver;
    clBlack = Graphics.clBlack;
 {$endif}
-{$ifdef unix}
+{$IFDEF UNIX}
 {$ifdef FPC}
    clBtnFace = Graphics.clBtnFace;
    clRed = Graphics.clRed;
@@ -157,7 +158,7 @@ const
   glKey_UP = VK_UP;
   glKey_DOWN = VK_DOWN;
 {$endif}
-{$ifdef unix}
+{$IFDEF UNIX}
 {$IFDEF FPC}
   glKey_TAB = VK_TAB;
   glKey_SPACE = VK_SPACE;
@@ -185,7 +186,7 @@ const
 {$endif}
 {$endif}
 
-// several define from unit consts
+// Several define from unit Consts
 const
   glsAllFilter: string = {$ifndef FPC}sAllFilter{$else}'all'{$endif};
   {$IFDEF FPC}
@@ -313,9 +314,9 @@ implementation
 
 {$IFDEF MSWINDOWS}
 uses
-  shellapi, gltexture;
-{$endif}
-{$ifdef unix}
+  ShellApi, GLTexture;
+{$ENDIF}
+{$IFDEF UNIX}
 
 {$ENDIF}
 
@@ -328,7 +329,7 @@ begin
 {$IFDEF MSWINDOWS}
   ABitmap.Handle := LoadBitmap(HInstance, PChar(AName));
 {$ENDIF}
-{$IFDEF unix}
+{$IFDEF UNIX}
   ABitmap.LoadFromResourceName(HInstance, PChar(AName));
 {$ENDIF}
 end;
@@ -338,7 +339,7 @@ begin
 {$IFDEF MSWINDOWS}
   result := Application.MessageBox(PChar(Text),PChar(Caption),MB_OK);
 {$ENDIF}
-{$IFDEF unix}
+{$IFDEF UNIX}
   {$ifdef fpc}
   result := Application.MessageBox(PChar(Text),PChar(Caption),MB_OK);
   {$ELSE}
@@ -352,7 +353,7 @@ begin
 {$IFDEF MSWINDOWS}
   ShowCursor(AShow);
 {$ENDIF}
-{$IFDEF unix}
+{$IFDEF UNIX}
   {$MESSAGE Warn 'ShowCursor: Needs to be implemented'}
 {$ENDIF}
 end;
@@ -362,7 +363,7 @@ begin
 {$IFDEF MSWINDOWS}
   SetCursorPos(AScreenX, AScreenY);
 {$ENDIF}
-{$IFDEF unix}
+{$IFDEF UNIX}
   {$MESSAGE Warn 'SetCursorPos: Needs to be implemented'}
 {$ENDIF}
 end;
@@ -372,7 +373,7 @@ begin
 {$IFDEF MSWINDOWS}
   GetCursorPos(point);
 {$ENDIF}
-{$IFDEF unix}
+{$IFDEF UNIX}
   {$MESSAGE Warn 'GetCursorPos: Needs to be implemented'}
 {$ENDIF}
 end;
@@ -392,12 +393,12 @@ begin
 {$IFDEF MSWINDOWS}
   result := GetTickCount;
 {$ENDIF}
-{$IFDEF unix}
+{$IFDEF UNIX}
   QueryPerformanceCounter(result);
 {$ENDIF}
 end;
 
-{$IFDEF unix}
+{$IFDEF UNIX}
 function QueryCombo(const ACaption, APrompt: string; Alist:TStringList;
                           var Index: integer; var Value: string): Boolean;
 var
@@ -481,7 +482,7 @@ end;
 resourcestring
   sFileName = '/tmp/delete-me.txt';
 
-// code inspired from unit misc.pas of tplot component of mat ballard
+// Code inspired from unit Misc.pas of TPlot component of Mat Ballard
 function CheckForRPM(AnRPM: String): String;
 var
   TmpFile: TStringList;
@@ -491,7 +492,7 @@ begin
   {$IFDEF FPC}
   FPSystem(PChar('rpm -ql ' + AnRPM + ' > ' + sFileName));
   {$ELSE}
-  libc.System(PChar('rpm -ql ' + AnRPM + ' > ' + sFileName));
+  Libc.system(PChar('rpm -ql ' + AnRPM + ' > ' + sFileName));
   {$ENDIF}
   TmpFile.LoadFromFile(sFileName);
   if (Length(TmpFile.Strings[0]) > 0) then
@@ -554,7 +555,7 @@ end;
 {$ENDIF}
 
 procedure ShowHTMLUrl(Url: String);
-{$IFDEF unix}
+{$IFDEF UNIX}
 var
   TheBrowser: String;
 {$ENDIF}
@@ -562,7 +563,7 @@ begin
 {$IFDEF MSWINDOWS}
   ShellExecute(0, 'open', PChar(Url), Nil, Nil, SW_SHOW);
 {$ENDIF}
-{$IFDEF unix}
+{$IFDEF UNIX}
   TheBrowser := GetBrowser;
 {the ' &' means immediately continue:}
   if (Length(TheBrowser) > 0) then
@@ -576,7 +577,6 @@ end;
 
 // GLPoint
 //
-
 function GLPoint(const x, y : Integer) : TGLPoint;
 begin
    Result.X:=x;
@@ -841,7 +841,7 @@ begin
   end;
 end;
 {$ENDIF}
-{$IFDEF unix}
+{$IFDEF UNIX}
 {$IFNDEF FPC}
 var
   metrics: QPAintDeviceMetricsH;

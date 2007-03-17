@@ -6,9 +6,10 @@
 	Component for making screen-savers an easy task<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>09/07/01 - Egg - Fix in PreviewSaver (from Marco Dissel)
       <li>12/04/00 - Egg - Added ssoEnhancedMouseMoveDetection
-		<li>11/04/00 - Egg - Creation
+      <li>11/04/00 - Egg - Creation
 	</ul></font>
 
 	Parts of this code are based on DeskSpin sample by	Tom Nuydens
@@ -22,7 +23,7 @@ unit ScreenSaver;
 interface
 
 {$i GLScene.inc}
-{$ifdef unix}{$message error 'unit not supported'}{$endif unix}
+{$IFDEF UNIX}{$Message Error 'Unit not supported'}{$ENDIF LINUX}
 
 uses Windows, Classes, Controls, Forms, Extctrls;
 

@@ -1,27 +1,28 @@
-// sdlwindow
-{: non visual wrapper around basic sdl window features.<p>
+// SDLWindow
+{: Non visual wrapper around basic SDL window features.<p>
 
    <u>Notes to Self:</u><br>
-   unit must ultimately *not* make use of any platform specific stuff,
+   Unit must ultimately *NOT* make use of any platform specific stuff,
    *EVEN* through the use of conditionnals.<br>
    SDL-specifics should also be avoided in the "interface" section.<p>
 
    Written and maintained by Eric Grange (http://glscene.org),
-   this component uses jedi-sdl conversion (http://delphi-jedi.org),
-   which is a delphi header conversion for sdl (http://libsdl.org)<p>
+   this component uses JEDI-SDL conversion (http://delphi-jedi.org),
+   which is a Delphi header conversion for SDL (http://libsdl.org)<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>16/12/01 - Egg - Resize no longer recreates SDL surface in OpenGL mode
       <li>12/12/01 - Egg - Fixes & additions (code from Dominique Louis),
                            Added doc tags, Stencil buffer and others.
 	   <li>11/12/01 - Egg - Creation
 	</ul></font>
 }
-unit sdlwindow;
+unit SDLWindow;
 
 interface
 
-uses classes, sysutils, sdl;
+uses Classes, SysUtils, SDL;
 
 type
 
@@ -194,7 +195,7 @@ implementation
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
 
-uses opengl1x, syncobjs;
+uses OpenGL1x, SyncObjs;
 
 var
    vSDLCS : TCriticalSection;

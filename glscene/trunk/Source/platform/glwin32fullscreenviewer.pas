@@ -1,5 +1,5 @@
-// glwin32fullscreenviewer
-{: win32 specific full-screen viewer.<p>
+// GLWin32FullScreenViewer
+{: Win32 specific full-screen viewer.<p>
 
    Currently TForm+TGLSceneViewer based, may be made into a standalone
    Win32 control someday, so don't assume there is a TForm in your code.<p>
@@ -8,7 +8,7 @@
       <li>24/07/03 - EG - Creation from GLWin32Viewer split 
 	</ul></font>
 }
-unit glwin32fullscreenviewer;
+unit GLWin32FullScreenViewer;
 
 interface
 
@@ -66,6 +66,7 @@ type
          FRefreshRate : Integer;
          FCursor : TCursor;
          FPopupMenu : TPopupMenu;
+
       protected
          { Protected Declarations }
          procedure SetScreenDepth(const val : TGLScreenDepth);
@@ -141,13 +142,13 @@ type
          property VSync : TVSyncMode read FVSync write FVSync default vsmSync;
          {: Screen refresh rate.<p>
             Use zero for system default. This property allows you to work around
-            the winxp bug that limits uses a refresh rate of 60hz when changeing
-            resolution. it is however suggested to give the user the opportunity
+            the WinXP bug that limits uses a refresh rate of 60Hz when changeing
+            resolution. It is however suggested to give the user the opportunity
             to adjust it instead of having a fixed value (expecially beyond
-            75hz or for resolutions beyond 1024x768).<p>
-            the value will be automatically clamped to the highest value
+            75Hz or for resolutions beyond 1024x768).<p>
+            The value will be automatically clamped to the highest value
             *reported* compatible with the monitor. }
-         property refreshrate : integer read frefreshrate write frefreshrate;
+         property RefreshRate : Integer read FRefreshRate write FRefreshRate;
 
          property Cursor : TCursor read FCursor write SetCursor default crDefault;
          property PopupMenu : TPopupMenu read FPopupMenu write SetPopupMenu;
@@ -392,14 +393,14 @@ begin
       OnMouseWheel:=FOnMouseWheel;
       OnClick:=FOnClick;
 //      OnDblClick:=FOnDblClick; //Dont know why but this gives an AV
+      OnPaint:=DoPaint;
       OnCloseQuery:=DoCloseQuery;
       OnClose:=FOnClose;
+      OnActivate:=DoActivate;
+      OnDeactivate:=DoDeactivate;
       OnKeyUp:=FOnKeyUp;
       OnKeyDown:=FOnKeyDown;
       OnKeyPress:=FOnKeyPress;
-      OnActivate:=DoActivate;
-      OnDeactivate:=DoDeactivate;
-      OnPaint:=DoPaint;
    end;
 end;
 
@@ -473,7 +474,7 @@ end;
 //
 procedure TGLFullScreenViewer.SetOnCloseQuery(const val : TCloseQueryEvent);
 begin
-   fonclosequery:=val; // this one uses a special binding
+   FOnCloseQuery:=val; // this one uses a special binding
 end;
 
 // SetOnClose

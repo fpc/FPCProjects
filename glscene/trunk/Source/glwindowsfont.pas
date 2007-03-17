@@ -2,6 +2,7 @@
 {: TFont Import into a BitmapFont using variable width...<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>12/15/04 - Eugene Kryukov - Added TGLStoredBitmapFont
       <li>03/07/04 - LR - Added ifdef for Graphics uses
       <li>29/09/02 - EG - Fixed transparency, style fixes, prop defaults fixed,

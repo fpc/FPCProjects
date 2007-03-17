@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: tga<p>
+{: TGA<p>
 
    Simple TGA formats supports for Delphi.<br>
    Currently supports only 24 and 32 bits RGB formats (uncompressed
@@ -10,17 +10,17 @@
    Based on David McDuffee's document from www.wotsit.org<p>
 
 	<b>History : </b><font size=-1><ul>
-           <li>08/07/04 - lr - uses of graphics replaced by glcrossplatform for linux
-	   <li>21/11/02 - egg - creation
+           <li>08/07/04 - LR - Uses of Graphics replaced by GLCrossPlatform for Linux
+	   <li>21/11/02 - Egg - Creation
 	</ul></font>
 }
-unit tga;
-
+unit TGA;
+{$WARNING crossbuilder - too much commented code, this unit does not work correctly!}
 interface
 
 {$i GLScene.inc}
 
-uses classes, sysutils, glcrossplatform;
+uses Classes, SysUtils, GLCrossPlatform;
 
 type
 

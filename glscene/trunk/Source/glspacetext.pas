@@ -3,6 +3,8 @@
 //
 {: GLSpaceText<p>
 
+   Win32 specific Context.<p>
+   
       $Log: glspacetext.pas,v $
       Revision 1.1  2006/01/10 20:50:46  z0m3ie
       recheckin to make shure that all is lowercase
@@ -20,6 +22,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>19/10/06 - LC - Added TGLSpaceText.Assign. Bugtracker ID=1576445 (thanks Zapology)
@@ -37,7 +40,7 @@ unit GLSpaceText;
 interface
 
 {$i GLScene.inc}
-{$ifdef unix}{$message error 'unit not supported'}{$endif unix}
+{$IFDEF UNIX}{$Message Error 'Unit not supported'}{$ENDIF LINUX}
 
 uses Windows, Messages, Classes, GLScene, Graphics, OpenGL1x, GLTexture, GLContext;
 

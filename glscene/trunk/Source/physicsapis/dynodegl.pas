@@ -14,8 +14,8 @@ interface
 
 {
   Here I collect random functions and procedures I've found useful when
-  integrating ode into glscene. if you don't use glscene, this unit won't be
-  very useful to you. the unit is not intended as a sorted toolbox, but more
+  integrating ODE into GLScene. If you don't use GLScene, this unit won't be
+  very useful to you. The unit is not intended as a sorted toolbox, but more
   as a place to put stuff until we figure out how to organize the integration.
 
   Mattias Fagerlund ( mattias@cambrianlabs.com ), 2002-09-26
@@ -23,8 +23,8 @@ interface
 }
 
 uses
-  opengl1x, vectorgeometry, dynode, glscene, vectortypes, vectorlists,
-  globjects, glverletclothify, glvectorfileobjects;
+  OpenGL1x, VectorGeometry, dynode, GLScene, VectorTypes, VectorLists,
+  GLObjects, GLVerletClothify, GLVectorFileObjects;
 
   procedure DrawBox(Sides : TdVector3);
   procedure setTransform (pos : TdVector3; R : TdMatrix3);
@@ -89,7 +89,7 @@ uses
 
 implementation
 
-uses sysutils;
+uses SysUtils;
 
 
 procedure ODERToGLSceneMatrix(var m : TMatrix; R : TdMatrix3_As3x4; pos : TdVector3); overload;

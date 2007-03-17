@@ -15,6 +15,7 @@
    holds the data a renderer needs.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>13/02/07 - LIN- Added THeightDataSource.TextureCoordinates -

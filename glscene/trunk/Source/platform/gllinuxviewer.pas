@@ -1,22 +1,23 @@
-// gllinuxviewer
-{: linux specific.<p>
+// GLLinuxViewer
+{: Linux specific.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>28/06/04 - LR - Rename TGLLinuxSceneViewer to TGLSceneViewer as for Win32 platform
       <li>28/12/01 - EG - Event persistence change (GliGli / Dephi bug)           
       <li>12/12/01 - EG - Creation (split from GLScene.pas)
 	</ul></font>
 }
-unit gllinuxviewer;
+unit GLLinuxViewer;
 
 interface
 
 {$i GLScene.inc}
 
-{$ifndef linux} {$message error 'unit is linux specific'} {$endif}
+{$IFNDEF UNIX} {$MESSAGE Error 'Unit is Linux specific'} {$ENDIF}
 
 uses
-  classes, glscene, qcontrols, qt;
+  Classes, GLScene, QControls, Qt;
 
 type
 
@@ -130,7 +131,7 @@ implementation
 // ------------------------------------------------------------------
 
 uses
-  opengl1x, sysutils, gllinuxcontext;
+  OpenGL1x, SysUtils, GLLinuxContext;
 
 // ------------------
 // ------------------ TGLSceneViewer ------------------

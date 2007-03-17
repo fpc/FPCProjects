@@ -1,7 +1,7 @@
 //
-// this unit is part of the glscene project, http://glscene.org
+// This unit is part of the GLScene Project, http://glscene.org
 //
-{: vrmlparser<p>
+{: VRMLParser<p>
 
    VRML file format parser.<p>
 
@@ -10,12 +10,12 @@
       <li>14/01/05 - SG - Added to CVS
    </ul></font>
 }
-unit vrmlparser;
+unit VRMLParser;
 
 interface
 
 uses
-  classes, sysutils, vectortypes, vectorlists, glutils;
+  Classes, SysUtils, VectorTypes, VectorLists, GLUtils;
 
 type
   TVRMLNode = class

@@ -1,65 +1,71 @@
-unit sdl;
+{
+    History:<p>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC
+                                                         (BugTracekrID=1681585)
+
+}
+unit SDL;
 {******************************************************************************}
 {                                                                              }
-{       borland delphi sdl - simple directmedia layer                          }
-{       conversion of the simple directmedia layer headers                     }
+{       Borland Delphi SDL - Simple DirectMedia Layer                          }
+{       Conversion of the Simple DirectMedia Layer Headers                     }
 {                                                                              }
-{ portions created by sam lantinga <slouken@devolution.com> are                }
-{ copyright (c) 1997, 1998, 1999, 2000, 2001  sam lantinga                     }
-{ 5635-34 springhouse dr.                                                      }
-{ pleasanton, ca 94588 (usa)                                                   }
+{ Portions created by Sam Lantinga <slouken@devolution.com> are                }
+{ Copyright (C) 1997, 1998, 1999, 2000, 2001  Sam Lantinga                     }
+{ 5635-34 Springhouse Dr.                                                      }
+{ Pleasanton, CA 94588 (USA)                                                   }
 {                                                                              }
-{ all rights reserved.                                                         }
+{ All Rights Reserved.                                                         }
 {                                                                              }
-{ the original files are : sdl.h                                               }
-{                          sdl_main.h                                          }
-{                          sdl_types.h                                         }
-{                          sdl_rwops.h                                         }
-{                          sdl_timer.h                                         }
-{                          sdl_audio.h                                         }
-{                          sdl_cdrom.h                                         }
-{                          sdl_joystick.h                                      }
-{                          sdl_mouse.h                                         }
-{                          sdl_keyboard.h                                      }
-{                          sdl_events.h                                        }
-{                          sdl_video.h                                         }
-{                          sdl_byteorder.h                                     }
-{                          sdl_version.h                                       }
-{                          sdl_active.h                                        }
-{                          sdl_thread.h                                        }
-{                          sdl_mutex .h                                        }
-{                          sdl_getenv.h                                        }
+{ The original files are : SDL.h                                               }
+{                          SDL_main.h                                          }
+{                          SDL_types.h                                         }
+{                          SDL_rwops.h                                         }
+{                          SDL_timer.h                                         }
+{                          SDL_audio.h                                         }
+{                          SDL_cdrom.h                                         }
+{                          SDL_joystick.h                                      }
+{                          SDL_mouse.h                                         }
+{                          SDL_keyboard.h                                      }
+{                          SDL_events.h                                        }
+{                          SDL_video.h                                         }
+{                          SDL_byteorder.h                                     }
+{                          SDL_version.h                                       }
+{                          SDL_active.h                                        }
+{                          SDL_thread.h                                        }
+{                          SDL_mutex .h                                        }
+{                          SDL_getenv.h                                        }
 {                                                                              }
-{ the initial developer of this pascal code was :                              }
-{ dominqiue louis <dominique@savagesoftware.com.au>                            }
+{ The initial developer of this Pascal code was :                              }
+{ Dominqiue Louis <Dominique@SavageSoftware.com.au>                            }
 {                                                                              }
-{ portions created by dominqiue louis are                                      }
-{ copyright (c) 2000 - 2001 dominqiue louis.                                   }
+{ Portions created by Dominqiue Louis are                                      }
+{ Copyright (C) 2000 - 2001 Dominqiue Louis.                                   }
 {                                                                              }
 {                                                                              }
-{ contributor(s)                                                               }
+{ Contributor(s)                                                               }
 { --------------                                                               }
-{ tom jones <tigertomjones@gmx.de>  his project inspired this conversion       }
-{ matthias thoma <ma.thoma@gmx.de>                                             }
+{ Tom Jones <tigertomjones@gmx.de>  His Project inspired this conversion       }
+{ Matthias Thoma <ma.thoma@gmx.de>                                             }
 {                                                                              }
-{ obtained through:                                                            }
-{ joint endeavour of delphi innovators ( project jedi )                        }
+{ Obtained through:                                                            }
+{ Joint Endeavour of Delphi Innovators ( Project JEDI )                        }
 {                                                                              }
-{ you may retrieve the latest version of this file at the project              }
-{ jedi home page, located at http://delphi-jedi.org                            }
+{ You may retrieve the latest version of this file at the Project              }
+{ JEDI home page, located at http://delphi-jedi.org                            }
 {                                                                              }
-{ the contents of this file are used with permission, subject to               }
-{ the mozilla public license version 1.1 (the "license"); you may              }
-{ not use this file except in compliance with the license. you may             }
-{ obtain a copy of the license at                                              }
-{ http://www.mozilla.org/mpl/mpl-1.1.html                                      }
+{ The contents of this file are used with permission, subject to               }
+{ the Mozilla Public License Version 1.1 (the "License"); you may              }
+{ not use this file except in compliance with the License. You may             }
+{ obtain a copy of the License at                                              }
+{ http://www.mozilla.org/MPL/MPL-1.1.html                                      }
 {                                                                              }
-{ software distributed under the license is distributed on an                  }
-{ "as is" basis, without warranty of any kind, either express or               }
-{ implied. see the license for the specific language governing                 }
-{ rights and limitations under the license.                                    }
+{ Software distributed under the License is distributed on an                  }
+{ "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or               }
+{ implied. See the License for the specific language governing                 }
+{ rights and limitations under the License.                                    }
 {                                                                              }
-{ description                                                                  }
+{ Description                                                                  }
 { -----------                                                                  }
 {                                                                              }
 {                                                                              }
@@ -68,66 +74,66 @@ unit sdl;
 {                                                                              }
 {                                                                              }
 {                                                                              }
-{ requires                                                                     }
+{ Requires                                                                     }
 { --------                                                                     }
-{   the sdl runtime libraris on win32  : sdl.dll on linux : libsdl-1.2.so.0    }
-{   they are available from...                                                 }
+{   The SDL Runtime libraris on Win32  : SDL.dll on Linux : libSDL-1.2.so.0    }
+{   They are available from...                                                 }
 {   http://www.libsdl.org .                                                    }
 {                                                                              }
-{ programming notes                                                            }
+{ Programming Notes                                                            }
 { -----------------                                                            }
 {                                                                              }
 {                                                                              }
 {                                                                              }
 {                                                                              }
-{ revision history                                                             }
+{ Revision History                                                             }
 { ----------------                                                             }
-{   may      08 2001 - dl : added keyboard  state array ( see demos for how to }
+{   May      08 2001 - DL : Added Keyboard  State Array ( See demos for how to }
 {                           use )                                              }
-{                           pkeystatearr = ^tkeystatearr;                      }
-{                           tkeystatearr = array[0..65000] of uint8;           }
-{                           as most games will need it.                        }
+{                           PKeyStateArr = ^TKeyStateArr;                      }
+{                           TKeyStateArr = array[0..65000] of UInt8;           }
+{                           As most games will need it.                        }
 {                                                                              }
-{   april    02 2001 - dl : added sdl_getenv.h definitions and tested version  }
+{   April    02 2001 - DL : Added SDL_getenv.h definitions and tested version  }
 {                           1.2.0 compatability.                               }
 {                                                                              }
-{   march    13 2001 - mt : added linux compatibility.                         }
+{   March    13 2001 - MT : Added Linux compatibility.                         }
 {                                                                              }
-{   march    10 2001 - mt : added externalsyms for defines                     }
-{                           changed the license header                         }
+{   March    10 2001 - MT : Added externalsyms for DEFINES                     }
+{                           Changed the license header                         }
 {                                                                              }
-{   march    09 2001 - mt : added kylix ifdefs/deleted the uses mmsystem       }
+{   March    09 2001 - MT : Added Kylix Ifdefs/Deleted the uses mmsystem       }
 {                                                                              }
-{   march    01 2001 - dl : update conversion of version 1.1.8                 }
+{   March    01 2001 - DL : Update conversion of version 1.1.8                 }
 {                                                                              }
-{   july     22 2001 - dl : added tuint8array and puintarray after suggestions }
-{                           from matthias thoma and eric grange.               }
+{   July     22 2001 - DL : Added TUInt8Array and PUIntArray after suggestions }
+{                           from Matthias Thoma and Eric Grange.               }
 {                                                                              }
-{   october  12 2001 - dl : various changes as suggested by matthias thoma and }
-{                           david acklam                                       }
+{   October  12 2001 - DL : Various changes as suggested by Matthias Thoma and }
+{                           David Acklam                                       }
 {                                                                              }
-{   october  24 2001 - dl : added freepascal support as per suggestions from   }
-{                           dean ellis.                                        }
+{   October  24 2001 - DL : Added FreePascal support as per suggestions from   }
+{                           Dean Ellis.                                        }
 {                                                                              }
-{   october  27 2001 - dl : added sdl_button macro                             }
+{   October  27 2001 - DL : Added SDL_BUTTON macro                             }
 {                                                                              }
-{  november  08 2001 - dl : bug fix as pointed out by puthoon.                 }
+{  November  08 2001 - DL : Bug fix as pointed out by Puthoon.                 }
 {                                                                              }
-{  november  29 2001 - dl : bug fix of sdl_setgammaramp as pointed out by simon}
-{                           rushton.                                           }
+{  November  29 2001 - DL : Bug fix of SDL_SetGammaRamp as pointed out by Simon}
+{                           Rushton.                                           }
 {                                                                              }
-{  november  30 2001 - dl : sdl_noframe added as pointed out by simon rushton. }
+{  November  30 2001 - DL : SDL_NOFRAME added as pointed out by Simon Rushton. }
 {                                                                              }
-{  december  11 2001 - dl : added $weakpackageunit on to facilitate useage in  }
-{                           components                                         }
+{  December  11 2001 - DL : Added $WEAKPACKAGEUNIT ON to facilitate useage in  }
+{                           Components                                         }
 {                                                                              }
 {  January   05 2002 - DL : Added SDL_Swap32 function as suggested by Matthias }
 {                           Thoma and also made sure the _getenv from          }
-{                           msvcrt.dll uses the right calling convention       }
+{                           MSVCRT.DLL uses the right calling convention       }
 {                                                                              }
-{  january   25 2002 - dl : updated conversion of sdl_addtimer &               }
-{                           sdl_removetimer as per suggestions from matthias   }
-{                           thoma.                                             }
+{  January   25 2002 - DL : Updated conversion of SDL_AddTimer &               }
+{                           SDL_RemoveTimer as per suggestions from Matthias   }
+{                           Thoma.                                             }
 {                                                                              }
 {  January   27 2002 - DL : Commented out exported function putenv and getenv  }
 {                           So that developers get used to using SDL_putenv    }
@@ -137,7 +143,7 @@ unit sdl;
 {                                                                              }
 {******************************************************************************}
 
-{.$weakpackageunit on}
+{.$WEAKPACKAGEUNIT ON}
 
 {$ALIGN ON}
 
@@ -150,8 +156,8 @@ interface
 
 uses
 {$ifdef windows}
-  windows;
-{$endif}
+  Windows;
+{$ENDIF}
 
 {$IFDEF UNIX}
   pThreads, UnixType, BaseUnix, DynLibs;
@@ -161,7 +167,6 @@ const
 {$IFDEF WINDOWS}
   LibName = 'SDL.dll';
 {$ENDIF}
-
 {$IFDEF UNIX}
 {$IFDEF DARWIN}
   LibName = 'libSDL.dylib';
@@ -1021,20 +1026,20 @@ const
   SDL_NOFRAME = $00000020; // No window caption or edge frame
 {$EXTERNALSYM SDL_NOFRAME}
   // Used internally (read-only)
-  sdl_hwaccel = $00000100; // blit uses hardware acceleration
-{$externalsym sdl_hwaccel}
-  sdl_srccolorkey = $00001000; // blit uses a source color key
-{$externalsym sdl_srccolorkey}
-  sdl_rleaccelok = $00002000; // private flag
-{$externalsym sdl_rleaccelok}
-  sdl_rleaccel = $00004000; // colorkey blit is rle accelerated
-{$externalsym sdl_rleaccel}
-  sdl_srcalpha = $00010000; // blit uses source alpha blending
-{$externalsym sdl_srcalpha}
-  sdl_srcclipping = $00100000; // blit uses source clipping
-{$externalsym sdl_srcclipping}
-  sdl_prealloc = $01000000; // surface uses preallocated memory
-{$externalsym sdl_prealloc}
+  SDL_HWACCEL = $00000100; // Blit uses hardware acceleration
+{$EXTERNALSYM SDL_HWACCEL}
+  SDL_SRCCOLORKEY = $00001000; // Blit uses a source color key
+{$EXTERNALSYM SDL_SRCCOLORKEY}
+  SDL_RLEACCELOK = $00002000; // Private flag
+{$EXTERNALSYM SDL_RLEACCELOK}
+  SDL_RLEACCEL = $00004000; // Colorkey blit is RLE accelerated
+{$EXTERNALSYM SDL_RLEACCEL}
+  SDL_SRCALPHA = $00010000; // Blit uses source alpha blending
+{$EXTERNALSYM SDL_SRCALPHA}
+  SDL_SRCCLIPPING = $00100000; // Blit uses source clipping
+{$EXTERNALSYM SDL_SRCCLIPPING}
+  SDL_PREALLOC = $01000000; // Surface uses preallocated memory
+{$EXTERNALSYM SDL_PREALLOC}
 
   { The most common video overlay formats.
     For an explanation of these pixel formats, see:
@@ -2120,7 +2125,7 @@ procedure SDL_PauseAudio(pause_on: Integer); cdecl; external LibName;
 
   This function returns NULL and sets the SDL error message if the
   wave file cannot be opened, uses an unknown data format, or is
-  corrupt.  currently raw and ms-adpcm wave files are supported. }
+  corrupt.  Currently raw and MS-ADPCM WAVE files are supported. }
 
 function SDL_LoadWAV_RW(src: PSDL_RWops; freesrc: Integer; spec:
   PSDL_AudioSpec; audio_buf: PUInt8; audiolen: PUInt32): PSDL_AudioSpec;
@@ -2855,8 +2860,8 @@ Integer; cdecl; external LibName;
 { This function sets the alpha value for the entire surface, as opposed to
   using the alpha component of each pixel. This value measures the range
   of transparency of the surface, 0 being completely transparent to 255
-  being completely opaque. an 'alpha' value of 255 causes blits to be
-  opaque, the source pixels copied to the destination (the default). note
+  being completely opaque. An 'alpha' value of 255 causes blits to be
+  opaque, the source pixels copied to the destination (the default). Note
   that per-surface alpha can be combined with colorkey transparency.
 
   If 'flag' is 0, alpha blending is disabled for the surface.
@@ -3190,15 +3195,15 @@ external LibName;
 
 function SDL_GetMouseState(var x: Integer; var y: Integer): UInt8; cdecl;
 external LibName;
-{$externalsym sdl_getmousestate}
+{$EXTERNALSYM SDL_GetMouseState}
 
 { Retrieve the current state of the mouse.
   The current button state is returned as a button bitmask, which can
   be tested using the SDL_BUTTON(X) macros, and x and y are set to the
-  mouse deltas since the last call to sdl_getrelativemousestate(). }
+  mouse deltas since the last call to SDL_GetRelativeMouseState(). }
 function SDL_GetRelativeMouseState(var x: Integer; var y: Integer): UInt8;
 cdecl; external LibName;
-{$externalsym sdl_getrelativemousestate}
+{$EXTERNALSYM SDL_GetRelativeMouseState}
 
 { Set the position of the mouse cursor (generates a mouse motion event) }
 procedure SDL_WarpMouse(x, y: UInt16); cdecl; external LibName;

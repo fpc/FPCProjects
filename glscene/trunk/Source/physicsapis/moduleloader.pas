@@ -1,43 +1,49 @@
+{
+    History:<p>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC
+                                                         (BugTracekrID=1681585)
+
+}
 unit moduleloader;
 {******************************************************************}
 {                                                                  }
-{       project jedi                                               }
-{       os independent dynamic loading helpers                     }
+{       Project JEDI                                               }
+{       OS independent Dynamic Loading Helpers                     }
 {                                                                  }
-{ the initial developer of the this code is                        }
-{ robert marquardt <robert_marquardt@gmx.de)                       }
+{ The initial developer of the this code is                        }
+{ Robert Marquardt <robert_marquardt@gmx.de)                       }
 {                                                                  }
-{ copyright (c) 2000, 2001 robert marquardt.                       }
+{ Copyright (C) 2000, 2001 Robert Marquardt.                       }
 {                                                                  }
-{ obtained through:                                                }
-{ joint endeavour of delphi innovators (project jedi)              }
+{ Obtained through:                                                }
+{ Joint Endeavour of Delphi Innovators (Project JEDI)              }
 {                                                                  }
-{ you may retrieve the latest version of this file at the project  }
-{ jedi home page, located at http://delphi-jedi.org                }
+{ You may retrieve the latest version of this file at the Project  }
+{ JEDI home page, located at http://delphi-jedi.org                }
 {                                                                  }
-{ the contents of this file are used with permission, subject to   }
-{ the mozilla public license version 1.1 (the "license"); you may  }
-{ not use this file except in compliance with the license. you may }
-{ obtain a copy of the license at                                  }
-{ http://www.mozilla.org/npl/npl-1_1final.html                     }
+{ The contents of this file are used with permission, subject to   }
+{ the Mozilla Public License Version 1.1 (the "License"); you may  }
+{ not use this file except in compliance with the License. You may }
+{ obtain a copy of the License at                                  }
+{ http://www.mozilla.org/NPL/NPL-1_1Final.html                     }
 {                                                                  }
-{ software distributed under the license is distributed on an      }
-{ "as is" basis, without warranty of any kind, either express or   }
-{ implied. see the license for the specific language governing     }
-{ rights and limitations under the license.                        }
+{ Software distributed under the License is distributed on an      }
+{ "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or   }
+{ implied. See the License for the specific language governing     }
+{ rights and limitations under the License.                        }
 {                                                                  }
 {******************************************************************}
 
 interface
 
 {$i delphiode.inc}
-{$weakpackageunit on}
+{$WEAKPACKAGEUNIT ON}
 
 // each OS gets its own IFDEFed complete code block to make reading easier
 
 {$IFDEF WINDOWS}
 uses
-  windows;
+  Windows;
 
 type
   // Handle to a loaded DLL
@@ -162,12 +168,12 @@ end;
 {$IFDEF Unix}
 uses
   dl,
-  types,
-  baseunix,
-  unix;
+  Types,
+  Baseunix,
+  Unix;
 type
-  // handle to a loaded .so
-  tmodulehandle = pointer;
+  // Handle to a loaded .so
+  TModuleHandle = Pointer;
 
 const
   // Value designating an unassigned TModuleHandle od a failed loading

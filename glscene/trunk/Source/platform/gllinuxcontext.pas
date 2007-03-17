@@ -6,6 +6,7 @@
    Linux specific Context.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>15/02/07 - DaStr - Integer -> Cardinal because $R- was removed in GLScene.pas
                              Added a header and restored version history  
       <li>05/07/04 - lirey - More corrections for Linux
@@ -21,7 +22,7 @@ interface
 
 {$i GLScene.inc}
 
-{$IFNDEF LINUX} {$MESSAGE Error 'Unit is Linux specific'} {$ENDIF}
+{$IFNDEF UNIX} {$MESSAGE Error 'Unit is Linux specific'} {$ENDIF}
 
 uses
   XLib, Classes, SysUtils, GLContext, QForms, OpenGL1x, Qt;

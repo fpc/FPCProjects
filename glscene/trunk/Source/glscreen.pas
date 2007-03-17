@@ -1,4 +1,4 @@
-{: glscreen<p>
+{: GLScreen<p>
 
    Routines to interact with the screen/desktop.<p>
 
@@ -34,7 +34,7 @@
       <li>06/02/00 - EG - Javadocisation, added "default"s to properties
    </ul></font>
 }
-unit glscreen;
+unit GLScreen;
 
 // GLScreen    - This units contains routines to interact with the screen/desktop.
 // Version     - 0.0.8
@@ -46,11 +46,7 @@ interface
 {$include GLScene.inc}
 
 uses
-   classes, graphics, vectorgeometry
-   {$ifdef mswindows}
-   ,windows
-   {$endif}
-   ;
+   {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, Graphics, VectorGeometry;
 
 const
    MaxVideoModes = 200;
@@ -119,7 +115,7 @@ implementation
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-uses glscene, sysutils, forms;
+uses GLScene, SysUtils, Forms;
 
 type TLowResMode = packed record
                      Width : Word;

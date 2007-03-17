@@ -1,4 +1,4 @@
-{: glsmbass<p>
+{: GLSMBASS<p>
 
 	BASS based sound-manager (http://www.un4seen.com/music/, free for freeware).<p>
 
@@ -17,11 +17,11 @@
 	   <li>13/01/01 - EG - Creation (compat BASS 0.8)
 	</ul></font>
 }
-unit glsmbass;
+unit GLSMBASS;
 
 interface
 
-uses classes, glsound, glscene, controls;
+uses Classes, GLSound, GLScene, controls;
 
 type
 
@@ -77,7 +77,7 @@ implementation
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
 
-uses forms, sysutils, bass, vectorgeometry, dialogs;
+uses Forms, SysUtils, Bass, VectorGeometry, Dialogs;
 
 type
    TBASSInfo =  record
@@ -283,7 +283,7 @@ begin
    end;
 end;
 
-// pausesource
+// PauseSource
 //
 procedure TGLSMBASS.PauseSource(aSource : TGLBaseSoundSource; paused : Boolean);
 var
