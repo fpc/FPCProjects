@@ -3,6 +3,7 @@
    Editor for Gui skin.<p>
 
    <b>Historique : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>18/02/07 - DaStr - Fixed range check error.
       <li>22/02/05 - Mathx - Fixed Delphi 5 support.
       <li>16/12/05 - aidave - moved GUIComponentDialog in from GLGui.pas<br>
@@ -30,7 +31,7 @@ uses
   ,glwin32viewer
   {$else}
   ,GLLCLViewer ,lresources,lclintf,messages,lmessages,buttons;
-  {$endif}
+{$ENDIF}
 {$else}
 uses
   SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,

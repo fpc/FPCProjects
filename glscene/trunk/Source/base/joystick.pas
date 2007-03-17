@@ -6,6 +6,7 @@
 	Component for handling joystick messages<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>29/01/02 - Egg - Added NoCaptureErrors
       <li>18/12/00 - Egg - Fix for supporting 2 joysticks simultaneously
       <li>14/04/00 - Egg - Various minor to major fixes, the component should
@@ -18,7 +19,7 @@ unit Joystick;
 interface
 
 {$i GLScene.inc}
-{$ifdef unix}{$message error 'unit not supported'}{$endif unix}
+{$IFDEF UNIX}{$Message Error 'Unit not supported'}{$ENDIF LINUX}
 
 uses Windows, Forms, Classes, Controls, Messages;
 

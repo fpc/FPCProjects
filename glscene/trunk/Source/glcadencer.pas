@@ -1,4 +1,4 @@
-{: glcadencer<p>
+{: GLCadencer<p>
 
 	Cadencing composant for GLScene (ease Progress processing)<p>
 
@@ -19,6 +19,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>28/06/04 - LR - Added some ifdef Win32 for Linux
       <li>20/10/03 - EG - Fixed issues about cadencer destruction
       <li>29/08/03 - EG - Added MinDeltaTime and FixedDeltaTime
@@ -42,21 +43,21 @@
       <li>13/04/00 - EG - Creation
 	</ul></font>
 }
-unit glcadencer;
+unit GLCadencer;
 
 interface
 
 {$i GLScene.inc}
 
-uses glscene, classes, glmisc, glcrossplatform,cadencerasap,
-   {$ifdef win32}
-   windows, controls, messages, stdctrls, forms
+uses GLScene, Classes, GLMisc, GLCrossPlatform, cadencerasap,
+   {$ifdef WIN32}
+   Windows, Controls, Messages, StdCtrls, Forms
    {$endif}
-   {$ifdef unix}
+   {$IFDEF UNIX}
    {$ifdef fpc}
    forms
    {$else}
-   qforms
+   QForms
    {$endif}
    {$endif}
    ;
@@ -69,9 +70,9 @@ type
 		- cmManual : you must trigger progress manually (in your code)<br>
 		- cmASAP : progress is triggered As Soon As Possible after a previous
 			progress (uses windows messages).
-      - cmapplicationidle : will hook application.onidle, this will overwrite
+      - cmApplicationIdle : will hook Application.OnIdle, this will overwrite
          any previous event handle, and only one cadencer may be in this mode. }
-	tglcadencermode = (cmmanual, cmasap, cmapplicationidle);
+	TGLCadencerMode = (cmManual, cmASAP, cmApplicationIdle);
 
 	// TGLCadencerTimeReference
 	//
@@ -98,7 +99,7 @@ type
 	TGLCadencer = class (TComponent)
 		private
 			{ Private Declarations }
-                        FSubscribedCadenceableComponents : TList;
+         FSubscribedCadenceableComponents : TList;
 			FScene : TGLScene;
 			FTimeMultiplier : Double;
 			lastTime, downTime, lastMultiplier : Double;
@@ -253,7 +254,7 @@ implementation
 {$endif}
 {$endif}
 
-uses sysutils;
+uses SysUtils;
 
 var
 	vCounterFrequency : Int64;

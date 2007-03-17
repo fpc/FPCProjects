@@ -12,7 +12,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>08/07/04 - LR - Suppress CommCtrl in the uses of Linux		
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
+      <li>08/07/04 - LR - Suppress CommCtrl in the uses of Linux
       <li>06/07/04 - LR - Display some infos for Linux	
       <li>03/07/04 - LR - Make change for Linux
       <li>21/02/04 - EG - Added extensions popup menu and hyperlink to
@@ -39,8 +40,8 @@ uses
   {$ifdef fpc}lresources,{$endif}
   Windows, Forms, GLScene, Classes, Controls, Buttons, StdCtrls, ComCtrls, 
   extctrls, graphics, menus;
-{$endif}
-{$ifdef unix}
+{$ENDIF}
+{$IFDEF UNIX}
 uses
   glscene,classes,
 {$ifndef fpc}
@@ -49,7 +50,7 @@ uses
 {$else}
   forms,controls,buttons,stdctrls,comctrls,extctrls,graphics,menus,lresources;
 {$endif}
-{$endif}
+{$ENDIF}
 
 
 type
@@ -144,8 +145,7 @@ uses
 {$IFDEF MSWINDOWS}
 {$R *.dfm}
 {$ENDIF}
-
-{$IFDEF LINUX} // kylix crap
+{$IFDEF UNIX}
 {$R *.xfm}
 {$ENDIF}
 
