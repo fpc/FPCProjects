@@ -18,8 +18,7 @@ interface
 {$ENDIF}
 
 uses Classes, GLSound, GLSoundFileObjects, GLScene, XCollection, VectorGeometry, GLCadencer,
-     GLMisc;
-
+     GLMisc, mmsystem;
 {$i GLScene.inc}
 
 Type
@@ -34,6 +33,7 @@ Type
       (ie. no 4bits samples playback etc.). }
 	TGLSMWaveOut = class (TGLSoundManager)
 	   private
+  function WaveFormat(ASoundSampling: TGLSoundSampling): TWaveFormatEx;
 	      { Private Declarations }
 
 	   protected
@@ -58,7 +58,7 @@ procedure Register;
 
 
 implementation
-uses mmsystem;
+uses SysUtils, GLCrossPlatform;
 
 // Register
 //
@@ -86,6 +86,20 @@ destructor TGLSMWaveOut.Destroy;
 begin
 	inherited Destroy;
 end;
+
+function TGLSMWaveOut.WaveFormat(ASoundSampling : TGLSoundSampling) : TWaveFormatEx;
+begin
+  with ASoundSampling do begin
+   Result.nSamplesPerSec:=Frequency;
+   Result.nChannels:=NbChannels;
+   Result.wFormatTag:=Wave_Format_PCM;
+   Result.nAvgBytesPerSec:=BytesPerSec;
+   Result.wBitsPerSample:=BitsPerSample;
+   Result.nBlockAlign:=1024;
+   Result.cbSize:=SizeOf(TWaveFormatEx);
+  end;
+end;
+
 
 // DoActivate
 //
@@ -147,10 +161,10 @@ begin
 {$endif}
 	// start sources if some capacity remains, and forget the others
    for i:=Sources.Count-1 downto 0 do if Sources[i].ManagerTag=0 then begin
-      if n<FMaxChannels then begin
+      if n<MaxChannels then begin
          smp:=Sources[i].Sample;
          if Assigned(smp) and (smp.Data<>nil) then begin
-            wfx:=smp.Data.Sampling.WaveFormat;
+            wfx:=WaveFormat(smp.Data.Sampling);
             mmres:=waveOutOpen(@hwo, WAVE_MAPPER, @wfx,
                                Cardinal(@_waveOutCallBack), Integer(Sources[i]),
                                CALLBACK_FUNCTION);
