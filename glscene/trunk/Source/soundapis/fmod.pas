@@ -1361,8 +1361,11 @@ implementation
 
 {$IFDEF fpc}
 {$IFDEF UNIX}
+(*
 uses
-  BaseUnix, cTypes;
+  //BaseUnix,
+  cTypes;
+*)
 {$endif}
 {$ENDIF}
 
@@ -1386,8 +1389,12 @@ var
 
 function GetAddress(Handle: TFMODModuleHandle; FuncName: PChar): Pointer;
 begin
-  Result := GetProcAddress(Handle, FuncName);
 
+  {$IFDEF UNIX}
+    Result := GetProcAddress(Handle, copy(FuncName,2,pos('@',FuncName)-2));
+  {$ELSE}
+    Result := GetProcAddress(Handle, FuncName);
+  {$ENDIF}
   Assert(Result <> nil, 'Failed to find ' + FuncName + ' in ' + FMOD_DLL);
 end;
 
