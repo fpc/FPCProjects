@@ -47,7 +47,7 @@ interface
 uses
   Classes, Forms, ExtCtrls,  GLScene, GLObjects, GLMisc,
   GLSound, GLSMFMOD, ComCtrls, Controls, StdCtrls,
-  GLGeomObjects, LResources, GLSMBASS, GLCadencer, Buttons, GLWin32Viewer;
+  GLGeomObjects, LResources, GLCadencer, Buttons, GLLCLViewer;
 
 type
 
@@ -74,10 +74,8 @@ type
     Disk1: TGLDisk;
     Torus1: TGLTorus;
     TrackBar1: TTrackBar;
-    GLSMBASS: TGLSMBASS;
     Panel1: TPanel;
     Label1: TLabel;
-    RBBass: TRadioButton;
     RBFMOD: TRadioButton;
     Button1: TButton;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -150,9 +148,7 @@ var
    mngName : String;
 begin
    // some stats
-   if ActiveSoundManager is TGLSMBASS then
-      mngName:='BASS'
-   else if ActiveSoundManager is TGLSMFMOD then
+   if ActiveSoundManager is TGLSMFMOD then
       mngName:='FMOD'
    else mngName:='';
    if ActiveSoundManager<>nil then
@@ -171,8 +167,7 @@ begin
    // happen: you would choose and API and then cling to it, but the GLSS
    // completely wraps the underlying complexity and makes it a snap
    if RBFMOD.Checked then
-      newManager:=GLSMFMOD
-   else newManager:=GLSMBASS;
+      newManager:=GLSMFMOD;
    if newManager<>ActiveSoundManager then begin
       // shut down current one, and activate the new one
       if ActiveSoundManager<>nil then begin
