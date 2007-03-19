@@ -1,5 +1,8 @@
-{: 3D Sound sample (FMOD and BASS managers are used in this sample).<p>
+{: 3D Sound sample (only FMOD manager is used in this sample).<p>
 
+   This is the same demo as in ../3Dsound/ but without BASS, because BASS is not
+   available on linux.
+   
    This sample has a moving red sound source with a looping sound, and a "mickey"
    listener that you can move around using the trackbars.<p>
 
@@ -28,7 +31,7 @@
 
    That's basicly all you need to use GLScene Sound System. Note however, that
    depending on the low-level API you chose (ie. sound manager), some features
-   amy or may not be available, but you don't need to worry about that, if
+   may or may not be available, but you don't need to worry about that, if
    a feature is unavailable on a particular driver, it will just be ignored.<p>
 
    For the sake of the demo, all three samples are using different formats,
