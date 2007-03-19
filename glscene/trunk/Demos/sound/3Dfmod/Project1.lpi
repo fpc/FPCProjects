@@ -9,10 +9,10 @@
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
       </Flags>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="3"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -34,104 +34,12 @@
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="11">
+    <Units Count="1">
       <Unit0>
         <Filename Value="Project1.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="14" Y="6"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="22"/>
-        <Loaded Value="True"/>
       </Unit0>
-      <Unit1>
-        <Filename Value="Unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <ResourceFilename Value="Unit1.lrs"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="1" Y="171"/>
-        <TopLine Value="141"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="C:/lazarus/components/GLScene/Source/SoundAPIs/Bass.pas"/>
-        <UnitName Value="Bass"/>
-        <CursorPos X="45" Y="302"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="C:/lazarus/components/GLScene/Source/GLSMFMOD.pas"/>
-        <UnitName Value="GLSMFMOD"/>
-        <CursorPos X="31" Y="124"/>
-        <TopLine Value="157"/>
-        <UsageCount Value="10"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="C:/lazarus/components/GLScene/Source/Base/ApplicationFileIO.pas"/>
-        <UnitName Value="ApplicationFileIO"/>
-        <CursorPos X="1" Y="182"/>
-        <TopLine Value="161"/>
-        <UsageCount Value="10"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="C:/lazarus/components/GLScene/Source/SoundAPIs/fmod.pas"/>
-        <UnitName Value="FMod"/>
-        <CursorPos X="11" Y="1359"/>
-        <TopLine Value="1357"/>
-        <UsageCount Value="10"/>
-      </Unit5>
-      <Unit6>
-        <Filename Value="C:/lazarus/components/GLScene/Source/GLSMBASS.pas"/>
-        <UnitName Value="GLSMBASS"/>
-        <CursorPos X="21" Y="114"/>
-        <TopLine Value="81"/>
-        <UsageCount Value="10"/>
-      </Unit6>
-      <Unit7>
-        <Filename Value="C:/lazarus/components/GLScene/Source/Base/PersistentClasses.pas"/>
-        <UnitName Value="PersistentClasses"/>
-        <CursorPos X="1" Y="962"/>
-        <TopLine Value="941"/>
-        <UsageCount Value="10"/>
-      </Unit7>
-      <Unit8>
-        <Filename Value="../../../Source/glgeomobjects.pas"/>
-        <UnitName Value="GLGeomObjects"/>
-        <CursorPos X="65" Y="50"/>
-        <TopLine Value="20"/>
-        <EditorIndex Value="4"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="../../../Source/glsmfmod.pas"/>
-        <UnitName Value="GLSMFMOD"/>
-        <CursorPos X="1" Y="132"/>
-        <TopLine Value="102"/>
-        <EditorIndex Value="2"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit9>
-      <Unit10>
-        <Filename Value="../../../Source/soundapis/fmod.pas"/>
-        <UnitName Value="FMod"/>
-        <CursorPos X="87" Y="1626"/>
-        <TopLine Value="1596"/>
-        <EditorIndex Value="3"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit10>
     </Units>
-    <JumpHistory Count="1" HistoryIndex="0">
-      <Position1>
-        <Filename Value="../../../Source/soundapis/fmod.pas"/>
-        <Caret Line="1455" Column="95" TopLine="1402"/>
-      </Position1>
-    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
@@ -160,14 +68,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>
