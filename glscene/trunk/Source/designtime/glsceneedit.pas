@@ -1,40 +1,39 @@
-{: glsceneedit<p>
+{: GLSceneEdit<p>
 
    Handles all the color and texture stuff.<p>
 
-   <b>History : </b><font size=-1><ul>
-      <li>03/07/04 - LR - Make change for Linux
-      <li>14/12/03 - EG - Paste fix (Mrqzzz)
-      <li>31/06/03 - EG - Cosmetic changes, form position/state now saved to the
-                          registry 
-      <li>21/06/03 - DanB - Added behaviours/effects listviews
-      <li>22/01/02 - EG - Fixed controls state after drag/drop (Anton Zhuchkov)
-      <li>06/08/00 - EG - Added basic Clipboard support
-      <li>14/05/00 - EG - Added workaround for VCL DesignInfo bug (thx Nelson Chu)
-      <li>28/04/00 - EG - Fixed new objects not being immediately reco by IDE
-      <li>26/04/00 - EG - Added support for objects categories
-      <li>17/04/00 - EG - Added access to TInfoForm
-      <li>16/04/00 - EG - Fixed occasionnal crash when rebuilding GLScene dpk
-                          while GLSceneEdit is visible
-      <li>10/04/00 - EG - Minor Create/Release change
-      <li>24/03/00 - EG - Fixed SetScene not updating enablings
-      <li>13/03/00 - EG - Object names (ie. node text) is now properly adjusted
-                          when a GLScene object is renamed,
-                          Added Load/Save whole scene
-      <li>07/02/00 - EG - Fixed notification logic
-      <li>06/02/00 - EG - DragDrop now starts after moving the mouse a little,
-                          Form is now auto-creating, fixed Notification,
-                          Added actionlist and moveUp/moveDown
-      <li>05/02/00 - EG - Fixed DragDrop, added root nodes auto-expansion
-   </ul></font>
+	<b>History : </b><font size=-1><ul>
+  <li>03/07/04 - LR - Make change for Linux
+  <li>14/12/03 - EG - Paste fix (Mrqzzz)
+  <li>31/06/03 - EG - Cosmetic changes, form position/state now saved to the registry
+  <li>21/06/03 - DanB - Added behaviours/effects listviews
+  <li>22/01/02 - EG - Fixed controls state after drag/drop (Anton Zhuchkov)
+  <li>06/08/00 - EG - Added basic Clipboard support
+  <li>14/05/00 - EG - Added workaround for VCL DesignInfo bug (thx Nelson Chu)
+  <li>28/04/00 - EG - Fixed new objects not being immediately reco by IDE
+  <li>26/04/00 - EG - Added support for objects categories
+  <li>17/04/00 - EG - Added access to TInfoForm
+  <li>16/04/00 - EG - Fixed occasionnal crash when rebuilding GLScene dpk
+                      while GLSceneEdit is visible
+  <li>10/04/00 - EG - Minor Create/Release change
+  <li>24/03/00 - EG - Fixed SetScene not updating enablings
+  <li>13/03/00 - EG - Object names (ie. node text) is now properly adjusted
+                      when a GLScene object is renamed,
+                      Added Load/Save whole scene
+  <li>07/02/00 - EG - Fixed notification logic
+  <li>06/02/00 - EG - DragDrop now starts after moving the mouse a little,
+                      Form is now auto-creating, fixed Notification,
+                      Added actionlist and moveUp/moveDown
+  <li>05/02/00 - EG - Fixed DragDrop, added root nodes auto-expansion
+  </ul></font>
 }
-unit glsceneedit;
+unit GLSceneEdit;
 
 {$MODE Delphi}
 
 interface
 
-{$i GLScene.inc}
+{$I GLScene.inc}
 
 uses
   xcollection, registry, controls, forms, comctrls, imglist, dialogs, menus,
@@ -162,8 +161,7 @@ type
     procedure DeleteBaseBehaviour(ListView:TListView);
     procedure PMBehavioursToolbarPopup(Sender: TObject);
     procedure PMEffectsToolbarPopup(Sender: TObject);
-    procedure BehavioursListViewSelectItem(Sender: TObject;
-      Item: TListItem; Selected: Boolean);
+    procedure BehavioursListViewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure ACAddEffectExecute(Sender: TObject);
     procedure PopupMenuPopup(Sender: TObject);
     procedure TBEffectsPanelClick(Sender: TObject);
@@ -176,19 +174,21 @@ type
     FCurrentDesigner: TTheDesigner;
     FLastMouseDownPos : TPoint;
 
-{$ifdef GLS_DELPHI_6_UP}
+{$IFDEF GLS_DELPHI_6_UP}
     FPasteOwner : TComponent;
     FPasteSelection : IDesignerSelections;
-{$endif}
+{$ENDIF}
 
     procedure ReadScene;
     procedure ResetTree;
+    // adds the given scene object as well as its children to the tree structure and returns
+    // the last add node (e.g. for selection)
     function AddNodes(ANode: TTreeNode; AObject: TGLBaseSceneObject): TTreeNode;
     procedure AddObjectClick(Sender: TObject);
     procedure AddBehaviourClick(Sender: TObject);
     procedure AddEffectClick(Sender: TObject);
     procedure SetObjectsSubItems(parent : TMenuItem);
-    procedure SetXCollectionSubItems(parent : TMenuItem ; XCollection: TXCollection; Event:TSetSubItemsEvent);    
+    procedure SetXCollectionSubItems(parent : TMenuItem ; XCollection: TXCollection; Event:TSetSubItemsEvent);
     procedure SetBehavioursSubItems(parent : TMenuItem; XCollection: TXCollection);
     procedure SetEffectsSubItems(parent : TMenuItem; XCollection: TXCollection);
     procedure OnBaseSceneObjectNameChanged(Sender : TObject);
@@ -199,7 +199,7 @@ type
     procedure ShowBehavioursAndEffects(BaseSceneObject:TGLBaseSceneObject);
     procedure EnableAndDisableActions();
 
-{$ifdef GLS_DELPHI_6_UP}
+{$IFDEF GLS_DELPHI_6_UP}
     function CanPaste(obj, destination : TGLBaseSceneObject) : Boolean;
     procedure CopyComponents(Root: TComponent; const Components: IDesignerSelections);
    procedure MethodError(Reader: TReader; const MethodName: String; var Address: Pointer; var Error: Boolean);
@@ -207,7 +207,7 @@ type
     procedure ReaderSetName(Reader: TReader; Component: TComponent; var Name: string);
     procedure ComponentRead(Component: TComponent);
     function UniqueName(Component: TComponent): string;
-{$endif}
+{$ENDIF}
 
     // We can not use the IDE to define this event because the
     // prototype is not the same between Delphi and Kylix !!
@@ -241,13 +241,14 @@ implementation
 {$ifndef FPC}{$R *.dfm}{$endif}
 {$ENDIF}
 
+
 uses
-{$ifdef mswindows}
+{$IFDEF MSWINDOWS}
   gllazarusregister, glstrings, info, opengl1x, clipbrd, gllclviewer;
-{$endif}
-{$ifdef unix}
+{$ENDIF}
+{$IFDEF UNIX}
   glsceneregister, glstrings, info, opengl1x, qclipbrd, gllinuxviewer; 
-{$endif}
+{$ENDIF}
 
 
 resourcestring
@@ -384,16 +385,19 @@ begin
    Tree.Indent:=ObjectManager.ObjectIcons.Width;
    {$endif}
    with Tree.Items do begin
+      // first add the scene root
       CurrentNode:=Add(nil, glsSceneRoot);
       with CurrentNode do begin
          ImageIndex:=ObjectManager.SceneRootIndex;
          SelectedIndex:=ImageIndex;
       end;
+      // next the root for all cameras
       FCameraNode:=AddChild(CurrentNode, glsCameraRoot);
       with FCameraNode do begin
          ImageIndex:=ObjectManager.CameraRootIndex;
          SelectedIndex:=ObjectManager.CameraRootIndex;
       end;
+      // and the root for all objects
       FObjectNode:=AddChild(CurrentNode, glsObjectRoot);
       with FObjectNode do begin
          ImageIndex:=ObjectManager.ObjectRootIndex;
@@ -402,18 +406,18 @@ begin
    end;
    // Build SubMenus
    SetObjectsSubItems(MIAddObject);
-{$ifdef GLS_DELPHI_5_UP}
+{$IFDEF GLS_DELPHI_5_UP}
 {$IFDEF MSWINDOWS}
 {$ifndef FPC}
    MIAddObject.SubMenuImages:=ObjectManager.ObjectIcons;
 {$endif}
 {$ENDIF}
 {$endif}
-{$ifndef GLS_DELPHI_6_UP}
+{$IFNDEF GLS_DELPHI_6_UP}
    ACCut.Visible:=False;
    ACCopy.Visible:=False;
    ACPaste.Visible:=False;
-{$endif}
+{$ENDIF}
    SetObjectsSubItems(PMToolBar.Items);
 {$ifndef FPC}
    PMToolBar.Images:=ObjectManager.ObjectIcons;
@@ -582,7 +586,7 @@ begin
                item.ImageIndex:=GetImageIndex(soc);
                item.Tag:=Integer(soc);
                objectList[j]:='';
-               if currentCategory='' then Break; 
+               if currentCategory='' then Break;
             end;
          end;
       end;
@@ -598,12 +602,12 @@ var
 	XCollectionItemClass : TXCollectionItemClass;
 	mi : TMenuItem;
 begin
-{$ifdef GLS_DELPHI_5_UP}
+{$IFDEF GLS_DELPHI_5_UP}
    parent.Clear;
-{$else}
+{$ELSE}
    for i:=parent.Count-1 downto 0 do
       parent.Delete(i);
-{$endif}
+{$ENDIF}
    if Assigned(XCollection) then begin
       list:=GetXCollectionItemClassesList(XCollection.ItemsClass);
       try
@@ -927,8 +931,7 @@ var
    confirmMsg : String;
    buttons : TMsgDlgButtons;
 begin
-  if FSelectedItems=BEHAVIOURS_SELECTED then
-  begin
+  if FSelectedItems=BEHAVIOURS_SELECTED then begin
     DeleteBaseBehaviour(BehavioursListView);
     {$ifndef FPC}
     FCurrentDesigner.SelectComponent(TGLBaseSceneObject(Tree.Selected.data));
@@ -936,9 +939,7 @@ begin
     FCurrentDesigner.SelectOnlyThisComponent(TGLBaseSceneObject(Tree.Selected.data));
     {$endif}
     ShowBehaviours(TGLBaseSceneObject(Tree.Selected.data));
-  end
-  else if FSelectedItems=EFFECTS_SELECTED then
-  begin
+   end else if FSelectedItems=EFFECTS_SELECTED then begin
     DeleteBaseBehaviour(EffectsListView);
     {$ifndef FPC}
     FCurrentDesigner.SelectComponent(TGLBaseSceneObject(Tree.Selected.data));
@@ -946,9 +947,7 @@ begin
     FCurrentDesigner.SelectOnlyThisComponent(TGLBaseSceneObject(Tree.Selected.data));
     {$endif}
     ShowEffects(TGLBaseSceneObject(Tree.Selected.data));
-  end
-  else if FSelectedItems=SCENE_SELECTED then
-  begin
+   end else if FSelectedItems=SCENE_SELECTED then begin
 	if Assigned(Tree.Selected) and (Tree.Selected.Level > 1) then begin
       anObject:=TGLBaseSceneObject(Tree.Selected.Data);
       // ask for confirmation
@@ -1180,7 +1179,7 @@ end;
 // IsPastePossible
 //
 function TGLSceneEditorForm.IsPastePossible : Boolean;
-{$ifdef GLS_DELPHI_6_UP}
+{$IFDEF GLS_DELPHI_6_UP}
 
    function PossibleStream(const S: string): Boolean;
    var
@@ -1219,26 +1218,26 @@ begin
          TmpContainer.Free;
       end;
    end else Result:=False;
-{$else}
+{$ELSE}
 begin
    Result:=False;
-{$endif}
+{$ENDIF}
 end;
 
 // CanPaste
 //
-{$ifdef GLS_DELPHI_6_UP}
+{$IFDEF GLS_DELPHI_6_UP}
 function TGLSceneEditorForm.CanPaste(obj, destination : TGLBaseSceneObject) : Boolean;
 begin
    Result:=((obj is TGLCamera) or (destination<>FScene.Cameras))
            and (obj is TGLBaseSceneObject);
 end;
-{$endif}
+{$ENDIF}
 
 // ACCopyExecute
 //
 procedure TGLSceneEditorForm.ACCopyExecute(Sender: TObject);
-{$ifdef GLS_DELPHI_6_UP}
+{$IFDEF GLS_DELPHI_6_UP}
 var
    ComponentList: IDesignerSelections;
 begin
@@ -1246,14 +1245,15 @@ begin
    ComponentList.Add(TGLBaseSceneObject(Tree.Selected.Data));
    CopyComponents(FScene.Owner, ComponentList);
    ACPaste.Enabled:=IsPastePossible;
-{$else}
+{$ELSE}
 begin
-{$endif}
+{$ENDIF}
 end;
 
 // ACCutExecute
 //
 procedure TGLSceneEditorForm.ACCutExecute(Sender: TObject);
+{$IFDEF GLS_DELPHI_6_UP}
 var
 	AObject : TGLBaseSceneObject;
    selNode : TTreeNode;
@@ -1269,12 +1269,10 @@ begin
 end;
 
 
-
-
 // ACPasteExecute
 //
 procedure TGLSceneEditorForm.ACPasteExecute(Sender: TObject);
-{$ifdef GLS_DELPHI_6_UP}
+{$IFDEF GLS_DELPHI_6_UP}
 var
    selNode : TTreeNode;
 	destination : TGLBaseSceneObject;
@@ -1293,12 +1291,12 @@ begin
       end;
       FCurrentDesigner.Modified;
    end;
-{$else}
+{$ELSE}
 begin
-{$endif}
+{$ENDIF}
 end;
 
-{$ifdef GLS_DELPHI_6_UP}
+{$IFDEF GLS_DELPHI_6_UP}
 // CopyComponents
 //
 procedure TGLSceneEditorForm.CopyComponents(Root: TComponent; const Components: IDesignerSelections);
@@ -1375,7 +1373,7 @@ procedure TGLSceneEditorForm.ComponentRead(Component: TComponent);
 begin
    FPasteSelection.Add(Component);
 end;
-{$endif}
+{$ENDIF}
 
 procedure TGLSceneEditorForm.BehavioursListViewEnter(Sender: TObject);
 begin
@@ -1398,7 +1396,7 @@ begin
       {$endif}
    end;
    FSelectedItems:=EFFECTS_SELECTED;
-   EnableAndDisableActions();   
+   EnableAndDisableActions();
 end;
 
 procedure TGLSceneEditorForm.ACAddBehaviourExecute(Sender: TObject);
@@ -1410,16 +1408,17 @@ procedure TGLSceneEditorForm.DeleteBaseBehaviour(ListView:TListView);
 begin
   if ListView.Selected<>nil then
   begin
+
       FCurrentDesigner.Modified;
-{$ifndef GLS_DELPHI_4}
+{$IFNDEF GLS_DELPHI_4}
 {$ifndef FPC}
       FCurrentDesigner.NoSelection;
-{$else}
+{$ELSE}
       FCurrentDesigner.SelectOnlyThisComponent(nil);
 {$endif}
 {$else}
       FCurrentDesigner.SelectComponent(nil);
-{$endif}
+{$ENDIF}
       TXCollectionItem(ListView.Selected.Data).Free;
       ListView.Selected.Free;
      // ListViewChange(Self, nil, ctState);
@@ -1595,8 +1594,7 @@ initialization
    {$i glsceneedit.lrs}
 
 finalization
-
-   ReleaseGLSceneEditorForm;
+  ReleaseGLSceneEditorForm;
 
 end.
 
