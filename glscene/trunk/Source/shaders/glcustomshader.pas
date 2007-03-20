@@ -10,6 +10,8 @@
 
 	<b>History : </b><font size=-1><ul>
       <li>20/03/07 - DaStr - Added DrawTexturedScreenQuad[4/5/6]
+                             "TextureType" parameter renamed to "TextureTarget"
+                             Finished working on TGLCustomShaderParameter
       <li>04/03/07 - DaStr - Added IGLPostShader
       <li>03/03/07 - DaStr - Added TGLCustomShaderParameter (beta state)
       <li>22/02/07 - DaStr - Initial version (contributed to GLScene)
@@ -146,55 +148,8 @@ type
   private
     FFragmentProgram: TGLShaderProgram;
     FVertexProgram: TGLShaderProgram;
-
-    FOnApply, FOnInitialize: TGLShaderEvent;
-    FOnUnApply: TGLShaderUnUplyEvent;
-
     FTagObject: TObject;
   protected
-    function GetParameter1i(const Index: string): Integer; virtual; abstract;
-    procedure SetParameter1i(const Index: string; Value: Integer); virtual; abstract;
-    function GetParameter1f(const Index: string): Single; virtual; abstract;
-    procedure SetParameter1f(const Index: string; Value: Single); virtual; abstract;
-    function GetParameter3f(const Index: string): TAffineVector; virtual; abstract;
-    procedure SetParameter3f(const Index: string; const Value: TAffineVector); virtual; abstract;
-    function GetParameter4f(const Index: string): TVector; virtual; abstract;
-    procedure SetParameter4f(const Index: string; const Value: TVector); virtual; abstract;
-
-    function GetParameterMatrix3fv(const Index: string): TAffineMatrix; virtual; abstract;
-    procedure SetParameterMatrix3fv(const Index: string; const Value: TAffineMatrix); virtual; abstract;
-    function GetParameterMatrix4fv(const Index: string): TMatrix; virtual; abstract;
-    procedure SetParameterMatrix4fv(const Index: string; const Value: TMatrix); virtual; abstract;
-    function GetParameter2f(const Index: string): TVector2f; virtual; abstract;
-    function GetParameter2i(const Index: string): TVector2i; virtual; abstract;
-    function GetParameter3i(const Index: string): TVector3i; virtual; abstract;
-    function GetParameter4i(const Index: string): TVector4i; virtual; abstract;
-    procedure SetParameter2f(const Index: string; const Value: TVector2f); virtual; abstract;
-    procedure SetParameter2i(const Index: string; const Value: TVector2i); virtual; abstract;
-    procedure SetParameter3i(const Index: string; const Value: TVector3i); virtual; abstract;
-    procedure SetParameter4i(const Index: string; const Value: TVector4i); virtual; abstract;
-
-    procedure SetParameterTexture2D(const ParameterName: string; const TextureIndex: Integer; const Value: TGLTexture); virtual; abstract;
-    procedure SetParameterTexture1D(const ParameterName: string; const TextureIndex: Integer; const Value: TGLTexture); virtual; abstract;
-    procedure SetParameterTexture3D(const ParameterName: string; const TextureIndex: Integer; const Value: TGLTexture); virtual; abstract;
-
-    function GetParameterTexture1DHandle(const ParameterName: string; const TextureIndex: Integer): Cardinal; virtual; abstract;
-    function GetParameterTexture2DHandle(const ParameterName: string; const TextureIndex: Integer): Cardinal; virtual; abstract;
-    function GetParameterTexture3DHandle(const ParameterName: string; const TextureIndex: Integer): Cardinal; virtual; abstract;
-
-    procedure SetParameterTexture1DHandle(const ParameterName: string; const TextureIndex: Integer; const Value: Cardinal); virtual; abstract;
-    procedure SetParameterTexture2DHandle(const ParameterName: string; const TextureIndex: Integer; const Value: Cardinal); virtual; abstract;
-    procedure SetParameterTexture3DHandle(const ParameterName: string; const TextureIndex: Integer; const Value: Cardinal); virtual; abstract;
-
-    function GetParameterCustomTextureHandle(const ParameterName: string; const TextureIndex: Integer; const TextureType: Word): Cardinal; virtual; abstract;
-    procedure SetParameterCustomTextureHandle(const ParameterName: string; const TextureIndex: Integer; const TextureType: Word; const Value: Cardinal); virtual; abstract;
-
-  protected
-    //only declare the events, nothing generates them ***yet***
-    property OnApply: TGLShaderEvent read FOnApply write FOnApply;
-    property OnUnApply: TGLShaderUnUplyEvent read FOnUnApply write FOnUnApply;
-    property OnInitialize: TGLShaderEvent read FOnInitialize write FOnInitialize;
-
     property FragmentProgram: TGLShaderProgram read FFragmentProgram;
     property VertexProgram: TGLShaderProgram read FVertexProgram;
 
@@ -205,33 +160,6 @@ type
     procedure Assign(Source: TPersistent); override;
 
     procedure LoadShaderPrograms(const VPFilename, FPFilename: string);
-
-    //idea taken from the original TGLProgramHandle
-    property Parameter1i[const ParameterName: string]: Integer read GetParameter1i write SetParameter1i;
-    property Parameter1f[const ParameterName: string]: Single read GetParameter1f write SetParameter1f;
-
-    property Parameter2i[const ParameterName: string]: TVector2i read GetParameter2i write SetParameter2i;
-    property Parameter2f[const ParameterName: string]: TVector2f read GetParameter2f write SetParameter2f;
-
-    property Parameter3i[const ParameterName: string]: TVector3i read GetParameter3i write SetParameter3i;
-    property Parameter3f[const ParameterName: string]: TVector3f read GetParameter3f write SetParameter3f;
-
-    property Parameter4i[const ParameterName: string]: TVector4i read GetParameter4i write SetParameter4i;
-    property Parameter4f[const ParameterName: string]: TVector read GetParameter4f write SetParameter4f;
-
-    property ParameterMatrix2fv[const ParameterName: string]: TMatrix read GetParameterMatrix4fv write SetParameterMatrix4fv;
-    property ParameterMatrix3fv[const ParameterName: string]: TAffineMatrix read GetParameterMatrix3fv write SetParameterMatrix3fv;
-    property ParameterMatrix4fv[const ParameterName: string]: TMatrix read GetParameterMatrix4fv write SetParameterMatrix4fv;
-
-    property ParameterTexture1D[const ParameterName: string; const TextureIndex: Integer]: TGLTexture write SetParameterTexture1D;
-    property ParameterTexture2D[const ParameterName: string; const TextureIndex: Integer]: TGLTexture write SetParameterTexture2D;
-    property ParameterTexture3D[const ParameterName: string; const TextureIndex: Integer]: TGLTexture write SetParameterTexture3D;
-
-    property ParameterTexture1DHandle[const ParameterName: string; const TextureIndex: Integer]: Cardinal read GetParameterTexture1DHandle write SetParameterTexture1DHandle;
-    property ParameterTexture2DHandle[const ParameterName: string; const TextureIndex: Integer]: Cardinal read GetParameterTexture2DHandle write SetParameterTexture2DHandle;
-    property ParameterTexture3DHandle[const ParameterName: string; const TextureIndex: Integer]: Cardinal read GetParameterTexture3DHandle write SetParameterTexture3DHandle;
-
-    property ParameterCustomTextureHandle[const ParameterName: string; const TextureIndex: Integer; const TextureType: Word]: Cardinal read GetParameterCustomTextureHandle write SetParameterCustomTextureHandle;
   end;
 
   TGLShaderProgram = class(TPersistent)
@@ -289,20 +217,20 @@ type
     procedure SetAsMatrix4f(const Value: TMatrix4f); virtual; abstract;
 
     procedure SetAsTexture1D(const TextureIndex: Integer;
-      const Value: TGLTexture); virtual; abstract;
+      const Value: TGLTexture);
     procedure SetAsTexture2D(const TextureIndex: Integer;
-      const Value: TGLTexture); virtual; abstract;
+      const Value: TGLTexture);
     procedure SetAsTexture3D(const TextureIndex: Integer;
-      const Value: TGLTexture); virtual; abstract;
+      const Value: TGLTexture);
     procedure SetAsTextureCube(const TextureIndex: Integer;
-      const Value: TGLTexture); virtual; abstract;
+      const Value: TGLTexture);
     procedure SetAsTextureRect(const TextureIndex: Integer;
-      const Value: TGLTexture); virtual; abstract;
+      const Value: TGLTexture);
 
     function GetAsCustomTexture(const TextureIndex: Integer;
-      const TextureType: Word): Cardinal; virtual; abstract;
+      const TextureTarget: Word): Cardinal; virtual; abstract;
     procedure SetAsCustomTexture(const TextureIndex: Integer;
-      const TextureType: Word; const Value: Cardinal); virtual; abstract;
+      const TextureTarget: Word; const Value: Cardinal); virtual; abstract;
   public
     { Public Declarations }
 
@@ -343,7 +271,7 @@ type
     property AsTextureRect[const TextureIndex: Integer]: TGLTexture write SetAsTextureRect;
     property AsTextureCube[const TextureIndex: Integer]: TGLTexture write SetAsTextureCube;
 
-    property AsCustomTexture[const TextureIndex: Integer; const TextureType: Word]: Cardinal read GetAsCustomTexture write SetAsCustomTexture;
+    property AsCustomTexture[const TextureIndex: Integer; const TextureTarget: Word]: Cardinal read GetAsCustomTexture write SetAsCustomTexture;
   end;
 
 
@@ -357,7 +285,7 @@ type
 // Exported procedures.
 procedure ApplyBlendingModeEx(const BlendingMode: TGLBlendingModeEx);
 procedure UnApplyBlendingModeEx;
-procedure InitTexture(const TextureHandle: Cardinal; const TextureSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
+procedure InitTexture(const TextureHandle: Cardinal; const TextureSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 
 // Probably need to give them proper names, instead of numbers... 
 procedure DrawTexturedScreenQuad;
@@ -367,8 +295,8 @@ procedure DrawTexturedScreenQuad4(const ViewPortSize: TGLSize);
 procedure DrawTexturedScreenQuad5(const ViewPortSize: TGLSize);
 procedure DrawTexturedScreenQuad6(const ViewPortSize: TGLSize);
 
-procedure CopyScreentoTexture(const ViewPortSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
-procedure CopyScreentoTexture2(const ViewPortSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
+procedure CopyScreentoTexture(const ViewPortSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
+procedure CopyScreentoTexture2(const ViewPortSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 
 { May be should be added to TGLScene class. Or deleted. }
 //function GetActualLightNumber(const Scene: TGLScene): Byte;
@@ -390,14 +318,14 @@ begin
 end;
 }
 
-procedure CopyScreentoTexture(const ViewPortSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
+procedure CopyScreentoTexture(const ViewPortSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 begin
-  glCopyTexSubImage2D(TextureType, 0, 0, 0, 0, 0, ViewPortSize.cx, ViewPortSize.cy);
+  glCopyTexSubImage2D(TextureTarget, 0, 0, 0, 0, 0, ViewPortSize.cx, ViewPortSize.cy);
 end;
 
-procedure CopyScreentoTexture2(const ViewPortSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
+procedure CopyScreentoTexture2(const ViewPortSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 begin
-  glCopyTexImage2D(TextureType, 0, GL_RGB, 0, 0, ViewPortSize.cx, ViewPortSize.cy, 0);
+  glCopyTexImage2D(TextureTarget, 0, GL_RGB, 0, 0, ViewPortSize.cx, ViewPortSize.cy, 0);
 end;
 
 procedure ApplyBlendingModeEx(const BlendingMode: TGLBlendingModeEx);
@@ -534,14 +462,14 @@ begin
   glEnd;
 end;
 
-procedure InitTexture(const TextureHandle: Cardinal; const TextureSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
+procedure InitTexture(const TextureHandle: Cardinal; const TextureSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 begin
-  glBindTexture(TextureType, TextureHandle);
-  glTexParameteri(TextureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(TextureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(TextureType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(TextureType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glCopyTexImage2d(TextureType, 0, GL_RGBA8, 0, 0, TextureSize.cx, TextureSize.cy, 0);
+  glBindTexture(TextureTarget, TextureHandle);
+  glTexParameteri(TextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(TextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(TextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(TextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glCopyTexImage2d(TextureTarget, 0, GL_RGBA8, 0, 0, TextureSize.cx, TextureSize.cy, 0);
 end;
 
 { TGLShaderProgram }
@@ -654,6 +582,36 @@ begin
 end;
 
 { TGLCustomShaderParameter }
+
+procedure TGLCustomShaderParameter.SetAsTexture1D(
+  const TextureIndex: Integer; const Value: TGLTexture);
+begin
+  SetAsCustomTexture(TextureIndex, GL_TEXTURE_1D, Value.Handle);
+end;
+
+procedure TGLCustomShaderParameter.SetAsTexture2D(
+  const TextureIndex: Integer; const Value: TGLTexture);
+begin
+  SetAsCustomTexture(TextureIndex, GL_TEXTURE_2D, Value.Handle);
+end;
+
+procedure TGLCustomShaderParameter.SetAsTexture3D(
+  const TextureIndex: Integer; const Value: TGLTexture);
+begin
+  SetAsCustomTexture(TextureIndex, GL_TEXTURE_3D, Value.Handle);
+end;
+
+procedure TGLCustomShaderParameter.SetAsTextureCube(
+  const TextureIndex: Integer; const Value: TGLTexture);
+begin
+  SetAsCustomTexture(TextureIndex, GL_TEXTURE_CUBE_MAP_ARB, Value.Handle);
+end;
+
+procedure TGLCustomShaderParameter.SetAsTextureRect(
+  const TextureIndex: Integer; const Value: TGLTexture);
+begin
+  SetAsCustomTexture(TextureIndex, GL_TEXTURE_RECTANGLE_ARB, Value.Handle);
+end;
 
 procedure TGLCustomShaderParameter.SetAsVectorF(const Values: array of Single);
 begin

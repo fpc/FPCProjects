@@ -6,6 +6,7 @@
    A GLSL shader that applies bump mapping.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/03/07 - DaStr - Made changes related to the new parameter passing model
       <li>06/03/07 - DaStr - Again replaced DecimalSeparator stuff with
                               a single Str procedure (thanks Uwe Raabe)
       <li>03/03/07 - DaStr - Made compatible with Delphi6
@@ -615,23 +616,23 @@ end;
 procedure TGLBaseCustomGLSLBumpShader.DoApply(
   var rci: TRenderContextInfo; Sender: TObject);
 begin
-  //don't inherit not to call the event
+  // Don't inherit not to call the event.
   GetGLSLProg.UseProgramObject;
 
-  Parameter1f['fSpecularPower'] := FSpecularPower;
-  Parameter1f['fSpecularSpread'] := FSpecularSpread;
-  Parameter1f['fLightPower'] := FLightPower;
+  Param['fSpecularPower'].AsVector1f := FSpecularPower;
+  Param['fSpecularSpread'].AsVector1f := FSpecularSpread;
+  Param['fLightPower'].AsVector1f := FLightPower;
 
   if FSpecularTexture <> nil then
-    ParameterTexture2D['specMap', 2] := FSpecularTexture;
+    Param['specMap'].AsTexture2D[2] := FSpecularTexture;
 
 {$IFNDEF GLS_OPTIMIZATIONS}
   if FNormalTexture <> nil then
 {$ENDIF}
   begin
-    ParameterTexture2D['bumpMap', 1] := FNormalTexture;
-    Parameter1f['fBumpHeight'] := FBumpHeight;
-    Parameter1f['fBumpSmoothness'] := FBumpSmoothness;
+    Param['bumpMap'].AsTexture2D[1] := FNormalTexture;
+    Param['fBumpHeight'].AsVector1f := FBumpHeight;
+    Param['fBumpSmoothness'].AsVector1f := FBumpSmoothness;
   end;
 end;
 
@@ -846,11 +847,11 @@ procedure TGLCustomGLSLBumpShaderAM.DoApply(var rci: TRenderContextInfo;
 begin
   inherited;
 
-  Parameter4f['fvAmbient'] := FAmbientColor.Color;
-  Parameter4f['fvDiffuse'] := FDiffuseColor.Color;
-  Parameter4f['fvSpecular'] := FSpecularColor.Color;
+  Param['fvAmbient'].AsVector4f := FAmbientColor.Color;
+  Param['fvDiffuse'].AsVector4f := FDiffuseColor.Color;
+  Param['fvSpecular'].AsVector4f := FSpecularColor.Color;
 
-  ParameterTexture2D['baseMap', 0] := FMainTexture;
+  Param['baseMap'].AsTexture2D[0] := FMainTexture;
 end;
 
 procedure TGLCustomGLSLBumpShaderAM.DoInitialize;
@@ -885,7 +886,7 @@ procedure TGLCustomGLSLMLBumpShaderMT.DoApply(var rci: TRenderContextInfo;
   Sender: TObject);
 begin
   inherited;
-  ParameterTexture2D['baseMap', 0] := FMainTexture;
+  Param['baseMap'].AsTexture2D[0] := FMainTexture;
 end;
 
 procedure TGLCustomGLSLMLBumpShaderMT.DoInitialize;
@@ -934,7 +935,7 @@ procedure TGLCustomGLSLBumpShaderMT.DoApply(
   var rci: TRenderContextInfo; Sender: TObject);
 begin
   inherited;
-  ParameterTexture2D['baseMap', 0] := FMainTexture;
+  Param['baseMap'].AsTexture2D[0] := FMainTexture;
 end;
 
 procedure TGLCustomGLSLBumpShaderMT.DoInitialize;
@@ -950,7 +951,7 @@ procedure TGLCustomGLSLBumpShader.DoApply(var rci: TRenderContextInfo;
   Sender: TObject);
 begin
   inherited;
-  Parameter1i['baseMap'] := 0; //use the current texture
+  Param['baseMap'].AsVector1i := 0;  // Use the current texture.
 end;
 
 procedure TGLCustomGLSLBumpShader.DoInitialize;
@@ -1035,7 +1036,7 @@ procedure TGLCustomGLSLMLBumpShader.DoApply(var rci: TRenderContextInfo;
   Sender: TObject);
 begin
   inherited;
-  Parameter1i['baseMap'] := 0; //use the current texture
+  Param['baseMap'].AsVector1i := 0;  // Use the current texture.
 end;
 
 procedure TGLCustomGLSLMLBumpShader.DoInitialize;

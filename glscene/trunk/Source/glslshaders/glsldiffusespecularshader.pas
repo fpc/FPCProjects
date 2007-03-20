@@ -6,6 +6,7 @@
     This is a collection of GLSL diffuse-specular shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/03/07 - DaStr - Made changes related to the new parameter passing model 
       <li>06/03/07 - DaStr - Again replaced DecimalSeparator stuff with
                               a single Str procedure (thanks Uwe Raabe)
       <li>03/03/07 - DaStr - Made compatible with Delphi6
@@ -409,8 +410,8 @@ procedure TGLBaseCustomGLSLDiffuseSpecular.DoApply(
   var rci: TRenderContextInfo; Sender: TObject);
 begin
   GetGLSLProg.UseProgramObject;
-  Parameter1f['SpecPower'] := FSpecularPower;
-  Parameter1f['LightIntensity'] := FLightPower;
+  Param['SpecPower'].AsVector1f := FSpecularPower;
+  Param['LightIntensity'].AsVector1f := FLightPower;
 end;
 
 function TGLBaseCustomGLSLDiffuseSpecular.DoUnApply(
@@ -435,7 +436,7 @@ procedure TGLBaseGLSLDiffuseSpecularShaderMT.DoApply(
   var rci: TRenderContextInfo; Sender: TObject);
 begin
   inherited;
-  ParameterTexture2D['MainTexture', 0] := FMainTexture;
+  Param['MainTexture'].AsTexture2D[0] := FMainTexture;
 end;
 
 function TGLBaseGLSLDiffuseSpecularShaderMT.GetMainTextureName: TGLLibMaterialName;
@@ -530,9 +531,9 @@ procedure TGLCustomGLSLDiffuseSpecularShaderAM.DoApply(var rci: TRenderContextIn
   Sender: TObject);
 begin
   inherited;
-  Parameter4f['AmbientColor'] := FAmbientColor.Color;
-  Parameter4f['DiffuseColor'] := FDiffuseColor.Color;
-  Parameter4f['SpecularColor'] := FSpecularColor.Color;
+  Param['AmbientColor'].AsVector4f := FAmbientColor.Color;
+  Param['DiffuseColor'].AsVector4f := FDiffuseColor.Color;
+  Param['SpecularColor'].AsVector4f := FSpecularColor.Color;
 end;
 
 procedure TGLCustomGLSLDiffuseSpecularShaderAM.DoInitialize;
@@ -569,7 +570,7 @@ procedure TGLCustomGLSLDiffuseSpecularShader.DoApply(
   var rci: TRenderContextInfo; Sender: TObject);
 begin
   inherited;
-  Parameter1i['MainTexture'] := 0;
+  Param['MainTexture'].AsVector1i := 0;  // Use the current texture.
 end;
 
 procedure TGLCustomGLSLDiffuseSpecularShader.DoInitialize;

@@ -6,6 +6,10 @@
     TGLSLShader is a wrapper for GLS shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/03/07 - DaStr - TGLCustomGLSLShader now generates its own events
+                             Added TGLSLShaderParameter
+                             Added TGLCustomGLSLShader.DoInitialPass
+                             Added TGLCustomGLSLShader.Param[]
       <li>21/02/07 - DaStr - Initial version (contributed to GLScene)
 
 
@@ -35,65 +39,106 @@ interface
 {$I GLScene.inc}
 
 uses
-  //VCL
+  // VCL
   Classes, SysUtils,
-  //GLScene
+
+  // GLScene
   VectorGeometry, VectorTypes, GLTexture, GLContext, OpenGL1x, GLCustomShader;
 
 type
+  TGLSLShaderParameter = class;
+  TGLCustomGLSLShader = class;
   EGLSLShaderException = class(EGLCustomShaderException);
+
+  TGLSLShaderEvent = procedure(Shader: TGLCustomGLSLShader) of object;
+  TGLSLShaderUnUplyEvent = procedure(Shader: TGLCustomGLSLShader; var ThereAreMorePasses: Boolean) of object;
+
+  {: TODO! }
+  TGLSLInitializedShaderParameters = class
+  private
+    FList: array of TGLSLShaderParameter;
+  public
+  end;
 
   TGLCustomGLSLShader = class(TGLCustomShader)
   private
     FGLSLProg: TGLProgramHandle;
+    FParam: TGLSLShaderParameter;
+    FInitializedParameters: TGLSLInitializedShaderParameters;
+
+    FOnInitialize: TGLSLShaderEvent;
+    FOnApply: TGLSLShaderEvent;
+    FOnUnApply: TGLSLShaderUnUplyEvent;
+
+    function GetParam(const Index: string): TGLSLShaderParameter;
+    function GetDirectParam(const Index: Cardinal): TGLSLShaderParameter;
   protected
-    function GetParameter1i(const Index: string): integer; override;
-    procedure SetParameter1i(const Index: string; Value: integer); override;
-    function GetParameter1f(const Index: string): single; override;
-    procedure SetParameter1f(const Index: string; Value: single); override;
-    function GetParameter3f(const Index: string): TAffineVector; override;
-    procedure SetParameter3f(const Index: string; const Value: TAffineVector); override;
-    function GetParameter4f(const Index: string): TVector; override;
-    procedure SetParameter4f(const Index: string; const Value: TVector); override;
+    property OnApply: TGLSLShaderEvent read FOnApply write FOnApply;
+    property OnUnApply: TGLSLShaderUnUplyEvent read FOnUnApply write FOnUnApply;
+    property OnInitialize: TGLSLShaderEvent read FOnInitialize write FOnInitialize;
 
-    function GetParameterMatrix3fv(const Index: string): TAffineMatrix; override;
-    procedure SetParameterMatrix3fv(const Index: string; const Value: TAffineMatrix); override;
-    function GetParameterMatrix4fv(const Index: string): TMatrix; override;
-    procedure SetParameterMatrix4fv(const Index: string; const Value: TMatrix); override;
-    function GetParameter2f(const Index: string): TVector2f; override;
-    function GetParameter2i(const Index: string): TVector2i; override;
-    function GetParameter3i(const Index: string): TVector3i; override;
-    function GetParameter4i(const Index: string): TVector4i; override;
-    procedure SetParameter2f(const Index: string; const Value: TVector2f); override;
-    procedure SetParameter2i(const Index: string; const Value: TVector2i); override;
-    procedure SetParameter3i(const Index: string; const Value: TVector3i); override;
-    procedure SetParameter4i(const Index: string; const Value: TVector4i); override;
-
-    procedure SetParameterTexture1D(const ParameterName: string; const TextureIndex: Integer; const Value: TGLTexture); override;
-    procedure SetParameterTexture2D(const ParameterName: string; const TextureIndex: Integer; const Value: TGLTexture); override;
-    procedure SetParameterTexture3D(const ParameterName: string; const TextureIndex: Integer; const Value: TGLTexture); override;
-
-    function GetParameterTexture1DHandle(const ParameterName: string; const TextureIndex: Integer): Cardinal; override;
-    function GetParameterTexture2DHandle(const ParameterName: string; const TextureIndex: Integer): Cardinal; override;
-    function GetParameterTexture3DHandle(const ParameterName: string; const TextureIndex: Integer): Cardinal; override;
-
-    procedure SetParameterTexture1DHandle(const ParameterName: string; const TextureIndex: Integer; const Value: Cardinal); override;
-    procedure SetParameterTexture2DHandle(const ParameterName: string; const TextureIndex: Integer; const Value: Cardinal); override;
-    procedure SetParameterTexture3DHandle(const ParameterName: string; const TextureIndex: Integer; const Value: Cardinal); override;
-
-    function GetParameterCustomTextureHandle(const ParameterName: string; const TextureIndex: Integer; const TextureType: Word): Cardinal; override;
-    procedure SetParameterCustomTextureHandle(const ParameterName: string; const TextureIndex: Integer; const TextureType: Word; const Value: Cardinal); override;
+    procedure DoInitialPass; virtual;
 
     function GetGLSLProg: TGLProgramHandle; virtual;
+    function GetCurrentParam: TGLSLShaderParameter; virtual;
     procedure DoInitialize; override;
     procedure DoFinalize; override;
     procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
     function DoUnApply(var rci: TRenderContextInfo): Boolean; override;
   public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
     function ShaderSupported: Boolean; override;
+
+    property Param[const Index: string]: TGLSLShaderParameter read GetParam;
+    property DirectParam[const Index: Cardinal]: TGLSLShaderParameter read GetDirectParam;
+
+    property InitializedParameters: TGLSLInitializedShaderParameters read FInitializedParameters;
   end;
 
+
+  {: Wrapper around a parameter of a GLSL program. }
+  TGLSLShaderParameter = class(TGLCustomShaderParameter)
+  private
+    { Private Declarations }
+    FGLSLProg: TGLProgramHandle;
+    FParameterID: GLInt;
+  protected
+    { Protected Declarations }
+    function GetAsVector1f: Single; override;
+    function GetAsVector1i: Integer; override;
+    function GetAsVector2f: TVector2f; override;
+    function GetAsVector2i: TVector2i; override;
+    function GetAsVector3f: TVector3f; override;
+    function GetAsVector3i: TVector3i; override;
+    function GetAsVector4f: TVector; override;
+    function GetAsVector4i: TVector4i; override;
+
+    procedure SetAsVector1f(const Value: Single); override;
+    procedure SetAsVector1i(const Value: Integer); override;
+    procedure SetAsVector2i(const Value: TVector2i); override;
+    procedure SetAsVector3i(const Value: TVector3i); override;
+    procedure SetAsVector4i(const Value: TVector4i); override;
+    procedure SetAsVector2f(const Value: TVector2f); override;
+    procedure SetAsVector3f(const Value: TVector3f); override;
+    procedure SetAsVector4f(const Value: TVector4f); override;
+
+    function GetAsMatrix2f: TMatrix2f; override;
+    function GetAsMatrix3f: TMatrix3f; override;
+    function GetAsMatrix4f: TMatrix4f; override;
+    procedure SetAsMatrix2f(const Value: TMatrix2f); override;
+    procedure SetAsMatrix3f(const Value: TMatrix3f); override;
+    procedure SetAsMatrix4f(const Value: TMatrix4f); override;
+
+    function GetAsCustomTexture(const TextureIndex: Integer;
+      const TextureTarget: Word): Cardinal; override;
+    procedure SetAsCustomTexture(const TextureIndex: Integer;
+      const TextureTarget: Word; const Value: Cardinal); override;
+
+   public
+     // Nothing here ...yet.
+   end;
 
   TGLSLShader = class(TGLCustomGLSLShader)
   published
@@ -116,8 +161,8 @@ implementation
 procedure TGLCustomGLSLShader.DoApply(var rci: TRenderContextInfo; Sender: TObject);
 begin
   FGLSLProg.UseProgramObject;
-  if Assigned(OnApply) then
-    OnApply(Self);
+  if Assigned(FOnApply) then
+    FOnApply(Self);
 end;
 
 
@@ -131,6 +176,7 @@ begin
       if VertexProgram.Enabled or FragmentProgram.Enabled then
       begin
         FGLSLProg := TGLProgramHandle.CreateAndAllocate;
+        FParam.FGLSLProg := FGLSLProg;
         if Name <> '' then
           FGLSLProg.Name := Name
         else
@@ -163,20 +209,16 @@ begin
   finally
     Enabled := (FGLSLProg <> nil);
 
-    if Assigned(OnInitialize) and Enabled then
-    begin
-      FGLSLProg.UseProgramObject;
-      OnInitialize(Self);
-      FGLSLProg.EndUseProgramObject;
-    end;
+    if Enabled then
+      DoInitialPass;
   end;
 end;
 
 
 function TGLCustomGLSLShader.DoUnApply(var rci: TRenderContextInfo): Boolean;
 begin
-  if Assigned(OnUnApply) then
-    OnUnApply(Self, Result)
+  if Assigned(FOnUnApply) then
+    FOnUnApply(Self, Result)
   else
     Result := False;
   if not Result then
@@ -193,139 +235,6 @@ begin
              GL_ARB_vertex_shader and GL_ARB_fragment_shader);
 end;
 
-// GetParameter1i
-//
-function TGLCustomGLSLShader.GetParameter1i(const Index: string): integer;
-begin
-  glGetUniformivARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-// SetParameter1f
-//
-procedure TGLCustomGLSLShader.SetParameter1f(const Index: string; Value: single);
-begin
-  glUniform1fARB(FGLSLProg.GetUniformLocation(Index), Value);
-end;
-
-// GetParameter1f
-//
-function TGLCustomGLSLShader.GetParameter1f(const Index: string): single;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-// SetParameter1i
-//
-procedure TGLCustomGLSLShader.SetParameter1i(const Index: string; Value: integer);
-begin
-  glUniform1iARB(FGLSLProg.GetUniformLocation(Index), Value);
-end;
-
-// GetParameter3f
-//
-function TGLCustomGLSLShader.GetParameter3f(const Index: string): TAffineVector;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-// SetParameter3f
-//
-procedure TGLCustomGLSLShader.SetParameter3f(const Index: string; const Value: TAffineVector);
-begin
-  glUniform3fARB(FGLSLProg.GetUniformLocation(Index), Value[0], Value[1], Value[2]);
-end;
-
-// GetParameter4f
-//
-function TGLCustomGLSLShader.GetParameter4f(const Index: string): TVector;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-// SetParameter4f
-//
-procedure TGLCustomGLSLShader.SetParameter4f(const Index: string; const Value: TVector);
-begin
-  glUniform4fARB(FGLSLProg.GetUniformLocation(Index), Value[0], Value[1], Value[2], Value[3]);
-end;
-
-// GetParameterMatrix4fv
-//
-function TGLCustomGLSLShader.GetParameterMatrix4fv(const Index: string): TMatrix;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-// SetParameterMatrix4fv
-//
-procedure TGLCustomGLSLShader.SetParameterMatrix4fv(const Index: string; const Value: TMatrix);
-begin
-  glUniformMatrix4fvARB(FGLSLProg.GetUniformLocation(Index), 1, False, @Value);
-end;
-
-// GetParameterMatrix3fv
-//
-function TGLCustomGLSLShader.GetParameterMatrix3fv(const Index: string): TAffineMatrix;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-// SetParameterMatrix3fv
-//
-procedure TGLCustomGLSLShader.SetParameterMatrix3fv(const Index: string; const Value: TAffineMatrix);
-begin
-  glUniformMatrix3fvARB(FGLSLProg.GetUniformLocation(Index), 1, False, @Value);
-end;
-
-
-function TGLCustomGLSLShader.GetParameter2f(const Index: string): TVector2f;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-
-function TGLCustomGLSLShader.GetParameter2i(const Index: string): TVector2i;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-
-function TGLCustomGLSLShader.GetParameter3i(const Index: string): TVector3i;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-
-function TGLCustomGLSLShader.GetParameter4i(const Index: string): TVector4i;
-begin
-  glGetUniformfvARB(FGLSLProg.Handle, FGLSLProg.GetUniformLocation(Index), @Result);
-end;
-
-
-procedure TGLCustomGLSLShader.SetParameter2f(const Index: string; const Value: TVector2f);
-begin
-  glUniform2fARB(FGLSLProg.GetUniformLocation(Index), Value[0], Value[1]);
-end;
-
-
-procedure TGLCustomGLSLShader.SetParameter2i(const Index: string; const Value: TVector2i);
-begin
-  glUniform2iARB(FGLSLProg.GetUniformLocation(Index), Value[0], Value[1]);
-end;
-
-
-procedure TGLCustomGLSLShader.SetParameter3i(const Index: string; const Value: TVector3i);
-begin
-  glUniform3iARB(FGLSLProg.GetUniformLocation(Index), Value[0], Value[1], Value[2]);
-end;
-
-
-procedure TGLCustomGLSLShader.SetParameter4i(const Index: string; const Value: TVector4i);
-begin
-  glUniform4iARB(FGLSLProg.GetUniformLocation(Index), Value[0], Value[1], Value[2], Value[3]);
-end;
-
-
 procedure TGLCustomGLSLShader.Assign(Source: TPersistent);
 begin
   inherited Assign(Source);
@@ -334,33 +243,6 @@ begin
   begin
     FreeAndNil(FGLSLProg); //just free the handle for it to be recreated on next initialization
   end;
-end;
-
-procedure TGLCustomGLSLShader.SetParameterTexture1D(
-  const ParameterName: string; const TextureIndex: Integer;
-  const Value: TGLTexture);
-begin
-  glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
-  glBindTexture(GL_TEXTURE_1D, Value.Handle);
-  Parameter1i[ParameterName] := TextureIndex;
-end;
-
-procedure TGLCustomGLSLShader.SetParameterTexture2D(
-  const ParameterName: string; const TextureIndex: Integer;
-  const Value: TGLTexture);
-begin
-  glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
-  glBindTexture(GL_TEXTURE_2D, Value.Handle);
-  Parameter1i[ParameterName] := TextureIndex;
-end;
-
-procedure TGLCustomGLSLShader.SetParameterTexture3D(
-  const ParameterName: string; const TextureIndex: Integer;
-  const Value: TGLTexture);
-begin
-  glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
-  glBindTexture(GL_TEXTURE_3D, Value.Handle);
-  Parameter1i[ParameterName] := TextureIndex;
 end;
 
 procedure TGLCustomGLSLShader.DoFinalize;
@@ -374,67 +256,172 @@ begin
   Result := FGLSLProg;
 end;
 
-procedure TGLCustomGLSLShader.SetParameterTexture1DHandle(
-  const ParameterName: string; const TextureIndex: Integer;
-  const Value: Cardinal);
+function TGLCustomGLSLShader.GetParam(
+  const Index: string): TGLSLShaderParameter;
+begin
+  FParam.FParameterID := FGLSLProg.GetUniformLocation(Index);
+  Result := FParam;
+end;
+
+function TGLCustomGLSLShader.GetDirectParam(
+  const Index: Cardinal): TGLSLShaderParameter;
+begin
+  FParam.FParameterID := Index;
+  Result := FParam;
+end;
+
+function TGLCustomGLSLShader.GetCurrentParam: TGLSLShaderParameter;
+begin
+  Result := FParam;
+end;
+
+constructor TGLCustomGLSLShader.Create(AOwner: TComponent);
 begin
   inherited;
-  glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
-  glBindTexture(GL_TEXTURE_1D, Value);
-  Parameter1i[ParameterName] := TextureIndex;
+  FParam := TGLSLShaderParameter.Create;
 end;
 
-procedure TGLCustomGLSLShader.SetParameterTexture2DHandle(
-  const ParameterName: string; const TextureIndex: Integer;
-  const Value: Cardinal);
+destructor TGLCustomGLSLShader.Destroy;
 begin
+  FParam.Free;
   inherited;
-  glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
-  glBindTexture(GL_TEXTURE_2D, Value);
-  Parameter1i[ParameterName] := TextureIndex;
 end;
 
-procedure TGLCustomGLSLShader.SetParameterTexture3DHandle(
-  const ParameterName: string; const TextureIndex: Integer;
+procedure TGLCustomGLSLShader.DoInitialPass;
+begin
+  if Assigned(FOnInitialize) then
+  begin
+    FGLSLProg.UseProgramObject;
+    FOnInitialize(Self);
+    FGLSLProg.EndUseProgramObject;
+  end;
+end;
+
+{ TGLSLShaderParameter }
+
+function TGLSLShaderParameter.GetAsCustomTexture(
+  const TextureIndex: Integer; const TextureTarget: Word): Cardinal;
+begin
+  glGetUniformivARB(FGLSLProg.Handle, TextureIndex, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsMatrix2f: TMatrix2f;
+begin
+  glGetUniformfvARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsMatrix3f: TMatrix3f;
+begin
+  glGetUniformfvARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsMatrix4f: TMatrix4f;
+begin
+  glGetUniformfvARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsVector1f: Single;
+begin
+  glGetUniformfvARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsVector1i: Integer;
+begin
+  glGetUniformivARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsVector2f: TVector2f;
+begin
+  glGetUniformfvARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsVector2i: TVector2i;
+begin
+  glGetUniformivARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsVector3f: TVector3f;
+begin
+  glGetUniformfvARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsVector3i: TVector3i;
+begin
+  glGetUniformivARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsVector4f: TVector;
+begin
+  glGetUniformfvARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+function TGLSLShaderParameter.GetAsVector4i: TVector4i;
+begin
+  glGetUniformivARB(FGLSLProg.Handle, FParameterID, @Result);
+end;
+
+procedure TGLSLShaderParameter.SetAsCustomTexture(
+  const TextureIndex: Integer; const TextureTarget: Word;
   const Value: Cardinal);
 begin
   glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
-  glBindTexture(GL_TEXTURE_3D, Value);
-  Parameter1i[ParameterName] := TextureIndex;
+  glBindTexture(TextureTarget, Value);
+  glUniform1iARB(FParameterID, TextureIndex);
 end;
 
-function TGLCustomGLSLShader.GetParameterTexture1DHandle(
-  const ParameterName: string; const TextureIndex: Integer): Cardinal;
+procedure TGLSLShaderParameter.SetAsMatrix2f(const Value: TMatrix2f);
 begin
-  Result := Parameter1i[ParameterName];
+  glUniformMatrix2fvARB(FParameterID, 1, False, @Value);
 end;
 
-function TGLCustomGLSLShader.GetParameterTexture2DHandle(
-  const ParameterName: string; const TextureIndex: Integer): Cardinal;
+procedure TGLSLShaderParameter.SetAsMatrix3f(const Value: TMatrix3f);
 begin
-  Result := Parameter1i[ParameterName];
+  glUniformMatrix3fvARB(FParameterID, 1, False, @Value);
 end;
 
-function TGLCustomGLSLShader.GetParameterTexture3DHandle(
-  const ParameterName: string; const TextureIndex: Integer): Cardinal;
+procedure TGLSLShaderParameter.SetAsMatrix4f(const Value: TMatrix4f);
 begin
-  Result := Parameter1i[ParameterName];
+  glUniformMatrix4fvARB(FParameterID, 1, False, @Value);
 end;
 
-function TGLCustomGLSLShader.GetParameterCustomTextureHandle(
-  const ParameterName: string; const TextureIndex: Integer;
-  const TextureType: Word): Cardinal;
+procedure TGLSLShaderParameter.SetAsVector1f(const Value: Single);
 begin
-  Result := Parameter1i[ParameterName];
+  glUniform1fARB(FParameterID, Value);
 end;
 
-procedure TGLCustomGLSLShader.SetParameterCustomTextureHandle(
-  const ParameterName: string; const TextureIndex: Integer;
-  const TextureType: Word; const Value: Cardinal);
+procedure TGLSLShaderParameter.SetAsVector1i(const Value: Integer);
 begin
-  glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
-  glBindTexture(TextureType, Value);
-  Parameter1i[ParameterName] := TextureIndex;
+  glUniform1iARB(FParameterID, Value);
+end;
+
+procedure TGLSLShaderParameter.SetAsVector2f(const Value: TVector2f);
+begin
+  glUniform2fARB(FParameterID, Value[0], Value[1]);
+end;
+
+procedure TGLSLShaderParameter.SetAsVector2i(const Value: TVector2i);
+begin
+  glUniform2iARB(FParameterID, Value[0], Value[1]);
+end;
+
+procedure TGLSLShaderParameter.SetAsVector3f(const Value: TVector3f);
+begin
+  glUniform3fARB(FParameterID, Value[0], Value[1], Value[2]);
+end;
+
+procedure TGLSLShaderParameter.SetAsVector3i(const Value: TVector3i);
+begin
+  glUniform3iARB(FParameterID, Value[0], Value[1], Value[2]);
+end;
+
+procedure TGLSLShaderParameter.SetAsVector4f(const Value: TVector4f);
+begin
+  glUniform4fARB(FParameterID, Value[0], Value[1], Value[2], Value[3]);
+end;
+
+procedure TGLSLShaderParameter.SetAsVector4i(const Value: TVector4i);
+begin
+  glUniform4iARB(FParameterID, Value[0], Value[1], Value[2], Value[3]);
 end;
 
 initialization

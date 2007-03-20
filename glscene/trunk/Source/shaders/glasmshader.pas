@@ -4,9 +4,13 @@
 {: GLAsmShader<p>
 
     TGLAsmShader is a wrapper for all ARB shaders<p>
+    This component is only a template and has to be replaced with a
+    proper version by someone who uses ARB shaders more then me.
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/03/07 - DaStr - TGLCustomAsmShader now generates its own events
+                             All outside stuff moved back to TGLPhongShader
       <li>22/02/07 - DaStr - Initial version (contributed to GLScene)
 
 
@@ -20,6 +24,8 @@ unit GLAsmShader;
 
 interface
 
+{$I GLScene.inc}
+
 uses
   // VCL
   Classes, SysUtils,
@@ -28,28 +34,86 @@ uses
   VectorGeometry, VectorTypes, GLTexture, OpenGL1x, VectorLists, ARBProgram,
   GLCustomShader;
 
-  {$Include GLScene.inc}
-
 type
+  TGLCustomAsmShader = class;
+  TGLAsmShaderEvent = procedure(Shader: TGLCustomAsmShader) of object;
+  TGLAsmShaderUnUplyEvent = procedure(Shader: TGLCustomAsmShader; var ThereAreMorePasses: Boolean) of object;
+
+  TGLAsmShaderParameter = class(TGLCustomShaderParameter)
+  private
+    { Private Declarations }
+  protected
+    { Protected Declarations }
+{
+    function GetAsVector1f: Single; override;
+    function GetAsVector1i: Integer; override;
+    function GetAsVector2f: TVector2f; override;
+    function GetAsVector2i: TVector2i; override;
+    function GetAsVector3f: TVector3f; override;
+    function GetAsVector3i: TVector3i; override;
+    function GetAsVector4f: TVector; override;
+    function GetAsVector4i: TVector4i; override;
+
+    procedure SetAsVector1f(const Value: Single); override;
+    procedure SetAsVector1i(const Value: Integer); override;
+    procedure SetAsVector2i(const Value: TVector2i); override;
+    procedure SetAsVector3i(const Value: TVector3i); override;
+    procedure SetAsVector4i(const Value: TVector4i); override;
+    procedure SetAsVector2f(const Value: TVector2f); override;
+    procedure SetAsVector3f(const Value: TVector3f); override;
+    procedure SetAsVector4f(const Value: TVector4f); override;
+
+    function GetAsMatrix2f: TMatrix2f; override;
+    function GetAsMatrix3f: TMatrix3f; override;
+    function GetAsMatrix4f: TMatrix4f; override;
+    procedure SetAsMatrix2f(const Value: TMatrix2f); override;
+    procedure SetAsMatrix3f(const Value: TMatrix3f); override;
+    procedure SetAsMatrix4f(const Value: TMatrix4f); override;
+
+    procedure SetAsTexture1D(const TextureIndex: Integer;
+      const Value: TGLTexture);
+    procedure SetAsTexture2D(const TextureIndex: Integer;
+      const Value: TGLTexture);
+    procedure SetAsTexture3D(const TextureIndex: Integer;
+      const Value: TGLTexture);
+    procedure SetAsTextureCube(const TextureIndex: Integer;
+      const Value: TGLTexture);
+    procedure SetAsTextureRect(const TextureIndex: Integer;
+      const Value: TGLTexture);
+
+    function GetAsCustomTexture(const TextureIndex: Integer;
+      const TextureTarget: Word): Cardinal; override;
+    procedure SetAsCustomTexture(const TextureIndex: Integer;
+      const TextureTarget: Word; const Value: Cardinal); override;
+}
+  end;
+
   TGLCustomAsmShader = class(TGLCustomShader)
   private
     { Private Declarations }
-    FVPHandle: cardinal;
-    FFPHandle: cardinal;
-  protected
-    FLightIDs: TIntegerList;
-    procedure FillLights; virtual;
-    procedure UnApplyLights; virtual;
+    FVPHandle: Cardinal;
+    FFPHandle: Cardinal;
 
-    procedure DoLightPass(lightID: cardinal); virtual;
-    procedure DoAmbientPass; virtual;
+    FOnInitialize: TGLAsmShaderEvent;
+    FOnApply: TGLAsmShaderEvent;
+    FOnUnApply: TGLAsmShaderUnUplyEvent;
+  protected
+    { Protected Declarations }
+    procedure FillLights(const ALightIDs: TIntegerList); virtual;
     procedure DestroyARBPrograms; virtual;
+    function GetVPHandle: Cardinal; virtual;
+    function GetFPHandle: Cardinal; virtual;
+
+    property OnApply: TGLAsmShaderEvent read FOnApply write FOnApply;
+    property OnUnApply: TGLAsmShaderUnUplyEvent read FOnUnApply write FOnUnApply;
+    property OnInitialize: TGLAsmShaderEvent read FOnInitialize write FOnInitialize;
 
     procedure DoInitialize; override;
     procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
     function DoUnApply(var rci: TRenderContextInfo): Boolean; override;
     procedure DoFinalize; override;
   public
+    { Public Declarations }
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
@@ -87,7 +151,7 @@ begin
 
   if Source is TGLCustomAsmShader then
   begin
-    FLightIDs.Assign(TGLCustomAsmShader(Source).FLightIDs);
+    // Nothing here ...yet
   end;
 end;
 
@@ -95,14 +159,13 @@ end;
 constructor TGLCustomAsmShader.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FLightIDs := TIntegerList.Create;
 end;
 
 
 destructor TGLCustomAsmShader.Destroy;
 begin
   DestroyARBPrograms;
-  FLightIDs.Free;
+
   inherited Destroy;
 end;
 
@@ -120,33 +183,12 @@ begin
     FFPHandle := 0;
   end;  
 end;
-
-
-procedure TGLCustomAsmShader.DoAmbientPass;
-var
-  ambient, materialAmbient: TVector;
-begin
-  glDisable(GL_LIGHTING);
-  glActiveTextureARB(GL_TEXTURE0_ARB);
-  glDisable(GL_TEXTURE_2D);
-  glActiveTextureARB(GL_TEXTURE1_ARB);
-  glDisable(GL_TEXTURE_2D);
-  glActiveTextureARB(GL_TEXTURE0_ARB);
-
-  glGetFloatv(GL_LIGHT_MODEL_AMBIENT, @ambient);
-  glGetMaterialfv(GL_FRONT, GL_AMBIENT, @materialAmbient);
-  ambient[0] := ambient[0] * materialAmbient[0];
-  ambient[1] := ambient[1] * materialAmbient[1];
-  ambient[2] := ambient[2] * materialAmbient[2];
-  glColor3fv(@ambient);
-end;
-
 {$Warnings On}
 
 procedure TGLCustomAsmShader.DoApply(var rci: TRenderContextInfo; Sender: TObject);
 begin
-  if Assigned(OnApply) then
-    OnApply(Self);
+  if Assigned(FOnApply) then
+    FOnApply(Self);
 end;
 
 
@@ -186,79 +228,51 @@ begin
     Enabled := (FragmentProgram.Enabled or VertexProgram.Enabled) and (FailedText = '');
     if Enabled then
     begin
-      if Assigned(OnInitialize) then
-        OnInitialize(Self)
+      if Assigned(FOnInitialize) then
+        FOnInitialize(Self)
     end
     else
       HandleFailedInitialization(FailedText);
   end;
 end;
 
-
-procedure TGLCustomAsmShader.DoLightPass(lightID: cardinal);
-var
-  light: TVector;
-begin
-  glEnable(GL_VERTEX_PROGRAM_ARB);
-  glBindProgramARB(GL_VERTEX_PROGRAM_ARB, FVPHandle);
-  glGetLightfv(lightID, GL_POSITION, @light[0]);
-  glProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 0, @light[0]);
-
-  glEnable(GL_FRAGMENT_PROGRAM_ARB);
-  glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, FFPHandle);
-  glGetLightfv(lightID, GL_DIFFUSE, @light[0]);
-  glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, @light[0]);
-  glGetLightfv(lightID, GL_SPECULAR, @light[0]);
-  glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 1, @light[0]);
-end;
-
-
 function TGLCustomAsmShader.DoUnApply(var rci: TRenderContextInfo): Boolean;
 begin
-  if Assigned(OnUnApply) then
-    OnUnApply(Self, Result)
+  if Assigned(FOnUnApply) then
+    FOnUnApply(Self, Result)
   else
     Result := False;
 end;
 
+function TGLCustomAsmShader.ShaderSupported: Boolean;
+begin
+  Result := (GL_ARB_vertex_program and GL_ARB_fragment_program);
+end;
 
-procedure TGLCustomAsmShader.FillLights;
+function TGLCustomAsmShader.GetFPHandle: Cardinal;
+begin
+  Result := FFPHandle;
+end;
+
+function TGLCustomAsmShader.GetVPHandle: Cardinal;
+begin
+  Result := FVPHandle;
+end;
+
+procedure TGLCustomAsmShader.FillLights(const ALightIDs: TIntegerList);
 var
   MaxLights: Integer;
   I: Integer;
   LightEnabled: GLBoolean;
 begin
-  FLightIDs.Clear;
+  ALightIDs.Clear;
   glGetIntegerv(GL_MAX_LIGHTS, @maxLights);
   for I := 0 to maxLights - 1 do
   begin
     glGetBooleanv(GL_LIGHT0 + I, @lightEnabled);
     if lightEnabled then
-      FLightIDs.Add(GL_LIGHT0 + I);
+      ALightIDs.Add(GL_LIGHT0 + I);
   end;
-end;
-
-
-function TGLCustomAsmShader.ShaderSupported: Boolean;
-var
-  maxTextures: Integer;
-begin
-  Result := (GL_ARB_multitexture and GL_ARB_vertex_program and
-             GL_ARB_fragment_program);
-
-  glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, @maxTextures);
-  if maxTextures < 3 then
-    Result := False;
-end;
-
-
-procedure TGLCustomAsmShader.UnApplyLights;
-begin
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE);
-  DoLightPass(FLightIDs[0]);
-  FLightIDs.Delete(0);
 end;
 
 initialization

@@ -6,6 +6,7 @@
    An ARBvp1.0 + ARBfp1.0 shader that implements phong shading.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>20/03/07 - DaStr - Moved some of the stuff from TGLCustomAsmShader back here
       <li>25/02/07 - DaStr - Completely replaced with a descendant of TGLCustomAsmShader.
       <li>11/10/04 - SG - Creation.
    </ul></font>
@@ -26,17 +27,24 @@ uses
 type
   TGLPhongShader = class(TGLCustomAsmShader)
   private
+    FLightIDs: TIntegerList;
     FDesignTimeEnabled: Boolean;
     FAmbientPass: Boolean;
     procedure SetDesignTimeEnabled(const Value: Boolean);
   protected
     { Protected Declarations }
+    procedure DoLightPass(lightID: Cardinal); virtual;
+    procedure DoAmbientPass; virtual;
+    procedure UnApplyLights; virtual;
+
     procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
     function DoUnApply(var rci: TRenderContextInfo): Boolean; override;
     procedure DoInitialize; override;
   public
     { Public Declarations }
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    function ShaderSupported: Boolean; override;
   published
     { Published Declarations }
     property DesignTimeEnabled: Boolean read FDesignTimeEnabled write SetDesignTimeEnabled default False;
@@ -50,13 +58,12 @@ procedure TGLPhongShader.DoApply(var rci: TRenderContextInfo; Sender: TObject);
 begin
   if (csDesigning in ComponentState) and not DesignTimeEnabled then Exit;
 
+  FillLights(FLightIDs);
   FAmbientPass := False;
   glPushAttrib(GL_ENABLE_BIT or
                GL_TEXTURE_BIT or
                GL_DEPTH_BUFFER_BIT or
                GL_COLOR_BUFFER_BIT);
-
-  FillLights;
 
   if FLightIDs.Count > 0 then
   begin
@@ -193,6 +200,69 @@ begin
 
     Add('END');
   end;
+  FLightIDs := TIntegerList.Create;
+end;
+
+// ShaderSupported
+//
+function TGLPhongShader.ShaderSupported: Boolean;
+var
+  MaxTextures: Integer;
+begin
+  Result := inherited ShaderSupported and GL_ARB_multitexture;
+
+  glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, @MaxTextures);
+  Result := Result and (maxTextures > 2);
+end;
+
+// UnApplyLights
+//
+procedure TGLPhongShader.UnApplyLights;
+begin
+  glDepthFunc(GL_LEQUAL);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_ONE, GL_ONE);
+  DoLightPass(FLightIDs[0]);
+  FLightIDs.Delete(0);
+end;
+
+destructor TGLPhongShader.Destroy;
+begin
+  FLightIDs.Free;
+  inherited;
+end;
+
+procedure TGLPhongShader.DoAmbientPass;
+var
+  ambient, materialAmbient: TVector;
+begin
+  glDisable(GL_LIGHTING);
+
+  glGetFloatv(GL_LIGHT_MODEL_AMBIENT, @ambient);
+  glGetMaterialfv(GL_FRONT, GL_AMBIENT, @materialAmbient);
+  ambient[0] := ambient[0] * materialAmbient[0];
+  ambient[1] := ambient[1] * materialAmbient[1];
+  ambient[2] := ambient[2] * materialAmbient[2];
+  glColor3fv(@ambient);
+end;
+
+procedure TGLPhongShader.DoLightPass(lightID: Cardinal);
+var
+  LightParam: TVector;
+begin
+  glEnable(GL_VERTEX_PROGRAM_ARB);
+  glBindProgramARB(GL_VERTEX_PROGRAM_ARB, GetVPHandle);
+
+  glGetLightfv(lightID, GL_POSITION, @LightParam);
+  glProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 0, @LightParam);
+
+  glEnable(GL_FRAGMENT_PROGRAM_ARB);
+  glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, GetFPHandle);
+
+  glGetLightfv(lightID, GL_DIFFUSE, @LightParam);
+  glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, @LightParam);
+  glGetLightfv(lightID, GL_SPECULAR, @LightParam);
+  glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 1, @LightParam);
 end;
 
 initialization
