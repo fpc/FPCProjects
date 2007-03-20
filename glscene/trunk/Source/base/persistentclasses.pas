@@ -12,6 +12,22 @@
 
    Internal Note: stripped down versions of XClasses & XLists.<p>
 
+      $Log: persistentclasses.pas,v $
+      Revision 1.1  2006/01/10 20:50:44  z0m3ie
+      recheckin to make shure that all is lowercase
+
+      Revision 1.1  2006/01/09 21:01:42  z0m3ie
+      *** empty log message ***
+
+      Revision 1.2  2005/12/04 16:52:59  z0m3ie
+      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
+
+      Revision 1.1  2005/12/01 21:24:10  z0m3ie
+      *** empty log message ***
+
+      Revision 1.4  2005/08/03 00:41:38  z0m3ie
+      - added automatical generated History from CVS
+
 	<b>History : </b><font size=-1><ul>
       <li>06/03/07 - DaStr - Added TGLOwnedPersistent
       <li>04/01/04 - EG - Fixed ReadString & ReadWideString for empty strings (thx Kenguru)
@@ -36,6 +52,12 @@ uses Classes, SysUtils;
 {$i GLScene.inc}
 
 type
+  {$IFDEF FPC}
+  TValueType = (vaNull, vaList, vaInt8, vaInt16, vaInt32, vaExtended,
+    vaString, vaIdent, vaFalse, vaTrue, vaBinary, vaSet, vaLString,
+    vaNil, vaCollection, vaSingle, vaCurrency, vaDate, vaWString,
+    vaInt64, vaUTF8String);
+  {$ENDIF}
 
    PObject = ^TObject;
 
