@@ -9,6 +9,7 @@
     this component on the form.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>20/03/07 - DaStr - Improved SceneViewer detection
       <li>02/03/07 - DaStr - Added default values to all properties
                              Added TGLSimpleNavigationOptions
                              Added TGLSimpleNavigationKeyCombination
@@ -39,7 +40,7 @@ uses
   Classes, Forms, ExtCtrls, Types, SysUtils,  TypInfo,
 
   // GLSCene
-  VectorGeometry, GLScene, gllclviewer, GLStrings;
+  VectorGeometry, GLScene, GLViewer, GLStrings;
 
 type
   TGLSimpleNavigationOption = (
@@ -160,11 +161,8 @@ begin
 end;
 
 constructor TGLSimpleNavigation.Create(AOwner: TComponent);
-const
-  STR_SCENE_VIEWER = 'SceneViewer';
-  STR_GL = 'GL';
 var
-  Temp: TComponent;
+  I: Integer;
 begin
   inherited;
   FKeyCombinations := TGLSimpleNavigationKeyCombinations.Create(Self, TGLSimpleNavigationKeyCombination);
@@ -187,26 +185,13 @@ begin
   //Detect SceneViewer
   if FForm <> nil then
   begin
-    Temp := FForm.FindComponent(STR_SCENE_VIEWER);
-    if Temp <> nil then
-    begin
-      SetGLSceneViewer(TGLSceneViewer(Temp));
-      Exit;
-    end;
-
-    Temp := FForm.FindComponent(STR_GL + STR_SCENE_VIEWER);
-    if Temp <> nil then
-    begin
-      SetGLSceneViewer(TGLSceneViewer(Temp));
-      Exit;
-    end;
-
-    Temp := FForm.FindComponent(STR_GL + STR_SCENE_VIEWER + IntToStr(1));
-    if Temp <> nil then
-    begin
-      SetGLSceneViewer(TGLSceneViewer(Temp));
-      Exit;
-    end;
+    if FForm.ComponentCount <> 0 then
+      for I := 0 to FForm.ComponentCount - 1 do
+        if FForm.Components[I] is TGLSceneViewer then
+        begin
+          SetGLSceneViewer(TGLSceneViewer(FForm.Components[I]));
+          Exit;
+        end;
   end;
 end;
 

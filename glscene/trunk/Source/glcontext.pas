@@ -4,6 +4,8 @@
    Currently NOT thread-safe.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>15/02/07 - DaStr - Added more parameters to TGLProgramHandle
+                             TGLProgramHandle.Name is now a property
       <li>15/02/07 - DaStr - Integer -> Cardinal because $R- was removed in GLScene.pas
       <li>15/09/06 - NC - TGLContextHandle.handle as Integer -> Cardinal
       <li>11/09/06 - NC - Added TGLProgramHandle.Name, TGLProgramHandle.Uniform2f,
@@ -464,13 +466,16 @@ type
    TGLProgramHandle = class (TGLSLHandle)
       private
          { Private Declarations }
-
-      protected
-         { Protected Declarations }
-         function DoAllocateHandle : cardinal; override;
-
+         FName: string;
          function GetUniform1i(const index : String) : Integer;
          procedure SetUniform1i(const index : String; val : Integer);
+         function GetUniform2i(const index: String): TVector2i;
+         procedure SetUniform2i(const index: String; const Value: TVector2i);
+         function GetUniform3i(const index: String): TVector3i;
+         procedure SetUniform3i(const index: String; const Value: TVector3i);
+         function GetUniform4i(const index: String): TVector4i;
+         procedure SetUniform4i(const index: String; const Value: TVector4i);
+
          function GetUniform1f(const index : String) : Single;
          procedure SetUniform1f(const index : String; val : Single);
          function GetUniform2f(const index : String) : TVector2f;
@@ -479,17 +484,30 @@ type
          procedure SetUniform3f(const index : String; const val : TAffineVector);
          function GetUniform4f(const index : String) : TVector;
          procedure SetUniform4f(const index : String; const val : TVector);
+
+         function GetUniformMatrix2fv(const index : String) : TMatrix2f;
+         procedure SetUniformMatrix2fv(const index : String; const val : TMatrix2f);
+         function GetUniformMatrix3fv(const index : String) : TMatrix3f;
+         procedure SetUniformMatrix3fv(const index : String; const val : TMatrix3f);
          function GetUniformMatrix4fv(const index : String) : TMatrix;
          procedure SetUniformMatrix4fv(const index : String; const val : TMatrix);
 
+        function GetUniformTextureHandle(const index: string;
+          const TextureIndex: Integer; const TextureTarget: Cardinal): Cardinal;
+        procedure SetUniformTextureHandle(const index: string;
+          const TextureIndex: Integer; const TextureTarget, Value: Cardinal);
+      protected
+         { Protected Declarations }
+         function DoAllocateHandle : cardinal; override;
+
       public
          { Public Declarations }
-         {: Compile and attach a new shader.<p>
-            Raises an EGLShader exception in case of failure. }
-         Name : string;
+         property Name : string read FName write FName;
 
          constructor Create; override;
 
+         {: Compile and attach a new shader.<p>
+            Raises an EGLShader exception in case of failure. }
          procedure AddShader(shaderType : TGLShaderHandleClass; const shaderSource : String;
                              treatWarningsAsErrors : Boolean = False);
 
@@ -503,17 +521,31 @@ type
          procedure EndUseProgramObject;
 
          procedure SetUniformi(const index : String; const val: integer);   overload;
+         procedure SetUniformi(const index : String; const val: TVector2i); overload;
+         procedure SetUniformi(const index : String; const val: TVector3i); overload;
+         procedure SetUniformi(const index : String; const val: TVector4i); overload;
+
          procedure SetUniformf(const index : String; const val: single);    overload;
          procedure SetUniformf(const index : String; const val: TVector2f); overload;
          procedure SetUniformf(const index : String; const val: TVector3f); overload;
          procedure SetUniformf(const index : String; const val: TVector4f); overload;
 
+         {: Shader parameters. }
          property Uniform1i[const index : String] : Integer read GetUniform1i write SetUniform1i;
+         property Uniform2i[const index : String] : TVector2i read GetUniform2i write SetUniform2i;
+         property Uniform3i[const index : String] : TVector3i read GetUniform3i write SetUniform3i;
+         property Uniform4i[const index : String] : TVector4i read GetUniform4i write SetUniform4i;
+
          property Uniform1f[const index : String] : Single read GetUniform1f write SetUniform1f;
          property Uniform2f[const index : String] : TVector2f read GetUniform2f write SetUniform2f;
          property Uniform3f[const index : String] : TAffineVector read GetUniform3f write SetUniform3f;
          property Uniform4f[const index : String] : TVector read GetUniform4f write SetUniform4f;
+
+         property UniformMatrix2fv[const index : String] : TMatrix2f read GetUniformMatrix2fv write SetUniformMatrix2fv;
+         property UniformMatrix3fv[const index : String] : TMatrix3f read GetUniformMatrix3fv write SetUniformMatrix3fv;
          property UniformMatrix4fv[const index : String] : TMatrix read GetUniformMatrix4fv write SetUniformMatrix4fv;
+
+         property UniformTextureHandle[const index: string; const TextureIndex: Integer; const TextureTarget: Cardinal]: Cardinal read GetUniformTextureHandle write SetUniformTextureHandle;
    end;
 
    // TGLContextNotification
@@ -1443,7 +1475,7 @@ begin
       shader.ShaderSource(shaderSource);
       if    (not shader.CompileShader)
          or (treatWarningsAsErrors and (Pos('warning', LowerCase(shader.InfoLog))>0)) then
-         raise EGLShader.Create(Name + ' (' + shader.ClassName+'): '#13#10 + shader.InfoLog);
+         raise EGLShader.Create(FName + ' (' + shader.ClassName+'): '#13#10 + shader.InfoLog);
       AttachObject(shader);
    finally
       shader.Free;
@@ -1526,6 +1558,27 @@ begin
    glGetUniformivARB(FHandle, GetUniformLocation(index), @Result);
 end;
 
+// GetUniform2i
+//
+function TGLProgramHandle.GetUniform2i(const index: String): TVector2i;
+begin
+   glGetUniformivARB(FHandle, GetUniformLocation(index), @Result);
+end;
+
+// GetUniform3i
+//
+function TGLProgramHandle.GetUniform3i(const index: String): TVector3i;
+begin
+   glGetUniformivARB(FHandle, GetUniformLocation(index), @Result);
+end;
+
+// GetUniform4i
+//
+function TGLProgramHandle.GetUniform4i(const index: String): TVector4i;
+begin
+   glGetUniformivARB(FHandle, GetUniformLocation(index), @Result);
+end;
+
 // SetUniform1f
 //
 procedure TGLProgramHandle.SetUniform1f(const index : String; val : Single);
@@ -1545,6 +1598,30 @@ end;
 procedure TGLProgramHandle.SetUniform1i(const index : String; val : Integer);
 begin
    glUniform1iARB(GetUniformLocation(index), val);
+end;
+
+// SetUniform2i
+//
+procedure TGLProgramHandle.SetUniform2i(const index: String;
+  const Value: TVector2i);
+begin
+   glUniform2iARB(GetUniformLocation(index), Value[0], Value[1]);
+end;
+
+// SetUniform3i
+//
+procedure TGLProgramHandle.SetUniform3i(const index: String;
+  const Value: TVector3i);
+begin
+   glUniform3iARB(GetUniformLocation(index), Value[0], Value[1], Value[2]);
+end;
+
+// SetUniform4i
+//
+procedure TGLProgramHandle.SetUniform4i(const index: String;
+  const Value: TVector4i);
+begin
+   glUniform4iARB(GetUniformLocation(index), Value[0], Value[1], Value[2], Value[3]);
 end;
 
 // GetUniform2f
@@ -1589,6 +1666,35 @@ begin
    glUniform4fARB(GetUniformLocation(index), val[0], val[1], val[2], val[3]);
 end;
 
+
+// GetUniformMatrix2fv
+//
+function TGLProgramHandle.GetUniformMatrix2fv(const index : String) : TMatrix2f;
+begin
+   glGetUniformfvARB(FHandle, GetUniformLocation(index), @Result);
+end;
+
+// SetUniformMatrix2fv
+//
+procedure TGLProgramHandle.SetUniformMatrix2fv(const index : String; const val : TMatrix2f);
+begin
+   glUniformMatrix2fvARB(GetUniformLocation(index), 1, False, @val);
+end;
+
+// GetUniformMatrix3fv
+//
+function TGLProgramHandle.GetUniformMatrix3fv(const index : String) : TMatrix3f;
+begin
+   glGetUniformfvARB(FHandle, GetUniformLocation(index), @Result);
+end;
+
+// SetUniformMatrix3fv
+//
+procedure TGLProgramHandle.SetUniformMatrix3fv(const index : String; const val : TMatrix3f);
+begin
+   glUniformMatrix3fvARB(GetUniformLocation(index), 1, False, @val);
+end;
+
 // GetUniformMatrix4fv
 //
 function TGLProgramHandle.GetUniformMatrix4fv(const index : String) : TMatrix;
@@ -1603,41 +1709,93 @@ begin
    glUniformMatrix4fvARB(GetUniformLocation(index), 1, False, @val);
 end;
 
+
+// SetUniformf
+//
+procedure TGLProgramHandle.SetUniformf(const index: String;
+  const val: single);
+begin
+  SetUniform1f(index, val);
+end;
+
 // SetUniformf
 //
 procedure TGLProgramHandle.SetUniformf(const index: String; const val: TVector2f);
 begin
-  Uniform2f[index]:=val;
+  SetUniform2f(index, val);
 end;
 
+// SetUniformf
+//
 procedure TGLProgramHandle.SetUniformf(const index: String;
   const val: TVector3f);
 begin
-  Uniform3f[index]:=val;
+  SetUniform3f(index, val);
 end;
 
-procedure TGLProgramHandle.SetUniformf(const index: String;
-  const val: single);
-begin
-  Uniform1f[index]:=val;
-end;
-
+// SetUniformf
+//
 procedure TGLProgramHandle.SetUniformf(const index: String;
   const val: TVector4f);
 begin
-  Uniform4f[index]:=val;
+  SetUniform4f(index, val);
 end;
 
+// SetUniformf
+//
 procedure TGLProgramHandle.SetUniformi(const index: String;
   const val: integer);
 begin
-  Uniform1i[index]:=val;
+  SetUniform1f(index, val);
 end;
 
+// SetUniformf
+//
+procedure TGLProgramHandle.SetUniformi(const index: String; const val: TVector2i);
+begin
+  SetUniform2i(index, val);
+end;
+
+// SetUniformf
+//
+procedure TGLProgramHandle.SetUniformi(const index: String;
+  const val: TVector3i);
+begin
+  SetUniform3i(index, val);
+end;
+
+// SetUniformf
+//
+procedure TGLProgramHandle.SetUniformi(const index: String;
+  const val: TVector4i);
+begin
+  SetUniform4i(index, val);
+end;
+
+// GetUniformTextureHandle
+//
+function TGLProgramHandle.GetUniformTextureHandle(const index: string;
+  const TextureIndex: Integer; const TextureTarget: Cardinal): Cardinal;
+begin
+  Result := GetUniform1i(index);
+end;
+
+// SetUniformTextureHandle
+//
+procedure TGLProgramHandle.SetUniformTextureHandle(const index: string;
+  const TextureIndex: Integer; const TextureTarget, Value: Cardinal);
+begin
+  glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
+  glBindTexture(TextureTarget, Value);
+  SetUniform1i(index, TextureIndex);
+end;
+
+// Create
+//
 constructor TGLProgramHandle.Create;
 begin
   inherited Create;
-  Name := 'DefaultShaderName';
+  FName := 'DefaultShaderName';
 end;
 
 // ------------------
