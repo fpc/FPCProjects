@@ -152,7 +152,7 @@ implementation
 // ------------------------------------------------------------------
 
 uses
-   gllclviewer,
+   glviewer,
    {$ifdef windows}
      gllclfullscreenviewer, glspacetext,
    {$endif}
