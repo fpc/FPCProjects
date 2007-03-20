@@ -240,8 +240,19 @@ end;
 // DoShareLists
 //
 procedure TGLGTKContext.DoShareLists(aContext : TGLContext);
+var
+   otherRC : GLXContext;
 begin
   {$MESSAGE Warn 'DoShareLists: Needs to be implemented'}
+   if aContext is TGLGTKContext then begin
+      otherRC:=TGLGTKContext(aContext).RenderingContext;
+      // some drivers fail (access violation) when requesting to share
+      // a context with itself
+      if FRenderingContext<>otherRC then
+         //Can't find such a function.
+         //glXShareLists(FRC, otherRC);
+         //Seems, a sharedList context must be given when creating the context (3. parameter of glXCeateContext)
+   end else raise Exception.Create(cIncompatibleContexts);
 end;
 
 // DoDestroyContext
