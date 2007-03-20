@@ -6,6 +6,7 @@
   A collection of components that generate post effects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/03/07 - DaStr - Fixed TGLPostShaderHolder.DoRender
       <li>09/03/07 - DaStr - Added pepNightVision preset (thanks Roman Ganz)
                              Changed back all Trunc() calls to Round()
       <li>07/03/07 - DaStr - Moved "Weird" effect to the demo
@@ -69,9 +70,9 @@ type
     property Items[const Index: Integer]: TGLPostShaderCollectionItem read GetItems write SetItems; default;
   end;
 
-  {: A class that allows several post-shaders to be applied to the scene
-     without a need to read the contents of the buffer to a temp texture in
-     every applied shader. }
+  {: A class that allows several post-shaders to be applied to the scene,
+    one after another. It does not provide any optimizations related to
+    multi-shader rendering, just a convenient interface. }
   TGLPostShaderHolder = class(TGLBaseSCeneObject)
   private
     FShaders: TGLPostShaderCollection;
@@ -366,7 +367,6 @@ procedure TGLPostShaderHolder.DoRender(var rci: TRenderContextInfo;
   renderSelf, renderChildren: Boolean);
 var
   I: Integer;
-  NeedToContinue: Boolean;
 begin
   if not (rci.ignoreMaterials) and not (csDesigning in ComponentState) and
          (rci.drawState <> dsPicking) then
@@ -380,20 +380,21 @@ begin
 
     if FShaders.Count <> 0 then
     begin
-      glEnable(FTempTextureTarget);
-      CopyScreentoTexture(rci.viewPortSize, FTempTextureTarget);
       for I := 0 to FShaders.Count - 1 do
       begin
         Assert(Assigned(FShaders[I].FShader));
-        FShaders[I].FShader.Apply(rci, Self);
-        repeat
-          FShaders[I].FPostShaderInterface.DoUseTempTexture(FTempTexture, FTempTextureTarget);
-          DrawTexturedScreenQuad3;
-          NeedToContinue := FShaders[I].FShader.UnApply(rci);
-        until
-          NeedToContinue = False;
+        if FShaders[I].FShader.Enabled then
+        begin
+          glEnable(FTempTextureTarget);
+          FShaders[I].FShader.Apply(rci, Self);
+          repeat
+            CopyScreentoTexture(rci.viewPortSize, FTempTextureTarget);
+            FShaders[I].FPostShaderInterface.DoUseTempTexture(FTempTexture, FTempTextureTarget);
+            DrawTexturedScreenQuad5(rci.viewPortSize);
+          until not FShaders[I].FShader.UnApply(rci);
+          glDisable(FTempTextureTarget);
+        end;
       end;
-      glDisable(FTempTextureTarget);
     end;
   end;
   if renderChildren then

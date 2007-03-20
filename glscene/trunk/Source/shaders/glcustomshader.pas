@@ -9,6 +9,7 @@
     It also contains a procedures and function that can be used in all shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/03/07 - DaStr - Added DrawTexturedScreenQuad[4/5/6]
       <li>04/03/07 - DaStr - Added IGLPostShader
       <li>03/03/07 - DaStr - Added TGLCustomShaderParameter (beta state)
       <li>22/02/07 - DaStr - Initial version (contributed to GLScene)
@@ -353,13 +354,19 @@ type
     bmxAlphaTest50, bmxAlphaTest100, bmxModulate,
     bmxDestColorOne, bmxDestAlphaOne);
 
-//Exported procedures
+// Exported procedures.
 procedure ApplyBlendingModeEx(const BlendingMode: TGLBlendingModeEx);
 procedure UnApplyBlendingModeEx;
 procedure InitTexture(const TextureHandle: Cardinal; const TextureSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
+
+// Probably need to give them proper names, instead of numbers... 
 procedure DrawTexturedScreenQuad;
 procedure DrawTexturedScreenQuad2(const ViewPortSize: TGLSize);
 procedure DrawTexturedScreenQuad3;
+procedure DrawTexturedScreenQuad4(const ViewPortSize: TGLSize);
+procedure DrawTexturedScreenQuad5(const ViewPortSize: TGLSize);
+procedure DrawTexturedScreenQuad6(const ViewPortSize: TGLSize);
+
 procedure CopyScreentoTexture(const ViewPortSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
 procedure CopyScreentoTexture2(const ViewPortSize: TGLSize; const TextureType: Word = GL_TEXTURE_2D);
 
@@ -460,10 +467,61 @@ begin
       glTexCoord2f(ViewPortSize.cx, ViewPortSize.cy); glVertex2f(ViewPortSize.cx, 0);
     glEnd;
     glDepthMask(True);
+    glEnable(GL_DEPTH_TEST);
     glMatrixMode(GL_PROJECTION);
     glPopMatrix;
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix;
+end;
+
+procedure DrawTexturedScreenQuad4(const ViewPortSize: TGLSize);
+begin
+  glBegin(GL_QUADS);
+    glTexCoord2f(0, 0);                             glVertex2f(-1, -1);
+    glTexCoord2f(ViewPortSize.cx, 0);               glVertex2f( 1, -1);
+    glTexCoord2f(ViewPortSize.cx, ViewPortSize.cy); glVertex2f( 1,  1);
+    glTexCoord2f(0, ViewPortSize.cy);               glVertex2f(-1,  1);
+  glEnd;
+end;
+
+procedure DrawTexturedScreenQuad5(const ViewPortSize: TGLSize);
+begin
+  glMatrixMode( GL_PROJECTION );
+  glPushMatrix;
+    glLoadIdentity;
+    glOrtho( 0, ViewPortSize.cx, ViewPortSize.cy, 0, 0, 1 );
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix;
+      glLoadIdentity;
+      glDisable(GL_DEPTH_TEST);
+      glDepthMask( FALSE );
+      DrawTexturedScreenQuad3;
+      glDepthMask( TRUE );
+      glEnable(GL_DEPTH_TEST);
+    glPopMatrix;
+    glMatrixMode( GL_PROJECTION );
+  glPopMatrix;
+  glMatrixMode( GL_MODELVIEW );
+end;
+
+procedure DrawTexturedScreenQuad6(const ViewPortSize: TGLSize);
+begin
+  glMatrixMode( GL_PROJECTION );
+  glPushMatrix;
+    glLoadIdentity;
+    glOrtho( 0, ViewPortSize.cx, ViewPortSize.cy, 0, 0, 1 );
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix;
+      glLoadIdentity;
+      glDisable(GL_DEPTH_TEST);
+      glDepthMask( FALSE );
+      DrawTexturedScreenQuad4(ViewPortSize);;
+      glDepthMask( TRUE );
+      glEnable(GL_DEPTH_TEST);
+    glPopMatrix;
+    glMatrixMode( GL_PROJECTION );
+  glPopMatrix;
+  glMatrixMode( GL_MODELVIEW );
 end;
 
 procedure DrawTexturedScreenQuad3;
