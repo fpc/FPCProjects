@@ -1,11 +1,11 @@
 { This is an automatically generated lazarus resource file }
 
 LazarusResources.Add('TForm1','FORMDATA',[
-  'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#19#1#6'Height'#3#131#1#3'Top'#3#140#0#5'W'
-  +'idth'#3#187#1#18'HorzScrollBar.Page'#3#186#1#18'VertScrollBar.Page'#3#130#1
-  +#13'ActiveControl'#7#8'TrackBar'#7'Caption'#6#5'Form1'#11'Font.Height'#2#245
-  +#9'Font.Name'#6#13'MS Sans Serif'#7'OnClose'#7#9'FormClose'#8'OnCreate'#7#10
-  +'FormCreate'#0#14'TGLSceneViewer'#13'GLSceneViewer'#6'Height'#3'$'#1#3'Top'#2
+  'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#206#1#6'Height'#3#131#1#3'Top'#2'}'#5'Wid'
+  +'th'#3#187#1#18'HorzScrollBar.Page'#3#186#1#18'VertScrollBar.Page'#3#130#1#13
+  +'ActiveControl'#7#8'TrackBar'#7'Caption'#6#5'Form1'#11'Font.Height'#2#245#9
+  +'Font.Name'#6#13'MS Sans Serif'#7'OnClose'#7#9'FormClose'#8'OnCreate'#7#10'F'
+  +'ormCreate'#0#14'TGLSceneViewer'#13'GLSceneViewer'#6'Height'#3'$'#1#3'Top'#2
   +'B'#5'Width'#3#187#1#6'Camera'#7#9'GLCamera1'#22'Buffer.BackgroundColor'#7#7
   +'clBlack'#19'Buffer.AntiAliasing'#7#6'aaNone'#11'FieldOfView'#5#0#0#0#0#0#220
   +'0'#142#6'@'#5'Align'#7#8'alClient'#0#0#9'TTrackBar'#8'TrackBar'#6'Height'#2
@@ -71,22 +71,22 @@ LazarusResources.Add('TForm1','FORMDATA',[
   +#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#20'Position.Coordinates'#10#16#0#0#0
   +#0#0#0'@'#0#0#0'?'#0#0#0#0#0#0#128'?'#10'OnProgress'#7#14'SphereProgress'#6
   +'Radius'#5#0#0#0#0#0#0#0#128#254'?'#6'Slices'#2#9#6'Stacks'#2#9#14'Behaviour'
-  +'sData'#10'g'#0#0#0#2#1#6#16'TGLBSoundEmitter'#2#0#2#0#2#0#2#0#5#0#0#0#0#0#0
+  +'sData'#10#130#0#0#0#2#1#6#16'TGLBSoundEmitter'#2#0#2#0#2#0#2#0#5#0#0#0#0#0#0
   +#0#128#255'?'#5#0#0#0#0#0#0#0#128#255'?'#5#0#0#0#0#0#0#0#200#5'@'#5#0#0#0#0#0
-  +#0#0#180#7'@'#5#0#0#0#0#0#0#0#180#7'@'#5#0#0#0#0#0#0#0#0#0#0#6#0#6#0#8#8#2#1
-  +#8#0#7'TGLDisk'#5'Disk10Material.Texture.MappingTCoordinates.Coordinates'#10
-  +#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#21'Direction.Coordinates'#10#16
-  +#0#0#0#0#0#0#0#0#0#128'?.'#189';'#179#0#0#0#0#20'Position.Coordinates'#10#16
-  +#0#0#0#0#0#0#0#0#0#128#191#0#0#0#0#0#0#128'?'#14'Up.Coordinates'#10#16#0#0#0
-  +#0#0#0#0'.'#189';'#179#0#0#128#191#0#0#0#0#11'OuterRadius'#5#0#0#0#0#0#0#0
-  +#128#254'?'#6'Slices'#2#12#10'SweepAngle'#5#0#0#0#0#0#0#0#180#7'@'#0#0#0#14
-  +'TGLLightSource'#13'GLLightSource'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128
-  +#255'?'#20'Position.Coordinates'#10#16#0#0#0#0#0' A'#0#0' A'#0#0' A'#0#0#128
-  +'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#9'TGLCamera'#9'GLCamera1'#11
-  +'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0#200#4
-  +'@'#12'TargetObject'#7#6'Plane1'#20'Position.Coordinates'#10#16#0#0#0#0#0#0
-  +'@'#0#0#160'@'#0#0' A'#0#0#128'?'#4'left'#3#0#1#3'top'#3#160#0#0#0#0#11'TGLC'
-  +'adencer'#11'GLCadencer1'#5'Scene'#7#7'GLScene'#11'SleepLength'#2#1#4'left'#2
-  +#8#3'top'#3#184#0#0#0#6'TTimer'#5'Timer'#7'OnTimer'#7#10'TimerTimer'#4'left'
-  +#2#8#3'top'#3#224#0#0#0#0
+  +#0#0#180#7'@'#5#0#0#0#0#0#0#0#180#7'@'#5#0#0#0#0#0#0#0#0#0#0#6#14'GLSoundLib'
+  +'rary'#6#12'drumloop.wav'#8#8#3#231#3#9#0#7'TGLDisk'#5'Disk10Material.Textur'
+  +'e.MappingTCoordinates.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0
+  +#0#0#0#21'Direction.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?.'#189';'#179#0
+  +#0#0#0#20'Position.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128#191#0#0#0#0#0#0
+  +#128'?'#14'Up.Coordinates'#10#16#0#0#0#0#0#0#0'.'#189';'#179#0#0#128#191#0#0
+  +#0#0#11'OuterRadius'#5#0#0#0#0#0#0#0#128#254'?'#6'Slices'#2#12#10'SweepAngle'
+  +#5#0#0#0#0#0#0#0#180#7'@'#0#0#0#14'TGLLightSource'#13'GLLightSource'#16'Cons'
+  +'tAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Coordinates'#10#16#0#0
+  +#0#0#0' A'#0#0' A'#0#0' A'#0#0#128'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'
+  +#0#0#9'TGLCamera'#9'GLCamera1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'F'
+  +'ocalLength'#5#0#0#0#0#0#0#0#200#4'@'#12'TargetObject'#7#6'Plane1'#20'Positi'
+  +'on.Coordinates'#10#16#0#0#0#0#0#0'@'#0#0#160'@'#0#0' A'#0#0#128'?'#4'left'#3
+  +#0#1#3'top'#3#160#0#0#0#0#11'TGLCadencer'#11'GLCadencer1'#5'Scene'#7#7'GLSce'
+  +'ne'#11'SleepLength'#2#1#4'left'#2#8#3'top'#3#184#0#0#0#6'TTimer'#5'Timer'#7
+  +'OnTimer'#7#10'TimerTimer'#4'left'#2#8#3'top'#3#224#0#0#0#0
 ]);
