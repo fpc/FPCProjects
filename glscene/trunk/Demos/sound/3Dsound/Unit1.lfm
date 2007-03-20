@@ -1,132 +1,113 @@
 object Form1: TForm1
-  Caption = 'Form1'
-  ClientHeight = 387
-  ClientWidth = 443
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
-  OnClose = FormClose
-  OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 442
-  VertScrollBar.Page = 386
   Left = 275
   Height = 387
   Top = 140
   Width = 443
+  HorzScrollBar.Page = 442
+  VertScrollBar.Page = 386
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnClose = FormClose
+  OnCreate = FormCreate
   object GLSceneViewer: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clBlack
-    Buffer.AntiAliasing = aaNone
-    FieldOfView = 142.42996215820312
-    Align = alClient
     Height = 294
     Top = 66
     Width = 443
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.AntiAliasing = aaNone
+    FieldOfView = 142.429962158203
+    Align = alClient
   end
   object TrackBar: TTrackBar
-    Align = alBottom
-    Frequency = 45
-    Max = 180
-    Min = -180
-    OnChange = TrackBarChange
-    PageSize = 45
-    ScalePos = trTop
-    TabOrder = 0
-    TickMarks = tmBoth
-    Frequency = 45
-    Max = 180
-    Min = -180
-    OnChange = TrackBarChange
-    PageSize = 45
-    ScalePos = trTop
-    TickMarks = tmBoth
     Height = 27
     Top = 360
     Width = 443
+    Frequency = 45
+    Max = 180
+    Min = -180
+    OnChange = TrackBarChange
+    PageSize = 45
+    ScalePos = trTop
+    TickMarks = tmBoth
+    Align = alBottom
+    TabOrder = 0
   end
   object TrackBar1: TTrackBar
-    Align = alTop
-    Frequency = 10
-    Max = 50
-    Min = -50
-    OnChange = TrackBar1Change
-    PageSize = 45
-    ScalePos = trTop
-    TabOrder = 1
-    TickMarks = tmBoth
-    Frequency = 10
-    Max = 50
-    Min = -50
-    OnChange = TrackBar1Change
-    PageSize = 45
-    ScalePos = trTop
-    TickMarks = tmBoth
     Height = 33
     Top = 33
     Width = 443
+    Frequency = 10
+    Max = 50
+    Min = -50
+    OnChange = TrackBar1Change
+    PageSize = 45
+    ScalePos = trTop
+    TickMarks = tmBoth
+    Align = alTop
+    TabOrder = 1
   end
   object Panel1: TPanel
-    Align = alTop
-    BevelOuter = bvNone
-    ClientHeight = 33
-    ClientWidth = 443
-    FullRepaint = False
-    TabOrder = 2
     Height = 33
     Width = 443
+    Align = alTop
+    BevelOuter = bvNone
+    FullRepaint = False
+    TabOrder = 2
     object Label1: TLabel
-      Caption = 'Sound Manager :'
-      Color = clNone
       Height = 13
       Top = 8
       Width = 82
+      Caption = 'Sound Manager :'
+      Color = clNone
+      ParentColor = False
     end
     object RBBass: TRadioButton
-      Caption = 'BASS'
-      OnClick = RBFMODClick
-      TabOrder = 0
       Left = 96
       Height = 17
       Top = 8
       Width = 57
+      Caption = 'BASS'
+      OnClick = RBFMODClick
+      TabOrder = 0
     end
     object RBFMOD: TRadioButton
+      Left = 152
+      Height = 17
+      Top = 8
+      Width = 57
       Caption = 'FMOD'
       Checked = True
       OnClick = RBFMODClick
       State = cbChecked
       TabOrder = 1
-      Left = 152
-      Height = 17
-      Top = 8
-      Width = 57
     end
     object Button1: TButton
-      Anchors = [akTop, akRight]
-      Caption = 'Chimes (WAV)'
-      OnClick = Button1Click
-      TabOrder = 2
       Left = 360
       Height = 25
       Top = 4
       Width = 83
+      Anchors = [akTop, akRight]
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Chimes (WAV)'
+      OnClick = Button1Click
+      TabOrder = 2
     end
     object Button2: TButton
-      Anchors = [akTop, akRight]
-      BorderSpacing.OnChange = nil
-      Caption = 'Howl (MP3)'
-      OnClick = Button2Click
-      TabOrder = 3
       Left = 272
       Height = 25
       Top = 4
       Width = 83
+      Anchors = [akTop, akRight]
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Howl (MP3)'
+      OnClick = Button2Click
+      TabOrder = 3
     end
   end
   object GLSMFMOD: TGLSMFMOD
     Active = True
-    MaxChannels = 32
     MasterVolume = 1
     Listener = Mickey
     Sources = <>
@@ -154,10 +135,6 @@ object Form1: TForm1
     object DummyCube: TGLDummyCube
       CubeSize = 1
       object Torus1: TGLTorus
-        MajorRadius = 5
-        MinorRadius = 0.100000001490116
-        Rings = 16
-        Sides = 3
         Material.FrontProperties.Diffuse.Color = {
           00000000000000000000803F0000803F
         }
@@ -179,45 +156,44 @@ object Form1: TForm1
         Up.Coordinates = {
           000000002EBD3BB3000080BF00000000
         }
+        MajorRadius = 5
+        MinorRadius = 0.10000000149011
+        Rings = 16
+        Sides = 3
       end
       object Mickey: TGLSphere
-        Radius = 0.5
-        Slices = 9
-        Stacks = 9
         Material.Texture.MappingTCoordinates.Coordinates = {
           000000000000803F0000000000000000
         }
         Position.Coordinates = {
           000000000000003F000000000000803F
         }
+        Radius = 0.5
+        Slices = 9
+        Stacks = 9
         object Sphere2: TGLSphere
-          Radius = 0.300000011920929
-          Slices = 6
-          Stacks = 6
           Material.Texture.MappingTCoordinates.Coordinates = {
             000000000000803F0000000000000000
           }
           Position.Coordinates = {
             CDCCCC3ECDCC4C3E000000000000803F
           }
-        end
-        object Sphere3: TGLSphere
-          Radius = 0.300000011920929
+          Radius = 0.30000001192092
           Slices = 6
           Stacks = 6
+        end
+        object Sphere3: TGLSphere
           Material.Texture.MappingTCoordinates.Coordinates = {
             000000000000803F0000000000000000
           }
           Position.Coordinates = {
             CDCCCCBECDCC4C3E000000000000803F
           }
+          Radius = 0.30000001192092
+          Slices = 6
+          Stacks = 6
         end
         object Cone1: TGLCone
-          Parts = [coSides]
-          BottomRadius = 0.300000011920929
-          Height = 0.5
-          Slices = 8
-          Stacks = 2
           Material.Texture.MappingTCoordinates.Coordinates = {
             000000000000803F0000000000000000
           }
@@ -230,11 +206,14 @@ object Form1: TForm1
           Up.Coordinates = {
             00000000000000000000803F00000000
           }
+          BottomRadius = 0.30000001192092
+          Height = 0.5
+          Slices = 8
+          Stacks = 2
+          Parts = [coSides]
         end
       end
       object Plane1: TGLPlane
-        Height = 10
-        Width = 0.5
         Material.Texture.MappingTCoordinates.Coordinates = {
           000000000000803F0000000000000000
         }
@@ -247,12 +226,11 @@ object Form1: TForm1
         Up.Coordinates = {
           000000002EBD3BB3000080BF00000000
         }
+        Height = 10
+        Width = 0.5
       end
     end
     object Sphere: TGLSphere
-      Radius = 0.5
-      Slices = 9
-      Stacks = 9
       Material.FrontProperties.Diffuse.Color = {
         0000803F00000000000000000000803F
       }
@@ -266,6 +244,9 @@ object Form1: TForm1
         000000400000003F000000000000803F
       }
       OnProgress = SphereProgress
+      Radius = 0.5
+      Slices = 9
+      Stacks = 9
       BehavioursData = {
         0201061054474C42536F756E64456D6974746572020002000200020005000000
         0000000080FF3F050000000000000080FF3F0500000000000000C80540050000
@@ -274,9 +255,6 @@ object Form1: TForm1
         0309
       }
       object Disk1: TGLDisk
-        OuterRadius = 0.5
-        Slices = 12
-        SweepAngle = 360
         Material.Texture.MappingTCoordinates.Coordinates = {
           000000000000803F0000000000000000
         }
@@ -289,6 +267,9 @@ object Form1: TForm1
         Up.Coordinates = {
           000000002EBD3BB3000080BF00000000
         }
+        OuterRadius = 0.5
+        Slices = 12
+        SweepAngle = 360
       end
     end
     object GLLightSource: TGLLightSource

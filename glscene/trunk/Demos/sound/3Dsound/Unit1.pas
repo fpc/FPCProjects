@@ -47,7 +47,7 @@ interface
 uses
   Classes, Forms, ExtCtrls,  GLScene, GLObjects, GLMisc,
   GLSound, GLSMFMOD, ComCtrls, Controls, StdCtrls,
-  GLGeomObjects, LResources, GLSMBASS, GLCadencer, Buttons, GLWin32Viewer;
+  GLGeomObjects, LResources, GLSMBASS, GLCadencer, Buttons, GLLCLViewer;
 
 type
 
