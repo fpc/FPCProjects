@@ -53,6 +53,9 @@ uses Classes, SysUtils;
 
 type
   {$IFDEF FPC}
+  // This is needed, tho it is exactly the same like in classes BUT
+  // classes is compiled with mode OBJFPC, so sizeof(TValueType)=4
+  // while redeclaring it here (compiled in MODE DELPHI) sizeof(TValueType)=1.
   TValueType = (vaNull, vaList, vaInt8, vaInt16, vaInt32, vaExtended,
     vaString, vaIdent, vaFalse, vaTrue, vaBinary, vaSet, vaLString,
     vaNil, vaCollection, vaSingle, vaCurrency, vaDate, vaWString,
