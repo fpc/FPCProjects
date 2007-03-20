@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="154">
+    <Files Count="153">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -292,7 +292,7 @@
       </Item62>
       <Item63>
         <Filename Value="../Source/fileformats/tga.pas"/>
-        <UnitName Value="tga"/>
+        <UnitName Value="TGA"/>
       </Item63>
       <Item64>
         <Filename Value="../Source/fileformats/utils3ds.pas"/>
@@ -330,7 +330,7 @@
       </Item71>
       <Item72>
         <Filename Value="../Source/glcadencer.pas"/>
-        <UnitName Value="glcadencer"/>
+        <UnitName Value="GLCadencer"/>
       </Item72>
       <Item73>
         <Filename Value="../Source/glcollision.pas"/>
@@ -510,7 +510,7 @@
       </Item115>
       <Item116>
         <Filename Value="../Source/glscreen.pas"/>
-        <UnitName Value="glscreen"/>
+        <UnitName Value="GLScreen"/>
       </Item116>
       <Item117>
         <Filename Value="../Source/glshadowplane.pas"/>
@@ -562,7 +562,7 @@
       </Item128>
       <Item129>
         <Filename Value="../Source/gltileplane.pas"/>
-        <UnitName Value="gltileplane"/>
+        <UnitName Value="GLTilePlane"/>
       </Item129>
       <Item130>
         <Filename Value="../Source/gltimeeventsmgr.pas"/>
@@ -589,19 +589,19 @@
       </Item134>
       <Item135>
         <Filename Value="../Source/glverletclasses.pas"/>
-        <UnitName Value="glverletclasses"/>
+        <UnitName Value="GLVerletClasses"/>
       </Item135>
       <Item136>
         <Filename Value="../Source/glverletclothify.pas"/>
-        <UnitName Value="glverletclothify"/>
+        <UnitName Value="GLVerletClothify"/>
       </Item136>
       <Item137>
         <Filename Value="../Source/glverletskeletoncolliders.pas"/>
-        <UnitName Value="glverletskeletoncolliders"/>
+        <UnitName Value="GLVerletSkeletonColliders"/>
       </Item137>
       <Item138>
         <Filename Value="../Source/glwaterplane.pas"/>
-        <UnitName Value="glwaterplane"/>
+        <UnitName Value="GLWaterPlane"/>
       </Item138>
       <Item139>
         <Filename Value="../Source/glwindows.pas"/>
@@ -617,65 +617,61 @@
       </Item141>
       <Item142>
         <Filename Value="../Source/platform/glcrossplatform.pas"/>
-        <UnitName Value="glcrossplatform"/>
+        <UnitName Value="GLCrossPlatform"/>
       </Item142>
       <Item143>
-        <Filename Value="../Source/platform/gllclviewer.pas"/>
-        <UnitName Value="gllclviewer"/>
-      </Item143>
-      <Item144>
         <Filename Value="../Source/shaders/glbumpshader.pas"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLBumpShader"/>
-      </Item144>
-      <Item145>
+      </Item143>
+      <Item144>
         <Filename Value="../Source/shaders/glcelshader.pas"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLCelShader"/>
-      </Item145>
-      <Item146>
+      </Item144>
+      <Item145>
         <Filename Value="../Source/shaders/glhiddenlineshader.pas"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLHiddenLineShader"/>
-      </Item146>
-      <Item147>
+      </Item145>
+      <Item146>
         <Filename Value="../Source/shaders/glmultimaterialshader.pas"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLMultiMaterialShader"/>
-      </Item147>
-      <Item148>
+      </Item146>
+      <Item147>
         <Filename Value="../Source/shaders/gloutlineshader.pas"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLOutlineShader"/>
-      </Item148>
-      <Item149>
+      </Item147>
+      <Item148>
         <Filename Value="../Source/shaders/glphongshader.pas"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLPhongShader"/>
-      </Item149>
-      <Item150>
+      </Item148>
+      <Item149>
         <Filename Value="../Source/shaders/gltexcombineshader.pas"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLTexCombineShader"/>
-      </Item150>
-      <Item151>
+      </Item149>
+      <Item150>
         <Filename Value="../Source/shaders/glusershader.pas"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLUserShader"/>
-      </Item151>
-      <Item152>
+      </Item150>
+      <Item151>
         <Filename Value="../Source/glheightdata.pas"/>
         <UnitName Value="GLHeightData"/>
-      </Item152>
-      <Item153>
+      </Item151>
+      <Item152>
         <Filename Value="../Source/glsound.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="GLSound"/>
-      </Item153>
-      <Item154>
+      </Item152>
+      <Item153>
         <Filename Value="../Source/platform/glviewer.pas"/>
         <UnitName Value="GLViewer"/>
-      </Item154>
+      </Item153>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
