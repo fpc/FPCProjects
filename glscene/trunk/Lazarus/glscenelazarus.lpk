@@ -178,6 +178,7 @@
       </Item34>
       <Item35>
         <Filename Value="../Source/designtime/glsceneedit.pas"/>
+        <AddToUsesPkgSection Value="False"/>
         <UnitName Value="glsceneedit"/>
       </Item35>
       <Item36>
