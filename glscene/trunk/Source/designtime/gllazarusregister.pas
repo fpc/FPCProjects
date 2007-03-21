@@ -1,7 +1,15 @@
-unit GLLazarusRegister;
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLLazarusRegister<p>
+
+   This is a clone of GLSceneRegister modified for use with Lazarus.<p>
+   
+   Registration unit for GLScene library components, property editors and
+      IDE experts.<p>
 
 
-{
+
       $Log: gllazarusregister.pas,v $
       Revision 1.3  2006/03/01 10:08:42  skinhat
       glplot cf glplott
@@ -58,7 +66,39 @@ unit GLLazarusRegister;
       Revision 1.2  2005/08/03 00:41:38  z0m3ie
       - added automatical generated History from CVS
 
+
+	<b>History : </b><font size=-1><ul>
+      <li>22/08/02 - EG - RegisterPropertiesInCategory (Robin Gerrets)
+      <li>08/04/02 - EG - Added verb to TGLSceneEditor
+      <li>26/01/02 - EG - Color property drawing in D6 too now
+      <li>22/08/01 - EG - D6 related changes
+      <li>08/07/01 - EG - Register for TGLExtrusionSolid (Uwe Raabe)
+      <li>18/02/01 - EG - Added Terrain/HeightData objects
+      <li>21/01/01 - EG - Enhanced GetAttributes for some property editors
+      <li>09/10/00 - EG - Added registration for TGLMultiPolygon
+      <li>09/06/00 - EG - Added TSoundFileProperty & TSoundNameProperty
+      <li>23/05/00 - EG - Added GLCollision
+      <li>16/05/00 - EG - Delphi 4 Compatibility
+      <li>28/04/00 - EG - Removed ObjectStock in TObjectManager (was useless)
+      <li>26/04/00 - EG - Added Categories in ObjectManager,
+                          enhanced GetRegisteredSceneObjects
+      <li>16/04/00 - EG - Objects icons are now loaded from ressources using
+                          ClassName (more VCL-like)
+      <li>11/04/00 - EG - Components now install under 'GLScene',
+                          Fixed DestroySceneObjectList (thanks Uwe Raabe)
+      <li>06/04/00 - EG - Added TGLBehavioursProperty
+      <li>18/03/00 - EG - Added TGLImageClassProperty
+      <li>13/03/00 - EG - Updated TGLTextureImageProperty
+      <li>14/02/00 - EG - Added MaterialLibrary editor and picker
+      <li>09/02/00 - EG - ObjectManager moved in, ObjectManager is now fully
+                          object-oriented and encapsulated
+      <li>06/02/00 - EG - Fixed TGLScenedEditor logic
+                          (was causing Delphi IDE crashes on package unload)
+      <li>05/02/00 - EG - Added TGLColorProperty and TGLCoordinatesProperty
+	</ul></font>
 }
+
+unit GLLazarusRegister;
 
 interface
 
