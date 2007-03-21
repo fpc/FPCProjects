@@ -5,6 +5,8 @@
    This unit contains classes that imitate an atmosphere around a planet.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>21/03/07 - DaStr - Cleaned up "uses" section
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
       <li>01/03/07 - DaStr - Fixed TGLAtmosphereBlendingMode
                                              (old version did not generate RTTI)
                              Added default values to all properties                
@@ -57,7 +59,7 @@ interface
 
 uses
   // VCL
-  {Windows,} Messages, SysUtils, Classes, Graphics, Controls,
+  SysUtils, Classes,
 
   // GLScene
   GLScene, GLObjects, GLMisc, GLTexture, GLCadencer, OpenGL1x, VectorGeometry,

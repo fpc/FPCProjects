@@ -51,6 +51,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>21/03/07 - DaStr - Bugfixed MatrixDecompose
+                             (thanks Burkhard Carstens) (BugTrackerID=1684438)
       <li>06/03/07 - DaStr - Added InterpolateXXX and MatrixLerp functions
       <li>03/03/07 - DaStr - Added [Vector/Matrix/Rect]Equals, Vector[2/3/4][i/f/s/b/d]Make
                              Added Vector[More/Less](Equal)Then

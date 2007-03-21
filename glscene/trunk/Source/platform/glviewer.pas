@@ -6,7 +6,9 @@
    Platform independant viewer.<p>
 
     History:
-      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
+      <li>21/03/07 - DaStr - Improved Cross-Platform compatibility
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTrackerID=1681585)
       <li>24/01/02 -  EG   - Initial version
 }
 
@@ -25,16 +27,17 @@ uses
 {$ENDIF FPC}
 
 type
-{$IFDEF FPC}
+{$IFDEF FPC}  //For FPC, always use LCLViewer
   TGLSceneViewer = class(GLLCLViewer.TGLSceneViewer);
-{$ELSE}
-{$IFDEF UNIX}
-  TGLSceneViewer = class(TGLLinuxSceneViewer);
-{$ENDIF LINUX}
-{$IFDEF MSWINDOWS}
-  TGLSceneViewer = class(TGLWin32SceneViewer);
-{$ENDIF MSWINDOWS}
+{$ELSE}  // if not FPC then
+  {$IFDEF UNIX}  // kylix
+  TGLSceneViewer = class(GLLinuxViewer.TGLLinuxSceneViewer);
+  {$ENDIF UNIX}
+  {$IFDEF MSWINDOWS} // windows
+  TGLSceneViewer = class(GLWin32Viewer.TGLWin32SceneViewer);
+  {$ENDIF MSWINDOWS}
 {$ENDIF FPC}
+
 implementation
 
 end.
