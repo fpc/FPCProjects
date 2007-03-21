@@ -45,7 +45,7 @@ uses
       dsgnintf;
     {$endif}
   {$else}
-    componenteditors, lclintf, lresources;
+    propedits, componenteditors, FormEditingIntf, lclintf, lresources;
   {$endif}
 
 const
@@ -60,7 +60,7 @@ type
       TTheDesigner = class(IFormDesigner);
     {$endif}
   {$else}
-    TTheDesigner = class(TComponentEditorDesigner);
+    TTheDesigner = TComponentEditorDesigner;
   {$endif}
 
 
@@ -208,16 +208,21 @@ type
     procedure ComponentRead(Component: TComponent);
     function UniqueName(Component: TComponent): string;
 {$ENDIF}
+{$IFDEF FPC}
+    function UniqueName(Component: TComponent): string;
+{$ENDIF}
 
     // We can not use the IDE to define this event because the
     // prototype is not the same between Delphi and Kylix !!
+    procedure TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
+    (* NO MORE KYLIX
     {$IFDEF MSWINDOWS}
     procedure TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
     {$ENDIF}
     {$IFDEF UNIX}
     procedure TreeEdited(Sender: TObject; Node: TTreeNode; var S: WideString);
     {$ENDIF}
-
+    *)
   protected
 	 procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
@@ -243,13 +248,17 @@ implementation
 
 
 uses
+  {$IFDEF FPC}
+  gllazarusregister, glstrings, info, opengl1x, clipbrd, GLViewer;
+  {$ENDIF}
+(*
 {$IFDEF MSWINDOWS}
   gllazarusregister, glstrings, info, opengl1x, clipbrd, gllclviewer;
 {$ENDIF}
 {$IFDEF UNIX}
   glsceneregister, glstrings, info, opengl1x, qclipbrd, gllinuxviewer; 
 {$ENDIF}
-
+*)
 
 resourcestring
    cGLSceneEditor = 'GLScene Editor';
@@ -325,10 +334,14 @@ end;
 procedure TGLSceneEditorForm.SetScene(Scene: TGLScene; Designer: TTheDesigner);
 begin
    if Assigned(FScene) then
+{$IFDEF FPC}
+      FScene.RemoveFreeNotification(Self);
+{$ELSE}
 {$ifdef GLS_DELPHI_5_UP}
       FScene.RemoveFreeNotification(Self);
 {$else}
       FScene.Notification(Self, opRemove);
+{$endif}
 {$endif}
    FScene:=Scene;
    FCurrentDesigner:=Designer;
@@ -379,6 +392,10 @@ var
    reg : TRegistry;
    {$ENDIF}
 begin
+  {$IFDEF FPC}
+  //GlobalDesignHook.AddHandlerRefreshPropertyValues(@OnRefreshPropertyValues);
+  //GlobalDesignHook.AddHandlerSetSelection(@OnSetSelection);
+  {$ENDIF}
    RegisterGLBaseSceneObjectNameChangeEvent(OnBaseSceneObjectNameChanged);
    {$ifndef FPC}
    Tree.Images:=ObjectManager.ObjectIcons;
@@ -559,32 +576,16 @@ begin
          if currentCategory='' then
             currentParent:=parent
          else begin
-            currentParent:=TMenuItem.Create(parent);
-            with currentParent do begin
-              Name:='';
-              Caption:=currentCategory;
-              ShortCut:=0;
-              Checked:=False;
-              Enabled:=True;
-              OnClick:=nil;
-              HelpContext:=0;
-            end;
+            currentParent:=NewItem(currentCategory, 0, False, True, nil, 0, '');
+            parent.Add(currentParent);
          end;
          for j:=i to objectList.Count-1 do if objectList[j]<>'' then with ObjectManager do begin
             soc:=TGLSceneObjectClass(objectList.Objects[j]);
             if currentCategory=GetCategory(soc) then begin
-               item:=TMenuItem.Create(currentParent);
-               with item do begin
-                 Name:='';
-                 Caption:=objectList[j];
-                 ShortCut:=0;
-                 Checked:=False;
-                 Enabled:=True;
-                 OnClick:=AddObjectClick;
-                 HelpContext:=0;
-               end;
+               item:=NewItem(objectList[j], 0, False, True, AddObjectClick, 0, '');
                item.ImageIndex:=GetImageIndex(soc);
                item.Tag:=Integer(soc);
+               currentParent.Add(item);
                objectList[j]:='';
                if currentCategory='' then Break;
             end;
@@ -644,10 +645,40 @@ begin
 end;
 
 
+(*procedure TComponentPalette.ComponentBtnDblClick(Sender: TObject);
+var
+  TypeClass: TComponentClass;
+  ParentCI: TIComponentInterface;
+  X, Y: integer;
+  CompIntf: TIComponentInterface;
+begin
+  //debugln('TComponentPalette.ComponentBtnDblClick ',TComponent(Sender).Name);
+  if SelectButton(TComponent(Sender)) and (FSelected<>nil) then begin
+    if FormEditingHook<>nil then begin
+      TypeClass:=FSelected.ComponentClass;
+      ParentCI:=FormEditingHook.GetDefaultComponentParent(TypeClass);
+      if ParentCI=nil then exit;
+      if not FormEditingHook.GetDefaultComponentPosition(TypeClass,ParentCI,X,Y)
+      then exit;
+      //debugln('TComponentPalette.ComponentBtnDblClick ',dbgsName(Sender),' ',dbgs(X),',',dbgs(Y));
+      CompIntf:=FormEditingHook.CreateComponent(ParentCI,TypeClass,'',X,Y,0,0);
+      if CompIntf<>nil then begin
+        GlobalDesignHook.PersistentAdded(CompIntf.Component,true);
+      end;
+    end;
+  end;
+  Selected:=nil;
+end;
+*)
+
 procedure TGLSceneEditorForm.AddObjectClick(Sender: TObject);
 var
    AParent, AObject: TGLBaseSceneObject;
    Node: TTreeNode;
+  ParentCI: TIComponentInterface;
+  CompIntf: TIComponentInterface;
+  TypeClass: TComponentClass;
+  X, Y: integer;
 begin
    if Assigned(FCurrentDesigner) then with Tree do
       if Assigned(Selected) and (Selected.Level > 0) then begin
@@ -657,12 +688,14 @@ begin
          AObject:=TGLBaseSceneObject(FCurrentDesigner.CreateComponent(TGLSceneObjectClass(TMenuItem(Sender).Tag), AParent, 0, 0, 0, 0));
          {$else}
          AObject:=TGLBaseSceneObject(TGLSceneObjectClass(TMenuItem(Sender).Tag).Create(FCurrentDesigner.Form));
+         AObject.Name:=UniqueName(AObject);
          {$endif}
          TComponent(AObject).DesignInfo:=0;
          AParent.AddChild(AObject);
          Node:=AddNodes(Selected, AObject);
          Node.Selected:=True;
          FCurrentDesigner.Modified;
+         GlobalDesignHook.PersistentAdded(AObject,true);
       end;
 end;
 
@@ -840,12 +873,15 @@ end;
 
 // TreeEdited
 //
+procedure TGLSceneEditorForm.TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
+(* NO MORE KYLIX
 {$IFDEF MSWINDOWS}
 procedure TGLSceneEditorForm.TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
 {$ENDIF}
 {$IFDEF UNIX}
 procedure TGLSceneEditorForm.TreeEdited(Sender: TObject; Node: TTreeNode; var S: WideString);
 {$ENDIF}
+*)
 var
   BaseSceneObject1:TGLBaseSceneObject;
 begin
@@ -1000,10 +1036,12 @@ begin
          {$ifndef FPC}
          FCurrentDesigner.SelectComponent(nil);
          {$else}
-         FCurrentDesigner.SelectOnlyThisComponent(nil);
+         GlobalDesignHook.Unselect(anObject);
+         //FCurrentDesigner.SelectOnlyThisComponent(nil);
          {$endif}
          anObject.Parent.Remove(anObject, keepChildren);
-         anObject.Free;
+         GlobalDesignHook.DeletePersistent(TPersistent(anObject));
+         //anObject.Free;
       end
    end;
    end;
@@ -1267,6 +1305,10 @@ begin
       Tree.Selected.Free;
    end;
 end;
+{$ELSE}
+begin
+{$ENDIF}
+end;
 
 
 // ACPasteExecute
@@ -1374,6 +1416,15 @@ begin
    FPasteSelection.Add(Component);
 end;
 {$ENDIF}
+
+{$ifdef FPC}
+function TGLSceneEditorForm.UniqueName(Component: TComponent): string;
+begin
+  //Result := FCurrentDesigner.UniqueName(Component.ClassName);
+  Result := FCurrentDesigner.CreateUniqueComponentName(Component.ClassName);
+end;
+{$ENDIF FPC}
+
 
 procedure TGLSceneEditorForm.BehavioursListViewEnter(Sender: TObject);
 begin

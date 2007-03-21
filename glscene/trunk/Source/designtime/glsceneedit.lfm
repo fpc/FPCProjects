@@ -27,7 +27,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
     Top = 22
     Width = 212
     Align = alClient
-    DefaultItemHeight = 15
+    DefaultItemHeight = 12
     Font.CharSet = ANSI_CHARSET
     Font.Height = -11
     Font.Name = 'Microsoft Sans Serif'
@@ -159,7 +159,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
     Visible = False
     object Label1: TLabel
       Left = 1
-      Height = 14
+      Height = 11
       Top = 30
       Width = 156
       Align = alTop
@@ -172,8 +172,8 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object Label2: TLabel
       Left = 1
-      Height = 14
-      Top = 159
+      Height = 11
+      Top = 156
       Width = 156
       Align = alTop
       Alignment = taCenter
@@ -187,7 +187,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
       Cursor = crVSplit
       Left = 1
       Height = 5
-      Top = 154
+      Top = 151
       Width = 156
       Align = alTop
       ResizeAnchor = akTop
@@ -195,7 +195,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
     object BehavioursListView: TListView
       Left = 1
       Height = 110
-      Top = 44
+      Top = 41
       Width = 156
       Align = alTop
       Columns = <>
@@ -205,8 +205,8 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object EffectsListView: TListView
       Left = 1
-      Height = 115
-      Top = 173
+      Height = 121
+      Top = 167
       Width = 156
       Align = alClient
       Columns = <>
@@ -239,7 +239,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
         Style = tbsDropDown
       end
       object TBAddEffects: TToolButton
-        Left = 81
+        Left = 82
         Hint = 'Add effect'
         Top = 2
         Action = ACAddEffect

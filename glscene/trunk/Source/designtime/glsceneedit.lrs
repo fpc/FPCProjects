@@ -1,4 +1,4 @@
-{ Dies ist eine automatisch erzeugte Lazarus-Ressourcendatei }
+{ This is an automatically generated lazarus resource file }
 
 LazarusResources.Add('TGLSceneEditorForm','FORMDATA',[
   'TPF0'#18'TGLSceneEditorForm'#17'GLSceneEditorForm'#4'Left'#3#239#0#6'Height'
@@ -10,7 +10,7 @@ LazarusResources.Add('TGLSceneEditorForm','FORMDATA',[
   +#2#22#5'Width'#2#4#5'Align'#7#7'alRight'#7'Anchors'#11#5'akTop'#7'akRight'#0
   +#7'Visible'#8#12'ResizeAnchor'#7#7'akRight'#0#0#9'TTreeView'#4'Tree'#6'Heigh'
   +'t'#3'!'#1#3'Top'#2#22#5'Width'#3#212#0#5'Align'#7#8'alClient'#17'DefaultIte'
-  +'mHeight'#2#15#12'Font.CharSet'#7#12'ANSI_CHARSET'#11'Font.Height'#2#245#9'F'
+  +'mHeight'#2#12#12'Font.CharSet'#7#12'ANSI_CHARSET'#11'Font.Height'#2#245#9'F'
   +'ont.Name'#6#20'Microsoft Sans Serif'#13'HideSelection'#8#6'Indent'#2#19#9'P'
   +'opupMenu'#7#9'PopupMenu'#16'RightClickSelect'#9#8'TabOrder'#2#0#8'OnChange'
   +#7#10'TreeChange'#10'OnDragDrop'#7#12'TreeDragDrop'#10'OnDragOver'#7#12'Tree'
@@ -48,19 +48,19 @@ LazarusResources.Add('TGLSceneEditorForm','FORMDATA',[
   +'CDeleteObject'#0#0#0#6'TPanel'#12'PABehaviours'#4'Left'#3#216#0#6'Height'#3
   +'!'#1#3'Top'#2#22#5'Width'#3#158#0#5'Align'#7#7'alRight'#7'Caption'#6#12'PAB'
   +'ehaviours'#20'Constraints.MinWidth'#2#1#11'FullRepaint'#8#8'TabOrder'#2#2#7
-  +'Visible'#8#0#6'TLabel'#6'Label1'#4'Left'#2#1#6'Height'#2#14#3'Top'#2#30#5'W'
+  +'Visible'#8#0#6'TLabel'#6'Label1'#4'Left'#2#1#6'Height'#2#11#3'Top'#2#30#5'W'
   +'idth'#3#156#0#5'Align'#7#5'alTop'#9'Alignment'#7#8'taCenter'#7'Caption'#6#10
   +'Behaviours'#5'Color'#7#6'clNone'#11'Font.Height'#2#245#9'Font.Name'#6#5'Ari'
-  +'al'#11'ParentColor'#8#0#0#6'TLabel'#6'Label2'#4'Left'#2#1#6'Height'#2#14#3
-  +'Top'#3#159#0#5'Width'#3#156#0#5'Align'#7#5'alTop'#9'Alignment'#7#8'taCenter'
+  +'al'#11'ParentColor'#8#0#0#6'TLabel'#6'Label2'#4'Left'#2#1#6'Height'#2#11#3
+  +'Top'#3#156#0#5'Width'#3#156#0#5'Align'#7#5'alTop'#9'Alignment'#7#8'taCenter'
   +#7'Caption'#6#7'Effects'#5'Color'#7#6'clNone'#11'Font.Height'#2#245#9'Font.N'
   +'ame'#6#5'Arial'#11'ParentColor'#8#0#0#9'TSplitter'#9'Splitter3'#6'Cursor'#7
-  +#8'crVSplit'#4'Left'#2#1#6'Height'#2#5#3'Top'#3#154#0#5'Width'#3#156#0#5'Ali'
+  +#8'crVSplit'#4'Left'#2#1#6'Height'#2#5#3'Top'#3#151#0#5'Width'#3#156#0#5'Ali'
   +'gn'#7#5'alTop'#12'ResizeAnchor'#7#5'akTop'#0#0#9'TListView'#18'BehavioursLi'
-  +'stView'#4'Left'#2#1#6'Height'#2'n'#3'Top'#2','#5'Width'#3#156#0#5'Align'#7#5
+  +'stView'#4'Left'#2#1#6'Height'#2'n'#3'Top'#2')'#5'Width'#3#156#0#5'Align'#7#5
   +'alTop'#7'Columns'#14#0#9'PopupMenu'#7#19'BehavioursPopupMenu'#8'TabOrder'#2
   +#0#12'OnSelectItem'#7#28'BehavioursListViewSelectItem'#0#0#9'TListView'#15'E'
-  +'ffectsListView'#4'Left'#2#1#6'Height'#2's'#3'Top'#3#173#0#5'Width'#3#156#0#5
+  +'ffectsListView'#4'Left'#2#1#6'Height'#2'y'#3'Top'#3#167#0#5'Width'#3#156#0#5
   +'Align'#7#8'alClient'#7'Columns'#14#0#9'PopupMenu'#7#19'BehavioursPopupMenu'
   +#8'TabOrder'#2#1#12'OnSelectItem'#7#28'BehavioursListViewSelectItem'#0#0#8'T'
   +'ToolBar'#8'ToolBar1'#4'Left'#2#1#6'Height'#2#29#3'Top'#2#1#5'Width'#3#156#0
@@ -70,7 +70,7 @@ LazarusResources.Add('TGLSceneEditorForm','FORMDATA',[
   +' behaviour'#3'Top'#2#2#6'Action'#7#14'ACAddBehaviour'#7'Caption'#6#10'Behav'
   +'iours'#12'DropdownMenu'#7#19'PMBehavioursToolbar'#14'ParentShowHint'#8#8'Sh'
   +'owHint'#9#5'Style'#7#11'tbsDropDown'#0#0#11'TToolButton'#12'TBAddEffects'#4
-  +'Left'#2'Q'#4'Hint'#6#10'Add effect'#3'Top'#2#2#6'Action'#7#11'ACAddEffect'#7
+  +'Left'#2'R'#4'Hint'#6#10'Add effect'#3'Top'#2#2#6'Action'#7#11'ACAddEffect'#7
   +'Caption'#6#7'Effects'#12'DropdownMenu'#7#16'PMEffectsToolbar'#14'ParentShow'
   +'Hint'#8#8'ShowHint'#9#5'Style'#7#11'tbsDropDown'#0#0#0#0#10'TPopupMenu'#9'P'
   +'opupMenu'#6'Images'#7#9'ImageList'#7'OnPopup'#7#14'PopupMenuPopup'#4'left'#3
