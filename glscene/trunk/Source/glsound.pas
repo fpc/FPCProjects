@@ -1547,11 +1547,11 @@ procedure TGLSoundManager.StopAllSources;
 var
    i : Integer;
 begin
-{$ifdef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifdef GLS_DELPHI_5_UP}*)
 	for i:=Sources.Count-1 downto 0 do Sources.Delete(i);
-{$else}
+(* removed delphi 4 support {$else}
 	for i:=Sources.Count-1 downto 0 do Sources[i].Free;
-{$endif}
+{$endif}*)
 end;
 
 // DoProgress

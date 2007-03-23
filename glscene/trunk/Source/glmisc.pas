@@ -198,9 +198,9 @@ type
 	TGLCadenceAbleComponent = class (TComponent)
 		public
 	      { Public Declarations }
-{$ifndef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifndef GLS_DELPHI_5_UP}
          procedure RemoveFreeNotification(AComponent: TComponent);
-{$endif}
+{$endif}*)
 			procedure DoProgress(const progressTime : TProgressTimes); virtual;
 	end;
 
@@ -628,14 +628,14 @@ end;
 // ------------------ TGLCadenceAbleComponent ------------------
 // ------------------
 
-{$ifndef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifndef GLS_DELPHI_5_UP}
 // RemoveFreeNotification
 //
 procedure TGLCadenceAbleComponent.RemoveFreeNotification(AComponent: TComponent);
 begin
    Notification(AComponent, opRemove);
 end;
-{$endif}
+{$endif}*)
 
 // DoProgress
 //

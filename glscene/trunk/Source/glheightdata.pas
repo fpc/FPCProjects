@@ -137,9 +137,9 @@ type
 	      constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-{$ifndef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifndef GLS_DELPHI_5_UP}
          procedure RemoveFreeNotification(AComponent: TComponent);
-{$endif}
+{$endif}*)
 
          {: Empties the Data list, terminating thread if necessary.<p>
             If some THeightData are hdsInUse, triggers an exception and does
@@ -742,14 +742,14 @@ begin
       FDataHash[i].Free;
 end;
 
-{$ifndef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifndef GLS_DELPHI_5_UP}
 // RemoveFreeNotification
 //
 procedure THeightDataSource.RemoveFreeNotification(AComponent: TComponent);
 begin
    Notification(AComponent, opRemove);
 end;
-{$endif}
+{$endif}*)
 
 // Clear
 //

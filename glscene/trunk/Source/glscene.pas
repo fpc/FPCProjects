@@ -1587,9 +1587,9 @@ type
          constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-{$ifndef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifndef GLS_DELPHI_5_UP}
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-{$endif}
+{$endif} *)
 
          procedure BeginUpdate;
          procedure EndUpdate;
@@ -6157,7 +6157,7 @@ begin
    inherited Destroy;
 end;
 
-{$ifndef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifndef GLS_DELPHI_5_UP}
 // Notification
 //
 procedure TGLScene.Notification(AComponent: TComponent; Operation: TOperation);
@@ -6166,7 +6166,7 @@ begin
    // 'RemoveFreeNotification' under Delphi 4
    inherited Notification(AComponent, Operation);
 end;
-{$endif}
+{$endif}*)
 
 // AddLight
 //

@@ -154,11 +154,11 @@ begin
       if Sources[i].ManagerTag>0 then
          Inc(n)
       else if Sources[i].ManagerTag=-1 then
-{$ifdef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifdef GLS_DELPHI_5_UP}*)
 			Sources.Delete(i);
-{$else}
+(* removed delphi 4 support {$else}
 			Sources[i].Free;
-{$endif}
+{$endif}*)
 	// start sources if some capacity remains, and forget the others
    for i:=Sources.Count-1 downto 0 do if Sources[i].ManagerTag=0 then begin
       if n<MaxChannels then begin
@@ -183,17 +183,17 @@ begin
             Sources[i].ManagerTag:=hwo;
             Inc(n);
 			end else
-{$ifdef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifdef GLS_DELPHI_5_UP}*)
 				Sources.Delete(i);
-{$else}
+(* removed delphi 4 support {$else}
 				Sources[i].Free;
-{$endif}
+{$endif}*)
 		end else
-{$ifdef GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$ifdef GLS_DELPHI_5_UP}*)
 			Sources.Delete(i);
-{$else}
+(* removed delphi 4 support {$else}
 			Sources[i].Free;
-{$endif}
+{$endif}*)
 	end;
 end;
 
