@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLScreen<p>
 
    Routines to interact with the screen/desktop.<p>
@@ -25,6 +28,8 @@
       - added automatical generated History from CVS
 
    <b>Historique : </b><font size=-1><ul>
+      <li>23/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>03/07/04 - LR - Suppress CurrentScreenColorDepth because there are in GLCrossPlatform
       <li>24/07/03 - EG - Video modes now read on request only, removed
                           the non-standard low-res video modes

@@ -25,6 +25,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>23/03/07 - DaStr - Added missing parameters in procedure's implementation
+                              (thanks Burkhard Carstens) (Bugtracker ID = 1681409)
       <li>06/03/07 - DaStr - Removed obsolete FPC IFDEF's
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678642)
       <li>14/03/07 - DaStr - TGLPicFileImage now provides correct Width and Height

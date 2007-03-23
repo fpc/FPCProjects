@@ -1,6 +1,10 @@
-// GLBaseMeshSilhouette
-{: Silhouette classes for GLBaseMesh and FaceGroups.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLBaseMeshSilhouette<p>
 
+   Silhouette classes for GLBaseMesh and FaceGroups.<p>
+   
       $Log: glbasemeshsilhouette.pas,v $
       Revision 1.1  2006/01/10 20:50:45  z0m3ie
       recheckin to make shure that all is lowercase
@@ -18,6 +22,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>23/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>09/02/04 - MF - Fixed bug where vertices weren't freed when owned
       <li>24/06/03 - MF - Created file from parts of GLShilouette
    </ul></font>
