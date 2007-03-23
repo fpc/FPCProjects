@@ -21,6 +21,9 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/03/07 - DaStr - Cleanup after previous fix - now object does not
+                             igore its children in picking state
+                             Removed "unsafe type/unsafe code" warnings
       <li>15/03/07 - DaStr - Removed flicker that occured when LensFlare was
                              rendered in a picking state (BugTracker ID = 1681031)
       <li>19/04/04 - EG - Fixed occlusion test and pojection matrix stack issues
@@ -234,6 +237,9 @@ implementation
 // ------------------------------------------------------------------
 
 uses GLUtils;
+
+{$WARN UNSAFE_TYPE OFF}
+{$WARN UNSAFE_CODE OFF}
 
 // ------------------
 // ------------------ TGLFlareGradient ------------------
@@ -507,7 +513,13 @@ var
    oldSeed : LongInt;
    projMatrix : TMatrix;
 begin
-   if (rci.drawState = dsPicking) then Exit;
+   if (rci.drawState = dsPicking) then
+   begin
+      if Count <> 0 then
+         Self.RenderChildren(0, Count - 1, rci);
+      Exit;
+   end;
+
    SetVector(v, AbsolutePosition);
    // are we looking towards the flare?
    rv:=VectorSubtract(v, PAffineVector(@rci.cameraPosition)^);
@@ -518,7 +530,7 @@ begin
                        and (screenPos[1]<rci.viewPortSize.cy) and (screenPos[1]>=0);
    end else flareInViewPort:=False;
 
-   dynamicSize:=Dynamic and not (csDesigning in ComponentState);
+   dynamicSize:= FDynamic and not (csDesigning in ComponentState);
    if dynamicSize then begin
       // make the glow appear/disappear progressively
       if flareInViewPort and FlareIsNotOccluded then begin

@@ -29,6 +29,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/03/07 - DaStr - Removed GetTextureRectangle (had many useless checks)
       <li>16/03/07 - DaStr - Dropped Kylix support in favor of FPC
                              (thanks Burkhard Carstens) (BugTracekrID=1681585)
       <li>09/03/07 - DaStr - Added GL_ARB_draw_buffers (thanks riz)
@@ -3756,9 +3757,6 @@ procedure ReadWGLExtensions;
 procedure ReadWGLImplementationProperties;
 {$ENDIF}
 
-{: Returns False if none of the three existing extentions are supported. }
-function GetTextureRectangle(var Extension: Cardinal): Boolean;
-
 // Buffer ID's for Multiple-Render-Targets (using GL_ATI_draw_buffers)
 const
   MRT_BUFFERS: array [0..3] of GLenum = (GL_FRONT_LEFT, GL_AUX0, GL_AUX1, GL_AUX2);
@@ -3812,30 +3810,6 @@ begin
 end;
 {$ENDIF}
 
-
-function GetTextureRectangle(var Extension: Cardinal): Boolean;
-begin
-  if GL_ARB_texture_rectangle then
-  begin
-    Extension := GL_TEXTURE_RECTANGLE_ARB;
-    Result := True;
-  end
-  else if GL_EXT_texture_rectangle then
-  begin
-    Extension := GL_TEXTURE_RECTANGLE_EXT;
-    Result := True;
-  end
-  else if GL_NV_texture_rectangle then
-  begin
-    Extension := GL_TEXTURE_RECTANGLE_NV;
-    Result := True;
-  end
-  else
-  begin
-    Extension := 0;
-    Result := False;
-  end;
-end;
 
 // ************** Extensions ********************
 

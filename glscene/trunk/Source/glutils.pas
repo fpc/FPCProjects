@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLUtils<p>
 
    Miscellaneous support utilities & classes.<p>
@@ -22,7 +25,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>07/02/07 - DaStr - StringToColorAdvanced() functions added
+      <li>07/02/07 - DaStr - Added SaveComponentToFile, LoadComponentFromFile
+      <li>07/02/07 - DaStr - Added StringToColorAdvanced() functions
       <li>05/09/03 - EG - Creation from GLMisc split
    </ul></font>
 }
@@ -43,8 +47,9 @@ type
   EGLUtilsException = class(Exception);
 
 	TGLMinFilter   = (miNearest, miLinear, miNearestMipmapNearest,
-							miLinearMipmapNearest, miNearestMipmapLinear,
-							miLinearMipmapLinear);
+                    miLinearMipmapNearest, miNearestMipmapLinear,
+                    miLinearMipmapLinear);
+
 	TGLMagFilter   = (maNearest, maLinear);
    
 	TSqrt255Array = array [0..255] of Byte;
@@ -88,6 +93,12 @@ function ParseFloat(var p : PChar) : Extended;
 procedure SaveStringToFile(const fileName, data : String);
 {: Returns the content of "filename". }
 function LoadStringFromFile(const fileName : String) : String;
+
+{: Saves component to a file. }
+procedure SaveComponentToFile(const Component: TComponent; const FileName: string; const AsText: Boolean = True);
+{: Loads component from a file. }
+procedure LoadComponentFromFile(const Component: TComponent; const FileName: string; const AsText: Boolean = True);
+
 {: Returns the size of "filename".<p>
    Returns 0 (zero) is file does not exists. }
 function SizeOfFile(const fileName : String) : Int64;
@@ -444,6 +455,58 @@ begin
    	   fs.Free;
       end;
    end else Result:='';
+end;
+
+// SaveComponentToFile
+//
+procedure SaveComponentToFile(const Component: TComponent; const FileName: string; const AsText: Boolean);
+var
+  Stream: TStream;
+  MemStream: TMemoryStream;
+begin
+  Stream := CreateFileStream(FileName, fmCreate);
+  if AsText then
+    MemStream := TMemoryStream.Create;
+  try
+    if AsText then
+    begin
+      MemStream.WriteComponent(Component);
+      MemStream.Position := 0;
+      ObjectBinaryToText(MemStream, Stream);
+    end
+    else
+      Stream.WriteComponent(Component);
+  finally
+    Stream.Free;
+    if AsText then
+      MemStream.Free;
+  end;
+end;
+
+// LoadComponentFromFile
+//
+procedure LoadComponentFromFile(const Component: TComponent; const FileName: string; const AsText: Boolean = True);
+var
+  Stream: TStream;
+  MemStream: TMemoryStream;
+begin
+  Stream := CreateFileStream(FileName, fmOpenRead);
+  if AsText then
+    MemStream := TMemoryStream.Create;
+  try
+    if AsText then
+    begin
+      ObjectTextToBinary(Stream, MemStream);
+      MemStream.Position := 0;
+      MemStream.ReadComponent(Component);
+    end
+    else
+      Stream.ReadComponent(Component);
+  finally
+    Stream.Free;
+    if AsText then
+      MemStream.Free;
+  end;
 end;
 
 // SizeOfFile
