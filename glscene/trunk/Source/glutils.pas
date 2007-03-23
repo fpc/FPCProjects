@@ -25,7 +25,9 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>07/02/07 - DaStr - Added SaveComponentToFile, LoadComponentFromFile
+      <li>23/03/07 - DaStr - Removed compiler warnings caused by
+                               SaveComponentToFile and LoadComponentFromFile
+      <li>22/03/07 - DaStr - Added SaveComponentToFile, LoadComponentFromFile
       <li>07/02/07 - DaStr - Added StringToColorAdvanced() functions
       <li>05/09/03 - EG - Creation from GLMisc split
    </ul></font>
@@ -465,21 +467,22 @@ var
   MemStream: TMemoryStream;
 begin
   Stream := CreateFileStream(FileName, fmCreate);
-  if AsText then
-    MemStream := TMemoryStream.Create;
   try
     if AsText then
     begin
-      MemStream.WriteComponent(Component);
-      MemStream.Position := 0;
-      ObjectBinaryToText(MemStream, Stream);
+      MemStream := TMemoryStream.Create;
+      try
+        MemStream.WriteComponent(Component);
+        MemStream.Position := 0;
+        ObjectBinaryToText(MemStream, Stream);
+      finally
+        MemStream.Free;
+      end;
     end
     else
       Stream.WriteComponent(Component);
   finally
     Stream.Free;
-    if AsText then
-      MemStream.Free;
   end;
 end;
 
@@ -491,21 +494,22 @@ var
   MemStream: TMemoryStream;
 begin
   Stream := CreateFileStream(FileName, fmOpenRead);
-  if AsText then
-    MemStream := TMemoryStream.Create;
   try
     if AsText then
     begin
-      ObjectTextToBinary(Stream, MemStream);
-      MemStream.Position := 0;
-      MemStream.ReadComponent(Component);
+      MemStream := TMemoryStream.Create;
+      try
+        ObjectTextToBinary(Stream, MemStream);
+        MemStream.Position := 0;
+        MemStream.ReadComponent(Component);
+      finally
+        MemStream.Free;
+      end;
     end
     else
       Stream.ReadComponent(Component);
   finally
     Stream.Free;
-    if AsText then
-      MemStream.Free;
   end;
 end;
 
