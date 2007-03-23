@@ -247,9 +247,9 @@ function ApplicationTerminated : Boolean;
 
 procedure RaiseLastOSError;
 
-{$IFNDEF GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$IFNDEF GLS_DELPHI_5_UP}
 procedure FreeAndNil(var anObject);
-{$ENDIF GLS_DELPHI_5_UP}
+{$ENDIF GLS_DELPHI_5_UP}*)
 
 {: Number of pixels per logical inch along the screen width for the device.<p>
    Under Win32 awaits a HDC and returns its LOGPIXELSX. }
@@ -330,7 +330,11 @@ begin
   ABitmap.Handle := LoadBitmap(HInstance, PChar(AName));
 {$ENDIF}
 {$IFDEF UNIX}
+  {$IFNDEF FPC}
   ABitmap.LoadFromResourceName(HInstance, PChar(AName));
+  {$ELSE}
+  ABitmap.LoadFromLazarusResource(AName);
+  {$ENDIF}
 {$ENDIF}
 end;
 
@@ -805,7 +809,7 @@ begin
    {$ENDIF}
 end;
 
-{$IFNDEF GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$IFNDEF GLS_DELPHI_5_UP}
 // FreeAndNil
 //
 procedure FreeAndNil(var anObject);
@@ -816,7 +820,7 @@ begin
   TObject(anObject):=nil;  // clear the reference before destroying the object
   buf.Free;
 end;
-{$ENDIF GLS_DELPHI_5_UP}
+{$ENDIF GLS_DELPHI_5_UP}*)
 
 type
   TDeviceCapabilities = record
