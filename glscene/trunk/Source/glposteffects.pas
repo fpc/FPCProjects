@@ -6,6 +6,7 @@
   A collection of components that generate post effects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>23/03/07 - DaStr - Added TGLPostShaderHolder.Assign
       <li>20/03/07 - DaStr - Fixed TGLPostShaderHolder.DoRender
       <li>09/03/07 - DaStr - Added pepNightVision preset (thanks Roman Ganz)
                              Changed back all Trunc() calls to Round()
@@ -53,7 +54,7 @@ type
     function GetRealOwner: TGLPostShaderHolder;
     function GetDisplayName: string; override;
   public
-    procedure Assign(Source: TPersistent); override;  
+    procedure Assign(Source: TPersistent); override;
   published
     property Shader: TGLShader read FShader write SetShader;
   end;
@@ -87,6 +88,7 @@ type
   public
     constructor Create(Owner: TComponent); override;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
     procedure DoRender(var rci : TRenderContextInfo;
                        renderSelf, renderChildren : Boolean); override;
   published
@@ -347,6 +349,16 @@ begin
 end;
 
 { TGLPostShaderHolder }
+
+procedure TGLPostShaderHolder.Assign(Source: TPersistent);
+begin
+  if Source is TGLPostShaderHolder then
+  begin
+    FShaders.Assign(TGLPostShaderHolder(Source).FShaders);
+    FTempTextureTarget := TGLPostShaderHolder(Source).FTempTextureTarget;
+  end;
+  inherited;
+end;
 
 constructor TGLPostShaderHolder.Create(Owner: TComponent);
 begin
