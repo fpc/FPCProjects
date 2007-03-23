@@ -200,7 +200,7 @@ begin
 
   // Add the collider's verlet constraints to the verlet world
   AddSCVerletConstriantsToVerletWorld(GLActor1.Skeleton.Colliders,VerletWorld);
-
+  Cape.MeshObjects.UseVBO:=false;
   {AirResistance := TVFAirResistance.Create(VerletWorld);
   AirResistance.DragCoeff := 0.001;
   AirResistance.WindDirection := AffineVectorMake(0,0,1);
