@@ -66,6 +66,8 @@ type
 
   TSetSubItemsEvent = procedure(Sender:TObject) of object;
 
+  { TGLSceneEditorForm }
+
   TGLSceneEditorForm = class(TForm)
     Tree: TTreeView;
     PopupMenu: TPopupMenu;
@@ -134,6 +136,9 @@ type
     TBAddBehaviours: TToolButton;
     TBAddEffects: TToolButton;
     TBEffectsPanel: TToolButton;
+    procedure BehavioursListViewClick(Sender: TObject);
+    procedure EffectsListViewClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure TreeEditing(Sender: TObject; Node: TTreeNode; var AllowEdit: Boolean);
     procedure TreeDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
@@ -209,7 +214,7 @@ type
     function UniqueName(Component: TComponent): string;
 {$ENDIF}
 {$IFDEF FPC}
-    function UniqueName(Component: TComponent): string;
+    //function UniqueName(Component: TComponent): string;
 {$ENDIF}
 
     // We can not use the IDE to define this event because the
@@ -227,7 +232,7 @@ type
 	 procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
   public
-    procedure SetScene(Scene: TGLScene; Designer: TTheDesigner);
+    procedure SetScene(Scene: TGLScene; ADesigner: TTheDesigner);
 
   end;
 
@@ -331,20 +336,16 @@ end;
 
 // SetScene
 //
-procedure TGLSceneEditorForm.SetScene(Scene: TGLScene; Designer: TTheDesigner);
+procedure TGLSceneEditorForm.SetScene(Scene: TGLScene; ADesigner: TTheDesigner);
 begin
    if Assigned(FScene) then
-{$IFDEF FPC}
+(* removed delphi 4 support {$ifdef GLS_DELPHI_5_UP}*)
       FScene.RemoveFreeNotification(Self);
-{$ELSE}
-{$ifdef GLS_DELPHI_5_UP}
-      FScene.RemoveFreeNotification(Self);
-{$else}
+(* removed delphi 4 support {$else}
       FScene.Notification(Self, opRemove);
-{$endif}
-{$endif}
+{$endif}*)
    FScene:=Scene;
-   FCurrentDesigner:=Designer;
+   FCurrentDesigner:=ADesigner;
    ResetTree;
    BehavioursListView.Items.Clear;
    EffectsListView.Items.Clear;
@@ -397,10 +398,10 @@ begin
   //GlobalDesignHook.AddHandlerSetSelection(@OnSetSelection);
   {$ENDIF}
    RegisterGLBaseSceneObjectNameChangeEvent(OnBaseSceneObjectNameChanged);
-   {$ifndef FPC}
+   {.$ifndef FPC}
    Tree.Images:=ObjectManager.ObjectIcons;
    Tree.Indent:=ObjectManager.ObjectIcons.Width;
-   {$endif}
+   {.$endif}
    with Tree.Items do begin
       // first add the scene root
       CurrentNode:=Add(nil, glsSceneRoot);
@@ -423,22 +424,20 @@ begin
    end;
    // Build SubMenus
    SetObjectsSubItems(MIAddObject);
-{$IFDEF GLS_DELPHI_5_UP}
-{$IFDEF MSWINDOWS}
-{$ifndef FPC}
+(* removed delphi 4 support {$IFDEF GLS_DELPHI_5_UP}
+{$IFDEF MSWINDOWS}*)
    MIAddObject.SubMenuImages:=ObjectManager.ObjectIcons;
-{$endif}
-{$ENDIF}
-{$endif}
+(* removed delphi 4 support {$ENDIF}
+{$endif}*)
 {$IFNDEF GLS_DELPHI_6_UP}
    ACCut.Visible:=False;
    ACCopy.Visible:=False;
    ACPaste.Visible:=False;
 {$ENDIF}
    SetObjectsSubItems(PMToolBar.Items);
-{$ifndef FPC}
+{.$ifndef FPC}
    PMToolBar.Images:=ObjectManager.ObjectIcons;
-{$endif}
+{.$endif}
 
    SetBehavioursSubItems(MIAddBehaviour, nil);
    SetBehavioursSubItems(PMBehavioursToolBar.Items, nil);
@@ -464,6 +463,24 @@ begin
 
    // Trigger the event OnEdited manualy
    Tree.OnEdited := TreeEdited;
+end;
+
+procedure TGLSceneEditorForm.FormClose(Sender: TObject;
+  var CloseAction: TCloseAction);
+begin
+  SetScene(nil,nil);
+  //CloseAction:=caFree;
+  //vGLSceneEditorForm:=nil;
+end;
+
+procedure TGLSceneEditorForm.BehavioursListViewClick(Sender: TObject);
+begin
+  BehavioursListViewEnter(BehavioursListView);
+end;
+
+procedure TGLSceneEditorForm.EffectsListViewClick(Sender: TObject);
+begin
+  EffectsListViewEnter(EffectsListView);
 end;
 
 // FormDestroy
@@ -603,12 +620,12 @@ var
 	XCollectionItemClass : TXCollectionItemClass;
 	mi : TMenuItem;
 begin
-{$IFDEF GLS_DELPHI_5_UP}
+(* removed delphi 4 support {$IFDEF GLS_DELPHI_5_UP}*)
    parent.Clear;
-{$ELSE}
+(* removed delphi 4 support {$ELSE}
    for i:=parent.Count-1 downto 0 do
       parent.Delete(i);
-{$ENDIF}
+{$ENDIF}*)
    if Assigned(XCollection) then begin
       list:=GetXCollectionItemClassesList(XCollection.ItemsClass);
       try
@@ -687,15 +704,21 @@ begin
          {$ifndef FPC}
          AObject:=TGLBaseSceneObject(FCurrentDesigner.CreateComponent(TGLSceneObjectClass(TMenuItem(Sender).Tag), AParent, 0, 0, 0, 0));
          {$else}
-         AObject:=TGLBaseSceneObject(TGLSceneObjectClass(TMenuItem(Sender).Tag).Create(FCurrentDesigner.Form));
-         AObject.Name:=UniqueName(AObject);
+         AObject:=TGLBaseSceneObject(TGLSceneObjectClass(TMenuItem(Sender).Tag).Create(FScene.Owner));
+         //AObject:=TGLBaseSceneObject(FormEditingHook.CreateComponent(nil,TGLSceneObjectClass(TMenuItem(Sender).Tag), '', 0, 0, 0, 0));
+         //CreateComponent(nil,);
+         AObject.Name:=FCurrentDesigner.CreateUniqueComponentName(AObject.ClassName);
          {$endif}
          TComponent(AObject).DesignInfo:=0;
+         //FCurrentDesigner.Modified;
          AParent.AddChild(AObject);
          Node:=AddNodes(Selected, AObject);
          Node.Selected:=True;
+         FCurrentDesigner.PropertyEditorHook.PersistentAdded(AObject,True);
          FCurrentDesigner.Modified;
-         GlobalDesignHook.PersistentAdded(AObject,true);
+         FCurrentDesigner.SelectOnlyThisComponent(AObject);
+         //GlobalDesignHook.PersistentAdded(AObject,true);
+         //GlobalDesignHook.AddPersistentAdded(AObject,true);
       end;
 end;
 
@@ -711,6 +734,7 @@ begin
       //PrepareListView;
       ShowBehaviours(AParent);
       //ListView.Selected:=ListView.FindData(0, XCollectionItem, True, False);
+      FCurrentDesigner.PropertyEditorHook.PersistentAdded(AParent.Behaviours.Items[AParent.Behaviours.count-1],True);
       FCurrentDesigner.Modified;
    end;
 end;
@@ -728,6 +752,7 @@ begin
       //PrepareListView;
       ShowEffects(AParent);
       //ListView.Selected:=ListView.FindData(0, XCollectionItem, True, False);
+      FCurrentDesigner.PropertyEditorHook.PersistentAdded(AParent.Effects.Items[AParent.Effects.count-1],True);
       FCurrentDesigner.Modified;
    end;
 end;
@@ -781,6 +806,7 @@ procedure TGLSceneEditorForm.OnBaseSceneObjectNameChanged(Sender : TObject);
 var
 	n : TTreeNode;
 begin
+  if not(Assigned(FScene)) then exit;
 	n:=FindNodeByData(Tree.Items, Sender);
 	if Assigned(n) then
 		n.Text:=(Sender as TGLBaseSceneObject).Name;
@@ -950,11 +976,14 @@ begin
       AObject:=TGLBaseSceneObject(FCurrentDesigner.CreateComponent(TGLCamera, FScene.Cameras, 0, 0, 0, 0));
       {$else}
       AObject:=TGLBaseSceneObject(TGLCamera.Create(FCurrentDesigner.Form));
+      AObject.Name:=FCurrentDesigner.CreateUniqueComponentName(AObject.ClassName);
       {$endif}
       FScene.Cameras.AddChild(AObject);
       Node:=AddNodes(FCameraNode, AObject);
       Node.Selected:=True;
+      FCurrentDesigner.PropertyEditorHook.PersistentAdded(AObject,True);
       FCurrentDesigner.Modified;
+      FCurrentDesigner.SelectOnlyThisComponent(AObject);
    end;
 end;
 
@@ -1037,9 +1066,9 @@ begin
          FCurrentDesigner.SelectComponent(nil);
          {$else}
          GlobalDesignHook.Unselect(anObject);
-         //FCurrentDesigner.SelectOnlyThisComponent(nil);
          {$endif}
          anObject.Parent.Remove(anObject, keepChildren);
+         FCurrentDesigner.Modified;
          GlobalDesignHook.DeletePersistent(TPersistent(anObject));
          //anObject.Free;
       end
@@ -1076,10 +1105,10 @@ begin
         ShowBehaviours(TGLBaseSceneObject(Tree.Selected.Data));
         {$ifndef FPC}
         BehavioursListView.Selected:=BehavioursListView.FindData(0,PrevData,True,False);
-        FCurrentDesigner.Modified;
         {$else}
         BehavioursListView.Selected:=FindListViewData(BehavioursListView, PrevData);
         {$endif}
+        FCurrentDesigner.Modified;
   end
   else if FSelectedItems=EFFECTS_SELECTED then
   begin
@@ -1417,6 +1446,7 @@ begin
 end;
 {$ENDIF}
 
+(*
 {$ifdef FPC}
 function TGLSceneEditorForm.UniqueName(Component: TComponent): string;
 begin
@@ -1424,13 +1454,15 @@ begin
   Result := FCurrentDesigner.CreateUniqueComponentName(Component.ClassName);
 end;
 {$ENDIF FPC}
-
+*)
 
 procedure TGLSceneEditorForm.BehavioursListViewEnter(Sender: TObject);
 begin
    if Assigned(FCurrentDesigner) and Assigned(BehavioursListView.Selected) then begin
       {$ifndef FPC}
       FCurrentDesigner.SelectComponent(TGLBaseBehaviour(BehavioursListView.Selected.Data));
+      {$else}
+      GlobalDesignHook.SelectOnlyThis(TGLBaseBehaviour(BehavioursListView.Selected.Data));
       {$endif}
    end;
    FSelectedItems:=BEHAVIOURS_SELECTED;
@@ -1443,7 +1475,7 @@ begin
       {$ifndef FPC}
       FCurrentDesigner.SelectComponent(TGLBaseBehaviour(EffectsListView.Selected.Data));
       {$else}
-      //FCurrentDesigner.SelectOnlyThisComponent(TGLBaseBehaviour(EffectsListView.Selected.Data));
+      GlobalDesignHook.SelectOnlyThis(TXCollectionItem(EffectsListView.Selected.Data));
       {$endif}
    end;
    FSelectedItems:=EFFECTS_SELECTED;
@@ -1460,19 +1492,21 @@ begin
   if ListView.Selected<>nil then
   begin
 
-      FCurrentDesigner.Modified;
-{$IFNDEF GLS_DELPHI_4}
-{$ifndef FPC}
-      FCurrentDesigner.NoSelection;
+
+
+{$ifdef FPC}
+      GlobalDesignHook.SelectOnlyThis(nil);
 {$ELSE}
-      FCurrentDesigner.SelectOnlyThisComponent(nil);
-{$endif}
+{$IFNDEF GLS_DELPHI_4}
+      FCurrentDesigner.NoSelection;
 {$else}
       FCurrentDesigner.SelectComponent(nil);
+{$ENDIF}
 {$ENDIF}
       TXCollectionItem(ListView.Selected.Data).Free;
       ListView.Selected.Free;
      // ListViewChange(Self, nil, ctState);
+      FCurrentDesigner.Modified;
       ShowBehavioursAndEffects(TGLBaseSceneObject(Tree.Selected.Data));
   end;
 end;
@@ -1565,7 +1599,8 @@ begin
          {$ifndef FPC}
          FCurrentDesigner.SelectComponent(TGLBaseBehaviour(BehavioursListView.Selected.Data));
          {$else}
-         //FCurrentDesigner.SelectOnlyThisComponent(TGLBaseBehaviour(BehavioursListView.Selected.Data));
+         GlobalDesignHook.SelectOnlyThis(TGLBaseBehaviour(BehavioursListView.Selected.Data));
+         //Writeln('BehavioursListView.Selected.data=',hexStr(BehavioursListView.Selected.data));
          {$endif}
          ACDeleteObject.Enabled:=True;
          ACMoveUp.Enabled:=(BehavioursListView.Selected.Index>0);
@@ -1576,6 +1611,7 @@ begin
     end
       else
       begin
+         //Writeln('BehavioursListView.Selected=nil');
          ACDeleteObject.Enabled:=false;
          ACMoveUp.Enabled:=false;
          ACMoveDown.Enabled:=false;
@@ -1591,7 +1627,7 @@ begin
          {$ifndef FPC}
          FCurrentDesigner.SelectComponent(TGLBaseBehaviour(EffectsListView.Selected.Data));
          {$else}
-         //FCurrentDesigner.SelectOnlyThisComponent(TGLBaseBehaviour(EffectsListView.Selected.Data));
+         GlobalDesignHook.SelectOnlyThis(TXCollectionItem(EffectsListView.Selected.Data));
          {$endif}
          ACDeleteObject.Enabled:=True;
          ACMoveUp.Enabled:=(EffectsListView.Selected.Index>0);
