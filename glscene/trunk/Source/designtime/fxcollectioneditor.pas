@@ -4,6 +4,7 @@
 	Edits a TXCollection<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>03/07/04 - LR - Make change for Linux
       <li>12/07/03 - DanB - Fixed crash when owner deleted        
       <li>27/02/02 - Egg - Fixed crash after item deletion
@@ -17,6 +18,19 @@ interface
 
 {$i GLScene.inc}
 
+(* OLD DELPHI/KYLIX
+{$IFDEF MSWINDOWS}
+uses
+  Windows, Forms, XCollection, Messages, ImgList, Controls, Classes, ActnList, 
+  Menus, ComCtrls, ToolWin, 
+  {$ifdef GLS_DELPHI_6_UP} DesignEditors, DesignIntf {$else} DsgnIntf {$endif};
+{$ENDIF}
+{$IFDEF UNIX} 
+uses
+  QForms, XCollection, QImgList, QControls, Classes, QActnList, 
+  QMenus, QComCtrls, DesignEditors, DesignIntf; 
+{$ENDIF}
+*)
 uses
   LResources, Forms, XCollection, Messages, ImgList, Controls, Classes, ActnList,
   Menus, ComCtrls, Propedits;
@@ -59,9 +73,10 @@ procedure TBAddClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormHide(Sender: TObject);
   private
-	 { Déclarations privées }
+    { private declarations }
 	 FXCollection : TXCollection;
 //    ownerComponent : TComponent;
+//CRB-We want this:    FDesigner : {$ifdef GLS_DELPHI_6_UP} IDesigner {$else} IFormDesigner {$endif};
     updatingListView : Boolean;
 	 procedure PrepareListView;
 	 procedure PrepareXCollectionItemPopup(parent : TMenuItem);
@@ -71,8 +86,11 @@ procedure TBAddClick(Sender: TObject);
   protected
 	 procedure Notification(AComponent: TComponent; Operation: TOperation); override;
   public
-	 { Déclarations publiques }
+    { public declarations }
     procedure SetXCollection(aXCollection: TXCollection);
+(*CRB-want    procedure SetXCollection(aXCollection: TXCollection;
+         designer: {$ifdef GLS_DELPHI_6_UP} IDesigner {$else} IFormDesigner {$endif});
+*)        
   end;
 
 function XCollectionEditor : TXCollectionEditor;
@@ -86,8 +104,17 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
+(* DELPHI/KYLIX - please clean up 
+{$IFDEF MSWINDOWS}
+{$R *.dfm}
+{$ENDIF}
+{$IFDEF UNIX}
+{$R *.xfm}
+{$ENDIF}
+*)
+
 uses
-  GLMisc, SysUtils, GLBehaviours, GLScene, Dialogs;
+  GLMisc, SysUtils, GLBehaviours, GLScene, Dialogs; 
 
 resourcestring
    cXCollectionEditor = 'XCollection editor';

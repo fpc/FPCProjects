@@ -13,6 +13,7 @@
       - added automatical generated History from CVS
 
    <b>Historique : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>03/07/04 - LR - Make change for Linux
       <li>?/?/? -  - Creation
    </ul></font>
@@ -29,7 +30,7 @@ uses
   Forms, ComCtrls, StdCtrls, ToolWin, ExtCtrls, Buttons, Graphics, Controls, 
   Classes;
 {$ENDIF}
-{$ifdef unix}
+{$IFDEF UNIX}
 uses
   {$ifndef fpc}
   QForms, QComCtrls, QStdCtrls, QExtCtrls, QButtons, QGraphics, QControls, 
@@ -79,11 +80,11 @@ type
     procedure SpeedButton9Click(Sender: TObject);
     procedure SBInvertClick(Sender: TObject);
   private
-    { Déclarations privées }
+    { private declarations }
     vx, vy, vz : Single;
     procedure TestInput(edit : TEdit; imError : TImage; var dest : Single);
   public
-    { Déclarations publiques }
+    { public declarations }
     function Execute(var x, y, z : Single) : Boolean;
   end;
 
