@@ -20,9 +20,11 @@
 }
 unit XCollection;
 
+{.$DEFINE DEBUG_XCOLLECTION}
+
 interface
 
-uses Classes, SysUtils;
+uses Classes, SysUtils {$IFDEF DEBUG_XCOLLECTION}, typinfo {$ENDIF};
 
 {$i GLScene.inc}
 
@@ -493,63 +495,81 @@ var
 	classList : TList;
 	XCollectionItem : TXCollectionItem;
 begin
-	// Here, we write all listed XCollection through their WriteToFiler methods,
-	// but to be able to restore them, we also write their classname, and to
-	// avoid wasting space if the same class appears multiple times we build up
-	// a lookup table while writing them, if the class is anew, the name is
-	// written, otherwise, only the index in the table is written.
-	// Using a global lookup table (instead of a "per-WriteData" one) could save
-	// more space, but would also increase dependencies, and this I don't want 8)
-	classList:=TList.Create;
-	try
-		with writer do begin
-			WriteInteger(FList.Count);
-			for i:=0 to FList.Count-1 do begin
-				XCollectionItem:=TXCollectionItem(FList[i]);
-				n:=classList.IndexOf(XCollectionItem.ClassType);
-				if n<0 then begin
-					WriteString(XCollectionItem.ClassName);
-					classList.Add(XCollectionItem.ClassType);
-				end else WriteInteger(n);
-            XCollectionItem.WriteToFiler(writer);
-			end;
-		end;
-	finally
-		classList.Free;
-	end;
+  // Here, we write all listed XCollection through their WriteToFiler methods,
+  // but to be able to restore them, we also write their classname, and to
+  // avoid wasting space if the same class appears multiple times we build up
+  // a lookup table while writing them, if the class is anew, the name is
+  // written, otherwise, only the index in the table is written.
+  // Using a global lookup table (instead of a "per-WriteData" one) could save
+  // more space, but would also increase dependencies, and this I don't want 8)
+  classList:=TList.Create;
+  try
+    with writer do begin
+      WriteInteger(FList.Count);
+      for i:=0 to FList.Count-1 do begin
+        XCollectionItem:=TXCollectionItem(FList[i]);
+        n:=classList.IndexOf(XCollectionItem.ClassType);
+        if n<0 then begin
+          WriteString(XCollectionItem.ClassName);
+          classList.Add(XCollectionItem.ClassType);
+        end
+        else
+          WriteInteger(n);
+        XCollectionItem.WriteToFiler(writer);
+      end;
+    end;
+  finally
+    classList.Free;
+  end;
 end;
 
 // ReadFromFiler
 //
 procedure TXCollection.ReadFromFiler(reader : TReader);
 var
-	n : Integer;
+	n,lc,lcnum : Integer;
 	classList : TList;
 	cName : String;
 	XCollectionItemClass : TXCollectionItemClass;
 	XCollectionItem : TXCollectionItem;
 begin
-	// see WriteData for a description of what is going on here
-	Clear;
-	classList:=TList.Create;
-	try
-		with reader do begin
-			for n:=1 to ReadInteger do begin
-				if NextValue in [vaString, vaLString] then begin
-					cName:=ReadString;
-					XCollectionItemClass:=FindXCollectionItemClass(cName);
-					Assert(Assigned(XCollectionItemClass),
-                      'Class '+cName+' unknown. Add the relevant unit to your "uses".');
-					classList.Add(XCollectionItemClass);
-				end else XCollectionItemClass:=TXCollectionItemClass(classList[ReadInteger]);
-				XCollectionItem:=XCollectionItemClass.Create(Self);
-            XCollectionItem.ReadFromFiler(reader);
-			end;
-		end;
-	finally
-		classList.Free;
-	end;
-   FCount:=FList.Count;
+  // see WriteData for a description of what is going on here
+  Clear;
+  classList:=TList.Create;
+  try
+    with reader do begin
+      lc:=ReadInteger;
+      for n:=1 to lc do begin
+        if NextValue in [vaString, vaLString] then begin
+          cName:=ReadString;
+          {$IFDEF DEBUG_XCOLLECTION}
+          writeln('TXCollection.ReadFromFiler create class entry: ',cname);
+          {$ENDIF}
+          XCollectionItemClass:=FindXCollectionItemClass(cName);
+          Assert(Assigned(XCollectionItemClass),'Class '+cName+' unknown. Add the relevant unit to your "uses".');
+          classList.Add(XCollectionItemClass);
+        end
+        else begin
+          {$IFDEF DEBUG_XCOLLECTION}
+          assert(NextValue in [vaInt8,vaInt16,vaInt32],'Non-Integer ValueType: '+ GetEnumName(TypeInfo(TValueType),ord(NextValue)));
+          {$ENDIF}
+          lcnum:=ReadInteger;
+          Assert((lcnum>=0) and (lcnum<classlist.Count),'Inavlid classlistIndex: '+inttostr(lcnum));
+          XCollectionItemClass:=TXCollectionItemClass(classList[lcnum]);
+          {$IFDEF DEBUG_XCOLLECTION}
+          writeln('TXCollection.ReadFromFiler create by number: ',lcnum,' -> ',XCollectionItemClass.ClassName);
+          {$ENDIF}
+        end;
+
+        XCollectionItem:=XCollectionItemClass.Create(Self);
+
+        XCollectionItem.ReadFromFiler(reader);
+      end;
+    end;
+  finally
+    classList.Free;
+  end;
+  FCount:=FList.Count;
 end;
 
 // ItemsClass
