@@ -97,14 +97,18 @@
       <li>05/02/00 - EG - Added TGLColorProperty and TGLCoordinatesProperty
 	</ul></font>
 }
-
 unit GLLazarusRegister;
+
+// Registration unit for GLScene library
+// 30-DEC-99 ml: scene editor added, structural changes
 
 interface
 
+{$i GLScene.inc}
+
 uses
    {$ifdef windows}windows,{$endif}
-   classes, controls, stdctrls, dialogs, glscene, lresources, propedits;
+   classes, controls, stdctrls, dialogs, glscene, lresources, propedits, lclintf, ComponentReg;
 
 
 type
@@ -126,9 +130,9 @@ type
       private
          { Private Declarations }
          FSceneObjectList : TList;
-         {$IFNDEF FPC}
+         {.$IFNDEF FPC}
          FObjectIcons : TImageList;       // a list of icons for scene objects
-         {$ENDIF}
+         {.$ENDIF}
          {$ifdef WINDOWS}
          FOverlayIndex,                   // indices into the object icon list
          {$endif}
@@ -137,6 +141,7 @@ type
          FLightsourceRootIndex,
          FObjectRootIndex,
          FStockObjectRootIndex : Integer;
+         procedure RegisterSceneObjectsToIDE;
 
       protected
 			{ Protected Declarations }
@@ -159,9 +164,9 @@ type
          //: Unregisters a stock object and removes it from the stock object list
          procedure UnRegisterSceneObject(ASceneObject: TGLSceneObjectClass);
 //         procedure Notify(Sender: TPlugInManager; Operation: TOperation; PlugIn: Integer); override;
-         {$IFNDEF FPC}
+         {.$IFNDEF FPC}
          property ObjectIcons: TImageList read FObjectIcons;
-         {$ENDIF}
+         {.$ENDIF}
          property SceneRootIndex: Integer read FSceneRootIndex;
          property LightsourceRootIndex: Integer read FLightsourceRootIndex;
          property CameraRootIndex: Integer read FCameraRootIndex;
@@ -240,6 +245,11 @@ uses
    {glsdlcontext,glscriptbase,}
    ;
 
+resourcestring
+   { OpenGL property category }
+   sOpenGLCategoryName = 'OpenGL';
+
+
 var
    vObjectManager : TObjectManager;
 
@@ -273,6 +283,48 @@ type
          function GetVerb(Index: Integer): String; override;
          function GetVerbCount: Integer; override;
    end;
+   // TResolutionProperty
+   //
+   TResolutionProperty = class (TPropertyEditor)
+      public
+         { Public Declarations }
+         function GetAttributes: TPropertyAttributes; override;
+         function GetValue : String; override;
+         procedure GetValues(Proc: TGetStrProc); override;
+         procedure SetValue(const Value: String); override;
+   end;
+
+   // TClassProperty
+   //
+   TGLTextureProperty = class (TClassProperty)
+      protected
+         { Protected Declarations }
+         function GetAttributes: TPropertyAttributes; override;
+   end;
+
+   // TGLTextureImageProperty
+   //
+   TGLTextureImageProperty = class(TClassProperty)
+      protected
+         { Protected Declarations }
+         function GetAttributes: TPropertyAttributes; override;
+         procedure Edit; override;
+   end;
+
+   // TGLImageClassProperty
+   //
+   TGLImageClassProperty = class(TClassProperty)
+      protected
+         { Protected Declarations }
+         function GetAttributes : TPropertyAttributes; override;
+         procedure GetValues(proc : TGetStrProc); override;
+
+      public
+        { Public Declarations }
+        function GetValue : String; override;
+        procedure SetValue(const value : String); override;
+   end;
+
 
    TGLColorProperty = class (TClassProperty)
       private
@@ -287,8 +339,18 @@ type
         function GetValue: String; override;
 	procedure SetValue(const Value: string); override;
    end;
-//{$endif}
          
+   // TVectorFileProperty
+   //
+   TVectorFileProperty = class (TClassProperty)
+      protected
+         { Protected Declarations }
+         function GetAttributes: TPropertyAttributes; override;
+         function GetValue: String; override;
+         procedure Edit; override;
+         procedure SetValue(const Value: string); override;
+   end;
+
    // TSoundFileProperty
    //
    TSoundFileProperty = class (TClassProperty)
@@ -318,6 +380,26 @@ type
          procedure Edit; override;
    end;
 
+   // TGLMaterialProperty
+   //
+   TGLMaterialProperty = class(TClassProperty)
+      protected
+         { Protected Declarations }
+         function GetAttributes: TPropertyAttributes; override;
+         procedure Edit; override;
+   end;
+
+   // TGLAnimationNameProperty
+   //
+   TGLAnimationNameProperty = class(TStringProperty)
+      protected
+         { Protected Declarations }
+         function GetAttributes : TPropertyAttributes; override;
+         procedure GetValues(proc : TGetStrProc); override;
+      public
+         { Public Declarations }
+   end;
+
 
 //----------------- TObjectManager ---------------------------------------------
 
@@ -335,9 +417,9 @@ end;
 destructor TObjectManager.Destroy;
 begin
    DestroySceneObjectList;
-   {$IFNDEF FPC}
+   {.$IFNDEF FPC}
    FObjectIcons.Free;
-   {$ENDIF}
+   {.$ENDIF}
    inherited Destroy;
 end;
 
@@ -418,6 +500,17 @@ begin
    end;
 end;
 
+
+procedure TObjectManager.RegisterSceneObjectsToIDE;
+var i : integer;
+begin
+  if not(Assigned(RegisterNoIconProc)) then exit;
+  for i := 0 to FSceneObjectList.count-1 do begin
+     RegisterNoIcon([PSceneObjectEntry(FSceneObjectList[i])^.ObjectClass]);
+  end;
+end;
+
+
 // RegisterSceneObject
 //
 procedure TObjectManager.RegisterSceneObject(ASceneObject: TGLSceneObjectClass;
@@ -425,13 +518,16 @@ procedure TObjectManager.RegisterSceneObject(ASceneObject: TGLSceneObjectClass;
 var
    newEntry  : PSceneObjectEntry;
    pic       : TPicture;
-   {$IFNDEF FPC}
+   {.$IFNDEF FPC}
    resBitmapName : String;
    bmp : TBitmap;
-   {$ENDIF}
+   {.$ENDIF}
 begin
 //>>Lazarus will crash at this function
-   RegisterNoIcon([aSceneObject]);
+   if Assigned(RegisterNoIconProc) then
+      RegisterNoIcon([ASceneObject]);
+   //Writeln('GL Registered ',ASceneObject.classname);
+   Classes.RegisterClass(ASceneObject);
    with FSceneObjectList do begin
       // make sure no class is registered twice
       if Assigned(FindSceneObjectClass(ASceneObject, AName)) then Exit;
@@ -445,8 +541,8 @@ begin
             NewEntry^.Name:=aName;
             NewEntry^.Category:=aCategory;
             Index:=FSceneObjectList.Count;
-            {$IFNDEF FPC}
             resBitmapName:=ASceneObject.ClassName;
+            {$IFNDEF FPC}
             GLLoadBitmapFromInstance(Pic.Bitmap,resBitmapName);
             bmp:=TBitmap.Create;
             bmp.PixelFormat:=glpf24bit;
@@ -458,8 +554,11 @@ begin
                FObjectIcons.AddMasked(Pic.Bitmap, Pic.Bitmap.Canvas.Pixels[0, 0]);
                ImageIndex:=FObjectIcons.Count-1;
             end else ImageIndex:=0;
+            {$ELSE}
+            FObjectIcons.AddFromLazarusResource(resBitmapName);
+            ImageIndex:=FObjectIcons.Count-1;
             {$ENDIF}
-		   end;
+         end;
        Add(NewEntry);
       finally
          pic.Free;
@@ -495,7 +594,7 @@ begin
    // load first pic to get size
    GLLoadBitmapFromInstance(Pic.Bitmap,'gls_cross');
    //FObjectIcons:=TImageList.CreateSize(Pic.Width, Pic.height);
-   FObjectIcons:=TImageList.CreateSize(16, 16);
+   FObjectIcons:=TImageList.CreateSize(24, 24);
 
    with FObjectIcons, pic.Bitmap.Canvas do begin
       try
@@ -513,11 +612,26 @@ begin
          GLLoadBitmapFromInstance(Pic.Bitmap,'gls_lights');
          AddMasked(Pic.Bitmap, Pixels[0, 0]); FLightsourceRootIndex:=Count-1;
          GLLoadBitmapFromInstance(Pic.Bitmap,'gls_objects');
-         AddMasked(Pic.Bitmap, Pixels[0, 0]); FObjectRootIndex:=Count-1;
+         AddMasked(Pic.Bitmap, Pixels[0, 0]); FObjectRootIndex;:=Count-1;
          AddMasked(Pic.Bitmap, Pixels[0, 0]); FStockObjectRootIndex:=Count-1;
       finally
          Pic.Free;
       end;
+   end;
+   {$ELSE}
+   FObjectIcons:=TImageList.CreateSize(16, 16);
+   with FObjectIcons do begin
+         AddFromLazarusResource('gls_cross');
+         AddFromLazarusResource('gls_root');
+         FSceneRootIndex:=Count-1;
+         AddFromLazarusResource('gls_camera');
+         FCameraRootIndex:=Count-1;
+         AddFromLazarusResource('gls_lights');
+         FLightsourceRootIndex:=Count-1;
+         AddFromLazarusResource('gls_objects');
+         FObjectRootIndex:=Count-1;
+         AddFromLazarusResource('gls_objects');
+         FStockObjectRootIndex:=Count-1;
    end;
    {$ENDIF}
 end;
@@ -604,6 +718,168 @@ begin
    Result:=1;
 end;
 
+//----------------- TResolutionProperty ----------------------------------------
+
+// GetAttributes
+//
+function TResolutionProperty.GetAttributes: TPropertyAttributes;
+begin
+   Result:=[paValueList];
+end;
+
+// GetValue
+//
+function TResolutionProperty.GetValue : String;
+begin
+   Result:=vVideoModes[GetOrdValue].Description;
+end;
+
+// GetValues
+//
+procedure TResolutionProperty.GetValues(Proc: TGetStrProc);
+var
+   i : Integer;
+begin
+   for i:=0 to vNumberVideoModes-1 do
+      Proc(vVideoModes[i].Description);
+end;
+
+// SetValue
+//
+procedure TResolutionProperty.SetValue(const Value: String);
+
+const Nums = ['0'..'9'];
+
+var XRes,YRes,BPP : Integer;
+    Pos, SLength  : Integer;
+    TempStr       : String;
+
+begin
+  if CompareText(Value,'default') <> 0 then
+  begin
+    // initialize scanning
+    TempStr:=Trim(Value)+'|'; // ensure at least one delimiter
+    SLength:=Length(TempStr);
+    XRes:=0; YRes:=0; BPP:=0;
+    // contains the string something?
+    if SLength > 1 then
+    begin
+      // determine first number
+      for Pos:=1 to SLength do
+        if not (TempStr[Pos] in Nums) then Break;
+      if Pos <= SLength then
+      begin
+        // found a number?
+        XRes:=StrToInt(Copy(TempStr,1,Pos-1));
+        // search for following non-numerics
+        for Pos:=Pos to SLength do
+          if TempStr[Pos] in Nums then Break;
+        Delete(TempStr,1,Pos-1); // take it out of the String
+        SLength:=Length(TempStr); // rest length of String
+        if SLength > 1 then // something to scan?
+        begin
+          // determine second number
+          for Pos:=1 to SLength do
+            if not (TempStr[Pos] in Nums) then Break;
+          if Pos <= SLength then
+          begin
+            YRes:=StrToInt(Copy(TempStr,1,Pos-1));
+            // search for following non-numerics
+            for Pos:=Pos to SLength do
+              if TempStr[Pos] in Nums then Break;
+            Delete(TempStr,1,Pos-1); // take it out of the String
+            SLength:=Length(TempStr); // rest length of String
+            if SLength > 1 then
+            begin
+              for Pos:=1 to SLength do
+                if not (TempStr[Pos] in Nums) then Break;
+              if Pos <= SLength then BPP:=StrToInt(Copy(TempStr,1,Pos-1));
+            end;
+          end;
+        end;
+      end;
+    end;
+    SetOrdValue(GetIndexFromResolution(XRes,YRes,BPP));
+  end
+  else SetOrdValue(0);
+end;
+
+
+//----------------- TGLTextureProperty -----------------------------------------
+
+function TGLTextureProperty.GetAttributes: TPropertyAttributes;
+begin
+  Result:=[paSubProperties];
+end;
+
+//----------------- TGLTextureImageProperty ------------------------------------
+
+// GetAttributes
+//
+function TGLTextureImageProperty.GetAttributes: TPropertyAttributes;
+begin
+	Result:=[paDialog];
+end;
+
+// Edit
+//
+procedure TGLTextureImageProperty.Edit;
+var
+	ownerTexture : TGLTexture;
+begin
+	ownerTexture:=TGLTextureImage(GetOrdValue).OwnerTexture;
+	if ownerTexture.Image.Edit then
+		{Designer.}Modified;
+end;
+
+//----------------- TGLImageClassProperty --------------------------------------
+
+// GetAttributes
+//
+function TGLImageClassProperty.GetAttributes: TPropertyAttributes;
+begin
+	Result:=[paValueList];
+end;
+
+// GetValues
+//
+procedure TGLImageClassProperty.GetValues(proc: TGetStrProc);
+var
+	i : Integer;
+	sl : TStrings;
+begin
+	sl:=GetGLTextureImageClassesAsStrings;
+	try
+		for i:=0 to sl.Count-1 do proc(sl[i]);
+	finally
+		sl.Free;
+	end;
+end;
+
+// GetValue
+//
+function TGLImageClassProperty.GetValue : String;
+begin
+	Result:=FindGLTextureImageClass(GetStrValue).FriendlyName;
+end;
+
+// SetValue
+//
+procedure TGLImageClassProperty.SetValue(const value : String);
+var
+	tic : TGLTextureImageClass;
+begin
+	tic:=FindGLTextureImageClassByFriendlyName(value);
+	if Assigned(tic) then
+		SetStrValue(tic.ClassName)
+	else SetStrValue('');
+	Modified;
+end;
+
+
+
+//----------------- TGLColorproperty -----------------------------------------------------------------------------------
+
 procedure TGLColorProperty.Edit;
 var
    colorDialog : TColorDialog;
@@ -652,6 +928,51 @@ begin
    else if selected then
       Result:=clWhite
    else Result:=ConvertColorVector(AColor);
+end;
+
+//----------------- TVectorFileProperty ----------------------------------------
+
+// GetAttributes
+//
+function TVectorFileProperty.GetAttributes: TPropertyAttributes;
+begin
+   Result:=[paDialog];
+end;
+
+// GetValue
+//
+function TVectorFileProperty.GetValue: String;
+begin
+   Result:=GetStrValue;
+end;
+
+// Edit
+//
+procedure TVectorFileProperty.Edit;
+var
+   ODialog   : TOpenDialog;
+   Component : TGLFreeForm;
+   Desc, F    : String;
+begin
+   Component:=GetComponent(0) as TGLFreeForm;
+   ODialog:=TOpenDialog.Create(nil);
+   try
+      GetVectorFileFormats.BuildFilterStrings(TVectorFile, Desc, F);
+      ODialog.Filter:=Desc;
+      if ODialog.Execute then begin
+         Component.LoadFromFile(ODialog.FileName);
+         Modified;
+      end;
+   finally
+      ODialog.Free;
+   end;
+end;
+
+// SetValue
+//
+procedure TVectorFileProperty.SetValue(const Value: string);
+begin
+   SetStrValue(Value);
 end;
 
 //----------------- TSoundFileProperty -----------------------------------------
@@ -744,6 +1065,26 @@ begin
    end;
 end;
 
+//----------------- TGLMaterialProperty --------------------------------------------------------------------------------
+
+// GetAttributes
+//
+function TGLMaterialProperty.GetAttributes: TPropertyAttributes;
+begin
+   Result:=[paDialog, paSubProperties];
+end;
+
+// Edit
+//
+procedure TGLMaterialProperty.Edit;
+begin
+{$WARNING crossbuilder - needs MaterialEditorForm }
+(*
+   if MaterialEditorForm.Execute(TGLMaterial(GetOrdValue)) then
+      Modified;
+*)
+end;
+
 //----------------- TGLLibMaterialNameProperty ---------------------------------
 
 // GetAttributes
@@ -779,6 +1120,34 @@ begin
 		SetStrValue(buf);
   }
 end;
+
+//----------------- TGLAnimationNameProperty -----------------------------------
+
+// GetAttributes
+//
+function TGLAnimationNameProperty.GetAttributes: TPropertyAttributes;
+begin
+	Result:=[paValueList];
+end;
+
+// GetValues
+//
+procedure TGLAnimationNameProperty.GetValues(proc: TGetStrProc);
+var
+	i : Integer;
+   animControler : TGLAnimationControler;
+   actor : TGLActor;
+begin
+   animControler:=(GetComponent(0) as TGLAnimationControler);
+   if Assigned(animControler) then begin
+      actor:=animControler.Actor;
+      if Assigned(actor) then with actor.Animations do begin
+         for i:=0 to Count-1 do
+            proc(Items[i].Name);
+      end;
+	end;
+end;
+
 
 procedure Register;
 begin
@@ -830,15 +1199,38 @@ begin
 
    RegisterComponentEditor(TGLSceneViewer, TGLSceneViewerEditor);
    RegisterComponentEditor(TGLScene, TGLSceneEditor);
-   
-   RegisterPropertyEditor(TypeInfo(TGLColor), nil, '', TGLColorProperty);
-   
+
+//   RegisterComponentEditor(TGLMaterialLibrary, TGLMaterialLibraryEditor);
+
+   RegisterPropertyEditor(TypeInfo(TResolution), nil, '', TResolutionProperty);
+   RegisterPropertyEditor(TypeInfo(TGLTexture), TGLMaterial, '', TGLTextureProperty);
+   RegisterPropertyEditor(TypeInfo(TGLTextureImage), TGLTexture, '', TGLTextureImageProperty);
+   RegisterPropertyEditor(TypeInfo(String), TGLTexture, 'ImageClassName', TGLImageClassProperty);
+
    RegisterPropertyEditor(TypeInfo(TGLSoundFile), TGLSoundSample, '', TSoundFileProperty);
    RegisterPropertyEditor(TypeInfo(String), TGLBaseSoundSource, 'SoundName', TSoundNameProperty);
 
-   RegisterClasses([TGLCoordinates]);
-
    RegisterPropertyEditor(TypeInfo(TGLCoordinates), nil, '', TGLCoordinatesProperty);
+
+   RegisterPropertyEditor(TypeInfo(TGLColor), nil, '', TGLColorProperty);
+
+   RegisterPropertyEditor(TypeInfo(TGLMaterial), nil, '', TGLMaterialProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLMaterial, '', TGLLibMaterialNameProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLLibMaterial, 'Texture2Name', TGLLibMaterialNameProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLSkyBox, '', TGLLibMaterialNameProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLEParticleMask, '', TGLLibMaterialNameProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLGameMenu, '', TGLLibMaterialNameProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLMaterialMultiProxyMaster, '', TGLLibMaterialNameProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLSLBumpShader, '', TGLLibMaterialNameProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TSpriteAnimation, '', TGLLibMaterialNameProperty);
+
+   RegisterPropertyEditor(TypeInfo(TActorAnimationName), TGLAnimationControler, '', TGLAnimationNameProperty);
+
+   RegisterPropertyEditor(TypeInfo(TFileName), TGLFreeForm, 'FileName', TVectorFileProperty);
+//Still needed?   RegisterClasses([TGLCoordinates]);
+
+   ObjectManager.RegisterSceneObjectsToIDE;
+
 end;
 
 // ------------------------------------------------------------------
@@ -851,7 +1243,6 @@ initialization
 
    GLMisc.vUseDefaultSets:=True;
    //ReadVideoModes;
-
    with ObjectManager do begin
       RegisterSceneObject(TGLCamera, 'Camera', '');
       RegisterSceneObject(TGLLightSource, 'LightSource', '');
