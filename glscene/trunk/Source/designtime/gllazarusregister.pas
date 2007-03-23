@@ -222,17 +222,13 @@ uses
    GLSimpleNavigation,
    GLTexturedHDS,
    GLAsyncHDS,
-   GLShadowHDS,
    GLAtmosphere,
    GLConsole,
    GLTexCombineShader,
    GLPhongShader,
-   GLUserShader,
-   GLHiddenLineShader,
    GLCelShader,
    GLOutlineShader,
    GLMultiMaterialShader,
-   GLBumpShader,
    GLAsmShader,
    GLShaderCombiner,
    GLSLShader,
@@ -241,8 +237,9 @@ uses
    glfeedback,glextrusion,glbumpmaphds,glheighttilefilehds,
    glterrainrenderer,glgamemenu, gltextureimageeditors,
    glstate, glutils, glwaterplane,
-   glheightdata,glperlin
-   {glsdlcontext,glscriptbase,}
+   glheightdata,glperlin,
+   GLBumpShader, GLHiddenLineShader, GLUserShader, GLShadowHDS, GLSLProjectedTextures
+   {,glsdlcontext,glscriptbase,}
    ;
 
 resourcestring
@@ -1323,7 +1320,9 @@ initialization
       RegisterSceneObject(TGLShadowPlane, 'ShadowPlane', glsOCSpecialObjects);
       RegisterSceneObject(TGLShadowVolume, 'ShadowVolume', glsOCSpecialObjects);
       RegisterSceneObject(TGLZShadows, 'ZShadows', glsOCSpecialObjects);
-
+      RegisterSceneObject(TGLSLTextureEmitter, 'GLSL Texture Emitter', glsOCSpecialObjects);
+      RegisterSceneObject(TGLSLProjectedTextures, 'GLSL Projected Textures', glsOCSpecialObjects);
+      
       RegisterSceneObject(TGLTextureEmitter, 'Texture Emitter', glsOCSpecialObjects);
       RegisterSceneObject(TGLProjectedTextures, 'Projected Textures', glsOCSpecialObjects);
       RegisterSceneObject(TGLBlur, 'Blur', glsOCSpecialObjects);

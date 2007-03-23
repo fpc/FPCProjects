@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="154">
+    <Files Count="155">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -179,7 +179,7 @@
       <Item35>
         <Filename Value="../Source/designtime/glsceneedit.pas"/>
         <AddToUsesPkgSection Value="False"/>
-        <UnitName Value="glsceneedit"/>
+        <UnitName Value="GLSceneEdit"/>
       </Item35>
       <Item36>
         <Filename Value="../Source/designtime/glsceneedit.lfm"/>
@@ -676,6 +676,10 @@
         <Filename Value="../Source/glatmosphere.pas"/>
         <UnitName Value="GLAtmosphere"/>
       </Item154>
+      <Item155>
+        <Filename Value="../Source/glslprojectedtextures.pas"/>
+        <UnitName Value="GLSLProjectedTextures"/>
+      </Item155>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
