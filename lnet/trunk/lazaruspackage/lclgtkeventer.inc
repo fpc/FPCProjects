@@ -21,11 +21,11 @@ procedure TLCLEventer.HandleIgnoreWrite(aHandle: TLHandle);
 var
   LHI: PLCLHandleInfo;
 begin
-  LHI:=GetInternalData(aHandle);
+  LHI := GetInternalData(aHandle);
   if aHandle.IgnoreWrite then
-    LHI^.Flags:=LHI^.Flags and (not G_IO_OUT)
+    LHI^.Flags := LHI^.Flags and (not G_IO_OUT)
   else
-    LHI^.Flags:=LHI^.Flags or G_IO_OUT;
+    LHI^.Flags := LHI^.Flags or G_IO_OUT;
   SetEventHandlerFlags(LHI^.EventHandle, LHI^.Flags);
 end;
 
@@ -33,11 +33,11 @@ procedure TLCLEventer.HandleIgnoreRead(aHandle: TLHandle);
 var
   LHI: PLCLHandleInfo;
 begin
-  LHI:=GetInternalData(aHandle);
+  LHI := GetInternalData(aHandle);
   if aHandle.IgnoreRead then
-    LHI^.Flags:=LHI^.Flags and (not G_IO_IN)
+    LHI^.Flags := LHI^.Flags and (not G_IO_IN)
   else
-    LHI^.Flags:=LHI^.Flags or G_IO_IN;
+    LHI^.Flags := LHI^.Flags or G_IO_IN;
   SetEventHandlerFlags(LHI^.EventHandle, LHI^.Flags);
 end;
 
@@ -46,10 +46,10 @@ var
   LHI: PLCLHandleInfo;
   Temp: TLHandle;
 begin
-  LHI:=PLCLHandleInfo(aData);
-  Temp:=LHI^.Handle;
+  LHI := PLCLHandleInfo(aData);
+  Temp := LHI^.Handle;
   if not FInLoop then begin
-    FInLoop:=True;
+    FInLoop := True;
 
     if aFlags and G_IO_OUT = G_IO_OUT then
       if not Temp.Dispose and Assigned(Temp.OnWrite) then
@@ -70,7 +70,7 @@ begin
 
     if Temp.Dispose then
       AddForFree(Temp);
-    FInLoop:=False;
+    FInLoop := False;
 
     if Assigned(FFreeRoot) then
       FreeHandles;
@@ -86,23 +86,23 @@ begin
   
   SetHandleEventer(aHandle);
   
-  LHI:=GetMem(SizeOf(TLCLHandleInfo));
-  LHI^.Handle:=aHandle;
+  LHI := GetMem(SizeOf(TLCLHandleInfo));
+  LHI^.Handle := aHandle;
   SetInternalData(aHandle, LHI);
-  LHI^.EventHandle:=AddEventHandler(aHandle.Handle, ALL_FLAGS,
+  LHI^.EventHandle := AddEventHandler(aHandle.Handle, ALL_FLAGS,
                                     @HandleEvents, PtrInt(LHI));
-  LHI^.Flags:=ALL_FLAGS;
+  LHI^.Flags := ALL_FLAGS;
   if not Assigned(LHI^.EventHandle) then
     Bail('Error on handler', -1)
   else
-    Result := True;
+    Result  :=  True;
 end;
 
 procedure TLCLEventer.UnplugHandle(aHandle: TLHandle);
 var
   LHI: PLCLHandleInfo;
 begin
-  LHI:=GetInternalData(aHandle);
+  LHI := GetInternalData(aHandle);
   RemoveEventHandler(LHI^.EventHandle);
   FreeMem(LHI);
   inherited UnplugHandle(aHandle);
