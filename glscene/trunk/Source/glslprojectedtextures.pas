@@ -5,6 +5,7 @@
    <b>History : </b><font size=-1><ul>
         <li>23/03/07 - fig -    Fixed reverse projection bug and added Quick Decimal Separator fix.
                                 Finished Design time support.
+                                Now checks for GLSL support and just renders the children as normal, if not supported.
         <li>22/03/07 - fig -    Initial version.
    </ul></font>
 }
@@ -84,19 +85,19 @@ type
         property AllowReverseProjection: boolean read FAllowReverseProjection write SetAllowReverseProjection;
 
         property ObjectsSorting;
-         property VisibilityCulling;
-         property Direction;
-         property PitchAngle;
-         property Position;
-         property RollAngle;
-         property Scale;
-         property ShowAxes;
-         property TurnAngle;
-         property Up;
-         property Visible;
-         property OnProgress;
-         property Behaviours;
-         property Effects;
+        property VisibilityCulling;
+        property Direction;
+        property PitchAngle;
+        property Position;
+        property RollAngle;
+        property Scale;
+        property ShowAxes;
+        property TurnAngle;
+        property Up;
+        property Visible;
+        property OnProgress;
+        property Behaviours;
+        property Effects;
     end;
 
     // TGLSLTextureEmitterItem
@@ -138,6 +139,7 @@ type
        At the moment, only 1 texture can be used.}
     TGLSLProjectedTextures = class(TGLSceneObject)
     private
+        ShaderSupported: boolean;
         FEmitters: TGLSLTextureEmitters;
         FUseLightmaps: boolean;
         Shader: TGLProgramHandle;
@@ -160,8 +162,6 @@ type
         property Ambient: TGLColor read fAmbient write fAmbient;
         property UseLightmaps: boolean read FUseLightmaps write SetUseLightmaps;
     end;
-
-
 
 implementation
 
@@ -399,7 +399,6 @@ begin
     inherited Create(aOWner);
     FEmitters := TGLSLTextureEmitters.Create(TGLSLTextureEmitterItem);
     FEmitters.FOwner := self;
-    Shader := TGLProgramHandle.Create;
     FUseLightmaps := false;
     ShaderChanged := true;
     Ambient := TGLColor.Create(self);
@@ -411,7 +410,8 @@ end;
 
 destructor TGLSLProjectedTextures.Destroy;
 begin
-    Shader.free;
+    if assigned(shader) then
+        Shader.free;
     FEmitters.Free;
     Ambient.Free;
 
@@ -431,13 +431,19 @@ var
     emitter: TGLSLTextureEmitter;
     OldSeparator: char;
 begin
+    ShaderSupported := (GL_ARB_shader_objects and GL_ARB_vertex_program and
+        GL_ARB_vertex_shader and GL_ARB_fragment_shader);
+
+    if not ShaderSupported then
+        exit;
+
+    if assigned(shader) then
+        FreeAndNil(shader);
+
+    Shader := TGLProgramHandle.CreateAndAllocate;
+
     OldSeparator := sysutils.DecimalSeparator;
     DecimalSeparator := '.';
-
-    if shader.Handle <> 0 then
-        shader.DestroyHandle;
-    shader.AllocateHandle;
-
     vp := TStringlist.create;
     fp := TStringlist.create;
 
@@ -589,40 +595,45 @@ begin
         ShaderChanged := false;
     end;
 
-    Shader.UseProgramObject;
-
-    for i := 0 to Emitters.Count - 1 do
+    if ShaderSupported then
     begin
-        emitter := Emitters[i].Emitter;
-        if not assigned(emitter) then continue;
-        if not emitter.Visible then continue;
-        if emitter.TexMatrixChanged then
+        Shader.UseProgramObject;
+
+        for i := 0 to Emitters.Count - 1 do
         begin
-            emitter.setupTexMatrix;
-            emitter.TexMatrixChanged := false;
+            emitter := Emitters[i].Emitter;
+            if not assigned(emitter) then continue;
+            if not emitter.Visible then continue;
+            if emitter.TexMatrixChanged then
+            begin
+                emitter.setupTexMatrix;
+                emitter.TexMatrixChanged := false;
+            end;
+
+            m := emitter.InvAbsoluteMatrix;
+
+            Shader.Uniformmatrix4fv['InvModelViewMatrix' + inttostr(i)] := {emitter.invabsolutematrix;} emitter.InvMatrix;
+            Shader.Uniformmatrix4fv['TextureMatrix' + inttostr(i)] := emitter.texMatrix;
         end;
 
-        m := emitter.InvAbsoluteMatrix;
+        Shader.Uniform1i['TextureMap'] := 0;
 
-        Shader.Uniformmatrix4fv['InvModelViewMatrix' + inttostr(i)] := {emitter.invabsolutematrix;} emitter.InvMatrix;
-        Shader.Uniformmatrix4fv['TextureMatrix' + inttostr(i)] := emitter.texMatrix;
-    end;
+        if UseLightmaps then
+            Shader.Uniform1i['LightMap'] := 1;
 
-    Shader.Uniform1i['TextureMap'] := 0;
+        if emitters.count > 0 then
+            Shader.Uniform1i['ProjMap'] := 2;
 
-    if UseLightmaps then
-        Shader.Uniform1i['LightMap'] := 1;
+        glActiveTextureARB(GL_TEXTURE2_ARB);
+        glBindTexture(GL_TEXTURE_2D, Material.Texture.Handle);
+        glActiveTextureARB(GL_TEXTURE0_ARB);
 
-    if emitters.count > 0 then
-        Shader.Uniform1i['ProjMap'] := 2;
+        self.RenderChildren(0, Count - 1, rci);
 
-    glActiveTextureARB(GL_TEXTURE2_ARB);
-    glBindTexture(GL_TEXTURE_2D, Material.Texture.Handle);
-    glActiveTextureARB(GL_TEXTURE0_ARB);
-
-    self.RenderChildren(0, Count - 1, rci);
-
-    Shader.EndUseProgramObject;
+        Shader.EndUseProgramObject;
+    end
+    else
+        self.RenderChildren(0, Count - 1, rci);
 end;
 
 procedure TGLSLProjectedTextures.StructureChanged;
