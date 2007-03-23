@@ -2,31 +2,6 @@
 
   <p>Spatial partitioning related code that also uses GLScene objects
 
-      $Log: glspatialpartitioning.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/10 20:38:38  z0m3ie
-      bugfixes from main tree
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/11/14 21:38:07  z0m3ie
-      making this stuff again Linux compatible please dont break multi platform support again
-
-      Revision 1.4  2005/09/17 22:04:09  k00m
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
       <li>19/12/06 - DaStranger - Old version of ExtendedFrustumMakeFromSceneViewer function
                                   restored as an overloaded version of the new one
@@ -42,8 +17,7 @@ unit GLSpatialPartitioning;
 interface
 
 uses
-  {$IFDEF LCL} GLLCLViewer, {$ELSE} GLWin32Viewer, {$ENDIF}
-  SpatialPartitioning, GLScene, VectorGeometry, OpenGL1x,
+  GLViewer, SpatialPartitioning, GLScene, VectorGeometry, OpenGL1x,
   GeometryBB;
 
 type

@@ -127,8 +127,7 @@ function TGLSMFMOD.DoActivate : Boolean;
 var
    cap : Cardinal;
 begin
-   FMOD_Load(0);
-   //InitFMod;
+   FMOD_Load;
    if not FSOUND_SetOutput(FSOUND_OUTPUT_DSOUND) then begin
       Result:=False;
       Exit;

@@ -88,8 +88,7 @@ interface
 uses  Classes, GLMisc, OpenGL1x, GLScene, VectorGeometry, GLGraphics,
      SysUtils, GLObjects, GLBitmapFont, XOpenGL, GLTexture, 
      GLContext, GLBehaviours, XCollection, GLState, Dialogs,
-     {$IFDEF LCL} gllclviewer {$ELSE} GLWin32Viewer {$ENDIF}
-     ;
+     GLViewer;
 
 type
   TZArray = array [0..MaxInt shr 3] of Single;
