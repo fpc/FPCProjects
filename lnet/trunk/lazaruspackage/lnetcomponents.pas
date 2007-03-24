@@ -30,7 +30,7 @@ interface
 
 uses
   Classes, SysUtils,
-  LCLNet, lNet, lEvents, lTelnet, lFTP, lSMTP, lHTTP;
+  LCLNet, lNet, lTelnet, lFTP, lSMTP, lHTTP;
   
 type
 
