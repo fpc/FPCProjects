@@ -55,7 +55,7 @@ uses
 {$IFDEF UNIX}
 uses
   {$ifdef fpc}
-  graphics,controls,forms,dialogs,stdctrls,lcltype,buttons,unix,lclintf,
+  graphics,controls,forms,dialogs,stdctrls,lcltype,buttons,unix,lclintf,ExtDlgs,
   {$else}
   qt, qgraphics, qcontrols, qforms,
   qdialogs, qstdctrls,qconsts,
@@ -763,7 +763,7 @@ end;
 // OpenPictureDialog
 //
 function OpenPictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
-{$ifdef WIN32}
+{.$ifdef WIN32}
 var
    openDialog : TOpenPictureDialog;
 begin
@@ -781,11 +781,11 @@ begin
    finally
       openDialog.Free;
    end;
-{$else}
+(*{$else}
 begin
    InformationDlg('OpenPictureDialog not supported on this platform.');
    Result:=False;
-{$endif}
+{$endif}*)
 end;
 
 // ApplicationTerminated
