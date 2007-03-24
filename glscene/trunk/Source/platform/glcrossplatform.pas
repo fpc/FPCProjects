@@ -1,6 +1,9 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLCrossPlatform<p>
 
-	Cross platform support functions and types for GLScene.<p>
+   Cross platform support functions and types for GLScene.<p>
 
    Ultimately, *no* cross-platform or cross-version defines should be present
    in the core GLScene units, and have all moved here instead.<p>
@@ -22,6 +25,8 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>17/03/07 - DaStr - Added TPenStyle, TPenMode, TBrushStyle, more color constants,
+                             Added "Application" function
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>08/07/04 - LR - Added clBlack
       <li>03/07/04 - LR - Added constant for Keyboard (glKey_TAB, ...)
@@ -36,7 +41,7 @@
       <li>30/05/03 - EG - Added RDTSC and RDTSC-based precision timing for non-WIN32
       <li>22/01/02 - EG - Added OpenPictureDialog, ApplicationTerminated
       <li>07/01/02 - EG - Added QuestionDialog and SavePictureDialog,
-                          Added PrecisionTimer funcs 
+                          Added PrecisionTimer funcs
       <li>06/12/01 - EG - Added several abstraction calls
       <li>31/08/01 - EG - Creation
 	</ul></font>
@@ -68,6 +73,8 @@ type
    // Several aliases to shield us from the need of ifdef'ing between
    // the "almost cross-platform" units like Graphics/QGraphics etc.
    // Gives a little "alien" look to names, but that's the only way around :(
+
+   // DaStr: Actually, there is a way around, see TPenStyle for example.
 
    TGLPoint = TPoint;
    PGLPoint = ^TGLPoint;
@@ -103,6 +110,17 @@ type
    {$endif}
 {$endif}
 
+{$IFNDEF KYLIX}
+  TPenStyle   = Graphics.TPenStyle;
+  TPenMode    = Graphics.TPenMode;
+  TBrushStyle = Graphics.TBrushStyle;
+{$ENDIF}
+{$IFDEF KYLIX}
+  TPenStyle   = QGraphics.TPenStyle;
+  TPenMode    = QGraphics.TPenMode;
+  TBrushStyle = QGraphics.TBrushStyle;
+{$ENDIF}
+
 const
 {$ifdef WIN32}
    glpf8Bit = pf8bit;
@@ -118,34 +136,262 @@ const
 {$endif}
 
    // standard colors
-{$ifdef WIN32}
-   clBtnFace = Graphics.clBtnFace;
-   clRed = Graphics.clRed;
-   clGreen = Graphics.clGreen;
-   clBlue = Graphics.clBlue;
-   clSilver = Graphics.clSilver;
-   clBlack = Graphics.clBlack;
-{$endif}
-{$IFDEF UNIX}
-{$ifdef FPC}
-   clBtnFace = Graphics.clBtnFace;
-   clRed = Graphics.clRed;
-   clGreen = Graphics.clGreen;
-   clBlue = Graphics.clBlue;
-   clSilver = Graphics.clSilver;
-   clBlack = Graphics.clBlack;
-{$ELSE}
-   clBtnFace = QGraphics.clBtnFace;
-   clRed = QGraphics.clRed;
-   clGreen = QGraphics.clGreen;
-   clBlue = QGraphics.clBlue;
-   clSilver = QGraphics.clSilver;
-   clBlack = QGraphics.clBlack;
-{$endif}
-{$endif}
+{$IFNDEF KYLIX}
+   { Raw rgb values }
+  clBlack = Graphics.clBlack;
+  clMaroon = Graphics.clMaroon;
+  clGreen = Graphics.clGreen;
+  clOlive = Graphics.clOlive;
+  clNavy = Graphics.clNavy;
+  clPurple = Graphics.clPurple;
+  clTeal = Graphics.clTeal;
+  clGray = Graphics.clGray;
+  clSilver = Graphics.clSilver;
+  clRed = Graphics.clRed;
+  clLime = Graphics.clLime;
+  clYellow = Graphics.clYellow;
+  clBlue = Graphics.clBlue;
+  clFuchsia = Graphics.clFuchsia;
+  clAqua = Graphics.clAqua;
+  clLtGray = Graphics.clLtGray;
+  clDkGray = Graphics.clDkGray;
+  clWhite = Graphics.clWhite;
+  clNone = Graphics.clNone;
+  clDefault = Graphics.clDefault;
+{$ENDIF}
+{$IFDEF KYLIX}
+   { Raw rgb values }
+  clBlack = QGraphics.clBlack;
+  clMaroon = QGraphics.clMaroon;
+  clGreen = QGraphics.clGreen;
+  clOlive = QGraphics.clOlive;
+  clNavy = QGraphics.clNavy;
+  clPurple = QGraphics.clPurple;
+  clTeal = QGraphics.clTeal;
+  clGray = QGraphics.clGray;
+  clSilver = QGraphics.clSilver;
+  clRed = QGraphics.clRed;
+  clLime = QGraphics.clLime;
+  clYellow = QGraphics.clYellow;
+  clBlue = QGraphics.clBlue;
+  clFuchsia = QGraphics.clFuchsia;
+  clAqua = QGraphics.clAqua;
+  clLtGray = QGraphics.clLtGray;
+  clDkGray = QGraphics.clDkGray;
+  clWhite = QGraphics.clWhite;
+  clNone = QGraphics.clNone;
+  clDefault = QGraphics.clDefault;
+{$ENDIF}
+
+{$IFNDEF KYLIX}  // Not declared in Graphics.pas
+  clForeground = TColor(-1);
+  clButton = TColor(-2);
+  clLight = TColor(-3);
+  clMidlight = TColor(-4);
+  clDark = TColor(-5);
+  clMid = TColor(-6);
+  clText = TColor(-7);
+  clBrightText = TColor(-8);
+  clButtonText = TColor(-9);
+  clBase = TColor(-10);
+  clBackground = TColor(-11);
+  clShadow = TColor(-12);
+  clHighlight = TColor(-13);
+  clHighlightedText = TColor(-14);
+
+  { Mapped role offsets }
+  cloNormal = 32;
+  cloDisabled = 64;
+  cloActive = 96;
+
+  { Normal, mapped, pseudo, rgb values }
+  clNormalForeground = TColor(clForeground - cloNormal);
+  clNormalButton = TColor(clButton - cloNormal);
+  clNormalLight = TColor(clLight - cloNormal);
+  clNormalMidlight = TColor(clMidlight - cloNormal);
+  clNormalDark = TColor(clDark - cloNormal);
+  clNormalMid = TColor(clMid - cloNormal);
+  clNormalText = TColor(clText - cloNormal);
+  clNormalBrightText = TColor(clBrightText - cloNormal);
+  clNormalButtonText = TColor(clButtonText - cloNormal);
+  clNormalBase = TColor(clBase - cloNormal);
+  clNormalBackground = TColor(clBackground - cloNormal);
+  clNormalShadow = TColor(clShadow - cloNormal);
+  clNormalHighlight = TColor(clHighlight - cloNormal);
+  clNormalHighlightedText = TColor(clHighlightedText - cloNormal);
+
+  { Disabled, mapped, pseudo, rgb values }
+  clDisabledForeground = TColor(clForeground - cloDisabled);
+  clDisabledButton = TColor(clButton - cloDisabled);
+  clDisabledLight = TColor(clLight - cloDisabled);
+  clDisabledMidlight = TColor(clMidlight - cloDisabled);
+  clDisabledDark = TColor(clDark - cloDisabled);
+  clDisabledMid = TColor(clMid - cloDisabled);
+  clDisabledText = TColor(clText - cloDisabled);
+  clDisabledBrightText = TColor(clBrightText - cloDisabled);
+  clDisabledButtonText = TColor(clButtonText - cloDisabled);
+  clDisabledBase = TColor(clBase - cloDisabled);
+  clDisabledBackground = TColor(clBackground - cloDisabled);
+  clDisabledShadow = TColor(clShadow - cloDisabled);
+  clDisabledHighlight = TColor(clHighlight - cloDisabled);
+  clDisabledHighlightedText = TColor(clHighlightedText - cloDisabled);
+{$ENDIF}
+{$IFDEF KYLIX}
+  { Base, mapped, pseudo, rgb values }
+  clForeground = QGraphics.clForeground;
+  clButton = QGraphics.clButton;
+  clLight = QGraphics.clLight;
+  clMidlight = QGraphics.clMidlight;
+  clDark = QGraphics.clDark;
+  clMid = QGraphics.clMid;
+  clText = QGraphics.clText;
+  clBrightText = QGraphics.clBrightText;
+  clButtonText = QGraphics.clButtonText;
+  clBase = QGraphics.clBase;
+  clBackground = QGraphics.clBackground;
+  clShadow = QGraphics.clShadow;
+  clHighlight = QGraphics.clHighlight;
+  clHighlightedText = QGraphics.clHighlightedText;
+
+  { Mapped role offsets }
+  cloNormal = QGraphics.cloNormal;
+  cloDisabled = QGraphics.cloDisabled;
+  cloActive = QGraphics.cloActive;
+
+  { Normal, mapped, pseudo, rgb values }
+  clNormalForeground = QGraphics.clNormalForeground;
+  clNormalButton = QGraphics.clNormalButton;
+  clNormalLight = QGraphics.clNormalLight;
+  clNormalMidlight = QGraphics.clNormalMidlight;
+  clNormalDark = QGraphics.clNormalDark;
+  clNormalMid = QGraphics.clNormalMid;
+  clNormalText = QGraphics.clNormalText;
+  clNormalBrightText = QGraphics.clNormalBrightText;
+  clNormalButtonText = QGraphics.clNormalButtonText;
+  clNormalBase = QGraphics.clNormalBase;
+  clNormalBackground = QGraphics.clNormalBackground;
+  clNormalShadow = QGraphics.clNormalShadow;
+  clNormalHighlight = QGraphics.clNormalHighlight;
+  clNormalHighlightedText = QGraphics.clNormalHighlightedText;
+
+  { Disabled, mapped, pseudo, rgb values }
+  clDisabledForeground = QGraphics.clDisabledForeground;
+  clDisabledButton = QGraphics.clDisabledButton;
+  clDisabledLight = QGraphics.clDisabledLight;
+  clDisabledMidlight = QGraphics.clDisabledMidlight;
+  clDisabledDark = QGraphics.clDisabledDark;
+  clDisabledMid = QGraphics.clDisabledMid;
+  clDisabledText = QGraphics.clDisabledText;
+  clDisabledBrightText = QGraphics.clDisabledBrightText;
+  clDisabledButtonText = QGraphics.clDisabledButtonText;
+  clDisabledBase = QGraphics.clDisabledBase;
+  clDisabledBackground = QGraphics.clDisabledBackground;
+  clDisabledShadow = QGraphics.clDisabledShadow;
+  clDisabledHighlight = QGraphics.clDisabledHighlight;
+  clDisabledHighlightedText = QGraphics.clDisabledHighlightedText;
+{$ENDIF}
+
+{$IFNDEF KYLIX} // Not declared in Graphics.pas
+  { Active, mapped, pseudo, rgb values }
+  clActiveForeground = TColor(clForeground - cloActive);
+  clActiveButton = TColor(clButton - cloActive);
+  clActiveLight = TColor(clLight - cloActive);
+  clActiveMidlight = TColor(clMidlight - cloActive);
+  clActiveDark = TColor(clDark - cloActive);
+  clActiveMid = TColor(clMid - cloActive);
+  clActiveText = TColor(clText - cloActive);
+  clActiveBrightText = TColor(clBrightText - cloActive);
+  clActiveButtonText = TColor(clButtonText - cloActive);
+  clActiveBase = TColor(clBase - cloActive);
+  clActiveBackground = TColor(clBackground - cloActive);
+  clActiveShadow = TColor(clShadow - cloActive);
+  clActiveHighlight = TColor(clHighlight - cloActive);
+  clActiveHighlightedText = TColor(clHighlightedText - cloActive);
+{$ENDIF}
+{$IFDEF KYLIX}
+  { Active, mapped, pseudo, rgb values }
+  clActiveForeground = QGraphics.clActiveForeground;
+  clActiveButton = QGraphics.clActiveButton;
+  clActiveLight = QGraphics.clActiveLight;
+  clActiveMidlight = QGraphics.clActiveMidlight;
+  clActiveDark = QGraphics.clActiveDark;
+  clActiveMid = QGraphics.clActiveMid;
+  clActiveText = QGraphics.clActiveText;
+  clActiveBrightText = QGraphics.clActiveBrightText;
+  clActiveButtonText = QGraphics.clActiveButtonText;
+  clActiveBase = QGraphics.clActiveBase;
+  clActiveBackground = QGraphics.clActiveBackground;
+  clActiveShadow = QGraphics.clActiveShadow;
+  clActiveHighlight = QGraphics.clActiveHighlight;
+  clActiveHighlightedText = QGraphics.clActiveHighlightedText;
+{$ENDIF}
+
+{$IFNDEF KYLIX}
+  { Compatiblity colors }
+  clScrollBar = Graphics.clScrollBar;
+  clActiveCaption = Graphics.clActiveCaption;
+  clInactiveCaption = Graphics.clInactiveCaption;
+  clMenu = Graphics.clMenu;
+  clWindow = Graphics.clWindow;
+  clWindowFrame = Graphics.clWindowFrame;
+  clMenuText = Graphics.clMenuText;
+  clWindowText = Graphics.clWindowText;
+  clCaptionText = Graphics.clCaptionText;
+  clActiveBorder = Graphics.clActiveBorder;
+  clInactiveBorder = Graphics.clInactiveBorder;
+  clAppWorkSpace = Graphics.clAppWorkSpace;
+  clBtnFace = Graphics.clBtnFace;
+  clBtnShadow = Graphics.clBtnShadow;
+  clGrayText = Graphics.clGrayText;
+  clBtnText = Graphics.clBtnText;
+  clInactiveCaptionText = Graphics.clInactiveCaptionText;
+  clBtnHighlight = Graphics.clBtnHighlight;
+  cl3DDkShadow = Graphics.cl3DDkShadow;
+  cl3DLight = Graphics.cl3DLight;
+  clInfoText = Graphics.clInfoText;
+  clInfoBk = Graphics.clInfoBk;
+  clHighlightText = Graphics.clHighlightText;
+{$ENDIF}
+{$IFDEF KYLIX}
+  { Compatiblity colors }
+  clScrollBar = QGraphics.clScrollBar;
+  clActiveCaption = QGraphics.clActiveCaption;
+  clInactiveCaption = QGraphics.clInactiveCaption;
+  clMenu = QGraphics.clMenu;
+  clWindow = QGraphics.clWindow;
+  clWindowFrame = QGraphics.clWindowFrame;
+  clMenuText = QGraphics.clMenuText;
+  clWindowText = QGraphics.clWindowText;
+  clCaptionText = QGraphics.clCaptionText;
+  clActiveBorder = QGraphics.clActiveBorder;
+  clInactiveBorder = QGraphics.clInactiveBorder;
+  clAppWorkSpace = QGraphics.clAppWorkSpace;
+  clBtnFace = QGraphics.clBtnFace;
+  clBtnShadow = QGraphics.clBtnShadow;
+  clGrayText = QGraphics.clGrayText;
+  clBtnText = QGraphics.clBtnText;
+  clInactiveCaptionText = QGraphics.clInactiveCaptionText;
+  clBtnHighlight = QGraphics.clBtnHighlight;
+  cl3DDkShadow = QGraphics.cl3DDkShadow;
+  cl3DLight = QGraphics.cl3DLight;
+  clInfoText = QGraphics.clInfoText;
+  clInfoBk = QGraphics.clInfoBk;
+  clHighlightText = QGraphics.clHighlightText;
+{$ENDIF}
+
+ // Not declared in Graphics.pas
+{$IFNDEF KYLIX}
+  clFirstSpecialColor = clActiveHighlightedText;
+  clMask = clWhite;
+  clDontMask = clBlack;
+{$ENDIF}
+{$IFDEF KYLIX}
+  clMask = QGraphics.clMask;
+  clDontMask = QGraphics.clDontMask;
+{$ENDIF}
 
 // standard keyboard
-{$ifdef WIN32}
+{$IFNDEF KYLIX}
   glKey_TAB = VK_TAB;
   glKey_SPACE = VK_SPACE;
   glKey_RETURN = VK_RETURN;
@@ -157,21 +403,8 @@ const
   glKey_CANCEL = VK_CANCEL;
   glKey_UP = VK_UP;
   glKey_DOWN = VK_DOWN;
-{$endif}
-{$IFDEF UNIX}
-{$IFDEF FPC}
-  glKey_TAB = VK_TAB;
-  glKey_SPACE = VK_SPACE;
-  glKey_RETURN = VK_RETURN;
-  glKey_DELETE = VK_DELETE;
-  glKey_LEFT = VK_LEFT;
-  glKey_RIGHT = VK_RIGHT;
-  glKey_HOME = VK_HOME;
-  glKey_END = VK_END;
-  glKey_CANCEL = VK_CANCEL;
-  glKey_UP = VK_UP;
-  glKey_DOWN = VK_DOWN;
-{$ELSE}
+{$ENDIF}
+{$IFDEF KYLIX}
   glKey_TAB = Key_Tab;
   glKey_SPACE = Key_Space;
   glKey_RETURN = Key_Return;
@@ -183,8 +416,103 @@ const
   glKey_CANCEL = Key_Escape;   // ?
   glKey_UP = Key_Up;
   glKey_DOWN = Key_DOWN;
-{$endif}
-{$endif}
+{$ENDIF}
+
+// TPenStyle.
+{$IFNDEF KYLIX}
+  psSolid = Graphics.psSolid;
+  psDash = Graphics.psDash;
+  psDot = Graphics.psDot;
+  psDashDot = Graphics.psDashDot;
+  psDashDotDot = Graphics.psDashDotDot;
+  psClear = Graphics.psClear;
+  {$IFNDEF FPC}
+  psInsideFrame = Graphics.psInsideFrame;
+  {$ENDIF}
+{$ENDIF}
+{$IFDEF KYLIX}
+  psSolid = QGraphics.psSolid;
+  psDash = QGraphics.psDash;
+  psDot = QGraphics.psDot;
+  psDashDot = QGraphics.psDashDot;
+  psDashDotDot = QGraphics.psDashDotDot;
+  psClear = QGraphics.psClear;
+//  psInsideFrame not defined in QGraphics.TPenStyle
+{$ENDIF}
+
+// TPenMode.
+{$IFNDEF KYLIX}
+  pmBlack = Graphics.pmBlack;
+  pmWhite = Graphics.pmWhite;
+  pmNop = Graphics.pmNop;
+  pmNot = Graphics.pmNot;
+  pmCopy = Graphics.pmCopy;
+  pmNotCopy = Graphics.pmNotCopy;
+
+  pmMergePenNot = Graphics.pmMergePenNot;
+  pmMaskPenNot = Graphics.pmMaskPenNot;
+  pmMergeNotPen = Graphics.pmMergeNotPen;
+  pmMaskNotPen = Graphics.pmMaskNotPen;
+  pmMerge = Graphics.pmMerge;
+
+  pmNotMerge = Graphics.pmNotMerge;
+  pmMask = Graphics.pmMask;
+  pmNotMask = Graphics.pmNotMask;
+  pmXor = Graphics.pmXor;
+  pmNotXor = Graphics.pmNotXor;
+{$ENDIF}
+{$IFDEF KYLIX}
+  pmBlack = QGraphics.pmBlack;
+  pmWhite = QGraphics.pmWhite;
+  pmNop = QGraphics.pmNop;
+  pmNot = QGraphics.pmNot;
+  pmCopy = QGraphics.pmCopy;
+  pmNotCopy = QGraphics.pmNotCopy;
+
+  pmMergePenNot = QGraphics.pmMergePenNot;
+  pmMaskPenNot = QGraphics.pmMaskPenNot;
+  pmMergeNotPen = QGraphics.pmMergeNotPen;
+  pmMaskNotPen = QGraphics.pmMaskNotPen;
+  pmMerge = QGraphics.pmMerge;
+
+  pmNotMerge = QGraphics.pmNotMerge;
+  pmMask = QGraphics.pmMask;
+  pmNotMask = QGraphics.pmNotMask;
+  pmXor = QGraphics.pmXor;
+  pmNotXor = QGraphics.pmNotXor;
+{$ENDIF}
+
+// TBrushStyle.
+{$IFNDEF KYLIX}
+  bsSolid = Graphics.bsSolid;
+  bsClear = Graphics.bsClear;
+  bsHorizontal = Graphics.bsHorizontal;
+  bsVertical = Graphics.bsVertical;
+
+  bsFDiagonal = Graphics.bsFDiagonal;
+  bsBDiagonal = Graphics.bsBDiagonal;
+  bsCross = Graphics.bsCross;
+  bsDiagCross = Graphics.bsDiagCross;
+{$ENDIF}
+{$IFDEF KYLIX}
+  bsSolid = QGraphics.bsSolid;
+  bsClear = QGraphics.bsClear;
+  bsHorizontal = QGraphics.bsHorizontal;
+  bsVertical = QGraphics.bsVertical;
+
+  bsFDiagonal = QGraphics.bsFDiagonal;
+  bsBDiagonal = QGraphics.bsBDiagonal;
+  bsCross = QGraphics.bsCross;
+  bsDiagCross = QGraphics.bsDiagCross;
+
+  bsDense1 = QGraphics.bsDense1;
+  bsDense2 = QGraphics.bsDense2;
+  bsDense3 = QGraphics.bsDense3;
+  bsDense4 = QGraphics.bsDense4;
+  bsDense5 = QGraphics.bsDense5;
+  bsDense6 = QGraphics.bsDense6;
+  bsDense7 = QGraphics.bsDense7;
+{$ENDIF}
 
 // Several define from unit Consts
 const
@@ -209,6 +537,7 @@ const
   SMsgDlgYesToAll = 'A&lle Ja';
   {$ENDIF}
 
+function Application: TApplication;
 
 function GLPoint(const x, y : Integer) : TGLPoint;
 
@@ -323,6 +652,16 @@ uses
 var
    vInvPerformanceCounterFrequency : Double;
    vInvPerformanceCounterFrequencyReady : Boolean = False;
+
+function Application: TApplication;
+begin
+{$IFNDEF KYLIX}
+  Result := Forms.Application;
+{$ENDIF}
+{$IFDEF KYLIX}
+  Result := QForms.Application;
+{$ENDIF}
+end;
 
 procedure GLLoadBitmapFromInstance(ABitmap: TBitmap; AName: string);
 begin
