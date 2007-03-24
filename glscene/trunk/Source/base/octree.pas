@@ -825,9 +825,9 @@ begin
    TriCountMesh:=triangleFiler.Count div 3;
    n:=0;
    while n<triangleFiler.Count do begin
-      WalkTriToLeaf(RootNode, triangleFiler.Items[n],
-                              triangleFiler.Items[n+1],
-                              triangleFiler.Items[n+2]);
+      WalkTriToLeaf(RootNode, triangleFiler.List^[n],
+                              triangleFiler.List^[n+1],
+                              triangleFiler.List^[n+2]);
       if resultArray <> NIL then begin
          AddTriangleToNodes(n);
          Inc(TriCountOctree, 1);
@@ -1138,9 +1138,9 @@ begin
       for t:=0 to High(p^.TriArray) do begin
          k:=p^.triarray[t];
          if RayCastTriangleIntersect(rayStart, rayVector,
-                                     triangleFiler.Items[k],
-                                     triangleFiler.Items[k+1],
-                                     triangleFiler.Items[k+2],
+                                     triangleFiler.List^[k],
+                                     triangleFiler.List^[k+1],
+                                     triangleFiler.List^[k+2],
                                      @iPoint, @iNormal) then begin
             d:=VectorDistance2(rayStart, iPoint);
             if d<minD then begin
@@ -1151,9 +1151,9 @@ begin
                   intersectNormal^:=iNormal;
                if triangleInfo<>nil then begin
                   triangleInfo^.index:=k;
-                  triangleInfo^.vertex[0]:=triangleFiler.Items[k];
-                  triangleInfo^.vertex[1]:=triangleFiler.Items[k+1];
-                  triangleInfo^.vertex[2]:=triangleFiler.Items[k+2];
+                  triangleInfo^.vertex[0]:=triangleFiler.List^[k];
+                  triangleInfo^.vertex[1]:=triangleFiler.List^[k+1];
+                  triangleInfo^.vertex[2]:=triangleFiler.List^[k+2];
                end;
             end;
          end;
@@ -1454,7 +1454,7 @@ begin
       Result.Capacity:=triangleIndices.Count*3;
       for i:=0 to triangleIndices.Count-1 do begin
          k:=triangleIndices[i];
-         Result.Add(triangleFiler.Items[k], triangleFiler.Items[k+1], triangleFiler.Items[k+2]);
+         Result.Add(triangleFiler.List^[k], triangleFiler.List^[k+1], triangleFiler.List^[k+2]);
       end;
    finally
       triangleIndices.Free;
@@ -1516,7 +1516,7 @@ begin
       Result.Capacity:=triangleIndices.Count*3;
       for i:=0 to triangleIndices.Count-1 do begin
          k:=triangleIndices[i];
-         Result.Add(triangleFiler.Items[k], triangleFiler.Items[k+1], triangleFiler.Items[k+2]);
+         Result.Add(triangleFiler.List^[k], triangleFiler.List^[k+1], triangleFiler.List^[k+2]);
       end;
    finally
       triangleIndices.Free;
