@@ -73,6 +73,11 @@ var
   LHI: PLCLHandleInfo;
 begin
   {$ERROR TODO: finish in windows you lazy ass}
+  
+  uses
+    avglvltree; // for the guy below
+    FWaitSockets: TPointerToPointerTree;
+
   TWin32WidgetSet(WidgetSet).OnAsyncSocketMsg := @HandleEvents;
 
   Result := True;
