@@ -6,6 +6,8 @@
    Base Cg shader classes.<p>
 
    <b>History :</b><font size=-1><ul>
+      <li>24/03/07 - DaStr - Improved Cross-Platform compatibility
+                                                      (BugTracker ID = 1684432)
       <li>23/02/07 - DaStr- Added TCgProgram.ManualNotification
       <li>23/02/07 - DaStr- Added TCadencableCustomCgShader
                             Added EGLCGShaderException
@@ -60,14 +62,14 @@ unit GLCgShader;
 interface
 
 uses
-  //VCL
-  Classes,
+  // VCL
+  Classes, SysUtils,
 
-  //GLScene
+  // GLScene
   VectorGeometry, VectorLists, VectorTypes, GLTexture, GLMisc, GLStrings,
-  GLCadencer,
+  GLCadencer, OpenGL1x, GLCrossPlatform,
 
-  //CG
+  // CG
   Cg, CgGL;
 
 {$Include GLScene.inc}
@@ -444,8 +446,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
-uses SysUtils, OpenGL1x, Dialogs, Forms;
 
 const
   CgBoolean : array[false..true] of TCGbool = (CG_FALSE, CG_TRUE);
