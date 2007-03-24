@@ -1,10 +1,16 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLSpatialPartitioning<p>
 
   <p>Spatial partitioning related code that also uses GLScene objects
 
 	<b>History : </b><font size=-1><ul>
-      <li>19/12/06 - DaStranger - Old version of ExtendedFrustumMakeFromSceneViewer function
-                                  restored as an overloaded version of the new one
+      <li>24/03/07 - DaStr - Replaced GLWin32Viewer with GLViewer
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
+      <li>06/03/07 - DaStr - Removed obsolete FPC IFDEF's
+      <li>19/12/06 - DaStr - Old version of ExtendedFrustumMakeFromSceneViewer function
+                              restored as an overloaded version of the new one
       <li>04/11/05 - Mathx - Corrections related to bug 1335349
                              (ExtendedFrustumMakeFromSceneViewer supporting more
                              than just regular TGLSceneViewer).  

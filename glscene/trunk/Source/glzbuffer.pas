@@ -31,6 +31,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>24/03/07 - DaStr - Improved Cross-Platform compatibility
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -87,10 +89,11 @@ interface
 
 uses  Classes, GLMisc, OpenGL1x, GLScene, VectorGeometry, GLGraphics,
      SysUtils, GLObjects, GLBitmapFont, XOpenGL, GLTexture, 
-     GLContext, GLBehaviours, XCollection, GLState, Dialogs,
-     GLViewer;
+     GLContext, GLBehaviours, XCollection, GLState, GLViewer;
 
 type
+  EZBufferException = class(Exception);
+
   TZArray = array [0..MaxInt shr 3] of Single;
   PZArray = ^TZArray;
   TZArrayIdx = array of PZArray;
@@ -400,12 +403,10 @@ var  axs :TAffineVector;
      wrp :single;
 begin
   if not assigned(Buffer) then exit;
-  if not assigned(cam) then begin
-     ShowMessage('No Camera!');
-     exit;
-  end;
-//  if (FWidth=0) then showMessage('No Width!');
-  if not assigned(cam) then exit;
+  if not assigned(cam) then
+    raise EZBufferException.Create('No Camera!');
+
+    //  if (FWidth=0) then showMessage('No Width!');
 
 //-----------For ScreenToVector-------------
  w:=FWidth;

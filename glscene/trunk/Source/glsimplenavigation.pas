@@ -9,6 +9,8 @@
     this component on the form.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>24/03/07 - DaStr - Replaced GLWin32Viewer with GLViewer
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
       <li>20/03/07 - DaStr - Improved SceneViewer detection
       <li>02/03/07 - DaStr - Added default values to all properties
                              Added TGLSimpleNavigationOptions
@@ -21,7 +23,7 @@
 
 
 
-Previous version History:
+   Previous version history:
            v1.0   08 May        '2006  Creation
            v1.1   04 September  '2006  FreeNotification fix
                                        Automatic Form detection fix

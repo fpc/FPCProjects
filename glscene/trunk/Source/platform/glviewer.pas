@@ -6,6 +6,7 @@
    Platform independant viewer.<p>
 
     History:
+      <li>24/03/07 - DaStr - Update for Windows after the previous fix
       <li>21/03/07 - DaStr - Improved Cross-Platform compatibility
                              (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTrackerID=1681585)
@@ -34,7 +35,7 @@ type
   TGLSceneViewer = class(GLLinuxViewer.TGLLinuxSceneViewer);
   {$ENDIF UNIX}
   {$IFDEF MSWINDOWS} // windows
-  TGLSceneViewer = class(GLWin32Viewer.TGLWin32SceneViewer);
+  TGLSceneViewer = class(GLWin32Viewer.TGLSceneViewer);
   {$ENDIF MSWINDOWS}
 {$ENDIF FPC}
 
