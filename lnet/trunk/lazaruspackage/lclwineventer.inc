@@ -72,6 +72,9 @@ function TLCLEventer.AddHandle(aHandle: TLHandle): Boolean;
 var
   LHI: PLCLHandleInfo;
 begin
+  {$ERROR TODO: finish in windows you lazy ass}
+  TWin32WidgetSet(WidgetSet).OnAsyncSocketMsg := @HandleEvents;
+
   Result := True;
   SetHandleEventer(aHandle);
   LHI := GetMem(SizeOf(TLCLHandleInfo));
