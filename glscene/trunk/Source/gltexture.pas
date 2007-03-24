@@ -6200,7 +6200,7 @@ end;
 function TGLMaterialLibrary.LibMaterialByName(const nam : TGLLibMaterialName) : TGLLibMaterial;
 begin
    if Assigned(Self) then
-      Result:=Materials.GetLibMaterialByName(name)
+      Result:=Materials.GetLibMaterialByName(nam)
    else Result:=nil;
 end;
 
