@@ -1,6 +1,8 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
+//  24/03/07 - DaStr - Added explicit pointer dereferencing
+//                     (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
 // 08/03/06 - ur - Fixed warnings for Delphi 2006
 // 14/11/02 - EG - Fixed warnings
 // 16/11/02 - BJ - Replaced TLWChunkList.FindChunk search mechanism

@@ -8,20 +8,10 @@
     Note that you must manually add this unit to one of your project's uses
     to enable support for OBJ & OBJF at run-time.<p>
 
-      $Log: glfileobj.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:31  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/12/04 16:53:03  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>24/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
+      <li>11/07/05 - DaStr - Improved Cross-Platform compatibility (BugTracker ID = 1684432)
       <li>11/07/05 - Wet - Added multi meshobject support
       <li>09/09/03 - Jaj - Added TriangleStrip and TriangleFan support to save..
       <li>10/07/03 - Egg - Improved robustness of material loading
@@ -73,7 +63,7 @@ unit GLFileObj;
 
 interface
 
-uses {$IFDEF STATS}Dialogs, {$ENDIF} Classes, SysUtils, GLScene, ApplicationFileIO,
+uses GLCrossPlatform, Classes, SysUtils, GLScene, ApplicationFileIO,
      VectorGeometry, GLMisc, GLVectorFileObjects, VectorLists, GLTexture;
 
 const
@@ -843,7 +833,7 @@ var
 {$ENDIF}
 begin
    {$IFDEF STATS}
-   t0:=GetTickCount;
+   t0:=GLGetTickCount;
    {$ENDIF}
 
    FEof:=False;
@@ -908,14 +898,14 @@ begin
       mesh.FaceGroups.SortByMaterial;
 
       {$IFDEF STATS}
-      t1:=GetTickCount;
+      t1:=GLGetTickCount;
       {$ENDIF}
 
       CalcMissingOBJNormals(mesh);
 
       {$IFDEF STATS}
-      t2:=GetTickCount;
-      ShowMessage(Format('TGLOBJVectorFile Loaded in %dms'#13+
+      t2:=GLGetTickCount;
+      InformationDlg(Format('TGLOBJVectorFile Loaded in %dms'#13+
                          #13+
                          '    %dms spent reading'#13+
                          '    %dms spent calculating normals'#13+

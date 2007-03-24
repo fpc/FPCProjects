@@ -6,6 +6,8 @@
 	3DStudio 3DS vector file format implementation.<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>24/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>28/01/07 - DaStr - Added transparency and opacity texture support (thanks DIVON)
       <li>09/12/04 - LR - Add Integer cast line 94 for Linux
       <li>25/10/04 - SG - Added lightmap (3DS IllumMap) support

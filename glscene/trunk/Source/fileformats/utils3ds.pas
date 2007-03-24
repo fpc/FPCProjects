@@ -1,6 +1,8 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
+// 24/03/07 - DaStr - Added explicit pointer dereferencing
+//                     (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
 // 09/03/07 - DaStr - Fixed a potential AV in two InitMeshObj procedures
 //                     (thanks Burkhard Carstens) (BugtrackerID = 1678649)
 // 27/10/06 - LC - Fixed memory leak in RelMeshObjField. Bugtracker ID=1585639
@@ -589,7 +591,7 @@ begin
                          else
       begin
         Chunk := FindChunk(MDataChunk, USE_SOLID_BGND);
-        if assigned(chunk) then bgndused := btusesolidbgnd
+        if Assigned(Chunk) then BgndUsed := btUseSolidBgnd
                            else
         begin
           Chunk := FindChunk(MDataChunk, USE_V_GRADIENT);
@@ -3785,7 +3787,7 @@ begin
      Assigned(Mesh.MatArray)           then
   begin
     for I := 0 to Mesh.NMats - 1 do begin
-      // name is allways assigned
+      // name is always assigned
       Mesh.MatArray^[I].NameStr:='';
       if Assigned(Mesh.MatArray^[I].FaceIndex) then
       begin
@@ -4980,7 +4982,7 @@ begin
   if Assigned(FOVChunk) then
   begin
     Source.ReadChunkData(FOVChunk);
-    FovKeys := FOVChunk^.Data.FovTrackTag^.TrackHdr.KeyCount;
+    FovKeys := FOVChunk^.Data.FOVTrackTag^.TrackHdr.KeyCount;
   end;
 
   if Assigned(RollChunk) then
@@ -5041,9 +5043,9 @@ begin
     // field of view information
     if FOVKeys <> 0 then
     begin
-      NFFlag := FOVChunk^.Data.FovTrackTag^.TrackHdr.Flags;
-      Move(FOVChunk^.Data.FovTrackTag^.KeyHdrList^, FKeys^, FOVKeys * SizeOf(TKeyHeader3DS));
-      Move(FOVChunk^.Data.FovTrackTag^.FOVAngleList^, FOV^, FOVKeys * SizeOf(Single));
+      NFFlag := FOVChunk^.Data.FOVTrackTag^.TrackHdr.Flags;
+      Move(FOVChunk^.Data.FOVTrackTag^.KeyHdrList^, FKeys^, FOVKeys * SizeOf(TKeyHeader3DS));
+      Move(FOVChunk^.Data.FOVTrackTag^.FOVAngleList^, FOV^, FOVKeys * SizeOf(Single));
     end;
 
     // roll track information
