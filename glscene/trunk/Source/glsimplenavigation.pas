@@ -11,6 +11,7 @@
    <b>History : </b><font size=-1><ul>
       <li>24/03/07 - DaStr - Replaced GLWin32Viewer with GLViewer
                              (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
+                             Got rid of Types dependancy
       <li>20/03/07 - DaStr - Improved SceneViewer detection
       <li>02/03/07 - DaStr - Added default values to all properties
                              Added TGLSimpleNavigationOptions
@@ -39,10 +40,10 @@ interface
 
 uses
   // VCL
-  Classes, Forms, ExtCtrls, Types, SysUtils,  TypInfo,
+  Classes, Forms, ExtCtrls, SysUtils, TypInfo,
 
   // GLSCene
-  VectorGeometry, GLScene, GLViewer, GLStrings;
+  VectorGeometry, GLScene, GLViewer, GLStrings, GLCrossPlatform;
 
 type
   TGLSimpleNavigationOption = (
@@ -106,7 +107,7 @@ type
     procedure GLSceneViewerMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+      WheelDelta: Integer; MousePos: TGLPoint; var Handled: Boolean);
 
     procedure SetGLSceneViewer(const Value: TGLSceneViewer);
     procedure SetForm(const Value: TCustomForm);
@@ -212,7 +213,7 @@ begin
 end;
 
 procedure TGLSimpleNavigation.FormMouseWheel(Sender: TObject;
-  Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
+  Shift: TShiftState; WheelDelta: Integer; MousePos: TGLPoint;
   var Handled: Boolean);
 var
   Sign: SmallInt;

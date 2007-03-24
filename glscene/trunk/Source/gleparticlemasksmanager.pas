@@ -6,6 +6,8 @@
    A pretty particle mask effect manager.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>24/03/07 - Improved Cross-Platform compatibility (BugTracker ID = 1684432)
+                     Got rid of Types dependancy
       <li>29/01/07 - DaStr - Initial version (donated to GLScene by Kenneth Poulter)
 
 
@@ -45,8 +47,12 @@ unit GLEParticleMasksManager;
 interface
 
 uses
-  SysUtils, Classes, Types, GLTexture, GLScene, VectorGeometry, VectorTypes,
-  GLMisc, Graphics, GLParticleFX, Dialogs;
+  // VCL
+  SysUtils, Classes,
+
+  // GLScene
+  GLTexture, GLScene, VectorGeometry, VectorTypes, GLMisc,
+  GLParticleFX, GLCrossPlatform;
 
 type
 
@@ -65,8 +71,8 @@ type
     FZMask: TGLLibMaterialName;
     FXMask: TGLLibMaterialName;
     FMaterialLibrary: TGLMaterialLibrary;
-    FBackgroundColor: TColor;
-    FMaskColor: TColor;
+    FBackgroundColor: TDelphiColor;
+    FMaskColor: TDelphiColor;
     FMaxX, FMaxY, FMaxZ, FMinX, FMinY, FMinZ: Integer;
     IXW, IXH, IYW, IYH, IZW, IZH: Integer;
     LX, LY, LZ: Integer;
@@ -81,9 +87,9 @@ type
     procedure SetYMask(const Value: TGLLibMaterialName);
     procedure SetZMask(const Value: TGLLibMaterialName);
     procedure SetMaterialLibrary(const Value: TGLMaterialLibrary);
-    function XCan: TBitMap;
-    function YCan: TBitMap;
-    function ZCan: TBitMap;
+    function XCan: TGLBitmap;
+    function YCan: TGLBitmap;
+    function ZCan: TGLBitmap;
     //implementing IGLMaterialLibrarySupported
     function GetMaterialLibrary: TGLMaterialLibrary;
     //implementing IInterface
@@ -118,9 +124,9 @@ type
     property YMask: TGLLibMaterialName read FYMask write SetYMask;
     property ZMask: TGLLibMaterialName read FZMask write SetZMask;
     // background color is the color that prevents particles from being positioned there
-    property BackgroundColor: TColor read FBackgroundColor write FBackgroundColor;
+    property BackgroundColor: TDelphiColor read FBackgroundColor write FBackgroundColor;
     // maskcolor is where particles are allowed to be positioned
-    property MaskColor: TColor read FMaskColor write FMaskColor;
+    property MaskColor: TDelphiColor read FMaskColor write FMaskColor;
     // just the average angles for orientation
     property RollAngle: Single read FRollAngle write FRollAngle;
     property PitchAngle: Single read FPitchAngle write FPitchAngle;
@@ -258,10 +264,10 @@ end;
 procedure TGLEParticleMask.GenerateMaskFromProjection(FromMask,
   ToMask: TGLEProjectedParticleMask; Depth: Integer);
 var
-  FromBitMap: TBitmap;
-  ToBitMap: TBitMap;
+  FromBitMap: TGLBitmap;
+  ToBitMap: TGLBitmap;
   X, Y: Integer;
-  Rect: TRect;
+  Rect: TGLRect;
 begin
 
   FromBitMap := nil;
@@ -602,9 +608,8 @@ begin
   LZ := MaxInteger(IXW, IYH);
 end;
 
-function TGLEParticleMask.XCan: TBitMap;
+function TGLEParticleMask.XCan: TGLBitmap;
 begin
-
   Result := nil;
   if not assigned(FMaterialLibrary) then
     Exit;
@@ -613,13 +618,11 @@ begin
   if FMaterialLibrary.LibMaterialByName(FXMask).Material.Texture.ImageClassName <> TGLPersistentImage.ClassName then
     Exit;
 
-  Result := TBitMap((FMaterialLibrary.LibMaterialByName(FXMask).Material.Texture.Image as TGLPersistentImage).Picture.Bitmap);
-
+  Result := TGLBitmap((FMaterialLibrary.LibMaterialByName(FXMask).Material.Texture.Image as TGLPersistentImage).Picture.Bitmap);
 end;
 
-function TGLEParticleMask.YCan: TBitMap;
+function TGLEParticleMask.YCan: TGLBitmap;
 begin
-
   Result := nil;
   if not assigned(FMaterialLibrary) then
     Exit;
@@ -628,13 +631,11 @@ begin
   if FMaterialLibrary.LibMaterialByName(FYMask).Material.Texture.ImageClassName <> TGLPersistentImage.ClassName then
     Exit;
 
-  Result := TBitMap((FMaterialLibrary.LibMaterialByName(FYMask).Material.Texture.Image as TGLPersistentImage).Picture.Bitmap);
-
+  Result := TGLBitmap((FMaterialLibrary.LibMaterialByName(FYMask).Material.Texture.Image as TGLPersistentImage).Picture.Bitmap);
 end;
 
-function TGLEParticleMask.ZCan: TBitMap;
+function TGLEParticleMask.ZCan: TGLBitmap;
 begin
-
   Result := nil;
   if not assigned(FMaterialLibrary) then
     Exit;
@@ -643,8 +644,7 @@ begin
   if FMaterialLibrary.LibMaterialByName(FZMask).Material.Texture.ImageClassName <> TGLPersistentImage.ClassName then
     Exit;
 
-  Result := TBitMap((FMaterialLibrary.LibMaterialByName(FZMask).Material.Texture.Image as TGLPersistentImage).Picture.Bitmap);
-
+  Result := TGLBitmap((FMaterialLibrary.LibMaterialByName(FZMask).Material.Texture.Image as TGLPersistentImage).Picture.Bitmap);
 end;
 
 function TGLEParticleMask._AddRef: Integer;
