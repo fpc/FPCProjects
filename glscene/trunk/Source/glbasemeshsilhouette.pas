@@ -53,8 +53,8 @@ type
 
           property MeshObject : TMeshObject read FMeshObject write SetMeshObject;
 
-          constructor Create(PrecomputeFaceNorml : boolean); override;
-          constructor CreateFromMesh(aMeshObject : TMeshObject; precomputeFaceNorml : Boolean);
+          constructor Create(APrecomputeFaceNormal : boolean); override;
+          constructor CreateFromMesh(aMeshObject : TMeshObject; APrecomputeFaceNormal : Boolean);
           destructor Destroy; override;
    end;
 
@@ -84,7 +84,7 @@ type
 
           procedure CreateSilhouette(const silhouetteParameters : TGLSilhouetteParameters; var aSilhouette : TGLSilhouette; AddToSilhouette : boolean); override;
 
-          constructor Create(PrecomputeFaceNorml : boolean); override;
+          constructor Create(APrecomputeFaceNormal : boolean); override;
           constructor CreateFromMesh(aGLBaseMesh : TGLBaseMesh);
           destructor Destroy; override;
    end;
@@ -114,7 +114,7 @@ begin
     inherited;
 end;
 
-constructor TFaceGroupConnectivity.Create(PrecomputeFaceNorml: boolean);
+constructor TFaceGroupConnectivity.Create(APrecomputeFaceNormal: boolean);
 begin
   inherited;
 
@@ -138,9 +138,9 @@ begin
 end;
 
 constructor TFaceGroupConnectivity.CreateFromMesh(aMeshObject: TMeshObject;
-  PrecomputeFaceNorml: boolean);
+  APrecomputeFaceNormal: boolean);
 begin
-  Create(PrecomputeFaceNormal);
+  Create(APrecomputeFaceNormal);
 
   MeshObject := aMeshObject;
 end;
@@ -232,7 +232,7 @@ begin
   end;
 end;
 
-constructor TGLBaseMeshConnectivity.Create(PrecomputeFaceNorml: boolean);
+constructor TGLBaseMeshConnectivity.Create(APrecomputeFaceNormal: boolean);
 begin
   FFaceGroupConnectivityList := TList.Create;
 
