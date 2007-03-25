@@ -25,7 +25,15 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
-      <li>17/03/07 - DaStr - Added TPenStyle, TPenMode, TBrushStyle, more color constants,
+      <li>25/03/07 - DaStr - Replaced some UNIX IFDEFs with KYLIX
+                             Added IdentToColor, ColorToIdent, ColorToString,
+                                   AnsiStartsText, IsSubComponent
+                             Added TPoint, PPoint, TRect, PRect, TPicture, TGraphic,
+                                   TBitmap, TTextLayout, TMouseButton, TMouseEvent,
+                                   TKeyEvent, TKeyPressEvent
+                             Added IInterface, S_OK, E_NOINTERFACE,
+                                   glKey_PRIOR, glKey_NEXT, glKey_CONTROL
+      <li>24/03/07 - DaStr - Added TPenStyle, TPenMode, TBrushStyle, more color constants,
                              Added "Application" function
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>08/07/04 - LR - Added clBlack
@@ -55,12 +63,13 @@ interface
 {$IFDEF MSWINDOWS}
 uses
   Windows, Classes, SysUtils, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtDlgs{$ifndef fpc}, Consts{$endif};
+  Dialogs, StdCtrls, ExtDlgs, strutils{$ifndef fpc}, Consts{$endif};
 {$ENDIF}
 {$IFDEF UNIX}
 uses
   {$ifdef fpc}
   graphics,controls,forms,dialogs,stdctrls,lcltype,buttons,unix,lclintf,ExtDlgs,
+  strutils,
   {$else}
   qt, qgraphics, qcontrols, qforms,
   qdialogs, qstdctrls,qconsts,
@@ -111,11 +120,56 @@ type
 {$endif}
 
 {$IFNDEF KYLIX}
+  {$IFDEF FPC}
+  TPoint = Types.TPoint;
+  PPoint = Types.PPoint;
+  TRect = Types.TRect;
+  PRect = Types.PRect;
+
+  TTextLayout = Graphics.TTextLayout;
+
+  {$ELSE}
+  TPoint = Windows.TPoint;
+  PPoint = Windows.PPoint;
+  TRect = Windows.TRect;
+  PRect = Windows.PRect;
+
+  TTextLayout = StdCtrls.TTextLayout;
+
+  {$ENDIF}
+  TPicture = Graphics.TPicture;
+  TGraphic = Graphics.TGraphic;
+  TBitmap = Graphics.TBitmap;
+
+
+  TMouseButton = Controls.TMouseButton;
+  TMouseEvent = Controls.TMouseEvent;
+  TKeyEvent = Controls.TKeyEvent;
+  TKeyPressEvent = Controls.TKeyPressEvent;
+
+  TColor      = Graphics.TColor;
   TPenStyle   = Graphics.TPenStyle;
   TPenMode    = Graphics.TPenMode;
   TBrushStyle = Graphics.TBrushStyle;
 {$ENDIF}
 {$IFDEF KYLIX}
+  TPoint = QTypes.TPoint;
+  PPoint = QTypes.PPoint;
+  TRect = QTypes.TRect;
+  PRect = QTypes.PRect;
+
+  TPicture = QGraphics.TPicture;
+  TGraphic = QGraphics.TGraphic;
+  TBitmap = QGraphics.TBitmap;
+
+  TTextLayout = QStdCtrls.TTextLayout;
+
+  TMouseButton = QControls.TMouseButton;
+  TMouseEvent = QControls.TMouseEvent;
+  TKeyEvent = QControls.TKeyEvent;
+  TKeyPressEvent = QControls.TKeyPressEvent;
+
+  TColor      = QGraphics.TColor;
   TPenStyle   = QGraphics.TPenStyle;
   TPenMode    = QGraphics.TPenMode;
   TBrushStyle = QGraphics.TBrushStyle;
@@ -403,6 +457,9 @@ const
   glKey_CANCEL = VK_CANCEL;
   glKey_UP = VK_UP;
   glKey_DOWN = VK_DOWN;
+  glKey_PRIOR = VK_PRIOR;
+  glKey_NEXT = VK_NEXT;
+  glKey_CONTROL = VK_CONTROL;
 {$ENDIF}
 {$IFDEF KYLIX}
   glKey_TAB = Key_Tab;
@@ -413,9 +470,12 @@ const
   glKey_RIGHT = Key_Right;
   glKey_HOME = Key_Home;
   glKey_END = Key_End;
-  glKey_CANCEL = Key_Escape;   // ?
+  glKey_CANCEL = Key_Escape;     // ?
   glKey_UP = Key_Up;
   glKey_DOWN = Key_DOWN;
+  glKey_PRIOR = Key_PRIOR;       // ?
+  glKey_NEXT = Key_NEXT;         // ?
+  glKey_CONTROL = Key_CONTROL;   // ?
 {$ENDIF}
 
 // TPenStyle.
@@ -633,6 +693,14 @@ function GLGetScreenWidth:integer;
 function GLGetScreenHeight:integer;
 function GLGetTickCount:int64;
 
+function IdentToColor(const Ident: string; var Color: Longint): Boolean;
+function ColorToIdent(Color: Longint; var Ident: string): Boolean;
+function ColorToString(Color: TColor): string;
+
+function AnsiStartsText(const ASubText, AText: string): Boolean;
+
+function IsSubComponent(const AComponent: TComponent): Boolean;
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -652,6 +720,73 @@ uses
 var
    vInvPerformanceCounterFrequency : Double;
    vInvPerformanceCounterFrequencyReady : Boolean = False;
+
+function IsSubComponent(const AComponent: TComponent): Boolean;
+begin
+//{$IFNDEF GLS_COMPILER_6_UP}
+//  Result := False; // AFAIK Delphi 5 does not know what is a SubComponent.
+//{$ELSE}
+  Result := (csSubComponent in AComponent.ComponentStyle);
+//{$ENDIF}
+end;
+
+function IdentToColor(const Ident: string; var Color: Longint): Boolean;
+begin
+{$IFNDEF KYLIX}
+  Result := Graphics.IdentToColor(Ident, Color);
+{$ENDIF}
+{$IFDEF KYLIX}
+  Result := QGraphics.IdentToColor(Ident, Color);
+{$ENDIF}
+end;
+
+function ColorToIdent(Color: Longint; var Ident: string): Boolean;
+begin
+{$IFNDEF KYLIX}
+  Result := Graphics.ColorToIdent(Color, Ident);
+{$ENDIF}
+{$IFDEF KYLIX}
+  Result := QGraphics.ColorToIdent(Color, Ident);
+{$ENDIF}
+end;
+
+function ColorToString(Color: TColor): string;
+begin
+  // Taken from Delphi7 Graphics.pas
+  if not ColorToIdent(Color, Result) then
+    FmtStr(Result, '%s%.8x', [HexDisplayPrefix, Color]);
+end;
+
+function AnsiStartsText(const ASubText, AText: string): Boolean;
+//{$IFDEF GLS_COMPILER_6_UP}
+begin
+  Result := StrUtils.AnsiStartsText(ASubText, AText);
+end;
+(*{$ELSE}
+var
+{$IFDEF MSWINDOWS}
+  P: PChar;
+{$ENDIF}
+  L, L2: Integer;
+begin
+{$IFDEF MSWINDOWS}
+  P := PChar(AText);
+{$ENDIF}
+  L := Length(ASubText);
+  L2 := Length(AText);
+  if L > L2 then
+    Result := False
+  else
+{$IFDEF MSWINDOWS}
+    Result := CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
+      P, L, PChar(ASubText), L) = 2;
+{$ENDIF}
+{$IFDEF UNIX}
+    Result := WideSameText(ASubText, Copy(AText, 1, L));
+{$ENDIF}
+end;
+{$ENDIF}
+*)
 
 function Application: TApplication;
 begin
