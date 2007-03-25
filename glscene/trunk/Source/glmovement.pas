@@ -1,11 +1,15 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLMovement<p>
 
    Movement path behaviour by Roger Cao<p>
 
    <b>Historique : </b><font size=-1><ul>
+      <li>25/03/07 - DaStr - Small fix for Delphi5 compatibility
       <li>15/02/07 - DaStr - Fixed TGLMovementPath.SetShowPath - SubComponent support
       <li>27/10/06 - LC - Fixed memory leak in TGLMovementPath. Bugtracker ID=1548615 (thanks Da Stranger)
-      <li>28/09/04 - Mrqzzz - Fixed bug in proc. Interpolation (skipped a line from Carlos' code, oops)  
+      <li>28/09/04 - Mrqzzz - Fixed bug in proc. Interpolation (skipped a line from Carlos' code, oops)
       <li>09/09/04 - Mrqzzz - CalculateState change by Carlos (NG) to make speed interpolated between nodes
       <li>20/11/01 - Egg - DoProgress fix suggested by Philipp Pammler (NG)
       <li>14/01/01 - Egg - Minor changes, integrated to v0.8RC2, still needed:
@@ -17,6 +21,8 @@
 unit GLMovement;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes, GLScene, VectorGeometry, GLMisc, XCollection, OpenGL1x, Spline, GLObjects;
@@ -1627,4 +1633,6 @@ initialization
   RegisterXCollectionItemClass(TGLMovement);
 
 end.
+
+
 

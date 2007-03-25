@@ -7,6 +7,7 @@
    Allows assign a unique material for each proxy master.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>25/03/07 - Added GLCrossPlatform to uses for Delphi5 compatibility
       <li>17/02/07 - DaStr - Initial version (contributed to GLScene)
 
 
@@ -38,10 +39,12 @@ interface
 {$I GLScene.inc}
 
 uses
-  //VCL
+  // VCL
   Classes,
-  //GLScene
-  GLScene, VectorGeometry, GLMisc, GLTexture, GLSilhouette, GLStrings;
+
+  // GLScene
+  GLScene, VectorGeometry, GLMisc, GLTexture, GLSilhouette, GLStrings,
+  GLCrossPlatform;
 
 type
 

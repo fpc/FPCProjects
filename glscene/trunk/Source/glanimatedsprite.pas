@@ -6,6 +6,7 @@
   A sprite that uses a scrolling texture for animation.<p>
 
   <b>History : </b><font size=-1><ul>
+    <li>25/03/07 - DaStr - Added GLCrossPlatform to uses for Delphi5 compatibility
     <li>14/03/07 - DaStr - Added IGLMaterialLibrarySupported to TSpriteAnimation
                            Published TGLAnimatedSprite.Visible
                            Fixed TGLAnimatedSprite.SetMaterialLibrary
@@ -24,7 +25,7 @@ interface
 
 uses
   Classes, SysUtils, GLScene, VectorGeometry, OpenGL1x, GLTexture, GLUtils,
-  PersistentClasses, XCollection, GLMisc;
+  PersistentClasses, XCollection, GLMisc, GLCrossPlatform;
 
 type
   TSpriteAnimFrame = class;
