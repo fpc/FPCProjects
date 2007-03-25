@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="156">
+    <Files Count="158">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -684,6 +684,14 @@
         <Filename Value="../Source/gleparticlemasksmanager.pas"/>
         <UnitName Value="GLEParticleMasksManager"/>
       </Item156>
+      <Item157>
+        <Filename Value="../Source/glconsole.pas"/>
+        <UnitName Value="GLConsole"/>
+      </Item157>
+      <Item158>
+        <Filename Value="../Source/glposteffects.pas"/>
+        <UnitName Value="GLPostEffects"/>
+      </Item158>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
