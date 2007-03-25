@@ -3,6 +3,7 @@
 //                  by Brad Stowers: bstowers@pobox.com
 //                  Delphi Free Stuff: http://www.delphifreestuff.com/
 //
+// 25/03/07 - DaStr - Added UNIX and KYLIX defines
 // 14/01/07 - DaStr - Added GLS_DELPHI/COMPILER_XX_DOWN defines
 // 20/12/06 - DaStr - Added GLS_OPTIMIZATIONS option
 // 08/03/06 - ur - added Delphi 2006 detection
@@ -57,8 +58,11 @@
 {$ENDIF}
 
 {$IFDEF LINUX}
-  {$IFNDEF LCL}
+  {$IFNDEF FPC}
   {$DEFINE GEOMETRY_NO_ASM}
+     // DaStr: May be these defines already exist in Kylix, I don't know...
+    {$DEFINE UNIX}
+    {$DEFINE KYLIX}
   {$ENDIF}
 {$ENDIF}
 
