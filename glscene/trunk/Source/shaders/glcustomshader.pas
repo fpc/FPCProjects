@@ -9,6 +9,7 @@
     It also contains a procedures and function that can be used in all shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/03/07 - DaStr - Added TGLCustomShaderParameter.SetToTextureOf
       <li>20/03/07 - DaStr - Added DrawTexturedScreenQuad[4/5/6]
                              "TextureType" parameter renamed to "TextureTarget"
                              Finished working on TGLCustomShaderParameter
@@ -240,8 +241,8 @@ type
     procedure SetAsVectorI(const Values: array of Integer); overload;
 
     {: SetToTextureOf determines texture type on-the-fly.}
-    procedure SetToTextureOf(const LibMaterial: TGLLibMaterial); overload;
-    procedure SetToTextureOf(const Texture: TGLTexture); overload; virtual; abstract;
+    procedure SetToTextureOf(const LibMaterial: TGLLibMaterial; const TextureIndex: Integer); overload;
+    procedure SetToTextureOf(const Texture: TGLTexture; const TextureIndex: Integer); overload;
 
     //: GLScene-friendly properties.
     property AsVector: TVector read GetAsVector4f write SetAsVector4f;
@@ -637,9 +638,24 @@ begin
   end;
 end;
 
-procedure TGLCustomShaderParameter.SetToTextureOf(const LibMaterial: TGLLibMaterial);
+procedure TGLCustomShaderParameter.SetToTextureOf(
+  const LibMaterial: TGLLibMaterial; const TextureIndex: Integer);
 begin
-  SetToTextureOf(LibMaterial.Material.Texture);
+  SetToTextureOf(LibMaterial.Material.Texture, TextureIndex);
+end;
+
+procedure TGLCustomShaderParameter.SetToTextureOf(
+  const Texture: TGLTexture; const TextureIndex: Integer);
+begin
+  case Texture.Image.NativeTextureTarget of
+    GL_TEXTURE_2D : SetAsCustomTexture(TextureIndex, GL_TEXTURE_2D, Texture.Handle);
+    GL_TEXTURE_1D : SetAsCustomTexture(TextureIndex, GL_TEXTURE_1D, Texture.Handle);
+    GL_TEXTURE_3D : SetAsCustomTexture(TextureIndex, GL_TEXTURE_3D, Texture.Handle);
+    GL_TEXTURE_CUBE_MAP_ARB : SetAsCustomTexture(TextureIndex, GL_TEXTURE_CUBE_MAP_ARB, Texture.Handle);
+    GL_TEXTURE_RECTANGLE_ARB : SetAsCustomTexture(TextureIndex, GL_TEXTURE_RECTANGLE_ARB, Texture.Handle);
+  else
+    Assert(False, glsUnknownType);
+  end;
 end;
 
 initialization
