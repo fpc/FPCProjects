@@ -3,6 +3,7 @@
    Implements projected textures through a GLScene object via GLSL.
 
    <b>History : </b><font size=-1><ul>
+        <li>25/03/07 - fig -    Only The texMatrix is passed to the shader now, no need for the InvModelViewMatrix
         <li>23/03/07 - fig -    Fixed reverse projection bug and added Quick Decimal Separator fix.
                                 Finished Design time support.
                                 Now checks for GLSL support and just renders the children as normal, if not supported.
@@ -54,16 +55,13 @@ type
         procedure ColorNotifyChange(sender: TObject);
     protected
         ProjectedTexturesObject: TGLSLProjectedTextures;
-        TexMatrix, invmatrix: TMatrix;
-        TexMatrixChanged: boolean;
+        TexMatrix: TMatrix;
         procedure SetupTexMatrix;
         procedure SetAttenuation(val: single);
         procedure SetBrightness(val: single);
         procedure SetColor(val: TGLColor);
         procedure SetStyle(val: TGLSLProjectedTexturesStyle);
         procedure SetUseAttenuation(val: boolean);
-        procedure SetAspect(val: single);
-        procedure SetFOV(val: single);
         procedure SetAllowReverseProjection(val: boolean);
     public
         constructor Create(AOwner: TComponent); override;
@@ -71,10 +69,10 @@ type
         procedure DoRender(var rci: TRenderContextInfo; renderSelf, renderChildren: boolean); override;
     published
         {: Indicates the field-of-view of the projection frustum.}
-        property FOV: single read FFOV write SetFOV;
+        property FOV: single read FFOV write FFOV;
         {: x/y ratio. For no distortion, this should be set to
            texture.width/texture.height.}
-        property Aspect: single read FAspect write SetAspect;
+        property Aspect: single read FAspect write FAspect;
         {: Indicates the style of the projected textures.}
         property Style: TGLSLProjectedTexturesStyle read FStyle write SetStyle;
         {:Fall off/ attenuation of the projected texture}
@@ -198,13 +196,16 @@ end;
 procedure TGLSLTextureEmitter.DoRender(var rci: TRenderContextInfo;
     renderSelf, renderChildren: boolean);
 begin
-    glGetFloatv(GL_MODELVIEW_MATRIX, @invmatrix[0][0]);
-    InvertMatrix(invmatrix);
+    SetupTexMatrix;
     inherited;
 end;
 
 procedure TGLSLTextureEmitter.SetupTexMatrix;
+var
+    invmatrix: TMatrix;
 begin
+    glGetFloatv(GL_MODELVIEW_MATRIX, @invmatrix[0][0]);
+    InvertMatrix(invmatrix);
     glMatrixMode(GL_TEXTURE);
     glpushmatrix;
     glLoadIdentity;
@@ -216,7 +217,7 @@ begin
     // Then set the projector's "perspective" (i.e. the "spotlight cone"):.
     gluPerspective(FFOV, FAspect, 0.1, 1);
 
-    //  glMultMatrixf(PGLFloat(invabsolutematrixasaddress));
+    glMultMatrixf(@invmatrix);
     glGetFloatv(GL_TEXTURE_MATRIX, @TexMatrix[0][0]);
     glpopmatrix;
     glMatrixMode(GL_MODELVIEW);
@@ -270,17 +271,6 @@ begin
         ProjectedTexturesObject.ShaderChanged := true;
 end;
 
-procedure TGLSLTextureEmitter.SetAspect(val: single);
-begin
-    FAspect := val;
-    TexMatrixChanged := true;
-end;
-
-procedure TGLSLTextureEmitter.SetFOV(val: single);
-begin
-    FFOV := Val;
-    TexMatrixChanged := true;
-end;
 // ------------------
 // ------------------ TGLSLTextureEmitterItem ------------------
 // ------------------
@@ -455,7 +445,6 @@ begin
             emitter := Emitters[i].Emitter;
             if not assigned(emitter) then continue;
             if not emitter.Visible then continue;
-            vp.add(format('uniform mat4 InvModelViewMatrix%d;', [i]));
             vp.add(format('uniform mat4 TextureMatrix%d;', [i]));
             vp.add(format('varying vec4 ProjTexCoords%d;', [i]));
         end;
@@ -472,14 +461,12 @@ begin
         vp.add('gl_TexCoord[1] = gl_TextureMatrix[1] * gl_MultiTexCoord1;');
     if emitters.count > 0 then
     begin
-        vp.add('vec4 Pinv;');
         for i := 0 to emitters.count - 1 do
         begin
             emitter := Emitters[i].Emitter;
             if not assigned(emitter) then continue;
             if not emitter.Visible then continue;
-            vp.add(format('Pinv = InvModelViewMatrix%d * Pe;', [i]));
-            vp.add(format('ProjTexCoords%d = TextureMatrix%d * Pinv;', [i, i]));
+            vp.add(format('ProjTexCoords%d = TextureMatrix%d * Pe;', [i, i]));
         end;
     end;
     vp.add('}');
@@ -580,7 +567,6 @@ procedure TGLSLProjectedTextures.DoRender(var rci: TRenderContextInfo;
 var
     i: integer;
     emitter: TGLSLTextureEmitter;
-    m: TMatrix;
 begin
     if not (renderSelf or renderChildren) then Exit;
     if (csDesigning in ComponentState) then
@@ -604,15 +590,6 @@ begin
             emitter := Emitters[i].Emitter;
             if not assigned(emitter) then continue;
             if not emitter.Visible then continue;
-            if emitter.TexMatrixChanged then
-            begin
-                emitter.setupTexMatrix;
-                emitter.TexMatrixChanged := false;
-            end;
-
-            m := emitter.InvAbsoluteMatrix;
-
-            Shader.Uniformmatrix4fv['InvModelViewMatrix' + inttostr(i)] := {emitter.invabsolutematrix;} emitter.InvMatrix;
             Shader.Uniformmatrix4fv['TextureMatrix' + inttostr(i)] := emitter.texMatrix;
         end;
 
