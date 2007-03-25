@@ -4,6 +4,7 @@
 
    <b>History : </b><font size=-1><ul>
         <li>25/03/07 - fig -    Only The texMatrix is passed to the shader now, no need for the InvModelViewMatrix
+                                Changed Emitter color, brightness and Attenuation properties to use Uniforms in the shader, so they're now dynamic.
         <li>23/03/07 - fig -    Fixed reverse projection bug and added Quick Decimal Separator fix.
                                 Finished Design time support.
                                 Now checks for GLSL support and just renders the children as normal, if not supported.
@@ -17,7 +18,7 @@
 2. Only up to 6 Emitters can be used (more on better cards)
    A way round this is to make the emiitters a children of the 6 nearest objects to the camera.
 3. Changing emiiter properties causes a slight delay while recreating the shader.
-   So, no dynamic flickering lights etc. yet.
+   To make an emitter invisible, just move it to somewhere it won't project on anything, or set the brightness to 0. (?)
 4. All children of the ProjectedTextures must have use a texture.
    The shader can't be changed between rendering each seperate object..
 }
@@ -52,14 +53,10 @@ type
         FStyle: TGLSLProjectedTexturesStyle;
         FColor: TGLColor;
         FUseAttenuation, FAllowReverseProjection: boolean;
-        procedure ColorNotifyChange(sender: TObject);
     protected
         ProjectedTexturesObject: TGLSLProjectedTextures;
         TexMatrix: TMatrix;
         procedure SetupTexMatrix;
-        procedure SetAttenuation(val: single);
-        procedure SetBrightness(val: single);
-        procedure SetColor(val: TGLColor);
         procedure SetStyle(val: TGLSLProjectedTexturesStyle);
         procedure SetUseAttenuation(val: boolean);
         procedure SetAllowReverseProjection(val: boolean);
@@ -76,9 +73,9 @@ type
         {: Indicates the style of the projected textures.}
         property Style: TGLSLProjectedTexturesStyle read FStyle write SetStyle;
         {:Fall off/ attenuation of the projected texture}
-        property Attenuation: single read FAttenuation write SetAttenuation;
-        property Brightness: single read FBrightness write SetBrightness;
-        property Color: TGLColor read FColor write SetColor;
+        property Attenuation: single read FAttenuation write FAttenuation;
+        property Brightness: single read FBrightness write FBrightness;
+        property Color: TGLColor read FColor write FColor;
         property UseAttenuation: boolean read FUseAttenuation write SetUseAttenuation;
         property AllowReverseProjection: boolean read FAllowReverseProjection write SetAllowReverseProjection;
 
@@ -182,7 +179,6 @@ begin
     FBrightness := 1;
     FColor := TGLColor.create(self);
     FColor.SetColor(1, 1, 1);
-    FColor.OnNotifyChange := ColorNotifyChange;
 end;
 
 destructor TGLSLTextureEmitter.Destroy;
@@ -223,12 +219,6 @@ begin
     glMatrixMode(GL_MODELVIEW);
 end;
 
-procedure TGLSLTextureEmitter.ColorNotifyChange(sender: TObject);
-begin
-    if assigned(ProjectedTexturesObject) then
-        ProjectedTexturesObject.ShaderChanged := true;
-end;
-
 procedure TGLSLTextureEmitter.SetAllowReverseProjection(val: boolean);
 begin
     FAllowReverseProjection := val;
@@ -239,27 +229,6 @@ end;
 procedure TGLSLTextureEmitter.SetUseAttenuation(val: boolean);
 begin
     FUseAttenuation := val;
-    if assigned(ProjectedTexturesObject) then
-        ProjectedTexturesObject.ShaderChanged := true;
-end;
-
-procedure TGLSLTextureEmitter.SetAttenuation(val: single);
-begin
-    FAttenuation := val;
-    if assigned(ProjectedTexturesObject) then
-        ProjectedTexturesObject.ShaderChanged := true;
-end;
-
-procedure TGLSLTextureEmitter.SetBrightness(val: single);
-begin
-    FBrightness := val;
-    if assigned(ProjectedTexturesObject) then
-        ProjectedTexturesObject.ShaderChanged := true;
-end;
-
-procedure TGLSLTextureEmitter.SetColor(val: TGLColor);
-begin
-    FColor := val;
     if assigned(ProjectedTexturesObject) then
         ProjectedTexturesObject.ShaderChanged := true;
 end;
@@ -465,7 +434,6 @@ begin
         begin
             emitter := Emitters[i].Emitter;
             if not assigned(emitter) then continue;
-            if not emitter.Visible then continue;
             vp.add(format('ProjTexCoords%d = TextureMatrix%d * Pe;', [i, i]));
         end;
     end;
@@ -483,10 +451,11 @@ begin
         begin
             emitter := Emitters[i].Emitter;
             if not assigned(emitter) then continue;
-            if not emitter.Visible then continue;
             fp.add(format('varying vec4 ProjTexCoords%d;', [i]));
             if Emitter.UseAttenuation then
                 fp.add(format('uniform float Attenuation%d;', [i]));
+            fp.add(format('uniform float Brightness%d;', [i]));
+            fp.add(format('uniform vec3 Color%d;', [i]));
         end;
     end;
 
@@ -503,36 +472,33 @@ begin
         fp.add('vec3 projshadow = vec3(0, 0, 0);');
         fp.add('vec3 temp;');
         fp.add('float dist;');
-        fp.add('vec3 col;');
         for i := 0 to emitters.count - 1 do
         begin
             emitter := Emitters[i].Emitter;
             if not assigned(emitter) then continue;
-            if not emitter.Visible then continue;
+            if not emitter.visible then continue;
             if not emitter.AllowReverseProjection then
                 fp.add(format('if (ProjTexCoords%d.q<0.0){', [i]));
-            with emitter.color do
-                fp.add(format('col = vec3(%.4f,%.4f,%.4f);', [red, green, blue]));
             case emitter.Style of
                 ptslight:
-                    fp.add(format('projlight+= (texture2DProj(ProjMap, ProjTexCoords%d).rgb*col*%.4f);', [i, emitter.brightness]));
+                    fp.add(format('projlight+= (texture2DProj(ProjMap, ProjTexCoords%d).rgb*Color%d*Brightness%d);', [i, i, i]));
                 ptsShadow:
-                    fp.add(format('projshadow+= (texture2DProj(ProjMap, ProjTexCoords%d).rgb*col*%.4f);', [i, emitter.brightness]));
+                    fp.add(format('projshadow+= (texture2DProj(ProjMap, ProjTexCoords%d).rgb*Color%d*Brightness%d);', [i, i, i]));
             end;
 
             if emitter.UseAttenuation then
             begin
-                fp.add(format('dist = 1.0 - clamp(ProjTexCoords%d.q / %.4f, 0.0, 1.0);', [i, emitter.Attenuation]));
+                fp.add(format('dist = 1.0 - clamp(ProjTexCoords%d.q/Attenuation%d, 0.0, 1.0);', [i, i]));
                 case emitter.Style of
                     ptslight:
                         fp.add('projlight *= dist;');
                     ptsShadow:
                         fp.add('projshadow *= dist;');
                 end;
-            end;
 
+            end;
             if not emitter.AllowReverseProjection then
-                fp.add('}');
+                fp[fp.Count - 1] := fp[fp.Count - 1] + '}';
         end;
 
         fp.add('projlight = clamp(projlight,0.0,1.2);');
@@ -545,8 +511,8 @@ begin
 
     fp.add('gl_FragColor = vec4(1.5*totlight *color , 1);}');
 
-    // vp.SaveToFile('c:\vp.txt');
-    // fp.SaveToFile('c:\fp.txt');
+    vp.SaveToFile('c:\vp.txt');
+    fp.SaveToFile('c:\fp.txt');
     Shader.AddShader(TGLVertexShaderHandle, vp.Text, True);
     Shader.AddShader(TGLFragmentShaderHandle, fp.Text, True);
 
@@ -589,7 +555,10 @@ begin
         begin
             emitter := Emitters[i].Emitter;
             if not assigned(emitter) then continue;
-            if not emitter.Visible then continue;
+            if emitter.UseAttenuation then
+                Shader.Uniform1f['Attenuation' + inttostr(i)] := emitter.Attenuation;
+            Shader.Uniform1f['Brightness' + inttostr(i)] := emitter.Brightness;
+            Shader.Uniform3f['Color' + inttostr(i)] := PAffinevector(@emitter.Color.Color)^;
             Shader.Uniformmatrix4fv['TextureMatrix' + inttostr(i)] := emitter.texMatrix;
         end;
 
