@@ -64,8 +64,8 @@ type
       constructor Create(AOwner : TComponent); override;
       destructor Destroy; override;
       
-      procedure DoRender(var rci : TRenderContextInfo;
-        renderSelf, renderChildre : Boolean); override;
+      procedure DoRender(var ARci : TRenderContextInfo;
+        ARenderSelf, ARenderChildren : Boolean); override;
 
       {: Parse the the feedback buffer for polygon data and build
          a mesh into the assigned lists. }
@@ -146,8 +146,8 @@ end;
 
 // DoRender
 //
-procedure TGLFeedback.DoRender(var rci : TRenderContextInfo;
-  renderSelf, renderChildre : Boolean);
+procedure TGLFeedback.DoRender(var ARci : TRenderContextInfo;
+  ARenderSelf, ARenderChildren : Boolean);
 
   function RecursChildRadius(obj : TGLBaseSceneObject) : Single;
   var
@@ -170,7 +170,7 @@ begin
   FBuffer.Count:=0;
   try
     if (csDesigning in ComponentState) or not Active then exit;
-    if not renderChildre then exit;
+    if not ARenderChildren then exit;
 
     FCorrectionScaling:=1.0;
     for i:=0 to Count-1 do begin
@@ -206,7 +206,7 @@ begin
     glViewPort(-1,-1,2,2);
     glRenderMode(GL_FEEDBACK);
 
-    Self.RenderChildren(0, Count-1, rci);
+    Self.RenderChildren(0, Count-1, ARci);
 
     FBuffer.Count:=glRenderMode(GL_RENDER);
     glMatrixMode(GL_MODELVIEW);
@@ -218,8 +218,8 @@ begin
 
   finally
     FBuffered:=(FBuffer.Count>0);
-    if RenderChildre then
-      Self.RenderChildren(0, Count-1, rci);
+    if ARenderChildren then
+      Self.RenderChildren(0, Count-1, ARci);
   end;
 end;
 
@@ -232,7 +232,7 @@ procedure TGLFeedback.BuildMeshFromBuffer(
   VertexIndices : TIntegerList = nil);
 var
   value : Single;
-  i,j,cont,skip : Integer;
+  i,j,LCount,skip : Integer;
   vertex, color, texcoord : TVector;
   tempVertices, tempNormals, tempTexCoords : TAffineVectorList;
   tempIndices : TIntegerList;
@@ -261,9 +261,9 @@ begin
     if value = GL_POLYGON_TOKEN then begin
       Inc(i);
       value:=FBuffer[i];
-      cont:=Round(value);
+      LCount:=Round(value);
       Inc(i);
-      if cont = 3 then begin
+      if LCount = 3 then begin
         for j:=0 to 2 do begin
           vertex[0]:=FBuffer[i];   Inc(i);
           vertex[1]:=FBuffer[i];   Inc(i);
@@ -289,7 +289,7 @@ begin
           tempTexCoords.Add(AffineVectorMake(texcoord));
         end;
       end else begin
-        Inc(i,skip*cont);
+        Inc(i,skip*LCount);
       end;
     end else begin
       Inc(i);
