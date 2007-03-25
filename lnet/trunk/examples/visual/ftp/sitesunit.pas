@@ -12,7 +12,7 @@ type
 
   TSiteInfo = record
     Site: string;
-    Host: string;
+    txtHost: string;
     Port: string;
     path: string;
     user: string;
@@ -101,7 +101,7 @@ begin
     I := Ini.ReadInteger('Global','LastSite', -1);
     s := 'Site'+IntToStr(i);
     Site.Site := Ini.ReadString(s, 'Site', '<see sites manager>');
-    Site.Host := Ini.ReadString(s, 'Host', '');
+    Site.txtHost := Ini.ReadString(s, 'Host', '');
     Site.Port := Ini.ReadString(s, 'Port', '');
     Site.path := Ini.ReadString(s, 'Path', '');
     Site.user := Ini.ReadString(s, 'User', '');
@@ -266,7 +266,7 @@ begin
   
   // store site values
   FSites[i].Site := txtSite.Text;
-  FSites[i].Host := txtHost.Text;
+  FSites[i].txtHost := txtHost.Text;
   FSites[i].Port := txtPort.Text;
   FSites[i].path := txtPath.Text;
   FSites[i].User := txtUser.Text;
@@ -301,7 +301,7 @@ begin
     with FSites[i - 1] do begin
       s := 'Site'+IntToStr(i);
       Site := Ini.ReadString(s, 'site', s);
-      Host := Ini.ReadString(s, 'host', '');
+      txtHost := Ini.ReadString(s, 'host', '');
       Port := Ini.ReadString(s, 'Port', '');
       Path := Ini.ReadString(s, 'path', '');
       User := Ini.ReadString(s, 'user', '');
@@ -326,7 +326,7 @@ begin
     for i := 0 to High(FSites) do begin
       s :='Site' + IntToStr(i + 1);
       ini.WriteString(s, 'site', FSites[i].Site);
-      ini.WriteString(s, 'host', FSites[i].Host);
+      ini.WriteString(s, 'host', FSites[i].txtHost);
       ini.WriteString(s, 'Port', FSites[i].Port);
       ini.WriteString(s, 'path', FSites[i].Path);
       ini.WriteString(s, 'User', FSites[i].User);
@@ -352,7 +352,7 @@ begin
   lbSites.ItemIndex := i;
   if i>=0 then begin
     txtSite.Text := FSites[i].Site;
-    txtHost.Text := FSites[i].Host;
+    txtHost.Text := FSites[i].txtHost;
     txtPort.Text := FSites[i].Port;
     txtPath.Text := FSites[i].Path;
     txtUser.Text := FSites[i].User;
@@ -418,7 +418,7 @@ var
   s: string;
 begin
   Site.Site := txtSite.Text;
-  Site.Host := txtHost.Text;
+  Site.txtHost := txtHost.Text;
   Site.Port := txtPort.Text;
   Site.Path := txtPath.text;
   Site.User := txtUser.Text;

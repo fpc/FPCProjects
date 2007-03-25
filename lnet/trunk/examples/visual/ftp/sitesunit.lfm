@@ -13,7 +13,7 @@ object frmSites: TfrmSites
     Left = 8
     Height = 14
     Top = 4
-    Width = 31
+    Width = 27
     Caption = 'Sites:'
     Color = clNone
     ParentColor = False
@@ -26,7 +26,6 @@ object frmSites: TfrmSites
     OnSelectionChange = lbSitesSelectionChange
     PopupMenu = PopupMenuSites
     TabOrder = 0
-    TopIndex = -1
   end
   object txtHost: TLabeledEdit
     Left = 172
@@ -35,9 +34,9 @@ object frmSites: TfrmSites
     Width = 228
     EditLabel.Left = 172
     EditLabel.Height = 14
-    EditLabel.Top = 48
-    EditLabel.Width = 38
-    EditLabel.Caption = 'txtHost'
+    EditLabel.Top = 51
+    EditLabel.Width = 23
+    EditLabel.Caption = 'Host'
     EditLabel.Color = clNone
     EditLabel.ParentColor = False
     ParentColor = False
@@ -52,8 +51,8 @@ object frmSites: TfrmSites
     EditLabel.Left = 172
     EditLabel.Height = 14
     EditLabel.Top = 96
-    EditLabel.Width = 38
-    EditLabel.Caption = 'txtPath'
+    EditLabel.Width = 23
+    EditLabel.Caption = 'Path'
     EditLabel.Color = clNone
     EditLabel.ParentColor = False
     ParentColor = False
@@ -62,9 +61,9 @@ object frmSites: TfrmSites
   end
   object chkAnonymous: TCheckBox
     Left = 172
-    Height = 24
+    Height = 13
     Top = 165
-    Width = 89
+    Width = 75
     Caption = 'Anonymous'
     OnClick = chkAnonymousClick
     TabOrder = 5
@@ -77,8 +76,8 @@ object frmSites: TfrmSites
     EditLabel.Left = 254
     EditLabel.Height = 14
     EditLabel.Top = 145
-    EditLabel.Width = 39
-    EditLabel.Caption = 'txtUser'
+    EditLabel.Width = 23
+    EditLabel.Caption = 'User'
     EditLabel.Color = clNone
     EditLabel.ParentColor = False
     ParentColor = False
@@ -93,8 +92,8 @@ object frmSites: TfrmSites
     EditLabel.Left = 408
     EditLabel.Height = 14
     EditLabel.Top = 145
-    EditLabel.Width = 40
-    EditLabel.Caption = 'txtPass'
+    EditLabel.Width = 24
+    EditLabel.Caption = 'Pass'
     EditLabel.Color = clNone
     EditLabel.ParentColor = False
     ParentColor = False
@@ -109,8 +108,8 @@ object frmSites: TfrmSites
     Width = 356
     EditLabel.Left = 172
     EditLabel.Height = 14
-    EditLabel.Width = 34
-    EditLabel.Caption = 'txtSite'
+    EditLabel.Width = 19
+    EditLabel.Caption = 'Site'
     EditLabel.Color = clNone
     EditLabel.ParentColor = False
     ParentColor = False
@@ -165,8 +164,8 @@ object frmSites: TfrmSites
     EditLabel.Left = 408
     EditLabel.Height = 14
     EditLabel.Top = 48
-    EditLabel.Width = 35
-    EditLabel.Caption = 'txtPort'
+    EditLabel.Width = 20
+    EditLabel.Caption = 'Port'
     EditLabel.Color = clNone
     EditLabel.ParentColor = False
     ParentColor = False
