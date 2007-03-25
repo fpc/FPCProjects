@@ -36,7 +36,6 @@ type
     Handle: TLHandle;
     Flags: DWord;
     EventHandle: PEventHandler;
-    WinObject: THandle;
   end;
 
   { TLCLEventer }
@@ -46,8 +45,14 @@ type
     procedure HandleIgnoreError(aHandle: TLHandle); override;
     procedure HandleIgnoreWrite(aHandle: TLHandle); override;
     procedure HandleIgnoreRead(aHandle: TLHandle); override;
+    {$ifndef windows} // unix
     procedure HandleEvents(aData: PtrInt; aFlags: DWord);
    public
+    {$else}
+    function HandleEvents(aHandle: THandle; aFlags: DWord): LongInt;
+   public
+    constructor Create;
+    {$endif}
     function AddHandle(aHandle: TLHandle): Boolean; override;
     procedure UnplugHandle(aHandle: TLHandle); override;
   end;

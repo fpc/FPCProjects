@@ -1,9 +1,12 @@
 
 uses
-  lCommon, WinSock2;
+  lCommon, WinSock2, Win32Int, Win32Def, avglvltree; // for the guy below
 
 const
   ALL_FLAGS = FD_ACCEPT or FD_READ or FD_CLOSE or FD_CONNECT or FD_WRITE;
+
+var
+  WaitSockets: TPointerToPointerTree;
 
 procedure TLCLEventer.HandleIgnoreError(aHandle: TLHandle);
 begin
@@ -20,14 +23,11 @@ begin
   // don't do anything
 end;
 
-procedure TLCLEventer.HandleEvents(aData: PtrInt; aFlags: DWord);
+function TLCLEventer.HandleEvents(aHandle: THandle; aFlags: DWord): LongInt;
 var
-//  Events: TWSANetworkEvents;
-  LHI: PLCLHandleInfo;
   Temp: TLHandle;
 begin
-  LHI := PLCLHandleInfo(aData);
-  Temp := LHI^.Handle;
+  Temp := TLHandle(WaitSockets[Pointer(aHandle)]);
   
   if not FInLoop then begin
     FInLoop := True;
@@ -58,54 +58,38 @@ begin
     FInLoop := False;
 
     if Assigned(FFreeRoot) then
-      FreeHandles
-    else if not Assigned(LHI^.EventHandle) then
-      LHI^.EventHandle := AddSocketEventHandler(Temp.Handle, ALL_FLAGS,
-                                        @HandleEvents, PtrInt(LHI));
-  end else if Assigned(LHI^.EventHandle) then begin
-    RemoveEventHandler(LHI^.EventHandle);
-    LHI^.EventHandle := nil;
+      FreeHandles;
   end;
 end;
 
-function TLCLEventer.AddHandle(aHandle: TLHandle): Boolean;
-var
-  LHI: PLCLHandleInfo;
+constructor TLCLEventer.Create;
 begin
-  {$ERROR TODO: finish in windows you lazy ass}
-  
-  uses
-    avglvltree; // for the guy below
-    FWaitSockets: TPointerToPointerTree;
-
   TWin32WidgetSet(WidgetSet).OnAsyncSocketMsg := @HandleEvents;
+end;
 
+function TLCLEventer.AddHandle(aHandle: TLHandle): Boolean;
+begin
   Result := True;
   SetHandleEventer(aHandle);
-  LHI := GetMem(SizeOf(TLCLHandleInfo));
-  LHI^.Handle := aHandle;
-//  LHI^.WinObject := WSACreateEvent;
-  SetInternalData(aHandle, LHI);
-  
-{  if WSAEventSelect(aHandle.Handle, LHI^.WinObject, ALL_FLAGS) <> 0 then
-    Exit(Bail('EventSelect error', WSAGetLastError));}
-
-  LHI^.EventHandle := AddSocketEventHandler(aHandle.Handle, ALL_FLAGS,
-                                    @HandleEvents, PtrInt(LHI));
-  LHI^.Flags := ALL_FLAGS;
-  if not Assigned(LHI^.EventHandle) then
-    Exit(Bail('Error on handler', -1));
+  WaitSockets.Values[Pointer(aHandle.Handle)] := aHandle;
+  if WSAAsyncSelect(aHandle.Handle, TWin32WidgetSet(WidgetSet).AppHandle,
+                                         WM_LCL_SOCK_ASYNC, ALL_FLAGS) <> 0 then
+    Bail('Error on AsyncSelect', WSAGetLastError);
 end;
 
 procedure TLCLEventer.UnplugHandle(aHandle: TLHandle);
-var
-  LHI: PLCLHandleInfo;
 begin
-  LHI := GetInternalData(aHandle);
-  RemoveSocketEventHandler(LHI^.EventHandle);
-//  WSACloseEvent(LHI^.WinObject);
-  FreeMem(LHI);
+  if WSAAsyncSelect(aHandle.Handle, TWin32WidgetSet(WidgetSet).AppHandle,
+                                         WM_LCL_SOCK_ASYNC, ALL_FLAGS) <> 0 then
+    Bail('Error on AsyncSelect', WSAGetLastError);
+
   inherited UnplugHandle(aHandle);
 end;
+
+initialization
+  WaitSockets := TPointerToPointerTree.Create;
+
+finalization
+  WaitSockets.Free;
 
 
