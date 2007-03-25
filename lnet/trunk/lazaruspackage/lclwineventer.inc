@@ -27,6 +27,7 @@ function TLCLEventer.HandleEvents(aHandle: THandle; aFlags: DWord): LongInt;
 var
   Temp: TLHandle;
 begin
+  Result := 0;
   Temp := TLHandle(WaitSockets[Pointer(aHandle)]);
   
   if not FInLoop then begin
