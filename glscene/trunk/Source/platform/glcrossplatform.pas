@@ -699,7 +699,7 @@ function ColorToString(Color: TColor): string;
 
 function AnsiStartsText(const ASubText, AText: string): Boolean;
 
-function IsSubComponent(const AComponent: TComponent): Boolean;
+//We dont want this: function IsSubComponent(const AComponent: TComponent): Boolean;
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -721,14 +721,16 @@ var
    vInvPerformanceCounterFrequency : Double;
    vInvPerformanceCounterFrequencyReady : Boolean = False;
 
+(* This is bullshit. way too expensive, just to be D5 compatible
 function IsSubComponent(const AComponent: TComponent): Boolean;
 begin
-//{$IFNDEF GLS_COMPILER_6_UP}
-//  Result := False; // AFAIK Delphi 5 does not know what is a SubComponent.
-//{$ELSE}
+{$IFNDEF GLS_COMPILER_6_UP}
+  Result := False; // AFAIK Delphi 5 does not know what is a SubComponent.
+{$ELSE}
   Result := (csSubComponent in AComponent.ComponentStyle);
-//{$ENDIF}
+{$ENDIF}
 end;
+*)
 
 function IdentToColor(const Ident: string; var Color: Longint): Boolean;
 begin

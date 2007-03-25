@@ -61,7 +61,6 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
-      <li>25/03/07 - DaStr - Small fix for Delphi5 compatibility
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>10/03/07 - DaStr - TGLSceneBuffer's Events are not stored now
@@ -2823,7 +2822,7 @@ var
 begin
    if Assigned(FChildren) then
       for i:=0 to FChildren.Count-1 do
-      if not IsSubComponent(TComponent(FChildren.List^[i])) then
+      if not (csSubComponent in TComponent(FChildren.List^[i]).ComponentStyle) then
          AProc(TComponent(FChildren.List^[i]));
 end;
 
@@ -2854,7 +2853,7 @@ begin
   Result := False;
   if Count <> 0 then
     for I := 0 to Count - 1 do
-      if IsSubComponent(Children[i]) then
+      if csSubComponent in Children[i].ComponentStyle then
       begin
         Result := True;
         Exit;
@@ -4069,7 +4068,7 @@ begin
          BeginUpdate;
          if Count <> 0 then
          for I := Count - 1 downto 0 do
-          if not IsSubComponent(Children[I]) then
+          if not (csSubComponent in Children[I].ComponentStyle) then
             Children[I].MoveTo(Self);
          EndUpdate;
       end else NotifyChange(Self);
