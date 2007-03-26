@@ -8929,7 +8929,7 @@ procedure OffsetFloatArray(var values : array of Single;
                            delta : Single);
 begin
    if Length(values)>0 then
-      ScaleFloatArray(@values[0], Length(values), delta);
+      OffsetFloatArray(@values[0], Length(values), delta);
 end;
 
 // OffsetFloatArray (raw, raw)
