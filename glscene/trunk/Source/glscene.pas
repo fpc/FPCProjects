@@ -61,6 +61,10 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>26/03/07 - aidave - added MoveFirst, MoveLast
+      <li>26/03/07 - aidave - added MoveChildFirst, MoveChildLast
+      <li>25/03/07 - DaStr - Renamed parameters in some methods
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>10/03/07 - DaStr - TGLSceneBuffer's Events are not stored now
@@ -746,11 +750,15 @@ type
          {: These procedures are safe. }
          procedure MoveChildUp(anIndex : Integer);
          procedure MoveChildDown(anIndex : Integer);
+         procedure MoveChildFirst(anIndex : Integer);
+         procedure MoveChildLast(anIndex : Integer);
 
          procedure DoProgress(const progressTime : TProgressTimes); override;
          procedure MoveTo(newParent : TGLBaseSceneObject); dynamic;
          procedure MoveUp;
          procedure MoveDown;
+         procedure MoveFirst;
+         procedure MoveLast;
          procedure BeginUpdate; virtual;
          procedure EndUpdate; virtual;
          {: Make object-specific geometry description here.<p>
@@ -3926,6 +3934,22 @@ begin
       parent.MoveChildDown(parent.IndexOfChild(Self));
 end;
 
+// MoveFirst
+//
+procedure TGLBaseSceneObject.MoveFirst;
+begin
+   if Assigned(parent) then
+      parent.MoveChildFirst(parent.IndexOfChild(Self));
+end;
+
+// MoveLast
+//
+procedure TGLBaseSceneObject.MoveLast;
+begin
+   if Assigned(parent) then
+      parent.MoveChildLast(parent.IndexOfChild(Self));
+end;
+
 // MoveObjectAroundTarget
 //
 procedure TGLBaseSceneObject.MoveObjectAround(anObject : TGLBaseSceneObject;
@@ -4153,6 +4177,30 @@ begin
       FChildren.Exchange(anIndex, anIndex+1);
       NotifyChange(Self);
    end;
+end;
+
+// MoveChildFirst
+//
+procedure TGLBaseSceneObject.MoveChildFirst(anIndex : Integer);
+begin
+  Assert(Assigned(FChildren), 'No children found!');
+  if anIndex<>0 then
+  begin
+    FChildren.Exchange(anIndex, 0);
+    NotifyChange(Self);
+  end;
+end;
+
+// MoveChildLast
+//
+procedure TGLBaseSceneObject.MoveChildLast(anIndex : Integer);
+begin
+  Assert(Assigned(FChildren), 'No children found!');
+  if anIndex<>FChildren.Count-1 then
+  begin
+    FChildren.Exchange(anIndex, FChildren.Count-1);
+    NotifyChange(Self);
+  end;
 end;
 
 // Render

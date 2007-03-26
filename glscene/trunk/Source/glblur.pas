@@ -5,23 +5,9 @@
 
 	Applies a blur effect over the viewport.<p>
 
-      $Log: glblur.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+        <li>25/03/07 - DaStr  - Renamed parameters in some methods
+                                (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
         <li>22/03/07 - DaStr  - Added checks to TGLMotionBlur for supported extensions
                                 TGLMotionBlur is not rendered when picking now
         <li>25/02/07 - DaStr  - Added DesignTime check in TGLMotionBlur.DoRender

@@ -6,6 +6,7 @@
    Manages a basic game menu UI<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>26/03/07 - DaveK - back to TGLSceneObject for Material support
       <li>16/02/07 - DaStr & DaveK - TGLGameMenu.MouseMenuSelect bugfixed (again)
                              Component made descendant of TGLBaseSceneObject
                              IGLMaterialLibrarySupported added
@@ -29,7 +30,7 @@ type
    // TGLGameMenu
    //
    {: Classic game menu interface made of several lines.<p> }
-   TGLGameMenu = class(TGLBaseSceneObject, IGLMaterialLibrarySupported)
+   TGLGameMenu = class(TGLSceneObject, IGLMaterialLibrarySupported)
       private
          { Private Properties }
          FItems : TStrings;
@@ -95,6 +96,7 @@ type
          property MarginVert : Integer read FMarginVert write SetMarginVert default 16;
          property Spacing : Integer read FSpacing write SetSpacing default 16;
          property Font : TGLCustomBitmapFont read FFont write SetFont;
+
 
          property TitleMaterialName : String read FTitleMaterialName write SetTitleMaterialName;
          property TitleWidth : Integer read FTitleWidth write SetTitleWidth default 0;
