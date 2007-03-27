@@ -145,11 +145,11 @@ type
 
       protected
 			{ Protected Declarations }
-         procedure SetRenderPoint(val : TGLRenderPoint);
+         procedure SetRenderPoint(AValue : TGLRenderPoint);
          procedure RenderPointFreed(Sender : TObject);
-         procedure SetBackColor(val : TGLColor);
-         procedure SetBuildOffset(val : TGLCoordinates);
-         procedure SetImposterReference(val : TImposterReference);
+         procedure SetBackColor(AValue : TGLColor);
+         procedure SetBuildOffset(AValue : TGLCoordinates);
+         procedure SetImposterReference(AValue : TImposterReference);
 
          procedure InitializeImpostorTexture(const textureSize : TGLPoint);
 
@@ -228,12 +228,12 @@ type
 	   protected
 	      { Protected Declarations }
          function GetDisplayName : String; override;
-         procedure SetSamples(val : Integer);
-         procedure SetElevation(val : Single);
+         procedure SetSamples(AValue : Integer);
+         procedure SetElevation(AValue : Single);
 
       public
 	      { Public Declarations }
-	      constructor Create(Collection : TCollection); override;
+	      constructor Create(ACollection : TCollection); override;
 	      destructor Destroy; override;
 	      procedure Assign(Source: TPersistent); override;
 
@@ -257,8 +257,8 @@ type
 
 	   protected
 	      { Protected Declarations }
-         procedure SetItems(index : Integer; const val : TGLStaticImposterBuilderCorona);
-	      function GetItems(index : Integer) : TGLStaticImposterBuilderCorona;
+         procedure SetItems(AIndex : Integer; const AValue : TGLStaticImposterBuilderCorona);
+	      function GetItems(AIndex : Integer) : TGLStaticImposterBuilderCorona;
          procedure Update(Item: TCollectionItem); override;
 
          procedure PrepareSampleBaseIndices;
@@ -271,7 +271,7 @@ type
 
          function Add : TGLStaticImposterBuilderCorona; overload;
          function Add(const elevation : Single; samples : Integer) : TGLStaticImposterBuilderCorona; overload;
-	      property Items[index : Integer] : TGLStaticImposterBuilderCorona read GetItems write SetItems; default;
+	      property Items[AIndex : Integer] : TGLStaticImposterBuilderCorona read GetItems write SetItems; default;
          function SampleCount : Integer;
 
          procedure NotifyChange; virtual;
@@ -316,12 +316,12 @@ type
 
       protected
 			{ Protected Declarations }
-         procedure SetCoronas(val : TGLStaticImposterBuilderCoronas);
-         procedure SetSampleSize(val : Integer);
-         procedure SetSamplingRatioBias(val : Single);
+         procedure SetCoronas(AValue : TGLStaticImposterBuilderCoronas);
+         procedure SetSampleSize(AValue : Integer);
+         procedure SetSamplingRatioBias(AValue : Single);
          function  StoreSamplingRatioBias : Boolean;
-         procedure SetLighting(val : TSIBLigthing);
-         procedure SetSamplesAlphaScale(val : Single);
+         procedure SetLighting(AValue : TSIBLigthing);
+         procedure SetSamplesAlphaScale(AValue : Single);
          function  StoreSamplesAlphaScale : Boolean;
 
          function GetTextureSizeInfo : String;
@@ -394,7 +394,7 @@ type
 
       protected
 			{ Protected Declarations }
-         procedure SetMinDistance(const Value : Single);
+         procedure SetMinDistance(const AValue : Single);
 
       public
 	      { Public Declarations }
@@ -423,16 +423,16 @@ type
 
       protected
 			{ Protected Declarations }
-         procedure SetBuilder(const val : TGLImposterBuilder);
-         procedure SetImpostoredObject(const val : TGLBaseSceneObject);
+         procedure SetBuilder(const AValue : TGLImposterBuilder);
+         procedure SetImpostoredObject(const AValue : TGLBaseSceneObject);
 
       public
 	      { Public Declarations }
          constructor Create(AOwner : TComponent); override;
          destructor Destroy; override;
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-         procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+         procedure DoRender(var ARci : TRenderContextInfo;
+                            ARenderSelf, ARenderChildren : Boolean); override;
 
       published
 	      { Published Declarations }
@@ -758,14 +758,14 @@ end;
 
 // SetRenderPoint
 //
-procedure TGLImposterBuilder.SetRenderPoint(val : TGLRenderPoint);
+procedure TGLImposterBuilder.SetRenderPoint(AValue : TGLRenderPoint);
 begin
-   if val<>FRenderPoint then begin
+   if AValue<>FRenderPoint then begin
       if Assigned(FRenderPoint) then begin
          FRenderPoint.RemoveFreeNotification(Self);
          FRenderPoint.UnRegisterCallBack(PrepareImposters);
       end;
-      FRenderPoint:=val;
+      FRenderPoint:=AValue;
       if Assigned(FRenderPoint) then begin
          FRenderPoint.FreeNotification(Self);
          FRenderPoint.RegisterCallBack(PrepareImposters, RenderPointFreed);
@@ -782,24 +782,24 @@ end;
 
 // SetBackColor
 //
-procedure TGLImposterBuilder.SetBackColor(val : TGLColor);
+procedure TGLImposterBuilder.SetBackColor(AValue : TGLColor);
 begin
-   FBackColor.Assign(val);
+   FBackColor.Assign(AValue);
 end;
 
 // SetBuildOffset
 //
-procedure TGLImposterBuilder.SetBuildOffset(val : TGLCoordinates);
+procedure TGLImposterBuilder.SetBuildOffset(AValue : TGLCoordinates);
 begin
-   FBuildOffset.Assign(val);
+   FBuildOffset.Assign(AValue);
 end;
 
 // SetImposterReference
 //
-procedure TGLImposterBuilder.SetImposterReference(val : TImposterReference);
+procedure TGLImposterBuilder.SetImposterReference(AValue : TImposterReference);
 begin
-   if FImposterReference<>val then begin
-      FImposterReference:=val;
+   if FImposterReference<>AValue then begin
+      FImposterReference:=AValue;
       NotifyChange(Self);
    end;
 end;
@@ -835,7 +835,7 @@ end;
 
 // Create
 //
-constructor TGLStaticImposterBuilderCorona.Create(Collection : TCollection);
+constructor TGLStaticImposterBuilderCorona.Create(ACollection : TCollection);
 begin
    inherited;
    FSamples:=8;
@@ -868,10 +868,10 @@ end;
 
 // SetSamples
 //
-procedure TGLStaticImposterBuilderCorona.SetSamples(val : Integer);
+procedure TGLStaticImposterBuilderCorona.SetSamples(AValue : Integer);
 begin
-   if val<>FSamples then begin
-      FSamples:=val;
+   if AValue<>FSamples then begin
+      FSamples:=AValue;
       if FSamples<1 then FSamples:=1;
       (Collection as TGLStaticImposterBuilderCoronas).NotifyChange;
    end;
@@ -879,10 +879,10 @@ end;
 
 // SetElevation
 //
-procedure TGLStaticImposterBuilderCorona.SetElevation(val : Single);
+procedure TGLStaticImposterBuilderCorona.SetElevation(AValue : Single);
 begin
-   if val<>FElevation then begin
-      FElevation:=ClampValue(val, -89, 89);
+   if AValue<>FElevation then begin
+      FElevation:=ClampValue(AValue, -89, 89);
       (Collection as TGLStaticImposterBuilderCoronas).NotifyChange;
    end;
 end;
@@ -917,16 +917,16 @@ end;
 
 // SetItems
 //
-procedure TGLStaticImposterBuilderCoronas.SetItems(index : Integer; const val : TGLStaticImposterBuilderCorona);
+procedure TGLStaticImposterBuilderCoronas.SetItems(AIndex : Integer; const AValue : TGLStaticImposterBuilderCorona);
 begin
-   inherited Items[index]:=val;
+   inherited Items[AIndex]:=AValue;
 end;
 
 // GetItems
 //
-function TGLStaticImposterBuilderCoronas.GetItems(index : Integer) : TGLStaticImposterBuilderCorona;
+function TGLStaticImposterBuilderCoronas.GetItems(AIndex : Integer) : TGLStaticImposterBuilderCorona;
 begin
-   Result:=TGLStaticImposterBuilderCorona(inherited Items[index]);
+   Result:=TGLStaticImposterBuilderCorona(inherited Items[AIndex]);
 end;
 
 // Update
@@ -1106,33 +1106,33 @@ end;
 
 // SetCoronas
 //
-procedure TGLStaticImposterBuilder.SetCoronas(val : TGLStaticImposterBuilderCoronas);
+procedure TGLStaticImposterBuilder.SetCoronas(AValue : TGLStaticImposterBuilderCoronas);
 begin
-   FCoronas.Assign(val);
+   FCoronas.Assign(AValue);
    NotifyChange(Self);
 end;
 
 // SetSampleSize
 //
-procedure TGLStaticImposterBuilder.SetSampleSize(val : Integer);
+procedure TGLStaticImposterBuilder.SetSampleSize(AValue : Integer);
 begin
-   val:=RoundUpToPowerOf2(val);
-   if val<8 then val:=8;
-   if val>1024 then val:=1024;
-   if val<>FSampleSize then begin
-      FSampleSize:=val;
+   AValue:=RoundUpToPowerOf2(AValue);
+   if AValue<8 then AValue:=8;
+   if AValue>1024 then AValue:=1024;
+   if AValue<>FSampleSize then begin
+      FSampleSize:=AValue;
       NotifyChange(Self);
    end;
 end;
 
 // SetSamplingRatioBias
 //
-procedure TGLStaticImposterBuilder.SetSamplingRatioBias(val : Single);
+procedure TGLStaticImposterBuilder.SetSamplingRatioBias(AValue : Single);
 begin
-   val:=ClampValue(val, 0.1, 10);
-   if val<>FSamplingRatioBias then begin
-      FSamplingRatioBias:=val;
-      FInvSamplingRatioBias:=1/val;
+   AValue:=ClampValue(AValue, 0.1, 10);
+   if AValue<>FSamplingRatioBias then begin
+      FSamplingRatioBias:=AValue;
+      FInvSamplingRatioBias:=1/AValue;
       NotifyChange(Self);
    end;
 end;
@@ -1146,20 +1146,20 @@ end;
 
 // SetLighting
 //
-procedure TGLStaticImposterBuilder.SetLighting(val : TSIBLigthing);
+procedure TGLStaticImposterBuilder.SetLighting(AValue : TSIBLigthing);
 begin
-   if val<>FLighting then begin
-      FLighting:=val;
+   if AValue<>FLighting then begin
+      FLighting:=AValue;
       NotifyChange(Self);
    end;
 end;
 
 // SetSamplesAlphaScale
 //
-procedure TGLStaticImposterBuilder.SetSamplesAlphaScale(val : Single);
+procedure TGLStaticImposterBuilder.SetSamplesAlphaScale(AValue : Single);
 begin
-   if FSamplesAlphaScale<>val then begin
-      FSamplesAlphaScale:=val;
+   if FSamplesAlphaScale<>AValue then begin
+      FSamplesAlphaScale:=AValue;
       NotifyChange(Self);
    end;
 end;
@@ -1537,10 +1537,10 @@ end;
 }
 // SetMinDistance
 //
-procedure TGLDynamicImposterBuilder.SetMinDistance(const Value : Single);
+procedure TGLDynamicImposterBuilder.SetMinDistance(const AValue : Single);
 begin
-  if Value<>FMinDistance then begin
-    FMinDistance:=Value;
+  if AValue<>FMinDistance then begin
+    FMinDistance:=AValue;
     NotifyChange(Self);
   end;
 end;
@@ -1579,35 +1579,35 @@ end;
 
 // DoRender
 //
-procedure TGLImposter.DoRender(var rci : TRenderContextInfo;
-  renderSelf, renderChildre : Boolean);
+procedure TGLImposter.DoRender(var ARci : TRenderContextInfo;
+  ARenderSelf, ARenderChildren : Boolean);
 var
    camPos : TVector;
    imposter : TImposter;
 begin
-   if renderSelf and Assigned(Builder) and Assigned(ImpostoredObject) then begin
+   if ARenderSelf and Assigned(Builder) and Assigned(ImpostoredObject) then begin
       imposter:=Builder.ImposterFor(ImpostoredObject);
       if Assigned(imposter) and (imposter.Texture.Handle<>0) then begin
-         camPos:=AbsoluteToLocal(rci.cameraPosition);
-         imposter.BeginRender(rci);
-         imposter.Render(rci, NullHmgPoint, camPos, Scale.MaxXYZ);
-         imposter.EndRender(rci);
+         camPos:=AbsoluteToLocal(ARci.cameraPosition);
+         imposter.BeginRender(ARci);
+         imposter.Render(ARci, NullHmgPoint, camPos, Scale.MaxXYZ);
+         imposter.EndRender(ARci);
       end;
    end;
-   if renderChildre then
-       Self.RenderChildren(0, Count-1,rci);
+   if ARenderChildren then
+       Self.RenderChildren(0, Count-1,ARci);
 end;
 
 // SetBuilder
 //
-procedure TGLImposter.SetBuilder(const val : TGLImposterBuilder);
+procedure TGLImposter.SetBuilder(const AValue : TGLImposterBuilder);
 begin
-   if val<>FBuilder then begin
+   if AValue<>FBuilder then begin
       if Assigned(FBuilder) then begin
          FBuilder.RemoveFreeNotification(Self);
          FBuilder.UnRequestImposterFor(ImpostoredObject);
       end;
-      FBuilder:=val;
+      FBuilder:=AValue;
       if Assigned(FBuilder) then begin
          FBuilder.FreeNotification(Self);
          FBuilder.RequestImposterFor(ImpostoredObject);
@@ -1617,12 +1617,12 @@ end;
 
 // SetImpostoredObject
 //
-procedure TGLImposter.SetImpostoredObject(const val : TGLBaseSceneObject);
+procedure TGLImposter.SetImpostoredObject(const AValue : TGLBaseSceneObject);
 begin
-   if val<>FImpostoredObject then begin
+   if AValue<>FImpostoredObject then begin
       if Assigned(Builder) then
          FBuilder.UnRequestImposterFor(ImpostoredObject);
-      FImpostoredObject:=val;
+      FImpostoredObject:=AValue;
       if Assigned(Builder) then
          FBuilder.RequestImposterFor(ImpostoredObject);
    end;

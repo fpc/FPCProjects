@@ -96,9 +96,9 @@ type
 			{ Public Declarations }
 			constructor Create(AOwner: TComponent); override;
 
-         procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
-		   procedure BuildList(var rci : TRenderContextInfo); override;
+         procedure DoRender(var ARci : TRenderContextInfo;
+                            ARenderSelf, ARenderChildren : Boolean); override;
+		   procedure BuildList(var ARci : TRenderContextInfo); override;
 
 		   procedure Assign(Source: TPersistent); override;
 //         function AxisAlignedDimensions : TVector; override;
@@ -171,8 +171,8 @@ end;
 
 // DoRender
 //
-procedure TGLMirror.DoRender(var rci : TRenderContextInfo;
-                          renderSelf, renderChildre : Boolean);
+procedure TGLMirror.DoRender(var ARci : TRenderContextInfo;
+                          ARenderSelf, ARenderChildren : Boolean);
 var
    oldProxySubObject : Boolean;
    refMat, curMat : TMatrix;
@@ -183,10 +183,10 @@ begin
    if FRendering then Exit;
    FRendering:=True;
    try
-      oldProxySubObject:=rci.proxySubObject;
-      rci.proxySubObject:=True;
+      oldProxySubObject:=ARci.proxySubObject;
+      ARci.proxySubObject:=True;
 
-      if VectorDotProduct(VectorSubtract(rci.cameraPosition, AbsolutePosition), AbsoluteDirection)>0 then begin
+      if VectorDotProduct(VectorSubtract(ARci.cameraPosition, AbsolutePosition), AbsoluteDirection)>0 then begin
 
          glPushAttrib(GL_ENABLE_BIT);
 
@@ -201,14 +201,14 @@ begin
             end;
             if (moOpaque in MirrorOptions) then begin
                bgColor:=ConvertWinColor(Scene.CurrentBuffer.BackgroundColor);
-               rci.GLStates.SetGLMaterialColors(GL_FRONT, bgColor, clrBlack, clrBlack, clrBlack, 0);
-               rci.GLStates.UnSetGLState(stTexture2D);
+               ARci.GLStates.SetGLMaterialColors(GL_FRONT, bgColor, clrBlack, clrBlack, clrBlack, 0);
+               ARci.GLStates.UnSetGLState(stTexture2D);
             end else begin
                glColorMask(False, False, False, False);
             end;
             glDepthMask(False);
 
-            BuildList(rci);
+            BuildList(ARci);
 
             glDepthMask(True);
             if (moUseStencil in MirrorOptions) then begin
@@ -246,10 +246,10 @@ begin
             glClipPlane(GL_CLIP_PLANE0, @clipPlane);
          end;
 
-         cameraPosBackup:=rci.cameraPosition;
-         cameraDirectionBackup:=rci.cameraDirection;
-         rci.cameraPosition:=VectorTransform(rci.cameraPosition, refMat);
-         rci.cameraDirection:=VectorTransform(rci.cameraDirection, refMat);
+         cameraPosBackup:=ARci.cameraPosition;
+         cameraDirectionBackup:=ARci.cameraDirection;
+         ARci.cameraPosition:=VectorTransform(ARci.cameraPosition, refMat);
+         ARci.cameraDirection:=VectorTransform(ARci.cameraDirection, refMat);
 
          glMultMatrixf(@refMat);
 
@@ -259,15 +259,15 @@ begin
             if FMirrorObject.Parent<>nil then
                glMultMatrixf(PGLFloat(FMirrorObject.Parent.AbsoluteMatrixAsAddress));
             glMultMatrixf(PGLFloat(FMirrorObject.LocalMatrix));
-            FMirrorObject.DoRender(rci, renderSelf, FMirrorObject.Count>0);
+            FMirrorObject.DoRender(ARci, ARenderSelf, FMirrorObject.Count>0);
          end else begin
-            Scene.Objects.DoRender(rci, renderSelf, True);
+            Scene.Objects.DoRender(ARci, ARenderSelf, True);
          end;
          if Assigned(FOnBeginRenderingMirrors) then
             FOnBeginRenderingMirrors(Self);
 
-         rci.cameraPosition:=cameraPosBackup;
-         rci.cameraDirection:=cameraDirectionBackup;
+         ARci.cameraPosition:=cameraPosBackup;
+         ARci.cameraDirection:=cameraDirectionBackup;
 
          // Restore to "normal"
          Scene.CurrentBuffer.PopModelViewMatrix;
@@ -276,26 +276,26 @@ begin
 
          glPopMatrix;
          glPopAttrib;
-         rci.GLStates.ResetGLMaterialColors;
-         rci.GLStates.ResetGLCurrentTexture;
+         ARci.GLStates.ResetGLMaterialColors;
+         ARci.GLStates.ResetGLCurrentTexture;
 
-         rci.proxySubObject:=oldProxySubObject;
+         ARci.proxySubObject:=oldProxySubObject;
 
          // start rendering self
-         if renderSelf then begin
-            Material.Apply(rci);
+         if ARenderSelf then begin
+            Material.Apply(ARci);
             repeat
-               BuildList(rci);
-            until not Material.UnApply(rci);
+               BuildList(ARci);
+            until not Material.UnApply(ARci);
          end;
          
       end;
       
-      if renderChildre then
-         Self.RenderChildren(0, Count-1, rci);
+      if ARenderChildren then
+         Self.RenderChildren(0, Count-1, ARci);
 
       if Assigned(FMirrorObject) then
-         FMirrorObject.Effects.RenderPostEffects(Scene.CurrentBuffer, rci);
+         FMirrorObject.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
    finally
       FRendering:=False;
    end;
@@ -303,7 +303,7 @@ end;
 
 // BuildList
 //
-procedure TGLMirror.BuildList(var rci : TRenderContextInfo);
+procedure TGLMirror.BuildList(var ARci : TRenderContextInfo);
 var
    hw, hh : TGLFloat;
    quadric : PGLUquadricObj;
