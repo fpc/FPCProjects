@@ -5,10 +5,9 @@
     <CompilerOptions>
       <Version Value="5"/>
       <SearchPaths>
-        <IncludeFiles Value="../Source/physicsapis/;../Source/;../Source/base/;../Source/designtime/"/>
+        <IncludeFiles Value="../Source/"/>
         <OtherUnitFiles Value="../Source/physicsapis/;../Source/;../Source/base/;../Source/designtime/"/>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
-        <SrcPath Value="../Source/physicsapis/;../Source/;../Source/base/;../Source/designtime/"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -33,29 +32,29 @@
     <Version Minor="9" Release="1" Build="6"/>
     <Files Count="6">
       <Item1>
-        <Filename Value="../Source/physicsapis/odegl.pas"/>
-        <UnitName Value="odegl"/>
-      </Item1>
-      <Item2>
-        <Filename Value="../Source/physicsapis/gloxode.pas"/>
-        <UnitName Value="gloxode"/>
-      </Item2>
-      <Item3>
         <Filename Value="../Source/designtime/gloderegister.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="gloderegister"/>
-      </Item3>
-      <Item4>
+      </Item1>
+      <Item2>
         <Filename Value="../Source/glodecustomcolliders.pas"/>
         <UnitName Value="glodecustomcolliders"/>
-      </Item4>
-      <Item5>
+      </Item2>
+      <Item3>
         <Filename Value="../Source/glodemanager.pas"/>
         <UnitName Value="glodemanager"/>
-      </Item5>
-      <Item6>
+      </Item3>
+      <Item4>
         <Filename Value="../Source/glodeskeletoncolliders.pas"/>
         <UnitName Value="glodeskeletoncolliders"/>
+      </Item4>
+      <Item5>
+        <Filename Value="../Source/physicsapis/gloxode.pas"/>
+        <UnitName Value="gloxode"/>
+      </Item5>
+      <Item6>
+        <Filename Value="../Source/physicsapis/odegl.pas"/>
+        <UnitName Value="odegl"/>
       </Item6>
     </Files>
     <Type Value="DesignTime"/>
@@ -68,6 +67,7 @@
       </Item2>
     </RequiredPkgs>
     <UsageOptions>
+      <CustomOptions Value="-dUseCThreads"/>
       <UnitPath Value="$(PkgOutDir)/"/>
     </UsageOptions>
     <PublishOptions>
