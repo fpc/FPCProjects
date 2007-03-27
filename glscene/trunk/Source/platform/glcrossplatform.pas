@@ -60,22 +60,28 @@ interface
 
 {$include GLScene.inc}
 
-{$IFDEF MSWINDOWS}
+
 uses
+{$IFDEF FPC}
+  {$IFDEF WINDOWS}
+  Windows,
+  {$ENDIF}
+  Classes, SysUtils, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtDlgs, strutils, LCLType, LCLIntf, types
+  {$IFDEF UNIX}
+  , Buttons, unix, libc
+  {$ENDIF}
+{$ELSE} //Not FPC
+  {$IFDEF MSWINDOWS} // delphi
   Windows, Classes, SysUtils, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtDlgs, strutils{$ifndef fpc}, Consts{$endif};
-{$ENDIF}
-{$IFDEF UNIX}
-uses
-  {$ifdef fpc}
-  graphics,controls,forms,dialogs,stdctrls,lcltype,buttons,unix,lclintf,ExtDlgs,
-  strutils,
-  {$else}
+  Dialogs, StdCtrls, ExtDlgs, strutils, Consts
+  {$ELSE} // kylix
   qt, qgraphics, qcontrols, qforms,
   qdialogs, qstdctrls,qconsts,
-  {$endif}
-  libc, classes, sysutils,  types;
+  classes, sysutils,  types
+  {$ENDIF} // delphi/kylix
 {$ENDIF}
+;
 
 type
 
