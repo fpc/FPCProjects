@@ -65,8 +65,8 @@ type
          constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-         procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+         procedure DoRender(var ARci : TRenderContextInfo;
+                            ARenderSelf, ARenderChildren : Boolean); override;
       published
          { Published Declarations }
          property FrontColor: TGLFaceProperties read FFrontColor;
@@ -124,8 +124,8 @@ type
   public
     { Public Declarations }
     constructor Create(AOwner: TComponent); override;
-    procedure DoRender(var rci : TRenderContextInfo;
-                        renderSelf, renderChildren : Boolean); override;
+    procedure DoRender(var ARci : TRenderContextInfo;
+                        ARenderSelf, ARenderChildren : Boolean); override;
     procedure DoProgress(const progressTime : TProgressTimes); override;
   published
     { Published Declarations }
@@ -171,8 +171,8 @@ end;
 
 // Render
 //
-procedure TGLColorProxy.DoRender(var rci : TRenderContextInfo;
-                                  renderSelf, renderChildre : Boolean);
+procedure TGLColorProxy.DoRender(var ARci : TRenderContextInfo;
+                                  ARenderSelf, ARenderChildren : Boolean);
 var
    gotMaster, masterGotEffects, oldProxySubObject : Boolean;
 begin
@@ -184,20 +184,20 @@ begin
                         and (MasterObject.Effects.Count>0);
       if gotMaster then begin
          if pooObjects in ProxyOptions then begin
-            oldProxySubObject:=rci.proxySubObject;
-            rci.proxySubObject:=True;
+            oldProxySubObject:=ARci.proxySubObject;
+            ARci.proxySubObject:=True;
             if pooTransformation in ProxyOptions then
                glMultMatrixf(PGLFloat(MasterObject.MatrixAsAddress));
             GetMasterMaterialObject.Material.FrontProperties.Assign(FFrontColor);
-            MasterObject.DoRender(rci, renderSelf, RenderChildre);
-            rci.proxySubObject:=oldProxySubObject;
+            MasterObject.DoRender(ARci, ARenderSelf, ARenderChildren);
+            ARci.proxySubObject:=oldProxySubObject;
          end;
       end;
       // now render self stuff (our children, our effects, etc.)
-      if renderChildre and (Count>0) then
-         Self.RenderChildren(0, Count-1, rci);
+      if ARenderChildren and (Count>0) then
+         Self.RenderChildren(0, Count-1, ARci);
       if masterGotEffects then
-         MasterObject.Effects.RenderPostEffects(Scene.CurrentBuffer, rci);
+         MasterObject.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
    finally
       FRendering:=False;
    end;
@@ -332,8 +332,8 @@ end;
 
 // DoRender
 //
-procedure TGLActorProxy.DoRender(var rci: TRenderContextInfo; renderSelf,
-  renderChildren: Boolean);
+procedure TGLActorProxy.DoRender(var ARci: TRenderContextInfo; ARenderSelf,
+  ARenderChildren: Boolean);
 var
   // TGLActorProxy specific
   cf, sf, ef: Integer;
@@ -350,8 +350,8 @@ begin
     begin
       if pooObjects in ProxyOptions then
       begin
-        oldProxySubObject := rci.proxySubObject;
-        rci.proxySubObject := True;
+        oldProxySubObject := ARci.proxySubObject;
+        ARci.proxySubObject := True;
         if pooTransformation in ProxyOptions then
           glMultMatrixf(PGLFloat(MasterActor.MatrixAsAddress));
 
@@ -367,7 +367,7 @@ begin
           StartFrame := FStartFrame;
           EndFrame := FEndFrame;
           DoProgress(FCurrentTime);
-          DoRender(rci,renderSelf,Count>0);
+          DoRender(ARci,ARenderSelf,Count>0);
           FCurrentFrameDelta := CurrentFrameDelta;
           FCurrentFrame := CurrentFrame;
           CurrentFrameDelta := cfd;
@@ -376,14 +376,14 @@ begin
           endframe := ef;
         end;
 
-        rci.proxySubObject := oldProxySubObject;
+        ARci.proxySubObject := oldProxySubObject;
       end;
     end;
     // now render self stuff (our children, our effects, etc.)
-    if renderChildren and (Count > 0) then
-      Self.RenderChildren(0, Count - 1, rci);
+    if ARenderChildren and (Count > 0) then
+      Self.RenderChildren(0, Count - 1, ARci);
     if masterGotEffects then
-      MasterActor.Effects.RenderPostEffects(Scene.CurrentBuffer, rci);
+      MasterActor.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
   finally
     ClearStructureChanged;
   end;

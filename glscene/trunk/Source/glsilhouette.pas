@@ -125,9 +125,9 @@ type
           property FaceCount : integer read GetFaceCount;
 
           property PrecomputeFaceNormal : boolean read FPrecomputeFaceNormal;
-          procedure CreateSilhouette(const silhouetteParameters : TGLSilhouetteParameters; var aSilhouette : TGLSilhouette; AddToSilhouette : boolean); virtual;
+          procedure CreateSilhouette(const ASilhouetteParameters : TGLSilhouetteParameters; var ASilhouette : TGLSilhouette; AddToSilhouette : boolean); virtual;
 
-          constructor Create(PrecomputeFaceNorml : boolean); virtual;
+          constructor Create(APrecomputeFaceNormal : boolean); virtual;
    end;
 
    // TConnectivity
@@ -166,7 +166,7 @@ type
           property EdgeCount : integer read GetEdgeCount;
           property FaceCount : integer read GetFaceCount;
 
-          constructor Create(PrecomputeFaceNorml : boolean); override;
+          constructor Create(APrecomputeFaceNormal : boolean); override;
           destructor Destroy; override;
    end;
 
@@ -335,12 +335,12 @@ end;
 
 { TBaseConnectivity }
 
-constructor TBaseConnectivity.Create(PrecomputeFaceNorml: boolean);
+constructor TBaseConnectivity.Create(APrecomputeFaceNormal: boolean);
 begin
-  FPrecomputeFaceNormal := PrecomputeFaceNormal;
+  FPrecomputeFaceNormal := APrecomputeFaceNormal;
 end;
 
-procedure TBaseConnectivity.CreateSilhouette(const silhouetteParameters : TGLSilhouetteParameters; var aSilhouette : TGLSilhouette; AddToSilhouette : boolean);
+procedure TBaseConnectivity.CreateSilhouette(const ASilhouetteParameters : TGLSilhouetteParameters; var ASilhouette : TGLSilhouette; AddToSilhouette : boolean);
 begin
   // Purely virtual!
 end;
@@ -361,7 +361,7 @@ end;
 
 { TConnectivity }
 
-constructor TConnectivity.Create(PrecomputeFaceNorml : boolean);
+constructor TConnectivity.Create(APrecomputeFaceNormal : boolean);
 begin
   FFaceVisible := TByteList.Create;
 
@@ -371,7 +371,7 @@ begin
   FEdgeVertices := TIntegerList.Create;
   FEdgeFaces := TIntegerList.Create;
 
-  FPrecomputeFaceNormal := PrecomputeFaceNormal;
+  FPrecomputeFaceNormal := APrecomputeFaceNormal;
 
   FVertexMemory := TIntegerList.Create;
 

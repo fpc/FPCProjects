@@ -87,8 +87,8 @@ type
 			constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-         procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+         procedure DoRender(var ARci : TRenderContextInfo;
+                            ARenderSelf, ARenderChildren : Boolean); override;
 
 		   procedure Assign(Source: TPersistent); override;
 
@@ -160,8 +160,8 @@ end;
 
 // DoRender
 //
-procedure TGLShadowPlane.DoRender(var rci : TRenderContextInfo;
-                                  renderSelf, renderChildre : Boolean);
+procedure TGLShadowPlane.DoRender(var ARci : TRenderContextInfo;
+                                  ARenderSelf, ARenderChildren : Boolean);
 var
    oldProxySubObject, oldIgnoreMaterials : Boolean;
    curMat, shadowMat : TMatrix;
@@ -170,17 +170,17 @@ begin
    if FRendering then Exit;
    FRendering:=True;
    try
-      oldProxySubObject:=rci.proxySubObject;
-      rci.proxySubObject:=True;
+      oldProxySubObject:=ARci.proxySubObject;
+      ARci.proxySubObject:=True;
 
-      if renderSelf and (VectorDotProduct(VectorSubtract(rci.cameraPosition, AbsolutePosition), AbsoluteDirection)>0) then begin
+      if ARenderSelf and (VectorDotProduct(VectorSubtract(ARci.cameraPosition, AbsolutePosition), AbsoluteDirection)>0) then begin
          glPushAttrib(GL_ENABLE_BIT);
          
          if     (spoScissor in ShadowOptions)
-            and (PointDistance(rci.cameraPosition)>BoundingSphereRadius) then begin
+            and (PointDistance(ARci.cameraPosition)>BoundingSphereRadius) then begin
             sr:=ScreenRect;
             InflateGLRect(sr, 1, 1);
-            IntersectGLRect(sr, GLRect(0, 0, rci.viewPortSize.cx, rci.viewPortSize.cy));
+            IntersectGLRect(sr, GLRect(0, 0, ARci.viewPortSize.cx, ARci.viewPortSize.cy));
             glScissor(sr.Left, sr.Top, sr.Right-sr.Left, sr.Bottom-sr.Top);
             glEnable(GL_SCISSOR_TEST);
          end;
@@ -202,14 +202,14 @@ begin
          if (spoTransparent in ShadowOptions) then begin
             glColorMask(False, False, False, False);
             glDepthMask(False);
-            BuildList(rci);
+            BuildList(ARci);
             glDepthMask(True);
             glColorMask(True, True, True, True);
          end else begin
-            Material.Apply(rci);
+            Material.Apply(ARci);
             repeat
-               BuildList(rci);
-            until not Material.UnApply(rci);
+               BuildList(ARci);
+            until not Material.UnApply(ARci);
          end;
 
          if Assigned(FShadowedLight) then begin
@@ -239,8 +239,8 @@ begin
             glPolygonOffset(-1, -1);
             glEnable(GL_POLYGON_OFFSET_FILL);
 
-            oldIgnoreMaterials:=rci.ignoreMaterials;
-            rci.ignoreMaterials:=True;
+            oldIgnoreMaterials:=ARci.ignoreMaterials;
+            ARci.ignoreMaterials:=True;
             glDisable(GL_TEXTURE_2D);
             glDisable(GL_LIGHTING);
             glDisable(GL_FOG);
@@ -262,14 +262,14 @@ begin
                if FShadowingObject.Parent<>nil then
                   glMultMatrixf(PGLFloat(FShadowingObject.Parent.AbsoluteMatrixAsAddress));
                glMultMatrixf(PGLFloat(FShadowingObject.LocalMatrix));
-               FShadowingObject.DoRender(rci, True, (FShadowingObject.Count>0));
+               FShadowingObject.DoRender(ARci, True, (FShadowingObject.Count>0));
             end else begin
-               Scene.Objects.DoRender(rci, True, True);
+               Scene.Objects.DoRender(ARci, True, True);
             end;
             if Assigned(FOnEndRenderingShadows) then
                FOnEndRenderingShadows(Self);
 
-            rci.ignoreMaterials:=oldIgnoreMaterials;
+            ARci.ignoreMaterials:=oldIgnoreMaterials;
 
             // Restore to "normal"
             Scene.CurrentBuffer.PopModelViewMatrix;
@@ -282,10 +282,10 @@ begin
          glPopAttrib;
       end;
 
-      rci.proxySubObject:=oldProxySubObject;
+      ARci.proxySubObject:=oldProxySubObject;
 
-      if renderChildre and (Count>0) then
-         Self.RenderChildren(0, Count-1, rci);
+      if ARenderChildren and (Count>0) then
+         Self.RenderChildren(0, Count-1, ARci);
    finally
       FRendering:=False;
    end;

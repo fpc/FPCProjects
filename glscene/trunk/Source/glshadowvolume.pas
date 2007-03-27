@@ -106,7 +106,7 @@ type
 
 		public
 			{ Public Declarations }
-         constructor Create(Collection: TCollection); override;
+         constructor Create(ACollection: TCollection); override;
          destructor Destroy; override;
 
          procedure Assign(Source: TPersistent); override;
@@ -155,8 +155,8 @@ type
          function GetLightSource : TGLLightSource;
          procedure SetLightSource(const ls : TGLLightSource);
 
-         function GetCachedSilhouette(indx : Integer) : TGLSilhouette;
-         procedure StoreCachedSilhouette(indx : Integer; sil : TGLSilhouette);
+         function GetCachedSilhouette(AIndex : Integer) : TGLSilhouette;
+         procedure StoreCachedSilhouette(AIndex : Integer; ASil : TGLSilhouette);
 
          {: Compute and setup scissor clipping rect for the light.<p>
             Returns true if a scissor rect was setup }
@@ -164,7 +164,7 @@ type
 
 		public
 			{ Public Declarations }
-         constructor Create(Collection: TCollection); override;
+         constructor Create(ACollection: TCollection); override;
          destructor Destroy; override;
 
          procedure FlushSilhouetteCache;
@@ -271,8 +271,8 @@ type
 			constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-         procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+         procedure DoRender(var ARci : TRenderContextInfo;
+                            ARenderSelf, ARenderChildren : Boolean); override;
 
 		   procedure Assign(Source: TPersistent); override;
 
@@ -316,9 +316,9 @@ uses SysUtils, VectorLists, GLState;
 
 // Create
 //
-constructor TGLShadowVolumeCaster.Create(Collection: TCollection);
+constructor TGLShadowVolumeCaster.Create(ACollection: TCollection);
 begin
-   inherited Create(Collection);
+   inherited Create(ACollection);
    FCapping:=svcDefault;
    FCastingMode := scmRecursivelyVisible;
 end;
@@ -398,9 +398,9 @@ end;
 
 // Create
 //
-constructor TGLShadowVolumeLight.Create(Collection: TCollection);
+constructor TGLShadowVolumeLight.Create(ACollection: TCollection);
 begin
-   inherited Create(Collection);
+   inherited Create(ACollection);
    FSilhouettes:=TPersistentObjectList.Create;
 end;
 
@@ -436,21 +436,21 @@ end;
 
 // GetCachedSilhouette
 //
-function TGLShadowVolumeLight.GetCachedSilhouette(indx : Integer) : TGLSilhouette;
+function TGLShadowVolumeLight.GetCachedSilhouette(AIndex : Integer) : TGLSilhouette;
 begin
-   if indx<FSilhouettes.Count then
-      Result:=TGLSilhouette(FSilhouettes[indx])
+   if AIndex<FSilhouettes.Count then
+      Result:=TGLSilhouette(FSilhouettes[AIndex])
    else Result:=nil;
 end;
 
 // StoreCachedSilhouette
 //
-procedure TGLShadowVolumeLight.StoreCachedSilhouette(indx : Integer; sil : TGLSilhouette);
+procedure TGLShadowVolumeLight.StoreCachedSilhouette(AIndex : Integer; ASil : TGLSilhouette);
 begin
-   while indx>=FSilhouettes.Count do FSilhouettes.Add(nil);
-   if sil<>FSilhouettes[indx] then begin
-      FSilhouettes[indx].Free;
-      FSilhouettes[indx]:=sil;
+   while AIndex>=FSilhouettes.Count do FSilhouettes.Add(nil);
+   if ASil<>FSilhouettes[AIndex] then begin
+      if assigned(FSilhouettes[AIndex]) then FSilhouettes[AIndex].Free;
+      FSilhouettes[AIndex]:=ASil;
    end;
 end;
 
@@ -693,8 +693,8 @@ end;
 
 // DoRender
 //
-procedure TGLShadowVolume.DoRender(var rci : TRenderContextInfo;
-                                   renderSelf, renderChildre : Boolean);
+procedure TGLShadowVolume.DoRender(var ARci : TRenderContextInfo;
+                                   ARenderSelf, ARenderChildren : Boolean);
 
    // Function that determines if an object is "recursively visible". It halts when
    // * it finds an invisible ancestor (=> invisible)
@@ -745,11 +745,11 @@ begin
       Exit;
    end;
    if FRendering then Exit;
-   if not (renderSelf or renderChildre) then Exit;
+   if not (ARenderSelf or ARenderChildren) then Exit;
    ClearStructureChanged;
    if    ((csDesigning in ComponentState) and not (svoDesignVisible in Options))
       or (Mode=svmOff)
-      or (rci.drawState=dsPicking) then begin
+      or (ARci.drawState=dsPicking) then begin
       inherited;
       Exit;
    end;
@@ -778,11 +778,11 @@ begin
               ((Caster.CastingMode = scmParentVisible) and (not Assigned(obj.Parent) or obj.Parent.Visible))
             )
             and ((caster.EffectiveRadius<=0)
-                 or (obj.DistanceTo(rci.cameraPosition)<caster.EffectiveRadius)) then begin
+                 or (obj.DistanceTo(ARci.cameraPosition)<caster.EffectiveRadius)) then begin
             opaques.Add(obj);
-            opaqueCapping.Add(Pointer(   (caster.Capping=svcAlways)
+            opaqueCapping.Add(Pointer(ord(   (caster.Capping=svcAlways)
                                       or ((caster.Capping=svcDefault)
-                                          and (Capping=svcAlways))));
+                                          and (Capping=svcAlways)))));
          end else begin
             opaques.Add(nil);
             opaqueCapping.Add(nil);
@@ -806,10 +806,10 @@ begin
       end;
 
       // render shadow receivers with ambient lighting
-      Self.RenderChildren(0, Count-1, rci);
+      Self.RenderChildren(0, Count-1, ARci);
 
       glDepthMask(False);
-      rci.ignoreBlendingRequests:=True;
+      ARci.ignoreBlendingRequests:=True;
       //rci.ignoreMaterials := true;
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       glDisable(GL_ALPHA_TEST);
@@ -843,7 +843,7 @@ begin
          silParams.CappingRequired:=True;
 
          if Assigned(pWorldAABB) or (svoScissorClips in Options) then begin
-            if lightCaster.SetupScissorRect(pWorldAABB, rci) then
+            if lightCaster.SetupScissorRect(pWorldAABB, ARci) then
                glEnable(GL_SCISSOR_TEST)
             else glDisable(GL_SCISSOR_TEST)
          end;
@@ -860,7 +860,7 @@ begin
             glColorMask(False, False, False, False);
             glDisable(GL_BLEND);
          end;
-         rci.GLStates.SetGLState(stCullFace);
+         ARci.GLStates.SetGLState(stCullFace);
 
          glDisable(GL_LIGHTING);
          glEnableClientState(GL_VERTEX_ARRAY);
@@ -884,7 +884,7 @@ begin
                // render the silhouette
                glPushMatrix;
 
-               glLoadMatrixf(PGLFloat(rci.modelViewMatrix));
+               glLoadMatrixf(PGLFloat(ARci.modelViewMatrix));
                mat:=obj.AbsoluteMatrix;
                glMultMatrixf(@mat);
 
@@ -958,7 +958,7 @@ begin
             glDepthFunc(GL_EQUAL);
             glEnable(GL_LIGHTING);
 
-            Self.RenderChildren(0, Count-1, rci)
+            Self.RenderChildren(0, Count-1, ARci)
          end else begin
             glStencilFunc(GL_NOTEQUAL, 0, 255);
             glDepthFunc(GL_ALWAYS);
@@ -993,8 +993,8 @@ begin
       glPopAttrib;
       glDepthMask(True);
       glDepthFunc(GL_LESS);
-      glLightModelfv(GL_LIGHT_MODEL_AMBIENT, @rci.sceneAmbientColor);
-      rci.ignoreBlendingRequests:=False;
+      glLightModelfv(GL_LIGHT_MODEL_AMBIENT, @ARci.sceneAmbientColor);
+      ARci.ignoreBlendingRequests:=False;
    finally
       FRendering:=False;
       opaques.Free;
