@@ -137,8 +137,8 @@ type
          procedure Assign(Source: TPersistent); override;
 
          procedure BuildList(var rci : TRenderContextInfo); override;
-         procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+         procedure DoRender(var ARci : TRenderContextInfo;
+                            ARenderSelf, ARenderChildren : Boolean); override;
 
          function TextWidth(const str : String = '') : Single;
          function TextMaxHeight(const str : String = '') : Single;
@@ -463,8 +463,8 @@ end;
 
 // DoRender
 //
-procedure TGLSpaceText.DoRender(var rci : TRenderContextInfo;
-                              renderSelf, renderChildre : Boolean);
+procedure TGLSpaceText.DoRender(var ARci : TRenderContextInfo;
+                              ARenderSelf, ARenderChildren : Boolean);
 var
 	firstChar, lastChar : Integer;
 begin
