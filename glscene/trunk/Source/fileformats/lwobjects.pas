@@ -1313,8 +1313,7 @@ function TLWObjectFile.GetSurfaceByName(Index: string): TLWSurf;
 var
   SurfIdx: Integer;
 begin
-//  SurfIdx := Chunks.FindChunk(@FindSurfaceByName,PChar(Index),0);
-  SurfIdx := Chunks.FindChunk(@FindSurfaceByName,@ShortString((Index)),0);
+  SurfIdx := Chunks.FindChunk(@FindSurfaceByName,PChar(Index),0);
   if SurfIdx <> -1 then
     result := TLWSurf(Chunks[SurfIdx])
   else
