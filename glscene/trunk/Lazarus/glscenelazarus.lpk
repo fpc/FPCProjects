@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="158">
+    <Files Count="160">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -692,6 +692,14 @@
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLUserShader"/>
       </Item158>
+      <Item159>
+        <Filename Value="../Source/glgamemenu.pas"/>
+        <UnitName Value="GLGameMenu"/>
+      </Item159>
+      <Item160>
+        <Filename Value="../Source/glterrainrenderer.pas"/>
+        <UnitName Value="GLTerrainRenderer"/>
+      </Item160>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
