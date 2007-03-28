@@ -347,7 +347,8 @@ begin
       FCaster:=TGLShadowVolumeCaster(Source).FCaster;
       FEffectiveRadius:=TGLShadowVolumeCaster(Source).FEffectiveRadius;
       FCapping:=TGLShadowVolumeCaster(Source).FCapping;
-      TGLShadowVolume(TGLShadowVolumeCaster(Collection).GetOwner).StructureChanged;
+      //THIS WAS CASTED WRONG:
+      TGLShadowVolume(TGLShadowVolumeCasters(Collection).GetOwner).StructureChanged;
    end;
    inherited;
 end;
@@ -362,7 +363,8 @@ begin
       FCaster:=val;
       if FCaster<>nil then
          FCaster.FreeNotification(GLShadowVolume);
-      TGLShadowVolume(TGLShadowVolumeCaster(Collection).GetOwner).StructureChanged;
+      //THIS WAS CASTED WRONG:
+      TGLShadowVolume(TGLShadowVolumeCasters(Collection).GetOwner).StructureChanged;
    end;
 end;
 
