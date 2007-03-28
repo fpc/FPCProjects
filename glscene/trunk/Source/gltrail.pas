@@ -93,7 +93,7 @@ TGLTrail = class(TGlMesh)
     destructor Destroy; override;
 
     procedure CreateMark(obj: TGlBaseSceneObject; width: single;CurrentTime : Double); overload;
-    procedure CreateMark(pos,dir,upd: TVector3f; width: single;CurrentTime : Double); overload;
+    procedure CreateMark(APos,ADir,AUp: TVector3f; AWidth: single;ACurrentTime : Double); overload;
     function CreateMark(p1,p2: TVector3f;CurrentTime : Double):boolean; overload;
 
     procedure ClearMarks;
@@ -344,27 +344,27 @@ begin
 
 end;
 
-procedure TGLTrail.CreateMark(pos,dir,upd: TVector3f; width: single;CurrentTime : Double);
+procedure TGLTrail.CreateMark(APos,ADir,AUp: TVector3f; AWidth: single;ACurrentTime : Double);
 var
 apoint1,apoint2,crossp: TVector3f;
 begin
 
     if fMinDistance > 0 then
-        if vectorDistance(pos,fLastPos) < fMinDistance then
+        if vectorDistance(APos,fLastPos) < fMinDistance then
            exit;
 
-    fLastPos := pos;
-    fLastDir := dir;
-    fLastUp := upd;
+    fLastPos := APos;
+    fLastDir := ADir;
+    fLastUp := AUp;
 
-    apoint1 := pos;
-    apoint2 := pos;
-    crossp :=  vectorcrossproduct(dir,upd);
+    apoint1 := APos;
+    apoint2 := APos;
+    crossp :=  vectorcrossproduct(ADir,AUp);
 
-    CombineVector( apoint1,vectornormalize(crossp),width);
-    CombineVector( apoint2,vectornormalize(VectorNegate(crossp)),width);
+    CombineVector( apoint1,vectornormalize(crossp),AWidth);
+    CombineVector( apoint2,vectornormalize(VectorNegate(crossp)),AWidth);
 
-    CreateMark( apoint1, apoint2,CurrentTime);
+    CreateMark( apoint1, apoint2,ACurrentTime);
 
 end;
 

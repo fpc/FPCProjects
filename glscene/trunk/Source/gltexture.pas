@@ -1528,7 +1528,7 @@ type
 
       public
 	      { Public Declarations }
-	      constructor Create(Collection : TCollection); override;
+	      constructor Create(ACollection : TCollection); override;
 	      destructor Destroy; override;
 
 	      procedure Assign(Source: TPersistent); override;
@@ -1600,7 +1600,7 @@ type
 	      function FindItemID(ID: Integer): TGLLibMaterial;
 	      property Items[index : Integer] : TGLLibMaterial read GetItems write SetItems; default;
          function MakeUniqueName(const nameRoot : TGLLibMaterialName) : TGLLibMaterialName;
-         function GetLibMaterialByName(const name : TGLLibMaterialName) : TGLLibMaterial;
+         function GetLibMaterialByName(const AName : TGLLibMaterialName) : TGLLibMaterial;
 
          {: Returns index of this Texture if it exists. }
          function GetTextureIndex(const Texture: TGLTexture): Integer;
@@ -1680,7 +1680,7 @@ type
          function AddTextureMaterial(const materialName : String; graphic : TGLGraphic) : TGLLibMaterial; overload;
 
          {: Returns libMaterial of given name if any exists. }
-         function LibMaterialByName(const nam : TGLLibMaterialName) : TGLLibMaterial;
+         function LibMaterialByName(const AName : TGLLibMaterialName) : TGLLibMaterial;
 
          {: Returns Texture of given material's name if any exists. }
          function TextureByName(const LibMatName : TGLLibMaterialName): TGLTexture;
@@ -5100,11 +5100,11 @@ end;
 
 // Create
 //
-constructor TGLLibMaterial.Create(Collection : TCollection);
+constructor TGLLibMaterial.Create(ACollection : TCollection);
 begin
-	inherited Create(Collection);
+	inherited Create(ACollection);
    userList:=TList.Create;
-   FName:=TGLLibMaterials(Collection).MakeUniqueName('LibMaterial');
+   FName:=TGLLibMaterials(ACollection).MakeUniqueName('LibMaterial');
    FNameHashKey:=ComputeNameHashKey(FName);
    FMaterial:=TGLMaterial.Create(Self);
    FMaterial.Texture.OnTextureNeeded:=DoOnTextureNeeded;
@@ -5646,15 +5646,15 @@ end;
 
 // GetLibMaterialByName
 //
-function TGLLibMaterials.GetLibMaterialByName(const name : TGLLibMaterialName) : TGLLibMaterial;
+function TGLLibMaterials.GetLibMaterialByName(const AName : TGLLibMaterialName) : TGLLibMaterial;
 var
    i, hk : Integer;
    lm : TGLLibMaterial;
 begin
-   hk:=TGLLibMaterial.ComputeNameHashKey(name);
+   hk:=TGLLibMaterial.ComputeNameHashKey(AName);
    for i:=0 to Count-1 do begin
       lm:=TGLLibMaterial(inherited Items[i]);
-      if (lm.NameHashKey=hk) and (lm.Name=name) then begin
+      if (lm.NameHashKey=hk) and (lm.Name=AName) then begin
          Result:=lm;
          Exit;
       end;
@@ -5979,7 +5979,7 @@ var
    archiveVersion : Integer;
    libMat : TGLLibMaterial;
    i, n, size, tex, texCount : Integer;
-   nam : String;
+   LName : String;
    ss : TStringStream;
    bmp : TGLBitmap;
    texExItem : TGLTextureExItem;
@@ -5991,9 +5991,9 @@ begin
       n:=ReadInteger;
       for i:=0 to n-1 do begin
          // version 0
-         nam:=ReadString;
+         LName:=ReadString;
          if FDoNotClearMaterialsOnLoad then
-            libMat:=LibMaterialByName(nam)
+            libMat:=LibMaterialByName(LName)
          else libMat:=nil;
          if ReadBoolean then begin
             ss:=TStringStream.Create(ReadString);
@@ -6002,7 +6002,7 @@ begin
                try
                   bmp.LoadFromStream(ss);
                   if libMat=nil then
-                     libMat:=AddTextureMaterial(nam, bmp)
+                     libMat:=AddTextureMaterial(LName, bmp)
                   else libMat.Material.Texture.Image.Assign(bmp);
                finally
                   bmp.Free;
@@ -6013,7 +6013,7 @@ begin
          end else begin
             if libMat=nil then begin
                libMat:=Materials.Add;
-               libMat.Name:=nam;
+               libMat.Name:=LName;
             end;
          end;
          with libMat.Material.FrontProperties do begin
@@ -6197,10 +6197,10 @@ end;
 
 // LibMaterialByName
 //
-function TGLMaterialLibrary.LibMaterialByName(const nam : TGLLibMaterialName) : TGLLibMaterial;
+function TGLMaterialLibrary.LibMaterialByName(const AName : TGLLibMaterialName) : TGLLibMaterial;
 begin
    if Assigned(Self) then
-      Result:=Materials.GetLibMaterialByName(nam)
+      Result:=Materials.GetLibMaterialByName(AName)
    else Result:=nil;
 end;
 

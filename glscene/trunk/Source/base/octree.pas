@@ -133,9 +133,9 @@ type
          {: Initializes the tree from the triangle list.<p>
             All triangles must be contained in the world extent to be properly
             taken into account. }
-         procedure InitializeTree(const xworldMinExtent, xworldMaxExtent : TAffineVector;
-                                  const triangles : TAffineVectorList;
-                                  const treeDepth : Integer);
+         procedure InitializeTree(const AWorldMinExtent, AWorldMaxExtent : TAffineVector;
+                                  const ATriangles : TAffineVectorList;
+                                  const ATreeDepth : Integer);
          procedure DisposeTree;
 
          destructor Destroy;  override;
@@ -861,24 +861,24 @@ end;
 
 // InitializeTree
 //
-procedure TOctree.InitializeTree(const xworldMinExtent, xworldMaxExtent : TAffineVector;
-                                 const triangles : TAffineVectorList;
-                                 const treeDepth : Integer);
+procedure TOctree.InitializeTree(const AWorldMinExtent, AWorldMaxExtent : TAffineVector;
+                                 const ATriangles : TAffineVectorList;
+                                 const ATreeDepth : Integer);
 var
    n : Integer;
    newnode : POctreeNode;
 begin
-   Self.WorldMinExtent:=xworldMinExtent;
-   Self.WorldMaxExtent:=xworldMaxExtent;
+   Self.WorldMinExtent:=AWorldMinExtent;
+   Self.WorldMaxExtent:=AWorldMaxExtent;
 
    //set up the filer data for this mesh
    if triangleFiler=nil then
       triangleFiler:=TAffineVectorList.Create;
-   triangleFiler.Assign(triangles);
+   triangleFiler.Assign(ATriangles);
 
    New(newnode);
-   newnode^.MinExtent:=xWorldMinExtent;
-   newnode^.MaxExtent:=xWorldMaxExtent;
+   newnode^.MinExtent:=AWorldMinExtent;
+   newnode^.MaxExtent:=AWorldMaxExtent;
    newnode^.TriArray:=NIL;
    for n:=0 to 7 do newnode^.ChildArray[n]:=NIL;
 
@@ -886,7 +886,7 @@ begin
    rootnode:=newnode; //rootnode always points to root.
    NodeCount:=0;     //initialize node count
 
-   CreateTree(treeDepth);
+   CreateTree(ATreeDepth);
    CutMesh;
 end;
 

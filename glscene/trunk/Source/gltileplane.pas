@@ -146,8 +146,8 @@ type
 			constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-         procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+         procedure DoRender(var ARci : TRenderContextInfo;
+                            ARenderSelf, ARenderChildren : Boolean); override;
          procedure BuildList(var rci : TRenderContextInfo); override;
 
          //: Access to the TiledArea data
@@ -590,8 +590,8 @@ end;
 
 // DoRender
 //
-procedure TGLTilePlane.DoRender(var rci : TRenderContextInfo;
-                                renderSelf, renderChildre : Boolean);
+procedure TGLTilePlane.DoRender(var ARci : TRenderContextInfo;
+                                ARenderSelf, ARenderChildren : Boolean);
 var
    i : Integer;
 begin

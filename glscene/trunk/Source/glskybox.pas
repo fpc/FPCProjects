@@ -80,7 +80,7 @@ type
          constructor Create(AOwner : TComponent); override;
          destructor  Destroy; override;
          
-         procedure DoRender(var rci : TRenderContextInfo; renderSelf, renderChildre : Boolean); override;
+         procedure DoRender(var ARci : TRenderContextInfo; ARenderSelf, ARenderChildren : Boolean); override;
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
       published
@@ -147,8 +147,8 @@ end;
 
 // DoRender
 //
-procedure TGLSkyBox.DoRender(var rci : TRenderContextInfo;
-                             renderSelf, renderChildre : Boolean);
+procedure TGLSkyBox.DoRender(var ARci : TRenderContextInfo;
+                             ARenderSelf, ARenderChildren : Boolean);
 var
    f, cps, cof1 : Single;
    mvMat : TMatrix;
@@ -158,7 +158,7 @@ var
 begin
    if FMaterialLibrary=nil then Exit;
 
-   with rci.GLStates do begin
+   with ARci.GLStates do begin
       oldStates:=States;
       UnSetGLState(stDepthTest);
       UnSetGLState(stLighting);
@@ -170,7 +170,7 @@ begin
    SetVector(transMat[0], LeftVector);
    SetVector(transMat[1], Up.AsVector);
    SetVector(transMat[2], Direction.AsVector);
-   SetVector(transMat[3], rci.cameraPosition);
+   SetVector(transMat[3], ARci.cameraPosition);
    glMultMatrixf(@transMat);
    
    with Scene.CurrentGLCamera do
@@ -200,7 +200,7 @@ begin
       // FRONT
       libMat:=MaterialLibrary.LibMaterialByName(FMatNameFront);
       if libMat<>nil then begin
-         libMat.Apply(rci);
+         libMat.Apply(ARci);
          repeat
             glBegin(GL_QUADS);
                xglTexCoord2f(0.002, 0.998);  glVertex3f(-1,  1, -1);
@@ -214,12 +214,12 @@ begin
                   xglTexCoord2f(0.998, 0.002);  glVertex3f( 1, -1, -1);
                end;
             glEnd;
-         until not libMat.UnApply(rci);
+         until not libMat.UnApply(ARci);
       end;
       // BACK
       libMat:=MaterialLibrary.LibMaterialByName(FMatNameBack);
       if libMat<>nil then begin
-         libMat.Apply(rci);
+         libMat.Apply(ARci);
          repeat
             glBegin(GL_QUADS);
                xglTexCoord2f(0.002, 0.998);  glVertex3f( 1,  1,  1);
@@ -233,12 +233,12 @@ begin
                   xglTexCoord2f(0.998, 0.002);  glVertex3f(-1, -1,  1);
                end;
             glEnd;
-         until not libMat.UnApply(rci);
+         until not libMat.UnApply(ARci);
       end;
       // TOP
       libMat:=MaterialLibrary.LibMaterialByName(FMatNameTop);
       if libMat<>nil then begin
-         libMat.Apply(rci);
+         libMat.Apply(ARci);
          repeat
             glBegin(GL_QUADS);
                xglTexCoord2f(0.002, 0.998);  glVertex3f(-1,  1,  1);
@@ -246,12 +246,12 @@ begin
                xglTexCoord2f(0.998, 0.002);  glVertex3f( 1,  1, -1);
                xglTexCoord2f(0.998, 0.998);  glVertex3f( 1,  1,  1);
             glEnd;
-         until not libMat.UnApply(rci);
+         until not libMat.UnApply(ARci);
       end;
       // BOTTOM
       libMat:=MaterialLibrary.LibMaterialByName(FMatNameBottom);
       if libMat<>nil then begin
-         libMat.Apply(rci);
+         libMat.Apply(ARci);
          repeat
             glBegin(GL_QUADS);
                xglTexCoord2f(0.002, 0.998);  glVertex3f(-1, -1, -1);
@@ -259,12 +259,12 @@ begin
                xglTexCoord2f(0.998, 0.002);  glVertex3f( 1, -1,  1);
                xglTexCoord2f(0.998, 0.998);  glVertex3f( 1, -1, -1);
             glEnd;
-         until not libMat.UnApply(rci);
+         until not libMat.UnApply(ARci);
       end;
       // LEFT
       libMat:=MaterialLibrary.LibMaterialByName(FMatNameLeft);
       if libMat<>nil then begin
-         libMat.Apply(rci);
+         libMat.Apply(ARci);
          repeat
             glBegin(GL_QUADS);
                xglTexCoord2f(0.002, 0.998);  glVertex3f(-1,  1,  1);
@@ -278,12 +278,12 @@ begin
                   xglTexCoord2f(0.998, 0.002);  glVertex3f(-1, -1, -1);
                end;
             glEnd;
-         until not libMat.UnApply(rci);
+         until not libMat.UnApply(ARci);
       end;
       // RIGHT
       libMat:=MaterialLibrary.LibMaterialByName(FMatNameRight);
       if libMat<>nil then begin
-         libMat.Apply(rci);
+         libMat.Apply(ARci);
          repeat
             glBegin(GL_QUADS);
                xglTexCoord2f(0.002, 0.998);  glVertex3f(1,  1, -1);
@@ -297,7 +297,7 @@ begin
                   xglTexCoord2f(0.998, 0.002);  glVertex3f(1, -1,  1);
                end;
             glEnd;
-         until not libMat.UnApply(rci);
+         until not libMat.UnApply(ARci);
       end;
       // CLOUDS CAP PLANE
       libMat:=MaterialLibrary.LibMaterialByName(FMatNameClouds);
@@ -306,7 +306,7 @@ begin
          cps := FCloudsPlaneSize*0.5;
          cof1 := FCloudsPlaneOffset;
 
-         libMat.Apply(rci);
+         libMat.Apply(ARci);
          repeat
             glBegin(GL_QUADS);
                xglTexCoord2f(0, 1);  glVertex3f(-cps, cof1,  cps);
@@ -314,26 +314,26 @@ begin
                xglTexCoord2f(1, 0);  glVertex3f( cps, cof1, -cps);
                xglTexCoord2f(1, 1);  glVertex3f( cps, cof1,  cps);
             glEnd;
-         until not libMat.UnApply(rci);
+         until not libMat.UnApply(ARci);
       end;
 
       glPopMatrix;
 
       glDepthMask(True); // restore
       if stLighting in oldStates then
-         rci.GLStates.SetGLState(stLighting);
+         ARci.GLStates.SetGLState(stLighting);
       if stFog in oldStates then
-         rci.GLStates.SetGLState(stFog);
+         ARci.GLStates.SetGLState(stFog);
 
       // process children
-      if renderChildre then begin
+      if ARenderChildren then begin
          f:=1/f;
          glScalef(f, f, f);
-         Self.RenderChildren(0, Count-1, rci);
+         Self.RenderChildren(0, Count-1, ARci);
       end;
 
       if stDepthTest in oldStates then
-         rci.GLStates.SetGLState(stDepthTest);
+         ARci.GLStates.SetGLState(stDepthTest);
 
    finally
       Scene.CurrentBuffer.PopModelViewMatrix;

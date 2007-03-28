@@ -247,8 +247,8 @@ type
          destructor Destroy; override;
 
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-         procedure DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildre : Boolean); override;
+         procedure DoRender(var ARci : TRenderContextInfo;
+                            ARenderSelf, ARenderChildren : Boolean); override;
          procedure BuildList(var rci : TRenderContextInfo); override;
          procedure StructureChanged; override;
 
@@ -870,8 +870,8 @@ end;
 
 // DoRender
 //
-procedure TGLTree.DoRender(var rci : TRenderContextInfo;
-                           renderSelf, renderChildre : Boolean);
+procedure TGLTree.DoRender(var ARci : TRenderContextInfo;
+                           ARenderSelf, ARenderChildren : Boolean);
 begin
    MaterialLibrary.LibMaterialByName(BranchMaterialName).PrepareBuildList;
    MaterialLibrary.LibMaterialByName(LeafMaterialName).PrepareBuildList;

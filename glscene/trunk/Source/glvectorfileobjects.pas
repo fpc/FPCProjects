@@ -5029,7 +5029,6 @@ begin
       end;
       FVerticesBonesWeights:=newArea;
    end;
-   //crossbuilder: this is not in cvs and I don't see the sense in this, so commented it: FLastVerticeBoneWeightCount:=FVerticeBoneWeightCount;
    FLastBonesPerVertex:=FBonesPerVertex;
 end;
 

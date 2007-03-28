@@ -367,7 +367,7 @@ type
     function AddNC(const item: Integer): Integer; overload;
     procedure Add(const i1, i2: Integer); overload;
     procedure Add(const i1, i2, i3: Integer); overload;
-    procedure Add(const list: TIntegerList); overload;
+    procedure Add(const AList: TIntegerList); overload;
     procedure Push(const Val: Integer);
     function Pop: Integer;
     procedure Insert(Index: Integer; const item: Integer);
@@ -2196,14 +2196,14 @@ end;
 
 procedure TIntegerList.Add(const i1, i2: Integer);
 var
-   listaux : PIntegerArray;
+  tmpList : PIntegerArray;
 begin
   Inc(FCount, 2);
   while FCount > FCapacity do
     SetCapacity(FCapacity + FGrowthDelta);
-    listaux := @FList[FCount - 2];
-    listaux^[0] := i1;
-    listaux^[1] := i2;
+  tmpList := @FList[FCount - 2];
+  tmpList^[0] := i1;
+  tmpList^[1] := i2;
 end;
 
 // Add (three at once)
@@ -2211,28 +2211,28 @@ end;
 
 procedure TIntegerList.Add(const i1, i2, i3: Integer);
 var
-   listaux : PIntegerArray;
+  tmpList : PIntegerArray;
 begin
   Inc(FCount, 3);
   while FCount > FCapacity do
     SetCapacity(FCapacity + FGrowthDelta);
-    listaux := @FList[FCount - 3];
-    listaux^[0] := i1;
-    listaux^[1] := i2;
-    listaux^[2] := i3;
+  tmpList := @FList[FCount - 3];
+  tmpList^[0] := i1;
+  tmpList^[1] := i2;
+  tmpList^[2] := i3;
 end;
 
 // Add (list)
 //
 
-procedure TIntegerList.Add(const list: TIntegerList);
+procedure TIntegerList.Add(const AList: TIntegerList);
 begin
-  if Assigned(list) and (list.Count > 0) then
+  if Assigned(AList) and (AList.Count > 0) then
   begin
-    if Count + list.Count > Capacity then
-      Capacity := Count + list.Count;
-    System.Move(list.FList[0], FList[Count], list.Count * SizeOf(Integer));
-    Inc(FCount, list.Count);
+    if Count + AList.Count > Capacity then
+      Capacity := Count + AList.Count;
+    System.Move(AList.FList[0], FList[Count], AList.Count * SizeOf(Integer));
+    Inc(FCount, AList.Count);
   end;
 end;
 
@@ -2328,17 +2328,17 @@ end;
 
 procedure TIntegerList.AddSerie(aBase, aDelta, aCount: Integer);
 var
-    listaux : PInteger;
+  tmpList : PInteger;
   I:    Integer;
 begin
   if aCount <= 0 then
     Exit;
   AdjustCapacityToAtLeast(Count + aCount);
-    listaux := @FList[Count];
+  tmpList := @FList[Count];
   for I := Count to Count + aCount - 1 do
   begin
-        listaux^ := aBase;
-        Inc(listaux);
+    tmpList^ := aBase;
+    Inc(tmpList);
     aBase := aBase + aDelta;
   end;
   FCount := Count + aCount;
@@ -2762,17 +2762,17 @@ end;
 
 procedure TSingleList.AddSerie(aBase, aDelta: Single; aCount: Integer);
 var
-    listaux : PSingle;
+  tmpList : PSingle;
   I:    Integer;
 begin
   if aCount <= 0 then
     Exit;
   AdjustCapacityToAtLeast(Count + aCount);
-    listaux := @FList[Count];
+  tmpList := @FList[Count];
   for I := Count to Count + aCount - 1 do
   begin
-        listaux^ := aBase;
-        Inc(listaux);
+    tmpList^ := aBase;
+    Inc(tmpList);
     aBase := aBase + aDelta;
   end;
   FCount := Count + aCount;
@@ -2980,7 +2980,7 @@ begin
   Result := FCount;
   if Result = FCapacity then
     SetCapacity(FCapacity + FGrowthDelta);
-  FList[Result] := Item;
+  FList^[Result] := Item;
   Inc(FCount);
 end;
 
@@ -2992,7 +2992,7 @@ begin
 {$IFOPT R+}
     Assert(Cardinal(Index) < Cardinal(FCount));
 {$ENDIF}
-  Result := FList[Index];
+  Result := FList^[Index];
 end;
 
 // Insert
@@ -3008,7 +3008,7 @@ begin
   if Index < FCount then
     System.Move(FList[Index], FList[Index + 1],
       (FCount - Index) * SizeOf(Double));
-  FList[Index] := Item;
+  FList^[Index] := Item;
   Inc(FCount);
 end;
 
@@ -3020,7 +3020,7 @@ begin
 {$IFOPT R+}
     Assert(Cardinal(Index) < Cardinal(FCount));
 {$ENDIF}
-  FList[Index] := Item;
+  FList^[Index] := Item;
 end;
 
 // SetCapacity
@@ -3059,17 +3059,17 @@ end;
 
 procedure TDoubleList.AddSerie(aBase, aDelta: Double; aCount: Integer);
 var
-  list: PDouble;
+  tmpList: PDouble;
   I:    Integer;
 begin
   if aCount <= 0 then
     Exit;
   AdjustCapacityToAtLeast(Count + aCount);
-  list := @FList[Count];
+  tmpList := @FList[Count];
   for I := Count to Count + aCount - 1 do
   begin
-    list^ := aBase;
-    Inc(list);
+    tmpList^ := aBase;
+    Inc(tmpList);
     aBase := aBase + aDelta;
   end;
   FCount := Count + aCount;
@@ -3083,7 +3083,7 @@ var
   I: Integer;
 begin
   for I := 0 to Count - 1 do
-    FList[I] := FList[I] + delta;
+    FList^[I] := FList^[I] + delta;
 end;
 
 // Offset (list)
@@ -3093,9 +3093,10 @@ procedure TDoubleList.Offset(const delta: TDoubleList);
 var
   I: Integer;
 begin
+  {$HINT crossbuilder - would be faster to access delta.flist directly? }
   if FCount = delta.FCount then
     for I := 0 to Count - 1 do
-      FList[I] := FList[I] + delta[I]
+      FList^[I] := FList^[I] + delta[I]
   else
     raise Exception.Create('DoubleList count do not match');
 end;
@@ -3108,7 +3109,7 @@ var
   I: Integer;
 begin
   for I := 0 to Count - 1 do
-    FList[I] := FList[I] * factor;
+    FList^[I] := FList^[I] * factor;
 end;
 
 // Sqr
@@ -3121,7 +3122,7 @@ var
 begin
   locList := FList;
   for I := 0 to Count - 1 do
-    locList[I] := locList[I] * locList[I];
+    locList^[I] := locList^[I] * locList^[I];
 end;
 
 // Sqrt
@@ -3134,7 +3135,7 @@ var
 begin
   locList := FList;
   for I := 0 to Count - 1 do
-    locList[I] := System.Sqrt(locList[I]);
+    locList^[I] := System.Sqrt(locList^[I]);
 end;
 
 // Sum
@@ -3143,12 +3144,14 @@ end;
 function TDoubleList.Sum: Double;
 
   function ComputeSum(list: PDoubleArrayList; nb: Integer): Double; register;
+  begin
   asm
     fld   dword ptr [eax]
     @@Loop:
     dec   edx
     fadd  dword ptr [eax+edx*4]
     jnz   @@Loop
+  end;
   end;
 
 begin
