@@ -61,8 +61,11 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
-      <li>26/03/07 - aidave - added MoveFirst, MoveLast
-      <li>26/03/07 - aidave - added MoveChildFirst, MoveChildLast
+      <li>28/03/07 - DaStr - Added more explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
+                             Fixed TGLBaseSceneObject.Destroy (potential AV)
+      <li>26/03/07 - aidave - Added MoveFirst, MoveLast
+      <li>26/03/07 - aidave - Added MoveChildFirst, MoveChildLast
       <li>25/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
@@ -6667,19 +6670,7 @@ var
 begin
    if (not IsUpdating) and Assigned(FBuffers) then
       for i:=0 to FBuffers.Count-1 do
-      begin
          TGLSceneBuffer(FBuffers[i]).NotifyChange(Self);
-         {$WARNING crossbuilder - removed the following hack, because it requires the viewer in uses. Seems to work good.}
-         {$HINT crossbuilder - Please check if the following lines are still needed, they are not in cvs }
-         {
-         // Lazarus invalidate all scenes. k00m
-         if (not TGLSceneBuffer(FBuffers[i]).Rendering)
-         and (not TGLSceneBuffer(FBuffers[i]).Freezed) then
-           if (TGLSceneBuffer(FBuffers[i]).Owner is TGLSceneViewer) then
-             TGLSceneViewer(TGLSceneBuffer(FBuffers[i]).Owner).Invalidate; //whait a fix k00m
-             // TGLFullScreenViewer not working good need a fix too.
-         }
-      end;
 end;
 
 // SetupLights

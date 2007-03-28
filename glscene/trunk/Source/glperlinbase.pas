@@ -1,25 +1,12 @@
-// GLPerlinBase
-{: Functions for generating perlin noise.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLScene<p>
 
-   Just some base functions for Perlin noise<p>
-
-      $Log: glperlinbase.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
+   Functions for generating perlin noise.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Cosmetic fixes for FPC compatibility.
       <li>29/01/03 - JaJ - Submitted to GLScene.
 	</ul></font>
 }
@@ -58,7 +45,6 @@ type
    PDouble = ^Double;
 
 Function ExponateCrap(root, exponant : Integer) : Integer;
-
 Var
   D : Extended;
 Begin
@@ -77,7 +63,6 @@ Begin
 End;
 
 Function Perlin_Random1(X : Integer) : Double;
-
 Begin
   x := ExponateCrap((x shl 13) + (x shr 9), x);
   // mess up the number real good!
@@ -89,14 +74,12 @@ Begin
 End;
 
 Function Perlin_Random2(const X, Y : Integer) : Double;
-
 Begin
   // it works! I guess any prime will do!
   Result := Perlin_Random1(x+y*57);
 End;
 
 Procedure Perlin_Random1DStrip(X,Width,Step : Integer; Amp : Double; Res : T1DPerlinArray);
-
 Var
   Posi : PDouble;
   XC : Integer;
@@ -111,7 +94,6 @@ Begin
 End;
 
 procedure Smooth_Interpolate_Strip(B1,B2,B3,Res : T1DPerlinArray; Width : Integer);
-
 Var
   Posi : PDouble;
   T1 : PDouble;
@@ -163,7 +145,6 @@ Begin
 End;
 
 procedure Cubic_Interpolate_Strip(B1,B2,B3,B4,Res : T1DPerlinArray; Width : Integer);
-
 Var
   Posi : PDouble;
   V1 : PDouble;
@@ -207,13 +188,11 @@ Begin
 End;
 
 function Linear_Interpolate(const a, b, x : Double) : Double;
-
 Begin
   result := a*(1-x) + b*x
 End;
 
 Function Cosine_Interpolate(const a, b, x : Double) : Double;
-
 Var
   ft : Double;
   f : Double;
@@ -226,7 +205,6 @@ Begin
 End;
 
 function Cubic_Interpolate(v0, v1, v2, v3,x : Double) : Double;
-
 Var
   P, Q, R, S : Double;
 
@@ -240,7 +218,7 @@ Begin
 	P := (v3 - v2) - (v0 - v1);
 	Q := (v0 - v1) - P;
 	R := v2 - v0;
-	S := v1;{}
+	S := v1;
 
 	Result := (P*x*x*x + Q*x*x + R*x + S);
 //   If (Abs(Result) > 1) then

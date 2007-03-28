@@ -1,23 +1,13 @@
-// GLParticles
-{: Particle systems for GLScene, based on replication of full-featured scene objects.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLParticles<p>
 
-      $Log: glparticles.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
+   Particle systems for GLScene, based on replication of full-featured scene objects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Renamed parameters in some methods
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>27/07/04 - EG - Added KillParticles
       <li>18/04/04 - EG - Added Before/After events
       <li>12/07/01 - EG - Fixed FEdgeColor memory leak
@@ -387,4 +377,3 @@ initialization
    RegisterClass(TGLParticles);
 
 end.
-

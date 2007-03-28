@@ -35,7 +35,8 @@
       - added automatical generated History from CVS
 
   History:<ul>
-
+    <li>28/03/07 - DaStr - Renamed parameters in some methods
+                           (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
     <li>01/03/05 - Mrqzzz - Moved in TODEJointBase protected code from Loaded to
                           public DoLoaded.
     <li>20/12/04 - SG - TGLODEStatic objects now realign geoms on step,

@@ -32,6 +32,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Renamed parameters in some methods
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>08/12/04 - DB - Fixed bug in TGLShadowVolumeCaster.SetCaster
       <li>02/12/04 - MF - Added some documentation
       <li>23/03/04 - EG - Added Active property

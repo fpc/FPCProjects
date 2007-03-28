@@ -1,27 +1,17 @@
-// GLShadowPlane
-{: Implements a basic shadow plane.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLShadowPlane<p>
+
+   Implements a basic shadow plane.<p>
 
    It is strongly recommended to read and understand the explanations in the
    materials/mirror demo before using this component.<p>
 
-      $Log: glshadowplane.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
-      <li>23/03/04 - EG - Added spoTransparent 
+      <li>28/03/07 - DaStr - Renamed parameters in some methods
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
+      <li>23/03/04 - EG - Added spoTransparent
       <li>29/11/03 - EG - Scissors turned of if camera is withing bounding volume
       <li>30/10/02 - EG - Added OnBegin/EndRenderingShadows
       <li>25/10/02 - EG - Fixed Stencil cleanup and shadow projection bug

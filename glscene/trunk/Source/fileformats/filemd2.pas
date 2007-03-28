@@ -6,7 +6,9 @@
 	MD2 file loader<p>
 
 	<b>Historique : </b><font size=-1><ul>
-      <li>25/08/03 - Php - Added FreeLists & degibbered LoadFromStream 
+      <li>28/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
+      <li>25/08/03 - Php - Added FreeLists & degibbered LoadFromStream
       <li>21/07/00 - Egg - Added frame names (Roger Cao/Carlos A. Rivero)
       <li>07/06/00 - Egg - Added Header, reduced dependencies,
                            LoadFromFile replaced with LoadFromStream,
@@ -145,7 +147,7 @@ begin
     else
       FrameName := Copy(FrameName, 1, Length(FrameName) - 1);
     if FrameNames.IndexOf(FrameName) < 0 then
-      FrameNames.AddObject(FrameName, TOBject(Pointer(I)));
+      FrameNames.AddObject(FrameName, TObject(Pointer(I)));
     // fill the vertices list  
     for J := 0 to Header.Num_Vertices - 1 do begin
       VertexList(FrameList(m_frame_list)[I])[J][0] := Frame^.Vertices[J].V[0] * Frame^.Scale[0] + Frame^.Translate[0];

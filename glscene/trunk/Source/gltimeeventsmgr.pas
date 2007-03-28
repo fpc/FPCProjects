@@ -3,11 +3,12 @@
 //
 {: GLTimeEventsMgr<p>
      by GliGli
-}
-{: Time based events mannager using the Cadencer<p>
+
+   Time based events mannager using the Cadencer<p>
    can be useful to make animations with GlScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Cosmetic fix for FPC compatibility
       <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>07/02/02 - EG - Added Notification, DoEvent, ElapsedTime and changed Event type
 }

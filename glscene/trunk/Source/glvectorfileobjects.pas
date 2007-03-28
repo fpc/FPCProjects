@@ -5,42 +5,11 @@
 
 	Vector File related objects for GLScene<p>
 
-      $Log: glvectorfileobjects.pas,v $
-      Revision 1.2  2006/03/01 05:10:06  skinhat
-      changed ResizeVerticesBonesWeights back to the way it was in the original delphi glscene code and now the skeletal demo works.
-
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/10 20:38:38  z0m3ie
-      bugfixes from main tree
-
-      Revision 1.3  2006/01/09 20:45:51  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.7  2005/09/06 23:51:01  skinhat
-      FVerticeBoneWeightCapacity missing from TSkeletonMeshObjectl. Added it
-
-      Revision 1.6  2005/09/06 23:37:16  skinhat
-      extractTriangles using was call normls instead of normals in procedure header
-
-      Revision 1.5  2005/09/06 19:32:42  z0m3ie
-      BugFix for MeshObject saving by Zapology@gmx.net
-
-      Revision 1.4  2005/08/18 07:45:50  k00m
-      <li>05/18/08 - D.G - Bug Fix on TActorAnimation.Create
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History :</b><font size=-1><ul>
-      <li>25/03/07 - LC - Added VBO support to TFGVertexIndexList, depends on MeshObject owner's UseVBO status
+      <li>28/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
+      <li>25/03/07 - LC - Added VBO support to TFGVertexIndexList, depends
+                          on MeshObject owner's UseVBO status
       <li>25/03/07 - LC - Fixed VBO bug. Bugtracker ID=1687665
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -58,7 +27,9 @@
       <li>11/01/05 - SG - Another fix for TGLBaseMesh.Assign (dikoe Kenguru)
       <li>11/01/05 - SG - Fix for TGLBaseMesh.Assign when assigning actors
       <li>26/11/04 - MRQZZZ - by Uwe Raabe : fixed TBaseMeshObject.BuildNormals
-      <li>26/11/04 - MRQZZZ - Added "Rendered" property to TGLBaseMesh in order to prevent rendering of the GLBaseMesh but allowing the rendering of it's children
+      <li>26/11/04 - MRQZZZ - Added "Rendered" property to TGLBaseMesh in order
+                              to prevent rendering of the GLBaseMesh but allowing
+                              the rendering of it's children
       <li>25/11/04 - SG - Fixed memory leak in TMeshObject (dikoe Kenguru)
       <li>24/11/04 - MF - Added OctreePointInMesh
       <li>03/10/04 - MRQZZZ - Fixed memory leak (FAutoScaling.Free) in TGLBaseMesh.Destroy; (thanks Jan Zizka)
@@ -68,7 +39,8 @@
       <li>23/07/04 - SG - Added fgmmQuad case for TFGVertexIndexList.TraingleCount
                           (Thanks fig).
       <li>18/07/04 - LR - Suppress Consts in uses
-      <li>20/06/04 - MRQZZZ - Added AutoScaling property to GLBaseMesh to scale a mesh after loading (like Autocentering) 
+      <li>20/06/04 - MRQZZZ - Added AutoScaling property to GLBaseMesh to scale
+                              a mesh after loading (like Autocentering)
       <li>30/03/04 - EG - Added TSkeletonBoneList.BoneCount
       <li>23/03/04 - SG - External positions added to skeleton blended lerps.
                           AutoUpdate flag added to skeleton collider list.

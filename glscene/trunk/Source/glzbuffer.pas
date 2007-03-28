@@ -31,6 +31,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Renamed parameters in some methods
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>24/03/07 - DaStr - Improved Cross-Platform compatibility
                              (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
@@ -1348,6 +1350,8 @@ initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-// class registrations
+
+   // class registrations
    RegisterClasses([TGLZShadows]);
+   
 end.

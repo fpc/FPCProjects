@@ -6,6 +6,7 @@
    GLScene's brute-force terrain renderer.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Cosmetic fixes for FPC compatibility
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>08/02/08 - Lin- Ignore tiles that are not hdsReady (Prevents crashes when threading)

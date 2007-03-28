@@ -25,6 +25,10 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Added explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
+      <li>28/03/07 - DaStr - Renamed parameters in some methods
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>23/03/07 - DaStr - Added missing parameters in procedure's implementation
                               (thanks Burkhard Carstens) (Bugtracker ID = 1681409)
       <li>06/03/07 - DaStr - Removed obsolete FPC IFDEF's
@@ -43,10 +47,10 @@
                              Fixed TGLShader.InitializeShader
                              Fixed TGLTextureExItem.Create (TGLCoordinatesStyle stuff)
       <li>16/02/07 - DaStr - Global $Q- removed
-                           Added TGLLibMaterials.GetTextureIndex, GetMaterialIndex,
-                             GetNameOfTexture, GetNameOfLibMaterial
-                           Added TGLMaterialLibrary.TextureByName,
-                             GetNameOfTexture, GetNameOfLibMaterial
+                             Added TGLLibMaterials.GetTextureIndex, GetMaterialIndex,
+                               GetNameOfTexture, GetNameOfLibMaterial
+                             Added TGLMaterialLibrary.TextureByName,
+                               GetNameOfTexture, GetNameOfLibMaterial
       <li>01/02/07 - LIN - Added TGLLibMaterial.IsUsed : true if texture has registered users
       <li>23/01/07 - LIN - Added TGLTextureImage.AssignToBitmap : Converts the TextureImage to a TBitmap
       <li>23/01/07 - LIN - Added TGLTextureImage.AsBitmap : Returns the TextureImage as a TBitmap

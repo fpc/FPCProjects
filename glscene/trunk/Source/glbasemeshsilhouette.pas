@@ -307,4 +307,5 @@ function TGLBaseMeshConnectivity.GetFaceGroupConnectivity(
 begin
   result := TFaceGroupConnectivity(FFaceGroupConnectivityList[i]);
 end;
+
 end.

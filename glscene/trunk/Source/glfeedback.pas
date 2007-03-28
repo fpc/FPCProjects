@@ -1,5 +1,9 @@
-// GLFeedback
-{: A scene object encapsulating the OpenGL feedback buffer.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLFeedback<p>
+
+   A scene object encapsulating the OpenGL feedback buffer.<p>
 
    This object, when Active, will render it's children using
    the GL_FEEDBACK render mode. This will render the children
@@ -10,23 +14,9 @@
    buffer use the Buffer SingleList. The Buffered property
    will indicate if there is valid data in the buffer.<p>
 
-      $Log: glfeedback.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Renamed parameters in some methods
+                            (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>23/07/04 - SG - Creation.
    </ul></font>
 

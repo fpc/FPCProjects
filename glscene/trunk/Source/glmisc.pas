@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLMisc<p>
 
    Miscellaneous support routines & classes.<p>
@@ -28,6 +31,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Renamed parameters in some methods
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>09/03/07 - DaStr - Removed obsolete FPC IFDEF's
@@ -1655,4 +1660,3 @@ finalization
    vManagers:=nil;
 
 end.
-

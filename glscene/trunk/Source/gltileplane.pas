@@ -4,27 +4,10 @@
 {: GLTilePlane<p>
 
    Implements a tiled texture plane.<p>
-   
-      $Log: gltileplane.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:51  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/09/12 04:08:47  z0m3ie
-      changes adapted from main cvs
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Renamed parameters in some methods
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>23/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>19/08/05 - Mathx - Made index of materials start from 0 not from 1 (thanks to uhfath)

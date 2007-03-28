@@ -1,7 +1,7 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-{: Keyboard<p>
+{: GLKeyboard<p>
 
 	Provides on demand state of any key on the keyboard as well as a set of
    utility functions for working with virtual keycodes.<p>
@@ -12,6 +12,8 @@
    key code constants (VK_* constants are declared in the "Windows" unit).<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>28/03/07 - DaStr - Renamed from Keyboard.pas (BugTracker ID = 1678646)
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTrackerID=1681585)
       <li>19/12/06 - DaS - Added additional string constants and made all
                              existing 'Mixed Case', not 'UPPERCASE'
                            KeyNameToVirtualKeyCode optimized,
@@ -21,7 +23,7 @@
       <li>03/08/00 - Egg - Creation, partly based Silicon Commander code
 	</ul></font>
 }
-unit glkeyboard;
+unit GLKeyboard;
 
 interface
 
