@@ -1,7 +1,9 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-//  28/03/07 - DaStr - Renamed parameters in some methods
+//  29/03/07 - DaStr - Renamed parameters in some methods
+//                     Added more explicit pointer dereferencing
+//                     Initialized local string variables in two places
 //                     (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
 //  25/03/07 - DaStr - Turned off UNSAFE_TYPE, UNSAFE_CODE warnings
 //  24/03/07 - DaStr - Added explicit pointer dereferencing

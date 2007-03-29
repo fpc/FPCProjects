@@ -28,6 +28,8 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
+      <li>29/03/07 - DaStr - Added more explicit pointer dereferencing
+                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>25/01/07 - DaStr - Reformated code according to VCL standard
