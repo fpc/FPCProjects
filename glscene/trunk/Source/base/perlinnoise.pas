@@ -1,8 +1,12 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: PerlinNoise.<p>
 
    Classes and function for generation of PerlinNoise.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/04/04 - EG - Creation
    </ul></font>
 
@@ -14,6 +18,8 @@
 unit PerlinNoise;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, VectorGeometry;
 

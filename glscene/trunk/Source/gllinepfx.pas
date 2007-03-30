@@ -6,12 +6,15 @@
    A PFX whose particles are lines
 
    <b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>20/02/05 - EG - Creation
    </ul></font>
 }
 unit GLLinePFX;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, PersistentClasses, VectorGeometry, GLParticleFX, GLTexture;
 

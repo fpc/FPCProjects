@@ -6,6 +6,7 @@
    Implements projected textures through a GLScene object.
 
    <b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>15/06/05 - Mathx - Added the Style property and inverse rendering
@@ -16,6 +17,8 @@
 unit GLProjectedTextures;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    Classes, GLScene, GLTexture, OpenGL1x, VectorGeometry, xopengl;

@@ -1,9 +1,13 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLDCEMisc<p>
 
   Miscelaneous functions used by DCE (Dynamic Collision Engine).
 
   <b>History : </b><font size=-1><ul>
-    <li>23/01/05 - LucasG - Code reorganized, many fixes and some new features 
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
+    <li>23/01/05 - LucasG - Code reorganized, many fixes and some new features
     <li>03/09/04 - LucasG - First release
     <li>29/07/04 - LucasG - Creation
   </ul></font>
@@ -11,6 +15,8 @@
 unit GLDCEMisc;
 
 interface
+
+{$I GLScene.inc}
 
 uses GLVectorFileObjects, Octree, GLEllipseCollision, VectorGeometry, VectorLists,
   GLScene, GLTerrainRenderer,GLProxyObjects, GLMultiProxy;

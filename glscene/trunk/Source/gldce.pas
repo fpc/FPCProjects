@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLDCE<p>
 
   How to use:
@@ -18,6 +21,7 @@
   - BounceFactor: Restituition factor, 1 means that it will bounce forever
 
   <b>History : </b><font size=-1><ul>
+    <li>30/03/07 - DaStr - Added $I GLScene.inc
     <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
     <li>01/07/05 - MathX - Fixed memory leak on contactPoints (moveByDistance method)
     <li>23/01/05 - LucasG - Code reorganized, many fixes and some new features 
@@ -40,6 +44,8 @@
 unit GLDCE;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, XCollection, VectorGeometry, VectorLists, GLVectorFileObjects,
    GeometryBB, GLCrossPlatform, GLMisc, GLDCEMisc, GLEllipseCollision, GLTerrainRenderer;

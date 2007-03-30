@@ -6,6 +6,7 @@
   Bitmap Fonts management classes for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>22/12/06 - LC - Fixed TGLCustomBitmapFont.RenderString, it now unbinds the texture.
                           Bugtracker ID=1619243 (thanks Da Stranger)
       <li>09/03/05 - EG - Fixed space width during rendering
@@ -33,6 +34,8 @@
 	</ul></font>
 }
 unit GLBitmapFont;
+
+{$I GLScene.inc}
 
 interface
 

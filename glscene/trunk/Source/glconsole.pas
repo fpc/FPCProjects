@@ -1,3 +1,4 @@
+//
 // This unit is part of the GLScene Project, http://glscene.org
 //
 {: GLConsole <p>
@@ -5,6 +6,8 @@
    The console is a popdown window that appears on a game for text output/input.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Replaced GLWin32Viewer with GLViewer
+      <li>25/02/07 - DaStr - Made some fixes for Delphi5 compatibility
       <li>23/02/07 - DaStr - Cosmetic changes, replaced some strings with
                               resource strings from GLStrings.pas
       <li>15/02/07 - DaStr - Some properties are not stored now, because they are
@@ -72,12 +75,13 @@ interface
 {$I GLScene.inc}
 
 uses
-  //VCL
-  Classes, SysUtils, {Windows,} Graphics, StrUtils, TypInfo,
-  //GLScene
-  {$IFDEF LCL} LCLType, LCLIntf, {$ENDIF}
-  GLScene, GLObjects, GLHUDObjects, {$IFDEF LCL} gllclviewer, {$ELSE} GLWin32Viewer, {$ENDIF} GLBitmapFont, glkeyboard,
-  VectorTypes, PersistentClasses, GLContext, GLTexture, GLUtils, GLStrings;
+  // VCL
+  Classes, SysUtils, TypInfo,
+
+  // GLScene
+  GLScene, GLObjects, GLHUDObjects, GLViewer, GLBitmapFont, GLKeyboard,
+  VectorTypes, PersistentClasses, GLContext, GLTexture, GLUtils, GLStrings,
+  GLCrossPlatform;
 
 const
   CONSOLE_MAX_COMMANDS = 120;
@@ -210,13 +214,13 @@ type
     constructor Create(AOwner: TPersistent);
     procedure Assign(Source: TPersistent); override;
   published
-    property NavigateUp: Byte read FNavigateUp write FNavigateUp default VK_HOME;
-    property NavigateDown: Byte read FNavigateDown write FNavigateDown default VK_END;
-    property NavigatePageUp: Byte read FNavigatePageUp write FNavigatePageUp default VK_PRIOR;
-    property NavigatePageDown: Byte read FNavigatePageDown write FNavigatePageDown default VK_NEXT;
-    property NextCommand: Byte read FNextCommand write FNextCommand default VK_DOWN;
-    property PreviousCommand: Byte read FPreviousCommand write FPreviousCommand default VK_UP;
-    property AutoCompleteCommand: Byte read FAutoCompleteCommand write FAutoCompleteCommand default VK_CONTROL;
+    property NavigateUp: Byte read FNavigateUp write FNavigateUp default glKey_HOME;
+    property NavigateDown: Byte read FNavigateDown write FNavigateDown default glKey_END;
+    property NavigatePageUp: Byte read FNavigatePageUp write FNavigatePageUp default glKey_PRIOR;
+    property NavigatePageDown: Byte read FNavigatePageDown write FNavigatePageDown default glKey_NEXT;
+    property NextCommand: Byte read FNextCommand write FNextCommand default glKey_DOWN;
+    property PreviousCommand: Byte read FPreviousCommand write FPreviousCommand default glKey_UP;
+    property AutoCompleteCommand: Byte read FAutoCompleteCommand write FAutoCompleteCommand default glKey_CONTROL;
     property DblClickDelay: Integer read FDblClickDelay write FDblClickDelay default 300;
   end;
 
@@ -770,9 +774,9 @@ begin
   if not Visible then
     Exit;
 
-  if c = #8 then //VK_BACK
+  if c = #8 then //glKey_BACK
     FInputLine := copy(FInputLine, 1, Length(FInputLine) - 1)
-  else if c = #13 then //VK_RETURN
+  else if c = #13 then //glKey_RETURN
   begin
     if coAutoCompleteCommandsOnEnter in FOptions then
       AutoCompleteCommand;
@@ -830,7 +834,7 @@ begin
 
   if (key = FControls.AutoCompleteCommand) then
   begin
-    CurrentTickCount := GetTickCount;
+    CurrentTickCount := GLGetTickCount;
     AutoCompleteCommand(MatchCount, AdditionalCommandsMatchList, CommandsMatchList);
     if MatchCount = 0 then
       SysUtils.beep;
@@ -1449,13 +1453,13 @@ constructor TGLConsoleControls.Create(AOwner: TPersistent);
 begin
   FOwner := AOwner;
 
-  FNavigateUp := VK_HOME;
-  FNavigateDown := VK_END;
-  FNavigatePageUp := VK_PRIOR;
-  FNavigatePageDown := VK_NEXT;
-  FNextCommand := VK_DOWN;
-  FPreviousCommand := VK_UP;
-  FAutoCompleteCommand := VK_CONTROL;
+  FNavigateUp := glKey_HOME;
+  FNavigateDown := glKey_END;
+  FNavigatePageUp := glKey_PRIOR;
+  FNavigatePageDown := glKey_NEXT;
+  FNextCommand := glKey_DOWN;
+  FPreviousCommand := glKey_UP;
+  FAutoCompleteCommand := glKey_CONTROL;
 
   FDblClickDelay := 300;
 end;

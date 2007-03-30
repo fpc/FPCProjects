@@ -13,7 +13,7 @@
       - added automatical generated History from CVS
 
    <b>Historique : </b><font size=-1><ul>
-      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
+      <li>29/03/07 - DaStr - Renamed LINUX to KYLIX (BugTrackerID=1681585)
       <li>03/07/04 - LR - Make change for Linux
       <li>?/?/? -  - Creation
    </ul></font>
@@ -24,20 +24,15 @@ interface
 
 {$i GLScene.inc}
 
-{$IFDEF MSWINDOWS}
+{$IFNDEF KYLIX}
 uses
   {$ifdef fpc}lresources,{$endif}
   Forms, ComCtrls, StdCtrls, ToolWin, ExtCtrls, Buttons, Graphics, Controls, 
   Classes;
 {$ENDIF}
-{$IFDEF UNIX}
+{$IFDEF KYLIX}
 uses
-  {$ifndef fpc}
   QForms, QComCtrls, QStdCtrls, QExtCtrls, QButtons, QGraphics, QControls, 
-  {$else}
-  lresources,
-  forms,comctrls,stdctrls,extctrls,buttons,graphics,controls,
-  {$endif}
   Classes; 
 {$ENDIF}
 

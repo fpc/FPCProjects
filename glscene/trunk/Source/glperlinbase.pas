@@ -6,6 +6,7 @@
    Functions for generating perlin noise.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Cosmetic fixes for FPC compatibility.
       <li>29/01/03 - JaJ - Submitted to GLScene.
 	</ul></font>
@@ -13,6 +14,8 @@
 unit GLPerlinBase;
 
 interface
+
+{$I GLScene.inc}
 
 type
    T1DPerlinArray = array of Double;

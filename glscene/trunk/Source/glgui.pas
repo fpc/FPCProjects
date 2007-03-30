@@ -6,6 +6,7 @@
   In GL windows management classes and structures<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc, cosmetic changes
       <li>17/02/07 - DaStr - TGLGuiElement.Create - vectors creation fixed
                           Changed some types from TGLCoordinates to TGLCoordinates2
                           Removed some empty lines
@@ -21,10 +22,13 @@ unit GLGui;
 
 interface
 
+{$I GLScene.inc}
+
 uses
-  //VCL
+  // VCL
   Classes, SysUtils,
-  //GLScene
+
+  // GLScene
   GLScene, GLMisc, GLBitmapFont, GLTexture, GLCrossPlatform,
   OpenGL1x, PersistentClasses, VectorGeometry;
 
@@ -346,7 +350,6 @@ begin
 end;
 
 Constructor TGLGuiLayout.Create(AOwner : TComponent);
-
 Begin
   FGuiComponentList := TList.Create;
   inherited;
@@ -604,173 +607,171 @@ Var
   AlignCount  : TGUIAlignments;
   TmpElement  : TGLGuiElement;
 
-Procedure Prepare;
-Begin
-  Len1 := (ThisElement.FTopLeft.x-ThisElement.FBottomRight.x)*ThisElement.Scale.X*Scale;
-  Len2 := (ThisElement.FTopLeft.y-ThisElement.FBottomRight.y)*ThisElement.Scale.Y*Scale;
-  If Len1 < 0 then
+  Procedure Prepare;
   Begin
-    If Len2 < 0 then
+    Len1 := (ThisElement.FTopLeft.x-ThisElement.FBottomRight.x)*ThisElement.Scale.X*Scale;
+    Len2 := (ThisElement.FTopLeft.y-ThisElement.FBottomRight.y)*ThisElement.Scale.Y*Scale;
+    If Len1 < 0 then
     Begin
-      W     := -Len1;
-      H     := -Len2;
+      If Len2 < 0 then
+      Begin
+        W     := -Len1;
+        H     := -Len2;
+      End else
+      Begin
+        W     := -Len1;
+        H     := Len2;
+      End;
     End else
     Begin
-      W     := -Len1;
-      H     := Len2;
-    End;
-  End else
-  Begin
-    If Len2 < 0 then
-    Begin
-      W     := Len1;
-      H     := -Len2;
-    End else
-    Begin
-      W     := Len1;
-      H     := Len2;
+      If Len2 < 0 then
+      Begin
+        W     := Len1;
+        H     := -Len2;
+      End else
+      Begin
+        W     := Len1;
+        H     := Len2;
+      End;
     End;
   End;
-End;
 
-Procedure RenderIt(Var ARect : TGuiRect; AElement : TGLGuiElement);
-Var
-  XC : TGLFloat;
-  YC : TGLFloat;
-  XPos,X2Pos : TGLFloat;
-  YPos,y2Pos : TGLFloat;
-  tx1,ty1,tx2,ty2 : TGLFloat;
-  XTileSize, YTileSize : TGLFloat;
-  tx3,ty3 : TGLFloat;
-  tx,ty : TGLFloat;
+  Procedure RenderIt(Var ARect : TGuiRect; AElement : TGLGuiElement);
+  Var
+    XC : TGLFloat;
+    YC : TGLFloat;
+    XPos,X2Pos : TGLFloat;
+    YPos,y2Pos : TGLFloat;
+    tx1,ty1,tx2,ty2 : TGLFloat;
+    XTileSize, YTileSize : TGLFloat;
+    tx3,ty3 : TGLFloat;
+    tx,ty : TGLFloat;
 
-Begin
-  If (ARect.XTiles = 1) and (ARect.YTiles = 1) then
   Begin
-    glTexCoord2f( AElement.TopLeft.X/TexWidth,     -AElement.TopLeft.Y/TexHeight);
-    glVertex2f(ARect.X1, -ARect.Y1);
-
-    glTexCoord2f( AElement.TopLeft.X/TexWidth,     -AElement.BottomRight.Y/TexHeight);
-    glVertex2f(ARect.X1, -ARect.Y2);
-
-    glTexCoord2f( AElement.BottomRight.X/TexWidth, -AElement.BottomRight.Y/TexHeight);
-    glVertex2f(ARect.X2, -ARect.Y2);
-
-    glTexCoord2f( AElement.BottomRight.X/TexWidth, -AElement.TopLeft.Y/TexHeight);
-    glVertex2f(ARect.X2, -ARect.Y1);
-  End else
-  Begin
-    XTileSize := (ARect.X2 - ARect.X1) / ARect.XTiles;
-    YTileSize := (ARect.Y2 - ARect.Y1) / ARect.YTiles;
-    tx1 := AElement.TopLeft.X/TexWidth;
-    ty1 := -AElement.TopLeft.Y/TexHeight;
-    tx2 := AElement.BottomRight.X/TexWidth;
-    ty2 := -AElement.BottomRight.Y/TexHeight;
-    tx3 := (AElement.TopLeft.X+(AElement.BottomRight.X-AElement.TopLeft.X)*Frac(ARect.XTiles))/TexWidth;
-    ty3 := -(AElement.TopLeft.y+(AElement.BottomRight.y-AElement.TopLeft.y)*Frac(ARect.yTiles))/TexHeight;
-
-    XC := ARect.XTiles;
-    XPos := ARect.X1;
-    tx := tx2;
-    While XC > 0 do
+    If (ARect.XTiles = 1) and (ARect.YTiles = 1) then
     Begin
-      YC := ARect.YTiles;
-      YPos := ARect.Y1;
-      ty := ty2;
+      glTexCoord2f( AElement.TopLeft.X/TexWidth,     -AElement.TopLeft.Y/TexHeight);
+      glVertex2f(ARect.X1, -ARect.Y1);
 
-      If XC >= 1 then X2Pos := XPos+XTileSize
-      else
-      Begin
-        X2Pos := ARect.X2;
-        tx := tx3;
-      End;
+      glTexCoord2f( AElement.TopLeft.X/TexWidth,     -AElement.BottomRight.Y/TexHeight);
+      glVertex2f(ARect.X1, -ARect.Y2);
 
-      While YC > 0 do
+      glTexCoord2f( AElement.BottomRight.X/TexWidth, -AElement.BottomRight.Y/TexHeight);
+      glVertex2f(ARect.X2, -ARect.Y2);
+
+      glTexCoord2f( AElement.BottomRight.X/TexWidth, -AElement.TopLeft.Y/TexHeight);
+      glVertex2f(ARect.X2, -ARect.Y1);
+    End else
+    Begin
+      XTileSize := (ARect.X2 - ARect.X1) / ARect.XTiles;
+      YTileSize := (ARect.Y2 - ARect.Y1) / ARect.YTiles;
+      tx1 := AElement.TopLeft.X/TexWidth;
+      ty1 := -AElement.TopLeft.Y/TexHeight;
+      tx2 := AElement.BottomRight.X/TexWidth;
+      ty2 := -AElement.BottomRight.Y/TexHeight;
+      tx3 := (AElement.TopLeft.X+(AElement.BottomRight.X-AElement.TopLeft.X)*Frac(ARect.XTiles))/TexWidth;
+      ty3 := -(AElement.TopLeft.y+(AElement.BottomRight.y-AElement.TopLeft.y)*Frac(ARect.yTiles))/TexHeight;
+
+      XC := ARect.XTiles;
+      XPos := ARect.X1;
+      tx := tx2;
+      While XC > 0 do
       Begin
-        If YC >= 1 then Y2Pos := YPos+YTileSize
+        YC := ARect.YTiles;
+        YPos := ARect.Y1;
+        ty := ty2;
+
+        If XC >= 1 then X2Pos := XPos+XTileSize
         else
         Begin
-          Y2Pos := ARect.Y2;
-          ty := ty3;
+          X2Pos := ARect.X2;
+          tx := tx3;
         End;
 
-        glTexCoord2f( tx1,     ty1);
-        glVertex2f(XPos, -YPos);
+        While YC > 0 do
+        Begin
+          If YC >= 1 then Y2Pos := YPos+YTileSize
+          else
+          Begin
+            Y2Pos := ARect.Y2;
+            ty := ty3;
+          End;
 
-        glTexCoord2f( tx1,     ty);
-        glVertex2f(XPos, -Y2Pos);
+          glTexCoord2f( tx1,     ty1);
+          glVertex2f(XPos, -YPos);
 
-        glTexCoord2f( tx,     ty);
-        glVertex2f(X2Pos, -Y2Pos);
+          glTexCoord2f( tx1,     ty);
+          glVertex2f(XPos, -Y2Pos);
 
-        glTexCoord2f( tx,     ty1);
-        glVertex2f(X2Pos, -YPos);
-        yc := yc - 1.0;
-        ypos := Y2Pos;
+          glTexCoord2f( tx,     ty);
+          glVertex2f(X2Pos, -Y2Pos);
+
+          glTexCoord2f( tx,     ty1);
+          glVertex2f(X2Pos, -YPos);
+          yc := yc - 1.0;
+          ypos := Y2Pos;
+        End;
+        xc := xc - 1.0;
+        xpos := X2Pos;
       End;
-      xc := xc - 1.0;
-      xpos := X2Pos;
     End;
   End;
-End;
 
-Procedure RenderBorder(AElement : TGLGuiElement);
-Var
-  TmpElement : TGLGuiElement;
+  Procedure RenderBorder(AElement : TGLGuiElement);
+  Var
+    TmpElement : TGLGuiElement;
 
-Begin
-  TmpElement := TGLGuiElement.Create(Nil);
-  TmpElement.FTopLeft.X := ThisElement.FTopLeft.X;
-  TmpElement.FTopLeft.Y := ThisElement.FTopLeft.Y;
-  TmpElement.FBottomRight.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
-  TmpElement.FBottomRight.Y := ThisElement.FTopLeft.Y+ThisElement.Scale.Y;
-  TmpElement.Scale.SetPoint(1,1,1);
-  RenderIt(Res[GLALTopLeft],TmpElement);
+  Begin
+    TmpElement := TGLGuiElement.Create(Nil);
+    TmpElement.FTopLeft.X := ThisElement.FTopLeft.X;
+    TmpElement.FTopLeft.Y := ThisElement.FTopLeft.Y;
+    TmpElement.FBottomRight.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
+    TmpElement.FBottomRight.Y := ThisElement.FTopLeft.Y+ThisElement.Scale.Y;
+    TmpElement.Scale.SetPoint(1,1,1);
+    RenderIt(Res[GLALTopLeft],TmpElement);
 
-  TmpElement.FTopLeft.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
-  TmpElement.FBottomRight.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
-  RenderIt(Res[GLALTop],TmpElement);
+    TmpElement.FTopLeft.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
+    TmpElement.FBottomRight.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
+    RenderIt(Res[GLALTop],TmpElement);
 
-  TmpElement.FTopLeft.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
-  TmpElement.FBottomRight.X := ThisElement.FBottomRight.X;
-  RenderIt(Res[GLALTopRight],TmpElement);
+    TmpElement.FTopLeft.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
+    TmpElement.FBottomRight.X := ThisElement.FBottomRight.X;
+    RenderIt(Res[GLALTopRight],TmpElement);
 
-  TmpElement.FTopLeft.Y := ThisElement.FTopLeft.Y+ThisElement.Scale.Y;
-  TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
-  RenderIt(Res[GLALRight],TmpElement);
+    TmpElement.FTopLeft.Y := ThisElement.FTopLeft.Y+ThisElement.Scale.Y;
+    TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
+    RenderIt(Res[GLALRight],TmpElement);
 
-  TmpElement.FTopLeft.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
-  TmpElement.FTopLeft.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
-  TmpElement.FBottomRight.X := ThisElement.FBottomRight.X;
-  TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y;
-  RenderIt(Res[GLALBottomRight],TmpElement);
+    TmpElement.FTopLeft.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
+    TmpElement.FTopLeft.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
+    TmpElement.FBottomRight.X := ThisElement.FBottomRight.X;
+    TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y;
+    RenderIt(Res[GLALBottomRight],TmpElement);
 
-  TmpElement.FTopLeft.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
-  TmpElement.FTopLeft.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
-  TmpElement.FBottomRight.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
-  TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y;
-  RenderIt(Res[GLALBottom],TmpElement);
+    TmpElement.FTopLeft.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
+    TmpElement.FTopLeft.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
+    TmpElement.FBottomRight.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
+    TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y;
+    RenderIt(Res[GLALBottom],TmpElement);
 
-  TmpElement.FTopLeft.X := ThisElement.FTopLeft.X;
-  TmpElement.FTopLeft.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
-  TmpElement.FBottomRight.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
-  TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y;
-  RenderIt(Res[GLALBottomLeft],TmpElement);
+    TmpElement.FTopLeft.X := ThisElement.FTopLeft.X;
+    TmpElement.FTopLeft.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
+    TmpElement.FBottomRight.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
+    TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y;
+    RenderIt(Res[GLALBottomLeft],TmpElement);
 
-  TmpElement.FTopLeft.X := ThisElement.FTopLeft.X;
-  TmpElement.FTopLeft.Y := ThisElement.FTopLeft.Y+ThisElement.Scale.Y;
-  TmpElement.FBottomRight.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
-  TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
-  RenderIt(Res[GLALLeft],TmpElement);
+    TmpElement.FTopLeft.X := ThisElement.FTopLeft.X;
+    TmpElement.FTopLeft.Y := ThisElement.FTopLeft.Y+ThisElement.Scale.Y;
+    TmpElement.FBottomRight.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
+    TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
+    RenderIt(Res[GLALLeft],TmpElement);
 
-  TmpElement.FTopLeft.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
-  TmpElement.FTopLeft.Y := ThisElement.FTopLeft.Y+ThisElement.Scale.Y;
-  TmpElement.FBottomRight.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
-  TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
-  RenderIt(Res[GLALCenter],TmpElement);
-End;
-
-
+    TmpElement.FTopLeft.X := ThisElement.FTopLeft.X+ThisElement.Scale.X;
+    TmpElement.FTopLeft.Y := ThisElement.FTopLeft.Y+ThisElement.Scale.Y;
+    TmpElement.FBottomRight.X := ThisElement.FBottomRight.X-ThisElement.Scale.X;
+    TmpElement.FBottomRight.Y := ThisElement.FBottomRight.Y-ThisElement.Scale.Y;
+    RenderIt(Res[GLALCenter],TmpElement);
+  End;
 
 Begin
   Layout := ((GetOwner as TGLGuiComponentList).GetOwner as TGLGuiLayout);
@@ -1017,7 +1018,6 @@ Begin
 End;
 
 function  TGLGuiElementList.GetOwner: TPersistent;
-
 Begin
   Result := FGuiComponent;
 End;

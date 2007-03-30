@@ -19,6 +19,7 @@
    properly handled, these are marked by comments in the code.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>21/07/02 - EG - Added MinPositiveCoef
@@ -33,6 +34,8 @@
 unit Polynomials;
 
 interface
+
+{$I GLScene.inc}
 
 uses VectorGeometry;
 

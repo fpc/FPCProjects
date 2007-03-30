@@ -1,10 +1,16 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-// 20/07/00 - Egg - Fixed array declarations (non null range to allow bound checks),
-//                  Renamed "TIntegerList" to "TIntegerArray" 
+{: GLTeapot<p>
 
-unit Types3DS;
+   Implements the standard Teapot, build from evaluators.<p>
+
+	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
+      <li>20/07/00 -  Egg  - Fixed array declarations (non null range to allow bound checks),
+                             Renamed "TIntegerList" to "TIntegerArray"
+   </ul></font>
+}
 
 // This unit contains all of the data types used by the core routines. Most of these are only used
 // with the internal database, created when a file is loaded.
@@ -13,10 +19,14 @@ unit Types3DS;
 //
 // (c) Copyright 1999, Dipl. Ing. Mike Lischke (public@lischke-online.de)
 
+unit Types3DS;
+
 {$ALIGN ON}
 {$MINENUMSIZE 4}
 
-interface                                                               
+interface
+
+{$I GLScene.inc}
 
 uses Classes; // for TStringList
 

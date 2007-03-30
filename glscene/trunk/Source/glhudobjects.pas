@@ -1,7 +1,12 @@
-// GLHUDObjects
-{: GLScene objects that get rendered in 2D coordinates<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLBitmapFont<p>
+
+   GLScene objects that get rendered in 2D coordinates<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>23/02/07 - DaStr - Added default values to TGLHUDSprite.Width & Height
       <li>15/02/07 - DaStr - Added default values to TGLHUDText.Alignment & Layout
       <li>28/06/04 - LR - Change TTextLayout to TGLTextLayout for Linux
@@ -18,6 +23,8 @@
 unit GLHUDObjects;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    Classes, GLScene, VectorGeometry, GLMisc, GLObjects, GLBitmapFont,

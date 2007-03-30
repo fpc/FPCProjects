@@ -61,6 +61,9 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>29/03/07 - DaStr - GLS_WANT_DATA removed
+                             Added IGLInitializable, TGLInitializableObjectList
+                             Added TGLScene.InitializableObjects
       <li>28/03/07 - DaStr - Added more explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
                              Fixed TGLBaseSceneObject.Destroy (potential AV)
@@ -442,6 +445,26 @@ type
       time after the progress event is completed. }
    TGLProgressEvent = procedure (Sender : TObject; const deltaTime, newTime : Double) of object;
 
+   // IGLInitializable
+   //
+   {: Interface to objects that need initialization<p> }
+   IGLInitializable = interface
+   ['{EA40AE8E-79B3-42F5-ADF1-7A901B665E12}']
+     procedure InitializeObject(ASender: TObject; const ARci: TRenderContextInfo);
+   end;
+
+   // TGLInitializableObjectList
+   //
+   {: Just a list of objects that support IGLInitializable.<p> }
+   TGLInitializableObjectList = class(TList)
+   private
+     function GetItems(const Index: Integer): IGLInitializable;
+     procedure PutItems(const Index: Integer; const Value: IGLInitializable);
+   public
+     function Add(const Item: IGLInitializable): Integer;
+     property Items[const Index: Integer]: IGLInitializable read GetItems write PutItems; default;
+   end;
+
    // TGLBaseSceneObject
    //
    {: Base class for all scene objects.<p>
@@ -561,10 +584,6 @@ type
          procedure DestroyHandle; dynamic;
          procedure DestroyHandles;
          procedure DeleteChildCameras;
-         {$ifdef GLS_WANT_DATA}
-         function GetData: pointer;
-         procedure SetData(const Value: pointer);
-         {$endif}
          procedure DoOnAddedToParent; virtual;
 
       public
@@ -838,13 +857,8 @@ type
 
          property Behaviours : TGLBehaviours read GetBehaviours write SetBehaviours stored False;
          property Effects : TGLObjectEffects read GetEffects write SetEffects stored False;
-         {$ifdef GLS_WANT_DATA}
-         {: A pointer to attach your data to GLScene. Uses Tag as a pointer.<p>
-            Note: for temporary backward compatibility only, migrate code!!!}
-         property Data : pointer read GetData write SetData;
-         {$endif}
-         property TagObject : TObject read FTagObject write FTagObject;
 
+         property TagObject : TObject read FTagObject write FTagObject;
       published
          { Published Declarations }
          property TagFloat: Single read FTagFloat write FTagFloat;
@@ -1575,6 +1589,7 @@ type
          FVisibilityCulling : TGLVisibilityCulling;
          FOnProgress : TGLProgressEvent;
          FRenderedObject: TGLCustomSceneObject;
+         FInitializableObjects: TGLInitializableObjectList;
 
       protected
          { Protected Declarations }
@@ -1654,6 +1669,10 @@ type
          {: Stores the current rendered object.<p>
             Useful when using shaders, to know what object we are applying the material to. }
          property RenderedObject : TGLCustomSceneObject read GetRenderedObject;
+
+         {: List of objects that request to be initialized when rendering context is active.<p>
+           They are removed automaticly from this list once initialized. }
+         property InitializableObjects: TGLInitializableObjectList read FInitializableObjects;
       published
          { Published Declarations }
          {: Defines default ObjectSorting option for scene objects. }
@@ -3393,22 +3412,6 @@ begin
       FTagFloat:=TGLBaseSceneObject(Source).FTagFloat;
    end else inherited Assign(Source);
 end;
-
-{$ifdef GLS_WANT_DATA}
-// GetData
-//
-function TGLBaseSceneObject.GetData: pointer;
-begin
-  result := pointer(Tag);
-end;
-
-// SetData
-//
-procedure TGLBaseSceneObject.SetData(const Value: pointer);
-begin
-  Tag := Integer(Value);
-end;
-{$endif}
 
 // IsUpdating
 //
@@ -6188,12 +6191,14 @@ begin
    FVisibilityCulling:=vcNone;
    // actual maximum number of lights is stored in TGLSceneViewer
    FLights.Count:=8;
+   FInitializableObjects := TGLInitializableObjectList.Create
 end;
 
 // Destroy
 //
 destructor TGLScene.Destroy;
 begin
+   InitializableObjects.Free;
    FObjects.DestroyHandles;
    {$IFDEF FPC}
    {$hint: - crossbuilder is this still needed? for me it works without that hack. }
@@ -6461,6 +6466,16 @@ begin
    else glColorMask(True, True, True, True);
    if Assigned(aBuffer.FInitiateRendering) then
       aBuffer.FInitiateRendering(aBuffer, rci);
+
+   if FInitializableObjects.Count <> 0 then
+   begin
+      // First initialize all objects.
+      for I := 0 to FInitializableObjects.Count - 1 do
+         FInitializableObjects.GetItems(I).InitializeObject(Self, rci);
+      // In the end clear the list.
+      FInitializableObjects.Clear;
+   end;
+
    if baseObject=nil then
       FObjects.Render(rci)
    else baseObject.Render(rci);
@@ -8691,6 +8706,34 @@ begin
 
    // Request a new Instantiation of RC on next render
    FBuffer.DestroyRC;
+end;
+
+
+// ------------------
+// ------------------ TGLInitializableObjectList ------------------
+// ------------------
+
+// Add
+//
+function TGLInitializableObjectList.Add(const Item: IGLInitializable): Integer;
+begin
+  Result := inherited Add(Pointer(Item));
+end;
+
+// GetItems
+//
+function TGLInitializableObjectList.GetItems(
+  const Index: Integer): IGLInitializable;
+begin
+  Result := IGLInitializable(inherited Get(Index));
+end;
+
+// PutItems
+//
+procedure TGLInitializableObjectList.PutItems(const Index: Integer;
+  const Value: IGLInitializable);
+begin
+  inherited Put(Index, Pointer(Value));
 end;
 
 //------------------------------------------------------------------------------

@@ -7,6 +7,7 @@
    surface described by a moving curve.<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>02/01/06 - LC - Fixed TGLExtrusionSolid texuring. Bugtracker ID=1619318
@@ -33,6 +34,8 @@
 unit GLExtrusion;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, OpenGL1x, GLObjects, GLScene, GLMisc, GLTexture, GLMultiPolygon;
 
@@ -1112,7 +1115,7 @@ end;
 //
 procedure TGLExtrusionSolid.BuildList(var rci: TRenderContextInfo);
 var
-   deltaS, deltaZ : Single;
+   {deltaS,} deltaZ : Single;
    lastNormal : TAffineVector;
 
    procedure CalcNormal(const Top, Bottom : TAffineVector; var normal : TAffineVector);
@@ -1214,7 +1217,7 @@ var
 begin
    if Outline.Count<1 then Exit;
    deltaZ:=FHeight/FStacks;
-   deltaS:=1/FStacks;
+//   deltaS:=1/FStacks;
    invertedNormals:=(FNormalDirection=ndInside);
    FTriangleCount:=0;
    // generate sides

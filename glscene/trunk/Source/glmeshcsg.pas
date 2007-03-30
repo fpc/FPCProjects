@@ -1,4 +1,9 @@
-{: Constructive Solid Geometry in GLScene.
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLMeshCSG<p>
+
+   Constructive Solid Geometry in GLScene.
 
    The CSG system uses BSP to optimize what triangles it considers.
    Its kept on a mesh basis to simplyfy things, it allways generates new BSP's,
@@ -10,6 +15,7 @@
    Features: CSG_Union, CSG_Subtraction, CSG_Intersection.
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>18/07/04 - JAJ - Bug fix, causing triangles to dissapear, once in a while.
       <li>29/11/03 - JAJ - Created and Submitted to GLScene.
 	</ul></font>
@@ -17,6 +23,8 @@
 unit GLMeshCSG;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   SysUtils, Classes, GLMisc, GLScene, GLVectorFileObjects, VectorGeometry, GLBSP, VectorLists;

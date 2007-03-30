@@ -3,6 +3,7 @@
 //                  by Brad Stowers: bstowers@pobox.com
 //                  Delphi Free Stuff: http://www.delphifreestuff.com/
 //
+// 30/03/07 - DaStr - Added GLS_ENABLE_UNSAFE_WARNINGS
 // 25/03/07 - DaStr - Added UNIX and KYLIX defines
 // 14/01/07 - DaStr - Added GLS_DELPHI/COMPILER_XX_DOWN defines
 // 20/12/06 - DaStr - Added GLS_OPTIMIZATIONS option
@@ -24,12 +25,17 @@
 // Activate support for Alex Denissov's Graphics32 library (http://www.g32.org)
 {.$DEFINE GLS_Graphics32_SUPPORT}
 
-//Activate support for some optimizations by disabling checks that occur very often
-//Warning: it will disable some options (like ShowAxis and OptSaveGLStack)
+// Activate support for some optimizations by disabling checks that occur very often
+// Warning: it will disable some options (like ShowAxis and OptSaveGLStack)
 {.$DEFINE GLS_OPTIMIZATIONS}
+
+// Enable all "Unsafe Type" / "Unsafe Code" compiler warnings
+// May be useful when debugging.
+{.$DEFINE GLS_ENABLE_UNSAFE_WARNINGS}
 
 // De-Activate assembly routine
 {.$DEFINE GEOMETRY_NO_ASM}
+
 
 //
 // Platform Detection
@@ -107,9 +113,6 @@
   {$DEFINE GLS_COMPILER_7}
   {$DEFINE GLS_DELPHI}
   {$DEFINE GLS_DELPHI_7}
-  {$WARN UNSAFE_TYPE OFF}
-  {$WARN UNSAFE_CODE OFF}
-  {$WARN UNSAFE_CAST OFF}
 {$endif}
 
 {$ifdef VER140}
@@ -544,3 +547,15 @@
   {$ObjExportAll On}
 {$ENDIF}
 
+
+{$IFDEF GLS_COMPILER_7_UP}
+  {$IFDEF GLS_ENABLE_UNSAFE_WARNINGS}
+    {$WARN UNSAFE_TYPE ON}
+    {$WARN UNSAFE_CODE ON}
+    {$WARN UNSAFE_CAST ON}
+  {$ELSE}
+    {$WARN UNSAFE_TYPE OFF}
+    {$WARN UNSAFE_CODE OFF}
+    {$WARN UNSAFE_CAST OFF}
+  {$ENDIF}
+{$ENDIF}

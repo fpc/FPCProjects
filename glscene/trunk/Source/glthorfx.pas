@@ -4,8 +4,9 @@
 {: GLThorFX<p>
 
   <b>History : </b><font size=-1><ul>
-      <li>16/03/07 - DaStr - Added explicit pointer dereferencing
-                             (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
+    <li>30/03/07 - DaStr - Added $I GLScene.inc
+    <li>16/03/07 - DaStr - Added explicit pointer dereferencing
+                           (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
     <li>13/02/07 - aidave - Updated Target.Style to csPoint
     <li>23/12/04 - PhP - GLScenestyled Header
     <li>06/04/04 - PhP - Removed property Paused use of property Disabled instead
@@ -19,6 +20,8 @@
 unit GLThorFX;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, GLMisc, XCollection, VectorGeometry, GLTexture, GLCadencer;
 

@@ -1,6 +1,7 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
+//  30/03/07 - DaStr - Moved all UNSAFE_TYPE, UNSAFE_CODE checks to GLSCene.inc
 //  29/03/07 - DaStr - Renamed parameters in some methods
 //                     Added more explicit pointer dereferencing
 //                     Initialized local string variables in two places
@@ -32,12 +33,9 @@ unit LWObjects;
 
 interface
 
-uses Classes;
+{$I GLScene.inc}
 
-{$IFDEF FEATURE_WARN_UNSAFE}
-  {$WARN UNSAFE_TYPE OFF}
-  {$WARN UNSAFE_CODE OFF}
-{$ENDIF}
+uses Classes;
 
 type
 

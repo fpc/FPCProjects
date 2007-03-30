@@ -6,6 +6,7 @@
    Implements a tiled texture plane.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>23/03/07 - DaStr - Added explicit pointer dereferencing
@@ -18,6 +19,8 @@
 unit GLTilePlane;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, VectorGeometry, OpenGL1x, GLMisc, GLTexture, GLObjects,
    GLCrossPlatform, PersistentClasses, VectorLists;

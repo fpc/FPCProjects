@@ -6,7 +6,7 @@
    General utilities for mesh manipulations.<p>
 
 	<b>History : </b><font size=-1><ul>
-
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>29/07/03 - PVD - Fixed bug in RemapReferences limiting lists to 32768 items   
       <li>29/07/03 - SG - Fixed small bug in ConvertStripToList (indexed vectors variant)
       <li>05/03/03 - EG - Added RemapIndicesToIndicesMap
@@ -24,6 +24,8 @@
 unit MeshUtils;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes,PersistentClasses, VectorLists, VectorGeometry;
 

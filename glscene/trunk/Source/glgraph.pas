@@ -6,6 +6,7 @@
 	Graph plotting objects for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>12/09/03 - EG - DefaultHeightField now defines color
@@ -27,6 +28,8 @@
 unit GLGraph;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, VectorGeometry, GLMisc, GLTexture, GLObjects, VectorLists;
 

@@ -6,6 +6,7 @@
    Methods for turning a TGLBaseMesh into a Verlet cloth / jelly<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Added explicit pointer dereferencing (even more)
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -18,6 +19,8 @@
 unit GLVerletClothify;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes,  GLVectorFileObjects, VerletClasses, VectorTypes, VectorLists,

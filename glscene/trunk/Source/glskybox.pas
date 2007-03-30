@@ -7,6 +7,7 @@
    for use as a skybox always centered on the camera.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>21/01/07 - DaStr - Added IGLMaterialLibrarySupported support
@@ -19,6 +20,8 @@
 unit GLSkyBox;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    Classes, GLScene, GLTexture, VectorTypes, VectorGeometry, OpenGL1x, GLMisc,

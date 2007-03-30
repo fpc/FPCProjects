@@ -32,6 +32,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>08/12/04 - DB - Fixed bug in TGLShadowVolumeCaster.SetCaster
@@ -48,6 +49,8 @@
 unit GLShadowVolume;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, VectorGeometry, OpenGL1x, GLMisc, GLSilhouette, GLTexture,
   GLCrossPlatform, PersistentClasses, GeometryBB;

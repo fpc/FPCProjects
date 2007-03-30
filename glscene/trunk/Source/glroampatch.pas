@@ -1,7 +1,12 @@
-// GLROAMPatch
-{: Class for managing a ROAM (square) patch.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLROAMPatch<p>
+
+   Class for managing a ROAM (square) patch.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>19/10/06 - LC - Added code to gracefully handle the case when MaxCLODTriangles is reached.
                           It will now increase the buffer instead of not splitting. Bugtracker ID=1574111
       <li>09/10/06 - Lin - Added OnMaxCLODTrianglesReached event.
@@ -20,7 +25,9 @@ unit GLROAMPatch;
 
 interface
 
-uses VectorGeometry, GLHeightData, VectorLists, GLCrossPlatform, GLContext, dialogs;
+{$I GLScene.inc}
+
+uses VectorGeometry, GLHeightData, VectorLists, GLCrossPlatform, GLContext;
 
 type
 

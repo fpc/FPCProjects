@@ -1,9 +1,12 @@
-// GLCollision
-{: Egg<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLCollision<p>
 
 	Collision-detection management for GLScene<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>19/10/06 - LC - Fixed memory leak in TCollisionManager.CheckCollisions. Bugtracker ID=1548618
       <li>09/05/03 - DanB - fixed for collisions with bounding-box unproperly defined (min>max)
       <li>09/05/03 - DanB - Added FastCheckCubeVsFace (Matheus Degiovani)
@@ -11,12 +14,14 @@
       <li>22/02/01 - Egg - Included new collision code by Uwe Raabe
       <li>08/08/00 - Egg - Fixed TGLBCollision.Assign
       <li>16/07/00 - Egg - Added support for all bounding modes (most are un-tested)
-	   <li>23/05/00 - Egg - Creation
+	    <li>23/05/00 - Egg - Creation
 	</ul></font>
 }
 unit GLCollision;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, XCollection, VectorGeometry, VectorLists, GLVectorFileObjects,
    GeometryBB, GLCrossPlatform;
@@ -968,6 +973,7 @@ end;
 type
    //only add collision node to list if GroupIndex>=0
    TCollisionNode = class
+     public
       Collision:TGLBCollision;
       AABB:TAABB;
       constructor Create(Collision:TGLBCollision; AABB:TAABB);

@@ -6,6 +6,7 @@
     Support-code to load Lightwave LWO Files (v6.0+, partial support).<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc$I GLScene.inc
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>14/11/02 - EG - Added header, fixed warnings
@@ -19,6 +20,8 @@
 unit GLFileLWO;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLVectorFileObjects, LWObjects;
 

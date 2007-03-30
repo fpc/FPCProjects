@@ -6,6 +6,7 @@
    Silhouette classes for GLBaseMesh and FaceGroups.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>25/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>23/03/07 - DaStr - Added explicit pointer dereferencing
@@ -18,6 +19,8 @@
 unit GLBaseMeshSilhouette;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLMisc, VectorGeometry, VectorLists, GLVectorFileObjects, GLSilhouette;
 

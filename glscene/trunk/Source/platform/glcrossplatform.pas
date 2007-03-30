@@ -876,11 +876,15 @@ end;
 
 function GLGetTickCount:int64;
 begin
-{$IFDEF MSWINDOWS}
+{$IFDEF FPC}
+  result:=LCLIntf.GetTickCount;
+{$ELSE}
+  {$IFDEF MSWINDOWS}
   result := GetTickCount;
-{$ENDIF}
-{$IFDEF UNIX}
+  {$ENDIF}
+  {$IFDEF KYLIX}
   QueryPerformanceCounter(result);
+  {$ENDIF}
 {$ENDIF}
 end;
 

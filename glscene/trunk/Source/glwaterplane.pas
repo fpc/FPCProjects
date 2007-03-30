@@ -1,8 +1,12 @@
-// GLWaterPlane
-{: A plane simulating animated water<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLWaterPlane<p>
+
+   A plane simulating animated water<p>
 
 	<b>History : </b><font size=-1><ul>
-
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>22/09/04 - R.Cao - Added AxisAlignedDimensionsUnscaled to fix visibility culling
       <li>02/04/03 - EG - More optimizations, mask support
       <li>01/04/03 - EG - Cleanup and optimizations
@@ -19,6 +23,8 @@
 unit GLWaterPlane;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, VectorTypes, VectorGeometry, GLScene, GLTexture, GLGraphics,
    GLMisc, OpenGL1x, VectorLists, GLCrossPlatform, PersistentClasses;

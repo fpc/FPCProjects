@@ -6,6 +6,7 @@
    Texture-based Lens flare object.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>23/03/07 - DaStr - Added missing parameters in procedure's implementation
                              (thanks Burkhard Carstens) (Bugtracker ID = 1681409)
       <li>25/09/03 - EG - Creation from GLLensFlare split
@@ -14,6 +15,8 @@
 unit GLTexLensFlare;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    Classes, GLScene, VectorGeometry, GLObjects, GLTexture, OpenGL1x, GLMisc, GLContext;

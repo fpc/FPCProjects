@@ -6,6 +6,7 @@
    GLScene's brute-force terrain renderer.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Cosmetic fixes for FPC compatibility
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -38,6 +39,8 @@
 unit GLTerrainRenderer;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, GLHeightData, GLTexture, VectorGeometry, GLContext,
    GLROAMPatch, VectorLists;
@@ -747,9 +750,9 @@ end;
 //HashedTileCount
 //
 function TGLTerrainRenderer.HashedTileCount:integer;
-var i, j : Integer;
+var i{, j} : Integer;
     hashList : TList;
-    hd : THeightData;
+//    hd : THeightData;
     cnt:integer;
 begin
    cnt:=0;

@@ -38,6 +38,7 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>24/01/07 - DaStr - TGLSourcePFXEffect.Burst and TGLBaseSpritePFXManager.RenderParticle bugfixed
@@ -78,6 +79,8 @@
 unit GLParticleFX;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, PersistentClasses, GLScene, VectorGeometry, XCollection, GLTexture,
      GLCadencer, GLMisc, VectorLists, GLGraphics, GLContext;

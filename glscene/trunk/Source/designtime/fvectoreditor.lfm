@@ -358,9 +358,9 @@ object VectorEditorForm: TVectorEditorForm
   end
   object Label1: TLabel
     Left = 8
-    Height = 14
+    Height = 13
     Top = 72
-    Width = 34
+    Width = 37
     Caption = 'X axis'
     Color = clNone
     Font.CharSet = ANSI_CHARSET
@@ -372,9 +372,9 @@ object VectorEditorForm: TVectorEditorForm
   end
   object Label2: TLabel
     Left = 8
-    Height = 14
+    Height = 13
     Top = 104
-    Width = 34
+    Width = 37
     Caption = 'Y axis'
     Color = clNone
     Font.CharSet = ANSI_CHARSET
@@ -386,9 +386,9 @@ object VectorEditorForm: TVectorEditorForm
   end
   object Label3: TLabel
     Left = 8
-    Height = 14
+    Height = 13
     Top = 136
-    Width = 34
+    Width = 36
     Caption = 'Z axis'
     Color = clNone
     Font.CharSet = ANSI_CHARSET

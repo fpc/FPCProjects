@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: SpatialPartitioning<p>
 
 	Spatial Partitioning speeds up geometrical queries, like what objects does A
@@ -14,6 +17,7 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>09/12/04 - MF - Renamed TQuadSpacePartition to TQuadtreeSpacePartition
       <li>08/12/04 - MF - Fixed AV error reported by DanB
       <li>03/12/04 - MF - Added quadtree for typical 2d (landscape) scenes
@@ -30,6 +34,8 @@
 unit SpatialPartitioning;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes, VectorGeometry, SysUtils, GeometryBB, PersistentClasses, Math;

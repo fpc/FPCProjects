@@ -9,6 +9,7 @@
     to enable support for OBJ & OBJF at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>11/07/05 - DaStr - Improved Cross-Platform compatibility (BugTracker ID = 1684432)
@@ -59,6 +60,7 @@
 }
 unit GLFileObj;
 
+{$I GLScene.inc}
 {.$DEFINE STATS} { Define to display statistics after loading. }
 
 interface

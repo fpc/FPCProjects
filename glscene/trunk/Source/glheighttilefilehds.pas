@@ -1,7 +1,12 @@
-// GLHeightTileFileHDS
-{: HeightDataSource for the HTF (HeightTileFile) format.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLHeightTileFileHDS<p>
+
+   HeightDataSource for the HTF (HeightTileFile) format.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>15/02/07 - LIN -Added OpenHTF function, for direct access to the HeightTileFile object.
       <li>25/01/07 - LIN -Added Width and Height properties to GLHeightTileFieHDS
       <li>19/01/07 - LIN -Bug fix/workaround: Added 'Inverted' property to GLHeightTileFieHDS
@@ -14,6 +19,8 @@
 unit GLHeightTileFileHDS;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLHeightData, HeightTileFile;
 

@@ -6,6 +6,7 @@
     TGLSLShader is a wrapper for GLS shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Bugfixed TGLCustomGLSLShader.DoUnApply (Result was not initialized)
       <li>20/03/07 - DaStr - TGLCustomGLSLShader now generates its own events
                              Added TGLSLShaderParameter
                              Added TGLCustomGLSLShader.DoInitialPass
@@ -56,7 +57,7 @@ type
   {: TODO! }
   TGLSLInitializedShaderParameters = class
   private
-    FList: array of TGLSLShaderParameter;
+//    FList: array of TGLSLShaderParameter;
   public
   end;
 
@@ -217,10 +218,9 @@ end;
 
 function TGLCustomGLSLShader.DoUnApply(var rci: TRenderContextInfo): Boolean;
 begin
+  Result := False;
   if Assigned(FOnUnApply) then
-    FOnUnApply(Self, Result)
-  else
-    Result := False;
+    FOnUnApply(Self, Result);
   if not Result then
   begin
     glActiveTextureARB(GL_TEXTURE0_ARB); //suggested by Nelsol Chu

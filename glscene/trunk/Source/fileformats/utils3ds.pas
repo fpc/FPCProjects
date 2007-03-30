@@ -1,6 +1,7 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
+// 30/03/07 - DaStr - Added $I GLScene.inc
 // 24/03/07 - DaStr - Added explicit pointer dereferencing
 //                     (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
 // 09/03/07 - DaStr - Fixed a potential AV in two InitMeshObj procedures
@@ -38,6 +39,7 @@ unit Utils3DS;
 
 interface
 
+{$I GLScene.inc}
 {$R-}
 {$IFDEF FPC}
   {$MODE DELPHI}

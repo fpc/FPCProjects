@@ -6,6 +6,7 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>25/03/07 - LC - Added VBO support to TFGVertexIndexList, depends
@@ -153,6 +154,8 @@
 unit GLVectorFileObjects;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, OpenGL1x, VectorGeometry, SysUtils, GLMisc, GLTexture,
    GLMesh, VectorLists, PersistentClasses, Octree, GeometryBB,

@@ -1,13 +1,15 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-// GLMesh
-{: Raw Mesh support in GLScene.<p>
+{: GLMesh<p>
+
+   Raw Mesh support in GLScene.<p>
 
    This unit is for simple meshes and legacy support, GLVectorFileObjects
    implements more efficient (though more complex) mesh tools.<p> 
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>06/07/02 - EG - Mesh vertex lock only performed if context is active
@@ -25,6 +27,8 @@
 unit GLMesh;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLMisc, GLScene, VectorGeometry, OpenGL1x, GLTexture, GLState;
 

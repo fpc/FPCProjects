@@ -1,16 +1,22 @@
-// GLGeomObjects
-{: Geometric objects.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLGeomObjects<p>
+
+   Geometric objects.<p>
 
 	<b>History : </b><font size=-1><ul>
-
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>25/09/04 - Eric Pascual - Added AxisAlignedBoundingBox,AxisAlignedBoundingBoxUnscaled,AxisAlignedDimensionsUnscaled
       <li>29/11/03 - MF - Added shadow silhouette code for TGLCylinderBase et al.
-        Added GetTopRadius to facilitate silhouette.
+                          Added GetTopRadius to facilitate silhouette.
       <li>24/10/03 - NelC - Fixed TGLTorus texture coord. bug
       <li>21/07/03 - EG - Creation from GLObjects split
    </ul></font>
 }
 unit GLGeomObjects;
+
+{$I GLScene.inc}
 
 interface
 

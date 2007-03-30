@@ -17,12 +17,15 @@
    </ul><p>
 
    <b>Historique : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>21/12/01 - Egg - Creation
    </ul></font>
 }
 unit HeightTileFile;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes;
 

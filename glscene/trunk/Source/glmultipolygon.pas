@@ -6,6 +6,7 @@
    Object with support for complex polygons.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>18/11/04 - SG - Fixed TGLMultiPolygonBase.Destroy memory leak (Neil)
@@ -39,6 +40,8 @@
 unit GLMultiPolygon;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    Classes, OpenGL1x, Spline, VectorGeometry, VectorLists, PersistentClasses,

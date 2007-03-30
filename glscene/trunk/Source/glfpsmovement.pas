@@ -6,6 +6,7 @@
    FPS-like movement behaviour and manager.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>08/03/06 - ur - Fixed warnigs for Delphi 2006
       <li>02/12/04 - DB - Fixed memory leak, spotted by dikoe Kenguru
@@ -20,6 +21,8 @@ unit GLFPSMovement;
 
 interface
 
+{$I GLScene.inc}
+
 uses
      OpenGL1x, VectorGeometry, GLMisc, GLScene, GLVectorFileObjects, GLTexture,
      VectorLists, XCollection, Classes, GLGeomObjects, SysUtils,
@@ -31,6 +34,7 @@ type
      end;
 
      TCollisionState=class
+     public
        Position:TVector;
        Contact:TContactPoint;
        Time:Int64;

@@ -9,6 +9,7 @@
    materials/mirror demo before using this component.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>18/07/04 - Orlando - added custom shapes
@@ -25,6 +26,8 @@
 unit GLMirror;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, VectorGeometry, OpenGL1x, GLMisc, GLTexture;
 

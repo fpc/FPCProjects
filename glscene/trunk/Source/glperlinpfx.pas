@@ -6,6 +6,7 @@
    PFX particle effects revolving around the use of Perlin noise.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>15/04/04 - Mrqzzz - Fixed range check error suggested by Graham Kennedy
@@ -15,6 +16,8 @@
 unit GLPerlinPFX;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLParticleFX, GLGraphics;
 

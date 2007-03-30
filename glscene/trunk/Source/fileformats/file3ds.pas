@@ -1,6 +1,7 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
+// 30/03/07 - DaStr - Added $I GLScene.inc
 // 08/06/00 - Egg - LoadFromStream no longer free the stream it was passed,
 //                  further fixing of the streaming mechanism is needed
 //
@@ -25,6 +26,7 @@ unit File3DS;
 //   Dipl. Ing. Mike Lischke (public@lischke-online.de)
 //   Igor T. (GWin), (georgwin@chat.ru)
 
+{$I GLScene.inc}
 {$ALIGN ON}
 {$MINENUMSIZE 4}
 {$RANGECHECKS OFF}

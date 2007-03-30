@@ -1,13 +1,20 @@
-// GLTeapot
-{: Implements the standard Teapot, build from evaluators.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLTeapot<p>
+
+   Implements the standard Teapot, build from evaluators.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>21/07/03 - EG - Creation from GLObjects split
    </ul></font>
 }
 unit GLTeapot;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLScene, GLTexture, VectorGeometry, OpenGL1x, GLMisc;
 

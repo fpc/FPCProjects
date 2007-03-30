@@ -302,14 +302,14 @@ LazarusResources.Add('TVectorEditorForm','FORMDATA',[
   +'tton'#8'SBInvert'#4'Left'#3#194#0#6'Height'#2#23#3'Top'#2' '#5'Width'#2'?'#7
   +'Caption'#6#6'Invert'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#7'O'
   +'nClick'#7#13'SBInvertClick'#0#0#6'TLabel'#6'Label1'#4'Left'#2#8#6'Height'#2
-  +#14#3'Top'#2'H'#5'Width'#2'"'#7'Caption'#6#6'X axis'#5'Color'#7#6'clNone'#12
+  +#13#3'Top'#2'H'#5'Width'#2'%'#7'Caption'#6#6'X axis'#5'Color'#7#6'clNone'#12
   +'Font.CharSet'#7#12'ANSI_CHARSET'#10'Font.Color'#7#5'clRed'#11'Font.Height'#2
   +#243#9'Font.Name'#6#5'Arial'#10'Font.Style'#11#6'fsBold'#0#11'ParentColor'#8
-  +#0#0#6'TLabel'#6'Label2'#4'Left'#2#8#6'Height'#2#14#3'Top'#2'h'#5'Width'#2'"'
+  +#0#0#6'TLabel'#6'Label2'#4'Left'#2#8#6'Height'#2#13#3'Top'#2'h'#5'Width'#2'%'
   +#7'Caption'#6#6'Y axis'#5'Color'#7#6'clNone'#12'Font.CharSet'#7#12'ANSI_CHAR'
   +'SET'#10'Font.Color'#7#6'clLime'#11'Font.Height'#2#243#9'Font.Name'#6#5'Aria'
   +'l'#10'Font.Style'#11#6'fsBold'#0#11'ParentColor'#8#0#0#6'TLabel'#6'Label3'#4
-  +'Left'#2#8#6'Height'#2#14#3'Top'#3#136#0#5'Width'#2'"'#7'Caption'#6#6'Z axis'
+  +'Left'#2#8#6'Height'#2#13#3'Top'#3#136#0#5'Width'#2'$'#7'Caption'#6#6'Z axis'
   +#5'Color'#7#6'clNone'#12'Font.CharSet'#7#12'ANSI_CHARSET'#10'Font.Color'#7#6
   +'clBlue'#11'Font.Height'#2#243#9'Font.Name'#6#5'Arial'#10'Font.Style'#11#6'f'
   +'sBold'#0#11'ParentColor'#8#0#0#5'TEdit'#3'EDx'#4'Left'#2'8'#6'Height'#2#21#3

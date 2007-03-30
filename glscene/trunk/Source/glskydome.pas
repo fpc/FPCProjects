@@ -1,12 +1,13 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-//
 {: GLSkydome<p>
 
    Skydome object<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - DaStr - Moved all UNSAFE_TYPE, UNSAFE_CODE checks to GLSCene.inc
+      <li>25/03/07 - DaStr - Fixed compiler directives for Delphi5 compatibility
       <li>22/03/07 - DaStr - Removed "unsafe type/unsafe code" warnings
       <li>19/12/06 - DaStr - TSkyDomeStars.AddRandomStars() overloaded
       <li>29/06/06 - PvD - Fixed small bug to properly deal with polygon fill
@@ -31,7 +32,15 @@ unit GLSkydome;
 
 interface
 
-uses Classes, GLScene, GLMisc, GLTexture, VectorGeometry, GLGraphics, glCrossPlatform, VectorTypes;
+{$I GLSCene.inc}
+
+uses
+  // VCL
+  Classes,
+
+  // GLSCene
+  GLScene, GLMisc, GLTexture, VectorGeometry, GLGraphics, GLCrossPlatform,
+  VectorTypes;
 
 type
 
@@ -411,7 +420,6 @@ begin
    TSkyDomeBands(Collection).NotifyChange;
 end;
 
-{$WARN UNSAFE_CODE OFF}
 // BuildList
 //
 procedure TSkyDomeBand.BuildList(var rci : TRenderContextInfo);
@@ -485,7 +493,6 @@ begin
                  VectorLerp(StartColor.Color, StopColor.Color, t2));
    end;
 end;
-{$WARN UNSAFE_CODE ON}
 
 // ------------------
 // ------------------ TSkyDomeBands ------------------
@@ -643,7 +650,6 @@ begin
    end;
 end;
 
-{$WARN UNSAFE_CODE OFF}
 // BuildList
 //
 procedure TSkyDomeStars.BuildList(var rci : TRenderContextInfo; twinkle : Boolean);
@@ -712,7 +718,6 @@ begin
    // restore default GLScene AlphaFunc
    glAlphaFunc(GL_GREATER, 0);
 end;
-{$WARN UNSAFE_CODE ON}
 
 // AddRandomStars
 //
@@ -1156,7 +1161,6 @@ begin
    VectorLerp(Result, FCurSunColor, ClampValue(exp(FCurSunSkyTurbid*cosGamma*(1+t))*1.1, 0, 1), Result);
 end;
 
-{$WARN UNSAFE_CODE OFF}
 // SetSunElevation
 //
 procedure TGLEarthSkyDome.RenderDome;
@@ -1286,7 +1290,6 @@ begin
    FreeMem(sinTable);
    FreeMem(cosTable);
 end;
-{$WARN UNSAFE_CODE ON}
 
 //-------------------------------------------------------------
 //-------------------------------------------------------------
