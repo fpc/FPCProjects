@@ -75,7 +75,7 @@ type
          procedure  GenerateNormalMap(heightData : THeightData; normalMap : TGLBitmap32; scale : Single);
          procedure  TrimTextureCache(MaxTextureCount:integer);
          //procedure  TileTextureCoordinates(heightData : THeightData; TextureScale:TTexPoint; TextureOffset:TTexPoint);
-         procedure UpdateData(heightData : THeightData); override;
+         procedure PreparingData(heightData : THeightData); override;
 	   published
 	      { Published Declarations }
          property BumpmapLibrary : TGLMaterialLibrary read FBumpmapLibrary write SetBumpmapLibrary;
@@ -194,9 +194,9 @@ begin
   end;
 end;
 
-// UpdateData
+// PreparingData
 //
-procedure TGLBumpmapHDS.UpdateData(heightData : THeightData);
+procedure TGLBumpmapHDS.PreparingData(heightData : THeightData);
 var HD    : THeightData;
     libMat: TGLLibMaterial;
     bmp32 : TGLBitmap32;
@@ -268,7 +268,7 @@ begin
     for x:=0 to mapSize-1 do begin
       px:=x*subsampling;
       py:=y*subsampling;
-      vec:=HD.NormalNode(px,py,ScaleVec);
+      vec:=HD.NormalAtNode(px,py,ScaleVec);
       nmRow[x].r:=round(128+127*vec[0]);      //nmRow[x].r:=0;         //Red
       nmRow[x].g:=round(128+127*vec[1]);      //nmRow[x].g:=0;         //Green
       nmRow[x].b:=round(128+127*vec[2]);      //nmRow[x].b:=0;         //Blue

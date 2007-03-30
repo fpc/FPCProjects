@@ -1,6 +1,7 @@
 // GLShadowHDS
 {: Implements an HDS that automatically generates a terrain lightmap texture.<p>
 	<b>History : </b><font size=-1><ul>
+      <li>22/03/07 - LIN - Thread-safe. (Now works with TGLAsyncHDS)
       <li>02/03/07 - LIN - Now works with InfiniteWrap terrain
       <li>14/02/07 - LIN - Creation
 	</ul></font>
@@ -14,6 +15,9 @@
           a bit jagged, due to the crude Bresenham line algorythm that was used.
           You can hide this by increasing SoftRange though.
         5:Bug If light angle is 0,0, only the edge of the texture is generated.
+        6:At some light angles, rounding errors cause various artifacts:
+         (Black tile edges / slight mis-alignments /etc.)
+        6:Applying materials ocasionally causes AV's
 
 PS. The RayCastShadowHeight function returns the height of the shadow at a point
 on the terrain. This, and the LightVector may come in handy for implementing shadow volumes?
@@ -48,12 +52,12 @@ type
          FOnNewTilePrepared : TNewTilePreparedEvent;
          //FSubSampling : Integer;
          FMaxTextures : integer;
-         Uno:TCriticalSection;
          Step :TVector3f;
          FScanDistance:integer;
          FSoftRange:cardinal;
          FDiffuse:single;
          FAmbient:single;
+         OwnerHDS:THeightDataSource; //The owner of the tile
 
 	   protected
 	      { Protected Declarations }
@@ -66,6 +70,7 @@ type
          //procedure SetSubSampling(const val : Integer);
 
          procedure Trim(MaxTextureCount:integer);
+         function  FindUnusedMaterial:TGLLibMaterial;
          function  CalcStep:TAffineVector;
          function  CalcScale:TAffineVector;
          function  WrapDist(Lx,Ly:single):integer;
@@ -76,15 +81,21 @@ type
 	      { Public Declarations }
 	        constructor Create(AOwner: TComponent); override;
          destructor  Destroy; override;
-         procedure   Release(aHeightData : THeightData); override;
-         procedure   TrimTextureCache(MaxTextureCount:integer);
+         //procedure   Release(aHeightData : THeightData); override;
+         procedure   TrimTextureCache(MaxTextureCount:integer=0);
          procedure   Notification(AComponent: TComponent; Operation: TOperation); override;
-         procedure   UpdateData(heightData : THeightData); override;
+
+         procedure   BeforePreparingData(heightData : THeightData); override;
+         procedure   PreparingData(heightData : THeightData); override;
+         procedure   AfterPreparingData(heightData : THeightData); override;
+
          procedure   GenerateShadowMap(heightData:THeightData; ShadowMap:TGLBitmap32; scale:Single);
          function    RayCastShadowHeight(HD:THeightData;localX,localY:single):single;  overload;
          procedure   RayCastLine(HeightData:THeightData;Lx,Ly:single;ShadowMap:TGLBitmap32);
          function    Shade(HeightData:THeightData;x,y:integer;ShadowHeight,TerrainHeight:single):byte;
+
 	   published
+
 	      { Published Declarations }
          property ShadowmapLibrary : TGLMaterialLibrary read FShadowmapLibrary write SetShadowmapLibrary;
          property OnNewTilePrepared : TNewTilePreparedEvent read FOnNewTilePrepared write FOnNewTilePrepared;
@@ -113,16 +124,16 @@ uses SysUtils, OpenGL1x, GLUtils, VectorLists;
 constructor TGLShadowHDS.Create(AOwner: TComponent);
 begin
  	inherited Create(AOwner);
-  FLightVector := TGLCoordinates.CreateInitialized(Self, VectorMake(1, 1,-10));
+  FLightVector := TGLCoordinates.CreateInitialized(Self, VectorMake(1, 0,-1));
   FLightVector.Style:=csVector; //csPoint;
   FScale := TGLCoordinates.CreateInitialized(Self, VectorMake(1,1,1));
   FScale.Style:=csVector; //csPoint;
-  Uno:=TCriticalSection.Create;
   FScanDistance:=64;
   FAmbient:=0.25;
   FDiffuse:=0.75;
   FSoftRange:=1;
   //FSubSampling:=1;
+  OwnerHDS:=self; //Until told otherwise, assume that ShadowHDS IS the tile owner.
 end;
 
 // Destroy
@@ -148,29 +159,34 @@ end;
 
 // Release
 //
+{
 procedure TGLShadowHDS.Release(aHeightData : THeightData);
 var libMat : TGLLibMaterial;
 begin
+  HeightDataSource.Data.LockList;
   libMat:=aHeightData.LibMaterial;
   aHeightData.MaterialName:='';
   if (FMaxTextures>0)and(assigned(LibMat))and(libMat.IsUsed=false)
     then LibMat.free;
   inherited;
+  HeightDataSource.Data.UnlockList;
 end;
+}
 
 // TrimTextureCache
 //
 // This will repeatedly delete the oldest unused texture from the TGLMaterialLibrary,
 // until the texture count drops to MaxTextureCount.
 // DONT use this if you used THeightData.MaterialName to link your terrain textures.
-// Either use with THeightData.LibMaterial, or manually delete unused Normal-Map textures.
+// Either use with THeightData.LibMaterial, or manually delete unused LightMap textures.
 //
 procedure TGLShadowHDS.TrimTextureCache(MaxTextureCount:integer);  //Thread-safe Version
 begin
-  if assigned(self) then begin
-    uno.Acquire;
-      Trim(MaxTextureCount);
-    uno.Release;
+  If(not assigned(self))or(not assigned(OwnerHDS)) then exit;
+  with OwnerHDS.Data.LockList do try
+    Trim(MaxTextureCount);
+  finally
+    OwnerHDS.Data.UnlockList;
   end;
 end;
 
@@ -182,14 +198,37 @@ var matLib: TGLMaterialLibrary;
 begin
   matLib:=FShadowmapLibrary;
   if matLib<>nil then begin
+    //---------------------------------
+    //--Trim unused textures, until MaxTextureCount is reached--
     cnt:=matlib.Materials.Count;
     i:=0;
     while (i<cnt)and(cnt>=MaxTextureCount) do begin
       libMat:=matlib.Materials[i];
-      if libMat.IsUsed then i:=i+1
-      else libmat.Free;
-      cnt:=matlib.Materials.Count;
+      if libMat.IsUsed then inc(i)
+      else begin
+        libmat.Free;
+        dec(cnt);  //cnt:=matlib.Materials.Count;
+      end;
     end;
+    //----------------------------------------------------------
+  end;
+end;
+
+//FindUnusedMaterial
+//
+// Useful for recycling unused textures, instead of freeing and creating a new one.
+function TGLShadowHDS.FindUnusedMaterial:TGLLibMaterial;
+var matLib: TGLMaterialLibrary;
+    i:integer;
+    cnt:integer;
+begin
+  result:=nil;
+  matLib:=FShadowmapLibrary;
+  if matLib<>nil then begin
+    cnt:=matlib.Materials.Count;
+    i:=0;
+    while(i<cnt)and(matlib.Materials[i].IsUsed) do inc(i);
+    if (i<cnt) then result:=matlib.Materials[i];
   end;
 end;
 
@@ -197,9 +236,11 @@ end;
 //
 procedure TGLShadowHDS.SetLightVector(AValue: TGLCoordinates);
 begin
-  FLightVector.Assign(AValue);
-  CalcStep;
-  MarkDirty;
+  With OwnerHDS.Data.LockList do try
+    FLightVector.Assign(AValue);
+    CalcStep;
+    //MarkDirty;
+  finally OwnerHDS.Data.UnlockList; end;
 end;
 
 // CalcStep
@@ -208,11 +249,18 @@ function TGLShadowHDS.CalcStep:TAffineVector;
 var L:single;
     v:TAffineVector;
 begin
-  MakeVector(v,FLightVector.X/FScale.X,FLightVector.Y/FScale.Y,FLightVector.Z/FScale.Z);
+  MakeVector(v,FLightVector.X/FScale.X,FLightVector.Y/FScale.Y,256*FLightVector.Z/FScale.Z);
   L:=MaxFloat(abs(v[0]),abs(v[1]));
   Step:=VectorScale(v,1/L);
-  step[0]:=trunc(step[0]*4096)/4096;  //round down the fraction now, to prevent rounding errors later
-  step[1]:=trunc(step[1]*4096)/4096;  //round down the fraction now, to prevent rounding errors later
+  step[0]:=trunc(step[0]*16384)/16384;  //round down the fraction now, to prevent rounding errors later
+  step[1]:=trunc(step[1]*16384)/16384;  //round down the fraction now, to prevent rounding errors later
+
+  if((FLightVector.X=0)and(FLightVector.Y=0))then begin
+    step[0]:=1;
+    step[1]:=0;
+    step[2]:=-maxint;
+  end;
+
   result:=step;
 end;
 
@@ -220,42 +268,125 @@ end;
 //
 function TGLShadowHDS.CalcScale:TAffineVector;
 begin
-  FScaleVec[0]:=FScale.X;
-  FScaleVec[1]:=FScale.Y;
+  FScaleVec[0]:=FScale.X*256;
+  FScaleVec[1]:=FScale.Y*256;
   FScaleVec[2]:=FScale.Z;
   result:=FScaleVec;
 end;
 
-//  UpdateData
+// BeforePreparingData
+// Prepare a blank texture for this tile's lightmap, from the main thread
 //
-procedure TGLShadowHDS.UpdateData(heightData : THeightData);
+procedure TGLShadowHDS.BeforePreparingData(heightData : THeightData);
+var HD    : THeightData;
+    libMat: TGLLibMaterial;
+    MatName:string;
+begin
+  if not assigned(FShadowmapLibrary) then exit;
+  HD:=HeightData;
+  OwnerHDS:=HD.Owner;
+  with OwnerHDS.Data.LockList do try
+    Trim(FMaxTextures);
+    MatName:='ShadowHDS_x'+IntToStr(HD.XLeft)+'y'+IntToStr(HD.YTop)+'.'; //name contains xy coordinates of the current tile
+
+    libMat:=FShadowmapLibrary.Materials.Add;
+    //---------Recycle Textures---------
+    //libMat:=self.FindUnusedMaterial;                  //look for an unused texture, to recycle
+    //if libMat=nil
+    //  then libMat:=FShadowmapLibrary.Materials.Add    //if no free textures were found, get a new one
+    //  else libMat.Material.Texture.Enabled:=false;    //recycle the unused texture
+    //----------------------------------
+
+    libMat.Name:=MatName;
+    //HD.MaterialName:=LibMat.Name;
+    HD.LibMaterial:=LibMat;  //attach texture to current tile
+  finally OwnerHDS.Data.UnlockList; end;
+end;
+
+
+// Calculate the lightmap from the HD thread, using the attached blank texture
+//
+procedure TGLShadowHDS.PreparingData(heightData : THeightData);
 var HD    : THeightData;
     libMat: TGLLibMaterial;
     bmp32 : TGLBitmap32;
-    MatName:string;
-    OldLibMat:TGLLibMaterial;
 begin
-  if not assigned (FShadowmapLibrary) then exit;
-  //--Generate Normal Map for tile--
   HD:=HeightData;
-  MatName:='ShadowHDS_x'+IntToStr(HD.XLeft)+'y'+IntToStr(HD.YTop)+'.'; //name contains xy coordinates of the current tile
-  Uno.Acquire;
-  LibMat:=FShadowmapLibrary.Materials.GetLibMaterialByName(MatName);   //Check if Tile Texture already exists
-  //LibMat:=nil;
-  //HD.MaterialName:='';
-  if LibMat=nil then begin
-    if (FMaxTextures>0)and(HD.Thread=nil)  //Dont trim the cache from a sub-thread;
-      then TrimTextureCache(FMaxTextures); //Trim unused textures from the material library
-    //Generate new ShadowMap texture for this tile
-    libMat:=FShadowmapLibrary.Materials.Add;
-    libMat.Name:=MatName;
+  libMat:=HD.LibMaterial;
+  Assert(Assigned(HD));
+  Assert(Assigned(libMat));
+  Assert(libMat.Material.Texture.Disabled);
+
+  //With heightData.Owner.Data.LockList do try //lock out other threads
     //Transfer tile texture coordinates to generated texture
     libMat.TextureScale.X :=HD.TextureCoordinatesScale.S;
     libMat.TextureScale.Y :=HD.TextureCoordinatesScale.T;
     libMat.TextureOffset.X:=HD.TextureCoordinatesOffset.S;
     libMat.TextureOffset.Y:=HD.TextureCoordinatesOffset.T;
     //------------------------------------------------------
-    //--Set up new Normalmap texture for the current tile--
+    //--Set up new Lightmap texture for the current tile--
+    libMat.Material.MaterialOptions:=[moNoLighting];
+    with libMat.Material.Texture do begin
+      ImageClassName:=TGLBlankImage.ClassName;
+      MinFilter:=miNearestMipmapNearest;
+      MagFilter:=maNearest;
+      TextureMode:=tmReplace;
+      TextureWrap:=twNone;
+      TextureFormat:=tfLuminance;
+      bmp32:=(Image as TGLBlankImage).GetBitmap32(GL_TEXTURE_2D);
+      GenerateShadowMap(HD , bmp32, 1);
+      //Enabled:=True;
+      with HD.Owner.Data.LockList do try Enabled:=True;
+      finally HD.Owner.Data.UnlockList; end;
+    end;
+  //finally HD.Owner.Data.UnlockList; end;
+  //----------------------------------------------------
+end;
+
+procedure TGLShadowHDS.AfterPreparingData(heightData : THeightData);
+begin
+  if Assigned(FOnNewTilePrepared) then FOnNewTilePrepared(Self,heightData,heightData.LibMaterial);
+end;
+
+
+{
+//  PreparingData
+//
+procedure TGLShadowHDS.PreparingData(heightData : THeightData);
+var HD    : THeightData;
+    libMat: TGLLibMaterial;
+    bmp32 : TGLBitmap32;
+    MatName:string;
+    Hold:TGLUpdateAbleObject;
+    lst:TList;
+begin
+
+  if not assigned (FShadowmapLibrary) then exit;
+  //--Generate Shadow Map for tile--
+  lst:=HeightDataSource.Data.LockList;   //lock out other threads
+  //Uno.Acquire;
+  HD:=HeightData;
+  MatName:='ShadowHDS_x'+IntToStr(HD.XLeft)+'y'+IntToStr(HD.YTop)+'.'; //name contains xy coordinates of the current tile
+  Hold:=TGLUpdateAbleObject.Create(self);
+
+  LibMat:=FShadowmapLibrary.Materials.GetLibMaterialByName(MatName);   //Check if Tile Texture already exists
+  //if assigned(libmat) then LibMat.Name:='Dirty';
+
+  //LibMat:=nil;
+  if LibMat=nil then begin
+    if (FMaxTextures>0)and(HD.Thread=nil)  //Dont trim the cache from a sub-thread;
+      then TrimTextureCache(FMaxTextures); //Trim unused textures from the material library
+    //Generate new ShadowMap texture for this tile
+    libMat:=FShadowmapLibrary.Materials.Add;
+    libMat.RegisterUser(Hold);  //hold onto the texture, so another thread doesnt delete it
+
+    //Transfer tile texture coordinates to generated texture
+    libMat.TextureScale.X :=HD.TextureCoordinatesScale.S;
+    libMat.TextureScale.Y :=HD.TextureCoordinatesScale.T;
+    libMat.TextureOffset.X:=HD.TextureCoordinatesOffset.S;
+    libMat.TextureOffset.Y:=HD.TextureCoordinatesOffset.T;
+    //------------------------------------------------------
+    //--Set up new Lightmap texture for the current tile--
     libMat.Material.MaterialOptions:=[moNoLighting];
     with libMat.Material.Texture do begin
       ImageClassName:=TGLBlankImage.ClassName;
@@ -272,14 +403,18 @@ begin
       bmp32:=(Image as TGLBlankImage).GetBitmap32(GL_TEXTURE_2D);
       GenerateShadowMap(HD , bmp32, 1);
     end;
+    libMat.Name:=MatName;
     //----------------------------------------------------
   end;
   //HD.MaterialName:=LibMat.Name;
   HD.LibMaterial:=LibMat;  //attach texture to current tile
+  libMat.UnregisterUser(Hold);
+  Hold.Free;
+  //Uno.Release;
+  HeightDataSource.Data.UnlockList;
   if Assigned(FOnNewTilePrepared) then FOnNewTilePrepared(Self,HD,libMat);
-  Uno.Release;
 end;
-
+}
 
 procedure TGLShadowHDS.GenerateShadowMap(heightData:THeightData; ShadowMap:TGLBitmap32; scale:Single);
 var HD : THeightData;
@@ -329,18 +464,20 @@ var tmpHD:THeightData;
     dif:single;
     ShadowDif:single;
     startH:single;
+    jump:integer;
 begin
   lx:=ClampValue(LocalX,0,FTileSize);
-  ly:=ClampValue(LocalY,0,FTileSize); 
+  ly:=ClampValue(LocalY,0,FTileSize);
   StartH:=HD.InterpolatedHeight(lx,ly);
   tmpHD:=HD;
   ctr:=0;
   ShadowDif:=0;
   rh:=StartH;
+  jump:=1;
   while (ctr<FScanDistance)and(tmpHD.DataState<>hdsNone) do begin
-    lx:=lx-step[0];
-    ly:=ly-step[1];
-    rh:=rh-step[2];
+    lx:=lx-step[0]*jump;
+    ly:=ly-step[1]*jump;
+    rh:=rh-step[2]*jump;
     //--jump to new tile--
     if (lx<0)or(lx>=FTileSize)or(ly<0)or(ly>=FTileSize) then begin
       LocalToWorld(lx,ly,tmpHD,wx,wy); //if our local coordinates are off the tile,
@@ -349,6 +486,9 @@ begin
       h:=tmpHD.InterpolatedHeight(lx,ly);
       dif:=h-rh;
       ShadowDif:=MaxFloat(dif,ShadowDif);
+      if ShadowDif>(-Step[2])+FSoftRange   //if ray is more than 1 steps above the surface
+        then jump:=2                       //then take 2 steps at a time
+        else jump:=1;
       inc(ctr);
     end;
   end;
@@ -382,6 +522,7 @@ var HDS:THeightDataSource;
     size:integer;
 begin
   //wrap terrain
+  HDS:=self.HeightDataSource;
   if wx>=HDS.Width then wx:=wx-HDS.Width;
   if wx<0 then wx:=wx+HDS.Width;
   if wy>=HDS.Height then wy:=wy-HDS.Height;
@@ -503,7 +644,7 @@ var HD:THeightData;
     Light:single;
 begin
   HD:=HeightData;
-  nv:=HD.NormalNode(x,y,FScaleVec);
+  nv:=HD.NormalAtNode(x,y,FScaleVec);
   //--Ambient Light from blue sky (directly up)--
   ambientLight:=nv[2];
   //--Shadows/Direct light/Soft shadow edges--
@@ -535,35 +676,42 @@ end;
 //
 procedure TGLShadowHDS.SetScale(AValue: TGLCoordinates);
 begin
-  FScale.Assign(AValue);
-  CalcScale;
-  MarkDirty;
+  with OwnerHDS.Data.LockList do try
+    FScale.Assign(AValue);
+  //CalcScale;
+  //MarkDirty;
+  finally OwnerHDS.Data.UnlockList; end;
 end;
 
 //SetSoftRange
 //
 procedure TGLShadowHDS.SetSoftRange(AValue:Cardinal);
 begin
-  FSoftRange:=MaxInteger(AValue,1);
-  MarkDirty;
+  with OwnerHDS.Data.LockList do try
+    FSoftRange:=MaxInteger(AValue,1);
+    //MarkDirty;
+  finally OwnerHDS.Data.UnlockList; end;
 end;
 
 //SetDiffuse
 //
 procedure TGLShadowHDS.SetDiffuse(AValue: Single);
 begin
-  FDiffuse:=ClampValue(AValue,0.001,1);
-  MarkDirty;
+  with OwnerHDS.Data.LockList do try
+    FDiffuse:=ClampValue(AValue,0.001,1);
+    //MarkDirty;
+  finally OwnerHDS.Data.UnlockList; end;
 end;
 
 //SetAmbient
 //
 procedure TGLShadowHDS.SetAmbient(AValue: Single);
 begin
-  FAmbient:=ClampValue(AValue,0.001,1);
-  MarkDirty;
+  with OwnerHDS.Data.LockList do try
+    FAmbient:=ClampValue(AValue,0.001,1);
+    //MarkDirty;
+  finally OwnerHDS.Data.UnlockList; end;
 end;
-
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

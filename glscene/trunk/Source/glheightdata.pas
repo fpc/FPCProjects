@@ -1,6 +1,4 @@
-//
-// This unit is part of the GLScene Project, http://glscene.org
-//
+
 // GLHeightData
 {: Classes for height data access.<p>
 
@@ -15,6 +13,10 @@
    holds the data a renderer needs.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>27/03/07 - LIN- Data is now prepared in 3 stages, to prevent multi-threading issues:
+                          -BeforePreparingData : (Main Thread) - Create empty data structures and textures here.
+                          -PreparingData       : (Sub-Thread)  - Fill in the empty structures (MUST be thread safe)
+                          -AfterPreparingData  : (Main Thread) - Perform any cleanup, which cant be done from a sub-thread
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -108,7 +110,7 @@ type
          FMaxThreads : Integer;
          FMaxPoolSize : Integer;
          FHeightDataClass : THeightDataClass;
-         FReleaseLatency : TDateTime;
+         //FReleaseLatency : TDateTime;      //Not used anymore???
          FDefaultHeight : Single;
 	   protected
 	      { Protected Declarations }
@@ -119,20 +121,11 @@ type
          {: Adjust this property in you subclasses. }
          property HeightDataClass : THeightDataClass read FHeightDataClass write FHeightDataClass;
 
-         {: Access to currently pooled THeightData objects. }
-         property Data : TThreadList read FData;
-
          {: Looks up the list and returns the matching THeightData, if any. }
          function FindMatchInList(xLeft, yTop, size : Integer;
                                   dataType : THeightDataType) : THeightData;
 	   public
 	      { Public Declarations }
-         {: When true, the tile is ready for use by the TerrainRenderer as soon as this
-            component's StartPreparingData procedure completes. This flag is automatically
-            set to false by a calling THeightDataSourceFilter, to allow the caller to make
-            its own changes, before the tile is marked ready for use.
-            Defaults to TRUE.}
-         ReadyWhenDone : boolean;
 
 	      constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
@@ -141,13 +134,16 @@ type
          procedure RemoveFreeNotification(AComponent: TComponent);
 {$endif}*)
 
+         {: Access to currently pooled THeightData objects, and Thread locking }
+         property Data : TThreadList read FData;
+
          {: Empties the Data list, terminating thread if necessary.<p>
             If some THeightData are hdsInUse, triggers an exception and does
             nothing. }
          procedure Clear;
          {: Removes less used TDataHeight objects from the pool.<p>
             Only removes objects whose state is hdsReady and UseCounter is zero,
-            starting from the end of the list untill total data size gets below
+            starting from the end of the list until total data size gets below
             MaxPoolSize (or nothing can be removed). }
          procedure CleanUp;
 
@@ -162,6 +158,10 @@ type
             See GetData for details. }
          function PreLoad(xLeft, yTop, size : Integer;
                           dataType : THeightDataType) : THeightData; virtual;
+
+         {: Replacing dirty tiles.}
+         procedure PreloadReplacement(aHeightData : THeightData);
+
          {: Notification that the data is no longer used by the renderer.<p>
             Default behaviour is just to change DataState to hdsReady (ie. return
             the data to the pool) }
@@ -187,7 +187,7 @@ type
          {: Maximum size of TDataHeight pool in bytes.<p>
             The pool (cache) can actually get larger if more data than the pool
             can accomodate is used, but as soon as data gets released and returns
-            to the pool, TDataHeight will be freed untill total pool size gets
+            to the pool, TDataHeight will be freed until total pool size gets
             below this figure.<br>
             The pool manager frees TDataHeight objects who haven't been requested
             for the longest time first.<p>
@@ -204,6 +204,9 @@ type
          procedure ThreadIsIdle;   virtual;
 
 
+         {: This is called BEFORE StartPreparing Data, but always from the main thread.}
+         procedure BeforePreparingData(heightData : THeightData); virtual;
+
          {: Request to start preparing data.<p>
             If your subclass is thread-enabled, this is here that you'll create
             your thread and fire it (don't forget the requirements), if not,
@@ -212,6 +215,10 @@ type
             hdsReady when you're done (DataState will be hdsPreparing when this
             method will be invoked). }
          procedure StartPreparingData(heightData : THeightData); virtual;
+
+         {: This is called After "StartPreparingData", but always from the main thread.}
+         procedure AfterPreparingData(heightData : THeightData); virtual;
+
          procedure TextureCoordinates(heightData:THeightData;Stretch:boolean=false);
 	end;
 
@@ -253,7 +260,7 @@ type
       from the THeightDataSource with the appropriate format.<p>
       Though this class can be instantiated, you will usually prefer to subclass
       it in real-world cases, f.i. to add texturing data. }
-	//THeightData = class (TObject)
+	 //THeightData = class (TObject)
   THeightData = class (TGLUpdateAbleObject)
 	   private
 	      { Private Declarations }
@@ -278,7 +285,6 @@ type
          FObjectTag : TObject;
          FTag, FTag2 : Integer;
          FOnDestroy : TNotifyEvent;
-         FReleaseTimeStamp : TDateTime;
          FDirty : Boolean;
          FHeightMin, FHeightMax : Single;
 
@@ -305,6 +311,9 @@ type
          function  GetHeightMax : Single;
 
 	   public
+         OldVersion :THeightData; //previous version of this tile
+         NewVersion :THeightData; //the replacement tile
+         DontUse :boolean;        //Tells TerrainRenderer which version to use
 
 	      { Public Declarations }
 
@@ -321,7 +330,7 @@ type
          property OnDestroy : TNotifyEvent read FOnDestroy write FOnDestroy;
 
          {: Counter for use registration.<p>
-            A THeightData is not returned to the pool untill this counter reaches
+            A THeightData is not returned to the pool until this counter reaches
             a value of zero. }
          property UseCounter : Integer read FUseCounter;
          {: Increments UseCounter.<p>
@@ -354,7 +363,7 @@ type
          {: Size of the data square, in data units. }
          property Size : Integer read FSize;
          {: True if the data is dirty (ie. no longer up-to-date). }
-         property Dirty : Boolean read FDirty;
+         property Dirty : Boolean read FDirty write FDirty;
 
          {: Memory size of the raw data in bytes. }
          property DataSize : Integer read FDataSize;
@@ -421,7 +430,7 @@ type
          function Normal(x, y : Integer; const scale : TAffineVector) : TAffineVector; virtual;
 
          {: Calculates and returns the normal for cell x, y.(between vertexes) <p>}
-         function NormalNode(x, y : Integer; const scale : TAffineVector) : TAffineVector; virtual;
+         function NormalAtNode(x, y : Integer; const scale : TAffineVector) : TAffineVector; virtual;
 
          {: Returns True if the data tile overlaps the area. }
          function OverlapsArea(const area : TGLRect) : Boolean;
@@ -588,7 +597,7 @@ type
    The THeightData objects are then cached by THIS component, AFTER you have made your changes.
    This eliminates the need to copy and release the THeightData object from the Source HDS's cache,
    before linking your texture.  See the new version of TGLBumpmapHDS for an example. (LIN)
-   To create your own HDSFilters, Derive from this component, and override the UpdateData procedure.
+   To create your own HDSFilters, Derive from this component, and override the PreparingData procedure.
    }
   THeightDataSourceFilter = Class(THeightDataSource)
 	   private
@@ -598,17 +607,17 @@ type
         FActive:Boolean;
 	   protected
 	      { Protected Declarations }
-        {: UpdateData:  <p>
+        {: PreparingData:  <p>
            Override this function in your filter subclasses, to make any
            updates/changes to HeightData, before it goes into the cache.
            Make sure any code in this function is thread-safe, in case TAsyncHDS was used.}
-         procedure UpdateData(heightData : THeightData); virtual; abstract;
-         //procedure AfterPreparingData(heightData : THeightData); override;
-         procedure SetHDS(const val : THeightDataSource);
+         procedure PreparingData(heightData : THeightData); virtual; abstract;
+         procedure SetHDS(val : THeightDataSource);
 	   public
 	      { Public Declarations }
 	        constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
+         procedure Release(aHeightData : THeightData); override;
          procedure StartPreparingData(heightData : THeightData); override;
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
          function  Width:integer;  override;
@@ -648,6 +657,7 @@ type
    THeightDataSourceThread = class (TThread)
       FOwner : THeightDataSource;
       procedure Execute; override;
+      function  WaitForTile(HD:THeightData;seconds:integer):boolean;
       procedure HDSIdle;
    end;
 
@@ -663,6 +673,7 @@ begin
   while not Terminated do begin
     max:=FOwner.MaxThreads;
     lst:=FOwner.FData.LockList;
+
     //--count active threads--
     i:=0;TdCtr:=0;
     while(i<lst.Count)and(TdCtr<max) do begin
@@ -670,24 +681,37 @@ begin
       inc(i);
     end;
     //------------------------
-    //--Find the first queued tile, and Start preparing it--
+
+    //--Find the queued tiles, and Start preparing them--
     i:=lst.Count;
-    if TdCtr<max then begin
-      while(i>0)and(TdCtr<max) do begin
-        dec(i);
-        HD:=THeightData(lst.Items[i]);
-        if HD.DataState=hdsQueued then begin
-          FOwner.StartPreparingData(HD);
-          inc(TdCtr);
-        end;
+    while((i>0)and(TdCtr<max)) do begin
+      dec(i);
+      HD:=THeightData(lst.Items[i]);
+      if HD.DataState=hdsQueued then begin
+        FOwner.StartPreparingData(HD);  //prepare
+        inc(TdCtr);
       end;
     end;
-    //------------------------------------------------------
+    //---------------------------------------------------
+
     FOwner.FData.UnlockList;
-    if i=0 then sleep(10) //if no queued tiles were found then sleep longer
-           else sleep(0);
-    if(i=0)and(TdCtr=0) then synchronize(HDSIdle);
+    if(TdCtr=0) then synchronize(HDSIdle);
+    if(TdCtr=0) then sleep(10) else sleep(0);  //sleep longer if no Queued tiles were found
   end;
+end;
+
+//WaitForTile
+//
+//When Threading, wait a specified time, for the tile to finish preparing
+function THeightDataSourceThread.WaitForTile(HD:THeightData;seconds:integer):boolean;
+var i:integer;
+    eTime:TDateTime;
+begin
+  etime:=now+(1000*seconds);
+  while(HD.FThread<>nil)and(now<eTime) do begin
+    sleep(0);
+  end;
+  result:=(HD.FThread=nil); //true if the thread has finished
 end;
 
 //HDSIdle
@@ -711,12 +735,11 @@ var
    i : Integer;
 begin
 	inherited Create(AOwner);
-   ReadyWhenDone:=true;
    FHeightDataClass:=THeightData;
    FData:=TThreadList.Create;
    for i:=0 to High(FDataHash) do
       FDataHash[i]:=TList.Create;
-   FReleaseLatency:=15/(3600*24);
+   //FReleaseLatency:=15/(3600*24);
    FThread:=THeightDataSourceThread.Create(True);
    FThread.FreeOnTerminate:=False;
    THeightDataSourceThread(FThread).FOwner:=Self;
@@ -731,8 +754,8 @@ var
 begin
 	inherited Destroy;
    if assigned(FThread) then begin
-     FThread.Resume;            //
      FThread.Terminate;
+     FThread.Resume;
      FThread.WaitFor;
      FThread.Free;
    end;
@@ -784,6 +807,7 @@ end;
 
 // FindMatchInList
 //
+
 function THeightDataSource.FindMatchInList(xLeft, yTop, size : Integer;
                                            dataType : THeightDataType) : THeightData;
 var
@@ -795,7 +819,9 @@ begin
    try
       with FDataHash[HashKey(xLeft, yTop)] do for i:=0 to Count-1 do begin
          hd:=THeightData(Items[i]);
-         if (not hd.Dirty) and (hd.XLeft=xLeft) and (hd.YTop=yTop) and (hd.Size=size) and (hd.DataType=dataType) then begin
+         //if (not hd.Dirty) and (hd.XLeft=xLeft) and (hd.YTop=yTop) and (hd.Size=size) and (hd.DataType=dataType) then begin
+         if (hd.XLeft=xLeft) and (hd.YTop=yTop) and (hd.Size=size) and (hd.DataType=dataType) and (hd.DontUse=false)
+          then begin
             Result:=hd;
             Break;
          end;
@@ -815,7 +841,7 @@ begin
       Result:=PreLoad(xLeft, yTop, size, dataType)
    else with FData.LockList do begin
       try
-         Move(IndexOf(Result), 0);
+         Move(IndexOf(Result), 0);  //Moves item to the beginning of the list.
       finally
          FData.UnlockList;
       end;
@@ -832,14 +858,41 @@ begin
    Result:=HeightDataClass.Create(Self, xLeft, yTop, size, dataType);
    with FData.LockList do try
       Add(Result);
+      BeforePreparingData(Result);
       FDataHash[HashKey(xLeft, yTop)].Add(Result);
    finally
       FData.UnlockList;
    end;
+
+   //-- When NOT using Threads, fully prepare the tile immediately--
    if MaxThreads=0 then begin
-      StartPreparingData(Result);
-      //AfterPreparingData(Result);
+     StartPreparingData(Result);
+     AfterPreparingData(Result);
    end;
+   //---------------------------------------------------------------
+end;
+
+//PreloadReplacement
+//
+// When Multi-threading, this queues a replacement for a dirty tile
+// The Terrain renderer will continue to use the dirty tile, until the replacement is complete
+procedure THeightDataSource.PreloadReplacement(aHeightData : THeightData);
+var HD:THeightData;
+    NewHD:THeightData;
+begin
+  Assert(MaxThreads>0);
+  HD:=aHeightData;
+  NewHD:=HeightDataClass.Create(Self, hd.xLeft, hd.yTop, hd.size, hd.dataType);
+  with FData.LockList do try
+      Add(NewHD);
+      NewHD.OldVersion:=HD;          //link
+      HD.NewVersion:=NewHD;          //link
+      NewHD.DontUse:=true;
+      BeforePreparingData(NewHD);
+      FDataHash[HashKey(hd.xLeft, hd.yTop)].Add(NewHD);
+  finally
+    FData.UnlockList;
+  end;
 end;
 
 // Release
@@ -898,7 +951,8 @@ var
    packList : Boolean;
    i, k : Integer;
    usedMemory : Integer;
-   hd : THeightData;
+   hd :THeightData;
+   ReleaseThis:Boolean;
 begin
    with FData.LockList do begin
       try
@@ -908,13 +962,25 @@ begin
          for i:=Count-1 downto 0 do begin
             hd:=THeightData(List^[i]);
             if hd<>nil then with hd do begin
-               if Dirty then begin
-                  FDataHash[HashKey(hd.XLeft, hd.YTop)].Remove(hd);
-                  FOwner:=nil;
-                  Free;
-                  List^[i]:=nil;
-                  packList:=True;
-               end else usedMemory:=usedMemory+hd.DataSize;
+              //--Release criteria for dirty tiles--
+              ReleaseThis:=false;
+              if hd.Dirty then begin                             //Only release dirty tiles
+                if (MaxThreads=0) then ReleaseThis:=true         //when not threading, delete ALL dirty tiles
+                else if (HD.DataState<>hdsPreparing) then begin  //Dont release Preparing tiles
+                  if (hd.UseCounter=0)   then ReleaseThis:=true; //This tile is unused
+                  if (hd.NewVersion=nil) then ReleaseThis:=true  //This tile has no queued replacement to wait for
+                    else if (hd.DontUse) then ReleaseThis:=true; //??This tile has already been replaced.
+                end;
+              end;
+              //------------------------------------
+              //if Dirty then ReleaseThis:=true;
+              if ReleaseThis then begin
+                 FDataHash[HashKey(hd.XLeft, hd.YTop)].Remove(hd);
+                 List^[i]:=nil;
+                 FOwner:=nil;
+                 Free;
+                 packList:=True;
+              end else usedMemory:=usedMemory+hd.DataSize;
             end;
          end;
          // If MaxPoolSize exceeded, release all that may be, and pack the list
@@ -923,10 +989,13 @@ begin
             for i:=0 to Count-1 do begin
                hd:=THeightData(List^[i]);
                if hd<>nil then with hd do begin
-                  if (DataState=hdsReady) and (UseCounter=0) then begin
+                  if (DataState=hdsReady)and(UseCounter=0)and(OldVersion=nil)
+                  then begin
                      FDataHash[HashKey(hd.XLeft, hd.YTop)].Remove(hd);
+                     List^[i]:=nil;
                      FOwner:=nil;
                      Free;
+                     packList:=True;
                   end else begin
                      List^[k]:=hd;
                      Inc(k);
@@ -965,24 +1034,34 @@ begin
    end;
 end;
 
+//  BeforePreparingData
+//  Called BEFORE StartPreparingData, but always from the MAIN thread.
+//  Override this in subclasses, to prepare for Threading.
+//
+procedure THeightDataSource.BeforePreparingData(heightData : THeightData);
+begin
+//
+end;
+
 // StartPreparingData
-// (Must be thread-safe.)
+// When Threads are used, this runs from the sub-thread, so this MUST be thread-safe.
+// Any Non-thread-safe code should be placed in "BeforePreparingData"
 //
 procedure THeightDataSource.StartPreparingData(heightData : THeightData);
 begin
-  if ReadyWhenDone then heightData.FDataState:=hdsReady
-                   else ReadyWhenDone:=true;  //reset
+  //Only the tile Owner may set the preparing tile to ready
+  if (heightData.Owner=self)and(heightData.DataState=hdsPreparing)
+    then heightData.FDataState:=hdsReady;
 end;
 
 //  AfterPreparingData
-//  (Called after StartPreparingData, but runs in the main thread.)
+//  Called AFTER StartPreparingData, but always from the MAIN thread.
+//  Override this in subclasses, if needed.
 //
-{
 procedure THeightDataSource.AfterPreparingData(heightData : THeightData);
 begin
-  //ShowMessage(self.ClassName);
+//
 end;
-}
 
 //ThreadIsIdle
 //
@@ -1076,7 +1155,7 @@ constructor THeightData.Create(aOwner : THeightDataSource;
                                aXLeft, aYTop, aSize : Integer;
                                aDataType : THeightDataType);
 begin
-  	inherited Create(aOwner);
+   inherited Create(aOwner);
    SetLength(FUsers, 0);
    FOwner:=aOwner;
    FXLeft:=aXLeft;
@@ -1088,6 +1167,10 @@ begin
    FDataState:=hdsQueued;
    FHeightMin:=1e30;
    FHeightMax:=1e30;
+
+   OldVersion:=nil;
+   NewVersion:=nil;
+   DontUse:=false;
 end;
 
 // Destroy
@@ -1098,8 +1181,11 @@ begin
    Assert(not Assigned(FOwner), 'You should *not* free a THeightData, use "Release" instead');
    if Assigned(FThread) then begin
       FThread.Terminate;
+      if FThread.Suspended then FThread.Resume;
       FThread.WaitFor;
    end;
+
+
    if Assigned(FOnDestroy) then
       FOnDestroy(Self);
    case DataType of
@@ -1119,6 +1205,21 @@ begin
    else
       Assert(False);
    end;
+   //----------------------
+   self.LibMaterial:=nil; //release a used material
+
+   //--Break any link with a new/old version of this tile--
+   if assigned(self.OldVersion) then begin
+     self.OldVersion.NewVersion:=nil;
+     self.OldVersion:=nil;
+   end;
+   if assigned(self.NewVersion) then begin
+     self.NewVersion.OldVersion:=nil;
+     self.NewVersion:=nil;
+   end;
+   //------------------------------------------------------
+   
+   //----------------------
 	inherited Destroy;
 end;
 
@@ -1136,20 +1237,28 @@ begin
    if FUseCounter>0 then
       Dec(FUseCounter);
    if FUseCounter=0 then begin
-      FReleaseTimeStamp:=Now;
       Owner.Release(Self);          // ???
    end;
 end;
 
 // MarkDirty
 //
+// Release Dirty tiles, unless threading, and the tile is being used.
+// In that case, start building a replacement tile instead.
+
 procedure THeightData.MarkDirty;
 begin
-   if not Dirty then begin
+  with Owner.Data.LockList do try
+    if (not Dirty)and(DataState<>hdsQueued) then begin // dont mark queued tiles as dirty
       FDirty:=True;
-      FUseCounter:=0;
-      Owner.Release(Self);
-   end;
+      if (owner.MaxThreads>0)and(FUseCounter>0)
+      then Owner.PreloadReplacement(self)
+      else begin
+        FUseCounter:=0;
+        Owner.Release(Self);
+      end;
+    end;
+  finally Owner.Data.UnlockList; end;
 end;
 
 // Allocate
@@ -1179,7 +1288,7 @@ begin
    FDataType:=val;
 end;
 
-//WARNING: SetMaterialName does NOT register as a user of this texture.
+//WARNING: SetMaterialName does NOT register the tile as a user of this texture.
 //         So, TGLLibMaterials.DeleteUnusedMaterials may see this material as unused, and delete it.
 //         This may lead to AV's the next time this tile is rendered.
 //         To be safe, rather assign the new THeightData.LibMaterial property
@@ -1233,7 +1342,6 @@ begin
       FDataType:=val;
    end;
 end;
-
 
 // BuildByteRaster
 //
@@ -1382,9 +1490,7 @@ end;
 //
 function THeightData.SmallIntHeight(x, y : Integer) : SmallInt;
 begin
-  //if(Cardinal(x)>=Cardinal(Size))or(Cardinal(y)>=Cardinal(Size)) then
-  //  ShowMessage('x: 0<'+IntToStr(x)+'<'+IntToStr(size)+'  y: 0<'+IntToStr(y)+'<'+IntToStr(size)+' ?');
-   Assert((Cardinal(x)<Cardinal(Size)) and (Cardinal(y)<Cardinal(Size)));
+  Assert((Cardinal(x)<Cardinal(Size)) and (Cardinal(y)<Cardinal(Size)));
 	Result:=SmallIntRaster^[y]^[x];
 end;                                         
 
@@ -1542,7 +1648,7 @@ end;
 //NormalNode
 //
 //Calculates the normal at a surface cell (Between vertexes)
-function THeightData.NormalNode(x,y:Integer;const scale:TAffineVector):TAffineVector;
+function THeightData.NormalAtNode(x,y:Integer;const scale:TAffineVector):TAffineVector;
 var dx,dy,Hxy:single;
 begin
   MinInteger(MaxInteger(x,0),size-2);   //clamp x to 0 -> size-2
@@ -1842,8 +1948,7 @@ end;
 //
 procedure TGLCustomHDS.StartPreparingData(heightData : THeightData);
 begin
-   if Assigned(FOnStartPreparingData) then
-      FOnStartPreparingData(heightData);
+   if Assigned(FOnStartPreparingData) then FOnStartPreparingData(heightData);
    if heightData.DataState<>hdsNone then
       heightData.DataState:=hdsReady;
 end;
@@ -1923,7 +2028,12 @@ begin
   HeightDataSource:=nil;
  	inherited Destroy;
 end;
- 
+
+procedure THeightDataSourceFilter.Release(aHeightData : THeightData);
+begin
+  if assigned(HeightDataSource) then HeightDataSource.Release(aHeightData);
+end;
+
 // Notification
 //
 procedure THeightDataSourceFilter.Notification(AComponent: TComponent; Operation: TOperation);
@@ -1936,14 +2046,16 @@ end;
 
 //SetHDS  - Set HeightDataSource property
 //
-procedure THeightDataSourceFilter.SetHDS(const val : THeightDataSource);
+procedure THeightDataSourceFilter.SetHDS(val : THeightDataSource);
 begin
-   if val<>FHDS then begin
-      if Assigned(FHDS) then FHDS.RemoveFreeNotification(Self);
-      FHDS:=val;
-      if Assigned(FHDS) then FHDS.FreeNotification(Self);
-      MarkDirty;
-   end;
+  if val=self then val:=nil;  //prevent self-referencing
+  if val<>FHDS then begin
+     if Assigned(FHDS) then FHDS.RemoveFreeNotification(Self);
+     FHDS:=val;
+     if Assigned(FHDS) then FHDS.FreeNotification(Self);
+     //MarkDirty;
+     self.Clear;  //when removing the HDS, also remove all tiles from the cache
+  end;
 end;
 
 function THeightDataSourceFilter.Width:integer;
@@ -1962,25 +2074,24 @@ procedure THeightDataSourceFilter.StartPreparingData(heightData : THeightData);
 begin
   //---if there is no linked HDS then return an empty tile--
   if not Assigned(FHDS) then begin
+    heightData.Owner.Data.LockList;
     heightData.DataState:=hdsNone;
+    heightData.Owner.Data.UnLockList;
     exit;
   end;
   //---Use linked HeightDataSource to prepare height data--
-  FHDS.ReadyWhenDone:=false; //tell source HDS NOT to mark the tile as hdsReady
-  heightData.DataState:=hdsPreparing;
+  if heightData.DataState=hdsQueued then begin
+    heightData.Owner.Data.LockList;
+    heightData.DataState:=hdsPreparing;
+    heightData.Owner.Data.UnLockList;
+  end;
   FHDS.StartPreparingData(heightData);
   if Assigned(FOnSourceDataFetched) then FOnSourceDataFetched(Self,heightData);
   if heightData.DataState=hdsNone then exit;
-  if FActive then UpdateData(heightData);
+  if FActive then PreparingData(heightData);
   inherited;  //heightData.DataState:=hdsReady;
 end;
-{
-procedure THeightDataSourceFilter.AfterPreparingData(heightData : THeightData);
-begin
-  //--trigger the source HDS AfterPreparingData--
-  if assigned(FHDS) then FHDS.AfterPreparingData(heightData);
-end;
-}
+
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

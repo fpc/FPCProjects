@@ -8,9 +8,12 @@
    <b>History : </b><font size=-1><ul>
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Cosmetic fixes for FPC compatibility
+      <li>27/03/07 - Lin- Added TileManagement flags. - Helps prevent tile cache fushes.
+      <li>19/03/07 - Lin- Added IgnoredByRenderer flag to THeightData.
+                          Helps manage duplicate tiles, when a dirty tile is being replaced.
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
-      <li>08/02/08 - Lin- Ignore tiles that are not hdsReady (Prevents crashes when threading)
+      <li>08/02/07 - Lin- Ignore tiles that are not hdsReady (Prevents crashes when threading)
       <li>30/01/07 - Lin- Added HashedTileCount - Counts the tiles in the buffer
       <li>19/10/06 - LC - Changed the behaviour of OnMaxCLODTrianglesReached
       <li>09/10/06 - Lin- Added OnMaxCLODTrianglesReached event.(Rene Lindsay)
@@ -46,7 +49,7 @@ uses Classes, GLScene, GLHeightData, GLTexture, VectorGeometry, GLContext,
    GLROAMPatch, VectorLists;
 
 const
-   cTilesHashSize = 511;
+   cTilesHashSize = 255;
 
 type
 
@@ -58,6 +61,9 @@ type
    TTerrainHighResStyle = (hrsFullGeometry, hrsTesselated);
    TTerrainOcclusionTesselate = (totTesselateAlways, totTesselateIfVisible);
 
+   TTileManagementFlag  =(tmClearUsedFlags,tmMarkUsedTiles,tmReleaseUnusedTiles,tmAllocateNewTiles,tmWaitForPreparing);
+   TTileManagementFlags = set of TTileManagementFlag;
+
 	// TGLTerrainRenderer
 	//
    {: Basic terrain renderer.<p>
@@ -67,7 +73,8 @@ type
       terrain renderers.<p>
       The Terrain heightdata is retrieved directly from a THeightDataSource, and
       expressed as z=f(x, y) data. }
-	TGLTerrainRenderer = class (TGLSceneObject)
+	//TGLTerrainRenderer = class (TGLSceneObject)
+ TGLTerrainRenderer = class (TGLSceneObject)
 	   private
 	      { Private Declarations }
          FHeightDataSource : THeightDataSource;
@@ -112,17 +119,21 @@ type
 
          procedure ReleaseAllTiles; dynamic;
          procedure OnTileDestroyed(sender : TObject); virtual;
-
          function GetPreparedPatch(const tilePos, eyePos : TAffineVector;
                                    texFactor : Single;
                                    hdList : TList) : TGLROAMPatch;
 
 	   public
 	      { Public Declarations }
-	      constructor Create(AOwner: TComponent); override;
+
+         {:TileManagement flags can be used to turn off various Tile cache management features.
+          This helps to prevent unnecessary tile cache flushes, when rendering from multiple cameras.}
+         TileManagement     : TTileManagementFlags;
+
+	        constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-			procedure BuildList(var rci : TRenderContextInfo); override;
+  		    	procedure BuildList(var rci : TRenderContextInfo); override;
          function RayCastIntersect(const rayStart, rayVector : TVector;
                                    intersectPoint : PVector = nil;
                                    intersectNormal : PVector = nil) : Boolean; override;
@@ -215,11 +226,9 @@ type
          property OnHeightDataPostRender : THeightDataPostRenderEvent read FOnHeightDataPostRender write FOnHeightDataPostRender;
          {: Invoked whenever the MaxCLODTriangles limit was reached during last rendering.<p>
             This forced the terrain renderer to resize the buffer, which affects performance.
-            If this event is fired frequently, one should increase MaxCLODTriangles. 
+            If this event is fired frequently, one should increase MaxCLODTriangles.
          }
          property OnMaxCLODTrianglesReached : TMaxCLODTrianglesReachedEvent read FOnMaxCLODTrianglesReached write FOnMaxCLODTrianglesReached;
-
-
 	end;
 
 // ------------------------------------------------------------------
@@ -264,6 +273,7 @@ begin
    FBufferVertices:=TAffineVectorList.Create;
    FBufferTexPoints:=TTexPointList.Create;
    FBufferVertexIndices:=TIntegerList.Create;
+   TileManagement:=[tmClearUsedFlags,tmMarkUsedTiles,tmReleaseUnusedTiles,tmAllocateNewTiles];
 end;
 
 // Destroy
@@ -451,7 +461,6 @@ var
    hd : THeightData;
    TessDone:boolean;
 
-
    procedure ApplyMaterial(const materialName : String);
    begin
      if (MaterialLibrary=nil)or(currentMaterialName=materialName) then exit;
@@ -476,6 +485,7 @@ var
 begin
    if csDesigning in ComponentState then Exit;
    if HeightDataSource=nil then Exit;
+
    currentMaterialName:='';
    // first project eye position into heightdata coordinates
    vEye:=VectorTransform(rci.cameraPosition, InvAbsoluteMatrix);
@@ -549,8 +559,9 @@ begin
    nbX:=Round((maxTilePosX-minTilePosX)/TileSize);
    nbY:=Round((maxTilePosY-minTilePosY)/TileSize);
 
-   FLastTriangleCount:=0;
+   HeightDataSource.Data.LockList;  //Lock out the HDS thread while rendering
 
+   FLastTriangleCount:=0;
    patchList:=TList.Create;
    patchList.Capacity:=(nbX+1)*(nbY+1);
    rowList:=TList.Create;
@@ -702,12 +713,16 @@ begin
 
    glPopMatrix;
 
-   ReleaseAllUnusedTiles;
-   HeightDataSource.CleanUp;
+   if (tmReleaseUnusedTiles in TileManagement) then begin  //Tile cache management option
+     ReleaseAllUnusedTiles;
+     HeightDataSource.CleanUp;
+   end;
 
    rowList.Free;
    prevRow.Free;
    patchList.Free;
+
+   HeightDataSource.Data.UnLockList;
 end;
 
 // MarkAllTilesAsUnused
@@ -717,6 +732,7 @@ var
    i, j, zero : Integer;
    pList : PPointerList;
 begin
+  if not (tmClearUsedFlags in TileManagement) then exit;  //Tile cache management option
    for i:=0 to cTilesHashSize do with FTilesHash[i] do begin
       pList:=List;
       zero:=0;
@@ -750,18 +766,14 @@ end;
 //HashedTileCount
 //
 function TGLTerrainRenderer.HashedTileCount:integer;
-var i{, j} : Integer;
+var i : integer;
     hashList : TList;
-//    hd : THeightData;
     cnt:integer;
 begin
    cnt:=0;
    for i:=0 to cTilesHashSize do begin
-      hashList:=FTilesHash[i];
-      //for j:=hashList.Count-1 downto 0 do begin
-      //   hd:=THeightData(hashList.List[j]);
-      //end;
-      cnt:=cnt+hashList.count;
+      hashList:=FTilesHash[i]; //get the number of tiles in each list
+      cnt:=cnt+hashList.count; //Add the current list's count to the total
    end;
    result:=cnt;
 end;
@@ -770,10 +782,12 @@ end;
 // MarkHashedTileAsUsed
 //
 procedure TGLTerrainRenderer.MarkHashedTileAsUsed(const tilePos : TAffineVector);
-var
-   hd : THeightData;
+var hd : THeightData;
+    canAllocate:boolean;
 begin
-   hd:=HashedTile(tilePos);
+   if not (tmMarkUsedTiles in TileManagement) then exit;  //Mark used tiles option
+   canAllocate:=tmAllocateNewTiles in TileManagement;     //Allocate tile if not in the list
+   hd:=HashedTile(tilePos,canAllocate);
    if Assigned(hd) then hd.Tag:=1;
 end;
 
@@ -803,8 +817,12 @@ begin
    for i:=hashList.Count-1 downto 0 do begin
       hd:=THeightData(pList^[i]);
       if (hd.XLeft=xLeft) and (hd.YTop=yTop) then begin
-         Result:=hd;
-         Exit;
+         if hd.DontUse then begin
+           hashlist.Remove(hd); //This tile has now been replaced. Remove it from the hash-table.
+         end else begin
+           Result:=hd;
+           Exit;
+         end;
       end;
    end;
    // if not, request it
@@ -826,16 +844,23 @@ var
    tile : THeightData;
    patch : TGLROAMPatch;
    xLeft, yTop : Integer;
+   canAllocate:Boolean;
 begin
+   canAllocate:=tmAllocateNewTiles in TileManagement;
    xLeft:=Round(tilePos[0]*FinvTileSize-0.5)*TileSize;
    yTop:=Round(tilePos[1]*FinvTileSize-0.5)*TileSize;
-   tile:=HashedTile(xLeft, yTop);
+   tile:=HashedTile(xLeft, yTop,canAllocate);
+   result:=nil;
+   if not assigned(tile) then exit;
+
+   if (tmClearUsedFlags in TileManagement) //Tile cache management option
+     then tile.Tag:=1; //mark tile as used
    if Assigned(hdList) then
       hdList.Add(tile);
-   tile.Tag:=1; //mark tile as used
+
    //if tile.DataState=hdsNone then begin
    if tile.DataState<>hdsReady then begin
-      Result:=nil;
+      Result:=nil;                //if the tile is still not hdsReady, then skip it
    end else begin
       patch:=TGLROAMPatch(tile.ObjectTag);
       if not Assigned(patch) then begin
