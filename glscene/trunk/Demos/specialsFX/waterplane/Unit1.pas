@@ -9,7 +9,7 @@ interface
 
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLMisc, GLWin32Viewer, GLWaterPlane,
+  Dialogs, GLObjects, GLMisc, GLViewer, GLWaterPlane,
   GLCadencer, ExtCtrls, Jpeg, GLTexture, GLUserShader, OpenGL1x,
   VectorGeometry, GLGraph, VectorTypes, GLState, LResources, GLScene;
 
@@ -78,7 +78,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-   SetCurrentDir(ExtractFilePath(Application.ExeName)+'..\..\media');
+   SetCurrentDir(ExtractFilePath(Application.ExeName)+'../../media');
 
    // Load the cube map which is used both for environment and as reflection texture
 
