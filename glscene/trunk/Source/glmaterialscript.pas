@@ -39,10 +39,6 @@ unit GLMaterialScript;
 interface
 
 uses
-  {$ifdef windows}
-  Windows,
-  {$endif}
-  Messages,
   SysUtils, Classes, StdCtrls, GLTexture, GLMisc,
   ExtCtrls, GLUtils;
 
