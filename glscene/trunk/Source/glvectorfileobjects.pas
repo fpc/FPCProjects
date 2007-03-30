@@ -3362,7 +3362,7 @@ begin
    FTangentsTexCoordIndex:=1;
    FBinormalsTexCoordIndex:=2;
 
-   FUseVBO:= true;
+   FUseVBO:= false;
 
    inherited;
 end;
