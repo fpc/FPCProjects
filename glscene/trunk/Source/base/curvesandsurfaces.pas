@@ -1,7 +1,12 @@
-// CurvesAndSurfaces
-{: Bezier and B-Spline Curve and Surface Routines.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: CurvesAndSurfaces<p>
+
+   Bezier and B-Spline Curve and Surface Routines.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>11/05/04 - SG - Some fixes for BSpline calculations (rational BSplines
                           are still still broken). Minor knot vector changes.
       <li>20/08/03 - SG - Removed weights realizing it's an inefficient way
@@ -16,6 +21,8 @@
 unit CurvesAndSurfaces;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   SysUtils, VectorGeometry, VectorLists;

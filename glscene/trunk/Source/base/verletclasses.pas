@@ -11,6 +11,7 @@
    It's a matter of leverage. <p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>14/04/04 - MF - Fixed force for springs, was referring to deltaP...
       <li>13/04/04 - MF - Minor drag changes
       <li>13/04/04 - EG - Added TVCHeightField and TVCSlider, fixed TVCFloor
@@ -46,6 +47,8 @@
 unit VerletClasses;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, VectorGeometry, SysUtils, VectorLists, SpatialPartitioning,
   GeometryBB;

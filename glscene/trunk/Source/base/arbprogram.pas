@@ -1,16 +1,20 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-// ARBProgram
-{: Some useful methods for setting up ARB vertex and fragment programs.<p>
+{: ARBProgram<p>
+
+   Some useful methods for setting up ARB vertex and fragment programs.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>11/10/04 - SG - Creation
    </ul></font>
 }
 unit ARBProgram;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    SysUtils, OpenGL1x, GLContext;
