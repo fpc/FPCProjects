@@ -1,9 +1,13 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLCelShader<p>
 
    A shader that applies cel shading through a vertex program
    and shade definition texture.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>21/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
@@ -15,6 +19,8 @@
 unit GLCelShader;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,

@@ -5,26 +5,9 @@
 
 	Handles all the color and texture stuff.<p>
 
-      $Log: gltexture.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/08/22 00:07:46  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.4  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Bugfixed TGLTexture.Assign (missed some properties)
+                              (Bugtracker ID = 1692012) (thanks Zapology)
       <li>28/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -3471,29 +3454,45 @@ end;
 //
 procedure TGLTexture.Assign(Source: TPersistent);
 begin
-   if Assigned(Source) then begin
-      if (Source is TGLTexture) then begin
-		   if Source<>Self then begin
-			   FImageAlpha:=TGLTexture(Source).FImageAlpha;
-   			FTextureMode:=TGLTexture(Source).FTextureMode;
-	   		FTextureWrap:=TGLTexture(Source).FTextureWrap;
-      		FTextureFormat:=TGLTexture(Source).FTextureFormat;
-      		FCompression:=TGLTexture(Source).FCompression;
-		   	FMinFilter:=TGLTexture(Source).FMinFilter;
-			   FMagFilter:=TGLTexture(Source).FMagFilter;
+   if Assigned(Source) then
+   begin
+      if (Source is TGLTexture) then
+      begin
+         if Source<>Self then
+         begin
+            FImageAlpha:=TGLTexture(Source).FImageAlpha;
+            FTextureMode:=TGLTexture(Source).FTextureMode;
+            FTextureWrap:=TGLTexture(Source).FTextureWrap;
+            FTextureFormat:=TGLTexture(Source).FTextureFormat;
+            FCompression:=TGLTexture(Source).FCompression;
+            FMinFilter:=TGLTexture(Source).FMinFilter;
+            FMagFilter:=TGLTexture(Source).FMagFilter;
             FMappingMode:=TGLTexture(Source).FMappingMode;
             MappingSCoordinates.Assign(TGLTexture(Source).MappingSCoordinates);
             MappingTCoordinates.Assign(TGLTexture(Source).MappingTCoordinates);
-   			FDisabled:=TGLTexture(Source).FDisabled;
-	   		SetImage(TGLTexture(Source).FImage);
-		   	FChanges:=[tcParams, tcImage];
-   		end;
-      end else if (Source is TGLGraphic) then begin
-         Image.Assign(Source);
-      end else if (Source is TGLPicture) then begin
-         Image.Assign(TGLPicture(Source).Graphic);
-      end else inherited Assign(Source);
-   end else begin
+            FDisabled:=TGLTexture(Source).FDisabled;
+            SetImage(TGLTexture(Source).FImage);
+            FImageBrightness  := TGLTexture(Source).FImageBrightness;
+            FImageGamma       := TGLTexture(Source).FImageGamma;
+            FFilteringQuality := TGLTexture(Source).FFilteringQuality;
+            FEnvColor.Assign(TGLTexture(Source).FEnvColor);
+            FNormalMapScale   := TGLTexture(Source).FNormalMapScale;
+            // Probably don't need to assign these....
+            // FOnTextureNeeded := TGLTexture(Source).FImageGamma;
+            // FRequiredMemorySize  : Integer;
+            // FTexWidth, FTexHeight : Integer;
+            FChanges := [tcParams, tcImage];
+         end;
+      end
+      else if (Source is TGLGraphic) then
+         Image.Assign(Source)
+      else if (Source is TGLPicture) then
+         Image.Assign(TGLPicture(Source).Graphic)
+      else
+         inherited Assign(Source);
+   end
+   else
+   begin
       FDisabled:=True;
   		SetImage(nil);
      	FChanges:=[tcParams, tcImage];
@@ -6720,8 +6719,7 @@ function TGLFloatDataImage.GetBitmap32(target : TGLUInt) : TGLBitmap32;
 begin
 	if not Assigned(FBitmap) then begin
       FBitmap:=TGLBitmap32.Create;
-      {$HINT crossbuilder: Please check why our bitmap doesn't know "Blank" and enable the following line when fixed}
-      //FBitmap.Blank:=true;
+      FBitmap.Blank:=true;
       FBitmap.Width:=FWidth;
       FBitmap.Height:=FHeight;
 	end;

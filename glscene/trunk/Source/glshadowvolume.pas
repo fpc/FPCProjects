@@ -9,29 +9,9 @@
    to cast correct shadows. Transparent/blended/shader objects among the receivers
    or the casters will be rendered incorrectly.<p>
 
-      $Log: glshadowvolume.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/10/13 22:30:32  skinhat
-      Uncommented opaquecapping.add in dorender. Was causing elist error
-
-      Revision 1.4  2005/08/22 00:06:25  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Fixed issue with invalid typecasting
+                            (thanks Burkhard Carstens) (Bugtracker ID = 1692016)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
@@ -184,14 +164,12 @@ type
    // TGLShadowVolumeCasters
    //
    {: Collection of TGLShadowVolumeCaster. }
-   TGLShadowVolumeCasters = class (TCollection)
+   TGLShadowVolumeCasters = class (TOwnedCollection)
 	   private
 			{ Private Declarations }
-         FOwner : TGLShadowVolume;
 
 		protected
 			{ Protected Declarations }
-         function GetOwner : TPersistent; override;
          function GetItems(index : Integer) : TGLShadowVolumeCaster;
          procedure RemoveNotification(aComponent : TComponent);
 
@@ -328,11 +306,15 @@ begin
    FCastingMode := scmRecursivelyVisible;
 end;
 
+type
+  // Required for Delphi 5 support.
+  THackOwnedCollection = class(TOwnedCollection);
+
 // GetGLShadowVolume
 //
 function TGLShadowVolumeCaster.GetGLShadowVolume: TGLShadowVolume;
 begin
-   Result:=TGLShadowVolume(TGLShadowVolumeCasters(Collection).GetOwner);
+   Result:=TGLShadowVolume(THackOwnedCollection(Collection).GetOwner);
 end;
 
 // Destroy
@@ -352,8 +334,7 @@ begin
       FCaster:=TGLShadowVolumeCaster(Source).FCaster;
       FEffectiveRadius:=TGLShadowVolumeCaster(Source).FEffectiveRadius;
       FCapping:=TGLShadowVolumeCaster(Source).FCapping;
-      //THIS WAS CASTED WRONG:
-      TGLShadowVolume(TGLShadowVolumeCasters(Collection).GetOwner).StructureChanged;
+      GetGLShadowVolume.StructureChanged;
    end;
    inherited;
 end;
@@ -368,8 +349,7 @@ begin
       FCaster:=val;
       if FCaster<>nil then
          FCaster.FreeNotification(GLShadowVolume);
-      //THIS WAS CASTED WRONG:
-      TGLShadowVolume(TGLShadowVolumeCasters(Collection).GetOwner).StructureChanged;
+      GetGLShadowVolume.StructureChanged;
    end;
 end;
 
@@ -512,12 +492,6 @@ end;
 // ------------------ TGLShadowVolumeCasters ------------------
 // ------------------
 
-// GetOwner
-//
-function TGLShadowVolumeCasters.GetOwner : TPersistent;
-begin
-   Result:=FOwner;
-end;
 
 // RemoveNotification
 //
@@ -587,10 +561,8 @@ begin
    inherited Create(AOwner);
    ObjectStyle:=ObjectStyle-[osDirectDraw]+[osNoVisibilityCulling];
    FActive:=True;
-   FLights:=TGLShadowVolumeCasters.Create(TGLShadowVolumeLight);
-   FLights.FOwner:=Self;
-   FOccluders:=TGLShadowVolumeCasters.Create(TGLShadowVolumeOccluder);
-   FOccluders.FOwner:=Self;
+   FLights:=TGLShadowVolumeCasters.Create(self,TGLShadowVolumeLight);
+   FOccluders:=TGLShadowVolumeCasters.Create(self,TGLShadowVolumeOccluder);
    FCapping:=svcAlways;
    FMode:=svmAccurate;
    FOptions:=[svoCacheSilhouettes, svoScissorClips];

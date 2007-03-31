@@ -26,6 +26,7 @@
    other patches.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>11/05/04 - SG - Mesh building and texture coord fixes.
       <li>05/02/04 - SG - Added FGBezierSurface facegroup descendant.
       <li>20/08/03 - SG - Weighted control points.
@@ -35,6 +36,8 @@
 unit GLParametricSurfaces;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   GLVectorFileObjects, CurvesAndSurfaces, VectorGeometry, VectorLists,

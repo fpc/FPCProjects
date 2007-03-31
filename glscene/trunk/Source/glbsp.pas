@@ -27,6 +27,7 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>07/03/03 - EG - T-junctions now properly supported and repaired
@@ -39,6 +40,8 @@
 unit GLBSP;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLVectorFileObjects, GLScene, GLTexture, GLMisc, VectorGeometry,
    VectorLists;

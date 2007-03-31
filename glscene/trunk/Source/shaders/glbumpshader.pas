@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLBumpShader<p>
 
    A shader that applies bump mapping.<p>
@@ -22,6 +25,7 @@
    texture lookups.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>15/04/05 - SG - Added parallax offset mapping for the BasicARBfp bump method (experimental)
                           Height data is expected in the normal map alpha channel.
@@ -53,6 +57,8 @@
 unit GLBumpShader;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
