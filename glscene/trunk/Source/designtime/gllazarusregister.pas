@@ -68,6 +68,36 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>29/03/07 - DaStr - Renamed LINUX to KYLIX (BugTrackerID=1681585)
+      <li>23/03/07 - fig - Added TGLSLProjectedTextures
+      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTrackerID=1681585)
+      <li>14/03/07 - DaStr - SpriteAnimation now makes use of
+                                         TGLLibMaterialName's property editor
+      <li>04/03/07 - DaStr - Added TGLPostShaderHolder
+      <li>28/02/07 - LIN   - Added GLShadowHDS
+      <li>25/02/07 - DaStr - Added TGLPostEffect
+                             Moved all terrain components to a separate tab
+                             Moved all shader components registration here
+      <li>23/02/07 - DaStr - Added TGLSLShader, TGLSLDiffuseSpecularShader,
+                             TGLSLBumpShader, TGLAsmShader, TGLShaderCombiner
+                             TGLSmoothNavigator, TGLSmoothUserInterface
+                             Moved TGLLibMaterialNameProperty to the interface
+                                                                        section
+      <li>21/02/07 - DaStr - Added TGLActorProxy and TGLMotionBlur
+      <li>16/02/07 - DaStr - Added GLMaterialMultiProxy
+      <li>15/02/07 - DaStr - Added GLConsole and GLAtmosphere
+      <li>13/02/07 - LIN   - Added GLAsyncHDS and GLTexturedHDS
+      <li>06/02/07 - DaStr - Added GLSimpleNavigation
+      <li>29/01/07 - DaStr - Added GLEParticleMasksManager, moved registration
+                               procedures from other units to this one
+      <li>21/01/07 - DaStr - TGLLibMaterialNameProperty.Edit fixed
+                                   (to support IGLMaterialLibrarySupported)
+      <li>23/12/04 - PhP - "Animated Sprite" moved to advanced objects category
+      <li>13/10/04 - MRQZZZ - Added GLTrail
+      <li>03/07/04 - LR - Completly review to take account designtime for Linux
+                          Note a problem with TGLColorProperty
+      <li>28/06/04 - LR - Changed LoadBitmap to GLLoadBitmapFromInstance
+      <li>12/04/04 - EG - LibMaterialName property editor for SkyBox
       <li>22/08/02 - EG - RegisterPropertiesInCategory (Robin Gerrets)
       <li>08/04/02 - EG - Added verb to TGLSceneEditor
       <li>26/01/02 - EG - Color property drawing in D6 too now
@@ -130,12 +160,10 @@ type
       private
          { Private Declarations }
          FSceneObjectList : TList;
-         {.$IFNDEF FPC}
          FObjectIcons : TImageList;       // a list of icons for scene objects
-         {.$ENDIF}
-         {$ifdef WINDOWS}
+         {.$ifdef WINDOWS}
          FOverlayIndex,                   // indices into the object icon list
-         {$endif}
+         {.$endif}
          FSceneRootIndex,
          FCameraRootIndex,
          FLightsourceRootIndex,
@@ -164,9 +192,7 @@ type
          //: Unregisters a stock object and removes it from the stock object list
          procedure UnRegisterSceneObject(ASceneObject: TGLSceneObjectClass);
 //         procedure Notify(Sender: TPlugInManager; Operation: TOperation; PlugIn: Integer); override;
-         {.$IFNDEF FPC}
          property ObjectIcons: TImageList read FObjectIcons;
-         {.$ENDIF}
          property SceneRootIndex: Integer read FSceneRootIndex;
          property LightsourceRootIndex: Integer read FLightsourceRootIndex;
          property CameraRootIndex: Integer read FCameraRootIndex;
@@ -197,51 +223,45 @@ implementation
 // ------------------------------------------------------------------
 
 uses
-   glviewer,
+   TypInfo, VectorGeometry, GLTexture, SysUtils, GLCrossPlatform, GLStrings,
+   GLObjects, GLVectorFileObjects, GLExtrusion, GLMultiPolygon, GLMesh, GLPortal,
+   GLGraph, GLParticles, GLHUDObjects, GLSkydome, GLBitmapFont, GLLensFlare,
+   GLMirror, GLParticleFX, GLShadowPlane, GLTerrainRenderer, GLShadowVolume,
+   GLTeapot, GLPolyhedron, GLGeomObjects, GLTextureImageEditors, GLMultiProxy,
+   GLSkyBox, GLState, GLUtils, GLTilePlane, GLTree, GLImposter, GLWaterPlane,
+   GLPerlinPFX, GLTexLensFlare, GLFireFX, GLThorFX, glsceneeditnew, FVectorEditor,
+   GLCadencer, GLCollision, GLHeightData, GLzBuffer, GLGui, GLBumpmapHDS,
+   AsyncTimer, GLWindows, GLWindowsFont, GLHeightTileFileHDS, GLTexturedHDS,
+   GLAnimatedSprite, GLFeedback, GLProjectedTextures, GLBlur, GLTrail, GLPerlin,
+   GLLinePFX, GLScriptBase, GLGameMenu, GLEParticleMasksManager,
+   GLTimeEventsMgr, GLNavigator, GLMaterialScript, GLFPSMovement, GLDCE,
+   ApplicationFileIO,  GLScreen, GLMisc, GLVfsPAK, GLSimpleNavigation,
+   GLAsyncHDS, GLConsole, GLAtmosphere, GLProxyObjects, GLMaterialMultiProxy,
+   GLSLShader, GLSLDiffuseSpecularShader, GLSLBumpShader, GLAsmShader,
+   GLShaderCombiner, GLSmoothNavigator, GLPostEffects, GLPhongShader,
+   GLTexCombineShader, GLCelShader, GLOutlineShader, GLMultiMaterialShader,
+   GLBumpShader, GLHiddenLineShader, GLUserShader, GLShadowHDS, GLSLProjectedTextures,
+   GLSound, GLSoundFileObjects,
+   Graphics,
+   GLViewer,
    {$ifdef windows}
-     gllclfullscreenviewer, glspacetext,
+     gllclfullscreenviewer, GLSpaceText,
+     GLWideBitmapFont, GLAVIRecorder,
    {$endif}
-   glsound, glsoundfileobjects,
-   typinfo,sysutils, graphics, componenteditors, glsceneeditnew,
-   glvectorfileobjects,glscreen,glmesh, glmisc, glcrossplatform,
-   fvectoreditor, vectorgeometry,glstrings,glcadencer,gltexture,glgui,
-   glbitmapfont,glwindowsfont,glparticlefx,glperlinpfx,gllinepfx,glfirefx,
-   glthorfx,asynctimer,globjects, glgeomobjects, glteapot, glimposter,
-   glcollision,glpolyhedron,glanimatedsprite,glmultipolygon,gltileplane,
-   glportal,glgraph,glparticles,glskydome,glskybox,glhudobjects,glwindows,
-   gllensflare,gltexlensflare,glmirror,glshadowplane,glshadowvolume,
-   glzbuffer,glprojectedtextures,glblur,gltrail,gltree,glmultiproxy,
-   GLTimeEventsMgr, GLNavigator, GLFPSMovement, GLDCE,
-   ApplicationFileIO, GLVfsPAK,
-   gleparticlemasksmanager,
-   GLPostEffects,
-   GLProxyObjects,
-   GLMaterialScript,
-   GLMaterialMultiProxy,
-   GLSmoothNavigator,
-   GLSimpleNavigation,
-   GLTexturedHDS,
-   GLAsyncHDS,
-   GLAtmosphere,
-   GLConsole,
-   GLTexCombineShader,
-   GLPhongShader,
-   GLCelShader,
-   GLOutlineShader,
-   GLMultiMaterialShader,
-   GLAsmShader,
-   GLShaderCombiner,
-   GLSLShader,
-   GLSLBumpShader,
-   GLSLDiffuseSpecularShader,
-   glfeedback,glextrusion,glbumpmaphds,glheighttilefilehds,
-   glterrainrenderer,glgamemenu, gltextureimageeditors,
-   glstate, glutils, glwaterplane,
-   glheightdata,glperlin,
-   GLBumpShader, GLHiddenLineShader, GLUserShader, GLShadowHDS, GLSLProjectedTextures
+   componenteditors
    {,glsdlcontext,glscriptbase,}
    ;
-
+(*
+uses
+{$ifdef WIN32}
+   Dialogs, ExtDlgs, Forms,
+   GLWin32Viewer, GLWin32FullScreenViewer,
+{$endif}
+{$IFDEF KYLIX}
+   QGraphics, QDialogs, Types, GLLinuxViewer
+{$endif}
+   ;
+*)
 resourcestring
    { OpenGL property category }
    sOpenGLCategoryName = 'OpenGL';
@@ -256,6 +276,9 @@ begin
       vObjectManager:=TObjectManager.Create;
    Result:=vObjectManager;
 end;
+
+
+{ TODO : Moving property editors to the public interface }
 
 type
 
@@ -280,6 +303,7 @@ type
          function GetVerb(Index: Integer): String; override;
          function GetVerbCount: Integer; override;
    end;
+
    // TResolutionProperty
    //
    TResolutionProperty = class (TPropertyEditor)
@@ -331,12 +355,31 @@ type
 	function GetAttributes: TPropertyAttributes; override;
 	procedure GetValues(Proc: TGetStrProc); override;
 	procedure Edit; override;
+
         function ColorToBorderColor(aColor: TColorVector; selected : Boolean) : TColor;
+
       public
+(*	      {$ifdef GLS_COMPILER_5}
+	      procedure ListDrawValue(const Value: string; ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean); override;
+	      procedure PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean); override;
+	      {$endif}
+	      {$ifdef GLS_COMPILER_6_UP}
+         // Well, i don't know why it's doesn't work with Kylix ...
+         {$ifdef WIN32}
+         // ICustomPropertyListDrawing  stuff
+         procedure ListMeasureHeight(const Value: string; ACanvas: TCanvas; var AHeight: Integer);
+         procedure ListMeasureWidth(const Value: string; ACanvas: TCanvas; var AWidth: Integer);
+         procedure ListDrawValue(const Value: string; ACanvas: TCanvas; const ARect: TGLRect; ASelected: Boolean);
+         // CustomPropertyDrawing
+         procedure PropDrawName(ACanvas: TCanvas; const ARect: TGLRect; ASelected: Boolean);
+         procedure PropDrawValue(ACanvas: TCanvas; const ARect: TGLRect; ASelected: Boolean);
+         {$endif}
+         {$endif}
+*)
         function GetValue: String; override;
 	procedure SetValue(const Value: string); override;
    end;
-         
+
    // TVectorFileProperty
    //
    TVectorFileProperty = class (TClassProperty)
@@ -386,6 +429,54 @@ type
          procedure Edit; override;
    end;
 
+   // TReuseableDefaultEditor
+   //
+   {: Editor copied from DsgnIntf.<p>
+      Could have been avoided, if only that guy at Borland didn't chose to
+      publish only half of the stuff (and that's not the only class with
+      that problem, most of the subitems handling code in TGLSceneBaseObject is
+      here for the same reason...), the "protected" wasn't meant just to lure
+      programmers into code they can't reuse... Arrr! and he did that again
+      in D6! Grrr... }
+{$ifdef GLS_DELPHI_6_UP}
+   TReuseableDefaultEditor = class (TComponentEditor, IDefaultEditor)
+{$else}
+   TReuseableDefaultEditor = class (TComponentEditor)
+{$endif}
+      protected
+			{ Protected Declarations }
+{$ifdef GLS_DELPHI_6_UP}
+         FFirst: IProperty;
+         FBest: IProperty;
+         FContinue: Boolean;
+         procedure CheckEdit(const Prop : IProperty);
+         procedure EditProperty(const Prop: IProperty; var Continue: Boolean); virtual;
+{$else}
+         FFirst: TPropertyEditor;
+			FBest: TPropertyEditor;
+         FContinue: Boolean;
+         procedure CheckEdit(PropertyEditor : TPropertyEditor);
+         procedure EditProperty(PropertyEditor : TPropertyEditor;
+                                var Continue, FreeEditor : Boolean); virtual;
+{$endif}
+
+      public
+         { Public Declarations }
+         procedure Edit; override;
+   end;
+
+   // TGLMaterialLibraryEditor
+   //
+   {: Editor for material library.<p> }
+   TGLMaterialLibraryEditor = class(TReuseableDefaultEditor{$ifdef GLS_DELPHI_6_UP}, IDefaultEditor{$endif})
+      protected
+{$ifdef GLS_DELPHI_6_UP}
+         procedure EditProperty(const Prop: IProperty; var Continue: Boolean); override;
+{$else}
+         procedure EditProperty(PropertyEditor: TPropertyEditor; var Continue, FreeEditor: Boolean); override;
+{$endif}
+	end;
+
    // TGLAnimationNameProperty
    //
    TGLAnimationNameProperty = class(TStringProperty)
@@ -393,6 +484,7 @@ type
          { Protected Declarations }
          function GetAttributes : TPropertyAttributes; override;
          procedure GetValues(proc : TGetStrProc); override;
+
       public
          { Public Declarations }
    end;
@@ -414,9 +506,7 @@ end;
 destructor TObjectManager.Destroy;
 begin
    DestroySceneObjectList;
-   {.$IFNDEF FPC}
    FObjectIcons.Free;
-   {.$ENDIF}
    inherited Destroy;
 end;
 
@@ -515,10 +605,8 @@ procedure TObjectManager.RegisterSceneObject(ASceneObject: TGLSceneObjectClass;
 var
    newEntry  : PSceneObjectEntry;
    pic       : TPicture;
-   {.$IFNDEF FPC}
    resBitmapName : String;
    bmp : TBitmap;
-   {.$ENDIF}
 begin
 //>>Lazarus will crash at this function
    if Assigned(RegisterNoIconProc) then
@@ -550,11 +638,12 @@ begin
             if Cardinal(Pic.Bitmap.Handle)<>0 then begin
                FObjectIcons.AddMasked(Pic.Bitmap, Pic.Bitmap.Canvas.Pixels[0, 0]);
                ImageIndex:=FObjectIcons.Count-1;
-            end else ImageIndex:=0;
             {$ELSE}
-            FObjectIcons.AddFromLazarusResource(resBitmapName);
-            ImageIndex:=FObjectIcons.Count-1;
+            if LazarusResources.Find(resBitmapName) <> nil then begin
+              FObjectIcons.AddFromLazarusResource(resBitmapName);
+              ImageIndex:=FObjectIcons.Count-1;
             {$ENDIF}
+            end else ImageIndex:=0;
          end;
        Add(NewEntry);
       finally
@@ -590,17 +679,16 @@ begin
    pic:=TPicture.Create;
    // load first pic to get size
    GLLoadBitmapFromInstance(Pic.Bitmap,'gls_cross');
-   //FObjectIcons:=TImageList.CreateSize(Pic.Width, Pic.height);
-   FObjectIcons:=TImageList.CreateSize(24, 24);
+   FObjectIcons:=TImageList.CreateSize(Pic.Width, Pic.height);
 
    with FObjectIcons, pic.Bitmap.Canvas do begin
       try
          // There's a more direct way for loading images into the image list, but
          // the image quality suffers too much
          AddMasked(Pic.Bitmap, Pixels[0, 0]);
-         {$ifdef WINDOWS}
+         {$ifdef WIN32}
          FOverlayIndex:=Count-1;
-         //Overlay(FOverlayIndex, 0); // used as indicator for disabled objects
+         Overlay(FOverlayIndex, 0); // used as indicator for disabled objects
          {$endif}
          GLLoadBitmapFromInstance(Pic.Bitmap,'gls_root');
          AddMasked(Pic.Bitmap, Pixels[0, 0]); FSceneRootIndex:=Count-1;
@@ -609,7 +697,7 @@ begin
          GLLoadBitmapFromInstance(Pic.Bitmap,'gls_lights');
          AddMasked(Pic.Bitmap, Pixels[0, 0]); FLightsourceRootIndex:=Count-1;
          GLLoadBitmapFromInstance(Pic.Bitmap,'gls_objects');
-         AddMasked(Pic.Bitmap, Pixels[0, 0]); FObjectRootIndex;:=Count-1;
+         AddMasked(Pic.Bitmap, Pixels[0, 0]); FObjectRootIndex:=Count-1;
          AddMasked(Pic.Bitmap, Pixels[0, 0]); FStockObjectRootIndex:=Count-1;
       finally
          Pic.Free;
@@ -619,6 +707,9 @@ begin
    FObjectIcons:=TImageList.CreateSize(16, 16);
    with FObjectIcons do begin
          AddFromLazarusResource('gls_cross');
+         FOverlayIndex:=Count-1;
+         //missing in lazarus: TImageList.overlay
+         //Overlay(FOverlayIndex, 0); // used as indicator for disabled objects
          AddFromLazarusResource('gls_root');
          FSceneRootIndex:=Count-1;
          AddFromLazarusResource('gls_camera');
@@ -677,7 +768,6 @@ begin
   Result:=1;
 end;
 
-
 //----------------- TGLSceneEditor ---------------------------------------------
 
 // Edit
@@ -685,7 +775,7 @@ end;
 procedure TGLSceneEditor.Edit;
 begin
    with GLSceneEditorForm do begin
-      SetScene(Self.Component as TGLScene, TComponentEditorDesigner(Self.Designer));
+      SetScene(Self.Component as TGLScene, Self.Designer);
       Show;
    end;
 end;
@@ -801,7 +891,6 @@ begin
   else SetOrdValue(0);
 end;
 
-
 //----------------- TGLTextureProperty -----------------------------------------
 
 function TGLTextureProperty.GetAttributes: TPropertyAttributes;
@@ -873,8 +962,6 @@ begin
 	Modified;
 end;
 
-
-
 //----------------- TGLColorproperty -----------------------------------------------------------------------------------
 
 procedure TGLColorProperty.Edit;
@@ -885,6 +972,9 @@ begin
    colorDialog:=TColorDialog.Create(nil);
    try
       glColor:=TGLColor(GetOrdValue);
+      {$IFNDEF FPC}{$ifdef WIN32}
+      colorDialog.Options:=[cdFullOpen];
+      {$endif}{$ENDIF}
       colorDialog.Color:=ConvertColorVector(glColor.Color);
       if colorDialog.Execute then begin
          glColor.Color:=ConvertWinColor(colorDialog.Color);
@@ -927,6 +1017,106 @@ begin
    else Result:=ConvertColorVector(AColor);
 end;
 
+(* CRB ??
+{$ifdef GLS_COMPILER_5}
+procedure TGLColorProperty.ListDrawValue(const Value: string; ACanvas: TCanvas;
+                                         const ARect: TRect; ASelected: Boolean);
+var
+   vRight: Integer;
+   vOldPenColor,
+   vOldBrushColor: TColor;
+   Color: TColorVector;
+begin
+   vRight:=(ARect.Bottom - ARect.Top) + ARect.Left;
+   with ACanvas do try
+      vOldPenColor:=Pen.Color;
+      vOldBrushColor:=Brush.Color;
+
+      Pen.Color:=Brush.Color;
+      Rectangle(ARect.Left, ARect.Top, vRight, ARect.Bottom);
+
+      Color:=ColorManager.GetColor(Value);
+      Brush.Color:=ConvertColorVector(Color);
+      Pen.Color:=ColorToBorderColor(Color, ASelected);
+
+      Rectangle(ARect.Left + 1, ARect.Top + 1, vRight - 1, ARect.Bottom - 1);
+
+      Brush.Color:=vOldBrushColor;
+      Pen.Color:=vOldPenColor;
+   finally
+      inherited ListDrawValue(Value, ACanvas, Rect(vRight, ARect.Top, ARect.Right, ARect.Bottom), ASelected);
+   end;
+end;
+
+procedure TGLColorProperty.PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+begin
+   // draws the small color rectangle in the object inspector
+   if GetVisualValue<>'' then
+      ListDrawValue(GetVisualValue, ACanvas, ARect, True)
+   else inherited PropDrawValue(ACanvas, ARect, ASelected);
+end;
+{$endif}
+
+{$ifdef GLS_COMPILER_6_UP}
+{$ifdef WIN32}
+procedure TGLColorProperty.PropDrawValue(ACanvas: TCanvas; const ARect: TRect; ASelected: Boolean);
+begin
+   if GetVisualValue <> '' then
+      ListDrawValue(GetVisualValue, ACanvas, ARect, True)
+   else DefaultPropertyDrawValue(Self, ACanvas, ARect);
+end;
+
+procedure TGLColorProperty.ListDrawValue(const Value: string; ACanvas: TCanvas;
+                                         const ARect: TRect; ASelected: Boolean);
+var
+   vRight: Integer;
+   vOldPenColor,
+   vOldBrushColor: TColor;
+   Color: TColorVector;
+begin
+   vRight:=(ARect.Bottom - ARect.Top) + ARect.Left;
+   with ACanvas do try
+      vOldPenColor:=Pen.Color;
+      vOldBrushColor:=Brush.Color;
+
+      Pen.Color:=Brush.Color;
+      Rectangle(ARect.Left, ARect.Top, vRight, ARect.Bottom);
+
+      Color:=ColorManager.GetColor(Value);
+      Brush.Color:=ConvertColorVector(Color);
+      Pen.Color:=ColorToBorderColor(Color, ASelected);
+
+      Rectangle(ARect.Left + 1, ARect.Top + 1, vRight - 1, ARect.Bottom - 1);
+
+      Brush.Color:=vOldBrushColor;
+      Pen.Color:=vOldPenColor;
+   finally
+      DefaultPropertyListDrawValue(Value, ACanvas, Rect(vRight, ARect.Top, ARect.Right, ARect.Bottom),
+                                   ASelected);
+   end;
+end;
+
+procedure TGLColorProperty.ListMeasureWidth(const Value: string;
+  ACanvas: TCanvas; var AWidth: Integer);
+begin
+   AWidth := AWidth + ACanvas.TextHeight('M');
+end;
+
+procedure TGLColorProperty.ListMeasureHeight(const Value: string;
+  ACanvas: TCanvas; var AHeight: Integer);
+begin
+   // Nothing
+end;
+
+procedure TGLColorProperty.PropDrawName(ACanvas: TCanvas; const ARect: TRect;
+  ASelected: Boolean);
+begin
+   DefaultPropertyDrawName(Self, ACanvas, ARect);
+end;
+{$endif WIN32}
+{$endif GLS_COMPILER_6_UP}
+{$endif GLS_COMPILER_5_UP}
+*)
 //----------------- TVectorFileProperty ----------------------------------------
 
 // GetAttributes
@@ -1082,6 +1272,183 @@ begin
 *)
 end;
 
+
+//----------------- TReuseableDefaultEditor --------------------------------------------------------------------------------
+
+// CheckEdit
+//
+{$ifdef GLS_DELPHI_6_UP}
+procedure TReuseableDefaultEditor.CheckEdit(const Prop : IProperty);
+begin
+  if FContinue then
+    EditProperty(Prop, FContinue);
+end;
+{$else}
+procedure TReuseableDefaultEditor.CheckEdit(PropertyEditor: TPropertyEditor);
+var
+  FreeEditor: Boolean;
+begin
+  FreeEditor:=True;
+  try
+    if FContinue then EditProperty(PropertyEditor, FContinue, FreeEditor);
+  finally
+    if FreeEditor then PropertyEditor.Free;
+  end;
+end;
+{$endif}
+
+// EditProperty
+//
+{$ifdef GLS_DELPHI_6_UP}
+procedure TReuseableDefaultEditor.EditProperty(const Prop: IProperty;
+  var Continue: Boolean);
+var
+  PropName: string;
+  BestName: string;
+  MethodProperty: IMethodProperty;
+
+  procedure ReplaceBest;
+  begin
+    FBest := Prop;
+    if FFirst = FBest then FFirst := nil;
+  end;
+
+begin
+  if not Assigned(FFirst) and
+    Supports(Prop, IMethodProperty, MethodProperty) then
+    FFirst := Prop;
+  PropName := Prop.GetName;
+  BestName := '';
+  if Assigned(FBest) then BestName := FBest.GetName;
+  if CompareText(PropName, 'ONCREATE') = 0 then
+    ReplaceBest
+  else if CompareText(BestName, 'ONCREATE') <> 0 then
+    if CompareText(PropName, 'ONCHANGE') = 0 then
+      ReplaceBest
+    else if CompareText(BestName, 'ONCHANGE') <> 0 then
+      if CompareText(PropName, 'ONCLICK') = 0 then
+        ReplaceBest;
+end;
+{$else}
+procedure TReuseableDefaultEditor.EditProperty(PropertyEditor: TPropertyEditor;
+															  var Continue, FreeEditor: Boolean);
+var
+  PropName: string;
+  BestName: string;
+
+  procedure ReplaceBest;
+  begin
+    FBest.Free;
+	 FBest:=PropertyEditor;
+    if FFirst = FBest then FFirst:=nil;
+    FreeEditor:=False;
+  end;
+
+begin
+  if not Assigned(FFirst) and (PropertyEditor is TMethodProperty) then
+  begin
+    FreeEditor:=False;
+    FFirst:=PropertyEditor;
+  end;
+  PropName:=PropertyEditor.GetName;
+  BestName:='';
+  if Assigned(FBest) then BestName:=FBest.GetName;
+  if CompareText(PropName, 'ONCREATE') = 0 then
+    ReplaceBest
+  else if CompareText(BestName, 'ONCREATE') <> 0 then
+    if CompareText(PropName, 'ONCHANGE') = 0 then
+		ReplaceBest
+    else if CompareText(BestName, 'ONCHANGE') <> 0 then
+      if CompareText(PropName, 'ONCLICK') = 0 then
+        ReplaceBest;
+end;
+{$endif}
+
+// Edit
+//
+{.$ifdef GLS_DELPHI_6_UP}
+procedure TReuseableDefaultEditor.Edit;
+(*
+var
+{$IFDEF FPC}
+  Components : TDesignerSelections;
+{$ELSE}
+  Components: IDesignerSelections;
+{$ENDIF}
+*)
+begin
+(*  Components := TDesignerSelections.Create;
+  FContinue := True;
+  Components.Add(Component);
+  FFirst := nil;
+  FBest := nil;
+  try
+    GetComponentProperties(Components, tkAny, Designer, CheckEdit);
+    if FContinue then
+      if Assigned(FBest) then
+        FBest.Edit
+      else if Assigned(FFirst) then
+        FFirst.Edit;
+  finally
+    FFirst := nil;
+    FBest := nil;
+  end;*)
+end;
+(*{$else}
+procedure TReuseableDefaultEditor.Edit;
+var
+{$IFDEF FPC}
+  Components : TDesignerSelections;
+{$ELSE}
+  Components : TDesignerSelectionList;
+{$ENDIF}
+begin
+  Components:=TDesignerSelectionList.Create;
+  try
+    FContinue:=True;
+    Components.Add(Component);
+    FFirst:=nil;
+    FBest:=nil;
+	 try
+      GetComponentProperties(Components, tkAny, Designer, CheckEdit);
+      if FContinue then
+        if Assigned(FBest) then
+          FBest.Edit
+        else if Assigned(FFirst) then
+          FFirst.Edit;
+    finally
+      FFirst.Free;
+      FBest.Free;
+	 end;
+  finally
+    Components.Free;
+  end;
+end;
+{$endif}
+*)
+//----------------- TGLMaterialLibraryEditor --------------------------------------------------------------------------------
+
+// EditProperty
+//
+{$ifdef GLS_DELPHI_6_UP}
+procedure TGLMaterialLibraryEditor.EditProperty(const Prop: IProperty; var Continue: Boolean);
+begin
+   if CompareText(Prop.GetName, 'MATERIALS') = 0 then begin
+      FBest:=Prop;
+   end;
+end;
+{$else}
+procedure TGLMaterialLibraryEditor.EditProperty(PropertyEditor: TPropertyEditor;
+                                                var Continue, FreeEditor: Boolean);
+begin
+   if CompareText(PropertyEditor.GetName, 'MATERIALS') = 0 then begin
+      FBest.Free;
+      FBest:=PropertyEditor;
+      FreeEditor:=False;
+   end;
+end;
+{$endif}
+
 //----------------- TGLLibMaterialNameProperty ---------------------------------
 
 // GetAttributes
@@ -1154,9 +1521,11 @@ begin
                        TGLMaterialLibrary,
                        TGLCadencer,
                        TGLGuiLayout,
-                       TGLBitmapFont, TGLWindowsBitmapFont, TGLStoredBitmapFont
+                       TGLBitmapFont, TGLWindowsBitmapFont, TGLStoredBitmapFont,
+                       TGLScriptLibrary
                        {$ifdef WINDOWS}
                        ,TGLFullScreenViewer
+                       ,TGLWideBitmapFont
                        {$endif}
                       ]);
 
@@ -1173,7 +1542,8 @@ begin
    RegisterComponents('GLScene Utils',
                       [TAsyncTimer, TGLStaticImposterBuilder,
                        TCollisionManager, TGLAnimationControler,
-                       {TAVIRecorder,} TGLDCEManager, TGLFPSMovementManager,
+                       {$IFDEF WINDOWS}TAVIRecorder,{$ENDIF}
+                       TGLDCEManager, TGLFPSMovementManager,
                        TGLMaterialScripter, TGLUserInterface, TGLNavigator,
                        TGLSmoothNavigator, TGLSmoothUserInterface,
                        TGLTimeEventsMGR, TApplicationFileIO, TGLVfsPAK,
@@ -1210,8 +1580,8 @@ begin
    RegisterPropertyEditor(TypeInfo(TGLCoordinates), nil, '', TGLCoordinatesProperty);
 
    RegisterPropertyEditor(TypeInfo(TGLColor), nil, '', TGLColorProperty);
-
    RegisterPropertyEditor(TypeInfo(TGLMaterial), nil, '', TGLMaterialProperty);
+
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLMaterial, '', TGLLibMaterialNameProperty);
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLLibMaterial, 'Texture2Name', TGLLibMaterialNameProperty);
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLSkyBox, '', TGLLibMaterialNameProperty);
@@ -1322,7 +1692,6 @@ initialization
       RegisterSceneObject(TGLZShadows, 'ZShadows', glsOCSpecialObjects);
       RegisterSceneObject(TGLSLTextureEmitter, 'GLSL Texture Emitter', glsOCSpecialObjects);
       RegisterSceneObject(TGLSLProjectedTextures, 'GLSL Projected Textures', glsOCSpecialObjects);
-      
       RegisterSceneObject(TGLTextureEmitter, 'Texture Emitter', glsOCSpecialObjects);
       RegisterSceneObject(TGLProjectedTextures, 'Projected Textures', glsOCSpecialObjects);
       RegisterSceneObject(TGLBlur, 'Blur', glsOCSpecialObjects);
@@ -1331,7 +1700,7 @@ initialization
       RegisterSceneObject(TGLSpaceText, 'SpaceText', glsOCDoodad);
       {$ENDIF}
       RegisterSceneObject(TGLTrail, 'GLTrail', glsOCSpecialObjects);
-      //{.$endif}
+
       RegisterSceneObject(TGLPostEffect, 'PostEffect', glsOCSpecialObjects);
       RegisterSceneObject(TGLPostShaderHolder, 'PostShaderHolder', glsOCSpecialObjects);
 
@@ -1353,7 +1722,6 @@ initialization
       RegisterSceneObject(TGLRenderPoint, 'Render Point', '');
       RegisterSceneObject(TGLImposter, 'Imposter Sprite', '');
       RegisterSceneObject(TGLFeedback, 'OpenGL Feedback', '');
-
    end;
 
   {$i GLLazarusRegister.lrs}
