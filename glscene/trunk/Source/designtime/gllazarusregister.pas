@@ -229,7 +229,7 @@ uses
    GLMirror, GLParticleFX, GLShadowPlane, GLTerrainRenderer, GLShadowVolume,
    GLTeapot, GLPolyhedron, GLGeomObjects, GLTextureImageEditors, GLMultiProxy,
    GLSkyBox, GLState, GLUtils, GLTilePlane, GLTree, GLImposter, GLWaterPlane,
-   GLPerlinPFX, GLTexLensFlare, GLFireFX, GLThorFX, glsceneeditnew, FVectorEditor,
+   GLPerlinPFX, GLTexLensFlare, GLFireFX, GLThorFX, GLSceneEdit, FVectorEditor,
    GLCadencer, GLCollision, GLHeightData, GLzBuffer, GLGui, GLBumpmapHDS,
    AsyncTimer, GLWindows, GLWindowsFont, GLHeightTileFileHDS, GLTexturedHDS,
    GLAnimatedSprite, GLFeedback, GLProjectedTextures, GLBlur, GLTrail, GLPerlin,
