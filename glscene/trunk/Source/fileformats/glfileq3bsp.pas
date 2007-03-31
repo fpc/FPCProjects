@@ -8,13 +8,16 @@
     to enable support for OBJ & OBJF at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
-	   <li>31/01/03 - EG - Materials support
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
+      <li>31/01/03 - EG - Materials support
       <li>30/01/03 - EG - Creation
    </ul><p>
 }
 unit GLFileQ3BSP;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLVectorFileObjects, ApplicationFileIO, GLMisc;
 

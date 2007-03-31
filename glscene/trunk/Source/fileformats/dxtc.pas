@@ -7,6 +7,7 @@
    Adapted from DevIL image library (http://openil.sourceforge.net)<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>03/09/04 - SG - Delphi 5 compatibilty fixes (Ivan Lee Herring)
       <li>01/09/04 - SG - Creation
    </ul></font>
@@ -14,6 +15,8 @@
 unit DXTC;
 
 interface
+
+{$I GLScene.inc}
 
 uses
    SysUtils, VectorGeometry;

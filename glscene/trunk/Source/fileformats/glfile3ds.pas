@@ -6,6 +6,7 @@
 	3DStudio 3DS vector file format implementation.<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>28/01/07 - DaStr - Added transparency and opacity texture support (thanks DIVON)
@@ -17,6 +18,8 @@
 unit GLFile3DS;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes, SysUtils, GLVectorFileObjects, GLTexture, ApplicationFileIO,

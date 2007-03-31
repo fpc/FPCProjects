@@ -6,6 +6,7 @@
 	MD2 file loader<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>25/08/03 - Php - Added FreeLists & degibbered LoadFromStream
@@ -20,6 +21,7 @@ unit FileMD2;
 interface
 
 {$R-}
+{$I GLScene.inc}
 
 uses Classes, TypesMD2;
 

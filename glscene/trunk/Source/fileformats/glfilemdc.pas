@@ -26,6 +26,7 @@
       - added automatical generated History from CVS
 
 	<b>History :</b><font size=-1><ul>
+      <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>11/05/04 - SG - Added to CVS
       <li>07/02/04 - OT - Creation (Osman Turan)
 	</ul></font>
@@ -33,6 +34,8 @@
 unit GLFileMDC;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes, SysUtils, GLVectorFileObjects, GLMisc, GLTexture, ApplicationFileIO,

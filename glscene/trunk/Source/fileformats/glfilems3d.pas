@@ -1,11 +1,12 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-{: GLVectorFileObjects<p>
+{: GLFileMS3D<p>
 
-	Vector File related objects for GLScene<p>
+	Support for MS3D file format.<p>
 
   <b>History :</b><font size=-1><ul>
+    <li>31/03/07 - DaStr - Added $I GLScene.inc
     <li>24/03/07 - DaStr - Added explicit pointer dereferencing
                            (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
     <li>19/12/04 - PhP - Added capabilities function
@@ -17,6 +18,8 @@
 unit GLFileMS3D;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes, SysUtils, GLVectorFileObjects,  VectorTypes, GLTexture, VectorGeometry,

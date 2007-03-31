@@ -9,6 +9,7 @@
    You can change current PAK file by ActivePak variable.<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>31/03/2007 - DaStr - Added $I GLScene.inc
       <li>29/01/2007 - DaStr - Moved registration to GLSceneRegister.pas
       <li>26/10/2006 - LC - Fixed memory leak in TGLVfsPAK.LoadFromFile. Bugtracker ID=1585215 (thanks Da Stranger)
       <li>18/10/2004 - Orchestraman - PAKCreateFileStream, Fixed an error when trying to load an image file in material editor during design time. It Loads the file from the Hard Disk. 
@@ -26,6 +27,7 @@
 }
 unit GLVfsPAK;
 
+{$I GLScene.inc}
 // Activate support for LZRW1 compression. This line could be moved to GLScene.inc file.
 // Remove the "." characted in order to activate compression features.
 {.$DEFINE GLS_LZRW_SUPPORT}
