@@ -6,10 +6,9 @@
     <CompilerOptions>
       <Version Value="5"/>
       <SearchPaths>
-        <IncludeFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/"/>
-        <OtherUnitFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/;../Source/shaders/;../Source/physicsapis/;../Source/soundapis/;../Source/gameapis/;../Source/cgshaders/;../Source/glslshaders/"/>
+        <IncludeFiles Value="../Source/"/>
+        <OtherUnitFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/;../Source/shaders/;../Source/physicsapis/;../Source/soundapis/;../Source/videoapis/;../Source/cgshaders/;../Source/glslshaders/"/>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
-        <SrcPath Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
