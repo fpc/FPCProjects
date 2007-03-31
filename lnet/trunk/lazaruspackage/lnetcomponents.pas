@@ -219,7 +219,7 @@ begin
 end;
 
 initialization
-  LCLEventer:=TLCLEventer.Create;
+  LCLEventer := TLCLEventer.Create;
   
 finalization
   LCLEventer.Free; // it IS required because refcount is +1

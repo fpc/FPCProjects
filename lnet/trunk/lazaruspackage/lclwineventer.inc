@@ -65,6 +65,7 @@ end;
 
 constructor TLCLEventer.Create;
 begin
+  inherited;
   TWin32WidgetSet(WidgetSet).OnAsyncSocketMsg := @HandleEvents;
 end;
 
