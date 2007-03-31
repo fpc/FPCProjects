@@ -6,6 +6,7 @@
   A collection of components that generate post effects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/03/07 - DaStr - Small fix for Delphi5 compatibility
       <li>23/03/07 - DaStr - Added TGLPostShaderHolder.Assign
       <li>20/03/07 - DaStr - Fixed TGLPostShaderHolder.DoRender
       <li>09/03/07 - DaStr - Added pepNightVision preset (thanks Roman Ganz)
@@ -315,12 +316,16 @@ begin
   end;
 end;
 
+type
+  // Required for Delphi5 compatibility.
+  THackCollection = class(TOwnedCollection)end;
+
 function TGLPostShaderCollectionItem.GetRealOwner: TGLPostShaderHolder;
 begin
   if Collection = nil then
     Result := nil
   else
-    Result := TGLPostShaderHolder(Collection.Owner);
+    Result := TGLPostShaderHolder(THackCollection(Collection).GetOwner);
 end;
 
 procedure TGLPostShaderCollectionItem.SetShader(const Value: TGLShader);
