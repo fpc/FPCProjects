@@ -38,7 +38,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="160">
+    <Files Count="161">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -700,6 +700,10 @@
         <Filename Value="../Source/glterrainrenderer.pas"/>
         <UnitName Value="GLTerrainRenderer"/>
       </Item160>
+      <Item161>
+        <Filename Value="../Source/glmaterialscript.pas"/>
+        <UnitName Value="GLMaterialScript"/>
+      </Item161>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
