@@ -4,7 +4,7 @@
 	Edits a TXCollection<p>
 
 	<b>Historique : </b><font size=-1><ul>
-      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
+      <li>29/03/07 - DaStr - Renamed LINUX to KYLIX (BugTrackerID=1681585)
       <li>03/07/04 - LR - Make change for Linux
       <li>12/07/03 - DanB - Fixed crash when owner deleted        
       <li>27/02/02 - Egg - Fixed crash after item deletion
@@ -25,7 +25,7 @@ uses
   Menus, ComCtrls, ToolWin, 
   {$ifdef GLS_DELPHI_6_UP} DesignEditors, DesignIntf {$else} DsgnIntf {$endif};
 {$ENDIF}
-{$IFDEF UNIX} 
+{$IFDEF KYLIX}
 uses
   QForms, XCollection, QImgList, QControls, Classes, QActnList, 
   QMenus, QComCtrls, DesignEditors, DesignIntf; 

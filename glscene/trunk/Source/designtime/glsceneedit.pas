@@ -37,7 +37,7 @@ interface
 
 uses
   xcollection, registry, controls, forms, comctrls, imglist, dialogs, menus,
-  actnlist, toolwin, glscene, classes, sysutils, extctrls, stdctrls,
+  actnlist, toolwin, glscene, classes, sysutils, extctrls, stdctrls, GLCrossPlatform,
   {$ifndef fpc}
     {$ifdef gls_delphi_6_up}
       designintf, vcleditors;
@@ -53,16 +53,6 @@ const
   BEHAVIOURS_SELECTED=1;
   EFFECTS_SELECTED=2;
 type
-  {$ifndef FPC}
-    {$ifdef GLS_DELPHI_6_UP}
-      TTheDesigner = class(IDesigner);
-    {$else}
-      TTheDesigner = class(IFormDesigner);
-    {$endif}
-  {$else}
-    TTheDesigner = TComponentEditorDesigner;
-  {$endif}
-
 
   TSetSubItemsEvent = procedure(Sender:TObject) of object;
 
@@ -176,7 +166,7 @@ type
 
     FScene: TGLScene;
     FObjectNode, FCameraNode: TTreeNode;
-    FCurrentDesigner: TTheDesigner;
+    FCurrentDesigner: TGLDesigner;
     FLastMouseDownPos : TPoint;
 
 {$IFDEF GLS_DELPHI_6_UP}
@@ -232,7 +222,7 @@ type
 	 procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
   public
-    procedure SetScene(Scene: TGLScene; ADesigner: TTheDesigner);
+    procedure SetScene(Scene: TGLScene; ADesigner: TGLDesigner);
 
   end;
 
@@ -336,7 +326,7 @@ end;
 
 // SetScene
 //
-procedure TGLSceneEditorForm.SetScene(Scene: TGLScene; ADesigner: TTheDesigner);
+procedure TGLSceneEditorForm.SetScene(Scene: TGLScene; ADesigner: TGLDesigner);
 begin
    if Assigned(FScene) then
 (* removed delphi 4 support {$ifdef GLS_DELPHI_5_UP}*)

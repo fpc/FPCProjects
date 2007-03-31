@@ -67,7 +67,7 @@ uses
   Windows,
   {$ENDIF}
   Classes, SysUtils, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtDlgs, strutils, LCLType, LCLIntf, types
+  Dialogs, StdCtrls, ExtDlgs, strutils, LCLType, LCLIntf, types, ComponentEditors
   {$IFDEF UNIX}
   , Buttons, unix, libc
   {$ENDIF}
@@ -124,6 +124,16 @@ type
       EGLOSError = EOSError;
    {$endif}
 {$endif}
+{$IFDEF FPC}
+   TGLDesigner = TComponentEditorDesigner;
+{$ELSE}
+  {$ifdef GLS_DELPHI_6_UP}
+    TGLDesigner = IDesigner;
+  {$else}
+    TGLDesigner = IFormDesigner;
+  {$endif}
+{$endif}
+
 
 {$IFNDEF KYLIX}
   {$IFDEF FPC}
@@ -182,13 +192,13 @@ type
 {$ENDIF}
 
 const
-{$ifdef WIN32}
+{$ifndef KYLIX}
    glpf8Bit = pf8bit;
    glpf24bit = pf24bit;
    glpf32Bit = pf32bit;
    glpfDevice = pfDevice;
 {$endif}
-{$IFDEF UNIX}
+{$IFDEF KYLIX}
    glpf8Bit = pf8bit;
    glpf24bit = pf32bit;
    glpf32Bit = pf32bit;
