@@ -143,7 +143,7 @@ begin
     Frame := PMD2AliasFrame(@Buffer);
     // read animation / frame info
     aStream.Read(Frame^, Header.FrameSize);
-    FrameName := Trim(String(Frame^.Name));
+    FrameName := Trim(Frame^.Name);
     if Copy(FrameName, Length(FrameName) - 1, 1)[1] in ['0'..'9'] then
       FrameName := Copy(FrameName, 1, Length(FrameName) - 2)
     else

@@ -6,19 +6,6 @@
 	Vector file object loading of Ghoul2 model and animation 
 	files into GLScene.<p>
 
-      $Log: glfilegl2.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:31  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/12/04 16:53:01  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History :</b><font size=-1><ul>
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -114,8 +101,8 @@ begin
     for s:=0 to Length(GLMFile.SurfaceHeirachy)-1 do begin
       mesh:=TSkeletonMeshObject.CreateOwned(Owner.MeshObjects);
       mesh.Mode:=momFaceGroups;
-      mesh.Name:=trim(String(GLMFile.SurfaceHeirachy[s].name));
-      shader:=trim(String(GLMFile.SurfaceHeirachy[s].shader));
+      mesh.Name:=trim(GLMFile.SurfaceHeirachy[s].name);
+      shader:=trim(GLMFile.SurfaceHeirachy[s].shader);
       AllocateMaterial(mesh.Name,shader);
 
       // Set size of VerticesBonesWeights

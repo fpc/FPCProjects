@@ -5,19 +5,6 @@
   GLFileMD3 - Code for loading animated MD3 files into GLScene
               FreeForms and Actors.
 
-      $Log: glfilemd3.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:31  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/12/04 16:53:02  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
   History :
     21/08/03 - EG - Fixed GetNormalFromMD3Normal (lat/lon were inverted)
     28/02/03 - SG - Creation
@@ -101,7 +88,7 @@ begin
   try
     for i:=0 to MD3File.ModelHeader.numMeshes-1 do begin
       mesh:=TMorphableMeshObject.CreateOwned(Owner.MeshObjects);
-      mesh.Name:=trim(String(MD3File.MeshData[i].MeshHeader.strName));
+      mesh.Name:=trim(MD3File.MeshData[i].MeshHeader.strName);
       with mesh, MD3File do begin
         Mode:=momFaceGroups;
         faceGroup:=TFGIndexTexCoordList.CreateOwned(FaceGroups);
@@ -130,7 +117,7 @@ begin
         // Get the mesh data for each morph frame
         for j:=0 to ModelHeader.numFrames-1 do begin
           morphTarget:=TMeshMorphTarget.CreateOwned(MorphTargets);
-          morphTarget.Name:=Trim(String(MeshData[i].MeshHeader.strName))+'['+IntToStr(j)+']';
+          morphTarget.Name:=Trim(MeshData[i].MeshHeader.strName)+'['+IntToStr(j)+']';
           numVerts:=MeshData[i].MeshHeader.numVertices;
           morphTarget.Vertices.Capacity:=numVerts;
           for k:=numVerts*j to numVerts*(j+1)-1 do begin
