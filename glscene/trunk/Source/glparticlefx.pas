@@ -618,8 +618,6 @@ type
 	TPFXLifeColors = class (TOwnedCollection)
 	   protected
 	      { Protected Declarations }
-	      //FOwner : TComponent;
-	      //function GetOwner: TPersistent; override;
          procedure SetItems(index : Integer; const val : TPFXLifeColor);
 	      function GetItems(index : Integer) : TPFXLifeColor;
 
@@ -2119,14 +2117,8 @@ end;
 
 constructor TPFXLifeColors.Create(AOwner : TComponent);
 begin
-	//Ownr:=AOwner;
 	inherited Create(AOwner, TPFXLifeColor);
 end;
-
-(*function TPFXLifeColors.GetOwner: TPersistent;
-begin
-	Result:=Owner;
-end;*)
 
 procedure TPFXLifeColors.SetItems(index : Integer; const val : TPFXLifeColor);
 begin
