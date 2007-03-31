@@ -247,7 +247,7 @@ uses
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText,
      //GLWideBitmapFont,  doesn't even compile in win due to missing TTextRecA
-     GLAVIRecorder,
+     //GLAVIRecorder, doesn't even compile in win due to missing commDlg
    {$endif}
    componenteditors
    {,glsdlcontext,glscriptbase,}
