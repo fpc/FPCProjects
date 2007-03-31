@@ -1526,7 +1526,7 @@ begin
                        TGLScriptLibrary
                        {$ifdef WINDOWS}
                        ,TGLFullScreenViewer
-                       ,TGLWideBitmapFont
+                       //,TGLWideBitmapFont
                        {$endif}
                       ]);
 
@@ -1543,7 +1543,7 @@ begin
    RegisterComponents('GLScene Utils',
                       [TAsyncTimer, TGLStaticImposterBuilder,
                        TCollisionManager, TGLAnimationControler,
-                       {$IFDEF WINDOWS}TAVIRecorder,{$ENDIF}
+                       //{$IFDEF WINDOWS}TAVIRecorder,{$ENDIF}
                        TGLDCEManager, TGLFPSMovementManager,
                        TGLMaterialScripter, TGLUserInterface, TGLNavigator,
                        TGLSmoothNavigator, TGLSmoothUserInterface,
