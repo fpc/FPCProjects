@@ -4,14 +4,15 @@ object MainForm: TMainForm
   Top = 112
   Width = 647
   HorzScrollBar.Page = 646
-  VertScrollBar.Page = 558
+  VertScrollBar.Page = 529
   ActiveControl = EditHost
   Caption = 'HTTP Client Test'
   Constraints.MinHeight = 559
   Constraints.MinWidth = 647
+  Menu = MainMenu1
   object MenuPanel: TPanel
     Left = 477
-    Height = 559
+    Height = 530
     Width = 170
     Align = alRight
     TabOrder = 0
@@ -19,7 +20,7 @@ object MainForm: TMainForm
       Left = 11
       Height = 14
       Top = 16
-      Width = 57
+      Width = 60
       Caption = 'Hostname'
       Color = clNone
       ParentColor = False
@@ -37,7 +38,7 @@ object MainForm: TMainForm
       Left = 11
       Height = 14
       Top = 128
-      Width = 23
+      Width = 25
       Caption = 'Port'
       Color = clNone
       ParentColor = False
@@ -80,14 +81,14 @@ object MainForm: TMainForm
   end
   object MemoStatus: TMemo
     Height = 103
-    Top = 456
+    Top = 427
     Width = 477
     Anchors = [akLeft, akRight, akBottom]
     ScrollBars = ssAutoVertical
     TabOrder = 1
   end
   object MemoHTML: TMemo
-    Height = 456
+    Height = 427
     Width = 477
     Anchors = [akTop, akLeft, akRight, akBottom]
     ScrollBars = ssAutoBoth
@@ -101,7 +102,25 @@ object MainForm: TMainForm
     OnProcessHeaders = HTTPClientProcessHeaders
     OnDisconnect = HTTPClientDisconnect
     OnError = HTTPClientError
-    left = 616
-    top = 528
+    left = 504
+    top = 616
+  end
+  object MainMenu1: TMainMenu
+    left = 504
+    top = 584
+    object MenuItemFile: TMenuItem
+      Caption = '&File'
+      object MenuItemExit: TMenuItem
+        Caption = 'E&xit'
+        OnClick = MenuItemExitClick
+      end
+    end
+    object MenuItemHelp: TMenuItem
+      Caption = '&Help'
+      object MenuItemAbout: TMenuItem
+        Caption = '&About'
+        OnClick = MenuItemAboutClick
+      end
+    end
   end
 end

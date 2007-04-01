@@ -2,12 +2,14 @@ object MainForm: TMainForm
   Left = 198
   Height = 548
   Top = 84
-  Width = 696
-  HorzScrollBar.Page = 695
-  VertScrollBar.Page = 528
+  Width = 725
+  HorzScrollBar.Page = 724
+  VertScrollBar.Page = 518
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
+  Constraints.MinHeight = 548
+  Constraints.MinWidth = 725
   Menu = MainMenu
   OnClose = FormClose
   OnCreate = FormCreate
@@ -15,22 +17,22 @@ object MainForm: TMainForm
   OnKeyDown = FormKeyDown
   object MemoText: TMemo
     Height = 103
-    Top = 403
-    Width = 696
+    Top = 393
+    Width = 725
     Align = alBottom
     ReadOnly = True
     ScrollBars = ssAutoVertical
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 372
+    Height = 362
     Top = 26
-    Width = 696
+    Width = 725
     Align = alClient
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 370
+      Height = 360
       Top = 1
       Width = 183
       Align = alLeft
@@ -42,15 +44,15 @@ object MainForm: TMainForm
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 370
+      Height = 360
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 370
+      Height = 360
       Top = 1
-      Width = 506
+      Width = 535
       Align = alClient
       ColCount = 6
       Columns = <      
@@ -96,15 +98,15 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 398
-    Width = 696
+    Top = 388
+    Width = 725
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
     Height = 23
-    Top = 506
-    Width = 696
+    Top = 496
+    Width = 725
     Panels = <    
       item
         Width = 150
@@ -122,7 +124,7 @@ object MainForm: TMainForm
   end
   object ToolBar1: TToolBar
     Height = 26
-    Width = 696
+    Width = 725
     Caption = 'ToolBar1'
     ShowCaptions = True
     TabOrder = 2
@@ -133,21 +135,21 @@ object MainForm: TMainForm
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 72
+      Left = 86
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 85
+      Left = 99
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 133
+      Left = 155
       Top = 2
       Action = accDisconnect
       Down = True

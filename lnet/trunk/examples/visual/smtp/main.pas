@@ -106,6 +106,11 @@ begin
   if (not SMTP.Connected) and (ButtonConnect.Caption = 'Connect') then begin
     SMTP.Connect(EditServer.Text, Word(StrToInt(EditPort.Text)));
     ButtonConnect.Caption := 'Connecting';
+    SB.SimpleText := 'Connecting...';
+  end else if ButtonConnect.Caption = 'Connecting' then begin
+    SMTP.Disconnect;
+    ButtonConnect.Caption := 'Connect';
+    SB.SimpleText := 'Aborted connect!';
   end else
     SMTP.Quit; // server will respond and we'll make a clean disconnect (see SMTP rfc)
 end;

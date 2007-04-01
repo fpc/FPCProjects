@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, lNet, lHTTP,
-  lNetComponents, ExtCtrls, StdCtrls, Buttons;
+  lNetComponents, ExtCtrls, StdCtrls, Buttons, Menus;
   
 type
 
@@ -21,8 +21,13 @@ type
     LabelPort: TLabel;
     LabelURI: TLabel;
     LabelHost: TLabel;
+    MainMenu1: TMainMenu;
     MemoHTML: TMemo;
     MemoStatus: TMemo;
+    MenuItemExit: TMenuItem;
+    MenuItemAbout: TMenuItem;
+    MenuItemHelp: TMenuItem;
+    MenuItemFile: TMenuItem;
     MenuPanel: TPanel;
     procedure ButtonSendRequestClick(Sender: TObject);
     procedure EditHostKeyPress(Sender: TObject; var Key: char);
@@ -32,6 +37,8 @@ type
     function HTTPClientInput(ASocket: TLHTTPClientSocket; ABuffer: pchar;
       ASize: dword): dword;
     procedure HTTPClientProcessHeaders(ASocket: TLHTTPClientSocket);
+    procedure MenuItemAboutClick(Sender: TObject);
+    procedure MenuItemExitClick(Sender: TObject);
   private
     HTTPBuffer: string;
     procedure AppendToMemo(aMemo: TMemo; const aText: string);
@@ -96,6 +103,17 @@ procedure TMainForm.HTTPClientProcessHeaders(ASocket: TLHTTPClientSocket);
 begin
   AppendToMemo(MemoStatus, 'Response: ' + IntToStr(HTTPStatusCodes[ASocket.ResponseStatus]) +
                     ' ' + ASocket.ResponseReason + ', data...');
+end;
+
+procedure TMainForm.MenuItemAboutClick(Sender: TObject);
+begin
+  MessageDlg('Copyright (c) 2006-2007 by Ales Katona and Micha Nelissen. All rights deserved :)',
+             mtInformation, [mbOK], 0);
+end;
+
+procedure TMainForm.MenuItemExitClick(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TMainForm.AppendToMemo(aMemo: TMemo; const aText: string);

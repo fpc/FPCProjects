@@ -340,7 +340,7 @@ end;
 
 procedure TMainForm.AboutMenuItemClick(Sender: TObject);
 begin
-  MessageDlg('lFTP test program copyright (c) 2005-2006 by Ales Katona. All rights deserved :)',
+  MessageDlg('lFTP test program copyright (c) 2005-2007 by Ales Katona and Jesus Reyes. All rights deserved :)',
              mtInformation, [mbOK], 0);
 end;
 
@@ -528,18 +528,18 @@ procedure TMainForm.rmtGridCompareCells(Sender: TObject; Acol, ARow, Bcol,
 var
   A,B: Integer;
 begin
-  if aCol=0 then begin
+  if aCol = 0 then begin
     // lets do a simple sort, Dirs->Files->Alphabetic order
     A := ptrInt(rmtGrid.Objects[ACol,ARow]);
     B := ptrInt(rmtGrid.Objects[BCol,BRow]);
     result := A-B;
-    if Result=0 then begin
+    if Result = 0 then begin
       // both rows are of the same kind
       // do it alphabetically
       result := CompareText(rmtGrid.Cells[1,ARow],rmtGrid.Cells[1,BRow]);
     end;
   end else
-  if aCol=1 then begin
+  if aCol = 1 then begin
     Result := CompareText(rmtGrid.Cells[ACol,ARow],rmtGrid.Cells[ACol,BRow]);
   end;
 end;
@@ -554,7 +554,7 @@ begin
   else if CurrentIsLink then
     ChangeDirectory(CurrentNameLink)
   else
-  if rmtGrid.Objects[0, rmtGrid.Row]<>itError then begin
+  if rmtGrid.Objects[0, rmtGrid.Row] <> itError then begin
     FDLSize := CurrentSize;
     if FDLSize = 0 then
       FDLSize := 1;
@@ -569,12 +569,12 @@ procedure TMainForm.rmtGridDrawCell(Sender: TObject; Col, Row: Integer;
 var
   i: Integer;
 begin
-  if (Row>0)and(Col=0) then begin
-    i := PtrInt(rmtGrid.Objects[2,Row]);
-    if i=0 then
-      i := PtrInt(rmtGrid.Objects[0,Row])-1;
-    if i<Length(FIcons) then
-      rmtGrid.Canvas.Draw(aRect.Left+2,aRect.Top+2, FIcons[i].Bmp);
+  if (Row > 0)and(Col = 0) then begin
+    i := PtrInt(rmtGrid.Objects[2, Row]);
+    if i = 0 then
+      i := PtrInt(rmtGrid.Objects[0, Row]) - 1;
+    if i < Length(FIcons) then
+      rmtGrid.Canvas.Draw(aRect.Left + 2,aRect.Top + 2, FIcons[i].Bmp);
   end else
     rmtGrid.DefaultDrawCell(Col,Row,aRect,aState);
 end;
@@ -634,7 +634,7 @@ procedure TMainForm.UpdateSite;
 begin
   SBar.Panels[0].Text := Site.site;
   SBar.Panels[1].Text := Site.user;
-  if Site.txtHost<>'' then
+  if Site.txtHost <> '' then
     SBar.Panels[2].Text := Site.txtHost+GetSitePath
   else
     SBar.Panels[2].Text := '';
@@ -658,14 +658,14 @@ end;
 function TMainForm.CurrentIsDirectory: boolean;
 begin
   result :=
-    (rmtGrid.Objects[0, rmtGrid.Row]=itDirUp) or
-    (rmtGrid.Objects[0, rmtGrid.Row]=itDir);
+    (rmtGrid.Objects[0, rmtGrid.Row] = itDirUp) or
+    (rmtGrid.Objects[0, rmtGrid.Row] = itDir);
 end;
 
 function TMainForm.CurrentIsLink: boolean;
 begin
   result :=
-    (rmtGrid.Objects[0, rmtGrid.Row]=itLink);
+    (rmtGrid.Objects[0, rmtGrid.Row] = itLink);
 end;
 
 function TMainForm.GetIconIndexObj(aName: string): TObject;
@@ -674,10 +674,10 @@ var
 begin
   result := nil;
   aName := lowercase(aName);
-  for i := 5 to Length(FIcons)-1 do begin
+  for i := 5 to Length(FIcons) - 1 do begin
     FtmpStrList.CommaText := FIcons[i].Ext;
-    for j := 0 to FtmpStrList.Count-1 do
-      if RevPos(FtmpStrList[j],aName)<>0 then begin
+    for j := 0 to FtmpStrList.Count - 1 do
+      if RevPos(FtmpStrList[j],aName) <> 0 then begin
         result := TObject(PtrInt(i));
         exit;
       end;
@@ -689,8 +689,8 @@ var
   i: Integer;
 begin
   result := -1;
-  for i := 5 to Length(FIcons)-1 do
-    if CompareText(aExt, FIcons[i].Ext)=0 then begin
+  for i := 5 to Length(FIcons) - 1 do
+    if CompareText(aExt, FIcons[i].Ext) = 0 then begin
       result := i;
       break;
     end;
@@ -723,7 +723,7 @@ var
 begin
   // check if not exists already
   i := IndexOfExt(FileExt);
-  if (i<0) and (LazarusResources.Find(LazResName)<>nil) then begin
+  if (i < 0) and (LazarusResources.Find(LazResName) <> nil) then begin
     i := Length(FIcons);
     SetLength(FIcons, i+1);
     FIcons[i].Bmp := TBitmap.Create;
