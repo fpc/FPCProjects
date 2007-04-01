@@ -8,7 +8,7 @@ make -- compiles all examples and lib with -XX -Xs -O2
 make argless -- compiles everything with no arguments (can be combined with OPT=...)
 make clean -- deletes the object files, ppus and binaries(requires delp, part of FPC)
 
-Usage: if you want to use lnet in your project, just copy the lNet directory somewhere and put it in compiler's unit search path with -Fu and -Fi for the lib/sys subdir.
+Usage: If you're using Lazarus, see lazaruspackage/INSTALL, even if you plan to use only non-visual aspect of lNet (eg: not depend on LCL). Otherwise if you want to use lnet in your project, just copy the "lib" directory somewhere and put it in compiler's unit search path with -Fu and -Fi for the "lib/sys" subdir.
 
 Units:
 

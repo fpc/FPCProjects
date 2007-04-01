@@ -3,10 +3,6 @@ LentilWars networking unit.
 These units are an asynchronous, TCP/UDP communications classes.
 LTCP, LUDP, LTELNET, LFTP and LSMTP are example programs.
 
-You can use them as long as you abide by the GPL. (see LICENSE.examples)
-
-LNET is licensed under a modified LGPL. (see lnet/LICENSE and lnet/LICENSE.ADDON)
-
 Use the makefile to compile the lib as well as examples.
 
 All programs are compiled with Free Pascal 2.0.4+ (http://www.freepascal.org)
@@ -16,7 +12,7 @@ All rights reserved.
 
 LICENSING:
 
-lNet units (units in lnet directory) are licensed under a modified LGPL license. See file lnet/LICENSE and lnet/LICENSE.ADDON.
+lNet units (units in lib and lazaruspackage directories) are licensed under a modified LGPL license. See file lnet/LICENSE and lnet/LICENSE.ADDON.
 
 The modification allows to static/smart - link lNet libraries into binary applications without providing sources.
 
