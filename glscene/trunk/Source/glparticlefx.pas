@@ -9,35 +9,9 @@
    particle depth-sorting (allowing correct rendering of interwoven separate
    fire and smoke particle systems for instance).<p>
 
-      2007-03-06 crossbuilder: bugfixes from main tree - this unit is now
-         functional identical with rev. 1.69 of glscene cvs
-   
-      2006-11-18 crossbuilder: bugfixes from main tree - this unit is now
-         functional identical with rev. 1.68 of glscene cvs
-
-      $Log: glparticlefx.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/10 20:38:38  z0m3ie
-      bugfixes from main tree
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/08/22 00:05:32  k00m
-      Correction with the TCollection creation.
-
-      Revision 1.4  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
+      <li>02/04/07 - DaStr - TPFXLifeColors now inherits from TOwnedCollection
+                             (thanks Burkhard Carstens)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -623,7 +597,7 @@ type
 
       public
 	      { Public Declarations }
-	      constructor Create(AOwner : TComponent);
+	      constructor Create(AOwner: TPersistent);
 
          function Add: TPFXLifeColor;
 	      function FindItemID(ID: Integer): TPFXLifeColor;
@@ -2115,7 +2089,7 @@ end;
 // ------------------ TPFXLifeColors ------------------
 // ------------------
 
-constructor TPFXLifeColors.Create(AOwner : TComponent);
+constructor TPFXLifeColors.Create(AOwner : TPersistent);
 begin
 	inherited Create(AOwner, TPFXLifeColor);
 end;

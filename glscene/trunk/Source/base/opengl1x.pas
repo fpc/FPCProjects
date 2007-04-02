@@ -2194,6 +2194,7 @@ const
    GL_STENCIL_INDEX4_EXT                            = $8D47;
    GL_STENCIL_INDEX8_EXT                            = $8D48;
    GL_STENCIL_INDEX16_EXT                           = $8D49;
+   GL_DEPTH24_STENCIL8_EXT							= $88F0;
    GL_RENDERBUFFER_WIDTH_EXT                        = $8D42;
    GL_RENDERBUFFER_HEIGHT_EXT                       = $8D43;
    GL_RENDERBUFFER_INTERNAL_FORMAT_EXT              = $8D44;
