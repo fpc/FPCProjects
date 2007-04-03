@@ -6,12 +6,15 @@
 	Loader for FSRad OCT files.<p>
 
 	<b>History : </b><font size=-1><ul>
-	   <li>30/01/03 - Egg - Creation
+      <li>02/04/07 - DaStr - Added $I GLScene.inc
+      <li>30/01/03 - Egg - Creation
 	</ul></font>
 }
 unit FileOCT;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, VectorGeometry, VectorLists;
 

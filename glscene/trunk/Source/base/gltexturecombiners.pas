@@ -6,6 +6,7 @@
    Texture combiners setup utility functions.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>02/04/07 - DaStr - Added $I GLScene.inc
       <li>17/12/03 - EG - Alpha and RGB channels separate combination now supported
       <li>23/05/03 - EG - All tex units now accepted as target
       <li>22/05/03 - EG - Fixed GL_ADD_SIGNED_ARB parsing, better error reporting
@@ -15,6 +16,8 @@
 unit GLTextureCombiners;
 
 interface
+
+{$I GLScene.inc}
 
 uses SysUtils;
 
