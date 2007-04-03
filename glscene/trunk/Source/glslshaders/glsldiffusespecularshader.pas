@@ -6,6 +6,8 @@
     This is a collection of GLSL diffuse-specular shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>03/04/07 - LC - Shader didn't respect the texture matrix. Changed
+                          vertex shader to fix this. (Bugtracker ID = 1693389)
       <li>20/03/07 - DaStr - Made changes related to the new parameter passing model 
       <li>06/03/07 - DaStr - Again replaced DecimalSeparator stuff with
                               a single Str procedure (thanks Uwe Raabe)
@@ -227,13 +229,12 @@ begin
     Add('varying vec3 Normal; ');
     Add('varying vec3 LightVector; ');
     Add('varying vec3 CameraVector; ');
-    Add('varying vec2 Texcoord; ');
     Add(' ');
     Add(' ');
     Add('void main(void) ');
     Add('{ ');
     Add('  gl_Position = ftransform(); ');
-    Add('  Texcoord = gl_MultiTexCoord0.xy; ');
+    Add('  gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0; ');
     Add('  Normal = normalize(gl_NormalMatrix * gl_Normal); ');
     Add('  vec3 p = (gl_ModelViewMatrix * gl_Vertex).xyz; ');
     Add('  LightVector = normalize(gl_LightSource[0].position.xyz - p); ');
@@ -254,11 +255,10 @@ begin
     Add('varying vec3 Normal; ');
     Add('varying vec3 LightVector; ');
     Add('varying vec3 CameraVector; ');
-    Add('varying vec2 Texcoord; ');
     Add(' ');
     Add('void main(void) ');
     Add('{ ');
-    Add('  vec4 TextureContrib = texture2D(MainTexture, Texcoord); ');
+    Add('  vec4 TextureContrib = texture2D(MainTexture, gl_TexCoord[0].xy); ');
     Add('  vec4 DiffuseContrib = clamp(gl_LightSource[0].diffuse * dot(LightVector, Normal), 0.0, 1.0); ');
     Add(' ');
     Add('  vec3 reflect_vec = reflect(CameraVector, -Normal); ');
@@ -289,11 +289,10 @@ begin
     Add('varying vec3 Normal; ');
     Add('varying vec3 LightVector; ');
     Add('varying vec3 CameraVector; ');
-    Add('varying vec2 Texcoord; ');
     Add(' ');
     Add('void main(void) ');
     Add('{ ');
-    Add('  vec4 TextureContrib = texture2D(MainTexture, Texcoord); ');
+    Add('  vec4 TextureContrib = texture2D(MainTexture, gl_TexCoord[0].xy); ');
     Add('  vec4 DiffuseContrib = clamp(DiffuseColor * dot(LightVector, Normal), 0.0, 1.0); ');
     Add(' ');
     Add('  vec3 reflect_vec = reflect(CameraVector, -Normal); ');
@@ -317,13 +316,12 @@ begin
     Add('varying vec3 Normal; ');
     Add('varying vec3 LightVector; ');
     Add('varying vec3 ViewDirection; ');
-    Add('varying vec2 Texcoord; ');
     Add(' ');
     Add(' ');
     Add('void main(void) ');
     Add('{ ');
     Add('  gl_Position = ftransform(); ');
-    Add('  Texcoord = gl_MultiTexCoord0.xy; ');
+    Add('  gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0; ');
     Add('  Normal = normalize(gl_NormalMatrix * gl_Normal); ');
     Add('  ViewDirection = (gl_ModelViewMatrix * gl_Vertex).xyz; ');
     Add('} ');
