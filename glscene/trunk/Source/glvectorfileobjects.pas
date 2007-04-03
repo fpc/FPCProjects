@@ -6,6 +6,7 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>03/04/07 - LC - Added VBO support for TextureEx (Bugtracker ID = 1693378) 
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -614,7 +615,8 @@ type
    TMeshObjectRenderingOption = (moroGroupByMaterial);
    TMeshObjectRenderingOptions = set of TMeshObjectRenderingOption;
 
-   TVBOBuffer = (vbVertices, vbNormals, vbColors, vbTexCoords, vbLightMapTexCoords);
+   TVBOBuffer = (vbVertices, vbNormals, vbColors, vbTexCoords, vbLightMapTexCoords,
+                 vbTexCoordsEx);
    TVBOBuffers = set of TVBOBuffer;
 
    // TMeshObject
@@ -643,7 +645,7 @@ type
          FVerticesVBO: TGLVBOHandle;
          FNormalsVBO: TGLVBOHandle;
          FColorsVBO: TGLVBOHandle;
-         FTexCoordsVBO: TGLVBOHandle;
+         FTexCoordsVBO: array of TGLVBOHandle;
          FLightmapTexCoordsVBO: TGLVBOHandle;
          FValidBuffers: TVBOBuffers;
 
@@ -3376,7 +3378,8 @@ begin
    FVerticesVBO.Free;
    FNormalsVBO.Free;
    FColorsVBO.Free;
-   FTexCoordsVBO.Free;
+   for i := 0 to high(FTexCoordsVBO) do
+      FTexCoordsVBO[i].Free;
    FLightmapTexCoordsVBO.Free;
 
    FFaceGroups.Free;
@@ -3913,6 +3916,8 @@ begin
 end;
 
 procedure TMeshObject.SetUseVBO(const Value: boolean);
+var
+  i: integer;
 begin
   if Value = FUseVBO then
     exit;
@@ -3922,7 +3927,8 @@ begin
     FreeAndNil(FVerticesVBO);
     FreeAndNil(FNormalsVBO);
     FreeAndNil(FColorsVBO);
-    FreeAndNil(FTexCoordsVBO);
+    for i := 0 to high(FTexCoordsVBO) do
+      FreeAndNil(FTexCoordsVBO[i]);      
     FreeAndNil(FLightmapTexCoordsVBO);
   end;
 
@@ -4024,9 +4030,11 @@ var
    i : Integer;
    currentMapping : Cardinal;
    lists: array[0..4] of pointer;
+   tlists: array of pointer;
 begin
    if evenIfAlreadyDeclared or (not FArraysDeclared) then begin
       FillChar(lists, sizeof(lists), 0);
+      SetLength(tlists, FTexCoordsEx.Count);
 
       FUseVBO:= FUseVBO and GL_ARB_vertex_buffer_object;
 
@@ -4037,6 +4045,9 @@ begin
         lists[2]:= Colors.List;
         lists[3]:= TexCoords.List;
         lists[4]:= LightMapTexCoords.List;
+
+        for i:=0 to FTexCoordsEx.Count-1 do
+          tlists[i]:= TexCoordsEx[i].List;
       end
       else
       begin
@@ -4065,7 +4076,7 @@ begin
          end else glDisableClientState(GL_COLOR_ARRAY);
          if TexCoords.Count>0 then begin
             if FUseVBO then
-               FTexCoordsVBO.Bind;
+               FTexCoordsVBO[0].Bind;
             xglEnableClientState(GL_TEXTURE_COORD_ARRAY);
             xglTexCoordPointer(2, GL_FLOAT, SizeOf(TAffineVector), lists[3]);
          end else xglDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -4079,8 +4090,10 @@ begin
             end;
             for i:=0 to FTexCoordsEx.Count-1 do begin
                if TexCoordsEx[i].Count>0 then begin
+                  if FUseVBO then
+                     FTexCoordsVBO[i].Bind;
                   glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
-                  glTexCoordPointer(4, GL_FLOAT, SizeOf(TVector), TexCoordsEx[i].List);
+                  glTexCoordPointer(4, GL_FLOAT, SizeOf(TVector), tlists[i]);
                   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
                end;
             end;
@@ -4154,9 +4167,18 @@ begin
         if Colors.Count > 0 then
           FColorsVBO.UnBind;
         if TexCoords.Count > 0 then
-          FTexCoordsVBO.UnBind;
+          FTexCoordsVBO[0].UnBind;
         if LightMapTexCoords.Count > 0 then
           FLightmapTexCoordsVBO.UnBind;
+        if FTexCoordsEx.Count > 0 then
+        begin
+          for i:= 0 to FTexCoordsEx.Count - 1 do
+          begin
+            if TexCoordsEx[i].Count > 0 then
+              FTexCoordsVBO[i].UnBind;
+          end;
+        end;
+          
       end;
       FArraysDeclared:=False;
    end;
@@ -4208,6 +4230,8 @@ end;
 procedure TMeshObject.BufferArrays;
 const
   BufferUsage = GL_DYNAMIC_DRAW_ARB;
+var
+  i: integer;
 begin
   if (Vertices.Count > 0) and not (vbVertices in ValidBuffers) then
   begin
@@ -4241,11 +4265,14 @@ begin
 
   if (TexCoords.Count > 0) and not (vbTexCoords in ValidBuffers) then
   begin
-    if not assigned(FTexCoordsVBO) then
-      FTexCoordsVBO:= TGLVBOArrayBufferHandle.CreateAndAllocate;
+    if length(FTexCoordsVBO) < 1 then
+      SetLength(FTexCoordsVBO, 1);
 
-    FTexCoordsVBO.BindBufferData(TexCoords.List, sizeof(TAffineVector) * TexCoords.Count, BufferUsage);
-    FTexCoordsVBO.UnBind;
+    if not assigned(FTexCoordsVBO[0]) then
+      FTexCoordsVBO[0]:= TGLVBOArrayBufferHandle.CreateAndAllocate;
+
+    FTexCoordsVBO[0].BindBufferData(TexCoords.List, sizeof(TAffineVector) * TexCoords.Count, BufferUsage);
+    FTexCoordsVBO[0].UnBind;
     ValidBuffers:= ValidBuffers + [vbTexCoords];
   end;
 
@@ -4257,6 +4284,26 @@ begin
     FLightmapTexCoordsVBO.BindBufferData(LightMapTexCoords.List, sizeof(TAffineVector) * LightMapTexCoords.Count, BufferUsage);
     FLightmapTexCoordsVBO.UnBind;
     ValidBuffers:= ValidBuffers + [vbLightMapTexCoords];
+  end;
+
+  if (FTexCoordsEx.Count > 0) and not (vbTexCoordsEx in ValidBuffers) then
+  begin
+    if length(FTexCoordsVBO) < FTexCoordsEx.Count then
+      SetLength(FTexCoordsVBO, FTexCoordsEx.Count);
+
+    for i:=0 to FTexCoordsEx.Count-1 do
+    begin
+      if TexCoordsEx[i].Count <= 0 then
+        continue;
+
+      if not assigned(FTexCoordsVBO[i]) then
+        FTexCoordsVBO[i]:= TGLVBOArrayBufferHandle.CreateAndAllocate;
+
+      FTexCoordsVBO[i].BindBufferData(TexCoordsEx[i].List, sizeof(TVector) * TexCoordsEx[i].Count, BufferUsage);
+      FTexCoordsVBO[i].UnBind;
+    end;
+
+    ValidBuffers:= ValidBuffers + [vbTexCoordsEx];
   end;
 
   CheckOpenGLError;
