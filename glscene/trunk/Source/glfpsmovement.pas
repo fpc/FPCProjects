@@ -6,6 +6,7 @@
    FPS-like movement behaviour and manager.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>03/04/07 - DaStr - Added "public" to TCollisionState for FPC compatibility
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>08/03/06 - ur - Fixed warnigs for Delphi 2006

@@ -6,6 +6,7 @@
    Movement path behaviour by Roger Cao<p>
 
    <b>Historique : </b><font size=-1><ul>
+      <li>02/04/07 - DaStr - All cross-version stuff abstracted into GLCrossPlatform
       <li>25/03/07 - DaStr - Small fix for Delphi5 compatibility
       <li>15/02/07 - DaStr - Fixed TGLMovementPath.SetShowPath - SubComponent support
       <li>27/10/06 - LC - Fixed memory leak in TGLMovementPath. Bugtracker ID=1548615 (thanks Da Stranger)
@@ -25,7 +26,12 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, GLScene, VectorGeometry, GLMisc, XCollection, OpenGL1x, Spline, GLObjects;
+  // VCL
+  Classes,
+
+  // GLScene
+  GLScene, VectorGeometry, GLMisc, XCollection, OpenGL1x, Spline, GLObjects,
+  GLCrossPlatform;
 
 type
 
@@ -609,7 +615,7 @@ begin
     if FShowPath then
     begin
       FPathLine := TGLLines.Create(OwnerObj);
-      FPathLine.SetSubComponent(True);
+      MakeSubComponent(FPathLine, True);
       OwnerObj.Scene.Objects.AddChild(FPathLine);
       FPathLine.SplineMode := FPathSplineMode;
       UpdatePathLine;

@@ -9,6 +9,7 @@
     It also contains a procedures and function that can be used in all shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>03/04/07 - DaStr - Added TGLCustomShaderParameter.AsFloat and AsInteger
       <li>25/03/07 - DaStr - Added TGLCustomShaderParameter.SetToTextureOf
       <li>20/03/07 - DaStr - Added DrawTexturedScreenQuad[4/5/6]
                              "TextureType" parameter renamed to "TextureTarget"
@@ -248,13 +249,17 @@ type
     property AsVector: TVector read GetAsVector4f write SetAsVector4f;
     property AsAffineVector: TAffineVector read GetAsVector3f write SetAsVector3f;
 
-    //: Float types.
+    //: Standard types.
+    property AsFloat: Single read GetAsVector1f write SetAsVector1f;
+    property AsInteger: Integer read GetAsVector1i write SetAsVector1i;
+
+    //: Float vector types.
     property AsVector1f: Single    read GetAsVector1f write SetAsVector1f;
     property AsVector2f: TVector2f read GetAsVector2f write SetAsVector2f;
     property AsVector3f: TVector3f read GetAsVector3f write SetAsVector3f;
     property AsVector4f: TVector4f read GetAsVector4f write SetAsVector4f;
 
-    //: Integer Types.
+    //: Integer vector  types.
     property AsVector1i: Integer   read GetAsVector1i write SetAsVector1i;
     property AsVector2i: TVector2i read GetAsVector2i write SetAsVector2i;
     property AsVector3i: TVector3i read GetAsVector3i write SetAsVector3i;

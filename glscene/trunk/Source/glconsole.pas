@@ -6,6 +6,7 @@
    The console is a popdown window that appears on a game for text output/input.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>02/04/07 - DaStr - All cross-version stuff abstracted into GLCrossPlatform
       <li>30/03/07 - DaStr - Replaced GLWin32Viewer with GLViewer
       <li>25/02/07 - DaStr - Made some fixes for Delphi5 compatibility
       <li>23/02/07 - DaStr - Cosmetic changes, replaced some strings with
@@ -729,7 +730,7 @@ begin
   FControls := TGLConsoleControls.Create(Self);
 
   FHudSprite := TGLHudSprite.Create(Self);
-  FHudSprite.SetSubComponent(True);
+  MakeSubComponent(FHudSprite, True);
   AddChild(FHudSprite);
   FHudSprite.FreeNotification(Self);
   with FHudSprite.Material do
@@ -741,7 +742,7 @@ begin
   end;
 
   FHudText := TGLHudText.Create(Self);
-  FHudText.SetSubComponent(True);
+  MakeSubComponent(FHudText, True);
   AddChild(FHUDText);
   FHudText.FreeNotification(Self);
   FHudText.Position.Y := 2;

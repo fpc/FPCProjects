@@ -61,6 +61,8 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>03/04/07 - DaStr - GLS_DELPHI_5_UP renamed to GLS_DELPHI_4_DOWN for
+                             FPC compatibility (thanks Burkhard Carstens)
       <li>29/03/07 - DaStr - GLS_WANT_DATA removed
                              Added IGLInitializable, TGLInitializableObjectList
                              Added TGLScene.InitializableObjects
@@ -1613,9 +1615,9 @@ type
          constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-(* removed delphi 4 support {$ifndef GLS_DELPHI_5_UP}
+{$ifdef GLS_DELPHI_4_DOWN}
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-{$endif} *)
+{$endif}
 
          procedure BeginUpdate;
          procedure EndUpdate;
@@ -2852,7 +2854,7 @@ var
 begin
    if Assigned(FChildren) then
       for i:=0 to FChildren.Count-1 do
-      if not (csSubComponent in TComponent(FChildren.List^[i]).ComponentStyle) then
+      if not IsSubComponent(TComponent(FChildren.List^[i])) then
          AProc(TComponent(FChildren.List^[i]));
 end;
 
@@ -2883,7 +2885,7 @@ begin
   Result := False;
   if Count <> 0 then
     for I := 0 to Count - 1 do
-      if csSubComponent in Children[i].ComponentStyle then
+      if IsSubComponent(Children[i]) then
       begin
         Result := True;
         Exit;
@@ -4098,7 +4100,7 @@ begin
          BeginUpdate;
          if Count <> 0 then
          for I := Count - 1 downto 0 do
-          if not (csSubComponent in Children[I].ComponentStyle) then
+          if not IsSubComponent(Children[I]) then
             Children[I].MoveTo(Self);
          EndUpdate;
       end else NotifyChange(Self);
@@ -6213,7 +6215,7 @@ begin
    inherited Destroy;
 end;
 
-(* removed delphi 4 support {$ifndef GLS_DELPHI_5_UP}
+{$ifdef GLS_DELPHI_4_DOWN}
 // Notification
 //
 procedure TGLScene.Notification(AComponent: TComponent; Operation: TOperation);
@@ -6222,7 +6224,7 @@ begin
    // 'RemoveFreeNotification' under Delphi 4
    inherited Notification(AComponent, Operation);
 end;
-{$endif}*)
+{$endif}
 
 // AddLight
 //
