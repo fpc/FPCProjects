@@ -1,3 +1,4 @@
+//
 // This unit is part of the GLScene Project, http://glscene.org
 //
 {: GLAtmosphere <p>
@@ -5,12 +6,14 @@
    This unit contains classes that imitate an atmosphere around a planet.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>03/04/07 - DaStr - Optimized TGLCustomAtmosphere.DoRender
+                             Fixed SetPlanetRadius and SetAtmosphereRadius
       <li>21/03/07 - DaStr - Cleaned up "uses" section
                              (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
       <li>01/03/07 - DaStr - Fixed TGLAtmosphereBlendingMode
                                              (old version did not generate RTTI)
-                             Added default values to all properties                
-      <li>15/02/07 - DaStr - Added TGLCustomAtmosphere.AxisAlignedDimensionsUnscaled 
+                             Added default values to all properties
+      <li>15/02/07 - DaStr - Added TGLCustomAtmosphere.AxisAlignedDimensionsUnscaled
       <li>07/02/07 - DaStr - Initial version (donated to GLScene)
 
 
@@ -19,7 +22,7 @@
       2) Alpha in LowAtmColor, HighAtmColor is ignored.
 
 
-Previous version history:
+   Previous version history:
           v1.0     06 February '2005  Creation (based on demo "Earth" by Eric Grange)
           v1.1     28 February '2005  Don't remmember what...
           v1.2     16 March    '2005  Small improvements, including ability to
@@ -66,6 +69,8 @@ uses
   GLContext, GLStrings;
 
 type
+   EGLAtmosphereException = class(Exception);
+
    {:
    With aabmOneMinusSrcAlpha atmosphere is transparent to other objects,
    but has problems, which are best seen when the Atmosphere radius is big.
@@ -78,6 +83,10 @@ type
   {: This class imitates an atmosphere around a planet. }
   TGLCustomAtmosphere = class(TGLBaseSceneObject)
   private
+    // Used in DoRenderl
+    cosCache, sinCache: array of Single;
+    pVertex, pColor: PVectorArray;
+
     FSlices: Integer;
     FBlendingMode: TGLAtmosphereBlendingMode;
     FPlanetRadius: Single;
@@ -93,12 +102,13 @@ type
     function StoreAtmosphereRadius: Boolean;
     function StoreOpacity: Boolean;
     function StorePlanetRadius: Boolean;
+    procedure SetSlices(const Value: Integer);
   protected
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
   public
     property Sun: TglBaseSceneObject read FSun write SetSun;
 
-    property Slices: Integer read FSlices write FSlices default 60;
+    property Slices: Integer read FSlices write SetSlices default 60;
     property Opacity: Single read FOpacity write FOpacity stored StoreOpacity;
 
     //: AtmosphereRadius > PlanetRadius!!!
@@ -111,8 +121,8 @@ type
     property BlendingMode: TGLAtmosphereBlendingMode read FBlendingMode
                                write FBlendingMode default abmOneMinusSrcAlpha;
 
-    procedure SetOptimalAtmosphere(const R: Single);  //absolute
-    procedure SetOptimalAtmosphere2(const R: Single); //relative
+    procedure SetOptimalAtmosphere(const ARadius: Single);  //absolute
+    procedure SetOptimalAtmosphere2(const ARadius: Single); //relative
     procedure TogleBlendingMode; //changes between 2 blending modes
 
     //: Standard component stuff.
@@ -154,17 +164,17 @@ const
     (1 / 2, 1 / 3, 1 / 4, 1 / 5, 1 / 6, 1 / 7, 1 / 8, 1 / 9, 1 / 10,
     1 / 11, 1 / 12, 1 / 13, 1 / 14, 1 / 15, 1 / 16, 1 / 17, 1 / 18, 1 / 19, 1 / 20);
 
-procedure TGLCustomAtmosphere.SetOptimalAtmosphere(const R: Single);
+procedure TGLCustomAtmosphere.SetOptimalAtmosphere(const ARadius: Single);
 begin
-  FAtmosphereRadius := R + 0.25;
-  FPlanetRadius := R - 0.07;
+  FAtmosphereRadius := ARadius + 0.25;
+  FPlanetRadius := ARadius - 0.07;
 end;
 
 
-procedure TGLCustomAtmosphere.SetOptimalAtmosphere2(const R: Single);
+procedure TGLCustomAtmosphere.SetOptimalAtmosphere2(const ARadius: Single);
 begin
-  FAtmosphereRadius := R + R / 15;
-  FPlanetRadius := R - R / 50;
+  FAtmosphereRadius := ARadius + ARadius / 15;
+  FPlanetRadius := ARadius - ARadius / 50;
 end;
 
 constructor TGLCustomAtmosphere.Create(AOwner: TComponent);
@@ -174,7 +184,7 @@ begin
   FHighAtmColor := TGLColor.Create(Self);
 
   FOpacity := 2.1;
-  FSlices := 60;
+  SetSlices(60);
   FAtmosphereRadius := 3.55;
   FPlanetRadius := 3.395;
   FLowAtmColor.Color := VectorMake(1, 1, 1, 1);
@@ -186,8 +196,10 @@ end;
 
 destructor TGLCustomAtmosphere.Destroy;
 begin
-  FLowAtmColor.Destroy;
-  FHighAtmColor.Destroy;
+  FLowAtmColor.Free;
+  FHighAtmColor.Free;
+  FreeMem(pVertex);
+  FreeMem(pColor);
   inherited;
 end;
 
@@ -226,7 +238,7 @@ var
       begin
         // sample on the lit side
         intensity := intensity * contrib;
-        alt := (VectorLength(atmPoint) - PlanetRadius) * invAtmosphereHeight;
+        alt := (VectorLength(atmPoint) - FPlanetRadius) * invAtmosphereHeight;
         VectorLerp(LowAtmColor.Color, HighAtmColor.Color, alt, altColor);
         Result[0] := Result[0] * decay + altColor[0] * intensity;
         Result[1] := Result[1] * decay + altColor[1] * intensity;
@@ -251,11 +263,11 @@ var
   begin
     rayVector := VectorNormalize(VectorSubtract(rayDest, eyePos));
     if RayCastSphereIntersect(eyePos, rayVector, NullHmgPoint,
-      AtmosphereRadius, ai1, ai2) > 1 then
+      FAtmosphereRadius, ai1, ai2) > 1 then
     begin
       // atmosphere hit
       if mayHitGround and (RayCastSphereIntersect(eyePos, rayVector,
-        NullHmgPoint, PlanetRadius, pi1, pi2) > 0) then
+        NullHmgPoint, FPlanetRadius, pi1, pi2) > 0) then
       begin
         // hit ground
         Result := AtmosphereColor(ai1, pi1);
@@ -273,14 +285,11 @@ var
 
 var
   I, J, k0, k1:    Integer;
-  cosCache, sinCache: array of Single;
-  pVertex, pColor: PVectorArray;
 begin
   if FSun <> nil then
   begin
-    SetLength(cosCache, Slices + 1);
-    SetLength(sinCache, Slices + 1);
-
+    Assert(FAtmosphereRadius > FPlanetRadius);
+    
     sunPos := VectorSubtract(FSun.AbsolutePosition, AbsolutePosition);
     eyepos := VectorSubtract(rci.CameraPosition, AbsolutePosition);
 
@@ -291,12 +300,8 @@ begin
     diskUp := VectorCrossProduct(diskNormal, diskRight);
     NormalizeVector(diskUp);
 
-    invAtmosphereHeight := 1 / (AtmosphereRadius - PlanetRadius);
+    invAtmosphereHeight := 1 / (FAtmosphereRadius - FPlanetRadius);
     lightingVector := VectorNormalize(sunPos); // sun at infinity
-    PrepareSinCosCache(sinCache, cosCache, 0, 360);
-
-    GetMem(pVertex, 2 * (Slices + 1) * SizeOf(TVector));
-    GetMem(pColor, 2 * (Slices + 1) * SizeOf(TVector));
 
     glPushAttrib(GL_ENABLE_BIT);
     glDepthMask(False);
@@ -310,9 +315,9 @@ begin
       else
         radius := FPlanetRadius + (I - 5.1) * (FAtmosphereRadius - FPlanetRadius) * (1 / 6.9);
       radius := SphereVisibleRadius(VectorLength(eyePos), radius);
-      k0 := (I and 1) * (Slices + 1);
-      k1 := (Slices + 1) - k0;
-      for J := 0 to Slices do
+      k0 := (I and 1) * (FSlices + 1);
+      k1 := (FSlices + 1) - k0;
+      for J := 0 to FSlices do
       begin
         VectorCombine(diskRight, diskUp,
           cosCache[J] * radius, sinCache[J] * radius,
@@ -329,7 +334,7 @@ begin
         begin
           // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
           glBegin(GL_QUAD_STRIP);
-          for J := Slices downto 0 do
+          for J := FSlices downto 0 do
           begin
             glColor4fv(@pColor[k1 + J]);
             glVertex3fv(@pVertex[k1 + J]);
@@ -342,7 +347,7 @@ begin
         begin
           // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_COLOR);
           glBegin(GL_QUAD_STRIP);
-          for J := Slices downto 0 do
+          for J := FSlices downto 0 do
           begin
             glColor4fv(@pColor[k1 + J]);
             glVertex3fv(@pVertex[k1 + J]);
@@ -358,7 +363,7 @@ begin
         glBegin(GL_TRIANGLE_FAN);
         glColor4fv(@pColor[k1]);
         glVertex3fv(@pVertex[k1]);
-        for J := k0 + Slices downto k0 do
+        for J := k0 + FSlices downto k0 do
         begin
           glColor4fv(@pColor[J]);
           glVertex3fv(@pVertex[J]);
@@ -368,9 +373,6 @@ begin
     end;
     glDepthMask(True);
     glPopAttrib;
-
-    FreeMem(pVertex);
-    FreeMem(pColor);
   end;
   inherited;
 end;
@@ -388,7 +390,7 @@ begin
   inherited;
   if Source is TGLCustomAtmosphere then
   begin
-    FSlices := TGLCustomAtmosphere(Source).FSlices;
+    SetSlices(TGLCustomAtmosphere(Source).FSlices);
     FOpacity := TGLCustomAtmosphere(Source).FOpacity;
     FAtmosphereRadius := TGLCustomAtmosphere(Source).FAtmosphereRadius;
     FPlanetRadius := TGLCustomAtmosphere(Source).FPlanetRadius;
@@ -425,14 +427,16 @@ end;
 procedure TGLCustomAtmosphere.SetAtmosphereRadius(
   const Value: Single);
 begin
-  if Value > FPlanetRadius then
-    FAtmosphereRadius := Value;
+  FAtmosphereRadius := Value;
+  if Value <= FPlanetRadius then
+    FPlanetRadius := FAtmosphereRadius / 1.01;
 end;
 
 procedure TGLCustomAtmosphere.SetPlanetRadius(const Value: Single);
 begin
-  if Value < FAtmosphereRadius then
-    FPlanetRadius := Value;
+  FPlanetRadius := Value;
+  if Value >= FAtmosphereRadius then
+    FAtmosphereRadius := FPlanetRadius * 1.01;
 end;
 
 procedure TGLCustomAtmosphere.EnableGLBlendingMode;
@@ -458,6 +462,22 @@ end;
 function TGLCustomAtmosphere.StorePlanetRadius: Boolean;
 begin
   Result := Abs(FPlanetRadius - 3.395) > EPS;
+end;
+
+procedure TGLCustomAtmosphere.SetSlices(const Value: Integer);
+begin
+  if Value > 0 then
+  begin
+    FSlices := Value;
+    SetLength(cosCache, FSlices + 1);
+    SetLength(sinCache, FSlices + 1);
+    PrepareSinCosCache(sinCache, cosCache, 0, 360);
+
+    GetMem(pVertex, 2 * (FSlices + 1) * SizeOf(TVector));
+    GetMem(pColor, 2 * (FSlices + 1) * SizeOf(TVector));
+  end
+  else
+    raise EGLAtmosphereException.Create('Slices must be more than0!');
 end;
 
 initialization

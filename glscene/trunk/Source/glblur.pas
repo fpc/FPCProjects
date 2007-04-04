@@ -6,6 +6,8 @@
 	Applies a blur effect over the viewport.<p>
 
 	<b>History : </b><font size=-1><ul>
+        <li>03/04/07 - DaStr  - Optimized TGLMotionBlur.DoRender - now component
+                                 checks for supported extensions only once
         <li>25/03/07 - DaStr  - Renamed parameters in some methods
                                 (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
         <li>22/03/07 - DaStr  - Added checks to TGLMotionBlur for supported extensions
@@ -95,10 +97,13 @@ type
   anyone knows another way to fix this issue - please post it on the glscene
   newsgroup.
 }
-  TGLMotionBlur = class(TGLCustomSceneObject)
+  TGLMotionBlur = class(TGLCustomSceneObject, IGLInitializable)
   private
     FIntensity: Single;
     function StoreIntensity: Boolean;
+  protected
+    procedure DoOnAddedToParent; override;
+    procedure InitializeObject(ASender: TObject; const ARci: TRenderContextInfo); virtual;
   public
     {: This function is only valid AFTER OpenGL has been initialized. }
     function SupportsRequiredExtensions: Boolean;
@@ -422,10 +427,18 @@ begin
   FIntensity := 0.975;
 end;
 
+procedure TGLMotionBlur.DoOnAddedToParent;
+begin
+  inherited;
+  // Request to be initialized on next render.
+  if Scene <> nil then
+    Scene.InitializableObjects.Add(Self);
+end;
+
 procedure TGLMotionBlur.DoRender(var ARci: TRenderContextInfo; ARenderSelf, ARenderChildren: Boolean);
 begin
   if not (ARci.ignoreMaterials or (csDesigning in ComponentState) or
-         (ARci.drawState = dsPicking)) and SupportsRequiredExtensions then
+         (ARci.drawState = dsPicking)) then
   begin
     glEnable( GL_TEXTURE_RECTANGLE_ARB );
     Material.Apply( ARci );
@@ -458,7 +471,15 @@ begin
     Material.FrontProperties.Diffuse.Alpha := FIntensity;
   end;
 
-  if Count > 0 then Self.RenderChildren(0, Count - 1, ARci);
+  if Count <> 0 then Self.RenderChildren(0, Count - 1, ARci);
+end;
+
+procedure TGLMotionBlur.InitializeObject(ASender: TObject;
+  const ARci: TRenderContextInfo);
+begin
+  // If extension is not supported, silently disable this component. }
+  if not SupportsRequiredExtensions then
+    Visible := False;
 end;
 
 function TGLMotionBlur.StoreIntensity: Boolean;

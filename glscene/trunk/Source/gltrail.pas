@@ -4,11 +4,14 @@
 {: GLTrail<p>
 
 	Creates a trail-like mesh.
-        Based on Jason Lanford's demo. <p>
+  Based on Jason Lanford's demo. <p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>28/03/07 - DaStr - Renamed parameters in some methods
-                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
+        <li>03/04/07 - DaStr - Added default values to some properties
+                               Added TGLTrail.AntiZFightOffset
+                               Subscribed for Notification in TGLTrail.SetTrailObject
+        <li>28/03/07 - DaStr - Renamed parameters in some methods
+                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
         <li>19/12/06 - DaS - msRight (TMarkStyle) support added
         <li>09/12/04 - LR  - Suppress windows uses
         <li>12/10/04 - Mrqzzz - Creation (Based on Jason Lanford's demo - june 2003)
@@ -22,21 +25,21 @@ interface
 {$I GLScene.inc}
 
 uses
-  //VCL
+  // VCL
   Classes, SysUtils,
 
-  //GLScene
+  // GLScene
   GLScene, VectorTypes, MeshUtils, VectorGeometry, GLVectorFileObjects,
   GLMesh, GLObjects, GLMisc, OpenGL1x, GLTexture, GLStrings;
 
 
-    const cMaxVerts = 2000;
+const cMaxVerts = 2000;
 
 type
 
-TMarkStyle = (msUp, msDirection, msFaceCamera, msRight);
+  TMarkStyle = (msUp, msDirection, msFaceCamera, msRight);
 
-TGLTrail = class(TGlMesh)
+  TGLTrail = class(TGlMesh)
   private
 
     fVertLimit: integer;
@@ -60,6 +63,7 @@ TGLTrail = class(TGlMesh)
     FMarkStyle: TMarkStyle;
     FMarkWidth: single;
     FEnabled: boolean;
+    FAntiZFightOffset: Single;
     procedure SetTrailObject(const Value: TGLBaseSceneObject);
     procedure SetMarkStyle(const Value: TMarkStyle);
     procedure SetAlpha(const Value: single);
@@ -70,6 +74,7 @@ TGLTrail = class(TGlMesh)
     procedure SetVertLimit(const Value: integer);
     procedure SetMarkWidth(const Value: single);
     procedure SetEnabled(const Value: boolean);
+    function StoreAntiZFightOffset: Boolean;
     
   protected
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
@@ -88,19 +93,23 @@ TGLTrail = class(TGlMesh)
     procedure ClearMarks;
 
   published
+    {: Add a tiny bit of offset to help prevent z-fighting..
+       Need a better solution here as this will get out of whack on really
+       long trails and is dependant on scene scale. }
+     property AntiZFightOffset: Single read FAntiZFightOffset write FAntiZFightOffset stored StoreAntiZFightOffset;
 
-     property VertLimit: integer  read FVertLimit write SetVertLimit;
+     property VertLimit: integer  read FVertLimit write SetVertLimit default 150;
      property TimeLimit: single  read FTimeLimit write SetTimeLimit;
      {: Don't create mark unless moved at least this distance. }
      property MinDistance: single  read FMinDistance write SetMinDistance;
      property Alpha: single  read FAlpha write SetAlpha;
-     property AlphaFade: Boolean  read FAlphaFade write SetAlphaFade;
+     property AlphaFade: Boolean  read FAlphaFade write SetAlphaFade default True;
      property UVScale: single  read FUVScale write SetUVScale;
-     property MarkStyle : TMarkStyle read FMarkStyle write SetMarkStyle;
-     property TrailObject : TGLBaseSceneObject read FTrailObject write SetTrailObject;
+     property MarkStyle : TMarkStyle read FMarkStyle write SetMarkStyle default msFaceCamera;
+     property TrailObject : TGLBaseSceneObject read FTrailObject write SetTrailObject default nil;
      property MarkWidth : single read FMarkWidth write SetMarkWidth;
-     property Enabled : boolean read FEnabled write SetEnabled;
-    end;
+     property Enabled : boolean read FEnabled write SetEnabled default True;
+  end;
 
 
 implementation
@@ -111,6 +120,7 @@ begin
  inherited Create(AOwner);
  vertices.Clear;    // inherited tglmesh makes a triangle... remove it.
  Mode := mmTriangleStrip;
+ FAntiZFightOffset := 0.0000266;
  VertexMode := vmVNCT;
  fVertStart := 1;
  fVertEnd := 0;
@@ -197,16 +207,6 @@ begin
      begin
           fLastV0Pos := v0;
      end;
-     
-
-     {with Scene.FindSceneObject('GLArrowLine1') do
-     begin
-          position.SetPoint(V0);
-          Direction.SetVector(v);
-     end;}
-
-
-
 end;
 
 
@@ -322,9 +322,9 @@ begin
               // need a better solution here
               // as this will get out of whack on really long trails
               // and is dependant on scene scale
-              TinyOffset[0] := 0.0000266 * i;
-              TinyOffset[1] := 0.0000266 * i;
-              TinyOffset[2] := 0.0000266 * i;
+              TinyOffset[0] := FAntiZFightOffset * i;
+              TinyOffset[1] := FAntiZFightOffset * i;
+              TinyOffset[2] := FAntiZFightOffset * i;
               TinyOffset :=  VectorAdd( fVerts[ currentvert ],Tinyoffset);
               //TinyOffset := fVerts[ currentvert]; // bypass
               Vertices.AddVertex( TinyOffset, NullVector, Color, fUVs[currentvert]  );
@@ -396,7 +396,9 @@ if directmode then
 
 procedure TGLTrail.SetTrailObject(const Value: TGLBaseSceneObject);
 begin
+  if FTrailObject <> nil then FTrailObject.RemoveFreeNotification(Self);
   FTrailObject := Value;
+  if FTrailObject <> nil then FTrailObject.FreeNotification(Self);
 end;
 
 procedure TGLTrail.SetMarkStyle(const Value: TMarkStyle);
@@ -453,6 +455,10 @@ begin
   FEnabled := Value;
 end;
 
+function TGLTrail.StoreAntiZFightOffset: Boolean;
+begin
+  Result := FAntiZFightOffset <> 0.0000266;
+end;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

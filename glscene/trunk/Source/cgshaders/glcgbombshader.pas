@@ -6,6 +6,8 @@
    Just a good looking shader. And my first one;) <p>
 
    <b>History :</b><font size=-1><ul>
+      <li>14/03/07 - DaStr - Bugfixed TGLCustomCGBombShader.DoInitialize
+                             (Shader is disabled if GradientTexture is not assigned)
       <li>14/03/07 - DaStr - Bugfixed TGLCustomCGBombShader.SetMaterialLibrary
                              Alpha is not stored now
                              Added design-time checks
@@ -40,7 +42,7 @@ uses
   // GLScene
   GLMisc, GLTexture, GLCadencer, GLContext, OpenGL1x, GLStrings,
 
-  // CG Shaders 
+  // CG Shaders
   CgGL, GLCgShader;
 
 type
@@ -208,7 +210,12 @@ end;
 procedure TGLCustomCGBombShader.DoInitialize;
 begin
   if FGradientTexture = nil then
+  try
     FGradientTexture := FMaterialLibrary.TextureByName(FGradientTextureName);
+  except
+    Enabled := False;
+    raise;
+  end;
   if FMainTexture = nil then
   try
     FMainTexture := FMaterialLibrary.TextureByName(FMainTextureName);
