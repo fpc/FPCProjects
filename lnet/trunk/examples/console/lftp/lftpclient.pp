@@ -11,17 +11,23 @@ type
 
   TClient = class
    private
-    procedure OnConnect(aSocket: TLSocket); // callbacks
+    { These are the events which will get called when something happens on a socket.
+      OnConnect will get called when the client connection finished connecting successfuly.
+      OnReceive will get called when any data is received on the data stream (the one for files).
+      OnControl will get called when any data/info is received on the command stream (the one with command/responses for server.
+      OnSent will get called after sending big pieces of data to the other side, it'll report the progress indicated by "Bytes".
+      OnError will get called when any network error occurs, like ECONNRESET }
+    procedure OnConnect(aSocket: TLSocket);
     procedure OnReceive(aSocket: TLSocket);
     procedure OnControl(aSocket: TLSocket);
     procedure OnSent(aSocket: TLSocket; const Bytes: Integer);
     procedure OnError(const msg: string; aSocket: TLSocket);
    protected
-    FCon: TLFTPClient; // the FTP connection
+    FCon: TLFTPClient; // the FTP connection itself
     FConnected: Boolean;
-    FQuit: Boolean;
-    FGetting: Boolean;
-    FFile: TFileStream;
+    FQuit: Boolean;    // used as controller of the main loop
+    FGetting: Boolean; // getting mode means we're getting a file, not info like eg: directory listing
+    FFile: TFileStream; // file stream to save "GET" files into
     function UserString: string;
     function GetAnswer(const s: string; const NoEcho: Boolean = False): string;
     procedure PrintHelp;
@@ -29,7 +35,7 @@ type
    public
     constructor Create;
     destructor Destroy; override;
-    procedure Run(const Host: string; const Port: Word);
+    procedure Run(const Host: string; const Port: Word); // this is where the main loop is
   end;
 
 procedure TClient.OnConnect(aSocket: TLSocket);
@@ -40,46 +46,46 @@ end;
 
 procedure TClient.OnReceive(aSocket: TLSocket);
 const
-  BUFFER_SIZE = 65535;
+  BUFFER_SIZE = 65535; // usual maximal recv. size defined by OS, no problem if it's more or less really
 var
   n: Integer;
   Buf: array[0..BUFFER_SIZE-1] of Byte;
 begin
-  if FGetting then begin
-    Write('.');
-    n := FCon.GetData(Buf, BUFFER_SIZE);
-    if n = 0 then begin
-      FGetting := False;
-      FreeAndNil(FFile);
+  if FGetting then begin // if we're in getting mode
+    Write('.'); // inform of progress
+    n := FCon.GetData(Buf, BUFFER_SIZE); // get data, n is set to the amount
+    if n = 0 then begin // if we got disconnected then
+      FGetting := False;  // stop getting mode
+      FreeAndNil(FFile);  // close the file
     end else
-      FFile.Write(Buf, n);
-  end else Write(FCon.GetDataMessage);
+      FFile.Write(Buf, n); // otherwise, write the data to file
+  end else Write(FCon.GetDataMessage); // if we got data and we weren't in getting mode, write it on the screen as FTP info
 end;
 
 procedure TClient.OnControl(aSocket: TLSocket);
 var
   s: string;
 begin
-  if FCon.GetMessage(s) > 0 then
+  if FCon.GetMessage(s) > 0 then // if we got some new message about FTP status, write it
     Writeln(s);
 end;
 
 procedure TClient.OnSent(aSocket: TLSocket; const Bytes: Integer);
 begin
-  Write('.');
+  Write('.'); // inform on progress, very basic
 end;
 
 procedure TClient.OnError(const msg: string; aSocket: TLSocket);
 begin
-  Writeln(msg);
+  Writeln(msg); // just write the error out
 end;
 
 constructor TClient.Create;
 begin
-  FConnected := False;
+  FConnected := False; // we're not connected yet
   FCon := TLFTPClient.Create(nil);
-  FCon.Timeout := 50;
-  FCon.OnConnect := @OnConnect;
+  FCon.Timeout := 50; // 50 milliseconds is nice to save CPU but fast enough to be responsive to humans
+  FCon.OnConnect := @OnConnect; // assign all events
   FCon.OnReceive := @OnReceive;
   FCon.OnControl := @OnControl;
   FCon.OnSent := @OnSent;
@@ -116,7 +122,7 @@ end;
 
 procedure TClient.CleanGetting;
 begin
-  if FGetting then
+  if FGetting then // cleans the getting status, frees file stream
     FreeAndNil(FFile);
   FGetting := False;
 end;
@@ -125,110 +131,110 @@ procedure TClient.Run(const Host: string; const Port: Word);
 var
   s, Name, Pass, Dir: string;
 begin
-  Dir := ExtractFilePath(ParamStr(0));
-  FFile := nil;
-  FGetting := False;
-  Name := GetAnswer('USER [' + GetEnvironmentVariable(UserString) + ']', False);
-  if Length(Name) = 0 then
+  Dir := ExtractFilePath(ParamStr(0)); // get current working directory
+  FFile := nil; // set "GET" file to nothing for now
+  FGetting := False; // set getting mode to false
+  Name := GetAnswer('USER [' + GetEnvironmentVariable(UserString) + ']', False); // get info about username and pass from console
+  if Length(Name) = 0 then // if username wasn't set, presume it's the same as environment var for USER
     Name := GetEnvironmentVariable('USER');
-  Pass := GetAnswer('PASS', True);
+  Pass := GetAnswer('PASS', True); // get password from user console
 
-  if FCon.Connect(Host, PORT) then begin
-    Writeln('Connecting... press escape to cancel');
-    repeat
-      FCon.CallAction;
+  if FCon.Connect(Host, PORT) then begin // if initial connect call worked
+    Writeln('Connecting... press escape to cancel'); // write info about status
+    repeat 
+      FCon.CallAction; // repeat this until we either get connected, fail or user decides to quit manually
       if KeyPressed then
         if ReadKey = #27 then Exit;
     until FConnected;
   end else Halt;
 
-  if FCon.Authenticate(Name, Pass) then begin
-    FCon.Binary := True;
+  if FCon.Authenticate(Name, Pass) then begin // if authentication with server passed
+    FCon.Binary := True; // set binary mode, others are useless anyhow
     s := '';
-    Writeln('Press "?" for help');
-    while not FQuit do begin
-      if KeyPressed then case ReadKey of
-             #27: FQuit := True;
+    Writeln('Press "?" for help'); // just info
+    while not FQuit do begin // main loop is here, for events and user interaction
+      if KeyPressed then case ReadKey of // this is all user interaction stuff
+             #27: FQuit := True; // escape quits the client
              '?': PrintHelp;
-        'g', 'G': begin
-                    s := GetAnswer('Filename');
-                    if Length(s) > 0 then begin
-                      s := ExtractFileName(s);
+        'g', 'G': begin // "GET" file, this means:
+                    s := GetAnswer('Filename'); // we need to find out which file from user
+                    if Length(s) > 0 then begin // then if it was valid info
+                      s := ExtractFileName(s); // see if the file exists already on local disk/dir 
                       if FileExists(Dir + s) then
-                        DeleteFile(Dir + s);
-                      FreeAndNil(FFile);
-                      FFile := TFileStream.Create(Dir + s, fmOpenWrite or fmCreate);
-                      FGetting := True;
-                      FCon.Retrieve(s);
+                        DeleteFile(Dir + s); // if so, delete it (I know it's not the best idea, but it's a simple client)
+                      FreeAndNil(FFile); // ensure any old file/data is not used
+                      FFile := TFileStream.Create(Dir + s, fmOpenWrite or fmCreate); // create new file for the incomming one
+                      FGetting := True; // set yourself to getting mode
+                      FCon.Retrieve(s); // send request for the file over FTP control connnection
                     end;
                   end;
              'l': begin
-                    CleanGetting;
-                    FCon.List;
+                    CleanGetting; // stop getting any files if at all
+                    FCon.List; // and send request for file listing
                   end;
              'L': begin
-                    CleanGetting;
-                    FCon.Nlst;
+                    CleanGetting; // detto
+                    FCon.Nlst; // send request for new type of file listing
                   end;
         'p', 'P': begin
                     CleanGetting;
-                    s := GetAnswer('Filename');
-                    if FileExists(Dir + s) then
-                      FCon.Put(Dir + s)
+                    s := GetAnswer('Filename'); // see which file the user wants to PUT on the server
+                    if FileExists(Dir + s) then // if it exits locally
+                      FCon.Put(Dir + s) // then send it over
                     else
-                      Writeln('No such file "', s, '"');
+                      Writeln('No such file "', s, '"'); // otherwise inform user of their error
                   end;
         'b', 'B': begin
                     CleanGetting;
-                    FCon.Binary := not FCon.Binary;
+                    FCon.Binary := not FCon.Binary; // set or unset binary
                   end;
         's', 'S': begin
                     CleanGetting;
-                    FCon.SystemInfo;
+                    FCon.SystemInfo; // request systeminfo from server
                   end;
         'h', 'H': begin
                     CleanGetting;
-                    FCon.Help(GetAnswer('Help verb'));
+                    FCon.Help(GetAnswer('Help verb')); // request help from server, argument input from console
                   end;
         'x', 'X': begin
                     CleanGetting;
-                    FCon.PresentWorkingDirectory;
+                    FCon.PresentWorkingDirectory; // get current working directory info from server
                   end;
         'c', 'C': begin
                     CleanGetting;
-                    FCon.ChangeDirectory(GetAnswer('New dir'));
+                    FCon.ChangeDirectory(GetAnswer('New dir')); // change directory, new dir is read from user console
                   end;
         'm', 'M': begin
                     CleanGetting;
-                    FCon.MakeDirectory(GetAnswer('New dir'));
+                    FCon.MakeDirectory(GetAnswer('New dir')); // make a new directory on server, dirname is read from user console
                   end;
         'n', 'N': begin
                     CleanGetting;
-                    FCon.Rename(GetAnswer('From'), GetAnswer('To'));
+                    FCon.Rename(GetAnswer('From'), GetAnswer('To')); // rename a file, old and new names read from user console
                   end;
         'r', 'R': begin
                     CleanGetting;
-                    FCon.RemoveDirectory(GetAnswer('Dirname'));
+                    FCon.RemoveDirectory(GetAnswer('Dirname')); // delete a directory on server, name read from user console
                   end;
         'd', 'D': begin
                     CleanGetting;
-                    FCon.DeleteFile(GetAnswer('Filename'));
+                    FCon.DeleteFile(GetAnswer('Filename')); // delete a file on server, name read from user console
                   end;
         'e', 'E': begin
                     CleanGetting;
-                    FCon.Echo := not FCon.Echo;
+                    FCon.Echo := not FCon.Echo; // set echo mode on/off
                   end;
         'f', 'F': begin
                     CleanGetting;
-                    FCon.FeatureList;
+                    FCon.FeatureList; // get all FTP features from server
                   end;
       end;
-      FCon.CallAction;
+      FCon.CallAction; // this needs to be called ASAP, in a loop. It's the magic function which makes all the events work :)
     end;
-  end else FCon.GetMessage(s);
-  if Length(s) > 0 then
+  end else FCon.GetMessage(s); // if the authentication failed, get reason from server
+  if Length(s) > 0 then // if reason was given, write it
     Write(s);
-  FreeAndNil(FFile);
+  FreeAndNil(FFile); // make sure not to leak memory
 end;
 
 function TClient.UserString: string;
