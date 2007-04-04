@@ -16,8 +16,9 @@ type
 
   TLTelnetTest = class
    private
-    FCon: TLTelnetClient;
+    FCon: TLTelnetClient; // THE telnet connection
     FQuit: Boolean;
+    // the old known event, only Error is checked in this basic telnet client
     procedure OnError(const msg: string; aSocket: TLSocket);
    public
     constructor Create;
@@ -30,7 +31,7 @@ type
 constructor TLTelnetTest.Create;
 begin
   FCon := TLTelnetClient.Create(nil);
-  FCon.OnError := @OnError;
+  FCon.OnError := @OnError; // assign callbacks
 end;
 
 destructor TLTelnetTest.Destroy;
@@ -52,7 +53,7 @@ var
   AD: string;
   PORT: Word;
 begin
-  if ParamCount > 1 then
+  if ParamCount > 1 then // get some info regarding host from commandline
     try
       AD := Paramstr(1);
       PORT := Word(StrToInt(Paramstr(2)));
@@ -66,10 +67,10 @@ begin
 
   FQuit := False;
 
-  if FCon.Connect(AD, PORT) then begin
-    Writeln('Connecting... press any key to cancel');
+  if FCon.Connect(AD, PORT) then begin // try connecting to other side
+    Writeln('Connecting... press any key to cancel'); // if initial connect worked, inform user and wait
     repeat
-      FCon.CallAction;
+      FCon.CallAction; // repeat this to get info
       Sleep(1);
       if KeyPressed then
         Halt;
@@ -82,27 +83,31 @@ begin
       if KeyPressed then begin
         c := ReadKey;
         case c of
-          #27: FQuit := True;
-           #8: if Length(SendStr) > 0 then begin
+          #27: FQuit := True; // user wants to quit
+           #8: if Length(SendStr) > 0 then begin // delete last char
                  GotoXY(WhereX-1, WhereY);
                  Write(' ');
                  GotoXY(WhereX-1, WhereY);
                  SetLength(SendStr, Length(SendStr) - 1);
                end;
-        else   if c = #13 then begin
+        else   if c = #13 then begin // if it's enter, send the message
                  Writeln;
-                 FCon.SendMessage(SendStr + #13#10);
+                 FCon.SendMessage(SendStr + #13#10); // don't forget terminator
                  SendStr := '';
                end else begin
                  SendStr := SendStr + c;
-                 if not FCon.OptionIsSet(TS_ECHO) then
+                 if not FCon.OptionIsSet(TS_ECHO) then // if echo is not on, we need to do echo locally
                    Write(c);
                end;
         end;
       end;
-      if FCon.GetMessage(s) > 0 then
+      { Always see if we got new messages, this is somewhat different from others (EG: TLTcp). 
+        Instead of callbacks/events, we check this, because in telnet, the library needs to check for 
+        special sequences containing telnet info and process them before giving the data to user. 
+        So telnet has it's own internal buffer, unlike most other lNet protocols/connections }
+      if FCon.GetMessage(s) > 0 then 
         Write(s);
-      FCon.CallAction;
+      FCon.CallAction; // don't forget to make the clock tick :)
       Delay(1);
     end;
   end;
