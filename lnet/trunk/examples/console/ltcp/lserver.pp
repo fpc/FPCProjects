@@ -11,7 +11,13 @@ type
 
   TLTCPTest = class
    private
-    FCon: TLTCP;
+    FCon: TLTCP; // THE server connection
+   {  these are all events which happen on our server connection. They are called inside CallAction
+      OnEr gets fired when a network error occurs.
+      OnAc gets fired when a new connection is accepted on the server socket.
+      OnRe gets fired when any of the server sockets receives new data.
+      OnDs gets fired when any of the server sockets disconnects gracefully.
+   }
     procedure OnEr(const msg: string; aSocket: TLSocket);
     procedure OnAc(aSocket: TLSocket);
     procedure OnRe(aSocket: TLSocket);
@@ -19,7 +25,7 @@ type
    public
     constructor Create;
     destructor Destroy; override;
-    procedure Run;
+    procedure Run; // main loop with CallAction
   end;
 
 procedure TLTCPTest.OnEr(const msg: string; aSocket: TLSocket);

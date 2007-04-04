@@ -13,7 +13,12 @@ type
    private
     FQuit: boolean;
     FCon: TLTcp; // the connection
-    procedure OnDs(aSocket: TLSocket); // callbacks
+   {  these are all events which happen on our server connection. They are called inside CallAction
+      OnEr gets fired when a network error occurs.
+      OnRe gets fired when any of the server sockets receives new data.
+      OnDs gets fired when any of the server sockets disconnects gracefully.
+   }
+    procedure OnDs(aSocket: TLSocket); 
     procedure OnRe(aSocket: TLSocket);
     procedure OnEr(const msg: string; aSocket: TLSocket);
    public
@@ -56,10 +61,6 @@ begin
   FCon.Free; // free the connection
   inherited Destroy;
 end;
-
-
-
-
 
 procedure TLTCPTest.Run;
 var
