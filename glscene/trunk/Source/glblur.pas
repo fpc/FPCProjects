@@ -6,6 +6,8 @@
 	Applies a blur effect over the viewport.<p>
 
 	<b>History : </b><font size=-1><ul>
+        <li>06/04/07 - DaStr  - Fixed TGLMotionBlur.InitializeObject -
+                                 component can only be disabled in run-time
         <li>03/04/07 - DaStr  - Optimized TGLMotionBlur.DoRender - now component
                                  checks for supported extensions only once
         <li>25/03/07 - DaStr  - Renamed parameters in some methods
@@ -477,9 +479,10 @@ end;
 procedure TGLMotionBlur.InitializeObject(ASender: TObject;
   const ARci: TRenderContextInfo);
 begin
-  // If extension is not supported, silently disable this component. }
-  if not SupportsRequiredExtensions then
-    Visible := False;
+  // If extension is not supported, silently disable this component.
+  if not (csDesigning in ComponentState) then
+    if not SupportsRequiredExtensions then
+      Visible := False;
 end;
 
 function TGLMotionBlur.StoreIntensity: Boolean;
