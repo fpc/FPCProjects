@@ -146,6 +146,7 @@ begin
   Con.AddCommand('lastword', @Doer.OnLastWord, 'Syntax: lastword <nick> Info: makes me tell you the last thing someone said');
   Con.AddCommand('logurl', @Doer.OnLogUrl, 'Syntax: logurl Info: makes me tell you where the log is (don''t use in private');
   Con.AddCommand('pasteurl', @Doer.OnPasteUrl, 'Syntax: pasteurl [title] Info: makes me tell you where the pastebin is (don''t use in private)');
+  Con.AddCommand('pastebin', @Doer.OnPasteUrl, 'Syntax: pastebin [title] Info: makes me tell you where the pastebin is (don''t use in private)');
   Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Syntax: listpusers Info: makes me list power users');
   Con.AddCommand('markov', @Doer.OnMarkov, 'Syntax: markov [on/off] Info: if parameter is empty, I will display info about the markov generator. If parameter is on/off it will start/shutdown the markov response generator (starting and shuting down the generator works only for power users).');
 
