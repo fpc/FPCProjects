@@ -530,10 +530,8 @@ function TLSocket.DoSend(const TheData; const TheSize: Integer): Integer;
 begin
   if FSocketClass = SOCK_STREAM then
     Result := sockets.send(FHandle, TheData, TheSize, LMSG)
-  else begin
-    Writeln('Sending to: ', FPeerAddress.sin_port);
+  else
     Result := sockets.sendto(FHandle, TheData, TheSize, LMSG, FPeerAddress, SizeOf(FPeerAddress));
-  end;
 end;
 
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
