@@ -1,0 +1,6 @@
+* Version 0.5.0 01.04.2007 -- new major release, removes hacks regarding type reintroduction thanks to new Lazarus fix, fixes windows blocking problem with dialogs and menus.
+* Version 0.4.0 25.09.2006 -- added LCLEventer and new http client visual example
+* Version 0.4.0 16.02.2006 -- changed internals to support eventer
+* Version 0.3.1 03.01.2005 -- removed MT support. fixed lots of bugs and overhauled interface
+* Version 0.2.0 29.11.2005
+* Version 0.1.0 12.11.2005 -- fixed some minor MT bugs, added ST LCL version

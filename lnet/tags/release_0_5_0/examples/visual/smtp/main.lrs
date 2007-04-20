@@ -1,0 +1,57 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TMainForm','FORMDATA',[
+  'TPF0'#9'TMainForm'#8'MainForm'#4'Left'#3'V'#1#6'Height'#3'h'#1#3'Top'#3#202#0
+  +#5'Width'#3#188#1#18'HorzScrollBar.Page'#3#187#1#18'VertScrollBar.Page'#3'S'
+  +#1#13'ActiveControl'#7#10'EditServer'#7'Caption'#6#16'SMTP Client Test'#21'C'
+  +'onstraints.MaxHeight'#3'h'#1#20'Constraints.MaxWidth'#3#188#1#21'Constraint'
+  +'s.MinHeight'#3'h'#1#20'Constraints.MinWidth'#3#188#1#4'Menu'#7#8'MainMenu'#7
+  +'OnClose'#7#9'FormClose'#8'OnCreate'#7#10'FormCreate'#0#9'TGroupBox'#12'GBCo'
+  +'nnection'#6'Height'#2'p'#5'Width'#3#228#0#5'Align'#7#6'alLeft'#7'Anchors'#11
+  +#5'akTop'#0#7'Caption'#6#10'Connection'#8'TabOrder'#2#0#0#6'TLabel'#11'Label'
+  +'Server'#4'Left'#2#6#6'Height'#2#14#3'Top'#2#15#5'Width'#2'('#7'Anchors'#11#5
+  +'akTop'#6'akLeft'#7'akRight'#0#7'Caption'#6#7'Server:'#5'Color'#7#6'clNone'
+  +#11'ParentColor'#8#0#0#6'TLabel'#9'LabelPort'#4'Left'#2#6#6'Height'#2#14#3'T'
+  +'op'#2''''#5'Width'#2'('#7'Anchors'#11#5'akTop'#6'akLeft'#7'akRight'#0#7'Cap'
+  +'tion'#6#5'Port:'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#5'TEdit'#10'Edi'
+  +'tServer'#4'Left'#2'F'#6'Height'#2#22#3'Top'#2#7#5'Width'#2'_'#7'Anchors'#11
+  +#5'akTop'#6'akLeft'#7'akRight'#0#10'OnKeyPress'#7#18'EditServerKeyPress'#8'T'
+  +'abOrder'#2#0#0#0#5'TEdit'#8'EditPort'#4'Left'#2'F'#6'Height'#2#22#3'Top'#2
+  +#31#5'Width'#2'_'#7'Anchors'#11#5'akTop'#6'akLeft'#7'akRight'#0#10'OnKeyPres'
+  +'s'#7#18'EditServerKeyPress'#8'TabOrder'#2#1#4'Text'#6#2'25'#0#0#7'TButton'
+  +#13'ButtonConnect'#4'Left'#2'F'#6'Height'#2#22#3'Top'#2'?'#5'Width'#2'_'#7'A'
+  +'nchors'#11#5'akTop'#6'akLeft'#7'akRight'#0#25'BorderSpacing.InnerBorder'#2#4
+  +#7'Caption'#6#7'Connect'#7'OnClick'#7#18'ButtonConnectClick'#8'TabOrder'#2#2
+  +#0#0#0#10'TStatusBar'#2'SB'#6'Height'#2#23#3'Top'#3'='#1#5'Width'#3#188#1#6
+  +'Panels'#14#0#0#0#7'TButton'#10'ButtonSend'#6'Height'#2#24#3'Top'#3'%'#1#5'W'
+  +'idth'#3#188#1#5'Align'#7#8'alBottom'#25'BorderSpacing.InnerBorder'#2#4#7'Ca'
+  +'ption'#6#4'Send'#7'Enabled'#8#7'OnClick'#7#15'ButtonSendClick'#8'TabOrder'#2
+  +#1#0#0#9'TGroupBox'#7'GBEmail'#4'Left'#3#232#0#6'Height'#2'p'#5'Width'#3#212
+  +#0#5'Align'#7#7'alRight'#7'Anchors'#11#5'akTop'#0#7'Caption'#6#6'e-mail'#8'T'
+  +'abOrder'#2#2#0#6'TLabel'#9'LabelFrom'#4'Left'#2#6#6'Height'#2#14#3'Top'#2#12
+  +#5'Width'#2'$'#7'Anchors'#11#5'akTop'#6'akLeft'#7'akRight'#0#7'Caption'#6#5
+  +'From:'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#6'TLabel'#7'LabelTo'#4'Le'
+  +'ft'#2#6#6'Height'#2#14#3'Top'#2'&'#5'Width'#2'('#7'Anchors'#11#5'akTop'#6'a'
+  +'kLeft'#7'akRight'#0#7'Caption'#6#3'To:'#5'Color'#7#6'clNone'#11'ParentColor'
+  +#8#0#0#6'TLabel'#12'LabelSubject'#4'Left'#2#6#6'Height'#2#14#3'Top'#2'?'#5'W'
+  +'idth'#2'('#7'Anchors'#11#5'akTop'#6'akLeft'#7'akRight'#0#7'Caption'#6#8'Sub'
+  +'ject:'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#5'TEdit'#8'EditFrom'#4'Le'
+  +'ft'#2'>'#6'Height'#2#23#3'Top'#2#4#5'Width'#2'_'#7'Anchors'#11#5'akTop'#6'a'
+  +'kLeft'#7'akRight'#0#10'OnKeyPress'#7#16'EditFromKeyPress'#8'TabOrder'#2#0#0
+  +#0#5'TEdit'#6'EditTo'#4'Left'#2'>'#6'Height'#2#23#3'Top'#2#30#5'Width'#2'_'#7
+  +'Anchors'#11#5'akTop'#6'akLeft'#7'akRight'#0#10'OnKeyPress'#7#16'EditFromKey'
+  +'Press'#8'TabOrder'#2#1#0#0#5'TEdit'#11'EditSubject'#4'Left'#2'>'#6'Height'#2
+  +#23#3'Top'#2'7'#5'Width'#2'_'#7'Anchors'#11#5'akTop'#6'akLeft'#7'akRight'#0
+  +#10'OnKeyPress'#7#16'EditFromKeyPress'#8'TabOrder'#2#2#0#0#0#5'TMemo'#8'Memo'
+  +'Text'#6'Height'#3#181#0#3'Top'#2'p'#5'Width'#3#188#1#5'Align'#7#8'alBottom'
+  +#7'Anchors'#11#5'akTop'#6'akLeft'#7'akRight'#8'akBottom'#0#8'TabOrder'#2#3#0
+  +#0#21'TLSMTPClientComponent'#4'SMTP'#4'Port'#2#25#9'OnConnect'#7#11'SMTPConn'
+  +'ect'#9'OnReceive'#7#11'SMTPReceive'#12'OnDisconnect'#7#14'SMTPDisconnect'#7
+  +'OnError'#7#9'SMTPError'#9'OnSuccess'#7#11'SMTPSuccess'#9'OnFailure'#7#11'SM'
+  +'TPFailure'#9'StatusSet'#11#6'ssMail'#6'ssQuit'#0#4'left'#3#152#1#3'top'#2'8'
+  +#0#0#9'TMainMenu'#8'MainMenu'#4'left'#3#152#1#3'top'#2#24#0#9'TMenuItem'#12
+  +'MenuItemFile'#7'Caption'#6#5'&File'#0#9'TMenuItem'#12'MenuItemExit'#7'Capti'
+  +'on'#6#5'E&xit'#7'OnClick'#7#17'MenuItemExitClick'#0#0#0#9'TMenuItem'#12'Men'
+  +'uItemHelp'#7'Caption'#6#5'&Help'#0#9'TMenuItem'#13'MenuItemAbout'#7'Caption'
+  +#6#6'&About'#7'OnClick'#7#18'MenuItemAboutClick'#0#0#0#0#0
+]);

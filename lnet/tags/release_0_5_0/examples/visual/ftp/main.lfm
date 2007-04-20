@@ -1,0 +1,243 @@
+object MainForm: TMainForm
+  Left = 198
+  Height = 548
+  Top = 84
+  Width = 725
+  HorzScrollBar.Page = 724
+  VertScrollBar.Page = 518
+  ActiveControl = MemoText
+  BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
+  Caption = 'FTP Test Client'
+  Constraints.MinHeight = 548
+  Constraints.MinWidth = 725
+  Menu = MainMenu
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
+  object MemoText: TMemo
+    Height = 103
+    Top = 393
+    Width = 725
+    Align = alBottom
+    ReadOnly = True
+    ScrollBars = ssAutoVertical
+    TabOrder = 0
+  end
+  object Panel1: TPanel
+    Height = 362
+    Top = 26
+    Width = 725
+    Align = alClient
+    TabOrder = 1
+    object LeftView: TFileListBox
+      Left = 1
+      Height = 360
+      Top = 1
+      Width = 183
+      Align = alLeft
+      ExtendedSelect = False
+      FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
+      OnDblClick = LeftViewDblClick
+      PopupMenu = PopupLeft
+      TabOrder = 0
+    end
+    object Splitter2: TSplitter
+      Left = 184
+      Height = 360
+      Top = 1
+      Width = 5
+    end
+    object rmtGrid: TStringGrid
+      Left = 189
+      Height = 360
+      Top = 1
+      Width = 535
+      Align = alClient
+      ColCount = 6
+      Columns = <      
+        item
+          Title.Caption = ' '
+          Width = 18
+        end      
+        item
+          Title.Caption = 'File'
+          Width = 220
+        end      
+        item
+          Title.Caption = 'Size'
+          Width = 80
+        end      
+        item
+          Title.Caption = 'Date'
+          Width = 100
+        end      
+        item
+          Title.Caption = 'Attributes'
+        end      
+        item
+          Title.Caption = 'Links'
+          Width = 0
+        end>
+      DefaultRowHeight = 16
+      FixedColor = clBtnFace
+      FixedCols = 0
+      GridLineWidth = 0
+      Options = [goFixedVertLine, goFixedHorzLine, goColSizing, goRowSelect]
+      PopupMenu = PopupRight
+      RowCount = 1
+      ScrollBars = ssAutoBoth
+      TabOrder = 1
+      TabStop = True
+      OnCompareCells = rmtGridCompareCells
+      OnDblClick = rmtGridDblClick
+      OnDrawCell = rmtGridDrawCell
+      OnKeyDown = rmtGridKeyDown
+    end
+  end
+  object Splitter1: TSplitter
+    Cursor = crVSplit
+    Height = 5
+    Top = 388
+    Width = 725
+    Align = alBottom
+    ResizeAnchor = akBottom
+  end
+  object SBar: TStatusBar
+    Height = 23
+    Top = 496
+    Width = 725
+    Panels = <    
+      item
+        Width = 150
+      end    
+      item
+        Width = 100
+      end    
+      item
+        Width = 250
+      end    
+      item
+        Width = 50
+      end>
+    SimplePanel = False
+  end
+  object ToolBar1: TToolBar
+    Height = 26
+    Width = 725
+    Caption = 'ToolBar1'
+    ShowCaptions = True
+    TabOrder = 2
+    OnClick = ToolBar1Click
+    object ToolButton1: TToolButton
+      Left = 1
+      Top = 2
+      Action = accSiteManager
+    end
+    object ToolButton3: TToolButton
+      Left = 86
+      Top = 2
+      Width = 13
+      Caption = 'ToolButton3'
+      Style = tbsDivider
+    end
+    object ToolButton4: TToolButton
+      Left = 99
+      Top = 2
+      Action = accConnect
+      Grouped = True
+      Style = tbsCheck
+    end
+    object ToolButton2: TToolButton
+      Left = 155
+      Top = 2
+      Action = accDisconnect
+      Down = True
+      Grouped = True
+      Style = tbsCheck
+    end
+  end
+  object MainMenu: TMainMenu
+    top = 335
+    object MenuItemFile: TMenuItem
+      Caption = '&File'
+      object MenuSiteManager: TMenuItem
+        Action = accSiteManager
+        OnClick = accSiteManagerExecute
+      end
+      object MenuItem1: TMenuItem
+        Caption = '-'
+      end
+      object MenuItemExit: TMenuItem
+        Caption = 'E&xit'
+        OnClick = ExitMenuItemClick
+      end
+    end
+    object MenuItemHelp: TMenuItem
+      Caption = '&Help'
+      object MenuItemAbout: TMenuItem
+        Caption = '&About'
+        OnClick = AboutMenuItemClick
+      end
+    end
+  end
+  object PopupRight: TPopupMenu
+    top = 272
+    object PupupGet: TMenuItem
+      Caption = 'Get'
+      OnClick = GetPupupClick
+    end
+    object PopupDelete: TMenuItem
+      Caption = 'Delete'
+      OnClick = DeletePopupClick
+    end
+    object PopupRename: TMenuItem
+      Caption = 'Rename'
+      OnClick = RenamePopupClick
+    end
+  end
+  object FTP: TLFTPClientComponent
+    Port = 21
+    OnConnect = FTPConnect
+    OnSent = FTPSent
+    OnReceive = FTPReceive
+    OnControl = FTPControl
+    OnError = FTPError
+    StartPort = 1024
+    TransferMethod = ftPassive
+    top = 300
+  end
+  object PopupLeft: TPopupMenu
+    top = 248
+    object PopupLInfo: TMenuItem
+      Caption = 'Info'
+      OnClick = LInfoPopupClick
+    end
+    object PopupLDelete: TMenuItem
+      Caption = 'Delete'
+      OnClick = LDeletePopupClick
+    end
+    object PopupLRename: TMenuItem
+      Caption = 'Rename'
+      OnClick = LRenamePopupClick
+    end
+  end
+  object ActionList1: TActionList
+    top = 370
+    object accSiteManager: TAction
+      Caption = 'Site Manager'
+      DisableIfNoHandler = True
+      OnExecute = accSiteManagerExecute
+    end
+    object accConnect: TAction
+      Caption = 'Connect'
+      DisableIfNoHandler = True
+      OnExecute = accConnectExecute
+    end
+    object accDisconnect: TAction
+      Caption = 'Disconnect'
+      DisableIfNoHandler = True
+      OnExecute = accDisconnectExecute
+    end
+  end
+end

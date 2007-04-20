@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <Package Version="2">
+    <Name Value="lnetbase"/>
+    <CompilerOptions>
+      <Version Value="5"/>
+      <SearchPaths>
+        <IncludeFiles Value="../lib/sys/"/>
+        <OtherUnitFiles Value="../lib/"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+        <SrcPath Value="../lib/;../lib/sys/"/>
+      </SearchPaths>
+      <Parsing>
+        <SyntaxOptions>
+          <CStyleMacros Value="True"/>
+        </SyntaxOptions>
+      </Parsing>
+      <CodeGeneration>
+        <SmartLinkUnit Value="True"/>
+        <Generate Value="Faster"/>
+        <Optimizations>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
+      </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <GenerateDebugInfo Value="True"/>
+        </Debugging>
+      </Linking>
+      <Other>
+        <CompilerPath Value="$(CompPath)"/>
+      </Other>
+    </CompilerOptions>
+    <Version Minor="5"/>
+    <Files Count="8">
+      <Item1>
+        <Filename Value="../lib/lnet.pp"/>
+        <UnitName Value="lNet"/>
+      </Item1>
+      <Item2>
+        <Filename Value="../lib/levents.pp"/>
+        <UnitName Value="lEvents"/>
+      </Item2>
+      <Item3>
+        <Filename Value="../lib/lcommon.pp"/>
+        <UnitName Value="lCommon"/>
+      </Item3>
+      <Item4>
+        <Filename Value="../lib/lftp.pp"/>
+        <UnitName Value="lFTP"/>
+      </Item4>
+      <Item5>
+        <Filename Value="../lib/lsmtp.pp"/>
+        <UnitName Value="lsmtp"/>
+      </Item5>
+      <Item6>
+        <Filename Value="../lib/ltelnet.pp"/>
+        <UnitName Value="lTelnet"/>
+      </Item6>
+      <Item7>
+        <Filename Value="../lib/lhttp.pp"/>
+        <UnitName Value="lhttp"/>
+      </Item7>
+      <Item8>
+        <Filename Value="../lib/lwebserver.pp"/>
+        <UnitName Value="lwebserver"/>
+      </Item8>
+    </Files>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)/"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
