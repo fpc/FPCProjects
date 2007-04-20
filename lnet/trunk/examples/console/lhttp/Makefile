@@ -1,5 +1,5 @@
 PP=fpc
-BASEARGS=-Fu../../../lib -Fi../../../lib/sys -Sm -FU../../../units -FE.
+BASEARGS=-Fu../../../lib -Fi../../../lib/sys -Sm -FU../units -FE.
 ARGS=$(BASEARGS) $(OPT) -O2 -XX -Xs
 
 all:
