@@ -9,5 +9,6 @@ clean:
 	delp .
 	delp lib
 	delp lib/sys
+	delp units
 	$(MAKE) -C examples clean
 	rm -f *~
