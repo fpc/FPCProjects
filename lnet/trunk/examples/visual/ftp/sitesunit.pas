@@ -17,6 +17,7 @@ type
     path: string;
     user: string;
     pass: string;
+    Anonymous: Boolean;
   end;
   
   { TfrmSites }
@@ -423,6 +424,7 @@ begin
   Site.Path := txtPath.text;
   Site.User := txtUser.Text;
   Site.Pass := txtPass.Text;
+  Site.Anonymous := chkAnonymous.Checked;
   
   s := extractFilePath(Application.ExeName) + 'sites.ini';
   Ini := TIniFile.Create(s);

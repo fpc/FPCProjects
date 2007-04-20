@@ -182,7 +182,7 @@ begin
   then
     exit;
   Pass := Site.Pass;
-  if (Pass='') then
+  if (not Site.Anonymous) and (Pass='') then
     Pass := PasswordBox('Password', 'Please type in your password');
 
   FTP.Authenticate(aName, Pass);
