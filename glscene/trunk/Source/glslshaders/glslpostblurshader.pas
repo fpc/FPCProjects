@@ -6,6 +6,7 @@
    A shader that blurs the entire scene.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>16/04/07 - DaStr - Shader made ATI compatible
       <li>05/04/07 - DaStr - Initial version (contributed to GLScene)
 
 
@@ -89,18 +90,18 @@ begin
     Add('{ ');
     Add('   ');
     Add('   vec2 samples[8]; ');
+    Add('   vec2 vTexCoordScr = vTexCoord * ScreenExtents; ');
     Add('    ');
-    Add('   vTexCoord *= ScreenExtents;');
-    Add('   samples[0]  = vTexCoord + vec2(-1.0, -1.0); ');
-    Add('   samples[1]  = vTexCoord + vec2( 0.0, -1.0); ');
-    Add('   samples[2]  = vTexCoord + vec2( 1.0, -1.0); ');
-    Add('   samples[3]  = vTexCoord + vec2(-1.0,  0.0); ');
-    Add('   samples[4]  = vTexCoord + vec2( 1.0,  0.0); ');
-    Add('   samples[5]  = vTexCoord + vec2(-1.0,  1.0); ');
-    Add('   samples[6]  = vTexCoord + vec2( 0.0,  1.0); ');
-    Add('   samples[7]  = vTexCoord + vec2( 1.0,  1.0); ');
+    Add('   samples[0]  = vTexCoordScr + vec2(-1.0, -1.0); ');
+    Add('   samples[1]  = vTexCoordScr + vec2( 0.0, -1.0); ');
+    Add('   samples[2]  = vTexCoordScr + vec2( 1.0, -1.0); ');
+    Add('   samples[3]  = vTexCoordScr + vec2(-1.0,  0.0); ');
+    Add('   samples[4]  = vTexCoordScr + vec2( 1.0,  0.0); ');
+    Add('   samples[5]  = vTexCoordScr + vec2(-1.0,  1.0); ');
+    Add('   samples[6]  = vTexCoordScr + vec2( 0.0,  1.0); ');
+    Add('   samples[7]  = vTexCoordScr + vec2( 1.0,  1.0); ');
     Add(' ');
-    Add('   vec4 sample = texture2DRect(Image, vTexCoord); ');
+    Add('   vec4 sample = texture2DRect(Image, vTexCoordScr); ');
     Add(' ');
     Add('   // Neighborhood average ');
     Add('   vec4 avg = sample; ');
