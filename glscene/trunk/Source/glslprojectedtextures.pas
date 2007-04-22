@@ -6,6 +6,8 @@
    Implements projected textures through a GLScene object via GLSL.
 
    <b>History : </b><font size=-1><ul>
+        <li>13/04/07 - LC  -    Fixed bug that caused Attenuation to fail. (Bugtracker ID=1699882)
+                                Also added Quadratic attenuation      
         <li>02/04/07 - DaStr -  Added $I GLScene.inc
         <li>25/03/07 - fig -    Only The texMatrix is passed to the shader now,
                                   no need for the InvModelViewMatrix
@@ -27,7 +29,7 @@
 2. Only up to 6 Emitters can be used (more on better cards)
    A way round this is to make the emiitters a children of the 6 nearest objects
    to the camera.
-3. Changing emiiter properties causes a slight delay while recreating the shader.
+3. Changing emitter properties causes a slight delay while recreating the shader.
    To make an emitter invisible, just move it to somewhere it won't project on
    anything, or set the brightness to 0. (?)
 4. All children of the ProjectedTextures must have use a texture.
@@ -66,12 +68,14 @@ type
         FStyle: TGLSLProjectedTexturesStyle;
         FColor: TGLColor;
         FUseAttenuation, FAllowReverseProjection: boolean;
+        FUseQuadraticAttenuation: boolean;
     protected
         ProjectedTexturesObject: TGLSLProjectedTextures;
         TexMatrix: TMatrix;
         procedure SetupTexMatrix;
         procedure SetStyle(val: TGLSLProjectedTexturesStyle);
         procedure SetUseAttenuation(val: boolean);
+        procedure SetUseQuadraticAttenuation(val: boolean);
         procedure SetAllowReverseProjection(val: boolean);
     public
         constructor Create(AOwner: TComponent); override;
@@ -90,6 +94,7 @@ type
         property Brightness: single read FBrightness write FBrightness;
         property Color: TGLColor read FColor write FColor;
         property UseAttenuation: boolean read FUseAttenuation write SetUseAttenuation;
+        property UseQuadraticAttenuation: Boolean read FUseQuadraticAttenuation write SetUseQuadraticAttenuation;
         property AllowReverseProjection: boolean read FAllowReverseProjection write SetAllowReverseProjection;
 
         property ObjectsSorting;
@@ -242,6 +247,13 @@ end;
 procedure TGLSLTextureEmitter.SetUseAttenuation(val: boolean);
 begin
     FUseAttenuation := val;
+    if assigned(ProjectedTexturesObject) then
+        ProjectedTexturesObject.ShaderChanged := true;
+end;
+
+procedure TGLSLTextureEmitter.SetUseQuadraticAttenuation(val: boolean);
+begin
+    FUseQuadraticAttenuation := val;
     if assigned(ProjectedTexturesObject) then
         ProjectedTexturesObject.ShaderChanged := true;
 end;
@@ -478,7 +490,6 @@ begin
         fp.add('vec3 light = texture2D(LightMap, gl_TexCoord[1].st).rgb;')
     else
         fp.add(format('vec3 light = vec3(%.4f, %.4f, %.4f);', [Ambient.Red, ambient.Green, ambient.Blue]));
-
     if emitters.count > 0 then
     begin
         fp.add('vec3 projlight = vec3(0, 0, 0);');
@@ -501,7 +512,10 @@ begin
 
             if emitter.UseAttenuation then
             begin
+                //fp.add(format('dist = 1.0 - clamp(ProjTexCoords%d.q/Attenuation%d, 0.0, 1.0);', [i, i]));
                 fp.add(format('dist = 1.0 - clamp(ProjTexCoords%d.q/Attenuation%d, 0.0, 1.0);', [i, i]));
+                if emitter.UseQuadraticAttenuation then
+                  fp.add('dist *= dist;');
                 case emitter.Style of
                     ptslight:
                         fp.add('projlight *= dist;');
@@ -523,7 +537,7 @@ begin
         fp.add('vec3 totlight = light;');
 
     fp.add('gl_FragColor = vec4(1.5*totlight *color , 1);}');
-
+    //fp.add('gl_FragColor = vec4(vec3(dist) , 1);}');
     vp.SaveToFile('c:\vp.txt');
     fp.SaveToFile('c:\fp.txt');
     Shader.AddShader(TGLVertexShaderHandle, vp.Text, True);
@@ -569,7 +583,9 @@ begin
             emitter := Emitters[i].Emitter;
             if not assigned(emitter) then continue;
             if emitter.UseAttenuation then
-                Shader.Uniform1f['Attenuation' + inttostr(i)] := emitter.Attenuation;
+                // negate attenuation here, instead of negating q inside the shader
+                // otherwise the result of q/attenuation is negative.
+                Shader.Uniform1f['Attenuation' + inttostr(i)] := -emitter.Attenuation;
             Shader.Uniform1f['Brightness' + inttostr(i)] := emitter.Brightness;
             Shader.Uniform3f['Color' + inttostr(i)] := PAffinevector(@emitter.Color.Color)^;
             Shader.Uniformmatrix4fv['TextureMatrix' + inttostr(i)] := emitter.texMatrix;
