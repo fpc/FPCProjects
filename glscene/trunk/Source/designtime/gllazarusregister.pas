@@ -641,7 +641,8 @@ begin
                ImageIndex:=FObjectIcons.Count-1;
             {$ELSE}
             if LazarusResources.Find(resBitmapName) <> nil then begin
-              FObjectIcons.AddFromLazarusResource(resBitmapName);
+//              FObjectIcons.AddFromLazarusResource(resBitmapName);
+              FObjectIcons.AddLazarusResource(resBitmapName);
               ImageIndex:=FObjectIcons.Count-1;
             {$ENDIF}
             end else ImageIndex:=0;
@@ -707,19 +708,19 @@ begin
    {$ELSE}
    FObjectIcons:=TImageList.CreateSize(16, 16);
    with FObjectIcons do begin
-         AddFromLazarusResource('gls_cross');
+         AddLazarusResource('gls_cross');
          FOverlayIndex:=Count-1;
          //missing in lazarus: TImageList.overlay
          //Overlay(FOverlayIndex, 0); // used as indicator for disabled objects
-         AddFromLazarusResource('gls_root');
+         AddLazarusResource('gls_root');
          FSceneRootIndex:=Count-1;
-         AddFromLazarusResource('gls_camera');
+         AddLazarusResource('gls_camera');
          FCameraRootIndex:=Count-1;
-         AddFromLazarusResource('gls_lights');
+         AddLazarusResource('gls_lights');
          FLightsourceRootIndex:=Count-1;
-         AddFromLazarusResource('gls_objects');
+         AddLazarusResource('gls_objects');
          FObjectRootIndex:=Count-1;
-         AddFromLazarusResource('gls_objects');
+         AddLazarusResource('gls_objects');
          FStockObjectRootIndex:=Count-1;
    end;
    {$ENDIF}
