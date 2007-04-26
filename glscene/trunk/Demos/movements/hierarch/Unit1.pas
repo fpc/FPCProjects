@@ -19,7 +19,7 @@ interface
 uses
   LCLType, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
   AsyncTimer, Classes, Controls,  LResources, GLScene,
-  GLCadencer, GLLCLViewer;
+  GLCadencer, GLViewer;
 
 type
 
@@ -84,8 +84,6 @@ begin
 	if CBPlay.Checked and Visible then begin
 		// simulate a user action on the trackbar...
 		TrackBar.Position:=((TrackBar.Position+1) mod 360);
-                //Patch to work with lazarus k00m.
-                TrackBar.OnChange(self);
    end;
 end;
 
