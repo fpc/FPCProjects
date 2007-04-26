@@ -538,8 +538,8 @@ begin
 
     fp.add('gl_FragColor = vec4(1.5*totlight *color , 1);}');
     //fp.add('gl_FragColor = vec4(vec3(dist) , 1);}');
-    vp.SaveToFile('c:\vp.txt');
-    fp.SaveToFile('c:\fp.txt');
+    //vp.SaveToFile('c:\vp.txt');
+    //fp.SaveToFile('c:\fp.txt');
     Shader.AddShader(TGLVertexShaderHandle, vp.Text, True);
     Shader.AddShader(TGLFragmentShaderHandle, fp.Text, True);
 
