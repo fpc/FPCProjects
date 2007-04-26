@@ -3807,7 +3807,7 @@ var
    
 function GLGetProcAddress(ProcName: PChar):Pointer;
 begin
-  result := GetProcAddress(Cardinal(GLHandle),ProcName);
+  result := GetProcAddress(TLibHandle(GLHandle),ProcName);
 end;
 {$ENDIF}
 
