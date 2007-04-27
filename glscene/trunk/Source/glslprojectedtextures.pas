@@ -7,18 +7,18 @@
 
    <b>History : </b><font size=-1><ul>
         <li>13/04/07 - LC  -    Fixed bug that caused Attenuation to fail. (Bugtracker ID=1699882)
-                                Also added Quadratic attenuation      
+                                Also added Quadratic attenuation                                
         <li>02/04/07 - DaStr -  Added $I GLScene.inc
-        <li>25/03/07 - fig -    Only The texMatrix is passed to the shader now,
+        <li>25/03/07 - fig -    Only The texMatrix is passed to the shader now, 
                                   no need for the InvModelViewMatrix
-                                Changed Emitter color, brightness and Attenuation
-                                  properties to use Uniforms in the shader, so
+                                Changed Emitter color, brightness and Attenuation 
+                                  properties to use Uniforms in the shader, so 
                                   they're now dynamic.
-        <li>23/03/07 - fig -    Fixed reverse projection bug and added
-                                  Quick Decimal Separator fix.
+        <li>23/03/07 - fig -    Fixed reverse projection bug and added Quick 
+                                  Decimal Separator fix.
                                 Finished Design time support.
-                                Now checks for GLSL support and just renders
-                                  the children as normal, if not supported.
+                                Now checks for GLSL support and just renders the children as normal, 
+                                  if not supported.
         <li>22/03/07 - fig -    Initial version.
    </ul></font>
 }
@@ -30,7 +30,7 @@
    A way round this is to make the emiitters a children of the 6 nearest objects
    to the camera.
 3. Changing emitter properties causes a slight delay while recreating the shader.
-   To make an emitter invisible, just move it to somewhere it won't project on
+   To make an emitter invisible, just move it to somewhere it won't project on 
    anything, or set the brightness to 0. (?)
 4. All children of the ProjectedTextures must have use a texture.
    The shader can't be changed between rendering each seperate object..
