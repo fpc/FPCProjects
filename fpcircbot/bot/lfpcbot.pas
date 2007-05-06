@@ -62,12 +62,11 @@ begin
     Delete(Result, Length(Result), 1); // delete trailing ","
 end;
 
-procedure SetGreetings(var aList: TStringList; const s: string);
+function SetGreetings(const s: string): TStringList;
 begin
-  FreeAndNil(aList);
-  aList := TStringList.Create;
+  Result := TStringList.Create;
   if Length(s) > 6 then
-    aList.CommaText := Copy(s, 7, Length(s));
+    Result.CommaText := Copy(s, 7, Length(s));
 end;
 
 function CleanDoubles(const s: string): string;
@@ -126,7 +125,7 @@ begin
   Doer.Logging := True;
   Doer.MarkovOn := True;
   
-  SetGreetings(Doer.Greetings, ConfigList[0]);
+  Doer.Greetings := SetGreetings(ConfigList[0]);
   ConfigList.Delete(0); // "delete" first greetings line
   Doer.GreetList := ConfigList;
   Con.NickServPassword := NickPass;

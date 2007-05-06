@@ -515,18 +515,16 @@ var
 begin
   Args:=SQLEscape(Caller.LastLine.Arguments);
   with Caller, Caller.LastLine do begin
-    if Length(Args) < 256 then begin
-      if Length(Args) > 0 then begin
-        n:=Pos(' ', Args);
-        if n > 0 then begin
-          DefWord:=Args;
-          Delete(DefWord, n, Length(DefWord));
-          DefWord:=Trim(LowerCase(DefWord));
-          Args:=Copy(Args, n + 1, Length(Args));
-          AddIt;
-        end else Respond('Usage: ' + Nick + ': define <what> <definition>');
+    if Length(Args) > 0 then begin
+      n:=Pos(' ', Args);
+      if n > 0 then begin
+        DefWord:=Args;
+        Delete(DefWord, n, Length(DefWord));
+        DefWord:=Trim(LowerCase(DefWord));
+        Args:=Copy(Args, n + 1, Length(Args));
+        AddIt;
       end else Respond('Usage: ' + Nick + ': define <what> <definition>');
-    end else Respond('Description string too long, max size is 255 chars');
+    end else Respond('Usage: ' + Nick + ': define <what> <definition>');
   end;
 {$else}
 begin
