@@ -93,8 +93,6 @@ type
     FPeerAddress: TInetSockAddr;
     FConnected: Boolean;
     FConnecting: Boolean;
-    FSocketClass: Integer;
-    FProtocol: Integer;
     FNextSock: TLSocket;
     FPrevSock: TLSocket;
     FIgnoreShutdown: Boolean;
@@ -103,7 +101,6 @@ type
     FServerSocket: Boolean;
     FOnFree: TLSocketEvent;
     FBlocking: Boolean;
-    FListenBacklog: Integer;
     FCreator: TLComponent;
    protected
     function DoSend(const TheData; const TheSize: Integer): Integer;
@@ -124,6 +121,10 @@ type
     
     procedure LogError(const msg: string; const ernum: Integer); virtual;
    public
+    ListenBacklog: Integer;
+    Protocol: Integer;
+    SocketType: Integer;
+
     constructor Create; override;
     destructor Destroy; override;
     
@@ -142,9 +143,6 @@ type
    public
     property Connected: Boolean read FConnected;
     property Connecting: Boolean read FConnecting;
-    property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
-    property Protocol: Integer read FProtocol write FProtocol;
-    property SocketType: Integer read FSocketClass write FSocketClass;
     property Blocking: Boolean read FBlocking write SetBlocking;
     property PeerAddress: string read GetPeerAddress;
     property PeerPort: Word read GetPeerPort;
@@ -200,14 +198,14 @@ type
    protected
     FHost: string;
     FPort: Word;
-    FSocketClass: TLSocketClass;
     FCreator: TLComponent;
    public
+    SocketClass: TLSocketClass;
+
     constructor Create(aOwner: TComponent); override;
     procedure Disconnect; virtual; abstract;
     procedure CallAction; virtual; abstract;
 
-    property SocketClass: TLSocketClass read FSocketClass write FSocketClass;
     property Host: string read FHost write FHost;
     property Port: Word read FPort write FPort;
     property Creator: TLComponent read FCreator write FCreator;
@@ -293,7 +291,6 @@ type
     property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
     property Iterator: TLSocket read FIterator;
     property Timeout: DWord read GetTimeout write SetTimeout;
-    property SocketClass: TLSocketClass read FSocketClass write FSocketClass;
     property Eventer: TLEventer read FEventer write SetEventer;
     property EventerClass: TLEventerClass read FEventerClass write FEventerClass;
   end;
@@ -395,7 +392,7 @@ begin
   inherited Create;
   FHandle := INVALID_SOCKET;
   FBlocking := False;
-  FListenBacklog := LDEFAULT_BACKLOG;
+  ListenBacklog := LDEFAULT_BACKLOG;
   FServerSocket := False;
   FPrevSock := nil;
   FNextSock := nil;
@@ -404,8 +401,8 @@ begin
   FConnected := False;
   FConnecting := False;
   FIgnoreShutdown := False;
-  FSocketClass := SOCK_STREAM;
-  FProtocol := LPROTO_TCP;
+  SocketType := SOCK_STREAM;
+  Protocol := LPROTO_TCP;
 end;
 
 destructor TLSocket.Destroy;
@@ -428,7 +425,7 @@ begin
   if FConnected or FConnecting then begin
     FConnected := False;
     FConnecting := False;
-    if (FSocketClass = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
+    if (SocketType = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
       if ShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
     if CloseSocket(FHandle) <> 0 then
@@ -457,7 +454,7 @@ end;
 function TLSocket.GetPeerAddress: string;
 begin
   Result := '';
-  if FSocketClass = SOCK_STREAM then
+  if SocketType = SOCK_STREAM then
     Result := NetAddrtoStr(FAddress.Addr)
   else
     Result := NetAddrtoStr(FPeerAddress.Addr);
@@ -510,7 +507,7 @@ var
 begin
   Result := 0;
   if CanReceive then begin
-    if FSocketClass = SOCK_STREAM then
+    if SocketType = SOCK_STREAM then
       Result := sockets.Recv(FHandle, aData, aSize, LMSG)
     else
       Result := sockets.Recvfrom(FHandle, aData, aSize, LMSG, FPeerAddress, AddressLength);
@@ -528,7 +525,7 @@ end;
 
 function TLSocket.DoSend(const TheData; const TheSize: Integer): Integer;
 begin
-  if FSocketClass = SOCK_STREAM then
+  if SocketType = SOCK_STREAM then
     Result := sockets.send(FHandle, TheData, TheSize, LMSG)
   else
     Result := sockets.sendto(FHandle, TheData, TheSize, LMSG, FPeerAddress, SizeOf(FPeerAddress));
@@ -542,11 +539,11 @@ begin
   Result := false;
   if not FConnected and not FConnecting then begin
     Done := true;
-    FHandle := fpSocket(AF_INET, FSocketClass, FProtocol);
+    FHandle := fpSocket(AF_INET, SocketType, Protocol);
     if FHandle = INVALID_SOCKET then
       Bail('Socket error', LSocketError);
     SetOptions;
-    if FSocketClass = SOCK_DGRAM then begin
+    if SocketType = SOCK_DGRAM then begin
       Arg := 1;
       if SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Bail('SetSockOpt error', LSocketError);
@@ -579,8 +576,8 @@ begin
       Bail('Error on bind', LSocketError)
     else
       Result := true;
-    if (FSocketClass = SOCK_STREAM) and Result then
-      if fpListen(FHandle, FListenBacklog) = SOCKET_ERROR then
+    if (SocketType = SOCK_STREAM) and Result then
+      if fpListen(FHandle, ListenBacklog) = SOCKET_ERROR then
         Result  :=  Bail('Error on Listen', LSocketError)
       else
         Result := true;
@@ -650,7 +647,7 @@ begin
   FPort := 0;
   FListenBacklog := LDEFAULT_BACKLOG;
   FTimeout := 0;
-  FSocketClass := TLSocket;
+  SocketClass := TLSocket;
   FOnReceive := nil;
   FOnError := nil;
   FOnDisconnect := nil;
@@ -857,7 +854,7 @@ begin
   if Assigned(FRootSock) and FRootSock.Connected then
     Disconnect;
 
-  FRootSock := InitSocket(FSocketClass.Create);
+  FRootSock := InitSocket(SocketClass.Create);
   FIterator := FRootSock;
 
   Result := FRootSock.SetupSocket(APort, LADDR_ANY);
@@ -876,7 +873,7 @@ begin
   if Assigned(FRootSock) and FRootSock.Connected then
     Disconnect;
 
-  FRootSock := InitSocket(FSocketClass.Create);
+  FRootSock := InitSocket(SocketClass.Create);
   FIterator := FRootSock;
   
   if FRootSock.Listen(APort, AIntf) then begin
@@ -1031,7 +1028,7 @@ begin
   if Assigned(FRootSock) then
     Disconnect;
     
-  FRootSock := InitSocket(FSocketClass.Create);
+  FRootSock := InitSocket(SocketClass.Create);
   Result := FRootSock.Connect(Address, aPort);
   
   if Result then begin
@@ -1051,7 +1048,7 @@ begin
   if Assigned(FRootSock) then
     Disconnect;
   
-  FRootSock := InitSocket(FSocketClass.Create);
+  FRootSock := InitSocket(SocketClass.Create);
   FRootSock.FIgnoreShutdown := True;
   if FRootSock.Listen(APort, AIntf) then begin
     FRootSock.FConnected := True;
@@ -1153,7 +1150,7 @@ procedure TLTcp.AcceptAction(aSocket: TLHandle);
 var
   Tmp: TLSocket;
 begin
-  Tmp := InitSocket(FSocketClass.Create);
+  Tmp := InitSocket(SocketClass.Create);
   if Tmp.Accept(FRootSock.FHandle) then begin
     if Assigned(FRootSock.FNextSock) then begin
       Tmp.FNextSock := FRootSock.FNextSock;

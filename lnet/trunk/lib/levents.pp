@@ -67,12 +67,12 @@ type
     FPrev: TLHandle;
     FNext: TLHandle;
     FFreeNext: TLHandle;
-    FUserData: Pointer;
     FInternalData: Pointer;
     procedure SetIgnoreError(const aValue: Boolean);
     procedure SetIgnoreWrite(const aValue: Boolean);
     procedure SetIgnoreRead(const aValue: Boolean);
    public
+    UserData: Pointer;
     constructor Create; virtual;
     destructor Destroy; override;
     procedure Free; virtual;          // this is a trick
@@ -85,7 +85,6 @@ type
     property OnRead: TLHandleEvent read FOnRead write FOnRead;
     property OnWrite: TLHandleEvent read FOnWrite write FOnWrite;
     property OnError: TLHandleErrorEvent read FOnError write FOnError;
-    property UserData: Pointer read FUserData write FUserData;
     property Dispose: Boolean read FDispose write FDispose;
     property Handle: THandle read FHandle write FHandle;
     property Eventer: TLEventer read FEventer;
@@ -231,7 +230,7 @@ begin
   FOnRead := nil;
   FOnWrite := nil;
   FOnError := nil;
-  FUserData := nil;
+  UserData := nil;
   FEventer := nil;
   FPrev := nil;
   FNext := nil;
