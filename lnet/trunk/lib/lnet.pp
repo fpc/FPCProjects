@@ -280,8 +280,6 @@ type
     function IterNext: Boolean; virtual; abstract;
     procedure IterReset; virtual; abstract;
    public
-    property Host: string read FHost write FHost;
-    property Port: Word read FPort write FPort;
     property OnError: TLSocketErrorEvent read FOnError write FOnError;
     property OnReceive: TLSocketEvent read FOnReceive write FOnReceive;
     property OnDisconnect: TLSocketEvent read FOnDisconnect write FOnDisconnect;
