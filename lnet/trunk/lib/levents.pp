@@ -46,7 +46,7 @@ type
 
   TLHandleEvent = procedure (aHandle: TLHandle) of object;
   TLHandleErrorEvent = procedure (aHandle: TLHandle; const msg: string) of object;
-  TLEventerErrorCallback = procedure (const msg: string; Sender: TLEventer) of object;
+  TLEventerErrorEvent = procedure (const msg: string; Sender: TLEventer) of object;
   
   TArrayP = array of Pointer;
 
@@ -137,7 +137,7 @@ type
    protected
     FRoot: TLHandle;
     FCount: Integer;
-    FOnError: TLEventerErrorCallback;
+    FOnError: TLEventerErrorEvent;
     FReferences: Integer;
     FFreeRoot: TLHandle; // the root of "free" list if any
     FFreeIter: TLHandle; // the last of "free" list if any
@@ -165,7 +165,7 @@ type
     procedure AddRef;
     procedure DeleteRef;
     property Timeout: DWord read GetTimeout write SetTimeout;
-    property OnError: TLEventerErrorCallback read FOnError write FOnError;
+    property OnError: TLEventerErrorEvent read FOnError write FOnError;
     property Count: Integer read FCount;
   end;
   TLEventerClass = class of TLEventer;

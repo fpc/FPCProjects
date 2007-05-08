@@ -101,6 +101,9 @@ type
     FServerSocket: Boolean;
     FOnFree: TLSocketEvent;
     FBlocking: Boolean;
+    FListenBacklog: Integer;
+    FProtocol: Integer;
+    FSocketType: Integer;
     FCreator: TLComponent;
    protected
     function DoSend(const TheData; const TheSize: Integer): Integer;
@@ -121,10 +124,6 @@ type
     
     procedure LogError(const msg: string; const ernum: Integer); virtual;
    public
-    ListenBacklog: Integer;
-    Protocol: Integer;
-    SocketType: Integer;
-
     constructor Create; override;
     destructor Destroy; override;
     
@@ -144,6 +143,9 @@ type
     property Connected: Boolean read FConnected;
     property Connecting: Boolean read FConnecting;
     property Blocking: Boolean read FBlocking write SetBlocking;
+    property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
+    property Protocol: Integer read FProtocol write FProtocol;
+    property SocketType: Integer read FSocketType write FSocketType;
     property PeerAddress: string read GetPeerAddress;
     property PeerPort: Word read GetPeerPort;
     property LocalAddress: string read GetLocalAddress;
@@ -200,12 +202,11 @@ type
     FPort: Word;
     FCreator: TLComponent;
    public
-    SocketClass: TLSocketClass;
-
     constructor Create(aOwner: TComponent); override;
     procedure Disconnect; virtual; abstract;
     procedure CallAction; virtual; abstract;
-
+   public
+    SocketClass: TLSocketClass;
     property Host: string read FHost write FHost;
     property Port: Word read FPort write FPort;
     property Creator: TLComponent read FCreator write FCreator;
@@ -392,7 +393,7 @@ begin
   inherited Create;
   FHandle := INVALID_SOCKET;
   FBlocking := False;
-  ListenBacklog := LDEFAULT_BACKLOG;
+  FListenBacklog := LDEFAULT_BACKLOG;
   FServerSocket := False;
   FPrevSock := nil;
   FNextSock := nil;
@@ -401,8 +402,8 @@ begin
   FConnected := False;
   FConnecting := False;
   FIgnoreShutdown := False;
-  SocketType := SOCK_STREAM;
-  Protocol := LPROTO_TCP;
+  FSocketType := SOCK_STREAM;
+  FProtocol := LPROTO_TCP;
 end;
 
 destructor TLSocket.Destroy;
@@ -425,7 +426,7 @@ begin
   if FConnected or FConnecting then begin
     FConnected := False;
     FConnecting := False;
-    if (SocketType = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
+    if (FSocketType = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
       if ShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
     if CloseSocket(FHandle) <> 0 then
@@ -454,7 +455,7 @@ end;
 function TLSocket.GetPeerAddress: string;
 begin
   Result := '';
-  if SocketType = SOCK_STREAM then
+  if FSocketType = SOCK_STREAM then
     Result := NetAddrtoStr(FAddress.Addr)
   else
     Result := NetAddrtoStr(FPeerAddress.Addr);
@@ -507,7 +508,7 @@ var
 begin
   Result := 0;
   if CanReceive then begin
-    if SocketType = SOCK_STREAM then
+    if FSocketType = SOCK_STREAM then
       Result := sockets.Recv(FHandle, aData, aSize, LMSG)
     else
       Result := sockets.Recvfrom(FHandle, aData, aSize, LMSG, FPeerAddress, AddressLength);
@@ -525,7 +526,7 @@ end;
 
 function TLSocket.DoSend(const TheData; const TheSize: Integer): Integer;
 begin
-  if SocketType = SOCK_STREAM then
+  if FSocketType = SOCK_STREAM then
     Result := sockets.send(FHandle, TheData, TheSize, LMSG)
   else
     Result := sockets.sendto(FHandle, TheData, TheSize, LMSG, FPeerAddress, SizeOf(FPeerAddress));
@@ -539,11 +540,11 @@ begin
   Result := false;
   if not FConnected and not FConnecting then begin
     Done := true;
-    FHandle := fpSocket(AF_INET, SocketType, Protocol);
+    FHandle := fpSocket(AF_INET, FSocketType, FProtocol);
     if FHandle = INVALID_SOCKET then
       Bail('Socket error', LSocketError);
     SetOptions;
-    if SocketType = SOCK_DGRAM then begin
+    if FSocketType = SOCK_DGRAM then begin
       Arg := 1;
       if SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Bail('SetSockOpt error', LSocketError);
@@ -576,8 +577,8 @@ begin
       Bail('Error on bind', LSocketError)
     else
       Result := true;
-    if (SocketType = SOCK_STREAM) and Result then
-      if fpListen(FHandle, ListenBacklog) = SOCKET_ERROR then
+    if (FSocketType = SOCK_STREAM) and Result then
+      if fpListen(FHandle, FListenBacklog) = SOCKET_ERROR then
         Result  :=  Bail('Error on Listen', LSocketError)
       else
         Result := true;
