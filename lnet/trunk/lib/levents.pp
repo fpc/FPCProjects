@@ -48,8 +48,6 @@ type
   TLHandleErrorEvent = procedure (aHandle: TLHandle; const msg: string) of object;
   TLEventerErrorEvent = procedure (const msg: string; Sender: TLEventer) of object;
   
-  TArrayP = array of Pointer;
-
   { TLHandle }
 
   TLHandle = class(TObject)
