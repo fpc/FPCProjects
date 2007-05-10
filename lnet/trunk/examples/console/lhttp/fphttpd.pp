@@ -72,10 +72,10 @@ begin
   FileHandler.MimeTypeFile := GetMimeFile;
   FileHandler.DocumentRoot := GetHTTPPath;
   CGIHandler := TCGIHandler.Create;
-  CGIHandler.CGIRoot := GetCGIRoot;
-  CGIHandler.DocumentRoot := GetHTTPPath;
-  CGIHandler.EnvPath := GetCGIPath;
-  CGIHandler.ScriptPathPrefix := GetScriptPathPrefix;
+  CGIHandler.FCGIRoot := GetCGIRoot;
+  CGIHandler.FDocumentRoot := GetHTTPPath;
+  CGIHandler.FEnvPath := GetCGIPath;
+  CGIHandler.FScriptPathPrefix := GetScriptPathPrefix;
   PHPCGIHandler := TPHPFastCGIHandler.Create;
   PHPCGIHandler.Host := 'localhost';
   PHPCGIHandler.Port := GetPHPCGIPort;
