@@ -425,7 +425,7 @@ begin
     FConnected := False;
     FConnecting := False;
     if (FSocketType = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
-      if ShutDown(FHandle, 2) <> 0 then
+      if fpShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
     if CloseSocket(FHandle) <> 0 then
       LogError('Closesocket error', LSocketError);
@@ -465,7 +465,7 @@ var
   l: Integer;
 begin
   l := SizeOf(a);
-  GetSocketName(FHandle, a, l);
+  fpGetSockName(FHandle, @a, @l);
   Result := HostAddrToStr(LongWord(a.sin_addr));
 end;
 
@@ -507,9 +507,9 @@ begin
   Result := 0;
   if CanReceive then begin
     if FSocketType = SOCK_STREAM then
-      Result := sockets.Recv(FHandle, aData, aSize, LMSG)
+      Result := sockets.fpRecv(FHandle, @aData, aSize, LMSG)
     else
-      Result := sockets.Recvfrom(FHandle, aData, aSize, LMSG, FPeerAddress, AddressLength);
+      Result := sockets.fpRecvfrom(FHandle, @aData, aSize, LMSG, @FPeerAddress, @AddressLength);
     if Result = 0 then
       Disconnect;
     if Result = SOCKET_ERROR then begin
@@ -523,11 +523,14 @@ begin
 end;
 
 function TLSocket.DoSend(const TheData; const TheSize: Integer): Integer;
+var
+  AddressLength: Integer;
 begin
+  AddressLength := SizeOf(FPeerAddress);
   if FSocketType = SOCK_STREAM then
-    Result := sockets.send(FHandle, TheData, TheSize, LMSG)
+    Result := sockets.fpsend(FHandle, @TheData, TheSize, LMSG)
   else
-    Result := sockets.sendto(FHandle, TheData, TheSize, LMSG, FPeerAddress, SizeOf(FPeerAddress));
+    Result := sockets.fpsendto(FHandle, @TheData, TheSize, LMSG, @FPeerAddress, AddressLength);
 end;
 
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
@@ -544,7 +547,7 @@ begin
     SetOptions;
     if FSocketType = SOCK_DGRAM then begin
       Arg := 1;
-      if SetSocketOptions(FHandle, SOL_SOCKET, SO_BROADCAST, Arg, Sizeof(Arg)) = SOCKET_ERROR then
+      if fpsetsockopt(FHandle, SOL_SOCKET, SO_BROADCAST, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Bail('SetSockOpt error', LSocketError);
     end;
     
@@ -1135,7 +1138,7 @@ var
 begin
   with TLSocket(aSocket) do begin
     l := SizeOf(a);
-    if Sockets.GetPeerName(FHandle, a, l) <> 0 then
+    if Sockets.fpGetPeerName(FHandle, @a, @l) <> 0 then
       Self.Bail('Error on connect: connection refused', TLSocket(aSocket))
     else begin
       FConnected := True;
