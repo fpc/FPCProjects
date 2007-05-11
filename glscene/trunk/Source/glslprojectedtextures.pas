@@ -6,18 +6,22 @@
    Implements projected textures through a GLScene object via GLSL.
 
    <b>History : </b><font size=-1><ul>
-        <li>13/04/07 - LC  -    Fixed bug that caused Attenuation to fail. (Bugtracker ID=1699882)
-                                Also added Quadratic attenuation                                
+        <li>02/05/07 - LC -     Fixed alpha bug. (Bugtracker ID=1710964)
+                                Fixed AllowReverseProjection attenuation bug.
+                                  (Bugtracker ID=1710974)
+                                Added try-finally block in SetupShader
+        <li>13/04/07 - LC -     Fixed bug that caused Attenuation to fail. (Bugtracker ID=1699882)
+                                Also added Quadratic attenuation
         <li>02/04/07 - DaStr -  Added $I GLScene.inc
-        <li>25/03/07 - fig -    Only The texMatrix is passed to the shader now, 
+        <li>25/03/07 - fig -    Only The texMatrix is passed to the shader now,
                                   no need for the InvModelViewMatrix
-                                Changed Emitter color, brightness and Attenuation 
-                                  properties to use Uniforms in the shader, so 
+                                Changed Emitter color, brightness and Attenuation
+                                  properties to use Uniforms in the shader, so
                                   they're now dynamic.
-        <li>23/03/07 - fig -    Fixed reverse projection bug and added Quick 
+        <li>23/03/07 - fig -    Fixed reverse projection bug and added Quick
                                   Decimal Separator fix.
                                 Finished Design time support.
-                                Now checks for GLSL support and just renders the children as normal, 
+                                Now checks for GLSL support and just renders the children as normal,
                                   if not supported.
         <li>22/03/07 - fig -    Initial version.
    </ul></font>
@@ -409,6 +413,8 @@ begin
 end;
 
 procedure TGLSLProjectedTextures.SetupShader;
+const
+  AbsFunc: array[boolean] of string = ('', 'abs');
 var
     vp, fp: TStringlist;
     i: integer;
@@ -431,121 +437,126 @@ begin
     vp := TStringlist.create;
     fp := TStringlist.create;
 
-    //define the vertex program
-    if emitters.count > 0 then
-    begin
-        for i := 0 to emitters.count - 1 do
-        begin
-            emitter := Emitters[i].Emitter;
-            if not assigned(emitter) then continue;
-            if not emitter.Visible then continue;
-            vp.add(format('uniform mat4 TextureMatrix%d;', [i]));
-            vp.add(format('varying vec4 ProjTexCoords%d;', [i]));
-        end;
+    try
+      //define the vertex program
+      if emitters.count > 0 then
+      begin
+         for i := 0 to emitters.count - 1 do
+         begin
+             emitter := Emitters[i].Emitter;
+             if not assigned(emitter) then continue;
+             if not emitter.Visible then continue;
+             vp.add(format('uniform mat4 TextureMatrix%d;', [i]));
+             vp.add(format('varying vec4 ProjTexCoords%d;', [i]));
+         end;
+      end;
+
+      vp.add('void main(){');
+      vp.add('vec4 P = gl_Vertex;');
+      vp.add('gl_Position = gl_ModelViewProjectionMatrix * P;');
+      vp.add('vec4 Pe = gl_ModelViewMatrix * P;');
+
+      vp.add('gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;');
+
+      if UseLightmaps then
+          vp.add('gl_TexCoord[1] = gl_TextureMatrix[1] * gl_MultiTexCoord1;');
+      if emitters.count > 0 then
+      begin
+          for i := 0 to emitters.count - 1 do
+          begin
+              emitter := Emitters[i].Emitter;
+              if not assigned(emitter) then continue;
+              vp.add(format('ProjTexCoords%d = TextureMatrix%d * Pe;', [i, i]));
+          end;
+      end;
+      vp.add('}');
+
+      //define the fragment program
+      fp.add('uniform sampler2D TextureMap;');
+      if UseLightmaps then
+          fp.add('uniform sampler2D LightMap;');
+      if emitters.count > 0 then
+      begin
+          fp.add('uniform sampler2D ProjMap;');
+
+          for i := 0 to emitters.count - 1 do
+          begin
+              emitter := Emitters[i].Emitter;
+              if not assigned(emitter) then continue;
+              fp.add(format('varying vec4 ProjTexCoords%d;', [i]));
+              if Emitter.UseAttenuation then
+                  fp.add(format('uniform float Attenuation%d;', [i]));
+              fp.add(format('uniform float Brightness%d;', [i]));
+              fp.add(format('uniform vec3 Color%d;', [i]));
+          end;
+      end;
+
+      fp.add('void main(){');
+      fp.add('vec4 color = texture2D(TextureMap, gl_TexCoord[0].st).rgba;');
+      if UseLightmaps then
+          fp.add('vec3 light = texture2D(LightMap, gl_TexCoord[1].st).rgb;')
+      else
+          fp.add(format('vec3 light = vec3(%.4f, %.4f, %.4f);', [Ambient.Red, ambient.Green, ambient.Blue]));
+      if emitters.count > 0 then
+      begin
+          fp.add('vec3 projlight = vec3(0, 0, 0);');
+          fp.add('vec3 projshadow = vec3(0, 0, 0);');
+          fp.add('vec3 temp;');
+          fp.add('float dist;');
+          for i := 0 to emitters.count - 1 do
+          begin
+              emitter := Emitters[i].Emitter;
+              if not assigned(emitter) then continue;
+              if not emitter.visible then continue;
+              if not emitter.AllowReverseProjection then
+                  fp.add(format('if (ProjTexCoords%d.q<0.0){', [i]));
+              case emitter.Style of
+                  ptslight:
+                      fp.add(format('projlight+= (texture2DProj(ProjMap, ProjTexCoords%d).rgb*Color%d*Brightness%d);', [i, i, i]));
+                  ptsShadow:
+                      fp.add(format('projshadow+= (texture2DProj(ProjMap, ProjTexCoords%d).rgb*Color%d*Brightness%d);', [i, i, i]));
+              end;
+
+              if emitter.UseAttenuation then
+              begin
+                  // for attenuation we need the distance to the point
+                  // so use absolute value when AllowReverseProjection is enabled 
+                  fp.add(format('dist = 1.0 - clamp(%s(ProjTexCoords%d.q/Attenuation%d), 0.0, 1.0);',
+                    [AbsFunc[emitter.AllowReverseProjection], i, i]));
+                  if emitter.UseQuadraticAttenuation then
+                    fp.add('dist *= dist;');
+                  case emitter.Style of
+                      ptslight:
+                          fp.add('projlight *= dist;');
+                      ptsShadow:
+                          fp.add('projshadow *= dist;');
+                  end;
+
+              end;
+              if not emitter.AllowReverseProjection then
+                  fp[fp.Count - 1] := fp[fp.Count - 1] + '}';
+          end;
+
+          fp.add('projlight = clamp(projlight,0.0,1.2);');
+          fp.add('projshadow = clamp(projshadow,0.0,0.8);');
+
+          fp.add('vec3 totlight = 1.0-((( 1.0-projlight)*( 1.0-light)) +(projshadow*light)) ;');
+      end
+      else
+          fp.add('vec3 totlight = light;');
+
+      fp.add('gl_FragColor = vec4(1.5*totlight * color.rgb, color.a);}');
+      //fp.add('gl_FragColor = vec4(vec3(dist) , 1);}');
+      //vp.SaveToFile('c:\vp.txt');
+      //fp.SaveToFile('c:\fp.txt');
+      Shader.AddShader(TGLVertexShaderHandle, vp.Text, True);
+      Shader.AddShader(TGLFragmentShaderHandle, fp.Text, True);
+    finally
+      DecimalSeparator := OldSeparator;
+      vp.free;
+      fp.free;
     end;
 
-    vp.add('void main(){');
-    vp.add('vec4 P = gl_Vertex;');
-    vp.add('gl_Position = gl_ModelViewProjectionMatrix * P;');
-    vp.add('vec4 Pe = gl_ModelViewMatrix * P;');
-
-    vp.add('gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;');
-
-    if UseLightmaps then
-        vp.add('gl_TexCoord[1] = gl_TextureMatrix[1] * gl_MultiTexCoord1;');
-    if emitters.count > 0 then
-    begin
-        for i := 0 to emitters.count - 1 do
-        begin
-            emitter := Emitters[i].Emitter;
-            if not assigned(emitter) then continue;
-            vp.add(format('ProjTexCoords%d = TextureMatrix%d * Pe;', [i, i]));
-        end;
-    end;
-    vp.add('}');
-
-    //define the fragment program
-    fp.add('uniform sampler2D TextureMap;');
-    if UseLightmaps then
-        fp.add('uniform sampler2D LightMap;');
-    if emitters.count > 0 then
-    begin
-        fp.add('uniform sampler2D ProjMap;');
-
-        for i := 0 to emitters.count - 1 do
-        begin
-            emitter := Emitters[i].Emitter;
-            if not assigned(emitter) then continue;
-            fp.add(format('varying vec4 ProjTexCoords%d;', [i]));
-            if Emitter.UseAttenuation then
-                fp.add(format('uniform float Attenuation%d;', [i]));
-            fp.add(format('uniform float Brightness%d;', [i]));
-            fp.add(format('uniform vec3 Color%d;', [i]));
-        end;
-    end;
-
-    fp.add('void main(){');
-    fp.add('vec3 color = texture2D(TextureMap, gl_TexCoord[0].st).rgb;');
-    if UseLightmaps then
-        fp.add('vec3 light = texture2D(LightMap, gl_TexCoord[1].st).rgb;')
-    else
-        fp.add(format('vec3 light = vec3(%.4f, %.4f, %.4f);', [Ambient.Red, ambient.Green, ambient.Blue]));
-    if emitters.count > 0 then
-    begin
-        fp.add('vec3 projlight = vec3(0, 0, 0);');
-        fp.add('vec3 projshadow = vec3(0, 0, 0);');
-        fp.add('vec3 temp;');
-        fp.add('float dist;');
-        for i := 0 to emitters.count - 1 do
-        begin
-            emitter := Emitters[i].Emitter;
-            if not assigned(emitter) then continue;
-            if not emitter.visible then continue;
-            if not emitter.AllowReverseProjection then
-                fp.add(format('if (ProjTexCoords%d.q<0.0){', [i]));
-            case emitter.Style of
-                ptslight:
-                    fp.add(format('projlight+= (texture2DProj(ProjMap, ProjTexCoords%d).rgb*Color%d*Brightness%d);', [i, i, i]));
-                ptsShadow:
-                    fp.add(format('projshadow+= (texture2DProj(ProjMap, ProjTexCoords%d).rgb*Color%d*Brightness%d);', [i, i, i]));
-            end;
-
-            if emitter.UseAttenuation then
-            begin
-                //fp.add(format('dist = 1.0 - clamp(ProjTexCoords%d.q/Attenuation%d, 0.0, 1.0);', [i, i]));
-                fp.add(format('dist = 1.0 - clamp(ProjTexCoords%d.q/Attenuation%d, 0.0, 1.0);', [i, i]));
-                if emitter.UseQuadraticAttenuation then
-                  fp.add('dist *= dist;');
-                case emitter.Style of
-                    ptslight:
-                        fp.add('projlight *= dist;');
-                    ptsShadow:
-                        fp.add('projshadow *= dist;');
-                end;
-
-            end;
-            if not emitter.AllowReverseProjection then
-                fp[fp.Count - 1] := fp[fp.Count - 1] + '}';
-        end;
-
-        fp.add('projlight = clamp(projlight,0.0,1.2);');
-        fp.add('projshadow = clamp(projshadow,0.0,0.8);');
-
-        fp.add('vec3 totlight = 1.0-((( 1.0-projlight)*( 1.0-light)) +(projshadow*light)) ;');
-    end
-    else
-        fp.add('vec3 totlight = light;');
-
-    fp.add('gl_FragColor = vec4(1.5*totlight *color , 1);}');
-    //fp.add('gl_FragColor = vec4(vec3(dist) , 1);}');
-    //vp.SaveToFile('c:\vp.txt');
-    //fp.SaveToFile('c:\fp.txt');
-    Shader.AddShader(TGLVertexShaderHandle, vp.Text, True);
-    Shader.AddShader(TGLFragmentShaderHandle, fp.Text, True);
-
-    vp.free;
-    fp.free;
-    DecimalSeparator := OldSeparator;
     if not Shader.LinkProgram then
         raise Exception.Create(Shader.InfoLog);
     if not Shader.ValidateProgram then

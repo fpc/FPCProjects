@@ -6,6 +6,8 @@
    Implements specific proxying classes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/05/07 - DaStr - Bugfixed TGLColorProxy.DoRender
+                              (thanks Paul Robello) (Bugtracker ID = 1716692)
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>25/02/07 - Made TGLActorProxy.SetAnimation a bit safer
@@ -175,7 +177,7 @@ begin
             if pooTransformation in ProxyOptions then
                glMultMatrixf(PGLFloat(MasterObject.MatrixAsAddress));
             GetMasterMaterialObject.Material.FrontProperties.Assign(FFrontColor);
-            MasterObject.DoRender(ARci, ARenderSelf, ARenderChildren);
+            MasterObject.DoRender(ARci, ARenderSelf, MasterObject.Count > 0);
             ARci.proxySubObject:=oldProxySubObject;
          end;
       end;
