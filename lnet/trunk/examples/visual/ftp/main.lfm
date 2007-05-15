@@ -4,10 +4,12 @@ object MainForm: TMainForm
   Top = 84
   Width = 725
   HorzScrollBar.Page = 724
-  VertScrollBar.Page = 518
+  VertScrollBar.Page = 521
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
+  ClientHeight = 522
+  ClientWidth = 725
   Constraints.MinHeight = 548
   Constraints.MinWidth = 725
   Menu = MainMenu
@@ -17,7 +19,7 @@ object MainForm: TMainForm
   OnKeyDown = FormKeyDown
   object MemoText: TMemo
     Height = 103
-    Top = 393
+    Top = 399
     Width = 725
     Align = alBottom
     ReadOnly = True
@@ -25,17 +27,20 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 362
-    Top = 26
+    Height = 370
+    Top = 24
     Width = 725
     Align = alClient
+    ClientHeight = 370
+    ClientWidth = 725
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 360
+      Height = 368
       Top = 1
       Width = 183
       Align = alLeft
+      Directory = '/home/prog/lazarus'
       ExtendedSelect = False
       FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
       OnDblClick = LeftViewDblClick
@@ -44,40 +49,42 @@ object MainForm: TMainForm
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 360
+      Height = 368
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 360
+      Height = 368
       Top = 1
       Width = 535
       Align = alClient
-      ColCount = 6
+      ColCount = 5
       Columns = <      
         item
           Title.Caption = ' '
-          Width = 18
+          Width = 25
         end      
         item
           Title.Caption = 'File'
-          Width = 220
+          Width = 249
         end      
         item
           Title.Caption = 'Size'
-          Width = 80
+          Width = 94
         end      
         item
           Title.Caption = 'Date'
-          Width = 100
+          Width = 72
         end      
         item
           Title.Caption = 'Attributes'
+          Width = 71
         end      
         item
           Title.Caption = 'Links'
           Width = 0
+          Visible = False
         end>
       DefaultRowHeight = 16
       FixedColor = clBtnFace
@@ -89,6 +96,7 @@ object MainForm: TMainForm
       ScrollBars = ssAutoBoth
       TabOrder = 1
       TabStop = True
+      TitleStyle = tsNative
       OnCompareCells = rmtGridCompareCells
       OnDblClick = rmtGridDblClick
       OnDrawCell = rmtGridDrawCell
@@ -98,14 +106,14 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 388
+    Top = 394
     Width = 725
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
-    Height = 23
-    Top = 496
+    Height = 20
+    Top = 502
     Width = 725
     Panels = <    
       item
@@ -123,7 +131,7 @@ object MainForm: TMainForm
     SimplePanel = False
   end
   object ToolBar1: TToolBar
-    Height = 26
+    Height = 24
     Width = 725
     Caption = 'ToolBar1'
     ShowCaptions = True
@@ -135,21 +143,21 @@ object MainForm: TMainForm
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 86
+      Left = 84
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 99
+      Left = 97
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 155
+      Left = 152
       Top = 2
       Action = accDisconnect
       Down = True

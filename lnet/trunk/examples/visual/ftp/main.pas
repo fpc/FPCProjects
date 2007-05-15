@@ -261,7 +261,8 @@ procedure TMainForm.FTPReceive(aSocket: TLSocket);
             rmtGrid.Cells[3, n] := FormatDateTime(
               ShortDateFormat+' '+ShortTimeFormat, Parser.Date);
             rmtGrid.Cells[4, n] := Parser.Attributes;
-            rmtGrid.Cells[5, n] := Parser.LinkName;
+            if rmtGrid.Columns[5].Visible then
+              rmtGrid.Cells[5, n] := Parser.LinkName;
           end else begin
             rmtGrid.Cells[1, n] := FList[i];
             IndxObj := itError;
