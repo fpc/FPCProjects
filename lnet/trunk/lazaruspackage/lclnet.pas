@@ -64,7 +64,7 @@ implementation
 {$endif}
 
 {$ifdef LCLWINCE}
-  {$i lclwineventer.inc}
+  {$i lclwinceeventer.inc}
 {$endif}
 
 {$ifdef LCLGTK}
