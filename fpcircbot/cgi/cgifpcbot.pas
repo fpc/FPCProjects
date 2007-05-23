@@ -320,10 +320,14 @@ var
   Tmp: string;
   InFont: Boolean = False;
   s2 : string;
+  Origo: string;
 begin
+  Origo := s;
   Result := '';
   i := 1;
   Tmp := '';
+
+  try
 
   while i <= Length(s) do begin
     if s[i] in AllowedChars then
@@ -344,6 +348,10 @@ begin
     s := s + '</font>';
 
   Result := s;
+  
+  except
+    Result := Origo;
+  end;
 end;
 
 var
