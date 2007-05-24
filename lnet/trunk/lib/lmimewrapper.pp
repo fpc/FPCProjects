@@ -91,13 +91,13 @@ type
 
   { TMimeStream }
 
-  TMimeStream = class
+  TMimeStream = class(TStream)
    protected
     FSections: TFPObjectList;
     FOutputStream: TMimeOutputStream;
     FBoundary: string;
     FActiveSection: Integer;
-    function GetSize: Integer;
+    function GetSize: Int64; override;
     function GetCount: Integer;
     function GetBoundary: string;
     function GetSections(i: Integer): TMimeSection;
@@ -108,13 +108,14 @@ type
    public
     constructor Create;
     destructor Destroy; override;
-    function Read(var Buffer; const aSize: Integer): Integer;
-    function Write(var Buffer; const aSize: Integer): Integer;
+    function Seek(Offset: Longint; Origin: Word): Longint; overload; override;
+    function Seek(const Offset: Int64; Origin: TSeekOrigin): Int64; overload; override;
+    function Read(var Buffer; Count: Longint): Longint; override;
+    function Write(const Buffer; Count: Longint): Longint; override;
     procedure AddTextSection(const aText: string; const aCharSet: string = 'UTF-8');
     procedure AddFileSection(const aFileName: string);
     procedure AddStreamSection(aStream: TStream; const FreeStream: Boolean = False);
    public
-    property Size: Integer read GetSize;
     property Sections[i: Integer]: TMimeSection read GetSections write SetSections; default;
     property Count: Integer read GetCount;
     property Boundary: string read FBoundary;
@@ -389,7 +390,7 @@ end;
 
 { TMimeStream }
 
-function TMimeStream.GetSize: Integer;
+function TMimeStream.GetSize: Int64;
 var
   i: Integer;
 begin
@@ -478,12 +479,22 @@ begin
   inherited Destroy;
 end;
 
-function TMimeStream.Read(var Buffer; const aSize: Integer): Integer;
+function TMimeStream.Seek(Offset: Longint; Origin: Word): Longint;
 begin
-  Result := FOutputStream.Read(Buffer, aSize);
+  Result := Offset;
 end;
 
-function TMimeStream.Write(var Buffer; const aSize: Integer): Integer;
+function TMimeStream.Seek(const Offset: Int64; Origin: TSeekOrigin): Int64;
+begin
+  Result := Offset;
+end;
+
+function TMimeStream.Read(var Buffer; Count: Longint): Longint;
+begin
+  Result := FOutputStream.Read(Buffer, Count);
+end;
+
+function TMimeStream.Write(const Buffer; Count: Longint): Longint;
 begin
   Result := 0;
   raise Exception.Create('Not yet implemented');
