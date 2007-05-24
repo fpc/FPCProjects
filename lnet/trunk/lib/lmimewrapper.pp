@@ -109,6 +109,7 @@ type
     constructor Create;
     destructor Destroy; override;
     function Read(var Buffer; const aSize: Integer): Integer;
+    function Write(var Buffer; const aSize: Integer): Integer;
     procedure AddTextSection(const aText: string; const aCharSet: string = 'UTF-8');
     procedure AddFileSection(const aFileName: string);
     procedure AddStreamSection(aStream: TStream; const FreeStream: Boolean = False);
@@ -480,6 +481,12 @@ end;
 function TMimeStream.Read(var Buffer; const aSize: Integer): Integer;
 begin
   Result := FOutputStream.Read(Buffer, aSize);
+end;
+
+function TMimeStream.Write(var Buffer; const aSize: Integer): Integer;
+begin
+  Result := 0;
+  raise Exception.Create('Not yet implemented');
 end;
 
 procedure TMimeStream.AddTextSection(const aText: string; const aCharSet: string = 'UTF-8');
