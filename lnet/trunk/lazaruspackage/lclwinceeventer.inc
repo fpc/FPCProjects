@@ -66,7 +66,7 @@ end;
 constructor TLCLEventer.Create;
 begin
   inherited;
-  TWin32WidgetSet(WidgetSet).OnAsyncSocketMsg := @HandleEvents;
+  TWinCEWidgetSet(WidgetSet).OnAsyncSocketMsg := @HandleEvents;
 end;
 
 function TLCLEventer.AddHandle(aHandle: TLHandle): Boolean;
@@ -74,14 +74,14 @@ begin
   Result := True;
   SetHandleEventer(aHandle);
   WaitSockets.Values[Pointer(aHandle.Handle)] := aHandle;
-  if WSAAsyncSelect(aHandle.Handle, TWin32WidgetSet(WidgetSet).AppHandle,
+  if WSAAsyncSelect(aHandle.Handle, TWinCEWidgetSet(WidgetSet).AppHandle,
                                          WM_LCL_SOCK_ASYNC, ALL_FLAGS) <> 0 then
     Bail('Error on AsyncSelect', WSAGetLastError);
 end;
 
 procedure TLCLEventer.UnplugHandle(aHandle: TLHandle);
 begin
-  if WSAAsyncSelect(aHandle.Handle, TWin32WidgetSet(WidgetSet).AppHandle,
+  if WSAAsyncSelect(aHandle.Handle, TWinCEWidgetSet(WidgetSet).AppHandle,
                                          WM_LCL_SOCK_ASYNC, ALL_FLAGS) <> 0 then
     Bail('Error on AsyncSelect', WSAGetLastError);
 
