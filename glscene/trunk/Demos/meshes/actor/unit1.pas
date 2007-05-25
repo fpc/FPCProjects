@@ -180,7 +180,7 @@ end;
 procedure TForm1.CBSmoothClick(Sender: TObject);
 begin
    // Smooth movement is achieved by using linear frame interpolation
-   if CBSmooth.Checked then begin
+   if not CBSmooth.Checked then begin
       Actor1.FrameInterpolation:=afpLinear;
       Actor2.FrameInterpolation:=afpLinear;
    end else begin
