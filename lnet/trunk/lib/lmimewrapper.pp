@@ -5,7 +5,10 @@ unit lMimeWrapper;
 interface
 
 uses
-  Classes, Contnrs, lMimeStreams;
+  SysUtils, Classes, Contnrs, lMimeStreams;
+  
+const
+  MIME_VERSION = 'MIME-version: 1.0' + CRLF;
 
 type
   TMimeEncoding = (me8bit, meBase64);
@@ -23,7 +26,7 @@ type
     FBuffer: string;
     FEncodingStream: TStream;
     FOutputStream: TStream;
-    FLocalStream: TStream;
+    FLocalStream: TBogusStream;
     function GetSize: Integer; virtual; abstract;
     procedure SetDescription(const AValue: string);
     procedure SetDisposition(const AValue: TMimeDisposition);
@@ -36,6 +39,8 @@ type
     constructor Create(aOutputStream: TStream);
     destructor Destroy; override;
     function Read(const aSize: Integer): Integer;
+    procedure Reset; virtual;
+   public
     property ContentType: string read FContentType write FContentType;
     property Encoding: TMimeEncoding read FEncoding write SetEncoding;
     property Disposition: TMimeDisposition read FDisposition write SetDisposition;
@@ -48,6 +53,7 @@ type
 
   TMimeTextSection = class(TMimeSection)
    protected
+    FOriginalData: string;
     FData: string;
     function GetSize: Integer; override;
     procedure SetData(const AValue: string);
@@ -56,6 +62,8 @@ type
     procedure FillBuffer(const aSize: Integer); override;
    public
     constructor Create(aOutputStream: TStream; const aText: string);
+    procedure Reset; override;
+   public
     property Charset: string read GetCharset write SetCharset;
     property Text: string read FData write SetData;
   end;
@@ -66,12 +74,15 @@ type
    protected
     FStream: TStream;
     FOwnsStreams: Boolean;
+    FOriginalPosition: Int64;
     function GetSize: Integer; override;
     procedure SetStream(aValue: TStream);
     procedure FillBuffer(const aSize: Integer); override;
    public
     constructor Create(aOutputStream: TStream; aStream: TStream);
     destructor Destroy; override;
+    procedure Reset; override;
+   public
     property Stream: TStream read FStream write SetStream;
     property OwnsStreams: Boolean read FOwnsStreams write FOwnsStreams;
   end;
@@ -97,6 +108,8 @@ type
     FOutputStream: TMimeOutputStream;
     FBoundary: string;
     FActiveSection: Integer;
+    FCalledRead: Boolean;
+    FCalledWrite: Boolean;
     function GetSize: Int64; override;
     function GetCount: Integer;
     function GetBoundary: string;
@@ -115,19 +128,38 @@ type
     procedure AddTextSection(const aText: string; const aCharSet: string = 'UTF-8');
     procedure AddFileSection(const aFileName: string);
     procedure AddStreamSection(aStream: TStream; const FreeStream: Boolean = False);
+    procedure Reset;
    public
     property Sections[i: Integer]: TMimeSection read GetSections write SetSections; default;
     property Count: Integer read GetCount;
     property Boundary: string read FBoundary;
   end;
   
+  { EAlreadyActivatedException }
+
+  EAlreadyActivatedException = class(Exception)
+   public
+    constructor Create;
+  end;
+  
+  { EAlreadyCalledReadException }
+
+  EAlreadyCalledReadException = class(Exception)
+   public
+    constructor Create;
+  end;
+
+  { EAlreadyCalledWriteException }
+
+  EAlreadyCalledWriteException = class(Exception)
+   public
+    constructor Create;
+  end;
+  
 implementation
 
 uses
-  SysUtils, Base64;
-  
-const
-  CRLF = #13#10;
+  Base64;
   
 function EncodingToStr(const Encoding: TMimeEncoding): string;
 begin
@@ -242,6 +274,14 @@ begin
   end;
 end;
 
+procedure TMimeSection.Reset;
+begin
+  FActivated := False;
+  FBuffer := '';
+  FLocalStream.Reset;
+  SetEncoding(FEncoding);
+end;
+
 { TMimeTextSection }
 
 procedure TMimeTextSection.SetCharset(const aValue: string);
@@ -295,8 +335,10 @@ end;
 
 procedure TMimeTextSection.SetData(const AValue: string);
 begin
-  if not FActivated then
+  if not FActivated then begin
+    FOriginalData := aValue;
     FData := aValue;
+  end;
 end;
 
 function TMimeTextSection.GetCharset: string;
@@ -316,7 +358,14 @@ begin
   inherited Create(aOutputStream);
 
   FContentType := 'text/plain; charset="UTF-8"';
-  FData := aText;
+  FOriginalData := aText;
+  FData := FOriginalData;
+end;
+
+procedure TMimeTextSection.Reset;
+begin
+  inherited Reset;
+  FData := FOriginalData;
 end;
 
 { TMimeStreamSection }
@@ -338,6 +387,7 @@ begin
   end;
   
   FStream := aValue;
+  FOriginalPosition := FStream.Position;
 end;
 
 procedure TMimeStreamSection.FillBuffer(const aSize: Integer);
@@ -377,6 +427,7 @@ begin
   
   FDisposition := mdAttachment;
   FStream := aStream;
+  FOriginalPosition := FStream.Position;
   FContentType := 'application/octet-stream';
 end;
 
@@ -388,6 +439,12 @@ begin
   inherited Destroy;
 end;
 
+procedure TMimeStreamSection.Reset;
+begin
+  inherited Reset;
+  FStream.Position := FOriginalPosition;
+end;
+
 { TMimeStream }
 
 function TMimeStream.GetSize: Int64;
@@ -397,7 +454,8 @@ begin
   Result := 0;
   
   for i := 0 to Count - 1 do
-    Result := Result + TMimeSection(FSections[i]).Size;
+    if not TMimeSection(FSections[i]).FActivated then
+      Result := Result + TMimeSection(FSections[i]).Size;
     
   Result := Result + FOutputStream.Size;
 end;
@@ -433,17 +491,36 @@ begin
 end;
 
 procedure TMimeStream.ActivateFirstSection;
+const
+  MIME_HEADER = 'Content-type: multipart/mixed; boundary="';
+var
+  s: string;
 begin
-  if FActiveSection < 0 then
-    if FSections.Count > 0 then
+  if FActiveSection = -1 then
+    if FSections.Count > 0 then begin
+      FOutputStream.Write(MIME_VERSION[1], Length(MIME_VERSION));
       FActiveSection := 0;
+      
+      if FSections.Count > 1 then begin
+        s := MIME_HEADER + FBoundary + '"' + CRLF + '--' + FBoundary + CRLF;
+        FOutputStream.Write(s[1], Length(s));
+      end;
+    end;
 end;
 
 procedure TMimeStream.ActivateNextSection;
+var
+  s: string;
 begin
   Inc(FActiveSection);
+  
+  if FSections.Count > 1 then begin
+    s := '--' + FBoundary + CRLF;
+    FOutputStream.Write(s[1], Length(s));
+  end;
+
   if FActiveSection >= FSections.Count then
-    FActiveSection := -1;
+    FActiveSection := -2;
 end;
 
 procedure TMimeStream.DoRead(const aSize: Integer);
@@ -491,12 +568,20 @@ end;
 
 function TMimeStream.Read(var Buffer; Count: Longint): Longint;
 begin
+  if FCalledWrite then
+    raise EAlreadyCalledWriteException.Create;
+
+  FCalledRead := True;
   Result := FOutputStream.Read(Buffer, Count);
 end;
 
 function TMimeStream.Write(const Buffer; Count: Longint): Longint;
 begin
+  if FCalledRead then
+    raise EAlreadyCalledReadException.Create;
+
   Result := 0;
+  FCalledWrite := True;
   raise Exception.Create('Not yet implemented');
 end;
 
@@ -504,6 +589,9 @@ procedure TMimeStream.AddTextSection(const aText: string; const aCharSet: string
 var
   s: TMimeTextSection;
 begin
+  if FActiveSection >= 0 then
+    raise EAlreadyActivatedException.Create;
+    
   s := TMimeTextSection.Create(FOutputStream, aText);
   
   s.Charset := aCharSet;
@@ -512,6 +600,9 @@ end;
 
 procedure TMimeStream.AddFileSection(const aFileName: string);
 begin
+  if FActiveSection >= 0 then
+    raise EAlreadyActivatedException.Create;
+
   FSections.Add(TMimeFileSection.Create(FOutputStream, aFileName));
 end;
 
@@ -520,10 +611,27 @@ procedure TMimeStream.AddStreamSection(aStream: TStream; const FreeStream: Boole
 var
   s: TMimeStreamSection;
 begin
+  if FActiveSection >= 0 then
+    raise EAlreadyActivatedException.Create;
+
   s := TMimeStreamSection.Create(FOutputStream, aStream);
   if FreeStream then
     s.OwnsStreams := True;
   FSections.Add(s);
+end;
+
+procedure TMimeStream.Reset;
+var
+  i: Integer;
+begin
+  FCalledRead := False;
+  FCalledWrite := False;
+  
+  for i := 0 to FSections.Count - 1 do
+    TMimeSection(FSections[i]).Reset;
+    
+  FOutputStream.Reset;
+  FActiveSection := -1;
 end;
 
 { TMimeFileSection }
@@ -609,6 +717,27 @@ begin
   Encoding := meBase64;
   FFileName := ExtractFileName(aFileName);
   FOwnsStreams := True;
+end;
+
+{ EAlreadyActivatedException }
+
+constructor EAlreadyActivatedException.Create;
+begin
+  inherited Create('The stream or section has already been activated (by Read() or Write())');
+end;
+
+{ EAlreadyCalledReadException }
+
+constructor EAlreadyCalledReadException.Create;
+begin
+  inherited Create('The stream has already been used for reading');
+end;
+
+{ EAlreadyCalledWriteException }
+
+constructor EAlreadyCalledWriteException.Create;
+begin
+  inherited Create('The stream has already been used for writing');
 end;
 
 end.

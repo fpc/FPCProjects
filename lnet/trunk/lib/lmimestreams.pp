@@ -7,6 +7,9 @@ interface
 uses
   Classes;
   
+const
+  CRLF = #13#10;
+
 type
   TStreamNotificationEvent = procedure(const aSize: Integer) of object;
 
@@ -15,7 +18,7 @@ type
   TMimeOutputStream = class(TStream)
    protected
     FInputData: string;
-    FLastCRLF: Integer;
+//    FLastCRLF: Integer;
     FNotificationEvent: TStreamNotificationEvent;
     function GetSize: Int64; override;
     procedure AddInputData(const s: string);
@@ -25,6 +28,7 @@ type
     function Write(const Buffer; Count: Longint): Longint; override;
     function Seek(Offset: Longint; Origin: Word): Longint; overload; override;
     function Seek(const Offset: Int64; Origin: TSeekOrigin): Int64; overload; override;
+    procedure Reset;
   end;
 
   { TBogusStream }
@@ -38,6 +42,7 @@ type
     function Write(const Buffer; Count: Longint): Longint; override;
     function Seek(Offset: Longint; Origin: Word): Longint; overload; override;
     function Seek(const Offset: Int64; Origin: TSeekOrigin): Int64; overload; override;
+    procedure Reset;
   end;
   
 implementation
@@ -75,14 +80,14 @@ procedure TMimeOutputStream.AddInputData(const s: string);
 var
   n: Integer;}
 begin
-{  n := RightPos(#13#10, s);
+{  n := RightPos(CRLF, s);
   if n > 0 then
     Inc(FLastCRLF, (Length(FInputData) - FLastCRLF) + n);}
 
   FInputData := FInputData + s;
 
 {  while Length(FInputData) - FLastCRLF >= 74 do begin
-    Insert(#13#10, FInputData, FLastCRLF + 75);
+    Insert(CRLF, FInputData, FLastCRLF + 75);
     Inc(FLastCRLF, 77);
   end;}
 end;
@@ -92,7 +97,7 @@ begin
   inherited Create;
   
   FNotificationEvent := aNotificationEvent;
-  FLastCRLF := 1;
+//  FLastCRLF := 1;
 end;
 
 function TMimeOutputStream.Read(var Buffer; Count: Longint): Longint;
@@ -107,7 +112,7 @@ begin
   Move(FInputData[1], Buffer, Result);
   Delete(FInputData, 1, Result);
 
-  Dec(FLastCRLF, Result);
+//  Dec(FLastCRLF, Result);
 end;
 
 function TMimeOutputStream.Write(const Buffer; Count: Longint): Longint;
@@ -129,6 +134,11 @@ function TMimeOutputStream.Seek(const Offset: Int64; Origin: TSeekOrigin
   ): Int64;
 begin
   Result := Offset;
+end;
+
+procedure TMimeOutputStream.Reset;
+begin
+  FInputData := '';
 end;
 
 { TBogusStream }
@@ -165,6 +175,11 @@ end;
 function TBogusStream.Seek(const Offset: Int64; Origin: TSeekOrigin): Int64;
 begin
   Result := Offset;
+end;
+
+procedure TBogusStream.Reset;
+begin
+  FData := '';
 end;
 
 end.
