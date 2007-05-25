@@ -93,6 +93,7 @@ type
   TMail = class
    protected
     FMailText: string;
+    FMailStream: TStream;
     FRecipients: string;
     FSender: string;
     FSubject: string;
@@ -103,6 +104,7 @@ type
    public
     property Attachments: TAttachmentList read FAttachments;
     property MailText: string read FMailText write FMailText;
+    property MailStream: TStream read FMailStream write FMailStream;
     property Sender: string read FSender write FSender;
     property Recipients: string read FRecipients write FRecipients;
     property Subject: string read FSubject write FSubject;
@@ -151,12 +153,14 @@ type
 
     FSL: TStringList;
     FStatusSet: TLSMTPStatusSet;
-    FMessage: string;
+    FBuffer: string;
+    FStream: TStream;
    protected
     procedure OnEr(const msg: string; aSocket: TLSocket);
     procedure OnRe(aSocket: TLSocket);
     procedure OnCo(aSocket: TLSocket);
     procedure OnDs(aSocket: TLSocket);
+    procedure OnCs(aSocket: TLSocket);
    protected
     function CanContinue(const aStatus: TLSMTPStatus; const Arg1, Arg2: string): Boolean;
     
@@ -165,6 +169,8 @@ type
     procedure EvaluateAnswer(const Ans: string);
     
     procedure ExecuteFrontCommand;
+    
+    procedure SendData;
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
@@ -175,7 +181,8 @@ type
     function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual;
 
-    procedure SendMail(const From, Recipients, Subject, Msg: string);
+    procedure SendMail(From, Recipients, Subject, Msg: string);
+    procedure SendMail(From, Recipients, Subject: string; aStream: TStream);
     procedure SendMail(aMail: TMail);
     
     procedure Helo(aHost: string = '');
@@ -203,12 +210,11 @@ type
 implementation
 
 uses
-  SysUtils;
+  SysUtils, lMimeStreams;
 
 const
   EMPTY_REC: TLSMTPStatusRec = (Status: ssNone; Args: ('', ''));
-  SLE                        = #13#10;
-  
+
 {$i lcontainers.inc}
 
 function StatusToStr(const aStatus: TLSMTPStatus): string;
@@ -285,14 +291,14 @@ begin
   FPort := 25;
   FStatusSet := []; // empty set for "ok/not-ok" Event
   FSL := TStringList.Create;
-  FHost := '';
-  FMessage := '';
 //  {$warning TODO: fix pipelining support when server does it}
   FPipeLine := False;
   
   FConnection.OnError := @OnEr;
+  FConnection.OnCanSend := @OnCs;
   FConnection.OnReceive := @OnRe;
   FConnection.OnConnect := @OnCo;
+  FConnection.OnDisconnect := @OnDs;
 
   FStatus := TLSMTPStatusFront.Create(EMPTY_REC);
   FCommandFront := TLSMTPStatusFront.Create(EMPTY_REC);
@@ -332,6 +338,12 @@ begin
     FOnDisconnect(aSocket);
 end;
 
+procedure TLSMTPClient.OnCs(aSocket: TLSocket);
+begin
+  if FStatus.First.Status = ssData then
+    SendData;
+end;
+
 function TLSMTPClient.CanContinue(const aStatus: TLSMTPStatus; const Arg1, Arg2: string): Boolean;
 begin
   Result := FPipeLine or FStatus.Empty;
@@ -347,7 +359,7 @@ begin
   if FSL.Count > 0 then
     for i := 0 to FSL.Count-1 do
       if Length(FSL[i]) > 0 then EvaluateAnswer(FSL[i]);
-  s := StringReplace(s, SLE, LineEnding, [rfReplaceAll]);
+  s := StringReplace(s, CRLF, LineEnding, [rfReplaceAll]);
   i := Pos('PASS', s);
   if i > 0 then
     s := Copy(s, 1, i-1) + 'PASS';
@@ -417,10 +429,7 @@ begin
                             Eventize(FStatus.First.Status, True);
                             FStatus.Remove;
                           end;
-                300..399: if Length(FMessage) > 0 then begin
-                            FConnection.SendMessage(FMessage);
-                            FMessage := '';
-                          end;
+                300..399: SendData;
               else        begin
                             Eventize(FStatus.First.Status, False);
                             FStatus.Remove;
@@ -440,6 +449,7 @@ begin
                 Disconnect;
               end;
     end;
+    
   if FStatus.Empty and not FCommandFront.Empty then
     ExecuteFrontCommand;
 end;
@@ -457,6 +467,36 @@ begin
       ssQuit: Quit;
     end;
   FCommandFront.Remove;
+end;
+
+procedure TLSMTPClient.SendData;
+const
+  SBUF_SIZE = 65535;
+  
+  procedure FillBuffer;
+  var
+    s: string;
+  begin
+    SetLength(s, SBUF_SIZE - Length(FBuffer));
+    SetLength(s, FStream.Read(s[1], Length(s)));
+    FBuffer := FBuffer + s;
+  end;
+
+var
+  n: Integer;
+begin
+  if Assigned(FStream) then
+    FillBuffer;
+
+  n := 1;
+  while (Length(FBuffer) > 0) and (n > 0) do begin
+    n := FConnection.SendMessage(FBuffer);
+    if n > 0 then
+      Delete(FBuffer, 1, n);
+      
+    if Assigned(FStream) and (Length(FBuffer) < SBUF_SIZE) then
+      FillBuffer;
+  end;
 end;
 
 function TLSMTPClient.Connect(const aHost: string; const aPort: Word = 25): Boolean;
@@ -495,24 +535,51 @@ begin
     Result := CleanInput(msg);
 end;
 
-procedure TLSMTPClient.SendMail(const From, Recipients, Subject, Msg: string);
+procedure TLSMTPClient.SendMail(From, Recipients, Subject, Msg: string);
 var
   i: Integer;
 begin
+  FStream := nil;
+  From := EncodeMimeHeaderText(From);
+  Recipients := EncodeMimeHeaderText(Recipients);
+  Subject := EncodeMimeHeaderText(Subject);
+  
   if (Length(Recipients) > 0) and (Length(From) > 0) then begin
     Mail(From);
     FSL.CommaText := StringReplace(Recipients, ' ', ',', [rfReplaceAll]);
     for i := 0 to FSL.Count-1 do
       Rcpt(FSL[i]);
-    Data('From: ' + From + SLE + 'Subject: ' + Subject + SLE + 'To: ' + FSL.CommaText + SLE + Msg);
+    Data('From: ' + From + CRLF + 'Subject: ' + Subject + CRLF + 'To: ' + FSL.CommaText + CRLF + Msg);
+    Rset;
+  end;
+end;
+
+procedure TLSMTPClient.SendMail(From, Recipients, Subject: string; aStream: TStream);
+var
+  i: Integer;
+begin
+  From := EncodeMimeHeaderText(From);
+  Recipients := EncodeMimeHeaderText(Recipients);
+  Subject := EncodeMimeHeaderText(Subject);
+  
+  FStream := aStream;
+
+  if (Length(Recipients) > 0) and (Length(From) > 0) then begin
+    Mail(From);
+    FSL.CommaText := StringReplace(Recipients, ' ', ',', [rfReplaceAll]);
+    for i := 0 to FSL.Count-1 do
+      Rcpt(FSL[i]);
+    Data('From: ' + From + CRLF + 'Subject: ' + Subject + CRLF + 'To: ' + FSL.CommaText + CRLF);
     Rset;
   end;
 end;
 
 procedure TLSMTPClient.SendMail(aMail: TMail);
 begin
-  // TODO: incorporate attachments + encoding
-  SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.MailText);
+  if Length(aMail.MailText) > 0 then
+    SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.MailText)
+  else if Assigned(aMail.MailStream) then
+    SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.MailStream);
 end;
 
 procedure TLSMTPClient.Helo(aHost: string = '');
@@ -520,7 +587,7 @@ begin
   if Length(Host) = 0 then
     aHost := FHost;
   if CanContinue(ssHelo, aHost, '') then begin
-    FConnection.SendMessage('HELO ' + aHost + SLE);
+    FConnection.SendMessage('HELO ' + aHost + CRLF);
     FStatus.Insert(MakeStatusRec(ssHelo, '', ''));
   end;
 end;
@@ -530,7 +597,7 @@ begin
   if Length(aHost) = 0 then
     aHost := FHost;
   if CanContinue(ssEhlo, aHost, '') then begin
-    FConnection.SendMessage('EHLO ' + aHost + SLE);
+    FConnection.SendMessage('EHLO ' + aHost + CRLF);
     FStatus.Insert(MakeStatusRec(ssEhlo, '', ''));
   end;
 end;
@@ -538,7 +605,7 @@ end;
 procedure TLSMTPClient.Mail(const From: string);
 begin
   if CanContinue(ssMail, From, '') then begin
-    FConnection.SendMessage('MAIL FROM:' + '<' + From + '>' + SLE);
+    FConnection.SendMessage('MAIL FROM:' + '<' + From + '>' + CRLF);
     FStatus.Insert(MakeStatusRec(ssMail, '', ''));
   end;
 end;
@@ -546,7 +613,7 @@ end;
 procedure TLSMTPClient.Rcpt(const RcptTo: string);
 begin
   if CanContinue(ssRcpt, RcptTo, '') then begin
-    FConnection.SendMessage('RCPT TO:' + '<' + RcptTo + '>' + SLE);
+    FConnection.SendMessage('RCPT TO:' + '<' + RcptTo + '>' + CRLF);
     FStatus.Insert(MakeStatusRec(ssRcpt, '', ''));
   end;
 end;
@@ -554,17 +621,24 @@ end;
 procedure TLSMTPClient.Data(const Msg: string);
 begin
   if CanContinue(ssData, Msg, '') then begin
-    // TODO: clean SLEs and '.' on line starts
-    FMessage := Msg + SLE + '.' + SLE;
-    FConnection.SendMessage('DATA' + SLE);
+    // TODO: clean CRLFs and '.' on line starts
+    if Assigned(FStream) then begin
+      if Length(Msg) > 0 then
+        FBuffer := 'DATA ' + Msg + CRLF
+      else
+        FBuffer := 'DATA ';
+    end else
+      FBuffer := 'DATA ' + Msg + CRLF + '.' + CRLF;
+      
     FStatus.Insert(MakeStatusRec(ssData, '', ''));
+    SendData;
   end;
 end;
 
 procedure TLSMTPClient.Rset;
 begin
   if CanContinue(ssRset, '', '') then begin
-    FConnection.SendMessage('RSET' + SLE);
+    FConnection.SendMessage('RSET' + CRLF);
     FStatus.Insert(MakeStatusRec(ssRset, '', ''));
   end;
 end;
@@ -572,7 +646,7 @@ end;
 procedure TLSMTPClient.Quit;
 begin
   if CanContinue(ssQuit, '', '') then begin
-    FConnection.SendMessage('QUIT' + SLE);
+    FConnection.SendMessage('QUIT' + CRLF);
     FStatus.Insert(MakeStatusRec(ssQuit, '', ''));
   end;
 end;

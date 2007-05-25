@@ -45,6 +45,8 @@ type
     procedure Reset;
   end;
   
+  function EncodeMimeHeaderText(const s: string): string;
+  
 implementation
 
 uses
@@ -52,6 +54,11 @@ uses
 
 type
   TByteArray = array of Byte;
+
+function EncodeMimeHeaderText(const s: string): string;
+begin
+  Result := s;
+end;
 
 { TMimeOutputStream }
 
