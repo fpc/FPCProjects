@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, lNetComponents, lSMTP, lNet, ComCtrls, Menus;
+  Buttons, lNetComponents, lSMTP, lNet, ComCtrls, Menus, ExtCtrls;
 
 type
 
@@ -35,6 +35,7 @@ type
     LabelPort: TLabel;
     LabelServer: TLabel;
     SB: TStatusBar;
+    TimerQuit: TTimer;
     procedure ButtonConnectClick(Sender: TObject);
     procedure ButtonSendClick(Sender: TObject);
     procedure EditFromKeyPress(Sender: TObject; var Key: Char);
@@ -49,8 +50,9 @@ type
     procedure SMTPReceive(aSocket: TLSocket);
     procedure SMTPFailure(aSocket: TLSocket; const aStatus: TLSMTPStatus);
     procedure SMTPSuccess(aSocket: TLSocket; const aStatus: TLSMTPStatus);
+    procedure TimerQuitTimer(Sender: TObject);
   private
-    { private declarations }
+    FQuit: Boolean; // to see if we force quitting
   public
     { public declarations }
   end; 
@@ -121,9 +123,8 @@ begin
     SB.SimpleText := '"Mail from" info is missing or irrelevant'
   else if Length(EditTo.Text) < 6 then
     SB.SimpleText := '"Mail to" info is missing or irrelevant'
-  else begin
+  else
     SMTP.SendMail(EditFrom.Text, EditTo.Text, EditSubject.Text, MemoText.Text);
-  end;
 end;
 
 procedure TMainForm.EditFromKeyPress(Sender: TObject; var Key: Char);
@@ -149,9 +150,11 @@ end;
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   CloseAction := caFree;
-  if SMTP.Connected then begin
+
+  if not FQuit and SMTP.Connected then begin
     CloseAction := caNone; // make sure we quit gracefuly
     SMTP.Quit; // the quit success/failure CBs will close our form
+    TimerQuit.Enabled := True; // if this runs out, quit ungracefully
   end;
 end;
 
@@ -159,7 +162,7 @@ procedure TMainForm.SMTPFailure(aSocket: TLSocket;
   const aStatus: TLSMTPStatus);
 begin
   case aStatus of
-    ssMail: MessageDlg('Error sending message', mtError, [mbOK], 0);
+    ssData: MessageDlg('Error sending message', mtError, [mbOK], 0);
     ssQuit: begin
               SMTP.Disconnect;
               Close;
@@ -171,12 +174,18 @@ procedure TMainForm.SMTPSuccess(aSocket: TLSocket;
   const aStatus: TLSMTPStatus);
 begin
   case aStatus of
-    ssMail: MessageDlg('Message sent successfuly', mtInformation, [mbOK], 0);
+    ssData: MessageDlg('Message sent successfuly', mtInformation, [mbOK], 0);
     ssQuit: begin
               SMTP.Disconnect;
               Close;
             end;
   end;
+end;
+
+procedure TMainForm.TimerQuitTimer(Sender: TObject);
+begin
+  FQuit := True;
+  Close;
 end;
 
 initialization

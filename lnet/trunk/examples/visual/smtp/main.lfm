@@ -1,16 +1,16 @@
 object MainForm: TMainForm
   Left = 342
-  Height = 360
+  Height = 400
   Top = 202
-  Width = 444
-  HorzScrollBar.Page = 443
-  VertScrollBar.Page = 339
+  Width = 471
+  HorzScrollBar.Page = 470
+  VertScrollBar.Page = 399
   ActiveControl = EditServer
   Caption = 'SMTP Client Test'
-  Constraints.MaxHeight = 360
-  Constraints.MaxWidth = 444
-  Constraints.MinHeight = 360
-  Constraints.MinWidth = 444
+  ClientHeight = 400
+  ClientWidth = 471
+  Constraints.MinHeight = 400
+  Constraints.MinWidth = 471
   Menu = MainMenu
   OnClose = FormClose
   OnCreate = FormCreate
@@ -20,12 +20,14 @@ object MainForm: TMainForm
     Align = alLeft
     Anchors = [akTop]
     Caption = 'Connection'
+    ClientHeight = 93
+    ClientWidth = 224
     TabOrder = 0
     object LabelServer: TLabel
       Left = 6
-      Height = 14
-      Top = 15
-      Width = 40
+      Height = 20
+      Top = 12
+      Width = 56
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Server:'
       Color = clNone
@@ -33,9 +35,9 @@ object MainForm: TMainForm
     end
     object LabelPort: TLabel
       Left = 6
-      Height = 14
-      Top = 39
-      Width = 40
+      Height = 20
+      Top = 38
+      Width = 56
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Port:'
       Color = clNone
@@ -44,8 +46,8 @@ object MainForm: TMainForm
     object EditServer: TEdit
       Left = 70
       Height = 22
-      Top = 7
-      Width = 95
+      Top = 8
+      Width = 144
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditServerKeyPress
       TabOrder = 0
@@ -53,18 +55,18 @@ object MainForm: TMainForm
     object EditPort: TEdit
       Left = 70
       Height = 22
-      Top = 31
-      Width = 95
+      Top = 36
+      Width = 144
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditServerKeyPress
       TabOrder = 1
       Text = '25'
     end
     object ButtonConnect: TButton
-      Left = 70
-      Height = 22
+      Left = 69
+      Height = 24
       Top = 63
-      Width = 95
+      Width = 96
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.InnerBorder = 4
       Caption = 'Connect'
@@ -73,15 +75,15 @@ object MainForm: TMainForm
     end
   end
   object SB: TStatusBar
-    Height = 23
-    Top = 317
-    Width = 444
+    Height = 21
+    Top = 379
+    Width = 471
     Panels = <>
   end
   object ButtonSend: TButton
     Height = 24
-    Top = 293
-    Width = 444
+    Top = 355
+    Width = 471
     Align = alBottom
     BorderSpacing.InnerBorder = 4
     Caption = 'Send'
@@ -90,18 +92,20 @@ object MainForm: TMainForm
     TabOrder = 1
   end
   object GBEmail: TGroupBox
-    Left = 232
+    Left = 259
     Height = 112
     Width = 212
     Align = alRight
     Anchors = [akTop]
     Caption = 'e-mail'
+    ClientHeight = 93
+    ClientWidth = 208
     TabOrder = 2
     object LabelFrom: TLabel
       Left = 6
-      Height = 14
+      Height = 20
       Top = 12
-      Width = 36
+      Width = 45
       Anchors = [akTop, akLeft, akRight]
       Caption = 'From:'
       Color = clNone
@@ -109,7 +113,7 @@ object MainForm: TMainForm
     end
     object LabelTo: TLabel
       Left = 6
-      Height = 14
+      Height = 20
       Top = 38
       Width = 40
       Anchors = [akTop, akLeft, akRight]
@@ -119,9 +123,9 @@ object MainForm: TMainForm
     end
     object LabelSubject: TLabel
       Left = 6
-      Height = 14
+      Height = 20
       Top = 63
-      Width = 40
+      Width = 53
       Anchors = [akTop, akLeft, akRight]
       Caption = 'Subject:'
       Color = clNone
@@ -130,8 +134,8 @@ object MainForm: TMainForm
     object EditFrom: TEdit
       Left = 62
       Height = 23
-      Top = 4
-      Width = 95
+      Top = 7
+      Width = 135
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 0
@@ -139,8 +143,8 @@ object MainForm: TMainForm
     object EditTo: TEdit
       Left = 62
       Height = 23
-      Top = 30
-      Width = 95
+      Top = 35
+      Width = 135
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 1
@@ -148,17 +152,17 @@ object MainForm: TMainForm
     object EditSubject: TEdit
       Left = 62
       Height = 23
-      Top = 55
-      Width = 95
+      Top = 60
+      Width = 135
       Anchors = [akTop, akLeft, akRight]
       OnKeyPress = EditFromKeyPress
       TabOrder = 2
     end
   end
   object MemoText: TMemo
-    Height = 181
+    Height = 243
     Top = 112
-    Width = 444
+    Width = 471
     Align = alBottom
     Anchors = [akTop, akLeft, akRight, akBottom]
     TabOrder = 3
@@ -171,13 +175,13 @@ object MainForm: TMainForm
     OnError = SMTPError
     OnSuccess = SMTPSuccess
     OnFailure = SMTPFailure
-    StatusSet = [ssMail, ssQuit]
-    left = 408
-    top = 56
+    StatusSet = [ssData, ssQuit]
+    left = 233
+    top = 48
   end
   object MainMenu: TMainMenu
-    left = 408
-    top = 24
+    left = 233
+    top = 80
     object MenuItemFile: TMenuItem
       Caption = '&File'
       object MenuItemExit: TMenuItem
@@ -192,5 +196,11 @@ object MainForm: TMainForm
         OnClick = MenuItemAboutClick
       end
     end
+  end
+  object TimerQuit: TTimer
+    Enabled = False
+    OnTimer = TimerQuitTimer
+    left = 233
+    top = 16
   end
 end
