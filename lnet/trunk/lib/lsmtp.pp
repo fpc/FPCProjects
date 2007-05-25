@@ -170,7 +170,7 @@ type
     
     procedure ExecuteFrontCommand;
     
-    procedure SendData;
+    procedure SendData(const FromStream: Boolean = False);
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
@@ -340,8 +340,7 @@ end;
 
 procedure TLSMTPClient.OnCs(aSocket: TLSocket);
 begin
-  if FStatus.First.Status = ssData then
-    SendData;
+  SendData(FStatus.First.Status = ssData);
 end;
 
 function TLSMTPClient.CanContinue(const aStatus: TLSMTPStatus; const Arg1, Arg2: string): Boolean;
@@ -429,7 +428,7 @@ begin
                             Eventize(FStatus.First.Status, True);
                             FStatus.Remove;
                           end;
-                300..399: SendData;
+                300..399: SendData(True);
               else        begin
                             Eventize(FStatus.First.Status, False);
                             FStatus.Remove;
@@ -469,7 +468,7 @@ begin
   FCommandFront.Remove;
 end;
 
-procedure TLSMTPClient.SendData;
+procedure TLSMTPClient.SendData(const FromStream: Boolean = False);
 const
   SBUF_SIZE = 65535;
   
@@ -485,7 +484,7 @@ const
 var
   n: Integer;
 begin
-  if Assigned(FStream) then
+  if FromStream and Assigned(FStream) then
     FillBuffer;
 
   n := 1;
@@ -494,7 +493,7 @@ begin
     if n > 0 then
       Delete(FBuffer, 1, n);
       
-    if Assigned(FStream) and (Length(FBuffer) < SBUF_SIZE) then
+    if FromStream and Assigned(FStream) and (Length(FBuffer) < SBUF_SIZE) then
       FillBuffer;
   end;
 end;
@@ -587,8 +586,9 @@ begin
   if Length(Host) = 0 then
     aHost := FHost;
   if CanContinue(ssHelo, aHost, '') then begin
-    FConnection.SendMessage('HELO ' + aHost + CRLF);
+    FBuffer := FBuffer + 'HELO ' + aHost + CRLF;
     FStatus.Insert(MakeStatusRec(ssHelo, '', ''));
+    SendData;
   end;
 end;
 
@@ -597,24 +597,27 @@ begin
   if Length(aHost) = 0 then
     aHost := FHost;
   if CanContinue(ssEhlo, aHost, '') then begin
-    FConnection.SendMessage('EHLO ' + aHost + CRLF);
+    FBuffer := FBuffer + 'EHLO ' + aHost + CRLF;
     FStatus.Insert(MakeStatusRec(ssEhlo, '', ''));
+    SendData;
   end;
 end;
 
 procedure TLSMTPClient.Mail(const From: string);
 begin
   if CanContinue(ssMail, From, '') then begin
-    FConnection.SendMessage('MAIL FROM:' + '<' + From + '>' + CRLF);
+    FBuffer := FBuffer + 'MAIL FROM:' + '<' + From + '>' + CRLF;
     FStatus.Insert(MakeStatusRec(ssMail, '', ''));
+    SendData;
   end;
 end;
 
 procedure TLSMTPClient.Rcpt(const RcptTo: string);
 begin
   if CanContinue(ssRcpt, RcptTo, '') then begin
-    FConnection.SendMessage('RCPT TO:' + '<' + RcptTo + '>' + CRLF);
+    FBuffer := FBuffer + 'RCPT TO:' + '<' + RcptTo + '>' + CRLF;
     FStatus.Insert(MakeStatusRec(ssRcpt, '', ''));
+    SendData;
   end;
 end;
 
@@ -631,23 +634,25 @@ begin
       FBuffer := 'DATA ' + Msg + CRLF + '.' + CRLF;
       
     FStatus.Insert(MakeStatusRec(ssData, '', ''));
-    SendData;
+    SendData(True);
   end;
 end;
 
 procedure TLSMTPClient.Rset;
 begin
   if CanContinue(ssRset, '', '') then begin
-    FConnection.SendMessage('RSET' + CRLF);
+    FBuffer := FBuffer + 'RSET' + CRLF;
     FStatus.Insert(MakeStatusRec(ssRset, '', ''));
+    SendData;
   end;
 end;
 
 procedure TLSMTPClient.Quit;
 begin
   if CanContinue(ssQuit, '', '') then begin
-    FConnection.SendMessage('QUIT' + CRLF);
+    FBuffer := FBuffer + 'QUIT' + CRLF;
     FStatus.Insert(MakeStatusRec(ssQuit, '', ''));
+    SendData;
   end;
 end;
 
