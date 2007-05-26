@@ -478,7 +478,13 @@ const
   begin
     SetLength(s, SBUF_SIZE - Length(FBuffer));
     SetLength(s, FStream.Read(s[1], Length(s)));
+    
     FBuffer := FBuffer + s;
+    
+    if FStream.Position = FStream.Size then begin // we finished the stream
+      FBuffer := FBuffer + CRLF + '.' + CRLF;
+      FStream := nil;
+    end;
   end;
 
 var

@@ -128,6 +128,8 @@ type
     procedure AddTextSection(const aText: string; const aCharSet: string = 'UTF-8');
     procedure AddFileSection(const aFileName: string);
     procedure AddStreamSection(aStream: TStream; const FreeStream: Boolean = False);
+    procedure Delete(const i: Integer);
+    procedure Remove(aSection: TMimeSection);
     procedure Reset;
    public
     property Sections[i: Integer]: TMimeSection read GetSections write SetSections; default;
@@ -219,6 +221,8 @@ begin
 
   if Length(FDescription) > 0 then
     Result := Result + 'Content-Description: ' + FDescription + CRLF;
+    
+  Result := Result + CRLF;
 end;
 
 function TMimeSection.ReadBuffer(const aSize: Integer): string;
@@ -620,6 +624,17 @@ begin
   FSections.Add(s);
 end;
 
+procedure TMimeStream.Delete(const i: Integer);
+begin
+  if (i >= 0) and (i < Count) then
+    FSections.Delete(i);
+end;
+
+procedure TMimeStream.Remove(aSection: TMimeSection);
+begin
+  FSections.Remove(aSection);
+end;
+
 procedure TMimeStream.Reset;
 var
   i: Integer;
@@ -706,6 +721,8 @@ begin
 
   if Length(FDescription) > 0 then
     Result := Result + 'Content-Description: ' + FDescription + CRLF;
+    
+  Result := Result + CRLF;
 end;
 
 constructor TMimeFileSection.Create(aOutputStream: TStream; const aFileName: string);
