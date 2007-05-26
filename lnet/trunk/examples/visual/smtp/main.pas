@@ -191,7 +191,9 @@ var
   s: string;
 begin
   if SMTP.GetMessage(s) > 0 then begin
-    SB.SimpleText := StringReplace(s, #13#10, '', [rfReplaceAll]);
+    s := StringReplace(s, #13, '', [rfReplaceAll]);
+    s := StringReplace(s, #10, '', [rfReplaceAll]);
+    SB.SimpleText := s;
     FormLogs.MemoLogs.Append(SB.SimpleText);
   end;
 end;
