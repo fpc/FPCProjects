@@ -32,7 +32,7 @@
       </Other>
     </CompilerOptions>
     <Version Minor="5"/>
-    <Files Count="8">
+    <Files Count="9">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
         <UnitName Value="lNet"/>
@@ -65,6 +65,10 @@
         <Filename Value="../lib/lwebserver.pp"/>
         <UnitName Value="lwebserver"/>
       </Item8>
+      <Item9>
+        <Filename Value="../lib/lmimewrapper.pp"/>
+        <UnitName Value="lMimeWrapper"/>
+      </Item9>
     </Files>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)/"/>

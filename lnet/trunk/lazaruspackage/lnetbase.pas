@@ -7,7 +7,8 @@ unit lnetbase;
 interface
 
 uses
-  lNet, lEvents, lCommon, lFTP, lsmtp, lTelnet, lhttp, lwebserver; 
+  lNet, lEvents, lCommon, lFTP, lsmtp, lTelnet, lhttp, lwebserver, 
+    lMimeWrapper; 
 
 implementation
 
