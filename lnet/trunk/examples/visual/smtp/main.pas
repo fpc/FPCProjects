@@ -1,4 +1,4 @@
-unit main;
+unit Main;
 
 {$mode objfpc}{$H+}
 
@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, lNetComponents, lSMTP, lNet, ComCtrls, Menus, ExtCtrls;
+  Buttons, ComCtrls, Menus, ExtCtrls,
+  lMimeWrapper, lNetComponents, lSMTP, lNet;
 
 type
 
@@ -20,15 +21,23 @@ type
     EditSubject: TEdit;
     EditTo: TEdit;
     GBEmail: TGroupBox;
+    ListBoxAttachments: TListBox;
     MainMenu: TMainMenu;
-    MemoText: TMemo;
     LabelSubject: TLabel;
     LabelTo: TLabel;
     LabelFrom: TLabel;
+    MemoText: TMemo;
+    MenuItemLogs: TMenuItem;
+    MenuItemDelete: TMenuItem;
+    MenuItemAdd: TMenuItem;
     MenuItemAbout: TMenuItem;
     MenuItemHelp: TMenuItem;
     MenuItemExit: TMenuItem;
     MenuItemFile: TMenuItem;
+    OD: TOpenDialog;
+    Panel1: TPanel;
+    Panel2: TPanel;
+    PopupMenuAttachments: TPopupMenu;
     SMTP: TLSMTPClientComponent;
     EditServer: TEdit;
     EditPort: TEdit;
@@ -43,7 +52,10 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure MenuItemAboutClick(Sender: TObject);
+    procedure MenuItemAddClick(Sender: TObject);
+    procedure MenuItemDeleteClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
+    procedure MenuItemLogsClick(Sender: TObject);
     procedure SMTPConnect(aSocket: TLSocket);
     procedure SMTPDisconnect(aSocket: TLSocket);
     procedure SMTPError(const msg: string; aSocket: TLSocket);
@@ -52,6 +64,7 @@ type
     procedure SMTPSuccess(aSocket: TLSocket; const aStatus: TLSMTPStatus);
     procedure TimerQuitTimer(Sender: TObject);
   private
+    FMimeStream: TMimeStream;
     FQuit: Boolean; // to see if we force quitting
   public
     { public declarations }
@@ -62,12 +75,16 @@ var
 
 implementation
 
+uses
+  Logs;
+
 { TMainForm }
 
 procedure TMainForm.SMTPConnect(aSocket: TLSocket);
 begin
   SB.SimpleText := 'Connected to server...';
-  SMTP.Helo('mail.chello.sk');
+  FormLogs.MemoLogs.Append(SB.SimpleText);
+  SMTP.Helo(EditServer.Text);
   if SMTP.Connected then begin
     ButtonSend.Enabled := SMTP.Connected;
     ButtonConnect.Caption := 'Disconnect';
@@ -77,6 +94,7 @@ end;
 procedure TMainForm.SMTPDisconnect(aSocket: TLSocket);
 begin
   SB.SimpleText := 'Disconnected from server';
+  FormLogs.MemoLogs.Append(SB.SimpleText);
   ButtonSend.Enabled := SMTP.Connected;
   ButtonConnect.Caption := 'Connect';
 end;
@@ -85,11 +103,14 @@ procedure TMainForm.SMTPError(const msg: string; aSocket: TLSocket);
 begin
   SMTPDisconnect(nil);
   SB.SimpleText := msg;
+  FormLogs.MemoLogs.Append(msg);
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   SMTP.OnError := @SMTPError;
+  FMimeStream := TMimeStream.Create;
+  FMimeStream.AddTextSection(''); // for the memo
 end;
 
 procedure TMainForm.MenuItemAboutClick(Sender: TObject);
@@ -98,9 +119,32 @@ begin
              mtInformation, [mbOK], 0);
 end;
 
+procedure TMainForm.MenuItemAddClick(Sender: TObject);
+begin
+  if OD.Execute then
+    if FileExists(OD.FileName) then begin
+      FMimeStream.AddFileSection(OD.FileName);
+      ListBoxAttachments.Items.Add(ExtractFileName(OD.FileName));
+    end;
+end;
+
+procedure TMainForm.MenuItemDeleteClick(Sender: TObject);
+begin
+  if  (ListBoxAttachments.ItemIndex >= 0)
+  and (ListBoxAttachments.ItemIndex < FMimeStream.Count - 1) then begin
+    FMimeStream.Delete(ListBoxAttachments.ItemIndex + 1); // 0th is the text of memo
+    ListBoxAttachments.Items.Delete(ListBoxAttachments.ItemIndex);
+  end;
+end;
+
 procedure TMainForm.MenuItemExitClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TMainForm.MenuItemLogsClick(Sender: TObject);
+begin
+  FormLogs.Show;
 end;
 
 procedure TMainForm.ButtonConnectClick(Sender: TObject);
@@ -123,8 +167,11 @@ begin
     SB.SimpleText := '"Mail from" info is missing or irrelevant'
   else if Length(EditTo.Text) < 6 then
     SB.SimpleText := '"Mail to" info is missing or irrelevant'
-  else
-    SMTP.SendMail(EditFrom.Text, EditTo.Text, EditSubject.Text, MemoText.Text);
+  else begin
+    FMimeStream.Reset; // make sure we can read it again
+    TMimeTextSection(FMimeStream[0]).Text := MemoText.Text; // change to text
+    SMTP.SendMail(EditFrom.Text, EditTo.Text, EditSubject.Text, FMimeStream); // send the stream
+  end;
 end;
 
 procedure TMainForm.EditFromKeyPress(Sender: TObject; var Key: Char);
@@ -143,8 +190,10 @@ procedure TMainForm.SMTPReceive(aSocket: TLSocket);
 var
   s: string;
 begin
-  SMTP.GetMessage(s);
-  SB.SimpleText := s;
+  if SMTP.GetMessage(s) > 0 then begin
+    SB.SimpleText := StringReplace(s, #13#10, '', [rfReplaceAll]);
+    FormLogs.MemoLogs.Append(SB.SimpleText);
+  end;
 end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -155,7 +204,8 @@ begin
     CloseAction := caNone; // make sure we quit gracefuly
     SMTP.Quit; // the quit success/failure CBs will close our form
     TimerQuit.Enabled := True; // if this runs out, quit ungracefully
-  end;
+  end else
+    FMimeStream.Free;
 end;
 
 procedure TMainForm.SMTPFailure(aSocket: TLSocket;

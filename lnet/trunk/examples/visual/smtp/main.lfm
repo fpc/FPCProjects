@@ -5,7 +5,7 @@ object MainForm: TMainForm
   Width = 471
   HorzScrollBar.Page = 470
   VertScrollBar.Page = 399
-  ActiveControl = EditServer
+  ActiveControl = EditFrom
   Caption = 'SMTP Client Test'
   ClientHeight = 400
   ClientWidth = 471
@@ -14,66 +14,6 @@ object MainForm: TMainForm
   Menu = MainMenu
   OnClose = FormClose
   OnCreate = FormCreate
-  object GBConnection: TGroupBox
-    Height = 112
-    Width = 228
-    Align = alLeft
-    Anchors = [akTop]
-    Caption = 'Connection'
-    ClientHeight = 93
-    ClientWidth = 224
-    TabOrder = 0
-    object LabelServer: TLabel
-      Left = 6
-      Height = 20
-      Top = 12
-      Width = 56
-      Anchors = [akTop, akLeft, akRight]
-      Caption = 'Server:'
-      Color = clNone
-      ParentColor = False
-    end
-    object LabelPort: TLabel
-      Left = 6
-      Height = 20
-      Top = 38
-      Width = 56
-      Anchors = [akTop, akLeft, akRight]
-      Caption = 'Port:'
-      Color = clNone
-      ParentColor = False
-    end
-    object EditServer: TEdit
-      Left = 70
-      Height = 22
-      Top = 8
-      Width = 144
-      Anchors = [akTop, akLeft, akRight]
-      OnKeyPress = EditServerKeyPress
-      TabOrder = 0
-    end
-    object EditPort: TEdit
-      Left = 70
-      Height = 22
-      Top = 36
-      Width = 144
-      Anchors = [akTop, akLeft, akRight]
-      OnKeyPress = EditServerKeyPress
-      TabOrder = 1
-      Text = '25'
-    end
-    object ButtonConnect: TButton
-      Left = 69
-      Height = 24
-      Top = 63
-      Width = 96
-      Anchors = [akTop, akLeft, akRight]
-      BorderSpacing.InnerBorder = 4
-      Caption = 'Connect'
-      OnClick = ButtonConnectClick
-      TabOrder = 2
-    end
-  end
   object SB: TStatusBar
     Height = 21
     Top = 379
@@ -89,83 +29,176 @@ object MainForm: TMainForm
     Caption = 'Send'
     Enabled = False
     OnClick = ButtonSendClick
+    TabOrder = 0
+  end
+  object Panel1: TPanel
+    Height = 128
+    Width = 471
+    Align = alTop
+    ClientHeight = 128
+    ClientWidth = 471
     TabOrder = 1
-  end
-  object GBEmail: TGroupBox
-    Left = 259
-    Height = 112
-    Width = 212
-    Align = alRight
-    Anchors = [akTop]
-    Caption = 'e-mail'
-    ClientHeight = 93
-    ClientWidth = 208
-    TabOrder = 2
-    object LabelFrom: TLabel
-      Left = 6
-      Height = 20
-      Top = 12
-      Width = 45
-      Anchors = [akTop, akLeft, akRight]
-      Caption = 'From:'
-      Color = clNone
-      ParentColor = False
-    end
-    object LabelTo: TLabel
-      Left = 6
-      Height = 20
-      Top = 38
-      Width = 40
-      Anchors = [akTop, akLeft, akRight]
-      Caption = 'To:'
-      Color = clNone
-      ParentColor = False
-    end
-    object LabelSubject: TLabel
-      Left = 6
-      Height = 20
-      Top = 63
-      Width = 53
-      Anchors = [akTop, akLeft, akRight]
-      Caption = 'Subject:'
-      Color = clNone
-      ParentColor = False
-    end
-    object EditFrom: TEdit
-      Left = 62
-      Height = 23
-      Top = 7
-      Width = 135
-      Anchors = [akTop, akLeft, akRight]
-      OnKeyPress = EditFromKeyPress
+    object GBEmail: TGroupBox
+      Left = 248
+      Height = 123
+      Width = 212
+      Caption = 'e-mail'
+      ClientHeight = 104
+      ClientWidth = 208
       TabOrder = 0
+      object LabelFrom: TLabel
+        Left = 6
+        Height = 20
+        Top = 10
+        Width = 45
+        Anchors = [akTop, akLeft, akRight]
+        Caption = 'From:'
+        Color = clNone
+        ParentColor = False
+      end
+      object LabelTo: TLabel
+        Left = 6
+        Height = 20
+        Top = 38
+        Width = 40
+        Anchors = [akTop, akLeft, akRight]
+        Caption = 'To:'
+        Color = clNone
+        ParentColor = False
+      end
+      object LabelSubject: TLabel
+        Left = 6
+        Height = 20
+        Top = 63
+        Width = 53
+        Anchors = [akTop, akLeft, akRight]
+        Caption = 'Subject:'
+        Color = clNone
+        ParentColor = False
+      end
+      object EditFrom: TEdit
+        Left = 62
+        Height = 23
+        Top = 7
+        Width = 135
+        Anchors = [akTop, akLeft, akRight]
+        OnKeyPress = EditFromKeyPress
+        TabOrder = 0
+        Text = 'ales@chello.sk'
+      end
+      object EditTo: TEdit
+        Left = 62
+        Height = 23
+        Top = 35
+        Width = 135
+        Anchors = [akTop, akLeft, akRight]
+        OnKeyPress = EditFromKeyPress
+        TabOrder = 1
+        Text = 'ales@chello.sk'
+      end
+      object EditSubject: TEdit
+        Left = 62
+        Height = 23
+        Top = 60
+        Width = 135
+        Anchors = [akTop, akLeft, akRight]
+        OnKeyPress = EditFromKeyPress
+        TabOrder = 2
+        Text = 'test_noatt'
+      end
     end
-    object EditTo: TEdit
-      Left = 62
-      Height = 23
-      Top = 35
-      Width = 135
-      Anchors = [akTop, akLeft, akRight]
-      OnKeyPress = EditFromKeyPress
+    object GBConnection: TGroupBox
+      Left = 8
+      Height = 123
+      Width = 228
+      Caption = 'Connection'
+      ClientHeight = 104
+      ClientWidth = 224
       TabOrder = 1
-    end
-    object EditSubject: TEdit
-      Left = 62
-      Height = 23
-      Top = 60
-      Width = 135
-      Anchors = [akTop, akLeft, akRight]
-      OnKeyPress = EditFromKeyPress
-      TabOrder = 2
+      object LabelServer: TLabel
+        Left = 6
+        Height = 20
+        Top = 12
+        Width = 56
+        Anchors = [akTop, akLeft, akRight]
+        Caption = 'Server:'
+        Color = clNone
+        ParentColor = False
+      end
+      object LabelPort: TLabel
+        Left = 6
+        Height = 20
+        Top = 38
+        Width = 56
+        Anchors = [akTop, akLeft, akRight]
+        Caption = 'Port:'
+        Color = clNone
+        ParentColor = False
+      end
+      object EditServer: TEdit
+        Left = 70
+        Height = 22
+        Top = 8
+        Width = 144
+        Anchors = [akTop, akLeft, akRight]
+        OnKeyPress = EditServerKeyPress
+        TabOrder = 0
+        Text = 'mail.chello.sk'
+      end
+      object EditPort: TEdit
+        Left = 70
+        Height = 22
+        Top = 36
+        Width = 144
+        Anchors = [akTop, akLeft, akRight]
+        OnKeyPress = EditServerKeyPress
+        TabOrder = 1
+        Text = '25'
+      end
+      object ButtonConnect: TButton
+        Left = 69
+        Height = 24
+        Top = 63
+        Width = 96
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.InnerBorder = 4
+        Caption = 'Connect'
+        OnClick = ButtonConnectClick
+        TabOrder = 2
+      end
     end
   end
-  object MemoText: TMemo
-    Height = 243
-    Top = 112
+  object Panel2: TPanel
+    Height = 226
+    Top = 129
     Width = 471
     Align = alBottom
     Anchors = [akTop, akLeft, akRight, akBottom]
-    TabOrder = 3
+    ClientHeight = 226
+    ClientWidth = 471
+    TabOrder = 2
+    object MemoText: TMemo
+      Left = 1
+      Height = 224
+      Top = 1
+      Width = 335
+      Align = alLeft
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      Lines.Strings = (
+        'automated message'
+      )
+      TabOrder = 0
+    end
+    object ListBoxAttachments: TListBox
+      Left = 338
+      Height = 224
+      Top = 1
+      Width = 132
+      Align = alRight
+      PopupMenu = PopupMenuAttachments
+      TabOrder = 1
+      TopIndex = -1
+    end
   end
   object SMTP: TLSMTPClientComponent
     Port = 25
@@ -191,6 +224,10 @@ object MainForm: TMainForm
     end
     object MenuItemHelp: TMenuItem
       Caption = '&Help'
+      object MenuItemLogs: TMenuItem
+        Caption = 'Log'
+        OnClick = MenuItemLogsClick
+      end
       object MenuItemAbout: TMenuItem
         Caption = '&About'
         OnClick = MenuItemAboutClick
@@ -202,5 +239,23 @@ object MainForm: TMainForm
     OnTimer = TimerQuitTimer
     left = 233
     top = 16
+  end
+  object PopupMenuAttachments: TPopupMenu
+    left = 176
+    top = 80
+    object MenuItemAdd: TMenuItem
+      Caption = 'Add'
+      OnClick = MenuItemAddClick
+    end
+    object MenuItemDelete: TMenuItem
+      Caption = 'Delete'
+      OnClick = MenuItemDeleteClick
+    end
+  end
+  object OD: TOpenDialog
+    Title = 'Open existing file'
+    FilterIndex = 0
+    left = 200
+    top = 80
   end
 end

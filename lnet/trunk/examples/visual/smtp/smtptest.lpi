@@ -32,7 +32,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="3">
       <Unit0>
         <Filename Value="smtptest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -43,13 +43,21 @@
         <ComponentName Value="MainForm"/>
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="main.lrs"/>
-        <UnitName Value="main"/>
+        <UnitName Value="Main"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="logs.pas"/>
+        <ComponentName Value="FormLogs"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="logs.lrs"/>
+        <UnitName Value="Logs"/>
+      </Unit2>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
     <SearchPaths>
+      <LCLWidgetType Value="gtk"/>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
     <CodeGeneration>
