@@ -199,7 +199,8 @@ procedure TMimeSection.SetEncoding(const AValue: TMimeEncoding);
 begin
   if not FActivated then begin
     FEncoding := aValue;
-    FEncodingStream.Free;
+    if Assigned(FEncodingStream) then
+      FEncodingStream.Free;
     
     CreateEncodingStream;
   end;
@@ -246,6 +247,7 @@ destructor TMimeSection.Destroy;
 begin
   if Assigned(FEncodingStream) then
     FEncodingStream.Free;
+    
   FLocalStream.Free;
 
   inherited Destroy;
@@ -304,8 +306,10 @@ var
   n: Integer;
 begin
   s := Copy(FData, 1, aSize);
+  
   if Length(s) <= 0 then
     Exit;
+    
   n := aSize;
 
   if Assigned(FEncodingStream) then begin
@@ -457,8 +461,8 @@ var
 begin
   Result := 0;
   
-  for i := 0 to Count - 1 do
-    if not TMimeSection(FSections[i]).FActivated then
+  if FActiveSection > -2 then
+    for i := 0 to Count - 1 do
       Result := Result + TMimeSection(FSections[i]).Size;
     
   Result := Result + FOutputStream.Size;
