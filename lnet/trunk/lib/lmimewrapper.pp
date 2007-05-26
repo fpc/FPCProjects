@@ -506,7 +506,10 @@ begin
       FActiveSection := 0;
       
       if FSections.Count > 1 then begin
-        s := MIME_HEADER + FBoundary + '"' + CRLF + '--' + FBoundary + CRLF;
+        s := MIME_HEADER + FBoundary + '"' + CRLF + CRLF +
+             'This is a multi-part message in MIME format.' + CRLF +
+             '--' + FBoundary + CRLF;
+             
         FOutputStream.Write(s[1], Length(s));
       end;
     end;
@@ -519,7 +522,11 @@ begin
   Inc(FActiveSection);
   
   if FSections.Count > 1 then begin
-    s := '--' + FBoundary + CRLF;
+    if FActiveSection >= FSections.Count then
+      s := '--' + FBoundary + '--' + CRLF
+    else
+      s := '--' + FBoundary + CRLF;
+      
     FOutputStream.Write(s[1], Length(s));
   end;
 

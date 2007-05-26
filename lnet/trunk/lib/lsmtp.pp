@@ -170,6 +170,7 @@ type
     
     procedure ExecuteFrontCommand;
     
+    procedure InsertCRLFs;
     procedure SendData(const FromStream: Boolean = False);
    public
     constructor Create(aOwner: TComponent); override;
@@ -468,6 +469,29 @@ begin
   FCommandFront.Remove;
 end;
 
+procedure TLSMTPClient.InsertCRLFs;
+var
+  i, c: Integer;
+begin
+  c := 0;
+  i := 2;
+  while i <= Length(FBuffer) do begin
+    if (FBuffer[i - 1] = #13) and (FBuffer[i] = #10) then begin
+      c := 0;
+      Inc(i);
+    end else
+      Inc(c);
+      
+    if c >= 74 then begin
+      Insert(CRLF, FBuffer, i);
+      c := 0;
+      Inc(i, 2);
+    end;
+
+    Inc(i);
+  end;
+end;
+
 procedure TLSMTPClient.SendData(const FromStream: Boolean = False);
 const
   SBUF_SIZE = 65535;
@@ -495,10 +519,12 @@ begin
 
   n := 1;
   while (Length(FBuffer) > 0) and (n > 0) do begin
+    InsertCRLFs;
+  
     n := FConnection.SendMessage(FBuffer);
     if n > 0 then
       Delete(FBuffer, 1, n);
-      
+
     if FromStream and Assigned(FStream) and (Length(FBuffer) < SBUF_SIZE) then
       FillBuffer;
   end;
@@ -630,10 +656,9 @@ end;
 procedure TLSMTPClient.Data(const Msg: string);
 begin
   if CanContinue(ssData, Msg, '') then begin
-    // TODO: clean CRLFs and '.' on line starts
     if Assigned(FStream) then begin
       if Length(Msg) > 0 then
-        FBuffer := 'DATA ' + Msg + CRLF
+        FBuffer := 'DATA ' + Msg
       else
         FBuffer := 'DATA ';
     end else
