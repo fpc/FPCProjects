@@ -18,7 +18,6 @@ type
   TMimeOutputStream = class(TStream)
    protected
     FInputData: string;
-//    FLastCRLF: Integer;
     FNotificationEvent: TStreamNotificationEvent;
     function GetSize: Int64; override;
     procedure AddInputData(const s: string);
@@ -104,7 +103,6 @@ begin
   inherited Create;
   
   FNotificationEvent := aNotificationEvent;
-//  FLastCRLF := 1;
 end;
 
 function TMimeOutputStream.Read(var Buffer; Count: Longint): Longint;
@@ -116,10 +114,11 @@ begin
 
   Result := Min(Count, Length(FInputData));
   
+  if Result <= 0 then
+    Exit(0);
+  
   Move(FInputData[1], Buffer, Result);
   Delete(FInputData, 1, Result);
-
-//  Dec(FLastCRLF, Result);
 end;
 
 function TMimeOutputStream.Write(const Buffer; Count: Longint): Longint;

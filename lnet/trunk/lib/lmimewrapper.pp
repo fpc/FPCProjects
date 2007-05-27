@@ -27,6 +27,7 @@ type
     FEncodingStream: TStream;
     FOutputStream: TStream;
     FLocalStream: TBogusStream;
+    function RecalculateSize(const OriginalSize: Integer): Integer;
     function GetSize: Integer; virtual; abstract;
     procedure SetDescription(const AValue: string);
     procedure SetDisposition(const AValue: TMimeDisposition);
@@ -110,10 +111,12 @@ type
     FActiveSection: Integer;
     FCalledRead: Boolean;
     FCalledWrite: Boolean;
+    function GetBoundarySize: Integer;
     function GetSize: Int64; override;
     function GetCount: Integer;
     function GetBoundary: string;
     function GetSections(i: Integer): TMimeSection;
+    function GetMimeHeader: string;
     procedure SetSections(i: Integer; const AValue: TMimeSection);
     procedure ActivateFirstSection;
     procedure ActivateNextSection;
@@ -161,7 +164,7 @@ type
 implementation
 
 uses
-  Base64;
+  Math, Base64;
   
 function EncodingToStr(const Encoding: TMimeEncoding): string;
 begin
@@ -182,6 +185,22 @@ begin
 end;
 
 { TMimeSection }
+
+function TMimeSection.RecalculateSize(const OriginalSize: Integer): Integer;
+begin
+  Result := 0;
+
+  if OriginalSize = 0 then
+    Exit;
+    
+  case FEncoding of
+    me8bit   : Result := OriginalSize;
+    meBase64 : if OriginalSize mod 3 = 0 then
+                 Result := (OriginalSize div 3) * 4 // this is simple, 4 bytes per 3 bytes
+               else
+                 Result := ((OriginalSize + 3) div 3) * 4; // add "padding" trupplet
+  end;
+end;
 
 procedure TMimeSection.SetDescription(const AValue: string);
 begin
@@ -274,7 +293,7 @@ begin
   if Length(s) >= aSize then begin
     Result := FOutputStream.Write(s[1], aSize);
     Delete(FBuffer, 1, Result);
-  end else begin
+  end else if Length(s) > 0 then begin
     Result := FOutputStream.Write(s[1], Length(s));
     Delete(FBuffer, 1, Result);
   end;
@@ -307,9 +326,9 @@ var
 begin
   s := Copy(FData, 1, aSize);
   
-  if Length(s) <= 0 then
+  if Length(s) = 0 then
     Exit;
-    
+  
   n := aSize;
 
   if Assigned(FEncodingStream) then begin
@@ -336,9 +355,15 @@ end;
 function TMimeTextSection.GetSize: Integer;
 begin
   if FActivated then
-    Result := Length(FBuffer) + Length(FData)
+    Result := Length(FBuffer) + RecalculateSize(Length(FData))
   else
-    Result := Length(FBuffer) + Length(GetHeader) + Length(FData);
+    Result := Length(FBuffer) + Length(GetHeader) + RecalculateSize(Length(FData));
+
+  if not FActivated
+  or (Length(FBuffer) > 0)
+  or (Length(FData) > 0) then
+    if Length(FOriginalData) > 0 then
+      Result := Result + Length(CRLF); // CRLF after each msg body
 end;
 
 procedure TMimeTextSection.SetData(const AValue: string);
@@ -381,9 +406,15 @@ end;
 function TMimeStreamSection.GetSize: Integer;
 begin
   if FActivated then
-    Result := Length(FBuffer) + FStream.Size - FStream.Position
+    Result := Length(FBuffer) + RecalculateSize(FStream.Size - FStream.Position)
   else
-    Result := Length(FBuffer) + Length(GetHeader) + FStream.Size - FStream.Position;
+    Result := Length(FBuffer) + Length(GetHeader) + RecalculateSize(FStream.Size - FStream.Position);
+    
+  if not FActivated
+  or (Length(FBuffer) > 0)
+  or (FStream.Size - FStream.Position > 0) then
+    if FStream.Size - FOriginalPosition > 0 then
+      Result := Result + Length(CRLF); // CRLF after each msg body
 end;
 
 procedure TMimeStreamSection.SetStream(aValue: TStream);
@@ -455,6 +486,19 @@ end;
 
 { TMimeStream }
 
+function TMimeStream.GetBoundarySize: Integer;
+var
+  n: Integer;
+begin
+  Result := 0;
+
+  if FSections.Count > 1 then begin
+    n := Max(FActiveSection, 0);
+    Result := (Length(FBoundary) + 4) * (FSections.Count - n) + 2;
+    // # sections * (boundarylength + --CRLF +) ending --
+  end;
+end;
+
 function TMimeStream.GetSize: Int64;
 var
   i: Integer;
@@ -464,6 +508,9 @@ begin
   if FActiveSection > -2 then
     for i := 0 to Count - 1 do
       Result := Result + TMimeSection(FSections[i]).Size;
+      
+  if FActiveSection = -1 then // not yet active, must add header info
+    Result := Result + Length(GetMimeHeader) + GetBoundarySize;
     
   Result := Result + FOutputStream.Size;
 end;
@@ -491,6 +538,18 @@ begin
     Result := TMimeSection(FSections[i]);
 end;
 
+function TMimeStream.GetMimeHeader: string;
+const
+  MIME_HEADER = 'Content-type: multipart/mixed; boundary="';
+begin
+  Result := MIME_VERSION;
+  
+  if FSections.Count > 1 then
+    Result := Result + MIME_HEADER + FBoundary + '"' + CRLF + CRLF +
+         'This is a multi-part message in MIME format.' + CRLF +
+         '--' + FBoundary + CRLF;
+end;
+
 procedure TMimeStream.SetSections(i: Integer; const AValue: TMimeSection);
 begin
   if  (i >= 0)
@@ -499,23 +558,14 @@ begin
 end;
 
 procedure TMimeStream.ActivateFirstSection;
-const
-  MIME_HEADER = 'Content-type: multipart/mixed; boundary="';
 var
   s: string;
 begin
   if FActiveSection = -1 then
     if FSections.Count > 0 then begin
-      FOutputStream.Write(MIME_VERSION[1], Length(MIME_VERSION));
       FActiveSection := 0;
-      
-      if FSections.Count > 1 then begin
-        s := MIME_HEADER + FBoundary + '"' + CRLF + CRLF +
-             'This is a multi-part message in MIME format.' + CRLF +
-             '--' + FBoundary + CRLF;
-             
-        FOutputStream.Write(s[1], Length(s));
-      end;
+      s := GetMimeHeader;
+      FOutputStream.Write(s[1], Length(s));
     end;
 end;
 
@@ -524,7 +574,7 @@ var
   s: string;
 begin
   Inc(FActiveSection);
-  
+
   if FSections.Count > 1 then begin
     if FActiveSection >= FSections.Count then
       s := '--' + FBoundary + '--' + CRLF
@@ -583,6 +633,9 @@ end;
 
 function TMimeStream.Read(var Buffer; Count: Longint): Longint;
 begin
+  if Count <= 0 then
+    Exit(0);
+    
   if FCalledWrite then
     raise EAlreadyCalledWriteException.Create;
 
@@ -592,6 +645,9 @@ end;
 
 function TMimeStream.Write(const Buffer; Count: Longint): Longint;
 begin
+  if Count <= 0 then
+    Exit(0);
+
   if FCalledRead then
     raise EAlreadyCalledReadException.Create;
 
