@@ -38,6 +38,7 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     PopupMenuAttachments: TPopupMenu;
+    ProgressBar: TProgressBar;
     SMTP: TLSMTPClientComponent;
     EditServer: TEdit;
     EditPort: TEdit;
@@ -61,9 +62,12 @@ type
     procedure SMTPError(const msg: string; aSocket: TLSocket);
     procedure SMTPReceive(aSocket: TLSocket);
     procedure SMTPFailure(aSocket: TLSocket; const aStatus: TLSMTPStatus);
+    procedure SMTPSent(aSocket: TLSocket; const Bytes: Integer);
     procedure SMTPSuccess(aSocket: TLSocket; const aStatus: TLSMTPStatus);
     procedure TimerQuitTimer(Sender: TObject);
   private
+    FDataSent: Int64;
+    FDataSize: Int64;
     FMimeStream: TMimeStream;
     FQuit: Boolean; // to see if we force quitting
   public
@@ -170,6 +174,11 @@ begin
   else begin
     FMimeStream.Reset; // make sure we can read it again
     TMimeTextSection(FMimeStream[0]).Text := MemoText.Text; // change to text
+
+    ProgressBar.Position := 0;
+    FDataSent := 0;
+    FDataSize := FMimeStream.Size; // get size to send
+    
     SMTP.SendMail(EditFrom.Text, EditTo.Text, EditSubject.Text, FMimeStream); // send the stream
   end;
 end;
@@ -220,6 +229,13 @@ begin
               Close;
             end;
   end;
+end;
+
+procedure TMainForm.SMTPSent(aSocket: TLSocket; const Bytes: Integer);
+begin
+  FDataSent := FDataSent + Bytes;
+  
+  ProgressBar.Position := Round((FDataSent / FDataSize) * 100);
 end;
 
 procedure TMainForm.SMTPSuccess(aSocket: TLSocket;
