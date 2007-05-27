@@ -150,6 +150,7 @@ type
     FOnSuccess: TLSMTPClientStatusEvent;
     FOnFailure: TLSMTPClientStatusEvent;
     FOnError: TLSocketErrorEvent;
+    FOnSent: TLSocketProgressEvent;
 
     FSL: TStringList;
     FStatusSet: TLSMTPStatusSet;
@@ -206,6 +207,7 @@ type
     property OnSuccess: TLSMTPClientStatusEvent read FOnSuccess write FOnSuccess;
     property OnFailure: TLSMTPClientStatusEvent read FOnFailure write FOnFailure;
     property OnError: TLSocketErrorEvent read FOnError write FOnError;
+    property OnSent: TLSocketProgressEvent read FOnSent write FOnSent;
   end;
 
 implementation
@@ -513,21 +515,27 @@ const
 
 var
   n: Integer;
+  Sent: Integer;
 begin
   if FromStream and Assigned(FStream) then
     FillBuffer;
 
   n := 1;
+  Sent := 0;
   while (Length(FBuffer) > 0) and (n > 0) do begin
     InsertCRLFs;
   
     n := FConnection.SendMessage(FBuffer);
+    Sent := Sent + n;
     if n > 0 then
       Delete(FBuffer, 1, n);
 
     if FromStream and Assigned(FStream) and (Length(FBuffer) < SBUF_SIZE) then
       FillBuffer;
   end;
+  
+  if Assigned(FOnSent) and (FStatus.First.Status = ssData) then
+    FOnSent(FConnection.Iterator, Sent);
 end;
 
 function TLSMTPClient.Connect(const aHost: string; const aPort: Word = 25): Boolean;
