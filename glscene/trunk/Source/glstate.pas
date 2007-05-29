@@ -3,6 +3,7 @@
    Miscellaneous support routines & classes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>13/05/07 - fig - Added stTexture3D (GL_TEXTURE_3D)
       <li>19/12/06 - DaS - GetGLCurrentTexture, ResetGLTexture added to TGLStateCache
       <li>04/10/04 - NC - Added stTextureRect (GL_TEXTURE_RECTANGLE_NV)
       <li>07/01/04 - EG - Introduced TGLStateCache
@@ -27,7 +28,7 @@ type
 					stFog, stLighting, stLineSmooth, stLineStipple,
 					stLogicOp, stNormalize, stPointSmooth, stPolygonSmooth,
 					stPolygonStipple, stScissorTest, stStencilTest,
-					stTexture1D, stTexture2D, stTextureCubeMap, stTextureRect);
+					stTexture1D, stTexture2D, stTextureCubeMap, stTextureRect,stTexture3D);
 	TGLStates = set of TGLState;
 
    // TFaceWinding
@@ -115,12 +116,12 @@ implementation
 //------------------------------------------------------
 
 const
-	cGLStateToGLEnum : array [stAlphaTest..stTextureRect] of TGLEnum =
+	cGLStateToGLEnum : array [stAlphaTest..stTexture3D] of TGLEnum =
 		(GL_ALPHA_TEST, GL_AUTO_NORMAL, GL_BLEND, GL_COLOR_MATERIAL, GL_CULL_FACE,
 		 GL_DEPTH_TEST, GL_DITHER, GL_FOG, GL_LIGHTING, GL_LINE_SMOOTH,
 		 GL_LINE_STIPPLE, GL_LOGIC_OP, GL_NORMALIZE, GL_POINT_SMOOTH,
 		 GL_POLYGON_SMOOTH, GL_POLYGON_STIPPLE, GL_SCISSOR_TEST, GL_STENCIL_TEST,
-		 GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_RECTANGLE_NV );
+		 GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_RECTANGLE_NV, GL_TEXTURE_3D);
 
 // ------------------
 // ------------------ TGLStateCache ------------------

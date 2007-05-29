@@ -6,6 +6,9 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>16/05/07 - PvD - Applied fixes to skeletonmesh to fix problems with physics engines. (Bugtracker ID = 1719652)
+      <li>15/05/07 - LC - Added workaround for ATI bug in TFGVertexIndexList. (Bugtracker ID = 1719611)
+      <li>13/05/07 - LC - Fixed AV bug in TMeshObject.BufferArrays (Bugtracker ID = 1718033)
       <li>03/04/07 - LC - Added VBO support for TextureEx (Bugtracker ID = 1693378) 
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Added explicit pointer dereferencing
@@ -365,6 +368,7 @@ type
          {: Returns a bone by its Name, nil if not found. }
          function BoneByName(const aName : String) : TSkeletonBone; virtual;
          {: Number of bones (including all children and self). }
+         
          function BoneCount : Integer;
 
          //: Render skeleton wireframe
@@ -433,6 +437,11 @@ type
          {: Returns a bone by its BoneID, nil if not found. }
          function BoneByID(anID : Integer) : TSkeletonBone; override;
          function BoneByName(const aName : String) : TSkeletonBone; override;
+
+         {: Set the bone's matrix. Becareful using this. }
+         procedure SetGlobalMatrix(Matrix: TMatrix); // Ragdoll
+         {: Set the bone's GlobalMatrix. Used for Ragdoll. }
+         procedure SetGlobalMatrixForRagDoll(RagDollMatrix: TMatrix); // Ragdoll
 
          {: Calculates the global matrix for the bone and its sub-bone.<p>
             Call this function directly only the RootBone. }
@@ -546,7 +555,7 @@ type
          FCurrentFrame : TSkeletonFrame; // not persistent
          FBonesByIDCache : TList;
          FColliders : TSkeletonColliderList;
-
+         FRagDollEnabled : Boolean; // ragdoll
 	   protected
 	      { Protected Declarations }
          procedure SetRootBones(const val : TSkeletonRootBoneList);
@@ -601,6 +610,10 @@ type
          procedure Synchronize(reference : TSkeleton);
          {: Release bones and frames info. }
          procedure Clear;
+         {: Backup and prepare the BoneMatrixInvertedMeshes to use with ragdolls }
+         procedure StartRagdoll; // ragdoll
+         {: Restore the BoneMatrixInvertedMeshes to stop the ragdoll }
+         procedure StopRagdoll; // ragdoll
 	end;
 
    // TMeshObjectRenderingOption
@@ -944,7 +957,9 @@ type
          FBonesPerVertex : Integer;
          FLastVerticeBoneWeightCount, FLastBonesPerVertex : Integer; // not persistent
          FBoneMatrixInvertedMeshes : TList; // not persistent
-
+         FBackupInvertedMeshes : TList; // ragdoll
+         procedure BackupBoneMatrixInvertedMeshes; // ragdoll
+         procedure RestoreBoneMatrixInvertedMeshes; // ragdoll
 	   protected
 	      { Protected Declarations }
          procedure SetVerticeBoneWeightCount(const val : Integer);
@@ -1860,6 +1875,14 @@ var
 
 const
    cAAFHeader = 'AAF';
+
+function InsideList: boolean;
+var
+  li: integer;
+begin
+  glGetIntegerv(GL_LIST_INDEX, @li);
+  result:= li <> 0;
+end;
 
 // GetVectorFileFormats
 //
@@ -2827,8 +2850,20 @@ end;
 //
 procedure TSkeletonBone.PrepareGlobalMatrices;
 begin
+   if (Skeleton.FRagDollEnabled) then Exit; // ragdoll
    FGlobalMatrix:=MatrixMultiply(Skeleton.CurrentFrame.LocalMatrixList^[BoneID],
                                  TSkeletonBoneList(Owner).FGlobalMatrix);
+   inherited;
+end;
+
+procedure TSkeletonBone.SetGlobalMatrix(Matrix: TMatrix);  // ragdoll
+begin
+   FGlobalMatrix := Matrix;
+end;
+
+procedure TSkeletonBone.SetGlobalMatrixForRagDoll(RagDollMatrix: TMatrix);  // ragdoll
+begin
+   FGlobalMatrix:=MatrixMultiply(RagDollMatrix, Skeleton.Owner.InvAbsoluteMatrix);
    inherited;
 end;
 
@@ -3337,6 +3372,41 @@ begin
    FColliders.Clear;
 end;
 
+procedure TSkeleton.StartRagDoll; // ragdoll
+var
+   i : Integer;
+   mesh : TBaseMeshObject;
+begin
+   if FRagDollEnabled then Exit
+   else FRagDollEnabled := True;
+
+   if Owner.MeshObjects.Count>0 then begin
+      for i:=0 to Owner.MeshObjects.Count-1 do begin
+         mesh:=Owner.MeshObjects.Items[i];
+         if mesh is TSkeletonMeshObject then
+         begin
+            TSkeletonMeshObject(mesh).BackupBoneMatrixInvertedMeshes;
+            TSkeletonMeshObject(mesh).PrepareBoneMatrixInvertedMeshes;
+         end;
+      end;
+   end;
+end;
+
+procedure TSkeleton.StopRagDoll; // ragdoll
+var
+   i : Integer;
+   mesh : TBaseMeshObject;
+begin
+   FRagDollEnabled := False;
+   if Owner.MeshObjects.Count>0 then begin
+      for i:=0 to Owner.MeshObjects.Count-1 do begin
+         mesh:=Owner.MeshObjects.Items[i];
+         if mesh is TSkeletonMeshObject then
+            TSkeletonMeshObject(mesh).RestoreBoneMatrixInvertedMeshes;
+      end;
+   end;
+end;
+
 // ------------------
 // ------------------ TMeshObject ------------------
 // ------------------
@@ -3707,7 +3777,7 @@ begin
                break;
             end;
          end;
-         
+
       end;
    else
       Assert(False);
@@ -3940,7 +4010,7 @@ end;
 // BuildTangentSpace
 //
 procedure TMeshObject.BuildTangentSpace(
-   buildBinormals : Boolean = True; 
+   buildBinormals : Boolean = True;
    buildTangents : Boolean = True);
 var
    i,j        : Integer;
@@ -4281,7 +4351,7 @@ begin
     if not assigned(FLightmapTexCoordsVBO) then
       FLightmapTexCoordsVBO:= TGLVBOArrayBufferHandle.CreateAndAllocate;
 
-    FLightmapTexCoordsVBO.BindBufferData(LightMapTexCoords.List, sizeof(TAffineVector) * LightMapTexCoords.Count, BufferUsage);
+    FLightmapTexCoordsVBO.BindBufferData(LightMapTexCoords.List, sizeof(TTexPoint) * LightMapTexCoords.Count, BufferUsage);
     FLightmapTexCoordsVBO.UnBind;
     ValidBuffers:= ValidBuffers + [vbLightMapTexCoords];
   end;
@@ -4920,6 +4990,7 @@ end;
 constructor TSkeletonMeshObject.Create;
 begin
    FBoneMatrixInvertedMeshes:=TList.Create;
+   FBackupInvertedMeshes := TList.Create; // ragdoll
 	inherited Create;
 end;
 
@@ -5183,6 +5254,46 @@ begin
          invMesh.Normals[i]:=PAffineVector(@p)^;
       end;
    end;
+end;
+
+procedure TSkeletonMeshObject.BackupBoneMatrixInvertedMeshes; // ragdoll
+var
+   i: Integer;
+   bm: TBaseMeshObject;
+begin
+   // cleanup existing stuff
+   for i:=0 to FBackupInvertedMeshes.Count-1 do
+      TBaseMeshObject(FBackupInvertedMeshes[i]).Free;
+   FBackupInvertedMeshes.Clear;
+   // copy current stuff
+   for i:=0 to FBoneMatrixInvertedMeshes.Count-1 do
+   begin
+     bm := TBaseMeshObject.Create;
+     bm.Assign(TBaseMeshObject(FBoneMatrixInvertedMeshes[i]));
+     FBackupInvertedMeshes.Add(bm);
+     TBaseMeshObject(FBoneMatrixInvertedMeshes[i]).Free;
+   end;
+   FBoneMatrixInvertedMeshes.Clear;
+end;
+
+procedure TSkeletonMeshObject.RestoreBoneMatrixInvertedMeshes; // ragdoll
+var
+   i: Integer;
+   bm: TBaseMeshObject;
+begin
+   // cleanup existing stuff
+   for i:=0 to FBoneMatrixInvertedMeshes.Count-1 do
+      TBaseMeshObject(FBoneMatrixInvertedMeshes[i]).Free;
+   FBoneMatrixInvertedMeshes.Clear;
+   // restore the backup
+   for i:=0 to FBackupInvertedMeshes.Count-1 do
+   begin
+     bm := TBaseMeshObject.Create;
+     bm.Assign(TBaseMeshObject(FBackupInvertedMeshes[i]));
+     FBoneMatrixInvertedMeshes.Add(bm);
+     TBaseMeshObject(FBackupInvertedMeshes[i]).Free;
+   end;
+   FBackupInvertedMeshes.Clear;
 end;
 
 // ApplyCurrentSkeletonFrame
@@ -5467,7 +5578,9 @@ begin
    Owner.Owner.DeclareArraysToOpenGL(mrci,  False);
    AttachOrDetachLightmap(mrci);
 
-   if Owner.Owner.UseVBO then
+   // workaround for ATI bug, disable element VBO if
+   // inside a display list
+   if Owner.Owner.UseVBO and not InsideList then
    begin
       SetupVBO;
 

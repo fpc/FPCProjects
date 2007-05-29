@@ -6,6 +6,9 @@
     TGLSLShader is a wrapper for GLS shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>30/03/07 - fig -   Changed OnInitialize event to be fired after linking, but before validation.
+                             This can now be used to set texture units for different sampler types (1D/2D/3D)
+                             before validation, which fixes a bug (or complies to strict validation) with ATI drivers.
       <li>30/03/07 - DaStr - Bugfixed TGLCustomGLSLShader.DoUnApply (Result was not initialized)
       <li>20/03/07 - DaStr - TGLCustomGLSLShader now generates its own events
                              Added TGLSLShaderParameter
@@ -193,8 +196,6 @@ begin
       begin
         if (not FGLSLProg.LinkProgram) then
           raise EGLSLShaderException.Create(FGLSLProg.InfoLog);
-        if (not FGLSLProg.ValidateProgram) then
-          raise EGLSLShaderException.Create(FGLSLProg.InfoLog);
       end
       else
         FreeAndNil(FGLSLProg);
@@ -211,7 +212,18 @@ begin
     Enabled := (FGLSLProg <> nil);
 
     if Enabled then
+    try
       DoInitialPass;
+      if (not FGLSLProg.ValidateProgram) then
+        raise EGLSLShaderException.Create(FGLSLProg.InfoLog);
+    except
+      on E: Exception do
+      begin
+        HandleFailedInitialization(E.Message);
+        FreeAndNil(FGLSLProg);
+        Enabled:=false;
+      end;
+    end;
   end;
 end;
 
