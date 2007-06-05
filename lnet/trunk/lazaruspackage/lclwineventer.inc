@@ -28,7 +28,11 @@ var
   Temp: TLHandle;
 begin
   Result := 0;
-  Temp := TLHandle(WaitSockets[Pointer(aHandle)]);
+  
+  if WaitSockets.Contains(Pointer(aHandle)) then
+    Temp := TLHandle(WaitSockets[Pointer(aHandle)])
+  else
+    Exit;
   
   if not FInLoop then begin
     FInLoop := True;
@@ -81,8 +85,9 @@ end;
 
 procedure TLCLEventer.UnplugHandle(aHandle: TLHandle);
 begin
+  WaitSockets.Remove(Pointer(aHandle.Handle));
   if WSAAsyncSelect(aHandle.Handle, TWin32WidgetSet(WidgetSet).AppHandle,
-                                         WM_LCL_SOCK_ASYNC, ALL_FLAGS) <> 0 then
+                                         0, 0) <> 0 then
     Bail('Error on AsyncSelect', WSAGetLastError);
 
   inherited UnplugHandle(aHandle);
