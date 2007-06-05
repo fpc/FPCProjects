@@ -40,6 +40,7 @@ type
     PopupLInfo: TMenuItem;
     PopupLDelete: TMenuItem;
     PopupLRename: TMenuItem;
+    ProgressBar1: TProgressBar;
     PupupGet: TMenuItem;
     MemoText: TMemo;
     PopupRename: TMenuItem;
@@ -73,7 +74,6 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure GetPupupClick(Sender: TObject);
     procedure IPEditKeyPress(Sender: TObject; var Key: char);
     procedure LDeletePopupClick(Sender: TObject);
     procedure LInfoPopupClick(Sender: TObject);
@@ -93,9 +93,9 @@ type
     FLastN: Integer;
     FList: TStringList;
     FFile: TFileStream;
-    FDirListingExpected: Boolean;
     FDLSize: Int64;
     FDLDone: Int64;
+    FGetting: Boolean;
     FIcons: array of TIconRec;
     CreateFilePath: string;
     FTmpStrList: TStringList;
@@ -284,14 +284,14 @@ var
   i: Integer;
   Buf: array[0..65535] of Byte;
 begin
-  if FDirListingExpected then begin
+  if not FGetting then begin
     s := FTP.GetDataMessage;
     if Length(s) > 0 then
-      FDirListing := FDirListing+s
+      FDirListing := FDirListing + s
     else begin
       FList.Text := FDirListing;
+      FDirListing := '';
       FindNames;
-      FDirListingExpected := False;
       FList.Clear;
     end;
   end else begin
@@ -305,11 +305,11 @@ begin
     end else begin
       FreeAndNil(FFile);
       CreateFilePath := '';
+      FGetting := False;
       DoList('');
     end;
     Inc(FDLDone, i);
-    if MemoText.Lines.Count > 0 then
-      MemoText.Lines[MemoText.Lines.Count-1] := IntToStr(Round(FDLDone / FDLSize * 100)) + '%';
+    ProgressBar1.Position := Round(FDLDone / FDLSize * 100);
   end;
 end;
 
@@ -322,15 +322,12 @@ begin
     if MemoText.Lines.Count > 0 then begin
       n := Integer(Round(FDLDone / FDLSize * 100));
       if n <> FLastN then begin
-        MemoText.Lines[MemoText.Lines.Count-1] := IntToStr(n) + '%';
+        ProgressBar1.Position := n;
         FLastN := n;
       end;
     end;
-  end else begin
-    if MemoText.Lines.Count > 0 then
-      MemoText.Lines[MemoText.Lines.Count-1] := '100%';
+  end else
     DoList('');
-  end;
 end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -387,7 +384,6 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
   FDLSize := 1;
   Dir := ExtractFilePath(ParamStr(0));
-  FDirListingExpected := False;
   FList := TStringList.Create;
   FFile := nil;
   LeftView.Mask := '*';
@@ -412,22 +408,6 @@ begin
   case Key of
     VK_F5: begin end;
   end;
-end;
-
-procedure TMainForm.GetPupupClick(Sender: TObject);
-var
-  s: string;
-begin
-  s := CurrentName;
-  FDLSize := CurrentSize;
-
-  if FDLSize = 0 then
-    FDLSize := 1;
-
-  FDLDone := 0;
-  FreeAndNil(FFile); // if the last get failed, we need to free memory here
-  CreateFilePath := Dir + s;
-  FTP.Retrieve(s);
 end;
 
 procedure TMainForm.IPEditKeyPress(Sender: TObject; var Key: char);
@@ -562,6 +542,7 @@ begin
       FDLSize := 1;
     FreeAndNil(FFile);
     CreateFilePath := Dir + item;
+    FGetting := True;
     FTP.Retrieve(item);
   end;
 end;
@@ -627,7 +608,6 @@ end;
 
 procedure TMainForm.DoList(const FileName: string);
 begin
-  FDirListingExpected := True;
   FDirListing := '';
   FTP.List(FileName);
 end;
