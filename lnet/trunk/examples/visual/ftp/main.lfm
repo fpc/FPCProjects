@@ -4,12 +4,10 @@ object MainForm: TMainForm
   Top = 84
   Width = 725
   HorzScrollBar.Page = 724
-  VertScrollBar.Page = 521
+  VertScrollBar.Page = 527
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
-  ClientHeight = 522
-  ClientWidth = 725
   Constraints.MinHeight = 548
   Constraints.MinWidth = 725
   Menu = MainMenu
@@ -19,7 +17,7 @@ object MainForm: TMainForm
   OnKeyDown = FormKeyDown
   object MemoText: TMemo
     Height = 103
-    Top = 399
+    Top = 402
     Width = 725
     Align = alBottom
     ReadOnly = True
@@ -27,20 +25,17 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 370
+    Height = 373
     Top = 24
     Width = 725
     Align = alClient
-    ClientHeight = 370
-    ClientWidth = 725
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 368
+      Height = 371
       Top = 1
       Width = 183
       Align = alLeft
-      Directory = '/home/prog/lazarus'
       ExtendedSelect = False
       FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
       OnDblClick = LeftViewDblClick
@@ -49,13 +44,13 @@ object MainForm: TMainForm
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 368
+      Height = 371
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 368
+      Height = 371
       Top = 1
       Width = 535
       Align = alClient
@@ -106,14 +101,14 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 394
+    Top = 397
     Width = 725
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
-    Height = 20
-    Top = 502
+    Height = 23
+    Top = 505
     Width = 725
     Panels = <    
       item
@@ -143,21 +138,21 @@ object MainForm: TMainForm
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 84
+      Left = 72
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 97
+      Left = 85
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 152
+      Left = 133
       Top = 2
       Action = accDisconnect
       Down = True
