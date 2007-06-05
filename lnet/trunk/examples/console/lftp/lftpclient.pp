@@ -3,7 +3,7 @@ program lFTPClient;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, Crt, lFTP, lNet, lTelnet;
+  Classes, SysUtils, Crt, lFTP, lNet, lnetbase;
   
 type
 
@@ -31,7 +31,6 @@ type
     function UserString: string;
     function GetAnswer(const s: string; const NoEcho: Boolean = False): string;
     procedure PrintHelp;
-    procedure CleanGetting;
    public
     constructor Create;
     destructor Destroy; override;
@@ -120,13 +119,6 @@ begin
   Writeln('f/F - Feature list');
 end;
 
-procedure TClient.CleanGetting;
-begin
-  if FGetting then // cleans the getting status, frees file stream
-    FreeAndNil(FFile);
-  FGetting := False;
-end;
-
 procedure TClient.Run(const Host: string; const Port: Word);
 var
   s, Name, Pass, Dir: string;
@@ -168,66 +160,39 @@ begin
                       FCon.Retrieve(s); // send request for the file over FTP control connnection
                     end;
                   end;
-             'l': begin
-                    CleanGetting; // stop getting any files if at all
+             'l': if not FGetting then
                     FCon.List; // and send request for file listing
-                  end;
-             'L': begin
-                    CleanGetting; // detto
+             'L': if not FGetting then
                     FCon.Nlst; // send request for new type of file listing
-                  end;
-        'p', 'P': begin
-                    CleanGetting;
-                    s := GetAnswer('Filename'); // see which file the user wants to PUT on the server
+        'p', 'P': if not FGetting then begin
+                     s := GetAnswer('Filename'); // see which file the user wants to PUT on the server
                     if FileExists(Dir + s) then // if it exits locally
                       FCon.Put(Dir + s) // then send it over
                     else
                       Writeln('No such file "', s, '"'); // otherwise inform user of their error
                   end;
-        'b', 'B': begin
-                    CleanGetting;
+        'b', 'B': if not FGetting then
                     FCon.Binary := not FCon.Binary; // set or unset binary
-                  end;
-        's', 'S': begin
-                    CleanGetting;
+        's', 'S': if not FGetting then
                     FCon.SystemInfo; // request systeminfo from server
-                  end;
-        'h', 'H': begin
-                    CleanGetting;
+        'h', 'H': if not FGetting then
                     FCon.Help(GetAnswer('Help verb')); // request help from server, argument input from console
-                  end;
-        'x', 'X': begin
-                    CleanGetting;
+        'x', 'X': if not FGetting then
                     FCon.PresentWorkingDirectory; // get current working directory info from server
-                  end;
-        'c', 'C': begin
-                    CleanGetting;
+        'c', 'C': if not FGetting then
                     FCon.ChangeDirectory(GetAnswer('New dir')); // change directory, new dir is read from user console
-                  end;
-        'm', 'M': begin
-                    CleanGetting;
+        'm', 'M': if not FGetting then
                     FCon.MakeDirectory(GetAnswer('New dir')); // make a new directory on server, dirname is read from user console
-                  end;
-        'n', 'N': begin
-                    CleanGetting;
+        'n', 'N': if not FGetting then
                     FCon.Rename(GetAnswer('From'), GetAnswer('To')); // rename a file, old and new names read from user console
-                  end;
-        'r', 'R': begin
-                    CleanGetting;
+        'r', 'R': if not FGetting then
                     FCon.RemoveDirectory(GetAnswer('Dirname')); // delete a directory on server, name read from user console
-                  end;
-        'd', 'D': begin
-                    CleanGetting;
+        'd', 'D': if not FGetting then
                     FCon.DeleteFile(GetAnswer('Filename')); // delete a file on server, name read from user console
-                  end;
-        'e', 'E': begin
-                    CleanGetting;
+        'e', 'E': if not FGetting then
                     FCon.Echo := not FCon.Echo; // set echo mode on/off
-                  end;
-        'f', 'F': begin
-                    CleanGetting;
+        'f', 'F': if not FGetting then
                     FCon.FeatureList; // get all FTP features from server
-                  end;
       end;
       FCon.CallAction; // this needs to be called ASAP, in a loop. It's the magic function which makes all the events work :)
     end;
