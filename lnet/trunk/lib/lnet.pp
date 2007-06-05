@@ -408,8 +408,9 @@ destructor TLSocket.Destroy;
 begin
   if Assigned(FOnFree) then
     FOnFree(Self);
+
+  inherited Destroy; // important! must be called before disconnect
   Disconnect;
-  inherited Destroy;
 end;
 
 procedure TLSocket.Disconnect;
