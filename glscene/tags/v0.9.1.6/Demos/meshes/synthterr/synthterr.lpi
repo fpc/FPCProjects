@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="5"/>
+    <General>
+      <Flags>
+        <MainUnitHasUsesSectionForAllUnits Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+      </Flags>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <ActiveEditorIndexAtStart Value="1"/>
+    </General>
+    <Units Count="6">
+      <Unit0>
+        <CursorPos X="32" Y="6"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="synthterr.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="21"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="60" Y="104"/>
+        <EditorIndex Value="1"/>
+        <Filename Value="unit1.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <Loaded Value="True"/>
+        <ResourceFilename Value="unit1.lrs"/>
+        <TopLine Value="83"/>
+        <UnitName Value="Unit1"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="16" Y="4"/>
+        <Filename Value="C:\lazarus\lcl\include\lclintf.inc"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="1" Y="1961"/>
+        <Filename Value="C:\lazarus\lcl\LResources.pp"/>
+        <TopLine Value="1948"/>
+        <UnitName Value="LResources"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+      <Unit4>
+        <CursorPos X="1" Y="575"/>
+        <EditorIndex Value="2"/>
+        <Filename Value="C:\lazarus\lcl\IntfGraphics.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="563"/>
+        <UnitName Value="IntfGraphics"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+      <Unit5>
+        <CursorPos X="1" Y="565"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLGraphics.pas"/>
+        <TopLine Value="563"/>
+        <UnitName Value="GLGraphics"/>
+        <UsageCount Value="10"/>
+      </Unit5>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="GLSceneLazarus"/>
+      </Item2>
+    </RequiredPackages>
+    <JumpHistory Count="1" HistoryIndex="0">
+      <Position1>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="101" Column="25" TopLine="83"/>
+      </Position1>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <PathDelim Value="\"/>
+    <SearchPaths>
+      <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Linking>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

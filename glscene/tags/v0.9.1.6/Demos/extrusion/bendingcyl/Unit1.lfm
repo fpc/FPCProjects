@@ -1,0 +1,84 @@
+object Form1: TForm1
+  Left = 293
+  Height = 308
+  Top = 125
+  Width = 356
+  HorzScrollBar.Page = 355
+  VertScrollBar.Page = 307
+  ActiveControl = CBSpline
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  object GLSceneViewer1: TGLSceneViewer
+    Height = 308
+    Width = 356
+    Camera = GLCamera1
+    FieldOfView = 144.025329589843
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+  end
+  object CBSpline: TCheckBox
+    Left = 272
+    Height = 24
+    Top = 8
+    Width = 65
+    Caption = 'Splines'
+    OnClick = CBSplineClick
+    TabOrder = 0
+  end
+  object CBFat: TCheckBox
+    Left = 272
+    Height = 24
+    Top = 32
+    Width = 69
+    Caption = 'Fat/Slim'
+    TabOrder = 1
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 8
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000484200004842000048420000803F
+      }
+      SpotCutOff = 180
+    end
+    object Pipe1: TGLPipe
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Position.Coordinates = {
+        00000000000080BF000000000000803F
+      }
+      Nodes = <>
+      Parts = [ppOutside, ppStartDisk, ppStopDisk]
+      Radius = 0.20000000298023
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        0000803F00004040000080400000803F
+      }
+      left = 160
+      top = 120
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 40
+    top = 8
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+    top = 40
+  end
+end

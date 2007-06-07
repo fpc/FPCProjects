@@ -1,0 +1,46 @@
+object DataModule1: TDataModule1
+  OnCreate = DataModuleCreate
+  Height = 300
+  HorizontalOffset = -94
+  VerticalOffset = 219
+  Width = 400
+  object GLScene1: TGLScene
+    left = 28
+    top = 13
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      SpotCutOff = 180
+    end
+    object GLTeapot1: TGLTeapot
+    end
+    object DCBlueLight: TGLDummyCube
+      CubeSize = 1
+      object GLLightSource2: TGLLightSource
+        ConstAttenuation = 1
+        SpotCutOff = 180
+      end
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = GLTeapot1
+      Position.Coordinates = {
+        0000404000000040000000400000803F
+      }
+    end
+  end
+  object GLFullScreenViewer1: TGLFullScreenViewer
+    StayOnTop = True
+    RefreshRate = 100
+    OnKeyPress = GLFullScreenViewer1KeyPress
+    Camera = GLCamera1
+    Width = 800
+    Height = 600
+    PostRender = GLFullScreenViewer1PostRender
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    left = 106
+    top = 18
+  end
+end

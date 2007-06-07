@@ -1,0 +1,84 @@
+object Form1: TForm1
+  Caption = 'Use arrow key.'
+  ClientHeight = 440
+  ClientWidth = 543
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnKeyPress = FormKeyPress
+  OnShow = FormShow
+  PixelsPerInch = 96
+  Position = poDesktopCenter
+  TextHeight = 13
+  HorzScrollBar.Page = 542
+  VertScrollBar.Page = 439
+  Left = 265
+  Height = 440
+  Top = 189
+  Width = 543
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = Cam
+    Buffer.BackgroundColor = clBlack
+    Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 135.501953125
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 440
+    Width = 543
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 24
+    object DummyCam: TGLDummyCube
+      CubeSize = 1
+      object Cam: TGLCamera
+        DepthOfView = 300
+        FocalLength = 90
+        TargetObject = Scene
+        Position.Coordinates = {
+          000000000000A0C0000040400000803F
+        }
+        Direction.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Up.Coordinates = {
+          00000000000000000000803F00000000
+        }
+      end
+    end
+    object Scene: TGLDummyCube
+      CubeSize = 1
+      object Box: TGLDummyCube
+        CubeSize = 1
+      end
+    end
+    object light: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        000000000000C8C20000C8420000803F
+      }
+      LightStyle = lsOmni
+      Specular.Color = {
+        0000803F0000803F0000803F0000803F
+      }
+      SpotCutOff = 180
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    MaxDeltaTime = 0.02
+    Mode = cmapplicationidle
+    OnProgress = GLCadencer1Progress
+    left = 8
+    top = 56
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+    top = 88
+  end
+end

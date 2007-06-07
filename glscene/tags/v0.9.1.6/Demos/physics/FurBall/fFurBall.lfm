@@ -1,0 +1,307 @@
+object frmFurBall: TfrmFurBall
+  Left = 245
+  Height = 452
+  Top = 121
+  Width = 667
+  HorzScrollBar.Page = 666
+  VertScrollBar.Page = 451
+  ActiveControl = CheckBox_LockBall
+  Caption = 'Fur Ball'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnClose = FormClose
+  OnCreate = FormCreate
+  object Label1: TLabel
+    Left = 288
+    Height = 14
+    Top = 35
+    Width = 175
+    Caption = '(Steer with A/D W/S UP/DOWN)'
+    Color = clNone
+    ParentColor = False
+  end
+  object Label_FPS: TLabel
+    Left = 464
+    Height = 14
+    Top = 8
+    Width = 79
+    Alignment = taRightJustify
+    Anchors = [akTop, akLeft, akRight]
+    Caption = 'FPS'
+    Color = clNone
+    ParentColor = False
+  end
+  object GLSceneViewer1: TGLSceneViewer
+    Left = 10
+    Height = 374
+    Top = 64
+    Width = 644
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clSilver
+    Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
+    Buffer.AntiAliasing = aa4xHQ
+    FieldOfView = 138.955078125
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    OnMouseMove = GLSceneViewer1MouseMove
+  end
+  object CheckBox_LockBall: TCheckBox
+    Left = 8
+    Height = 26
+    Width = 74
+    Caption = '&Lock Ball'
+    TabOrder = 0
+  end
+  object CheckBox_FurGravity: TCheckBox
+    Left = 96
+    Height = 26
+    Width = 85
+    Caption = 'Fur &Gravity'
+    Checked = True
+    OnClick = CheckBox_FurGravityClick
+    State = cbChecked
+    TabOrder = 1
+  end
+  object CheckBox_WindResistence: TCheckBox
+    Left = 192
+    Height = 26
+    Width = 117
+    Caption = '&Wind Resistence'
+    Checked = True
+    OnClick = CheckBox_WindResistenceClick
+    State = cbChecked
+    TabOrder = 2
+  end
+  object CheckBox_Bald: TCheckBox
+    Left = 328
+    Height = 26
+    Width = 49
+    Caption = '&Bald'
+    OnClick = CheckBox_BaldClick
+    TabOrder = 3
+  end
+  object CheckBox_Shadows: TCheckBox
+    Left = 488
+    Height = 26
+    Top = 24
+    Width = 75
+    Caption = '&Shadows'
+    OnClick = CheckBox_ShadowsClick
+    TabOrder = 4
+  end
+  object CheckBox_Inertia: TCheckBox
+    Left = 10
+    Height = 26
+    Top = 23
+    Width = 80
+    Caption = 'Fur &Inertia'
+    Checked = True
+    OnClick = CheckBox_InertiaClick
+    State = cbChecked
+    TabOrder = 5
+  end
+  object TrackBar_WindForce: TTrackBar
+    Left = 160
+    Height = 33
+    Top = 23
+    Width = 105
+    Max = 100
+    OnChange = TrackBar_WindForceChange
+    Position = 50
+    ScalePos = trTop
+    TickStyle = tsNone
+    TabOrder = 6
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    MaxDeltaTime = 0.05
+    OnProgress = GLCadencer1Progress
+    left = 48
+    top = 104
+  end
+  object GLScene1: TGLScene
+    left = 48
+    top = 48
+    object DC_LightHolder: TGLDummyCube
+      OnProgress = DC_LightHolderProgress
+      CubeSize = 1
+      object GLLightSource1: TGLLightSource
+        ConstAttenuation = 1
+        Position.Coordinates = {
+          00000000000000000000A0400000803F
+        }
+        SpotCutOff = 180
+        object Sphere1: TGLSphere
+          Material.BackProperties.Diffuse.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          Material.BackProperties.Emission.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          Material.FrontProperties.Diffuse.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          Material.FrontProperties.Emission.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          Radius = 0.10000000149011
+        end
+      end
+    end
+    object DCShadowCaster: TGLDummyCube
+      CubeSize = 1
+      object FurBall: TGLSphere
+        Material.FrontProperties.Ambient.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.FrontProperties.Diffuse.Color = {
+          CDCC4C3ECDCC4C3ECDCC4C3E0000803F
+        }
+        Material.Texture.ImageClassName = 'TGLBlankImage'
+        Material.Texture.TextureMode = tmModulate
+        Position.Coordinates = {
+          000000000000C0BF000040400000803F
+        }
+        Radius = 0.25
+      end
+    end
+    object GLShadowPlane_Floor: TGLShadowPlane
+      Material.BackProperties.Diffuse.Color = {
+        1283003F1283003F000000000000803F
+      }
+      Material.FrontProperties.Diffuse.Color = {
+        1283003F1283003F000000000000803F
+      }
+      Direction.Coordinates = {
+        00000000B6C8CB3DC2BA7E3F00000000
+      }
+      Up.Coordinates = {
+        00000000C2BA7E3FB6C8CBBD00000000
+      }
+      Height = 8
+      Width = 8
+      XTiles = 10
+      YTiles = 10
+      Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
+    end
+    object GLShadowPlane_Wall: TGLShadowPlane
+      Material.BackProperties.Diffuse.Color = {
+        000000000000803F000000000000803F
+      }
+      Material.FrontProperties.Diffuse.Color = {
+        0000803F0000803F000000000000803F
+      }
+      Direction.Coordinates = {
+        0000803F000000000000000000000000
+      }
+      Position.Coordinates = {
+        000080C0000080400000803F0000803F
+      }
+      Up.Coordinates = {
+        0000000000000000FFFF7FBF00000000
+      }
+      Height = 4
+      Width = 16
+      XTiles = 10
+      YTiles = 10
+      Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
+    end
+    object GLShadowPlane_Floor2: TGLShadowPlane
+      Material.BackProperties.Diffuse.Color = {
+        1283003F1283003F000000000000803F
+      }
+      Material.FrontProperties.Diffuse.Color = {
+        1283003F1283003F000000000000803F
+      }
+      Direction.Coordinates = {
+        00000000B6C8CBBDC2BA7E3F00000000
+      }
+      Position.Coordinates = {
+        000000000000F040000000000000803F
+      }
+      Up.Coordinates = {
+        00000000C2BA7E3FB5C8CB3D00000000
+      }
+      Height = 10
+      Width = 8
+      XTiles = 10
+      YTiles = 10
+      Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
+    end
+    object GLLines1: TGLLines
+      Nodes = <>
+    end
+    object GLShadowPlane_Wall2: TGLShadowPlane
+      Material.BackProperties.Diffuse.Color = {
+        000000000000803F000000000000803F
+      }
+      Material.FrontProperties.Diffuse.Color = {
+        0000803F0000803F000000000000803F
+      }
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Position.Coordinates = {
+        00000000000080C00000803F0000803F
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
+      Height = 4
+      Width = 8
+      XTiles = 10
+      YTiles = 10
+      Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
+    end
+    object GLShadowPlane_Wall3: TGLShadowPlane
+      Material.BackProperties.Diffuse.Color = {
+        000000000000803F000000000000803F
+      }
+      Material.FrontProperties.Diffuse.Color = {
+        0000803F0000803F000000000000803F
+      }
+      Direction.Coordinates = {
+        00000000000080BF0000000000000000
+      }
+      Position.Coordinates = {
+        00000000000040410000803F0000803F
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
+      Height = 4
+      Width = 8
+      XTiles = 10
+      YTiles = 10
+      Style = [psTileTexture]
+      ShadowingObject = DCShadowCaster
+      shadowoptions = [spousestencil]
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 70
+      TargetObject = FurBall
+      Position.Coordinates = {
+        0000004100004040000040400000803F
+      }
+      Direction.Coordinates = {
+        000000000000803F0000008000000000
+      }
+      Up.Coordinates = {
+        00000000000000000000803F00000000
+      }
+    end
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 136
+    top = 80
+  end
+end

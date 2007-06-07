@@ -1,0 +1,83 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TForm1','FORMDATA',[
+  'TPF0'#6'TForm1'#5'Form1'#7'Caption'#6#17'GLBumpShader Demo'#12'ClientHeight'
+  +#3#210#1#11'ClientWidth'#3#219#1#11'Font.Height'#2#245#9'Font.Name'#6#13'MS '
+  +'Sans Serif'#8'OnCreate'#7#10'FormCreate'#8'OnResize'#7#10'FormResize'#13'Pi'
+  +'xelsPerInch'#2'`'#8'Position'#7#14'poScreenCenter'#10'TextHeight'#2#13#18'H'
+  +'orzScrollBar.Page'#3#218#1#18'VertScrollBar.Page'#3#209#1#4'Left'#3#26#1#6
+  +'Height'#3#210#1#3'Top'#3#135#0#5'Width'#3#219#1#0#14'TGLSceneViewer'#14'GLS'
+  +'ceneViewer1'#6'Camera'#7#6'Camera'#12'BeforeRender'#7#26'GLSceneViewer1Befo'
+  +'reRender'#22'Buffer.BackgroundColor'#7#7'clBlack'#15'Buffer.OnChange'#13#25
+  +'Buffer.OnStructuralChange'#13#11'FieldOfView'#5#0#0#0#0#0#135#133#152#6'@'#5
+  +'Align'#7#8'alClient'#11'OnMouseDown'#7#23'GLSceneViewer1MouseDown'#11'OnMou'
+  +'seMove'#7#23'GLSceneViewer1MouseMove'#6'Height'#3#153#1#3'Top'#2'9'#5'Width'
+  +#3#219#1#0#0#6'TPanel'#6'Panel1'#5'Align'#7#5'alTop'#22'BorderSpacing.OnChan'
+  +'ge'#13#12'ClientHeight'#2'9'#11'ClientWidth'#3#219#1#11'FullRepaint'#8#8'Ta'
+  +'bOrder'#2#0#6'Height'#2'9'#5'Width'#3#219#1#0#6'TLabel'#6'Label1'#22'Border'
+  +'Spacing.OnChange'#13#7'Caption'#6#12'Shade Method'#5'Color'#7#6'clNone'#4'L'
+  +'eft'#2#8#6'Height'#2#13#3'Top'#2#8#5'Width'#2'F'#0#0#6'TLabel'#6'Label2'#22
+  +'BorderSpacing.OnChange'#13#7'Caption'#6#13'Specular Mode'#5'Color'#7#6'clNo'
+  +'ne'#4'Left'#3#128#1#6'Height'#2#13#3'Top'#2#8#5'Width'#2'H'#0#0#9'TComboBox'
+  +#9'ComboBox1'#22'BorderSpacing.OnChange'#13#10'ItemHeight'#2#13#13'Items.Str'
+  +'ings'#1#6#10'Per-Vertex'#0#9'ItemIndex'#2#0#9'MaxLength'#2#0#8'OnChange'#7
+  +#15'ComboBox1Change'#5'Style'#7#14'csDropDownList'#8'TabOrder'#2#0#4'Text'#6
+  +#10'Per-Vertex'#4'Left'#2#8#6'Height'#2#21#3'Top'#2#24#5'Width'#3#145#0#0#0#9
+  +'TGroupBox'#9'GroupBox1'#22'BorderSpacing.OnChange'#13#7'Caption'#6#6'Lights'
+  +#12'ClientHeight'#2#23#11'ClientWidth'#3#165#0#11'ParentColor'#9#8'TabOrder'
+  +#2#1#4'Left'#3#160#0#6'Height'#2')'#3'Top'#2#8#5'Width'#3#169#0#0#6'TShape'#6
+  +'Shape1'#22'BorderSpacing.OnChange'#13#11'OnMouseDown'#7#14'ShapeMouseDown'#4
+  +'Left'#2' '#6'Height'#2#17#3'Top'#2#16#5'Width'#2#17#0#0#6'TShape'#6'Shape2'
+  +#22'BorderSpacing.OnChange'#13#11'Brush.Color'#7#5'clRed'#11'OnMouseDown'#7
+  +#14'ShapeMouseDown'#4'Left'#2'X'#6'Height'#2#17#3'Top'#2#16#5'Width'#2#17#0#0
+  +#6'TShape'#6'Shape3'#22'BorderSpacing.OnChange'#13#11'Brush.Color'#7#6'clBlu'
+  +'e'#11'OnMouseDown'#7#14'ShapeMouseDown'#4'Left'#3#144#0#6'Height'#2#17#3'To'
+  +'p'#2#16#5'Width'#2#17#0#0#9'TCheckBox'#9'CheckBox1'#22'BorderSpacing.OnChan'
+  +'ge'#13#7'Checked'#9#7'OnClick'#7#13'CheckBoxClick'#5'State'#7#9'cbChecked'#8
+  +'TabOrder'#2#0#4'Left'#2#8#6'Height'#2#17#3'Top'#2#16#5'Width'#2#17#0#0#9'TC'
+  +'heckBox'#9'CheckBox2'#22'BorderSpacing.OnChange'#13#7'OnClick'#7#13'CheckBo'
+  +'xClick'#8'TabOrder'#2#1#4'Left'#2'@'#6'Height'#2#17#3'Top'#2#16#5'Width'#2
+  +#17#0#0#9'TCheckBox'#9'CheckBox3'#22'BorderSpacing.OnChange'#13#7'OnClick'#7
+  +#13'CheckBoxClick'#8'TabOrder'#2#2#4'Left'#2'x'#6'Height'#2#17#3'Top'#2#16#5
+  +'Width'#2#17#0#0#0#9'TCheckBox'#9'CheckBox4'#22'BorderSpacing.OnChange'#13#7
+  +'Caption'#6#4'Spin'#7'Checked'#9#5'State'#7#9'cbChecked'#8'TabOrder'#2#2#4'L'
+  +'eft'#3'P'#1#6'Height'#2#17#3'Top'#2#24#5'Width'#2'1'#0#0#9'TComboBox'#9'Com'
+  +'boBox2'#22'BorderSpacing.OnChange'#13#10'ItemHeight'#2#13#13'Items.Strings'
+  +#1#6#5'smOff'#6#7'smBlinn'#6#7'smPhong'#0#9'ItemIndex'#2#0#9'MaxLength'#2#0#8
+  +'OnChange'#7#15'ComboBox2Change'#5'Style'#7#14'csDropDownList'#8'TabOrder'#2
+  +#3#4'Text'#6#5'smOff'#4'Left'#3#128#1#6'Height'#2#21#3'Top'#2#24#5'Width'#2
+  +'I'#0#0#0#8'TGLScene'#8'GLScene1'#4'left'#2#8#3'top'#2'@'#0#12'TGLDummyCube'
+  +#8'DCLights'#8'CubeSize'#5#0#0#0#0#0#0#0#128#255'?'#0#14'TGLLightSource'#10
+  +'WhiteLight'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Coo'
+  +'rdinates'#10#16#0#0#0#0#0'@@'#0#0#0'@'#0#0#0#0#0#0#128'?'#10'LightStyle'#7#6
+  +'lsOmni'#14'Specular.Color'#10#16#0#0#0#0#0#128'?'#0#0#128'?'#0#0#128'?'#0#0
+  +#128'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#14'TGLLightSource'#8'Red'
+  +'Light'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#13'Diffuse.Color'#10
+  +#16#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#0#0#128'?'#20'Position.Coordinates'#10
+  +#16#0#0#0#0#0#192#191#0#0#0'@ff&'#192#0#0#128'?'#10'LightStyle'#7#6'lsOmni'#7
+  +'Shining'#8#14'Specular.Color'#10#16#0#0#0#0#0#128'?'#0#0#0'?'#0#0#0'?'#0#0
+  +#128'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#14'TGLLightSource'#9'Blu'
+  +'eLight'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#13'Diffuse.Color'#10
+  +#16#0#0#0#0#0#0#0#0#0#0#0#0#0#128'?'#0#0#128'?'#20'Position.Coordinates'#10
+  +#16#0#0#0#0#0#192#191#0#0#0'@ff&@'#0#0#128'?'#10'LightStyle'#7#6'lsOmni'#7'S'
+  +'hining'#8#14'Specular.Color'#10#16#0#0#0#0#0#0'?'#0#0#0'?'#0#0#128'?'#0#0
+  +#128'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#0#11'TGLFreeForm'#5'Bunn'
+  +'y'#13'AutoCentering'#11#10'macCenterX'#10'macCenterY'#10'macCenterZ'#0#8'Re'
+  +'ndered'#9'"Material.FrontProperties.Shininess'#2'@''Material.FrontPropertie'
+  +'s.Specular.Color'#10#16#0#0#0#205#204'L>'#205#204'L>'#205#204'L>'#0#0#128'?'
+  ,#24'Material.MaterialLibrary'#7#18'GLMaterialLibrary1'#0#0#9'TGLCamera'#6'Ca'
+  +'mera'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0
+  +#0#200#4'@'#12'TargetObject'#7#5'Bunny'#20'Position.Coordinates'#10#16#0#0#0
+  +#0#0#128'@'#0#0#128'?'#0#0#0#0#0#0#128'?'#0#0#0#11'TGLCadencer'#11'GLCadence'
+  +'r1'#5'Scene'#7#8'GLScene1'#10'OnProgress'#7#19'GLCadencer1Progress'#4'left'
+  +#2#8#3'top'#2'`'#0#0#18'TGLMaterialLibrary'#18'GLMaterialLibrary1'#9'Materia'
+  +'ls'#14#1#4'Name'#6#4'Bump"Material.FrontProperties.Shininess'#2'@''Material'
+  +'.FrontProperties.Specular.Color'#10#16#0#0#0#205#204'L>'#205#204'L>'#205#204
+  +'L>'#0#0#128'?'#25'Material.Texture.Disabled'#8#6'Shader'#7#13'GLBumpShader1'
+  +#0#0#4'left'#2'('#3'top'#2'@'#0#0#13'TGLBumpShader'#13'GLBumpShader1'#14'Par'
+  +'allaxOffset'#5#0#0#0#0#0#10#215#163#250'?'#4'left'#2'('#3'top'#2'`'#0#0#12
+  +'TColorDialog'#12'ColorDialog1'#5'Title'#6#12'Select color'#5'Title'#6#12'Se'
+  +'lect color'#4'left'#3#216#0#3'top'#2#16#0#0#11'TAsyncTimer'#11'AsyncTimer1'
+  +#7'Enabled'#9#7'OnTimer'#7#16'AsyncTimer1Timer'#14'ThreadPriority'#7#8'tpNor'
+  +'mal'#4'left'#2#8#3'top'#3#128#0#0#0#0
+]);
