@@ -25,6 +25,7 @@
    texture lookups.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>15/04/05 - SG - Added parallax offset mapping for the BasicARBfp bump method (experimental)
@@ -62,7 +63,7 @@ interface
 
 uses
    Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
-   VectorGeometry, OpenGL1x, VectorLists, ARBProgram;
+   VectorGeometry, OpenGL1x, VectorLists, ARBProgram, GLColor;
 
 type
    TBumpMethod = (bmDot3TexCombiner, bmBasicARBFP);

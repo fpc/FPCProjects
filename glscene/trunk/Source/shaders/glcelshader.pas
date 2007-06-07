@@ -7,6 +7,7 @@
    and shade definition texture.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>21/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -24,7 +25,7 @@ interface
 
 uses
    Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
-   VectorGeometry, OpenGL1x, ARBProgram;
+   VectorGeometry, OpenGL1x, ARBProgram, GLColor;
 
 type
    // TGLCelShaderOption

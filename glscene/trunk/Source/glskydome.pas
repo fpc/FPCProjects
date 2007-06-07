@@ -6,6 +6,7 @@
    Skydome object<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Moved all UNSAFE_TYPE, UNSAFE_CODE checks to GLSCene.inc
       <li>25/03/07 - DaStr - Fixed compiler directives for Delphi5 compatibility
       <li>22/03/07 - DaStr - Removed "unsafe type/unsafe code" warnings
@@ -40,7 +41,7 @@ uses
 
   // GLSCene
   GLScene, GLMisc, GLTexture, VectorGeometry, GLGraphics, GLCrossPlatform,
-  VectorTypes;
+  VectorTypes, GLColor;
 
 type
 

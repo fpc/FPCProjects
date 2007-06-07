@@ -111,7 +111,7 @@ interface
 
 uses
   Classes, dynode, dynodegl, GLScene, GLMisc, VectorGeometry, GLTexture, OpenGL1x,
-  XOpenGL, SysUtils, GLObjects, XCollection, PersistentClasses, VectorLists;
+  XOpenGL, SysUtils, GLObjects, XCollection, PersistentClasses, VectorLists, GLColor;
 
 type
 

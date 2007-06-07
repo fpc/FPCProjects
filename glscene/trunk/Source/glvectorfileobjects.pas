@@ -6,6 +6,7 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>16/05/07 - PvD - Applied fixes to skeletonmesh to fix problems with physics engines. (Bugtracker ID = 1719652)
       <li>15/05/07 - LC - Added workaround for ATI bug in TFGVertexIndexList. (Bugtracker ID = 1719611)
       <li>13/05/07 - LC - Fixed AV bug in TMeshObject.BufferArrays (Bugtracker ID = 1718033)
@@ -163,7 +164,7 @@ interface
 
 uses Classes, GLScene, OpenGL1x, VectorGeometry, SysUtils, GLMisc, GLTexture,
    GLMesh, VectorLists, PersistentClasses, Octree, GeometryBB,
-   ApplicationFileIO, GLSilhouette, GLContext;
+   ApplicationFileIO, GLSilhouette, GLContext, GLColor;
 
 type
 

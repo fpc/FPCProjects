@@ -6,6 +6,7 @@
    Lens flare object.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Moved all UNSAFE_TYPE, UNSAFE_CODE checks to GLSCene.inc
       <li>25/03/07 - DaStr - UNSAFE_TYPE and UNSAFE_CODE warnings are now ignored
       <li>23/03/07 - DaStr - Added missing parameters in procedure's implementation
@@ -41,7 +42,8 @@ interface
 {$I GLScene.inc}
 
 uses
-   Classes, GLScene, VectorGeometry, GLObjects, GLTexture, OpenGL1x, GLMisc, GLContext;
+   Classes, GLScene, VectorGeometry, GLObjects, GLTexture, OpenGL1x, GLMisc,
+   GLContext, GLColor;
 
 type
 

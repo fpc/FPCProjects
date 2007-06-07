@@ -6,6 +6,7 @@
    Manages a basic game menu UI<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
@@ -24,7 +25,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLScene, GLTexture, GLBitmapFont, GLCrossPlatform;
+uses Classes, GLScene, GLTexture, GLBitmapFont, GLCrossPlatform, GLColor;
 
 type
 

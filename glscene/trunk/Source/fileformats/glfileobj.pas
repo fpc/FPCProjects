@@ -9,6 +9,7 @@
     to enable support for OBJ & OBJF at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -66,7 +67,8 @@ unit GLFileObj;
 interface
 
 uses GLCrossPlatform, Classes, SysUtils, GLScene, ApplicationFileIO,
-     VectorGeometry, GLMisc, GLVectorFileObjects, VectorLists, GLTexture;
+     VectorGeometry, GLMisc, GLVectorFileObjects, VectorLists, GLTexture,
+     GLColor;
 
 const
    BufSize = 10240; { Load input data in chunks of BufSize Bytes. }

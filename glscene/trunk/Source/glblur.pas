@@ -6,6 +6,7 @@
 	Applies a blur effect over the viewport.<p>
 
 	<b>History : </b><font size=-1><ul>
+        <li>06/06/07 - DaStr  - Added GLColor to uses (BugtrackerID = 1732211)
         <li>06/04/07 - DaStr  - Fixed TGLMotionBlur.InitializeObject -
                                  component can only be disabled in run-time
         <li>03/04/07 - DaStr  - Optimized TGLMotionBlur.DoRender - now component
@@ -33,7 +34,7 @@ uses
 
   // GLScene
   GLScene, VectorGeometry, GLMisc, GLObjects, GLBitmapFont, GLTexture,
-  GLHudObjects, GLStrings;
+  GLHudObjects, GLStrings, GLColor;
 
 type
   TGLBlurPreset = (pNone, pGlossy, pBeastView, pOceanDepth, pDream, pOverBlur);

@@ -6,6 +6,7 @@
 	Graph plotting objects for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -31,7 +32,8 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLScene, VectorGeometry, GLMisc, GLTexture, GLObjects, VectorLists;
+uses Classes, GLScene, VectorGeometry, GLMisc, GLTexture, GLObjects, VectorLists,
+     GLColor;
 
 type
 

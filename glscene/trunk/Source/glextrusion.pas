@@ -7,6 +7,7 @@
    surface described by a moving curve.<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -37,7 +38,8 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, OpenGL1x, GLObjects, GLScene, GLMisc, GLTexture, GLMultiPolygon;
+uses Classes, OpenGL1x, GLObjects, GLScene, GLMisc, GLTexture, GLMultiPolygon,
+     GLColor;
 
 type
 

@@ -10,6 +10,8 @@
      <li> 3. Doesn't Works with visible backfaces.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added $I GLScene.inc
+                             Added GLColor to uses (BugtrackerID = 1732211)
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>05/06/04 - NelC - Fixed bug with textured object
       <li>14/12/03 - NelC - Removed BlendLine, automatically determine if blend   
@@ -23,8 +25,10 @@ unit GLOutlineShader;
 
 interface
 
+{$I GLScene.inc}
+
 uses
-  Classes, GLTexture, GLCrossPlatform;
+  Classes, GLTexture, GLCrossPlatform, GLColor;
 
 type
 

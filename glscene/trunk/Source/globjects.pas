@@ -13,6 +13,7 @@
    objects can be found GLGeomObjects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>15/02/07 - DaStr - Global $R- removed, added default values to
@@ -104,16 +105,16 @@
                           Added mmTriangleStrip support in CalcNormals
       <li>08/05/00 - EG - Uncommented DisableAutoTexture in TGLSpaceText.BuildList
       <li>07/05/00 - RoC - TGLLines added, to show a list of vertex
-		<li>26/04/00 - EG - Reactivated stuff in SetupQuadricParams (thanks Nelson Chu)
-		<li>18/04/00 - EG - Overriden TGLDummyCube.Render
-		<li>16/04/00 - EG - FontManager now published and auto-creating
-		<li>12/04/00 - EG - Added TGLCylinderBase.Loops (fixes a bug, thanks Uwe)
+      <li>26/04/00 - EG - Reactivated stuff in SetupQuadricParams (thanks Nelson Chu)
+      <li>18/04/00 - EG - Overriden TGLDummyCube.Render
+      <li>16/04/00 - EG - FontManager now published and auto-creating
+      <li>12/04/00 - EG - Added TGLCylinderBase.Loops (fixes a bug, thanks Uwe)
       <li>24/03/00 - EG - Added Rotation to TGLSprite, fixed sprite size
-		<li>20/03/00 - EG - Enhanced FontManager
-		<li>17/03/00 - EG - Fixed SpaceText glBaseList bug,
-								  TGLSprite now uses a transposition of the globalmatrix
-		<li>16/03/00 - EG - Enhanced TFontManager to allow lower quality
-		<li>14/03/00 - EG - Added subobjects Barycenter support for TGLDummyCube
+      <li>20/03/00 - EG - Enhanced FontManager
+      <li>17/03/00 - EG - Fixed SpaceText glBaseList bug,
+							            TGLSprite now uses a transposition of the globalmatrix
+      <li>16/03/00 - EG - Enhanced TFontManager to allow lower quality
+      <li>14/03/00 - EG - Added subobjects Barycenter support for TGLDummyCube
       <li>09/02/00 - EG - ObjectManager stuff moved to GLSceneRegister,
                           FreeForm and vector file stuff moved to new GLVectorFileObjects
       <li>08/02/00 - EG - Added TGLDummyCube
@@ -128,7 +129,7 @@ interface
 {$i GLScene.inc}
 
 uses Classes, VectorGeometry, GLScene, GLTexture, GLMisc, OpenGL1x, SysUtils,
-   VectorLists, GLCrossPlatform, GLContext, GLSilhouette;
+   VectorLists, GLCrossPlatform, GLContext, GLSilhouette, GLColor;
 
 type
 

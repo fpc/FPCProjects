@@ -27,6 +27,7 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -43,8 +44,8 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLVectorFileObjects, GLScene, GLTexture, GLMisc, VectorGeometry,
-   VectorLists;
+uses Classes, GLVectorFileObjects, GLTexture, GLMisc, VectorGeometry,
+   VectorLists, GLColor;
 
 type
 

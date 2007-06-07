@@ -5,6 +5,8 @@
    so that there is no z-fighting in rendering the same geometry multiple times.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added $I GLScene.inc
+                             Added GLColor to uses (BugtrackerID = 1732211)
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>25/09/04 - NelC - Fixed bug of disabled blend (thx Carlos)
       <li>05/02/04 - NelC - Fixed memory leak in TGLHiddenLineShader.Destroy (thx Achim Hammes)
@@ -18,8 +20,10 @@ unit GLHiddenLineShader;
 
 interface
 
+{$I GLScene.inc}
+
 uses
-  Classes, GLTexture, OpenGL1x, GLMisc, GLCrossPlatform, GLScene;
+  Classes, GLTexture, OpenGL1x, GLMisc, GLCrossPlatform, GLScene, GLColor;
 
 type
   TGLLineSettings = class(TGLUpdateAbleObject)

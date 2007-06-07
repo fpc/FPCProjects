@@ -8,6 +8,9 @@
    to the GLScene core units (only to base units).<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Removed ConvertColorVector and ConvertWinColor (now in GLColor.pas)
+                             Added GLColor to uses (BugtrackerID = 1732211)
+                             Removed TColor declaration (now in GLCrossPlatform.pas)
       <li>08/07/04 - LR - Replace Graphics and TPoint by GLCrossPlatform for Linux
       <li>13/01/04 - EG - Polyline/Polygon fix
       <li>07/05/03 - EG - SetPenWidth now correctly stops the primitive
@@ -27,12 +30,9 @@ interface
 
 {$i GLScene.inc}
 
-uses Classes, VectorGeometry, GLCrossPlatform;
+uses Classes, VectorGeometry, GLColor, GLCrossPlatform;
 
 type
-
-   TColor = Integer;
-
 	// TGLCanvas
 	//
    {: A simple Canvas-like interface for OpenGL.<p>
@@ -159,30 +159,6 @@ uses OpenGL1x;
 
 const
    cNoPrimitive = MaxInt;
-
-// ConvertColorVector
-//
-function ConvertColorVector(const aColor: TVector): TColor;
-begin
-  Result:=   (Round(255 * AColor[2]) shl 16)
-          or (Round(255 * AColor[1]) shl 8)
-          or  Round(255 * AColor[0]);
-end;
-
-// ConvertWinColor
-//
-function ConvertWinColor(aColor : TColor; alpha : Single = 1) : TVector;
-var
-   winColor : Integer;
-begin
-	// Delphi color to Windows color
-   winColor:=ColorToRGB(AColor);
-   // convert 0..255 range into 0..1 range
-   Result[0]:=(winColor and $FF)*(1/255);
-   Result[1]:=((winColor shr 8) and $FF)*(1/255);
-   Result[2]:=((winColor shr 16) and $FF)*(1/255);
-   Result[3]:=alpha;
-end;
 
 // ------------------
 // ------------------ TGLCanvas ------------------

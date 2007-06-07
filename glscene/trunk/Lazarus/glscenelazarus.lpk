@@ -37,7 +37,7 @@
     <License Value="LGPL
 "/>
     <Version Minor="9" Release="1" Build="6"/>
-    <Files Count="162">
+    <Files Count="163">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -706,6 +706,10 @@
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLUserShader"/>
       </Item162>
+      <Item163>
+        <Filename Value="../Source/base/glcolor.pas"/>
+        <UnitName Value="GLColor"/>
+      </Item163>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">

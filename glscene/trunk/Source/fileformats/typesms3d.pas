@@ -1,12 +1,26 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
+{: TypesMS3D<p>
+
+	Types and structures for the MS3D file format.<p>
+
+	<b>Historique : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added $I GLScene.inc
+                             Added GLColor to uses (BugtrackerID = 1732211)
+      <li>31/08/03 - DanB  - Some code standardisation (by Philipp)
+      <li>16/06/03 -  EG   - Updated headers
+      <li>10/03/03 - Matt  - Creation
+	</ul></font>
+}
 unit TypesMS3D;
 
 interface
 
+{$I GLScene.inc}
+
 uses
-  Classes, VectorTypes, GLTexture;
+  Classes, VectorTypes, GLColor;
 
 const
   MAX_MS3D_VERTICES  = 8192;
@@ -26,6 +40,7 @@ type
   //     char            materialIndex;                      // -1 = no material
   // } ms3d_group_t;
   TMS3DGroup = class
+  public
     Flags: byte;
     Name: array[0..31] of char;
     NumTriangles: word;

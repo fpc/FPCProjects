@@ -6,6 +6,7 @@
    This unit contains classes that imitate an atmosphere around a planet.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>03/04/07 - DaStr - Optimized TGLCustomAtmosphere.DoRender
                              Fixed SetPlanetRadius and SetAtmosphereRadius
       <li>21/03/07 - DaStr - Cleaned up "uses" section
@@ -66,7 +67,7 @@ uses
 
   // GLScene
   GLScene, GLObjects, GLMisc, GLTexture, GLCadencer, OpenGL1x, VectorGeometry,
-  GLContext, GLStrings;
+  GLContext, GLStrings, GLColor;
 
 type
    EGLAtmosphereException = class(Exception);

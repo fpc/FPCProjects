@@ -244,6 +244,7 @@ uses
    GLSound, GLSoundFileObjects,
    Graphics,
    GLViewer,
+   GLColor,
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText,
      //GLWideBitmapFont,  doesn't even compile in win due to missing TTextRecA

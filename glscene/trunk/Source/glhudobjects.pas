@@ -6,6 +6,7 @@
    GLScene objects that get rendered in 2D coordinates<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>23/02/07 - DaStr - Added default values to TGLHUDSprite.Width & Height
       <li>15/02/07 - DaStr - Added default values to TGLHUDText.Alignment & Layout
@@ -28,7 +29,7 @@ interface
 
 uses
    Classes, GLScene, VectorGeometry, GLMisc, GLObjects, GLBitmapFont,
-   GLTexture, GLCrossPlatform;
+   GLTexture, GLCrossPlatform, GLColor;
 
 type
 

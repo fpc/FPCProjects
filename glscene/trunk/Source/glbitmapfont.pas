@@ -6,6 +6,7 @@
   Bitmap Fonts management classes for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>22/12/06 - LC - Fixed TGLCustomBitmapFont.RenderString, it now unbinds the texture.
                           Bugtracker ID=1619243 (thanks Da Stranger)
@@ -40,7 +41,7 @@ unit GLBitmapFont;
 interface
 
 uses Classes, GLScene, VectorGeometry, GLMisc, GLContext, GLCrossPlatform,
-   GLTexture, GLState, GLUtils, GLGraphics;
+   GLTexture, GLState, GLUtils, GLGraphics, GLColor;
 
 type
 

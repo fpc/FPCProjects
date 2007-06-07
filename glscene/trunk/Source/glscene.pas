@@ -61,6 +61,7 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>03/04/07 - DaStr - GLS_DELPHI_5_UP renamed to GLS_DELPHI_4_DOWN for
                              FPC compatibility (thanks Burkhard Carstens)
       <li>29/03/07 - DaStr - GLS_WANT_DATA removed
@@ -2346,7 +2347,7 @@ implementation
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-uses GLStrings, XOpenGL, VectorTypes, OpenGL1x, ApplicationFileIO, GLUtils;
+uses GLStrings, XOpenGL, VectorTypes, OpenGL1x, ApplicationFileIO, GLUtils, GLColor;
 
 var
    vCounterFrequency : Int64;

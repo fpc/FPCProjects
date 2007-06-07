@@ -39,11 +39,11 @@ interface
 uses
   {$ifdef fpc}lresources,{$endif}
   Windows, Forms, GLScene, Classes, Controls, Buttons, StdCtrls, ComCtrls, 
-  extctrls, graphics, menus;
+  extctrls, graphics, menus, GLColor;
 {$ENDIF}
 {$IFDEF UNIX}
 uses
-  glscene,classes,
+  glscene,classes, GLColor,
 {$ifndef fpc}
   xlib,qforms, qcontrols, qbuttons, qstdctrls, qcomctrls,
   QExtCtrls, QGraphics, QMenus; 

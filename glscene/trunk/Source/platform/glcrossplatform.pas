@@ -25,6 +25,9 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Got rid of GLTexture.pas dependancy
+                             Moved GetRValue, GetGValue, GetBValue, InitWinColors
+                               to GLColor.pas (BugtrackerID = 1732211)
       <li>02/04/07 - DaStr - Added MakeSubComponent
                              Fixed some IFDEFs to separate FPC from Kylix
       <li>25/03/07 - DaStr - Replaced some UNIX IFDEFs with KYLIX
@@ -68,17 +71,17 @@ uses
   {$IFDEF WINDOWS}
   Windows,
   {$ENDIF}
-  Classes, SysUtils, Graphics, Controls, Forms,
+  Classes, SysUtils, Graphics, Controls, Forms, VectorTypes,
   Dialogs, StdCtrls, ExtDlgs, strutils, LCLType, LCLIntf, types, ComponentEditors
   {$IFDEF UNIX}
   , Buttons, unix, libc
   {$ENDIF}
 {$ELSE} //Not FPC
   {$IFDEF MSWINDOWS} // delphi
-  Windows, Classes, SysUtils, Graphics, Controls, Forms,
+  Windows, Classes, SysUtils, Graphics, Controls, Forms, VectorTypes,
   Dialogs, StdCtrls, ExtDlgs, strutils, Consts
   {$ELSE} // kylix
-  qt, qgraphics, qcontrols, qforms,
+  qt, qgraphics, qcontrols, qforms, VectorTypes,
   qdialogs, qstdctrls,qconsts,
   classes, sysutils,  types
   {$ENDIF} // delphi/kylix
@@ -633,11 +636,6 @@ function RGB(const r, g, b : Byte) : TColor;
 {: Converts 'magic' colors to their RGB values. }
 function ColorToRGB(color : TColor) : TColor;
 
-function GetRValue(rgb: DWORD): Byte;
-function GetGValue(rgb: DWORD): Byte;
-function GetBValue(rgb: DWORD): Byte;
-procedure InitWinColors;
-
 function GLRect(const aLeft, aTop, aRight, aBottom : Integer) : TGLRect;
 {: Increases or decreases the width and height of the specified rectangle.<p>
    Adds dx units to the left and right ends of the rectangle and dy units to
@@ -739,7 +737,7 @@ implementation
 
 {$IFDEF MSWINDOWS}
 uses
-  ShellApi, GLTexture;
+  ShellApi;
 {$ENDIF}
 {$IFDEF UNIX}
 
@@ -1122,60 +1120,6 @@ begin
    {$ENDIF}
 end;
 
-// GetRValue
-//
-function GetRValue(rgb: DWORD): Byte;
-begin
-   Result:=Byte(rgb);
-end;
-
-// GetGValue
-//
-function GetGValue(rgb: DWORD): Byte;
-begin
-   Result:=Byte(rgb shr 8);
-end;
-
-// GetBValue
-//
-function GetBValue(rgb: DWORD): Byte;
-begin
-   Result:=Byte(rgb shr 16);
-end;
-
-// InitWinColors
-//
-procedure InitWinColors;
-begin
-   {$IFDEF MSWINDOWS}
-   clrScrollBar:=ConvertWinColor(clScrollBar);
-   clrBackground:=ConvertWinColor(clBackground);
-   clrActiveCaption:=ConvertWinColor(clActiveCaption);
-   clrInactiveCaption:=ConvertWinColor(clInactiveCaption);
-   clrMenu:=ConvertWinColor(clMenu);
-   clrWindow:=ConvertWinColor(clWindow);
-   clrWindowFrame:=ConvertWinColor(clWindowFrame);
-   clrMenuText:=ConvertWinColor(clMenuText);
-   clrWindowText:=ConvertWinColor(clWindowText);
-   clrCaptionText:=ConvertWinColor(clCaptionText);
-   clrActiveBorder:=ConvertWinColor(clActiveBorder);
-   clrInactiveBorder:=ConvertWinColor(clInactiveBorder);
-   clrAppWorkSpace:=ConvertWinColor(clAppWorkSpace);
-   clrHighlight:=ConvertWinColor(clHighlight);
-   clrHighlightText:=ConvertWinColor(clHighlightText);
-   clrBtnFace:=ConvertWinColor(clBtnFace);
-   clrBtnShadow:=ConvertWinColor(clBtnShadow);
-   clrGrayText:=ConvertWinColor(clGrayText);
-   clrBtnText:=ConvertWinColor(clBtnText);
-   clrInactiveCaptionText:=ConvertWinColor(clInactiveCaptionText);
-   clrBtnHighlight:=ConvertWinColor(clBtnHighlight);
-   clr3DDkShadow:=ConvertWinColor(cl3DDkShadow);
-   clr3DLight:=ConvertWinColor(cl3DLight);
-   clrInfoText:=ConvertWinColor(clInfoText);
-   clrInfoBk:=ConvertWinColor(clInfoBk);
-   {$ENDIF}
-end;
-
 // GLRect
 //
 function GLRect(const aLeft, aTop, aRight, aBottom : Integer) : TGLRect;
@@ -1431,7 +1375,7 @@ begin
 {$ELSE}
 begin
    Result:=32; // dunno how to do it properly, so I fake it
-{$ENDIF}     *)
+{$ENDIF}*)
 begin
   result := GetDeviceCapabilities().Depth;
 end;

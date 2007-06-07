@@ -1,7 +1,12 @@
-  // In GL windows management
-{: In GL windows management classes and structures<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLWindows<p>
+
+  OpenGL windows management classes and structures<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>20/12/06 - DaStr - TGLEdit.ReadOnly, TGLScrollbar.Locked, TGLStringGrid.ColSelect added
       <li>10/11/05 - Mathx - Fixed TGLPopupMenu stack overflow on method internalRender.
                              Related to bug 1193909.
@@ -34,7 +39,7 @@ interface
 uses
    SysUtils, Classes, GLMisc, GLScene, GLHUDObjects,
    GLTexture, OpenGL1x, GLBitmapFont, GLWindowsFont, VectorGeometry,
-   GLGui, GLCrossPlatform;
+   GLGui, GLCrossPlatform, GLColor;
 
 type
 

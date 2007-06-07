@@ -10,6 +10,7 @@
    fire and smoke particle systems for instance).<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>02/04/07 - DaStr - TPFXLifeColors now inherits from TOwnedCollection
                              (thanks Burkhard Carstens)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
@@ -57,7 +58,7 @@ interface
 {$I GLScene.inc}
 
 uses Classes, PersistentClasses, GLScene, VectorGeometry, XCollection, GLTexture,
-     GLCadencer, GLMisc, VectorLists, GLGraphics, GLContext;
+     GLCadencer, GLMisc, VectorLists, GLGraphics, GLContext, GLColor;
 
 const
    cPFXNbRegions = 128;     // number of distance regions

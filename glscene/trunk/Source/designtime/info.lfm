@@ -7,6 +7,8 @@ object InfoForm: TInfoForm
   VertScrollBar.Page = 255
   BorderStyle = bsToolWindow
   Caption = 'OpenGL Driver Info'
+  ClientHeight = 256
+  ClientWidth = 405
   Font.Height = -10
   Font.Name = 'Arial'
   KeyPreview = True
@@ -101,16 +103,18 @@ object InfoForm: TInfoForm
     TabOrder = 0
     object Sheet1: TTabSheet
       Caption = 'Common'
+      ClientHeight = 195
+      ClientWidth = 400
       object Image1: TImage
-        Height = 191
+        Height = 195
         Width = 400
         Align = alClient
       end
       object Label1: TLabel
         Left = 10
-        Height = 14
+        Height = 11
         Top = 10
-        Width = 96
+        Width = 84
         Caption = 'OpenGL vendor :'
         Color = clNone
         Font.CharSet = ANSI_CHARSET
@@ -121,9 +125,9 @@ object InfoForm: TInfoForm
       end
       object Label2: TLabel
         Left = 10
-        Height = 14
+        Height = 11
         Top = 54
-        Width = 75
+        Width = 69
         Caption = 'Acceleration :'
         Color = clNone
         Font.CharSet = ANSI_CHARSET
@@ -134,9 +138,9 @@ object InfoForm: TInfoForm
       end
       object Label3: TLabel
         Left = 10
-        Height = 14
+        Height = 11
         Top = 77
-        Width = 72
+        Width = 68
         Caption = 'Version Info :'
         Color = clNone
         Font.CharSet = ANSI_CHARSET
@@ -147,9 +151,9 @@ object InfoForm: TInfoForm
       end
       object Label5: TLabel
         Left = 10
-        Height = 14
+        Height = 11
         Top = 99
-        Width = 95
+        Width = 86
         Caption = 'Double buffered :'
         Color = clNone
         Font.CharSet = ANSI_CHARSET
@@ -160,9 +164,9 @@ object InfoForm: TInfoForm
       end
       object Label6: TLabel
         Left = 10
-        Height = 14
+        Height = 11
         Top = 144
-        Width = 110
+        Width = 103
         Caption = 'Buffer switch mode :'
         Color = clNone
         Font.CharSet = ANSI_CHARSET
@@ -173,9 +177,9 @@ object InfoForm: TInfoForm
       end
       object VendorLabel: TLabel
         Left = 137
-        Height = 14
+        Height = 11
         Top = 10
-        Width = 22
+        Width = 19
         Caption = '???'
         Color = clNone
         Font.Color = clTeal
@@ -186,9 +190,9 @@ object InfoForm: TInfoForm
       end
       object AccLabel: TLabel
         Left = 137
-        Height = 14
+        Height = 11
         Top = 54
-        Width = 22
+        Width = 19
         Caption = '???'
         Color = clNone
         Font.Color = clTeal
@@ -199,9 +203,9 @@ object InfoForm: TInfoForm
       end
       object VersionLabel: TLabel
         Left = 137
-        Height = 14
+        Height = 11
         Top = 77
-        Width = 22
+        Width = 19
         Caption = '???'
         Color = clNone
         Font.Color = clTeal
@@ -212,9 +216,9 @@ object InfoForm: TInfoForm
       end
       object CopyLabel: TLabel
         Left = 137
-        Height = 14
+        Height = 11
         Top = 144
-        Width = 22
+        Width = 19
         Caption = '???'
         Color = clNone
         Font.Color = clTeal
@@ -225,9 +229,9 @@ object InfoForm: TInfoForm
       end
       object DoubleLabel: TLabel
         Left = 137
-        Height = 14
+        Height = 11
         Top = 99
-        Width = 22
+        Width = 19
         Caption = '???'
         Color = clNone
         Font.Color = clTeal
@@ -238,9 +242,9 @@ object InfoForm: TInfoForm
       end
       object Label7: TLabel
         Left = 10
-        Height = 14
+        Height = 11
         Top = 121
-        Width = 91
+        Width = 82
         Caption = 'Stereo enabled :'
         Color = clNone
         Font.CharSet = ANSI_CHARSET
@@ -251,9 +255,9 @@ object InfoForm: TInfoForm
       end
       object StereoLabel: TLabel
         Left = 137
-        Height = 14
+        Height = 11
         Top = 121
-        Width = 22
+        Width = 19
         Caption = '???'
         Color = clNone
         Font.Color = clTeal
@@ -264,9 +268,9 @@ object InfoForm: TInfoForm
       end
       object Label13: TLabel
         Left = 10
-        Height = 14
+        Height = 11
         Top = 32
-        Width = 59
+        Width = 52
         Caption = 'Renderer :'
         Color = clNone
         Font.CharSet = ANSI_CHARSET
@@ -277,9 +281,9 @@ object InfoForm: TInfoForm
       end
       object RendererLabel: TLabel
         Left = 137
-        Height = 14
+        Height = 11
         Top = 32
-        Width = 22
+        Width = 19
         Caption = '???'
         Color = clNone
         Font.Color = clTeal
@@ -291,9 +295,11 @@ object InfoForm: TInfoForm
     end
     object Sheet2: TTabSheet
       Caption = 'Buffer and pixel depths'
+      ClientHeight = 225
+      ClientWidth = 404
       object Image2: TImage
-        Height = 191
-        Width = 400
+        Height = 225
+        Width = 404
         Align = alClient
       end
       object Label8: TLabel
@@ -507,9 +513,11 @@ object InfoForm: TInfoForm
     end
     object Sheet3: TTabSheet
       Caption = 'Maximum values'
+      ClientHeight = 225
+      ClientWidth = 404
       object Image3: TImage
-        Height = 191
-        Width = 400
+        Height = 225
+        Width = 404
         Align = alClient
       end
       object Label14: TLabel
@@ -827,11 +835,13 @@ object InfoForm: TInfoForm
     end
     object TabSheet1: TTabSheet
       Caption = 'Supported extensions'
+      ClientHeight = 225
+      ClientWidth = 404
       ImageIndex = 3
       object Extensions: TListBox
-        Height = 191
+        Height = 225
         Hint = 'Double-click and extension to go to its OpenGL Extension registry page'
-        Width = 400
+        Width = 404
         Align = alClient
         BorderStyle = bsNone
         ClickOnSelChange = False

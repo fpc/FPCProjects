@@ -6,6 +6,7 @@
    A PFX whose particles are lines
 
    <b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>20/02/05 - EG - Creation
    </ul></font>
@@ -16,7 +17,8 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, PersistentClasses, VectorGeometry, GLParticleFX, GLTexture;
+uses Classes, PersistentClasses, VectorGeometry, GLParticleFX, GLTexture,
+     GLColor;
 
 type
 
