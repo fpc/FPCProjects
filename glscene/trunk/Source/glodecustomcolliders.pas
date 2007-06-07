@@ -34,6 +34,8 @@
       - added automatical generated History from CVS
 
   <b>History : </b><font size=-1><ul>
+    <li>07/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
+                           Added $I GLScene.inc
     <li>08/12/04 - SG - Added contact point rendering to TGLODECustomCollider.
     <li>07/12/04 - SG - Added new TGLODECustomCollider class,
                         Geom collide code now uses Resolution to determine the
@@ -52,6 +54,8 @@ unit GLODECustomColliders;
 
 interface
 
+{$I GLScene.inc}
+
 uses
   Classes, SysUtils, GLODEManager, dynode, dynodegl, VectorGeometry,
   VectorLists, GLScene, GLTerrainRenderer, GLGraph, XCollection,
@@ -59,6 +63,7 @@ uses
 
 type
   TContactPoint = class
+  public
     Position,
     Normal : TAffineVector;
     Depth : Single;

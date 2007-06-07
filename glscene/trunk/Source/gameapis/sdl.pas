@@ -1,8 +1,13 @@
-{
-    History:<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: SDL<p>
+
+	<b>History : </b><font size=-1><ul>
+      <li>07/06/07 - DaStr - Added $I GLScene.inc
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC
                                                          (BugTracekrID=1681585)
-
+	</ul></font>
 }
 unit SDL;
 {******************************************************************************}
@@ -153,6 +158,7 @@ unit SDL;
 
 interface
 
+{$I GLScene.inc}
 
 uses
 {$ifdef windows}

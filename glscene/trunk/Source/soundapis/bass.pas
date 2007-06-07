@@ -6,6 +6,16 @@
 
   See the BASS.CHM file for more complete documentation
 
+	<b>History : </b><font size=-1><ul>
+      <li>06/06/07 - DaStr - Added $I GLScene.inc
+      <li>06/07/04 - Mrqzzz- Updated to Bass 2.0 (Graham Kennedy)
+      <li>27/08/02 -  EG   - Updated to Bass 1.6a
+      <li>16/06/02 -  EG   - BASS 1.6
+      <li>27/02/07 -  EG   - Misc.
+      <li>05/02/02 -  EG   - BASS 1.4 support
+      <li>28/07/01 -  EG   - Initial version
+   </ul></font>
+
 
   How to install
   ----------------
@@ -14,6 +24,8 @@
 unit Bass;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Windows;

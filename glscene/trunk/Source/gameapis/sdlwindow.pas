@@ -1,5 +1,9 @@
-// SDLWindow
-{: Non visual wrapper around basic SDL window features.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: SDLWindow<p>
+
+   Non visual wrapper around basic SDL window features.<p>
 
    <u>Notes to Self:</u><br>
    Unit must ultimately *NOT* make use of any platform specific stuff,
@@ -11,6 +15,7 @@
    which is a Delphi header conversion for SDL (http://libsdl.org)<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>07/06/07 - DaStr - Added $I GLScene.inc
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>16/12/01 - Egg - Resize no longer recreates SDL surface in OpenGL mode
       <li>12/12/01 - Egg - Fixes & additions (code from Dominique Louis),
@@ -21,6 +26,8 @@
 unit SDLWindow;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, SysUtils, SDL;
 

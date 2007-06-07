@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLSMFMOD<p>
 
 	FMOD based sound-manager (http://www.fmod.org/, free for freeware).<p>
@@ -9,6 +12,7 @@
    </ul><p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>07/06/07 - DaStr - Added $I GLScene.inc
       <li>18/10/03 - EG - Dynamic support is back
       <li>18/09/03 - ARH - updated for fmod 3.7
       <li>24/09/02 - EG - FMOD activation errors no longer result in Asserts (ignored)
@@ -25,6 +29,8 @@
 unit GLSMFMOD;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLSound, GLScene;
 

@@ -35,6 +35,8 @@
       - added automatical generated History from CVS
 
   History:<ul>
+    <li>07/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
+                           Added $I GLScene.inc
     <li>28/03/07 - DaStr - Renamed parameters in some methods
                            (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
     <li>01/03/05 - Mrqzzz - Moved in TODEJointBase protected code from Loaded to
@@ -109,9 +111,12 @@ unit GLODEManager;
 
 interface
 
+{$I GLScene.inc}
+
 uses
   Classes, dynode, dynodegl, GLScene, GLMisc, VectorGeometry, GLTexture, OpenGL1x,
-  XOpenGL, SysUtils, GLObjects, XCollection, PersistentClasses, VectorLists, GLColor;
+  XOpenGL, SysUtils, GLObjects, XCollection, PersistentClasses, VectorLists,
+  GLColor;
 
 type
 
