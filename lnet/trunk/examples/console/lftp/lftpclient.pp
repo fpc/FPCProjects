@@ -3,7 +3,7 @@ program lFTPClient;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, Crt, lFTP, lNet, lnetbase;
+  Classes, SysUtils, Crt, lFTP, lNet;
   
 type
 
