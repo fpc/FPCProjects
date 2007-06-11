@@ -106,8 +106,6 @@ begin
 end;
 
 function TMimeOutputStream.Read(var Buffer; Count: Longint): Longint;
-var
-  i: Integer;
 begin
   if Assigned(FNotificationEvent) then
     FNotificationEvent(Count);
