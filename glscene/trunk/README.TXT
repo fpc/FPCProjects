@@ -16,7 +16,7 @@ SVN:
   This will create the lazarus/componets/glscene/ folder
 
 Finish the installation:
-* copy glscene/globallinks/*.lpl to lazarus/packager/globallinks/
+* copy "lazarus/components/glscene/globallinks/*.lpl" to "lazarus/packager/globallinks/"
 * start lazarus
 * select "Configure installed packages ..." from the "Components" menu
 * select "glscenelazarus" from the "Available packages" list
