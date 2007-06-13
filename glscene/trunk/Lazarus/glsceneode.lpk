@@ -28,8 +28,9 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Description Value="GLScene ODE support"/>
-    <Version Minor="9" Release="1" Build="6"/>
+    <Description Value="GLScene ODE support
+"/>
+    <Version Major="1" Build="1"/>
     <Files Count="6">
       <Item1>
         <Filename Value="../Source/designtime/gloderegister.pas"/>
@@ -67,7 +68,8 @@
       </Item2>
     </RequiredPkgs>
     <UsageOptions>
-      <CustomOptions Value="-dUseCThreads"/>
+      <CustomOptions Value="-dUseCThreads
+"/>
       <UnitPath Value="$(PkgOutDir)/"/>
     </UsageOptions>
     <PublishOptions>

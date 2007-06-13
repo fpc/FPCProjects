@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
 <CONFIG>
   <Package Version="2">
-    <PathDelim Value="\"/>
     <Name Value="gls_winonly"/>
     <CompilerOptions>
       <Version Value="5"/>
-      <PathDelim Value="\"/>
       <SearchPaths>
-        <IncludeFiles Value="..\Source\"/>
-        <OtherUnitFiles Value="..\Source\;..\Source\platform\;..\Source\soundapis\;..\Source\base\"/>
-        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+        <IncludeFiles Value="../Source/"/>
+        <OtherUnitFiles Value="../Source/;../Source/platform/;../Source/soundapis/;../Source/base/"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -23,23 +21,25 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
+    <Description Value="GLScene support for Windows Only components"/>
+    <Version Major="1" Build="1"/>
     <Files Count="4">
       <Item1>
-        <Filename Value="..\Source\glsmbass.pas"/>
+        <Filename Value="../Source/glsmbass.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="GLSMBASS"/>
       </Item1>
       <Item2>
-        <Filename Value="..\Source\soundapis\bass.pas"/>
+        <Filename Value="../Source/soundapis/bass.pas"/>
         <UnitName Value="Bass"/>
       </Item2>
       <Item3>
-        <Filename Value="..\Source\glsmwaveout.pas"/>
+        <Filename Value="../Source/glsmwaveout.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="GLSMWaveOut"/>
       </Item3>
       <Item4>
-        <Filename Value="..\Source\base\screensaver.pas"/>
+        <Filename Value="../Source/base/screensaver.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="ScreenSaver"/>
       </Item4>
@@ -55,11 +55,10 @@
       </Item2>
     </RequiredPkgs>
     <UsageOptions>
-      <UnitPath Value="$(PkgOutDir)\"/>
+      <UnitPath Value="$(PkgOutDir)/"/>
     </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>
-      <DestinationDirectory Value="$(TestDir)\publishedpackage\"/>
       <IgnoreBinaries Value="False"/>
     </PublishOptions>
   </Package>

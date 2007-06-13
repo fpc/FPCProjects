@@ -32,7 +32,7 @@
     </CompilerOptions>
     <Description Value="glscene cg shader support package
 "/>
-    <Version Minor="9" Release="1" Build="6"/>
+    <Version Major="1" Build="1"/>
     <Files Count="5">
       <Item1>
         <Filename Value="../Source/cgshaders/glcgshader.pas"/>

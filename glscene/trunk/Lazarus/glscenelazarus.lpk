@@ -32,11 +32,9 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Description Value="GLScene - OpenGL 3D library
-"/>
-    <License Value="LGPL
-"/>
-    <Version Minor="9" Release="1" Build="6"/>
+    <Description Value="GLScene - OpenGL 3D library"/>
+    <License Value="LGPL"/>
+    <Version Major="1" Build="1"/>
     <Files Count="163">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>

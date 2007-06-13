@@ -28,8 +28,9 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Description Value="GLScene FMOD support"/>
-    <Version Minor="9" Release="1" Build="6"/>
+    <Description Value="GLScene FMOD support
+"/>
+    <Version Major="1" Build="1"/>
     <Files Count="2">
       <Item1>
         <Filename Value="../Source/glsmfmod.pas"/>
@@ -52,7 +53,8 @@
       </Item2>
     </RequiredPkgs>
     <UsageOptions>
-      <CustomOptions Value="-dUseCThreads"/>
+      <CustomOptions Value="-dUseCThreads
+"/>
       <UnitPath Value="$(PkgOutDir)/"/>
     </UsageOptions>
     <PublishOptions>
