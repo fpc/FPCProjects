@@ -1,0 +1,130 @@
+object Form1: TForm1
+  Left = 249
+  Height = 362
+  Top = 136
+  Width = 558
+  HorzScrollBar.Page = 557
+  VertScrollBar.Page = 361
+  ActiveControl = RBPaint
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  object GLSceneViewer: TGLSceneViewer
+    Height = 362
+    Width = 456
+    Camera = GLCamera1
+    FieldOfView = 149.115112304687
+    Align = alClient
+    OnMouseDown = GLSceneViewerMouseDown
+    OnMouseMove = GLSceneViewerMouseMove
+  end
+  object Panel1: TPanel
+    Left = 456
+    Height = 362
+    Width = 102
+    Align = alRight
+    BevelOuter = bvLowered
+    Font.Height = -11
+    Font.Name = 'Arial'
+    FullRepaint = False
+    TabOrder = 0
+    object Label1: TLabel
+      Left = 8
+      Height = 15
+      Top = 8
+      Width = 100
+      Caption = 'HeightField'
+      Color = clNone
+      Font.Height = -15
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+    end
+    object Label2: TLabel
+      Left = 24
+      Height = 15
+      Top = 32
+      Width = 64
+      Caption = 'picking'
+      Color = clNone
+      Font.Height = -15
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+    end
+    object Label3: TLabel
+      Left = 8
+      Height = 145
+      Top = 168
+      Width = 89
+      AutoSize = False
+      Caption = 'This demo uses a crude method for heightfield picking based on the Z-Buffer. This method can be easily adapted for a variety of objects and 2.5D problems.'
+      Color = clNone
+      ParentColor = False
+      WordWrap = True
+    end
+    object RBPaint: TRadioButton
+      Left = 16
+      Height = 24
+      Top = 80
+      Width = 52
+      Caption = 'Paint'
+      Checked = True
+      State = cbChecked
+      TabOrder = 0
+    end
+    object RadioButton2: TRadioButton
+      Left = 16
+      Height = 24
+      Top = 112
+      Width = 60
+      Caption = 'Rotate'
+      TabOrder = 1
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 40
+    object HeightField: TGLHeightField
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Scale.Coordinates = {
+        9A99193F9A99193F0000003F00000000
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
+      XSamplingScale.Min = -5.5
+      XSamplingScale.Max = 5.5
+      XSamplingScale.Step = 0.20000000298023
+      YSamplingScale.Min = -5.5
+      YSamplingScale.Max = 5.5
+      YSamplingScale.Step = 0.20000000298023
+      ColorMode = hfcmAmbientAndDiffuse
+      OnGetHeight = HeightFieldGetHeight
+    end
+    object GLLightSource1: TGLLightSource
+      Ambient.Color = {
+        9A99193E9A99193E9A99193E0000803F
+      }
+      ConstAttenuation = 1
+      Diffuse.Color = {
+        9A99593F9A99593F9A99593F0000803F
+      }
+      Position.Coordinates = {
+        0000E040000070410000A0400000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = HeightField
+      Position.Coordinates = {
+        0000A04000008040000040400000803F
+      }
+    end
+  end
+end

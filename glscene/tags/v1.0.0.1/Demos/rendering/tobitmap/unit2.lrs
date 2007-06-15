@@ -1,0 +1,8 @@
+LazarusResources.Add('TForm2','FORMDATA',[
+  'TPF0'#6'TForm2'#5'Form2'#4'Left'#3#149#0#3'Top'#2'Q'#5'Width'#3#17#1#6'Heigh'
+  +'t'#3#182#0#7'Caption'#6#5'Form2'#5'Color'#7#9'clBtnFace'#12'Font.Charset'#7
+  +#15'DEFAULT_CHARSET'#10'Font.Color'#7#12'clWindowText'#11'Font.Height'#2#245
+  +#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#0#13'PixelsPerInch'#2'`'
+  +#10'TextHeight'#2#13#0#6'TImage'#6'Image1'#4'Left'#2#0#3'Top'#2#0#5'Width'#3
+  +#9#1#6'Height'#3#153#0#0#0#0
+]);

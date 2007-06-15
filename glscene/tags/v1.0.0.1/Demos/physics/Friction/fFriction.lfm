@@ -1,0 +1,79 @@
+object frmFriction: TfrmFriction
+  Caption = 'ODE Lazarus Friction Demo'
+  ClientHeight = 339
+  ClientWidth = 457
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnClose = FormClose
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 456
+  VertScrollBar.Page = 338
+  Left = 253
+  Height = 339
+  Top = 151
+  Width = 457
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clSilver
+    Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 142.0701904296875
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Left = 8
+    Height = 291
+    Top = 8
+    Width = 430
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 168
+    top = 72
+  end
+  object GLScene1: TGLScene
+    left = 48
+    top = 48
+    object GLShadowPlane1: TGLShadowPlane
+      ShadowingObject = DirectOpenGL1
+      ShadowedLight = GLLightSource1
+      Height = 4
+      Width = 5
+    end
+    object DirectOpenGL1: TGLDirectOpenGL
+      OnRender = DirectOpenGL1Render
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+    end
+    object ZShadows1: TGLZShadows
+      Viewer = GLSceneViewer1
+      Width = 430
+      Height = 291
+      Tolerance = 0.014999999664724
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        0000A04000000000000000400000803F
+      }
+      Direction.Coordinates = {
+        000000000000803F0000008000000000
+      }
+      Up.Coordinates = {
+        00000000000000000000803F00000000
+      }
+      object GLLightSource1: TGLLightSource
+        ConstAttenuation = 1
+        Position.Coordinates = {
+          0000000000000000000000400000803F
+        }
+        SpotCutOff = 180
+      end
+    end
+  end
+end

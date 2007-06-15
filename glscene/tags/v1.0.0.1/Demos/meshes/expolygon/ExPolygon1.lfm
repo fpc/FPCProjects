@@ -1,0 +1,89 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 540
+  ClientWidth = 783
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 782
+  VertScrollBar.Page = 539
+  Left = 259
+  Height = 540
+  Top = 126
+  Width = 783
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = Camera
+    FieldOfView = 121.89079284667969
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 540
+    Width = 783
+  end
+  object GLScene1: TGLScene
+    left = 720
+    top = 40
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000FAC30000FAC3000048440000803F
+      }
+      LightStyle = lsOmni
+      SpotCutOff = 180
+    end
+    object GLLightSource2: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000FA430000FAC3000048440000803F
+      }
+      SpotCutOff = 180
+    end
+    object Container: TGLDummyCube
+      CubeSize = 100
+    end
+    object CameraTarget: TGLDummyCube
+      CubeSize = 1
+    end
+    object Camera: TGLCamera
+      DepthOfView = 10000
+      FocalLength = 150
+      TargetObject = CameraTarget
+      Position.Coordinates = {
+        0000484300007AC4000048430000803F
+      }
+      Direction.Coordinates = {
+        000000000000803F0000008000000000
+      }
+      Up.Coordinates = {
+        00000000000000000000803F00000000
+      }
+      left = 376
+      top = 240
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = 'MatSurface'
+        Material.FrontProperties.Diffuse.Color = {
+          6666263F0000003F14AEC73E0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end    
+      item
+        Name = 'MatInner'
+        Material.FrontProperties.Diffuse.Color = {
+          C3F5683F5C8F423F6666263F0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end>
+    left = 720
+    top = 72
+  end
+end

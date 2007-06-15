@@ -1,0 +1,120 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 369
+  ClientWidth = 468
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 467
+  VertScrollBar.Page = 368
+  Left = 248
+  Height = 369
+  Top = 135
+  Width = 468
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 149.67378234863281
+    Align = alClient
+    Height = 369
+    Width = 468
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 16
+    object DCBase: TGLDummyCube
+      CubeSize = 1
+      Position.Coordinates = {
+        00000000000000C0000000000000803F
+      }
+      object Sphere1: TGLSphere
+        Radius = 1
+        Slices = 32
+        Stacks = 8
+        Material.FrontProperties.Ambient.Color = {
+          00000000CDCC4C3E000000000000803F
+        }
+        Material.FrontProperties.Diffuse.Color = {
+          938C0C3E938E0E3F938C0C3E0000803F
+        }
+        Material.FrontProperties.Emission.Color = {
+          0000000039B4483E000000000000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Scale.Coordinates = {
+          000000400000003F0000004000000000
+        }
+      end
+      object Pipe1: TGLPipe
+        Radius = 1
+        Nodes = <>
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+      object Pipe2: TGLPipe
+        Radius = 1
+        Nodes = <>
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+      object Pipe3: TGLPipe
+        Radius = 1
+        Nodes = <>
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+      object Pipe4: TGLPipe
+        Radius = 1
+        Nodes = <>
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+      object Pipe5: TGLPipe
+        Radius = 1
+        Nodes = <>
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        00004842000020420000F0410000803F
+      }
+      SpotCutOff = 180
+    end
+    object DCTarget: TGLDummyCube
+      CubeSize = 1
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = DCTarget
+      Position.Coordinates = {
+        0000C0400000A040000080400000803F
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 56
+    top = 16
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 16
+    top = 48
+  end
+end

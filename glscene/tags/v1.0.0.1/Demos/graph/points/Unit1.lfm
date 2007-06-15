@@ -1,0 +1,109 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 394
+  ClientWidth = 418
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 417
+  VertScrollBar.Page = 393
+  Left = 239
+  Height = 394
+  Top = 88
+  Width = 418
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 149.67378234863281
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 369
+    Top = 25
+    Width = 418
+  end
+  object Panel1: TPanel
+    Align = alTop
+    BorderSpacing.OnChange = nil
+    ClientHeight = 25
+    ClientWidth = 418
+    FullRepaint = False
+    TabOrder = 0
+    Height = 25
+    Width = 418
+    object CBPointParams: TCheckBox
+      BorderSpacing.OnChange = nil
+      Caption = 'PointParameters'
+      Checked = True
+      OnClick = CBPointParamsClick
+      State = cbChecked
+      TabOrder = 0
+      Left = 8
+      Height = 17
+      Top = 4
+      Width = 97
+    end
+    object CBAnimate: TCheckBox
+      BorderSpacing.OnChange = nil
+      Caption = 'Animate'
+      Checked = True
+      OnClick = CBAnimateClick
+      State = cbChecked
+      TabOrder = 1
+      Left = 176
+      Height = 17
+      Top = 4
+      Width = 97
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 40
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      object GLPoints1: TGLPoints
+        NoZWrite = True
+        Size = 10
+        Style = psSmoothAdditive
+        PointParameters.Enabled = True
+        PointParameters.DistanceAttenuation.Coordinates = {
+          0000C0BF3333333F0000000000000000
+        }
+      end
+      object GLPoints2: TGLPoints
+        NoZWrite = True
+        Size = 20
+        Style = psSmoothAdditive
+        PointParameters.Enabled = True
+        PointParameters.DistanceAttenuation.Coordinates = {
+          0000C0BF3333333F0000000000000000
+        }
+      end
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = DummyCube1
+      Position.Coordinates = {
+        0000A04000008040000040400000803F
+      }
+      left = 256
+      top = 160
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 48
+    top = 40
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 24
+    top = 80
+  end
+end

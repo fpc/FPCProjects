@@ -1,0 +1,259 @@
+object Form1: TForm1
+  Align = alClient
+  BorderStyle = bsNone
+  Caption = 'Form1'
+  ClientHeight = 405
+  ClientWidth = 603
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnKeyPress = FormKeyPress
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 602
+  VertScrollBar.Page = 404
+  Left = 252
+  Height = 405
+  Top = 191
+  Width = 603
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.FogEnvironment.FogColor.Color = {
+      0000803F0000803F0000803F0000803F
+    }
+    Buffer.FogEnvironment.FogStart = 200
+    Buffer.FogEnvironment.FogEnd = 650
+    Buffer.FogEnvironment.FogDistance = fdEyeRadial
+    Buffer.BackgroundColor = clGray
+    Buffer.FogEnable = True
+    Buffer.Lighting = False
+    FieldOfView = 152.2606201171875
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 405
+    Width = 603
+  end
+  object GLBitmapHDS1: TGLBitmapHDS
+    left = 56
+    top = 16
+  end
+  object GLScene1: TGLScene
+    ObjectsSorting = osNone
+    left = 56
+    top = 56
+    object InitialRenderPoint: TGLRenderPoint
+    end
+    object SkyDome1: TGLSkyDome
+      Bands = <      
+        item
+          StartAngle = -5
+          StartColor.Color = {
+            0000803F0000803F0000803F0000803F
+          }
+          StopAngle = 25
+          Slices = 9
+        end      
+        item
+          StartAngle = 25
+          StopAngle = 90
+          StopColor.Color = {
+            938C0C3E938C0C3E938E0E3F0000803F
+          }
+          Slices = 9
+          Stacks = 4
+        end>
+      Stars = <>
+      Options = [sdoTwinkle]
+      Direction.Coordinates = {
+        000000000000803F2EBD3BB300000000
+      }
+      Up.Coordinates = {
+        000000002EBD3BB3000080BF00000000
+      }
+      object SPMoon: TGLSprite
+        Width = 30
+        Height = 30
+        NoZWrite = True
+        Material.FrontProperties.Ambient.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.FrontProperties.Diffuse.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.FrontProperties.Emission.Color = {
+          0000803F0000803F0000803F0000803F
+        }
+        Material.BlendingMode = bmTransparency
+        Material.MaterialOptions = [moIgnoreFog]
+        Material.Texture.ImageAlpha = tiaSuperBlackTransparent
+        Material.Texture.TextureMode = tmReplace
+        Material.Texture.Compression = tcNone
+        Material.Texture.Disabled = False
+        Position.Coordinates = {
+          00000C430000C842000096420000803F
+        }
+        Visible = False
+      end
+      object SPSun: TGLSprite
+        Width = 60
+        Height = 60
+        NoZWrite = True
+        Material.FrontProperties.Ambient.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.FrontProperties.Diffuse.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.BlendingMode = bmAdditive
+        Material.MaterialOptions = [moIgnoreFog]
+        Material.Texture.TextureMode = tmReplace
+        Material.Texture.TextureFormat = tfLuminance
+        Material.Texture.Compression = tcNone
+        Material.Texture.Disabled = False
+        Position.Coordinates = {
+          00000C430000C842000096420000803F
+        }
+      end
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      Position.Coordinates = {
+        0000000000000041000000000000803F
+      }
+      object GLCamera1: TGLCamera
+        DepthOfView = 650
+        FocalLength = 50
+        TargetObject = DummyCube1
+        Position.Coordinates = {
+          0000A040000020410000C8410000803F
+        }
+        left = 264
+        top = 160
+      end
+    end
+    object TerrainRenderer1: TGLTerrainRenderer
+      HeightDataSource = GLBitmapHDS1
+      TileSize = 32
+      TilesPerTexture = 1
+      QualityDistance = 150
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'ground'
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Scale.Coordinates = {
+        00008040000080400000803E00000000
+      }
+      Up.Coordinates = {
+        00000000000000000000803F00000000
+      }
+    end
+    object HUDText1: TGLHUDText
+      BitmapFont = BitmapFont1
+      Position.Coordinates = {
+        000096420000C841000000000000803F
+      }
+    end
+    object DCSound: TGLDummyCube
+      CubeSize = 1
+    end
+    object GLLensFlare: TGLLensFlare
+      Size = 100
+      Seed = 978
+      FlareIsNotOccluded = True
+      PreRenderPoint = InitialRenderPoint
+      Position.Coordinates = {
+        9A620252C9B28B51B743BAD10000803F
+      }
+      Visible = False
+      object GLDummyCube1: TGLDummyCube
+        CubeSize = 100
+        VisibleAtRunTime = True
+      end
+    end
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 56
+    top = 96
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 16
+    top = 16
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = 'ground'
+        Material.FrontProperties.Ambient.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.FrontProperties.Diffuse.Color = {
+          0000000000000000000000000000803F
+        }
+        Material.FrontProperties.Emission.Color = {
+          9A99993E9A99993E9A99993E0000803F
+        }
+        Material.Texture.TextureMode = tmReplace
+        Material.Texture.Compression = tcStandard
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Material.Texture.Disabled = False
+        Texture2Name = 'details'
+      end    
+      item
+        Name = 'details'
+        Material.Texture.TextureMode = tmModulate
+        Material.Texture.TextureFormat = tfLuminance
+        Material.Texture.Compression = tcStandard
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Material.Texture.Disabled = False
+        TextureScale.Coordinates = {
+          00000043000000430000004300000000
+        }
+      end>
+    left = 16
+    top = 56
+  end
+  object BitmapFont1: TGLBitmapFont
+    GlyphsIntervalX = 1
+    GlyphsIntervalY = 1
+    Ranges = <    
+      item
+        StartASCII = ' '
+        StopASCII = 'Z'
+      end>
+    CharWidth = 30
+    CharHeight = 30
+    left = 16
+    top = 96
+  end
+  object TISound: TTimer
+    Interval = 3000
+    OnTimer = TISoundTimer
+    left = 16
+    top = 136
+  end
+  object GLSoundLibrary: TGLSoundLibrary
+    Samples = <>
+    left = 96
+    top = 56
+  end
+  object GLSMFMOD1: TGLSMFMOD
+    Active = True
+    MaxChannels = 32
+    MasterVolume = 1
+    Listener = GLCamera1
+    Sources = <>
+    Cadencer = GLCadencer1
+    Environment = seForest
+    left = 94
+    top = 20
+  end
+end
