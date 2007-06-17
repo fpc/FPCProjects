@@ -29,6 +29,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/06/07 - LC - Added GL_ARB_pixel_buffer_object, GL_EXT_pixel_buffer_object 
       <li>22/03/07 - DaStr - Removed GetTextureRectangle (had many useless checks)
       <li>16/03/07 - DaStr - Dropped Kylix support in favor of FPC
                              (thanks Burkhard Carstens) (BugTracekrID=1681585)
@@ -252,6 +253,7 @@ var
    GL_ARB_texture_env_dot3,
    GL_ARB_vertex_program,
    GL_ARB_vertex_buffer_object,
+   GL_ARB_pixel_buffer_object,
    GL_ARB_shader_objects,
    GL_ARB_vertex_shader,
    GL_ARB_fragment_shader,
@@ -293,6 +295,7 @@ var
    GL_EXT_clip_volume_hint,
    GL_EXT_framebuffer_object,
    GL_EXT_texture_rectangle,
+   GL_EXT_pixel_buffer_object,
 
    GL_HP_occlusion_test,
 
@@ -1523,6 +1526,12 @@ const
    GL_BUFFER_ACCESS_ARB                              = $88BB;
    GL_BUFFER_MAPPED_ARB                              = $88BC;
    GL_BUFFER_MAP_POINTER_ARB                         = $88BD;
+
+   // ARB_pixel_buffer_object
+   GL_PIXEL_PACK_BUFFER_ARB                          = $88EB;
+   GL_PIXEL_UNPACK_BUFFER_ARB                        = $88EC;
+   GL_PIXEL_PACK_BUFFER_BINDING_ARB                  = $88ED;
+   GL_PIXEL_UNPACK_BUFFER_BINDING_ARB                = $88EF;
 
    // ARB_shader_objects
    GL_PROGRAM_OBJECT_ARB                             = $8B40;
@@ -4512,6 +4521,7 @@ begin
    GL_ARB_texture_env_dot3 := CheckExtension('GL_ARB_texture_env_dot3');
    GL_ARB_vertex_program := CheckExtension('GL_ARB_vertex_program');
    GL_ARB_vertex_buffer_object := CheckExtension('GL_ARB_vertex_buffer_object');
+   GL_ARB_pixel_buffer_object := CheckExtension('GL_ARB_pixel_buffer_object');
    GL_ARB_shader_objects := CheckExtension('GL_ARB_shader_objects');
    GL_ARB_vertex_shader := CheckExtension('GL_ARB_vertex_shader');
    GL_ARB_fragment_shader := CheckExtension('GL_ARB_fragment_shader');
@@ -4556,6 +4566,7 @@ begin
    GL_EXT_clip_volume_hint := CheckExtension('GL_EXT_clip_volume_hint');
    GL_EXT_framebuffer_object := CheckExtension('GL_EXT_framebuffer_object');
    GL_EXT_texture_rectangle := CheckExtension('GL_EXT_texture_rectangle');
+   GL_EXT_pixel_buffer_object := CheckExtension('GL_EXT_pixel_buffer_object');
 
    GL_HP_occlusion_test := CheckExtension('GL_HP_occlusion_test');
 
