@@ -1012,22 +1012,22 @@ begin
       buttons:=[mbOK, mbCancel];
       // are there children to care for?
       // mbAll exist only on Windows ...
-      {$IFDEF MSWINDOWS}
+      {.$IFDEF MSWINDOWS}
       if anObject.Count>0 then begin
          confirmMsg:=ConfirmMsg+' only or with ALL its children?';
          buttons:=[mbAll]+Buttons;
       end else confirmMsg:=confirmMsg+'?';
-      {$ENDIF}
+      {.$ENDIF}
       {$IFDEF UNIX}
       confirmMsg:=confirmMsg+'?';
       {$ENDIF}
       case MessageDlg(confirmMsg, mtConfirmation, buttons, 0) of
-        {$IFDEF MSWINDOWS}
+        {.$IFDEF MSWINDOWS}
          mrAll : begin
             keepChildren:=False;
             allowed:=True;
 			end;
-         {$ENDIF}
+         {.$ENDIF}
          mrOK : begin
             keepChildren:=True;
             allowed:=True;
