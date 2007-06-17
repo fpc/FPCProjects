@@ -4099,10 +4099,10 @@ begin
       aChild.FParent:=nil;
       if keepChildren then begin
          BeginUpdate;
-         if Count <> 0 then
-         for I := Count - 1 downto 0 do
-          if not IsSubComponent(Children[I]) then
-            Children[I].MoveTo(Self);
+         if aChild.Count <> 0 then
+         for I := aChild.Count - 1 downto 0 do
+          if not IsSubComponent(aChild.Children[I]) then
+            aChild.Children[I].MoveTo(Self);
          EndUpdate;
       end else NotifyChange(Self);
    end;
