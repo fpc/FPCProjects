@@ -245,6 +245,7 @@ uses
    Graphics,
    GLViewer,
    GLColor,
+   GLDynamicTexture,
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText,
      //GLWideBitmapFont,  doesn't even compile in win due to missing TTextRecA

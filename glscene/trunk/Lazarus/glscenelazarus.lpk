@@ -35,7 +35,7 @@
     <Description Value="GLScene - OpenGL 3D library"/>
     <License Value="LGPL"/>
     <Version Major="1" Build="1"/>
-    <Files Count="163">
+    <Files Count="164">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -708,6 +708,10 @@
         <Filename Value="../Source/base/glcolor.pas"/>
         <UnitName Value="GLColor"/>
       </Item163>
+      <Item164>
+        <Filename Value="../Source/gldynamictexture.pas"/>
+        <UnitName Value="GLDynamicTexture"/>
+      </Item164>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
