@@ -465,9 +465,10 @@ var
   a: TSockAddr;
   l: Integer;
 begin
+  Result := '';
   l := SizeOf(a);
-  fpGetSockName(FHandle, @a, @l);
-  Result := HostAddrToStr(LongWord(a.sin_addr));
+  if fpGetSockName(FHandle, @a, @l) = 0 then
+    Result := NetAddrToStr(LongWord(a.sin_addr));
 end;
 
 function TLSocket.CanSend: Boolean;
