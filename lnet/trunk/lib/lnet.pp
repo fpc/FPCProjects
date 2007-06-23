@@ -563,7 +563,7 @@ end;
 
 function TLSocket.GetLocalPort: Word;
 begin
-  Result := FAddress.sin_port;
+  Result := ntohs(FAddress.sin_port);
 end;
 
 function TLSocket.GetPeerPort: Word;
