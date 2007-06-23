@@ -1057,6 +1057,7 @@ begin
   if FRootSock.Listen(APort, AIntf) then begin
     FRootSock.FConnected := True;
     FRootSock.FServerSocket := True;
+    FIterator := FRootSock;
     RegisterWithEventer;
     Result := true;
   end;
