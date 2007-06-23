@@ -1163,8 +1163,9 @@ begin
     end;
     FRootSock.FNextSock := Tmp;
     Tmp.FPrevSock := FRootSock;
-    if not Assigned(FIterator) then
-      FIterator := Tmp;
+    if not Assigned(FIterator)      // if we don't have (bug?) an iterator yet
+    or FIterator.FServerSocket then // or if it's the first socket accepted
+      FIterator := Tmp;  // assign it as iterator (don't assign later acceptees)
     Inc(FCount);
     FEventer.AddHandle(Tmp);
     AcceptEvent(Tmp);

@@ -88,7 +88,7 @@ type
     property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
     property ControlConnection: TLTelnetClient read FControl;
     property DataConnection: TLTCP read FData;
-    property TransferMethod: TLFTPTransferMethod read FTransferMethod write FTransferMethod;
+    property TransferMethod: TLFTPTransferMethod read FTransferMethod write FTransferMethod default ftPassive;
   end;
 
   { TLFTPTelnetClient }
