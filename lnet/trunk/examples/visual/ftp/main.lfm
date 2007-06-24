@@ -8,6 +8,8 @@ object MainForm: TMainForm
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
+  ClientHeight = 529
+  ClientWidth = 725
   Constraints.MinHeight = 548
   Constraints.MinWidth = 725
   Menu = MainMenu
@@ -29,6 +31,8 @@ object MainForm: TMainForm
     Top = 24
     Width = 725
     Align = alClient
+    ClientHeight = 359
+    ClientWidth = 725
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
@@ -36,6 +40,7 @@ object MainForm: TMainForm
       Top = 1
       Width = 183
       Align = alLeft
+      Directory = 'C:\lazarus'
       ExtendedSelect = False
       FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
       OnDblClick = LeftViewDblClick
@@ -214,8 +219,6 @@ object MainForm: TMainForm
     OnReceive = FTPReceive
     OnControl = FTPControl
     OnError = FTPError
-    StartPort = 1024
-    TransferMethod = ftPassive
     top = 300
   end
   object PopupLeft: TPopupMenu
