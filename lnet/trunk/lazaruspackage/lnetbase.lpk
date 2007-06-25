@@ -31,7 +31,9 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Version Minor="5" Release="2"/>
+    <Description Value="Lightweight Networking Library, or lNet is a networking suite  providing simple and effective means to use TCP, UDP, FTP, SMTP, Telnet and HTTP protocols over the net.
+"/>
+    <Version Minor="5" Release="3"/>
     <Files Count="9">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
