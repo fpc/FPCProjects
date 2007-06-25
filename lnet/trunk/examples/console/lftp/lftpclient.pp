@@ -89,6 +89,7 @@ begin
   FCon.OnControl := @OnControl;
   FCon.OnSent := @OnSent;
   FCon.OnError := @OnError;
+  FCon.TransferMethod := ftActive;
 end;
 
 destructor TClient.Destroy;
