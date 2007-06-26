@@ -4,6 +4,8 @@
    Currently NOT thread-safe.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>24/06/06 - LC - Refactored TGLVBOHandle, introduced TGLBufferObjectHandle
+                          and TGLPackPBOHandle/TGLUnpackPBOHandle
       <li>15/02/07 - DaStr - Added more parameters to TGLProgramHandle
                              TGLProgramHandle.Name is now a property
       <li>15/02/07 - DaStr - Integer -> Cardinal because $R- was removed in GLScene.pas
@@ -2051,7 +2053,6 @@ end;
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
 initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

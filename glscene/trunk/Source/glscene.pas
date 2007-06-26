@@ -61,6 +61,8 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>18/06/07 - DaStr - Fixed bug which caused objects' order to get inverted
+                             (BugtrackerID = 1739180) (thanks Burkhard Carstens)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>03/04/07 - DaStr - GLS_DELPHI_5_UP renamed to GLS_DELPHI_4_DOWN for
                              FPC compatibility (thanks Burkhard Carstens)

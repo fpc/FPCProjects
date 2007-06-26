@@ -1,13 +1,30 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLDynamicTexture<p>
+
+  Adds a dynamic texture image, which allows for easy updating of
+  texture data.<p>
+
+	<b>History : </b><font size=-1><ul>
+      <li>25/06/07 - LC - Added SysUtils (needed for AllocMem or D7 and down).
+      <li>25/06/07 - LC - Fixed a bug where resizing a texture would fail. Introduced
+                          new methods for freeing PBO and buffer.
+      <li>24/06/07 - LC - Creation
+   </ul></font>
+}
+
 unit GLDynamicTexture;
 
 interface
 
 uses
-  Classes, OpenGL1x, GLContext, GLTexture, GLGraphics;
+  Classes, SysUtils, OpenGL1x, GLContext, GLTexture, GLGraphics;
 
 type
-  // A dynamic texture image
-  // Allows for fast updating of the texture at runtime
+  // TGLDynamicTextureImage
+  //
+  {: Allows for fast updating of the texture at runtime. }
   TGLDynamicTextureImage = class(TGLBlankImage)
   private
     FUpdating: integer;
@@ -25,6 +42,9 @@ type
     function GetDataFormat: integer;
     function GetTextureFormat: integer;
 
+    procedure FreePBO;
+    procedure FreeBuffer;
+
     property BitsPerPixel: integer read GetBitsPerPixel;
     property DataFormat: integer read GetDataFormat;
     property TextureFormat: integer read GetTextureFormat;
@@ -33,28 +53,28 @@ type
 
     procedure NotifyChange(Sender: TObject); override;
 
-    // Caches the target to indicate which target to update
-    // Do not call this method with a different target than
-    // intended for the Texture owner
+    {: Caches the target to indicate which target to update.<p>
+      Do not call this method with a different target than
+      intended for the Texture owner. }
     function GetBitmap32(target : TGLUInt) : TGLBitmap32; override;
 
-    // Must be called before using the Data pointer
-    // Rendering context must be active!
+    {: Must be called before using the Data pointer.<p>
+      Rendering context must be active! }
     procedure BeginUpdate;
-    
-    // Must be called after data is changed
-    // This will upload the new data
+
+    {: Must be called after data is changed.<p>
+       This will upload the new data. }
     procedure EndUpdate;
 
-    // pointer to buffer data
-    // will be nil outside a BeginUpdate / EndUpdate block
+    {: Pointer to buffer data.<p> Will be nil
+       outside a BeginUpdate / EndUpdate block. }
     property Data: pointer read FData;
 
-    // Indicates that the data is stored as BGR(A) instead of
-    // RGB(A). The default is to use BGR(A).
+    {: Indicates that the data is stored as BGR(A) instead of
+       RGB(A).<p> The default is to use BGR(A). }
     property UseBGR: boolean read FUseBGR write FUseBGR;
 
-    // Enables or disables use of a PBO. Default is true.
+    {: Enables or disables use of a PBO. Default is true. }
     property UsePBO: boolean read FUsePBO write SetUsePBO;
   end;
 
@@ -80,7 +100,10 @@ begin
     if FUsePBO and (GL_ARB_pixel_buffer_object or GL_EXT_pixel_buffer_object) then
     begin
       FPBO:= TGLUnpackPBOHandle.CreateAndAllocate;
+      // initialize buffer
       FPBO.BindBufferData(nil, FTexSize, GL_STREAM_DRAW_ARB);
+      // unbind so we don't upload the data from it, which is unnecessary
+      FPBO.UnBind;
     end
     else
     begin
@@ -88,8 +111,11 @@ begin
       FBuffer:= AllocMem(FTexSize);
     end;
 
+    // Force creation of texture
+    // This is a bit of a hack, should be a better way...
     glBindTexture(TTarget, OwnerTexture.Handle);
     glTexImage2D(TTarget, 0, OwnerTexture.OpenGLTextureFormat, Width, Height, 0, TextureFormat, GL_UNSIGNED_BYTE, nil);
+    glBindTexture(TTarget, 0);
   end;
 
   CheckOpenGLError;
@@ -130,6 +156,7 @@ begin
   if assigned(FPBO) then
   begin
     FPBO.UnmapBuffer;
+    // pointer will act as an offset when using PBO
     d:= nil;
   end
   else
@@ -159,9 +186,28 @@ begin
   CheckOpenGLError;
 end;
 
+procedure TGLDynamicTextureImage.FreeBuffer;
+begin
+  if assigned(FBuffer) then
+  begin
+    FreeMem(FBuffer);
+    FBuffer:= nil;
+  end;
+end;
+
+procedure TGLDynamicTextureImage.FreePBO;
+begin
+  if assigned(FPBO) then
+  begin
+    FPBO.Free;
+    FPBO:= nil;
+  end;
+end;
+
 function TGLDynamicTextureImage.GetBitmap32(target: TGLUInt): TGLBitmap32;
 begin
   result:= inherited GetBitmap32(target);
+  // Cache the target, so we know what to bind to (in case of cube faces)
   TTarget:= target;
 end;
 
@@ -246,9 +292,8 @@ procedure TGLDynamicTextureImage.NotifyChange(Sender: TObject);
 begin
   if FTexSize <> GetTexSize then
   begin
-    FPBO.Free;
-    if assigned(FBuffer) then    
-      FreeMem(FBuffer);
+    FreePBO;
+    FreeBuffer;
   end;
 
   inherited;
@@ -261,10 +306,9 @@ begin
   begin
     FUsePBO := Value;
     if not FUsePBO then
-    begin
-      FPBO.Free;
-      FPBO:= nil;
-    end;
+      FreePBO
+    else
+      FreeBuffer;
   end;
 end;
 
