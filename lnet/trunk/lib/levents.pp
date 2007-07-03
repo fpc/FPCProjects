@@ -225,6 +225,7 @@ end;
 
 constructor TLHandle.Create;
 begin
+  Writeln('Created: ', DWord(Self));
   FOnRead := nil;
   FOnWrite := nil;
   FOnError := nil;
@@ -244,6 +245,8 @@ destructor TLHandle.Destroy;
 begin
   if Assigned(FEventer) then
     FEventer.UnplugHandle(Self);
+
+  Writeln('Destroyed: ', DWord(Self));
 end;
 
 procedure TLHandle.Free;
@@ -337,6 +340,7 @@ var
 begin
   Temp := FFreeRoot;
   while Assigned(Temp) do begin
+    Writeln('FreeHandles: ', DWord(Temp));
     Temp2 := Temp.FreeNext;
     Temp.Free;
     Temp := Temp2;
