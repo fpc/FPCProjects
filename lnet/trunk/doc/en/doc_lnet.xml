@@ -607,7 +607,7 @@ This is the metaclass of the TLSocket class. It is used by protocols to specify 
 <element name="ILComponent">
 <short>Interface which specifies basic network component</short>
 <descr>
-This interface is used as the bare minimum specification of any network component.
+This interface is used as the bare minimum specification of any network component. It contains the absolute minimum methods and properties any connection/protocol should contain.
 </descr>
 <errors>
 </errors>
@@ -619,6 +619,7 @@ This interface is used as the bare minimum specification of any network componen
 <element name="ILComponent.Disconnect">
 <short></short>
 <descr>
+Each connection should support direct disconnecting, even if it's not the proper way (eg: SMTP is a nice example).
 </descr>
 <errors>
 </errors>
@@ -669,7 +670,7 @@ This method is used to "eventize" the activity in given component. It ensures th
 <element name="ILDirect">
 <short>Interface for direct connection components</short>
 <descr>
-This interface specifies those network components which offer a direct connection.
+This interface specifies those network components which offer a direct connection. Protocols like TCP or UDP fall into this category, since the user can directly send raw data on them. Protocols like SMTP or FTP on the other hand do not, because the data on these protocols is specific, or the transfer is even one sided.
 </descr>
 <errors>
 </errors>
@@ -681,7 +682,7 @@ This interface specifies those network components which offer a direct connectio
 <element name="ILDirect.Get">
 <short>Method for getting data from the other side</short>
 <descr>
-This method specifies how to get data from the other side.
+This method specifies how to get data from the other side. See specific implementor classes for specific details.
 </descr>
 <errors>
 </errors>
@@ -706,7 +707,7 @@ This method specifies how to get data from the other side.
 
 <!-- argument Visibility: default -->
 <element name="ILDirect.Get.aSocket">
-<short>Socket on which to receive, defaults to nil</short>
+<short>Socket on which to receive, defaults to nil. See specific implementor classes for meaning of nil socket argument</short>
 </element>
 
 <!-- function Visibility: default -->
@@ -733,14 +734,14 @@ This method gets data from the other side and inpus it into user string.
 
 <!-- argument Visibility: default -->
 <element name="ILDirect.GetMessage.aSocket">
-<short>The socket on which to receive, defaults to nil</short>
+<short>The socket on which to receive, defaults to nil. See specific implementor classes for meaning of nil socket argument</short>
 </element>
 
 <!-- function Visibility: default -->
 <element name="ILDirect.Send">
 <short>Method used to send data to the other side</short>
 <descr>
-This method is used to send data over a connection to the other side.
+This method is used to send data over a connection to the other side. See specific implementor classes for more information.
 </descr>
 <errors>
 </errors>
@@ -799,7 +800,7 @@ This method sends a string message to the other side.
 <element name="ILServer">
 <short>Interface for any server protocol</short>
 <descr>
-This interface is used as the basis for all server specific protocol implementations
+This interface is used as the basis for all server specific protocol implementations.
 </descr>
 <errors>
 </errors>
@@ -995,7 +996,7 @@ This class is used as a common ancestor to both TCP and UDP connection protocols
 <element name="TLConnection.Connect">
 <short>Connects the connection to the remote host</short>
 <descr>
-This method is used to connect to the specifies remote host
+This method is used to connect to the specifies remote host.
 </descr>
 <errors>
 </errors>
@@ -1074,14 +1075,14 @@ This method is used to receive data sent from the other side
 
 <!-- argument Visibility: default -->
 <element name="TLConnection.Get.aSocket">
-<short>Specifies the socket to receive on, defaults to nil</short>
+<short>Specifies the socket to receive on, defaults to nil. See specific implementor classes for meaning of nil socket argument</short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLConnection.GetMessage">
 <short>Receives message from the other side</short>
 <descr>
-This method is used to receive data into a string message from the other side.
+This method is used to receive data into a string message from the other side. See specific implementor classes for more details.
 </descr>
 <errors>
 </errors>
@@ -1101,14 +1102,14 @@ This method is used to receive data into a string message from the other side.
 
 <!-- argument Visibility: default -->
 <element name="TLConnection.GetMessage.aSocket">
-<short>The socket to receive on, defaults to nil</short>
+<short>The socket to receive on, defaults to nil. See specific implementor classes for meaning of nil socket argument</short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLConnection.Send">
 <short>Send data to the other side</short>
 <descr>
-This method is used to send data to the other side.
+This method is used to send data to the other side. See specific implementor classes for more details.
 </descr>
 <errors>
 </errors>
@@ -1133,14 +1134,14 @@ This method is used to send data to the other side.
 
 <!-- argument Visibility: default -->
 <element name="TLConnection.Send.aSocket">
-<short>Socket to send on, defaults to nil</short>
+<short>Socket to send on, defaults to nil. See specific implementor classes for meaning of nil socket argument</short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLConnection.SendMessage">
 <short>Send a string message to the other side</short>
 <descr>
-This method is used to send a string message to the other side.
+This method is used to send a string message to the other side. See specific implementor classes for more details.
 </descr>
 <errors>
 </errors>
@@ -1160,14 +1161,14 @@ This method is used to send a string message to the other side.
 
 <!-- argument Visibility: default -->
 <element name="TLConnection.SendMessage.aSocket">
-<short>Socket to send on, defaults to nil</short>
+<short>Socket to send on, defaults to nil. See specific implementor classes for meaning of nil socket argument</short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLConnection.IterNext">
 <short>Iterator for cycling all sockets in a connection</short>
 <descr>
-This method is used to iterate all the sockets in given connection.
+This method is used to iterate all the sockets in given connection. It returns the next socket.
 </descr>
 <errors>
 </errors>
@@ -1184,7 +1185,7 @@ This method is used to iterate all the sockets in given connection.
 <element name="TLConnection.IterReset">
 <short>Reset the iterator</short>
 <descr>
-This method is used to reset the socket iterator.
+This method is used to reset the socket iterator to the first socket. See specific implementor classes for more info.
 </descr>
 <errors>
 </errors>
@@ -1403,7 +1404,7 @@ This method is used to initiate listening for new TCP connections.
 <element name="TLUdp.Get">
 <short>Method used to receive data from the other side</short>
 <descr>
-This method is used to receive data from the other side, into the user buffer.
+This method is used to receive data from the other side, into the user buffer. Socket does not need to be specified as UDP has only one socket all the times.
 </descr>
 <errors>
 </errors>
@@ -1428,14 +1429,14 @@ This method is used to receive data from the other side, into the user buffer.
 
 <!-- argument Visibility: default -->
 <element name="TLUdp.Get.aSocket">
-<short>The socket to receive on, defaults to nil</short>
+<short>The socket to receive on, defaults to nil. There is no need to specify the socket as UDP always has only one socket.</short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLUdp.GetMessage">
 <short>Method used to receive message from the other side</short>
 <descr>
-This method is used to receive message from the other side and put it into a string.
+This method is used to receive message from the other side and put it into a string. Socket does not need to be specified in any case as UDP has only one socket at all times.
 </descr>
 <errors>
 </errors>
@@ -1455,14 +1456,14 @@ This method is used to receive message from the other side and put it into a str
 
 <!-- argument Visibility: default -->
 <element name="TLUdp.GetMessage.aSocket">
-<short>The socket to receive on, defaults to nil</short>
+<short>The socket to receive on, defaults to nil. Socket does not need to be specified as UDP has only one all the time.</short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLUdp.SendMessage">
 <short>Send a message to the other side</short>
 <descr>
-This method is used to send a string message to the other side.
+This method is used to send a string message to the other side. Socket does not need to be specified as UDP has only one socket all the times.
 </descr>
 <errors>
 </errors>
@@ -1482,7 +1483,7 @@ This method is used to send a string message to the other side.
 
 <!-- argument Visibility: default -->
 <element name="TLUdp.SendMessage.aSocket">
-<short>The socket to send on, defaults to nil</short>
+<short>The socket to send on, defaults to nil. Socket does not need to be specified as UDP has only one socket all the times.</short>
 </element>
 
 <!-- argument Visibility: default -->
@@ -1494,7 +1495,7 @@ This method is used to send a string message to the other side.
 <element name="TLUdp.Send">
 <short>Send data to the other side</short>
 <descr>
-This method sends user data to the other side.
+This method sends user data to the other side. Socket does not need to be specified as UDP has only one socket all the times.
 </descr>
 <errors>
 </errors>
@@ -1519,7 +1520,7 @@ This method sends user data to the other side.
 
 <!-- argument Visibility: default -->
 <element name="TLUdp.Send.aSocket">
-<short>Socket on which to send, defaults to nil</short>
+<short>Socket on which to send, defaults to nil. Socket does not need to be specified as UDP has only one socket all the times</short>
 </element>
 
 <!-- argument Visibility: default -->
@@ -1666,7 +1667,10 @@ This method is used to start listening for new TCP connections.
 <element name="TLTcp.Get">
 <short>Receive data from the other side</short>
 <descr>
-This method is used to receive data from the other side.
+This method is used to receive data from the other side. 
+If the socket argument is not specified:
+1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
 </descr>
 <errors>
 </errors>
@@ -1691,7 +1695,9 @@ This method is used to receive data from the other side.
 
 <!-- argument Visibility: default -->
 <element name="TLTcp.Get.aSocket">
-<short>The socket to receive on, defaults to nil</short>
+<short>The socket to receive on, defaults to nil. If the argument is nil:
+1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
 </element>
 
 <!-- function Visibility: public -->
@@ -1699,6 +1705,9 @@ This method is used to receive data from the other side.
 <short>Receive a message from the other side</short>
 <descr>
 This method is used to receive a message to the other side and input it into a user string.
+If the socket argument is not specified:
+1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
 </descr>
 <errors>
 </errors>
@@ -1718,7 +1727,10 @@ This method is used to receive a message to the other side and input it into a u
 
 <!-- argument Visibility: default -->
 <element name="TLTcp.GetMessage.aSocket">
-<short>The socket to receive on, defaults to nil</short>
+<short>The socket to receive on, defaults to nil.
+If the socket argument is not specified:
+1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</short>
 </element>
 
 <!-- function Visibility: public -->
@@ -1726,6 +1738,9 @@ This method is used to receive a message to the other side and input it into a u
 <short>Send data to the other side</short>
 <descr>
 This method is used to send data to the other side.
+If the socket argument is not specified:
+1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
 </descr>
 <errors>
 </errors>
@@ -1750,15 +1765,20 @@ This method is used to send data to the other side.
 
 <!-- argument Visibility: default -->
 <element name="TLTcp.Send.aSocket">
-<short>Socket to send the data on, defaults to nil</short>
+<short>Socket to send the data on, defaults to nil.
+If the socket argument is not specified:
+1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLTcp.SendMessage">
 <short>Send a string message to the other side</short>
 <descr>
-This method is used to send a user string message to the other side
-</descr>
+This method is used to send a user string message to the other side.
+If the socket argument is not specified:
+1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</descr>
 <errors>
 </errors>
 <seealso>
@@ -1777,7 +1797,10 @@ This method is used to send a user string message to the other side
 
 <!-- argument Visibility: default -->
 <element name="TLTcp.SendMessage.aSocket">
-<short>The socket to send on, defaults to nil</short>
+<short>The socket to send on, defaults to nil.
+If the socket argument is not specified:
+1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</short>
 </element>
 
 <!-- function Visibility: public -->
@@ -1801,7 +1824,7 @@ This method is used to get the next iterator socket. It returns the next socket 
 <element name="TLTcp.IterReset">
 <short>Resets the socket iterator</short>
 <descr>
-This method is used to reset the socket iterator to the first socket. 
+This method is used to reset the socket iterator to the first socket. In case of client, this is the only socket. In case of server it now points to the listening server socket. You should use IterNext on server right after IterReset to get to the first connected socket! (the server one is just listening, for new connections)
 </descr>
 <errors>
 </errors>
