@@ -1698,6 +1698,7 @@ If the socket argument is not specified:
 <short>The socket to receive on, defaults to nil. If the argument is nil:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
 2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
+</short>
 </element>
 
 <!-- function Visibility: public -->
