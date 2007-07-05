@@ -1667,10 +1667,11 @@ This method is used to start listening for new TCP connections.
 <element name="TLTcp.Get">
 <short>Receive data from the other side</short>
 <descr>
-This method is used to receive data from the other side. 
+<pre>This method is used to receive data from the other side. 
 If the socket argument is not specified:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
 2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
+</pre>
 </descr>
 <errors>
 </errors>
@@ -1695,9 +1696,9 @@ If the socket argument is not specified:
 
 <!-- argument Visibility: default -->
 <element name="TLTcp.Get.aSocket">
-<short>The socket to receive on, defaults to nil. If the argument is nil:
+<short><pre>The socket to receive on, defaults to nil. If the argument is nil:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
-2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</pre>
 </short>
 </element>
 
@@ -1705,10 +1706,10 @@ If the socket argument is not specified:
 <element name="TLTcp.GetMessage">
 <short>Receive a message from the other side</short>
 <descr>
-This method is used to receive a message to the other side and input it into a user string.
+<pre>This method is used to receive a message to the other side and input it into a user string.
 If the socket argument is not specified:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
-2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</pre>
 </descr>
 <errors>
 </errors>
@@ -1728,20 +1729,20 @@ If the socket argument is not specified:
 
 <!-- argument Visibility: default -->
 <element name="TLTcp.GetMessage.aSocket">
-<short>The socket to receive on, defaults to nil.
+<short><pre>The socket to receive on, defaults to nil.
 If the socket argument is not specified:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
-2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</short>
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</pre></short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLTcp.Send">
 <short>Send data to the other side</short>
 <descr>
-This method is used to send data to the other side.
+<pre>This method is used to send data to the other side.
 If the socket argument is not specified:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
-2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</pre>
 </descr>
 <errors>
 </errors>
@@ -1766,20 +1767,20 @@ If the socket argument is not specified:
 
 <!-- argument Visibility: default -->
 <element name="TLTcp.Send.aSocket">
-<short>Socket to send the data on, defaults to nil.
+<short><pre>Socket to send the data on, defaults to nil.
 If the socket argument is not specified:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
-2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</short>
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</pre></short>
 </element>
 
 <!-- function Visibility: public -->
 <element name="TLTcp.SendMessage">
 <short>Send a string message to the other side</short>
 <descr>
-This method is used to send a user string message to the other side.
+<pre>This method is used to send a user string message to the other side.
 If the socket argument is not specified:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
-2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</descr>
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</pre></descr>
 <errors>
 </errors>
 <seealso>
@@ -1798,10 +1799,10 @@ If the socket argument is not specified:
 
 <!-- argument Visibility: default -->
 <element name="TLTcp.SendMessage.aSocket">
-<short>The socket to send on, defaults to nil.
+<short><pre>The socket to send on, defaults to nil.
 If the socket argument is not specified:
 1. If the object is a client (connect was used), then it uses the only socket, and so the argument is useless anyhow.
-2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</short>
+2. If the object is a server, the current iterator is used. This points to the first accepted connection socket if there is one, or the server socket (in which case Get will fail with 0 and OnError will get called).</pre></short>
 </element>
 
 <!-- function Visibility: public -->
