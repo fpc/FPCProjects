@@ -1,3 +1,10 @@
+{
+  GLDynamicTexture Demo.
+
+  Version history:
+    29/06/07 - DaStr - Initial version (by LordCrc)
+}
+
 unit Unit1;
 
 {$IFDEF FPC}
@@ -11,7 +18,7 @@ uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLMisc, GLTexture, GLViewer, GLCadencer,
   ExtCtrls
-  {$IFDEF LCL} , LResources {$ENDIF};
+  {$IFDEF LCL}, LResources{$ENDIF};
 
 type
   TForm1 = class(TForm)
@@ -28,14 +35,12 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure GLDirectOpenGL1Render(Sender: TObject;
-      var rci: TRenderContextInfo);
+    procedure GLDirectOpenGL1Render(Sender: TObject; var rci: TRenderContextInfo);
     procedure Timer1Timer(Sender: TObject);
-    procedure GLCadencer1Progress(Sender: TObject; const deltaTime,
-      newTime: Double);
+    procedure GLCadencer1Progress(Sender: TObject; const DeltaTime, newTime: Double);
   private
     { Private declarations }
-    frame: integer;
+    frame: Integer;
   public
     { Public declarations }
   end;
@@ -49,14 +54,12 @@ implementation
 {$R *.dfm}
 {$ENDIF}
 
-
 uses
   OpenGL1x, GLUtils, GLContext, GLDynamicTexture;
 
-
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  GLSceneViewer1.Align:= alClient;
+  GLSceneViewer1.Align := alClient;
 end;
 
 procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -64,19 +67,21 @@ var
   tex: TGLTexture;
   img: TGLDynamicTextureImage;
 begin
-  tex:= GLMaterialLibrary1.TextureByName('Anim');
+  tex := GLMaterialLibrary1.TextureByName('Anim');
   if not (tex.Image is TGLDynamicTextureImage) then
-    exit;
+    Exit;
 
-  img:= TGLDynamicTextureImage(tex.Image);
+  img := TGLDynamicTextureImage(tex.Image);
 
   case Key of
-    VK_F2: begin
-      img.UsePBO:= false;
+    VK_F2:
+    begin
+      img.UsePBO := False;
       GLSceneViewer1.ResetPerformanceMonitor;
     end;
-    VK_F3: begin
-      img.UsePBO:= true;
+    VK_F3:
+    begin
+      img.UsePBO := True;
       GLSceneViewer1.ResetPerformanceMonitor;
     end;
   end;
@@ -84,52 +89,50 @@ end;
 
 procedure TForm1.FormResize(Sender: TObject);
 begin
-  GLCamera1.SceneScale:= GLSceneViewer1.ClientWidth / 400;
+  GLCamera1.SceneScale := GLSceneViewer1.ClientWidth / 400;
 end;
 
-procedure TForm1.GLCadencer1Progress(Sender: TObject; const deltaTime,
-  newTime: Double);
+procedure TForm1.GLCadencer1Progress(Sender: TObject; const DeltaTime, newTime: Double);
 begin
   GLSceneViewer1.Invalidate;
 end;
 
-procedure TForm1.GLDirectOpenGL1Render(Sender: TObject;
-  var rci: TRenderContextInfo);
+procedure TForm1.GLDirectOpenGL1Render(Sender: TObject; var rci: TRenderContextInfo);
 var
-  tex: TGLTexture;
-  img: TGLDynamicTextureImage;
-  p: PRGBQuad;
-  x, y: integer;
+  tex:  TGLTexture;
+  img:  TGLDynamicTextureImage;
+  p:    PRGBQuad;
+  X, Y: Integer;
 begin
-  tex:= GLMaterialLibrary1.TextureByName('Anim');
+  tex := GLMaterialLibrary1.TextureByName('Anim');
   if tex.Disabled then
   begin
-    tex.ImageClassName:= TGLDynamicTextureImage.ClassName;
-    img:= TGLDynamicTextureImage(tex.Image);
-    img.Width:= 256;
-    img.Height:= 256;
+    tex.ImageClassName := TGLDynamicTextureImage.ClassName;
+    img := TGLDynamicTextureImage(tex.Image);
+    img.Width := 256;
+    img.Height := 256;
 
-    tex.TextureFormat:= tfRGBA;
+    tex.TextureFormat := tfRGBA;
 
-    tex.TextureMode:= tmReplace;
-    tex.Disabled:= false;
+    tex.TextureMode := tmReplace;
+    tex.Disabled := False;
   end;
 
-  img:= TGLDynamicTextureImage(tex.Image);
+  img := TGLDynamicTextureImage(tex.Image);
 
   img.BeginUpdate;
 
   // draw some silly stuff
-  p:= img.Data;
-  frame:= frame + 1;
-  for y := 0 to img.Height - 1 do
+  p := img.Data;
+  frame := frame + 1;
+  for Y := 0 to img.Height - 1 do
   begin
-    for x := 0 to img.Width - 1 do
+    for X := 0 to img.Width - 1 do
     begin
-      p^.rgbRed:= ((x xor y) + frame) and 255;
-      p^.rgbGreen:= ((x + frame) xor y) and 255;
-      p^.rgbBlue:= ((x - frame) xor (y + frame)) and 255;
-      inc(p);
+      p^.rgbRed := ((X xor Y) + frame) and 255;
+      p^.rgbGreen := ((X + frame) xor Y) and 255;
+      p^.rgbBlue := ((X - frame) xor (Y + frame)) and 255;
+      Inc(p);
     end;
   end;
 
@@ -138,20 +141,20 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 const
-  PBOText: array[boolean] of string = ('PBO disabled', 'PBO enabled');
+  PBOText: array[Boolean] of string = ('PBO disabled', 'PBO enabled');
 var
   tex: TGLTexture;
   img: TGLDynamicTextureImage;
-  s: string;
+  s:   string;
 begin
-  tex:= GLMaterialLibrary1.TextureByName('Anim');
+  tex := GLMaterialLibrary1.TextureByName('Anim');
   if (tex.Image is TGLDynamicTextureImage) then
   begin
-    img:= TGLDynamicTextureImage(tex.Image);
-    s:= PBOText[img.UsePBO];
+    img := TGLDynamicTextureImage(tex.Image);
+    s := PBOText[img.UsePBO];
   end;
 
-  Caption:= Format('%s - %s', [GLSceneViewer1.FramesPerSecondText, s]);
+  Caption := Format('%s - %s', [GLSceneViewer1.FramesPerSecondText, s]);
   GLSceneViewer1.ResetPerformanceMonitor;
 end;
 
