@@ -345,6 +345,7 @@ type
 
     function GetConnected: Boolean; override;
     function GetConnecting: Boolean;
+    function GetCount: Integer; override;
 
     procedure ConnectAction(aSocket: TLHandle); override;
     procedure AcceptAction(aSocket: TLHandle); override;
@@ -1228,6 +1229,11 @@ begin
   Result := False;
   if Assigned(FRootSock) then
     Result := FRootSock.Connecting;
+end;
+
+function TLTcp.GetCount: Integer;
+begin
+  Result := FCount;
 end;
 
 function TLTcp.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
