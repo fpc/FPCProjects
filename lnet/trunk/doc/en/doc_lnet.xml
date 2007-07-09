@@ -1237,7 +1237,18 @@ This callback is used to see when sending is again possible. This callback doesn
 <element name="TLConnection.Socks">
 <short>The array property of sockets on connection</short>
 <descr>
-This is an array property containing all sockets in the connection
+<pre>
+This is an array property containing all sockets in the connection.
+
+Note that the order of sockets it NOT given durins the lifetime of a given connection. 
+For example in a TCP server, you might initially have 3 active sockets. 
+But later, socket 1 might disconnect. This means that socket 2 becomes socket 1 and socket 3 becomes socket 2.
+This property is therefor deprecated and might get removed.
+
+The iterator property with IterReset and IterNext should be used to go over all sockets in a connection.
+If you require indexing of sockets, your design is somehow flawed.
+(I know that lNet used this in the past, but it was a mistake)
+</pre>
 </descr>
 <seealso>
 </seealso>
