@@ -392,7 +392,7 @@ begin
   if  (Count = '9999')
   and (Length(FromDate) = 0)
   and (Length(ToDate) = 0) then
-    s := s + ' and CAST (logtime as date) >= ' + AnsiQuotedStr(SQLEscape (DateTimeToStr(Now)), #39) ;
+    s := s + ' and logtime::date >= ' + AnsiQuotedStr(SQLEscape (DateTimeToStr(Now)), #39) + '::date' ;
 
   if ValidRequest then begin
     with LogQuery do try
