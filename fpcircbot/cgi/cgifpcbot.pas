@@ -378,10 +378,16 @@ begin
 
   if Length(Sender) > 0 then s := s + ' and UPPER(sender)=' + UpperCase(AnsiQuotedStr(SQLEscape(Sender), #39));
   if Length(Msg) > 0 then s := s + ' and msg like ''%' + SQLEscape(Msg) + '%''';
-  if Length(FromDate) > 0 then s := s + ' and CAST (logtime as date) >= ' + AnsiQuotedStr(SQLEscape (FromDate), #39) ;
+  {"CAST" confuses the PostgreSQL optimizer.}
+{  if Length(FromDate) > 0 then s := s + ' and CAST (logtime as date) >= ' + AnsiQuotedStr(SQLEscape (FromDate), #39) ;
   if Length(ToDate) > 0 then s := s + ' and CAST (logtime as date) <= ' + AnsiQuotedStr(SQLEscape (ToDate), #39) ;
   if Length(FromTime) > 0 then s := s + ' and CAST (logtime as time) >= ' + AnsiQuotedStr(SQLEscape (FromTime), #39) ;
-  if Length(ToTime) > 0 then s := s + ' and CAST (logtime as time) <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) ;
+  if Length(ToTime) > 0 then s := s + ' and CAST (logtime as time) <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) ;}
+
+  if Length(FromDate) > 0 then s := s + ' and logtime::date >= ' + AnsiQuotedStr(SQLEscape (FromDate), #39) + '::date';
+  if Length(ToDate) > 0 then s := s + ' and logtime::date <= ' + AnsiQuotedStr(SQLEscape (ToDate), #39) + '::date';
+  if Length(FromTime) > 0 then s := s + ' and logtime::time >= ' + AnsiQuotedStr(SQLEscape (FromTime), #39) + '::time';
+  if Length(ToTime) > 0 then s := s + ' and logtime::time <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) + '::time';
 
   if  (Count = '9999')
   and (Length(FromDate) = 0)
