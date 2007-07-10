@@ -31,72 +31,82 @@ uses
   BaseUnix, Errors,
 {$endif}
   lhttp, lwebserver, lHTTPSettings, lSpawnFCGI;
+  
+type
+
+  { TMain }
+
+  TMain = class
+   public
+    Server: TLHTTPServer;
+    FileHandler: TFileHandler;
+    CGIHandler: TCGIHandler;
+    PHPCGIHandler: TPHPFastCGIHandler;
+    Quit: Boolean;
+    procedure OnEr(const msg: string; aSocket: TLSocket);
+    function SetServer: Boolean;
+    procedure HandleSignals;
+    function Daemonize: Integer;
+    procedure Spawn;
+    procedure MainLoop;
+    procedure Run(const BG: Boolean);
+  end;
 
 var
-  Server: TLHTTPServer;
-  FileHandler: TFileHandler;
-  CGIHandler: TCGIHandler;
-  PHPCGIHandler: TPHPFastCGIHandler;
-  Quit: Boolean = False;
+  Main: TMain;
   
 procedure HandleTermSignal(sig: longint); cdecl;
 begin
-  Quit := true;
-end;
-  
-procedure MainLoop;
-var
-  lRuns: dword;
-begin
-  lRuns := $FFFFFFFF;
-  while (lRuns > 0) and (Server.Connected) and (not Quit) do
-  begin
-    Server.CallAction;
-    if Assigned(PHPCGIHandler.Pool.Timer) then
-    begin
-      Server.Eventer.Timeout := 2000;
-      PHPCGIHandler.Pool.Timer.CallAction;
-    end;
-    dec(lruns);
-    if (lruns and $FFF) = 0 then
-      writeln(lruns);
-  end;
+  Main.Quit := true;
 end;
 
-function SetServer: Boolean;
+procedure TMain.OnEr(const msg: string; aSocket: TLSocket);
+begin
+  Writeln(msg);
+end;
+
+function TMain.SetServer: Boolean;
 begin
   Result:=False;
+
   Server := TLHTTPServer.Create(nil);
   Server.ServerSoftware := 'fpHTTPd/0.4';
+  Server.TimeOut := -1;
+  Server.OnError := @OnEr;
+
   FileHandler := TFileHandler.Create;
   FileHandler.MimeTypeFile := GetMimeFile;
   FileHandler.DocumentRoot := GetHTTPPath;
+
   CGIHandler := TCGIHandler.Create;
   CGIHandler.FCGIRoot := GetCGIRoot;
   CGIHandler.FDocumentRoot := GetHTTPPath;
   CGIHandler.FEnvPath := GetCGIPath;
   CGIHandler.FScriptPathPrefix := GetScriptPathPrefix;
+
   PHPCGIHandler := TPHPFastCGIHandler.Create;
   PHPCGIHandler.Host := 'localhost';
   PHPCGIHandler.Port := GetPHPCGIPort;
   PHPCGIHandler.AppEnv := GetPHPCGIEnv;
   PHPCGIHandler.AppName := GetPHPCGIBinary;
   PHPCGIHandler.EnvPath := GetCGIPath;
+
   Server.RegisterHandler(FileHandler);
   Server.RegisterHandler(CGIHandler);
+
   FileHandler.DirIndexList.Add('index.html');
   FileHandler.DirIndexList.Add('index.htm');
   FileHandler.DirIndexList.Add('index.php');
   FileHandler.DirIndexList.Add('index.cgi');
   FileHandler.RegisterHandler(PHPCGIHandler);
-  Server.TimeOut := 300000;
+
   if not Server.Listen(GetPort) then
     Writeln('Error starting server.')
   else
     Result:=True;
 end;
 
-procedure HandleSignals;
+procedure TMain.HandleSignals;
 begin
   {$ifdef UNIX}
   FpSignal(SIGTERM, @HandleTermSignal);
@@ -106,7 +116,7 @@ begin
   {$endif}
 end;
 
-function Daemonize: Integer;
+function TMain.Daemonize: Integer;
   {$ifdef UNIX}
 var
   PID: TPid;
@@ -128,7 +138,31 @@ begin
   {$endif}
 end;
 
-procedure Run(const BG: Boolean);
+procedure TMain.Spawn;
+begin
+  SpawnFCGIProcess(ParamStr(2), ParamStr(4), StrToInt(ParamStr(3)));
+end;
+
+procedure TMain.MainLoop;
+var
+  lRuns: dword;
+begin
+  lRuns := $FFFFFFFF;
+  while (lRuns > 0) and (Server.Connected) and (not Quit) do
+  begin
+    Server.CallAction;
+    if Assigned(PHPCGIHandler.Pool.Timer) then
+    begin
+      Server.Eventer.Timeout := 2000;
+      PHPCGIHandler.Pool.Timer.CallAction;
+    end;
+    dec(lruns);
+    if (lruns and $FFF) = 0 then
+      writeln(lruns);
+  end;
+end;
+
+procedure TMain.Run(const BG: Boolean);
 begin
   HandleSignals;
   InitSettings;
@@ -148,11 +182,6 @@ begin
   Server.Free;
 end;
 
-procedure Spawn;
-begin
-  SpawnFCGIProcess(ParamStr(2), ParamStr(4), StrToInt(ParamStr(3)));
-end;
-
 procedure WriteUsage;
 begin
   Writeln('Usage: ', ExtractFileName(ParamStr(0)), ' [-h|-c|-s <fcgi port [enviro]>]');
@@ -169,13 +198,17 @@ begin
 end;
 
 begin
+  Main := TMain.Create;
+  
   if ParamStr(1) = '-c' then
-    Run(LowerCase(ParamStr(1)) <> '-c')
+    Main.Run(LowerCase(ParamStr(1)) <> '-c')
   else if ParamStr(1) = '-s' then begin
     if ParamCount >= 3 then
-      Spawn
+      Main.Spawn
     else
       WriteUsage;
   end else
-   WriteUsage;
+    WriteUsage;
+   
+  Main.Free;
 end.
