@@ -5,7 +5,7 @@ INTERFACE
 uses
   classes, vectorgeometry, glscene, gltexture, glmisc, opengl1x, sysutils,
   vectorlists, glcrossplatform, glcontext, glsilhouette, globjects,
-  geometrybb, glgizmo, gllclviewer, controls, forms, glgizmoutils,
+  geometrybb, glgizmo, glviewer, controls, forms, glgizmoutils,
   contnrs, graphics,dialogs
   {$ifdef win32}
   ,windows

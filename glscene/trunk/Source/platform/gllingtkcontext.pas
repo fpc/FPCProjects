@@ -14,7 +14,7 @@ interface
 
 uses
   xlib, classes, sysutils, glcontext, lclproc, forms, controls, opengl1x,
-  x,xutil,gllclviewer,gtkproc,
+  x, xutil, gtkproc,
 {$ifdef LCLGTK2}
   gtk2, gdk2, gdk2x;
 {$else}

@@ -27,10 +27,9 @@ uses
   sysutils, classes, graphics, controls, forms, dialogs,
   StdCtrls, ComCtrls, ExtCtrls, GLTexture, GLScene, GLObjects, GLWindows, GLHUDObjects,
   glmisc, glgui, glgraphics, glutils, menus
-  {$ifndef lcl}
-  ,glwin32viewer
-  {$else}
-  ,GLLCLViewer ,lresources,lclintf,messages,lmessages,buttons;
+  , glviewer
+  {$ifdef lcl}
+  ,lresources,lclintf,messages,lmessages,buttons;
 {$ENDIF}
 {$else}
 uses
