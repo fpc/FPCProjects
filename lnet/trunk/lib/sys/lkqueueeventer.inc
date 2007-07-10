@@ -99,7 +99,7 @@ begin
 
   FFreeSlot := 0;
   if n < 0 then
-    Bail('Error on kqueue: ', LSocketError);
+    Bail('Error on kqueue', LSocketError);
   Result := n > 0;
   if Result then begin
     FInLoop := True;

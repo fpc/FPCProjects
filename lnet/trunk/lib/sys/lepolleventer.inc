@@ -138,7 +138,7 @@ begin
       else
         ReadChanges := epoll_wait(FEpollReadFD, @FEventsRead[0], FCount, 0);
     if (Changes < 0) or (ReadChanges < 0) then
-      Bail('Error on epoll: ', LSocketError)
+      Bail('Error on epoll', LSocketError)
     else
       Result := Changes + ReadChanges > 0;
       
@@ -179,7 +179,7 @@ begin
           if  (not Temp.FDispose)
           and (FEvents[i].events and EPOLLERR = EPOLLERR) then
             if Assigned(Temp.FOnError) and not Temp.IgnoreError then
-              Temp.FOnError(Temp, 'Handle error: ' + LStrError(LSocketError));
+              Temp.FOnError(Temp, 'Handle error' + LStrError(LSocketError));
 
           if Temp.FDispose then
             AddForFree(Temp);
@@ -190,7 +190,7 @@ begin
         FreeHandles;
     end;
   end else if MasterChanges < 0 then
-    Bail('Error on epoll: ', LSocketError);
+    Bail('Error on epoll', LSocketError);
 end;
 
 function BestEventerClass: TLEventerClass;
