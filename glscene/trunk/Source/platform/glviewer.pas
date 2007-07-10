@@ -22,6 +22,7 @@ interface
 {$I GLScene.inc}
 
 uses
+  classes,
 {$IFDEF FPC}
   GLLCLViewer;
 {$ELSE}
@@ -31,15 +32,15 @@ uses
 
 type
 {$IFDEF FPC}  //For FPC, always use LCLViewer
-  TGLSceneViewer = GLLCLViewer.TGLSceneViewer;
+  TGLSceneViewer = class(GLLCLViewer.TGLSceneViewer);
   TVSyncMode = GLLCLViewer.TVSyncMode;
 {$ELSE}  // if not FPC then
   {$IFDEF UNIX}  // kylix
-    TGLSceneViewer = GLLinuxViewer.TGLLinuxSceneViewer;
+    TGLSceneViewer = class(GLLinuxViewer.TGLLinuxSceneViewer);
     TVSyncMode = GLLinuxViewer.TVSyncMode;
   {$ENDIF UNIX}
   {$IFDEF MSWINDOWS} // windows
-    TGLSceneViewer = GLWin32Viewer.TGLSceneViewer;
+    TGLSceneViewer = class(GLWin32Viewer.TGLSceneViewer);
     TVSyncMode = GLWin32Viewer.TVSyncMode;
   {$ENDIF MSWINDOWS}
 {$ENDIF FPC}
@@ -61,6 +62,13 @@ const
 {$ENDIF FPC}
 
 implementation
+
+initialization
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+
+   RegisterClass(TGLSceneViewer);
 
 end.
  
