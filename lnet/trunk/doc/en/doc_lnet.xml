@@ -1303,7 +1303,7 @@ This is the socket iterator property. It returns the "current" socket in iterati
 <element name="TLConnection.Timeout">
 <short>Specifies the timeout on CallAction</short>
 <descr>
-This property specifies how much can the connection block on the CallAction call. Default is 0 which means don't block. If any positive number is given, CallAction will block that number of milliseconds or less if an event occurred.
+This property specifies how much can the connection block on the CallAction call. Default is 0 which means don't block. If any positive number is given, CallAction will block that number of milliseconds or less if an event occurred. If -1 is given, CallAction will block until an event happens.
 </descr>
 <seealso>
 </seealso>
@@ -2223,7 +2223,7 @@ This method adds a new handle to the eventer. After this call, the handle will b
 <element name="TLEventer.CallAction">
 <short>Eventizes the eventer</short>
 <descr>
-This method is the heart of the eventer. It ensures activity. Once called, all handles are checked for events and callbacks are issued. Depending on timeout this method will block or not (if timeout is > 0 it will block for that time or until an event occurs on any handle).
+This method is the heart of the eventer. It ensures activity. Once called, all handles are checked for events and callbacks are issued. Depending on timeout this method will block or not (if timeout is > 0 it will block for that time or until an event occurs on any handle, if timeout is -1, it will block until an event happens).
 </descr>
 <errors>
 </errors>
@@ -2327,7 +2327,7 @@ This method is used by protocols to keep track of references to the eventers. If
 <element name="TLEventer.Timeout">
 <short>Callaction timeout</short>
 <descr>
-This property specifies the timeout a callaction can take at most. If the number is greater than 0, callaction will block for the specified amount of time or less, depending on event occurrences.
+This property specifies how much can the connection block on the CallAction call. Default is 0 which means don't block. If any positive number is given, CallAction will block that number of milliseconds or less if an event occurred. If -1 is given, CallAction will block until an event happens.
 </descr>
 <seealso>
 </seealso>
