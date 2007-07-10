@@ -26,6 +26,7 @@ var
   ChanQuery       : TSQLQuery;
   Channel, Sender : string;
   Count, Msg      : string;
+  ShowSQL         : string;
   FromDate, ToDate: string;
   FromTime, ToTime: string;
   ChanList        : TStringList;
@@ -147,6 +148,8 @@ begin
 
   TryGetWebVar(Sender, 'sender', '');
 	Sender := return_Nick_sanitize (Sender); //Making sure that only RFC allowed chars exists
+
+  TryGetWebVar(ShowSQL, 'showsql', '');
 
   TryGetWebVar(Msg, 'msg', '');
 end;
@@ -355,7 +358,7 @@ begin
 end;
 
 var
-  LN, s, smsg, TheColor: string;
+  LN, s, smsg, TheColor,sql_query: string;
   Flip: Boolean;
 begin
   Init;
@@ -384,22 +387,23 @@ begin
   if Length(FromTime) > 0 then s := s + ' and CAST (logtime as time) >= ' + AnsiQuotedStr(SQLEscape (FromTime), #39) ;
   if Length(ToTime) > 0 then s := s + ' and CAST (logtime as time) <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) ;}
 
-  if Length(FromDate) > 0 then s := s + ' and logtime::date >= ' + AnsiQuotedStr(SQLEscape (FromDate), #39) + '::date';
-  if Length(ToDate) > 0 then s := s + ' and logtime::date <= ' + AnsiQuotedStr(SQLEscape (ToDate), #39) + '::date';
+  if Length(FromDate) > 0 then s := s + ' and logtime >= ' + AnsiQuotedStr(SQLEscape (FromDate), #39) + '::date';
+  if Length(ToDate) > 0 then s := s + ' and logtime <= ' + AnsiQuotedStr(SQLEscape (ToDate), #39) + '::date';
   if Length(FromTime) > 0 then s := s + ' and logtime::time >= ' + AnsiQuotedStr(SQLEscape (FromTime), #39) + '::time';
   if Length(ToTime) > 0 then s := s + ' and logtime::time <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) + '::time';
 
   if  (Count = '9999')
   and (Length(FromDate) = 0)
   and (Length(ToDate) = 0) then
-    s := s + ' and logtime::date >= ' + AnsiQuotedStr(SQLEscape (DateTimeToStr(Now)), #39) + '::date' ;
+    s := s + ' and logtime >= ' + AnsiQuotedStr(SQLEscape (DateTimeToStr(Now)), #39) + '::date' ;
 
   if ValidRequest then begin
     with LogQuery do try
       sql.clear;
-      sql.add('select * from (select sender, msg, logtime from tbl_loglines ' +
-              'where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) + s + ') ' +
-              'order by logtime desc limit ' + SQLEscape(Count) + ') as selection order by logtime');
+      sql_query:='select * from (select sender, msg, logtime from tbl_loglines ' +
+                 'where (reciever=' + AnsiQuotedStr(SQLEscape(Channel), #39) + s + ') ' +
+                 'order by logtime desc limit ' + SQLEscape(Count) + ') as selection order by logtime';
+      sql.add(sql_query);
       open;
       Flip := False;
       LN := FilterHtml(fieldbyname('sender').asstring);
@@ -436,6 +440,8 @@ begin
   end else WebWriteln('<h1>Invalid input, date difference too big?</h1>');
 
   WebWriteln('</table><br>');
+  if ShowSQL='1' then
+    WebWriteln('<TABLE border=1><TR><TH>SQL source:</TH></TR><TR><TD>'+sql_query+'</TD></TR></TABLE>');
   WebWriteln('<p><a href="http://validator.w3.org/check?uri=referer"><img ' +
           'style="border:0;width:88px;height:31px" ' +
           'src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 ' +
