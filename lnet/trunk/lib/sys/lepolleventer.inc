@@ -49,14 +49,17 @@ begin
   inherited Destroy;
 end;
 
-function TLEpollEventer.GetTimeout: DWord;
+function TLEpollEventer.GetTimeout: Integer;
 begin
-  Result := DWord(FTimeout);
+  Result := FTimeout;
 end;
 
-procedure TLEpollEventer.SetTimeout(const Value: DWord);
+procedure TLEpollEventer.SetTimeout(const Value: Integer);
 begin
-  FTimeout := cInt(Value);
+  if Value >= 0 then
+    FTimeout := Value
+  else
+    FTimeout := -1;
 end;
 
 procedure TLEpollEventer.HandleIgnoreRead(aHandle: TLHandle);
@@ -129,7 +132,7 @@ begin
   MasterChanges := epoll_wait(FEpollMasterFD, @MasterEvents[0], 2, FTimeout);
 
   if MasterChanges > 0 then begin
-    for i := 0 to MasterChanges-1 do
+    for i := 0 to MasterChanges - 1 do
       if MasterEvents[i].Data.fd = FEpollFD then
         Changes := epoll_wait(FEpollFD, @FEvents[0], FCount, 0)
       else
@@ -141,7 +144,7 @@ begin
       
     if Result then begin
       FInLoop := True;
-      for i := 0 to Max(Changes, ReadChanges)-1 do begin
+      for i := 0 to Max(Changes, ReadChanges) - 1 do begin
         Temp := nil;
         if i < Changes then begin
           Temp := TLHandle(FEvents[i].data.ptr);
