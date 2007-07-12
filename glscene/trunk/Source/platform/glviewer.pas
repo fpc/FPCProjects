@@ -6,6 +6,7 @@
    Platform independant viewer.<p>
 
     History:
+      <li>12/07/07 - DaStr - Added SetupVSync
       <li>30/03/07 - DaStr - Another update after the previous fix (removed class())
                              Added TVSyncMode type and constants.
       <li>24/03/07 - DaStr - Update for Windows after the previous fix
@@ -61,7 +62,19 @@ const
   {$ENDIF MSWINDOWS}
 {$ENDIF FPC}
 
+procedure SetupVSync(const vsync : TVSyncMode);
+
 implementation
+
+procedure SetupVSync(const vsync : TVSyncMode);
+begin
+{$IFDEF WIN32}
+  SetupVSync(vsync);
+{$ELSE}
+  // Ignore.
+{$ENDIF WIN32}
+end;
+
 
 initialization
 // ------------------------------------------------------------------
@@ -71,4 +84,3 @@ initialization
    RegisterClass(TGLSceneViewer);
 
 end.
- 

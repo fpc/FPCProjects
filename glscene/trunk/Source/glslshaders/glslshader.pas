@@ -6,10 +6,17 @@
     TGLSLShader is a wrapper for GLS shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>30/03/07 - fig -   Changed OnInitialize event to be fired after linking, but before validation.
-                             This can now be used to set texture units for different sampler types (1D/2D/3D)
-                             before validation, which fixes a bug (or complies to strict validation) with ATI drivers.
-      <li>30/03/07 - DaStr - Bugfixed TGLCustomGLSLShader.DoUnApply (Result was not initialized)
+      <li>12/07/07 - DaStr - TGLSLInitializedShaderParameters removed because
+                              even if implemented, it could not give
+                              a significant performance increase
+      <li>30/03/07 - fig -   Changed OnInitialize event to be fired after
+                              linking, but before validation. This can now be
+                              used to set texture units for different sampler
+                              types (1D/2D/3D) before validation, which fixes
+                              a bug (or complies to strict validation) with ATI
+                              drivers.
+      <li>30/03/07 - DaStr - Bugfixed TGLCustomGLSLShader.DoUnApply
+                              (Result was not initialized)
       <li>20/03/07 - DaStr - TGLCustomGLSLShader now generates its own events
                              Added TGLSLShaderParameter
                              Added TGLCustomGLSLShader.DoInitialPass
@@ -55,20 +62,13 @@ type
   EGLSLShaderException = class(EGLCustomShaderException);
 
   TGLSLShaderEvent = procedure(Shader: TGLCustomGLSLShader) of object;
-  TGLSLShaderUnUplyEvent = procedure(Shader: TGLCustomGLSLShader; var ThereAreMorePasses: Boolean) of object;
-
-  {: TODO! }
-  TGLSLInitializedShaderParameters = class
-  private
-//    FList: array of TGLSLShaderParameter;
-  public
-  end;
+  TGLSLShaderUnUplyEvent = procedure(Shader: TGLCustomGLSLShader;
+                                     var ThereAreMorePasses: Boolean) of object;
 
   TGLCustomGLSLShader = class(TGLCustomShader)
   private
     FGLSLProg: TGLProgramHandle;
     FParam: TGLSLShaderParameter;
-    FInitializedParameters: TGLSLInitializedShaderParameters;
 
     FOnInitialize: TGLSLShaderEvent;
     FOnApply: TGLSLShaderEvent;
@@ -97,8 +97,6 @@ type
 
     property Param[const Index: string]: TGLSLShaderParameter read GetParam;
     property DirectParam[const Index: Cardinal]: TGLSLShaderParameter read GetDirectParam;
-
-    property InitializedParameters: TGLSLInitializedShaderParameters read FInitializedParameters;
   end;
 
 

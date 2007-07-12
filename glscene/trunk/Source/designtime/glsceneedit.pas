@@ -1,3 +1,6 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLSceneEdit<p>
 
    Handles all the color and texture stuff.<p>

@@ -7,6 +7,7 @@
   texture data.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>12/07/07 - DaStr - Added $I GLScene.inc
       <li>25/06/07 - LC - Added SysUtils (needed for AllocMem or D7 and down).
       <li>25/06/07 - LC - Fixed a bug where resizing a texture would fail. Introduced
                           new methods for freeing PBO and buffer.
@@ -17,6 +18,8 @@
 unit GLDynamicTexture;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes, SysUtils, OpenGL1x, GLContext, GLTexture, GLGraphics;

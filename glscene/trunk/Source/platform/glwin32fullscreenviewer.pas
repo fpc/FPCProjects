@@ -1,11 +1,17 @@
-// GLWin32FullScreenViewer
-{: Win32 specific full-screen viewer.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLWin32FullScreenViewer<p>
+
+   Win32 specific full-screen viewer.<p>
 
    Currently TForm+TGLSceneViewer based, may be made into a standalone
    Win32 control someday, so don't assume there is a TForm in your code.<p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>24/07/03 - EG - Creation from GLWin32Viewer split 
+      <li>12/07/07 - DaStr -  Improved Cross-Platform compatibility
+                              (Bugtracker ID = 1684432)
+      <li>24/07/03 - EG - Creation from GLWin32Viewer split
 	</ul></font>
 }
 unit GLWin32FullScreenViewer;
@@ -14,15 +20,7 @@ interface
 
 {$i GLScene.inc}
 
-uses forms, messages, classes, glscene, controls, menus
-     ,glwin32viewer,glwin32context
-     {$ifdef unix}
-     , gllingtkcontext
-     {$endif}
-     {$ifdef mswindows}
-     ,windows
-     {$endif}
-     ;
+uses Windows, Forms, Messages, Classes, GLScene, Controls, Menus, GLViewer;
 
 type
 
@@ -174,7 +172,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses opengl1x, sysutils, glcrossplatform, glscreen;
+uses OpenGL1x, SysUtils, GLWin32Context, GLCrossPlatform, GLScreen;
 
 const
    cScreenDepthToBPP : array [sd8bits..sd32bits] of Integer = (8, 16, 24, 32);
@@ -216,9 +214,8 @@ end;
 procedure TGLFullScreenViewer.DoBufferChange(Sender : TObject);
 begin
    if Assigned(FForm) and (not Buffer.Rendering) then
-   begin
+//      Render;
       FForm.Invalidate;
-   end;
 end;
 
 // DoBufferStructuralChange
