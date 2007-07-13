@@ -132,7 +132,7 @@ var
   Tmp: string;
   TmpW: widestring;
 begin
-  Result := '[' + IntToStr(Ernum) + '] ';
+  Result := ' [' + IntToStr(Ernum) + ']: ';
   if USEUtf8 then begin
     SetLength(TmpW, MAX_ERROR);
     SetLength(TmpW, FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM or
@@ -149,7 +149,7 @@ begin
   end;
   if Length(Tmp) > 2 then
     Delete(Tmp, Length(Tmp)-1, 2);
-  Result := Tmp;
+  Result := Result + Tmp;
 end;
 
 {$ENDIF}
