@@ -54,6 +54,7 @@ begin
   FCon.OnError := @OnEr; // assign callbacks
   FCon.OnReceive := @OnRe;
   FCOn.OnDisconnect := @OnDs;
+  FCon.Timeout := 100; // responsive enough, but won't hog cpu
 end;
 
 destructor TLTCPTest.Destroy;
@@ -97,7 +98,6 @@ begin
       FQuit := False;
       repeat
         FCon.CallAction; // wait for "OnConnect"
-        Sleep(1);
         if KeyPressed then // if user pressed anything, quit waiting
           FQuit := True;
       until FCon.Connected or FQuit;
@@ -132,7 +132,6 @@ begin
             end;
           end;
           FCon.Callaction; // eventize lNet loop
-          Sleep(1); // sleep so we don't hog the CPU
         until FQuit; // repeat until user quit or error happened
       end; // if not FQuit
     end; // if Connect

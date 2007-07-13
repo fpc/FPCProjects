@@ -63,6 +63,7 @@ begin
   FCon.OnReceive := @OnRe;
   FCon.OnDisconnect := @OnDs;
   FCon.OnAccept := @OnAc;
+  FCon.Timeout := 100; // responsive enough, but won't hog cpu
 end;
 
 destructor TLTCPTest.Destroy;
@@ -92,7 +93,6 @@ begin
       Writeln('Press ''escape'' to quit, ''r'' to restart');
       repeat
         FCon.Callaction; // eventize the lNet
-        Sleep(1);       // wait 1 ms to not hog CPU
         if Keypressed then // if user provided input
           case readkey of
            #27: quit := true; // if he pressed "escape" then quit

@@ -32,6 +32,7 @@ constructor TLTelnetTest.Create;
 begin
   FCon := TLTelnetClient.Create(nil);
   FCon.OnError := @OnError; // assign callbacks
+  FCon.Timeout := 100; // responsive enough but won't hog cpu
 end;
 
 destructor TLTelnetTest.Destroy;
@@ -71,7 +72,6 @@ begin
     Writeln('Connecting... press any key to cancel'); // if initial connect worked, inform user and wait
     repeat
       FCon.CallAction; // repeat this to get info
-      Sleep(1);
       if KeyPressed then
         Halt;
     until FCon.Connected; // wait until timeout or we actualy connected

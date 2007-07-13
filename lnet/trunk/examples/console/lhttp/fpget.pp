@@ -99,7 +99,7 @@ begin
   HttpClient.Method := hmGet;
   HttpClient.Port := Port;
   HttpClient.URI := URI;
-  HttpClient.Timeout := 30000;
+  HttpClient.Timeout := -1;
   HttpClient.OnDisconnect := @dummy.ClientDisconnect;
   HttpClient.OnDoneInput := @dummy.ClientDoneInput;
   HttpClient.OnError := @dummy.ClientError;

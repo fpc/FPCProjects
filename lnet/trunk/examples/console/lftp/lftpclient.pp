@@ -219,7 +219,6 @@ begin
   Write(s, ': ');
   while True do begin
     FCon.CallAction;
-    Sleep(50);
     if KeyPressed then begin
       c := ReadKey;
       case c of

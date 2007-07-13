@@ -62,7 +62,6 @@ begin
         end;
       end;
     end;
-    Sleep(1);
   end;
 end;
 
@@ -99,6 +98,7 @@ constructor TLSMTPClientTest.Create;
 begin
   FQuit := False;
   FSMTP := TLSMTPClient.Create(nil);
+  FSMTP.Timeout := 100; // responsive enough, but won't hog CPU
   FSMTP.OnReceive := @OnReceive; // assign all events
   FSMTP.OnConnect := @OnConnect;
   FSMTP.OnDisconnect := @OnDisconnect;

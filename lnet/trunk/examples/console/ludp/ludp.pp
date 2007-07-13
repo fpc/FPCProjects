@@ -32,6 +32,7 @@ begin
   FCon := TLUdp.Create(nil); // create a new TLUDP component with no parent coponent
   FCon.OnError := @OnEr;     // assign callbacks
   FCon.OnReceive := @OnRe;
+  FCon.Timeout := 100; // responsive enough, but won't hog CPU
 end;
 
 destructor TLUDPTest.Destroy;
@@ -98,7 +99,6 @@ begin
           FCon.SendMessage('Hello') // send the "Hello" message to other side
         else
           FQuit := true; // otherwise (if he pressed "escape") quit
-      Sleep(20); // 20 ms delay to not hog cpu (normaly, 1ms is used)
     until FQuit; // repeat this cycle until FQuit = true, due to error or user input
 
     Writeln; // write additional line to clarify stuff
