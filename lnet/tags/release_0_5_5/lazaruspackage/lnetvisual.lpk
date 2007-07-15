@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <Package Version="2">
+    <Name Value="lnetvisual"/>
+    <CompilerOptions>
+      <Version Value="5"/>
+      <SearchPaths>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+      <CodeGeneration>
+        <SmartLinkUnit Value="True"/>
+        <Generate Value="Faster"/>
+        <Optimizations>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
+      </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <GenerateDebugInfo Value="True"/>
+        </Debugging>
+      </Linking>
+      <Other>
+        <CompilerPath Value="$(CompPath)"/>
+      </Other>
+    </CompilerOptions>
+    <Description Value="Lightweight Networking Library, or lNet is a networking suite integrated with Lazarus to provide simple and effective means to use TCP, UDP, FTP, SMTP, Telnet and HTTP protocols over the net.
+"/>
+    <Version Minor="5" Release="4"/>
+    <Files Count="4">
+      <Item1>
+        <Filename Value="lclnet.pas"/>
+        <UnitName Value="LCLNet"/>
+      </Item1>
+      <Item2>
+        <Filename Value="lnetcomponents.pas"/>
+        <UnitName Value="lNetComponents"/>
+      </Item2>
+      <Item3>
+        <Filename Value="lnetvisualreg.lrs"/>
+        <Type Value="LRS"/>
+      </Item3>
+      <Item4>
+        <Filename Value="lnetvisualreg.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="LNetVisualReg"/>
+      </Item4>
+    </Files>
+    <Type Value="RunAndDesignTime"/>
+    <RequiredPkgs Count="3">
+      <Item1>
+        <PackageName Value="lnetbase"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="LCL"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
+      </Item3>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)/"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
