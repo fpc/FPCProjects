@@ -1116,10 +1116,7 @@ end;
 
 procedure TLTcp.IterReset;
 begin
-  if Assigned(FRootSock) and FRootSock.FServerSocket then
-    FIterator := FRootSock.NextSock
-  else
-    FIterator := FRootSock;
+  FIterator := FRootSock;
 end;
 
 procedure TLTcp.Disconnect;

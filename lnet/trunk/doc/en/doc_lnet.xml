@@ -1168,7 +1168,7 @@ This method is used to send a string message to the other side. See specific imp
 <element name="TLConnection.IterNext">
 <short>Iterator for cycling all sockets in a connection</short>
 <descr>
-This method is used to iterate all the sockets in given connection. It returns the next socket.
+This method is used to iterate all the sockets in given connection. It returns true if Iterator was moved to the next socket or false if there was no socket to move on. In case it returns false, the iterator is reset with IterReset automatically.
 </descr>
 <errors>
 </errors>
@@ -1178,7 +1178,7 @@ This method is used to iterate all the sockets in given connection. It returns t
 
 <!-- function result Visibility: default -->
 <element name="TLConnection.IterNext.Result">
-<short>Returns the next socket if there is any, nil otherwise</short>
+<short>Returns true if there is a next socket, false otherwise (and resets the iterator)</short>
 </element>
 
 <!-- procedure Visibility: public -->
@@ -1543,7 +1543,7 @@ This method sends user data to the other side. Socket does not need to be specif
 <element name="TLUdp.IterNext">
 <short>Get next iterator</short>
 <descr>
-This method is used to get the next socket iterator. In UDP there's always only 1 socket tho.
+This method is used to get the Iterator to point to the next socket. In UDP there's always only 1 socket tho.
 </descr>
 <errors>
 </errors>
@@ -1553,7 +1553,7 @@ This method is used to get the next socket iterator. In UDP there's always only 
 
 <!-- function result Visibility: default -->
 <element name="TLUdp.IterNext.Result">
-<short>Returns nil (UDP has only one socket)</short>
+<short>Returns false (UDP has only one socket)</short>
 </element>
 
 <!-- procedure Visibility: public -->
@@ -1820,7 +1820,7 @@ If the socket argument is not specified:
 <element name="TLTcp.IterNext">
 <short>Get the next iterator</short>
 <descr>
-This method is used to get the next iterator socket. It returns the next socket or nil if there is none.
+This method is used to get Iterator to point to the next socket. This method is used to iterate all the sockets in given connection. It returns true if Iterator was moved to the next socket or false if there was no socket to move on. In case it returns false, the iterator is reset with IterReset automatically.
 </descr>
 <errors>
 </errors>
@@ -1830,7 +1830,7 @@ This method is used to get the next iterator socket. It returns the next socket 
 
 <!-- function result Visibility: default -->
 <element name="TLTcp.IterNext.Result">
-<short>Returns the next socket or nil if there's none</short>
+<short>Returns true if there is a next socket, false otherwise (and resets the iterator)</short>
 </element>
 
 <!-- procedure Visibility: public -->
