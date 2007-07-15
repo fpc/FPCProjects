@@ -1,3 +1,4 @@
+* version 0.5.5 15.07.2007 -- fixes TCP.IterReset and documentation, makes Timeout signed for -1 (blocking mode)
 * version 0.5.4 08.07.2007 -- fixes some UDP bugs and TCP.Count
 * version 0.5.3 25.06.2007 -- fixes FTP bugs, removes Timout from published, fixed default published values
 * version 0.5.2 11.06.2007 -- fixes bug in windows and wince LCLEventer

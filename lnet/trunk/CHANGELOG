@@ -1,3 +1,5 @@
+15.07.2007 - 0.5.5 fixed TCP.IterReset (goes to server socket always now), fixed some doc errata, changed .Timeout to signed, -1 means block until event
+
 08.07.2007 - 0.5.4 fixed bugs with UDP.Listen and UDP.Connect as well as some other minor issues
 
 25.06.2007 - 0.5.3 fixed bugs with FTP and TCP(iterator with Listen)
