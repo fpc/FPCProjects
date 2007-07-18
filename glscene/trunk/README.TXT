@@ -11,6 +11,10 @@ This version of glscene needs at least:
 * fpc-2.1.4 or greater
 * lazarus-0.9.23 svn revision 11348 (2007-06-21) or greater
 
+Until the next stable versions (fpc-2.2 / lazarus-0.9.24) are out, you might want to get a snapshot
+from http://www.hu.freepascal.org/lazarus/ 
+or install freepascal and lazarus from subversion.
+
 Installation:
 #############
 
