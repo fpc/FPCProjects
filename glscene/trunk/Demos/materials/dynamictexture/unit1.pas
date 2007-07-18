@@ -14,11 +14,10 @@ unit Unit1;
 interface
 
 uses
-  {$IFDEF LCL} lcltype, {$ELSE} Windows,{$ENDIF}
+  {$IFDEF LCL} lcltype, LResources, {$ELSE} Windows,{$ENDIF}
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLMisc, GLTexture, GLViewer, GLCadencer,
-  ExtCtrls
-  {$IFDEF LCL}, LResources{$ENDIF};
+  ExtCtrls;
 
 type
   TForm1 = class(TForm)
