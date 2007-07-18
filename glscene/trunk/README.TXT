@@ -4,11 +4,18 @@
 
 ==========================================
 
+Requirements:
+#############
+
+This version of glscene needs at least:
+* fpc-2.1.4 or greater
+* lazarus-0.9.23 svn revision 11348 (2007-06-21) or greater
+
 Installation:
 #############
 
 ZIP:
-* in "lazarus/components/" folder execute "unzip glscene-1.0.0.1.zip"
+* in "lazarus/components/" folder execute "unzip glscene-1.0.0.2.zip"
   This will create the lazarus/componets/glscene/ folder
 
 SVN:
