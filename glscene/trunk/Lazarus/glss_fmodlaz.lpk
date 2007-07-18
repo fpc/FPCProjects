@@ -28,9 +28,8 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Description Value="GLScene FMOD support
-"/>
-    <Version Major="1" Build="1"/>
+    <Description Value="GLScene FMOD support"/>
+    <Version Major="1" Build="2"/>
     <Files Count="2">
       <Item1>
         <Filename Value="../Source/glsmfmod.pas"/>

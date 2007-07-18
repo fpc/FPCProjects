@@ -28,9 +28,8 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Description Value="GLScene ODE support
-"/>
-    <Version Major="1" Build="1"/>
+    <Description Value="GLScene ODE support"/>
+    <Version Major="1" Build="2"/>
     <Files Count="6">
       <Item1>
         <Filename Value="../Source/designtime/gloderegister.pas"/>

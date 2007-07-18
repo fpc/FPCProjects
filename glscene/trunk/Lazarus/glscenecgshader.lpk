@@ -30,9 +30,8 @@
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
-    <Description Value="glscene cg shader support package
-"/>
-    <Version Major="1" Build="1"/>
+    <Description Value="glscene cg shader support package"/>
+    <Version Major="1" Build="2"/>
     <Files Count="5">
       <Item1>
         <Filename Value="../Source/cgshaders/glcgshader.pas"/>
