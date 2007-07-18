@@ -643,12 +643,13 @@ begin
                ImageIndex:=FObjectIcons.Count-1;
             {$ELSE}
             if LazarusResources.Find(resBitmapName) <> nil then begin
-//              FObjectIcons.AddFromLazarusResource(resBitmapName);
-              if LazarusResources.Find(resBitmapName) <> nil then
-                try FObjectIcons.AddLazarusResource(resBitmapName); except end;
+              try FObjectIcons.AddLazarusResource(resBitmapName); except end;
               ImageIndex:=FObjectIcons.Count-1;
             {$ENDIF}
-            end else ImageIndex:=0;
+            end else begin
+              ImageIndex:=0;
+              //writeln('No Image loaded for :',resBitmapName);
+            end;
          end;
        Add(NewEntry);
       finally
@@ -1618,6 +1619,8 @@ initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
+  {$i GLLazarusRegister.lrs}
+  {$i gllazarusobjects.lrs}
 
    GLMisc.vUseDefaultSets:=True;
    //ReadVideoModes;
@@ -1734,9 +1737,6 @@ initialization
       RegisterSceneObject(TGLImposter, 'Imposter Sprite', '');
       RegisterSceneObject(TGLFeedback, 'OpenGL Feedback', '');
    end;
-
-  {$i GLLazarusRegister.lrs}
-
 
 finalization
    ObjectManager.Free;
