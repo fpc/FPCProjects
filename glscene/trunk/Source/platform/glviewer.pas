@@ -33,7 +33,11 @@ uses
 
 type
 {$IFDEF FPC}  //For FPC, always use LCLViewer
-  TGLSceneViewer = class(GLLCLViewer.TGLSceneViewer);
+
+  { TGLSceneViewer }
+
+  TGLSceneViewer = class(TGLSceneViewerLCL)
+  end;
   TVSyncMode = GLLCLViewer.TVSyncMode;
 {$ELSE}  // if not FPC then
   {$IFDEF UNIX}  // kylix
