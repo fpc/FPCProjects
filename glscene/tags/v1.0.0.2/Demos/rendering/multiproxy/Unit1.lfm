@@ -1,0 +1,164 @@
+object Form1: TForm1
+  Left = 236
+  Height = 389
+  Top = 156
+  Width = 491
+  HorzScrollBar.Page = 490
+  VertScrollBar.Page = 388
+  ActiveControl = RBUseLODs
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnClose = FormClose
+  OnCreate = FormCreate
+  object GLSceneViewer1: TGLSceneViewer
+    Height = 329
+    Top = 60
+    Width = 491
+    Camera = GLCamera
+    Buffer.BackgroundColor = clGray
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 117.408935546875
+    Align = alClient
+  end
+  object Panel1: TPanel
+    Height = 60
+    Width = 491
+    Align = alTop
+    BevelOuter = bvLowered
+    Font.Height = -11
+    Font.Name = 'Arial'
+    FullRepaint = False
+    TabOrder = 0
+    object Label1: TLabel
+      Left = 8
+      Height = 10
+      Top = 8
+      Width = 71
+      Caption = 'MultiProxy'
+      Color = clNone
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+    end
+    object RBUseLODs: TRadioButton
+      Left = 176
+      Height = 24
+      Top = 32
+      Width = 143
+      Caption = 'Use 3 Levels of Detail'
+      Checked = True
+      OnClick = RBUseLODsClick
+      State = cbChecked
+      TabOrder = 0
+    end
+    object RBHighRes: TRadioButton
+      Left = 96
+      Height = 24
+      Width = 147
+      Caption = 'Force High Resolution'
+      OnClick = RBUseLODsClick
+      TabOrder = 1
+    end
+    object CBColorize: TCheckBox
+      Left = 8
+      Height = 24
+      Top = 32
+      Width = 105
+      Caption = 'Colorize LODs'
+      OnClick = RBUseLODsClick
+      TabOrder = 2
+    end
+    object RBLowRes: TRadioButton
+      Left = 272
+      Height = 24
+      Width = 144
+      Caption = 'Force Low Resolution'
+      OnClick = RBUseLODsClick
+      TabOrder = 3
+    end
+  end
+  object GLScene: TGLScene
+    left = 80
+    top = 64
+    object DCTarget: TGLDummyCube
+      CubeSize = 1
+      object GLParticles: TGLParticles
+        Direction.Coordinates = {
+          0000000000000000FFFF7F3F00000000
+        }
+        Position.Coordinates = {
+          0000000000000040000000000000803F
+        }
+        RollAngle = -5
+        Up.Coordinates = {
+          B97EB23D9E067F3F0000000000000000
+        }
+        CubeSize = 1
+        object MPSphere: TGLMultiProxy
+          OnProgress = MPSphereProgress
+          MasterObjects = <          
+            item
+              MasterObject = SPHighRes
+              DistanceMax = 20
+            end          
+            item
+              MasterObject = SPMedRes
+              DistanceMin = 20
+              DistanceMax = 60
+            end          
+            item
+              MasterObject = SPLowRes
+              DistanceMin = 60
+              DistanceMax = 99999
+            end>
+        end
+      end
+    end
+    object DCReferences: TGLDummyCube
+      Visible = False
+      CubeSize = 1
+      object SPHighRes: TGLSphere
+        Radius = 0.5
+        Slices = 32
+        Stacks = 32
+      end
+      object SPMedRes: TGLSphere
+        Radius = 0.5
+      end
+      object SPLowRes: TGLSphere
+        Radius = 0.5
+        Slices = 8
+        Stacks = 8
+      end
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        00004842000020420000F0410000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera: TGLCamera
+      DepthOfView = 200
+      FocalLength = 100
+      TargetObject = DCTarget
+      Position.Coordinates = {
+        0000F04100004040000000400000803F
+      }
+    end
+  end
+  object GLCadencer: TGLCadencer
+    Scene = GLScene
+    TimeMultiplier = 0.5
+    left = 152
+    top = 64
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 120
+    top = 64
+  end
+end

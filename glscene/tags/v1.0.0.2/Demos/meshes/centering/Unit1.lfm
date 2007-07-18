@@ -1,0 +1,147 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 276
+  ClientWidth = 563
+  Font.Height = -11
+  Font.Name = 'Arial'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 14
+  HorzScrollBar.Page = 562
+  VertScrollBar.Page = 275
+  Left = 400
+  Height = 276
+  Top = 130
+  Width = 563
+  object Label1: TLabel
+    Caption = 'Centered X, Y'
+    Color = clNone
+    ParentColor = False
+    Left = 56
+    Height = 14
+    Top = 8
+    Width = 68
+  end
+  object Label2: TLabel
+    Caption = 'Centered Y'
+    Color = clNone
+    ParentColor = False
+    Left = 232
+    Height = 14
+    Top = 8
+    Width = 55
+  end
+  object Label3: TLabel
+    Caption = 'Centered X, Y, Z'
+    Color = clNone
+    ParentColor = False
+    Left = 408
+    Height = 14
+    Top = 8
+    Width = 81
+  end
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = 11447982
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 60.275093078613281
+    Left = 8
+    Height = 209
+    Top = 32
+    Width = 513
+  end
+  object TrackBar1: TTrackBar
+    Frequency = 10
+    Max = 80
+    Min = -80
+    OnChange = TrackBar1Change
+    Orientation = trVertical
+    ScalePos = trTop
+    TabOrder = 0
+    Frequency = 10
+    Max = 80
+    Min = -80
+    OnChange = TrackBar1Change
+    Orientation = trVertical
+    ScalePos = trTop
+    Left = 528
+    Height = 209
+    Top = 32
+    Width = 25
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 56
+    object DummyCube3: TGLDummyCube
+      CubeSize = 1
+      VisibleAtRunTime = True
+      Position.Coordinates = {
+        000000C000000000000000000000803F
+      }
+      ShowAxes = True
+      object FreeForm3: TGLFreeForm
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F8180003F8180803E0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+    end
+    object DummyCube2: TGLDummyCube
+      CubeSize = 1
+      VisibleAtRunTime = True
+      ShowAxes = True
+      object FreeForm2: TGLFreeForm
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F8180003F8180803E0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+    end
+    object DummyCube1: TGLDummyCube
+      CubeSize = 1
+      VisibleAtRunTime = True
+      Position.Coordinates = {
+        0000004000000000000000000000803F
+      }
+      ShowAxes = True
+      object FreeForm1: TGLFreeForm
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F8180003F8180803E0000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+      end
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        00004040000020410000A0400000803F
+      }
+      SpotCutOff = 180
+    end
+    object DCCamera: TGLDummyCube
+      CubeSize = 1
+      object GLCamera1: TGLCamera
+        DepthOfView = 100
+        FocalLength = 180
+        TargetObject = DummyCube2
+        Position.Coordinates = {
+          0000000000000040000070410000803F
+        }
+        left = 256
+        top = 96
+      end
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    left = 48
+    top = 56
+  end
+end

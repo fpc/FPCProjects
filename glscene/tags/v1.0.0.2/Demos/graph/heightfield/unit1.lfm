@@ -1,0 +1,253 @@
+object Form1: TForm1
+  AutoSize = True
+  Caption = 'Form1'
+  ClientHeight = 438
+  ClientWidth = 433
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 432
+  VertScrollBar.Page = 437
+  Left = 272
+  Height = 438
+  Top = 143
+  Width = 433
+  object Label1: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'X extents'
+    Color = clNone
+    Height = 13
+    Top = 312
+    Width = 44
+  end
+  object Label2: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'Y extents'
+    Color = clNone
+    Height = 13
+    Top = 344
+    Width = 44
+  end
+  object Label3: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'Step'
+    Color = clNone
+    Height = 13
+    Top = 376
+    Width = 22
+  end
+  object Label4: TLabel
+    BorderSpacing.OnChange = nil
+    Caption = 'Color Mode'
+    Color = clNone
+    Left = 336
+    Height = 13
+    Top = 336
+    Width = 54
+  end
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 112.08729553222656
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 297
+    Width = 417
+  end
+  object TrackBar1: TTrackBar
+    BorderSpacing.OnChange = nil
+    Frequency = 1
+    Max = 50
+    OnChange = TrackBar1Change
+    Position = 10
+    ScalePos = trTop
+    TabOrder = 0
+    TickMarks = tmBoth
+    Frequency = 1
+    Max = 50
+    OnChange = TrackBar1Change
+    Position = 10
+    ScalePos = trTop
+    TickMarks = tmBoth
+    Left = 64
+    Height = 33
+    Top = 304
+    Width = 169
+  end
+  object TrackBar2: TTrackBar
+    BorderSpacing.OnChange = nil
+    Frequency = 1
+    Max = 50
+    OnChange = TrackBar2Change
+    Position = 10
+    ScalePos = trTop
+    TabOrder = 1
+    TickMarks = tmBoth
+    Frequency = 1
+    Max = 50
+    OnChange = TrackBar2Change
+    Position = 10
+    ScalePos = trTop
+    TickMarks = tmBoth
+    Left = 64
+    Height = 33
+    Top = 336
+    Width = 169
+  end
+  object CheckBox1: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Two-sided'
+    Checked = True
+    OnClick = CheckBox1Click
+    State = cbChecked
+    TabOrder = 2
+    Left = 336
+    Height = 17
+    Top = 312
+    Width = 73
+  end
+  object TrackBar3: TTrackBar
+    BorderSpacing.OnChange = nil
+    Frequency = 10
+    Max = 160
+    Min = 10
+    OnChange = TrackBar3Change
+    Position = 80
+    ScalePos = trTop
+    TabOrder = 4
+    TickMarks = tmBoth
+    Frequency = 10
+    Max = 160
+    Min = 10
+    OnChange = TrackBar3Change
+    Position = 80
+    ScalePos = trTop
+    TickMarks = tmBoth
+    Left = 64
+    Height = 33
+    Top = 368
+    Width = 169
+  end
+  object RadioGroup1: TRadioGroup
+    BorderSpacing.OnChange = nil
+    Caption = 'Formula'
+    ItemIndex = 0
+    Items.Strings = (
+      'Formula 1'
+      'Formula 2'
+      'Dynamic'
+    )
+    OnClick = RadioGroup1Click
+    ParentColor = True
+    Left = 240
+    Height = 89
+    Top = 304
+    Width = 81
+  end
+  object ComboBox1: TComboBox
+    BorderSpacing.OnChange = nil
+    ItemHeight = 13
+    Items.Strings = (
+      'none'
+      'emission'
+      'diffuse'
+    )
+    MaxLength = 0
+    OnChange = ComboBox1Change
+    Style = csDropDownList
+    TabOrder = 5
+    Left = 336
+    Height = 21
+    Top = 352
+    Width = 81
+  end
+  object CheckBox2: TCheckBox
+    BorderSpacing.OnChange = nil
+    Caption = 'Lighting'
+    Checked = True
+    OnClick = CheckBox2Click
+    State = cbChecked
+    TabOrder = 6
+    Left = 336
+    Height = 17
+    Top = 376
+    Width = 65
+  end
+  object GLScene1: TGLScene
+    left = 16
+    top = 16
+    object HeightField1: TGLHeightField
+      XSamplingScale.Min = -1
+      XSamplingScale.Max = 1
+      XSamplingScale.Step = 0.079999998211861
+      YSamplingScale.Min = -1
+      YSamplingScale.Max = 1
+      YSamplingScale.Step = 0.079999998211861
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Direction.Coordinates = {
+        000000000000803F2EBD3BB300000000
+      }
+      Up.Coordinates = {
+        000000002EBD3BB3000080BF00000000
+      }
+      object Sphere1: TGLSphere
+        Radius = 0.100000001490116
+        Slices = 12
+        Stacks = 9
+        Material.FrontProperties.Diffuse.Color = {
+          F8FEFE3E0000803F000000000000803F
+        }
+        Material.Texture.MappingTCoordinates.Coordinates = {
+          000000000000803F0000000000000000
+        }
+        Position.Coordinates = {
+          0000803F0000803F000000000000803F
+        }
+        Visible = False
+        OnProgress = Sphere1Progress
+        object Lines1: TGLLines
+          Nodes = <          
+            item
+            end          
+            item
+            end>
+          NodesAspect = lnaInvisible
+        end
+      end
+    end
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000F041000048420000C8420000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 100
+      TargetObject = HeightField1
+      Position.Coordinates = {
+        0000404000008040000000410000803F
+      }
+      left = 208
+      top = 168
+    end
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 16
+    top = 56
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    SleepLength = 1
+    left = 16
+    top = 96
+  end
+end

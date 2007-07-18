@@ -1,0 +1,192 @@
+object Form1: TForm1
+  Caption = 'Form1'
+  ClientHeight = 498
+  ClientWidth = 534
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  HorzScrollBar.Page = 533
+  VertScrollBar.Page = 497
+  Left = 285
+  Height = 498
+  Top = 118
+  Width = 534
+  object GLSceneViewer1: TGLSceneViewer
+    Camera = GLCamera1
+    Buffer.FogEnvironment.FogColor.Color = {
+      1283003F1283003F0000803F0000803F
+    }
+    Buffer.FogEnvironment.FogStart = 1
+    Buffer.FogEnvironment.FogEnd = 3
+    Buffer.BackgroundColor = clBlack
+    Buffer.AmbientColor.Color = {
+      0000000000000000000000000000803F
+    }
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 155.10313415527344
+    Align = alClient
+    OnMouseMove = GLSceneViewer1MouseMove
+    Height = 453
+    Top = 45
+    Width = 534
+  end
+  object Panel1: TPanel
+    Align = alTop
+    BorderSpacing.OnChange = nil
+    Caption = ' '
+    ClientHeight = 45
+    ClientWidth = 534
+    FullRepaint = False
+    TabOrder = 0
+    Height = 45
+    Width = 534
+    object Label1: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Blur Preset:'
+      Color = clNone
+      Left = 8
+      Height = 13
+      Top = 4
+      Width = 54
+    end
+    object Label2: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Render Size:'
+      Color = clNone
+      Left = 216
+      Height = 13
+      Top = 4
+      Width = 61
+    end
+    object ComboBox1: TComboBox
+      BorderSpacing.OnChange = nil
+      ItemHeight = 13
+      Items.Strings = (
+        'pNone (no change)'
+        'pGlossy'
+        'pBeastView'
+        'pOceanDepth'
+        'pDream'
+        'pOverBlur'
+      )
+      ItemIndex = 0
+      MaxLength = 0
+      OnClick = ComboBox1Click
+      Style = csDropDownList
+      TabOrder = 0
+      Text = 'pNone (no change)'
+      Left = 8
+      Height = 21
+      Top = 20
+      Width = 161
+    end
+    object ComboBox2: TComboBox
+      BorderSpacing.OnChange = nil
+      ItemHeight = 13
+      Items.Strings = (
+        '8'
+        '16'
+        '32'
+        '64'
+        '128'
+        '256'
+        '512'
+      )
+      ItemIndex = 5
+      MaxLength = 0
+      OnChange = ComboBox2Change
+      Style = csDropDownList
+      TabOrder = 1
+      Text = '256'
+      Left = 216
+      Height = 21
+      Top = 20
+      Width = 145
+    end
+  end
+  object GLScene1: TGLScene
+    ObjectsSorting = osRenderFarthestFirst
+    left = 188
+    top = 48
+    object GLLightSource1: TGLLightSource
+      Ambient.Color = {
+        BEC0403FBEC0403FBEC0403F0000803F
+      }
+      ConstAttenuation = 1
+      Diffuse.Color = {
+        BEC0403FBEC0403FBEC0403F0000803F
+      }
+      Position.Coordinates = {
+        56551B40F9FF2D40F6FF3B400000803F
+      }
+      LightStyle = lsOmni
+      SpotCutOff = 180
+    end
+    object GLCube1: TGLCube
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'LibMaterial'
+      Direction.Coordinates = {
+        82B16B3E068E77BF3986DFBD00000000
+      }
+      PitchAngle = -95.5
+      Position.Coordinates = {
+        DB9FEC3E806395BE509F213F0000803F
+      }
+      TurnAngle = 6.5
+      Up.Coordinates = {
+        DD7324BEE3EB17BE6BCE793F00000000
+      }
+    end
+    object GLSphere1: TGLSphere
+      Radius = 0.5
+      Material.MaterialLibrary = GLMaterialLibrary1
+      Material.LibMaterialName = 'LibMaterial'
+      Position.Coordinates = {
+        6E3D38BF0A5515BE733C1CBF0000803F
+      }
+    end
+    object GLDummyCube1: TGLDummyCube
+      CubeSize = 1
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      NearPlaneBias = 0.100000001490116
+      TargetObject = GLDummyCube1
+      Position.Coordinates = {
+        41A38A3F6847033F2894FA3F0000803F
+      }
+      Direction.Coordinates = {
+        A5C4F6BE96EA77BE3E9257BF00000000
+      }
+      Up.Coordinates = {
+        B74DF6BD4B62783F582A57BE00000000
+      }
+    end
+  end
+  object GLMaterialLibrary1: TGLMaterialLibrary
+    Materials = <    
+      item
+        Name = 'LibMaterial'
+        Material.Texture.TextureMode = tmModulate
+        Material.Texture.Disabled = False
+      end>
+    left = 228
+    top = 48
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    SleepLength = 0
+    OnProgress = GLCadencer1Progress
+    left = 268
+    top = 48
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 308
+    top = 48
+  end
+end

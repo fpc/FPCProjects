@@ -1,0 +1,72 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TForm1','FORMDATA',[
+  'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#192#0#6'Height'#3#200#1#3'Top'#2'w'#5'Wid'
+  +'th'#3#254#1#18'HorzScrollBar.Page'#3#253#1#18'VertScrollBar.Page'#3#199#1#13
+  +'ActiveControl'#7#26'RGFogDistance.RadioButton0'#7'Caption'#6#5'Form1'#11'Fo'
+  +'nt.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#8'OnCreate'#7#10'FormCrea'
+  +'te'#0#6'TLabel'#9'LFogStart'#4'Left'#2#8#6'Height'#2#20#3'Top'#3'8'#1#5'Wid'
+  +'th'#2'7'#7'Caption'#6#9'fog start'#5'Color'#7#6'clNone'#11'ParentColor'#8#0
+  +#0#6'TLabel'#7'LFogEnd'#4'Left'#2#8#6'Height'#2#20#3'Top'#3'm'#1#5'Width'#2
+  +'1'#7'Caption'#6#7'fog end'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#6'TLa'
+  +'bel'#9'LFogColor'#4'Left'#3#169#1#6'Height'#2#20#3'Top'#3'$'#1#5'Width'#2'8'
+  +#7'Caption'#6#9'fog color'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#6'TSha'
+  +'pe'#9'SFogColor'#4'Left'#3#168#1#6'Height'#2#16#3'Top'#3'@'#1#5'Width'#2'9'
+  +#11'OnMouseDown'#7#18'SFogColorMouseDown'#0#0#6'TLabel'#11'LFogDensity'#4'Le'
+  +'ft'#3#27#1#6'Height'#2#20#3'Top'#3#135#1#5'Width'#3#198#0#7'Caption'#6#30'f'
+  +'og density (for fmExp/fmExp2)'#5'Color'#7#6'clNone'#11'ParentColor'#8#0#0#14
+  +'TGLSceneViewer'#14'GLSceneViewer1'#4'Left'#2#8#6'Height'#3#18#1#3'Top'#2#8#5
+  +'Width'#3#246#1#6'Camera'#7#9'GLCamera1'#15'Buffer.OnChange'#13#25'Buffer.On'
+  +'StructuralChange'#13#11'FieldOfView'#5#0#0#0#0#0'G'#230#139#6'@'#7'Anchors'
+  +#11#5'akTop'#6'akLeft'#7'akRight'#0#11'OnMouseDown'#7#23'GLSceneViewer1Mouse'
+  +'Down'#11'OnMouseMove'#7#23'GLSceneViewer1MouseMove'#0#0#9'TCheckBox'#11'CBF'
+  +'ogEnable'#4'Left'#2#8#6'Height'#2#22#3'Top'#3' '#1#5'Width'#2'U'#7'Caption'
+  +#6#10'fog on/off'#7'OnClick'#7#16'CBFogEnableClick'#8'TabOrder'#2#1#0#0#11'T'
+  +'RadioGroup'#13'RGFogDistance'#4'Left'#2'x'#6'Height'#2'a'#3'Top'#3' '#1#5'W'
+  +'idth'#2'i'#8'AutoFill'#9#7'Caption'#6#12'[ fog mode ]'#28'ChildSizing.LeftR'
+  +'ightSpacing'#2#6#28'ChildSizing.TopBottomSpacing'#2#6#29'ChildSizing.Enlarg'
+  +'eHorizontal'#7#24'crsHomogenousChildResize'#27'ChildSizing.EnlargeVertical'
+  +#7#24'crsHomogenousChildResize'#28'ChildSizing.ShrinkHorizontal'#7#14'crsSca'
+  +'leChilds'#26'ChildSizing.ShrinkVertical'#7#14'crsScaleChilds'#18'ChildSizin'
+  +'g.Layout'#7#29'cclLeftToRightThenTopToBottom'#27'ChildSizing.ControlsPerLin'
+  +'e'#2#1#9'ItemIndex'#2#0#13'Items.Strings'#1#6#9'fdDefault'#6#10'fdEyePlane'
+  +#6#11'fdEyeRadial'#0#7'OnClick'#7#14'RGFogModeClick'#8'TabOrder'#2#0#0#0#11
+  +'TRadioGroup'#9'RGFogMode'#4'Left'#3#232#0#6'Height'#2'a'#3'Top'#3' '#1#5'Wi'
+  +'dth'#2'i'#8'AutoFill'#9#7'Caption'#6#12'[ fog mode ]'#28'ChildSizing.LeftRi'
+  +'ghtSpacing'#2#6#28'ChildSizing.TopBottomSpacing'#2#6#29'ChildSizing.Enlarge'
+  +'Horizontal'#7#24'crsHomogenousChildResize'#27'ChildSizing.EnlargeVertical'#7
+  +#24'crsHomogenousChildResize'#28'ChildSizing.ShrinkHorizontal'#7#14'crsScale'
+  +'Childs'#26'ChildSizing.ShrinkVertical'#7#14'crsScaleChilds'#18'ChildSizing.'
+  +'Layout'#7#29'cclLeftToRightThenTopToBottom'#27'ChildSizing.ControlsPerLine'
+  +#2#1#9'ItemIndex'#2#0#13'Items.Strings'#1#6#8'fmLinear'#6#5'fmExp'#6#6'fmExp'
+  +'2'#0#7'OnClick'#7#14'RGFogModeClick'#8'TabOrder'#2#2#0#0#9'TCheckBox'#19'CB'
+  +'ApplyToBackground'#4'Left'#3'Y'#1#6'Height'#2#22#3'Top'#3'X'#1#5'Width'#3
+  +#136#0#7'Caption'#6#16'background too ?'#7'Checked'#9#7'OnClick'#7#24'CBAppl'
+  +'yToBackgroundClick'#5'State'#7#9'cbChecked'#8'TabOrder'#2#3#0#0#9'TGroupBox'
+  +#9'GBTexture'#4'Left'#2'p'#6'Height'#2')'#3'Top'#3#153#1#5'Width'#3#217#0#7
+  +'Caption'#6#11'[ texture ]'#8'TabOrder'#2#4#0#9'TCheckBox'#16'CBTextureEnabl'
+  +'ed'#4'Left'#2#8#6'Height'#2#22#5'Width'#2'L'#7'Caption'#6#7'enabled'#7'Chec'
+  +'ked'#9#7'OnClick'#7#21'CBTextureEnabledClick'#5'State'#7#9'cbChecked'#8'Tab'
+  +'Order'#2#0#0#0#9'TCheckBox'#18'CBTextureIgnoreFog'#4'Left'#2'N'#6'Height'#2
+  +#22#5'Width'#2'Y'#7'Caption'#6#10'ignore fog'#7'OnClick'#7#23'CBTextureIgnor'
+  +'eFogClick'#8'TabOrder'#2#1#0#0#0#5'TEdit'#9'EFogStart'#4'Left'#2#8#6'Height'
+  +#2#21#3'Top'#3'P'#1#5'Width'#2'9'#8'OnChange'#7#15'EFogStartChange'#8'TabOrd'
+  +'er'#2#5#4'Text'#6#3'-30'#0#0#5'TEdit'#7'EFogEnd'#4'Left'#2#8#6'Height'#2#21
+  +#3'Top'#3#135#1#5'Width'#2'9'#8'OnChange'#7#15'EFogStartChange'#8'TabOrder'#2
+  +#6#4'Text'#6#2'30'#0#0#5'TEdit'#11'EFogDensity'#4'Left'#3#168#1#6'Height'#2
+  +#21#3'Top'#3#168#1#5'Width'#2'9'#8'OnChange'#7#15'EFogStartChange'#8'TabOrde'
+  +'r'#2#7#4'Text'#6#3'100'#0#0#8'TGLScene'#8'GLScene1'#4'left'#2#16#3'top'#2#16
+  +#0#12'TGLDummyCube'#12'GLDummyCube1'#8'CubeSize'#5#0#0#0#0#0#0#0#128#255'?'#0
+  +#0#14'TGLLightSource'#14'GLLightSource1'#16'ConstAttenuation'#5#0#0#0#0#0#0#0
+  +#128#255'?'#20'Position.Coordinates'#10#16#0#0#0#0#0#150'C'#0#0#250'C'#0#0
+  +#200'C'#0#0#128'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#9'TGLSphere'#9
+  +'GLSphere1'#20'Position.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#160#193#0#0#0#0
+  +#0#0#128'?'#6'Radius'#5#0#0#0#0#0#0#0#128#254'?'#0#0#9'TGLCamera'#9'GLCamera'
+  +'1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0
+  +#200#4'@'#12'TargetObject'#7#12'GLDummyCube1'#20'Position.Coordinates'#10#16
+  +#0#0#0#0#0#192'@'#0#0#128'@'#0#0#0'A'#0#0#128'?'#0#0#0#11'TGLCadencer'#11'GL'
+  ,'Cadencer1'#5'Scene'#7#8'GLScene1'#11'SleepLength'#2#1#10'OnProgress'#7#19'G'
+  +'LCadencer1Progress'#4'left'#2'0'#3'top'#2#16#0#0#12'TColorDialog'#12'ColorD'
+  +'ialog1'#5'Title'#6#12'Select color'#4'left'#2'P'#3'top'#2#16#0#0#18'TGLMate'
+  +'rialLibrary'#18'GLMaterialLibrary1'#4'left'#2'p'#3'top'#2#16#0#0#0
+]);

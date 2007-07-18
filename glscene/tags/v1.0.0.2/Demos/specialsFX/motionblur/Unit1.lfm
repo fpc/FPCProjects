@@ -1,0 +1,127 @@
+object Form1: TForm1
+  Left = 293
+  Height = 541
+  Top = 132
+  Width = 520
+  HorzScrollBar.Page = 519
+  VertScrollBar.Page = 540
+  BorderIcons = [biSystemMenu, biMinimize]
+  Caption = 'Motion Blur Demo'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
+  OnResize = FormResize
+  object GLSceneViewer: TGLSceneViewer
+    Height = 541
+    Width = 520
+    Camera = Camera
+    VSync = vsmSync
+    PostRender = GLSceneViewerPostRender
+    Buffer.BackgroundColor = clNavy
+    FieldOfView = 158.228942871093
+    Align = alClient
+    OnMouseDown = GLSceneViewerMouseDown
+    OnMouseMove = GLSceneViewerMouseMove
+  end
+  object GLScene1: TGLScene
+    ObjectsSorting = osNone
+    left = 8
+    top = 8
+    object Light: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        0000F041000000000000F0410000803F
+      }
+      LightStyle = lsOmni
+      SpotCutOff = 180
+    end
+    object Cube: TGLCube
+      Material.FrontProperties.Diffuse.Color = {
+        0000803F00000000000000000000803F
+      }
+      RollAngle = -15
+      Up.Coordinates = {
+        EF83843EE946773F0000008000000000
+      }
+      object Torus: TGLTorus
+        Scale.Coordinates = {
+          0000A0400000A0400000A04000000000
+        }
+        MajorRadius = 0.40000000596046
+        MinorRadius = 0.10000000149011
+      end
+    end
+    object DummyCube: TGLDummyCube
+      Direction.Coordinates = {
+        00000000441DAFBEB28F703F00000000
+      }
+      PitchAngle = -10
+      Up.Coordinates = {
+        00008031B28F703F441DAF3E00000000
+      }
+      CubeSize = 1
+      object Dodecahedron: TGLDodecahedron
+        Material.FrontProperties.Diffuse.Color = {
+          0000803F0000803F000000000000803F
+        }
+        Direction.Coordinates = {
+          000000B3000000B30000803F00000000
+        }
+        Position.Coordinates = {
+          0000000000000000000040400000803F
+        }
+        RollAngle = 10
+        Up.Coordinates = {
+          D3D031BE5D1C7C3F28A8CF3200000000
+        }
+      end
+    end
+    object HUD: TGLHUDSprite
+      Material.FrontProperties.Diffuse.Color = {
+        0000803F0000803F0000803F9A99193F
+      }
+      Material.BlendingMode = bmTransparency
+      Material.MaterialOptions = [moIgnoreFog, moNoLighting]
+      Material.Texture.ImageClassName = 'TGLBlankImage'
+      Material.Texture.MagFilter = maNearest
+      Material.Texture.MinFilter = miNearest
+      Material.Texture.TextureMode = tmModulate
+      Material.Texture.Compression = tcNone
+      Material.Texture.Disabled = False
+      Position.Coordinates = {
+        0000804300008043000000000000803F
+      }
+      Width = 512
+      Height = 512
+      NoZWrite = True
+    end
+    object Camera: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = Cube
+      Position.Coordinates = {
+        0000C040000000000000803F0000803F
+      }
+      Direction.Coordinates = {
+        000000000000803F0000008000000000
+      }
+      Up.Coordinates = {
+        00000000000000000000803F00000000
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    MaxDeltaTime = 1
+    OnProgress = GLCadencer1Progress
+    left = 40
+    top = 8
+  end
+  object Timer1: TTimer
+    Interval = 500
+    OnTimer = Timer1Timer
+    left = 16
+    top = 40
+  end
+end

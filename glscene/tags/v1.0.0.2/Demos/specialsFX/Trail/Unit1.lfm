@@ -1,0 +1,99 @@
+object Form1: TForm1
+  Left = 252
+  Height = 480
+  Top = 132
+  Width = 510
+  HorzScrollBar.Page = 509
+  VertScrollBar.Page = 479
+  ActiveControl = TrackBarSpeed
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  object GLSceneViewer1: TGLSceneViewer
+    Height = 447
+    Top = 33
+    Width = 510
+    Camera = GLCamera1
+    Buffer.BackgroundColor = 4194304
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 154.779571533203
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
+  end
+  object Panel1: TPanel
+    Height = 33
+    Width = 510
+    Align = alTop
+    Caption = ' '
+    FullRepaint = False
+    TabOrder = 0
+    object Label1: TLabel
+      Left = 8
+      Height = 14
+      Top = 12
+      Width = 40
+      Caption = 'Speed:'
+      Color = clNone
+      ParentColor = False
+    end
+    object TrackBarSpeed: TTrackBar
+      Left = 48
+      Height = 33
+      Top = 4
+      Width = 133
+      Position = 1
+      ScalePos = trTop
+      TabOrder = 0
+    end
+  end
+  object GLScene1: TGLScene
+    left = 60
+    top = 36
+    object GLLightSource1: TGLLightSource
+      ConstAttenuation = 1
+      Position.Coordinates = {
+        00000000E1A22B41000000000000803F
+      }
+      SpotCutOff = 180
+    end
+    object GLSphere1: TGLSphere
+      Position.Coordinates = {
+        000000008E2EBA3F8C2EBA3E0000803F
+      }
+      Radius = 0.5
+    end
+    object Room: TGLSphere
+      Material.FrontProperties.PolygonMode = pmLines
+      NormalDirection = ndInside
+      Radius = 8
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 50
+      TargetObject = Room
+      Position.Coordinates = {
+        CFBD804073312F409AF80A410000803F
+      }
+      Direction.Coordinates = {
+        82FABBBE331FC9BE96D857BF00000000
+      }
+      Up.Coordinates = {
+        3F9720BE056C6B3FE965B8BE00000000
+      }
+    end
+  end
+  object GLCadencer1: TGLCadencer
+    Scene = GLScene1
+    OnProgress = GLCadencer1Progress
+    left = 100
+    top = 36
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 140
+    top = 36
+  end
+end

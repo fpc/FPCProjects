@@ -1,0 +1,222 @@
+object Form1: TForm1
+  Left = 200
+  Height = 381
+  Top = 104
+  Width = 532
+  HorzScrollBar.Page = 531
+  VertScrollBar.Page = 380
+  ActiveControl = CBFormat
+  Caption = 'Form1'
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  OnResize = FormResize
+  object GLSceneViewer1: TGLSceneViewer
+    Height = 381
+    Width = 324
+    Camera = GLCamera1
+    AfterRender = GLSceneViewer1AfterRender
+    Buffer.OnChange = nil
+    Buffer.OnStructuralChange = nil
+    FieldOfView = 179.292648315429
+    Align = alClient
+  end
+  object Panel1: TPanel
+    Left = 324
+    Height = 381
+    Width = 208
+    Align = alRight
+    BevelOuter = bvLowered
+    FullRepaint = False
+    TabOrder = 0
+    object Label1: TLabel
+      Left = 1
+      Height = 56
+      Top = 1
+      Width = 206
+      Align = alTop
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'TexFormat'
+      Color = clNone
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -27
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      Layout = tlCenter
+      ParentColor = False
+    end
+    object Label2: TLabel
+      Left = 16
+      Height = 14
+      Top = 148
+      Width = 40
+      Caption = 'Format'
+      Color = clNone
+      ParentColor = False
+    end
+    object Label3: TLabel
+      Left = 16
+      Height = 14
+      Top = 180
+      Width = 74
+      Caption = 'Compression'
+      Color = clNone
+      ParentColor = False
+    end
+    object Label4: TLabel
+      Left = 16
+      Height = 14
+      Top = 84
+      Width = 35
+      Caption = 'Image'
+      Color = clNone
+      ParentColor = False
+    end
+    object LAPicSize: TLabel
+      Left = 88
+      Height = 14
+      Top = 112
+      Width = 57
+      Caption = 'LAPicSize'
+      Color = clNone
+      ParentColor = False
+    end
+    object Label5: TLabel
+      Left = 16
+      Height = 14
+      Top = 272
+      Width = 69
+      Caption = 'Render Size'
+      Color = clNone
+      ParentColor = False
+    end
+    object LAUsedMemory: TLabel
+      Left = 16
+      Height = 14
+      Top = 228
+      Width = 77
+      Caption = 'Used Memory'
+      Color = clNone
+      ParentColor = False
+    end
+    object LARGB32: TLabel
+      Left = 16
+      Height = 14
+      Top = 212
+      Width = 77
+      Caption = 'Used Memory'
+      Color = clNone
+      ParentColor = False
+    end
+    object LACompression: TLabel
+      Left = 16
+      Height = 14
+      Top = 244
+      Width = 77
+      Caption = 'Used Memory'
+      Color = clNone
+      ParentColor = False
+    end
+    object CBFormat: TComboBox
+      Left = 88
+      Height = 21
+      Top = 144
+      Width = 105
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      ItemHeight = 13
+      Items.Strings = (
+        'RGB    (24 bits)'
+        'RGBA  (32 bits)'
+        'RGB    (16 bits)'
+        'RGBA  (16 bits)'
+      )
+      MaxLength = 0
+      OnChange = CBImageChange
+      Style = csDropDownList
+      TabOrder = 0
+    end
+    object CBCompression: TComboBox
+      Left = 88
+      Height = 21
+      Top = 176
+      Width = 105
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      ItemHeight = 13
+      Items.Strings = (
+        'None'
+        'Standard'
+        'Nicest'
+        'Fastest'
+      )
+      MaxLength = 0
+      OnChange = CBImageChange
+      Style = csDropDownList
+      TabOrder = 1
+    end
+    object CBImage: TComboBox
+      Left = 88
+      Height = 21
+      Top = 80
+      Width = 105
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      ItemHeight = 13
+      MaxLength = 0
+      OnChange = CBImageChange
+      Style = csDropDownList
+      TabOrder = 2
+    end
+    object RBDefault: TRadioButton
+      Left = 88
+      Height = 24
+      Top = 270
+      Width = 59
+      Caption = '100 %'
+      Checked = True
+      OnClick = CBImageChange
+      State = cbChecked
+      TabOrder = 3
+    end
+    object RBDouble: TRadioButton
+      Left = 87
+      Height = 24
+      Top = 294
+      Width = 59
+      Caption = '200 %'
+      OnClick = CBImageChange
+      TabOrder = 4
+    end
+    object RBQuad: TRadioButton
+      Left = 87
+      Height = 24
+      Top = 318
+      Width = 59
+      Caption = '400 %'
+      OnClick = CBImageChange
+      TabOrder = 5
+    end
+  end
+  object GLScene1: TGLScene
+    left = 8
+    top = 16
+    object HUDSprite1: TGLHUDSprite
+      Material.Texture.MinFilter = miLinear
+      Material.Texture.MappingTCoordinates.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Material.Texture.Disabled = False
+      Width = 256
+      Height = 256
+    end
+    object GLCamera1: TGLCamera
+      DepthOfView = 100
+      FocalLength = 1
+      CameraStyle = csOrthogonal
+      Position.Coordinates = {
+        0000000000000000000070410000803F
+      }
+      left = 256
+      top = 160
+    end
+  end
+end

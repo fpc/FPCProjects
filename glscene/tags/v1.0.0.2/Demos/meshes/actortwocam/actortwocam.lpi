@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="5"/>
+    <General>
+      <Flags>
+        <MainUnitHasUsesSectionForAllUnits Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+      </Flags>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <ActiveEditorIndexAtStart Value="1"/>
+    </General>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="GLSceneLazarus"/>
+      </Item2>
+    </RequiredPackages>
+    <Units Count="11">
+      <Unit0>
+        <Filename Value="actortwocam.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="14" Y="6"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="Unit1.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceFilename Value="Unit1.lrs"/>
+        <UnitName Value="Unit1"/>
+        <CursorPos X="38" Y="107"/>
+        <TopLine Value="99"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="C:/glenn/applications/lazarus/components/glscene/Demos/meshes/actor/Unit1.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <UnitName Value="Unit1"/>
+        <CursorPos X="17" Y="251"/>
+        <TopLine Value="245"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="C:/glenn/applications/lazarus/lcl/LCLType.pp"/>
+        <UnitName Value="LCLType"/>
+        <CursorPos X="3" Y="371"/>
+        <TopLine Value="445"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="C:/glenn/applications/lazarus/components/glscene/Source/Base/GLKeyboard.pas"/>
+        <UnitName Value="GLKeyboard"/>
+        <CursorPos X="24" Y="50"/>
+        <TopLine Value="46"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="GLKeyboard.pas"/>
+        <CursorPos X="24" Y="18"/>
+        <TopLine Value="10"/>
+        <UsageCount Value="10"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="C:/glenn/applications/lazarus/lcl/include/customcheckbox.inc"/>
+        <CursorPos X="1" Y="121"/>
+        <TopLine Value="107"/>
+        <UsageCount Value="10"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="C:/glenn/applications/lazarus/components/glscene/Source/GLNavigator.pas"/>
+        <UnitName Value="GLNavigator"/>
+        <CursorPos X="1" Y="488"/>
+        <TopLine Value="474"/>
+        <UsageCount Value="10"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="C:/glenn/applications/lazarus/fpcsrc/rtl/win32/windows.pp"/>
+        <UnitName Value="windows"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="../../../../../../../../lazarus/lcl/interfaces/gtk/interfaces.pp"/>
+        <UnitName Value="Interfaces"/>
+        <CursorPos X="53" Y="32"/>
+        <TopLine Value="9"/>
+        <UsageCount Value="10"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="../../../Source/base/applicationfileio.pas"/>
+        <UnitName Value="applicationfileio"/>
+        <CursorPos X="51" Y="194"/>
+        <TopLine Value="164"/>
+        <UsageCount Value="10"/>
+      </Unit10>
+    </Units>
+    <JumpHistory Count="2" HistoryIndex="1">
+      <Position1>
+        <Filename Value="Unit1.pas"/>
+        <Caret Line="33" Column="2" TopLine="8"/>
+      </Position1>
+      <Position2>
+        <Filename Value="Unit1.pas"/>
+        <Caret Line="20" Column="30" TopLine="8"/>
+      </Position2>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <SearchPaths>
+      <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Linking>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <BreakPoints Count="1">
+      <Item1>
+        <Source Value="C:/glenn/applications/lazarus/components/jpeg/LazJPEG.pas"/>
+        <Line Value="119"/>
+      </Item1>
+    </BreakPoints>
+  </Debugging>
+</CONFIG>

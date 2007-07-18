@@ -1,0 +1,196 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="5"/>
+    <General>
+      <Flags>
+        <MainUnitHasUsesSectionForAllUnits Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+      </Flags>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <Units Count="10">
+      <Unit0>
+        <CursorPos X="1" Y="1"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="terrain.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="27"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="18" Y="143"/>
+        <EditorIndex Value="1"/>
+        <Filename Value="Unit1.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <Loaded Value="True"/>
+        <ResourceFilename Value="Unit1.lrs"/>
+        <TopLine Value="130"/>
+        <UnitName Value="Unit1"/>
+        <UsageCount Value="13"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="10" Y="1452"/>
+        <EditorIndex Value="2"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1435"/>
+        <UnitName Value="GLHeightData"/>
+        <UsageCount Value="13"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="44" Y="117"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLScanlinedGraphics.pas"/>
+        <TopLine Value="95"/>
+        <UnitName Value="GLScanlinedGraphics"/>
+        <UsageCount Value="13"/>
+      </Unit3>
+      <Unit4>
+        <CursorPos X="1" Y="243"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLROAMPatch.pas"/>
+        <TopLine Value="226"/>
+        <UnitName Value="GLROAMPatch"/>
+        <UsageCount Value="13"/>
+      </Unit4>
+      <Unit5>
+        <CursorPos X="11" Y="635"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLTerrainRenderer.pas"/>
+        <TopLine Value="621"/>
+        <UnitName Value="GLTerrainRenderer"/>
+        <UsageCount Value="13"/>
+      </Unit5>
+      <Unit6>
+        <CursorPos X="24" Y="3056"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLParticleFX.pas"/>
+        <TopLine Value="3055"/>
+        <UnitName Value="GLParticleFX"/>
+        <UsageCount Value="13"/>
+      </Unit6>
+      <Unit7>
+        <CursorPos X="1" Y="1"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\Base\VectorGeometry.pas"/>
+        <TopLine Value="1145"/>
+        <UnitName Value="VectorGeometry"/>
+        <UsageCount Value="13"/>
+      </Unit7>
+      <Unit8>
+        <CursorPos X="83" Y="57"/>
+        <Filename Value="C:\lazarus\fpcsrc\fcl\image\fpwritebmp.pp"/>
+        <TopLine Value="41"/>
+        <UnitName Value="FPWriteBMP"/>
+        <UsageCount Value="12"/>
+      </Unit8>
+      <Unit9>
+        <CursorPos X="44" Y="836"/>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLGraphics.pas"/>
+        <TopLine Value="818"/>
+        <UnitName Value="GLGraphics"/>
+        <UsageCount Value="12"/>
+      </Unit9>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="GLSceneLazarus"/>
+      </Item2>
+    </RequiredPackages>
+    <JumpHistory Count="8" HistoryIndex="7">
+      <Position1>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Caret Line="1512" Column="34" TopLine="1494"/>
+      </Position1>
+      <Position2>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Caret Line="1497" Column="4" TopLine="1480"/>
+      </Position2>
+      <Position3>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Caret Line="1485" Column="16" TopLine="1480"/>
+      </Position3>
+      <Position4>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Caret Line="1511" Column="51" TopLine="1494"/>
+      </Position4>
+      <Position5>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Caret Line="1454" Column="31" TopLine="1429"/>
+      </Position5>
+      <Position6>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Caret Line="1452" Column="14" TopLine="1442"/>
+      </Position6>
+      <Position7>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Caret Line="5" Column="52" TopLine="1"/>
+      </Position7>
+      <Position8>
+        <Filename Value="C:\lazarus\components\GLScene\Source\GLHeightData.pas"/>
+        <Caret Line="1440" Column="47" TopLine="1435"/>
+      </Position8>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <PathDelim Value="\"/>
+    <SearchPaths>
+      <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
+    </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <DelphiCompat Value="True"/>
+      </SyntaxOptions>
+    </Parsing>
+    <CodeGeneration>
+      <HeapSize Value="1024"/>
+      <Generate Value="Faster"/>
+      <TargetProcessor Value="1"/>
+      <Optimizations>
+        <OptimizationLevel Value="0"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <UseHeaptrc Value="True"/>
+      </Debugging>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>
