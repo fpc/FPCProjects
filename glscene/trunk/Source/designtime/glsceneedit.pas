@@ -331,9 +331,11 @@ end;
 //
 procedure TGLSceneEditorForm.SetScene(Scene: TGLScene; ADesigner: TGLDesigner);
 begin
-   if Assigned(FScene) then
+   if Assigned(FScene) then begin
 (* removed delphi 4 support {$ifdef GLS_DELPHI_5_UP}*)
-      FScene.RemoveFreeNotification(Self);
+     GlobalDesignHook.SelectOnlyThis(FScene.Owner);
+     FScene.RemoveFreeNotification(Self);
+   end;
 (* removed delphi 4 support {$else}
       FScene.Notification(Self, opRemove);
 {$endif}*)
@@ -484,6 +486,7 @@ var
    reg : TRegistry;
 {$ENDIF}
 begin
+  SetScene(nil,nil);
 	DeRegisterGLBaseSceneObjectNameChangeEvent(OnBaseSceneObjectNameChanged);
 
    {$IFDEF MSWINDOWS}
