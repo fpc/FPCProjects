@@ -24,6 +24,8 @@ interface
 
 uses
   classes,
+  forms,
+  controls,
 {$IFDEF FPC}
   GLLCLViewer;
 {$ELSE}
