@@ -7,6 +7,8 @@ object Form1: TForm1
   VertScrollBar.Page = 573
   ActiveControl = TrackBar1
   Caption = 'Form1'
+  ClientHeight = 574
+  ClientWidth = 705
   Color = clGray
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
@@ -26,6 +28,8 @@ object Form1: TForm1
     Width = 705
     Align = alTop
     BevelOuter = bvNone
+    ClientHeight = 65
+    ClientWidth = 705
     FullRepaint = False
     TabOrder = 0
     object Label1: TLabel
@@ -34,7 +38,6 @@ object Form1: TForm1
       Top = 8
       Width = 39
       Caption = 'Label1'
-      Color = clNone
       ParentColor = False
     end
     object Label2: TLabel
@@ -43,7 +46,6 @@ object Form1: TForm1
       Top = 24
       Width = 39
       Caption = 'Label2'
-      Color = clNone
       ParentColor = False
     end
     object Label3: TLabel
@@ -52,7 +54,6 @@ object Form1: TForm1
       Top = 40
       Width = 39
       Caption = 'Label3'
-      Color = clNone
       ParentColor = False
     end
     object Label4: TLabel
@@ -61,7 +62,6 @@ object Form1: TForm1
       Top = 8
       Width = 44
       Caption = 'Velocity'
-      Color = clNone
       ParentColor = False
     end
     object TrackBar1: TTrackBar

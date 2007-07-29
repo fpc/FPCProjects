@@ -7,6 +7,8 @@ object Form1: TForm1
   VertScrollBar.Page = 428
   ActiveControl = CheckBox1
   Caption = 'Form1'
+  ClientHeight = 429
+  ClientWidth = 562
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
@@ -27,6 +29,8 @@ object Form1: TForm1
     Width = 562
     Align = alTop
     BevelOuter = bvNone
+    ClientHeight = 49
+    ClientWidth = 562
     FullRepaint = False
     TabOrder = 0
     object Label1: TLabel
@@ -34,7 +38,6 @@ object Form1: TForm1
       Height = 14
       Width = 39
       Caption = 'Label1'
-      Color = clNone
       ParentColor = False
     end
     object Label2: TLabel
@@ -43,7 +46,6 @@ object Form1: TForm1
       Top = 16
       Width = 39
       Caption = 'Label2'
-      Color = clNone
       ParentColor = False
     end
     object Label3: TLabel
@@ -52,7 +54,6 @@ object Form1: TForm1
       Top = 32
       Width = 39
       Caption = 'Label3'
-      Color = clNone
       ParentColor = False
     end
     object Label5: TLabel
@@ -61,7 +62,6 @@ object Form1: TForm1
       Top = 8
       Width = 39
       Caption = 'Label5'
-      Color = clNone
       ParentColor = False
     end
     object LABuild: TLabel
@@ -70,7 +70,6 @@ object Form1: TForm1
       Top = 24
       Width = 44
       Caption = 'LABuild'
-      Color = clNone
       ParentColor = False
     end
     object Label4: TLabel
@@ -79,7 +78,6 @@ object Form1: TForm1
       Top = 32
       Width = 39
       Caption = 'Label4'
-      Color = clNone
       ParentColor = False
     end
     object CheckBox1: TCheckBox

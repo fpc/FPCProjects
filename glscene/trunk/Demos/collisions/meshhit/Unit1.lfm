@@ -6,25 +6,25 @@ object Form1: TForm1
   HorzScrollBar.Page = 561
   VertScrollBar.Page = 301
   Caption = 'Form1'
+  ClientHeight = 302
+  ClientWidth = 562
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   object Label1: TLabel
     Left = 8
-    Height = 14
+    Height = 20
     Top = 8
-    Width = 93
+    Width = 105
     Caption = 'Orthogonal View'
-    Color = clNone
     ParentColor = False
   end
   object Label2: TLabel
     Left = 280
-    Height = 14
+    Height = 20
     Top = 8
-    Width = 95
+    Width = 107
     Caption = 'Perspective View'
-    Color = clNone
     ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer

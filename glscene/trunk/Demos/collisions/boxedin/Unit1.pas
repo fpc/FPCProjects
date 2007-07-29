@@ -15,9 +15,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, SysUtils, Classes, Controls, Forms,{ GLKeyboard,}
+  SysUtils, Classes, Controls, Forms,{ GLKeyboard,}
   VectorGeometry, GLMisc, GLScene, GLVectorFileObjects, GLObjects,
-  GLLCLViewer, GLCadencer, ExtCtrls, StdCtrls, GLNavigator, ComCtrls,
+  GLViewer, GLCadencer, ExtCtrls, StdCtrls, GLNavigator, ComCtrls,
   GLGeomObjects, LResources, Buttons;
 
 type
