@@ -278,6 +278,11 @@ var
       end;
     end;
   end;
+  
+  procedure SetStartID;
+  begin
+    SetWebVar('startid', '0');
+  end;
 
   procedure DoPaste;
   var
@@ -346,6 +351,7 @@ var
   begin
     PT := SetViewVars(MsgID);
     if Length(PT) > 0 then begin
+      SetStartID;
       WebTemplateOut('html' + PathDelim + 'viewpaste.html', False);
       WebWriteln(PT);
     end else
@@ -362,11 +368,10 @@ var
     i: Integer;
   begin
     WebFileOut('html' + PathDelim + 'viewall.html');
-    WebWriteln('<table class="header_style" width="80%">');
-    
+
     if StartID < 0 then with PasteQuery do try
       SQL.Clear;
-      SQL.Add('select pasteid from tbl_pastes order by pasteid limit 1');
+      SQL.Add('select pasteid from tbl_pastes order by pasteid desc limit 1');
 
       Open;
 
@@ -377,6 +382,13 @@ var
     except
       StartID := 0;
     end;
+
+    if StartID > 0 then
+      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(Max(StartID - MaxPerPage, 0)) + '">PREV</a>');
+    if i >= 0 then
+      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(i) + '">NEXT</a>');
+
+    WebWriteln('<table class="header_style" width="80%">');
     
     with PasteQuery do try
       SQL.Clear;
@@ -414,11 +426,6 @@ var
       end;
     end;
     WebWriteln('</table>');
-
-    if StartID > 0 then
-      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(Max(StartID - MaxPerPage, 0)) + '">PREV</a>');
-    if i >= 0 then
-      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(i) + '">NEXT</a>');
   end;
 
 begin
