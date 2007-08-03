@@ -81,9 +81,9 @@ begin
     rp^[1] := byte(b64[(c shr 12) and $3f]); 
     rp^[2] := byte(b64[(c shr 6) and $3f]); 
     rp^[3] := byte(b64[c and $3f]); 
-    inc(longword(rp), 4); 
-    inc(longword(sp), 3); 
-  end; 
+    rp := TPAByte(longword(rp) + 4);
+    sp := TPAByte(longword(sp) + 3);
+  end;
   case len mod 3 of 
     1:
     begin 
@@ -154,8 +154,8 @@ begin
     rp^[0] := c shr 16; 
     rp^[1] := byte(c shr 8); 
     rp^[2] := byte(c); 
-    inc(longword(sp), 4); 
-    inc(longword(rp), 3); 
+    sp := TPAByte(longword(sp) + 4);
+    rp := TPAByte(longword(rp) + 3);
   end;  
 end;
 
