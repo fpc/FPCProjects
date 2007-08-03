@@ -1,6 +1,6 @@
 PP=fpc
-BASEARGS=-Fucommon -Fulnet -Fubot/pasdoc -Fubot/markov -Filnet/include -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
-ARGS=$(BASEARGS) -O2p2 -XX -Xs
+BASEARGS=-Fucommon -Fulnet -Fubot/pasdoc -Fubot/markov -Filnet/include -Fucgi/hiliter -Ficgi/hiliter/inc -Fucgi -Fubot -Fibot/include -Fiinclude -Fucgi/psp
+ARGS=$(BASEARGS) -O2 -XX -Xs
 LBOT=bot/lfpcbot.pas
 LCGI1=cgi/cgifpcbot.pas
 LCGI2=cgi/cgipastebin.pas
