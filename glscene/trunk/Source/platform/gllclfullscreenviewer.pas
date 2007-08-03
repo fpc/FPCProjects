@@ -15,7 +15,7 @@ interface
 {$i GLScene.inc}
 
 uses forms, lcltype, messages, classes, glscene, controls, menus
-     ,gllclviewer//, gllinuxcontext
+     ,glviewer//, gllinuxcontext
      {$ifdef LCLGTK}
      , gllingtkcontext
      {$endif}
@@ -598,7 +598,7 @@ initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-   RegisterClasses([TGLSceneViewer, TGLFullScreenViewer]);
+   RegisterClasses([TGLFullScreenViewer]);
 
 end.
 
