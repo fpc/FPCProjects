@@ -357,7 +357,7 @@ end;
 {$ifdef MSWINDOWS}
 // CreateParams
 //
-procedure TGLSceneViewer.CreateParams(var Params: TCreateParams);
+procedure TGLSceneViewerLCL.CreateParams(var Params: TCreateParams);
 begin
    inherited CreateParams(Params);
    with Params do begin
@@ -591,7 +591,7 @@ begin
 end;
 
 {$IFDEF MSWINDOWS}
-procedure TGLSceneViewer.EraseBackground(DC: HDC);
+procedure TGLSceneViewerLCL.EraseBackground(DC: HDC);
 begin
 
 end;
