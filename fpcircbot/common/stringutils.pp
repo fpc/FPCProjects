@@ -24,6 +24,9 @@ function FilterHtml(const s: string): string;
 function FilterHtmlWeak(const s: string): string;
 //This function convert chars that are used in html and convert them to char codes.
 
+function RestoreHtmlWeak(const s: string): string;
+//This function reverts cleaning
+
 function return_Number_sanitize (const Number : String) : String;
 //Remove any char that is not number
 
@@ -124,6 +127,20 @@ begin
     Result := StringReplace (Result, #$9b,     '&#8250;', [rfReplaceAll]);
 {    Result := StringReplace (Result, chr(&12), '&#10;',   [rfReplaceAll]);
     Result := StringReplace (Result, chr(&15), '&#13;',   [rfReplaceAll]);}
+  end;
+end;
+
+function RestoreHtmlWeak(const s: string): string;
+begin
+  Result:=s;
+  if Length(Result) > 0 then begin
+    Result := StringReplace (Result, '&amp;',      '&',   [rfReplaceAll]); // Keep this the first or the rest of the changes will scrow up :)
+    Result := StringReplace (Result, '&lt;',      '<',    [rfReplaceAll]);
+    Result := StringReplace (Result, '&gt;',      '>',    [rfReplaceAll]);
+    Result := StringReplace (Result, '&quot;',      '"',  [rfReplaceAll]);
+    Result := StringReplace (Result, '&#39;',      #39,   [rfReplaceAll]);
+    Result := StringReplace (Result, '&#8249;',     #$8b, [rfReplaceAll]);
+    Result := StringReplace (Result, '&#8250;',     #$9b, [rfReplaceAll]);
   end;
 end;
 
