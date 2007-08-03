@@ -6,7 +6,8 @@ uses
   Classes, SysUtils, Math,
   SqlDB, PQConnection,
   PWU, PWUEnvVar,
-  lNet, StringUtils;
+  lNet, StringUtils,
+  PasHiliter;
   
 type
   TDoer = class
@@ -218,6 +219,10 @@ var
   begin
     List := TStringList.Create;
     List.Text := aPaste;
+
+    if GetWebVar('highlight') = 'Pascal' then
+      List.Text := PasStrToHtmStr(RestoreHTMLWeak(aPaste));
+
     if List.Count > 0 then begin
 
       Result := #13#10'<br>'#13#10'<a href="cgipastebin">Add new paste</a>'#13#10 +
