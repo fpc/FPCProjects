@@ -6,8 +6,8 @@ uses
   Classes, SysUtils, Math,
   SqlDB, PQConnection,
   PWU, PWUEnvVar,
-  lNet, StringUtils,
-  PasHiliter;
+  lNet, StringUtils;
+//  PasHiliter;
   
 type
   TDoer = class
@@ -220,8 +220,8 @@ var
     List := TStringList.Create;
     List.Text := aPaste;
 
-    if GetWebVar('highlight') = 'Pascal' then
-      List.Text := PasStrToHtmStr(RestoreHTMLWeak(aPaste));
+{    if GetWebVar('highlight') = 'Pascal' then
+      List.Text := PasStrToHtmStr(RestoreHTMLWeak(aPaste));}
 
     if List.Count > 0 then begin
 
@@ -368,7 +368,8 @@ var
     i: Integer;
   begin
     WebFileOut('html' + PathDelim + 'viewall.html');
-
+    WebWriteln('<table class="header_style" width="80%">');
+    
     if StartID < 0 then with PasteQuery do try
       SQL.Clear;
       SQL.Add('select pasteid from tbl_pastes order by pasteid desc limit 1');
@@ -383,13 +384,6 @@ var
       StartID := 0;
     end;
 
-    if StartID > 0 then
-      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(Max(StartID - MaxPerPage, 0)) + '">PREV</a>');
-    if i >= 0 then
-      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(i) + '">NEXT</a>');
-
-    WebWriteln('<table class="header_style" width="80%">');
-    
     with PasteQuery do try
       SQL.Clear;
       SQL.Add('select pasteid, title, sender, pastetime from tbl_pastes ' +
@@ -426,6 +420,11 @@ var
       end;
     end;
     WebWriteln('</table>');
+    
+    if StartID > 0 then
+      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(Max(StartID - MaxPerPage, 0)) + '">PREV</a>');
+    if i >= 0 then
+      WebWriteln('<a href="' + CGIURL + 'cgipastebin?viewall=yes&start=' + IntToStr(i) + '">NEXT</a>');
   end;
 
 begin
