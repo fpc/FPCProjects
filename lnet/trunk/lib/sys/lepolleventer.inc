@@ -197,7 +197,7 @@ function BestEventerClass: TLEventerClass;
 var
   tmp: THandle;
 begin
-  {$IFNDEF DISABLE_EPOLL}
+  {$IFNDEF FORCE_SELECT}
   try
     tmp := epoll_create(1);
     if tmp >= 0 then begin
