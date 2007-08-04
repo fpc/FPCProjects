@@ -33,7 +33,7 @@
     </CompilerOptions>
     <Description Value="Lightweight Networking Library, or lNet is a networking suite  providing simple and effective means to use TCP, UDP, FTP, SMTP, Telnet and HTTP protocols over the net.
 "/>
-    <Version Minor="5" Release="5"/>
+    <Version Minor="5" Release="6"/>
     <Files Count="9">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
