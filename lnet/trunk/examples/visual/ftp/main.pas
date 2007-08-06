@@ -32,6 +32,7 @@ type
     ActionList1: TActionList;
     LeftView: TFileListBox;
     MenuItem1: TMenuItem;
+    MenuItemMkdir: TMenuItem;
     MenuSiteManager: TMenuItem;
     Panel1: TPanel;
     PopupDelete: TMenuItem;
@@ -60,6 +61,7 @@ type
     ToolButton3: TToolButton;
     ToolButton4: TToolButton;
     procedure AboutMenuItemClick(Sender: TObject);
+    procedure MenuItemMkdirClick(Sender: TObject);
     procedure accConnectExecute(Sender: TObject);
     procedure accDisconnectExecute(Sender: TObject);
     procedure accSiteManagerExecute(Sender: TObject);
@@ -342,6 +344,15 @@ begin
              mtInformation, [mbOK], 0);
 end;
 
+procedure TMainForm.MenuItemMkdirClick(Sender: TObject);
+var
+  s: string;
+begin
+  if InputQuery('New directory', 'Please specify directory name', s) then
+    if FTP.MakeDirectory(s) then
+      DoList('');
+end;
+
 procedure TMainForm.accConnectExecute(Sender: TObject);
 begin
   if Length(Site.txtHost) > 0 then begin
@@ -376,7 +387,10 @@ end;
 
 procedure TMainForm.DeletePopupClick(Sender: TObject);
 begin
-  FTP.DeleteFile(CurrentName);
+  if CurrentIsDirectory then
+    FTP.RemoveDirectory(CurrentName)
+  else
+    FTP.DeleteFile(CurrentName);
   DoList('');
 end;
 
