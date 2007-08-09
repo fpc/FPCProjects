@@ -62,6 +62,10 @@ const
         LMSG = 0;
       {$ENDIF}
     {$ENDIF}
+    
+    {$IFDEF DARWIN}
+    SO_NOSIGPIPE = $1022; // for fpc 2.0.4
+    {$ENDIF}
   {$ENDIF}
   { Default Values }
   LDEFAULT_BACKLOG = 5;

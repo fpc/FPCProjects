@@ -557,6 +557,12 @@ begin
         Exit(Bail('SetSockOpt error', LSocketError));
     end;
     
+    {$ifdef darwin}
+    Arg := 1;
+    if fpsetsockopt(FHandle, SOL_SOCKET, SO_NOSIGPIPE, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
+      Exit(Bail('SetSockOpt error', LSocketError));
+    {$endif}
+    
     FillAddressInfo(FAddress, AF_INET, Address, aPort);
     FillAddressInfo(FPeerAddress, AF_INET, LADDR_BR, aPort);
 
