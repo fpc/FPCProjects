@@ -6,6 +6,8 @@
    Object with support for complex polygons.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>31/07/07 - DanB - Implemented AxisAlignedDimensionsUnscaled for
+                            TMultiPolygonBase
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -108,6 +110,8 @@ type
          function Add: TGLContour;
          function FindItemID(ID: Integer): TGLContour;
          property Items[index : Integer] : TGLContour read GetItems write SetItems; default;
+         procedure GetExtents(var min, max : TAffineVector);
+
    end;
 
    // TPolygonList
@@ -145,6 +149,7 @@ type
          FContours : TGLContours;
          FOutline : TPolygonList;
          FContoursNormal : TAffineVector;
+         FAxisAlignedDimensionsCache : TVector;         
          procedure SetContours(const Value: TGLContours);
          function GetPath(i: Integer): TGLContourNodes;
          procedure SetPath(i: Integer; const value: TGLContourNodes);
@@ -173,6 +178,9 @@ type
          property Path[i : Integer] : TGLContourNodes read GetPath write SetPath;
          property Outline : TPolygonList read GetOutline;
          property ContoursNormal : TAffineVector read FContoursNormal write SetContoursNormal;
+
+         function AxisAlignedDimensionsUnscaled : TVector;override;
+         procedure StructureChanged; override;
 
       published
          { Published Declarations }
@@ -393,6 +401,27 @@ begin
   inherited Items[index] := value;
 end;
 
+// GetExtents
+//
+procedure TGLContours.GetExtents(var min, max : TAffineVector);
+var
+   i, k : Integer;
+   lMin, lMax : TAffineVector;
+const
+   cBigValue : Single = 1e30;
+   cSmallValue : Single = -1e30;
+begin
+   SetVector(min, cBigValue, cBigValue, cBigValue);
+   SetVector(max, cSmallValue, cSmallValue, cSmallValue);
+   for i:=0 to Count-1 do begin
+      GetItems(i).Nodes.GetExtents(lMin, lMax);
+      for k:=0 to 2 do begin
+          if lMin[k]<min[k] then min[k]:=lMin[k];
+          if lMax[k]>max[k] then max[k]:=lMax[k];
+      end;
+   end;
+end;
+
 { TMultiPolygonBase }
 
 // Create
@@ -403,6 +432,7 @@ begin
    FContours:=TGLContours.Create(Self);
    FContours.OnNotifyChange:=ContourChanged;
    FContoursNormal:=AffineVectorMake(0,0,1);
+   FAxisAlignedDimensionsCache[0]:=-1;
 end;
 
 // Destroy
@@ -754,6 +784,30 @@ procedure TMultiPolygonBase.SetContoursNormal(const Value: TAffineVector);
 begin
   FContoursNormal := Value;
 end;
+
+// AxisAlignedDimensionsUnscaled
+//
+function TMultiPolygonBase.AxisAlignedDimensionsUnscaled : TVector;
+var
+   dMin, dMax : TAffineVector;
+begin
+   if FAxisAlignedDimensionsCache[0]<0 then begin
+      Contours.GetExtents(dMin, dMax);
+      FAxisAlignedDimensionsCache[0]:=MaxFloat(Abs(dMin[0]), Abs(dMax[0]));
+      FAxisAlignedDimensionsCache[1]:=MaxFloat(Abs(dMin[1]), Abs(dMax[1]));
+      FAxisAlignedDimensionsCache[2]:=MaxFloat(Abs(dMin[2]), Abs(dMax[2]));
+   end;
+   SetVector(Result, FAxisAlignedDimensionsCache);
+end;
+
+// StructureChanged
+//
+procedure TMultiPolygonBase.StructureChanged;
+begin
+   FAxisAlignedDimensionsCache[0]:=-1;
+   inherited;
+end;
+
 
 // ------------------
 // ------------------ TGLContourNodes ------------------

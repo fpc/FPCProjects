@@ -4,6 +4,7 @@
 {: GLFileLMTS<p>
 
  <b>History : </b><font size=-1><ul>
+        <li>13/08/07 - fig -  Added checks for DDS textures in LoadFromStream()
         <li>23/03/07 - fig -  Fixed exception when material properties were loaded without a material library being assigned.
         <li>15/01/07 - fig -  If available, material data is now imported/exported.
         <li>15/01/07 - fig -  Added checks in the loader for invalid material indices.  LMTools can return meshes like this for some reason.
@@ -34,7 +35,9 @@ uses Windows,
     vectorlists,
     vectorgeometry,
     gltexture,
-    glutils,persistentclasses,opengl1x;
+    glutils,
+    persistentclasses,
+    opengl1x;
 
 const
     C_LMTS_ID = $53544D4C;
@@ -103,7 +106,6 @@ type
         mathash: integer;
     end;
 
-
     TGLLMTSVectorFile = class(TVectorFile)
     public
         class function Capabilities: TDataFileCapabilities; override;
@@ -116,8 +118,6 @@ type
 implementation
 
 uses GLMisc;
-
-
 
 // ------------------
 // ------------------ TGLLMTSVectorFile ------------------
@@ -237,7 +237,11 @@ begin
                                     fName := changefileext(fName, '.bmp');
                                     if not fileexists(fName) then
                                     begin
-                                        fName := T.fName;
+                                        fName := changefileext(fName, '.dds');
+                                        if not fileexists(fName) then
+                                        begin
+                                            fName := T.fName;
+                                        end;
                                         //  fName:=fName+' (missing)';
                                     end;
 
@@ -284,7 +288,11 @@ begin
                                     fName := changefileext(fName, '.bmp');
                                     if not fileexists(fName) then
                                     begin
-                                        fName := T.fName;
+                                        fName := changefileext(fName, '.dds');
+                                        if not fileexists(fName) then
+                                        begin
+                                            fName := T.fName;
+                                        end;
                                         //fName:=fName+' (missing)';
                                     end;
                                 end;
@@ -318,42 +326,42 @@ begin
         end;
 
         if assigned(owner.MaterialLibrary) then
-        for i := 0 to MatInfoCount - 1 do
-        begin
-            libmat := nil;
-            for j := 0 to owner.MaterialLibrary.Materials.count - 1 do
-                if owner.MaterialLibrary.Materials[j].NameHashKey = matinfo[i].mathash then
-                begin
-                    libmat := owner.MaterialLibrary.Materials[j];
-                    break;
-                end;
-
-            if assigned(libmat) then
+            for i := 0 to MatInfoCount - 1 do
             begin
-                with matinfo[i] do
+                libmat := nil;
+                for j := 0 to owner.MaterialLibrary.Materials.count - 1 do
+                    if owner.MaterialLibrary.Materials[j].NameHashKey = matinfo[i].mathash then
+                    begin
+                        libmat := owner.MaterialLibrary.Materials[j];
+                        break;
+                    end;
+
+                if assigned(libmat) then
                 begin
-                    libmat.Material.FrontProperties.Shininess := FShininess;
-                    libmat.Material.BackProperties.Shininess := BShininess;
-                    libmat.Material.FrontProperties.Ambient.Color := FAmbient;
-                    libmat.Material.FrontProperties.Diffuse.Color := FDiffuse;
-                    libmat.Material.FrontProperties.Emission.Color := FEmission;
-                    libmat.Material.FrontProperties.Specular.Color := FSpecular;
+                    with matinfo[i] do
+                    begin
+                        libmat.Material.FrontProperties.Shininess := FShininess;
+                        libmat.Material.BackProperties.Shininess := BShininess;
+                        libmat.Material.FrontProperties.Ambient.Color := FAmbient;
+                        libmat.Material.FrontProperties.Diffuse.Color := FDiffuse;
+                        libmat.Material.FrontProperties.Emission.Color := FEmission;
+                        libmat.Material.FrontProperties.Specular.Color := FSpecular;
 
-                    libmat.Material.BackProperties.Ambient.Color := BAmbient;
-                    libmat.Material.BackProperties.Diffuse.Color := BDiffuse;
-                    libmat.Material.BackProperties.Emission.Color := BEmission;
-                    libmat.Material.BackProperties.Specular.Color := BSpecular;
+                        libmat.Material.BackProperties.Ambient.Color := BAmbient;
+                        libmat.Material.BackProperties.Diffuse.Color := BDiffuse;
+                        libmat.Material.BackProperties.Emission.Color := BEmission;
+                        libmat.Material.BackProperties.Specular.Color := BSpecular;
 
-                    libmat.Material.Texture.ImageAlpha := ImageAlpha;
-                    libmat.Material.Texture.MagFilter := magFilter;
-                    libmat.Material.Texture.MinFilter := minFilter;
-                    libmat.Material.Texture.TextureMode := TextureMode;
-                    libmat.Material.Texture.TextureWrap := TextureWrap;
-                    libmat.Material.BlendingMode := Blendingmode;
-                    libmat.Material.FaceCulling := faceculling;
+                        libmat.Material.Texture.ImageAlpha := ImageAlpha;
+                        libmat.Material.Texture.MagFilter := magFilter;
+                        libmat.Material.Texture.MinFilter := minFilter;
+                        libmat.Material.Texture.TextureMode := TextureMode;
+                        libmat.Material.Texture.TextureWrap := TextureWrap;
+                        libmat.Material.BlendingMode := Blendingmode;
+                        libmat.Material.FaceCulling := faceculling;
+                    end;
                 end;
             end;
-        end;
 
         // read subset data...
         aStream.Read(_4cc, SizeOf(_4cc));

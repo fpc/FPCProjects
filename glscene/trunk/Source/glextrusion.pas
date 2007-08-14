@@ -7,6 +7,8 @@
    surface described by a moving curve.<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>31/07/07 - DanB - Implemented AxisAlignedDimensionsUnscaled for
+                            TGLRevolutionSolid & TGLExtrusionSolid
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
@@ -39,7 +41,7 @@ interface
 {$I GLScene.inc}
 
 uses Classes, OpenGL1x, GLObjects, GLScene, GLMisc, GLTexture, GLMultiPolygon,
-     GLColor;
+     GLColor, VectorTypes, VectorGeometry;
 
 type
 
@@ -71,7 +73,7 @@ type
          FTriangleCount : Integer;
          FNormalDirection : TNormalDirection;
          FParts : TRevolutionSolidParts;
-
+         FAxisAlignedDimensionsCache: TVector;
 		protected
 			{ Protected Declarations }
          procedure SetStartAngle(const val : Single);
@@ -92,6 +94,8 @@ type
 
          {: Number of triangles used for rendering. }
          property TriangleCount : Integer read FTriangleCount;
+         function AxisAlignedDimensionsUnscaled : TVector;override;
+         procedure StructureChanged; override;
 
       published
 			{ Published Declarations }
@@ -141,6 +145,7 @@ type
       FHeight: TGLFloat;
       FMinSmoothAngle: Single;
       FMinSmoothAngleCos:Single;
+      FAxisAlignedDimensionsCache:TVector;
       procedure SetHeight(const Value: TGLFloat);
       procedure SetMinSmoothAngle(const Value: Single);
 
@@ -160,6 +165,8 @@ type
 
       {: Number of triangles used for rendering. }
       property TriangleCount : Integer read FTriangleCount;
+      function AxisAlignedDimensionsUnscaled : TVector;override;
+      procedure StructureChanged; override;
 
    published
      { Published Declarations }
@@ -276,7 +283,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, VectorGeometry, Spline, VectorLists, XOpenGL;
+uses SysUtils, Spline, VectorLists, XOpenGL;
 
 // ------------------
 // ------------------ TGLRevolutionSolid ------------------
@@ -640,6 +647,39 @@ begin
       end;
    end;
 end;
+
+// AxisAlignedDimensionsUnscaled
+//
+function TGLRevolutionSolid.AxisAlignedDimensionsUnscaled : TVector;
+var
+   maxRadius: Single;
+   maxHeight:Single;
+   i:integer;
+begin
+   maxRadius:=0;
+   maxHeight:=0;
+   if FAxisAlignedDimensionsCache[0]<0 then begin
+     for i:=0 to Nodes.Count-1 do
+     begin
+       maxHeight:=MaxFloat(maxHeight,Abs(Nodes[i].Y));
+       maxRadius:=MaxFloat(maxRadius,Sqr(Nodes[i].X)+Sqr(Nodes[i].Z));
+     end;
+     maxRadius:=sqrt(maxRadius);
+     FAxisAlignedDimensionsCache[0]:=maxRadius;
+     FAxisAlignedDimensionsCache[1]:=maxHeight;
+     FAxisAlignedDimensionsCache[2]:=maxRadius;     
+   end;
+   SetVector(Result, FAxisAlignedDimensionsCache);
+end;
+
+// StructureChanged
+//
+procedure TGLRevolutionSolid.StructureChanged;
+begin
+   FAxisAlignedDimensionsCache[0]:=-1;
+   inherited;
+end;
+
 
 // ------------------
 // ------------------ TGLPipeNode ------------------
@@ -1279,6 +1319,7 @@ begin
    FNormalDirection:=ndOutside;
    FParts:=[espOutside];
    MinSmoothAngle:=5;
+   FAxisAlignedDimensionsCache[0]:=-1;
 end;
 
 // Destroy
@@ -1348,6 +1389,30 @@ begin
       StructureChanged;
    end;
 end;
+
+// AxisAlignedDimensionsUnscaled
+//
+function TGLExtrusionSolid.AxisAlignedDimensionsUnscaled : TVector;
+var
+   dMin, dMax : TAffineVector;
+begin
+   if FAxisAlignedDimensionsCache[0]<0 then begin
+      Contours.GetExtents(dMin, dMax);
+      FAxisAlignedDimensionsCache[0]:=MaxFloat(Abs(dMin[0]), Abs(dMax[0]));
+      FAxisAlignedDimensionsCache[1]:=MaxFloat(Abs(dMin[1]), Abs(dMax[1]));
+      FAxisAlignedDimensionsCache[2]:=MaxFloat(Abs(dMin[2]), Abs(dMax[2]+Height));
+   end;
+   SetVector(Result, FAxisAlignedDimensionsCache);
+end;
+
+// StructureChanged
+//
+procedure TGLExtrusionSolid.StructureChanged;
+begin
+   FAxisAlignedDimensionsCache[0]:=-1;
+   inherited;
+end;
+
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

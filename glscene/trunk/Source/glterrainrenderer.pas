@@ -6,6 +6,8 @@
    GLScene's brute-force terrain renderer.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>20/07/07 - LC - Fixed a problem when camera is far away from the terrain bounds.
+                          (Bugtracker ID = 1757733)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Cosmetic fixes for FPC compatibility
       <li>27/03/07 - Lin- Added TileManagement flags. - Helps prevent tile cache fushes.
@@ -506,6 +508,33 @@ begin
    minTilePosX:=vEye[0]-f;
    minTilePosY:=vEye[1]-f;
 
+   if Assigned(FOnGetTerrainBounds) then begin
+      // User-specified terrain bounds, may override ours
+      t_l:=minTilePosX;
+      t_t:=maxTilePosY;
+      t_r:=maxTilePosX;
+      t_b:=minTilePosY;
+
+      FOnGetTerrainBounds(t_l, t_t, t_r, t_b);
+
+      t_l:=Round(t_l/TileSize-0.5)*TileSize+TileSize*0.5;
+      t_t:=Round(t_t/TileSize-0.5)*TileSize-TileSize*0.5;
+      t_r:=Round(t_r/TileSize-0.5)*TileSize-TileSize*0.5;
+      t_b:=Round(t_b/TileSize-0.5)*TileSize+TileSize*0.5;
+
+      if maxTilePosX>t_r then maxTilePosX:=t_r;
+      if maxTilePosY>t_t then maxTilePosY:=t_t;
+      if minTilePosX<t_l then minTilePosX:=t_l;
+      if minTilePosY<t_b then minTilePosY:=t_b;
+   end;
+   // if max is less than min, we have nothing to render
+   if (maxTilePosX < minTilePosX) or (maxTilePosY < minTilePosY) then
+      exit;
+
+   nbX:=Round((maxTilePosX-minTilePosX)/TileSize);
+   nbY:=Round((maxTilePosY-minTilePosY)/TileSize);
+
+
    texFactor:=1/(TilesPerTexture*TileSize);
    rcci:=rci.rcci;
    if QualityDistance>0 then
@@ -536,28 +565,6 @@ begin
    finally
       xglPopState;
    end;
-
-   if Assigned(FOnGetTerrainBounds) then begin
-      // User-specified terrain bounds, may override ours
-      t_l:=minTilePosX;
-      t_t:=maxTilePosY;
-      t_r:=maxTilePosX;
-      t_b:=minTilePosY;
-
-      FOnGetTerrainBounds(t_l, t_t, t_r, t_b);
-
-      t_l:=Round(t_l/TileSize-0.5)*TileSize+TileSize*0.5;
-      t_t:=Round(t_t/TileSize-0.5)*TileSize-TileSize*0.5;
-      t_r:=Round(t_r/TileSize-0.5)*TileSize-TileSize*0.5;
-      t_b:=Round(t_b/TileSize-0.5)*TileSize+TileSize*0.5;
-
-      if maxTilePosX>t_r then maxTilePosX:=t_r;
-      if maxTilePosY>t_t then maxTilePosY:=t_t;
-      if minTilePosX<t_l then minTilePosX:=t_l;
-      if minTilePosY<t_b then minTilePosY:=t_b;
-   end;
-   nbX:=Round((maxTilePosX-minTilePosX)/TileSize);
-   nbY:=Round((maxTilePosY-minTilePosY)/TileSize);
 
    HeightDataSource.Data.LockList;  //Lock out the HDS thread while rendering
 

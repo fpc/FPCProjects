@@ -1,6 +1,11 @@
 // GLShadowHDS
 {: Implements an HDS that automatically generates a terrain lightmap texture.<p>
 	<b>History : </b><font size=-1><ul>
+
+      <li>17/07/07 - LIN - Added OnThreadBmp32 event. This event can be used to
+                           modify the lightmap, before it is sent to texture memory.
+                           When used with TAsyncHDS, this event runs in the HeightData thread,
+                           and NOT in the main thread, so make sure code in this event is thread-safe.
       <li>22/03/07 - LIN - Thread-safe. (Now works with TGLAsyncHDS)
       <li>02/03/07 - LIN - Now works with InfiniteWrap terrain
       <li>14/02/07 - LIN - Creation
@@ -14,8 +19,7 @@
         3:If the light vector's y component is not 0 then the shadow edges may be
           a bit jagged, due to the crude Bresenham line algorythm that was used.
           You can hide this by increasing SoftRange though.
-        5:Bug If light angle is 0,0, only the edge of the texture is generated.
-        6:At some light angles, rounding errors cause various artifacts:
+        5:At some light angles, rounding errors cause various artifacts:
          (Black tile edges / slight mis-alignments /etc.)
         6:Applying materials ocasionally causes AV's
 
@@ -34,6 +38,8 @@ type
    TGLShadowHDS = class;
    TNewTilePreparedEvent = procedure (Sender : TGLShadowHDS; heightData : THeightData;
                                       ShadowMapMaterial : TGLLibMaterial) of object;
+   TThreadBmp32 = procedure (Sender : TGLShadowHDS; heightData : THeightData; bmp32:TGLBitmap32) of object;
+
 
 	// TGLShadowHDS
 	//
@@ -50,6 +56,8 @@ type
          FScale       : TGLCoordinates;
          FScaleVec     :TVector3f;
          FOnNewTilePrepared : TNewTilePreparedEvent;
+         FOnThreadBmp32 : TThreadBmp32;
+
          //FSubSampling : Integer;
          FMaxTextures : integer;
          Step :TVector3f;
@@ -98,6 +106,7 @@ type
 
 	      { Published Declarations }
          property ShadowmapLibrary : TGLMaterialLibrary read FShadowmapLibrary write SetShadowmapLibrary;
+         property OnThreadBmp32 : TThreadBmp32 read FOnThreadBmp32 write FOnThreadBmp32; //WARNING: This runs in a subthread
          property OnNewTilePrepared : TNewTilePreparedEvent read FOnNewTilePrepared write FOnNewTilePrepared;
          property LightVector : TGLCoordinates read FLightVector write SetLightVector;
          property Scale       : TGLCoordinates read FScale write FScale;
@@ -288,7 +297,6 @@ begin
   with OwnerHDS.Data.LockList do try
     Trim(FMaxTextures);
     MatName:='ShadowHDS_x'+IntToStr(HD.XLeft)+'y'+IntToStr(HD.YTop)+'.'; //name contains xy coordinates of the current tile
-
     libMat:=FShadowmapLibrary.Materials.Add;
     //---------Recycle Textures---------
     //libMat:=self.FindUnusedMaterial;                  //look for an unused texture, to recycle
@@ -296,7 +304,6 @@ begin
     //  then libMat:=FShadowmapLibrary.Materials.Add    //if no free textures were found, get a new one
     //  else libMat.Material.Texture.Enabled:=false;    //recycle the unused texture
     //----------------------------------
-
     libMat.Name:=MatName;
     //HD.MaterialName:=LibMat.Name;
     HD.LibMaterial:=LibMat;  //attach texture to current tile
@@ -329,12 +336,19 @@ begin
     with libMat.Material.Texture do begin
       ImageClassName:=TGLBlankImage.ClassName;
       MinFilter:=miNearestMipmapNearest;
-      MagFilter:=maNearest;
+      //MinFilter:=miLinearMipmapLinear;
+      //MagFilter:=maNearest;
+      MagFilter:=maLinear;
+
       TextureMode:=tmReplace;
       TextureWrap:=twNone;
-      TextureFormat:=tfLuminance;
+      //TextureFormat:=tfLuminance;
+      TextureFormat:=tfRGB16;
+      //TextureFormat:=tfRGBA;
       bmp32:=(Image as TGLBlankImage).GetBitmap32(GL_TEXTURE_2D);
       GenerateShadowMap(HD , bmp32, 1);
+      if Assigned(FOnThreadBmp32) then FOnThreadBmp32(self,heightData,bmp32);
+
       //Enabled:=True;
       with HD.Owner.Data.LockList do try Enabled:=True;
       finally HD.Owner.Data.UnlockList; end;
@@ -506,11 +520,11 @@ begin
   wx:=Lx+HD.XLeft;
   wy:=HDS.Height-HD.YTop-Ly;
 
-  //wrap terrain
-  if wx>=HDS.Width then wx:=wx-HDS.Width;
-  if wx<0 then wx:=wx+HDS.Width;
-  if wy>=HDS.Height then wy:=wy-HDS.Height;
-  if wy<0 then wy:=wy+HDS.Height;
+  //wrap terrain                               //no longer needed?
+  //if wx>=HDS.Width then wx:=wx-HDS.Width;
+  //if wx<0 then wx:=wx+HDS.Width;
+  //if wy>=HDS.Height then wy:=wy-HDS.Height;
+  //if wy<0 then wy:=wy+HDS.Height;
 end;
 
 //WorldToLocal
@@ -521,12 +535,12 @@ var HDS:THeightDataSource;
     xleft,ytop:integer;
     size:integer;
 begin
-  //wrap terrain
-  HDS:=self.HeightDataSource;
-  if wx>=HDS.Width then wx:=wx-HDS.Width;
-  if wx<0 then wx:=wx+HDS.Width;
-  if wy>=HDS.Height then wy:=wy-HDS.Height;
-  if wy<0 then wy:=wy+HDS.Height;
+  //wrap terrain                               //no longer needed?
+  //HDS:=self.HeightDataSource;
+  //if wx>=HDS.Width then wx:=wx-HDS.Width;
+  //if wx<0 then wx:=wx+HDS.Width;
+  //if wy>=HDS.Height then wy:=wy-HDS.Height;
+  //if wy<0 then wy:=wy+HDS.Height;
 
   HDS:=self.HeightDataSource;
   size:=FTileSize;

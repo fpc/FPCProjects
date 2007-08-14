@@ -6,6 +6,8 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>29/07/07 - LC - Modified how tmmEyeLinear is applied, see
+                          Bugtracker ID = 1762966.
       <li>06/06/07 - DaStr - Moved all color types, constants and functions
                               to GLColor.pas (Bugtracker ID = 1732211)
       <li>31/03/07 - DaStr - Bugfixed TGLTexture.Assign (missed some properties)
@@ -3652,8 +3654,13 @@ begin
       tmmEyeLinear : begin
          glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
          glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+         // specify planes in eye space, not world space
+         glMatrixMode(GL_MODELVIEW);
+         glPushMatrix;
+         glLoadIdentity;
          glTexGenfv(GL_S, GL_EYE_PLANE, @MappingSCoordinates.DirectVector);
          glTexGenfv(GL_T, GL_EYE_PLANE, @MappingTCoordinates.DirectVector);
+         glPopMatrix;
          glEnable(GL_TEXTURE_GEN_S);
          glEnable(GL_TEXTURE_GEN_T);
       end;

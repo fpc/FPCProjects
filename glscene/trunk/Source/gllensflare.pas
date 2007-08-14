@@ -6,6 +6,8 @@
    Lens flare object.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>08/08/07 - Lin - Bugfix for AutoZTest:
+                           Lensflare is no longer occluded by objects BEHIND the flare.
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Moved all UNSAFE_TYPE, UNSAFE_CODE checks to GLSCene.inc
       <li>25/03/07 - DaStr - UNSAFE_TYPE and UNSAFE_CODE warnings are now ignored
@@ -42,8 +44,7 @@ interface
 {$I GLScene.inc}
 
 uses
-   Classes, GLScene, VectorGeometry, GLObjects, GLTexture, OpenGL1x, GLMisc,
-   GLContext, GLColor;
+   Classes, GLScene, VectorGeometry, GLObjects, GLTexture, OpenGL1x, GLMisc, GLContext, GLColor;
 
 type
 
@@ -497,7 +498,7 @@ end;
 procedure TGLLensFlare.BuildList(var rci : TRenderContextInfo);
 var
    i : Integer;
-   depth : Single;
+   depth, dist: Single;
    posVector, v, rv : TAffineVector;
    screenPos : TAffineVector;
    flareInViewPort, usedOcclusionQuery, dynamicSize : Boolean;
@@ -603,10 +604,14 @@ begin
          glColorMask(True, True, True, True);
       end else begin
          // explicit ZTesting, can hurt framerate badly
-         depth:=Scene.CurrentBuffer.GetPixelDepth(Round(ScreenPos[0]),
-                                                  Round(rci.viewPortSize.cy-ScreenPos[1]));
-         // but is it behind something?
-         FlareIsNotOccluded:=(depth>=1);
+         //depth:=Scene.CurrentBuffer.GetPixelDepth(Round(ScreenPos[0]),Round(rci.viewPortSize.cy-ScreenPos[1]));
+         //FlareIsNotOccluded:=(depth>=1); //this assumes the light is further than the farplane.
+
+         //Compares the distance to the lensflare, to the z-buffer depth.
+         //This prevents the flare from being occluded by objects BEHIND the light.
+         depth:=Scene.CurrentBuffer.PixelToDistance(Round(ScreenPos[0]),Round(rci.viewPortSize.cy-ScreenPos[1]));
+         dist:=Scene.CurrentGLCamera.DistanceTo(self);
+         FlareIsNotOccluded:=((dist-depth)<1);
       end;
    end;
 

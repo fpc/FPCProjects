@@ -9,6 +9,7 @@
    implements more efficient (though more complex) mesh tools.<p> 
 
 	<b>History : </b><font size=-1><ul>
+      <li>31/07/07 - DanB - Implemented AxisAlignedDimensionsUnscaled for TGLMesh
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
@@ -163,6 +164,7 @@ type
          FVertices   : TVertexList;
          FMode       : TMeshMode;
          FVertexMode : TVertexMode;
+         FAxisAlignedDimensionsCache : TVector;
 
       protected
 			{ Protected Declarations }
@@ -181,6 +183,8 @@ type
          procedure BuildList(var rci : TRenderContextInfo); override;
          procedure CalcNormals(Frontface: TFaceWinding);
          property Vertices: TVertexList read FVertices write SetVertices;
+         function AxisAlignedDimensionsUnscaled : TVector;override;
+         procedure StructureChanged; override;
 
       published
 			{ Published Declarations }
@@ -583,6 +587,7 @@ begin
   FVertices.AddVertex(YVector, ZVector, NullHmgVector, NullTexPoint);
   FVertices.AddVertex(ZVector, ZVector, NullHmgVector, NullTexPoint);
   FVertices.OnNotifyChange:=VerticesChanged;
+  FAxisAlignedDimensionsCache[0]:=-1;
   FVertexmode := vmVNCT; //should change this later to default to vmVN. But need to
 end;                     //change GLMeshPropform so that it greys out unused vertex info
 
@@ -732,6 +737,29 @@ begin
       FMode := TGLMesh(Source).FMode;
       FVertexMode := TGLMesh(Source).FVertexMode;
    end else inherited Assign(Source);
+end;
+
+// AxisAlignedDimensionsUnscaled
+//
+function TGLMesh.AxisAlignedDimensionsUnscaled : TVector;
+var
+   dMin, dMax : TAffineVector;
+begin
+   if FAxisAlignedDimensionsCache[0]<0 then begin
+      Vertices.GetExtents(dMin, dMax);
+      FAxisAlignedDimensionsCache[0]:=MaxFloat(Abs(dMin[0]), Abs(dMax[0]));
+      FAxisAlignedDimensionsCache[1]:=MaxFloat(Abs(dMin[1]), Abs(dMax[1]));
+      FAxisAlignedDimensionsCache[2]:=MaxFloat(Abs(dMin[2]), Abs(dMax[2]));
+   end;
+   SetVector(Result, FAxisAlignedDimensionsCache);
+end;
+
+// StructureChanged
+//
+procedure TGLMesh.StructureChanged;
+begin
+   FAxisAlignedDimensionsCache[0]:=-1;
+   inherited;
 end;
 
 // ------------------------------------------------------------------
