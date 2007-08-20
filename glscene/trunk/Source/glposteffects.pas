@@ -6,6 +6,7 @@
   A collection of components that generate post effects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/08/07 - DaStr - Added pepBlur preset (by Paul van Dinther) 
       <li>25/03/07 - DaStr - Small fix for Delphi5 compatibility
       <li>23/03/07 - DaStr - Added TGLPostShaderHolder.Assign
       <li>20/03/07 - DaStr - Fixed TGLPostShaderHolder.DoRender
@@ -40,7 +41,7 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  GLScene, GLTexture, OpenGL1x, GLStrings, GLCustomShader, GLContext;
+  GLScene, GLTexture, OpenGL1x, GLGraphics, GLStrings, GLCustomShader, GLContext;
 
 type
   EGLPostShaderHolderException = class(Exception);
@@ -115,12 +116,13 @@ type
        pepGray - makes picture gray.
        pepNegative - inverts all colors.
        pepDistort - simulates shaky TV image.
-       pepNightVision - simulates nightvision goggles.
        pepNoise - just adds random niose.
+       pepNightVision - simulates nightvision goggles.
+       pepBlur - blurs the scene.
        pepCustom - calls the OnCustomEffect event.
   }
   TGLPostEffectPreset = (pepNone, pepGray, pepNegative, pepDistort, pepNoise,
-                         pepNightVision, pepCustom);
+                         pepNightVision, pepBlur, pepCustom);
 
   {: Provides a simple way to producing post-effects without shaders.<p>
      It is slow as hell, but it's worth it in some cases.}
@@ -136,6 +138,7 @@ type
     procedure MakeDistortEffect; virtual;
     procedure MakeNoiseEffect; virtual;
     procedure MakeNightVisionEffect; virtual;
+    procedure MakeBlurEffect(var rci : TRenderContextInfo); virtual;
     procedure DoOnCustomEffect(var rci : TRenderContextInfo; var Buffer: TGLPostEffectBuffer); virtual;
   public
     procedure DoRender(var rci : TRenderContextInfo;
@@ -189,6 +192,7 @@ begin
        pepDistort:     MakeDistortEffect;
        pepNoise:       MakeNoiseEffect;
        pepNightVision: MakeNightVisionEffect;
+       pepBlur:        MakeBlurEffect(rci);
        pepCustom:      DoOnCustomEffect(rci, FRenderBuffer);
      else
        Assert(False, glsUnknownType);
@@ -286,6 +290,27 @@ begin
    end;
 end;
 
+procedure TGLPostEffect.MakeBlurEffect(var rci : TRenderContextInfo);
+var
+  I: Integer;
+  lUp: Integer;
+  lOffset: Integer;
+begin
+  lOffset := 2;
+  lUp := rci.viewPortSize.cx * lOffset;
+  for I := lUp to High(FRenderBuffer) - lUp do
+  begin
+    FRenderBuffer[I].r := (FRenderBuffer[I].r + FRenderBuffer[I - lOffset].r +
+        FRenderBuffer[I + lOffset].r + FRenderBuffer[I - lUp].r +
+        FRenderBuffer[I + lUp].r) div 5;
+    FRenderBuffer[I].g := (FRenderBuffer[I].g + FRenderBuffer[I - lOffset].g +
+        FRenderBuffer[I + lOffset].g + FRenderBuffer[I - lUp].g +
+        FRenderBuffer[I + lUp].r) div 5;
+    FRenderBuffer[I].b := (FRenderBuffer[I].b + FRenderBuffer[I - lOffset].b +
+        FRenderBuffer[I + lOffset].b + FRenderBuffer[I - lUp].g +
+        FRenderBuffer[I + lUp].r) div 5;
+  end;
+end;
 {$IFDEF NEED_TO_RESTORE_RANGE_CHECK}
   {$R+}
   {$UNDEF NEED_TO_RESTORE_RANGE_CHECK}

@@ -8,6 +8,8 @@
    to the GLScene core units (only to base units).<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>31/07/07 - DaStr - Added missing StopPrimitive call to TGLCanvas.FillRect
+                             (Bugtracker ID = 1775528)
       <li>06/06/07 - DaStr - Removed ConvertColorVector and ConvertWinColor (now in GLColor.pas)
                              Added GLColor to uses (BugtrackerID = 1732211)
                              Removed TColor declaration (now in GLCrossPlatform.pas)
@@ -480,6 +482,7 @@ begin
    StartPrimitive(GL_QUADS);
    glVertex2i(x1, y1);  glVertex2i(x2, y1);
    glVertex2i(x2, y2);  glVertex2i(x1, y2);
+   StopPrimitive;
 end;
 
 // FillRect (single)
@@ -489,6 +492,7 @@ begin
    StartPrimitive(GL_QUADS);
    glVertex2f(x1, y1);  glVertex2f(x2, y1);
    glVertex2f(x2, y2);  glVertex2f(x1, y2);
+   StopPrimitive;   
 end;
 
 // EllipseVertices
