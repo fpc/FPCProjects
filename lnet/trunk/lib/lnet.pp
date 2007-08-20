@@ -230,7 +230,7 @@ type
     FID: Integer; // internal number for server
     FEventer: TLEventer;
     FEventerClass: TLEventerClass;
-    FTimeout: DWord;
+    FTimeout: Integer;
     FListenBacklog: Integer;
    protected
     function InitSocket(aSocket: TLSocket): TLSocket; virtual;
@@ -239,8 +239,8 @@ type
     function GetCount: Integer; virtual;
     function GetItem(const i: Integer): TLSocket;
     
-    function GetTimeout: DWord;
-    procedure SetTimeout(const AValue: DWord);
+    function GetTimeout: Integer;
+    procedure SetTimeout(const AValue: Integer);
     
     procedure SetEventer(Value: TLEventer);
     
@@ -289,7 +289,7 @@ type
     property Connected: Boolean read GetConnected;
     property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
     property Iterator: TLSocket read FIterator;
-    property Timeout: DWord read GetTimeout write SetTimeout;
+    property Timeout: Integer read GetTimeout write SetTimeout;
     property Eventer: TLEventer read FEventer write SetEventer;
     property EventerClass: TLEventerClass read FEventerClass write FEventerClass;
   end;
@@ -736,7 +736,7 @@ begin
     Result := Tmp;
 end;
 
-function TLConnection.GetTimeout: DWord;
+function TLConnection.GetTimeout: Integer;
 begin
   if Assigned(FEventer) then
     Result := FEventer.Timeout
@@ -800,7 +800,7 @@ begin
     FOnError(msg, TLSocket(aSocket));
 end;
 
-procedure TLConnection.SetTimeout(const AValue: DWord);
+procedure TLConnection.SetTimeout(const AValue: Integer);
 begin
   if Assigned(FEventer) then
     FEventer.Timeout := aValue;
@@ -830,7 +830,7 @@ begin
   if Assigned(FRootSock) then
     FEventer.AddHandle(FRootSock);
 
-  if (FEventer.Timeout = 0) and (FTimeout > 0) then
+  if (FEventer.Timeout = 0) and (FTimeout <> 0) then
     FEventer.Timeout := FTimeout
   else
     FTimeout := FEventer.Timeout;

@@ -114,8 +114,8 @@ type
    protected
     FConnection: TLTcp;
    protected
-    function GetTimeout: DWord;
-    procedure SetTimeout(const AValue: DWord);
+    function GetTimeout: Integer;
+    procedure SetTimeout(const AValue: Integer);
     
     function GetConnected: Boolean;
 
@@ -133,7 +133,7 @@ type
 
     property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
     property Eventer: TLEventer read GetEventer write SetEventer;
-    property Timeout: DWord read GetTimeout write SetTimeout;
+    property Timeout: Integer read GetTimeout write SetTimeout;
   end;
 
   { TLSMTPClient }
@@ -237,12 +237,12 @@ end;
 
 { TLSMTP }
 
-function TLSMTP.GetTimeout: DWord;
+function TLSMTP.GetTimeout: Integer;
 begin
   Result := FConnection.Timeout;
 end;
 
-procedure TLSMTP.SetTimeout(const AValue: DWord);
+procedure TLSMTP.SetTimeout(const AValue: Integer);
 begin
   FConnection.Timeout := aValue;
 end;
