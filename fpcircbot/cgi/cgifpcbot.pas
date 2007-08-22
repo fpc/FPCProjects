@@ -387,8 +387,8 @@ begin
   if Length(FromTime) > 0 then s := s + ' and CAST (logtime as time) >= ' + AnsiQuotedStr(SQLEscape (FromTime), #39) ;
   if Length(ToTime) > 0 then s := s + ' and CAST (logtime as time) <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) ;}
 
-  if Length(FromDate) > 0 then s := s + ' and logtime >= ' + AnsiQuotedStr(SQLEscape (FromDate), #39) + '::date';
-  if Length(ToDate) > 0 then s := s + ' and logtime <= ' + AnsiQuotedStr(SQLEscape (ToDate), #39) + '::date';
+  if Length(FromDate) > 0 then s := s + ' and logtime::date >= ' + AnsiQuotedStr(SQLEscape (FromDate), #39) + '::date';
+  if Length(ToDate) > 0 then s := s + ' and logtime::date <= ' + AnsiQuotedStr(SQLEscape (ToDate), #39) + '::date';
   if Length(FromTime) > 0 then s := s + ' and logtime::time >= ' + AnsiQuotedStr(SQLEscape (FromTime), #39) + '::time';
   if Length(ToTime) > 0 then s := s + ' and logtime::time <= ' + AnsiQuotedStr(SQLEscape (ToTime), #39) + '::time';
 
