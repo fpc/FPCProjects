@@ -1,4 +1,4 @@
-{ lNet v0.5.6
+{ lNet v0.5.7
 
   CopyRight (C) 2004-2007 Ales Katona
 
@@ -844,6 +844,7 @@ begin
   while Assigned(Tmp) do begin
     Tmp2 := Tmp;
     Tmp := Tmp.NextSock;
+    Tmp2.Disconnect;
     Tmp2.Free;
   end;
 end;
