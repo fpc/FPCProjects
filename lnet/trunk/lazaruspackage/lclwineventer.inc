@@ -85,11 +85,13 @@ end;
 
 procedure TLCLEventer.UnregisterHandle(aHandle: TLHandle);
 begin
-  WaitSockets.Remove(Pointer(aHandle.Handle));
+  if WaitSockets.Contains(Pointer(aHandle.Handle)) then begin
+    WaitSockets.Remove(Pointer(aHandle.Handle));
 
-  if WSAAsyncSelect(aHandle.Handle, TWin32WidgetSet(WidgetSet).AppHandle,
-                                         0, 0) <> 0 then
-    Bail('Error on AsyncSelect', WSAGetLastError);
+    if WSAAsyncSelect(aHandle.Handle, TWin32WidgetSet(WidgetSet).AppHandle,
+                                           0, 0) <> 0 then
+      Bail('Error on AsyncSelect', WSAGetLastError);
+  end;
 end;
 
 procedure TLCLEventer.UnplugHandle(aHandle: TLHandle);
