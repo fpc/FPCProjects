@@ -429,6 +429,10 @@ begin
     if (FSocketType = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
       if fpShutDown(FHandle, 2) <> 0 then
         LogError('Shutdown error', LSocketError);
+        
+    if Assigned(FEventer) then
+      FEventer.UnregisterHandle(Self);
+        
     if CloseSocket(FHandle) <> 0 then
       LogError('Closesocket error', LSocketError);
     FHandle := INVALID_SOCKET;

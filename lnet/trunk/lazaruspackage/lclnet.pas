@@ -48,6 +48,7 @@ type
     {$ifndef windows} // unix
     procedure HandleEvents(aData: PtrInt; aFlags: DWord);
    public
+    procedure UnregisterHandle(aHandle: TLHandle); override;
     {$else}
     function HandleEvents(aHandle: THandle; aFlags: DWord): LongInt;
    public

@@ -158,6 +158,7 @@ type
     function CallAction: Boolean; virtual;
     procedure RemoveHandle(aHandle: TLHandle); virtual;
     procedure UnplugHandle(aHandle: TLHandle); virtual;
+    procedure UnregisterHandle(aHandle: TLHandle); virtual;
     procedure LoadFromEventer(aEventer: TLEventer); virtual;
     procedure Clear;
     procedure AddRef;
@@ -422,6 +423,11 @@ begin
     if FCount > 0 then
       Dec(FCount);
   end;
+end;
+
+procedure TLEventer.UnregisterHandle(aHandle: TLHandle);
+begin
+  // do nothing, specific to win32 LCLEventer crap (windows is shit)
 end;
 
 procedure TLEventer.LoadFromEventer(aEventer: TLEventer);
