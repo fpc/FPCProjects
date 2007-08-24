@@ -1,4 +1,4 @@
-{ lNetComponents v0.5.6
+{ lNetComponents v0.5.8
 
   CopyRight (C) 2004-2007 Ales Katona
 
@@ -48,9 +48,9 @@ type
     {$ifndef windows} // unix
     procedure HandleEvents(aData: PtrInt; aFlags: DWord);
    public
-    procedure UnregisterHandle(aHandle: TLHandle); override;
     {$else}
     function HandleEvents(aHandle: THandle; aFlags: DWord): LongInt;
+    procedure UnregisterHandle(aHandle: TLHandle); override;
    public
     constructor Create;
     {$endif}
