@@ -1096,6 +1096,7 @@ begin
     FRootSock.FConnected := True;
     FRootSock.FServerSocket := True;
     FIterator := FRootSock;
+    Inc(FCount);
     RegisterWithEventer;
     Result := true;
   end;
@@ -1130,6 +1131,7 @@ begin
     aSocket.PrevSock.NextSock := aSocket.NextSock;
   if Assigned(aSocket.NextSock) then
     aSocket.NextSock.PrevSock := aSocket.PrevSock;
+    
   Dec(FCount);
 end;
 
