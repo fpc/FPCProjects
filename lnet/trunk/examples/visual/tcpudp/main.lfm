@@ -4,10 +4,10 @@ object Form1: TForm1
   Top = 166
   Width = 390
   HorzScrollBar.Page = 389
-  VertScrollBar.Page = 322
+  VertScrollBar.Page = 326
   ActiveControl = MemoText
   Caption = 'lNet Component Test'
-  ClientHeight = 323
+  ClientHeight = 327
   ClientWidth = 390
   Constraints.MaxHeight = 350
   Constraints.MaxWidth = 390
@@ -21,7 +21,6 @@ object Form1: TForm1
     Top = 11
     Width = 31
     Caption = 'Port:'
-    Color = clNone
     ParentColor = False
   end
   object LabelHostName: TLabel
@@ -30,7 +29,6 @@ object Form1: TForm1
     Top = 36
     Width = 72
     Caption = 'Hostname:'
-    Color = clNone
     ParentColor = False
   end
   object MemoText: TMemo
@@ -103,8 +101,8 @@ object Form1: TForm1
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
-    ClientHeight = 36
-    ClientWidth = 140
+    ClientHeight = 38
+    ClientWidth = 144
     TabOrder = 6
     object RBTCP: TRadioButton
       Left = 14
@@ -151,6 +149,7 @@ object Form1: TForm1
     OnDisconnect = LTCPComponentDisconnect
     OnConnect = LTCPComponentConnect
     OnAccept = LTCPComponentAccept
+    ReuseAddress = True
     left = 104
     top = 16
   end

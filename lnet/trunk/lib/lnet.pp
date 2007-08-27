@@ -91,6 +91,7 @@ type
    protected
     FAddress: TInetSockAddr;
     FPeerAddress: TInetSockAddr;
+    FReuseAddress: Boolean;
     FConnected: Boolean;
     FConnecting: Boolean;
     FNextSock: TLSocket;
@@ -119,7 +120,8 @@ type
     
     procedure SetBlocking(const aValue: Boolean);
     procedure SetOptions; virtual;
-    
+    procedure SetReuseAddress(const aValue: Boolean);
+
     function Bail(const msg: string; const ernum: Integer): Boolean;
     
     procedure LogError(const msg: string; const ernum: Integer); virtual;
@@ -150,6 +152,7 @@ type
     property PeerPort: Word read GetPeerPort;
     property LocalAddress: string read GetLocalAddress;
     property LocalPort: Word read GetLocalPort;
+    property ReuseAddress: Boolean read FReuseAddress write SetReuseAddress;
     property NextSock: TLSocket read FNextSock write FNextSock;
     property PrevSock: TLSocket read FPrevSock write FPrevSock;
     property Creator: TLComponent read FCreator;
@@ -341,11 +344,14 @@ type
   TLTcp = class(TLConnection)
    protected
     FCount: Integer;
+    FReuseAddress: Boolean;
     function InitSocket(aSocket: TLSocket): TLSocket; override;
 
     function GetConnected: Boolean; override;
     function GetConnecting: Boolean;
     function GetCount: Integer; override;
+
+    procedure SetReuseAddress(const aValue: Boolean);
 
     procedure ConnectAction(aSocket: TLHandle); override;
     procedure AcceptAction(aSocket: TLHandle); override;
@@ -378,6 +384,7 @@ type
     property Connecting: Boolean read GetConnecting;
     property OnAccept: TLSocketEvent read FOnAccept write FOnAccept;
     property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
+    property ReuseAddress: Boolean read FReuseAddress write SetReuseAddress;
   end;
   
 implementation
@@ -543,6 +550,12 @@ begin
     Result := sockets.fpsendto(FHandle, @TheData, TheSize, LMSG, @FPeerAddress, AddressLength);
 end;
 
+procedure TLSocket.SetReuseAddress(const aValue: Boolean);
+begin
+  if not FConnected then
+    FReuseAddress := aValue;
+end;
+
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
 var
   Done: Boolean;
@@ -555,9 +568,14 @@ begin
     if FHandle = INVALID_SOCKET then
       Exit(Bail('Socket error', LSocketError));
     SetOptions;
+
+    Arg := 1;
     if FSocketType = SOCK_DGRAM then begin
-      Arg := 1;
       if fpsetsockopt(FHandle, SOL_SOCKET, SO_BROADCAST, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
+        Exit(Bail('SetSockOpt error', LSocketError));
+    end else if FReuseAddress then begin
+      {$WARNING TODO: use SO_EXCLUSIVEREUSEADDR in winNT+}
+      if fpsetsockopt(FHandle, SOL_SOCKET, SO_REUSEADDR, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Exit(Bail('SetSockOpt error', LSocketError));
     end;
     
@@ -1073,6 +1091,7 @@ begin
   
   FRootSock := InitSocket(SocketClass.Create);
   FRootSock.FIgnoreShutdown := True;
+  FRootSock.SetReuseAddress(FReuseAddress);
   if FRootSock.Listen(APort, AIntf) then begin
     FRootSock.FConnected := True;
     FRootSock.FServerSocket := True;
@@ -1249,6 +1268,13 @@ end;
 function TLTcp.GetCount: Integer;
 begin
   Result := FCount;
+end;
+
+procedure TLTcp.SetReuseAddress(const aValue: Boolean);
+begin
+  if not Assigned(FRootSock)
+  or not FRootSock.Connected then
+    FReuseAddress := aValue;
 end;
 
 function TLTcp.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;

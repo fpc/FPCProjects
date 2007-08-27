@@ -48,6 +48,7 @@ type
     property OnConnect;
     property OnAccept;
     property Timeout;
+    property ReuseAddress;
   end;
   
   { TLUDPComponent }
