@@ -1,4 +1,4 @@
-LentilWars networking unit.
+Lightweight Networking Library.
 
 These units are an asynchronous, TCP/UDP communications classes.
 LTCP, LUDP, LTELNET, LFTP and LSMTP are example programs.
