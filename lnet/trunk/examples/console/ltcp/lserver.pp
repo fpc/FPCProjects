@@ -64,6 +64,7 @@ begin
   FCon.OnDisconnect := @OnDs;
   FCon.OnAccept := @OnAc;
   FCon.Timeout := 100; // responsive enough, but won't hog cpu
+  FCon.ReuseAddress := True;
 end;
 
 destructor TLTCPTest.Destroy;
