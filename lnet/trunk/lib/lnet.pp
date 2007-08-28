@@ -118,8 +118,8 @@ type
     function CanSend: Boolean; virtual;
     function CanReceive: Boolean; virtual;
     
-    procedure SetBlocking(const aValue: Boolean);
     procedure SetOptions; virtual;
+    procedure SetBlocking(const aValue: Boolean);
     procedure SetReuseAddress(const aValue: Boolean);
 
     function Bail(const msg: string; const ernum: Integer): Boolean;
@@ -493,6 +493,11 @@ begin
   Result := FCanReceive and FConnected;
 end;
 
+procedure TLSocket.SetOptions;
+begin
+  SetBlocking(FBlocking);
+end;
+
 procedure TLSocket.SetBlocking(const aValue: Boolean);
 begin
   FBlocking := aValue;
@@ -501,9 +506,10 @@ begin
       Bail('Error on SetBlocking', LSocketError);
 end;
 
-procedure TLSocket.SetOptions;
+procedure TLSocket.SetReuseAddress(const aValue: Boolean);
 begin
-  SetBlocking(FBlocking);
+  if not FConnected then
+    FReuseAddress := aValue;
 end;
 
 function TLSocket.GetMessage(out msg: string): Integer;
@@ -550,16 +556,10 @@ begin
     Result := sockets.fpsendto(FHandle, @TheData, TheSize, LMSG, @FPeerAddress, AddressLength);
 end;
 
-procedure TLSocket.SetReuseAddress(const aValue: Boolean);
-begin
-  if not FConnected then
-    FReuseAddress := aValue;
-end;
-
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
 var
   Done: Boolean;
-  Arg: Integer;
+  Arg, Opt: Integer;
 begin
   Result := false;
   if not FConnected and not FConnecting then begin
@@ -574,8 +574,12 @@ begin
       if fpsetsockopt(FHandle, SOL_SOCKET, SO_BROADCAST, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Exit(Bail('SetSockOpt error', LSocketError));
     end else if FReuseAddress then begin
-      {$WARNING TODO: use SO_EXCLUSIVEREUSEADDR in winNT+}
-      if fpsetsockopt(FHandle, SOL_SOCKET, SO_REUSEADDR, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
+      Opt := SO_REUSEADDR;
+      {$ifdef WIN32} // I expect 64 has it oddly, so screw them for now
+      if (Win32Platform = 2) and (Win32MajorVersion >= 5) then
+        Opt := Integer(not Opt);
+      {$endif}
+      if fpsetsockopt(FHandle, SOL_SOCKET, Opt, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Exit(Bail('SetSockOpt error', LSocketError));
     end;
     
