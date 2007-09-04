@@ -25,8 +25,8 @@
     </CompilerOptions>
     <Description Value="Lightweight Networking Library, or lNet is a networking suite integrated with Lazarus to provide simple and effective means to use TCP, UDP, FTP, SMTP, Telnet and HTTP protocols over the net.
 "/>
-    <Version Minor="5" Release="7"/>
-    <Files Count="4">
+    <Version Minor="5" Release="8"/>
+    <Files Count="7">
       <Item1>
         <Filename Value="lclnet.pas"/>
         <UnitName Value="LCLNet"/>
@@ -44,6 +44,18 @@
         <HasRegisterProc Value="True"/>
         <UnitName Value="LNetVisualReg"/>
       </Item4>
+      <Item5>
+        <Filename Value="lclgtkeventer.inc"/>
+        <Type Value="Include"/>
+      </Item5>
+      <Item6>
+        <Filename Value="lclwinceeventer.inc"/>
+        <Type Value="Include"/>
+      </Item6>
+      <Item7>
+        <Filename Value="lclwineventer.inc"/>
+        <Type Value="Include"/>
+      </Item7>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="3">

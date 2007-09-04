@@ -33,8 +33,8 @@
     </CompilerOptions>
     <Description Value="Lightweight Networking Library, or lNet is a networking suite  providing simple and effective means to use TCP, UDP, FTP, SMTP, Telnet and HTTP protocols over the net.
 "/>
-    <Version Minor="5" Release="7"/>
-    <Files Count="9">
+    <Version Minor="5" Release="8"/>
+    <Files Count="26">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
         <UnitName Value="lNet"/>
@@ -71,6 +71,74 @@
         <Filename Value="../lib/lmimewrapper.pp"/>
         <UnitName Value="lMimeWrapper"/>
       </Item9>
+      <Item10>
+        <Filename Value="../lib/lhttputil.pp"/>
+        <UnitName Value="lHTTPUtil"/>
+      </Item10>
+      <Item11>
+        <Filename Value="../lib/lcontrolstack.pp"/>
+        <UnitName Value="lControlStack"/>
+      </Item11>
+      <Item12>
+        <Filename Value="../lib/lmimestreams.pp"/>
+        <UnitName Value="lMimeStreams"/>
+      </Item12>
+      <Item13>
+        <Filename Value="../lib/lmimetypes.pp"/>
+        <UnitName Value="lMimeTypes"/>
+      </Item13>
+      <Item14>
+        <Filename Value="../lib/fastcgi.pp"/>
+        <UnitName Value="fastcgi"/>
+      </Item14>
+      <Item15>
+        <Filename Value="../lib/lfastcgi.pp"/>
+        <UnitName Value="lfastcgi"/>
+      </Item15>
+      <Item16>
+        <Filename Value="../lib/lprocess.pp"/>
+        <UnitName Value="lProcess"/>
+      </Item16>
+      <Item17>
+        <Filename Value="../lib/lspawnfcgi.pp"/>
+        <UnitName Value="lSpawnFCGI"/>
+      </Item17>
+      <Item18>
+        <Filename Value="../lib/lstrbuffer.pp"/>
+        <UnitName Value="lStrBuffer"/>
+      </Item18>
+      <Item19>
+        <Filename Value="../lib/ltimer.pp"/>
+        <UnitName Value="ltimer"/>
+      </Item19>
+      <Item20>
+        <Filename Value="../lib/sys/osunits.inc"/>
+        <Type Value="Include"/>
+      </Item20>
+      <Item21>
+        <Filename Value="../lib/sys/lspawnfcgiunix.inc"/>
+        <Type Value="Include"/>
+      </Item21>
+      <Item22>
+        <Filename Value="../lib/sys/lspawnfcgiwin.inc"/>
+        <Type Value="Include"/>
+      </Item22>
+      <Item23>
+        <Filename Value="../lib/sys/lepolleventerh.inc"/>
+        <Type Value="Include"/>
+      </Item23>
+      <Item24>
+        <Filename Value="../lib/sys/lepolleventer.inc"/>
+        <Type Value="Include"/>
+      </Item24>
+      <Item25>
+        <Filename Value="../lib/sys/lkqueueeventerh.inc"/>
+        <Type Value="Include"/>
+      </Item25>
+      <Item26>
+        <Filename Value="../lib/sys/lkqueueeventer.inc"/>
+        <Type Value="Include"/>
+      </Item26>
     </Files>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)/"/>

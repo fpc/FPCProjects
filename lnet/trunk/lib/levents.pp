@@ -1,6 +1,6 @@
 { lNet Events abstration
 
-  CopyRight (C) 2006 Ales Katona
+  CopyRight (C) 2006-2007 Ales Katona
 
   This library is Free software; you can rediStribute it and/or modify it
   under the terms of the GNU Library General Public License as published by

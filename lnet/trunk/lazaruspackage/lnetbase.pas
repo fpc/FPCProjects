@@ -8,7 +8,8 @@ interface
 
 uses
   lNet, lEvents, lCommon, lFTP, lsmtp, lTelnet, lhttp, lwebserver, 
-    lMimeWrapper; 
+    lMimeWrapper, lHTTPUtil, lControlStack, lMimeStreams, lMimeTypes, fastcgi, 
+    lfastcgi, lProcess, lSpawnFCGI, lStrBuffer, ltimer; 
 
 implementation
 
