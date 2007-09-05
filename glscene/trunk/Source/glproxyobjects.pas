@@ -6,6 +6,8 @@
    Implements specific proxying classes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>04/09/07 - DaStr - Added TGLMaterialProxy
+                             Cleaned up this unit a bit
       <li>10/05/07 - DaStr - Bugfixed TGLColorProxy.DoRender
                               (thanks Paul Robello) (Bugtracker ID = 1716692)
       <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -61,6 +63,45 @@ type
         // Redeclare as TGLCustomSceneObject.
         property MasterObject: TGLCustomSceneObject read GetMasterMaterialObject write SetMasterMaterialObject;
    end;
+
+   // TGLMaterialProxy
+   //
+   {: A proxy object with its own material.<p>
+      This proxy object can take a mesh from one master and a materia from
+      a material library. }
+  TGLMaterialProxy = class (TGLProxyObject, IGLMaterialLibrarySupported)
+  private
+    { Private Declarations }
+    FTempLibMaterialName: string;
+    FMasterLibMaterial: TGLLibMaterial;
+    FMaterialLibrary: TGLMaterialLibrary;
+    procedure SetMaterialLibrary(const Value: TGLMaterialLibrary);
+    function GetMasterLibMaterialName: TGLLibMaterialName;
+    procedure SetMasterLibMaterialName(const Value: TGLLibMaterialName);
+    function GetMasterMaterialObject: TGLCustomSceneObject;
+    procedure SetMasterMaterialObject(const Value: TGLCustomSceneObject);
+    // Implementing IGLMaterialLibrarySupported.
+    function GetMaterialLibrary: TGLMaterialLibrary;
+  public
+    { Public Declarations }
+    constructor Create(AOwner: TComponent); override;
+    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+    destructor Destroy; override;
+
+    procedure DoRender(var ARci : TRenderContextInfo;
+                       ARenderSelf, ARenderChildren : Boolean); override;
+    {: Specifies the Material, that current master object will use.
+       Provides a faster way to access FMasterLibMaterial, compared to
+       MasterLibMaterialName }
+    property MasterLibMaterial: TGLLibMaterial read FMasterLibMaterial write FMasterLibMaterial stored False;
+  published
+    { Published Declarations }
+    property MaterialLibrary: TGLMaterialLibrary read FMaterialLibrary write SetMaterialLibrary;
+    {: Specifies the Material, that current master object will use. }
+    property MasterLibMaterialName: TGLLibMaterialName read GetMasterLibMaterialName write SetMasterLibMaterialName;
+    {: Redeclare as TGLCustomSceneObject. }
+    property MasterObject: TGLCustomSceneObject read GetMasterMaterialObject write SetMasterMaterialObject;
+  end;
 
    // TGLFreeFormProxy
    //
@@ -204,8 +245,7 @@ end;
 procedure TGLColorProxy.SetMasterMaterialObject(
   const Value: TGLCustomSceneObject);
 begin
-  Assert(Value is TGLCustomSceneObject, ClassName + ' accepts only TGLCustomSceneObject as master!');
-  SetMasterObject(Value);
+  inherited SetMasterObject(Value);
 end;
 
 // ------------------
@@ -221,14 +261,13 @@ var
    localRayStart, localRayVector : TVector;
 begin
    if Assigned(MasterObject) then begin
-      Assert(MasterObject is TGLFreeForm);
       SetVector(localRayStart, AbsoluteToLocal(rayStart));
       SetVector(localRayStart, MasterObject.LocalToAbsolute(localRayStart));
       SetVector(localRayVector, AbsoluteToLocal(rayVector));
       SetVector(localRayVector, MasterObject.LocalToAbsolute(localRayVector));
       NormalizeVector(localRayVector);
 
-      Result:=TGLFreeForm(MasterObject).OctreeRayCastIntersect(localRayStart, localRayVector,
+      Result:=GetMasterFreeFormObject.OctreeRayCastIntersect(localRayStart, localRayVector,
                                             intersectPoint, intersectNormal);
       if Result then begin
          if Assigned(intersectPoint) then begin
@@ -255,7 +294,6 @@ var
 begin
   Result:=False;
    if Assigned(MasterObject) then begin
-      Assert(MasterObject is TGLFreeForm);
       localVelocity := velocity * modelscale;
       localRadius := radius * modelscale;
 
@@ -265,7 +303,7 @@ begin
       SetVector(localRayVector, MasterObject.LocalToAbsolute(localRayVector));
       NormalizeVector(localRayVector);
 
-      Result:=TGLFreeForm(MasterObject).OctreeSphereSweepIntersect(localRayStart, localRayVector,
+      Result:=GetMasterFreeFormObject.OctreeSphereSweepIntersect(localRayStart, localRayVector,
                                             localVelocity, localRadius,
                                             intersectPoint, intersectNormal);
       if Result then begin
@@ -294,8 +332,7 @@ end;
 procedure TGLFreeFormProxy.SetMasterFreeFormObject(
   const Value: TGLFreeForm);
 begin
-  Assert(Value is TGLFreeForm, ClassName + ' accepts only TGLFreeForm as master!');
-  SetMasterObject(Value);
+  inherited SetMasterObject(Value);
 end;
 
 // ------------------
@@ -409,8 +446,130 @@ end;
 //
 procedure TGLActorProxy.SetMasterActorObject(const Value: TGLActor);
 begin
-  Assert(Value is TGLActor, ClassName + ' accepts only TGLActor as master!');
-  SetMasterObject(Value);
+  inherited SetMasterObject(Value);
+end;
+
+
+{ TGLMaterialProxy }
+
+constructor TGLMaterialProxy.Create(AOwner: TComponent);
+begin
+  inherited;
+  // Nothing here.
+end;
+
+destructor TGLMaterialProxy.Destroy;
+begin
+  // Nothing here.
+  inherited;
+end;
+
+procedure TGLMaterialProxy.DoRender(var ARci: TRenderContextInfo;
+  ARenderSelf, ARenderChildren: Boolean);
+var
+   gotMaster, masterGotEffects, oldProxySubObject : Boolean;
+begin
+   if FRendering then Exit;
+   FRendering:=True;
+   try
+      gotMaster:=Assigned(MasterObject);
+      masterGotEffects:=gotMaster and (pooEffects in ProxyOptions)
+                        and (MasterObject.Effects.Count>0);
+      if gotMaster then begin
+         if pooObjects in ProxyOptions then begin
+            oldProxySubObject:=ARci.proxySubObject;
+            ARci.proxySubObject:=True;
+            if pooTransformation in ProxyOptions then
+               glMultMatrixf(PGLFloat(MasterObject.MatrixAsAddress));
+
+            GetMasterMaterialObject.Material.QuickAssignMaterial(
+                                         FMaterialLibrary, FMasterLibMaterial);
+
+            MasterObject.DoRender(ARci, ARenderSelf, MasterObject.Count > 0);
+            ARci.proxySubObject:=oldProxySubObject;
+         end;
+      end;
+      // now render self stuff (our children, our effects, etc.)
+      if ARenderChildren and (Count>0) then
+         Self.RenderChildren(0, Count-1, ARci);
+      if masterGotEffects then
+         MasterObject.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
+   finally
+      FRendering:=False;
+   end;
+   ClearStructureChanged;
+end;
+
+function TGLMaterialProxy.GetMasterLibMaterialName: TGLLibMaterialName;
+begin
+  Result := FMaterialLibrary.GetNameOfLibMaterial(FMasterLibMaterial);
+  if Result = '' then
+    Result := FTempLibMaterialName;
+end;
+
+function TGLMaterialProxy.GetMasterMaterialObject: TGLCustomSceneObject;
+begin
+  Result := TGLCustomSceneObject(inherited MasterObject);
+end;
+
+function TGLMaterialProxy.GetMaterialLibrary: TGLMaterialLibrary;
+begin
+  Result := FMaterialLibrary;
+end;
+
+procedure TGLMaterialProxy.Notification(AComponent: TComponent;
+  Operation: TOperation);
+begin
+  inherited;
+  if Operation = opRemove then
+  begin
+    if AComponent = FMaterialLibrary then
+      FMaterialLibrary := nil;
+  end;
+end;
+
+procedure TGLMaterialProxy.SetMasterLibMaterialName(
+  const Value: TGLLibMaterialName);
+begin
+  if FMaterialLibrary = nil then
+  begin
+    FTempLibMaterialName := Value;
+    if not (csLoading in ComponentState) then
+      raise ETexture.Create(glsMatLibNotDefined);
+  end
+  else
+  begin
+    FMasterLibMaterial := FMaterialLibrary.LibMaterialByName(Value);
+    FTempLibMaterialName := '';
+  end;
+end;
+
+procedure TGLMaterialProxy.SetMasterMaterialObject(
+  const Value: TGLCustomSceneObject);
+begin
+  inherited SetMasterObject(Value);
+end;
+
+procedure TGLMaterialProxy.SetMaterialLibrary(
+  const Value: TGLMaterialLibrary);
+begin
+  if FMaterialLibrary <> Value then
+  begin
+    if FMaterialLibrary <> nil then
+      FMaterialLibrary.RemoveFreeNotification(Self);
+    FMaterialLibrary := Value;
+
+    if FMaterialLibrary <> nil then
+    begin
+      FMaterialLibrary.FreeNotification(Self);
+      if FTempLibMaterialName <> '' then
+        SetMasterLibMaterialName(FTempLibMaterialName);
+    end
+    else
+    begin
+      FTempLibMaterialName := '';
+    end;
+  end;
 end;
 
 //-------------------------------------------------------------
@@ -421,6 +580,6 @@ initialization
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
-   RegisterClasses([TGLColorProxy, TGLFreeFormProxy, TGLActorProxy]);
+   RegisterClasses([TGLColorProxy, TGLFreeFormProxy, TGLActorProxy, TGLMaterialProxy]);
 
 end.

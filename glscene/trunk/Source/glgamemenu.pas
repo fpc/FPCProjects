@@ -6,6 +6,8 @@
    Manages a basic game menu UI<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>04/09/07 - DaStr - Fixed memory leak in TGLGameMenu
+                              (BugtrackerID = 1787617) (thanks Pierre Lemerle)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -172,6 +174,7 @@ end;
 destructor TGLGameMenu.Destroy;
 begin
    inherited;
+   FItems.Free;
    Font:=nil;
    FBackColor.Free;
    FInactiveColor.Free;
