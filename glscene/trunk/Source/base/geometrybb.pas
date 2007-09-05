@@ -6,6 +6,8 @@
 	Calculations and manipulations on Bounding Boxes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>31/08/07 - LC - Replaced TriangleIntersectAABB with a working (and faster) version
+      <li>23/08/07 - LC - Added RayCastAABBIntersect
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>22/06/03 - MF - Added TBSphere for bounding spheres and classes to
@@ -125,7 +127,7 @@ function PointInAABB(const p : TVector; const aabb : TAABB) : Boolean; overload;
 {: Checks if a plane (given by the normal+d) intersects the AABB}
 function PlaneIntersectAABB(Normal: TAffineVector; d: single; aabb: TAABB): boolean;
 {: Checks if a triangle (given by vertices v1, v2 and v3) intersects an AABB}
-function TriangleIntersectAABB(const aabb: TAABB; v1, v2, v3: TAffineVector): boolean;
+function TriangleIntersectAABB(const aabb: TAABB; const v1, v2, v3: TAffineVector): boolean;
 
 {: Extract the corners from an AABB}
 procedure ExtractAABBCorners(const AABB: TAABB; var AABBCorners : TAABBCorners);
@@ -161,6 +163,12 @@ procedure IncludeInClipRect(var clipRect : TClipRect; x, y : Single);
 {: Projects an AABB and determines the extent of its projection as a clip rect. }
 function AABBToClipRect(const aabb : TAABB; modelViewProjection : TMatrix;
                         viewportSizeX, viewportSizeY : Integer) : TClipRect;
+
+{: Finds the intersection between a ray and an axis aligned bounding box. }
+function RayCastAABBIntersect(const rayOrigin, rayDirection: TVector; const aabb: TAABB;
+  out tNear, tFar: single): boolean; overload;
+function RayCastAABBIntersect(const rayOrigin, rayDirection: TVector;
+  const aabb: TAABB; intersectPoint: PVector = nil): boolean; overload;
 
 type
    TPlanIndices = array [0..3] of Integer;
@@ -691,57 +699,208 @@ begin
      if VectorDotProduct(normal, vmax) + d >= 0 then result:= true;
 end;
 
+procedure FindMinMax(x0,x1,x2: single; out min, max: single);
+begin
+  min:= x0;
+  max:= x0;
+  if (x1 < min) then
+    min:= x1;
+  if (x1 > max) then
+    max:= x1;
+  if (x2 < min) then
+    min:= x2;
+  if (x2 > max) then
+    max:= x2;
+end;
+
+function planeBoxOverlap(const normal: TAffineVector; d: single; const maxbox: TAffineVector): boolean;
+var
+  q: integer;
+  vmin, vmax: TAffineVector;
+begin
+  result:= false;
+
+  for q := 0 to 2 do
+  begin
+    if (normal[q] > 0.0) then
+    begin
+      vmin[q]:= -maxbox[q];
+      vmax[q]:=  maxbox[q];
+    end
+    else
+    begin
+      vmin[q]:=  maxbox[q];
+      vmax[q]:= -maxbox[q];
+    end;
+  end;
+
+  if (VectorDotProduct(normal, vmin)+d) > 0 then
+    exit;
+
+  if (VectorDotProduct(normal, vmax)+d) >= 0 then
+    result:= true;
+end;
+
 // TriangleIntersectAABB
 //
 function TriangleIntersectAABB(const aabb: TAABB;
-v1, v2, v3: TAffineVector): boolean;
+  const v1, v2, v3: TAffineVector): boolean;
+// Original source code by Tomas Akenine-Möller
+// Based on the paper "Fast 3D Triangle-Box Overlap Testing"
+// http://www.cs.lth.se/home/Tomas_Akenine_Moller/pubs/tribox.pdf
+// http://jgt.akpeters.com/papers/AkenineMoller01/ (code)
+
+//    use separating axis theorem to test overlap between triangle and box
+//    need to test for overlap in these directions:
+//    1) the (x,y,z)-directions (actually, since we use the AABB of the triangle
+//       we do not even need to test these)
+//    2) normal of the triangle
+//    3) crossproduct(edge from tri, {x,y,z}-directin)
+//       this gives 3x3=9 more tests
 var
-d, min, max: single;
-a, normal: TAffineVector;
-f, e: array[1..3] of TAffineVector;
-i, j: integer;
-p1, p2, p3, r: single;
+  boxcenter, boxhalfsize: TAffineVector;
+  tv0, tv1, tv2: TAffineVector;
+  min, max, d, p0, p1, p2, rad, fex, fey, fez: single;
+  normal, e0, e1, e2: TAffineVector;
 begin
-     result:= false;
+  result:= false;
 
-     VectorSubtract(v2, v1, f[1]);  //f0 = v1 - v0
-     VectorSubtract(v3, v2, f[2]);  //f1 = v2 - v1
-     VectorSubtract(v1, v3, f[3]);  //f2 = v0 - v2
+  boxhalfsize:= VectorSubtract(VectorScale(aabb.max, 0.5), VectorScale(aabb.min, 0.5));
+  boxcenter:= VectorAdd(VectorScale(aabb.max, 0.5), VectorScale(aabb.min, 0.5));
+  // move everything so that the boxcenter is in (0,0,0)
+  VectorSubtract(v1, boxcenter, tv0);
+  VectorSubtract(v2, boxcenter, tv1);
+  VectorSubtract(v3, boxcenter, tv2);
 
-     e[1]:= XVector;
-     e[2]:= YVector;
-     e[3]:= ZVector;
+   // compute triangle edges
+  VectorSubtract(tv1, tv0, e0);
+  VectorSubtract(tv2, tv1, e1);
+  VectorSubtract(tv0, tv2, e2);
 
-     //test 3
-     min:= MinXYZComponent(affineVectorMake(v1[0], v2[0], v3[0]));
-     max:= MaxXYZComponent(affineVectorMake(v1[0], v2[0], v3[0]));
-     if (min > aabb.max[0]) or (max < aabb.min[0]) then exit;
+  // Bullet 3:
+  //  test the 9 tests first (this was faster)
+  fex:= abs(e0[0]);
+  fey:= abs(e0[1]);
+  fez:= abs(e0[2]);
 
-     min:= MinXYZComponent(affineVectorMake(v1[1], v2[1], v3[1]));
-     max:= MaxXYZComponent(affineVectorMake(v1[1], v2[1], v3[1]));
-     if (min > aabb.max[1]) or (max < aabb.min[1]) then exit;
+  //  AXISTEST_X01(e0[Z], e0[Y], fez, fey);
+  p0:= e0[2]*tv0[1] - e0[1]*tv0[2];
+  p2:= e0[2]*tv2[1] - e0[1]*tv2[2];
+  min:= MinFloat(p0, p2);
+  max:= MaxFloat(p0, p2);
+  rad:= fez * boxhalfsize[1] + fey * boxhalfsize[2];
+  if (min > rad) or (max < -rad) then
+    exit;
 
-     min:= MinXYZComponent(affineVectorMake(v1[2], v2[2], v3[2]));
-     max:= MaxXYZComponent(affineVectorMake(v1[2], v2[2], v3[2]));
-     if (min > aabb.max[2]) or (max < aabb.min[2]) then exit;
+  //  AXISTEST_Y02(e0[Z], e0[X], fez, fex);
+  p0:= -e0[2]*tv0[0] + e0[0]*tv0[2];
+  p2:= -e0[2]*tv2[0] + e0[0]*tv2[2];
+  min:= MinFloat(p0, p2);
+  max:= MaxFloat(p0, p2);
+  rad:= fez * boxhalfsize[0] + fex * boxhalfsize[2];
+  if (min > rad) or (max < -rad) then
+    exit;
 
-     //test 2
-     VectorCrossProduct(f[1], f[2], normal);
-     d:= -VectorDotProduct(normal, v1);
-     if not PlaneIntersectAABB(normal, d, aabb) then exit;
+  //  AXISTEST_Z12(e0[Y], e0[X], fey, fex);
+  p1:= e0[1]*tv1[0] - e0[0]*tv1[1];
+  p2:= e0[1]*tv2[0] - e0[0]*tv2[1];
+  min:= MinFloat(p1, p2);
+  max:= MaxFloat(p1, p2);
+  rad:= fey * boxhalfsize[0] + fex * boxhalfsize[1];
+  if (min > rad) or (max < -rad) then
+    exit;
 
-     //test 3
-     for i:= 1 to 3 do
-          for j:= 1 to 3 do begin
-               VectorCrossProduct(e[i], f[j], a);
-               p1:= VectorDotProduct(a, v1);
-               p2:= VectorDotProduct(a, v2);
-               p3:= VectorDotProduct(a, v3);
-               r:= aabb.max[0] * abs(a[0]) + aabb.max[1] * abs(a[1]) + aabb.max[2] * abs(a[2]);
-               if (MinFloat(p1, p2, p3) > r) or (maxFloat(p1, p2, p3) < -r) then exit;
-          end;
+  fex:= abs(e1[0]);
+  fey:= abs(e1[1]);
+  fez:= abs(e1[2]);
+  //  AXISTEST_X01(e1[Z], e1[Y], fez, fey);
+  p0:= e1[2]*tv0[1] - e1[1]*tv0[2];
+  p2:= e1[2]*tv2[1] - e1[1]*tv2[2];
+  min:= MinFloat(p0, p2);
+  max:= MaxFloat(p0, p2);
+  rad:= fez * boxhalfsize[1] + fey * boxhalfsize[2];
+  if (min > rad) or (max < -rad) then
+    exit;
 
-     result:= true;
+  //  AXISTEST_Y02(e1[Z], e1[X], fez, fex);
+  p0:= -e1[2]*tv0[0] + e1[0]*tv0[2];
+  p2:= -e1[2]*tv2[0] + e1[0]*tv2[2];
+  min:= MinFloat(p0, p2);
+  max:= MaxFloat(p0, p2);
+  rad:= fez * boxhalfsize[0] + fex * boxhalfsize[2];
+  if (min > rad) or (max < -rad) then
+    exit;
+
+  //  AXISTEST_Z0(e1[Y], e1[X], fey, fex);
+  p0:= e1[1]*tv0[0] - e1[0]*tv0[1];
+  p1:= e1[1]*tv1[0] - e1[0]*tv1[1];
+  min:= MinFloat(p0, p1);
+  max:= MaxFloat(p0, p1);
+  rad:= fey * boxhalfsize[0] + fex * boxhalfsize[1];
+  if (min > rad) or (max < -rad) then
+    exit;
+
+  fex:= abs(e2[0]);
+  fey:= abs(e2[1]);
+  fez:= abs(e2[2]);
+  //  AXISTEST_X2(e2[Z], e2[Y], fez, fey);
+  p0:= e2[2]*tv0[1] - e2[1]*tv0[2];
+  p1:= e2[2]*tv1[1] - e2[1]*tv1[2];
+  min:= MinFloat(p0, p1);
+  max:= MaxFloat(p0, p1);
+  rad:= fez * boxhalfsize[1] + fey * boxhalfsize[2];
+  if (min > rad) or (max < -rad) then
+    exit;
+
+//  AXISTEST_Y1(e2[Z], e2[X], fez, fex);
+  p0:= -e2[2]*tv0[0] + e2[0]*tv0[2];
+  p1:= -e2[2]*tv1[0] + e2[0]*tv1[2];
+  min:= MinFloat(p0, p1);
+  max:= MaxFloat(p0, p1);
+  rad:= fez * boxhalfsize[0] + fex * boxhalfsize[2];
+  if (min > rad) or (max < -rad) then
+    exit;
+
+  //  AXISTEST_Z12(e2[Y], e2[X], fey, fex);
+  p1:= e2[1]*tv1[0] - e2[0]*tv1[1];
+  p2:= e2[1]*tv2[0] - e2[0]*tv2[1];
+  min:= MinFloat(p1, p2);
+  max:= MaxFloat(p1, p2);
+  rad:= fey * boxhalfsize[0] + fex * boxhalfsize[1];
+  if (min > rad) or (max < -rad) then
+    exit;
+
+  // Bullet 1:
+  //  first test overlap in the {x,y,z}-directions
+  //  find min, max of the triangle each direction, and test for overlap in
+  //  that direction -- this is equivalent to testing a minimal AABB around 
+  //  the triangle against the AABB
+
+  // test in X-direction
+  FindMinMax(tv0[0], tv1[0], tv2[0], min, max);
+  if (min > boxhalfsize[0]) or (max < -boxhalfsize[0]) then
+    exit;
+
+  // test in Y-direction
+  FindMinMax(tv0[1], tv1[1], tv2[1], min, max);
+  if (min > boxhalfsize[1]) or (max < -boxhalfsize[1]) then
+    exit;
+
+  // test in Z-direction
+  FindMinMax(tv0[2], tv1[2], tv2[2], min, max);
+  if (min > boxhalfsize[2]) or (max < -boxhalfsize[2]) then
+    exit;
+
+  // Bullet 2:
+  //  test if the box intersects the plane of the triangle
+  //  compute plane equation of triangle: normal * x + d = 0
+  VectorCrossProduct(e0, e1, normal);
+  d:= -VectorDotProduct(normal, tv0); // plane eq: normal.x + d = 0
+  if not planeBoxOverlap(normal, d, boxhalfsize) then
+    exit;
+
+  // box and triangle overlaps
+  result:= true;
 end;
 
 // ExtractAABBCorners
@@ -1047,5 +1206,71 @@ begin
       end;
    end;
 end;
+
+function RayCastAABBIntersect(const rayOrigin, rayDirection: TVector; const aabb: TAABB;
+  out tNear, tFar: single): boolean; overload;
+const
+  Infinity    =  1.0 / 0.0;
+var
+  p: integer;
+  invDir: double;
+  t0, t1, tmp: single;
+begin
+  result:= false;
+
+  tNear:= -Infinity;
+  tFar:= Infinity;
+
+  for p:= 0 to 2 do
+  begin
+    if (rayDirection[p] = 0) then
+    begin
+      if ((rayOrigin[p] < aabb.min[p]) or (rayOrigin[p] > aabb.max[p])) then
+        exit;
+    end
+    else
+    begin
+      invDir:= 1 / rayDirection[p];
+      t0:= (aabb.min[p] - rayOrigin[p]) * invDir;
+      t1:= (aabb.max[p] - rayOrigin[p]) * invDir;
+
+      if (t0 > t1) then
+      begin
+        tmp:= t0;
+        t0:= t1;
+        t1:= tmp;
+      end;
+
+      if (t0 > tNear) then
+        tNear:= t0;
+      if (t1 < tFar) then
+        tFar:= t1;
+
+      if ((tNear > tFar) or (tFar < 0)) then
+        exit;
+    end;
+  end;
+
+  result:= true;
+end;
+
+function RayCastAABBIntersect(const rayOrigin, rayDirection: TVector;
+  const aabb: TAABB; intersectPoint: PVector = nil): boolean; overload;
+var
+  tNear, tFar: single;
+begin
+  result:= RayCastAABBIntersect(rayOrigin, rayDirection, aabb, tNear, tFar);
+
+  if result and assigned(intersectPoint) then
+  begin
+    if tNear >= 0 then
+      // origin outside the box
+      intersectPoint^:= VectorCombine(rayOrigin, rayDirection, 1, tNear)
+    else
+      // origin inside the box, near is "behind", use far
+      intersectPoint^:= VectorCombine(rayOrigin, rayDirection, 1, tFar);
+  end;
+end;
+
 
 end.
