@@ -35,6 +35,7 @@
       - added automatical generated History from CVS
 
   History:<ul>
+    <li>24/08/07 - Mrqzzz - Updated GetSurfaceFromObject to support correctly Trimesh collision
     <li>07/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
                            Added $I GLScene.inc
     <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -1286,7 +1287,12 @@ begin
   Result:=nil;
   if Assigned(anObject) then
     if anObject is TGLODEBehaviour then
-      Result:=TGLODEBehaviour(anObject).Surface;
+      Result:=TGLODEBehaviour(anObject).Surface
+    else
+    begin
+         if (anObject is TGLBaseSceneObject) and (TGLBaseSceneObject(anObject).Behaviours.Count>0) and (TGLBaseSceneObject(anObject).Behaviours[0] is TGLODEBehaviour)  then
+            Result:=TGLODEBehaviour(TGLBaseSceneObject(anObject).Behaviours[0]).Surface
+    end;
 end;
 
 // IsGLODEObject
