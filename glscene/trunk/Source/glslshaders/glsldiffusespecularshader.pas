@@ -6,6 +6,8 @@
     This is a collection of GLSL diffuse-specular shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>02/09/07 - LC - Fixed texture bug in TGLSLMLDiffuseSpecularShader.
+                          (Bugtracker ID = 1786286)
       <li>03/04/07 - LC - Shader didn't respect the texture matrix. Changed
                           vertex shader to fix this. (Bugtracker ID = 1693389)
       <li>20/03/07 - DaStr - Made changes related to the new parameter passing model 
@@ -144,6 +146,8 @@ type
     procedure SetLightCompensation(const Value: Single);
   protected
     procedure DoInitialize; override;
+    procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
+
   public
     constructor Create(AOwner : TComponent); override;
 
@@ -339,14 +343,13 @@ begin
     Add(' ');
     Add('varying vec3 Normal; ');
     Add('varying vec3 ViewDirection; ');
-    Add('varying vec2 Texcoord; ');
     Add(' ');
     Add('void main(void) ');
     Add('{ ');
     Add('  vec3 LightVector; ');
     Add('  vec3 reflect_vec; ');
     Add('  float Temp; ');
-    Add('  vec4 TextureContrib = texture2D(MainTexture, Texcoord); ');
+    Add('  vec4 TextureContrib = texture2D(MainTexture, gl_TexCoord[0].st); ');
     Add('  vec3 CameraVector = normalize(ViewDirection); ');
     Add(' ');
     Add('  vec4 DiffuseContrib = vec4(0, 0, 0, 0); ');
@@ -588,6 +591,12 @@ begin
   FLightCompensation := 1;
 end;
 
+procedure TGLCustomGLSLMLDiffuseSpecularShader.DoApply(var rci: TRenderContextInfo; Sender: TObject);
+begin
+  inherited;
+  Param['MainTexture'].AsVector1i := 0;  // Use the current texture.
+end;
+
 procedure TGLCustomGLSLMLDiffuseSpecularShader.DoInitialize;
 var
   I: Integer;
@@ -603,6 +612,7 @@ begin
 
     GetMLFragmentProgramCodeEnd(FragmentProgram.Code, FLightCount, FLightCompensation, FRealisticSpecular);
   end;
+
   inherited;
 end;
 
