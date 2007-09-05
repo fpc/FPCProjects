@@ -51,6 +51,10 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>29/08/07 - LC - Fixed BarycentricCoordinates to work with triangles in yz plane
+      <li>27/08/07 - DaStr - Bugfixed VectorAffineFltToDbl and VectorFltToDbl
+                             (thanks Biot!) (BugTracker ID = 1782005)
+      <li>23/08/07 - LC - Added BarycentricCoordinates
       <li>16/04/07 - DaStr - Removed TMatrix[3/4][w/e] types (declared in VectorTypes.pas)
       <li>25/03/07 - DaStr - Replaced Types with GLCrossPlatform for Delphi 5 support
                              Added YZHmgVector and XZHmgVector
@@ -1606,6 +1610,16 @@ function PackRotationMatrix(const mat : TMatrix) : TPackedRotationMatrix;
 {: Restores a packed rotation matrix.<p>
    See PackRotationMatrix. }
 function UnPackRotationMatrix(const packedMatrix : TPackedRotationMatrix) : TMatrix;
+
+{: Calculates the barycentric coordinates for the point p on the triangle
+   defined by the vertices v1, v2 and v3. That is, solves
+     p = u * v1 + v * v2 + (1-u-v) * v3
+   for u,v.
+   Returns true if the point is inside the triangle, false otherwise.<p>
+   NOTE: This function assumes that the point lies on the plane defined by the triangle.
+   If this is not the case, the function will not work correctly! }
+function BarycentricCoordinates(const v1, v2, v3, p: TAffineVector; var u, v: single): boolean;
+
 
 const
    cPI       : Single =  3.141592654;
@@ -9465,10 +9479,10 @@ begin
  asm
               FLD  DWORD PTR [EAX]
               FSTP QWORD PTR [EDX]
-              FLD  DWORD PTR [EAX + 8]
-              FSTP QWORD PTR [EDX + 4]
-              FLD  DWORD PTR [EAX + 16]
+              FLD  DWORD PTR [EAX + 4]
               FSTP QWORD PTR [EDX + 8]
+              FLD  DWORD PTR [EAX + 8]
+              FSTP QWORD PTR [EDX + 16]
  end;
  {$else}
  begin
@@ -9488,12 +9502,12 @@ begin
  asm
               FLD  DWORD PTR [EAX]
               FSTP QWORD PTR [EDX]
-              FLD  DWORD PTR [EAX + 8]
-              FSTP QWORD PTR [EDX + 4]
-              FLD  DWORD PTR [EAX + 16]
+              FLD  DWORD PTR [EAX + 4]
               FSTP QWORD PTR [EDX + 8]
-              FLD  DWORD PTR [EAX + 24]
-              FSTP QWORD PTR [EDX + 12]
+              FLD  DWORD PTR [EAX + 8]
+              FSTP QWORD PTR [EDX + 16]
+              FLD  DWORD PTR [EAX + 12]
+              FSTP QWORD PTR [EDX + 24]
  end;
  {$else}
  begin
@@ -10235,6 +10249,51 @@ begin
       q.RealPart:=0
    else q.RealPart:=Sqrt(q.RealPart);
    Result:=QuaternionToMatrix(q);
+end;
+
+// BarycentricCoordinates
+//
+function BarycentricCoordinates(const v1, v2, v3, p: TAffineVector; var u, v: single): boolean;
+var
+  a1, a2: integer;
+  n, e1, e2, pt: TAffineVector;
+begin
+  // calculate edges
+  VectorSubtract(v1, v3, e1);
+  VectorSubtract(v2, v3, e2);
+
+  // calculate p relative to v3
+  VectorSubtract(p, v3, pt);
+
+  // find the dominant axis
+  n:= VectorCrossProduct(e1, e2);
+  AbsVector(n);
+  a1:= 0;
+  if n[1] > n[a1] then
+    a1:= 1;
+  if n[2] > n[a1] then
+    a1:= 2;
+
+  // use dominant axis for projection
+  case a1 of
+    0: begin
+      a1:= 1;
+      a2:= 2;
+    end;
+    1: begin
+      a1:= 0;
+      a2:= 2;
+    end;
+  else // 2:
+    a1:= 0;
+    a2:= 1;
+  end;
+
+  // solve for u and v
+  u:= (pt[a2] * e2[a1] - pt[a1] * e2[a2]) / (e1[a2] * e2[a1] - e1[a1] * e2[a2]);
+  v:= (pt[a2] * e1[a1] - pt[a1] * e1[a2]) / (e2[a2] * e1[a1] - e2[a1] * e1[a2]);
+
+  result:= (u >= 0) and (v >= 0) and (u+v <= 1);
 end;
 
 {*****************************************************************************}
