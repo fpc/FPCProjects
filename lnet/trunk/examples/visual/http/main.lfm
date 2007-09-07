@@ -5,6 +5,7 @@ object MainForm: TMainForm
   Width = 647
   HorzScrollBar.Page = 646
   VertScrollBar.Page = 535
+  ActiveControl = EditURL
   Caption = 'HTTP Client Test'
   ClientHeight = 536
   ClientWidth = 647
@@ -32,7 +33,7 @@ object MainForm: TMainForm
       Height = 25
       Top = 5
       Width = 440
-      OnKeyPress = EditHostKeyPress
+      OnKeyPress = EditURLKeyPress
       TabOrder = 0
     end
     object ButtonSendRequest: TButton

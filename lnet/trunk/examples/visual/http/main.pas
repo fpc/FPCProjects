@@ -27,7 +27,7 @@ type
     MenuPanel: TPanel;
     PanelSep: TPanel;
     procedure ButtonSendRequestClick(Sender: TObject);
-    procedure EditHostKeyPress(Sender: TObject; var Key: char);
+    procedure EditURLKeyPress(Sender: TObject; var Key: char);
     procedure HTTPClientDisconnect(aSocket: TLSocket);
     procedure HTTPClientDoneInput(ASocket: TLHTTPClientSocket);
     procedure HTTPClientError(const msg: string; aSocket: TLSocket);
@@ -74,7 +74,7 @@ begin
   HTTPClient.SendRequest;
 end;
 
-procedure TMainForm.EditHostKeyPress(Sender: TObject; var Key: char);
+procedure TMainForm.EditURLKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
     ButtonSendRequestClick(Sender);
