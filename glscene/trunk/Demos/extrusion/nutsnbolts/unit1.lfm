@@ -7,6 +7,8 @@ object Form1: TForm1
   VertScrollBar.Page = 296
   AutoSize = True
   Caption = 'Form1'
+  ClientHeight = 297
+  ClientWidth = 449
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   object GLSceneViewer1: TGLSceneViewer
@@ -56,7 +58,7 @@ object Form1: TForm1
             end          
             item
               X = 6
-              Y = -1.3999999761581
+              Y = -1.39999997615814
             end          
             item
               X = 5.90000009536743
@@ -148,7 +150,7 @@ object Form1: TForm1
             end          
             item
               X = 6
-              Y = -1.3999999761581
+              Y = -1.39999997615814
             end          
             item
               X = 5.90000009536743

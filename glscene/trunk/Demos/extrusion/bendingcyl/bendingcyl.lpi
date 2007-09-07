@@ -28,10 +28,10 @@
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="GLSceneLazarus"/>
       </Item1>
       <Item2>
-        <PackageName Value="GLSceneLazarus"/>
+        <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
     <Units Count="3">
@@ -50,8 +50,8 @@
         <HasResources Value="True"/>
         <ResourceFilename Value="unit1.lrs"/>
         <UnitName Value="Unit1"/>
-        <CursorPos X="1" Y="62"/>
-        <TopLine Value="44"/>
+        <CursorPos X="17" Y="22"/>
+        <TopLine Value="76"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
@@ -65,16 +65,7 @@
         <Loaded Value="True"/>
       </Unit2>
     </Units>
-    <JumpHistory Count="2" HistoryIndex="1">
-      <Position1>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="22" Column="20" TopLine="65"/>
-      </Position1>
-      <Position2>
-        <Filename Value="../../../../../../../../lazarus/lcl/include/intfbaselcl.inc"/>
-        <Caret Line="398" Column="1" TopLine="378"/>
-      </Position2>
-    </JumpHistory>
+    <JumpHistory Count="0" HistoryIndex="-1"/>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>

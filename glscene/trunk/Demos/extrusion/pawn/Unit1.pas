@@ -10,9 +10,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLMisc, GLObjects, StdCtrls, ComCtrls, GLTexture, ExtCtrls,
-  GLExtrusion, GLWin32Viewer, LResources, GLScene;
+  GLExtrusion, GLViewer, LResources, GLScene;
 
 type
   TForm1 = class(TForm)
@@ -64,7 +64,7 @@ uses JPeg;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-   RotationSolid1.Material.Texture.Image.LoadFromFile('..\..\media\ashwood.jpg');
+   RotationSolid1.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'ashwood.jpg');
 end;
 
 procedure TForm1.CheckBox1Click(Sender: TObject);
