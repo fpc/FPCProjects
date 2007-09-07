@@ -12,7 +12,7 @@ interface
 uses
   LCLType, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
   Classes, Controls, GLBehaviours, Buttons, GLGraph, GLMovement,
-  GLLCLViewer, LResources, GLScene, GLCadencer;
+  GLViewer, LResources, GLScene, GLCadencer;
 
 type
 
@@ -51,7 +51,7 @@ uses
 
 procedure TForm1.FormActivate(Sender: TObject);
 begin
-
+  {$WARNING MISSING!!!! REPLACE FROM ORIGINAL}
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);

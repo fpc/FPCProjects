@@ -18,11 +18,11 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLScene, GLObjects, GLMisc, GLCadencer, GLWin32Viewer,
+  Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, GLScene, GLObjects, GLMisc, GLCadencer, GLViewer,
   GLTexture, GLHeightData, GLTerrainRenderer, GLVectorFileObjects,
   ExtCtrls, GLBitmapFont, GLWindowsFont, GLHUDObjects, LResources,
-  GLDCE, Windows;
+  GLDCE, LCLType;
 
 type
   TForm1 = class(TForm)
@@ -96,13 +96,13 @@ begin
   //Load Materials
   with GLMatlLib do
   begin
-    AddTextureMaterial('Terrain','..\..\media\snow512.jpg');
-    AddTextureMaterial('Actor','..\..\media\waste.jpg');
+    AddTextureMaterial('Terrain','..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'snow512.jpg');
+    AddTextureMaterial('Actor','..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'waste.jpg');
   end;
 
   //Load Terrain
   GLBitmapHDS1.MaxPoolSize:=8*1024*1024;
-  GLBitmapHDS1.Picture.LoadFromFile('..\..\media\terrain.bmp');
+  GLBitmapHDS1.Picture.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'terrain.bmp');
   Terrain.Direction.SetVector(0,1,0);
   Terrain.Material.LibMaterialName := 'Terrain';
   Terrain.TilesPerTexture:=256/Terrain.TileSize;
@@ -113,19 +113,19 @@ begin
   // Load mushroom mesh
   //Always use AutoScaling property or you may get some problems
   moMushRoom.AutoScaling.SetPoint(0.1,0.1,0.1);
-  moMushRoom.LoadFromFile('..\..\media\Mushroom.3ds');
+  moMushRoom.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'mushroom.3ds');
   moMushRoom.Direction.SetVector(0,1,0);
   moMushRoom.BuildOctree;
 
   //Load player
   Player.Position.SetPoint(0,3,0);
   //Actor
-  GLActor1.LoadFromFile('..\..\media\Waste.md2');
+  GLActor1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'waste.md2');
   GLActor1.Direction.SetVector(0,1,0);
   GLActor1.Up.SetVector(1,0,0);
   GLActor1.Scale.SetVector(0.05,0.05,0.05);
   GLActor1.Material.LibMaterialName := 'Actor';
-  GLActor1.Animations.LoadFromFile('..\..\media\Quake2Animations.aaf');
+  GLActor1.Animations.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'Quake2Animations.aaf');
   // Define animation properties
   GLActor1.AnimationMode:=aamLoop;
   GLActor1.SwitchToAnimation('stand');

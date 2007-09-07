@@ -25,7 +25,7 @@ interface
 
 uses
   Forms, GLObjects, GLScene, GLMisc, StdCtrls, ExtCtrls, Controls, Classes,
-  GLCadencer, GLLCLViewer, GLPolyhedron, LResources, Buttons;
+  GLCadencer, GLViewer, GLPolyhedron, LResources, Buttons;
 
 type
   TForm1 = class(TForm)

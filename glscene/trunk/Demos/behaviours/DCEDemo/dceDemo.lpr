@@ -3,6 +3,9 @@ program dceDemo;
 {$MODE Delphi}
 
 uses
+  {$ifndef windows}
+  cThreads,
+  {$endif}
   Interfaces,
   Forms,
   Unit1 in 'Unit1.pas' {Form1};
