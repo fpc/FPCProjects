@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, lNet, lHTTP,
-  lNetComponents, ExtCtrls, StdCtrls, Buttons, Menus;
+  lNetComponents, ExtCtrls, StdCtrls, Buttons, Menus, lHTTPUtil;
   
 type
 
@@ -14,13 +14,9 @@ type
 
   TMainForm = class(TForm)
     ButtonSendRequest: TButton;
-    EditPort: TEdit;
-    EditURI: TEdit;
-    EditHost: TEdit;
+    EditURL: TEdit;
     HTTPClient: TLHTTPClientComponent;
-    LabelPort: TLabel;
     LabelURI: TLabel;
-    LabelHost: TLabel;
     MainMenu1: TMainMenu;
     MemoHTML: TMemo;
     MemoStatus: TMemo;
@@ -29,6 +25,7 @@ type
     MenuItemHelp: TMenuItem;
     MenuItemFile: TMenuItem;
     MenuPanel: TPanel;
+    PanelSep: TPanel;
     procedure ButtonSendRequestClick(Sender: TObject);
     procedure EditHostKeyPress(Sender: TObject; var Key: char);
     procedure HTTPClientDisconnect(aSocket: TLSocket);
@@ -65,11 +62,15 @@ begin
 end;
 
 procedure TMainForm.ButtonSendRequestClick(Sender: TObject);
+var
+  aHost, aURI: string;
+  aPort: Word;
 begin
   HTTPBuffer := '';
-  HTTPClient.Host := EditHost.Text;
-  HTTPClient.Port := Word(StrToInt(EditPort.Text));
-  HTTPClient.URI := EditURI.Text;
+  DecomposeURL(EditURL.Text, aHost, aURI, aPort);
+  HTTPClient.Host := aHost;
+  HTTPClient.URI  := aURI;
+  HTTPClient.Port := aPort;
   HTTPClient.SendRequest;
 end;
 
