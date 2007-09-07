@@ -6,6 +6,8 @@ object Form1: TForm1
   HorzScrollBar.Page = 518
   VertScrollBar.Page = 385
   Caption = 'Form1'
+  ClientHeight = 386
+  ClientWidth = 519
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
