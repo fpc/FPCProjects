@@ -7,6 +7,8 @@ object Form1: TForm1
   VertScrollBar.Page = 358
   ActiveControl = RadioGroup1.RadioButton1
   Caption = 'Form1'
+  ClientHeight = 359
+  ClientWidth = 468
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnClose = FormClose
@@ -16,8 +18,6 @@ object Form1: TForm1
     Width = 384
     Camera = GLCamera1
     Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
     FieldOfView = 148.869476318359
     Align = alClient
   end
@@ -36,6 +36,8 @@ object Form1: TForm1
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
+    ClientHeight = 342
+    ClientWidth = 84
     ItemIndex = 1
     Items.Strings = (
       'Sleepy'

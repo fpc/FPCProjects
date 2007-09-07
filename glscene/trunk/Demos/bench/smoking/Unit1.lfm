@@ -1,34 +1,32 @@
 object Form1: TForm1
+  Left = 261
+  Height = 493
+  Top = 140
+  Width = 482
+  HorzScrollBar.Page = 481
+  VertScrollBar.Page = 492
   Caption = 'Form1'
   ClientHeight = 493
   ClientWidth = 482
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
-  PixelsPerInch = 90
   Position = poScreenCenter
-  TextHeight = 13
-  HorzScrollBar.Page = 481
-  VertScrollBar.Page = 492
-  Left = 261
-  Height = 493
-  Top = 140
-  Width = 482
   object GLSceneViewer: TGLSceneViewer
-    Camera = GLCamera
-    Buffer.BackgroundColor = clBlack
-    FieldOfView = 156.55838012695312
-    Align = alClient
     Height = 493
     Width = 482
+    Camera = GLCamera
+    Buffer.BackgroundColor = clBlack
+    FieldOfView = 156.558364868164
+    Align = alClient
   end
   object GLScene: TGLScene
     left = 16
     top = 8
     object DCFire1: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         000040C000000000000000000000803F
       }
+      CubeSize = 1
       EffectsData = {
         0202061254474C536F7572636550465845666665637402010608466C616D6550
         4658050000000000000080FF3F0206020008020008020008050000000000CDCC
@@ -52,10 +50,10 @@ object Form1: TForm1
       }
     end
     object DCFire3: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         0000404000000000000000000000803F
       }
+      CubeSize = 1
       EffectsData = {
         0202061254474C536F7572636550465845666665637402010608466C616D6550
         4658050000000000000080FF3F0206020008020008020008050000000000CDCC
@@ -67,10 +65,10 @@ object Form1: TForm1
       }
     end
     object DCFire4: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         0000000000000000000040400000803F
       }
+      CubeSize = 1
       EffectsData = {
         0202061254474C536F7572636550465845666665637402010608466C616D6550
         4658050000000000000080FF3F0206020008020008020008050000000000CDCC
@@ -82,10 +80,10 @@ object Form1: TForm1
       }
     end
     object DCFire5: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         0000000000000000000040C00000803F
       }
+      CubeSize = 1
       EffectsData = {
         0202061254474C536F7572636550465845666665637402010608466C616D6550
         4658050000000000000080FF3F0206020008020008020008050000000000CDCC
@@ -97,13 +95,13 @@ object Form1: TForm1
       }
     end
     object ParticleFXRenderer: TGLParticleFXRenderer
-      BlendingMode = bmtransparency
+      BlendingMode = bmTransparency
     end
     object DCTarget: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         0000000000000040000000000000803F
       }
+      CubeSize = 1
     end
     object GLCamera: TGLCamera
       DepthOfView = 100
@@ -115,6 +113,13 @@ object Form1: TForm1
     end
   end
   object SmokePFX: TGLPerlinPFXManager
+    Cadencer = GLCadencer
+    Renderer = ParticleFXRenderer
+    Acceleration.Coordinates = {
+      000000000000803F0000000000000000
+    }
+    Friction = 1
+    BlendingMode = bmTransparency
     Smoothness = 1
     Brightness = 1
     Gamma = 1
@@ -156,19 +161,18 @@ object Form1: TForm1
         LifeTime = 5
         SizeScale = 3
       end>
-    BlendingMode = bmtransparency
-    Acceleration.Coordinates = {
-      000000000000803F0000000000000000
-    }
-    Friction = 1
-    Renderer = ParticleFXRenderer
-    Cadencer = GLCadencer
-    Cadencer = GLCadencer
     left = 56
     top = 8
   end
   object FlamePFX: TGLCustomSpritePFXManager
-    ParticleSize = 0.200000002980232
+    Cadencer = GLCadencer
+    Renderer = ParticleFXRenderer
+    Acceleration.Coordinates = {
+      000000000000803F0000000000000000
+    }
+    Friction = 1
+    ShareSprites = SmokePFX
+    ParticleSize = 0.20000000298023
     ColorInner.Color = {
       0000803F0000803F000000000000003F
     }
@@ -186,14 +190,6 @@ object Form1: TForm1
         LifeTime = 2
         SizeScale = 1
       end>
-    ShareSprites = SmokePFX
-    Acceleration.Coordinates = {
-      000000000000803F0000000000000000
-    }
-    Friction = 1
-    Renderer = ParticleFXRenderer
-    Cadencer = GLCadencer
-    Cadencer = GLCadencer
     left = 56
     top = 48
   end

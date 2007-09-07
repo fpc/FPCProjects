@@ -1,34 +1,32 @@
 object Form1: TForm1
+  Left = 331
+  Height = 302
+  Top = 294
+  Width = 344
+  HorzScrollBar.Page = 343
+  VertScrollBar.Page = 301
   Caption = 'Form1'
   ClientHeight = 302
   ClientWidth = 344
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 90
-  TextHeight = 13
-  HorzScrollBar.Page = 343
-  VertScrollBar.Page = 301
-  Left = 331
-  Height = 302
-  Top = 294
-  Width = 344
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clBlack
-    FieldOfView = 143.35792541503906
-    Align = alClient
     Height = 302
     Width = 344
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    FieldOfView = 143.35791015625
+    Align = alClient
   end
   object GLScene1: TGLScene
     ObjectsSorting = osNone
     left = 8
     top = 8
     object DummyCube1: TGLDummyCube
+      ObjectsSorting = osNone
       CubeSize = 10
       Amalgamate = True
-      ObjectsSorting = osNone
     end
     object GLLightSource1: TGLLightSource
       ConstAttenuation = 1
