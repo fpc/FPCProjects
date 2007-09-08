@@ -5,7 +5,7 @@ program PathControl;
 uses
   Interfaces,
   Forms,
-  Unit1 in 'Unit1.pas' {Form1};
+  Unit1;
 
 begin
   Application.Initialize;

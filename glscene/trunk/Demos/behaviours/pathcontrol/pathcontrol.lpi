@@ -28,15 +28,15 @@
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="GLSceneLazarus"/>
+        <PackageName Value="LCL"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
     <Units Count="5">
       <Unit0>
-        <Filename Value="PathControl.lpr"/>
+        <Filename Value="pathcontrol.lpr"/>
         <IsPartOfProject Value="True"/>
         <CursorPos X="28" Y="9"/>
         <TopLine Value="1"/>
@@ -45,7 +45,7 @@
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="Unit1.pas"/>
+        <Filename Value="unit1.pas"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceFilename Value="unit1.lrs"/>
