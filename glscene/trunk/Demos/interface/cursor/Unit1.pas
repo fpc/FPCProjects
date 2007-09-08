@@ -23,9 +23,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs, GLColor,
   ExtDlgs, Menus, ComCtrls, GLObjects, GLParticles, GLMisc, GLTexture,
-  GLCadencer, ExtCtrls, GLHudObjects, GLLCLViewer, LResources, GLScene;
+  GLCadencer, ExtCtrls, GLHudObjects, GLViewer, LResources, GLScene;
 
 type
   TForm1 = class(TForm)

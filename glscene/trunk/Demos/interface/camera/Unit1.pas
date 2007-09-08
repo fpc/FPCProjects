@@ -20,8 +20,8 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Forms, GLObjects, GLMisc, Classes, Controls, GLTeapot,
-  GLLCLViewer, LResources, GLScene;
+  Forms, GLObjects, GLMisc, Classes, Controls, GLTeapot,
+  GLViewer, LResources, GLScene;
 
 type
   TForm1 = class(TForm)

@@ -21,9 +21,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLMisc, GLHUDObjects, GLObjects, GLCadencer, ExtCtrls,
-  GLWin32Viewer, GLTeapot, LResources, GLScene, GLBitmapFont;
+  GLViewer, GLTeapot, LResources, GLScene, GLBitmapFont;
 
 type
 
@@ -60,7 +60,7 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-   BitmapFont1.Glyphs.LoadFromFile('..\..\media\darkgold_font.bmp');
+   BitmapFont1.Glyphs.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'darkgold_font.bmp');
 end;
 
 procedure TForm1.GLCadencer1Progress(Sender: TObject; const deltaTime,

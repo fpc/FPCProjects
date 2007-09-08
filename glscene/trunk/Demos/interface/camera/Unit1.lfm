@@ -6,6 +6,8 @@ object Form1: TForm1
   HorzScrollBar.Page = 376
   VertScrollBar.Page = 307
   Caption = 'Form1'
+  ClientHeight = 308
+  ClientWidth = 377
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnKeyPress = FormKeyPress

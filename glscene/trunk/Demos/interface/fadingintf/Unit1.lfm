@@ -1,4 +1,10 @@
 object Form1: TForm1
+  Left = 348
+  Height = 193
+  Top = 124
+  Width = 283
+  HorzScrollBar.Page = 282
+  VertScrollBar.Page = 192
   BorderStyle = bsDialog
   Caption = 'Form1'
   ClientHeight = 193
@@ -6,32 +12,24 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 90
-  TextHeight = 13
-  HorzScrollBar.Page = 282
-  VertScrollBar.Page = 192
-  Left = 348
-  Height = 193
-  Top = 124
-  Width = 283
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    FieldOfView = 121.06955718994141
-    OnMouseDown = GLSceneViewer1MouseDown
-    OnMouseMove = GLSceneViewer1MouseMove
     Left = 8
     Height = 177
     Top = 8
     Width = 265
+    Camera = GLCamera1
+    FieldOfView = 121.069557189941
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
   end
   object GLScene1: TGLScene
     left = 16
     top = 48
     object DummyCube1: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         000000000000803F000000000000803F
       }
+      CubeSize = 1
     end
     object GLLightSource1: TGLLightSource
       ConstAttenuation = 1
@@ -41,7 +39,6 @@ object Form1: TForm1
       SpotCutOff = 180
     end
     object Sphere: TGLSphere
-      Radius = 1
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
@@ -49,11 +46,9 @@ object Form1: TForm1
         00000040000080BE000000000000803F
       }
       OnProgress = SphereProgress
+      Radius = 1
     end
     object Cylinder: TGLCylinder
-      TopRadius = 1
-      BottomRadius = 1
-      Height = 1.5
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
@@ -61,10 +56,11 @@ object Form1: TForm1
         000000C0000080BE000000000000803F
       }
       OnProgress = SphereProgress
+      BottomRadius = 1
+      Height = 1.5
+      TopRadius = 1
     end
     object Torus: TGLTorus
-      MajorRadius = 0.699999988079071
-      MinorRadius = 0.200000002980232
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
@@ -78,10 +74,10 @@ object Form1: TForm1
         F604B53EF304353F70C41CBF00000000
       }
       OnProgress = SphereProgress
+      MajorRadius = 0.69999998807907
+      MinorRadius = 0.20000000298023
     end
     object Cone: TGLCone
-      BottomRadius = 1
-      Height = 1.5
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
@@ -95,6 +91,8 @@ object Form1: TForm1
         00000000EA46773FF283843E00000000
       }
       OnProgress = SphereProgress
+      BottomRadius = 1
+      Height = 1.5
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100

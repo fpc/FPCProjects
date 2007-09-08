@@ -28,8 +28,8 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Forms, GLObjects, GLMisc, GLTexture, Classes, Controls,
-  ExtCtrls, SysUtils, VectorGeometry, GLLCLViewer, GLGeomObjects, LResources,
+  Forms, GLObjects, GLMisc, GLTexture, Classes, Controls, GLColor,
+  ExtCtrls, SysUtils, VectorGeometry, GLViewer, GLGeomObjects, LResources,
   GLScene;
 
 type
@@ -88,7 +88,7 @@ var
    cp : TPoint;
 begin
 	// get what is under the mouse
-   GetCursorPos(cp);
+   cp := Mouse.CursorPos;
    cp:=GLSceneViewer1.ScreenToClient(cp);
 	currentPick:=(GLSceneViewer1.Buffer.GetPickedObject(cp.x, cp.y) as TGLCustomSceneObject);
    TIPickTimer.Enabled:=False;

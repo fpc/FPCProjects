@@ -1,42 +1,43 @@
+{ This is an automatically generated lazarus resource file }
+
 LazarusResources.Add('TForm1','FORMDATA',[
-  'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#255#0#3'Top'#3#185#0#5'Width'#3'{'#2#6'He'
-  +'ight'#3#147#1#7'Caption'#6#5'Form1'#5'Color'#7#9'clBtnFace'#12'Font.Charset'
-  +#7#15'DEFAULT_CHARSET'#10'Font.Color'#7#12'clWindowText'#11'Font.Height'#2
-  +#245#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#0#4'Menu'#7#9'MainMe'
-  +'nu1'#14'OldCreateOrder'#8#8'OnCreate'#7#10'FormCreate'#13'PixelsPerInch'#2
-  +'`'#10'TextHeight'#2#13#0#14'TGLSceneViewer'#14'GLSceneViewer1'#4'Left'#2#0#3
-  +'Top'#2#0#5'Width'#3's'#2#6'Height'#3'e'#1#6'Camera'#7#9'GLCamera1'#22'Buffe'
-  +'r.BackgroundColor'#7#7'clBlack'#5'Align'#7#8'alClient'#7'OnClick'#7#19'GLSc'
-  +'eneViewer1Click'#0#0#8'TGLScene'#8'GLScene1'#14'ObjectsSorting'#7#6'osNone'
-  +#4'Left'#2#16#3'Top'#2#16#0#14'TGLLightSource'#14'GLLightSource1'#16'ConstAt'
-  +'tenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Coordinates'#10#16#0#0#0#0
-  +#0' A'#0#0' A'#0#0' A'#0#0#128'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0
-  +#9'TGLTeapot'#7'Teapot1&Material.FrontProperties.Diffuse.Color'#10#16#0#0#0
-  +#173#172',?'#170#169')?'#240#239'o?'#0#0#128'?0Material.Texture.MappingTCoor'
-  +'dinates.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#21'Dire'
-  +'ction.Coordinates'#10#16#0#0#0#238#131#132'>'#0#0#0#0#234'Fw?'#0#0#0#0#17'S'
-  +'cale.Coordinates'#10#16#0#0#0#0#0#160'@'#0#0#160'@'#0#0#160'@'#0#0#0#0#0#0
-  +#10'TGLHUDText'#8'HUDText1'#20'Position.Coordinates'#10#16#0#0#0#0#0#160'A'#0
-  +#0#200'A'#0#0#0#0#0#0#128'?'#10'BitmapFont'#7#19'GLStoredBitmapFont1'#4'Text'
-  +#6#11'Hello World'#9'Alignment'#7#13'taLeftJustify'#6'Layout'#7#5'tlTop'#0#0
-  +#10'TGLHUDText'#8'HUDText2'#20'Position.Coordinates'#10#16#0#0#0#0#0#22'C'#0
-  +#0#150'C'#0#0#0#0#0#0#128'?'#10'BitmapFont'#7#19'GLStoredBitmapFont1'#4'Text'
-  +#6#4'Spin'#9'Alignment'#7#8'taCenter'#6'Layout'#7#8'tlCenter'#0#0#10'TGLHUDT'
-  +'ext'#8'HUDText3'#20'Position.Coordinates'#10#16#0#0#0#0#0#250'C'#0#0#150'C'
-  +#0#0#0#0#0#0#128'?'#10'BitmapFont'#7#19'GLStoredBitmapFont1'#4'Text'#6#5'Sca'
-  +'le'#9'Alignment'#7#8'taCenter'#6'Layout'#7#8'tlCenter'#0#0#9'TGLCamera'#9'G'
-  +'LCamera1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0
-  +#0#0#0#200#4'@'#12'TargetObject'#7#7'Teapot1'#20'Position.Coordinates'#10#16
-  +#0#0#0#0#0#160'@'#0#0'@@'#0#0#128'@'#0#0#128'?'#4'Left'#3#240#0#3'Top'#3#152
-  +#0#0#0#0#11'TGLCadencer'#11'GLCadencer1'#5'Scene'#7#8'GLScene1'#10'OnProgres'
-  +'s'#7#19'GLCadencer1Progress'#4'Left'#2#16#3'Top'#2'0'#0#0#6'TTimer'#6'Timer'
-  +'1'#7'OnTimer'#7#11'Timer1Timer'#4'Left'#2#16#3'Top'#2'P'#0#0#9'TMainMenu'#9
-  +'MainMenu1'#4'Left'#2'p'#3'Top'#2'0'#0#9'TMenuItem'#10'MIPickFont'#7'Caption'
-  +#6#9'Load Font'#7'OnClick'#7#15'MIPickFontClick'#0#0#9'TMenuItem'#13'MIViewT'
-  +'exture'#7'Caption'#6#12'View Texture'#7'OnClick'#7#18'MIViewTextureClick'#0
-  +#0#0#19'TGLStoredBitmapFont'#19'GLStoredBitmapFont1'#12'Font.Charset'#7#12'A'
-  +'NSI_CHARSET'#10'Font.Color'#7#7'clWhite'#11'Font.Height'#2#245#9'Font.Name'
-  +#6#16'AvantGarde Bk BT'#10'Font.Style'#11#0#4'Left'#2'p'#3'Top'#2#16#0#0#11
-  +'TOpenDialog'#11'OpenDialog1'#10'DefaultExt'#6#3'gsf'#6'Filter'#6#19'GlScene'
-  +' Fonts|*.gsf'#4'Left'#2'p'#3'Top'#2'T'#0#0#0
+  'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#255#0#6'Height'#3#147#1#3'Top'#3#185#0#5
+  +'Width'#3'{'#2#18'HorzScrollBar.Page'#3'z'#2#18'VertScrollBar.Page'#3'{'#1#7
+  +'Caption'#6#5'Form1'#12'ClientHeight'#3'|'#1#11'ClientWidth'#3'{'#2#11'Font.'
+  +'Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#4'Menu'#7#9'MainMenu1'#8'OnC'
+  +'reate'#7#10'FormCreate'#0#14'TGLSceneViewer'#14'GLSceneViewer1'#6'Height'#3
+  +'|'#1#5'Width'#3'{'#2#6'Camera'#7#9'GLCamera1'#22'Buffer.BackgroundColor'#7#7
+  +'clBlack'#11'FieldOfView'#5#0#0#0#0#0'L'#131#150#6'@'#5'Align'#7#8'alClient'
+  +#7'OnClick'#7#19'GLSceneViewer1Click'#0#0#8'TGLScene'#8'GLScene1'#14'Objects'
+  +'Sorting'#7#6'osNone'#4'left'#2#16#3'top'#2#16#0#14'TGLLightSource'#14'GLLig'
+  +'htSource1'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Coor'
+  +'dinates'#10#16#0#0#0#0#0' A'#0#0' A'#0#0' A'#0#0#128'?'#10'SpotCutOff'#5#0#0
+  +#0#0#0#0#0#180#6'@'#0#0#9'TGLTeapot'#7'Teapot1&Material.FrontProperties.Diff'
+  +'use.Color'#10#16#0#0#0#173#172',?'#170#169')?'#240#239'o?'#0#0#128'?0Materi'
+  +'al.Texture.MappingTCoordinates.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0
+  +#0#0#0#0#0#0#0#21'Direction.Coordinates'#10#16#0#0#0#238#131#132'>'#0#0#0#0
+  +#234'Fw?'#0#0#0#0#17'Scale.Coordinates'#10#16#0#0#0#0#0#160'@'#0#0#160'@'#0#0
+  +#160'@'#0#0#0#0#0#0#10'TGLHUDText'#8'HUDText1'#20'Position.Coordinates'#10#16
+  +#0#0#0#0#0#160'A'#0#0#200'A'#0#0#0#0#0#0#128'?'#10'BitmapFont'#7#19'GLStored'
+  +'BitmapFont1'#4'Text'#6#11'Hello World'#0#0#10'TGLHUDText'#8'HUDText2'#20'Po'
+  +'sition.Coordinates'#10#16#0#0#0#0#0#22'C'#0#0#150'C'#0#0#0#0#0#0#128'?'#10
+  +'BitmapFont'#7#19'GLStoredBitmapFont1'#4'Text'#6#4'Spin'#9'Alignment'#7#8'ta'
+  +'Center'#6'Layout'#7#8'tlCenter'#0#0#10'TGLHUDText'#8'HUDText3'#20'Position.'
+  +'Coordinates'#10#16#0#0#0#0#0#250'C'#0#0#150'C'#0#0#0#0#0#0#128'?'#10'Bitmap'
+  +'Font'#7#19'GLStoredBitmapFont1'#4'Text'#6#5'Scale'#9'Alignment'#7#8'taCente'
+  +'r'#6'Layout'#7#8'tlCenter'#0#0#9'TGLCamera'#9'GLCamera1'#11'DepthOfView'#5#0
+  +#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0#200#4'@'#12'TargetObje'
+  +'ct'#7#7'Teapot1'#20'Position.Coordinates'#10#16#0#0#0#0#0#160'@'#0#0'@@'#0#0
+  +#128'@'#0#0#128'?'#4'left'#3#240#0#3'top'#3#152#0#0#0#0#11'TGLCadencer'#11'G'
+  +'LCadencer1'#5'Scene'#7#8'GLScene1'#10'OnProgress'#7#19'GLCadencer1Progress'
+  +#4'left'#2#16#3'top'#2'0'#0#0#6'TTimer'#6'Timer1'#7'OnTimer'#7#11'Timer1Time'
+  +'r'#4'left'#2#16#3'top'#2'P'#0#0#9'TMainMenu'#9'MainMenu1'#4'left'#2'p'#3'to'
+  +'p'#2'0'#0#9'TMenuItem'#10'MIPickFont'#7'Caption'#6#9'Load Font'#7'OnClick'#7
+  +#15'MIPickFontClick'#0#0#9'TMenuItem'#13'MIViewTexture'#7'Caption'#6#12'View'
+  +' Texture'#7'OnClick'#7#18'MIViewTextureClick'#0#0#0#19'TGLStoredBitmapFont'
+  +#19'GLStoredBitmapFont1'#12'Font.CharSet'#7#12'ANSI_CHARSET'#10'Font.Color'#7
+  +#7'clWhite'#11'Font.Height'#2#245#9'Font.Name'#6#16'AvantGarde Bk BT'#4'left'
+  +#2'p'#3'top'#2#16#0#0#11'TOpenDialog'#11'OpenDialog1'#5'Title'#6#18'Open exi'
+  +'sting file'#10'DefaultExt'#6#4'.gsf'#6'Filter'#6#19'GlScene Fonts|*.gsf'#4
+  +'left'#2'p'#3'top'#2'T'#0#0#0
 ]);

@@ -3,7 +3,7 @@ LazarusResources.Add('TForm1','FORMDATA',[
   +#3#248#1#7'Caption'#6#9'Gui Paint'#5'Color'#7#9'clBtnFace'#12'Font.Charset'#7
   +#15'DEFAULT_CHARSET'#10'Font.Color'#7#12'clWindowText'#11'Font.Height'#2#245
   +#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#0#4'Menu'#7#9'MainMenu1'
-  +#14'OldCreateOrder'#8#8'OnCreate'#7#10'FormCreate'#9'OnKeyDown'#7#11'FormKey'
+  +#9'OnKeyDown'#7#11'FormKey'
   +'Down'#10'OnKeyPress'#7#12'FormKeyPress'#7'OnKeyUp'#7#9'FormKeyUp'#13'Pixels'
   +'PerInch'#2'`'#10'TextHeight'#2#13#0#14'TGLSceneViewer'#14'GLSceneViewer1'#4
   +'Left'#2#0#3'Top'#2#0#5'Width'#3#251#1#6'Height'#3#202#1#6'Camera'#7#9'GLCam'

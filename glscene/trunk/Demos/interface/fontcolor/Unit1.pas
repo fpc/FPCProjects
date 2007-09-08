@@ -17,10 +17,10 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLMisc, GLScene, GLObjects, GLHUDObjects,
   GLBitmapFont, GLCadencer, GLTimeEventsMgr, GLTeapot, LResources,
-  GLWin32Viewer;
+  GLViewer;
 
 type
   TForm1 = class(TForm)
@@ -31,7 +31,6 @@ type
     HUDText1: TGLHUDText;
     GLLightSource1: TGLLightSource;
     Teapot1: TGLTeapot;
-    GLTimeEventsMGR1: TGLTimeEventsMGR;
     GLCadencer1: TGLCadencer;
     HUDText2: TGLHUDText;
     HUDText3: TGLHUDText;
@@ -64,7 +63,7 @@ var
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-   BitmapFont.Glyphs.LoadFromFile('..\..\media\toonfont.bmp');
+   BitmapFont.Glyphs.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'toonfont.bmp');
 end;
 
 procedure TForm1.GLTimeEventsMGR1Events0Event(event: TTimeEvent);

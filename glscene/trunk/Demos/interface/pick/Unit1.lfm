@@ -7,6 +7,8 @@ object Form1: TForm1
   VertScrollBar.Page = 190
   BorderStyle = bsDialog
   Caption = 'Form1'
+  ClientHeight = 191
+  ClientWidth = 280
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate

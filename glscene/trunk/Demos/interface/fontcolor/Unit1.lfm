@@ -1,27 +1,23 @@
 object Form1: TForm1
+  Left = 273
+  Height = 299
+  Top = 164
+  Width = 370
+  HorzScrollBar.Page = 369
+  VertScrollBar.Page = 298
   Caption = 'Bitmap Text with Color Properties'
   ClientHeight = 299
   ClientWidth = 370
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 369
-  VertScrollBar.Page = 298
-  Left = 257
-  Height = 299
-  Top = 138
-  Width = 370
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 143.01516723632812
-    Align = alClient
     Height = 299
     Width = 370
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    FieldOfView = 143.015167236328
+    Align = alClient
   end
   object GLScene1: TGLScene
     left = 8
@@ -39,47 +35,47 @@ object Form1: TForm1
       }
     end
     object HUDText1: TGLHUDText
+      Position.Coordinates = {
+        000034430000F042000000000000803F
+      }
       BitmapFont = BitmapFont
       Text = 'FADING OUT'
       Alignment = taCenter
       ModulateColor.Color = {
         0000803F0000803F0000803F3333333F
       }
-      Position.Coordinates = {
-        000034430000F042000000000000803F
-      }
     end
     object HUDText2: TGLHUDText
+      Position.Coordinates = {
+        000034430000DC42000000000000803F
+      }
       BitmapFont = BitmapFont
       Text = 'THE END'
       Alignment = taCenter
       ModulateColor.Color = {
         0000803FF8FEFE3E000000003333333F
       }
-      Position.Coordinates = {
-        000034430000DC42000000000000803F
-      }
     end
     object HUDText3: TGLHUDText
+      Position.Coordinates = {
+        000034430000A041000000000000803F
+      }
       BitmapFont = BitmapFont
       Text = 'RED RED'
       Alignment = taCenter
       ModulateColor.Color = {
         0000803F00000000000000000000803F
       }
-      Position.Coordinates = {
-        000034430000A041000000000000803F
-      }
     end
     object HUDText4: TGLHUDText
+      Position.Coordinates = {
+        0000344300002043000000000000803F
+      }
       BitmapFont = BitmapFont
       Text = 'TRANSPARENT'
       Alignment = taCenter
       ModulateColor.Color = {
         9A99593F9A99593FCDCCCC3DCDCCCC3E
-      }
-      Position.Coordinates = {
-        0000344300002043000000000000803F
       }
     end
     object GLCamera1: TGLCamera
@@ -118,30 +114,6 @@ object Form1: TForm1
     HSpace = 0
     left = 8
     top = 104
-  end
-  object GLTimeEventsMGR1: TGLTimeEventsMGR
-    Cadencer = GLCadencer1
-    Events = <    
-      item
-        Name = 'Event0'
-        StartTime = 1.5
-        EndTime = 3
-        EventType = etContinuous
-        OnEvent = GLTimeEventsMGR1Events0Event
-      end    
-      item
-        Name = 'Event1'
-        OnEvent = GLTimeEventsMGR1Events1Event
-      end    
-      item
-        Name = 'Event2'
-        StartTime = 2
-        EndTime = 10
-        EventType = etContinuous
-        OnEvent = GLTimeEventsMGR1Events2Event
-      end>
-    left = 8
-    top = 8
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1

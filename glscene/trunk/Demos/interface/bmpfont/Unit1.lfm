@@ -1,28 +1,24 @@
 object Form1: TForm1
+  Left = 348
+  Height = 407
+  Top = 308
+  Width = 532
+  HorzScrollBar.Page = 531
+  VertScrollBar.Page = 406
   Caption = 'Form1'
   ClientHeight = 407
   ClientWidth = 532
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 531
-  VertScrollBar.Page = 406
-  Left = 348
-  Height = 407
-  Top = 327
-  Width = 532
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 152.39170837402344
-    Align = alClient
-    OnClick = GLSceneViewer1Click
     Height = 407
     Width = 532
+    Camera = GLCamera1
+    Buffer.BackgroundColor = clBlack
+    FieldOfView = 152.391708374023
+    Align = alClient
+    OnClick = GLSceneViewer1Click
   end
   object GLScene1: TGLScene
     ObjectsSorting = osNone
@@ -49,30 +45,30 @@ object Form1: TForm1
         0000A0400000A0400000A04000000000
       }
     end
-    object HUDText1: tglhudtext
-      BitmapFont = BitmapFont1
-      Text = 'Hello World'
+    object HUDText1: TGLHUDText
       Position.Coordinates = {
         0000C8410000C841000000000000803F
       }
+      BitmapFont = BitmapFont1
+      Text = 'Hello World'
     end
-    object HUDText2: tglhudtext
+    object HUDText2: TGLHUDText
+      Position.Coordinates = {
+        0000C84200009643000000000000803F
+      }
       BitmapFont = BitmapFont1
       Text = 'rotating'
       Alignment = taCenter
       Layout = tlCenter
-      Position.Coordinates = {
-        0000C84200009643000000000000803F
-      }
     end
-    object HUDText3: tglhudtext
+    object HUDText3: TGLHUDText
+      Position.Coordinates = {
+        0000AF4300009643000000000000803F
+      }
       BitmapFont = BitmapFont1
       Text = 'Scale'
       Alignment = taCenter
       Layout = tlCenter
-      Position.Coordinates = {
-        0000AF4300009643000000000000803F
-      }
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100
