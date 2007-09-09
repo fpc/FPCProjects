@@ -6,6 +6,8 @@
    Win32 specific Context.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>08/09/07 - DaStr - Implemented AxisAlignedDimensionsUnscaled and
+                              BarycenterAbsolutePosition for TGLSpaceText
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
@@ -18,7 +20,7 @@
       <li>30/01/02 - EG - Text Alignment (Sören Mühlbauer),
                           TFontManager now GLContext compliant (RenderToBitmap ok!) 
       <li>28/12/01 - EG - Event persistence change (GliGli / Dephi bug)
-	   <li>12/12/01 - EG - Creation (split from GLScene.pas)
+      <li>12/12/01 - EG - Creation (split from GLScene.pas)
 	</ul></font>
 }
 unit GLSpaceText;
@@ -28,7 +30,12 @@ interface
 {$i GLScene.inc}
 {$IFDEF UNIX}{$Message Error 'Unit not supported'}{$ENDIF LINUX}
 
-uses Windows, Messages, Classes, GLScene, Graphics, OpenGL1x, GLTexture, GLContext;
+uses
+  // VCL
+  Windows, Messages, Classes, Graphics,
+
+  // GLScene
+  GLScene, OpenGL1x, GLTexture, GLContext, VectorGeometry, GLStrings;
 
 type
 
@@ -37,6 +44,8 @@ type
    TSpaceTextCharRange = (stcrAlphaNum, stcrNumbers, stcrAll);
 
    // TGLTextHorzAdjust
+   //
+   // Note: haAligned, haCentrically, haFitIn have not been implemented!
    //
    TGLTextHorzAdjust = (haLeft, haCenter, haRight, haAligned, haCentrically, haFitIn);
 
@@ -133,7 +142,8 @@ type
          procedure NotifyFontChanged;
          procedure NotifyChange(Sender: TObject); override;
          procedure DefaultHandler(var Message); override;
-
+         function AxisAlignedDimensionsUnscaled : TVector; override;
+         function BarycenterAbsolutePosition: TVector; override;
 		published
 			{ Published Declarations }
          {: Adjusts the 3D font extrusion.<p>
@@ -566,6 +576,83 @@ begin
    end;
 end;
 
+// NotifyFontChanged
+//
+procedure TGLSpaceText.NotifyFontChanged;
+begin
+   FTextFontEntry:=nil;
+   FontChanged:=True;
+end;
+
+// NotifyChange
+//
+procedure TGLSpaceText.NotifyChange(sender : TObject);
+begin
+   if Sender is TFontManager then
+      NotifyFontChanged
+   else inherited;
+end;
+
+// DefaultHandler
+//
+procedure TGLSpaceText.DefaultHandler(var Message);
+begin
+   with TMessage(Message) do begin
+      if Msg=vFontManagerMsgID then
+         NotifyFontChanged
+      else inherited;
+  end;
+end;
+
+// BarycenterAbsolutePosition
+//
+function TGLSpaceText.BarycenterAbsolutePosition: TVector;
+var
+  lWidth, lHeightMax, lHeightMin: Single;
+begin
+  Result := inherited BarycenterAbsolutePosition; // AbsolutePosition.
+  TextMetrics(Text, lWidth, lHeightMax, lHeightMin);
+
+  case FAdjust.FHorz of
+    haLeft:   Result[0] := Result[0] + lWidth / 2 * AbsoluteScale[0];
+    haCenter: ; // Nothing.
+    haRight:  Result[0] := Result[0] - lWidth / 2 * AbsoluteScale[0];
+  else
+    Assert(False, glsUnknownType); // Not implemented...
+  end;
+
+  case FAdjust.FVert of
+    vaTop:      Result[1] := Result[1] - (Abs(lHeightMin) * 0.5 + lHeightMax * 0.5) * AbsoluteScale[1];
+    vaCenter:   ; // Nothing.
+    vaBottom:   Result[1] := Result[1] + (Abs(lHeightMin) * 0.5 + lHeightMax * 0.5) * AbsoluteScale[1];
+    vaBaseLine: Result[1] := Result[1] - (Abs(lHeightMin) * 0.5 - lHeightMax * 0.5) * AbsoluteScale[1];
+  else
+    Assert(False, glsUnknownType); // Not implemented...
+  end;
+
+  Result[2] := Result[2] - (FExtrusion / 2) * AbsoluteScale[2];
+end;
+
+// AxisAlignedDimensionsUnscaled
+//
+function TGLSpaceText.AxisAlignedDimensionsUnscaled: TVector;
+var
+  lWidth, lHeightMax, lHeightMin: Single;
+  charScale: Single;
+begin
+  TextMetrics(Text, lWidth, lHeightMax, lHeightMin);
+
+  if FTextHeight = 0 then
+    charScale := 1
+  else
+    charScale := FTextHeight / lHeightMax;
+
+  Result[0] := lWidth / 2 * charScale;
+  Result[1] := (lHeightMax + Abs(lHeightMin)) / 2 * charScale;
+  Result[2] := FExtrusion / 2;
+  Result[3] := 0;
+end;
+
 // ------------------
 // ------------------ TFontManager ------------------
 // ------------------
@@ -722,34 +809,6 @@ begin
    hMsg.Msg:=vFontManagerMsgID;
    for i:=0 to Clients.Count-1 do
       TObject(Clients[i]).DefaultHandler(hMsg);
-end;
-
-// NotifyFontChanged
-//
-procedure TGLSpaceText.NotifyFontChanged;
-begin
-   FTextFontEntry:=nil;
-   FontChanged:=True;
-end;
-
-// NotifyChange
-//
-procedure TGLSpaceText.NotifyChange(sender : TObject);
-begin
-   if Sender is TFontManager then
-      NotifyFontChanged
-   else inherited;
-end;
-
-// DefaultHandler
-//
-procedure TGLSpaceText.DefaultHandler(var Message);
-begin
-   with TMessage(Message) do begin
-      if Msg=vFontManagerMsgID then
-         NotifyFontChanged
-      else inherited;
-  end;
 end;
 
 //-------------------------------------------------------------
