@@ -6,6 +6,9 @@
    GLScene objects that get rendered in 2D coordinates<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>07/09/07 - DaStr - AlphaChannel is now applied to ActualPrimaryMaterial
+                             Added TGLResolutionIndependantHUDText,
+                                   TGLAbsoluteHUDText
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>23/02/07 - DaStr - Added default values to TGLHUDSprite.Width & Height
@@ -105,6 +108,8 @@ type
          procedure SetModulateColor(const val : TGLColor);
 
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+         procedure RenderTextAtPosition(const X, Y, Z: Single;
+                                                var rci : TRenderContextInfo);
 
 		public
 			{ Public Declarations }
@@ -135,6 +140,25 @@ type
          {: Color modulation, can be used for fade in/out too.}
          property ModulateColor : TGLColor read FModulateColor write SetModulateColor;
    end;
+
+  {: Position (X, Y and X) is in absolute coordinates. This component converts
+     them to screen coordinates and renderes text there. }
+  TGLAbsoluteHUDText = class(TGLHUDText)
+    procedure DoRender(var rci : TRenderContextInfo;
+                       renderSelf, renderChildren : Boolean); override;
+  end;
+
+  {: Position (X and Y) is expected in a [0..1] range (from Screen size)
+     This component converts this position to the actual screen position and
+     renders the text there. This way a HUD text always appears to be in the
+     the same place, regardless of the currect screen resolution.
+     Note: this still does not solve the font scaling problem. }
+  TGLResolutionIndependantHUDText = class(TGLHUDText)
+  public
+    procedure DoRender(var rci : TRenderContextInfo;
+                       renderSelf, renderChildren : Boolean); override;
+    constructor Create(AOwner : TComponent); override;
+  end;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -194,7 +218,7 @@ begin
    repeat
       if AlphaChannel<>1 then begin
          if rci.lightingDisabledCounter>0 then begin
-            with Material.FrontProperties.Diffuse do
+            with Material.GetActualPrimaryMaterial.FrontProperties.Diffuse do
                glColor4f(Red, Green, Blue, AlphaChannel)
          end else rci.GLStates.SetGLMaterialAlphaChannel(GL_FRONT, AlphaChannel);
       end;
@@ -338,10 +362,10 @@ begin
    FModulateColor.Assign(val);
 end;
 
-// DoRender
+// RenderTextAtPosition
 //
-procedure TGLHUDText.DoRender(var rci : TRenderContextInfo;
-                            renderSelf, renderChildren : Boolean);
+procedure TGLHUDText.RenderTextAtPosition(const X, Y, Z: Single;
+  var rci : TRenderContextInfo);
 var
    f : Single;
 begin
@@ -351,12 +375,10 @@ begin
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix;
       glLoadMatrixf(@Scene.CurrentBuffer.BaseProjectionMatrix);
-      if rci.renderDPI=96 then
-         f:=1
-      else f:=rci.renderDPI/96;
+      f:=rci.renderDPI/96;
       glScalef(2/rci.viewPortSize.cx, 2/rci.viewPortSize.cy, 1);
-      glTranslatef(Position.X*f-rci.viewPortSize.cx/2,
-                   rci.viewPortSize.cy/2-Position.Y*f, Position.Z);
+      glTranslatef(X * f-rci.viewPortSize.cx / 2,
+                   rci.viewPortSize.cy / 2 - Y * f, Z);
       if FRotation<>0 then
          glRotatef(FRotation, 0, 0, 1);
       glScalef(Scale.DirectX*f, Scale.DirectY*f, 1);
@@ -373,8 +395,61 @@ begin
       glMatrixMode(GL_MODELVIEW);
       glPopMatrix;
    end;
-   if Count>0 then
-      Self.RenderChildren(0, Count-1, rci);
+end;
+
+// DoRender
+//
+procedure TGLHUDText.DoRender(var rci : TRenderContextInfo;
+                            renderSelf, renderChildren : Boolean);
+begin
+  RenderTextAtPosition(Position.X, Position.Y, Position.Z, rci);
+  if Count > 0 then
+    Self.RenderChildren(0, Count - 1, rci);
+end;
+
+
+// ------------------
+// ------------------ TGLResolutionIndependantHUDText ------------------
+// ------------------
+
+// Create
+//
+constructor TGLResolutionIndependantHUDText.Create(AOwner: TComponent);
+begin
+  inherited;
+  Position.X := 0.5;
+  Position.Y := 0.5;
+end;
+
+// DoRender
+//
+procedure TGLResolutionIndependantHUDText.DoRender(
+  var rci: TRenderContextInfo; renderSelf, renderChildren: Boolean);
+begin
+  RenderTextAtPosition(Position.X * rci.viewPortSize.cx,
+                       Position.Y * rci.viewPortSize.cy,
+                       Position.Z, rci);
+ if Count > 0 then
+    Self.RenderChildren(0, Count - 1, rci);
+end;
+
+
+// ------------------
+// ------------------ TGLAbsoluteHUDText ------------------
+// ------------------
+
+// DoRender
+//
+procedure TGLAbsoluteHUDText.DoRender(var rci: TRenderContextInfo;
+  renderSelf, renderChildren: Boolean);
+var
+  Temp: TAffineVector;
+begin
+  Temp := TGLSceneBuffer(rci.buffer).WorldToScreen(Position.AsAffineVector);
+  Temp[1] := rci.viewPortSize.cy - Temp[1];
+  RenderTextAtPosition(Temp[0], Temp[1], Temp[2], rci);
+  if Count > 0 then
+    Self.RenderChildren(0, Count - 1, rci);
 end;
 
 // ------------------------------------------------------------------
