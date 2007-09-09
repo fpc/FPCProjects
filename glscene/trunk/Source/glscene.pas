@@ -61,6 +61,7 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>08/09/07 - DaStr - Added TGLBaseSceneObject.Absolute[Affine]Scale
       <li>18/06/07 - DaStr - Fixed bug which caused objects' order to get inverted
                              (BugtrackerID = 1739180) (thanks Burkhard Carstens)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -346,11 +347,13 @@ interface
 {$i GLScene.inc}
 
 uses
-   //VCL
-   Classes, GLMisc, GLTexture, SysUtils,
-   //GLScene
+   // VCL
+   Classes, SysUtils,
+
+   // GLScene
    VectorGeometry, XCollection, GLSilhouette, PersistentClasses, GLState,
-   GLGraphics, GeometryBB, GLContext, GLCrossPlatform, VectorLists;
+   GLGraphics, GeometryBB, GLContext, GLCrossPlatform, VectorLists, GLTexture,
+   GLMisc;
 
 type
 
@@ -549,6 +552,10 @@ type
          function  GetEffects : TGLObjectEffects;
          procedure SetScene(const value : TGLScene);
 
+         function GetAbsoluteAffineScale: TAffineVector;
+         function GetAbsoluteScale: TVector;
+         procedure SetAbsoluteAffineScale(const Value: TAffineVector);
+         procedure SetAbsoluteScale(const Value: TVector);
       protected
          { Protected Declarations }
          procedure Loaded; override;
@@ -640,24 +647,34 @@ type
          function InvAbsoluteMatrix : TMatrix;
          {: See InvAbsoluteMatrix. }
          function InvAbsoluteMatrixAsAddress : PMatrix;
+
          {: Direction vector in absolute coordinates. }
          property AbsoluteDirection : TVector read GetAbsoluteDirection write SetAbsoluteDirection;
          property AbsoluteAffineDirection : TAffineVector read GetAbsoluteAffineDirection write SetAbsoluteAffineDirection;
+
+         {: Scale vector in absolute coordinates. }
+         property AbsoluteScale : TVector read GetAbsoluteScale write SetAbsoluteScale;
+         property AbsoluteAffineScale : TAffineVector read GetAbsoluteAffineScale write SetAbsoluteAffineScale;
+
          {: Up vector in absolute coordinates. }
          property AbsoluteUp : TVector read GetAbsoluteUp write SetAbsoluteUp;
          property AbsoluteAffineUp : TAffineVector read GetAbsoluteAffineUp write SetAbsoluteAffineUp;
+
          {: Calculate the right vector in absolute coordinates. }
          function AbsoluteRight : TVector;
+
          {: Computes and allows to set the object's absolute coordinates.<p> }
          property AbsolutePosition : TVector read GetAbsolutePosition write SetAbsolutePosition;
          property AbsoluteAffinePosition : TAffineVector read GetAbsoluteAffinePosition write SetAbsoluteAffinePosition;
          function AbsolutePositionAsAddress : PVector;
+
          {: Returns the Absolute X Vector expressed in local coordinates. }
          function AbsoluteXVector : TVector;
          {: Returns the Absolute Y Vector expressed in local coordinates. }
          function AbsoluteYVector : TVector;
          {: Returns the Absolute Z Vector expressed in local coordinates. }
          function AbsoluteZVector : TVector;
+
          {: Converts a vector/point from absolute coordinates to local coordinates.<p> }
          function AbsoluteToLocal(const v : TVector) : TVector; overload;
          {: Converts a vector from absolute coordinates to local coordinates.<p> }
@@ -666,6 +683,7 @@ type
          function LocalToAbsolute(const v : TVector) : TVector; overload;
          {: Converts a vector from local coordinates to absolute coordinates.<p> }
          function LocalToAbsolute(const v : TAffineVector) : TAffineVector; overload;
+
          {: Returns the Right vector (based on Up and Direction) }
          function Right : TVector;
          {: Returns the Left vector (based on Up and Direction) }
@@ -675,6 +693,7 @@ type
          function AffineRight : TAffineVector;
          {: Returns the Left vector (based on Up and Direction) }
          function AffineLeftVector : TAffineVector;
+
          {: Calculates the object's square distance to a point/object.<p>
             pt is assumed to be in absolute coordinates,
             AbsolutePosition is considered as being the object position. }
@@ -693,6 +712,7 @@ type
             SubClasses where AbsolutePosition is not the barycenter should
             override this method as it is used for distance calculation, during
             rendering for instance, and may lead to visual inconsistencies. }
+
          function BarycenterAbsolutePosition : TVector; virtual;
          {: Calculates the object's barycenter distance to a point.<p> }
          function BarycenterSqrDistanceTo(const pt : TVector) : Single;
@@ -3056,6 +3076,26 @@ begin
    else Direction.AsVector:=v;
 end;
 
+// GetAbsoluteScale
+//
+function TGLBaseSceneObject.GetAbsoluteScale: TVector;
+begin
+  Result[0] := AbsoluteMatrixAsAddress^[0][0];
+  Result[1] := AbsoluteMatrixAsAddress^[1][1];
+  Result[2] := AbsoluteMatrixAsAddress^[2][2];
+  Result[3] := AbsoluteMatrixAsAddress^[3][3];
+end;
+
+// SetAbsoluteScale
+//
+procedure TGLBaseSceneObject.SetAbsoluteScale(const Value: TVector);
+begin
+  if Parent <> nil then
+    Scale.AsVector := Parent.AbsoluteToLocal(Value)
+  else
+    Scale.AsVector := Value;
+end;
+
 // GetAbsoluteUp
 //
 function TGLBaseSceneObject.GetAbsoluteUp : TVector;
@@ -4665,6 +4705,20 @@ begin
     FOnAddedToParent(self);
 end;
 
+// GetAbsoluteAffineScale
+//
+function TGLBaseSceneObject.GetAbsoluteAffineScale: TAffineVector;
+begin
+  Result := AffineVectorMake(GetAbsoluteScale);
+end;
+
+// SetAbsoluteAffineScale
+//
+procedure TGLBaseSceneObject.SetAbsoluteAffineScale(
+  const Value: TAffineVector);
+begin
+  SetAbsoluteScale(VectorMake(Value,GetAbsoluteScale[3]));
+end;
 
 // ------------------
 // ------------------ TGLBaseBehaviour ------------------
