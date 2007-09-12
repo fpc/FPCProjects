@@ -245,7 +245,8 @@ begin
     ssData: MessageDlg('Message sent successfuly', mtInformation, [mbOK], 0);
     ssQuit: begin
               SMTP.Disconnect;
-              Close;
+              if TimerQuit.Enabled then
+                Close;
             end;
   end;
 end;
