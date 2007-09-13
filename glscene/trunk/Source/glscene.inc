@@ -3,6 +3,7 @@
 //                  by Brad Stowers: bstowers@pobox.com
 //                  Delphi Free Stuff: http://www.delphifreestuff.com/
 //
+// 12/09/07 - DaStr - Added GLS_DELPHI_OR_CPPB
 // 30/03/07 - DaStr - Added GLS_ENABLE_UNSAFE_WARNINGS
 // 25/03/07 - DaStr - Added UNIX and KYLIX defines
 // 14/01/07 - DaStr - Added GLS_DELPHI/COMPILER_XX_DOWN defines
@@ -547,7 +548,7 @@
   {$ObjExportAll On}
 {$ENDIF}
 
-
+// GLS_ENABLE_UNSAFE_WARNINGS.
 {$IFDEF GLS_COMPILER_7_UP}
   {$IFDEF GLS_ENABLE_UNSAFE_WARNINGS}
     {$WARN UNSAFE_TYPE ON}
@@ -558,4 +559,13 @@
     {$WARN UNSAFE_CODE OFF}
     {$WARN UNSAFE_CAST OFF}
   {$ENDIF}
+{$ENDIF}
+
+// GLS_DELPHI_OR_CPPB.
+{$IFDEF GLS_CPPB}
+  {$DEFINE GLS_DELPHI_OR_CPPB}
+{$ENDIF}
+
+{$IFDEF GLS_DELPHI}
+  {$DEFINE GLS_DELPHI_OR_CPPB}
 {$ENDIF}
