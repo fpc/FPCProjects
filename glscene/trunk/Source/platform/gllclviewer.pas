@@ -1,8 +1,13 @@
-// gllclviewer
-{: lcl viewer.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLLCLViewer<p>
 
+  A FPC specific Scene viewer.
 
 	<b>History : </b><font size=-1><ul>
+      <li>12/09/07 - DaStr - Removed old IFDEFs. Moved SetupVSync()
+                              to GLViewer.pas (Bugtracker ID = 1786279)
       <li>04/12/04 - DaS - OnMouseWheel, OnMouseWheelDown, OnMouseWheelUp
                            published in TGLSceneViewer
       <li>04/12/04 - MF - Added FieldOfView, formula by Ivan Sivak Jr.
@@ -27,14 +32,16 @@ interface
 {$i GLScene.inc}
 
 uses
-    lcltype,
-    {$ifdef mswindows}windows,
-     {$endif}
-     messages, graphics, forms, classes, glscene, controls, menus, glcontext,
-     lmessages;
+  LCLType,
+  {$IFDEF MSWINDOWS} Windows, {$ENDIF}
+  Messages, Graphics, Forms, Classes, Controls, Menus,
+  LMessages,
+
+  // GLScene
+  GLScene, GLContext;
+
 
 type
-
    // TVSyncMode
    //
    TVSyncMode = (vsmSync, vsmNoSync);
@@ -153,7 +160,7 @@ type
          property FieldOfView : single read GetFieldOfView write SetFieldOfView;
 
          property OnMouseLeave : TNotifyEvent read FOnMouseLeave write FOnMouseLeave;
-	 property OnMouseEnter : TNotifyEvent read FOnMouseEnter write FOnMouseEnter;
+         property OnMouseEnter : TNotifyEvent read FOnMouseEnter write FOnMouseEnter;
          
          property Align;
          property Anchors;
@@ -183,8 +190,6 @@ type
 {$endif}
    end;
 
-procedure SetupVSync(vsync : TVSyncMode);
-
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -193,28 +198,28 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses opengl1x, sysutils, glcrossplatform
+uses OpenGL1x, sysutils, GLViewer
      {$ifndef fpc} // delphi
-     ,glwin32context
+     ,GLWin32Context
      {$else}
      
        {$ifdef LCLWIN32}
          {$ifndef CONTEXT_INCLUDED}
-     ,glwin32context
+     ,GLWin32Context
          {$define CONTEXT_INCLUDED}
          {$endif}
        {$endif}
        
        {$ifdef LCLGTK}
          {$ifndef CONTEXT_INCLUDED}
-     ,gllingtkcontext
+     ,GLLinGTKContext
          {$define CONTEXT_INCLUDED}
          {$endif}
        {$endif}
        
        {$ifdef LCLGTK2}
          {$ifndef CONTEXT_INCLUDED}
-     ,gllingtkcontext
+     ,GLLinGTKContext
          {$define CONTEXT_INCLUDED}
          {$endif}
        {$endif}
@@ -225,25 +230,6 @@ uses opengl1x, sysutils, glcrossplatform
        
      {$endif}
      ;
-
-// SetupVSync
-//
-procedure SetupVSync(vsync : TVSyncMode);
-var
-   i : Integer;
-begin
-  {$IFNDEF LINUX}
-   if WGL_EXT_swap_control then begin
-      i:=wglGetSwapIntervalEXT;
-      case VSync of
-         vsmSync    : if i<>1 then wglSwapIntervalEXT(1);
-         vsmNoSync  : if i<>0 then wglSwapIntervalEXT(0);
-      else
-         Assert(False);
-      end;
-   end;
-   {$ENDIF}
-end;
 
 // ------------------
 // ------------------ TGLSceneViewer ------------------

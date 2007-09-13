@@ -6,6 +6,8 @@
    Platform independant viewer.<p>
 
     History:
+      <li>12/09/07 - DaStr - Fixed SetupVSync() function (Bugtracker ID = 1786279)
+                             Made cross-platform code easier to read
       <li>12/07/07 - DaStr - Added SetupVSync
       <li>30/03/07 - DaStr - Another update after the previous fix (removed class())
                              Added TVSyncMode type and constants.
@@ -26,60 +28,75 @@ uses
   classes,
   forms,
   controls,
-{$IFDEF FPC}
-  GLLCLViewer;
-{$ELSE}
-  {$IFDEF UNIX}GLLinuxViewer; {$ENDIF UNIX}
-  {$IFDEF MSWINDOWS}GLWin32Viewer; {$ENDIF MSWINDOWS}
-{$ENDIF FPC}
+  OpenGL1x,
+  {$IFDEF GLS_DELPHI_OR_CPPB} GLWin32Viewer; {$ENDIF}
+  {$IFDEF FPC}                GLLCLViewer;   {$ENDIF}
+  {$IFDEF KYLIX}              GLLinuxViewer; {$ENDIF}
 
 type
 {$IFDEF FPC}  //For FPC, always use LCLViewer
-
-  { TGLSceneViewer }
-
   TGLSceneViewer = class(TGLSceneViewerLCL)
   end;
   TVSyncMode = GLLCLViewer.TVSyncMode;
-{$ELSE}  // if not FPC then
-  {$IFDEF UNIX}  // kylix
-    TGLSceneViewer = class(GLLinuxViewer.TGLLinuxSceneViewer);
-    TVSyncMode = GLLinuxViewer.TVSyncMode;
-  {$ENDIF UNIX}
-  {$IFDEF MSWINDOWS} // windows
-    TGLSceneViewer = class(GLWin32Viewer.TGLSceneViewer);
-    TVSyncMode = GLWin32Viewer.TVSyncMode;
-  {$ENDIF MSWINDOWS}
 {$ENDIF FPC}
 
+{$IFDEF KYLIX}
+  TGLSceneViewer = class(TGLLinuxSceneViewer)
+  end;
+  TVSyncMode = GLLinuxViewer.TVSyncMode;
+{$ENDIF KYLIX}
+
+{$IFDEF GLS_DELPHI_OR_CPPB}
+  TGLSceneViewer = class(TGLSceneViewerWin32)
+  end;
+  TVSyncMode = GLWin32Viewer.TVSyncMode;
+{$ENDIF GLS_DELPHI_OR_CPPB}
+
 const
-{$IFDEF FPC}  // FPC.
+{$IFDEF FPC}
   // TVSyncMode.
   vsmSync = GLLCLViewer.vsmSync;
   vsmNoSync = GLLCLViewer.vsmNoSync;
-{$ELSE}
-  {$IFDEF UNIX}  // Kylix.
-    vsmSync = GLLinuxViewer.vsmSync;
-    vsmNoSync = GLLinuxViewer.vsmNoSync;
-  {$ENDIF UNIX}
-  {$IFDEF MSWINDOWS} // Windows.
-    vsmSync = GLWin32Viewer.vsmSync;
-    vsmNoSync = GLWin32Viewer.vsmNoSync;
-  {$ENDIF MSWINDOWS}
 {$ENDIF FPC}
 
-procedure SetupVSync(const vsync : TVSyncMode);
+{$IFDEF KYLIX}
+  // TVSyncMode.
+  vsmSync = GLLinuxViewer.vsmSync;
+  vsmNoSync = GLLinuxViewer.vsmNoSync;
+{$ENDIF KYLIX}
+
+{$IFDEF GLS_DELPHI_OR_CPPB}
+  // TVSyncMode.
+  vsmSync = GLWin32Viewer.vsmSync;
+  vsmNoSync = GLWin32Viewer.vsmNoSync;
+{$ENDIF GLS_DELPHI_OR_CPPB}
+
+
+procedure SetupVSync(const AVSyncMode : TVSyncMode);
 
 implementation
 
-procedure SetupVSync(const vsync : TVSyncMode);
+procedure SetupVSync(const AVSyncMode : TVSyncMode);
+{$IFDEF MSWINDOWS}
+var
+  I: Integer;
 begin
-{$IFDEF WIN32}
-  SetupVSync(vsync);
-{$ELSE}
-  // Ignore.
-{$ENDIF WIN32}
+  if WGL_EXT_swap_control then
+  begin
+    I := wglGetSwapIntervalEXT;
+    case AVSyncMode of
+      vsmSync  : if I <> 1 then wglSwapIntervalEXT(1);
+      vsmNoSync: if I <> 0 then wglSwapIntervalEXT(0);
+    else
+       Assert(False);
+    end;
+  end;
 end;
+{$ELSE}
+begin
+   Assert(False, 'SetupVSync only implemented for Windows!')
+end;
+{$ENDIF}
 
 
 initialization
