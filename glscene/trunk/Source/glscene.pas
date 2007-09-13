@@ -61,6 +61,9 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>10/09/07 - DaStr - TGLBaseSceneObject:
+                               Added AxisAlignedBoundingBoxAbsolute
+                               Bugfixed GetAbsoluteScale
       <li>08/09/07 - DaStr - Added TGLBaseSceneObject.Absolute[Affine]Scale
       <li>18/06/07 - DaStr - Fixed bug which caused objects' order to get inverted
                              (BugtrackerID = 1739180) (thanks Burkhard Carstens)
@@ -706,13 +709,13 @@ type
          function DistanceTo(anObject : TGLBaseSceneObject) : Single; overload;
          function DistanceTo(const pt : TAffineVector) : Single; overload;
          function DistanceTo(const pt : TVector) : Single; overload;
+
          {: Calculates the object's barycenter in absolute coordinates.<p>
             Default behaviour is to consider Barycenter=AbsolutePosition
             (whatever the number of children).<br>
             SubClasses where AbsolutePosition is not the barycenter should
             override this method as it is used for distance calculation, during
             rendering for instance, and may lead to visual inconsistencies. }
-
          function BarycenterAbsolutePosition : TVector; virtual;
          {: Calculates the object's barycenter distance to a point.<p> }
          function BarycenterSqrDistanceTo(const pt : TVector) : Single;
@@ -729,15 +732,19 @@ type
             The AABB is currently calculated from the BB. }
          function AxisAlignedBoundingBox : TAABB;
          function AxisAlignedBoundingBoxUnscaled : TAABB;
+         function AxisAlignedBoundingBoxAbsolute : TAABB;
+
          {: Calculates and return the Bounding Box for the object.<p>
             The BB is calculated <b>each</b> time this method is invoked,
             based on the AxisAlignedDimensions of the object and that of its
             children, there is <b>no</b> caching scheme as of now. }
          function BoundingBox : THmgBoundingBox;
          function BoundingBoxUnscaled : THmgBoundingBox;
+
          {: Max distance of corners of the BoundingBox. }
          function BoundingSphereRadius : Single;
          function BoundingSphereRadiusUnscaled : Single;
+
          {: Indicates if a point is within an object.<p>
             Given coordinate is an absolute coordinate.<br>
             Linear or surfacic objects shall always return False.<p>
@@ -3080,10 +3087,10 @@ end;
 //
 function TGLBaseSceneObject.GetAbsoluteScale: TVector;
 begin
-  Result[0] := AbsoluteMatrixAsAddress^[0][0];
-  Result[1] := AbsoluteMatrixAsAddress^[1][1];
-  Result[2] := AbsoluteMatrixAsAddress^[2][2];
-  Result[3] := AbsoluteMatrixAsAddress^[3][3];
+  Result[0] := VectorLength(AbsoluteMatrixAsAddress^[0]);
+  Result[1] := VectorLength(AbsoluteMatrixAsAddress^[1]);
+  Result[2] := VectorLength(AbsoluteMatrixAsAddress^[2]);
+  Result[3] := 0;
 end;
 
 // SetAbsoluteScale
@@ -3314,6 +3321,24 @@ begin
    end;
 end;
 
+// AxisAlignedBoundingBoxAbsolute
+//
+function TGLBaseSceneObject.AxisAlignedBoundingBoxAbsolute : TAABB;
+var
+  BB: THmgBoundingBox;
+  I: Integer;
+begin
+  BB := BoundingBoxUnscaled;
+  for I := 0 to 7 do
+    BB[I] := LocalToAbsolute(BB[I]);
+
+  Result.Min[0] := BBMinX(BB);
+  Result.Min[1] := BBMinY(BB);
+  Result.Min[2] := BBMinZ(BB);
+  Result.Max[0] := BBMaxX(BB);
+  Result.Max[1] := BBMaxY(BB);
+  Result.Max[2] := BBMaxZ(BB);
+end;
 
 // BoundingBox
 //
