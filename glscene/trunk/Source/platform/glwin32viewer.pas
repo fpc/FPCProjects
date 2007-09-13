@@ -1,23 +1,6 @@
 // GLWin32Viewer
 {: Win32 specific.<p>
 
-$Log: glwin32viewer.pas,v $
-Revision 1.1  2006/01/10 20:50:46  z0m3ie
-recheckin to make shure that all is lowercase
-
-Revision 1.1  2006/01/09 21:02:34  z0m3ie
-*** empty log message ***
-
-Revision 1.4  2006/01/08 21:04:12  z0m3ie
-*** empty log message ***
-
-Revision 1.3  2005/12/04 16:53:04  z0m3ie
-renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-Revision 1.2  2005/11/14 21:38:07  z0m3ie
-making this stuff again Linux compatible please dont break multi platform support again
-
-
 	<b>History : </b><font size=-1><ul>
       <li>04/12/04 - DaS - OnMouseWheel, OnMouseWheelDown, OnMouseWheelUp
                            published in TGLSceneViewer
@@ -38,20 +21,31 @@ making this stuff again Linux compatible please dont break multi platform suppor
 }
 unit GLWin32Viewer;
 {$IFDEF FPC}
-  {$ERROR Please use LCLViewer instead of Win32Viewer when compiling with FreePascalLazarus }
+  {$ERROR Please use GLViewer.pas instead of GLWin32Viewer when compiling with FreePascal/Lazarus ! }
+  {
+    GLViewer.pas uses the correct platform dependant viewer unit.
+    This Unit is Delphi/CPP only.
+    See GLViewer.pas and GLLCLViewer.pas for FreePascal/Lazarus implementation
+  }
 {$ENDIF}
 interface
 
 {$i GLScene.inc}
 
 uses Windows, Graphics, Forms, Messages, Classes, GLScene, Controls, Menus,
-     glcontext,
-     {$ifdef lcl}
-     lmessages,lcltype,
-     {$endif}
-     dialogs;
+   GLContext;
 
 type
+
+{$ifdef FPC}
+   TWMPaint = packed record
+      Msg: Cardinal;
+      DC: HDC;
+      Unused: Longint;
+      Result: Longint;
+   end;
+  TWMDestroy = TWMNoParams;
+{$endif}
 
    // TVSyncMode
    //
@@ -78,18 +72,16 @@ type
          FMouseInControl : Boolean;
          FIsOpenGLAvailable : Boolean;
          FLastScreenPos : TPoint;
-         {$IFDEF MSWINDOWS}
-         procedure EraseBackground(DC: HDC); override;
-         {$ENDIF}
-         procedure LMEraseBkgnd(var Message: TLMEraseBkgnd); Message LM_ERASEBKGND;
-         procedure LMPaint(var Message: TLMPaint); Message LM_PAINT;
-         procedure LMSize(var Message: TLMSize); Message LM_SIZE;
-         procedure LMDestroy(var Message: TLMDestroy); message LM_DESTROY;
 
-         procedure CMMouseEnter(var msg: TMessage); message CM_MOUSEENTER;
-	 procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
-         function GetFieldOfView: single;
-         procedure SetFieldOfView(const Value: single);
+         procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); Message WM_ERASEBKGND;
+         procedure WMPaint(var Message: TWMPaint); Message WM_PAINT;
+         procedure WMSize(var Message: TWMSize); Message WM_SIZE;
+         procedure WMDestroy(var Message: TWMDestroy); message WM_DESTROY;
+
+	      procedure CMMouseEnter(var msg: TMessage); message CM_MOUSEENTER;
+	      procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
+        function GetFieldOfView: single;
+        procedure SetFieldOfView(const Value: single);
 
       protected
          { Protected Declarations }
@@ -134,7 +126,7 @@ type
 
          property RenderDC : Cardinal read FOwnDC;
          property MouseInControl : Boolean read FMouseInControl;
-         Procedure Invalidate; override;
+
       published
          { Published Declarations }
          {: Camera from which the scene is rendered. }
@@ -166,8 +158,8 @@ type
          changed, FieldOfView is changed also. }
          property FieldOfView : single read GetFieldOfView write SetFieldOfView;
 
-         property OnMouseLeave : TNotifyEvent read FOnMouseLeave write FOnMouseLeave;
-	 property OnMouseEnter : TNotifyEvent read FOnMouseEnter write FOnMouseEnter;
+			   property OnMouseLeave : TNotifyEvent read FOnMouseLeave write FOnMouseLeave;
+			   property OnMouseEnter : TNotifyEvent read FOnMouseEnter write FOnMouseEnter;
          
          property Align;
          property Anchors;
@@ -374,7 +366,7 @@ end;
 
 // WMEraseBkgnd
 //
-procedure TGLSceneViewer.LMEraseBkgnd(var Message: TLMEraseBkgnd);
+procedure TGLSceneViewer.WMEraseBkgnd(var Message: TWMEraseBkgnd);
 begin
    if IsOpenGLAvailable then
       Message.Result:=1
@@ -383,7 +375,7 @@ end;
 
 // WMSize
 //
-procedure TGLSceneViewer.LMSize(var Message: TLMSize);
+procedure TGLSceneViewer.WMSize(var Message: TWMSize);
 begin
    inherited;
    FBuffer.Resize(Message.Width, Message.Height);
@@ -391,7 +383,7 @@ end;
 
 // WMPaint
 //
-procedure TGLSceneViewer.LMPaint(var Message: TLMPaint);
+procedure TGLSceneViewer.WMPaint(var Message: TWMPaint);
 var
    PS : TPaintStruct;
    p : TPoint;
@@ -400,23 +392,23 @@ begin
    if (FLastScreenPos.X<>p.X) or (FLastScreenPos.Y<>p.Y) then begin
       // Workaround for MS OpenGL "black borders" bug
       if FBuffer.RCInstantiated then
-         PostMessage(Handle, LM_SIZE, SIZE_RESTORED,
+         PostMessage(Handle, WM_SIZE, SIZE_RESTORED,
                      Width+(Height shl 16));
       FLastScreenPos:=p;
    end;
-   BeginPaint(Handle, @PS);
+   BeginPaint(Handle, PS);
    try
       if IsOpenGLAvailable and (Width>0) and (Height>0) then
          FBuffer.Render;
    finally
-      EndPaint(Handle, @PS);
+      EndPaint(Handle, PS);
       Message.Result:=0;
    end;
 end;
 
 // WMDestroy
 //
-procedure TGLSceneViewer.LMDestroy(var Message: TLMDestroy);
+procedure TGLSceneViewer.WMDestroy(var Message: TWMDestroy);
 begin
    FBuffer.DestroyRC;
    if FOwnDC<>0 then begin
@@ -541,18 +533,6 @@ begin
       Camera.SetFieldOfView(Value, Height);
   end;
 end;
-
-Procedure TGLSceneViewer.Invalidate;
-begin
-  inherited;
-end;
-
-{$IFDEF MSWINDOWS}
-procedure TGLSceneViewer.EraseBackground(DC: HDC);
-begin
-
-end;
-{$ENDIF}
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
