@@ -6,6 +6,8 @@
    Win32 specific Context.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>12/09/07 - DaStr - Bugfixed TGLSpaceText.BarycenterAbsolutePosition
+                              (Didn't consider rotations)
       <li>08/09/07 - DaStr - Implemented AxisAlignedDimensionsUnscaled and
                               BarycenterAbsolutePosition for TGLSpaceText
       <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -609,28 +611,37 @@ end;
 function TGLSpaceText.BarycenterAbsolutePosition: TVector;
 var
   lWidth, lHeightMax, lHeightMin: Single;
+  AdjustVector: TVector;
 begin
   Result := inherited BarycenterAbsolutePosition; // AbsolutePosition.
   TextMetrics(Text, lWidth, lHeightMax, lHeightMin);
 
   case FAdjust.FHorz of
-    haLeft:   Result[0] := Result[0] + lWidth / 2 * AbsoluteScale[0];
-    haCenter: ; // Nothing.
-    haRight:  Result[0] := Result[0] - lWidth / 2 * AbsoluteScale[0];
+    haLeft:   AdjustVector[0] := lWidth / 2;
+    haCenter: AdjustVector[0] := 0; // Nothing.
+    haRight:  AdjustVector[0] := - lWidth / 2;
   else
-    Assert(False, glsUnknownType); // Not implemented...
+    begin
+      AdjustVector[0] := 0;
+      Assert(False, glsUnknownType); // Not implemented...
+    end;
   end;
 
   case FAdjust.FVert of
-    vaTop:      Result[1] := Result[1] - (Abs(lHeightMin) * 0.5 + lHeightMax * 0.5) * AbsoluteScale[1];
-    vaCenter:   ; // Nothing.
-    vaBottom:   Result[1] := Result[1] + (Abs(lHeightMin) * 0.5 + lHeightMax * 0.5) * AbsoluteScale[1];
-    vaBaseLine: Result[1] := Result[1] - (Abs(lHeightMin) * 0.5 - lHeightMax * 0.5) * AbsoluteScale[1];
+    vaTop:      AdjustVector[1] := - (Abs(lHeightMin) * 0.5 + lHeightMax * 0.5);
+    vaCenter:   AdjustVector[1] := 0; // Nothing.
+    vaBottom:   AdjustVector[1] :=    (Abs(lHeightMin) * 0.5 + lHeightMax * 0.5);
+    vaBaseLine: AdjustVector[1] :=  - (Abs(lHeightMin) * 0.5 - lHeightMax * 0.5);
   else
-    Assert(False, glsUnknownType); // Not implemented...
+    begin
+      AdjustVector[1] := 0;
+      Assert(False, glsUnknownType); // Not implemented...
+    end;
   end;
 
-  Result[2] := Result[2] - (FExtrusion / 2) * AbsoluteScale[2];
+  AdjustVector[2] := - (FExtrusion / 2);
+  AdjustVector[3] := 1;
+  Result := LocalToAbsolute(AdjustVector);
 end;
 
 // AxisAlignedDimensionsUnscaled
