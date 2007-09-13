@@ -6,15 +6,15 @@
       <li>14/01/05 - CU - Creation
    </ul></font>
 }
-unit gllingtkcontext;
+unit GLLinGTKContext;
 
 interface
 
 {$i ../GLScene.inc}
 
 uses
-  xlib, classes, sysutils, glcontext, lclproc, forms, controls, opengl1x,
-  x, xutil, gtkproc,
+  xlib, Classes, sysutils, GLContext, LCLProc, Forms, Controls, OpenGL1x,
+  x, xutil, GTKProc,
 {$ifdef LCLGTK2}
   gtk2, gdk2, gdk2x;
 {$else}
