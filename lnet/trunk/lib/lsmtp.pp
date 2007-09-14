@@ -155,6 +155,7 @@ type
     FSL: TStringList;
     FStatusSet: TLSMTPStatusSet;
     FBuffer: string;
+    FDataBuffer: string; // intermediate wait buffer on DATA command
     FStream: TStream;
    protected
     procedure OnEr(const msg: string; aSocket: TLSocket);
@@ -431,7 +432,11 @@ begin
                             Eventize(FStatus.First.Status, True);
                             FStatus.Remove;
                           end;
-                300..399: SendData(True);
+                300..399: begin
+                            FBuffer := FDataBuffer;
+                            FDataBuffer := '';
+                            SendData(True);
+                          end;
               else        begin
                             Eventize(FStatus.First.Status, False);
                             FStatus.Remove;
@@ -664,16 +669,17 @@ end;
 procedure TLSMTPClient.Data(const Msg: string);
 begin
   if CanContinue(ssData, Msg, '') then begin
+    FBuffer := 'DATA ' + CRLF;
+    FDataBuffer := '';
+
     if Assigned(FStream) then begin
       if Length(Msg) > 0 then
-        FBuffer := 'DATA ' + CRLF + Msg
-      else
-        FBuffer := 'DATA ' + CRLF;
+        FDataBuffer := Msg;
     end else
-      FBuffer := 'DATA ' + CRLF + Msg + CRLF + '.' + CRLF;
-      
+      FDataBuffer := Msg + CRLF + '.' + CRLF;
+
     FStatus.Insert(MakeStatusRec(ssData, '', ''));
-    SendData(True);
+    SendData(False);
   end;
 end;
 
