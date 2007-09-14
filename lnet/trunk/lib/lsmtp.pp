@@ -156,6 +156,7 @@ type
     FStatusSet: TLSMTPStatusSet;
     FBuffer: string;
     FDataBuffer: string; // intermediate wait buffer on DATA command
+    FCharCount: Integer; // count of chars from last CRLF
     FStream: TStream;
    protected
     procedure OnEr(const msg: string; aSocket: TLSocket);
@@ -172,7 +173,7 @@ type
     
     procedure ExecuteFrontCommand;
     
-    procedure InsertCRLFs;
+    procedure ClearCR_LF;
     procedure SendData(const FromStream: Boolean = False);
    public
     constructor Create(aOwner: TComponent); override;
@@ -477,26 +478,39 @@ begin
   FCommandFront.Remove;
 end;
 
-procedure TLSMTPClient.InsertCRLFs;
+procedure TLSMTPClient.ClearCR_LF;
 var
-  i, c: Integer;
+  i: Integer;
+  Skip: Boolean = False;
 begin
-  c := 0;
-  i := 2;
-  while i <= Length(FBuffer) do begin
-    if (FBuffer[i - 1] = #13) and (FBuffer[i] = #10) then begin
-      c := 0;
-      Inc(i);
-    end else
-      Inc(c);
-      
-    if c >= 74 then begin
-      Insert(CRLF, FBuffer, i);
-      c := 0;
-      Inc(i, 2);
+  for i := 1 to Length(FBuffer) do begin
+    if Skip then begin
+      Skip := False;
+      Continue;
     end;
-
-    Inc(i);
+    
+    if (FBuffer[i] = #13) or (FBuffer[i] = #10) then begin
+      if FBuffer[i] = #13 then
+        if (i < Length(FBuffer)) and (FBuffer[i + 1] = #10) then begin
+          FCharCount := 0;
+          Skip := True; // skip the crlf
+        end else begin // insert LF to a standalone CR
+          System.Insert(#10, FBuffer, i + 1);
+          FCharCount := 0;
+          Skip := True; // skip the new crlf
+        end;
+        
+      if FBuffer[i] = #10 then begin
+        System.Insert(#13, FBuffer, i);
+        FCharCount := 0;
+        Skip := True; // skip the new crlf
+      end;
+    end else if FCharCount >= 1000 then begin // line too long
+      System.Insert(CRLF, FBuffer, i);
+      FCharCount := 0;
+      Skip := True;
+    end else
+      Inc(FCharCount);
   end;
 end;
 
@@ -529,7 +543,7 @@ begin
   n := 1;
   Sent := 0;
   while (Length(FBuffer) > 0) and (n > 0) do begin
-    InsertCRLFs;
+    ClearCR_LF;
   
     n := FConnection.SendMessage(FBuffer);
     Sent := Sent + n;
