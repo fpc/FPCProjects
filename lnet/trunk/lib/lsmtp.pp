@@ -438,6 +438,7 @@ begin
                             SendData(True);
                           end;
               else        begin
+                            FDataBuffer := '';
                             Eventize(FStatus.First.Status, False);
                             FStatus.Remove;
                           end;
