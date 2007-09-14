@@ -666,11 +666,11 @@ begin
   if CanContinue(ssData, Msg, '') then begin
     if Assigned(FStream) then begin
       if Length(Msg) > 0 then
-        FBuffer := 'DATA' + CRLF + Msg
+        FBuffer := 'DATA ' + CRLF + Msg
       else
-        FBuffer := 'DATA' + CRLF;
+        FBuffer := 'DATA ' + CRLF;
     end else
-      FBuffer := 'DATA' + CRLF + Msg + CRLF + '.' + CRLF;
+      FBuffer := 'DATA ' + CRLF + Msg + CRLF + '.' + CRLF;
       
     FStatus.Insert(MakeStatusRec(ssData, '', ''));
     SendData(True);
