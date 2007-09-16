@@ -1,4 +1,4 @@
-* version 0.5.8 04.09.2007 -- fixed problems with windows visual component
+* version 0.5.8 04.09.2007 -- fixed problems with windows visual component, fixed SMTP RFC compliance
 * version 0.5.7 20.08.2007 -- fixes Darwin MSG_NOSIGNAL to use SO_NOSIGPIPE instead
 * version 0.5.6 04.08.2007 -- fixed UFP.Disconnect potential AV bug and loss of error numbers in some situations
 * version 0.5.5 15.07.2007 -- fixes TCP.IterReset and documentation, makes Timeout signed for -1 (blocking mode)
