@@ -10,8 +10,8 @@ unit fQuadtreeVisCulling;
 interface
 
 uses
-  Windows,LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLScene, GLWin32Viewer, GLSkydome, GLMisc, GLObjects,  jpeg, glkeyboard,
+  SysUtils, Classes, Graphics, Controls, Forms, LCLType,
+  Dialogs, GLScene, GLViewer, GLSkydome, GLMisc, GLObjects,  jpeg, glkeyboard,
   GLHeightData, GLTerrainRenderer, GLTexture, GLCadencer, GLNavigator,
   SpatialPartitioning, VectorGeometry, ExtCtrls, GLBitmapFont, GeometryBB,
   GLWindowsFont, GLHUDObjects, StdCtrls, ComCtrls, OpenGL1x, LResources;
@@ -117,10 +117,10 @@ begin
   tree.visible := false;
   trees.ObjectsSorting := osRenderFarthestFirst;
 
-  GLBitmapHDS1.Picture.LoadFromFile('..\..\media\terrain.bmp');
-  GLMaterialLibrary1.Materials[0].Material.Texture.Image.LoadFromFile('..\..\media\snow512.jpg');
-  GLMaterialLibrary1.Materials[1].Material.Texture.Image.LoadFromFile('..\..\media\detailmap.jpg');
-  tree.Material.Texture.Image.LoadFromFile('..\..\media\tree1.bmp');
+  GLBitmapHDS1.Picture.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'terrain.bmp');
+  GLMaterialLibrary1.Materials[0].Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'snow512.jpg');
+  GLMaterialLibrary1.Materials[1].Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'detailmap.jpg');
+  tree.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'tree1.bmp');
   Show;
   CreateTrees;
   cullingMode := 'quadtree ';

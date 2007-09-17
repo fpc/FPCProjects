@@ -12,7 +12,7 @@ interface
 uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, GLScene, GLObjects, GLCadencer,
-  GLMisc, GLTexture, LResources, GLLCLViewer;
+  GLMisc, GLTexture, LResources, GLViewer;
 
 type
 
@@ -84,7 +84,7 @@ begin
     FogStart := StrToInt(EFogStart.Text);
     FogEnd := StrToInt(EFogEnd.Text);
   end;
-  GLSceneViewer1.Buffer.FogEnable := CBFogEnable.Checked;
+  GLSceneViewer1.Buffer.FogEnable := not CBFogEnable.Checked;
 end;
 
 // glsceneviewer1mousedown
@@ -191,14 +191,14 @@ end;
 //
 procedure TForm1.CBTextureEnabledClick(Sender: TObject);
 begin
-  GLMaterialLibrary1.Materials[0].Material.Texture.Enabled := CBTextureEnabled.Checked;
+  GLMaterialLibrary1.Materials[0].Material.Texture.Enabled := not CBTextureEnabled.Checked;
 end;
 
 // cbtextureignorefogclick
 //
 procedure TForm1.CBTextureIgnoreFogClick(Sender: TObject);
 begin
-  if CBTextureIgnoreFog.Checked then
+  if not CBTextureIgnoreFog.Checked then
     GLMaterialLibrary1.Materials[0].Material.MaterialOptions := GLMaterialLibrary1.Materials[0].Material.MaterialOptions + [moIgnoreFog]
   else
     GLMaterialLibrary1.Materials[0].Material.MaterialOptions := GLMaterialLibrary1.Materials[0].Material.MaterialOptions - [moIgnoreFog];

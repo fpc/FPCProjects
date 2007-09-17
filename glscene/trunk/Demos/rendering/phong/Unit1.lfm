@@ -5,7 +5,10 @@ object Form1: TForm1
   Width = 412
   HorzScrollBar.Page = 411
   VertScrollBar.Page = 382
+  ActiveControl = CheckBox1
   Caption = 'Phong Shader'
+  ClientHeight = 383
+  ClientWidth = 412
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
@@ -13,7 +16,7 @@ object Form1: TForm1
     Height = 344
     Width = 412
     Camera = GLCamera1
-    FieldOfView = 147.581954956054
+    FieldOfView = 147.581939697265
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
@@ -23,6 +26,8 @@ object Form1: TForm1
     Top = 344
     Width = 412
     Align = alBottom
+    ClientHeight = 39
+    ClientWidth = 412
     TabOrder = 0
     object CheckBox1: TCheckBox
       Left = 24
@@ -77,22 +82,20 @@ object Form1: TForm1
     left = 40
     top = 8
   end
-  object GLPhongShader1: tglphongshader
+  object GLPhongShader1: TGLPhongShader
     Enabled = False
     left = 72
     top = 8
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
-    Mode = cmapplicationidle
+    Mode = cmApplicationIdle
     OnProgress = GLCadencer1Progress
     left = 8
     top = 40
   end
-  object AsyncTimer1: TAsyncTimer
-    Enabled = True
+  object Timer1: TTimer
     OnTimer = AsyncTimer1Timer
-    ThreadPriority = tpNormal
     left = 40
     top = 40
   end

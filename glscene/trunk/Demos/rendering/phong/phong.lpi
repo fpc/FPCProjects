@@ -28,10 +28,10 @@
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="GLSceneLazarus"/>
       </Item1>
       <Item2>
-        <PackageName Value="GLSceneLazarus"/>
+        <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
     <Units Count="3">
@@ -50,8 +50,8 @@
         <HasResources Value="True"/>
         <ResourceFilename Value="Unit1.lrs"/>
         <UnitName Value="Unit1"/>
-        <CursorPos X="20" Y="36"/>
-        <TopLine Value="18"/>
+        <CursorPos X="33" Y="88"/>
+        <TopLine Value="77"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
@@ -64,15 +64,19 @@
         <UsageCount Value="10"/>
       </Unit2>
     </Units>
-    <JumpHistory Count="2" HistoryIndex="1">
+    <JumpHistory Count="3" HistoryIndex="2">
       <Position1>
         <Filename Value="Unit1.pas"/>
-        <Caret Line="74" Column="15" TopLine="65"/>
+        <Caret Line="18" Column="5" TopLine="1"/>
       </Position1>
       <Position2>
         <Filename Value="Unit1.pas"/>
-        <Caret Line="91" Column="96" TopLine="65"/>
+        <Caret Line="33" Column="30" TopLine="9"/>
       </Position2>
+      <Position3>
+        <Filename Value="Unit1.pas"/>
+        <Caret Line="36" Column="20" TopLine="11"/>
+      </Position3>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>

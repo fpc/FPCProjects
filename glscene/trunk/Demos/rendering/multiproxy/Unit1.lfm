@@ -7,6 +7,8 @@ object Form1: TForm1
   VertScrollBar.Page = 388
   ActiveControl = RBUseLODs
   Caption = 'Form1'
+  ClientHeight = 389
+  ClientWidth = 491
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnClose = FormClose
@@ -17,9 +19,7 @@ object Form1: TForm1
     Width = 491
     Camera = GLCamera
     Buffer.BackgroundColor = clGray
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 117.408935546875
+    FieldOfView = 117.40892791748
     Align = alClient
   end
   object Panel1: TPanel
@@ -27,6 +27,8 @@ object Form1: TForm1
     Width = 491
     Align = alTop
     BevelOuter = bvLowered
+    ClientHeight = 60
+    ClientWidth = 491
     Font.Height = -11
     Font.Name = 'Arial'
     FullRepaint = False
@@ -37,7 +39,6 @@ object Form1: TForm1
       Top = 8
       Width = 71
       Caption = 'MultiProxy'
-      Color = clNone
       Font.Height = -11
       Font.Name = 'Arial'
       Font.Style = [fsBold]

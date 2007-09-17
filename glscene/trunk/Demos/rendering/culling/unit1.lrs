@@ -3,33 +3,33 @@
 LazarusResources.Add('TForm1','FORMDATA',[
   'TPF0'#6'TForm1'#5'Form1'#4'Left'#3#188#0#6'Height'#3'T'#1#3'Top'#2'p'#5'Widt'
   +'h'#3' '#2#18'HorzScrollBar.Page'#3#31#2#18'VertScrollBar.Page'#3'S'#1#13'Ac'
-  +'tiveControl'#7#6'RBNone'#7'Caption'#6#5'Form1'#11'Font.Height'#2#245#9'Font'
-  +'.Name'#6#5'Arial'#8'OnCreate'#7#10'FormCreate'#0#6'TLabel'#6'Label1'#4'Left'
-  +#3#180#1#6'Height'#2#13#3'Top'#2#8#5'Width'#2'O'#7'Anchors'#11#5'akTop'#7'ak'
-  +'Right'#0#7'Caption'#6#13'Culling Mode:'#5'Color'#7#6'clNone'#11'Font.Height'
-  +#2#244#9'Font.Name'#6#5'Arial'#10'Font.Style'#11#6'fsBold'#0#11'ParentColor'
-  +#8#0#0#6'TLabel'#6'Label2'#4'Left'#3#182#1#6'Height'#2#13#3'Top'#2'x'#5'Widt'
-  +'h'#2'1'#7'Anchors'#11#5'akTop'#7'akRight'#0#7'Caption'#6#8'Objects:'#5'Colo'
-  +'r'#7#6'clNone'#11'Font.Height'#2#244#9'Font.Name'#6#5'Arial'#10'Font.Style'
-  +#11#6'fsBold'#0#11'ParentColor'#8#0#0#14'TGLSceneViewer'#6'Viewer'#4'Left'#2
-  +#8#6'Height'#3')'#1#3'Top'#2#8#5'Width'#3#169#1#6'Camera'#7#9'GLCamera1'#22
-  +'Buffer.BackgroundColor'#4#183#183#183#0#15'Buffer.OnChange'#13#25'Buffer.On'
-  +'StructuralChange'#13#11'FieldOfView'#5#0#0#0#0#0#128#200#142#6'@'#7'Anchors'
-  +#11#5'akTop'#6'akLeft'#7'akRight'#8'akBottom'#0#0#0#12'TRadioButton'#6'RBNon'
-  +'e'#4'Left'#3#219#1#6'Height'#2#24#3'Top'#2' '#5'Width'#2'6'#7'Anchors'#11#5
-  +'akTop'#7'akRight'#0#7'Caption'#6#4'None'#7'Checked'#9#7'OnClick'#7#11'RBNon'
-  +'eClick'#5'State'#7#9'cbChecked'#8'TabOrder'#2#0#0#0#12'TRadioButton'#8'RBOb'
-  +'ject'#4'Left'#3#176#1#6'Height'#2#24#3'Top'#2'8'#5'Width'#2'a'#7'Anchors'#11
-  +#5'akTop'#7'akRight'#0#7'Caption'#6#12'Object based'#7'OnClick'#7#11'RBNoneC'
-  +'lick'#8'TabOrder'#2#1#0#0#12'TRadioButton'#14'RBHierarchical'#4'Left'#3#183
-  +#1#6'Height'#2#24#3'Top'#2'P'#5'Width'#2'Z'#7'Anchors'#11#5'akTop'#7'akRight'
-  +#0#7'Caption'#6#12'Hierarchical'#7'OnClick'#7#11'RBNoneClick'#8'TabOrder'#2#2
-  +#7'Visible'#8#0#0#6'TPanel'#6'Panel1'#4'Left'#3#184#1#6'Height'#2'A'#3'Top'#3
-  +#144#0#5'Width'#2'Y'#7'Anchors'#11#5'akTop'#7'akRight'#0#10'BevelOuter'#7#6
-  +'bvNone'#11'FullRepaint'#8#8'TabOrder'#2#3#0#12'TRadioButton'#9'RBSpheres'#6
-  +'Height'#2#24#5'Width'#2'F'#7'Caption'#6#7'Spheres'#7'Checked'#9#7'OnClick'#7
+  +'tiveControl'#7#6'RBNone'#7'Caption'#6#5'Form1'#12'ClientHeight'#3'T'#1#11'C'
+  +'lientWidth'#3' '#2#11'Font.Height'#2#245#9'Font.Name'#6#5'Arial'#8'OnCreate'
+  +#7#10'FormCreate'#0#6'TLabel'#6'Label1'#4'Left'#3#184#1#6'Height'#2#17#3'Top'
+  +#2#8#5'Width'#2'Y'#7'Anchors'#11#5'akTop'#7'akRight'#0#7'Caption'#6#13'Culli'
+  +'ng Mode:'#11'Font.Height'#2#244#9'Font.Name'#6#5'Arial'#10'Font.Style'#11#6
+  +'fsBold'#0#11'ParentColor'#8#0#0#6'TLabel'#6'Label2'#4'Left'#3#186#1#6'Heigh'
+  +'t'#2#17#3'Top'#2'x'#5'Width'#2'4'#7'Anchors'#11#5'akTop'#7'akRight'#0#7'Cap'
+  +'tion'#6#8'Objects:'#11'Font.Height'#2#244#9'Font.Name'#6#5'Arial'#10'Font.S'
+  +'tyle'#11#6'fsBold'#0#11'ParentColor'#8#0#0#14'TGLSceneViewer'#6'Viewer'#4'L'
+  +'eft'#2#8#6'Height'#3')'#1#3'Top'#2#8#5'Width'#3#169#1#6'Camera'#7#9'GLCamer'
+  +'a1'#22'Buffer.BackgroundColor'#4#183#183#183#0#11'FieldOfView'#5#0#0#0#0#0
+  +#128#200#142#6'@'#7'Anchors'#11#5'akTop'#6'akLeft'#7'akRight'#8'akBottom'#0#0
+  +#0#12'TRadioButton'#6'RBNone'#4'Left'#3#184#1#6'Height'#2#19#3'Top'#2' '#5'W'
+  +'idth'#2'6'#7'Anchors'#11#5'akTop'#7'akRight'#0#7'Caption'#6#4'None'#7'Check'
+  +'ed'#9#7'OnClick'#7#11'RBNoneClick'#5'State'#7#9'cbChecked'#8'TabOrder'#2#0#0
+  +#0#12'TRadioButton'#8'RBObject'#4'Left'#3#184#1#6'Height'#2#19#3'Top'#2'8'#5
+  +'Width'#2'h'#7'Anchors'#11#5'akTop'#7'akRight'#0#7'Caption'#6#12'Object base'
+  +'d'#7'OnClick'#7#11'RBNoneClick'#8'TabOrder'#2#1#0#0#12'TRadioButton'#14'RBH'
+  +'ierarchical'#4'Left'#3#184#1#6'Height'#2#19#3'Top'#2'P'#5'Width'#2'_'#7'Anc'
+  +'hors'#11#5'akTop'#7'akRight'#0#7'Caption'#6#12'Hierarchical'#7'OnClick'#7#11
+  +'RBNoneClick'#8'TabOrder'#2#2#7'Visible'#8#0#0#6'TPanel'#6'Panel1'#4'Left'#3
+  +#184#1#6'Height'#2'A'#3'Top'#3#144#0#5'Width'#2'Y'#7'Anchors'#11#5'akTop'#7
+  +'akRight'#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2'A'#11'ClientWidth'
+  +#2'Y'#11'FullRepaint'#8#8'TabOrder'#2#3#0#12'TRadioButton'#9'RBSpheres'#6'He'
+  +'ight'#2#19#5'Width'#2'I'#7'Caption'#6#7'Spheres'#7'Checked'#9#7'OnClick'#7
   +#14'RBSpheresClick'#5'State'#7#9'cbChecked'#8'TabOrder'#2#0#0#0#12'TRadioBut'
-  +'ton'#8'RBActors'#6'Height'#2#24#3'Top'#2#24#5'Width'#2':'#7'Caption'#6#6'Ac'
+  +'ton'#8'RBActors'#6'Height'#2#19#3'Top'#2#24#5'Width'#2'='#7'Caption'#6#6'Ac'
   +'tors'#7'OnClick'#7#14'RBSpheresClick'#8'TabOrder'#2#1#0#0#0#8'TGLScene'#7'G'
   +'LScene'#4'left'#2#16#3'top'#2#16#0#14'TGLLightSource'#14'GLLightSource1'#16
   +'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position.Coordinates'#10#16
@@ -47,8 +47,8 @@ LazarusResources.Add('TForm1','FORMDATA',[
   +'L='#205#204'L='#0#0#128'?'#17'Scale.Coordinates'#10#16#0#0#0#205#204'L='#205
   +#204'L='#205#204'L='#0#0#0#0#14'Up.Coordinates'#10#16#0#0#0#0#0#0#0'.'#189';'
   +#179#0#0#128#191#0#0#0#0#13'AnimationMode'#7#7'aamLoop'#8'Interval'#2'd'#0#0
-  +#0#11'TGLCadencer'#10'GLCadencer'#5'Scene'#7#7'GLScene'#4'Mode'#7#17'cmappli'
-  +'cationidle'#10'OnProgress'#7#18'GLCadencerProgress'#4'left'#2'0'#3'top'#2#16
+  +#0#11'TGLCadencer'#10'GLCadencer'#5'Scene'#7#7'GLScene'#4'Mode'#7#17'cmAppli'
+  +'cationIdle'#10'OnProgress'#7#18'GLCadencerProgress'#4'left'#2'0'#3'top'#2#16
   +#0#0#6'TTimer'#6'Timer1'#7'OnTimer'#7#11'Timer1Timer'#4'left'#2#16#3'top'#2
   +'0'#0#0#18'TGLMaterialLibrary'#17'GLMaterialLibrary'#9'Materials'#14#1#4'Nam'
   +'e'#6#12'ActorTexture'#25'Material.Texture.Disabled'#8#0#0#4'left'#2'0'#3'to'

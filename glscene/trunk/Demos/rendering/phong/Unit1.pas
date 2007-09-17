@@ -15,7 +15,7 @@ interface
 uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLTeapot, GLMisc, GLTexture, GLPhongShader,
-  GLLCLViewer, StdCtrls, LResources, GLScene, GLCadencer, AsyncTimer, ExtCtrls;
+  GLViewer, StdCtrls, LResources, GLScene, GLCadencer, ExtCtrls;
 
 type
 
@@ -31,9 +31,9 @@ type
     GLDummyCube1: TGLDummyCube;
     GLLightSource1: TGLLightSource;
     GLCadencer1: TGLCadencer;
-    AsyncTimer1: TAsyncTimer;
     CheckBox1: TCheckBox;
     Panel1: TPanel;
+    Timer1: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure GLSceneViewer1MouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -79,13 +79,13 @@ end;
 
 procedure TForm1.AsyncTimer1Timer(Sender: TObject);
 begin
-  Form1.Caption:='Phong Shader - '+GLSceneViewer1.FramesPerSecondText;
+  Form1.Caption:='Phong Shader - ' + GLSceneViewer1.FramesPerSecondText;
   GLSceneViewer1.ResetPerformanceMonitor;
 end;
 
 procedure TForm1.CheckBox1Click(Sender: TObject);
 begin
-  GLPhongShader1.Enabled:=CheckBox1.Checked;
+  GLPhongShader1.Enabled := not CheckBox1.Checked;
 end;
 
 procedure TForm1.GLCadencer1Progress(Sender: TObject; const deltaTime,

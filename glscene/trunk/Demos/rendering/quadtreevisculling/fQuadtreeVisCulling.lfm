@@ -1,4 +1,11 @@
 object frmQuadtreeVisCulling: TfrmQuadtreeVisCulling
+  Left = 282
+  Height = 480
+  Top = 235
+  Width = 640
+  HorzScrollBar.Page = 639
+  VertScrollBar.Page = 479
+  ActiveControl = cbUseQuadtree
   Caption = 'Quadtree Visibility Culling'
   ClientHeight = 480
   ClientWidth = 640
@@ -8,103 +15,92 @@ object frmQuadtreeVisCulling: TfrmQuadtreeVisCulling
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
-  PixelsPerInch = 96
   Position = poScreenCenter
-  TextHeight = 13
-  HorzScrollBar.Page = 639
-  VertScrollBar.Page = 479
-  Left = 282
-  Height = 480
-  Top = 373
-  Width = 640
   object Label2: TLabel
-    BorderSpacing.OnChange = nil
-    Caption = 'Label2'
-    Color = clNone
     Left = 288
-    Height = 13
+    Height = 20
     Top = 10
-    Width = 32
+    Width = 43
+    Caption = 'Label2'
+    ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer
+    Height = 430
+    Top = 27
+    Width = 633
     Camera = GLCamera1
     Buffer.FogEnvironment.FogStart = 3000
     Buffer.FogEnvironment.FogEnd = 3950
     Buffer.BackgroundColor = clWhite
     Buffer.Lighting = False
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 153.81620788574219
+    FieldOfView = 153.816207885742
     Anchors = [akTop, akLeft, akRight, akBottom]
-    Height = 430
-    Top = 27
-    Width = 633
   end
   object cbUseQuadtree: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 19
+    Top = 8
+    Width = 80
     Caption = 'Quadtree'
     Checked = True
     State = cbChecked
     TabOrder = 0
-    Left = 8
-    Height = 17
-    Top = 8
-    Width = 65
   end
   object Panel1: TPanel
-    BorderSpacing.OnChange = nil
-    ClientHeight = 49
-    ClientWidth = 185
-    FullRepaint = False
-    TabOrder = 1
     Left = 224
     Height = 49
     Top = 216
     Width = 185
+    ClientHeight = 49
+    ClientWidth = 185
+    FullRepaint = False
+    TabOrder = 1
     object Label1: TLabel
-      BorderSpacing.OnChange = nil
-      Caption = 'Generating Trees'
-      Color = clNone
       Left = 8
       Height = 13
       Top = 8
       Width = 82
+      Caption = 'Generating Trees'
+      ParentColor = False
     end
     object ProgressBar1: TProgressBar
-      BorderSpacing.OnChange = nil
-      Max = 100
-      TabOrder = 0
       Left = 8
       Height = 17
       Top = 24
       Width = 169
+      Max = 100
+      TabOrder = 0
     end
   end
   object cbShowQuadtree: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 184
+    Height = 19
+    Top = 8
+    Width = 118
     Caption = 'Show &Quadtree'
     OnClick = cbShowQuadtreeClick
     TabOrder = 2
-    Left = 184
-    Height = 17
-    Top = 8
-    Width = 97
   end
   object cbUseExtendedFrustum: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 72
+    Height = 19
+    Top = 8
+    Width = 136
     Caption = 'E&xtended Frustum'
     Checked = True
     State = cbChecked
     TabOrder = 3
-    Left = 72
-    Height = 17
-    Top = 8
-    Width = 105
   end
   object GLScene1: TGLScene
     left = 92
     top = 40
     object GLSkyDome1: TGLSkyDome
+      Direction.Coordinates = {
+        000000000000803F0000000000000000
+      }
+      Up.Coordinates = {
+        0000000000000000000080BF00000000
+      }
       Bands = <      
         item
           StartColor.Color = {
@@ -121,17 +117,8 @@ object frmQuadtreeVisCulling: TfrmQuadtreeVisCulling
           Stacks = 4
         end>
       Stars = <>
-      Direction.Coordinates = {
-        000000000000803F0000000000000000
-      }
-      Up.Coordinates = {
-        0000000000000000000080BF00000000
-      }
     end
     object GLTerrainRenderer1: TGLTerrainRenderer
-      HeightDataSource = GLBitmapHDS1
-      TileSize = 32
-      TilesPerTexture = 8
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = '1'
       Direction.Coordinates = {
@@ -143,6 +130,9 @@ object frmQuadtreeVisCulling: TfrmQuadtreeVisCulling
       Up.Coordinates = {
         00000000000000000000803F00000000
       }
+      HeightDataSource = GLBitmapHDS1
+      TileSize = 32
+      TilesPerTexture = 8
     end
     object queryVisible: TGLDirectOpenGL
       OnRender = queryVisibleRender
@@ -153,30 +143,30 @@ object frmQuadtreeVisCulling: TfrmQuadtreeVisCulling
       CubeSize = 1
     end
     object GLHUDText1: TGLHUDText
-      BitmapFont = GLWindowsBitmapFont1
-      Text = '0'
       Position.Coordinates = {
         0000804000008040000000000000803F
       }
+      BitmapFont = GLWindowsBitmapFont1
+      Text = '0'
     end
     object tree: TGLSprite
-      Width = 280
-      Height = 300
       Material.BlendingMode = bmTransparency
       Material.Texture.ImageAlpha = tiaSuperBlackTransparent
       Material.Texture.TextureMode = tmReplace
       Material.Texture.Disabled = False
+      Width = 280
+      Height = 300
     end
     object GLDirectOpenGL2: TGLDirectOpenGL
-      OnRender = GLDirectOpenGL2Render
       Visible = False
+      OnRender = GLDirectOpenGL2Render
     end
     object GLSphere1: TGLSphere
-      Radius = 90
       Position.Coordinates = {
         00000000000000000000FAC30000803F
       }
       Visible = False
+      Radius = 90
     end
     object GLCamera1: TGLCamera
       DepthOfView = 4000

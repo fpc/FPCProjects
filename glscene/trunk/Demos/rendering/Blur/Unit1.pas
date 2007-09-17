@@ -17,9 +17,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLTexture, GLMisc,GLHudObjects,Jpeg,
-  GLCadencer, StdCtrls, ExtCtrls,GLBlur, LResources, GLWin32Viewer;
+  GLCadencer, StdCtrls, ExtCtrls,GLBlur, LResources, GLViewer;
 
 type
   TForm1 = class(TForm)
@@ -70,7 +70,7 @@ begin
      B.RenderHeight := 256;
 
      // Load texture for objects
-     GLMaterialLibrary1.Materials[0].Material.Texture.Image.LoadFromFile('..\..\media\marbletiles.jpg');
+     GLMaterialLibrary1.Materials[0].Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'marbletiles.jpg');
 end;
 
 procedure TForm1.GLCadencer1Progress(Sender: TObject; const deltaTime,

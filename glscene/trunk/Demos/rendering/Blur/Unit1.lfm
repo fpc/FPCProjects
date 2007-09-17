@@ -1,19 +1,20 @@
 object Form1: TForm1
+  Left = 285
+  Height = 498
+  Top = 118
+  Width = 534
+  HorzScrollBar.Page = 533
+  VertScrollBar.Page = 497
   Caption = 'Form1'
   ClientHeight = 498
   ClientWidth = 534
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 533
-  VertScrollBar.Page = 497
-  Left = 285
-  Height = 498
-  Top = 118
-  Width = 534
   object GLSceneViewer1: TGLSceneViewer
+    Height = 442
+    Top = 56
+    Width = 534
     Camera = GLCamera1
     Buffer.FogEnvironment.FogColor.Color = {
       1283003F1283003F0000803F0000803F
@@ -24,46 +25,42 @@ object Form1: TForm1
     Buffer.AmbientColor.Color = {
       0000000000000000000000000000803F
     }
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 155.10313415527344
+    FieldOfView = 154.503555297851
     Align = alClient
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 453
-    Top = 45
-    Width = 534
   end
   object Panel1: TPanel
+    Height = 56
+    Width = 534
     Align = alTop
-    BorderSpacing.OnChange = nil
     Caption = ' '
-    ClientHeight = 45
+    ClientHeight = 56
     ClientWidth = 534
     FullRepaint = False
     TabOrder = 0
-    Height = 45
-    Width = 534
     object Label1: TLabel
-      BorderSpacing.OnChange = nil
-      Caption = 'Blur Preset:'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 4
-      Width = 54
+      Width = 75
+      Caption = 'Blur Preset:'
+      ParentColor = False
     end
     object Label2: TLabel
-      BorderSpacing.OnChange = nil
-      Caption = 'Render Size:'
-      Color = clNone
       Left = 216
-      Height = 13
+      Height = 20
       Top = 4
-      Width = 61
+      Width = 80
+      Caption = 'Render Size:'
+      ParentColor = False
     end
     object ComboBox1: TComboBox
-      BorderSpacing.OnChange = nil
-      ItemHeight = 13
+      Left = 8
+      Height = 28
+      Top = 20
+      Width = 161
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      ItemIndex = 0
       Items.Strings = (
         'pNone (no change)'
         'pGlossy'
@@ -72,20 +69,19 @@ object Form1: TForm1
         'pDream'
         'pOverBlur'
       )
-      ItemIndex = 0
       MaxLength = 0
       OnClick = ComboBox1Click
       Style = csDropDownList
       TabOrder = 0
       Text = 'pNone (no change)'
-      Left = 8
-      Height = 21
-      Top = 20
-      Width = 161
     end
     object ComboBox2: TComboBox
-      BorderSpacing.OnChange = nil
-      ItemHeight = 13
+      Left = 216
+      Height = 28
+      Top = 20
+      Width = 145
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      ItemIndex = 5
       Items.Strings = (
         '8'
         '16'
@@ -95,22 +91,17 @@ object Form1: TForm1
         '256'
         '512'
       )
-      ItemIndex = 5
       MaxLength = 0
       OnChange = ComboBox2Change
       Style = csDropDownList
       TabOrder = 1
       Text = '256'
-      Left = 216
-      Height = 21
-      Top = 20
-      Width = 145
     end
   end
   object GLScene1: TGLScene
     ObjectsSorting = osRenderFarthestFirst
-    left = 188
-    top = 48
+    left = 192
+    top = 56
     object GLLightSource1: TGLLightSource
       Ambient.Color = {
         BEC0403FBEC0403FBEC0403F0000803F
@@ -141,12 +132,12 @@ object Form1: TForm1
       }
     end
     object GLSphere1: TGLSphere
-      Radius = 0.5
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial'
       Position.Coordinates = {
         6E3D38BF0A5515BE733C1CBF0000803F
       }
+      Radius = 0.5
     end
     object GLDummyCube1: TGLDummyCube
       CubeSize = 1
@@ -154,7 +145,7 @@ object Form1: TForm1
     object GLCamera1: TGLCamera
       DepthOfView = 100
       FocalLength = 50
-      NearPlaneBias = 0.100000001490116
+      NearPlaneBias = 0.10000000149011
       TargetObject = GLDummyCube1
       Position.Coordinates = {
         41A38A3F6847033F2894FA3F0000803F
@@ -175,18 +166,18 @@ object Form1: TForm1
         Material.Texture.Disabled = False
       end>
     left = 228
-    top = 48
+    top = 56
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
     SleepLength = 0
     OnProgress = GLCadencer1Progress
     left = 268
-    top = 48
+    top = 56
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer
     left = 308
-    top = 48
+    top = 56
   end
 end

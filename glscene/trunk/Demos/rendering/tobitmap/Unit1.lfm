@@ -1,4 +1,11 @@
 object Form1: TForm1
+  Left = 285
+  Height = 335
+  Top = 113
+  Width = 465
+  HorzScrollBar.Page = 464
+  VertScrollBar.Page = 334
+  ActiveControl = BUSnapShot
   Caption = 'Form1'
   ClientHeight = 335
   ClientWidth = 465
@@ -6,85 +13,82 @@ object Form1: TForm1
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   OnResize = FormResize
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 464
-  VertScrollBar.Page = 334
-  Left = 285
-  Height = 335
-  Top = 113
-  Width = 465
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.AntiAliasing = aaNone
-    FieldOfView = 146.75848388671875
-    Align = alClient
     Height = 335
     Width = 352
+    Camera = GLCamera1
+    Buffer.AntiAliasing = aaNone
+    FieldOfView = 146.758483886718
+    Align = alClient
   end
   object Panel1: TPanel
+    Left = 352
+    Height = 335
+    Width = 113
     Align = alRight
     ClientHeight = 335
     ClientWidth = 113
     FullRepaint = False
     TabOrder = 0
-    Left = 352
-    Height = 335
-    Width = 113
     object BUSnapShot: TButton
-      Caption = 'Buffer SnapShot'
-      OnClick = BUSnapShotClick
-      TabOrder = 0
       Left = 8
       Height = 25
       Top = 40
       Width = 97
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Buffer SnapShot'
+      OnClick = BUSnapShotClick
+      TabOrder = 0
     end
     object BURenderToBitmap: TButton
-      Caption = 'Render To Bitmap'
-      OnClick = BURenderToBitmapClick
-      TabOrder = 1
       Left = 8
       Height = 25
       Top = 72
       Width = 97
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Render To Bitmap'
+      OnClick = BURenderToBitmapClick
+      TabOrder = 1
     end
     object BUBitmapx2: TButton
-      Caption = 'Bitmap x2'
-      OnClick = BUBitmapx2Click
-      TabOrder = 2
       Left = 8
       Height = 25
       Top = 120
       Width = 97
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Bitmap x2'
+      OnClick = BUBitmapx2Click
+      TabOrder = 2
     end
     object BUBitmap600: TButton
-      Caption = 'Bitmap 600 dpi'
-      OnClick = BUBitmap600Click
-      TabOrder = 3
       Left = 8
       Height = 25
       Top = 200
       Width = 97
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Bitmap 600 dpi'
+      OnClick = BUBitmap600Click
+      TabOrder = 3
     end
     object BUBitmap300: TButton
-      Caption = 'Bitmap 300 dpi'
-      OnClick = BUBitmap300Click
-      TabOrder = 4
       Left = 8
       Height = 25
       Top = 160
       Width = 97
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Bitmap 300 dpi'
+      OnClick = BUBitmap300Click
+      TabOrder = 4
     end
     object BUViewerSnapShot1: TButton
-      BorderSpacing.OnChange = nil
-      Caption = 'Viewer SnapShot'
-      OnClick = BUViewerSnapShotClick
-      TabOrder = 5
       Left = 8
       Height = 25
       Top = 8
       Width = 97
+      BorderSpacing.InnerBorder = 4
+      Caption = 'Viewer SnapShot'
+      OnClick = BUViewerSnapShotClick
+      TabOrder = 5
     end
   end
   object GLScene1: TGLScene
@@ -101,14 +105,10 @@ object Form1: TForm1
       SpotCutOff = 180
     end
     object HUDSprite1: TGLHUDSprite
-      Width = 16
-      Height = 16
-      NoZWrite = True
       Material.Texture.Disabled = False
+      NoZWrite = True
     end
     object Plane1: TGLPlane
-      Height = 6
-      Width = 6
       Material.Texture.TextureMode = tmReplace
       Material.Texture.Disabled = False
       Direction.Coordinates = {
@@ -117,34 +117,10 @@ object Form1: TForm1
       Up.Coordinates = {
         E9DC72BF000000009BE8A13E00000000
       }
-      object SpaceText1: TGLSpaceText
-        Extrusion = 0.050000000745058
-        Font.Height = -8
-        Font.Name = 'Arial'
-        Text = 'Render to Bitmap'
-        AllowedDeviation = 1
-        CharacterRange = stcrAlphaNum
-        AspectRatio = 1.299999952316284
-        TextHeight = 0.400000005960465
-        Adjust.Horz = haCenter
-        Adjust.Vert = vaCenter
-        Material.FrontProperties.Diffuse.Color = {
-          00000000000000000000803F0000803F
-        }
-        Material.FrontProperties.Specular.Color = {
-          FA7EAA3EFA7EAA3E000000000000803F
-        }
-        Position.Coordinates = {
-          000020C000000000CDCC4C3D0000803F
-        }
-        Up.Coordinates = {
-          0000803F000000800000000000000000
-        }
-      end
+      Height = 6
+      Width = 6
     end
     object Sphere1: TGLSphere
-      Radius = 1
-      Slices = 24
       Material.FrontProperties.Diffuse.Color = {
         9A99393F9A99393F0000803F0000803F
       }
@@ -152,12 +128,14 @@ object Form1: TForm1
       Material.Texture.MappingMode = tmmSphere
       Material.Texture.Disabled = False
       OnProgress = Sphere1Progress
+      Radius = 1
+      Slices = 24
     end
     object DummyCube1: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         0000000000000040000000000000803F
       }
+      CubeSize = 1
     end
     object GLCamera1: TGLCamera
       DepthOfView = 100

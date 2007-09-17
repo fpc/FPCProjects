@@ -1,27 +1,25 @@
 object Form1: TForm1
+  Left = 288
+  Height = 434
+  Top = 132
+  Width = 408
+  HorzScrollBar.Page = 407
+  VertScrollBar.Page = 433
   Caption = 'Cel Shading Demo'
   ClientHeight = 434
   ClientWidth = 408
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 96
   Position = poScreenCenter
-  TextHeight = 13
-  HorzScrollBar.Page = 407
-  VertScrollBar.Page = 433
-  Left = 288
-  Height = 434
-  Top = 132
-  Width = 408
   object GLSceneViewer1: TGLSceneViewer
+    Height = 434
+    Width = 408
     Camera = GLCamera1
-    FieldOfView = 152.45680236816406
+    FieldOfView = 152.456802368164
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 434
-    Width = 408
   end
   object GLScene1: TGLScene
     left = 8
@@ -46,7 +44,6 @@ object Form1: TForm1
       end
     end
     object GLActor1: TGLActor
-      Interval = 100
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'TexturedCellMat'
       Direction.Coordinates = {
@@ -56,10 +53,9 @@ object Form1: TForm1
       Up.Coordinates = {
         000000002EBD3BB3000080BF00000000
       }
+      Interval = 100
     end
     object GLTorus1: TGLTorus
-      MajorRadius = 2.5
-      MinorRadius = 0.25
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'ColoredCelMat'
       Direction.Coordinates = {
@@ -68,6 +64,8 @@ object Form1: TForm1
       Up.Coordinates = {
         00000000000000000000803F00000000
       }
+      MajorRadius = 2.5
+      MinorRadius = 0.25
     end
   end
   object GLMaterialLibrary1: TGLMaterialLibrary
@@ -98,13 +96,6 @@ object Form1: TForm1
     left = 8
     top = 40
   end
-  object AsyncTimer1: TAsyncTimer
-    Enabled = True
-    OnTimer = AsyncTimer1Timer
-    ThreadPriority = tpNormal
-    left = 8
-    top = 72
-  end
   object GLTexturedCelShader: TGLCelShader
     CelShaderOptions = [csoOutlines, csoTextured]
     OutlineWidth = 3
@@ -115,6 +106,11 @@ object Form1: TForm1
     CelShaderOptions = [csoOutlines]
     OutlineWidth = 3
     left = 40
+    top = 72
+  end
+  object Timer1: TTimer
+    OnTimer = AsyncTimer1Timer
+    left = 8
     top = 72
   end
 end

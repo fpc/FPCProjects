@@ -5,12 +5,15 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLCadencer, GLWin32Viewer, GLVectorFileObjects,
-  AsyncTimer, GLCelShader, GLGeomObjects, GLTexture, GLMisc, GLObjects,
-  LResources, GLScene;
+  SysUtils, Classes, Graphics, Controls, Forms, LCLType,
+  Dialogs, GLCadencer, GLViewer, GLVectorFileObjects,
+  GLCelShader, GLGeomObjects, GLTexture, GLMisc, GLObjects,
+  LResources, GLScene, ExtCtrls;
 
 type
+
+  { TForm1 }
+
   TForm1 = class(TForm)
     GLScene1: TGLScene;
     GLSceneViewer1: TGLSceneViewer;
@@ -20,10 +23,10 @@ type
     GLDummyCube1: TGLDummyCube;
     GLLightSource1: TGLLightSource;
     GLActor1: TGLActor;
-    AsyncTimer1: TAsyncTimer;
     GLTexturedCelShader: TGLCelShader;
     GLColoredCelShader: TGLCelShader;
     GLTorus1: TGLTorus;
+    Timer1: TTimer;
     procedure GLSceneViewer1MouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure GLSceneViewer1MouseMove(Sender: TObject; Shift: TShiftState;
@@ -52,7 +55,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   r : Single;
 begin
-  SetCurrentDir(ExtractFilePath(Application.ExeName)+'..\..\media');
+  SetCurrentDir(ExtractFilePath(Application.ExeName)+'..' + PathDelim + '..' + PathDelim + 'media');
 
   GLActor1.LoadFromFile('waste.md2');
   r:=GLActor1.BoundingSphereRadius;

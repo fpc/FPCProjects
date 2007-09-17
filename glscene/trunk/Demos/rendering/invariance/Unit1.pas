@@ -7,7 +7,7 @@ interface
 uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLMisc, GLTexture, JPeg,
-  GLGeomObjects, LResources, GLLCLViewer;
+  GLGeomObjects, LResources, GLViewer;
 
 type
 

@@ -1,4 +1,11 @@
 object Form1: TForm1
+  Left = 321
+  Height = 307
+  Top = 141
+  Width = 479
+  HorzScrollBar.Page = 478
+  VertScrollBar.Page = 306
+  ActiveControl = CheckBox1
   BorderStyle = bsDialog
   Caption = 'Form1'
   ClientHeight = 307
@@ -6,83 +13,75 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'Arial'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 14
-  HorzScrollBar.Page = 478
-  VertScrollBar.Page = 306
-  Left = 321
-  Height = 307
-  Top = 141
-  Width = 479
   object Label1: TLabel
+    Left = 392
+    Height = 22
+    Top = 8
+    Width = 69
     Caption = 'Options'
-    Color = clNone
     Font.Height = -16
     Font.Name = 'Arial'
     Font.Style = [fsBold]
-    Left = 392
-    Height = 19
-    Top = 8
-    Width = 60
+    ParentColor = False
   end
   object Label2: TLabel
-    Caption = 'Texture framerate'
-    Color = clNone
     Left = 384
-    Height = 14
+    Height = 20
     Top = 64
-    Width = 87
+    Width = 114
+    Caption = 'Texture framerate'
+    ParentColor = False
   end
   object CheckBox1: TCheckBox
+    Left = 384
+    Height = 19
+    Top = 200
+    Width = 60
     Caption = 'VSync'
     OnClick = CheckBox1Click
     TabOrder = 0
-    Left = 384
-    Height = 17
-    Top = 200
-    Width = 57
   end
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    AfterRender = GLSceneViewer1AfterRender
-    Buffer.BackgroundColor = clGray
-    FieldOfView = 87.86016845703125
     Left = 8
     Height = 289
     Top = 8
     Width = 369
+    Camera = GLCamera1
+    AfterRender = GLSceneViewer1AfterRender
+    Buffer.BackgroundColor = clGray
+    FieldOfView = 87.8601684570312
   end
   object RB1to1: TRadioButton
+    Tag = 1
+    Left = 400
+    Height = 19
+    Top = 88
+    Width = 40
     Caption = '1:1'
     Checked = True
     OnClick = RB1to1Click
     State = cbChecked
     TabOrder = 1
-    Left = 400
-    Height = 17
-    Top = 88
-    Width = 41
-    Tag = 1
   end
   object RB1to2: TRadioButton
+    Tag = 2
+    Left = 400
+    Height = 19
+    Top = 112
+    Width = 40
     Caption = '1:2'
     OnClick = RB1to1Click
     TabOrder = 2
-    Left = 400
-    Height = 17
-    Top = 112
-    Width = 41
-    Tag = 2
   end
   object RB1to10: TRadioButton
+    Tag = 10
+    Left = 400
+    Height = 19
+    Top = 136
+    Width = 48
     Caption = '1:10'
     OnClick = RB1to1Click
     TabOrder = 3
-    Left = 400
-    Height = 17
-    Top = 136
-    Width = 41
-    Tag = 10
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer

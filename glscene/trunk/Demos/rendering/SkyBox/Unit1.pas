@@ -22,8 +22,8 @@ interface
 uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, GLMisc, GLTexture,
-  GLCadencer, GLNavigator, GLLCLViewer, GLKeyboard, GLLensFlare, GLObjects,
-  JPeg,GLSkyBox, LResources, GLScene;
+  GLCadencer, GLNavigator, GLViewer, GLKeyboard, GLLensFlare, GLObjects,
+  JPeg, GLSkyBox, LResources, GLScene;
 
 type
   TForm1 = class(TForm)

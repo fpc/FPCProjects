@@ -3,6 +3,9 @@ program QuadtreeVisCulling;
 {$MODE Delphi}
 
 uses
+  {$ifndef windows}
+  cThreads,
+  {$endif}
   Interfaces,
   Forms,
   fQuadtreeVisCulling in 'fQuadtreeVisCulling.pas' {frmQuadtreeVisCulling};

@@ -21,9 +21,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  GLObjects, GLScene, ExtCtrls, GLMisc, GLWin32Viewer,
-  GLHUDObjects, StdCtrls, GLSpaceText, LResources, GLCadencer, Buttons;
+  SysUtils, Classes, Graphics, Controls, Forms,
+  GLObjects, GLScene, ExtCtrls, GLMisc, GLViewer,
+  GLHUDObjects, StdCtrls, LResources, GLCadencer, Buttons;
 
 type
 
@@ -46,7 +46,6 @@ type
     BUBitmapx2: TButton;
     BUBitmap600: TButton;
     BUBitmap300: TButton;
-    SpaceText1: TGLSpaceText;
     procedure Sphere1Progress(Sender: TObject; const deltaTime,
       newTime: Double);
     procedure FormCreate(Sender: TObject);
@@ -189,9 +188,9 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-   HUDSprite1.Material.Texture.Image.LoadFromFile('..\..\media\ashwood.jpg');
-   Plane1.Material.Texture.Image.LoadFromFile('..\..\media\marbletiles.jpg');
-   Sphere1.Material.Texture.Image.LoadFromFile('..\..\media\marbletiles.jpg');
+   HUDSprite1.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'ashwood.jpg');
+   Plane1.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'marbletiles.jpg');
+   Sphere1.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'marbletiles.jpg');
 end;
 
 procedure TForm1.Sphere1Progress(Sender: TObject; const deltaTime,

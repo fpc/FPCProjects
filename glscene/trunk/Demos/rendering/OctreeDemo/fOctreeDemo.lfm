@@ -7,38 +7,37 @@ object frmOctreeDemo: TfrmOctreeDemo
   VertScrollBar.Page = 579
   ActiveControl = TrackBar_LeafThreshold
   Caption = 'Octree Demo'
+  ClientHeight = 580
+  ClientWidth = 778
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
   object Label1: TLabel
-    Left = 568
-    Height = 14
+    Left = 564
+    Height = 20
     Top = 31
-    Width = 39
+    Width = 43
     Alignment = taRightJustify
     Anchors = [akTop, akRight]
     Caption = 'Label1'
-    Color = clNone
     ParentColor = False
   end
   object Label3: TLabel
     Left = 16
-    Height = 14
+    Height = 20
     Top = 8
-    Width = 84
+    Width = 94
     Caption = 'Leaf Threshold'
-    Color = clNone
     ParentColor = False
   end
   object Label2: TLabel
     Left = 120
-    Height = 14
+    Height = 20
     Top = 8
-    Width = 451
+    Width = 526
     Caption = '(Green = Colliding with other object, Red = inside query box/sphere, Yellow = both)'
-    Color = clNone
     ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer
@@ -49,15 +48,13 @@ object frmOctreeDemo: TfrmOctreeDemo
     Camera = GLCamera1
     Buffer.BackgroundColor = clWhite
     Buffer.FaceCulling = False
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
     FieldOfView = 145.893371582031
     Anchors = [akTop, akLeft, akRight, akBottom]
     OnMouseMove = GLSceneViewer1MouseMove
   end
   object TrackBar_LeafThreshold: TTrackBar
     Left = 8
-    Height = 33
+    Height = 35
     Top = 24
     Width = 150
     Max = 20

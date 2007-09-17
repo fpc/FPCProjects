@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="\"/>
+    <PathDelim Value="/"/>
     <Version Value="5"/>
     <General>
       <Flags>
@@ -12,42 +12,8 @@
       <MainUnit Value="0"/>
       <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="2"/>
+      <ActiveEditorIndexAtStart Value="1"/>
     </General>
-    <Units Count="3">
-      <Unit0>
-        <CursorPos X="14" Y="6"/>
-        <EditorIndex Value="0"/>
-        <Filename Value="tobitmap.lpr"/>
-        <IsPartOfProject Value="True"/>
-        <Loaded Value="True"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="20"/>
-      </Unit0>
-      <Unit1>
-        <CursorPos X="3" Y="32"/>
-        <EditorIndex Value="2"/>
-        <Filename Value="Unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <Loaded Value="True"/>
-        <ResourceFilename Value="Unit1.lrs"/>
-        <TopLine Value="23"/>
-        <UnitName Value="Unit1"/>
-        <UsageCount Value="10"/>
-      </Unit1>
-      <Unit2>
-        <CursorPos X="15" Y="3"/>
-        <EditorIndex Value="1"/>
-        <Filename Value="unit2.pas"/>
-        <ComponentName Value="Form2"/>
-        <HasResources Value="True"/>
-        <Loaded Value="True"/>
-        <TopLine Value="1"/>
-        <UnitName Value="Unit2"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-    </Units>
     <PublishOptions>
       <Version Value="2"/>
       <IgnoreBinaries Value="False"/>
@@ -62,28 +28,59 @@
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="GLSceneLazarus"/>
       </Item1>
       <Item2>
-        <PackageName Value="GLSceneLazarus"/>
+        <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
+    <Units Count="3">
+      <Unit0>
+        <Filename Value="tobitmap.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="14" Y="6"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="Unit1.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceFilename Value="Unit1.lrs"/>
+        <UnitName Value="Unit1"/>
+        <CursorPos X="109" Y="193"/>
+        <TopLine Value="181"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="unit2.pas"/>
+        <ComponentName Value="Form2"/>
+        <HasResources Value="True"/>
+        <UnitName Value="Unit2"/>
+        <CursorPos X="15" Y="3"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+    </Units>
     <JumpHistory Count="2" HistoryIndex="1">
       <Position1>
         <Filename Value="Unit1.pas"/>
-        <Caret Line="58" Column="13" TopLine="53"/>
+        <Caret Line="26" Column="27" TopLine="14"/>
       </Position1>
       <Position2>
         <Filename Value="Unit1.pas"/>
-        <Caret Line="40" Column="17" TopLine="23"/>
+        <Caret Line="49" Column="1" TopLine="37"/>
       </Position2>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
-    <PathDelim Value="\"/>
     <SearchPaths>
-      <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
+      <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
     <CodeGeneration>
       <Generate Value="Faster"/>
