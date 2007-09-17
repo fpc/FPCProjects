@@ -1,53 +1,56 @@
 object Form1: TForm1
-  Left = 192
-  Top = 114
-  Width = 431
+  Left = 342
   Height = 430
+  Top = 145
+  Width = 431
+  HorzScrollBar.Page = 430
+  VertScrollBar.Page = 429
   Caption = 'Cg Cell Shading Demo'
-  Color = clBtnFace
-  Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
+  ClientHeight = 430
+  ClientWidth = 431
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
-  Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
   object GLSceneViewer1: TGLSceneViewer
-    Left = 0
-    Top = 0
-    Width = 423
-    Height = 396
+    Height = 430
+    Width = 431
     Camera = GLCamera1
+    FieldOfView = 153.816207885742
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
   end
   object GLScene1: TGLScene
-    Left = 8
-    Top = 8
+    left = 8
+    top = 8
     object GLDummyCube1: TGLDummyCube
-      CubeSize = 1.000000000000000000
+      CubeSize = 1
       object GLCamera1: TGLCamera
-        DepthOfView = 100.000000000000000000
-        FocalLength = 50.000000000000000000
+        DepthOfView = 100
+        FocalLength = 50
         TargetObject = GLDummyCube1
-        Position.Coordinates = {00000000000000400000A0400000803F}
-        Direction.Coordinates = {00000000000000000000803F00000000}
-        Up.Coordinates = {000000000000803F0000008000000000}
+        Position.Coordinates = {
+          00000000000000400000A0400000803F
+        }
+        Direction.Coordinates = {
+          00000000000000000000803F00000000
+        }
         object GLLightSource1: TGLLightSource
-          ConstAttenuation = 1.000000000000000000
-          SpotCutOff = 180.000000000000000000
+          ConstAttenuation = 1
+          SpotCutOff = 180
         end
       end
     end
     object GLActor1: TGLActor
-      Direction.Coordinates = {000000000000803F2EBD3BB300000000}
-      PitchAngle = 90.000000000000000000
-      Up.Coordinates = {000000002EBD3BB3000080BF00000000}
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'CgShaderMat'
+      Direction.Coordinates = {
+        000000000000803F2EBD3BB300000000
+      }
+      PitchAngle = 90
+      Up.Coordinates = {
+        000000002EBD3BB3000080BF00000000
+      }
       Interval = 100
     end
   end
@@ -59,29 +62,27 @@ object Form1: TForm1
     OnApplyFP = CgCellShaderApplyFP
     OnUnApplyFP = CgCellShaderUnApplyFP
     OnInitialize = CgCellShaderInitialize
-    Left = 40
-    Top = 40
+    left = 40
+    top = 40
   end
   object GLMaterialLibrary1: TGLMaterialLibrary
-    Materials = <
+    Materials = <    
       item
         Name = 'CgShaderMat'
         Material.Texture.Disabled = False
-        Tag = 0
         Shader = CgCellShader
       end>
-    Left = 40
-    Top = 8
+    left = 40
+    top = 8
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
-    Left = 8
-    Top = 40
+    left = 8
+    top = 40
   end
-  object AsyncTimer1: TAsyncTimer
-    Enabled = True
-    OnTimer = AsyncTimer1Timer
-    Left = 8
-    Top = 72
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+    top = 72
   end
 end

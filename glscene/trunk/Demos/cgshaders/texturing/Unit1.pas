@@ -13,8 +13,8 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLMisc, GLWin32Viewer, GLTexture, OpenGL1x,
+  LCLIntf, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, GLObjects, GLMisc, GLViewer, GLTexture, OpenGL1x,
   GLCgShader, Cg, cgGL, StdCtrls, VectorGeometry, GLCadencer, ExtCtrls, ComCtrls,
   GLGraph, jpeg, LResources, GLScene;
 
@@ -142,19 +142,19 @@ begin
     MemoFragCode.Lines.Assign(FragmentProgram.Code);
   end;
 
-  with GLMatLib do begin
+{  with GLMatLib do begin
     Materials[0].Material.Texture.Image.LoadFromFile('moon.bmp');
     Materials[1].Material.Texture.Image.LoadFromFile('clover.jpg');
     Materials[2].Material.Texture.Image.LoadFromFile('marbletiles.jpg');
     Materials[3].Material.Texture.Image.LoadFromFile('chrome_buckle.bmp');
-  end;
+  end;}
 end;
 
 procedure TForm1.CgShader1Initialize(CgShader: TCustomCgShader);
 begin
   // Due to parameter shadowing (ref. Cg Manual), parameters that doesn't change
   // once set can be assigned for once in the OnInitialize event. 
-  with CgShader.FragmentProgram, GLMatLib do begin
+  with TCgShader(CgShader).FragmentProgram, GLMatLib do begin
     ParamByName('Map0').SetToTextureOf(Materials[0]);
     ParamByName('Map1').SetToTextureOf(Materials[1]);
     ParamByName('Map2').SetToTextureOf(Materials[2]);
@@ -165,8 +165,8 @@ begin
   end;
 
   // Display profiles used
-  LabelVertProfile.Caption:='Using profile: ' + CgShader.VertexProgram.GetProfileString;
-  LabelFragProfile.Caption:='Using profile: ' + CgShader.FragmentProgram.GetProfileString;
+  LabelVertProfile.Caption:='Using profile: ' + TCgShader(CgShader).VertexProgram.GetProfileString;
+  LabelFragProfile.Caption:='Using profile: ' + TCgShader(CgShader).FragmentProgram.GetProfileString;
 end;
 
 procedure TForm1.CgShader1ApplyVP(CgProgram: TCgProgram; Sender: TObject);

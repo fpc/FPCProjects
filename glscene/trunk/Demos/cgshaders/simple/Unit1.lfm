@@ -7,6 +7,8 @@ object Form1: TForm1
   VertScrollBar.Page = 483
   ActiveControl = CBVertexProgram
   Caption = 'Cg Shader Demo'
+  ClientHeight = 484
+  ClientWidth = 759
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   KeyPreview = True
@@ -26,6 +28,8 @@ object Form1: TForm1
     Align = alLeft
     BevelInner = bvRaised
     BevelOuter = bvLowered
+    ClientHeight = 484
+    ClientWidth = 369
     TabOrder = 0
     object PageControl1: TPageControl
       Left = 2
@@ -41,10 +45,12 @@ object Form1: TForm1
       TabOrder = 0
       object TabSheet1: TTabSheet
         Caption = 'Vertex Program'
+        ClientHeight = 449
+        ClientWidth = 361
         object Splitter3: TSplitter
           Cursor = crVSplit
           Height = 3
-          Top = 339
+          Top = 342
           Width = 361
           Align = alBottom
           Color = clBtnShadow
@@ -56,21 +62,22 @@ object Form1: TForm1
           Width = 361
           Align = alTop
           BevelOuter = bvNone
+          ClientHeight = 25
+          ClientWidth = 361
           TabOrder = 0
           object LabelVertProfile: TLabel
             Left = 88
-            Height = 14
+            Height = 20
             Top = 5
-            Width = 73
+            Width = 84
             Caption = 'Using profile:'
-            Color = clNone
             ParentColor = False
           end
           object CBVertexProgram: TCheckBox
             Left = 6
-            Height = 24
+            Height = 18
             Top = 4
-            Width = 70
+            Width = 71
             Caption = 'Enabled'
             Font.CharSet = ANSI_CHARSET
             Font.Height = -11
@@ -80,11 +87,13 @@ object Form1: TForm1
           end
         end
         object Panel11: TPanel
-          Height = 314
+          Height = 317
           Top = 25
           Width = 361
           Align = alClient
           Caption = 'Panel6'
+          ClientHeight = 317
+          ClientWidth = 361
           TabOrder = 1
           object Panel12: TPanel
             Left = 1
@@ -100,7 +109,7 @@ object Form1: TForm1
           end
           object MemoVertCode: TMemo
             Left = 1
-            Height = 271
+            Height = 270
             Top = 17
             Width = 359
             Align = alClient
@@ -114,16 +123,18 @@ object Form1: TForm1
           end
           object Panel13: TPanel
             Left = 1
-            Height = 25
-            Top = 288
+            Height = 29
+            Top = 287
             Width = 359
             Align = alBottom
             BevelOuter = bvNone
+            ClientHeight = 29
+            ClientWidth = 359
             TabOrder = 2
             object ButtonApplyVP: TButton
               Left = 284
-              Height = 20
-              Top = 2
+              Height = 28
+              Top = 1
               Width = 67
               Anchors = [akTop, akRight]
               BorderSpacing.InnerBorder = 4
@@ -136,18 +147,19 @@ object Form1: TForm1
         end
         object Panel5: TPanel
           Height = 104
-          Top = 342
+          Top = 345
           Width = 361
           Align = alBottom
+          ClientHeight = 104
+          ClientWidth = 361
           TabOrder = 2
           object Label2: TLabel
-            Left = 283
-            Height = 14
+            Left = 280
+            Height = 20
             Top = 5
-            Width = 35
+            Width = 38
             Anchors = [akTop, akRight]
             Caption = 'Show:'
-            Color = clNone
             ParentColor = False
           end
           object Memo1: TMemo
@@ -168,7 +180,7 @@ object Form1: TForm1
           end
           object Button1: TButton
             Left = 286
-            Height = 18
+            Height = 34
             Top = 21
             Width = 64
             Anchors = [akTop, akRight]
@@ -179,8 +191,8 @@ object Form1: TForm1
           end
           object Button4: TButton
             Left = 286
-            Height = 18
-            Top = 42
+            Height = 30
+            Top = 64
             Width = 64
             Anchors = [akTop, akRight]
             BorderSpacing.InnerBorder = 4
@@ -192,11 +204,13 @@ object Form1: TForm1
       end
       object TabSheet2: TTabSheet
         Caption = 'Fragment Program'
+        ClientHeight = 449
+        ClientWidth = 361
         ImageIndex = 1
         object Splitter2: TSplitter
           Cursor = crVSplit
           Height = 3
-          Top = 339
+          Top = 342
           Width = 361
           Align = alBottom
           Color = clBtnShadow
@@ -208,6 +222,8 @@ object Form1: TForm1
           Width = 361
           Align = alTop
           BevelOuter = bvNone
+          ClientHeight = 25
+          ClientWidth = 361
           TabOrder = 0
           object LabelFragProfile: TLabel
             Left = 88
@@ -215,7 +231,6 @@ object Form1: TForm1
             Top = 5
             Width = 63
             Caption = 'Using profile:'
-            Color = clNone
             ParentColor = False
           end
           object CheckBox1: TCheckBox
@@ -229,11 +244,13 @@ object Form1: TForm1
           end
         end
         object Panel6: TPanel
-          Height = 314
+          Height = 317
           Top = 25
           Width = 361
           Align = alClient
           Caption = 'Panel6'
+          ClientHeight = 317
+          ClientWidth = 361
           TabOrder = 1
           object Panel7: TPanel
             Left = 1
@@ -249,7 +266,7 @@ object Form1: TForm1
           end
           object MemoFragCode: TMemo
             Left = 1
-            Height = 271
+            Height = 274
             Top = 17
             Width = 359
             Align = alClient
@@ -264,10 +281,12 @@ object Form1: TForm1
           object Panel3: TPanel
             Left = 1
             Height = 25
-            Top = 288
+            Top = 291
             Width = 359
             Align = alBottom
             BevelOuter = bvNone
+            ClientHeight = 25
+            ClientWidth = 359
             TabOrder = 2
             object ButtonApplyFP: TButton
               Left = 284
@@ -285,9 +304,11 @@ object Form1: TForm1
         end
         object Panel8: TPanel
           Height = 104
-          Top = 342
+          Top = 345
           Width = 361
           Align = alBottom
+          ClientHeight = 104
+          ClientWidth = 361
           TabOrder = 2
           object Label1: TLabel
             Left = 288
@@ -296,7 +317,6 @@ object Form1: TForm1
             Width = 30
             Anchors = [akTop, akRight]
             Caption = 'Show:'
-            Color = clNone
             ParentColor = False
           end
           object Memo3: TMemo
@@ -346,6 +366,8 @@ object Form1: TForm1
     Height = 484
     Width = 385
     Align = alClient
+    ClientHeight = 484
+    ClientWidth = 385
     Font.CharSet = ANSI_CHARSET
     Font.Height = -19
     Font.Name = 'Tahoma'
