@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="\"/>
+    <PathDelim Value="/"/>
     <Version Value="5"/>
     <General>
       <Flags>
@@ -28,10 +28,10 @@
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="GLSceneLazarus"/>
       </Item1>
       <Item2>
-        <PackageName Value="GLSceneLazarus"/>
+        <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
     <Units Count="4">
@@ -51,20 +51,20 @@
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="unit1.lrs"/>
         <UnitName Value="Unit1"/>
-        <CursorPos X="30" Y="128"/>
-        <TopLine Value="117"/>
+        <CursorPos X="24" Y="19"/>
+        <TopLine Value="9"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit1>
       <Unit2>
-        <Filename Value="D:\lazarus\lcl\include\application.inc"/>
+        <Filename Value="D:/lazarus/lcl/include/application.inc"/>
         <CursorPos X="1" Y="264"/>
         <TopLine Value="248"/>
         <UsageCount Value="10"/>
       </Unit2>
       <Unit3>
-        <Filename Value="..\..\..\..\lazarus\components\GLScene\Source\GLScene.pas"/>
+        <Filename Value="../../../../lazarus/components/GLScene/Source/GLScene.pas"/>
         <UnitName Value="GLScene"/>
         <CursorPos X="12" Y="6354"/>
         <TopLine Value="1"/>
@@ -75,9 +75,8 @@
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
-    <PathDelim Value="\"/>
     <SearchPaths>
-      <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
+      <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
     <CodeGeneration>
       <Generate Value="Faster"/>

@@ -3,23 +3,23 @@
 LazarusResources.Add('TForm1','FORMDATA',[
   'TPF0'#6'TForm1'#5'Form1'#4'Left'#3'&'#1#6'Height'#3'N'#1#3'Top'#3#130#0#5'Wi'
   +'dth'#3'<'#1#18'HorzScrollBar.Page'#3';'#1#18'VertScrollBar.Page'#3'M'#1#13
-  +'ActiveControl'#7#7'Button1'#7'Caption'#6#5'Form1'#11'Font.Height'#2#245#9'F'
-  +'ont.Name'#6#13'MS Sans Serif'#0#14'TGLSceneViewer'#14'GLSceneViewer1'#6'Hei'
-  +'ght'#3'N'#1#5'Width'#3'<'#1#6'Camera'#7#9'GLCamera1'#22'Buffer.BackgroundCo'
-  +'lor'#7#7'clBlack'#11'FieldOfView'#5#0#0#0#0#0#186'1'#222#4'@'#5'Align'#7#8
-  +'alClient'#11'OnMouseDown'#7#23'GLSceneViewer1MouseDown'#11'OnMouseMove'#7#23
-  +'GLSceneViewer1MouseMove'#0#0#7'TButton'#7'Button1'#4'Left'#3#136#0#6'Height'
-  +#2#25#3'Top'#2#8#5'Width'#3#163#0#25'BorderSpacing.InnerBorder'#2#4#7'Captio'
-  +'n'#6#26'Apply Cube Environment Map'#7'OnClick'#7#12'Button1Click'#8'TabOrde'
-  +'r'#2#0#0#0#8'TGLScene'#8'GLScene1'#4'left'#2#8#3'top'#2#8#0#12'TGLDummyCube'
-  +#10'DummyCube1'#8'CubeSize'#5#0#0#0#0#0#205#204#204#254'?'#16'VisibleAtRunTi'
-  +'me'#9#0#0#14'TGLLightSource'#14'GLLightSource1'#16'ConstAttenuation'#5#0#0#0
-  +#0#0#0#0#128#255'?'#20'Position.Coordinates'#10#16#0#0#0#0#0#224'@'#0#0#160
-  +'@'#0#0'@@'#0#0#128'?'#10'SpotCutOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#9'TGLTeap'
-  +'ot'#7'Teapot1'#28'Material.Texture.TextureMode'#7#9'tmReplace0Material.Text'
-  +'ure.MappingTCoordinates.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0
-  +#0#0#0#0#0#0#9'TGLCamera'#9'GLCamera1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5
-  +'@'#11'FocalLength'#5#0#0#0#0#0#0#0#150#7'@'#12'TargetObject'#7#7'Teapot1'#20
-  +'Position.Coordinates'#10#16#0#0#0#0#0'@@'#0#0#160'@'#0#0#224'@'#0#0#128'?'#0
-  +#0#0#0
+  +'ActiveControl'#7#7'Button1'#7'Caption'#6#5'Form1'#12'ClientHeight'#3'N'#1#11
+  +'ClientWidth'#3'<'#1#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#0
+  +#14'TGLSceneViewer'#14'GLSceneViewer1'#6'Height'#3'N'#1#5'Width'#3'<'#1#6'Ca'
+  +'mera'#7#9'GLCamera1'#22'Buffer.BackgroundColor'#7#7'clBlack'#11'FieldOfView'
+  +#5#0#0#0#0#0#186'1'#222#4'@'#5'Align'#7#8'alClient'#11'OnMouseDown'#7#23'GLS'
+  +'ceneViewer1MouseDown'#11'OnMouseMove'#7#23'GLSceneViewer1MouseMove'#0#0#7'T'
+  +'Button'#7'Button1'#4'Left'#3#136#0#6'Height'#2#25#3'Top'#2#8#5'Width'#3#163
+  +#0#25'BorderSpacing.InnerBorder'#2#4#7'Caption'#6#26'Apply Cube Environment '
+  +'Map'#7'OnClick'#7#12'Button1Click'#8'TabOrder'#2#0#0#0#8'TGLScene'#8'GLScen'
+  +'e1'#4'left'#2#8#3'top'#2#8#0#12'TGLDummyCube'#10'DummyCube1'#8'CubeSize'#5#0
+  +#0#0#0#0#205#204#204#254'?'#16'VisibleAtRunTime'#9#0#0#14'TGLLightSource'#14
+  +'GLLightSource1'#16'ConstAttenuation'#5#0#0#0#0#0#0#0#128#255'?'#20'Position'
+  +'.Coordinates'#10#16#0#0#0#0#0#224'@'#0#0#160'@'#0#0'@@'#0#0#128'?'#10'SpotC'
+  +'utOff'#5#0#0#0#0#0#0#0#180#6'@'#0#0#9'TGLTeapot'#7'Teapot1'#28'Material.Tex'
+  +'ture.TextureMode'#7#9'tmReplace0Material.Texture.MappingTCoordinates.Coordi'
+  +'nates'#10#16#0#0#0#0#0#0#0#0#0#128'?'#0#0#0#0#0#0#0#0#0#0#9'TGLCamera'#9'GL'
+  +'Camera1'#11'DepthOfView'#5#0#0#0#0#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0
+  +#0#0#0#150#7'@'#12'TargetObject'#7#7'Teapot1'#20'Position.Coordinates'#10#16
+  +#0#0#0#0#0'@@'#0#0#160'@'#0#0#224'@'#0#0#128'?'#0#0#0#0
 ]);

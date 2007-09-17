@@ -53,10 +53,10 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  SysUtils, Classes, Graphics, Controls, Forms,
   GLScene, GLObjects, GLMisc, GLExtrusion, GLMirror, GLMultiPolygon,
   ExtCtrls, GLCadencer, StdCtrls, GLTeapot, GLGeomObjects,
-  LResources, GLLCLViewer;
+  LResources, GLViewer;
 
 type
 
@@ -118,8 +118,8 @@ implementation
 procedure TForm1.CBOpaqueClick(Sender: TObject);
 begin
    if CBOpaque.Checked then
-      GLMirror.MirrorOptions:=GLMirror.MirrorOptions+[moOpaque]
-   else GLMirror.MirrorOptions:=GLMirror.MirrorOptions-[moOpaque];
+      GLMirror.MirrorOptions:=GLMirror.MirrorOptions-[moOpaque]
+   else GLMirror.MirrorOptions:=GLMirror.MirrorOptions+[moOpaque];
 end;
 
 procedure TForm1.CBStencilClick(Sender: TObject);

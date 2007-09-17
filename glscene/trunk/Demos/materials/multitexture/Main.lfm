@@ -1,13 +1,15 @@
 object Form1: TForm1
   Left = 276
-  Height = 409
+  Height = 431
   Top = 149
   Width = 559
   HorzScrollBar.Page = 558
-  VertScrollBar.Page = 408
+  VertScrollBar.Page = 430
   ActiveControl = TrackBar1
   BorderStyle = bsSingle
   Caption = 'Multitexture'
+  ClientHeight = 431
+  ClientWidth = 559
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
@@ -28,38 +30,34 @@ object Form1: TForm1
   end
   object Label1: TLabel
     Left = 416
-    Height = 14
+    Height = 20
     Top = 40
-    Width = 80
+    Width = 89
     Caption = 'Texture Map 1'
-    Color = clNone
     ParentColor = False
   end
   object Label2: TLabel
     Left = 416
-    Height = 14
+    Height = 20
     Top = 192
-    Width = 80
+    Width = 89
     Caption = 'Texture Map 2'
-    Color = clNone
     ParentColor = False
   end
   object Label3: TLabel
     Left = 416
-    Height = 14
+    Height = 20
     Top = 368
-    Width = 69
+    Width = 79
     Caption = 'Map 2 Scale'
-    Color = clNone
     ParentColor = False
   end
   object Label4: TLabel
     Left = 432
-    Height = 14
+    Height = 22
     Top = 8
-    Width = 121
+    Width = 110
     Caption = 'MultiTexture'
-    Color = clNone
     Font.CharSet = ANSI_CHARSET
     Font.Height = -16
     Font.Name = 'Arial'
@@ -89,9 +87,9 @@ object Form1: TForm1
   end
   object CBClampTex2: TCheckBox
     Left = 416
-    Height = 24
+    Height = 19
     Top = 344
-    Width = 115
+    Width = 122
     Caption = 'Clamp Texture 2'
     OnClick = CBClampTex2Click
     TabOrder = 1

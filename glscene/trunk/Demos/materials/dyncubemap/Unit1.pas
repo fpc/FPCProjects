@@ -28,7 +28,7 @@ uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLScene, GLMisc, StdCtrls, GLSkydome,
   ExtCtrls, GLCadencer, GLParticleFX, OpenGL1x, GLTeapot, GLGeomObjects,
-  LResources, GLLCLViewer;
+  LResources, GLViewer;
 
 type
 

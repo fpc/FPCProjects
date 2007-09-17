@@ -5,7 +5,10 @@ object Form1: TForm1
   Width = 413
   HorzScrollBar.Page = 412
   VertScrollBar.Page = 370
+  ActiveControl = CBDynamic
   Caption = 'Form1'
+  ClientHeight = 371
+  ClientWidth = 413
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = Form1Create
@@ -15,9 +18,7 @@ object Form1: TForm1
     Width = 413
     Camera = GLCamera1
     Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 147.759582519531
+    FieldOfView = 147.759567260742
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
@@ -27,6 +28,8 @@ object Form1: TForm1
     Width = 413
     Align = alTop
     BevelOuter = bvLowered
+    ClientHeight = 25
+    ClientWidth = 413
     FullRepaint = False
     TabOrder = 0
     object CBDynamic: TCheckBox
@@ -159,8 +162,6 @@ object Form1: TForm1
     Width = 128
     Height = 128
     Buffer.BackgroundColor = clMaroon
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
     left = 40
     top = 32
   end

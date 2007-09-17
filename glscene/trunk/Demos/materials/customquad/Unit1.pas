@@ -14,9 +14,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs, GLColor,
   GLCadencer, GLScene, GLObjects, GLTexture, GLMisc, GLBehaviours,
-  GLLCLViewer, GLGeomObjects, LResources;
+  GLViewer, GLGeomObjects, LResources;
 
 type
   TForm1 = class(TForm)
@@ -49,9 +49,9 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
    // dynamically create 2 materials and load 2 textures
    with GLMaterialLibrary do begin
-      with AddTextureMaterial('wood', '..\..\media\ashwood.jpg') do
+      with AddTextureMaterial('wood', '..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'ashwood.jpg') do
          Material.FrontProperties.Emission.Color:=clrGray50;
-      with AddTextureMaterial('stone', '..\..\media\walkway.jpg') do
+      with AddTextureMaterial('stone', '..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'walkway.jpg') do
          Material.FrontProperties.Emission.Color:=clrGray50;
    end;
 end;

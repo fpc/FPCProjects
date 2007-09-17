@@ -1,24 +1,22 @@
 object Form1: TForm1
+  Left = 275
+  Height = 368
+  Top = 129
+  Width = 452
+  HorzScrollBar.Page = 451
+  VertScrollBar.Page = 367
   Caption = 'Form1'
   ClientHeight = 368
   ClientWidth = 452
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 451
-  VertScrollBar.Page = 367
-  Left = 275
-  Height = 368
-  Top = 129
-  Width = 452
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    FieldOfView = 135.64752197265625
-    Align = alClient
     Height = 368
     Width = 452
+    Camera = GLCamera1
+    FieldOfView = 135.647521972656
+    Align = alClient
   end
   object GLScene1: TGLScene
     left = 8
@@ -31,19 +29,16 @@ object Form1: TForm1
         000009020008020008
       }
       object DirectOpenGL1: TGLDirectOpenGL
-        OnRender = DirectOpenGL1Render
         Direction.Coordinates = {
           000000000000803F2EBD3BB300000000
         }
         Up.Coordinates = {
           000000002EBD3BB3000080BF00000000
         }
+        OnRender = DirectOpenGL1Render
       end
     end
     object Torus1: TGLTorus
-      MajorRadius = 1.299999952316284
-      MinorRadius = 0.100000001490116
-      Rings = 36
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
@@ -53,6 +48,9 @@ object Form1: TForm1
       Up.Coordinates = {
         000000002EBD3BB3000080BF00000000
       }
+      MajorRadius = 1.29999995231628
+      MinorRadius = 0.10000000149011
+      Rings = 36
       BehavioursData = {
         0201060B54474C42496E657274696102000200050000000000000080FF3F0200
         08050000000000000000000005000000000000000000000500000000000000F0

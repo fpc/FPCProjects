@@ -34,9 +34,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLScene, GLMisc, GLObjects, StdCtrls, GLCadencer, GLBehaviours, GLTexture,
-  VectorGeometry, GLGeomObjects, LResources, GLLCLViewer;
+  VectorGeometry, GLGeomObjects, LResources, GLViewer;
 
 type
 
@@ -50,8 +50,8 @@ type
     Cone1: TGLCone;
     DCCentral: TGLDummyCube;
     CentralSphere: TGLSphere;
+    Memo1: TMemo;
     Torus1: TGLTorus;
-    Label1: TLabel;
     RBSTC: TRadioButton;
     RBTSC: TRadioButton;
     RBTCS: TRadioButton;
