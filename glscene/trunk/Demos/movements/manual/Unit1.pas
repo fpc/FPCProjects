@@ -19,7 +19,7 @@ interface
 
 uses
   LCLType, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
-  Classes, Controls, Dialogs, GLLCLViewer, LResources,
+  Classes, Controls, Dialogs, GLViewer, LResources,
   GLScene, GLCadencer;
 
 type

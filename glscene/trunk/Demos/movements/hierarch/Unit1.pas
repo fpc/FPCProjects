@@ -18,7 +18,7 @@ interface
 
 uses
   LCLType, Forms, GLObjects, ComCtrls, GLMisc, ExtCtrls, StdCtrls,
-  AsyncTimer, Classes, Controls,  LResources, GLScene,
+  SysUtils, Classes, Controls,  LResources, GLScene,
   GLCadencer, GLViewer;
 
 type
@@ -54,9 +54,6 @@ var
   Form1: TForm1;
 
 implementation
-
-
-uses Math, SysUtils;
 
 procedure TForm1.TrackBarChange(Sender: TObject);
 var

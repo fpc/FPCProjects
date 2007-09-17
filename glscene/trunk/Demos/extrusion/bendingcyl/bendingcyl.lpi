@@ -28,10 +28,10 @@
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="GLSceneLazarus"/>
+        <PackageName Value="LCL"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
     <Units Count="3">
@@ -51,7 +51,7 @@
         <ResourceFilename Value="unit1.lrs"/>
         <UnitName Value="Unit1"/>
         <CursorPos X="17" Y="22"/>
-        <TopLine Value="76"/>
+        <TopLine Value="73"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>

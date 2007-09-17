@@ -14,8 +14,8 @@ interface
 
 uses
   LCLIntf, Forms, GLObjects, GLMisc, GLTexture, VectorGeometry, ExtCtrls,
-  Classes, Controls, GLSpaceText, GLShadowPlane, GLShadowVolume, LResources,
-  GLScene, GLCadencer, GLWin32Viewer;
+  Classes, Controls, GLShadowPlane, GLShadowVolume, LResources,
+  GLScene, GLCadencer, GLViewer;
 
 type
 
@@ -34,7 +34,6 @@ type
 	 GLLightSource1: TGLLightSource;
 	 GLMaterialLibrary1: TGLMaterialLibrary;
     Pad: TGLCube;
-    SpaceText1: TGLSpaceText;
     Timer1: TTimer;
     GLCadencer1: TGLCadencer;
     GLShadowVolume: TGLShadowVolume;
@@ -128,7 +127,6 @@ begin
 				ballVector[1]:=ballVector[1]+0.1;
 				// ...and of course a point is scored !
 				Inc(score);
-				SpaceText1.Text:=Format('%.3d', [score]);
 			end else begin
 				// ball missed !
 				gameOver:=True;

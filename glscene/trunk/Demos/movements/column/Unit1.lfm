@@ -6,6 +6,8 @@ object Form1: TForm1
   HorzScrollBar.Page = 218
   VertScrollBar.Page = 368
   Caption = 'Form1'
+  ClientHeight = 369
+  ClientWidth = 219
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
@@ -48,7 +50,7 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
-    Mode = cmapplicationidle
+    Mode = cmApplicationIdle
     OnProgress = GLCadencer1Progress
     left = 8
     top = 72

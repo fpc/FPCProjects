@@ -29,7 +29,7 @@ interface
 
 uses
   LCLType, Forms, GLMisc, GLObjects, GLTexture, Classes, Controls,
-  ExtCtrls, StdCtrls, GLLCLViewer, LResources,
+  ExtCtrls, StdCtrls, GLViewer, LResources, GLColor,
   GLScene, GLCadencer, VectorGeometry;
 
 type
