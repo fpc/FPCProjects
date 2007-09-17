@@ -13,20 +13,20 @@ object Form1: TForm1
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   object GLSceneViewer1: TGLSceneViewer
-    Height = 382
+    Height = 386
     Top = 38
     Width = 526
     Camera = GLCamera1
     Buffer.BackgroundColor = clSilver
     Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
-    FieldOfView = 51.0489501953125
+    FieldOfView = 51.5146179199218
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
   end
   object StatusBar1: TStatusBar
-    Height = 21
-    Top = 420
+    Height = 17
+    Top = 424
     Width = 526
     Panels = <    
       item
@@ -291,7 +291,6 @@ object Form1: TForm1
       Top = 14
       Width = 74
       Caption = 'Animation :'
-      Color = clNone
       ParentColor = False
     end
     object CBAnimations: TComboBox

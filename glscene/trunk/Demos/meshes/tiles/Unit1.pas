@@ -22,8 +22,8 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, GLObjects, GLGraph, GLScene, GLMisc, GLWin32Viewer,
+  SysUtils, Classes, Graphics, Controls, Forms, LCLType, LCLIntf,
+  Dialogs, ExtCtrls, GLObjects, GLGraph, GLScene, GLMisc, GLViewer,
   VectorGeometry, GLTilePlane, GLTexture, GLCadencer, Jpeg, StdCtrls,
   OpenGL1x, LResources;
 
@@ -134,7 +134,7 @@ begin
       GLSceneViewer1.Cursor:=crDefault
    else GLSceneViewer1.Cursor:=crHandPoint;
 
-   GetCursorPos(mp);
+   mp := Mouse.CursorPos;
    mp:=GLSceneViewer1.ScreenToClient(mp);
    if PtInRect(GLSceneViewer1.ClientRect, mp) then begin
       GLSceneViewer1.Buffer.ScreenVectorIntersectWithPlaneXY(
@@ -187,12 +187,12 @@ end;
 
 procedure TForm1.CBShowGridClick(Sender: TObject);
 begin
-   GLXYZGrid.Visible:=CBShowGrid.Checked;
+   GLXYZGrid.Visible:=not CBShowGrid.Checked;
 end;
 
 procedure TForm1.CBSortByMaterialsClick(Sender: TObject);
 begin
-   GLTilePlane.SortByMaterials:=CBSortByMaterials.Checked;
+   GLTilePlane.SortByMaterials:= not CBSortByMaterials.Checked;
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);

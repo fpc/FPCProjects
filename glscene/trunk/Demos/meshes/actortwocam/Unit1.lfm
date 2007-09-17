@@ -7,6 +7,8 @@ object Form1: TForm1
   VertScrollBar.Page = 441
   ActiveControl = CBMouseLook
   Caption = 'Form1'
+  ClientHeight = 442
+  ClientWidth = 665
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   KeyPreview = True
@@ -17,9 +19,7 @@ object Form1: TForm1
     Width = 665
     Camera = GLCamera2
     Buffer.BackgroundColor = clGreen
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 126.984260559082
+    FieldOfView = 126.984252929687
     Align = alClient
   end
   object Panel1: TPanel
@@ -27,6 +27,8 @@ object Form1: TForm1
     Width = 665
     Align = alTop
     BevelOuter = bvLowered
+    ClientHeight = 41
+    ClientWidth = 665
     Font.Height = -11
     Font.Name = 'Arial'
     FullRepaint = False
@@ -37,7 +39,6 @@ object Form1: TForm1
       Top = 20
       Width = 90
       Caption = 'F7 Third Person'
-      Color = clNone
       ParentColor = False
     end
     object Label4: TLabel
@@ -46,7 +47,6 @@ object Form1: TForm1
       Top = 20
       Width = 85
       Caption = 'F8 First Person'
-      Color = clNone
       Font.CharSet = ANSI_CHARSET
       Font.Height = 12
       ParentColor = False
@@ -57,7 +57,6 @@ object Form1: TForm1
       Top = 6
       Width = 369
       Caption = 'Move with arrow keys, strafe with CTRL, run with SHIFT, ESC to exit'
-      Color = clNone
       ParentColor = False
     end
     object CBMouseLook: TCheckBox

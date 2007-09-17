@@ -29,7 +29,7 @@ uses
   LCLType, GLCadencer, GLVectorFileObjects, GLScene, GLObjects, GLMisc,
   StdCtrls, Buttons, Controls, ExtCtrls, ComCtrls, Classes, Forms, Graphics,
   GLSkydome,  GLNavigator, GLFileMD2, GLFile3DS,
-  GLGeomObjects, LResources, GLLCLViewer, GLKeyboard;
+  GLGeomObjects, LResources, GLViewer, GLKeyboard;
 
 type
 

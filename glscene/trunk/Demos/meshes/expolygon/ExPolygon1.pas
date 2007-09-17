@@ -10,9 +10,9 @@ unit ExPolygon1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   VectorGeometry, GLTexture, GLScene, GLObjects, GLGeomObjects, GLMisc, GLMultiPolygon,
-  LResources, GLLCLViewer;
+  LResources, GLViewer;
 
 type
   TVektor = record

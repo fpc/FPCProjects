@@ -17,10 +17,10 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLVectorFileObjects, GLObjects, GLMisc,
   ExtCtrls, ComCtrls, StdCtrls, GLTexture, LResources, GLCadencer,
-  GLWin32Viewer;
+  GLViewer;
 
 type
 
@@ -66,9 +66,9 @@ var
   cp : TAffineVectorList;
 begin
   // Load the nurbs data
-  GLActor1.LoadFromFile('..\..\media\duck1.nurbs');
-  GLActor1.AddDataFromFile('..\..\media\duck2.nurbs');
-  GLActor1.AddDataFromFile('..\..\media\duck3.nurbs');
+  GLActor1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'duck1.nurbs');
+  GLActor1.AddDataFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'duck2.nurbs');
+  GLActor1.AddDataFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'duck3.nurbs');
 
   { Translate Actor based on the first mesh object's average
     control point. Quick and dirty ... or maybe just dirty :P }

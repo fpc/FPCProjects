@@ -20,9 +20,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLVectorFileObjects, GLMisc, GLObjects, GLBehaviours, GLCadencer,
-  StdCtrls, ExtCtrls, GLGeomObjects, LResources, GLWin32Viewer,
+  StdCtrls, ExtCtrls, GLGeomObjects, LResources, GLViewer,
   Buttons, GLScene;
 
 type
@@ -72,9 +72,9 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
 //   Randomize;
    // Load mushroom mesh
-   FreeForm1.LoadFromFile('..\..\media\mushroom.3ds');
+   FreeForm1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'mushroom.3ds');
    // Load ground texture
-   Disk1.Material.Texture.Image.LoadFromFile('..\..\media\clover.jpg');
+   Disk1.Material.Texture.Image.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'clover.jpg');
    // Duplicate our reference mushroom (but not its mesh data !)
    AddMushrooms;
 end;

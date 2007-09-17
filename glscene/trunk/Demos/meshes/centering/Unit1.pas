@@ -11,9 +11,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLScene, GLVectorFileObjects, GLObjects, GLMisc, ComCtrls, StdCtrls,
-  GLLCLViewer, GLFile3DS, LResources, GLCadencer;
+  GLViewer, GLFile3DS, LResources, GLCadencer;
 
 type
 
@@ -52,7 +52,7 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 const
-   cFileName = '..\..\media\polyhedron.3ds';
+   cFileName = '..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'polyhedron.3ds';
 begin
    // left one
    FreeForm3.AutoCentering:=[macCenterX, macCenterZ];

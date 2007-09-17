@@ -1,81 +1,66 @@
 object Form1: TForm1
+  Left = 258
+  Height = 435
+  Top = 160
+  Width = 666
+  HorzScrollBar.Page = 665
+  VertScrollBar.Page = 434
+  ActiveControl = TrackBar1
   Caption = 'Form1'
   ClientHeight = 435
   ClientWidth = 666
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 665
-  VertScrollBar.Page = 434
-  Left = 258
-  Height = 435
-  Top = 160
-  Width = 666
   object Panel1: TPanel
+    Height = 435
+    Width = 161
     Align = alLeft
-    BorderSpacing.OnChange = nil
     ClientHeight = 435
     ClientWidth = 161
     FullRepaint = False
     TabOrder = 0
     OnClick = Panel1Click
-    Height = 435
-    Width = 161
     object Label1: TLabel
-      BorderSpacing.OnChange = nil
-      Caption = 'Resolution'
-      Color = clNone
       Left = 16
-      Height = 13
+      Height = 20
       Top = 32
-      Width = 50
+      Width = 66
+      Caption = 'Resolution'
+      ParentColor = False
     end
     object TrackBar1: TTrackBar
-      BorderSpacing.OnChange = nil
-      Frequency = 1
-      Max = 50
-      Min = 1
-      OnChange = TrackBar1Change
-      Position = 20
-      ScalePos = trTop
-      TabOrder = 0
-      TickStyle = tsManual
-      Frequency = 1
-      Max = 50
-      Min = 1
-      OnChange = TrackBar1Change
-      Position = 20
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 16
-      Height = 25
+      Height = 35
       Top = 48
       Width = 129
+      Max = 50
+      Min = 1
+      OnChange = TrackBar1Change
+      Position = 20
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 0
     end
     object CheckBox1: TCheckBox
-      BorderSpacing.OnChange = nil
+      Left = 16
+      Height = 19
+      Top = 88
+      Width = 84
       Caption = 'Wireframe'
       OnClick = CheckBox1Click
       TabOrder = 1
-      Left = 16
-      Height = 17
-      Top = 80
-      Width = 97
     end
   end
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 154.10697937011719
-    Align = alClient
-    OnMouseDown = GLSceneViewer1MouseDown
-    OnMouseMove = GLSceneViewer1MouseMove
     Left = 161
     Height = 435
     Width = 505
+    Camera = GLCamera1
+    FieldOfView = 154.106979370117
+    Align = alClient
+    OnMouseDown = GLSceneViewer1MouseDown
+    OnMouseMove = GLSceneViewer1MouseMove
   end
   object GLScene1: TGLScene
     left = 8
@@ -105,7 +90,6 @@ object Form1: TForm1
       end
     end
     object GLActor1: TGLActor
-      Interval = 100
       Material.BackProperties.PolygonMode = pmLines
       Material.FrontProperties.Diffuse.Color = {
         0000803F0000803F000000000000803F
@@ -114,6 +98,7 @@ object Form1: TForm1
       Material.FrontProperties.Specular.Color = {
         0000803F0000803F0000803F0000803F
       }
+      Interval = 100
     end
   end
   object GLCadencer1: TGLCadencer

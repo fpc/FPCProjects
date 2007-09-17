@@ -31,9 +31,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLVectorFileObjects, GLMisc, GLScene, StdCtrls, GLObjects, GLTexture,
-  ExtCtrls, GLLCLViewer, GLGraph, ComCtrls, GLFileSMD, LResources,
+  ExtCtrls, GLViewer, GLGraph, ComCtrls, GLFileSMD, LResources,
   GLCadencer, Buttons, JPEG;
 
 type
@@ -94,7 +94,7 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-   SetCurrentDir(ExtractFilePath(Application.ExeName)+'../../media');
+   SetCurrentDir(ExtractFilePath(Application.ExeName)+'..' + PathDelim + '..' + PathDelim + 'media');
    // We load the SMD model here
    // Note the actor was linked to a material library, and textures are loaded
    // automatically (4 textures are used by this model)

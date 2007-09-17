@@ -1,37 +1,33 @@
 object Form1: TForm1
+  Left = 503
+  Height = 328
+  Top = 237
+  Width = 413
+  HorzScrollBar.Page = 412
+  VertScrollBar.Page = 327
+  ActiveControl = Button1
   Caption = 'OpenGL Feedback into a GLFreeForm'
   ClientHeight = 328
   ClientWidth = 413
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 412
-  VertScrollBar.Page = 327
-  Left = 503
-  Height = 328
-  Top = 237
-  Width = 413
   object GLSceneViewer1: TGLSceneViewer
+    Height = 328
+    Width = 413
     Camera = GLCamera1
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 146.08937072753906
+    FieldOfView = 146.089370727539
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 328
-    Width = 413
   end
   object Button1: TButton
-    BorderSpacing.InnerBorder = 2
-    Caption = 'Build Mesh'
-    OnClick = Button1Click
-    TabOrder = 0
     Left = 152
     Height = 25
     Top = 8
     Width = 75
+    Caption = 'Build Mesh'
+    OnClick = Button1Click
+    TabOrder = 0
   end
   object GLScene1: TGLScene
     left = 8
@@ -58,8 +54,8 @@ object Form1: TForm1
       Mode = fm3DColorTexture
       Visible = False
       object MeshObject1: TGLDummyCube
-        CubeSize = 1
         Visible = False
+        CubeSize = 1
         object GLCube1: TGLCube
           Position.Coordinates = {
             CDCC0CBFCDCC0CBF000000000000803F
@@ -72,13 +68,13 @@ object Form1: TForm1
         end
       end
       object MeshObject2: TGLDummyCube
-        CubeSize = 1
         Visible = False
+        CubeSize = 1
         object GLSphere1: TGLSphere
-          Radius = 0.5
           Position.Coordinates = {
             00000000CDCC0C3F000000000000803F
           }
+          Radius = 0.5
         end
       end
     end

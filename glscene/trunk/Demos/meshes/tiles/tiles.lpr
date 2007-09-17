@@ -6,7 +6,7 @@ uses
   Interfaces,
   Forms,
   Unit1 in 'Unit1.pas' {Form1},
-  GLTilePlane in '..\..\Source\GLTilePlane.pas';
+  GLTilePlane;
 
 begin
   Application.Initialize;

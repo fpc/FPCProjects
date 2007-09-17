@@ -1,357 +1,303 @@
 object Form1: TForm1
+  Left = 244
+  Height = 550
+  Top = 112
+  Width = 736
+  HorzScrollBar.Page = 735
+  VertScrollBar.Page = 526
+  ActiveControl = TrackBar1
   Caption = 'GLTree Editor'
-  ClientHeight = 531
+  ClientHeight = 527
   ClientWidth = 736
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Menu = MainMenu1
   OnCreate = FormCreate
-  PixelsPerInch = 96
   Position = poScreenCenter
-  TextHeight = 13
-  HorzScrollBar.Page = 735
-  VertScrollBar.Page = 530
-  Left = 244
-  Height = 550
-  Top = 112
-  Width = 736
   object GLSceneViewer1: TGLSceneViewer
+    Left = 153
+    Height = 527
+    Width = 583
     Camera = GLCamera1
-    FieldOfView = 158.66949462890625
+    FieldOfView = 158.511352539062
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Left = 153
-    Height = 531
-    Width = 583
   end
   object Panel1: TPanel
+    Height = 527
+    Width = 153
     Align = alLeft
-    ClientHeight = 531
+    ClientHeight = 527
     ClientWidth = 153
     FullRepaint = False
     TabOrder = 0
-    Height = 531
-    Width = 153
     object Label1: TLabel
-      Caption = 'Branch Twist'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 112
-      Width = 62
+      Width = 79
+      Caption = 'Branch Twist'
+      ParentColor = False
     end
     object Label2: TLabel
-      Caption = 'Depth'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 32
-      Width = 29
+      Width = 40
+      Caption = 'Depth'
+      ParentColor = False
     end
     object Label3: TLabel
-      Caption = 'Branch Angle'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 152
-      Width = 64
+      Width = 86
+      Caption = 'Branch Angle'
+      ParentColor = False
     end
     object Label4: TLabel
-      Caption = 'Branch Angle Bias'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 192
-      Width = 87
+      Width = 117
+      Caption = 'Branch Angle Bias'
+      ParentColor = False
     end
     object Label5: TLabel
-      Caption = 'Branch Size'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 232
-      Width = 57
+      Width = 77
+      Caption = 'Branch Size'
+      ParentColor = False
     end
     object Label6: TLabel
-      Caption = 'Branch Radius'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 272
-      Width = 70
+      Width = 92
+      Caption = 'Branch Radius'
+      ParentColor = False
     end
     object Label7: TLabel
-      Caption = 'Branch Noise'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 360
-      Width = 64
+      Width = 86
+      Caption = 'Branch Noise'
+      ParentColor = False
     end
     object Label8: TLabel
-      Caption = 'Leaf Size'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 440
-      Width = 44
+      Width = 59
+      Caption = 'Leaf Size'
+      ParentColor = False
     end
     object Label9: TLabel
-      Caption = 'Leaf Threshold'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 480
-      Width = 71
+      Width = 94
+      Caption = 'Leaf Threshold'
+      ParentColor = False
     end
     object Label10: TLabel
-      Caption = 'Branch Facets'
-      Color = clNone
-      FocusControl = GLSceneViewer1
       Left = 8
-      Height = 13
+      Height = 20
       Top = 72
-      Width = 69
+      Width = 91
+      Caption = 'Branch Facets'
+      FocusControl = GLSceneViewer1
+      ParentColor = False
     end
     object Label11: TLabel
+      Left = 8
+      Height = 20
+      Top = 8
+      Width = 127
       Caption = 'Tree properties'
-      Color = clNone
       Font.CharSet = ANSI_CHARSET
       Font.Height = -13
       Font.Name = 'Verdana'
       Font.Style = [fsBold]
-      Left = 8
-      Height = 16
-      Top = 8
-      Width = 111
+      ParentColor = False
     end
     object Label12: TLabel
-      Caption = 'Random Seed'
-      Color = clNone
       Left = 8
-      Height = 13
+      Height = 20
       Top = 312
-      Width = 68
+      Width = 91
+      Caption = 'Random Seed'
+      ParentColor = False
     end
     object TrackBar1: TTrackBar
+      Left = 8
+      Height = 17
+      Top = 48
+      Width = 137
       Max = 15
       OnChange = TrackBar1Change
       Position = 10
       ScalePos = trTop
       TabOrder = 0
-      Max = 15
-      OnChange = TrackBar1Change
-      Position = 10
-      ScalePos = trTop
-      Left = 8
-      Height = 17
-      Top = 48
-      Width = 137
     end
     object TrackBar2: TTrackBar
-      Max = 180
-      OnChange = TrackBar2Change
-      Position = 45
-      ScalePos = trTop
-      TabOrder = 1
-      TickStyle = tsManual
-      Max = 180
-      OnChange = TrackBar2Change
-      Position = 45
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 128
       Width = 137
+      Max = 180
+      OnChange = TrackBar2Change
+      Position = 45
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 1
     end
     object TrackBar3: TTrackBar
-      Max = 100
-      OnChange = TrackBar3Change
-      Position = 40
-      ScalePos = trTop
-      TabOrder = 2
-      TickStyle = tsManual
-      Max = 100
-      OnChange = TrackBar3Change
-      Position = 40
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 168
       Width = 137
+      Max = 100
+      OnChange = TrackBar3Change
+      Position = 40
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 2
     end
     object TrackBar4: TTrackBar
-      Max = 100
-      OnChange = TrackBar4Change
-      Position = 60
-      ScalePos = trTop
-      TabOrder = 3
-      TickStyle = tsManual
-      Max = 100
-      OnChange = TrackBar4Change
-      Position = 60
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 208
       Width = 137
+      Max = 100
+      OnChange = TrackBar4Change
+      Position = 60
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 3
     end
     object TrackBar5: TTrackBar
-      Max = 100
-      OnChange = TrackBar5Change
-      Position = 10
-      ScalePos = trTop
-      TabOrder = 4
-      TickStyle = tsManual
-      Max = 100
-      OnChange = TrackBar5Change
-      Position = 10
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 248
       Width = 137
+      Max = 100
+      OnChange = TrackBar5Change
+      Position = 10
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 4
     end
     object TrackBar6: TTrackBar
-      Max = 25
-      OnChange = TrackBar6Change
-      Position = 3
-      ScalePos = trTop
-      TabOrder = 5
-      TickStyle = tsManual
-      Max = 25
-      OnChange = TrackBar6Change
-      Position = 3
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 288
       Width = 137
+      Max = 25
+      OnChange = TrackBar6Change
+      Position = 3
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 5
     end
     object TrackBar7: TTrackBar
-      Max = 100
-      OnChange = TrackBar7Change
-      Position = 70
-      ScalePos = trTop
-      TabOrder = 6
-      TickStyle = tsManual
-      Max = 100
-      OnChange = TrackBar7Change
-      Position = 70
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 376
       Width = 137
+      Max = 100
+      OnChange = TrackBar7Change
+      Position = 70
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 6
     end
     object TrackBar8: TTrackBar
-      Max = 100
-      OnChange = TrackBar8Change
-      Position = 20
-      ScalePos = trTop
-      TabOrder = 7
-      TickStyle = tsManual
-      Max = 100
-      OnChange = TrackBar8Change
-      Position = 20
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 456
       Width = 137
+      Max = 100
+      OnChange = TrackBar8Change
+      Position = 20
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 7
     end
     object TrackBar9: TTrackBar
-      Max = 100
-      OnChange = TrackBar9Change
-      Position = 20
-      ScalePos = trTop
-      TabOrder = 8
-      TickStyle = tsManual
-      Max = 100
-      OnChange = TrackBar9Change
-      Position = 20
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 496
       Width = 137
+      Max = 100
+      OnChange = TrackBar9Change
+      Position = 20
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 8
     end
     object TrackBar10: TTrackBar
+      Left = 8
+      Height = 17
+      Top = 88
+      Width = 137
       Min = 3
       OnChange = TrackBar10Change
       Position = 6
       ScalePos = trTop
       TabOrder = 9
-      Min = 3
-      OnChange = TrackBar10Change
-      Position = 6
-      ScalePos = trTop
-      Left = 8
-      Height = 17
-      Top = 88
-      Width = 137
     end
     object Edit1: TEdit
-      TabOrder = 10
       Left = 8
       Height = 21
       Top = 328
       Width = 105
+      TabOrder = 10
     end
     object CheckBox1: TCheckBox
+      Left = 8
+      Height = 19
+      Top = 400
+      Width = 114
       Caption = 'Central Leader'
       OnClick = CheckBox1Click
       TabOrder = 11
-      Left = 8
-      Height = 17
-      Top = 400
-      Width = 97
     end
     object TrackBar11: TTrackBar
-      Max = 100
-      OnChange = TrackBar11Change
-      Position = 50
-      ScalePos = trTop
-      TabOrder = 12
-      TickStyle = tsManual
-      Max = 100
-      OnChange = TrackBar11Change
-      Position = 50
-      ScalePos = trTop
-      TickStyle = tsManual
       Left = 8
       Height = 17
       Top = 416
       Width = 137
+      Max = 100
+      OnChange = TrackBar11Change
+      Position = 50
+      ScalePos = trTop
+      TickStyle = tsManual
+      TabOrder = 12
     end
     object Button1: TButton
-      BorderSpacing.OnChange = nil
-      Caption = 'S'
-      OnClick = Button1Click
-      TabOrder = 13
       Left = 117
       Height = 21
       Top = 328
       Width = 21
+      BorderSpacing.InnerBorder = 4
+      Caption = 'S'
+      OnClick = Button1Click
+      TabOrder = 13
     end
   end
   object GLScene1: TGLScene
     left = 160
     top = 8
     object GLDummyCube1: TGLDummyCube
-      CubeSize = 1
       Position.Coordinates = {
         0000000000000000000020400000803F
       }
+      CubeSize = 1
       object GLCamera1: TGLCamera
         DepthOfView = 100
         FocalLength = 50
@@ -375,7 +321,6 @@ object Form1: TForm1
       end
     end
     object GLFreeForm1: TGLFreeForm
-      Rendered = True
       Visible = False
     end
     object GLPlane1: TGLPlane
@@ -447,7 +392,6 @@ object Form1: TForm1
     Title = 'Open existing file'
     Filter = 'GLTree files (*.gltr)|*.gltr'
     FilterIndex = 0
-    Title = 'Open existing file'
     left = 160
     top = 40
   end
@@ -455,7 +399,6 @@ object Form1: TForm1
     Title = 'Save file as'
     Filter = 'GLTree files (*.gltr)|*.gltr'
     FilterIndex = 0
-    Title = 'Save file as'
     left = 160
     top = 72
   end
@@ -463,7 +406,6 @@ object Form1: TForm1
     Title = 'Export Mesh'
     Filter = 'GLScene Mesh files (*.glsm)|*.glsm'
     FilterIndex = 0
-    Title = 'Export Mesh'
     left = 192
     top = 72
   end
@@ -471,7 +413,6 @@ object Form1: TForm1
     Title = 'Export Material Library'
     Filter = 'GLScene Material Library files (*.glml)|*.glml'
     FilterIndex = 0
-    Title = 'Export Material Library'
     left = 224
     top = 72
   end
@@ -479,7 +420,6 @@ object Form1: TForm1
     Title = 'Open existing file'
     Filter = 'Graphic (*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.tga;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp)|*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.tga;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp|TGA Image File (*.tga)|*.tga|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|PNM Image File (*.pbm)|*.pbm|PNM Image File (*.pgm)|*.pgm|PNM Image File (*.ppm)|*.ppm|Targa (*.tga)|*.tga|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|Icon (*.ico)|*.ico|Portable PixMap (*.ppm)|*.ppm|Portable GrayMap (*.pgm)|*.pgm|Portable BitMap (*.pbm)|*.pbm|Portable Network Graphic (*.png)|*.png|Pixmap (*.xpm)|*.xpm|Bitmaps (*.bmp)|*.bmp|All files (*.*)|*.*|'
     FilterIndex = 0
-    Title = 'Open existing file'
     left = 192
     top = 40
   end

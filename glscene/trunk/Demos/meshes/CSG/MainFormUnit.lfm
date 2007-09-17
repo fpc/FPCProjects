@@ -1,98 +1,92 @@
 object Form1: TForm1
+  Left = 390
+  Height = 611
+  Top = 99
+  Width = 624
+  HorzScrollBar.Page = 623
+  VertScrollBar.Page = 610
+  ActiveControl = Button1
   Caption = 'Constructive Solid Geometry Demo'
   ClientHeight = 611
   ClientWidth = 624
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 623
-  VertScrollBar.Page = 610
-  Left = 405
-  Height = 611
-  Top = 99
-  Width = 624
   object GLSceneViewer1: TGLSceneViewer
+    Height = 569
+    Width = 624
     Camera = GLCamera1
     Buffer.BackgroundColor = clTeal
-    FieldOfView = 160.06446838378906
+    FieldOfView = 160.064468383789
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
     OnMouseUp = GLSceneViewer1MouseUp
-    Height = 569
-    Width = 624
   end
   object Panel1: TPanel
+    Height = 42
+    Top = 569
+    Width = 624
     Align = alBottom
     ClientHeight = 42
     ClientWidth = 624
     FullRepaint = False
     TabOrder = 0
-    Height = 42
-    Top = 569
-    Width = 624
     object Button1: TButton
-      BorderSpacing.InnerBorder = 2
-      Caption = 'Clear'
-      OnClick = Button1Click
-      TabOrder = 0
       Left = 8
       Height = 25
       Top = 7
       Width = 75
+      Caption = 'Clear'
+      OnClick = Button1Click
+      TabOrder = 0
     end
     object Button2: TButton
-      BorderSpacing.InnerBorder = 2
-      Caption = 'Union'
-      OnClick = Button2Click
-      TabOrder = 1
       Left = 88
       Height = 25
       Top = 8
       Width = 75
+      Caption = 'Union'
+      OnClick = Button2Click
+      TabOrder = 1
     end
     object Button3: TButton
-      BorderSpacing.InnerBorder = 2
-      Caption = 'Subtract A-B'
-      OnClick = Button3Click
-      TabOrder = 2
       Left = 168
       Height = 25
       Top = 8
       Width = 75
+      Caption = 'Subtract A-B'
+      OnClick = Button3Click
+      TabOrder = 2
     end
     object Button4: TButton
-      BorderSpacing.InnerBorder = 2
-      Caption = 'Subtract B-A'
-      OnClick = Button4Click
-      TabOrder = 3
       Left = 248
       Height = 25
       Top = 8
       Width = 75
+      Caption = 'Subtract B-A'
+      OnClick = Button4Click
+      TabOrder = 3
     end
     object Button5: TButton
-      BorderSpacing.InnerBorder = 2
-      Caption = 'Intersection'
-      OnClick = Button5Click
-      TabOrder = 4
       Left = 328
       Height = 25
       Top = 8
       Width = 75
+      Caption = 'Intersection'
+      OnClick = Button5Click
+      TabOrder = 4
     end
     object CheckBox1: TCheckBox
+      Left = 408
+      Height = 17
+      Top = 12
+      Width = 97
       Caption = 'Solid Result'
       Checked = True
       OnClick = CheckBox1Click
       State = cbChecked
       TabOrder = 5
-      Left = 408
-      Height = 17
-      Top = 12
-      Width = 97
     end
   end
   object GLScene1: TGLScene
@@ -102,8 +96,6 @@ object Form1: TForm1
       MaterialLibrary = GLMaterialLibrary1
     end
     object GLFreeForm1: TGLFreeForm
-      AutoCentering = [macCenterX, macCenterY, macCenterZ]
-      MaterialLibrary = GLMaterialLibrary1
       Material.FrontProperties.Ambient.Color = {
         B1A8A83EB1A8A83EB1A8A83E0000803F
       }
@@ -119,9 +111,10 @@ object Form1: TForm1
       Scale.Coordinates = {
         00002042000020420000204200000000
       }
+      AutoCentering = [macCenterX, macCenterY, macCenterZ]
+      MaterialLibrary = GLMaterialLibrary1
     end
     object GLFreeForm2: TGLFreeForm
-      AutoCentering = [macCenterX, macCenterY, macCenterZ]
       Material.FrontProperties.Ambient.Color = {
         029F1F3FBEBEBE3E999F1F3F0000803F
       }
@@ -134,6 +127,7 @@ object Form1: TForm1
       Scale.Coordinates = {
         0000A0410000A0410000A04100000000
       }
+      AutoCentering = [macCenterX, macCenterY, macCenterZ]
     end
     object GLCamera1: TGLCamera
       DepthOfView = 5000

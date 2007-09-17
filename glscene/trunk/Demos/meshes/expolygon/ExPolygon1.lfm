@@ -1,26 +1,24 @@
 object Form1: TForm1
+  Left = 231
+  Height = 540
+  Top = 126
+  Width = 783
+  HorzScrollBar.Page = 782
+  VertScrollBar.Page = 539
   Caption = 'Form1'
   ClientHeight = 540
   ClientWidth = 783
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 782
-  VertScrollBar.Page = 539
-  Left = 259
-  Height = 540
-  Top = 126
-  Width = 783
   object GLSceneViewer1: TGLSceneViewer
+    Height = 540
+    Width = 783
     Camera = Camera
-    FieldOfView = 121.89079284667969
+    FieldOfView = 121.890792846679
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 540
-    Width = 783
   end
   object GLScene1: TGLScene
     left = 720

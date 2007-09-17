@@ -31,9 +31,9 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, GLCadencer, GLVectorFileObjects, GLScene, GLObjects, GLMisc,
+  GLCadencer, GLVectorFileObjects, GLScene, GLObjects, GLMisc,
   StdCtrls, Buttons, Controls, ExtCtrls, ComCtrls, Classes, Forms, GLGraphics,
-  GLTexture, GLLCLViewer, LResources, GLFileMD2, GLGeomObjects;
+  GLTexture, GLViewer, LResources, GLFileMD2, GLGeomObjects;
 
 type
 

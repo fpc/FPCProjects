@@ -30,10 +30,10 @@ unit MainFormUnit;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLVectorFileObjects, GLMisc, StdCtrls, GLBSP, GLMeshCSG,
   GLObjects, GLTexture, GLFile3ds, ExtCtrls, ComCtrls,
-  LResources, Buttons, GLWin32Viewer;
+  LResources, Buttons, GLViewer;
 
 type
 
@@ -128,10 +128,10 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   // scaled 40
-  GLFreeForm1.LoadFromFile('..\..\media\polyhedron.3ds');
+  GLFreeForm1.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'polyhedron.3ds');
 
   // scaled 20, position.x = 16
-  GLFreeForm2.LoadFromFile('..\..\media\polyhedron.3ds');
+  GLFreeForm2.LoadFromFile('..' + PathDelim + '..' + PathDelim + 'media' + PathDelim + 'polyhedron.3ds');
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);

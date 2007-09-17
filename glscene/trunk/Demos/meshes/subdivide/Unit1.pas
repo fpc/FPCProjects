@@ -11,10 +11,10 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, GLVectorFileObjects, GLObjects, GLTexture,
   GLMisc, VectorLists, ComCtrls, ExtCtrls,
-  LResources, GLScene, GLCadencer, Buttons, GLLCLViewer;
+  LResources, GLScene, GLCadencer, Buttons, GLViewer;
 
 type
 
@@ -266,7 +266,7 @@ procedure TForm1.CBAnimateClick(Sender: TObject);
 begin
    // not only turns on/off animation, but also forces the TGLActor
    // to generate a display list when animation is off
-   if CBAnimate.Checked then begin
+   if not CBAnimate.Checked then begin
       GLActor1.AnimationMode:=aamLoop;
       GLActor1.ObjectStyle:=GLActor1.ObjectStyle+[osDirectDraw];
       GLActor1.Reference:=aarMorph;

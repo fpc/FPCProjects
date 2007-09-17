@@ -1,103 +1,99 @@
 object Form1: TForm1
   Left = 124
+  Height = 445
   Top = 96
   Width = 618
-  Height = 445
+  HorzScrollBar.Page = 617
+  VertScrollBar.Page = 444
+  ActiveControl = BUPack
   Caption = 'Form1'
-  Color = clBtnFace
-  Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
+  ClientHeight = 445
+  ClientWidth = 618
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
-  Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  OnMouseWheel = FormMouseWheel
-  PixelsPerInch = 96
-  TextHeight = 13
   object GLSceneViewer1: TGLSceneViewer
-    Left = 0
-    Top = 0
-    Width = 482
-    Height = 416
+    Height = 445
+    Width = 490
     Camera = GLCamera
+    FieldOfView = 154.669860839843
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
   end
   object Panel1: TPanel
-    Left = 482
-    Top = 0
+    Left = 490
+    Height = 445
     Width = 128
-    Height = 416
     Align = alRight
     BevelOuter = bvLowered
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
+    ClientHeight = 445
+    ClientWidth = 128
     Font.Height = -11
     Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 1
+    TabOrder = 0
     object Label1: TLabel
       Left = 8
+      Height = 20
       Top = 8
-      Width = 62
-      Height = 14
+      Width = 84
       Caption = 'Tile Materials'
+      ParentColor = False
     end
     object Label2: TLabel
       Left = 8
+      Height = 89
       Top = 136
       Width = 113
-      Height = 89
       AutoSize = False
       Caption = 'Shift + Left button: pan'#13#10#13#10'Left button : paint with current material'#13#10#13#10'Mouse wheel: zoom'
+      ParentColor = False
       WordWrap = True
     end
     object CBMaterial: TComboBox
       Left = 8
+      Height = 32
       Top = 24
       Width = 113
-      Height = 22
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
       Style = csDropDownList
-      ItemHeight = 14
       TabOrder = 0
     end
     object BUPack: TButton
       Left = 24
+      Height = 25
       Top = 72
       Width = 75
-      Height = 25
+      BorderSpacing.InnerBorder = 4
       Caption = 'Pack'
-      TabOrder = 1
       OnClick = BUPackClick
+      TabOrder = 1
     end
     object CBShowGrid: TCheckBox
       Left = 8
+      Height = 19
       Top = 248
-      Width = 81
-      Height = 17
+      Width = 84
       Caption = 'Show Grid'
       Checked = True
+      OnClick = CBShowGridClick
       State = cbChecked
       TabOrder = 2
-      OnClick = CBShowGridClick
     end
     object CBSortByMaterials: TCheckBox
       Left = 8
+      Height = 19
       Top = 272
-      Width = 105
-      Height = 17
+      Width = 130
       Caption = 'Sort by materials'
       Checked = True
+      OnClick = CBSortByMaterialsClick
       State = cbChecked
       TabOrder = 3
-      OnClick = CBSortByMaterialsClick
     end
   end
   object GLScene: TGLScene
-    Left = 24
-    Top = 16
+    left = 24
+    top = 16
     object GLLightSource: TGLLightSource
       ConstAttenuation = 1
       Position.Coordinates = {
@@ -110,7 +106,7 @@ object Form1: TForm1
       object GLCamera: TGLCamera
         DepthOfView = 500
         FocalLength = 50
-        NearPlaneBias = 0.200000002980232
+        NearPlaneBias = 0.20000000298023
         TargetObject = DCTarget
         Position.Coordinates = {
           00000000000080C0000040400000803F
@@ -127,7 +123,6 @@ object Form1: TForm1
       MaterialLibrary = GLMaterialLibrary
     end
     object GLDirectOpenGL: TGLDirectOpenGL
-      UseBuildList = False
       OnRender = GLDirectOpenGLRender
     end
     object GLXYZGrid: TGLXYZGrid
@@ -169,8 +164,7 @@ object Form1: TForm1
           item
           end>
         NodesAspect = lnaCube
-        NodeSize = 0.150000005960464
-        Options = []
+        NodeSize = 0.15000000596046
       end
     end
   end
@@ -178,7 +172,6 @@ object Form1: TForm1
     Materials = <    
       item
         Name = 'base'
-        Tag = 0
       end    
       item
         Name = 'blue'
@@ -188,7 +181,6 @@ object Form1: TForm1
         Material.FrontProperties.Emission.Color = {
           00000000000000000000003F0000803F
         }
-        Tag = 0
       end    
       item
         Name = 'red'
@@ -198,21 +190,18 @@ object Form1: TForm1
         Material.FrontProperties.Emission.Color = {
           0000003F00000000000000000000803F
         }
-        Tag = 0
       end    
       item
         Name = 'beigemarble'
         Material.Texture.ImageClassName = 'TGLPicFileImage'
         Material.Texture.Image.PictureFileName = 'beigemarble.jpg'
         Material.Texture.Disabled = False
-        Tag = 0
       end    
       item
         Name = 'marbletiles'
         Material.Texture.ImageClassName = 'TGLPicFileImage'
         Material.Texture.Image.PictureFileName = 'marbletiles.jpg'
         Material.Texture.Disabled = False
-        Tag = 0
         TextureScale.Coordinates = {
           0000803E0000803E0000803F00000000
         }
@@ -222,24 +211,23 @@ object Form1: TForm1
         Material.Texture.ImageClassName = 'TGLPicFileImage'
         Material.Texture.Image.PictureFileName = 'walkway.jpg'
         Material.Texture.Disabled = False
-        Tag = 0
         TextureScale.Coordinates = {
           0000003F0000003F0000803F00000000
         }
       end>
     TexturePaths = '..\..\media'
-    Left = 24
-    Top = 64
+    left = 24
+    top = 64
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer
-    Left = 80
-    Top = 16
+    left = 80
+    top = 16
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene
     OnProgress = GLCadencer1Progress
-    Left = 80
-    Top = 64
+    left = 80
+    top = 64
   end
 end

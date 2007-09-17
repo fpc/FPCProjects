@@ -5,8 +5,8 @@ unit Unit1;
 interface
 
 uses
-  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLWin32Viewer, GLMisc, GLTree, GLTexture,
+  SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, GLObjects, GLViewer, GLMisc, GLTree, GLTexture,
   ExtCtrls, ComCtrls, StdCtrls, GLVectorFileObjects, Menus, ExtDlgs, LResources,
   GLScene, Buttons;
 
@@ -156,7 +156,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  SetCurrentDir(ExtractFileDir(Application.ExeName)+'/../../media');
+  SetCurrentDir(ExtractFileDir(Application.ExeName) + PathDelim + '..' + PathDelim + '..' + PathDelim + 'media');
 
   // Set up default textures
   with GLMaterialLibrary1.AddTextureMaterial('LeafFront','maple_multi.tga') do begin
@@ -211,37 +211,37 @@ end;
 
 procedure TForm1.TrackBar3Change(Sender: TObject);
 begin
-  GLTree1.BranchAngle:=TrackBar3.Position/100;
+  GLTree1.BranchAngle:=TrackBar3.Position / 100;
 end;
 
 procedure TForm1.TrackBar4Change(Sender: TObject);
 begin
-  GLTree1.BranchAngleBias:=TrackBar4.Position/100;
+  GLTree1.BranchAngleBias:=TrackBar4.Position / 100;
 end;
 
 procedure TForm1.TrackBar5Change(Sender: TObject);
 begin
-  GLTree1.BranchSize:=TrackBar5.Position/10;
+  GLTree1.BranchSize:=TrackBar5.Position / 10;
 end;
 
 procedure TForm1.TrackBar6Change(Sender: TObject);
 begin
-  GLTree1.BranchRadius:=TrackBar6.Position/25;
+  GLTree1.BranchRadius:=TrackBar6.Position / 25;
 end;
 
 procedure TForm1.TrackBar7Change(Sender: TObject);
 begin
-  GLTree1.BranchNoise:=TrackBar7.Position/100;
+  GLTree1.BranchNoise:=TrackBar7.Position / 100;
 end;
 
 procedure TForm1.TrackBar8Change(Sender: TObject);
 begin
-  GLTree1.LeafSize:=TrackBar8.Position/100;
+  GLTree1.LeafSize:=TrackBar8.Position / 100;
 end;
 
 procedure TForm1.TrackBar9Change(Sender: TObject);
 begin
-  GLTree1.LeafThreshold:=TrackBar9.Position/100;
+  GLTree1.LeafThreshold:=TrackBar9.Position / 100;
 end;
 
 procedure TForm1.TrackBar10Change(Sender: TObject);
@@ -268,7 +268,7 @@ end;
 
 procedure TForm1.TrackBar11Change(Sender: TObject);
 begin
-  GLTree1.CentralLeaderBias:=TrackBar11.Position/100;
+  GLTree1.CentralLeaderBias:=TrackBar11.Position / 100;
 end;
 
 // Menu options

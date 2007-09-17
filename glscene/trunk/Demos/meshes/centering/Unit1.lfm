@@ -1,57 +1,55 @@
 object Form1: TForm1
+  Left = 400
+  Height = 276
+  Top = 130
+  Width = 563
+  HorzScrollBar.Page = 562
+  VertScrollBar.Page = 275
+  ActiveControl = TrackBar1
   Caption = 'Form1'
   ClientHeight = 276
   ClientWidth = 563
   Font.Height = -11
   Font.Name = 'Arial'
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 14
-  HorzScrollBar.Page = 562
-  VertScrollBar.Page = 275
-  Left = 400
-  Height = 276
-  Top = 130
-  Width = 563
   object Label1: TLabel
-    Caption = 'Centered X, Y'
-    Color = clNone
-    ParentColor = False
     Left = 56
-    Height = 14
+    Height = 20
     Top = 8
-    Width = 68
+    Width = 87
+    Caption = 'Centered X, Y'
+    ParentColor = False
   end
   object Label2: TLabel
-    Caption = 'Centered Y'
-    Color = clNone
-    ParentColor = False
     Left = 232
-    Height = 14
+    Height = 20
     Top = 8
-    Width = 55
+    Width = 71
+    Caption = 'Centered Y'
+    ParentColor = False
   end
   object Label3: TLabel
-    Caption = 'Centered X, Y, Z'
-    Color = clNone
-    ParentColor = False
     Left = 408
-    Height = 14
+    Height = 20
     Top = 8
-    Width = 81
+    Width = 105
+    Caption = 'Centered X, Y, Z'
+    ParentColor = False
   end
   object GLSceneViewer1: TGLSceneViewer
-    Camera = GLCamera1
-    Buffer.BackgroundColor = 11447982
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 60.275093078613281
     Left = 8
     Height = 209
     Top = 32
     Width = 513
+    Camera = GLCamera1
+    Buffer.BackgroundColor = 11447982
+    FieldOfView = 60.2750930786132
   end
   object TrackBar1: TTrackBar
+    Left = 528
+    Height = 209
+    Top = 32
+    Width = 25
     Frequency = 10
     Max = 80
     Min = -80
@@ -59,27 +57,17 @@ object Form1: TForm1
     Orientation = trVertical
     ScalePos = trTop
     TabOrder = 0
-    Frequency = 10
-    Max = 80
-    Min = -80
-    OnChange = TrackBar1Change
-    Orientation = trVertical
-    ScalePos = trTop
-    Left = 528
-    Height = 209
-    Top = 32
-    Width = 25
   end
   object GLScene1: TGLScene
     left = 16
     top = 56
     object DummyCube3: TGLDummyCube
-      CubeSize = 1
-      VisibleAtRunTime = True
       Position.Coordinates = {
         000000C000000000000000000000803F
       }
       ShowAxes = True
+      CubeSize = 1
+      VisibleAtRunTime = True
       object FreeForm3: TGLFreeForm
         Material.FrontProperties.Diffuse.Color = {
           0000803F8180003F8180803E0000803F
@@ -90,9 +78,9 @@ object Form1: TForm1
       end
     end
     object DummyCube2: TGLDummyCube
+      ShowAxes = True
       CubeSize = 1
       VisibleAtRunTime = True
-      ShowAxes = True
       object FreeForm2: TGLFreeForm
         Material.FrontProperties.Diffuse.Color = {
           0000803F8180003F8180803E0000803F
@@ -103,12 +91,12 @@ object Form1: TForm1
       end
     end
     object DummyCube1: TGLDummyCube
-      CubeSize = 1
-      VisibleAtRunTime = True
       Position.Coordinates = {
         0000004000000000000000000000803F
       }
       ShowAxes = True
+      CubeSize = 1
+      VisibleAtRunTime = True
       object FreeForm1: TGLFreeForm
         Material.FrontProperties.Diffuse.Color = {
           0000803F8180003F8180803E0000803F
