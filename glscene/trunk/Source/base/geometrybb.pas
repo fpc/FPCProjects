@@ -6,6 +6,7 @@
 	Calculations and manipulations on Bounding Boxes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/09/07 - DaStr - Added OffsetBB(Point) procedures
       <li>31/08/07 - LC - Replaced TriangleIntersectAABB with a working (and faster) version
       <li>23/08/07 - LC - Added RayCastAABBIntersect
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
@@ -106,6 +107,12 @@ function AABBToBB(const anAABB : TAABB; const m : TMatrix) : THmgBoundingBox; ov
 {: Adds delta to min and max of the AABB. }
 procedure OffsetAABB(var aabb : TAABB; const delta : TAffineVector); overload;
 procedure OffsetAABB(var aabb : TAABB; const delta : TVector); overload;
+
+{: Adds delta to min and max of the BB. }
+procedure OffsetBB(var bb : THmgBoundingBox; const delta : TAffineVector); overload;
+procedure OffsetBB(var bb : THmgBoundingBox; const delta : TVector); overload;
+{: The same as above but uses AddPoint() instead of AddVector(). }
+procedure OffsetBBPoint(var bb : THmgBoundingBox; const delta : TVector); overload;
 
 {: Determines if two AxisAlignedBoundingBoxes intersect.<p>
    The matrices are the ones that convert one point to the other's AABB system }
@@ -500,6 +507,38 @@ procedure OffsetAABB(var aabb : TAABB; const delta : TVector);
 begin
    AddVector(aabb.min, delta);
    AddVector(aabb.max, delta);
+end;
+
+// OffsetBB
+//
+procedure OffsetBB(var bb : THmgBoundingBox; const delta : TAffineVector);
+var
+  I: Integer;
+  TempVector: TVector;
+begin
+  TempVector := VectorMake(delta, 0);
+  for I := 0 to 7 do
+    AddVector(bb[I], TempVector);
+end;
+
+// OffsetAABB
+//
+procedure OffsetBB(var bb : THmgBoundingBox; const delta : TVector);
+var
+  I: Integer;
+begin
+  for I := 0 to 7 do
+    AddVector(bb[I], delta);
+end;
+
+// OffsetBBPoint
+//
+procedure OffsetBBPoint(var bb : THmgBoundingBox; const delta : TVector);
+var
+  I: Integer;
+begin
+  for I := 0 to 7 do
+    AddPoint(bb[I], delta);
 end;
 
 // IntersectCubes (AABBs)
