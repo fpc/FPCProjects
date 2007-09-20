@@ -6,6 +6,8 @@
    Platform independant viewer.<p>
 
     History:
+      <li>17/09/07 - DaStr - Replaced $IFNDEF KYLIX to $IFDEF MSWINDOWS in 
+                              SetupVSync() because wgl* functions are Windows-specific
       <li>12/09/07 - DaStr - Fixed SetupVSync() function (Bugtracker ID = 1786279)
                              Made cross-platform code easier to read
       <li>12/07/07 - DaStr - Added SetupVSync
