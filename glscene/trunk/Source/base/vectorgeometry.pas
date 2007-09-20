@@ -51,7 +51,9 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>29/08/07 - LC - Fixed BarycentricCoordinates to work with triangles in yz plane
+      <li>19/09/07 - DaStr - Added AddPoint() and PointAdd() procedures
+      <li>18/09/07 - DaStr - Added two more overloaded versions of VectorScale()
+      <li>29/08/07 - LC - Fixed BarycentricCoordinates to work with triangles in yz plane 
       <li>27/08/07 - DaStr - Bugfixed VectorAffineFltToDbl and VectorFltToDbl
                              (thanks Biot!) (BugTracker ID = 1782005)
       <li>23/08/07 - LC - Added BarycentricCoordinates
@@ -715,6 +717,13 @@ procedure AddVector(var v : TAffineVector; const f : Single); overload;
 //: Sums up f to each component of the vector
 procedure AddVector(var v : TVector; const f : Single); overload;
 
+//: Adds V2 to V1, result is placed in V1. W coordinate is always 1.
+procedure AddPoint(var v1 : TVector; const v2 : TVector); overload;
+
+//: Returns the sum of two homogeneous vectors. W coordinate is always 1.
+function PointAdd(var v1 : TVector; const v2 : TVector): TVector; overload;
+
+
 //: Adds delta to nb texpoints in src and places result in dest
 procedure TexPointArrayAdd(const src : PTexPointArray; const delta : TTexPoint;
                            const nb : Integer;
@@ -931,6 +940,10 @@ function VectorScale(const v : TVector; factor : Single) : TVector; overload;
 procedure VectorScale(const v : TVector; factor : Single; var vr : TVector); overload;
 //: Scales a vector by a factor and places result in vr
 procedure VectorScale(const v : TVector; factor : Single; var vr : TAffineVector); overload;
+//: Scales given vector by another vector
+function VectorScale(const v : TAffineVector; const Factor : TAffineVector): TAffineVector; overload;
+//: RScales given vector by another vector
+function VectorScale(const v : TVector; const Factor : TVector): TVector; overload;
 
 {: Divides given vector by another vector.<p>
    v[x]:=v[x]/divider[x], v[y]:=v[y]/divider[y] etc. }
@@ -2164,6 +2177,16 @@ begin
    Result[3]:=v[3]+f;
 end;
 
+// PointAdd (hmg, W = 1)
+//
+function PointAdd(var v1 : TVector; const v2 : TVector): TVector;
+begin
+   Result[0] := v1[0] + v2[0];
+   Result[1] := v1[1] + v2[1];
+   Result[2] := v1[2] + v2[2];
+   Result[3] := 1;
+end;
+
 // AddVector (affine)
 //
 procedure AddVector(var v1 : TAffineVector; const v2 : TAffineVector);
@@ -2269,6 +2292,16 @@ begin
    v[1]:=v[1]+f;
    v[2]:=v[2]+f;
    v[3]:=v[3]+f;
+end;
+
+// AddPoint (hmg, W = 1)
+//
+procedure AddPoint(var v1 : TVector; const v2 : TVector);
+begin
+   v1[0] := v1[0] + v2[0];
+   v1[1] := v1[1] + v2[1];
+   v1[2] := v1[2] + v2[2];
+   v1[3] := 1;
 end;
 
 // TexPointArrayAdd
@@ -4652,6 +4685,25 @@ begin
    vr[1]:=v[1]*factor;
    vr[2]:=v[2]*factor;
 {$endif}
+end;
+
+// VectorScale (func, affine)
+//
+function VectorScale(const v : TAffineVector; const Factor : TAffineVector): TAffineVector;
+begin
+  Result[0] := v[0] * Factor[0];
+  Result[1] := v[1] * Factor[1];
+  Result[2] := v[2] * Factor[2];
+end;
+
+// VectorScale (func, hmg)
+//
+function VectorScale(const v : TVector; const Factor : TVector): TVector;
+begin
+  Result[0] := v[0] * Factor[0];
+  Result[1] := v[1] * Factor[1];
+  Result[2] := v[2] * Factor[2];
+  Result[3] := v[3] * Factor[3];
 end;
 
 // DivideVector
