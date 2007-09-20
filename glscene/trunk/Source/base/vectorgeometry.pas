@@ -1620,7 +1620,6 @@ function UnPackRotationMatrix(const packedMatrix : TPackedRotationMatrix) : TMat
    If this is not the case, the function will not work correctly! }
 function BarycentricCoordinates(const v1, v2, v3, p: TAffineVector; var u, v: single): boolean;
 
-
 const
    cPI       : Single =  3.141592654;
    cPIdiv180 : Single =  0.017453292;
@@ -1954,54 +1953,47 @@ end;
 // RstVector (affine)
 //
 procedure RstVector(var v : TAffineVector);
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
          xor   edx, edx
          mov   [eax], edx
          mov   [eax+4], edx
          mov   [eax+8], edx
- end;
- {$else}
- begin
-    v[0]:=0;
-    v[1]:=0;
-    v[2]:=0;
- end;
- {$endif}
+{$else}
+begin
+   v[0]:=0;
+   v[1]:=0;
+   v[2]:=0;
+{$endif}
 end;
 
 // RstVector (hmg)
 //
 procedure RstVector(var v : TVector);
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
          xor   edx, edx
          mov   [eax], edx
          mov   [eax+4], edx
          mov   [eax+8], edx
          mov   [eax+12], edx
- end;
- {$else}
- begin
-    v[0]:=0;
-    v[1]:=0;
-    v[2]:=0;
-    v[3]:=0;
- end;
- {$endif}
+{$else}
+begin
+   v[0]:=0;
+   v[1]:=0;
+   v[2]:=0;
+   v[3]:=0;
+{$endif}
 end;
 
 // VectorAdd (func, affine)
 //
 function VectorAdd(const v1, v2 : TAffineVector) : TAffineVector;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD  DWORD PTR [EAX]
          FADD DWORD PTR [EDX]
          FSTP DWORD PTR [ECX]
@@ -2011,25 +2003,22 @@ begin
          FLD  DWORD PTR [EAX+8]
          FADD DWORD PTR [EDX+8]
          FSTP DWORD PTR [ECX+8]
- end;
- {$else}
- begin
-    Result[0]:=v1[0]+v2[0];
-    Result[1]:=v1[1]+v2[1];
-    Result[2]:=v1[2]+v2[2];
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=v1[0]+v2[0];
+   Result[1]:=v1[1]+v2[1];
+   Result[2]:=v1[2]+v2[2];
+{$endif}
 end;
 
 // VectorAdd (proc, affine)
 //
 procedure VectorAdd(const v1, v2 : TAffineVector; var vr : TAffineVector); overload;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD  DWORD PTR [EAX]
          FADD DWORD PTR [EDX]
          FSTP DWORD PTR [ECX]
@@ -2039,25 +2028,22 @@ begin
          FLD  DWORD PTR [EAX+8]
          FADD DWORD PTR [EDX+8]
          FSTP DWORD PTR [ECX+8]
- end;
- {$else}
- begin
-    vr[0]:=v1[0]+v2[0];
-    vr[1]:=v1[1]+v2[1];
-    vr[2]:=v1[2]+v2[2];
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=v1[0]+v2[0];
+   vr[1]:=v1[1]+v2[1];
+   vr[2]:=v1[2]+v2[2];
+{$endif}
 end;
 
 // VectorAdd (proc, affine)
 //
 procedure VectorAdd(const v1, v2 : TAffineVector; vr : PAffineVector); overload;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD  DWORD PTR [EAX]
          FADD DWORD PTR [EDX]
          FSTP DWORD PTR [ECX]
@@ -2067,28 +2053,25 @@ begin
          FLD  DWORD PTR [EAX+8]
          FADD DWORD PTR [EDX+8]
          FSTP DWORD PTR [ECX+8]
- end;
- {$else}
- begin
-    vr^[0]:=v1[0]+v2[0];
-    vr^[1]:=v1[1]+v2[1];
-    vr^[2]:=v1[2]+v2[2];
- end;
- {$endif}
+{$else}
+begin
+   vr^[0]:=v1[0]+v2[0];
+   vr^[1]:=v1[1]+v2[1];
+   vr^[2]:=v1[2]+v2[2];
+{$endif}
 end;
 
 // VectorAdd (hmg)
 //
 function VectorAdd(const v1, v2 : TVector) : TVector;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
          test vSIMD, 1
          jz @@FPU
- @@3DNow:
+@@3DNow:
          db $0F,$6F,$00           /// movq  mm0, [eax]
          db $0F,$0F,$02,$9E       /// pfadd mm0, [edx]
          db $0F,$7F,$01           /// movq  [ecx], mm0
@@ -2098,7 +2081,7 @@ begin
          db $0F,$0E               /// femms
          ret
 
- @@FPU:
+@@FPU:
          FLD  DWORD PTR [EAX]
          FADD DWORD PTR [EDX]
          FSTP DWORD PTR [ECX]
@@ -2111,29 +2094,26 @@ begin
          FLD  DWORD PTR [EAX+12]
          FADD DWORD PTR [EDX+12]
          FSTP DWORD PTR [ECX+12]
- end;
- {$else}
- begin
-    Result[0]:=v1[0]+v2[0];
-    Result[1]:=v1[1]+v2[1];
-    Result[2]:=v1[2]+v2[2];
-    Result[3]:=v1[3]+v2[3];
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=v1[0]+v2[0];
+   Result[1]:=v1[1]+v2[1];
+   Result[2]:=v1[2]+v2[2];
+   Result[3]:=v1[3]+v2[3];
+{$endif}
 end;
 
 // VectorAdd (hmg, proc)
 //
 procedure VectorAdd(const v1, v2: TVector; var vr : TVector);
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
          test vSIMD, 1
          jz @@FPU
- @@3DNow:
+@@3DNow:
          db $0F,$6F,$00           /// movq  mm0, [eax]
          db $0F,$0F,$02,$9E       /// pfadd mm0, [edx]
          db $0F,$7F,$01           /// movq  [ecx], mm0
@@ -2143,7 +2123,7 @@ begin
          db $0F,$0E               /// femms
          ret
 
- @@FPU:
+@@FPU:
          FLD  DWORD PTR [EAX]
          FADD DWORD PTR [EDX]
          FSTP DWORD PTR [ECX]
@@ -2156,15 +2136,13 @@ begin
          FLD  DWORD PTR [EAX+12]
          FADD DWORD PTR [EDX+12]
          FSTP DWORD PTR [ECX+12]
- end;
- {$else}
- begin
-    vr[0]:=v1[0]+v2[0];
-    vr[1]:=v1[1]+v2[1];
-    vr[2]:=v1[2]+v2[2];
-    vr[3]:=v1[3]+v2[3];
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=v1[0]+v2[0];
+   vr[1]:=v1[1]+v2[1];
+   vr[2]:=v1[2]+v2[2];
+   vr[3]:=v1[3]+v2[3];
+{$endif}
 end;
 
 // VectorAdd (affine, single)
@@ -2189,11 +2167,10 @@ end;
 // AddVector (affine)
 //
 procedure AddVector(var v1 : TAffineVector; const v2 : TAffineVector);
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FADD DWORD PTR [EDX]
       FSTP DWORD PTR [EAX]
@@ -2203,24 +2180,21 @@ begin
       FLD  DWORD PTR [EAX+8]
       FADD DWORD PTR [EDX+8]
       FSTP DWORD PTR [EAX+8]
- end;
- {$else}
- begin
-    v1[0]:=v1[0]+v2[0];
-    v1[1]:=v1[1]+v2[1];
-    v1[2]:=v1[2]+v2[2];
- end;
- {$endif}
+{$else}
+begin
+   v1[0]:=v1[0]+v2[0];
+   v1[1]:=v1[1]+v2[1];
+   v1[2]:=v1[2]+v2[2];
+{$endif}
 end;
 
 // AddVector (affine)
 //
 procedure AddVector(var v1 : TAffineVector; const v2 : TVector);
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FADD DWORD PTR [EDX]
       FSTP DWORD PTR [EAX]
@@ -2230,27 +2204,24 @@ begin
       FLD  DWORD PTR [EAX+8]
       FADD DWORD PTR [EDX+8]
       FSTP DWORD PTR [EAX+8]
- end;
- {$else}
- begin
-    v1[0]:=v1[0]+v2[0];
-    v1[1]:=v1[1]+v2[1];
-    v1[2]:=v1[2]+v2[2];
- end;
- {$endif}
+{$else}
+begin
+   v1[0]:=v1[0]+v2[0];
+   v1[1]:=v1[1]+v2[1];
+   v1[2]:=v1[2]+v2[2];
+{$endif}
 end;
 
 // AddVector (hmg)
 //
 procedure AddVector(var v1 : TVector; const v2 : TVector);
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$00           /// MOVQ  MM0, [EAX]
       db $0F,$0F,$02,$9E       /// PFADD MM0, [EDX]
       db $0F,$7F,$00           /// MOVQ  [EAX], MM0
@@ -2259,7 +2230,7 @@ begin
       db $0F,$7F,$48,$08       /// MOVQ  [EAX+8], MM1
       db $0F,$0E               /// FEMMS
       ret
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EAX]
       FADD DWORD PTR [EDX]
       FSTP DWORD PTR [EAX]
@@ -2272,15 +2243,13 @@ begin
       FLD  DWORD PTR [EAX+12]
       FADD DWORD PTR [EDX+12]
       FSTP DWORD PTR [EAX+12]
- end;
- {$else}
- begin
-    v1[0]:=v1[0]+v2[0];
-    v1[1]:=v1[1]+v2[1];
-    v1[2]:=v1[2]+v2[2];
-    v1[3]:=v1[3]+v2[3];
- end;
- {$endif}
+{$else}
+begin
+   v1[0]:=v1[0]+v2[0];
+   v1[1]:=v1[1]+v2[1];
+   v1[2]:=v1[2]+v2[2];
+   v1[3]:=v1[3]+v2[3];
+{$endif}
 end;
 
 // AddVector (affine)
@@ -2307,11 +2276,8 @@ end;
 procedure TexPointArrayAdd(const src : PTexPointArray; const delta : TTexPoint;
                            const nb : Integer;
                            dest : PTexPointArray); overload;
- var
-    i : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       or    ecx, ecx
       jz    @@End
 
@@ -2321,7 +2287,7 @@ begin
       push edi
       mov   edi, dest
 
- @@FPULoop:
+@@FPULoop:
       fld   dword ptr [eax]
       fadd  dword ptr [edx]
       fstp  dword ptr [edi]
@@ -2337,11 +2303,11 @@ begin
       pop edi
       jmp   @@End
 
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$02           /// movq  mm0, [edx]
       mov   edx, dest
 
- @@3DNowLoop:
+@@3DNowLoop:
       db $0F,$6F,$10           /// movq  mm2, [eax]
       db $0F,$0F,$D0,$9E       /// pfadd mm2, mm0
       db $0F,$7F,$12           /// movq  [edx], mm2
@@ -2353,18 +2319,16 @@ begin
 
       db $0F,$0E               /// femms
 
- @@End:
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    for i:=0 to nb-1 do begin
-       dest^[i].S:=src^[i].S+delta.S;
-       dest^[i].T:=src^[i].T+delta.T;
-    end;
- end;
- {$endif}
+@@End:
+{$else}
+var
+   i : Integer;
+begin
+   for i:=0 to nb-1 do begin
+      dest^[i].S:=src^[i].S+delta.S;
+      dest^[i].T:=src^[i].T+delta.T;
+   end;
+{$endif}
 end;
 
 // TexPointArrayScaleAndAdd
@@ -2372,11 +2336,8 @@ end;
 procedure TexPointArrayScaleAndAdd(const src : PTexPointArray; const delta : TTexPoint;
                                    const nb : Integer; const scale : TTexPoint;
                                    dest : PTexPointArray); overload;
- var
-    i : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       or    ecx, ecx
       jz    @@End
 
@@ -2388,7 +2349,7 @@ begin
       mov   edi, dest
       mov   esi, scale
 
- @@FPULoop:
+@@FPULoop:
       fld   dword ptr [eax]
       fmul  dword ptr [esi]
       fadd  dword ptr [edx]
@@ -2407,13 +2368,13 @@ begin
       pop   edi
       jmp   @@End
 
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$02           /// movq  mm0, [edx]
       mov   edx, scale
       db $0F,$6F,$0A           /// movq  mm1, [edx]
       mov   edx, dest
 
- @@3DNowLoop:
+@@3DNowLoop:
       db $0F,$6F,$10           /// movq  mm2, [eax]
       db $0F,$0F,$D1,$B4       /// pfmul mm2, mm1
       db $0F,$0F,$D0,$9E       /// pfadd mm2, mm0
@@ -2425,30 +2386,24 @@ begin
       jnz   @@3DNowLoop
 
       db $0F,$0E               /// femms 
- @@End:
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    for i:=0 to nb-1 do begin
-       dest^[i].S:=src^[i].S*scale.S+delta.S;
-       dest^[i].T:=src^[i].T*scale.T+delta.T;
-    end;
- end;
- {$endif}
+@@End:
+{$else}
+var
+   i : Integer;
+begin
+   for i:=0 to nb-1 do begin
+      dest^[i].S:=src^[i].S*scale.S+delta.S;
+      dest^[i].T:=src^[i].T*scale.T+delta.T;
+   end;
+{$endif}
 end;
 
 // VectorArrayAdd
 //
 procedure VectorArrayAdd(const src : PAffineVectorArray; const delta : TAffineVector;
                          const nb : Integer; dest : PAffineVectorArray);
- var
-    i : Integer;
-
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       or    ecx, ecx
       jz    @@End
 
@@ -2458,7 +2413,7 @@ begin
       push edi
       mov   edi, dest
 
- @@FPULoop:
+@@FPULoop:
       fld   dword ptr [eax]
       fadd  dword ptr [edx]
       fstp  dword ptr [edi]
@@ -2477,12 +2432,12 @@ begin
       pop edi
       jmp   @@End
 
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$02           /// movq  mm0, [edx]
       db $0F,$6E,$4A,$08       /// movd  mm1, [edx+8]
       mov   edx, dest
 
- @@3DNowLoop:
+@@3DNowLoop:
       db $0F,$6F,$10           /// movq  mm2, [eax]
       db $0F,$6E,$58,$08       /// movd  mm3, [eax+8]
       db $0F,$0F,$D0,$9E       /// pfadd mm2, mm0
@@ -2497,30 +2452,27 @@ begin
 
       db $0F,$0E               /// femms
 
- @@End:
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    for i:=0 to nb-1 do begin
-       dest^[i][0]:=src^[i][0]+delta[0];
-       dest^[i][1]:=src^[i][1]+delta[1];
-       dest^[i][2]:=src^[i][2]+delta[2];
-    end;
- end;
- {$endif}
+@@End:
+{$else}
+var
+   i : Integer;
+begin
+   for i:=0 to nb-1 do begin
+      dest^[i][0]:=src^[i][0]+delta[0];
+      dest^[i][1]:=src^[i][1]+delta[1];
+      dest^[i][2]:=src^[i][2]+delta[2];
+   end;
+{$endif}
 end;
 
 // VectorSubtract (func, affine)
 //
 function VectorSubtract(const v1, v2 : TAffineVector): TAffineVector;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FSTP DWORD PTR [ECX]
@@ -2530,25 +2482,22 @@ begin
       FLD  DWORD PTR [EAX+8]
       FSUB DWORD PTR [EDX+8]
       FSTP DWORD PTR [ECX+8]
- end;
- {$else}
- begin
-    Result[0]:=v1[0]-v2[0];
-    Result[1]:=v1[1]-v2[1];
-    Result[2]:=v1[2]-v2[2];
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=v1[0]-v2[0];
+   Result[1]:=v1[1]-v2[1];
+   Result[2]:=v1[2]-v2[2];
+{$endif}
 end;
 
 // VectorSubtract (proc, affine)
 //
 procedure VectorSubtract(const v1, v2 : TAffineVector; var result : TAffineVector); overload;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FSTP DWORD PTR [ECX]
@@ -2558,25 +2507,22 @@ begin
       FLD  DWORD PTR [EAX+8]
       FSUB DWORD PTR [EDX+8]
       FSTP DWORD PTR [ECX+8]
- end;
- {$else}
- begin
-    result[0]:=v1[0]-v2[0];
-    result[1]:=v1[1]-v2[1];
-    result[2]:=v1[2]-v2[2];
- end;
- {$endif}
+{$else}
+begin
+   result[0]:=v1[0]-v2[0];
+   result[1]:=v1[1]-v2[1];
+   result[2]:=v1[2]-v2[2];
+{$endif}
 end;
 
 // VectorSubtract (proc, affine-hmg)
 //
 procedure VectorSubtract(const v1, v2 : TAffineVector; var result : TVector); overload;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FSTP DWORD PTR [ECX]
@@ -2588,26 +2534,23 @@ begin
       FSTP DWORD PTR [ECX+8]
       xor   eax, eax
       mov   [ECX+12], eax
- end;
- {$else}
- begin
-    result[0]:=v1[0]-v2[0];
-    result[1]:=v1[1]-v2[1];
-    result[2]:=v1[2]-v2[2];
-    result[3]:=0;
- end;
- {$endif}
+{$else}
+begin
+   result[0]:=v1[0]-v2[0];
+   result[1]:=v1[1]-v2[1];
+   result[2]:=v1[2]-v2[2];
+   result[3]:=0;
+{$endif}
 end;
 
 // VectorSubtract
 //
 procedure VectorSubtract(const v1 : TVector; v2 : TAffineVector; var result : TVector); overload;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FSTP DWORD PTR [ECX]
@@ -2619,29 +2562,26 @@ begin
       FSTP DWORD PTR [ECX+8]
       mov   edx, [eax+12]
       mov   [ECX+12], edx
- end;
- {$else}
- begin
-    result[0]:=v1[0]-v2[0];
-    result[1]:=v1[1]-v2[1];
-    result[2]:=v1[2]-v2[2];
-    result[3]:=v1[0];
- end;
- {$endif}
+{$else}
+begin
+   result[0]:=v1[0]-v2[0];
+   result[1]:=v1[1]-v2[1];
+   result[2]:=v1[2]-v2[2];
+   result[3]:=v1[0];
+{$endif}
 end;
 
 // VectorSubtract (hmg)
 //
 function VectorSubtract(const v1, v2 : TVector) : TVector;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$00           /// MOVQ  MM0, [EAX]
       db $0F,$0F,$02,$9A       /// PFSUB MM0, [EDX]
       db $0F,$7F,$01           /// MOVQ  [ECX], MM0
@@ -2650,7 +2590,7 @@ begin
       db $0F,$7F,$49,$08       /// MOVQ  [ECX+8], MM1
       db $0F,$0E               /// FEMMS
       ret
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FSTP DWORD PTR [ECX]
@@ -2663,28 +2603,25 @@ begin
       FLD  DWORD PTR [EAX+12]
       FSUB DWORD PTR [EDX+12]
       FSTP DWORD PTR [ECX+12]
- end;
- {$else}
- begin
-    Result[0]:=v1[0]-v2[0];
-    Result[1]:=v1[1]-v2[1];
-    Result[2]:=v1[2]-v2[2];
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=v1[0]-v2[0];
+   Result[1]:=v1[1]-v2[1];
+   Result[2]:=v1[2]-v2[2];
+{$endif}
 end;
 
 // VectorSubtract (proc, hmg)
 //
 procedure VectorSubtract(const v1, v2 : TVector; var result : TVector);
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$00           /// MOVQ  MM0, [EAX]
       db $0F,$0F,$02,$9A       /// PFSUB MM0, [EDX]
       db $0F,$7F,$01           /// MOVQ  [ECX], MM0
@@ -2693,7 +2630,7 @@ begin
       db $0F,$7F,$49,$08       /// MOVQ  [ECX+8], MM1
       db $0F,$0E               /// FEMMS
       ret
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FSTP DWORD PTR [ECX]
@@ -2706,26 +2643,23 @@ begin
       FLD  DWORD PTR [EAX+12]
       FSUB DWORD PTR [EDX+12]
       FSTP DWORD PTR [ECX+12]
- end;
- {$else}
- begin
-    result[0]:=v1[0]-v2[0];
-    result[1]:=v1[1]-v2[1];
-    result[2]:=v1[2]-v2[2];
-    result[3]:=v1[3]-v2[3];
- end;
- {$endif}
+{$else}
+begin
+   result[0]:=v1[0]-v2[0];
+   result[1]:=v1[1]-v2[1];
+   result[2]:=v1[2]-v2[2];
+   result[3]:=v1[3]-v2[3];
+{$endif}
 end;
 
 // VectorSubtract (proc, affine)
 //
 procedure VectorSubtract(const v1, v2 : TVector; var result : TAffineVector); overload;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // ECX contains the result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// ECX contains the result
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD  DWORD PTR [EAX]
          FSUB DWORD PTR [EDX]
          FSTP DWORD PTR [ECX]
@@ -2735,14 +2669,12 @@ begin
          FLD  DWORD PTR [EAX+8]
          FSUB DWORD PTR [EDX+8]
          FSTP DWORD PTR [ECX+8]
- end;
- {$else}
- begin
-    result[0]:=v1[0]-v2[0];
-    result[1]:=v1[1]-v2[1];
-    result[2]:=v1[2]-v2[2];
- end;
- {$endif}
+{$else}
+begin
+   result[0]:=v1[0]-v2[0];
+   result[1]:=v1[1]-v2[1];
+   result[2]:=v1[2]-v2[2];
+{$endif}
 end;
 
 // VectorSubtract (affine, single)
@@ -2767,11 +2699,10 @@ end;
 // SubtractVector (affine)
 //
 procedure SubtractVector(var V1 : TAffineVector; const V2 : TAffineVector);
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD  DWORD PTR [EAX]
          FSUB DWORD PTR [EDX]
          FSTP DWORD PTR [EAX]
@@ -2781,27 +2712,24 @@ begin
          FLD  DWORD PTR [EAX+8]
          FSUB DWORD PTR [EDX+8]
          FSTP DWORD PTR [EAX+8]
- end;
- {$else}
- begin
-    v1[0]:=v1[0]-v2[0];
-    v1[1]:=v1[1]-v2[1];
-    v1[2]:=v1[2]-v2[2];
- end;
- {$endif}
+{$else}
+begin
+   v1[0]:=v1[0]-v2[0];
+   v1[1]:=v1[1]-v2[1];
+   v1[2]:=v1[2]-v2[2];
+{$endif}
 end;
 
 // SubtractVector (hmg)
 //
 procedure SubtractVector(var V1 : TVector; const V2 : TVector);
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$00           /// MOVQ  MM0, [EAX]
       db $0F,$0F,$02,$9A       /// PFSUB MM0, [EDX]
       db $0F,$7F,$00           /// MOVQ  [EAX], MM0
@@ -2810,7 +2738,7 @@ begin
       db $0F,$7F,$48,$08       /// MOVQ  [EAX+8], MM1
       db $0F,$0E               /// FEMMS
       ret
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FSTP DWORD PTR [EAX]
@@ -2823,26 +2751,23 @@ begin
       FLD  DWORD PTR [EAX+12]
       FSUB DWORD PTR [EDX+12]
       FSTP DWORD PTR [EAX+12]
- end;
- {$else}
- begin
-    v1[0]:=v1[0]-v2[0];
-    v1[1]:=v1[1]-v2[1];
-    v1[2]:=v1[2]-v2[2];
-    v1[3]:=v1[3]-v2[3];
- end;
- {$endif}
+{$else}
+begin
+   v1[0]:=v1[0]-v2[0];
+   v1[1]:=v1[1]-v2[1];
+   v1[2]:=v1[2]-v2[2];
+   v1[3]:=v1[3]-v2[3];
+{$endif}
 end;
 
 // CombineVector (var)
 //
 procedure CombineVector(var vr : TAffineVector; const v : TAffineVector; var f : Single);
-begin
- // EAX contains address of vr
- // EDX contains address of v
- // ECX contains address of f
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of vr
+// EDX contains address of v
+// ECX contains address of f
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD  DWORD PTR [EDX]
          FMUL DWORD PTR [ECX]
          FADD DWORD PTR [EAX]
@@ -2855,25 +2780,22 @@ begin
          FMUL DWORD PTR [ECX]
          FADD DWORD PTR [EAX+8]
          FSTP DWORD PTR [EAX+8]
- end;
- {$else}
- begin
-    vr[0]:=vr[0]+v[0]*f;
-    vr[1]:=vr[1]+v[1]*f;
-    vr[2]:=vr[2]+v[2]*f;
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=vr[0]+v[0]*f;
+   vr[1]:=vr[1]+v[1]*f;
+   vr[2]:=vr[2]+v[2]*f;
+{$endif}
 end;
 
 // CombineVector (pointer)
 //
 procedure CombineVector(var vr : TAffineVector; const v : TAffineVector; pf : PSingle);
-begin
- // EAX contains address of vr
- // EDX contains address of v
- // ECX contains address of f
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of vr
+// EDX contains address of v
+// ECX contains address of f
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD  DWORD PTR [EDX]
          FMUL DWORD PTR [ECX]
          FADD DWORD PTR [EAX]
@@ -2886,14 +2808,12 @@ begin
          FMUL DWORD PTR [ECX]
          FADD DWORD PTR [EAX+8]
          FSTP DWORD PTR [EAX+8]
- end;
- {$else}
- begin
-    vr[0]:=vr[0]+v[0]*pf^;
-    vr[1]:=vr[1]+v[1]*pf^;
-    vr[2]:=vr[2]+v[2]*pf^;
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=vr[0]+v[0]*pf^;
+   vr[1]:=vr[1]+v[1]*pf^;
+   vr[2]:=vr[2]+v[2]*pf^;
+{$endif}
 end;
 
 // TexPointCombine
@@ -2934,15 +2854,14 @@ end;
 // CombineVector
 //
 procedure CombineVector(var vr : TVector; const v : TVector; var f : Single); overload;
-begin
- // EAX contains address of vr
- // EDX contains address of v
- // ECX contains address of f
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of vr
+// EDX contains address of v
+// ECX contains address of f
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6E,$11           /// MOVD  MM2, [ECX]
       db $0F,$62,$D2           /// PUNPCKLDQ MM2, MM2
       db $0F,$6F,$02           /// MOVQ  MM0, [EDX]
@@ -2955,7 +2874,7 @@ begin
       db $0F,$7F,$48,$08       /// MOVQ  [EAX+8], MM1
       db $0F,$0E               /// FEMMS
       ret
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EDX]
       FMUL DWORD PTR [ECX]
       FADD DWORD PTR [EAX]
@@ -2972,26 +2891,23 @@ begin
       FMUL DWORD PTR [ECX]
       FADD DWORD PTR [EAX+12]
       FSTP DWORD PTR [EAX+12]
- end;
- {$else}
- begin
-    vr[0]:=vr[0]+v[0]*f;
-    vr[1]:=vr[1]+v[1]*f;
-    vr[2]:=vr[2]+v[2]*f;
-    vr[3]:=vr[3]+v[3]*f;
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=vr[0]+v[0]*f;
+   vr[1]:=vr[1]+v[1]*f;
+   vr[2]:=vr[2]+v[2]*f;
+   vr[3]:=vr[3]+v[3]*f;
+{$endif}
 end;
 
 // CombineVector
 //
 procedure CombineVector(var vr : TVector; const v : TAffineVector; var f : Single); overload;
-begin
- // EAX contains address of vr
- // EDX contains address of v
- // ECX contains address of f
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of vr
+// EDX contains address of v
+// ECX contains address of f
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EDX]
       FMUL DWORD PTR [ECX]
       FADD DWORD PTR [EAX]
@@ -3004,14 +2920,12 @@ begin
       FMUL DWORD PTR [ECX]
       FADD DWORD PTR [EAX+8]
       FSTP DWORD PTR [EAX+8]
- end;
- {$else}
- begin
-    vr[0]:=vr[0]+v[0]*f;
-    vr[1]:=vr[1]+v[1]*f;
-    vr[2]:=vr[2]+v[2]*f;
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=vr[0]+v[0]*f;
+   vr[1]:=vr[1]+v[1]*f;
+   vr[2]:=vr[2]+v[2]*f;
+{$endif}
 end;
 
 // VectorCombine
@@ -3037,17 +2951,16 @@ end;
 // VectorCombine
 //
 procedure VectorCombine(const V1, V2: TVector; const F1, F2: Single; var vr : TVector); overload;
-begin
- // EAX contains address of v1
- // EDX contains address of v2
- // ECX contains address of vr
- // ebp+$c points to f1
- // ebp+$8 points to f2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains address of v2
+// ECX contains address of vr
+// ebp+$c points to f1
+// ebp+$8 points to f2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:    // 246354
+@@3DNow:    // 246354
       db $0F,$6E,$4D,$0C       /// MOVD  MM1, [EBP+$0C]
       db $0F,$62,$C9           /// PUNPCKLDQ MM1, MM1
       db $0F,$6E,$55,$08       /// MOVD  MM2, [EBP+$08]
@@ -3071,7 +2984,7 @@ begin
       pop ebp
       ret $08
 
- @@FPU:      // 327363
+@@FPU:      // 327363
       FLD  DWORD PTR [EAX]
       FMUL DWORD PTR [EBP+$0C]
       FLD  DWORD PTR [EDX]
@@ -3099,30 +3012,27 @@ begin
       FMUL DWORD PTR [EBP+$08]
       FADD
       FSTP DWORD PTR [ECX+12]
- end;
- {$else}
- begin
-    vr[0]:=(F1 * V1[0]) + (F2 * V2[0]);
-    vr[1]:=(F1 * V1[1]) + (F2 * V2[1]);
-    vr[2]:=(F1 * V1[2]) + (F2 * V2[2]);
-    vr[3]:=(F1 * V1[3]) + (F2 * V2[3]);
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=(F1 * V1[0]) + (F2 * V2[0]);
+   vr[1]:=(F1 * V1[1]) + (F2 * V2[1]);
+   vr[2]:=(F1 * V1[2]) + (F2 * V2[2]);
+   vr[3]:=(F1 * V1[3]) + (F2 * V2[3]);
+{$endif}
 end;
 
 // VectorCombine (F1=1.0)
 //
 procedure VectorCombine(const V1, V2: TVector; const F2: Single; var vr : TVector); overload;
-begin
- // EAX contains address of v1
- // EDX contains address of v2
- // ECX contains address of vr
- // ebp+$8 points to f2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains address of v2
+// ECX contains address of vr
+// ebp+$8 points to f2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:    // 121559
+@@3DNow:    // 121559
       db $0F,$6E,$55,$08       /// MOVD  MM2, [EBP+$08]
       db $0F,$62,$D2           /// PUNPCKLDQ MM2, MM2
 
@@ -3142,7 +3052,7 @@ begin
       pop ebp
       ret $04
 
- @@FPU:      // 171379
+@@FPU:      // 171379
       FLD  DWORD PTR [EBP+$08]
 
       FLD  DWORD PTR [EDX]
@@ -3164,15 +3074,13 @@ begin
       FMULP
       FADD DWORD PTR [EAX+12]
       FSTP DWORD PTR [ECX+12]
- end;
- {$else}
- begin      // 201283
-    vr[0]:=V1[0] + (F2 * V2[0]);
-    vr[1]:=V1[1] + (F2 * V2[1]);
-    vr[2]:=V1[2] + (F2 * V2[2]);
-    vr[3]:=V1[3] + (F2 * V2[3]);
- end;
- {$endif}
+{$else}
+begin      // 201283
+   vr[0]:=V1[0] + (F2 * V2[0]);
+   vr[1]:=V1[1] + (F2 * V2[1]);
+   vr[2]:=V1[2] + (F2 * V2[2]);
+   vr[3]:=V1[3] + (F2 * V2[3]);
+{$endif}
 end;
 
 // VectorCombine
@@ -3198,19 +3106,19 @@ end;
 // VectorCombine3
 //
 procedure VectorCombine3(const V1, V2, V3: TVector; const F1, F2, F3: Single; var vr : TVector);
+// EAX contains address of v1
+// EDX contains address of v2
+// ECX contains address of v3
+// EBX contains address of vr
+// ebp+$14 points to f1
+// ebp+$10 points to f2
+// ebp+$0c points to f3
 begin
- // EAX contains address of v1
- // EDX contains address of v2
- // ECX contains address of v3
- // EBX contains address of vr
- // ebp+$14 points to f1
- // ebp+$10 points to f2
- // ebp+$0c points to f3
- {$ifndef GEOMETRY_NO_ASM}
+{$ifndef GEOMETRY_NO_ASM}
    asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:    // 197
+@@3DNow:    // 197
       db $0F,$6E,$4D,$14       /// MOVD  MM1, [EBP+$14]
       db $0F,$62,$C9           /// PUNPCKLDQ MM1, MM1
       db $0F,$6E,$55,$10       /// MOVD  MM2, [EBP+$10]
@@ -3242,26 +3150,23 @@ begin
       pop ebx
       pop ebp
       ret $10
- @@FPU:      // 263
+@@FPU:      // 263
    end;
- {$endif}
- begin
+{$endif}
    vr[X]:=(F1 * V1[X]) + (F2 * V2[X]) + (F3 * V3[X]);
    vr[Y]:=(F1 * V1[Y]) + (F2 * V2[Y]) + (F3 * V3[Y]);
    vr[Z]:=(F1 * V1[Z]) + (F2 * V2[Z]) + (F3 * V3[Z]);
    vr[W]:=(F1 * V1[W]) + (F2 * V2[W]) + (F3 * V3[W]);
- end;
 end;
 
 // VectorDotProduct (affine)
 //
 function VectorDotProduct(const V1, V2 : TAffineVector): Single;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // result is stored in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// result is stored in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
        FLD DWORD PTR [eax]
        FMUL DWORD PTR [edx]
        FLD DWORD PTR [eax+4]
@@ -3270,23 +3175,21 @@ begin
        FLD DWORD PTR [eax+8]
        FMUL DWORD PTR [edx+8]
        faddp
- end;
- {$else}
- begin
-    Result:=V1[0]*V2[0]+V1[1]*V2[1]+V1[2]*V2[2];
- end;
- {$endif}
 end;
+{$else}
+begin
+   Result:=V1[0]*V2[0]+V1[1]*V2[1]+V1[2]*V2[2];
+end;
+{$endif}
 
 // VectorDotProduct (hmg)
 //
 function VectorDotProduct(const V1, V2 : TVector) : Single;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // result is stored in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// result is stored in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD DWORD PTR [EAX]
          FMUL DWORD PTR [EDX]
          FLD DWORD PTR [EAX + 4]
@@ -3298,23 +3201,20 @@ begin
          FLD DWORD PTR [EAX + 12]
          FMUL DWORD PTR [EDX + 12]
          FADDP
- end;
- {$else}
- begin
-    Result:=V1[0]*V2[0]+V1[1]*V2[1]+V1[2]*V2[2]+V1[3]*V2[3];
- end;
- {$endif}
+{$else}
+begin
+   Result:=V1[0]*V2[0]+V1[1]*V2[1]+V1[2]*V2[2]+V1[3]*V2[3];
+{$endif}
 end;
 
 // VectorDotProduct
 //
 function VectorDotProduct(const V1 : TVector; const V2 : TAffineVector) : Single;
-begin
- // EAX contains address of V1
- // EDX contains address of V2
- // result is stored in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V1
+// EDX contains address of V2
+// result is stored in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD DWORD PTR [EAX]
          FMUL DWORD PTR [EDX]
          FLD DWORD PTR [EAX + 4]
@@ -3323,21 +3223,18 @@ begin
          FLD DWORD PTR [EAX + 8]
          FMUL DWORD PTR [EDX + 8]
          FADDP
- end;
- {$else}
- begin
-    Result:=V1[0]*V2[0]+V1[1]*V2[1]+V1[2]*V2[2];
- end;
- {$endif}
+{$else}
+begin
+   Result:=V1[0]*V2[0]+V1[1]*V2[1]+V1[2]*V2[2];
+{$endif}
 end;
 
 // PointProject (affine)
 //
 function PointProject(const p, origin, direction : TAffineVector) : Single;
-begin
- // EAX -> p, EDX -> origin, ECX -> direction
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX -> p, EDX -> origin, ECX -> direction
+{$ifndef GEOMETRY_NO_ASM}
+asm
       fld   dword ptr [eax]
       fsub  dword ptr [edx]
       fmul  dword ptr [ecx]
@@ -3349,23 +3246,20 @@ begin
       fsub  dword ptr [edx+8]
       fmul  dword ptr [ecx+8]
       fadd
- end;
- {$else}
- begin
-    Result:= direction[0]*(p[0]-origin[0])
-            +direction[1]*(p[1]-origin[1])
-            +direction[2]*(p[2]-origin[2]);
- end;
- {$endif}
+{$else}
+begin
+   Result:= direction[0]*(p[0]-origin[0])
+           +direction[1]*(p[1]-origin[1])
+           +direction[2]*(p[2]-origin[2]);
+{$endif}
 end;
 
 // PointProject (vector)
 //
 function PointProject(const p, origin, direction : TVector) : Single;
-begin
- // EAX -> p, EDX -> origin, ECX -> direction
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX -> p, EDX -> origin, ECX -> direction
+{$ifndef GEOMETRY_NO_ASM}
+asm
       fld   dword ptr [eax]
       fsub  dword ptr [edx]
       fmul  dword ptr [ecx]
@@ -3377,14 +3271,12 @@ begin
       fsub  dword ptr [edx+8]
       fmul  dword ptr [ecx+8]
       fadd
- end;
- {$else}
- begin
-    Result:= direction[0]*(p[0]-origin[0])
-            +direction[1]*(p[1]-origin[1])
-            +direction[2]*(p[2]-origin[2]);
- end;
- {$endif}
+{$else}
+begin
+   Result:= direction[0]*(p[0]-origin[0])
+           +direction[1]*(p[1]-origin[1])
+           +direction[2]*(p[2]-origin[2]);
+{$endif}
 end;
 
 // VectorCrossProduct
@@ -3492,9 +3384,8 @@ end;
 // VectorAffineLerp
 //
 function VectorLerp(const V1, V2: TAffineVector; t: Single): TAffineVector;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
    fld   t
 
    fld   dword ptr [eax+0]
@@ -3519,26 +3410,23 @@ begin
    fstp  dword ptr [ecx+8]
 
    ffree st(0)
- end;
- {$else}
- begin
-    Result[X]:=V1[X]+(V2[X]-V1[X])*t;
-    Result[Y]:=V1[Y]+(V2[Y]-V1[Y])*t;
-    Result[Z]:=V1[Z]+(V2[Z]-V1[Z])*t;
- end;
- {$endif}
+{$else}
+begin
+   Result[X]:=V1[X]+(V2[X]-V1[X])*t;
+   Result[Y]:=V1[Y]+(V2[Y]-V1[Y])*t;
+   Result[Z]:=V1[Z]+(V2[Z]-V1[Z])*t;
+{$endif}
 end;
 
 // VectorLerp
 //
 procedure VectorLerp(const v1, v2 : TAffineVector; t : Single; var vr : TAffineVector);
-begin
- // EAX contains address of v1
- // EDX contains address of v2
- // EBX contains address of t
- // ECX contains address of vr
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains address of v2
+// EBX contains address of t
+// ECX contains address of vr
+{$ifndef GEOMETRY_NO_ASM}
+asm
       fld   t
 
       fld   dword ptr [eax+0]
@@ -3563,14 +3451,12 @@ begin
       fstp  dword ptr [ecx+8]
 
       ffree st(0)
- end;
- {$else}
- begin
-    vr[X]:=V1[X]+(V2[X]-V1[X])*t;
-    vr[Y]:=V1[Y]+(V2[Y]-V1[Y])*t;
-    vr[Z]:=V1[Z]+(V2[Z]-V1[Z])*t;
- end;
- {$endif}
+{$else}
+begin
+   vr[X]:=V1[X]+(V2[X]-V1[X])*t;
+   vr[Y]:=V1[Y]+(V2[Y]-V1[Y])*t;
+   vr[Z]:=V1[Z]+(V2[Z]-V1[Z])*t;
+{$endif}
 end;
 
 // VectorLerp
@@ -3884,61 +3770,52 @@ end;
 // VectorLength (array)
 //
 function VectorLength(const V : array of Single) : Single;
- var
-    i : Integer;
-begin
- // EAX contains address of V
- // EDX contains the highest index of V
- // the result is returned in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V
+// EDX contains the highest index of V
+// the result is returned in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLDZ                           // initialize sum
- @@Loop:
+@@Loop:
          FLD  DWORD PTR [EAX  +  4 * EDX] // load a component
          FMUL ST, ST
          FADDP
          SUB  EDX, 1
          JNL  @@Loop
          FSQRT
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    Result:=0;
-    for i:=Low(V) to High(V) do
-       Result:=Result+Sqr(V[i]);
-    Result:=Sqrt(Result);
- end;
- {$endif}
+{$else}
+var
+   i : Integer;
+begin
+   Result:=0;
+   for i:=Low(V) to High(V) do
+      Result:=Result+Sqr(V[i]);
+   Result:=Sqrt(Result);
+{$endif}
 end;
 
 // VectorLength  (x, y)
 //
 function VectorLength(const x, y : Single) : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD X
          FMUL ST, ST
          FLD Y
          FMUL ST, ST
          FADD
          FSQRT
- end;
- {$else}
- begin
-    Result:=Sqrt(x*x+y*y);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Sqrt(x*x+y*y);
+{$endif}
 end;
 
 // VectorLength (x, y, z)
 //
 function VectorLength(const x, y, z : Single) : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
          FLD X
          FMUL ST, ST
          FLD Y
@@ -3948,22 +3825,19 @@ begin
          FMUL ST, ST
          FADD
          FSQRT
- end;
- {$else}
- begin
-    Result:=Sqrt(x*x+y*y+z*z);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Sqrt(x*x+y*y+z*z);
+{$endif}
 end;
 
 // VectorLength
 //
 function VectorLength(const v : TAffineVector) : Single;
-begin
- // EAX contains address of V
- // result is passed in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V
+// result is passed in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
        FLD  DWORD PTR [EAX]
        FMUL ST, ST
        FLD  DWORD PTR [EAX+4]
@@ -3973,22 +3847,19 @@ begin
        FMUL ST, ST
        FADDP
        FSQRT
- end;
- {$else}
- begin
-    Result:=Sqrt(VectorNorm(v));
- end;
- {$endif}
+{$else}
+begin
+   Result:=Sqrt(VectorNorm(v));
+{$endif}
 end;
 
 // VectorLength
 //
 function VectorLength(const v : TVector) : Single;
-begin
- // EAX contains address of V
- // result is passed in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V
+// result is passed in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
        FLD  DWORD PTR [EAX]
        FMUL ST, ST
        FLD  DWORD PTR [EAX+4]
@@ -3998,12 +3869,10 @@ begin
        FMUL ST, ST
        FADDP
        FSQRT
- end;
- {$else}
- begin
-    Result:=Sqrt(VectorNorm(v));
- end;
- {$endif}
+{$else}
+begin
+   Result:=Sqrt(VectorNorm(v));
+{$endif}
 end;
 
 // VectorNorm
@@ -4016,11 +3885,10 @@ end;
 // VectorNorm (affine)
 //
 function VectorNorm(const v : TAffineVector) : Single;
-begin
- // EAX contains address of V
- // result is passed in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V
+// result is passed in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX];
       FMUL ST, ST
       FLD DWORD PTR [EAX+4];
@@ -4029,22 +3897,19 @@ begin
       FLD DWORD PTR [EAX+8];
       FMUL ST, ST
       FADD
- end;
- {$else}
- begin
-    Result:=v[0]*v[0]+v[1]*v[1]+v[2]*v[2];
- end;
- {$endif}
+{$else}
+begin
+   Result:=v[0]*v[0]+v[1]*v[1]+v[2]*v[2];
+{$endif}
 end;
 
 // VectorNorm (hmg)
 //
 function VectorNorm(const v : TVector) : Single;
-begin
- // EAX contains address of V
- // result is passed in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V
+// result is passed in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX];
       FMUL ST, ST
       FLD DWORD PTR [EAX+4];
@@ -4053,55 +3918,45 @@ begin
       FLD DWORD PTR [EAX+8];
       FMUL ST, ST
       FADD
- end;
- {$else}
- begin
-    Result:=v[0]*v[0]+v[1]*v[1]+v[2]*v[2];
- end;
- {$endif}
+{$else}
+begin
+   Result:=v[0]*v[0]+v[1]*v[1]+v[2]*v[2];
+{$endif}
 end;
 
 // VectorNorm
 //
 function VectorNorm(var V: array of Single): Single;
- var
-    i : Integer;
-begin
- // EAX contains address of V
- // EDX contains highest index in V
- // result is passed in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of V
+// EDX contains highest index in V
+// result is passed in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLDZ                           // initialize sum
- @@Loop:
+@@Loop:
       FLD  DWORD PTR [EAX + 4 * EDX] // load a component
       FMUL ST, ST                    // make square
       FADDP                          // add previous calculated sum
       SUB  EDX, 1
       JNL  @@Loop
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    Result:=0;
-    for i:=Low(v) to High(v) do
-       Result:=Result+v[i]*v[i];
- end;
- {$endif}
+{$else}
+var
+   i : Integer;
+begin
+   Result:=0;
+   for i:=Low(v) to High(v) do
+      Result:=Result+v[i]*v[i];
+{$endif}
 end;
 
 // NormalizeVector (affine)
 //
 procedure NormalizeVector(var v : TAffineVector);
- var
-    invLen : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$00           /// movq        mm0,[eax]
       db $0F,$6E,$48,$08       /// movd        mm1,[eax+8]
       db $0F,$6F,$E0           /// movq        mm4,mm0
@@ -4121,11 +3976,11 @@ begin
       db $0F,$0F,$E1,$B4       /// pfmul       mm4,mm1
       db $0F,$7E,$58,$08       /// movd        [eax+8],mm3
       db $0F,$7F,$20           /// movq        [eax],mm4
- @@norm_end:
+@@norm_end:
       db $0F,$0E               /// femms
       ret
 
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EAX]
       FMUL ST, ST
       FLD  DWORD PTR [EAX+4]
@@ -4145,30 +4000,25 @@ begin
       FSTP DWORD PTR [EAX+4]
       FMUL DWORD PTR [EAX+8]
       FSTP DWORD PTR [EAX+8]
- end;
- {$else}
-// var
-//    invLen : Single;
- begin
-    invLen:=RSqrt(VectorNorm(v));
-    v[0]:=v[0]*invLen;
-    v[1]:=v[1]*invLen;
-    v[2]:=v[2]*invLen;
- end;
- {$endif}
+{$else}
+var
+   invLen : Single;
+begin
+   invLen:=RSqrt(VectorNorm(v));
+   v[0]:=v[0]*invLen;
+   v[1]:=v[1]*invLen;
+   v[2]:=v[2]*invLen;
+{$endif}
 end;
 
 // VectorNormalize
 //
 function VectorNormalize(const v : TAffineVector) : TAffineVector;
- var
-    invLen : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$00           /// movq        mm0,[eax]
       db $0F,$6E,$48,$08       /// movd        mm1,[eax+8]
       db $0F,$6F,$E0           /// movq        mm4,mm0
@@ -4188,11 +4038,11 @@ begin
       db $0F,$0F,$E1,$B4       /// pfmul       mm4,mm1
       db $0F,$7E,$5A,$08       /// movd        [edx+8],mm3
       db $0F,$7F,$22           /// movq        [edx],mm4
- @@norm_end:
+@@norm_end:
       db $0F,$0E               /// femms
       ret
 
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EAX]
       FMUL ST, ST
       FLD  DWORD PTR [EAX+4]
@@ -4212,34 +4062,29 @@ begin
       FSTP DWORD PTR [EDX+4]
       FMUL DWORD PTR [EAX+8]
       FSTP DWORD PTR [EDX+8]
- end;
- {$else}
-// var
-//    invLen : Single;
- begin
-    invLen:=RSqrt(VectorNorm(v));
-    Result[0]:=v[0]*invLen;
-    Result[1]:=v[1]*invLen;
-    Result[2]:=v[2]*invLen;
- end;
- {$endif}
+{$else}
+var
+   invLen : Single;
+begin
+   invLen:=RSqrt(VectorNorm(v));
+   Result[0]:=v[0]*invLen;
+   Result[1]:=v[1]*invLen;
+   Result[2]:=v[2]*invLen;
+{$endif}
 end;
 
 // NormalizeVectorArray
 //
 procedure NormalizeVectorArray(list : PAffineVectorArray; n : Integer);
- var
-    i : Integer;
-begin
- // EAX contains list
- // EDX contains n
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains list
+// EDX contains n
+{$ifndef GEOMETRY_NO_ASM}
+asm
       OR    EDX, EDX
       JZ    @@End
       test vSIMD, 1
       jz @@FPULoop
- @@3DNowLoop:
+@@3DNowLoop:
       db $0F,$6F,$00           /// movq        mm0,[eax]
       db $0F,$6E,$48,$08       /// movd        mm1,[eax+8]
       db $0F,$6F,$E0           /// movq        mm4,mm0
@@ -4259,7 +4104,7 @@ begin
       db $0F,$0F,$E1,$B4       /// pfmul       mm4,mm1
       db $0F,$7E,$58,$08       /// movd        [eax+8],mm3
       db $0F,$7F,$20           /// movq        [eax],mm4
- @@norm_end:
+@@norm_end:
       db $0F,$0E               /// femms
       add   eax, 12
       db $0F,$0D,$40,$60       /// PREFETCH    [EAX+96]
@@ -4267,7 +4112,7 @@ begin
       jnz   @@3DNowLOOP
       ret
 
- @@FPULoop:
+@@FPULoop:
       FLD   DWORD PTR [EAX]
       FMUL  ST, ST
       FLD   DWORD PTR [EAX+4]
@@ -4290,29 +4135,24 @@ begin
       ADD   EAX, 12
       DEC   EDX
       JNZ   @@FPULOOP
- @@End:
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    for i:=0 to n-1 do
-       NormalizeVector(list^[i]);
- end;
- {$endif}
+@@End:
+{$else}
+var
+   i : Integer;
+begin
+   for i:=0 to n-1 do
+      NormalizeVector(list^[i]);
+{$endif}
 end;
 
 // NormalizeVector (hmg)
 //
 procedure NormalizeVector(var v : TVector);
- var
-    invLen : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$00           /// movq        mm0,[eax]
       db $0F,$6E,$48,$08       /// movd        mm1,[eax+8]
       db $0F,$6F,$E0           /// movq        mm4,mm0
@@ -4332,13 +4172,13 @@ begin
       db $0F,$0F,$E1,$B4       /// pfmul       mm4,mm1
       db $0F,$7E,$58,$08       /// movd        [eax+8],mm3
       db $0F,$7F,$20           /// movq        [eax],mm4
- @@norm_end:
+@@norm_end:
       db $0F,$0E               /// femms
       xor   edx, edx
       mov   [eax+12], edx
       ret
 
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EAX]
       FMUL ST, ST
       FLD  DWORD PTR [EAX+4]
@@ -4360,31 +4200,26 @@ begin
       FSTP DWORD PTR [EAX+8]
       xor   edx, edx
       mov   [eax+12], edx
- end;
- {$else}
-// var
-//    invLen : Single;
- begin
-    invLen:=RSqrt(VectorNorm(v));
-    v[0]:=v[0]*invLen;
-    v[1]:=v[1]*invLen;
-    v[2]:=v[2]*invLen;
-    v[3]:=0;
- end;
- {$endif}
+{$else}
+var
+   invLen : Single;
+begin
+   invLen:=RSqrt(VectorNorm(v));
+   v[0]:=v[0]*invLen;
+   v[1]:=v[1]*invLen;
+   v[2]:=v[2]*invLen;
+   v[3]:=0;
+{$endif}
 end;
 
 // VectorNormalize (hmg, func)
 //
 function VectorNormalize(const v : TVector) : TVector;
- var
-    invLen : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6F,$00           /// movq        mm0,[eax]
       db $0F,$6E,$48,$08       /// movd        mm1,[eax+8]
       db $0F,$6F,$E0           /// movq        mm4,mm0
@@ -4404,13 +4239,13 @@ begin
       db $0F,$0F,$E1,$B4       /// pfmul       mm4,mm1
       db $0F,$7E,$5A,$08       /// movd        [edx+8],mm3
       db $0F,$7F,$22           /// movq        [edx],mm4
- @@norm_end:
+@@norm_end:
       db $0F,$0E               /// femms
       xor   eax, eax
       mov   [edx+12], eax
       ret
 
- @@FPU:
+@@FPU:
       FLD  DWORD PTR [EAX]
       FMUL ST, ST
       FLD  DWORD PTR [EAX+4]
@@ -4432,28 +4267,25 @@ begin
       FSTP DWORD PTR [EDX+8]
       xor   eax, eax
       mov   [edx+12], eax
- end;
- {$else}
-// var
-//    invLen : Single;
- begin
-    invLen:=RSqrt(VectorNorm(v));
-    Result[0]:=v[0]*invLen;
-    Result[1]:=v[1]*invLen;
-    Result[2]:=v[2]*invLen;
-    Result[3]:=0;
- end;
- {$endif}
+{$else}
+var
+   invLen : Single;
+begin
+   invLen:=RSqrt(VectorNorm(v));
+   Result[0]:=v[0]*invLen;
+   Result[1]:=v[1]*invLen;
+   Result[2]:=v[2]*invLen;
+   Result[3]:=0;
+{$endif}
 end;
 
 // VectorAngleCosine
 //
 function VectorAngleCosine(const V1, V2: TAffineVector): Single;
-begin
- // EAX contains address of Vector1
- // EDX contains address of Vector2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of Vector1
+// EDX contains address of Vector2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX]           // V1[0]
       FLD ST                        // double V1[0]
       FMUL ST, ST                   // V1[0]^2 (prep. for divisor)
@@ -4483,22 +4315,19 @@ begin
       FSQRT                         // sqrt(ST(0))
       FDIVP                         // ST(0):=Result:=ST(1) / ST(0)
   // the result is expected in ST(0), if it's invalid, an error is raised
- end;
- {$else}
- begin
-    Result:=VectorDotProduct(V1, V2)/(VectorLength(V1)*VectorLength(V2));
- end;
- {$endif}
+{$else}
+begin
+   Result:=VectorDotProduct(V1, V2)/(VectorLength(V1)*VectorLength(V2));
+{$endif}
 end;
 
 // VectorNegate (affine)
 //
 function VectorNegate(const v : TAffineVector) : TAffineVector;
-begin
- // EAX contains address of v
- // EDX contains address of Result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v
+// EDX contains address of Result
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX]
       FCHS
       FSTP DWORD PTR [EDX]
@@ -4508,24 +4337,21 @@ begin
       FLD DWORD PTR [EAX+8]
       FCHS
       FSTP DWORD PTR [EDX+8]
- end;
- {$else}
- begin
-    Result[0]:=-v[0];
-    Result[1]:=-v[1];
-    Result[2]:=-v[2];
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=-v[0];
+   Result[1]:=-v[1];
+   Result[2]:=-v[2];
+{$endif}
 end;
 
 // VectorNegate (hmg)
 //
 function VectorNegate(const v : TVector) : TVector;
-begin
- // EAX contains address of v
- // EDX contains address of Result
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v
+// EDX contains address of Result
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX]
       FCHS
       FSTP DWORD PTR [EDX]
@@ -4538,24 +4364,21 @@ begin
       FLD DWORD PTR [EAX+12]
       FCHS
       FSTP DWORD PTR [EDX+12]
- end;
- {$else}
- begin
-    Result[0]:=-v[0];
-    Result[1]:=-v[1];
-    Result[2]:=-v[2];
-    Result[3]:=-v[3];
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=-v[0];
+   Result[1]:=-v[1];
+   Result[2]:=-v[2];
+   Result[3]:=-v[3];
+{$endif}
 end;
 
 // NegateVector
 //
 procedure NegateVector(var v : TAffineVector);
-begin
- // EAX contains address of v
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX]
       FCHS
       FSTP DWORD PTR [EAX]
@@ -4565,23 +4388,20 @@ begin
       FLD DWORD PTR [EAX+8]
       FCHS
       FSTP DWORD PTR [EAX+8]
- end;
- {$else}
- begin
-    v[0]:=-v[0];
-    v[1]:=-v[1];
-    v[2]:=-v[2];
- end;
- {$endif}
+{$else}
+begin
+   v[0]:=-v[0];
+   v[1]:=-v[1];
+   v[2]:=-v[2];
+{$endif}
 end;
 
 // NegateVector
 //
 procedure NegateVector(var v : TVector);
-begin
- // EAX contains address of v
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX]
       FCHS
       FSTP DWORD PTR [EAX]
@@ -4594,51 +4414,43 @@ begin
       FLD DWORD PTR [EAX+12]
       FCHS
       FSTP DWORD PTR [EAX+12]
- end;
- {$else}
- begin
-    v[0]:=-v[0];
-    v[1]:=-v[1];
-    v[2]:=-v[2];
-    v[3]:=-v[3];
- end;
- {$endif}
+{$else}
+begin
+   v[0]:=-v[0];
+   v[1]:=-v[1];
+   v[2]:=-v[2];
+   v[3]:=-v[3];
+{$endif}
 end;
 
 // NegateVector
 //
 procedure NegateVector(var V : array of Single);
- var
-    i : Integer;
-begin
- // EAX contains address of V
- // EDX contains highest index in V
- {$ifndef GEOMETRY_NO_ASM}
- asm
- @@Loop:
+// EAX contains address of V
+// EDX contains highest index in V
+{$ifndef GEOMETRY_NO_ASM}
+asm
+@@Loop:
       FLD DWORD PTR [EAX + 4 * EDX]
       FCHS
       WAIT
       FSTP DWORD PTR [EAX + 4 * EDX]
       DEC EDX
       JNS @@Loop
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    for i:=Low(v) to High(v) do
-       v[i]:=-v[i];
- end;
- {$endif}
+{$else}
+var
+   i : Integer;
+begin
+   for i:=Low(v) to High(v) do
+      v[i]:=-v[i];
+{$endif}
 end;
 
 // ScaleVector (affine)
 //
 procedure ScaleVector(var v : TAffineVector; factor: Single);
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EAX]
@@ -4648,26 +4460,23 @@ begin
       FLD  DWORD PTR [EAX+8]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EAX+8]
- end;
- {$else}
- begin
-    v[0]:=v[0]*factor;
-    v[1]:=v[1]*factor;
-    v[2]:=v[2]*factor;
- end;
- {$endif}
+{$else}
+begin
+   v[0]:=v[0]*factor;
+   v[1]:=v[1]*factor;
+   v[2]:=v[2]*factor;
+{$endif}
 end;
 
 // ScaleVector (hmg)
 //
 procedure ScaleVector(var v : TVector; factor: Single);
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test     vSIMD, 1
       jz @@FPU
 
- @@3DNow:      // 121824
+@@3DNow:      // 121824
 
       db $0F,$6E,$4D,$08       /// movd        mm1, [ebp+8]
       db $0F,$62,$C9           /// punpckldq   mm1, mm1
@@ -4684,7 +4493,7 @@ begin
       pop   ebp
       ret   $04
 
- @@FPU:        // 155843
+@@FPU:        // 155843
       FLD  DWORD PTR [EBP+8]
 
       FLD  DWORD PTR [EAX]
@@ -4699,15 +4508,13 @@ begin
       FLD  DWORD PTR [EAX+12]
       FMULP
       FSTP DWORD PTR [EAX+12]
- end;
- {$else}
- begin
-    v[0]:=v[0]*factor;
-    v[1]:=v[1]*factor;
-    v[2]:=v[2]*factor;
-    v[3]:=v[3]*factor;
- end;
- {$endif}
+{$else}
+begin
+   v[0]:=v[0]*factor;
+   v[1]:=v[1]*factor;
+   v[2]:=v[2]*factor;
+   v[3]:=v[3]*factor;
+{$endif}
 end;
 
 // ScaleVector (affine vector)
@@ -4732,9 +4539,8 @@ end;
 // VectorScale (affine)
 //
 function VectorScale(const v : TAffineVector; factor : Single) : TAffineVector;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX]
@@ -4744,22 +4550,19 @@ begin
       FLD  DWORD PTR [EAX+8]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX+8]
- end;
- {$else}
- begin
-    Result[0]:=v[0]*factor;
-    Result[1]:=v[1]*factor;
-    Result[2]:=v[2]*factor;
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=v[0]*factor;
+   Result[1]:=v[1]*factor;
+   Result[2]:=v[2]*factor;
+{$endif}
 end;
 
 // VectorScale (proc, affine)
 //
 procedure VectorScale(const v : TAffineVector; factor : Single; var vr : TAffineVector);
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX]
@@ -4769,22 +4572,19 @@ begin
       FLD  DWORD PTR [EAX+8]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX+8]
- end;
- {$else}
- begin
-    vr[0]:=v[0]*factor;
-    vr[1]:=v[1]*factor;
-    vr[2]:=v[2]*factor;
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=v[0]*factor;
+   vr[1]:=v[1]*factor;
+   vr[2]:=v[2]*factor;
+{$endif}
 end;
 
 // VectorScale (hmg)
 //
 function VectorScale(const v : TVector; factor : Single) : TVector;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX]
@@ -4797,23 +4597,20 @@ begin
       FLD  DWORD PTR [EAX+12]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX+12]
- end;
- {$else}
- begin
-    Result[0]:=v[0]*factor;
-    Result[1]:=v[1]*factor;
-    Result[2]:=v[2]*factor;
-    Result[3]:=v[3]*factor;
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=v[0]*factor;
+   Result[1]:=v[1]*factor;
+   Result[2]:=v[2]*factor;
+   Result[3]:=v[3]*factor;
+{$endif}
 end;
 
 // VectorScale (proc, hmg)
 //
 procedure VectorScale(const v : TVector; factor : Single; var vr : TVector);
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX]
@@ -4826,23 +4623,20 @@ begin
       FLD  DWORD PTR [EAX+12]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX+12]
- end;
- {$else}
- begin
-    vr[0]:=v[0]*factor;
-    vr[1]:=v[1]*factor;
-    vr[2]:=v[2]*factor;
-    vr[3]:=v[3]*factor;
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=v[0]*factor;
+   vr[1]:=v[1]*factor;
+   vr[2]:=v[2]*factor;
+   vr[3]:=v[3]*factor;
+{$endif}
 end;
 
 // VectorScale (proc, hmg-affine)
 //
 procedure VectorScale(const v : TVector; factor : Single; var vr : TAffineVector);
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX]
@@ -4852,14 +4646,12 @@ begin
       FLD  DWORD PTR [EAX+8]
       FMUL DWORD PTR [EBP+8]
       FSTP DWORD PTR [EDX+8]
- end;
- {$else}
- begin
-    vr[0]:=v[0]*factor;
-    vr[1]:=v[1]*factor;
-    vr[2]:=v[2]*factor;
- end;
- {$endif}
+{$else}
+begin
+   vr[0]:=v[0]*factor;
+   vr[1]:=v[1]*factor;
+   vr[2]:=v[2]*factor;
+{$endif}
 end;
 
 // DivideVector
@@ -4892,11 +4684,10 @@ end;
 // VectorEquals (hmg vector)
 //
 function VectorEquals(const V1, V2: TVector) : Boolean;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       mov ecx, [edx]
       cmp ecx, [eax]
       jne @@Diff
@@ -4909,27 +4700,24 @@ begin
       mov ecx, [edx+$C]
       cmp ecx, [eax+$C]
       jne @@Diff
- @@Equal:
+@@Equal:             
       mov eax, 1
       ret
- @@Diff:
+@@Diff:
       xor eax, eax
- end;
- {$else}
- begin
-    Result:=(v1[0]=v2[0]) and (v1[1]=v2[1]) and (v1[2]=v2[2]) and (v1[3]=v2[3]);
- end;
- {$endif}
+{$else}
+begin
+   Result:=(v1[0]=v2[0]) and (v1[1]=v2[1]) and (v1[2]=v2[2]) and (v1[3]=v2[3]);
+{$endif}
 end;
 
 // VectorEquals (affine vector)
 //
 function VectorEquals(const V1, V2: TAffineVector) : Boolean;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       mov ecx, [edx]
       cmp ecx, [eax]
       jne @@Diff
@@ -4939,28 +4727,25 @@ begin
       mov ecx, [edx+$8]
       cmp ecx, [eax+$8]
       jne @@Diff
- @@Equal:
+@@Equal:
       mov al, 1
       ret
- @@Diff:
+@@Diff:
       xor eax, eax
- @@End:
- end;
- {$else}
- begin
-    Result:=(v1[0]=v2[0]) and (v1[1]=v2[1]) and (v1[2]=v2[2]);
- end;
- {$endif}
+@@End:
+{$else}
+begin
+   Result:=(v1[0]=v2[0]) and (v1[1]=v2[1]) and (v1[2]=v2[2]);
+{$endif}
 end;
 
 // AffineVectorEquals (hmg vector)
 //
 function AffineVectorEquals(const V1, V2 : TVector) : Boolean;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+{$ifndef GEOMETRY_NO_ASM}
+asm
       mov ecx, [edx]
       cmp ecx, [eax]
       jne @@Diff
@@ -4970,17 +4755,15 @@ begin
       mov ecx, [edx+$8]
       cmp ecx, [eax+$8]
       jne @@Diff
- @@Equal:
+@@Equal:
       mov eax, 1
       ret
- @@Diff:
+@@Diff:
       xor eax, eax
- end;
- {$else}
- begin
-    Result:=(v1[0]=v2[0]) and (v1[1]=v2[1]) and (v1[2]=v2[2]);
- end;
- {$endif}
+{$else}
+begin
+   Result:=(v1[0]=v2[0]) and (v1[1]=v2[1]) and (v1[2]=v2[2]);
+{$endif}
 end;
 
 // VectorIsNull (hmg)
@@ -5000,12 +4783,11 @@ end;
 // VectorSpacing (texpoint)
 //
 function VectorSpacing(const v1, v2 : TTexPoint): Single; overload;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- // Result  is passed on the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+// Result  is passed on the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FABS
@@ -5013,23 +4795,20 @@ begin
       FSUB DWORD PTR [EDX+4]
       FABS
       FADD
- end;
- {$else}
- begin
-    Result:=Abs(v2.S-v1.S)+Abs(v2.T-v1.T);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Abs(v2.S-v1.S)+Abs(v2.T-v1.T);
+{$endif}
 end;
 
 // VectorSpacing (affine)
 //
 function VectorSpacing(const v1, v2 : TAffineVector) : Single;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- // Result  is passed on the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+// Result  is passed on the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FABS
@@ -5041,23 +4820,20 @@ begin
       FSUB DWORD PTR [EDX+8]
       FABS
       FADD
- end;
- {$else}
- begin
-    Result:=Abs(v2[0]-v1[0])+Abs(v2[1]-v1[1])+Abs(v2[2]-v1[2]);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Abs(v2[0]-v1[0])+Abs(v2[1]-v1[1])+Abs(v2[2]-v1[2]);
+{$endif}
 end;
 
 // VectorSpacing (Hmg)
 //
 function VectorSpacing(const v1, v2 : TVector) : Single;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- // Result  is passed on the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+// Result  is passed on the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FABS
@@ -5073,23 +4849,20 @@ begin
       FSUB DWORD PTR [EDX+12]
       FABS
       FADD
- end;
- {$else}
- begin
-    Result:=Abs(v2[0]-v1[0])+Abs(v2[1]-v1[1])+Abs(v2[2]-v1[2])+Abs(v2[3]-v1[3]);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Abs(v2[0]-v1[0])+Abs(v2[1]-v1[1])+Abs(v2[2]-v1[2])+Abs(v2[3]-v1[3]);
+{$endif}
 end;
 
 // VectorDistance (affine)
 //
 function VectorDistance(const v1, v2 : TAffineVector) : Single;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- // Result  is passed on the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+// Result  is passed on the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FMUL ST, ST
@@ -5102,23 +4875,20 @@ begin
       FMUL ST, ST
       FADD
       FSQRT
- end;
- {$else}
- begin
-    Result:=Sqrt(Sqr(v2[0]-v1[0])+Sqr(v2[1]-v1[1])+Sqr(v2[2]-v1[2]));
- end;
- {$endif}
+{$else}
+begin
+   Result:=Sqrt(Sqr(v2[0]-v1[0])+Sqr(v2[1]-v1[1])+Sqr(v2[2]-v1[2]));
+{$endif}
 end;
 
 // VectorDistance (hmg)
 //
 function VectorDistance(const v1, v2 : TVector) : Single;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- // Result  is passed on the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+// Result  is passed on the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FMUL ST, ST
@@ -5131,23 +4901,20 @@ begin
       FMUL ST, ST
       FADD
       FSQRT
- end;
- {$else}
- begin
-    Result:=Sqrt(Sqr(v2[0]-v1[0])+Sqr(v2[1]-v1[1])+Sqr(v2[2]-v1[2]));
- end;
- {$endif}
+{$else}
+begin
+   Result:=Sqrt(Sqr(v2[0]-v1[0])+Sqr(v2[1]-v1[1])+Sqr(v2[2]-v1[2]));
+{$endif}
 end;
 
 // VectorDistance2 (affine)
 //
 function VectorDistance2(const v1, v2 : TAffineVector) : Single;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- // Result is passed on the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+// Result is passed on the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FMUL ST, ST
@@ -5159,23 +4926,20 @@ begin
       FSUB DWORD PTR [EDX+8]
       FMUL ST, ST
       FADD
- end;
- {$else}
- begin
-    Result:=Sqr(v2[0]-v1[0])+Sqr(v2[1]-v1[1])+Sqr(v2[2]-v1[2]);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Sqr(v2[0]-v1[0])+Sqr(v2[1]-v1[1])+Sqr(v2[2]-v1[2]);
+{$endif}
 end;
 
 // VectorDistance2 (hmg)
 //
 function VectorDistance2(const v1, v2 : TVector) : Single;
-begin
- // EAX contains address of v1
- // EDX contains highest of v2
- // Result is passed on the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of v1
+// EDX contains highest of v2
+// Result is passed on the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EAX]
       FSUB DWORD PTR [EDX]
       FMUL ST, ST
@@ -5187,12 +4951,10 @@ begin
       FSUB DWORD PTR [EDX+8]
       FMUL ST, ST
       FADD
- end;
- {$else}
- begin
-    Result:=Sqr(v2[0]-v1[0])+Sqr(v2[1]-v1[1])+Sqr(v2[2]-v1[2]);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Sqr(v2[0]-v1[0])+Sqr(v2[1]-v1[1])+Sqr(v2[2]-v1[2]);
+{$endif}
 end;
 
 // VectorPerpendicular
@@ -6103,11 +5865,11 @@ end;
 // transpose_scale_m33
 //
 procedure transpose_scale_m33(const src : TMatrix; var dest : TMatrix; var scale : Single);
+// EAX src
+// EDX dest
+// ECX scale
 begin
- // EAX src
- // EDX dest
- // ECX scale
- {$ifndef GEOMETRY_NO_ASM}
+{$ifndef GEOMETRY_NO_ASM}
    asm
       //   dest[0][0]:=scale*src[0][0];
       fld   dword ptr [ecx]
@@ -6148,8 +5910,7 @@ begin
       fmul  dword ptr [eax+40]
       fstp  dword ptr [edx+40]
    end;
- {$else}
- begin
+{$else}
    dest[0][0]:=scale*src[0][0];
    dest[1][0]:=scale*src[0][1];
    dest[2][0]:=scale*src[0][2];
@@ -6159,8 +5920,7 @@ begin
    dest[0][2]:=scale*src[2][0];
    dest[1][2]:=scale*src[2][1];
    dest[2][2]:=scale*src[2][2];
- end;
- {$endif}
+{$endif}
 end;
 
 // AnglePreservingMatrixInvert
@@ -6419,12 +6179,11 @@ end;
 // PlaneEvaluatePoint (affine)
 //
 function PlaneEvaluatePoint(const plane : THmgPlane; const point : TAffineVector) : Single;
-begin
- // EAX contains address of plane
- // EDX contains address of point
- // result is stored in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of plane
+// EDX contains address of point
+// result is stored in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX]
       FMUL DWORD PTR [EDX]
       FLD DWORD PTR [EAX + 4]
@@ -6435,23 +6194,20 @@ begin
       FADDP
       FLD DWORD PTR [EAX + 12]
       FADDP
- end;
- {$else}
- begin
-    Result:=plane[0]*point[0]+plane[1]*point[1]+plane[2]*point[2]+plane[3];
- end;
- {$endif}
+{$else}
+begin
+   Result:=plane[0]*point[0]+plane[1]*point[1]+plane[2]*point[2]+plane[3];
+{$endif}
 end;
 
 // PlaneEvaluatePoint (hmg)
 //
 function PlaneEvaluatePoint(const plane : THmgPlane; const point : TVector) : Single;
-begin
- // EAX contains address of plane
- // EDX contains address of point
- // result is stored in ST(0)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of plane
+// EDX contains address of point
+// result is stored in ST(0)
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD DWORD PTR [EAX]
       FMUL DWORD PTR [EDX]
       FLD DWORD PTR [EAX + 4]
@@ -6462,20 +6218,17 @@ begin
       FADDP
       FLD DWORD PTR [EAX + 12]
       FADDP
- end;
- {$else}
- begin
-    Result:=plane[0]*point[0]+plane[1]*point[1]+plane[2]*point[2]+plane[3];
- end;
- {$endif}
+{$else}
+begin
+   Result:=plane[0]*point[0]+plane[1]*point[1]+plane[2]*point[2]+plane[3];
+{$endif}
 end;
 
 // PointIsInHalfSpace
 //
 function PointIsInHalfSpace(const point, planePoint, planeNormal : TVector) : Boolean;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
    fld   dword ptr [eax]         // 27
    fsub  dword ptr [edx]
    fmul  dword ptr [ecx]
@@ -6492,12 +6245,10 @@ begin
    sahf
    setnbe al
    ffree st(0)
- end;
- {$else}
- begin
-    Result:=(PointPlaneDistance(point, planePoint, planeNormal)>0); // 44
- end;
- {$endif}
+{$else}
+begin
+   Result:=(PointPlaneDistance(point, planePoint, planeNormal)>0); // 44
+{$endif}
 end;
 
 // PointIsInHalfSpace
@@ -6688,15 +6439,12 @@ end;
 // QuaternionMake
 //
 function QuaternionMake(const Imag: array of Single; Real: Single): TQuaternion;
- var
-    n : Integer;
-begin
- // EAX contains address of Imag
- // ECX contains address to result vector
- // EDX contains highest index of Imag
- // Real part is passed on the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of Imag
+// ECX contains address to result vector
+// EDX contains highest index of Imag
+// Real part is passed on the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
       PUSH EDI
       PUSH ESI
       MOV EDI, ECX
@@ -6708,18 +6456,16 @@ begin
       MOV [EDI], EAX
       POP ESI
       POP EDI
- end;
- {$else}
-// var
-//    n : Integer;
- begin
-    n:=Length(Imag);
-    if n>=1 then Result.ImagPart[0]:=Imag[0];
-    if n>=2 then Result.ImagPart[1]:=Imag[1];
-    if n>=3 then Result.ImagPart[2]:=Imag[2];
-    Result.RealPart:=real;
- end;
- {$endif}
+{$else}
+var
+   n : Integer;
+begin
+   n:=Length(Imag);
+   if n>=1 then Result.ImagPart[0]:=Imag[0];
+   if n>=2 then Result.ImagPart[1]:=Imag[1];
+   if n>=3 then Result.ImagPart[2]:=Imag[2];
+   Result.RealPart:=real;
+{$endif}
 end;
 
 // QuaternionConjugate
@@ -6992,9 +6738,8 @@ end;
 // LnXP1
 //
 function LnXP1(X: Extended): Extended;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
         FLDLN2
         MOV     AX, WORD PTR X+8  // exponent
         FLD     X
@@ -7004,80 +6749,69 @@ begin
         FADD
         FYL2X
         JMP     @@2
- @@1:
+@@1:
         FYL2XP1
- @@2:
+@@2:
         FWAIT
- end;
- {$else}
- begin
+{$else}
+begin
     Result:=ln(1+X);
 //    Result:=Math.LnXP1(X);
- end;
- {$endif}
+
+{$endif}
 end;
 
 // Log10
 //
 function Log10(X: Extended): Extended;
-begin
- // Log.10(X):=Log.2(X) * Log.10(2)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// Log.10(X):=Log.2(X) * Log.10(2)
+{$ifndef GEOMETRY_NO_ASM}
+asm
         FLDLG2     { Log base ten of 2 }
         FLD     X
         FYL2X
- end;
- {$else}
- begin
-    Result:=Math.Log10(X);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Math.Log10(X);
+{$endif}
 end;
 
 // Log2
 //
 function Log2(X: Extended): Extended;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
         FLD1
         FLD     X
         FYL2X
- end;
- {$else}
- begin
-    Result:=Math.Log2(X);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Math.Log2(X);
+{$endif}
 end;
 
 // Log2
 //
 function Log2(X: Single): Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
         FLD1
         FLD     X
         FYL2X
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Math.Log2(X);
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Math.Log2(X);
+   {$HINTS ON}
+{$endif}
 end;
 
 // LogN
 //
 function LogN(Base, X: Extended): Extended;
-begin
- // Log.N(X):=Log.2(X) / Log.2(N)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// Log.N(X):=Log.2(X) / Log.2(N)
+{$ifndef GEOMETRY_NO_ASM}
+asm
         FLD1
         FLD     X
         FYL2X
@@ -7085,21 +6819,18 @@ begin
         FLD     Base
         FYL2X
         FDIV
- end;
- {$else}
- begin
+{$else}
+begin
     Result:=ln(X)/ln(Base);
 //    Result:=Math.LogN(Base, X);
- end;
- {$endif}
+{$endif}
 end;
 
 // IntPower
 //
 function IntPower(Base: Extended; Exponent: Integer) : Extended;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
         mov     ecx, eax
         cdq
         fld1                      { Result:=1 }
@@ -7108,8 +6839,8 @@ begin
         jz      @@3
         fld     Base
         jmp     @@2
- @@1:    fmul    ST, ST            { X:=Base * Base }
- @@2:    shr     eax,1
+@@1:    fmul    ST, ST            { X:=Base * Base }
+@@2:    shr     eax,1
         jnc     @@1
         fmul    ST(1),ST          { Result:=Result * X }
         jnz     @@1
@@ -7118,13 +6849,11 @@ begin
         jge     @@3
         fld1
         fdivrp                    { Result:=1 / Result }
- @@3:
- end;
- {$else}
- begin
-    Result:=Math.IntPower(Base, Exponent);
- end;
- {$endif}
+@@3:
+{$else}
+begin
+   Result:=Math.IntPower(Base, Exponent);
+{$endif}
 end;
 
 // Power
@@ -7145,9 +6874,8 @@ end;
 // Power (int exponent)
 //
 function Power(Base: Single; Exponent: Integer): Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
         mov     ecx, eax
         cdq
         fld1                      { Result:=1 }
@@ -7156,8 +6884,8 @@ begin
         jz      @@3
         fld     Base
         jmp     @@2
- @@1:    fmul    ST, ST            { X:=Base * Base }
- @@2:    shr     eax,1
+@@1:    fmul    ST, ST            { X:=Base * Base }
+@@2:    shr     eax,1
         jnc     @@1
         fmul    ST(1),ST          { Result:=Result * X }
         jnz     @@1
@@ -7166,15 +6894,13 @@ begin
         jge     @@3
         fld1
         fdivrp                    { Result:=1 / Result }
- @@3:
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Math.Power(Base, Exponent);
-    {$HINTS ON}
- end;
- {$endif}
+@@3:
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Math.Power(Base, Exponent);
+   {$HINTS ON}
+{$endif}
 end;
 
 // DegToRad (extended)
@@ -7188,22 +6914,19 @@ end;
 // DegToRad (single)
 //
 function DegToRad(const Degrees : Single) : Single;
-begin
- //   Result:=Degrees * cPIdiv180;
- // don't laugh, Delphi's compiler manages to make a nightmare of this one
- // with pushs, pops, etc. in its default compile... (this one is twice faster !)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+//   Result:=Degrees * cPIdiv180;
+// don't laugh, Delphi's compiler manages to make a nightmare of this one
+// with pushs, pops, etc. in its default compile... (this one is twice faster !)
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EBP+8]
       FMUL cPIdiv180
- end;
- {$else}
- begin
-    Result:=Degrees*cPIdiv180;
- end;
- {$endif}
+{$else}
+begin
+   Result:=Degrees*cPIdiv180;
+{$endif}
 end;
- {$ENDIF}
+ {$ENDIF FPC}
 
 // RadToDeg (extended)
 //
@@ -7216,22 +6939,19 @@ end;
 // RadToDeg (single)
 //
 function RadToDeg(const Radians: Single): Single;
-begin
- //   Result:=Radians * c180divPI;
- // don't laugh, Delphi's compiler manages to make a nightmare of this one
- // with pushs, pops, etc. in its default compile... (this one is twice faster !)
- {$ifndef GEOMETRY_NO_ASM}
- asm
+//   Result:=Radians * c180divPI;
+// don't laugh, Delphi's compiler manages to make a nightmare of this one
+// with pushs, pops, etc. in its default compile... (this one is twice faster !)
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  DWORD PTR [EBP+8]
       FMUL c180divPI
- end;
- {$else}
- begin
+{$else}
+begin
    Result:=Radians*c180divPI;
- end;
- {$endif}
+{$endif}
 end;
-{$ENDIF}
+{$ENDIF FPC}
 
 // NormalizeAngle
 //
@@ -7258,162 +6978,134 @@ end;
 // SinCos (Extended)
 //
 procedure SinCos(const Theta: Extended; var Sin, Cos: Extended);
-begin
- // EAX contains address of Sin
- // EDX contains address of Cos
- // Theta is passed over the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of Sin
+// EDX contains address of Cos
+// Theta is passed over the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
    FLD  Theta
    FSINCOS
    FSTP TBYTE PTR [EDX]    // cosine
    FSTP TBYTE PTR [EAX]    // sine
- end;
- {$else}
- begin
-    Math.SinCos(Theta, Sin, Cos);
- end;
- {$endif}
+{$else}
+begin
+   Math.SinCos(Theta, Sin, Cos);
+{$endif}
 end;
 
 // SinCos (Double)
 //
 procedure SinCos(const Theta: Double; var Sin, Cos: Double);
- var
-    s, c : Extended;
-begin
- // EAX contains address of Sin
- // EDX contains address of Cos
- // Theta is passed over the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of Sin
+// EDX contains address of Cos
+// Theta is passed over the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
    FLD  Theta
    FSINCOS
    FSTP QWORD PTR [EDX]    // cosine
    FSTP QWORD PTR [EAX]    // sine
- end;
- {$else}
-// var
-//    s, c : Extended;
- begin
-    Math.SinCos(Theta, s, c);
-    {$HINTS OFF}
-    Sin:=s; Cos:=c;
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+var
+   s, c : Extended;
+begin
+   Math.SinCos(Theta, s, c);
+   {$HINTS OFF}
+   Sin:=s; Cos:=c;
+   {$HINTS ON}
+{$endif}
 end;
 
 // SinCos (Single)
 //
 procedure SinCos(const Theta: Single; var Sin, Cos: Single);
- var
-    s, c : Extended;
-begin
- // EAX contains address of Sin
- // EDX contains address of Cos
- // Theta is passed over the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of Sin
+// EDX contains address of Cos
+// Theta is passed over the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
    FLD  Theta
    FSINCOS
    FSTP DWORD PTR [EDX]    // cosine
    FSTP DWORD PTR [EAX]    // sine
- end;
- {$else}
-// var
-//    s, c : Extended;
- begin
-    Math.SinCos(Theta, s, c);
-    {$HINTS OFF}
-    Sin:=s; Cos:=c;
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+var
+   s, c : Extended;
+begin
+   Math.SinCos(Theta, s, c);
+   {$HINTS OFF}
+   Sin:=s; Cos:=c;
+   {$HINTS ON}
+{$endif}
 end;
 
 // SinCos (Extended w radius)
 //
 procedure SinCos(const theta, radius : Double; var Sin, Cos: Extended);
- var
-    s, c : Extended;
-begin
- // EAX contains address of Sin
- // EDX contains address of Cos
- // Theta is passed over the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of Sin
+// EDX contains address of Cos
+// Theta is passed over the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
    FLD  theta
    FSINCOS
    FMUL radius
    FSTP TBYTE PTR [EDX]    // cosine
    FMUL radius
    FSTP TBYTE PTR [EAX]    // sine
- end;
- {$else}
-// var
-//    s, c : Extended;
- begin
-    Math.SinCos(Theta, s, c);
-    Sin:=s*radius; Cos:=c*radius;
- end;
- {$endif}
+{$else}
+var
+   s, c : Extended;
+begin
+   Math.SinCos(Theta, s, c);
+   Sin:=s*radius; Cos:=c*radius;
+{$endif}
 end;
 
 // SinCos (Double w radius)
 //
 procedure SinCos(const theta, radius : Double; var Sin, Cos: Double);
- var
-    s, c : Extended;
-begin
- // EAX contains address of Sin
- // EDX contains address of Cos
- // Theta is passed over the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of Sin
+// EDX contains address of Cos
+// Theta is passed over the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
    FLD  theta
    FSINCOS
    FMUL radius
    FSTP QWORD PTR [EDX]    // cosine
    FMUL radius
    FSTP QWORD PTR [EAX]    // sine
- end;
- {$else}
-// var
-//    s, c : Extended;
- begin
-    Math.SinCos(Theta, s, c);
-    Sin:=s*radius; Cos:=c*radius;
- end;
- {$endif}
+{$else}
+var
+   s, c : Extended;
+begin
+   Math.SinCos(Theta, s, c);
+   Sin:=s*radius; Cos:=c*radius;
+{$endif}
 end;
 
 // SinCos (Single w radius)
 //
 procedure SinCos(const theta, radius : Single; var Sin, Cos: Single);
- var
-    s, c : Extended;
-begin
- // EAX contains address of Sin
- // EDX contains address of Cos
- // Theta is passed over the stack
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// EAX contains address of Sin
+// EDX contains address of Cos
+// Theta is passed over the stack
+{$ifndef GEOMETRY_NO_ASM}
+asm
    FLD  theta
    FSINCOS
    FMUL radius
    FSTP DWORD PTR [EDX]    // cosine
    FMUL radius
    FSTP DWORD PTR [EAX]    // sine
- end;
- {$else}
-// var
-//    s, c : Extended;
- begin
-    Math.SinCos(Theta, s, c);
-    Sin:=s*radius; Cos:=c*radius;
- end;
- {$endif}
+{$else}
+var
+   s, c : Extended;
+begin
+   Math.SinCos(Theta, s, c);
+   Sin:=s*radius; Cos:=c*radius;
+{$endif}
 end;
 
 // PrepareSinCosCache
@@ -7460,24 +7152,21 @@ end;
 // ArcCos (Single)
 //
 function ArcCos(const x : Single): Single;
-begin
- // Result:=ArcTan2(Sqrt(c1 - X * X), X);
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// Result:=ArcTan2(Sqrt(c1 - X * X), X);
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD   X
       FMUL  ST, ST
       FSUBR cOne
       FSQRT
       FLD   X
       FPATAN
- end;
- {$else}
- begin
-    {$HINTS OFF}
+{$else}
+begin
+   {$HINTS OFF}
    Result:=Math.ArcCos(X);
-    {$HINTS ON}
- end;
- {$endif}
+   {$HINTS ON}
+{$endif}
 end;
 
 // ArcSin (Extended)
@@ -7490,60 +7179,51 @@ end;
 // ArcSin (Single)
 //
 function ArcSin(const x : Single) : Single;
-begin
- //   Result:=ArcTan2(X, Sqrt(1 - X * X))
- {$ifndef GEOMETRY_NO_ASM}
- asm
+//   Result:=ArcTan2(X, Sqrt(1 - X * X))
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD   X
       FLD   ST
       FMUL  ST, ST
       FSUBR cOne
       FSQRT
       FPATAN
- end;
- {$else}
- begin
-    {$HINTS OFF}
+{$else}
+begin
+   {$HINTS OFF}
    Result:=Math.ArcSin(X);
-    {$HINTS ON}
- end;
- {$endif}
+   {$HINTS ON}
+{$endif}
 end;
 
 // ArcTan2 (Extended)
 //
 function ArcTan2(const y, x : Extended) : Extended;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  Y
       FLD  X
       FPATAN
- end;
- {$else}
- begin
-    Result:=Math.ArcTan2(y, x);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Math.ArcTan2(y, x);
+{$endif}
 end;
 
 // ArcTan2 (Single)
 //
 function ArcTan2(const y, x : Single) : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  Y
       FLD  X
       FPATAN
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Math.ArcTan2(y, x);
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Math.ArcTan2(y, x);
+   {$HINTS ON}
+{$endif}
 end;
 
 // FastArcTan2
@@ -7570,85 +7250,71 @@ end;
 // Tan (Extended)
 //
 function Tan(const x : Extended) : Extended;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  X
       FPTAN
       FSTP ST(0)      // FPTAN pushes 1.0 after result
- end;
- {$else}
- begin
-    Result:=Math.Tan(x);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Math.Tan(x);
+{$endif}
 end;
 
 // Tan (Single)
 //
 function Tan(const x : Single) : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  X
       FPTAN
       FSTP ST(0)      // FPTAN pushes 1.0 after result
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Math.Tan(x);
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Math.Tan(x);
+   {$HINTS ON}
+{$endif}
 end;
 
 // CoTan (Extended)
 //
 function CoTan(const x : Extended) : Extended;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  X
       FPTAN
       FDIVRP
- end;
- {$else}
- begin
-    Result:=Math.CoTan(x);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Math.CoTan(x);
+{$endif}
 end;
 
 // CoTan (Single)
 //
 function CoTan(const x : Single) : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD  X
       FPTAN
       FDIVRP
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Math.CoTan(x);
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Math.CoTan(x);
+   {$HINTS ON}
+{$endif}
 end;
 
 // Sinh
 //
 function Sinh(const x : Single) : Single;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    Result:=0.5*(Exp(x)-Exp(-x));
- end;
- {$else}
- asm
+{$else}
+asm
       fld   x
       call  RegisterBasedExp
       fld   x
@@ -7656,20 +7322,17 @@ begin
       call  RegisterBasedExp
       fsub
       fmul  cOneDotFive
- end;
- {$endif}
+{$endif}
 end;
 
 // Sinh
 //
 function Sinh(const x : Double) : Double;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    Result:=0.5*(Exp(x)-Exp(-x));
- end;
- {$else}
- asm
+{$else}
+asm
       fld   x
       call  RegisterBasedExp
       fld   x
@@ -7677,20 +7340,17 @@ begin
       call  RegisterBasedExp
       fsub
       fmul  cOneDotFive
- end;
- {$endif}
+{$endif}
 end;
 
 // Cosh
 //
 function Cosh(const x : Single) : Single;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    Result:=0.5*(Exp(x)+Exp(-x));
- end;
- {$else}
- asm
+{$else}
+asm
       fld   x
       call  RegisterBasedExp
       fld   x
@@ -7698,20 +7358,17 @@ begin
       call  RegisterBasedExp
       fadd
       fmul  cOneDotFive
- end;
- {$endif}
+{$endif}
 end;
 
 // Cosh
 //
 function Cosh(const x : Double) : Double;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    Result:=0.5*(Exp(x)+Exp(-x));
- end;
- {$else}
- asm
+{$else}
+asm
       fld   x
       call  RegisterBasedExp
       fld   x
@@ -7719,19 +7376,17 @@ begin
       call  RegisterBasedExp
       fadd
       fmul  cOneDotFive
- end;
- {$endif}
+{$endif}
 end;
 
 // RSqrt
 //
 function RSqrt(v : Single) : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       lea eax, [ebp+8]
       db $0F,$6E,$00           /// movd mm0, [eax]
       db $0F,$0F,$C8,$97       /// pfrsqrt  mm1, mm0
@@ -7746,30 +7401,27 @@ begin
       fld dword ptr [eax]
       jmp @@End
 
- @@FPU:
+@@FPU:
       fld v
       fsqrt
       fld1
       fdivr
- @@End:
- end;
- {$else}
- begin
-    Result:=1/Sqrt(v);
- end;
- {$endif}
+@@End:
+{$else}
+begin
+   Result:=1/Sqrt(v);
+{$endif}
 end;
 
 // ISqrt
 //
 function ISqrt(i : Integer) : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       push     eax
       test     vSIMD, 1
       jz @@FPU
- @@3DNow:
+@@3DNow:
       db $0F,$6E,$04,$24       /// movd     mm0, [esp]
       db $0F,$0F,$C8,$0D       /// pi2fd    mm1, mm0
       db $0F,$0F,$D1,$97       /// pfrsqrt  mm2, mm1
@@ -7779,27 +7431,24 @@ begin
       db $0F,$0E               /// femms
       pop      eax
       ret
- @@FPU:
+@@FPU:
       fild     dword ptr [esp]
       fsqrt
       fistp    dword ptr [esp]
       pop      eax
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Round(Sqrt(i));
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Round(Sqrt(i));
+   {$HINTS ON}
+{$endif}
 end;
 
 // ILength
 //
 function ILength(x, y : Integer) : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       push     edx
       push     eax
       fild     dword ptr [esp]
@@ -7811,22 +7460,19 @@ begin
       fistp    dword ptr [esp+4]
       pop      edx
       pop      eax
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Round(Sqrt(x*x+y*y));
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Round(Sqrt(x*x+y*y));
+   {$HINTS ON}
+{$endif}
 end;
 
 // ILength
 //
 function ILength(x, y, z : Integer) : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       push     ecx
       push     edx
       push     eax
@@ -7843,22 +7489,19 @@ begin
       pop      ecx
       pop      edx
       pop      eax
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Round(Sqrt(x*x+y*y+z*z));
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Round(Sqrt(x*x+y*y+z*z));
+   {$HINTS ON}
+{$endif}
 end;
 
 // RLength
 //
 function RLength(x, y : Single) : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       fld  x
       fmul x
       fld  y
@@ -7867,20 +7510,17 @@ begin
       fsqrt
       fld1
       fdivr
- end;
- {$else}
- begin
-    Result:=1/Sqrt(x*x+y*y);
- end;
- {$endif}
+{$else}
+begin
+   Result:=1/Sqrt(x*x+y*y);
+{$endif}
 end;
 
 // RegisterBasedExp
 //
 {$ifndef GEOMETRY_NO_ASM}
 procedure RegisterBasedExp;
-begin
- asm   // Exp(x) = 2^(x.log2(e))
+asm   // Exp(x) = 2^(x.log2(e))
       fldl2e
       fmul
       fld      st(0)
@@ -7892,10 +7532,8 @@ begin
       fadd
       fscale
       fstp     st(1)
- end;
 end;
- {$endif}
-
+{$endif}
 
 // RandomPointOnSphere
 //
@@ -7912,35 +7550,29 @@ end;
 // RoundInt (single)
 //
 function RoundInt(v : Single) : Single;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD     v
       FRNDINT
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Int(v+cOneDotFive);
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Int(v+cOneDotFive);
+   {$HINTS ON}
+{$endif}
 end;
 
 // RoundInt (extended)
 //
 function RoundInt(v : Extended) : Extended;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       FLD     v
       FRNDINT
- end;
- {$else}
- begin
-    Result:=Int(v+0.5);
- end;
- {$endif}
+{$else}
+begin
+   Result:=Int(v+0.5);
+{$endif}
 end;
 
 {$ifndef GEOMETRY_NO_ASM}
@@ -7948,8 +7580,7 @@ end;
 // Trunc64 (extended)
 //
 function Trunc64(v : Extended) : Int64;
-begin
- asm
+asm
       SUB     ESP,12
       FSTCW   [ESP]
       FLDCW   cwChop
@@ -7959,14 +7590,12 @@ begin
       POP     ECX
       POP     EAX
       POP     EDX
- end;
 end;
 
 // Trunc (single)
 //
 function Trunc(v : Single) : Integer;
-begin
- asm
+asm
       SUB     ESP,8
       FSTCW   [ESP]
       FLDCW   cwChop
@@ -7975,14 +7604,12 @@ begin
       FLDCW   [ESP]
       POP     ECX
       POP     EAX
- end;
 end;
 
 // Int (Extended)
 //
 function Int(v : Extended) : Extended;
-begin
- asm
+asm
       SUB     ESP,4
       FSTCW   [ESP]
       FLDCW   cwChop
@@ -7990,14 +7617,12 @@ begin
       FRNDINT
       FLDCW   [ESP]
       ADD     ESP,4
- end;
 end;
 
 // Int (Single)
 //
 function Int(v : Single) : Single;
-begin
- asm
+asm
       SUB     ESP,4
       FSTCW   [ESP]
       FLDCW   cwChop
@@ -8005,14 +7630,12 @@ begin
       FRNDINT
       FLDCW   [ESP]
       ADD     ESP,4
- end;
 end;
 
 // Frac (Extended)
 //
 function Frac(v : Extended) : Extended;
-begin
- asm
+asm
       SUB     ESP,4
       FSTCW   [ESP]
       FLDCW   cwChop
@@ -8022,14 +7645,12 @@ begin
       FSUB
       FLDCW   [ESP]
       ADD     ESP,4
- end;
 end;
 
 // Frac (Extended)
 //
 function Frac(v : Single) : Single;
-begin
- asm
+asm
       SUB     ESP,4
       FSTCW   [ESP]
       FLDCW   cwChop
@@ -8039,43 +7660,36 @@ begin
       FSUB
       FLDCW   [ESP]
       ADD     ESP,4
- end;
 end;
 
 // Round64 (Single);
 //
 function Round64(v : Single) : Int64;
-begin
- asm
+asm
       SUB     ESP,8
       FLD     v
       FISTP   qword ptr [ESP]
       POP     EAX
       POP     EDX
- end;
 end;
 
 // Round64 (Extended);
 //
 function Round64(v : Extended) : Int64;
-begin
- asm
+asm
       FLD      v
       FISTP    qword ptr [v]           // use v as storage to place the result
       MOV      EAX, dword ptr [v]
       MOV      EDX, dword ptr [v+4]
- end;
 end;
 
 // Round (Single);
 //
 function Round(v : Single) : Integer;
-begin
- asm
+asm
       FLD     v
       FISTP   DWORD PTR [v]     // use v as storage to place the result
       MOV     EAX, [v]
- end;
 end;
 
 {$else}
@@ -8151,22 +7765,19 @@ end;
 // ScaleAndRound
 //
 function ScaleAndRound(i : Integer; var s : Single) : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
    push  eax
    fild  dword ptr [esp]
    fmul  dword ptr [edx]
    fistp dword ptr [esp]
    pop   eax
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result:=Round(i*s);
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result:=Round(i*s);
+   {$HINTS ON}
+{$endif}
 end;
 
 // IsInRange (single)
@@ -8263,72 +7874,62 @@ end;
 // MinFloat (single 2)
 //
 function MinFloat(const v1, v2 : Single) : Single;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
-    if v1<v2 then
-       Result:=v1
-    else Result:=v2;
- end;
- {$else}
- asm
+   if v1<v2 then
+      Result:=v1
+   else Result:=v2;
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DB,$C1                 /// fcmovnb st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MinFloat (double 2)
 //
 function MinFloat(const v1, v2 : Double) : Double;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1<v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DB,$C1                 /// fcmovnb st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MinFloat (extended 2)
 //
 function MinFloat(const v1, v2 : Extended) : Extended;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1<v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DB,$C1                 /// fcmovnb st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MinFloat
 //
 function MinFloat(const v1, v2, v3 : Single) : Single;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1<=v2 then
       if v1<=v3 then
          Result:=v1
@@ -8340,9 +7941,8 @@ begin
    else if v3<=v1 then
       Result:=v3
    else result:=v1;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
@@ -8352,16 +7952,14 @@ begin
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DB,$C1                 /// fcmovnb st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MinFloat (double)
 //
 function MinFloat(const v1, v2, v3 : Double) : Double;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1<=v2 then
       if v1<=v3 then
          Result:=v1
@@ -8373,9 +7971,8 @@ begin
    else if v3<=v1 then
       Result:=v3
    else result:=v1;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
@@ -8385,16 +7982,14 @@ begin
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DB,$C1                 /// fcmovnb st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MinFloat
 //
 function MinFloat(const v1, v2, v3 : Extended) : Extended;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1<=v2 then
       if v1<=v3 then
          Result:=v1
@@ -8406,9 +8001,8 @@ begin
    else if v3<=v1 then
       Result:=v3
    else result:=v1;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
@@ -8418,8 +8012,7 @@ begin
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DB,$C1                 /// fcmovnb st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MaxFloat (single)
@@ -8480,73 +8073,63 @@ end;
 // MaxFloat
 //
 function MaxFloat(const v1, v2 : Single) : Single;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1>v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DA,$C1                 /// fcmovb  st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MaxFloat
 //
 function MaxFloat(const v1, v2 : Double) : Double;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1>v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DA,$C1                 /// fcmovb  st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MaxFloat
 //
 function MaxFloat(const v1, v2 : Extended) : Extended;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1>v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DA,$C1                 /// fcmovb  st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MaxFloat
 //
 {$ifndef FPC}
 function MaxFloat(const v1, v2, v3 : Single) : Single;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1>=v2 then
       if v1>=v3 then
          Result:=v1
@@ -8558,9 +8141,8 @@ begin
    else if v3>=v1 then
       Result:=v3
    else Result:=v1;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    db $DB,$F1                 /// fcomi   st(0), st(1)
@@ -8570,16 +8152,14 @@ begin
    db $DB,$F1                 /// fcomi   st(0), st(1)
    db $DA,$C1                 /// fcmovb  st(0), st(1)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MaxFloat
 //
 function MaxFloat(const v1, v2, v3 : Double) : Double;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1>=v2 then
       if v1>=v3 then
          Result:=v1
@@ -8591,9 +8171,8 @@ begin
    else if v3>=v1 then
       Result:=v3
    else Result:=v1;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    fld     v3
@@ -8603,17 +8182,15 @@ begin
    db $DA,$C2                 /// fcmovb  st(0), st(2)
    ffree   st(2)
    ffree   st(1)
- end;
- {$endif}
-end;
 {$endif}
+end;
+{$endif fpc}
 
 // MaxFloat
 //
 function MaxFloat(const v1, v2, v3 : Extended) : Extended;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1>=v2 then
       if v1>=v3 then
          Result:=v1
@@ -8625,9 +8202,8 @@ begin
    else if v3>=v1 then
       Result:=v3
    else Result:=v1;
- end;
- {$else}
- asm
+{$else}
+asm
    fld     v1
    fld     v2
    fld     v3
@@ -8637,79 +8213,66 @@ begin
    db $DA,$C2                 /// fcmovb  st(0), st(2)
    ffree   st(2)
    ffree   st(1)
- end;
- {$endif}
+{$endif}
 end;
 
 // MinInteger (2 int)
 //
 function MinInteger(const v1, v2 : Integer) : Integer;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1<v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    cmp   eax, edx
    db $0F,$4F,$C2             /// cmovg eax, edx
- end;
  {$endif}
 end;
 
 // MinInteger (2 card)
 //
 function MinInteger(const v1, v2 : Cardinal) : Cardinal;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1<v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    cmp   eax, edx
    db $0F,$47,$C2             /// cmova eax, edx
- end;
  {$endif}
 end;
 
 // MaxInteger (2 int)
 //
 function MaxInteger(const v1, v2 : Integer) : Integer;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1>v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    cmp   eax, edx
    db $0F,$4C,$C2             /// cmovl eax, edx
- end;
  {$endif}
 end;
 
 // MaxInteger (2 card)
 //
 function MaxInteger(const v1, v2 : Cardinal) : Cardinal;
+{$ifdef GEOMETRY_NO_ASM}
 begin
- {$ifdef GEOMETRY_NO_ASM}
- begin
    if v1>v2 then
       Result:=v1
    else Result:=v2;
- end;
- {$else}
- asm
+{$else}
+asm
    cmp   eax, edx
    db $0F,$42,$C2             /// cmovb eax, edx
- end;
  {$endif}
 end;
 
@@ -8777,11 +8340,8 @@ end;
 //
 procedure ScaleFloatArray(values : PSingleArray; nb : Integer;
                           var factor : Single);
- var
-    i : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
 
@@ -8793,7 +8353,7 @@ begin
       db $0F,$6E,$39           /// movd        mm7, [ecx]
       db $0F,$62,$FF           /// punpckldq   mm7, mm7
 
- @@3DNowLoop:
+@@3DNowLoop:
       db $0F,$0D,$48,$40       /// prefetchw [eax+64]
       db $0F,$6F,$00           /// movq  mm0, [eax]
       db $0F,$6F,$48,$08       /// movq  mm1, [eax+8]
@@ -8810,13 +8370,13 @@ begin
       and   edx, 3
       db $0F,$0E               /// femms
 
- @@FPU:
+@@FPU:
       push  edx
       shr   edx, 1
       or    edx, edx
       jz    @@FPULone
 
- @@FPULoop:
+@@FPULoop:
       fld   dword ptr [eax]
       fmul  dword ptr [ecx]
       fstp  dword ptr [eax]
@@ -8828,7 +8388,7 @@ begin
       dec   edx
       jnz   @@FPULoop
 
- @@FPULone:
+@@FPULone:
       pop   edx
       test  edx, 1
       jz    @@End
@@ -8837,16 +8397,14 @@ begin
       fmul  dword ptr [ecx]
       fstp  dword ptr [eax]
 
- @@End:
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    for i:=0 to nb-1 do
-       values^[i]:=values^[i]*factor;
- end;
- {$endif}
+@@End:
+{$else}
+var
+   i : Integer;
+begin
+   for i:=0 to nb-1 do
+      values^[i]:=values^[i]*factor;
+{$endif}
 end;
 
 // ScaleFloatArray (array)
@@ -8862,11 +8420,8 @@ end;
 //
 procedure OffsetFloatArray(values : PSingleArray; nb : Integer;
                            var delta : Single);
- var
-    i : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test vSIMD, 1
       jz @@FPU
 
@@ -8878,7 +8433,7 @@ begin
       db $0F,$6E,$39           /// movd  mm7, [ecx]
       db $0F,$62,$FF           /// punpckldq   mm7, mm7
 
- @@3DNowLoop:
+@@3DNowLoop:
       db $0F,$0D,$48,$40       /// prefetchw [eax+64]
       db $0F,$6F,$00           /// movq  mm0, [eax]
       db $0F,$6F,$48,$08       /// movq  mm1, [eax+8]
@@ -8895,13 +8450,13 @@ begin
       and   edx, 3
       db $0F,$0E               /// femms
 
- @@FPU:
+@@FPU:
       push  edx
       shr   edx, 1
       or    edx, edx
       jz    @@FPULone
 
- @@FPULoop:
+@@FPULoop:
       fld   dword ptr [eax]
       fadd  dword ptr [ecx]
       fstp  dword ptr [eax]
@@ -8913,7 +8468,7 @@ begin
       dec   edx
       jnz   @@FPULoop
 
- @@FPULone:
+@@FPULone:
       pop   edx
       test  edx, 1
       jz    @@End
@@ -8922,16 +8477,14 @@ begin
       fadd  dword ptr [ecx]
       fstp  dword ptr [eax]
 
- @@End:
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    for i:=0 to nb-1 do
-       values^[i]:=values^[i]+delta;
- end;
- {$endif}
+@@End:
+{$else}
+var
+   i : Integer;
+begin
+   for i:=0 to nb-1 do
+      values^[i]:=values^[i]+delta;
+{$endif}
 end;
 
 // ScaleFloatArray (array)
@@ -8946,31 +8499,26 @@ end;
 // OffsetFloatArray (raw, raw)
 //
 procedure OffsetFloatArray(valuesDest, valuesDelta : PSingleArray; nb : Integer);
- var
-    i : Integer;
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
       test  ecx, ecx
       jz    @@End
 
- @@FPULoop:
+@@FPULoop:
       dec   ecx
       fld   dword ptr [eax+ecx*4]
       fadd  dword ptr [edx+ecx*4]
       fstp  dword ptr [eax+ecx*4]
       jnz   @@FPULoop
 
- @@End:
- end;
- {$else}
-// var
-//    i : Integer;
- begin
-    for i:=0 to nb-1 do
-       valuesDest^[i]:=valuesDest^[i]+valuesDelta^[i];
- end;
- {$endif}
+@@End:
+{$else}
+var
+   i : Integer;
+begin
+   for i:=0 to nb-1 do
+      valuesDest^[i]:=valuesDest^[i]+valuesDelta^[i];
+{$endif}
 end;
 
 // MaxXYZComponent
@@ -9087,16 +8635,15 @@ end;
 // ClampValue (min-max)
 //
 function ClampValue(const aValue, aMin, aMax : Single) : Single;
-begin
- //begin
- {$ifndef GEOMETRY_NO_ASM}
- asm   // 118
+//begin
+{$ifndef GEOMETRY_NO_ASM}
+asm   // 118
       fld   aValue
       fcom  aMin
       fstsw ax
       sahf
       jb    @@ReturnMin
- @@CompMax:
+@@CompMax:
       fcom  aMax
       fstsw ax
       sahf
@@ -9104,24 +8651,23 @@ begin
       pop   ebp
       ret   $0C
 
- @@ReturnMax:
+@@ReturnMax:
       fld   aMax
       jmp @@End
- @@ReturnMin:
+@@ReturnMin:
       fld   aMin
- @@End:
+@@End:
       ffree st(1)
- end;
- {$else}
- begin // 134
-    if aValue<aMin then
-       Result:=aMin
-    else if aValue>aMax then
-       Result:=aMax
-    else Result:=aValue;
- end;
- {$endif}
 end;
+{$else}
+begin // 134
+   if aValue<aMin then
+      Result:=aMin
+   else if aValue>aMax then
+      Result:=aMax
+   else Result:=aValue;
+end;              
+{$endif}
 
 // ClampValue (min-)
 //
@@ -9144,13 +8690,12 @@ end;
 // MakeDblVector
 //
 function MakeDblVector(var v : array of Double) : THomogeneousDblVector;
-begin
- // creates a vector from given values
- // EAX contains address of V
- // ECX contains address to result vector
- // EDX contains highest index of V
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// creates a vector from given values
+// EAX contains address of V
+// ECX contains address to result vector
+// EDX contains highest index of V
+{$ifndef GEOMETRY_NO_ASM}
+asm
               PUSH EDI
               PUSH ESI
               MOV EDI, ECX
@@ -9159,15 +8704,13 @@ begin
               REP MOVSD
               POP ESI
               POP EDI
- end;
- {$else}
- begin
+{$else}
+begin
    Result[0]:=V[0];
    Result[1]:=V[1];
    Result[2]:=V[2];
    Result[3]:=V[3];
- end;
- {$endif}
+{$endif}
 end;
 
 // PointInPolygon
@@ -9195,9 +8738,8 @@ end;
 // DivMod
 //
 procedure DivMod(dividend : Integer; divisor: Word; var result, remainder : Word);
-begin
- {$ifndef GEOMETRY_NO_ASM}
- asm
+{$ifndef GEOMETRY_NO_ASM}
+asm
    push  ebx
    mov   ebx, edx
    mov   edx, eax
@@ -9207,13 +8749,11 @@ begin
    mov   [ecx], ax
    mov   [ebx], dx
    pop   ebx
- end;
- {$else}
- begin
-    Result:=Dividend div Divisor;
-    Remainder:=Dividend mod Divisor;
- end;
- {$endif}
+{$else}
+begin
+   Result:=Dividend div Divisor;
+   Remainder:=Dividend mod Divisor;
+{$endif}
 end;
 
 // ConvertRotation
@@ -9420,10 +8960,9 @@ end;
 // VectorDblToFlt
 //
 function VectorDblToFlt(const V: THomogeneousDblVector): THomogeneousVector;
-begin
- // converts a vector containing double sized values into a vector with single sized values
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// converts a vector containing double sized values into a vector with single sized values
+{$ifndef GEOMETRY_NO_ASM}
+asm
               FLD  QWORD PTR [EAX]
               FSTP DWORD PTR [EDX]
               FLD  QWORD PTR [EAX + 8]
@@ -9432,74 +8971,65 @@ begin
               FSTP DWORD PTR [EDX + 8]
               FLD  QWORD PTR [EAX + 24]
               FSTP DWORD PTR [EDX + 12]
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result[0]:=V[0];
-    Result[1]:=V[1];
-    Result[2]:=V[2];
-    Result[3]:=V[3];
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result[0]:=V[0];
+   Result[1]:=V[1];
+   Result[2]:=V[2];
+   Result[3]:=V[3];
+   {$HINTS ON}
+{$endif}
 end;
 
 // VectorAffineDblToFlt
 //
 function VectorAffineDblToFlt(const V: TAffineDblVector): TAffineVector;
-begin
- // converts a vector containing double sized values into a vector with single sized values
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// converts a vector containing double sized values into a vector with single sized values
+{$ifndef GEOMETRY_NO_ASM}
+asm
               FLD  QWORD PTR [EAX]
               FSTP DWORD PTR [EDX]
               FLD  QWORD PTR [EAX + 8]
               FSTP DWORD PTR [EDX + 4]
               FLD  QWORD PTR [EAX + 16]
               FSTP DWORD PTR [EDX + 8]
- end;
- {$else}
- begin
-    {$HINTS OFF}
-    Result[0]:=V[0];
-    Result[1]:=V[1];
-    Result[2]:=V[2];
-    {$HINTS ON}
- end;
- {$endif}
+{$else}
+begin
+   {$HINTS OFF}
+   Result[0]:=V[0];
+   Result[1]:=V[1];
+   Result[2]:=V[2];
+   {$HINTS ON}
+{$endif}
 end;
 
 // VectorAffineFltToDbl
 //
 function VectorAffineFltToDbl(const V: TAffineVector): TAffineDblVector;
-begin
- // converts a vector containing single sized values into a vector with double sized values
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// converts a vector containing single sized values into a vector with double sized values
+{$ifndef GEOMETRY_NO_ASM}
+asm
               FLD  DWORD PTR [EAX]
               FSTP QWORD PTR [EDX]
               FLD  DWORD PTR [EAX + 4]
               FSTP QWORD PTR [EDX + 8]
               FLD  DWORD PTR [EAX + 8]
               FSTP QWORD PTR [EDX + 16]
- end;
- {$else}
- begin
-    Result[0]:=V[0];
-    Result[1]:=V[1];
-    Result[2]:=V[2];
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=V[0];
+   Result[1]:=V[1];
+   Result[2]:=V[2];
+{$endif}
 end;
 
 // VectorFltToDbl
 //
 function VectorFltToDbl(const V: TVector): THomogeneousDblVector;
-begin
- // converts a vector containing single sized values into a vector with double sized values
- {$ifndef GEOMETRY_NO_ASM}
- asm
+// converts a vector containing single sized values into a vector with double sized values
+{$ifndef GEOMETRY_NO_ASM}
+asm
               FLD  DWORD PTR [EAX]
               FSTP QWORD PTR [EDX]
               FLD  DWORD PTR [EAX + 4]
@@ -9508,15 +9038,13 @@ begin
               FSTP QWORD PTR [EDX + 16]
               FLD  DWORD PTR [EAX + 12]
               FSTP QWORD PTR [EDX + 24]
- end;
- {$else}
- begin
-    Result[0]:=V[0];
-    Result[1]:=V[1];
-    Result[2]:=V[2];
-    Result[3]:=V[3];
- end;
- {$endif}
+{$else}
+begin
+   Result[0]:=V[0];
+   Result[1]:=V[1];
+   Result[2]:=V[2];
+   Result[3]:=V[3];
+{$endif}
 end;
 
 //----------------- coordinate system manipulation functions -----------------------------------------------------------
@@ -9576,7 +9104,7 @@ begin
    Result:=((d>EPSILON2) or (d<-EPSILON2));
    if Result and Assigned(intersectPoint) then begin
       VectorSubtract(planePoint, rayStart, sp);
-      d:=1/d; // will keep one fpu unit busy during dot product calculation
+      d:=1/d; // will keep one FPU unit busy during dot product calculation
       t:=VectorDotProduct(sp, planeNormal)*d;
       if t>0 then
          VectorCombine(rayStart, rayVector, t, intersectPoint^)
