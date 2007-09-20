@@ -3,9 +3,15 @@
 //
 {: GLSpaceText<p>
 
-   Win32 specific Context.<p>
+   3D Text component.<p>
+
+   Note: You can get valid extents (including AABB's) of this component only
+   after it has been rendered for the first time. It means if you ask its
+   extents during / after its creation, you will get zeros.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>19/09/07 - DaStr - Added some comments
+                             Optimized TGLSpaceText.BarycenterAbsolutePosition
       <li>12/09/07 - DaStr - Bugfixed TGLSpaceText.BarycenterAbsolutePosition
                               (Didn't consider rotations)
       <li>08/09/07 - DaStr - Implemented AxisAlignedDimensionsUnscaled and
@@ -140,6 +146,9 @@ type
          function TextWidth(const str : String = '') : Single;
          function TextMaxHeight(const str : String = '') : Single;
          function TextMaxUnder(const str : String = '') : Single;
+
+         {: Note: this fuction is valid only after text has been rendered
+            the first time. Before that it returns zeros. }
          procedure TextMetrics(const str : String; var width, maxHeight, maxUnder : Single);
          procedure NotifyFontChanged;
          procedure NotifyChange(Sender: TObject); override;
@@ -613,7 +622,6 @@ var
   lWidth, lHeightMax, lHeightMin: Single;
   AdjustVector: TVector;
 begin
-  Result := inherited BarycenterAbsolutePosition; // AbsolutePosition.
   TextMetrics(Text, lWidth, lHeightMax, lHeightMin);
 
   case FAdjust.FHorz of
