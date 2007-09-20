@@ -6,6 +6,9 @@
    GLScene objects that get rendered in 2D coordinates<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>18/09/07 - DaStr - Added TGLResolutionIndependantHUDText and
+                              TGLAbsoluteHUDText to the list of registered classes
+                             Cleaned up "uses" section
       <li>07/09/07 - DaStr - AlphaChannel is now applied to ActualPrimaryMaterial
                              Added TGLResolutionIndependantHUDText,
                                    TGLAbsoluteHUDText
@@ -168,7 +171,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, OpenGL1x, GLGraphics, XOpenGL, GLState;
+uses OpenGL1x, XOpenGL;
 
 // ------------------
 // ------------------ TGLHUDSprite ------------------
@@ -461,7 +464,8 @@ initialization
 // ------------------------------------------------------------------
 
 	// class registrations
-   RegisterClasses([TGLHUDText, TGLHUDSprite]);
+   RegisterClasses([TGLHUDText, TGLHUDSprite, TGLResolutionIndependantHUDText,
+                    TGLAbsoluteHUDText]);
 
 end.
 
