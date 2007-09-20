@@ -61,6 +61,11 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>19/09/07 - DaStr - Made some changes to TGLBaseSceneObject Bounding Box
+                              calculations (BugTracker ID = 1797491)
+      <li>17/09/07 - DaStr - Fixed TGLScene.RenderScene
+                              (InitializableObjects stuff) (BugTracker ID = 1796358)
+                             Moved TGLBaseSceneObject.SetScene to the protected section
       <li>10/09/07 - DaStr - TGLBaseSceneObject:
                                Added AxisAlignedBoundingBoxAbsolute
                                Bugfixed GetAbsoluteScale
@@ -553,7 +558,6 @@ type
          function  GetBehaviours : TGLBehaviours;
          procedure SetEffects(const val : TGLObjectEffects);
          function  GetEffects : TGLObjectEffects;
-         procedure SetScene(const value : TGLScene);
 
          function GetAbsoluteAffineScale: TAffineVector;
          function GetAbsoluteScale: TVector;
@@ -562,6 +566,7 @@ type
       protected
          { Protected Declarations }
          procedure Loaded; override;
+         procedure SetScene(const Value : TGLScene); virtual;
 
          procedure DefineProperties(Filer: TFiler); override;
          procedure WriteBehaviours(stream : TStream);
@@ -730,16 +735,17 @@ type
 
          {: Calculates and return the AABB for the object.<p>
             The AABB is currently calculated from the BB. }
-         function AxisAlignedBoundingBox : TAABB;
-         function AxisAlignedBoundingBoxUnscaled : TAABB;
-         function AxisAlignedBoundingBoxAbsolute : TAABB;
+         function AxisAlignedBoundingBox(const AIncludeChilden: Boolean = True): TAABB;
+         function AxisAlignedBoundingBoxUnscaled(const AIncludeChilden: Boolean = True): TAABB;
+         function AxisAlignedBoundingBoxAbsolute(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): TAABB;
 
          {: Calculates and return the Bounding Box for the object.<p>
             The BB is calculated <b>each</b> time this method is invoked,
             based on the AxisAlignedDimensions of the object and that of its
             children, there is <b>no</b> caching scheme as of now. }
-         function BoundingBox : THmgBoundingBox;
-         function BoundingBoxUnscaled : THmgBoundingBox;
+         function BoundingBox(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
+         function BoundingBoxUnscaled(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
+         function BoundingBoxAbsolute(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
 
          {: Max distance of corners of the BoundingBox. }
          function BoundingSphereRadius : Single;
@@ -3284,7 +3290,8 @@ end;
 
 // AxisAlignedBoundingBox
 //
-function TGLBaseSceneObject.AxisAlignedBoundingBox : TAABB;
+function TGLBaseSceneObject.AxisAlignedBoundingBox(
+  const AIncludeChilden: Boolean): TAABB;
 var
    i : Integer;
    aabb : TAABB;
@@ -3292,10 +3299,11 @@ var
 begin
    SetAABB(Result, AxisAlignedDimensionsUnscaled);
    // not tested for child objects
-   if Assigned(FChildren) then begin
+   if AIncludeChilden and Assigned(FChildren) then
+   begin
       for i:=0 to FChildren.Count-1 do begin
          child:=TGLBaseSceneObject(FChildren.List^[i]);
-         aabb:=child.AxisAlignedBoundingBoxUnscaled;
+         aabb:=child.AxisAlignedBoundingBoxUnscaled(AIncludeChilden);
          AABBTransform(aabb, child.Matrix);
          AddAABB(Result, aabb);
       end;
@@ -3305,16 +3313,18 @@ end;
 
 // AxisAlignedBoundingBoxUnscaled
 //
-function TGLBaseSceneObject.AxisAlignedBoundingBoxUnscaled : TAABB;
+function TGLBaseSceneObject.AxisAlignedBoundingBoxUnscaled(
+  const AIncludeChilden: Boolean): TAABB;
 var
    i : Integer;
    aabb : TAABB;
 begin
    SetAABB(Result, AxisAlignedDimensionsUnscaled);
    //not tested for child objects
-   if Assigned(FChildren) then begin
+   if AIncludeChilden and Assigned(FChildren) then
+   begin
       for i:=0 to FChildren.Count-1 do begin
-         aabb:=TGLBaseSceneObject(FChildren.List^[i]).AxisAlignedBoundingBoxUnscaled;
+         aabb:=TGLBaseSceneObject(FChildren.List^[i]).AxisAlignedBoundingBoxUnscaled(AIncludeChilden);
          AABBTransform(aabb, TGLBaseSceneObject(FChildren.List^[i]).Matrix);
          AddAABB(Result, aabb);
       end;
@@ -3323,35 +3333,67 @@ end;
 
 // AxisAlignedBoundingBoxAbsolute
 //
-function TGLBaseSceneObject.AxisAlignedBoundingBoxAbsolute : TAABB;
+function TGLBaseSceneObject.AxisAlignedBoundingBoxAbsolute(
+  const AIncludeChilden: Boolean; const AUseBaryCenter: Boolean): TAABB;
+begin
+  Result := BBToAABB(BoundingBoxAbsolute(AIncludeChilden, AUseBaryCenter));
+end;
+
+// BoundingBox
+//
+function TGLBaseSceneObject.BoundingBox(const AIncludeChilden: Boolean;
+  const AUseBaryCenter: Boolean): THmgBoundingBox;
 var
-  BB: THmgBoundingBox;
+  CurrentBaryOffset: TVector;
+begin
+  Result := AABBToBB(AxisAlignedBoundingBox(AIncludeChilden));
+
+  // DaStr: code not tested...
+  if AUseBaryCenter then
+  begin
+    CurrentBaryOffset := VectorSubtract(AbsoluteToLocal(BarycenterAbsolutePosition),
+                                        Position.AsVector);
+    OffsetBBPoint(Result, CurrentBaryOffset);
+  end;
+end;
+
+// BoundingBoxUnscaled
+//
+function TGLBaseSceneObject.BoundingBoxUnscaled(
+  const AIncludeChilden: Boolean;
+  const AUseBaryCenter: Boolean) : THmgBoundingBox;
+var
+  CurrentBaryOffset: TVector;
+begin
+  Result := AABBToBB(AxisAlignedBoundingBoxUnscaled(AIncludeChilden));
+
+  // DaStr: code not tested...
+  if AUseBaryCenter then
+  begin
+    CurrentBaryOffset := VectorSubtract(AbsoluteToLocal(BarycenterAbsolutePosition),
+                                        Position.AsVector);
+    OffsetBBPoint(Result, CurrentBaryOffset);
+  end;
+end;
+
+// BoundingBoxAbsolute
+//
+function TGLBaseSceneObject.BoundingBoxAbsolute(
+  const AIncludeChilden: Boolean;
+  const AUseBaryCenter: Boolean): THmgBoundingBox;
+var
   I: Integer;
+  CurrentBaryOffset: TVector;
 begin
-  BB := BoundingBoxUnscaled;
+  Result := BoundingBoxUnscaled(AIncludeChilden, False);
   for I := 0 to 7 do
-    BB[I] := LocalToAbsolute(BB[I]);
+    Result[I] := LocalToAbsolute(Result[I]);
 
-  Result.Min[0] := BBMinX(BB);
-  Result.Min[1] := BBMinY(BB);
-  Result.Min[2] := BBMinZ(BB);
-  Result.Max[0] := BBMaxX(BB);
-  Result.Max[1] := BBMaxY(BB);
-  Result.Max[2] := BBMaxZ(BB);
-end;
-
-// BoundingBox
-//
-function TGLBaseSceneObject.BoundingBox : THmgBoundingBox;
-begin
-   Result:=AABBToBB(AxisAlignedBoundingBox);
-end;
-
-// BoundingBox
-//
-function TGLBaseSceneObject.BoundingBoxUnscaled : THmgBoundingBox;
-begin
-   Result:=AABBToBB(AxisAlignedBoundingBoxUnscaled);
+  if AUseBaryCenter then
+  begin
+    CurrentBaryOffset := VectorSubtract(BarycenterAbsolutePosition, AbsolutePosition);
+    OffsetBBPoint(Result, CurrentBaryOffset);
+  end;
 end;
 
 // BoundingSphereRadius
@@ -6553,11 +6595,12 @@ begin
 
    if FInitializableObjects.Count <> 0 then
    begin
-      // First initialize all objects.
-      for I := 0 to FInitializableObjects.Count - 1 do
+      // First initialize all objects and delete them from the list.
+      for I := FInitializableObjects.Count - 1 downto 0 do
+      begin
          FInitializableObjects.GetItems(I).InitializeObject(Self, rci);
-      // In the end clear the list.
-      FInitializableObjects.Clear;
+         FInitializableObjects.Delete(I);
+      end;
    end;
 
    if baseObject=nil then
