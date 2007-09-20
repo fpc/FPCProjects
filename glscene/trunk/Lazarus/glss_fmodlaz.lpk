@@ -29,7 +29,7 @@
       </Other>
     </CompilerOptions>
     <Description Value="GLScene FMOD support"/>
-    <Version Major="1" Build="2"/>
+    <Version Major="1" Build="3"/>
     <Files Count="2">
       <Item1>
         <Filename Value="../Source/glsmfmod.pas"/>
