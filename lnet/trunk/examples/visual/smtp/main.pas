@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, ComCtrls, Menus, ExtCtrls,
+  Buttons, ComCtrls, Menus, ExtCtrls, LCLType,
   lMimeWrapper, lNetComponents, lSMTP, lNet;
 
 type
@@ -185,13 +185,13 @@ end;
 
 procedure TMainForm.EditFromKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key = #13 then
+  if Ord(Key) = VK_RETURN then
     ButtonSendClick(nil);
 end;
 
 procedure TMainForm.EditServerKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key = #13 then
+  if Ord(Key) = VK_RETURN then
     ButtonConnectClick(nil);
 end;
 
