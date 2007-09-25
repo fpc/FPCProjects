@@ -138,9 +138,9 @@ type
     function GetSize: Int64; override;
     function GetCount: Integer;
     function GetBoundary: string;
-    function GetSections(i: Integer): TMimeSection;
+    function GetSection(i: Integer): TMimeSection;
     function GetMimeHeader: string;
-    procedure SetSections(i: Integer; const AValue: TMimeSection);
+    procedure SetSection(i: Integer; const AValue: TMimeSection);
     procedure ActivateFirstSection;
     procedure ActivateNextSection;
     procedure DoRead(const aSize: Integer);
@@ -158,7 +158,7 @@ type
     procedure Remove(aSection: TMimeSection);
     procedure Reset;
    public
-    property Sections[i: Integer]: TMimeSection read GetSections write SetSections; default;
+    property Sections[i: Integer]: TMimeSection read GetSection write SetSection; default;
     property Count: Integer read GetCount;
     property Boundary: string read FBoundary;
   end;
@@ -552,7 +552,7 @@ begin
     Result := Result + Char(Random(Ord('9') - Ord('0') + 1) + Ord('0'));
 end;
 
-function TMimeStream.GetSections(i: Integer): TMimeSection;
+function TMimeStream.GetSection(i: Integer): TMimeSection;
 begin
   Result := nil;
   
@@ -573,7 +573,7 @@ begin
          '--' + FBoundary + CRLF;
 end;
 
-procedure TMimeStream.SetSections(i: Integer; const AValue: TMimeSection);
+procedure TMimeStream.SetSection(i: Integer; const AValue: TMimeSection);
 begin
   if  (i >= 0)
   and (i < FSections.Count) then

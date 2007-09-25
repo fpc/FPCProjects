@@ -29,7 +29,7 @@ unit lsmtp;
 interface
 
 uses
-  Classes, Contnrs, lNet, lEvents, lCommon;
+  Classes, SysUtils, Contnrs, lNet, lEvents, lCommon, lMimeWrapper, lMimeStreams;
   
 type
   TLSMTP = class;
@@ -53,61 +53,33 @@ type
   TLSMTPClientStatusEvent = procedure (aSocket: TLSocket;
                                        const aStatus: TLSMTPStatus) of object;
                                        
-  { TAttachment }
-
-  TAttachment = class
-   protected
-    FData: TStringList;
-    function GetAsText: string; virtual;
-   public
-    constructor Create;
-    destructor Destroy; override;
-    function LoadFromFile(const aFileName: string): Boolean;
-   public
-    property AsText: string read GetAsText;
-  end;
-  
-  { TAttachmentList }
-
-  TAttachmentList = class
-   protected
-    FItems: TFPObjectList;
-    function GetCount: Integer;
-    function GetItem(i: Integer): TAttachment;
-    procedure SetItem(i: Integer; const AValue: TAttachment);
-   public
-    constructor Create;
-    destructor Destroy; override;
-    function Add(anAttachment: TAttachment): Integer;
-    function AddFromFile(const aFileName: string): Integer;
-    function Remove(anAttachment: TAttachment): Integer;
-    procedure Delete(const i: Integer);
-    procedure Clear;
-   public
-    property Count: Integer read GetCount;
-    property Items[i: Integer]: TAttachment read GetItem write SetItem; default;
-  end;
-
   { TMail }
 
   TMail = class
    protected
     FMailText: string;
-    FMailStream: TStream;
+    FMailStream: TMimeStream;
     FRecipients: string;
     FSender: string;
     FSubject: string;
-    FAttachments: TAttachmentList;
+    function GetCount: Integer;
+    function GetSection(i: Integer): TMimeSection;
+    procedure SetSection(i: Integer; const AValue: TMimeSection);
    public
     constructor Create;
     destructor Destroy; override;
+    procedure AddTextSection(const aText: string; const aCharSet: string = 'UTF-8');
+    procedure AddFileSection(const aFileName: string);
+    procedure AddStreamSection(aStream: TStream; const FreeStream: Boolean = False);
+    procedure DeleteSection(const i: Integer);
+    procedure RemoveSection(aSection: TMimeSection);
    public
-    property Attachments: TAttachmentList read FAttachments;
-    property MailText: string read FMailText write FMailText;
-    property MailStream: TStream read FMailStream write FMailStream;
+    property MailText: string read FMailText write FMailText; deprecated; // use sections!
     property Sender: string read FSender write FSender;
     property Recipients: string read FRecipients write FRecipients;
     property Subject: string read FSubject write FSubject;
+    property Sections[i: Integer]: TMimeSection read GetSection write SetSection; default;
+    property SectionCount: Integer read GetCount;
   end;
 
   TLSMTP = class(TLComponent)
@@ -213,9 +185,6 @@ type
   end;
 
 implementation
-
-uses
-  SysUtils, lMimeStreams;
 
 const
   EMPTY_REC: TLSMTPStatusRec = (Status: ssNone; Args: ('', ''));
@@ -637,8 +606,8 @@ procedure TLSMTPClient.SendMail(aMail: TMail);
 begin
   if Length(aMail.MailText) > 0 then
     SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.MailText)
-  else if Assigned(aMail.MailStream) then
-    SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.MailStream);
+  else if Assigned(aMail.FMailStream) then
+    SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.FMailStream);
 end;
 
 procedure TLSMTPClient.Helo(aHost: string = '');
@@ -730,98 +699,56 @@ end;
 
 { TMail }
 
+function TMail.GetCount: Integer;
+begin
+  Result := FMailStream.Count;
+end;
+
+function TMail.GetSection(i: Integer): TMimeSection;
+begin
+  Result := FMailStream.Sections[i];
+end;
+
+procedure TMail.SetSection(i: Integer; const AValue: TMimeSection);
+begin
+  FMailStream.Sections[i] := aValue;
+end;
+
 constructor TMail.Create;
 begin
-
+  FMailStream := TMimeStream.Create;
 end;
 
 destructor TMail.Destroy;
 begin
-
+  FMailStream.Free;
 end;
 
-{ TAttachment }
-
-function TAttachment.GetAsText: string;
+procedure TMail.AddTextSection(const aText: string; const aCharSet: string);
 begin
-  Result := '';
-  raise Exception.Create('Not yet implemented');
+  FMailStream.AddTextSection(aText, aCharSet);
 end;
 
-constructor TAttachment.Create;
+procedure TMail.AddFileSection(const aFileName: string);
 begin
-  FData := TStringList.Create;
+  FMailStream.AddFileSection(aFileName);
 end;
 
-destructor TAttachment.Destroy;
+procedure TMail.AddStreamSection(aStream: TStream; const FreeStream: Boolean);
 begin
-  FData.Free;
-  inherited Destroy;
+  FMailStream.AddStreamSection(aStream, FreeStream);
 end;
 
-function TAttachment.LoadFromFile(const aFileName: string): Boolean;
+procedure TMail.DeleteSection(const i: Integer);
 begin
-  Result := False;
-  raise Exception.Create('Not yet implemented');
+  FMailStream.Delete(i);
 end;
 
-{ TAttachmentList }
-
-function TAttachmentList.GetCount: Integer;
+procedure TMail.RemoveSection(aSection: TMimeSection);
 begin
-  Result := FItems.Count;
+  FMailStream.Remove(aSection);
 end;
 
-function TAttachmentList.GetItem(i: Integer): TAttachment;
-begin
-  Result := TAttachment(FItems[i]);
-end;
-
-procedure TAttachmentList.SetItem(i: Integer; const AValue: TAttachment);
-begin
-  FItems[i] := aValue;
-end;
-
-constructor TAttachmentList.Create;
-begin
-  FItems := TFPObjectList.Create(True);
-end;
-
-destructor TAttachmentList.Destroy;
-begin
-  FItems.Free;
-  inherited Destroy;
-end;
-
-function TAttachmentList.Add(anAttachment: TAttachment): Integer;
-begin
-  Result := FItems.Add(anAttachment);
-end;
-
-function TAttachmentList.AddFromFile(const aFileName: string): Integer;
-var
-  Tmp: TAttachment;
-begin
-  Tmp := TAttachment.Create;
-  
-  if Tmp.LoadFromFile(aFileName) then
-    Result := FItems.Add(Tmp);
-end;
-
-function TAttachmentList.Remove(anAttachment: TAttachment): Integer;
-begin
-  Result := FItems.Remove(anAttachment);
-end;
-
-procedure TAttachmentList.Delete(const i: Integer);
-begin
-  FItems.Delete(i);
-end;
-
-procedure TAttachmentList.Clear;
-begin
-  FItems.Clear;
-end;
 
 end.
 
