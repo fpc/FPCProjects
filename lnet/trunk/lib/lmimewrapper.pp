@@ -763,9 +763,17 @@ begin
   or (s = 'cpp')
   or (s = 'cc')
   or (s = 'h')
+  or (s = 'hh')
+  or (s = 'rb')
+  or (s = 'pod')
+  or (s = 'php')
+  or (s = 'php3')
+  or (s = 'php4')
+  or (s = 'php5')
   or (s = 'c++') then FContentType := 'text/plain';
   
-  if s = 'html' then FContentType := 'text/html';
+  if (s = 'html')
+  or (s = 'shtml') then FContentType := 'text/html';
   if s = 'css' then FContentType := 'text/css';
   
   if s = 'png' then FContentType := 'image/x-png';
