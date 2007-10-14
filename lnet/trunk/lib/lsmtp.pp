@@ -604,8 +604,8 @@ end;
 
 procedure TLSMTPClient.SendMail(aMail: TMail);
 begin
-  if Length(aMail.MailText) > 0 then
-    SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.MailText)
+  if Length(aMail.FMailText) > 0 then
+    SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.FMailText)
   else if Assigned(aMail.FMailStream) then
     SendMail(aMail.Sender, aMail.Recipients, aMail.Subject, aMail.FMailStream);
 end;

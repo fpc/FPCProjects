@@ -90,7 +90,7 @@ begin
   LHI^.Handle := aHandle;
   SetInternalData(aHandle, LHI);
   LHI^.EventHandle := AddEventHandler(aHandle.Handle, ALL_FLAGS,
-                                    @HandleEvents, PtrInt(LHI));
+                                    @HandleEvents, PtrUInt(LHI));
   LHI^.Flags := ALL_FLAGS;
   if not Assigned(LHI^.EventHandle) then
     Bail('Error on handler', -1)

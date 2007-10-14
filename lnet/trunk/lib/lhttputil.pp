@@ -244,9 +244,6 @@ begin
   if index > 0 then begin
     Port := StrToIntDef(Copy(Host, index+1, Length(Host)-index), -1);
 
-    if (Port < 0) or (Port > 65535) then
-      Port := 80;
-
     SetLength(Host, index-1);
   end else
     Port := 80;

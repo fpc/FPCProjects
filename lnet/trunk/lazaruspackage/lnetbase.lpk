@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <CONFIG>
-  <Package Version="2">
+  <Package Version="3">
     <Name Value="lnetbase"/>
     <CompilerOptions>
       <Version Value="5"/>
@@ -28,6 +28,11 @@
         </Debugging>
       </Linking>
       <Other>
+        <Verbosity>
+          <ShowNotes Value="False"/>
+          <ShowHints Value="False"/>
+          <ShowGenInfo Value="False"/>
+        </Verbosity>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
