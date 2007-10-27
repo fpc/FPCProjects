@@ -531,8 +531,13 @@ begin
       Result := sockets.fpRecv(FHandle, @aData, aSize, LMSG)
     else
       Result := sockets.fpRecvfrom(FHandle, @aData, aSize, LMSG, @FPeerAddress, @AddressLength);
+      
     if Result = 0 then
-      Disconnect;
+      if FSocketType = SOCK_STREAM then
+        Disconnect
+      else
+        Bail('Receive Error [0 on recvfrom with UDP]', 0);
+      
     if Result = SOCKET_ERROR then begin
       LastError := LSocketError;
       if IsBlockError(LastError) then begin
