@@ -9,8 +9,6 @@ LFILL=utils/fillmarkov.pas
 INSTSRC=botinst.pas
 INSTBIN1=./botinst
 INSTBIN2=./botinst inst
-ECHO=echo
-RM=$(RM) -f
 TOUCH=touch
 
 all:
@@ -18,7 +16,7 @@ all:
 	$(RM) include/baseinc.inc
 	$(TOUCH) include/baseinc.inc
 	$(INSTBIN1)
-	@$(ECHO) "Run make compile."
+	@echo "Run make compile."
 
 compile:
 	$(PP) $(ARGS) $(LBOT)
