@@ -224,6 +224,7 @@ begin
   FPort:=0;
   FServer:='';
   FCon:=TLTcp.Create(nil);
+  FCon.Timeout := 500; // low enough to be responsible, high enough to not bother CPU
   FCon.OnError:=@OnEr;
   FCon.OnDisconnect:=@OnDs;
   FCon.OnReceive:=@OnRe;
@@ -943,17 +944,17 @@ begin
 end;
 
 procedure TLIrcBot.RegisterSelf;
-var
-  i: Longint;
+//var
+//  i: Longint;
 begin
   FCon.SendMessage('NICK ' + FNick + #13#10);
   FCon.SendMessage('USER ' + FLogin + ' 8 * :FPC rag-tag bot' + #13#10);
   FCon.SendMessage('NICKSERV :IDENTIFY ' + FNickPass + #13#10);
-  i:=0;
+{  i:=0;
   while i < 2 do begin
     FCon.CallAction;
     Inc(i);
-  end;
+  end;}
 end;
 
 function SortCommands(i1, i2: Pointer): Integer;

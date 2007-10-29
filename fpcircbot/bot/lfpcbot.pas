@@ -92,7 +92,6 @@ end;
 procedure Main;
 const
   MAX_TIME = 5000;
-  EVENTER_TIMEOUT = 500; // half a second to get proper interaction from server/console
 var
   Con: TLIrcBot;
   AD: string;
@@ -178,7 +177,6 @@ begin
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
   else begin
     Writeln('Connecting... press escape to cancel');
-    Con.Eventer.Timeout := EVENTER_TIMEOUT;
     Doer.SetEventer(Con.Eventer); // share the eventer. !Warning!: must be set AFTER Con.Connect, or make your own outside!
     repeat
       Con.CallAction;
