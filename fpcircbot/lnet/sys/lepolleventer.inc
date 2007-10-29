@@ -126,8 +126,8 @@ var
   MasterEvents: array[0..1] of TEpollEvent;
 begin
   Result := False;
-  if FInLoop then
-    Exit;
+//  if FInLoop then
+//    Exit;
     
   Changes := 0;
   ReadChanges := 0;

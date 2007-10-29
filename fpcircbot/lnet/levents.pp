@@ -505,8 +505,8 @@ var
   MaxHandle, n: Integer;
   TempTime: TTimeVal;
 begin
-  if FInLoop then
-    Exit;
+//  if FInLoop then
+//    Exit;
 
   if not Assigned(FRoot) then begin
     Sleep(FTimeout.tv_sec * 1000 + FTimeout.tv_usec div 1000);
