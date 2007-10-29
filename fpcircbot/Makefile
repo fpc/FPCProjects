@@ -24,7 +24,7 @@ compile:
 	$(PP) $(ARGS) $(LCGI2)
 	$(PP) $(ARGS) $(LDUMP)
 	$(PP) $(ARGS) $(LFILL)
-	@ "Run make inst as root."
+	@echo "Run make inst as root."
 
 inst:
 	$(INSTBIN2)
