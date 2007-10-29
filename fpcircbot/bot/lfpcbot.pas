@@ -203,6 +203,7 @@ begin
     WasConnected := True;
     Con.RegisterSelf;
     Doer.TimeStarted := Now;
+    Doer.Listen;
 
     if ChannelsUsers.Count > 0 then begin
       n := ChannelsUsers.IndexOf('?');

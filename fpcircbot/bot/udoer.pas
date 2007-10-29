@@ -117,6 +117,7 @@ type
     procedure OnUserJoin(Caller: TLIrcBot);
     procedure OnChannelJoin(Caller: TLIrcBot);
     procedure OnChannelQuit(Caller: TLIrcBot);
+    procedure Listen;
     property GreetList: TStringList read FGreetList write SetGreetList;
     property Greetings: TStringList read FGreetings write SetGreetings;
     {$ifndef noDB}
@@ -158,7 +159,6 @@ begin
 
   {$ifndef nodb}
   FPasteUDP:=TLUdp.Create(nil);
-  FPasteUDP.Listen(PastePort, LADDR_LO);
   FPasteUDP.OnReceive:=@UDPReceive;
   FPasteUDP.OnError:=@UDPError;
 
@@ -1143,6 +1143,11 @@ end;
 procedure TDoer.OnChannelQuit(Caller: TLIrcBot);
 begin
   // no, I didn't forget to put anything here
+end;
+
+procedure TDoer.Listen;
+begin
+  FPasteUDP.Listen(PastePort, LADDR_LO);
 end;
 
 end.
