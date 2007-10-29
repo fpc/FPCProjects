@@ -456,7 +456,7 @@ var
   msg: string;
 begin
   if FCon.GetMessage(msg) > 0 then
-    if Pos(FNickOK + ' << ONLINE >>', Msg) > 0 then
+    if Pos(UpperCase(FNickOK) + ' << ONLINE >>', UpperCase(Msg)) > 0 then
       FNickOK:=''
     else
       if Pos('NOTICE', msg) = 0 then DoRe(msg);
@@ -800,9 +800,8 @@ begin
       Backup:=FLastLine.CloneSelf;
       FCon.SendMessage('NICKSERV :INFO ' + aNick + #13#10);
       FCon.OnReceive:=@OnReTest;
-      for i:=0 to 1000 do begin // LOOONG wait time for nickServ
+      for i := 1 to 20 do begin // LOOONG wait time for nickServ (10 seconds)
         FCon.CallAction;
-        Sleep(10);
         if Length(FNickOK) = 0 then Result:=True;
         if Result then Break;
       end;
@@ -864,9 +863,8 @@ begin
     FCon.OnReceive:=@OnReJoin;
     i:=0;
     FChan:=Channel;
-    while (FCon.OnReceive = @OnReJoin) and (i < 100) do begin
+    while (FCon.OnReceive = @OnReJoin) and (i < 2) do begin
       FCon.CallAction;
-      Sleep(10);
       Inc(i);
     end;
     FLastLine.Free;
@@ -952,9 +950,8 @@ begin
   FCon.SendMessage('USER ' + FLogin + ' 8 * :FPC rag-tag bot' + #13#10);
   FCon.SendMessage('NICKSERV :IDENTIFY ' + FNickPass + #13#10);
   i:=0;
-  while i < 100 do begin
+  while i < 2 do begin
     FCon.CallAction;
-    Sleep(10);
     Inc(i);
   end;
 end;
