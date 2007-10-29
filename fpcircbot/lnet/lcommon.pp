@@ -1,6 +1,6 @@
 { lCommon
 
-  CopyRight (C) 2004-2006 Ales Katona
+  CopyRight (C) 2004-2007 Ales Katona
 
   This library is Free software; you can rediStribute it and/or modify it
   under the terms of the GNU Library General Public License as published by
@@ -53,10 +53,18 @@ const
   {$IFDEF UNIX}
   INVALID_SOCKET = -1;
   SOCKET_ERROR = -1;
-    {$IFDEF LINUX} // TODO: fix this crap, some don't even have MSD_NOSIGNAL
+    {$IFDEF LINUX} // TODO: fix this crap, some don't even have MSG_NOSIGNAL
     LMSG = MSG_NOSIGNAL;
     {$ELSE}
-    LMSG = $20000; // FPC BUG in 2.0.4-
+      {$IFDEF FREEBSD}
+        LMSG = $20000; // FPC BUG in 2.0.4-, freeBSD value
+      {$ELSE}
+        LMSG = 0;
+      {$ENDIF}
+    {$ENDIF}
+    
+    {$IFDEF DARWIN}
+    SO_NOSIGPIPE = $1022; // for fpc 2.0.4
     {$ENDIF}
   {$ENDIF}
   { Default Values }

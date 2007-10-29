@@ -90,6 +90,10 @@ var
   i, n: Integer;
   Temp: TLHandle;
 begin
+  Result := False;
+  if FInLoop then
+    Exit;
+
   if FTimeout.tv_sec >= 0 then
     n := KEvent(FQueue, @FChanges[0], FFreeSlot,
               @FEvents[0], Length(FEvents), @FTimeout)
@@ -132,7 +136,11 @@ end;
 
 function BestEventerClass: TLEventerClass;
 begin
+  {$IFNDEF FORCE_SELECT}
   Result := TLKQueueEventer;
+  {$ELSE}
+  Result := TLSelectEventer;
+  {$ENDIF}
 end;
 
 {$endif} // BSD
