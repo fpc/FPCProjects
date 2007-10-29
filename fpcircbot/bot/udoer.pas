@@ -1147,7 +1147,9 @@ end;
 
 procedure TDoer.Listen;
 begin
+  {$ifndef nodb}
   FPasteUDP.Listen(PastePort, LADDR_LO);
+  {$endif}
 end;
 
 end.
