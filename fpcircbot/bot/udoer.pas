@@ -117,10 +117,11 @@ type
     procedure OnUserJoin(Caller: TLIrcBot);
     procedure OnChannelJoin(Caller: TLIrcBot);
     procedure OnChannelQuit(Caller: TLIrcBot);
-    procedure CallAction;
-    procedure SetEventer(aEventer: TLEventer);
     property GreetList: TStringList read FGreetList write SetGreetList;
     property Greetings: TStringList read FGreetings write SetGreetings;
+    {$ifndef noDB}
+    property Connection: TLUdp read FPasteUDP;
+    {$endif}
   end;
 
 implementation
@@ -1142,21 +1143,6 @@ end;
 procedure TDoer.OnChannelQuit(Caller: TLIrcBot);
 begin
   // no, I didn't forget to put anything here
-end;
-
-procedure TDoer.CallAction;
-begin
-  {$ifndef nodb}
-// no longer required, eventer is shared
-//  FPasteUDP.CallAction;
-  {$endif}
-end;
-
-procedure TDoer.SetEventer(aEventer: TLEventer);
-begin
-  {$ifndef nodb}
-  FPasteUDP.Eventer := aEventer;
-  {$endif}
 end;
 
 end.

@@ -21,8 +21,10 @@ along with This program; if not, Write to the Free Software Foundation,
 
 {$mode objfpc}{$H+}
 
+{$i ../include/baseinc.inc}
+
 uses
-  uDoer, Crt, Classes, SysUtils, lIrcBot, scheck;
+  uDoer, Crt, Classes, SysUtils, lIrcBot, scheck, lNet, lEvents;
   
 function LoadConfig(const FileName: string): TStringList;
 var
@@ -102,6 +104,7 @@ var
   n, i: Longint;
   WasConnected: Boolean = False;
   TimeOut: Integer;
+  Eventer: TLEventer;
 begin
   TimeOut := 0;
   GetADPORT(AD, PORT);
@@ -112,7 +115,12 @@ begin
     Halt;
   end;
   
+  Eventer := BestEventerClass.Create;
+  // note: no need to do this is you just use TLIrcBot, 500 is default there now too
+  Eventer.Timeout := 500; // good enough for both CPU usage and usability from console
+  
   Con := TLIrcBot.Create(BotName, 'SomeLogin');
+  Con.Connection.Eventer := Eventer;
   
   ChannelsUsers := TStringList.Create;
   ChannelsUsers.CommaText := ConfigList[0];
@@ -122,6 +130,9 @@ begin
   ConfigList.Delete(0); // "delete" SvN stuff now
   
   Doer := TDoer.Create(Con);
+  {$ifndef noDB}
+  Doer.Connection.Eventer := Eventer; // share eventers
+  {$endif}
   Doer.Logging := True;
   Doer.MarkovOn := True;
   
@@ -177,9 +188,8 @@ begin
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
   else begin
     Writeln('Connecting... press escape to cancel');
-    Doer.SetEventer(Con.Eventer); // share the eventer. !Warning!: must be set AFTER Con.Connect, or make your own outside!
     repeat
-      Con.CallAction;
+      Eventer.CallAction;
       Inc(TimeOut);
       if KeyPressed then
        if ReadKey = #27 then
@@ -205,9 +215,7 @@ begin
     while not Doer.Quit do begin // goes by 500ms, not fast but interaction is a debug feature
       if  KeyPressed
       and (ReadKey = #27) then Doer.Quit := True;
-      Con.CallAction;
-//      Doer.CallAction; // no longer required, eventers are shared
-//      Delay(1); // timeout is used now
+      Eventer.CallAction;
     end;
   end;
 
@@ -230,6 +238,7 @@ begin
   Doer.Free;
   ChannelsUsers.Free;
   ConfigList.Free;
+  Eventer.Free;
 end;
 
 begin

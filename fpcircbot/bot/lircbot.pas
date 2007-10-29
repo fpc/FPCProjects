@@ -109,7 +109,6 @@ type
     procedure OnDs(aSocket: TLSocket);
     procedure OnCo(aSocket: TLSocket);
     //******TCP callbacks end****
-    function GetEventer: TLEventer;
     function CleanEnding(const astr: string): string;
     function SeparateByEnding(var astr: string): string;
     function GetConnected: Boolean;
@@ -164,7 +163,7 @@ type
     property OnDisconnect: TLIrcCallback read FOnDisconnect write FOnDisconnect;
     property OnConnect: TLIrcCallback read FOnConnect write FOnConnect;
     property LogLine: TLIrcCallback read FLogLine write FLogLine;
-    property Eventer: TLEventer read GetEventer;
+    property Connection: TLTcp read FCon;
   end;
 
 implementation
@@ -517,11 +516,6 @@ begin
 end;
 
 //******TCP callbacks end****
-
-function TLIrcBot.GetEventer: TLEventer;
-begin
-  Result := FCon.Eventer;
-end;
 
 function TLIrcBot.CleanEnding(const astr: string): string;
 var
