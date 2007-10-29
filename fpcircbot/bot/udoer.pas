@@ -32,7 +32,7 @@ uses
   DB, SqlDB, PQConnection,
   {$endif}
   Classes, SysUtils,
-  lNet, lIrcBot, StringUtils, Markov, InfixMath;
+  lNet, lEvents, lIrcBot, StringUtils, Markov, InfixMath;
 const
   BoolStr: array[Boolean] of string = ('Off', 'On');
   YESSIR = 'As ordered';
@@ -118,6 +118,7 @@ type
     procedure OnChannelJoin(Caller: TLIrcBot);
     procedure OnChannelQuit(Caller: TLIrcBot);
     procedure CallAction;
+    procedure SetEventer(aEventer: TLEventer);
     property GreetList: TStringList read FGreetList write SetGreetList;
     property Greetings: TStringList read FGreetings write SetGreetings;
   end;
@@ -1146,7 +1147,15 @@ end;
 procedure TDoer.CallAction;
 begin
   {$ifndef nodb}
-  FPasteUDP.CallAction;
+// no longer required, eventer is shared
+//  FPasteUDP.CallAction;
+  {$endif}
+end;
+
+procedure TDoer.SetEventer(aEventer: TLEventer);
+begin
+  {$ifndef nodb}
+  FPasteUDP.Eventer := aEventer;
   {$endif}
 end;
 

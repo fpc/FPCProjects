@@ -92,6 +92,7 @@ end;
 procedure Main;
 const
   MAX_TIME = 5000;
+  EVENTER_TIMEOUT = 500; // half a second to get proper interaction from server/console
 var
   Con: TLIrcBot;
   AD: string;
@@ -177,8 +178,9 @@ begin
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
   else begin
     Writeln('Connecting... press escape to cancel');
+    Con.Eventer.Timeout := EVENTER_TIMEOUT;
+    Doer.SetEventer(Con.Eventer); // share the eventer. !Warning!: must be set AFTER Con.Connect, or make your own outside!
     repeat
-      Sleep(1);
       Con.CallAction;
       Inc(TimeOut);
       if KeyPressed then
@@ -202,12 +204,12 @@ begin
         for i := n+1 to ChannelsUsers.Count-1 do Con.Join(ChannelsUsers[i]);
     end;
 
-    while not Doer.Quit do begin
+    while not Doer.Quit do begin // goes by 500ms, not fast but interaction is a debug feature
       if  KeyPressed
       and (ReadKey = #27) then Doer.Quit := True;
       Con.CallAction;
-      Doer.CallAction;
-      Delay(1);
+//      Doer.CallAction; // no longer required, eventers are shared
+//      Delay(1); // timeout is used now
     end;
   end;
 

@@ -2,15 +2,21 @@ unit StringUtils;
 
 {$mode objfpc}{$H+}
 
+{$i ../include/baseinc.inc}
+
 interface
 
 uses
-  SysUtils,
+  SysUtils {$ifndef noDB} ,
 {$IfDef LinkDynamically}
   postgres3dyn;
 {$Else}
   postgres3;
 {$EndIf}
+
+{$else}
+;
+{$endif}
 
 function RemoveOtherChars (const S : String; AllowedChars : TSysCharSet) : String; {$IFDEF USEINLINE} inline;{$ENDIF}
 //Remove chars that does not exists on the charset
@@ -68,10 +74,14 @@ end;
 
 function SQLEscape (const S : string) : string;
 begin
+  {$ifndef noDB}
   if Length(S) > 0 then begin
     SetLength(Result, Length(S) * 2 + 1);
     SetLength(Result, PQescapeString(pChar(Result), pChar(S), Length(S)));
   end;
+  {$else}
+  Result := s;
+  {$endif}
 end;
 
 function FilterHtml(const s: string): string;

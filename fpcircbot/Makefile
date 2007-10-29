@@ -10,7 +10,7 @@ INSTSRC=botinst.pas
 INSTBIN1=./botinst
 INSTBIN2=./botinst inst
 ECHO=echo
-RM=rm -f
+RM=$(RM) -f
 TOUCH=touch
 
 all:
