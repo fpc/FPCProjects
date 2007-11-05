@@ -107,7 +107,7 @@ type
     FSocketType: Integer;
     FCreator: TLComponent;
    protected
-    function DoSend(const TheData; const TheSize: Integer): Integer;
+    function DoSend(const TheData; const TheSize: Integer): Integer; virtual;
     
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
     
@@ -125,6 +125,8 @@ type
     function Bail(const msg: string; const ernum: Integer): Boolean;
     
     procedure LogError(const msg: string; const ernum: Integer); virtual;
+
+    property SocketType: Integer read FSocketType write FSocketType; // inherit and publicize if you need to set this outside
    public
     constructor Create; override;
     destructor Destroy; override;
@@ -147,7 +149,6 @@ type
     property Blocking: Boolean read FBlocking write SetBlocking;
     property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
     property Protocol: Integer read FProtocol write FProtocol;
-    property SocketType: Integer read FSocketType write FSocketType;
     property PeerAddress: string read GetPeerAddress;
     property PeerPort: Word read GetPeerPort;
     property LocalAddress: string read GetLocalAddress;
@@ -158,6 +159,21 @@ type
     property Creator: TLComponent read FCreator;
   end;
   TLSocketClass = class of TLSocket;
+  
+  { TLSocketTCP }
+
+  TLSocketTCP = class(TLSocket)
+   private
+    FSendBuffer: string;
+   protected
+    function DoSend(const TheData; const TheSize: Integer): Integer; override;
+   public
+    function DoSendBuffer: Boolean;
+    function Send(const aData; const aSize: Integer): Integer; override;
+   public
+    property SocketType read FSocketType; // read only here
+    property SendBuffer: string read FSendBuffer;
+  end;
 
   { this is the socket used by TLConnection }
   
@@ -358,6 +374,8 @@ type
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle; const msg: string); override;
+
+    procedure CanSendEvent(aSocket: TLHandle); override;
 
     function Bail(const msg: string; aSocket: TLSocket): Boolean;
 
@@ -685,6 +703,64 @@ begin
       end;
     end;
  end;
+end;
+
+//*******************************TLSocketTCP**********************************
+
+function TLSocketTCP.DoSend(const TheData; const TheSize: Integer): Integer;
+var
+  StartPos, r, c: Integer;
+begin
+  Result := Sockets.fpSend(FHandle, @TheData, TheSize, LMSG);
+
+  if TheSize - Result > 0 then begin
+    r := Result;
+    if r < 0 then
+      r := 0;
+    c := TheSize - r; // how much to copy
+    
+    StartPos := Length(FSendBuffer);
+    if StartPos = 0 then // empty string, we start from 1
+      Inc(StartPos);
+      
+    SetLength(FSendBuffer, Length(FSendBuffer) + c);
+    System.Move(TByteArray(TheData)[r], FSendBuffer[StartPos], c);
+  end;
+end;
+
+function TLSocketTCP.DoSendBuffer: Boolean;
+var
+  Sent, LastError: Integer;
+begin
+  Result := False;
+  
+  if FCanSend
+  and (Length(FSendBuffer) > 0) then repeat
+    Sent := inherited DoSend(FSendBuffer[1], Length(FSendBuffer));
+    if Sent > 0 then
+      Delete(FSendBuffer, 1, Sent);
+      
+    if Sent = SOCKET_ERROR then begin
+      LastError := LSocketError;
+      if IsBlockError(LastError) then begin
+        FCanSend := False;
+        IgnoreWrite := False;
+      end else
+        Bail('Send [buffer] error', LastError);
+    end;
+  until (Length(FSendBuffer) = 0) or (Sent = SOCKET_ERROR);
+  
+  Result := (Length(FSendBuffer) = 0) and FCanSend; // true if we sent all, and STILL can send more
+end;
+
+function TLSocketTCP.Send(const aData; const aSize: Integer): Integer;
+var
+  r: Integer;
+begin
+  Result := inherited Send(aData, aSize);
+  
+  if not FServerSocket then
+    DoSendBuffer;
 end;
 
 //*******************************TLConnection*********************************
@@ -1069,6 +1145,7 @@ begin
   FIterator := nil;
   FCount := 0;
   FRootSock := nil;
+  SocketClass := TLSocketTCP;
 end;
 
 function TLTcp.Connect(const Address: string; const APort: Word): Boolean;
@@ -1253,6 +1330,18 @@ begin
     else
       Self.Bail(msg, TLSocket(aSocket));
   end;
+end;
+
+procedure TLTcp.CanSendEvent(aSocket: TLHandle);
+var
+  s: TLSocketTCP;
+begin
+  if aSocket is TLSocketTCP then begin // TODO: optmize this!
+    s := TLSocketTCP(aSocket);
+    if s.DoSendBuffer then
+      inherited CanSendEvent(aSocket);
+  end else
+    inherited CanSendEvent(aSocket);
 end;
 
 function TLTcp.GetConnected: Boolean;
