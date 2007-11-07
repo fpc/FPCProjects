@@ -7,8 +7,9 @@
   texture data.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/10/07 - LC - Added DirtyRectangle to allow partial updates.
       <li>12/07/07 - DaStr - Added $I GLScene.inc
-      <li>25/06/07 - LC - Added SysUtils (needed for AllocMem or D7 and down).
+      <li>25/06/07 - LC - Added SysUtils (needed for AllocMem on D7 and down).
       <li>25/06/07 - LC - Fixed a bug where resizing a texture would fail. Introduced
                           new methods for freeing PBO and buffer.
       <li>24/06/07 - LC - Creation
@@ -22,7 +23,7 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, SysUtils, OpenGL1x, GLContext, GLTexture, GLGraphics;
+  Classes, SysUtils, OpenGL1x, GLContext, GLTexture, GLGraphics, GLCrossPlatform;
 
 type
   // TGLDynamicTextureImage
@@ -36,8 +37,10 @@ type
     FPBO: TGLBufferObjectHandle;
     FData: pointer;
     TTarget: TGLuint;
+    FDirtyRect: TGLRect;
     FUseBGR: boolean;
     FUsePBO: boolean;
+    procedure SetDirtyRectangle(const Value: TGLRect);
     procedure SetUsePBO(const Value: boolean);
   protected
     function GetTexSize: integer;
@@ -73,6 +76,13 @@ type
        outside a BeginUpdate / EndUpdate block. }
     property Data: pointer read FData;
 
+    {: Marks the dirty rectangle inside the texture.<p> BeginUpdate sets
+       it to ((0, 0), (Width, Height)), ie the entire texture.
+       Override it if you're only changing a small piece of the texture.
+       Note that the Data pointer is relative to the DirtyRectangle,
+       NOT the entire texture. }
+    property DirtyRectangle: TGLRect read FDirtyRect write SetDirtyRectangle;
+
     {: Indicates that the data is stored as BGR(A) instead of
        RGB(A).<p> The default is to use BGR(A). }
     property UseBGR: boolean read FUseBGR write FUseBGR;
@@ -82,6 +92,9 @@ type
   end;
 
 implementation
+
+uses
+  VectorGeometry;
 
 { TGLDynamicTextureImage }
 
@@ -135,6 +148,8 @@ begin
   end;
 
   CheckOpenGLError;
+
+  FDirtyRect:= GLRect(0, 0, Width, Height);
 end;
 
 constructor TGLDynamicTextureImage.Create(AOwner: TPersistent);
@@ -171,7 +186,11 @@ begin
   begin
     // only change data if it's already been uploaded
     glBindTexture(TTarget, OwnerTexture.Handle);
-    glTexSubImage2D(TTarget, 0, 0, 0, Width, Height, TextureFormat, DataFormat, d);
+    glTexSubImage2D(TTarget, 0,
+      FDirtyRect.Left, FDirtyRect.Top,
+      FDirtyRect.Right-FDirtyRect.Left,
+      FDirtyRect.Bottom-FDirtyRect.Top,
+      TextureFormat, DataFormat, d);
 
     if assigned(FPBO) then
     begin
@@ -300,6 +319,14 @@ begin
   end;
 
   inherited;
+end;
+
+procedure TGLDynamicTextureImage.SetDirtyRectangle(const Value: TGLRect);
+begin
+  FDirtyRect.Left:= MaxInteger(Value.Left, 0);
+  FDirtyRect.Top:= MaxInteger(Value.Top, 0);
+  FDirtyRect.Right:= MinInteger(Value.Right, Width);
+  FDirtyRect.Bottom:= MinInteger(Value.Bottom, Height);
 end;
 
 procedure TGLDynamicTextureImage.SetUsePBO(const Value: boolean);
