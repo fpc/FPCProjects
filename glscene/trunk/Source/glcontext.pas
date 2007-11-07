@@ -4,6 +4,8 @@
    Currently NOT thread-safe.<p>
 
    <b>History : </b><font size=-1><ul>
+
+      <li>06/11/07 - LC - moved vIgnoreContextActivationFailures to "Interface" section
       <li>24/06/06 - LC - Refactored TGLVBOHandle, introduced TGLBufferObjectHandle
                           and TGLPackPBOHandle/TGLUnpackPBOHandle
       <li>15/02/07 - DaStr - Added more parameters to TGLProgramHandle
@@ -662,6 +664,7 @@ procedure RaiseOpenGLError(const msg : String);
 var
    GLContextManager : TGLContextManager;
    vIgnoreOpenGLErrors : Boolean = False;
+   vIgnoreContextActivationFailures : Boolean = true;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -681,7 +684,6 @@ resourcestring
 
 var
    vContextClasses : TList = nil;
-   vIgnoreContextActivationFailures : Boolean = False;
 
 var
    vCurrentGLContext : TGLContext;
