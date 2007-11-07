@@ -9,6 +9,7 @@
     this component on the form.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>29/09/07 - DaStr - Component now automaticly detects Form Caption
       <li>24/03/07 - DaStr - Replaced GLWin32Viewer with GLViewer
                              (thanks Burkhard Carstens) (Bugtracker ID = 1684432)
                              Got rid of Types dependancy
@@ -50,7 +51,7 @@ type
                                snoInvertMoveAroundX, snoInvertMoveAroundY, // MoveAroundTarget.
                                snoInvertZoom, snoInvertMouseWheel,         // Zoom.
                                snoInvertRotateX, snoInvertRotateY,         // RotateTarget.
-                               snoMouseWheelHandled                           // Other.
+                               snoMouseWheelHandled                        // MouseWheel.
                                );
 
   TGLSimpleNavigationOptions = set of TGLSimpleNavigationOption;
@@ -343,6 +344,9 @@ begin
 
   if FForm <> nil then
   begin
+    if FFormCaption = FPSString then
+      FFormCaption := FForm.Caption + ' - ' + FPSString;
+
     TForm(FForm).OnMouseWheel := FormMouseWheel;
     FForm.FreeNotification(Self);
   end;
