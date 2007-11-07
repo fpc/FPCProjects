@@ -8,6 +8,9 @@
    can be useful to make animations with GlScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>11/10/07 - DaStr - TTimeEvent.SetEnabled now updates StartTime to
+                             Cadencers's current time.
+                             (Thanks Lukasz Sokol) (BugTracker ID = 1811141)
       <li>28/03/07 - DaStr - Cosmetic fix for FPC compatibility
       <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>07/02/02 - EG - Added Notification, DoEvent, ElapsedTime and changed Event type
@@ -94,6 +97,7 @@ type
          FEnabled: boolean;
 
          FTickCount : Cardinal;
+         procedure SetEnabled(const Value: Boolean);
 
       protected
          { Protected Declarations }
@@ -120,7 +124,7 @@ type
          property Period : Double read  FPeriod write FPeriod;
          property EventType : TTimeEventType read FEventType write FEventType default etOneShot;
          property OnEvent : TTimeEventProc read FOnEvent write FOnEvent;
-         property Enabled : boolean read FEnabled write FEnabled  default True;
+         property Enabled : Boolean read FEnabled write SetEnabled  default True;
 
     end;
 
@@ -338,6 +342,12 @@ begin
       FOnEvent(Self);
    end;
    Inc(FTickCount);
+end;
+
+procedure TTimeEvent.SetEnabled(const Value: Boolean);
+begin
+  FEnabled := Value;
+  FStartTime := ((GetOwner as TTimeEvents).Owner as TGLTimeEventsMGR).Cadencer.CurrentTime;
 end;
 
 end.
