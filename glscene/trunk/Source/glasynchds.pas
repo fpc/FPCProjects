@@ -1,5 +1,9 @@
-// GLAsyncHDS
-{: Implements a HDS Filter that generates HeightData tiles in a seperate thread.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLAsyncHDS<p>
+
+   Implements a HDS Filter that generates HeightData tiles in a seperate thread.<p>
 
    This component is a THeightDataSourceFilter, which uses a THeightDataSourceThread,
    to asyncronously search the HeightData cache for any queued tiles.
@@ -12,6 +16,7 @@
    <p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>11/10/07 - DaStr - Added $I GLScene.inc, removed unused dependancy
       <li>25/03/07 - DaStr - Replaced Dialogs with GLCrossPlatform for Delphi5 compatibility
       <li>22/03/07 - LIN - Added UseDirtyTiles property - Specifies how dirty tiles are replaced.
       <li>22/03/07 - LIN - Data is now prepared in 3 stages:
@@ -27,7 +32,9 @@ unit GLAsyncHDS;
 
 interface
 
-uses Classes, GLHeightData, GLGraphics, SyncObjs, GLCrossPlatform;
+{$I GLScene.inc}
+
+uses Classes, GLHeightData, GLGraphics, GLCrossPlatform;
 
 type
   TGLAsyncHDS = class;
