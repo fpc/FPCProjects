@@ -1,20 +1,27 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-// 30/03/07 - DaStr - Added $I GLScene.inc
-// 24/03/07 - DaStr - Added explicit pointer dereferencing
-//                     (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
-// 09/03/07 - DaStr - Fixed a potential AV in two InitMeshObj procedures
-//                     (thanks Burkhard Carstens) (BugtrackerID = 1678649)
-// 27/10/06 - LC - Fixed memory leak in RelMeshObjField. Bugtracker ID=1585639
-// 12/08/02 - EG - ReadMatEntryChunk fix / COLOR_F chunk (coerni)
-unit Utils3DS;
+{: Utils3DS<p>
 
+   Utility functions for the universal 3DS file reader and writer (TFile3DS).
+   Essentially, the functions here are the heart of the import library as
+   they deal actually with the database and chunks.
 
-{
-      $Log: utils3ds.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
+	<b>History :</b><font size=-1><ul>
+      <li>02/11/07 - DaStr - Fixed incorrect positioning when importing 3ds
+                              animation (Bugtracker ID = 1824372)
+                             Fixed memory leaks in the FreeChunkData() procedure
+                              (Bugtracker ID = 1823781)
+                             Added a standard GLScene header
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
+      <li>24/03/07 - DaStr - Added explicit pointer dereferencing
+                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
+      <li>09/03/07 - DaStr - Fixed a potential AV in two InitMeshObj procedures
+                              (thanks Burkhard Carstens) (BugtrackerID = 1678649)
+      <li>27/10/06 - LC - Fixed memory leak in RelMeshObjField (Bugtracker ID = 1585639)
+      <li>12/08/02 -  EG  - ReadMatEntryChunk fix / COLOR_F chunk (coerni)
+	</ul></font>
+
 
       Revision 1.1  2006/01/09 21:02:31  z0m3ie
       *** empty log message ***
@@ -28,14 +35,12 @@ unit Utils3DS;
       Revision 1.5  2005/08/03 00:41:38  z0m3ie
       - added automatical generated History from CVS
 
-}
 
-// Utility functions for the universal 3DS file reader and writer (TFile3DS). Essentially, the functions
-// here are the heart of the import library as they deal actually with the database and chunks.
-//
-// Last Change - 03. October 1999
-//
-// (c) Copyright 1999, Dipl. Ing. Mike Lischke (public@lischke-online.de)
+
+   (c) Copyright 1999, Dipl. Ing. Mike Lischke (public@lischke-online.de)
+
+}
+unit Utils3DS;
 
 interface
 
@@ -2527,10 +2532,10 @@ begin
         FreeMem(Chunk^.Data.PointFlagArray^.FlagList);
       FACE_ARRAY:
         Freemem(Chunk^.Data.FaceArray^.FaceList);
-      MSH_MAT_GROUP: 
+      MSH_MAT_GROUP:
          begin
-            Chunk^.Data.MshMatGroup^.MatNameStr:='';
-            FreeMem(Chunk^.Data.MshMatGroup^.FaceList);
+            Dispose(Chunk^.Data.MshMatGroup);
+            Chunk^.Data.MshMatGroup := nil;
          end;
       SMOOTH_GROUP:
         FreeMem(Chunk^.Data.SmoothGroup^.GroupList);
@@ -2582,6 +2587,16 @@ begin
         begin
           FreeMem(Chunk^.Data.FallTrackTag^.KeyHdrList);
           FreeMem(Chunk^.Data.FallTrackTag^.FalloffAngleList);
+        end;
+      KFHDR:
+        begin
+          Dispose(Chunk^.Data.KFHdr);
+          Chunk^.Data.KFHdr := nil;
+        end;
+      NODE_HDR:
+        begin
+          Dispose(Chunk^.Data.NodeHdr);
+          Chunk^.Data.NodeHdr := nil;
         end;
       HIDE_TRACK_TAG:
         FreeMem(Chunk^.Data.HideTrackTag^.KeyHdrList);
@@ -2757,7 +2772,7 @@ begin
       MatName := FindChunk(MatEntry, MAT_NAME);
       Source.ReadChunkData(MatName);
       DB.MatList^.List^[I].Chunk := MatEntry;
-      DB.MatList^.List^[I].NameStr := StrPas(MatName^.Data.MatName);
+      DB.MatList^.List^[I].NameStr := string(MatName^.Data.MatName);
       MatEntry := FindNextChunk(MatEntry^.Sibling, MAT_ENTRY);
       Inc(I);
     end;
@@ -2800,7 +2815,7 @@ begin
     begin
       Source.ReadChunkData(Current);
       DB.ObjList^.List^[I].Chunk := Current;
-      DB.ObjList^.List^[I].NameStr := StrPas(Current^.Data.NamedObject);
+      DB.ObjList^.List^[I].NameStr := string(Current^.Data.NamedObject);
       Current := FindNextChunk(Current^.Sibling, NAMED_OBJECT);
       Inc(I);
     end;
@@ -2877,7 +2892,7 @@ begin
               if Assigned(Chunk) then
               begin
                 Source.ReadChunkData(Chunk);
-                DB.NodeList^.List^[I].NameStr := DB.NodeList^.List^[I].NameStr + '.' + StrPas(Chunk^.Data.InstanceName);
+                DB.NodeList^.List^[I].NameStr := DB.NodeList^.List^[I].NameStr + '.' + string(Chunk^.Data.InstanceName);
                 FreeChunkData(Chunk);
               end;
             end;
@@ -2987,7 +3002,10 @@ begin
   for I := 0 to DB.NodeList^.Count - 1 do
     if (DB.NodeList^.List^[I].Chunk^.Tag = AType) and
        (CompareStr(Name, DB.NodeList^.List^[I].NameStr) = 0) then
-       Result := DB.NodeList^.List^[I].Chunk;
+    begin
+      Result := DB.NodeList^.List^[I].Chunk;
+      Exit;
+    end;
 end;
 
 //----------------- material handling ---------------------------------------------------------------------------------
@@ -4931,7 +4949,7 @@ begin
   if Assigned(NameChunk) then
   begin
     Source.ReadChunkData(NameChunk);
-    Result := NameChunk^.Data.NamedObject^;
+    Result := string(NameChunk^.Data.NamedObject);
     FreeChunkData(NameChunk);
   end;
 end;
