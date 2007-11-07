@@ -1,37 +1,39 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-// 30/03/07 - DaStr - Added $I GLScene.inc
-// 08/06/00 - Egg - LoadFromStream no longer free the stream it was passed,
-//                  further fixing of the streaming mechanism is needed
-//
+{: File3DS<p>
+
+  Implementation of an universal 3DS file reader (and writer). This is the main file of the
+  3DS import library. Currently only loading of 3DS files (Mesh files  * .3ds, Project files  * .prj
+  and Material files  * .mli) is supported.
+
+  Note: Be careful when using LoadFromStream, because chunk data (in opposition to the
+        chunk structure) will be loaded on demand, i.e. when it is needed. Therefore the
+        passed stream must be available during load.
+        LoadFromStream does not make a copy of the passed stream, but keeps a reference
+        which must stay valid either during the entire lifetime of TFile3DS or at least
+        'til all chunks have been read (by accessing them all once).
+
+	<b>History :</b><font size=-1><ul>
+      <li>01/11/07 - DaStr - Fixed memory leaks when using the TKeyFramer class
+                              (BugTracker ID = 1823781)
+                             Added a standard GLScene header
+      <li>30/03/07 - DaStr - Added $I GLScene.inc
+      <li>08/06/00 -  Egg  - LoadFromStream no longer free the stream it was passed,
+	</ul></font>                further fixing of the streaming mechanism is needed
+
+  (c) Copyright 1999, 2000
+    Dipl. Ing. Mike Lischke (public@lischke-online.de)
+    Igor T. (GWin), (georgwin@chat.ru)
+}
 unit File3DS;
 
-// Implementation of an universal 3DS file reader (and writer). This is the main file of the
-// 3DS import library. Currently only loading of 3DS files (Mesh files  * .3ds, Project files  * .prj
-// and Material files  * .mli) is supported.
-//
-// Note: Be careful when using LoadFromStream, because chunk data (in opposition to the
-//       chunk structure) will be loaded on demand, i.e. when it is needed. Therefore the
-//       passed stream must be available during load.
-//       LoadFromStream does not make a copy of the passed stream, but keeps a reference
-//       which must stay valid either during the entire lifetime of TFile3DS or at least
-//       'til all chunks have been read (by accessing them all once).
-//
-// 05-APR-2000 GW:
-//   progress event
-//
-// Version    - 1.2
-// (c) Copyright 1999, 2000
-//   Dipl. Ing. Mike Lischke (public@lischke-online.de)
-//   Igor T. (GWin), (georgwin@chat.ru)
+interface
 
 {$I GLScene.inc}
 {$ALIGN ON}
 {$MINENUMSIZE 4}
 {$RANGECHECKS OFF}
-
-interface
 
 uses Classes, Types3DS;
 
@@ -1846,7 +1848,8 @@ procedure TFile3DS.ReadChunkData(Chunk: PChunk3DS);
 // Reads the data out of the chunk detailed in Chunk and places a pointer to
 // the data into the PChunk3DS structure, it will also return that pointer.
 
-var I : Integer;
+var
+  I: Integer;
 
 begin
   if Chunk.Data.Dummy = nil then  // don't try to read the data if its already been read
@@ -2435,12 +2438,10 @@ begin
         end;
       XDATA_APPNAME:
         begin
-//          Chunk.Data.XDataAppName := AllocMem(SizeOf(TXDataAppName));
           Chunk.Data.XDataAppName := ReadString;
         end;
       XDATA_STRING:
         begin
-//          Chunk.Data.XDataString := AllocMem(SizeOf(TXDataString));
           Chunk.Data.XDataString := ReadString;
         end;
       KFHDR:
@@ -2449,7 +2450,7 @@ begin
           with Chunk.Data.KFHdr^ do
           begin
             Revision := ReadShort;
-            FileName := ReadString;
+            FileName := StrPasFree(ReadString);
             AnimLength := ReadInteger;
           end;
         end;
@@ -2490,7 +2491,6 @@ begin
         end;
       INSTANCE_NAME:
         begin
-//          Chunk.Data.InstanceName := AllocMem(SizeOf(TInstanceName));
           Chunk.Data.InstanceName := ReadString;
         end;
       PARENT_NAME:
@@ -2587,7 +2587,7 @@ begin
             for I := 0 to TrackHdr.KeyCount - 1 do
             begin
               KeyHdrList[I] := ReadKeyHeader;
-              MorphList[I] := ReadString;
+              MorphList[I] := StrPasFree(ReadString);
             end;
           end;
         end;
