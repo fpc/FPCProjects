@@ -286,7 +286,7 @@ type
 var
    vGammaLUT : array [0..255] of Byte;
    invGamma : Single;
-   i : Integer;
+   i : PtrUInt;
 begin
    if pixelCount<1 then Exit;
    Assert(gamma>0);
@@ -297,7 +297,7 @@ begin
    for i:=0 to 255 do
       vGammaLUT[i]:=Round(255*Power(i*(1/255), InvGamma));
    // perform correction
-   for i:=Integer(base) to Integer(base)+pixelCount*3-1 do
+   for i:=PtrUInt(base) to PtrUInt(base)+dword(pixelCount)*3-1 do
       PByte(i)^:=vGammaLUT[PByte(i)^];
 end;
 
@@ -311,7 +311,7 @@ var
    vGammaLUT : array [0..255] of Byte;
    pLUT : PByteArray;
    invGamma : Single;
-   i, n : Integer;
+   i, n : PtrUInt;
 begin
    if pixelCount<1 then Exit;
    Assert(gamma>0);
@@ -322,8 +322,8 @@ begin
    for i:=0 to 255 do
       vGammaLUT[i]:=Round(255*Power(i*(1/255), InvGamma));
    // perform correction
-   n:=Integer(base)+pixelCount*4;
-   i:=Integer(base);
+   n:=PtrUInt(base)+dword(pixelCount)*4;
+   i:=PtrUInt(base);
    pLUT:=@vGammaLUT[0];
    while i<n do begin
       PByte(i)^:=pLUT^[PByte(i)^]; Inc(i);
@@ -340,7 +340,8 @@ type
    PByte = ^Byte;
 var
    vBrightnessLUT : array [0..255] of Byte;
-   i, k : Integer;
+   i : PtrUint;
+   k : Integer;
 begin
    if pixelCount<1 then Exit;
    Assert(factor>=0);
@@ -351,7 +352,7 @@ begin
       vBrightnessLUT[i]:=Byte(k);
    end;
    // perform correction
-   for i:=Integer(base) to Integer(base)+pixelCount*3-1 do
+   for i:=PtrUInt(base) to PtrUInt(base)+dword(pixelCount)*3-1 do
       PByte(i)^:=vBrightnessLUT[PByte(i)^];
 end;
 
@@ -364,7 +365,8 @@ type
 var
    vBrightnessLUT : array [0..255] of Byte;
    pLUT : PByteArray;
-   i, n, k : Integer;
+   i, n : PtrUInt;
+   k : Integer;
 begin
    if pixelCount<1 then Exit;
    Assert(factor>=0);
@@ -375,8 +377,8 @@ begin
       vBrightnessLUT[i]:=k;
    end;
    // perform correction
-   n:=Integer(base)+pixelCount*4;
-   i:=Integer(base);
+   n:=PtrUInt(base)+dword(pixelCount)*4;
+   i:=PtrUInt(base);
    pLUT:=@vBrightnessLUT[0];
    while i<n do begin
       PByte(i)^:=pLUT^[PByte(i)^]; Inc(i);
@@ -393,8 +395,8 @@ begin
       PChar(dest)[0]:=PChar(src)[2];
       PChar(dest)[1]:=PChar(src)[1];
       PChar(dest)[2]:=PChar(src)[0];
-      dest:=Pointer(Integer(dest)+3);
-      src:=Pointer(Integer(src)+3);
+      dest:=Pointer(PtrUInt(dest)+3);
+      src:=Pointer(PtrUInt(src)+3);
       Dec(pixelCount);
    end;
 end;
@@ -404,14 +406,13 @@ end;
 procedure BGR24ToRGBA32(src, dest : Pointer; pixelCount : Integer); register;
 begin
  {$IFDEF NO_ASM}
- begin
     while pixelCount>0 do begin
        PChar(dest)[0]:=PChar(src)[2];
        PChar(dest)[1]:=PChar(src)[1];
        PChar(dest)[2]:=PChar(src)[0];
        PChar(dest)[3]:=#255;
-       dest:=Pointer(Integer(dest)+4);
-       src:=Pointer(Integer(src)+3);
+       dest:=Pointer(PtrUInt(dest)+4);
+       src:=Pointer(PtrUInt;(src)+3);
        Dec(pixelCount);
     end;
  {$ELSE}
@@ -446,14 +447,25 @@ begin
          mov   [edx], eax
  @@Done:
          pop   edi
-  {$endif}
  end;
+ {$endif}
 end;
 
 // RGB24ToRGBA32
 //
 procedure RGB24ToRGBA32(src, dest : Pointer; pixelCount : Integer); register;
 begin
+ {$IFDEF NO_ASM}
+    while pixelCount>0 do begin
+       PChar(dest)[0]:=PChar(src)[0];
+       PChar(dest)[1]:=PChar(src)[1];
+       PChar(dest)[2]:=PChar(src)[2];
+       PChar(dest)[3]:=#255;
+       dest:=Pointer(PtrUInt(dest)+4);
+       src:=Pointer(PtrUInt;(src)+3);
+       Dec(pixelCount);
+    end;
+ {$ELSE}
  // EAX stores src
  // EDX stores dest
  // ECX stores pixelCount
@@ -481,6 +493,7 @@ begin
  @@Done:
          pop   edi
  end;
+ {$endif}
 end;
 
 // BGRA32ToRGBA32
@@ -493,8 +506,8 @@ begin
       PChar(dest)[1]:=PChar(src)[1];
       PChar(dest)[2]:=PChar(src)[0];
       PChar(dest)[3]:=PChar(src)[3];
-      dest:=Pointer(Integer(dest)+4);
-      src:=Pointer(Integer(src)+4);
+      dest:=Pointer(PtrUInt(dest)+4);
+      src:=Pointer(PtrUInt(src)+4);
       Dec(pixelCount);
    end;
 {$ELSE}
@@ -693,10 +706,10 @@ begin
       end else begin
          if VerticalReverseOnAssignFromBitmap then begin
             pSrc:=BitmapScanLine(aBitmap, Height-1);
-            rowOffset:=Integer(BitmapScanLine(aBitmap, Height-2))-Integer(pSrc);
+            rowOffset:=PtrInt(BitmapScanLine(aBitmap, Height-2))-PtrInt(pSrc);
          end else begin
             pSrc:=BitmapScanLine(aBitmap, 0);
-            rowOffset:=Integer(BitmapScanLine(aBitmap, 1))-Integer(pSrc);
+            rowOffset:=PtrInt(BitmapScanLine(aBitmap, 1))-PtrInt(pSrc);
          end;
          for y:=0 to Height-1 do begin
             RGB24ToRGBA32(pSrc, pDest, Width);
@@ -726,12 +739,12 @@ begin
       if VerticalReverseOnAssignFromBitmap then begin
          pSrc:=BitmapScanLine(aBitmap, Height-1);
          if Height>1 then
-            rowOffset:=Integer(BitmapScanLine(aBitmap, Height-2))-Integer(pSrc)
+            rowOffset:=PtrInt(BitmapScanLine(aBitmap, Height-2))-PtrInt(pSrc)
          else rowOffset:=0;
       end else begin
          pSrc:=BitmapScanLine(aBitmap, 0);
          if Height>1 then
-            rowOffset:=Integer(BitmapScanLine(aBitmap, 1))-Integer(pSrc)
+            rowOffset:=PtrInt(BitmapScanLine(aBitmap, 1))-PtrInt(pSrc)
          else rowOffset:=0;
       end;
       for y:=0 to Height-1 do begin
