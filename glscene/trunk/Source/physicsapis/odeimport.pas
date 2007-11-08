@@ -1310,8 +1310,13 @@ dSolveLDLT}
   procedure dMassSetBoxTotal(var m: TdMass; total_mass, lx, ly, lz: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetBoxTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
   procedure dMassSetCylinder(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCylinder'{$ELSE} ODEDLL{$ENDIF __GPC__};
   procedure dMassSetCylinderTotal(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCylinderTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
-  procedure dMassSetCappedCylinder(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCappedCylinder'{$ELSE} ODEDLL{$ENDIF __GPC__};
-  procedure dMassSetCappedCylinderTotal(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCappedCylinderTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
+
+  {$HINT crossbuilder - replaced deprecated dMassSetCappedCylinder* imports with dMassSetCapsule* }
+  //procedure dMassSetCappedCylinder(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCappedCylinder'{$ELSE} ODEDLL{$ENDIF __GPC__};
+  //procedure dMassSetCappedCylinderTotal(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCappedCylinderTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
+  procedure dMassSetCapsule(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCapsule'{$ELSE} ODEDLL{$ENDIF __GPC__};
+  procedure dMassSetCapsuleTotal(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCapsuleTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
+
   procedure dMassSetParameters(var m: TdMass; themass, cgx, cgy, cgz, I11, I22, I33, I12, I13, I23: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetParameters'{$ELSE} ODEDLL{$ENDIF __GPC__};
   procedure dMassSetSphere(var m: TdMass; density, radius: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetSphere'{$ELSE} ODEDLL{$ENDIF __GPC__};
   procedure dMassSetSphereTotal(var m: TdMass; total_mass, radius: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetSphereTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
