@@ -7,6 +7,7 @@
 
 	<b>History : </b><font size=-1><ul>
 
+      <li>07/11/07 - mrqzzz - Added "StoredBoneNames" property
       <li>07/11/07 - mrqzzz - Added "BoneMatrix(Boneidndex|boneName)" function and
                                StoreBonesMatrix property for TGLActorProxy
                               (To read each ActorProxy's individual Bone matrices,
@@ -150,6 +151,8 @@ type
   {: An object containing the bone matrix for TGLActorProxy.<p> }
    TBoneMatrixObj = class
      Matrix:TMatrix;
+     BoneName:string;
+     BoneIndex:integer;
    end;
 
   // TGLActorProxy
@@ -172,6 +175,7 @@ type
 
     FBonesMatrices:TStringList;
     FStoreBonesMatrix: boolean;
+    FStoredBoneNames: TStrings;
 
     procedure SetAnimation(const Value: TActorAnimationName);
     procedure SetMasterActorObject(const Value: TGLActor);
@@ -182,6 +186,7 @@ type
     // Implementing IGLMaterialLibrarySupported.
     function GetMaterialLibrary: TGLMaterialLibrary;
     procedure SetStoreBonesMatrix(const Value: boolean);
+    procedure SetStoredBoneNames(const Value: TStrings);
   protected
     { Protected Declarations }
     procedure DoStoreBonesMatrices; // stores matrices of bones of the current frame rendered
@@ -216,9 +221,12 @@ type
     property MaterialLibrary: TGLMaterialLibrary read FMaterialLibrary write SetMaterialLibrary;
     {: Specifies the Material, that current proxy will use. }
     property LibMaterialName: TGLLibMaterialName read GetLibMaterialName write SetLibMaterialName;
-    {: Specifies if it will store the Bones Matrices
+    {: Specifies if it will store the Bones Matrices, accessible via the BoneMatrix function
      (since the masterobject is shared between all proxies, each proxy will have it's bones matrices) }
     property StoreBonesMatrix:boolean read FStoreBonesMatrix write SetStoreBonesMatrix;
+    {: Specifies the names of the bones we want the matrices to be stored. If empty, all bones will be stored
+     (since the masterobject is shared between all proxies, each proxy will have it's bones matrices) }
+    property StoredBoneNames:TStrings read FStoredBoneNames write SetStoredBoneNames;
   end;
 
 //-------------------------------------------------------------
@@ -427,6 +435,7 @@ begin
   inherited;
   ProxyOptions := ProxyOptions - [pooTransformation];
   FBonesMatrices:=TStringList.create;
+  FStoredBoneNames:=TStringList.create;
   FStoreBonesMatrix:=false; // default is false to speed up a little if we don't need bones info
 end;
 
@@ -436,6 +445,7 @@ destructor TGLActorProxy.Destroy;
 begin
   BoneMatricesClear;
   FBonesMatrices.free;
+  FStoredBoneNames.free;
   inherited;
 end;
 
@@ -518,24 +528,55 @@ procedure TGLActorProxy.DoStoreBonesMatrices;
 var
    i,n:integer;
    Bmo:TBoneMatrixObj;
+   Bone:TSkeletonBone;
 begin
-     // Add missing TBoneMatrixObjects (actually ony 1st time)
-     if FBonesMatrices.Count<MasterObject.Skeleton.BoneCount then
+     if FStoredBoneNames.count>0 then
      begin
-          n:=FBonesMatrices.Count;
-          for i := n to MasterObject.Skeleton.BoneCount-2 do  // note : BoneCount actually returns 1 count more.
-          begin
-               Bmo := TBoneMatrixObj.Create;
-               if MasterObject.Skeleton.BoneByID(i)<>nil then
-                  FBonesMatrices.AddObject(MasterObject.Skeleton.BoneByID(i).Name,Bmo);
-          end;
+        // If we specified some bone names, only those bones matrices will be stored (save some cpu)
+        if FBonesMatrices.Count<FStoredBoneNames.Count then
+        begin
+             n := FBonesMatrices.Count;
+             for i := n to FStoredBoneNames.Count-1 do
+             begin
+                  Bone := MasterObject.Skeleton.BoneByName(FStoredBoneNames[i]);
+                  if Bone <>nil then
+                  begin
+                       Bmo := TBoneMatrixObj.Create;
+                       Bmo.BoneName:=Bone.Name;
+                       Bmo.BoneIndex:=Bone.BoneID;
+                       FBonesMatrices.AddObject(Bone.Name,Bmo);
+                  end;
+
+             end;
+        end;
+     end
+     else
+     begin
+        // Add (missing) TBoneMatrixObjects (actually ony 1st time) from all bones in skeleton
+        if FBonesMatrices.Count<MasterObject.Skeleton.BoneCount-1 then // note : BoneCount actually returns 1 count more.
+        begin
+             n := FBonesMatrices.Count;
+             for i := n to MasterObject.Skeleton.BoneCount-2 do  // note : BoneCount actually returns 1 count more.
+             begin
+                  Bone := MasterObject.Skeleton.BoneByID(i);
+                  if Bone<>nil then
+                  begin
+                       Bmo := TBoneMatrixObj.Create;
+                       Bmo.BoneName:=Bone.Name;
+                       Bmo.BoneIndex:=Bone.BoneID;
+                       FBonesMatrices.AddObject(Bone.Name,Bmo);
+                  end;
+
+             end;
+        end;
      end;
+
 
      // fill FBonesMatrices list
      for i:=0 to FBonesMatrices.count-1 do
      begin
           Bmo := TBoneMatrixObj(FBonesMatrices.Objects[i]);
-          Bmo.Matrix := MasterObject.Skeleton.BoneByID(i).GlobalMatrix;
+          Bmo.Matrix := MasterObject.Skeleton.BoneByID(Bmo.BoneIndex).GlobalMatrix;
      end;
 end;
 
@@ -588,6 +629,12 @@ begin
     FEndFrame := anAnimation.EndFrame;
     FCurrentFrame := FStartFrame;
   end;
+end;
+
+procedure TGLActorProxy.SetStoredBoneNames(const Value: TStrings);
+begin
+  if value<>nil then
+     FStoredBoneNames.Assign(Value);
 end;
 
 // SetMasterObject
