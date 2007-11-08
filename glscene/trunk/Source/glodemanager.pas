@@ -1,7 +1,7 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-{: GLODEManager<p>
+{: GLODEManager<p>                    
 
   An ODE Manager for GLScene.<p>
 
@@ -14,26 +14,6 @@
   Notes:
   This code is still being developed so any part of it may change at anytime.
   To install use the GLS_ODE?.dpk in the GLScene/Delphi? folder.<p>
-
-      $Log: glodemanager.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/04 17:34:56  z0m3ie
-      - fixed VirtualWriter issues (created by me :()
-
-      Revision 1.2  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 
   History:<ul>
 
@@ -3403,8 +3383,7 @@ begin
   if FInitialized then exit;
   if not IsODEInitialized then exit;
 
-  //? FGeomElement:=dCreateCCylinder(nil,FRadius,FLength);
-  FGeomElement:=dCreateCylinder(nil,FRadius,FLength);
+  FGeomElement:=dCreateCapsule(nil,FRadius,FLength);
   inherited;
 end;
 
@@ -3468,8 +3447,7 @@ var
   rad, len : TdReal;
 begin
   if Assigned(FGeomElement) then begin
-    //? dGeomCCylinderGetParams(Geom,rad,len);
-    dGeomCylinderGetParams(Geom,rad,len);
+    dGeomCapsuleGetParams(Geom,rad,len);
     FRadius:=rad;
   end;
   result:=FRadius;
@@ -3482,8 +3460,7 @@ var
   rad, len : TdReal;
 begin
   if Assigned(FGeomElement) then begin
-    //? dGeomCCylinderGetParams(Geom,rad,len);
-    dGeomCylinderGetParams(Geom,rad,len);
+    dGeomCapsuleGetParams(Geom,rad,len);
     FLength:=len;
   end;
   result:=FLength;
@@ -3494,8 +3471,7 @@ end;
 procedure TODEElementCapsule.ODERebuild;
 begin
   if Assigned(Geom) then
-    //? dGeomCCylinderSetParams(Geom,FRadius,FLength);
-    dGeomCylinderSetParams(Geom,FRadius,FLength);
+    dGeomCapsuleSetParams(Geom,FRadius,FLength);
   inherited;
 end;
 

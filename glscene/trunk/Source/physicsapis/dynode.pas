@@ -1118,8 +1118,9 @@ var
   //----- dGeom -----
   dGeomBoxGetLengths: procedure(const Geom : PdxGeom; var result: TdVector3); cdecl;
   dGeomBoxSetLengths: procedure(const Geom : PdxGeom; const lx, ly, lz: TdReal); cdecl;
-//  dGeomCCylinderGetParams: procedure(const Geom : PdxGeom; var radius, length: TdReal); cdecl;
-//  dGeomCCylinderSetParams: procedure(const Geom : PdxGeom; const radius, length: TdReal); cdecl;
+  dGeomCapsuleGetParams: procedure(const Geom : PdxGeom; var radius, length: TdReal); cdecl;
+  dGeomCapsuleSetParams: procedure(const Geom : PdxGeom; const radius, length: TdReal); cdecl;
+
   dGeomDestroy: procedure(const Geom : PdxGeom); cdecl;
   dGeomGetAABB: procedure(const Geom : PdxGeom; var aabb: TdAABB); cdecl;
   dGeomGetBody: function(const Geom : PdxGeom):  PdxBody; cdecl;
@@ -1159,14 +1160,15 @@ var
   dGeomSpherePointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
   dGeomBoxPointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
   dGeomPlanePointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
-//  dGeomCCylinderPointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
+  dGeomCapsulePointDepth: function(const Geom : PdxGeom; const x,y,z : TdReal):  TdReal; cdecl;
 
   // A strange fix, so the class ids can be updated
   // ***************
   function dCreateSphere(const Space : PdxSpace; const radius: TdReal): PdxGeom; cdecl;
   function dCreateBox(const Space : PdxSpace; const lx, ly, lz: TdReal): PdxGeom; cdecl;
   function dCreatePlane(const Space : PdxSpace; const a, b, c, d: TdReal): PdxGeom; cdecl;
-//  function dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
+  {$HINT crossbuilder - replaced deprecated dCreateCCylinder import with dCreateCapsule }
+  function dCreateCapsule(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
   function dCreateCylinder(const Space : PdxSpace; r, lz : TdReal) : PdxGeom; cdecl;
 //  function dCreateCone(const Space : PdxSpace; radius, length: TdReal): PdxGeom; cdecl;
 //  function dCreateTerrainY(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer): PdxGeom; cdecl;
@@ -1180,7 +1182,7 @@ var
   EXT_dCreateSphere: function(const Space : PdxSpace; const radius: TdReal):  PdxGeom; cdecl;
   EXT_dCreateBox: function(const Space : PdxSpace; const lx, ly, lz: TdReal):  PdxGeom; cdecl;
   EXT_dCreatePlane: function(const Space : PdxSpace; const a, b, c, d: TdReal):  PdxGeom; cdecl;
-//  EXT_dCreateCCylinder: function(const Space : PdxSpace; const radius, length: TdReal):  PdxGeom; cdecl;
+  EXT_dCreateCapsule: function(const Space : PdxSpace; const radius, length: TdReal):  PdxGeom; cdecl;
   EXT_dCreateCylinder: function(const Space : PdxSpace; r, lz : TdReal):  PdxGeom; cdecl;
 //  EXT_dCreateCone: function(const Space : PdxSpace; radius, length: TdReal):  PdxGeom; cdecl;
 //  EXT_dCreateTerrainY: function(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer):  PdxGeom; cdecl;
@@ -1266,8 +1268,8 @@ var
   dMassSetBoxTotal: procedure(var m: TdMass; total_mass, lx, ly, lz: TdReal); cdecl;
   dMassSetCylinder: procedure(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl;
   dMassSetCylinderTotal: procedure(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl;
-  dMassSetCappedCylinder: procedure(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl;
-  dMassSetCappedCylinderTotal: procedure(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl;
+  dMassSetCapsule: procedure(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl;
+  dMassSetCapsuleTotal: procedure(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl;
   dMassSetParameters: procedure(var m: TdMass; themass, cgx, cgy, cgz, I11, I22, I33, I12, I13, I23: TdReal); cdecl;
   dMassSetSphere: procedure(var m: TdMass; density, radius: TdReal); cdecl;
   dMassSetSphereTotal: procedure(var m: TdMass; total_mass, radius: TdReal); cdecl;
@@ -1361,7 +1363,7 @@ var
   // be exported from the dll, but how does one export integers from dlls?
   dSphereClass : integer=-1;
   dBoxClass : integer=-1;
-//  dCCylinderClass : integer=-1;
+  dCapsuleClass : integer=-1;
   dGeomTransformClass : integer=-1;
   dPlaneClass : integer=-1;
   dCylinderClass : integer=-1;
@@ -1613,12 +1615,12 @@ begin
 {$ENDIF}
 end;
 
-(*function dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
+function dCreateCapsule(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
 begin
-  result := EXT_dCreateCCylinder(Space, radius, length);
+  result := EXT_dCreateCapsule(Space, radius, length);
 
-  if dCCylinderClass=-1 then
-    dCCylinderClass := dGeomGetClass(result);
+  if dCapsuleClass=-1 then
+    dCapsuleClass := dGeomGetClass(result);
 {$IFDEF cODEDebugEnabled}
    If Not DisabledDebugGeom Then
       Begin
@@ -1629,6 +1631,7 @@ begin
 {$ENDIF}
 end;
 
+(*
 function dCreateCone(const Space : PdxSpace; radius, length: TdReal): PdxGeom; cdecl;
 begin
   result := EXT_dCreateCone(Space, radius, length);
@@ -2017,8 +2020,8 @@ begin
   dBodySetAutoDisableDefaults := GetModuleSymbol( vODEHandle, 'dBodySetAutoDisableDefaults' );
   dGeomBoxGetLengths := GetModuleSymbol( vODEHandle, 'dGeomBoxGetLengths' );
   dGeomBoxSetLengths := GetModuleSymbol( vODEHandle, 'dGeomBoxSetLengths' );
-//  dGeomCCylinderGetParams := GetModuleSymbol( vODEHandle, 'dGeomCCylinderGetParams' );
-//  dGeomCCylinderSetParams := GetModuleSymbol( vODEHandle, 'dGeomCCylinderSetParams' );
+  dGeomCapsuleGetParams := GetModuleSymbol( vODEHandle, 'dGeomCapsuleGetParams' );
+  dGeomCapsuleSetParams := GetModuleSymbol( vODEHandle, 'dGeomCapsuleSetParams' );
   dGeomDestroy := GetModuleSymbol( vODEHandle, 'dGeomDestroy' );
   dGeomGetAABB := GetModuleSymbol( vODEHandle, 'dGeomGetAABB' );
   dGeomGetBody := GetModuleSymbol( vODEHandle, 'dGeomGetBody' );
@@ -2054,13 +2057,12 @@ begin
   dGeomSpherePointDepth := GetModuleSymbol( vODEHandle, 'dGeomSpherePointDepth' );
   dGeomBoxPointDepth := GetModuleSymbol( vODEHandle, 'dGeomBoxPointDepth' );
   dGeomPlanePointDepth := GetModuleSymbol( vODEHandle, 'dGeomPlanePointDepth' );
-//  dGeomCCylinderPointDepth := GetModuleSymbol( vODEHandle, 'dGeomCCylinderPointDepth' );
+  dGeomCapsulePointDepth := GetModuleSymbol( vODEHandle, 'dGeomCapsulePointDepth' );
   EXT_dCreateSphere := GetModuleSymbol( vODEHandle, 'dCreateSphere' );
   EXT_dCreateBox := GetModuleSymbol( vODEHandle, 'dCreateBox' );
   EXT_dCreatePlane := GetModuleSymbol( vODEHandle, 'dCreatePlane' );
-//  EXT_dCreateCCylinder := GetModuleSymbol( vODEHandle, 'dCreateCCylinder' );
+  EXT_dCreateCapsule := GetModuleSymbol( vODEHandle, 'dCreateCapsule' );
   EXT_dCreateCylinder := GetModuleSymbol( vODEHandle, 'dCreateCylinder' );
-//  EXT_dCreateCone := GetModuleSymbol( vODEHandle, 'dCreateCone' );
 //  EXT_dCreateTerrainY := GetModuleSymbol( vODEHandle, 'dCreateTerrainY' );
 //  EXT_dCreateTerrainZ := GetModuleSymbol( vODEHandle, 'dCreateTerrainZ' );
   EXT_dCreateRay := GetModuleSymbol( vODEHandle, 'dCreateRay' );
@@ -2125,8 +2127,8 @@ begin
   dMassSetBoxTotal := GetModuleSymbol( vODEHandle, 'dMassSetBoxTotal' );
   dMassSetCylinder := GetModuleSymbol( vODEHandle, 'dMassSetCylinder' );
   dMassSetCylinderTotal := GetModuleSymbol( vODEHandle, 'dMassSetCylinderTotal' );
-  dMassSetCappedCylinder := GetModuleSymbol( vODEHandle, 'dMassSetCappedCylinder' );
-  dMassSetCappedCylinderTotal := GetModuleSymbol( vODEHandle, 'dMassSetCappedCylinderTotal' );
+  dMassSetCapsule := GetModuleSymbol( vODEHandle, 'dMassSetCapsule' );
+  dMassSetCapsuleTotal := GetModuleSymbol( vODEHandle, 'dMassSetCapsuleTotal' );
   dMassSetParameters := GetModuleSymbol( vODEHandle, 'dMassSetParameters' );
   dMassSetSphere := GetModuleSymbol( vODEHandle, 'dMassSetSphere' );
   dMassSetSphereTotal := GetModuleSymbol( vODEHandle, 'dMassSetSphereTotal' );

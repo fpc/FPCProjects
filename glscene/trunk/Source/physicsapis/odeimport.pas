@@ -1159,8 +1159,9 @@ dSolveLDLT}
   //----- dGeom -----
   procedure dGeomBoxGetLengths(const Geom : PdxGeom; var result: TdVector3); cdecl; external {$IFDEF __GPC__}name 'dGeomBoxGetLengths'{$ELSE} ODEDLL{$ENDIF __GPC__};
   procedure dGeomBoxSetLengths(const Geom : PdxGeom; const lx, ly, lz: TdReal); cdecl; external {$IFDEF __GPC__}name 'dGeomBoxSetLengths'{$ELSE} ODEDLL{$ENDIF __GPC__};
-//  procedure dGeomCCylinderGetParams(const Geom : PdxGeom; var radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dGeomCCylinderGetParams'{$ELSE} ODEDLL{$ENDIF __GPC__};
-//  procedure dGeomCCylinderSetParams(const Geom : PdxGeom; const radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dGeomCCylinderSetParams'{$ELSE} ODEDLL{$ENDIF __GPC__};
+  procedure dGeomCapsuleGetParams(const Geom : PdxGeom; var radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dGeomCapsuleGetParams'{$ELSE} ODEDLL{$ENDIF __GPC__};
+  procedure dGeomCapsuleSetParams(const Geom : PdxGeom; const radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dGeomCapsuleSetParams'{$ELSE} ODEDLL{$ENDIF __GPC__};
+
   procedure dGeomDestroy(const Geom : PdxGeom); cdecl; external {$IFDEF __GPC__}name 'dGeomDestroy'{$ELSE} ODEDLL{$ENDIF __GPC__};
   procedure dGeomGetAABB(const Geom : PdxGeom; var aabb: TdAABB); cdecl; external {$IFDEF __GPC__}name 'dGeomGetAABB'{$ELSE} ODEDLL{$ENDIF __GPC__};
   function dGeomGetBody(const Geom : PdxGeom): PdxBody; cdecl; external {$IFDEF __GPC__}name 'dGeomGetBody'{$ELSE} ODEDLL{$ENDIF __GPC__};
@@ -1200,14 +1201,17 @@ dSolveLDLT}
   function dGeomSpherePointDepth (const Geom : PdxGeom; const x,y,z : TdReal) : TdReal; cdecl; external {$IFDEF __GPC__}name 'dGeomSpherePointDepth'{$ELSE} ODEDLL{$ENDIF __GPC__};
   function dGeomBoxPointDepth (const Geom : PdxGeom; const x,y,z : TdReal) : TdReal; cdecl; external {$IFDEF __GPC__}name 'dGeomBoxPointDepth'{$ELSE} ODEDLL{$ENDIF __GPC__};
   function dGeomPlanePointDepth (const Geom : PdxGeom; const x,y,z : TdReal) : TdReal; cdecl; external {$IFDEF __GPC__}name 'dGeomPlanePointDepth'{$ELSE} ODEDLL{$ENDIF __GPC__};
-//  function dGeomCCylinderPointDepth (const Geom : PdxGeom; const x,y,z : TdReal) : TdReal; cdecl; external {$IFDEF __GPC__}name 'dGeomCCylinderPointDepth'{$ELSE} ODEDLL{$ENDIF __GPC__};
+  function dGeomCapsulePointDepth (const Geom : PdxGeom; const x,y,z : TdReal) : TdReal; cdecl; external {$IFDEF __GPC__}name 'dGeomCapsulePointDepth'{$ELSE} ODEDLL{$ENDIF __GPC__};
 
   // A strange fix, so the class ids can be updated
   // ***************
   function dCreateSphere(const Space : PdxSpace; const radius: TdReal): PdxGeom; cdecl;
   function dCreateBox(const Space : PdxSpace; const lx, ly, lz: TdReal): PdxGeom; cdecl;
   function dCreatePlane(const Space : PdxSpace; const a, b, c, d: TdReal): PdxGeom; cdecl;
-//  function dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
+
+  {$HINT crossbuilder - replaced deprecated dCreateCCylinder import with dCreateCapsule }
+  function dCreateCapsule(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
+  
   function dCreateCylinder(const Space : PdxSpace; r, lz : TdReal) : PdxGeom; cdecl;
 //  function dCreateCone(const Space : PdxSpace; radius, length: TdReal): PdxGeom; cdecl;
 //  function dCreateTerrainY(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer): PdxGeom; cdecl;
@@ -1219,7 +1223,8 @@ dSolveLDLT}
   function EXT_dCreateSphere(const Space : PdxSpace; const radius: TdReal): PdxGeom; cdecl; external ODEDLL name 'dCreateSphere';
   function EXT_dCreateBox(const Space : PdxSpace; const lx, ly, lz: TdReal): PdxGeom; cdecl; external ODEDLL name 'dCreateBox';
   function EXT_dCreatePlane(const Space : PdxSpace; const a, b, c, d: TdReal): PdxGeom; cdecl; external ODEDLL name 'dCreatePlane';
-//  function EXT_dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl; external ODEDLL name 'dCreateCCylinder';
+  function EXT_dCreateCapsule(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl; external ODEDLL name 'dCreateCapsule';
+  
   function EXT_dCreateCylinder(const Space : PdxSpace; r, lz : TdReal) : PdxGeom; cdecl; external ODEDLL name 'dCreateCylinder';
 //  function EXT_dCreateCone(const Space : PdxSpace; radius, length: TdReal): PdxGeom; cdecl; external ODEDLL name 'dCreateCone';
 //  function EXT_dCreateTerrainY(const Space: PdxSpace; pHeights: PdRealHugeArray; vLength: TdReal; nNumNodesPerSide: Integer; bFinite, bPlaceable: Integer): PdxGeom; cdecl; external ODEDLL name 'dCreateTerrainY';
@@ -1312,8 +1317,6 @@ dSolveLDLT}
   procedure dMassSetCylinderTotal(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCylinderTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
 
   {$HINT crossbuilder - replaced deprecated dMassSetCappedCylinder* imports with dMassSetCapsule* }
-  //procedure dMassSetCappedCylinder(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCappedCylinder'{$ELSE} ODEDLL{$ENDIF __GPC__};
-  //procedure dMassSetCappedCylinderTotal(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCappedCylinderTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
   procedure dMassSetCapsule(var m: TdMass; density: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCapsule'{$ELSE} ODEDLL{$ENDIF __GPC__};
   procedure dMassSetCapsuleTotal(var m: TdMass; total_mass: TdReal; direction: Integer; radius, length: TdReal); cdecl; external {$IFDEF __GPC__}name 'dMassSetCapsuleTotal'{$ELSE} ODEDLL{$ENDIF __GPC__};
 
@@ -1406,7 +1409,7 @@ var
   // be exported from the dll, but how does one export integers from dlls?
   dSphereClass : integer=-1;
   dBoxClass : integer=-1;
-//  dCCylinderClass : integer=-1;
+  dCapsuleClass : integer=-1;
   dGeomTransformClass : integer=-1;
   dPlaneClass : integer=-1;
   dCylinderClass : integer=-1;
@@ -1658,12 +1661,12 @@ begin
 {$ENDIF}
 end;
 
-(*function dCreateCCylinder(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
+function dCreateCapsule(const Space : PdxSpace; const radius, length: TdReal): PdxGeom; cdecl;
 begin
-  result := EXT_dCreateCCylinder(Space, radius, length);
+  result := EXT_dCreateCapsule(Space, radius, length);
 
-  if dCCylinderClass=-1 then
-    dCCylinderClass := dGeomGetClass(result);
+  if dCapsuleClass=-1 then
+    dCapsuleClass := dGeomGetClass(result);
 {$IFDEF cODEDebugEnabled}
    If Not DisabledDebugGeom Then
       Begin
@@ -1674,6 +1677,7 @@ begin
 {$ENDIF}
 end;
 
+(*
 function dCreateCone(const Space : PdxSpace; radius, length: TdReal): PdxGeom; cdecl;
 begin
   result := EXT_dCreateCone(Space, radius, length);

@@ -357,7 +357,8 @@ end;
 
 // CollideCCylinder
 //
-{function CollideCCylinder(o1, o2 : PdxGeom; flags : Integer;
+{$HINT crossbuilder - should be renamed to CollideCapsule}
+function CollideCCylinder(o1, o2 : PdxGeom; flags : Integer;
   contact : PdContactGeom; skip : Integer) : Integer; cdecl;
 var
   Collider : TGLODECustomCollider;
@@ -377,7 +378,7 @@ begin
   ODEGL.ODERToGLSceneMatrix(mat, R^, pos^);
   Collider.SetTransform(mat);
 
-  dGeomCCylinderGetParams(o2, rad, len);
+  dGeomCapsuleGetParams(o2, rad, len);
 
   res:=Round(5*MaxFloat(4*rad, len)/Collider.ContactResolution);
   if res<8 then res:=8;
@@ -405,7 +406,7 @@ begin
 
   Result:=Collider.ApplyContacts(o1, o2, flags, contact, skip);
   Collider.SetTransform(IdentityHMGMatrix);
-end;}
+end;
 
 // CollideCylinder
 //
@@ -513,8 +514,8 @@ begin
     Result:=CollideSphere
   else if num = dBoxClass then
     Result:=CollideBox
-{  else if num = dCCylinderClass then
-    Result:=CollideCCylinder}
+  else if num = dCapsuleClass then
+    Result:=CollideCCylinder
   else if num = dCylinderClass then
     Result:=CollideCylinder
 {  else if num = dConeClass then
