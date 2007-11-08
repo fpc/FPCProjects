@@ -2063,6 +2063,7 @@ begin
   EXT_dCreatePlane := GetModuleSymbol( vODEHandle, 'dCreatePlane' );
   EXT_dCreateCapsule := GetModuleSymbol( vODEHandle, 'dCreateCapsule' );
   EXT_dCreateCylinder := GetModuleSymbol( vODEHandle, 'dCreateCylinder' );
+//  EXT_dCreateCone := GetModuleSymbol( vODEHandle, 'dCreateCone' );
 //  EXT_dCreateTerrainY := GetModuleSymbol( vODEHandle, 'dCreateTerrainY' );
 //  EXT_dCreateTerrainZ := GetModuleSymbol( vODEHandle, 'dCreateTerrainZ' );
   EXT_dCreateRay := GetModuleSymbol( vODEHandle, 'dCreateRay' );
