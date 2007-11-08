@@ -68,6 +68,7 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/11/07 - mrqzzz - Registered material picker for TGLActorProxy
       <li>18/09/07 - DaStr - Added TGLMaterialProxy, TGLAbsoluteHUDText,
                               TGLResolutionIndependantHUDText
       <li>12/07/07 - DaStr - Improved Cross-Platform compatibility
@@ -1608,8 +1609,9 @@ begin
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLMaterialMultiProxyMaster, '', TGLLibMaterialNameProperty);
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLSLBumpShader, '', TGLLibMaterialNameProperty);
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TSpriteAnimation, '', TGLLibMaterialNameProperty);
-	RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLMaterialProxy, '', TGLLibMaterialNameProperty);
-
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLMaterialProxy, '', TGLLibMaterialNameProperty);
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLActorProxy, '', TGLLibMaterialNameProperty);
+   
    RegisterPropertyEditor(TypeInfo(TActorAnimationName), TGLAnimationControler, '', TGLAnimationNameProperty);
 
    RegisterPropertyEditor(TypeInfo(TFileName), TGLFreeForm, 'FileName', TVectorFileProperty);
