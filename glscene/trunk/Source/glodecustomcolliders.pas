@@ -34,6 +34,9 @@
       - added automatical generated History from CVS
 
   <b>History : </b><font size=-1><ul>
+    <li>10/10/07 - Mrqzzz - Ficed reference ODEGL.ODERToGLSceneMatrix
+    <li>07/10/07 - Mrqzzz - Added reference to ODEGL
+    <li>11/09/07 - Mrqzzz - Added reference to ODEImport
     <li>07/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
                            Added $I GLScene.inc
     <li>08/12/04 - SG - Added contact point rendering to TGLODECustomCollider.
@@ -57,7 +60,7 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, SysUtils, GLODEManager, dynode, dynodegl, VectorGeometry,
+  Classes, SysUtils, GLODEManager, dynode, odegl,dynodegl, ODEImport, VectorGeometry,
   VectorLists, GLScene, GLTerrainRenderer, GLGraph, XCollection,
   OpenGL1x, GLTexture, GLColor;
 
@@ -244,7 +247,7 @@ begin
 
   pos:=dGeomGetPosition(o2);
   R:=dGeomGetRotation(o2);
-  ODERToGLSceneMatrix(mat, R^, pos^);
+  ODEGL.ODERToGLSceneMatrix(mat, R^, pos^);
   Collider.SetTransform(mat);
 
   rad:=dGeomSphereGetRadius(o2);
@@ -289,7 +292,7 @@ begin
 
   pos:=dGeomGetPosition(o2);
   R:=dGeomGetRotation(o2);
-  ODERToGLSceneMatrix(mat, R^, pos^);
+  ODEGL.ODERToGLSceneMatrix(mat, R^, pos^);
   Collider.SetTransform(mat);
 
   dGeomBoxGetLengths(o2, s);
@@ -371,7 +374,7 @@ begin
 
   pos:=dGeomGetPosition(o2);
   R:=dGeomGetRotation(o2);
-  ODERToGLSceneMatrix(mat, R^, pos^);
+  ODEGL.ODERToGLSceneMatrix(mat, R^, pos^);
   Collider.SetTransform(mat);
 
   dGeomCCylinderGetParams(o2, rad, len);
@@ -423,7 +426,7 @@ begin
 
   pos:=dGeomGetPosition(o2);
   R:=dGeomGetRotation(o2);
-  ODERToGLSceneMatrix(mat, R^, pos^);
+  ODEGL.ODERToGLSceneMatrix(mat, R^, pos^);
   Collider.SetTransform(mat);
 
   dGeomCylinderGetParams(o2, rad, len);
@@ -474,7 +477,7 @@ begin
 
   pos:=dGeomGetPosition(o2);
   R:=dGeomGetRotation(o2);
-  ODERToGLSceneMatrix(mat, R^, pos^);
+  ODEGL.ODERToGLSceneMatrix(mat, R^, pos^);
   Collider.SetTransform(mat);
 
   dGeomConeGetParams(o2, rad, len);

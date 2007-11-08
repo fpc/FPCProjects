@@ -34,7 +34,14 @@
       Revision 1.2  2005/08/03 00:41:39  z0m3ie
       - added automatical generated History from CVS
 
+
   History:<ul>
+
+
+    <li>10/10/07 - Mrqzzz - Fixed in TGLODEDynamic.AlignObject the explocit reference to ODEGL.ODERToGLSceneMatrix(m,R^,pos^) to avoid ambiguous overloading
+    <li>08/09/07 - Mrqzzz - small changes in unit references (last reference is to odeimport) in order to
+                           make GLODEManager compatible with non-GLODEManager based ODE worlds
+                           Added public property "ContactGroup"
     <li>24/08/07 - Mrqzzz - Updated GetSurfaceFromObject to support correctly Trimesh collision
     <li>07/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
                            Added $I GLScene.inc
@@ -115,7 +122,7 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, dynode, dynodegl, GLScene, GLMisc, VectorGeometry, GLTexture, OpenGL1x,
+  Classes, dynode, dynodegl, odegl, odeimport, GLScene, GLMisc, VectorGeometry, GLTexture, OpenGL1x,
   XOpenGL, SysUtils, GLObjects, XCollection, PersistentClasses, VectorLists,
   GLColor;
 
@@ -203,6 +210,7 @@ type
 
       property World : PdxWorld read FWorld;
       property Space : PdxSpace read FSpace;
+      property ContactGroup : TdJointGroupID read FContactGroup;
       property NumContactJoints : integer read FNumContactJoints;
 
     published
@@ -1283,6 +1291,8 @@ end;
 // GetSurfaceFromObject
 //
 function GetSurfaceFromObject(anObject : TObject) : TODECollisionSurface;
+var
+  odebehaviour: TGLOdeBehaviour;
 begin
   Result:=nil;
   if Assigned(anObject) then
@@ -1290,8 +1300,12 @@ begin
       Result:=TGLODEBehaviour(anObject).Surface
     else
     begin
-         if (anObject is TGLBaseSceneObject) and (TGLBaseSceneObject(anObject).Behaviours.Count>0) and (TGLBaseSceneObject(anObject).Behaviours[0] is TGLODEBehaviour)  then
-            Result:=TGLODEBehaviour(TGLBaseSceneObject(anObject).Behaviours[0]).Surface
+         if (anObject is TGLBaseSceneObject) then
+         begin
+              odebehaviour:=TGLOdeBehaviour(TGLBaseSceneObject(anObject).Behaviours.GetByClass(TGLODEBehaviour));
+              if assigned(odebehaviour) then
+                 Result:=odebehaviour.Surface
+         end;
     end;
 end;
 
@@ -2296,7 +2310,7 @@ var
 begin
   pos:=dBodyGetPosition(Body);
   R:=dBodyGetRotation(Body);
-  ODERToGLSceneMatrix(m,R^,pos^);
+  ODEGL.ODERToGLSceneMatrix(m,R^,pos^);
   if OwnerBaseSceneObject.Parent is TGLBaseSceneObject then
     m:=MatrixMultiply(m, OwnerBaseSceneObject.Parent.InvAbsoluteMatrix);
   OwnerBaseSceneObject.Matrix:=m;
@@ -3389,6 +3403,7 @@ begin
   if FInitialized then exit;
   if not IsODEInitialized then exit;
 
+  //? FGeomElement:=dCreateCCylinder(nil,FRadius,FLength);
   FGeomElement:=dCreateCylinder(nil,FRadius,FLength);
   inherited;
 end;
@@ -3453,6 +3468,7 @@ var
   rad, len : TdReal;
 begin
   if Assigned(FGeomElement) then begin
+    //? dGeomCCylinderGetParams(Geom,rad,len);
     dGeomCylinderGetParams(Geom,rad,len);
     FRadius:=rad;
   end;
@@ -3466,6 +3482,7 @@ var
   rad, len : TdReal;
 begin
   if Assigned(FGeomElement) then begin
+    //? dGeomCCylinderGetParams(Geom,rad,len);
     dGeomCylinderGetParams(Geom,rad,len);
     FLength:=len;
   end;
@@ -3477,6 +3494,7 @@ end;
 procedure TODEElementCapsule.ODERebuild;
 begin
   if Assigned(Geom) then
+    //? dGeomCCylinderSetParams(Geom,FRadius,FLength);
     dGeomCylinderSetParams(Geom,FRadius,FLength);
   inherited;
 end;
@@ -4080,7 +4098,7 @@ var
 begin
   if not Assigned(FGeomElement) then exit;
   d:=VectorDotProduct(Mat[2], Mat[3]);
-  dynode.dGeomPlaneSetParams(FGeomElement,Mat[2][0],Mat[2][1],Mat[2][2],d);
+  {dynode.}dGeomPlaneSetParams(FGeomElement,Mat[2][0],Mat[2][1],Mat[2][2],d);
 end;
 
 
@@ -4848,6 +4866,7 @@ begin
   FAxisParams:=TODEJointParams.Create(Self);
   FAxisParams.SetCallback:=SetAxisParam;
   FAxisParams.GetCallback:=GetAxisParam;
+
 end;
 
 // Destroy
