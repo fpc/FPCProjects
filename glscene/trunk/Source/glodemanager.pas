@@ -3457,7 +3457,7 @@ end;
 //
 function TODEElementCapsule.CalculateMass: TdMass;
 begin
-  dMassSetCappedCylinder(FMass,FDensity,3,FRadius,FLength);
+  dMassSetCapsule(FMass,FDensity,3,FRadius,FLength);
   result:=inherited CalculateMass;
 end;
 
