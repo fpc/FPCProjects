@@ -4,6 +4,10 @@
    its assigned MaterialLibrary.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>25/10/07 - Mrqzzz - commented "glPushAttrib(GL_ALL_ATTRIB_BITS);" in DoApply
+                              and "glPopAttrib;" in DoUnapply, which seems to fix
+                              issues with other objects and materials in the scene.
+
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>24/05/04 - Mrqzzz - Re-added design-time rendering option
                           (seems stable now)
@@ -69,7 +73,7 @@ begin
 
    FPass:=1;
    if (not (csDesigning in ComponentState)) or FShaderActiveAtDesignTime then begin
-      glPushAttrib(GL_ALL_ATTRIB_BITS);
+      //glPushAttrib(GL_ALL_ATTRIB_BITS);
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LEQUAL);
       if FMaterialLibrary.Materials.Count>0 then
@@ -89,7 +93,7 @@ begin
          FMaterialLibrary.Materials[FPass-1].UnApply(rci);
       if (FPass >= FMaterialLibrary.Materials.Count) then begin
          glDepthFunc(GL_LESS);
-         glPopAttrib;
+         //glPopAttrib;
          exit;
       end;
       FMaterialLibrary.Materials[FPass].Apply(rci);
