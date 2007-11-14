@@ -88,7 +88,7 @@ begin
   if WaitSockets.Contains(Pointer(aHandle.Handle)) then begin
     WaitSockets.Remove(Pointer(aHandle.Handle));
 
-    if WSAAsyncSelect(aHandle.Handle, TWin32WidgetSet(WidgetSet).AppHandle,
+    if WSAAsyncSelect(aHandle.Handle, TWinCEWidgetSet(WidgetSet).AppHandle,
                                            0, 0) <> 0 then
       Bail('Error on AsyncSelect', WSAGetLastError);
   end;
