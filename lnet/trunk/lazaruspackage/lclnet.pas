@@ -52,7 +52,7 @@ type
     function HandleEvents(aHandle: THandle; aFlags: DWord): LongInt;
     procedure UnregisterHandle(aHandle: TLHandle); override;
    public
-    constructor Create;
+    constructor Create; override;
     {$endif}
     function AddHandle(aHandle: TLHandle): Boolean; override;
     procedure UnplugHandle(aHandle: TLHandle); override;
