@@ -3383,7 +3383,7 @@ begin
   if FInitialized then exit;
   if not IsODEInitialized then exit;
 
-  FGeomElement:=dCreateCapsule(nil,FRadius,FLength);
+  FGeomElement:=dCreateCCylinder(nil,FRadius,FLength);
   inherited;
 end;
 
@@ -3436,7 +3436,7 @@ end;
 //
 function TODEElementCapsule.CalculateMass: TdMass;
 begin
-  dMassSetCapsule(FMass,FDensity,3,FRadius,FLength);
+  dMassSetCappedCylinder(FMass,FDensity,3,FRadius,FLength);
   result:=inherited CalculateMass;
 end;
 
@@ -3447,7 +3447,7 @@ var
   rad, len : TdReal;
 begin
   if Assigned(FGeomElement) then begin
-    dGeomCapsuleGetParams(Geom,rad,len);
+    dGeomCCylinderGetParams(Geom,rad,len);
     FRadius:=rad;
   end;
   result:=FRadius;
@@ -3460,7 +3460,7 @@ var
   rad, len : TdReal;
 begin
   if Assigned(FGeomElement) then begin
-    dGeomCapsuleGetParams(Geom,rad,len);
+    dGeomCCylinderGetParams(Geom,rad,len);
     FLength:=len;
   end;
   result:=FLength;
@@ -3471,7 +3471,7 @@ end;
 procedure TODEElementCapsule.ODERebuild;
 begin
   if Assigned(Geom) then
-    dGeomCapsuleSetParams(Geom,FRadius,FLength);
+    dGeomCCylinderSetParams(Geom,FRadius,FLength);
   inherited;
 end;
 

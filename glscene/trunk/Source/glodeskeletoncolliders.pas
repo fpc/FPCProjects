@@ -284,7 +284,7 @@ end;
 //
 procedure TSCODECCylinder.AddToSpace(Space : PdxSpace);
 begin
-  FGeom:=dCreateCapsule(Space,FRadius,FLength);
+  FGeom:=dCreateCCylinder(Space,FRadius,FLength);
   inherited;
 end;
 
@@ -295,7 +295,7 @@ begin
   if val<>FRadius then begin
     FRadius:=val;
     if Assigned(FGeom) then
-      dGeomCapsuleSetParams(FGeom,FRadius,FLength);
+      dGeomCcylinderSetParams(FGeom,FRadius,FLength);
   end;
 end;
 
@@ -306,7 +306,7 @@ begin
   if val<>FLength then begin
     FLength:=val;
     if Assigned(FGeom) then
-      dGeomCapsuleSetParams(FGeom,FRadius,FLength);
+      dGeomCcylinderSetParams(FGeom,FRadius,FLength);
   end;
 end;
 
