@@ -2,6 +2,8 @@
 {: Implements an HDS that automatically generates a terrain lightmap texture.<p>
 	<b>History : </b><font size=-1><ul>
 
+      <li>13/11/07 - LIN - Added SkipGenerate flag. Set to true in "OnSourceDataFetched"
+                           to generate a blank shadow map. Then load your cached Shadowmap during OnThreadBmp32 event.
       <li>17/07/07 - LIN - Added OnThreadBmp32 event. This event can be used to
                            modify the lightmap, before it is sent to texture memory.
                            When used with TAsyncHDS, this event runs in the HeightData thread,
@@ -66,7 +68,6 @@ type
          FDiffuse:single;
          FAmbient:single;
          OwnerHDS:THeightDataSource; //The owner of the tile
-
 	   protected
 	      { Protected Declarations }
          procedure SetShadowmapLibrary(const val : TGLMaterialLibrary);
@@ -87,6 +88,7 @@ type
 
 	   public
 	      { Public Declarations }
+         SkipGenerate:boolean;  //When true, only a blank ShadowMap is generated (FAST), but OnThreadBmp32 is still called in a subthread.
 	        constructor Create(AOwner: TComponent); override;
          destructor  Destroy; override;
          //procedure   Release(aHeightData : THeightData); override;
@@ -101,7 +103,6 @@ type
          function    RayCastShadowHeight(HD:THeightData;localX,localY:single):single;  overload;
          procedure   RayCastLine(HeightData:THeightData;Lx,Ly:single;ShadowMap:TGLBitmap32);
          function    Shade(HeightData:THeightData;x,y:integer;ShadowHeight,TerrainHeight:single):byte;
-
 	   published
 
 	      { Published Declarations }
@@ -143,6 +144,7 @@ begin
   FSoftRange:=1;
   //FSubSampling:=1;
   OwnerHDS:=self; //Until told otherwise, assume that ShadowHDS IS the tile owner.
+  SkipGenerate:=false; //Set to true in "OnSourceDataFetched" to skip shadow generation.
 end;
 
 // Destroy
@@ -346,7 +348,8 @@ begin
       TextureFormat:=tfRGB16;
       //TextureFormat:=tfRGBA;
       bmp32:=(Image as TGLBlankImage).GetBitmap32(GL_TEXTURE_2D);
-      GenerateShadowMap(HD , bmp32, 1);
+      if not SkipGenerate then
+        GenerateShadowMap(HD , bmp32, 1);
       if Assigned(FOnThreadBmp32) then FOnThreadBmp32(self,heightData,bmp32);
 
       //Enabled:=True;
