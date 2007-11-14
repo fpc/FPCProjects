@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <CONFIG>
-  <Package Version="2">
+  <Package Version="3">
     <Name Value="glscenelazarus"/>
     <Author Value="Mike Lischke,Eric Grange"/>
     <CompilerOptions>
@@ -35,7 +35,7 @@
     <Description Value="GLScene - OpenGL 3D library"/>
     <License Value="LGPL"/>
     <Version Major="1" Build="3"/>
-    <Files Count="165">
+    <Files Count="166">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -716,25 +716,29 @@
         <Filename Value="../Source/platform/gllclviewer.pas"/>
         <UnitName Value="GLLCLViewer"/>
       </Item165>
+      <Item166>
+        <Filename Value="../Source/glgizmo.pas"/>
+        <UnitName Value="GLGizmo"/>
+      </Item166>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="5">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="FCL"/>
         <MinVersion Major="1" Valid="True"/>
       </Item1>
       <Item2>
-        <PackageName Value="jpegforlazarus"/>
+        <PackageName Value="IDEIntf"/>
+        <MinVersion Major="1" Valid="True"/>
       </Item2>
       <Item3>
         <PackageName Value="imagesforlazarus"/>
       </Item3>
       <Item4>
-        <PackageName Value="IDEIntf"/>
-        <MinVersion Major="1" Valid="True"/>
+        <PackageName Value="jpegforlazarus"/>
       </Item4>
       <Item5>
-        <PackageName Value="FCL"/>
+        <PackageName Value="LCL"/>
         <MinVersion Major="1" Valid="True"/>
       </Item5>
     </RequiredPkgs>

@@ -34,7 +34,7 @@ uses
     GLTilePlane, GLTrail, GLTree, GLUtils, GLVectorFileObjects, 
     GLVerletClasses, GLVerletClothify, GLVerletSkeletonColliders, GLWaterPlane, 
     GLWindows, GLzBuffer, cadencerasap, GLCrossPlatform, GLViewer, GLColor, 
-    GLDynamicTexture, GLLCLViewer, LazarusPackageIntf; 
+    GLDynamicTexture, GLLCLViewer, GLGizmo, LazarusPackageIntf; 
 
 implementation
 
