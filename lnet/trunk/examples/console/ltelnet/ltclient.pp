@@ -108,7 +108,6 @@ begin
       if FCon.GetMessage(s) > 0 then 
         Write(s);
       FCon.CallAction; // don't forget to make the clock tick :)
-      Delay(1);
     end;
   end;
   
