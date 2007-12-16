@@ -2084,6 +2084,14 @@ begin
       AppendString(lMessage, lTemp);
     end;
   end;
+  
+  if FHeaderOut^.ContentLength > 0 then
+    begin
+      AppendString(lMessage, 'Content-Length: ');
+      AppendString(lMessage, IntToStr(FHeaderOut^.ContentLength));
+      AppendString(lMessage, #13#10);
+    end;
+  
   with FHeaderOut^.ExtraHeaders do
     AppendString(lMessage, Memory, Pos-Memory);
   AppendString(lMessage, #13#10);
