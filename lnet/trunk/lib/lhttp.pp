@@ -2067,6 +2067,12 @@ begin
     AppendString(lMessage, lTemp);
   end;
   AppendString(lMessage, #13#10);
+  if FHeaderOut^.ContentLength > 0 then
+  begin
+    AppendString(lMessage, 'Content-Length: ');
+    Str(FHeaderOut^.ContentLength, lTemp);
+    AppendString(lMessage, lTemp+#13#10);
+  end;
   hasRangeStart := TLHTTPClient(FCreator).RangeStart <> high(qword);
   hasRangeEnd := TLHTTPClient(FCreator).RangeEnd <> high(qword);
   if hasRangeStart or hasRangeEnd then
@@ -2083,15 +2089,8 @@ begin
       Str(TLHTTPClient(FCreator).RangeEnd, lTemp);
       AppendString(lMessage, lTemp);
     end;
+    AppendString(lMessage, #13#10);
   end;
-  
-  if FHeaderOut^.ContentLength > 0 then
-    begin
-      AppendString(lMessage, 'Content-Length: ');
-      AppendString(lMessage, IntToStr(FHeaderOut^.ContentLength));
-      AppendString(lMessage, #13#10);
-    end;
-  
   with FHeaderOut^.ExtraHeaders do
     AppendString(lMessage, Memory, Pos-Memory);
   AppendString(lMessage, #13#10);
