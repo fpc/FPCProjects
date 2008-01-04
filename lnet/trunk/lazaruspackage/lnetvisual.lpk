@@ -2,6 +2,7 @@
 <CONFIG>
   <Package Version="3">
     <Name Value="lnetvisual"/>
+    <Author Value="Aleš Katona"/>
     <CompilerOptions>
       <Version Value="5"/>
       <SearchPaths>
@@ -30,7 +31,8 @@
     </CompilerOptions>
     <Description Value="Lightweight Networking Library, or lNet is a networking suite integrated with Lazarus to provide simple and effective means to use TCP, UDP, FTP, SMTP, Telnet and HTTP protocols over the net.
 "/>
-    <Version Minor="5" Release="8"/>
+    <License Value="LGPL with exception, see LICENSE and LICENSE.addon"/>
+    <Version Minor="6"/>
     <Files Count="7">
       <Item1>
         <Filename Value="lclnet.pas"/>
@@ -65,14 +67,14 @@
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="3">
       <Item1>
-        <PackageName Value="lnetbase"/>
+        <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
       </Item1>
       <Item2>
         <PackageName Value="LCL"/>
       </Item2>
       <Item3>
-        <PackageName Value="FCL"/>
-        <MinVersion Major="1" Valid="True"/>
+        <PackageName Value="lnetbase"/>
       </Item3>
     </RequiredPkgs>
     <UsageOptions>
