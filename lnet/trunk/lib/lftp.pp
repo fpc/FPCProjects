@@ -312,6 +312,8 @@ begin
   FControl := TLFTPTelnetClient.Create(nil);
 
   FData := TLTcp.Create(nil);
+  // TODO: rework to use the new TLSocketTCP
+  FData.SocketClass := TLSocket;
 
   FTransferMethod  :=  ftPassive; // let's be modern
 end;

@@ -248,6 +248,8 @@ begin
   inherited Create(aOwner);
   
   FConnection := TLTcp.Create(nil);
+  // TODO: rework to use the new TLSocketTCP
+  FConnection.SocketClass := TLSocket;
 end;
 
 destructor TLSMTP.Destroy;
