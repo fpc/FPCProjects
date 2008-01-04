@@ -4,10 +4,10 @@ object Form1: TForm1
   Top = 166
   Width = 390
   HorzScrollBar.Page = 389
-  VertScrollBar.Page = 326
+  VertScrollBar.Page = 324
   ActiveControl = MemoText
   Caption = 'lNet Component Test'
-  ClientHeight = 327
+  ClientHeight = 325
   ClientWidth = 390
   Constraints.MaxHeight = 350
   Constraints.MaxWidth = 390
@@ -36,6 +36,7 @@ object Form1: TForm1
     Height = 176
     Top = 64
     Width = 280
+    ReadOnly = True
     TabOrder = 0
   end
   object ButtonSend: TButton
@@ -101,8 +102,8 @@ object Form1: TForm1
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
-    ClientHeight = 38
-    ClientWidth = 144
+    ClientHeight = 36
+    ClientWidth = 140
     TabOrder = 6
     object RBTCP: TRadioButton
       Left = 14
@@ -150,18 +151,18 @@ object Form1: TForm1
     OnConnect = LTCPComponentConnect
     OnAccept = LTCPComponentAccept
     ReuseAddress = True
-    left = 104
-    top = 16
+    left = 360
+    top = 264
   end
   object LUDP: TLUDPComponent
     OnReceive = LTCPComponentReceive
     OnError = LTCPComponentError
-    left = 134
-    top = 16
+    left = 360
+    top = 296
   end
   object MainMenu1: TMainMenu
-    left = 160
-    top = 16
+    left = 360
+    top = 232
     object MenuItemFile: TMenuItem
       Caption = '&File'
       object MenuItemExit: TMenuItem

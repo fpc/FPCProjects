@@ -21,6 +21,7 @@ type
     EditSubject: TEdit;
     EditTo: TEdit;
     GBEmail: TGroupBox;
+    LabelAtt: TLabel;
     ListBoxAttachments: TListBox;
     MainMenu: TMainMenu;
     LabelSubject: TLabel;
@@ -119,7 +120,7 @@ end;
 
 procedure TMainForm.MenuItemAboutClick(Sender: TObject);
 begin
-  MessageDlg('SMTP example copyright (c) 2006-2007 by Ales Katona. All rights deserved ;)',
+  MessageDlg('SMTP example copyright (c) 2006-2008 by Ales Katona. All rights deserved ;)',
              mtInformation, [mbOK], 0);
 end;
 

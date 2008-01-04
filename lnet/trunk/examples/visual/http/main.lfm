@@ -4,17 +4,17 @@ object MainForm: TMainForm
   Top = 116
   Width = 647
   HorzScrollBar.Page = 646
-  VertScrollBar.Page = 535
+  VertScrollBar.Page = 533
   ActiveControl = EditURL
   Caption = 'HTTP Client Test'
-  ClientHeight = 536
+  ClientHeight = 534
   ClientWidth = 647
   Constraints.MinHeight = 559
   Constraints.MinWidth = 647
   Menu = MainMenu1
   object MenuPanel: TPanel
     Height = 40
-    Top = 496
+    Top = 494
     Width = 647
     Align = alBottom
     ClientHeight = 40
@@ -49,14 +49,14 @@ object MainForm: TMainForm
   end
   object MemoStatus: TMemo
     Height = 103
-    Top = 393
+    Top = 391
     Width = 647
     Align = alBottom
     ScrollBars = ssAutoVertical
     TabOrder = 1
   end
   object MemoHTML: TMemo
-    Height = 383
+    Height = 381
     Width = 647
     Align = alClient
     ScrollBars = ssAutoBoth
@@ -64,7 +64,7 @@ object MainForm: TMainForm
   end
   object PanelSep: TPanel
     Height = 10
-    Top = 383
+    Top = 381
     Width = 647
     Align = alBottom
     TabOrder = 3

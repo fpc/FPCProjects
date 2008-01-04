@@ -340,7 +340,7 @@ end;
 
 procedure TMainForm.AboutMenuItemClick(Sender: TObject);
 begin
-  MessageDlg('lFTP test program copyright (c) 2005-2007 by Ales Katona and Jesus Reyes. All rights deserved :)',
+  MessageDlg('lFTP test program copyright (c) 2005-2008 by Ales Katona and Jesus Reyes. All rights deserved :)',
              mtInformation, [mbOK], 0);
 end;
 

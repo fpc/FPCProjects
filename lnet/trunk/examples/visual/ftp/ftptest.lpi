@@ -2,7 +2,7 @@
 <CONFIG>
   <ProjectOptions>
     <PathDelim Value="/"/>
-    <Version Value="5"/>
+    <Version Value="6"/>
     <General>
       <Flags>
         <SaveClosedFiles Value="False"/>
@@ -27,14 +27,14 @@
     </RunParams>
     <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="lnetvisual"/>
-        <MinVersion Minor="4" Release="1" Valid="True"/>
+        <PackageName Value="LCL"/>
       </Item1>
       <Item2>
         <PackageName Value="lnetbase"/>
       </Item2>
       <Item3>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lnetvisual"/>
+        <MinVersion Minor="4" Release="1" Valid="True"/>
       </Item3>
     </RequiredPackages>
     <Units Count="3">

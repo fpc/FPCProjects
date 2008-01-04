@@ -108,7 +108,7 @@ end;
 
 procedure TMainForm.MenuItemAboutClick(Sender: TObject);
 begin
-  MessageDlg('Copyright (c) 2006-2007 by Ales Katona and Micha Nelissen. All rights deserved :)',
+  MessageDlg('Copyright (c) 2006-2008 by Ales Katona and Micha Nelissen. All rights deserved :)',
              mtInformation, [mbOK], 0);
 end;
 

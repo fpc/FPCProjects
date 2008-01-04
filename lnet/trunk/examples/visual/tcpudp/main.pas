@@ -115,7 +115,7 @@ end;
 
 procedure TForm1.MenuItemAboutClick(Sender: TObject);
 begin
-  MessageDlg('TCP/UDP example copyright(c) 2005-2007 by Ales Katona. All rights deserved ;)',
+  MessageDlg('TCP/UDP example copyright(c) 2005-2008 by Ales Katona. All rights deserved ;)',
              mtInformation, [mbOK], 0);
 end;
 

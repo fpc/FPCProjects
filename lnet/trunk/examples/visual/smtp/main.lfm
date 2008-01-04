@@ -1,28 +1,28 @@
 object MainForm: TMainForm
   Left = 342
-  Height = 417
+  Height = 468
   Top = 202
   Width = 471
   HorzScrollBar.Page = 470
-  VertScrollBar.Page = 393
+  VertScrollBar.Page = 442
   ActiveControl = EditFrom
   Caption = 'SMTP Client Test'
-  ClientHeight = 394
+  ClientHeight = 443
   ClientWidth = 471
-  Constraints.MinHeight = 400
+  Constraints.MinHeight = 468
   Constraints.MinWidth = 471
   Menu = MainMenu
   OnClose = FormClose
   OnCreate = FormCreate
   object SB: TStatusBar
-    Height = 17
-    Top = 377
+    Height = 21
+    Top = 422
     Width = 471
     Panels = <>
   end
   object ButtonSend: TButton
     Height = 24
-    Top = 333
+    Top = 378
     Width = 471
     Align = alBottom
     BorderSpacing.InnerBorder = 4
@@ -43,14 +43,14 @@ object MainForm: TMainForm
       Height = 123
       Width = 212
       Caption = 'e-mail'
-      ClientHeight = 106
-      ClientWidth = 212
+      ClientHeight = 104
+      ClientWidth = 208
       TabOrder = 0
       object LabelFrom: TLabel
         Left = 6
         Height = 20
         Top = 10
-        Width = 45
+        Width = 41
         Anchors = [akTop, akLeft, akRight]
         Caption = 'From:'
         ParentColor = False
@@ -59,7 +59,7 @@ object MainForm: TMainForm
         Left = 6
         Height = 20
         Top = 38
-        Width = 40
+        Width = 36
         Anchors = [akTop, akLeft, akRight]
         Caption = 'To:'
         ParentColor = False
@@ -68,7 +68,7 @@ object MainForm: TMainForm
         Left = 6
         Height = 20
         Top = 63
-        Width = 53
+        Width = 49
         Anchors = [akTop, akLeft, akRight]
         Caption = 'Subject:'
         ParentColor = False
@@ -77,7 +77,7 @@ object MainForm: TMainForm
         Left = 62
         Height = 23
         Top = 7
-        Width = 135
+        Width = 131
         Anchors = [akTop, akLeft, akRight]
         OnKeyPress = EditFromKeyPress
         TabOrder = 0
@@ -86,7 +86,7 @@ object MainForm: TMainForm
         Left = 62
         Height = 23
         Top = 35
-        Width = 135
+        Width = 131
         Anchors = [akTop, akLeft, akRight]
         OnKeyPress = EditFromKeyPress
         TabOrder = 1
@@ -95,7 +95,7 @@ object MainForm: TMainForm
         Left = 62
         Height = 23
         Top = 60
-        Width = 135
+        Width = 131
         Anchors = [akTop, akLeft, akRight]
         OnKeyPress = EditFromKeyPress
         TabOrder = 2
@@ -106,14 +106,14 @@ object MainForm: TMainForm
       Height = 123
       Width = 228
       Caption = 'Connection'
-      ClientHeight = 106
-      ClientWidth = 228
+      ClientHeight = 104
+      ClientWidth = 224
       TabOrder = 1
       object LabelServer: TLabel
         Left = 6
         Height = 20
         Top = 12
-        Width = 56
+        Width = 52
         Anchors = [akTop, akLeft, akRight]
         Caption = 'Server:'
         ParentColor = False
@@ -122,7 +122,7 @@ object MainForm: TMainForm
         Left = 6
         Height = 20
         Top = 38
-        Width = 56
+        Width = 52
         Anchors = [akTop, akLeft, akRight]
         Caption = 'Port:'
         ParentColor = False
@@ -131,7 +131,7 @@ object MainForm: TMainForm
         Left = 70
         Height = 22
         Top = 8
-        Width = 144
+        Width = 140
         Anchors = [akTop, akLeft, akRight]
         OnKeyPress = EditServerKeyPress
         TabOrder = 0
@@ -140,7 +140,7 @@ object MainForm: TMainForm
         Left = 70
         Height = 22
         Top = 36
-        Width = 144
+        Width = 140
         Anchors = [akTop, akLeft, akRight]
         OnKeyPress = EditServerKeyPress
         TabOrder = 1
@@ -150,7 +150,7 @@ object MainForm: TMainForm
         Left = 69
         Height = 24
         Top = 63
-        Width = 96
+        Width = 92
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.InnerBorder = 4
         Caption = 'Connect'
@@ -160,38 +160,51 @@ object MainForm: TMainForm
     end
   end
   object Panel2: TPanel
-    Height = 204
+    Height = 249
     Top = 129
     Width = 471
     Align = alBottom
     Anchors = [akTop, akLeft, akRight, akBottom]
-    ClientHeight = 204
+    ClientHeight = 249
     ClientWidth = 471
     TabOrder = 2
+    object LabelAtt: TLabel
+      Left = 8
+      Height = 20
+      Top = 162
+      Width = 88
+      Caption = 'Attachments:'
+      ParentColor = False
+    end
     object MemoText: TMemo
       Left = 1
-      Height = 202
+      Height = 158
+      Hint = 'Message text'
       Top = 1
-      Width = 334
-      Align = alLeft
+      Width = 469
+      Align = alTop
       Anchors = [akTop, akLeft, akRight, akBottom]
       Font.CharSet = 4
       TabOrder = 0
     end
     object ListBoxAttachments: TListBox
-      Left = 338
-      Height = 202
-      Top = 1
-      Width = 132
-      Align = alRight
+      Left = 1
+      Height = 65
+      Hint = 'Attachments'
+      Top = 183
+      Width = 469
+      Align = alBottom
+      OnDblClick = MenuItemAddClick
+      ParentShowHint = False
       PopupMenu = PopupMenuAttachments
+      ShowHint = True
       TabOrder = 1
       TopIndex = -1
     end
   end
   object ProgressBar: TProgressBar
     Height = 20
-    Top = 357
+    Top = 402
     Width = 471
     Align = alBottom
     Max = 100
@@ -251,7 +264,6 @@ object MainForm: TMainForm
     end
   end
   object OD: TOpenDialog
-    Title = 'Open existing file'
     FilterIndex = 0
     left = 200
     top = 80

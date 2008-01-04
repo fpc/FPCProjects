@@ -2,11 +2,11 @@
 
 LazarusResources.Add('TMainForm','FORMDATA',[
   'TPF0'#9'TMainForm'#8'MainForm'#4'Left'#3#214#0#6'Height'#3'/'#2#3'Top'#2't'#5
-  +'Width'#3#135#2#18'HorzScrollBar.Page'#3#134#2#18'VertScrollBar.Page'#3#23#2
+  +'Width'#3#135#2#18'HorzScrollBar.Page'#3#134#2#18'VertScrollBar.Page'#3#21#2
   +#13'ActiveControl'#7#7'EditURL'#7'Caption'#6#16'HTTP Client Test'#12'ClientH'
-  +'eight'#3#24#2#11'ClientWidth'#3#135#2#21'Constraints.MinHeight'#3'/'#2#20'C'
+  +'eight'#3#22#2#11'ClientWidth'#3#135#2#21'Constraints.MinHeight'#3'/'#2#20'C'
   +'onstraints.MinWidth'#3#135#2#4'Menu'#7#9'MainMenu1'#0#6'TPanel'#9'MenuPanel'
-  +#6'Height'#2'('#3'Top'#3#240#1#5'Width'#3#135#2#5'Align'#7#8'alBottom'#12'Cl'
+  +#6'Height'#2'('#3'Top'#3#238#1#5'Width'#3#135#2#5'Align'#7#8'alBottom'#12'Cl'
   +'ientHeight'#2'('#11'ClientWidth'#3#135#2#8'TabOrder'#2#0#0#6'TLabel'#8'Labe'
   +'lURI'#4'Left'#2#11#6'Height'#2#20#3'Top'#2#8#5'Width'#2#26#7'Caption'#6#3'U'
   +'RL'#11'ParentColor'#8#0#0#5'TEdit'#7'EditURL'#4'Left'#2'0'#6'Height'#2#25#3
@@ -14,11 +14,11 @@ LazarusResources.Add('TMainForm','FORMDATA',[
   +#0#0#0#7'TButton'#17'ButtonSendRequest'#4'Left'#3#240#1#6'Height'#2#25#3'Top'
   +#2#5#5'Width'#3#144#0#25'BorderSpacing.InnerBorder'#2#4#7'Caption'#6#12'Send'
   +' Request'#7'OnClick'#7#22'ButtonSendRequestClick'#8'TabOrder'#2#1#0#0#0#5'T'
-  +'Memo'#10'MemoStatus'#6'Height'#2'g'#3'Top'#3#137#1#5'Width'#3#135#2#5'Align'
+  +'Memo'#10'MemoStatus'#6'Height'#2'g'#3'Top'#3#135#1#5'Width'#3#135#2#5'Align'
   +#7#8'alBottom'#10'ScrollBars'#7#14'ssAutoVertical'#8'TabOrder'#2#1#0#0#5'TMe'
-  +'mo'#8'MemoHTML'#6'Height'#3''#1#5'Width'#3#135#2#5'Align'#7#8'alClient'#10
+  +'mo'#8'MemoHTML'#6'Height'#3'}'#1#5'Width'#3#135#2#5'Align'#7#8'alClient'#10
   +'ScrollBars'#7#10'ssAutoBoth'#8'TabOrder'#2#2#0#0#6'TPanel'#8'PanelSep'#6'He'
-  +'ight'#2#10#3'Top'#3''#1#5'Width'#3#135#2#5'Align'#7#8'alBottom'#8'TabOrder'
+  +'ight'#2#10#3'Top'#3'}'#1#5'Width'#3#135#2#5'Align'#7#8'alBottom'#8'TabOrder'
   +#2#3#0#0#21'TLHTTPClientComponent'#10'HTTPClient'#6'Method'#7#5'hmGet'#4'Por'
   +'t'#2'P'#11'OnDoneInput'#7#19'HTTPClientDoneInput'#7'OnInput'#7#15'HTTPClien'
   +'tInput'#16'OnProcessHeaders'#7#24'HTTPClientProcessHeaders'#12'OnDisconnect'
