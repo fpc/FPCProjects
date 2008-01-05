@@ -2,7 +2,7 @@
 <CONFIG>
   <Package Version="3">
     <Name Value="lnetbase"/>
-    <Author Value="Aleš Katona"/>
+    <Author Value="Aleš Katona, Micha Nelissen"/>
     <CompilerOptions>
       <Version Value="5"/>
       <SearchPaths>
@@ -39,7 +39,8 @@
     </CompilerOptions>
     <Description Value="Lightweight Networking Library, or lNet is a networking suite  providing simple and effective means to use TCP, UDP, FTP, SMTP, Telnet and HTTP protocols over the net.
 "/>
-    <License Value="LGPL with exception, see LICENSE and LICENSE.addon"/>
+    <License Value="LGPL with exception, see LICENSE and LICENSE.addon
+"/>
     <Version Minor="6"/>
     <Files Count="26">
       <Item1>
