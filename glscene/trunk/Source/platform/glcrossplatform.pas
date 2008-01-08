@@ -1417,7 +1417,7 @@ end;
 //
 procedure Sleep(length : Cardinal);
 begin
-  Sleep(Length * 1000);
+  Sleep(Length);
 end;
 
 // QueryPerformanceCounter
