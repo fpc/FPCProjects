@@ -56,7 +56,7 @@ uses
   vectorlists, persistentclasses, opengl1x, gltexture, glmesh, meshutils, glstate,
   xcollection, glgeomobjects, glverletclothify, xopengl, glterrainrenderer,
   vectortypes, odegl, odeimport, glcrossplatform, glcontext, glsilhouette, tga,
-  {jpeg,} GLColor;
+  jpeg, GLColor;
 {******************************************************************************}
 const
   num = ( 20 );
