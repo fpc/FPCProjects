@@ -21,7 +21,15 @@ unit jpeg;
 interface
 
 uses
+  // The lazjpeg unit got merged into graphics unit during laz-0.9.25 development
+  // If you have trouble here, comment the following line:
   lazjpeg;
+  // and uncomment the next one:
+// graphics;
+
+  // you might also need to remove "jpegforlazarus" from "Required packages" section
+  // of glscenelazarus package.
+  // This will be cleaned up as soon as lazarus-0.9.26 is released.
 
 implementation
 
