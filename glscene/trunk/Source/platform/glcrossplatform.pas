@@ -74,7 +74,7 @@ uses
   Classes, SysUtils, Graphics, Controls, Forms, VectorTypes,
   Dialogs, StdCtrls, ExtDlgs, strutils, LCLType, LCLIntf, types, ComponentEditors
   {$IFDEF UNIX}
-  , Buttons, unix, libc
+  , Buttons, unix
   {$ENDIF}
 {$ELSE} //Not FPC
   {$IFDEF MSWINDOWS} // delphi
@@ -1027,7 +1027,7 @@ var
   BrowserList: TStringList;
 begin
 {Get the $BROWSER environment variable:}
-  ExeName := getenv('BROWSER');
+  ExeName := GetEnvironmentVariable('BROWSER');
 
   if (Length(ExeName) = 0) then
   begin
@@ -1059,7 +1059,7 @@ begin
         BrowserList, Index, AProgram) then
       begin
         ExeName := AProgram;
-        Libc.putenv(PChar('BROWSER=' + ExeName));
+        //Libc.putenv(PChar('BROWSER=' + ExeName));
       end;
 
     finally
@@ -1417,11 +1417,7 @@ end;
 //
 procedure Sleep(length : Cardinal);
 begin
-{$IFDEF WIN32}
-   Windows.Sleep(length);
-{$ELSE}
-   usleep(length*1000);
-{$ENDIF}
+  Sleep(Length * 1000);
 end;
 
 // QueryPerformanceCounter
