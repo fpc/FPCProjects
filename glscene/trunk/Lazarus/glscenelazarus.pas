@@ -8,7 +8,7 @@ interface
 
 uses
   ApplicationFileIO, ARBProgram, AsyncTimer, BumpMapping, CurvesAndSurfaces, 
-    GeometryBB, GLCanvas, GLKeyboard, GLTextureCombiners, HeightTileFile, jpeg, 
+    GeometryBB, GLCanvas, GLKeyboard, GLTextureCombiners, HeightTileFile, 
     MeshUtils, Octree, OpenGL1x, PerlinNoise, PersistentClasses, 
     PictureRegisteredFormats, Polynomials, SpatialPartitioning, Spline, 
     VectorGeometry, VectorLists, VectorTypes, VerletClasses, VerletHairClasses, 
