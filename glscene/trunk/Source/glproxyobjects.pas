@@ -7,6 +7,9 @@
 
 	<b>History : </b><font size=-1><ul>
 
+      <li>07/11/07 - mrqzzz - Added "OnBeforeRender" event to Actorproxy
+                              allowing to apply extra transformations (f.ex: bone rotations)
+                              to the referenced Actor in order to have the proxy render these changes.
       <li>07/11/07 - mrqzzz - Added "StoredBoneNames" property
       <li>07/11/07 - mrqzzz - Added "BoneMatrix(Boneidndex|boneName)" function and
                                StoreBonesMatrix property for TGLActorProxy
@@ -176,6 +179,7 @@ type
     FBonesMatrices:TStringList;
     FStoreBonesMatrix: boolean;
     FStoredBoneNames: TStrings;
+    FOnBeforeRender: TGLProgressEvent;
 
     procedure SetAnimation(const Value: TActorAnimationName);
     procedure SetMasterActorObject(const Value: TGLActor);
@@ -187,6 +191,7 @@ type
     function GetMaterialLibrary: TGLMaterialLibrary;
     procedure SetStoreBonesMatrix(const Value: boolean);
     procedure SetStoredBoneNames(const Value: TStrings);
+    procedure SetOnBeforeRender(const Value: TGLProgressEvent);
   protected
     { Protected Declarations }
     procedure DoStoreBonesMatrices; // stores matrices of bones of the current frame rendered
@@ -227,6 +232,9 @@ type
     {: Specifies the names of the bones we want the matrices to be stored. If empty, all bones will be stored
      (since the masterobject is shared between all proxies, each proxy will have it's bones matrices) }
     property StoredBoneNames:TStrings read FStoredBoneNames write SetStoredBoneNames;
+    {: Event allowing to apply extra transformations (f.ex: bone rotations) to the referenced
+       Actor on order to have the proxy render these changes.  }
+    property OnBeforeRender : TGLProgressEvent read FOnBeforeRender write SetOnBeforeRender;
   end;
 
 //-------------------------------------------------------------
@@ -497,6 +505,10 @@ begin
                                        FMaterialLibrary, FMasterLibMaterial);
 
           DoProgress(FCurrentTime);
+
+          if Assigned(FOnBeforeRender) then
+             FOnBeforeRender(self,FCurrentTime.deltaTime,FCurrentTime.newTime);
+
           DoRender(ARci,ARenderSelf,Count>0);
 
           // Stores Bones matrices of the current frame
@@ -681,6 +693,11 @@ begin
       FTempLibMaterialName := '';
     end;
   end;
+end;
+
+procedure TGLActorProxy.SetOnBeforeRender(const Value: TGLProgressEvent);
+begin
+  FOnBeforeRender := Value;
 end;
 
 procedure TGLActorProxy.SetStoreBonesMatrix(const Value: boolean);
