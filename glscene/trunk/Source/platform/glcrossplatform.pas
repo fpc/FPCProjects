@@ -25,7 +25,10 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
-      <li>06/06/07 - DaStr - Got rid of GLTexture.pas dependancy
+      <li>18/11/07 - DaStr - Added ptrInt and PtrUInt types (BugtrackerID = 1833830)
+                              (thanks Dje and Burkhard Carstens)
+      <li>06/06/07 - DaStr - Added WORD type
+                             Got rid of GLTexture.pas dependancy
                              Moved GetRValue, GetGValue, GetBValue, InitWinColors
                                to GLColor.pas (BugtrackerID = 1732211)
       <li>02/04/07 - DaStr - Added MakeSubComponent
@@ -89,6 +92,14 @@ uses
 ;
 
 type
+{$IFNDEF FPC}
+  // These new types were added to be able to cast pointers to integers
+  // in 64 bit mode, because in FPC "Integer" type is always 32 bit 
+  // (or 16 bit in Pascal mode), but in Delphi it is platform-specific and
+  // can be 16, 32 or 64 bit.
+  ptrInt  = Integer;
+  PtrUInt = Cardinal;
+{$ENDIF}
 
    // Several aliases to shield us from the need of ifdef'ing between
    // the "almost cross-platform" units like Graphics/QGraphics etc.
@@ -1375,7 +1386,7 @@ begin
 {$ELSE}
 begin
    Result:=32; // dunno how to do it properly, so I fake it
-{$ENDIF}*)
+{$ENDIF}     *)
 begin
   result := GetDeviceCapabilities().Depth;
 end;

@@ -6,6 +6,7 @@
    Geometric objects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>18/11/07 - Got rid of compiler warning in TGLCone.RayCastIntersect
       <li>07/05/07 - DanB - Added TGLCone.RayCastIntersect + improved TGLDisk.RayCastIntersect
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>25/09/04 - Eric Pascual - Added AxisAlignedBoundingBox,AxisAlignedBoundingBoxUnscaled,AxisAlignedDimensionsUnscaled
@@ -862,6 +863,7 @@ begin
     poly[0]:=Sqr(localRayStart[0])+hconst*Sqr(localRayStart[1]-0.5*fHeight)+Sqr(localRayStart[2]);
     poly[1]:=2*(localRayStart[0]*localRayVector[0]+hconst*(localRayStart[1]-0.5*fHeight)*localRayVector[1]+localRayStart[2]*localRayVector[2]);
     poly[2]:=Sqr(localRayVector[0])+hconst*Sqr(localRayVector[1])+Sqr(localRayVector[2]);
+    SetLength(roots, 0);
     roots:=SolveQuadric(@poly);
     if MinPositiveCoef(roots, minRoot) then begin
       t:=minRoot;
