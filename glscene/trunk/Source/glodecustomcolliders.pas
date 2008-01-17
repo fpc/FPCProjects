@@ -34,7 +34,9 @@
       - added automatical generated History from CVS
 
   <b>History : </b><font size=-1><ul>
-    <li>10/10/07 - Mrqzzz - Ficed reference ODEGL.ODERToGLSceneMatrix
+    <li>25/12/07 - DaStr  - Fixed memory leak in TGLODECustomCollider.Destroy()
+                             (thanks Sandor Domokos) (BugtrackerID = 1808373)
+    <li>10/10/07 - Mrqzzz - Fixed reference ODEGL.ODERToGLSceneMatrix
     <li>07/10/07 - Mrqzzz - Added reference to ODEGL
     <li>11/09/07 - Mrqzzz - Added reference to ODEImport
     <li>07/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -556,7 +558,7 @@ begin
     TContactPoint(FContactCache[i]).Free;
   FContactCache.Free;
   FContactRenderPoints.Free;
-
+  FContactColor.Free;
   inherited;
 end;
 
