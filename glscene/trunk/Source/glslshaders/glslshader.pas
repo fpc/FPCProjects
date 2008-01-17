@@ -6,6 +6,7 @@
     TGLSLShader is a wrapper for GLS shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/12/07 - DaStr - Fix-up for previous update (BugtrackerID = 1772477)
       <li>12/08/07 - LC - TGLSLShaderParameter.SetAsCustomTexture now restores the
                           active texture unit (BugtrackerID = 1772477)
       <li>12/07/07 - DaStr - TGLSLInitializedShaderParameters removed because
@@ -234,10 +235,7 @@ begin
   if Assigned(FOnUnApply) then
     FOnUnApply(Self, Result);
   if not Result then
-  begin
-    glActiveTextureARB(GL_TEXTURE0_ARB); //suggested by Nelsol Chu
     FGLSLProg.EndUseProgramObject;
-  end;  
 end;
 
 
