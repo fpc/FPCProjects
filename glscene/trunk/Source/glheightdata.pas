@@ -16,6 +16,8 @@
    holds the data a renderer needs.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/07/07 - LIN- Bugfix: hdsNone tiles were not being released. (Now also deletes Queued tiles that are no longer needed).
+      <li>17/07/07 - LIN- Reversed the order in which Queued tiles are prepared.
       <li>03/04/07 - DaStr - Commented out lines that caused compiler hints
                              Added more explicit pointer dereferencing
                              Renamed GLS_DELPHI_5_UP to GLS_DELPHI_4_DOWN for
@@ -690,14 +692,14 @@ begin
     //------------------------
 
     //--Find the queued tiles, and Start preparing them--
-    i:=lst.Count;
-    while((i>0)and(TdCtr<max)) do begin
-      dec(i);
+    i:=0;
+    While((i<lst.count)and(TdCtr<max)) do begin
       HD:=THeightData(lst.Items[i]);
       if HD.DataState=hdsQueued then begin
         FOwner.StartPreparingData(HD);  //prepare
         inc(TdCtr);
       end;
+      inc(i);
     end;
     //---------------------------------------------------
 
@@ -997,7 +999,8 @@ begin
             for i:=0 to Count-1 do begin
                hd:=THeightData(List^[i]);
                if hd<>nil then with hd do begin
-                  if (DataState=hdsReady)and(UseCounter=0)and(OldVersion=nil)
+                 if (DataState<>hdsPreparing)and(UseCounter=0)and(OldVersion=nil)
+                  //if (DataState=hdsReady)and(UseCounter=0)and(OldVersion=nil)
                   then begin
                      FDataHash[HashKey(hd.XLeft, hd.YTop)].Remove(hd);
                      List^[i]:=nil;
