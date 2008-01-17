@@ -6,11 +6,21 @@
 	 ASE (ASCI Scene Export) file format support for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>27/12/07 - DaStr - Added skipping unknown file sections
+                             Improved ASE material objects structure:
+                               Material can keep up to 12 texture maps
+                               SubMaterial can keep up to 12 texture maps
+                             Added ability to select texture, lightmap
+                              ASE material/submaterial maps
+                             Bugfixed parsing failures on unknown section found
+                              (all above changes were made by MaX)
       <li>19/05/07 - DaStr - Initial version (contributed by MaX)
 
 
   Parser supported features list:
     blablabla :)
+
+
 }
 unit GLFileASE;
 
@@ -22,9 +32,10 @@ uses
   Classes, GLVectorFileObjects, ApplicationFileIO, VectorGeometry, VectorLists;
 
 const
-  MAX_TEXURE_CHANNELS = 5; // maximum texture channels
-  MAX_SUBMATERIALS =    5; // maximum material submaterials
-  MAX_SMOOTH_GROUPS =   5; // maximum smoothing groups
+  GL_ASE_MAX_TEXURE_CHANNELS = 12; // maximum texture channels
+  GL_ASE_MAX_SUBMATERIALS =    5;  // maximum material submaterials
+  GL_ASE_MAX_SMOOTH_GROUPS =   5;  // maximum smoothing groups
+  GL_ASE_MAX_TEXTURE_MAPS =    12; // maximum texture maps
 
 type
   // face texture channel indices
@@ -35,12 +46,12 @@ type
   // face texture channels
   TGLASEFaceTexureChannels = record
     Count: Integer;
-    ChanelTexture: array [0..MAX_TEXURE_CHANNELS - 1] of TGLASEFaceTexure;
+    ChanelTexture: array [0..GL_ASE_MAX_TEXURE_CHANNELS - 1] of TGLASEFaceTexure;
   end;
 
   TGLASESmoothingGroups = record
     Count: Integer;
-    Groups: array [0..MAX_SMOOTH_GROUPS] of Integer;
+    Groups: array [0..GL_ASE_MAX_SMOOTH_GROUPS] of Integer;
   end;
 
   // ASE mesh face
@@ -100,7 +111,7 @@ type
     FScale: TAffineVector;
     FScaleAxisAngle: Single;
     FScaleAxis: TAffineVector;
-    FTexChannels: array [0..MAX_TEXURE_CHANNELS - 1] of TAffineVectorList;
+    FTexChannels: array [0..GL_ASE_MAX_TEXURE_CHANNELS - 1] of TAffineVectorList;
     FTexChannelsCount: Integer;
     FHasNormals: Boolean;
     FMaterialID: Integer;
@@ -127,7 +138,8 @@ type
     property MaterialID: Integer read FMaterialID;
   end;
 
-  TGLASEMaterialDiffuseMap = record
+  TGLASEMaterialTextureMap = record
+    Kind: string;
     Name: string;
     _Class: string;
     No: Integer;
@@ -146,6 +158,11 @@ type
     NoisePhase: Single;
   end;
 
+  TGLASEMaterialTextureMaps = record
+    Map: array [0..GL_ASE_MAX_TEXTURE_MAPS - 1] of TGLASEMaterialTextureMap;
+    Count: Integer;
+  end;
+
   TGLASESubMaterial = record
     Name: string;
     Ambient: TAffineVector;
@@ -156,11 +173,11 @@ type
     Transparency: Single;
     WireSize: Single;
     SelfIllumination: Single;
-    DiffuseMap: TGLASEMaterialDiffuseMap;
+    TextureMaps: TGLASEMaterialTextureMaps;
   end;
 
   TGLASESubMaterialList = record
-    SubMaterial: array [0..MAX_SUBMATERIALS - 1] of TGLASESubMaterial;
+    SubMaterial: array [0..GL_ASE_MAX_SUBMATERIALS - 1] of TGLASESubMaterial;
     Count: Integer;
   end;
 
@@ -175,6 +192,7 @@ type
     FAmbient: TAffineVector;
     FSpecular: TAffineVector;
     FSubMaterials: TGLASESubMaterialList;
+    FTextureMaps: TGLASEMaterialTextureMaps;
   public
     constructor Create;
     property Name: string read FName;
@@ -185,6 +203,7 @@ type
     property ShineStrength: Single read FShineStrength;
     property Transparency: Single read FTransparency;
     property WireSize: Single read FWireSize;
+    property TextureMaps: TGLASEMaterialTextureMaps read FTextureMaps;
     property SubMaterials: TGLASESubMaterialList read FSubMaterials;
   end;
 
@@ -223,12 +242,16 @@ type
     function GetDoubleValue(const aData: string): Double;
     function GetFirstValue(aData: string): string;
     function GetEndOfFirstValue(const aData: string): Integer;
+    procedure SkipSection(var aLineIndex: Integer);
+    function IsSectionBegingin(const aData: string): Boolean;
+    function CheckUnknownData(var aLineIndex: Integer): Boolean;
     procedure ParseFaceString(const aData: string; var Index, A, B, C, AB, BC, CA, MatID: Integer; var Smooth: TGLASESmoothingGroups);
   private
     procedure ParseScene(var aLineIndex: Integer);
     procedure ParseGeomObject(var aLineIndex: Integer);
     procedure ParseMeshOptions(var aLineIndex: Integer; aMesh: TGLASEMeshObject);
     procedure ParseMeshGeom(var aLineIndex: Integer; aMesh: TGLASEMeshObject);
+    procedure ParseMappingChannel(var aLineIndex: Integer; aMesh: TGLASEMeshObject);
     procedure ParseMeshVertices(var aLineIndex: Integer; aMesh: TGLASEMeshObject; VerticesCount: Integer);
     procedure ParseMeshFaces(var aLineIndex: Integer; aMesh: TGLASEMeshObject; FacesCount: Integer);
     procedure ParseMeshNormals(var aLineIndex: Integer; aMesh: TGLASEMeshObject; FacesCount: Integer);
@@ -237,7 +260,8 @@ type
     procedure ParseMaterialList(var aLineIndex: Integer);
     procedure ParseMaterial(var aLineIndex: Integer; aMaterial: TGLASEMaterial);
     procedure ParseSubMaterial(var aLineIndex: Integer; aMaterial: TGLASEMaterial);
-    procedure ParseDiffuseMap(var aLineIndex: Integer; aMaterial: TGLASEMaterial; aSubMaterialIndex: Integer);
+    function CheckTextureMap(var aLineIndex: Integer; var aMaps: TGLASEMaterialTextureMaps): Boolean;
+    procedure ParseTextureMap(var aLineIndex: Integer; var aMaps: TGLASEMaterialTextureMaps; const aMapKind: string);
     function GetPropMBlur(const aData: string): Boolean;
     function GetPropCastShadow(const aData: string): Boolean;
     function GetPropRECVShadow(const aData: string): Boolean;
@@ -254,6 +278,17 @@ type
     property CastShadow: Boolean read FCastShadow;
     property RECVShadow: Boolean read FRECVShadow;
   end;
+
+  TASETextureMap = (tmGeneric, tmAmbient, tmDiffuse, tmSpecular, tmShine, tmShinestrength,
+    tmSelfillum, tmOpacity, tmFiltercolor, tmBump, tmReflect, tmRefract);
+
+  // use this functions to select texture and lightmap from ASE file
+  // aSubMaterialIndex = -1 - means main material maps
+  // Default are:
+  // Texture  - main material Diffuse map
+  // Lightmap - main material Ambient map
+  procedure ASESetPreferredTexture(aMap: TASETextureMap; aSubMaterialIndex: Integer = -1);
+  procedure ASESetPreferredLightmap(aMap: TASETextureMap; aSubMaterialIndex: Integer = -1);
 
 implementation
 
@@ -340,7 +375,17 @@ const
   ASCII_MESH_SMOOTHING_S =       'MESH_SMOOTHING';
   ASCII_MESH_MTLID_S =           'MESH_MTLID';
   ASCII_MATERIAL_REF_S =         'MATERIAL_REF';
-
+  ASCII_MAP_AMBIENT_S =          'MAP_AMBIENT';
+  ASCII_MAP_GENERIC_S =          'MAP_GENERIC';
+  ASCII_MAP_SPECULAR_S =         'MAP_SPECULAR';
+  ASCII_MAP_SHINE_S =            'MAP_SHINE';
+  ASCII_MAP_SHINESTRENGTH_S =    'MAP_SHINESTRENGTH';
+  ASCII_MAP_SELFILLUM_S =        'MAP_SELFILLUM';
+  ASCII_MAP_OPACITY_S =          'MAP_OPACITY';
+  ASCII_MAP_FILTERCOLOR_S =      'MAP_FILTERCOLOR';
+  ASCII_MAP_BUMP_S =             'MAP_BUMP';
+  ASCII_MAP_REFLECT_S =          'MAP_REFLECT';
+  ASCII_MAP_REFRACT_S =          'MAP_REFRACT';
 
 const
   ASCII_COMMENT_I =              0;
@@ -421,6 +466,17 @@ const
   ASCII_MESH_SMOOTHING_I =       75;
   ASCII_MESH_MTLID_I =           76;
   ASCII_MATERIAL_REF_I =         77;
+  ASCII_MAP_AMBIENT_I =          78;
+  ASCII_MAP_GENERIC_I =          79;
+  ASCII_MAP_SPECULAR_I =         80;
+  ASCII_MAP_SHINE_I =            81;
+  ASCII_MAP_SHINESTRENGTH_I =    82;
+  ASCII_MAP_SELFILLUM_I =        83;
+  ASCII_MAP_OPACITY_I =          84;
+  ASCII_MAP_FILTERCOLOR_I =      85;
+  ASCII_MAP_BUMP_I =             86;
+  ASCII_MAP_REFLECT_I =          87;
+  ASCII_MAP_REFRACT_I =          88;
 
 const
   ASCII_MESH_OT = 0;
@@ -436,7 +492,7 @@ type
 //  for correct fast lookup. i.e.:
 //  MESH_FACE must be placed before MESH_FACE_LIST
 const
-  vTagIdx: array [0..77] of TTagIdx = (
+  vTagIdx: array [0..88] of TTagIdx = (
     (Idx: ASCII_COMMENT_I;              Name: ASCII_COMMENT_S),
     (Idx: ASCII_SCENE_I;                Name: ASCII_SCENE_S),
     (Idx: ASCII_GEOMOBJECT_I;           Name: ASCII_GEOMOBJECT_S),
@@ -494,6 +550,17 @@ const
     (Idx: ASCII_MATERIAL_FALLOFF_I;     Name: ASCII_MATERIAL_FALLOFF_S),
     (Idx: ASCII_MATERIAL_XP_TYPE_I;     Name: ASCII_MATERIAL_XP_TYPE_S),
     (Idx: ASCII_MAP_DIFFUSE_I;          Name: ASCII_MAP_DIFFUSE_S),
+    (Idx: ASCII_MAP_AMBIENT_I;          Name: ASCII_MAP_AMBIENT_S),
+    (Idx: ASCII_MAP_GENERIC_I;          Name: ASCII_MAP_GENERIC_S),
+    (Idx: ASCII_MAP_SPECULAR_I;         Name: ASCII_MAP_SPECULAR_S),
+    (Idx: ASCII_MAP_SHINE_I;            Name: ASCII_MAP_SHINE_S),
+    (Idx: ASCII_MAP_SHINESTRENGTH_I;    Name: ASCII_MAP_SHINESTRENGTH_S),
+    (Idx: ASCII_MAP_SELFILLUM_I;        Name: ASCII_MAP_SELFILLUM_S),
+    (Idx: ASCII_MAP_OPACITY_I;          Name: ASCII_MAP_OPACITY_S),
+    (Idx: ASCII_MAP_FILTERCOLOR_I;      Name: ASCII_MAP_FILTERCOLOR_S),
+    (Idx: ASCII_MAP_BUMP_I;             Name: ASCII_MAP_BUMP_S),
+    (Idx: ASCII_MAP_REFLECT_I;          Name: ASCII_MAP_REFLECT_S),
+    (Idx: ASCII_MAP_REFRACT_I;          Name: ASCII_MAP_REFRACT_S),
     (Idx: ASCII_MAP_NAME_I;             Name: ASCII_MAP_NAME_S),
     (Idx: ASCII_MAP_CLASS_I;            Name: ASCII_MAP_CLASS_S),
     (Idx: ASCII_MAP_SUBNO_I;            Name: ASCII_MAP_SUBNO_S),
@@ -557,55 +624,114 @@ begin
   end;
 end;
 
+var
+  vPrepTexMap: TASETextureMap;
+  vPrepTexSubM: Integer;
+  vPrepLightMap: TASETextureMap;
+  vPrepLightSubM: Integer;
+
+procedure ASESetPreferredTexture(aMap: TASETextureMap; aSubMaterialIndex: Integer = -1);
+begin
+  vPrepTexMap := aMap;
+  vPrepTexSubM := aSubmaterialIndex
+end;
+
+procedure ASESetPreferredLightmap(aMap: TASETextureMap; aSubMaterialIndex: Integer = -1);
+begin
+  vPrepLightMap := aMap;
+  vPrepLightSubM := aSubMaterialIndex;
+end;
+
 
 // here ASE geom object is converted to GLScene mesh
 procedure CopyASEToMesh(aASEMesh: TGLASEMeshObject; aMesh: TMeshObject; aASEMaterials: TGLASEMaterialList);
 
-   function GetOrAllocateMaterial(const aIndex, aSubID: Integer) : string;
-   var
-      material : TGLASEMaterial;
-      specColor : TVector;
-      matLib : TGLMaterialLibrary;
-      libMat : TGLLibMaterial;
-   begin
-      material := aASEMaterials[aIndex];
-      Assert(Assigned(material));
-      if Assigned(aMesh.Owner) and Assigned(aMesh.Owner.Owner) then begin
-         matLib := aMesh.Owner.Owner.MaterialLibrary;
-         if Assigned(matLib) then begin
-            Result := material.Name + IntToStr(aIndex) + IntToStr(aSubID);
-            libMat := matLib.Materials.GetLibMaterialByName(Result);
-            if not Assigned(libMat) then begin
-               libMat:=matLib.Materials.Add;
-               libMat.Name := Result;
-               with libMat.Material.FrontProperties do begin
-                  Ambient.Color:= VectorMake(material.Ambient, 1);
-                  Diffuse.Color:= VectorMake(material.Diffuse, 1);
-                  specColor := VectorMake(material.Specular, 1);
-                  ScaleVector(specColor, 1 - material.Shiness);
-                  Specular.Color:=specColor;
-                  Shininess:=MaxInteger(0, Integer(Round((1 - material.ShineStrength) * 128)));
-               end;
+  const
+    ASETextureMapKinds: array [TASETextureMap] of string = (
+      ASCII_MAP_GENERIC_S,
+      ASCII_MAP_AMBIENT_S,
+      ASCII_MAP_DIFFUSE_S,
+      ASCII_MAP_SPECULAR_S,
+      ASCII_MAP_SHINE_S,
+      ASCII_MAP_SHINESTRENGTH_S,
+      ASCII_MAP_SELFILLUM_S,
+      ASCII_MAP_OPACITY_S,
+      ASCII_MAP_FILTERCOLOR_S,
+      ASCII_MAP_BUMP_S,
+      ASCII_MAP_REFLECT_S,
+      ASCII_MAP_REFRACT_S);
 
-               if (material.SubMaterials.Count > 0{aSubID}) and
-                  (Trim(material.SubMaterials.SubMaterial[0{aSubID}].DiffuseMap.Bitmap)<>'') then begin
-                  try
-                     with libMat.Material.Texture do begin
-                        Image.LoadFromFile(material.SubMaterials.SubMaterial[0{aSubID}].DiffuseMap.Bitmap);
-                        Disabled:=False;
-                        TextureMode:=tmModulate;
-                     end;
-                  except
-                     on E: ETexture do begin
-                        if not aMesh.Owner.Owner.IgnoreMissingTextures then
-                           raise;
-                     end;
-                  end;
+  function FindTextureMap(aMaterial: TGLASEMaterial; aMapKind: string; aSubmaterialIndex: Integer;
+    out TM: TGLASEMaterialTextureMap): Boolean;
+
+    function FindInMaps(const aMaps: TGLASEMaterialTextureMaps): Boolean;
+    var
+      i: Integer;
+    begin
+      Result := False;
+      for i := 0 to aMaps.Count - 1 do
+        if aMaps.Map[i].Kind = aMapKind then begin
+          TM := aMaps.Map[i];
+          Result := True;
+          Break;
+        end;
+    end;
+
+  begin
+    if aSubmaterialIndex = -1 then
+      Result := FindInMaps(aMaterial.TextureMaps)
+    else
+    if aSubmaterialIndex < aMaterial.SubMaterials.Count then
+      Result := FindInMaps(aMaterial.SubMaterials.SubMaterial[aSubmaterialIndex].TextureMaps)
+    else
+      Result := False;
+  end;
+
+  function GetOrAllocateMaterial(const aIndex, aSubID: Integer): string;
+  var
+    material : TGLASEMaterial;
+    specColor : TVector;
+    matLib : TGLMaterialLibrary;
+    libMat : TGLLibMaterial;
+    TM: TGLASEMaterialTextureMap;
+  begin
+    material := aASEMaterials[aIndex];
+    Assert(Assigned(material));
+    if Assigned(aMesh.Owner) and Assigned(aMesh.Owner.Owner) then begin
+      matLib := aMesh.Owner.Owner.MaterialLibrary;
+      if Assigned(matLib) then begin
+        Result := material.Name + IntToStr(aIndex) + IntToStr(aSubID);
+        libMat := matLib.Materials.GetLibMaterialByName(Result);
+        if not Assigned(libMat) then begin
+          libMat:=matLib.Materials.Add;
+          libMat.Name := Result;
+          with libMat.Material.FrontProperties do begin
+            Ambient.Color:= VectorMake(material.Ambient, 1);
+            Diffuse.Color:= VectorMake(material.Diffuse, 1);
+            specColor := VectorMake(material.Specular, 1);
+            ScaleVector(specColor, 1 - material.Shiness);
+            Specular.Color:=specColor;
+            Shininess:=MaxInteger(0, Integer(Round((1 - material.ShineStrength) * 128)));
+          end;
+
+          if FindTextureMap(material, ASETextureMapKinds[vPrepTexMap], vPrepTexSubM, TM) and (Trim(TM.Bitmap) <> '') then begin
+            try
+               with libMat.Material.Texture do begin
+                  Image.LoadFromFile(TM.Bitmap);
+                  Disabled:=False;
+                  TextureMode:=tmModulate;
+               end;
+            except
+               on E: ETexture do begin
+                  if not aMesh.Owner.Owner.IgnoreMissingTextures then
+                     raise;
                end;
             end;
-         end else Result:='';
+          end;
+        end;
       end else Result:='';
-   end;
+    end else Result:='';
+  end;
 
    function GetOrAllocateLightMap(const aIndex, aSubID: Integer) : Integer;
    var
@@ -613,6 +739,7 @@ procedure CopyASEToMesh(aASEMesh: TGLASEMeshObject; aMesh: TMeshObject; aASEMate
       matLib : TGLMaterialLibrary;
       libMat : TGLLibMaterial;
       name: string;
+      TM: TGLASEMaterialTextureMap;
    begin
       Result:=-1;
       material := aASEMaterials.Material[aIndex];
@@ -621,15 +748,14 @@ procedure CopyASEToMesh(aASEMesh: TGLASEMeshObject; aMesh: TMeshObject; aASEMate
       if Assigned(aMesh.Owner) and Assigned(aMesh.Owner.Owner) then begin
          matLib := aMesh.Owner.Owner.LightmapLibrary;
          if Assigned(matLib) then begin
-             if (material.SubMaterials.Count > 1) and
-                (Trim(material.SubMaterials.SubMaterial[1].DiffuseMap.Bitmap)<>'') then begin
+             if FindTextureMap(material, ASETextureMapKinds[vPrepLightMap], vPrepLightSubM, TM) and (Trim(TM.Bitmap)<>'') then begin
                libMat:=matLib.Materials.GetLibMaterialByName(name);
                if not Assigned(libMat) then begin
                   libMat:=matLib.Materials.Add;
                   libMat.Name:=name;
                   try
                      with libMat.Material.Texture do begin
-                        Image.LoadFromFile(material.SubMaterials.SubMaterial[1].DiffuseMap.Bitmap);
+                        Image.LoadFromFile(TM.Bitmap);
                         Disabled:=False;
                         TextureMode:=tmModulate;
                      end;
@@ -707,7 +833,7 @@ begin
     vLastFG := nil;
     for i := 0 to aASEMesh.Faces.Count - 1 do begin
       aseFace := aASEMesh.Faces[i];
-      fg := GetFaceGroup(aASEMesh.MaterialID, aseFace.SubMaterialID);
+      fg := GetFaceGroup(aASEMesh.MaterialID, 0{aseFace.SubMaterialID});
 
       if (aseFace.SubMaterialID > -1) and (subID = -1) then
         subID := aseFace.SubMaterialID;
@@ -720,13 +846,13 @@ begin
 
       if tex then begin
         Assert(aseFace.TextChannels.Count = aASEMesh.TextChannelsCount);
-        aMesh.TexCoords.Add(aASEMesh.TextChannel[0].Items[aseFace.TextChannels.ChanelTexture[0].Idx0],
-                            aASEMesh.TextChannel[0].Items[aseFace.TextChannels.ChanelTexture[0].Idx1],
-                            aASEMesh.TextChannel[0].Items[aseFace.TextChannels.ChanelTexture[0].Idx2]);
+        aMesh.TexCoords.Add(aASEMesh.TextChannel[0][aseFace.TextChannels.ChanelTexture[0].Idx0],
+                            aASEMesh.TextChannel[0][aseFace.TextChannels.ChanelTexture[0].Idx1],
+                            aASEMesh.TextChannel[0][aseFace.TextChannels.ChanelTexture[0].Idx2]);
         if light then begin
-          lmt[0] := aASEMesh.TextChannel[1].Items[aseFace.TextChannels.ChanelTexture[1].Idx0];
-          lmt[1] := aASEMesh.TextChannel[1].Items[aseFace.TextChannels.ChanelTexture[1].Idx1];
-          lmt[2] := aASEMesh.TextChannel[1].Items[aseFace.TextChannels.ChanelTexture[1].Idx2];
+          lmt[0] := aASEMesh.TextChannel[1][aseFace.TextChannels.ChanelTexture[1].Idx0];
+          lmt[1] := aASEMesh.TextChannel[1][aseFace.TextChannels.ChanelTexture[1].Idx1];
+          lmt[2] := aASEMesh.TextChannel[1][aseFace.TextChannels.ChanelTexture[1].Idx2];
           aMesh.LightMapTexCoords.Add(lmt[0][0], lmt[0][1]);
           aMesh.LightMapTexCoords.Add(lmt[1][0], lmt[1][1]);
           aMesh.LightMapTexCoords.Add(lmt[2][0], lmt[2][1]);
@@ -837,7 +963,7 @@ end;
 
 function TGLASEMeshObject.AddTexChannel: TAffineVectorList;
 begin
-  Assert(FTexChannelsCount < MAX_TEXURE_CHANNELS, 'texture channels count maximum reached');
+  Assert(FTexChannelsCount < GL_ASE_MAX_TEXURE_CHANNELS, 'texture channels count maximum reached');
   Result := TAffineVectorList.Create;
   FTexChannels[FTexChannelsCount] := Result;
   Inc(FTexChannelsCount);
@@ -1076,47 +1202,60 @@ begin
   end;
 end;
 
+function TGLASEVectorFile.IsSectionBegingin(const aData: string): Boolean;
+begin
+  Result := Pos('{', aData) > 0;
+end;
+
+function TGLASEVectorFile.CheckUnknownData(var aLineIndex: Integer): Boolean;
+begin
+  Result := IsSectionBegingin(FStringData[aLineIndex]);
+  if Result then begin
+    SkipSection(aLineIndex);
+  end else
+    Inc(aLineIndex);
+end;
+
+procedure TGLASEVectorFile.SkipSection(var aLineIndex: Integer);
+var
+  Data: string;
+begin
+  Inc(aLineIndex);
+  Data := FStringData[aLineIndex];
+  while not IsEndOfSection(Data) do begin
+    CheckUnknownData(aLineIndex);
+    Data := FStringData[aLineIndex];
+  end;
+  Inc(aLineIndex);
+end;
+
 procedure TGLASEVectorFile.Parse;
 var
   LineIndex: Integer;
   Data: string;
+  b: Boolean;
 begin
   LineIndex := 0;
   while LineIndex < FStringData.Count do begin
     Data := FStringData[LineIndex];
+    b := IsSectionBegingin(Data);
     case GetTagOnData(Data) of
-      ASCII_COMMENT_I: begin
-        FComment := GetStringValue(Data);
-        Inc(LineIndex);
-      end;
-      ASCII_SCENE_I: begin
-        ParseScene(LineIndex);
-      end;
-      ASCII_GEOMOBJECT_I: begin
-        ParseGeomObject(LineIndex);
-      end;
-      ASCII_PROP_MOTION_BLUR_I: begin
-        FMotionBlur := GetPropMBlur(Data);
-        Inc(LineIndex);
-      end;
-      ASCII_PROP_CAST_SHADOW_I: begin
-        FCastShadow := GetPropCastShadow(Data);
-        Inc(LineIndex);
-      end;
-      ASCII_PROP_RECV_SHADOW_I: begin
-        FRECVShadow := GetPropRECVShadow(Data);
-        Inc(LineIndex);
-      end;
-      ASCII_MATERIAL_LIST_I: begin
-        ParseMaterialList(LineIndex);
-      end;
+      ASCII_COMMENT_I:            FComment := GetStringValue(Data);
+      ASCII_SCENE_I:              ParseScene(LineIndex);
+      ASCII_GEOMOBJECT_I:         ParseGeomObject(LineIndex);
+      ASCII_PROP_MOTION_BLUR_I:   FMotionBlur := GetPropMBlur(Data);
+      ASCII_PROP_CAST_SHADOW_I:   FCastShadow := GetPropCastShadow(Data);
+      ASCII_PROP_RECV_SHADOW_I:   FRECVShadow := GetPropRECVShadow(Data);
+      ASCII_MATERIAL_LIST_I:      ParseMaterialList(LineIndex);
       else begin
-        if LineIndex = 0 then begin
+        if LineIndex = 0 then
           FHeader := Data;
-        end;
-        Inc(LineIndex);
+        b := True;
+        CheckUnknownData(LineIndex);
       end;
     end;
+    if not b then
+      Inc(LineIndex);
   end;
 end;
 
@@ -1209,6 +1348,7 @@ var
   aseMesh: TGLASEMeshObject;
   obj: TMeshObject;
   Data: string;
+  b: Boolean;
 begin
   aseMesh := TGLASEMeshObject.Create;
   try
@@ -1217,13 +1357,19 @@ begin
     Inc(aLineIndex);
     Data := FStringData[aLineIndex];
     while not IsEndOfSection(Data) do begin
+      b := IsSectionBegingin(Data);
       case GetTagOnData(Data) of
-        ASCII_NODE_NAME_I:   obj.Name := GetStringValue(Data);
-        ASCII_NODE_TM_I:     ParseMeshOptions(aLineIndex, aseMesh);
-        ASCII_MESH_I:        ParseMeshGeom(aLineIndex, aseMesh);
+        ASCII_NODE_NAME_I:    obj.Name := GetStringValue(Data);
+        ASCII_NODE_TM_I:      ParseMeshOptions(aLineIndex, aseMesh);
+        ASCII_MESH_I:         ParseMeshGeom(aLineIndex, aseMesh);
         ASCII_MATERIAL_REF_I: aseMesh.FMaterialID := Round(GetDoubleValue(Data));
+        else begin
+          b := True;
+          CheckUnknownData(aLineIndex);
+        end;
       end;
-      Inc(aLineIndex);
+      if not b then
+        Inc(aLineIndex);
       Data := FStringData[aLineIndex];
     end;
 
@@ -1231,6 +1377,7 @@ begin
   finally
     aseMesh.Free;
   end;
+  Inc(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseMeshFaces(var aLineIndex: Integer; aMesh: TGLASEMeshObject; FacesCount: Integer);
@@ -1258,9 +1405,11 @@ begin
 //    face.FSmoothing := Smooth;
     face.FSubMaterialID := ID;
 
-    Inc(aLineIndex);
+    CheckUnknownData(aLineIndex);
+
     Data := FStringData[aLineIndex];
   end;
+  Inc(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseMeshNormals(var aLineIndex: Integer; aMesh: TGLASEMeshObject; FacesCount: Integer);
@@ -1293,9 +1442,12 @@ begin
       end else
         Inc(Counter);
     end;
-    Inc(aLineIndex);
+
+    CheckUnknownData(aLineIndex);
+
     Data := FStringData[ALineIndex];
   end;
+  Inc(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseMeshTextureFaces(var aLineIndex: Integer; aMesh: TGLASEMeshObject;
@@ -1319,9 +1471,11 @@ begin
     face.FTextChannels.ChanelTexture[chanelIdx].Idx2 := Round(v3D[2]);
     Inc(face.FTextChannels.Count);
 
-    Inc(aLineIndex);
+    CheckUnknownData(aLineIndex);
+
     Data := FStringData[aLineIndex];
   end;
+  Inc(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseMeshTextureVertices(var aLineIndex: Integer; aMesh: TGLASEMeshObject;
@@ -1337,9 +1491,12 @@ begin
   while not IsEndOfSection(Data) do begin
     channel.Add(GetValue4D(Data, Index));
     Assert(Index = (channel.Count - 1), 'unexpected unsorted texture coordinates');
-    Inc(aLineIndex);
+
+    CheckUnknownData(aLineIndex);
+
     Data := FStringData[aLineIndex];
   end;
+  Inc(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseMeshGeom(var aLineIndex: Integer; aMesh: TGLASEMeshObject);
@@ -1349,6 +1506,7 @@ var
   FacesCount: Integer;
   TextureVerticesCount: Integer;
   TextureFacesCount: Integer;
+  b: Boolean;
 begin
   VerticesCount := 0;
   FacesCount := 0;
@@ -1357,8 +1515,9 @@ begin
   Inc(aLineIndex);
   Data := FStringData[aLineIndex];
   while not IsEndOfSection(Data) do begin
+    b := IsSectionBegingin(Data);
     case GetTagOnData(Data) of
-      ASCII_TIMEVALUE_I:          ;//aMesh.TimeValue := Round(GetDoubleValue(Data));
+      ASCII_TIMEVALUE_I:            ; //aMesh.TimeValue := Round(GetDoubleValue(Data));
       ASCII_MESH_NUM_VERTEX_I:      VerticesCount := Round(GetDoubleValue(Data));
       ASCII_NUM_FACES_I:            FacesCount := Round(GetDoubleValue(Data));
       ASCII_VERTEX_LIST_I:          ParseMeshVertices(aLineIndex, aMesh, VerticesCount);
@@ -1368,13 +1527,17 @@ begin
       ASCII_MESH_TVERTLIST_I:       ParseMeshTextureVertices(aLineIndex, aMesh, TextureVerticesCount);
       ASCII_MESH_NUMTVFACES_I:      TextureFacesCount := Round(GetDoubleValue(Data));
       ASCII_MESH_TFACELIST_I:       ParseMeshTextureFaces(aLineIndex, aMesh, TextureFacesCount);
-      ASCII_MESH_MAPPINGCHANNEL_I:  ; // texure channels will be added automatically using tag MESH_FACE_LIST
+      ASCII_MESH_MAPPINGCHANNEL_I:  ParseMappingChannel(aLineIndex, aMesh);
+      else begin
+        b := True;
+        CheckUnknownData(aLineIndex);
+      end;
     end;
-    Inc(aLineIndex);
+    if not b then
+      Inc(aLineIndex);
     Data := FStringData[aLineIndex];
   end;
   Inc(aLineIndex);
-  Data := FStringData[aLineIndex];
 end;
 
 procedure TGLASEVectorFile.ParseMeshVertices(var aLineIndex: Integer; aMesh: TGLASEMeshObject;
@@ -1388,18 +1551,53 @@ begin
   while not IsEndOfSection(Data) do begin
     aMesh.Vertices.Add(GetValue4D(Data, VertIndex));
     Assert(VertIndex = (aMesh.Vertices.Count - 1), 'unexpeted unsorted vertices');
-    Inc(aLineIndex);
+
+    CheckUnknownData(aLineIndex);
+
     Data := FStringData[aLineIndex];
   end;
+  Inc(aLineIndex);
+end;
+
+procedure TGLASEVectorFile.ParseMappingChannel(var aLineIndex: Integer; aMesh: TGLASEMeshObject);
+var
+  Data: string;
+  TextureVerticesCount: Integer;
+  TextureFacesCount: Integer;
+  b: Boolean;
+begin
+  TextureVerticesCount := 0;
+  TextureFacesCount := 0;
+  Inc(aLineIndex);
+  Data := FStringData[aLineIndex];
+  while not IsEndOfSection(Data) do begin
+    b := IsSectionBegingin(Data);
+    case GetTagOnData(Data) of
+      ASCII_MESH_NUMTVERTEX_I:      TextureVerticesCount := Round(GetDoubleValue(Data));
+      ASCII_MESH_TVERTLIST_I:       ParseMeshTextureVertices(aLineIndex, aMesh, TextureVerticesCount);
+      ASCII_MESH_NUMTVFACES_I:      TextureFacesCount := Round(GetDoubleValue(Data));
+      ASCII_MESH_TFACELIST_I:       ParseMeshTextureFaces(aLineIndex, aMesh, TextureFacesCount);
+      else begin
+        b := True;
+        CheckUnknownData(aLineIndex);
+      end;
+    end;
+    if not b then
+      Inc(aLineIndex);
+    Data := FStringData[aLineIndex];
+  end;
+  Inc(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseMeshOptions(var aLineIndex: Integer; aMesh: TGLASEMeshObject);
 var
   Data: string;
+  b: Boolean;
 begin
   Inc(aLineIndex);
   Data := FStringData[aLineIndex];
   while not IsEndOfSection(Data) do begin
+    b := IsSectionBegingin(Data);
     case GetTagOnData(Data) of
       ASCII_INHERIT_POS_I:  aMesh.FInheritedPosition := GetValue3D(Data);
       ASCII_INHERIT_ROT_I:  aMesh.FInheritedRotation := GetValue3D(Data);
@@ -1414,22 +1612,21 @@ begin
       ASCII_SCALE_I:        aMesh.FScale := GetValue3D(Data);
       ASCII_SCALEAXIS_I:    aMesh.FScaleAxis := GetValue3D(Data);
       ASCII_SCALEAXISANG_I: aMesh.FScaleAxisAngle := GetDoubleValue(Data);
+      else begin
+        b := True;
+        CheckUnknownData(aLineIndex);
+      end;
     end;
-    Inc(aLineIndex);
+    if not b then
+      Inc(aLineIndex);
     Data := FStringData[aLineIndex];
   end;
+  Inc(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseScene(var aLineIndex: Integer);
-var
-  Data: string;
 begin
-  Inc(aLineIndex);
-  Data := FStringData[aLineIndex];
-  while not IsEndOfSection(Data) do begin
-    Inc(aLineIndex);
-    Data := FStringData[aLineIndex];
-  end;
+  CheckUnknownData(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseMaterialList(var aLineIndex: Integer);
@@ -1444,40 +1641,76 @@ begin
       ASCII_MATERIAL_I: begin
         material := FMaterialList.Add;
         ParseMaterial(aLineIndex, material);
+      end; else begin
+        CheckUnknownData(aLineIndex);
       end;
     end;
-    Inc(aLineIndex);
     Data := FStringData[aLineIndex];
+  end;
+  Inc(aLineIndex);
+end;
+
+function TGLASEVectorFile.CheckTextureMap(var aLineIndex: Integer; var aMaps: TGLASEMaterialTextureMaps): Boolean;
+var
+  Data: string;
+begin
+  Result := True;
+  Data := FStringData[aLineIndex];
+  case GetTagOnData(Data) of
+    ASCII_MAP_AMBIENT_I:              ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_AMBIENT_S);
+    ASCII_MAP_DIFFUSE_I:              ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_DIFFUSE_S);
+    ASCII_MAP_GENERIC_I:              ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_GENERIC_S);
+    ASCII_MAP_SPECULAR_I:             ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_SPECULAR_S);
+    ASCII_MAP_SHINE_I:                ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_SHINE_S);
+    ASCII_MAP_SHINESTRENGTH_I:        ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_SHINESTRENGTH_S);
+    ASCII_MAP_SELFILLUM_I:            ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_SELFILLUM_S);
+    ASCII_MAP_OPACITY_I:              ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_OPACITY_S);
+    ASCII_MAP_FILTERCOLOR_I:          ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_FILTERCOLOR_S);
+    ASCII_MAP_BUMP_I:                 ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_BUMP_S);
+    ASCII_MAP_REFLECT_I:              ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_REFLECT_S);
+    ASCII_MAP_REFRACT_I:              ParseTextureMap(aLineIndex, aMaps, ASCII_MAP_REFRACT_S);
+    else
+      Result := False;
   end;
 end;
 
 procedure TGLASEVectorFile.ParseMaterial(var aLineIndex: Integer; aMaterial: TGLASEMaterial);
 var
   Data: string;
+  b: Boolean;
 begin
   Inc(aLineIndex);
   Data := FStringData[aLineIndex];
   while not IsEndOfSection(Data) do begin
+    b := IsSectionBegingin(Data);
     case GetTagOnData(Data) of
-      ASCII_MATERIAL_NAME_I:          aMaterial.FName := GetStringValue(Data);
-      ASCII_MATERIAL_AMBIENT_I:       aMaterial.FAmbient := GetValue3D(Data);
-      ASCII_MATERIAL_DIFFUSE_I:       aMaterial.FDiffuse := GetValue3D(Data);
-      ASCII_MATERIAL_SPECULAR_I:      aMaterial.FSpecular := GetValue3D(Data);
-      ASCII_MATERIAL_SHINE_I:         aMaterial.FShiness := GetDoubleValue(Data);
-      ASCII_MATERIAL_SHINESTRENGTH_I: aMaterial.FShineStrength := GetDoubleValue(Data);
-      ASCII_MATERIAL_TRANSPARENCY_I:  aMaterial.FTransparency := GetDoubleValue(Data);
-      ASCII_MATERIAL_WIRESIZE_I:      aMaterial.FWireSize := GetDoubleValue(Data);
-      ASCII_SUBMATERIAL_I:  ParseSubMaterial(aLineIndex, aMaterial);
+      ASCII_MATERIAL_NAME_I:            aMaterial.FName := GetStringValue(Data);
+      ASCII_MATERIAL_AMBIENT_I:         aMaterial.FAmbient := GetValue3D(Data);
+      ASCII_MATERIAL_DIFFUSE_I:         aMaterial.FDiffuse := GetValue3D(Data);
+      ASCII_MATERIAL_SPECULAR_I:        aMaterial.FSpecular := GetValue3D(Data);
+      ASCII_MATERIAL_SHINE_I:           aMaterial.FShiness := GetDoubleValue(Data);
+      ASCII_MATERIAL_SHINESTRENGTH_I:   aMaterial.FShineStrength := GetDoubleValue(Data);
+      ASCII_MATERIAL_TRANSPARENCY_I:    aMaterial.FTransparency := GetDoubleValue(Data);
+      ASCII_MATERIAL_WIRESIZE_I:        aMaterial.FWireSize := GetDoubleValue(Data);
+      ASCII_SUBMATERIAL_I:              ParseSubMaterial(aLineIndex, aMaterial);
+      else
+      if not CheckTextureMap(aLineIndex, aMaterial.FTextureMaps) then begin
+        b := True;
+        CheckUnknownData(aLineIndex);
+      end;
     end;
-    Inc(aLineIndex);
+    if not b then
+      Inc(aLineIndex);
     Data := FStringData[aLineIndex];
   end;
+  Inc(aLineIndex);
 end;
 
 procedure TGLASEVectorFile.ParseSubMaterial(var aLineIndex: Integer; aMaterial: TGLASEMaterial);
 var
   Data: string;
   Index: Integer;
+  b: Boolean;
 begin
   Index := aMaterial.FSubMaterials.Count;
   Inc(aMaterial.FSubMaterials.Count);
@@ -1485,6 +1718,7 @@ begin
   Inc(aLineIndex);
   Data := FStringData[aLineIndex];
   while not IsEndOfSection(Data) do begin
+    b := IsSectionBegingin(Data);
     case GetTagOnData(Data) of
       ASCII_MATERIAL_NAME_I:          aMaterial.FSubMaterials.SubMaterial[Index].Name := GetStringValue(Data);
       ASCII_MATERIAL_AMBIENT_I:       aMaterial.FSubMaterials.SubMaterial[Index].Ambient := GetValue3D(Data);
@@ -1495,43 +1729,65 @@ begin
       ASCII_MATERIAL_TRANSPARENCY_I:  aMaterial.FSubMaterials.SubMaterial[Index].Transparency := GetDoubleValue(Data);
       ASCII_MATERIAL_WIRESIZE_I:      aMaterial.FSubMaterials.SubMaterial[Index].WireSize := GetDoubleValue(Data);
       ASCII_MATERIAL_SELFILLUM_I:     aMaterial.FSubMaterials.SubMaterial[Index].SelfIllumination := GetDoubleValue(Data);
-      ASCII_MAP_DIFFUSE_I: ParseDiffuseMap(aLineIndex, aMaterial, Index);
+      else
+      if not CheckTextureMap(aLineIndex, aMaterial.FSubMaterials.SubMaterial[Index].TextureMaps) then begin
+        b := True;
+        CheckUnknownData(aLineIndex);
+      end;
     end;
-    Inc(aLineIndex);
+    if not b then
+      Inc(aLineIndex);
     Data := FStringData[aLineIndex];
   end;
+  Inc(aLineIndex);
 end;
 
-procedure TGLASEVectorFile.ParseDiffuseMap(var aLineIndex: Integer; aMaterial: TGLASEMaterial; aSubMaterialIndex: Integer);
+procedure TGLASEVectorFile.ParseTextureMap(var aLineIndex: Integer; var aMaps: TGLASEMaterialTextureMaps; const aMapKind: string);
 var
   Data: string;
+  Index: Integer;
+  b: Boolean;
 begin
+  Index := aMaps.Count;
+  Inc(aMaps.Count);
+  aMaps.Map[Index].Kind := aMapKind;
+
   Inc(aLineIndex);
   Data := FStringData[aLineIndex];
   while not IsEndOfSection(Data) do begin
+    b := IsSectionBegingin(Data);
     case GetTagOnData(Data) of
-      ASCII_MAP_NAME_I:       aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.Name := GetStringValue(Data);
-      ASCII_MAP_CLASS_I:      aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap._Class := GetStringValue(Data);
-      ASCII_MAP_SUBNO_I:      aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.No := Round(GetDoubleValue(Data));
-      ASCII_MAP_AMOUNT_I:     aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.Amount := GetDoubleValue(Data);
-      ASCII_BITMAP_I:         aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.Bitmap := GetStringValue(Data);
-      ASCII_UVW_U_OFFSET_I:   aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.UOffset := GetDoubleValue(Data);
-      ASCII_UVW_V_OFFSET_I:   aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.VOffset := GetDoubleValue(Data);
-      ASCII_UVW_U_TILING_I:   aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.UTiling := GetDoubleValue(Data);
-      ASCII_UVW_V_TILING_I:   aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.VTiling := GetDoubleValue(Data);
-      ASCII_UVW_ANGLE_I:      aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.Angle := GetDoubleValue(Data);
-      ASCII_UVW_BLUR_I:       aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.Blur := GetDoubleValue(Data);
-      ASCII_UVW_BLUR_OFFSET_I:aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.BlurOffset := GetDoubleValue(Data);
-      ASCII_UVW_NOUSE_AMT_I:  aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.NouseAmount := GetDoubleValue(Data);
-      ASCII_UVW_NOISE_SIZE_I: aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.NoiseSize := GetDoubleValue(Data);
-      ASCII_UVW_NOISE_LEVEL_I:aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.NoiseLevel := Round(GetDoubleValue(Data));
-      ASCII_UVW_NOISE_PHASE_I:aMaterial.FSubMaterials.SubMaterial[aSubMaterialIndex].DiffuseMap.NoisePhase := GetDoubleValue(Data);
+      ASCII_MAP_NAME_I:         aMaps.Map[Index].Name := GetStringValue(Data);
+      ASCII_MAP_CLASS_I:        aMaps.Map[Index]._Class := GetStringValue(Data);
+      ASCII_MAP_SUBNO_I:        aMaps.Map[Index].No := Round(GetDoubleValue(Data));
+      ASCII_MAP_AMOUNT_I:       aMaps.Map[Index].Amount := GetDoubleValue(Data);
+      ASCII_BITMAP_I:           aMaps.Map[Index].Bitmap := GetStringValue(Data);
+      ASCII_UVW_U_OFFSET_I:     aMaps.Map[Index].UOffset := GetDoubleValue(Data);
+      ASCII_UVW_V_OFFSET_I:     aMaps.Map[Index].VOffset := GetDoubleValue(Data);
+      ASCII_UVW_U_TILING_I:     aMaps.Map[Index].UTiling := GetDoubleValue(Data);
+      ASCII_UVW_V_TILING_I:     aMaps.Map[Index].VTiling := GetDoubleValue(Data);
+      ASCII_UVW_ANGLE_I:        aMaps.Map[Index].Angle := GetDoubleValue(Data);
+      ASCII_UVW_BLUR_I:         aMaps.Map[Index].Blur := GetDoubleValue(Data);
+      ASCII_UVW_BLUR_OFFSET_I:  aMaps.Map[Index].BlurOffset := GetDoubleValue(Data);
+      ASCII_UVW_NOUSE_AMT_I:    aMaps.Map[Index].NouseAmount := GetDoubleValue(Data);
+      ASCII_UVW_NOISE_SIZE_I:   aMaps.Map[Index].NoiseSize := GetDoubleValue(Data);
+      ASCII_UVW_NOISE_LEVEL_I:  aMaps.Map[Index].NoiseLevel := Round(GetDoubleValue(Data));
+      ASCII_UVW_NOISE_PHASE_I:  aMaps.Map[Index].NoisePhase := GetDoubleValue(Data);
+      else begin
+        b := True;
+        CheckUnknownData(aLineIndex);
+      end;
     end;
-    Inc(aLineIndex);
+    if not b then
+      Inc(aLineIndex);
     Data := FStringData[aLineIndex];
   end;
+  Inc(aLineIndex);
 end;
 
 initialization
   RegisterVectorFileFormat('ase', 'ASCII files', TGLASEVectorFile);
+  ASESetPreferredTexture(tmDiffuse);
+  ASESetPreferredLightmap(tmAmbient);
+  
 end.
