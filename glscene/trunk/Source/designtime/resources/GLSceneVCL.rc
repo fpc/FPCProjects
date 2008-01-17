@@ -55,3 +55,4 @@ TGLSLDiffuseSpecularShader BITMAP vcl\glscene_icon_TGLSLDiffuseSpecularShader.bm
 TGLSLBumpShader BITMAP vcl\glscene_icon_TGLSLBumpShader.bmp
 TGLAsmShader BITMAP vcl\glscene_icon_TGLAsmShader.bmp
 TGLShaderCombiner BITMAP vcl\glscene_icon_TGLShaderCombiner.bmp
+TGLGizmo BITMAP vcl\glscene_icon_TGLGizmo.bmp
