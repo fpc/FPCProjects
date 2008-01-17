@@ -252,6 +252,7 @@ uses
    Graphics,
    GLViewer,
    GLColor,
+   GLGizmo,
    GLDynamicTexture,
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText,
@@ -1566,7 +1567,7 @@ begin
                        TGLMaterialScripter, TGLUserInterface, TGLNavigator,
                        TGLSmoothNavigator, TGLSmoothUserInterface,
                        TGLTimeEventsMGR, TApplicationFileIO, TGLVfsPAK,
-                       TGLSimpleNavigation 
+                       TGLSimpleNavigation, TGLGizmo
                       ]);
 
    RegisterComponents('GLScene Terrain',
