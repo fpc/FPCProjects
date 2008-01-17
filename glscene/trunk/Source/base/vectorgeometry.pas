@@ -51,6 +51,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>18/11/07 - DaStr - Added MatrixInvert(), VectorDivide() functions
       <li>19/09/07 - DaStr - Added AddPoint() and PointAdd() procedures
       <li>18/09/07 - DaStr - Added two more overloaded versions of VectorScale()
       <li>29/08/07 - LC - Fixed BarycentricCoordinates to work with triangles in yz plane 
@@ -948,6 +949,10 @@ function VectorScale(const v : TVector; const Factor : TVector): TVector; overlo
 {: Divides given vector by another vector.<p>
    v[x]:=v[x]/divider[x], v[y]:=v[y]/divider[y] etc. }
 procedure DivideVector(var v : TVector; const divider : TVector); overload;
+procedure DivideVector(var v : TAffineVector; const divider : TAffineVector); overload;
+
+function VectorDivide(const v: TVector; const divider : TVector): TVector; overload;
+function VectorDivide(const v: TAffineVector; const divider : TAffineVector): TAffineVector; overload;
 
 //: True if all components are equal.
 function TexpointEquals(const p1, p2: TTexpoint): Boolean;
@@ -1099,8 +1104,11 @@ procedure TransposeMatrix(var M: TMatrix); overload;
 
 //: Finds the inverse of a 4x4 matrix
 procedure InvertMatrix(var M : TMatrix); overload;
+function MatrixInvert(const M: TMatrix): TMatrix; overload;
+
 //: Finds the inverse of a 3x3 matrix;
 procedure InvertMatrix(var M : TAffineMatrix); overload;
+function MatrixInvert(const M: TAffineMatrix): TAffineMatrix; overload;
 
 {: Finds the inverse of an angle preserving matrix.<p>
    Angle preserving matrices can combine translation, rotation and isotropic
@@ -4716,6 +4724,34 @@ begin
    v[3]:=v[3]/divider[3];
 end;
 
+// DivideVector
+//
+procedure DivideVector(var v : TAffineVector; const divider : TAffineVector); overload;
+begin
+   v[0]:=v[0]/divider[0];
+   v[1]:=v[1]/divider[1];
+   v[2]:=v[2]/divider[2];
+end;
+
+// VectorDivide
+//
+function VectorDivide(const v: TVector; const divider : TVector): TVector; overload;
+begin
+   Result[0]:=v[0]/divider[0];
+   Result[1]:=v[1]/divider[1];
+   Result[2]:=v[2]/divider[2];
+   Result[3]:=v[3]/divider[3];
+end;
+
+// VectorDivide
+//
+function VectorDivide(const v: TAffineVector; const divider : TAffineVector): TAffineVector; overload;
+begin
+   Result[0]:=v[0]/divider[0];
+   Result[1]:=v[1]/divider[1];
+   Result[2]:=v[2]/divider[2];
+end;
+
 // TexpointEquals
 //
 function TexpointEquals(const p1, p2: TTexpoint): Boolean;
@@ -5899,6 +5935,14 @@ begin
    end;
 end;
 
+// MatrixInvert
+//
+function MatrixInvert(const M: TMatrix): TMatrix;
+begin
+  Result := M;
+  InvertMatrix(Result);
+end;
+
 // InvertMatrix (affine)
 //
 procedure InvertMatrix(var M : TAffineMatrix);
@@ -5912,6 +5956,14 @@ begin
       AdjointMatrix(M);
       ScaleMatrix(M, 1/det);
    end;
+end;
+
+// MatrixInvert (affine)
+//
+function MatrixInvert(const M: TAffineMatrix): TAffineMatrix;
+begin
+  Result := M;
+  InvertMatrix(Result);
 end;
 
 // transpose_scale_m33
