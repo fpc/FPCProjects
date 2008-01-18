@@ -62,12 +62,12 @@ interface
 
 uses
   // Standard
-  Classes, {$IFDEF WINDOWS}Windows,{$ENDIF} Controls, Graphics, SysUtils,
+  Classes, (* {$IFDEF WINDOWS}Windows,{$ENDIF} Controls, Graphics, *) SysUtils,
 
   // GLScene
   OpenGL1x, GLScene, GLColor, GLObjects, VectorGeometry, GLTexture, GLStrings,
-  GLViewer, {$IFDEF WINDOWS} GLSpaceText, {$ENDIF} GLGeomObjects, GLBitmapFont, GLHUDObjects,
-  GLMisc, GLVectorFileObjects, PersistentClasses, GLCrossPlatform;
+  GLViewer, {$IFDEF WINDOWS} GLSpaceText, {$ENDIF} GLGeomObjects, GLBitmapFont, (* GLHUDObjects, *)
+  GLMisc, GLVectorFileObjects, (* PersistentClasses, *) GLCrossPlatform;
 
 type
   TGLGizmoUndoCollection = class;
