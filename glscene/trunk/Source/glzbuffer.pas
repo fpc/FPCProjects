@@ -8,29 +8,11 @@
    See readme.txt in the Demos/SpecialsFX/Shadows directory.<br>
    By René Lindsay.<p>
 
-      $Log: glzbuffer.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:51  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty  log message ***
-
-      Revision 1.5  2005/11/14 21:38:07  z0m3ie
-      making this stuff again Linux compatible please dont break multi platform support again
-
-      Revision 1.4  2005/09/17 22:35:01  k00m
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>20/01/08 - DaStr - Bugfixed TGLZShadows.HardSet(Bugtracker ID = 1875708)
+                             Removed some old commented out code
+                             Removed TGLZShadows.Trnc() procedure - there is a
+                              similar procedure in VectorGeometry.pas
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
       <li>24/03/07 - DaStr - Improved Cross-Platform compatibility
@@ -90,7 +72,7 @@ interface
 {$i GLScene.inc}
 
 uses  Classes, GLMisc, OpenGL1x, GLScene, VectorGeometry, GLGraphics,
-     SysUtils, GLObjects, GLBitmapFont, XOpenGL, GLTexture, 
+     SysUtils, GLObjects, GLBitmapFont, XOpenGL, GLTexture,
      GLContext, GLBehaviours, XCollection, GLState, GLViewer;
 
 type
@@ -161,7 +143,7 @@ type
     procedure Refresh;
     function FastScreenToVector(x,y : Integer):TAffineVector;
     function FastVectorToScreen(vec : TAffineVector):TAffineVector;
-//    function PixelToWorld_OLD(x,y :integer):TAffineVector;
+
     function PixelToWorld(const x,y : Integer):TAffineVector;
     function WorldToPixel(const aPoint :TAffineVector;out pixX,pixY:integer;out pixZ:single):boolean;
     function WorldToPixelZ(const aPoint :TAffineVector;out pixX,pixY:integer;out pixZ:single):boolean; overload;
@@ -209,7 +191,7 @@ type
          procedure SetCaster(const val :TGLMemoryViewer);
          procedure CalcShadowTexture(var rci : TRenderContextInfo);
          function  HardSet(const x,y :integer):Byte;
-         function  Trnc(v : Single) : Integer; register;
+
          function  SoftTest(const x,y:integer):Byte;
          procedure SetWidth(const val :integer);
          procedure SetHeight(const val :integer);
@@ -511,33 +493,10 @@ function TGLzBuffer.FastVectorToScreen(Vec :TAffineVector):TAffineVector;
    z:=c2*z-s2*v1;            //Rotate around X-axis
    Result[0]:=Round(-x/z*scal+vw);
    Result[1]:=Round( y/z*scal+vh);
-{
-  MakeVector(hpvec,vec);
-  SetVector(axs,0,1,0);
-  RotateVector(hpvec,axs,ang1);
-  SetVector(axs,1,0,0);
-  RotateVector(hpvec,axs,-ang2);
-  Result[0]:=Round(-hpvec[0]/hpvec[2]*scal+vw);
-  Result[1]:=Round( hpvec[1]/hpvec[2]*scal+vh);
-  Result[2]:=0;
-}
+
  end;
-//-----------------------------------------------------------------
-{
-function TGLzBuffer.PixelToWorld_OLD(x,y :integer):TAffineVector;
-var z, dst, camAng,wrpdst :single;
-    vec, campos :TAffineVector;
-begin
- z:=GetPixelzDepth(x,y);
- dst:=(NpFp)/(fp-z*dov);  //calc from z-buffer value to frustrum depth
- vec:=FastScreenToVector(x,y);
- NormalizeVector(vec);
- camAng:=VectorAngleCosine(normal,vec);                  //
- wrpdst:=dst/camAng;                                     //compensate for flat frustrum face
- SetVector( campos  ,Cam.AbsolutePosition);              //--camera position--
- result:=VectorCombine(campos,vec,1,wrpdst);
-end;
-}
+
+
 function TGLzBuffer.PixelToWorld(const x,y : Integer) : TAffineVector;
 var
    z, dst :single;
@@ -590,13 +549,6 @@ begin
       pixY:=0;
       pixZ:=0;
    end;
-
-{
-  SetVector(campos,viewer.Camera.AbsolutePosition);
-  pntVec:=VectorSubtract(aPoint,campos);
-  Result:=FastVectorToScreen(pntVec);     //---x,y coordinate
-  Result[2]:=VectorLength(pntVec);        //---distance
-}
 end;
 
 function TGLzBuffer.WorldToPixelZ(const aPoint :TAffineVector;out pixX,pixY:integer;out pixZ:single):boolean; //OVERLOAD
@@ -683,12 +635,6 @@ begin
 end;
 
 
-//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-
-
-
-
 // ------------------
 // ------------------ TGLZShadows ------------------
 // ------------------
@@ -722,8 +668,6 @@ end;
 // BindTexture
 //
 procedure TGLZShadows.BindTexture;
-//var
-//   bmp32 : TGLBitmap32;
 begin
    if FTexHandle.Handle=0 then begin
       FTexHandle.AllocateHandle;
@@ -745,18 +689,6 @@ begin
 
         PrepareAlphaMemory;
 
-      {
-//      bmp32:=TGLBitmap32.Create;
-      try
-         tf:=GL_RGBA;
-//         PrepareImage(bmp32, tf);
-         tw:=bmp32.Width;
-         th:=bmp32.Height;
-         bmp32.RegisterAsOpenGLTexture(GL_TEXTURE_2D, miLinear,tf, tw, th);
-      finally
-//         bmp32.Free;
-      end;
-       }
    end else glBindTexture(GL_TEXTURE_2D, FTexHandle.Handle);
 end;
 
@@ -972,18 +904,7 @@ begin
 
  //-----------16in1 optimising-----------
  if FOptimise=op16in1 then begin
-//  for x:=0 to fXres-1 do HardSet(x,fYres);  // out of range!
 
-{
-  TmpFlag:=self.FSoft;
-  FSoft:=False;
-  for x:=0 to fXres-1 do HardSet(x,0);
-  for y:=0 to fYres-1 do HardSet(fXres-1,y);
-  for y:=0 to fYres-1 do HardSet(fXres-2,y);
-  for y:=0 to fYres-1 do HardSet(fXres-3,y);
-  for y:=0 to fYres-1 do HardSet(fXres-4,y);
-  FSoft:=TmpFlag;
-}
   y:=4;
   While (y<>FHeight+3) do begin
   if y>=FHeight then y:=FHeight-1;
@@ -1064,7 +985,7 @@ function TGLZShadows.HardSet(const x,y :integer):Byte;
 
 var  pix :Byte;
     coord:TAffineVector;
-//    pixX,pixY :integer;
+
     ipixX,ipixY :integer;
     pixX,pixY :single;
     pixZ:single;
@@ -1074,11 +995,6 @@ var  pix :Byte;
     Tol :Single;
 
     modx,mody :single;
-
-
-//    d1,d3,d7,d9 :single;
-//    shad1,shad3,shad7,shad9 :single;
-
 
     d2,d4,d5,d6,d8:single;
     shad2,shad4,shad5,shad6,shad8 :single;
@@ -1095,12 +1011,6 @@ var  pix :Byte;
     end;
 
 begin
-{
- if caster.Camera.CameraStyle=csOrthogonal  then begin
-  result:=OrthHardSet(x,y);
-  Exit;
- end;
-}
    //---test pixel for shadow---
     if ViewerZBuf.GetPixelzDepth(x,y)<1 then begin
        coord:=ViewerZBuf.PixelToWorld(x,y);
@@ -1113,43 +1023,17 @@ begin
            if FFrustShadow then pix:=SCol.a          //dark  outside frustrum
                            else pix:=ComputeIlum;    //light outside frustrum
        end else begin
-          ipixX:=Trnc(pixX);
-          ipixY:=Trnc(pixY);
+          ipixX:=Trunc(pixX);
+          ipixY:=Trunc(pixY);
           if (FSoft=True) and (ipixY>0) then begin //---soft shadows---
              modx:=Frac(pixX);   //extract the fraction part only - used to interpolate soft shadow edges
              mody:=Frac(pixY);
 
-{
-             d1:=CasterZBuf.DataIdx[ipixY-1][ipixX-1];
-             d2:=CasterZBuf.DataIdx[ipixY-1][ipixX];
-             d3:=CasterZBuf.DataIdx[ipixY-1][ipixX+1];
-             d4:=CasterZBuf.DataIdx[ipixY][ipixX-1];
-             d5:=CasterZBuf.DataIdx[ipixY][ipixX];
-             d6:=CasterZBuf.DataIdx[ipixY][ipixX+1];
-             d7:=CasterZBuf.DataIdx[ipixY+1][ipixX-1];
-             d8:=CasterZBuf.DataIdx[ipixY+1][ipixX];
-             d9:=CasterZBuf.DataIdx[ipixY+1][ipixX+1];
-             ilum:=ComputeIlum;
+             if ipixX > 0 then
+               d4:=CasterZBuf.DataIdx[ipixY]^[ipixX-1]
+             else
+               d4:=CasterZBuf.DataIdx[ipixY]^[0];
 
-             if ((pixZ-d1)>Tol) then Shad1:= SCol.a else Shad1:= ilum;
-             if ((pixZ-d2)>Tol) then Shad2:= SCol.a else Shad2:= ilum;
-             if ((pixZ-d3)>Tol) then Shad3:= SCol.a else Shad3:= ilum;
-             if ((pixZ-d4)>Tol) then Shad4:= SCol.a else Shad4:= ilum;
-             if ((pixZ-d5)>Tol) then Shad5:= SCol.a else Shad5:= ilum;
-             if ((pixZ-d6)>Tol) then Shad6:= SCol.a else Shad6:= ilum;
-             if ((pixZ-d7)>Tol) then Shad7:= SCol.a else Shad7:= ilum;
-             if ((pixZ-d8)>Tol) then Shad8:= SCol.a else Shad8:= ilum;
-             if ((pixZ-d9)>Tol) then Shad9:= SCol.a else Shad9:= ilum;
-             shad:=(shad1+shad2+shad2+shad3)*(1-mody)+
-                   (shad7+shad8+Shad8+shad9)*(mody)+
-                   (shad1+shad4+shad4+shad7)*(1-modx)+
-                   (shad3+shad6+Shad6+shad9)*(modx)+
-                   (shad2+shad5+Shad5+shad8)/2+
-                   (shad4+shad5+Shad5+shad6)/2;
-             pix:=Round(shad/12);
-}
-
-             d4:=CasterZBuf.DataIdx[ipixY]^[ipixX-1];
              d5:=CasterZBuf.DataIdx[ipixY]^[ipixX];
              d6:=CasterZBuf.DataIdx[ipixY]^[ipixX+1];
              d8:=CasterZBuf.DataIdx[ipixY+1]^[ipixX];
@@ -1219,8 +1103,8 @@ begin
              if FFrustShadow then pix:=SCol.a   //dark  outside frustrum
                              else pix:=0;       //light outside frustrum
          end else begin
-            ipixX:=Trnc(pixX);
-            ipixY:=Trnc(pixY);
+            ipixX:=Trunc(pixX);
+            ipixY:=Trunc(pixY);
             if pixZ-Tol>CasterZBuf.DataIdx[ipixY][ipixX] then pix:=SCol.a      //dark
                                                          else pix:=0;          //light
          end;
@@ -1229,18 +1113,6 @@ begin
       result:=pix;
 end;
 }
-
-function TGLZShadows.Trnc(v : Single) : Integer; register;     //Same as Trunc
-const half :single = 0.5;
-begin
- asm
-   SUB     ESP,4
-   FLD     v
-   FSUB    half
-   FISTP   dword ptr [ESP]
-   POP     EAX
- end;
-end;
 
 function TGLZShadows.SoftTest(const x,y:integer):Byte;
 begin
