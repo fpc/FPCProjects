@@ -68,6 +68,8 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/01/08 - DaStr - Registered TGLCapsule (thanks Dave Gravel)
+                             Registered TGLGizmo
       <li>06/11/07 - mrqzzz - Registered material picker for TGLActorProxy
       <li>18/09/07 - DaStr - Added TGLMaterialProxy, TGLAbsoluteHUDText,
                               TGLResolutionIndependantHUDText
@@ -1651,6 +1653,7 @@ initialization
       RegisterSceneObject(TGLDisk, 'Disk', glsOCBasicGeometry);
       RegisterSceneObject(TGLCone, 'Cone', glsOCBasicGeometry);
       RegisterSceneObject(TGLCylinder, 'Cylinder', glsOCBasicGeometry);
+      RegisterSceneObject(TGLCapsule, 'Capsule', glsOCBasicGeometry);
       RegisterSceneObject(TGLDodecahedron, 'Dodecahedron', glsOCBasicGeometry);
       RegisterSceneObject(TGLIcosahedron, 'Icosahedron', glsOCBasicGeometry);
 
