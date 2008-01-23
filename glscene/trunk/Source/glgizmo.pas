@@ -7,6 +7,8 @@
    under GLScene (usefull for an Editor).<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>20/01/08 - DaStr - Cleaned up uses section for proper FPC support
+                             (thanks Lukasz Sokol) 
       <li>18/09/07 - DaStr - Initial version (based on GLGizmo.pas by Adirex,
                              J.Delauney, Degiovani, Marcus Oblak and a bit myself)
    </ul></font>
@@ -62,12 +64,12 @@ interface
 
 uses
   // Standard
-  Classes, (* {$IFDEF WINDOWS}Windows,{$ENDIF} Controls, Graphics, *) SysUtils,
+  Classes, SysUtils,
 
   // GLScene
   OpenGL1x, GLScene, GLColor, GLObjects, VectorGeometry, GLTexture, GLStrings,
-  GLViewer, {$IFDEF WINDOWS} GLSpaceText, {$ENDIF} GLGeomObjects, GLBitmapFont, (* GLHUDObjects, *)
-  GLMisc, GLVectorFileObjects, (* PersistentClasses, *) GLCrossPlatform;
+  GLGeomObjects, GLBitmapFont, GLViewer, GLVectorFileObjects, GLCrossPlatform,
+  GLMisc;
 
 type
   TGLGizmoUndoCollection = class;
@@ -864,7 +866,7 @@ var
 begin
   if FGizmoThickness <> Value then
   begin
-    thk := MaxFloat(single(1), Round(3 * Value));
+    thk := MaxFloat(single(1.0), Round(3 * Value));
     _GZOlinex.LineWidth := thk;
     _GZOliney.LineWidth := thk;
     _GZOlinez.LineWidth := thk;
