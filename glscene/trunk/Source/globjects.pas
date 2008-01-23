@@ -13,6 +13,8 @@
    objects can be found GLGeomObjects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/08 - DaStr - Fixed rendering of TGLPoints
+                             (thanks Kapitan) (BugtrackerID = 1876920)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -1839,6 +1841,7 @@ begin
    FStyle:=psSquare;
    FSize:=cDefaultPointSize;
    FPositions:=TAffineVectorList.Create;
+   FPositions.Add(NullVector);
    FColors:=TVectorList.Create;
    FPointParameters:=TGLPointParameters.Create(Self);
 end;
@@ -1875,6 +1878,7 @@ var
    v : TVector;
 begin
    n:=FPositions.Count;
+   if n = 0 then Exit;
    case FColors.Count of
       0 : glColor4f(1, 1, 1, 1);
       1 : glColor4fv(PGLFloat(FColors.List));
