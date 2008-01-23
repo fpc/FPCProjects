@@ -6,7 +6,10 @@
    Geometric objects.<p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>18/11/07 - Got rid of compiler warning in TGLCone.RayCastIntersect
+      <li>20/01/08 - DaStr - Corrected object centering in TGLFrustrum.BuildList()
+                              (thanks Sandor Domokos) (BugTrackerID = 1864314)
+                             Added a TGLCapsule object (thanks Dave Gravel) 
+      <li>18/11/07 - DaStr - Got rid of compiler warning in TGLCone.RayCastIntersect
       <li>07/05/07 - DanB - Added TGLCone.RayCastIntersect + improved TGLDisk.RayCastIntersect
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>25/09/04 - Eric Pascual - Added AxisAlignedBoundingBox,AxisAlignedBoundingBoxUnscaled,AxisAlignedDimensionsUnscaled
@@ -193,6 +196,44 @@ type
 			property Parts : TCylinderParts read FParts write SetParts default [cySides, cyBottom, cyTop];
          property Alignment : TCylinderAlignment read FAlignment write SetAlignment default caCenter;
 	end;
+
+   {: Capsule object, can also be used to make truncated cones }
+   TGLCapsule = class(TGLSceneObject)
+     private
+     { Private Declarations }
+       FParts: TCylinderparts;
+       FRadius: TGLFloat;
+       FSlices: TGLInt;
+       FStacks: TGLInt;
+       FHeight: TGLFloat;
+       FAlignment: TCylinderAlignment;
+     protected
+     { Protected Declarations }
+       procedure SetHeight(const aValue: Single);
+       procedure SetRadius(const aValue: Single);
+       procedure SetSlices(const aValue: integer);
+       procedure SetStacks(const aValue: integer);
+       procedure SetParts(aValue: TCylinderParts);
+       procedure SetAlignment(val: TCylinderAlignment);
+     public
+     { Public Declarations }
+       constructor Create(AOwner: TComponent); override;
+       procedure Assign(Source: TPersistent); override;
+       procedure BuildList(var rci: TRenderContextInfo); override;
+       function AxisAlignedDimensionsUnscaled: TVector; override;
+       function RayCastIntersect(const rayStart, rayVector: TVector; intersectPoint: PVector = nil;intersectNormal: PVector = nil): Boolean; override;
+       procedure Align(const startPoint, endPoint: TVector); overload;
+       procedure Align(const startObj, endObj: TGLBaseSceneObject); overload;
+       procedure Align(const startPoint, endPoint: TAffineVector); overload;
+     published
+     { Published Declarations }
+       property Height: TGLFloat read FHeight write SetHeight;
+       property Slices: TGLInt read FSlices write SetSlices;
+       property Stacks: TGLInt read FStacks write SetStacks;
+       property Radius: TGLFloat read FRadius write SetRadius;
+       property Parts: TCylinderParts read FParts write SetParts default [cySides, cyBottom, cyTop];
+       property Alignment: TCylinderAlignment read FAlignment write SetAlignment default caCenter;
+     end;
 
    // TAnnulusPart
    //
@@ -1129,6 +1170,362 @@ begin
    Align(PointMake(startPoint), PointMake(endPoint));
 end;
 
+
+// ------------------
+// ------------------ TGLCapsule ------------------
+// ------------------
+
+// Create
+//
+constructor TGLCapsule.Create(AOwner:TComponent);
+begin
+   inherited Create(AOwner);
+   FHeight:=1;
+   FRadius:=0.5;
+   FSlices:=4;
+   FStacks:=4;
+   FParts:=[cySides, cyBottom, cyTop];
+   FAlignment:=caCenter;
+end;
+
+// BuildList
+//
+procedure TGLCapsule.BuildList(var rci: TRenderContextInfo);
+var
+  i,j,n: integer;
+  start_nx2: single;
+  start_ny2: single;
+  tmp,nx,ny,nz,
+  start_nx,start_ny,
+  a,ca,sa,l: single;
+  nx2,ny2,nz2: single;
+begin
+ glPushMatrix;
+	glRotatef(-90, 0, 0, 1);
+   case Alignment of
+      caTop : glTranslatef(0, 0, FHeight+1);
+      caBottom : glTranslatef(0, 0, -FHeight);
+   else // caCenter
+   	glTranslatef(0, 0, 0.5);
+   end;
+  n:=FSlices*FStacks;
+  l:=FHeight;
+  l:=l*0.5;
+  a:=(PI*2.0)/n;
+  sa:=sin(a);
+  ca:=cos(a);
+  ny:=0;
+  nz:=1;
+  if cySides in FParts then begin
+    glBegin(GL_TRIANGLE_STRIP);
+    for i:=0 to n do begin
+      glNormal3d(ny,nz,0);
+      glTexCoord2f(i/n,1);
+      glVertex3d(ny*FRadius,nz*FRadius,l-0.5);
+      glNormal3d(ny,nz,0);
+      glTexCoord2f(i/n,0);
+      glVertex3d(ny*FRadius,nz*FRadius,-l-0.5);
+      tmp:=ca*ny-sa*nz;
+      nz:=sa*ny+ca*nz;
+      ny:=tmp;
+    end;
+    glEnd();
+  end;
+  //
+  if cyTop in FParts then begin
+    start_nx:=0;
+    start_ny:=1;
+    for j:=0 to (n div FStacks) do begin
+      start_nx2:=ca*start_nx+sa*start_ny;
+      start_ny2:=-sa*start_nx+ca*start_ny;
+      nx:=start_nx;
+      ny:=start_ny;
+      nz:=0;
+      nx2:=start_nx2;
+      ny2:=start_ny2;
+      nz2:=0;
+      glPushMatrix;
+      glTranslatef(0,0,-0.5);
+      glBegin(GL_TRIANGLE_STRIP);
+      for i:=0 to n do begin
+        glNormal3d(ny2,nz2,nx2);
+        glTexCoord2f(i/n,j/n);
+        glVertex3d(ny2*FRadius,nz2*FRadius,l+nx2*FRadius);
+        glNormal3d(ny,nz,nx);
+        glTexCoord2f(i/n,(j-1)/n);
+        glVertex3d(ny*FRadius,nz*FRadius,l+nx*FRadius);
+        tmp:=ca*ny-sa*nz;
+        nz:=sa*ny+ca*nz;
+        ny:=tmp;
+        tmp:=ca*ny2-sa*nz2;
+        nz2:=sa*ny2+ca*nz2;
+        ny2:=tmp;
+      end;
+      glEnd();
+      glPopMatrix;
+      start_nx:=start_nx2;
+      start_ny:=start_ny2;
+    end;
+  end;
+  //
+  if cyBottom in FParts then begin
+    start_nx:=0;
+    start_ny:=1;
+    for j:=0 to (n div FStacks) do begin
+      start_nx2:=ca*start_nx-sa*start_ny;
+      start_ny2:=sa*start_nx+ca*start_ny;
+      nx:=start_nx;
+      ny:=start_ny;
+      nz:=0;
+      nx2:=start_nx2;
+      ny2:=start_ny2;
+      nz2:=0;
+      glPushMatrix;
+      glTranslatef(0,0,-0.5);
+      glBegin(GL_TRIANGLE_STRIP);
+      for i:=0 to n do begin
+        glNormal3d(ny,nz,nx);
+        glTexCoord2f(i/n,(j-1)/n);
+        glVertex3d(ny*FRadius,nz*FRadius,-l+nx*FRadius);
+        glNormal3d(ny2,nz2,nx2);
+        glTexCoord2f(i/n,j/n);
+        glVertex3d(ny2*FRadius,nz2*FRadius,-l+nx2*FRadius);
+        tmp:=ca*ny-sa*nz;
+        nz:=sa*ny+ca*nz;
+        ny:=tmp;
+        tmp:=ca*ny2-sa*nz2;
+        nz2:=sa*ny2+ca*nz2;
+        ny2:=tmp;
+      end;
+      glEnd();
+      glPopMatrix;
+      start_nx:=start_nx2;
+      start_ny:=start_ny2;
+    end;
+  end;
+  glPopMatrix;
+end;
+
+// SetLength
+//
+procedure TGLCapsule.SetHeight(const aValue : Single);
+begin
+   if aValue<>FHeight then begin
+      FHeight:=aValue;
+      StructureChanged;
+   end;
+end;
+
+// SetRadius
+//
+procedure TGLCapsule.SetRadius(const aValue : Single);
+begin
+   if aValue<>FRadius then begin
+      FRadius:=aValue;
+      StructureChanged;
+   end;
+end;
+
+// SetSlices
+//
+procedure TGLCapsule.SetSlices(const aValue: integer);
+begin
+   if aValue<>FSlices then begin
+      FSlices:=aValue;
+      StructureChanged;
+   end;
+end;
+
+// SetStacks
+//
+procedure TGLCapsule.SetStacks(const aValue: integer);
+begin
+   if aValue<>FStacks then begin
+      FStacks:=aValue;
+      StructureChanged;
+   end;
+end;
+
+// SetParts
+//
+procedure TGLCapsule.SetParts(aValue: TCylinderParts);
+begin
+   if aValue<>FParts then begin
+      FParts:=aValue;
+      StructureChanged;
+   end;
+end;
+
+// SetAlignment
+//
+procedure TGLCapsule.SetAlignment(val : TCylinderAlignment);
+begin
+   if val<>FAlignment then begin
+      FAlignment:=val;
+      StructureChanged;
+   end;
+end;
+
+// Assign
+//
+procedure TGLCapsule.Assign(Source: TPersistent);
+begin
+   if Assigned(SOurce) and (Source is TGLCapsule) then begin
+      FParts:=TGLCapsule(Source).FParts;
+      FRadius:=TGLCapsule(Source).FRadius;
+   end;
+   inherited Assign(Source);
+end;
+
+// AxisAlignedDimensions
+//
+function TGLCapsule.AxisAlignedDimensionsUnscaled: TVector;
+var r,r1: TGLFloat;
+begin
+  r:=Abs(FRadius);
+  r1:=Abs(FRadius);
+  if r1>r then r:=r1;
+  Result:=VectorMake(r,0.5*FHeight,r);
+//  ScaleVector(Result, Scale.AsVector);
+end;
+
+// RayCastIntersect
+//
+function TGLCapsule.RayCastIntersect(const rayStart, rayVector : TVector;
+                                    intersectPoint : PVector = nil;
+                                    intersectNormal : PVector = nil) : Boolean;
+const
+   cOne : Single = 1;
+var
+   locRayStart, locRayVector, ip : TVector;
+   poly : array [0..2] of Double;
+   roots : TDoubleArray;
+   minRoot : Double;
+   t, tr2, invRayVector1, hTop, hBottom : Single;
+   tPlaneMin, tPlaneMax : Single;
+begin
+   Result:=False;
+   locRayStart:=AbsoluteToLocal(rayStart);
+   locRayVector:=AbsoluteToLocal(rayVector);
+
+   case Alignment of
+      caTop : begin
+         hTop:=0;
+         hBottom:=-FHeight;
+      end;
+      caBottom : begin
+         hTop:=FHeight;
+         hBottom:=0;
+      end;
+   else
+      // caCenter
+      hTop:=FHeight*0.5;
+      hBottom:=-hTop;
+   end;
+
+   if locRayVector[1]=0 then begin
+      // intersect if ray shot through the top/bottom planes
+      if (locRayStart[0]>hTop) or (locRayStart[0]<hBottom) then
+         Exit;
+      tPlaneMin:=-1e99;
+      tPlaneMax:=1e99;
+   end else begin
+      invRayVector1:=cOne/locRayVector[1];
+      tr2:=Sqr(Radius);
+
+      // compute intersection with topPlane
+      t:=(hTop-locRayStart[1])*invRayVector1;
+      if (t>0) and (cyTop in Parts) then begin
+         ip[0]:=locRayStart[0]+t*locRayVector[0];
+         ip[2]:=locRayStart[2]+t*locRayVector[2];
+         if Sqr(ip[0])+Sqr(ip[2])<=tr2 then begin
+            // intersect with top plane
+            if Assigned(intersectPoint) then
+               intersectPoint^:=LocalToAbsolute(VectorMake(ip[0], hTop, ip[2], 1));
+            if Assigned(intersectNormal) then
+               intersectNormal^:=LocalToAbsolute(YHmgVector);
+            Result:=True;
+         end;
+      end;
+      tPlaneMin:=t;
+      tPlaneMax:=t;
+      // compute intersection with bottomPlane
+      t:=(hBottom-locRayStart[1])*invRayVector1;
+      if (t>0) and (cyBottom in Parts) then begin
+         ip[0]:=locRayStart[0]+t*locRayVector[0];
+         ip[2]:=locRayStart[2]+t*locRayVector[2];
+         if (t<tPlaneMin) or (not (cyTop in Parts)) then begin
+            if Sqr(ip[0])+Sqr(ip[2])<=tr2 then begin
+               // intersect with top plane
+               if Assigned(intersectPoint) then
+                  intersectPoint^:=LocalToAbsolute(VectorMake(ip[0], hBottom, ip[2], 1));
+               if Assigned(intersectNormal) then
+                  intersectNormal^:=LocalToAbsolute(VectorNegate(YHmgVector));
+               Result:=True;
+            end;
+         end;
+      end;
+      if t<tPlaneMin then
+         tPlaneMin:=t;
+      if t>tPlaneMax then
+         tPlaneMax:=t;
+   end;
+   if cySides in Parts then begin
+      // intersect against cylinder infinite cylinder
+      poly[0]:=Sqr(locRayStart[0])+Sqr(locRayStart[2])-Sqr(Radius);
+      poly[1]:=2*(locRayStart[0]*locRayVector[0]+locRayStart[2]*locRayVector[2]);
+      poly[2]:=Sqr(locRayVector[0])+Sqr(locRayVector[2]);
+      roots:=SolveQuadric(@poly);
+      if MinPositiveCoef(roots, minRoot) then begin
+         t:=minRoot;
+         if (t>=tPlaneMin) and (t<tPlaneMax) then begin
+            if Assigned(intersectPoint) or Assigned(intersectNormal) then begin
+               ip:=VectorCombine(locRayStart, locRayVector, 1, t);
+               if Assigned(intersectPoint) then
+                  intersectPoint^:=LocalToAbsolute(ip);
+               if Assigned(intersectNormal) then begin
+                  ip[1]:=0;
+                  ip[3]:=0;
+                  intersectNormal^:=LocalToAbsolute(ip);
+               end;
+            end;
+            Result:=True;
+         end;
+      end;
+   end else SetLength(roots, 0);
+end;
+
+// Align
+//
+procedure TGLCapsule.Align(const startPoint, endPoint : TVector);
+var
+   dir : TAffineVector;
+begin
+   AbsolutePosition:=startPoint;
+   VectorSubtract(endPoint, startPoint, dir);
+   if Parent<>nil then
+      dir:=Parent.AbsoluteToLocal(dir);
+   Up.AsAffineVector:=dir;
+   FHeight:=VectorLength(dir);
+   Lift(FHeight*0.5);
+   Alignment:=caCenter;
+end;
+
+// Align
+//
+procedure TGLCapsule.Align(const startObj, endObj : TGLBaseSceneObject);
+begin
+   Align(startObj.AbsolutePosition, endObj.AbsolutePosition);
+end;
+
+// Align
+//
+procedure TGLCapsule.Align(const startPoint, endPoint : TAffineVector);
+begin
+   Align(PointMake(startPoint), PointMake(endPoint));
+end;
+
+
 // ------------------
 // ------------------ TGLAnnulus ------------------
 // ------------------
@@ -1766,6 +2163,7 @@ procedure TGLFrustrum.BuildList(var rci: TRenderContextInfo);
 var
   HBW, HBD: TGLFloat; // half of width, half of depth at base
   HTW, HTD: TGLFloat; // half of width, half of depth at top of frustrum
+  HFH : TGLFloat; // half of height, for align to center
   Sign: TGLFloat;     // +1 or -1
   Angle: TGLFloat;    // in radians
   ASin, ACos: TGLFloat;
@@ -1778,6 +2176,7 @@ begin
   HBD := FBaseDepth * 0.5;
   HTW := HBW * (FApexHeight - FHeight) / FApexHeight;
   HTD := HBD * (FApexHeight - FHeight) / FApexHeight;
+  HFH := FHeight * 0.5;
 
   glBegin(GL_QUADS);
 
@@ -1788,18 +2187,18 @@ begin
     if fpFront in FParts then
     begin
       glNormal3f(0, Sign * ACos, Sign * ASin);
-      xglTexCoord2fv(@XYTexPoint);    glVertex3f( HTW, FHeight, HTD);
-      xglTexCoord2fv(@YTexPoint);     glVertex3f(-HTW, FHeight, HTD);
-      xglTexCoord2fv(@NullTexPoint);  glVertex3f(-HBW, 0, HBD);
-      xglTexCoord2fv(@XTexPoint);     glVertex3f( HBW, 0, HBD);
+      xglTexCoord2fv(@XYTexPoint);    glVertex3f( HTW, HFH, HTD);
+      xglTexCoord2fv(@YTexPoint);     glVertex3f(-HTW, HFH, HTD);
+      xglTexCoord2fv(@NullTexPoint);  glVertex3f(-HBW, -HFH, HBD);
+      xglTexCoord2fv(@XTexPoint);     glVertex3f( HBW, -HFH, HBD);
     end;
     if fpBack in FParts then
     begin
       glNormal3f(0, Sign * ACos, -Sign * ASin);
-      xglTexCoord2fv(@YTexPoint);     glVertex3f( HTW, FHeight, -HTD);
-      xglTexCoord2fv(@NullTexPoint);  glVertex3f( HBW, 0, -HBD);
-      xglTexCoord2fv(@XTexPoint);     glVertex3f(-HBW, 0, -HBD);
-      xglTexCoord2fv(@XYTexPoint);    glVertex3f(-HTW, FHeight, -HTD);
+      xglTexCoord2fv(@YTexPoint);     glVertex3f( HTW, HFH, -HTD);
+      xglTexCoord2fv(@NullTexPoint);  glVertex3f( HBW, -HFH, -HBD);
+      xglTexCoord2fv(@XTexPoint);     glVertex3f(-HBW, -HFH, -HBD);
+      xglTexCoord2fv(@XYTexPoint);    glVertex3f(-HTW, HFH, -HTD);
     end;
   end;
 
@@ -1810,36 +2209,36 @@ begin
     if fpLeft in FParts then
     begin
       glNormal3f(-Sign * ASin, Sign * ACos, 0);
-      xglTexCoord2fv(@XYTexPoint);    glVertex3f(-HTW, FHeight,  HTD);
-      xglTexCoord2fv(@YTexPoint);     glVertex3f(-HTW, FHeight, -HTD);
-      xglTexCoord2fv(@NullTexPoint);  glVertex3f(-HBW, 0, -HBD);
-      xglTexCoord2fv(@XTexPoint);     glVertex3f(-HBW, 0,  HBD);
+      xglTexCoord2fv(@XYTexPoint);    glVertex3f(-HTW, HFH,  HTD);
+      xglTexCoord2fv(@YTexPoint);     glVertex3f(-HTW, HFH, -HTD);
+      xglTexCoord2fv(@NullTexPoint);  glVertex3f(-HBW, -HFH, -HBD);
+      xglTexCoord2fv(@XTexPoint);     glVertex3f(-HBW, -HFH,  HBD);
     end;
     if fpRight in FParts then
     begin
       glNormal3f(Sign * ASin, Sign * ACos, 0);
-      xglTexCoord2fv(@YTexPoint);     glVertex3f(HTW, FHeight, HTD);
-      xglTexCoord2fv(@NullTexPoint);  glVertex3f(HBW, 0,  HBD);
-      xglTexCoord2fv(@XTexPoint);     glVertex3f(HBW, 0, -HBD);
-      xglTexCoord2fv(@XYTexPoint);    glVertex3f(HTW, FHeight, -HTD);
+      xglTexCoord2fv(@YTexPoint);     glVertex3f(HTW, HFH, HTD);
+      xglTexCoord2fv(@NullTexPoint);  glVertex3f(HBW, -HFH,  HBD);
+      xglTexCoord2fv(@XTexPoint);     glVertex3f(HBW, -HFH, -HBD);
+      xglTexCoord2fv(@XYTexPoint);    glVertex3f(HTW, HFH, -HTD);
     end;
   end;
 
   if (fpTop in FParts) and (FHeight < FApexHeight) then
   begin
     glNormal3f(0, Sign, 0);
-    xglTexCoord2fv(@YTexPoint);     glVertex3f(-HTW, FHeight, -HTD);
-    xglTexCoord2fv(@NullTexPoint);  glVertex3f(-HTW, FHeight,  HTD);
-    xglTexCoord2fv(@XTexPoint);     glVertex3f( HTW, FHeight,  HTD);
-    xglTexCoord2fv(@XYTexPoint);    glVertex3f( HTW, FHeight, -HTD);
+    xglTexCoord2fv(@YTexPoint);     glVertex3f(-HTW, HFH, -HTD);
+    xglTexCoord2fv(@NullTexPoint);  glVertex3f(-HTW, HFH,  HTD);
+    xglTexCoord2fv(@XTexPoint);     glVertex3f( HTW, HFH,  HTD);
+    xglTexCoord2fv(@XYTexPoint);    glVertex3f( HTW, HFH, -HTD);
   end;
   if fpBottom in FParts then
   begin
     glNormal3f(0, -Sign, 0);
-    xglTexCoord2fv(@NullTexPoint);  glVertex3f(-HBW, 0, -HBD);
-    xglTexCoord2fv(@XTexPoint);     glVertex3f( HBW, 0, -HBD);
-    xglTexCoord2fv(@XYTexPoint);    glVertex3f( HBW, 0,  HBD);
-    xglTexCoord2fv(@YTexPoint);     glVertex3f(-HBW, 0,  HBD);
+    xglTexCoord2fv(@NullTexPoint);  glVertex3f(-HBW, -HFH, -HBD);
+    xglTexCoord2fv(@XTexPoint);     glVertex3f( HBW, -HFH, -HBD);
+    xglTexCoord2fv(@XYTexPoint);    glVertex3f( HBW, -HFH,  HBD);
+    xglTexCoord2fv(@YTexPoint);     glVertex3f(-HBW, -HFH,  HBD);
   end;
 
   glEnd;
@@ -2069,7 +2468,7 @@ initialization
 //-------------------------------------------------------------
 
    RegisterClasses([TGLCylinder, TGLCone, TGLTorus, TGLDisk, TGLArrowLine,
-                    TGLAnnulus, TGLFrustrum, TGLPolygon]);
+                    TGLAnnulus, TGLFrustrum, TGLPolygon, TGLCapsule]);
 
 end.
 
