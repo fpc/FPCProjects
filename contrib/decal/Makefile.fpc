@@ -13,16 +13,18 @@ units= mwfixedrecsort decal superstream randomtesting decalsamples decalio \
 programs=regressdecal
 
 [compiler]
+includedir=src
+sourcedir=src tests
 
 [install]
 basedir=.
 
 [prerules]
-decalio$(PPUEXT): decalio.pas decal$(PPUEXT) superstream$(PPUEXT)
-decalsamples$(PPUEXT): decalsamples.pas decal$(PPUEXT) randomtesting$(PPUEXT)
-decaltesting$(PPUEXT): decalsamples.pas decal$(PPUEXT) decalsamples$(PPUEXT)
+decalio$(PPUEXT): src/decalio.pas decal$(PPUEXT) superstream$(PPUEXT)
+decalsamples$(PPUEXT): tests/decalsamples.pas decal$(PPUEXT) randomtesting$(PPUEXT)
+decaltesting$(PPUEXT): tests/decalsamples.pas decal$(PPUEXT) decalsamples$(PPUEXT)
 decal$(PPUEXT): decal.pas mwfixedrecsort$(PPUEXT)
 randomtesting$(PPUEXT): randomtesting.pas decal$(PPUEXT)
 
 regressdecal$(PPUEXT): 
-	$(COMPILER) regressdecal.dpr
+	$(COMPILER) tests/regressdecal.dpr
