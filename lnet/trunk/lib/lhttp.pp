@@ -1340,7 +1340,14 @@ begin
       Result := false;
     end;
   end else begin
-    FRequestInputDone := true;
+    { only if keep-alive, then user must specify either of above headers to 
+      indicate next header's start }
+    FRequestInputDone := StrIComp(FParameters[hpConnection], 'keep-alive') = 0;
+    if not FRequestInputDone then
+    begin
+      FParseBuffer := @ParseEntityPlain;
+      FInputRemaining := high(FInputRemaining);
+    end;
   end;
 end;
 
