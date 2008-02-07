@@ -7,6 +7,7 @@
 
 	<b>History : </b><font size=-1><ul>
 
+      <li>06/02/08 - mrqzzz - Added a "RayCastIntersect" overload for Actorproxy
       <li>07/11/07 - mrqzzz - Added "OnBeforeRender" event to Actorproxy
                               allowing to apply extra transformations (f.ex: bone rotations)
                               to the referenced Actor in order to have the proxy render these changes.
@@ -213,6 +214,17 @@ type
     function BoneMatrix(BoneIndex:integer):TMatrix; overload;
     function BoneMatrix(BoneName:string):TMatrix; overload;
     procedure BoneMatricesClear;
+    {: Raycasts on self, but actually on the "RefActor" Actor.
+       Note that the "RefActor" parameter does not necessarily have to be
+       the same Actor refernced by the MasterObject property:
+       This allows to pass a low-low-low-poly Actor to raycast in the "RefActor" parameter,
+       while using a high-poly Actor in the "MasterObject" property,
+       of course we assume that the two Masterobject Actors have same animations.
+      }
+    function RayCastIntersect( RefActor:TGLActor; const rayStart, rayVector : TVector;
+                               intersectPoint : PVector = nil;
+                               intersectNormal : PVector = nil) : Boolean; overload;
+
   published
     { Published Declarations }
     property Interval: Integer read FInterval write FInterval default 0;
@@ -620,6 +632,83 @@ begin
     if AComponent = FMaterialLibrary then
       FMaterialLibrary := nil;
   end;
+end;
+
+function TGLActorProxy.RayCastIntersect(RefActor: TGLActor; const rayStart,
+  rayVector: TVector; intersectPoint, intersectNormal: PVector): Boolean;
+var
+   localRayStart, localRayVector : TVector;
+   cf, sf, ef: Integer;
+   cfd: Single;
+   HaspooTransformation:boolean;
+   invScale:TVector;
+  dummyRCI: TRenderContextInfo;
+begin
+
+   // Set RefObject frame as current ActorProxy frame
+   with RefActor do
+   begin
+     // VARS FOR ACTOR TO ASSUME ACTORPROXY CURRENT ANIMATION FRAME
+     cfd := RefActor.CurrentFrameDelta;
+     cf := RefActor.CurrentFrame;
+     sf := RefActor.startframe;
+     ef := RefActor.endframe;
+     RefActor.CurrentFrameDelta := self.CurrentFrameDelta;
+     RefActor.SetCurrentFrameDirect(self.CurrentFrame);
+     RefActor.StartFrame := self.StartFrame;
+     RefActor.EndFrame := self.EndFrame;
+     RefActor.CurrentFrame := self.CurrentFrame;
+
+     // FORCE ACTOR TO ASSUME ACTORPROXY CURRENT ANIMATION FRAME
+     FillChar(dummyRCI, SizeOf(dummyRCI), 0);
+     BuildList(dummyRCI);
+
+     HaspooTransformation:=pooTransformation in self.ProxyOptions;
+
+     // transform RAYSTART
+     SetVector(localRayStart, self.AbsoluteToLocal(rayStart));
+     if not HaspooTransformation then
+        SetVector(localRayStart, RefActor.LocalToAbsolute(localRayStart));
+
+     // transform RAYVECTOR
+     SetVector(localRayVector, self.AbsoluteToLocal(rayVector));
+     if not HaspooTransformation then
+        SetVector(localRayVector, RefActor.LocalToAbsolute(localRayVector));
+
+
+     NormalizeVector(localRayVector);
+
+     Result:=RefActor.RayCastIntersect(localRayStart, localRayVector,
+                                           intersectPoint, intersectNormal);
+     if Result then begin
+        if Assigned(intersectPoint) then
+        begin
+           if not HaspooTransformation then
+              SetVector(intersectPoint^, RefActor.AbsoluteToLocal(intersectPoint^));
+           SetVector(intersectPoint^, self.LocalToAbsolute(intersectPoint^));
+        end;
+        if Assigned(intersectNormal) then
+        begin
+           if not HaspooTransformation then
+              SetVector(intersectNormal^, RefActor.AbsoluteToLocal(intersectNormal^));
+           SetVector(intersectNormal^, self.LocalToAbsolute(intersectNormal^));
+        end;
+     end;
+
+
+     // Return RefObject to it's old time
+     // (USELESS??) :
+     {
+     CurrentFrameDelta:=cfd;
+     SetCurrentFrameDirect(cf);
+     CurrentFrame:=cf;
+     startframe:=sf;
+     endframe:=ef;
+
+     // REVERT ACTOR TO ASSUME ORIGINAL ANIMATION FRAME
+     BuildList(dummyRCI);
+     }
+   end;
 end;
 
 // SetAnimation
