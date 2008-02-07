@@ -29,6 +29,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>04/02/08 - DaStr - Bugfixed TPersistentObjectList.Move() (BugTracker ID = 1857974)
       <li>06/03/07 - DaStr - Added TGLOwnedPersistent
       <li>04/01/04 - EG - Fixed ReadString & ReadWideString for empty strings (thx Kenguru)
       <li>28/06/04 - LR - Removed ..\ from the GLScene.inc
@@ -1079,10 +1080,10 @@ begin
       item:=List[curIndex];
       if curIndex<newIndex then begin
          // curIndex+1 necessarily exists since curIndex<newIndex and newIndex<Count
-         System.Move(List[curIndex+1], List[curIndex], (newIndex-curIndex-1)*SizeOf(TObject));
+         System.Move(List[curIndex+1], List[curIndex], (Count-curIndex-1)*SizeOf(TObject));
       end else begin
          // newIndex+1 necessarily exists since newIndex<curIndex and curIndex<Count
-         System.Move(List[newIndex], List[newIndex+1], (curIndex-newIndex-1)*SizeOf(TObject));
+         System.Move(List[newIndex], List[newIndex+1], (Count-newIndex-1)*SizeOf(TObject));
       end;
       List[newIndex]:=item;
    end;
