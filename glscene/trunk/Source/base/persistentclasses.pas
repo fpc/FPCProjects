@@ -1080,10 +1080,10 @@ begin
       item:=List[curIndex];
       if curIndex<newIndex then begin
          // curIndex+1 necessarily exists since curIndex<newIndex and newIndex<Count
-         System.Move(List[curIndex+1], List[curIndex], (Count-curIndex-1)*SizeOf(TObject));
+         System.Move(List[curIndex+1], List[curIndex], (NewIndex-CurIndex)*SizeOf(TObject));
       end else begin
          // newIndex+1 necessarily exists since newIndex<curIndex and curIndex<Count
-         System.Move(List[newIndex], List[newIndex+1], (Count-newIndex-1)*SizeOf(TObject));
+         System.Move(List[newIndex], List[newIndex+1], (CurIndex-NewIndex)*SizeOf(TObject));
       end;
       List[newIndex]:=item;
    end;
