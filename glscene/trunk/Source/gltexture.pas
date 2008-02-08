@@ -6,6 +6,7 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>08/02/08 - Mrqzzz - Added tiaBottomRightPointColorTransparent
       <li>29/07/07 - LC - Modified how tmmEyeLinear is applied, see
                           Bugtracker ID = 1762966.
       <li>06/06/07 - DaStr - Moved all color types, constants and functions
@@ -318,7 +319,8 @@ type
                            tiaSuperBlackTransparent, tiaLuminance,
                            tiaLuminanceSqrt, tiaOpaque,
                            tiaTopLeftPointColorTransparent,
-                           tiaInverseLuminance, tiaInverseLuminanceSqrt);
+                           tiaInverseLuminance, tiaInverseLuminanceSqrt,
+                           tiaBottomRightPointColorTransparent);
 
 	// TGLTextureImage
 	//
@@ -4053,6 +4055,8 @@ begin
          bitmap32.SqrtAlpha;
          bitmap32.InvertAlpha;
       end;
+      tiaBottomRightPointColorTransparent :
+         bitmap32.SetAlphaTransparentForColor(bitmap32.Data^[bitmap32.Width-1]);
    else
       Assert(False);
    end;
