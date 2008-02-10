@@ -229,10 +229,10 @@ function CreateDiffStr(const DT1, DT2: TDateTime): string;
 
 var
   Year, Day, Hour, Minute: Integer;
-  
+
   DiffTIme: Integer;
 begin
-  Result:='';
+  Result := '';
   DiffTime  := Abs(DateTimeToTimeStamp(DT1).Time - DateTimeToTimeStamp(DT2).Time);
 
   Day       := Abs(DateTimeToTimeStamp(DT1).Date - DateTimeToTimeStamp(DT2).Date);
@@ -241,9 +241,10 @@ begin
     imagine this diff: DT1 = (01, 01, 0001 23:59) DT2 = (02, 01, 0001 00:01)
     The result would be DTResult = (1 day 23 hours and 58 minutes)
     So what we need to get 2 minute here is (and the rule should work generaly):
-    if day is decreasable by 1 do so, and if so then subtract time from 24 hours.
+    if day diff is 1 and first time is greater than second time, dec day and
+    subtract time from 24 hours.
   }
-  if Day > 0 then begin
+  if (Day = 1) and (DateTimeToTimeStamp(DT1).Time > DateTimeToTimeStamp(DT2).Time) then begin
     Dec(Day);
     DiffTime := Abs((24 * 1000 * 60 * 60) - DiffTime);
   end;
