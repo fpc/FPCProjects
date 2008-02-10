@@ -244,7 +244,7 @@ begin
     if day diff is 1 and first time is greater than second time, dec day and
     subtract time from 24 hours.
   }
-  if (Day = 1) and (DateTimeToTimeStamp(DT1).Time > DateTimeToTimeStamp(DT2).Time) then begin
+  if (Day > 0) and (DateTimeToTimeStamp(DT1).Time > DateTimeToTimeStamp(DT2).Time) then begin
     Dec(Day);
     DiffTime := Abs((24 * 1000 * 60 * 60) - DiffTime);
   end;
