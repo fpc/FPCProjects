@@ -28,7 +28,7 @@ implementation
 
 procedure Register;
 begin
-  RegisterComponents('lNet' , [TLTcpComponent, TLUdpComponent,
+  RegisterComponents('lNet' , [TLTcpComponent, TLUdpComponent, TLTelnetClientComponent,
                                TLFTPClientComponent, TLSMTPClientComponent,
                                TLHTTPClientComponent, TLHTTPServerComponent]);
 end;
