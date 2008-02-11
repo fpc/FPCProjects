@@ -72,6 +72,8 @@ type
   { TLTelnet }
 
   TLTelnet = class(TLComponent, ILDirect)
+  private
+    function GetConnected: Boolean;
    protected
     FStack: TLControlStack;
     FConnection: TLTcp;
@@ -86,7 +88,6 @@ type
     FOnError: TLSocketErrorEvent;
     FCommandArgs: string[3];
     FOrders: TLTelnetControlChars;
-    FConnected: Boolean;
     FBuffer: string;
 
     function Question(const Command: Char; const Value: Boolean): Char;
@@ -128,7 +129,7 @@ type
     procedure SendCommand(const aCommand: Char; const How: TLHowEnum); virtual;
    public
     property Output: TMemoryStream read FOutput;
-    property Connected: Boolean read FConnected;
+    property Connected: Boolean read GetConnected;
     property Timeout: Integer read GetTimeout write SetTimeout;
     property OnReceive: TLSocketEvent read FOnReceive write FOnReceive;
     property OnDisconnect: TLSocketEvent read FOnDisconnect write FOnDisconnect;
@@ -183,7 +184,7 @@ constructor TLTelnet.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   
-  FConnection := TLTCP.Create(aOwner);
+  FConnection := TLTCP.Create(nil);
   FConnection.OnCanSend := @OnCs;
   
   FOutput := TMemoryStream.Create;
@@ -199,6 +200,11 @@ begin
   FConnection.Free;
   FStack.Free;
   inherited Destroy;
+end;
+
+function TLTelnet.GetConnected: Boolean;
+begin
+  Result := FConnection.Connected;
 end;
 
 function TLTelnet.Question(const Command: Char; const Value: Boolean): Char;
@@ -326,7 +332,6 @@ end;
 procedure TLTelnet.Disconnect;
 begin
   FConnection.Disconnect;
-  FConnected := False;
 end;
 
 procedure TLTelnet.SendCommand(const aCommand: Char; const How: TLHowEnum);
@@ -348,7 +353,6 @@ begin
   FConnection.OnReceive := @OnRe;
   FConnection.OnConnect := @OnCo;
 
-  FConnected := False;
   FPossible := [TS_ECHO, TS_HYI, TS_SGA];
   FActive := [];
   FOrders := [];
@@ -381,7 +385,6 @@ end;
 
 procedure TLTelnetClient.OnCo(aSocket: TLSocket);
 begin
-  FConnected := True;
   if Assigned(FOnConnect) then
     FOnConnect(aSocket);
 end;
@@ -427,7 +430,7 @@ end;
 
 procedure TLTelnetClient.SendCommand(const Command: Char; const Value: Boolean);
 begin
-  if FConnected then begin
+  if Connected then begin
     {$ifdef debug}
     Writeln('**SENT** ', TNames[Question(Command, Value)], ' ', TNames[Command]);
     {$endif}
