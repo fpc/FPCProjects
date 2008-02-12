@@ -1,3 +1,5 @@
+12.02.2008 - 0.6.0 made TCP sending more user-friendly (optional), fixed some telnet stuff, added visual telnet + examples
+
 04.09.2007 - 0.5.8 fixed Windows visual problems with .Disconnect and .Free, fixed SMTP RFC compliance
 
 20.08.2007 - 0.5.7 fixed Darwin's MSG_NOSIGNAL (doesn't exist, but changed it to use SO_NOSIGPIPE). Fixed timeouts to be signed (forgotten commit in 0.5.5?)

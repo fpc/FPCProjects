@@ -1,4 +1,4 @@
-{ lNet v0.5.8
+{ lNet v0.6.0
 
   CopyRight (C) 2004-2008 Ales Katona
 
