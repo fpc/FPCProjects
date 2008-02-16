@@ -29,6 +29,9 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>11/02/08 - DaStr - Bugfixed TPersistentObjectList.Move() once again
+                             (BugTracker ID = 1857974)
+                             (thanks Yann PAPOUIN and Burkhard Carstens)
       <li>04/02/08 - DaStr - Bugfixed TPersistentObjectList.Move() (BugTracker ID = 1857974)
       <li>06/03/07 - DaStr - Added TGLOwnedPersistent
       <li>04/01/04 - EG - Fixed ReadString & ReadWideString for empty strings (thx Kenguru)

@@ -61,6 +61,8 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>16/02/08 - Mrqzzz - Other fix to ResetAndPitchTurnRoll by Pete,Dan Bartlett
+      <li>12/02/08 - Mrqzzz - Dave Gravel fixed ResetAndPitchTurnRoll
       <li>20/01/08 - DaStr - Bugfixed TGLBaseSceneObject.MoveChild[First/Last]()
                               (thanks "_") (BugTracker ID = 1857974) 
                              Converted the TGLBaseSceneObject.AbsoluteMatrix()
@@ -3626,33 +3628,41 @@ end;
 //
 procedure TGLBaseSceneObject.ResetAndPitchTurnRoll(const degX, degY, degZ : Single);
 var
-   rotMatrix : TMatrix;
+    rotMatrix: TMatrix;
+    V:TVector;
 begin
-   ResetRotations;
-   // set DegX (Pitch)
-   rotMatrix:=CreateRotationMatrix(Right, degX*cPIdiv180);
-   FUp.DirectVector:=VectorTransform(FUp.AsVector, rotMatrix);
-   FUp.Normalize;
-   FDirection.DirectVector:=VectorTransform(FDirection.AsVector, rotMatrix);
-   FDirection.Normalize;
-   FRotation.DirectX:=NormalizeDegAngle(DegX);
-   // set DegY (Turn)
-   rotMatrix:=CreateRotationMatrix(FUp.AsVector, degY*cPIdiv180);
-   FUp.DirectVector:=VectorTransform(FUp.AsVector, rotMatrix);
-   FUp.Normalize;
-   FDirection.DirectVector:=VectorTransform(FDirection.AsVector, rotMatrix);
-   FDirection.Normalize;
-   FRotation.DirectY:=NormalizeDegAngle(DegY);
-   // set DegZ (Roll)
-   rotMatrix:=CreateRotationMatrix(Direction.AsVector, degZ*cPIdiv180);
-   FUp.DirectVector:=VectorTransform(FUp.AsVector, rotMatrix);
-   FUp.Normalize;
-   FDirection.DirectVector:=VectorTransform(FDirection.AsVector, rotMatrix);
-   FDirection.Normalize;
-   FRotation.DirectZ:=NormalizeDegAngle(DegZ);
-   TransformationChanged;
-   NotifyChange(self);
+    ResetRotations;
+    // set DegX (Pitch)
+    rotMatrix:=CreateRotationMatrix(Right, degX*cPIdiv180);
+    V := VectorTransform(FUp.AsVector, rotMatrix);
+    NormalizeVector(V);
+    FUp.DirectVector := V;
+    V := VectorTransform(FDirection.AsVector, rotMatrix);
+    NormalizeVector(V);
+    FDirection.DirectVector:=V;
+    FRotation.DirectX:=NormalizeDegAngle(DegX);
+    // set DegY (Turn)
+    rotMatrix:=CreateRotationMatrix(FUp.AsVector, degY*cPIdiv180);
+    V := VectorTransform(FUp.AsVector, rotMatrix);
+    NormalizeVector(V);
+    FUp.DirectVector := V;
+    V := VectorTransform(FDirection.AsVector, rotMatrix);
+    NormalizeVector(V);
+    FDirection.DirectVector:=V;
+    FRotation.DirectY:=NormalizeDegAngle(DegY);
+    // set DegZ (Roll)
+    rotMatrix:=CreateRotationMatrix(Direction.AsVector, degZ*cPIdiv180);
+    V := VectorTransform(FUp.AsVector, rotMatrix);
+    NormalizeVector(V);
+    FUp.DirectVector := V;
+    V := VectorTransform(FDirection.AsVector, rotMatrix);
+    NormalizeVector(V);
+    FDirection.DirectVector:=V;
+    FRotation.DirectZ:=NormalizeDegAngle(DegZ);
+    TransformationChanged;
+    NotifyChange(self);
 end;
+
 
 // RotateAbsolute
 //
