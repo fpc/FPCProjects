@@ -10,6 +10,7 @@
    fire and smoke particle systems for instance).<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>15/02/08 - Mrqzzz - Fixed SizeScale in Lifetimes of TGLBaseSpritePFXManager (was ignored)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>02/04/07 - DaStr - TPFXLifeColors now inherits from TOwnedCollection
                              (thanks Burkhard Carstens)
@@ -2992,7 +2993,7 @@ begin
    sizeScale :=1;
    if (aParticle.FEffectScale<>1) or ComputeSizeScale(lifeTime, sizeScale) then
    begin
-      sizeScale := aParticle.FEffectScale;
+      sizeScale := sizeScale * aParticle.FEffectScale;
       for i:=0 to FVertBuf.Count-1 do
          vertexList^[i]:=VectorCombine(FVertices.List^[i], pos, sizeScale, 1);
    end
