@@ -1513,8 +1513,35 @@ end;
 // RenderTesselatedPolygon
 //
 var
-   nbExtraVertices : Integer;
-   newVertices : PAffineVectorArray;
+   _rtp_nbExtraVertices : Integer;
+   _rtp_newVertices : PAffineVectorArray;
+
+
+   function _rtp_AllocNewVertex : PAffineVector;
+   begin
+      Inc(_rtp_nbExtraVertices);
+      Result:=@_rtp_newVertices[_rtp_nbExtraVertices-1];
+   end;
+
+   procedure _rtp_tessError(errno : TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   begin
+      Assert(False, IntToStr(errno)+': '+gluErrorString(errno));
+   end;
+
+   procedure _rtp_tessIssueVertex(vertexData : Pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   begin
+      xglTexCoord2fv(vertexData);
+      glVertex3fv(vertexData);
+   end;
+
+   procedure _rtp_tessCombine(coords : PDoubleVector; vertex_data : Pointer;
+                         weight : PGLFloat; var outData : Pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   begin
+      outData:=_rtp_AllocNewVertex;
+      SetVector(PAffineVector(outData)^, coords^[0], coords^[1], coords^[2]);
+   end;
+
+
 procedure TGLNodes.RenderTesselatedPolygon(ATextured : Boolean;
                                            ANormal : PAffineVector = nil;
                                            ASplineDivisions : Integer = 1;
@@ -1527,29 +1554,6 @@ var
    splinePos : PAffineVector;
    f : Single;
 
-   function AllocNewVertex : PAffineVector;
-   begin
-      Inc(nbExtraVertices);
-      Result:=@newVertices[nbExtraVertices-1];
-   end;
-
-   procedure tessError(errno : TGLEnum); stdcall;
-   begin
-      Assert(False, IntToStr(errno)+': '+gluErrorString(errno));
-   end;
-
-   procedure tessIssueVertex(vertexData : Pointer); stdcall;
-   begin
-      xglTexCoord2fv(vertexData);
-      glVertex3fv(vertexData);
-   end;
-
-   procedure tessCombine(coords : PDoubleVector; vertex_data : Pointer;
-                         weight : PGLFloat; var outData : Pointer); stdcall;
-   begin
-      outData:=AllocNewVertex;
-      SetVector(PAffineVector(outData)^, coords^[0], coords^[1], coords^[2]);
-   end;
 
 begin
    if Count>2 then begin
@@ -1557,12 +1561,12 @@ begin
       tess:=gluNewTess;
       gluTessCallback(tess, GLU_TESS_BEGIN, @glBegin);
       if ATextured then
-         gluTessCallback(tess, GLU_TESS_VERTEX, @tessIssueVertex)
+         gluTessCallback(tess, GLU_TESS_VERTEX, @_rtp_tessIssueVertex)
       else gluTessCallback(tess, GLU_TESS_VERTEX, @glVertex3fv);
       gluTessCallback(tess, GLU_TESS_END, @glEnd);
-      gluTessCallback(tess, GLU_TESS_ERROR, @tessError);
-      gluTessCallback(tess, GLU_TESS_COMBINE, @tessCombine);
-      nbExtraVertices:=0;
+      gluTessCallback(tess, GLU_TESS_ERROR, @_rtp_tessError);
+      gluTessCallback(tess, GLU_TESS_COMBINE, @_rtp_tessCombine);
+      _rtp_nbExtraVertices:=0;
       // Issue normal
       if Assigned(ANormal) then begin
          glNormal3fv(PGLFloat(ANormal));
@@ -1573,7 +1577,7 @@ begin
       gluTessBeginContour(tess);
       if ASplineDivisions<=1 then begin
          // no spline, use direct coordinates
-         GetMem(newVertices, Count*SizeOf(TAffineVector));
+         GetMem(_rtp_newVertices, Count*SizeOf(TAffineVector));
          if AInvertNormals then begin
             for i:=Count-1 downto 0 do begin
                SetVector(dblVector, PAffineVector(Items[i].AsAddress)^);
@@ -1587,19 +1591,19 @@ begin
          end;
       end else begin
          // cubic spline
-         GetMem(newVertices, 2*ASplineDivisions*Count*SizeOf(TAffineVector));
+         GetMem(_rtp_newVertices, 2*ASplineDivisions*Count*SizeOf(TAffineVector));
          spline:=CreateNewCubicSpline;
          f:=1.0/ASplineDivisions;
          if AInvertNormals then begin
             for i:=ASplineDivisions*(Count-1) downto 0 do begin
-               splinePos:=AllocNewVertex;
+               splinePos:=_rtp_AllocNewVertex;
                spline.SplineAffineVector(i*f, splinePos^);
                SetVector(dblVector, splinePos^);
                gluTessVertex(tess, dblVector, splinePos);
             end;
          end else begin
             for i:=0 to ASplineDivisions*(Count-1) do begin
-               splinePos:=AllocNewVertex;
+               splinePos:=_rtp_AllocNewVertex;
                spline.SplineAffineVector(i*f, splinePos^);
                SetVector(dblVector, splinePos^);
                gluTessVertex(tess, dblVector, splinePos);
@@ -1610,8 +1614,8 @@ begin
       gluTessEndContour(tess);
       gluTessEndPolygon(tess);
       // release stuff
-      if Assigned(newVertices) then
-         FreeMem(newVertices);
+      if Assigned(_rtp_newVertices) then
+         FreeMem(_rtp_newVertices);
       gluDeleteTess(tess);
    end;
 end;
