@@ -193,7 +193,7 @@ type
   { Interface for protools with direct send/get capabilities }
 
   ILDirect = interface
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer;
 
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer;
@@ -290,7 +290,7 @@ type
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; virtual; abstract; overload;
     function Listen: Boolean; virtual; overload;
     
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
     
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
@@ -336,7 +336,7 @@ type
     function Connect(const Address: string; const APort: Word): Boolean; override;
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; override;
     
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
     
     function SendMessage(const msg: string; aSocket: TLSocket = nil): Integer; override;
@@ -386,7 +386,7 @@ type
     function Connect(const Address: string; const APort: Word): Boolean; override;
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean; override;
 
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
 
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
@@ -1116,7 +1116,7 @@ begin
   Result := FRootSock.Connected;
 end;
 
-function TLUdp.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
+function TLUdp.Get(out aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
   Result := 0;
   if Assigned(FRootSock) then
@@ -1406,7 +1406,7 @@ begin
     FReuseAddress := aValue;
 end;
 
-function TLTcp.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
+function TLTcp.Get(out aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
   Result := 0;
   if not Assigned(aSocket) then

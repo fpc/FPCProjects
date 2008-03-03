@@ -79,7 +79,7 @@ type
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
     
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
     
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
@@ -166,7 +166,7 @@ type
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
 
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
     
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
@@ -177,7 +177,7 @@ type
     
     function Authenticate(const aUsername, aPassword: string): Boolean;
     
-    function GetData(var aData; const aSize: Integer): Integer;
+    function GetData(out aData; const aSize: Integer): Integer;
     function GetDataMessage: string;
     
     function Retrieve(const FileName: string): Boolean;
@@ -894,7 +894,7 @@ begin
   FCommandFront.Remove;
 end;
 
-function TLFTPClient.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
+function TLFTPClient.Get(out aData; const aSize: Integer; aSocket: TLSocket): Integer;
 var
   s: string;
 begin
@@ -925,7 +925,7 @@ begin
   Result := FControl.SendMessage(msg);
 end;
 
-function TLFTPClient.GetData(var aData; const aSize: Integer): Integer;
+function TLFTPClient.GetData(out aData; const aSize: Integer): Integer;
 begin
   Result := FData.Iterator.Get(aData, aSize);
 end;

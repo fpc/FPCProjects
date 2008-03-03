@@ -113,7 +113,7 @@ type
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
     
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
     
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
@@ -158,7 +158,7 @@ type
     function Connect(const anAddress: string; const aPort: Word): Boolean;
     function Connect: Boolean;
     
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
     
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
@@ -452,7 +452,7 @@ begin
   Result  :=  FConnection.Connect(FHost, FPort);
 end;
 
-function TLTelnetClient.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
+function TLTelnetClient.Get(out aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
   Result := FOutput.Read(aData, aSize);
   if FOutput.Position = FOutput.Size then
