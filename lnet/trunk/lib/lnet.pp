@@ -550,7 +550,7 @@ end;
 function TLSocket.Get(out aData; const aSize: Integer): Integer;
 var
   LastError: Longint;
-  AddressLength: cInt = SizeOf(FPeerAddress);
+  AddressLength: Longint = SizeOf(FPeerAddress);
 begin
   Result := 0;
 
@@ -680,7 +680,7 @@ end;
 function TLSocket.Send(const aData; const aSize: Integer): Integer;
 var
   LastError: Longint;
-  AddressLength: cInt = SizeOf(FPeerAddress);
+  AddressLength: Longint = SizeOf(FPeerAddress);
 begin
   Result := 0;
 

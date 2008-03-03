@@ -36,6 +36,7 @@ const
   SOL_SOCKET = $ffff;
   LMSG = 0;
   SOCKET_ERROR = WinSock2.SOCKET_ERROR;
+  SHUT_RDWR = 2; // windows missing this I guess
   {$ENDIF}
 
   {$IFDEF OS2}
