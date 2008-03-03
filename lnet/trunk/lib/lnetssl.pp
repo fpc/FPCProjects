@@ -29,7 +29,7 @@ type
 
     procedure ConnectionEstablished(aEvent: TLHandleEvent); override;
     
-    procedure LogError(const msg: string; const ernum: Integer); virtual;
+    procedure LogError(const msg: string; const ernum: Integer); override;
    public
     constructor Create; override;
     function Send(const aData; const aSize: Integer): Integer; override;
