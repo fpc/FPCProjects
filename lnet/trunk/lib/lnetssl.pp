@@ -129,7 +129,7 @@ end;
 
 function TLSocketSSL.GetConnected: Boolean;
 begin
-  if FActiveSSL then
+  if not FActiveSSL then
     Result := inherited GetConnected
   else
     Result := FConnected and Assigned(FSSL) and (FStatusSSL = ssNone)
@@ -404,7 +404,9 @@ end;
 
 constructor TLSessionSSL.Create;
 begin
+  inherited Create;
   FPasswordCallback := @PasswordCB;
+  FActiveSSL := True;
 end;
 
 procedure TLSessionSSL.RegisterWithComponent(aComponent: TLComponent);
@@ -421,7 +423,7 @@ end;
 procedure TLSessionSSL.ConnectEvent(aHandle: TLHandle;
   const aOnConnect: TLHandleEvent);
 begin
-  if TLSocketSSL(aHandle).ActiveSSL then
+  if not TLSocketSSL(aHandle).ActiveSSL then
     inherited ConnectEvent(aHandle, aOnConnect)
   else begin
     FActive := True;
@@ -440,7 +442,7 @@ end;
 procedure TLSessionSSL.AcceptEvent(aHandle: TLHandle;
   const aOnAccept: TLHandleEvent);
 begin
-  if TLSocketSSL(aHandle).ActiveSSL then
+  if not TLSocketSSL(aHandle).ActiveSSL then
     inherited AcceptEvent(aHandle, aOnAccept)
   else begin
     FActive := True;
@@ -458,7 +460,7 @@ end;
 
 procedure TLSessionSSL.ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent);
 begin
-  if TLSocketSSL(aHandle).ActiveSSL then
+  if not TLSocketSSL(aHandle).ActiveSSL then
     inherited ReceiveEvent(aHandle, aOnReceive)
   else begin
     FActive := True;
@@ -474,7 +476,7 @@ end;
 
 procedure TLSessionSSL.SendEvent(aHandle: TLHandle; const aOnSend: TLHandleEvent);
 begin
-  if TLSocketSSL(aHandle).ActiveSSL then
+  if not TLSocketSSL(aHandle).ActiveSSL then
     inherited SendEvent(aHandle, aOnSend)
   else begin
     FActive := True;
