@@ -39,6 +39,7 @@ type
     procedure Disconnect; override;
    public
     property ActiveSSL: Boolean read FActiveSSL write SetActiveSSL;
+    property StatusSSL: TLStatusSSL read FStatusSSL;
   end;
   
   { TLSessionSSL }
@@ -118,8 +119,12 @@ begin
   if aValue and FConnected then
     ConnectEvent(FSSLContext);
     
-  if not aValue and Connected then
-    ShutdownSSL;
+  if not aValue then begin
+    if Connected then
+      ShutdownSSL
+    else if FStatusSSL = ssConnect then
+      raise Exception.Create('Switching SSL mode on socket during SSL handshake is not supported');
+  end;
 end;
 
 function TLSocketSSL.GetConnected: Boolean;
@@ -274,6 +279,7 @@ var
 begin
   c := 0;
   if Assigned(FSSL) then begin
+    FStatusSSL := ssNone; // for now
     n := SSLShutdown(FSSL); // don't care for now, unless it fails badly
     if n <= 0 then begin
       n := SslGetError(FSSL, n);
