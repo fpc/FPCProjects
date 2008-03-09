@@ -181,8 +181,8 @@ end;
 
 destructor TLSocketSSL.Destroy;
 begin
-  SslFree(FSSL);
   inherited Destroy;
+  SslFree(FSSL);
 end;
 
 function TLSocketSSL.Send(const aData; const aSize: Integer): Integer;
