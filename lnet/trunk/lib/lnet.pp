@@ -405,6 +405,8 @@ type
    public
     procedure RegisterWithComponent(aComponent: TLComponent); virtual;
 
+    procedure InitHandle(aHandle: TLHandle); virtual;
+
     procedure ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent); virtual;
     procedure SendEvent(aHandle: TLHandle; const aOnSend: TLHandleEvent); virtual;
     procedure ErrorEvent(aHandle: TLHandle; const msg: string; const aOnError: TLHandleErrorEvent); virtual;
@@ -882,6 +884,8 @@ begin
   aSocket.ListenBacklog := FListenBacklog;
   aSocket.FCreator := FCreator;
   aSocket.FSession := FSession;
+  if Assigned(FSession) then
+    FSession.InitHandle(aSocket);
   Result := aSocket;
 end;
 
@@ -1514,6 +1518,11 @@ end;
 procedure TLSession.RegisterWithComponent(aComponent: TLComponent);
 begin
   FComponent := aComponent;
+end;
+
+procedure TLSession.InitHandle(aHandle: TLHandle);
+begin
+  // nothing here
 end;
 
 procedure TLSession.ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent);

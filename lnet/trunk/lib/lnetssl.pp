@@ -19,25 +19,33 @@ type
   TLSocketSSL = class(TLSocketTCP)
    protected
     FSSL: PSSL;
+    FSSLContext: PSSL_CTX;
     FStatusSSL: TLStatusSSL;
-
+    FActiveSSL: Boolean;
     function GetConnected: Boolean; override;
+    procedure SetActiveSSL(const AValue: Boolean);
 
     procedure ConnectEvent(aSSLContext: PSSL_CTX);
     procedure ConnectSSL;
+    procedure ShutdownSSL;
 
     procedure LogError(const msg: string; const ernum: Integer); override;
    public
+    constructor Create; override;
+    destructor Destroy; override;
     function Send(const aData; const aSize: Integer): Integer; override;
     function Get(out aData; const aSize: Integer): Integer; override;
 
     procedure Disconnect; override;
+   public
+    property ActiveSSL: Boolean read FActiveSSL write SetActiveSSL;
   end;
   
   { TLSessionSSL }
   
   TLSessionSSL = class(TLSession)
    protected
+    FActiveSSL: Boolean;
     FSSLContext: PSSL_CTX;
     FPassword: string;
     FCAFile: string;
@@ -59,7 +67,10 @@ type
     
     procedure RegisterWithComponent(aComponent: TLComponent); override;
     
+    procedure InitHandle(aHandle: TLHandle); override;
+    
     procedure ConnectEvent(aHandle: TLHandle; const aOnConnect: TLHandleEvent); override;
+    procedure AcceptEvent(aHandle: TLHandle; const aOnAccept: TLHandleEvent); override;
     procedure ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent); override;
     procedure SendEvent(aHandle: TLHandle; const aOnSend: TLHandleEvent); override;
    public
@@ -69,6 +80,7 @@ type
     property Method: TLMethodSSL read FMethod write SetMethod;
     property PasswordCallback: TLPasswordCB read FPasswordCallback write SetPasswordCallback;
     property SSLContext: PSSL_CTX read FSSLContext;
+    property ActiveSSL: Boolean read FActiveSSL write FActiveSSL;
   end;
   
   function IsSSLBlockError(const anError: Longint): Boolean; inline;
@@ -98,22 +110,39 @@ end;
 
 { TLSocketSSL }
 
+procedure TLSocketSSL.SetActiveSSL(const AValue: Boolean);
+begin
+  if FActiveSSL = AValue then Exit;
+  FActiveSSL := AValue;
+  
+  if aValue and FConnected then
+    ConnectEvent(FSSLContext);
+    
+  if not aValue and Connected then
+    ShutdownSSL;
+end;
+
 function TLSocketSSL.GetConnected: Boolean;
 begin
-  Result := FConnected and (FStatusSSL = ssNone);
+  if FActiveSSL then
+    Result := inherited GetConnected
+  else
+    Result := FConnected and Assigned(FSSL) and (FStatusSSL = ssNone)
 end;
 
 procedure TLSocketSSL.ConnectEvent(aSSLContext: PSSL_CTX);
 begin
   if Assigned(FSSL) then
     SslFree(FSSL);
-    
-  FSSL := SSLNew(aSSLContext);
+
+  FSSLContext := aSSLContext;
+
+  FSSL := SSLNew(FSSLContext);
   if not Assigned(FSSL) then begin
     Bail('SSLNew error', -1);
     Exit;
   end;
-  
+
   if SslSetFd(FSSL, FHandle) = 0 then begin
     FSSL := nil;
     Bail('SSL setFD error', -1);
@@ -127,19 +156,37 @@ procedure TLSocketSSL.LogError(const msg: string; const ernum: Integer);
 var
   s: string;
 begin
-  if Assigned(FOnError) then
+  if not FActiveSSL then
+    inherited LogError(msg, ernum)
+  else if Assigned(FOnError) then begin
     if ernum > 0 then begin
       SetLength(s, 1024);
       ErrErrorString(ernum, s, Length(s));
       FOnError(Self, msg + ': ' + s);
     end else
       FOnError(Self, msg);
+  end;
+end;
+
+constructor TLSocketSSL.Create;
+begin
+  inherited Create;
+  FActiveSSL := True;
+end;
+
+destructor TLSocketSSL.Destroy;
+begin
+  SslFree(FSSL);
+  inherited Destroy;
 end;
 
 function TLSocketSSL.Send(const aData; const aSize: Integer): Integer;
 var
   LastError: Longint;
 begin
+  if not FActiveSSL then
+    Exit(inherited Send(aData, aSize));
+
   Result := 0;
 
   if not FServerSocket then begin
@@ -169,6 +216,9 @@ function TLSocketSSL.Get(out aData; const aSize: Integer): Integer;
 var
   LastError: Longint;
 begin
+  if not FActiveSSL then
+    Exit(inherited Get(aData, aSize));
+
   Result := 0;
 
   if CanReceive then begin
@@ -218,26 +268,33 @@ begin
   end;
 end;
 
-procedure TLSocketSSL.Disconnect;
+procedure TLSocketSSL.ShutdownSSL;
 var
   n, c: Integer;
 begin
-  {$WARNING Handle non-blocking shutdown here via TLEventer somehow}
   c := 0;
-  if Assigned(FSSL) then
-    repeat
-      n := SSLShutdown(FSSL);
+  if Assigned(FSSL) then begin
+    n := SSLShutdown(FSSL); // don't care for now, unless it fails badly
+    if n <= 0 then begin
+      n := SslGetError(FSSL, n);
       case n of
-        -1 : Bail('SSL shutdown error', -1); // TODO: handle non-blocking shutdown here via TLEventer somehow
-         0 : case SslGetError(FSSL, n) of
-               SSL_ERROR_WANT_READ  : Sleep(1);
-               SSL_ERROR_WANT_WRITE : Sleep(1);
-               SSL_ERROR_SYSCALL    : Sleep(1);
-             end;
+        SSL_ERROR_WANT_READ,
+        SSL_ERROR_WANT_WRITE,
+        SSL_ERROR_SYSCALL     : begin end; // ignore
+      else
+        Bail('SSL shutdown error', n);
       end;
-      Inc(c);
-    until (n > 0) or (n < 0) or (c > 2);
-    
+    end;
+  end;
+end;
+
+procedure TLSocketSSL.Disconnect;
+begin
+  if FActiveSSL then begin
+    FStatusSSL := ssShutdown;
+    ShutdownSSL;
+  end;
+  
   inherited Disconnect;
 end;
 
@@ -350,42 +407,78 @@ begin
   aComponent.SocketClass := TLSocketSSL;
 end;
 
+procedure TLSessionSSL.InitHandle(aHandle: TLHandle);
+begin
+  TLSocketSSL(aHandle).FActiveSSL := FActiveSSL;
+end;
+
 procedure TLSessionSSL.ConnectEvent(aHandle: TLHandle;
   const aOnConnect: TLHandleEvent);
 begin
-  FActive := True;
-  FOnConnect := aOnConnect;
+  if TLSocketSSL(aHandle).ActiveSSL then
+    inherited ConnectEvent(aHandle, aOnConnect)
+  else begin
+    FActive := True;
+    FOnConnect := aOnConnect;
 
-  if not Assigned(FSSLContext) then
-    if not CanCreateContext then
-      raise Exception.Create('Context is not/can not be created on connect event')
-    else
-      CreateSSLContext;
-      
-  TLSocketSSL(aHandle).ConnectEvent(FSSLContext);
+    if not Assigned(FSSLContext) then
+      if not CanCreateContext then
+        raise Exception.Create('Context is not/can not be created on connect event')
+      else
+        CreateSSLContext;
+
+    TLSocketSSL(aHandle).ConnectEvent(FSSLContext);
+  end;
+end;
+
+procedure TLSessionSSL.AcceptEvent(aHandle: TLHandle;
+  const aOnAccept: TLHandleEvent);
+begin
+  if TLSocketSSL(aHandle).ActiveSSL then
+    inherited AcceptEvent(aHandle, aOnAccept)
+  else begin
+    FActive := True;
+    FOnConnect := aOnAccept;
+
+    if not Assigned(FSSLContext) then
+      if not CanCreateContext then
+        raise Exception.Create('Context is not/can not be created on connect event')
+      else
+        CreateSSLContext;
+
+    TLSocketSSL(aHandle).ConnectEvent(FSSLContext);
+  end;
 end;
 
 procedure TLSessionSSL.ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent);
 begin
-  FActive := True;
-  FOnReceive := aOnReceive;
-  
-  case TLSocketSSL(aHandle).FStatusSSL of
-    ssNone     : CallReceiveEvent(aHandle);
-    ssConnect  : TLSocketSSL(aHandle).ConnectSSL;
-    ssShutdown : begin end; // TODO: finish shutdown eventizing
+  if TLSocketSSL(aHandle).ActiveSSL then
+    inherited ReceiveEvent(aHandle, aOnReceive)
+  else begin
+    FActive := True;
+    FOnReceive := aOnReceive;
+
+    case TLSocketSSL(aHandle).FStatusSSL of
+      ssNone     : CallReceiveEvent(aHandle);
+      ssConnect  : TLSocketSSL(aHandle).ConnectSSL;
+      ssShutdown : begin end; // TODO: finish shutdown eventizing
+    end;
   end;
 end;
 
 procedure TLSessionSSL.SendEvent(aHandle: TLHandle; const aOnSend: TLHandleEvent);
 begin
-  FActive := True;
-  FOnSend := aOnSend;
-  
-  case TLSocketSSL(aHandle).FStatusSSL of
-    ssNone     : CallSendEvent(aHandle);
-    ssConnect  : TLSocketSSL(aHandle).ConnectSSL;
-    ssShutdown : begin end; // TODO: finish shutdown eventizing
+  if TLSocketSSL(aHandle).ActiveSSL then
+    inherited SendEvent(aHandle, aOnSend)
+  else begin
+    FActive := True;
+    FOnSend := aOnSend;
+
+    case TLSocketSSL(aHandle).FStatusSSL of
+      ssNone     : CallSendEvent(aHandle);
+      ssConnect  : TLSocketSSL(aHandle).ConnectSSL;
+      ssShutdown : begin end; // TODO: finish shutdown eventizing
+    end;
   end;
 end;
 
