@@ -66,10 +66,7 @@ type
     FNext: TLHandle;
     FFreeNext: TLHandle;
     FInternalData: Pointer;
-    procedure SetOnError(const AValue: TLHandleErrorEvent); virtual;
-    procedure SetOnRead(const AValue: TLHandleEvent); virtual;
-    procedure SetOnWrite(const AValue: TLHandleEvent); virtual;
-
+    
     procedure SetIgnoreError(const aValue: Boolean);
     procedure SetIgnoreWrite(const aValue: Boolean);
     procedure SetIgnoreRead(const aValue: Boolean);
@@ -84,9 +81,9 @@ type
     property IgnoreWrite: Boolean read FIgnoreWrite write SetIgnoreWrite;
     property IgnoreRead: Boolean read FIgnoreRead write SetIgnoreRead;
     property IgnoreError: Boolean read FIgnoreError write SetIgnoreError;
-    property OnRead: TLHandleEvent read FOnRead write SetOnRead;
-    property OnWrite: TLHandleEvent read FOnWrite write SetOnWrite;
-    property OnError: TLHandleErrorEvent read FOnError write SetOnError;
+    property OnRead: TLHandleEvent read FOnRead write FOnRead;
+    property OnWrite: TLHandleEvent read FOnWrite write FOnWrite;
+    property OnError: TLHandleErrorEvent read FOnError write FOnError;
     property Dispose: Boolean read FDispose write FDispose;
     property Handle: THandle read FHandle write FHandle;
     property Eventer: TLEventer read FEventer;
@@ -200,21 +197,6 @@ uses
   lCommon;
   
 { TLHandle }
-
-procedure TLHandle.SetOnError(const AValue: TLHandleErrorEvent);
-begin
-  FOnError := aValue;
-end;
-
-procedure TLHandle.SetOnRead(const AValue: TLHandleEvent);
-begin
-  FOnRead := aValue;
-end;
-
-procedure TLHandle.SetOnWrite(const AValue: TLHandleEvent);
-begin
-  FOnWrite := aValue;
-end;
 
 procedure TLHandle.SetIgnoreError(const aValue: Boolean);
 begin

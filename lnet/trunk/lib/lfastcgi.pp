@@ -123,7 +123,7 @@ type
     function Connect: Boolean; override;
     procedure ConnectEvent(ASocket: TLHandle); override;
     procedure DisconnectEvent(ASocket: TLHandle); override;
-    procedure ErrorEvent(const Msg: string; ASocket: TLHandle); override;
+    procedure ErrorEvent(ASocket: TLHandle; const msg: string); override;
     function  CreateRequester: TLFastCGIRequest;
     procedure HandleGetValuesResult;
     procedure HandleReceive(ASocket: TLSocket);
@@ -572,7 +572,7 @@ begin
     Connect;
 end;
 
-procedure TLFastCGIClient.ErrorEvent(const Msg: string; ASocket: TLHandle);
+procedure TLFastCGIClient.ErrorEvent(ASocket: TLHandle; const msg: string);
 begin
   if (FState = fsConnectingAgain) 
     or ((FState = fsConnecting) and (FPool.FSpawnState = ssSpawned)) then

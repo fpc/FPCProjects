@@ -78,7 +78,7 @@ type
     FStack: TLControlStack;
     FConnection: TLTcp;
     FPossible: TLTelnetControlChars;
-    FActive: TLTelnetControlChars;
+    FActiveOpts: TLTelnetControlChars;
     FOutput: TMemoryStream;
     FOperation: Char;
     FCommandCharIndex: Byte;
@@ -302,7 +302,7 @@ end;
 function TLTelnet.OptionIsSet(const Option: Char): Boolean;
 begin
   Result := False;
-  Result := Option in FActive;
+  Result := Option in FActiveOpts;
 end;
 
 function TLTelnet.RegisterOption(const aOption: Char;
@@ -354,7 +354,7 @@ begin
   FConnection.OnConnect := @OnCo;
 
   FPossible := [TS_ECHO, TS_HYI, TS_SGA];
-  FActive := [];
+  FActiveOpts := [];
   FOrders := [];
 end;
 
@@ -393,7 +393,7 @@ procedure TLTelnetClient.React(const Operation, Command: Char);
 
   procedure Accept(const Operation, Command: Char);
   begin
-    FActive := FActive + [Command];
+    FActiveOpts := FActiveOpts + [Command];
     {$ifdef debug}
     Writeln('**SENT** ', TNames[Operation], ' ', TNames[Command]);
     {$endif}
@@ -403,7 +403,7 @@ procedure TLTelnetClient.React(const Operation, Command: Char);
   
   procedure Refuse(const Operation, Command: Char);
   begin
-    FActive := FActive - [Command];
+    FActiveOpts := FActiveOpts - [Command];
     {$ifdef debug}
     Writeln('**SENT** ', TNames[Operation], ' ', TNames[Command]);
     {$endif}
@@ -421,10 +421,10 @@ begin
               
     TS_DONT : if Command in FPossible then Refuse(TS_WONT, Command);
     
-    TS_WILL : if Command in FPossible then FActive := FActive + [Command]
+    TS_WILL : if Command in FPossible then FActiveOpts := FActiveOpts + [Command]
               else Refuse(TS_DONT, Command);
                  
-    TS_WONT : if Command in FPossible then FActive := FActive - [Command];
+    TS_WONT : if Command in FPossible then FActiveOpts := FActiveOpts - [Command];
   end;
 end;
 
@@ -435,7 +435,7 @@ begin
     Writeln('**SENT** ', TNames[Question(Command, Value)], ' ', TNames[Command]);
     {$endif}
     case Question(Command, Value) of
-      TS_WILL : FActive := FActive + [Command];
+      TS_WILL : FActiveOpts := FActiveOpts + [Command];
     end;
     FBuffer := FBuffer + TS_IAC + Question(Command, Value) + Command;
     OnCs(nil);

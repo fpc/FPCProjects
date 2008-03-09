@@ -9,7 +9,10 @@ uses
   lNet, lEvents;
   
 type
+  TLMethodSSL = (msSSLv2or3, msSSLv2, msSSLv3, msTLSv1);
   TLStatusSSL = (ssNone, ssConnect, ssShutdown);
+
+  TLPasswordCB = function(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
 
   { TLSocketSSL }
 
@@ -17,78 +20,71 @@ type
    protected
     FSSL: PSSL;
     FStatusSSL: TLStatusSSL;
-    FOnWritePriv: TLHandleEvent;
-    FOnReadPriv: TLHandleEvent;
-    FConnectionEstablishedCB: TLHandleEvent;
-    
-    procedure OnReadInternal(aHandle: TLHandle);
-    procedure OnWriteInternal(aHandle: TLHandle);
 
-    procedure SetOnRead(const AValue: TLHandleEvent); override;
-    procedure SetOnWrite(const AValue: TLHandleEvent); override;
+    procedure ConnectEvent(aSSLContext: PSSL_CTX);
+    procedure ConnectSSL;
 
-    procedure ConnectionEstablished(aEvent: TLHandleEvent); override;
-    
     procedure LogError(const msg: string; const ernum: Integer); override;
    public
-    constructor Create; override;
     function Send(const aData; const aSize: Integer): Integer; override;
     function Get(out aData; const aSize: Integer): Integer; override;
 
-    procedure ConnectSSL;
     procedure Disconnect; override;
   end;
   
-  function CreateSSLContext(const CAList, KeyFile, Password: string): Boolean;
-  function GetSSLContext: PSSL_CTX;
+  { TLSessionSSL }
+  
+  TLSessionSSL = class(TLSession)
+   protected
+    FSSLContext: PSSL_CTX;
+    FPassword: string;
+    FCAFile: string;
+    FKeyFile: string;
+    FMethod: TLMethodSSL;
+    FPasswordCallback: TLPasswordCB;
+    
+    function CanCreateContext: Boolean;
+    
+    procedure SetCAFile(const AValue: string);
+    procedure SetKeyFile(const AValue: string);
+    procedure SetPassword(const AValue: string);
+    procedure SetMethod(const AValue: TLMethodSSL);
+    procedure SetPasswordCallback(const AValue: TLPasswordCB);
+    
+    procedure CreateSSLContext;
+   public
+    constructor Create;
+    
+    procedure RegisterWithComponent(aComponent: TLComponent); override;
+    
+    procedure ConnectEvent(aHandle: TLHandle; const aOnConnect: TLHandleEvent); override;
+    procedure ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent); override;
+    procedure SendEvent(aHandle: TLHandle; const aOnSend: TLHandleEvent); override;
+   public
+    property Password: string read FPassword write SetPassword;
+    property CAFile: string read FCAFile write SetCAFile;
+    property KeyFile: string read FKeyFile write SetKeyFile;
+    property Method: TLMethodSSL read FMethod write SetMethod;
+    property PasswordCallback: TLPasswordCB read FPasswordCallback write SetPasswordCallback;
+    property SSLContext: PSSL_CTX read FSSLContext;
+  end;
+  
   function IsSSLBlockError(const anError: Longint): Boolean; inline;
   
 implementation
 
+function PasswordCB(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
 var
-  SSLContext: PSSL_CTX;
-  SSLPassword: string;
-  
-function PasswordCallback(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
+  S: TLSessionSSL;
 begin
-  if num < Length(SSLPassword) + 1 then
+  Writeln('Password callback executing...');
+  S := TLSessionSSL(userdata);
+  
+  if num < Length(S.Password) + 1 then
     Exit(0);
 
-  Move(SSLPassword[1], buf[0], Length(SSLPassword));
-  Result := Length(SSLPassword);
-end;
-
-function CreateSSLContext(const CAList, KeyFile, Password: string): Boolean;
-var
-  Method: PSSL_METHOD;
-begin
-  Result := False;
-  SSLPassword := Password;
-  if Assigned(SSLContext) then
-    SSLCTXFree(SSLContext);
-  
-  {* Create our context*}
-  Method := SslMethodV23;
-  SSLContext := SSLCTXNew(Method);
-  
-  {* Load our keys and certificates*}
-  if SslCtxUseCertificateChainFile(SSLContext, KeyFile) = 0 then
-    Exit;
-
-  SslCtxSetDefaultPasswdCb(SSLContext, @PasswordCallback);
-  if SSLCTXUsePrivateKeyFile(SSLContext, Keyfile, SSL_FILETYPE_PEM) = 0 then
-    Exit;
-
-  {* Load the CAs we trust*}
-  if SSLCTXLoadVerifyLocations(SSLContext, CAList, pChar(nil)) = 0 then
-    Exit;
-    
-  Result := True;
-end;
-
-function GetSSLContext: PSSL_CTX;
-begin
-  Result := SSLContext;
+  Move(S.Password[1], buf[0], Length(S.Password));
+  Result := Length(S.Password);
 end;
 
 function IsSSLBlockError(const anError: Longint): Boolean; inline;
@@ -98,43 +94,17 @@ end;
 
 { TLSocketSSL }
 
-procedure TLSocketSSL.OnReadInternal(aHandle: TLHandle);
+procedure TLSocketSSL.ConnectEvent(aSSLContext: PSSL_CTX);
 begin
-  case FStatusSSL of
-    ssNone     : if Assigned(FOnReadPriv) then FOnReadPriv(aHandle);
-    ssConnect  : ConnectSSL;
-    ssShutdown : begin end; // TODO: finish shutdown eventizing
-  end;
-end;
-
-procedure TLSocketSSL.OnWriteInternal(aHandle: TLHandle);
-begin
-  case FStatusSSL of
-    ssNone     : if Assigned(FOnWritePriv) then FOnWritePriv(aHandle);
-    ssConnect  : ConnectSSL;
-    ssShutdown : begin end; // TODO: finish shutdown eventizing
-  end;
-end;
-
-procedure TLSocketSSL.SetOnRead(const AValue: TLHandleEvent);
-begin
-  FOnReadPriv := aValue;
-end;
-
-procedure TLSocketSSL.SetOnWrite(const AValue: TLHandleEvent);
-begin
-  FOnWritePriv := aValue;
-end;
-
-procedure TLSocketSSL.ConnectionEstablished(aEvent: TLHandleEvent);
-begin
-  if FServerSocket then begin // server socket behaves just like non-SSL
-    inherited ConnectionEstablished(aEvent);
+  if Assigned(FSSL) then
+    SslFree(FSSL);
+    
+  FSSL := SSLNew(aSSLContext);
+  if not Assigned(FSSL) then begin
+    Bail('SSLNew error', -1);
     Exit;
   end;
   
-  FConnectionEstablishedCB := aEvent;
-  FSSL := SSLNew(SSLContext);
   if SslSetFd(FSSL, FHandle) = 0 then begin
     FSSL := nil;
     Bail('SSL setFD error', -1);
@@ -154,14 +124,6 @@ begin
       FOnError(Self, msg + s);
     end else
       FOnError(Self, msg);
-end;
-
-constructor TLSocketSSL.Create;
-begin
-  inherited Create;
-  
-  FOnWrite := @OnWriteInternal;
-  FOnRead := @OnReadInternal;
 end;
 
 function TLSocketSSL.Send(const aData; const aSize: Integer): Integer;
@@ -242,7 +204,7 @@ begin
     end;
   end else begin
     FStatusSSL := ssNone;
-    inherited ConnectionEstablished(FConnectionEstablishedCB);
+    FSession.CallConnectEvent(Self);
   end;
 end;
 
@@ -269,13 +231,159 @@ begin
   inherited Disconnect;
 end;
 
+{ TLSessionSSL }
+
+function TLSessionSSL.CanCreateContext: Boolean;
+begin
+  Result := (Length(FCAFile) > 0) and (Length(FPassword) > 0) and (Length(FKeyFile) > 0);
+end;
+
+procedure TLSessionSSL.SetCAFile(const AValue: string);
+begin
+  if aValue = FCAFile then Exit;
+  if FActive then
+    raise Exception.Create('Cannot change certificate file on active session');
+  FCAFile := aValue;
+  
+  if CanCreateContext then
+    CreateSSLContext;
+end;
+
+procedure TLSessionSSL.SetKeyFile(const AValue: string);
+begin
+  if aValue = FKeyFile then Exit;
+  if FActive then
+    raise Exception.Create('Cannot change key file on active session');
+  FKeyFile := aValue;
+  
+  if CanCreateContext then
+    CreateSSLContext;
+end;
+
+procedure TLSessionSSL.SetPassword(const AValue: string);
+begin
+  if aValue = FPassword then Exit;
+  if FActive then
+    raise Exception.Create('Cannot change password on active session');
+  FPassword := aValue;
+
+  if CanCreateContext then
+    CreateSSLContext;
+end;
+
+procedure TLSessionSSL.SetMethod(const AValue: TLMethodSSL);
+begin
+  if aValue = FMethod then Exit;
+  if FActive then
+    raise Exception.Create('Cannot change SSL method on active session');
+  FMethod := aValue;
+  
+  if CanCreateContext then
+    CreateSSLContext;
+end;
+
+procedure TLSessionSSL.SetPasswordCallback(const AValue: TLPasswordCB);
+begin
+  if aValue = FPasswordCallback then Exit;
+  if FActive then
+    raise Exception.Create('Cannot change SSL password callback on active session');
+  FPasswordCallback := aValue;
+
+  if CanCreateContext then
+    CreateSSLContext;
+end;
+
+procedure TLSessionSSL.CreateSSLContext;
+var
+  aMethod: PSSL_METHOD;
+begin
+  if not CanCreateContext then
+    raise Exception.Create('Cannot create SSL context without password, keyfile and cafile set');
+
+  if FActive then
+    raise Exception.Create('Cannot create SSL context on an already active session');
+    
+  if Assigned(FSSLContext) then
+    SSLCTXFree(FSSLContext);
+
+  case FMethod of
+    msSSLv2or3 : aMethod := SslMethodV23;
+    msSSLv2    : aMethod := SslMethodV2;
+    msSSLv3    : aMethod := SslMethodV3;
+    msTLSv1    : aMethod := SslMethodTLSV1;
+  end;
+
+  FSSLContext := SSLCTXNew(aMethod);
+  if not Assigned(FSSLContext) then
+    raise Exception.Create('Error creating SSL CTX: SSLCTXNew');
+
+  if SslCtxUseCertificateChainFile(FSSLContext, FKeyFile) = 0 then
+    raise Exception.Create('Error creating SSL CTX: SslCtxUseCertificateChainFile');
+
+  SslCtxSetDefaultPasswdCb(FSSLContext, @FPasswordCallback);
+  SslCtxSetDefaultPasswdCbUserdata(FSSLContext, Self);
+  if SSLCTXUsePrivateKeyFile(FSSLContext, FKeyfile, SSL_FILETYPE_PEM) = 0 then
+    raise Exception.Create('Error creating SSL CTX: SSLCTXUsePrivateKeyFile');
+
+  if SSLCTXLoadVerifyLocations(FSSLContext, FCAFile, pChar(nil)) = 0 then
+    raise Exception.Create('Error creating SSL CTX: SSLCTXLoadVerifyLocations');
+end;
+
+constructor TLSessionSSL.Create;
+begin
+  FPasswordCallback := @PasswordCB;
+end;
+
+procedure TLSessionSSL.RegisterWithComponent(aComponent: TLComponent);
+begin
+  inherited RegisterWithComponent(aComponent);
+  aComponent.SocketClass := TLSocketSSL;
+end;
+
+procedure TLSessionSSL.ConnectEvent(aHandle: TLHandle;
+  const aOnConnect: TLHandleEvent);
+begin
+  FActive := True;
+  FOnConnect := aOnConnect;
+
+  if not Assigned(FSSLContext) then
+    if not CanCreateContext then
+      raise Exception.Create('Context is not/can not be created on connect event')
+    else
+      CreateSSLContext;
+      
+  TLSocketSSL(aHandle).ConnectEvent(FSSLContext);
+end;
+
+procedure TLSessionSSL.ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent);
+begin
+  FActive := True;
+  FOnReceive := aOnReceive;
+  
+  case TLSocketSSL(aHandle).FStatusSSL of
+    ssNone     : CallReceiveEvent(aHandle);
+    ssConnect  : TLSocketSSL(aHandle).ConnectSSL;
+    ssShutdown : begin end; // TODO: finish shutdown eventizing
+  end;
+end;
+
+procedure TLSessionSSL.SendEvent(aHandle: TLHandle; const aOnSend: TLHandleEvent);
+begin
+  FActive := True;
+  FOnSend := aOnSend;
+  
+  case TLSocketSSL(aHandle).FStatusSSL of
+    ssNone     : CallSendEvent(aHandle);
+    ssConnect  : TLSocketSSL(aHandle).ConnectSSL;
+    ssShutdown : begin end; // TODO: finish shutdown eventizing
+  end;
+end;
+
 initialization
   SslLibraryInit;
   SslLoadErrorStrings;
 
 finalization
-  if Assigned(SSLContext) then
-    SslCtxFree(SSLContext);
   DestroySSLInterface;
 
 end.
