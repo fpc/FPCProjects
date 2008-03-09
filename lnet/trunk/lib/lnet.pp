@@ -92,13 +92,14 @@ type
    protected
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
     
+    function GetConnected: Boolean; virtual;
     function GetLocalPort: Word;
     function GetPeerPort: Word;
     function GetPeerAddress: string;
     function GetLocalAddress: string;
     function CanSend: Boolean; virtual;
     function CanReceive: Boolean; virtual;
-    
+
     procedure SetOptions; virtual;
     procedure SetBlocking(const aValue: Boolean);
     procedure SetReuseAddress(const aValue: Boolean);
@@ -125,7 +126,7 @@ type
     
     procedure Disconnect; virtual;
    public
-    property Connected: Boolean read FConnected;
+    property Connected: Boolean read GetConnected;
     property Connecting: Boolean read FConnecting;
     property Blocking: Boolean read FBlocking write SetBlocking;
     property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
@@ -625,6 +626,11 @@ begin
   end;
 end;
 
+function TLSocket.GetConnected: Boolean;
+begin
+  Result := FConnected;
+end;
+
 function TLSocket.GetLocalPort: Word;
 begin
   Result := ntohs(FAddress.sin_port);
@@ -637,7 +643,7 @@ end;
 
 function TLSocket.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
 begin
-  if not Connected then begin
+  if not FConnected then begin
     Result := false;
     SetupSocket(APort, AIntf);
     if fpBind(FHandle, psockaddr(@FAddress), SizeOf(FAddress)) = SOCKET_ERROR then
@@ -657,7 +663,7 @@ var
   AddressLength: tsocklen = SizeOf(FAddress);
 begin
   Result := false;
-  if not Connected then begin
+  if not FConnected then begin
     FHandle := fpAccept(sersock, psockaddr(@FAddress), @AddressLength);
     if FHandle <> INVALID_SOCKET then begin
       SetOptions;
@@ -670,8 +676,10 @@ end;
 function TLSocket.Connect(const Address: string; const aPort: Word): Boolean;
 begin
   Result := False;
-  if Connected or FConnecting then
+  
+  if FConnected or FConnecting then
     Disconnect;
+    
   if SetupSocket(APort, Address) then begin
     fpConnect(FHandle, psockaddr(@FAddress), SizeOf(FAddress));
     FConnecting := True;
@@ -1032,7 +1040,7 @@ function TLUdp.Connect(const Address: string; const APort: Word): Boolean;
 begin
   Result := inherited Connect(Address, aPort);
 
-  if Assigned(FRootSock) and FRootSock.Connected then
+  if Assigned(FRootSock) and FRootSock.FConnected then
     Disconnect;
 
   FRootSock := InitSocket(SocketClass.Create);
@@ -1051,7 +1059,7 @@ function TLUdp.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boole
 begin
   Result := False;
 
-  if Assigned(FRootSock) and FRootSock.Connected then
+  if Assigned(FRootSock) and FRootSock.FConnected then
     Disconnect;
 
   FRootSock := InitSocket(SocketClass.Create);
@@ -1384,14 +1392,14 @@ begin
   if (TLSocket(aSocket) = FRootSock) and TLSocket(aSocket).FServerSocket then
     AcceptAction(aSocket)
   else with TLSocket(aSocket) do begin
-    if Connected then begin
+    if FConnected then begin
       FCanReceive := True;
       if Assigned(FSession) then
         FSession.ReceiveEvent(aSocket, @ReceiveEvent)
       else
         ReceiveEvent(aSocket);
         
-      if not Connected then begin
+      if not FConnected then begin
         DisconnectEvent(aSocket);
         aSocket.Free;
       end;
@@ -1465,7 +1473,7 @@ end;
 procedure TLTcp.SetReuseAddress(const aValue: Boolean);
 begin
   if not Assigned(FRootSock)
-  or not FRootSock.Connected then
+  or not FRootSock.FConnected then
     FReuseAddress := aValue;
 end;
 

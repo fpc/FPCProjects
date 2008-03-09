@@ -21,6 +21,8 @@ type
     FSSL: PSSL;
     FStatusSSL: TLStatusSSL;
 
+    function GetConnected: Boolean; override;
+
     procedure ConnectEvent(aSSLContext: PSSL_CTX);
     procedure ConnectSSL;
 
@@ -73,11 +75,13 @@ type
   
 implementation
 
+uses
+  lCommon;
+
 function PasswordCB(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
 var
   S: TLSessionSSL;
 begin
-  Writeln('Password callback executing...');
   S := TLSessionSSL(userdata);
   
   if num < Length(S.Password) + 1 then
@@ -93,6 +97,11 @@ begin
 end;
 
 { TLSocketSSL }
+
+function TLSocketSSL.GetConnected: Boolean;
+begin
+  Result := FConnected and (FStatusSSL = ssNone);
+end;
 
 procedure TLSocketSSL.ConnectEvent(aSSLContext: PSSL_CTX);
 begin
@@ -120,8 +129,9 @@ var
 begin
   if Assigned(FOnError) then
     if ernum > 0 then begin
-      ErrErrorString(ernum, s, 1024);
-      FOnError(Self, msg + s);
+      SetLength(s, 1024);
+      ErrErrorString(ernum, s, Length(s));
+      FOnError(Self, msg + ': ' + s);
     end else
       FOnError(Self, msg);
 end;
@@ -147,7 +157,7 @@ begin
           FCanSend := False;
           IgnoreWrite := False;
         end else
-          Bail('SSL_Write error', LastError);
+          Bail('SSLWrite error', LastError);
         Result := 0;
       end;
     end;
@@ -170,10 +180,10 @@ begin
     if Result <= 0 then begin
       LastError := SslGetError(FSSL, Result);
       if IsSSLBlockError(LastError) then begin
-        FCanReceive  :=  False;
-        IgnoreRead  :=  False;
+        FCanReceive := False;
+        IgnoreRead := False;
       end else
-        Bail('Receive Error', LastError);
+        Bail('SSLRead Error', LastError);
       Result := 0;
     end;
   end;
