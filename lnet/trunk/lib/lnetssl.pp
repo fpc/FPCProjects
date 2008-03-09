@@ -320,7 +320,7 @@ begin
   if SslCtxUseCertificateChainFile(FSSLContext, FKeyFile) = 0 then
     raise Exception.Create('Error creating SSL CTX: SslCtxUseCertificateChainFile');
 
-  SslCtxSetDefaultPasswdCb(FSSLContext, @FPasswordCallback);
+  SslCtxSetDefaultPasswdCb(FSSLContext, FPasswordCallback);
   SslCtxSetDefaultPasswdCbUserdata(FSSLContext, Self);
   if SSLCTXUsePrivateKeyFile(FSSLContext, FKeyfile, SSL_FILETYPE_PEM) = 0 then
     raise Exception.Create('Error creating SSL CTX: SSLCTXUsePrivateKeyFile');
