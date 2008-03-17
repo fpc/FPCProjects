@@ -29,7 +29,7 @@ unit lhttp;
 interface
 
 uses
-  classes, sysutils, lnet, levents, lhttputil, lstrbuffer;
+  classes, sysutils, lnet, lnetssl, levents, lhttputil, lstrbuffer;
 
 type
   TLHTTPMethod = (hmHead, hmGet, hmPost, hmUnknown);
@@ -274,7 +274,7 @@ type
     destructor Destroy; override;
   end;
 
-  TLHTTPSocket = class(TLSocket)
+  TLHTTPSocket = class(TLSocketSSL)
   protected
     FBuffer: pchar;
     FBufferPos: pchar;

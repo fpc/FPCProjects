@@ -31,7 +31,6 @@ type
 
     procedure LogError(const msg: string; const ernum: Integer); override;
    public
-    constructor Create; override;
     destructor Destroy; override;
     function Send(const aData; const aSize: Integer): Integer; override;
     function Get(out aData; const aSize: Integer): Integer; override;
@@ -66,14 +65,14 @@ type
    public
     constructor Create;
     
-    procedure RegisterWithComponent(aComponent: TLComponent); override;
+    procedure RegisterWithComponent(aConnection: TLConnection); override;
     
     procedure InitHandle(aHandle: TLHandle); override;
     
-    procedure ConnectEvent(aHandle: TLHandle; const aOnConnect: TLHandleEvent); override;
-    procedure AcceptEvent(aHandle: TLHandle; const aOnAccept: TLHandleEvent); override;
-    procedure ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent); override;
-    procedure SendEvent(aHandle: TLHandle; const aOnSend: TLHandleEvent); override;
+    procedure ConnectEvent(aHandle: TLHandle); override;
+    procedure AcceptEvent(aHandle: TLHandle); override;
+    procedure ReceiveEvent(aHandle: TLHandle); override;
+    procedure SendEvent(aHandle: TLHandle); override;
    public
     property Password: string read FPassword write SetPassword;
     property CAFile: string read FCAFile write SetCAFile;
@@ -171,12 +170,6 @@ begin
     end else
       FOnError(Self, msg);
   end;
-end;
-
-constructor TLSocketSSL.Create;
-begin
-  inherited Create;
-  FActiveSSL := True;
 end;
 
 destructor TLSocketSSL.Destroy;
@@ -409,25 +402,24 @@ begin
   FActiveSSL := True;
 end;
 
-procedure TLSessionSSL.RegisterWithComponent(aComponent: TLComponent);
+procedure TLSessionSSL.RegisterWithComponent(aConnection: TLConnection);
 begin
-  inherited RegisterWithComponent(aComponent);
-  aComponent.SocketClass := TLSocketSSL;
+  inherited RegisterWithComponent(aConnection);
+  aConnection.SocketClass := TLSocketSSL;
 end;
 
 procedure TLSessionSSL.InitHandle(aHandle: TLHandle);
 begin
+  inherited;
   TLSocketSSL(aHandle).FActiveSSL := FActiveSSL;
 end;
 
-procedure TLSessionSSL.ConnectEvent(aHandle: TLHandle;
-  const aOnConnect: TLHandleEvent);
+procedure TLSessionSSL.ConnectEvent(aHandle: TLHandle);
 begin
   if not TLSocketSSL(aHandle).ActiveSSL then
-    inherited ConnectEvent(aHandle, aOnConnect)
+    inherited ConnectEvent(aHandle)
   else begin
     FActive := True;
-    FOnConnect := aOnConnect;
 
     if not Assigned(FSSLContext) then
       if not CanCreateContext then
@@ -439,14 +431,12 @@ begin
   end;
 end;
 
-procedure TLSessionSSL.AcceptEvent(aHandle: TLHandle;
-  const aOnAccept: TLHandleEvent);
+procedure TLSessionSSL.AcceptEvent(aHandle: TLHandle);
 begin
   if not TLSocketSSL(aHandle).ActiveSSL then
-    inherited AcceptEvent(aHandle, aOnAccept)
+    inherited AcceptEvent(aHandle)
   else begin
     FActive := True;
-    FOnConnect := aOnAccept;
 
     if not Assigned(FSSLContext) then
       if not CanCreateContext then
@@ -458,13 +448,12 @@ begin
   end;
 end;
 
-procedure TLSessionSSL.ReceiveEvent(aHandle: TLHandle; const aOnReceive: TLHandleEvent);
+procedure TLSessionSSL.ReceiveEvent(aHandle: TLHandle);
 begin
   if not TLSocketSSL(aHandle).ActiveSSL then
-    inherited ReceiveEvent(aHandle, aOnReceive)
+    inherited ReceiveEvent(aHandle)
   else begin
     FActive := True;
-    FOnReceive := aOnReceive;
 
     case TLSocketSSL(aHandle).FStatusSSL of
       ssNone     : CallReceiveEvent(aHandle);
@@ -474,13 +463,12 @@ begin
   end;
 end;
 
-procedure TLSessionSSL.SendEvent(aHandle: TLHandle; const aOnSend: TLHandleEvent);
+procedure TLSessionSSL.SendEvent(aHandle: TLHandle);
 begin
   if not TLSocketSSL(aHandle).ActiveSSL then
-    inherited SendEvent(aHandle, aOnSend)
+    inherited SendEvent(aHandle)
   else begin
     FActive := True;
-    FOnSend := aOnSend;
 
     case TLSocketSSL(aHandle).FStatusSSL of
       ssNone     : CallSendEvent(aHandle);
