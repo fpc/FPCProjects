@@ -873,6 +873,7 @@ begin
   if FActive then
     raise Exception.Create('Cannot change session on active component');
 
+  FSession.Free;
   FSession := aSession;
   FSession.RegisterWithComponent(Self);
 end;
