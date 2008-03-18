@@ -40,7 +40,7 @@ type
     property ActiveSSL: Boolean read FActiveSSL write SetActiveSSL;
     property StatusSSL: TLStatusSSL read FStatusSSL;
   end;
-  
+
   { TLSessionSSL }
   
   TLSessionSSL = class(TLSession)
@@ -403,9 +403,14 @@ begin
 end;
 
 procedure TLSessionSSL.RegisterWithComponent(aConnection: TLConnection);
+var
+  tmp: TLSocket;
 begin
   inherited RegisterWithComponent(aConnection);
-  aConnection.SocketClass := TLSocketSSL;
+  
+//  tmp := aConnection.SocketClass.Create;
+  if not (tmp is TLSocketSSL) then
+    aConnection.SocketClass := TLSocketSSL;
 end;
 
 procedure TLSessionSSL.InitHandle(aHandle: TLHandle);
