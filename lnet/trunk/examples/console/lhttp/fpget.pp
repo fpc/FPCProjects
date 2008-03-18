@@ -4,7 +4,7 @@ program fpget;
 {$h+}
 
 uses
-  sysutils, strutils, lnet, lhttp, lHTTPUtil;
+  sysutils, strutils, lnet, lhttp, lHTTPUtil, lnetSSL;
 
 var
   HttpClient: TLHTTPClient;
@@ -58,6 +58,7 @@ var
   Port: Word;
   dummy: THTTPHandler;
   index: Integer;
+  SessionSSL: TLSessionSSL;
 begin
   if ParamCount = 0 then
   begin
@@ -69,6 +70,7 @@ begin
   URL := ParamStr(1);
   
   DecomposeURL(URL, Host, URI, Port);
+  Writeln('Host: ', Host, ' URI: ', URI, ' Port: ', Port);
 
   if ParamCount >= 2 then
     FileName := ParamStr(2)
@@ -95,6 +97,14 @@ begin
   rewrite(OutputFile, 1);
 
   HttpClient := TLHTTPClient.Create(nil);
+
+  SessionSSL := TLSessionSSL.Create(HttpClient);
+  SessionSSL.CAFile := 'root.pem';
+  SessionSSL.KeyFile := 'client.pem';
+  SessionSSL.Password := 'password';
+  SessionSSL.ActiveSSL := Pos('https', URL) = 1;
+
+  HttpClient.Session := SessionSSL;
   HttpClient.Host := Host;
   HttpClient.Method := hmGet;
   HttpClient.Port := Port;
@@ -107,6 +117,7 @@ begin
   HttpClient.OnProcessHeaders := @dummy.ClientProcessHeaders;
   HttpClient.SendRequest;
   Done := false;
+
   while not Done do
     HttpClient.CallAction;
   HttpClient.Free;
