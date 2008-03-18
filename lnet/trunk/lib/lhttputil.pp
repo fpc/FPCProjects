@@ -234,10 +234,17 @@ end;
 
 procedure DecomposeURL(const URL: string; out Host, URI: string; out Port: Word);
 var
-  index: Integer;
+  hl, index: Integer;
+  DefPort: Word = 80;
 begin
-  index := PosEx('/', URL, 8);
-  Host := Copy(URL, 8, index-8);
+  hl := 8;
+  if Pos('https://', URL) = 1 then begin
+    hl := 9;
+    DefPort := 443;
+  end;
+    
+  index := PosEx('/', URL, hl);
+  Host := Copy(URL, hl, index - hl);
   URI := StringReplace(Copy(URL, index, Length(URL)+1-index), ' ', '%20', [rfReplaceAll]);
 
   index := Pos(':', Host);
@@ -246,7 +253,7 @@ begin
 
     SetLength(Host, index-1);
   end else
-    Port := 80;
+    Port := DefPort;
 end;
 
 function ComposeURL(Host, URI: string; const Port: Word): string;
