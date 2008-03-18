@@ -391,7 +391,7 @@ type
 
   { TLSession }
 
-  TLSession = class
+  TLSession = class(TComponent)
    protected
     FOnReceive: TLHandleEvent;
     FOnSend: TLHandleEvent;

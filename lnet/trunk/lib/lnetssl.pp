@@ -5,7 +5,7 @@ unit lNetSSL;
 interface
 
 uses
-  SysUtils, cTypes, OpenSSL,
+  SysUtils, Classes, cTypes, OpenSSL,
   lNet, lEvents;
   
 type
@@ -63,7 +63,7 @@ type
     
     procedure CreateSSLContext;
    public
-    constructor Create;
+    constructor Create(aOwner: TComponent); override;
     
     procedure RegisterWithComponent(aConnection: TLConnection); override;
     
@@ -395,9 +395,9 @@ begin
     raise Exception.Create('Error creating SSL CTX: SSLCTXLoadVerifyLocations');
 end;
 
-constructor TLSessionSSL.Create;
+constructor TLSessionSSL.Create(aOwner: TComponent);
 begin
-  inherited Create;
+  inherited Create(aOwner);
   FPasswordCallback := @PasswordCB;
   FActiveSSL := True;
 end;
