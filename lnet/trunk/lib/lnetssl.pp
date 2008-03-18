@@ -408,9 +408,13 @@ var
 begin
   inherited RegisterWithComponent(aConnection);
   
-//  tmp := aConnection.SocketClass.Create;
-  if not (tmp is TLSocketSSL) then
-    aConnection.SocketClass := TLSocketSSL;
+  try
+    tmp := aConnection.SocketClass.Create;
+    if not (tmp is TLSocketSSL) then
+      aConnection.SocketClass := TLSocketSSL;
+  finally
+    tmp.Free;
+  end;
 end;
 
 procedure TLSessionSSL.InitHandle(aHandle: TLHandle);
