@@ -819,6 +819,8 @@ end;
 constructor TLConnection.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
+
+  FSession := TLSession.Create(Self);
   FHost := '';
   FPort := 0;
   FListenBacklog := LDEFAULT_BACKLOG;
@@ -866,13 +868,13 @@ end;
 procedure TLConnection.SetSession(aSession: TLSession);
 begin
   if FSession = aSession then Exit;
+  if not Assigned(aSession) then
+    raise Exception.Create('Some session must be always assigned, nil assignment detected');
   if FActive then
     raise Exception.Create('Cannot change session on active component');
 
   FSession := aSession;
-
-  if Assigned(FSession) then
-    FSession.RegisterWithComponent(Self);
+  FSession.RegisterWithComponent(Self);
 end;
 
 function TLConnection.InitSocket(aSocket: TLSocket): TLSocket;
@@ -1121,10 +1123,7 @@ procedure TLUdp.ReceiveAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
     FCanReceive := True;
-    if Assigned(FSession) then
-      FSession.ReceiveEvent(aSocket)
-    else
-      ReceiveEvent(aSocket);
+    FSession.ReceiveEvent(aSocket);
   end;
 end;
 
@@ -1133,10 +1132,7 @@ begin
   with TLSocket(aSocket) do begin
     FCanSend := True;
     IgnoreWrite := True;
-    if Assigned(FSession) then
-      FSession.SendEvent(aSocket)
-    else
-      CanSendEvent(aSocket);
+    FSession.SendEvent(aSocket);
   end;
 end;
 
@@ -1350,10 +1346,7 @@ begin
     else begin
       FConnecting := False;
       FConnected := True;
-      if Assigned(FSession) then
-        FSession.ConnectEvent(aSocket)
-      else
-        ConnectEvent(TLSocket(aSocket));
+      FSession.ConnectEvent(aSocket)
     end;
   end;
 end;
@@ -1383,10 +1376,7 @@ begin
     Tmp.FConnecting := False;
     Tmp.FConnected := True;
     
-    if Assigned(FSession) then
-      FSession.AcceptEvent(Tmp)
-    else
-      AcceptEvent(Tmp);
+    FSession.AcceptEvent(Tmp)
   end else
     Tmp.Free;
 end;
@@ -1398,11 +1388,8 @@ begin
   else with TLSocket(aSocket) do begin
     if FConnected then begin
       FCanReceive := True;
-      if Assigned(FSession) then
-        FSession.ReceiveEvent(aSocket)
-      else
-        ReceiveEvent(aSocket);
-        
+      FSession.ReceiveEvent(aSocket);
+
       if not FConnected then begin
         DisconnectEvent(aSocket);
         aSocket.Free;
@@ -1419,10 +1406,7 @@ begin
     FCanSend := True;
     IgnoreWrite := True;
 
-    if Assigned(FSession) then
-      FSession.SendEvent(aSocket)
-    else
-      CanSendEvent(aSocket);
+    FSession.SendEvent(aSocket)
   end;
 end;
 
