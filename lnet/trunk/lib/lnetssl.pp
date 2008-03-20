@@ -403,18 +403,11 @@ begin
 end;
 
 procedure TLSessionSSL.RegisterWithComponent(aConnection: TLConnection);
-var
-  tmp: TLSocket;
 begin
   inherited RegisterWithComponent(aConnection);
   
-  try
-    tmp := aConnection.SocketClass.Create;
-    if not (tmp is TLSocketSSL) then
-      aConnection.SocketClass := TLSocketSSL;
-  finally
-    tmp.Free;
-  end;
+  if not aConnection.SocketClass.InheritsFrom(TLSocketSSL) then
+    aConnection.SocketClass := TLSocketSSL;
 end;
 
 procedure TLSessionSSL.InitHandle(aHandle: TLHandle);
