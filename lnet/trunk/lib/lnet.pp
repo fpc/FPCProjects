@@ -393,12 +393,6 @@ type
 
   TLSession = class(TComponent)
    protected
-    FOnReceive: TLHandleEvent;
-    FOnSend: TLHandleEvent;
-    FOnError: TLHandleErrorEvent;
-    FOnConnect: TLHandleEvent;
-    FOnAccept: TLHandleEvent;
-    FOnDisconnect: TLHandleEvent;
     FConnection: TLConnection;
 
     FActive: Boolean;
@@ -821,6 +815,7 @@ begin
   inherited Create(aOwner);
 
   FSession := TLSession.Create(Self);
+  FSession.RegisterWithComponent(Self);
   FHost := '';
   FPort := 0;
   FListenBacklog := LDEFAULT_BACKLOG;
@@ -1266,11 +1261,8 @@ function TLTcp.Bail(const msg: string; aSocket: TLSocket): Boolean;
 begin
   Result  :=  False;
 
-  if Assigned(FSession) then
-    FSession.ErrorEvent(aSocket, msg)
-  else
-    ErrorEvent(aSocket, msg);
-    
+  FSession.ErrorEvent(aSocket, msg);
+
   if Assigned(aSocket) then
     aSocket.Disconnect
   else
