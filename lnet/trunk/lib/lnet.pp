@@ -1494,6 +1494,9 @@ end;
 
 procedure TLSession.RegisterWithComponent(aConnection: TLConnection);
 begin
+  if not Assigned(aConnection) then
+    raise Exception.Create('Cannot register session with nil connection');
+    
   FConnection := aConnection;
 end;
 
@@ -1540,39 +1543,33 @@ end;
 
 procedure TLSession.CallReceiveEvent(aHandle: TLHandle); inline;
 begin
-  if Assigned(FConnection) then
-    FConnection.ReceiveEvent(TLSocket(aHandle));
+  FConnection.ReceiveEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallSendEvent(aHandle: TLHandle); inline;
 begin
-  if Assigned(FConnection) then
-    FConnection.CanSendEvent(TLSocket(aHandle));
+  FConnection.CanSendEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallErrorEvent(aHandle: TLHandle; const msg: string);
   inline;
 begin
-  if Assigned(FConnection) then
-    FConnection.ErrorEvent(TLSocket(aHandle), msg);
+  FConnection.ErrorEvent(TLSocket(aHandle), msg);
 end;
 
 procedure TLSession.CallConnectEvent(aHandle: TLHandle); inline;
 begin
-  if Assigned(FConnection) then
-    FConnection.ConnectEvent(TLSocket(aHandle));
+  FConnection.ConnectEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallAcceptEvent(aHandle: TLHandle); inline;
 begin
-  if Assigned(FConnection) then
-    FConnection.AcceptEvent(TLSocket(aHandle));
+  FConnection.AcceptEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallDisconnectEvent(aHandle: TLHandle); inline;
 begin
-  if Assigned(FConnection) then
-    FConnection.DisconnectEvent(TLSocket(aHandle));
+  FConnection.DisconnectEvent(TLSocket(aHandle));
 end;
 
 
