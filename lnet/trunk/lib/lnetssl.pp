@@ -43,7 +43,7 @@ type
 
   { TLSessionSSL }
   
-  TLSessionSSL = class(TLSession)
+  TLSSLSession = class(TLSession)
    protected
     FActiveSSL: Boolean;
     FSSLContext: PSSL_CTX;
@@ -92,9 +92,9 @@ uses
 
 function PasswordCB(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
 var
-  S: TLSessionSSL;
+  S: TLSSLSession;
 begin
-  S := TLSessionSSL(userdata);
+  S := TLSSLSession(userdata);
   
   if num < Length(S.Password) + 1 then
     Exit(0);
@@ -297,14 +297,14 @@ begin
   inherited Disconnect;
 end;
 
-{ TLSessionSSL }
+{ TLSSLSession }
 
-function TLSessionSSL.CanCreateContext: Boolean;
+function TLSSLSession.CanCreateContext: Boolean;
 begin
   Result := (Length(FCAFile) > 0) and (Length(FPassword) > 0) and (Length(FKeyFile) > 0);
 end;
 
-procedure TLSessionSSL.SetCAFile(const AValue: string);
+procedure TLSSLSession.SetCAFile(const AValue: string);
 begin
   if aValue = FCAFile then Exit;
   if FActive then
@@ -315,7 +315,7 @@ begin
     CreateSSLContext;
 end;
 
-procedure TLSessionSSL.SetKeyFile(const AValue: string);
+procedure TLSSLSession.SetKeyFile(const AValue: string);
 begin
   if aValue = FKeyFile then Exit;
   if FActive then
@@ -326,7 +326,7 @@ begin
     CreateSSLContext;
 end;
 
-procedure TLSessionSSL.SetPassword(const AValue: string);
+procedure TLSSLSession.SetPassword(const AValue: string);
 begin
   if aValue = FPassword then Exit;
   if FActive then
@@ -337,7 +337,7 @@ begin
     CreateSSLContext;
 end;
 
-procedure TLSessionSSL.SetMethod(const AValue: TLMethodSSL);
+procedure TLSSLSession.SetMethod(const AValue: TLMethodSSL);
 begin
   if aValue = FMethod then Exit;
   if FActive then
@@ -348,7 +348,7 @@ begin
     CreateSSLContext;
 end;
 
-procedure TLSessionSSL.SetPasswordCallback(const AValue: TLPasswordCB);
+procedure TLSSLSession.SetPasswordCallback(const AValue: TLPasswordCB);
 begin
   if aValue = FPasswordCallback then Exit;
   if FActive then
@@ -359,7 +359,7 @@ begin
     CreateSSLContext;
 end;
 
-procedure TLSessionSSL.CreateSSLContext;
+procedure TLSSLSession.CreateSSLContext;
 var
   aMethod: PSSL_METHOD;
 begin
@@ -395,14 +395,14 @@ begin
     raise Exception.Create('Error creating SSL CTX: SSLCTXLoadVerifyLocations');
 end;
 
-constructor TLSessionSSL.Create(aOwner: TComponent);
+constructor TLSSLSession.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   FPasswordCallback := @PasswordCB;
   FActiveSSL := True;
 end;
 
-procedure TLSessionSSL.RegisterWithComponent(aConnection: TLConnection);
+procedure TLSSLSession.RegisterWithComponent(aConnection: TLConnection);
 begin
   inherited RegisterWithComponent(aConnection);
   
@@ -410,13 +410,13 @@ begin
     aConnection.SocketClass := TLSSLSocket;
 end;
 
-procedure TLSessionSSL.InitHandle(aHandle: TLHandle);
+procedure TLSSLSession.InitHandle(aHandle: TLHandle);
 begin
   inherited;
   TLSSLSocket(aHandle).FActiveSSL := FActiveSSL;
 end;
 
-procedure TLSessionSSL.ConnectEvent(aHandle: TLHandle);
+procedure TLSSLSession.ConnectEvent(aHandle: TLHandle);
 begin
   if not TLSSLSocket(aHandle).ActiveSSL then
     inherited ConnectEvent(aHandle)
@@ -433,7 +433,7 @@ begin
   end;
 end;
 
-procedure TLSessionSSL.AcceptEvent(aHandle: TLHandle);
+procedure TLSSLSession.AcceptEvent(aHandle: TLHandle);
 begin
   if not TLSSLSocket(aHandle).ActiveSSL then
     inherited AcceptEvent(aHandle)
@@ -450,7 +450,7 @@ begin
   end;
 end;
 
-procedure TLSessionSSL.ReceiveEvent(aHandle: TLHandle);
+procedure TLSSLSession.ReceiveEvent(aHandle: TLHandle);
 begin
   if not TLSSLSocket(aHandle).ActiveSSL then
     inherited ReceiveEvent(aHandle)
@@ -465,7 +465,7 @@ begin
   end;
 end;
 
-procedure TLSessionSSL.SendEvent(aHandle: TLHandle);
+procedure TLSSLSession.SendEvent(aHandle: TLHandle);
 begin
   if not TLSSLSocket(aHandle).ActiveSSL then
     inherited SendEvent(aHandle)

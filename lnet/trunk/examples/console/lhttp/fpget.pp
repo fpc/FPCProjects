@@ -58,7 +58,7 @@ var
   Port: Word;
   dummy: THTTPHandler;
   index: Integer;
-  SessionSSL: TLSessionSSL;
+  SSLSession: TLSSLSession;
 begin
   if ParamCount = 0 then
   begin
@@ -98,13 +98,13 @@ begin
 
   HttpClient := TLHTTPClient.Create(nil);
 
-  SessionSSL := TLSessionSSL.Create(HttpClient);
-  SessionSSL.CAFile := 'root.pem';
-  SessionSSL.KeyFile := 'client.pem';
-  SessionSSL.Password := 'password';
-  SessionSSL.ActiveSSL := Pos('https', URL) = 1;
+  SSLSession := TLSSLSession.Create(HttpClient);
+  SSLSession.CAFile := 'root.pem';
+  SSLSession.KeyFile := 'client.pem';
+  SSLSession.Password := 'password';
+  SSLSession.ActiveSSL := Pos('https', URL) = 1;
 
-  HttpClient.Session := SessionSSL;
+  HttpClient.Session := SSLSession;
   HttpClient.Host := Host;
   HttpClient.Method := hmGet;
   HttpClient.Port := Port;
