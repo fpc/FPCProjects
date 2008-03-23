@@ -16,7 +16,7 @@ type
 
   { TLSocketSSL }
 
-  TLSocketSSL = class(TLSocketTCP)
+  TLSocketSSL = class(TLSocket)
    protected
     FSSL: PSSL;
     FSSLContext: PSSL_CTX;

@@ -143,21 +143,6 @@ type
   end;
   TLSocketClass = class of TLSocket;
   
-  { TLSocketTCP }
-
-  TLSocketTCP = class(TLSocket)
-   private
-    FSendBuffer: string;
-   protected
-    function DoSend(const aData; const aSize: Integer): Integer;
-   public
-    function DoSendBuffer: Boolean;
-    function Send(const aData; const aSize: Integer): Integer; override;
-   public
-    property SocketType read FSocketType; // read only here
-    property SendBuffer: string read FSendBuffer;
-  end;
-
   { this is the socket used by TLConnection }
   
   TLActionEnum = (acConnect, acAccept, acSend, acReceive, acError);
@@ -350,6 +335,7 @@ type
     function GetConnected: Boolean; override;
     function GetConnecting: Boolean;
     function GetCount: Integer; override;
+    function GetValidSocket: TLSocket;
 
     procedure SetReuseAddress(const aValue: Boolean);
 
@@ -358,8 +344,6 @@ type
     procedure ReceiveAction(aSocket: TLHandle); override;
     procedure SendAction(aSocket: TLHandle); override;
     procedure ErrorAction(aSocket: TLHandle; const msg: string); override;
-
-    procedure CanSendEvent(aSocket: TLHandle); override;
 
     function Bail(const msg: string; aSocket: TLSocket): Boolean;
 
@@ -718,86 +702,6 @@ begin
       end;
     end;
   end;
-end;
-
-//*******************************TLSocketTCP**********************************
-
-function TLSocketTCP.DoSend(const aData; const aSize: Integer): Integer;
-var
-  StartPos, r, c: Integer;
-begin
-  Result := Sockets.fpSend(FHandle, @aData, aSize, LMSG);
-
-  if aSize - Result > 0 then begin
-    r := Result;
-    if r < 0 then
-      r := 0;
-    c := aSize - r; // how much to copy
-    
-    StartPos := Length(FSendBuffer);
-    if StartPos = 0 then // empty string, we start from 1
-      Inc(StartPos);
-      
-    SetLength(FSendBuffer, Length(FSendBuffer) + c);
-    System.Move(TByteArray(aData)[r], FSendBuffer[StartPos], c);
-  end;
-end;
-
-function TLSocketTCP.DoSendBuffer: Boolean;
-var
-  Sent, LastError: Integer;
-begin
-  Result := False;
-  
-  if FCanSend
-  and (Length(FSendBuffer) > 0) then repeat
-    Sent := inherited Send(FSendBuffer[1], Length(FSendBuffer));
-    if Sent > 0 then
-      Delete(FSendBuffer, 1, Sent);
-      
-    if Sent = SOCKET_ERROR then begin
-      LastError := LSocketError;
-      if IsBlockError(LastError) then begin
-        FCanSend := False;
-        IgnoreWrite := False;
-      end else
-        Bail('Send [buffer] error', LastError);
-    end;
-  until (Length(FSendBuffer) = 0) or (Sent = SOCKET_ERROR);
-  
-  Result := (Length(FSendBuffer) = 0) and FCanSend; // true if we sent all, and STILL can send more
-end;
-
-function TLSocketTCP.Send(const aData; const aSize: Integer): Integer;
-var
-  r: Integer;
-  LastError: Longint;
-begin
-  Result := 0;
-
-  if not FServerSocket then begin
-    if aSize <= 0 then begin
-      Bail('Send error: wrong size (Size <= 0)', -1);
-      Exit(0);
-    end;
-
-    if CanSend then begin
-      Result := DoSend(aData, aSize);
-
-      if Result = SOCKET_ERROR then begin
-        LastError := LSocketError;
-        if IsBlockError(LastError) then begin
-          FCanSend := False;
-          IgnoreWrite := False;
-        end else
-          Bail('Send error', LastError);
-        Result := 0;
-      end;
-    end;
-  end;
-
-  if not FServerSocket and (Result > 0) then
-    DoSendBuffer;
 end;
 
 //*******************************TLComponent*********************************
@@ -1214,7 +1118,6 @@ begin
   FIterator := nil;
   FCount := 0;
   FRootSock := nil;
-  SocketClass := TLSocketTCP;
 end;
 
 function TLTcp.Connect(const Address: string; const APort: Word): Boolean;
@@ -1413,18 +1316,6 @@ begin
   end;
 end;
 
-procedure TLTcp.CanSendEvent(aSocket: TLHandle);
-var
-  s: TLSocketTCP;
-begin
-  if aSocket is TLSocketTCP then begin // TODO: optmize this!
-    s := TLSocketTCP(aSocket);
-    if s.DoSendBuffer then
-      inherited CanSendEvent(aSocket);
-  end else
-    inherited CanSendEvent(aSocket);
-end;
-
 function TLTcp.GetConnected: Boolean;
 var
   Tmp: TLSocket;
@@ -1451,6 +1342,16 @@ begin
   Result := FCount;
 end;
 
+function TLTcp.GetValidSocket: TLSocket;
+begin
+  Result := nil;
+  
+  if Assigned(FIterator) and (not FIterator.FServerSocket) then
+    Result := FIterator
+  else if Assigned(FRootSock) and Assigned(FRootSock.FNextSock) then
+    Result := FRootSock.FNextSock;
+end;
+
 procedure TLTcp.SetReuseAddress(const aValue: Boolean);
 begin
   if not Assigned(FRootSock)
@@ -1462,7 +1363,7 @@ function TLTcp.Get(out aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
   Result := 0;
   if not Assigned(aSocket) then
-    aSocket := FIterator;
+    aSocket := GetValidSocket;
   if Assigned(aSocket) then
     Result := aSocket.Get(aData, aSize);
 end;
@@ -1471,7 +1372,7 @@ function TLTcp.GetMessage(out msg: string; aSocket: TLSocket): Integer;
 begin
   Result := 0;
   if not Assigned(aSocket) then
-    aSocket := FIterator;
+    aSocket := GetValidSocket;
   if Assigned(aSocket) then
     Result := aSocket.GetMessage(msg);
 end;
@@ -1480,7 +1381,7 @@ function TLTcp.Send(const aData; const aSize: Integer; aSocket: TLSocket): Integ
 begin
   Result := 0;
   if not Assigned(aSocket) then
-    aSocket := FIterator;
+    aSocket := GetValidSocket;
   if Assigned(aSocket) then
     Result := aSocket.Send(aData, aSize);
 end;
