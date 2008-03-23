@@ -89,8 +89,15 @@ type
     FSocketType: Integer;
     FCreator: TLComponent;
     FSession: TLSession;
+    FBuffering: Boolean;
+    FSendBuffer: string;
    protected
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
+    
+    function DoSend(const aData; const aSize: Integer): Integer; virtual;
+    function DoGet(out aData; const aSize: Integer): Integer; virtual;
+
+    function HandleResult(const aResult, aOp: Integer): Integer; virtual;
     
     function GetConnected: Boolean; virtual;
     function GetLocalPort: Word;
@@ -536,17 +543,11 @@ begin
 end;
 
 function TLSocket.Get(out aData; const aSize: Integer): Integer;
-var
-  LastError: Longint;
-  AddressLength: Longint = SizeOf(FPeerAddress);
 begin
   Result := 0;
 
   if CanReceive then begin
-    if FSocketType = SOCK_STREAM then
-      Result := sockets.fpRecv(FHandle, @aData, aSize, LMSG)
-    else
-      Result := sockets.fpRecvfrom(FHandle, @aData, aSize, LMSG, @FPeerAddress, @AddressLength);
+    Result := DoGet(aData, aSize);
 
     if Result = 0 then
       if FSocketType = SOCK_STREAM then
@@ -554,15 +555,7 @@ begin
       else
         Bail('Receive Error [0 on recvfrom with UDP]', 0);
       
-    if Result = SOCKET_ERROR then begin
-      LastError := LSocketError;
-      if IsBlockError(LastError) then begin
-        FCanReceive := False;
-        IgnoreRead := False;
-      end else
-        Bail('Receive Error', LastError);
-      Result := 0;
-    end;
+    Result := HandleResult(Result, 1);
   end;
 end;
 
@@ -603,6 +596,49 @@ begin
     FillAddressInfo(FPeerAddress, AF_INET, LADDR_BR, aPort);
 
     Result  :=  Done;
+  end;
+end;
+
+function TLSocket.DoSend(const aData; const aSize: Integer): Integer;
+var
+  AddressLength: Longint = SizeOf(FPeerAddress);
+begin
+  if FSocketType = SOCK_STREAM then
+    Result := Sockets.fpSend(FHandle, @aData, aSize, LMSG)
+  else
+    Result := sockets.fpsendto(FHandle, @aData, aSize, LMSG, @FPeerAddress, AddressLength);
+end;
+
+function TLSocket.DoGet(out aData; const aSize: Integer): Integer;
+var
+  AddressLength: Longint = SizeOf(FPeerAddress);
+begin
+  if FSocketType = SOCK_STREAM then
+    Result := sockets.fpRecv(FHandle, @aData, aSize, LMSG)
+  else
+    Result := sockets.fpRecvfrom(FHandle, @aData, aSize, LMSG, @FPeerAddress, @AddressLength);
+end;
+
+function TLSocket.HandleResult(const aResult, aOp: Integer): Integer;
+var
+  LastError: Longint;
+begin
+  Result := aResult;
+  if Result = SOCKET_ERROR then begin
+    LastError := LSocketError;
+    if IsBlockError(LastError) then case aOp of
+      0: begin
+           FCanSend := False;
+           IgnoreWrite := False;
+         end;
+      1: begin
+           FCanReceive := False;
+           IgnoreRead := False;
+         end;
+    end else
+      Bail('Send error', LastError);
+      
+    Result := 0;
   end;
 end;
 
@@ -674,31 +710,28 @@ end;
 
 function TLSocket.Send(const aData; const aSize: Integer): Integer;
 var
-  LastError: Longint;
-  AddressLength: Longint = SizeOf(FPeerAddress);
+  OldLength: Integer;
 begin
   Result := 0;
 
   if not FServerSocket then begin
     if aSize <= 0 then begin
-      Bail('Send error: wrong size (Size <= 0)', -1);
-      Exit(0);
+      if Length(FSendBuffer) = 0 then begin
+        Bail('Send error: Size <= but send buffer is empty', -1);
+        Exit(0);
+      end;
+      
+      Exit(Send(FSendBuffer[1], Length(FSendBuffer))); // send buffer instead
     end;
-
+    
     if CanSend then begin
-      if FSocketType = SOCK_STREAM then
-        Result := Sockets.fpSend(FHandle, @aData, aSize, LMSG)
-      else
-        Result := sockets.fpsendto(FHandle, @aData, aSize, LMSG, @FPeerAddress, AddressLength);
-
-      if Result = SOCKET_ERROR then begin
-        LastError := LSocketError;
-        if IsBlockError(LastError) then begin
-          FCanSend := False;
-          IgnoreWrite := False;
-        end else
-          Bail('Send error', LastError);
-        Result := 0;
+      Result := HandleResult(DoSend(aData, aSize), 0);
+      if FBuffering and (Result > 0) then begin
+        Result := aSize; // in case we buffer, always report 100% success
+        OldLength := Length(FSendBuffer);
+        if aSize - Result > 0 then // if we didn't send it all in one batch
+          SetLength(FSendBuffer, OldLength + (aSize - Result));
+        Move(TByteArray(aData)[Result], FSendBuffer[OldLength + 1], aSize - Result); // add the non-sent data to the sendbuffer
       end;
     end;
   end;
