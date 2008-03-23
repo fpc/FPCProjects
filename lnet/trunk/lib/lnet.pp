@@ -549,8 +549,10 @@ begin
     if Result = 0 then
       if FSocketType = SOCK_STREAM then
         Disconnect
-      else
+      else begin
         Bail('Receive Error [0 on recvfrom with UDP]', 0);
+        Exit(0);
+      end;
       
     Result := HandleResult(Result, 1);
   end;
