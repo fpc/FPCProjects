@@ -635,7 +635,7 @@ begin
            IgnoreRead := False;
          end;
     end else
-      Bail('Send error', LastError);
+      Bail('Send/Get error', LastError);
       
     Result := 0;
   end;

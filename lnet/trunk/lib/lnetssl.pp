@@ -16,12 +16,19 @@ type
 
   { TLSocketSSL }
 
+  { TLSSLSocket }
+
   TLSSLSocket = class(TLSocket)
    protected
     FSSL: PSSL;
     FSSLContext: PSSL_CTX;
     FStatusSSL: TLStatusSSL;
     FActiveSSL: Boolean;
+    function DoSend(const aData; const aSize: Integer): Integer; override;
+    function DoGet(out aData; const aSize: Integer): Integer; override;
+    
+    function HandleResult(const aResult, aOp: Integer): Integer; override;
+
     function GetConnected: Boolean; override;
     procedure SetActiveSSL(const AValue: Boolean);
 
@@ -32,7 +39,6 @@ type
     procedure LogError(const msg: string; const ernum: Integer); override;
    public
     destructor Destroy; override;
-    function Send(const aData; const aSize: Integer): Integer; override;
     function Get(out aData; const aSize: Integer): Integer; override;
 
     procedure Disconnect; override;
@@ -126,6 +132,47 @@ begin
   end;
 end;
 
+function TLSSLSocket.DoSend(const aData; const aSize: Integer): Integer;
+begin
+  if FActiveSSL then
+    Result := SSLWrite(FSSL, @aData, aSize)
+  else
+    Result := inherited DoSend(aData, aSize);
+end;
+
+function TLSSLSocket.DoGet(out aData; const aSize: Integer): Integer;
+begin
+  if FActiveSSL then
+    Result := SSLRead(FSSL, @aData, aSize)
+  else
+    Result := inherited DoGet(aData, aSize);
+end;
+
+function TLSSLSocket.HandleResult(const aResult, aOp: Integer): Integer;
+var
+  LastError: cInt;
+begin
+  if not FActiveSSL then
+    Exit(inherited HandleResult(aResult, aOp));
+    
+  Result := aResult;
+  if Result <= 0 then begin
+    LastError := SslGetError(FSSL, Result);
+    if IsSSLBlockError(LastError) then case aOp of
+      0: begin
+           FCanSend := False;
+           IgnoreWrite := False;
+         end;
+      1: begin
+           FCanReceive := False;
+           IgnoreRead := False;
+         end;
+    end else
+      Bail('SSLWrite error', LastError);
+    Result := 0;
+  end;
+end;
+
 function TLSSLSocket.GetConnected: Boolean;
 begin
   if not FActiveSSL then
@@ -178,63 +225,9 @@ begin
   SslFree(FSSL);
 end;
 
-function TLSSLSocket.Send(const aData; const aSize: Integer): Integer;
-var
-  LastError: Longint;
-begin
-  if not FActiveSSL then
-    Exit(inherited Send(aData, aSize));
-
-  Result := 0;
-
-  if not FServerSocket then begin
-    if aSize <= 0 then begin
-      Bail('Send error: wrong size (Size <= 0)', -1);
-      Exit(0);
-    end;
-
-    if CanSend then begin
-      Result := SSLWrite(FSSL, @aData, aSize);
-
-      if Result <= 0 then begin // TODO: SSL error handling
-        LastError := SslGetError(FSSL, Result);
-        if IsSSLBlockError(LastError) then begin
-          FCanSend := False;
-          IgnoreWrite := False;
-        end else
-          Bail('SSLWrite error', LastError);
-        Result := 0;
-      end;
-    end;
-  end;
-end;
-
-
 function TLSSLSocket.Get(out aData; const aSize: Integer): Integer;
-var
-  LastError: Longint;
 begin
-  if not FActiveSSL then
-    Exit(inherited Get(aData, aSize));
-
-  Result := 0;
-
-  if CanReceive then begin
-    Result := SSLRead(FSSL, @aData, aSize);
-
-    if Result = 0 then
-      Disconnect;
-
-    if Result <= 0 then begin
-      LastError := SslGetError(FSSL, Result);
-      if IsSSLBlockError(LastError) then begin
-        FCanReceive := False;
-        IgnoreRead := False;
-      end else
-        Bail('SSLRead Error', LastError);
-      Result := 0;
-    end;
-  end;
+  Result:=inherited Get(aData, aSize);
 end;
 
 procedure TLSSLSocket.ConnectSSL;
