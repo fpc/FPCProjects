@@ -70,6 +70,8 @@ type
   { TLSocket }
 
   TLSocket = class(TLHandle)
+  private
+    procedure SetBuffering(const AValue: Boolean);
    protected
     FAddress: TInetSockAddr;
     FPeerAddress: TInetSockAddr;
@@ -145,6 +147,8 @@ type
     property ReuseAddress: Boolean read FReuseAddress write SetReuseAddress;
     property NextSock: TLSocket read FNextSock write FNextSock;
     property PrevSock: TLSocket read FPrevSock write FPrevSock;
+    property Buffering: Boolean read FBuffering write SetBuffering;
+    property SendBuffer: string read FSendBuffer;
     property Creator: TLComponent read FCreator;
     property Session: TLSession read FSession;
   end;
@@ -559,6 +563,15 @@ begin
   end;
 end;
 
+procedure TLSocket.SetBuffering(const AValue: Boolean);
+begin
+  if aValue = FBuffering then Exit;
+  if aValue and (Length(FSendBuffer) > 0) then
+    raise Exception.Create('Can''t set buffering on a socket which has send buffer in use');
+    
+  FBuffering := aValue;
+end;
+
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
 var
   Done: Boolean;
@@ -715,23 +728,30 @@ begin
   Result := 0;
 
   if CanSend then begin
+    Writeln('Send with size: ', aSize);
     if aSize <= 0 then begin
       if Length(FSendBuffer) = 0 then begin
         Bail('Send error: Size <= but send buffer is empty', -1);
         Exit(0);
       end;
 
-      Exit(Send(FSendBuffer[1], Length(FSendBuffer))); // send buffer instead
+      Result := HandleResult(DoSend(FSendBuffer[1], Length(FSendBuffer)), 0);
+      Delete(FSendBuffer, 1, Result);
+      Exit;
     end;
+    
+    if not FBuffering then
+      Exit(HandleResult(DoSend(aData, aSize), 0));
 
-    Result := HandleResult(DoSend(aData, aSize), 0);
-    if FBuffering and (Result > 0) then begin
-      Result := aSize; // in case we buffer, always report 100% success
-      OldLength := Length(FSendBuffer);
-      if aSize - Result > 0 then // if we didn't send it all in one batch
-        SetLength(FSendBuffer, OldLength + (aSize - Result));
-      Move(TByteArray(aData)[Result], FSendBuffer[OldLength + 1], aSize - Result); // add the non-sent data to the sendbuffer
-    end;
+    OldLength := Length(FSendBuffer);
+    SetLength(FSendBuffer, OldLength + aSize);
+    Move(TByteArray(aData)[0], FSendBuffer[OldLength + 1], aSize); // add the non-sent data to the sendbuffer
+
+    repeat
+      Result := Send(aData, 0);
+    until (Result = 0) or (Length(FSendBuffer) = 0);
+    
+    Result := aSize; // in case we buffer, always report 100% success
   end;
 end;
 
@@ -817,8 +837,7 @@ begin
   aSocket.ListenBacklog := FListenBacklog;
   aSocket.FCreator := FCreator;
   aSocket.FSession := FSession;
-  if Assigned(FSession) then
-    FSession.InitHandle(aSocket);
+  FSession.InitHandle(aSocket);
   Result := aSocket;
 end;
 
@@ -1044,9 +1063,9 @@ function TLUdp.InitSocket(aSocket: TLSocket): TLSocket;
 begin
   Result := FRootSock;
   if not Assigned(FRootSock) then begin
-    Result := inherited InitSocket(aSocket);
     aSocket.SocketType := SOCK_DGRAM;
     aSocket.Protocol := LPROTO_UDP;
+    Result := inherited InitSocket(aSocket); // call last, to make sure sessions get their turn in overriding
   end;
 end;
 
@@ -1227,10 +1246,12 @@ end;
 
 function TLTcp.InitSocket(aSocket: TLSocket): TLSocket;
 begin
-  Result := inherited InitSocket(aSocket);
   aSocket.SocketType := SOCK_STREAM;
   aSocket.Protocol := LPROTO_TCP;
   aSocket.FOnFree := @SocketDisconnect;
+  aSocket.FBuffering := True;
+  
+  Result := inherited InitSocket(aSocket); // call last to make sure session can override options
 end;
 
 function TLTcp.IterNext: Boolean;
