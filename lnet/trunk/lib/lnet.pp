@@ -97,7 +97,6 @@ type
 
     function HandleResult(const aResult, aOp: Integer): Integer; virtual;
     
-    function GetConnected: Boolean; virtual;
     function GetLocalPort: Word;
     function GetPeerPort: Word;
     function GetPeerAddress: string;
@@ -131,7 +130,7 @@ type
     
     procedure Disconnect; virtual;
    public
-    property Connected: Boolean read GetConnected;
+    property Connected: Boolean read FConnected;
     property Connecting: Boolean read FConnecting;
     property Blocking: Boolean read FBlocking write SetBlocking;
     property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
@@ -641,11 +640,6 @@ begin
       
     Result := 0;
   end;
-end;
-
-function TLSocket.GetConnected: Boolean;
-begin
-  Result := FConnected;
 end;
 
 function TLSocket.GetLocalPort: Word;
