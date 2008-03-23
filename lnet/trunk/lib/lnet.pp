@@ -507,12 +507,12 @@ end;
 
 function TLSocket.CanSend: Boolean;
 begin
-  Result := FCanSend and FConnected;
+  Result := FCanSend and FConnected and not FServerSocket;
 end;
 
 function TLSocket.CanReceive: Boolean;
 begin
-  Result := FCanReceive and FConnected;
+  Result := FCanReceive and FConnected and not FServerSocket;
 end;
 
 procedure TLSocket.SetOptions;
@@ -714,25 +714,23 @@ var
 begin
   Result := 0;
 
-  if not FServerSocket then begin
+  if CanSend then begin
     if aSize <= 0 then begin
       if Length(FSendBuffer) = 0 then begin
         Bail('Send error: Size <= but send buffer is empty', -1);
         Exit(0);
       end;
-      
+
       Exit(Send(FSendBuffer[1], Length(FSendBuffer))); // send buffer instead
     end;
-    
-    if CanSend then begin
-      Result := HandleResult(DoSend(aData, aSize), 0);
-      if FBuffering and (Result > 0) then begin
-        Result := aSize; // in case we buffer, always report 100% success
-        OldLength := Length(FSendBuffer);
-        if aSize - Result > 0 then // if we didn't send it all in one batch
-          SetLength(FSendBuffer, OldLength + (aSize - Result));
-        Move(TByteArray(aData)[Result], FSendBuffer[OldLength + 1], aSize - Result); // add the non-sent data to the sendbuffer
-      end;
+
+    Result := HandleResult(DoSend(aData, aSize), 0);
+    if FBuffering and (Result > 0) then begin
+      Result := aSize; // in case we buffer, always report 100% success
+      OldLength := Length(FSendBuffer);
+      if aSize - Result > 0 then // if we didn't send it all in one batch
+        SetLength(FSendBuffer, OldLength + (aSize - Result));
+      Move(TByteArray(aData)[Result], FSendBuffer[OldLength + 1], aSize - Result); // add the non-sent data to the sendbuffer
     end;
   end;
 end;
