@@ -149,6 +149,8 @@ begin
 end;
 
 function TLSSLSocket.HandleResult(const aResult, aOp: Integer): Integer;
+const
+  GSStr: array[0..1] of string = ('SSLWrite', 'SSLRead');
 var
   LastError: cInt;
 begin
@@ -168,7 +170,7 @@ begin
            IgnoreRead := False;
          end;
     end else
-      Bail('SSLWrite error', LastError);
+      Bail(GSStr[aOp] + ' error', LastError);
     Result := 0;
   end;
 end;

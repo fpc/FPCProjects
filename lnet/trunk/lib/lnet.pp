@@ -619,6 +619,8 @@ begin
 end;
 
 function TLSocket.HandleResult(const aResult, aOp: Integer): Integer;
+const
+  GSStr: array[0..1] of string = ('Send', 'Get');
 var
   LastError: Longint;
 begin
@@ -635,7 +637,7 @@ begin
            IgnoreRead := False;
          end;
     end else
-      Bail('Send/Get error', LastError);
+      Bail(GSStr[aOp] + ' error', LastError);
       
     Result := 0;
   end;
