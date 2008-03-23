@@ -274,7 +274,7 @@ type
     destructor Destroy; override;
   end;
 
-  TLHTTPSocket = class(TLSocketSSL)
+  TLHTTPSocket = class(TLSSLSocket)
   protected
     FBuffer: pchar;
     FBufferPos: pchar;

@@ -16,7 +16,7 @@ type
 
   { TLSocketSSL }
 
-  TLSocketSSL = class(TLSocket)
+  TLSSLSocket = class(TLSocket)
    protected
     FSSL: PSSL;
     FSSLContext: PSSL_CTX;
@@ -108,9 +108,9 @@ begin
   Result := (anError = SSL_ERROR_WANT_READ) or (anError = SSL_ERROR_WANT_READ);
 end;
 
-{ TLSocketSSL }
+{ TLSSLSocket }
 
-procedure TLSocketSSL.SetActiveSSL(const AValue: Boolean);
+procedure TLSSLSocket.SetActiveSSL(const AValue: Boolean);
 begin
   if FActiveSSL = AValue then Exit;
   FActiveSSL := AValue;
@@ -126,7 +126,7 @@ begin
   end;
 end;
 
-function TLSocketSSL.GetConnected: Boolean;
+function TLSSLSocket.GetConnected: Boolean;
 begin
   if not FActiveSSL then
     Result := inherited GetConnected
@@ -134,7 +134,7 @@ begin
     Result := FConnected and Assigned(FSSL) and (FStatusSSL = ssNone)
 end;
 
-procedure TLSocketSSL.ConnectEvent(aSSLContext: PSSL_CTX);
+procedure TLSSLSocket.ConnectEvent(aSSLContext: PSSL_CTX);
 begin
   if Assigned(FSSL) then
     SslFree(FSSL);
@@ -156,7 +156,7 @@ begin
   ConnectSSL;
 end;
 
-procedure TLSocketSSL.LogError(const msg: string; const ernum: Integer);
+procedure TLSSLSocket.LogError(const msg: string; const ernum: Integer);
 var
   s: string;
 begin
@@ -172,13 +172,13 @@ begin
   end;
 end;
 
-destructor TLSocketSSL.Destroy;
+destructor TLSSLSocket.Destroy;
 begin
   inherited Destroy;
   SslFree(FSSL);
 end;
 
-function TLSocketSSL.Send(const aData; const aSize: Integer): Integer;
+function TLSSLSocket.Send(const aData; const aSize: Integer): Integer;
 var
   LastError: Longint;
 begin
@@ -210,7 +210,7 @@ begin
 end;
 
 
-function TLSocketSSL.Get(out aData; const aSize: Integer): Integer;
+function TLSSLSocket.Get(out aData; const aSize: Integer): Integer;
 var
   LastError: Longint;
 begin
@@ -237,7 +237,7 @@ begin
   end;
 end;
 
-procedure TLSocketSSL.ConnectSSL;
+procedure TLSSLSocket.ConnectSSL;
 var
   c: cInt;
 begin
@@ -266,7 +266,7 @@ begin
   end;
 end;
 
-procedure TLSocketSSL.ShutdownSSL;
+procedure TLSSLSocket.ShutdownSSL;
 var
   n, c: Integer;
 begin
@@ -287,7 +287,7 @@ begin
   end;
 end;
 
-procedure TLSocketSSL.Disconnect;
+procedure TLSSLSocket.Disconnect;
 begin
   if FActiveSSL then begin
     FStatusSSL := ssShutdown;
@@ -406,19 +406,19 @@ procedure TLSessionSSL.RegisterWithComponent(aConnection: TLConnection);
 begin
   inherited RegisterWithComponent(aConnection);
   
-  if not aConnection.SocketClass.InheritsFrom(TLSocketSSL) then
-    aConnection.SocketClass := TLSocketSSL;
+  if not aConnection.SocketClass.InheritsFrom(TLSSLSocket) then
+    aConnection.SocketClass := TLSSLSocket;
 end;
 
 procedure TLSessionSSL.InitHandle(aHandle: TLHandle);
 begin
   inherited;
-  TLSocketSSL(aHandle).FActiveSSL := FActiveSSL;
+  TLSSLSocket(aHandle).FActiveSSL := FActiveSSL;
 end;
 
 procedure TLSessionSSL.ConnectEvent(aHandle: TLHandle);
 begin
-  if not TLSocketSSL(aHandle).ActiveSSL then
+  if not TLSSLSocket(aHandle).ActiveSSL then
     inherited ConnectEvent(aHandle)
   else begin
     FActive := True;
@@ -429,13 +429,13 @@ begin
       else
         CreateSSLContext;
 
-    TLSocketSSL(aHandle).ConnectEvent(FSSLContext);
+    TLSSLSocket(aHandle).ConnectEvent(FSSLContext);
   end;
 end;
 
 procedure TLSessionSSL.AcceptEvent(aHandle: TLHandle);
 begin
-  if not TLSocketSSL(aHandle).ActiveSSL then
+  if not TLSSLSocket(aHandle).ActiveSSL then
     inherited AcceptEvent(aHandle)
   else begin
     FActive := True;
@@ -446,20 +446,20 @@ begin
       else
         CreateSSLContext;
 
-    TLSocketSSL(aHandle).ConnectEvent(FSSLContext);
+    TLSSLSocket(aHandle).ConnectEvent(FSSLContext);
   end;
 end;
 
 procedure TLSessionSSL.ReceiveEvent(aHandle: TLHandle);
 begin
-  if not TLSocketSSL(aHandle).ActiveSSL then
+  if not TLSSLSocket(aHandle).ActiveSSL then
     inherited ReceiveEvent(aHandle)
   else begin
     FActive := True;
 
-    case TLSocketSSL(aHandle).FStatusSSL of
+    case TLSSLSocket(aHandle).FStatusSSL of
       ssNone     : CallReceiveEvent(aHandle);
-      ssConnect  : TLSocketSSL(aHandle).ConnectSSL;
+      ssConnect  : TLSSLSocket(aHandle).ConnectSSL;
       ssShutdown : begin end; // TODO: finish shutdown eventizing
     end;
   end;
@@ -467,14 +467,14 @@ end;
 
 procedure TLSessionSSL.SendEvent(aHandle: TLHandle);
 begin
-  if not TLSocketSSL(aHandle).ActiveSSL then
+  if not TLSSLSocket(aHandle).ActiveSSL then
     inherited SendEvent(aHandle)
   else begin
     FActive := True;
 
-    case TLSocketSSL(aHandle).FStatusSSL of
+    case TLSSLSocket(aHandle).FStatusSSL of
       ssNone     : CallSendEvent(aHandle);
-      ssConnect  : TLSocketSSL(aHandle).ConnectSSL;
+      ssConnect  : TLSSLSocket(aHandle).ConnectSSL;
       ssShutdown : begin end; // TODO: finish shutdown eventizing
     end;
   end;
