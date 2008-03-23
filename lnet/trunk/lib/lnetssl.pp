@@ -14,8 +14,6 @@ type
 
   TLPasswordCB = function(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
 
-  { TLSocketSSL }
-
   { TLSSLSocket }
 
   TLSSLSocket = class(TLSocket)
