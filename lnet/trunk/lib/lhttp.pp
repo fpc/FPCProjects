@@ -2251,10 +2251,10 @@ end;
 
 function  TLHTTPClient.InitSocket(aSocket: TLSocket): TLSocket;
 begin
-  Result := inherited;
   TLHTTPClientSocket(aSocket).FHeaderOut := @FHeaderOut;
   TLHTTPClientSocket(aSocket).FRequest := @FRequest;
   TLHTTPClientSocket(aSocket).FResponse := @FResponse;
+  Result := inherited;
 end;
 
 procedure TLHTTPClient.InternalSendRequest;
