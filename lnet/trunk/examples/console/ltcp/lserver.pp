@@ -41,13 +41,16 @@ end;
 procedure TLTCPTest.OnRe(aSocket: TLSocket);
 var
   s: string;
+  n: Integer;
 begin
   if aSocket.GetMessage(s) > 0 then begin // if we received anything (result is in s)
     Writeln('Got: "', s, '" with length: ', Length(s)); // write message and it's length
-    if Assigned(FCon.Iterator) then repeat // if we have clients to echo to
-      if FCon.SendMessage(s, FCon.Iterator) < Length(s) then // try to send to each of them
-        Writeln('Unsuccessful send'); // if send fails write error
-    until not FCon.IterNext; // until all clients are parsed
+    FCon.IterReset; // now it points to server socket
+    while FCon.IterNext do begin // while we have clients to echo to
+      n := FCon.SendMessage(s, FCon.Iterator);
+      if n < Length(s) then // try to send to each of them
+        Writeln('Unsuccessful send, wanted: ', Length(s), ' got: ', n); // if send fails write error
+    end;
   end;
 end;
 
