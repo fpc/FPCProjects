@@ -39,7 +39,6 @@ type
     procedure LogError(const msg: string; const ernum: Integer); override;
    public
     destructor Destroy; override;
-    function Get(out aData; const aSize: Integer): Integer; override;
 
     procedure Disconnect; override;
    public
@@ -225,11 +224,6 @@ destructor TLSSLSocket.Destroy;
 begin
   inherited Destroy;
   SslFree(FSSL);
-end;
-
-function TLSSLSocket.Get(out aData; const aSize: Integer): Integer;
-begin
-  Result:=inherited Get(aData, aSize);
 end;
 
 procedure TLSSLSocket.ConnectSSL;
