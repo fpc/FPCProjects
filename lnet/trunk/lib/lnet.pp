@@ -101,8 +101,8 @@ type
     function GetPeerPort: Word;
     function GetPeerAddress: string;
     function GetLocalAddress: string;
-    function CanSend: Boolean; virtual;
-    function CanReceive: Boolean; virtual;
+    function SendPossible: Boolean; inline;
+    function ReceivePossible: Boolean; inline;
 
     procedure SetOptions; virtual;
     procedure SetBlocking(const aValue: Boolean);
@@ -142,6 +142,8 @@ type
     property ReuseAddress: Boolean read FReuseAddress write SetReuseAddress;
     property NextSock: TLSocket read FNextSock write FNextSock;
     property PrevSock: TLSocket read FPrevSock write FPrevSock;
+    property CanSend: Boolean read FCanSend write FCanSend;
+    property CanReceive: Boolean read FCanReceive write FCanReceive;
     property Creator: TLComponent read FCreator;
     property Session: TLSession read FSession;
   end;
@@ -501,12 +503,12 @@ begin
     Result := NetAddrToStr(LongWord(a.sin_addr));
 end;
 
-function TLSocket.CanSend: Boolean;
+function TLSocket.SendPossible: Boolean; inline;
 begin
   Result := FCanSend and FConnected and not FServerSocket;
 end;
 
-function TLSocket.CanReceive: Boolean;
+function TLSocket.ReceivePossible: Boolean; inline;
 begin
   Result := FCanReceive and FConnected and not FServerSocket;
 end;
@@ -847,7 +849,7 @@ end;
 procedure TLConnection.SendAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
-    FCanSend := True;
+    CanSend := True;
     IgnoreWrite := True;
 
     FSession.SendEvent(aSocket);
@@ -1040,7 +1042,7 @@ end;
 procedure TLUdp.ReceiveAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
-    FCanReceive := True;
+    CanReceive := True;
     FSession.ReceiveEvent(aSocket);
   end;
 end;
@@ -1293,7 +1295,7 @@ begin
     AcceptAction(aSocket)
   else with TLSocket(aSocket) do begin
     if FConnected then begin
-      FCanReceive := True;
+      CanReceive := True;
       FSession.ReceiveEvent(aSocket);
 
       if not FConnected then begin
