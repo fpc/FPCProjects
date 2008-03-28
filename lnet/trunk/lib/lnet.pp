@@ -1254,6 +1254,7 @@ begin
     else begin
       FConnecting := False;
       FConnected := True;
+      IgnoreWrite := True;
       FSession.ConnectEvent(aSocket)
     end;
   end;
@@ -1283,6 +1284,7 @@ begin
     
     Tmp.FConnecting := False;
     Tmp.FConnected := True;
+    Tmp.IgnoreWrite := True;
     
     FSession.AcceptEvent(Tmp)
   end else
