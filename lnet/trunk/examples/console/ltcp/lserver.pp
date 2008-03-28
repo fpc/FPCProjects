@@ -30,7 +30,7 @@ type
 
 procedure TLTCPTest.OnEr(const msg: string; aSocket: TLSocket);
 begin
-  Writeln('ERROR: ', msg);  // if error occured, write it explicitly
+  Writeln(msg);  // if error occured, write it explicitly
 end;
 
 procedure TLTCPTest.OnAc(aSocket: TLSocket);

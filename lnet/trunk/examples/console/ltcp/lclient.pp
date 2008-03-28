@@ -44,7 +44,7 @@ end;
 
 procedure TLTCPTest.OnEr(const msg: string; aSocket: TLSocket);
 begin
-  Writeln('ERROR: ', msg); // if error occured, write it
+  Writeln(msg); // if error occured, write it
   FQuit := true;             // and quit ASAP
 end;
 
@@ -69,16 +69,6 @@ var
   c: char;
   Port: Word;
 
-  procedure Reconnect;
-  begin
-    Writeln('Reconnecting...');
-    FCon.Disconnect;
-    if not FCon.Connect(Address, Port) then begin // try to connect again
-      FQuit := True; // if it failed quit ASAP
-      Writeln('Failed to reconnect'); // write reason
-    end;
-  end;
-
 begin
   if ParamCount > 1 then begin // we need atleast one parameter
     try
@@ -94,7 +84,7 @@ begin
     s := '';
 
     if FCon.Connect(Address, Port) then begin // if connect went ok
-      Write('Connecting... ');
+      Writeln('Connecting... [press any key to cancel] ');
       FQuit := False;
       repeat
         FCon.CallAction; // wait for "OnConnect"
@@ -103,12 +93,11 @@ begin
       until FCon.Connected or FQuit;
       
       if not FQuit then begin // if we connected succesfuly
-        Writeln('Connected');
+        Writeln('Connected, write your messages, send with ''return'' or press ''escape'' to quit');
         repeat
           if Keypressed then begin // if user provided inpur
             c := Readkey; // get key pressed
             case c of
-              'r': Reconnect; // if it's 'r' do a reconnect
               #8:  begin      // backspace deletes from message-to-send
                      if Length(s) > 1 then
                        Delete(s, Length(s)-1, 1)
