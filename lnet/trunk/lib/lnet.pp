@@ -544,7 +544,7 @@ function TLSocket.Get(out aData; const aSize: Integer): Integer;
 begin
   Result := 0;
 
-  if CanReceive then begin
+  if ReceivePossible then begin
     Result := DoGet(aData, aSize);
 
     if Result = 0 then
@@ -709,7 +709,7 @@ function TLSocket.Send(const aData; const aSize: Integer): Integer;
 begin
   Result := 0;
 
-  if CanSend then begin
+  if SendPossible then begin
     if aSize <= 0 then begin
       Bail('Send error: Size <= 0', -1);
       Exit(0);
