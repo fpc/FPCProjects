@@ -88,8 +88,12 @@ type
     FOnError: TLSocketErrorEvent;
     FCommandArgs: string[3];
     FOrders: TLTelnetControlChars;
-    FBuffer: string;
-
+    FBuffer: array of Char;
+    FBufferIndex: Integer;
+    FBufferEnd: Integer;
+    procedure InflateBuffer;
+    function AddToBuffer(const aStr: string): Boolean; inline;
+    
     function Question(const Command: Char; const Value: Boolean): Char;
     
     function GetTimeout: Integer;
@@ -99,13 +103,9 @@ type
     procedure SetSocketClass(Value: TLSocketClass);
     
     procedure StackFull;
-    
     procedure DoubleIAC(var s: string);
-    
     procedure TelnetParse(const msg: string);
-    
     procedure React(const Operation, Command: Char); virtual; abstract;
-    
     procedure SendCommand(const Command: Char; const Value: Boolean); virtual; abstract;
 
     procedure OnCs(aSocket: TLSocket);
@@ -172,7 +172,7 @@ type
 implementation
 
 uses
-  SysUtils;
+  SysUtils, Math;
 
 var
   zz: Char;
@@ -205,6 +205,25 @@ end;
 function TLTelnet.GetConnected: Boolean;
 begin
   Result := FConnection.Connected;
+end;
+
+procedure TLTelnet.InflateBuffer;
+var
+  n: Integer;
+begin
+  n := Max(Length(FBuffer), 25);
+  SetLength(FBuffer, n * 10);
+end;
+
+function TLTelnet.AddToBuffer(const aStr: string): Boolean; inline;
+begin
+  Result := False;
+  
+  while Length(aStr) + FBufferEnd > Length(FBuffer) do
+    InflateBuffer;
+    
+  Move(aStr[1], FBuffer[FBufferEnd], Length(aStr));
+  Inc(FBufferEnd, Length(aStr));
 end;
 
 function TLTelnet.Question(const Command: Char; const Value: Boolean): Char;
@@ -291,11 +310,17 @@ var
 begin
   n := 1;
 
-  while n > 0 do begin
-    n := FConnection.SendMessage(FBuffer);
+  while (n > 0) and (FBufferIndex < FBufferEnd) do begin
+    n := FConnection.Send(FBuffer[FBufferIndex], FBufferEnd - FBufferIndex);
 
     if n > 0 then
-      System.Delete(FBuffer, 1, n);
+      Inc(FBufferIndex, n);
+  end;
+  
+  if FBufferEnd - FBufferIndex < FBufferIndex then begin // if we can move the "right" side of the buffer back to the left
+    Move(FBuffer[FBufferIndex], FBuffer[0], FBufferEnd - FBufferIndex);
+    FBufferEnd := FBufferEnd - FBufferIndex;
+    FBufferIndex := 0;
   end;
 end;
 
@@ -339,7 +364,7 @@ begin
   {$ifdef debug}
   Writeln('**SENT** ', TNames[Char(How)], ' ', TNames[aCommand]);
   {$endif}
-  FBuffer := FBuffer + TS_IAC + Char(How) + aCommand;
+  AddToBuffer(TS_IAC + Char(How) + aCommand);
   OnCs(nil);
 end;
 
@@ -397,7 +422,7 @@ procedure TLTelnetClient.React(const Operation, Command: Char);
     {$ifdef debug}
     Writeln('**SENT** ', TNames[Operation], ' ', TNames[Command]);
     {$endif}
-    FBuffer := FBuffer + TS_IAC + Operation + Command;
+    AddToBuffer(TS_IAC + Operation + Command);
     OnCs(nil);
   end;
   
@@ -407,7 +432,7 @@ procedure TLTelnetClient.React(const Operation, Command: Char);
     {$ifdef debug}
     Writeln('**SENT** ', TNames[Operation], ' ', TNames[Command]);
     {$endif}
-    FBuffer := FBuffer + TS_IAC + Operation + Command;
+    AddToBuffer(TS_IAC + Operation + Command);
     OnCs(nil);
   end;
   
@@ -437,7 +462,7 @@ begin
     case Question(Command, Value) of
       TS_WILL : FActiveOpts := FActiveOpts + [Command];
     end;
-    FBuffer := FBuffer + TS_IAC + Question(Command, Value) + Command;
+    AddToBuffer(TS_IAC + Question(Command, Value) + Command);
     OnCs(nil);
   end;
 end;
@@ -487,7 +512,7 @@ begin
     if LocalEcho and (not OptionIsSet(TS_ECHO)) and (not OptionIsSet(TS_HYI)) then
       FOutput.Write(PChar(Tmp)^, Length(Tmp));
       
-    FBuffer := FBuffer + Tmp;
+    AddToBuffer(Tmp);
     OnCs(nil);
     
     Result := aSize;
