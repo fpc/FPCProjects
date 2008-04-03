@@ -72,7 +72,10 @@ type
     
     function GetTimeout: Integer;
     procedure SetTimeout(const Value: Integer);
-    
+
+    function GetSession: TLSession;
+    procedure SetSession(const AValue: TLSession);
+
     function GetSocketClass: TLSocketClass;
     procedure SetSocketClass(Value: TLSocketClass);
    public
@@ -92,6 +95,7 @@ type
     property ControlConnection: TLTelnetClient read FControl;
     property DataConnection: TLTCP read FData;
     property TransferMethod: TLFTPTransferMethod read FTransferMethod write FTransferMethod default ftPassive;
+    property Session: TLSession read GetSession write SetSession;
   end;
 
   { TLFTPTelnetClient }
@@ -274,6 +278,17 @@ end;
 {$i lcontainers.inc}
 
 { TLFTP }
+
+function TLFTP.GetSession: TLSession;
+begin
+  Result := FControl.Session;
+end;
+
+procedure TLFTP.SetSession(const AValue: TLSession);
+begin
+  FControl.Session := aValue;
+  FData.Session := aValue;
+end;
 
 function TLFTP.GetConnected: Boolean;
 begin

@@ -72,8 +72,6 @@ type
   { TLTelnet }
 
   TLTelnet = class(TLComponent, ILDirect)
-  private
-    function GetConnected: Boolean;
    protected
     FStack: TLControlStack;
     FConnection: TLTcp;
@@ -96,12 +94,17 @@ type
     
     function Question(const Command: Char; const Value: Boolean): Char;
     
+    function GetConnected: Boolean;
+    
     function GetTimeout: Integer;
     procedure SetTimeout(const Value: Integer);
 
     function GetSocketClass: TLSocketClass;
     procedure SetSocketClass(Value: TLSocketClass);
-    
+
+    function GetSession: TLSession;
+    procedure SetSesssion(const AValue: TLSession);
+
     procedure StackFull;
     procedure DoubleIAC(var s: string);
     procedure TelnetParse(const msg: string);
@@ -137,6 +140,7 @@ type
     property OnError: TLSocketErrorEvent read FOnError write FOnError;
     property Connection: TLTCP read FConnection;
     property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
+    property Session: TLSession read GetSession write SetSesssion;
   end;
 
   { TLTelnetClient }
@@ -205,6 +209,16 @@ end;
 function TLTelnet.GetConnected: Boolean;
 begin
   Result := FConnection.Connected;
+end;
+
+function TLTelnet.GetSession: TLSession;
+begin
+  Result := FConnection.Session;
+end;
+
+procedure TLTelnet.SetSesssion(const AValue: TLSession);
+begin
+  FConnection.Session := aValue;
 end;
 
 procedure TLTelnet.InflateBuffer;

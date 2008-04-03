@@ -89,6 +89,9 @@ type
     function GetTimeout: Integer;
     procedure SetTimeout(const AValue: Integer);
     
+    function GetSession: TLSession;
+    procedure SetSession(const AValue: TLSession);
+
     function GetConnected: Boolean;
 
     function GetSocketClass: TLSocketClass;
@@ -106,6 +109,7 @@ type
     property SocketClass: TLSocketClass read GetSocketClass write SetSocketClass;
     property Eventer: TLEventer read GetEventer write SetEventer;
     property Timeout: Integer read GetTimeout write SetTimeout;
+    property Session: TLSession read GetSession write SetSession;
   end;
 
   { TLSMTPClient }
@@ -207,6 +211,16 @@ begin
 end;
 
 { TLSMTP }
+
+function TLSMTP.GetSession: TLSession;
+begin
+  Result := FConnection.Session;
+end;
+
+procedure TLSMTP.SetSession(const AValue: TLSession);
+begin
+  FConnection.Session := aValue;
+end;
 
 function TLSMTP.GetTimeout: Integer;
 begin
