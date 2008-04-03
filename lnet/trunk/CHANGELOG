@@ -1,3 +1,5 @@
+03.04.2008 - 0.6.0 reverted TCP sending changes (too bloaty, not modular). Fixed lots of bugs. Added SSL support!
+
 12.02.2008 - 0.6.0 made TCP sending more user-friendly (optional), fixed some telnet stuff, added visual telnet + examples
 
 04.09.2007 - 0.5.8 fixed Windows visual problems with .Disconnect and .Free, fixed SMTP RFC compliance
