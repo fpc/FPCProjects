@@ -90,6 +90,7 @@ type
     FCreator: TLComponent;
     FSession: TLSession;
    protected
+    function GetConnected: Boolean; virtual;
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
     
     function DoSend(const aData; const aSize: Integer): Integer; virtual;
@@ -130,7 +131,7 @@ type
     
     procedure Disconnect; virtual;
    public
-    property Connected: Boolean read FConnected;
+    property Connected: Boolean read GetConnected;
     property Connecting: Boolean read FConnecting;
     property Blocking: Boolean read FBlocking write SetBlocking;
     property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
@@ -557,6 +558,11 @@ begin
       
     Result := HandleResult(Result, 1);
   end;
+end;
+
+function TLSocket.GetConnected: Boolean;
+begin
+  Result := FConnected;
 end;
 
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
@@ -1311,7 +1317,7 @@ end;
 procedure TLTcp.SendAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
-    if Connecting then
+    if FConnecting then
       ConnectAction(aSocket)
     else
       inherited;

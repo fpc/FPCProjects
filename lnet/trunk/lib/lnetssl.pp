@@ -22,6 +22,9 @@ type
     FSSLContext: PSSL_CTX;
     FStatusSSL: TLStatusSSL;
     FActiveSSL: Boolean;
+    function GetConnected: Boolean; override;
+    function IsServerSocket: Boolean;
+    
     function DoSend(const aData; const aSize: Integer): Integer; override;
     function DoGet(out aData; const aSize: Integer): Integer; override;
     
@@ -73,8 +76,9 @@ type
     procedure InitHandle(aHandle: TLHandle); override;
     
     procedure ConnectEvent(aHandle: TLHandle); override;
+    procedure ReceiveEvent(aHandle: TLHandle); override;
     procedure AcceptEvent(aHandle: TLHandle); override;
-    procedure HandleSSLConnection(aSocket: TLSSLSocket);
+    function HandleSSLConnection(aSocket: TLSSLSocket): Boolean;
    public
     property Password: string read FPassword write SetPassword;
     property CAFile: string read FCAFile write SetCAFile;
@@ -131,7 +135,16 @@ end;
 procedure TLSSLSocket.SetConnecting(const AValue: Boolean);
 begin
   FConnecting := AValue;
-  FConnected := not AValue;
+end;
+
+function TLSSLSocket.GetConnected: Boolean;
+begin
+  Result := Assigned(FSSL) and (FStatusSSL = ssNone);
+end;
+
+function TLSSLSocket.IsServerSocket: Boolean;
+begin
+  Result := FServerSocket;
 end;
 
 function TLSSLSocket.DoSend(const aData; const aSize: Integer): Integer;
@@ -402,32 +415,37 @@ procedure TLSSLSession.ConnectEvent(aHandle: TLHandle);
 begin
   if not TLSSLSocket(aHandle).ActiveSSL then
     inherited ConnectEvent(aHandle)
-  else begin
-    FActive := True;
-    HandleSSLConnection(TLSSLSocket(aHandle));
-    if TLSSLSocket(aHandle).FStatusSSL = ssNone then begin
-      TLSSLSocket(aHandle).SetConnecting(False);
-      CallConnectEvent(aHandle);
+  else if HandleSSLConnection(TLSSLSocket(aHandle)) then
+    CallConnectEvent(aHandle);
+end;
+
+procedure TLSSLSession.ReceiveEvent(aHandle: TLHandle);
+begin
+  if not TLSSLSocket(aHandle).ActiveSSL then
+    inherited ReceiveEvent(aHandle)
+  else if TLSSLSocket(aHandle).FConnecting then begin
+    if HandleSSLConnection(TLSSLSocket(aHandle)) then
+    case TLSSLSocket(aHandle).IsServerSocket of
+      True  : CallAcceptEvent(aHandle);
+      False : CallConnectEvent(aHandle);
     end;
-  end;
+  end else
+    CallReceiveEvent(aHandle);
 end;
 
 procedure TLSSLSession.AcceptEvent(aHandle: TLHandle);
 begin
   if not TLSSLSocket(aHandle).ActiveSSL then
     inherited AcceptEvent(aHandle)
-  else begin
-    FActive := True;
-    HandleSSLConnection(TLSSLSocket(aHandle));
-    if TLSSLSocket(aHandle).FStatusSSL = ssNone then begin
-      TLSSLSocket(aHandle).SetConnecting(False);
-      CallAcceptEvent(aHandle);
-    end;
-  end;
+  else if HandleSSLConnection(TLSSLSocket(aHandle)) then
+    CallAcceptEvent(aHandle);
 end;
 
-procedure TLSSLSession.HandleSSLConnection(aSocket: TLSSLSocket);
+function TLSSLSession.HandleSSLConnection(aSocket: TLSSLSocket): Boolean;
 begin
+  Result := False;
+  FActive := True;
+  
   if not Assigned(FSSLContext) then
     if not CanCreateContext then
       raise Exception.Create('Context is not/can not be created on connect or accept event')
@@ -439,6 +457,11 @@ begin
     ssNone     : aSocket.ConnectEvent(FSSLContext);
     ssConnect  : aSocket.ConnectSSL;
     ssShutdown : raise Exception.Create('Got ConnectEvent or AcceptEvent on socket with ssShutdown status');
+  end;
+  
+  if aSocket.FStatusSSL = ssNone then begin
+    aSocket.SetConnecting(False);
+    Result := True;
   end;
 end;
 
