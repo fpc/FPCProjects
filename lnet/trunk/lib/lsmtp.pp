@@ -614,8 +614,9 @@ end;
 
 procedure TLSMTPClient.Helo(aHost: string = '');
 begin
-  if Length(Host) = 0 then
+  if Length(aHost) = 0 then
     aHost := FHost;
+
   if CanContinue(ssHelo, aHost, '') then begin
     FBuffer := FBuffer + 'HELO ' + aHost + CRLF;
     FStatus.Insert(MakeStatusRec(ssHelo, '', ''));
