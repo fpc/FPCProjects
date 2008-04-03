@@ -30,7 +30,8 @@ procedure Register;
 begin
   RegisterComponents('lNet' , [TLTcpComponent, TLUdpComponent, TLTelnetClientComponent,
                                TLFTPClientComponent, TLSMTPClientComponent,
-                               TLHTTPClientComponent, TLHTTPServerComponent]);
+                               TLHTTPClientComponent, TLHTTPServerComponent,
+                               TLSSLSessionComponent]);
 end;
 
 initialization

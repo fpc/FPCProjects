@@ -30,7 +30,7 @@ interface
 
 uses
   Classes, SysUtils,
-  LCLNet, lNet, lTelnet, lFTP, lSMTP, lHTTP;
+  LCLNet, lNet, lTelnet, lFTP, lSMTP, lHTTP, lNetSSL;
   
 type
 
@@ -78,6 +78,7 @@ type
     property OnError;
     property Timeout;
     property LocalEcho;
+    property Session;
   end;
 
   { TLFTPClientComponent }
@@ -100,6 +101,7 @@ type
     property StartPort;
     property TransferMethod;
     property Timeout;
+    property Session;
   end;
   
   { TLSMTPCientComponent }
@@ -120,6 +122,7 @@ type
     property StatusSet;
     property PipeLine;
     property Timeout;
+    property Session;
   end;
   
   { TLHTTPClientComponent }
@@ -139,6 +142,7 @@ type
     property OnDisconnect;
     property OnError;
     property Timeout;
+    property Session;
   end;
   
   { TLHTTPServerComponent }
@@ -156,6 +160,16 @@ type
     property OnDisconnect;
     property OnAccept;
     property Timeout;
+    property Session;
+  end;
+  
+  TLSSLSessionComponent = class(TLSSLSession)
+   published
+    property Password;
+    property CAFile;
+    property KeyFile;
+    property Method;
+    property ActiveSSL;
   end;
 
 implementation
