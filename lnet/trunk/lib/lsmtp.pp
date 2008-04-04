@@ -29,14 +29,15 @@ unit lsmtp;
 interface
 
 uses
-  Classes, SysUtils, Contnrs, lNet, lEvents, lCommon, lMimeWrapper, lMimeStreams;
+  Classes, SysUtils, Contnrs, Base64,
+  lNet, lEvents, lCommon, lMimeWrapper, lMimeStreams;
   
 type
   TLSMTP = class;
   TLSMTPClient = class;
   
-  TLSMTPStatus = (ssNone, ssCon, ssHelo, ssEhlo, ssMail,
-                  ssRcpt, ssData, ssRset, ssQuit);
+  TLSMTPStatus = (ssNone, ssCon, ssHelo, ssEhlo, ssAuthLogin, ssAuthPlain,
+                  ssMail, ssRcpt, ssData, ssRset, ssQuit);
 
   TLSMTPStatusSet = set of TLSMTPStatus;
 
@@ -119,6 +120,7 @@ type
     FStatus: TLSMTPStatusFront;
     FCommandFront: TLSMTPStatusFront;
     FPipeLine: Boolean;
+    FAuthStep: Integer;
 
     FOnConnect: TLSocketEvent;
     FOnReceive: TLSocketEvent;
@@ -146,11 +148,11 @@ type
     function CleanInput(var s: string): Integer;
     
     procedure EvaluateAnswer(const Ans: string);
-    
     procedure ExecuteFrontCommand;
     
     procedure ClearCR_LF;
     procedure SendData(const FromStream: Boolean = False);
+    function EncodeBase64(const s: string): string;
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
@@ -167,6 +169,8 @@ type
     
     procedure Helo(aHost: string = '');
     procedure Ehlo(aHost: string = '');
+    procedure AuthLogin(aName, aPass: string);
+    procedure AuthPlain(aName, aPass: string);
     procedure Mail(const From: string);
     procedure Rcpt(const RcptTo: string);
     procedure Data(const Msg: string);
@@ -197,7 +201,8 @@ const
 
 function StatusToStr(const aStatus: TLSMTPStatus): string;
 const
-  STATAR: array[ssNone..ssQuit] of string = ('ssNone', 'ssCon', 'ssHelo', 'ssEhlo', 'ssMail',
+  STATAR: array[ssNone..ssQuit] of string = ('ssNone', 'ssCon', 'ssHelo', 'ssEhlo',
+                                             'ssAuthLogin', 'ssAuthPlain', 'ssMail',
                                              'ssRcpt', 'ssData', 'ssRset', 'ssQuit');
 begin
   Result := STATAR[aStatus];
@@ -406,7 +411,45 @@ begin
                             Disconnect;
                           end;
               end;
-               
+              
+      ssAuthLogin:
+              case x of
+                200..299: begin
+                            Eventize(FStatus.First.Status, True);
+                            FStatus.Remove;
+                          end;
+                300..399: if FAuthStep = 0 then begin
+                            FBuffer := FBuffer + FStatus.First.Args[1] + CRLF;
+                            Inc(FAuthStep);
+                            SendData;
+                          end else if FAuthStep = 1 then begin
+                            FBuffer := FBuffer + FStatus.First.Args[2] + CRLF;
+                            Inc(FAuthStep);
+                            SendData;
+                          end else
+                            raise Exception.Create('Authentication out of sync');
+              else        begin
+                            Eventize(FStatus.First.Status, False);
+                            FStatus.Remove;
+                          end;
+              end;
+              
+      ssAuthPlain:
+              case x of
+                200..299: begin
+                            Eventize(FStatus.First.Status, True);
+                            FStatus.Remove;
+                          end;
+                300..399: begin
+                            FBuffer := FBuffer + FStatus.First.Args[1] + FStatus.First.Args[2] + CRLF;
+                            SendData;
+                          end;
+              else        begin
+                            Eventize(FStatus.First.Status, False);
+                            FStatus.Remove;
+                          end;
+              end;
+
       ssMail,
       ssRcpt: begin
                 Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
@@ -543,6 +586,26 @@ begin
     FOnSent(FConnection.Iterator, Sent);
 end;
 
+function TLSMTPClient.EncodeBase64(const s: string): string;
+var
+  Dummy: TBogusStream;
+  Enc: TBase64EncodingStream;
+begin
+  Result := '';
+  if Length(s) = 0 then
+    Exit;
+  
+  Dummy := TBogusStream.Create;
+  Enc := TBase64EncodingStream.Create(Dummy);
+
+  Enc.Write(s[1], Length(s));
+  Enc.Free;
+  SetLength(Result, Dummy.Size);
+  Dummy.Read(Result[1], Dummy.Size);
+
+  Dummy.Free;
+end;
+
 function TLSMTPClient.Connect(const aHost: string; const aPort: Word = 25): Boolean;
 begin
   Result := False;
@@ -645,6 +708,32 @@ begin
   if CanContinue(ssEhlo, aHost, '') then begin
     FBuffer := FBuffer + 'EHLO ' + aHost + CRLF;
     FStatus.Insert(MakeStatusRec(ssEhlo, '', ''));
+    SendData;
+  end;
+end;
+
+procedure TLSMTPClient.AuthLogin(aName, aPass: string);
+begin
+  aName := EncodeBase64(aName);
+  aPass := EncodeBase64(aPass);
+  FAuthStep := 0; // first, send username
+  
+  if CanContinue(ssAuthLogin, aName, aPass) then begin
+    FBuffer := FBuffer + 'AUTH LOGIN' + CRLF;
+    FStatus.Insert(MakeStatusRec(ssAuthLogin, aName, aPass));
+    SendData;
+  end;
+end;
+
+procedure TLSMTPClient.AuthPlain(aName, aPass: string);
+begin
+  aName := EncodeBase64(#0 + aName);
+  aPass := EncodeBase64(#0 + aPass);
+  FAuthStep := 0;
+
+  if CanContinue(ssAuthPlain, aName, aPass) then begin
+    FBuffer := FBuffer + 'AUTH PLAIN' + CRLF;
+    FStatus.Insert(MakeStatusRec(ssAuthPlain, aName, aPass));
     SendData;
   end;
 end;
