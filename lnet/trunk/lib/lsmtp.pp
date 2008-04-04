@@ -481,8 +481,8 @@ begin
       ssQuit: begin
                 Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
                 FStatus.Remove;
-                if Assigned(FOnDisconnect) then
-                  FOnDisconnect(FConnection.Iterator);
+{                if Assigned(FOnDisconnect) then
+                  FOnDisconnect(FConnection.Iterator);}
                 Disconnect;
               end;
     end;
