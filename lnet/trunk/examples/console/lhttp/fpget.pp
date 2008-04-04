@@ -102,7 +102,7 @@ begin
   SSLSession.CAFile := 'root.pem';
   SSLSession.KeyFile := 'client.pem';
   SSLSession.Password := 'password';
-  SSLSession.ActiveSSL := Pos('https', URL) = 1;
+  SSLSession.SSLActive := Pos('https', URL) = 1;
 
   HttpClient.Session := SSLSession;
   HttpClient.Host := Host;
