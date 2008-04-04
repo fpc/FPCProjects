@@ -503,7 +503,8 @@ end;
 function TLSelectEventer.CallAction: Boolean;
 var
   Temp, Temp2: TLHandle;
-  MaxHandle, n: Integer;
+  n: Integer;
+  MaxHandle: THandle;
   TempTime: TTimeVal;
 begin
   if FInLoop then
