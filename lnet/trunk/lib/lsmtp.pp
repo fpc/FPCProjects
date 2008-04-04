@@ -37,7 +37,7 @@ type
   TLSMTPClient = class;
   
   TLSMTPStatus = (ssNone, ssCon, ssHelo, ssEhlo, ssAuthLogin, ssAuthPlain,
-                  ssMail, ssRcpt, ssData, ssRset, ssQuit);
+                  ssStartTLS, ssMail, ssRcpt, ssData, ssRset, ssQuit);
 
   TLSMTPStatusSet = set of TLSMTPStatus;
 
@@ -169,6 +169,7 @@ type
     
     procedure Helo(aHost: string = '');
     procedure Ehlo(aHost: string = '');
+    procedure StartTLS;
     procedure AuthLogin(aName, aPass: string);
     procedure AuthPlain(aName, aPass: string);
     procedure Mail(const From: string);
@@ -202,8 +203,8 @@ const
 function StatusToStr(const aStatus: TLSMTPStatus): string;
 const
   STATAR: array[ssNone..ssQuit] of string = ('ssNone', 'ssCon', 'ssHelo', 'ssEhlo',
-                                             'ssAuthLogin', 'ssAuthPlain', 'ssMail',
-                                             'ssRcpt', 'ssData', 'ssRset', 'ssQuit');
+                                             'ssStartTLS', 'ssAuthLogin', 'ssAuthPlain',
+                                             'ssMail', 'ssRcpt', 'ssData', 'ssRset', 'ssQuit');
 begin
   Result := STATAR[aStatus];
 end;
@@ -412,6 +413,19 @@ begin
                           end;
               end;
               
+      ssStartTLS:
+              case x of
+                200..299: begin
+                            Eventize(FStatus.First.Status, True);
+                            FConnection.Iterator.SetState(ssSSLActive);
+                            FStatus.Remove;
+                          end;
+              else        begin
+                            Eventize(FStatus.First.Status, False);
+                            FStatus.Remove;
+                          end;
+              end;
+              
       ssAuthLogin:
               case x of
                 200..299: begin
@@ -426,8 +440,10 @@ begin
                             FBuffer := FBuffer + FStatus.First.Args[2] + CRLF;
                             Inc(FAuthStep);
                             SendData;
-                          end else
-                            raise Exception.Create('Authentication out of sync');
+                          end else begin
+                            Eventize(FStatus.First.Status, False);
+                            FStatus.Remove;
+                          end;
               else        begin
                             Eventize(FStatus.First.Status, False);
                             FStatus.Remove;
@@ -708,6 +724,15 @@ begin
   if CanContinue(ssEhlo, aHost, '') then begin
     FBuffer := FBuffer + 'EHLO ' + aHost + CRLF;
     FStatus.Insert(MakeStatusRec(ssEhlo, '', ''));
+    SendData;
+  end;
+end;
+
+procedure TLSMTPClient.StartTLS;
+begin
+  if CanContinue(ssStartTLS, '', '') then begin
+    FBuffer := FBuffer + 'STARTTLS' + CRLF;
+    FStatus.Insert(MakeStatusRec(ssStartTLS, '', ''));
     SendData;
   end;
 end;
