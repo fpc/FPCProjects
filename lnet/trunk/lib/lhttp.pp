@@ -1411,7 +1411,7 @@ begin
     end;
 
     { if we cannot send, then the send buffer is full }
-    if not FConnected or not (LSOCKF_CANSEND in FFeatures) then
+    if not FConnected or not (ssCanSend in FSocketState) then
       break;
 
     case FCurrentOutput.WriteBlock of

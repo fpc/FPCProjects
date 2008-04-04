@@ -33,13 +33,6 @@ uses
   {$i sys/osunits.inc}
 
 const
-  { Socket features }
-  LSOCKF_SERVERSOCKET = 1;
-  LSOCKF_BLOCKING     = 2;
-  LSOCKF_REUSEADDRESS = 3;
-  LSOCKF_CANSEND      = 4;
-  LSOCKF_CANRECEIVE   = 5;
-  LSOCKF_SSLACTIVE    = 6;
   { Address constants }
   LADDR_ANY = '0.0.0.0';
   LADDR_BR  = '255.255.255.255';
@@ -73,9 +66,13 @@ type
 
   { Callback Event procedure for progress reports}
   TLSocketProgressEvent = procedure (aSocket: TLSocket; const Bytes: Integer) of object;
-  
-  { TLSocketFeatures }
-  TLSocketFeatures = set of 1..16;
+
+  { TLSocketState }
+  TLSocketState = (ssServerSocket, ssBlocking, ssReuseAddress, ssCanSend,
+                   ssCanReceive, ssSSLActive);
+
+  { TLSocketStates }
+  TLSocketStates = set of TLSocketState;
 
   { TLSocket }
 
@@ -89,7 +86,7 @@ type
     FNextSock: TLSocket;
     FPrevSock: TLSocket;
     FIgnoreShutdown: Boolean;
-    FFeatures: TLSocketFeatures;
+    FSocketState: TLSocketStates;
     FOnFree: TLSocketEvent;
     FBlocking: Boolean;
     FListenBacklog: Integer;
@@ -126,7 +123,7 @@ type
     constructor Create; override;
     destructor Destroy; override;
     
-    function SetFeature(const aFeature: Byte; const TurnOn: Boolean = True): Boolean; virtual;
+    function SetState(const aState: TLSocketState; const TurnOn: Boolean = True): Boolean; virtual;
     
     function Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
     function Accept(const SerSock: TSocket): Boolean;
@@ -151,7 +148,7 @@ type
     property LocalPort: Word read GetLocalPort;
     property NextSock: TLSocket read FNextSock write FNextSock;
     property PrevSock: TLSocket read FPrevSock write FPrevSock;
-    property Features: TLSocketFeatures read FFeatures;
+    property SocketState: TLSocketStates read FSocketState;
     property Creator: TLComponent read FCreator;
     property Session: TLSession read FSession;
   end;
@@ -429,7 +426,7 @@ begin
   FListenBacklog := LDEFAULT_BACKLOG;
   FPrevSock := nil;
   FNextSock := nil;
-  FFeatures := [LSOCKF_CANSEND];
+  FSocketState := [ssCanSend];
   FConnected := False;
   FConnecting := False;
   FIgnoreShutdown := False;
@@ -446,26 +443,26 @@ begin
   Disconnect;
 end;
 
-function TLSocket.SetFeature(const aFeature: Byte; const TurnOn: Boolean = True): Boolean;
+function TLSocket.SetState(const aState: TLSocketState; const TurnOn: Boolean = True): Boolean;
 begin
   Result := False;
 
-  case aFeature of
-    LSOCKF_SERVERSOCKET : if TurnOn then
-                            FFeatures := FFeatures + [aFeature]
+  case aState of
+    ssServerSocket      : if TurnOn then
+                            FSocketState := FSocketState + [aState]
                           else
                             raise Exception.Create('Can not turn off server socket feature');
                             
-    LSOCKF_BLOCKING     : SetBlocking(TurnOn);
-    LSOCKF_REUSEADDRESS : SetReuseAddress(TurnOn);
+    ssBlocking          : SetBlocking(TurnOn);
+    ssReuseAddress      : SetReuseAddress(TurnOn);
 
-    LSOCKF_CANSEND,
-    LSOCKF_CANRECEIVE   : if TurnOn then
-                            FFeatures := FFeatures + [aFeature]
+    ssCanSend,
+    ssCanReceive        : if TurnOn then
+                            FSocketState := FSocketState + [aState]
                           else
-                            FFeatures := FFeatures - [aFeature];
+                            FSocketState := FSocketState - [aState];
     
-    LSOCKF_SSLACTIVE    : raise Exception.Create('Can not turn SSL/TLS on in TLSocket instance');
+    ssSSLActive         : raise Exception.Create('Can not turn SSL/TLS on in TLSocket instance');
   end;
   
   Result := True;
@@ -477,7 +474,7 @@ var
 begin
   WasConnected := FConnected;
   FDispose := True;
-  FFeatures := FFeatures + [LSOCKF_CANSEND, LSOCKF_CANRECEIVE];
+  FSocketState := FSocketState + [ssCanSend, ssCanReceive];
   FIgnoreWrite := True;
   if FConnected or FConnecting then begin
     FConnected := False;
@@ -534,12 +531,12 @@ end;
 
 function TLSocket.SendPossible: Boolean; inline;
 begin
-  Result := FConnected and (LSOCKF_CANSEND in FFeatures) and not (LSOCKF_SERVERSOCKET in FFeatures);
+  Result := FConnected and (ssCanSend in FSocketState) and not (ssServerSocket in FSocketState);
 end;
 
 function TLSocket.ReceivePossible: Boolean; inline;
 begin
-  Result := FConnected and (LSOCKF_CANRECEIVE in FFeatures) and not (LSOCKF_SERVERSOCKET in FFeatures);
+  Result := FConnected and (ssCanReceive in FSocketState) and not (ssServerSocket in FSocketState);
 end;
 
 procedure TLSocket.SetOptions;
@@ -664,11 +661,11 @@ begin
     LastError := LSocketError;
     if IsBlockError(LastError) then case aOp of
       0: begin
-           FFeatures := FFeatures - [LSOCKF_CANSEND];
+           FSocketState := FSocketState - [ssCanSend];
            IgnoreWrite := False;
          end;
       1: begin
-           FFeatures := FFeatures - [LSOCKF_CANRECEIVE];
+           FSocketState := FSocketState - [ssCanReceive];
            IgnoreRead := False;
          end;
     end else
@@ -883,7 +880,7 @@ end;
 procedure TLConnection.SendAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
-    SetFeature(LSOCKF_CANSEND);
+    SetState(ssCanSend);
     IgnoreWrite := True;
 
     FSession.SendEvent(aSocket);
@@ -1076,7 +1073,7 @@ end;
 procedure TLUdp.ReceiveAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
-    SetFeature(LSOCKF_CANRECEIVE);
+    SetState(ssCanReceive);
     FSession.ReceiveEvent(aSocket);
   end;
 end;
@@ -1196,7 +1193,7 @@ begin
   FRootSock.FIgnoreShutdown := True;
   FRootSock.SetReuseAddress(FReuseAddress);
   if FRootSock.Listen(APort, AIntf) then begin
-    FRootSock.SetFeature(LSOCKF_SERVERSOCKET);
+    FRootSock.SetState(ssServerSocket);
     FRootSock.FConnected := True;
     FIterator := FRootSock;
     Inc(FCount);
@@ -1225,7 +1222,7 @@ begin
     else if Assigned(FIterator.PrevSock) then
       FIterator := FIterator.PrevSock
     else FIterator := nil; // NOT iterreset, not reorganized yet
-    if Assigned(FIterator) and (LSOCKF_SERVERSOCKET in FIterator.Features) then
+    if Assigned(FIterator) and (ssServerSocket in FIterator.SocketState) then
       FIterator := nil;
   end;
 
@@ -1310,7 +1307,7 @@ begin
     Tmp.FPrevSock := FRootSock;
     
     if not Assigned(FIterator)      // if we don't have (bug?) an iterator yet
-    or (LSOCKF_SERVERSOCKET in FIterator.Features) then // or if it's the first socket accepted
+    or (ssServerSocket in FIterator.SocketState) then // or if it's the first socket accepted
       FIterator := Tmp;  // assign it as iterator (don't assign later acceptees)
       
     Inc(FCount);
@@ -1327,11 +1324,11 @@ end;
 
 procedure TLTcp.ReceiveAction(aSocket: TLHandle);
 begin
-  if (TLSocket(aSocket) = FRootSock) and (LSOCKF_SERVERSOCKET in TLSocket(aSocket).Features) then
+  if (TLSocket(aSocket) = FRootSock) and (ssServerSocket in TLSocket(aSocket).SocketState) then
     AcceptAction(aSocket)
   else with TLSocket(aSocket) do begin
     if FConnected then begin
-      SetFeature(LSOCKF_CANRECEIVE);
+      SetState(ssCanReceive);
       FSession.ReceiveEvent(aSocket);
 
       if not FConnected then begin
@@ -1392,7 +1389,7 @@ function TLTcp.GetValidSocket: TLSocket;
 begin
   Result := nil;
   
-  if Assigned(FIterator) and not (LSOCKF_SERVERSOCKET in FIterator.Features) then
+  if Assigned(FIterator) and not (ssServerSocket in FIterator.SocketState) then
     Result := FIterator
   else if Assigned(FRootSock) and Assigned(FRootSock.FNextSock) then
     Result := FRootSock.FNextSock;
