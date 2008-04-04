@@ -14,8 +14,11 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    ButtonAuth: TButton;
+    ButtonTLS: TButton;
     ButtonSend: TButton;
     ButtonConnect: TButton;
+    CheckBoxSSL: TCheckBox;
     GBConnection: TGroupBox;
     EditFrom: TEdit;
     EditSubject: TEdit;
@@ -23,6 +26,7 @@ type
     GBEmail: TGroupBox;
     LabelAtt: TLabel;
     ListBoxAttachments: TListBox;
+    SSLSession: TLSSLSessionComponent;
     MainMenu: TMainMenu;
     LabelSubject: TLabel;
     LabelTo: TLabel;
@@ -47,8 +51,11 @@ type
     LabelServer: TLabel;
     SB: TStatusBar;
     TimerQuit: TTimer;
+    procedure ButtonAuthClick(Sender: TObject);
     procedure ButtonConnectClick(Sender: TObject);
     procedure ButtonSendClick(Sender: TObject);
+    procedure ButtonTLSClick(Sender: TObject);
+    procedure CheckBoxSSLChange(Sender: TObject);
     procedure EditFromKeyPress(Sender: TObject; var Key: Char);
     procedure EditServerKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -65,6 +72,7 @@ type
     procedure SMTPFailure(aSocket: TLSocket; const aStatus: TLSMTPStatus);
     procedure SMTPSent(aSocket: TLSocket; const Bytes: Integer);
     procedure SMTPSuccess(aSocket: TLSocket; const aStatus: TLSMTPStatus);
+    procedure SSLSessionSSLConnect(aSocket: TLSocket);
     procedure TimerQuitTimer(Sender: TObject);
   private
     FDataSent: Int64;
@@ -89,7 +97,7 @@ procedure TMainForm.SMTPConnect(aSocket: TLSocket);
 begin
   SB.SimpleText := 'Connected to server...';
   FormLogs.MemoLogs.Append(SB.SimpleText);
-  SMTP.Helo(EditServer.Text);
+  SMTP.Ehlo(EditServer.Text);
   if SMTP.Connected then begin
     ButtonSend.Enabled := SMTP.Connected;
     ButtonConnect.Caption := 'Disconnect';
@@ -166,6 +174,15 @@ begin
     SMTP.Quit; // server will respond and we'll make a clean disconnect (see SMTP rfc)
 end;
 
+procedure TMainForm.ButtonAuthClick(Sender: TObject);
+var
+  aName, aPass: string;
+begin
+  if InputQuery('Name', 'Please specify login name', False, aName) then
+    if InputQuery('Password', 'Please specify login password', True, aPass) then
+      SMTP.AuthLogin(aName, aPass);
+end;
+
 procedure TMainForm.ButtonSendClick(Sender: TObject);
 begin
   if Length(EditFrom.Text) < 6 then
@@ -181,6 +198,23 @@ begin
     FDataSize := FMimeStream.Size; // get size to send
     
     SMTP.SendMail(EditFrom.Text, EditTo.Text, EditSubject.Text, FMimeStream); // send the stream
+  end;
+end;
+
+procedure TMainForm.ButtonTLSClick(Sender: TObject);
+begin
+  SMTP.StartTLS;
+end;
+
+procedure TMainForm.CheckBoxSSLChange(Sender: TObject);
+begin
+  SSLSession.SSLActive := CheckBoxSSL.Checked;
+  if CheckBoxSSL.Checked then begin
+    if EditPort.Text = '25'then
+      EditPort.Text := '465';
+  end else begin
+    if EditPort.Text = '465' then
+      EditPort.Text := '25';
   end;
 end;
 
@@ -250,6 +284,12 @@ begin
                 Close;
             end;
   end;
+end;
+
+procedure TMainForm.SSLSessionSSLConnect(aSocket: TLSocket);
+begin
+  SB.SimpleText := 'TLS handshake complete';
+  FormLogs.MemoLogs.Append(SB.SimpleText);
 end;
 
 procedure TMainForm.TimerQuitTimer(Sender: TObject);

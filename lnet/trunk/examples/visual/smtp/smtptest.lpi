@@ -59,7 +59,6 @@
     <Version Value="5"/>
     <PathDelim Value="\"/>
     <SearchPaths>
-      <LCLWidgetType Value="win32"/>
       <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
     </SearchPaths>
     <CodeGeneration>
