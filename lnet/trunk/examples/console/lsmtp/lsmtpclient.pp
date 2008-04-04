@@ -123,7 +123,6 @@ begin
   FSSL.Password := 'password'; // password for the SSL stuff
   
   FSMTP := TLSMTPClient.Create(Self);
-  FSMTP.PipeLine := True; // let's emulate pipeline on this end, better support for multiple servers
   FSMTP.Session := FSSL; // set the SSL session, so if it's a SSL/TLS SMTP we can use it
   FSMTP.Timeout := 100; // responsive enough, but won't hog CPU
   FSMTP.OnReceive := @OnReceive; // assign all events
