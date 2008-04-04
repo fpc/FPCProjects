@@ -169,7 +169,7 @@ type
     property CAFile;
     property KeyFile;
     property Method;
-    property ActiveSSL;
+    property SSLActive;
   end;
 
 implementation
