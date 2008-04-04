@@ -163,13 +163,18 @@ type
     property Session;
   end;
   
+  { TLSSLSessionComponent }
+
   TLSSLSessionComponent = class(TLSSLSession)
+   protected
+    procedure CreateSSLContext; override;
    published
     property Password;
     property CAFile;
     property KeyFile;
     property Method;
-    property SSLActive;
+    property SSLActive default True;
+    property OnSSLConnect;
   end;
 
 implementation
@@ -232,6 +237,14 @@ constructor TLHTTPServerComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   Eventer := LCLEventer;
+end;
+
+{ TLSSLSessionComponent }
+
+procedure TLSSLSessionComponent.CreateSSLContext;
+begin
+  if not (csDesigning in ComponentState) then
+    inherited CreateSSLContext;
 end;
 
 initialization

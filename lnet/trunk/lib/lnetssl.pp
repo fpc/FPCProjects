@@ -69,7 +69,7 @@ type
     procedure SetMethod(const AValue: TLSSLMethod);
     procedure SetPasswordCallback(const AValue: TLPasswordCB);
     
-    procedure CreateSSLContext;
+    procedure CreateSSLContext; virtual;
    public
     constructor Create(aOwner: TComponent); override;
     
