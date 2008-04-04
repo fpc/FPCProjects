@@ -54,7 +54,7 @@ begin
                    end;
         #13      : begin
                      Writeln;
-                     Exit('');
+                     Exit;
                    end;
         #8       : if Length(Result) > 0 then begin
                      SetLength(Result, Length(Result)-1);
