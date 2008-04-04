@@ -145,7 +145,10 @@ end;
 
 function TLSSLSocket.GetConnected: Boolean;
 begin
-  Result := Assigned(FSSL) and (FStatusSSL = ssNone);
+  if ssSSLActive in FSocketState then
+    Result := Assigned(FSSL) and (FStatusSSL = ssNone)
+  else
+    Result := inherited;
 end;
 
 function TLSSLSocket.DoSend(const aData; const aSize: Integer): Integer;
