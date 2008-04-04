@@ -21,16 +21,14 @@ type
     FSSL: PSSL;
     FSSLContext: PSSL_CTX;
     FStatusSSL: TLStatusSSL;
-    FActiveSSL: Boolean;
     function GetConnected: Boolean; override;
-    function IsServerSocket: Boolean;
-    
+
     function DoSend(const aData; const aSize: Integer): Integer; override;
     function DoGet(out aData; const aSize: Integer): Integer; override;
     
     function HandleResult(const aResult, aOp: Integer): Integer; override;
 
-    procedure SetActiveSSL(const AValue: Boolean);
+    function SetActiveSSL(const AValue: Boolean): Boolean;
     procedure SetConnecting(const AValue: Boolean);
 
     procedure ConnectEvent(aSSLContext: PSSL_CTX);
@@ -40,10 +38,11 @@ type
     procedure LogError(const msg: string; const ernum: Integer); override;
    public
     destructor Destroy; override;
+    
+    function SetFeature(const aFeature: Byte; const TurnOn: Boolean = True): Boolean; override;
 
     procedure Disconnect; override;
    public
-    property ActiveSSL: Boolean read FActiveSSL write SetActiveSSL;
     property StatusSSL: TLStatusSSL read FStatusSSL;
   end;
 
@@ -51,7 +50,7 @@ type
 
   TLSSLSession = class(TLSession)
    protected
-    FActiveSSL: Boolean;
+    FSSLActive: Boolean;
     FSSLContext: PSSL_CTX;
     FPassword: string;
     FCAFile: string;
@@ -86,7 +85,7 @@ type
     property Method: TLMethodSSL read FMethod write SetMethod;
     property PasswordCallback: TLPasswordCB read FPasswordCallback write SetPasswordCallback;
     property SSLContext: PSSL_CTX read FSSLContext;
-    property ActiveSSL: Boolean read FActiveSSL write FActiveSSL;
+    property SSLActive: Boolean read FSSLActive write FSSLActive;
   end;
   
   function IsSSLBlockError(const anError: Longint): Boolean; inline;
@@ -116,10 +115,15 @@ end;
 
 { TLSSLSocket }
 
-procedure TLSSLSocket.SetActiveSSL(const AValue: Boolean);
+function TLSSLSocket.SetActiveSSL(const AValue: Boolean): Boolean;
 begin
-  if FActiveSSL = AValue then Exit;
-  FActiveSSL := AValue;
+  Result := False;
+  
+  if (LSOCKF_SSLACTIVE in FFeatures) = AValue then Exit(True);
+  case aValue of
+    True  : FFeatures := FFeatures + [LSOCKF_SSLACTIVE];
+    False : FFeatures := FFeatures - [LSOCKF_SSLACTIVE];
+  end;
   
   if aValue and FConnected then
     ConnectEvent(FSSLContext);
@@ -130,6 +134,8 @@ begin
     else if FStatusSSL = ssConnect then
       raise Exception.Create('Switching SSL mode on socket during SSL handshake is not supported');
   end;
+  
+  Result := True;
 end;
 
 procedure TLSSLSocket.SetConnecting(const AValue: Boolean);
@@ -142,14 +148,9 @@ begin
   Result := Assigned(FSSL) and (FStatusSSL = ssNone);
 end;
 
-function TLSSLSocket.IsServerSocket: Boolean;
-begin
-  Result := FServerSocket;
-end;
-
 function TLSSLSocket.DoSend(const aData; const aSize: Integer): Integer;
 begin
-  if FActiveSSL then
+  if LSOCKF_SSLACTIVE in FFeatures then
     Result := SSLWrite(FSSL, @aData, aSize)
   else
     Result := inherited DoSend(aData, aSize);
@@ -157,7 +158,7 @@ end;
 
 function TLSSLSocket.DoGet(out aData; const aSize: Integer): Integer;
 begin
-  if FActiveSSL then
+  if LSOCKF_SSLACTIVE in FFeatures then
     Result := SSLRead(FSSL, @aData, aSize)
   else
     Result := inherited DoGet(aData, aSize);
@@ -169,7 +170,7 @@ const
 var
   LastError: cInt;
 begin
-  if not FActiveSSL then
+  if not LSOCKF_SSLACTIVE in FFeatures then
     Exit(inherited HandleResult(aResult, aOp));
     
   Result := aResult;
@@ -177,11 +178,11 @@ begin
     LastError := SslGetError(FSSL, Result);
     if IsSSLBlockError(LastError) then case aOp of
       0: begin
-           FCanSend := False;
+           FFeatures := FFeatures - [LSOCKF_CANSEND];
            IgnoreWrite := False;
          end;
       1: begin
-           FCanReceive := False;
+           FFeatures := FFeatures - [LSOCKF_CANRECEIVE];
            IgnoreRead := False;
          end;
     end else
@@ -216,7 +217,7 @@ procedure TLSSLSocket.LogError(const msg: string; const ernum: Integer);
 var
   s: string;
 begin
-  if not FActiveSSL then
+  if not LSOCKF_SSLACTIVE in FFeatures then
     inherited LogError(msg, ernum)
   else if Assigned(FOnError) then begin
     if ernum > 0 then begin
@@ -234,6 +235,16 @@ begin
   SslFree(FSSL);
 end;
 
+function TLSSLSocket.SetFeature(const aFeature: Byte; const TurnOn: Boolean
+  ): Boolean;
+begin
+  case aFeature of
+    LSOCKF_SSLACTIVE: Result := SetActiveSSL(TurnOn);
+  else
+    Result := inherited SetFeature(aFeature, TurnOn);
+  end;
+end;
+
 procedure TLSSLSocket.ConnectSSL;
 var
   c: cInt;
@@ -243,12 +254,12 @@ begin
     case SslGetError(FSSL, c) of
       SSL_ERROR_WANT_READ  : begin // make sure we're watching for reads and flag status
                                FStatusSSL := ssConnect;
-                               FCanReceive := False;
+                               FFeatures := FFeatures - [LSOCKF_CANRECEIVE];
                                IgnoreRead := False;
                              end;
       SSL_ERROR_WANT_WRITE : begin // make sure we're watching for writes and flag status
                                FStatusSSL := ssConnect;
-                               FCanSend := False;
+                               FFeatures := FFeatures - [LSOCKF_CANSEND];
                                IgnoreWrite := False;
                              end;
     else
@@ -284,7 +295,7 @@ end;
 
 procedure TLSSLSocket.Disconnect;
 begin
-  if FActiveSSL then begin
+  if LSOCKF_SSLACTIVE in FFeatures then begin
     FStatusSSL := ssShutdown;
     ShutdownSSL;
   end;
@@ -394,7 +405,7 @@ constructor TLSSLSession.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   FPasswordCallback := @PasswordCB;
-  FActiveSSL := True;
+  FSSLActive := True;
 end;
 
 procedure TLSSLSession.RegisterWithComponent(aConnection: TLConnection);
@@ -408,12 +419,13 @@ end;
 procedure TLSSLSession.InitHandle(aHandle: TLHandle);
 begin
   inherited;
-  TLSSLSocket(aHandle).FActiveSSL := FActiveSSL;
+  if FSSLActive then
+    TLSSLSocket(aHandle).SetFeature(LSOCKF_SSLACTIVE);
 end;
 
 procedure TLSSLSession.ConnectEvent(aHandle: TLHandle);
 begin
-  if not TLSSLSocket(aHandle).ActiveSSL then
+  if not (LSOCKF_SSLACTIVE in TLSSLSocket(aHandle).Features) then
     inherited ConnectEvent(aHandle)
   else if HandleSSLConnection(TLSSLSocket(aHandle)) then
     CallConnectEvent(aHandle);
@@ -421,11 +433,11 @@ end;
 
 procedure TLSSLSession.ReceiveEvent(aHandle: TLHandle);
 begin
-  if not TLSSLSocket(aHandle).ActiveSSL then
+  if not (LSOCKF_SSLACTIVE in TLSSLSocket(aHandle).Features) then
     inherited ReceiveEvent(aHandle)
   else if TLSSLSocket(aHandle).FConnecting then begin
     if HandleSSLConnection(TLSSLSocket(aHandle)) then
-    case TLSSLSocket(aHandle).IsServerSocket of
+    case LSOCKF_SERVERSOCKET in TLSSLSocket(aHandle).Features of
       True  : CallAcceptEvent(aHandle);
       False : CallConnectEvent(aHandle);
     end;
@@ -435,7 +447,7 @@ end;
 
 procedure TLSSLSession.AcceptEvent(aHandle: TLHandle);
 begin
-  if not TLSSLSocket(aHandle).ActiveSSL then
+  if not (LSOCKF_SSLACTIVE in TLSSLSocket(aHandle).Features) then
     inherited AcceptEvent(aHandle)
   else if HandleSSLConnection(TLSSLSocket(aHandle)) then
     CallAcceptEvent(aHandle);

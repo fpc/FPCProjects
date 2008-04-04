@@ -1411,7 +1411,7 @@ begin
     end;
 
     { if we cannot send, then the send buffer is full }
-    if not FCanSend or not FConnected then
+    if not FConnected or not (LSOCKF_CANSEND in FFeatures) then
       break;
 
     case FCurrentOutput.WriteBlock of
