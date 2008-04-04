@@ -75,7 +75,7 @@ type
   TLSocketProgressEvent = procedure (aSocket: TLSocket; const Bytes: Integer) of object;
   
   { TLSocketFeatures }
-  TLSocketFeatures = set of Byte;
+  TLSocketFeatures = set of 1..16;
 
   { TLSocket }
 
