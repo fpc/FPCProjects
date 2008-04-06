@@ -58,6 +58,7 @@ var
   Port: Word;
   dummy: THTTPHandler;
   index: Integer;
+  UseSSL: Boolean;
   SSLSession: TLSSLSession;
 begin
   if ParamCount = 0 then
@@ -69,7 +70,7 @@ begin
   { parse URL }
   URL := ParamStr(1);
   
-  DecomposeURL(URL, Host, URI, Port);
+  UseSSL := DecomposeURL(URL, Host, URI, Port);
   Writeln('Host: ', Host, ' URI: ', URI, ' Port: ', Port);
 
   if ParamCount >= 2 then
@@ -102,7 +103,7 @@ begin
   SSLSession.CAFile := '..' + PathDelim + '..' + PathDelim + 'root.pem';
   SSLSession.KeyFile := '..' + PathDelim + '..' + PathDelim + 'client.pem';
   SSLSession.Password := 'password';
-  SSLSession.SSLActive := Pos('https', URL) = 1;
+  SSLSession.SSLActive := UseSSL;
 
   HttpClient.Session := SSLSession;
   HttpClient.Host := Host;

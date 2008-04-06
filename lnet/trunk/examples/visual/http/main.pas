@@ -17,6 +17,7 @@ type
     EditURL: TEdit;
     HTTPClient: TLHTTPClientComponent;
     LabelURI: TLabel;
+    SSL: TLSSLSessionComponent;
     MainMenu1: TMainMenu;
     MemoHTML: TMemo;
     MemoStatus: TMemo;
@@ -36,6 +37,7 @@ type
     procedure HTTPClientProcessHeaders(ASocket: TLHTTPClientSocket);
     procedure MenuItemAboutClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
+    procedure SSLSSLConnect(aSocket: TLSocket);
   private
     HTTPBuffer: string;
     procedure AppendToMemo(aMemo: TMemo; const aText: string);
@@ -67,7 +69,7 @@ var
   aPort: Word;
 begin
   HTTPBuffer := '';
-  DecomposeURL(EditURL.Text, aHost, aURI, aPort);
+  SSL.SSLActive := DecomposeURL(EditURL.Text, aHost, aURI, aPort);
   HTTPClient.Host := aHost;
   HTTPClient.URI  := aURI;
   HTTPClient.Port := aPort;
@@ -115,6 +117,11 @@ end;
 procedure TMainForm.MenuItemExitClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TMainForm.SSLSSLConnect(aSocket: TLSocket);
+begin
+  MemoStatus.Append('TLS handshake successful');
 end;
 
 procedure TMainForm.AppendToMemo(aMemo: TMemo; const aText: string);

@@ -12,6 +12,7 @@ object MainForm: TMainForm
   Constraints.MinHeight = 559
   Constraints.MinWidth = 647
   Menu = MainMenu1
+  LCLVersion = '0.9.25'
   object MenuPanel: TPanel
     Height = 40
     Top = 494
@@ -77,6 +78,7 @@ object MainForm: TMainForm
     OnProcessHeaders = HTTPClientProcessHeaders
     OnDisconnect = HTTPClientDisconnect
     OnError = HTTPClientError
+    Session = SSL
     left = 584
     top = 456
   end
@@ -97,5 +99,14 @@ object MainForm: TMainForm
         OnClick = MenuItemAboutClick
       end
     end
+  end
+  object SSL: TLSSLSessionComponent
+    Password = 'password'
+    CAFile = '../../root.pem'
+    KeyFile = '../../client.pem'
+    SSLActive = False
+    OnSSLConnect = SSLSSLConnect
+    left = 552
+    top = 456
   end
 end
