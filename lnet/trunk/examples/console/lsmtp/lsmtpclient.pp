@@ -118,8 +118,8 @@ begin
   FSSL := TLSSLSession.Create(Self);
   FSSL.SSLActive := False; // make it "off" by default
   FSSL.OnSSLConnect := @OnSSLConnect; // let's watch if TLS/SSL handshake is ok
-  FSSL.CAFile := 'root.pem'; // certificates chain file
-  FSSL.KeyFile := 'client.pem'; // our SSL file
+  FSSL.CAFile := '..' + PathDelim + '..' + PathDelim + 'root.pem'; // certificates chain file
+  FSSL.KeyFile := '..' + PathDelim + '..' + PathDelim + 'client.pem'; // our SSL file
   FSSL.Password := 'password'; // password for the SSL stuff
   
   FSMTP := TLSMTPClient.Create(Self);

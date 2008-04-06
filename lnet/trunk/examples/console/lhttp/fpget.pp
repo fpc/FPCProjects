@@ -99,8 +99,8 @@ begin
   HttpClient := TLHTTPClient.Create(nil);
 
   SSLSession := TLSSLSession.Create(HttpClient);
-  SSLSession.CAFile := 'root.pem';
-  SSLSession.KeyFile := 'client.pem';
+  SSLSession.CAFile := '..' + PathDelim + '..' + PathDelim + 'root.pem';
+  SSLSession.KeyFile := '..' + PathDelim + '..' + PathDelim + 'client.pem';
   SSLSession.Password := 'password';
   SSLSession.SSLActive := Pos('https', URL) = 1;
 

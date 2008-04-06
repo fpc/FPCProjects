@@ -81,6 +81,6 @@ LazarusResources.Add('TMainForm','FORMDATA',[
   +'uItemDelete'#7'Caption'#6#6'Delete'#7'OnClick'#7#19'MenuItemDeleteClick'#0#0
   +#0#11'TOpenDialog'#2'OD'#11'FilterIndex'#2#0#4'left'#3'h'#1#3'top'#3#184#0#0
   +#0#21'TLSSLSessionComponent'#10'SSLSession'#8'Password'#6#8'password'#6'CAFi'
-  +'le'#6#8'root.pem'#7'KeyFile'#6#10'client.pem'#9'SSLActive'#8#12'OnSSLConnec'
-  +'t'#7#20'SSLSessionSSLConnect'#4'left'#3'h'#1#3'top'#3#248#0#0#0#0
+  +'le'#6#14'../../root.pem'#7'KeyFile'#6#16'../../client.pem'#9'SSLActive'#8#12
+  +'OnSSLConnect'#7#20'SSLSessionSSLConnect'#4'left'#3'h'#1#3'top'#3#248#0#0#0#0
 ]);

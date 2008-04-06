@@ -300,8 +300,8 @@ object MainForm: TMainForm
   end
   object SSLSession: TLSSLSessionComponent
     Password = 'password'
-    CAFile = 'root.pem'
-    KeyFile = 'client.pem'
+    CAFile = '../../root.pem'
+    KeyFile = '../../client.pem'
     SSLActive = False
     OnSSLConnect = SSLSessionSSLConnect
     left = 360
