@@ -51,7 +51,7 @@ type
   function HTTPEncode(const AStr: string): string;
   function HexToNum(AChar: char): byte;
   
-  procedure DecomposeURL(const URL: string; out Host, URI: string; out Port: Word);
+  function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word): Boolean;
   function ComposeURL(Host, URI: string; const Port: Word): string;
 
 implementation
@@ -232,13 +232,15 @@ begin
   until false;
 end;
 
-procedure DecomposeURL(const URL: string; out Host, URI: string; out Port: Word);
+function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word): Boolean;
 var
   hl, index: Integer;
   DefPort: Word = 80;
 begin
+  Result := False;
   hl := 8;
   if Pos('https://', URL) = 1 then begin
+    Result := True;
     hl := 9;
     DefPort := 443;
   end;
