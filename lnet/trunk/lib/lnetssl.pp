@@ -63,8 +63,8 @@ type
     function CanCreateContext: Boolean;
     procedure CallOnSSLConnect(aSocket: TLSocket);
     
-    procedure SetCAFile(const AValue: string);
-    procedure SetKeyFile(const AValue: string);
+    procedure SetCAFile(AValue: string);
+    procedure SetKeyFile(AValue: string);
     procedure SetPassword(const AValue: string);
     procedure SetMethod(const AValue: TLSSLMethod);
     procedure SetPasswordCallback(const AValue: TLPasswordCB);
@@ -329,8 +329,9 @@ begin
     FOnSSLConnect(aSocket);
 end;
 
-procedure TLSSLSession.SetCAFile(const AValue: string);
+procedure TLSSLSession.SetCAFile(AValue: string);
 begin
+  DoDirSeparators(aValue);
   if aValue = FCAFile then Exit;
   if FActive then
     raise Exception.Create('Cannot change certificate file on active session');
@@ -340,8 +341,9 @@ begin
     CreateSSLContext;
 end;
 
-procedure TLSSLSession.SetKeyFile(const AValue: string);
+procedure TLSSLSession.SetKeyFile(AValue: string);
 begin
+  DoDirSeparators(aValue);
   if aValue = FKeyFile then Exit;
   if FActive then
     raise Exception.Create('Cannot change key file on active session');
