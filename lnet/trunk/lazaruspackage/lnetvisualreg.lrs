@@ -54,6 +54,21 @@ LazarusResources.Add('TLSMTPClientComponent','XPM',[
   +'ddd###dd#..",'#10'"..#dd###dddddd####dd#..",'#10'"..#ddddddddddddddddd#..",'
   +#10'"..###################..",'#10'"......................."};'#10
 ]);
+LazarusResources.Add('TLSSLSession','XPM',[
+  '/* XPM */'#10'static char *udpicon[] = {'#10'/* columns rows colors chars-pe'
+  +'r-pixel */'#10'"23 23 4 1",'#10'". c black",'#10'"x c red",'#10'"z c #CECEC'
+  +'E",'#10'"o c None",'#10'/*.pixels.*/'#10'"ooo....ooo....ooo.ooooo",'#10'"oo'
+  +'.xxxx.o.xxxx.o.x.oooo",'#10'"o.x....o.x....oo.x.oooo",'#10'"oo.xxxx.o.xxxx.'
+  +'o.x.oooo",'#10'"ooo....x.o....x..x...oo",'#10'"oo.xxxx.o.xxxx.o.xxxx.o",'#10
+  +'"ooo....ooo....ooo....oo",'#10'"ooooooooooooooooooooooo",'#10'"oooooooooooo'
+  +'ooooooooooo",'#10'"ooooooooo.....ooooooooo",'#10'"oooooooo.zzzzz.oooooooo",'
+  +#10'"ooooooo.zzzzzzz.ooooooo",'#10'"oooooo.zzz...zzz.oooooo",'#10'"oooooo.zz'
+  +'.....zz.oooooo",'#10'"ooooo.zzzzzzzzzzz.ooooo",'#10'"ooooo.zzzz...zzzz.oooo'
+  +'o",'#10'"ooooo.zzzz...zzzz.ooooo",'#10'"ooooo.zzzzz.zzzzz.ooooo",'#10'"oooo'
+  +'o.zzzzz..zzzz.ooooo",'#10'"ooooo.zzzzzzzzzzz.ooooo",'#10'"oooooo...........'
+  +'oooooo",'#10'"ooooooooooooooooooooooo",'#10'"ooooooooooooooooooooooo"'#10'}'
+  +';'#10
+]);
 LazarusResources.Add('TLTcpComponent','XPM',[
   '/* XPM */'#10'static char *tcpicon[] = {'#10'/* columns rows colors chars-pe'
   +'r-pixel */'#10'"23 23 4 1",'#10'"  c black",'#10'"z c #2050cc",'#10'". c #5'
