@@ -54,7 +54,7 @@ LazarusResources.Add('TLSMTPClientComponent','XPM',[
   +'ddd###dd#..",'#10'"..#dd###dddddd####dd#..",'#10'"..#ddddddddddddddddd#..",'
   +#10'"..###################..",'#10'"......................."};'#10
 ]);
-LazarusResources.Add('TLSSLSession','XPM',[
+LazarusResources.Add('TLSSLSessionComponent','XPM',[
   '/* XPM */'#10'static char *udpicon[] = {'#10'/* columns rows colors chars-pe'
   +'r-pixel */'#10'"23 23 4 1",'#10'". c black",'#10'"x c red",'#10'"z c #CECEC'
   +'E",'#10'"o c None",'#10'/*.pixels.*/'#10'"ooo....ooo....ooo.ooooo",'#10'"oo'
