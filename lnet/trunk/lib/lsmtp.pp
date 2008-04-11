@@ -86,6 +86,7 @@ type
   TLSMTP = class(TLComponent)
    protected
     FConnection: TLTcp;
+    FFeatureList: TStringList;
    protected
     function GetTimeout: Integer;
     procedure SetTimeout(const AValue: Integer);
@@ -103,6 +104,8 @@ type
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
+    
+    function HasFeature(aFeature: string): Boolean;
    public
     property Connected: Boolean read GetConnected;
     property Connection: TLTcp read FConnection;
@@ -111,6 +114,7 @@ type
     property Eventer: TLEventer read GetEventer write SetEventer;
     property Timeout: Integer read GetTimeout write SetTimeout;
     property Session: TLSession read GetSession write SetSession;
+    property FeatureList: TStringList read FFeatureList;
   end;
 
   { TLSMTPClient }
@@ -134,6 +138,7 @@ type
     FStatusSet: TLSMTPStatusSet;
     FBuffer: string;
     FDataBuffer: string; // intermediate wait buffer on DATA command
+    FTempBuffer: string;
     FCharCount: Integer; // count of chars from last CRLF
     FStream: TStream;
    protected
@@ -147,6 +152,8 @@ type
     
     function CleanInput(var s: string): Integer;
     
+    procedure EvaluateServer;
+    procedure EvaluateFeatures;
     procedure EvaluateAnswer(const Ans: string);
     procedure ExecuteFrontCommand;
     
@@ -267,6 +274,7 @@ constructor TLSMTP.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   
+  FFeatureList := TStringList.Create;
   FConnection := TLTcp.Create(nil);
   // TODO: rework to use the new TLSocketTCP
   FConnection.SocketClass := TLSocket;
@@ -274,9 +282,44 @@ end;
 
 destructor TLSMTP.Destroy;
 begin
+  FFeatureList.Free;
   FConnection.Free;
 
   inherited Destroy;
+end;
+
+function TLSMTP.HasFeature(aFeature: string): Boolean;
+var
+  tmp: TStringList;
+  i, j: Integer;
+  AllArgs: Boolean;
+begin
+  Result := False;
+  try
+    tmp := TStringList.Create;
+    aFeature := UpperCase(aFeature);
+    aFeature := StringReplace(aFeature, ' ', ',', [rfReplaceAll]);
+    tmp.CommaText := aFeature;
+    for i := 0 to FFeatureList.Count - 1 do begin
+      if Pos(tmp[0], FFeatureList[i]) = 1 then begin
+        if tmp.Count = 1 then // no arguments, feature found, just exit true
+          Exit(True)
+        else begin // check arguments
+          AllArgs := True;
+          for j := 1 to tmp.Count - 1 do
+            if Pos(tmp[j], FFeatureList[i]) <= 0 then begin // some argument not found
+              AllArgs := False;
+              Break;
+            end;
+          if AllArgs then
+            Exit(True);
+        end;
+      end;
+    end;
+
+  finally
+    tmp.Free;
+  end;
 end;
 
 { TLSMTPClient }
@@ -351,14 +394,55 @@ var
   i: Integer;
 begin
   FSL.Text := s;
+
+  case FStatus.First.Status of // TODO: clear this to a proper place, the whole thing needs an overhaul
+    ssCon,
+    ssEhlo: FTempBuffer := FTempBuffer + UpperCase(s);
+  end;
+
   if FSL.Count > 0 then
-    for i := 0 to FSL.Count-1 do
+    for i := 0 to FSL.Count - 1 do
       if Length(FSL[i]) > 0 then EvaluateAnswer(FSL[i]);
   s := StringReplace(s, CRLF, LineEnding, [rfReplaceAll]);
   i := Pos('PASS', s);
   if i > 0 then
     s := Copy(s, 1, i-1) + 'PASS';
   Result := Length(s);
+end;
+
+procedure TLSMTPClient.EvaluateServer;
+begin
+  FFeatureList.Clear;
+  if Length(FTempBuffer) = 0 then
+    Exit;
+
+  if Pos('ESMTP', FTempBuffer) > 0 then
+    FFeatureList.Append('EHLO');
+  FTempBuffer := '';
+end;
+
+procedure TLSMTPClient.EvaluateFeatures;
+var
+  i: Integer;
+begin
+  FFeatureList.Clear;
+  if Length(FTempBuffer) = 0 then
+    Exit;
+
+  FFeatureList.Text := FTempBuffer;
+  FTempBuffer := '';
+  FFeatureList.Delete(0);
+
+  i := 0;
+  while i < FFeatureList.Count do begin;
+    FFeatureList[i] := Copy(FFeatureList[i], 5, Length(FFeatureList[i])); // delete the response code crap
+    FFeatureList[i] := StringReplace(FFeatureList[i], '=', ' ', [rfReplaceAll]);
+    if FFeatureList.IndexOf(FFeatureList[i]) <> i then begin
+      FFeatureList.Delete(i);
+      Continue;
+    end;
+    Inc(i);
+  end;
 end;
 
 procedure TLSMTPClient.EvaluateAnswer(const Ans: string);
@@ -398,18 +482,25 @@ var
   x: Integer;
 begin
   x := GetNum;
+
   if ValidResponse(Ans) and not FStatus.Empty then
     case FStatus.First.Status of
       ssCon,
       ssHelo,
       ssEhlo: case x of
                 200..299: begin
+                            case FStatus.First.Status of
+                              ssCon  : EvaluateServer;
+                              ssEhlo : EvaluateFeatures;
+                            end;
                             Eventize(FStatus.First.Status, True);
                             FStatus.Remove;
                           end;
               else        begin
                             Eventize(FStatus.First.Status, False);
                             Disconnect;
+                            FFeatureList.Clear;
+                            FTempBuffer := '';
                           end;
               end;
               
@@ -627,6 +718,7 @@ begin
   Result := False;
   Disconnect;
   if FConnection.Connect(aHost, aPort) then begin
+    FTempBuffer := '';
     FHost := aHost;
     FPort := aPort;
     FStatus.Insert(MakeStatusRec(ssCon, '', ''));
@@ -722,6 +814,7 @@ begin
   if Length(aHost) = 0 then
     aHost := FHost;
   if CanContinue(ssEhlo, aHost, '') then begin
+    FTempBuffer := ''; // for ehlo response
     FBuffer := FBuffer + 'EHLO ' + aHost + CRLF;
     FStatus.Insert(MakeStatusRec(ssEhlo, '', ''));
     SendData;
