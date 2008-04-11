@@ -79,6 +79,7 @@ type
     FDataSize: Int64;
     FMimeStream: TMimeStream;
     FQuit: Boolean; // to see if we force quitting
+    procedure RefreshFeatureList;
   public
     { public declarations }
   end; 
@@ -97,15 +98,14 @@ procedure TMainForm.SMTPConnect(aSocket: TLSocket);
 begin
   SB.SimpleText := 'Connected to server...';
   FormLogs.MemoLogs.Append(SB.SimpleText);
-  SMTP.Ehlo(EditServer.Text);
-  if SMTP.Connected then begin
-    ButtonSend.Enabled := SMTP.Connected;
-    ButtonConnect.Caption := 'Disconnect';
-  end;
+  ButtonSend.Enabled := SMTP.Connected;
+  ButtonConnect.Caption := 'Disconnect';
 end;
 
 procedure TMainForm.SMTPDisconnect(aSocket: TLSocket);
 begin
+  ButtonAuth.Visible := False;
+  ButtonTLS.Visible := False;
   SB.SimpleText := 'Disconnected from server';
   FormLogs.MemoLogs.Append(SB.SimpleText);
   ButtonSend.Enabled := SMTP.Connected;
@@ -179,8 +179,12 @@ var
   aName, aPass: string;
 begin
   if InputQuery('Name', 'Please specify login name', False, aName) then
-    if InputQuery('Password', 'Please specify login password', True, aPass) then
-      SMTP.AuthLogin(aName, aPass);
+    if InputQuery('Password', 'Please specify login password', True, aPass) then begin
+      if SMTP.HasFeature('AUTH LOGIN') then // use login if possible
+        SMTP.AuthLogin(aName, aPass)
+      else if SMTP.HasFeature('AUTH PLAIN') then // fall back to plain if possible
+        SMTP.AuthPlain(aName, aPass);
+    end;
 end;
 
 procedure TMainForm.ButtonSendClick(Sender: TObject);
@@ -232,13 +236,13 @@ end;
 
 procedure TMainForm.SMTPReceive(aSocket: TLSocket);
 var
-  s: string;
+  s, st: string;
 begin
   if SMTP.GetMessage(s) > 0 then begin
-    s := StringReplace(s, #13, '', [rfReplaceAll]);
-    s := StringReplace(s, #10, '', [rfReplaceAll]);
-    SB.SimpleText := s;
-    FormLogs.MemoLogs.Append(SB.SimpleText);
+    st := StringReplace(s, #13, '', [rfReplaceAll]);
+    st := StringReplace(st, #10, '', [rfReplaceAll]);
+    SB.SimpleText := st;
+    FormLogs.MemoLogs.Append(s);
   end;
 end;
 
@@ -258,6 +262,8 @@ procedure TMainForm.SMTPFailure(aSocket: TLSocket;
   const aStatus: TLSMTPStatus);
 begin
   case aStatus of
+    ssCon,
+    ssEhlo: RefreshFeatureList;
     ssData: MessageDlg('Error sending message', mtError, [mbOK], 0);
     ssQuit: begin
               SMTP.Disconnect;
@@ -277,6 +283,17 @@ procedure TMainForm.SMTPSuccess(aSocket: TLSocket;
   const aStatus: TLSMTPStatus);
 begin
   case aStatus of
+    ssCon : begin
+              if SMTP.HasFeature('EHLO') then // check for EHLO support
+                SMTP.Ehlo(EditServer.Text)
+              else
+                SMTP.Helo(EditServer.Text);
+            end;
+    ssEhlo: RefreshFeatureList;
+    
+    ssAuthLogin,
+    ssAuthPlain : SMTP.Ehlo; // re-ehlo to get new features after auth
+
     ssData: MessageDlg('Message sent successfuly', mtInformation, [mbOK], 0);
     ssQuit: begin
               SMTP.Disconnect;
@@ -290,12 +307,26 @@ procedure TMainForm.SSLSessionSSLConnect(aSocket: TLSocket);
 begin
   SB.SimpleText := 'TLS handshake complete';
   FormLogs.MemoLogs.Append(SB.SimpleText);
+  { re-ehlo to get new feature list, do this here, not on SMTPSuccess because
+    handshake can take time and while it's in progress, sending of any data
+    including SMTP commands is going to fail and disconnect us! }
+  SMTP.Ehlo;
 end;
 
 procedure TMainForm.TimerQuitTimer(Sender: TObject);
 begin
   FQuit := True;
   Close;
+end;
+
+procedure TMainForm.RefreshFeatureList;
+begin
+  with FormLogs do begin
+    ListBoxFeatures.Clear;
+    ListBoxFeatures.Items.AddStrings(MainForm.SMTP.FeatureList);
+  end;
+  ButtonTLS.Visible := SMTP.HasFeature('STARTTLS');
+  ButtonAuth.Visible := SMTP.HasFeature('AUTH PLAIN') or SMTP.HasFeature('AUTH LOGIN');
 end;
 
 initialization

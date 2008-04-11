@@ -12,6 +12,9 @@ type
   { TFormLogs }
 
   TFormLogs = class(TForm)
+    GroupBoxFeatures: TGroupBox;
+    GroupBoxLog: TGroupBox;
+    ListBoxFeatures: TListBox;
     MemoLogs: TMemo;
   private
     { private declarations }
@@ -23,6 +26,8 @@ var
   FormLogs: TFormLogs;
 
 implementation
+
+{ TFormLogs }
 
 initialization
   {$I logs.lrs}
