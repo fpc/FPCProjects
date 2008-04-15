@@ -328,7 +328,7 @@ constructor TLSMTPClient.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   FPort := 25;
-  FStatusSet := []; // empty set for "ok/not-ok" Event
+  FStatusSet := [ssCon..ssQuit]; // full set
   FSL := TStringList.Create;
 //  {$warning TODO: fix pipelining support when server does it}
   FPipeLine := False;
