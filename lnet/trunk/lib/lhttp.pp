@@ -999,6 +999,9 @@ end;
 procedure TLHTTPSocket.DelayFree(AOutputItem: TOutputItem);
 begin
   if AOutputItem = nil then exit;
+  { check whether already in delayed free list }
+  if AOutputItem = FDelayFreeItems then exit;
+  if AOutputItem.FNextDelayFree <> nil then exit;
   if FDelayFreeItems <> nil then
     FDelayFreeItems.FPrevDelayFree := AOutputItem;
   AOutputItem.FNextDelayFree := FDelayFreeItems;
