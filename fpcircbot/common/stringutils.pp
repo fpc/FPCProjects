@@ -105,8 +105,8 @@ begin
     Result := StringReplace (Result, '>',      '&gt;',    [rfReplaceAll]);
     Result := StringReplace (Result, '"',      '&quot;',  [rfReplaceAll]);
     Result := StringReplace (Result, #39,      '&#39;',   [rfReplaceAll]);
-    Result := StringReplace (Result, #$8b,     '&#8249;', [rfReplaceAll]);
-    Result := StringReplace (Result, #$9b,     '&#8250;', [rfReplaceAll]);
+    //Result := StringReplace (Result, #$8b,     '&#8249;', [rfReplaceAll]); <- Extended ASCII code always different on each code page !
+    //Result := StringReplace (Result, #$9b,     '&#8250;', [rfReplaceAll]); <- Extended ASCII code always different on each code page !
     Result := StringReplace (Result, chr(&12), '&#10;',   [rfReplaceAll]);
     Result := StringReplace (Result, chr(&15), '&#13;',   [rfReplaceAll]);
   end;
@@ -133,8 +133,8 @@ begin
     Result := StringReplace (Result, '>',      '&gt;',    [rfReplaceAll]);
     Result := StringReplace (Result, '"',      '&quot;',  [rfReplaceAll]);
     Result := StringReplace (Result, #39,      '&#39;',   [rfReplaceAll]);
-    Result := StringReplace (Result, #$8b,     '&#8249;', [rfReplaceAll]);
-    Result := StringReplace (Result, #$9b,     '&#8250;', [rfReplaceAll]);
+    //Result := StringReplace (Result, #$8b,     '&#8249;', [rfReplaceAll]); <- Extended ASCII code always different on each code page !
+    //Result := StringReplace (Result, #$9b,     '&#8250;', [rfReplaceAll]); <- Extended ASCII code always different on each code page !
 {    Result := StringReplace (Result, chr(&12), '&#10;',   [rfReplaceAll]);
     Result := StringReplace (Result, chr(&15), '&#13;',   [rfReplaceAll]);}
   end;

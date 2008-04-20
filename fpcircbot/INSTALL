@@ -23,7 +23,7 @@ COMPILATION AND INSTALL:
 
 make
 make compile
-make install (as root) [only with DB support]
+make inst (as root) [only with DB support]
 
 -----------------------------------MANUAL INSTALL GUIDE--------------------------------------------
 
