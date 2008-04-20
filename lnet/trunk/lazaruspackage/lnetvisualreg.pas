@@ -18,13 +18,13 @@ unit LNetVisualReg;
 
 interface
 
-uses
-  Classes, LResources, LazarusPackageIntf,
-  lNetComponents;
-
 procedure Register;
 
 implementation
+
+uses
+  Classes, LResources, LazarusPackageIntf, PropEdits,
+  lNetComponents;
 
 procedure Register;
 begin
@@ -32,6 +32,11 @@ begin
                                TLFTPClientComponent, TLSMTPClientComponent,
                                TLHTTPClientComponent, TLHTTPServerComponent,
                                TLSSLSessionComponent]);
+                               
+  RegisterPropertyEditor(TypeInfo(ansistring), TLSSLSessionComponent, 'CAFile',
+                                                     TFileNamePropertyEditor);
+  RegisterPropertyEditor(TypeInfo(ansistring), TLSSLSessionComponent, 'KeyFile',
+                                                     TFileNamePropertyEditor);
 end;
 
 initialization
