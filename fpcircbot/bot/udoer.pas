@@ -273,18 +273,18 @@ begin
     s:=StringReplace(s, '.', ' ', [rfReplaceAll]);
     s:=StringReplace(s, ',', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '"', ' ', [rfReplaceAll]);
-    s:=StringReplace(s, '-', ' ', [rfReplaceAll]);
-    s:=StringReplace(s, '_', ' ', [rfReplaceAll]);
+//    s:=StringReplace(s, '-', ' ', [rfReplaceAll]);
+//    s:=StringReplace(s, '_', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '=', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '+', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '!', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '?', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '/', ' ', [rfReplaceAll]);
-    s:=StringReplace(s, '\', ' ', [rfReplaceAll]);
+//    s:=StringReplace(s, '\', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '>', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '<', ' ', [rfReplaceAll]);
-    s:=StringReplace(s, '[', ' ', [rfReplaceAll]);
-    s:=StringReplace(s, ']', ' ', [rfReplaceAll]);
+//    s:=StringReplace(s, '[', ' ', [rfReplaceAll]);
+//    s:=StringReplace(s, ']', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '{', ' ', [rfReplaceAll]);
     s:=StringReplace(s, '}', ' ', [rfReplaceAll]);
 
