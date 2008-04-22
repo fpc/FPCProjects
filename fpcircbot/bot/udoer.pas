@@ -61,12 +61,14 @@ type
     FSList: TStringList;
     FGreetList: TStringList;
     FGreetings: TStringList; // for each channel
+    FIgnoreList: TStringList;
     FIrcBot: TLIrcBot;
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
     function SpellCheck(const Word, Lang: string): string;
     procedure SetGreetings(const Value: TStringList);
     procedure SetGreetList(const Value: TStringList);
+    procedure SetIgnoreList(aValue: TStringList);
     procedure CleanChannels;
     procedure AddChannels(Bot: TLIrcBot);
     {$ifndef nodb}
@@ -111,6 +113,8 @@ type
     procedure OnListPusers(Caller: TLIrcBot);
     procedure OnMarkov(Caller: TLIrcBot);
     procedure OnSetMarkov(Caller: TLIrcBot);
+    procedure OnIgnore(Caller: TLIrcBot);
+    procedure OnUnIgnore(Caller: TLIrcBot);
     procedure OnCleanChans(Caller: TLIrcBot);
     procedure OnRecieve(Caller: TLIrcBot);
     procedure OnDisconnect(Caller: TLIrcBot);
@@ -120,6 +124,7 @@ type
     procedure Listen;
     property GreetList: TStringList read FGreetList write SetGreetList;
     property Greetings: TStringList read FGreetings write SetGreetings;
+    property IgnoreList: TStringList read FIgnoreList write SetIgnoreList;
     {$ifndef noDB}
     property Connection: TLUdp read FPasteUDP;
     {$endif}
@@ -144,6 +149,7 @@ constructor TDoer.Create(aBot: TLIrcBot);
   end;
 
 begin
+  FIgnoreList := TStringList.Create;
   FIrcBot:=aBot;
   Quit:=False;
   SpellCount:=3;
@@ -209,6 +215,7 @@ end;
 
 destructor TDoer.Destroy;
 begin
+  FIgnoreList.Free;
   FMarkov.Free;
   FSList.Free;
   FLL.Free;
@@ -326,6 +333,20 @@ begin
     if Value.Count > 0 then
       for i:=0 to Value.Count-1 do
         FGreetList.Add(Value[i]);
+  end;
+end;
+
+procedure TDoer.SetIgnoreList(aValue: TStringList);
+var
+  i: Integer;
+begin
+  FIgnoreList.CommaText := aValue[0];
+  FIgnoreList.Delete(0); // delete $none
+  for i := FIgnoreList.Count - 1 downto 0 do begin
+    if Length(Trim(FIgnoreList[i])) = 0 then
+      FIgnoreList.Delete(i)
+    else
+      FIgnoreList[i] := LowerCase(FIgnoreList[i]);
   end;
 end;
 
@@ -922,6 +943,51 @@ begin
   end else Caller.Respond('Markov generator is turned off, turn it on with Markov command');
 end;
 
+procedure TDoer.OnIgnore(Caller: TLIrcBot);
+var
+  l: TStringList;
+  s: string;
+begin
+  with Caller, Caller.LastLine do begin
+    if Length(Trim(Arguments)) > 0 then begin
+      l := SepString(Trim(Arguments));
+      if l.Count = 1 then begin
+        s := LowerCase(l[0]);
+        if FIgnoreList.IndexOf(s) < 0 then begin
+          FIgnoreList.Add(s);
+          Respond('As ordered');
+        end else Respond(l[0] + ' is already in the list');
+      end else Respond('Syntax: Ignore [nick]');
+    end else begin
+      if FIgnoreList.Count > 0 then
+        Respond(FIgnoreList.CommaText)
+      else
+        Respond('Noone is being ignored');
+    end;
+  end;
+end;
+
+procedure TDoer.OnUnIgnore(Caller: TLIrcBot);
+var
+  l: TStringList;
+  i: Integer;
+begin
+  with Caller, Caller.LastLine do begin
+    if Length(Trim(Arguments)) > 0 then begin
+      l := SepString(Trim(Arguments));
+      if l.Count = 1 then begin
+        i := FIgnoreList.IndexOf(LowerCase(l[0]));
+        if i < 0 then
+          Respond(l[0] + ' is not in the list')
+        else begin
+          FIgnoreList.Delete(i);
+          Respond('As ordered');
+        end;
+      end else Respond('Syntax: Unignore <nick>');
+    end else Respond('Syntax: Unignore <nick>');
+  end;
+end;
+
 procedure TDoer.OnCleanChans(Caller: TLIrcBot);
 begin
   CleanChannels;
@@ -972,6 +1038,10 @@ var
 begin
   with Caller.LastLine do
     Writeln('(', DateTimeToStr(Now), ')$', Sender, '$', Reciever, '$', Msg);
+    
+  if FIgnoreList.IndexOf(LowerCase(Caller.LastLine.Sender)) >= 0 then
+    Exit; // ignore them
+    
   if Logging then begin
     TheLastLine:=Caller.LastLine;
     LogMessage;

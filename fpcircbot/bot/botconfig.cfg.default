@@ -12,7 +12,11 @@ Almindor,?,#lentilwars
 !$none means exactly that, just one $none means no reports on no port
 $none
 
-!3rd line consists of channel list where greetings are set, enty $none is REQUIRED as 1st
+!3rd line consists of ignored users, $none is REQUIRED as 1st
+
+$none,
+
+!4rd line consists of channel list where greetings are set, enty $none is REQUIRED as 1st
 !example: $none,#chan1,#chan2
 
 $none,
