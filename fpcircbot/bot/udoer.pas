@@ -993,6 +993,7 @@ procedure TDoer.IgnoreMe(Caller: TLIrcBot);
 var
   l: TStringList;
   s, a: string;
+  i: Integer;
 begin
   with Caller, Caller.LastLine do begin
     if Length(Trim(Arguments)) > 0 then begin
@@ -1001,11 +1002,12 @@ begin
         a := Trim(LowerCase(l[0]));
         if (a = 'yes') or (a = 'no') or (a = 'on') or (a = 'off') then begin
           s := Trim(LowerCase(Sender));
-          if FIgnoreList.IndexOf(s) >= 0 then begin
+          i := FIgnoreList.IndexOf(s);
+          if i >= 0 then begin
             if (a = 'on') or (a = 'yes') then
               Respond('You are already being ignored')
             else begin
-              FIgnoreList.Add(s);
+              FIgnoreList.Delete(i);
               Respond('As ordered');
             end;
           end else begin
