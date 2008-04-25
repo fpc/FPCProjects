@@ -162,6 +162,7 @@ begin
   Con.AddCommand('pastebin', @Doer.OnPasteUrl, 'Syntax: pastebin [title] Info: makes me tell you where the pastebin is (don''t use in private)');
   Con.AddCommand('listpusers', @Doer.OnListPUsers, 'Syntax: listpusers Info: makes me list power users');
   Con.AddCommand('markov', @Doer.OnMarkov, 'Syntax: markov [on/off] Info: if parameter is empty, I will display info about the markov generator. If parameter is on/off it will start/shutdown the markov response generator (starting and shuting down the generator works only for power users).');
+  Con.AddCommand('ignoreme', @Doer.IgnoreMe, 'Syntax: ignoreme [yes/no/on/off] Info: tells you if you''re in the ignore list if you don''t specify params. With on/yes it will add you to the ignore list, and vice versa');
 
   // Power user commands
   Con.AddPCommand('spellcount', @Doer.OnSpellCount, 'Syntax: spellcount [count] Info: makes me set the maximum number of suggested spellings for a word. If [count] is empty I will tell the current count, otherwise I will set to the given number');

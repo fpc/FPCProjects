@@ -115,6 +115,7 @@ type
     procedure OnSetMarkov(Caller: TLIrcBot);
     procedure OnIgnore(Caller: TLIrcBot);
     procedure OnUnIgnore(Caller: TLIrcBot);
+    procedure IgnoreMe(Caller: TLIrcBot);
     procedure OnCleanChans(Caller: TLIrcBot);
     procedure OnRecieve(Caller: TLIrcBot);
     procedure OnDisconnect(Caller: TLIrcBot);
@@ -985,6 +986,43 @@ begin
         end;
       end else Respond('Syntax: Unignore <nick>');
     end else Respond('Syntax: Unignore <nick>');
+  end;
+end;
+
+procedure TDoer.IgnoreMe(Caller: TLIrcBot);
+var
+  l: TStringList;
+  s, a: string;
+begin
+  with Caller, Caller.LastLine do begin
+    if Length(Trim(Arguments)) > 0 then begin
+      l := SepString(Trim(Arguments));
+      if l.Count = 1 then begin
+        a := Trim(LowerCase(l[0]));
+        if (a = 'yes') or (a = 'no') or (a = 'on') or (a = 'off') then begin
+          s := Trim(LowerCase(Sender));
+          if FIgnoreList.IndexOf(s) >= 0 then begin
+            if (a = 'on') or (a = 'yes') then
+              Respond('You are already being ignored')
+            else begin
+              FIgnoreList.Add(s);
+              Respond('As ordered');
+            end;
+          end else begin
+            if (a = 'on') or (a = 'yes') then begin
+              FIgnoreList.Add(s);
+              Respond('As ordered');
+            end else
+              Respond('You are not being ignored');
+          end;
+        end else Respond('Syntax: IgnoreMe [on/off/yes/no]');
+      end else Respond('Syntax: IgnoreMe [on/off/yes/no]');
+    end else begin
+      if FIgnoreList.Indexof(Sender) >= 0 then
+        Respond('You are being ignored')
+      else
+        Respond('You''re not being ignored');
+    end;
   end;
 end;
 
