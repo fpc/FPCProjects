@@ -118,10 +118,7 @@ begin
   FSSL := TLSSLSession.Create(Self);
   FSSL.SSLActive := False; // make it "off" by default
   FSSL.OnSSLConnect := @OnSSLConnect; // let's watch if TLS/SSL handshake is ok
-  FSSL.CAFile := '..' + PathDelim + '..' + PathDelim + 'root.pem'; // certificates chain file
-  FSSL.KeyFile := '..' + PathDelim + '..' + PathDelim + 'client.pem'; // our SSL file
-  FSSL.Password := 'password'; // password for the SSL stuff
-  
+
   FSMTP := TLSMTPClient.Create(Self);
   FSMTP.Session := FSSL; // set the SSL session, so if it's a SSL/TLS SMTP we can use it
   FSMTP.Timeout := 100; // responsive enough, but won't hog CPU

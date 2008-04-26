@@ -4,10 +4,10 @@ object MainForm: TMainForm
   Top = 202
   Width = 471
   HorzScrollBar.Page = 470
-  VertScrollBar.Page = 442
+  VertScrollBar.Page = 440
   ActiveControl = EditFrom
   Caption = 'SMTP Client Test'
-  ClientHeight = 443
+  ClientHeight = 441
   ClientWidth = 471
   Constraints.MinHeight = 468
   Constraints.MinWidth = 471
@@ -17,13 +17,13 @@ object MainForm: TMainForm
   LCLVersion = '0.9.25'
   object SB: TStatusBar
     Height = 21
-    Top = 422
+    Top = 420
     Width = 471
     Panels = <>
   end
   object ButtonSend: TButton
     Height = 24
-    Top = 378
+    Top = 376
     Width = 471
     Align = alBottom
     BorderSpacing.InnerBorder = 4
@@ -162,7 +162,7 @@ object MainForm: TMainForm
         Left = 126
         Height = 22
         Top = 38
-        Width = 78
+        Width = 79
         Caption = 'Use SSL'
         OnChange = CheckBoxSSLChange
         TabOrder = 3
@@ -190,12 +190,12 @@ object MainForm: TMainForm
     end
   end
   object Panel2: TPanel
-    Height = 234
+    Height = 232
     Top = 144
     Width = 471
     Align = alBottom
     Anchors = [akTop, akLeft, akRight, akBottom]
-    ClientHeight = 234
+    ClientHeight = 232
     ClientWidth = 471
     TabOrder = 2
     object LabelAtt: TLabel
@@ -208,7 +208,7 @@ object MainForm: TMainForm
     end
     object MemoText: TMemo
       Left = 1
-      Height = 143
+      Height = 141
       Hint = 'Message text'
       Top = 1
       Width = 469
@@ -221,7 +221,7 @@ object MainForm: TMainForm
       Left = 1
       Height = 65
       Hint = 'Attachments'
-      Top = 168
+      Top = 166
       Width = 469
       Align = alBottom
       OnDblClick = MenuItemAddClick
@@ -234,7 +234,7 @@ object MainForm: TMainForm
   end
   object ProgressBar: TProgressBar
     Height = 20
-    Top = 402
+    Top = 400
     Width = 471
     Align = alBottom
     Max = 100
@@ -409,9 +409,6 @@ object MainForm: TMainForm
     top = 184
   end
   object SSLSession: TLSSLSessionComponent
-    Password = 'password'
-    CAFile = '../../root.pem'
-    KeyFile = '../../client.pem'
     SSLActive = False
     OnSSLConnect = SSLSessionSSLConnect
     left = 360

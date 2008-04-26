@@ -1,13 +1,13 @@
 object MainForm: TMainForm
-  Left = 214
+  Left = 325
   Height = 559
-  Top = 116
+  Top = 127
   Width = 647
   HorzScrollBar.Page = 646
-  VertScrollBar.Page = 533
+  VertScrollBar.Page = 531
   ActiveControl = EditURL
   Caption = 'HTTP Client Test'
-  ClientHeight = 534
+  ClientHeight = 532
   ClientWidth = 647
   Constraints.MinHeight = 559
   Constraints.MinWidth = 647
@@ -15,7 +15,7 @@ object MainForm: TMainForm
   LCLVersion = '0.9.25'
   object MenuPanel: TPanel
     Height = 40
-    Top = 494
+    Top = 492
     Width = 647
     Align = alBottom
     ClientHeight = 40
@@ -50,14 +50,14 @@ object MainForm: TMainForm
   end
   object MemoStatus: TMemo
     Height = 103
-    Top = 391
+    Top = 389
     Width = 647
     Align = alBottom
     ScrollBars = ssAutoVertical
     TabOrder = 1
   end
   object MemoHTML: TMemo
-    Height = 381
+    Height = 379
     Width = 647
     Align = alClient
     ScrollBars = ssAutoBoth
@@ -65,7 +65,7 @@ object MainForm: TMainForm
   end
   object PanelSep: TPanel
     Height = 10
-    Top = 381
+    Top = 379
     Width = 647
     Align = alBottom
     TabOrder = 3
@@ -101,9 +101,6 @@ object MainForm: TMainForm
     end
   end
   object SSL: TLSSLSessionComponent
-    Password = 'password'
-    CAFile = '../../root.pem'
-    KeyFile = '../../client.pem'
     SSLActive = False
     OnSSLConnect = SSLSSLConnect
     left = 552

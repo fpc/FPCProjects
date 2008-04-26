@@ -100,9 +100,6 @@ begin
   HttpClient := TLHTTPClient.Create(nil);
 
   SSLSession := TLSSLSession.Create(HttpClient);
-  SSLSession.CAFile := '..' + PathDelim + '..' + PathDelim + 'root.pem';
-  SSLSession.KeyFile := '..' + PathDelim + '..' + PathDelim + 'client.pem';
-  SSLSession.Password := 'password';
   SSLSession.SSLActive := UseSSL;
 
   HttpClient.Session := SSLSession;
