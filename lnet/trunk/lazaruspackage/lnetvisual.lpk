@@ -33,7 +33,7 @@
 "/>
     <License Value="LGPL with exception, see LICENSE and LICENSE.addon
 "/>
-    <Version Minor="6"/>
+    <Version Minor="6" Release="1"/>
     <Files Count="7">
       <Item1>
         <Filename Value="lclnet.pas"/>
