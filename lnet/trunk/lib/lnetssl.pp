@@ -60,9 +60,9 @@ type
     FMethod: TLSSLMethod;
     FPasswordCallback: TLPasswordCB;
     
-    function CanCreateContext: Boolean;
     procedure CallOnSSLConnect(aSocket: TLSocket);
     
+    procedure SetSSLActive(const AValue: Boolean);
     procedure SetCAFile(AValue: string);
     procedure SetKeyFile(AValue: string);
     procedure SetPassword(const AValue: string);
@@ -88,7 +88,7 @@ type
     property Method: TLSSLMethod read FMethod write SetMethod;
     property PasswordCallback: TLPasswordCB read FPasswordCallback write SetPasswordCallback;
     property SSLContext: PSSL_CTX read FSSLContext;
-    property SSLActive: Boolean read FSSLActive write FSSLActive;
+    property SSLActive: Boolean read FSSLActive write SetSSLActive;
     property OnSSLConnect: TLSocketEvent read FOnSSLConnect write FOnSSLConnect;
   end;
   
@@ -129,10 +129,9 @@ begin
     False : FSocketState := FSocketState - [ssSSLActive];
   end;
   
-  if aValue and FConnected then begin
+  if aValue and FConnected then
     ActivateTLSEvent;
-  end;
-    
+
   if not aValue then begin
     if Connected then
       ShutdownSSL
@@ -318,9 +317,12 @@ end;
 
 { TLSSLSession }
 
-function TLSSLSession.CanCreateContext: Boolean;
+procedure TLSSLSession.SetSSLActive(const AValue: Boolean);
 begin
-  Result := (Length(FCAFile) > 0) and (Length(FPassword) > 0) and (Length(FKeyFile) > 0);
+  if aValue = FSSLActive then Exit;
+  FSSLActive := aValue;
+  if aValue then
+    CreateSSLContext;
 end;
 
 procedure TLSSLSession.CallOnSSLConnect(aSocket: TLSocket);
@@ -333,71 +335,48 @@ procedure TLSSLSession.SetCAFile(AValue: string);
 begin
   DoDirSeparators(aValue);
   if aValue = FCAFile then Exit;
-  if FActive then
-    raise Exception.Create('Cannot change certificate file on active session');
   FCAFile := aValue;
-  
-  if CanCreateContext then
-    CreateSSLContext;
+  CreateSSLContext;
 end;
 
 procedure TLSSLSession.SetKeyFile(AValue: string);
 begin
   DoDirSeparators(aValue);
   if aValue = FKeyFile then Exit;
-  if FActive then
-    raise Exception.Create('Cannot change key file on active session');
   FKeyFile := aValue;
-  
-  if CanCreateContext then
-    CreateSSLContext;
+  CreateSSLContext;
 end;
 
 procedure TLSSLSession.SetPassword(const AValue: string);
 begin
   if aValue = FPassword then Exit;
-  if FActive then
-    raise Exception.Create('Cannot change password on active session');
   FPassword := aValue;
-
-  if CanCreateContext then
-    CreateSSLContext;
+  CreateSSLContext;
 end;
 
 procedure TLSSLSession.SetMethod(const AValue: TLSSLMethod);
 begin
   if aValue = FMethod then Exit;
-  if FActive then
-    raise Exception.Create('Cannot change SSL method on active session');
   FMethod := aValue;
-  
-  if CanCreateContext then
-    CreateSSLContext;
+  CreateSSLContext;
 end;
 
 procedure TLSSLSession.SetPasswordCallback(const AValue: TLPasswordCB);
 begin
   if aValue = FPasswordCallback then Exit;
-  if FActive then
-    raise Exception.Create('Cannot change SSL password callback on active session');
   FPasswordCallback := aValue;
-
-  if CanCreateContext then
-    CreateSSLContext;
+  CreateSSLContext;
 end;
 
 procedure TLSSLSession.CreateSSLContext;
 var
   aMethod: PSSL_METHOD;
 begin
-  if not CanCreateContext then
-    raise Exception.Create('Cannot create SSL context without password, keyfile and cafile set');
-
-  if FActive then
-    raise Exception.Create('Cannot create SSL context on an already active session');
-    
   if Assigned(FSSLContext) then
     SSLCTXFree(FSSLContext);
+    
+  if not FSSLActive then
+    Exit;
 
   case FMethod of
     msSSLv2or3 : aMethod := SslMethodV23;
@@ -410,16 +389,20 @@ begin
   if not Assigned(FSSLContext) then
     raise Exception.Create('Error creating SSL CTX: SSLCTXNew');
 
-  if SslCtxUseCertificateChainFile(FSSLContext, FKeyFile) = 0 then
-    raise Exception.Create('Error creating SSL CTX: SslCtxUseCertificateChainFile');
+  if Length(FKeyFile) > 0 then begin
+    if SslCtxUseCertificateChainFile(FSSLContext, FKeyFile) = 0 then
+      raise Exception.Create('Error creating SSL CTX: SslCtxUseCertificateChainFile');
 
-  SslCtxSetDefaultPasswdCb(FSSLContext, FPasswordCallback);
-  SslCtxSetDefaultPasswdCbUserdata(FSSLContext, Self);
-  if SSLCTXUsePrivateKeyFile(FSSLContext, FKeyfile, SSL_FILETYPE_PEM) = 0 then
-    raise Exception.Create('Error creating SSL CTX: SSLCTXUsePrivateKeyFile');
+    SslCtxSetDefaultPasswdCb(FSSLContext, FPasswordCallback);
+    SslCtxSetDefaultPasswdCbUserdata(FSSLContext, Self);
+  
+    if SSLCTXUsePrivateKeyFile(FSSLContext, FKeyfile, SSL_FILETYPE_PEM) = 0 then
+      raise Exception.Create('Error creating SSL CTX: SSLCTXUsePrivateKeyFile');
+  end;
 
-  if SSLCTXLoadVerifyLocations(FSSLContext, FCAFile, pChar(nil)) = 0 then
-    raise Exception.Create('Error creating SSL CTX: SSLCTXLoadVerifyLocations');
+  if Length(FCAFile) > 0 then
+    if SSLCTXLoadVerifyLocations(FSSLContext, FCAFile, pChar(nil)) = 0 then
+      raise Exception.Create('Error creating SSL CTX: SSLCTXLoadVerifyLocations');
 end;
 
 constructor TLSSLSession.Create(aOwner: TComponent);
@@ -427,6 +410,7 @@ begin
   inherited Create(aOwner);
   FPasswordCallback := @PasswordCB;
   FSSLActive := True;
+  CreateSSLContext;
 end;
 
 procedure TLSSLSession.RegisterWithComponent(aConnection: TLConnection);
@@ -482,13 +466,9 @@ end;
 function TLSSLSession.HandleSSLConnection(aSocket: TLSSLSocket): Boolean;
 begin
   Result := False;
-  FActive := True;
   
   if not Assigned(FSSLContext) then
-    if not CanCreateContext then
-      raise Exception.Create('Context is not/can not be created on connect or accept event')
-    else
-      CreateSSLContext;
+    raise Exception.Create('Context not created during SSL connect/accept');
 
   case aSocket.FSSLStatus of
     slNone        : aSocket.ConnectEvent;
