@@ -1,4 +1,4 @@
-function imagelib_add_edge(ASource: TFPCustomImage; ASize: integer; const AColor: TFPColor): TFPCustomImage;
+function imagelib_add_edge(ASource: TFPMemoryImage; ASize: integer; const AColor: TFPColor): TFPMemoryImage;
 var
   w: integer;
   h: integer;

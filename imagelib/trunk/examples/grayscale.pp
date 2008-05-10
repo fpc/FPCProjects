@@ -3,47 +3,50 @@ program grayscale;
 {$mode objfpc}{$H+}
 
 uses 
-  SysUtils, imagelib, FPImage, FPWritePNG, FPReadPNG;
+  SysUtils, imagelib, FPImage, FPWriteJPEG, FPReadJPEG;
 
 var
-  ci, image : TFPCustomImage;
+  ci, image : TFPMemoryImage;
   writer : TFPCustomImageWriter;
   reader : TFPCustomImageReader;
+  start: TDateTime;
 begin
-  ci := TFPMemoryImage.Create(100,100);
-  Writer := TFPWriterPNG.Create;
-  reader := TFPReaderPNG.Create;
-  with TFPWriterPNG(Writer) do
-    begin
-    indexed := false;
-    wordsized := false;
-    UseAlpha := false;
-    GrayScale := false;
-    end;
+  ci := TFPMemoryImage.Create(0,0);
+  ci.UsePalette := False;
+  
+  reader := TFPReaderJPEG.Create;
+  writer := TFPWriterJPEG.Create;
+
   try
-    ci.LoadFromFile ('lenna_color.png', reader);
+    writeln('Loading JPEG file from disk');
+    ci.LoadFromFile ('lenna_color.jpg', reader);
 
-    //writeln('Converting to grayscale');
-    //image := imagelib_rgb_to_grayscale(ci);
-
-    //writeln ('Saving to inspect !');
-    //image.SaveToFile ('lenna_grayscale.png', writer);
-
-    //writeln('Converting to sepia');
-    //image := imagelib_rgb_to_sepia(ci);
-
-    //writeln ('Saving to inspect !');
-    //image.SaveToFile ('lenna_sepia.png', writer);
-
-    writeln('Converting to luma');
-    image := imagelib_rgb_to_luma(ci);
-
-    writeln ('Saving to inspect !');
-    image.SaveToFile ('lenna_luma.png', writer);
-  finally
+    start := Now;
+    write('Converting to grayscale...');
+    image := imagelib_rgb_to_grayscale(ci);
+    image.SaveToFile ('lenna_grayscale.jpg', writer);
     image.Free;
+    writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+
+    start := Now;
+    write('Converting to sepia.......');
+    image := imagelib_rgb_to_sepia(ci);
+    image.SaveToFile ('lenna_sepia.jpg', writer);
+    image.Free;
+    writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+
+    start := Now;
+    write('Converting to luma........');
+    image := imagelib_rgb_to_luma(ci);
+    image.SaveToFile ('lenna_luma.jpg', writer);
+    image.Free;
+    writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+
+  finally
     writer.Free;
     ci.free;
     reader.Free;
   end;
+  writeln('done.');
+  readln;
 end.

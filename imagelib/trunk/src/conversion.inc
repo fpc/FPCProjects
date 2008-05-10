@@ -1,95 +1,69 @@
-type
-  TColorMatrix = record
-                   red: double;
-                   green: double;
-                   blue: double;
-                 end;
+const
+  GCM_NTSC    : TGrayConvMatrix = (red:0.2990; green:0.5870; blue:0.1140);
+  GCM_SEPIA_R : TGrayConvMatrix = (red:0.3930; green:0.7690; blue:0.1890);
+  GCM_SEPIA_G : TGrayConvMatrix = (red:0.3490; green:0.6860; blue:0.1680);
+  GCM_SEPIA_B : TGrayConvMatrix = (red:0.2720; green:0.5340; blue:0.1310);
+  GCM_LUMA    : TGrayConvMatrix = (red:0.2126; green:0.7152; blue:0.0722);
 
-function imagelib_convert_to_monochrome(ASource: TFPCustomImage; R, G, B: TColorMatrix): TFPCustomImage;
+function imagelib_rgb_to_grayscale(ASource: TFPMemoryImage): TFPMemoryImage;
 var
+  gray: word;
   w: integer;
   h: integer;
-  Gray: TFPColor;
-  GrayIndex: integer;
 begin
-  try
-    Result := TFPMemoryImage.Create(ASource.Width, ASource.Height);
-
-    for w := 0 to ASource.Width-1 do
-      for h := 0 to ASource.Height-1 do
-      begin
-        Gray.red := Round(ASource.Colors[w,h].red * R.red +
-                          ASource.Colors[w,h].green * R.green +
-                          ASource.Colors[w,h].blue * R.blue);
-        Gray.green := Round(ASource.Colors[w,h].red * G.red +
-                            ASource.Colors[w,h].green * G.green +
-                            ASource.Colors[w,h].blue * G.blue);
-        Gray.blue := Round(ASource.Colors[w,h].red * B.red +
-                           ASource.Colors[w,h].green * B.green +
-                           ASource.Colors[w,h].blue * B.blue);
-
-        GrayIndex := Result.Palette.IndexOf(Gray);
-        Result.Pixels[w,h] := GrayIndex;
-      end;
-  except
-    raise ImageLibException.Create('Cannot convert to grayscale');
-  end;
-
-end;
-
-function imagelib_rgb_to_grayscale(ASource: TFPCustomImage): TFPCustomImage;
-var
-  R: TColorMatrix;
-  G: TColorMatrix;
-  B: TColorMatrix;
-begin
-  R.red := 0.3;
-  R.green:= 0.59;
-  R.blue:= 0.11;
-  G := R;
-  B := R;
+  GrayConvMatrix := GCM_JPEG;
   
-  Result := imagelib_convert_to_monochrome(ASource, R, G, B);
+  Result := TFPMemoryImage.Create(ASource.Width, ASource.Height);
+  Result.UsePalette := False;
+  
+  for w := 0 to ASource.Width-1 do
+    for h := 0 to ASource.Height-1 do
+    begin
+      gray := CalculateGray(ASource.Colors[w, h]);
+      Result.Colors[w, h] := fpcolor(gray, gray, gray);
+    end;
 end;
 
-function imagelib_rgb_to_sepia(ASource: TFPCustomImage): TFPCustomImage;
+function imagelib_rgb_to_sepia(ASource: TFPMemoryImage): TFPMemoryImage;
 var
-  R: TColorMatrix;
-  G: TColorMatrix;
-  B: TColorMatrix;
+  sepiaR: word;
+  sepiaG: word;
+  sepiaB: word;
+  w: integer;
+  h: integer;
 begin
-  R.red := 0.393;
-  R.green:= 0.769;
-  R.blue:= 0.189;
+  Result := TFPMemoryImage.Create(ASource.Width, ASource.Height);
+  Result.UsePalette := False;
 
-  G.red := 0.349;
-  G.green:= 0.686;
-  G.blue:= 0.168;
+  for w := 0 to ASource.Width-1 do
+    for h := 0 to ASource.Height-1 do
+    begin
+      GrayConvMatrix := GCM_SEPIA_R;
+      sepiaR := CalculateGray(ASource.Colors[w, h]);
+      GrayConvMatrix := GCM_SEPIA_G;
+      sepiaG := CalculateGray(ASource.Colors[w, h]);
+      GrayConvMatrix := GCM_SEPIA_B;
+      sepiaB := CalculateGray(ASource.Colors[w, h]);
 
-  B.red := 0.272;
-  B.green:= 0.534;
-  B.blue:= 0.131;
-
-  Result := imagelib_convert_to_monochrome(ASource, R, G, B);
+      Result.Colors[w, h] := fpcolor(sepiaR, sepiaG, sepiaB);
+    end;
 end;
 
-function imagelib_rgb_to_luma(ASource: TFPCustomImage): TFPCustomImage;
+function imagelib_rgb_to_luma(ASource: TFPMemoryImage): TFPMemoryImage;
 var
-  R: TColorMatrix;
-  G: TColorMatrix;
-  B: TColorMatrix;
+  gray: word;
+  w: integer;
+  h: integer;
 begin
-  R.red := 0.2126;
-  R.green:= 0.7152;
-  R.blue:= 0.0722;
+  GrayConvMatrix := GCM_LUMA;
 
-  G.red := 0.2126;
-  G.green:= 0.7152;
-  G.blue:= 0.0722;
+  Result := TFPMemoryImage.Create(ASource.Width, ASource.Height);
+  Result.UsePalette := False;
 
-  B.red := 0.2126;
-  B.green:= 0.7152;
-  B.blue:= 0.0722;
-
-  Result := imagelib_convert_to_monochrome(ASource, R, G, B);
+  for w := 0 to ASource.Width-1 do
+    for h := 0 to ASource.Height-1 do
+    begin
+      gray := CalculateGray(ASource.Colors[w, h]);
+      Result.Colors[w, h] := fpcolor(gray, gray, gray);
+    end;
 end;
