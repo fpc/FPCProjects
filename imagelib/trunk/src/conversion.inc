@@ -1,5 +1,4 @@
 const
-  GCM_NTSC    : TGrayConvMatrix = (red:0.2990; green:0.5870; blue:0.1140);
   GCM_SEPIA_R : TGrayConvMatrix = (red:0.3930; green:0.7690; blue:0.1890);
   GCM_SEPIA_G : TGrayConvMatrix = (red:0.3490; green:0.6860; blue:0.1680);
   GCM_SEPIA_B : TGrayConvMatrix = (red:0.2720; green:0.5340; blue:0.1310);

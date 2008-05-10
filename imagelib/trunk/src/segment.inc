@@ -1,4 +1,4 @@
-function imagelib_roberts_gradient(ASource: TFPCustomImage): TFPCustomImage;
+function imagelib_roberts_gradient(ASource: TFPMemoryImage): TFPMemoryImage;
 
 var
   w: integer;
@@ -6,56 +6,45 @@ var
 
   function calc_gradient(x, y: integer): TFPColor;
   var
-    GradientX: integer;
-    GradientY: integer;
+    gradX: word;
+    gradY: word;
   begin
     //red
-    GradientX := ASource.Colors[x, y].red - ASource.Colors[x+1,y].red;
-    GradientY := ASource.Colors[x, y].red - ASource.Colors[x, y+1].red;
+    gradX := Abs(ASource.Colors[x, y].red - ASource.Colors[x+1,y].red);
+    gradY := Abs(ASource.Colors[x, y].red - ASource.Colors[x, y+1].red);
 
-    GradientX := Abs(GradientX);
-    GradientY := Abs(GradientY);
-
-    if GradientX > GradientY then
-      Result.red := GradientX
+    if gradX > gradY then
+      Result.red := gradX
     else
-      Result.red := GradientY;
+      Result.red := gradY;
 
     //green
-    GradientX := ASource.Colors[x, y].green - ASource.Colors[x+1,y].green;
-    GradientY := ASource.Colors[x, y].green - ASource.Colors[x, y+1].green;
+    gradX := Abs(ASource.Colors[x, y].green - ASource.Colors[x+1,y].green);
+    gradY := Abs(ASource.Colors[x, y].green - ASource.Colors[x, y+1].green);
 
-    GradientX := Abs(GradientX);
-    GradientY := Abs(GradientY);
-
-    if GradientX > GradientY then
-      Result.green := GradientX
+    if gradX > gradY then
+      Result.green := gradX
     else
-      Result.green := GradientY;
+      Result.green := gradY;
 
     //blue
-    GradientX := ASource.Colors[x, y].blue - ASource.Colors[x+1,y].blue;
-    GradientY := ASource.Colors[x, y].blue - ASource.Colors[x, y+1].blue;
+    gradX := Abs(ASource.Colors[x, y].blue - ASource.Colors[x+1,y].blue);
+    gradY := Abs(ASource.Colors[x, y].blue - ASource.Colors[x, y+1].blue);
 
-    GradientX := Abs(GradientX);
-    GradientY := Abs(GradientY);
-
-    if GradientX > GradientY then
-      Result.blue := GradientX
+    if gradX > gradY then
+      Result.blue := gradX
     else
-      Result.blue := GradientY;
+      Result.blue := gradY;
   end;
 
 begin
   try
     Result := TFPMemoryImage.Create(ASource.Width, ASource.Height);
-    Result.Palette.Copy(ASource.Palette);
+    Result.UsePalette := False;
 
     for w := 0 to ASource.Width-2 do
       for h := 0 to ASource.Height-2 do
-      begin
         Result.Colors[w,h] := calc_gradient(w, h);
-      end;
   except
     raise ImageLibException.Create('Cannot determine Roberts gradient');
   end;

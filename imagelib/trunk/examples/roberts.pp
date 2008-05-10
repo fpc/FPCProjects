@@ -3,35 +3,44 @@ program roberts;
 {$mode objfpc}{$H+}
 
 uses 
-  SysUtils, imagelib, FPImage, FPWritePNG, FPReadPNG;
+  SysUtils, imagelib, FPImage, FPWriteJPEG, FPReadJPEG;
 
 var
-  ci, image : TFPCustomImage;
+  ci, image : TFPMemoryImage;
+  grayImage : TFPMemoryImage;
   writer : TFPCustomImageWriter;
   reader : TFPCustomImageReader;
+  start: TDateTime;
 begin
-  ci := TFPMemoryImage.Create(100,100);
-  Writer := TFPWriterPNG.Create;
-  reader := TFPReaderPNG.Create;
-  with TFPWriterPNG(Writer) do
-    begin
-    indexed := false;
-    wordsized := false;
-    UseAlpha := false;
-    GrayScale := true;
-    end;
+  ci := TFPMemoryImage.Create(0,0);
+  ci.UsePalette := False;
+  
+  writer := TFPWriterJPEG.Create;
+  reader := TFPReaderJPEG.Create;
+  
   try
-    ci.LoadFromFile ('lenna_grayscale.png', reader);
+    writeln('Loading JPEG file from disk');
+    ci.LoadFromFile ('lenna_color.jpg', reader);
 
-    writeln('Calculating Roberts gradient');
-    image := imagelib_roberts_gradient(ci);
+    start := Now;
+    write('Converting to grayscale...');
+    grayImage := imagelib_rgb_to_grayscale(ci);
+    writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
 
-    writeln ('Saving to inspect !');
-    image.SaveToFile ('lenna_roberts.png', writer);
+    start := Now;
+    write('Calculating Roberts gradient...');
+    image := imagelib_roberts_gradient(grayImage);
+    image.SaveToFile ('lenna_roberts.jpg', writer);
+    writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+
   finally
     image.Free;
     writer.Free;
     ci.free;
+    grayImage.Free;
     reader.Free;
   end;
+  
+  writeln('done.');
+  readln;
 end.
