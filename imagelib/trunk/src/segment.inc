@@ -1,40 +1,32 @@
 function imagelib_roberts_gradient(ASource: TFPMemoryImage): TFPMemoryImage;
-
 var
   w: integer;
   h: integer;
 
-  function calc_gradient(x, y: integer): TFPColor;
+  function calc_col_gradient(ColorXY, ColorX, ColorY: word): word;
   var
     gradX: word;
     gradY: word;
   begin
-    //red
-    gradX := Abs(ASource.Colors[x, y].red - ASource.Colors[x+1,y].red);
-    gradY := Abs(ASource.Colors[x, y].red - ASource.Colors[x, y+1].red);
+    gradX := Abs(ColorXY - ColorX);
+    gradY := Abs(ColorXY - ColorY);
 
     if gradX > gradY then
-      Result.red := gradX
+      Result := gradX
     else
-      Result.red := gradY;
+      Result := gradY;
+  end;
+
+  function calc_gradient(XY, X, Y: TFPColor): TFPColor;
+  begin
+    //red
+    Result.red := calc_col_gradient(XY.red, X.red, Y.red);
 
     //green
-    gradX := Abs(ASource.Colors[x, y].green - ASource.Colors[x+1,y].green);
-    gradY := Abs(ASource.Colors[x, y].green - ASource.Colors[x, y+1].green);
-
-    if gradX > gradY then
-      Result.green := gradX
-    else
-      Result.green := gradY;
+    Result.green := calc_col_gradient(XY.green, X.green, Y.green);
 
     //blue
-    gradX := Abs(ASource.Colors[x, y].blue - ASource.Colors[x+1,y].blue);
-    gradY := Abs(ASource.Colors[x, y].blue - ASource.Colors[x, y+1].blue);
-
-    if gradX > gradY then
-      Result.blue := gradX
-    else
-      Result.blue := gradY;
+    Result.blue := calc_col_gradient(XY.blue, X.blue, Y.blue);
   end;
 
 begin
@@ -44,7 +36,7 @@ begin
 
     for w := 0 to ASource.Width-2 do
       for h := 0 to ASource.Height-2 do
-        Result.Colors[w,h] := calc_gradient(w, h);
+        Result.Colors[w,h] := calc_gradient(ASource.Colors[w, h], ASource.Colors[w+1, h], ASource.Colors[w, h+1]);
   except
     raise ImageLibException.Create('Cannot determine Roberts gradient');
   end;
