@@ -17,6 +17,7 @@ function imagelib_roberts_gradient(ASource: TFPMemoryImage): TFPMemoryImage;
 function imagelib_add_edge(ASource: TFPMemoryImage; ASize: integer; const AColor: TFPColor): TFPMemoryImage;
 
 //conversion
+function imagelib_rgb_to_bw(ASource: TFPMemoryImage): TFPMemoryImage;
 function imagelib_rgb_to_grayscale(ASource: TFPMemoryImage): TFPMemoryImage;
 function imagelib_rgb_to_sepia(ASource: TFPMemoryImage): TFPMemoryImage;
 function imagelib_rgb_to_luma(ASource: TFPMemoryImage): TFPMemoryImage;

@@ -42,6 +42,13 @@ begin
     image.Free;
     writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
 
+    start := Now;
+    write('Converting to bw..........');
+    image := imagelib_rgb_to_bw(ci);
+    image.SaveToFile ('lenna_bw.jpg', writer);
+    image.Free;
+    writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+
   finally
     writer.Free;
     ci.free;
