@@ -1,3 +1,18 @@
+{
+    This file is part of the Free Pascal imagelib.
+    Copyright (c) 2008 by Darius Blaszyk
+
+    Colormap conversions
+
+    See the file COPYING.GPL, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+ **********************************************************************}
+
 const
   GCM_SEPIA_R : TGrayConvMatrix = (red:0.3930; green:0.7690; blue:0.1890);
   GCM_SEPIA_G : TGrayConvMatrix = (red:0.3490; green:0.6860; blue:0.1680);

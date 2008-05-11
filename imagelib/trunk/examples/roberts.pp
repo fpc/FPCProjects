@@ -1,3 +1,18 @@
+{
+    This file is part of the Free Pascal imagelib.
+    Copyright (c) 2008 by Darius Blaszyk
+
+    Example file of roberts operator
+
+    See the file COPYING.GPL, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+ **********************************************************************}
+
 program roberts;
 
 {$mode objfpc}{$H+}
