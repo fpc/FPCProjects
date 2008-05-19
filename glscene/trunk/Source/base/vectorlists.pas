@@ -2841,14 +2841,20 @@ end;
 function TSingleList.Sum: Single;
 
   function ComputeSum(list: PSingleArrayList; nb: Integer): Single; register;
+  var
+    i: Integer;
    begin
-  asm
+   // ALMINDOR -- double check this, possibly optimize later, but NO FRICKING ASM
+{  asm
     fld   dword ptr [eax]
     @@Loop:
     dec   edx
     fadd  dword ptr [eax+edx*4]
     jnz   @@Loop
-  end;
+  end;}
+     Result := 0;
+     for i := 0 to nb-1 do
+       Result := Result + list^[i];
    end;
 
 begin
@@ -3148,14 +3154,20 @@ end;
 function TDoubleList.Sum: Double;
 
   function ComputeSum(list: PDoubleArrayList; nb: Integer): Double; register;
+  var
+    i: Integer;
   begin
-  asm
+   // ALMINDOR -- double check this, possibly optimize later, but NO FRICKING ASM
+{  asm
     fld   dword ptr [eax]
     @@Loop:
     dec   edx
     fadd  dword ptr [eax+edx*4]
     jnz   @@Loop
-  end;
+  end;}
+     Result := 0;
+     for i := 0 to nb-1 do
+       Result := Result + list^[i];
   end;
 
 begin

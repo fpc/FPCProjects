@@ -85,13 +85,13 @@ End;
 Procedure Perlin_Random1DStrip(X,Width,Step : Integer; Amp : Double; Res : T1DPerlinArray);
 Var
   Posi : PDouble;
-  XC : Integer;
+  XC, tmp : Integer;
 Begin
   Posi := @Res[0];
   For XC := 0 to Width-1 do
   Begin
     Posi^ := Perlin_Random1(X)*Amp;
-    inc(Integer(Posi),SizeOf(Double));
+    Inc(Posi);
     Inc(X,Step);
   End;
 End;
@@ -111,7 +111,7 @@ Var
   L2 : PDouble;
   L3 : PDouble;
 
-  XC : Integer;
+  XC, tmp : Integer;
 Begin
   Posi := @Res[0];
   T1 := @B1[0];
@@ -131,7 +131,7 @@ Begin
     Posi^ := (T1^+T3^+L1^+L3^) / 16
             +(T2^+C1^+C3^+L2^) / 8
             +C2^             / 4;
-    Inc(Integer(Posi),SizeOf(Double));
+    Inc(Posi);
 
     T1 := T2;
     C1 := C2;
@@ -141,9 +141,9 @@ Begin
     C2 := C3;
     L2 := L3;
 
-    Inc(Integer(T3),SizeOf(Double));
-    Inc(Integer(C3),SizeOf(Double));
-    Inc(Integer(L3),SizeOf(Double));
+    Inc(T3);
+    Inc(C3);
+    Inc(L3);
   End;
 End;
 
@@ -176,17 +176,17 @@ Begin
   For XC := 0 to Width-1 do
   Begin
     Posi^ := Cubic_Interpolate(V1^,V2^,V3^,V4^,0.5)/2+Cubic_Interpolate(H1^,H2^,H3^,H4^,0.5)/2;
-    Inc(Integer(Posi),SizeOf(Double));
+    Inc(Posi);
 
     H1 := H2;
     H2 := H3;
     H3 := H4;
-    Inc(Integer(H4),SizeOf(Double));
+    Inc(H4);
 
-    Inc(Integer(V1),SizeOf(Double));
-    Inc(Integer(V2),SizeOf(Double));
-    Inc(Integer(V3),SizeOf(Double));
-    Inc(Integer(V4),SizeOf(Double));
+    Inc(V1);
+    Inc(V2);
+    Inc(V3);
+    Inc(V4);
   End;
 End;
 

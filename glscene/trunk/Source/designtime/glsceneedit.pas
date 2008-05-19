@@ -177,6 +177,7 @@ type
     FPasteSelection : IDesignerSelections;
 {$ENDIF}
 
+    function AddToHackList(aOC: TClass): Integer;
     procedure ReadScene;
     procedure ResetTree;
     // adds the given scene object as well as its children to the tree structure and returns
@@ -265,6 +266,7 @@ const
    cRegistryKey = 'Software\GLScene.org\GLSceneEdit';
 
 var
+  hackList: TList;
    vGLSceneEditorForm : TGLSceneEditorForm;
 
 function GLSceneEditorForm : TGLSceneEditorForm;
@@ -597,7 +599,7 @@ begin
             if currentCategory=GetCategory(soc) then begin
                item:=NewItem(objectList[j], 0, False, True, AddObjectClick, 0, '');
                item.ImageIndex:=GetImageIndex(soc);
-               item.Tag:=Integer(soc);
+               item.Tag:=AddToHackList(soc);
                currentParent.Add(item);
                objectList[j]:='';
                if currentCategory='' then Break;
@@ -630,7 +632,7 @@ begin
             mi:=TMenuItem.Create(owner);
             mi.Caption:=XCollectionItemClass.FriendlyName;
             mi.OnClick:=Event;//AddBehaviourClick;
-            mi.Tag:=Integer(XCollectionItemClass);
+            mi.Tag:=AddToHackList(XCollectionItemClass);
             if Assigned(XCollection) then
                mi.Enabled:=XCollection.CanAdd(XCollectionItemClass)
             else mi.Enabled:=TBAddBehaviours.Enabled;
@@ -700,7 +702,7 @@ begin
          {$ifndef FPC}
          AObject:=TGLBaseSceneObject(FCurrentDesigner.CreateComponent(TGLSceneObjectClass(TMenuItem(Sender).Tag), AParent, 0, 0, 0, 0));
          {$else}
-         AObject:=TGLBaseSceneObject(TGLSceneObjectClass(TMenuItem(Sender).Tag).Create(FScene.Owner));
+         AObject:=TGLBaseSceneObject(TGLSceneObjectClass(hackList[TMenuItem(Sender).Tag]).Create(FScene.Owner));
          //AObject:=TGLBaseSceneObject(FormEditingHook.CreateComponent(nil,TGLSceneObjectClass(TMenuItem(Sender).Tag), '', 0, 0, 0, 0));
          //CreateComponent(nil,);
          AObject.Name:=FCurrentDesigner.CreateUniqueComponentName(AObject.ClassName);
@@ -725,7 +727,7 @@ var
 begin
    if Assigned(Tree.Selected) then begin
       AParent:=TGLBaseSceneObject(Tree.Selected.Data);
-      XCollectionItemClass:=TXCollectionItemClass((Sender as TMenuItem).Tag);
+      XCollectionItemClass:=TXCollectionItemClass(hackList[(Sender as TMenuItem).Tag]);
       XCollectionItemClass.Create(AParent.Behaviours);
       //PrepareListView;
       ShowBehaviours(AParent);
@@ -743,7 +745,7 @@ var
 begin
    if Assigned(Tree.Selected) then begin
       AParent:=TGLBaseSceneObject(Tree.Selected.Data);
-      XCollectionItemClass:=TXCollectionItemClass((Sender as TMenuItem).Tag);
+      XCollectionItemClass:=TXCollectionItemClass(hackList[(Sender as TMenuItem).Tag]);
       XCollectionItemClass.Create(AParent.Effects);
       //PrepareListView;
       ShowEffects(AParent);
@@ -1672,11 +1674,18 @@ begin
    else Width:=Width-PABehaviours.Width;
 end;
 
-initialization
+function TGLSceneEditorForm.AddToHackList(aOC: TClass): Integer;
+begin
+  hackList.Add(aOC);
+  Result := hackList.Count - 1;
+end;
 
+initialization
+  hackList := TList.Create;
    {$i glsceneedit.lrs}
 
 finalization
+  hackList.Free;
   ReleaseGLSceneEditorForm;
 
 end.

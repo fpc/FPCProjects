@@ -764,7 +764,6 @@ initialization
 // ------------------------------------------------------------------
 
 finalization
-
 	vXCollectionItemClasses.Free;
 
 end.

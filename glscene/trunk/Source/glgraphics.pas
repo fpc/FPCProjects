@@ -412,7 +412,7 @@ begin
        PChar(dest)[2]:=PChar(src)[0];
        PChar(dest)[3]:=#255;
        dest:=Pointer(PtrUInt(dest)+4);
-       src:=Pointer(PtrUInt;(src)+3);
+       src:=Pointer(PtrUInt(src)+3);
        Dec(pixelCount);
     end;
  {$ELSE}
@@ -462,7 +462,7 @@ begin
        PChar(dest)[2]:=PChar(src)[2];
        PChar(dest)[3]:=#255;
        dest:=Pointer(PtrUInt(dest)+4);
-       src:=Pointer(PtrUInt;(src)+3);
+       src:=Pointer(PtrUInt(src)+3);
        Dec(pixelCount);
     end;
  {$ELSE}

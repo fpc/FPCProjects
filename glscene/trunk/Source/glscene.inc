@@ -80,6 +80,9 @@
   {$asmmode intel}
   {$TYPEINFO ON}
   {$INLINE ON}
+  {$IFDEF CPU64}
+  {$DEFINE NO_ASM}
+  {$ENDIF}
 {$ENDIF}
 
 {$IFDEF LCL}

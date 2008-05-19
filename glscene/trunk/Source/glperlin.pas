@@ -636,7 +636,7 @@ Begin
 //        raise Exception.create('In Cubic_Interpolate_Strip a value greater than 1 occured! value = '+FloatToStr(Value)+' values=['+S+']');
       End;
 
-      inc(Integer(Posi),SizeOf(SmallInt));
+      inc(Posi);
     End;
   End;
 End;

@@ -78,8 +78,9 @@ procedure TBAddClick(Sender: TObject);
 //    ownerComponent : TComponent;
 //CRB-We want this:    FDesigner : {$ifdef GLS_DELPHI_6_UP} IDesigner {$else} IFormDesigner {$endif};
     updatingListView : Boolean;
+         function AddToHackList(aXC: TXCollectionItemClass): Integer;
 	 procedure PrepareListView;
-	 procedure PrepareXCollectionItemPopup(parent : TMenuItem);
+  	 procedure PrepareXCollectionItemPopup(parent : TMenuItem);
 	 procedure OnAddXCollectionItemClick(Sender : TObject);
     procedure OnNameChanged(Sender : TObject);
     procedure OnXCollectionDestroyed(Sender : TObject);
@@ -120,6 +121,7 @@ resourcestring
    cXCollectionEditor = 'XCollection editor';
 
 var
+  hackList: TList;
 	vXCollectionEditor : TXCollectionEditor;
 
 function XCollectionEditor : TXCollectionEditor;
@@ -158,6 +160,12 @@ procedure TXCollectionEditor.FormHide(Sender: TObject);
 begin
    SetXCollection(nil);
    ReleaseXCollectionEditor;
+end;
+
+function TXCollectionEditor.AddToHackList(aXC: TXCollectionItemClass): Integer;
+begin
+  hackList.Add(aXC);
+  Result := hackList.Count - 1;
 end;
 
 // SetXCollection
@@ -293,7 +301,7 @@ begin
 			mi:=TMenuItem.Create(owner);
 			mi.Caption:=XCollectionItemClass.FriendlyName;
 			mi.OnClick:=OnAddXCollectionItemClick;
-			mi.Tag:=Integer(XCollectionItemClass);
+			mi.Tag:=AddToHackList(XCollectionItemClass);
 			mi.Enabled:=Assigned(FXCollection) and FXCollection.CanAdd(XCollectionItemClass);
 			parent.Add(mi);
 		end;
@@ -338,7 +346,7 @@ var
 	XCollectionItemClass : TXCollectionItemClass;
 	XCollectionItem : TXCollectionItem;
 begin
-	XCollectionItemClass:=TXCollectionItemClass((Sender as TMenuItem).Tag);
+	XCollectionItemClass:=TXCollectionItemClass(hackList[(Sender as TMenuItem).Tag]);
 	XCollectionItem:=XCollectionItemClass.Create(FXCollection);
 	PrepareListView;
 //	ListView.Selected:=ListView.FindData(0, XCollectionItem, True, False);
@@ -402,10 +410,11 @@ begin
 end;
 
 initialization
+  hackList := TList.Create;
   {$i fxcollectioneditor.lrs}
 
 finalization
-
+  hackList.Free;
    ReleaseXCollectionEditor;
 
 end.
