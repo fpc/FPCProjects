@@ -114,7 +114,7 @@ end;
 
 function IsSSLBlockError(const anError: Longint): Boolean; inline;
 begin
-  Result := (anError = SSL_ERROR_WANT_READ) or (anError = SSL_ERROR_WANT_READ);
+  Result := (anError = SSL_ERROR_WANT_READ) or (anError = SSL_ERROR_WANT_WRITE);
 end;
 
 { TLSSLSocket }
