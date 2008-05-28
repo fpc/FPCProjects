@@ -264,7 +264,10 @@ begin
   case aStatus of
     ssCon,
     ssEhlo: RefreshFeatureList;
-    ssData: MessageDlg('Error sending message', mtError, [mbOK], 0);
+    ssData: begin
+              MessageDlg('Error sending message', mtError, [mbOK], 0);
+              SMTP.Rset;
+            end;
     ssQuit: begin
               SMTP.Disconnect;
               Close;
@@ -292,7 +295,7 @@ begin
     ssEhlo: RefreshFeatureList;
     
     ssAuthLogin,
-    ssAuthPlain : SMTP.Ehlo; // re-ehlo to get new features after auth
+    ssAuthPlain : ButtonAuth.Visible := False;
 
     ssData: MessageDlg('Message sent successfuly', mtInformation, [mbOK], 0);
     ssQuit: begin
