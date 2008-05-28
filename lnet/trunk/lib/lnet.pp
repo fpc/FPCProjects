@@ -56,6 +56,7 @@ const
 type
   TLSocket = class;
   TLComponent = class;
+  TLConnection = class;
   TLSession = class;
 
   { Callback Event procedure for errors }
@@ -94,6 +95,7 @@ type
     FSocketType: Integer;
     FCreator: TLComponent;
     FSession: TLSession;
+    FConnection: TLConnection;
    protected
     function GetConnected: Boolean; virtual;
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
@@ -200,6 +202,7 @@ type
     FPort: Word;
     FCreator: TLComponent;
     FActive: Boolean;
+    procedure SetCreator(AValue: TLComponent); virtual;
    public
     constructor Create(aOwner: TComponent); override;
     procedure Disconnect; virtual; abstract;
@@ -208,7 +211,7 @@ type
     SocketClass: TLSocketClass;
     property Host: string read FHost write FHost;
     property Port: Word read FPort write FPort;
-    property Creator: TLComponent read FCreator write FCreator;
+    property Creator: TLComponent read FCreator write SetCreator;
     property Active: Boolean read FActive;
   end;
   
@@ -750,6 +753,11 @@ end;
 
 //*******************************TLComponent*********************************
 
+procedure TLComponent.SetCreator(AValue: TLComponent);
+begin
+  FCreator := aValue;
+end;
+
 constructor TLComponent.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
@@ -826,6 +834,7 @@ begin
   aSocket.OnError := @ErrorAction;
   aSocket.ListenBacklog := FListenBacklog;
   aSocket.FCreator := FCreator;
+  aSocket.FConnection := Self;
   aSocket.FSession := FSession;
   if Assigned(FSession) then
     FSession.InitHandle(aSocket);
@@ -1499,33 +1508,33 @@ end;
 
 procedure TLSession.CallReceiveEvent(aHandle: TLHandle); inline;
 begin
-  TLConnection(TLSocket(aHandle).Creator).ReceiveEvent(TLSocket(aHandle));
+  TLSocket(aHandle).FConnection.ReceiveEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallSendEvent(aHandle: TLHandle); inline;
 begin
-  TLConnection(TLSocket(aHandle).Creator).CanSendEvent(TLSocket(aHandle));
+  TLSocket(aHandle).FConnection.CanSendEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallErrorEvent(aHandle: TLHandle; const msg: string);
   inline;
 begin
-  TLConnection(TLSocket(aHandle).Creator).ErrorEvent(TLSocket(aHandle), msg);
+  TLSocket(aHandle).FConnection.ErrorEvent(TLSocket(aHandle), msg);
 end;
 
 procedure TLSession.CallConnectEvent(aHandle: TLHandle); inline;
 begin
-  TLConnection(TLSocket(aHandle).Creator).ConnectEvent(TLSocket(aHandle));
+  TLSocket(aHandle).FConnection.ConnectEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallAcceptEvent(aHandle: TLHandle); inline;
 begin
-  TLConnection(TLSocket(aHandle).Creator).AcceptEvent(TLSocket(aHandle));
+  TLSocket(aHandle).FConnection.AcceptEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallDisconnectEvent(aHandle: TLHandle); inline;
 begin
-  TLConnection(TLSocket(aHandle).Creator).DisconnectEvent(TLSocket(aHandle));
+  TLSocket(aHandle).FConnection.DisconnectEvent(TLSocket(aHandle));
 end;
 
 

@@ -75,6 +75,7 @@ type
 
     function GetSession: TLSession;
     procedure SetSession(const AValue: TLSession);
+    procedure SetCreator(AValue: TLComponent); override;
 
     function GetSocketClass: TLSocketClass;
     procedure SetSocketClass(Value: TLSocketClass);
@@ -290,6 +291,14 @@ begin
   FData.Session := aValue;
 end;
 
+procedure TLFTP.SetCreator(AValue: TLComponent);
+begin
+  inherited SetCreator(AValue);
+  
+  FControl.Creator := AValue;
+  FData.Creator := AValue;
+end;
+
 function TLFTP.GetConnected: Boolean;
 begin
   Result := FControl.Connected;
@@ -325,9 +334,10 @@ begin
   FPort := 21;
 
   FControl := TLFTPTelnetClient.Create(nil);
+  FControl.Creator := Self;
 
   FData := TLTcp.Create(nil);
-  // TODO: rework to use the new TLSocketTCP
+  FData.Creator := Self;
   FData.SocketClass := TLSocket;
 
   FTransferMethod  :=  ftPassive; // let's be modern

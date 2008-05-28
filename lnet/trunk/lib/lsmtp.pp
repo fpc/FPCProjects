@@ -93,6 +93,7 @@ type
     
     function GetSession: TLSession;
     procedure SetSession(const AValue: TLSession);
+    procedure SetCreator(AValue: TLComponent); override;
 
     function GetConnected: Boolean;
 
@@ -235,6 +236,13 @@ begin
   FConnection.Session := aValue;
 end;
 
+procedure TLSMTP.SetCreator(AValue: TLComponent);
+begin
+  inherited SetCreator(AValue);
+  
+  FConnection.Creator := AValue;
+end;
+
 function TLSMTP.GetTimeout: Integer;
 begin
   Result := FConnection.Timeout;
@@ -276,6 +284,7 @@ begin
   
   FFeatureList := TStringList.Create;
   FConnection := TLTcp.Create(nil);
+  FConnection.Creator := Self;
   // TODO: rework to use the new TLSocketTCP
   FConnection.SocketClass := TLSocket;
 end;

@@ -104,6 +104,7 @@ type
 
     function GetSession: TLSession;
     procedure SetSesssion(const AValue: TLSession);
+    procedure SetCreator(AValue: TLComponent); override;
 
     procedure StackFull;
     procedure DoubleIAC(var s: string);
@@ -189,6 +190,7 @@ begin
   inherited Create(aOwner);
   
   FConnection := TLTCP.Create(nil);
+  FConnection.Creator := Self;
   FConnection.OnCanSend := @OnCs;
   
   FOutput := TMemoryStream.Create;
@@ -219,6 +221,12 @@ end;
 procedure TLTelnet.SetSesssion(const AValue: TLSession);
 begin
   FConnection.Session := aValue;
+end;
+
+procedure TLTelnet.SetCreator(AValue: TLComponent);
+begin
+  inherited SetCreator(AValue);
+  FConnection.Creator := aValue;
 end;
 
 procedure TLTelnet.InflateBuffer;
