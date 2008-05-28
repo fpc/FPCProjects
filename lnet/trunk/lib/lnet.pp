@@ -504,7 +504,7 @@ end;
 function TLSocket.Bail(const msg: string; const ernum: Integer): Boolean;
 begin
   Result := False; // return the result for the caller
-
+  if FDispose then Exit;
   Disconnect;
   LogError(msg, ernum);
 end;
