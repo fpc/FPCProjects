@@ -309,7 +309,7 @@ procedure TLSSLSocket.Disconnect;
 begin
   if ssSSLActive in FSocketState then begin
     FSSLStatus := slShutdown;
-    ShutdownSSL;
+    SetActiveSSL(False);
   end;
   
   inherited Disconnect;
