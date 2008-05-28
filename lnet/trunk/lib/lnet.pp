@@ -387,8 +387,6 @@ type
 
   TLSession = class(TComponent)
    protected
-    FConnection: TLConnection;
-
     FActive: Boolean;
    public
     procedure RegisterWithComponent(aConnection: TLConnection); virtual;
@@ -764,8 +762,6 @@ constructor TLConnection.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
 
-  FSession := TLSession.Create(Self);
-  FSession.RegisterWithComponent(Self);
   FHost := '';
   FPort := 0;
   FListenBacklog := LDEFAULT_BACKLOG;
@@ -813,14 +809,13 @@ end;
 procedure TLConnection.SetSession(aSession: TLSession);
 begin
   if FSession = aSession then Exit;
-  if not Assigned(aSession) then
-    raise Exception.Create('Some session must be always assigned, nil assignment detected');
+
   if FActive then
     raise Exception.Create('Cannot change session on active component');
 
-  FSession.Free;
   FSession := aSession;
-  FSession.RegisterWithComponent(Self);
+  if Assigned(FSession) then
+    FSession.RegisterWithComponent(Self);
 end;
 
 function TLConnection.InitSocket(aSocket: TLSocket): TLSocket;
@@ -832,7 +827,8 @@ begin
   aSocket.ListenBacklog := FListenBacklog;
   aSocket.FCreator := FCreator;
   aSocket.FSession := FSession;
-  FSession.InitHandle(aSocket);
+  if Assigned(FSession) then
+    FSession.InitHandle(aSocket);
   Result := aSocket;
 end;
 
@@ -883,7 +879,10 @@ begin
     SetState(ssCanSend);
     IgnoreWrite := True;
 
-    FSession.SendEvent(aSocket);
+    if Assigned(FSession) then
+      FSession.SendEvent(aSocket)
+    else
+      CanSendEvent(aSocket);
   end;
 end;
 
@@ -1074,7 +1073,10 @@ procedure TLUdp.ReceiveAction(aSocket: TLHandle);
 begin
   with TLSocket(aSocket) do begin
     SetState(ssCanReceive);
-    FSession.ReceiveEvent(aSocket);
+    if Assigned(FSession) then
+      FSession.ReceiveEvent(aSocket)
+    else
+      ReceiveEvent(aSocket);
   end;
 end;
 
@@ -1206,7 +1208,10 @@ function TLTcp.Bail(const msg: string; aSocket: TLSocket): Boolean;
 begin
   Result  :=  False;
 
-  FSession.ErrorEvent(aSocket, msg);
+  if Assigned(FSession) then
+    FSession.ErrorEvent(aSocket, msg)
+  else
+    ErrorEvent(aSocket, msg);
 
   if Assigned(aSocket) then
     aSocket.Disconnect
@@ -1286,7 +1291,10 @@ begin
       FConnecting := False;
       FConnected := True;
       IgnoreWrite := True;
-      FSession.ConnectEvent(aSocket)
+      if Assigned(FSession) then
+        FSession.ConnectEvent(aSocket)
+      else
+        ConnectEvent(aSocket);
     end;
   end;
 end;
@@ -1317,7 +1325,10 @@ begin
     Tmp.FConnected := True;
     Tmp.IgnoreWrite := True;
     
-    FSession.AcceptEvent(Tmp)
+    if Assigned(FSession) then
+      FSession.AcceptEvent(Tmp)
+    else
+      AcceptEvent(Tmp);
   end else
     Tmp.Free;
 end;
@@ -1329,7 +1340,10 @@ begin
   else with TLSocket(aSocket) do begin
     if FConnected then begin
       SetState(ssCanReceive);
-      FSession.ReceiveEvent(aSocket);
+      if Assigned(FSession) then
+        FSession.ReceiveEvent(aSocket)
+      else
+        ReceiveEvent(aSocket);
 
       if not FConnected then begin
         DisconnectEvent(aSocket);
@@ -1440,8 +1454,6 @@ procedure TLSession.RegisterWithComponent(aConnection: TLConnection);
 begin
   if not Assigned(aConnection) then
     raise Exception.Create('Cannot register session with nil connection');
-    
-  FConnection := aConnection;
 end;
 
 procedure TLSession.InitHandle(aHandle: TLHandle);
@@ -1487,33 +1499,33 @@ end;
 
 procedure TLSession.CallReceiveEvent(aHandle: TLHandle); inline;
 begin
-  FConnection.ReceiveEvent(TLSocket(aHandle));
+  TLConnection(TLSocket(aHandle).Creator).ReceiveEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallSendEvent(aHandle: TLHandle); inline;
 begin
-  FConnection.CanSendEvent(TLSocket(aHandle));
+  TLConnection(TLSocket(aHandle).Creator).CanSendEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallErrorEvent(aHandle: TLHandle; const msg: string);
   inline;
 begin
-  FConnection.ErrorEvent(TLSocket(aHandle), msg);
+  TLConnection(TLSocket(aHandle).Creator).ErrorEvent(TLSocket(aHandle), msg);
 end;
 
 procedure TLSession.CallConnectEvent(aHandle: TLHandle); inline;
 begin
-  FConnection.ConnectEvent(TLSocket(aHandle));
+  TLConnection(TLSocket(aHandle).Creator).ConnectEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallAcceptEvent(aHandle: TLHandle); inline;
 begin
-  FConnection.AcceptEvent(TLSocket(aHandle));
+  TLConnection(TLSocket(aHandle).Creator).AcceptEvent(TLSocket(aHandle));
 end;
 
 procedure TLSession.CallDisconnectEvent(aHandle: TLHandle); inline;
 begin
-  FConnection.DisconnectEvent(TLSocket(aHandle));
+  TLConnection(TLSocket(aHandle).Creator).DisconnectEvent(TLSocket(aHandle));
 end;
 
 

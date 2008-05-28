@@ -49,6 +49,7 @@ type
     property OnAccept;
     property Timeout;
     property ReuseAddress;
+    property Session;
   end;
   
   { TLUDPComponent }
@@ -62,6 +63,7 @@ type
     property OnReceive;
     property OnError;
     property Timeout;
+    property Session;
   end;
   
   { TLTelnetClientComponent }
