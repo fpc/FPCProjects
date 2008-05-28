@@ -1,4 +1,4 @@
-{ lNetComponents v0.6.0
+{ lNetComponents v0.6.2
 
   CopyRight (C) 2004-2008 Ales Katona
 

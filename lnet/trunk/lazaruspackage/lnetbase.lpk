@@ -41,7 +41,7 @@
 "/>
     <License Value="LGPL with exception, see LICENSE and LICENSE.addon
 "/>
-    <Version Minor="6" Release="1"/>
+    <Version Minor="6" Release="2"/>
     <Files Count="27">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
