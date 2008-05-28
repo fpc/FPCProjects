@@ -248,6 +248,7 @@ type
     
     procedure SetEventer(Value: TLEventer);
     procedure SetSession(aSession: TLSession);
+    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
     procedure ConnectAction(aSocket: TLHandle); virtual;
     procedure AcceptAction(aSocket: TLHandle); virtual;
@@ -822,8 +823,19 @@ begin
     raise Exception.Create('Cannot change session on active component');
 
   FSession := aSession;
-  if Assigned(FSession) then
+  if Assigned(FSession) then begin
+    FSession.FreeNotification(Self);
     FSession.RegisterWithComponent(Self);
+  end;
+end;
+
+procedure TLConnection.Notification(AComponent: TComponent;
+  Operation: TOperation);
+begin
+  inherited Notification(AComponent, Operation);
+  
+  if (Operation = opRemove) and (AComponent = FSession) then
+    FSession := nil;
 end;
 
 function TLConnection.InitSocket(aSocket: TLSocket): TLSocket;
