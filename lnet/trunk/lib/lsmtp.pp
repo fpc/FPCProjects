@@ -773,7 +773,7 @@ begin
     FSL.CommaText := StringReplace(Recipients, ' ', ',', [rfReplaceAll]);
     for i := 0 to FSL.Count-1 do
       Rcpt(FSL[i]);
-    Data('From: ' + From + CRLF + 'Subject: ' + Subject + CRLF + 'To: ' + FSL.CommaText + CRLF + Msg);
+    Data('From: ' + From + CRLF + 'Subject: ' + Subject + CRLF + 'To: ' + FSL.CommaText + CRLF + CRLF + Msg);
     Rset;
   end;
 end;
