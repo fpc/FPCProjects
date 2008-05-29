@@ -478,6 +478,7 @@ procedure TLSMTPClient.EvaluateAnswer(const Ans: string);
   
   procedure Eventize(const aStatus: TLSMTPStatus; const Res: Boolean);
   begin
+    FStatus.Remove;
     if Res then begin
       if Assigned(FOnSuccess) and (aStatus in FStatusSet) then
         FOnSuccess(FConnection.Iterator, aStatus);
@@ -503,7 +504,6 @@ begin
                               ssEhlo : EvaluateFeatures;
                             end;
                             Eventize(FStatus.First.Status, True);
-                            FStatus.Remove;
                           end;
               else        begin
                             Eventize(FStatus.First.Status, False);
@@ -518,11 +518,9 @@ begin
                 200..299: begin
                             Eventize(FStatus.First.Status, True);
                             FConnection.Iterator.SetState(ssSSLActive);
-                            FStatus.Remove;
                           end;
               else        begin
                             Eventize(FStatus.First.Status, False);
-                            FStatus.Remove;
                           end;
               end;
               
@@ -530,7 +528,6 @@ begin
               case x of
                 200..299: begin
                             Eventize(FStatus.First.Status, True);
-                            FStatus.Remove;
                           end;
                 300..399: if FAuthStep = 0 then begin
                             AddToBuffer(FStatus.First.Args[1] + CRLF);
@@ -542,11 +539,9 @@ begin
                             SendData;
                           end else begin
                             Eventize(FStatus.First.Status, False);
-                            FStatus.Remove;
                           end;
               else        begin
                             Eventize(FStatus.First.Status, False);
-                            FStatus.Remove;
                           end;
               end;
               
@@ -554,7 +549,6 @@ begin
               case x of
                 200..299: begin
                             Eventize(FStatus.First.Status, True);
-                            FStatus.Remove;
                           end;
                 300..399: begin
                             AddToBuffer(FStatus.First.Args[1] + FStatus.First.Args[2] + CRLF);
@@ -562,20 +556,17 @@ begin
                           end;
               else        begin
                             Eventize(FStatus.First.Status, False);
-                            FStatus.Remove;
                           end;
               end;
 
       ssMail,
       ssRcpt: begin
                 Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
-                FStatus.Remove;
               end;
 
       ssData: case x of
                 200..299: begin
                             Eventize(FStatus.First.Status, True);
-                            FStatus.Remove;
                           end;
                 300..399: begin
                             AddToBuffer(FDataBuffer);
@@ -585,18 +576,15 @@ begin
               else        begin
                             FDataBuffer := '';
                             Eventize(FStatus.First.Status, False);
-                            FStatus.Remove;
                           end;
               end;
               
       ssRset: begin
                 Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
-                FStatus.Remove;
               end;
               
       ssQuit: begin
                 Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
-                FStatus.Remove;
 {                if Assigned(FOnDisconnect) then
                   FOnDisconnect(FConnection.Iterator);}
                 Disconnect;
@@ -774,7 +762,6 @@ begin
     for i := 0 to FSL.Count-1 do
       Rcpt(FSL[i]);
     Data('From: ' + From + CRLF + 'Subject: ' + Subject + CRLF + 'To: ' + FSL.CommaText + CRLF + CRLF + Msg);
-    Rset;
   end;
 end;
 
@@ -794,7 +781,6 @@ begin
     for i := 0 to FSL.Count-1 do
       Rcpt(FSL[i]);
     Data('From: ' + From + CRLF + 'Subject: ' + Subject + CRLF + 'To: ' + FSL.CommaText + CRLF);
-    Rset;
   end;
 end;
 
