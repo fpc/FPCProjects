@@ -139,7 +139,7 @@ type
     FStatusSet: TLSMTPStatusSet;
     FBuffer: string;
     FDataBuffer: string; // intermediate wait buffer on DATA command
-    FTempBuffer: string;
+    FTempBuffer: string; // used independently from FBuffer for feature list
     FCharCount: Integer; // count of chars from last CRLF
     FStream: TStream;
    protected
@@ -158,7 +158,7 @@ type
     procedure EvaluateAnswer(const Ans: string);
     procedure ExecuteFrontCommand;
     
-    procedure ClearCR_LF;
+    procedure AddToBuffer(s: string);
     procedure SendData(const FromStream: Boolean = False);
     function EncodeBase64(const s: string): string;
    public
@@ -533,11 +533,11 @@ begin
                             FStatus.Remove;
                           end;
                 300..399: if FAuthStep = 0 then begin
-                            FBuffer := FBuffer + FStatus.First.Args[1] + CRLF;
+                            AddToBuffer(FStatus.First.Args[1] + CRLF);
                             Inc(FAuthStep);
                             SendData;
                           end else if FAuthStep = 1 then begin
-                            FBuffer := FBuffer + FStatus.First.Args[2] + CRLF;
+                            AddToBuffer(FStatus.First.Args[2] + CRLF);
                             Inc(FAuthStep);
                             SendData;
                           end else begin
@@ -557,7 +557,7 @@ begin
                             FStatus.Remove;
                           end;
                 300..399: begin
-                            FBuffer := FBuffer + FStatus.First.Args[1] + FStatus.First.Args[2] + CRLF;
+                            AddToBuffer(FStatus.First.Args[1] + FStatus.First.Args[2] + CRLF);
                             SendData;
                           end;
               else        begin
@@ -578,7 +578,7 @@ begin
                             FStatus.Remove;
                           end;
                 300..399: begin
-                            FBuffer := FDataBuffer;
+                            AddToBuffer(FDataBuffer);
                             FDataBuffer := '';
                             SendData(True);
                           end;
@@ -622,40 +622,42 @@ begin
   FCommandFront.Remove;
 end;
 
-procedure TLSMTPClient.ClearCR_LF;
+procedure TLSMTPClient.AddToBuffer(s: string);
 var
   i: Integer;
   Skip: Boolean = False;
 begin
-  for i := 1 to Length(FBuffer) do begin
+  for i := 1 to Length(s) do begin
     if Skip then begin
       Skip := False;
       Continue;
     end;
-    
-    if (FBuffer[i] = #13) or (FBuffer[i] = #10) then begin
-      if FBuffer[i] = #13 then
-        if (i < Length(FBuffer)) and (FBuffer[i + 1] = #10) then begin
+
+    if (s[i] = #13) or (s[i] = #10) then begin
+      if s[i] = #13 then
+        if (i < Length(s)) and (s[i + 1] = #10) then begin
           FCharCount := 0;
           Skip := True; // skip the crlf
         end else begin // insert LF to a standalone CR
-          System.Insert(#10, FBuffer, i + 1);
+          System.Insert(#10, s, i + 1);
           FCharCount := 0;
           Skip := True; // skip the new crlf
         end;
-        
-      if FBuffer[i] = #10 then begin
-        System.Insert(#13, FBuffer, i);
+
+      if s[i] = #10 then begin
+        System.Insert(#13, s, i);
         FCharCount := 0;
         Skip := True; // skip the new crlf
       end;
     end else if FCharCount >= 1000 then begin // line too long
-      System.Insert(CRLF, FBuffer, i);
+      System.Insert(CRLF, s, i);
       FCharCount := 0;
       Skip := True;
     end else
       Inc(FCharCount);
   end;
+  
+  FBuffer := FBuffer + s;
 end;
 
 procedure TLSMTPClient.SendData(const FromStream: Boolean = False);
@@ -669,10 +671,10 @@ const
     SetLength(s, SBUF_SIZE - Length(FBuffer));
     SetLength(s, FStream.Read(s[1], Length(s)));
     
-    FBuffer := FBuffer + s;
+    AddToBuffer(s);
     
     if FStream.Position = FStream.Size then begin // we finished the stream
-      FBuffer := FBuffer + CRLF + '.' + CRLF;
+      AddToBuffer(CRLF + '.' + CRLF);
       FStream := nil;
     end;
   end;
@@ -687,8 +689,6 @@ begin
   n := 1;
   Sent := 0;
   while (Length(FBuffer) > 0) and (n > 0) do begin
-    ClearCR_LF;
-  
     n := FConnection.SendMessage(FBuffer);
     Sent := Sent + n;
     if n > 0 then
@@ -812,7 +812,7 @@ begin
     aHost := FHost;
 
   if CanContinue(ssHelo, aHost, '') then begin
-    FBuffer := FBuffer + 'HELO ' + aHost + CRLF;
+    AddToBuffer('HELO ' + aHost + CRLF);
     FStatus.Insert(MakeStatusRec(ssHelo, '', ''));
     SendData;
   end;
@@ -824,7 +824,7 @@ begin
     aHost := FHost;
   if CanContinue(ssEhlo, aHost, '') then begin
     FTempBuffer := ''; // for ehlo response
-    FBuffer := FBuffer + 'EHLO ' + aHost + CRLF;
+    AddToBuffer('EHLO ' + aHost + CRLF);
     FStatus.Insert(MakeStatusRec(ssEhlo, '', ''));
     SendData;
   end;
@@ -833,7 +833,7 @@ end;
 procedure TLSMTPClient.StartTLS;
 begin
   if CanContinue(ssStartTLS, '', '') then begin
-    FBuffer := FBuffer + 'STARTTLS' + CRLF;
+    AddToBuffer('STARTTLS' + CRLF);
     FStatus.Insert(MakeStatusRec(ssStartTLS, '', ''));
     SendData;
   end;
@@ -846,7 +846,7 @@ begin
   FAuthStep := 0; // first, send username
   
   if CanContinue(ssAuthLogin, aName, aPass) then begin
-    FBuffer := FBuffer + 'AUTH LOGIN' + CRLF;
+    AddToBuffer('AUTH LOGIN' + CRLF);
     FStatus.Insert(MakeStatusRec(ssAuthLogin, aName, aPass));
     SendData;
   end;
@@ -859,7 +859,7 @@ begin
   FAuthStep := 0;
 
   if CanContinue(ssAuthPlain, aName, aPass) then begin
-    FBuffer := FBuffer + 'AUTH PLAIN' + CRLF;
+    AddToBuffer('AUTH PLAIN' + CRLF);
     FStatus.Insert(MakeStatusRec(ssAuthPlain, aName, aPass));
     SendData;
   end;
@@ -868,7 +868,7 @@ end;
 procedure TLSMTPClient.Mail(const From: string);
 begin
   if CanContinue(ssMail, From, '') then begin
-    FBuffer := FBuffer + 'MAIL FROM:' + '<' + From + '>' + CRLF;
+    AddToBuffer('MAIL FROM:' + '<' + From + '>' + CRLF);
     FStatus.Insert(MakeStatusRec(ssMail, '', ''));
     SendData;
   end;
@@ -877,7 +877,7 @@ end;
 procedure TLSMTPClient.Rcpt(const RcptTo: string);
 begin
   if CanContinue(ssRcpt, RcptTo, '') then begin
-    FBuffer := FBuffer + 'RCPT TO:' + '<' + RcptTo + '>' + CRLF;
+    AddToBuffer('RCPT TO:' + '<' + RcptTo + '>' + CRLF);
     FStatus.Insert(MakeStatusRec(ssRcpt, '', ''));
     SendData;
   end;
@@ -886,7 +886,7 @@ end;
 procedure TLSMTPClient.Data(const Msg: string);
 begin
   if CanContinue(ssData, Msg, '') then begin
-    FBuffer := 'DATA ' + CRLF;
+    AddToBuffer('DATA ' + CRLF);
     FDataBuffer := '';
 
     if Assigned(FStream) then begin
@@ -903,7 +903,7 @@ end;
 procedure TLSMTPClient.Rset;
 begin
   if CanContinue(ssRset, '', '') then begin
-    FBuffer := FBuffer + 'RSET' + CRLF;
+    AddToBuffer('RSET' + CRLF);
     FStatus.Insert(MakeStatusRec(ssRset, '', ''));
     SendData;
   end;
@@ -912,7 +912,7 @@ end;
 procedure TLSMTPClient.Quit;
 begin
   if CanContinue(ssQuit, '', '') then begin
-    FBuffer := FBuffer + 'QUIT' + CRLF;
+    AddToBuffer('QUIT' + CRLF);
     FStatus.Insert(MakeStatusRec(ssQuit, '', ''));
     SendData;
   end;

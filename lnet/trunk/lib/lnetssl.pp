@@ -21,6 +21,8 @@ type
     FSSL: PSSL;
     FSSLContext: PSSL_CTX;
     FSSLStatus: TLSSLStatus;
+{    FSSLSendBuffer: array[0..65535] of Byte;
+    FSSLSendSize: Integer;}
     function GetConnected: Boolean; override;
 
     function DoSend(const aData; const aSize: Integer): Integer; override;
@@ -97,7 +99,7 @@ type
 implementation
 
 uses
-  lCommon;
+  {Math,} lCommon;
 
 function PasswordCB(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
 var
@@ -177,9 +179,18 @@ end;
 
 function TLSSLSocket.DoSend(const aData; const aSize: Integer): Integer;
 begin
-  if ssSSLActive in FSocketState then
-    Result := SSLWrite(FSSL, @aData, aSize)
-  else
+  if ssSSLActive in FSocketState then begin
+{    if FSSLSendSize = 0 then begin
+      FSSLSendSize := Min(aSize, Length(FSSLSendBuffer));
+      Move(aData, FSSLSendBuffer[0], FSSLSendSize);
+    end;
+      
+    Result := SSLWrite(FSSL, @FSSLSendBuffer[0], FSSLSendSize);
+    if Result > 0 then
+      FSSLSendSize := 0;}
+
+    Result := SSLWrite(FSSL, @aData, aSize);
+  end else
     Result := inherited DoSend(aData, aSize);
 end;
 
