@@ -388,6 +388,11 @@ begin
   FSSLContext := SSLCTXNew(aMethod);
   if not Assigned(FSSLContext) then
     raise Exception.Create('Error creating SSL CTX: SSLCTXNew');
+    
+  if SSLCTXSetMode(FSSLContext, SSL_MODE_ENABLE_PARTIAL_WRITE) and SSL_MODE_ENABLE_PARTIAL_WRITE <> SSL_MODE_ENABLE_PARTIAL_WRITE then
+    raise Exception.Create('Error setting partial write mode on CTX');
+  if SSLCTXSetMode(FSSLContext, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER) and SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER <> SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER then
+    raise Exception.Create('Error setting accept moving buffer mode on CTX');
 
   if Length(FKeyFile) > 0 then begin
     if SslCtxUseCertificateChainFile(FSSLContext, FKeyFile) = 0 then
