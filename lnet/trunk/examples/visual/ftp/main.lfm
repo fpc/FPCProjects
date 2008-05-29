@@ -4,11 +4,11 @@ object MainForm: TMainForm
   Top = 138
   Width = 725
   HorzScrollBar.Page = 724
-  VertScrollBar.Page = 522
+  VertScrollBar.Page = 527
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
-  ClientHeight = 523
+  ClientHeight = 528
   ClientWidth = 725
   Constraints.MinHeight = 548
   Constraints.MinWidth = 725
@@ -17,9 +17,10 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  LCLVersion = '0.9.25'
   object MemoText: TMemo
     Height = 98
-    Top = 404
+    Top = 407
     Width = 725
     Align = alBottom
     ReadOnly = True
@@ -27,16 +28,16 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 355
+    Height = 358
     Top = 24
     Width = 725
     Align = alClient
-    ClientHeight = 355
+    ClientHeight = 358
     ClientWidth = 725
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 353
+      Height = 356
       Top = 1
       Width = 183
       Align = alLeft
@@ -46,17 +47,16 @@ object MainForm: TMainForm
       OnDblClick = LeftViewDblClick
       PopupMenu = PopupLeft
       TabOrder = 0
-      TopIndex = -1
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 353
+      Height = 356
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 353
+      Height = 356
       Top = 1
       Width = 535
       Align = alClient
@@ -94,9 +94,7 @@ object MainForm: TMainForm
       Options = [goFixedVertLine, goFixedHorzLine, goColSizing, goRowSelect]
       PopupMenu = PopupRight
       RowCount = 1
-      ScrollBars = ssAutoBoth
       TabOrder = 1
-      TabStop = True
       TitleStyle = tsNative
       OnCompareCells = rmtGridCompareCells
       OnDblClick = rmtGridDblClick
@@ -107,14 +105,14 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 379
+    Top = 382
     Width = 725
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
-    Height = 21
-    Top = 502
+    Height = 23
+    Top = 505
     Width = 725
     Panels = <    
       item
@@ -137,28 +135,27 @@ object MainForm: TMainForm
     Caption = 'ToolBar1'
     ShowCaptions = True
     TabOrder = 2
-    OnClick = ToolBar1Click
     object ToolButton1: TToolButton
       Left = 1
       Top = 2
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 94
+      Left = 72
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 107
+      Left = 85
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 168
+      Left = 133
       Top = 2
       Action = accDisconnect
       Down = True
@@ -168,11 +165,12 @@ object MainForm: TMainForm
   end
   object ProgressBar1: TProgressBar
     Height = 20
-    Top = 384
+    Top = 387
     Width = 725
     Align = alBottom
     Max = 100
     Step = 1
+    TabOrder = 5
   end
   object MainMenu: TMainMenu
     top = 335

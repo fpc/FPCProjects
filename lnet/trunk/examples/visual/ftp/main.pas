@@ -90,7 +90,6 @@ type
       aState: TGridDrawState);
     procedure rmtGridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState
       );
-    procedure ToolBar1Click(Sender: TObject);
   private
     FLastN: Integer;
     FList: TStringList;
@@ -587,37 +586,6 @@ begin
     rmtGridDblClick(Sender);
     Key := 0;
   end;
-end;
-
-procedure TMainForm.ToolBar1Click(Sender: TObject);
-  procedure Test(s:string);
-  var
-    Parser: TDirEntryParser;
-  begin
-    Parser := DirParser.Parse(pchar(s));
-    WriteLn('Testing dir  =',s);
-    if Parser<>nil then begin
-      writeLn('Parser       =',Parser.Description);
-      Write('    ');
-
-      if Parser.IsDir then  Write('Dir=') else
-      if Parser.IsLink then Write('Link=')
-      else                  Write('File=');
-
-      Write(Parser.EntryName);
-      if Parser.IsLink then
-        Write(' -> ', Parser.LinkName);
-      Write(' Size=', Parser.EntrySize);
-      WriteLn(' attr=',Parser.Attributes);
-    end else
-      WriteLn('Parser       = Can''t find a suitable parser');
-  end;
-begin
-  Test('total 24');
-  Test('-rw-rw-r--   1 53       53           2024 May 29  2006 index.html');
-  Test('drwxrwxr-x   8 53       53           4096 Sep  8 01:29 lazarus');
-  Test('lrwxrwxrwx   1 root     other           7 Jul 15  1997 README -> WELCOME');
-  Test('lrwxrwxrwx   1 root     other          13 Jun 04  1998 ls-lR -> IAFA-LISTINGS');
 end;
 
 procedure TMainForm.DoList(const FileName: string);
