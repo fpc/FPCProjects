@@ -26,6 +26,7 @@ end;
 function TLCLEventer.HandleEvents(aHandle: THandle; aFlags: DWord): LongInt;
 var
   Temp: TLHandle;
+  buf: Byte;
 begin
   Result := 0;
   
@@ -42,8 +43,10 @@ begin
         Temp.OnWrite(Temp);
 
     if aFlags and FD_READ  = FD_READ then
-      if not Temp.Dispose and Assigned(Temp.OnRead) then
+      if not Temp.Dispose and Assigned(Temp.OnRead) then begin
         Temp.OnRead(Temp);
+        recv(Temp.Handle, @buf, SizeOf(buf), MSG_PEEK);
+      end;
 
     if aFlags and FD_CLOSE = FD_CLOSE then
       if not Temp.Dispose and Assigned(Temp.OnRead) then
