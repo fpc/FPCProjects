@@ -590,6 +590,7 @@ procedure TLFTPClient.EvaluateAnswer(const Ans: string);
   
   procedure Eventize(const aStatus: TLFTPStatus; const Res: Boolean);
   begin
+    FStatus.Remove;
     if Res then begin
       if Assigned(FOnSuccess) and (aStatus in FStatusSet) then
         FOnSuccess(FData.Iterator, aStatus);
@@ -597,7 +598,6 @@ procedure TLFTPClient.EvaluateAnswer(const Ans: string);
       if Assigned(FOnFailure) and (aStatus in FStatusSet) then
         FOnFailure(FData.Iterator, aStatus);
     end;
-    FStatus.Remove;
   end;
   
 var
