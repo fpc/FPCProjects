@@ -27,7 +27,6 @@ type
     btnSave: TBitBtn;
     btnClose: TBitBtn;
     btnConnect: TBitBtn;
-    chkAnonymous: TCheckBox;
     Label1: TLabel;
     MenuItemSiteDelete: TMenuItem;
     PopupMenuSites: TPopupMenu;
@@ -38,15 +37,14 @@ type
     txtPath: TLabeledEdit;
     txtHost: TLabeledEdit;
     lbSites: TListBox;
+    procedure lbSitesClick(Sender: TObject);
     procedure MenuItemSiteDeleteClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnConnectClick(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
-    procedure chkAnonymousClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure btnAddSiteClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure lbSitesSelectionChange(Sender: TObject; User: boolean);
     procedure txtSiteChange(Sender: TObject);
   private
     { private declarations }
@@ -99,14 +97,14 @@ begin
   s := extractFilePath(Application.ExeName)+'sites.ini';
   Ini := TIniFile.Create(s);
   try
-    I := Ini.ReadInteger('Global','LastSite', -1);
-    s := 'Site'+IntToStr(i);
-    Site.Site := Ini.ReadString(s, 'Site', '<see sites manager>');
-    Site.txtHost := Ini.ReadString(s, 'Host', '');
-    Site.Port := Ini.ReadString(s, 'Port', '');
-    Site.path := Ini.ReadString(s, 'Path', '');
-    Site.user := Ini.ReadString(s, 'User', '');
-    Site.pass := DecryptString(Ini.ReadString(s, 'Pass', ''));
+    I := Ini.ReadInteger('global','lastsite', -1);
+    s := 'site'+IntToStr(i);
+    Site.Site := Ini.ReadString(s, 'site', '<see sites manager>');
+    Site.txtHost := Ini.ReadString(s, 'host', '');
+    Site.Port := Ini.ReadString(s, 'port', '');
+    Site.path := Ini.ReadString(s, 'path', '');
+    Site.user := Ini.ReadString(s, 'user', '');
+    Site.pass := DecryptString(Ini.ReadString(s, 'pass', ''));
   finally
     Ini.Free;
   end;
@@ -162,16 +160,15 @@ begin
     txtHost.Text := '';
     txtPort.Text := '';
     txtUser.Text := '';
-    chkAnonymous.Checked := False;
     Modified(False);
     DeleteSite(i);
   end;
 end;
 
-procedure TfrmSites.chkAnonymousClick(Sender: TObject);
+procedure TfrmSites.lbSitesClick(Sender: TObject);
 begin
-  Modified(True);
-  txtUser.Text := 'anonymous';
+  UpdateCurrentSite;
+  Modified(False);
 end;
 
 procedure TfrmSites.btnAddSiteClick(Sender: TObject);
@@ -193,22 +190,16 @@ begin
   txtPath.Text := '/';
   txtUser.Text := 'anonymous';
   txtPass.Text := '';
-  chkAnonymous.Checked := True;
 end;
 
 procedure TfrmSites.FormShow(Sender: TObject);
 begin
   LoadSites;
+  lbSitesClick(Sender);
   // locate current site;
   //lbSites.ItemIndex := lbSites.Items.IndexOf(Site.Site);
   //UpdateCurrentSite;
   //Modified(False);
-end;
-
-procedure TfrmSites.lbSitesSelectionChange(Sender: TObject; User: boolean);
-begin
-  if User then UpdateCurrentSite;
-  Modified(False);
 end;
 
 procedure TfrmSites.txtSiteChange(Sender: TObject);
@@ -295,15 +286,15 @@ begin
   s := extractFilePath(Application.ExeName) + 'sites.ini';
   Ini := TIniFile.Create(s);
   try
-    n:= Ini.ReadInteger('global', 'SiteCount', 0);
+    n:= Ini.ReadInteger('global', 'sitecount', 0);
     SetLength(FSites, n);
     lbSites.Clear;
     for i := 1 to n do
     with FSites[i - 1] do begin
-      s := 'Site'+IntToStr(i);
+      s := 'site'+IntToStr(i);
       Site := Ini.ReadString(s, 'site', s);
       txtHost := Ini.ReadString(s, 'host', '');
-      Port := Ini.ReadString(s, 'Port', '');
+      Port := Ini.ReadString(s, 'port', '');
       Path := Ini.ReadString(s, 'path', '');
       User := Ini.ReadString(s, 'user', '');
       Pass := DecryptString(Ini.ReadString(s, 'pass', ''));
@@ -323,15 +314,15 @@ begin
   s := extractFilePath(Application.ExeName) + 'sites.ini';
   Ini := TIniFile.Create(s);
   try
-    ini.WriteInteger('global', 'SiteCount', Length(Fsites));
+    ini.WriteInteger('global', 'sitecount', Length(Fsites));
     for i := 0 to High(FSites) do begin
-      s :='Site' + IntToStr(i + 1);
+      s :='site' + IntToStr(i + 1);
       ini.WriteString(s, 'site', FSites[i].Site);
       ini.WriteString(s, 'host', FSites[i].txtHost);
-      ini.WriteString(s, 'Port', FSites[i].Port);
+      ini.WriteString(s, 'port', FSites[i].Port);
       ini.WriteString(s, 'path', FSites[i].Path);
-      ini.WriteString(s, 'User', FSites[i].User);
-      ini.WriteString(s, 'Pass', EncryptString(FSites[i].Pass));
+      ini.WriteString(s, 'user', FSites[i].User);
+      ini.WriteString(s, 'pass', EncryptString(FSites[i].Pass));
     end;
   finally
     ini.free;
@@ -358,7 +349,6 @@ begin
     txtPath.Text := FSites[i].Path;
     txtUser.Text := FSites[i].User;
     txtPass.Text := FSites[i].Pass;
-    chkAnonymous.Checked := (compareText(Fsites[i].user, 'anonymous')=0);
   end;
 end;
 
@@ -382,10 +372,8 @@ begin
   if txtPort.Text = '' then
     result := 4
   else
-  if not chkAnonymous.Checked then begin
-    if txtUser.Text = '' then
-      result := 5;
-  end;
+  if txtUser.Text = '' then
+    result := 5;
   tmp := StrToIntDef(txtPort.Text, -1);
   if tmp < 0 then
     Result := 6
@@ -393,7 +381,6 @@ begin
   if (tmp < 1) or (tmp > 65535) then
     result := 7;
 
-  //WriteLn('Checkinfo was: ', result);
   case result of
     1: ShowMessage('Site dosn''t have a name');
     2: ShowMessage('Site it''s duplicated');
@@ -424,12 +411,11 @@ begin
   Site.Path := txtPath.text;
   Site.User := txtUser.Text;
   Site.Pass := txtPass.Text;
-  Site.Anonymous := chkAnonymous.Checked;
-  
+
   s := extractFilePath(Application.ExeName) + 'sites.ini';
   Ini := TIniFile.Create(s);
   try
-    Ini.WriteInteger('Global', 'LastSite', lbSites.ItemIndex + 1);
+    Ini.WriteInteger('global', 'lastsite', lbSites.ItemIndex + 1);
   finally
     Ini.Free;
   end;
