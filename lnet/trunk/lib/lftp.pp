@@ -597,6 +597,7 @@ procedure TLFTPClient.EvaluateAnswer(const Ans: string);
       if Assigned(FOnFailure) and (aStatus in FStatusSet) then
         FOnFailure(FData.Iterator, aStatus);
     end;
+    FStatus.Remove;
   end;
   
 var
@@ -614,13 +615,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -629,7 +628,6 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    331,
                    332:
@@ -641,7 +639,6 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -650,13 +647,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -669,12 +664,10 @@ begin
                    200:
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -684,12 +677,10 @@ begin
                        FStatusFlags[FStatus.First.Status] := FExpectedBinary;
                        Writedbg(['Binary mode: ', FExpectedBinary]);
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -698,14 +689,12 @@ begin
                    226:
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FData.Disconnect;
                        Writedbg(['Disconnecting data connection']);
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove; // error after connection established
                      end;
                  end;
 
@@ -715,12 +704,10 @@ begin
                    226:
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -729,13 +716,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -744,12 +729,10 @@ begin
                    226:
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -758,13 +741,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -774,13 +755,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -789,12 +768,10 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -803,12 +780,10 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
       end;
