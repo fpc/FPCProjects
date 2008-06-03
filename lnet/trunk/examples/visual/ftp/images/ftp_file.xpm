@@ -15,7 +15,7 @@ static char *ftp_file__[] = {
 "& c green",
 "* c yellow",
 "= c blue",
-"- c magenta",
+"- c None",
 "; c cyan",
 ": c gray100",
 /* pixels */

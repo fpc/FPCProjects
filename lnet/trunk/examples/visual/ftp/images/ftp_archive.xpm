@@ -5,7 +5,7 @@ static char *ftp_archive[] = {
 "  c black",
 ". c red",
 "X c yellow",
-"o c magenta",
+"o c None",
 "O c #808080",
 /* pixels */
 "ooooooooooooooo",

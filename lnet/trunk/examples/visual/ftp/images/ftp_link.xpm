@@ -15,7 +15,7 @@ static char *ftp_link[] = {
 "& c green",
 "* c yellow",
 "= c blue",
-"- c magenta",
+"- c None",
 "; c cyan",
 ": c gray100",
 /* pixels */
