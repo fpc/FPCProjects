@@ -670,7 +670,9 @@ begin
            FSocketState := FSocketState - [ssCanReceive];
            IgnoreRead := False;
          end;
-    end else
+    end else if IsNonFatalError(LastError) then
+      LogError(GSStr[aOp] + ' error', LastError) // non fatals don't cause disconnect
+    else
       Bail(GSStr[aOp] + ' error', LastError);
       
     Result := 0;

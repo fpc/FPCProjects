@@ -95,6 +95,7 @@ type
   end;
   
   function IsSSLBlockError(const anError: Longint): Boolean; inline;
+  function IsSSLNonFatalError(const anError, aRet: Longint): Boolean; inline;
   
 implementation
 
@@ -117,6 +118,21 @@ end;
 function IsSSLBlockError(const anError: Longint): Boolean; inline;
 begin
   Result := (anError = SSL_ERROR_WANT_READ) or (anError = SSL_ERROR_WANT_WRITE);
+end;
+
+function IsSSLNonFatalError(const anError, aRet: Longint): Boolean; inline;
+var
+  tmp: Longint;
+begin
+  Result := False;
+  if anError = SSL_ERROR_SYSCALL then repeat
+    tmp := ErrGetError();
+    if tmp = 0 then begin // we neet to check the ret
+      if aRet <= 0 then Exit; // EOF or BIO crap, we skip those
+      Result := IsNonFatalError(aRet);
+    end else // check what exactly
+      Result := IsNonFatalError(tmp);
+  until tmp <= 0; // we need to empty the queue
 end;
 
 { TLSSLSocket }
@@ -223,7 +239,9 @@ begin
            FSocketState := FSocketState - [ssCanReceive];
            IgnoreRead := False;
          end;
-    end else
+    end else if IsSSLNonFatalError(LastError, Result) then
+      LogError(GSStr[aOp] + ' error', LastError)
+    else
       Bail(GSStr[aOp] + ' error', LastError);
     Result := 0;
   end;

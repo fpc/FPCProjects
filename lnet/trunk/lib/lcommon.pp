@@ -90,6 +90,7 @@ const
   function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
 
   function IsBlockError(const anError: Integer): Boolean; inline;
+  function IsNonFatalError(const anError: Integer): Boolean; inline;
 
   function TZSeconds: Integer; inline;
 
@@ -266,6 +267,14 @@ begin
   Result := anError = WSAEWOULDBLOCK;
 end;
 
+function IsNonFatalError(const anError: Integer): Boolean; inline;
+begin
+  Result := (anError = WSAEINVAL) or (anError = WSAEFAULT)
+         or (anError = WSAEOPNOTSUPP) or (anError = WSAEMSGSIZE)
+         or (anError = WSAEADDRNOTAVAIL) or (anError = WSAEAFNOSUPPORT)
+         or (anError = WSAEDESTADDRREQ);
+end;
+
 {$ELSE}
 
 // unix
@@ -330,6 +339,13 @@ end;
 function IsBlockError(const anError: Integer): Boolean; inline;
 begin
   Result := (anError = ESysEWOULDBLOCK) or (anError = ESysENOBUFS);
+end;
+
+function IsNonFatalError(const anError: Integer): Boolean; inline;
+begin
+  Result := (anError = ESysEINTR) or (anError = ESysEMSGSIZE)
+         or (anError = ESysEFAULT) or (anError = ESysEINVAL)
+         or (anError = ESysEOPNOTSUPP);
 end;
 
 function TZSeconds: Integer; inline;
