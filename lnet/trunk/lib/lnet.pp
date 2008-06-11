@@ -746,7 +746,7 @@ begin
 
   if SendPossible then begin
     if aSize <= 0 then begin
-      Bail('Send error: Size <= 0', -1);
+      LogError('Send error: Size <= 0', -1);
       Exit(0);
     end;
 
@@ -1055,7 +1055,7 @@ end;
 
 function TLUdp.Bail(const msg: string): Boolean;
 begin
-  Result  :=  False;
+  Result := False;
 
   Disconnect;
 
@@ -1105,7 +1105,10 @@ end;
 
 procedure TLUdp.ErrorAction(aSocket: TLHandle; const msg: string);
 begin
-  Bail(msg);
+  if Assigned(FSession) then
+    FSession.ErrorEvent(aSocket, msg)
+  else
+    ErrorEvent(aSocket, msg);
 end;
 
 function TLUdp.IterNext: Boolean;
@@ -1388,12 +1391,15 @@ end;
 
 procedure TLTcp.ErrorAction(aSocket: TLHandle; const msg: string);
 begin
-  with TLSocket(aSocket) do begin
-    if Connecting then
-      Self.Bail('Error on connect: connection refused' , TLSocket(aSocket))
-    else
-      Self.Bail(msg, TLSocket(aSocket));
+  if TLSocket(aSocket).Connecting then begin
+    Self.Bail('Error on connect: connection refused', TLSocket(aSocket));
+    Exit;
   end;
+  
+  if Assigned(FSession) then
+    FSession.ErrorEvent(aSocket, msg)
+  else
+    ErrorEvent(aSocket, msg);
 end;
 
 function TLTcp.GetConnected: Boolean;

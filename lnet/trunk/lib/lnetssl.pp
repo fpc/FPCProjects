@@ -315,9 +315,8 @@ end;
 
 procedure TLSSLSocket.ShutdownSSL;
 var
-  n, c: Integer;
+  n: Integer;
 begin
-  c := 0;
   if Assigned(FSSL) then begin
     FSSLStatus := slNone; // for now
     n := SSLShutdown(FSSL); // don't care for now, unless it fails badly
