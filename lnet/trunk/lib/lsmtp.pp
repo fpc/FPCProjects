@@ -74,6 +74,7 @@ type
     procedure AddStreamSection(aStream: TStream; const FreeStream: Boolean = False);
     procedure DeleteSection(const i: Integer);
     procedure RemoveSection(aSection: TMimeSection);
+    procedure Reset;
    public
     property MailText: string read FMailText write FMailText; deprecated; // use sections!
     property Sender: string read FSender write FSender;
@@ -966,6 +967,11 @@ end;
 procedure TMail.RemoveSection(aSection: TMimeSection);
 begin
   FMailStream.Remove(aSection);
+end;
+
+procedure TMail.Reset;
+begin
+  FMailStream.Reset;
 end;
 
 
