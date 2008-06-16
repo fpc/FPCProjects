@@ -249,7 +249,8 @@ begin
     DiffTime := Abs((24 * 1000 * 60 * 60) - DiffTime);
   end;
 
-  Year      := Day div 356; // let's assume noone is gone long enough for leap year to make effect
+  Year      := Day div 365; // let's assume noone is gone long enough for leap year to make effect
+  Day       := Day mod 365;
   Hour      := ((DiffTime div 1000) div 60) div 60;
   Minute    := ((DiffTime div 1000) div 60) mod 60;
 
