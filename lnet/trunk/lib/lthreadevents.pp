@@ -127,6 +127,8 @@ end;
 
 function TLThreadedEventer.AddHandle(aHandle: TLHandle): Boolean;
 begin
+  if aHandle is TLSocket then
+    TLSocket(aHandle).SetState(ssBlocking, True);
   FWorkEventer.AddHandle(aHandle);
 end;
 
