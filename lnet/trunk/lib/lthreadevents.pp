@@ -34,14 +34,15 @@ type
    protected
     FWorkThread: array of TLWorkThread;
     FThreadCount: Integer;
-    FActiveThread: Integer;
-    FSocketsPerThread: Integer;
-    function CreateWorkThread(aEventer: TLEventer): TLWorkThread;
+    FThreadsCreated: Boolean;
+    procedure CreateWorkThreads(aEventerClass: TLEventerClass);
     
+    function GetCoreCount: Integer;
     function GetWorkThread(const i: Integer): TLWorkThread;
     function GetCount: Integer; override;
     function GetTimeout: Integer; override;
     procedure SetTimeout(const aValue: Integer); override;
+    procedure SetThreadCount(const aValue: Integer);
    public
     constructor Create; override;
     destructor Destroy; override;
@@ -50,9 +51,9 @@ type
     function AddHandle(aHandle: TLHandle): Boolean; override;
    public
     property WorkThreads[i: Integer]: TLWorkThread read GetWorkThread;
-    property ThreadCount: Integer read FThreadCount;
-    property SocketsPerThread: Integer read FSocketsPerThread write FSocketsPerThread;
+    property ThreadCount: Integer read FThreadCount write SetThreadCount;
   end;
+  TLThreadedEventerClass = class of TLThreadedEventer;
 
 implementation
 
@@ -86,23 +87,27 @@ end;
 
 { TLThreadedEventer }
 
-function TLThreadedEventer.CreateWorkThread(aEventer: TLEventer): TLWorkThread;
+procedure TLThreadedEventer.CreateWorkThreads(aEventerClass: TLEventerClass);
 const
   DEF_TIMEOUT = 50; // 50ms is good enough
 var
   i: Integer;
 begin
-  i := Length(FWorkThread);
-  Writeln('Creating work thread: ', i);
-  SetLength(FWorkThread, i + 1);
-  FThreadCount := i + 1;
-  FActiveThread := i;
+  SetLength(FWorkThread, FThreadCount);
 
-  aEventer.Timeout := DEF_TIMEOUT;
+  for i := 0 to FThreadCount - 1 do begin
+    FWorkThread[i] := TLWorkThread.Create(True);
+    FWorkThread[i].FEventer := aEventerClass.Create;
+    FWorkThread[i].FEventer.Timeout := DEF_TIMEOUT;
+    FWorkThread[i].Resume;
+  end;
+  
+  FThreadsCreated := True;
+end;
 
-  FWorkThread[i] := TLWorkThread.Create(True);
-  FWorkThread[i].FEventer := aEventer;
-  Result := FWorkThread[i];
+function TLThreadedEventer.GetCoreCount: Integer;
+begin
+  Result := 1; // TODO: auto-detect core count!
 end;
 
 function TLThreadedEventer.GetWorkThread(const i: Integer): TLWorkThread;
@@ -138,23 +143,34 @@ begin
     FWorkThread[i].Eventer.Timeout := aValue;
 end;
 
+procedure TLThreadedEventer.SetThreadCount(const aValue: Integer);
+begin
+  if aValue > 0 then
+    FThreadCount := aValue
+  else
+    FThreadCount := GetCoreCount;
+end;
+
 constructor TLThreadedEventer.Create;
 begin
   inherited Create;
 
-  CreateWorkThread(BestEventerClass.Create).Resume;
+  SetThreadCount(0);
 end;
 
 destructor TLThreadedEventer.Destroy;
 var
   i: Integer;
 begin
-  for i := 0 to FThreadCount - 1 do begin
-    if FWorkThread[i].Working then
-      FWorkThread[i].Quit := True;
+  if FThreadsCreated then begin
+    for i := 0 to FThreadCount - 1 do // tell them all to quit at once, so we wait max DEF_TIMEOUT ms
+      if FWorkThread[i].Working then
+        FWorkThread[i].Quit := True;
 
-    FWorkThread[i].WaitFor;
-    FWorkThread[i].Free;
+    for i := 0 to FThreadCount - 1 do begin
+      FWorkThread[i].WaitFor;
+      FWorkThread[i].Free;
+    end;
   end;
 
   inherited Destroy;
@@ -162,24 +178,24 @@ end;
 
 function TLThreadedEventer.AddHandle(aHandle: TLHandle): Boolean;
 var
-  i: Integer;
+  i, j, c: Integer;
 begin
+  if not FThreadsCreated then
+    CreateWorkThreads(BestEventerClass);
+
   if aHandle is TLSocket then
     TLSocket(aHandle).SetState(ssBlocking, True);
     
-  if FSocketsPerThread > 0 then
-    if FWorkThread[FActiveThread].Eventer.Count >= FSocketsPerThread then begin
-      for i := 0 to FThreadCount - 1 do
-        if FWorkThread[i].Eventer.Count < FSocketsPerThread then begin
-          FActiveThread := i;
-          Break;
-        end;
-      { If there's no thread/eventer with free space, then make new one }
-      if FWorkThread[FActiveThread].Eventer.Count >= FSocketsPerThread then
-        CreateWorkThread(BestEventerClass.Create).Resume;
+  { Find the thread with lowest count }
+  c := FWorkThread[0].Eventer.Count;
+  j := 0;
+  for i := 0 to FThreadCount - 1 do
+    if FWorkThread[i].Eventer.Count < c then begin
+      c := FWorkThread[i].Eventer.Count;
+      j := i;
     end;
-    
-  Result := FWorkThread[FActiveThread].Eventer.AddHandle(aHandle);
+  { And add the new handle to it }
+  Result := FWorkThread[j].Eventer.AddHandle(aHandle);
 end;
 
 end.
