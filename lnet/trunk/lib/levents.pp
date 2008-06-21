@@ -141,6 +141,7 @@ type
     FFreeRoot: TLHandle; // the root of "free" list if any
     FFreeIter: TLHandle; // the last of "free" list if any
     FInLoop: Boolean;
+    function GetCount: Integer; virtual;
     function GetTimeout: Integer; virtual;
     procedure SetTimeout(const Value: Integer); virtual;
     function Bail(const msg: string; const Ernum: Integer): Boolean;
@@ -166,7 +167,7 @@ type
     procedure DeleteRef;
     property Timeout: Integer read GetTimeout write SetTimeout;
     property OnError: TLEventerErrorEvent read FOnError write FOnError;
-    property Count: Integer read FCount;
+    property Count: Integer read GetCount;
   end;
   TLEventerClass = class of TLEventer;
   
@@ -301,6 +302,11 @@ end;
 destructor TLEventer.Destroy;
 begin
   Clear;
+end;
+
+function TLEventer.GetCount: Integer;
+begin
+  Result := FCount;
 end;
 
 function TLEventer.GetTimeout: Integer;
