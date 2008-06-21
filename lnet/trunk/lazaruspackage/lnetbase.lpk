@@ -152,7 +152,7 @@
         <UnitName Value="lNetSSL"/>
       </Item27>
       <Item28>
-        <Filename Value="../lib/lthreadevents.pas"/>
+        <Filename Value="../lib/lthreadevents.pp"/>
         <UnitName Value="lThreadEvents"/>
       </Item28>
     </Files>
