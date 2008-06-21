@@ -94,6 +94,8 @@ end;
 
 procedure TLThreadedEventer.SetTimeout(const aValue: Integer);
 begin
+  if aValue < 0 then
+    raise Exception.Create('TThreadedEventer must have Timeout >= 0');
   FWorkEventer.Timeout := aValue;
 end;
 
@@ -102,7 +104,7 @@ begin
   inherited Create;
 
   FWorkEventer := BestEventerClass.Create;
-  FWorkEventer.Timeout := 10; // 10ms is good enough, but power-saving will suck
+  FWorkEventer.Timeout := 50; // 50ms is good enough
   
   CreateWorkThread;
   FWorkThread.Resume;
