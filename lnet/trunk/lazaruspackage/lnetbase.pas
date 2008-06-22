@@ -9,8 +9,7 @@ interface
 uses
   lNet, lEvents, lCommon, lFTP, lsmtp, lTelnet, lhttp, lwebserver, 
     lMimeWrapper, lHTTPUtil, lControlStack, lMimeStreams, lMimeTypes, fastcgi, 
-    lfastcgi, lProcess, lSpawnFCGI, lStrBuffer, ltimer, lNetSSL, lThreadEvents, 
-    lCriticalSection; 
+    lfastcgi, lProcess, lSpawnFCGI, lStrBuffer, ltimer, lNetSSL, lThreadEvents; 
 
 implementation
 

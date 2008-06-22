@@ -196,7 +196,11 @@ type
 implementation
 
 uses
-  lCriticalSection, lCommon;
+  syncobjs,
+  lCommon;
+  
+var
+  CS: TCriticalSection;
   
 { TLHandle }
 
@@ -252,14 +256,14 @@ end;
 
 procedure TLHandle.Free;
 begin
-  EnterLNetCS;
+  CS.Enter;
 
   if Assigned(FEventer) and FEventer.FInLoop then
     FEventer.AddForFree(Self)
   else
     inherited Free;
 
-  LeaveLNetCS;
+  CS.Leave;
 end;
 
 { TLTimer }
@@ -444,11 +448,11 @@ end;
 
 procedure TLEventer.UnplugHandle(aHandle: TLHandle);
 begin
-  EnterLNetCS;
+  CS.Enter;
 
   InternalUnplugHandle(aHandle);
 
-  LeaveLNetCS;
+  CS.Leave;
 end;
 
 procedure TLEventer.UnregisterHandle(aHandle: TLHandle);
@@ -609,5 +613,11 @@ begin
 end;
 
 {$endif}
+
+initialization
+  CS := TCriticalSection.Create;
+
+finalization
+  CS.Free;
 
 end.

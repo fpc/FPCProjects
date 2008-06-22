@@ -42,7 +42,7 @@
     <License Value="LGPL with exception, see LICENSE and LICENSE.addon
 "/>
     <Version Minor="6" Release="2"/>
-    <Files Count="29">
+    <Files Count="28">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
         <UnitName Value="lNet"/>
@@ -155,10 +155,6 @@
         <Filename Value="../lib/lthreadevents.pp"/>
         <UnitName Value="lThreadEvents"/>
       </Item28>
-      <Item29>
-        <Filename Value="../lib/lcriticalsection.pp"/>
-        <UnitName Value="lcriticalsection"/>
-      </Item29>
     </Files>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)/"/>
