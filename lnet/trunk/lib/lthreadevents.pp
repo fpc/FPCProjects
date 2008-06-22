@@ -5,7 +5,6 @@ unit lThreadEvents;
 interface
 
 uses
-  {$ifndef windows}cThreads,{$endif}
   Classes, SysUtils,
   lNet, lEvents;
   

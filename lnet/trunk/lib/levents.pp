@@ -153,13 +153,14 @@ type
     function GetInternalData(aHandle: TLHandle): Pointer;
     procedure SetInternalData(aHandle: TLHandle; const aData: Pointer);
     procedure SetHandleEventer(aHandle: TLHandle);
+    procedure InternalUnplugHandle(aHandle: TLHandle); virtual;
    public
     constructor Create; virtual;
     destructor Destroy; override;
     function AddHandle(aHandle: TLHandle): Boolean; virtual;
     function CallAction: Boolean; virtual;
     procedure RemoveHandle(aHandle: TLHandle); virtual;
-    procedure UnplugHandle(aHandle: TLHandle); virtual;
+    procedure UnplugHandle(aHandle: TLHandle);
     procedure UnregisterHandle(aHandle: TLHandle); virtual;
     procedure LoadFromEventer(aEventer: TLEventer); virtual;
     procedure Clear;
@@ -191,11 +192,11 @@ type
 {$i sys/lepolleventerh.inc}
 
   function BestEventerClass: TLEventerClass;
-
+  
 implementation
 
 uses
-  lCommon;
+  lCriticalSection, lCommon;
   
 { TLHandle }
 
@@ -246,15 +247,19 @@ end;
 destructor TLHandle.Destroy;
 begin
   if Assigned(FEventer) then
-    FEventer.UnplugHandle(Self);
+    FEventer.InternalUnplugHandle(Self);
 end;
 
 procedure TLHandle.Free;
 begin
+  EnterLNetCS;
+
   if Assigned(FEventer) and FEventer.FInLoop then
     FEventer.AddForFree(Self)
   else
     inherited Free;
+
+  LeaveLNetCS;
 end;
 
 { TLTimer }
@@ -383,6 +388,29 @@ begin
   aHandle.FEventer := Self;
 end;
 
+procedure TLEventer.InternalUnplugHandle(aHandle: TLHandle);
+begin
+  if aHandle.FEventer = Self then begin
+    if aHandle.FEventer.FInLoop then begin
+      aHandle.FEventer.AddForFree(aHandle);
+      Exit;
+    end;
+
+    aHandle.FEventer := nil; // avoid recursive AV
+    if Assigned(aHandle.FPrev) then begin
+      aHandle.FPrev.FNext := aHandle.FNext;
+      if Assigned(aHandle.FNext) then
+        aHandle.FNext.FPrev := aHandle.FPrev;
+    end else if Assigned(aHandle.FNext) then begin
+      aHandle.FNext.FPrev := aHandle.FPrev;
+      if aHandle = FRoot then
+        FRoot := aHandle.FNext;
+    end else FRoot := nil;
+    if FCount > 0 then
+      Dec(FCount);
+  end;
+end;
+
 function TLEventer.AddHandle(aHandle: TLHandle): Boolean;
 begin
   Result := False;
@@ -416,20 +444,11 @@ end;
 
 procedure TLEventer.UnplugHandle(aHandle: TLHandle);
 begin
-  if aHandle.FEventer = Self then begin
-    aHandle.FEventer := nil; // avoid recursive AV
-    if Assigned(aHandle.FPrev) then begin
-      aHandle.FPrev.FNext := aHandle.FNext;
-      if Assigned(aHandle.FNext) then
-        aHandle.FNext.FPrev := aHandle.FPrev;
-    end else if Assigned(aHandle.FNext) then begin
-      aHandle.FNext.FPrev := aHandle.FPrev;
-      if aHandle = FRoot then
-        FRoot := aHandle.FNext;
-    end else FRoot := nil;
-    if FCount > 0 then
-      Dec(FCount);
-  end;
+  EnterLNetCS;
+
+  InternalUnplugHandle(aHandle);
+
+  LeaveLNetCS;
 end;
 
 procedure TLEventer.UnregisterHandle(aHandle: TLHandle);

@@ -94,7 +94,7 @@ begin
   end;
 end;
 
-procedure TLCLEventer.UnplugHandle(aHandle: TLHandle);
+procedure TLCLEventer.InternalUnplugHandle(aHandle: TLHandle);
 begin
   WaitSockets.Remove(Pointer(aHandle.Handle));
 
