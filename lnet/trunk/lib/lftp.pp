@@ -140,6 +140,8 @@ type
     procedure OnControlRe(aSocket: TLSocket);
     procedure OnControlCo(aSocket: TLSocket);
     procedure OnControlDs(aSocket: TLSocket);
+    
+    procedure ClearStatusFlags;
 
     function GetTransfer: Boolean;
 
@@ -385,9 +387,8 @@ begin
   FSL := TStringList.Create;
   FLastPort := FStartPort;
 
-  for s := fsNone to fsDEL do
-    FStatusFlags[s] := False;
-    
+  ClearStatusFlags;
+
   FStatus := TLFTPStatusFront.Create(EMPTY_REC);
   FCommandFront := TLFTPStatusFront.Create(EMPTY_REC);
   
@@ -431,8 +432,19 @@ begin
 end;
 
 procedure TLFTPClient.OnControlEr(const msg: string; aSocket: TLSocket);
+var
+  aStatus: TLFTPStatus;
 begin
   FSending := False;
+  
+  if Assigned(FOnFailure) then begin
+    while not FStatus.Empty do
+      FOnFailure(aSocket, FStatus.Remove.Status);
+  end else
+    FStatus.Clear;
+    
+  ClearStatusFlags;
+
   if Assigned(FOnError) then
     FOnError(msg, aSocket);
 end;
@@ -455,6 +467,14 @@ begin
     FOnError('Connection lost', aSocket);
 end;
 
+procedure TLFTPClient.ClearStatusFlags;
+var
+  s: TLFTPStatus;
+begin
+  for s := fsNone to fsLast do
+    FStatusFlags[s] := False;
+end;
+
 function TLFTPClient.GetTransfer: Boolean;
 begin
   Result := FData.Connected;
@@ -467,7 +487,7 @@ end;
 
 function TLFTPClient.GetConnected: Boolean;
 begin
-  Result  :=  FStatusFlags[fsCon] and inherited;
+  Result := FStatusFlags[fsCon] and inherited;
 end;
 
 function TLFTPClient.GetBinary: Boolean;
@@ -519,8 +539,8 @@ const
 begin
   if CanContinue(fsType, BoolToStr(Value), '') then begin
     FExpectedBinary := Value;
-    FControl.SendMessage('TYPE ' + TypeBool[Value] + FLE);
     FStatus.Insert(MakeStatusRec(fsType, '', ''));
+    FControl.SendMessage('TYPE ' + TypeBool[Value] + FLE);
   end;
 end;
 
@@ -811,8 +831,8 @@ begin
     Writedbg(['Sent PORT']);
     FData.Disconnect;
     FData.Listen(FLastPort);
-    FControl.SendMessage('PORT ' + StringIP + StringPair(FLastPort) + FLE);
     FStatus.Insert(MakeStatusRec(fsPort, '', ''));
+    FControl.SendMessage('PORT ' + StringIP + StringPair(FLastPort) + FLE);
 
     if FLastPort < 65535 then
       Inc(FLastPort)
@@ -820,8 +840,8 @@ begin
       FLastPort := FStartPort;
   end else begin
     Writedbg(['Sent PASV']);
-    FControl.SendMessage('PASV' + FLE);
     FStatus.Insert(MakeStatusRec(fsPasv, '', ''));
+    FControl.SendMessage('PASV' + FLE);
   end;
 end;
 
@@ -829,8 +849,8 @@ function TLFTPClient.User(const aUserName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsUser, aUserName, '') then begin
-    FControl.SendMessage('USER ' + aUserName + FLE);
     FStatus.Insert(MakeStatusRec(fsUser, '', ''));
+    FControl.SendMessage('USER ' + aUserName + FLE);
     Result := True;
   end;
 end;
@@ -839,8 +859,8 @@ function TLFTPClient.Password(const aPassword: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsPass, aPassword, '') then begin
-    FControl.SendMessage('PASS ' + aPassword + FLE);
     FStatus.Insert(MakeStatusRec(fsPass, '', ''));
+    FControl.SendMessage('PASS ' + aPassword + FLE);
     Result := True;
   end;
 end;
@@ -967,8 +987,8 @@ begin
   Result := not FPipeLine;
   if CanContinue(fsRetr, FileName, '') then begin
     PasvPort;
-    FControl.SendMessage('RETR ' + FileName + FLE);
     FStatus.Insert(MakeStatusRec(fsRetr, '', ''));
+    FControl.SendMessage('RETR ' + FileName + FLE);
     Result := True;
   end;
 end;
@@ -979,8 +999,8 @@ begin
   if FileExists(FileName) and CanContinue(fsStor, FileName, '') then begin
     FStoreFile := TFileStream.Create(FileName, fmOpenRead);
     PasvPort;
-    FControl.SendMessage('STOR ' + ExtractFileName(FileName) + FLE);
     FStatus.Insert(MakeStatusRec(fsStor, '', ''));
+    FControl.SendMessage('STOR ' + ExtractFileName(FileName) + FLE);
     Result := True;
   end;
 end;
@@ -989,9 +1009,9 @@ function TLFTPClient.ChangeDirectory(const DestPath: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsCWD, DestPath, '') then begin
-    FControl.SendMessage('CWD ' + DestPath + FLE);
     FStatus.Insert(MakeStatusRec(fsCWD, '', ''));
     FStatusFlags[fsCWD] := False;
+    FControl.SendMessage('CWD ' + DestPath + FLE);
     Result := True;
   end;
 end;
@@ -1000,9 +1020,9 @@ function TLFTPClient.MakeDirectory(const DirName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsMKD, DirName, '') then begin
-    FControl.SendMessage('MKD ' + DirName + FLE);
     FStatus.Insert(MakeStatusRec(fsMKD, '', ''));
     FStatusFlags[fsMKD] := False;
+    FControl.SendMessage('MKD ' + DirName + FLE);
     Result := True;
   end;
 end;
@@ -1011,9 +1031,9 @@ function TLFTPClient.RemoveDirectory(const DirName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsRMD, DirName, '') then begin
-    FControl.SendMessage('RMD ' + DirName + FLE);
     FStatus.Insert(MakeStatusRec(fsRMD, '', ''));
     FStatusFlags[fsRMD] := False;
+    FControl.SendMessage('RMD ' + DirName + FLE);
     Result := True;
   end;
 end;
@@ -1022,9 +1042,9 @@ function TLFTPClient.DeleteFile(const FileName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsDEL, FileName, '') then begin
-    FControl.SendMessage('DELE ' + FileName + FLE);
     FStatus.Insert(MakeStatusRec(fsDEL, '', ''));
     FStatusFlags[fsDEL] := False;
+    FControl.SendMessage('DELE ' + FileName + FLE);
     Result := True;
   end;
 end;
@@ -1033,13 +1053,13 @@ function TLFTPClient.Rename(const FromName, ToName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsRNFR, FromName, ToName) then begin
-    FControl.SendMessage('RNFR ' + FromName + FLE);
     FStatus.Insert(MakeStatusRec(fsRNFR, '', ''));
     FStatusFlags[fsRNFR] := False;
+    FControl.SendMessage('RNFR ' + FromName + FLE);
 
-    FControl.SendMessage('RNTO ' + ToName + FLE);
     FStatus.Insert(MakeStatusRec(fsRNTO, '', ''));
     FStatusFlags[fsRNTO] := False;
+    FControl.SendMessage('RNTO ' + ToName + FLE);
 
     Result := True;
   end;
@@ -1101,8 +1121,7 @@ begin
   FStatus.Clear;
   FData.Disconnect;
   FLastPort := FStartPort;
-  for s := fsNone to fsLast do
-    FStatusFlags[s] := False;
+  ClearStatusFlags;
   FCommandFront.Clear;
 end;
 

@@ -1448,28 +1448,40 @@ end;
 function TLTcp.Get(out aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
   Result := 0;
+
   if not Assigned(aSocket) then
     aSocket := GetValidSocket;
+
   if Assigned(aSocket) then
-    Result := aSocket.Get(aData, aSize);
+    Result := aSocket.Get(aData, aSize)
+  else
+    Bail('No connected socket to get through', nil);
 end;
 
 function TLTcp.GetMessage(out msg: string; aSocket: TLSocket): Integer;
 begin
   Result := 0;
+
   if not Assigned(aSocket) then
     aSocket := GetValidSocket;
+
   if Assigned(aSocket) then
-    Result := aSocket.GetMessage(msg);
+    Result := aSocket.GetMessage(msg)
+  else
+    Bail('No connected socket to get through', nil);
 end;
 
 function TLTcp.Send(const aData; const aSize: Integer; aSocket: TLSocket): Integer;
 begin
   Result := 0;
+
   if not Assigned(aSocket) then
     aSocket := GetValidSocket;
+
   if Assigned(aSocket) then
-    Result := aSocket.Send(aData, aSize);
+    Result := aSocket.Send(aData, aSize)
+  else
+    Bail('No connected socket to send through', nil);
 end;
 
 function TLTcp.SendMessage(const msg: string; aSocket: TLSocket): Integer;

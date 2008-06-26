@@ -365,6 +365,12 @@ end;
 
 procedure TLSMTPClient.OnEr(const msg: string; aSocket: TLSocket);
 begin
+  if Assigned(FOnFailure) then begin
+    while not FStatus.Empty do
+      FOnFailure(aSocket, FStatus.Remove.Status);
+  end else
+    FStatus.Clear;
+
   if Assigned(FOnError) then
     FOnError(msg, aSocket);
 end;
