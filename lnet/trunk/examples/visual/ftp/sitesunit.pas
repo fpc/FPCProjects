@@ -342,7 +342,7 @@ begin
     i:=-1;
     
   lbSites.ItemIndex := i;
-  if i>=0 then begin
+  if (i>=0) and (i<Length(FSites)) then begin
     txtSite.Text := FSites[i].Site;
     txtHost.Text := FSites[i].txtHost;
     txtPort.Text := FSites[i].Port;
