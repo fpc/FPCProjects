@@ -11,7 +11,7 @@ uses
 
 type
   TIconRec=record
-    Bmp: TBitmap;
+    Bmp: TPixMap;
     Ext: String; // comma separated string of extensions supported by icon
                  // ex. .zip,.rar,.tar.gz
   end;
@@ -690,7 +690,7 @@ begin
   if (i < 0) and (LazarusResources.Find(LazResName) <> nil) then begin
     i := Length(FIcons);
     SetLength(FIcons, i+1);
-    FIcons[i].Bmp := TBitmap.Create;
+    FIcons[i].Bmp := TPixMap.Create;
     FIcons[i].Bmp.LoadFromLazarusResource(LazResName);
     FIcons[i].Ext := lowercase(FileExt);
   end;
