@@ -105,7 +105,7 @@ begin
   LHI := GetInternalData(aHandle);
   RemoveEventHandler(LHI^.EventHandle);
   FreeMem(LHI);
-  inherited UnplugHandle(aHandle);
+  inherited InternalUnplugHandle(aHandle);
 end;
 
 

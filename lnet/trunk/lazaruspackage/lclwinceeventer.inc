@@ -102,7 +102,7 @@ begin
                                          WM_LCL_SOCK_ASYNC, ALL_FLAGS) <> 0 then
     Bail('Error on AsyncSelect', WSAGetLastError);
 
-  inherited UnplugHandle(aHandle);
+  inherited InternalUnplugHandle(aHandle);
 end;
 
 initialization
