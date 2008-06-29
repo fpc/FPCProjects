@@ -51,7 +51,7 @@ type
   private
     FNet: TLConnection;
     FIsServer: Boolean;
-    function NotMine(aSocket: TLSocket): Boolean; // check if the last received message is not from me (broadcast)
+    procedure SendToAll(const aMsg: string);
   public
     { public declarations }
   end; 
@@ -101,10 +101,12 @@ begin
   if aSocket.GetMessage(s) > 0 then begin
     MemoText.Append(s);
     MemoText.SelStart := Length(MemoText.Lines.Text);
-    FNet.IterReset;
-    if FIsServer and NotMine(aSocket) then repeat
-      FNet.SendMessage(s, FNet.Iterator);
-    until not FNet.IterNext;
+
+    if FNet is TLUdp then begin // echo to sender if UDP
+      if FIsServer then
+        FNet.SendMessage(s);
+    end else if FIsServer then // echo to all if TCP
+      SendToAll(s);
   end;
 end;
 
@@ -127,20 +129,16 @@ end;
 
 procedure TForm1.SendButtonClick(Sender: TObject);
 var
-  AllOK: Boolean;
   n: Integer;
 begin
   if Length(EditSend.Text) > 0 then begin
-    AllOk := True;
-    if Assigned(FNet.Iterator) then repeat
-      n := FNet.SendMessage(EditSend.Text, FNet.Iterator);
-      if n < Length(EditSend.Text) then begin
-        MemoText.Append('Error on send [' + IntToStr(n) + ']');
-        AllOK := False;
-      end;
-    until not FNet.IterNext;
-    if FIsServer and AllOK then
+
+    if FIsServer then begin
+      SendToAll(EditSend.Text);
       MemoText.Append(EditSend.Text);
+    end else
+      FNet.SendMessage(EditSend.Text);
+    
     EditSend.Text := '';
   end;
 end;
@@ -175,13 +173,22 @@ begin
     SendButtonClick(Sender);
 end;
 
-function TForm1.NotMine(aSocket: TLSocket): Boolean;
+procedure TForm1.SendToAll(const aMsg: string);
+var
+  n: Integer;
 begin
-  Result := False;
-  
-  Result := (aSocket.PeerPort = aSocket.LocalPort)
-        and (aSocket.PeerAddress = aSocket.LocalAddress);
-
+  if FNet is TLUdp then begin // UDP, use broadcast
+    n := TLUdp(FNet).SendMessage(aMsg, LADDR_BR);
+    if n < Length(aMsg) then
+      MemoText.Append('Error on send [' + IntToStr(n) + ']');
+  end else begin // TCP
+    FNet.IterReset; // start at server socket
+    while FNet.IterNext do begin // skip server socket, go to clients only
+      n := FNet.SendMessage(aMsg, FNet.Iterator);
+      if n < Length(aMsg) then
+        MemoText.Append('Error on send [' + IntToStr(n) + ']');
+    end;
+  end;
 end;
 
 initialization
