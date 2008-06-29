@@ -3,11 +3,9 @@ object Form1: TForm1
   Height = 350
   Top = 166
   Width = 390
-  HorzScrollBar.Page = 389
-  VertScrollBar.Page = 324
   ActiveControl = MemoText
   Caption = 'lNet Component Test'
-  ClientHeight = 325
+  ClientHeight = 323
   ClientWidth = 390
   Constraints.MaxHeight = 350
   Constraints.MaxWidth = 390
@@ -15,6 +13,7 @@ object Form1: TForm1
   Constraints.MinWidth = 390
   Menu = MainMenu1
   OnCreate = FormCreate
+  LCLVersion = '0.9.25'
   object LabelPort: TLabel
     Left = 224
     Height = 20
@@ -158,7 +157,7 @@ object Form1: TForm1
     OnReceive = LTCPComponentReceive
     OnError = LTCPComponentError
     left = 360
-    top = 296
+    top = 295
   end
   object MainMenu1: TMainMenu
     left = 360

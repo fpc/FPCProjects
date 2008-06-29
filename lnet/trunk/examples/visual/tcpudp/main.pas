@@ -51,6 +51,7 @@ type
   private
     FNet: TLConnection;
     FIsServer: Boolean;
+    function NotMine(aSocket: TLSocket): Boolean; // check if the last received message is not from me (broadcast)
   public
     { public declarations }
   end; 
@@ -101,7 +102,7 @@ begin
     MemoText.Append(s);
     MemoText.SelStart := Length(MemoText.Lines.Text);
     FNet.IterReset;
-    if FIsServer then repeat
+    if FIsServer and NotMine(aSocket) then repeat
       FNet.SendMessage(s, FNet.Iterator);
     until not FNet.IterNext;
   end;
@@ -172,6 +173,15 @@ procedure TForm1.SendEditKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
     SendButtonClick(Sender);
+end;
+
+function TForm1.NotMine(aSocket: TLSocket): Boolean;
+begin
+  Result := False;
+  
+  Result := (aSocket.PeerPort = aSocket.LocalPort)
+        and (aSocket.PeerAddress = aSocket.LocalAddress);
+
 end;
 
 initialization

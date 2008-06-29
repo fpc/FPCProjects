@@ -43,6 +43,7 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="main.lrs"/>
         <UnitName Value="main"/>
       </Unit1>
