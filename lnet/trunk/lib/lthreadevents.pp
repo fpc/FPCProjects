@@ -36,13 +36,13 @@ type
     FThreadsCreated: Boolean;
     procedure CreateWorkThreads(aEventerClass: TLEventerClass);
     
-    function GetCoreCount: Integer;
     function GetWorkThread(const i: Integer): TLWorkThread;
     function GetCount: Integer; override;
     function GetTimeout: Integer; override;
     procedure SetTimeout(const aValue: Integer); override;
     procedure SetThreadCount(const aValue: Integer);
    public
+    constructor Create(const aThreadCount: Integer);
     constructor Create; override;
     destructor Destroy; override;
     { AddHandle is called from within lNet unit as FEventer.AddHandle
@@ -104,11 +104,6 @@ begin
   FThreadsCreated := True;
 end;
 
-function TLThreadedEventer.GetCoreCount: Integer;
-begin
-  Result := 1; // TODO: auto-detect core count!
-end;
-
 function TLThreadedEventer.GetWorkThread(const i: Integer): TLWorkThread;
 begin
   Result := FWorkThread[i];
@@ -147,14 +142,19 @@ begin
   if aValue > 0 then
     FThreadCount := aValue
   else
-    FThreadCount := GetCoreCount;
+    FThreadCount := 1;
+end;
+
+constructor TLThreadedEventer.Create(const aThreadCount: Integer);
+begin
+  inherited Create;
+
+  SetThreadCount(aThreadCount);
 end;
 
 constructor TLThreadedEventer.Create;
 begin
-  inherited Create;
-
-  SetThreadCount(0);
+  Create(1);
 end;
 
 destructor TLThreadedEventer.Destroy;
