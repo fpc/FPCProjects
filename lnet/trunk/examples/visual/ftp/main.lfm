@@ -3,12 +3,10 @@ object MainForm: TMainForm
   Height = 548
   Top = 138
   Width = 725
-  HorzScrollBar.Page = 724
-  VertScrollBar.Page = 527
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
-  ClientHeight = 528
+  ClientHeight = 521
   ClientWidth = 725
   Constraints.MinHeight = 548
   Constraints.MinWidth = 725
@@ -20,7 +18,7 @@ object MainForm: TMainForm
   LCLVersion = '0.9.25'
   object MemoText: TMemo
     Height = 98
-    Top = 407
+    Top = 402
     Width = 725
     Align = alBottom
     ReadOnly = True
@@ -28,16 +26,16 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 358
+    Height = 353
     Top = 24
     Width = 725
     Align = alClient
-    ClientHeight = 358
+    ClientHeight = 353
     ClientWidth = 725
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 356
+      Height = 351
       Top = 1
       Width = 183
       Align = alLeft
@@ -47,16 +45,17 @@ object MainForm: TMainForm
       OnDblClick = LeftViewDblClick
       PopupMenu = PopupLeft
       TabOrder = 0
+      TopIndex = -1
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 356
+      Height = 351
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 356
+      Height = 351
       Top = 1
       Width = 535
       Align = alClient
@@ -88,6 +87,7 @@ object MainForm: TMainForm
           Visible = False
         end>
       DefaultRowHeight = 16
+      ExtendedSelect = True
       FixedColor = clBtnFace
       FixedCols = 0
       GridLineWidth = 0
@@ -105,14 +105,14 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 382
+    Top = 377
     Width = 725
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
-    Height = 23
-    Top = 505
+    Height = 21
+    Top = 500
     Width = 725
     Panels = <    
       item
@@ -141,21 +141,21 @@ object MainForm: TMainForm
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 72
+      Left = 94
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 85
+      Left = 107
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 133
+      Left = 168
       Top = 2
       Action = accDisconnect
       Down = True
@@ -165,7 +165,7 @@ object MainForm: TMainForm
   end
   object ProgressBar1: TProgressBar
     Height = 20
-    Top = 387
+    Top = 382
     Width = 725
     Align = alBottom
     Max = 100

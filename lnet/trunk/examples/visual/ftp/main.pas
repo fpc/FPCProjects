@@ -11,7 +11,7 @@ uses
 
 type
   TIconRec=record
-    Bmp: TPixMap;
+    Bmp: TPicture;
     Ext: String; // comma separated string of extensions supported by icon
                  // ex. .zip,.rar,.tar.gz
   end;
@@ -570,7 +570,7 @@ begin
     if i = 0 then
       i := PtrInt(rmtGrid.Objects[0, Row]) - 1;
     if i < Length(FIcons) then
-      rmtGrid.Canvas.Draw(aRect.Left + 2,aRect.Top + 2, FIcons[i].Bmp);
+      rmtGrid.Canvas.Draw(aRect.Left + 2,aRect.Top + 2, FIcons[i].Bmp.Graphic);
   end else
     rmtGrid.DefaultDrawCell(Col,Row,aRect,aState);
 end;
@@ -690,7 +690,7 @@ begin
   if (i < 0) and (LazarusResources.Find(LazResName) <> nil) then begin
     i := Length(FIcons);
     SetLength(FIcons, i+1);
-    FIcons[i].Bmp := TPixMap.Create;
+    FIcons[i].Bmp := TPicture.Create;
     FIcons[i].Bmp.LoadFromLazarusResource(LazResName);
     FIcons[i].Ext := lowercase(FileExt);
   end;
