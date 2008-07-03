@@ -193,7 +193,7 @@ end;
 constructor TLIrcBot.Create(const Nick, Login: string);
 begin
   FNick:=Nick;
-  FNickOK:='';
+  FNickOK := '';
   FRIP:=False;
   FLastLine:=TLIrcRec.Create;
   FLogin:=Login;
@@ -456,8 +456,8 @@ var
   msg: string;
 begin
   if FCon.GetMessage(msg) > 0 then
-    if Pos(UpperCase(FNickOK) + ' << ONLINE >>', UpperCase(Msg)) > 0 then
-      FNickOK:=''
+    if Pos('Last seen  : now', Msg) > 0 then
+      FNickOK := ''
     else
       if Pos('NOTICE', msg) = 0 then DoRe(msg);
 end;
@@ -790,7 +790,7 @@ var
 begin
   Result:=False;
   if Length(aNick) > 0 then begin
-    FNickOK:=aNick;
+    FNickOK := aNick;
     if FPUsers.IndexOf(aNick) >= 0 then begin
       Backup:=FLastLine.CloneSelf;
       FCon.SendMessage('NICKSERV :INFO ' + aNick + #13#10);
