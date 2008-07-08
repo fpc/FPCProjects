@@ -6,13 +6,18 @@
    Geometric objects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>15/03/08 - DaStr - Deleted TGLFrustrum.AxisAlignedBoundingBox(),
+                             now this function references the inherited function
       <li>20/01/08 - DaStr - Corrected object centering in TGLFrustrum.BuildList()
                               (thanks Sandor Domokos) (BugTrackerID = 1864314)
                              Added a TGLCapsule object (thanks Dave Gravel) 
       <li>18/11/07 - DaStr - Got rid of compiler warning in TGLCone.RayCastIntersect
-      <li>07/05/07 - DanB - Added TGLCone.RayCastIntersect + improved TGLDisk.RayCastIntersect
+      <li>07/05/07 - DanB - Added TGLCone.RayCastIntersect
+                            Improved TGLDisk.RayCastIntersect
       <li>30/03/07 - DaStr - Added $I GLScene.inc
-      <li>25/09/04 - Eric Pascual - Added AxisAlignedBoundingBox,AxisAlignedBoundingBoxUnscaled,AxisAlignedDimensionsUnscaled
+      <li>25/09/04 - Eric Pascual - Added AxisAlignedBoundingBox,
+                                    AxisAlignedBoundingBoxUnscaled,
+                                    AxisAlignedDimensionsUnscaled
       <li>29/11/03 - MF - Added shadow silhouette code for TGLCylinderBase et al.
                           Added GetTopRadius to facilitate silhouette.
       <li>24/10/03 - NelC - Fixed TGLTorus texture coord. bug
@@ -445,7 +450,6 @@ type
          procedure Assign(Source: TPersistent); override;
          function TopDepth: TGLFloat;
          function TopWidth: TGLFloat;
-         function AxisAlignedBoundingBox: TAABB;
          function AxisAlignedBoundingBoxUnscaled: TAABB;
          function AxisAlignedDimensionsUnscaled: TVector; override;
       published
@@ -2373,12 +2377,6 @@ begin
      AABBTransform(aabb, child.Matrix) ;
      AddAABB(Result, aabb) ;
    end ;
-end ;
-
-function TGLFrustrum.AxisAlignedBoundingBox : TAABB ;
-begin
-   Result := AxisAlignedBoundingBoxUnscaled ;
-   AABBScale(Result, Scale.AsAffineVector) ;
 end ;
 
 function TGLFrustrum.AxisAlignedDimensionsUnscaled : TVector ;
