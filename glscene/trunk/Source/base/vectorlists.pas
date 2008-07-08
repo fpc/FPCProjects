@@ -2386,7 +2386,21 @@ end;
 //
 
 function IntegerSearch(item: Integer; list: PIntegerVector; Count: Integer): Integer; register;
+{$IFDEF NO_ASM}
+var i : integer;
 begin
+  result:=-1;
+  for i := 0 to Count-1 do begin
+    if list^[i]=item then begin
+      result:=i;
+      break;
+    end;
+  end;
+end;
+{$ELSE}
+{$IFDEF FPC}
+ {$ASMMODE INTEL}
+{$ENDIF}
 asm
   push edi;
 
@@ -2411,7 +2425,7 @@ asm
   @@end:
   pop edi;
 end;
-end;
+{$ENDIF}
 
 // IndexOf
 //
@@ -2839,29 +2853,13 @@ end;
 //
 
 function TSingleList.Sum: Single;
-
-  function ComputeSum(list: PSingleArrayList; nb: Integer): Single; register;
-  var
-    i: Integer;
-   begin
-   // ALMINDOR -- double check this, possibly optimize later, but NO FRICKING ASM
-{  asm
-    fld   dword ptr [eax]
-    @@Loop:
-    dec   edx
-    fadd  dword ptr [eax+edx*4]
-    jnz   @@Loop
-  end;}
-     Result := 0;
-     for i := 0 to nb-1 do
-       Result := Result + list^[i];
-   end;
+var
+  i: Integer;
 
 begin
-  if FCount > 0 then
-    Result := ComputeSum(FList, FCount)
-  else
-    Result := 0;
+  Result := 0;
+  for i := 0 to FCount-1 do
+     Result := Result + FList^[i];
 end;
 
 // ------------------
@@ -3152,29 +3150,13 @@ end;
 //
 
 function TDoubleList.Sum: Double;
-
-  function ComputeSum(list: PDoubleArrayList; nb: Integer): Double; register;
-  var
-    i: Integer;
-  begin
-   // ALMINDOR -- double check this, possibly optimize later, but NO FRICKING ASM
-{  asm
-    fld   dword ptr [eax]
-    @@Loop:
-    dec   edx
-    fadd  dword ptr [eax+edx*4]
-    jnz   @@Loop
-  end;}
-     Result := 0;
-     for i := 0 to nb-1 do
-       Result := Result + list^[i];
-  end;
+var
+  i: Integer;
 
 begin
-  if FCount > 0 then
-    Result := ComputeSum(FList, FCount)
-  else
-    Result := 0;
+  Result := 0;
+  for i := 0 to FCount-1 do
+    Result := Result + FList^[i];
 end;
 
 // ------------------
