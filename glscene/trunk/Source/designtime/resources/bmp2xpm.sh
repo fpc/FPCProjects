@@ -22,4 +22,7 @@ done
 rm *.bmp
 lazres ../../gllazarusregister.lrs *.xpm
 
-
+cd ..
+echo "Remember to run the following commands after adding the new *.xpm to svn:"
+echo 'find -name "*.xpm" -exec svn ps svn:eol-style "native" {} \;'
+echo 'find -name "*.xpm" -exec svn ps svn:mime-type "image/x-xpixmap" {} \;'
