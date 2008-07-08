@@ -6,6 +6,8 @@
     TGLSLShader is a wrapper for GLS shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>15/03/08 - DaStr - Fixups for vIgnoreContextActivationFailures mode
+                                                      (BugTracker ID = 1914782)
       <li>25/12/07 - DaStr - Fix-up for previous update (BugtrackerID = 1772477)
       <li>12/08/07 - LC - TGLSLShaderParameter.SetAsCustomTexture now restores the
                           active texture unit (BugtrackerID = 1772477)
@@ -293,6 +295,8 @@ end;
 
 destructor TGLCustomGLSLShader.Destroy;
 begin
+  if vIgnoreContextActivationFailures then
+    FGLSLProg.Free;
   FParam.Free;
   inherited;
 end;
