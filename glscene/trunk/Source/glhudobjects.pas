@@ -1,11 +1,13 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-{: GLBitmapFont<p>
+{: GLHUDObjects<p>
 
    GLScene objects that get rendered in 2D coordinates<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>15/03/08 - DaStr - Bugfixed TGLAbsoluteHUDText.DoRender()
+                              (thanks Nicoara Adrian) (BugtrackerID = 1914823)
       <li>18/09/07 - DaStr - Added TGLResolutionIndependantHUDText and
                               TGLAbsoluteHUDText to the list of registered classes
                              Cleaned up "uses" section
@@ -448,7 +450,7 @@ procedure TGLAbsoluteHUDText.DoRender(var rci: TRenderContextInfo;
 var
   Temp: TAffineVector;
 begin
-  Temp := TGLSceneBuffer(rci.buffer).WorldToScreen(Position.AsAffineVector);
+  Temp := TGLSceneBuffer(rci.buffer).WorldToScreen(Self.AbsoluteAffinePosition);
   Temp[1] := rci.viewPortSize.cy - Temp[1];
   RenderTextAtPosition(Temp[0], Temp[1], Temp[2], rci);
   if Count > 0 then
