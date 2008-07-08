@@ -68,6 +68,8 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>21/03/08 - DaStr - Renamed TMMat to TGLTextureSharingShaderMaterial 
+      <li>17/03/08 - mrqzzz - Registered TGLTextureSharingShader
       <li>20/01/08 - DaStr - Registered TGLCapsule (thanks Dave Gravel)
                              Registered TGLGizmo
       <li>06/11/07 - mrqzzz - Registered material picker for TGLActorProxy
@@ -255,6 +257,7 @@ uses
    GLViewer,
    GLColor,
    GLGizmo,
+   GLTextureSharingShader,
    GLDynamicTexture,
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText,
@@ -1583,7 +1586,7 @@ begin
                         TGLHiddenLineShader, TGLCelShader, TGLOutlineShader,
                         TGLMultiMaterialShader, TGLBumpShader,
                         TGLSLShader, TGLSLDiffuseSpecularShader, TGLSLBumpShader,
-                        TGLAsmShader,TGLShaderCombiner
+                        TGLAsmShader,TGLShaderCombiner,TGLTextureSharingShader
                       ]);
 
    RegisterComponentEditor(TGLSceneViewer, TGLSceneViewerEditor);
@@ -1614,9 +1617,8 @@ begin
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TSpriteAnimation, '', TGLLibMaterialNameProperty);
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLMaterialProxy, '', TGLLibMaterialNameProperty);
    RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLActorProxy, '', TGLLibMaterialNameProperty);
-   
    RegisterPropertyEditor(TypeInfo(TActorAnimationName), TGLAnimationControler, '', TGLAnimationNameProperty);
-
+   RegisterPropertyEditor(TypeInfo(TGLLibMaterialName), TGLTextureSharingShaderMaterial, 'LibMaterialName', TGLLibMaterialNameProperty);
    RegisterPropertyEditor(TypeInfo(TFileName), TGLFreeForm, 'FileName', TVectorFileProperty);
 //Still needed?   RegisterClasses([TGLCoordinates]);
 
