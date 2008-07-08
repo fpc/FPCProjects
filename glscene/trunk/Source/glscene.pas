@@ -61,6 +61,7 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>15/03/08 - DaStr - Implemented TGLProxyObject.BarycenterAbsolutePosition()
       <li>16/02/08 - Mrqzzz - Other fix to ResetAndPitchTurnRoll by Pete,Dan Bartlett
       <li>12/02/08 - Mrqzzz - Dave Gravel fixed ResetAndPitchTurnRoll
       <li>20/01/08 - DaStr - Bugfixed TGLBaseSceneObject.MoveChild[First/Last]()
@@ -1326,6 +1327,7 @@ type
          procedure DoRender(var ARci : TRenderContextInfo;
                             ARenderSelf, ARenderChildren : Boolean); override;
 
+         function BarycenterAbsolutePosition : TVector; override;
          function AxisAlignedDimensionsUnscaled : TVector; override;
          function RayCastIntersect(const rayStart, rayVector : TVector;
                                  intersectPoint : PVector = nil;
@@ -6075,6 +6077,24 @@ begin
    if Assigned(FMasterObject) then begin
       Result:=FMasterObject.AxisAlignedDimensionsUnscaled;
    end else Result:=inherited AxisAlignedDimensionsUnscaled;
+end;
+
+// BarycenterAbsolutePosition
+//
+function TGLProxyObject.BarycenterAbsolutePosition: TVector;
+var
+  lAdjustVector: TVector;
+begin
+  if Assigned(FMasterObject) then
+  begin
+    // Not entirely correct, but better than nothing...
+    lAdjustVector := VectorSubtract(FMasterObject.BarycenterAbsolutePosition, FMasterObject.AbsolutePosition);
+    Position.AsVector := VectorAdd(Position.AsVector, lAdjustVector);
+    Result:=AbsolutePosition;
+    Position.AsVector := VectorSubtract(Position.AsVector, lAdjustVector);
+  end
+  else
+   Result:=inherited BarycenterAbsolutePosition;
 end;
 
 // Notification
