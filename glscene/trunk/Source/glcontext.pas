@@ -4,7 +4,8 @@
    Currently NOT thread-safe.<p>
 
    <b>History : </b><font size=-1><ul>
-
+      <li>15/03/08 - DaStr - Fixups for vIgnoreContextActivationFailures mode
+                                                      (BugTracker ID = 1914782)
       <li>06/11/07 - LC - moved vIgnoreContextActivationFailures to "Interface" section
       <li>24/06/06 - LC - Refactored TGLVBOHandle, introduced TGLBufferObjectHandle
                           and TGLPackPBOHandle/TGLUnpackPBOHandle
@@ -979,7 +980,8 @@ begin
       if Assigned(oldContext) then
          oldContext.Activate;
    end;
-   vIgnoreContextActivationFailures:=False;
+// DaStr: don't understand why do you need to turn it off?..
+//   vIgnoreContextActivationFailures:=False;
    FAcceleration:=chaUnknown;
 end;
 
