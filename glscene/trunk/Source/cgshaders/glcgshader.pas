@@ -6,6 +6,8 @@
    Base Cg shader classes.<p>
 
    <b>History :</b><font size=-1><ul>
+      <li>15/03/08 - DaStr - Fixups for vIgnoreContextActivationFailures mode
+                                                      (BugTracker ID = 1914782)
       <li>24/03/07 - DaStr - Improved Cross-Platform compatibility
                                                       (BugTracker ID = 1684432)
       <li>23/02/07 - DaStr- Added TCgProgram.ManualNotification
@@ -67,7 +69,7 @@ uses
 
   // GLScene
   VectorGeometry, VectorLists, VectorTypes, GLTexture, GLMisc, GLStrings,
-  GLCadencer, OpenGL1x, GLCrossPlatform,
+  GLCadencer, OpenGL1x, GLCrossPlatform, GLContext,
 
   // CG
   Cg, CgGL;
@@ -502,7 +504,8 @@ end;
 destructor TCgProgram.Destroy;
 begin
   inherited Destroy;
-  Assert(FParams.Count=0, '[' + LongName + ']: bug! params unbound!');
+  Assert((FParams.Count=0) or vIgnoreContextActivationFailures, '[' + LongName + ']: bug! params unbound!');
+  ClearParamsList;
   FParams.Free;
   FCode.Free;
 end;
