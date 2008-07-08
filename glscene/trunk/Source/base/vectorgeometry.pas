@@ -51,6 +51,8 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
+      <li>21/02/07 - DaStr - Bugfixed InterpolatePower() to support negative Base
+                               and not round Exponent parameters
       <li>12/02/08 - Mrqzzz - Removed cPIdiv360, not needed anymore, by Pete,Dan Bartlett
       <li>12/02/08 - Mrqzzz - Dave Gravel added const cPIdiv360 to fix ResetAndPitchTurnRoll
       <li>18/11/07 - DaStr - Added MatrixInvert(), VectorDivide() functions
@@ -3796,7 +3798,10 @@ end;
 //
 function InterpolatePower(const Start, Stop, Delta: Single; const DistortionDegree: Single): Single;
 begin
-  Result := (Stop - Start) * VectorGeometry.Power(Delta, DistortionDegree) + Start;
+  if (Round(DistortionDegree) <> DistortionDegree) and (Delta < 0) then
+    Result := (Stop - Start) * VectorGeometry.Power(Delta, Round(DistortionDegree)) + Start
+  else
+    Result := (Stop - Start) * VectorGeometry.Power(Delta, DistortionDegree) + Start;
 end;
 
 // MatrixLerp
