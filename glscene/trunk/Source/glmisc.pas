@@ -6,6 +6,10 @@
    Miscellaneous support routines & classes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
+                              TGLUpdateAbleObject, TGLCadenceAbleComponent,
+                              TGLCustomCoordinates.NotifyChange
+                              (BugTracker ID = 1938988)
       <li>03/04/07 - DaStr - GLS_DELPHI_5_UP renamed to GLS_DELPHI_4_DOWN for
                              FPC compatibility (thanks Burkhard Carstens)
       <li>30/03/07 - DaStr - Added a work-around to the Delphi 5 interface bug
@@ -95,7 +99,8 @@ uses
   Classes,
 
   // GLScene
-  VectorGeometry, OpenGL1x, Spline, VectorLists, VectorTypes, GLCrossPlatform;
+  VectorGeometry, OpenGL1x, Spline, VectorLists, VectorTypes, GLCrossPlatform,
+  PersistentClasses;
 
 {$I GLScene.inc}
 
@@ -159,7 +164,7 @@ type
    // TGLUpdateAbleObject
    //
    {: An abstract class describing the "update" interface.<p> }
-   TGLUpdateAbleObject = class (TPersistent)
+   TGLUpdateAbleObject = class (TGLInterfacedPersistent)
       private
 	      { Private Declarations }
          FOwner : TPersistent;
@@ -184,7 +189,7 @@ type
 	// TGLCadenceAbleComponent
 	//
 	{: A base class describing the "cadenceing" interface.<p> }
-	TGLCadenceAbleComponent = class (TComponent)
+	TGLCadenceAbleComponent = class (TGLComponent)
 		public
 	      { Public Declarations }
 {$ifdef GLS_DELPHI_4_DOWN}
@@ -750,19 +755,11 @@ end;
 // NotifyChange
 //
 procedure TGLCustomCoordinates.NotifyChange(Sender : TObject);
-{$IFNDEF GLS_COMPILER_5_DOWN}
 var
   Int: IGLCoordinatesUpdateAble;
 begin
   if  Supports(Owner, IGLCoordinatesUpdateAble, Int) then
     Int.CoordinateChanged(TGLCoordinates(Self))
-
-{$ELSE}
-begin
-  // A work-around in Delphi 5 interface bug.
-  if Owner is TGLCoordinatesUpdateAbleComponent then
-    TGLCoordinatesUpdateAbleComponent(Owner).CoordinateChanged(TGLCoordinates(Self))
-{$ENDIF}
   else
     inherited NotifyChange(Sender);
 end;

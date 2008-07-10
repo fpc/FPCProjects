@@ -7,9 +7,11 @@
    Allows assign a unique material for each proxy master.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
+                              TGLMaterialMultiProxyMaster (BugTracker ID = 1938988)
       <li>25/03/07 - Added GLCrossPlatform to uses for Delphi5 compatibility
       <li>17/02/07 - DaStr - Initial version (contributed to GLScene)
-
+    </ul></font>     
 
   What changed compared to GLMultiProxy:
     1) Allows assign a unique material for each proxy master
@@ -44,7 +46,7 @@ uses
 
   // GLScene
   GLScene, VectorGeometry, GLMisc, GLTexture, GLSilhouette, GLStrings,
-  GLCrossPlatform;
+  GLCrossPlatform, PersistentClasses;
 
 type
 
@@ -53,7 +55,7 @@ type
   // TGLMaterialMultiProxyMaster
   //
   {: MasterObject description for a MultiProxy object. }
-  TGLMaterialMultiProxyMaster = class(TCollectionItem, IGLMaterialLibrarySupported)
+  TGLMaterialMultiProxyMaster = class(TGLInterfacedCollectionItem, IGLMaterialLibrarySupported)
   private
     { Private Declarations }
     FMasterObject: TGLBaseSceneObject;
@@ -61,14 +63,11 @@ type
     FTempLibMaterialName: TGLLibMaterialName;
     FDistanceMin2, FDistanceMax2: Single;
 
-    //implementing IGLMaterialLibrarySupported
-    function GetMaterialLibrary: TGLMaterialLibrary;
-    //implementing IInterface
-    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
-    function _AddRef: Integer; stdcall;
-    function _Release: Integer; stdcall;
     procedure SetMasterLibMaterialName(const Value: TGLLibMaterialName);
     function GetMasterLibMaterialName: TGLLibMaterialName;
+
+    // Implementing IGLMaterialLibrarySupported.
+    function GetMaterialLibrary: TGLMaterialLibrary;
   protected
     { Protected Declarations }
     function GetDisplayName: string; override;
@@ -299,28 +298,6 @@ begin
     FDistanceMax2 := tmp;
     NotifyChange;
   end;
-end;
-
-// _AddRef
-//
-function TGLMaterialMultiProxyMaster._AddRef: Integer;
-begin
-  Result := -1; //ignore
-end;
-
-// _Release
-//
-function TGLMaterialMultiProxyMaster._Release: Integer;
-begin
-  Result := -1; //ignore
-end;
-
-// QueryInterface
-//
-function TGLMaterialMultiProxyMaster.QueryInterface(const IID: TGUID;
-  out Obj): HResult;
-begin
-  if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
 
 // GetMaterialLibrary

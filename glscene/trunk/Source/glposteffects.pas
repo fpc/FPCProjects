@@ -6,7 +6,10 @@
   A collection of components that generate post effects.<p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>16/08/07 - DaStr - Added pepBlur preset (by Paul van Dinther) 
+      <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
+                              TGLPostShaderCollectionItem.SetShader()
+                              (BugTracker ID = 1938988)
+      <li>16/08/07 - DaStr - Added pepBlur preset (by Paul van Dinther)
       <li>25/03/07 - DaStr - Small fix for Delphi5 compatibility
       <li>23/03/07 - DaStr - Added TGLPostShaderHolder.Assign
       <li>20/03/07 - DaStr - Fixed TGLPostShaderHolder.DoRender
@@ -28,6 +31,7 @@
                              pepNone preset does not call gl[Read/Draw]Pixels
       <li>23/02/07 - DaStr - Initial version of TGLPostEffect
                                                 (based on OldCity demo by FedeX)
+    </ul></font>                                                
 
 }
 unit GLPostEffects;
@@ -363,7 +367,7 @@ begin
   if FShader <> nil then
       FShader.RemoveFreeNotification(RealOwner);
 
-  if not Supports(Value, IGLPostShader, FPostShaderInterface) then
+  if not Supports(TObject(Value), IGLPostShader, FPostShaderInterface) then
     raise EGLPostShaderHolderException.Create('Shader must support interface IGLPostShader!');
 
   if RealOwner <> nil then

@@ -6,6 +6,8 @@
 	A polymorphism-enabled TCollection-like set of classes<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/04/08 - DaStr - TXCollectionItem now descends from
+                              TGLInterfacedPersistent (BugTracker ID = 1938988)
       <li>08/12/04 - SG - Added TXCollectionItem.CanAddTo class function
       <li>03/07/04 - LR - Removed ..\ from the GLScene.inc
       <li>12/07/03 - DanB - Added (De)RegisterXCollectionDestroyEvent
@@ -24,7 +26,7 @@ unit XCollection;
 
 interface
 
-uses Classes, SysUtils {$IFDEF DEBUG_XCOLLECTION}, typinfo {$ENDIF};
+uses Classes, SysUtils, PersistentClasses {$IFDEF DEBUG_XCOLLECTION}, typinfo {$ENDIF};
 
 {$i GLScene.inc}
 
@@ -44,7 +46,7 @@ type
 		<li>Subclasses must be registered using the RegisterXCollectionItemClass
          function for proper operation
 		</ul> }
-	TXCollectionItem = class (TPersistent)
+	TXCollectionItem = class (TGLInterfacedPersistent)
 		private
 			{ Private Declarations }
 			FOwner : TXCollection;

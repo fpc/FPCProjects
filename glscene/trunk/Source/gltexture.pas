@@ -6,6 +6,8 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
+                              TGLMaterial (BugTracker ID = 1938988)
       <li>08/02/08 - Mrqzzz - Added tiaBottomRightPointColorTransparent
       <li>29/07/07 - LC - Modified how tmmEyeLinear is applied, see
                           Bugtracker ID = 1762966.
@@ -1219,12 +1221,9 @@ type
          FMaterialOptions : TMaterialOptions;
          FFaceCulling : TFaceCulling;
          currentLibMaterial : TGLLibMaterial;
-         //implementing IGLMaterialLibrarySupported
+
+         // Implementing IGLMaterialLibrarySupported.
          function GetMaterialLibrary: TGLMaterialLibrary;
-         //implementing IInterface
-         function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
-         function _AddRef: Integer; stdcall;
-         function _Release: Integer; stdcall;
 	   protected
 	      { Protected Declarations }
          function GetBackProperties : TGLFaceProperties;
@@ -4467,27 +4466,6 @@ end;
 function TGLMaterial.GetMaterialLibrary: TGLMaterialLibrary;
 begin
   Result := FMaterialLibrary;
-end;
-
-// QueryInterface
-//
-function TGLMaterial.QueryInterface(const IID: TGUID; out Obj): HResult;
-begin
-  if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
-end;
-
-// _AddRef
-//
-function TGLMaterial._AddRef: Integer;
-begin
-  Result := -1; //ignore
-end;
-
-// _Release
-//
-function TGLMaterial._Release: Integer;
-begin
-  Result := -1; //ignore
 end;
 
 // SetBackProperties

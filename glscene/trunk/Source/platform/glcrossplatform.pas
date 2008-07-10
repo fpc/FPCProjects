@@ -25,6 +25,7 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>10/04/08 - DaStr - Added TGLComponent (BugTracker ID = 1938988)
       <li>18/11/07 - DaStr - Added ptrInt and PtrUInt types (BugtrackerID = 1833830)
                               (thanks Dje and Burkhard Carstens)
       <li>06/06/07 - DaStr - Added WORD type
@@ -143,6 +144,13 @@ type
 
 {$IFDEF GLS_DELPHI_5_DOWN}
   IInterface = IUnknown;
+{$ENDIF}
+
+// A work-around a Delphi5 interface bug.
+{$IFDEF GLS_DELPHI_5_DOWN}
+  TGLComponent = class(TComponent, IInterface);
+{$ELSE}
+  TGLComponent = class(TComponent);
 {$ENDIF}
 
 {$IFDEF FPC}
