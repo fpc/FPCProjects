@@ -39,6 +39,8 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>24/03/07 - DaStr - Moved TGLMinFilter and TGLMagFilter from GLUtils.pas
+                              to GLGraphics.pas (BugTracker ID = 1923844)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -68,7 +70,7 @@
       <li>14/01/01 - EG - Fixed isEmpty (was invalid for rectangles)
       <li>08/10/00 - EG - Fixed RegisterAsOpenGLTexture and Assign(nil)
       <li>25/09/00 - EG - First operational code
-	   <li>19/08/00 - EG - Creation
+      <li>19/08/00 - EG - Creation
 	</ul></font>
 }
 unit GLGraphics;
@@ -87,6 +89,12 @@ uses Classes,
    OpenGL1x, GLUtils, GLCrossPlatform, GLContext, GLColor;
 
 type
+	TGLMinFilter   = (miNearest, miLinear, miNearestMipmapNearest,
+                    miLinearMipmapNearest, miNearestMipmapLinear,
+                    miLinearMipmapLinear);
+
+	TGLMagFilter   = (maNearest, maLinear);
+
    // TGLPixel24
    //
    TGLPixel24 = packed record

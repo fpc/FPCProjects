@@ -25,7 +25,10 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>25/03/07 - Replaced StrUtils with GLCrossPlatform
+      <li>24/03/08 - DaStr - Removed OpenGL1x dependancy
+                             Moved TGLMinFilter and TGLMagFilter from GLUtils.pas
+                              to GLGraphics.pas (BugTracker ID = 1923844)
+      <li>25/03/07 - DaStr - Replaced StrUtils with GLCrossPlatform
       <li>23/03/07 - DaStr - Removed compiler warnings caused by
                                SaveComponentToFile and LoadComponentFromFile
       <li>22/03/07 - DaStr - Added SaveComponentToFile, LoadComponentFromFile
@@ -38,23 +41,17 @@ unit GLUtils;
 interface
 
 uses
-  //VCL
+  // VCL
   Classes, SysUtils,
 
-  //GLScene
-  VectorGeometry, GLCrossPlatform, OpenGL1x;
+  // GLScene
+  VectorGeometry, GLCrossPlatform;
 
 {$i GLScene.inc}
 
 type
   EGLUtilsException = class(Exception);
 
-	TGLMinFilter   = (miNearest, miLinear, miNearestMipmapNearest,
-                    miLinearMipmapNearest, miNearestMipmapLinear,
-                    miLinearMipmapLinear);
-
-	TGLMagFilter   = (maNearest, maLinear);
-   
 	TSqrt255Array = array [0..255] of Byte;
 	PSqrt255Array = ^TSqrt255Array;
 

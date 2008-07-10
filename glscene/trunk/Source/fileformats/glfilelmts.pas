@@ -4,6 +4,8 @@
 {: GLFileLMTS<p>
 
  <b>History : </b><font size=-1><ul>
+        <li>29/05/08 - DaStr - Replaced GLUtils with GLGraphics (BugTracker ID = 1923844)
+                               Added $I GLScene.inc
         <li>13/08/07 - fig -  Added checks for DDS textures in LoadFromStream()
         <li>23/03/07 - fig -  Fixed exception when material properties were loaded without a material library being assigned.
         <li>15/01/07 - fig -  If available, material data is now imported/exported.
@@ -26,6 +28,8 @@ unit GLFileLMTS;
 
 interface
 
+{$I GLScene.inc}
+
 uses Windows,
     Graphics,
     Classes,
@@ -35,9 +39,9 @@ uses Windows,
     vectorlists,
     vectorgeometry,
     gltexture,
-    glutils,
     persistentclasses,
-    opengl1x;
+    opengl1x,
+    GLGraphics;
 
 const
     C_LMTS_ID = $53544D4C;
