@@ -305,7 +305,7 @@ begin
    for i:=0 to 255 do
       vGammaLUT[i]:=Round(255*Power(i*(1/255), InvGamma));
    // perform correction
-   for i:=PtrUInt(base) to PtrUInt(base)+dword(pixelCount)*3-1 do
+   for i:=PtrUInt(base) to PtrUInt(base)+longword(pixelCount)*3-1 do
       PByte(i)^:=vGammaLUT[PByte(i)^];
 end;
 
@@ -330,7 +330,7 @@ begin
    for i:=0 to 255 do
       vGammaLUT[i]:=Round(255*Power(i*(1/255), InvGamma));
    // perform correction
-   n:=PtrUInt(base)+dword(pixelCount)*4;
+   n:=PtrUInt(base)+longword(pixelCount)*4;
    i:=PtrUInt(base);
    pLUT:=@vGammaLUT[0];
    while i<n do begin
@@ -360,7 +360,7 @@ begin
       vBrightnessLUT[i]:=Byte(k);
    end;
    // perform correction
-   for i:=PtrUInt(base) to PtrUInt(base)+dword(pixelCount)*3-1 do
+   for i:=PtrUInt(base) to PtrUInt(base)+longword(pixelCount)*3-1 do
       PByte(i)^:=vBrightnessLUT[PByte(i)^];
 end;
 
@@ -385,7 +385,7 @@ begin
       vBrightnessLUT[i]:=k;
    end;
    // perform correction
-   n:=PtrUInt(base)+dword(pixelCount)*4;
+   n:=PtrUInt(base)+longword(pixelCount)*4;
    i:=PtrUInt(base);
    pLUT:=@vBrightnessLUT[0];
    while i<n do begin
@@ -412,29 +412,30 @@ end;
 // BGR24ToRGBA32
 //
 procedure BGR24ToRGBA32(src, dest : Pointer; pixelCount : Integer); register;
+{$IFDEF NO_ASM}
 begin
- {$IFDEF NO_ASM}
-    while pixelCount>0 do begin
-       PChar(dest)[0]:=PChar(src)[2];
-       PChar(dest)[1]:=PChar(src)[1];
-       PChar(dest)[2]:=PChar(src)[0];
-       PChar(dest)[3]:=#255;
-       dest:=Pointer(PtrUInt(dest)+4);
-       src:=Pointer(PtrUInt(src)+3);
-       Dec(pixelCount);
-    end;
- {$ELSE}
- // EAX stores src
- // EDX stores dest
- // ECX stores pixelCount
- asm
+   while pixelCount>0 do begin
+      PChar(dest)[0]:=PChar(src)[2];
+      PChar(dest)[1]:=PChar(src)[1];
+      PChar(dest)[2]:=PChar(src)[0];
+      PChar(dest)[3]:=#255;
+      dest:=Pointer(PtrUInt(dest)+4);
+      src:=Pointer(PtrUInt(src)+3);
+      Dec(pixelCount);
+   end;
+end;
+{$ELSE}
+// EAX stores src
+// EDX stores dest
+// ECX stores pixelCount
+asm
          push  edi
          cmp   ecx, 0
          jle   @@Done
          mov   edi, eax
          dec   ecx
          jz    @@Last
- @@Loop:
+@@Loop:
          mov   eax, [edi]
          shl   eax, 8
          or    eax, $FF
@@ -444,7 +445,7 @@ begin
          add   edx, 4
          dec   ecx
          jnz   @@Loop
- @@Last:
+@@Last:
          mov   cx, [edi+1]
          shl   ecx, 16
          mov   ah, [edi]
@@ -453,38 +454,38 @@ begin
          or    eax, ecx
          bswap eax
          mov   [edx], eax
- @@Done:
+@@Done:
          pop   edi
- end;
- {$endif}
 end;
+{$endif}
 
 // RGB24ToRGBA32
 //
 procedure RGB24ToRGBA32(src, dest : Pointer; pixelCount : Integer); register;
+{$IFDEF NO_ASM}
 begin
- {$IFDEF NO_ASM}
-    while pixelCount>0 do begin
-       PChar(dest)[0]:=PChar(src)[0];
-       PChar(dest)[1]:=PChar(src)[1];
-       PChar(dest)[2]:=PChar(src)[2];
-       PChar(dest)[3]:=#255;
-       dest:=Pointer(PtrUInt(dest)+4);
-       src:=Pointer(PtrUInt(src)+3);
-       Dec(pixelCount);
-    end;
- {$ELSE}
- // EAX stores src
- // EDX stores dest
- // ECX stores pixelCount
- asm
+   while pixelCount>0 do begin
+      PChar(dest)[0]:=PChar(src)[0];
+      PChar(dest)[1]:=PChar(src)[1];
+      PChar(dest)[2]:=PChar(src)[2];
+      PChar(dest)[3]:=#255;
+      dest:=Pointer(PtrUInt(dest)+4);
+      src:=Pointer(PtrUInt(src)+3);
+      Dec(pixelCount);
+   end;
+end;
+{$ELSE}
+// EAX stores src
+// EDX stores dest
+// ECX stores pixelCount
+asm
          push  edi
          cmp   ecx, 0
          jle   @@Done
          mov   edi, eax
          dec   ecx
          jz    @@Last
- @@Loop:
+@@Loop:
          mov   eax, [edi]
          or    eax, $FF000000
          mov   [edx], eax
@@ -492,23 +493,22 @@ begin
          add   edx, 4
          dec   ecx
          jnz   @@Loop
- @@Last:
+@@Last:
          mov   ax, [edi+1]
          shl   eax, 8
          mov   al, [edi];
          or    eax, $FF000000
          mov   [edx], eax
- @@Done:
+@@Done:
          pop   edi
- end;
- {$endif}
 end;
+{$endif}
 
 // BGRA32ToRGBA32
 //
 procedure BGRA32ToRGBA32(src, dest : Pointer; pixelCount : Integer); register;
-begin
 {$IFDEF NO_ASM}
+begin
    while pixelCount>0 do begin
       PChar(dest)[0]:=PChar(src)[2];
       PChar(dest)[1]:=PChar(src)[1];
@@ -518,6 +518,7 @@ begin
       src:=Pointer(PtrUInt(src)+4);
       Dec(pixelCount);
    end;
+end;
 {$ELSE}
 // EAX stores src
 // EDX stores dest
@@ -541,7 +542,6 @@ asm
          pop   edi 
 end;
 {$ENDIF}
-end;
 
 // ------------------
 // ------------------ TGLBitmap32 ------------------
@@ -661,7 +661,8 @@ end;
 {$else}
 procedure TGLBitmap32.AssignFrom24BitsBitmap(aBitmap : TGLBitmap);
 var
-   y, rowOffset : Integer;
+   y           : Integer;
+   rowOffset   : PtrInt;
    pSrc, pDest : PChar;
 begin
    Assert(aBitmap.PixelFormat=glpf24bit);
@@ -678,10 +679,10 @@ begin
       end else begin
          if VerticalReverseOnAssignFromBitmap then begin
             pSrc:=BitmapScanLine(aBitmap, Height-1);
-            rowOffset:=Integer(BitmapScanLine(aBitmap, Height-2))-Integer(pSrc);
+            rowOffset:=PtrInt(BitmapScanLine(aBitmap, Height-2))-PtrInt(pSrc);
          end else begin
             pSrc:=BitmapScanLine(aBitmap, 0);
-            rowOffset:=Integer(BitmapScanLine(aBitmap, 1))-Integer(pSrc);
+            rowOffset:=PtrInt(BitmapScanLine(aBitmap, 1))-PtrInt(pSrc);
          end;
          for y:=0 to Height-1 do begin
             BGR24ToRGBA32(pSrc, pDest, Width);
@@ -697,7 +698,8 @@ end;
 //
 procedure TGLBitmap32.AssignFromBitmap24WithoutRGBSwap(aBitmap : TGLBitmap);
 var
-   y, rowOffset : Integer;
+   y           : Integer;
+   rowOffset   : PtrInt;
    pSrc, pDest : PChar;
 begin
    Assert(aBitmap.PixelFormat=glpf24bit);
@@ -732,7 +734,8 @@ end;
 //
 procedure TGLBitmap32.AssignFrom32BitsBitmap(aBitmap : TGLBitmap);
 var
-   y, rowOffset : Integer;
+   y           : Integer;
+   rowOffset   : PtrInt;
    pSrc, pDest : PChar;
 begin
    Assert(aBitmap.PixelFormat=glpf32bit);
@@ -768,7 +771,7 @@ end;
 //
 procedure TGLBitmap32.AssignFromBitmap32(aBitmap32 : TBitmap32);
 var
-   y : Integer;
+   y           : Integer;
    pSrc, pDest : PChar;
 begin
    Assert((aBitmap32.Width and 3)=0);
@@ -1023,7 +1026,6 @@ type
    P2Pixel32 = ^T2Pixel32;
 
    procedure ProcessRow3DNow(pDest : PGLPixel32; pLineA, pLineB : P2Pixel32; n : Integer);
-begin
    asm     // 3DNow! version 30% faster
       db $0F,$EF,$C0           /// pxor        mm0, mm0          // set mm0 to [0, 0, 0, 0]
 
@@ -1059,7 +1061,6 @@ begin
 
       db $0F,$0E               /// femms
    end;
-end;
 
    procedure ProcessRowPascal(pDest : PGLPixel32; pLineA, pLineB : P2Pixel32; n : Integer);
    var
