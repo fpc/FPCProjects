@@ -1,11 +1,13 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-{: GLTeapot<p>
+{: Types3DS<p>
 
    Implements the standard Teapot, build from evaluators.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/04/08 - DaStr - Fixed sizes of some array pointer types.
+                             Now $R- is not required for units that use them.
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>20/07/00 -  Egg  - Fixed array declarations (non null range to allow bound checks),
                              Renamed "TIntegerList" to "TIntegerArray"
@@ -94,7 +96,7 @@ type TDumpLevel = (dlTerseDump, dlMediumDump, dlMaximumDump);
        EaseFrom: Single;                         // Flagged with $10
      end;
      PKeyHeaderList = ^TKeyHeaderList;
-     TKeyHeaderList = array[0..0] of TKeyHeader3DS;
+     TKeyHeaderList = array[0..MaxInt shr 8] of TKeyHeader3DS;
 
      PKFRotKey3DS = ^TKFRotKey3DS;               // Rotation key
      TKFRotKey3DS = record
@@ -102,13 +104,13 @@ type TDumpLevel = (dlTerseDump, dlMediumDump, dlMaximumDump);
        X, Y, Z: Single;                          // Rotation axis vector
      end;
      PKFRotKeyList = ^TKFRotKeyList;
-     TKFRotKeyList = array[0..0] of TKFRotKey3DS;
+     TKFRotKeyList = array[0..MaxInt shr 8] of TKFRotKey3DS;
 
      PKFMorphKey3DS = ^TKFMorphKey3DS;           // Object Morph key
      TKFMorphKey3DS = String;                    // Name of Target Morph object
 
      PKFMorphKeyList = ^TKFMorphKeyList;
-     TKFMorphKeyList = array[0..0] of TKFMorphKey3DS;
+     TKFMorphKeyList = array[0..MaxInt shr 4] of TKFMorphKey3DS;
 
      PChunk3DS = ^TChunk3DS;                     // internal database representation of file information
 
@@ -118,7 +120,7 @@ type TDumpLevel = (dlTerseDump, dlMediumDump, dlMaximumDump);
        Chunk: PChunk3DS;                         // corresponding pos
      end;
      PChunkList = ^TChunkList;
-     TChunkList = array[0..0] of TChunkListEntry3DS;
+     TChunkList = array[0..MaxInt shr 4] of TChunkListEntry3DS;
 
      PChunkList3DS = ^TChunkList3DS;             // list of cross references
      TChunkList3DS = record
