@@ -6,15 +6,21 @@
   OpenGL windows management classes and structures<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>27/04/08 - DaStr - Fixed bug in TGLButton.InternalRender()
+                             (thanks Nicoara Adrian) (BugtrackerID = 1952711)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
-      <li>20/12/06 - DaStr - TGLEdit.ReadOnly, TGLScrollbar.Locked, TGLStringGrid.ColSelect added
+      <li>20/12/06 - DaStr - Added: TGLEdit.ReadOnly, TGLScrollbar.Locked,
+                                    TGLStringGrid.ColSelect
       <li>10/11/05 - Mathx - Fixed TGLPopupMenu stack overflow on method internalRender.
                              Related to bug 1193909.
-      <li>24/05/02 - JAJ - Base Unit built on basis of Jan Horn's demo at http://www.sulaco.co.za (http://www.sulaco.co.za/opengl/windows.zip)
-      <li>01/06/02 - JAJ - After not having received Jan Horn's blessing, the system have been revised all parts have been rewritten.
+      <li>24/05/02 - JAJ - Base Unit built on basis of Jan Horn's demo at
+                            (http://www.sulaco.co.za/opengl/windows.zip)
+      <li>01/06/02 - JAJ - After not having received Jan Horn's blessing, the
+                            system have been revised all parts have been rewritten.
       <li>01/01/03 - JAJ - Updated so that focused controls pass focus on hide...
       <li>05/01/03 - JAJ - Cleaned up the DesignTime AccessViolations...
-      <li>07/01/03 - JAJ - Jeremy Darling modified the TGLEdit's Render, more updates on TGLEdit expected...
+      <li>07/01/03 - JAJ - Jeremy Darling modified the TGLEdit's Render, more
+                            updates on TGLEdit expected...
       <li>18/01/03 - JAJ - Added TGLStringList, TGLScrollbar, TGLPopupMenu...
       <li>08/08/03 - PS  - Added Horizontal to GLScrollbar...
       <li>14/08/03 - SG  - Fixed TGLBaseComponent.SetGuiLayout (Joen Joensen)
@@ -2440,6 +2446,7 @@ Begin
   if B then
   with FRenderStatus[GLAlCenter] do
   Begin
+    GuiLayout.Material.UnApply(rci);
     BitBtn.Apply(rci);
 
     TexWidth  := Material.Texture.TexWidth;
@@ -2449,20 +2456,8 @@ Begin
     TexHeight := Material.Texture.TexHeight;
     If TexHeight = 0 then
     TexHeight := Material.Texture.Image.Height;
-    
+
     glBegin(GL_QUADS);
-
-{    glTexCoord2f(0,1);
-    glVertex2f(X1, -Y1);
-
-    glTexCoord2f(0,0);
-    glVertex2f(X1, -Y2);
-
-    glTexCoord2f(1,0);
-    glVertex2f(X2, -Y2);
-
-    glTexCoord2f(1,1);
-    glVertex2f(X2, -Y1);{}
 
     glTexCoord2f(0,0);
     glVertex2f(X1-XOffSet, -Y1+YOffSet);
@@ -2478,6 +2473,7 @@ Begin
 
     glEnd();
     BitBtn.UnApply(rci);
+    GuiLayout.Material.Apply(rci);
   End;
 
    If Assigned(BitmapFont) then
