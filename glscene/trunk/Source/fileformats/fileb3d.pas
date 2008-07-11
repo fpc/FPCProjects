@@ -1,15 +1,20 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: FileB3D<p>
 
 	File streaming class for the B3D loader<p>
 
 	<b>History :</b><font size=-1><ul>
-	   <li>22/12/05 - Mathx - Added to the GLScene Project.
+      <li>29/05/08 - DaStr - Added $I GLScene.inc
+      <li>22/12/05 - Mathx - Added to the GLScene Project.
 	</ul></font>
 }
 unit FileB3D;
 
 interface
 
+{$I GLScene.inc}
 {$R-}
 
 uses
@@ -17,6 +22,7 @@ uses
 
 type
   TB3DMaterial = class
+  public
     MaterialData: TBRUSChunk;
     constructor Create;
     destructor Destroy; override;
@@ -24,6 +30,7 @@ type
   end;
 
   TB3DTexture = class
+  public
     TextureData: TTEXSChunk;
     constructor Create;
     destructor Destroy; override;
@@ -31,6 +38,7 @@ type
   end;
 
   TB3DNode = class
+  public
     NodeData: PNODEChunk;
     constructor Create;
     destructor Destroy; override;
@@ -69,7 +77,7 @@ type
 implementation
 
 uses
-  SysUtils, Windows;
+  SysUtils{, Windows};
 
 constructor TB3DMaterial.Create;
 begin
@@ -473,10 +481,8 @@ procedure TFileB3D.LoadFromStream(aStream : TStream);
 var
   aChunk: TB3DChunk;
   FileSize: Integer;
-  Node: PNODEChunk;
 begin
   FileSize := aStream.Size;
-  Node := nil;
   while aStream.Position<FileSize do
   begin
     aStream.Read(aChunk, sizeof(TB3DChunk));

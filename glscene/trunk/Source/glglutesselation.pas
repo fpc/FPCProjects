@@ -7,6 +7,7 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>29/05/08 - DaStr - Added $I GLScene.inc
       <li>08/09/03 - Jaj - Added single outline polygon support
 
    </ul><p>
@@ -18,6 +19,8 @@
 unit GLGLUTesselation;
 
 interface
+
+{$I GLScene.inc}
 
 Uses
   GLVectorFileObjects, VectorLists, Opengl1X, VectorGeometry, GLMisc;
@@ -80,7 +83,6 @@ Var
   Tess : PGLUTesselator;
   i : Integer;
   dblVector : TAffineDblVector;
-  P : PAffineVector;
 Begin
   TessError := False;
 

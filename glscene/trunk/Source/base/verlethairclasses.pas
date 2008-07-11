@@ -7,12 +7,15 @@
    ropes, fur or hair.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>29/05/08 - DaStr - Added $I GLScene.inc
       <li>06/03/04 - MF - Creation
    </ul>
 }
 unit VerletHairClasses;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes, SysUtils, VerletClasses, VectorTypes, VectorLists, VectorGeometry;
