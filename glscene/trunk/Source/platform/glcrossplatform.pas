@@ -25,7 +25,9 @@
       - added automatical generated History from CVS
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>29/05/08 - DaStr - Added StrToFloatDef(), TryStrToFloat()
       <li>10/04/08 - DaStr - Added TGLComponent (BugTracker ID = 1938988)
+      <li>07/04/08 - DaStr - Added IsInfinite, IsNan
       <li>18/11/07 - DaStr - Added ptrInt and PtrUInt types (BugtrackerID = 1833830)
                               (thanks Dje and Burkhard Carstens)
       <li>06/06/07 - DaStr - Added WORD type
@@ -69,28 +71,42 @@ interface
 
 {$include GLScene.inc}
 
-
-uses
+//**************************************
+//**  FPC uses section
 {$IFDEF FPC}
+uses
   {$IFDEF WINDOWS}
   Windows,
   {$ENDIF}
   Classes, SysUtils, Graphics, Controls, Forms, VectorTypes,
-  Dialogs, StdCtrls, ExtDlgs, strutils, LCLType, LCLIntf, types, ComponentEditors
+  Dialogs, StdCtrls, ExtDlgs, Math, strutils, LCLType, LCLIntf, types, ComponentEditors
   {$IFDEF UNIX}
   , Buttons, unix
   {$ENDIF}
-{$ELSE} //Not FPC
-  {$IFDEF MSWINDOWS} // delphi
-  Windows, Classes, SysUtils, Graphics, Controls, Forms, VectorTypes,
-  Dialogs, StdCtrls, ExtDlgs, strutils, Consts
-  {$ELSE} // kylix
-  qt, qgraphics, qcontrols, qforms, VectorTypes,
-  qdialogs, qstdctrls,qconsts,
-  classes, sysutils,  types
-  {$ENDIF} // delphi/kylix
-{$ENDIF}
 ;
+{$ENDIF}
+//**  end of FPC uses section
+//**************************************
+
+//**************************************
+//**  Delphi/Kylix uses section
+{$IFNDEF FPC} //Not FPC
+
+{$IFDEF MSWINDOWS}
+uses
+  Windows, Classes, SysUtils, Graphics, Controls, Forms, VectorTypes,
+  Dialogs, StdCtrls, ExtDlgs, Consts
+  {$IFDEF GLS_COMPILER_6_UP}, Math, StrUtils{$ENDIF}
+  ;
+{$ENDIF}
+{$IFDEF KYLIX}
+uses
+  libc, Classes, SysUtils, Qt, QGraphics, QControls, QForms, VectorTypes,
+  QDialogs, QStdCtrls, Types, QConsts;
+{$ENDIF}
+{$ENDIF}
+//**  end of Delphi/Kylix uses section
+//**************************************
 
 type
 {$IFNDEF FPC}
@@ -741,10 +757,25 @@ function IdentToColor(const Ident: string; var Color: Longint): Boolean;
 function ColorToIdent(Color: Longint; var Ident: string): Boolean;
 function ColorToString(Color: TColor): string;
 
+// StrUtils.pas
 function AnsiStartsText(const ASubText, AText: string): Boolean;
 
+// Classes.pas
 function IsSubComponent(const AComponent: TComponent): Boolean;
 procedure MakeSubComponent(const AComponent: TComponent; const Value: Boolean);
+
+// SysUtils.pas
+function StrToFloatDef(const S: string; const Default: Extended): Extended; overload;
+function TryStrToFloat(const S: string; out Value: Extended): Boolean; overload;
+function TryStrToFloat(const S: string; out Value: Double): Boolean; overload;
+function TryStrToFloat(const S: string; out Value: Single): Boolean; overload;
+
+// Math.pas
+function IsNan(const AValue: Double): Boolean; overload;
+function IsNan(const AValue: Single): Boolean; overload;
+function IsNan(const AValue: Extended): Boolean; overload;
+function IsInfinite(const AValue: Double): Boolean;
+
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -781,6 +812,87 @@ begin
  // AFAIK Delphi 5 does not know what is a SubComponent, so ignore this.
 {$ELSE}
   AComponent.SetSubComponent(Value);
+{$ENDIF}
+end;
+
+function StrToFloatDef(const S: string; const Default: Extended): Extended;
+begin
+{$IFDEF GLS_DELPHI_5_DOWN}
+  Removed code, because we don't need it AND it's probably copyrighted
+  regards, crossbuilder
+{$ELSE}
+  Result := SysUtils.StrToFloatDef(S, Default);
+{$ENDIF}
+end;
+
+function TryStrToFloat(const S: string; out Value: Extended): Boolean;
+begin
+{$IFDEF GLS_DELPHI_5_DOWN}
+  Removed code, because we don't need it AND it's probably copyrighted
+  regards, crossbuilder
+{$ELSE}
+  Result := SysUtils.TryStrToFloat(S, Value);
+{$ENDIF}
+end;
+
+function TryStrToFloat(const S: string; out Value: Double): Boolean;
+{$IFDEF GLS_DELPHI_5_DOWN}
+  Removed code, because we don't need it AND it's probably copyrighted
+  regards, crossbuilder
+{$ELSE}
+begin
+  Result := SysUtils.TryStrToFloat(S, Value);
+end;
+{$ENDIF}
+
+
+function TryStrToFloat(const S: string; out Value: Single): Boolean;
+{$IFDEF GLS_DELPHI_5_DOWN}
+  Removed code, because we don't need it AND it's probably copyrighted
+  regards, crossbuilder
+{$ELSE}
+begin
+  Result := SysUtils.TryStrToFloat(S, Value);
+end;
+{$ENDIF}
+
+function IsNan(const AValue: Single): Boolean;
+begin
+{$IFDEF GLS_DELPHI_5_DOWN}
+  Removed code, because we don't need it AND it's probably copyrighted
+  regards, crossbuilder
+{$ELSE}
+  Result := Math.IsNan(AValue);
+{$ENDIF}
+end;
+
+function IsNan(const AValue: Double): Boolean;
+begin
+{$IFDEF GLS_DELPHI_5_DOWN}
+  Removed code, because we don't need it AND it's probably copyrighted
+  regards, crossbuilder
+{$ELSE}
+  Result := Math.IsNan(AValue);
+{$ENDIF}
+end;
+
+function IsNan(const AValue: Extended): Boolean;
+{$IFDEF GLS_DELPHI_5_DOWN}
+  Removed code, because we don't need it AND it's probably copyrighted
+  regards, crossbuilder
+{$ELSE}
+begin
+  Result := Math.IsNan(AValue);
+{$ENDIF}
+end;
+
+function IsInfinite(const AValue: Double): Boolean;
+begin
+{$IFDEF GLS_DELPHI_5_DOWN}
+  Removed code, because we don't need it AND it's probably copyrighted
+  regards, crossbuilder
+{$ELSE}
+  Result := Math.IsInfinite(AValue);
 {$ENDIF}
 end;
 
@@ -868,15 +980,10 @@ end;
 
 function GLOKMessageBox(const Text, Caption: string): Integer;
 begin
-{$IFDEF MSWINDOWS}
-  result := Application.MessageBox(PChar(Text),PChar(Caption),MB_OK);
-{$ENDIF}
-{$IFDEF UNIX}
-  {$ifdef fpc}
-  result := Application.MessageBox(PChar(Text),PChar(Caption),MB_OK);
-  {$ELSE}
+{$IFDEF KYLIX}
   result := integer(Application.MessageBox(Text,Caption));
-  {$ENDIF}
+{$ELSE}
+  result := Application.MessageBox(PChar(Text),PChar(Caption),MB_OK);
 {$ENDIF}
 end;
 
