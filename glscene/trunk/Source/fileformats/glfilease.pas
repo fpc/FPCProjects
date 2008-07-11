@@ -6,6 +6,8 @@
 	 ASE (ASCI Scene Export) file format support for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>21/06/08 - DaStr - Bugfixed GetFaceGroup() (Thanks Beon)
+      <li>29/05/08 - DaStr - Made compatible with Delphi 5
       <li>27/12/07 - DaStr - Added skipping unknown file sections
                              Improved ASE material objects structure:
                                Material can keep up to 12 texture maps
@@ -29,7 +31,9 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, GLVectorFileObjects, ApplicationFileIO, VectorGeometry, VectorLists;
+  Classes, SysUtils,
+  GLVectorFileObjects, ApplicationFileIO, VectorGeometry, VectorLists,
+  GLCrossPlatform, GLTexture;
 
 const
   GL_ASE_MAX_TEXURE_CHANNELS = 12; // maximum texture channels
@@ -291,9 +295,6 @@ type
   procedure ASESetPreferredLightmap(aMap: TASETextureMap; aSubMaterialIndex: Integer = -1);
 
 implementation
-
-uses
-  SysUtils, GLTexture;
 
 // ASE file tags
 const
@@ -613,13 +614,13 @@ end;
 
 function StringToFloatRegular(aValue: string): Double;
 begin
-  Result := StrToFloatDef(aValue, 0);
+  Result := GLCrossPlatform.StrToFloatDef(aValue, 0);
   if Result = 0 then begin
     ChangeDotToComma(aValue);
-    Result := StrToFloatDef(aValue, 0);
+    Result := GLCrossPlatform.StrToFloatDef(aValue, 0);
     if Result = 0 then begin
       ChangeCommaToDot(aValue);
-      Result := StrToFloatDef(aValue, 0);
+      Result := GLCrossPlatform.StrToFloatDef(aValue, 0);
     end;
   end;
 end;
@@ -781,7 +782,12 @@ procedure CopyASEToMesh(aASEMesh: TGLASEMeshObject; aMesh: TMeshObject; aASEMate
      name: string;
    begin
     Result := nil;
-    name := aASEMaterials[aMaterialID].Name + IntToStr(aMaterialID) + IntToStr(aSubMaterialID);
+	  if aMaterialID >= 0 then
+      name := aASEMaterials[aMaterialID].Name +
+              IntToStr(aMaterialID) + IntToStr(aSubMaterialID)
+    else
+      name := '';
+      
     if Assigned(vLastFG) and (vLastFG.MaterialName = name) then
       Result := vLastFG
     else begin
