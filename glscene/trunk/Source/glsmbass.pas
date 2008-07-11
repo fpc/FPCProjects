@@ -9,6 +9,8 @@
    </ul><p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>21/03/08 - DanB - Updated to BASS Version 2.3
+      <li>15/03/08 - DaStr - Added $I GLScene.inc
       <li>09/05/04 - GAK - Updated to BASS Version 2.0, and swapped to Dynamic DLL loading
       <li>24/09/02 - EG - BASS activation errors no longer result in Asserts (ignored)
       <li>27/02/02 - EG - Added 3D Factors and Environment support
@@ -20,6 +22,8 @@
 unit GLSMBASS;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, GLSound, GLScene, controls;
 
@@ -253,13 +257,16 @@ begin
    VectorToBASSVector(objVel, velocity);
    VectorToBASSVector(objOri, orientation);
    if p.channel=0 then begin
-      p.channel:=BASS_SamplePlay3D(p.sample, position, orientation, velocity);
+//      p.channel:=BASS_SamplePlay3D(p.sample, position, orientation, velocity);
+      p.channel:=BASS_SampleGetChannel(p.sample,false);
       Assert(p.channel<>0);
+      BASS_ChannelSet3DPosition(p.channel,position, orientation, velocity);
       BASS_ChannelSet3DAttributes(p.channel, BASS_3DMODE_NORMAL,
                                   aSource.MinDistance, aSource.MaxDistance,
                                   Round(aSource.InsideConeAngle),
                                   Round(aSource.OutsideConeAngle),
                                   Round(aSource.ConeOutsideVolume*100));
+      BASS_ChannelPlay(p.channel,true);                                  
    end else BASS_ChannelSet3DPosition(p.channel, position, orientation, velocity);
    if p.channel<>0 then begin
       if not BASS_ChannelSetAttributes(p.channel, aSource.Frequency, Round(aSource.Volume*100), -101) then
@@ -293,7 +300,7 @@ begin
       p:=PBASSInfo(aSource.ManagerTag);
       if paused then
          BASS_ChannelPause(p.channel)
-      else BASS_ChannelResume(p.channel);
+      else BASS_ChannelPlay(p.channel,false);
    end;
 end;
 
