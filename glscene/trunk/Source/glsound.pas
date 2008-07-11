@@ -31,6 +31,7 @@ type
 	      { Private Declarations }
          FName : String;
          FData : TGLSoundFile;
+         FTag: Integer;
 
 	   protected
 	      { Protected Declarations }
@@ -54,6 +55,10 @@ type
 	      function LengthInBytes : Integer;
 	      function LengthInSamples : Integer;
 	      function LengthInSec : Single;
+
+         //: This Tag is reserved for sound manager use only
+         property ManagerTag : Integer read FTag write FTag;
+
 
 	   published
 	      { Published Declarations }
