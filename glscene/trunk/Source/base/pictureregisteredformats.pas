@@ -1,5 +1,7 @@
-// PictureRegisteredFormats
-{: Egg<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLFile3DSSceneObjects<p>
 
    Hacks into the VCL to access the list of TPicture registered TGraphic formats<p>
 
@@ -20,6 +22,7 @@
       - added automatical generated History from CVS
 
    <b>History : </b><font size=-1><ul>
+      <li>06/04/08 - DaStr - Added IFDEFs for Delphi 5 compatibility
       <li>20/12/06 - DaStr - Added a warning about optimization turned off
                              in HackTPictureRegisteredFormats (BugTrackerID=1586936)
       <li>08/03/06 - ur - Added Delphi 2006 support
@@ -112,9 +115,11 @@ var
    fileFormat : PFileFormat;
 begin
 {$IFDEF GLS_DELPHI_7_DOWN}
+{$IFDEF GLS_DELPHI_6_UP}
   {$IFOPT O-}
     {$Message Warn 'This may crash when Graphics.pas is compiled with optimization Off'}
   {$ENDIF}
+{$ENDIF}
 {$ENDIF}
    pRegisterFileFormat:=PChar(@TPicture.RegisterFileFormat);
    if pRegisterFileFormat[0]=#$FF then // in case of BPL redirector
