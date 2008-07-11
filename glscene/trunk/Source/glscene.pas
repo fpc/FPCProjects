@@ -61,6 +61,9 @@
    - added History
 
    <b>History : </b><font size=-1><ul>
+      <li>20/04/08 - DaStr - Added a AABB cauching mechanism to TGLBaseSceneObject
+                             TGLDirectOpenGL's dimentions are now all all zeros
+                             (all above changes were made by Pascal)
       <li>15/03/08 - DaStr - Implemented TGLProxyObject.BarycenterAbsolutePosition()
       <li>16/02/08 - Mrqzzz - Other fix to ResetAndPitchTurnRoll by Pete,Dan Bartlett
       <li>12/02/08 - Mrqzzz - Dave Gravel fixed ResetAndPitchTurnRoll
@@ -398,6 +401,9 @@ type
                    ocStructure);
   TObjectChanges = set of TObjectChange;
 
+  TObjectBBChange = (oBBcChild, oBBcStructure);
+  TObjectBBChanges = set of TObjectBBChange;
+
   // flags for design notification
   TSceneOperation = (soAdd, soRemove, soMove, soRename, soSelect, soBeginUpdate, soEndUpdate);
 
@@ -519,6 +525,11 @@ type
          FParent : TGLBaseSceneObject;
          FScene : TGLScene;
 
+         FBBChanges: TObjectBBChanges;
+         FBoundingBoxPersonalUnscaled: THmgBoundingBox;
+         FBoundingBoxOfChildren:  THmgBoundingBox;
+         FBoundingBoxIncludingChildren: THmgBoundingBox;
+
          FChildren : TPersistentObjectList; // created on 1st use
          FVisible : Boolean;
          FUpdateCount : Integer;
@@ -574,6 +585,7 @@ type
 
          function GetAbsoluteMatrix: TMatrix;
          procedure SetAbsoluteMatrix(const Value: TMatrix);
+         procedure SetBBChanges(const Value: TObjectBBChanges);
       protected
          { Protected Declarations }
          procedure Loaded; override;
@@ -617,6 +629,13 @@ type
          procedure DeleteChildCameras;
          procedure DoOnAddedToParent; virtual;
 
+         {: Used to re-calculate BoundingBoxes every time we need it.
+            GetLocalUnscaleBB() must return the local BB, not the axis-aligned one.
+
+            By default it is calculated from AxisAlignedBoundingBoxUnscaled and
+            BarycenterAbsolutePosition, but for most objects there is a more
+            efficient method, that's why it is virtual. }
+         procedure CalculateBoundingBoxPersonalUnscaled(var ANewBoundingBox: THmgBoundingBox); virtual;
       public
          { Public Declarations }
          constructor Create(AOwner: TComponent); override;
@@ -751,18 +770,32 @@ type
          function AxisAlignedDimensionsUnscaled : TVector; virtual;
 
          {: Calculates and return the AABB for the object.<p>
-            The AABB is currently calculated from the BB. }
+            The AABB is currently calculated from the BB.
+            There is <b>no</b> caching scheme for them. }
          function AxisAlignedBoundingBox(const AIncludeChilden: Boolean = True): TAABB;
          function AxisAlignedBoundingBoxUnscaled(const AIncludeChilden: Boolean = True): TAABB;
          function AxisAlignedBoundingBoxAbsolute(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): TAABB;
 
+
+         {: Advanced AABB functions that use a caching scheme.
+            Also they include children and use BaryCenter. }
+         function AxisAlignedBoundingBoxEx: TAABB;
+         function AxisAlignedBoundingBoxAbsoluteEx: TAABB;
+
          {: Calculates and return the Bounding Box for the object.<p>
             The BB is calculated <b>each</b> time this method is invoked,
             based on the AxisAlignedDimensions of the object and that of its
-            children, there is <b>no</b> caching scheme as of now. }
+            children.
+            There is <b>no</b> caching scheme for them. }
          function BoundingBox(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
          function BoundingBoxUnscaled(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
          function BoundingBoxAbsolute(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
+
+         {: Advanced BB functions that use a caching scheme.
+            Also they include children and use BaryCenter. }
+         function BoundingBoxPersonalUnscaledEx: THmgBoundingBox;
+         function BoundingBoxOfChildrenEx: THmgBoundingBox;
+         function BoundingBoxIncludingChildrenEx: THmgBoundingBox;
 
          {: Max distance of corners of the BoundingBox. }
          function BoundingSphereRadius : Single;
@@ -897,7 +930,10 @@ type
          property TurnAngle : Single read GetTurnAngle write SetTurnAngle;
 
          property ShowAxes: Boolean read FShowAxes write SetShowAxes default False;
+
          property Changes: TObjectChanges read FChanges;
+         property BBChanges: TObjectBBChanges read fBBChanges write SetBBChanges;
+
          property Parent: TGLBaseSceneObject read FParent write SetParent;
          property Position: TGLCoordinates read FPosition write SetPosition;
          property Direction: TGLCoordinates read FDirection write SetDirection;
@@ -1237,7 +1273,6 @@ type
          procedure SetUseBuildList(const val : Boolean);
          function Blended : Boolean; override;
          procedure SetBlend(const val : Boolean);
-
       public
          { Public Declarations }
          constructor Create(AOwner: TComponent); override;
@@ -1245,6 +1280,7 @@ type
          procedure Assign(Source: TPersistent); override;
          procedure BuildList(var rci : TRenderContextInfo); override;
 
+         function AxisAlignedDimensionsUnscaled: TVector; override;
       published
          { Published Declarations }
          {: Specifies if a build list be made.<p>
@@ -2498,9 +2534,9 @@ begin
    inherited Create;
 end;
 
-// CompareFunction (for picklist sorting)
+// Comparefunction (for picklist sorting)
 //
-function CompareFunction(item1, item2 : TObject): Integer;
+function Comparefunction(item1, item2 : TObject): Integer;
 var
    diff: Single;
 begin
@@ -2542,7 +2578,7 @@ begin
    newRecord.zMax:=zMax;
    Add(newRecord);
    if vPickListSortFlag<>psDefault then
-      Sort(@CompareFunction);
+      Sort(@Comparefunction);
 end;
 
 // Clear
@@ -2618,6 +2654,11 @@ begin
    FVisible:=True;
    FObjectsSorting:=osInherited;
    FVisibilityCulling:=vcInherited;
+
+   fBBChanges := [oBBcChild, oBBcStructure];
+   FBoundingBoxPersonalUnscaled := NullBoundingBox;
+   FBoundingBoxOfChildren := NullBoundingBox;
+   FBoundingBoxIncludingChildren := NullBoundingBox;
 end;
 
 // CreateAsChild
@@ -2712,6 +2753,18 @@ begin
    DestroyHandle;
 end;
 
+// SetBBChanges
+//
+procedure TGLBaseSceneObject.SetBBChanges(const Value: TObjectBBChanges);
+begin
+  if value <> fBBChanges then
+  begin
+    fBBChanges := Value;
+    if Assigned(FParent) then
+       FParent.BBChanges := FParent.BBChanges + [oBBcChild];
+  end;
+end;
+
 // Blended
 //
 function TGLBaseSceneObject.Blended : Boolean;
@@ -2775,6 +2828,7 @@ begin
       child.FParent:=nil;
       child.Free;
    end;
+   BBChanges := BBChanges + [oBBcChild];
 end;
 
 // Loaded
@@ -2960,6 +3014,7 @@ begin
    TransformationChanged;
    aChild.TransformationChanged;
    aChild.DoOnAddedToParent;
+   BBChanges := BBChanges + [oBBcChild];
 end;
 
 // AddNewChild
@@ -3460,6 +3515,102 @@ begin
    localPt:=VectorTransform(point, InvAbsoluteMatrix);
    Result:=(Abs(localPt[0]*Scale.X)<=dim[0]) and (Abs(localPt[1]*Scale.Y)<=dim[1])
            and (Abs(localPt[2]*Scale.Z)<=dim[2]);
+end;
+
+
+// CalculateBoundingBoxPersonalUnscaled
+//
+procedure TGLBaseSceneObject.CalculateBoundingBoxPersonalUnscaled(var ANewBoundingBox: THmgBoundingBox);
+begin
+  // Using the standard method to get the local BB.
+  ANewBoundingBox := AABBToBB(AxisAlignedBoundingBoxUnscaled(False));
+  OffsetBBPoint(ANewBoundingBox, AbsoluteToLocal(BarycenterAbsolutePosition));
+end;
+
+// BoundingBoxPersonalUnscaledEx
+//
+function TGLBaseSceneObject.BoundingBoxPersonalUnscaledEx : THmgBoundingBox;
+begin
+  if oBBcStructure in FBBChanges then
+  begin
+    CalculateBoundingBoxPersonalUnscaled(FBoundingBoxPersonalUnscaled);
+    Exclude(FBBChanges,oBBcStructure);
+  end;
+  Result := FBoundingBoxPersonalUnscaled;
+end;
+
+// AxisAlignedBoundingBoxAbsoluteEx
+//
+function TGLBaseSceneObject.AxisAlignedBoundingBoxAbsoluteEx : TAABB;
+var
+  pBB: THmgBoundingBox;
+begin
+  pBB := BoundingBoxIncludingChildrenEx;
+  BBTransform(pBB, AbsoluteMatrix);
+  Result := BBtoAABB(pBB);
+end;
+
+// AxisAlignedBoundingBoxEx
+//
+function TGLBaseSceneObject.AxisAlignedBoundingBoxEx : TAABB;
+begin
+  Result := BBtoAABB(BoundingBoxIncludingChildrenEx);
+  AABBScale(Result, Scale.AsAffineVector);
+end;
+
+// BoundingBoxOfChildrenEx
+//
+function TGLBaseSceneObject.BoundingBoxOfChildrenEx : THmgBoundingBox;
+Var
+ i : Integer;
+ pBB : THmgBoundingBox;
+begin
+  if oBBcChild in FBBChanges then
+  begin
+    // Computing
+    FBoundingBoxOfChildren := NullBoundingBox;
+    if assigned (FChildren) then
+    begin
+      for i := 0 to FChildren.count-1 do
+      begin
+        pBB := TGLBaseSceneObject(FChildren.List^[i]).BoundingBoxIncludingChildrenEx;
+        if not BoundingBoxesAreEqual(@pBB, @NullBoundingBox) then
+        begin
+          // transformation with local matrix
+          BBTransform(pbb, TGLBaseSceneObject(FChildren.List^[i]).Matrix);
+          if BoundingBoxesAreEqual(@FBoundingBoxOfChildren, @NullBoundingBox) then
+             FBoundingBoxOfChildren := pBB
+          else
+             AddBB (FBoundingBoxOfChildren,pBB);
+        end;
+      end;
+    end;
+    exclude(FBBChanges,oBBcChild);
+  end;
+  result := FBoundingBoxOfChildren;
+end;
+
+// BoundingBoxIncludingChildrenEx
+//
+function TGLBaseSceneObject.BoundingBoxIncludingChildrenEx : THmgBoundingBox;
+var
+  pBB : THmgBoundingBox;
+begin
+  if (oBBcStructure in FBBChanges) or
+     (oBBcChild in FBBChanges) then
+  begin
+    pBB := BoundingBoxPersonalUnscaledEx;
+    if BoundingBoxesAreEqual(@pBB, @NullBoundingBox) then
+      FBoundingBoxIncludingChildren := BoundingBoxOfChildrenEx
+    else
+    begin
+      FBoundingBoxIncludingChildren := pBB;
+      pBB := BoundingBoxOfChildrenEx;
+      if not BoundingBoxesAreEqual(@pBB, @NullBoundingBox) then
+        AddBB (FBoundingBoxIncludingChildren,pBB);
+    end;
+  end;
+  Result := FBoundingBoxIncludingChildren;
 end;
 
 // RayCastIntersect
@@ -4038,6 +4189,7 @@ end;
 procedure TGLBaseSceneObject.ClearStructureChanged;
 begin
    Exclude(FChanges, ocStructure);
+   SetBBChanges(BBChanges + [oBBcStructure]);
 end;
 
 // RecTransformationChanged
@@ -5889,9 +6041,16 @@ end;
 procedure TGLDirectOpenGL.BuildList(var rci : TRenderContextInfo);
 begin
    if Assigned(FOnRender) then begin
-      xglMapTexCoordToMain;   // single texturing by default 
+      xglMapTexCoordToMain;   // single texturing by default
       OnRender(Self, rci);
    end;
+end;
+
+// AxisAlignedDimensionsUnscaled
+//
+function TGLDirectOpenGL.AxisAlignedDimensionsUnscaled: TVector;
+begin
+  Result := NullHmgPoint;
 end;
 
 // SetUseBuildList
@@ -5922,7 +6081,6 @@ begin
     StructureChanged;
   end;
 end;
-
 
 // ------------------
 // ------------------ TGLRenderPoint ------------------
@@ -6839,23 +6997,32 @@ var
       i : Integer;
       curObj : TGLBaseSceneObject;
       dist2 : Single;
+      fNear, fFar: single;
    begin
       Result:=nil;
       for i:=0 to baseObject.Count-1 do begin
          curObj:=baseObject.Children[i];
          if curObj.Visible then begin
-            if curObj.RayCastIntersect(rayStart, rayVector, @iPoint, pINormal) then begin
-               dist2:=VectorDistance2(rayStart, iPoint);
-               if dist2<bestDist2 then begin
-                  bestHit:=curObj;
-                  bestDist2:=dist2;
-                  if Assigned(intersectPoint) then
-                     intersectPoint^:=iPoint;
-                  if Assigned(intersectNormal) then
-                     intersectNormal^:=iNormal;
-               end;
+            if RayCastAABBIntersect(rayStart,rayVector,curObj.AxisAlignedBoundingBoxAbsoluteEx,fNear, fFar) then
+            begin
+              if fnear*fnear>bestDist2 then
+              begin
+                if not PointInAABB(rayStart,curObj.AxisAlignedBoundingBoxAbsoluteEx) then
+                  continue;
+              end;
+              if curObj.RayCastIntersect(rayStart, rayVector, @iPoint, pINormal) then begin
+                 dist2:=VectorDistance2(rayStart, iPoint);
+                 if dist2<bestDist2 then begin
+                    bestHit:=curObj;
+                    bestDist2:=dist2;
+                    if Assigned(intersectPoint) then
+                       intersectPoint^:=iPoint;
+                    if Assigned(intersectNormal) then
+                       intersectNormal^:=iNormal;
+                 end;
+              end;
+              RecursiveDive(curObj);
             end;
-            RecursiveDive(curObj);
          end;
       end;
    end;
