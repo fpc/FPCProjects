@@ -6,11 +6,22 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>22/06/08 - DaStr - TMeshObject.LightMapTexCoords converted to TAffineVectorList
+                              (thanks Ast) (Bugtracker ID = 2000089)
+      <li>07/06/08 - DaStr - Implemented TBaseMeshObject.Assign(), TMeshObject.Assign()
+      <li>20/05/08 - Mrqzzz - Fixed memory leak in TSkeletonMeshObject.Destroy (thanks Dave Gravel)
+      <li>17/05/08 - DaStr - Added TSkeleton.MorphInvisibleParts
+                             (thanks andron13 and ) (BugtrackerID = 1966020)
+                             Added vGLVectorFileObjectsEnableVBOByDefault
+      <li>01/05/08 - DaStr - Implemented TGLBaseMesh.BarycenterAbsolutePosition()
+                             Bugfixed TGLBaseMesh.AxisAlignedDimensionsUnscaled()
+      <li>06/04/08 - DaStr - TMeshObjectList.MorphTo() and Lerp() are now virtual
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
-      <li>16/05/07 - PvD - Applied fixes to skeletonmesh to fix problems with physics engines. (Bugtracker ID = 1719652)
+      <li>16/05/07 - PvD - Applied fixes to skeletonmesh to fix problems with
+                            physics engines. (Bugtracker ID = 1719652)
       <li>15/05/07 - LC - Added workaround for ATI bug in TFGVertexIndexList. (Bugtracker ID = 1719611)
       <li>13/05/07 - LC - Fixed AV bug in TMeshObject.BufferArrays (Bugtracker ID = 1718033)
-      <li>03/04/07 - LC - Added VBO support for TextureEx (Bugtracker ID = 1693378) 
+      <li>03/04/07 - LC - Added VBO support for TextureEx (Bugtracker ID = 1693378)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -206,8 +217,10 @@ type
          constructor Create; override;
          destructor Destroy; override;
 
-			procedure WriteToFiler(writer : TVirtualWriter); override;
-			procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure Assign(Source: TPersistent); override;
+
+         procedure WriteToFiler(writer : TVirtualWriter); override;
+         procedure ReadFromFiler(reader : TVirtualReader); override;
 
          {: Clears all mesh object data, submeshes, facegroups, etc. }
          procedure Clear; dynamic;
@@ -557,6 +570,8 @@ type
          FBonesByIDCache : TList;
          FColliders : TSkeletonColliderList;
          FRagDollEnabled : Boolean; // ragdoll
+         FMorphInvisibleParts: Boolean;
+         
 	   protected
 	      { Protected Declarations }
          procedure SetRootBones(const val : TSkeletonRootBoneList);
@@ -615,6 +630,11 @@ type
          procedure StartRagdoll; // ragdoll
          {: Restore the BoneMatrixInvertedMeshes to stop the ragdoll }
          procedure StopRagdoll; // ragdoll
+
+         {: Turning this option off (by default) alows to increase FPS,
+            but may break backwards-compatibility, because some may choose to
+            attach other objects to invisible parts. }
+         property MorphInvisibleParts: Boolean read FMorphInvisibleParts write FMorphInvisibleParts;
 	end;
 
    // TMeshObjectRenderingOption
@@ -643,7 +663,7 @@ type
          { Private Declarations }
          FOwner : TMeshObjectList;
          FTexCoords : TAffineVectorList; // provision for 3D textures
-         FLightMapTexCoords : TTexPointList; // reserved for 2D surface needs
+         FLightMapTexCoords : TAffineVectorList; // reserved for 2D surface needs
          FColors : TVectorList;
          FFaceGroups: TFaceGroups;
          FMode : TMeshObjectMode;
@@ -667,7 +687,7 @@ type
       protected
          { Protected Declarations }
          procedure SetTexCoords(const val : TAffineVectorList);
-         procedure SetLightmapTexCoords(const val : TTexPointList);
+         procedure SetLightmapTexCoords(const val : TAffineVectorList);
          procedure SetColors(const val : TVectorList);
 
          procedure BufferArrays;
@@ -697,8 +717,10 @@ type
          constructor Create; override;
          destructor Destroy; override;
 
-			procedure WriteToFiler(writer : TVirtualWriter); override;
-			procedure ReadFromFiler(reader : TVirtualReader); override;
+         procedure Assign(Source: TPersistent); override;
+
+         procedure WriteToFiler(writer : TVirtualWriter); override;
+         procedure ReadFromFiler(reader : TVirtualReader); override;
 
          procedure Clear; override;
 
@@ -731,7 +753,7 @@ type
             var v0, v1, v2 : TVector); overload;
 
          //: Sets the triangle data of a given triangle
-         procedure SetTriangleData(tri : Integer; list : TAffineVectorList; 
+         procedure SetTriangleData(tri : Integer; list : TAffineVectorList;
             const v0, v1, v2 : TAffineVector); overload;
          procedure SetTriangleData(tri : Integer; list : TVectorList;
             const v0, v1, v2 : TVector); overload;
@@ -746,7 +768,7 @@ type
          property Owner : TMeshObjectList read FOwner;
          property Mode : TMeshObjectMode read FMode write FMode;
          property TexCoords : TAffineVectorList read FTexCoords write SetTexCoords;
-         property LightMapTexCoords : TTexPointList read FLightMapTexCoords write SetLightMapTexCoords;
+         property LightMapTexCoords : TAffineVectorList read FLightMapTexCoords write SetLightMapTexCoords;
          property Colors : TVectorList read FColors write SetColors;
          property FaceGroups : TFaceGroups read FFaceGroups;
          property RenderingOptions : TMeshObjectRenderingOptions read FRenderingOptions write FRenderingOptions;
@@ -921,9 +943,9 @@ type
 
          procedure Translate(const delta : TAffineVector); override;
 
-         procedure MorphTo(morphTargetIndex : Integer);
+         procedure MorphTo(morphTargetIndex : Integer); virtual;
          procedure Lerp(morphTargetIndex1, morphTargetIndex2 : Integer;
-                        lerpFactor : Single);
+                        lerpFactor : Single); virtual;
 
          property MorphTargets : TMeshMorphTargetList read FMorphTargets;
    end;
@@ -1333,6 +1355,7 @@ type
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
          function AxisAlignedDimensionsUnscaled : TVector;override;
+         function BarycenterAbsolutePosition : TVector; override;
 
          procedure BuildList(var rci : TRenderContextInfo); override;
 			procedure DoRender(var rci : TRenderContextInfo;
@@ -1341,7 +1364,7 @@ type
          {: Notifies that geometry data changed, but no re-preparation is needed.<p>
             Using this method will usually be faster, but may result in incorrect
             rendering, reduced performance and/or invalid bounding box data
-            (ie. invalid collision detection). Use with caution. } 
+            (ie. invalid collision detection). Use with caution. }
          procedure StructureChangedNoPrepare;
 
          {: BEWARE! Utterly inefficient implementation! }
@@ -1858,6 +1881,7 @@ procedure UnregisterVectorFileClass(aClass : TVectorFileClass);
 
 var
    vGLVectorFileObjectsAllocateMaterials : Boolean = True; // Mrqzzz : Flag to avoid loading materials (useful for IDE Extentions or scene editors)
+   vGLVectorFileObjectsEnableVBOByDefault: Boolean = false;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -2085,6 +2109,20 @@ begin
    FNormals.Free;
    FVertices.Free;
    inherited;
+end;
+
+// Assign
+//
+procedure TBaseMeshObject.Assign(Source: TPersistent);
+begin
+  if Source is TBaseMeshObject then
+  begin
+    FName := TBaseMeshObject(Source).Name;
+    FVertices.Assign(TBaseMeshObject(Source).FVertices);
+    FNormals.Assign(TBaseMeshObject(Source).FNormals);
+  end
+  else
+    inherited; // Die!
 end;
 
 // WriteToFiler
@@ -3345,11 +3383,21 @@ begin
       RootBones.PrepareGlobalMatrices;
       if Colliders.Count>0 then
          Colliders.AlignColliders;
-      for i:=0 to Owner.MeshObjects.Count-1 do begin
-         mesh:=Owner.MeshObjects.Items[i];
-         if mesh is TSkeletonMeshObject then
-            TSkeletonMeshObject(mesh).ApplyCurrentSkeletonFrame(normalize);
-      end;
+
+      if FMorphInvisibleParts then
+        for i:=0 to Owner.MeshObjects.Count-1 do
+        begin
+           mesh:=Owner.MeshObjects.Items[i];
+           if (mesh is TSkeletonMeshObject) then
+              TSkeletonMeshObject(mesh).ApplyCurrentSkeletonFrame(normalize);
+        end
+      else
+        for i:=0 to Owner.MeshObjects.Count-1 do
+        begin
+           mesh:=Owner.MeshObjects.Items[i];
+           if (mesh is TSkeletonMeshObject) and mesh.Visible then
+              TSkeletonMeshObject(mesh).ApplyCurrentSkeletonFrame(normalize);
+        end
    end;
 end;
 
@@ -3428,15 +3476,14 @@ constructor TMeshObject.Create;
 begin
    FMode:=momTriangles;
    FTexCoords:=TAffineVectorList.Create;
-   FLightMapTexCoords:=TTexPointList.Create;
+   FLightMapTexCoords:=TAffineVectorList.Create;
    FColors:=TVectorList.Create;
    FFaceGroups:=TFaceGroups.CreateOwned(Self);
    FTexCoordsEx:=TList.Create;
    FTangentsTexCoordIndex:=1;
    FBinormalsTexCoordIndex:=2;
 
-   FUseVBO:= false;
-
+   FUseVBO:= vGLVectorFileObjectsEnableVBOByDefault;
    inherited;
 end;
 
@@ -3453,6 +3500,7 @@ begin
       FTexCoordsVBO[i].Free;
    FLightmapTexCoordsVBO.Free;
 
+
    FFaceGroups.Free;
    FColors.Free;
    FTexCoords.Free;
@@ -3463,6 +3511,40 @@ begin
    if Assigned(FOwner) then
       FOwner.Remove(Self);
    inherited;
+end;
+
+// Assign
+//
+procedure TMeshObject.Assign(Source: TPersistent);
+var
+  I: Integer;
+begin
+  inherited Assign(Source);
+
+  if Source is TMeshObject then
+  begin
+    FTexCoords.Assign(TMeshObject(Source).FTexCoords);
+    FLightMapTexCoords.Assign(TMeshObject(Source).FLightMapTexCoords);
+    FColors.Assign(TMeshObject(Source).FColors);
+    FFaceGroups.Assign(TMeshObject(Source).FFaceGroups);
+    FMode := TMeshObject(Source).FMode;
+    FRenderingOptions := TMeshObject(Source).FRenderingOptions;
+    FBinormalsTexCoordIndex := TMeshObject(Source).FBinormalsTexCoordIndex;
+    FTangentsTexCoordIndex := TMeshObject(Source).FTangentsTexCoordIndex;
+
+    // Clear FTexCoordsEx.
+    for I := 0 to FTexCoordsEx.Count - 1 do
+      TVectorList(FTexCoordsEx[I]).Free;
+
+    FTexCoordsEx.Count := TMeshObject(Source).FTexCoordsEx.Count;
+
+    // Fill FTexCoordsEx.
+    for I := 0 to FTexCoordsEx.Count - 1 do
+    begin
+      FTexCoordsEx[I] := TVectorList.Create;
+      TVectorList(FTexCoordsEx[I]).Assign(TMeshObject(Source).FTexCoordsEx[I]);
+    end;
+  end;
 end;
 
 // WriteToFiler
@@ -3639,7 +3721,7 @@ end;
 
 // SetLightmapTexCoords
 //
-procedure TMeshObject.SetLightmapTexCoords(const val : TTexPointList);
+procedure TMeshObject.SetLightmapTexCoords(const val :  TAffineVectorList);
 begin
    FLightMapTexCoords.Assign(val);
 end;
@@ -3999,7 +4081,7 @@ begin
     FreeAndNil(FNormalsVBO);
     FreeAndNil(FColorsVBO);
     for i := 0 to high(FTexCoordsVBO) do
-      FreeAndNil(FTexCoordsVBO[i]);      
+      FreeAndNil(FTexCoordsVBO[i]);
     FreeAndNil(FLightmapTexCoordsVBO);
   end;
 
@@ -4156,7 +4238,7 @@ begin
                if FUseVBO then
                   FLightmapTexCoordsVBO.Bind;
                glClientActiveTextureARB(GL_TEXTURE1_ARB);
-               glTexCoordPointer(2, GL_FLOAT, SizeOf(TTexPoint), lists[4]);
+               glTexCoordPointer(2, GL_FLOAT, SizeOf(TAffineVector), lists[4]);
                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             end;
             for i:=0 to FTexCoordsEx.Count-1 do begin
@@ -4249,7 +4331,7 @@ begin
               FTexCoordsVBO[i].UnBind;
           end;
         end;
-          
+
       end;
       FArraysDeclared:=False;
    end;
@@ -4352,7 +4434,7 @@ begin
     if not assigned(FLightmapTexCoordsVBO) then
       FLightmapTexCoordsVBO:= TGLVBOArrayBufferHandle.CreateAndAllocate;
 
-    FLightmapTexCoordsVBO.BindBufferData(LightMapTexCoords.List, sizeof(TTexPoint) * LightMapTexCoords.Count, BufferUsage);
+    FLightmapTexCoordsVBO.BindBufferData(LightMapTexCoords.List, sizeof(TAffineVector) * LightMapTexCoords.Count, BufferUsage);
     FLightmapTexCoordsVBO.UnBind;
     ValidBuffers:= ValidBuffers + [vbLightMapTexCoords];
   end;
@@ -5001,6 +5083,7 @@ destructor TSkeletonMeshObject.Destroy;
 begin
    Clear;
    FBoneMatrixInvertedMeshes.Free;
+   FBackupInvertedMeshes.Free;
 	inherited Destroy;
 end;
 
@@ -6552,23 +6635,6 @@ begin
    inherited;
 end;
 
-// AxisAlignedDimensions
-//
-{
-function TGLBaseMesh.AxisAlignedDimensions : TVector;
-var
-   dMin, dMax : TAffineVector;
-begin
-   if FAxisAlignedDimensionsCache[0]<0 then begin
-      MeshObjects.GetExtents(dMin, dMax);
-      FAxisAlignedDimensionsCache[0]:=MaxFloat(Abs(dMin[0]), Abs(dMax[0]));
-      FAxisAlignedDimensionsCache[1]:=MaxFloat(Abs(dMin[1]), Abs(dMax[1]));
-      FAxisAlignedDimensionsCache[2]:=MaxFloat(Abs(dMin[2]), Abs(dMax[2]));
-   end;
-   SetVector(Result, FAxisAlignedDimensionsCache);
-   ScaleVector(Result,Scale.AsVector);  //added by DanB
-end;
-}
 // AxisAlignedDimensionsUnscaled
 //
 function TGLBaseMesh.AxisAlignedDimensionsUnscaled : TVector;
@@ -6577,11 +6643,27 @@ var
 begin
    if FAxisAlignedDimensionsCache[0]<0 then begin
       MeshObjects.GetExtents(dMin, dMax);
-      FAxisAlignedDimensionsCache[0]:=MaxFloat(Abs(dMin[0]), Abs(dMax[0]));
-      FAxisAlignedDimensionsCache[1]:=MaxFloat(Abs(dMin[1]), Abs(dMax[1]));
-      FAxisAlignedDimensionsCache[2]:=MaxFloat(Abs(dMin[2]), Abs(dMax[2]));
+      FAxisAlignedDimensionsCache[0]:= (dMax[0] - dMin[0]) / 2;
+      FAxisAlignedDimensionsCache[1]:= (dMax[1] - dMin[1]) / 2;
+      FAxisAlignedDimensionsCache[2]:= (dMax[2] - dMin[2]) / 2;
+      FAxisAlignedDimensionsCache[3]:= 0;
    end;
    SetVector(Result, FAxisAlignedDimensionsCache);
+end;
+
+// BarycenterAbsolutePosition
+//
+function TGLBaseMesh.BarycenterAbsolutePosition : TVector;
+var
+   dMin, dMax : TAffineVector;
+begin
+  MeshObjects.GetExtents(dMin, dMax);
+  Result[0]:= (dMax[0] + dMin[0]) / 2;
+  Result[1]:= (dMax[1] + dMin[1]) / 2;
+  Result[2]:= (dMax[2] + dMin[2]) / 2;
+  Result[3]:= 1;
+
+  Result := LocalToAbsolute(Result);
 end;
 
 // DestroyHandle
