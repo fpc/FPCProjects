@@ -6,6 +6,8 @@
 	Calculations and manipulations on Bounding Boxes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/04/08 - DaStr - Added a NullBoundingBox constant and
+                              BoundingBoxesAreEqual() function (thanks Pascal)
       <li>19/09/07 - DaStr - Added OffsetBB(Point) procedures
       <li>31/08/07 - LC - Replaced TriangleIntersectAABB with a working (and faster) version
       <li>23/08/07 - LC - Added RayCastAABBIntersect
@@ -30,12 +32,14 @@ interface
 
 {$i GLScene.inc}
 
-uses VectorGeometry;
+uses
+  SysUtils, VectorGeometry;
 
 type
 
    {: Structure for storing Bounding Boxes }
-   THmgBoundingBox = array [0..7] of TVector; {JT}
+   THmgBoundingBox = array [0..7] of TVector;
+   PHmgBoundingBox = ^THmgBoundingBox;
 
    {: Structure for storing Axis Aligned Bounding Boxes }
    TAABB = record
@@ -66,9 +70,17 @@ type
    {: Structure for storing the corners of an AABB, used with ExtractAABBCorners}
    TAABBCorners = array[0..7] of TAffineVector;
 
+const
+  NullBoundingBox : THmgBoundingBox = ((0, 0, 0, 1),(0, 0, 0, 1),(0, 0, 0, 1),(0, 0, 0, 1),
+                                       (0, 0, 0, 1),(0, 0, 0, 1),(0, 0, 0, 1),(0, 0, 0, 1)) ;
+
 //------------------------------------------------------------------------------
 // Bounding Box functions
 //------------------------------------------------------------------------------
+
+
+function BoundingBoxesAreEqual(const ABoundingBox1, ABoundingBox2: THmgBoundingBox): Boolean; overload;
+function BoundingBoxesAreEqual(const ABoundingBox1, ABoundingBox2: PHmgBoundingBox): Boolean; overload;
 
 {: Adds a BB into another BB.<p>
    The original BB (c1) is extended if necessary to contain c2. }
@@ -220,6 +232,20 @@ begin
        BB[cBBPlans[NumPlan][i]][cDirPlan[NumPlan]] := Valeur;
        BB[cBBPlans[NumPlan][i]][3] := 1;
    end;
+end;
+
+// BoundingBoxesAreEqual (copy)
+//
+function BoundingBoxesAreEqual(const ABoundingBox1, ABoundingBox2: THmgBoundingBox): Boolean;
+begin
+  Result := CompareMem(@ABoundingBox1, @ABoundingBox2, SizeOf(THmgBoundingBox));
+end;
+
+// BoundingBoxesAreEqual (direct)
+//
+function BoundingBoxesAreEqual(const ABoundingBox1, ABoundingBox2: PHmgBoundingBox): Boolean;
+begin
+  Result := CompareMem(ABoundingBox1, ABoundingBox2, SizeOf(THmgBoundingBox));
 end;
 
 // AddBB
