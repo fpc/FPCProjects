@@ -1,25 +1,23 @@
 {: GLSMOpenAL<p>
 
 	OpenAL based sound-manager (http://www.openal.org).<p>
-   OpenAL drivers can be download from the OpenAL site or you soundcard
+   OpenAL drivers can be download from the OpenAL site or your soundcard
    manufacturer's website.<p>
-
-   OpenAL headers: you can use the JEDI headers (http://www.delphi-jedi.org/),
-   but until dynamic binding headers are created, use of GLSMOpenAL is *not*
-   recommended as a component in the IDE (ie. don't add it to your DPKs or DFMs,
-   create it manually at runtime instead).<p>
 
    Unsupported feature(s) :<ul>
       <li>Accepts only simple *uncompressed* WAV files (8/16 bits, mono/stereo)
       <li>Dynamic loading/unloading
       <li>Global 3D parameters
-      <li>Master Volume
       <li>Environments
       <li>CPUUsagePercent
+      <li>No system in place to limit number of sources playing simultaneously,
+          can crash if too playing at once.
       <li>???
    </ul><p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/03/08 - DanB - Added design-time support, linked to new OpenAL headers
+                            (see OpenAL.pas).
       <li>??/??/03 - Mrqzz - Creation
 	</ul></font>
 }
@@ -35,6 +33,8 @@ type
 	// TGLSMOpenAL
 	//
 	TGLSMOpenAL = class (TGLSoundManager)
+      private
+         FActivated : Boolean;      
       protected
 	      { Protected Declarations }
          function DoActivate : Boolean; override;
@@ -74,12 +74,11 @@ implementation
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
 
-uses Forms, VectorGeometry, Dialogs{, al, alut, alTypes};
+uses Forms, VectorGeometry, Dialogs, OpenAL{al, alut, alTypes};
 
 procedure Register;
 begin
-// No registering by default (headers aren't dynamic)
-//   RegisterComponents('GLScene', [TGLSMOpenAL]);
+   RegisterComponents('GLScene', [TGLSMOpenAL]);
 end;
 
 //checks for an error and raises an exception if necessary
@@ -89,7 +88,7 @@ var
 begin
    error:=alGetError;
    if error<>AL_NO_ERROR then
-      raise EOpenALError.Create('OpenAL Error #' + intToStr(error));
+      raise EOpenALError.Create('OpenAL Error #' + IntToStr(error) + ' (HEX: $'+ IntToHex(error,4)+')');
 end;
 
 //clears the error-states
@@ -120,55 +119,139 @@ end;
 //
 function TGLSMOpenAL.DoActivate : Boolean;
 var
-dummy: array of PChar;
+     dummy: array of PALbyte;
 begin
+     Result:=false;
+
+     // Setup OpenAL
+     if not InitOpenAL() then
+       Exit;
      dummy:= nil;
      alutInit(nil, dummy);
      CheckOpenALError;
      alDistanceModel(AL_INVERSE_DISTANCE);
      CheckOpenALError;
+     ReadOpenALExtensions();
+
+     // Set any global states
+     FActivated:=true;
+     NotifyMasterVolumeChange;
+     Notify3DFactorsChanged;
+     if Environment<>seDefault then
+          NotifyEnvironmentChanged;
+
      Result:=True;
 end;
 
 // DoDeActivate
 //
 procedure TGLSMOpenAL.DoDeActivate;
+var
+  i:integer;
 begin
-     alutExit;
+  FActivated:=false;
+  for i := 0 to Sources.Count - 1 do
+  begin
+    Sources[i].Sample.ManagerTag := 0;
+  end;
+  alutExit;
 end;
 
 // NotifyMasterVolumeChange
 //
 procedure TGLSMOpenAL.NotifyMasterVolumeChange;
 begin
+  if FActivated then
+  begin
+    alListenerf(AL_GAIN,MasterVolume);
+  end;
 end;
 
 // Notify3DFactorsChanged
 //
 procedure TGLSMOpenAL.Notify3DFactorsChanged;
 begin
+  if FActivated then
+  begin
+    alDopplerFactor(DopplerFactor);
+  end;
 end;
 
 // NotifyEnvironmentChanged
 //
 procedure TGLSMOpenAL.NotifyEnvironmentChanged;
 begin
+  if FActivated then
+  begin
+    // check extension is available + update
+    if EAXSupported then
+    begin
+      // nothing yet
+    end;
+  end;
 end;
 
 // KillSource
 //
 procedure TGLSMOpenAL.KillSource(aSource : TGLBaseSoundSource);
+var
+  i, currentBufferTag, bufferCount:integer;
 begin
+  if aSource.ManagerTag<>0 then
+  begin
+    alSourceStop(ASource.ManagerTag);
+    alDeleteSources(1, PALuint(@ASource.ManagerTag));
+    ASource.ManagerTag:=0;
+
+    // We can't just delete buffer, because other sources may be using it
+    // so we count how many sources are using, then delete if it's the only one
+    // using.
+    // Same for ASource.Sample.ManagerTag, we set to zero once it's no longer
+    // being used by any other sources
+
+    currentBufferTag:=ASource.Sample.ManagerTag;
+    bufferCount:=0;
+    if currentBufferTag<>0 then
+    begin
+      for i := 0 to Sources.Count - 1 do
+      begin
+        if Sources[i].Sample.ManagerTag = currentBufferTag then
+        begin
+          bufferCount:=bufferCount+1;
+        end;
+      end;
+      if bufferCount=1 then
+      begin
+        alDeleteBuffers(1, PALuint(@ASource.Sample.ManagerTag));
+        ASource.Sample.ManagerTag := 0;
+      end;
+    end;
+  end;
 end;
 
 // UpdateSource
 //
 procedure TGLSMOpenAL.UpdateSource(aSource : TGLBaseSoundSource);
+var
+  a: TALint;
 begin
+     // Clear any errors we may enter into procedure with
      ClearOpenALError;
+
+     // Create an OpenAL source object if needed, and put ID into aSource.ManagerTag
      if aSource.ManagerTag = 0 then begin
           alGenSources(1, PALuint(@aSource.managerTag));
           CheckOpenALError;
+     end
+     else begin
+       // Check to see if source has stopped, if so free it as limited number of sources allowed
+       alGetSourcei(aSource.ManagerTag,AL_SOURCE_STATE,@a);
+       CheckOpenALError;
+       if a=AL_STOPPED then
+       begin
+         aSource.Free;
+         Exit;
+       end;
      end;
 
      //if sscTransformation in aSource.Changes then begin
@@ -179,19 +262,35 @@ begin
      //end;
 
      if aSource.SoundName <> '' then begin
+
+          // If the sample doesn't have a reference to an OpenAL buffer
+          // we need to create a buffer, and load the sample data into it
           if aSource.Sample.ManagerTag = 0 then begin
                alGenBuffers(1, PALuint(@aSource.sample.ManagerTag));
                CheckOpenALError;
-          end;
-
-          if (sscSample in aSource.Changes) and assigned(aSource.Sample.Data) then begin
+               // fill buffer (once buffer filled, can't fill buffer again, unless no other sources playing)
                alBufferData(aSource.sample.ManagerTag,
                             GetALFormat(aSource.sample.Sampling),
                             aSource.sample.Data.PCMData,
                             aSource.sample.data.LengthInBytes,
                             aSource.Sample.Data.Sampling.Frequency);
                CheckOpenALError;
+
+          end;
+
+          if (sscSample in aSource.Changes) and assigned(aSource.Sample.Data) then begin
+
+               // Associate buffer with source, buffer may have either been recently
+               // created, or already existing if being used by another source
                alSourcei(aSource.ManagerTag, AL_BUFFER, aSource.sample.ManagerTag);
+               CheckOpenALError;
+
+               // If NbLoops>1 the source will constantly loop the sample, otherwise only play once
+               alSourcei(aSource.managerTag, AL_LOOPING, Integer(aSource.NbLoops>1));
+               CheckOpenALError;
+
+               // Start the source playing!
+               alSourcePlay(aSource.ManagerTag);
                CheckOpenALError;
           end;
      end;
@@ -199,10 +298,10 @@ begin
      if sscStatus in aSource.changes then begin
           alSourcef(aSource.ManagerTag,AL_PITCH,1.0);
           CheckOpenALError;
-          alSourcei(aSource.managerTag,AL_LOOPING, AL_TRUE);
+          alSourcef(aSource.ManagerTag,AL_GAIN,1.0);
           CheckOpenALError;
-          //alSourcef(aSource.managerTag, AL_MAX_DISTANCE, aSource.MaxDistance);
-          //CheckOpenALError;
+          alSourcef(aSource.managerTag, AL_MAX_DISTANCE, aSource.MaxDistance);
+          CheckOpenALError;
           alSourcef(aSource.managerTag, AL_ROLLOFF_FACTOR, 1.0);
           CheckOpenALError;
           alSourcef(aSource.ManagerTag, AL_REFERENCE_DISTANCE, aSource.MinDistance);
@@ -213,7 +312,6 @@ begin
           CheckOpenALError;
           alSourcef(aSource.ManagerTag, AL_CONE_OUTER_GAIN, aSource.ConeOutsideVolume);
      end;
-
      inherited UpdateSource(aSource);
 end;
 
