@@ -4,6 +4,8 @@
 {: GLFileLMTS<p>
 
  <b>History : </b><font size=-1><ul>
+        <li>22/06/08 - DaStr - Fixups after converting TMeshObject.LightMapTexCoords
+                               to TAffineVectorList (thanks Ast) (Bugtracker ID = 2000089)
         <li>29/05/08 - DaStr - Replaced GLUtils with GLGraphics (BugTracker ID = 1923844)
                                Added $I GLScene.inc
         <li>13/08/07 - fig -  Added checks for DDS textures in LoadFromStream()
@@ -567,8 +569,8 @@ begin
                         v2 := 0;
                         if mo.LightmapTexcoords.count > fg.VertexIndices[k + l] then
                         begin
-                            u2 := mo.LightmapTexcoords[fg.VertexIndices[k + l]].s;
-                            v2 := 1 - mo.LightmapTexcoords[fg.VertexIndices[k + l]].t;
+                            u2 := mo.LightmapTexcoords[fg.VertexIndices[k + l]][0];
+                            v2 := 1 - mo.LightmapTexcoords[fg.VertexIndices[k + l]][1];
                         end;
                     end;
                 end;
