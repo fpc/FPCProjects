@@ -6,6 +6,8 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>12/04/08 - DaStr - Bugfixed TGLTextureExItem.Create()
+                              (thanks dAlex) (BugTracker ID = 1940451)
       <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
                               TGLMaterial (BugTracker ID = 1938988)
       <li>08/02/08 - Mrqzzz - Added tiaBottomRightPointColorTransparent
@@ -4170,6 +4172,10 @@ begin
 
   FTextureIndex:=ID;
   FTextureMatrix:=IdentityHMGMatrix;
+
+  if ACollection is TGLTextureEx then
+    if TGLTextureEx(ACollection).FMaterial <> nil then
+      FTexture.OnTextureNeeded := TGLTextureEx(ACollection).FMaterial.Texture.OnTextureNeeded;
 end;
 
 // Destroy
