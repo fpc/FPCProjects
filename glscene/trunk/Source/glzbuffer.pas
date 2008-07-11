@@ -9,6 +9,7 @@
    By René Lindsay.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>29/05/08 - DaStr - Removed unused variables in TGLZShadows.CalcShadowTexture()
       <li>20/01/08 - DaStr - Bugfixed TGLZShadows.HardSet(Bugtracker ID = 1875708)
                              Removed some old commented out code
                              Removed TGLZShadows.Trnc() procedure - there is a
@@ -794,12 +795,10 @@ end;
 
 Procedure TGLZShadows.CalcShadowTexture(var rci : TRenderContextInfo);
 var pix,p0,p1,p2,p3,p4:Byte;
-    pM,pL,pT, OpM, OpL:Byte;
+    pM,pL,pT:Byte;
     pixa : PAArray;
     x,y,w,h :integer;
     xy :integer;
-    fx,fy :single;
-    TmpFlag :boolean;
 begin
  pixa:=FData;
  w:=fXres;
