@@ -35,7 +35,7 @@
     <Description Value="GLScene - OpenGL 3D library"/>
     <License Value="LGPL"/>
     <Version Major="1" Build="3"/>
-    <Files Count="166">
+    <Files Count="167">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -720,6 +720,10 @@
         <Filename Value="../Source/glgizmo.pas"/>
         <UnitName Value="GLGizmo"/>
       </Item166>
+      <Item167>
+        <Filename Value="../Source/fileformats/glfileb3d.pas"/>
+        <UnitName Value="GLFileB3D"/>
+      </Item167>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="4">
