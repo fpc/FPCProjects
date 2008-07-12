@@ -6,18 +6,20 @@
   A sprite that uses a scrolling texture for animation.<p>
 
   <b>History : </b><font size=-1><ul>
-    <li>25/03/07 - DaStr - Added GLCrossPlatform to uses for Delphi5 compatibility
-    <li>14/03/07 - DaStr - Added IGLMaterialLibrarySupported to TSpriteAnimation
-                           Published TGLAnimatedSprite.Visible
-                           Fixed TGLAnimatedSprite.SetMaterialLibrary
-                                                    (subcribed for notification) 
-    <li>21/07/04 - SG - Added Margins to Animations, Added comments.
-    <li>20/07/04 - SG - Added FrameRate (alternative for Interval),
-                        Added Interval to Animations, will override
-                        sprite interval if not equal to zero.
-                        Some minor fixes.
-    <li>13/07/04 - SG - Creation
-  </ul></font>
+      <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
+                              TSpriteAnimation (BugTracker ID = 1938988)
+      <li>25/03/07 - DaStr - Added GLCrossPlatform to uses for Delphi5 compatibility
+      <li>14/03/07 - DaStr - Added IGLMaterialLibrarySupported to TSpriteAnimation
+                             Published TGLAnimatedSprite.Visible
+                             Fixed TGLAnimatedSprite.SetMaterialLibrary
+                                                      (subcribed for notification)
+      <li>21/07/04 - SG - Added Margins to Animations, Added comments.
+      <li>20/07/04 - SG - Added FrameRate (alternative for Interval),
+                          Added Interval to Animations, will override
+                          sprite interval if not equal to zero.
+                          Some minor fixes.
+      <li>13/07/04 - SG - Creation
+    </ul></font>
 }
 unit GLAnimatedSprite;
 
@@ -149,10 +151,6 @@ type
 
       // Implementing IGLMaterialLibrarySupported.
       function GetMaterialLibrary: TGLMaterialLibrary; virtual;
-      // Implementing IInterface.
-      function QueryInterface(const IID: TGUID; out Obj): HResult; virtual; stdcall;
-      function _AddRef: Integer; virtual; stdcall;
-      function _Release: Integer; virtual; stdcall;
     public
       constructor Create(aOwner : TXCollection); override;
       destructor Destroy; override;
@@ -525,20 +523,6 @@ begin
   inherited;
 end;
 
-// _AddRef
-//
-function TSpriteAnimation._AddRef: Integer;
-begin
-  Result := -1; //ignore
-end;
-
-// _Release
-//
-function TSpriteAnimation._Release: Integer;
-begin
-  Result := -1; //ignore
-end;
-
 // GetMaterialLibrary
 //
 function TSpriteAnimation.GetMaterialLibrary: TGLMaterialLibrary;
@@ -552,14 +536,6 @@ begin
     else
       Result := TGLAnimatedSprite(TSpriteAnimationList(Owner).Owner).FMaterialLibrary;
   end;
-end;
-
-// QueryInterface
-//
-function TSpriteAnimation.QueryInterface(const IID: TGUID;
-  out Obj): HResult;
-begin
-  if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
 
 // FriendlyName
