@@ -1,9 +1,13 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLBehaviours<p>
 
 	Standard TGLBehaviour subclasses for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
-    <li>19/12/06 - DaS - TGLBAcceleration.Create - creates Inertia right away,
+    <li>08/05/08 - DaStr - Added a global GetInertia() function
+    <li>19/12/06 - DaStr - TGLBAcceleration.Create - creates Inertia right away,
                          thus displaying it in the XCollection Editor
                          TGLBAcceleration.DoProgress - raises an exception
                          when required Inertia component is deleted by user
@@ -190,6 +194,7 @@ type
 
 {: Returns or creates the TGLBInertia within the given behaviours.<p>
 	This helper function is convenient way to access a TGLBInertia. }
+function GetInertia(const AGLSceneObject: TGLBaseSceneObject) : TGLBInertia;
 function GetOrCreateInertia(behaviours : TGLBehaviours) : TGLBInertia; overload;
 function GetOrCreateInertia(obj : TGLBaseSceneObject) : TGLBInertia; overload;
 
@@ -207,6 +212,18 @@ implementation
 // ------------------------------------------------------------------
 
 uses SysUtils, OpenGL1x;
+
+// GetInertia
+//
+function GetInertia(const AGLSceneObject: TGLBaseSceneObject) : TGLBInertia;
+var
+	i : Integer;
+begin
+	i:=AGLSceneObject.behaviours.IndexOfClass(TGLBInertia);
+	if i>=0 then
+		Result:=TGLBInertia(AGLSceneObject.behaviours[i])
+	else Result:=nil;
+end;
 
 // GetOrCreateInertia (TGLBehaviours)
 //
