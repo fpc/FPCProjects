@@ -1,9 +1,14 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GuiSkinEditorFormUnit<p>
 
    Editor for Gui skin.<p>
 
    <b>Historique : </b><font size=-1><ul>
-      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
+      <li>07/06/08 - DaStr - Updated TGUISkinEditor.AddElement() to use SetPoint2D()
+                              (thanks Nicoara Adrian)
+      <li>29/03/07 - DaStr - Renamed LINUX to KYLIX (BugTrackerID=1681585)
       <li>18/02/07 - DaStr - Fixed range check error.
       <li>22/02/05 - Mathx - Fixed Delphi 5 support.
       <li>16/12/05 - aidave - moved GUIComponentDialog in from GLGui.pas<br>
@@ -26,7 +31,7 @@ interface
 uses
   sysutils, classes, graphics, controls, forms, dialogs,
   StdCtrls, ComCtrls, ExtCtrls, GLTexture, GLScene, GLObjects, GLWindows, GLHUDObjects,
-  glmisc, glgui, glgraphics, glutils, menus
+  glmisc, glgui, glgraphics, glutils, menus, GLCrossPlatform
   , glviewer
   {$ifdef lcl}
   ,lresources,lclintf,messages,lmessages,buttons;
@@ -35,7 +40,7 @@ uses
 uses
   SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,
   QStdCtrls, QComCtrls, QExtCtrls, GLTexture, GLScene, GLObjects, GLWindows, GLHUDObjects,
-  GLMisc, GLLinuxViewer, GLGui, GLGraphics, GLUtils;
+  GLMisc, GLLinuxViewer, GLGui, GLGraphics, GLUtils, GLCrossPlatform;
 {$ENDIF}
 
 
@@ -193,8 +198,6 @@ implementation
 {$ELSE}
 {$R *.xfm}
 {$ENDIF}
-
-uses GLCrossPlatform;
 
 Function GUIComponentDialog(GuiComponent : TGLGuiElementList) : Boolean;
 var
@@ -886,8 +889,8 @@ begin
   NewElement := TheGuiComponent.Add as TGLGuiElement;
   NewElement.Name := S;
   NewElement.Align := TGUIAlignments(Index);
-  NewElement.BottomRight.SetPoint(0,0,0);
-  NewElement.TopLeft.SetPoint(0,0,0);
+  NewElement.BottomRight.SetPoint2D(0,0);
+  NewElement.TopLeft.SetPoint2D(0,0);
   lbElements.ItemIndex := lbElements.Items.Add(S);
   UpdateRegionEdits;
 end;
