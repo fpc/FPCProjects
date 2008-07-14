@@ -68,6 +68,8 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>24/03/08 - DaStr - Moved TGLMinFilter and TGLMagFilter from GLUtils.pas
+                              to GLGraphics.pas (BugTracker ID = 1923844)  
       <li>21/03/08 - DaStr - Renamed TMMat to TGLTextureSharingShaderMaterial 
       <li>17/03/08 - mrqzzz - Registered TGLTextureSharingShader
       <li>20/01/08 - DaStr - Registered TGLCapsule (thanks Dave Gravel)
@@ -254,10 +256,7 @@ uses
    GLBumpShader, GLHiddenLineShader, GLUserShader, GLShadowHDS, GLSLProjectedTextures,
    GLSound, GLSoundFileObjects,
    Graphics,
-   GLViewer,
-   GLColor,
-   GLGizmo,
-   GLTextureSharingShader,
+   GLColor, GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics,
    GLDynamicTexture,
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText,
