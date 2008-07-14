@@ -9,6 +9,7 @@
     to enable support for OBJ & OBJF at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/05/08 - mrqzzz - Added RegisterClass(TOBJFGVertexNormalTexIndexList)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>24/03/07 - DaStr - Added explicit pointer dereferencing
@@ -1200,6 +1201,6 @@ initialization
    { Register this Fileformat-Handler with GLScene }
    RegisterVectorFileFormat('obj','WaveFront model file',TGLOBJVectorFile);
    RegisterVectorFileFormat('objf','Stripe model file',  TGLOBJVectorFile);
-
+   RegisterClass(TOBJFGVertexNormalTexIndexList);
 end.
 
