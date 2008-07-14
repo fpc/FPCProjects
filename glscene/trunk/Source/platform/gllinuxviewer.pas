@@ -1,7 +1,13 @@
-// GLLinuxViewer
-{: Linux specific.<p>
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
+{: GLLinuxViewer<p>
+
+  Linux specific Scene viewer.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/04/08 - DaStr - Bugfixed TGLSceneViewer.Notification()
+                              (thanks z80maniac) (Bugtracker ID = 1936108)
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>28/06/04 - LR - Rename TGLLinuxSceneViewer to TGLSceneViewer as for Win32 platform
       <li>28/12/01 - EG - Event persistence change (GliGli / Dephi bug)           
@@ -166,8 +172,11 @@ end;
 //
 procedure TGLSceneViewer.Notification(AComponent: TComponent; Operation: TOperation);
 begin
-   if (Operation = opRemove) and (AComponent = Camera) then
-      Camera:=nil;
+   if (Operation = opRemove) and (FBuffer<>nil) then
+   begin
+      if (AComponent = FBuffer.Camera) then
+         FBuffer.Camera := nil;
+   end;
    inherited;
 end;
 
