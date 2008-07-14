@@ -6,6 +6,8 @@
   A collection of components that generate post effects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/05/08 - DaStr - Fixed AV in TGLPostEffect.MakeDistortEffect()
+                             Got rid of all R- hacks
       <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
                               TGLPostShaderCollectionItem.SetShader()
                               (BugTracker ID = 1938988)
@@ -24,7 +26,7 @@
                              Changed all Round() calls to Trunc()
                              Removed all TGLPostEffectColor typecasts
                              (All above changes were made by Michail Glukhov)
-                             TGLPostEffect  and TGLPostShaderHolder are not
+                             TGLPostEffect and TGLPostShaderHolder are not
                               rendered when DrawState=dsPicking (suggested by Riz)
       <li>04/03/07 - DaStr - Added TGLPostShaderHolder
       <li>02/03/07 - DaStr - TGLOnCustomPostEffectEvent now passes rci
@@ -45,7 +47,8 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  GLScene, GLTexture, OpenGL1x, GLGraphics, GLStrings, GLCustomShader, GLContext;
+  GLScene, GLTexture, OpenGL1x, GLGraphics, GLStrings, GLCustomShader, GLContext,
+  VectorGeometry;
 
 type
   EGLPostShaderHolderException = class(Exception);
@@ -189,30 +192,25 @@ begin
       SetLength(FRenderBuffer, NewScreenSize);
 
     glReadPixels(0, 0, rci.viewPortSize.cx, rci.viewPortSize.cy, GL_RGBA, GL_UNSIGNED_BYTE, FRenderBuffer);
-     case FPreset of
-       // pepNone is handled in the first line.
-       pepGray:        MakeGrayEffect;
-       pepNegative:    MakeNegativeEffect;
-       pepDistort:     MakeDistortEffect;
-       pepNoise:       MakeNoiseEffect;
-       pepNightVision: MakeNightVisionEffect;
-       pepBlur:        MakeBlurEffect(rci);
-       pepCustom:      DoOnCustomEffect(rci, FRenderBuffer);
-     else
-       Assert(False, glsUnknownType);
-     end;
+    case FPreset of
+      // pepNone is handled in the first line.
+      pepGray:        MakeGrayEffect;
+      pepNegative:    MakeNegativeEffect;
+      pepDistort:     MakeDistortEffect;
+      pepNoise:       MakeNoiseEffect;
+      pepNightVision: MakeNightVisionEffect;
+      pepBlur:        MakeBlurEffect(rci);
+      pepCustom:      DoOnCustomEffect(rci, FRenderBuffer);
+    else
+      Assert(False, glsUnknownType);
+    end;
     glDrawPixels(rci.viewPortSize.cx, rci.viewPortSize.cy, GL_RGBA, GL_UNSIGNED_BYTE, FRenderBuffer);
   end;
 
-   // Start rendering children (if any).
-   if renderChildren then
-      Self.RenderChildren(0, Count - 1, rci);
+  // Start rendering children (if any).
+  if renderChildren then
+    Self.RenderChildren(0, Count - 1, rci);
 end;
-
-{$IFOPT R+}
-  {$R-}
-  {$DEFINE NEED_TO_RESTORE_RANGE_CHECK}
-{$ENDIF}
 
 procedure TGLPostEffect.MakeGrayEffect;
 var
@@ -242,21 +240,22 @@ begin
   end;
 end;
 
-{$Warnings Off}
 procedure TGLPostEffect.MakeDistortEffect;
 var
-  I: Longword;
-  rnd: Integer;
+  I: Integer;
+  lMaxLength: Integer;
+  lNewIndex: Integer;
 begin
-  for I := 0 to High(FRenderBuffer) do
+  lMaxLength := High(FRenderBuffer);
+
+  for I := 0 to lMaxLength do
   begin
-    rnd := Random(10) - 5;
-    FRenderBuffer[I].r := FRenderBuffer[I + rnd].r;
-    FRenderBuffer[I].g := FRenderBuffer[I + rnd].g;
-    FRenderBuffer[I].b := FRenderBuffer[I + rnd].b;
+    lNewIndex := MaxInteger(0, MinInteger(lMaxLength, I + Random(10) - 5));
+    FRenderBuffer[I].r := FRenderBuffer[lNewIndex].r;
+    FRenderBuffer[I].g := FRenderBuffer[lNewIndex].g;
+    FRenderBuffer[I].b := FRenderBuffer[lNewIndex].b;
   end;
 end;
-{$Warnings On}
 
 procedure TGLPostEffect.MakeNoiseEffect;
 var
@@ -276,31 +275,32 @@ end;
 procedure TGLPostEffect.MakeNightVisionEffect;
 var
    gray: Single;
-   I, rnd2: Integer;
+   I: Integer;
+   lNewIndex, lMaxLength: Integer;
 begin
-   for I := 0 to High(FRenderBuffer) do
-   begin
-     if i < 10 then
-       rnd2 := Random(10)
-     else
-       rnd2 := Random(20) - 10;
-     gray := 60+ (0.30 * FRenderBuffer[I + rnd2].r) +
-                 (0.59 * FRenderBuffer[I + rnd2].g) +
-                 (0.11 * FRenderBuffer[I + rnd2].b);
+  lMaxLength := High(FRenderBuffer);
 
-     FRenderBuffer[I].r := Round(gray * 0.25);
-     FRenderBuffer[I].g := Round((gray + 4) * 0.6);
-     FRenderBuffer[I].b := Round((gray + 4) * 0.11);
-   end;
+  for I := 0 to lMaxLength do
+  begin
+    lNewIndex := MaxInteger(0, MinInteger(lMaxLength, I + Random(20) - 10));
+
+    gray := 60 + (0.30 * FRenderBuffer[lNewIndex].r) +
+                 (0.59 * FRenderBuffer[lNewIndex].g) +
+                 (0.11 * FRenderBuffer[lNewIndex].b);
+
+    FRenderBuffer[I].r := Round(gray * 0.25);
+    FRenderBuffer[I].g := Round((gray + 4) * 0.6);
+    FRenderBuffer[I].b := Round((gray + 4) * 0.11);
+  end;
 end;
 
 procedure TGLPostEffect.MakeBlurEffect(var rci : TRenderContextInfo);
+const
+  lOffset: Integer = 2;
 var
   I: Integer;
   lUp: Integer;
-  lOffset: Integer;
 begin
-  lOffset := 2;
   lUp := rci.viewPortSize.cx * lOffset;
   for I := lUp to High(FRenderBuffer) - lUp do
   begin
@@ -315,10 +315,6 @@ begin
         FRenderBuffer[I + lUp].r) div 5;
   end;
 end;
-{$IFDEF NEED_TO_RESTORE_RANGE_CHECK}
-  {$R+}
-  {$UNDEF NEED_TO_RESTORE_RANGE_CHECK}
-{$ENDIF}
 
 { TGLPostShaderCollectionItem }
 
