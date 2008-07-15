@@ -29,7 +29,7 @@
       - added automatical generated History from CVS
 
 	<b>History : </b><font size=-1><ul>
-      <li>17/06/07 - LC - Added GL_ARB_pixel_buffer_object, GL_EXT_pixel_buffer_object 
+      <li>17/06/07 - LC - Added GL_ARB_pixel_buffer_object, GL_EXT_pixel_buffer_object
       <li>22/03/07 - DaStr - Removed GetTextureRectangle (had many useless checks)
       <li>16/03/07 - DaStr - Dropped Kylix support in favor of FPC
                              (thanks Burkhard Carstens) (BugTracekrID=1681585)
@@ -176,6 +176,7 @@ type
 
    PGLPointer = ^Pointer;
 
+   // Windows types
    {$IFDEF MSWINDOWS}
    PWGLSwap = ^TWGLSwap;
    _WGLSWAP = packed record
@@ -184,28 +185,33 @@ type
    end;
    TWGLSwap = _WGLSWAP;
    WGLSWAP = _WGLSWAP;
+   HPBUFFERARB= Integer;
+
    {$ENDIF}
 
-   // unix type
+   // Unix types
    {$IFDEF unix}
    GLXContext    = Pointer;
-   GLXFBConfig   = Pointer;
    {$IFDEF fpc}
    GLXPixmap     = TXID;
    GLXDrawable   = TXID;
+   {$ELSE}
+   GLXPixmap     = XID;
+   GLXDrawable   = XID;
+   {$ENDIF}
+
    // GLX 1.3 and later
+   GLXFBConfig   = Pointer;
+   {$IFDEF fpc}
    GLXFBConfigID = TXID;
    GLXContextID  = TXID;
    GLXWindow     = TXID;
    GLXPbuffer    = TXID;
-   Pixmap = TPixmap;
-   Font = TFont;
-   Window = TWindow;
-   Colormap = TColormap;
+   Pixmap        = TPixmap;
+   Font          = TFont;
+   Window        = TWindow;
+   Colormap      = TColormap;
    {$ELSE}
-   GLXPixmap     = XID;
-   GLXDrawable   = XID;
-   // GLX 1.3 and later
    GLXFBConfigID = XID;
    GLXContextID  = XID;
    GLXWindow     = XID;
@@ -368,9 +374,8 @@ const
 
 {$IFDEF UNIX}
     opengl32 = 'libGL.so';
-    glu32 = 'libGLU.so'; 
-{$ENDIF} 
-
+    glu32 = 'libGLU.so';
+{$ENDIF}
 
    {.$region 'OpenGL v1.1 generic constants'}
    // ********** GL generic constants **********
@@ -443,73 +448,6 @@ const
    GL_BLEND_DST                                      = $0BE0;
    GL_BLEND_SRC                                      = $0BE1;
    GL_BLEND                                          = $0BE2;
-
-   // blending (GL 1.2 ARB imaging)
-   GL_BLEND_COLOR                                    = $8005;
-   GL_CONSTANT_COLOR                                 = $8001;
-   GL_ONE_MINUS_CONSTANT_COLOR                       = $8002;
-   GL_CONSTANT_ALPHA                                 = $8003;
-   GL_ONE_MINUS_CONSTANT_ALPHA                       = $8004;
-   GL_FUNC_ADD                                       = $8006;
-   GL_MIN                                            = $8007;
-   GL_MAX                                            = $8008;
-   GL_FUNC_SUBTRACT                                  = $800A;
-   GL_FUNC_REVERSE_SUBTRACT                          = $800B;
-
-   // color table GL 1.2 ARB imaging
-   GL_COLOR_TABLE                                    = $80D0;
-   GL_POST_CONVOLUTION_COLOR_TABLE                   = $80D1;
-   GL_POST_COLOR_MATRIX_COLOR_TABLE                  = $80D2;
-   GL_PROXY_COLOR_TABLE                              = $80D3;
-   GL_PROXY_POST_CONVOLUTION_COLOR_TABLE             = $80D4;
-   GL_PROXY_POST_COLOR_MATRIX_COLOR_TABLE            = $80D5;
-   GL_COLOR_TABLE_SCALE                              = $80D6;
-   GL_COLOR_TABLE_BIAS                               = $80D7;
-   GL_COLOR_TABLE_FORMAT                             = $80D8;
-   GL_COLOR_TABLE_WIDTH                              = $80D9;
-   GL_COLOR_TABLE_RED_SIZE                           = $80DA;
-   GL_COLOR_TABLE_GREEN_SIZE                         = $80DB;
-   GL_COLOR_TABLE_BLUE_SIZE                          = $80DC;
-   GL_COLOR_TABLE_ALPHA_SIZE                         = $80DD;
-   GL_COLOR_TABLE_LUMINANCE_SIZE                     = $80DE;
-   GL_COLOR_TABLE_INTENSITY_SIZE                     = $80DF;
-
-   // convolutions GL 1.2 ARB imaging
-   GL_CONVOLUTION_1D                                 = $8010;
-   GL_CONVOLUTION_2D                                 = $8011;
-   GL_SEPARABLE_2D                                   = $8012;
-   GL_CONVOLUTION_BORDER_MODE                        = $8013;
-   GL_CONVOLUTION_FILTER_SCALE                       = $8014;
-   GL_CONVOLUTION_FILTER_BIAS                        = $8015;
-   GL_REDUCE                                         = $8016;
-   GL_CONVOLUTION_FORMAT                             = $8017;
-   GL_CONVOLUTION_WIDTH                              = $8018;
-   GL_CONVOLUTION_HEIGHT                             = $8019;
-   GL_MAX_CONVOLUTION_WIDTH                          = $801A;
-   GL_MAX_CONVOLUTION_HEIGHT                         = $801B;
-   GL_POST_CONVOLUTION_RED_SCALE                     = $801C;
-   GL_POST_CONVOLUTION_GREEN_SCALE                   = $801D;
-   GL_POST_CONVOLUTION_BLUE_SCALE                    = $801E;
-   GL_POST_CONVOLUTION_ALPHA_SCALE                   = $801F;
-   GL_POST_CONVOLUTION_RED_BIAS                      = $8020;
-   GL_POST_CONVOLUTION_GREEN_BIAS                    = $8021;
-   GL_POST_CONVOLUTION_BLUE_BIAS                     = $8022;
-   GL_POST_CONVOLUTION_ALPHA_BIAS                    = $8023;
-
-   // histogram GL 1.2 ARB imaging
-   GL_HISTOGRAM                                      = $8024;
-   GL_PROXY_HISTOGRAM                                = $8025;
-   GL_HISTOGRAM_WIDTH                                = $8026;
-   GL_HISTOGRAM_FORMAT                               = $8027;
-   GL_HISTOGRAM_RED_SIZE                             = $8028;
-   GL_HISTOGRAM_GREEN_SIZE                           = $8029;
-   GL_HISTOGRAM_BLUE_SIZE                            = $802A;
-   GL_HISTOGRAM_ALPHA_SIZE                           = $802B;
-   GL_HISTOGRAM_LUMINANCE_SIZE                       = $802C;
-   GL_HISTOGRAM_SINK                                 = $802D;
-   GL_MINMAX                                         = $802E;
-   GL_MINMAX_FORMAT                                  = $802F;
-   GL_MINMAX_SINK                                    = $8030;
 
    // buffers
    GL_NONE                                           = 0;
@@ -669,7 +607,6 @@ const
    GL_LIGHT_MODEL_LOCAL_VIEWER                       = $0B51;
    GL_LIGHT_MODEL_TWO_SIDE                           = $0B52;
    GL_LIGHT_MODEL_AMBIENT                            = $0B53;
-   GL_LIGHT_MODEL_COLOR_CONTROL                      = $81F8; // GL 1.2
    GL_SHADE_MODEL                                    = $0B54;
    GL_NORMALIZE                                      = $0BA1;
    GL_AMBIENT                                        = $1200;
@@ -725,9 +662,6 @@ const
    GL_ATTRIB_STACK_DEPTH                             = $0BB0;
    GL_CLIENT_ATTRIB_STACK_DEPTH                      = $0BB1;
 
-   GL_SINGLE_COLOR                                   = $81F9; // GL 1.2
-   GL_SEPARATE_SPECULAR_COLOR                        = $81FA; // GL 1.2
-
    // alpha testing
    GL_ALPHA_TEST                                     = $0BC0;
    GL_ALPHA_TEST_FUNC                                = $0BC1;
@@ -777,10 +711,6 @@ const
    GL_PACK_SKIP_ROWS                                 = $0D03;
    GL_PACK_SKIP_PIXELS                               = $0D04;
    GL_PACK_ALIGNMENT                                 = $0D05;
-   GL_PACK_SKIP_IMAGES                               = $806B; // GL 1.2
-   GL_PACK_IMAGE_HEIGHT                              = $806C; // GL 1.2
-   GL_UNPACK_SKIP_IMAGES                             = $806D; // GL 1.2
-   GL_UNPACK_IMAGE_HEIGHT                            = $806E; // GL 1.2
    GL_MAP_COLOR                                      = $0D10;
    GL_MAP_STENCIL                                    = $0D11;
    GL_INDEX_SHIFT                                    = $0D12;
@@ -801,7 +731,6 @@ const
    GL_MAX_LIGHTS                                     = $0D31;
    GL_MAX_CLIP_PLANES                                = $0D32;
    GL_MAX_TEXTURE_SIZE                               = $0D33;
-   GL_MAX_3D_TEXTURE_SIZE                            = $8073; // GL 1.2
    GL_MAX_PIXEL_MAP_TABLE                            = $0D34;
    GL_MAX_ATTRIB_STACK_DEPTH                         = $0D35;
    GL_MAX_MODELVIEW_STACK_DEPTH                      = $0D36;
@@ -810,9 +739,6 @@ const
    GL_MAX_TEXTURE_STACK_DEPTH                        = $0D39;
    GL_MAX_VIEWPORT_DIMS                              = $0D3A;
    GL_MAX_CLIENT_ATTRIB_STACK_DEPTH                  = $0D3B;
-   GL_MAX_ELEMENTS_VERTICES                          = $80E8; // GL 1.2
-   GL_MAX_ELEMENTS_INDICES                           = $80E9; // GL 1.2
-   GL_RESCALE_NORMAL                                 = $803A; // GL 1.2
    GL_SUBPIXEL_BITS                                  = $0D50;
    GL_INDEX_BITS                                     = $0D51;
    GL_RED_BITS                                       = $0D52;
@@ -851,7 +777,6 @@ const
    GL_MAP2_GRID_SEGMENTS                             = $0DD3;
    GL_TEXTURE_1D                                     = $0DE0;
    GL_TEXTURE_2D                                     = $0DE1;
-   GL_TEXTURE_3D                                     = $806F; // GL 1.2
    GL_SELECTION_BUFFER_POINTER                       = $0DF3;
    GL_SELECTION_BUFFER_SIZE                          = $0DF4;
    GL_POLYGON_OFFSET_UNITS                           = $2A00;
@@ -881,17 +806,6 @@ const
    GL_TEXTURE_COORD_ARRAY_TYPE                       = $8089;
    GL_TEXTURE_COORD_ARRAY_STRIDE                     = $808A;
    GL_EDGE_FLAG_ARRAY_STRIDE                         = $808C;
-   GL_COLOR_MATRIX                                   = $80B1; // GL 1.2 ARB imaging
-   GL_COLOR_MATRIX_STACK_DEPTH                       = $80B2; // GL 1.2 ARB imaging
-   GL_MAX_COLOR_MATRIX_STACK_DEPTH                   = $80B3; // GL 1.2 ARB imaging
-   GL_POST_COLOR_MATRIX_RED_SCALE                    = $80B4; // GL 1.2 ARB imaging
-   GL_POST_COLOR_MATRIX_GREEN_SCALE                  = $80B5; // GL 1.2 ARB imaging
-   GL_POST_COLOR_MATRIX_BLUE_SCALE                   = $80B6; // GL 1.2 ARB imaging
-   GL_POST_COLOR_MATRIX_ALPHA_SCALE                  = $80B7; // GL 1.2 ARB imaging
-   GL_POST_COLOR_MATRIX_RED_BIAS                     = $80B8; // GL 1.2 ARB imaging
-   GL_POST_COLOR_MATRIX_GREEN_BIAS                   = $80B9; // GL 1.2 ARB imaging
-   GL_POST_COLOR_MATRIX_BLUE_BIAS                    = $80BA; // GL 1.2 ARB imaging
-   GL_POST_COLOR_MATRIX_ALPHA_BIAS                   = $80BB; // GL 1.2 ARB imaging
 
    // evaluators
    GL_COEFF                                          = $0A00;
@@ -913,8 +827,6 @@ const
    GL_TEXTURE_INTENSITY_SIZE                         = $8061;
    GL_TEXTURE_PRIORITY                               = $8066;
    GL_TEXTURE_RESIDENT                               = $8067;
-   GL_BGR                                            = $80E0; // v 1.2
-   GL_BGRA                                           = $80E1; // v 1.2
    GL_S                                              = $2000;
    GL_T                                              = $2001;
    GL_R                                              = $2002;
@@ -938,18 +850,10 @@ const
    GL_LINEAR_MIPMAP_LINEAR                           = $2703;
    GL_TEXTURE_MAG_FILTER                             = $2800;
    GL_TEXTURE_MIN_FILTER                             = $2801;
-   GL_TEXTURE_WRAP_R                                 = $8072; // GL 1.2
    GL_TEXTURE_WRAP_S                                 = $2802;
    GL_TEXTURE_WRAP_T                                 = $2803;
-   GL_CLAMP_TO_EDGE                                  = $812F; // GL 1.2
-   GL_TEXTURE_MIN_LOD                                = $813A; // GL 1.2
-   GL_TEXTURE_MAX_LOD                                = $813B; // GL 1.2
-   GL_TEXTURE_BASE_LEVEL                             = $813C; // GL 1.2
-   GL_TEXTURE_MAX_LEVEL                              = $813D; // GL 1.2
-   GL_TEXTURE_DEPTH                                  = $8071; // GL 1.2
    GL_PROXY_TEXTURE_1D                               = $8063;
    GL_PROXY_TEXTURE_2D                               = $8064;
-   GL_PROXY_TEXTURE_3D                               = $8070; // GL 1.2
    GL_CLAMP                                          = $2900;
    GL_REPEAT                                         = $2901;
 
@@ -1096,8 +1000,839 @@ const
    // miscellaneous
    GL_DITHER                                         = $0BD0;
 
+   {.$endregion}
+
+   {.$region 'New core constants in OpenGL v1.2'}
+
+   // promoted to core v1.2 from GL_EXT_packed_pixels (EXT #23)
+   GL_UNSIGNED_BYTE_3_3_2                            = $8032;
+   GL_UNSIGNED_SHORT_4_4_4_4                         = $8033;
+   GL_UNSIGNED_SHORT_5_5_5_1                         = $8034;
+   GL_UNSIGNED_INT_8_8_8_8                           = $8035;
+   GL_UNSIGNED_INT_10_10_10_2                        = $8036;
+
+   // promoted to core v1.2 from GL_EXT_rescale_normal (EXT #27)
+   GL_RESCALE_NORMAL                                 = $803A;
+
+   // promoted to core v1.2 from GL_EXT_texture3D (EXT #6)
+   GL_PACK_SKIP_IMAGES                               = $806B;
+   GL_PACK_IMAGE_HEIGHT                              = $806C;
+   GL_UNPACK_SKIP_IMAGES                             = $806D;
+   GL_UNPACK_IMAGE_HEIGHT                            = $806E;
+   GL_TEXTURE_3D                                     = $806F;
+   GL_PROXY_TEXTURE_3D                               = $8070;
+   GL_TEXTURE_DEPTH                                  = $8071;
+   GL_TEXTURE_WRAP_R                                 = $8072;
+   GL_MAX_3D_TEXTURE_SIZE                            = $8073;
+
+   // new for OpenGL 1.2
+   GL_UNSIGNED_BYTE_2_3_3_REV                        = $8362;
+   GL_UNSIGNED_SHORT_5_6_5                           = $8363;
+   GL_UNSIGNED_SHORT_5_6_5_REV                       = $8364;
+   GL_UNSIGNED_SHORT_4_4_4_4_REV                     = $8365;
+   GL_UNSIGNED_SHORT_1_5_5_5_REV                     = $8366;
+   GL_UNSIGNED_INT_8_8_8_8_REV                       = $8367;
+   GL_UNSIGNED_INT_2_10_10_10_REV                    = $8368;
+   
+   // promoted to core v1.2 from GL_EXT_bgra (EXT #129)
+   GL_BGR                                            = $80E0;
+   GL_BGRA                                           = $80E1;
+
+   // promoted to core v1.2 from GL_EXT_draw_range_elements (EXT #112)
+   GL_MAX_ELEMENTS_VERTICES                          = $80E8;
+   GL_MAX_ELEMENTS_INDICES                           = $80E9;
+
+   // promoted to core v1.2 from GL_SGIS_texture_edge_clamp (EXT #35)
+   GL_CLAMP_TO_EDGE                                  = $812F;
+
+   // promoted to core v1.2 from GL_SGIS_texture_lod (EXT #24)
+   GL_TEXTURE_MIN_LOD                                = $813A;
+   GL_TEXTURE_MAX_LOD                                = $813B;
+   GL_TEXTURE_BASE_LEVEL                             = $813C;
+   GL_TEXTURE_MAX_LEVEL                              = $813D;
+
+   // promoted to core v1.2 from EXT_separate_specular_color (EXT #144)
+   GL_LIGHT_MODEL_COLOR_CONTROL                      = $81F8;
+   GL_SINGLE_COLOR                                   = $81F9;
+   GL_SEPARATE_SPECULAR_COLOR                        = $81FA;
+
+   // new 1.2 naming scheme (POINT => SMOOTH_POINT)
+
+   // Blending ( 1.2 ARB imaging)
+   // promoted to core v1.2 from GL_EXT_blend_color (EXT #2)
+   GL_CONSTANT_COLOR                                 = $8001;
+   GL_ONE_MINUS_CONSTANT_COLOR                       = $8002;
+   GL_CONSTANT_ALPHA                                 = $8003;
+   GL_ONE_MINUS_CONSTANT_ALPHA                       = $8004;
+   GL_BLEND_COLOR                                    = $8005;
+
+   // promoted to core v1.2 from GL_EXT_blend_minmax (EXT #37)
+   GL_FUNC_ADD                                       = $8006;
+   GL_MIN                                            = $8007;
+   GL_MAX                                            = $8008;
+   GL_BLEND_EQUATION                                 = $8009;
+
+   // promoted to core v1.2 from GL_EXT_blend_subtract (EXT #38)
+   GL_FUNC_SUBTRACT                                  = $800A;
+   GL_FUNC_REVERSE_SUBTRACT                          = $800B;
+
+   // Convolutions (GL 1.2 ARB imaging)
+   // promoted to core v1.2 from GL_EXT_convolution (EXT #12)
+   GL_CONVOLUTION_1D                                 = $8010;
+   GL_CONVOLUTION_2D                                 = $8011;
+   GL_SEPARABLE_2D                                   = $8012;
+   GL_CONVOLUTION_BORDER_MODE                        = $8013;
+   GL_CONVOLUTION_FILTER_SCALE                       = $8014;
+   GL_CONVOLUTION_FILTER_BIAS                        = $8015;
+   GL_REDUCE                                         = $8016;
+   GL_CONVOLUTION_FORMAT                             = $8017;
+   GL_CONVOLUTION_WIDTH                              = $8018;
+   GL_CONVOLUTION_HEIGHT                             = $8019;
+   GL_MAX_CONVOLUTION_WIDTH                          = $801A;
+   GL_MAX_CONVOLUTION_HEIGHT                         = $801B;
+   GL_POST_CONVOLUTION_RED_SCALE                     = $801C;
+   GL_POST_CONVOLUTION_GREEN_SCALE                   = $801D;
+   GL_POST_CONVOLUTION_BLUE_SCALE                    = $801E;
+   GL_POST_CONVOLUTION_ALPHA_SCALE                   = $801F;
+   GL_POST_CONVOLUTION_RED_BIAS                      = $8020;
+   GL_POST_CONVOLUTION_GREEN_BIAS                    = $8021;
+   GL_POST_CONVOLUTION_BLUE_BIAS                     = $8022;
+   GL_POST_CONVOLUTION_ALPHA_BIAS                    = $8023;
+
+   // Histogram (GL 1.2 ARB imaging)
+   // promoted to core v1.2 from GL_EXT_histogram (EXT #11)
+   GL_HISTOGRAM                                      = $8024;
+   GL_PROXY_HISTOGRAM                                = $8025;
+   GL_HISTOGRAM_WIDTH                                = $8026;
+   GL_HISTOGRAM_FORMAT                               = $8027;
+   GL_HISTOGRAM_RED_SIZE                             = $8028;
+   GL_HISTOGRAM_GREEN_SIZE                           = $8029;
+   GL_HISTOGRAM_BLUE_SIZE                            = $802A;
+   GL_HISTOGRAM_ALPHA_SIZE                           = $802B;
+   GL_HISTOGRAM_LUMINANCE_SIZE                       = $802C;
+   GL_HISTOGRAM_SINK                                 = $802D;
+   GL_MINMAX                                         = $802E;
+   GL_MINMAX_FORMAT                                  = $802F;
+   GL_MINMAX_SINK                                    = $8030;
+   GL_TABLE_TOO_LARGE                                = $8031;
+
+   // Color Matrix (GL 1.2 ARB imaging)
+   // promoted to core v1.2 from SGI_color_matrix (EXT #13)
+   GL_COLOR_MATRIX                                   = $80B1;
+   GL_COLOR_MATRIX_STACK_DEPTH                       = $80B2;
+   GL_MAX_COLOR_MATRIX_STACK_DEPTH                   = $80B3;
+   GL_POST_COLOR_MATRIX_RED_SCALE                    = $80B4;
+   GL_POST_COLOR_MATRIX_GREEN_SCALE                  = $80B5;
+   GL_POST_COLOR_MATRIX_BLUE_SCALE                   = $80B6;
+   GL_POST_COLOR_MATRIX_ALPHA_SCALE                  = $80B7;
+   GL_POST_COLOR_MATRIX_RED_BIAS                     = $80B8;
+   GL_POST_COLOR_MATRIX_GREEN_BIAS                   = $80B9;
+   GL_POST_COLOR_MATRIX_BLUE_BIAS                    = $80BA;
+   GL_POST_COLOR_MATRIX_ALPHA_BIAS                   = $80BB;
+
+   // Color Table (GL 1.2 ARB imaging)
+   // promoted to core v1.2 from GL_SGI_color_table (EXT #14)
+   GL_COLOR_TABLE                                    = $80D0;
+   GL_POST_CONVOLUTION_COLOR_TABLE                   = $80D1;
+   GL_POST_COLOR_MATRIX_COLOR_TABLE                  = $80D2;
+   GL_PROXY_COLOR_TABLE                              = $80D3;
+   GL_PROXY_POST_CONVOLUTION_COLOR_TABLE             = $80D4;
+   GL_PROXY_POST_COLOR_MATRIX_COLOR_TABLE            = $80D5;
+   GL_COLOR_TABLE_SCALE                              = $80D6;
+   GL_COLOR_TABLE_BIAS                               = $80D7;
+   GL_COLOR_TABLE_FORMAT                             = $80D8;
+   GL_COLOR_TABLE_WIDTH                              = $80D9;
+   GL_COLOR_TABLE_RED_SIZE                           = $80DA;
+   GL_COLOR_TABLE_GREEN_SIZE                         = $80DB;
+   GL_COLOR_TABLE_BLUE_SIZE                          = $80DC;
+   GL_COLOR_TABLE_ALPHA_SIZE                         = $80DD;
+   GL_COLOR_TABLE_LUMINANCE_SIZE                     = $80DE;
+   GL_COLOR_TABLE_INTENSITY_SIZE                     = $80DF;
+
+   // Convolution Border Modes (GL 1.2 ARB imaging)
+   // promoted to core v1.2 from GL_HP_convolution_border_modes (EXT #67)
+//CRB: all missing
+
+   {.$endregion}
+
+   {.$region 'New core constants in OpenGL v1.3'}
+   // Multitexturing
+   // promoted to core OpenGL v1.3 from GL_ARB_multitexture (ARB #1)
+//CRB: all missing
+
+   // Transpose Matrices
+   // promoted to core OpenGL v1.3 from GL_ARB_transpose_matrix (ARB #3)
+//CRB: all missing
+
+   // Multisampling
+   // promoted to core OpenGL v1.3 from GL_ARB_multisample (ARB #5)
+
+   // Cube Mapping
+   // promoted to core OpenGL v1.3 from GL_ARB_texture_cube_map (ARB #7)
+
+   // Texture Compression
+   // promoted to core OpenGL v1.3 from GL_ARB_texture_compression (ARB #12)
+
+   // Texture Border Clamping
+   // promoted to core OpenGL v1.3 from GL_ARB_texture_border_clamp (ARB #13)
+
+   // Texture Combine Environment Mode
+   // promoted to core OpenGL v1.3 from GL_ARB_texture_env_combine (ARB #17)
+
+   // Texture Dot3 Environment Mode
+   // promoted to OpenGL v1.3 from GL_ARB_texture_env_dot3 (ARB #19)
+
+   {.$endregion}
+
+   {.$region 'New core constants in OpenGL v1.4'}
+
+   // Separate Blend Functions
+   // promoted to core OpenGL v1.4 from GL_EXT_blend_func_separate (EXT #173)
+
+   // Point Parameters
+   // promoted to core OpenGL v1.4 from GL_ARB_point_parameters (ARB #14)
+
+   // Automatic Mipmap Generation
+   // promoted to core OpenGL v1.4 from GL_SGIS_generate_mipmap (EXT #32)
+
+   // Depth Texture
+   // promoted to core OpenGL v1.4 from GL_ARB_depth_texture (ARB #22)
+
+   // Texture Mirrored Repeat
+   // promoted to Core OpenGL v1.4 from GL_ARB_texture_mirrored_repeat (ARB #21)
+
+   // Fog Coordinate
+   // promoted to core OpenGL v1.4 from GL_EXT_fog_coord (EXT #149)
+
+   // Secondary Color
+   // promoted to core OpenGL v1.4 from GL_EXT_secondary_color (EXT #145)
+
+   // Texture LOD Bias
+   // (promoted to core OpenGL v1.4 from GL_EXT_texture_lod_bias (EXT #186)
+
+   // Stencil Wrap
+   // promoted to core OpenGL v1.4 from GL_EXT_stencil_wrap (EXT #176)
+
+   // Depth Textures
+   // promoted to core OpenGL v1.4 from GL_ARB_depth_texture (ARB #22)
+
+   // Shadows
+   // promoted to core OpenGL v1.4 from GL_ARB_shadow (ARB #23)
+
+   {.$endregion}
+
+   {.$region 'New core constants in OpenGL v1.5'}
+   // Buffer Objects
+   // promoted to core OpenGL v1.5 from GL_ARB_vertex_buffer_object (ARB #28)
+
+   // Occlusion Queries
+   // promoted to core OpenGL v1.5 from GL_ARB_occulsion_query (ARB #29)
+
+   // Buffer Objects
+   // promoted to core OpenGL v1.5 from GL_ARB_vertex_buffer_object (ARB #28)
+
+   // Occlusion Queries   
+   // promoted to core OpenGL v1.5 from GL_ARB_occulsion_query (ARB #29)
+
+   // Changed Tokens
+   // new naming scheme in OpenGL v1.5, old tokens kept for backwards compatibility
+
+   {.$endregion}
+
+   {.$region 'New core constants in OpenGL v2.0'}
+   // OpenGL 2.0
+
+   // Changed Tokens
+   // new name in OpenGL v2.0
+
+   // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31)
+
+   // Separate Stencil
+   // promoted to core OpenGL v2.0 from GL_ARB_stencil_two_side (ARB #unknown)
+
+   // promoted to core OpenGL v2.0 from GL_ARB_draw_buffers (ARB #37) / GL_ATI_draw_buffers (EXT #277)
+
+   // Separate Blend Equation
+   // promoted to core OpenGL v2.0 from GL_EXT_blend_equation_separate (EXT #299)
+
+   // Point Sprites
+   // promoted to core OpenGL v2.0 from GL_ARB_point_sprite (ARB #35)
+
+   // Shader Programs
+   // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31)
+
+   // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31) /GL_ARB_fragment_shader (ARB #32)
+
+   // promoted to core OpenGL v2.0 from GL_ARB_fragment_shader (ARB #32)
+
+   // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31)
+
+   // promoted to core OpenGL v2.0 from GL_ARB_fragment_shader (ARB #32)
+
+   // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31)
+
+   // Shader Objects
+   // promoted to core OpenGL v2.0 from GL_ARB_shader_objects (ARB #30)
+
+   // Shader Programs
+   // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31)
+
+   // promoted to core OpenGL v2.0 from GL_ARB_fragment_shader (ARB #32)
+
+   // OpenGL Shading Language
+   // promoted to core OpenGL v2.0 from GL_ARB_shading_language_100 (ARB #33)
+
+   // Shader Objects
+   // promoted to core OpenGL v2.0 from GL_ARB_shader_objects (ARB #30) (added for 2.0)
+
+   // Point Sprites
+   // promoted to core OpenGL v2.0 from GL_ARB_point_sprite (ARB #35) (added for 2.0)
+
+   // Separate Stencil
+   // promoted to core OpenGL v2.0 from GL_ARB_stencil_two_side (ARB #unknown)
+
+   {.$endregion}
+
+   {.$region 'New core constants in OpenGL v2.1'}
+
+   // OpenGL 2.1
+
+   // new for 2.1
+
+   // Pixel Buffer Objects
+   // promoted to core OpenGL v2.1 from GL_ARB_pixel_buffer_object (ARB #42)
+
+   // Non-Square Matrices
+   // new for OpenGL 2.1
+
+   // sRGB Textures
+   // promoted to core OpenGL v2.1 from GL_EXT_texture_sRGB (EXT #315)
+
+   {.$endregion}
+
+   {.$region 'ARB approved extensions constants, in extension number order'}
+   // ARB approved extensions enumerants, in number order
+
+   // ARB Extension #1 - GL_ARB_multitexture
+   GL_ACTIVE_TEXTURE_ARB                             = $84E0;
+   GL_CLIENT_ACTIVE_TEXTURE_ARB                      = $84E1;
+   GL_MAX_TEXTURE_UNITS_ARB                          = $84E2;
+   GL_TEXTURE0_ARB                                   = $84C0;
+   GL_TEXTURE1_ARB                                   = $84C1;
+   GL_TEXTURE2_ARB                                   = $84C2;
+   GL_TEXTURE3_ARB                                   = $84C3;
+   GL_TEXTURE4_ARB                                   = $84C4;
+   GL_TEXTURE5_ARB                                   = $84C5;
+   GL_TEXTURE6_ARB                                   = $84C6;
+   GL_TEXTURE7_ARB                                   = $84C7;
+   GL_TEXTURE8_ARB                                   = $84C8;
+   GL_TEXTURE9_ARB                                   = $84C9;
+   GL_TEXTURE10_ARB                                  = $84CA;
+   GL_TEXTURE11_ARB                                  = $84CB;
+   GL_TEXTURE12_ARB                                  = $84CC;
+   GL_TEXTURE13_ARB                                  = $84CD;
+   GL_TEXTURE14_ARB                                  = $84CE;
+   GL_TEXTURE15_ARB                                  = $84CF;
+   GL_TEXTURE16_ARB                                  = $84D0;
+   GL_TEXTURE17_ARB                                  = $84D1;
+   GL_TEXTURE18_ARB                                  = $84D2;
+   GL_TEXTURE19_ARB                                  = $84D3;
+   GL_TEXTURE20_ARB                                  = $84D4;
+   GL_TEXTURE21_ARB                                  = $84D5;
+   GL_TEXTURE22_ARB                                  = $84D6;
+   GL_TEXTURE23_ARB                                  = $84D7;
+   GL_TEXTURE24_ARB                                  = $84D8;
+   GL_TEXTURE25_ARB                                  = $84D9;
+   GL_TEXTURE26_ARB                                  = $84DA;
+   GL_TEXTURE27_ARB                                  = $84DB;
+   GL_TEXTURE28_ARB                                  = $84DC;
+   GL_TEXTURE29_ARB                                  = $84DD;
+   GL_TEXTURE30_ARB                                  = $84DE;
+   GL_TEXTURE31_ARB                                  = $84DF;
+
+   // ARB Extension #2 - GLX_ARB_get_proc_address
+   // (no new tokens)
+
+   // ARB Extension #3 - GL_ARB_transpose_matrix
+   GL_TRANSPOSE_MODELVIEW_MATRIX_ARB                 = $84E3;
+   GL_TRANSPOSE_PROJECTION_MATRIX_ARB                = $84E4;
+   GL_TRANSPOSE_TEXTURE_MATRIX_ARB                   = $84E5;
+   GL_TRANSPOSE_COLOR_MATRIX_ARB                     = $84E6;
+
+   // ARB Extension #4 - WGL_ARB_buffer_region
+   WGL_FRONT_COLOR_BUFFER_BIT_ARB                   = $00000001;
+   WGL_BACK_COLOR_BUFFER_BIT_ARB                    = $00000002;
+   WGL_DEPTH_BUFFER_BIT_ARB                         = $00000004;
+   WGL_STENCIL_BUFFER_BIT_ARB                       = $00000008;
+
+
+   // ARB Extension #5 - GL_ARB_multisample
+   //                  - GLX_ARB_multisample 
+   //                  - WGL_ARB_multisample
+   GL_MULTISAMPLE_ARB                                = $809D;
+   GL_SAMPLE_ALPHA_TO_COVERAGE_ARB                   = $809E;
+   GL_SAMPLE_ALPHA_TO_ONE_ARB                        = $809F;
+   GL_SAMPLE_COVERAGE_ARB                            = $80A0;
+   GL_SAMPLE_BUFFERS_ARB                             = $80A8;
+   GL_SAMPLES_ARB                                    = $80A9;
+   GL_SAMPLE_COVERAGE_VALUE_ARB                      = $80AA;
+   GL_SAMPLE_COVERAGE_INVERT_ARB                     = $80AB;
+   GL_MULTISAMPLE_BIT_ARB                            = $20000000;
+   GLX_SAMPLE_BUFFERS_ARB                            = 100000;
+   GLX_SAMPLES_ARB                                   = 100001;
+   WGL_SAMPLE_BUFFERS_ARB                            = $2041;
+   WGL_SAMPLES_ARB                                   = $2042;
+
+   // ARB Extension #6 - GL_ARB_texture_env_add
+   // (no new tokens)
+
+   // ARB Extension #7 - GL_ARB_texture_cube_map
+   GL_NORMAL_MAP_ARB                                 = $8511;
+   GL_REFLECTION_MAP_ARB                             = $8512;
+   GL_TEXTURE_CUBE_MAP_ARB                           = $8513;
+   GL_TEXTURE_BINDING_CUBE_MAP_ARB                   = $8514;
+   GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB                = $8515;
+   GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB                = $8516;
+   GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB                = $8517;
+   GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB                = $8518;
+   GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB                = $8519;
+   GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB                = $851A;
+   GL_PROXY_TEXTURE_CUBE_MAP_ARB                     = $851B;
+   GL_MAX_CUBE_MAP_TEXTURE_SIZE_ARB                  = $851C;
+
+   // ARB Extension #8 - WGL_ARB_extensions_string
+   // (no new tokens)
+
+   // ARB Extension #9 - WGL_ARB_pixel_format
+   // (no new tokens)
+   WGL_NUMBER_PIXEL_FORMATS_ARB                     = $2000;
+   WGL_DRAW_TO_WINDOW_ARB                           = $2001;
+   WGL_DRAW_TO_BITMAP_ARB                           = $2002;
+   WGL_ACCELERATION_ARB                             = $2003;
+   WGL_NEED_PALETTE_ARB                             = $2004;
+   WGL_NEED_SYSTEM_PALETTE_ARB                      = $2005;
+   WGL_SWAP_LAYER_BUFFERS_ARB                       = $2006;
+   WGL_SWAP_METHOD_ARB                              = $2007;
+   WGL_NUMBER_OVERLAYS_ARB                          = $2008;
+   WGL_NUMBER_UNDERLAYS_ARB                         = $2009;
+   WGL_TRANSPARENT_ARB                              = $200A;
+   WGL_TRANSPARENT_RED_VALUE_ARB                    = $2037;
+   WGL_TRANSPARENT_GREEN_VALUE_ARB                  = $2038;
+   WGL_TRANSPARENT_BLUE_VALUE_ARB                   = $2039;
+   WGL_TRANSPARENT_ALPHA_VALUE_ARB                  = $203A;
+   WGL_TRANSPARENT_INDEX_VALUE_ARB                  = $203B;
+   WGL_SHARE_DEPTH_ARB                              = $200C;
+   WGL_SHARE_STENCIL_ARB                            = $200D;
+   WGL_SHARE_ACCUM_ARB                              = $200E;
+   WGL_SUPPORT_GDI_ARB                              = $200F;
+   WGL_SUPPORT_OPENGL_ARB                           = $2010;
+   WGL_DOUBLE_BUFFER_ARB                            = $2011;
+   WGL_STEREO_ARB                                   = $2012;
+   WGL_PIXEL_TYPE_ARB                               = $2013;
+   WGL_COLOR_BITS_ARB                               = $2014;
+   WGL_RED_BITS_ARB                                 = $2015;
+   WGL_RED_SHIFT_ARB                                = $2016;
+   WGL_GREEN_BITS_ARB                               = $2017;
+   WGL_GREEN_SHIFT_ARB                              = $2018;
+   WGL_BLUE_BITS_ARB                                = $2019;
+   WGL_BLUE_SHIFT_ARB                               = $201A;
+   WGL_ALPHA_BITS_ARB                               = $201B;
+   WGL_ALPHA_SHIFT_ARB                              = $201C;
+   WGL_ACCUM_BITS_ARB                               = $201D;
+   WGL_ACCUM_RED_BITS_ARB                           = $201E;
+   WGL_ACCUM_GREEN_BITS_ARB                         = $201F;
+   WGL_ACCUM_BLUE_BITS_ARB                          = $2020;
+   WGL_ACCUM_ALPHA_BITS_ARB                         = $2021;
+   WGL_DEPTH_BITS_ARB                               = $2022;
+   WGL_STENCIL_BITS_ARB                             = $2023;
+   WGL_AUX_BUFFERS_ARB                              = $2024;
+   WGL_NO_ACCELERATION_ARB                          = $2025;
+   WGL_GENERIC_ACCELERATION_ARB                     = $2026;
+   WGL_FULL_ACCELERATION_ARB                        = $2027;
+   WGL_SWAP_EXCHANGE_ARB                            = $2028;
+   WGL_SWAP_COPY_ARB                                = $2029;
+   WGL_SWAP_UNDEFINED_ARB                           = $202A;
+   WGL_TYPE_RGBA_ARB                                = $202B;
+   WGL_TYPE_COLORINDEX_ARB                          = $202C;
+
+   // ARB Extension #10 - WGL_ARB_make_current_read
+
+   // ARB Extension #11 - WGL_ARB_pbuffer
+   WGL_DRAW_TO_PBUFFER_ARB                          = $202D;
+   WGL_MAX_PBUFFER_PIXELS_ARB                       = $202E;
+   WGL_MAX_PBUFFER_WIDTH_ARB                        = $202F;
+   WGL_MAX_PBUFFER_HEIGHT_ARB                       = $2030;
+   WGL_PBUFFER_LARGEST_ARB                          = $2033;
+   WGL_PBUFFER_WIDTH_ARB                            = $2034;
+   WGL_PBUFFER_HEIGHT_ARB                           = $2035;
+   WGL_PBUFFER_LOST_ARB                             = $2036;
+
+   // ARB Extension #12 - GL_ARB_texture_compression
+   GL_COMPRESSED_ALPHA_ARB                           = $84E9;
+   GL_COMPRESSED_LUMINANCE_ARB                       = $84EA;
+   GL_COMPRESSED_LUMINANCE_ALPHA_ARB                 = $84EB;
+   GL_COMPRESSED_INTENSITY_ARB                       = $84EC;
+   GL_COMPRESSED_RGB_ARB                             = $84ED;
+   GL_COMPRESSED_RGBA_ARB                            = $84EE;
+   GL_TEXTURE_COMPRESSION_HINT_ARB                   = $84EF;
+   GL_TEXTURE_COMPRESSED_IMAGE_SIZE_ARB              = $86A0;
+   GL_TEXTURE_COMPRESSED_ARB                         = $86A1;
+   GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB             = $86A2;
+   GL_COMPRESSED_TEXTURE_FORMATS_ARB                 = $86A3;
+
+   // ARB Extension #13 - GL_ARB_texture_border_clamp
+   // (promoted from #36 GL_SGIS_texture_border_clamp)
+   GL_CLAMP_TO_BORDER_ARB                            = $812D;
+
+   // ARB Extension #14 - GL_ARB_point_parameters
+   // (promoted from #54 GL_{SGIS,EXT}_point_parameters)
+   GL_POINT_SIZE_MIN_ARB                             = $8126;
+   GL_POINT_SIZE_MAX_ARB                             = $8127;
+   GL_POINT_FADE_THRESHOLD_SIZE_ARB                  = $8128;
+   GL_DISTANCE_ATTENUATION_ARB                       = $8129;
+
+   // ARB Extension #15 - GL_ARB_vertex_blend
+   GL_MAX_VERTEX_UNITS_ARB                           = $86A4;
+   GL_ACTIVE_VERTEX_UNITS_ARB                        = $86A5;
+   GL_WEIGHT_SUM_UNITY_ARB                           = $86A6;
+   GL_VERTEX_BLEND_ARB                               = $86A7;
+   GL_CURRENT_WEIGHT_ARB                             = $86A8;
+   GL_WEIGHT_ARRAY_TYPE_ARB                          = $86A9;
+   GL_WEIGHT_ARRAY_STRIDE_ARB                        = $86AA;
+   GL_WEIGHT_ARRAY_SIZE_ARB                          = $86AB;
+   GL_WEIGHT_ARRAY_POINTER_ARB                       = $86AC;
+   GL_WEIGHT_ARRAY_ARB                               = $86AD;
+   GL_MODELVIEW0_ARB                                 = $1700;
+   GL_MODELVIEW1_ARB                                 = $850A;
+   GL_MODELVIEW2_ARB                                = $8722;
+   GL_MODELVIEW3_ARB                                = $8723;
+   GL_MODELVIEW4_ARB                                = $8724;
+   GL_MODELVIEW5_ARB                                = $8725;
+   GL_MODELVIEW6_ARB                                = $8726;
+   GL_MODELVIEW7_ARB                                = $8727;
+   GL_MODELVIEW8_ARB                                = $8728;
+   GL_MODELVIEW9_ARB                                = $8729;
+   GL_MODELVIEW10_ARB                               = $872A;
+   GL_MODELVIEW11_ARB                               = $872B;
+   GL_MODELVIEW12_ARB                               = $872C;
+   GL_MODELVIEW13_ARB                               = $872D;
+   GL_MODELVIEW14_ARB                               = $872E;
+   GL_MODELVIEW15_ARB                               = $872F;
+   GL_MODELVIEW16_ARB                               = $8730;
+   GL_MODELVIEW17_ARB                               = $8731;
+   GL_MODELVIEW18_ARB                               = $8732;
+   GL_MODELVIEW19_ARB                               = $8733;
+   GL_MODELVIEW20_ARB                               = $8734;
+   GL_MODELVIEW21_ARB                               = $8735;
+   GL_MODELVIEW22_ARB                               = $8736;
+   GL_MODELVIEW23_ARB                               = $8737;
+   GL_MODELVIEW24_ARB                               = $8738;
+   GL_MODELVIEW25_ARB                               = $8739;
+   GL_MODELVIEW26_ARB                               = $873A;
+   GL_MODELVIEW27_ARB                               = $873B;
+   GL_MODELVIEW28_ARB                               = $873C;
+   GL_MODELVIEW29_ARB                               = $873D;
+   GL_MODELVIEW30_ARB                               = $873E;
+   GL_MODELVIEW31_ARB                               = $873F;
+
+   // ARB Extension #16 - GL_ARB_matrix_palette
+
+   // ARB Extension #17 - GL_ARB_texture_env_combine
+   // (Shares enum values with #158 GL_EXT_texture_env_combine)
+   GL_COMBINE_ARB                                    = $8570;
+   GL_COMBINE_RGB_ARB                                = $8571;
+   GL_COMBINE_ALPHA_ARB                              = $8572;
+   GL_RGB_SCALE_ARB                                  = $8573;
+   GL_ADD_SIGNED_ARB                                 = $8574;
+   GL_INTERPOLATE_ARB                                = $8575;
+   GL_CONSTANT_ARB                                   = $8576;
+   GL_CONSTANT_COLOR_ARB                             = $8576;
+   GL_PRIMARY_COLOR_ARB                              = $8577;
+   GL_PREVIOUS_ARB                                   = $8578;
+   GL_SOURCE0_RGB_ARB                                = $8580;
+   GL_SOURCE1_RGB_ARB                                = $8581;
+   GL_SOURCE2_RGB_ARB                                = $8582;
+   GL_SOURCE0_ALPHA_ARB                              = $8588;
+   GL_SOURCE1_ALPHA_ARB                              = $8589;
+   GL_SOURCE2_ALPHA_ARB                              = $858A;
+   GL_OPERAND0_RGB_ARB                               = $8590;
+   GL_OPERAND1_RGB_ARB                               = $8591;
+   GL_OPERAND2_RGB_ARB                               = $8592;
+   GL_OPERAND0_ALPHA_ARB                             = $8598;
+   GL_OPERAND1_ALPHA_ARB                             = $8599;
+   GL_OPERAND2_ALPHA_ARB                             = $859A;
+   GL_SUBTRACT_ARB                                   = $84E7;
+
+   // ARB Extension #18 - GL_ARB_texture_env_crossbar
+   // (no new tokens)
+
+   // ARB Extension #19 - GL_ARB_texture_env_dot3
+   // (promoted from #220 GL_EXT_texture_env_dot3; enum values changed)
+   GL_DOT3_RGB_ARB                                   = $86AE;
+   GL_DOT3_RGBA_ARB                                  = $86AF;
+
+   // ARB Extension #20 - WGL_ARB_render_texture
+
+   // ARB Extension #21 - GL_ARB_texture_mirrored_repeat
+
+   // ARB Extension #22 - GL_ARB_depth_texture
+   GL_DEPTH_COMPONENT16_ARB                          = $81A5;
+   GL_DEPTH_COMPONENT24_ARB                          = $81A6;
+   GL_DEPTH_COMPONENT32_ARB                          = $81A7;
+   GL_TEXTURE_DEPTH_SIZE_ARB                         = $884A;
+   GL_DEPTH_TEXTURE_MODE_ARB                         = $884B;
+
+   // ARB Extension #23 - GL_ARB_shadow
+   GL_TEXTURE_COMPARE_MODE_ARB                       = $884C;
+   GL_TEXTURE_COMPARE_FUNC_ARB                       = $884D;
+   GL_COMPARE_R_TO_TEXTURE_ARB                       = $884E;
+
+   // ARB Extension #24 - GL_ARB_shadow_ambient
+   // (same as #90 GL_SGIX_shadow_ambient)
+
+   // ARB Extension #25 - GL_ARB_window_pos
+   // (no new tokens)
+
+   // ARB Extension #26 - GL_ARB_vertex_program
+   // GL_ARB_vertex_program enums are shared by GL_ARB_fragment_program are so marked.
+   // Unfortunately, PROGRAM_BINDING_ARB does accidentally reuse 0x8677 -
+   //   this was a spec editing typo that's now uncorrectable.
+   GL_COLOR_SUM_ARB                                  = $8458;
+   GL_VERTEX_PROGRAM_ARB                             = $8620;
+   GL_VERTEX_ATTRIB_ARRAY_ENABLED_ARB                = $8622;
+   GL_VERTEX_ATTRIB_ARRAY_SIZE_ARB                   = $8623;
+   GL_VERTEX_ATTRIB_ARRAY_STRIDE_ARB                 = $8624;
+   GL_VERTEX_ATTRIB_ARRAY_TYPE_ARB                   = $8625;
+   GL_CURRENT_VERTEX_ATTRIB_ARB                      = $8626;
+   GL_PROGRAM_LENGTH_ARB                             = $8627;  //shared
+   GL_PROGRAM_STRING_ARB                             = $8628;  //shared
+   GL_MAX_PROGRAM_MATRIX_STACK_DEPTH_ARB             = $862E;  //shared
+   GL_MAX_PROGRAM_MATRICES_ARB                       = $862F;  //shared
+   GL_CURRENT_MATRIX_STACK_DEPTH_ARB                 = $8640;  //shared
+   GL_CURRENT_MATRIX_ARB                             = $8641;  //shared
+   GL_VERTEX_PROGRAM_POINT_SIZE_ARB                  = $8642;
+   GL_VERTEX_PROGRAM_TWO_SIDE_ARB                    = $8643;
+   GL_VERTEX_ATTRIB_ARRAY_POINTER_ARB                = $8645;
+   GL_PROGRAM_ERROR_POSITION_ARB                     = $864B;  //shared
+   GL_PROGRAM_BINDING_ARB                            = $8677;  //shared
+   GL_MAX_VERTEX_ATTRIBS_ARB                         = $8869;
+   GL_VERTEX_ATTRIB_ARRAY_NORMALIZED_ARB             = $886A;
+
+   GL_PROGRAM_ERROR_STRING_ARB                       = $8874;  //shared
+   GL_PROGRAM_FORMAT_ASCII_ARB                       = $8875;  //shared
+   GL_PROGRAM_FORMAT_ARB                             = $8876;  //shared
+
+   GL_PROGRAM_INSTRUCTIONS_ARB                       = $88A0;  //shared
+   GL_MAX_PROGRAM_INSTRUCTIONS_ARB                   = $88A1;  //shared
+   GL_PROGRAM_NATIVE_INSTRUCTIONS_ARB                = $88A2;  //shared
+   GL_MAX_PROGRAM_NATIVE_INSTRUCTIONS_ARB            = $88A3;  //shared
+   GL_PROGRAM_TEMPORARIES_ARB                        = $88A4;  //shared
+   GL_MAX_PROGRAM_TEMPORARIES_ARB                    = $88A5;  //shared
+   GL_PROGRAM_NATIVE_TEMPORARIES_ARB                 = $88A6;  //shared
+   GL_MAX_PROGRAM_NATIVE_TEMPORARIES_ARB             = $88A7;  //shared
+   GL_PROGRAM_PARAMETERS_ARB                         = $88A8;  //shared
+   GL_MAX_PROGRAM_PARAMETERS_ARB                     = $88A9;  //shared
+   GL_PROGRAM_NATIVE_PARAMETERS_ARB                  = $88AA;  //shared
+   GL_MAX_PROGRAM_NATIVE_PARAMETERS_ARB              = $88AB;  //shared
+   GL_PROGRAM_ATTRIBS_ARB                            = $88AC;  //shared
+   GL_MAX_PROGRAM_ATTRIBS_ARB                        = $88AD;  //shared
+   GL_PROGRAM_NATIVE_ATTRIBS_ARB                     = $88AE;  //shared
+   GL_MAX_PROGRAM_NATIVE_ATTRIBS_ARB                 = $88AF;  //shared
+   GL_PROGRAM_ADDRESS_REGISTERS_ARB                  = $88B0;  //shared
+   GL_MAX_PROGRAM_ADDRESS_REGISTERS_ARB              = $88B1;  //shared
+   GL_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB           = $88B2;  //shared
+   GL_MAX_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB       = $88B3;  //shared
+   GL_MAX_PROGRAM_LOCAL_PARAMETERS_ARB               = $88B4;  //shared
+   GL_MAX_PROGRAM_ENV_PARAMETERS_ARB                 = $88B5;  //shared
+   GL_PROGRAM_UNDER_NATIVE_LIMITS_ARB                = $88B6;  //shared
+   GL_TRANSPOSE_CURRENT_MATRIX_ARB                   = $88B7;  //shared
+
+   GL_MATRIX0_ARB                                    = $88C0;  //shared
+   GL_MATRIX1_ARB                                    = $88C1;  //shared
+   GL_MATRIX2_ARB                                    = $88C2;  //shared
+   GL_MATRIX3_ARB                                    = $88C3;  //shared
+   GL_MATRIX4_ARB                                    = $88C4;  //shared
+   GL_MATRIX5_ARB                                    = $88C5;  //shared
+   GL_MATRIX6_ARB                                    = $88C6;  //shared
+   GL_MATRIX7_ARB                                    = $88C7;  //shared
+   GL_MATRIX8_ARB                                    = $88C8;  //shared
+   GL_MATRIX9_ARB                                    = $88C9;  //shared
+   GL_MATRIX10_ARB                                   = $88CA;  //shared
+   GL_MATRIX11_ARB                                   = $88CB;  //shared
+   GL_MATRIX12_ARB                                   = $88CC;  //shared
+   GL_MATRIX13_ARB                                   = $88CD;  //shared
+   GL_MATRIX14_ARB                                   = $88CE;  //shared
+   GL_MATRIX15_ARB                                   = $88CF;  //shared
+   GL_MATRIX16_ARB                                   = $88D0;  //shared
+   GL_MATRIX17_ARB                                   = $88D1;  //shared
+   GL_MATRIX18_ARB                                   = $88D2;  //shared
+   GL_MATRIX19_ARB                                   = $88D3;  //shared
+   GL_MATRIX20_ARB                                   = $88D4;  //shared
+   GL_MATRIX21_ARB                                   = $88D5;  //shared
+   GL_MATRIX22_ARB                                   = $88D6;  //shared
+   GL_MATRIX23_ARB                                   = $88D7;  //shared
+   GL_MATRIX24_ARB                                   = $88D8;  //shared
+   GL_MATRIX25_ARB                                   = $88D9;  //shared
+   GL_MATRIX26_ARB                                   = $88DA;  //shared
+   GL_MATRIX27_ARB                                   = $88DB;  //shared
+   GL_MATRIX28_ARB                                   = $88DC;  //shared
+   GL_MATRIX29_ARB                                   = $88DD;  //shared
+   GL_MATRIX30_ARB                                   = $88DE;  //shared
+   GL_MATRIX31_ARB                                   = $88DF;  //shared
+
+   // ARB Extension #27 - GL_ARB_fragment_program
+   // Some GL_ARB_fragment_program enums are shared with #26 GL_ARB_vertex_program,
+   //  and are included in there for now.
+   GL_FRAGMENT_PROGRAM_ARB                           = $8804;
+
+   // ARB Extension #28 - GL_ARB_vertex_buffer_object
+   GL_BUFFER_SIZE_ARB                                = $8764;
+   GL_BUFFER_USAGE_ARB                               = $8765;
+   GL_ARRAY_BUFFER_ARB                               = $8892;
+   GL_ELEMENT_ARRAY_BUFFER_ARB                       = $8893;
+   GL_ARRAY_BUFFER_BINDING_ARB                       = $8894;
+   GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB               = $8895;
+   GL_VERTEX_ARRAY_BUFFER_BINDING_ARB                = $8896;
+   GL_NORMAL_ARRAY_BUFFER_BINDING_ARB                = $8897;
+   GL_COLOR_ARRAY_BUFFER_BINDING_ARB                 = $8898;
+   GL_INDEX_ARRAY_BUFFER_BINDING_ARB                 = $8899;
+   GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING_ARB         = $889A;
+   GL_EDGE_FLAG_ARRAY_BUFFER_BINDING_ARB             = $889B;
+   GL_SECONDARY_COLOR_ARRAY_BUFFER_BINDING_ARB       = $889C;
+   GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING_ARB        = $889D;
+   GL_WEIGHT_ARRAY_BUFFER_BINDING_ARB                = $889E;
+   GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING_ARB         = $889F;
+   GL_READ_ONLY_ARB                                  = $88B8;
+   GL_WRITE_ONLY_ARB                                 = $88B9;
+   GL_READ_WRITE_ARB                                 = $88BA;
+   GL_BUFFER_ACCESS_ARB                              = $88BB;
+   GL_BUFFER_MAPPED_ARB                              = $88BC;
+   GL_BUFFER_MAP_POINTER_ARB                         = $88BD;
+   GL_STREAM_DRAW_ARB                                = $88E0;
+   GL_STREAM_READ_ARB                                = $88E1;
+   GL_STREAM_COPY_ARB                                = $88E2;
+   GL_STATIC_DRAW_ARB                                = $88E4;
+   GL_STATIC_READ_ARB                                = $88E5;
+   GL_STATIC_COPY_ARB                                = $88E6;
+   GL_DYNAMIC_DRAW_ARB                               = $88E8;
+   GL_DYNAMIC_READ_ARB                               = $88E9;
+   GL_DYNAMIC_COPY_ARB                               = $88EA;
+
+   // ARB Extension #29 - GL_ARB_occlusion_query
+   // (promoted from GL_HP_occulsion_query / GL_NV_occlusion_query)
+
+   // ARB Extension #30 - GL_ARB_shader_objects
+   GL_PROGRAM_OBJECT_ARB                             = $8B40;
+   GL_SHADER_OBJECT_ARB                              = $8B48;
+   GL_OBJECT_TYPE_ARB                                = $8B4E;
+   GL_OBJECT_SUBTYPE_ARB                             = $8B4F;
+   GL_FLOAT_VEC2_ARB                                 = $8B50;
+   GL_FLOAT_VEC3_ARB                                 = $8B51;
+   GL_FLOAT_VEC4_ARB                                 = $8B52;
+   GL_INT_VEC2_ARB                                   = $8B53;
+   GL_INT_VEC3_ARB                                   = $8B54;
+   GL_INT_VEC4_ARB                                   = $8B55;
+   GL_BOOL_ARB                                       = $8B56;
+   GL_BOOL_VEC2_ARB                                  = $8B57;
+   GL_BOOL_VEC3_ARB                                  = $8B58;
+   GL_BOOL_VEC4_ARB                                  = $8B59;
+   GL_FLOAT_MAT2_ARB                                 = $8B5A;
+   GL_FLOAT_MAT3_ARB                                 = $8B5B;
+   GL_FLOAT_MAT4_ARB                                 = $8B5C;
+   GL_OBJECT_DELETE_STATUS_ARB                       = $8B80;
+   GL_OBJECT_COMPILE_STATUS_ARB                      = $8B81;
+   GL_OBJECT_LINK_STATUS_ARB                         = $8B82;
+   GL_OBJECT_VALIDATE_STATUS_ARB                     = $8B83;
+   GL_OBJECT_INFO_LOG_LENGTH_ARB                     = $8B84;
+   GL_OBJECT_ATTACHED_OBJECTS_ARB                    = $8B85;
+   GL_OBJECT_ACTIVE_UNIFORMS_ARB                     = $8B86;
+   GL_OBJECT_ACTIVE_UNIFORM_MAX_LENGTH_ARB           = $8B87;
+   GL_OBJECT_SHADER_SOURCE_LENGTH_ARB                = $8B88;
+
+   // ARB Extension #31 - GL_ARB_vertex_shader
+   // (additional enums are reused from:
+   //  #26 GL_ARB_vertex_program
+   //  #27 GL_ARB_fragment_program
+   //  #30 GL_ARB_shader_objects)
+   GL_VERTEX_SHADER_ARB                              = $8B31;
+   GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB              = $8B4A;
+   GL_MAX_VARYING_FLOATS_ARB                         = $8B4B;
+   GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB             = $8B4C;
+   GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB           = $8B4D;
+   GL_OBJECT_ACTIVE_ATTRIBUTES_ARB                   = $8B89;
+   GL_OBJECT_ACTIVE_ATTRIBUTE_MAX_LENGTH_ARB         = $8B8A;
+
+   // ARB Extension #32 - GL_ARB_fragment_shader
+   // (additional enums are reused from #27 GL_ARB_fragment_program and #30 GL_ARB_shader_objects)
+   GL_FRAGMENT_SHADER_ARB                            = $8B30;
+   GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB            = $8B49;
+
+   // ARB Extension #33 - GL_ARB_shading_language_100
+
+   // ARB Extension #34 - GL_ARB_texture_non_power_of_two
+   // (no new tokens)
+
+   // ARB Extension #35 - GL_ARB_point_sprite
+
+   // ARB Extension #36 - GL_ARB_fragment_program_shadow
+   // (no new tokens)
+
+   // ARB Extension #37 - GL_ARB_draw_buffers
+
+   // ARB Extension #38 - GL_ARB_texture_rectangle
+   GL_TEXTURE_RECTANGLE_ARB                          = $84F5;
+   GL_TEXTURE_BINDING_RECTANGLE_ARB                  = $84F6;
+   GL_PROXY_TEXTURE_RECTANGLE_ARB                    = $84F7;
+   GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB                 = $84F8;
+
+   // ARB Extension #39 - GL_ARB_color_buffer_float
+   //                   - WGL_ARB_pixel_format_float
+   //                   - GLX_ARB_fbconfig_float
+
+   // ARB Extension #40 - GL_ARB_half_float_pixel
+
+   // ARB Extension #41 - GL_ARB_texture_float
+   GL_TEXTURE_RED_TYPE_ARB                           = $8C10;
+   GL_TEXTURE_GREEN_TYPE_ARB                         = $8C11;
+   GL_TEXTURE_BLUE_TYPE_ARB                          = $8C12;
+   GL_TEXTURE_ALPHA_TYPE_ARB                         = $8C13;
+   GL_TEXTURE_LUMINANCE_TYPE_ARB                     = $8C14;
+   GL_TEXTURE_INTENSITY_TYPE_ARB                     = $8C15;
+   GL_TEXTURE_DEPTH_TYPE_ARB                         = $8C16;
+   GL_UNSIGNED_NORMALIZED_ARB                        = $8C17;
+   GL_RGBA32F_ARB                                    = $8814;
+   GL_RGB32F_ARB                                     = $8815;
+   GL_ALPHA32F_ARB                                   = $8816;
+   GL_INTENSITY32F_ARB                               = $8817;
+   GL_LUMINANCE32F_ARB                               = $8818;
+   GL_LUMINANCE_ALPHA32F_ARB                         = $8819;
+   GL_RGBA16F_ARB                                    = $881A;
+   GL_RGB16F_ARB                                     = $881B;
+   GL_ALPHA16F_ARB                                   = $881C;
+   GL_INTENSITY16F_ARB                               = $881D;
+   GL_LUMINANCE16F_ARB                               = $881E;
+   GL_LUMINANCE_ALPHA16F_ARB                         = $881F;
+
+   // ARB Extension #42 - GL_ARB_pixel_buffer_object
+   GL_PIXEL_PACK_BUFFER_ARB                          = $88EB;
+   GL_PIXEL_UNPACK_BUFFER_ARB                        = $88EC;
+   GL_PIXEL_PACK_BUFFER_BINDING_ARB                  = $88ED;
+   GL_PIXEL_UNPACK_BUFFER_BINDING_ARB                = $88EF;
+
+   {.$endregion}
+
+   {.$region 'Vendor/EXT extensions constants, in extension number order'}
+
    // ----- extensions enumerants -----
-   // EXT_abgr
+
+   // EXT_texture_rectangle (can't find this extension in OpenGL registry)
+
+   GL_TEXTURE_RECTANGLE_EXT                          = $84F5;
+   GL_TEXTURE_BINDING_RECTANGLE_EXT                  = $84F6;
+   GL_PROXY_TEXTURE_RECTANGLE_EXT                    = $84F7;
+   GL_MAX_RECTANGLE_TEXTURE_SIZE_EXT                 = $84F8;
+
+   // EXT_abgr (#1)
    GL_ABGR_EXT                                       = $8000;
 
    // EXT_packed_pixels
@@ -1254,12 +1989,6 @@ const
    GL_POST_COLOR_MATRIX_BLUE_BIAS_SGI                = $80BA;
    GL_POST_COLOR_MATRIX_ALPHA_BIAS_SGI               = $80BB;
 
-   // ARB_point_parameters
-   GL_POINT_SIZE_MIN_ARB                             = $8126;
-   GL_POINT_SIZE_MAX_ARB                             = $8127;
-   GL_POINT_FADE_THRESHOLD_SIZE_ARB                  = $8128;
-   GL_DISTANCE_ATTENUATION_ARB                       = $8129;
-
    // EXT_rescale_normal
    GL_RESCALE_NORMAL_EXT                             = $803A;
 
@@ -1292,41 +2021,6 @@ const
    GL_ARRAY_ELEMENT_LOCK_COUNT_EXT                   = $81A9;
 
    // ARB_multitexture
-   GL_ACTIVE_TEXTURE_ARB                             = $84E0;
-   GL_CLIENT_ACTIVE_TEXTURE_ARB                      = $84E1;
-   GL_MAX_TEXTURE_UNITS_ARB                          = $84E2;
-   GL_TEXTURE0_ARB                                   = $84C0;
-   GL_TEXTURE1_ARB                                   = $84C1;
-   GL_TEXTURE2_ARB                                   = $84C2;
-   GL_TEXTURE3_ARB                                   = $84C3;
-   GL_TEXTURE4_ARB                                   = $84C4;
-   GL_TEXTURE5_ARB                                   = $84C5;
-   GL_TEXTURE6_ARB                                   = $84C6;
-   GL_TEXTURE7_ARB                                   = $84C7;
-   GL_TEXTURE8_ARB                                   = $84C8;
-   GL_TEXTURE9_ARB                                   = $84C9;
-   GL_TEXTURE10_ARB                                  = $84CA;
-   GL_TEXTURE11_ARB                                  = $84CB;
-   GL_TEXTURE12_ARB                                  = $84CC;
-   GL_TEXTURE13_ARB                                  = $84CD;
-   GL_TEXTURE14_ARB                                  = $84CE;
-   GL_TEXTURE15_ARB                                  = $84CF;
-   GL_TEXTURE16_ARB                                  = $84D0;
-   GL_TEXTURE17_ARB                                  = $84D1;
-   GL_TEXTURE18_ARB                                  = $84D2;
-   GL_TEXTURE19_ARB                                  = $84D3;
-   GL_TEXTURE20_ARB                                  = $84D4;
-   GL_TEXTURE21_ARB                                  = $84D5;
-   GL_TEXTURE22_ARB                                  = $84D6;
-   GL_TEXTURE23_ARB                                  = $84D7;
-   GL_TEXTURE24_ARB                                  = $84D8;
-   GL_TEXTURE25_ARB                                  = $84D9;
-   GL_TEXTURE26_ARB                                  = $84DA;
-   GL_TEXTURE27_ARB                                  = $84DB;
-   GL_TEXTURE28_ARB                                  = $84DC;
-   GL_TEXTURE29_ARB                                  = $84DD;
-   GL_TEXTURE30_ARB                                  = $84DE;
-   GL_TEXTURE31_ARB                                  = $84DF;
 
    // EXT_stencil_wrap
    GL_INCR_WRAP_EXT                                  = $8507;
@@ -1357,18 +2051,6 @@ const
    GL_PROXY_TEXTURE_RECTANGLE_NV                     = $84F7;
    GL_MAX_RECTANGLE_TEXTURE_SIZE_NV                  = $84F8;
 
-   // ARB_texture_rectangle
-   GL_TEXTURE_RECTANGLE_ARB                          = $84F5;
-   GL_TEXTURE_BINDING_RECTANGLE_ARB                  = $84F6;
-   GL_PROXY_TEXTURE_RECTANGLE_ARB                    = $84F7;
-   GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB                 = $84F8;
-
-   // EXT_texture_rectangle
-   GL_TEXTURE_RECTANGLE_EXT                          = $84F5;
-   GL_TEXTURE_BINDING_RECTANGLE_EXT                  = $84F6;
-   GL_PROXY_TEXTURE_RECTANGLE_EXT                    = $84F7;
-   GL_MAX_RECTANGLE_TEXTURE_SIZE_EXT                 = $84F8;
-
    // EXT_texture_env_combine
    GL_COMBINE_EXT                                    = $8570;
    GL_COMBINE_RGB_EXT                                = $8571;
@@ -1392,204 +2074,6 @@ const
    GL_OPERAND1_ALPHA_EXT                             = $8599;
    GL_OPERAND2_ALPHA_EXT                             = $859A;
 
-   // ARB_texture_env_combine
-   GL_COMBINE_ARB                                    = $8570;
-   GL_COMBINE_RGB_ARB                                = $8571;
-   GL_COMBINE_ALPHA_ARB                              = $8572;
-   GL_SOURCE0_RGB_ARB                                = $8580;
-   GL_SOURCE1_RGB_ARB                                = $8581;
-   GL_SOURCE2_RGB_ARB                                = $8582;
-   GL_SOURCE0_ALPHA_ARB                              = $8588;
-   GL_SOURCE1_ALPHA_ARB                              = $8589;
-   GL_SOURCE2_ALPHA_ARB                              = $858A;
-   GL_OPERAND0_RGB_ARB                               = $8590;
-   GL_OPERAND1_RGB_ARB                               = $8591;
-   GL_OPERAND2_RGB_ARB                               = $8592;
-   GL_OPERAND0_ALPHA_ARB                             = $8598;
-   GL_OPERAND1_ALPHA_ARB                             = $8599;
-   GL_OPERAND2_ALPHA_ARB                             = $859A;
-   GL_RGB_SCALE_ARB                                  = $8573;
-   GL_ADD_SIGNED_ARB                                 = $8574;
-   GL_INTERPOLATE_ARB                                = $8575;
-   GL_SUBTRACT_ARB                                   = $84E7;
-   GL_CONSTANT_ARB                                   = $8576;
-   GL_CONSTANT_COLOR_ARB                             = $8576;
-   GL_PRIMARY_COLOR_ARB                              = $8577;
-   GL_PREVIOUS_ARB                                   = $8578;
-
-   // ARB_texture_env_dot3
-   GL_DOT3_RGB_ARB                                   = $86AE;
-   GL_DOT3_RGBA_ARB                                  = $86AF;
-
-   // ARB_vertex_program
-   GL_VERTEX_PROGRAM_ARB                             = $8620;
-   GL_VERTEX_PROGRAM_POINT_SIZE_ARB                  = $8642;
-   GL_VERTEX_PROGRAM_TWO_SIDE_ARB                    = $8643;
-   GL_COLOR_SUM_ARB                                  = $8458;
-   GL_PROGRAM_FORMAT_ASCII_ARB                       = $8875;
-   GL_VERTEX_ATTRIB_ARRAY_ENABLED_ARB                = $8622;
-   GL_VERTEX_ATTRIB_ARRAY_SIZE_ARB                   = $8623;
-   GL_VERTEX_ATTRIB_ARRAY_STRIDE_ARB                 = $8624;
-   GL_VERTEX_ATTRIB_ARRAY_TYPE_ARB                   = $8625;
-   GL_VERTEX_ATTRIB_ARRAY_NORMALIZED_ARB             = $886A;
-   GL_CURRENT_VERTEX_ATTRIB_ARB                      = $8626;
-   GL_VERTEX_ATTRIB_ARRAY_POINTER_ARB                = $8645;
-   GL_PROGRAM_LENGTH_ARB                             = $8627;
-   GL_PROGRAM_FORMAT_ARB                             = $8876;
-   GL_PROGRAM_BINDING_ARB                            = $8677;
-   GL_PROGRAM_INSTRUCTIONS_ARB                       = $88A0;
-   GL_MAX_PROGRAM_INSTRUCTIONS_ARB                   = $88A1;
-   GL_PROGRAM_NATIVE_INSTRUCTIONS_ARB                = $88A2;
-   GL_MAX_PROGRAM_NATIVE_INSTRUCTIONS_ARB            = $88A3;
-   GL_PROGRAM_TEMPORARIES_ARB                        = $88A4;
-   GL_MAX_PROGRAM_TEMPORARIES_ARB                    = $88A5;
-   GL_PROGRAM_NATIVE_TEMPORARIES_ARB                 = $88A6;
-   GL_MAX_PROGRAM_NATIVE_TEMPORARIES_ARB             = $88A7;
-   GL_PROGRAM_PARAMETERS_ARB                         = $88A8;
-   GL_MAX_PROGRAM_PARAMETERS_ARB                     = $88A9;
-   GL_PROGRAM_NATIVE_PARAMETERS_ARB                  = $88AA;
-   GL_MAX_PROGRAM_NATIVE_PARAMETERS_ARB              = $88AB;
-   GL_PROGRAM_ATTRIBS_ARB                            = $88AC;
-   GL_MAX_PROGRAM_ATTRIBS_ARB                        = $88AD;
-   GL_PROGRAM_NATIVE_ATTRIBS_ARB                     = $88AE;
-   GL_MAX_PROGRAM_NATIVE_ATTRIBS_ARB                 = $88AF;
-   GL_PROGRAM_ADDRESS_REGISTERS_ARB                  = $88B0;
-   GL_MAX_PROGRAM_ADDRESS_REGISTERS_ARB              = $88B1;
-   GL_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB           = $88B2;
-   GL_MAX_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB       = $88B3;
-   GL_MAX_PROGRAM_LOCAL_PARAMETERS_ARB               = $88B4;
-   GL_MAX_PROGRAM_ENV_PARAMETERS_ARB                 = $88B5;
-   GL_PROGRAM_UNDER_NATIVE_LIMITS_ARB                = $88B6;
-   GL_PROGRAM_STRING_ARB                             = $8628;
-   GL_PROGRAM_ERROR_POSITION_ARB                     = $864B;
-   GL_CURRENT_MATRIX_ARB                             = $8641;
-   GL_TRANSPOSE_CURRENT_MATRIX_ARB                   = $88B7;
-   GL_CURRENT_MATRIX_STACK_DEPTH_ARB                 = $8640;
-   GL_MAX_VERTEX_ATTRIBS_ARB                         = $8869;
-   GL_MAX_PROGRAM_MATRICES_ARB                       = $862F;
-   GL_MAX_PROGRAM_MATRIX_STACK_DEPTH_ARB             = $862E;
-   GL_PROGRAM_ERROR_STRING_ARB                       = $8874;
-   GL_MATRIX0_ARB                                    = $88C0;
-   GL_MATRIX1_ARB                                    = $88C1;
-   GL_MATRIX2_ARB                                    = $88C2;
-   GL_MATRIX3_ARB                                    = $88C3;
-   GL_MATRIX4_ARB                                    = $88C4;
-   GL_MATRIX5_ARB                                    = $88C5;
-   GL_MATRIX6_ARB                                    = $88C6;
-   GL_MATRIX7_ARB                                    = $88C7;
-   GL_MATRIX8_ARB                                    = $88C8;
-   GL_MATRIX9_ARB                                    = $88C9;
-   GL_MATRIX10_ARB                                   = $88CA;
-   GL_MATRIX11_ARB                                   = $88CB;
-   GL_MATRIX12_ARB                                   = $88CC;
-   GL_MATRIX13_ARB                                   = $88CD;
-   GL_MATRIX14_ARB                                   = $88CE;
-   GL_MATRIX15_ARB                                   = $88CF;
-   GL_MATRIX16_ARB                                   = $88D0;
-   GL_MATRIX17_ARB                                   = $88D1;
-   GL_MATRIX18_ARB                                   = $88D2;
-   GL_MATRIX19_ARB                                   = $88D3;
-   GL_MATRIX20_ARB                                   = $88D4;
-   GL_MATRIX21_ARB                                   = $88D5;
-   GL_MATRIX22_ARB                                   = $88D6;
-   GL_MATRIX23_ARB                                   = $88D7;
-   GL_MATRIX24_ARB                                   = $88D8;
-   GL_MATRIX25_ARB                                   = $88D9;
-   GL_MATRIX26_ARB                                   = $88DA;
-   GL_MATRIX27_ARB                                   = $88DB;
-   GL_MATRIX28_ARB                                   = $88DC;
-   GL_MATRIX29_ARB                                   = $88DD;
-   GL_MATRIX30_ARB                                   = $88DE;
-   GL_MATRIX31_ARB                                   = $88DF;
-
-   // ARB_vertex_buffer_object
-   GL_ARRAY_BUFFER_ARB                               = $8892;
-   GL_ELEMENT_ARRAY_BUFFER_ARB                       = $8893;
-   GL_ARRAY_BUFFER_BINDING_ARB                       = $8894;
-   GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB               = $8895;
-   GL_VERTEX_ARRAY_BUFFER_BINDING_ARB                = $8896;
-   GL_NORMAL_ARRAY_BUFFER_BINDING_ARB                = $8897;
-   GL_COLOR_ARRAY_BUFFER_BINDING_ARB                 = $8898;
-   GL_INDEX_ARRAY_BUFFER_BINDING_ARB                 = $8899;
-   GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING_ARB         = $889A;
-   GL_EDGE_FLAG_ARRAY_BUFFER_BINDING_ARB             = $889B;
-   GL_SECONDARY_COLOR_ARRAY_BUFFER_BINDING_ARB       = $889C;
-   GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING_ARB        = $889D;
-   GL_WEIGHT_ARRAY_BUFFER_BINDING_ARB                = $889E;
-   GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING_ARB         = $889F;
-   GL_STREAM_DRAW_ARB                                = $88E0;
-   GL_STREAM_READ_ARB                                = $88E1;
-   GL_STREAM_COPY_ARB                                = $88E2;
-   GL_STATIC_DRAW_ARB                                = $88E4;
-   GL_STATIC_READ_ARB                                = $88E5;
-   GL_STATIC_COPY_ARB                                = $88E6;
-   GL_DYNAMIC_DRAW_ARB                               = $88E8;
-   GL_DYNAMIC_READ_ARB                               = $88E9;
-   GL_DYNAMIC_COPY_ARB                               = $88EA;
-   GL_READ_ONLY_ARB                                  = $88B8;
-   GL_WRITE_ONLY_ARB                                 = $88B9;
-   GL_READ_WRITE_ARB                                 = $88BA;
-   GL_BUFFER_SIZE_ARB                                = $8764;
-   GL_BUFFER_USAGE_ARB                               = $8765;
-   GL_BUFFER_ACCESS_ARB                              = $88BB;
-   GL_BUFFER_MAPPED_ARB                              = $88BC;
-   GL_BUFFER_MAP_POINTER_ARB                         = $88BD;
-
-   // ARB_pixel_buffer_object
-   GL_PIXEL_PACK_BUFFER_ARB                          = $88EB;
-   GL_PIXEL_UNPACK_BUFFER_ARB                        = $88EC;
-   GL_PIXEL_PACK_BUFFER_BINDING_ARB                  = $88ED;
-   GL_PIXEL_UNPACK_BUFFER_BINDING_ARB                = $88EF;
-
-   // ARB Extension #30 - GL_ARB_shader_objects
-   GL_PROGRAM_OBJECT_ARB                             = $8B40;
-   GL_OBJECT_TYPE_ARB                                = $8B4E;
-   GL_OBJECT_SUBTYPE_ARB                             = $8B4F;
-   GL_OBJECT_DELETE_STATUS_ARB                       = $8B80;
-   GL_OBJECT_COMPILE_STATUS_ARB                      = $8B81;
-   GL_OBJECT_LINK_STATUS_ARB                         = $8B82;
-   GL_OBJECT_VALIDATE_STATUS_ARB                     = $8B83;
-   GL_OBJECT_INFO_LOG_LENGTH_ARB                     = $8B84;
-   GL_OBJECT_ATTACHED_OBJECTS_ARB                    = $8B85;
-   GL_OBJECT_ACTIVE_UNIFORMS_ARB                     = $8B86;
-   GL_OBJECT_ACTIVE_UNIFORM_MAX_LENGTH_ARB           = $8B87;
-   GL_OBJECT_SHADER_SOURCE_LENGTH_ARB                = $8B88;
-   GL_SHADER_OBJECT_ARB                              = $8B48;
-   GL_FLOAT_VEC2_ARB                                 = $8B50;
-   GL_FLOAT_VEC3_ARB                                 = $8B51;
-   GL_FLOAT_VEC4_ARB                                 = $8B52;
-   GL_INT_VEC2_ARB                                   = $8B53;
-   GL_INT_VEC3_ARB                                   = $8B54;
-   GL_INT_VEC4_ARB                                   = $8B55;
-   GL_BOOL_ARB                                       = $8B56;
-   GL_BOOL_VEC2_ARB                                  = $8B57;
-   GL_BOOL_VEC3_ARB                                  = $8B58;
-   GL_BOOL_VEC4_ARB                                  = $8B59;
-   GL_FLOAT_MAT2_ARB                                 = $8B5A;
-   GL_FLOAT_MAT3_ARB                                 = $8B5B;
-   GL_FLOAT_MAT4_ARB                                 = $8B5C;
-
-   // ARB Extension #31 - GL_ARB_vertex_shader
-   // (additional enums are reused from:
-   //  #26 GL_ARB_vertex_program
-   //  #27 GL_ARB_fragment_program
-   //  #30 GL_ARB_shader_objects)
-   GL_VERTEX_SHADER_ARB                              = $8B31;
-   GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB              = $8B4A;
-   GL_MAX_VARYING_FLOATS_ARB                         = $8B4B;
-   GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB             = $8B4C;
-   GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB           = $8B4D;
-   GL_OBJECT_ACTIVE_ATTRIBUTES_ARB                   = $8B89;
-   GL_OBJECT_ACTIVE_ATTRIBUTE_MAX_LENGTH_ARB         = $8B8A;
-
-   // ARB Extension #32 - GL_ARB_fragment_shader
-   // (additional enums are reused from #27 GL_ARB_fragment_program and #30 GL_ARB_shader_objects)
-   GL_FRAGMENT_SHADER_ARB                            = $8B30;
-   GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB            = $8B49;
-
-   // ARB_fragment_program
-   GL_FRAGMENT_PROGRAM_ARB                           = $8804;
-
    // NV_texture_env_combine4
    GL_COMBINE4_NV                                    = $8503;
    GL_SOURCE3_RGB_NV                                 = $8583;
@@ -1597,149 +2081,6 @@ const
    GL_OPERAND3_RGB_NV                                = $8593;
    GL_OPERAND3_ALPHA_NV                              = $859B;
 
-   GL_BLEND_EQUATION                                 = $8009;
-   GL_TABLE_TOO_LARGE                                = $8031;
-   GL_UNSIGNED_BYTE_3_3_2                            = $8032;
-   GL_UNSIGNED_SHORT_4_4_4_4                         = $8033;
-   GL_UNSIGNED_SHORT_5_5_5_1                         = $8034;
-   GL_UNSIGNED_INT_8_8_8_8                           = $8035;
-   GL_UNSIGNED_INT_10_10_10_2                        = $8036;
-   GL_UNSIGNED_BYTE_2_3_3_REV                        = $8362;
-   GL_UNSIGNED_SHORT_5_6_5                           = $8363;
-   GL_UNSIGNED_SHORT_5_6_5_REV                       = $8364;
-   GL_UNSIGNED_SHORT_4_4_4_4_REV                     = $8365;
-   GL_UNSIGNED_SHORT_1_5_5_5_REV                     = $8366;
-   GL_UNSIGNED_INT_8_8_8_8_REV                       = $8367;
-   GL_UNSIGNED_INT_2_10_10_10_REV                    = $8368;
-
-   // GL_ARB_transpose_matrix
-   GL_TRANSPOSE_MODELVIEW_MATRIX_ARB                 = $84E3;
-   GL_TRANSPOSE_PROJECTION_MATRIX_ARB                = $84E4;
-   GL_TRANSPOSE_TEXTURE_MATRIX_ARB                   = $84E5;
-   GL_TRANSPOSE_COLOR_MATRIX_ARB                     = $84E6;
-
-   // GL_ARB_multisample
-   GL_MULTISAMPLE_ARB                                = $809D;
-   GL_SAMPLE_ALPHA_TO_COVERAGE_ARB                   = $809E;
-   GL_SAMPLE_ALPHA_TO_ONE_ARB                        = $809F;
-   GL_SAMPLE_COVERAGE_ARB                            = $80A0;
-   GL_SAMPLE_BUFFERS_ARB                             = $80A8;
-   GL_SAMPLES_ARB                                    = $80A9;
-   GL_SAMPLE_COVERAGE_VALUE_ARB                      = $80AA;
-   GL_SAMPLE_COVERAGE_INVERT_ARB                     = $80AB;
-   GL_MULTISAMPLE_BIT_ARB                            = $20000000;
-   GLX_SAMPLE_BUFFERS_ARB                            = 100000;
-   GLX_SAMPLES_ARB                                   = 100001;
-   WGL_SAMPLE_BUFFERS_ARB                            = $2041;
-   WGL_SAMPLES_ARB                                   = $2042;
-
-   // GL_ARB_depth_texture
-   GL_DEPTH_COMPONENT16_ARB                          = $81A5;
-   GL_DEPTH_COMPONENT24_ARB                          = $81A6;
-   GL_DEPTH_COMPONENT32_ARB                          = $81A7;
-   GL_TEXTURE_DEPTH_SIZE_ARB                         = $884A;
-   GL_DEPTH_TEXTURE_MODE_ARB                         = $884B;
-
-   // GL_ARB_shadow
-   GL_TEXTURE_COMPARE_MODE_ARB                       = $884C;
-   GL_TEXTURE_COMPARE_FUNC_ARB                       = $884D;
-   GL_COMPARE_R_TO_TEXTURE_ARB                       = $884E;
-
-   // GL_ARB_texture_cube_map
-   GL_NORMAL_MAP_ARB                                 = $8511;
-   GL_REFLECTION_MAP_ARB                             = $8512;
-   GL_TEXTURE_CUBE_MAP_ARB                           = $8513;
-   GL_TEXTURE_BINDING_CUBE_MAP_ARB                   = $8514;
-   GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB                = $8515;
-   GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB                = $8516;
-   GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB                = $8517;
-   GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB                = $8518;
-   GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB                = $8519;
-   GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB                = $851A;
-   GL_PROXY_TEXTURE_CUBE_MAP_ARB                     = $851B;
-   GL_MAX_CUBE_MAP_TEXTURE_SIZE_ARB                  = $851C;
-
-   // GL_ARB_texture_border_clamp
-   GL_CLAMP_TO_BORDER_ARB                            = $812D;
-
-   // GL_ARB_texture_compression
-   GL_COMPRESSED_ALPHA_ARB                           = $84E9;
-   GL_COMPRESSED_LUMINANCE_ARB                       = $84EA;
-   GL_COMPRESSED_LUMINANCE_ALPHA_ARB                 = $84EB;
-   GL_COMPRESSED_INTENSITY_ARB                       = $84EC;
-   GL_COMPRESSED_RGB_ARB                             = $84ED;
-   GL_COMPRESSED_RGBA_ARB                            = $84EE;
-   GL_TEXTURE_COMPRESSION_HINT_ARB                   = $84EF;
-   GL_TEXTURE_COMPRESSED_IMAGE_SIZE_ARB              = $86A0;
-   GL_TEXTURE_COMPRESSED_ARB                         = $86A1;
-   GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB             = $86A2;
-   GL_COMPRESSED_TEXTURE_FORMATS_ARB                 = $86A3;
-
-   // GL_ARB_vertex_blend
-   GL_MAX_VERTEX_UNITS_ARB                           = $86A4;
-   GL_ACTIVE_VERTEX_UNITS_ARB                        = $86A5;
-   GL_WEIGHT_SUM_UNITY_ARB                           = $86A6;
-   GL_VERTEX_BLEND_ARB                               = $86A7;
-   GL_CURRENT_WEIGHT_ARB                             = $86A8;
-   GL_WEIGHT_ARRAY_TYPE_ARB                          = $86A9;
-   GL_WEIGHT_ARRAY_STRIDE_ARB                        = $86AA;
-   GL_WEIGHT_ARRAY_SIZE_ARB                          = $86AB;
-   GL_WEIGHT_ARRAY_POINTER_ARB                       = $86AC;
-   GL_WEIGHT_ARRAY_ARB                               = $86AD;
-   GL_MODELVIEW0_ARB                                 = $1700;
-   GL_MODELVIEW1_ARB                                 = $850A;
-   GL_MODELVIEW2_ARB                                = $8722;
-   GL_MODELVIEW3_ARB                                = $8723;
-   GL_MODELVIEW4_ARB                                = $8724;
-   GL_MODELVIEW5_ARB                                = $8725;
-   GL_MODELVIEW6_ARB                                = $8726;
-   GL_MODELVIEW7_ARB                                = $8727;
-   GL_MODELVIEW8_ARB                                = $8728;
-   GL_MODELVIEW9_ARB                                = $8729;
-   GL_MODELVIEW10_ARB                               = $872A;
-   GL_MODELVIEW11_ARB                               = $872B;
-   GL_MODELVIEW12_ARB                               = $872C;
-   GL_MODELVIEW13_ARB                               = $872D;
-   GL_MODELVIEW14_ARB                               = $872E;
-   GL_MODELVIEW15_ARB                               = $872F;
-   GL_MODELVIEW16_ARB                               = $8730;
-   GL_MODELVIEW17_ARB                               = $8731;
-   GL_MODELVIEW18_ARB                               = $8732;
-   GL_MODELVIEW19_ARB                               = $8733;
-   GL_MODELVIEW20_ARB                               = $8734;
-   GL_MODELVIEW21_ARB                               = $8735;
-   GL_MODELVIEW22_ARB                               = $8736;
-   GL_MODELVIEW23_ARB                               = $8737;
-   GL_MODELVIEW24_ARB                               = $8738;
-   GL_MODELVIEW25_ARB                               = $8739;
-   GL_MODELVIEW26_ARB                               = $873A;
-   GL_MODELVIEW27_ARB                               = $873B;
-   GL_MODELVIEW28_ARB                               = $873C;
-   GL_MODELVIEW29_ARB                               = $873D;
-   GL_MODELVIEW30_ARB                               = $873E;
-   GL_MODELVIEW31_ARB                               = $873F;
-
-  // GL_ARB_texture_float
-  GL_TEXTURE_RED_TYPE_ARB                           = $8C10;
-  GL_TEXTURE_GREEN_TYPE_ARB                         = $8C11;
-  GL_TEXTURE_BLUE_TYPE_ARB                          = $8C12;
-  GL_TEXTURE_ALPHA_TYPE_ARB                         = $8C13;
-  GL_TEXTURE_LUMINANCE_TYPE_ARB                     = $8C14;
-  GL_TEXTURE_INTENSITY_TYPE_ARB                     = $8C15;
-  GL_TEXTURE_DEPTH_TYPE_ARB                         = $8C16;
-  GL_UNSIGNED_NORMALIZED_ARB                        = $8C17;
-  GL_RGBA32F_ARB                                    = $8814;
-  GL_RGB32F_ARB                                     = $8815;
-  GL_ALPHA32F_ARB                                   = $8816;
-  GL_INTENSITY32F_ARB                               = $8817;
-  GL_LUMINANCE32F_ARB                               = $8818;
-  GL_LUMINANCE_ALPHA32F_ARB                         = $8819;
-  GL_RGBA16F_ARB                                    = $881A;
-  GL_RGB16F_ARB                                     = $881B;
-  GL_ALPHA16F_ARB                                   = $881C;
-  GL_INTENSITY16F_ARB                               = $881D;
-  GL_LUMINANCE16F_ARB                               = $881E;
-  GL_LUMINANCE_ALPHA16F_ARB                         = $881F;
 
    // GL_SGIS_texture_lod (#24)
    GL_TEXTURE_MIN_LOD_SGIS                          = $813A;
@@ -2078,57 +2419,6 @@ const
    // NV_multisample_filter_hint
    GL_MULTISAMPLE_FILTER_HINT_NV                    = $8534;
 
-   // WGL_ARB_pixel_format
-   WGL_NUMBER_PIXEL_FORMATS_ARB                     = $2000;
-   WGL_DRAW_TO_WINDOW_ARB                           = $2001;
-   WGL_DRAW_TO_BITMAP_ARB                           = $2002;
-   WGL_ACCELERATION_ARB                             = $2003;
-   WGL_NEED_PALETTE_ARB                             = $2004;
-   WGL_NEED_SYSTEM_PALETTE_ARB                      = $2005;
-   WGL_SWAP_LAYER_BUFFERS_ARB                       = $2006;
-   WGL_SWAP_METHOD_ARB                              = $2007;
-   WGL_NUMBER_OVERLAYS_ARB                          = $2008;
-   WGL_NUMBER_UNDERLAYS_ARB                         = $2009;
-   WGL_TRANSPARENT_ARB                              = $200A;
-   WGL_TRANSPARENT_RED_VALUE_ARB                    = $2037;
-   WGL_TRANSPARENT_GREEN_VALUE_ARB                  = $2038;
-   WGL_TRANSPARENT_BLUE_VALUE_ARB                   = $2039;
-   WGL_TRANSPARENT_ALPHA_VALUE_ARB                  = $203A;
-   WGL_TRANSPARENT_INDEX_VALUE_ARB                  = $203B;
-   WGL_SHARE_DEPTH_ARB                              = $200C;
-   WGL_SHARE_STENCIL_ARB                            = $200D;
-   WGL_SHARE_ACCUM_ARB                              = $200E;
-   WGL_SUPPORT_GDI_ARB                              = $200F;
-   WGL_SUPPORT_OPENGL_ARB                           = $2010;
-   WGL_DOUBLE_BUFFER_ARB                            = $2011;
-   WGL_STEREO_ARB                                   = $2012;
-   WGL_PIXEL_TYPE_ARB                               = $2013;
-   WGL_COLOR_BITS_ARB                               = $2014;
-   WGL_RED_BITS_ARB                                 = $2015;
-   WGL_RED_SHIFT_ARB                                = $2016;
-   WGL_GREEN_BITS_ARB                               = $2017;
-   WGL_GREEN_SHIFT_ARB                              = $2018;
-   WGL_BLUE_BITS_ARB                                = $2019;
-   WGL_BLUE_SHIFT_ARB                               = $201A;
-   WGL_ALPHA_BITS_ARB                               = $201B;
-   WGL_ALPHA_SHIFT_ARB                              = $201C;
-   WGL_ACCUM_BITS_ARB                               = $201D;
-   WGL_ACCUM_RED_BITS_ARB                           = $201E;
-   WGL_ACCUM_GREEN_BITS_ARB                         = $201F;
-   WGL_ACCUM_BLUE_BITS_ARB                          = $2020;
-   WGL_ACCUM_ALPHA_BITS_ARB                         = $2021;
-   WGL_DEPTH_BITS_ARB                               = $2022;
-   WGL_STENCIL_BITS_ARB                             = $2023;
-   WGL_AUX_BUFFERS_ARB                              = $2024;
-   WGL_NO_ACCELERATION_ARB                          = $2025;
-   WGL_GENERIC_ACCELERATION_ARB                     = $2026;
-   WGL_FULL_ACCELERATION_ARB                        = $2027;
-   WGL_SWAP_EXCHANGE_ARB                            = $2028;
-   WGL_SWAP_COPY_ARB                                = $2029;
-   WGL_SWAP_UNDEFINED_ARB                           = $202A;
-   WGL_TYPE_RGBA_ARB                                = $202B;
-   WGL_TYPE_COLORINDEX_ARB                          = $202C;
-
    // WGL_NV_float_buffer
    WGL_FLOAT_COMPONENTS_NV                          = $20B0;
    WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_R_NV         = $20B1;
@@ -2340,24 +2630,7 @@ const
    GL_STENCIL_BACK_VALUE_MASK = $8CA4;
    GL_STENCIL_BACK_WRITEMASK = $8CA5;
 
-   // WGL_ARB_pbuffer
-type
-   HPBUFFERARB= Integer;
-const
-   WGL_DRAW_TO_PBUFFER_ARB                          = $202D;
-   WGL_MAX_PBUFFER_PIXELS_ARB                       = $202E;
-   WGL_MAX_PBUFFER_WIDTH_ARB                        = $202F;
-   WGL_MAX_PBUFFER_HEIGHT_ARB                       = $2030;
-   WGL_PBUFFER_LARGEST_ARB                          = $2033;
-   WGL_PBUFFER_WIDTH_ARB                            = $2034;
-   WGL_PBUFFER_HEIGHT_ARB                           = $2035;
-   WGL_PBUFFER_LOST_ARB                             = $2036;
 
-   // WGL_ARB_buffer_region
-   WGL_FRONT_COLOR_BUFFER_BIT_ARB                   = $00000001;
-   WGL_BACK_COLOR_BUFFER_BIT_ARB                    = $00000002;
-   WGL_DEPTH_BUFFER_BIT_ARB                         = $00000004;
-   WGL_STENCIL_BUFFER_BIT_ARB                       = $00000008;
 
    {.$region 'OpenGL Utility (GLU) generic constants'}
    // ********** GLU generic constants **********
