@@ -213,11 +213,14 @@ type
    {$ENDIF}
    {$ENDIF}
 
+{.$region 'OpenGL extension feature checks'}
+
 {$IFDEF MULTITHREADOPENGL}
 threadvar
 {$else}
 var
 {$ENDIF}
+   // supported version checks
    GL_VERSION_1_0,
    GL_VERSION_1_1,
    GL_VERSION_1_2,
@@ -232,33 +235,40 @@ var
    GLU_VERSION_1_2,
    GLU_VERSION_1_3: Boolean;
 
-   // Extensions (gl)
+   // ARB approved OpenGL extension checks
+   GL_ARB_depth_texture,
+   GL_ARB_draw_buffers,
+   GL_ARB_fragment_program,
+   GL_ARB_fragment_shader,
+   GL_ARB_imaging,
+   GL_ARB_multisample,
+   GL_ARB_multitexture,
+   GL_ARB_pixel_buffer_object,
+   GL_ARB_point_parameters,
+   GL_ARB_shadow,
+   GL_ARB_shader_objects,
+   GL_ARB_texture_border_clamp,
+   GL_ARB_texture_compression,
+   GL_ARB_texture_cube_map,
+   GL_ARB_texture_env_combine,
+   GL_ARB_texture_env_crossbar,
+   GL_ARB_texture_env_dot3,
+   GL_ARB_texture_float,
+   GL_ARB_texture_non_power_of_two,
+   GL_ARB_texture_rectangle,
+   GL_ARB_transpose_matrix,
+   GL_ARB_vertex_blend,
+   GL_ARB_vertex_buffer_object,
+   GL_ARB_vertex_program,
+   GL_ARB_vertex_shader,
+
+   // Vendor/EXT OpenGL extension checks
    GL_3DFX_multisample,
    GL_3DFX_tbuffer,
    GL_3DFX_texture_compression_FXT1,
 
-   GL_ARB_imaging,
-   GL_ARB_multisample,
-   GL_ARB_multitexture,
-   GL_ARB_depth_texture,
-   GL_ARB_shadow,
-   GL_ARB_texture_border_clamp,
-   GL_ARB_texture_compression,
-   GL_ARB_texture_cube_map,
-   GL_ARB_transpose_matrix,
-   GL_ARB_vertex_blend,
-   GL_ARB_point_parameters,
-   GL_ARB_texture_env_combine,
-   GL_ARB_texture_env_crossbar,
-   GL_ARB_texture_env_dot3,
-   GL_ARB_vertex_program,
-   GL_ARB_vertex_buffer_object,
-   GL_ARB_pixel_buffer_object,
-   GL_ARB_shader_objects,
-   GL_ARB_vertex_shader,
-   GL_ARB_fragment_shader,
-   GL_ARB_fragment_program,
-   GL_ARB_texture_rectangle,
+   GL_ATI_draw_buffers,
+   GL_ATI_texture_float,
 
    GL_EXT_abgr,
    GL_EXT_bgra,
@@ -268,21 +278,25 @@ var
    GL_EXT_blend_minmax,
    GL_EXT_blend_subtract,
    GL_EXT_Cg_shader,
+   GL_EXT_clip_volume_hint,
    GL_EXT_compiled_vertex_array,
    GL_EXT_copy_texture,
    GL_EXT_draw_range_elements,
    GL_EXT_fog_coord,
+   GL_EXT_framebuffer_object,
    GL_EXT_multi_draw_arrays,
    GL_EXT_multisample,
    GL_EXT_packed_pixels,
    GL_EXT_paletted_texture,
+   GL_EXT_pixel_buffer_object,
    GL_EXT_polygon_offset,
    GL_EXT_rescale_normal,
    GL_EXT_secondary_color,
    GL_EXT_separate_specular_color,
    GL_EXT_shared_texture_palette,
-   GL_EXT_stencil_wrap,
    GL_EXT_stencil_two_side,
+   GL_EXT_stencil_wrap,
+   GL_EXT_texture3D,
    GL_EXT_texture_compression_s3tc,
    GL_EXT_texture_cube_map,
    GL_EXT_texture_edge_clamp,
@@ -291,11 +305,7 @@ var
    GL_EXT_texture_filter_anisotropic,
    GL_EXT_texture_lod_bias,
    GL_EXT_texture_object,
-   GL_EXT_texture3D,
-   GL_EXT_clip_volume_hint,
-   GL_EXT_framebuffer_object,
    GL_EXT_texture_rectangle,
-   GL_EXT_pixel_buffer_object,
 
    GL_HP_occlusion_test,
 
@@ -306,21 +316,17 @@ var
    GL_MESA_resize_buffers,
 
    GL_NV_blend_square,
+   GL_NV_fence,
    GL_NV_fog_distance,
    GL_NV_light_max_exponent,
+   GL_NV_multisample_filter_hint,
+   GL_NV_occlusion_query,
    GL_NV_register_combiners,
    GL_NV_texgen_reflection,
    GL_NV_texture_env_combine4,
+   GL_NV_texture_rectangle,
    GL_NV_vertex_array_range,
    GL_NV_vertex_program,
-   GL_NV_multisample_filter_hint,
-   GL_NV_fence,
-   GL_NV_occlusion_query,
-   GL_NV_texture_rectangle,
-
-   GL_ATI_texture_float,
-   GL_ATI_draw_buffers,
-   GL_ARB_draw_buffers,
 
    GL_SGI_color_matrix,
 
@@ -336,22 +342,23 @@ var
    GL_SGIX_shadow_ambient,
 
    GL_WIN_swap_hint,
-   GL_ARB_texture_float,
-   GL_ARB_texture_non_power_of_two,
 
-   // WGL Extensions ----------------------------
-   WGL_EXT_swap_control,
-   WGL_ARB_multisample,
-   WGL_ARB_extensions_string,
-   WGL_ARB_pixel_format,
-   WGL_ARB_pbuffer,
+   // ARB approved WGL extension checks
    WGL_ARB_buffer_region,
+   WGL_ARB_extensions_string,
+   WGL_ARB_multisample,
+   WGL_ARB_pbuffer,
+   WGL_ARB_pixel_format,
+   // Vendor/EXT WGL extension checks
    WGL_ATI_pixel_format_float,
+   WGL_EXT_swap_control,
 
-   // Extensions (glu)
-   GLU_EXT_Texture,
+   // OpenGL Utility (GLU) extension checks
    GLU_EXT_object_space_tess,
-   GLU_EXT_nurbs_tessellator: Boolean;
+   GLU_EXT_nurbs_tessellator,
+   GLU_EXT_Texture: Boolean;
+
+{.$endregion}
 
 const
 {$IFDEF MSWINDOWS}
@@ -365,6 +372,7 @@ const
 {$ENDIF} 
 
 
+   {.$region 'OpenGL v1.1 generic constants'}
    // ********** GL generic constants **********
 
    // errors
@@ -1533,7 +1541,7 @@ const
    GL_PIXEL_PACK_BUFFER_BINDING_ARB                  = $88ED;
    GL_PIXEL_UNPACK_BUFFER_BINDING_ARB                = $88EF;
 
-   // ARB_shader_objects
+   // ARB Extension #30 - GL_ARB_shader_objects
    GL_PROGRAM_OBJECT_ARB                             = $8B40;
    GL_OBJECT_TYPE_ARB                                = $8B4E;
    GL_OBJECT_SUBTYPE_ARB                             = $8B4F;
@@ -1561,7 +1569,11 @@ const
    GL_FLOAT_MAT3_ARB                                 = $8B5B;
    GL_FLOAT_MAT4_ARB                                 = $8B5C;
 
-   // ARB_vertex_shader
+   // ARB Extension #31 - GL_ARB_vertex_shader
+   // (additional enums are reused from:
+   //  #26 GL_ARB_vertex_program
+   //  #27 GL_ARB_fragment_program
+   //  #30 GL_ARB_shader_objects)
    GL_VERTEX_SHADER_ARB                              = $8B31;
    GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB              = $8B4A;
    GL_MAX_VARYING_FLOATS_ARB                         = $8B4B;
@@ -1570,7 +1582,8 @@ const
    GL_OBJECT_ACTIVE_ATTRIBUTES_ARB                   = $8B89;
    GL_OBJECT_ACTIVE_ATTRIBUTE_MAX_LENGTH_ARB         = $8B8A;
 
-   // ARB_fragment_shader
+   // ARB Extension #32 - GL_ARB_fragment_shader
+   // (additional enums are reused from #27 GL_ARB_fragment_program and #30 GL_ARB_shader_objects)
    GL_FRAGMENT_SHADER_ARB                            = $8B30;
    GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB            = $8B49;
 
@@ -1728,13 +1741,13 @@ const
   GL_LUMINANCE16F_ARB                               = $881E;
   GL_LUMINANCE_ALPHA16F_ARB                         = $881F;
 
-   // GL_SGIS_texture_lod
+   // GL_SGIS_texture_lod (#24)
    GL_TEXTURE_MIN_LOD_SGIS                          = $813A;
    GL_TEXTURE_MAX_LOD_SGIS                          = $813B;
    GL_TEXTURE_BASE_LEVEL_SGIS                       = $813C;
    GL_TEXTURE_MAX_LEVEL_SGIS                        = $813D;
 
-   // GL_SGIS_multisample
+   // GL_SGIS_multisample (#25)
    GL_MULTISAMPLE_SGIS                              = $809D;
    GL_SAMPLE_ALPHA_TO_MASK_SGIS                     = $809E;
    GL_SAMPLE_ALPHA_TO_ONE_SGIS                      = $809F;
@@ -1752,45 +1765,45 @@ const
    GL_SAMPLE_MASK_INVERT_SGIS                       = $80AB;
    GL_SAMPLE_PATTERN_SGIS                           = $80AC;
 
-   // GL_SGIS_generate_mipmap
+   // GL_SGIS_generate_mipmap (#32)
    GL_GENERATE_MIPMAP_SGIS                          = $8191;
    GL_GENERATE_MIPMAP_HINT_SGIS                     = $8192;
 
-   // GL_SGIX_shadow
+   // GL_SGIX_shadow (#34)
    GL_TEXTURE_COMPARE_SGIX                          = $819A;
    GL_TEXTURE_COMPARE_OPERATOR_SGIX                 = $819B;
    GL_TEXTURE_LEQUAL_R_SGIX                         = $819C;
    GL_TEXTURE_GEQUAL_R_SGIX                         = $819D;
 
-   // GL_SGIS_texture_edge_clamp
+   // GL_SGIS_texture_edge_clamp (#35)
    GL_CLAMP_TO_EDGE_SGIS                            = $812F;
 
-   // GL_SGIS_texture_border_clamp
+   // GL_SGIS_texture_border_clamp (#36)
    GL_CLAMP_TO_BORDER_SGIS                          = $812D;
 
-   // GL_EXT_paletted_texture
+   // GL_EXT_paletted_texture (#78)
    GL_TEXTURE_INDEX_SIZE_EXT                        = $80ED;
 
-   // GL_SGIX_shadow_ambient
+   // GL_SGIX_shadow_ambient (#90)
    GL_SHADOW_AMBIENT_SGIX                           = $80BF;
 
-   // GL_IBM_rasterpos_clip
+   // GL_IBM_rasterpos_clip (#110)
    GL_RASTER_POSITION_UNCLIPPED_IBM                 = $19262;
 
-   // GL_EXT_draw_range_elements
+   // GL_EXT_draw_range_elements (#112)
    GL_MAX_ELEMENTS_VERTICES_EXT                     = $80E8;
    GL_MAX_ELEMENTS_INDICES_EXT                      = $80E9;
 
-   // GL_HP_occlusion_test
+   // GL_HP_occlusion_test (#137)
    GL_OCCLUSION_TEST_HP                             = $8165;
    GL_OCCLUSION_TEST_RESULT_HP                      = $8166;
 
-   // GL_EXT_separate_specular_color
+   // GL_EXT_separate_specular_color (#144)
    GL_LIGHT_MODEL_COLOR_CONTROL_EXT                 = $81F8;
    GL_SINGLE_COLOR_EXT                              = $81F9;
    GL_SEPARATE_SPECULAR_COLOR_EXT                   = $81FA;
 
-   // GL_EXT_secondary_color
+   // GL_EXT_secondary_color (#145)
    GL_COLOR_SUM_EXT                                 = $8458;
    GL_CURRENT_SECONDARY_COLOR_EXT                   = $8459;
    GL_SECONDARY_COLOR_ARRAY_SIZE_EXT                = $845A;
@@ -1799,7 +1812,7 @@ const
    GL_SECONDARY_COLOR_ARRAY_POINTER_EXT             = $845D;
    GL_SECONDARY_COLOR_ARRAY_EXT                     = $845E;
 
-   // GL_EXT_fog_coord
+   // GL_EXT_fog_coord (#149)
    GL_FOG_COORDINATE_SOURCE_EXT                     = $8450;
    GL_FOG_COORDINATE_EXT                            = $8451;
    GL_FRAGMENT_DEPTH_EXT                            = $8452;
@@ -1809,7 +1822,7 @@ const
    GL_FOG_COORDINATE_ARRAY_POINTER_EXT              = $8456;
    GL_FOG_COORDINATE_ARRAY_EXT                      = $8457;
 
-   // GL_EXT_texture_env_combine
+   // GL_EXT_texture_env_combine (#158)
    GL_SOURCE3_RGB_EXT                               = $8583;
    GL_SOURCE4_RGB_EXT                               = $8584;
    GL_SOURCE5_RGB_EXT                               = $8585;
@@ -1831,13 +1844,17 @@ const
    GL_OPERAND6_ALPHA_EXT                            = $859E;
    GL_OPERAND7_ALPHA_EXT                            = $859F;
 
-   // GL_EXT_blend_func_separate
+   // GL_EXT_blend_func_separate (#173)
    GL_BLEND_DST_RGB_EXT                             = $80C8;
    GL_BLEND_SRC_RGB_EXT                             = $80C9;
    GL_BLEND_DST_ALPHA_EXT                           = $80CA;
    GL_BLEND_SRC_ALPHA_EXT                           = $80CB;
 
    // GL_EXT_texture_cube_map
+   // DanB : "GL_EXT_texture_cube_map (can't find this extension in OpenGL registry so removed)"
+   // Mrqzzz : The following block was commented by DanB
+   // But the constants are currently used in dws2openGL1x.pas, so i re-add them. If they
+   // result harmful, we will remove them again.
    GL_NORMAL_MAP_EXT                                = $8511;
    GL_REFLECTION_MAP_EXT                            = $8512;
    GL_TEXTURE_CUBE_MAP_EXT                          = $8513;
@@ -1851,20 +1868,20 @@ const
    GL_PROXY_TEXTURE_CUBE_MAP_EXT                    = $851B;
    GL_MAX_CUBE_MAP_TEXTURE_SIZE_EXT                 = $851C;
 
-   // GL_EXT_texture_lod_bias
+   // GL_EXT_texture_lod_bias (#186)
    GL_MAX_TEXTURE_LOD_BIAS_EXT                      = $84FD;
    GL_TEXTURE_FILTER_CONTROL_EXT                    = $8500;
    GL_TEXTURE_LOD_BIAS_EXT                          = $8501;
 
-   // GL_EXT_texture_filter_anisotropic
+   // GL_EXT_texture_filter_anisotropic (#187)
    GL_TEXTURE_MAX_ANISOTROPY_EXT                    = $84FE;
    GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT                = $84FF;
 
-   // GL_NV_light_max_exponent
+   // GL_NV_light_max_exponent (#189)
    GL_MAX_SHININESS_NV                              = $8504;
    GL_MAX_SPOT_EXPONENT_NV                          = $8505;
 
-   // GL_NV_vertex_array_range
+   // GL_NV_vertex_array_range (#190)
    GL_VERTEX_ARRAY_RANGE_NV                         = $851D;
    GL_VERTEX_ARRAY_RANGE_LENGTH_NV                  = $851E;
    GL_VERTEX_ARRAY_RANGE_VALID_NV                   = $851F;
@@ -1874,7 +1891,7 @@ const
    // GL_NV_vertex_array_range2
    GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV          = $8533;
 
-   // GL_NV_register_combiners
+   // GL_NV_register_combiners (#191)
    GL_REGISTER_COMBINERS_NV                         = $8522;
    GL_VARIABLE_A_NV                                 = $8523;
    GL_VARIABLE_B_NV                                 = $8524;
@@ -1927,28 +1944,28 @@ const
    GL_COMBINER6_NV                                  = $8556;
    GL_COMBINER7_NV                                  = $8557;
 
-   // GL_NV_fog_distance
+   // GL_NV_fog_distance (#192)
    GL_FOG_DISTANCE_MODE_NV                          = $855A;
    GL_EYE_RADIAL_NV                                 = $855B;
    GL_EYE_PLANE_ABSOLUTE_NV                         = $855C;
 
-   // GL_EXT_texture_compression_s3tc
+   // GL_EXT_texture_compression_s3tc (#198)
    GL_COMPRESSED_RGB_S3TC_DXT1_EXT                  = $83F0;
    GL_COMPRESSED_RGBA_S3TC_DXT1_EXT                 = $83F1;
    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT                 = $83F2;
    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT                 = $83F3;
 
-   // GL_3DFX_texture_compression_FXT1
+   // GL_3DFX_texture_compression_FXT1 (#206)
    GL_COMPRESSED_RGB_FXT1_3DFX                      = $86B0;
    GL_COMPRESSED_RGBA_FXT1_3DFX                     = $86B1;
 
-   // GL_3DFX_multisample
+   // GL_3DFX_multisample (#207)
    GL_MULTISAMPLE_3DFX                              = $86B2;
    GL_SAMPLE_BUFFERS_3DFX                           = $86B3;
    GL_SAMPLES_3DFX                                  = $86B4;
    GL_MULTISAMPLE_BIT_3DFX                          = $20000000;
 
-   // GL_EXT_multisample
+   // GL_EXT_multisample / WGL_EXT_multisample (#209)
    GL_MULTISAMPLE_EXT                               = $809D;
    GL_SAMPLE_ALPHA_TO_MASK_EXT                      = $809E;
    GL_SAMPLE_ALPHA_TO_ONE_EXT                       = $809F;
@@ -1972,7 +1989,7 @@ const
    // GL_SGIS_texture_color_mask
    GL_TEXTURE_COLOR_WRITEMASK_SGIS                  = $81EF;
 
-   // GL_NV_vertex_program
+   // GL_NV_vertex_program (#233)
    GL_VERTEX_PROGRAM_NV                             = $8620;
    GL_VERTEX_STATE_PROGRAM_NV                       = $8621;
    GL_ATTRIB_ARRAY_SIZE_NV                          = $8623;
@@ -2057,6 +2074,7 @@ const
    GL_MAP2_VERTEX_ATTRIB14_4_NV                     = $867E;
    GL_MAP2_VERTEX_ATTRIB15_4_NV                     = $867F;
 
+   // GL_NV_multisample_filter_hint (#259)
    // NV_multisample_filter_hint
    GL_MULTISAMPLE_FILTER_HINT_NV                    = $8534;
 
@@ -2139,12 +2157,12 @@ const
    GL_FLOAT_CLEAR_COLOR_VALUE_NV                    = $888D;
    GL_FLOAT_RGBA_MODE_NV                            = $888E;
 
-   // WGL_ATI_pixel_format_float
+   // WGL_ATI_pixel_format_float (#278)
    WGL_TYPE_RGBA_FLOAT_ATI                          = $21A0;
    GL_TYPE_RGBA_FLOAT_ATI                           = $8820;
    GL_COLOR_CLEAR_UNCLAMPED_VALUE_ATI               = $8835;
 
-   // GL_ATI_texture_float
+   // GL_ATI_texture_float (#280)
    GL_RGBA_FLOAT32_ATI                              = $8814;
    GL_RGB_FLOAT32_ATI                               = $8815;
    GL_ALPHA_FLOAT32_ATI                             = $8816;
@@ -2196,7 +2214,7 @@ const
    GL_DRAW_BUFFER14                             = $8833;
    GL_DRAW_BUFFER15                             = $8834;
 
-   // GL_EXT_framebuffer_object
+   // GL_EXT_framebuffer_object (#310)
    GL_FRAMEBUFFER_EXT                               = $8D40;
    GL_RENDERBUFFER_EXT                              = $8D41;
    GL_STENCIL_INDEX1_EXT                            = $8D46;
@@ -2341,6 +2359,7 @@ const
    WGL_DEPTH_BUFFER_BIT_ARB                         = $00000004;
    WGL_STENCIL_BUFFER_BIT_ARB                       = $00000008;
 
+   {.$region 'OpenGL Utility (GLU) generic constants'}
    // ********** GLU generic constants **********
 
    // Errors: (return value 0= no error)
