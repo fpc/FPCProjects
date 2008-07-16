@@ -161,7 +161,7 @@ type
 
    GLhandleARB = Cardinal;
    PGLhandleARB = ^GLhandleARB;
-   
+
    GLcharARB = Char;
    PGLcharARB = ^GLcharARB;
    
@@ -1835,85 +1835,19 @@ const
    // EXT_abgr (#1)
    GL_ABGR_EXT                                       = $8000;
 
-   // EXT_packed_pixels
-   GL_UNSIGNED_BYTE_3_3_2_EXT                        = $8032;
-   GL_UNSIGNED_SHORT_4_4_4_4_EXT                     = $8033;
-   GL_UNSIGNED_SHORT_5_5_5_1_EXT                     = $8034;
-   GL_UNSIGNED_INT_8_8_8_8_EXT                       = $8035;
-   GL_UNSIGNED_INT_10_10_10_2_EXT                    = $8036;
-
-   // EXT_bgra
-   GL_BGR_EXT                                        = $80E0;
-   GL_BGRA_EXT                                       = $80E1;
-
-   // EXT_paletted_texture
-   GL_COLOR_INDEX1_EXT                               = $80E2;
-   GL_COLOR_INDEX2_EXT                               = $80E3;
-   GL_COLOR_INDEX4_EXT                               = $80E4;
-   GL_COLOR_INDEX8_EXT                               = $80E5;
-   GL_COLOR_INDEX12_EXT                              = $80E6;
-   GL_COLOR_INDEX16_EXT                              = $80E7;
-
-   // EXT_blend_color
+   // EXT_blend_color (#2)
    GL_CONSTANT_COLOR_EXT                             = $8001;
    GL_ONE_MINUS_CONSTANT_COLOR_EXT                   = $8002;
    GL_CONSTANT_ALPHA_EXT                             = $8003;
    GL_ONE_MINUS_CONSTANT_ALPHA_EXT                   = $8004;
    GL_BLEND_COLOR_EXT                                = $8005;
 
-   // EXT_blend_minmax
-   GL_FUNC_ADD_EXT                                   = $8006;
-   GL_MIN_EXT                                        = $8007;
-   GL_MAX_EXT                                        = $8008;
-   GL_BLEND_EQUATION_EXT                             = $8009;
-
-   // EXT_blend_subtract
-   GL_FUNC_SUBTRACT_EXT                              = $800A;
-   GL_FUNC_REVERSE_SUBTRACT_EXT                      = $800B;
-
-   // EXT_convolution
-   GL_CONVOLUTION_1D_EXT                             = $8010;
-   GL_CONVOLUTION_2D_EXT                             = $8011;
-   GL_SEPARABLE_2D_EXT                               = $8012;
-   GL_CONVOLUTION_BORDER_MODE_EXT                    = $8013;
-   GL_CONVOLUTION_FILTER_SCALE_EXT                   = $8014;
-   GL_CONVOLUTION_FILTER_BIAS_EXT                    = $8015;
-   GL_REDUCE_EXT                                     = $8016;
-   GL_CONVOLUTION_FORMAT_EXT                         = $8017;
-   GL_CONVOLUTION_WIDTH_EXT                          = $8018;
-   GL_CONVOLUTION_HEIGHT_EXT                         = $8019;
-   GL_MAX_CONVOLUTION_WIDTH_EXT                      = $801A;
-   GL_MAX_CONVOLUTION_HEIGHT_EXT                     = $801B;
-   GL_POST_CONVOLUTION_RED_SCALE_EXT                 = $801C;
-   GL_POST_CONVOLUTION_GREEN_SCALE_EXT               = $801D;
-   GL_POST_CONVOLUTION_BLUE_SCALE_EXT                = $801E;
-   GL_POST_CONVOLUTION_ALPHA_SCALE_EXT               = $801F;
-   GL_POST_CONVOLUTION_RED_BIAS_EXT                  = $8020;
-   GL_POST_CONVOLUTION_GREEN_BIAS_EXT                = $8021;
-   GL_POST_CONVOLUTION_BLUE_BIAS_EXT                 = $8022;
-   GL_POST_CONVOLUTION_ALPHA_BIAS_EXT                = $8023;
-
-   // EXT_histogram
-   GL_HISTOGRAM_EXT                                  = $8024;
-   GL_PROXY_HISTOGRAM_EXT                            = $8025;
-   GL_HISTOGRAM_WIDTH_EXT                            = $8026;
-   GL_HISTOGRAM_FORMAT_EXT                           = $8027;
-   GL_HISTOGRAM_RED_SIZE_EXT                         = $8028;
-   GL_HISTOGRAM_GREEN_SIZE_EXT                       = $8029;
-   GL_HISTOGRAM_BLUE_SIZE_EXT                        = $802A;
-   GL_HISTOGRAM_ALPHA_SIZE_EXT                       = $802B;
-   GL_HISTOGRAM_LUMINANCE_SIZE_EXT                   = $802C;
-   GL_HISTOGRAM_SINK_EXT                             = $802D;
-   GL_MINMAX_EXT                                     = $802E;
-   GL_MINMAX_FORMAT_EXT                              = $802F;
-   GL_MINMAX_SINK_EXT                                = $8030;
-
-   // EXT_polygon_offset
+   // EXT_polygon_offset (#3)
    GL_POLYGON_OFFSET_EXT                             = $8037;
    GL_POLYGON_OFFSET_FACTOR_EXT                      = $8038;
    GL_POLYGON_OFFSET_BIAS_EXT                        = $8039;
 
-   // EXT_texture
+   // EXT_texture (#4)
    GL_ALPHA4_EXT                                     = $803B;
    GL_ALPHA8_EXT                                     = $803C;
    GL_ALPHA12_EXT                                    = $803D;
@@ -1958,14 +1892,7 @@ const
    GL_PROXY_TEXTURE_2D_EXT                           = $8064;
    GL_TEXTURE_TOO_LARGE_EXT                          = $8065;
 
-   // EXT_texture_object
-   GL_TEXTURE_PRIORITY_EXT                           = $8066;
-   GL_TEXTURE_RESIDENT_EXT                           = $8067;
-   GL_TEXTURE_1D_BINDING_EXT                         = $8068;
-   GL_TEXTURE_2D_BINDING_EXT                         = $8069;
-   GL_TEXTURE_3D_BINDING_EXT                         = $806A;
-
-   // EXT_texture3D
+   // EXT_texture3D (#6)
    GL_PACK_SKIP_IMAGES_EXT                           = $806B;
    GL_PACK_IMAGE_HEIGHT_EXT                          = $806C;
    GL_UNPACK_SKIP_IMAGES_EXT                         = $806D;
@@ -1975,8 +1902,45 @@ const
    GL_TEXTURE_DEPTH_EXT                              = $8071;
    GL_TEXTURE_WRAP_R_EXT                             = $8072;
    GL_MAX_3D_TEXTURE_SIZE_EXT                        = $8073;
+   
+   // EXT_histogram (#11)
+   GL_HISTOGRAM_EXT                                  = $8024;
+   GL_PROXY_HISTOGRAM_EXT                            = $8025;
+   GL_HISTOGRAM_WIDTH_EXT                            = $8026;
+   GL_HISTOGRAM_FORMAT_EXT                           = $8027;
+   GL_HISTOGRAM_RED_SIZE_EXT                         = $8028;
+   GL_HISTOGRAM_GREEN_SIZE_EXT                       = $8029;
+   GL_HISTOGRAM_BLUE_SIZE_EXT                        = $802A;
+   GL_HISTOGRAM_ALPHA_SIZE_EXT                       = $802B;
+   GL_HISTOGRAM_LUMINANCE_SIZE_EXT                   = $802C;
+   GL_HISTOGRAM_SINK_EXT                             = $802D;
+   GL_MINMAX_EXT                                     = $802E;
+   GL_MINMAX_FORMAT_EXT                              = $802F;
+   GL_MINMAX_SINK_EXT                                = $8030;
 
-   // SGI_color_matrix
+   // EXT_convolution (#12)
+   GL_CONVOLUTION_1D_EXT                             = $8010;
+   GL_CONVOLUTION_2D_EXT                             = $8011;
+   GL_SEPARABLE_2D_EXT                               = $8012;
+   GL_CONVOLUTION_BORDER_MODE_EXT                    = $8013;
+   GL_CONVOLUTION_FILTER_SCALE_EXT                   = $8014;
+   GL_CONVOLUTION_FILTER_BIAS_EXT                    = $8015;
+   GL_REDUCE_EXT                                     = $8016;
+   GL_CONVOLUTION_FORMAT_EXT                         = $8017;
+   GL_CONVOLUTION_WIDTH_EXT                          = $8018;
+   GL_CONVOLUTION_HEIGHT_EXT                         = $8019;
+   GL_MAX_CONVOLUTION_WIDTH_EXT                      = $801A;
+   GL_MAX_CONVOLUTION_HEIGHT_EXT                     = $801B;
+   GL_POST_CONVOLUTION_RED_SCALE_EXT                 = $801C;
+   GL_POST_CONVOLUTION_GREEN_SCALE_EXT               = $801D;
+   GL_POST_CONVOLUTION_BLUE_SCALE_EXT                = $801E;
+   GL_POST_CONVOLUTION_ALPHA_SCALE_EXT               = $801F;
+   GL_POST_CONVOLUTION_RED_BIAS_EXT                  = $8020;
+   GL_POST_CONVOLUTION_GREEN_BIAS_EXT                = $8021;
+   GL_POST_CONVOLUTION_BLUE_BIAS_EXT                 = $8022;
+   GL_POST_CONVOLUTION_ALPHA_BIAS_EXT                = $8023;
+
+   // SGI_color_matrix (#13)
    GL_COLOR_MATRIX_SGI                               = $80B1;
    GL_COLOR_MATRIX_STACK_DEPTH_SGI                   = $80B2;
    GL_MAX_COLOR_MATRIX_STACK_DEPTH_SGI               = $80B3;
@@ -1989,98 +1953,19 @@ const
    GL_POST_COLOR_MATRIX_BLUE_BIAS_SGI                = $80BA;
    GL_POST_COLOR_MATRIX_ALPHA_BIAS_SGI               = $80BB;
 
-   // EXT_rescale_normal
-   GL_RESCALE_NORMAL_EXT                             = $803A;
+   // EXT_texture_object (#20)
+   GL_TEXTURE_PRIORITY_EXT                           = $8066;
+   GL_TEXTURE_RESIDENT_EXT                           = $8067;
+   GL_TEXTURE_1D_BINDING_EXT                         = $8068;
+   GL_TEXTURE_2D_BINDING_EXT                         = $8069;
+   GL_TEXTURE_3D_BINDING_EXT                         = $806A;
 
-   // EXT_shared_texture_palette
-   GL_SHARED_TEXTURE_PALETTE_EXT                     = $81FB;
-
-   // EXT_nurbs_tessellator
-   GLU_NURBS_MODE_EXT                                = 100160;
-   GLU_NURBS_TESSELLATOR_EXT                         = 100161;
-   GLU_NURBS_RENDERER_EXT                            = 100162;
-   GLU_NURBS_BEGIN_EXT                               = 100164;
-   GLU_NURBS_VERTEX_EXT                              = 100165;
-   GLU_NURBS_NORMAL_EXT                              = 100166;
-   GLU_NURBS_COLOR_EXT                               = 100167;
-   GLU_NURBS_TEX_COORD_EXT                           = 100168;
-   GLU_NURBS_END_EXT                                 = 100169;
-   GLU_NURBS_BEGIN_DATA_EXT                          = 100170;
-   GLU_NURBS_VERTEX_DATA_EXT                         = 100171;
-   GLU_NURBS_NORMAL_DATA_EXT                         = 100172;
-   GLU_NURBS_COLOR_DATA_EXT                          = 100173;
-   GLU_NURBS_TEX_COORD_DATA_EXT                      = 100174;
-   GLU_NURBS_END_DATA_EXT                            = 100175;
-
-   // EXT_object_space_tess
-   GLU_OBJECT_PARAMETRIC_ERROR_EXT                   = 100208;
-   GLU_OBJECT_PATH_LENGTH_EXT                        = 100209;
-
-   // EXT_compiled_vertex_array
-   GL_ARRAY_ELEMENT_LOCK_FIRST_EXT                   = $81A8;
-   GL_ARRAY_ELEMENT_LOCK_COUNT_EXT                   = $81A9;
-
-   // ARB_multitexture
-
-   // EXT_stencil_wrap
-   GL_INCR_WRAP_EXT                                  = $8507;
-   GL_DECR_WRAP_EXT                                  = $8508;
-
-   // EXT_stencil_two_side
-   GL_STENCIL_TEST_TWO_SIDE_EXT                      = $8910;
-   GL_ACTIVE_STENCIL_FACE_EXT                        = $8911;
-
-   // NV_texgen_reflection
-   GL_NORMAL_MAP_NV                                  = $8511;
-   GL_REFLECTION_MAP_NV                              = $8512;
-
-   // NV_fence
-   GL_ALL_COMPLETED_NV                               = $84F2;
-   GL_FENCE_STATUS_NV                                = $84F3;
-   GL_FENCE_CONDITION_NV                             = $84F4;
-
-   // NV_occlusion_query
-   GL_PIXEL_COUNTER_BITS_NV                          = $8864;
-   GL_CURRENT_OCCLUSION_QUERY_ID_NV                  = $8865;
-   GL_PIXEL_COUNT_NV                                 = $8866;
-   GL_PIXEL_COUNT_AVAILABLE_NV                       = $8867;
-
-   // NV_texture_rectangle
-   GL_TEXTURE_RECTANGLE_NV                           = $84F5;
-   GL_TEXTURE_BINDING_RECTANGLE_NV                   = $84F6;
-   GL_PROXY_TEXTURE_RECTANGLE_NV                     = $84F7;
-   GL_MAX_RECTANGLE_TEXTURE_SIZE_NV                  = $84F8;
-
-   // EXT_texture_env_combine
-   GL_COMBINE_EXT                                    = $8570;
-   GL_COMBINE_RGB_EXT                                = $8571;
-   GL_COMBINE_ALPHA_EXT                              = $8572;
-   GL_RGB_SCALE_EXT                                  = $8573;
-   GL_ADD_SIGNED_EXT                                 = $8574;
-   GL_INTERPOLATE_EXT                                = $8575;
-   GL_CONSTANT_EXT                                   = $8576;
-   GL_PRIMARY_COLOR_EXT                              = $8577;
-   GL_PREVIOUS_EXT                                   = $8578;
-   GL_SOURCE0_RGB_EXT                                = $8580;
-   GL_SOURCE1_RGB_EXT                                = $8581;
-   GL_SOURCE2_RGB_EXT                                = $8582;
-   GL_SOURCE0_ALPHA_EXT                              = $8588;
-   GL_SOURCE1_ALPHA_EXT                              = $8589;
-   GL_SOURCE2_ALPHA_EXT                              = $858A;
-   GL_OPERAND0_RGB_EXT                               = $8590;
-   GL_OPERAND1_RGB_EXT                               = $8591;
-   GL_OPERAND2_RGB_EXT                               = $8592;
-   GL_OPERAND0_ALPHA_EXT                             = $8598;
-   GL_OPERAND1_ALPHA_EXT                             = $8599;
-   GL_OPERAND2_ALPHA_EXT                             = $859A;
-
-   // NV_texture_env_combine4
-   GL_COMBINE4_NV                                    = $8503;
-   GL_SOURCE3_RGB_NV                                 = $8583;
-   GL_SOURCE3_ALPHA_NV                               = $858B;
-   GL_OPERAND3_RGB_NV                                = $8593;
-   GL_OPERAND3_ALPHA_NV                              = $859B;
-
+   // EXT_packed_pixels (#23)
+   GL_UNSIGNED_BYTE_3_3_2_EXT                        = $8032;
+   GL_UNSIGNED_SHORT_4_4_4_4_EXT                     = $8033;
+   GL_UNSIGNED_SHORT_5_5_5_1_EXT                     = $8034;
+   GL_UNSIGNED_INT_8_8_8_8_EXT                       = $8035;
+   GL_UNSIGNED_INT_10_10_10_2_EXT                    = $8036;
 
    // GL_SGIS_texture_lod (#24)
    GL_TEXTURE_MIN_LOD_SGIS                          = $813A;
@@ -2106,6 +1991,9 @@ const
    GL_SAMPLE_MASK_INVERT_SGIS                       = $80AB;
    GL_SAMPLE_PATTERN_SGIS                           = $80AC;
 
+   // GL_EXT_rescale_normal (#27)
+   GL_RESCALE_NORMAL_EXT                             = $803A;
+   
    // GL_SGIS_generate_mipmap (#32)
    GL_GENERATE_MIPMAP_SGIS                          = $8191;
    GL_GENERATE_MIPMAP_HINT_SGIS                     = $8192;
@@ -2122,11 +2010,57 @@ const
    // GL_SGIS_texture_border_clamp (#36)
    GL_CLAMP_TO_BORDER_SGIS                          = $812D;
 
+   // EXT_blend_minmax (#37)
+   GL_FUNC_ADD_EXT                                   = $8006;
+   GL_MIN_EXT                                        = $8007;
+   GL_MAX_EXT                                        = $8008;
+   GL_BLEND_EQUATION_EXT                             = $8009;
+
+   // EXT_blend_subtract (#38)
+   GL_FUNC_SUBTRACT_EXT                              = $800A;
+   GL_FUNC_REVERSE_SUBTRACT_EXT                      = $800B;
+
+   // GL_EXT_object_space_tess (#75)
+   GLU_OBJECT_PARAMETRIC_ERROR_EXT                   = 100208;
+   GLU_OBJECT_PATH_LENGTH_EXT                        = 100209;
+
+   // GL_EXT_paletted_texture (#78)
+   GL_COLOR_INDEX1_EXT                               = $80E2;
+   GL_COLOR_INDEX2_EXT                               = $80E3;
+   GL_COLOR_INDEX4_EXT                               = $80E4;
+   GL_COLOR_INDEX8_EXT                               = $80E5;
+   GL_COLOR_INDEX12_EXT                              = $80E6;
+   GL_COLOR_INDEX16_EXT                              = $80E7;
+
    // GL_EXT_paletted_texture (#78)
    GL_TEXTURE_INDEX_SIZE_EXT                        = $80ED;
 
+   // GL_EXT_clip_volume_hint (#79)
+   GL_CLIP_VOLUME_CLIPPING_HINT_EXT                 = $80F0;
+
    // GL_SGIX_shadow_ambient (#90)
    GL_SHADOW_AMBIENT_SGIX                           = $80BF;
+
+   // EXT_compiled_vertex_array (#97)
+   GL_ARRAY_ELEMENT_LOCK_FIRST_EXT                   = $81A8;
+   GL_ARRAY_ELEMENT_LOCK_COUNT_EXT                   = $81A9;
+
+   // EXT_nurbs_tessellator (#100)
+   GLU_NURBS_MODE_EXT                                = 100160;
+   GLU_NURBS_TESSELLATOR_EXT                         = 100161;
+   GLU_NURBS_RENDERER_EXT                            = 100162;
+   GLU_NURBS_BEGIN_EXT                               = 100164;
+   GLU_NURBS_VERTEX_EXT                              = 100165;
+   GLU_NURBS_NORMAL_EXT                              = 100166;
+   GLU_NURBS_COLOR_EXT                               = 100167;
+   GLU_NURBS_TEX_COORD_EXT                           = 100168;
+   GLU_NURBS_END_EXT                                 = 100169;
+   GLU_NURBS_BEGIN_DATA_EXT                          = 100170;
+   GLU_NURBS_VERTEX_DATA_EXT                         = 100171;
+   GLU_NURBS_NORMAL_DATA_EXT                         = 100172;
+   GLU_NURBS_COLOR_DATA_EXT                          = 100173;
+   GLU_NURBS_TEX_COORD_DATA_EXT                      = 100174;
+   GLU_NURBS_END_DATA_EXT                            = 100175;
 
    // GL_IBM_rasterpos_clip (#110)
    GL_RASTER_POSITION_UNCLIPPED_IBM                 = $19262;
@@ -2135,10 +2069,17 @@ const
    GL_MAX_ELEMENTS_VERTICES_EXT                     = $80E8;
    GL_MAX_ELEMENTS_INDICES_EXT                      = $80E9;
 
+   // EXT_bgra (#129)
+   GL_BGR_EXT                                        = $80E0;
+   GL_BGRA_EXT                                       = $80E1;
+
    // GL_HP_occlusion_test (#137)
    GL_OCCLUSION_TEST_HP                             = $8165;
    GL_OCCLUSION_TEST_RESULT_HP                      = $8166;
 
+   // GL_EXT_shared_texture_palette (#141)
+   GL_SHARED_TEXTURE_PALETTE_EXT                     = $81FB;
+   
    // GL_EXT_separate_specular_color (#144)
    GL_LIGHT_MODEL_COLOR_CONTROL_EXT                 = $81F8;
    GL_SINGLE_COLOR_EXT                              = $81F9;
@@ -2162,6 +2103,29 @@ const
    GL_FOG_COORDINATE_ARRAY_STRIDE_EXT               = $8455;
    GL_FOG_COORDINATE_ARRAY_POINTER_EXT              = $8456;
    GL_FOG_COORDINATE_ARRAY_EXT                      = $8457;
+
+   // GL_EXT_texture_env_combine (#158)
+   GL_COMBINE_EXT                                    = $8570;
+   GL_COMBINE_RGB_EXT                                = $8571;
+   GL_COMBINE_ALPHA_EXT                              = $8572;
+   GL_RGB_SCALE_EXT                                  = $8573;
+   GL_ADD_SIGNED_EXT                                 = $8574;
+   GL_INTERPOLATE_EXT                                = $8575;
+   GL_CONSTANT_EXT                                   = $8576;
+   GL_PRIMARY_COLOR_EXT                              = $8577;
+   GL_PREVIOUS_EXT                                   = $8578;
+   GL_SOURCE0_RGB_EXT                                = $8580;
+   GL_SOURCE1_RGB_EXT                                = $8581;
+   GL_SOURCE2_RGB_EXT                                = $8582;
+   GL_SOURCE0_ALPHA_EXT                              = $8588;
+   GL_SOURCE1_ALPHA_EXT                              = $8589;
+   GL_SOURCE2_ALPHA_EXT                              = $858A;
+   GL_OPERAND0_RGB_EXT                               = $8590;
+   GL_OPERAND1_RGB_EXT                               = $8591;
+   GL_OPERAND2_RGB_EXT                               = $8592;
+   GL_OPERAND0_ALPHA_EXT                             = $8598;
+   GL_OPERAND1_ALPHA_EXT                             = $8599;
+   GL_OPERAND2_ALPHA_EXT                             = $859A;
 
    // GL_EXT_texture_env_combine (#158)
    GL_SOURCE3_RGB_EXT                               = $8583;
@@ -2191,7 +2155,6 @@ const
    GL_BLEND_DST_ALPHA_EXT                           = $80CA;
    GL_BLEND_SRC_ALPHA_EXT                           = $80CB;
 
-   // GL_EXT_texture_cube_map
    // DanB : "GL_EXT_texture_cube_map (can't find this extension in OpenGL registry so removed)"
    // Mrqzzz : The following block was commented by DanB
    // But the constants are currently used in dws2openGL1x.pas, so i re-add them. If they
@@ -2208,6 +2171,16 @@ const
    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_EXT               = $851A;
    GL_PROXY_TEXTURE_CUBE_MAP_EXT                    = $851B;
    GL_MAX_CUBE_MAP_TEXTURE_SIZE_EXT                 = $851C;
+
+
+
+   // GL_EXT_stencil_wrap (#176)
+   GL_INCR_WRAP_EXT                                  = $8507;
+   GL_DECR_WRAP_EXT                                  = $8508;
+
+   // GL_NV_texgen_reflection (#179)
+   GL_NORMAL_MAP_NV                                  = $8511;
+   GL_REFLECTION_MAP_NV                              = $8512;
 
    // GL_EXT_texture_lod_bias (#186)
    GL_MAX_TEXTURE_LOD_BIAS_EXT                      = $84FD;
@@ -2228,9 +2201,6 @@ const
    GL_VERTEX_ARRAY_RANGE_VALID_NV                   = $851F;
    GL_MAX_VERTEX_ARRAY_RANGE_ELEMENT_NV             = $8520;
    GL_VERTEX_ARRAY_RANGE_POINTER_NV                 = $8521;
-
-   // GL_NV_vertex_array_range2
-   GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV          = $8533;
 
    // GL_NV_register_combiners (#191)
    GL_REGISTER_COMBINERS_NV                         = $8522;
@@ -2290,6 +2260,13 @@ const
    GL_EYE_RADIAL_NV                                 = $855B;
    GL_EYE_PLANE_ABSOLUTE_NV                         = $855C;
 
+   // GL_NV_texture_env_combine4 (#195)
+   GL_COMBINE4_NV                                    = $8503;
+   GL_SOURCE3_RGB_NV                                 = $8583;
+   GL_SOURCE3_ALPHA_NV                               = $858B;
+   GL_OPERAND3_RGB_NV                                = $8593;
+   GL_OPERAND3_ALPHA_NV                              = $859B;
+
    // GL_EXT_texture_compression_s3tc (#198)
    GL_COMPRESSED_RGB_S3TC_DXT1_EXT                  = $83F0;
    GL_COMPRESSED_RGBA_S3TC_DXT1_EXT                 = $83F1;
@@ -2324,11 +2301,26 @@ const
    GL_SAMPLE_MASK_INVERT_EXT                        = $80AB;
    GL_SAMPLE_PATTERN_EXT                            = $80AC;
 
-   // GL_EXT_clip_volume_hint
-   GL_CLIP_VOLUME_CLIPPING_HINT_EXT                 = $80F0;
-
-   // GL_SGIS_texture_color_mask
+   // GL_SGIS_texture_color_mask (#214)
    GL_TEXTURE_COLOR_WRITEMASK_SGIS                  = $81EF;
+
+   // GL_EXT_texture_env_dot3 (#220)
+
+   // GL_ATI_texture_mirror_once (#221)
+
+   // GL_NV_fence (#222)
+   GL_ALL_COMPLETED_NV                               = $84F2;
+   GL_FENCE_STATUS_NV                                = $84F3;
+   GL_FENCE_CONDITION_NV                             = $84F4;
+
+   // GL_NV_texture_rectangle (#229)
+   GL_TEXTURE_RECTANGLE_NV                           = $84F5;
+   GL_TEXTURE_BINDING_RECTANGLE_NV                   = $84F6;
+   GL_PROXY_TEXTURE_RECTANGLE_NV                     = $84F7;
+   GL_MAX_RECTANGLE_TEXTURE_SIZE_NV                  = $84F8;
+   
+   // GL_NV_vertex_array_range2 (#232)
+   GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV          = $8533;
 
    // GL_NV_vertex_program (#233)
    GL_VERTEX_PROGRAM_NV                             = $8620;
@@ -2416,36 +2408,38 @@ const
    GL_MAP2_VERTEX_ATTRIB15_4_NV                     = $867F;
 
    // GL_NV_multisample_filter_hint (#259)
-   // NV_multisample_filter_hint
    GL_MULTISAMPLE_FILTER_HINT_NV                    = $8534;
 
-   // WGL_NV_float_buffer
-   WGL_FLOAT_COMPONENTS_NV                          = $20B0;
-   WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_R_NV         = $20B1;
-   WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_RG_NV        = $20B2;
-   WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_RGB_NV       = $20B3;
-   WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_RGBA_NV      = $20B4;
-   WGL_TEXTURE_FLOAT_R_NV                           = $20B5;
-   WGL_TEXTURE_FLOAT_RG_NV                          = $20B6;
-   WGL_TEXTURE_FLOAT_RGB_NV                         = $20B7;
-   WGL_TEXTURE_FLOAT_RGBA_NV                        = $20B8;
+   // GL_NV_occlusion_query (#261)
+   GL_PIXEL_COUNTER_BITS_NV                          = $8864;
+   GL_CURRENT_OCCLUSION_QUERY_ID_NV                  = $8865;
+   GL_PIXEL_COUNT_NV                                 = $8866;
+   GL_PIXEL_COUNT_AVAILABLE_NV                       = $8867;
 
-   // GL_NV_float_buffer
-   GL_FLOAT_R_NV                                    = $8880;
-   GL_FLOAT_RG_NV                                   = $8881;
-   GL_FLOAT_RGB_NV                                  = $8882;
-   GL_FLOAT_RGBA_NV                                 = $8883;
-   GL_FLOAT_R16_NV                                  = $8884;
-   GL_FLOAT_R32_NV                                  = $8885;
-   GL_FLOAT_RG16_NV                                 = $8886;
-   GL_FLOAT_RG32_NV                                 = $8887;
-   GL_FLOAT_RGB16_NV                                = $8888;
-   GL_FLOAT_RGB32_NV                                = $8889;
-   GL_FLOAT_RGBA16_NV                               = $888A;
-   GL_FLOAT_RGBA32_NV                               = $888B;
-   GL_TEXTURE_FLOAT_COMPONENTS_NV                   = $888C;
-   GL_FLOAT_CLEAR_COLOR_VALUE_NV                    = $888D;
-   GL_FLOAT_RGBA_MODE_NV                            = $888E;
+   // GL_NV_point_sprite (#262)
+
+   // GL_EXT_stencil_two_side (#268)
+   GL_STENCIL_TEST_TWO_SIDE_EXT                      = $8910;
+   GL_ACTIVE_STENCIL_FACE_EXT                        = $8911;
+
+   // GL_ATI_draw_buffers (#277)
+   GL_MAX_DRAW_BUFFERS_ATI                          = $8824;
+   GL_DRAW_BUFFER0_ATI                              = $8825;
+   GL_DRAW_BUFFER1_ATI                              = $8826;
+   GL_DRAW_BUFFER2_ATI                              = $8827;
+   GL_DRAW_BUFFER3_ATI                              = $8828;
+   GL_DRAW_BUFFER4_ATI                              = $8829;
+   GL_DRAW_BUFFER5_ATI                              = $882A;
+   GL_DRAW_BUFFER6_ATI                              = $882B;
+   GL_DRAW_BUFFER7_ATI                              = $882C;
+   GL_DRAW_BUFFER8_ATI                              = $882D;
+   GL_DRAW_BUFFER9_ATI                              = $882E;
+   GL_DRAW_BUFFER10_ATI                             = $882F;
+   GL_DRAW_BUFFER11_ATI                             = $8830;
+   GL_DRAW_BUFFER12_ATI                             = $8831;
+   GL_DRAW_BUFFER13_ATI                             = $8832;
+   GL_DRAW_BUFFER14_ATI                             = $8833;
+   GL_DRAW_BUFFER15_ATI                             = $8834;
 
    // WGL_ATI_pixel_format_float (#278)
    WGL_TYPE_RGBA_FLOAT_ATI                          = $21A0;
@@ -2466,43 +2460,41 @@ const
    GL_LUMINANCE_FLOAT16_ATI                         = $881E;
    GL_LUMINANCE_ALPHA_FLOAT16_ATI                   = $881F;
 
-   // GL_ATI_draw_buffers
-   GL_MAX_DRAW_BUFFERS_ATI                          = $8824;
-   GL_DRAW_BUFFER0_ATI                              = $8825;
-   GL_DRAW_BUFFER1_ATI                              = $8826;
-   GL_DRAW_BUFFER2_ATI                              = $8827;
-   GL_DRAW_BUFFER3_ATI                              = $8828;
-   GL_DRAW_BUFFER4_ATI                              = $8829;
-   GL_DRAW_BUFFER5_ATI                              = $882A;
-   GL_DRAW_BUFFER6_ATI                              = $882B;
-   GL_DRAW_BUFFER7_ATI                              = $882C;
-   GL_DRAW_BUFFER8_ATI                              = $882D;
-   GL_DRAW_BUFFER9_ATI                              = $882E;
-   GL_DRAW_BUFFER10_ATI                             = $882F;
-   GL_DRAW_BUFFER11_ATI                             = $8830;
-   GL_DRAW_BUFFER12_ATI                             = $8831;
-   GL_DRAW_BUFFER13_ATI                             = $8832;
-   GL_DRAW_BUFFER14_ATI                             = $8833;
-   GL_DRAW_BUFFER15_ATI                             = $8834;
+   // GL_NV_float_buffer (#281)
+   // WGL_NV_float_buffer
+   // GLX_NV_float_buffer
+   GL_FLOAT_R_NV                                    = $8880;
+   GL_FLOAT_RG_NV                                   = $8881;
+   GL_FLOAT_RGB_NV                                  = $8882;
+   GL_FLOAT_RGBA_NV                                 = $8883;
+   GL_FLOAT_R16_NV                                  = $8884;
+   GL_FLOAT_R32_NV                                  = $8885;
+   GL_FLOAT_RG16_NV                                 = $8886;
+   GL_FLOAT_RG32_NV                                 = $8887;
+   GL_FLOAT_RGB16_NV                                = $8888;
+   GL_FLOAT_RGB32_NV                                = $8889;
+   GL_FLOAT_RGBA16_NV                               = $888A;
+   GL_FLOAT_RGBA32_NV                               = $888B;
+   GL_TEXTURE_FLOAT_COMPONENTS_NV                   = $888C;
+   GL_FLOAT_CLEAR_COLOR_VALUE_NV                    = $888D;
+   GL_FLOAT_RGBA_MODE_NV                            = $888E;
+   WGL_FLOAT_COMPONENTS_NV                          = $20B0;
+   WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_R_NV         = $20B1;
+   WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_RG_NV        = $20B2;
+   WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_RGB_NV       = $20B3;
+   WGL_BIND_TO_TEXTURE_RECTANGLE_FLOAT_RGBA_NV      = $20B4;
+   WGL_TEXTURE_FLOAT_R_NV                           = $20B5;
+   WGL_TEXTURE_FLOAT_RG_NV                          = $20B6;
+   WGL_TEXTURE_FLOAT_RGB_NV                         = $20B7;
+   WGL_TEXTURE_FLOAT_RGBA_NV                        = $20B8;
 
-   // GL_ATI_draw_buffers became obsolete with OpenGL 2.0
-   GL_MAX_DRAW_BUFFERS                          = $8824;
-   GL_DRAW_BUFFER0                              = $8825;
-   GL_DRAW_BUFFER1                              = $8826;
-   GL_DRAW_BUFFER2                              = $8827;
-   GL_DRAW_BUFFER3                              = $8828;
-   GL_DRAW_BUFFER4                              = $8829;
-   GL_DRAW_BUFFER5                              = $882A;
-   GL_DRAW_BUFFER6                              = $882B;
-   GL_DRAW_BUFFER7                              = $882C;
-   GL_DRAW_BUFFER8                              = $882D;
-   GL_DRAW_BUFFER9                              = $882E;
-   GL_DRAW_BUFFER10                             = $882F;
-   GL_DRAW_BUFFER11                             = $8830;
-   GL_DRAW_BUFFER12                             = $8831;
-   GL_DRAW_BUFFER13                             = $8832;
-   GL_DRAW_BUFFER14                             = $8833;
-   GL_DRAW_BUFFER15                             = $8834;
+   // GL_EXT_depth_bounds_test (#297)
+
+   // GL_EXT_texture_mirror_clamp (#298)
+
+   // GL_EXT_blend_equation_separate (EXT #299)
+
+   // GL_EXT_pixel_buffer_object (EXT #302)
 
    // GL_EXT_framebuffer_object (#310)
    GL_FRAMEBUFFER_EXT                               = $8D40;
@@ -2511,7 +2503,7 @@ const
    GL_STENCIL_INDEX4_EXT                            = $8D47;
    GL_STENCIL_INDEX8_EXT                            = $8D48;
    GL_STENCIL_INDEX16_EXT                           = $8D49;
-   GL_DEPTH24_STENCIL8_EXT							= $88F0;
+   GL_DEPTH24_STENCIL8_EXT                          = $88F0;
    GL_RENDERBUFFER_WIDTH_EXT                        = $8D42;
    GL_RENDERBUFFER_HEIGHT_EXT                       = $8D43;
    GL_RENDERBUFFER_INTERNAL_FORMAT_EXT              = $8D44;
@@ -2558,6 +2550,69 @@ const
    GL_MAX_COLOR_ATTACHMENTS_EXT                     = $8CDF;
    GL_MAX_RENDERBUFFER_SIZE_EXT                     = $84E8;
    GL_INVALID_FRAMEBUFFER_OPERATION_EXT             = $0506;
+
+   // GL_EXT_packed_depth_stencil (#312)
+
+   // GL_EXT_stencil_clear_tag (#314)
+
+   // GL_EXT_texture_sRGB (#315)
+
+   // GL_EXT_framebuffer_blit (#316)
+
+   // GL_EXT_framebuffer_multisample (#317)
+
+   // GL_EXT_timer_query (#319)
+
+   // GL_EXT_gpu_program_parameters (#320)
+   // (no new tokens)
+
+   // GL_EXT_geometry_shader4 (#324)
+
+   // GL_EXT_gpu_shader4 (#326)
+
+   // GL_EXT_packed_float (#328)
+   // WGL_EXT_pixel_format_packed_float
+   // GLX_EXT_fbconfig_packed_float
+
+   // GL_EXT_texture_array (#329)
+
+   // GL_EXT_texture_buffer_object (#330)
+
+   // GL_EXT_texture_compression_latc (#331)
+
+   // GL_EXT_texture_compression_rgtc (#332)
+
+   // GL_EXT_texture_shared_exponent (#333)
+
+   // GL_EXT_framebuffer_sRGB (#337)
+   // GLX_EXT_framebuffer_sRGB
+   // WGL_EXT_framebuffer_sRGB
+
+   // GL_EXT_bindable_uniform (#342)
+
+   // GL_EXT_texture_integer (#343)
+
+   {.$endregion}
+
+
+   // GL_ATI_draw_buffers became obsolete with OpenGL 2.0
+   GL_MAX_DRAW_BUFFERS                          = $8824;
+   GL_DRAW_BUFFER0                              = $8825;
+   GL_DRAW_BUFFER1                              = $8826;
+   GL_DRAW_BUFFER2                              = $8827;
+   GL_DRAW_BUFFER3                              = $8828;
+   GL_DRAW_BUFFER4                              = $8829;
+   GL_DRAW_BUFFER5                              = $882A;
+   GL_DRAW_BUFFER6                              = $882B;
+   GL_DRAW_BUFFER7                              = $882C;
+   GL_DRAW_BUFFER8                              = $882D;
+   GL_DRAW_BUFFER9                              = $882E;
+   GL_DRAW_BUFFER10                             = $882F;
+   GL_DRAW_BUFFER11                             = $8830;
+   GL_DRAW_BUFFER12                             = $8831;
+   GL_DRAW_BUFFER13                             = $8832;
+   GL_DRAW_BUFFER14                             = $8833;
+   GL_DRAW_BUFFER15                             = $8834;
 
 
    
@@ -2789,6 +2844,10 @@ const
    GLU_ERROR                                        = GLU_TESS_ERROR;
    GLU_EDGE_FLAG                                    = GLU_TESS_EDGE_FLAG;
 
+   {.$endregion}
+
+   {.$region 'OpenGL Extension to the X Window System (GLX) generic constants'}
+
    GLX_VERSION_1_1                                  = 1;
    GLX_VERSION_1_2                                  = 1;
    GLX_VERSION_1_3                                  = 1;
@@ -2900,8 +2959,11 @@ const
    GLX_3DFX_WINDOW_MODE_MESA                        = $1;
    GLX_3DFX_FULLSCREEN_MODE_MESA                    = $2;
 
+   {.$endregion}
 
 type
+
+   {.$region 'OpenGL Utility (GLU) types'}
    // GLU types
    TGLUNurbs = record end;
    TGLUQuadric = record end;
@@ -2943,7 +3005,9 @@ type
    // GLUNurbsCallback
    TGLUNurbsErrorProc = procedure(ErrorCode: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL functions and procedures
+   {.$endregion}
+
+   {.$region 'OpenGL v1.1 core functions and procedures'}
    procedure glAccum(op: TGLuint; value: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glAlphaFunc(func: TGLEnum; ref: TGLclampf); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    function  glAreTexturesResident(n: TGLsizei; Textures: PGLuint; residences: PGLboolean): TGLboolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
@@ -3297,7 +3361,9 @@ type
    procedure glVertexPointer(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glViewport(x, y: TGLint; width, height: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
 
-   // GL utility functions and procedures
+   {.$endregion}
+
+   {.$region 'OpenGL utility (GLU) functions and procedures'}
    function  gluErrorString(errCode: TGLEnum): PChar; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
    function  gluGetString(name: TGLEnum): PChar; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
    procedure gluOrtho2D(left, right, bottom, top: TGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
@@ -3357,7 +3423,9 @@ type
    procedure gluNextContour(tess: PGLUtesselator; atype: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
    procedure gluEndPolygon(tess: PGLUtesselator); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
 
-   // window support functions
+   {.$endregion}
+
+   {.$region 'Windows OpenGL (WGL) support functions'}
    {$IFDEF MSWINDOWS}
    function wglGetProcAddress(ProcName: PChar): Pointer; stdcall; external opengl32;
    function wglCopyContext(p1: HGLRC; p2: HGLRC; p3: Cardinal): BOOL; stdcall; external opengl32;
@@ -3381,8 +3449,9 @@ type
    function wglUseFontBitmaps(DC: HDC; p2, p3, p4: DWORD): BOOL; stdcall; external opengl32 name 'wglUseFontBitmapsA';
    function wglUseFontOutlines(p1: HDC; p2, p3, p4: DWORD; p5, p6: Single; p7: Integer; p8: PGlyphMetricsFloat): BOOL; stdcall; external opengl32 name 'wglUseFontOutlinesA';
    {$ENDIF}
+   {.$endregion}
 
-   // UNIX support functions
+   {.$region 'OpenGL Extension to the X Window System (GLX) support functions'}
    {$IFDEF UNIX}
    function glXChooseVisual(dpy: PDisplay; screen: TGLint; attribList: PGLint): PXVisualInfo; cdecl; external opengl32;
    function glXCreateContext(dpy: PDisplay; vis: PXVisualInfo; shareList: GLXContext; direct: TGLboolean): GLXContext; cdecl; external opengl32;
@@ -3439,7 +3508,8 @@ type
    function glXCreateGLXPixmapMESA(dpy: PDisplay; visual: PXVisualInfo; pixmap: Pixmap; cmap: Colormap): GLXPixmap; cdecl; external opengl32;
    function glXReleaseBuffersMESA(dpy: PDisplay; d: GLXDrawable): TGLboolean; cdecl; external opengl32;
    function glXSet3DfxModeMESA(mode: TGLint): TGLboolean; cdecl; external opengl32;
-{$ENDIF}
+   {$ENDIF}
+   {.$endregion}
 
 {$IFDEF MULTITHREADOPENGL}
 threadvar
@@ -3447,7 +3517,19 @@ threadvar
 var
 {$ENDIF}
 
-   // GL 1.2
+   {.$region 'OpenGL extension function/procedure definitions'}
+
+   {.$region 'New core function/procedure definitions in OpenGL 1.2'}
+   //  ###########################################################
+   //           function and procedure definitions for
+   //            extensions integrated into OpenGL 1.2 Core
+   //  ###########################################################
+
+   // promoted to core v1.2 from GL_EXT_blend_color (#2)
+
+   // promoted to core v1.2 from GL_EXT_blend_minmax (#37)
+
+   // promoted to core v1.2 from GL_EXT_draw_range_elements (#112)
    glDrawRangeElements: procedure(mode: TGLEnum; Astart, Aend: TGLuint; count: TGLsizei; Atype: TGLEnum;
                                   indices: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glTexImage3D: procedure(target: TGLEnum; level: TGLint; internalformat: TGLEnum; width, height, depth: TGLsizei;
@@ -3687,7 +3769,7 @@ var
    glGetVertexAttribPointervARB: procedure(index: GLuint; pname: GLenum; _pointer: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glIsProgramARB: function(_program: GLuint): GLboolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_ARB_vertex_buffer_object
+   // GL_ARB_vertex_buffer_object (ARB #28)
    glBindBufferARB: procedure(target: GLenum; buffer: GLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glDeleteBuffersARB: procedure(n: GLsizei; const buffers: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGenBuffersARB: procedure(n: GLsizei; buffers: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -3741,7 +3823,7 @@ var
    glGetUniformivARB: procedure(programObj: GLhandleARB; location: GLint; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetShaderSourceARB: procedure(obj: GLhandleARB; maxLength: GLsizei; length: PGLsizei; source: PChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_ARB_vertex_shader
+   // GL_ARB_vertex_shader (ARB #31)
    glBindAttribLocationARB: procedure(programObj: GLhandleARB; index: GLuint; const name: PChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetActiveAttribARB: procedure(programObj: GLhandleARB; index: GLuint; maxLength: GLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetAttribLocationARB: function(programObj: GLhandleARB; const name: PChar): GLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -3756,7 +3838,7 @@ var
    glSampleMaskSGIS: procedure(Value: TGLclampf; invert: TGLboolean); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glSamplePatternSGIS: procedure(pattern: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_EXT_blend_minmax
+   // GL_EXT_blend_minmax (EXT #37)
    glBlendEquationEXT: procedure(mode: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // GL_EXT_paletted_texture
@@ -3775,7 +3857,6 @@ var
    glSecondaryColor3fvEXT: procedure(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glSecondaryColor3iEXT: procedure(red, green, blue: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glSecondaryColor3ivEXT: procedure(v: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-
    glSecondaryColor3sEXT: procedure(red, green, blue: TGLshort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glSecondaryColor3svEXT: procedure(v: PGLshort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glSecondaryColor3ubEXT: procedure(red, green, blue: TGLubyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -3786,27 +3867,27 @@ var
    glSecondaryColor3usvEXT: procedure(v: PGLushort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glSecondaryColorPointerEXT: procedure(Size: TGLint; Atype: TGLenum; stride: TGLsizei; p: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_EXT_multi_draw_arrays
+   // GL_EXT_multi_draw_arrays (EXT #148)
    glMultiDrawArraysEXT: procedure(mode: TGLenum; First: PGLint; Count: PGLsizei; primcount: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glMultiDrawElementsEXT: procedure(mode: TGLenum; Count: PGLsizei; AType: TGLenum; var indices; primcount: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_EXT_fog_coord
+   // GL_EXT_fog_coord (EXT #149)
    glFogCoordfEXT: procedure(coord: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glFogCoordfvEXT: procedure(coord: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glFogCoorddEXT: procedure(coord: TGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glFogCoorddvEXT: procedure(coord: PGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glFogCoordPointerEXT: procedure(AType: TGLenum; stride: TGLsizei; p: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_EXT_blend_func_separate
+   // GL_EXT_blend_func_separate (EXT #173)
    glBlendFuncSeparateEXT: procedure(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_NV_vertex_array_range
+   // GL_NV_vertex_array_range (EXT #190)
    glFlushVertexArrayRangeNV: procedure; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glVertexArrayRangeNV: procedure(Size: TGLsizei; p: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    wglAllocateMemoryNV: function(size: TGLsizei; readFrequency, writeFrequency, priority: Single): Pointer; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    wglFreeMemoryNV: procedure(ptr: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_NV_register_combiners
+   // GL_NV_register_combiners (EXT #191)
    glCombinerParameterfvNV: procedure(pname: TGLenum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glCombinerParameterfNV: procedure(pname: TGLenum; param: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glCombinerParameterivNV: procedure(pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -3842,14 +3923,14 @@ var
    // GL_MESA_resize_buffers
    glResizeBuffersMESA: procedure; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_3DFX_tbuffer
+   // GL_3DFX_tbuffer (EXT #208)
    glTbufferMask3DFX: procedure(mask: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_EXT_multisample
+   // GL_EXT_multisample (EXT #209)
    glSampleMaskEXT: procedure(Value: TGLclampf; invert: TGLboolean); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glSamplePatternEXT: procedure(pattern: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   // GL_SGIS_texture_color_mask
+   // GL_SGIS_texture_color_mask (EXT #214)
    glTextureColorMaskSGIS: procedure(red, green, blue, alpha: TGLboolean); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // GL_NV_vertex_program
@@ -4044,11 +4125,12 @@ function InitOpenGL : Boolean;
 function InitOpenGLFromLibrary(const GLName, GLUName : String) : Boolean;
 function IsOpenGLInitialized: Boolean;
 
+// compatibility routines
 procedure UnloadOpenGL;
 function LoadOpenGL : Boolean;
 function LoadOpenGLFromLibrary(GLName, GLUName: String): Boolean;
-//: True if OpenGL is loaded
 function IsOpenGLLoaded : Boolean;
+
 function IsMesaGL : Boolean;
 
 
@@ -4085,12 +4167,12 @@ const
 var
    GLHandle: HINST;
    GLUHandle: HINST;
-   
+
 function GLGetProcAddress(ProcName: PChar):Pointer;
 begin
   result := wglGetProcAddress(ProcName);
-end;   
-   
+end;
+
 {$ENDIF}
 
 // ************** UNIX specific ********************
@@ -4120,9 +4202,14 @@ end;
 procedure ReadExtensions;
    // To be used in an active rendering context only!
 begin
-   // Extensions integrated into 1.2 core
 
-   // GL 1.2
+   {.$region 'locate functions/procedures added with OpenGL 1.2'}
+
+   //  ###########################################################
+   //            locate functions and procedures for
+   //         extensions integrated into OpenGL 1.2 core
+   //  ###########################################################
+
    glDrawRangeElements := GLGetProcAddress('glDrawRangeElements');
    glTexImage3D := GLGetProcAddress('glTexImage3D');
 
@@ -4196,34 +4283,34 @@ begin
    glMultiTexCoord1dVARB := GLGetProcAddress('glMultiTexCoord1dVARB');
    glMultiTexCoord1fARB := GLGetProcAddress('glMultiTexCoord1fARB');
    glMultiTexCoord1fVARB := GLGetProcAddress('glMultiTexCoord1fVARB');
-   glMultiTexCoord1iARB := GLGetProcAddress('glMultiTexCoord1iARB'); 
-   glMultiTexCoord1iVARB := GLGetProcAddress('glMultiTexCoord1iVARB'); 
-   glMultiTexCoord1sARB := GLGetProcAddress('glMultiTexCoord1sARB'); 
-   glMultiTexCoord1sVARB := GLGetProcAddress('glMultiTexCoord1sVARB'); 
+   glMultiTexCoord1iARB := GLGetProcAddress('glMultiTexCoord1iARB');
+   glMultiTexCoord1iVARB := GLGetProcAddress('glMultiTexCoord1iVARB');
+   glMultiTexCoord1sARB := GLGetProcAddress('glMultiTexCoord1sARB');
+   glMultiTexCoord1sVARB := GLGetProcAddress('glMultiTexCoord1sVARB');
    glMultiTexCoord2dARB := GLGetProcAddress('glMultiTexCoord2dARB');
-   glMultiTexCoord2dvARB := GLGetProcAddress('glMultiTexCoord2dvARB'); 
+   glMultiTexCoord2dvARB := GLGetProcAddress('glMultiTexCoord2dvARB');
    glMultiTexCoord2fARB := GLGetProcAddress('glMultiTexCoord2fARB');
    glMultiTexCoord2fvARB := GLGetProcAddress('glMultiTexCoord2fvARB');
    glMultiTexCoord2iARB := GLGetProcAddress('glMultiTexCoord2iARB');
    glMultiTexCoord2ivARB := GLGetProcAddress('glMultiTexCoord2ivARB');
-   glMultiTexCoord2sARB := GLGetProcAddress('glMultiTexCoord2sARB'); 
-   glMultiTexCoord2svARB := GLGetProcAddress('glMultiTexCoord2svARB'); 
-   glMultiTexCoord3dARB := GLGetProcAddress('glMultiTexCoord3dARB'); 
-   glMultiTexCoord3dvARB := GLGetProcAddress('glMultiTexCoord3dvARB'); 
-   glMultiTexCoord3fARB := GLGetProcAddress('glMultiTexCoord3fARB'); 
-   glMultiTexCoord3fvARB := GLGetProcAddress('glMultiTexCoord3fvARB'); 
-   glMultiTexCoord3iARB := GLGetProcAddress('glMultiTexCoord3iARB'); 
-   glMultiTexCoord3ivARB := GLGetProcAddress('glMultiTexCoord3ivARB'); 
-   glMultiTexCoord3sARB := GLGetProcAddress('glMultiTexCoord3sARB'); 
+   glMultiTexCoord2sARB := GLGetProcAddress('glMultiTexCoord2sARB');
+   glMultiTexCoord2svARB := GLGetProcAddress('glMultiTexCoord2svARB');
+   glMultiTexCoord3dARB := GLGetProcAddress('glMultiTexCoord3dARB');
+   glMultiTexCoord3dvARB := GLGetProcAddress('glMultiTexCoord3dvARB');
+   glMultiTexCoord3fARB := GLGetProcAddress('glMultiTexCoord3fARB');
+   glMultiTexCoord3fvARB := GLGetProcAddress('glMultiTexCoord3fvARB');
+   glMultiTexCoord3iARB := GLGetProcAddress('glMultiTexCoord3iARB');
+   glMultiTexCoord3ivARB := GLGetProcAddress('glMultiTexCoord3ivARB');
+   glMultiTexCoord3sARB := GLGetProcAddress('glMultiTexCoord3sARB');
    glMultiTexCoord3svARB := GLGetProcAddress('glMultiTexCoord3svARB');
-   glMultiTexCoord4dARB := GLGetProcAddress('glMultiTexCoord4dARB'); 
+   glMultiTexCoord4dARB := GLGetProcAddress('glMultiTexCoord4dARB');
    glMultiTexCoord4dvARB := GLGetProcAddress('glMultiTexCoord4dvARB');
    glMultiTexCoord4fARB := GLGetProcAddress('glMultiTexCoord4fARB');
-   glMultiTexCoord4fvARB := GLGetProcAddress('glMultiTexCoord4fvARB'); 
+   glMultiTexCoord4fvARB := GLGetProcAddress('glMultiTexCoord4fvARB');
    glMultiTexCoord4iARB := GLGetProcAddress('glMultiTexCoord4iARB');
    glMultiTexCoord4ivARB := GLGetProcAddress('glMultiTexCoord4ivARB');
    glMultiTexCoord4sARB := GLGetProcAddress('glMultiTexCoord4sARB');
-   glMultiTexCoord4svARB := GLGetProcAddress('glMultiTexCoord4svARB'); 
+   glMultiTexCoord4svARB := GLGetProcAddress('glMultiTexCoord4svARB');
    glActiveTextureARB := GLGetProcAddress('glActiveTextureARB');
    glClientActiveTextureARB := GLGetProcAddress('glClientActiveTextureARB');
 
@@ -4239,9 +4326,9 @@ begin
 
    // GL_ARB_transpose_matrix
    glLoadTransposeMatrixfARB := GLGetProcAddress('glLoadTransposeMatrixfARB');
-   glLoadTransposeMatrixdARB := GLGetProcAddress('glLoadTransposeMatrixdARB'); 
-   glMultTransposeMatrixfARB := GLGetProcAddress('glMultTransposeMatrixfARB'); 
-   glMultTransposeMatrixdARB := GLGetProcAddress('glMultTransposeMatrixdARB'); 
+   glLoadTransposeMatrixdARB := GLGetProcAddress('glLoadTransposeMatrixdARB');
+   glMultTransposeMatrixfARB := GLGetProcAddress('glMultTransposeMatrixfARB');
+   glMultTransposeMatrixdARB := GLGetProcAddress('glMultTransposeMatrixdARB');
 
    glSampleCoverageARB := GLGetProcAddress('glSampleCoverageARB');
    glSamplePassARB := GLGetProcAddress('glSamplePassARB'); 
@@ -4319,7 +4406,7 @@ begin
    glGetVertexAttribPointervARB := GLGetProcAddress('glGetVertexAttribPointervARB');
    glIsProgramARB := GLGetProcAddress('glIsProgramARB');
 
-   // GL_ARB_vertex_buffer_object
+   // GL_ARB_vertex_buffer_object (#28)
    glBindBufferARB := GLGetProcAddress('glBindBufferARB');
    glDeleteBuffersARB := GLGetProcAddress('glDeleteBuffersARB');
    glGenBuffersARB := GLGetProcAddress('glGenBuffersARB');
@@ -4373,7 +4460,7 @@ begin
    glGetUniformivARB := GLGetProcAddress('glGetUniformivARB');
    glGetShaderSourceARB := GLGetProcAddress('glGetShaderSourceARB');
 
-   // GL_ARB_vertex_shader
+   // GL_ARB_vertex_shader (#31)
    glBindAttribLocationARB := GLGetProcAddress('glBindAttribLocationARB');
    glGetActiveAttribARB := GLGetProcAddress('glGetActiveAttribARB');
    glGetAttribLocationARB := GLGetProcAddress('glGetAttribLocationARB');
@@ -4388,7 +4475,7 @@ begin
    glSampleMaskSGIS := GLGetProcAddress('glSampleMaskSGIS');
    glSamplePatternSGIS := GLGetProcAddress('glSamplePatternSGIS');
 
-   // GL_EXT_blend_minmax
+   // GL_EXT_blend_minmax (#37)
    glBlendEquationEXT := GLGetProcAddress('glBlendEquationEXT');
 
    // GL_EXT_paletted_texture
@@ -4398,53 +4485,53 @@ begin
    // GL_EXT_draw_range_elements
    glDrawRangeElementsEXT := GLGetProcAddress('glDrawRangeElementsEXT');
 
-   // GL_EXT_secondary_color
+   // GL_EXT_secondary_color (#145)
    glSecondaryColor3bEXT := GLGetProcAddress('glSecondaryColor3bEXT');
    glSecondaryColor3bvEXT := GLGetProcAddress('glSecondaryColor3bvEXT');
-   glSecondaryColor3dEXT := GLGetProcAddress('glSecondaryColor3dEXT'); 
-   glSecondaryColor3dvEXT := GLGetProcAddress('glSecondaryColor3dvEXT'); 
-   glSecondaryColor3fEXT := GLGetProcAddress('glSecondaryColor3fEXT'); 
-   glSecondaryColor3fvEXT := GLGetProcAddress('glSecondaryColor3fvEXT'); 
-   glSecondaryColor3iEXT := GLGetProcAddress('glSecondaryColor3iEXT'); 
-   glSecondaryColor3ivEXT := GLGetProcAddress('glSecondaryColor3ivEXT'); 
-   glSecondaryColor3sEXT := GLGetProcAddress('glSecondaryColor3sEXT'); 
-   glSecondaryColor3svEXT := GLGetProcAddress('glSecondaryColor3svEXT'); 
-   glSecondaryColor3ubEXT := GLGetProcAddress('glSecondaryColor3ubEXT'); 
-   glSecondaryColor3ubvEXT := GLGetProcAddress('glSecondaryColor3ubvEXT'); 
-   glSecondaryColor3uiEXT := GLGetProcAddress('glSecondaryColor3uiEXT'); 
-   glSecondaryColor3uivEXT := GLGetProcAddress('glSecondaryColor3uivEXT'); 
+   glSecondaryColor3dEXT := GLGetProcAddress('glSecondaryColor3dEXT');
+   glSecondaryColor3dvEXT := GLGetProcAddress('glSecondaryColor3dvEXT');
+   glSecondaryColor3fEXT := GLGetProcAddress('glSecondaryColor3fEXT');
+   glSecondaryColor3fvEXT := GLGetProcAddress('glSecondaryColor3fvEXT');
+   glSecondaryColor3iEXT := GLGetProcAddress('glSecondaryColor3iEXT');
+   glSecondaryColor3ivEXT := GLGetProcAddress('glSecondaryColor3ivEXT');
+   glSecondaryColor3sEXT := GLGetProcAddress('glSecondaryColor3sEXT');
+   glSecondaryColor3svEXT := GLGetProcAddress('glSecondaryColor3svEXT');
+   glSecondaryColor3ubEXT := GLGetProcAddress('glSecondaryColor3ubEXT');
+   glSecondaryColor3ubvEXT := GLGetProcAddress('glSecondaryColor3ubvEXT');
+   glSecondaryColor3uiEXT := GLGetProcAddress('glSecondaryColor3uiEXT');
+   glSecondaryColor3uivEXT := GLGetProcAddress('glSecondaryColor3uivEXT');
    glSecondaryColor3usEXT := GLGetProcAddress('glSecondaryColor3usEXT');
    glSecondaryColor3usvEXT := GLGetProcAddress('glSecondaryColor3usvEXT');
-   glSecondaryColorPointerEXT := GLGetProcAddress('glSecondaryColorPointerEXT'); 
+   glSecondaryColorPointerEXT := GLGetProcAddress('glSecondaryColorPointerEXT');
 
-   // GL_EXT_multi_draw_arrays
-   glMultiDrawArraysEXT := GLGetProcAddress('glMultiDrawArraysEXT'); 
+   // GL_EXT_multi_draw_arrays (#148)
+   glMultiDrawArraysEXT := GLGetProcAddress('glMultiDrawArraysEXT');
    glMultiDrawElementsEXT := GLGetProcAddress('glMultiDrawElementsEXT');
 
-   // GL_EXT_fog_coord
+   // GL_EXT_fog_coord (#149)
    glFogCoordfEXT := GLGetProcAddress('glFogCoordfEXT'); 
    glFogCoordfvEXT := GLGetProcAddress('glFogCoordfvEXT'); 
-   glFogCoorddEXT := GLGetProcAddress('glFogCoorddEXT'); 
+   glFogCoorddEXT := GLGetProcAddress('glFogCoorddEXT');
    glFogCoorddvEXT := GLGetProcAddress('glFogCoorddvEXT'); 
    glFogCoordPointerEXT := GLGetProcAddress('glFogCoordPointerEXT'); 
 
-   // GL_EXT_blend_func_separate
+   // GL_EXT_blend_func_separate (#173)
    glBlendFuncSeparateEXT := GLGetProcAddress('glBlendFuncSeparateEXT');
 
-   // GL_NV_vertex_array_range
+   // GL_NV_vertex_array_range (#190)
    glFlushVertexArrayRangeNV := GLGetProcAddress('glFlushVertexArrayRangeNV'); 
-   glVertexArrayRangeNV := GLGetProcAddress('glVertexArrayRangeNV'); 
+   glVertexArrayRangeNV := GLGetProcAddress('glVertexArrayRangeNV');
    wglAllocateMemoryNV := GLGetProcAddress('wglAllocateMemoryNV'); 
    wglFreeMemoryNV := GLGetProcAddress('wglFreeMemoryNV'); 
 
-   // GL_NV_register_combiners
+   // GL_NV_register_combiners (#191)
    glCombinerParameterfvNV := GLGetProcAddress('glCombinerParameterfvNV'); 
    glCombinerParameterfNV := GLGetProcAddress('glCombinerParameterfNV');
    glCombinerParameterivNV := GLGetProcAddress('glCombinerParameterivNV'); 
    glCombinerParameteriNV := GLGetProcAddress('glCombinerParameteriNV'); 
    glCombinerInputNV := GLGetProcAddress('glCombinerInputNV');
    glCombinerOutputNV := GLGetProcAddress('glCombinerOutputNV'); 
-   glFinalCombinerInputNV := GLGetProcAddress('glFinalCombinerInputNV'); 
+   glFinalCombinerInputNV := GLGetProcAddress('glFinalCombinerInputNV');
    glGetCombinerInputParameterfvNV := GLGetProcAddress('glGetCombinerInputParameterfvNV');
    glGetCombinerInputParameterivNV := GLGetProcAddress('glGetCombinerInputParameterivNV'); 
    glGetCombinerOutputParameterfvNV := GLGetProcAddress('glGetCombinerOutputParameterfvNV');
@@ -4473,14 +4560,14 @@ begin
    // GL_MESA_resize_buffers
    glResizeBuffersMESA := GLGetProcAddress('glResizeBuffersMESA');
 
-   // GL_3DFX_tbuffer
+   // GL_3DFX_tbuffer (#208)
    glTbufferMask3DFX := GLGetProcAddress('glTbufferMask3DFX');
 
-   // GL_EXT_multisample
+   // GL_EXT_multisample (#209)
    glSampleMaskEXT := GLGetProcAddress('glSampleMaskEXT');
    glSamplePatternEXT := GLGetProcAddress('glSamplePatternEXT');
 
-   // GL_SGIS_texture_color_mask
+   // GL_SGIS_texture_color_mask (#214)
    glTextureColorMaskSGIS := GLGetProcAddress('glTextureColorMaskSGIS');
 
    // GLU extensions
@@ -4488,45 +4575,45 @@ begin
    gluNewNurbsTessellatorEXT := GLGetProcAddress('gluNewNurbsTessellatorEXT'); 
    gluDeleteNurbsTessellatorEXT := GLGetProcAddress('gluDeleteNurbsTessellatorEXT');
 
-   // GL_NV_vertex_program
-   glAreProgramsResidentNV := GLGetProcAddress('glAreProgramsResidentNV'); 
+   // GL_NV_vertex_program (#233)
+   glAreProgramsResidentNV := GLGetProcAddress('glAreProgramsResidentNV');
    glBindProgramNV := GLGetProcAddress('glBindProgramNV');
-   glDeleteProgramsNV := GLGetProcAddress('glDeleteProgramsNV'); 
-   glExecuteProgramNV := GLGetProcAddress('glExecuteProgramNV'); 
+   glDeleteProgramsNV := GLGetProcAddress('glDeleteProgramsNV');
+   glExecuteProgramNV := GLGetProcAddress('glExecuteProgramNV');
    glGenProgramsNV := GLGetProcAddress('glGenProgramsNV');
-   glGetProgramParameterdvNV := GLGetProcAddress('glGetProgramParameterdvNV'); 
+   glGetProgramParameterdvNV := GLGetProcAddress('glGetProgramParameterdvNV');
    glGetProgramParameterfvNV := GLGetProcAddress('glGetProgramParameterfvNV');
    glGetProgramivNV := GLGetProcAddress('glGetProgramivNV');
-   glGetProgramStringNV := GLGetProcAddress('glGetProgramStringNV'); 
-   glGetTrackMatrixivNV := GLGetProcAddress('glGetTrackMatrixivNV'); 
-   glGetVertexAttribdvNV:= GLGetProcAddress('glGetVertexAttribdvNV'); 
-   glGetVertexAttribfvNV:= GLGetProcAddress('glGetVertexAttribfvNV'); 
+   glGetProgramStringNV := GLGetProcAddress('glGetProgramStringNV');
+   glGetTrackMatrixivNV := GLGetProcAddress('glGetTrackMatrixivNV');
+   glGetVertexAttribdvNV:= GLGetProcAddress('glGetVertexAttribdvNV');
+   glGetVertexAttribfvNV:= GLGetProcAddress('glGetVertexAttribfvNV');
    glGetVertexAttribivNV:= GLGetProcAddress('glGetVertexAttribivNV');
    glGetVertexAttribPointervNV := GLGetProcAddress ('glGetVertexAttribPointervNV');
-   glIsProgramNV := GLGetProcAddress('glIsProgramNV'); 
-   glLoadProgramNV := GLGetProcAddress('glLoadProgramNV'); 
-   glProgramParameter4dNV := GLGetProcAddress('glProgramParameter4dNV'); 
-   glProgramParameter4dvNV := GLGetProcAddress('glProgramParameter4dvNV'); 
-   glProgramParameter4fNV := GLGetProcAddress('glProgramParameter4fNV'); 
-   glProgramParameter4fvNV := GLGetProcAddress('glProgramParameter4fvNV'); 
-   glProgramParameters4dvNV := GLGetProcAddress ('glProgramParameters4dvNV'); 
+   glIsProgramNV := GLGetProcAddress('glIsProgramNV');
+   glLoadProgramNV := GLGetProcAddress('glLoadProgramNV');
+   glProgramParameter4dNV := GLGetProcAddress('glProgramParameter4dNV');
+   glProgramParameter4dvNV := GLGetProcAddress('glProgramParameter4dvNV');
+   glProgramParameter4fNV := GLGetProcAddress('glProgramParameter4fNV');
+   glProgramParameter4fvNV := GLGetProcAddress('glProgramParameter4fvNV');
+   glProgramParameters4dvNV := GLGetProcAddress ('glProgramParameters4dvNV');
    glProgramParameters4fvNV := GLGetProcAddress ('glProgramParameters4fvNV');
    glRequestResidentProgramsNV := GLGetProcAddress ('glRequestResidentProgramsNV');
-   glTrackMatrixNV := GLGetProcAddress('glTrackMatrixNV'); 
+   glTrackMatrixNV := GLGetProcAddress('glTrackMatrixNV');
    glVertexAttribPointerNV := GLGetProcAddress('glVertexAttribPointerNV');
-   glVertexAttrib1dNV := GLGetProcAddress('glVertexAttrib1dNV'); 
-   glVertexAttrib1dvNV := GLGetProcAddress('glVertexAttrib1dvNV'); 
+   glVertexAttrib1dNV := GLGetProcAddress('glVertexAttrib1dNV');
+   glVertexAttrib1dvNV := GLGetProcAddress('glVertexAttrib1dvNV');
    glVertexAttrib1fNV := GLGetProcAddress('glVertexAttrib1fNV');
-   glVertexAttrib1fvNV := GLGetProcAddress('glVertexAttrib1fvNV'); 
-   glVertexAttrib1sNV := GLGetProcAddress('glVertexAttrib1sNV'); 
-   glVertexAttrib1svNV := GLGetProcAddress('glVertexAttrib1svNV'); 
+   glVertexAttrib1fvNV := GLGetProcAddress('glVertexAttrib1fvNV');
+   glVertexAttrib1sNV := GLGetProcAddress('glVertexAttrib1sNV');
+   glVertexAttrib1svNV := GLGetProcAddress('glVertexAttrib1svNV');
    glVertexAttrib2dNV := GLGetProcAddress('glVertexAttrib2dNV');
    glVertexAttrib2dvNV := GLGetProcAddress('glVertexAttrib2dvNV');
-   glVertexAttrib2fNV := GLGetProcAddress('glVertexAttrib2fNV'); 
+   glVertexAttrib2fNV := GLGetProcAddress('glVertexAttrib2fNV');
    glVertexAttrib2fvNV := GLGetProcAddress('glVertexAttrib2fvNV');
-   glVertexAttrib2sNV := GLGetProcAddress('glVertexAttrib2sNV'); 
-   glVertexAttrib2svNV := GLGetProcAddress('glVertexAttrib2svNV'); 
-   glVertexAttrib3dNV := GLGetProcAddress('glVertexAttrib3dNV'); 
+   glVertexAttrib2sNV := GLGetProcAddress('glVertexAttrib2sNV');
+   glVertexAttrib2svNV := GLGetProcAddress('glVertexAttrib2svNV');
+   glVertexAttrib3dNV := GLGetProcAddress('glVertexAttrib3dNV');
    glVertexAttrib3dvNV := GLGetProcAddress('glVertexAttrib3dvNV');
    glVertexAttrib3fNV := GLGetProcAddress('glVertexAttrib3fNV');
    glVertexAttrib3fvNV := GLGetProcAddress('glVertexAttrib3fvNV');
@@ -4578,6 +4665,7 @@ begin
    {$IFDEF MSWINDOWS}
    ReadWGLExtensions;
    {$ENDIF}
+   {.$endregion}
    
    // GL 2.0
    glBlendEquationSeparate := GLGetProcAddress('glBlendEquationSeparate');
@@ -4676,13 +4764,14 @@ begin
 end;
 
 {$IFDEF MSWINDOWS}
-
 // ReadWGLExtensions
 //
 procedure ReadWGLExtensions;
 begin
    // ARB wgl extensions
    wglGetExtensionsStringARB := GLGetProcAddress('wglGetExtensionsStringARB');
+
+   // WGL_ARB_pixel_format (ARB #9)
    wglGetPixelFormatAttribivARB := GLGetProcAddress('wglGetPixelFormatAttribivARB');
    wglGetPixelFormatAttribfvARB := GLGetProcAddress('wglGetPixelFormatAttribfvARB');
    wglChoosePixelFormatARB := GLGetProcAddress('wglChoosePixelFormatARB');
@@ -4698,11 +4787,10 @@ begin
    wglSaveBufferRegionARB := GLGetProcAddress('wglSaveBufferRegionARB');
    wglRestoreBufferRegionARB := GLGetProcAddress('wglRestoreBufferRegionARB');
 
-   // -EGG- ----------------------------
+   // WGL_EXT_swap_control (EXT #172)
    wglSwapIntervalEXT := GLGetProcAddress('wglSwapIntervalEXT');
    wglGetSwapIntervalEXT := GLGetProcAddress('wglGetSwapIntervalEXT');
 end;
-
 {$ENDIF}
 
 // TrimAndSplitVersionString
@@ -4768,8 +4856,7 @@ var
    end;
 
 begin
-   // determine version of implementation
-   // GL
+   // determine OpenGL versions supported
    buffer:=glGetString(GL_VERSION);
    TrimAndSplitVersionString(buffer, majorversion, minorVersion);
    GL_VERSION_1_0:=True;
@@ -4782,15 +4869,14 @@ begin
    GL_VERSION_2_1:=((minorVersion >= 1) and (majorVersion > 1)) or (majorVersion > 2);
    GL_VERSION_2_2:=((minorVersion >= 2) and (majorVersion > 1)) or (majorVersion > 2);
 
-   // GLU
+   // determine GLU versions met
    buffer:=gluGetString(GLU_VERSION);
    TrimAndSplitVersionString(buffer, majorversion, minorVersion);
    GLU_VERSION_1_1:=True; // won't load without at least GLU 1.1
    GLU_VERSION_1_2:=(minorVersion>1) or (majorVersion>1);
    GLU_VERSION_1_3:=(minorVersion>2) or (majorVersion>1);
 
-   // check supported extensions
-   // GL
+   // check supported OpenGL extensions
    Buffer := StrPas(glGetString(GL_EXTENSIONS));
 
    GL_3DFX_multisample := CheckExtension('GL_3DFX_multisample');
@@ -4902,27 +4988,27 @@ begin
 
    WGL_ARB_extensions_string := CheckExtension('WGL_ARB_extensions_string');
 
-   // GLU
+   // check supported GLU extensions
    Buffer := gluGetString(GLU_EXTENSIONS);
    GLU_EXT_TEXTURE := CheckExtension('GLU_EXT_TEXTURE');
    GLU_EXT_object_space_tess := CheckExtension('GLU_EXT_object_space_tess');
    GLU_EXT_nurbs_tessellator := CheckExtension('GLU_EXT_nurbs_tessellator');
 
    {$IFDEF MSWINDOWS}
+   //check supported WGL extensions
    ReadWGLImplementationProperties;
    {$ENDIF}
 end;
 
 {$IFDEF MSWINDOWS}
-
 // ReadWGLImplementationProperties
 //
 procedure ReadWGLImplementationProperties;
 var
-   buffer: string;
+   Buffer: string;
 
    // Checks if the given Extension string is in Buffer.
-   function CheckExtension(const extension : String) : Boolean;
+   function CheckExtension(const Extension: string): Boolean;
    begin
       Result:=(Pos(extension, Buffer)>0);
    end;
@@ -4998,12 +5084,14 @@ begin
    Result:=(GLHandle<>INVALID_MODULEHANDLE);
 end;
 
+// compatibility routines
+
 // UnloadOpenGL
 //
 procedure UnloadOpenGL;
 begin
-   CloseOpenGL; 
-end; 
+   CloseOpenGL;
+end;
 
 // LoadOpenGL
 //
@@ -5033,6 +5121,7 @@ function IsMesaGL : Boolean;
 begin
    Result:=(GetProcAddress(Cardinal(GLHandle), 'glResizeBuffersMESA')<>nil);
 end;
+
 
 initialization
 
