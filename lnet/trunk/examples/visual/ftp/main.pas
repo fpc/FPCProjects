@@ -354,8 +354,8 @@ end;
 
 procedure TMainForm.accConnectExecute(Sender: TObject);
 begin
-  if Length(Site.txtHost) > 0 then begin
-    FTP.Connect(Site.txtHost, Word(StrToInt(Site.Port)));
+  if Length(Site.Host) > 0 then begin
+    FTP.Connect(Site.Host, Word(StrToInt(Site.Port)));
     ToolButton4.Down := True;
   end else
     MessageDlg('Please add some sites to the site manager', mtInformation, [mbOK], 0);
@@ -572,6 +572,7 @@ begin
     if i < Length(FIcons) then
       rmtGrid.Canvas.Draw(aRect.Left + 2,aRect.Top + 2, FIcons[i].Bmp.Graphic);
   end else
+  if Col<>5 then
     rmtGrid.DefaultDrawCell(Col,Row,aRect,aState);
 end;
 
@@ -598,8 +599,8 @@ procedure TMainForm.UpdateSite;
 begin
   SBar.Panels[0].Text := Site.site;
   SBar.Panels[1].Text := Site.user;
-  if Site.txtHost <> '' then
-    SBar.Panels[2].Text := Site.txtHost+GetSitePath
+  if Site.Host <> '' then
+    SBar.Panels[2].Text := Site.Host+GetSitePath
   else
     SBar.Panels[2].Text := '';
 end;
