@@ -37,7 +37,7 @@
         <MinVersion Minor="4" Release="1" Valid="True"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="4">
       <Unit0>
         <Filename Value="ftptest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -60,6 +60,11 @@
         <ResourceFilename Value="sitesunit.lrs"/>
         <UnitName Value="sitesunit"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="dleparsers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="dleparsers"/>
+      </Unit3>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -73,13 +78,6 @@
         <OptimizationLevel Value="2"/>
       </Optimizations>
     </CodeGeneration>
-    <Linking>
-      <Options>
-        <Win32>
-          <GraphicApplication Value="True"/>
-        </Win32>
-      </Options>
-    </Linking>
     <Other>
       <CompilerPath Value="$(CompPath)"/>
     </Other>

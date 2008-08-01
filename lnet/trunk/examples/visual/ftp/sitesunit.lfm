@@ -12,17 +12,17 @@ object frmSites: TfrmSites
   LCLVersion = '0.9.25'
   object Label1: TLabel
     Left = 8
-    Height = 13
+    Height = 14
     Top = 8
-    Width = 31
+    Width = 28
     Caption = 'Sites:'
     ParentColor = False
   end
   object Label2: TLabel
     Left = 172
-    Height = 13
+    Height = 14
     Top = 208
-    Width = 61
+    Width = 50
     Caption = 'Local Path'
     ParentColor = False
   end
@@ -35,7 +35,6 @@ object frmSites: TfrmSites
     OnClick = lbSitesClick
     PopupMenu = PopupMenuSites
     TabOrder = 0
-    TopIndex = -1
   end
   object txtHost: TLabeledEdit
     Left = 172
@@ -46,9 +45,9 @@ object frmSites: TfrmSites
     EditLabel.AnchorSideLeft.Control = txtHost
     EditLabel.AnchorSideBottom.Control = txtHost
     EditLabel.Left = 172
-    EditLabel.Height = 13
-    EditLabel.Top = 56
-    EditLabel.Width = 26
+    EditLabel.Height = 14
+    EditLabel.Top = 55
+    EditLabel.Width = 23
     EditLabel.Caption = 'Host'
     EditLabel.ParentColor = False
     ParentColor = False
@@ -64,9 +63,9 @@ object frmSites: TfrmSites
     EditLabel.AnchorSideLeft.Control = txtPath
     EditLabel.AnchorSideBottom.Control = txtPath
     EditLabel.Left = 172
-    EditLabel.Height = 13
-    EditLabel.Top = 104
-    EditLabel.Width = 26
+    EditLabel.Height = 14
+    EditLabel.Top = 103
+    EditLabel.Width = 23
     EditLabel.Caption = 'Path'
     EditLabel.ParentColor = False
     ParentColor = False
@@ -82,9 +81,9 @@ object frmSites: TfrmSites
     EditLabel.AnchorSideLeft.Control = txtUser
     EditLabel.AnchorSideBottom.Control = txtUser
     EditLabel.Left = 172
-    EditLabel.Height = 13
-    EditLabel.Top = 153
-    EditLabel.Width = 26
+    EditLabel.Height = 14
+    EditLabel.Top = 152
+    EditLabel.Width = 23
     EditLabel.Caption = 'User'
     EditLabel.ParentColor = False
     ParentColor = False
@@ -101,9 +100,9 @@ object frmSites: TfrmSites
     EditLabel.AnchorSideLeft.Control = txtPass
     EditLabel.AnchorSideBottom.Control = txtPass
     EditLabel.Left = 373
-    EditLabel.Height = 13
-    EditLabel.Top = 153
-    EditLabel.Width = 28
+    EditLabel.Height = 14
+    EditLabel.Top = 152
+    EditLabel.Width = 23
     EditLabel.Caption = 'Pass'
     EditLabel.ParentColor = False
     ParentColor = False
@@ -120,9 +119,9 @@ object frmSites: TfrmSites
     EditLabel.AnchorSideLeft.Control = txtSite
     EditLabel.AnchorSideBottom.Control = txtSite
     EditLabel.Left = 172
-    EditLabel.Height = 13
-    EditLabel.Top = 8
-    EditLabel.Width = 22
+    EditLabel.Height = 14
+    EditLabel.Top = 7
+    EditLabel.Width = 19
     EditLabel.Caption = 'Site'
     EditLabel.ParentColor = False
     ParentColor = False
@@ -182,9 +181,9 @@ object frmSites: TfrmSites
     EditLabel.AnchorSideLeft.Control = txtPort
     EditLabel.AnchorSideBottom.Control = txtPort
     EditLabel.Left = 421
-    EditLabel.Height = 13
-    EditLabel.Top = 56
-    EditLabel.Width = 23
+    EditLabel.Height = 14
+    EditLabel.Top = 55
+    EditLabel.Width = 21
     EditLabel.Caption = 'Port'
     EditLabel.ParentColor = False
     ParentColor = False
@@ -200,6 +199,7 @@ object frmSites: TfrmSites
     Anchors = [akTop, akLeft, akRight]
     ParentColor = False
     TabOrder = 11
+    OnChange = txtSiteChange
   end
   object PopupMenuSites: TPopupMenu
     left = 507

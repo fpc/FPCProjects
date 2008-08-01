@@ -2,24 +2,33 @@ unit main;
 
 {$mode objfpc}{$H+}
 
+{$define INCLUDEERRORS}
+
 interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LCLType,
   LNetComponents, lNet, ComCtrls, ExtCtrls, StdCtrls, Menus, FileCtrl,
-  ActnList, Grids;
+  ActnList, Maps, Grids;
 
 type
-  TIconRec=record
-    Bmp: TPicture;
-    Ext: String; // comma separated string of extensions supported by icon
-                 // ex. .zip,.rar,.tar.gz
-  end;
   TParserResult=(
     prOK,        // directory listing entry (DLE) was parsed successful
     prError,     // DLE was recognized but an error occur while parsing
     prNoImp      // there is no parser for this DLE
   );
+
+  TFTPOperation=(
+    foNone,     // current operation is uninteresting
+    foListing,  // a listing is expected
+    foPWD       // pwd is expected
+  );
+
+  TTaggedPicture=class(TPicture)
+  public
+    Tag: Integer;
+  end;
+
 
 type
 
@@ -88,6 +97,8 @@ type
     procedure rmtGridDblClick(Sender: TObject);
     procedure rmtGridDrawCell(Sender: TObject; Col, Row: Integer; aRect: TRect;
       aState: TGridDrawState);
+    procedure rmtGridHeaderClick(Sender: TObject; IsColumn: Boolean;
+      Index: Integer);
     procedure rmtGridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState
       );
   private
@@ -97,10 +108,12 @@ type
     FDLSize: Int64;
     FDLDone: Int64;
     FGetting: Boolean;
-    FIcons: array of TIconRec;
+    //FIcons: array of TIconRec;
+    FIcons: TStringList;
+    FSpecialIcons: array of TTaggedPicture;
     CreateFilePath: string;
-    FTmpStrList: TStringList;
     FDirListing: string;
+    FOperation: TFTPOperation;
     procedure DoList(const FileName: string);
     procedure UpdateSite;
     function CurrentName: string;
@@ -108,15 +121,17 @@ type
     function CurrentSize: Int64;
     function CurrentIsDirectory: boolean;
     function CurrentIsLink: boolean;
-    function GetIconIndexObj(aName: string): TObject;
-    function IndexOfExt(aExt: string):Integer;
+    function CurrentIsError: boolean;
+    function GetFileIcon(aName: string): TObject;
     procedure ChangeDirectory(aDir: string);
     procedure Disconnect(ClearLog: boolean);
-
+    procedure LeftViewDrawItem(sender: TWinControl; Index: Integer;
+                               ARect: TRect; State: TOwnerDrawState);
+    procedure SetLocalDirectory(const ADir: string);
     { private declarations }
   public
     { public declarations }
-    procedure RegisterExt(const LazResName,FileExt:string);
+    procedure RegisterExt(const LazResName,FileExt:string; special: boolean);
   end; 
 
 var
@@ -126,14 +141,12 @@ implementation
 
 uses SitesUnit, DLEParsers;
 
-var
-  Dir: string;
-  itDirUp   : TObject;
-  itDir     : TObject;
-  itLink    : TObject;
-  itError   : TObject;
-  itFile    : TObject;
-  
+const
+  siDirUp = 0;
+  siDir   = 1;
+  siLink  = 2;
+  siFile  = 3;
+  siError = 4;
 
 function RevPos(const substr,str:string): integer;
 var
@@ -154,6 +167,19 @@ begin
   end;
 end;
 
+function GetParentDirectory(Path: string): string;
+var
+  i: Integer;
+begin
+  Path := StringReplace(Path, PathDelim + PathDelim, PathDelim, [rfReplaceAll]);
+  if Length(Path) > 1 then
+    for i := Length(Path)-1 downto 1 do
+      if Path[i] = PathDelim then begin
+        Result := Copy(Path, 1, i);
+        Exit;
+      end;
+  Result := Path;
+end;
 
 { TMainForm }
 
@@ -164,13 +190,21 @@ end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 var
-  i: Integer;
+  i,j: Integer;
 begin
-  FTmpStrList.Free;
-  for i := 0 to Length(FIcons)-1 do
-    if FIcons[i].Bmp<>nil then
-      FIcons[i].bmp.Free;
-  SetLength(FIcons, 0);
+  for i := 0 to FIcons.Count-1 do
+    if FIcons.Objects[i]<>nil then begin
+      for j:=0 to FIcons.Count-1 do
+        if FIcons.Objects[i]=FIcons.Objects[j] then
+          FIcons.Objects[j]:=nil;
+      FIcons.Objects[i].Free;
+    end;
+  FIcons.Free;
+
+  for i := 0 to Length(FSpecialIcons)-1 do
+    FSpecialIcons[i].Free;
+
+ SetLength(FSpecialIcons,0);
 end;
 
 procedure TMainForm.FTPConnect(aSocket: TLSocket);
@@ -194,15 +228,38 @@ begin
     aName := '';
     
   DoList(aName);
+  // TODO: ask for current dir here
 end;
 
 procedure TMainForm.FTPControl(aSocket: TLSocket);
 var
   s: string;
+  i: integer;
 begin
   if FTP.GetMessage(s) > 0 then begin
+
     MemoText.Lines.Append(s);
     MemoText.SelStart := Length(MemoText.Text);
+
+    if pos('226',s)=1 then begin
+      if FOperation=foListing then begin
+        FOperation:=foPWD;
+        FTP.PresentWorkingDirectory;
+        exit;
+      end
+    end else
+    if (pos('257',s)=1) and (FOperation=foPWD) then begin
+      for i:=Length(s) downto 1 do
+        if s[i]='"' then begin
+          Site.Path := copy(s, 6, i-6);
+          SBar.Panels[3].Text:=site.path;
+          TFrmSites.SaveOption('site'+IntToStr(Site.Number),'path',site.path);
+          break;
+        end;
+      FOperation := foNone;
+      exit;
+    end;
+
   end;
 end;
 
@@ -220,60 +277,74 @@ end;
 procedure TMainForm.FTPReceive(aSocket: TLSocket);
   procedure FindNames;
   var
-    i, n: Integer;
+    i, nRow: Integer;
     Parser: TDirEntryParser;
-    IndxObj: TObject;
   begin
     rmtGrid.BeginUpdate;
     try
-      // each row encode information about file type in objects[] array
-      // col 0 default entry type (icon)
-      // col 2 specific entry type (icon)
+      // adds dirup entry
       rmtGrid.RowCount := 2;
       rmtGrid.Cells[1,1] := '..';
-      rmtGrid.objects[0,1] := itDirUp;
+      rmtGrid.objects[0,1] := FSpecialIcons[siDirUp];
       
+      // adds every item in list
       if FList.Count > 0 then begin
-        rmtGrid.RowCount := FList.Count + 2;
-        FList.SaveToFile('last.txt');
+
+        nRow := rmtGrid.RowCount;
+        rmtGrid.RowCount := nRow + FList.Count;
+
+        //FList.SaveToFile('last.txt');
         for i := 0 to FList.Count-1 do begin
-          n := i+2;
-          rmtGrid.Objects[2,n] := nil; // no special icon index
+
+          rmtGrid.Objects[0,nRow] := nil; // no special icon index
 
           Parser := DirParser.Parse(pchar(FList[i]));
           if Assigned(Parser) then begin
             DirParser.PrefParser := Parser;
             
             // default icon index/entry type
-            if Parser.IsLink then
-              IndxObj := itLink
-            else if Parser.IsDir then
-              IndxObj := itDir
+            if Parser.IsLink then begin
+              rmtGrid.Objects[0,nRow] := FSpecialIcons[siLink];
+              //rmtGrid.Objects[2,nRow] := FSpecialIcons[siLink];
+              //rmtGrid.Objects[0,nRow] := FSpecialIcons[siFile];
+            end else if Parser.IsDir then
+              rmtGrid.Objects[0,nRow] := FSpecialIcons[siDir]
             else begin
-              IndxObj := itFile;
-              rmtGrid.Objects[2,n] := GetIconIndexObj(Parser.EntryName);
+              rmtGrid.Objects[0,nRow] := GetFileIcon(Parser.EntryName);
+              //rmtGrid.Objects[2,nRow] := GetFileIcon(Parser.EntryName);
+              //rmtGrid.Objects[0,nRow] := FSpecialIcons[siFile];
             end;
+
             // text properties
-            rmtGrid.Cells[1, n] := Parser.EntryName;
+            rmtGrid.Cells[1, nRow] := Parser.EntryName;
             if Parser.IsDir or Parser.IsLink then
-              rmtGrid.Cells[2, n] := ''
+              rmtGrid.Cells[2, nRow] := ''
             else
-              rmtGrid.Cells[2, n] := IntToStr(Parser.EntrySize);
-            rmtGrid.Cells[3, n] := FormatDateTime(
-              ShortDateFormat+' '+ShortTimeFormat, Parser.Date);
-            rmtGrid.Cells[4, n] := Parser.Attributes;
+              rmtGrid.Cells[2, nRow] := IntToStr(Parser.EntrySize);
+            rmtGrid.Cells[3, nRow] := FormatDateTime(ShortDateFormat+' '+
+                                                  ShortTimeFormat,Parser.Date);
+            rmtGrid.Cells[4, nRow] := Parser.Attributes;
             if rmtGrid.Columns[5].Visible then
-              rmtGrid.Cells[5, n] := Parser.LinkName;
+              rmtGrid.Cells[5, nRow] := Parser.LinkName;
           end else begin
-            rmtGrid.Cells[1, n] := FList[i];
-            IndxObj := itError;
+            {$IFDEF INCLUDEERRORS}
+            rmtGrid.Cells[1, nRow] := FList[i];
+            rmtGrid.Objects[0, nRow] := FSpecialIcons[siError];
+            {$ELSE}
+            rmtGrid.RowCount:=rmtGrid.RowCount-1;
+            continue;
+            {$ENDIF}
           end;
-          rmtGrid.Objects[0, n] := IndxObj;
+
+          if rmtGrid.Objects[0, nRow] = nil then
+            rmtGrid.Objects[0, nRow] := FSpecialIcons[siFile];
+
+          Inc(nRow);
         end;
         
         if FList.Count>1 then
-          rmtGrid.SortColRow(True, 0, 1, rmtGrid.RowCount-1);
-        
+          rmtGrid.SortColRow(True, 1, 1, rmtGrid.RowCount-1);
+
       end;
     finally
       rmtGrid.EndUpdate;
@@ -304,6 +375,8 @@ begin
       end;
       FFile.Write(Buf, i);
     end else begin
+      // file download ended
+      LeftView.UpdateFileList;
       FreeAndNil(FFile);
       CreateFilePath := '';
       FGetting := False;
@@ -333,6 +406,7 @@ end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
+  MemoText.Lines.SaveToFile('log.txt');
   FList.Free;
   FreeAndNil(FFile);
 end;
@@ -363,7 +437,8 @@ end;
 
 procedure TMainForm.accDisconnectExecute(Sender: TObject);
 begin
-  Disconnect(true);
+  //Disconnect(true);
+  Disconnect(false);
 end;
 
 procedure TMainForm.accSiteManagerExecute(Sender: TObject);
@@ -396,23 +471,32 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   FDLSize := 1;
-  Dir := ExtractFilePath(ParamStr(0));
   FList := TStringList.Create;
   FFile := nil;
+  FIcons := TStringList.Create;
+
+  RegisterExt('ftp_dirup',  '0'{dummy}, true);
+  RegisterExt('ftp_dir',    '1'{dummy}, true);
+  RegisterExt('ftp_link',   '2'{dummy}, true);
+  RegisterExt('ftp_file',   '3'{dummy}, true);
+  RegisterExt('ftp_error',  '4'{dummy}, true);
+
+  // register additional icons
+  RegisterExt('ftp_archive','.zip,.gz,.rar,.tar,.bz2', false);
+
+
   LeftView.Mask := '*';
-  LeftView.Directory := Dir;
   CreateFilePath := '';
   TFrmSites.LoadLastSite;
   UpdateSite;
-  FTmpStrList := TStringList.Create;
-  // register our special icons
-  RegisterExt('ftp_dirup',  '1');
-  RegisterExt('ftp_dir',    '2');
-  RegisterExt('ftp_link',   '3');
-  RegisterExt('ftp_file',   '4');
-  RegisterExt('ftp_error',  '5');
-  // register additional icons
-  RegisterExt('ftp_archive','.zip,.gz,.rar,.tar,.bz2');
+  
+  if (Site.Site='') or (Site.ldir='') then
+    SetLocalDirectory(ExtractFilePath(ParamStr(0)));
+  
+
+  // custom draw file listbox
+  LeftView.Style:=lbOwnerDrawFixed;
+  LeftView.OnDrawItem:=@LeftViewDrawItem;
 end;
 
 procedure TMainForm.FormKeyDown(Sender: TObject; var Key: Word;
@@ -459,21 +543,6 @@ begin
 end;
 
 procedure TMainForm.LeftViewDblClick(Sender: TObject);
-
-  function GetParentDirectory(Path: string): string;
-  var
-    i: Integer;
-  begin
-    Path := StringReplace(Path, PathDelim + PathDelim, PathDelim, [rfReplaceAll]);
-    if Length(Path) > 1 then
-      for i := Length(Path)-1 downto 1 do
-        if Path[i] = PathDelim then begin
-          Result := Copy(Path, 1, i);
-          Exit;
-        end;
-    Result := Path;
-  end;
-
 var
   s: string;
   FF: TFileStream;
@@ -485,12 +554,16 @@ begin
     s := GetParentDirectory(LeftView.Directory)
   else begin
     s := ExtractFileName(LeftView.FileName);
-    s := LeftView.Directory + Copy(s, 2, Length(s)-2) + PathDelim;
+    s := IncludeTrailingPathDelimiter(LeftView.Directory) +
+         Copy(s, 2, Length(s)-2) + PathDelim;
   end;
 
-  if DirectoryExists(s) then
-    LeftView.Directory := s
-  else if FTP.Connected then begin
+  if DirectoryExists(s) then begin
+    SetLocalDirectory(s);
+    if (Site.LDir<>S) and (Site.Number>0) then
+      TFrmSites.SaveOption('site'+IntToStr(Site.Number),'ldir',s);
+    Site.ldir:=S;
+  end else if FTP.Connected then begin
     s := StringReplace(LeftView.FileName, PathDelim + PathDelim,
                        PathDelim, [rfReplaceAll]);
     FDLDone := 0;
@@ -522,58 +595,76 @@ procedure TMainForm.rmtGridCompareCells(Sender: TObject; Acol, ARow, Bcol,
 var
   A,B: Integer;
 begin
+  A := TTaggedPicture(rmtGrid.Objects[0, ARow]).Tag;
+  B := TTaggedPicture(rmtGrid.Objects[0, BRow]).Tag;
   if aCol = 0 then begin
-    // lets do a simple sort, Dirs->Files->Alphabetic order
-    A := ptrInt(rmtGrid.Objects[ACol,ARow]);
-    B := ptrInt(rmtGrid.Objects[BCol,BRow]);
-    result := A-B;
-    if Result = 0 then begin
-      // both rows are of the same kind
-      // do it alphabetically
-      result := CompareText(rmtGrid.Cells[1,ARow],rmtGrid.Cells[1,BRow]);
-    end;
+    // by specific type and name
+    ACol:=1;
+    BCol:=1;
   end else
   if aCol = 1 then begin
-    Result := CompareText(rmtGrid.Cells[ACol,ARow],rmtGrid.Cells[ACol,BRow]);
+    // by generic type and name
+    if A>siError then A := siFile;
+    if B>siError then B := siFile;
   end;
+
+  result := A-B;
+  if result=0 then
+    result := CompareText(rmtGrid.Cells[ACol,ARow],rmtGrid.Cells[ACol,BRow]);
 end;
 
 procedure TMainForm.rmtGridDblClick(Sender: TObject);
 var
   item: string;
+  P: TPoint;
 begin
+
+  if not FTP.Connected then
+    exit;
+
+  P := rmtGrid.ScreenToClient(Mouse.CursorPos);
+  if rmtGrid.MouseToGridZone(P.x, P.y) <> gzNormal then
+    exit;
+
   item := CurrentName;
   if CurrentIsDirectory then
     ChangeDirectory(Item)
   else if CurrentIsLink then
     ChangeDirectory(CurrentNameLink)
   else
-  if rmtGrid.Objects[0, rmtGrid.Row] <> itError then begin
+  if not CurrentIsError then begin
     FDLSize := CurrentSize;
     FDLDone := 0;
     if FDLSize = 0 then
       FDLSize := 1;
     FreeAndNil(FFile);
-    CreateFilePath := Dir + item;
+    CreateFilePath := IncludeTrailingPathDelimiter(LeftView.Directory) + item;
     FGetting := True;
-    FTP.Retrieve(item);
+    FTP.Retrieve(item)
   end;
 end;
 
 procedure TMainForm.rmtGridDrawCell(Sender: TObject; Col, Row: Integer;
   aRect: TRect; aState: TGridDrawState);
 var
-  i: Integer;
+  Pic: TPicture;
 begin
   if (Row > 0)and(Col = 0) then begin
-    i := PtrInt(rmtGrid.Objects[2, Row]);
-    if i = 0 then
-      i := PtrInt(rmtGrid.Objects[0, Row]) - 1;
-    if i < Length(FIcons) then
-      rmtGrid.Canvas.Draw(aRect.Left + 2,aRect.Top + 2, FIcons[i].Bmp.Graphic);
+    Pic := TPicture(rmtGrid.Objects[2, Row]);
+    if Pic=nil then
+      Pic := TPicture(rmtGrid.Objects[0, Row]);
+
+    rmtGrid.Canvas.Draw(aRect.Left + 2,aRect.Top + 2, Pic.Graphic);
   end else
   if Col<>5 then
     rmtGrid.DefaultDrawCell(Col,Row,aRect,aState);
+end;
+
+procedure TMainForm.rmtGridHeaderClick(Sender: TObject; IsColumn: Boolean;
+  Index: Integer);
+begin
+  if Index in [0,1] then
+    rmtGrid.SortColRow(true, Index, 1, rmtGrid.RowCount-1);
 end;
 
 procedure TMainForm.rmtGridKeyDown(Sender: TObject; var Key: Word;
@@ -591,13 +682,20 @@ end;
 
 procedure TMainForm.DoList(const FileName: string);
 begin
+  FOperation := foListing;
   FDirListing := '';
   FTP.List(FileName);
 end;
 
 procedure TMainForm.UpdateSite;
 begin
-  SBar.Panels[0].Text := Site.site;
+  if Site.Site='' then
+    SBar.Panels[0].Text := '<see sites manager>'
+  else begin
+    SBar.Panels[0].Text := Site.site;
+    if DirectoryExists(Site.ldir) then
+      SetLocalDirectory(Site.ldir);
+  end;
   SBar.Panels[1].Text := Site.user;
   if Site.Host <> '' then
     SBar.Panels[2].Text := Site.Host+GetSitePath
@@ -623,48 +721,38 @@ end;
 function TMainForm.CurrentIsDirectory: boolean;
 begin
   result :=
-    (rmtGrid.Objects[0, rmtGrid.Row] = itDirUp) or
-    (rmtGrid.Objects[0, rmtGrid.Row] = itDir);
+    (rmtGrid.Objects[0, rmtGrid.Row] = FSpecialIcons[siDirUp]) or
+    (rmtGrid.Objects[0, rmtGrid.Row] = FSpecialIcons[siDir]);
 end;
 
 function TMainForm.CurrentIsLink: boolean;
 begin
   result :=
-    (rmtGrid.Objects[0, rmtGrid.Row] = itLink);
+    (rmtGrid.Objects[0, rmtGrid.Row] = FSpecialIcons[siLink]);
 end;
 
-function TMainForm.GetIconIndexObj(aName: string): TObject;
-var
-  i,j: Integer;
+function TMainForm.CurrentIsError: boolean;
 begin
-  result := nil;
-  aName := lowercase(aName);
-  for i := 5 to Length(FIcons) - 1 do begin
-    FtmpStrList.CommaText := FIcons[i].Ext;
-    for j := 0 to FtmpStrList.Count - 1 do
-      if RevPos(FtmpStrList[j],aName) <> 0 then begin
-        result := TObject(PtrInt(i));
-        exit;
-      end;
-  end;
+  result :=
+    (rmtGrid.Objects[0, rmtGrid.Row] = FSpecialIcons[siError]);
 end;
 
-function TMainForm.IndexOfExt(aExt: string): Integer;
+function TMainForm.GetFileIcon(aName: string): TObject;
 var
   i: Integer;
 begin
-  result := -1;
-  for i := 5 to Length(FIcons) - 1 do
-    if CompareText(aExt, FIcons[i].Ext) = 0 then begin
-      result := i;
-      break;
-    end;
+  i := FIcons.IndexOf(lowercase(ExtractFileExt(aName)));
+  if i>=0 then
+    result := FICons.Objects[i]
+  else
+    result := nil;
 end;
 
 procedure TMainForm.ChangeDirectory(aDir: string);
 begin
   // todo: implement refresh
-  // todo: implement quick parent directory
+  // todo: implement quick parent director
+  WriteLn('Changing directory to ',aDir);
   if aDir='..' then begin
     FTP.ChangeDirectory(aDir);
     DoList('');
@@ -682,27 +770,136 @@ begin
     MemoText.Clear;
 end;
 
-procedure TMainForm.RegisterExt(const LazResName,FileExt: string);
+procedure TMainForm.LeftViewDrawItem(sender: TWinControl; Index: Integer;
+  ARect: TRect; State: TOwnerDrawState);
 var
-  i: LongInt;
+  ts: TTextStyle;
+  i: Integer;
+  Pic: TPicture;
 begin
-  // check if not exists already
-  i := IndexOfExt(FileExt);
-  if (i < 0) and (LazarusResources.Find(LazResName) <> nil) then begin
-    i := Length(FIcons);
-    SetLength(FIcons, i+1);
-    FIcons[i].Bmp := TPicture.Create;
-    FIcons[i].Bmp.LoadFromLazarusResource(LazResName);
-    FIcons[i].Ext := lowercase(FileExt);
+  if Index>=0 then begin
+    LeftView.Canvas.FillRect(ARect);
+    //
+    ts := LeftView.canvas.TextStyle;
+    ts.Layout:=tlCenter;
+    LeftView.Canvas.TextStyle := ts;
+    //
+    Pic := TPicture(LeftView.Items.Objects[Index]);
+    if Pic=nil then
+      Pic := FSpecialIcons[siFile];
+
+    LeftView.Canvas.Draw(aRect.Left + 2,aRect.Top + 2, Pic.Graphic);
+    ARect.Left := ARect.left + Pic.Graphic.Width + 4;
+
+    LeftView.Canvas.TextRect(ARect,ARect.Left,ARect.Top,LeftView.Items[Index]);
   end;
 end;
 
+
+function CompareFileDir(List: TStringList; Index1, Index2: Integer): Integer;
+var
+  Tag1,Tag2: Integer;
+begin
+  Tag1 := TTaggedPicture(List.Objects[Index1]).Tag;
+  if Tag1>siError then
+    Tag1:=siFile;
+
+  Tag2 := TTaggedPicture(List.Objects[Index2]).Tag;
+  if Tag2>siError then
+    Tag2:=siFile;
+
+  result := Tag1-Tag2;
+  if result=0 then
+    result := CompareText(List[Index1],List[Index2]);
+end;
+
+procedure TMainForm.SetLocalDirectory(const ADir: string);
+var
+  i,j: Integer;
+  L: TStringList;
+  Obj: TObject;
+begin
+
+  LeftView.Items.BeginUpdate;
+  LeftView.Directory := IncludeTrailingPathDelimiter(ADir);
+
+  // the default sorting doesn't work very well under linux
+  // do it "by hand"
+  L:=TStringList.Create;
+  j:=-1;
+  for i:=0 to LeftView.Items.Count-1 do
+  with leftView do begin
+
+    if (Items[i]='[.]') then
+      continue;
+    if (Items[i]='[..]') then begin
+      j:=i;
+      continue;
+    end;
+
+    if (LeftStr(Items[i],1)='[') and
+       (Rightstr(Items[i],1)=']') then
+      Obj := FSpecialICons[siDir]
+    else begin
+      Obj := GetFileIcon(Items[i]);
+      if Obj=nil then
+        Obj := FSpecialIcons[siFile];
+    end;
+
+    L.AddObject(Items[i], Obj);
+  end;
+
+  L.CustomSort(@CompareFileDir);
+
+  if (j>=0) or
+    ((L.Count=0) and DirectoryExists(GetParentDirectory(ADir))) then
+    L.InsertObject(0, '[..]', FSpecialIcons[siDirUp]);
+
+  LeftView.Items.Assign(L);
+
+  L.Free;
+  LeftView.Items.EndUpdate;
+end;
+
+procedure TMainForm.RegisterExt(const LazResName,FileExt: string; special: boolean);
+var
+  i: Longint;
+  Pic: TTaggedPicture;
+  Lst: TStringList;
+begin
+  if LazarusResources.Find(LazResName)=nil then
+    exit;
+
+  if special then begin
+    // special icons (they had a fixed index)
+    Pic := TTaggedPicture.Create;
+    Pic.LoadFromLazarusResource(LazResName);
+    Pic.Tag:=Length(FSpecialIcons);
+    SetLength(FSpecialIcons, Pic.Tag + 1);
+    FSpecialIcons[Pic.Tag] := Pic;
+  end else begin
+    // extension based icons
+    Lst := TStringList.Create;
+    Lst.CommaText := lowercase(FileExt);
+    try
+      Pic := nil;
+      for i:=0 to Lst.Count-1 do begin
+        if FIcons.IndexOf(Lst[i])<0 then begin
+          if Pic=nil then begin
+            Pic:=TTaggedPicture.Create;
+            Pic.LoadFromLazarusResource(LazResName);
+            Pic.Tag:=Length(FSpecialIcons) + FIcons.Count;
+          end;
+          FIcons.AddObject(Lst[i], Pic);
+        end;
+      end;
+    finally
+      Lst.Free;
+    end;
+ end;
+end;
+
 initialization
-  itDirUp := TObject(ptrInt(1));
-  itDir  := TObject(ptrInt(2));
-  itLink := TObject(ptrInt(3));
-  itFile := TObject(ptrInt(4));
-  itError := TObject(ptrInt(5));
   {$I main.lrs}
   {$I icons.lrs}
   //add additional icons in a new file iconsextra.lrs

@@ -19,6 +19,7 @@ type
     pass: string;
     Anonymous: Boolean;
     ldir: string;
+    Number: Integer;
   end;
   
   { TfrmSites }
@@ -67,6 +68,8 @@ type
   public
     { public declarations }
     class procedure LoadLastSite;
+    class procedure SaveOption(const ASection,AOption,AValue:string);
+    class procedure SaveOption(const ASection,AOption:string; AValue:Integer);
   end;
 
 var
@@ -103,13 +106,42 @@ begin
   try
     I := Ini.ReadInteger('global','lastsite', -1);
     s := 'site'+IntToStr(i);
-    Site.Site := Ini.ReadString(s, 'site', '<see sites manager>');
+    Site.Site := Ini.ReadString(s, 'site', '');
     Site.Host := Ini.ReadString(s, 'host', '');
     Site.Port := Ini.ReadString(s, 'port', '');
     Site.path := Ini.ReadString(s, 'path', '');
     Site.user := Ini.ReadString(s, 'user', '');
     Site.pass := DecryptString(Ini.ReadString(s, 'pass', ''));
     Site.ldir := ini.ReadString(s, 'ldir', '');
+    if Site.Site<>'' then
+      Site.Number := I
+    else
+      Site.Number := 0;
+  finally
+    Ini.Free;
+  end;
+end;
+
+class procedure TfrmSites.SaveOption(const ASection, AOption, AValue: string);
+var
+  Ini: TIniFile;
+begin
+  Ini := TIniFile.Create(extractFilePath(Application.ExeName)+'sites.ini');
+  try
+    Ini.WriteString(ASection, AOption, AValue);
+  finally
+    Ini.Free;
+  end;
+end;
+
+class procedure TfrmSites.SaveOption(const ASection, AOption: string; AValue: Integer
+  );
+var
+  Ini: TIniFile;
+begin
+  Ini := TIniFile.Create(extractFilePath(Application.ExeName)+'sites.ini');
+  try
+    Ini.WriteInteger(ASection, AOption, AValue);
   finally
     Ini.Free;
   end;
@@ -135,7 +167,6 @@ begin
   if SaveChanges then begin
     Modified(False);
     SaveCurrentSite;
-    //LoadSites;
   end;
 end;
 
@@ -303,6 +334,13 @@ begin
       ldir := ini.ReadString(s, 'ldir', '');
       lbSites.Items.add(Site);
     end;
+
+    // select the current site on list
+    if Site.Site<>'' then begin
+      FSiteIndex := lbSites.Items.IndexOf(Site.Site);
+      lbSites.ItemIndex:=FSiteIndex;
+    end;
+
   finally
     ini.free;
   end;
@@ -416,9 +454,6 @@ begin
 end;
 
 procedure TfrmSites.SaveCurrentSite;
-var
-  Ini: TIniFile;
-  s: string;
 begin
   Site.Site := txtSite.Text;
   Site.Host := txtHost.Text;
@@ -426,20 +461,16 @@ begin
   Site.Path := txtPath.text;
   Site.User := txtUser.Text;
   Site.Pass := txtPass.Text;
+  Site.LDir := txtLDir.Text;
 
-  s := extractFilePath(Application.ExeName) + 'sites.ini';
-  
   // be sure current site is selected
   FSiteIndex := lbSites.Items.IndexOf(Site.Site);
   if FSiteIndex>=0 then
     lbSites.ItemIndex := FSiteIndex;
+    
+  Site.Number:= lbSites.ItemIndex + 1;
   
-  Ini := TIniFile.Create(s);
-  try
-    Ini.WriteInteger('global', 'lastsite', lbSites.ItemIndex + 1);
-  finally
-    Ini.Free;
-  end;
+  SaveOption('global', 'lastsite', Site.Number);
 end;
 
 procedure TfrmSites.ChildHandlesCreated;
@@ -451,6 +482,6 @@ end;
 initialization
 
   {$I sitesunit.lrs}
-  
+
 end.
 
