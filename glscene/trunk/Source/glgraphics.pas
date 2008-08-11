@@ -1025,6 +1025,7 @@ type
    T2Pixel32 = packed array [0..1] of TGLPixel32;
    P2Pixel32 = ^T2Pixel32;
 
+{$IFNDEF NO_ASM}
    procedure ProcessRow3DNow(pDest : PGLPixel32; pLineA, pLineB : P2Pixel32; n : Integer);
    asm     // 3DNow! version 30% faster
       db $0F,$EF,$C0           /// pxor        mm0, mm0          // set mm0 to [0, 0, 0, 0]
@@ -1061,6 +1062,7 @@ type
 
       db $0F,$0E               /// femms
    end;
+{$ENDIF}
 
    procedure ProcessRowPascal(pDest : PGLPixel32; pLineA, pLineB : P2Pixel32; n : Integer);
    var
@@ -1088,6 +1090,7 @@ begin
    pDest:=@FData[0];
    pLineA:=@FData[0];
    pLineB:=@FData[Width];
+{$IFNDEF NO_ASM}
    if vSIMD=1 then begin
       for y:=0 to h2-1 do begin
          ProcessRow3DNow(pDest, pLineA, pLineB, w2);
@@ -1095,7 +1098,9 @@ begin
          Inc(pLineA, Width);
          Inc(pLineB, Width);
       end;
-   end else begin
+   end else
+{$ENDIF}
+   begin
       for y:=0 to h2-1 do begin
          ProcessRowPascal(pDest, pLineA, pLineB, w2);
          Inc(pDest, w2);
