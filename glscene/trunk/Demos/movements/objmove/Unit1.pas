@@ -18,7 +18,7 @@ uses
   LCLType, Forms, Dialogs, SysUtils, GLObjects, GLMisc, Classes, Controls, GLGraph,
   GLCollision, GLTexture, OpenGL1x, StdCtrls, ExtCtrls, VectorGeometry, Graphics,
   GLVectorFileObjects, GLGeomObjects, LResources,
-  GLScene, GLLCLViewer;
+  GLScene, GLViewer, GLColor;
 
 type
 
