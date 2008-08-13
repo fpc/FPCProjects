@@ -37,7 +37,7 @@ unit GLContext;
 
 interface
 
-uses Classes, SysUtils, GLCrossPlatform, OpenGL1x, VectorGeometry, VectorTypes;
+uses Classes, SysUtils, OpenGL1x, VectorGeometry, VectorTypes;
 
 {$i GLScene.inc}
 
@@ -100,8 +100,8 @@ type
          procedure SetActive(const aActive : Boolean);
          procedure PropagateSharedContext;
 
-         procedure DoCreateContext(outputDevice : HDC); dynamic; abstract;
-         procedure DoCreateMemoryContext(outputDevice: HDC; width, height : Integer; BufferCount : integer = 1); dynamic; abstract;
+         procedure DoCreateContext(outputDevice : Cardinal); dynamic; abstract;
+         procedure DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer = 1); dynamic; abstract;
          procedure DoShareLists(aContext : TGLContext); dynamic; abstract;
          procedure DoDestroyContext; dynamic; abstract;
          procedure DoActivate; virtual; abstract;
@@ -146,12 +146,12 @@ type
 
          {: Creates the context.<p>
             This method must be invoked before the context can be used. }
-         procedure CreateContext(outputDevice : HDC);
+         procedure CreateContext(outputDevice : Cardinal);
          {: Creates an in-memory context.<p>
             The function should fail if no hardware-accelerated memory context
             can be created (the CreateContext method can handle software OpenGL
             contexts). }
-         procedure CreateMemoryContext(outputDevice: HDC; width, height : Integer; BufferCount : integer = 1);
+         procedure CreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer = 1);
          {: Setup display list sharing between two rendering contexts.<p>
             Both contexts must have the same pixel format. }
          procedure ShareLists(aContext : TGLContext);
@@ -869,7 +869,7 @@ end;
 
 // CreateContext
 //
-procedure TGLContext.CreateContext(outputDevice : HDC);
+procedure TGLContext.CreateContext(outputDevice : Cardinal);
 begin
    if IsValid then
       raise EGLContext.Create(cContextAlreadyCreated);
@@ -881,7 +881,7 @@ end;
 
 // CreateMemoryContext
 //
-procedure TGLContext.CreateMemoryContext(outputDevice: HDC;
+procedure TGLContext.CreateMemoryContext(outputDevice: Cardinal;
   width, height : Integer; BufferCount : integer);
 begin
    if IsValid then
