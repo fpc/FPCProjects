@@ -66,8 +66,8 @@ type
 
          procedure ChooseWGLFormat(DC: HDC; nMaxFormats: Cardinal; piFormats: PInteger;
                                    var nNumFormats: Integer; BufferCount : integer = 1);
-         procedure DoCreateContext(outputDevice : Cardinal); override;
-         procedure DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer); override;
+         procedure DoCreateContext(outputDevice : HDC); override;
+         procedure DoCreateMemoryContext(HDC: Cardinal; width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -438,7 +438,7 @@ end;
 
 // DoCreateContext
 //
-procedure TGLWin32Context.DoCreateContext(outputDevice : Cardinal);
+procedure TGLWin32Context.DoCreateContext(outputDevice : HDC);
 const
    cMemoryDCs = [OBJ_MEMDC, OBJ_METADC, OBJ_ENHMETADC];
    cBoolToInt : array [False..True] of Integer = (GL_FALSE, GL_TRUE);
@@ -626,7 +626,7 @@ end;
 
 // DoCreateMemoryContext
 //
-procedure TGLWin32Context.DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer);
+procedure TGLWin32Context.DoCreateMemoryContext(outputDevice: HDC; width, height : Integer; BufferCount : integer);
 var
    nbFormats : Integer;
    iFormats : array [0..31] of Integer;

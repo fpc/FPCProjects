@@ -13,12 +13,12 @@ interface
 {$i ../GLScene.inc}
 
 uses
-  xlib, Classes, sysutils, GLContext, LCLProc, Forms, Controls, OpenGL1x,
+  xlib, Classes, sysutils, GLCrossPlatform, GLContext, LCLProc, Forms, Controls, OpenGL1x,
   x, xutil, GTKProc,
 {$ifdef LCLGTK2}
   gtk2, gdk2, gdk2x;
 {$else}
-  gtk, gdk;
+  gtk, gtkdef, gdk;
 {$endif}
 
 type
@@ -42,8 +42,8 @@ type
 
          procedure DestructionEarlyWarning(sender : TObject);
 
-         procedure DoCreateContext(outputDevice : cardinal); override;
-         procedure DoCreateMemoryContext(outputDevice : cardinal;width, height : Integer; BufferCount : integer); override;
+         procedure DoCreateContext(outputDevice : HDC); override;
+         procedure DoCreateMemoryContext(outputDevice : HDC;width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -69,8 +69,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses
-  glcrossplatform;
 
 resourcestring
    cIncompatibleContexts =       'Incompatible contexts';
@@ -146,22 +144,23 @@ end;
 
 // DoCreateContext
 //
-procedure TGLGTKContext.DoCreateContext(outputDevice : Cardinal);
+procedure TGLGTKContext.DoCreateContext(outputDevice : HDC);
 var
   winattr: TXWindowAttributes;
   vitemp: TXVisualInfo;
   nret: Integer;
   vi: PXvisualInfo;
-  LCLObject: TObject;
-  CurWinControl: TWinControl;
+  //LCLObject: TObject;
+  //CurWinControl: TWinControl;
   CurScreen : Integer;
 begin
    // Just in case it didn't happen already.
    if not InitOpenGL then RaiseLastOSError;
     { Create OpenGL context }
-    LCLObject:=TObject(outputDevice);
-    CurWinControl:=TWinControl(LCLObject);
-    fGTKWidget := GetFixedWidget(pgtkwidget(CurWinControl.Handle));
+    //LCLObject:=TObject(outputDevice);
+    //CurWinControl:=TWinControl(LCLObject);
+    //fGTKWidget := GetFixedWidget(pgtkwidget(CurWinControl.Handle));
+    fGTKWidget := GetFixedWidget(TGtkDeviceContext(outputDevice).Widget);
     // Dirty workaround: force realize
     gtk_widget_realize(FGTKWidget);
     
@@ -232,7 +231,7 @@ end;
 
 // DoCreateMemoryContext
 //
-procedure TGLGTKContext.DoCreateMemoryContext(outputDevice : Cardinal; width, height : Integer; BufferCount : integer);
+procedure TGLGTKContext.DoCreateMemoryContext(outputDevice : HDC; width, height : Integer; BufferCount : integer);
 begin
   {$MESSAGE Warn 'DoCreateMemoryContext: Needs to be implemented'}
 end;

@@ -1998,7 +1998,7 @@ type
 
          procedure NotifyChange(Sender : TObject); override;
 
-         procedure CreateRC(deviceHandle : Cardinal; memoryContext : Boolean; BufferCount : integer = 1);
+         procedure CreateRC(deviceHandle : HDC; memoryContext : Boolean; BufferCount : integer = 1);
          procedure ClearBuffers;
          procedure DestroyRC;
          function  RCInstantiated : Boolean;
@@ -7376,7 +7376,7 @@ end;
 
 // CreateRC
 //
-procedure TGLSceneBuffer.CreateRC(deviceHandle : Cardinal; memoryContext : Boolean; BufferCount : integer);
+procedure TGLSceneBuffer.CreateRC(deviceHandle : HDC; memoryContext : Boolean; BufferCount : integer);
 var
    backColor: TColorVector;
 begin
