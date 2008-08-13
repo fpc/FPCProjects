@@ -421,7 +421,7 @@ procedure TGLSceneViewerLCL.WMPaint(var Message: TLMPaint);
   end;
 {$ELSE}
 var
-   PS : TPaintStruct;
+   PS : LCLType.TPaintStruct;
    p : TPoint;
 begin
    p:=ClientToScreen(Point(0, 0));

@@ -67,7 +67,7 @@ type
          procedure ChooseWGLFormat(DC: HDC; nMaxFormats: Cardinal; piFormats: PInteger;
                                    var nNumFormats: Integer; BufferCount : integer = 1);
          procedure DoCreateContext(outputDevice : HDC); override;
-         procedure DoCreateMemoryContext(HDC: Cardinal; width, height : Integer; BufferCount : integer); override;
+         procedure DoCreateMemoryContext(OutputDevice: HDC; width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
