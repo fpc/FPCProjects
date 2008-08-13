@@ -3096,7 +3096,7 @@ begin
       RebuildMatrix;
       if not Assigned(FAbsoluteMatrix) then begin
          GetMem(FAbsoluteMatrix, SizeOf(TMatrix)*2);
-         FInvAbsoluteMatrix:=PMatrix(Integer(FAbsoluteMatrix)+SizeOf(TMatrix));
+         FInvAbsoluteMatrix:=PMatrix(PtrUInt(FAbsoluteMatrix)+SizeOf(TMatrix));
       end;
       if Assigned(Parent) and (not (Parent is TGLSceneRootObject)) then begin
          MatrixMultiply(FLocalMatrix^, TGLBaseSceneObject(Parent).AbsoluteMatrixAsAddress^,
@@ -3123,7 +3123,7 @@ begin
       if VectorEquals(Scale.DirectVector, XYZHmgVector) then begin
          if not Assigned(FAbsoluteMatrix) then begin
             GetMem(FAbsoluteMatrix, SizeOf(TMatrix)*2);
-            FInvAbsoluteMatrix:=PMatrix(Integer(FAbsoluteMatrix)+SizeOf(TMatrix));
+            FInvAbsoluteMatrix:=PMatrix(PtrUInt(FAbsoluteMatrix)+SizeOf(TMatrix));
          end;
          RebuildMatrix;
          if Parent<>nil then

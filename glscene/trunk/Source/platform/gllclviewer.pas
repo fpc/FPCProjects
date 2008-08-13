@@ -64,8 +64,8 @@ type
          { Private Declarations }
          FBuffer : TGLSceneBuffer;
          FVSync : TVSyncMode;
-         FOwnDC : Cardinal;
-			FOnMouseEnter, FOnMouseLeave : TNotifyEvent;
+         FOwnDC : HDC;
+         FOnMouseEnter, FOnMouseLeave : TNotifyEvent;
          FMouseInControl : Boolean;
          FIsOpenGLAvailable : Boolean;
          FLastScreenPos : TPoint;
@@ -127,7 +127,7 @@ type
 
          function CreateSnapShotBitmap : TBitmap;
 
-         property RenderDC : Cardinal read FOwnDC;
+         property RenderDC : HDC read FOwnDC;
          property MouseInControl : Boolean read FMouseInControl;
          Procedure Invalidate; override;
       published
@@ -204,7 +204,7 @@ uses OpenGL1x, sysutils, GLViewer
      {$ifndef fpc} // delphi
      ,GLWin32Context
      {$else}
-     
+     ,LCLIntf
        {$ifdef LCLWIN32}
          {$ifndef CONTEXT_INCLUDED}
      ,GLWin32Context
@@ -369,7 +369,10 @@ begin
       {$ifdef MSWINDOWS}
       FOwnDC:=GetDC(Handle);
       {$ELSE}
-      FOwnDC := Cardinal(Self);
+      //FOwnDC := Handle;
+      //FOwnDC := GetFixedWidget(pgtkwidget(outputDevice));
+      FOwnDC:=GetDC(Handle);
+      writeln('TGLSceneViewerLCL.CreateWnd FOwnDC= '+IntToHex(FOwnDC,sizeof(FOwnDC)*2));
       {$ENDIF}
       FBuffer.CreateRC(FOwnDC, False);
    end;

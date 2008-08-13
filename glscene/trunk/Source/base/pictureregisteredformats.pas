@@ -121,6 +121,7 @@ begin
   {$ENDIF}
 {$ENDIF}
 {$ENDIF}
+{
    pRegisterFileFormat:=PChar(@TPicture.RegisterFileFormat);
    if pRegisterFileFormat[0]=#$FF then // in case of BPL redirector
       pRegisterFileFormat:=PChar(PInteger(PInteger(@pRegisterFileFormat[2])^)^);
@@ -136,6 +137,7 @@ begin
                                               TObject(fileFormat.GraphicClass));
       end;
    end;
+}
 end;
 
 end.
