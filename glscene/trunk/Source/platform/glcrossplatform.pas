@@ -187,7 +187,7 @@ type
   PRect = Types.PRect;
 
   TTextLayout = Graphics.TTextLayout;
-
+  HDC         = LCLType.HDC;
   {$ELSE}
   TPoint = Windows.TPoint;
   PPoint = Windows.PPoint;
