@@ -1004,6 +1004,14 @@ begin
 	if FCount<=0 then
 		Result:=-1
 	else begin
+          {$IFDEF NO_ASM}
+            result:=-1;
+            for c := 0 to FCount-1 do
+              if Item = FList^[c] then begin
+                result:=c;
+                break;
+              end;
+          {$ELSE}
 		c:=FCount;
 		p:=@FList^[0];
 		asm
@@ -1023,6 +1031,7 @@ begin
 			mov Result, edx;
 			pop edi;
 		end;
+          {$ENDIF}
 	end;
 end;
 
