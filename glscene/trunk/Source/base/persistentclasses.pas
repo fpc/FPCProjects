@@ -1154,7 +1154,7 @@ begin
                Inc(pk);
             end;
          end;
-         SetCount((Integer(pk)-Integer(p)) div SizeOf(TObject));
+         SetCount((PtrInt(pk)-PtrInt(p)) div SizeOf(TObject));
          Exit;
       end;
    end;
