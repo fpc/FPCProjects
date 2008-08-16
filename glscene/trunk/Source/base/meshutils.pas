@@ -432,7 +432,7 @@ begin
       end;
       Inc(refListI);
    end;
-   reference.Count:=(Integer(refListN)-Integer(@reference.List[0])) div SizeOf(TAffineVector);
+   reference.Count:=(PtrUInt(refListN)-PtrUInt(@reference.List[0])) div SizeOf(TAffineVector);
 end;
 
 // RemapReferences (integers)
@@ -752,7 +752,7 @@ var
       hashList:=edgesHash[hashKey];
       iList:=@hashList.List[0];
       iListEnd:=@hashList.List[hashList.Count];
-      while Integer(iList)<Integer(iListEnd) do begin
+      while PtrUInt(iList)<PtrUInt(iListEnd) do begin
          n:=iList^;
          if (edgesList[n]=a) and (edgesList[n+1]=b) then begin
             edgesTriangles[n+1]:=curTri;

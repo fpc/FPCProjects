@@ -225,7 +225,7 @@ begin
     XFree(vi);
     if RenderingContext = nil then
       raise Exception.Create('Failed to create rendering context');
-    if integer(RenderingContext) = GLX_BAD_CONTEXT then
+    if PtrUInt(RenderingContext) = GLX_BAD_CONTEXT then
       raise Exception.Create('bad context');
 end;
 
