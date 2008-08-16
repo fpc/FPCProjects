@@ -449,11 +449,11 @@ procedure TGLSceneViewerLCL.WMDestroy(var Message: TLMDestroy);
 begin
    FBuffer.DestroyRC;
    if FOwnDC<>0 then begin
-     {$ifdef MSWINDOWS}
+     {.$ifdef MSWINDOWS}
       ReleaseDC(Handle, FOwnDC);
-      {$else}
-      FOwnDC := 0;
-      {$endif}
+      {.$else}
+      //FOwnDC := 0;
+      {.$endif}
       FOwnDC:=0;
    end;
    inherited;
