@@ -1953,6 +1953,7 @@ type
          FAfterRender  : TNotifyEvent;
          FInitiateRendering : TDirectRenderEvent;
          FWrapUpRendering : TDirectRenderEvent;
+         FNameStackMap    : TPersistentObjectList;
 
       protected
          { Protected Declarations }
@@ -1997,6 +1998,10 @@ type
          destructor  Destroy; override;
 
          procedure NotifyChange(Sender : TObject); override;
+
+         procedure DoGLInitNames;
+         procedure DoGLLoadName(aPointer : pointer);
+         procedure DoGLPushName(aPointer : pointer);
 
          procedure CreateRC(deviceHandle : HDC; memoryContext : Boolean; BufferCount : integer = 1);
          procedure ClearBuffers;
@@ -4564,8 +4569,8 @@ begin
    glMultMatrixf(PGLfloat(FLocalMatrix));
    if ARci.drawState=dsPicking then
       if ARci.proxySubObject then
-         glPushName(Integer(Self))
-      else glLoadName(Integer(Self));
+         TGLSceneBuffer(ARci.buffer).DoGLPushName(self)
+      else TGLSceneBuffer(ARci.buffer).DoGLLoadName(self);
    // Start rendering
    if shouldRenderSelf then begin
 {$IFNDEF GLS_OPTIMIZATIONS}
@@ -8202,6 +8207,25 @@ begin
    DoChange;
 end;
 
+procedure TGLSceneBuffer.DoGLInitNames;
+begin
+  if assigned(FNameStackMap) then
+    FNameStackMap.clear
+  else
+    FNameStackMap:=TPersistentObjectList.Create;
+  glInitNames;
+end;
+
+procedure TGLSceneBuffer.DoGLLoadName(aPointer: pointer);
+begin
+  glLoadName(FNameStackMap.add(aPointer));
+end;
+
+procedure TGLSceneBuffer.DoGLPushName(aPointer: pointer);
+begin
+  glPushName(FNameStackMap.add(aPointer));
+end;
+
 // PickObjects
 //
 procedure TGLSceneBuffer.PickObjects(const rect : TGLRect; pickList : TGLPickList;
@@ -8239,13 +8263,13 @@ begin
                // hardware that uses DMA to return select results but that sometimes
                // overrun the buffer.  Yuck.
                Inc(objectCountGuess, objectCountGuess); // double buffer size
-               ReallocMem(buffer, objectCountGuess * 4 * SizeOf(Integer) + 32 * 4);
+               ReallocMem(buffer, objectCountGuess * 4 * SizeOf(GLUint) + 32 * 4);
             end;
             // pass buffer to opengl and prepare render
             glSelectBuffer(objectCountGuess*4, @Buffer^);
             glRenderMode(GL_SELECT);
-            glInitNames;
-            glPushName(0);
+            DoGLInitNames;
+            DoGLPushName(nil);
             // render the scene (in select mode, nothing is drawn)
             FRenderDPI:=96;
             if Assigned(FCamera) and Assigned(FCamera.FScene) then
@@ -8271,12 +8295,13 @@ begin
                   inc(subObjIndex);
                end;
             end;
-            PickList.AddHit(TGLCustomSceneObject(buffer^[current+3]),
+            PickList.AddHit(TGLCustomSceneObject(FNameStackMap.Items[buffer^[current+3]]),
                             subObj, szmin, szmax);
          end;
       finally
          FProjectionMatrix:=backupProjectionMatrix;
          FreeMem(buffer);
+         FreeAndNil(FNameStackMap);
       end;
    finally
       FRendering:=False;
