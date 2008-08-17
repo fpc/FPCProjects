@@ -259,7 +259,7 @@ end;
 //
 destructor TGLSceneViewerLCL.Destroy;
 begin
-   FBuffer.Free;
+   FreeAndNil(FBuffer);
    inherited Destroy;
 end;
 
@@ -286,63 +286,72 @@ end;
 //
 procedure TGLSceneViewerLCL.SetBeforeRender(const val : TNotifyEvent);
 begin
-   FBuffer.BeforeRender:=val;
+   if assigned(FBuffer) then
+     FBuffer.BeforeRender:=val;
 end;
 
 // GetBeforeRender
 //
 function TGLSceneViewerLCL.GetBeforeRender : TNotifyEvent;
 begin
-   Result:=FBuffer.BeforeRender;
+   if assigned(FBuffer) then
+     Result:=FBuffer.BeforeRender;
 end;
 
 // SetPostRender
 //
 procedure TGLSceneViewerLCL.SetPostRender(const val : TNotifyEvent);
 begin
-   FBuffer.PostRender:=val;
+   if assigned(FBuffer) then
+     FBuffer.PostRender:=val;
 end;
 
 // GetPostRender
 //
 function TGLSceneViewerLCL.GetPostRender : TNotifyEvent;
 begin
-   Result:=FBuffer.PostRender;
+   if assigned(FBuffer) then
+     Result:=FBuffer.PostRender;
 end;
 
 // SetAfterRender
 //
 procedure TGLSceneViewerLCL.SetAfterRender(const val : TNotifyEvent);
 begin
-   FBuffer.AfterRender:=val;
+   if assigned(FBuffer) then
+     FBuffer.AfterRender:=val;
 end;
 
 // GetAfterRender
 //
 function TGLSceneViewerLCL.GetAfterRender : TNotifyEvent;
 begin
-   Result:=FBuffer.AfterRender;
+   if assigned(FBuffer) then
+     Result:=FBuffer.AfterRender;
 end;
 
 // SetCamera
 //
 procedure TGLSceneViewerLCL.SetCamera(const val : TGLCamera);
 begin
-   FBuffer.Camera:=val;
+   if assigned(FBuffer) then
+     FBuffer.Camera:=val;
 end;
 
 // GetCamera
 //
 function TGLSceneViewerLCL.GetCamera : TGLCamera;
 begin
-   Result:=FBuffer.Camera;
+   if assigned(FBuffer) then
+     Result:=FBuffer.Camera;
 end;
 
 // SetBuffer
 //
 procedure TGLSceneViewerLCL.SetBuffer(const val : TGLSceneBuffer);
 begin
-   FBuffer.Assign(val);
+   if assigned(FBuffer) then
+     FBuffer.Assign(val);
 end;
 
 {$ifdef MSWINDOWS}
@@ -362,7 +371,7 @@ end;
 procedure TGLSceneViewerLCL.CreateWnd;
 begin
    inherited CreateWnd;
-   if IsOpenGLAvailable then begin
+   if ((IsOpenGLAvailable) and (assigned(FBuffer))) then begin
       // initialize and activate the OpenGL rendering context
       // need to do this only once per window creation as we have a private DC
       FBuffer.Resize(Self.Width, Self.Height);
@@ -379,7 +388,8 @@ end;
 //
 procedure TGLSceneViewerLCL.DestroyWnd;
 begin
-   FBuffer.DestroyRC;
+   if assigned(FBuffer) then
+     FBuffer.DestroyRC;
    if FOwnDC<>0 then begin
       {.$IFDEF MSWINDIOWS}
       ReleaseDC(Handle, FOwnDC);
@@ -405,7 +415,8 @@ end;
 procedure TGLSceneViewerLCL.WMSize(var Message: TLMSize);
 begin
    inherited;
-   FBuffer.Resize(Message.Width, Message.Height);
+   if assigned(FBuffer) then
+     FBuffer.Resize(Message.Width, Message.Height);
 end;
 
 // WMPaint
@@ -415,7 +426,7 @@ procedure TGLSceneViewerLCL.WMPaint(var Message: TLMPaint);
   begin
     Include(FControlState,csCustomPaint);
     inherited WMPaint(Message);
-    if IsOpenGLAvailable then
+    if ((IsOpenGLAvailable) and (assigned(FBuffer))) then
       FBuffer.Render;
     Exclude(FControlState,csCustomPaint);
   end;
@@ -427,14 +438,14 @@ begin
    p:=ClientToScreen(Point(0, 0));
    if (FLastScreenPos.X<>p.X) or (FLastScreenPos.Y<>p.Y) then begin
       // Workaround for MS OpenGL "black borders" bug
-      if FBuffer.RCInstantiated then
+      if ((assigned(FBuffer)) and (FBuffer.RCInstantiated)) then
          PostMessage(Handle, WM_SIZE, SIZE_RESTORED,
                      Width+(Height shl 16));
       FLastScreenPos:=p;
    end;
    BeginPaint(Handle, PS);
    try
-      if IsOpenGLAvailable and (Width>0) and (Height>0) then
+      if assigned(FBuffer) and IsOpenGLAvailable and (Width>0) and (Height>0) then
          FBuffer.Render;
    finally
       EndPaint(Handle, PS);
@@ -447,7 +458,8 @@ end;
 //
 procedure TGLSceneViewerLCL.WMDestroy(var Message: TLMDestroy);
 begin
-   FBuffer.DestroyRC;
+   if assigned(FBuffer) then
+     FBuffer.DestroyRC;
    if FOwnDC<>0 then begin
      {.$ifdef MSWINDOWS}
       ReleaseDC(Handle, FOwnDC);
@@ -512,28 +524,36 @@ end;
 //
 function TGLSceneViewerLCL.LastFrameTime : Single;
 begin
-   Result:=FBuffer.LastFrameTime;
+   if assigned(FBuffer) then
+     Result:=FBuffer.LastFrameTime
+   else result:=0.0;
 end;
 
 // FramesPerSecond
 //
 function TGLSceneViewerLCL.FramesPerSecond : Single;
 begin
-   Result:=FBuffer.FramesPerSecond;
+   if assigned(FBuffer) then
+     Result:=FBuffer.FramesPerSecond
+   else
+     result:=0.0;
 end;
 
 // FramesPerSecondText
 //
 function TGLSceneViewerLCL.FramesPerSecondText(decimals : Integer = 1) : String;
 begin
-   Result:=Format('%.*f FPS', [decimals, FBuffer.FramesPerSecond]);
+   if assigned(FBuffer) then
+     Result:=Format('%.*f FPS', [decimals, FBuffer.FramesPerSecond])
+   else result:='';
 end;
 
 // ResetPerformanceMonitor
 //
 procedure TGLSceneViewerLCL.ResetPerformanceMonitor;
 begin
-   FBuffer.ResetPerformanceMonitor;
+   if assigned(FBuffer) then
+     FBuffer.ResetPerformanceMonitor;
 end;
 
 // CreateSnapShotBitmap

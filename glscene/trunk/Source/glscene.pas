@@ -6559,8 +6559,8 @@ begin
    {$hint: - crossbuilder is this still needed? for me it works without that hack. }
    { note: The ifdef fpc block is completely missing in cvs }
    //Scene is destroyed earlyer then Viewer in Lazarus so prevent to try free Unassigned buffer
-   Objects.DeleteChildCameras;
-   Objects.DeleteChildren;
+   //Objects.DeleteChildCameras;
+   //Objects.DeleteChildren;
    {$ENDIF}
    FCameras.Free;
    FLights.Free;
@@ -7319,12 +7319,12 @@ begin
    FGLStates.Free;
    // clean up and terminate
    {$HINT crossbuilder: check, if this ifndef is still needed }
-   {$ifndef FPC}
+   {.$ifndef FPC}
    if Assigned(FCamera) and Assigned(FCamera.FScene) then begin
       FCamera.FScene.RemoveBuffer(Self);
       FCamera:=nil;
    end;
-   {$endif}
+   {.$endif}
    DestroyRC;
    FAmbientColor.Free;
    FAfterRenderEffects.Free;
