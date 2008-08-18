@@ -995,7 +995,7 @@ var
 begin
    colorDialog:=TColorDialog.Create(nil);
    try
-      glColor:=TGLColor(GetOrdValue);
+      glColor:=TGLColor(GetObjectValue);
       {$IFNDEF FPC}{$ifdef WIN32}
       colorDialog.Options:=[cdFullOpen];
       {$endif}{$ENDIF}
@@ -1021,12 +1021,12 @@ end;
 
 function TGLColorProperty.GetValue: String;
 begin
-  Result:=ColorManager.GetColorName(TGLColor(GetOrdValue).Color);
+  Result:=ColorManager.GetColorName(TGLColor(GetObjectValue).Color);
 end;
 
 procedure TGLColorProperty.SetValue(const Value: string);
 begin
-  TGLColor(GetOrdValue).Color:=ColorManager.GetColor(Value);
+  TGLColor(GetObjectValue).Color:=ColorManager.GetColor(Value);
   Modified;
 end;
 
