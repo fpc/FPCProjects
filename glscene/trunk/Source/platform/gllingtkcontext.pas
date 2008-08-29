@@ -16,7 +16,7 @@ uses
   xlib, Classes, sysutils, GLCrossPlatform, GLContext, LCLProc, Forms, Controls, OpenGL1x,
   x, xutil, GTKProc,
 {$ifdef LCLGTK2}
-  gtk2, gdk2, gdk2x;
+  gtk2, gdk2, gdk2x, gtkdef;
 {$else}
   gtk, gtkdef, gdk;
 {$endif}
