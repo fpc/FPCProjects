@@ -37,7 +37,7 @@ type
   TLSMTPClient = class;
   
   TLSMTPStatus = (ssNone, ssCon, ssHelo, ssEhlo, ssAuthLogin, ssAuthPlain,
-                  ssStartTLS, ssMail, ssRcpt, ssData, ssRset, ssQuit);
+                  ssStartTLS, ssMail, ssRcpt, ssData, ssRset, ssQuit, ssLast);
 
   TLSMTPStatusSet = set of TLSMTPStatus;
 
@@ -211,9 +211,9 @@ const
 
 function StatusToStr(const aStatus: TLSMTPStatus): string;
 const
-  STATAR: array[ssNone..ssQuit] of string = ('ssNone', 'ssCon', 'ssHelo', 'ssEhlo',
+  STATAR: array[ssNone..ssLast] of string = ('ssNone', 'ssCon', 'ssHelo', 'ssEhlo',
                                              'ssStartTLS', 'ssAuthLogin', 'ssAuthPlain',
-                                             'ssMail', 'ssRcpt', 'ssData', 'ssRset', 'ssQuit');
+                                             'ssMail', 'ssRcpt', 'ssData', 'ssRset', 'ssQuit', 'ssLast');
 begin
   Result := STATAR[aStatus];
 end;
@@ -338,7 +338,7 @@ constructor TLSMTPClient.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
   FPort := 25;
-  FStatusSet := [ssCon..ssQuit]; // full set
+  FStatusSet := [ssNone..ssLast]; // full set
   FSL := TStringList.Create;
 //  {$warning TODO: fix pipelining support when server does it}
   FPipeLine := False;

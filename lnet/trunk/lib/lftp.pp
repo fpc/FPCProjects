@@ -380,7 +380,7 @@ begin
   FData.OnCanSend := @OnSe;
   FData.OnError := @OnEr;
 
-  FStatusSet := []; // empty Event set
+  FStatusSet := [fsNone..fsLast]; // full Event set
   FPassWord := '';
   FChunkSize := DEFAULT_CHUNK;
   FStartPort := DEFAULT_FTP_PORT;
