@@ -547,16 +547,7 @@ var
   s: string;
   FF: TFileStream;
 begin
-  if ExtractFileName(LeftView.FileName) = '[.]' then
-    Exit;
-    
-  if ExtractFileName(LeftView.FileName) = '[..]' then
-    s := GetParentDirectory(LeftView.Directory)
-  else begin
-    s := ExtractFileName(LeftView.FileName);
-    s := IncludeTrailingPathDelimiter(LeftView.Directory) +
-         Copy(s, 2, Length(s)-2) + PathDelim;
-  end;
+  s := LeftView.FileName;
 
   if DirectoryExists(s) then begin
     SetLocalDirectory(s);

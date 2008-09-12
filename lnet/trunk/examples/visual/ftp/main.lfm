@@ -6,7 +6,7 @@ object MainForm: TMainForm
   ActiveControl = MemoText
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
-  ClientHeight = 479
+  ClientHeight = 485
   ClientWidth = 725
   Constraints.MinHeight = 400
   Constraints.MinWidth = 725
@@ -18,7 +18,7 @@ object MainForm: TMainForm
   LCLVersion = '0.9.25'
   object MemoText: TMemo
     Height = 98
-    Top = 361
+    Top = 364
     Width = 725
     Align = alBottom
     ReadOnly = True
@@ -26,16 +26,16 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 312
+    Height = 315
     Top = 24
     Width = 725
     Align = alClient
-    ClientHeight = 312
+    ClientHeight = 315
     ClientWidth = 725
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 310
+      Height = 313
       Top = 1
       Width = 183
       Align = alLeft
@@ -47,17 +47,16 @@ object MainForm: TMainForm
       Sorted = False
       Style = lbOwnerDrawFixed
       TabOrder = 0
-      TopIndex = -1
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 310
+      Height = 313
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 310
+      Height = 313
       Top = 1
       Width = 535
       Align = alClient
@@ -107,14 +106,14 @@ object MainForm: TMainForm
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 356
+    Top = 359
     Width = 725
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
-    Height = 20
-    Top = 459
+    Height = 23
+    Top = 462
     Width = 725
     Panels = <    
       item
@@ -143,21 +142,21 @@ object MainForm: TMainForm
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 84
+      Left = 72
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 97
+      Left = 85
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 152
+      Left = 133
       Top = 2
       Action = accDisconnect
       Down = True
@@ -167,7 +166,7 @@ object MainForm: TMainForm
   end
   object ProgressBar1: TProgressBar
     Height = 20
-    Top = 336
+    Top = 339
     Width = 725
     Align = alBottom
     Max = 100
@@ -218,7 +217,6 @@ object MainForm: TMainForm
     end
   end
   object FTP: TLFTPClientComponent
-    Port = 21
     OnConnect = FTPConnect
     OnSent = FTPSent
     OnReceive = FTPReceive
