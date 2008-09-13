@@ -177,6 +177,7 @@ type
     property Method;
     property SSLActive default True;
     property OnSSLConnect;
+    property OnSSLAccept;
   end;
 
 implementation
