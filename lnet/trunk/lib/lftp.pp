@@ -143,6 +143,7 @@ type
     
     procedure ClearStatusFlags;
 
+    function GetCurrentStatus: TLFTPStatus;
     function GetTransfer: Boolean;
 
     function GetEcho: Boolean;
@@ -215,6 +216,7 @@ type
     property Echo: Boolean read GetEcho write SetEcho;
     property StartPort: Word read FStartPort write FStartPort default DEFAULT_FTP_PORT;
     property Transfer: Boolean read GetTransfer;
+    property CurrentStatus: TLFTPStatus read GetCurrentStatus;
 
     property OnError: TLSocketErrorEvent read FOnError write FOnError;
     property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
@@ -473,6 +475,11 @@ var
 begin
   for s := fsNone to fsLast do
     FStatusFlags[s] := False;
+end;
+
+function TLFTPClient.GetCurrentStatus: TLFTPStatus;
+begin
+  Result := FStatus.First.Status;
 end;
 
 function TLFTPClient.GetTransfer: Boolean;

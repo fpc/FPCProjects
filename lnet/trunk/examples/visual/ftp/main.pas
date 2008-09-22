@@ -8,8 +8,8 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LCLType,
-  LNetComponents, lNet, ComCtrls, ExtCtrls, StdCtrls, Menus, FileCtrl,
-  ActnList, Maps, Grids;
+  LNetComponents, lNet, lFTP, ComCtrls, ExtCtrls, StdCtrls, Menus, FileCtrl,
+  ActnList, Grids;
 
 type
   TParserResult=(
@@ -107,7 +107,6 @@ type
     FFile: TFileStream;
     FDLSize: Int64;
     FDLDone: Int64;
-    FGetting: Boolean;
     //FIcons: array of TIconRec;
     FIcons: TStringList;
     FSpecialIcons: array of TTaggedPicture;
@@ -356,17 +355,7 @@ var
   i: Integer;
   Buf: array[0..65535] of Byte;
 begin
-  if not FGetting then begin
-    s := FTP.GetDataMessage;
-    if Length(s) > 0 then
-      FDirListing := FDirListing + s
-    else begin
-      FList.Text := FDirListing;
-      FDirListing := '';
-      FindNames;
-      FList.Clear;
-    end;
-  end else begin
+  if FTP.CurrentStatus = fsRetr then begin // getting file, save to file
     i := FTP.GetData(Buf, 65535);
     if i > 0 then begin
       if Length(CreateFilePath) > 0 then begin
@@ -379,11 +368,20 @@ begin
       LeftView.UpdateFileList;
       FreeAndNil(FFile);
       CreateFilePath := '';
-      FGetting := False;
       DoList('');
     end;
     Inc(FDLDone, i);
     ProgressBar1.Position := Round(FDLDone / FDLSize * 100);
+  end else begin // getting listing
+    s := FTP.GetDataMessage;
+    if Length(s) > 0 then
+      FDirListing := FDirListing + s
+    else begin
+      FList.Text := FDirListing;
+      FDirListing := '';
+      FindNames;
+      FList.Clear;
+    end;
   end;
 end;
 
@@ -419,7 +417,7 @@ end;
 
 procedure TMainForm.MenuItemMkdirClick(Sender: TObject);
 var
-  s: string;
+  s: string = '';
 begin
   if InputQuery('New directory', 'Please specify directory name', s) then
     if FTP.MakeDirectory(s) then
@@ -515,8 +513,10 @@ end;
 
 procedure TMainForm.LDeletePopupClick(Sender: TObject);
 begin
-  if FileExists(LeftView.Directory + LeftView.Items[LeftView.ItemIndex]) then
+  if FileExists(LeftView.Directory + LeftView.Items[LeftView.ItemIndex]) then begin
     DeleteFile(LeftView.Directory + LeftView.Items[LeftView.ItemIndex]);
+    LeftView.UpdateFileList;
+  end;
 end;
 
 procedure TMainForm.LInfoPopupClick(Sender: TObject);
@@ -533,12 +533,13 @@ end;
 
 procedure TMainForm.LRenamePopupClick(Sender: TObject);
 var
-  aName: string;
+  aName: string = '';
 begin
   if FileExists(LeftView.Directory + LeftView.Items[LeftView.ItemIndex]) then begin
     if InputQuery('New Name', 'Please type in new filename', False, aName) then
       RenameFile(LeftView.Directory + LeftView.Items[LeftView.ItemIndex],
                  LeftView.Directory + aName);
+      LeftView.UpdateFileList;
   end;
 end;
 
@@ -573,7 +574,7 @@ end;
 
 procedure TMainForm.RenamePopupClick(Sender: TObject);
 var
-  aName: string;
+  aName: string = '';
 begin
   if InputQuery('New Name', 'Please type in new filename', False, aName) then begin
     FTP.Rename(CurrentName, aName);
@@ -609,7 +610,6 @@ var
   item: string;
   P: TPoint;
 begin
-
   if not FTP.Connected then
     exit;
 
@@ -630,7 +630,6 @@ begin
       FDLSize := 1;
     FreeAndNil(FFile);
     CreateFilePath := IncludeTrailingPathDelimiter(LeftView.Directory) + item;
-    FGetting := True;
     FTP.Retrieve(item)
   end;
 end;
@@ -743,7 +742,7 @@ procedure TMainForm.ChangeDirectory(aDir: string);
 begin
   // todo: implement refresh
   // todo: implement quick parent director
-  WriteLn('Changing directory to ',aDir);
+  //  WriteLn('Changing directory to ',aDir);
   if aDir='..' then begin
     FTP.ChangeDirectory(aDir);
     DoList('');
@@ -765,7 +764,6 @@ procedure TMainForm.LeftViewDrawItem(sender: TWinControl; Index: Integer;
   ARect: TRect; State: TOwnerDrawState);
 var
   ts: TTextStyle;
-  i: Integer;
   Pic: TPicture;
 begin
   if Index>=0 then begin
