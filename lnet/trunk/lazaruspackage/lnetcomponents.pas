@@ -47,6 +47,7 @@ type
     property OnDisconnect;
     property OnConnect;
     property OnAccept;
+    property OnCanSend;
     property Timeout;
     property ReuseAddress;
     property Session;
