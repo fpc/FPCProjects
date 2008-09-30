@@ -4358,10 +4358,6 @@ function IsOpenGLLoaded : Boolean;
 function IsMesaGL : Boolean;
 
 
-// Buffer ID's for Multiple-Render-Targets (using GL_ATI_draw_buffers)
-const
-  MRT_BUFFERS: array [0..3] of GLenum = (GL_FRONT_LEFT, GL_AUX0, GL_AUX1, GL_AUX2);
-
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

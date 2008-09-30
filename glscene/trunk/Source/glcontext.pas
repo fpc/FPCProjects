@@ -4,6 +4,8 @@
    Currently NOT thread-safe.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>16/03/08 - DanB - moved MRT_BUFFERS into unit from opengl1x.pas rewrite,
+                            and added some experimental geometry shader code
       <li>15/03/08 - DaStr - Fixups for vIgnoreContextActivationFailures mode
                                                       (BugTracker ID = 1914782)
       <li>06/11/07 - LC - moved vIgnoreContextActivationFailures to "Interface" section
@@ -40,6 +42,10 @@ interface
 uses Classes, SysUtils, GLCrossPlatform, OpenGL1x, VectorGeometry, VectorTypes;
 
 {$i GLScene.inc}
+
+// Buffer ID's for Multiple-Render-Targets (using GL_ATI_draw_buffers)
+const
+  MRT_BUFFERS: array [0..3] of GLenum = (GL_FRONT_LEFT, GL_AUX0, GL_AUX1, GL_AUX2);
 
 type
 
@@ -482,6 +488,15 @@ type
    //
    {: Manages a handle to a Vertex Shader Object. }
    TGLVertexShaderHandle = class (TGLShaderHandle)
+      public
+         { Public Declarations }
+         constructor Create; override;
+   end;
+
+   // TGLGeometryShaderHandle
+   //
+   {: Manages a handle to a Geometry Shader Object. }
+   TGLGeometryShaderHandle = class (TGLShaderHandle)
       public
          { Public Declarations }
          constructor Create; override;
@@ -1504,6 +1519,19 @@ end;
 constructor TGLVertexShaderHandle.Create;
 begin
    FShaderType:=GL_VERTEX_SHADER_ARB;
+   inherited;
+end;
+
+// ------------------
+// ------------------ TGLGeometryShaderHandle ------------------
+// ------------------
+
+// Create
+//
+constructor TGLGeometryShaderHandle.Create;
+begin
+   //Crossbuilder: uncomment after updating opengl1x.pas:
+   //FShaderType:=GL_GEOMETRY_SHADER_EXT;
    inherited;
 end;
 
