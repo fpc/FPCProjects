@@ -4437,7 +4437,7 @@ begin
    glDrawRangeElements := GLGetProcAddress('glDrawRangeElements');
 
    // promoted to core v1.2 from GL_SGI_color_table (#14)
-   glColorTable := GLGetProcAddress('glCopyColorSubTable');
+   glColorTable := GLGetProcAddress('glColorTable');
    glColorTableParameterfv := GLGetProcAddress('glColorTableParameterfv');
    glColorTableParameteriv := GLGetProcAddress('glColorTableParameteriv');
    glCopyColorTable := GLGetProcAddress('glCopyColorTable');
@@ -4743,11 +4743,11 @@ begin
    glPointParameterfvARB := GLGetProcAddress('glPointParameterfvARB');
 
    // GL_ARB_vertex_blend (#15) {deprecated?}
-   
+
    // GL_ARB_matrix_palette (#16) {deprecated?}
-   
+
    // GL_ARB_window_pos (#25)
-   
+
    // GL_ARB_vertex_program (#26)
    glVertexAttrib1dARB := GLGetProcAddress('glVertexAttrib1dARB');
    glVertexAttrib1dvARB := GLGetProcAddress('glVertexAttrib1dvARB');
@@ -4874,9 +4874,9 @@ begin
    glGetAttribLocationARB := GLGetProcAddress('glGetAttribLocationARB');
 
    // GL_ARB_draw_buffers (#37)
-   
+
    // GL_ARB_color_buffer_float (#39)
-   
+
    {.$endregion}
 
    {.$region 'locate functions/procedures for Vendor/EXT extensions'}
@@ -5474,7 +5474,7 @@ begin
    WGL_ARB_buffer_region:=CheckExtension('WGL_ARB_buffer_region');
    WGL_ARB_extensions_string:=CheckExtension('WGL_ARB_extensions_string');
    WGL_ARB_multisample:=CheckExtension('WGL_ARB_multisample');
-   WGL_ARB_pbuffer:=CheckExtension('WGL_ARB_pbuffer ');
+   WGL_ARB_pbuffer:=CheckExtension('WGL_ARB_pbuffer');
    WGL_ARB_pixel_format:=CheckExtension('WGL_ARB_pixel_format');
    WGL_ATI_pixel_format_float:=CheckExtension('WGL_ATI_pixel_format_float');
    WGL_EXT_swap_control:=CheckExtension('WGL_EXT_swap_control');
