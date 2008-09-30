@@ -70,7 +70,7 @@ const
   {$ENDIF}
   { Default Values }
   LDEFAULT_BACKLOG = 5;
-  BUFFER_SIZE = 65536;
+  BUFFER_SIZE = 262144;
   
   { Base functions }
   {$IFNDEF UNIX}
