@@ -1660,7 +1660,6 @@ initialization
 {$IFDEF UNIX}
   {$IFDEF FPC}
   Init_vProgStartSecond;
-  writeln('vProgStartSecond*1000000=',vProgStartSecond*1000,'  ',vProgStartSecond*1000000);
   {$ENDIF}
 {$ENDIF}
 end.
