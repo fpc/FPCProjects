@@ -118,13 +118,13 @@ Begin
   C1 := @B2[0];
   L1 := @B3[0];
 
-  T2 := Pointer(Integer(T1)+SizeOf(Double));
-  C2 := Pointer(Integer(C1)+SizeOf(Double));
-  L2 := Pointer(Integer(L1)+SizeOf(Double));
+  T2 := Pointer(PtrUInt(T1)+SizeOf(Double));
+  C2 := Pointer(PtrUInt(C1)+SizeOf(Double));
+  L2 := Pointer(PtrUInt(L1)+SizeOf(Double));
 
-  T3 := Pointer(Integer(T2)+SizeOf(Double));
-  C3 := Pointer(Integer(C2)+SizeOf(Double));
-  L3 := Pointer(Integer(L2)+SizeOf(Double));
+  T3 := Pointer(PtrUInt(T2)+SizeOf(Double));
+  C3 := Pointer(PtrUInt(C2)+SizeOf(Double));
+  L3 := Pointer(PtrUInt(L2)+SizeOf(Double));
 
   For XC := 0 to Width-1 do
   Begin
