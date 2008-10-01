@@ -1587,18 +1587,18 @@ end;
 // QueryPerformanceFrequency
 //
 function QueryPerformanceFrequency(var val : Int64) : Boolean;
-{$ifndef WIN32}
-var
-   startCycles, endCycles : Int64;
-   aTime, refTime : TDateTime;
-{$ENDIF}
-begin
 {$IFDEF WIN32}
+begin
    Result:=Boolean(Windows.QueryPerformanceFrequency(val));
 {$ELSE}
-   {$IFDEF FPC}
-   val:=1000000;
-   {$ELSE}
+  {$IFDEF FPC}
+  begin
+    val:=1000000;
+  {$ELSE}
+  var
+    startCycles, endCycles : Int64;
+    aTime, refTime : TDateTime;
+  begin
    aTime:=Now;
    while aTime=Now do ;
    startCycles:=RDTSC;
@@ -1607,8 +1607,8 @@ begin
    endCycles:=RDTSC;
    aTime:=Now;
    val:=Round((endCycles-startCycles)/((aTime-refTime)*(3600*24)));
-   {$ENDIF}
-   Result:=True;
+  {$ENDIF}
+  Result:=True;
 {$ENDIF}
 end;
 
