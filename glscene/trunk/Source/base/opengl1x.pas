@@ -6645,12 +6645,12 @@ end;
 procedure CloseOpenGL;
 begin
    if GLHandle<>INVALID_MODULEHANDLE then begin
-      FreeLibrary(Cardinal(GLHandle));
+      FreeLibrary(TLibHandle(GLHandle));
       GLHandle:=INVALID_MODULEHANDLE;
    end;
 
    if GLUHandle<>INVALID_MODULEHANDLE then begin
-      FreeLibrary(Cardinal(GLUHandle));
+      FreeLibrary(TLibHandle(GLUHandle));
       GLUHandle:=INVALID_MODULEHANDLE;
    end;
 end;
@@ -6683,9 +6683,9 @@ begin
      Result:=True
    else begin
       if GLHandle<>INVALID_MODULEHANDLE then
-         FreeLibrary(Cardinal(GLHandle));
+         FreeLibrary(TLibHandle(GLHandle));
       if GLUHandle<>INVALID_MODULEHANDLE then
-         FreeLibrary(Cardinal(GLUHandle));
+         FreeLibrary(TLibHandle(GLUHandle));
    end;
 end;
 
