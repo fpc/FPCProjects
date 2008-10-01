@@ -1530,8 +1530,7 @@ end;
 //
 constructor TGLGeometryShaderHandle.Create;
 begin
-   //Crossbuilder: uncomment after updating opengl1x.pas:
-   //FShaderType:=GL_GEOMETRY_SHADER_EXT;
+   FShaderType:=GL_GEOMETRY_SHADER_EXT;
    inherited;
 end;
 
