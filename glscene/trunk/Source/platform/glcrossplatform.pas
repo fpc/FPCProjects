@@ -1548,12 +1548,39 @@ end;
 
 // QueryPerformanceCounter
 //
+{$IFDEF UNIX}
+  {$IFDEF FPC}
+   var
+     vProgStartSecond : int64;
+
+   procedure Init_vProgStartSecond;
+   var
+     tz:timeval;
+   begin
+     fpgettimeofday(@tz,nil);
+     vProgStartSecond:=tz.tv_sec;
+   end;
+  {$ENDIF}
+{$ENDIF}
+
 procedure QueryPerformanceCounter(var val : Int64);
-begin
 {$IFDEF WIN32}
+begin
    Windows.QueryPerformanceCounter(val);
 {$ELSE}
-   val:=RDTSC;
+   {$IFDEF fpc}
+   var
+     tz:timeval;
+   begin
+     //val:=round(now*MSecsPerDay);
+     fpgettimeofday(@tz,nil);
+     val:=tz.tv_sec-vProgStartSecond;
+     val:=val*1000000;
+     val:=val+tz.tv_usec;
+   {$ELSE}
+   begin
+     val:=RDTSC;
+   {$ENDIF}
 {$ENDIF}
 end;
 
@@ -1569,6 +1596,9 @@ begin
 {$IFDEF WIN32}
    Result:=Boolean(Windows.QueryPerformanceFrequency(val));
 {$ELSE}
+   {$IFDEF FPC}
+   val:=1000000;
+   {$ELSE}
    aTime:=Now;
    while aTime=Now do ;
    startCycles:=RDTSC;
@@ -1577,6 +1607,7 @@ begin
    endCycles:=RDTSC;
    aTime:=Now;
    val:=Round((endCycles-startCycles)/((aTime-refTime)*(3600*24)));
+   {$ENDIF}
    Result:=True;
 {$ENDIF}
 end;
@@ -1614,8 +1645,22 @@ end;
 // RDTSC
 //
 function RDTSC : Int64;
+{$IFDEF FPC}
+begin
+  raise exception.create('Using GLCrossPlatform.RDTSC is a bad idea!');
+end;
+{$ELSE}
 asm
    db $0f, $31
 end;
+{$ENDIF}
 
+
+initialization
+{$IFDEF UNIX}
+  {$IFDEF FPC}
+  Init_vProgStartSecond;
+  writeln('vProgStartSecond*1000000=',vProgStartSecond*1000,'  ',vProgStartSecond*1000000);
+  {$ENDIF}
+{$ENDIF}
 end.
