@@ -70,7 +70,7 @@ type
 
   { TLSocketState }
   TLSocketState = (ssServerSocket, ssBlocking, ssReuseAddress, ssCanSend,
-                   ssCanReceive, ssSSLActive);
+                   ssCanReceive, ssSSLActive{, ssNoDelay});
 
   { TLSocketStates }
   TLSocketStates = set of TLSocketState;
@@ -115,6 +115,7 @@ type
     procedure SetOptions; virtual;
     procedure SetBlocking(const aValue: Boolean);
     procedure SetReuseAddress(const aValue: Boolean);
+//    procedure SetNoDelay(const aValue: Boolean);
 
     function Bail(const msg: string; const ernum: Integer): Boolean;
     
@@ -465,6 +466,7 @@ begin
                             FSocketState := FSocketState - [aState];
     
     ssSSLActive         : raise Exception.Create('Can not turn SSL/TLS on in TLSocket instance');
+{    ssNoDelay           : SetNoDelay(TurnOn);}
   end;
   
   Result := True;
@@ -548,17 +550,41 @@ end;
 
 procedure TLSocket.SetBlocking(const aValue: Boolean);
 begin
-  FBlocking := aValue;
   if FHandle >= 0 then // we already set our socket
     if not lCommon.SetBlocking(FHandle, aValue) then
-      Bail('Error on SetBlocking', LSocketError);
+      Bail('Error on SetBlocking', LSocketError)
+    else begin
+      FBlocking := aValue;
+      if aValue then
+        FSocketState := FSocketState + [ssBlocking]
+      else
+        FSocketState := FSocketState - [ssBlocking];
+    end;
 end;
 
 procedure TLSocket.SetReuseAddress(const aValue: Boolean);
 begin
-  if not FConnected then
+  if not FConnected then begin
     FReuseAddress := aValue;
+    if aValue then
+      FSocketState := FSocketState + [ssReuseAddress]
+    else
+      FSocketState := FSocketState - [ssReuseAddress];
+  end;
 end;
+
+{procedure TLSocket.SetNoDelay(const aValue: Boolean);
+begin
+  if FHandle >= 0 then // we already set our socket
+    if not lCommon.SetNoDelay(FHandle, aValue) then
+      Bail('Error on SetNoDelay', LSocketError)
+    else begin
+      if aValue then
+        FSocketState := FSocketState + [ssNoDelay]
+      else
+        FSocketState := FSocketState - [ssNoDelay];
+    end;
+end;}
 
 function TLSocket.GetMessage(out msg: string): Integer;
 begin
