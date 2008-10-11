@@ -88,7 +88,6 @@ type
     FConnectionStatus: TLSocketConnectionStatus;
     FNextSock: TLSocket;
     FPrevSock: TLSocket;
-    FIgnoreShutdown: Boolean;
     FSocketState: TLSocketStates;
     FOnFree: TLSocketEvent;
     FBlocking: Boolean;
@@ -121,6 +120,9 @@ type
     procedure SetBlocking(const aValue: Boolean);
     procedure SetReuseAddress(const aValue: Boolean);
 //    procedure SetNoDelay(const aValue: Boolean);
+
+    procedure HardDisconnect;
+    procedure SoftDisconnect;
 
     function Bail(const msg: string; const ernum: Integer): Boolean;
     
@@ -272,7 +274,7 @@ type
     
     procedure RegisterWithEventer; virtual;
     
-    procedure FreeSocks; virtual;
+    procedure FreeSocks(const Forced: Boolean); virtual;
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
@@ -436,7 +438,6 @@ begin
   FNextSock := nil;
   FSocketState := [ssCanSend];
   FConnectionStatus := scNone;
-  FIgnoreShutdown := False;
   FSocketType := SOCK_STREAM;
   FProtocol := LPROTO_TCP;
 end;
@@ -447,7 +448,7 @@ begin
     FOnFree(Self);
 
   inherited Destroy; // important! must be called before disconnect
-  Disconnect;
+  Disconnect(True);
 end;
 
 function TLSocket.SetState(const aState: TLSocketState; const TurnOn: Boolean = True): Boolean;
@@ -477,26 +478,11 @@ begin
 end;
 
 procedure TLSocket.Disconnect(const Forced: Boolean = True);
-var
-  WasConnected: Boolean;
 begin
-  WasConnected := FConnectionStatus = scConnected;
-  FDispose := True;
-  FSocketState := FSocketState + [ssCanSend, ssCanReceive];
-  FIgnoreWrite := True;
-  if FConnectionStatus in [scConnected, scConnecting] then begin
-    FConnectionStatus := scNone;
-    if (FSocketType = SOCK_STREAM) and (not FIgnoreShutdown) and WasConnected then
-      if fpShutDown(FHandle, SHUT_RDWR) <> 0 then
-        LogError('Shutdown error', LSocketError);
-        
-    if Assigned(FEventer) then
-      FEventer.UnregisterHandle(Self);
-        
-    if CloseSocket(FHandle) <> 0 then
-      LogError('Closesocket error', LSocketError);
-    FHandle := INVALID_SOCKET;
-  end;
+  if Forced then
+    HardDisconnect
+  else
+    SoftDisconnect;
 end;
 
 procedure TLSocket.LogError(const msg: string; const ernum: Integer);
@@ -512,7 +498,7 @@ function TLSocket.Bail(const msg: string; const ernum: Integer): Boolean;
 begin
   Result := False; // return the result for the caller
   if FDispose then Exit;
-  Disconnect;
+  Disconnect(True);
   LogError(msg, ernum);
 end;
 
@@ -538,12 +524,14 @@ end;
 
 function TLSocket.SendPossible: Boolean; inline;
 begin
-  Result := (FConnectionStatus = scConnected) and (ssCanSend in FSocketState) and not (ssServerSocket in FSocketState);
+  Result := (FConnectionStatus = scConnected)
+    and (ssCanSend in FSocketState) and not (ssServerSocket in FSocketState);
 end;
 
 function TLSocket.ReceivePossible: Boolean; inline;
 begin
-  Result := (FConnectionStatus = scConnected) and (ssCanReceive in FSocketState) and not (ssServerSocket in FSocketState);
+  Result := (FConnectionStatus in [scConnected, scDisconnecting])
+    and (ssCanReceive in FSocketState) and not (ssServerSocket in FSocketState);
 end;
 
 procedure TLSocket.SetOptions;
@@ -573,6 +561,43 @@ begin
       FSocketState := FSocketState + [ssReuseAddress]
     else
       FSocketState := FSocketState - [ssReuseAddress];
+  end;
+end;
+
+procedure TLSocket.HardDisconnect;
+var
+  NeedsShutdown: Boolean;
+begin
+  NeedsShutdown := (FConnectionStatus = scConnected) and (FSocketType = SOCK_STREAM)
+               and (not (ssServerSocket in FSocketState));
+  FDispose := True;
+  FSocketState := FSocketState + [ssCanSend, ssCanReceive];
+  FIgnoreWrite := True;
+  if FConnectionStatus in [scConnected, scConnecting] then begin
+    FConnectionStatus := scNone;
+    if NeedsShutdown then
+      if fpShutDown(FHandle, SHUT_RDWR) <> 0 then
+        LogError('Shutdown error', LSocketError);
+
+    if Assigned(FEventer) then
+      FEventer.UnregisterHandle(Self);
+
+    if CloseSocket(FHandle) <> 0 then
+      LogError('Closesocket error', LSocketError);
+    FHandle := INVALID_SOCKET;
+  end;
+end;
+
+procedure TLSocket.SoftDisconnect;
+begin
+  if FConnectionStatus in [scConnected, scConnecting] then begin
+    if  (FConnectionStatus = scConnected) and (not (ssServerSocket in FSocketState))
+    and (FSocketType = SOCK_STREAM) then begin
+      FConnectionStatus := scDisconnecting;
+      if fpShutDown(FHandle, SHUT_WR) <> 0 then
+        LogError('Shutdown error', LSocketError);
+    end else
+      HardDisconnect; // UDP or ServerSocket
   end;
 end;
 
@@ -606,7 +631,7 @@ begin
 
     if Result = 0 then
       if FSocketType = SOCK_STREAM then
-        Disconnect
+        Disconnect(True)
       else begin
         Bail('Receive Error [0 on recvfrom with UDP]', 0);
         Exit(0);
@@ -836,7 +861,7 @@ end;
 
 destructor TLConnection.Destroy;
 begin
-  FreeSocks;
+  FreeSocks(True);
   if Assigned(FEventer) then
     FEventer.DeleteRef;
   inherited Destroy;
@@ -1028,7 +1053,7 @@ begin
     FTimeout := FEventer.Timeout;
 end;
 
-procedure TLConnection.FreeSocks;
+procedure TLConnection.FreeSocks(const Forced: Boolean);
 var
   Tmp, Tmp2: TLSocket;
 begin
@@ -1036,8 +1061,9 @@ begin
   while Assigned(Tmp) do begin
     Tmp2 := Tmp;
     Tmp := Tmp.NextSock;
-    Tmp2.Disconnect;
-    Tmp2.Free;
+    Tmp2.Disconnect(Forced);
+    if Forced then
+      Tmp2.Free;
   end;
 end;
 
@@ -1053,7 +1079,7 @@ end;
 procedure TLUdp.Disconnect(const Forced: Boolean = True);
 begin
   if Assigned(FRootSock) then begin
-    FRootSock.Disconnect;
+    FRootSock.Disconnect(True);
     FRootSock := nil; // even if the old one exists, eventer takes care of it
   end;
 end;
@@ -1100,7 +1126,7 @@ function TLUdp.Bail(const msg: string): Boolean;
 begin
   Result := False;
 
-  Disconnect;
+  Disconnect(True);
 
   if Assigned(FSession) then
     FSession.ErrorEvent(nil, msg)
@@ -1238,7 +1264,7 @@ begin
   Result := inherited Connect(Address, aPort);
   
   if Assigned(FRootSock) then
-    Disconnect;
+    Disconnect(True);
     
   FRootSock := InitSocket(SocketClass.Create);
   Result := FRootSock.Connect(Address, aPort);
@@ -1258,10 +1284,9 @@ begin
   Result := false;
   
   if Assigned(FRootSock) then
-    Disconnect;
+    Disconnect(True);
   
   FRootSock := InitSocket(SocketClass.Create);
-  FRootSock.FIgnoreShutdown := True;
   FRootSock.SetReuseAddress(FReuseAddress);
   if FRootSock.Listen(APort, AIntf) then begin
     FRootSock.SetState(ssServerSocket);
@@ -1283,9 +1308,9 @@ begin
     ErrorEvent(aSocket, msg);
 
   if Assigned(aSocket) then
-    aSocket.Disconnect
+    aSocket.Disconnect(True)
   else
-    Disconnect;
+    Disconnect(True);
 end;
 
 procedure TLTcp.SocketDisconnect(aSocket: TLSocket);
@@ -1335,7 +1360,7 @@ end;
 
 procedure TLTcp.Disconnect(const Forced: Boolean = True);
 begin
-  FreeSocks;
+  FreeSocks(Forced);
   FRootSock := nil;
   FCount := 0;
   FIterator := nil;
@@ -1405,7 +1430,7 @@ begin
   if (TLSocket(aSocket) = FRootSock) and (ssServerSocket in TLSocket(aSocket).SocketState) then
     AcceptAction(aSocket)
   else with TLSocket(aSocket) do begin
-    if FConnectionStatus = scConnected then begin
+    if FConnectionStatus in [scConnected, scDisconnecting] then begin
       SetState(ssCanReceive);
       if Assigned(FSession) then
         FSession.ReceiveEvent(aSocket)
