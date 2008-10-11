@@ -298,7 +298,7 @@ type
     procedure AddContentLength(ALength: integer); virtual; abstract;
     function  CalcAvailableBufferSpace: integer;
     procedure DelayFree(AOutputItem: TOutputItem);
-    procedure Disconnect; override;
+    procedure Disconnect(const Forced: Boolean = True); override;
     procedure DoneBuffer(AOutput: TBufferOutput); virtual;
     procedure FreeDelayFreeItems;
     procedure LogAccess(const AMessage: string); virtual;
@@ -969,7 +969,7 @@ begin
   FreeMem(FBuffer);
 end;
 
-procedure TLHTTPSocket.Disconnect;
+procedure TLHTTPSocket.Disconnect(const Forced: Boolean = True);
 var
   lOutput: TOutputItem;
 begin
@@ -1414,7 +1414,7 @@ begin
     end;
 
     { if we cannot send, then the send buffer is full }
-    if not FConnected or not (ssCanSend in FSocketState) then
+    if (FConnectionStatus <> scConnected) or not (ssCanSend in FSocketState) then
       break;
 
     case FCurrentOutput.WriteBlock of

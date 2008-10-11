@@ -128,7 +128,7 @@ type
     procedure SetOption(const Option: Char);
     procedure UnSetOption(const Option: Char);
     
-    procedure Disconnect; override;
+    procedure Disconnect(const Forced: Boolean = True); override;
     
     procedure SendCommand(const aCommand: Char; const How: TLHowEnum); virtual;
    public
@@ -376,7 +376,7 @@ begin
     SendCommand(Option, False);
 end;
 
-procedure TLTelnet.Disconnect;
+procedure TLTelnet.Disconnect(const Forced: Boolean = True);
 begin
   FConnection.Disconnect;
 end;

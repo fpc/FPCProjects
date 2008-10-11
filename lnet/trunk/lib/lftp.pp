@@ -205,7 +205,7 @@ type
     procedure PresentWorkingDirectory;
     procedure Help(const Arg: string);
     
-    procedure Disconnect; override;
+    procedure Disconnect(const Forced: Boolean = True); override;
     
     procedure CallAction; override;
    public
@@ -1120,7 +1120,7 @@ begin
     FControl.SendMessage('HELP ' + Arg + FLE);
 end;
 
-procedure TLFTPClient.Disconnect;
+procedure TLFTPClient.Disconnect(const Forced: Boolean = True);
 var
   s: TLFTPStatus;
 begin

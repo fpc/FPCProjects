@@ -10,7 +10,7 @@ uses
   
 type
   TLSSLMethod = (msSSLv2or3, msSSLv2, msSSLv3, msTLSv1);
-  TLSSLStatus = (slNone, slConnect, slActiveteTLS, slShutdown);
+  TLSSLStatus = (slNone, slConnect, slActivateTLS, slShutdown);
 
   TLPasswordCB = function(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
 
@@ -22,7 +22,8 @@ type
     FSSLContext: PSSL_CTX;
     FSSLStatus: TLSSLStatus;
     FIsAcceptor: Boolean;
-    function GetConnected: Boolean; override;
+    function GetConnected: Boolean; override; deprecated;
+    function GetConnectionStatus: TLSocketConnectionStatus; override;
 
     function DoSend(const aData; const aSize: Integer): Integer; override;
     function DoGet(out aData; const aSize: Integer): Integer; override;
@@ -45,7 +46,7 @@ type
     
     function SetState(const aState: TLSocketState; const TurnOn: Boolean = True): Boolean; override;
 
-    procedure Disconnect; override;
+    procedure Disconnect(const Forced: Boolean = True); override;
    public
     property SSLStatus: TLSSLStatus read FSSLStatus;
   end;
@@ -151,13 +152,13 @@ begin
     False : FSocketState := FSocketState - [ssSSLActive];
   end;
   
-  if aValue and FConnected then
+  if aValue and (FConnectionStatus = scConnected) then
     ActivateTLSEvent;
 
   if not aValue then begin
-    if Connected then
+    if ConnectionStatus = scConnected then
       ShutdownSSL
-    else if FSSLStatus in [slConnect, slActiveteTLS] then
+    else if FSSLStatus in [slConnect, slActivateTLS] then
       raise Exception.Create('Switching SSL mode on socket during SSL handshake is not supported');
   end;
   
@@ -185,7 +186,7 @@ end;
 procedure TLSSLSocket.ActivateTLSEvent;
 begin
   SetupSSLSocket;
-  FSSLStatus := slActiveteTLS;
+  FSSLStatus := slActivateTLS;
   ConnectSSL;
 end;
 
@@ -194,6 +195,20 @@ begin
   if ssSSLActive in FSocketState then
     Result := Assigned(FSSL) and (FSSLStatus = slNone)
   else
+    Result := inherited;
+end;
+
+function TLSSLSocket.GetConnectionStatus: TLSocketConnectionStatus;
+begin
+  if ssSSLActive in FSocketState then case FSSLStatus of
+    slNone        : if Assigned(FSSL) then
+                      Result := scConnected
+                    else
+                      Result := scNone;
+    slConnect,
+    slActivateTLS : Result := scConnecting;
+    slShutdown    : Result := scDisconnecting;
+  end else
     Result := inherited;
 end;
 
@@ -373,7 +388,7 @@ begin
   end;
 end;
 
-procedure TLSSLSocket.Disconnect;
+procedure TLSSLSocket.Disconnect(const Forced: Boolean = True);
 begin
   if ssSSLActive in FSocketState then begin
     FSSLStatus := slShutdown;
@@ -527,7 +542,7 @@ begin
         True  : CallAcceptEvent(aHandle);
         False : CallConnectEvent(aHandle);
       end;
-    slActiveteTLS:
+    slActivateTLS:
       HandleSSLConnection(TLSSLSocket(aHandle));
   else
     CallReceiveEvent(aHandle);
@@ -570,7 +585,7 @@ begin
 
   case aSocket.FSSLStatus of
     slNone        : HandleNone;
-    slActiveteTLS,
+    slActivateTLS,
     slConnect     : HandleConnect;
     slShutdown    : raise Exception.Create('Got ConnectEvent or AcceptEvent on socket with ssShutdown status');
   end;
