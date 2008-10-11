@@ -201,7 +201,7 @@ end;
 
 destructor TLTelnet.Destroy;
 begin
-  Disconnect;
+  Disconnect(True);
   FOutput.Free;
   FConnection.Free;
   FStack.Free;
@@ -378,7 +378,7 @@ end;
 
 procedure TLTelnet.Disconnect(const Forced: Boolean = True);
 begin
-  FConnection.Disconnect;
+  FConnection.Disconnect(Forced);
 end;
 
 procedure TLTelnet.SendCommand(const aCommand: Char; const How: TLHowEnum);

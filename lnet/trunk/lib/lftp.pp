@@ -399,7 +399,7 @@ end;
 
 destructor TLFTPClient.Destroy;
 begin
-  Disconnect;
+  Disconnect(True);
   FSL.Free;
   FStatus.Free;
   FCommandFront.Free;
@@ -719,7 +719,7 @@ begin
                      end;
                    else
                      begin
-                       FData.Disconnect;
+                       FData.Disconnect(False);
                        Writedbg(['Disconnecting data connection']);
                        Eventize(FStatus.First.Status, False);
                      end;
@@ -836,7 +836,7 @@ procedure TLFTPClient.PasvPort;
 begin
   if FTransferMethod = ftActive then begin
     Writedbg(['Sent PORT']);
-    FData.Disconnect;
+    FData.Disconnect(True);
     FData.Listen(FLastPort);
     FStatus.Insert(MakeStatusRec(fsPort, '', ''));
     FControl.SendMessage('PORT ' + StringIP + StringPair(FLastPort) + FLE);
@@ -892,7 +892,7 @@ begin
       FreeAndNil(FStoreFile);
       FSending := False;
       {$hint this one calls freeinstance which doesn't pass}
-      FData.Disconnect;
+      FData.Disconnect(False);
     end;
   until (n = 0) or (Sent = 0);
 end;
@@ -967,7 +967,7 @@ end;
 function TLFTPClient.Connect(const aHost: string; const aPort: Word): Boolean;
 begin
   Result := False;
-  Disconnect;
+  Disconnect(True);
   if FControl.Connect(aHost, aPort) then begin
     FHost := aHost;
     FPort := aPort;
@@ -1124,9 +1124,9 @@ procedure TLFTPClient.Disconnect(const Forced: Boolean = True);
 var
   s: TLFTPStatus;
 begin
-  FControl.Disconnect;
+  FControl.Disconnect(Forced);
   FStatus.Clear;
-  FData.Disconnect;
+  FData.Disconnect(Forced);
   FLastPort := FStartPort;
   ClearStatusFlags;
   FCommandFront.Clear;

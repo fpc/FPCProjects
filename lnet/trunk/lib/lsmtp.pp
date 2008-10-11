@@ -355,7 +355,8 @@ end;
 
 destructor TLSMTPClient.Destroy;
 begin
-  Quit;
+  if FConnection.Connected then
+    Quit;
   FSL.Free;
   FStatus.Free;
   FCommandFront.Free;
@@ -514,7 +515,7 @@ begin
                           end;
               else        begin
                             Eventize(FStatus.First.Status, False);
-                            Disconnect;
+                            Disconnect(False);
                             FFeatureList.Clear;
                             FTempBuffer := '';
                           end;
@@ -594,7 +595,7 @@ begin
                 Eventize(FStatus.First.Status, (x >= 200) and (x < 299));
 {                if Assigned(FOnDisconnect) then
                   FOnDisconnect(FConnection.Iterator);}
-                Disconnect;
+                Disconnect(False);
               end;
     end;
     
@@ -720,7 +721,7 @@ end;
 function TLSMTPClient.Connect(const aHost: string; const aPort: Word = 25): Boolean;
 begin
   Result := False;
-  Disconnect;
+  Disconnect(True);
   if FConnection.Connect(aHost, aPort) then begin
     FTempBuffer := '';
     FHost := aHost;
@@ -913,7 +914,7 @@ end;
 
 procedure TLSMTPClient.Disconnect(const Forced: Boolean = True);
 begin
-  FConnection.Disconnect;
+  FConnection.Disconnect(Forced);
   FStatus.Clear;
   FCommandFront.Clear;
 end;

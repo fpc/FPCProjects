@@ -973,7 +973,8 @@ procedure TLHTTPSocket.Disconnect(const Forced: Boolean = True);
 var
   lOutput: TOutputItem;
 begin
-  inherited Disconnect;
+  inherited Disconnect(Forced);
+
   while FCurrentOutput <> nil do
   begin
     lOutput := FCurrentOutput;
