@@ -395,7 +395,7 @@ begin
     SetActiveSSL(False);
   end;
   
-  inherited Disconnect;
+  inherited Disconnect(Forced);
 end;
 
 { TLSSLSession }
