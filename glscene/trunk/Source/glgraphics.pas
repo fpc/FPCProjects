@@ -566,11 +566,10 @@ end;
 // Assign
 //
 procedure TGLBitmap32.Assign(Source: TPersistent);
-{$ifndef FPC}
 var
    bmp : TGLBitmap;
    graphic : TGLGraphic;
-{$endif}
+
 begin
    if Source=nil then begin
       FDataSize:=0;
@@ -588,25 +587,32 @@ begin
         Move(TGLBitmap32(Source).Data^, Data^, DataSize);
       end;
    end else if Source is TGLGraphic then begin
-{$ifdef FPC}
-      if Source is TGLBitmap then begin
-        // in FPC this is pixel wize and reads all pixelFormats.
-        AssignFrom24BitsBitmap(TGLBitmap(Source));
-      end else inherited;
-{$else}
-      if (Source is TGLBitmap) and (TGLBitmap(Source).PixelFormat in [glpf24bit, glpf32bit])
+      if (Source is TGLBitmap) {$ifNdef FPC}and (TGLBitmap(Source).PixelFormat in [glpf24bit, glpf32bit]){$ENDIF}
             and ((TGLBitmap(Source).Width and 3)=0) then begin
+         {$ifdef FPC}
+         AssignFrom24BitsBitmap(TGLBitmap(Source)); // in FPC this is pixel wize and reads all pixelFormats.
+         {$ELSE}
          if TGLBitmap(Source).PixelFormat=glpf24bit then
             AssignFrom24BitsBitmap(TGLBitmap(Source))
          else AssignFrom32BitsBitmap(TGLBitmap(Source))
-      end else begin
+         {$ENDIF}
+      end
+      else begin
          graphic:=TGLGraphic(Source);
          bmp:=TGLBitmap.Create;
          try
+            //crossbuilder: useless to set pixelformat before setting the size ?
+            //              or maybe just useless at all on gtk .. as soon as
+            //              bmp.canvas is touched, it's the pixelformat of the device
+            //              no matter what was adjusted before ??
+            //bmp.PixelFormat:=glpf24bit;
+            //bmp.Height:=graphic.Height;
+            //crossbuilder: using setsize because setting width or height while
+            //the other one is zero results in not setting with/hight
+            bmp.SetSize(graphic.Width,graphic.Height);
             bmp.PixelFormat:=glpf24bit;
-            bmp.Height:=graphic.Height;
             if (graphic.Width and 3)=0 then begin
-               bmp.Width:=graphic.Width;
+               //bmp.Width:=graphic.Width;
                bmp.Canvas.Draw(0, 0, graphic);
             end else begin
                bmp.Width:=(graphic.Width and $FFFC)+4;
@@ -617,8 +623,6 @@ begin
             bmp.Free;
          end;
       end;
-//      else inherited;
-{$endif}
 {$ifdef GLS_Graphics32_SUPPORT}
    end else if Source is TBitmap32 then begin
       AssignFromBitmap32(TBitmap32(Source));
@@ -645,15 +649,28 @@ begin
    IntfImg:=aBitmap.CreateIntfImage;
    try
      pDest:=PByte(FData);
-     for y:= FHeight-1 downto 0 do
-       for x:= 0 to FWidth-1 do
-       Begin
-         pixel := IntfImg.Colors[x,y];
-         pDest^ := pixel.red shr 8; inc(pDest);
-         pDest^ := pixel.green shr 8; inc(pDest);
-         pDest^ := pixel.blue shr 8; inc(pDest);
-         pDest^ := $ff{pixel.alpha shr 8}; inc(pDest);
-       end;
+     if not(VerticalReverseOnAssignFromBitmap) then begin
+       for y:= FHeight-1 downto 0 do
+         for x:= 0 to FWidth-1 do
+         Begin
+           pixel := IntfImg.Colors[x,y];
+           pDest^ := pixel.red shr 8; inc(pDest);
+           pDest^ := pixel.green shr 8; inc(pDest);
+           pDest^ := pixel.blue shr 8; inc(pDest);
+           pDest^ := $ff{pixel.alpha shr 8}; inc(pDest);
+         end;
+     end
+     else begin
+       for y:= 0 to FHeight-1 do
+         for x:= 0 to FWidth-1 do
+         Begin
+           pixel := IntfImg.Colors[x,y];
+           pDest^ := pixel.red shr 8; inc(pDest);
+           pDest^ := pixel.green shr 8; inc(pDest);
+           pDest^ := pixel.blue shr 8; inc(pDest);
+           pDest^ := $ff{pixel.alpha shr 8}; inc(pDest);
+         end;
+     end;
    finally
      IntfImg.Free;
    end;
