@@ -36,7 +36,8 @@ const
   SOL_SOCKET = $ffff;
   LMSG = 0;
   SOCKET_ERROR = WinSock2.SOCKET_ERROR;
-  SHUT_RDWR = 2; // windows missing this I guess
+  SHUT_RDWR = SD_BOTH;
+  SHUT_WR = SD_SEND;
   {$ENDIF}
 
   {$IFDEF OS2}
