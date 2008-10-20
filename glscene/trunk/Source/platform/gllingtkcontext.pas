@@ -166,6 +166,7 @@ begin
     
     // GTK1 -- old
     {$ifdef LCLGTK2}
+    gtk_widget_set_double_buffered(FGTKWidget, False);
     CurXDisplay:=GDK_WINDOW_XDISPLAY (PGdkDrawable(fGTKWidget^.window));
     CurXWindow:=GDK_WINDOW_XWINDOW (PGdkDrawable(fGTKWidget^.window));
     {$else}
@@ -173,7 +174,6 @@ begin
     CurXWindow:=GDK_WINDOW_XWINDOW (PGdkWindowPrivate(fGTKWidget^.window));
     {$endif}
 
-    
     XGetWindowAttributes(CurXDisplay, CurXWindow, @winattr);
     vitemp.visual := winattr.visual;
     vitemp.visualid := XVisualIDFromVisual(vitemp.visual);
