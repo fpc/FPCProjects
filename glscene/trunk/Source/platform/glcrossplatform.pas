@@ -511,6 +511,8 @@ const
 
 // standard keyboard
 {$IFNDEF KYLIX}
+  glKey_ESCAPE = VK_ESCAPE;
+  glKey_SHIFT = VK_SHIFT;
   glKey_TAB = VK_TAB;
   glKey_SPACE = VK_SPACE;
   glKey_RETURN = VK_RETURN;
@@ -1531,8 +1533,9 @@ end;
 function BitmapScanLine(aBitmap : TGLBitmap; aRow : Integer) : Pointer;
 begin
 {$IFDEF FPC}
-   Assert(False, 'BitmapScanLine unsupported');
+   //Assert(False, 'BitmapScanLine unsupported');
    Result:=nil;
+   raise exception.create('BitmapScanLine unsupported');
 {$ELSE}
    Result:=aBitmap.ScanLine[aRow];
 {$ENDIF}
