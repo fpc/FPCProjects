@@ -195,39 +195,40 @@ begin
 end;
 
 procedure IncreaseTrianglesCapacity(NewCapacity: integer);
-   procedure FixNodePtr(var p: PROAMTriangleNode; const delta: int64);
+
+   procedure FixNodePtr(var p: PROAMTriangleNode; const delta: PtrInt);
    begin
       if p = nil then
          exit;
 
-      inc(PByte(p), delta);
+      inc(PtrInt(p), delta);
    end;
 
 var
    oldbase, newbase: pointer;
    node: PROAMTriangleNode;
    i, oldsize: integer;
-   delta: int64;
+   delta: PtrInt;
 begin
    if NewCapacity <= vTriangleNodesCapacity then
       exit;
    
    oldsize:= vTriangleNodesCapacity;
    
-   oldbase:= pointer(vTriangleNodes);
+   oldbase:= @vTriangleNodes[0];
    SetLength(vTriangleNodes, NewCapacity);
 
    vTriangleNodesCapacity:= NewCapacity;
    
-   newbase:= pointer(vTriangleNodes);
+   newbase:= @vTriangleNodes[0];
    
    // Array has not been relocated, no need to fix
    if oldbase = newbase then
       exit; 
-      
+
    // go through all the old nodes and 
    // fix the pointers
-   delta:= int64(PChar(newbase) - PChar(oldbase));
+   delta:= (PtrInt(newbase) - PtrInt(oldbase));
    for i := 0 to oldsize - 1 do
    begin
       node:= @vTriangleNodes[i];
@@ -267,15 +268,19 @@ function Split(tri : PROAMTriangleNode) : Boolean;
 var n : Integer;
     lc,rc:PROAMTriangleNode;
 begin
-  result:=Assigned(tri.leftChild);
+  result:=Assigned(tri^.leftChild);
   if result then exit;                            //dont split if tri already has a left child
   with tri^ do begin
-    if Assigned(base)and(base.base<>tri) then Split(base); // If this triangle is not in a proper diamond, force split our base neighbor
+    if Assigned(base)and(base^.base<>tri) then Split(base); // If this triangle is not in a proper diamond, force split our base neighbor
     n:=vNbTris;
 
-    if n>=vTriangleNodesCapacity then begin
+    if n+2>=vTriangleNodesCapacity then begin
        // grow by 50%
-       IncreaseTrianglesCapacity(vTriangleNodesCapacity + (vTriangleNodesCapacity shr 1));
+       // Crossbuilder: Don't do that. Never. It relocates (by chance) all the Nodes, so neither current tri^ is valid
+       // nor the current "with" context. Even worse, this migt be called recursive!
+       //DON'T: IncreaseTrianglesCapacity(vTriangleNodesCapacity + (vTriangleNodesCapacity shr 1));
+       // Instead, raise an exception:
+       raise exception.create('vTriangleNodesCapacity Overflow!!');
     end;
 
 
@@ -604,6 +609,8 @@ begin
    s:=FPatchSize;
    tessCurrentVariance:=@FTLVariance[0];
    tessMaxVariance:=FMaxTLVarianceDepth;
+   if vTriangleNodesCapacity < vNbTris*2 then
+     IncreaseTrianglesCapacity(vTriangleNodesCapacity*2);
    result:=
       RecursTessellate(@vTriangleNodes[FTLNode], 1, VertexDist(0, s), VertexDist(s, 0), VertexDist(0, 0));
    tessCurrentVariance:=@FBRVariance[0];
@@ -807,7 +814,7 @@ begin
    RecursRender(@vTriangleNodes[FTLNode], rbl, rtr, rtl);
    RecursRender(@vTriangleNodes[FBRNode], rtr, rbl, rbr);
 
-   vertexIndices.Count:=(Integer(renderIndices)-Integer(vertexIndices.List)) div SizeOf(Integer);
+   vertexIndices.Count:=(PtrInt(renderIndices)-PtrInt(vertexIndices.List)) div SizeOf(Integer);
 end;
 
 // RenderAsStrips
