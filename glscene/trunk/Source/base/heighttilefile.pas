@@ -297,7 +297,7 @@ procedure THeightTileFile.PackTile(aWidth, aHeight : Integer; src : PSmallIntArr
 var
    packWidth : Integer;
 
-   function DiffEncode(src : PSmallIntArray; dest : PShortIntArray) : Integer;
+   function DiffEncode(src : PSmallIntArray; dest : PShortIntArray) : PtrInt;
    var
       i : Integer;
       v, delta : SmallInt;
@@ -305,32 +305,32 @@ var
       Result:=Integer(dest);
       v:=src[0];
       PSmallIntArray(dest)[0]:=v;
-      dest:=PShortIntArray(Integer(dest)+2);
+      dest:=PShortIntArray(PtrUInt(dest)+2);
       i:=1;
       while i<packWidth do begin
          delta:=src[i]-v;
          v:=src[i];
          if Abs(delta)<=127 then begin
             dest[0]:=ShortInt(delta);
-            dest:=PShortIntArray(Integer(dest)+1);
+            dest:=PShortIntArray(PtrUInt(dest)+1);
          end else begin
             dest[0]:=-128;
-            dest:=PShortIntArray(Integer(dest)+1);
+            dest:=PShortIntArray(PtrUInt(dest)+1);
             PSmallIntArray(dest)[0]:=v;
-            dest:=PShortIntArray(Integer(dest)+2);
+            dest:=PShortIntArray(PtrUInt(dest)+2);
          end;
          Inc(i);
       end;
-      Result:=Integer(dest)-Result;
+      Result:=PtrInt(dest)-Result;
    end;
 
-   function RLEEncode(src : PSmallIntArray; dest : PChar) : Integer;
+   function RLEEncode(src : PSmallIntArray; dest : PChar) : PtrInt;
    var
       v : SmallInt;
       i, n : Integer;
    begin
       i:=0;
-      Result:=Integer(dest);
+      Result:=PtrInt(dest);
       while (i<packWidth) do begin
          v:=src[i];
          Inc(i);
@@ -351,7 +351,7 @@ var
             Inc(dest);
          end;
       end;
-      Result:=Integer(dest)-Result;
+      Result:=PtrInt(dest)-Result;
    end;
 
 var
@@ -388,7 +388,7 @@ begin
       // Lookup leftPack
       leftPack:=0;
       while (leftPack<255) and (packWidth>0) and (p[0]=DefaultZ) do begin
-         p:=PSmallIntArray(Integer(p)+2);
+         p:=PSmallIntArray(PtrUInt(p)+2);
          Dec(packWidth);
          Inc(leftPack);
       end;
@@ -459,16 +459,16 @@ var
       locSrc : PShortInt;
       destEnd, locDest : PSmallInt;
    begin
-      locSrc:=PShortInt(Integer(src)-1);
+      locSrc:=PShortInt(PtrInt(src)-1);
       locDest:=dest;
-      destEnd:=PSmallInt(Integer(dest)+unpackWidth*2);
-      while Integer(locDest)<Integer(destEnd) do begin
+      destEnd:=PSmallInt(PtrUint(dest)+cardinal(unpackWidth)*2);
+      while PtrUInt(locDest)<PtrUInt(destEnd) do begin
          Inc(locSrc);
          v:=PSmallInt(locSrc)^;
          Inc(locSrc, 2);
          locDest^:=v;
          Inc(locDest);
-         while (Integer(locDest)<Integer(destEnd)) do begin
+         while (PtrUInt(locDest)<PtrUInt(destEnd)) do begin
             delta:=locSrc^;
             if delta<>-128 then begin
                v:=v+delta;
@@ -491,12 +491,12 @@ var
    begin
       locSrc:=src;
       locDest:=dest;
-      destEnd:=PSmallInt(Integer(dest)+unpackWidth*2);
-      while Integer(locDest)<Integer(destEnd) do begin
+      destEnd:=PSmallInt(PtrUInt(dest)+cardinal(unpackWidth)*2);
+      while PtrUInt(locDest)<PtrUInt(destEnd) do begin
          v:=PSmallIntArray(locSrc)[0];
          Inc(locSrc, 2);
          repeat
-            if Integer(locDest)=Integer(destEnd)-2 then begin
+            if PtrUint(locDest)+2=PtrUint(destEnd) then begin
                locDest^:=v;
                Inc(locDest);
                n:=0;
@@ -508,7 +508,7 @@ var
                   Inc(locDest);
                end;
             end;
-         until (n<255) or (Integer(locDest)>=Integer(destEnd));
+         until (n<255) or (PtrUint(locDest)>=PtrUInt(destEnd));
       end;
       src:=locSrc;
       dest:=locDest;
@@ -661,7 +661,7 @@ begin
       if n>len then n:=len;
       tile:=GetTile(tileInfo.left, tileInfo.top);
       Move(tile.data[(y-tileInfo.top)*tileInfo.width+rx], dest^, n*2);
-      dest:=PSmallIntArray(Integer(dest)+n*2);
+      dest:=PSmallIntArray(PtrInt(dest)+n*2);
       Dec(len, n);
       Inc(x, n);
    end;
