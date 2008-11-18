@@ -225,6 +225,10 @@ uses OpenGL1x, sysutils, GLViewer
          {$define CONTEXT_INCLUDED}
          {$endif}
        {$endif}
+
+       {$ifdef LCLCARBON}
+     ,GLCarbonContext
+       {$endif}
        
        {$ifdef LCLQT}
          {$error unimplemented QT context}

@@ -92,11 +92,18 @@ uses
 
   {$IFDEF unix}
     {$IFDEF FPC}
-    X, XUtil,
+      {$IFDEF darwin}
+        MacOSAll,
+      {$ELSE}
+        X, XUtil,
+      {$ENDIF}
     {$ELSE}  // kylix
     Libc,
     {$ENDIF}
-    Xlib, Types
+    {$IFNDEF darwin}
+    Xlib,
+    {$ENDIF}
+    Types
   {$ELSE}
     windows
   {$ENDIF}
@@ -213,6 +220,7 @@ type
    {$ENDIF}
 
    // Unix types
+   {$IFNDEF darwin}
    {$IFDEF unix}
    GLXContext    = Pointer;
    {$IFDEF fpc}
@@ -239,6 +247,7 @@ type
    GLXContextID  = XID;
    GLXWindow     = XID;
    GLXPbuffer    = XID;
+   {$ENDIF}
    {$ENDIF}
    {$ENDIF}
 
@@ -449,8 +458,13 @@ const
 {$ENDIF}
 
 {$IFDEF UNIX}
+  {$IFDEF darwin}
+    opengl32 = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib';
+    glu32 = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGLU.dylib';
+  {$ELSE}
     opengl32 = 'libGL.so';
     glu32 = 'libGLU.so';
+  {$ENDIF}
 {$ENDIF}
 
    {.$region 'OpenGL v1.1 generic constants'}
@@ -4039,6 +4053,7 @@ type
    {.$endregion}
 
    {.$region 'OpenGL Extension to the X Window System (GLX) support functions'}
+   {$IFNDEF darwin}
    {$IFDEF UNIX}
    function glXChooseVisual(dpy: PDisplay; screen: TGLint; attribList: PGLint): PXVisualInfo; cdecl; external opengl32;
    function glXCreateContext(dpy: PDisplay; vis: PXVisualInfo; shareList: GLXContext; direct: TGLboolean): GLXContext; cdecl; external opengl32;
@@ -4096,6 +4111,7 @@ type
    function glXCreateGLXPixmapMESA(dpy: PDisplay; visual: PXVisualInfo; pixmap: Pixmap; cmap: Colormap): GLXPixmap; cdecl; external opengl32;
    function glXReleaseBuffersMESA(dpy: PDisplay; d: GLXDrawable): TGLboolean; cdecl; external opengl32;
    function glXSet3DfxModeMESA(mode: TGLint): TGLboolean; cdecl; external opengl32;
+   {$ENDIF}
    {$ENDIF}
    {.$endregion}
 
@@ -5178,10 +5194,12 @@ procedure ReadImplementationProperties;
 procedure ReadWGLExtensions;
 procedure ReadWGLImplementationProperties;
 {$ENDIF}
+{$IFNDEF darwin}
 {$IFDEF UNIX}
 //crossbuilder needs to be implemented? :
 //procedure ReadGLXExtensions;
 procedure ReadGLXImplementationProperties;
+{$ENDIF}
 {$ENDIF}
 
 procedure CloseOpenGL;
@@ -5231,8 +5249,13 @@ end;
 // ************** UNIX specific ********************
 {$IFDEF UNIX}
 resourcestring
-  SDefaultGLLibrary= 'libGL.so'; 
+{$IFDEF darwin}
+  SDefaultGLLibrary = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib';
+  SDefaultGLULibrary = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGLU.dylib';
+{$ELSE}
+  SDefaultGLLibrary= 'libGL.so';
   SDefaultGLULibrary= 'libGLU.so'; 
+{$ENDIF}
   
 const
    INVALID_MODULEHANDLE = nil;
@@ -6556,9 +6579,11 @@ begin
    ReadWGLImplementationProperties;
    {$ENDIF}
 
+   {$IFNDEF darwin}
    {$IFDEF Unix}
    //check supported GLX extensions
    ReadGLXImplementationProperties;
+   {$ENDIF}
    {$ENDIF}
 end;
 
@@ -6604,6 +6629,7 @@ begin
 end;
 {$ENDIF}
 
+{$IFNDEF darwin}
 {$IFDEF Unix}
 // ReadGLXImplementationProperties
 //
@@ -6638,6 +6664,7 @@ begin
    GLX_EXT_fbconfig_packed_float := CheckExtension('GLX_EXT_fbconfig_packed_float');
 
 end;
+{$ENDIF}
 {$ENDIF}
 
 // CloseOpenGL
