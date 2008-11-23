@@ -497,6 +497,8 @@ begin
   if Length(FCAFile) > 0 then
     if SSLCTXLoadVerifyLocations(FSSLContext, FCAFile, pChar(nil)) = 0 then
       raise Exception.Create('Error creating SSL CTX: SSLCTXLoadVerifyLocations');
+
+  OPENSSLaddallalgorithms;
 end;
 
 constructor TLSSLSession.Create(aOwner: TComponent);
