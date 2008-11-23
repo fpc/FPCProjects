@@ -625,6 +625,9 @@ end;
 function TLSocket.Get(out aData; const aSize: Integer): Integer;
 begin
   Result := 0;
+  
+  if aSize = 0 then
+    raise Exception.Create('Invalid buffer size 0 in Get');
 
   if ReceivePossible then begin
     Result := DoGet(aData, aSize);
@@ -811,6 +814,9 @@ end;
 function TLSocket.Send(const aData; const aSize: Integer): Integer;
 begin
   Result := 0;
+  
+  if aSize = 0 then
+    raise Exception.Create('Invalid buffersize 0 in Send');
 
   if SendPossible then begin
     if aSize <= 0 then begin
