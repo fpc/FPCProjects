@@ -1,12 +1,11 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="\"/>
+    <PathDelim Value="/"/>
     <Version Value="6"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
     </General>
     <VersionInfo>
@@ -21,6 +20,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
+        <CommandLineParams Value="0002"/>
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
@@ -31,25 +31,25 @@
         <UnitName Value="detect_features"/>
       </Unit0>
       <Unit1>
-        <Filename Value="..\src\feature.inc"/>
+        <Filename Value="../src/feature.inc"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Unit1"/>
       </Unit1>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
-    <PathDelim Value="\"/>
+    <Version Value="8"/>
     <Target>
-      <Filename Value=".\detect_features"/>
+      <Filename Value="./detect_features"/>
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="..\src\"/>
-      <UnitOutputDirectory Value="\units\$(TargetCPU)-$(TargetOS)"/>
+      <OtherUnitFiles Value="../src/"/>
+      <UnitOutputDirectory Value="units/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
-    <CodeGeneration>
-      <Generate Value="Faster"/>
-    </CodeGeneration>
+    <Parsing>
+      <SyntaxOptions>
+        <CStyleOperator Value="False"/>
+      </SyntaxOptions>
+    </Parsing>
     <Other>
       <CompilerPath Value="$(CompPath)"/>
     </Other>

@@ -16,54 +16,59 @@
 program detect_features;
 
 uses
-  fpimage,fpcanvas,fpreadjpeg, fpwritejpeg,fpimgcanv, sysutils, imagelib,
+  fpimage, fpcanvas, fpreadjpeg, fpwritejpeg, fpimgcanv, sysutils, imagelib,
   classes;
 
 var
+  colimage : TFPMemoryImage;
   image : TFPMemoryImage;
   w : integer;
-  h: integer;
   start: TDateTime;
   allstart: TDateTime;
-  radius: smallint;
   FeatureList: TFeatureList;
-  Tmp: TFeature;
-  Count: integer;
-  canvas : TFPcustomCAnvas;
+  canvas : TFPcustomCanvas;
 begin
   //load image
-  image:=TFPMemoryImage.Create(0,0);
-  image.UsePalette:=False;
+  colimage:=TFPMemoryImage.Create(0,0);
+  colimage.UsePalette:=False;
 
   allstart := Now;
   
   start := Now;
   write('Loading image.................. ');
-  image.LoadFromFile('lenna_color.jpg', TFPReaderJPEG.Create);
+  colimage.LoadFromFile(ParamStr(1) + '.jpg', TFPReaderJPEG.Create);
   writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
-  start := Now;
-  write('Equalizing histogram........... ');
-  image := imagelib_equalize_histogram(image);
-  //image.SaveToFile ('lenna_grayscale_equalized.jpg', TFPWriterJPEG.Create);
-  writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+  
+  image := TFPMemoryImage.create(0,0);
+  image.UsePalette:=false;
+  image.Assign(colimage);
+  
   start := Now;
   write('Converting to grayscale........ ');
   image := imagelib_rgb_to_grayscale(image);
   writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
-  //start := Now;
-  //write('Calculating Roberts gradient... ');
-  //image := imagelib_roberts_gradient(image);
-  //writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
-  //start := Now;
-  //write('Converting to bw............... ');
-  //image := imagelib_rgb_to_bw(image);
-  //image.SaveToFile ('lenna_equalized_BW.jpg', TFPWriterJPEG.Create);
-  //writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+
+  start := Now;
+  write('Calculating Roberts gradient... ');
+  image := imagelib_roberts_gradient(image);
+  writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+
+  start := Now;
+  write('Equalizing histogram........... ');
+  image := imagelib_equalize_histogram(image);
+  writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+  image.SaveToFile(ParamStr(1) + '_grayscale_equalized.jpg', TFPWriterJPEG.Create);
+
+  start := Now;
+  write('Converting to bw............... ');
+  image := imagelib_rgb_to_bw(image);
+  writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
+  image.SaveToFile (ParamStr(1) + '_equalized_BW.jpg', TFPWriterJPEG.Create);
 
   //create a list with features
   start := Now;
   write('Extracting features............ ');
-  featurelist := imagelib_find_feature(image, 3, 200);
+  featurelist := imagelib_find_feature_FAST(image, 3, High(word) div 10);
 
   //draw the features in the original image
   canvas := TFPImageCanvas.Create (image);
@@ -80,7 +85,7 @@ begin
   //save image
   start := Now;
   write('Saving image................... ');
-  image.SaveToFile('lenna_features.jpg',TFPWriterJPEG.Create);
+  image.SaveToFile(ParamStr(1) + '_features.jpg',TFPWriterJPEG.Create);
   writeln('done in ', round((Now-start)*24*3600*1000), ' msec');
 
   writeln('done in ', round((Now-allstart)*24*3600*1000), ' msec');

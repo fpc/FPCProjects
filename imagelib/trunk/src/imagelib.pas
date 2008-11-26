@@ -23,6 +23,8 @@ uses
   SysUtils, FPImage, FPWritePNG, FPReadPNG, FPCanvas;
 
 type
+  TConvKernel = array of array of integer;
+
   ImageLibException = class(exception);
 
   TFeature = record
@@ -50,6 +52,7 @@ function imagelib_equalize_histogram(ASource: TFPMemoryImage): TFPMemoryImage;
 
 //feature.inc
 function imagelib_find_feature(ASource: TFPMemoryImage; Radius: smallint; FeatureCount: integer): TFeatureList;
+function imagelib_find_feature_FAST(ASource: TFPMemoryImage; Radius: smallint; Threshold: integer): TFeatureList;
 
 implementation
 
