@@ -4,7 +4,7 @@
     <Name Value="lnetbase"/>
     <Author Value="Aleš Katona, Micha Nelissen"/>
     <CompilerOptions>
-      <Version Value="5"/>
+      <Version Value="8"/>
       <SearchPaths>
         <IncludeFiles Value="../lib/sys/"/>
         <OtherUnitFiles Value="../lib/"/>
@@ -13,12 +13,12 @@
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
+          <CStyleOperator Value="False"/>
           <CStyleMacros Value="True"/>
         </SyntaxOptions>
       </Parsing>
       <CodeGeneration>
         <SmartLinkUnit Value="True"/>
-        <Generate Value="Faster"/>
         <Optimizations>
           <OptimizationLevel Value="2"/>
         </Optimizations>
@@ -34,6 +34,7 @@
           <ShowHints Value="False"/>
           <ShowGenInfo Value="False"/>
         </Verbosity>
+        <CustomOptions Value="-dLNET_BASE"/>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
     </CompilerOptions>
@@ -41,7 +42,7 @@
 "/>
     <License Value="LGPL with exception, see LICENSE and LICENSE.addon
 "/>
-    <Version Minor="6" Release="2"/>
+    <Version Minor="6" Release="3"/>
     <Files Count="28">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
