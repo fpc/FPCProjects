@@ -15,7 +15,7 @@ interface
 uses
   MacOSAll,
   Classes, sysutils, GLCrossPlatform, GLContext, LCLProc, Forms, Controls,
-  OpenGL1x, agl, CarbonDef, CarbonCanvas, CarbonProc;
+  OpenGL1x, agl, CarbonDef, CarbonCanvas, CarbonProc, CarbonPrivate;
 
 type
    // TGLCarbonContext
@@ -168,7 +168,7 @@ begin
   if not (FForm is TCustomForm) then
     raise EGLContext.Create('Creating context failed: control not on the form!');
 
-  Window := TCarbonWidget((FForm as TWinControl).Handle).Widget;
+  Window := TCarbonWindow((FForm as TWinControl).Handle).Window;
 
   // create the AGL context
   Disp := GetMainDevice();
