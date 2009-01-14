@@ -657,7 +657,7 @@ begin
            pDest^ := pixel.red shr 8; inc(pDest);
            pDest^ := pixel.green shr 8; inc(pDest);
            pDest^ := pixel.blue shr 8; inc(pDest);
-           pDest^ := $ff{pixel.alpha shr 8}; inc(pDest);
+           pDest^ := pixel.alpha shr 8; inc(pDest);
          end;
      end
      else begin
@@ -668,7 +668,7 @@ begin
            pDest^ := pixel.red shr 8; inc(pDest);
            pDest^ := pixel.green shr 8; inc(pDest);
            pDest^ := pixel.blue shr 8; inc(pDest);
-           pDest^ := $ff{pixel.alpha shr 8}; inc(pDest);
+           pDest^ := pixel.alpha shr 8; inc(pDest);
          end;
      end;
    finally
