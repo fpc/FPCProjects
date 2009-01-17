@@ -84,7 +84,7 @@ uses Classes,
    GR32,
 {$endif}
    {$ifdef lcl}
-   fpimage, intfgraphics,
+   fpimage, intfgraphics, GraphType,
    {$endif}
    OpenGL1x, GLUtils, GLCrossPlatform, GLContext, GLColor;
 
@@ -864,6 +864,10 @@ function TGLBitmap32.Create32BitsBitmap : TGLBitmap;
 var
    y, x, x4 : Integer;
    pSrc, pDest : PChar;
+   {$IFDEF FPC}
+   LIntfImg : TLazIntfImage;
+   RIMG     : TRawImage;
+   {$ENDIF}
 begin
    if FBlank then begin
      Result:=nil;
@@ -872,9 +876,23 @@ begin
 
    Result:=TGLBitmap.Create;
    Result.PixelFormat:=glpf32bit;
-   Result.Width:=Width;
-   Result.Height:=Height;
+   Result.SetSize(Width,Height);
+   //Result.Width:=Width;
+   //Result.Height:=Height;
+
+
    if Height>0 then begin
+   {$IFDEF FPC}
+     rimg.Description.Init_BPP32_B8G8R8A8_BIO_TTB(Width,Height);
+     RIMG.DataSize:=FDataSize;
+     rimg.Data:=PByte(FData);
+     LIntfImg:=TLazIntfImage.Create(rimg,False);
+     try
+       result.LoadFromIntfImage(LIntfImg);
+     finally
+       FreeAndNil(LIntfImg);
+     end;
+   {$ELSE}
       pSrc:=@PChar(FData)[Width*4*(Height-1)];
       for y:=0 to Height-1 do begin
          pDest:=BitmapScanLine(Result, y);
@@ -887,6 +905,7 @@ begin
          end;
          Dec(pSrc, Width*4);
       end;
+   {$ENDIF}
    end;
 end;
 
