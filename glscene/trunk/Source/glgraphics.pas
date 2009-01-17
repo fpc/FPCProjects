@@ -883,6 +883,7 @@ begin
 
    if Height>0 then begin
    {$IFDEF FPC}
+{ -- This works somehow, probably depending on screen BPP (and maybe killing alpha) : }
      rimg.Description.Init_BPP32_B8G8R8A8_BIO_TTB(Width,Height);
      RIMG.DataSize:=FDataSize;
      rimg.Data:=PByte(FData);
@@ -892,6 +893,23 @@ begin
      finally
        FreeAndNil(LIntfImg);
      end;
+ { -- }
+ { -- This does not work (Lazarus 0.9.27 r18304), because result.safetofile
+      tries to refresh SaveStream using result.handle (HBitmap) which is invalid
+  --
+     result.BeginUpdate;
+     try
+       rimg:=Result.RawImage;
+       rimg.Description.Init_BPP32_B8G8R8A8_BIO_TTB(Width,Height);
+       rimg.CreateData(false);
+       if rimg.DataSize <> FDataSize then
+         raise exception.CreateFmt('GLBitmap32.DataSize is %d, RawImage.DataSize should be the same but is %d',
+                                    [FDataSize,RIMG.DataSize]);
+       move(FData^,rimg.Data^,FDataSize);
+     finally
+       result.EndUpdate;
+     end;
+ { -- }
    {$ELSE}
       pSrc:=@PChar(FData)[Width*4*(Height-1)];
       for y:=0 to Height-1 do begin
