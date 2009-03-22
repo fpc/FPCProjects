@@ -4730,6 +4730,8 @@ begin
                end;
                if distList.Count>0 then begin
                   if distList.Count>1 then
+                     {$WARNING crossbuilder: FastQuickSortLists comment says all values >= 1 but osRenderNearestFirst would give values <= -1 }
+                     {$WARNING crossbuilder: so maybe better use the slower QuickSortLists instead }
                      FastQuickSortLists(0, distList.Count-1, distList, objList);
                   plist:=objList.List;
                   for i:=objList.Count-1 downto 0 do
