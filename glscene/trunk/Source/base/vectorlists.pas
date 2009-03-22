@@ -710,6 +710,8 @@ var
   p, Temp: Integer;
   refInts: PIntegerArray;
   ppl:     PIntegerArray;
+  oTemp    : pointer;
+  oppl     : PPointerArray;
 begin
   // All singles are >=1, so IEEE format allows comparing them as if they were integers
   refInts := PIntegerArray(@refList.List[0]);
@@ -730,10 +732,10 @@ begin
           Temp := ppl^[I];
           ppl^[I] := ppl^[J];
           ppl^[J] := Temp;
-          ppl := PIntegerArray(objList.List);
-          Temp := ppl^[I];
-          ppl^[I] := ppl^[J];
-          ppl^[J] := Temp;
+          oppl := PPointerArray(objList.List);
+          oTemp := oppl^[I];
+          oppl^[I] := oppl^[J];
+          oppl^[J] := oTemp;
           Inc(I);
           Dec(J);
         end;
@@ -754,10 +756,10 @@ begin
       Temp := ppl^[I];
       ppl^[I] := ppl^[J];
       ppl^[J] := Temp;
-      ppl := PIntegerArray(objList.List);
-      Temp := ppl^[I];
-      ppl^[I] := ppl^[J];
-      ppl^[J] := Temp;
+      oppl := PPointerArray(objList.List);
+      oTemp := oppl^[I];
+      oppl^[I] := oppl^[J];
+      oppl^[J] := oTemp;
     end;
   end;
 end;
