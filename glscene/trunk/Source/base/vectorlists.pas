@@ -708,13 +708,14 @@ procedure FastQuickSortLists(startIndex, endIndex: Integer; refList: TSingleList
 var
   I, J:    Integer;
   p, Temp: Integer;
-  refInts: PIntegerArray;
   ppl:     PIntegerArray;
   oTemp    : pointer;
   oppl     : PPointerArray;
+
 begin
   // All singles are >=1, so IEEE format allows comparing them as if they were integers
-  refInts := PIntegerArray(@refList.List[0]);
+  ppl := PIntegerArray(@refList.List[0]);
+  oppl := PPointerArray(objList.List);
   if endIndex > startIndex + 1 then
   begin
     repeat
@@ -722,7 +723,6 @@ begin
       J := endIndex;
       p := PInteger(@refList.List[(I + J) shr 1])^;
       repeat
-        ppl := refInts;
         while ppl^[I] < p do
           Inc(I);
         while ppl^[J] > p do
@@ -732,7 +732,6 @@ begin
           Temp := ppl^[I];
           ppl^[I] := ppl^[J];
           ppl^[J] := Temp;
-          oppl := PPointerArray(objList.List);
           oTemp := oppl^[I];
           oppl^[I] := oppl^[J];
           oppl^[J] := oTemp;
@@ -748,7 +747,6 @@ begin
   else
   if endIndex > startIndex then
   begin
-    ppl := refInts;
     if ppl^[endIndex] < ppl^[startIndex] then
     begin
       I := endIndex;
@@ -756,7 +754,6 @@ begin
       Temp := ppl^[I];
       ppl^[I] := ppl^[J];
       ppl^[J] := Temp;
-      oppl := PPointerArray(objList.List);
       oTemp := oppl^[I];
       oppl^[I] := oppl^[J];
       oppl^[J] := oTemp;
