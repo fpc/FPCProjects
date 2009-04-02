@@ -36,7 +36,7 @@ uses
   {$endif}
   {$ifdef BSD}
     {$undef nochoice}
-    BSD,
+    BSD, Errors,
   {$endif}
   {$i sys/osunits.inc}
 
