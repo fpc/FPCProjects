@@ -1346,7 +1346,9 @@ begin
   end else begin
     { only if keep-alive, then user must specify either of above headers to 
       indicate next header's start }
-    FRequestInputDone := StrIComp(FParameters[hpConnection], 'keep-alive') = 0;
+    FRequestInputDone := False;
+    if FParameters[hpConnection] <> nil then
+      FRequestInputDone := StrIComp(FParameters[hpConnection], 'keep-alive') = 0;
     if not FRequestInputDone then
     begin
       FParseBuffer := @ParseEntityPlain;
