@@ -747,9 +747,10 @@ begin
          end;
     end else if IsNonFatalError(LastError) then
       LogError(GSStr[aOp] + ' error', LastError) // non fatals don't cause disconnect
-    else if (aOp = soSend) and IsPipeError(LastError) then
-      HardDisconnect(True) {$warning check if we need aOp = soSend in the IF, perhaps bad recv is possible?}
-    else
+    else if (aOp = soSend) and IsPipeError(LastError) then begin
+      LogError(GSStr[aOp] + ' error', LastError);
+      HardDisconnect(True); {$warning check if we need aOp = soSend in the IF, perhaps bad recv is possible?}
+    end else
       Bail(GSStr[aOp] + ' error', LastError);
       
     Result := 0;

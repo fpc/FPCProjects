@@ -281,7 +281,7 @@ end;
 function IsPipeError(const anError: Integer): Boolean; inline;
 begin
   {$WARNING check these ambiguous errors}
-  Result := (anError = WSAENOTCONN) or (anError = WSAECONNRESET);
+  Result := anError = WSAECONNRESET;
 end;
 
 {$ELSE}
