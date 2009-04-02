@@ -34,6 +34,7 @@ type
     FWorkThread: array of TLWorkThread;
     FThreadCount: Integer;
     FThreadsCreated: Boolean;
+    FTimeout: Integer;
     procedure CreateWorkThreads(aEventerClass: TLEventerClass);
     
     function GetWorkThread(const i: Integer): TLWorkThread;
@@ -48,6 +49,7 @@ type
     { AddHandle is called from within lNet unit as FEventer.AddHandle
       base on TLConnection's eventer, which means this eventer }
     function AddHandle(aHandle: TLHandle): Boolean; override;
+    function CallAction: Boolean; override;
    public
     property WorkThreads[i: Integer]: TLWorkThread read GetWorkThread;
     property ThreadCount: Integer read FThreadCount write SetThreadCount;
@@ -87,8 +89,6 @@ end;
 { TLThreadedEventer }
 
 procedure TLThreadedEventer.CreateWorkThreads(aEventerClass: TLEventerClass);
-const
-  DEF_TIMEOUT = 50; // 50ms is good enough
 var
   i: Integer;
 begin
@@ -97,7 +97,7 @@ begin
   for i := 0 to FThreadCount - 1 do begin
     FWorkThread[i] := TLWorkThread.Create(True);
     FWorkThread[i].FEventer := aEventerClass.Create;
-    FWorkThread[i].FEventer.Timeout := DEF_TIMEOUT;
+    FWorkThread[i].FEventer.Timeout := FTimeout;
     FWorkThread[i].Resume;
   end;
   
@@ -120,10 +120,7 @@ end;
 
 function TLThreadedEventer.GetTimeout: Integer;
 begin
-  Result := 0;
-  
-  if FThreadCount > 0 then
-    Result := FWorkThread[0].Eventer.Timeout;
+  Result := FTimeout;
 end;
 
 procedure TLThreadedEventer.SetTimeout(const aValue: Integer);
@@ -132,9 +129,11 @@ var
 begin
   if aValue < 0 then
     raise Exception.Create('TThreadedEventer must have Timeout >= 0');
-    
-  for i := 0 to FThreadCount - 1 do
-    FWorkThread[i].Eventer.Timeout := aValue;
+
+  FTimeout := aValue;
+  if FThreadsCreated then
+    for i := 0 to FThreadCount - 1 do
+      FWorkThread[i].Eventer.Timeout := aValue;
 end;
 
 procedure TLThreadedEventer.SetThreadCount(const aValue: Integer);
@@ -149,6 +148,7 @@ constructor TLThreadedEventer.Create(const aThreadCount: Integer);
 begin
   inherited Create;
 
+  FTimeout := 50; // default, good enough
   SetThreadCount(aThreadCount);
 end;
 
@@ -195,6 +195,13 @@ begin
     end;
   { And add the new handle to it }
   Result := FWorkThread[j].Eventer.AddHandle(aHandle);
+end;
+
+function TLThreadedEventer.CallAction: Boolean;
+begin
+  Result := inherited;
+
+  Sleep(FTimeout);
 end;
 
 end.
