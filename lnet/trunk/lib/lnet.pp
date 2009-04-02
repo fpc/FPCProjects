@@ -78,6 +78,9 @@ type
   { TLSocketConnection }
   TLSocketConnectionStatus = (scNone, scConnecting, scConnected, scDisconnecting);
 
+  { TLSocketOperation }
+  TLSocketOperation = (soSend, soReceive);
+
   { TLSocket }
 
   TLSocket = class(TLHandle)
@@ -107,7 +110,7 @@ type
     function DoSend(const aData; const aSize: Integer): Integer; virtual;
     function DoGet(out aData; const aSize: Integer): Integer; virtual;
 
-    function HandleResult(const aResult, aOp: Integer): Integer; virtual;
+    function HandleResult(const aResult: Integer; aOp: TLSocketOperation): Integer; virtual;
     
     function GetLocalPort: Word;
     function GetPeerPort: Word;
@@ -121,7 +124,7 @@ type
     procedure SetReuseAddress(const aValue: Boolean);
 //    procedure SetNoDelay(const aValue: Boolean);
 
-    procedure HardDisconnect;
+    procedure HardDisconnect(const NoShutdown: Boolean = False);
     procedure SoftDisconnect;
 
     function Bail(const msg: string; const ernum: Integer): Boolean;
@@ -564,12 +567,15 @@ begin
   end;
 end;
 
-procedure TLSocket.HardDisconnect;
+procedure TLSocket.HardDisconnect(const NoShutdown: Boolean = False);
 var
   NeedsShutdown: Boolean;
 begin
   NeedsShutdown := (FConnectionStatus = scConnected) and (FSocketType = SOCK_STREAM)
                and (not (ssServerSocket in FSocketState));
+  if NoShutdown then
+    NeedsShutdown := False;
+
   FDispose := True;
   FSocketState := FSocketState + [ssCanSend, ssCanReceive];
   FIgnoreWrite := True;
@@ -640,7 +646,7 @@ begin
         Exit(0);
       end;
       
-    Result := HandleResult(Result, 1);
+    Result := HandleResult(Result, soReceive);
   end;
 end;
 
@@ -719,9 +725,9 @@ begin
     Result := sockets.fpRecvfrom(FHandle, @aData, aSize, LMSG, @FPeerAddress, @AddressLength);
 end;
 
-function TLSocket.HandleResult(const aResult, aOp: Integer): Integer;
+function TLSocket.HandleResult(const aResult: Integer; aOp: TLSocketOperation): Integer;
 const
-  GSStr: array[0..1] of string = ('Send', 'Get');
+  GSStr: array[TLSocketOperation] of string = ('Send', 'Get');
 var
   LastError: Longint;
 begin
@@ -729,16 +735,20 @@ begin
   if Result = SOCKET_ERROR then begin
     LastError := LSocketError;
     if IsBlockError(LastError) then case aOp of
-      0: begin
+      soSend:
+         begin
            FSocketState := FSocketState - [ssCanSend];
            IgnoreWrite := False;
          end;
-      1: begin
+      soReceive:
+         begin
            FSocketState := FSocketState - [ssCanReceive];
            IgnoreRead := False;
          end;
     end else if IsNonFatalError(LastError) then
       LogError(GSStr[aOp] + ' error', LastError) // non fatals don't cause disconnect
+    else if (aOp = soSend) and IsPipeError(LastError) then
+      HardDisconnect(True) {$warning check if we need aOp = soSend in the IF, perhaps bad recv is possible?}
     else
       Bail(GSStr[aOp] + ' error', LastError);
       
@@ -824,7 +834,7 @@ begin
       Exit(0);
     end;
 
-    Result := HandleResult(DoSend(aData, aSize), 0);
+    Result := HandleResult(DoSend(aData, aSize), soSend);
   end;
 end;
 

@@ -28,7 +28,7 @@ type
     function DoSend(const aData; const aSize: Integer): Integer; override;
     function DoGet(out aData; const aSize: Integer): Integer; override;
     
-    function HandleResult(const aResult, aOp: Integer): Integer; override;
+    function HandleResult(const aResult: Integer; aOp: TLSocketOperation): Integer; override;
 
     function SetActiveSSL(const AValue: Boolean): Boolean;
 
@@ -237,9 +237,9 @@ begin
     Result := inherited DoGet(aData, aSize);
 end;
 
-function TLSSLSocket.HandleResult(const aResult, aOp: Integer): Integer;
+function TLSSLSocket.HandleResult(const aResult: Integer; aOp: TLSocketOperation): Integer;
 const
-  GSStr: array[0..1] of string = ('SSLWrite', 'SSLRead');
+  GSStr: array[TLSocketOperation] of string = ('SSLWrite', 'SSLRead');
 var
   LastError: cInt;
 begin
@@ -250,16 +250,20 @@ begin
   if Result <= 0 then begin
     LastError := SslGetError(FSSL, Result);
     if IsSSLBlockError(LastError) then case aOp of
-      0: begin
+      soSend:
+         begin
            FSocketState := FSocketState - [ssCanSend];
            IgnoreWrite := False;
          end;
-      1: begin
+      soReceive:
+         begin
            FSocketState := FSocketState - [ssCanReceive];
            IgnoreRead := False;
          end;
     end else if IsSSLNonFatalError(LastError, Result) then
       LogError(GSStr[aOp] + ' error', LastError)
+    else if (aOp = soSend) and (IsPipeError(LastError)) then
+      HardDisconnect(True)
     else
       Bail(GSStr[aOp] + ' error', LastError);
     Result := 0;

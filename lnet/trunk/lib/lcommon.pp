@@ -93,6 +93,7 @@ const
 
   function IsBlockError(const anError: Integer): Boolean; inline;
   function IsNonFatalError(const anError: Integer): Boolean; inline;
+  function IsPipeError(const anError: Integer): Boolean; inline;
 
   function TZSeconds: Integer; inline;
 
@@ -277,6 +278,12 @@ begin
          or (anError = WSAEDESTADDRREQ);
 end;
 
+function IsPipeError(const anError: Integer): Boolean; inline;
+begin
+  {$WARNING check these ambiguous errors}
+  Result := (anError = WSAENOTCONN) or (anError = WSAECONNRESET);
+end;
+
 {$ELSE}
 
 // unix
@@ -348,6 +355,11 @@ begin
   Result := (anError = ESysEINTR) or (anError = ESysEMSGSIZE)
          or (anError = ESysEFAULT) or (anError = ESysEINVAL)
          or (anError = ESysEOPNOTSUPP);
+end;
+
+function IsPipeError(const anError: Integer): Boolean; inline;
+begin
+  Result := anError = ESysEPIPE;
 end;
 
 function TZSeconds: Integer; inline;
