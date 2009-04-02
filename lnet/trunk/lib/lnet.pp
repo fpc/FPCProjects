@@ -676,16 +676,21 @@ begin
     if FSocketType = SOCK_DGRAM then begin
       if fpsetsockopt(FHandle, SOL_SOCKET, SO_BROADCAST, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Exit(Bail('SetSockOpt error', LSocketError));
-    end else if FReuseAddress then begin
-      Opt := SO_REUSEADDR;
-      {$ifdef WIN32} // I expect 64 has it oddly, so screw them for now
-      if (Win32Platform = 2) and (Win32MajorVersion >= 5) then
-        Opt := Integer(not Opt);
-      {$endif}
-      if fpsetsockopt(FHandle, SOL_SOCKET, Opt, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
+    end else begin
+      if FReuseAddress then begin
+        Opt := SO_REUSEADDR;
+        {$ifdef WIN32} // I expect 64 has it oddly, so screw them for now
+        if (Win32Platform = 2) and (Win32MajorVersion >= 5) then
+          Opt := Integer(not Opt);
+        {$endif}
+        if fpsetsockopt(FHandle, SOL_SOCKET, Opt, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
+          Exit(Bail('SetSockOpt error', LSocketError));
+      end;
+      Arg := 1;
+      if fpsetsockopt(FHandle, IPPROTO_TCP, TCP_NODELAY, @Arg, sizeof(Arg)) < 0 then
         Exit(Bail('SetSockOpt error', LSocketError));
     end;
-    
+
     {$ifdef darwin}
     Arg := 1;
     if fpsetsockopt(FHandle, SOL_SOCKET, SO_NOSIGPIPE, @Arg, Sizeof(Arg)) = SOCKET_ERROR then

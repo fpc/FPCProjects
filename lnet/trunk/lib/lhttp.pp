@@ -1322,38 +1322,39 @@ end;
 function TLHTTPSocket.ProcessEncoding: boolean;
 var
   lCode: integer;
+  lParam: pchar;
 begin
   Result := true;
-  if FParameters[hpContentLength] <> nil then
+  lParam := FParameters[hpContentLength];
+  if lParam <> nil then
   begin
     FParseBuffer := @ParseEntityPlain;
-    Val(FParameters[hpContentLength], FInputRemaining, lCode);
+    Val(lParam, FInputRemaining, lCode);
     if lCode <> 0 then
-    begin
       WriteError(hsBadRequest);
-      exit;
-    end;
-  end else 
-  if FParameters[hpTransferEncoding] <> nil then
+    exit;
+  end;
+
+  lParam := FParameters[hpTransferEncoding];
+  if lParam <> nil then
   begin
-    if (StrIComp(FParameters[hpTransferEncoding], 'chunked') = 0) then
+    if StrIComp(lParam, 'chunked') = 0 then
     begin
       FParseBuffer := @ParseEntityChunked;
       FChunkState := csInitial;
-    end else begin
+    end else
       Result := false;
-    end;
-  end else begin
-    { only if keep-alive, then user must specify either of above headers to 
-      indicate next header's start }
-    FRequestInputDone := False;
-    if FParameters[hpConnection] <> nil then
-      FRequestInputDone := StrIComp(FParameters[hpConnection], 'keep-alive') = 0;
-    if not FRequestInputDone then
-    begin
-      FParseBuffer := @ParseEntityPlain;
-      FInputRemaining := high(FInputRemaining);
-    end;
+    exit;
+  end;
+
+  { only if keep-alive, then user must specify either of above headers to 
+    indicate next header's start }
+  lParam := FParameters[hpConnection];
+  FRequestInputDone := (lParam <> nil) and (StrIComp(lParam, 'keep-alive') = 0);
+  if not FRequestInputDone then
+  begin
+    FParseBuffer := @ParseEntityPlain;
+    FInputRemaining := high(FInputRemaining);
   end;
 end;
 
@@ -1651,7 +1652,7 @@ end;
 procedure TLHTTPServerSocket.ProcessHeaders;
   { process request }
 var
-  lPos: pchar;
+  lPos, lConnParam: pchar;
 begin
   { do HTTP/1.1 Host-field present check }
   if (FRequestInfo.Version > 10) and (FParameters[hpHost] = nil) then
@@ -1668,12 +1669,13 @@ begin
   end;
 
   FKeepAlive := FRequestInfo.Version > 10;
-  if FParameters[hpConnection] <> nil then
+  lConnParam := FParameters[hpConnection];
+  if lConnParam <> nil then
   begin
-    if StrIComp(FParameters[hpConnection], 'keep-alive') = 0 then
+    if StrIComp(lConnParam, 'keep-alive') = 0 then
       FKeepAlive := true
     else
-    if StrIComp(FParameters[hpConnection], 'close') = 0 then
+    if StrIComp(lConnParam, 'close') = 0 then
       FKeepAlive := false;
   end;
   
