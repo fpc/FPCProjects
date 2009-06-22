@@ -30,7 +30,7 @@ interface
 
 uses
   sysutils, classes, lhttp, lhttputil, lmimetypes, levents,
-  lprocess, process, lfastcgi, fastcgi;
+  lprocess, process, lfastcgi, fastcgi_base;
 
 type
   TLMultipartParameter = (mpContentType, mpContentDisposition, mpContentTransferEncoding,
