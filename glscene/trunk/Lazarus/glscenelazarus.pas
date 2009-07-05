@@ -1,6 +1,5 @@
-{ Tento súbor bol automaticky vytvorený Lazarom. Prosím neurpavovať!
-  Tento zdrojový kód je použitý len na preloženie a nainštalovanie tohoto 
-    balíčka.
+{ This file was automatically created by Lazarus. do not edit!
+  This source is only used to compile and install the package.
  }
 
 unit glscenelazarus; 
@@ -8,7 +7,7 @@ unit glscenelazarus;
 interface
 
 uses
-  ApplicationFileIO, ARBProgram, AsyncTimer, BumpMapping, CurvesAndSurfaces, 
+    ApplicationFileIO, ARBProgram, AsyncTimer, BumpMapping, CurvesAndSurfaces, 
   GeometryBB, GLCanvas, GLKeyboard, GLTextureCombiners, HeightTileFile, jpeg, 
   MeshUtils, Octree, OpenGL1x, PerlinNoise, PersistentClasses, 
   PictureRegisteredFormats, Polynomials, SpatialPartitioning, Spline, 
@@ -35,7 +34,8 @@ uses
   GLTilePlane, GLTrail, GLTree, GLUtils, GLVectorFileObjects, GLVerletClasses, 
   GLVerletClothify, GLVerletSkeletonColliders, GLWaterPlane, GLWindows, 
   GLzBuffer, cadencerasap, GLCrossPlatform, GLViewer, GLColor, 
-  GLDynamicTexture, GLLCLViewer, GLGizmo, GLFileB3D, LazarusPackageIntf;
+  GLDynamicTexture, GLLCLViewer, GLGizmo, GLFileB3D, GLSLBumpShader, 
+  GLSLDiffuseSpecularShader, GLSLPostBlurShader, GLSLShader, LazarusPackageIntf;
 
 implementation
 

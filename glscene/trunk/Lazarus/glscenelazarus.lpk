@@ -17,12 +17,10 @@
       </Parsing>
       <CodeGeneration>
         <SmartLinkUnit Value="True"/>
-        <Generate Value="Faster"/>
       </CodeGeneration>
       <Linking>
         <Debugging>
           <GenerateDebugInfo Value="True"/>
-          <UseHeaptrc Value="True"/>
         </Debugging>
       </Linking>
       <Other>
@@ -35,7 +33,7 @@
     <Description Value="GLScene - OpenGL 3D library"/>
     <License Value="LGPL"/>
     <Version Major="1" Build="3"/>
-    <Files Count="167">
+    <Files Count="171">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -724,6 +722,22 @@
         <Filename Value="../Source/fileformats/glfileb3d.pas"/>
         <UnitName Value="GLFileB3D"/>
       </Item167>
+      <Item168>
+        <Filename Value="../Source/glslshaders/glslbumpshader.pas"/>
+        <UnitName Value="GLSLBumpShader"/>
+      </Item168>
+      <Item169>
+        <Filename Value="../Source/glslshaders/glsldiffusespecularshader.pas"/>
+        <UnitName Value="GLSLDiffuseSpecularShader"/>
+      </Item169>
+      <Item170>
+        <Filename Value="../Source/glslshaders/glslpostblurshader.pas"/>
+        <UnitName Value="GLSLPostBlurShader"/>
+      </Item170>
+      <Item171>
+        <Filename Value="../Source/glslshaders/glslshader.pas"/>
+        <UnitName Value="GLSLShader"/>
+      </Item171>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="4">
