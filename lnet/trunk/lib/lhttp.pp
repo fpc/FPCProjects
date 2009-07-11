@@ -298,7 +298,6 @@ type
     procedure AddContentLength(ALength: integer); virtual; abstract;
     function  CalcAvailableBufferSpace: integer;
     procedure DelayFree(AOutputItem: TOutputItem);
-    procedure Disconnect(const Forced: Boolean = True); override;
     procedure DoneBuffer(AOutput: TBufferOutput); virtual;
     procedure FreeDelayFreeItems;
     procedure LogAccess(const AMessage: string); virtual;
@@ -323,6 +322,7 @@ type
     destructor Destroy; override;
 
     procedure AddToOutput(AOutputItem: TOutputItem);
+    procedure Disconnect(const Forced: Boolean = True); override;
     procedure PrependOutput(ANewItem, AItem: TOutputItem);
     procedure RemoveOutput(AOutputItem: TOutputItem);
     procedure HandleReceive;
@@ -459,6 +459,8 @@ type
     destructor Destroy; override;
 
     procedure AddExtraHeader(const AHeader: string);
+    procedure AddCookie(const AName, AValue: string; const APath: string = '';
+      const ADomain: string = ''; const AVersion: string = '0');
     procedure ResetRange;
     procedure SendRequest;
 
@@ -557,6 +559,11 @@ begin
     Inc(ABuffer);
   end;
   AValue := Val;
+end;
+
+function EscapeCookie(const AInput: string): string;
+begin
+  Result := StringReplace(AInput, ';', '%3B', [rfReplaceAll]);
 end;
 
 { TURIHandler }
@@ -2215,6 +2222,19 @@ procedure TLHTTPClient.AddExtraHeader(const AHeader: string);
 begin
   AppendString(FHeaderOut.ExtraHeaders, AHeader);
   AppendString(FHeaderOut.ExtraHeaders, #13#10);
+end;
+
+procedure TLHTTPClient.AddCookie(const AName, AValue: string; const APath: string = '';
+  const ADomain: string = ''; const AVersion: string = '0');
+var
+  lHeader: string;
+begin
+  lHeader := 'Cookie: $Version='+AVersion+'; '+AName+'='+EscapeCookie(AValue);
+  if Length(APath) > 0 then
+    lHeader := lHeader+';$Path='+APath;
+  if Length(ADomain) > 0 then
+    lHeader := lHeader+';$Domain='+ADomain;
+  AddExtraHeader(lHeader);
 end;
 
 procedure TLHTTPClient.ConnectEvent(aSocket: TLHandle);
