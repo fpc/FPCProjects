@@ -41,6 +41,7 @@ type
     ActionList1: TActionList;
     LeftView: TFileListBox;
     MenuItem1: TMenuItem;
+    MenuItemFeatures: TMenuItem;
     MenuItemMkdir: TMenuItem;
     MenuSiteManager: TMenuItem;
     Panel1: TPanel;
@@ -70,6 +71,9 @@ type
     ToolButton3: TToolButton;
     ToolButton4: TToolButton;
     procedure AboutMenuItemClick(Sender: TObject);
+    procedure FTPFailure(aSocket: TLSocket; const aStatus: TLFTPStatus);
+    procedure FTPSuccess(aSocket: TLSocket; const aStatus: TLFTPStatus);
+    procedure MenuItemFeaturesClick(Sender: TObject);
     procedure MenuItemMkdirClick(Sender: TObject);
     procedure accConnectExecute(Sender: TObject);
     procedure accDisconnectExecute(Sender: TObject);
@@ -138,7 +142,8 @@ var
 
 implementation
 
-uses SitesUnit, DLEParsers;
+uses
+  uFeatures, SitesUnit, DLEParsers;
 
 const
   siDirUp = 0;
@@ -225,7 +230,8 @@ begin
   aName := Site.path;
   if aName='/' then
     aName := '';
-    
+
+  FTP.ListFeatures;
   DoList(aName);
   // TODO: ask for current dir here
 end;
@@ -413,6 +419,24 @@ procedure TMainForm.AboutMenuItemClick(Sender: TObject);
 begin
   MessageDlg('lFTP test program copyright (c) 2005-2008 by Ales Katona and Jesus Reyes. All rights deserved :)',
              mtInformation, [mbOK], 0);
+end;
+
+procedure TMainForm.FTPFailure(aSocket: TLSocket; const aStatus: TLFTPStatus);
+begin
+
+end;
+
+procedure TMainForm.FTPSuccess(aSocket: TLSocket; const aStatus: TLFTPStatus);
+begin
+  case aStatus of
+    fsFeat : FormFeatures.ListBoxFeatures.Items.Assign(FTP.FeatureList);
+    // TODO: check status of other commands here properly!
+  end;
+end;
+
+procedure TMainForm.MenuItemFeaturesClick(Sender: TObject);
+begin
+  FormFeatures.Show;
 end;
 
 procedure TMainForm.MenuItemMkdirClick(Sender: TObject);

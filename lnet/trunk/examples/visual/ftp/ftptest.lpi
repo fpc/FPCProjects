@@ -1,16 +1,15 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="6"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <SaveClosedFiles Value="False"/>
         <SaveOnlyProjectUnits Value="True"/>
+        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=""/>
       <Title Value="FTP Test case"/>
     </General>
@@ -22,7 +21,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+        <LaunchingApplication Use="True" PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
     <RequiredPackages Count="3">
@@ -37,7 +36,7 @@
         <MinVersion Minor="4" Release="1" Valid="True"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="5">
       <Unit0>
         <Filename Value="ftptest.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -45,19 +44,17 @@
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
+        <IsPartOfProject Value="True"/>
         <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
-        <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="main.lrs"/>
         <UnitName Value="main"/>
       </Unit1>
       <Unit2>
         <Filename Value="sitesunit.pas"/>
-        <ComponentName Value="frmSites"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmSites"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="sitesunit.lrs"/>
         <UnitName Value="sitesunit"/>
       </Unit2>
       <Unit3>
@@ -65,6 +62,13 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="dleparsers"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="ufeatures.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormFeatures"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uFeatures"/>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

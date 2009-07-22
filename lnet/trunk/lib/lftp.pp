@@ -67,6 +67,8 @@ type
     FData: TLTcp;//TLTcpList;
     FSending: Boolean;
     FTransferMethod: TLFTPTransferMethod;
+    FFeatureList: TStringList;
+    FFeatureString: string;
 
     function GetConnected: Boolean; virtual;
     
@@ -97,6 +99,7 @@ type
     property DataConnection: TLTCP read FData;
     property TransferMethod: TLFTPTransferMethod read FTransferMethod write FTransferMethod default ftPassive;
     property Session: TLSession read GetSession write SetSession;
+    property FeatureList: TStringList read FFeatureList;
   end;
 
   { TLFTPTelnetClient }
@@ -160,6 +163,7 @@ type
 
     procedure SetStartPor(const Value: Word);
 
+    procedure EvaluateFeatures;
     procedure EvaluateAnswer(const Ans: string);
 
     procedure PasvPort;
@@ -201,7 +205,7 @@ type
     procedure List(const FileName: string = '');
     procedure Nlst(const FileName: string = '');
     procedure SystemInfo;
-    procedure FeatureList;
+    procedure ListFeatures;
     procedure PresentWorkingDirectory;
     procedure Help(const Arg: string);
     
@@ -232,7 +236,7 @@ type
 implementation
 
 uses
-  SysUtils;
+  SysUtils, Math;
 
 const
   FLE             = #13#10;
@@ -261,7 +265,6 @@ begin
         vtChar: Write(ar[i].vchar);
         vtExtended: Write(Extended(ar[i].vpointer^));
       end;
-  Writeln;
 end;
 {$else}
 begin
@@ -345,12 +348,15 @@ begin
   FData.SocketClass := TLSocket;
 
   FTransferMethod  :=  ftPassive; // let's be modern
+
+  FFeatureList := TStringList.Create;
 end;
 
 destructor TLFTP.Destroy;
 begin
   FControl.Free;
   FData.Free;
+  FFeatureList.Free;
 
   inherited Destroy;
 end;
@@ -515,9 +521,10 @@ var
   i: Integer;
 begin
   FSL.Text := s;
-  if FSL.Count > 0 then
-    for i := 0 to FSL.Count-1 do
-      if Length(FSL[i]) > 0 then EvaluateAnswer(FSL[i]);
+  for i := 0 to FSL.Count - 1 do
+    if Length(FSL[i]) > 0 then
+      EvaluateAnswer(FSL[i]);
+
   s := StringReplace(s, FLE, LineEnding, [rfReplaceAll]);
   i := Pos('PASS', s);
   if i > 0 then
@@ -530,6 +537,32 @@ begin
   FStartPort := Value;
   if Value > FLastPort then
     FLastPort := Value;
+end;
+
+procedure TLFTPClient.EvaluateFeatures;
+var
+  i: Integer;
+begin
+  FFeatureList.Clear;
+  if Length(FFeatureString) = 0 then
+    Exit;
+
+  FFeatureList.Text := FFeatureString;
+  FFeatureString := '';
+  FFeatureList.Delete(0);
+
+  i := 0;
+  while i < FFeatureList.Count do begin
+    if (Length(Trim(FFeatureList[i])) = 0)
+    or (FFeatureList[i][1] <> ' ') then begin
+      FFeatureList.Delete(i);
+      Continue;
+    end;
+
+    FFeatureList[i] := Trim(FFeatureList[i]);
+
+    Inc(i);
+  end;
 end;
 
 procedure TLFTPClient.SetEcho(const Value: Boolean);
@@ -633,6 +666,9 @@ begin
   x := GetNum;
   Writedbg(['WOULD EVAL: ', FTPStatusStr[FStatus.First.Status], ' with value: ',
             x, ' from "', Ans, '"']);
+  if FStatus.First.Status = fsFeat then
+    FFeatureString := FFeatureString + Ans + FLE; // we need to parse this later
+
   if ValidResponse(Ans) then
     if not FStatus.Empty then begin
       Writedbg(['EVAL: ', FTPStatusStr[FStatus.First.Status], ' with value: ', x]);
@@ -813,6 +849,19 @@ begin
                        Eventize(FStatus.First.Status, False);
                      end;
                  end;
+        fsFeat : case x of
+                   200..299:
+                     begin
+                       FStatusFlags[FStatus.First.Status] := True;
+                       EvaluateFeatures;
+                       Eventize(FStatus.First.Status, True);
+                     end;
+                   else
+                     begin
+                       FFeatureString := '';
+                       Eventize(FStatus.First.Status, False);
+                     end;
+                 end;
       end;
     end;
   if FStatus.Empty and not FCommandFront.Empty then
@@ -916,7 +965,7 @@ begin
       fsPWD  : PresentWorkingDirectory;
       fsHelp : Help(Args[1]);
       fsType : SetBinary(StrToBool(Args[1]));
-      fsFeat : FeatureList;
+      fsFeat : ListFeatures;
     end;
   FCommandFront.Remove;
 end;
@@ -925,11 +974,13 @@ function TLFTPClient.Get(out aData; const aSize: Integer; aSocket: TLSocket): In
 var
   s: string;
 begin
-  Result := FControl.Get(aData, aSize, aSocket);
-  if Result > 0 then begin
+  Result := 0;
+
+  if FControl.Get(aData, aSize, aSocket) > 0 then begin
     SetLength(s, Result);
     Move(aData, PChar(s)^, Result);
-    CleanInput(s);
+    Result := CleanInput(s);
+    Move(s[1], aData, Min(Length(s), aSize));
   end;
 end;
 
@@ -1102,10 +1153,12 @@ begin
     FControl.SendMessage('SYST' + FLE);
 end;
 
-procedure TLFTPClient.FeatureList;
+procedure TLFTPClient.ListFeatures;
 begin
-  if CanContinue(fsFeat, '', '') then
+  if CanContinue(fsFeat, '', '') then begin
+    FStatus.Insert(MakeStatusRec(fsFeat, '', ''));
     FControl.SendMessage('FEAT' + FLE);
+  end;
 end;
 
 procedure TLFTPClient.PresentWorkingDirectory;

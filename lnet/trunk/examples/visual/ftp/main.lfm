@@ -3,10 +3,10 @@ object MainForm: TMainForm
   Height = 505
   Top = 129
   Width = 725
-  ActiveControl = MemoText
+  ActiveControl = Panel1
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   Caption = 'FTP Test Client'
-  ClientHeight = 478
+  ClientHeight = 480
   ClientWidth = 725
   Constraints.MinHeight = 400
   Constraints.MinWidth = 725
@@ -15,11 +15,11 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  ParentFont = False
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.27'
   object MemoText: TMemo
+    Left = 0
     Height = 98
-    Top = 359
+    Top = 361
     Width = 725
     Align = alBottom
     ReadOnly = True
@@ -27,22 +27,24 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object Panel1: TPanel
-    Height = 310
+    Left = 0
+    Height = 312
     Top = 24
     Width = 725
     Align = alClient
-    ClientHeight = 310
+    ClientHeight = 312
     ClientWidth = 725
     TabOrder = 1
     object LeftView: TFileListBox
       Left = 1
-      Height = 308
+      Height = 310
       Top = 1
       Width = 183
       Align = alLeft
       Directory = 'C:\lazarus'
       ExtendedSelect = False
       FileType = [ftReadOnly, ftHidden, ftSystem, ftVolumeID, ftDirectory, ftArchive, ftNormal]
+      ItemHeight = 0
       OnDblClick = LeftViewDblClick
       PopupMenu = PopupLeft
       Sorted = False
@@ -52,13 +54,13 @@ object MainForm: TMainForm
     end
     object Splitter2: TSplitter
       Left = 184
-      Height = 308
+      Height = 310
       Top = 1
       Width = 5
     end
     object rmtGrid: TStringGrid
       Left = 189
-      Height = 308
+      Height = 310
       Top = 1
       Width = 535
       Align = alClient
@@ -89,12 +91,9 @@ object MainForm: TMainForm
           Width = 0
         end>
       DefaultRowHeight = 16
-      ExtendedSelect = True
-      FixedColor = clBtnFace
       FixedCols = 0
       GridLineWidth = 0
       Options = [goFixedVertLine, goFixedHorzLine, goColSizing, goRowSelect, goHeaderHotTracking, goHeaderPushedLook]
-      ParentColor = False
       PopupMenu = PopupRight
       RowCount = 1
       TabOrder = 1
@@ -108,15 +107,17 @@ object MainForm: TMainForm
   end
   object Splitter1: TSplitter
     Cursor = crVSplit
+    Left = 0
     Height = 5
-    Top = 354
+    Top = 356
     Width = 725
     Align = alBottom
     ResizeAnchor = akBottom
   end
   object SBar: TStatusBar
+    Left = 0
     Height = 21
-    Top = 457
+    Top = 459
     Width = 725
     Panels = <    
       item
@@ -134,7 +135,9 @@ object MainForm: TMainForm
     SimplePanel = False
   end
   object ToolBar1: TToolBar
+    Left = 0
     Height = 24
+    Top = 0
     Width = 725
     Caption = 'ToolBar1'
     ShowCaptions = True
@@ -145,21 +148,21 @@ object MainForm: TMainForm
       Action = accSiteManager
     end
     object ToolButton3: TToolButton
-      Left = 94
+      Left = 95
       Top = 2
       Width = 13
       Caption = 'ToolButton3'
       Style = tbsDivider
     end
     object ToolButton4: TToolButton
-      Left = 107
+      Left = 108
       Top = 2
       Action = accConnect
       Grouped = True
       Style = tbsCheck
     end
     object ToolButton2: TToolButton
-      Left = 168
+      Left = 169
       Top = 2
       Action = accDisconnect
       Down = True
@@ -168,11 +171,11 @@ object MainForm: TMainForm
     end
   end
   object ProgressBar1: TProgressBar
+    Left = 0
     Height = 20
-    Top = 334
+    Top = 336
     Width = 725
     Align = alBottom
-    Max = 100
     Step = 1
     TabOrder = 5
   end
@@ -194,6 +197,10 @@ object MainForm: TMainForm
     end
     object MenuItemHelp: TMenuItem
       Caption = '&Help'
+      object MenuItemFeatures: TMenuItem
+        Caption = '&Features'
+        OnClick = MenuItemFeaturesClick
+      end
       object MenuItemAbout: TMenuItem
         Caption = '&About'
         OnClick = AboutMenuItemClick
@@ -225,6 +232,10 @@ object MainForm: TMainForm
     OnReceive = FTPReceive
     OnControl = FTPControl
     OnError = FTPError
+    OnSuccess = FTPSuccess
+    OnFailure = FTPFailure
+    PipeLine = False
+    Timeout = 0
     top = 300
   end
   object PopupLeft: TPopupMenu
@@ -246,17 +257,14 @@ object MainForm: TMainForm
     top = 370
     object accSiteManager: TAction
       Caption = 'Site Manager'
-      DisableIfNoHandler = True
       OnExecute = accSiteManagerExecute
     end
     object accConnect: TAction
       Caption = 'Connect'
-      DisableIfNoHandler = True
       OnExecute = accConnectExecute
     end
     object accDisconnect: TAction
       Caption = 'Disconnect'
-      DisableIfNoHandler = True
       OnExecute = accDisconnectExecute
     end
   end
