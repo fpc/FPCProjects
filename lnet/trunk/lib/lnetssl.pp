@@ -40,7 +40,7 @@ type
     procedure AcceptSSL;
     procedure ShutdownSSL;
 
-    procedure LogError(const msg: string; const ernum: Integer); override;
+    function LogError(const msg: string; const ernum: Integer): Boolean; override;
    public
     destructor Destroy; override;
     
@@ -284,12 +284,13 @@ begin
   AcceptSSL;
 end;
 
-procedure TLSSLSocket.LogError(const msg: string; const ernum: Integer);
+function TLSSLSocket.LogError(const msg: string; const ernum: Integer): Boolean;
 var
   s: string;
 begin
+  Result := False;
   if not (ssSSLActive in FSocketState) then
-    inherited LogError(msg, ernum)
+    Result := inherited LogError(msg, ernum)
   else if Assigned(FOnError) then begin
     if ernum > 0 then begin
       SetLength(s, 1024);

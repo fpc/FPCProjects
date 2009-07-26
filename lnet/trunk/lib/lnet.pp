@@ -129,7 +129,7 @@ type
 
     function Bail(const msg: string; const ernum: Integer): Boolean;
     
-    procedure LogError(const msg: string; const ernum: Integer); virtual;
+    function LogError(const msg: string; const ernum: Integer): Boolean; virtual;
     
     property SocketType: Integer read FSocketType write FSocketType; // inherit and publicize if you need to set this outside
    public
@@ -488,8 +488,9 @@ begin
     SoftDisconnect;
 end;
 
-procedure TLSocket.LogError(const msg: string; const ernum: Integer);
+function TLSocket.LogError(const msg: string; const ernum: Integer): Boolean;
 begin
+  Result := False;
   if Assigned(FOnError) then
     if ernum > 0 then
       FOnError(Self, msg + LStrError(ernum))
@@ -500,7 +501,8 @@ end;
 function TLSocket.Bail(const msg: string; const ernum: Integer): Boolean;
 begin
   Result := False; // return the result for the caller
-  if FDispose then Exit;
+  if FDispose then // why?
+    Exit;
   Disconnect(True);
   LogError(msg, ernum);
 end;
@@ -527,8 +529,19 @@ end;
 
 function TLSocket.SendPossible: Boolean; inline;
 begin
-  Result := (FConnectionStatus = scConnected)
-    and (ssCanSend in FSocketState) and not (ssServerSocket in FSocketState);
+  Result := True;
+  if FConnectionStatus <> scConnected then
+    Exit(LogError('Can''t send when not connected', -1));
+
+  if not (ssCanSend in FSocketState) then begin
+    if not Assigned(FConnection)
+    or not Assigned(FConnection.FOnCanSend) then
+      LogError('Send buffer full, try again later', -1);
+    Exit(False);
+  end;
+
+  if ssServerSocket in FSocketState then
+    Exit(LogError('Can''t send on server socket', -1));
 end;
 
 function TLSocket.ReceivePossible: Boolean; inline;
