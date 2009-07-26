@@ -373,8 +373,6 @@ end;
 constructor TLFTPClient.Create(aOwner: TComponent);
 const
   DEFAULT_CHUNK = 8192;
-var
-  s: TLFTPStatus;
 begin
   inherited Create(aOwner);
 
@@ -440,8 +438,6 @@ begin
 end;
 
 procedure TLFTPClient.OnControlEr(const msg: string; aSocket: TLSocket);
-var
-  aStatus: TLFTPStatus;
 begin
   FSending := False;
   
@@ -1174,8 +1170,6 @@ begin
 end;
 
 procedure TLFTPClient.Disconnect(const Forced: Boolean = True);
-var
-  s: TLFTPStatus;
 begin
   FControl.Disconnect(Forced);
   FStatus.Clear;
