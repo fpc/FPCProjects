@@ -176,7 +176,7 @@ begin
         'r', 'R': FCon.RemoveDirectory(GetAnswer('Dirname')); // delete a directory on server, name read from user console
         'd', 'D': FCon.DeleteFile(GetAnswer('Filename')); // delete a file on server, name read from user console
         'e', 'E': FCon.Echo := not FCon.Echo; // set echo mode on/off
-        'f', 'F': FCon.FeatureList; // get all FTP features from server
+        'f', 'F': FCon.ListFeatures; // get all FTP features from server
       end;
       FCon.CallAction; // this needs to be called ASAP, in a loop. It's the magic function which makes all the events work :)
     end;
