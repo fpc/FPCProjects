@@ -768,14 +768,18 @@ procedure MakeSubComponent(const AComponent: TComponent; const Value: Boolean);
 
 // SysUtils.pas
 function StrToFloatDef(const S: string; const Default: Extended): Extended; overload;
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function TryStrToFloat(const S: string; out Value: Extended): Boolean; overload;
+{$ENDIF}
 function TryStrToFloat(const S: string; out Value: Double): Boolean; overload;
 function TryStrToFloat(const S: string; out Value: Single): Boolean; overload;
 
 // Math.pas
 function IsNan(const AValue: Double): Boolean; overload;
 function IsNan(const AValue: Single): Boolean; overload;
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function IsNan(const AValue: Extended): Boolean; overload;
+{$ENDIF}
 function IsInfinite(const AValue: Double): Boolean;
 
 
@@ -827,6 +831,7 @@ begin
 {$ENDIF}
 end;
 
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function TryStrToFloat(const S: string; out Value: Extended): Boolean;
 begin
 {$IFDEF GLS_DELPHI_5_DOWN}
@@ -836,6 +841,7 @@ begin
   Result := SysUtils.TryStrToFloat(S, Value);
 {$ENDIF}
 end;
+{$ENDIF}
 
 function TryStrToFloat(const S: string; out Value: Double): Boolean;
 {$IFDEF GLS_DELPHI_5_DOWN}
@@ -878,6 +884,7 @@ begin
 {$ENDIF}
 end;
 
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function IsNan(const AValue: Extended): Boolean;
 {$IFDEF GLS_DELPHI_5_DOWN}
   Removed code, because we don't need it AND it's probably copyrighted
@@ -887,6 +894,7 @@ begin
   Result := Math.IsNan(AValue);
 {$ENDIF}
 end;
+{$ENDIF}
 
 function IsInfinite(const AValue: Double): Boolean;
 begin
