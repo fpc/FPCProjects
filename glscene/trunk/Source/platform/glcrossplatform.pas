@@ -1521,10 +1521,10 @@ end;
 function PixelFormatToColorBits(aPixelFormat : TPixelFormat) : Integer;
 begin
    case aPixelFormat of
-      pfCustom {$IFDEF WIN32}, pfDevice{$ENDIF} :  // use current color depth
+      pfCustom {$IFDEF WINDOWS}, pfDevice{$ENDIF} :  // use current color depth
          Result:=GetCurrentColorDepth;
       pf1bit  : Result:=1;
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
       pf4bit  : Result:=4;
       pf15bit : Result:=15;
 {$ENDIF}
@@ -1575,7 +1575,7 @@ end;
 {$ENDIF}
 
 procedure QueryPerformanceCounter(var val : Int64);
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
 begin
    Windows.QueryPerformanceCounter(val);
 {$ELSE}
@@ -1598,7 +1598,7 @@ end;
 // QueryPerformanceFrequency
 //
 function QueryPerformanceFrequency(var val : Int64) : Boolean;
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
 begin
    Result:=Boolean(Windows.QueryPerformanceFrequency(val));
 {$ELSE}
