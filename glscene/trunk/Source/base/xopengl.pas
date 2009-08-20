@@ -91,27 +91,27 @@ var
    vSecondTextureUnitForbidden : Boolean;
 
    // Explicit texture coordinates specification
-   xglTexCoord2f: procedure(s, t: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglTexCoord2fv: procedure(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglTexCoord3f: procedure(s, t, r: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglTexCoord3fv: procedure(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglTexCoord4f: procedure(s, t, r, q: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglTexCoord4fv: procedure(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexCoord2f: procedure(s, t: TGLfloat); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexCoord2fv: procedure(v: PGLfloat); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexCoord3f: procedure(s, t, r: TGLfloat); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexCoord3fv: procedure(v: PGLfloat); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexCoord4f: procedure(s, t, r, q: TGLfloat); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexCoord4fv: procedure(v: PGLfloat); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 
    // TexGen texture coordinates specification
-   xglTexGenf: procedure(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglTexGenfv: procedure(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglTexGeni: procedure(coord, pname: TGLEnum; param: TGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglTexGeniv: procedure(coord, pname: TGLEnum; params: PGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexGenf: procedure(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexGenfv: procedure(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexGeni: procedure(coord, pname: TGLEnum; param: TGLint); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexGeniv: procedure(coord, pname: TGLEnum; params: PGLint); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 
    // Vertex Arrays texture coordinates specification
-   xglTexCoordPointer: procedure(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglEnableClientState: procedure(aarray: TGLEnum); {$ifdef Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglDisableClientState: procedure(aarray: TGLEnum); {$ifdef Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglTexCoordPointer: procedure(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglEnableClientState: procedure(aarray: TGLEnum); {$ifdef MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglDisableClientState: procedure(aarray: TGLEnum); {$ifdef MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 
    // Misc
-   xglEnable: procedure(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
-   xglDisable: procedure(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglEnable: procedure(cap: TGLEnum); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+   xglDisable: procedure(cap: TGLEnum); {$IFDEF MSWindows} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -134,7 +134,7 @@ var
 
 // --------- Complex (arbitrary) mapping
 
-procedure glTexCoord2f_Arbitrary(s, t: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord2f_Arbitrary(s, t: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -142,7 +142,7 @@ begin
       glMultiTexCoord2fARB(vComplexMapping[i], s, t);
 end;
 
-procedure glTexCoord2fv_Arbitrary(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord2fv_Arbitrary(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -150,7 +150,7 @@ begin
       glMultiTexCoord2fvARB(vComplexMapping[i], v);
 end;
 
-procedure glTexCoord3f_Arbitrary(s, t, r: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord3f_Arbitrary(s, t, r: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -158,7 +158,7 @@ begin
       glMultiTexCoord3fARB(vComplexMapping[i], s, t, r);
 end;
 
-procedure glTexCoord3fv_Arbitrary(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord3fv_Arbitrary(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -166,7 +166,7 @@ begin
       glMultiTexCoord3fvARB(vComplexMapping[i], v);
 end;
 
-procedure glTexCoord4f_Arbitrary(s, t, r, q: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord4f_Arbitrary(s, t, r, q: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -174,7 +174,7 @@ begin
       glMultiTexCoord4fARB(vComplexMapping[i], s, t, r, q);
 end;
 
-procedure glTexCoord4fv_Arbitrary(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord4fv_Arbitrary(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -182,7 +182,7 @@ begin
       glMultiTexCoord4fvARB(vComplexMapping[i], v);
 end;
 
-procedure glTexGenf_Arbitrary(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGenf_Arbitrary(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -193,7 +193,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGenfv_Arbitrary(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGenfv_Arbitrary(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -204,7 +204,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGeni_Arbitrary(coord, pname: TGLEnum; param: TGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGeni_Arbitrary(coord, pname: TGLEnum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -215,7 +215,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGeniv_Arbitrary(coord, pname: TGLEnum; params: PGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGeniv_Arbitrary(coord, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -226,7 +226,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glEnable_Arbitrary(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glEnable_Arbitrary(cap: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -237,7 +237,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glDisable_Arbitrary(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glDisable_Arbitrary(cap: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -248,7 +248,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglTexCoordPointer_Arbitrary(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglTexCoordPointer_Arbitrary(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -259,7 +259,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglEnableClientState_Arbitrary(aArray: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglEnableClientState_Arbitrary(aArray: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -270,7 +270,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglDisableClientState_Arbitrary(aArray: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglDisableClientState_Arbitrary(aArray: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 var
    i : Integer;
 begin
@@ -283,93 +283,93 @@ end;
 
 // --------- Second unit Texturing
 
-procedure glTexCoord2f_Second(s, t: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord2f_Second(s, t: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glMultiTexCoord2fARB(GL_TEXTURE1_ARB, s, t);
 end;
 
-procedure glTexCoord2fv_Second(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord2fv_Second(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, v);
 end;
 
-procedure glTexCoord3f_Second(s, t, r: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord3f_Second(s, t, r: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glMultiTexCoord3fARB(GL_TEXTURE1_ARB, s, t, r);
 end;
 
-procedure glTexCoord3fv_Second(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord3fv_Second(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glMultiTexCoord3fvARB(GL_TEXTURE1_ARB, v);
 end;
 
-procedure glTexCoord4f_Second(s, t, r, q: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord4f_Second(s, t, r, q: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glMultiTexCoord4fARB(GL_TEXTURE1_ARB, s, t, r, q);
 end;
 
-procedure glTexCoord4fv_Second(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord4fv_Second(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glMultiTexCoord4fvARB(GL_TEXTURE1_ARB, v);
 end;
 
-procedure glTexGenf_Second(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGenf_Second(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glActiveTextureARB(GL_TEXTURE1_ARB);
    glTexGenf(coord, pname, param);
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGenfv_Second(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGenfv_Second(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glActiveTextureARB(GL_TEXTURE1_ARB);
    glTexGenfv(coord, pname, params);
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGeni_Second(coord, pname: TGLEnum; param: TGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGeni_Second(coord, pname: TGLEnum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glActiveTextureARB(GL_TEXTURE1_ARB);
    glTexGeni(coord, pname, param);
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGeniv_Second(coord, pname: TGLEnum; params: PGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGeniv_Second(coord, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glActiveTextureARB(GL_TEXTURE1_ARB);
    glTexGeniv(coord, pname, params);
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glEnable_Second(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glEnable_Second(cap: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glActiveTextureARB(GL_TEXTURE1_ARB);
    glEnable(cap);
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glDisable_Second(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glDisable_Second(cap: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glActiveTextureARB(GL_TEXTURE1_ARB);
    glDisable(cap);
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglTexCoordPointer_Second(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglTexCoordPointer_Second(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glClientActiveTextureARB(GL_TEXTURE1_ARB);
    glTexCoordPointer(size, atype, stride, data);
    glClientActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglEnableClientState_Second(aArray: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglEnableClientState_Second(aArray: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glClientActiveTextureARB(GL_TEXTURE1_ARB);
    glEnableClientState(aArray);
    glClientActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglDisableClientState_Second(aArray: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglDisableClientState_Second(aArray: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glClientActiveTextureARB(GL_TEXTURE1_ARB);
    glDisableClientState(aArray);
@@ -378,43 +378,43 @@ end;
 
 // --------- Dual Texturing
 
-procedure glTexCoord2f_Dual(s, t: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord2f_Dual(s, t: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexCoord2f(s, t);
    glMultiTexCoord2fARB(GL_TEXTURE1_ARB, s, t);
 end;
 
-procedure glTexCoord2fv_Dual(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord2fv_Dual(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexCoord2fv(v);
    glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, v);
 end;
 
-procedure glTexCoord3f_Dual(s, t, r: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord3f_Dual(s, t, r: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexCoord3f(s, t, r);
    glMultiTexCoord3fARB(GL_TEXTURE1_ARB, s, t, r);
 end;
 
-procedure glTexCoord3fv_Dual(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord3fv_Dual(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexCoord3fv(v);
    glMultiTexCoord3fvARB(GL_TEXTURE1_ARB, v);
 end;
 
-procedure glTexCoord4f_Dual(s, t, r, q: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord4f_Dual(s, t, r, q: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexCoord4f(s, t, r, q);
    glMultiTexCoord4fARB(GL_TEXTURE1_ARB, s, t, r, q);
 end;
 
-procedure glTexCoord4fv_Dual(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord4fv_Dual(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexCoord4fv(v);
    glMultiTexCoord4fvARB(GL_TEXTURE1_ARB, v);
 end;
 
-procedure glTexGenf_Dual(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGenf_Dual(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexGenf(coord, pname, param);
    glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -422,7 +422,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGenfv_Dual(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGenfv_Dual(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexGenfv(coord, pname, params);
    glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -430,7 +430,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGeni_Dual(coord, pname: TGLEnum; param: TGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGeni_Dual(coord, pname: TGLEnum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexGeni(coord, pname, param);
    glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -438,7 +438,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glTexGeniv_Dual(coord, pname: TGLEnum; params: PGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGeniv_Dual(coord, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexGeniv(coord, pname, params);
    glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -446,7 +446,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glEnable_Dual(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glEnable_Dual(cap: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glEnable(cap);
    glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -454,7 +454,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure glDisable_Dual(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glDisable_Dual(cap: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glDisable(cap);
    glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -462,7 +462,7 @@ begin
    glActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglTexCoordPointer_Dual(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglTexCoordPointer_Dual(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glTexCoordPointer(size, atype, stride, data);
    glClientActiveTextureARB(GL_TEXTURE1_ARB);
@@ -470,7 +470,7 @@ begin
    glClientActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglEnableClientState_Dual(aArray: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglEnableClientState_Dual(aArray: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glEnableClientState(aArray);
    glClientActiveTextureARB(GL_TEXTURE1_ARB);
@@ -478,7 +478,7 @@ begin
    glClientActiveTextureARB(GL_TEXTURE0_ARB);
 end;
 
-procedure xglDisableClientState_Dual(aArray: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglDisableClientState_Dual(aArray: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    glDisableClientState(aArray);
    glClientActiveTextureARB(GL_TEXTURE1_ARB);
@@ -488,49 +488,49 @@ end;
 
 // --------- Null Texturing
 
-procedure glTexCoord2f_Null(s, t: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord2f_Null(s, t: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexCoord2fv_Null(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord2fv_Null(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexCoord3f_Null(s, t, r: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord3f_Null(s, t, r: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexCoord3fv_Null(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord3fv_Null(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexCoord4f_Null(s, t, r, q: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord4f_Null(s, t, r, q: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexCoord4fv_Null(v: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexCoord4fv_Null(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexGenf_Null(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGenf_Null(coord, pname: TGLEnum; param: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexGenfv_Null(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGenfv_Null(coord, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexGeni_Null(coord, pname: TGLEnum; param: TGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGeni_Null(coord, pname: TGLEnum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glTexGeniv_Null(coord, pname: TGLEnum; params: PGLint); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glTexGeniv_Null(coord, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glEnable_Null(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glEnable_Null(cap: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure glDisable_Null(cap: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure glDisable_Null(cap: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure xglTexCoordPointer_Null(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglTexCoordPointer_Null(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure xglEnableClientState_Null(aArray: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglEnableClientState_Null(aArray: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
-procedure xglDisableClientState_Null(aArray: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
+procedure xglDisableClientState_Null(aArray: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin end;
 
 // ------------------------------------------------------------------
