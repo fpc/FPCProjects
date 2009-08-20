@@ -886,6 +886,8 @@ begin
    {$IFDEF FPC}
      RIMG.Init;
      rimg.Description.Init_BPP32_B8G8R8A8_BIO_TTB(Width,Height);
+     rimg.Description.RedShift:=0;
+     rimg.Description.BlueShift:=16;
      rimg.Description.LineOrder:=riloBottomToTop;
      RIMG.DataSize:=FDataSize;
      rimg.Data:=PByte(FData);
