@@ -1270,14 +1270,18 @@ function NormalizeAngle(angle : Single) : Single;
 function NormalizeDegAngle(angle : Single) : Single;
 
 //: Calculates sine and cosine from the given angle Theta
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 procedure SinCos(const Theta: Extended; var Sin, Cos: Extended); overload;
+{$ENDIF}
 //: Calculates sine and cosine from the given angle Theta
 procedure SinCos(const Theta: Double; var Sin, Cos: Double); overload;
 //: Calculates sine and cosine from the given angle Theta
 procedure SinCos(const Theta: Single; var Sin, Cos: Single); overload;
 {: Calculates sine and cosine from the given angle Theta and Radius.<p>
    sin and cos values calculated from theta are multiplicated by radius. }
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 procedure SinCos(const theta, radius : Double; var Sin, Cos: Extended); overload;
+{$ENDIF}
 {: Calculates sine and cosine from the given angle Theta and Radius.<p>
    sin and cos values calculated from theta are multiplicated by radius. }
 procedure SinCos(const theta, radius : Double; var Sin, Cos: Double); overload;
@@ -1384,10 +1388,14 @@ function MinFloat(values : PExtendedArray; nbItems : Integer) : Extended; overlo
 function MinFloat(const v1, v2 : Single) : Single; overload;
 function MinFloat(const v : array of Single) : Single; overload;
 function MinFloat(const v1, v2 : Double) : Double; overload;
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function MinFloat(const v1, v2 : Extended) : Extended; overload;
+{$ENDIF}
 function MinFloat(const v1, v2, v3 : Single) : Single; overload;
 function MinFloat(const v1, v2, v3 : Double) : Double; overload;
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function MinFloat(const v1, v2, v3 : Extended) : Extended; overload;
+{$ENDIF}
 {: Returns the maximum value of the array. }
 function MaxFloat(values : PSingleArray; nbItems : Integer) : Single; overload;
 function MaxFloat(values : PDoubleArray; nbItems : Integer) : Double; overload;
@@ -1396,7 +1404,9 @@ function MaxFloat(const v : array of Single) : Single; overload;
 {: Returns the maximum of given values. }
 function MaxFloat(const v1, v2 : Single) : Single; overload;
 function MaxFloat(const v1, v2 : Double) : Double; overload;
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function MaxFloat(const v1, v2 : Extended) : Extended; overload;
+{$ENDIF}
 {$ifndef FPC}
 function MaxFloat(const v1, v2, v3 : Single) : Single; overload;
 function MaxFloat(const v1, v2, v3 : Double) : Double; overload;
@@ -7090,6 +7100,7 @@ end;
 
 // SinCos (Extended)
 //
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 procedure SinCos(const Theta: Extended; var Sin, Cos: Extended);
 // EAX contains address of Sin
 // EDX contains address of Cos
@@ -7105,6 +7116,7 @@ begin
    Math.SinCos(Theta, Sin, Cos);
 {$endif}
 end;
+{$endif}
 
 // SinCos (Double)
 //
@@ -7154,6 +7166,7 @@ end;
 
 // SinCos (Extended w radius)
 //
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 procedure SinCos(const theta, radius : Double; var Sin, Cos: Extended);
 // EAX contains address of Sin
 // EDX contains address of Cos
@@ -7174,6 +7187,7 @@ begin
    Sin:=s*radius; Cos:=c*radius;
 {$endif}
 end;
+{$endif}
 
 // SinCos (Double w radius)
 //
@@ -8022,6 +8036,7 @@ end;
 
 // MinFloat (extended 2)
 //
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function MinFloat(const v1, v2 : Extended) : Extended;
 {$ifdef GEOMETRY_NO_ASM}
 begin
@@ -8037,6 +8052,7 @@ asm
    ffree   st(1)
 {$endif}
 end;
+{$endif}
 
 // MinFloat
 //
@@ -8100,6 +8116,7 @@ end;
 
 // MinFloat
 //
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function MinFloat(const v1, v2, v3 : Extended) : Extended;
 {$ifdef GEOMETRY_NO_ASM}
 begin
@@ -8127,6 +8144,7 @@ asm
    ffree   st(1)
 {$endif}
 end;
+{$endif}
 
 // MaxFloat (single)
 //
@@ -8221,6 +8239,7 @@ end;
 
 // MaxFloat
 //
+{$IFDEF FPC_HAS_TYPE_EXTENDED}
 function MaxFloat(const v1, v2 : Extended) : Extended;
 {$ifdef GEOMETRY_NO_ASM}
 begin
@@ -8236,6 +8255,7 @@ asm
    ffree   st(1)
 {$endif}
 end;
+{$endif}
 
 // MaxFloat
 //
