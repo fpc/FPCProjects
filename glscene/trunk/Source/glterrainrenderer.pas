@@ -542,7 +542,9 @@ begin
    else qDist:=-1;
 
    SetROAMTrianglesCapacity(MaxCLODTriangles);
-   n:=MaxInteger(MaxCLODTriangles*2, Sqr(TileSize+1)*2);
+   if MaxCLODTriangles*2>Sqr(TileSize+1)*2 then
+     n:=MaxCLODTriangles*2 else n:=Sqr(TileSize+1)*2;
+//   n:=MaxInteger(MaxCLODTriangles*2, Sqr(TileSize+1)*2);
    FBufferVertices.Capacity:=n;
    FBufferTexPoints.Capacity:=n;
 
