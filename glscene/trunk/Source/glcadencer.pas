@@ -54,7 +54,7 @@ interface
 {$i GLScene.inc}
 
 uses GLScene, Classes, GLMisc, GLCrossPlatform, cadencerasap,
-   {$ifdef WIN32}
+   {$ifdef WINDOWS}
    Windows, Controls, Messages, StdCtrls, Forms
    {$endif}
    {$IFDEF UNIX}
