@@ -1,39 +1,38 @@
-object Form1: TForm1
-  Left = 363
-  Height = 350
-  Top = 166
+object FormMain: TFormMain
+  Left = 387
+  Height = 400
+  Top = 168
   Width = 390
-  ActiveControl = MemoText
+  ActiveControl = EditPort
   Caption = 'lNet Component Test'
-  ClientHeight = 323
+  ClientHeight = 373
   ClientWidth = 390
-  Constraints.MaxHeight = 350
   Constraints.MaxWidth = 390
-  Constraints.MinHeight = 350
+  Constraints.MinHeight = 400
   Constraints.MinWidth = 390
   Menu = MainMenu1
   OnCreate = FormCreate
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.29'
   object LabelPort: TLabel
     Left = 224
-    Height = 20
+    Height = 18
     Top = 11
-    Width = 31
+    Width = 34
     Caption = 'Port:'
     ParentColor = False
   end
   object LabelHostName: TLabel
     Left = 183
-    Height = 20
+    Height = 18
     Top = 36
-    Width = 72
+    Width = 77
     Caption = 'Hostname:'
     ParentColor = False
   end
   object MemoText: TMemo
     Left = 56
     Height = 176
-    Top = 64
+    Top = 120
     Width = 280
     ReadOnly = True
     TabOrder = 0
@@ -41,7 +40,7 @@ object Form1: TForm1
   object ButtonSend: TButton
     Left = 261
     Height = 25
-    Top = 246
+    Top = 302
     Width = 75
     BorderSpacing.InnerBorder = 4
     Caption = 'Send'
@@ -50,8 +49,8 @@ object Form1: TForm1
   end
   object EditSend: TEdit
     Left = 56
-    Height = 23
-    Top = 248
+    Height = 27
+    Top = 304
     Width = 200
     OnKeyPress = SendEditKeyPress
     TabOrder = 2
@@ -59,7 +58,7 @@ object Form1: TForm1
   object ButtonConnect: TButton
     Left = 56
     Height = 25
-    Top = 280
+    Top = 336
     Width = 75
     BorderSpacing.InnerBorder = 4
     Caption = 'Connect'
@@ -69,7 +68,7 @@ object Form1: TForm1
   object ButtonListen: TButton
     Left = 144
     Height = 25
-    Top = 280
+    Top = 336
     Width = 75
     BorderSpacing.InnerBorder = 4
     Caption = 'Host'
@@ -79,7 +78,7 @@ object Form1: TForm1
   object ButtonDiconnect: TButton
     Left = 232
     Height = 25
-    Top = 280
+    Top = 336
     Width = 75
     BorderSpacing.InnerBorder = 4
     Caption = 'Diconnect'
@@ -87,9 +86,9 @@ object Form1: TForm1
     TabOrder = 5
   end
   object GBConnection: TRadioGroup
-    Left = 32
-    Height = 55
-    Top = 1
+    Left = 24
+    Height = 112
+    Top = 0
     Width = 144
     AutoFill = True
     Caption = 'Connection Type'
@@ -101,35 +100,43 @@ object Form1: TForm1
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
-    ClientHeight = 36
+    ClientHeight = 93
     ClientWidth = 140
     TabOrder = 6
     object RBTCP: TRadioButton
-      Left = 14
+      Left = 6
       Height = 27
-      Top = 1
-      Width = 56
-      Align = alCustom
-      Caption = 'TCP'
+      Top = 6
+      Width = 128
+      Caption = 'TCP/IPv4'
       Checked = True
       OnChange = RBTCPChange
       State = cbChecked
       TabOrder = 0
     end
     object RBUDP: TRadioButton
-      Left = 78
+      Left = 6
       Height = 27
-      Top = 1
-      Width = 56
-      Align = alCustom
+      Top = 33
+      Width = 128
       Caption = 'UDP'
       OnChange = RBUDPChange
       TabOrder = 1
+      TabStop = False
+    end
+    object RBTCP6: TRadioButton
+      Left = 6
+      Height = 27
+      Top = 60
+      Width = 128
+      Caption = 'TCP/IPv6'
+      OnChange = RBTCP6Change
+      TabOrder = 2
     end
   end
   object EditPort: TEdit
     Left = 261
-    Height = 23
+    Height = 27
     Top = 8
     Width = 59
     TabOrder = 7
@@ -137,31 +144,35 @@ object Form1: TForm1
   end
   object EditIP: TEdit
     Left = 261
-    Height = 23
+    Height = 27
     Top = 33
     Width = 123
     TabOrder = 8
     Text = 'localhost'
   end
   object LTCP: TLTCPComponent
+    Port = 0
     OnReceive = LTCPComponentReceive
     OnError = LTCPComponentError
     OnDisconnect = LTCPComponentDisconnect
     OnConnect = LTCPComponentConnect
     OnAccept = LTCPComponentAccept
+    Timeout = 0
     ReuseAddress = True
-    left = 360
-    top = 264
+    left = 344
+    top = 232
   end
   object LUDP: TLUDPComponent
+    Port = 0
     OnReceive = LTCPComponentReceive
     OnError = LTCPComponentError
-    left = 360
-    top = 295
+    Timeout = 0
+    left = 344
+    top = 280
   end
   object MainMenu1: TMainMenu
-    left = 360
-    top = 232
+    left = 344
+    top = 192
     object MenuItemFile: TMenuItem
       Caption = '&File'
       object MenuItemExit: TMenuItem

@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="6"/>
+    <Version Value="7"/>
     <General>
+      <Flags>
+        <LRSInOutputDirectory Value="False"/>
+      </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=""/>
       <Title Value="TCP/UDP Test case"/>
     </General>
@@ -40,22 +41,20 @@
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormMain"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="main.lrs"/>
         <UnitName Value="main"/>
       </Unit1>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <SearchPaths>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
     <CodeGeneration>
-      <Generate Value="Faster"/>
       <Optimizations>
         <OptimizationLevel Value="2"/>
       </Optimizations>
