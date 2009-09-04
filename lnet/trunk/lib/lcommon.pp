@@ -72,6 +72,40 @@ const
   { Default Values }
   LDEFAULT_BACKLOG = 5;
   BUFFER_SIZE = 262144;
+  { Net types }
+  LAF_INET      =  AF_INET;
+  LAF_INET6     = AF_INET6;
+  { Address constants }
+  LADDR_ANY = '0.0.0.0';
+  LADDR_BR  = '255.255.255.255';
+  LADDR_LO  = '127.0.0.1';
+  LADDR6_ANY = '::0';
+  LADDR6_LO  = '::1';
+  { ICMP }
+  LICMP_ECHOREPLY     = 0;
+  LICMP_UNREACH       = 3;
+  LICMP_ECHO          = 8;
+  LICMP_TIME_EXCEEDED = 11;
+  { Protocols }
+  LPROTO_IP     =     0;
+  LPROTO_ICMP   =     1;
+  LPROTO_IGMP   =     2;
+  LPROTO_TCP    =     6;
+  LPROTO_UDP    =    17;
+  LPROTO_IPV6   =    41;
+  LPROTO_ICMPV6 =    58;
+  LPROTO_RAW    =   255;
+  LPROTO_MAX    =   256;
+
+type
+
+  { TLSocketAddress }
+
+  TLSocketAddress = record
+    case Integer of
+      LAF_INET  : (IPv4: TInetSockAddr);
+      LAF_INET6 : (IPv6: TInetSockAddr6);
+  end;
   
   { Base functions }
   {$IFNDEF UNIX}
@@ -84,6 +118,8 @@ const
   { DNS }
   function GetHostName(const Address: string): string;
   function GetHostIP(const Name: string): string;
+  function GetHostName6(const Address: string): string;
+  function GetHostIP6(const Name: string): string;
 
   function LStrError(const Ernum: Longint; const UseUTF8: Boolean = False): string;
   function LSocketError: Longint;
@@ -102,13 +138,13 @@ const
   function StrToNetAddr(const IP: string): Cardinal; inline;
   function NetAddrToStr(const Entry: Cardinal): string; inline;
   
-  procedure FillAddressInfo(var aAddrInfo: TInetSockAddr; const aFamily: sa_family_t;
-                            const Address: string; const aPort: Word); inline;
+  procedure FillAddressInfo(var aAddrInfo: TLSocketAddress; const aFamily: sa_family_t;
+                            const Address: string; const aPort: Word);
                             
 implementation
 
 uses
-  StrUtils, lNet
+  StrUtils//, lNet
   
 {$IFNDEF UNIX}
 
@@ -327,6 +363,28 @@ begin
     Result := NetAddrToStr(Cardinal(HE.Addr));
 end;
 
+function GetHostName6(const Address: string): string;
+var
+  HE: THostEntry6;
+begin
+  Result := '';
+{  if GetHostByAddr(StrToHostAddr6(Address), HE) then
+    Result := HE.Name
+  else} if ResolveHostbyAddr6(StrToHostAddr6(Address), HE) then
+    Result := HE.Name;
+end;
+
+function GetHostIP6(const Name: string): string;
+var
+  HE: THostEntry6;
+begin
+  Result := '';
+{  if GetHostByName(Name, HE) then
+    Result := HostAddrToStr6(HE.Addr) // for localhost
+  else} if ResolveHostByName6(Name, HE) then
+    Result := NetAddrToStr6(HE.Addr);
+end;
+
 function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
 var
   opt: cInt;
@@ -402,15 +460,36 @@ begin
   Result := Sockets.NetAddrToStr(in_addr(Entry));
 end;
 
-procedure FillAddressInfo(var aAddrInfo: TInetSockAddr; const aFamily: sa_family_t;
-  const Address: string; const aPort: Word); inline;
+function IsIP6Empty(const aIP6: TInetSockAddr6): Boolean; inline;
+var
+  i: Integer;
 begin
-  aAddrInfo.family := AF_INET;
-  aAddrInfo.Port := htons(aPort);
-  aAddrInfo.Addr := StrToNetAddr(Address);
-  
-  if (Address <> LADDR_ANY) and (aAddrInfo.Addr = 0) then
-    aAddrInfo.Addr := StrToNetAddr(GetHostIP(Address));
+  Result := True;
+  for i := 0 to High(aIP6.sin6_addr.u6_addr32) do
+    if aIP6.sin6_addr.u6_addr32[i] <> 0 then
+      Exit(False);
+end;
+
+procedure FillAddressInfo(var aAddrInfo: TLSocketAddress; const aFamily: sa_family_t;
+  const Address: string; const aPort: Word);
+begin
+  aAddrInfo.IPv4.family := aFamily;
+  aAddrInfo.IPv4.Port := htons(aPort);
+
+  case aFamily of
+    LAF_INET  :
+      begin
+        aAddrInfo.IPv4.Addr := StrToNetAddr(Address);
+        if (Address <> LADDR_ANY) and (aAddrInfo.IPv4.Addr = 0) then
+          aAddrInfo.IPv4.Addr := StrToNetAddr(GetHostIP(Address));
+      end;
+    LAF_INET6 :
+      begin
+        aAddrInfo.IPv6.sin6_addr := StrToNetAddr6(Address);
+        if (Address <> LADDR6_ANY) and (IsIP6Empty(aAddrInfo.IPv6)) then
+          aAddrInfo.IPv6.sin6_addr := StrToNetAddr6(GetHostIP6(Address));
+      end;
+  end;
 end;
 
 

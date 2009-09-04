@@ -29,29 +29,8 @@ unit lNet;
 interface
 
 uses
-  Classes, lEvents,
+  Classes, lEvents, lCommon,
   {$i sys/osunits.inc}
-
-const
-  { Address constants }
-  LADDR_ANY = '0.0.0.0';
-  LADDR_BR  = '255.255.255.255';
-  LADDR_LO  = '127.0.0.1';
-  { ICMP }
-  LICMP_ECHOREPLY     = 0;
-  LICMP_UNREACH       = 3;
-  LICMP_ECHO          = 8;
-  LICMP_TIME_EXCEEDED = 11;
-  { Protocols }
-  LPROTO_IP     =     0;
-  LPROTO_ICMP   =     1;
-  LPROTO_IGMP   =     2;
-  LPROTO_TCP    =     6;
-  LPROTO_UDP    =    17;
-  LPROTO_IPV6   =    41;
-  LPROTO_ICMPV6 =    58;
-  LPROTO_RAW    =   255;
-  LPROTO_MAX    =   256;
 
 type
   TLSocket = class;
@@ -85,8 +64,8 @@ type
 
   TLSocket = class(TLHandle)
    protected
-    FAddress: TInetSockAddr;
-    FPeerAddress: TInetSockAddr;
+    FAddress: TLSocketAddress;
+    FPeerAddress: TLSocketAddress;
     FReuseAddress: Boolean;
     FConnectionStatus: TLSocketConnectionStatus;
     FNextSock: TLSocket;
@@ -97,6 +76,7 @@ type
     FListenBacklog: Integer;
     FProtocol: Integer;
     FSocketType: Integer;
+    FSocketNet: Integer;
     FCreator: TLComponent;
     FSession: TLSession;
     FConnection: TLConnection;
@@ -104,6 +84,8 @@ type
     function GetConnected: Boolean; virtual; deprecated;
     function GetConnecting: Boolean; virtual; deprecated;
     function GetConnectionStatus: TLSocketConnectionStatus; virtual;
+    function GetIPAddressPointer: psockaddr;
+    function GetIPAddressLength: TSocklen;
 
     function SetupSocket(const APort: Word; const Address: string): Boolean; virtual;
     
@@ -155,6 +137,7 @@ type
     property ConnectionStatus: TLSocketConnectionStatus read GetConnectionStatus;
     property ListenBacklog: Integer read FListenBacklog write FListenBacklog;
     property Protocol: Integer read FProtocol write FProtocol;
+    property SocketNet: Integer read FSocketNet write FSocketNet;
     property PeerAddress: string read GetPeerAddress;
     property PeerPort: Word read GetPeerPort;
     property LocalAddress: string read GetLocalAddress;
@@ -353,6 +336,7 @@ type
 
   TLTcp = class(TLConnection)
    protected
+    FSocketNet: Integer;
     FCount: Integer;
     FReuseAddress: Boolean;
     function InitSocket(aSocket: TLSocket): TLSocket; override;
@@ -363,6 +347,7 @@ type
     function GetValidSocket: TLSocket;
 
     procedure SetReuseAddress(const aValue: Boolean);
+    procedure SetSocketNet(const aValue: Integer);
 
     procedure ConnectAction(aSocket: TLHandle); override;
     procedure AcceptAction(aSocket: TLHandle); override;
@@ -396,6 +381,7 @@ type
     property OnAccept: TLSocketEvent read FOnAccept write FOnAccept;
     property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
     property ReuseAddress: Boolean read FReuseAddress write SetReuseAddress;
+    property SocketNet: Integer read FSocketNet write SetSocketNet;
   end;
 
   { TLSession }
@@ -427,9 +413,6 @@ type
 
 implementation
 
-uses
-  lCommon;
-  
 //********************************TLSocket*************************************
 
 constructor TLSocket.Create;
@@ -442,6 +425,7 @@ begin
   FSocketState := [ssCanSend];
   FConnectionStatus := scNone;
   FSocketType := SOCK_STREAM;
+  FSocketNet := LAF_INET;
   FProtocol := LPROTO_TCP;
 end;
 
@@ -511,9 +495,9 @@ function TLSocket.GetPeerAddress: string;
 begin
   Result := '';
   if FSocketType = SOCK_STREAM then
-    Result := NetAddrtoStr(FAddress.Addr)
+    Result := NetAddrtoStr(FAddress.IPv4.sin_addr)
   else
-    Result := NetAddrtoStr(FPeerAddress.Addr);
+    Result := NetAddrtoStr(FPeerAddress.IPv4.sin_addr);
 end;
 
 function TLSocket.GetLocalAddress: string;
@@ -524,7 +508,7 @@ begin
   Result := '';
   l := SizeOf(a);
   if fpGetSockName(FHandle, @a, @l) = 0 then
-    Result := NetAddrToStr(LongWord(a.sin_addr));
+    Result := NetAddrToStr(a.sin_addr);
 end;
 
 function TLSocket.SendPossible: Boolean; inline;
@@ -678,6 +662,26 @@ begin
   Result := FConnectionStatus;
 end;
 
+function TLSocket.GetIPAddressPointer: psockaddr;
+begin
+  case FSocketNet of
+    LAF_INET  : Result := psockaddr(@FAddress.IPv4);
+    LAF_INET6 : Result := psockaddr(@FAddress.IPv6);
+  else
+    raise Exception.Create('Unknown socket network type (not IPv4 or IPv6)');
+  end;
+end;
+
+function TLSocket.GetIPAddressLength: TSocklen;
+begin
+  case FSocketNet of
+    LAF_INET  : Result := SizeOf(FAddress.IPv4);
+    LAF_INET6 : Result := SizeOf(FAddress.IPv6);
+  else
+    raise Exception.Create('Unknown socket network type (not IPv4 or IPv6)');
+  end;
+end;
+
 function TLSocket.SetupSocket(const APort: Word; const Address: string): Boolean;
 var
   Done: Boolean;
@@ -686,7 +690,7 @@ begin
   Result := false;
   if FConnectionStatus = scNone then begin
     Done := true;
-    FHandle := fpSocket(AF_INET, FSocketType, FProtocol);
+    FHandle := fpSocket(FSocketNet, FSocketType, FProtocol);
     if FHandle = INVALID_SOCKET then
       Exit(Bail('Socket error', LSocketError));
     SetOptions;
@@ -711,8 +715,8 @@ begin
       Exit(Bail('SetSockOpt error', LSocketError));
     {$endif}
     
-    FillAddressInfo(FAddress, AF_INET, Address, aPort);
-    FillAddressInfo(FPeerAddress, AF_INET, LADDR_BR, aPort);
+    FillAddressInfo(FAddress, FSocketNet, Address, aPort);
+    FillAddressInfo(FPeerAddress, FSocketNet, LADDR_BR, aPort);
 
     Result  :=  Done;
   end;
@@ -772,12 +776,12 @@ end;
 
 function TLSocket.GetLocalPort: Word;
 begin
-  Result := ntohs(FAddress.sin_port);
+  Result := ntohs(FAddress.IPv4.sin_port);
 end;
 
 function TLSocket.GetPeerPort: Word;
 begin
-  Result := ntohs(FPeerAddress.sin_port);
+  Result := ntohs(FPeerAddress.IPv4.sin_port);
 end;
 
 function TLSocket.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
@@ -788,7 +792,7 @@ begin
     Disconnect(True);
 
   SetupSocket(APort, AIntf);
-  if fpBind(FHandle, psockaddr(@FAddress), SizeOf(FAddress)) = SOCKET_ERROR then
+  if fpBind(FHandle, GetIPAddressPointer, GetIPAddressLength) = SOCKET_ERROR then
     Bail('Error on bind', LSocketError)
   else
     Result := true;
@@ -801,14 +805,15 @@ end;
 
 function TLSocket.Accept(const sersock: TSocket): Boolean;
 var
-  AddressLength: tsocklen = SizeOf(FAddress);
+  AddressLength: tsocklen;
 begin
   Result := false;
+  AddressLength := GetIPAddressLength;
 
   if FConnectionStatus <> scNone then
     Disconnect(True);
 
-  FHandle := fpAccept(sersock, psockaddr(@FAddress), @AddressLength);
+  FHandle := fpAccept(sersock, GetIPAddressPointer, @AddressLength);
   if FHandle <> INVALID_SOCKET then begin
     SetOptions;
     Result := true;
@@ -824,7 +829,7 @@ begin
     Disconnect(True);
     
   if SetupSocket(APort, Address) then begin
-    fpConnect(FHandle, psockaddr(@FAddress), SizeOf(FAddress));
+    fpConnect(FHandle, GetIPAddressPointer, GetIPAddressLength);
     FConnectionStatus := scConnecting;
     Result := True;
   end;
@@ -1127,7 +1132,7 @@ begin
   Result := FRootSock.SetupSocket(APort, LADDR_ANY);
   
   if Result then begin
-    FillAddressInfo(FRootSock.FPeerAddress, AF_INET, Address, aPort);
+    FillAddressInfo(FRootSock.FPeerAddress, FRootSock.FSocketNet, Address, aPort);
     FRootSock.FConnectionStatus := scConnected;
     RegisterWithEventer;
   end;
@@ -1144,7 +1149,7 @@ begin
   FIterator := FRootSock;
   
   if FRootSock.Listen(APort, AIntf) then begin
-    FillAddressInfo(FRootSock.FPeerAddress, AF_INET, LADDR_BR, aPort);
+    FillAddressInfo(FRootSock.FPeerAddress, FRootSock.FSocketNet, LADDR_BR, aPort);
   
     FRootSock.FConnectionStatus := scConnected;
     RegisterWithEventer;
@@ -1175,9 +1180,9 @@ begin
     s := Copy(Address, 1, n-1);
     p := Word(StrToInt(Copy(Address, n+1, Length(Address))));
 
-    FillAddressInfo(FRootSock.FPeerAddress, AF_INET, s, p);
+    FillAddressInfo(FRootSock.FPeerAddress, FRootSock.FSocketNet, s, p);
   end else
-    FillAddressInfo(FRootSock.FPeerAddress, AF_INET, Address,
+    FillAddressInfo(FRootSock.FPeerAddress, FRootSock.FSocketNet, Address,
                                             FRootSock.PeerPort);
 end;
 
@@ -1284,9 +1289,10 @@ end;
 constructor TLTcp.Create(aOwner: TComponent);
 begin
   inherited Create(aOwner);
-  FIterator := nil;
-  FCount := 0;
-  FRootSock := nil;
+  FSocketNet := LAF_INET; // default to IPv4
+  FIterator  := nil;
+  FCount     := 0;
+  FRootSock  := nil;
 end;
 
 function TLTcp.Connect(const Address: string; const APort: Word): Boolean;
@@ -1369,6 +1375,7 @@ function TLTcp.InitSocket(aSocket: TLSocket): TLSocket;
 begin
   aSocket.SocketType := SOCK_STREAM;
   aSocket.Protocol := LPROTO_TCP;
+  aSocket.SocketNet := FSocketNet;
   aSocket.FOnFree := @SocketDisconnect;
 
   Result := inherited InitSocket(aSocket); // call last to make sure session can override options
@@ -1539,6 +1546,14 @@ begin
   if not Assigned(FRootSock)
   or (FRootSock.FConnectionStatus = scNone) then
     FReuseAddress := aValue;
+end;
+
+procedure TLTcp.SetSocketNet(const aValue: Integer);
+begin
+  if GetConnected then
+    raise Exception.Create('Cannot set socket network on a connected system');
+
+  FSocketNet := aValue;
 end;
 
 function TLTcp.Get(out aData; const aSize: Integer; aSocket: TLSocket): Integer;
