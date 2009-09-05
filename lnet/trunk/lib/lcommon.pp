@@ -289,6 +289,18 @@ begin
   end;
 end;
 
+function GetHostName6(const Address: string): string;
+begin
+  {$WARNING find out windows IPv6 dns functions}
+  Result := '';
+end;
+
+function GetHostIP6(const Name: string): string;
+begin
+  // detto
+  Result := '';
+end;
+
 function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
 const
   BlockAr: array[Boolean] of DWord = (1, 0);
