@@ -18,7 +18,7 @@ interface
 
 uses
   // GLScene
-  VectorTypes, GLCrossPlatform;
+  VectorTypes, Graphics, GLCrossPlatform;
 
 type
   PColorVector = ^TColorVector;
