@@ -33,7 +33,6 @@ uses
   OpenGL1x,
   {$IFDEF GLS_DELPHI_OR_CPPB} GLWin32Viewer; {$ENDIF}
   {$IFDEF FPC}                GLLCLViewer;   {$ENDIF}
-  {$IFDEF KYLIX}              GLLinuxViewer; {$ENDIF}
 
 type
 {$IFDEF FPC}  //For FPC, always use LCLViewer
@@ -41,12 +40,6 @@ type
   end;
   TVSyncMode = GLLCLViewer.TVSyncMode;
 {$ENDIF FPC}
-
-{$IFDEF KYLIX}
-  TGLSceneViewer = class(TGLLinuxSceneViewer)
-  end;
-  TVSyncMode = GLLinuxViewer.TVSyncMode;
-{$ENDIF KYLIX}
 
 {$IFDEF GLS_DELPHI_OR_CPPB}
   TGLSceneViewer = class(TGLSceneViewerWin32)
@@ -60,12 +53,6 @@ const
   vsmSync = GLLCLViewer.vsmSync;
   vsmNoSync = GLLCLViewer.vsmNoSync;
 {$ENDIF FPC}
-
-{$IFDEF KYLIX}
-  // TVSyncMode.
-  vsmSync = GLLinuxViewer.vsmSync;
-  vsmNoSync = GLLinuxViewer.vsmNoSync;
-{$ENDIF KYLIX}
 
 {$IFDEF GLS_DELPHI_OR_CPPB}
   // TVSyncMode.

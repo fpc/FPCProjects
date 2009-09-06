@@ -64,15 +64,6 @@
   {$ENDIF}
 {$ENDIF}
 
-{$IFDEF LINUX}
-  {$IFNDEF FPC}
-  {$DEFINE GEOMETRY_NO_ASM}
-     // DaStr: May be these defines already exist in Kylix, I don't know...
-    {$DEFINE UNIX}
-    {$DEFINE KYLIX}
-  {$ENDIF}
-{$ENDIF}
-
 {$IFDEF FPC}
 //  {$IFNDEF cpu386} // bugged asm
   {$DEFINE GEOMETRY_NO_ASM}

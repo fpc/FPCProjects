@@ -24,17 +24,10 @@ interface
 
 {$i GLScene.inc}
 
-{$IFNDEF KYLIX}
 uses
   {$ifdef fpc}lresources,{$endif}
   Forms, ComCtrls, StdCtrls, ToolWin, ExtCtrls, Buttons, Graphics, Controls, 
   Classes;
-{$ENDIF}
-{$IFDEF KYLIX}
-uses
-  QForms, QComCtrls, QStdCtrls, QExtCtrls, QButtons, QGraphics, QControls, 
-  Classes; 
-{$ENDIF}
 
 
 type

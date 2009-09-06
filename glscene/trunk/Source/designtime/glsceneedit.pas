@@ -214,14 +214,6 @@ type
     // We can not use the IDE to define this event because the
     // prototype is not the same between Delphi and Kylix !!
     procedure TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
-    (* NO MORE KYLIX
-    {$IFDEF MSWINDOWS}
-    procedure TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
-    {$ENDIF}
-    {$IFDEF UNIX}
-    procedure TreeEdited(Sender: TObject; Node: TTreeNode; var S: WideString);
-    {$ENDIF}
-    *)
   protected
 	 procedure Notification(AComponent: TComponent; Operation: TOperation); override;
 
@@ -898,14 +890,7 @@ end;
 // TreeEdited
 //
 procedure TGLSceneEditorForm.TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
-(* NO MORE KYLIX
-{$IFDEF MSWINDOWS}
-procedure TGLSceneEditorForm.TreeEdited(Sender: TObject; Node: TTreeNode; var S: String);
-{$ENDIF}
-{$IFDEF UNIX}
-procedure TGLSceneEditorForm.TreeEdited(Sender: TObject; Node: TTreeNode; var S: WideString);
-{$ENDIF}
-*)
+
 var
   BaseSceneObject1:TGLBaseSceneObject;
 begin

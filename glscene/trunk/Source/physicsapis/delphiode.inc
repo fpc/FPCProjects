@@ -175,20 +175,6 @@
    {$DEFINE Has_Int64}
 {$ENDIF ver170}
 
-{$IFDEF UNIX}
-  {$ifdef VER150}
-    {$define KYLIX}
-  {$endif}
-
-  {$ifdef VER140}
-    {$define KYLIX}
-  {$endif}
-
-  {$ifdef VER140}
-    {$define KYLIX}
-  {$endif}
-{$ENDIF UNIX}
-
 {$IFDEF VirtualPascal} {  Virtual Pascal 2.x }
    {$DEFINE Delphi}    {  Use Delphi Syntax }
    {$DEFINE VP2}

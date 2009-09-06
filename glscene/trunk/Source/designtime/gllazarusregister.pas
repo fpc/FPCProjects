@@ -266,17 +266,7 @@ uses
    componenteditors
    {,glsdlcontext,glscriptbase,}
    ;
-(*
-uses
-{$ifdef WIN32}
-   Dialogs, ExtDlgs, Forms,
-   GLWin32Viewer, GLWin32FullScreenViewer,
-{$endif}
-{$IFDEF KYLIX}
-   QGraphics, QDialogs, Types, GLLinuxViewer
-{$endif}
-   ;
-*)
+
 resourcestring
    { OpenGL property category }
    sOpenGLCategoryName = 'OpenGL';

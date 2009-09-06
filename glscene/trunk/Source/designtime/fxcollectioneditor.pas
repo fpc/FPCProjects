@@ -18,19 +18,6 @@ interface
 
 {$i GLScene.inc}
 
-(* OLD DELPHI/KYLIX
-{$IFDEF MSWINDOWS}
-uses
-  Windows, Forms, XCollection, Messages, ImgList, Controls, Classes, ActnList, 
-  Menus, ComCtrls, ToolWin, 
-  {$ifdef GLS_DELPHI_6_UP} DesignEditors, DesignIntf {$else} DsgnIntf {$endif};
-{$ENDIF}
-{$IFDEF KYLIX}
-uses
-  QForms, XCollection, QImgList, QControls, Classes, QActnList, 
-  QMenus, QComCtrls, DesignEditors, DesignIntf; 
-{$ENDIF}
-*)
 uses
   LResources, Forms, XCollection, Messages, ImgList, Controls, Classes, ActnList,
   Menus, ComCtrls, Propedits;
@@ -104,15 +91,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
-(* DELPHI/KYLIX - please clean up 
-{$IFDEF MSWINDOWS}
-{$R *.dfm}
-{$ENDIF}
-{$IFDEF UNIX}
-{$R *.xfm}
-{$ENDIF}
-*)
 
 uses
   GLMisc, SysUtils, GLBehaviours, GLScene, Dialogs; 

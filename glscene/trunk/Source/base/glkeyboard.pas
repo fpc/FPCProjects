@@ -29,8 +29,6 @@ interface
 
 {$I GLScene.inc}
 
-{$IFDEF KYLIX}{$Message Error 'Unit not supported'}{$ENDIF KYLIX}
-
 uses
 {$ifdef fpc}
   lcltype, lclintf;
