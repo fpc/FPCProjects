@@ -32,6 +32,15 @@ uses
   Classes, lEvents, lCommon,
   {$i sys/osunits.inc}
 
+const
+  { API compatibility, these had to be moved to prevent circular unit usage and a
+    fpc bug with inline }
+  LADDR_ANY   = lCommon.LADDR_ANY;
+  LADDR_BR    = lCommon.LADDR_BR;
+  LADDR_LO    = lCommon.LADDR_LO;
+  LADDR6_ANY  = lCommon.LADDR6_ANY;
+  LADDR6_LO   = lCommon.LADDR6_LO;
+
 type
   TLSocket = class;
   TLComponent = class;
