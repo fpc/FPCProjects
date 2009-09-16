@@ -268,7 +268,7 @@ var
            ms := IntToStr(o1) + ' * ' + IntToStr(o2) + ' = ?';
 	 end;
       3: begin
-	   mr := IntToStr(o1 % o2);
+	   mr := IntToStr(o1 mod o2);
            ms := IntToStr(o1) + ' % ' + IntToStr(o2) + ' = ?';
 	 end;
     end;
