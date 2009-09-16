@@ -253,7 +253,7 @@ var
     o1, o2: Integer;
   begin
     o1 := Random(21);
-    o2 := Random(21);
+    o2 := Random(20) + 1;
     case Random(4) of
       0: begin
 	   mr := IntToStr(o1 + o2);
