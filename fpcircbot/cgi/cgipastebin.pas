@@ -80,6 +80,7 @@ var
 
   procedure Init;
   begin
+    Randomize;
     ShortDateFormat := 'dd"-"mmm"-"yy';
     InitCommon;
     InitDB;
@@ -246,12 +247,46 @@ var
       Result := '';
     List.Free;
   end;
+ 
+  procedure SetMath(out ms, mr: string);
+  var
+    o1, o2: Integer;
+  begin
+    o1 := Random(21);
+    o2 := Random(21);
+    case Random(4) of
+      0: begin
+	   mr := IntToStr(o1 + o2);
+           ms := IntToStr(o1) + ' + ' + IntToStr(o2) + ' = ?';
+	 end;
+      1: begin
+	   mr := IntToStr(o1 - o2);
+           ms := IntToStr(o1) + ' - ' + IntToStr(o2) + ' = ?';
+	 end;
+      2: begin
+	   mr := IntToStr(o1 * o2);
+           ms := IntToStr(o1) + ' * ' + IntToStr(o2) + ' = ?';
+	 end;
+      3: begin
+	   mr := IntToStr(o1 % o2);
+           ms := IntToStr(o1) + ' % ' + IntToStr(o2) + ' = ?';
+	 end;
+    end;
+  end;
 
   procedure SetPasteVars;
+  var
+    mr: string = '';
+    ms: string = '';
   begin
     SetWebVar('sender', FilterHTML(GetCGIVar('sender')));
     SetWebVar('title', FilterHTML(GetCGIVar('title')));
     SetWebVar('ancheck', CheckOut(GetCGIVar('ancheck')));
+
+    SetMath(ms, mr);
+
+    SetWebVar('ms', ms);
+    SetWebVar('mr', mr);
   end;
 
   function SetViewVars(const MsgID: Integer): string;
