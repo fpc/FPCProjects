@@ -257,19 +257,19 @@ var
     case Random(4) of
       0: begin
 	   mr := IntToStr(o1 + o2);
-           ms := IntToStr(o1) + ' + ' + IntToStr(o2) + ' = ?';
+           ms := IntToStr(o1) + ' + ' + IntToStr(o2);
 	 end;
       1: begin
 	   mr := IntToStr(o1 - o2);
-           ms := IntToStr(o1) + ' - ' + IntToStr(o2) + ' = ?';
+           ms := IntToStr(o1) + ' - ' + IntToStr(o2);
 	 end;
       2: begin
 	   mr := IntToStr(o1 * o2);
-           ms := IntToStr(o1) + ' * ' + IntToStr(o2) + ' = ?';
+           ms := IntToStr(o1) + ' times ' + IntToStr(o2);
 	 end;
       3: begin
 	   mr := IntToStr(o1 mod o2);
-           ms := IntToStr(o1) + ' % ' + IntToStr(o2) + ' = ?';
+           ms := IntToStr(o1) + ' mod ' + IntToStr(o2);
 	 end;
     end;
   end;
