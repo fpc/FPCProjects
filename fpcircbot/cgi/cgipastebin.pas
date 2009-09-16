@@ -345,6 +345,14 @@ var
     WebWriteLn('</form>');
   end;
 
+  procedure TryPaste;
+  begin
+    if Trim(GetCGIVar('mr')) = Trim(GetCGIVar('mathcheck')) then
+      DoPaste
+    else
+      WebWriteln('Wrong answer to person check question!');
+  end;
+
   procedure DoView(const MsgID: Integer);
   var
     PT: string;
@@ -433,7 +441,7 @@ begin
   FillChannels;
 
   if GetCGIVar('dopaste') = 'yes' then
-    DoPaste
+    TryPaste
   else if GetCGIVar('viewall') = 'yes' then
     DoList(GetListID)
   else if GetMsgID >= 0 then
