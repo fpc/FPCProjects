@@ -144,7 +144,7 @@ type
 implementation
 
 uses
-  StrUtils//, lNet
+  StrUtils, jwaws2tcpip
   
 {$IFNDEF UNIX}
 
@@ -290,15 +290,42 @@ begin
 end;
 
 function GetHostName6(const Address: string): string;
+var
+  H: TAddrInfo;
+  R: PAddrInfo;
+  n: Integer;
 begin
-  {$WARNING find out windows IPv6 dns functions}
   Result := '';
+  ZeroMemory(@H, SizeOf(H));
+  H.ai_flags := AI_NUMERICHOST;
+  H.ai_family := AF_INET6;
+  H.ai_protocol := PF_INET6;
+  H.ai_socktype := SOCK_STREAM;
+
+  n := getaddrinfo(pChar(Address), nil, @H, R);
+  if n <> 0 then
+    Exit;
+  Result := R^.ai_canonname;
+  freeaddrinfo(R);
 end;
 
 function GetHostIP6(const Name: string): string;
+var
+  H: TAddrInfo;
+  R: PAddrInfo;
+  n: Integer;
 begin
-  // detto
   Result := '';
+  ZeroMemory(@H, SizeOf(H));
+  H.ai_family := AF_INET6;
+  H.ai_protocol := PF_INET6;
+  H.ai_socktype := SOCK_STREAM;
+
+  n := getaddrinfo(pChar(Name), nil, @H, R);
+  if n <> 0 then
+    Exit;
+  Result := NetAddrToStr6(sockets.in6_addr(R^.ai_addr^));
+  freeaddrinfo(R);
 end;
 
 function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
