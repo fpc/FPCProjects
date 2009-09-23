@@ -144,12 +144,12 @@ type
 implementation
 
 uses
-  StrUtils, jwaws2tcpip
+  StrUtils
   
 {$IFNDEF UNIX}
 
 {$IFDEF WINDOWS}
-  , Windows;
+  , Windows, jwaws2tcpip;
   
 {$IFDEF WINCE}
 
