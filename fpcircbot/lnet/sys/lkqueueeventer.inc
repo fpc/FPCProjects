@@ -13,7 +13,7 @@ begin
   FTimeout.tv_nsec := 0;
   FQueue := KQueue;
   if FQueue < 0 then
-    raise Exception.Create('Unable to create kqueue');
+    raise Exception.Create('Unable to create kqueue: ' + StrError(fpGetErrno));
 end;
 
 destructor TLKQueueEventer.Destroy;
@@ -91,8 +91,8 @@ var
   Temp: TLHandle;
 begin
   Result := False;
-//  if FInLoop then
-//    Exit;
+  if FInLoop then
+    Exit;
 
   if FTimeout.tv_sec >= 0 then
     n := KEvent(FQueue, @FChanges[0], FFreeSlot,

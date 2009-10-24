@@ -1,4 +1,4 @@
-{ lFTP CopyRight (C) 2005-2007 Ales Katona
+{ lFTP CopyRight (C) 2005-2008 Ales Katona
 
   This library is Free software; you can rediStribute it and/or modify it
   under the terms of the GNU Library General Public License as published by
@@ -67,19 +67,25 @@ type
     FData: TLTcp;//TLTcpList;
     FSending: Boolean;
     FTransferMethod: TLFTPTransferMethod;
+    FFeatureList: TStringList;
+    FFeatureString: string;
 
     function GetConnected: Boolean; virtual;
     
     function GetTimeout: Integer;
     procedure SetTimeout(const Value: Integer);
-    
+
+    function GetSession: TLSession;
+    procedure SetSession(const AValue: TLSession);
+    procedure SetCreator(AValue: TLComponent); override;
+
     function GetSocketClass: TLSocketClass;
     procedure SetSocketClass(Value: TLSocketClass);
    public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
     
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; virtual; abstract;
     
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; virtual; abstract;
@@ -92,6 +98,8 @@ type
     property ControlConnection: TLTelnetClient read FControl;
     property DataConnection: TLTCP read FData;
     property TransferMethod: TLFTPTransferMethod read FTransferMethod write FTransferMethod default ftPassive;
+    property Session: TLSession read GetSession write SetSession;
+    property FeatureList: TStringList read FFeatureList;
   end;
 
   { TLFTPTelnetClient }
@@ -135,7 +143,10 @@ type
     procedure OnControlRe(aSocket: TLSocket);
     procedure OnControlCo(aSocket: TLSocket);
     procedure OnControlDs(aSocket: TLSocket);
+    
+    procedure ClearStatusFlags;
 
+    function GetCurrentStatus: TLFTPStatus;
     function GetTransfer: Boolean;
 
     function GetEcho: Boolean;
@@ -152,6 +163,7 @@ type
 
     procedure SetStartPor(const Value: Word);
 
+    procedure EvaluateFeatures;
     procedure EvaluateAnswer(const Ans: string);
 
     procedure PasvPort;
@@ -166,7 +178,7 @@ type
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
 
-    function Get(var aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
+    function Get(out aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
     function GetMessage(out msg: string; aSocket: TLSocket = nil): Integer; override;
     
     function Send(const aData; const aSize: Integer; aSocket: TLSocket = nil): Integer; override;
@@ -177,7 +189,7 @@ type
     
     function Authenticate(const aUsername, aPassword: string): Boolean;
     
-    function GetData(var aData; const aSize: Integer): Integer;
+    function GetData(out aData; const aSize: Integer): Integer;
     function GetDataMessage: string;
     
     function Retrieve(const FileName: string): Boolean;
@@ -193,11 +205,11 @@ type
     procedure List(const FileName: string = '');
     procedure Nlst(const FileName: string = '');
     procedure SystemInfo;
-    procedure FeatureList;
+    procedure ListFeatures;
     procedure PresentWorkingDirectory;
     procedure Help(const Arg: string);
     
-    procedure Disconnect; override;
+    procedure Disconnect(const Forced: Boolean = True); override;
     
     procedure CallAction; override;
    public
@@ -208,6 +220,7 @@ type
     property Echo: Boolean read GetEcho write SetEcho;
     property StartPort: Word read FStartPort write FStartPort default DEFAULT_FTP_PORT;
     property Transfer: Boolean read GetTransfer;
+    property CurrentStatus: TLFTPStatus read GetCurrentStatus;
 
     property OnError: TLSocketErrorEvent read FOnError write FOnError;
     property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
@@ -223,7 +236,7 @@ type
 implementation
 
 uses
-  SysUtils;
+  SysUtils, Math;
 
 const
   FLE             = #13#10;
@@ -252,7 +265,6 @@ begin
         vtChar: Write(ar[i].vchar);
         vtExtended: Write(Extended(ar[i].vpointer^));
       end;
-  Writeln;
 end;
 {$else}
 begin
@@ -274,6 +286,25 @@ end;
 {$i lcontainers.inc}
 
 { TLFTP }
+
+function TLFTP.GetSession: TLSession;
+begin
+  Result := FControl.Session;
+end;
+
+procedure TLFTP.SetSession(const AValue: TLSession);
+begin
+  FControl.Session := aValue;
+  FData.Session := aValue;
+end;
+
+procedure TLFTP.SetCreator(AValue: TLComponent);
+begin
+  inherited SetCreator(AValue);
+  
+  FControl.Creator := AValue;
+  FData.Creator := AValue;
+end;
 
 function TLFTP.GetConnected: Boolean;
 begin
@@ -310,16 +341,22 @@ begin
   FPort := 21;
 
   FControl := TLFTPTelnetClient.Create(nil);
+  FControl.Creator := Self;
 
   FData := TLTcp.Create(nil);
+  FData.Creator := Self;
+  FData.SocketClass := TLSocket;
 
   FTransferMethod  :=  ftPassive; // let's be modern
+
+  FFeatureList := TStringList.Create;
 end;
 
 destructor TLFTP.Destroy;
 begin
   FControl.Free;
   FData.Free;
+  FFeatureList.Free;
 
   inherited Destroy;
 end;
@@ -336,8 +373,6 @@ end;
 constructor TLFTPClient.Create(aOwner: TComponent);
 const
   DEFAULT_CHUNK = 8192;
-var
-  s: TLFTPStatus;
 begin
   inherited Create(aOwner);
 
@@ -351,16 +386,15 @@ begin
   FData.OnCanSend := @OnSe;
   FData.OnError := @OnEr;
 
-  FStatusSet := []; // empty Event set
+  FStatusSet := [fsNone..fsLast]; // full Event set
   FPassWord := '';
   FChunkSize := DEFAULT_CHUNK;
   FStartPort := DEFAULT_FTP_PORT;
   FSL := TStringList.Create;
   FLastPort := FStartPort;
 
-  for s := fsNone to fsDEL do
-    FStatusFlags[s] := False;
-    
+  ClearStatusFlags;
+
   FStatus := TLFTPStatusFront.Create(EMPTY_REC);
   FCommandFront := TLFTPStatusFront.Create(EMPTY_REC);
   
@@ -369,7 +403,7 @@ end;
 
 destructor TLFTPClient.Destroy;
 begin
-  Disconnect;
+  Disconnect(True);
   FSL.Free;
   FStatus.Free;
   FCommandFront.Free;
@@ -406,6 +440,15 @@ end;
 procedure TLFTPClient.OnControlEr(const msg: string; aSocket: TLSocket);
 begin
   FSending := False;
+  
+  if Assigned(FOnFailure) then begin
+    while not FStatus.Empty do
+      FOnFailure(aSocket, FStatus.Remove.Status);
+  end else
+    FStatus.Clear;
+    
+  ClearStatusFlags;
+
   if Assigned(FOnError) then
     FOnError(msg, aSocket);
 end;
@@ -428,6 +471,19 @@ begin
     FOnError('Connection lost', aSocket);
 end;
 
+procedure TLFTPClient.ClearStatusFlags;
+var
+  s: TLFTPStatus;
+begin
+  for s := fsNone to fsLast do
+    FStatusFlags[s] := False;
+end;
+
+function TLFTPClient.GetCurrentStatus: TLFTPStatus;
+begin
+  Result := FStatus.First.Status;
+end;
+
 function TLFTPClient.GetTransfer: Boolean;
 begin
   Result := FData.Connected;
@@ -440,7 +496,7 @@ end;
 
 function TLFTPClient.GetConnected: Boolean;
 begin
-  Result  :=  FStatusFlags[fsCon] and inherited;
+  Result := FStatusFlags[fsCon] and inherited;
 end;
 
 function TLFTPClient.GetBinary: Boolean;
@@ -461,9 +517,10 @@ var
   i: Integer;
 begin
   FSL.Text := s;
-  if FSL.Count > 0 then
-    for i := 0 to FSL.Count-1 do
-      if Length(FSL[i]) > 0 then EvaluateAnswer(FSL[i]);
+  for i := 0 to FSL.Count - 1 do
+    if Length(FSL[i]) > 0 then
+      EvaluateAnswer(FSL[i]);
+
   s := StringReplace(s, FLE, LineEnding, [rfReplaceAll]);
   i := Pos('PASS', s);
   if i > 0 then
@@ -476,6 +533,32 @@ begin
   FStartPort := Value;
   if Value > FLastPort then
     FLastPort := Value;
+end;
+
+procedure TLFTPClient.EvaluateFeatures;
+var
+  i: Integer;
+begin
+  FFeatureList.Clear;
+  if Length(FFeatureString) = 0 then
+    Exit;
+
+  FFeatureList.Text := FFeatureString;
+  FFeatureString := '';
+  FFeatureList.Delete(0);
+
+  i := 0;
+  while i < FFeatureList.Count do begin
+    if (Length(Trim(FFeatureList[i])) = 0)
+    or (FFeatureList[i][1] <> ' ') then begin
+      FFeatureList.Delete(i);
+      Continue;
+    end;
+
+    FFeatureList[i] := Trim(FFeatureList[i]);
+
+    Inc(i);
+  end;
 end;
 
 procedure TLFTPClient.SetEcho(const Value: Boolean);
@@ -492,8 +575,8 @@ const
 begin
   if CanContinue(fsType, BoolToStr(Value), '') then begin
     FExpectedBinary := Value;
-    FControl.SendMessage('TYPE ' + TypeBool[Value] + FLE);
     FStatus.Insert(MakeStatusRec(fsType, '', ''));
+    FControl.SendMessage('TYPE ' + TypeBool[Value] + FLE);
   end;
 end;
 
@@ -563,6 +646,7 @@ procedure TLFTPClient.EvaluateAnswer(const Ans: string);
   
   procedure Eventize(const aStatus: TLFTPStatus; const Res: Boolean);
   begin
+    FStatus.Remove;
     if Res then begin
       if Assigned(FOnSuccess) and (aStatus in FStatusSet) then
         FOnSuccess(FData.Iterator, aStatus);
@@ -578,6 +662,9 @@ begin
   x := GetNum;
   Writedbg(['WOULD EVAL: ', FTPStatusStr[FStatus.First.Status], ' with value: ',
             x, ' from "', Ans, '"']);
+  if FStatus.First.Status = fsFeat then
+    FFeatureString := FFeatureString + Ans + FLE; // we need to parse this later
+
   if ValidResponse(Ans) then
     if not FStatus.Empty then begin
       Writedbg(['EVAL: ', FTPStatusStr[FStatus.First.Status], ' with value: ', x]);
@@ -587,13 +674,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -602,7 +687,6 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    331,
                    332:
@@ -614,7 +698,6 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -623,13 +706,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -642,12 +723,10 @@ begin
                    200:
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -657,12 +736,10 @@ begin
                        FStatusFlags[FStatus.First.Status] := FExpectedBinary;
                        Writedbg(['Binary mode: ', FExpectedBinary]);
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -671,14 +748,12 @@ begin
                    226:
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
-                       FData.Disconnect;
+                       FData.Disconnect(False);
                        Writedbg(['Disconnecting data connection']);
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove; // error after connection established
                      end;
                  end;
 
@@ -688,12 +763,10 @@ begin
                    226:
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                  end;
 
@@ -702,13 +775,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -717,12 +788,10 @@ begin
                    226:
                      begin
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -731,13 +800,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -747,13 +814,11 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        FStatusFlags[FStatus.First.Status] := False;
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -762,12 +827,10 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
                      end;
                  end;
                  
@@ -776,12 +839,23 @@ begin
                      begin
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
-                       FStatus.Remove;
                      end;
                    else
                      begin
                        Eventize(FStatus.First.Status, False);
-                       FStatus.Remove;
+                     end;
+                 end;
+        fsFeat : case x of
+                   200..299:
+                     begin
+                       FStatusFlags[FStatus.First.Status] := True;
+                       EvaluateFeatures;
+                       Eventize(FStatus.First.Status, True);
+                     end;
+                   else
+                     begin
+                       FFeatureString := '';
+                       Eventize(FStatus.First.Status, False);
                      end;
                  end;
       end;
@@ -807,10 +881,10 @@ procedure TLFTPClient.PasvPort;
 begin
   if FTransferMethod = ftActive then begin
     Writedbg(['Sent PORT']);
-    FData.Disconnect;
+    FData.Disconnect(True);
     FData.Listen(FLastPort);
-    FControl.SendMessage('PORT ' + StringIP + StringPair(FLastPort) + FLE);
     FStatus.Insert(MakeStatusRec(fsPort, '', ''));
+    FControl.SendMessage('PORT ' + StringIP + StringPair(FLastPort) + FLE);
 
     if FLastPort < 65535 then
       Inc(FLastPort)
@@ -818,8 +892,8 @@ begin
       FLastPort := FStartPort;
   end else begin
     Writedbg(['Sent PASV']);
-    FControl.SendMessage('PASV' + FLE);
     FStatus.Insert(MakeStatusRec(fsPasv, '', ''));
+    FControl.SendMessage('PASV' + FLE);
   end;
 end;
 
@@ -827,8 +901,8 @@ function TLFTPClient.User(const aUserName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsUser, aUserName, '') then begin
-    FControl.SendMessage('USER ' + aUserName + FLE);
     FStatus.Insert(MakeStatusRec(fsUser, '', ''));
+    FControl.SendMessage('USER ' + aUserName + FLE);
     Result := True;
   end;
 end;
@@ -837,8 +911,8 @@ function TLFTPClient.Password(const aPassword: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsPass, aPassword, '') then begin
-    FControl.SendMessage('PASS ' + aPassword + FLE);
     FStatus.Insert(MakeStatusRec(fsPass, '', ''));
+    FControl.SendMessage('PASS ' + aPassword + FLE);
     Result := True;
   end;
 end;
@@ -863,7 +937,7 @@ begin
       FreeAndNil(FStoreFile);
       FSending := False;
       {$hint this one calls freeinstance which doesn't pass}
-      FData.Disconnect;
+      FData.Disconnect(False);
     end;
   until (n = 0) or (Sent = 0);
 end;
@@ -887,20 +961,22 @@ begin
       fsPWD  : PresentWorkingDirectory;
       fsHelp : Help(Args[1]);
       fsType : SetBinary(StrToBool(Args[1]));
-      fsFeat : FeatureList;
+      fsFeat : ListFeatures;
     end;
   FCommandFront.Remove;
 end;
 
-function TLFTPClient.Get(var aData; const aSize: Integer; aSocket: TLSocket): Integer;
+function TLFTPClient.Get(out aData; const aSize: Integer; aSocket: TLSocket): Integer;
 var
   s: string;
 begin
-  Result := FControl.Get(aData, aSize, aSocket);
-  if Result > 0 then begin
+  Result := 0;
+
+  if FControl.Get(aData, aSize, aSocket) > 0 then begin
     SetLength(s, Result);
     Move(aData, PChar(s)^, Result);
-    CleanInput(s);
+    Result := CleanInput(s);
+    Move(s[1], aData, Min(Length(s), aSize));
   end;
 end;
 
@@ -923,7 +999,7 @@ begin
   Result := FControl.SendMessage(msg);
 end;
 
-function TLFTPClient.GetData(var aData; const aSize: Integer): Integer;
+function TLFTPClient.GetData(out aData; const aSize: Integer): Integer;
 begin
   Result := FData.Iterator.Get(aData, aSize);
 end;
@@ -938,7 +1014,7 @@ end;
 function TLFTPClient.Connect(const aHost: string; const aPort: Word): Boolean;
 begin
   Result := False;
-  Disconnect;
+  Disconnect(True);
   if FControl.Connect(aHost, aPort) then begin
     FHost := aHost;
     FPort := aPort;
@@ -965,8 +1041,8 @@ begin
   Result := not FPipeLine;
   if CanContinue(fsRetr, FileName, '') then begin
     PasvPort;
-    FControl.SendMessage('RETR ' + FileName + FLE);
     FStatus.Insert(MakeStatusRec(fsRetr, '', ''));
+    FControl.SendMessage('RETR ' + FileName + FLE);
     Result := True;
   end;
 end;
@@ -977,8 +1053,8 @@ begin
   if FileExists(FileName) and CanContinue(fsStor, FileName, '') then begin
     FStoreFile := TFileStream.Create(FileName, fmOpenRead);
     PasvPort;
-    FControl.SendMessage('STOR ' + ExtractFileName(FileName) + FLE);
     FStatus.Insert(MakeStatusRec(fsStor, '', ''));
+    FControl.SendMessage('STOR ' + ExtractFileName(FileName) + FLE);
     Result := True;
   end;
 end;
@@ -987,9 +1063,9 @@ function TLFTPClient.ChangeDirectory(const DestPath: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsCWD, DestPath, '') then begin
-    FControl.SendMessage('CWD ' + DestPath + FLE);
     FStatus.Insert(MakeStatusRec(fsCWD, '', ''));
     FStatusFlags[fsCWD] := False;
+    FControl.SendMessage('CWD ' + DestPath + FLE);
     Result := True;
   end;
 end;
@@ -998,9 +1074,9 @@ function TLFTPClient.MakeDirectory(const DirName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsMKD, DirName, '') then begin
-    FControl.SendMessage('MKD ' + DirName + FLE);
     FStatus.Insert(MakeStatusRec(fsMKD, '', ''));
     FStatusFlags[fsMKD] := False;
+    FControl.SendMessage('MKD ' + DirName + FLE);
     Result := True;
   end;
 end;
@@ -1009,9 +1085,9 @@ function TLFTPClient.RemoveDirectory(const DirName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsRMD, DirName, '') then begin
-    FControl.SendMessage('RMD ' + DirName + FLE);
     FStatus.Insert(MakeStatusRec(fsRMD, '', ''));
     FStatusFlags[fsRMD] := False;
+    FControl.SendMessage('RMD ' + DirName + FLE);
     Result := True;
   end;
 end;
@@ -1020,9 +1096,9 @@ function TLFTPClient.DeleteFile(const FileName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsDEL, FileName, '') then begin
-    FControl.SendMessage('DELE ' + FileName + FLE);
     FStatus.Insert(MakeStatusRec(fsDEL, '', ''));
     FStatusFlags[fsDEL] := False;
+    FControl.SendMessage('DELE ' + FileName + FLE);
     Result := True;
   end;
 end;
@@ -1031,13 +1107,13 @@ function TLFTPClient.Rename(const FromName, ToName: string): Boolean;
 begin
   Result := not FPipeLine;
   if CanContinue(fsRNFR, FromName, ToName) then begin
-    FControl.SendMessage('RNFR ' + FromName + FLE);
     FStatus.Insert(MakeStatusRec(fsRNFR, '', ''));
     FStatusFlags[fsRNFR] := False;
+    FControl.SendMessage('RNFR ' + FromName + FLE);
 
-    FControl.SendMessage('RNTO ' + ToName + FLE);
     FStatus.Insert(MakeStatusRec(fsRNTO, '', ''));
     FStatusFlags[fsRNTO] := False;
+    FControl.SendMessage('RNTO ' + ToName + FLE);
 
     Result := True;
   end;
@@ -1073,10 +1149,12 @@ begin
     FControl.SendMessage('SYST' + FLE);
 end;
 
-procedure TLFTPClient.FeatureList;
+procedure TLFTPClient.ListFeatures;
 begin
-  if CanContinue(fsFeat, '', '') then
+  if CanContinue(fsFeat, '', '') then begin
+    FStatus.Insert(MakeStatusRec(fsFeat, '', ''));
     FControl.SendMessage('FEAT' + FLE);
+  end;
 end;
 
 procedure TLFTPClient.PresentWorkingDirectory;
@@ -1091,16 +1169,13 @@ begin
     FControl.SendMessage('HELP ' + Arg + FLE);
 end;
 
-procedure TLFTPClient.Disconnect;
-var
-  s: TLFTPStatus;
+procedure TLFTPClient.Disconnect(const Forced: Boolean = True);
 begin
-  FControl.Disconnect;
+  FControl.Disconnect(Forced);
   FStatus.Clear;
-  FData.Disconnect;
+  FData.Disconnect(Forced);
   FLastPort := FStartPort;
-  for s := fsNone to fsLast do
-    FStatusFlags[s] := False;
+  ClearStatusFlags;
   FCommandFront.Clear;
 end;
 

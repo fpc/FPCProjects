@@ -1,6 +1,6 @@
 { Utility routines for HTTP server component
 
-  Copyright (C) 2006-2007 Micha Nelissen
+  Copyright (C) 2006-2008 by Micha Nelissen
 
   This library is Free software; you can redistribute it and/or modify it
   under the terms of the GNU Library General Public License as published by
@@ -51,7 +51,7 @@ type
   function HTTPEncode(const AStr: string): string;
   function HexToNum(AChar: char): byte;
   
-  procedure DecomposeURL(const URL: string; out Host, URI: string; out Port: Word);
+  function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word): Boolean;
   function ComposeURL(Host, URI: string; const Port: Word): string;
 
 implementation
@@ -232,13 +232,22 @@ begin
   until false;
 end;
 
-procedure DecomposeURL(const URL: string; out Host, URI: string; out Port: Word);
+function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word): Boolean;
 var
-  index: Integer;
+  hl, index: Integer;
+  DefPort: Word = 80;
 begin
-  index := PosEx('/', URL, 8);
-  Host := Copy(URL, 8, index-8);
-  URI := Copy(URL, index, Length(URL)+1-index);
+  Result := False;
+  hl := 8;
+  if Pos('https://', URL) = 1 then begin
+    Result := True;
+    hl := 9;
+    DefPort := 443;
+  end;
+    
+  index := PosEx('/', URL, hl);
+  Host := Copy(URL, hl, index - hl);
+  URI := StringReplace(Copy(URL, index, Length(URL)+1-index), ' ', '%20', [rfReplaceAll]);
 
   index := Pos(':', Host);
   if index > 0 then begin
@@ -246,13 +255,13 @@ begin
 
     SetLength(Host, index-1);
   end else
-    Port := 80;
+    Port := DefPort;
 end;
 
 function ComposeURL(Host, URI: string; const Port: Word): string;
 begin
   Host := Trim(Host);
-  URI := Trim(URI);
+  URI := StringReplace(Trim(URI), '%20', ' ', [rfReplaceAll]);
 
   if (Pos('http://', Host) <> 1)
   and (Pos('https://', Host) <> 1) then
