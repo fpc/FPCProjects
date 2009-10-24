@@ -120,7 +120,7 @@ type
     function GetPCommandCount: Longint;
     function GetPuserCount: LongInt;
     function GetPuser(const i: Longint): string;
-    function ParseLine(aMsg: string): Boolean;
+    function ParseLine(const aMsg: string): Boolean;
     procedure SetNick(const Value: string);
    public
     constructor Create(const Nick, Login: string);
@@ -587,7 +587,7 @@ begin
   Result := LL.IsIdentified and (FPUsers.IndexOf(LL.Sender) >= 0);
 end;
 
-function TLIrcBot.ParseLine(aMsg: string): Boolean;
+function TLIrcBot.ParseLine(const aMsg: string): Boolean;
 var
   x, n, m: Longint;
   
@@ -612,6 +612,13 @@ var
         FReciever := Copy(aMsg, n + x + 1, m - n - x - 2);
         FMsg := Copy(aMsg, m + 1, Length(aMsg) - m);
         FMsg := CleanEnding(FMsg); // clean #13#10
+
+        if FMsg[1] in ['+', '-'] then begin // CAPAB IDENTIFY-MSG is on, use it
+          if FMsg[1] = '+' then
+            FIsIdentified := True;
+          Delete(FMsg, 1, 1);
+        end;
+
         FTime := Now;
       end; // if
     end;
@@ -655,12 +662,6 @@ begin
     FMsg := '';
     FArguments := '';
     FIsIdentified := False;
-  end;
-
-  if aMsg[1] in ['+', '-'] then begin // CAPAB IDENTIFY-MSG is on, use it
-    if aMsg[1] = '+' then
-      FLastLine.FIsIdentified := True;
-    Delete(aMsg, 1, 1);
   end;
 
   ParseCommand;
