@@ -396,7 +396,7 @@ begin
       Caller.Respond(s);
     end;
     s:='';
-    if Caller.IsPuser(Caller.LastLine.Sender)
+    if Caller.IsPuser(Caller.LastLine)
     and (Caller.PCommandCount > 0) then begin
       s:=s + 'Power user commands: ';
       for i:=0 to Caller.PCommandCount-1 do
@@ -408,7 +408,7 @@ begin
     if n >= 0 then begin
       if n < 1000 then
         Caller.Respond(Caller.LastLine.Arguments + ': ' + Caller.Commands[n].Help)
-      else if Caller.IsPuser(Caller.LastLine.Sender) then begin
+      else if Caller.IsPuser(Caller.LastLine) then begin
         Dec(n, 1000);
         Caller.Respond(Caller.LastLine.Arguments + ': ' + Caller.PCommands[n].Help);
       end else Caller.Respond('You are not allowed to perform that command');
@@ -902,12 +902,12 @@ end;
 procedure TDoer.OnMarkov(Caller: TLIrcBot);
 begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
-    if Caller.IsPuser(Caller.LastLine.Sender) then begin
+    if Caller.IsPuser(Caller.LastLine) then begin
       MarkovOn:=True;
       Caller.Respond(YESSIR);
     end else Caller.Respond('Only power users can change settings');
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
-    if Caller.IsPuser(Caller.LastLine.Sender) then begin
+    if Caller.IsPuser(Caller.LastLine) then begin
       MarkovOn:=False;
       Caller.Respond(YESSIR);
     end else Caller.Respond('Only power users can change settings');

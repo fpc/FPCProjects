@@ -41,6 +41,7 @@ type
     FCommand: string;
     FTime: TDateTime;
     FWasChat: Boolean;
+    FIsIdentified: Boolean;
    public
     function CloneSelf: TLIrcRec;
     property Sender: string read FSender;
@@ -49,6 +50,7 @@ type
     property Msg: string read FMsg;
     property Time: TDateTime read FTime;
     property WasChat: Boolean read FWasChat;
+    property IsIdentified: Boolean read FIsIdentified;
   end;
   
   TLIrcBot = class;
@@ -81,7 +83,6 @@ type
     FPort: Word;
     FChannels: TStringList;
     FPUsers: TStringList;
-    FActivePusers: TStringList;
     FCommands: TLCommandList;
     FPCommands: TLCommandList;
     FRespondTo: string;
@@ -104,7 +105,6 @@ type
     //******TCP callbacks********
     procedure OnEr(const msg: string; aSocket: TLSocket);
     procedure OnRe(aSocket: TLSocket);
-    procedure OnReTest(aSocket: TLSocket); // for testing of input
     procedure OnReJoin(aSocket: TLSocket);
     procedure OnDs(aSocket: TLSocket);
     procedure OnCo(aSocket: TLSocket);
@@ -118,19 +118,18 @@ type
     function GetCommandCount: Longint;
     function GetPCommand(const i: Longint): TLCommand;
     function GetPCommandCount: Longint;
+    function GetPuserCount: LongInt;
     function GetPuser(const i: Longint): string;
-    function GetPuserCount: Longint;
-    function ParseLine(const aMsg: string): Boolean;
-    function IsPuserCheck(const aNick: string): Boolean;
+    function ParseLine(aMsg: string): Boolean;
     procedure SetNick(const Value: string);
    public
     constructor Create(const Nick, Login: string);
     destructor Destroy; override;
     function Connect(const Server: string; const Port: Word): Boolean;
-    function IsPuser(const aNick: string): Boolean;
     function Join(const Channel: string): Boolean;
     function Part(const Channel: string): Boolean;
     function UserInChannel(const Channel, User: string): Boolean;
+    function IsPuser(LL: TLIrcRec): Boolean;
     procedure Quit;
     procedure SendMessage(const Msg: string; const Reciever: string = '');
     procedure Respond(const aMsg: string);
@@ -149,8 +148,8 @@ type
     property CommandCount: Longint read GetCommandCount;
     property PCommands[i: Longint]: TLCommand read GetPCommand;
     property PCommandCount: Longint read GetPCommandCount;
-    property PUsers[i: Longint]: string read GetPuser;
-    property PuserCount: Longint read GetPuserCount;
+    property PUserCount: Longint read GetPuserCount;
+    property PUsers[i: Longint]: string read GetPUser;
     property Connected: Boolean read GetConnected;
     property LastLine: TLIrcRec read FLastLine;
     property ReplyInPrivate: Boolean read FRIP write FRIP;
@@ -170,14 +169,15 @@ implementation
 
 function TLIrcRec.CloneSelf: TLIrcRec;
 begin
-  Result:=TLIrcRec.Create;
-  Result.FSender:=FSender;
-  Result.FReciever:=FReciever;
-  Result.FArguments:=FArguments;
-  Result.FMsg:=FMsg;
-  Result.FCommand:=FCommand;
-  Result.FTime:=FTime;
-  Result.FWasChat:=FWasChat;
+  Result := TLIrcRec.Create;
+  Result.FSender := FSender;
+  Result.FReciever := FReciever;
+  Result.FArguments := FArguments;
+  Result.FMsg := FMsg;
+  Result.FCommand := FCommand;
+  Result.FTime := FTime;
+  Result.FWasChat := FWasChat;
+  Result.FIsIdentified := FIsIdentified;
 end;
 
 constructor TLCommand.Create(const s: string; a: TLIrcCallback; const h: string = '');
@@ -198,8 +198,6 @@ begin
   FLastLine:=TLIrcRec.Create;
   FLogin:=Login;
   FPusers:=TStringList.Create;
-  FActivePusers:=TStringList.Create;
-  FActivePusers.Duplicates:=dupIgnore;
   FWords:=TStringList.Create;
   FWords.Delimiter:=' ';
   FPusers.CaseSensitive:=False;
@@ -234,7 +232,6 @@ begin
   FCon.Free;
   FChannels.Free;
   FPUsers.Free;
-  FActivePusers.Free;
   FCommands.Free;
   FPCommands.Free;
   FLastLine.Free;
@@ -324,7 +321,7 @@ procedure TLIrcBot.DoRe(const msg: string);
           if ((LowerCase(FLastLine.Reciever) = LowerCase(FNick)) or (FWords[0][1] = '!'))
           and (FPCommands[i].Command = TheWord) then begin
             if Assigned(FPCommands[i].FAction)
-            and (IsPuser(FLastLine.Sender)) then begin
+            and IsPuser(FLastLine) then begin
               if FWords[0][1] <> '!' then
                 FRespondTo:=FLastLine.Sender
               else
@@ -348,7 +345,7 @@ procedure TLIrcBot.DoRe(const msg: string);
           if  (Pos(LowerCase(Nick), LowerCase(FWords[0])) > 0)
           and (LowerCase(FWords[1]) = FPCommands[i].Command) then begin
             if Assigned(FPCommands[i].FAction)
-            and (IsPuser(FLastLine.Sender)) then begin
+            and IsPuser(FLastLine) then begin
               FLastLine.FArguments:='';
               if FWords.Count > 2 then
                 for j:=2 to FWords.Count-1 do
@@ -397,7 +394,7 @@ begin
   if Length(s) > 0 then
     DoRe(s);
 
-  Parsed:=ParseLine(nMsg);
+  Parsed := ParseLine(nMsg);
   if Assigned(FOnRecieve) then
     if Pos(',', FLastLine.FReciever) > 0 then begin
       SL:=TStringList.Create;
@@ -449,17 +446,6 @@ var
 begin
   if FCon.GetMessage(s) > 0 then
     DoRe(s);
-end;
-
-procedure TLIrcBot.OnReTest(aSocket: TLSocket);
-var
-  msg: string;
-begin
-  if FCon.GetMessage(msg) > 0 then
-    if Pos('Last seen  : now', Msg) > 0 then
-      FNickOK := ''
-    else
-      if Pos('NOTICE', msg) = 0 then DoRe(msg);
 end;
 
 procedure TLIrcBot.DoReJoin(const msg: string);
@@ -586,60 +572,48 @@ begin
   Result:=FPCommands.Count;
 end;
 
+function TLIrcBot.GetPuserCount: LongInt;
+begin
+  Result := FPUsers.Count;
+end;
+
 function TLIrcBot.GetPuser(const i: Longint): string;
 begin
-  Result:='';
-  if (i >= 0 ) and (i < FPUsers.Count) then
-    Result:=FPUsers[i];
+  Result := FPUsers[i];
 end;
 
-function TLIrcBot.GetPuserCount: Longint;
+function TLIrcBot.IsPuser(LL: TLIrcRec): Boolean;
 begin
-  Result:=FPusers.Count;
+  Result := LL.IsIdentified and (FPUsers.IndexOf(LL.Sender) >= 0);
 end;
 
-function TLIrcBot.ParseLine(const aMsg: string): Boolean;
+function TLIrcBot.ParseLine(aMsg: string): Boolean;
 var
   x, n, m: Longint;
   
   procedure ParseCommand;
   begin
     with FLastLine do begin
-      n:=Pos(' ', aMsg);
-      FCommand:=Copy(aMsg, n+1, Length(aMsg));
-      n:=Pos(' ', FCommand);
+      n := Pos(' ', aMsg);
+      FCommand := Copy(aMsg, n+1, Length(aMsg));
+      n := Pos(' ', FCommand);
       Delete(FCommand, n, Length(FCommand));
-      n:=Pos(FCommand, aMsg);
+      n := Pos(FCommand, aMsg);
 
       if n > 0 then begin
-        x:=Length(FCommand);
+        x := Length(FCommand);
         if n > 1 then begin // Get Sender name
           FSender:=Copy(aMsg, 2, n); // ignore the initial ":"
-          m:=Pos('!', FSender);
+          m := Pos('!', FSender);
           if m > 0 then
             Delete(FSender, m, Length(FSender)); // ignore after "!"
         end; // if
-        m:=Pos(':', Copy(aMsg, 2, Length(aMsg)-1)) + 1;
-        FReciever:=Copy(aMsg, n + x + 1, m - n - x - 2);
-        FMsg:=Copy(aMsg, m + 1, Length(aMsg) - m);
-        FMsg:=CleanEnding(FMsg); // clean #13#10
-        FTime:=Now;
+        m := Pos(':', Copy(aMsg, 2, Length(aMsg)-1)) + 1;
+        FReciever := Copy(aMsg, n + x + 1, m - n - x - 2);
+        FMsg := Copy(aMsg, m + 1, Length(aMsg) - m);
+        FMsg := CleanEnding(FMsg); // clean #13#10
+        FTime := Now;
       end; // if
-    end;
-  end;
-  
-  procedure CheckActive(const TheMan: string);
-  var
-    i: Integer;
-    StillExists: Boolean;
-  begin
-    if FActivePusers.IndexOf(TheMan) >=0 then begin
-      StillExists:=False;
-      if FPeople.Count > 0 then
-        for i:=0 to FPeople.Count-1 do
-          if FPeople[i].IndexOf(TheMan) >= 0 then StillExists:=True;
-      if not StillExists then
-        FActivePusers.Delete(FActivePusers.IndexOf(TheMan));
     end;
   end;
   
@@ -660,7 +634,6 @@ var
             Writeln('Deleting ', FPeople[m][n], ' from ', FChannels[m]);
             TheMan:=FPeople[m][n];
             FPeople[m].Delete(n);
-            CheckActive(TheMan);
           end;
         end;
       end;
@@ -675,32 +648,41 @@ var
 var
   s: string; // helper string
 begin
-  Result:=False;
+  Result := False;
   with FLastLine do begin
-    FSender:='';
-    FReciever:='';
-    FMsg:='';
-    FArguments:='';
+    FSender := '';
+    FReciever := '';
+    FMsg := '';
+    FArguments := '';
+    FIsIdentified := False;
   end;
+
+  if aMsg[1] in ['+', '-'] then begin // CAPAB IDENTIFY-MSG is on, use it
+    if aMsg[1] = '+' then
+      FLastLine.FIsIdentified := True;
+    Delete(aMsg, 1, 1);
+  end;
+
   ParseCommand;
   FilterSpecial(FLastLine.FSender);
+
   with FLastLine do begin
-    FWasChat:=False;
+    FWasChat := False;
     if FCommand = 'PRIVMSG' then begin
-      Result:=True;
-      FWasChat:=True;
-      m:=Pos('ACTION', FLastLine.FMsg);
+      Result := True;
+      FWasChat := True;
+      m := Pos('ACTION', FLastLine.FMsg);
       if (m = 2) and (FLastLine.FMsg[1] = #1) then begin
-        FLastLine.FMsg:=Copy(FLastLine.FMsg, m + x, Length(FLastLine.FMsg));
-        FLastLine.FMsg:=FLastLine.FSender + ' ' + FLastLine.FMsg;
+        FLastLine.FMsg := Copy(FLastLine.FMsg, m + x, Length(FLastLine.FMsg));
+        FLastLine.FMsg := FLastLine.FSender + ' ' + FLastLine.FMsg;
         Delete(FLastLine.FMsg, Length(FLastLine.FMsg), 1);
         FLastLine.FSender:='*';
       end; // if/and
     end;
     
     if FCommand = 'JOIN' then begin
-      FLastLine.FReciever:=FLastLine.FMsg;
-      FLastLine.FMsg:=FLastLine.Sender + ' joins ' + FLastLine.FMsg;
+      FLastLine.FReciever := FLastLine.FMsg;
+      FLastLine.FMsg := FLastLine.Sender + ' joins ' + FLastLine.FMsg;
       n:=FChannels.IndexOf(FLastLine.Reciever);
       if n >= 0 then with FPeople[n] do begin
         Writeln('Adding ', FLastLine.Sender, ' to ', FChannels[n]);
@@ -714,14 +696,13 @@ begin
     end; // if
     
     if FCommand = 'PART' then begin
-      FLastLine.FMsg:=FLastLine.Sender + ' leaves ' +
+      FLastLine.FMsg := FLastLine.Sender + ' leaves ' +
                       FLastLine.Reciever + '(' + FLastLine.FMsg + ')';
       n:=FChannels.IndexOf(FLastLine.Reciever);
       if n >= 0 then with FPeople[n] do
         if IndexOf(FlastLine.Sender) >= 0 then begin
           Writeln('Deleting ', FLastLine.Sender, ' from ', FChannels[n]);
           Delete(IndexOf(FlastLine.Sender));
-          CheckActive(FLastLine.Sender);
         end;
       Result:=True;
     end; // if
@@ -744,7 +725,6 @@ begin
           Writeln('Deleting channel ', FChannels[n], ' and all users from it');
           FChannels.Delete(n);
           FPeople.Delete(n);
-          FActivePusers.Clear;
           if Assigned(FOnChannelQuit) then
             FOnChannelQuit(Self);
         end;
@@ -765,9 +745,6 @@ begin
             for n:=0 to FPeople[m].Count-1 do
               if FPeople[m][n] = FLastLine.Sender then FPeople[m][n]:=FLastLine.Msg;
 
-      n:=FActivePusers.IndexOf(FLastLine.FSender);
-      if n >= 0 then
-        FActivePusers[n]:=FLastLine.FMsg;
       FLastLine.FMsg:=FLastLine.FSender + ' is now known as ' + FLastLine.FMsg;
       Result:=True;
     end;
@@ -775,35 +752,12 @@ begin
     if FCommand = 'NOTICE' then Result:=False;
     if FCommand = 'MODE' then Result:=False;
   end;
-  if not Result then with FLastLine do begin
-    FSender:='';
-    FReciever:='';
-    FArguments:='';
-    FMsg:=aMsg;
-  end;
-end;
 
-function TLIrcBot.IsPuserCheck(const aNick: string): Boolean;
-var
-  i: Longint;
-  Backup: TLIrcRec;
-begin
-  Result:=False;
-  if Length(aNick) > 0 then begin
-    FNickOK := aNick;
-    if FPUsers.IndexOf(aNick) >= 0 then begin
-      Backup:=FLastLine.CloneSelf;
-      FCon.SendMessage('NICKSERV :INFO ' + aNick + #13#10);
-      FCon.OnReceive:=@OnReTest;
-      for i := 1 to 20 do begin // LOOONG wait time for nickServ (10 seconds)
-        FCon.CallAction;
-        if Length(FNickOK) = 0 then Result:=True;
-        if Result then Break;
-      end;
-      FLastLine.Free;
-      FLastLine:=Backup;
-      FCon.OnReceive:=@OnRe;
-    end;
+  if not Result then with FLastLine do begin
+    FSender := '';
+    FReciever := '';
+    FArguments := '';
+    FMsg := aMsg;
   end;
 end;
 
@@ -823,18 +777,6 @@ begin
     Result:=True;
     FPort:=Port;
     FServer:=Server;
-  end;
-end;
-
-function TLIrcBot.IsPuser(const aNick: string): Boolean;
-begin
-  Result:=False;
-  if FActivePusers.Count > 0 then
-    if FActivePusers.IndexOf(aNick) >= 0 then
-      Result:=True;
-  if not Result then begin
-    Result:=IsPuserCheck(aNick);
-    if Result then FActivePusers.Add(aNick);
   end;
 end;
 
@@ -944,6 +886,7 @@ begin
   FCon.SendMessage('NICK ' + FNick + #13#10);
   FCon.SendMessage('USER ' + FLogin + ' 8 * :FPC rag-tag bot' + #13#10);
   FCon.SendMessage('NICKSERV :IDENTIFY ' + FNickPass + #13#10);
+  FCon.SendMessage('CAPAB IDENTIFY-MSG' + #13#10);
 {  i:=0;
   while i < 2 do begin
     FCon.CallAction;
