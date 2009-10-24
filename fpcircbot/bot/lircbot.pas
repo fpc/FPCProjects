@@ -613,7 +613,7 @@ var
         FMsg := Copy(aMsg, m + 1, Length(aMsg) - m);
         FMsg := CleanEnding(FMsg); // clean #13#10
 
-        if FMsg[1] in ['+', '-'] then begin // CAPAB IDENTIFY-MSG is on, use it
+        if Length(FMsg > 0) and (FMsg[1] in ['+', '-']) then begin // CAPAB IDENTIFY-MSG is on, use it
           if FMsg[1] = '+' then
             FIsIdentified := True;
           Delete(FMsg, 1, 1);
