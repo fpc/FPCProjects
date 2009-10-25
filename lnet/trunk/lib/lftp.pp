@@ -766,7 +766,7 @@ begin
                      end;
                    else
                      begin
-                       Eventize(FStatus.First.Status, True);
+                       Eventize(FStatus.First.Status, False);
                      end;
                  end;
 
