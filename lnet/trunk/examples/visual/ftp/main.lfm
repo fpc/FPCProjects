@@ -15,7 +15,7 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  LCLVersion = '0.9.27'
+  LCLVersion = '0.9.29'
   object MemoText: TMemo
     Left = 0
     Height = 98
@@ -180,7 +180,8 @@ object MainForm: TMainForm
     TabOrder = 5
   end
   object MainMenu: TMainMenu
-    top = 335
+    left = 384
+    top = 368
     object MenuItemFile: TMenuItem
       Caption = '&File'
       object MenuSiteManager: TMenuItem
@@ -208,7 +209,8 @@ object MainForm: TMainForm
     end
   end
   object PopupRight: TPopupMenu
-    top = 272
+    left = 568
+    top = 368
     object PupupGet: TMenuItem
       Caption = 'Get'
       OnClick = rmtGridDblClick
@@ -236,10 +238,12 @@ object MainForm: TMainForm
     OnFailure = FTPFailure
     PipeLine = False
     Timeout = 0
-    top = 300
+    left = 200
+    top = 368
   end
   object PopupLeft: TPopupMenu
-    top = 240
+    left = 464
+    top = 368
     object PopupLInfo: TMenuItem
       Caption = 'Info'
       OnClick = LInfoPopupClick
@@ -254,7 +258,8 @@ object MainForm: TMainForm
     end
   end
   object ActionList1: TActionList
-    top = 370
+    left = 288
+    top = 368
     object accSiteManager: TAction
       Caption = 'Site Manager'
       OnExecute = accSiteManagerExecute

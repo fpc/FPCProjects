@@ -1,7 +1,7 @@
 object frmSites: TfrmSites
-  Left = 115
+  Left = 331
   Height = 321
-  Top = 201
+  Top = 226
   Width = 553
   ActiveControl = txtSite
   Caption = 'Registered Sites'
@@ -9,7 +9,7 @@ object frmSites: TfrmSites
   ClientWidth = 553
   OnCloseQuery = FormCloseQuery
   OnShow = FormShow
-  LCLVersion = '0.9.27'
+  LCLVersion = '0.9.29'
   object Label1: TLabel
     Left = 8
     Height = 18
@@ -195,6 +195,7 @@ object frmSites: TfrmSites
     ButtonWidth = 23
     NumGlyphs = 0
     Anchors = [akTop, akLeft, akRight]
+    MaxLength = 0
     TabOrder = 11
     OnChange = txtSiteChange
   end

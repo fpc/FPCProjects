@@ -423,7 +423,7 @@ end;
 
 procedure TMainForm.FTPFailure(aSocket: TLSocket; const aStatus: TLFTPStatus);
 begin
-
+    // TODO: check status of other commands here properly!
 end;
 
 procedure TMainForm.FTPSuccess(aSocket: TLSocket; const aStatus: TLFTPStatus);
