@@ -12,17 +12,17 @@ object frmSites: TfrmSites
   LCLVersion = '0.9.29'
   object Label1: TLabel
     Left = 8
-    Height = 18
+    Height = 16
     Top = 8
-    Width = 37
+    Width = 34
     Caption = 'Sites:'
     ParentColor = False
   end
   object Label2: TLabel
     Left = 172
-    Height = 18
+    Height = 16
     Top = 208
-    Width = 67
+    Width = 62
     Caption = 'Local Path'
     ParentColor = False
   end
@@ -40,16 +40,16 @@ object frmSites: TfrmSites
   end
   object txtHost: TLabeledEdit
     Left = 172
-    Height = 27
+    Height = 25
     Top = 72
     Width = 241
     Anchors = [akTop, akLeft, akRight]
     EditLabel.AnchorSideLeft.Control = txtHost
     EditLabel.AnchorSideBottom.Control = txtHost
     EditLabel.Left = 172
-    EditLabel.Height = 18
-    EditLabel.Top = 51
-    EditLabel.Width = 31
+    EditLabel.Height = 16
+    EditLabel.Top = 53
+    EditLabel.Width = 28
     EditLabel.Caption = 'Host'
     EditLabel.ParentColor = False
     TabOrder = 2
@@ -57,16 +57,16 @@ object frmSites: TfrmSites
   end
   object txtPath: TLabeledEdit
     Left = 172
-    Height = 27
+    Height = 25
     Top = 120
     Width = 369
     Anchors = [akTop, akLeft, akRight]
     EditLabel.AnchorSideLeft.Control = txtPath
     EditLabel.AnchorSideBottom.Control = txtPath
     EditLabel.Left = 172
-    EditLabel.Height = 18
-    EditLabel.Top = 99
-    EditLabel.Width = 29
+    EditLabel.Height = 16
+    EditLabel.Top = 101
+    EditLabel.Width = 27
     EditLabel.Caption = 'Path'
     EditLabel.ParentColor = False
     TabOrder = 4
@@ -74,16 +74,16 @@ object frmSites: TfrmSites
   end
   object txtUser: TLabeledEdit
     Left = 172
-    Height = 27
+    Height = 25
     Top = 169
     Width = 185
     Anchors = [akTop, akLeft, akRight]
     EditLabel.AnchorSideLeft.Control = txtUser
     EditLabel.AnchorSideBottom.Control = txtUser
     EditLabel.Left = 172
-    EditLabel.Height = 18
-    EditLabel.Top = 148
-    EditLabel.Width = 31
+    EditLabel.Height = 16
+    EditLabel.Top = 150
+    EditLabel.Width = 28
     EditLabel.Caption = 'User'
     EditLabel.ParentColor = False
     TabOrder = 5
@@ -91,7 +91,7 @@ object frmSites: TfrmSites
   end
   object txtPass: TLabeledEdit
     Left = 373
-    Height = 27
+    Height = 25
     Top = 169
     Width = 168
     Anchors = [akTop, akRight]
@@ -99,9 +99,9 @@ object frmSites: TfrmSites
     EditLabel.AnchorSideLeft.Control = txtPass
     EditLabel.AnchorSideBottom.Control = txtPass
     EditLabel.Left = 373
-    EditLabel.Height = 18
-    EditLabel.Top = 148
-    EditLabel.Width = 30
+    EditLabel.Height = 16
+    EditLabel.Top = 150
+    EditLabel.Width = 26
     EditLabel.Caption = 'Pass'
     EditLabel.ParentColor = False
     PasswordChar = '+'
@@ -110,16 +110,16 @@ object frmSites: TfrmSites
   end
   object txtSite: TLabeledEdit
     Left = 172
-    Height = 27
+    Height = 25
     Top = 24
     Width = 369
     Anchors = [akTop, akLeft, akRight]
     EditLabel.AnchorSideLeft.Control = txtSite
     EditLabel.AnchorSideBottom.Control = txtSite
     EditLabel.Left = 172
-    EditLabel.Height = 18
-    EditLabel.Top = 3
-    EditLabel.Width = 26
+    EditLabel.Height = 16
+    EditLabel.Top = 5
+    EditLabel.Width = 24
     EditLabel.Caption = 'Site'
     EditLabel.ParentColor = False
     TabOrder = 1
@@ -171,16 +171,16 @@ object frmSites: TfrmSites
   end
   object txtPort: TLabeledEdit
     Left = 421
-    Height = 27
+    Height = 25
     Top = 72
     Width = 120
     Anchors = [akTop, akRight]
     EditLabel.AnchorSideLeft.Control = txtPort
     EditLabel.AnchorSideBottom.Control = txtPort
     EditLabel.Left = 421
-    EditLabel.Height = 18
-    EditLabel.Top = 51
-    EditLabel.Width = 27
+    EditLabel.Height = 16
+    EditLabel.Top = 53
+    EditLabel.Width = 25
     EditLabel.Caption = 'Port'
     EditLabel.ParentColor = False
     TabOrder = 3
@@ -188,7 +188,7 @@ object frmSites: TfrmSites
   end
   object txtLDir: TDirectoryEdit
     Left = 172
-    Height = 27
+    Height = 25
     Top = 224
     Width = 345
     ShowHidden = False

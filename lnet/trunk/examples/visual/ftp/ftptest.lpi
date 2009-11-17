@@ -88,10 +88,8 @@
     </CodeGeneration>
     <Linking>
       <Debugging>
-        <UseLineInfoUnit Value="False"/>
-        <StripSymbols Value="True"/>
+        <GenerateDebugInfo Value="True"/>
       </Debugging>
-      <LinkSmart Value="True"/>
     </Linking>
     <Other>
       <CompilerPath Value="$(CompPath)"/>

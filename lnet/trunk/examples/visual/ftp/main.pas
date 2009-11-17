@@ -116,7 +116,6 @@ type
     FSpecialIcons: array of TTaggedPicture;
     CreateFilePath: string;
     FDirListing: string;
-    FOperation: TFTPOperation;
     procedure DoList(const FileName: string);
     procedure UpdateSite;
     function CurrentName: string;
@@ -239,32 +238,10 @@ end;
 procedure TMainForm.FTPControl(aSocket: TLSocket);
 var
   s: string;
-  i: integer;
 begin
   if FTP.GetMessage(s) > 0 then begin
-
     MemoText.Lines.Append(s);
     MemoText.SelStart := Length(MemoText.Text);
-
-    if pos('226',s)=1 then begin
-      if FOperation=foListing then begin
-        FOperation:=foPWD;
-        FTP.PresentWorkingDirectory;
-        exit;
-      end
-    end else
-    if (pos('257',s)=1) and (FOperation=foPWD) then begin
-      for i:=Length(s) downto 1 do
-        if s[i]='"' then begin
-          Site.Path := copy(s, 6, i-6);
-          SBar.Panels[3].Text:=site.path;
-          TFrmSites.SaveOption('site'+IntToStr(Site.Number),'path',site.path);
-          break;
-        end;
-      FOperation := foNone;
-      exit;
-    end;
-
   end;
 end;
 
@@ -427,9 +404,18 @@ begin
 end;
 
 procedure TMainForm.FTPSuccess(aSocket: TLSocket; const aStatus: TLFTPStatus);
+var
+  i: Integer;
+  s: string = '';
 begin
   case aStatus of
     fsFeat : FormFeatures.ListBoxFeatures.Items.Assign(FTP.FeatureList);
+    fsList : FTP.PresentWorkingDirectory;
+    fsPWD  : begin
+               Site.Path := FTP.PresentWorkingDirectoryString;
+               SBar.Panels[3].Text := site.path;
+               TFrmSites.SaveOption('site' + IntToStr(Site.Number), 'path', site.path);
+             end;
     // TODO: check status of other commands here properly!
   end;
 end;
@@ -696,7 +682,6 @@ end;
 
 procedure TMainForm.DoList(const FileName: string);
 begin
-  FOperation := foListing;
   FDirListing := '';
   FTP.List(FileName);
 end;
