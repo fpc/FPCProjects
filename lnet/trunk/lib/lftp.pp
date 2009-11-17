@@ -584,11 +584,12 @@ procedure TLFTPClient.EvaluateAnswer(const Ans: string);
 
   function GetNum: Integer;
   begin
-    try
+    Result := -1;
+    if (Length(Ans) >= 3)
+    and (Ans[1] in ['0'..'9'])
+    and (Ans[2] in ['0'..'9'])
+    and (Ans[3] in ['0'..'9']) then
       Result := StrToInt(Copy(Ans, 1, 3));
-    except
-      Result := -1;
-    end;
   end;
 
   procedure ParsePortIP(s: string);
@@ -782,7 +783,33 @@ begin
                        Eventize(FStatus.First.Status, False);
                      end;
                  end;
-                 
+
+        fsPWD  : case x of
+                   257:
+                     begin
+                       FStatusFlags[FStatus.First.Status] := True;
+                       Eventize(FStatus.First.Status, True);
+                     end;
+                   else
+                     begin
+                       FStatusFlags[FStatus.First.Status] := False;
+                       Eventize(FStatus.First.Status, False);
+                     end;
+                 end;
+
+        fsHelp  : case x of
+                   211, 214:
+                     begin
+                       FStatusFlags[FStatus.First.Status] := True;
+                       Eventize(FStatus.First.Status, True);
+                     end;
+                   else
+                     begin
+                       FStatusFlags[FStatus.First.Status] := False;
+                       Eventize(FStatus.First.Status, False);
+                     end;
+                 end;
+
         fsList : case x of
                    125, 150: begin { do nothing } end;
                    226:
@@ -1159,14 +1186,18 @@ end;
 
 procedure TLFTPClient.PresentWorkingDirectory;
 begin
-  if CanContinue(fsPWD, '', '') then
+  if CanContinue(fsPWD, '', '') then begin
+    FStatus.Insert(MakeStatusRec(fsPWD, '', ''));
     FControl.SendMessage('PWD' + FLE);
+  end;
 end;
 
 procedure TLFTPClient.Help(const Arg: string);
 begin
-  if CanContinue(fsHelp, Arg, '') then
+  if CanContinue(fsHelp, Arg, '') then begin
+    FStatus.Insert(MakeStatusRec(fsHelp, Arg, ''));
     FControl.SendMessage('HELP ' + Arg + FLE);
+  end;
 end;
 
 procedure TLFTPClient.Disconnect(const Forced: Boolean = True);
