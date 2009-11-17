@@ -119,6 +119,7 @@ type
     FExpectedBinary: Boolean;
     FPipeLine: Boolean;
     FPassword: string;
+    FPWD: string;
     FStatusFlags: array[TLFTPStatus] of Boolean;
 
     FOnError: TLSocketErrorEvent;
@@ -151,6 +152,8 @@ type
 
     function GetEcho: Boolean;
     procedure SetEcho(const Value: Boolean);
+
+    procedure ParsePWD(const s: string);
 
     function GetConnected: Boolean; override;
 
@@ -221,6 +224,7 @@ type
     property StartPort: Word read FStartPort write FStartPort default DEFAULT_FTP_PORT;
     property Transfer: Boolean read GetTransfer;
     property CurrentStatus: TLFTPStatus read GetCurrentStatus;
+    property PresentWorkingDirectoryString: string read FPWD;
 
     property OnError: TLSocketErrorEvent read FOnError write FOnError;
     property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
@@ -569,6 +573,22 @@ begin
     FControl.UnSetOption(TS_ECHO);
 end;
 
+procedure TLFTPClient.ParsePWD(const s: string);
+var
+  i: Integer;
+  IsIn: Boolean = False;
+begin
+  FPWD := '';
+  for i := 1 to Length(s) do begin
+    if s[i] = '"' then begin
+      IsIn := not IsIn;
+      Continue;
+    end;
+    if IsIn then
+      FPWD := FPWD + s[i];
+  end;
+end;
+
 procedure TLFTPClient.SetBinary(const Value: Boolean);
 const
   TypeBool: array[Boolean] of string = ('A', 'I');
@@ -787,6 +807,7 @@ begin
         fsPWD  : case x of
                    257:
                      begin
+                       ParsePWD(Ans);
                        FStatusFlags[FStatus.First.Status] := True;
                        Eventize(FStatus.First.Status, True);
                      end;
