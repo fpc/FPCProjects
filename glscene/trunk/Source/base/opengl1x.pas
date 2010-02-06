@@ -9,29 +9,10 @@
    This unit is based on OpenGL12.pas orginally written by Mike Lischke,
    please refer to OpenGL12.pas header.<p>
 
-      $Log: opengl1x.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:42  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/10/18 14:33:31  z0m3ie
-      removed wglSwapMultipleBuffers from import whitch makes some trouble with older  opengl drivers
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
       <li>23/03/08 - DanB - Added more Vendor/EXT extensions
-      <li>17/03/08 - mrqzzz - uncommented some constants "GL_NORMAL_MAP_EXT,..." to keep compatibility with
-                              dws2OpenGL1x. 
+      <li>17/03/08 - mrqzzz - uncommented some constants "GL_NORMAL_MAP_EXT,..."
+                              to keep compatibility with dws2OpenGL1x.
       <li>16/03/08 - DanB - Major rewrite of unit, including:
                             OpenGL 1.3, 1.4, 1.5, 2.0, 2.1 support.
                             removed TRCOptions (not used).
@@ -82,6 +63,10 @@ interface
 
 {$i GLScene.inc}
 
+ // DaStr: MULTITHREADOPENGL is defined in GLScene.inc, but you can override it
+ // manually here, though I would not reccomend it. This is because other units
+ // may depend on this option too. So if you need this option, please use the
+ // GLS_MULTITHREAD define in GLScene.inc.
 {.$define MULTITHREADOPENGL}
 
 uses
@@ -122,7 +107,7 @@ type
    );
 
    GLenum      = UINT;
-   TGLenum     = UINT; 
+   TGLenum     = UINT;
    PGLenum     = ^TGLenum;
 
    GLboolean   = BYTEBOOL;
@@ -149,15 +134,30 @@ type
    TGLsizei    = Integer;
    PGLsizei    = ^TGLsizei;
 
-   {$IFNDEF GLS_DELPHI_4_DOWN}
+   GLint64 = Int64;
+   TGLint64 = Int64;
+   PGLint64 = ^TGLInt64;
+
    GLint64EXT  = Int64;
    TGLint64EXT = Int64;
    PGLint64EXT = ^TGLint64EXT;
-   {$ENDIF}
 
-   {$IFNDEF GLS_DELPHI_6_DOWN}
+   {$IFNDEF GLS_DELPHI_7_DOWN}
+   GLuint64 = UInt64;
+   TGLuint64= UInt64;
+   PGLuint64= ^TGLuint64;
+
    GLuint64EXT = UInt64;
    TGLuint64EXT= UInt64;
+   PGLuint64EXT= ^TGLuint64EXT;
+   {$ELSE}
+   // fake UInt64 by using Int64 for Delphi5 + 6
+   GLuint64 = Int64;
+   TGLuint64= Int64;
+   PGLuint64= ^TGLuint64;
+
+   GLuint64EXT = Int64;
+   TGLuint64EXT= Int64;
    PGLuint64EXT= ^TGLuint64EXT;
    {$ENDIF}
 
@@ -206,6 +206,32 @@ type
 
    PGLPointer = ^Pointer;
 
+   // the size of these depend on platform (32bit or 64bit)
+   {$IFDEF FPC}
+   GLintptr = PtrInt;
+   TGLintptr = PtrInt;
+   GLsizeiptr = SizeInt;
+   TGLsizeiptr = SizeInt;
+   GLsync = PtrInt;
+   TGLsync = PtrInt;
+   {$ELSE}
+   {$IFDEF GLS_DELPHI_2009_UP}
+   GLintptr = NativeInt;
+   TGLintptr = NativeInt;
+   GLsizeiptr = NativeInt;
+   TGLsizeiptr = NativeInt;
+   GLsync = NativeInt;
+   TGLsync = NativeInt;
+   {$ELSE}
+   GLintptr = Integer;
+   TGLintptr = Integer;
+   GLsizeiptr = Integer;
+   TGLsizeiptr = Integer;
+   GLsync = Integer;
+   TGLsync = Integer;
+   {$ENDIF}
+   {$ENDIF}
+
    // Windows types
    {$IFDEF MSWINDOWS}
    PWGLSwap = ^TWGLSwap;
@@ -223,17 +249,11 @@ type
    {$IFNDEF darwin}
    {$IFDEF unix}
    GLXContext    = Pointer;
-   {$IFDEF fpc}
    GLXPixmap     = TXID;
    GLXDrawable   = TXID;
-   {$ELSE}
-   GLXPixmap     = XID;
-   GLXDrawable   = XID;
-   {$ENDIF}
 
    // GLX 1.3 and later
    GLXFBConfig   = Pointer;
-   {$IFDEF fpc}
    GLXFBConfigID = TXID;
    GLXContextID  = TXID;
    GLXWindow     = TXID;
@@ -242,12 +262,6 @@ type
    Font          = TFont;
    Window        = TWindow;
    Colormap      = TColormap;
-   {$ELSE}
-   GLXFBConfigID = XID;
-   GLXContextID  = XID;
-   GLXWindow     = XID;
-   GLXPbuffer    = XID;
-   {$ENDIF}
    {$ENDIF}
    {$ENDIF}
 
@@ -4381,25 +4395,25 @@ var
    glBindAttribLocation: procedure(_program: TGLuint; index: TGLuint; const name: PGLchar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF unix} cdecl; {$ENDIF}
    glCompileShader: procedure(shader: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glCreateProgram: function(): TGLuint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glCreateShader: function(_type: TGLenum): TGLuint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} 
+   glCreateShader: function(_type: TGLenum): TGLuint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glDeleteProgram: procedure(_program: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glDeleteShader: procedure(shader: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glDetachShader: procedure(_program: TGLuint; shader: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glDisableVertexAttribArray: procedure(index: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glEnableVertexAttribArray: procedure(index: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetActiveAttrib: procedure(_program: TGLuint; index: TGLuint; bufSize: TGLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PGLchar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetActiveUniform: procedure(_program: TGLuint; index: TGLuint; bufSize: TGLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PGLchar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveAttrib: procedure(_program: TGLuint; index: TGLuint; bufSize: TGLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveUniform: procedure(_program: TGLuint; index: TGLuint; bufSize: TGLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetAttachedShaders: procedure(_program: TGLuint; maxCount: TGLsizei; count: PGLSizei; obj: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetAttribLocation: function(_program: TGLuint; const name: PGLchar): TGLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetAttribLocation: function(_program: TGLuint; const name: PGLChar): TGLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetProgramiv: procedure(_program: TGLuint; pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetProgramInfoLog: procedure(_program: TGLuint; bufSize: TGLsizei; length: PGLsizei; infoLog: PGLchar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetProgramInfoLog: procedure(_program: TGLuint; bufSize: TGLsizei; length: PGLsizei; infoLog: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetShaderiv: procedure(shader: TGLuint; pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetShaderInfoLog: procedure(shader: TGLuint; bufSize: TGLsizei; length: PGLsizei; infoLog: PGLchar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetShaderSource: procedure(shader: TGLuint; bufSize: TGLsizei; length: PGLsizei; source: PGLchar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetUniformLocation: function(_program: TGLuint; const name: PGLchar): TGLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetShaderInfoLog: procedure(shader: TGLuint; bufSize: TGLsizei; length: PGLsizei; infoLog: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetShaderSource: procedure(shader: TGLuint; bufSize: TGLsizei; length: PGLsizei; source: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetUniformLocation: function(_program: TGLuint; const name: PGLChar): TGLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformfv: procedure(_program: TGLuint; location: TGLint; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformiv: procedure(_program: TGLuint; location: TGLint; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetVertexAttribdv: procedure(index: TGLuint; pname: TGLenum; params: PGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetVertexAttribdv: procedure(index:TGLuint; pname: TGLenum; params: PGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetVertexAttribfv: procedure(index: TGLuint; pname: TGLenum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetVertexAttribiv: procedure(index: TGLuint; pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetVertexAttribPointerv: procedure(index: TGLuint; pname: TGLenum; _pointer: PGLvoid); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -4866,8 +4880,8 @@ var
    glGetColorTableParameterfvEXT: procedure(target, pname: TGLenum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetColorTableParameterivEXT: procedure(target, pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    (* crossbuilder these are probably leftovers from a typo: *)
-   //glGetColorTablePameterfvEXT: procedure(target, pname: TGLEnum; params: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   //glGetColorTablePameterivEXT: procedure(target, pname: TGLEnum; params: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+//   glGetColorTableParameterfvEXT: procedure(target, pname: TGLEnum; params: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+//   glGetColorTableParameterivEXT: procedure(target, pname: TGLEnum; params: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // GL_EXT_index_material (EXT #94)
    glIndexMaterialEXT: procedure(face: TGLEnum; mode: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -5084,12 +5098,8 @@ var
             internalformat: TGLenum; width: TGLsizei; height: TGLsizei);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // GL_EXT_timer_query (#319)
-   {$IFNDEF GLS_DELPHI_4_DOWN}
    glGetQueryObjecti64vEXT: procedure(id: TGLuint; pname: TGLenum; params: PGLint64EXT);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   {$ENDIF}
-   {$IFNDEF GLS_DELPHI_6_DOWN}
    glGetQueryObjectui64vEXT: procedure(id: TGLuint; pname: TGLenum; params: PGLuint64EXT);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   {$ENDIF}
 
    // GL_EXT_gpu_program_parameters (EXT #320)
    glProgramEnvParameters4fvEXT:   procedure(target:TGLenum; index:TGLuint; count:TGLsizei;
@@ -5836,12 +5846,12 @@ begin
    glGetBufferPointervARB := GLGetProcAddress('glGetBufferPointervARB');
 
    // GL_ARB_occlusion_query (#29)
-   glGenQueriesARB := GLGetProcAddress('glGenQueriesARB');//procedure(n: TGLsizei; ids: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glDeleteQueriesARB := GLGetProcAddress('glDeleteQueriesARB');// procedure(n: TGLsizei; const ids: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glIsQueryARB := GLGetProcAddress('glIsQueryARB'); // function(id: TGLuint): TGLboolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glBeginQueryARB := GLGetProcAddress('glBeginQueryARB'); // procedure(id: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glEndQueryARB := GLGetProcAddress('glEndQueryARB');// procedure; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetQueryivARB := GLGetProcAddress('glGetQueryivARB');// procedure(id: TGLuint; pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGenQueriesARB := GLGetProcAddress('glGenQueriesARB');
+   glDeleteQueriesARB := GLGetProcAddress('glDeleteQueriesARB');
+   glIsQueryARB := GLGetProcAddress('glIsQueryARB');
+   glBeginQueryARB := GLGetProcAddress('glBeginQueryARB');
+   glEndQueryARB := GLGetProcAddress('glEndQueryARB');
+   glGetQueryivARB := GLGetProcAddress('glGetQueryivARB');
    glGetQueryObjectivARB := GLGetProcAddress('glGetQueryObjectivARB');
    glGetQueryObjectuivARB := GLGetProcAddress('glGetQueryObjectuivARB');
 
@@ -5955,9 +5965,6 @@ begin
    glGetColorTableEXT := GLGetProcAddress('glGetColorTableEXT');
    glGetColorTableParameterivEXT := GLGetProcAddress('glGetColorTableParameterivEXT');
    glGetColorTableParameterfvEXT := GLGetProcAddress('glGetColorTableParameterfvEXT');
-   //crossbuilder: typo, please remove:
-   //glGetColorTablePameterivEXT := GLGetProcAddress('glGetColorTablePameterivEXT');
-   //glGetColorTablePameterfvEXT := GLGetProcAddress('glGetColorTablePameterfvEXT');
 
    // GL_EXT_index_material (#94)
    glIndexMaterialEXT := GLGetProcAddress('glIndexMaterialEXT');
@@ -6167,12 +6174,8 @@ begin
    glRenderbufferStorageMultisampleEXT := GLGetProcAddress('glRenderbufferStorageMultisampleEXT');
 
    // GL_EXT_timer_query (#319)
-   {$IFNDEF GLS_DELPHI_4_DOWN}
    glGetQueryObjecti64vEXT := GLGetProcAddress('glGetQueryObjecti64vEXT');
-   {$ENDIF}
-   {$IFNDEF GLS_DELPHI_6_DOWN}
    glGetQueryObjectui64vEXT := GLGetProcAddress('glGetQueryObjectui64vEXT');
-   {$ENDIF}
 
    // GL_EXT_gpu_program_parameters (#320)
    glProgramEnvParameters4fvEXT := GLGetProcAddress('glProgramEnvParameters4fvEXT');
@@ -6339,10 +6342,10 @@ begin
       (Buffer[Separator + 1] in ['0'..'9']) then
     begin
       // OK, it's a valid version string. Now remove unnecessary parts.
-      Dec(Separator); 
+      Dec(Separator);
       // Find last non-numeric character before version number.
       while (Separator > 0) and (Buffer[Separator] in ['0'..'9']) do
-        Dec(Separator); 
+        Dec(Separator);
       // Delete leading characters which do not belong to the version string.
       Delete(Buffer, 1, Separator);
       Separator := Pos('.', Buffer) + 1;
@@ -6565,9 +6568,6 @@ begin
 
    GL_WIN_swap_hint := CheckExtension('GL_WIN_swap_hint');
 
-   // this call is superfluous, isn't it ?
-   WGL_ARB_extensions_string := CheckExtension('WGL_ARB_extensions_string');
-
    // check supported GLU extensions
    Buffer := gluGetString(GLU_EXTENSIONS);
    GLU_EXT_nurbs_tessellator := CheckExtension('GLU_EXT_nurbs_tessellator');
@@ -6757,9 +6757,6 @@ end;
 //
 function IsMesaGL : Boolean;
 begin
-  //crossbuilder: our style, would fail on 64 bit:
-  //Result:=(GetProcAddress(Cardinal(GLHandle), 'glResizeBuffersMESA')<>nil);
-  //  glscene original style:
   Result:=GLGetProcAddress('glResizeBuffersMESA')<>nil;
 end;
 
