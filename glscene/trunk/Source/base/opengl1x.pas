@@ -105,6 +105,8 @@ type
       opGDI,
       opStereo
    );
+   PGLChar     = PAnsiChar;
+   TGLString   = AnsiString;
 
    GLenum      = UINT;
    TGLenum     = UINT;
@@ -192,13 +194,7 @@ type
    GLhandleARB = Cardinal;
    PGLhandleARB = ^GLhandleARB;
 
-   GLcharARB = Char;
-   PGLcharARB = ^GLcharARB;
-   
-   GLchar = Char;
-   PGLchar = Pchar;
-
-   PGLPCharArray = ^PChar;
+   PGLPCharArray = ^PGLChar;
 
    PGLvoid = Pointer;
 

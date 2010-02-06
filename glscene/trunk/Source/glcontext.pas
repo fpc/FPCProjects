@@ -729,7 +729,7 @@ begin
          // Egg : ignore exceptions here, will perhaps avoid problem expressed before
 		end;
       if not vIgnoreOpenGLErrors then
-   		raise EOpenGLError.Create(gluErrorString(GLError));
+   		raise EOpenGLError.Create(String(gluErrorString(GLError)));
 	end;
 end;
 
@@ -1467,14 +1467,16 @@ end;
 function TGLSLHandle.InfoLog : String;
 var
    maxLength : Integer;
+   log: TGLString;
 begin
    maxLength:=0;
    glGetObjectParameterivARB(FHandle, GL_OBJECT_INFO_LOG_LENGTH_ARB, @maxLength);
-   SetLength(Result, maxLength);
+   SetLength(log, maxLength);
    if maxLength>0 then begin
-      glGetInfoLogARB(FHandle, maxLength, @maxLength, @Result[1]);
-      SetLength(Result, maxLength);
+      glGetInfoLogARB(FHandle, maxLength, @maxLength, @log[1]);
+      SetLength(log, maxLength);
    end;
+   Result:=String(log);
 end;
 
 // ------------------
@@ -1492,9 +1494,9 @@ end;
 //
 procedure TGLShaderHandle.ShaderSource(const source : String);
 var
-   p : PChar;
+   p : PGLChar;
 begin
-   p:=PChar(source);
+   p:=PGLChar(TGLString(source));
    glShaderSourceARB(FHandle, 1, @p, nil);
 end;
 
@@ -1590,7 +1592,7 @@ end;
 //
 procedure TGLProgramHandle.BindAttribLocation(index : Integer; const name : String);
 begin
-   glBindAttribLocationARB(FHandle, index, PChar(name));
+   glBindAttribLocationARB(FHandle, index, PGLChar(TGLString(name)));
 end;
 
 // LinkProgram
@@ -1621,7 +1623,7 @@ end;
 //
 function TGLProgramHandle.GetAttribLocation(const name : String) : Integer;
 begin
-   Result:=glGetAttribLocationARB(Handle, PChar(name));
+   Result:=glGetAttribLocationARB(Handle, PGLChar(TGLString(name)));
    Assert(Result>=0, 'Unknown attrib "'+name+'" or program not in use');
 end;
 
@@ -1629,7 +1631,7 @@ end;
 //
 function TGLProgramHandle.GetUniformLocation(const name : String) : Integer;
 begin
-   Result:=glGetUniformLocationARB(Handle, PChar(name));
+   Result:=glGetUniformLocationARB(Handle, PGLChar(TGLString(name)));
    Assert(Result>=0, 'Unknown uniform "'+name+'" or program not in use');
 end;
 
