@@ -12,7 +12,7 @@
      <li>30/03/07 - DaStr - Added $I GLScene.inc
      <li>28/03/07 - DaStr - Renamed parameters in some methods
                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
-     <li>13/01/07 - DaStr - Added changes proposed by Tim "Sivael" Kapuœciñski [sivael@gensys.pl]
+     <li>13/01/07 - DaStr - Added changes proposed by Tim "Sivael" Kapuï¿½ciï¿½ski [sivael@gensys.pl]
                          Modified the code to create much more realistic trees -
                           added third branch for every node and modified constants
                           to make the tree look more "alive".
@@ -305,8 +305,6 @@ type
          property BranchMaterialName : TGLLibMaterialName read FBranchMaterialName write SetBranchMaterialName;
    end;
 
-procedure Register;
-
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -316,11 +314,6 @@ implementation
 // -----------------------------------------------------------------------------
 
 uses XOpenGL, GLState;
-
-procedure Register;
-begin
-   RegisterClasses([TGLTree]);
-end;
 
 // -----------------------------------------------------------------------------
 // TGLTreeLeaves
@@ -1415,5 +1408,9 @@ begin
       FAutoRebuild:=Value;
    end;
 end;
+
+initialization
+
+   RegisterClasses([TGLTree]);
 
 end.

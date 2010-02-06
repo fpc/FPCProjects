@@ -122,14 +122,7 @@ type
 
   end;
 
-procedure Register;
-
 implementation
-
-procedure Register;
-begin
-  RegisterClasses([TGLScriptLibrary, TGLScripts, TGLScriptBase]);
-end;
 
 // ---------------
 // --------------- TGLScriptBase ---------------
@@ -317,5 +310,9 @@ begin
       Scripts[i].Notification(AComponent, Operation);
   inherited;
 end;
+
+initialization
+
+  RegisterClasses([TGLScriptLibrary, TGLScripts, TGLScriptBase]);
 
 end.

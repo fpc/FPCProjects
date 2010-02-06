@@ -27,7 +27,7 @@
       making this stuff again Linux compatible please dont break multi platform support again
 
       Revision 1.14  2005/10/11 20:31:42  z0m3ie
-      - removed ode and sdl stuff becouse dll´s arend loaded dynamically
+      - removed ode and sdl stuff becouse dllï¿½s arend loaded dynamically
         maybe we should make seperate packages or load dlls dynamic
 
       Revision 1.13  2005/09/17 22:40:44  k00m
@@ -259,7 +259,7 @@ uses
    GLColor, GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics,
    GLDynamicTexture,
    {$ifdef windows}
-     gllclfullscreenviewer, GLSpaceText,
+     gllclfullscreenviewer, GLSpaceText, Joystick, ScreenSaver,
      //GLWideBitmapFont,  doesn't even compile in win due to missing TTextRecA
      //GLAVIRecorder, doesn't even compile in win due to missing commDlg
    {$endif}
@@ -1536,8 +1536,10 @@ begin
                        TGLCadencer,
                        TGLGuiLayout,
                        TGLBitmapFont, TGLWindowsBitmapFont, TGLStoredBitmapFont,
-                       TGLScriptLibrary
+                       TGLScriptLibrary,
+                       TGLSoundLibrary
                        {$ifdef WINDOWS}
+                       ,TGLSMWaveOut
                        ,TGLFullScreenViewer
                        //,TGLWideBitmapFont
                        {$endif}
@@ -1562,6 +1564,9 @@ begin
                        TGLSmoothNavigator, TGLSmoothUserInterface,
                        TGLTimeEventsMGR, TApplicationFileIO, TGLVfsPAK,
                        TGLSimpleNavigation, TGLGizmo
+                       {$IFDEF MSWINDOWS}
+                       , TJoystick, TScreenSaver
+                       {$ENDIF}
                       ]);
 
    RegisterComponents('GLScene Terrain',

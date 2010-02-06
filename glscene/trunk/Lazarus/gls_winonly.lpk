@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <CONFIG>
-  <Package Version="2">
+  <Package Version="3">
     <Name Value="gls_winonly"/>
     <CompilerOptions>
-      <Version Value="5"/>
+      <Version Value="8"/>
       <SearchPaths>
         <IncludeFiles Value="../Source/"/>
         <OtherUnitFiles Value="../Source/;../Source/platform/;../Source/soundapis/;../Source/base/"/>
@@ -11,12 +11,9 @@
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
-          <DelphiCompat Value="True"/>
+          <SyntaxMode Value="Delphi"/>
         </SyntaxOptions>
       </Parsing>
-      <CodeGeneration>
-        <Generate Value="Faster"/>
-      </CodeGeneration>
       <Other>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
@@ -40,7 +37,6 @@
       </Item3>
       <Item4>
         <Filename Value="../Source/base/screensaver.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="ScreenSaver"/>
       </Item4>
     </Files>

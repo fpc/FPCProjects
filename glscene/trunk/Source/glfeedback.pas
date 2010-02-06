@@ -91,8 +91,6 @@ type
       property Visible;
   end;
 
-procedure Register;
-
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -102,13 +100,6 @@ implementation
 // ----------------------------------------------------------------------
 
 uses OpenGL1x, MeshUtils;
-
-// Register
-//
-procedure Register;
-begin
-  RegisterClasses([TGLFeedback]);
-end;
 
 // ----------
 // ---------- TGLFeedback ----------
@@ -332,5 +323,9 @@ begin
     FBuffer.Count:=0;
   end;
 end;
+
+initialization
+
+  RegisterClasses([TGLFeedback]);
 
 end.

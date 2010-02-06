@@ -4,7 +4,7 @@
     <Name Value="glscenelazarus"/>
     <Author Value="Mike Lischke,Eric Grange"/>
     <CompilerOptions>
-      <Version Value="5"/>
+      <Version Value="8"/>
       <SearchPaths>
         <IncludeFiles Value="../Source/"/>
         <OtherUnitFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/;../Source/shaders/;../Source/physicsapis/;../Source/soundapis/;../Source/videoapis/;../Source/cgshaders/;../Source/glslshaders/"/>
@@ -12,7 +12,7 @@
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
-          <DelphiCompat Value="True"/>
+          <SyntaxMode Value="Delphi"/>
         </SyntaxOptions>
       </Parsing>
       <CodeGeneration>
@@ -298,7 +298,6 @@
       </Item65>
       <Item66>
         <Filename Value="../Source/glanimatedsprite.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLAnimatedSprite"/>
       </Item66>
@@ -372,7 +371,6 @@
       </Item83>
       <Item84>
         <Filename Value="../Source/glfeedback.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLFeedback"/>
       </Item84>
@@ -564,7 +562,6 @@
       </Item130>
       <Item131>
         <Filename Value="../Source/glsound.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="GLSound"/>
       </Item131>
       <Item132>
@@ -614,7 +611,6 @@
       </Item142>
       <Item143>
         <Filename Value="../Source/gltree.pas"/>
-        <HasRegisterProc Value="True"/>
         <AddToUsesPkgSection Value="False"/>
         <UnitName Value="GLTree"/>
       </Item143>

@@ -303,8 +303,6 @@ type
 
   end;
 
-procedure Register;
-
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -312,13 +310,6 @@ implementation
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-
-procedure Register;
-begin
-  RegisterClasses([TGLAnimatedSprite,
-                   TSpriteAnimFrame, TSpriteAnimFrameList,
-                   TSpriteAnimation, TSpriteAnimationList]);
-end;
 
 // ----------
 // ---------- TSpriteAnimFrame ----------
@@ -1145,6 +1136,10 @@ initialization
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+
+  RegisterClasses([TGLAnimatedSprite,
+                   TSpriteAnimFrame, TSpriteAnimFrameList,
+                   TSpriteAnimation, TSpriteAnimationList]);
 
   RegisterXCollectionItemClass(TSpriteAnimFrame);
   RegisterXCollectionItemClass(TSpriteAnimation);

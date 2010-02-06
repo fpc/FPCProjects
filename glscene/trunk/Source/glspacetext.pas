@@ -28,9 +28,9 @@
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>19/10/06 - LC - Added TGLSpaceText.Assign. Bugtracker ID=1576445 (thanks Zapology)
       <li>16/09/06 - NC - TGLVirtualHandle update (thx Lionel Reynaud)
-      <li>03/06/02 - EG - VirtualHandle notification fix (Sören Mühlbauer)
-      <li>07/03/02 - EG - GetFontBase fix (Sören Mühlbauer)
-      <li>30/01/02 - EG - Text Alignment (Sören Mühlbauer),
+      <li>03/06/02 - EG - VirtualHandle notification fix (Sï¿½ren Mï¿½hlbauer)
+      <li>07/03/02 - EG - GetFontBase fix (Sï¿½ren Mï¿½hlbauer)
+      <li>30/01/02 - EG - Text Alignment (Sï¿½ren Mï¿½hlbauer),
                           TFontManager now GLContext compliant (RenderToBitmap ok!) 
       <li>28/12/01 - EG - Event persistence change (GliGli / Dephi bug)
       <li>12/12/01 - EG - Creation (split from GLScene.pas)
@@ -450,7 +450,7 @@ begin
        end;
 
        glTranslatef(0,-i*(maxHeight+FAspectRatio),0);
-       glCallLists(Length(FLines.Strings[i]), GL_UNSIGNED_BYTE, PChar(FLines.Strings[i]));
+       glCallLists(Length(FLines.Strings[i]), GL_UNSIGNED_BYTE, PGLChar(TGLString(FLines.Strings[i])));
        glPopMatrix;
       end;
       

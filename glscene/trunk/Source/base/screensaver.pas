@@ -154,8 +154,6 @@ type
 
 	end;
 
-procedure Register;
-
 {: Invokes the standard Windows dialog to set the password.<p>
 	May be invoked from your Properties/Configuration dialog. }
 procedure SetScreenSaverPassword;
@@ -169,11 +167,6 @@ implementation
 // ---------------------------------------------------------------------
 
 uses SysUtils, Registry, Dialogs, Messages;
-
-procedure Register;
-begin
-	RegisterComponents('GLScene Utils', [TScreenSaver]);
-end;
 
 // GetSystemDirectory
 //
@@ -415,5 +408,9 @@ begin
             mouseTimer.Enabled:=False;
    lastMousePosition:=mousePos;
 end;
+
+initialization
+
+  RegisterClasses([TScreenSaver]);
 
 end.
