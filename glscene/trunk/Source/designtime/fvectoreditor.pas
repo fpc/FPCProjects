@@ -2,17 +2,8 @@
 
    Editor for a vector.<p>
 
-      $Log: fvectoreditor.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:30  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
    <b>Historique : </b><font size=-1><ul>
+      <li>05/10/08 - DanB - Removed Kylix support   
       <li>29/03/07 - DaStr - Renamed LINUX to KYLIX (BugTrackerID=1681585)
       <li>03/07/04 - LR - Make change for Linux
       <li>?/?/? -  - Creation
@@ -26,9 +17,8 @@ interface
 
 uses
   {$ifdef fpc}lresources,{$endif}
-  Forms, ComCtrls, StdCtrls, ToolWin, ExtCtrls, Buttons, Graphics, Controls, 
+  Forms, ComCtrls, StdCtrls, ToolWin, ExtCtrls, Buttons, Graphics, Controls,
   Classes;
-
 
 type
   TVectorEditorForm = class(TForm)
@@ -89,7 +79,6 @@ implementation
 
 uses
   SysUtils, VectorGeometry, GLUtils; 
-
 
 var
 	vVectorEditorForm : TVectorEditorForm;

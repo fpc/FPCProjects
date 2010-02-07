@@ -924,12 +924,9 @@ end;
 // Edit
 //
 procedure TGLTextureImageProperty.Edit;
-var
-	ownerTexture : TGLTexture;
 begin
-	ownerTexture:=TGLTextureImage(GetOrdValue).OwnerTexture;
-	if ownerTexture.Image.Edit then
-		{Designer.}Modified;
+ if EditGLTextureImage(TGLTextureImage(GetOrdValue)) then
+  {Designer.}Modified;
 end;
 
 //----------------- TGLImageClassProperty --------------------------------------

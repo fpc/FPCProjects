@@ -6,6 +6,10 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>05/10/08 - DaStr - Added GLSM format backward compatibility after
+                              MeshObject.LightMapTexCoords update
+                              (thanks Uwe Raabe) (Bugtracker ID = 2140994)
+      <li>03/10/08 - DanB -  Added Delphi 2009 (Unicode) support
       <li>22/06/08 - DaStr - TMeshObject.LightMapTexCoords converted to TAffineVectorList
                               (thanks Ast) (Bugtracker ID = 2000089)
       <li>07/06/08 - DaStr - Implemented TBaseMeshObject.Assign(), TMeshObject.Assign()
@@ -1899,7 +1903,7 @@ var
    vNextRenderGroupID : Integer = 1;
 
 const
-   cAAFHeader = 'AAF';
+   cAAFHeader: AnsiString = 'AAF';
 
 function InsideList: boolean;
 var
@@ -3555,7 +3559,7 @@ var
 begin
    inherited WriteToFiler(writer);
    with writer do begin
-      WriteInteger(2);        // Archive Version 2
+      WriteInteger(3);        // Archive Version 3
       FTexCoords.WriteToFiler(writer);
       FLightMapTexCoords.WriteToFiler(writer);
       FColors.WriteToFiler(writer);
@@ -3576,14 +3580,32 @@ end;
 procedure TMeshObject.ReadFromFiler(reader : TVirtualReader);
 var
    i, Count, archiveVersion : Integer;
+   lOldLightMapTexCoords: TTexPointList;
 begin
    inherited ReadFromFiler(reader);
    archiveVersion:=reader.ReadInteger;
-   if archiveVersion in [0..2] then with reader do begin
+   if archiveVersion in [0..3] then with reader do
+   begin
       FTexCoords.ReadFromFiler(reader);
-      if archiveVersion>=1 then
-         FLightMapTexCoords.ReadFromFiler(reader)
-      else FLightMapTexCoords.Clear;
+
+      if archiveVersion = 0 then
+      begin
+         // FLightMapTexCoords did not exist back than.
+         FLightMapTexCoords.Clear;
+      end
+      else if (archiveVersion = 1) or (archiveVersion = 2) then
+      begin
+         lOldLightMapTexCoords := TTexPointList.CreateFromFiler(reader);
+         for i := 0 to lOldLightMapTexCoords.Count - 1 do
+            FLightMapTexCoords.Add(lOldLightMapTexCoords[i].S, lOldLightMapTexCoords[i].T);
+         lOldLightMapTexCoords.Free;
+      end
+      else
+      begin
+         // Load FLightMapTexCoords the normal way.
+         FLightMapTexCoords.ReadFromFiler(reader);
+      end;
+
       FColors.ReadFromFiler(reader);
       FFaceGroups.ReadFromFiler(reader);
       FMode:=TMeshObjectMode(ReadInteger);
