@@ -497,8 +497,6 @@ type
 
 
 
-procedure Register;
-
 function ActiveSoundManager : TGLSoundManager;
 function GetSoundLibraryByName(const aName : String) : TGLSoundLibrary;
 

@@ -12,23 +12,10 @@
 
    Internal Note: stripped down versions of XClasses & XLists.<p>
 
-      $Log: persistentclasses.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:42  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>07/11/09 - DaStr - Improved FPC compatibility (BugtrackerID = 2893580)
+      <li>16/10/08 - UweR - Delphi 2009 compatibility fix for TPersistentObject, TTextReader and TTextWriter
+      <li>16/10/08 - DanB - Delphi 2009 compatibility fix for TBinaryReader.ReadString / WriteString
       <li>10/04/08 - DaStr - Added classes TGLInterfacedPersistent and
                               TGLInterfacedCollectionItem (BugTracker ID = 1938988)
       <li>11/02/08 - DaStr - Bugfixed TPersistentObjectList.Move() once again
@@ -58,6 +45,7 @@ uses Classes, SysUtils, GLCrossPlatform;
 {$i GLScene.inc}
 
 type
+
    PObject = ^TObject;
 
    // TVirtualReader
@@ -313,6 +301,8 @@ type
 
 		protected
 	      { Protected Declarations }
+         procedure WriteAnsiString(const aString : AnsiString); virtual;
+         procedure WriteWideString(const aString : WideString); virtual;
 
 		public
 	      { Public Declarations }
@@ -368,7 +358,7 @@ type
 
 		public
 	      { Public Declarations }
-         constructor Create(Stream: TStream); override;
+         constructor Create(aStream: TStream); override;
          destructor Destroy; override;
 
          procedure Write(const Buf; Count: Longint); override;
@@ -566,7 +556,7 @@ begin
    objectsStored:=ReadBoolean;
    i:=ReadInteger;
    if objectsStored then while i>0 do begin
-      aStrings.AddObject(ReadString, Pointer(ReadInteger));
+      aStrings.AddObject(ReadString, TObject(Pointer(ReadInteger)));
       Dec(i);
    end else while i>0 do begin
       aStrings.Add(ReadString);
@@ -701,16 +691,14 @@ end;
 
 // QueryInterface
 //
-function TPersistentObject.QueryInterface(const IID: TGUID; out Obj): HResult;
-const
-   E_NOINTERFACE = HResult($80004002);
+function TPersistentObject.QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
 begin
-   if GetInterface(IID, Obj) then Result := 0 else Result := E_NOINTERFACE;
+   if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
 
 // _AddRef
 //
-function TPersistentObject._AddRef: Integer;
+function TPersistentObject._AddRef: Integer; stdcall;
 begin
    // ignore
    Result:=1;
@@ -718,7 +706,7 @@ end;
 
 // _Release
 //
-function TPersistentObject._Release: Integer;
+function TPersistentObject._Release: Integer; stdcall;
 begin
    // ignore
    Result:=0;
@@ -729,7 +717,7 @@ end;
 procedure TPersistentObject.SaveToStream(stream : TStream; writerClass : TVirtualWriterClass = nil);
 var
    wr : TVirtualWriter;
-   fileSig : String;
+   fileSig : AnsiString;
 begin
    if writerClass=nil then
       writerClass:=TBinaryWriter;
@@ -750,7 +738,7 @@ end;
 procedure TPersistentObject.LoadFromStream(stream : TStream; readerClass : TVirtualReaderClass = nil);
 var
    rd : TVirtualReader;
-   sig : String;
+   sig : AnsiString;
 begin
    if readerClass=nil then
       readerClass:=TBinaryReader;
@@ -856,7 +844,7 @@ begin
 	Result:=FCount;
 	if Result=FCapacity then
 		SetCapacity(FCapacity+FGrowthDelta);
-	FList[Result]:=Item;
+	FList^[Result]:=Item;
 	Inc(FCount);
 end;
 
@@ -935,17 +923,17 @@ end;
 //
 procedure TPersistentObjectList.Exchange(index1, index2 : Integer);
 var
-	item : TObject;
-   locList : PPointerObjectList;
+  item : TObject;
+  locList : PPointerObjectList;
 begin
 {$IFOPT R+}
-	if (Cardinal(Index1)>=Cardinal(FCount))
-		or	(Cardinal(Index2)>=Cardinal(FCount)) then Error;
+  if (Cardinal(Index1)>=Cardinal(FCount)) or
+     (Cardinal(Index2)>=Cardinal(FCount)) then Error;
 {$ENDIF}
-   locList:=FList;
-	item:=locList[index1];
-	locList[index1]:=locList[index2];
-	locList[index2]:=item;
+  locList:=FList;
+  item:=locList^[index1];
+  locList^[index1]:=locList^[index2];
+  locList^[index2]:=item;
 end;
 
 // Expand
@@ -964,7 +952,7 @@ begin
 {$IFOPT R+}
 	if Cardinal(FCount)=0 then Error;
 {$ENDIF}
-	Result:=FList[0];
+	Result:=FList^[0];
 end;
 
 // SetFirst
@@ -974,7 +962,7 @@ begin
 {$IFOPT R+}
 	if Cardinal(FCount)=0 then Error;
 {$ENDIF}
-   FList[0]:=item;
+   FList^[0]:=item;
 end;
 
 // Error
@@ -1047,7 +1035,7 @@ begin
 	if Index<FCount then
 		System.Move(FList[index], FList[index+1],
 						(FCount-index)*SizeOf(TObject));
-	FList[index]:=item;
+	FList^[index]:=item;
 	Inc(FCount);
 end;
 
@@ -1079,7 +1067,7 @@ begin
 {$IFOPT R+}
 	if Cardinal(FCount)=0 then Error;
 {$ENDIF}
-	Result:=FList[FCount-1];
+	Result:=FList^[FCount-1];
 end;
 
 // SetLast
@@ -1089,7 +1077,7 @@ begin
 {$IFOPT R+}
 	if Cardinal(FCount)=0 then Error;
 {$ENDIF}
-	FList[FCount-1]:=item;
+	FList^[FCount-1]:=item;
 end;
 
 // Move
@@ -1103,7 +1091,7 @@ begin
       if Cardinal(newIndex)>=Cardinal(Count) then Error;
       if Cardinal(curIndex)>=Cardinal(Count) then Error;
 {$ENDIF}
-      item:=List[curIndex];
+      item:=FList^[curIndex];
       if curIndex<newIndex then begin
          // curIndex+1 necessarily exists since curIndex<newIndex and newIndex<Count
          System.Move(List[curIndex+1], List[curIndex], (NewIndex-CurIndex)*SizeOf(TObject));
@@ -1111,7 +1099,7 @@ begin
          // newIndex+1 necessarily exists since newIndex<curIndex and curIndex<Count
          System.Move(List[newIndex], List[newIndex+1], (CurIndex-NewIndex)*SizeOf(TObject));
       end;
-      List[newIndex]:=item;
+      FList^[newIndex] := TObject(item);
    end;
 end;
 
@@ -1144,13 +1132,13 @@ var
 begin
    p:=List;
    n:=Count-1;
-   while (n>=0) and (p[n]=nil) do Dec(n);
+   while (n>=0) and (p^[n]=nil) do Dec(n);
    for i:=0 to n do begin
-      if p[i]=nil then begin
-         pk:=@p[i];
+      if p^[i]=nil then begin
+         pk:=@(p^[i]);
          for j:=i+1 to n do begin
-            if p[j]<>nil then begin
-               pk^:=p[j];
+            if p^[j]<>nil then begin
+               pk^:=p^[j];
                Inc(pk);
             end;
          end;
@@ -1216,7 +1204,7 @@ begin
    if n>=FCount then
       n:=FCount-1;
    for i:=index to n do
-      FList[i].Free;
+      FList^[i].Free;
    DeleteItems(index, nbVals);
 end;
 
@@ -1239,7 +1227,7 @@ var
 begin
 	// a 'for' loop could crash if freeing an item removes other items form the list
 	i:=FCount-1; while i>=0 do begin
-		if i<FCount then FList[i].Free;
+		if i<FCount then FList^[i].Free;
 		Dec(i);
 	end;
 end;
@@ -1290,13 +1278,13 @@ begin
          WriteInteger(0); // Archive Version 0 (uh... not exactly... but...)
          WriteListBegin;
          for i:=0 to FCount-1 do begin
-            if FList[i]=nil then begin
+            if FList^[i]=nil then begin
                // store nil as... nil
                WriteBoolean(False);
                WriteInteger(0);
             end else if (FList^[i] is TPersistentObject) then begin
                // yeah, a TPersistentObject
-               aType:=FList[i].ClassType;
+               aType:=FList^[i].ClassType;
                objId:=objTypes.IndexOf(aType);
                if objId<0 then begin
                   // class is unknown
@@ -1306,11 +1294,11 @@ begin
                   // class already registered
                   WriteInteger(objId);
                end;
-               TPersistentObject(FList[i]).WriteToFiler(writer);
+               TPersistentObject(FList^[i]).WriteToFiler(writer);
             end else begin
                // Dunno that stuff here, store as is
                WriteBoolean(False);
-               WriteInteger(Integer(FList[i]));
+               WriteInteger(Integer(FList^[i]));
             end;
          end;
          WriteListEnd;
@@ -1340,9 +1328,10 @@ begin
                vaFalse, vaTrue : begin
                   // stored 'as was' value
                   ReadBoolean; // ignored
-                  Add(Pointer(ReadInteger));
+                  Add(TObject(Pointer(ReadInteger)));
                end;
-               vaString, vaLString : begin
+               vaString, vaLString, vaWString,
+               vaUTF8String : begin
                   // Unknown class, to be registered
                   m:=TPersistentObjectClass(FindClass(ReadString));
                   objTypes.Add(m);
@@ -1376,7 +1365,7 @@ end;
 //
 procedure TPersistentObjectList.ReadFromFiler(reader : TVirtualReader);
 begin
-	ReadFromFilerWithEvent(reader, AfterObjectCreatedByReader);
+  ReadFromFilerWithEvent(reader, AfterObjectCreatedByReader);
 end;
 
 // AfterObjectCreatedByReader
@@ -1398,7 +1387,7 @@ end;
 function TPersistentObjectList.Pop : TObject;
 begin
 	if FCount>0 then begin
-		Result:=FList[FCount-1];
+		Result:=FList^[FCount-1];
       Dec(FCount);
 	end else Result:=nil;
 end;
@@ -1416,15 +1405,15 @@ procedure POListQuickSort(SortList : PPointerObjectList; L, R : Integer;
                           compareFunc : TObjectListSortCompare);
 var
    I, J : Integer;
-   P, T : Pointer;
+   P, T : TObject;
 begin
    repeat
       I:=L;
       J:=R;
-      P:=SortList[(L+R) shr 1];
+      P:=SortList^[(L+R) shr 1];
       repeat
-         while compareFunc(SortList[I], P)<0 do Inc(I);
-         while compareFunc(SortList[J], P)>0 do Dec(J);
+         while compareFunc(SortList^[I], P)<0 do Inc(I);
+         while compareFunc(SortList^[J], P)>0 do Dec(J);
          if I<=J then begin
             T := SortList^[I];
             SortList^[I] := SortList^[J];
@@ -1521,6 +1510,7 @@ function TBinaryReader.ReadString : String;
 var
    n : Cardinal;
    vType : TValueType;
+   tempString: AnsiString;
 begin
    n:=0;
    vType:=ReadValue;
@@ -1535,9 +1525,10 @@ begin
    else
       ReadTypeError;
    end;
-   SetLength(Result, n);
+   SetLength(tempString, n);
    if n>0 then
-      Read(Result[1], n);
+      Read(tempString[1], n);
+   Result:=String(tempString);
 end;
 
 // ReadWideString
@@ -1545,7 +1536,7 @@ end;
 function TBinaryReader.ReadWideString(vType : TValueType) : WideString;
 var
    n : Cardinal;
-   utf8buf : String;
+   utf8buf : AnsiString;
 begin
    Read(n , 4);
    case Cardinal(vType) of
@@ -1642,9 +1633,9 @@ begin
    Write(cBoolToType[aBoolean], 1);
 end;
 
-// WriteString
+// WriteAnsiString
 //
-procedure TBinaryWriter.WriteString(const aString : String);
+procedure TBinaryWriter.WriteAnsiString(const aString : AnsiString);
 type
    TStringHeader = packed record
       typ : Byte;
@@ -1664,6 +1655,35 @@ begin
       Write(sh, 5);
       Write(aString[1], sh.Length);
    end;
+end;
+
+// WriteWideString
+//
+procedure TBinaryWriter.WriteWideString(const aString : WideString);
+type
+   TStringHeader = packed record
+      typ : Byte;
+      length : Integer;
+   end;
+var
+   sh : TStringHeader;
+begin
+   sh.Length:=Length(aString);
+   sh.typ:=byte(vaWString);
+   Write(sh, 5);
+   Write(aString[1], sh.length*SizeOf(WideChar));
+end;
+
+// WriteString
+//
+procedure TBinaryWriter.WriteString(const aString : String);
+begin
+   {$IFDEF UNICODE}
+   // TODO: should really check if the string can be simplified to: vaString / vaLString / vaUTF8String
+   WriteWideString(aString);
+   {$ELSE}
+   WriteAnsiString(aString);
+   {$ENDIF}
 end;
 
 // WriteFloat
@@ -1709,16 +1729,16 @@ end;
 procedure TTextReader.ReadLine(const requestedType : String = '');
 var
    line : String;
-   c : Char;
+   c : Byte;
    p : Integer;
 begin
    // will need speed upgrade, someday...
    line:='';
    repeat
       Stream.Read(c, 1);
-      if c>=#32 then
-         line:=line+c;
-   until c=#10;
+      if c>=32 then
+         line:=line+chr(c);
+   until c=10;
    line:=Trim(line);
    p:=Pos(' ', line);
    if p>0 then begin
@@ -1753,8 +1773,8 @@ begin
    ReadLine(cVTRaw);
    j:=1;
    for i:=0 to Count-1 do begin
-      PChar(@Buf)[i]:=Char((HexCharToInt(FData[j]) shl 4)
-                           +HexCharToInt(FData[j+1]));
+      PAnsiChar(@Buf)[i]:=AnsiChar((HexCharToInt(FData[j]) shl 4)
+                                   +HexCharToInt(FData[j+1]));
       Inc(j, 2);
    end;
 end;
@@ -1865,7 +1885,7 @@ end;
 
 // Create
 //
-constructor TTextWriter.Create(Stream: TStream);
+constructor TTextWriter.Create(aStream: TStream);
 begin
    inherited;
 end;
@@ -1881,7 +1901,7 @@ end;
 //
 procedure TTextWriter.WriteLine(const valueType, data : String);
 var
-   buf : String;
+   buf : AnsiString;
 begin
    buf:=StringOfChar(' ', FIndentLevel)+valueType+' '+data+#13#10;
    Stream.Write(buf[1], Length(buf));
@@ -1899,7 +1919,7 @@ begin
    SetLength(data, Count*2);
    j:=1;
    for i:=0 to Count-1 do begin
-      b:=Integer(PChar(@buf)[i]);
+      b:=Integer(PAnsiChar(@buf)[i]);
       data[j]:=cNibbleToHex[b shr 4];
       data[j+1]:=cNibbleToHex[b and 15];
       Inc(j, 2);
@@ -1987,14 +2007,14 @@ end;
 
 // _AddRef
 //
-function TGLInterfacedPersistent._AddRef: Integer;
+function TGLInterfacedPersistent._AddRef: Integer; stdcall;
 begin
   Result := -1; //ignore
 end;
 
 // _Release
 //
-function TGLInterfacedPersistent._Release: Integer;
+function TGLInterfacedPersistent._Release: Integer; stdcall;
 begin
   Result := -1; //ignore
 end;
@@ -2002,7 +2022,7 @@ end;
 // QueryInterface
 //
 function TGLInterfacedPersistent.QueryInterface(const IID: TGUID;
-  out Obj): HResult;
+  out Obj): HResult; stdcall;
 begin
   if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
@@ -2014,14 +2034,14 @@ end;
 
 // _AddRef
 //
-function TGLInterfacedCollectionItem._AddRef: Integer;
+function TGLInterfacedCollectionItem._AddRef: Integer; stdcall;
 begin
   Result := -1; //ignore
 end;
 
 // _Release
 //
-function TGLInterfacedCollectionItem._Release: Integer;
+function TGLInterfacedCollectionItem._Release: Integer; stdcall;
 begin
   Result := -1; //ignore
 end;
@@ -2029,7 +2049,7 @@ end;
 // QueryInterface
 //
 function TGLInterfacedCollectionItem.QueryInterface(const IID: TGUID;
-  out Obj): HResult;
+  out Obj): HResult; stdcall;
 begin
   if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
