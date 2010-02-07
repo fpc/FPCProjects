@@ -10,6 +10,23 @@
    please refer to OpenGL12.pas header.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>21/01/10 - DaStr - Bugfixed wglChoosePixelFormatARB() and
+                              wglCreatePbufferARB() parameters
+      <li>07/01/10 - DaStr - Added WGL_COLOR_SAMPLES_NV (thanks YarUndeoaker)
+      <li>25/12/09 - DaStr - Added GL_NV_copy_image, GL_LUMINANCE_INTEGER,
+                              GL_LUMINANCE_ALPHA_INTEGER extentions and constants
+                             Re-added $region declarations (thanks YarUndeoaker)
+      <li>13/12/09 - DaStr - Added missing stdcall/cdecl modifiers
+      <li>25/10/09 - DaStr - Added some texture compression extensions and updated
+                              glTransformFeedbackVaryings()(thanks YarUndeoaker)
+      <li>28/09/09 - DaStr - Added some NVidia-specific extensions (thanks YarUndeoaker)
+      <li>30/08/09 - DanB - GLsync changed to NativeInt, fixes to glBindBufferRange calls
+      <li>14/08/09 - DanB - Added missing GL_ARB_framebuffer_object extension check + fixed typo
+      <li>04/08/09 - DanB - OpenGL 3.1/3.2 support + new ARB extensions added
+      <li>28/07/09 - DaStr - Added GL_GEOMETRY_PROGRAM_NV and related extensions
+      <li>20/01/08 - DanB - Fix due to Delphi6 not containing UInt64
+      <li>05/10/08 - DanB - Moved error handling code here from GLContext.pas
+                            OpenGL 3.0 support, new core features + ARB extensions
       <li>23/03/08 - DanB - Added more Vendor/EXT extensions
       <li>17/03/08 - mrqzzz - uncommented some constants "GL_NORMAL_MAP_EXT,..."
                               to keep compatibility with dws2OpenGL1x.
@@ -68,36 +85,39 @@ interface
  // may depend on this option too. So if you need this option, please use the
  // GLS_MULTITHREAD define in GLScene.inc.
 {.$define MULTITHREADOPENGL}
+{}
+{$hint crossbuilder: the following defines should go into glscene.inc}
+{$IFDEF WINDOWS}
+  {$DEFINE SUPPORT_WGL}
+{$ENDIF}
+
+{$IFDEF UNIX}
+  {$IFnDEF DARWIN}
+    {$DEFINE SUPPORT_GLX}
+  {$ENDIF}
+{$ENDIF}
+
+
 
 uses
-  VectorTypes,
-  {$IFDEF FPC}
-    dynlibs, ctypes,
+  VectorTypes, SysUtils
+  {$IFDEF MSWINDOWS}
+    ,Windows
   {$ENDIF }
 
+  {$IFDEF FPC}
+    ,dynlibs ,ctypes ,LCLType
+  {$ENDIF}
+
   {$IFDEF unix}
-    {$IFDEF FPC}
       {$IFDEF darwin}
-        MacOSAll,
+        ,MacOSAll
       {$ELSE}
-        X, XUtil,
+        ,X ,Xlib, XUtil
       {$ENDIF}
-    {$ELSE}  // kylix
-    Libc,
-    {$ENDIF}
-    {$IFNDEF darwin}
-    Xlib,
-    {$ENDIF}
-    Types
-  {$ELSE}
-    windows
+    , Types
   {$ENDIF}
   ;
-
-{$IFDEF fpc}
-type
-  UINT = cuint;
-{$ENDIF}
 
 type
    TRCOptions = set of (
@@ -242,8 +262,12 @@ type
    {$ENDIF}
 
    // Unix types
-   {$IFNDEF darwin}
-   {$IFDEF unix}
+   {$IFDEF SUPPORT_GLX}
+   XPixmap        = TPixmap;
+   XFont          = TFont;
+   XColormap      = TColormap;
+   XWindow        = TWindow;
+
    GLXContext    = Pointer;
    GLXPixmap     = TXID;
    GLXDrawable   = TXID;
@@ -254,14 +278,9 @@ type
    GLXContextID  = TXID;
    GLXWindow     = TXID;
    GLXPbuffer    = TXID;
-   Pixmap        = TPixmap;
-   Font          = TFont;
-   Window        = TWindow;
-   Colormap      = TColormap;
-   {$ENDIF}
    {$ENDIF}
 
-{.$region 'OpenGL extension feature checks'}
+   {$region 'OpenGL extension feature checks' /fold }
 
 {$IFDEF MULTITHREADOPENGL}
 threadvar
@@ -277,21 +296,37 @@ var
    GL_VERSION_1_5,
    GL_VERSION_2_0,
    GL_VERSION_2_1,
-   GL_VERSION_2_2,
-   
+   GL_VERSION_2_2, 
+   GL_VERSION_3_0,
+   GL_VERSION_3_1,
+   GL_VERSION_3_2,
    GLU_VERSION_1_1,
    GLU_VERSION_1_2,
    GLU_VERSION_1_3: Boolean;
 
    // ARB approved OpenGL extension checks
    GL_ARB_color_buffer_float,
+   GL_ARB_compatibility,
+   GL_ARB_copy_buffer,
+   GL_ARB_depth_buffer_float,
+   GL_ARB_depth_clamp,
    GL_ARB_depth_texture,
    GL_ARB_draw_buffers,
+   GL_ARB_draw_buffers_blend,
+   GL_ARB_draw_elements_base_vertex,
+   GL_ARB_draw_instanced,
+   GL_ARB_fragment_coord_conventions,
    GL_ARB_fragment_program,
    GL_ARB_fragment_program_shadow,
    GL_ARB_fragment_shader,
+   GL_ARB_framebuffer_object,
+   GL_ARB_framebuffer_sRGB,
+   GL_ARB_geometry_shader4,
    GL_ARB_half_float_pixel,
+   GL_ARB_half_float_vertex,
    GL_ARB_imaging,
+   GL_ARB_instanced_arrays,
+   GL_ARB_map_buffer_range,
    GL_ARB_matrix_palette,
    GL_ARB_multisample,
    GL_ARB_multitexture,
@@ -299,22 +334,37 @@ var
    GL_ARB_pixel_buffer_object,
    GL_ARB_point_parameters,
    GL_ARB_point_sprite,
+   GL_ARB_provoking_vertex,
+   GL_ARB_sample_shading,
+   GL_ARB_seamless_cube_map,
+   GL_ARB_shader_texture_lod,
    GL_ARB_shading_language_100,
    GL_ARB_shadow,
    GL_ARB_shadow_ambient,
    GL_ARB_shader_objects,
+   GL_ARB_sync,
    GL_ARB_texture_border_clamp,
+   GL_ARB_texture_buffer_object,
    GL_ARB_texture_compression,
+   GL_ARB_texture_compression_rgtc,
    GL_ARB_texture_cube_map,
+   GL_ARB_texture_cube_map_array,
    GL_ARB_texture_env_add,
    GL_ARB_texture_env_combine,
    GL_ARB_texture_env_crossbar,
    GL_ARB_texture_env_dot3,
    GL_ARB_texture_float,
+   GL_ARB_texture_gather,
    GL_ARB_texture_mirrored_repeat,
+   GL_ARB_texture_multisample,
    GL_ARB_texture_non_power_of_two,
+   GL_ARB_texture_query_lod,
    GL_ARB_texture_rectangle,
+   GL_ARB_texture_rg,
    GL_ARB_transpose_matrix,
+   GL_ARB_uniform_buffer_object,
+   GL_ARB_vertex_array_bgra,
+   GL_ARB_vertex_array_object,
    GL_ARB_vertex_blend,
    GL_ARB_vertex_buffer_object,
    GL_ARB_vertex_program,
@@ -325,10 +375,11 @@ var
    GL_3DFX_multisample,
    GL_3DFX_tbuffer,
    GL_3DFX_texture_compression_FXT1,
+   GL_ATI_texture_compression_3dc,
 
    GL_ATI_draw_buffers,
    GL_ATI_texture_float,
-   GL_ATI_texture_mirror_once,   
+   GL_ATI_texture_mirror_once,
 
    GL_EXT_abgr,
    GL_EXT_bgra,
@@ -392,6 +443,7 @@ var
    GL_EXT_texture_sRGB,
    GL_EXT_texture_shared_exponent,
    GL_EXT_timer_query,
+   GL_EXT_transform_feedback,
    GL_EXT_vertex_array,
 
    GL_HP_occlusion_test,
@@ -403,6 +455,7 @@ var
    GL_MESA_resize_buffers,
 
    GL_NV_blend_square,
+   GL_NV_conditional_render,
    GL_NV_fence,
    GL_NV_float_buffer,
    GL_NV_fog_distance,
@@ -412,11 +465,18 @@ var
    GL_NV_point_sprite,
    GL_NV_register_combiners,
    GL_NV_texgen_reflection,
+   GL_NV_texture_compression_vtc,
    GL_NV_texture_env_combine4,
    GL_NV_texture_rectangle,
+   GL_NV_texture_shader,
+   GL_NV_texture_shader2,
+   GL_NV_texture_shader3,
+   GL_NV_transform_feedback,
    GL_NV_vertex_array_range,
    GL_NV_vertex_array_range2,
    GL_NV_vertex_program,
+   GL_NV_depth_buffer_float,
+   GL_NV_copy_image,
 
    GL_SGI_color_matrix,
 
@@ -435,7 +495,10 @@ var
 
    // ARB approved WGL extension checks
    WGL_ARB_buffer_region,
+   WGL_ARB_create_context,
+   WGL_ARB_create_context_profile,
    WGL_ARB_extensions_string,
+   WGL_ARB_framebuffer_sRGB,
    WGL_ARB_make_current_read,
    WGL_ARB_multisample,
    WGL_ARB_pbuffer,
@@ -451,15 +514,19 @@ var
    WGL_EXT_swap_control,
 
    // GLX extension checks
+   GLX_ARB_create_context,
+   GLX_ARB_create_context_profile,
+   GLX_ARB_framebuffer_sRGB,
    GLX_EXT_framebuffer_sRGB,
    GLX_EXT_fbconfig_packed_float,
+   GLX_SGI_swap_control,
 
    // OpenGL Utility (GLU) extension checks
    GLU_EXT_object_space_tess,
    GLU_EXT_nurbs_tessellator,
    GLU_EXT_Texture: Boolean;
 
-{.$endregion}
+{$endregion}
 
 const
 {$IFDEF MSWINDOWS}
@@ -477,7 +544,7 @@ const
   {$ENDIF}
 {$ENDIF}
 
-   {.$region 'OpenGL v1.1 generic constants'}
+   {$region 'OpenGL v1.1 generic constants' /fold }
    // ********** GL generic constants **********
 
    // errors
@@ -1101,9 +1168,9 @@ const
    // miscellaneous
    GL_DITHER                                         = $0BD0;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core constants in OpenGL v1.2'}
+   {$region 'New core constants in OpenGL v1.2'  /fold }
 
    // promoted to core v1.2 from GL_EXT_packed_pixels (EXT #23)
    GL_UNSIGNED_BYTE_3_3_2                            = $8032;
@@ -1263,9 +1330,9 @@ const
 	 GL_REPLICATE_BORDER				                       = $8153;
 	 GL_CONVOLUTION_BORDER_COLOR			                 = $8154;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core constants in OpenGL v1.3'}
+   {$region 'New core constants in OpenGL v1.3' /fold }
    // Multitexturing
    // promoted to core OpenGL v1.3 from GL_ARB_multitexture (ARB #1)
    GL_TEXTURE0                                       = $84C0;
@@ -1386,9 +1453,9 @@ const
    GL_DOT3_RGB                                       = $86AE;
    GL_DOT3_RGBA                                      = $86AF;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core constants in OpenGL v1.4'}
+   {$region 'New core constants in OpenGL v1.4' /fold }
 
    // Separate Blend Functions
    // promoted to core OpenGL v1.4 from GL_EXT_blend_func_separate (EXT #173)
@@ -1462,9 +1529,9 @@ const
    GL_TEXTURE_COMPARE_FUNC                           = $884D;
    GL_COMPARE_R_TO_TEXTURE                           = $884E;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core constants in OpenGL v1.5'}
+   {$region 'New core constants in OpenGL v1.5' /fold }
    // Buffer Objects
    // promoted to core OpenGL v1.5 from GL_ARB_vertex_buffer_object (ARB #28)
    GL_BUFFER_SIZE                                    = $8764;
@@ -1530,9 +1597,9 @@ const
 	 GL_SRC1_ALPHA					            = GL_SOURCE1_ALPHA;
 	 GL_SRC2_ALPHA					            = GL_SOURCE2_ALPHA;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core constants in OpenGL v2.0'}
+   {$region 'New core constants in OpenGL v2.0' /fold }
    // OpenGL 2.0
 
    // Changed Tokens
@@ -1668,9 +1735,9 @@ const
    GL_STENCIL_BACK_VALUE_MASK                           = $8CA4;
    GL_STENCIL_BACK_WRITEMASK                            = $8CA5;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core constants in OpenGL v2.1'}
+   {$region 'New core constants in OpenGL v2.1' /fold }
 
    // OpenGL 2.1
 
@@ -1708,9 +1775,202 @@ const
    GL_COMPRESSED_SLUMINANCE                             = $8C4A;
    GL_COMPRESSED_SLUMINANCE_ALPHA                       = $8C4B;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'ARB approved extensions constants, in extension number order'}
+   {$region 'New core constants in OpenGL v3.0' /fold }
+   // TODO: arrange these better, find where they came from
+   GL_COMPARE_REF_TO_TEXTURE				= GL_COMPARE_R_TO_TEXTURE;
+   GL_CLIP_DISTANCE0					= GL_CLIP_PLANE0;
+   GL_CLIP_DISTANCE1					= GL_CLIP_PLANE1;
+   GL_CLIP_DISTANCE2					= GL_CLIP_PLANE2;
+   GL_CLIP_DISTANCE3					= GL_CLIP_PLANE3;
+   GL_CLIP_DISTANCE4					= GL_CLIP_PLANE4;
+   GL_CLIP_DISTANCE5					= GL_CLIP_PLANE5;
+   GL_MAX_CLIP_DISTANCES				= GL_MAX_CLIP_PLANES;
+	 GL_MAJOR_VERSION					=$821B;
+	 GL_MINOR_VERSION					=$821C;
+	 GL_NUM_EXTENSIONS					=$821D;
+	 GL_CONTEXT_FLAGS					=$821E;
+//# Removed - replaced by per-attachment framebuffer queries
+//##	  COLOR_COMPONENT_TYPE				  = 0x821F
+//##	  COLOR_ENCODING_TYPE				  = 0x8220
+//##	  DEPTH_COMPONENT_TYPE				  = 0x8221
+//##	  TEXTURE_SHARED_TYPE				  = 0x8222
+	 GL_DEPTH_BUFFER					=$8223;
+	 GL_STENCIL_BUFFER					=$8224;
+	 GL_COMPRESSED_RED					=$8225;
+	 GL_COMPRESSED_RG					=$8226;
+	 GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT		=$0001;
+	 GL_RGBA32F						=$8814;
+	 GL_RGB32F						=$8815;
+	 GL_RGBA16F						=$881A;
+	 GL_RGB16F						=$881B;
+	 GL_VERTEX_ATTRIB_ARRAY_INTEGER			=$88FD;
+	 GL_MAX_ARRAY_TEXTURE_LAYERS			=$88FF;
+	 GL_MIN_PROGRAM_TEXEL_OFFSET			=$8904;
+	 GL_MAX_PROGRAM_TEXEL_OFFSET			=$8905;
+	 GL_CLAMP_VERTEX_COLOR				=$891A;
+	 GL_CLAMP_FRAGMENT_COLOR				=$891B;
+	 GL_CLAMP_READ_COLOR				=$891C;
+	 GL_FIXED_ONLY					=$891D;
+	 GL_MAX_VARYING_COMPONENTS				= GL_MAX_VARYING_FLOATS;
+//	 GL_TEXTURE_RED_TYPE				=$8C10;
+//	 GL_TEXTURE_GREEN_TYPE				=$8C11;
+//	 GL_TEXTURE_BLUE_TYPE				=$8C12;
+//	 GL_TEXTURE_ALPHA_TYPE				=$8C13;
+//	 GL_TEXTURE_LUMINANCE_TYPE				=$8C14;
+//	 GL_TEXTURE_INTENSITY_TYPE				=$8C15;
+//	 GL_TEXTURE_DEPTH_TYPE				= $8C16;
+//	 GL_UNSIGNED_NORMALIZED				= $8C17;
+	 GL_TEXTURE_1D_ARRAY				= $8C18;
+	 GL_PROXY_TEXTURE_1D_ARRAY				= $8C19;
+	 GL_TEXTURE_2D_ARRAY				= $8C1A;
+	 GL_PROXY_TEXTURE_2D_ARRAY				= $8C1B;
+	 GL_TEXTURE_BINDING_1D_ARRAY			= $8C1C;
+	 GL_TEXTURE_BINDING_2D_ARRAY			= $8C1D;
+	 GL_R11F_G11F_B10F					= $8C3A;
+	 GL_UNSIGNED_INT_10F_11F_11F_REV			= $8C3B;
+	 GL_RGB9_E5						= $8C3D;
+	 GL_UNSIGNED_INT_5_9_9_9_REV			= $8C3E;
+	 GL_TEXTURE_SHARED_SIZE				= $8C3F;
+	 GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH		= $8C76;
+	 GL_TRANSFORM_FEEDBACK_BUFFER_MODE			= $8C7F;
+	 GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS	= $8C80;
+	 GL_TRANSFORM_FEEDBACK_VARYINGS			= $8C83;
+	 GL_TRANSFORM_FEEDBACK_BUFFER_START			= $8C84;
+	 GL_TRANSFORM_FEEDBACK_BUFFER_SIZE			= $8C85;
+	 GL_PRIMITIVES_GENERATED				= $8C87;
+	 GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN		= $8C88;
+	 GL_RASTERIZER_DISCARD				= $8C89;
+	 GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS	= $8C8A;
+	 GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS		= $8C8B;
+	 GL_INTERLEAVED_ATTRIBS				= $8C8C;
+	 GL_SEPARATE_ATTRIBS				= $8C8D;
+	 GL_TRANSFORM_FEEDBACK_BUFFER			= $8C8E;
+	 GL_TRANSFORM_FEEDBACK_BUFFER_BINDING		= $8C8F;
+	 GL_RGBA32UI					= $8D70;
+	 GL_RGB32UI						= $8D71;
+	 GL_RGBA16UI					= $8D76;
+	 GL_RGB16UI						= $8D77;
+	 GL_RGBA8UI						= $8D7C;
+	 GL_RGB8UI						= $8D7D;
+	 GL_RGBA32I						= $8D82;
+	 GL_RGB32I						= $8D83;
+	 GL_RGBA16I						= $8D88;
+	 GL_RGB16I						= $8D89;
+	 GL_RGBA8I						= $8D8E;
+	 GL_RGB8I						  = $8D8F;
+	 GL_RED_INTEGER				= $8D94;
+	 GL_GREEN_INTEGER			= $8D95;
+	 GL_BLUE_INTEGER			= $8D96;
+	 GL_ALPHA_INTEGER			= $8D97;
+	 GL_RGB_INTEGER				= $8D98;
+	 GL_RGBA_INTEGER			= $8D99;
+	 GL_BGR_INTEGER				= $8D9A;
+	 GL_BGRA_INTEGER			= $8D9B;
+	 GL_LUMINANCE_INTEGER       = $8D9C;
+	 GL_LUMINANCE_ALPHA_INTEGER = $8D9D;
+	 GL_SAMPLER_1D_ARRAY				= $8DC0;
+	 GL_SAMPLER_2D_ARRAY				= $8DC1;
+	 GL_SAMPLER_1D_ARRAY_SHADOW				= $8DC3;
+	 GL_SAMPLER_2D_ARRAY_SHADOW				= $8DC4;
+	 GL_SAMPLER_CUBE_SHADOW				= $8DC5;
+	 GL_UNSIGNED_INT_VEC2				= $8DC6;
+	 GL_UNSIGNED_INT_VEC3				= $8DC7;
+	 GL_UNSIGNED_INT_VEC4				= $8DC8;
+	 GL_INT_SAMPLER_1D					= $8DC9;
+	 GL_INT_SAMPLER_2D					= $8DCA;
+	 GL_INT_SAMPLER_3D					= $8DCB;
+	 GL_INT_SAMPLER_CUBE				= $8DCC;
+	 GL_INT_SAMPLER_1D_ARRAY				= $8DCE;
+	 GL_INT_SAMPLER_2D_ARRAY				= $8DCF;
+	 GL_UNSIGNED_INT_SAMPLER_1D				= $8DD1;
+	 GL_UNSIGNED_INT_SAMPLER_2D				= $8DD2;
+	 GL_UNSIGNED_INT_SAMPLER_3D				= $8DD3;
+	 GL_UNSIGNED_INT_SAMPLER_CUBE			= $8DD4;
+	 GL_UNSIGNED_INT_SAMPLER_1D_ARRAY			= $8DD6;
+	 GL_UNSIGNED_INT_SAMPLER_2D_ARRAY			= $8DD7;
+	 GL_QUERY_WAIT					= $8E13;
+	 GL_QUERY_NO_WAIT					= $8E14;
+	 GL_QUERY_BY_REGION_WAIT				= $8E15;
+	 GL_QUERY_BY_REGION_NO_WAIT				= $8E16;
+
+   {$endregion}
+
+   {$region 'New core constants in OpenGL v3.1' /fold }
+   GL_SAMPLER_2D_RECT                = $8B63;
+   GL_SAMPLER_2D_RECT_SHADOW         = $8B64;
+   GL_SAMPLER_BUFFER                 = $8DC2;
+   GL_INT_SAMPLER_2D_RECT            = $8DCD;
+   GL_INT_SAMPLER_BUFFER             = $8DD0;
+   GL_UNSIGNED_INT_SAMPLER_2D_RECT   = $8DD5;
+   GL_UNSIGNED_INT_SAMPLER_BUFFER    = $8DD8;
+   GL_TEXTURE_BUFFER                 = $8C2A;
+   GL_MAX_TEXTURE_BUFFER_SIZE        = $8C2B;
+   GL_TEXTURE_BINDING_BUFFER         = $8C2C;
+   GL_TEXTURE_BUFFER_DATA_STORE_BINDING = $8C2D;
+   GL_TEXTURE_BUFFER_FORMAT          = $8C2E;
+   GL_TEXTURE_RECTANGLE              = $84F5;
+   GL_TEXTURE_BINDING_RECTANGLE      = $84F6;
+   GL_PROXY_TEXTURE_RECTANGLE        = $84F7;
+   GL_MAX_RECTANGLE_TEXTURE_SIZE     = $84F8;
+   GL_RED_SNORM                      = $8F90;
+   GL_RG_SNORM                       = $8F91;
+   GL_RGB_SNORM                      = $8F92;
+   GL_RGBA_SNORM                     = $8F93;
+   GL_R8_SNORM                       = $8F94;
+   GL_RG8_SNORM                      = $8F95;
+   GL_RGB8_SNORM                     = $8F96;
+   GL_RGBA8_SNORM                    = $8F97;
+   GL_R16_SNORM                      = $8F98;
+   GL_RG16_SNORM                     = $8F99;
+   GL_RGB16_SNORM                    = $8F9A;
+   GL_RGBA16_SNORM                   = $8F9B;
+   GL_SIGNED_NORMALIZED              = $8F9C;
+   GL_PRIMITIVE_RESTART              = $8F9D;
+   GL_PRIMITIVE_RESTART_INDEX        = $8F9E;
+   // re-use tokens from:
+   // ARB_copy_buffer (ARB #59)
+   // ARB_draw_instanced (ARB #44)
+   // ARB_uniform_buffer_object (ARB #57)
+   {$endregion}
+
+   {$region 'New core constants in OpenGL v3.2' /fold }
+   GL_CONTEXT_CORE_PROFILE_BIT              = $00000001;
+   GL_CONTEXT_COMPATIBILITY_PROFILE_BIT     = $00000002;
+   GL_LINES_ADJACENCY                       = $000A;
+   GL_LINE_STRIP_ADJACENCY                  = $000B;
+   GL_TRIANGLES_ADJACENCY                   = $000C;
+   GL_TRIANGLE_STRIP_ADJACENCY              = $000D;
+   GL_PROGRAM_POINT_SIZE                    = $8642;
+   GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS      = $8C29;
+   GL_FRAMEBUFFER_ATTACHMENT_LAYERED        = $8DA7;
+   GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS  = $8DA8;
+   GL_GEOMETRY_SHADER                       = $8DD9;
+   GL_GEOMETRY_VERTICES_OUT                 = $8916;
+   GL_GEOMETRY_INPUT_TYPE                   = $8917;
+   GL_GEOMETRY_OUTPUT_TYPE                  = $8918;
+   GL_MAX_GEOMETRY_UNIFORM_COMPONENTS       = $8DDF;
+   GL_MAX_GEOMETRY_OUTPUT_VERTICES          = $8DE0;
+   GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS	= $8DE1;
+   GL_MAX_VERTEX_OUTPUT_COMPONENTS          = $9122;
+   GL_MAX_GEOMETRY_INPUT_COMPONENTS         = $9123;
+   GL_MAX_GEOMETRY_OUTPUT_COMPONENTS        = $9124;
+   GL_MAX_FRAGMENT_INPUT_COMPONENTS         = $9125;
+   GL_CONTEXT_PROFILE_MASK                  = $9126;
+   // re-use tokens from:
+   // VERSION_3_0
+   // ARB_framebuffer_object
+   // ARB_depth_clamp
+   // ARB_draw_elements_base_vertex
+   // ARB_fragment_coord_conventions
+   // ARB_provoking_vertex
+   // ARB_seamless_cube_map
+   // ARB_sync
+   // ARB_texture_multisample
+   {$endregion}
+
+   {$region 'ARB approved extensions constants, in extension number order' /fold }
    // ARB approved extensions enumerants, in number order
 
    // ARB Extension #1 - GL_ARB_multitexture
@@ -1782,6 +2042,7 @@ const
    GLX_SAMPLES_ARB                                   = 100001;
    WGL_SAMPLE_BUFFERS_ARB                            = $2041;
    WGL_SAMPLES_ARB                                   = $2042;
+   WGL_COLOR_SAMPLES_NV                              = $20B9;
 
    // ARB Extension #6 - GL_ARB_texture_env_add
    // (no new tokens)
@@ -2324,9 +2585,344 @@ const
    GL_PIXEL_PACK_BUFFER_BINDING_ARB                  = $88ED;
    GL_PIXEL_UNPACK_BUFFER_BINDING_ARB                = $88EF;
 
-   {.$endregion}
+   // ARB Extension #43 - GL_ARB_depth_buffer_float
+   GL_DEPTH_COMPONENT32F                             = $8CAC;
+   GL_DEPTH32F_STENCIL8                              = $8CAD;
+   GL_FLOAT_32_UNSIGNED_INT_24_8_REV                 = $8DAD;
 
-   {.$region 'Vendor/EXT extensions constants, in extension number order'}
+   // ARB Extension #44 - GL_ARB_draw_instanced
+   // (no new tokens)
+
+   // ARB Extension #45 - GL_ARB_framebuffer_object
+   // (Also went simultaneously to core 3.0, so no ARB prefix on names)
+   GL_INVALID_FRAMEBUFFER_OPERATION			= $0506;
+	 GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING		= $8210;
+	 GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE		= $8211;
+	 GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE			= $8212;
+	 GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE		= $8213;
+	 GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE		= $8214;
+	 GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE		= $8215;
+	 GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE		= $8216;
+	 GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE		= $8217;
+	 GL_FRAMEBUFFER_DEFAULT				= $8218;
+	 GL_FRAMEBUFFER_UNDEFINED				= $8219;
+	 GL_DEPTH_STENCIL_ATTACHMENT			= $821A;
+	 GL_INDEX						= $8222;
+	 GL_MAX_RENDERBUFFER_SIZE				= $84E8;
+	 GL_DEPTH_STENCIL					= $84F9;
+	 GL_UNSIGNED_INT_24_8				= $84FA;
+	 GL_DEPTH24_STENCIL8				= $88F0;
+	 GL_TEXTURE_STENCIL_SIZE				= $88F1;
+	 GL_TEXTURE_RED_TYPE				= $8C10;
+	 GL_TEXTURE_GREEN_TYPE				= $8C11;
+	 GL_TEXTURE_BLUE_TYPE				= $8C12;
+	 GL_TEXTURE_ALPHA_TYPE				= $8C13;
+	 GL_TEXTURE_LUMINANCE_TYPE				= $8C14;
+	 GL_TEXTURE_INTENSITY_TYPE				= $8C15;
+	 GL_TEXTURE_DEPTH_TYPE				= $8C16;
+	 GL_UNSIGNED_NORMALIZED				= $8C17;
+	 GL_FRAMEBUFFER_BINDING				= $8CA6;
+	 GL_DRAW_FRAMEBUFFER_BINDING			= GL_FRAMEBUFFER_BINDING;
+	 GL_RENDERBUFFER_BINDING				= $8CA7;
+	 GL_READ_FRAMEBUFFER				= $8CA8;
+	 GL_DRAW_FRAMEBUFFER				= $8CA9;
+	 GL_READ_FRAMEBUFFER_BINDING			= $8CAA;
+	 GL_RENDERBUFFER_SAMPLES				= $8CAB;
+	 GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE		= $8CD0;
+	 GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME		= $8CD1;
+	 GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL		= $8CD2;
+	 GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE	= $8CD3;
+	 GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER		= $8CD4;
+	 GL_FRAMEBUFFER_COMPLETE				= $8CD5;
+	 GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT		= $8CD6;
+	 GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT	= $8CD7;
+	 GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER		= $8CDB;
+	 GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER		= $8CDC;
+	 GL_FRAMEBUFFER_UNSUPPORTED				= $8CDD;
+	 GL_MAX_COLOR_ATTACHMENTS				= $8CDF;
+	 GL_COLOR_ATTACHMENT0				= $8CE0;
+	 GL_COLOR_ATTACHMENT1				= $8CE1;
+	 GL_COLOR_ATTACHMENT2				= $8CE2;
+	 GL_COLOR_ATTACHMENT3				= $8CE3;
+	 GL_COLOR_ATTACHMENT4				= $8CE4;
+	 GL_COLOR_ATTACHMENT5				= $8CE5;
+	 GL_COLOR_ATTACHMENT6				= $8CE6;
+	 GL_COLOR_ATTACHMENT7				= $8CE7;
+	 GL_COLOR_ATTACHMENT8				= $8CE8;
+	 GL_COLOR_ATTACHMENT9				= $8CE9;
+	 GL_COLOR_ATTACHMENT10				= $8CEA;
+	 GL_COLOR_ATTACHMENT11				= $8CEB;
+	 GL_COLOR_ATTACHMENT12				= $8CEC;
+	 GL_COLOR_ATTACHMENT13				= $8CED;
+	 GL_COLOR_ATTACHMENT14				= $8CEE;
+	 GL_COLOR_ATTACHMENT15				= $8CEF;
+	 GL_DEPTH_ATTACHMENT				= $8D00;
+	 GL_STENCIL_ATTACHMENT				= $8D20;
+	 GL_FRAMEBUFFER					= $8D40;
+	 GL_RENDERBUFFER					= $8D41;
+	 GL_RENDERBUFFER_WIDTH				= $8D42;
+	 GL_RENDERBUFFER_HEIGHT				= $8D43;
+	 GL_RENDERBUFFER_INTERNAL_FORMAT			= $8D44;
+	 GL_STENCIL_INDEX1					= $8D46;
+	 GL_STENCIL_INDEX4					= $8D47;
+	 GL_STENCIL_INDEX8					= $8D48;
+	 GL_STENCIL_INDEX16					= $8D49;
+	 GL_RENDERBUFFER_RED_SIZE				= $8D50;
+	 GL_RENDERBUFFER_GREEN_SIZE				= $8D51;
+	 GL_RENDERBUFFER_BLUE_SIZE				= $8D52;
+	 GL_RENDERBUFFER_ALPHA_SIZE				= $8D53;
+	 GL_RENDERBUFFER_DEPTH_SIZE				= $8D54;
+	 GL_RENDERBUFFER_STENCIL_SIZE			= $8D55;
+	 GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE		= $8D56;
+	 GL_MAX_SAMPLES					= $8D57;
+
+   // ARB Extension #46 -  GL_ARB_framebuffer_sRGB
+   //                      GLX_ARB_framebuffer_sRGB
+   //                      WGL_ARB_framebuffer_sRGB
+   GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB                  = $20B2;
+   WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB                  = $20A9;
+   GL_FRAMEBUFFER_SRGB                               = $8DB9;
+   //GL_FRAMEBUFFER_SRGB_CAPABLE                       = $8DBA;
+
+   // ARB Extension #47 - GL_ARB_geometry_shader4
+   GL_GEOMETRY_SHADER_ARB                            =$8DD9;
+   GL_GEOMETRY_VERTICES_OUT_ARB                      =$8DDA;
+   GL_GEOMETRY_INPUT_TYPE_ARB                        =$8DDB;
+   GL_GEOMETRY_OUTPUT_TYPE_ARB                       =$8DDC;
+   GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS_ARB           =$8C29;
+   GL_MAX_GEOMETRY_VARYING_COMPONENTS_ARB            =$8DDD;
+   GL_MAX_VERTEX_VARYING_COMPONENTS_ARB              =$8DDE;
+   GL_MAX_GEOMETRY_UNIFORM_COMPONENTS_ARB              =$8DDF;
+   GL_MAX_GEOMETRY_OUTPUT_VERTICES_ARB                 =$8DE0;
+   GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS_ARB         =$8DE1;
+   GL_LINES_ADJACENCY_ARB                              =$A;
+   GL_LINE_STRIP_ADJACENCY_ARB                         =$B;
+   GL_TRIANGLES_ADJACENCY_ARB                          =$C;
+   GL_TRIANGLE_STRIP_ADJACENCY_ARB                     =$D;
+   GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS_ARB         =$8DA8;
+   GL_FRAMEBUFFER_INCOMPLETE_LAYER_COUNT_ARB           =$8DA9;
+   GL_FRAMEBUFFER_ATTACHMENT_LAYERED_ARB               =$8DA7;
+   //GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER             =$8CD4;
+   GL_PROGRAM_POINT_SIZE_ARB                           =$8642;
+
+   // ARB Extension #48 - GL_ARB_half_float_vertex
+   GL_HALF_FLOAT                                       =$140B;
+
+   // ARB Extension #49 - GL_ARB_instanced_arrays
+   GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ARB                  =$88FE;
+
+   // ARB Extension #50 - GL_ARB_map_buffer_range
+   GL_MAP_READ_BIT                                     =$0001;
+   GL_MAP_WRITE_BIT                                    =$0002;
+   GL_MAP_INVALIDATE_RANGE_BIT                         =$0004;
+   GL_MAP_INVALIDATE_BUFFER_BIT                        =$0008;
+   GL_MAP_FLUSH_EXPLICIT_BIT                           =$0010;
+   GL_MAP_UNSYNCHRONIZED_BIT                           =$0020;
+
+   // ARB Extension #51 - GL_ARB_texture_buffer_object
+   GL_TEXTURE_BUFFER_ARB                               =$8C2A;
+   GL_MAX_TEXTURE_BUFFER_SIZE_ARB                      =$8C2B;
+   GL_TEXTURE_BINDING_BUFFER_ARB                       =$8C2C;
+   GL_TEXTURE_BUFFER_DATA_STORE_BINDING_ARB            =$8C2D;
+   GL_TEXTURE_BUFFER_FORMAT_ARB                        =$8C2E;
+
+   // ARB Extension #52 - GL_ARB_texture_compression_rgtc
+   GL_COMPRESSED_RED_RGTC1                             =$8DBB;
+   GL_COMPRESSED_SIGNED_RED_RGTC1                      =$8DBC;
+   GL_COMPRESSED_RG_RGTC2                              =$8DBD;
+   GL_COMPRESSED_SIGNED_RG_RGTC2                       =$8DBE;
+
+   // ARB Extension #53 - GL_ARB_texture_rg
+   GL_R8                      =$8229;
+   GL_R16                     =$822A;
+   GL_RG8                     =$822B;
+   GL_RG16                    =$822C;
+   GL_R16F                    =$822D;
+   GL_R32F                    =$822E;
+   GL_RG16F                   =$822F;
+   GL_RG32F                   =$8230;
+   GL_R8I                     =$8231;
+   GL_R8UI                    =$8232;
+   GL_R16I                    =$8233;
+   GL_R16UI                   =$8234;
+   GL_R32I                    =$8235;
+   GL_R32UI                   =$8236;
+   GL_RG8I                    =$8237;
+   GL_RG8UI                   =$8238;
+   GL_RG16I                   =$8239;
+   GL_RG16UI                  =$823A;
+   GL_RG32I                   =$823B;
+   GL_RG32UI                  =$823C;
+   GL_RG                      =$8227;
+   GL_RG_INTEGER              =$8228;
+
+   // ARB Extension #54 - GL_ARB_vertex_array_object
+   GL_VERTEX_ARRAY_BINDING                             =$85B5;
+   
+   // ARB Extension #55 - WGL_ARB_create_context
+   // see also WGL_ARB_create_context_profile (ARB #74)
+   WGL_CONTEXT_MAJOR_VERSION_ARB                       =$2091;
+   WGL_CONTEXT_MINOR_VERSION_ARB                       =$2092;
+   WGL_CONTEXT_LAYER_PLANE_ARB                         =$2093;
+   WGL_CONTEXT_FLAGS_ARB                               =$2094;
+   WGL_CONTEXT_DEBUG_BIT_ARB                           =$0001;
+   WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB              =$0002;
+   ERROR_INVALID_VERSION_ARB                           =$2095;
+
+   // ARB Extension #56 - GLX_ARB_create_context
+   // see also GLX_ARB_create_context_profile (ARB #75)
+   GLX_CONTEXT_MAJOR_VERSION_ARB                       = $2091;
+   GLX_CONTEXT_MINOR_VERSION_ARB                       = $2092;
+   GLX_CONTEXT_FLAGS_ARB                               = $2094;
+   GLX_CONTEXT_DEBUG_BIT_ARB                           = $0001;
+   GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB              = $0002;
+
+   // ARB Extension #57 - GL_ARB_uniform_buffer_object
+   GL_UNIFORM_BUFFER                                   = $8A11;
+   GL_UNIFORM_BUFFER_BINDING                           = $8A28;
+   GL_UNIFORM_BUFFER_START                             = $8A29;
+   GL_UNIFORM_BUFFER_SIZE                              = $8A2A;
+   GL_MAX_VERTEX_UNIFORM_BLOCKS                        = $8A2B;
+   GL_MAX_GEOMETRY_UNIFORM_BLOCKS                      = $8A2C;
+   GL_MAX_FRAGMENT_UNIFORM_BLOCKS                      = $8A2D;
+   GL_MAX_COMBINED_UNIFORM_BLOCKS                      = $8A2E;
+   GL_MAX_UNIFORM_BUFFER_BINDINGS                      = $8A2F;
+   GL_MAX_UNIFORM_BLOCK_SIZE                           = $8A30;
+   GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS           = $8A31;
+   GL_MAX_COMBINED_GEOMETRY_UNIFORM_COMPONENTS         = $8A32;
+   GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS         = $8A33;
+   GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT                  = $8A34;
+   GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH             = $8A35;
+   GL_ACTIVE_UNIFORM_BLOCKS                            = $8A36;
+   GL_UNIFORM_TYPE                                     = $8A37;
+   GL_UNIFORM_SIZE                                     = $8A38;
+   GL_UNIFORM_NAME_LENGTH                              = $8A39;
+   GL_UNIFORM_BLOCK_INDEX                              = $8A3A;
+   GL_UNIFORM_OFFSET                                   = $8A3B;
+   GL_UNIFORM_ARRAY_STRIDE                             = $8A3C;
+   GL_UNIFORM_MATRIX_STRIDE                            = $8A3D;
+   GL_UNIFORM_IS_ROW_MAJOR                             = $8A3E;
+   GL_UNIFORM_BLOCK_BINDING                            = $8A3F;
+   GL_UNIFORM_BLOCK_DATA_SIZE                          = $8A40;
+   GL_UNIFORM_BLOCK_NAME_LENGTH                        = $8A41;
+   GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS                    = $8A42;
+   GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES             = $8A43;
+   GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER        = $8A44;
+   GL_UNIFORM_BLOCK_REFERENCED_BY_GEOMETRY_SHADER      = $8A45;
+   GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER      = $8A46;
+   GL_INVALID_INDEX                                    = $FFFFFFFF;
+
+   // ARB Extension #58 - GL_ARB_compatibility
+   // (no new tokens)
+
+   // ARB Extension #59 - GL_ARB_copy_buffer
+   GL_COPY_READ_BUFFER                                 = $8F36;
+   GL_COPY_WRITE_BUFFER                                = $8F37;
+
+   // ARB Extension #60 - GL_ARB_shader_texture_lod
+   // (no new tokens)
+
+   // ARB Extension #61 - GL_ARB_depth_clamp
+   GL_DEPTH_CLAMP                                      = $864F;
+
+   // ARB Extension #62 - GL_ARB_draw_elements_base_vertex
+   // (no new tokens)
+
+   // ARB Extension #63 - GL_ARB_fragment_coord_conventions
+   // (no new tokens)
+
+   // ARB Extension #64 - GL_ARB_provoking_vertex
+   GL_QUADS_FOLLOW_PROVOKING_VERTEX_CONVENTION         = $8E4C;
+   GL_FIRST_VERTEX_CONVENTION                          = $8E4D;
+   GL_LAST_VERTEX_CONVENTION                           = $8E4E;
+   GL_PROVOKING_VERTEX                                 = $8E4F;
+
+   // ARB Extension #65 - GL_ARB_seamless_cube_map
+   GL_TEXTURE_CUBE_MAP_SEAMLESS                        = $884F;
+
+   // ARB Extension #66 - GL_ARB_sync
+   GL_MAX_SERVER_WAIT_TIMEOUT                          = $9111;
+   GL_OBJECT_TYPE                                      = $9112;
+   GL_SYNC_CONDITION                                   = $9113;
+   GL_SYNC_STATUS                                      = $9114;
+   GL_SYNC_FLAGS                                       = $9115;
+   GL_SYNC_FENCE                                       = $9116;
+   GL_SYNC_GPU_COMMANDS_COMPLETE                       = $9117;
+   GL_UNSIGNALED                                       = $9118;
+   GL_SIGNALED                                         = $9119;
+   GL_ALREADY_SIGNALED                                 = $911A;
+   GL_TIMEOUT_EXPIRED                                  = $911B;
+   GL_CONDITION_SATISFIED                              = $911C;
+   GL_WAIT_FAILED                                      = $911D;
+   GL_SYNC_FLUSH_COMMANDS_BIT                          = $00000001;
+   GL_TIMEOUT_IGNORED                                  = $FFFFFFFFFFFFFFFF;
+
+   // ARB Extension #67 - GL_ARB_texture_multisample
+   GL_SAMPLE_POSITION                                  = $8E50;
+   GL_SAMPLE_MASK                                      = $8E51;
+   GL_SAMPLE_MASK_VALUE                                = $8E52;
+   GL_MAX_SAMPLE_MASK_WORDS                            = $8E59;
+   GL_TEXTURE_2D_MULTISAMPLE                           = $9100;
+   GL_PROXY_TEXTURE_2D_MULTISAMPLE                     = $9101;
+   GL_TEXTURE_2D_MULTISAMPLE_ARRAY                     = $9102;
+   GL_PROXY_TEXTURE_2D_MULTISAMPLE_ARRAY               = $9103;
+   GL_TEXTURE_BINDING_2D_MULTISAMPLE                   = $9104;
+   GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY             = $9105;
+   GL_TEXTURE_SAMPLES                                  = $9106;
+   GL_TEXTURE_FIXED_SAMPLE_LOCATIONS                   = $9107;
+   GL_SAMPLER_2D_MULTISAMPLE                           = $9108;
+   GL_INT_SAMPLER_2D_MULTISAMPLE                       = $9109;
+   GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE              = $910A;
+   GL_SAMPLER_2D_MULTISAMPLE_ARRAY                     = $910B;
+   GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY                 = $910C;
+   GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY        = $910D;
+   GL_MAX_COLOR_TEXTURE_SAMPLES                        = $910E;
+   GL_MAX_DEPTH_TEXTURE_SAMPLES                        = $910F;
+   GL_MAX_INTEGER_SAMPLES                              = $9110;
+
+   // ARB Extension #68 - GL_ARB_vertex_array_bgra
+   // (no new tokens)
+
+   // ARB Extension #69 - GL_ARB_draw_buffers_blend
+   // (no new tokens)
+
+   // ARB Extension #70 - GL_ARB_sample_shading
+   GL_SAMPLE_SHADING                                   = $8C36;
+   GL_MIN_SAMPLE_SHADING_VALUE                         = $8C37;
+
+   // ARB Extension #71 - GL_ARB_texture_cube_map_array
+   GL_TEXTURE_CUBE_MAP_ARRAY                           = $9009;
+   GL_TEXTURE_BINDING_CUBE_MAP_ARRAY                   = $900A;
+   GL_PROXY_TEXTURE_CUBE_MAP_ARRAY                     = $900B;
+   GL_SAMPLER_CUBE_MAP_ARRAY                           = $900C;
+   GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW                    = $900D;
+   GL_INT_SAMPLER_CUBE_MAP_ARRAY                       = $900E;
+   GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY              = $900F;
+
+   // ARB Extension #72 - GL_ARB_texture_gather
+   GL_MIN_PROGRAM_TEXTURE_GATHER_OFFSET                = $8E5E;
+   GL_MAX_PROGRAM_TEXTURE_GATHER_OFFSET                = $8E5F;
+   GL_MAX_PROGRAM_TEXTURE_GATHER_COMPONENTS            = $8F9F;
+
+   // ARB Extension #73 - GL_ARB_texture_query_lod
+   // (no new tokens)
+
+   // ARB Extension #74 - WGL_ARB_create_context_profile
+   // see also WGL_ARB_create_context (ARB #55)
+   WGL_CONTEXT_PROFILE_MASK_ARB                        =$9126;
+   WGL_CONTEXT_CORE_PROFILE_BIT_ARB                    =$00000001;
+   WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB           =$00000002;
+   ERROR_INVALID_PROFILE_ARB                           =$2096;
+
+   // ARB Extension #75 - GLX_ARB_create_context_profile
+   // see also GLX_ARB_create_context (ARB #56)
+   GLX_CONTEXT_PROFILE_MASK_ARB                        = $9126;
+   GLX_CONTEXT_CORE_PROFILE_BIT_ARB                    = $00000001;
+   GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB           = $00000002;
+
+   {$endregion}
+
+   {$region 'Vendor/EXT extensions constants, in extension number order' /fold }
 
    // ----- extensions enumerants -----
 
@@ -2829,9 +3425,107 @@ const
    GL_TEXTURE_BINDING_RECTANGLE_NV                   = $84F6;
    GL_PROXY_TEXTURE_RECTANGLE_NV                     = $84F7;
    GL_MAX_RECTANGLE_TEXTURE_SIZE_NV                  = $84F8;
+
+   // GL_NV_texture_shader
+   GL_OFFSET_TEXTURE_RECTANGLE_NV                   = $864C;
+   GL_OFFSET_TEXTURE_RECTANGLE_SCALE_NV             = $864D;
+   GL_DOT_PRODUCT_TEXTURE_RECTANGLE_NV              = $864E;
+   GL_RGBA_UNSIGNED_DOT_PRODUCT_MAPPING_NV          = $86D9;
+   GL_UNSIGNED_INT_S8_S8_8_8_NV                     = $86DA;
+   GL_UNSIGNED_INT_8_8_S8_S8_REV_NV                 = $86DB;
+   GL_DSDT_MAG_INTENSITY_NV                         = $86DC;
+   GL_SHADER_CONSISTENT_NV                          = $86DD;
+   GL_TEXTURE_SHADER_NV                             = $86DE;
+   GL_SHADER_OPERATION_NV                           = $86DF;
+   GL_CULL_MODES_NV                                 = $86E0;
+   GL_OFFSET_TEXTURE_MATRIX_NV                      = $86E1;
+   GL_OFFSET_TEXTURE_SCALE_NV                       = $86E2;
+   GL_OFFSET_TEXTURE_BIAS_NV                        = $86E3;
+   GL_OFFSET_TEXTURE_2D_MATRIX_NV                   = GL_OFFSET_TEXTURE_MATRIX_NV;
+   GL_OFFSET_TEXTURE_2D_SCALE_NV                    = GL_OFFSET_TEXTURE_SCALE_NV;
+   GL_OFFSET_TEXTURE_2D_BIAS_NV                     = GL_OFFSET_TEXTURE_BIAS_NV;
+   GL_PREVIOUS_TEXTURE_INPUT_NV                     = $86E4;
+   GL_CONST_EYE_NV                                  = $86E5;
+   GL_PASS_THROUGH_NV                               = $86E6;
+   GL_CULL_FRAGMENT_NV                              = $86E7;
+   GL_OFFSET_TEXTURE_2D_NV                          = $86E8;
+   GL_DEPENDENT_AR_TEXTURE_2D_NV                    = $86E9;
+   GL_DEPENDENT_GB_TEXTURE_2D_NV                    = $86EA;
+   GL_DOT_PRODUCT_NV                                = $86EC;
+   GL_DOT_PRODUCT_DEPTH_REPLACE_NV                  = $86ED;
+   GL_DOT_PRODUCT_TEXTURE_2D_NV                     = $86EE;
+   GL_DOT_PRODUCT_TEXTURE_CUBE_MAP_NV               = $86F0;
+   GL_DOT_PRODUCT_DIFFUSE_CUBE_MAP_NV               = $86F1;
+   GL_DOT_PRODUCT_REFLECT_CUBE_MAP_NV               = $86F2;
+   GL_DOT_PRODUCT_CONST_EYE_REFLECT_CUBE_MAP_NV     = $86F3;
+   GL_HILO_NV                                       = $86F4;
+   GL_DSDT_NV                                       = $86F5;
+   GL_DSDT_MAG_NV                                   = $86F6;
+   GL_DSDT_MAG_VIB_NV                               = $86F7;
+   GL_HILO16_NV                                     = $86F8;
+   GL_SIGNED_HILO_NV                                = $86F9;
+   GL_SIGNED_HILO16_NV                              = $86FA;
+   GL_SIGNED_RGBA_NV                                = $86FB;
+   GL_SIGNED_RGBA8_NV                               = $86FC;
+   GL_SIGNED_RGB_NV                                 = $86FE;
+   GL_SIGNED_RGB8_NV                                = $86FF;
+   GL_SIGNED_LUMINANCE_NV                           = $8701;
+   GL_SIGNED_LUMINANCE8_NV                          = $8702;
+   GL_SIGNED_LUMINANCE_ALPHA_NV                     = $8703;
+   GL_SIGNED_LUMINANCE8_ALPHA8_NV                   = $8704;
+   GL_SIGNED_ALPHA_NV                               = $8705;
+   GL_SIGNED_ALPHA8_NV                              = $8706;
+   GL_SIGNED_INTENSITY_NV                           = $8707;
+   GL_SIGNED_INTENSITY8_NV                          = $8708;
+   GL_DSDT8_NV                                      = $8709;
+   GL_DSDT8_MAG8_NV                                 = $870A;
+   GL_DSDT8_MAG8_INTENSITY8_NV                      = $870B;
+   GL_SIGNED_RGB_UNSIGNED_ALPHA_NV                  = $870C;
+   GL_SIGNED_RGB8_UNSIGNED_ALPHA8_NV                = $870D;
+   GL_HI_SCALE_NV                                   = $870E;
+   GL_LO_SCALE_NV                                   = $870F;
+   GL_DS_SCALE_NV                                   = $8710;
+   GL_DT_SCALE_NV                                   = $8711;
+   GL_MAGNITUDE_SCALE_NV                            = $8712;
+   GL_VIBRANCE_SCALE_NV                             = $8713;
+   GL_HI_BIAS_NV                                    = $8714;
+   GL_LO_BIAS_NV                                    = $8715;
+   GL_DS_BIAS_NV                                    = $8716;
+   GL_DT_BIAS_NV                                    = $8717;
+   GL_MAGNITUDE_BIAS_NV                             = $8718;
+   GL_VIBRANCE_BIAS_NV                              = $8719;
+   GL_TEXTURE_BORDER_VALUES_NV                      = $871A;
+   GL_TEXTURE_HI_SIZE_NV                            = $871B;
+   GL_TEXTURE_LO_SIZE_NV                            = $871C;
+   GL_TEXTURE_DS_SIZE_NV                            = $871D;
+   GL_TEXTURE_DT_SIZE_NV                            = $871E;
+   GL_TEXTURE_MAG_SIZE_NV                           = $871F;
+
+   // GL_NV_texture_shader2
+   GL_DOT_PRODUCT_TEXTURE_3D_NV                     = $86EF;
+
+   // GL_NV_texture_shader3
+   GL_OFFSET_PROJECTIVE_TEXTURE_2D_NV               = $8850;
+   GL_OFFSET_PROJECTIVE_TEXTURE_2D_SCALE_NV         = $8851;
+   GL_OFFSET_PROJECTIVE_TEXTURE_RECTANGLE_NV        = $8852;
+   GL_OFFSET_PROJECTIVE_TEXTURE_RECTANGLE_SCALE_NV  = $8853;
+   GL_OFFSET_HILO_TEXTURE_2D_NV                     = $8854;
+   GL_OFFSET_HILO_TEXTURE_RECTANGLE_NV              = $8855;
+   GL_OFFSET_HILO_PROJECTIVE_TEXTURE_2D_NV          = $8856;
+   GL_OFFSET_HILO_PROJECTIVE_TEXTURE_RECTANGLE_NV   = $8857;
+   GL_DEPENDENT_HILO_TEXTURE_2D_NV                  = $8858;
+   GL_DEPENDENT_RGB_TEXTURE_3D_NV                   = $8859;
+   GL_DEPENDENT_RGB_TEXTURE_CUBE_MAP_NV             = $885A;
+   GL_DOT_PRODUCT_PASS_THROUGH_NV                   = $885B;
+   GL_DOT_PRODUCT_TEXTURE_1D_NV                     = $885C;
+   GL_DOT_PRODUCT_AFFINE_DEPTH_REPLACE_NV           = $885D;
+   GL_HILO8_NV                                      = $885E;
+   GL_SIGNED_HILO8_NV                               = $885F;
+   GL_FORCE_BLUE_TO_ONE_NV                          = $8860;
+
    
    // GL_NV_vertex_array_range2 (#232)
-   GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV          = $8533;
+   GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV           = $8533;
 
    // GL_NV_vertex_program (#233)
    GL_VERTEX_PROGRAM_NV                             = $8620;
@@ -3214,6 +3908,9 @@ const
    GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT          = $8C72;
    GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT   = $8C73;
 
+   // // GL_ATI_texture_compression_3dc
+   GL_COMPRESSED_LUMINANCE_ALPHA_3DC_ATI            = $8837;
+
    // GL_EXT_texture_compression_rgtc (#332)
    GL_COMPRESSED_RED_RGTC1_EXT                      = $8DBB;
    GL_COMPRESSED_SIGNED_RED_RGTC1_EXT               = $8DBC;
@@ -3233,6 +3930,43 @@ const
    GL_FRAMEBUFFER_SRGB_EXT                          = $8DB9;
    GL_FRAMEBUFFER_SRGB_CAPABLE_EXT                  = $8DBA;
 
+   // GL_NV_transform_feedback (#341)
+   GL_TRANSFORM_FEEDBACK_BUFFER_NV                      =$8C8E;
+   GL_TRANSFORM_FEEDBACK_BUFFER_START_NV                =$8C84;
+   GL_TRANSFORM_FEEDBACK_BUFFER_SIZE_NV                 =$8C85;
+   GL_TRANSFORM_FEEDBACK_RECORD_NV                      =$8C86;
+   GL_TRANSFORM_FEEDBACK_BUFFER_BINDING_NV              =$8C8F;
+   GL_INTERLEAVED_ATTRIBS_NV                            =$8C8C;
+   GL_SEPARATE_ATTRIBS_NV                               =$8C8D;
+   GL_PRIMITIVES_GENERATED_NV                           =$8C87;
+   GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN_NV          =$8C88;
+   GL_RASTERIZER_DISCARD_NV                             =$8C89;
+   GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS_NV  =$8C8A;
+   GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS_NV        =$8C8B;
+   GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS_NV     =$8C80;
+   GL_TRANSFORM_FEEDBACK_ATTRIBS_NV                     =$8C7E;
+   GL_ACTIVE_VARYINGS_NV                                =$8C81;
+   GL_ACTIVE_VARYING_MAX_LENGTH_NV                      =$8C82;
+   GL_TRANSFORM_FEEDBACK_VARYINGS_NV                    =$8C83;
+   GL_TRANSFORM_FEEDBACK_BUFFER_MODE_NV                 =$8C7F;
+   GL_BACK_PRIMARY_COLOR_NV                             =$8C77;
+   GL_BACK_SECONDARY_COLOR_NV                           =$8C78;
+   GL_TEXTURE_COORD_NV                                  =$8C79;
+   GL_CLIP_DISTANCE_NV                                  =$8C7A;
+   GL_VERTEX_ID_NV                                      =$8C7B;
+   GL_PRIMITIVE_ID_NV                                   =$8C7C;
+   GL_GENERIC_ATTRIB_NV                                 =$8C7D;
+   //GL_POINT_SIZE                                        =$0B11;
+   //GL_FOG_COORDINATE                                    =$8451;
+   //GL_SECONDARY_COLOR_NV                                =$852D;
+   //GL_PRIMARY_COLOR                                     =$8577;
+   //GL_POSITION                                          =$1203;
+   GL_LAYER_NV                                          =$8DAA;
+   //GL_UNSIGNED_INT_VEC2_EXT                             =$8DC6;
+   //GL_UNSIGNED_INT_VEC3_EXT                             =$8DC7;
+   //GL_UNSIGNED_INT_VEC4_EXT                             =$8DC8;
+
+   
    // GL_EXT_bindable_uniform (#342)
    GL_MAX_VERTEX_BINDABLE_UNIFORMS_EXT              = $8DE2;
    GL_MAX_FRAGMENT_BINDABLE_UNIFORMS_EXT            = $8DE3;
@@ -3296,9 +4030,37 @@ const
    GL_LUMINANCE_INTEGER_EXT                         = $8D9C;
    GL_LUMINANCE_ALPHA_INTEGER_EXT                   = $8D9D;
 
-   {.$endregion}
+   // GL_NV_conditional_render (#346)
+   GL_QUERY_WAIT_NV                                    = $8E13;
+   GL_QUERY_NO_WAIT_NV                                 = $8E14;
+   GL_QUERY_BY_REGION_WAIT_NV                          = $8E15;
+   GL_QUERY_BY_REGION_NO_WAIT_NV                       = $8E16;
 
-   {.$region 'OpenGL Utility (GLU) generic constants'}
+   // GL_EXT_transform_feedback (#352)
+   GL_TRANSFORM_FEEDBACK_BUFFER_EXT                    = $8C8E;
+   GL_TRANSFORM_FEEDBACK_BUFFER_START_EXT              = $8C84;
+   GL_TRANSFORM_FEEDBACK_BUFFER_SIZE_EXT               = $8C85;
+   GL_TRANSFORM_FEEDBACK_BUFFER_BINDING_EXT            = $8C8F;
+   GL_INTERLEAVED_ATTRIBS_EXT                          = $8C8C;
+   GL_SEPARATE_ATTRIBS_EXT                             = $8C8D;
+   GL_PRIMITIVES_GENERATED_EXT                         = $8C87;
+   GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN_EXT        = $8C88;
+   GL_RASTERIZER_DISCARD_EXT                           = $8C89;
+   GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS_EXT= $8C8A;
+   GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS_EXT      = $8C8B;
+   GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS_EXT   = $8C80;
+   GL_TRANSFORM_FEEDBACK_VARYINGS_EXT                  = $8C83;
+   GL_TRANSFORM_FEEDBACK_BUFFER_MODE_EXT               = $8C7F;
+   GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH_EXT        = $8C76;
+
+   // GL_GEOMETRY_PROGRAM (Don't have info on those...)
+   GL_GEOMETRY_PROGRAM_NV                              = $8C26;
+   GL_MAX_PROGRAM_OUTPUT_VERTICES_NV                   = $8C27;
+   GL_MAX_PROGRAM_TOTAL_OUTPUT_COMPONENTS_NV           = $8C28;
+
+   {$endregion}
+
+   {$region 'OpenGL Utility (GLU) generic constants' /fold }
    // ********** GLU generic constants **********
 
    // Errors: (return value 0= no error)
@@ -3455,9 +4217,9 @@ const
    GLU_ERROR                                        = GLU_TESS_ERROR;
    GLU_EDGE_FLAG                                    = GLU_TESS_EDGE_FLAG;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'OpenGL Extension to the X Window System (GLX) generic constants'}
+   {$region 'OpenGL Extension to the X Window System (GLX) generic constants' /fold }
 
    GLX_VERSION_1_1                                  = 1;
    GLX_VERSION_1_2                                  = 1;
@@ -3570,11 +4332,11 @@ const
    GLX_3DFX_WINDOW_MODE_MESA                        = $1;
    GLX_3DFX_FULLSCREEN_MODE_MESA                    = $2;
 
-   {.$endregion}
+   {$endregion}
 
 type
 
-   {.$region 'OpenGL Utility (GLU) types'}
+   {$region 'OpenGL Utility (GLU) types' /fold }
    // GLU types
    TGLUNurbs = record end;
    TGLUQuadric = record end;
@@ -3616,9 +4378,9 @@ type
    // GLUNurbsCallback
    TGLUNurbsErrorProc = procedure(ErrorCode: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'OpenGL v1.1 core functions and procedures'}
+   {$region 'OpenGL v1.1 core functions and procedures' /fold }
    procedure glAccum(op: TGLuint; value: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glAlphaFunc(func: TGLEnum; ref: TGLclampf); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    function  glAreTexturesResident(n: TGLsizei; Textures: PGLuint; residences: PGLboolean): TGLboolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
@@ -3740,7 +4502,7 @@ type
    procedure glGetPixelMapusv(map: TGLEnum; values: PGLushort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glGetPointerv(pname: TGLEnum; var params); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glGetPolygonStipple(mask: PGLubyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
-   function  glGetString(name: TGLEnum): PChar; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
+   function  glGetString(name: TGLEnum): PGLChar; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glGetTexEnvfv(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glGetTexEnviv(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glGetTexGendv(coord, pname: TGLEnum; params: PGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
@@ -3972,11 +4734,11 @@ type
    procedure glVertexPointer(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glViewport(x, y: TGLint; width, height: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'OpenGL utility (GLU) functions and procedures'}
-   function  gluErrorString(errCode: TGLEnum): PChar; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
-   function  gluGetString(name: TGLEnum): PChar; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
+   {$region 'OpenGL utility (GLU) functions and procedures' /fold }
+   function  gluErrorString(errCode: TGLEnum): PGLChar; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
+   function  gluGetString(name: TGLEnum): PGLChar; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
    procedure gluOrtho2D(left, right, bottom, top: TGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
    procedure gluPerspective(fovy, aspect, zNear, zFar: TGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
    procedure gluPickMatrix(x, y, width, height: TGLdouble; const viewport: TVector4i); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
@@ -4034,11 +4796,11 @@ type
    procedure gluNextContour(tess: PGLUtesselator; atype: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
    procedure gluEndPolygon(tess: PGLUtesselator); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external glu32;
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'Windows OpenGL (WGL) support functions'}
-   {$IFDEF MSWINDOWS}
-   function wglGetProcAddress(ProcName: PChar): Pointer; stdcall; external opengl32;
+   {$region 'Windows OpenGL (WGL) support functions' /fold }
+   {$IFDEF SUPPORT_WGL}
+   function wglGetProcAddress(ProcName: PGLChar): Pointer; stdcall; external opengl32;
    function wglCopyContext(p1: HGLRC; p2: HGLRC; p3: Cardinal): BOOL; stdcall; external opengl32;
    function wglCreateContext(DC: HDC): HGLRC; stdcall; external opengl32;
    function wglCreateLayerContext(p1: HDC; p2: Integer): HGLRC; stdcall; external opengl32;
@@ -4052,7 +4814,7 @@ type
    function wglSetLayerPaletteEntries(p1: HDC; p2, p3, p4: Integer; var pcr): Integer; stdcall; external opengl32;
    function wglShareLists(p1, p2: HGLRC): BOOL; stdcall; external opengl32;
    function wglSwapLayerBuffers(p1: HDC; p2: Cardinal): BOOL; stdcall; external opengl32;
-//   function wglSwapMultipleBuffers(p1: UINT; const p2: PWGLSwap): DWORD; stdcall; external opengl32;
+   function wglSwapMultipleBuffers(p1: UINT; const p2: PWGLSwap): DWORD; stdcall; external opengl32;
    function wglUseFontBitmapsA(DC: HDC; p2, p3, p4: DWORD): BOOL; stdcall; external opengl32;
    function wglUseFontOutlinesA (p1: HDC; p2, p3, p4: DWORD; p5, p6: Single; p7: Integer; p8: PGlyphMetricsFloat): BOOL; stdcall; external opengl32;
    function wglUseFontBitmapsW(DC: HDC; p2, p3, p4: DWORD): BOOL; stdcall; external opengl32;
@@ -4060,18 +4822,17 @@ type
    function wglUseFontBitmaps(DC: HDC; p2, p3, p4: DWORD): BOOL; stdcall; external opengl32 name 'wglUseFontBitmapsA';
    function wglUseFontOutlines(p1: HDC; p2, p3, p4: DWORD; p5, p6: Single; p7: Integer; p8: PGlyphMetricsFloat): BOOL; stdcall; external opengl32 name 'wglUseFontOutlinesA';
    {$ENDIF}
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'OpenGL Extension to the X Window System (GLX) support functions'}
-   {$IFNDEF darwin}
-   {$IFDEF UNIX}
+   {$region 'OpenGL Extension to the X Window System (GLX) support functions' /fold }
+   {$IFDEF SUPPORT_GLX}
    function glXChooseVisual(dpy: PDisplay; screen: TGLint; attribList: PGLint): PXVisualInfo; cdecl; external opengl32;
    function glXCreateContext(dpy: PDisplay; vis: PXVisualInfo; shareList: GLXContext; direct: TGLboolean): GLXContext; cdecl; external opengl32;
    procedure glXDestroyContext(dpy: PDisplay; ctx: GLXContext); cdecl; external opengl32;
    function glXMakeCurrent(dpy: PDisplay; drawable: GLXDrawable; ctx: GLXContext): TGLboolean; cdecl; external opengl32;
    procedure glXCopyContext(dpy: PDisplay; src: GLXContext; dst: GLXContext; mask: TGLuint); cdecl; external opengl32;
    procedure glXSwapBuffers(dpy: PDisplay; drawable: GLXDrawable); cdecl; external opengl32;
-   function glXCreateGLXPixmap(dpy: PDisplay; visual: PXVisualInfo; pixmap: Pixmap): GLXPixmap; cdecl; external opengl32;
+   function glXCreateGLXPixmap(dpy: PDisplay; visual: PXVisualInfo; pixmap: XPixmap): GLXPixmap; cdecl; external opengl32;
    procedure glXDestroyGLXPixmap(dpy: PDisplay; pixmap: GLXPixmap); cdecl; external opengl32;
    function glXQueryExtension(dpy: PDisplay; errorb: PGLInt; event: PGLInt): TGLboolean; cdecl; external opengl32;
    function glXQueryVersion(dpy: PDisplay; maj: PGLInt; min: PGLINT): TGLboolean; cdecl; external opengl32;
@@ -4081,12 +4842,12 @@ type
    function glXGetCurrentDrawable: GLXDrawable; cdecl; external opengl32;
    procedure glXWaitGL; cdecl; external opengl32;
    procedure glXWaitX; cdecl; external opengl32;
-   procedure glXUseXFont(font: Font; first: TGLInt; count: TGLInt; list: TGLint); cdecl; external opengl32;
+   procedure glXUseXFont(font: XFont; first: TGLInt; count: TGLInt; list: TGLint); cdecl; external opengl32;
 
    // GLX 1.1 and later
-   function glXQueryExtensionsString(dpy: PDisplay; screen: TGLInt): PChar; cdecl; external opengl32;
-   function glXQueryServerString(dpy: PDisplay; screen: TGLInt; name: TGLInt): PChar; cdecl; external opengl32;
-   function glXGetClientString(dpy: PDisplay; name: TGLInt): PChar; cdecl; external opengl32;
+   function glXQueryExtensionsString(dpy: PDisplay; screen: TGLInt): PGLChar; cdecl; external opengl32;
+   function glXQueryServerString(dpy: PDisplay; screen: TGLInt; name: TGLInt): PGLChar; cdecl; external opengl32;
+   function glXGetClientString(dpy: PDisplay; name: TGLInt): PGLChar; cdecl; external opengl32;
 
    // GLX 1.2 and later
    function glXGetCurrentDisplay: PDisplay; cdecl; external opengl32;
@@ -4096,9 +4857,9 @@ type
    function glXGetFBConfigAttrib(dpy: PDisplay; config: GLXFBConfig; attribute: TGLInt; value: PGLInt): TGLInt; cdecl; external opengl32;
    function glXGetFBConfigs(dpy: PDisplay; screen: TGLInt; nelements: PGLInt): GLXFBConfig; cdecl; external opengl32;
    function glXGetVisualFromFBConfig(dpy: PDisplay; config: GLXFBConfig): PXVisualInfo; cdecl; external opengl32;
-   function glXCreateWindow(dpy: PDisplay; config: GLXFBConfig; win: Window; const attribList: PGLInt): GLXWindow; cdecl; external opengl32;
+   function glXCreateWindow(dpy: PDisplay; config: GLXFBConfig; win: XWindow; const attribList: PGLInt): GLXWindow; cdecl; external opengl32;
    procedure glXDestroyWindow(dpy: PDisplay; window: GLXWindow); cdecl; external opengl32;
-   function glXCreatePixmap(dpy: PDisplay; config: GLXFBConfig; pixmap: Pixmap; attribList: PGLInt): GLXPixmap; cdecl; external opengl32;
+   function glXCreatePixmap(dpy: PDisplay; config: GLXFBConfig; pixmap: XPixmap; attribList: PGLInt): GLXPixmap; cdecl; external opengl32;
    procedure glXDestroyPixmap(dpy: PDisplay; pixmap: GLXPixmap); cdecl; external opengl32;
    function glXCreatePbuffer(dpy: PDisplay; config: GLXFBConfig; attribList: PGLInt): GLXPBuffer; cdecl; external opengl32;
    procedure glXDestroyPbuffer(dpy: PDisplay; pbuf: GLXPBuffer); cdecl; external opengl32;
@@ -4118,12 +4879,11 @@ type
    function glXImportContextEXT(dpy: PDisplay; contextID: GLXContextID): GLXContext; cdecl; external opengl32;
    function glXQueryContextInfoEXT(dpy: PDisplay; context: GLXContext; attribute: TGLInt; value: PGLInt): TGLInt; cdecl; external opengl32;
    procedure glXCopySubBufferMESA(dpy: PDisplay; drawable: GLXDrawable; x: TGLInt; y: TGLInt; width: TGLInt; height: TGLInt); cdecl; external opengl32;
-   function glXCreateGLXPixmapMESA(dpy: PDisplay; visual: PXVisualInfo; pixmap: Pixmap; cmap: Colormap): GLXPixmap; cdecl; external opengl32;
+   function glXCreateGLXPixmapMESA(dpy: PDisplay; visual: PXVisualInfo; pixmap: XPixmap; cmap: XColormap): GLXPixmap; cdecl; external opengl32;
    function glXReleaseBuffersMESA(dpy: PDisplay; d: GLXDrawable): TGLboolean; cdecl; external opengl32;
    function glXSet3DfxModeMESA(mode: TGLint): TGLboolean; cdecl; external opengl32;
    {$ENDIF}
-   {$ENDIF}
-   {.$endregion}
+   {$endregion}
 
 {$IFDEF MULTITHREADOPENGL}
 threadvar
@@ -4131,9 +4891,9 @@ threadvar
 var
 {$ENDIF}
 
-   {.$region 'OpenGL extension function/procedure definitions'}
+   {$region 'OpenGL extension function/procedure definitions'}
 
-   {.$region 'New core function/procedure definitions in OpenGL 1.2'}
+   {$region 'New core function/procedure definitions in OpenGL 1.2' /fold }
    //  ###########################################################
    //           function and procedure definitions for
    //            extensions integrated into OpenGL 1.2 Core
@@ -4202,9 +4962,9 @@ var
    // promoted to core v1.2 from GL_EXT_copy_texture
    glCopyTexSubImage3D: procedure(target: TGLEnum; level, xoffset, yoffset, zoffset, x, y: TGLint; width, height: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core function/procedure definitions in OpenGL 1.3'}
+   {$region 'New core function/procedure definitions in OpenGL 1.3' /fold }
 
    //  ###########################################################
    //           function and procedure definitions for
@@ -4265,9 +5025,9 @@ var
    glCompressedTexSubImage1D: procedure(target: TGLenum; level: TGLint; xoffset: TGLint; width: TGLsizei; Format: TGLenum; imageSize: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetCompressedTexImage: procedure(target: TGLenum; level: TGLint; img: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core function/procedure definitions in OpenGL 1.4'}
+   {$region 'New core function/procedure definitions in OpenGL 1.4' /fold }
 
    //  ###########################################################
    //           function and procedure definitions for
@@ -4331,9 +5091,9 @@ var
    glWindowPos3s: procedure(x,y,z : TGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glWindowPos3sv: procedure(v : PGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core function/procedure definitions in OpenGL 1.5'}
+   {$region 'New core function/procedure definitions in OpenGL 1.5' /fold }
 
    //  ###########################################################
    //           function and procedure definitions for
@@ -4366,9 +5126,9 @@ var
    // promoted to core v1.5 from GL_EXT_shadow_funcs (#267)
    // (no functions or procedures)
 
-   {.$endregion}
-   
-   {.$region 'New core function/procedure definitions in OpenGL 2.0'}
+   {$endregion}
+
+   {$region 'New core function/procedure definitions in OpenGL 2.0' /fold }
 
    //  ###########################################################
    //           function and procedure definitions for
@@ -4388,7 +5148,7 @@ var
 
    // promoted to core v2.0 from GL_ARB_shader_objects (#30) / GL_ARB_vertex_shader (#31) / GL_ARB_fragment_shader (#32)
    glAttachShader: procedure(_program: TGLuint; shader: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glBindAttribLocation: procedure(_program: TGLuint; index: TGLuint; const name: PGLchar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF unix} cdecl; {$ENDIF}
+   glBindAttribLocation: procedure(_program: TGLuint; index: TGLuint; const name: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF unix} cdecl; {$ENDIF}
    glCompileShader: procedure(shader: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glCreateProgram: function(): TGLuint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glCreateShader: function(_type: TGLenum): TGLuint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -4405,7 +5165,7 @@ var
    glGetProgramInfoLog: procedure(_program: TGLuint; bufSize: TGLsizei; length: PGLsizei; infoLog: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetShaderiv: procedure(shader: TGLuint; pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetShaderInfoLog: procedure(shader: TGLuint; bufSize: TGLsizei; length: PGLsizei; infoLog: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetShaderSource: procedure(shader: TGLuint; bufSize: TGLsizei; length: PGLsizei; source: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetShaderSource: procedure(shader:TGLuint; bufSize: TGLsizei; length: PGLsizei; source: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformLocation: function(_program: TGLuint; const name: PGLChar): TGLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformfv: procedure(_program: TGLuint; location: TGLint; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformiv: procedure(_program: TGLuint; location: TGLint; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -4413,7 +5173,7 @@ var
    glGetVertexAttribfv: procedure(index: TGLuint; pname: TGLenum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetVertexAttribiv: procedure(index: TGLuint; pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetVertexAttribPointerv: procedure(index: TGLuint; pname: TGLenum; _pointer: PGLvoid); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glIsProgram: function(_program: TGLuint): TGLboolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glIsProgram: function(_program: TGLuint):TGLboolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glIsShader: function(shader: TGLuint): TGLboolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glLinkProgram: procedure(_program: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glShaderSource: procedure(shader: TGLuint; count: TGLsizei; const _string: PGLPCharArray; const length: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -4474,11 +5234,11 @@ var
    glVertexAttrib4ubv: procedure(index: TGLuint; v: PGLubyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glVertexAttrib4uiv: procedure(index: TGLuint; v: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glVertexAttrib4usv: procedure(index: TGLuint; v: PGLushort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glVertexAttribPointer: procedure(index: TGLuint; size: TGLint; _type: TGLenum; normalized: TGLboolean; stride: TGLsizei; _pointer: PGLvoid); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIXix} cdecl; {$ENDIF}
+   glVertexAttribPointer: procedure(index: TGLuint; size: TGLint; _type: TGLenum; normalized: TGLboolean; stride: TGLsizei; _pointer: PGLvoid); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'New core function/procedure definitions in OpenGL 2.1'}
+   {$region 'New core function/procedure definitions in OpenGL 2.1' /fold }
 
    //  ###########################################################
    //           function and procedure definitions for
@@ -4499,9 +5259,131 @@ var
    glUniformMatrix3x4fv: procedure(location: TGLint; count: TGLsizei; transpose: TGLBoolean; value: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glUniformMatrix4x3fv: procedure(location: TGLint; count: TGLsizei; transpose: TGLBoolean; value: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'OpenGL Utility (GLU) function/procedure definitions'}
+   {$region 'New core function/procedure definitions in OpenGL 3.0' /fold }
+
+   //  ###########################################################
+   //           function and procedure definitions for
+   //            extensions integrated into OpenGL 3.0 Core
+   //  ###########################################################
+
+   // promoted to core v3.0 from GL_EXT_gpu_shader4
+   glVertexAttribI1i: procedure(index: TGLuint; x: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI2i: procedure(index: TGLuint; x: TGLint; y: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI3i: procedure(index: TGLuint; x: TGLint; y: TGLint; z: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI4i: procedure(index: TGLuint; x: TGLint; y: TGLint; z: TGLint; w: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI1ui: procedure(index: TGLuint; x: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI2ui: procedure(index: TGLuint; x: TGLuint; y: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI3ui: procedure(index: TGLuint; x: TGLuint; y: TGLuint; z: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI4ui: procedure(index: TGLuint; x: TGLuint; y: TGLuint; z: TGLuint; w: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI1iv: procedure(index: TGLuint; v:PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI2iv: procedure(index: TGLuint; v:PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI3iv: procedure(index: TGLuint; v:PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI4iv: procedure(index: TGLuint; v:PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI1uiv: procedure(index: TGLuint; v:PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI2uiv: procedure(index: TGLuint; v:PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI3uiv: procedure(index: TGLuint; v:PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI4uiv: procedure(index: TGLuint; v:PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI4bv: procedure(index: TGLuint; v:PGLbyte);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI4sv: procedure(index: TGLuint; v:PGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI4ubv: procedure(index: TGLuint; v: PGLUbyte);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribI4usv: procedure(index: TGLuint; v: PGLushort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glVertexAttribIPointer: procedure(index: TGLuint; size: TGLint; _type: TGLenum;
+                                stride: TGLsizei; _pointer: pointer);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetVertexAttribIiv: procedure(index: TGLuint; pname: TGLenum; params: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetVertexAttribIuiv: procedure(index: TGLuint; pname: TGLenum; params: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniform1ui: procedure(location: TGLInt; v0: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniform2ui: procedure(location: TGLInt; v0: TGLuint; v1: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniform3ui: procedure(location: TGLInt; v0: TGLuint; v1: TGLuint; v2: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniform4ui: procedure(location: TGLInt; v0: TGLuint; v1: TGLuint; v2: TGLuint; v3: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniform1uiv: procedure(location: TGLInt; count: TGLsizei; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniform2uiv: procedure(location: TGLInt; count: TGLsizei; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniform3uiv: procedure(location: TGLInt; count: TGLsizei; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniform4uiv: procedure(location: TGLInt; count: TGLsizei; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetUniformuiv: procedure(_program: TGLuint; location: TGLint; params: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindFragDataLocation: procedure(_program: TGLuint; colorNumber: TGLuint; name: PGLChar);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetFragDataLocation: function(_program: TGLuint; name: PGLChar): TGLint;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // promoted to core v3.0 from GL_NV_conditional_render
+   glBeginConditionalRender: procedure(id: TGLuint; mode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glEndConditionalRender: procedure();{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // promoted to core v3.0 from GL_ARB_color_buffer_float
+   glClampColor: procedure (target: TGLenum; clamp: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // promoted to core v3.0 from GL_EXT_texture_integer
+   //glClearColorIi: procedure(r: TGLint; g: TGLint; b: TGLint; a: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   //glClearColorIui: procedure(r: TGLuint; g: TGLuint; b: TGLuint; a: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTexParameterIiv: procedure(target: TGLenum; pname: TGLenum; params: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTexParameterIuiv: procedure(target: TGLenum; pname: TGLenum; params: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetTexParameterIiv: procedure(target: TGLenum; pname: TGLenum; params: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetTexParameterIuiv: procedure(target: TGLenum; pname: TGLenum; params: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // promoted to core v3.0 from GL_EXT_draw_buffers2
+   glColorMaski: procedure(index: TGLuint; r: TGLboolean; g: TGLboolean;
+                            b: TGLboolean; a: TGLboolean);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetBooleani_v: procedure(target: TGLenum; index: TGLuint; data: PGLboolean);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetIntegeri_v: procedure(target: TGLenum; index: TGLuint; data: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glEnablei: procedure(target: TGLenum; index: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDisablei: procedure(target: TGLenum; index: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glIsEnabledi: function(target: TGLenum; index: TGLuint): TGLboolean;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   //promoted to core v3.0 from GL_EXT_transform_feedback
+   glBindBufferRange: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint;
+                            offset:TGLintptr; size: TGLsizeiptr);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindBufferBase: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBeginTransformFeedback: procedure(primitiveMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glEndTransformFeedback: procedure();{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTransformFeedbackVaryings: procedure(_program: TGLuint; count: TGLsizei;
+                                      const varyings: PGLPCharArray; bufferMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetTransformFeedbackVarying: procedure(_program: TGLuint; index: TGLuint;
+                                        location: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // New commands in OpenGL 3.0
+   glClearBufferiv: procedure(buffer: TGLenum; value: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glClearBufferuiv: procedure(buffer: TGLenum; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glClearBufferfv: procedure(buffer: TGLenum; value: PGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glClearBufferfi: procedure(buffer: TGLenum; depth: TGLfloat; stencil: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetStringi: function(name: TGLenum; index: TGLuint): PGLChar;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   {$endregion}
+
+   {$region 'New core function/procedure definitions in OpenGL 3.1' /fold }
+
+   //  ###########################################################
+   //           function and procedure definitions for
+   //            extensions integrated into OpenGL 3.1 Core
+   //  ###########################################################
+
+   glDrawArraysInstanced: procedure(mode: TGLenum; first: TGLint; count: TGLsizei; primcount: TGLsizei);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDrawElementsInstanced: procedure(mode: TGLenum; count: TGLsizei; _type: TGLenum; indices: PGLvoid; primcount: TGLsizei);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTexBuffer: procedure(target: TGLenum; internalformat: TGLenum; buffer: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glPrimitiveRestartIndex: procedure(index: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   {$endregion}
+
+   {$region 'New core function/procedure definitions in OpenGL 3.2' /fold }
+
+   //  ###########################################################
+   //           function and procedure definitions for
+   //            extensions integrated into OpenGL 3.2 Core
+   //  ###########################################################
+
+   glGetInteger64i_v: procedure(target: TGLenum; index: TGLuint; data: PGLint64);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetBufferParameteri64v: procedure(target: TGLenum; pname: TGLenum; params: PGLint64);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glProgramParameteri: procedure(_program: TGLuint; pname: TGLenum; value: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferTexture: procedure(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+//   glFramebufferTextureFace: procedure(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint; face: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   // OpenGL 3.2 also reuses entry points from these extensions:
+   // GL_ARB_draw_elements_base_vertex
+   // GL_ARB_provoking_vertex
+   // GL_ARB_sync
+   // GL_ARB_texture_multisample
+
+   {$endregion}
+
+   {$region 'OpenGL Utility (GLU) function/procedure definitions' /fold }
 
    //  ###########################################################
    //           function and procedure definitions for
@@ -4513,10 +5395,10 @@ var
    gluNewNurbsTessellatorEXT: function: PGLUnurbs; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    gluDeleteNurbsTessellatorEXT: procedure(nurb: PGLUnurbs); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'Windows OpenGL (WGL) function/procedure definitions for ARB approved extensions'}
-   {$IFDEF MSWINDOWS}
+   {$region 'Windows OpenGL (WGL) function/procedure definitions for ARB approved extensions' /fold }
+   {$IFDEF SUPPORT_WGL}
    //  ###########################################################
    //           function and procedure definitions for
    //               ARB approved WGL extensions
@@ -4530,7 +5412,7 @@ var
      xSrc, ySrc: Integer): BOOL; stdcall;
 
    // WGL_ARB_extensions_string (ARB #8)
-   wglGetExtensionsStringARB: function(DC: HDC): PChar; stdcall;
+   wglGetExtensionsStringARB: function(DC: HDC): PGLChar; stdcall;
 
    // WGL_ARB_pixel_format (ARB #9)
    wglGetPixelFormatAttribivARB: function(DC: HDC; iPixelFormat, iLayerPlane: Integer; nAttributes: TGLenum;
@@ -4538,14 +5420,14 @@ var
    wglGetPixelFormatAttribfvARB: function(DC: HDC; iPixelFormat, iLayerPlane: Integer; nAttributes: TGLenum;
      const piAttributes: PGLint; piValues: PGLFloat) : BOOL; stdcall;
    wglChoosePixelFormatARB: function(DC: HDC; const piAttribIList: PGLint; const pfAttribFList: PGLFloat;
-     nMaxFormats: GLint; piFormats: PGLint; nNumFormats: PGLenum) : BOOL; stdcall;
+     nMaxFormats: GLuint; piFormats: PGLint; nNumFormats: PGLenum) : BOOL; stdcall;
 
    // WGL_make_current_read (ARB #10)
    wglMakeContextCurrentARB: function(hDrawDC: HDC; hReadDC: HDC; _hglrc: HGLRC): BOOL; stdcall;
    wglGetCurrentReadDCARB: function(): HDC; stdcall;
 
    // WGL_ARB_pbuffer (ARB #11)
-   wglCreatePbufferARB: function(DC: HDC; iPixelFormat: Integer; iWidth, iHeight : Integer;
+   wglCreatePbufferARB: function(DC: HDC; iPixelFormat: GLInt; iWidth, iHeight : GLInt;
      const piAttribList: PGLint) : HPBUFFERARB; stdcall;
    wglGetPbufferDCARB: function(hPbuffer: HPBUFFERARB) : HDC; stdcall;
    wglReleasePbufferDCARB: function(hPbuffer: HPBUFFERARB; DC: HDC) : Integer; stdcall;
@@ -4557,11 +5439,16 @@ var
    wglBindTexImageARB: function(hPbuffer: HPBUFFERARB; iBuffer: Integer): BOOL; stdcall;
    wglReleaseTexImageARB: function(hpBuffer: HPBUFFERARB; iBuffer: Integer): BOOL; stdcall;
    wglSetPbufferAttribARB: function(hpBuffer: HPBUFFERARB; const piAttribList: PGLint): BOOL; stdcall;
-   {$ENDIF}
-   {.$endregion}
 
-   {.$region 'Windows OpenGL (WGL) function/procedure definitions for Vendor/EXT extensions'}
-   {$IFDEF MSWINDOWS}
+   // WGL_ARB_create_context (ARB #55)
+   wglCreateContextAttribsARB: function(DC: HDC; hShareContext: HGLRC;
+				     attribList: PGLint):HGLRC; stdcall;
+
+   {$ENDIF}
+   {$endregion}
+
+   {$region 'Windows OpenGL (WGL) function/procedure definitions for Vendor/EXT extensions' /fold }
+   {$IFDEF SUPPORT_WGL}
    //  ###########################################################
    //           function and procedure definitions for
    //               Vendor/EXT WGL extensions
@@ -4571,9 +5458,37 @@ var
    wglSwapIntervalEXT: function(interval : Integer) : BOOL; stdcall;
    wglGetSwapIntervalEXT: function : Integer; stdcall;
    {$ENDIF}
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'OpenGL function/procedure definitions for ARB approved extensions'}
+   {$region 'GLX function/procedure definitions for ARB approved extensions' /fold }
+   {$IFDEF SUPPORT_GLX}
+   //  ###########################################################
+   //           function and procedure definitions for
+   //               ARB approved GLX extensions
+   //  ###########################################################
+
+   // GLX_ARB_create_context (EXT #56)
+   glXCreateContextAttribsARB: function(dpy: PDisplay; config: GLXFBConfig;
+		    share_context: GLXContext; direct: TGLBoolean;
+		    attrib_list: PGLint): GLXContext; cdecl;
+
+   {$ENDIF}
+   {$endregion}
+
+   {$region 'GLX function/procedure definitions for Vendor/EXT extensions' /fold }
+   {$IFDEF SUPPORT_GLX}
+   //  ###########################################################
+   //           function and procedure definitions for
+   //               Vendor/EXT WGL extensions
+   //  ###########################################################
+
+   // GLX_SGI_swap_control (EXT #40)
+   glXSwapIntervalSGI: function(interval: TGLint): TGLint; cdecl;
+
+   {$ENDIF}
+   {$endregion}
+
+   {$region 'OpenGL function/procedure definitions for ARB approved extensions' /fold }
 
    //  ###########################################################
    //           function and procedure definitions for
@@ -4799,18 +5714,18 @@ var
    glUniformMatrix4fvARB: procedure(location: GLint; count: GLsizei; transpose: GLboolean; value: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetObjectParameterfvARB: procedure(obj: GLhandleARB; pname: GLenum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetObjectParameterivARB: procedure(obj: GLhandleARB; pname: GLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetInfoLogARB: procedure(obj: GLhandleARB; maxLength: GLsizei; length: PGLsizei; infoLog: PChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetInfoLogARB: procedure(obj: GLhandleARB; maxLength: GLsizei; length: PGLsizei; infoLog: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetAttachedObjectsARB: procedure(containerObj: GLhandleARB; maxCount: GLsizei; count: PGLsizei; obj: PGLhandleARB); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetUniformLocationARB: function(programObj: GLhandleARB; const name: PChar): GLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetActiveUniformARB: procedure(programObj: GLhandleARB; index: GLuint; maxLength: GLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetUniformLocationARB: function(programObj: GLhandleARB; const name: PGLChar): GLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveUniformARB: procedure(programObj: GLhandleARB; index: GLuint; maxLength: GLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformfvARB: procedure(programObj: GLhandleARB; location: GLint; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformivARB: procedure(programObj: GLhandleARB; location: GLint; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetShaderSourceARB: procedure(obj: GLhandleARB; maxLength: GLsizei; length: PGLsizei; source: PChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetShaderSourceARB: procedure(obj: GLhandleARB; maxLength: GLsizei; length: PGLsizei; source: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // GL_ARB_vertex_shader (ARB #31)
-   glBindAttribLocationARB: procedure(programObj: GLhandleARB; index: GLuint; const name: PChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetActiveAttribARB: procedure(programObj: GLhandleARB; index: GLuint; maxLength: GLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetAttribLocationARB: function(programObj: GLhandleARB; const name: PChar): GLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindAttribLocationARB: procedure(programObj: GLhandleARB; index: GLuint; const name: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveAttribARB: procedure(programObj: GLhandleARB; index: GLuint; maxLength: GLsizei; length: PGLsizei; size: PGLint; _type: PGLenum; name: PGLChar); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetAttribLocationARB: function(programObj: GLhandleARB; const name: PGLChar): GLint; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // GL_ARB_DrawBuffers (ARB #37)
    glDrawBuffersARB: procedure (n: GLSizei; const bufs: PGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -4818,9 +5733,127 @@ var
    // GL_ARB_color_buffer_float (ARB #39)
    glClampColorARB: procedure (target: TGLenum; clamp: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   // GL_ARB_draw_instanced (ARB #44)
+   glDrawArraysInstancedARB: procedure(mode: TGLenum; first: TGLint; count: TGLsizei;
+            primcount: TGLsizei);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDrawElementsInstancedARB: procedure(mode: TGLenum; count: TGLSizei; _type: TGLenum;
+            indices: PGLvoid; primcount: TGLsizei);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$region 'OpenGL function/procedure definitions for Vendor/EXT extensions'}
+   // GL_ARB_framebuffer_object (ARB #45)         
+   glIsRenderbuffer: function(renderbuffer: TGLuint): TGLBoolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindRenderbuffer: procedure(target: TGLenum; renderbuffer: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDeleteRenderbuffers: procedure(n: TGLsizei; renderbuffers: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGenRenderbuffers: procedure(n: TGLSizei; renderbuffers: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glRenderbufferStorage: procedure(target: TGLenum; internalformat: TGLenum;
+			      width: TGLsizei;  height: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glRenderbufferStorageMultisample: procedure(target: TGLenum; samples: TGLsizei;
+					internalformat: TGLenum;
+				  width: TGLsizei; height: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetRenderbufferParameteriv: procedure(target: TGLenum; pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glIsFramebuffer: function(framebuffer: TGLuint): TGLboolean; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindFramebuffer: procedure(target: TGLenum; framebuffer: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDeleteFramebuffers: procedure(n: TGLsizei; framebuffers: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGenFramebuffers: procedure(n: TGLsizei; framebuffers: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glCheckFramebufferStatus: function(target: TGLenum): TGLenum; {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferTexture1D: procedure(target: TGLenum; attachment: TGLenum;
+			      textarget: TGLenum; texture: TGLuint; level: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferTexture2D: procedure(target: TGLenum; attachment: TGLenum;
+			      textarget: TGLenum; texture: TGLuint; level: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferTexture3D: procedure(target: TGLenum; attachment: TGLenum;
+			      textarget: TGLenum; texture: TGLuint;
+			      level: TGLint; layer: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferTextureLayer: procedure(target: TGLenum; attachment: TGLenum;
+				 texture: TGLuint; level: TGLint; layer: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferRenderbuffer: procedure(target: TGLenum; attachment: TGLenum;
+				 renderbuffertarget: TGLenum; renderbuffer: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetFramebufferAttachmentParameteriv: procedure(target: TGLenum; attachment: TGLenum;
+					     pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBlitFramebuffer: procedure(srcX0: TGLint; srcY0: TGLint; srcX1: TGLint; srcY1: TGLint;
+			 dstX0: TGLint; dstY0: TGLint; dstX1: TGLint; dstY1: TGLint;
+			 mask: TGLbitfield; filter: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGenerateMipmap: procedure(target: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_geometry_shader4 (ARB #47)
+   glProgramParameteriARB: procedure ( _program:TGLuint; pname:TGLenum; value: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferTextureARB: procedure ( target:TGLenum;  attachment:TGLenum; texture:TGLuint;  level:TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferTextureLayerARB: procedure ( target:TGLenum;  attachment:TGLenum; texture:TGLuint;  level:TGLint; layer:TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFramebufferTextureFaceARB: procedure ( target:TGLenum;  attachment:TGLenum; texture:TGLuint;  level:TGLint; face:TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_instanced_arrays (ARB #49)
+   glVertexAttribDivisorARB: procedure(index: TGLuint; divisor: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_map_buffer_range (ARB #50)
+   glMapBufferRange: function(target: TGLenum; offset: TGLint{ptr}; length: TGLsizei{ptr};
+	            access: TGLbitfield ): Pointer;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glFlushMappedBufferRange: procedure( target: TGLenum; offset: TGLint{ptr}; length: TGLsizei{ptr} );{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_texture_buffer_object (ARB #51)
+   glTexBufferARB: procedure(target: TGLenum; internalformat: TGLEnum; buffer: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_vertex_array_object (ARB #54)
+   glBindVertexArray: procedure(_array: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDeleteVertexArrays: procedure(n: TGLsizei; arrays: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGenVertexArrays: procedure(n: TGLsizei; arrays: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glIsVertexArray: function(_array: TGLuint): TGLboolean;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_uniform_buffer_object (ARB #57)
+   glGetUniformIndices: procedure(_program: TGLuint; uniformCount: TGLsizei; uniformNames: PGLPCharArray; uniformIndices: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveUniformsiv: procedure(_program: TGLuint; uniformCount: TGLsizei; uniformIndices: PGLuint; pname: TGLenum; params: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveUniformName: procedure(_program: TGLuint; uniformIndex: TGLuint; bufSize: TGLsizei; length: PGLsizei; uniformName: PGLchar);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetUniformBlockIndex: function(_program: TGLuint; uniformBlockName: PGLchar): TGLuint;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveUniformBlockiv: procedure(_program: TGLuint; uniformBlockIndex: TGLuint; pname: TGLenum; params: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveUniformBlockName: procedure(_program: TGLuint; uniformBlockIndex: TGLuint; bufSize: TGLsizei; length: PGLsizei; uniformBlockName: PGLchar);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glUniformBlockBinding: procedure(_program: TGLuint; uniformBlockIndex: TGLuint; uniformBlockBinding: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_copy_buffer (ARB #59)
+   glCopyBufferSubData: procedure(readTarget: TGLenum; writeTarget: TGLenum;
+          readOffset: TGLintptr; writeOffset: TGLintptr; size: TGLsizeiptr);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_draw_elements_base_vertex (ARB #62)
+   glDrawElementsBaseVertex: procedure(mode: TGLenum; count: TGLsizei;
+          _type: TGLenum; indices: PGLvoid; basevertex: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDrawRangeElementsBaseVertex: procedure(mode: TGLenum; start: TGLuint; _end: TGLuint;
+          count: TGLsizei; _type: TGLenum; indices: PGLvoid; basevertex: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDrawElementsInstancedBaseVertex: procedure(mode: TGLenum; count: TGLsizei;
+          _type: TGLenum; indices: PGLvoid; primcount: TGLsizei; basevertex: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glMultiDrawElementsBaseVertex: procedure(mode: TGLenum; count: PGLsizei;
+          _type: TGLenum; var indices; primcount: TGLsizei; basevertex: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_provoking_vertex (ARB #64)
+   glProvokingVertex: procedure(mode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_sync (ARB #66)
+   glFenceSync: function(condition: TGLenum; flags: TGLbitfield): TGLsync;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glIsSync: function(sync: TGLsync): TGLboolean;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glDeleteSync: procedure(sync: TGLsync);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glClientWaitSync: function(sync: TGLsync; flags: TGLbitfield; timeout: TGLuint64): TGLenum;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glWaitSync: procedure(sync: TGLsync; flags: TGLbitfield; timeout: TGLuint64);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetInteger64v: procedure(pname: TGLenum; params: PGLint64);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetSynciv: procedure(sync: TGLsync; pname: TGLenum; bufSize: TGLsizei; length: PGLsizei; values: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_texture_multisample (ARB #67)
+   glTexImage2DMultisample: procedure(target: TGLenum; samples: TGLsizei; internalformat: TGLint;
+                               width: TGLsizei; height: TGLsizei;
+                               fixedsamplelocations: TGLboolean);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTexImage3DMultisample: procedure(target: TGLenum; samples: TGLsizei; internalformat: TGLint;
+                               width: TGLsizei; height: TGLsizei; depth: TGLsizei;
+                               fixedsamplelocations: TGLboolean);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetMultisamplefv: procedure(pname: TGLenum; index: TGLuint; val: PGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glSampleMaski: procedure(index: TGLuint; mask: TGLbitfield);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_draw_buffers_blend (ARB #69)
+   glBlendEquationiARB: procedure(buf: TGLuint; mode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBlendEquationSeparateiARB: procedure(buf: TGLuint; modeRGB: TGLenum; modeAlpha: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBlendFunciARB: procedure(buf: TGLuint; src: TGLenum; dst: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBlendFuncSeparateiARB: procedure(buf: TGLuint; srcRGB: TGLenum; dstRGB: TGLenum;
+                               srcAlpha: TGLenum; dstAlpha: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   // GL_ARB_sample_shading (ARB #70)
+   glMinSampleShadingARB: procedure(value: TGLclampf);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   {$endregion}
+
+   {$region 'OpenGL function/procedure definitions for Vendor/EXT extensions' /fold }
 
    //  ###########################################################
    //           function and procedure definitions for
@@ -5050,6 +6083,14 @@ var
    glPointParameteriNV: procedure(pname: TGLenum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glPointParameterivNV: procedure(pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
+   // GL_NV_copy_image
+   glCopyImageSubDataNV: procedure(
+     srcName: GLuint; srcTarget: GLenum; srcLevel: GLint;
+     srcX: GLint; srcY: GLint; srcZ: GLint;
+     dstName: GLuint; dstTarget: GLenum; dstLevel: GLint;
+     dstX: GLint; dstY: GLint; dstZ: GLint;
+     width: GLsizei; height: GLsizei; depth: GLsizei);  {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
    // GL_EXT_stencil_two_side (EXT #268)
    glActiveStencilFaceEXT: procedure(face: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
@@ -5143,8 +6184,8 @@ var
    glUniform3uivEXT: procedure(location: TGLInt; count: TGLsizei; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glUniform4uivEXT: procedure(location: TGLInt; count: TGLsizei; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformuivEXT: procedure(_program: TGLuint; location: TGLint; params: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glBindFragDataLocationEXT: procedure(_program: TGLuint; colorNumber: TGLuint; name: PChar);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetFragDataLocationEXT: function(_program: TGLuint; name: PChar): TGLint;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindFragDataLocationEXT: procedure(_program: TGLuint; colorNumber: TGLuint; name: PGLChar);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetFragDataLocationEXT: function(_program: TGLuint; name: PGLChar): TGLint;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // GL_EXT_draw_instanced (#327)
    glDrawArraysInstancedEXT: procedure(mode: TGLenum; first: TGLint; count: TGLsizei;
@@ -5174,6 +6215,29 @@ var
    glDisableIndexedEXT: procedure(target: TGLenum; index: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glIsEnabledIndexedEXT: function(target: TGLenum; index: TGLuint): TGLboolean;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
+   // GL_NV_transform_feedback (#341)
+   glBindBufferRangeNV: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint;
+                                  offset: TGLintptr; size: TGLsizeiptr);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindBufferOffsetNV: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint;
+                                   offset: TGLintptr);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindBufferBaseNV: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTransformFeedbackAttribsNV: procedure(count: TGLsizei; attribs: PGLint;
+                                           bufferMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTransformFeedbackVaryingsNV: procedure(_program: TGLuint; count: TGLsizei;
+                                            locations: PGLint;
+                                            bufferMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBeginTransformFeedbackNV: procedure(primitiveMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glEndTransformFeedbackNV: procedure();{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   glGetVaryingLocationNV: function(_program: TGLuint; name: PGLChar): TGLint;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetActiveVaryingNV: procedure(_program: TGLuint; index: TGLuint;
+                                   bufSize: TGLsizei; length: PGLsizei; size: PGLsizei;
+                                   _type: TGLenum; name: PGLChar);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glActiveVaryingNV: procedure(_program: TGLuint; name: PGLChar);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetTransformFeedbackVaryingNV: procedure(_program: TGLuint; index: TGLuint;
+                                              location: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+
    // GL_EXT_bindable_uniform (#342)
    glUniformBufferEXT: procedure(_program: TGLUint; location: TGLint; buffer: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetUniformBufferSizeEXT: function(_program: TGLuint; location: TGLint): TGLint;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -5187,25 +6251,41 @@ var
    glGetTexParameterIivEXT: procedure(target: TGLenum; pname: TGLenum; params: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetTexParameterIuivEXT: procedure(target: TGLenum; pname: TGLenum; params: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   // GL_NV_conditional_render (#346)
+   glBeginConditionalRenderNV: procedure(id: TGLuint; mode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glEndConditionalRenderNV: procedure();{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
-   {.$endregion}
+   // GL_EXT_transform_feedback (#352)
+   glBindBufferRangeEXT: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint;
+                            offset:TGLintptr; size: TGLsizeiptr);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindBufferOffsetEXT: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint;
+                            offset:TGLintptr);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glBindBufferBaseEXT: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   glBeginTransformFeedbackEXT: procedure(primitiveMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glEndTransformFeedbackEXT: procedure();{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+   glTransformFeedbackVaryingsEXT: procedure(_program: TGLuint; count: TGLsizei;
+                                      const varyings: PGLPCharArray; bufferMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glGetTransformFeedbackVaryingEXT: procedure(_program: TGLuint; index: TGLuint;
+                                        bufSize: TGLsizei; length: PGLsizei;
+                                        size: PGLsizei; _type: PGLenum; name: PGLChar);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
+
+   {$endregion}
 
 
 //------------------------------------------------------------------------------
 
 procedure ReadExtensions;
 procedure ReadImplementationProperties;
-{$IFDEF MSWINDOWS}
+{$IFDEF SUPPORT_WGL}
 procedure ReadWGLExtensions;
 procedure ReadWGLImplementationProperties;
 {$ENDIF}
-{$IFNDEF darwin}
-{$IFDEF UNIX}
-//crossbuilder needs to be implemented? :
-//procedure ReadGLXExtensions;
+{$IFDEF SUPPORT_GLX}
+procedure ReadGLXExtensions;
 procedure ReadGLXImplementationProperties;
-{$ENDIF}
 {$ENDIF}
 
 procedure CloseOpenGL;
@@ -5222,6 +6302,19 @@ function IsOpenGLLoaded : Boolean;
 function IsMesaGL : Boolean;
 function IsOpenGLVersionMet(MajorVersion,MinorVersion: Integer): boolean;
 
+type
+EOpenGLError = class(Exception);
+
+{: Gets the oldest error from OpenGL engine and tries to clear the error queue.<p> }
+procedure CheckOpenGLError;
+{: Clears all pending OpenGL errors. }
+procedure ClearGLError;
+{: Raises an EOpenGLError with 'msg' error string. }
+procedure RaiseOpenGLError(const msg : String);
+
+var
+   vIgnoreOpenGLErrors : Boolean = False;
+
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -5229,8 +6322,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
-uses SysUtils;
 
 // ************** Windows specific ********************
 {$IFDEF MSWINDOWS}
@@ -5245,7 +6336,7 @@ var
    GLHandle: HINST;
    GLUHandle: HINST;
 
-function GLGetProcAddress(ProcName: PChar):Pointer;
+function GLGetProcAddress(ProcName: PGLChar):Pointer;
 begin
   result := wglGetProcAddress(ProcName);
 end;
@@ -5264,18 +6355,56 @@ resourcestring
 {$ENDIF}
   
 const
-   INVALID_MODULEHANDLE = nil;
+   INVALID_MODULEHANDLE = TLibHandle(0);//nil;
 
 var
-   GLHandle: Pointer;
-   GLUHandle: Pointer;
+   GLHandle: TLibHandle;//Pointer;
+   GLUHandle: TLibHandle;//Pointer;
    
-function GLGetProcAddress(ProcName: PChar):Pointer;
+function GLGetProcAddress(ProcName: PGLChar):Pointer;
 begin
   result := GetProcAddress(TLibHandle(GLHandle),ProcName);
 end;
 {$ENDIF}
 
+// CheckOpenGLError
+//
+procedure CheckOpenGLError;
+var
+   GLError : LongWord;
+	Count : Word;
+begin
+	GLError:=glGetError;
+	if GLError <> GL_NO_ERROR then begin
+		Count:=0;
+      // Because under some circumstances reading the error code creates a new error
+      // and thus hanging up the thread, we limit the loop to 6 reads.
+      try
+         while (glGetError <> GL_NO_ERROR) and (Count < 6) do Inc(Count);
+      except
+         // Egg : ignore exceptions here, will perhaps avoid problem expressed before
+		end;
+      if not vIgnoreOpenGLErrors then
+   		raise EOpenGLError.Create(String(gluErrorString(GLError)));
+	end;
+end;
+
+// ClearGLError
+//
+procedure ClearGLError;
+var
+   n : Integer;
+begin
+   n:=0;
+   while (glGetError<>GL_NO_ERROR) and (n<6) do Inc(n);
+end;
+
+// RaiseOpenGLError
+//
+procedure RaiseOpenGLError(const msg : String);
+begin
+   raise EOpenGLError.Create(msg);
+end;
 
 // ************** Extensions ********************
 
@@ -5285,7 +6414,7 @@ procedure ReadExtensions;
    // To be used in an active rendering context only!
 begin
 
-   {.$region 'locate functions/procedures added with OpenGL 1.2'}
+   {$region 'locate functions/procedures added with OpenGL 1.2' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -5348,9 +6477,9 @@ begin
    // promoted to core v1.2 from GL_EXT_copy_texture
    glCopyTexSubImage3D := GLGetProcAddress('glCopyTexSubImage3D');
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'locate functions/procedures added with OpenGL 1.3'}
+   {$region 'locate functions/procedures added with OpenGL 1.3' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -5412,9 +6541,9 @@ begin
    glCompressedTexSubImage1D := GLGetProcAddress('glCompressedTexSubImage1D');
    glGetCompressedTexImage := GLGetProcAddress('glGetCompressedTexImage');
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'locate functions/procedures added with OpenGL 1.4'}
+   {$region 'locate functions/procedures added with OpenGL 1.4' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -5478,9 +6607,9 @@ begin
    glWindowPos3s := GLGetProcAddress('glWindowPos3s');
    glWindowPos3sv := GLGetProcAddress('glWindowPos3sv');
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'locate functions/procedures added with OpenGL 1.5'}
+   {$region 'locate functions/procedures added with OpenGL 1.5' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -5514,9 +6643,9 @@ begin
    // promoted to core v1.5 from GL_EXT_shadow_funcs (#267)
    // (no functions or procedures)
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'locate functions/procedures added with OpenGL 2.0'}
+   {$region 'locate functions/procedures added with OpenGL 2.0' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -5624,9 +6753,9 @@ begin
    glVertexAttrib4usv := GLGetProcAddress('glVertexAttrib4usv');
    glVertexAttribPointer := GLGetProcAddress('glVertexAttribPointer');
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'locate functions/procedures added with OpenGL 2.1'}
+   {$region 'locate functions/procedures added with OpenGL 2.1' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -5647,9 +6776,91 @@ begin
    glUniformMatrix3x4fv := GLGetProcAddress('glUniformMatrix3x4fv');
    glUniformMatrix4x3fv := GLGetProcAddress('glUniformMatrix4x3fv');
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'locate functions/procedures for OpenGL Utility (GLU) extensions'}
+   {$region 'locate functions/procedures added with OpenGL 3.0' /fold }
+
+   //  ###########################################################
+   //            locate functions and procedures for
+   //         extensions integrated into OpenGL 3.0 core
+   //  ###########################################################
+
+   // promoted to core v3.0 from GL_EXT_gpu_shader4
+   glVertexAttribI1i := GLGetProcAddress('glVertexAttribI1i');
+   glVertexAttribI2i := GLGetProcAddress('glVertexAttribI2i');
+   glVertexAttribI3i := GLGetProcAddress('glVertexAttribI3i');
+   glVertexAttribI4i := GLGetProcAddress('glVertexAttribI4i');
+   glVertexAttribI1ui := GLGetProcAddress('glVertexAttribI1ui');
+   glVertexAttribI2ui := GLGetProcAddress('glVertexAttribI2ui');
+   glVertexAttribI3ui := GLGetProcAddress('glVertexAttribI3ui');
+   glVertexAttribI4ui := GLGetProcAddress('glVertexAttribI4ui');
+   glVertexAttribI1iv := GLGetProcAddress('glVertexAttribI1iv');
+   glVertexAttribI2iv := GLGetProcAddress('glVertexAttribI2iv');
+   glVertexAttribI3iv := GLGetProcAddress('glVertexAttribI3iv');
+   glVertexAttribI4iv := GLGetProcAddress('glVertexAttribI4iv');
+   glVertexAttribI1uiv := GLGetProcAddress('glVertexAttribI1uiv');
+   glVertexAttribI2uiv := GLGetProcAddress('glVertexAttribI2uiv');
+   glVertexAttribI3uiv := GLGetProcAddress('glVertexAttribI3uiv');
+   glVertexAttribI4uiv := GLGetProcAddress('glVertexAttribI4uiv');
+   glVertexAttribI4bv := GLGetProcAddress('glVertexAttribI4bv');
+   glVertexAttribI4sv := GLGetProcAddress('glVertexAttribI4sv');
+   glVertexAttribI4ubv := GLGetProcAddress('glVertexAttribI4ubv');
+   glVertexAttribI4usv := GLGetProcAddress('glVertexAttribI4usv');
+   glVertexAttribIPointer := GLGetProcAddress('glVertexAttribIPointer');
+   glGetVertexAttribIiv := GLGetProcAddress('glGetVertexAttribIiv');
+   glGetVertexAttribIuiv := GLGetProcAddress('glGetVertexAttribIuiv');
+   glUniform1ui := GLGetProcAddress('glUniform1ui');
+   glUniform2ui :=  GLGetProcAddress('glUniform2ui');
+   glUniform3ui := GLGetProcAddress('glUniform3ui');
+   glUniform4ui := GLGetProcAddress('glUniform4ui');
+   glUniform1uiv := GLGetProcAddress('glUniform1uiv');
+   glUniform2uiv := GLGetProcAddress('glUniform2uiv');
+   glUniform3uiv := GLGetProcAddress('glUniform3uiv');
+   glUniform4uiv := GLGetProcAddress('glUniform4uiv');
+   glGetUniformuiv := GLGetProcAddress('glGetUniformuiv');
+   glBindFragDataLocation := GLGetProcAddress('glBindFragDataLocation');
+   glGetFragDataLocation := GLGetProcAddress('glGetFragDataLocation');
+
+   // promoted to core v3.0 from GL_NV_conditional_render
+   glBeginConditionalRender := GLGetProcAddress('glBeginConditionalRender');
+   glEndConditionalRender := GLGetProcAddress('glEndConditionalRender');
+   // promoted to core v3.0 from GL_ARB_color_buffer_float
+   glClampColor := GLGetProcAddress('glClampColor');
+   // promoted to core v3.0 from GL_EXT_texture_integer
+   //glClearColorIi := GLGetProcAddress('glClearColorIi');
+   //glClearColorIui := GLGetProcAddress('glClearColorIui');
+   glTexParameterIiv := GLGetProcAddress('glTexParameterIiv');
+   glTexParameterIuiv := GLGetProcAddress('glTexParameterIuiv');
+   glGetTexParameterIiv := GLGetProcAddress('glGetTexParameterIiv');
+   glGetTexParameterIuiv := GLGetProcAddress('glGetTexParameterIuiv');
+
+   // promoted to core v3.0 from GL_EXT_draw_buffers2
+   glColorMaski := GLGetProcAddress('glColorMaski');
+   glGetBooleani_v := GLGetProcAddress('glGetBooleani_v');
+   glGetIntegeri_v := GLGetProcAddress('glGetIntegeri_v');
+   glEnablei := GLGetProcAddress('glEnablei');
+   glDisablei := GLGetProcAddress('glDisablei');
+   glIsEnabledi := GLGetProcAddress('glIsEnabledi');
+
+   // GL_EXT_transform_feedback (#352)
+   glBindBufferRange := GLGetProcAddress('glBindBufferRange');
+   glBindBufferBase := GLGetProcAddress('glBindBufferBase');
+   glBeginTransformFeedback := GLGetProcAddress('glBeginTransformFeedback');
+   glEndTransformFeedback := GLGetProcAddress('glEndTransformFeedback');
+   glTransformFeedbackVaryings := GLGetProcAddress('glTransformFeedbackVaryings');
+   glGetTransformFeedbackVarying := GLGetProcAddress('glGetTransformFeedbackVarying');
+
+   // New commands in OpenGL 3.0
+   glClearBufferiv := GLGetProcAddress('glClearBufferiv');
+   glClearBufferuiv := GLGetProcAddress('glClearBufferuiv');
+   glClearBufferfv := GLGetProcAddress('glClearBufferfv');
+   glClearBufferfi := GLGetProcAddress('glClearBufferfi');
+   glGetStringi := GLGetProcAddress('glGetStringi');
+
+   {$endregion}
+
+
+   {$region 'locate functions/procedures for OpenGL Utility (GLU) extensions' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -5660,9 +6871,9 @@ begin
    gluNewNurbsTessellatorEXT := GLGetProcAddress('gluNewNurbsTessellatorEXT');
    gluDeleteNurbsTessellatorEXT := GLGetProcAddress('gluDeleteNurbsTessellatorEXT');
 
-   {.$endregion}
+   {$endregion}
 
-   {.$region 'locate functions/procedures for ARB approved extensions'}
+   {$region 'locate functions/procedures for ARB approved extensions' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -5903,9 +7114,102 @@ begin
    // GL_ARB_color_buffer_float (#39)
    glClampColorARB := GLGetProcAddress('glClampColorARB');
 
-   {.$endregion}
+   // GL_ARB_draw_instanced (ARB #44)
+   glDrawArraysInstancedARB := GLGetProcAddress('glDrawArraysInstancedARB');
+   glDrawElementsInstancedARB := GLGetProcAddress('glDrawElementsInstancedARB');
 
-   {.$region 'locate functions/procedures for Vendor/EXT extensions'}
+   // GL_ARB_framebuffer_object (ARB #45)
+   glIsRenderbuffer := GLGetProcAddress('glIsRenderbuffer');
+   glBindRenderbuffer := GLGetProcAddress('glBindRenderbuffer');
+   glDeleteRenderbuffers := GLGetProcAddress('glDeleteRenderbuffers');
+   glGenRenderbuffers := GLGetProcAddress('glGenRenderbuffers');
+   glRenderbufferStorage := GLGetProcAddress('glRenderbufferStorage');
+   glRenderbufferStorageMultisample := GLGetProcAddress('glRenderbufferStorageMultisample');
+   glGetRenderbufferParameteriv := GLGetProcAddress('glGetRenderbufferParameteriv');
+   glIsFramebuffer := GLGetProcAddress('glIsFramebuffer');
+   glBindFramebuffer := GLGetProcAddress('glBindFramebuffer');
+   glDeleteFramebuffers := GLGetProcAddress('glDeleteFramebuffers');
+   glGenFramebuffers := GLGetProcAddress('glGenFramebuffers');
+   glCheckFramebufferStatus := GLGetProcAddress('glCheckFramebufferStatus');
+   glFramebufferTexture1D := GLGetProcAddress('glFramebufferTexture1D');
+   glFramebufferTexture2D := GLGetProcAddress('glFramebufferTexture2D');
+   glFramebufferTexture3D := GLGetProcAddress('glFramebufferTexture3D');
+   glFramebufferTextureLayer := GLGetProcAddress('glFramebufferTextureLayer');
+   glFramebufferRenderbuffer := GLGetProcAddress('glFramebufferRenderbuffer');
+   glGetFramebufferAttachmentParameteriv := GLGetProcAddress('glGetFramebufferAttachmentParameteriv');
+   glBlitFramebuffer := GLGetProcAddress('glBlitFramebuffer');
+   glGenerateMipmap := GLGetProcAddress('glGenerateMipmap');
+
+   // GL_ARB_geometry_shader4 (ARB #47)
+   glProgramParameteriARB := GLGetProcAddress('glProgramParameteriARB');
+   glFramebufferTextureARB := GLGetProcAddress('glFramebufferTextureARB');
+   glFramebufferTextureLayerARB := GLGetProcAddress('glFramebufferTextureLayerARB');
+   glFramebufferTextureFaceARB := GLGetProcAddress('glFramebufferTextureFaceARB');
+
+   // GL_ARB_instanced_arrays (ARB #49)
+   glVertexAttribDivisorARB := GLGetProcAddress('glVertexAttribDivisorARB');
+
+   // GL_ARB_map_buffer_range (ARB #50)
+   glMapBufferRange := GLGetProcAddress('glMapBufferRange');
+   glFlushMappedBufferRange := GLGetProcAddress('glFlushMappedBufferRange');
+
+   // GL_ARB_texture_buffer_object (ARB #51)
+   glTexBufferARB := GLGetProcAddress('glTexBufferARB');
+
+   // GL_ARB_vertex_array_object (ARB #54)
+   glBindVertexArray := GLGetProcAddress('glBindVertexArray');
+   glDeleteVertexArrays := GLGetProcAddress('glDeleteVertexArrays');
+   glGenVertexArrays := GLGetProcAddress('glGenVertexArrays');
+   glIsVertexArray := GLGetProcAddress('glIsVertexArray');
+
+   // GL_ARB_uniform_buffer_object (ARB #57)
+   glGetUniformIndices := GLGetProcAddress('glGetUniformIndices');
+   glGetActiveUniformsiv := GLGetProcAddress('glGetActiveUniformsiv');
+   glGetActiveUniformName := GLGetProcAddress('glGetActiveUniformName');
+   glGetUniformBlockIndex := GLGetProcAddress('glGetUniformBlockIndex');
+   glGetActiveUniformBlockiv := GLGetProcAddress('glGetActiveUniformBlockiv');
+   glGetActiveUniformBlockName := GLGetProcAddress('glGetActiveUniformBlockName');
+   glUniformBlockBinding := GLGetProcAddress('glUniformBlockBinding');
+
+   // GL_ARB_copy_buffer (ARB #59)
+   glCopyBufferSubData := GLGetProcAddress('glCopyBufferSubData');
+
+   // GL_ARB_draw_elements_base_vertex (ARB #62)
+   glDrawElementsBaseVertex := GLGetProcAddress('glDrawElementsBaseVertex');
+   glDrawRangeElementsBaseVertex := GLGetProcAddress('glDrawRangeElementsBaseVertex');
+   glDrawElementsInstancedBaseVertex := GLGetProcAddress('glDrawElementsInstancedBaseVertex');
+   glMultiDrawElementsBaseVertex := GLGetProcAddress('glMultiDrawElementsBaseVertex');
+
+   // GL_ARB_provoking_vertex (ARB #64)
+   glProvokingVertex := GLGetProcAddress('glProvokingVertex');
+
+   // GL_ARB_sync commands (ARB #66)
+   glFenceSync := GLGetProcAddress('glFenceSync');
+   glIsSync := GLGetProcAddress('glIsSync');
+   glDeleteSync := GLGetProcAddress('glDeleteSync');
+   glClientWaitSync := GLGetProcAddress('glClientWaitSync');
+   glWaitSync := GLGetProcAddress('glWaitSync');
+   glGetInteger64v := GLGetProcAddress('glGetInteger64v');
+   glGetSynciv := GLGetProcAddress('glGetSynciv');
+
+   // GL_ARB_texture_multisample (ARB #67)
+   glTexImage2DMultisample := GLGetProcAddress('glTexImage2DMultisample');
+   glTexImage3DMultisample := GLGetProcAddress('glTexImage3DMultisample');
+   glGetMultisamplefv := GLGetProcAddress('glGetMultisamplefv');
+   glSampleMaski := GLGetProcAddress('glSampleMaski');
+
+   // GL_ARB_draw_buffers_blend (ARB #69)
+   glBlendEquationiARB := GLGetProcAddress('glBlendEquationiARB');
+   glBlendEquationSeparateiARB := GLGetProcAddress('glBlendEquationSeparateiARB');
+   glBlendFunciARB := GLGetProcAddress('glBlendFunciARB');
+   glBlendFuncSeparateiARB := GLGetProcAddress('glBlendFuncSeparateiARB');
+
+   // GL_ARB_sample_shading (ARB #70)
+   glMinSampleShadingARB := GLGetProcAddress('glMinSampleShadingARB');
+
+   {$endregion}
+
+   {$region 'locate functions/procedures for Vendor/EXT extensions' /fold }
 
    //  ###########################################################
    //            locate functions and procedures for
@@ -6129,6 +7433,9 @@ begin
    glPointParameteriNV := GLGetProcAddress('glPointParameteriNV');
    glPointParameterivNV := GLGetProcAddress('glPointParameterivNV');
 
+   // GL_NV_copy_image
+   glCopyImageSubDataNV := GLGetProcAddress('glCopyImageSubDataNV');
+
    // GL_EXT_stencil_two_side (#268)
    glActiveStencilFaceEXT := GLGetProcAddress('glActiveStencilFaceEXT');
 
@@ -6247,6 +7554,19 @@ begin
    glDisableIndexedEXT:= GLGetProcAddress('glDisableIndexedEXT');
    glIsEnabledIndexedEXT:= GLGetProcAddress('glIsEnabledIndexedEXT');
 
+   // GL_NV_transform_feedback (#341)
+   glBindBufferRangeNV := GLGetProcAddress('glBindBufferRangeNV');
+   glBindBufferOffsetNV := GLGetProcAddress('glBindBufferOffsetNV');
+   glBindBufferBaseNV := GLGetProcAddress('glBindBufferBaseNV');
+   glTransformFeedbackAttribsNV := GLGetProcAddress('glTransformFeedbackAttribsNV');
+   glTransformFeedbackVaryingsNV := GLGetProcAddress('glTransformFeedbackVaryingsNV');
+   glBeginTransformFeedbackNV := GLGetProcAddress('glBeginTransformFeedbackNV');
+   glEndTransformFeedbackNV := GLGetProcAddress('glEndTransformFeedbackNV');
+   glGetVaryingLocationNV := GLGetProcAddress('glGetVaryingLocationNV');
+   glGetActiveVaryingNV := GLGetProcAddress('glGetActiveVaryingNV');
+   glActiveVaryingNV := GLGetProcAddress('glActiveVaryingNV');
+   glGetTransformFeedbackVaryingNV := GLGetProcAddress('glGetTransformFeedbackVaryingNV');
+
    // GL_EXT_bindable_uniform (#342)
    glUniformBufferEXT := GLGetProcAddress('glUniformBufferEXT');
    glGetUniformBufferSizeEXT := GLGetProcAddress('glGetUniformBufferSizeEXT');
@@ -6260,16 +7580,37 @@ begin
    glGetTexParameterIivEXT := GLGetProcAddress('glGetTexParameterIivEXT');
    glGetTexParameterIuivEXT := GLGetProcAddress('glGetTexParameterIuivEXT');
 
-   {.$endregion}
+   // GL_NV_conditional_render (#346)
+   glBeginConditionalRenderNV := GLGetProcAddress('glBeginConditionalRenderNV');
+   glEndConditionalRenderNV := GLGetProcAddress('glEndConditionalRenderNV');
 
-   {.$region 'locate functions/procedures for Windows OpenGL (WGL) extensions'}
-   {$IFDEF MSWINDOWS}
+   // GL_EXT_transform_feedback (#352)
+   glBindBufferRangeEXT := GLGetProcAddress('glBindBufferRangeEXT');
+   glBindBufferOffsetEXT := GLGetProcAddress('glBindBufferOffsetEXT');
+   glBindBufferBaseEXT := GLGetProcAddress('glBindBufferBaseEXT');
+   glBeginTransformFeedbackEXT := GLGetProcAddress('glBeginTransformFeedbackEXT');
+   glEndTransformFeedbackEXT := GLGetProcAddress('glEndTransformFeedbackEXT');
+   glTransformFeedbackVaryingsEXT := GLGetProcAddress('glTransformFeedbackVaryingsEXT');
+   glGetTransformFeedbackVaryingEXT:= GLGetProcAddress('glGetTransformFeedbackVaryingEXT');
+
+
+   {$endregion}
+
+   {$region 'locate functions/procedures for Windows OpenGL (WGL) extensions'}
+   {$IFDEF SUPPORT_WGL}
    ReadWGLExtensions;
    {$ENDIF}
-   {.$endregion}
+   {$endregion}
+
+   {$region 'locate functions/procedures for GLX extensions'}
+   {$IFDEF SUPPORT_GLX}
+   ReadGLXExtensions;
+   {$ENDIF}
+   {$endregion}
+
 end;
 
-{$IFDEF MSWINDOWS}
+{$IFDEF SUPPORT_WGL}
 // ReadWGLExtensions
 //
 procedure ReadWGLExtensions;
@@ -6311,6 +7652,9 @@ begin
    wglReleaseTexImageARB := GLGetProcAddress('wglReleaseTexImageARB');
    wglSetPbufferAttribARB := GLGetProcAddress('wglSetPbufferAttribARB');
 
+   // WGL_ARB_create_context (ARB #55)
+   wglCreateContextAttribsARB := GLGetProcAddress('wglCreateContextAttribsARB');
+
    //  ###########################################################
    //            locating functions and procedures for
    //                Vendor/EXT WGL extensions
@@ -6319,6 +7663,32 @@ begin
    // WGL_EXT_swap_control (EXT #172)
    wglSwapIntervalEXT := GLGetProcAddress('wglSwapIntervalEXT');
    wglGetSwapIntervalEXT := GLGetProcAddress('wglGetSwapIntervalEXT');
+end;
+{$ENDIF}
+
+{$IFDEF SUPPORT_GLX}
+// ReadGLXExtensions
+//
+procedure ReadGLXExtensions;
+begin
+   // ARB glx extensions
+
+   //  ###########################################################
+   //            locating functions and procedures for
+   //                  ARB approved GLX extensions
+   //  ###########################################################
+
+   // GLX_ARB_create_context (EXT #56)
+   glXCreateContextAttribsARB := GLGetProcAddress('glXCreateContextAttribsARB');
+
+   //  ###########################################################
+   //            locating functions and procedures for
+   //                Vendor/EXT GLX extensions
+   //  ###########################################################
+
+   // WGL_EXT_swap_control (EXT #172)
+   glXSwapIntervalSGI := GLGetProcAddress('glXSwapIntervalSGI');
+
 end;
 {$ENDIF}
 
@@ -6392,7 +7762,7 @@ var
 
 begin
    // determine OpenGL versions supported
-   buffer:=glGetString(GL_VERSION);
+   buffer:=String(glGetString(GL_VERSION));
    TrimAndSplitVersionString(buffer, majorversion, minorVersion);
    GL_VERSION_1_0:=True;
    GL_VERSION_1_1:=IsVersionMet(1,1,majorVersion,minorVersion);
@@ -6403,26 +7773,42 @@ begin
    GL_VERSION_2_0:=IsVersionMet(2,0,majorVersion,minorVersion);
    GL_VERSION_2_1:=IsVersionMet(2,1,majorVersion,minorVersion);
    GL_VERSION_2_2:=IsVersionMet(2,2,majorVersion,minorVersion);
+   GL_VERSION_3_0:=IsVersionMet(3,0,majorVersion,minorVersion);
+   GL_VERSION_3_1:=IsVersionMet(3,1,majorVersion,minorVersion);
+   GL_VERSION_3_2:=IsVersionMet(3,2,majorVersion,minorVersion);
 
    // determine GLU versions met
-   buffer:=gluGetString(GLU_VERSION);
+   buffer:=String(gluGetString(GLU_VERSION));
    TrimAndSplitVersionString(buffer, majorversion, minorVersion);
    GLU_VERSION_1_1:=True; // won't load without at least GLU 1.1
    GLU_VERSION_1_2:=IsVersionMet(1,2,majorVersion,minorVersion);
    GLU_VERSION_1_3:=IsVersionMet(1,3,majorVersion,minorVersion);
 
    // check supported OpenGL extensions
-   Buffer := StrPas(glGetString(GL_EXTENSIONS));
-
+   Buffer := String(glGetString(GL_EXTENSIONS));
    // check ARB approved OpenGL extensions
    GL_ARB_color_buffer_float := CheckExtension('GL_ARB_color_buffer_float');
+   GL_ARB_compatibility := CheckExtension('GL_ARB_compatibility');
+   GL_ARB_copy_buffer := CheckExtension('GL_ARB_copy_buffer');
+   GL_ARB_depth_buffer_float := CheckExtension('GL_ARB_depth_buffer_float');
+   GL_ARB_depth_clamp := CheckExtension('GL_ARB_depth_clamp');
    GL_ARB_depth_texture := CheckExtension('GL_ARB_depth_texture');
    GL_ARB_draw_buffers := CheckExtension('GL_ARB_draw_buffers');
+   GL_ARB_draw_buffers_blend := CheckExtension('GL_ARB_draw_buffers_blend');
+   GL_ARB_draw_elements_base_vertex := CheckExtension('GL_ARB_draw_elements_base_vertex');
+   GL_ARB_draw_instanced := CheckExtension('GL_ARB_draw_instanced');
+   GL_ARB_fragment_coord_conventions := CheckExtension('GL_ARB_fragment_coord_conventions');
    GL_ARB_fragment_program := CheckExtension('GL_ARB_fragment_program');
    GL_ARB_fragment_program_shadow := CheckExtension('GL_ARB_fragment_program_shadow');
    GL_ARB_fragment_shader := CheckExtension('GL_ARB_fragment_shader');
+   GL_ARB_framebuffer_object := CheckExtension('GL_ARB_framebuffer_object');
+   GL_ARB_framebuffer_sRGB := CheckExtension('GL_ARB_framebuffer_sRGB');
+   GL_ARB_geometry_shader4 := CheckExtension('GL_ARB_geometry_shader4');
    GL_ARB_half_float_pixel := CheckExtension('GL_ARB_half_float_pixel');
+   GL_ARB_half_float_vertex := CheckExtension('GL_ARB_half_float_vertex');
    GL_ARB_imaging := CheckExtension('GL_ARB_imaging');
+   GL_ARB_instanced_arrays := CheckExtension('GL_ARB_instanced_arrays');
+   GL_ARB_map_buffer_range := CheckExtension('GL_ARB_map_buffer_range');
    GL_ARB_matrix_palette  := CheckExtension('GL_ARB_matrix_palette');
    GL_ARB_multisample := CheckExtension(' GL_ARB_multisample'); // ' ' to avoid collision with WGL variant
    GL_ARB_multitexture := CheckExtension('GL_ARB_multitexture');
@@ -6430,22 +7816,37 @@ begin
    GL_ARB_pixel_buffer_object := CheckExtension('GL_ARB_pixel_buffer_object');
    GL_ARB_point_parameters := CheckExtension('GL_ARB_point_parameters');
    GL_ARB_point_sprite := CheckExtension('GL_ARB_point_sprite');
+   GL_ARB_provoking_vertex := CheckExtension('GL_ARB_provoking_vertex');
+   GL_ARB_sample_shading := CheckExtension('GL_ARB_sample_shading');
+   GL_ARB_seamless_cube_map := CheckExtension('GL_ARB_seamless_cube_map');
    GL_ARB_shader_objects := CheckExtension('GL_ARB_shader_objects');
+   GL_ARB_shader_texture_lod := CheckExtension('GL_ARB_shader_texture_lod');
    GL_ARB_shading_language_100 := CheckExtension('GL_ARB_shading_language_100');
    GL_ARB_shadow := CheckExtension('GL_ARB_shadow');
    GL_ARB_shadow_ambient := CheckExtension('GL_ARB_shadow_ambient');
+   GL_ARB_sync := CheckExtension('GL_ARB_sync');
    GL_ARB_texture_border_clamp := CheckExtension('GL_ARB_texture_border_clamp');
+   GL_ARB_texture_buffer_object := CheckExtension('GL_ARB_texture_buffer_object');
    GL_ARB_texture_compression := CheckExtension('GL_ARB_texture_compression');
+   GL_ARB_texture_compression_rgtc := CheckExtension('GL_ARB_texture_compression_rgtc');
    GL_ARB_texture_cube_map := CheckExtension('GL_ARB_texture_cube_map');
+   GL_ARB_texture_cube_map_array := CheckExtension('GL_ARB_texture_cube_map_array');
    GL_ARB_texture_env_add := CheckExtension('GL_ARB_texture_env_add');
    GL_ARB_texture_env_combine := CheckExtension('GL_ARB_texture_env_combine');
    GL_ARB_texture_env_crossbar := CheckExtension('GL_ARB_texture_env_crossbar');
    GL_ARB_texture_env_dot3 := CheckExtension('GL_ARB_texture_env_dot3');
    GL_ARB_texture_float := CheckExtension('GL_ARB_texture_float');
+   GL_ARB_texture_gather := CheckExtension('GL_ARB_texture_gather');
    GL_ARB_texture_mirrored_repeat := CheckExtension('GL_ARB_texture_mirrored_repeat');
+   GL_ARB_texture_multisample := CheckExtension('GL_ARB_texture_multisample');
    GL_ARB_texture_non_power_of_two := CheckExtension('GL_ARB_texture_non_power_of_two');
+   GL_ARB_texture_query_lod := CheckExtension('GL_ARB_texture_query_lod');
    GL_ARB_texture_rectangle := CheckExtension('GL_ARB_texture_rectangle');
+   GL_ARB_texture_rg := CheckExtension('GL_ARB_texture_rg');
    GL_ARB_transpose_matrix := CheckExtension('GL_ARB_transpose_matrix');
+   GL_ARB_uniform_buffer_object := CheckExtension('GL_ARB_uniform_buffer_object');
+   GL_ARB_vertex_array_bgra := CheckExtension('GL_ARB_vertex_array_bgra');
+   GL_ARB_vertex_array_object := CheckExtension('GL_ARB_vertex_array_object');
    GL_ARB_vertex_blend := CheckExtension('GL_ARB_vertex_blend');
    GL_ARB_vertex_buffer_object := CheckExtension('GL_ARB_vertex_buffer_object');
    GL_ARB_vertex_program := CheckExtension('GL_ARB_vertex_program');
@@ -6456,7 +7857,7 @@ begin
    GL_3DFX_multisample := CheckExtension('GL_3DFX_multisample');
    GL_3DFX_tbuffer := CheckExtension('GL_3DFX_tbuffer');
    GL_3DFX_texture_compression_FXT1 := CheckExtension('GL_3DFX_texture_compression_FXT1');
-
+   GL_ATI_texture_compression_3dc := CheckExtension('GL_ATI_texture_compression_3dc');
    GL_ATI_draw_buffers := CheckExtension('GL_ATI_draw_buffers');
    GL_ATI_texture_float := CheckExtension('GL_ATI_texture_float');
    GL_ATI_texture_mirror_once := CheckExtension('GL_ATI_texture_mirror_once');
@@ -6523,6 +7924,7 @@ begin
    GL_EXT_texture_sRGB := CheckExtension('GL_EXT_texture_sRGB');
    GL_EXT_texture_shared_exponent := CheckExtension('GL_EXT_texture_shared_exponent');
    GL_EXT_timer_query := CheckExtension('GL_EXT_timer_query');
+   GL_EXT_transform_feedback := CheckExtension('GL_EXT_transform_feedback');
    GL_EXT_vertex_array := CheckExtension('GL_EXT_vertex_array');
 
    GL_HP_occlusion_test := CheckExtension('GL_HP_occlusion_test');
@@ -6534,6 +7936,7 @@ begin
    GL_MESA_resize_buffers := CheckExtension('GL_MESA_resize_buffers');
 
    GL_NV_blend_square := CheckExtension('GL_NV_blend_square');
+   GL_NV_conditional_render := CheckExtension('GL_NV_conditional_render');
    GL_NV_fence := CheckExtension('GL_NV_fence');
    GL_NV_float_buffer := CheckExtension('GL_NV_float_buffer');
    GL_NV_fog_distance := CheckExtension('GL_NV_fog_distance');
@@ -6543,11 +7946,18 @@ begin
    GL_NV_point_sprite := CheckExtension('GL_NV_point_sprite');
    GL_NV_register_combiners := CheckExtension('GL_NV_register_combiners');
    GL_NV_texgen_reflection := CheckExtension('GL_NV_texgen_reflection');
+   GL_NV_texture_compression_vtc := CheckExtension('GL_NV_texture_compression_vtc');
    GL_NV_texture_env_combine4 := CheckExtension('GL_NV_texture_env_combine4');
    GL_NV_texture_rectangle := CheckExtension('GL_NV_texture_rectangle');
+   GL_NV_texture_shader := CheckExtension('GL_NV_texture_shader');
+   GL_NV_texture_shader2 := CheckExtension('GL_NV_texture_shader2');
+   GL_NV_texture_shader3 := CheckExtension('GL_NV_texture_shader3');
+   GL_NV_transform_feedback := CheckExtension('GL_NV_transform_feedback');
    GL_NV_vertex_array_range := CheckExtension('GL_NV_vertex_array_range');
    GL_NV_vertex_array_range2 := CheckExtension('GL_NV_vertex_array_range2');
    GL_NV_vertex_program := CheckExtension('GL_NV_vertex_program');
+   GL_NV_depth_buffer_float := CheckExtension('GL_NV_depth_buffer_float');
+   GL_NV_copy_image := CheckExtension('GL_NV_copy_image');
 
    GL_SGI_color_matrix := CheckExtension('GL_SGI_color_matrix');
 
@@ -6565,25 +7975,23 @@ begin
    GL_WIN_swap_hint := CheckExtension('GL_WIN_swap_hint');
 
    // check supported GLU extensions
-   Buffer := gluGetString(GLU_EXTENSIONS);
+   Buffer := String(gluGetString(GLU_EXTENSIONS));
    GLU_EXT_nurbs_tessellator := CheckExtension('GLU_EXT_nurbs_tessellator');
    GLU_EXT_object_space_tess := CheckExtension('GLU_EXT_object_space_tess');
    GLU_EXT_TEXTURE := CheckExtension('GLU_EXT_TEXTURE');
 
-   {$IFDEF MSWINDOWS}
+   {$IFDEF SUPPORT_WGL}
    //check supported WGL extensions
    ReadWGLImplementationProperties;
    {$ENDIF}
 
-   {$IFNDEF darwin}
-   {$IFDEF Unix}
+   {$IFDEF SUPPORT_GLX}
    //check supported GLX extensions
    ReadGLXImplementationProperties;
    {$ENDIF}
-   {$ENDIF}
 end;
 
-{$IFDEF MSWINDOWS}
+{$IFDEF SUPPORT_WGL}
 // ReadWGLImplementationProperties
 //
 procedure ReadWGLImplementationProperties;
@@ -6607,10 +8015,13 @@ var
 begin
    // ARB wgl extensions
    if Assigned(wglGetExtensionsStringARB) then
-      Buffer:=wglGetExtensionsStringARB(wglGetCurrentDC)
+      Buffer:=String(wglGetExtensionsStringARB(wglGetCurrentDC))
    else Buffer:='';
    WGL_ARB_buffer_region:=CheckExtension('WGL_ARB_buffer_region');
+   WGL_ARB_create_context := CheckExtension('WGL_ARB_create_context');
+   WGL_ARB_create_context_profile := CheckExtension('WGL_ARB_create_context_profile');
    WGL_ARB_extensions_string:=CheckExtension('WGL_ARB_extensions_string');
+   WGL_ARB_framebuffer_sRGB := CheckExtension('WGL_ARB_framebuffer_sRGB');
    WGL_ARB_make_current_read:=CheckExtension('WGL_ARB_make_current_read');
    WGL_ARB_multisample:=CheckExtension('WGL_ARB_multisample');
    WGL_ARB_pbuffer:=CheckExtension('WGL_ARB_pbuffer');
@@ -6625,8 +8036,7 @@ begin
 end;
 {$ENDIF}
 
-{$IFNDEF darwin}
-{$IFDEF Unix}
+{$IFDEF SUPPORT_GLX}
 // ReadGLXImplementationProperties
 //
 procedure ReadGLXImplementationProperties;
@@ -6655,12 +8065,14 @@ begin
    else
      Buffer:='';
    // ARB GLX extensions
+   GLX_ARB_create_context := CheckExtension('GLX_ARB_create_context');
+   GLX_ARB_create_context_profile := CheckExtension('GLX_ARB_create_context_profile');
+   GLX_ARB_framebuffer_sRGB := CheckExtension('GLX_ARB_framebuffer_sRGB');
    // EXT/vendor GLX extensions
    GLX_EXT_framebuffer_sRGB := CheckExtension('GLX_EXT_framebuffer_sRGB');
    GLX_EXT_fbconfig_packed_float := CheckExtension('GLX_EXT_fbconfig_packed_float');
-
+   GLX_SGI_swap_control := CheckExtension('GLX_SGI_swap_control');
 end;
-{$ENDIF}
 {$ENDIF}
 
 // CloseOpenGL
@@ -6694,13 +8106,13 @@ begin
    Result := False;
    CloseOpenGL;
 
-   {$IFDEF WINDOWS}
+   //{$IFDEF Windows}
    GLHandle:=LoadLibrary(PChar(GLName));
    GLUHandle:=LoadLibrary(PChar(GLUName));
-   {$ELSE}
-   GLHandle:=Pointer(LoadLibrary(PChar(GLName)));
-   GLUHandle:=Pointer(LoadLibrary(PChar(GLUName)));
-   {$ENDIF};
+   //{$ELSE}
+   //GLHandle:=Pointer(LoadLibrary(PChar(GLName)));
+   //GLUHandle:=Pointer(LoadLibrary(PChar(GLUName)));
+   //{$ENDIF};
 
    if (GLHandle<>INVALID_MODULEHANDLE) and (GLUHandle<>INVALID_MODULEHANDLE) then
      Result:=True
@@ -6763,7 +8175,7 @@ var
   Buffer : String;
   GLMajorVersion, GLMinorVersion: Integer;
 begin
-  buffer:=glGetString(GL_VERSION);
+  buffer:=String(glGetString(GL_VERSION));
   TrimAndSplitVersionString(buffer, GLMajorVersion, GLMinorVersion);
   Result:=IsVersionMet(MajorVersion,MinorVersion,GLMajorVersion,GLMinorVersion);
 end;
