@@ -211,11 +211,11 @@ type
             100.0 by default }
          property MaxDistance : Single read FMaxDistance write SetMaxDistance;
 
-         {: Inside cone angle, [0°; 360°].<p>
+         {: Inside cone angle, [0ï¿½; 360ï¿½].<p>
             Sound volume is maximal within this cone.<p>
             See DirectX SDK for details. }
          property InsideConeAngle : Single read FInsideConeAngle write SetInsideConeAngle;
-         {: Outside cone angle, [0°; 360°].<p>
+         {: Outside cone angle, [0ï¿½; 360ï¿½].<p>
             Between inside and outside cone, sound volume decreases between max
             and cone outside volume.<p>
             See DirectX SDK for details. }
@@ -522,13 +522,6 @@ uses SysUtils, GLCrossPlatform;
 var
    vActiveSoundManager : TGLSoundManager;
    vSoundLibraries : TList;
-
-// Register
-//
-procedure Register;
-begin
-  RegisterComponents('GLScene', [TGLSoundLibrary]);
-end;
 
 // ActiveSoundManager
 //
@@ -1552,11 +1545,7 @@ procedure TGLSoundManager.StopAllSources;
 var
    i : Integer;
 begin
-(* removed delphi 4 support {$ifdef GLS_DELPHI_5_UP}*)
 	for i:=Sources.Count-1 downto 0 do Sources.Delete(i);
-(* removed delphi 4 support {$else}
-	for i:=Sources.Count-1 downto 0 do Sources[i].Free;
-{$endif}*)
 end;
 
 // DoProgress
@@ -1730,12 +1719,14 @@ initialization
 // ------------------------------------------------------------------
 
 	// class registrations
+  RegisterClasses([TGLSoundLibrary]);
 	RegisterXCollectionItemClass(TGLBSoundEmitter);
    vSoundLibraries:=TList.Create;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
+
 finalization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
