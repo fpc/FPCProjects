@@ -143,15 +143,15 @@
         <UnitName Value="XOpenGL"/>
       </Item27>
       <Item28>
-        <Filename Value="../Source/designtime/fvectoreditor.pas"/>
+        <Filename Value="../Source/propertyeditors/fvectoreditor.pas"/>
         <UnitName Value="FVectorEditor"/>
       </Item28>
       <Item29>
-        <Filename Value="../Source/designtime/fvectoreditor.lfm"/>
+        <Filename Value="../Source/propertyeditors/fvectoreditor.lfm"/>
         <Type Value="LFM"/>
       </Item29>
       <Item30>
-        <Filename Value="../Source/designtime/fvectoreditor.lrs"/>
+        <Filename Value="../Source/propertyeditors/fvectoreditor.lrs"/>
         <Type Value="LRS"/>
       </Item30>
       <Item31>
@@ -184,19 +184,19 @@
         <Type Value="LRS"/>
       </Item37>
       <Item38>
-        <Filename Value="../Source/designtime/gltextureimageeditors.pas"/>
+        <Filename Value="../Source/propertyeditors/gltextureimageeditors.pas"/>
         <UnitName Value="GLTextureImageEditors"/>
       </Item38>
       <Item39>
-        <Filename Value="../Source/designtime/info.pas"/>
+        <Filename Value="../Source/propertyeditors/info.pas"/>
         <UnitName Value="Info"/>
       </Item39>
       <Item40>
-        <Filename Value="../Source/designtime/info.lfm"/>
+        <Filename Value="../Source/propertyeditors/info.lfm"/>
         <Type Value="LFM"/>
       </Item40>
       <Item41>
-        <Filename Value="../Source/designtime/info.lrs"/>
+        <Filename Value="../Source/propertyeditors/info.lrs"/>
         <Type Value="LRS"/>
       </Item41>
       <Item42>
