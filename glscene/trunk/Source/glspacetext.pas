@@ -48,7 +48,8 @@ uses
   Windows, Messages, Dialogs, Classes, Graphics,
 
   // GLScene
-  GLScene, OpenGL1x, GLTexture, GLContext, VectorGeometry, GLStrings;
+  GLScene, OpenGL1x, GLTexture, GLContext, VectorGeometry, GLStrings,
+  GLRenderContextInfo;
 
 type
 

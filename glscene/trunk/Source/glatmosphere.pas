@@ -66,8 +66,8 @@ uses
   SysUtils, Classes,
 
   // GLScene
-  GLScene, GLObjects, GLMisc, GLTexture, GLCadencer, OpenGL1x, VectorGeometry,
-  GLContext, GLStrings, GLColor;
+  GLScene, GLObjects, GLCadencer, OpenGL1x, VectorGeometry,
+  GLContext, GLStrings, GLColor, GLRenderContextInfo;
 
 type
    EGLAtmosphereException = class(Exception);

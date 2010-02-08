@@ -69,7 +69,7 @@ uses
   // GLScene
   OpenGL1x, GLScene, GLColor, GLObjects, VectorGeometry, GLTexture, GLStrings,
   GLGeomObjects, GLBitmapFont, GLViewer, GLVectorFileObjects, GLCrossPlatform,
-  GLMisc;
+  GLCoordinates, GLRenderContextInfo;
 
 type
   TGLGizmoUndoCollection = class;
@@ -1511,7 +1511,7 @@ begin
   case FPickMode of
     pmGetPickedObjects:
     begin
-      //primeiro, ver se é uma das linhas/planos
+      //primeiro, ver se ï¿½ uma das linhas/planos
       for I := 0 to pick.Count - 1 do
         if (_GZOrootLines.IndexOfChild(pick.hit[I]) > -1) or (_GZOrootTorus.IndexOfChild(pick.hit[I]) > -1) or (_GZOrootCubes.IndexOfChild(pick.hit[I]) > -1) then
           gotPick := True;

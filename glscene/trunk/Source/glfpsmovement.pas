@@ -25,9 +25,9 @@ interface
 {$I GLScene.inc}
 
 uses
-     OpenGL1x, VectorGeometry, GLMisc, GLScene, GLVectorFileObjects, GLTexture,
+     OpenGL1x, VectorGeometry, GLScene, GLVectorFileObjects,
      VectorLists, XCollection, Classes, GLGeomObjects, SysUtils,
-     GLNavigator;
+     GLNavigator, GLRenderContextInfo, BaseClasses, GLManager;
 
 type
      TContactPoint = record

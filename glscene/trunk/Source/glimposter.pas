@@ -26,8 +26,9 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, GLScene, GLContext, GLTexture, VectorTypes, VectorGeometry,
-  GeometryBB, GLMisc, PersistentClasses, GLCrossPlatform, GLGraphics, GLColor;
+  Classes, GLScene, GLContext, VectorTypes, VectorGeometry,
+  GeometryBB, PersistentClasses, GLCrossPlatform, GLGraphics, GLColor,
+  GLRenderContextInfo, GLCoordinates, BaseClasses;
 
 type
    // TImposterOptions
@@ -854,7 +855,7 @@ end;
 //
 function TGLStaticImposterBuilderCorona.GetDisplayName : String;
 begin
-   Result:=Format('%.1f° / %d samples', [Elevation, Samples]);
+   Result:=Format('%.1fï¿½ / %d samples', [Elevation, Samples]);
 end;
 
 // SetSamples

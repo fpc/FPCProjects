@@ -63,7 +63,7 @@ interface
 
 uses
    Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
-   VectorGeometry, OpenGL1x, VectorLists, ARBProgram, GLColor;
+   VectorGeometry, OpenGL1x, VectorLists, ARBProgram, GLColor, GLRenderContextInfo;
 
 type
    TBumpMethod = (bmDot3TexCombiner, bmBasicARBFP);

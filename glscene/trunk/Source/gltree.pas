@@ -45,7 +45,7 @@ interface
 
 uses
    Classes, SysUtils, GLScene, GLTexture, VectorGeometry, VectorLists,
-   OpenGL1x, GLMisc, GLVectorFileObjects, ApplicationFileIO;
+   OpenGL1x, GLVectorFileObjects, ApplicationFileIO, GLRenderContextInfo;
 
 type
    TGLTree = class;

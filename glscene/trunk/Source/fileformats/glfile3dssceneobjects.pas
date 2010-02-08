@@ -21,8 +21,8 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  VectorGeometry, OpenGL1x, GLMisc, GLScene, GLTexture, GLVectorFileObjects,
-  PersistentClasses, GLCrossPlatform;
+  VectorGeometry, OpenGL1x, GLScene, GLVectorFileObjects,
+  PersistentClasses, GLCrossPlatform, GLCoordinates, GLRenderContextInfo;
 
 type
   TGLFile3DSLight = class(TGLLightSource)
@@ -33,7 +33,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure DoRender(var rci: TRenderContextInfo; renderSelf, renderChildren: Boolean); override;
-    procedure CoordinateChanged(Sender: TGLCoordinates); override;
+    procedure CoordinateChanged(Sender: TGLCustomCoordinates); override;
   published
     property SpotTargetPos: TGLCoordinates read FTargetPos;
     property HotSpot: Single read FHotSpot write FHotSpot;
@@ -49,7 +49,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure DoRender(var rci: TRenderContextInfo; renderSelf, renderChildren: Boolean); override;
-    procedure CoordinateChanged(Sender: TGLCoordinates); override;
+    procedure CoordinateChanged(Sender: TGLCustomCoordinates); override;
     destructor Destroy; override;
   published
     property CameraTargetPos: TGLCoordinates read FTargetPos;
@@ -80,7 +80,7 @@ type
     constructor Create(AOWner: TComponent); override;
     destructor Destroy; override;
     procedure BuildList(var rci: TRenderContextInfo); override;
-    procedure CoordinateChanged(Sender: TGLCoordinates); override;
+    procedure CoordinateChanged(Sender: TGLCustomCoordinates); override;
     function AxisAlignedDimensionsUnscaled: TVector; override;
     function BarycenterAbsolutePosition: TVector; override;
   published
@@ -211,7 +211,7 @@ begin
 
 end;
 
-procedure TGLFile3DSLight.CoordinateChanged(Sender: TGLCoordinates);
+procedure TGLFile3DSLight.CoordinateChanged(Sender: TGLCustomCoordinates);
 begin
   inherited;
 
@@ -300,7 +300,7 @@ begin
   rci.GLStates.SetGLPolygonMode(GL_FRONT, GL_FILL);
 end;
 
-procedure TGLFile3DSCamera.CoordinateChanged(Sender: TGLCoordinates);
+procedure TGLFile3DSCamera.CoordinateChanged(Sender: TGLCustomCoordinates);
 begin
   inherited;
 
@@ -435,7 +435,7 @@ begin
   ParentMatrix := MatrixMultiply(FTransfMat, ParentMatrix);
 end;
 
-procedure TGLFile3DSFreeForm.CoordinateChanged(Sender: TGLCoordinates);
+procedure TGLFile3DSFreeForm.CoordinateChanged(Sender: TGLCustomCoordinates);
 var
   quat, quat1, quat2: TQuaternion;
 begin

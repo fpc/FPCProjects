@@ -55,7 +55,7 @@ uses
 
   // GLScene
   GLTexture, GLScene, VectorGeometry, OpenGL1x, GLStrings, GLCustomShader,
-  GLSLShader, GLColor;
+  GLSLShader, GLColor, GLRenderContextInfo;
 
 type
   EGLSLDiffuseSpecularShaderException = class(EGLSLShaderException);

@@ -132,8 +132,9 @@ interface
 
 {$i GLScene.inc}
 
-uses Classes, VectorGeometry, GLScene, GLTexture, GLMisc, OpenGL1x, SysUtils,
-   VectorLists, GLCrossPlatform, GLContext, GLSilhouette, GLColor;
+uses Classes, VectorGeometry, GLScene, OpenGL1x, SysUtils,
+   VectorLists, GLCrossPlatform, GLContext, GLSilhouette, GLColor,
+   GLRenderContextInfo, BaseClasses, GLNodes, GLCoordinates;
 
 type
 

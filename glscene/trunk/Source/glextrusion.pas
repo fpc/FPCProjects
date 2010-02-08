@@ -40,8 +40,8 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, OpenGL1x, GLObjects, GLScene, GLMisc, GLTexture, GLMultiPolygon,
-     GLColor, VectorTypes, VectorGeometry;
+uses Classes, OpenGL1x, GLObjects, GLScene, GLMultiPolygon,
+     GLColor, VectorTypes, VectorGeometry, GLRenderContextInfo, GLNodes;
 
 type
 
@@ -116,7 +116,7 @@ type
             This can be useful for rendering, lots of helicoidal objects from
             screws, to nails to stairs etc. }
          property YOffsetPerTurn : Single read FYOffsetPerTurn write SetYOffsetPerTurn;
-         {: Number of slices per turn (360°). }
+         {: Number of slices per turn (360ï¿½). }
          property Slices : Integer read FSlices write SetSlices default 16;
 
          property Normals : TNormalSmoothing read FNormals write SetNormals default nsFlat;

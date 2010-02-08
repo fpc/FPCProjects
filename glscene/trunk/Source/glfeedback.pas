@@ -30,7 +30,7 @@ interface
 
 uses
   Classes, SysUtils, VectorGeometry, VectorLists, GLScene, GLVectorFileObjects,
-  GLTexture;
+  GLTexture, GLRenderContextInfo;
 
 type
   TFeedbackMode = (fm2D, fm3D, fm3DColor, fm3DColorTexture, fm4DColorTexture);

@@ -32,8 +32,21 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLMisc, GLScene, VectorGeometry, OpenGL1x, GLTexture, GLState,
-     GLColor;
+uses Classes, GLScene, VectorGeometry, OpenGL1x, GLState,
+     GLColor, BaseClasses, GLRenderContextInfo;
+
+type
+   TMeshMode = (mmTriangleStrip, mmTriangleFan, mmTriangles,
+                mmQuadStrip, mmQuads, mmPolygon);
+   TVertexMode = (vmV, vmVN, vmVNC, vmVNCT, vmVNT, vmVT);
+
+const
+   cMeshModeToGLEnum : array [Low(TMeshMode)..High(TMeshMode)] of TGLEnum =
+                     (GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_TRIANGLES,
+                      GL_QUAD_STRIP, GL_QUADS, GL_POLYGON);
+   cVertexModeToGLEnum : array [Low(TVertexMode)..High(TVertexMode)] of TGLEnum =
+                     (GL_V3F, GL_N3F_V3F, GL_C4F_N3F_V3F, GL_T2F_C4F_N3F_V3F,
+                      GL_T2F_N3F_V3F, GL_T2F_V3F);
 
 type
 

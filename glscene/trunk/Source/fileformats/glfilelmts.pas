@@ -123,8 +123,6 @@ type
 
 implementation
 
-uses GLMisc;
-
 // ------------------
 // ------------------ TGLLMTSVectorFile ------------------
 // ------------------

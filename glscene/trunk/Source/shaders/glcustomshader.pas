@@ -98,7 +98,7 @@ uses
 
   // GLScene
   VectorGeometry, VectorTypes, GLTexture, GLCadencer, OpenGL1x, GLScene,
-  GLStrings, GLCrossPlatform, GLContext;
+  GLStrings, GLCrossPlatform, GLContext, GLRenderContextInfo;
 
 const
   glsShaderMaxLightSources = 8;

@@ -30,7 +30,7 @@ uses
 
   // GLScene
   GLScene, VectorTypes, MeshUtils, VectorGeometry, GLVectorFileObjects,
-  GLMesh, GLObjects, GLMisc, OpenGL1x, GLTexture, GLStrings;
+  GLMesh, GLObjects, OpenGL1x, GLTexture, GLStrings, BaseClasses;
 
 
 const cMaxVerts = 2000;

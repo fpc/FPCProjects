@@ -177,9 +177,10 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLScene, OpenGL1x, VectorGeometry, SysUtils, GLMisc, GLTexture,
+uses Classes, GLScene, OpenGL1x, VectorGeometry, SysUtils, GLTexture,
    GLMesh, VectorLists, PersistentClasses, Octree, GeometryBB,
-   ApplicationFileIO, GLSilhouette, GLContext, GLColor;
+   ApplicationFileIO, GLSilhouette, GLContext, GLColor, GLRenderContextInfo,
+   GLCoordinates, BaseClasses;
 
 type
 
@@ -5211,7 +5212,7 @@ begin
       GetMem(newArea, VerticeBoneWeightCapacity*SizeOf(PVertexBoneWeightArray));
       newArea[0]:=AllocMem(n*SizeOf(TVertexBoneWeight));
       for i:=1 to VerticeBoneWeightCapacity-1 do
-         newArea[i]:=PVertexBoneWeightArray(PtrUInt(newArea[0])+i*SizeOf(TVertexBoneWeight)*BonesPerVertex);
+         newArea[i]:=PVertexBoneWeightArray(Integer(newArea[0])+i*SizeOf(TVertexBoneWeight)*BonesPerVertex);
       // transfer old data
       if FLastVerticeBoneWeightCount<VerticeBoneWeightCount then
          n:=FLastVerticeBoneWeightCount
@@ -5547,8 +5548,8 @@ begin
             Owner.Owner.FLastLightMapIndex:=lightMapIndex;
             if lightMapIndex>=0 then begin
                // attach and activate lightmap
-               Assert(lightMapIndex<mrci.lightmapLibrary.Materials.Count);
-               libMat:=mrci.lightmapLibrary.Materials[lightMapIndex];
+               Assert(lightMapIndex<TGLMaterialLibrary(mrci.lightmapLibrary).Materials.Count);
+               libMat:=TGLMaterialLibrary(mrci.lightmapLibrary).Materials[lightMapIndex];
                AttachLightmap(libMat.Material.Texture, mrci);
                Owner.Owner.EnableLightMapArray(mrci);
             end else begin

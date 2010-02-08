@@ -24,7 +24,8 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLScene, VectorGeometry, OpenGL1x, GLTexture, GLMisc, GLColor;
+uses Classes, GLScene, VectorGeometry, OpenGL1x, GLColor,
+     BaseClasses, GLRenderContextInfo;
 
 type
    TGLParticleEvent = procedure (Sender : TObject; particle : TGLBaseSceneObject) of object;

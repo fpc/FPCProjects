@@ -27,7 +27,7 @@ interface
 {$I GLScene.inc}
 
 uses
-  SysUtils, Classes, GLMisc, GLScene, GLVectorFileObjects, VectorGeometry, GLBSP, VectorLists;
+  SysUtils, Classes, GLScene, GLVectorFileObjects, VectorGeometry, GLBSP, VectorLists;
 
 Type
   TCSGOperation = (CSG_Union, CSG_Subtraction, CSG_Intersection);

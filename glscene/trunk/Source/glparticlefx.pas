@@ -59,7 +59,8 @@ interface
 {$I GLScene.inc}
 
 uses Classes, PersistentClasses, GLScene, VectorGeometry, XCollection, GLTexture,
-     GLCadencer, GLMisc, VectorLists, GLGraphics, GLContext, GLColor;
+     GLCadencer, VectorLists, GLGraphics, GLContext, GLColor, BaseClasses,
+     GLCoordinates, GLRenderContextInfo, GLManager;
 
 const
    cPFXNbRegions = 128;     // number of distance regions

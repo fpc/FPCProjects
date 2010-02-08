@@ -27,8 +27,8 @@ uses
   Classes,
 
   // GLScene
-  GLTexture, GLScene, VectorGeometry, OpenGL1x, GLMisc, GLContext,
-  GLSLShader, GLCustomShader;
+  GLTexture, GLScene, VectorGeometry, OpenGL1x, GLContext,
+  GLSLShader, GLCustomShader, GLRenderContextInfo;
 
 type
   TGLCustomGLSLPostBlurShader = class(TGLCustomGLSLShader, IGLPostShader)

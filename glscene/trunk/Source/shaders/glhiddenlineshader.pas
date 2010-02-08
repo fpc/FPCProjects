@@ -23,7 +23,8 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, GLTexture, OpenGL1x, GLMisc, GLCrossPlatform, GLScene, GLColor;
+  Classes, GLTexture, OpenGL1x, GLCrossPlatform, GLScene, GLColor,
+  BaseClasses, GLRenderContextInfo;
 
 type
   TGLLineSettings = class(TGLUpdateAbleObject)

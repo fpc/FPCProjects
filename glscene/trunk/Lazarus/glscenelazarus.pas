@@ -23,7 +23,7 @@ uses
   GLExplosionFx, GLExtrusion, GLFireFX, GLGameMenu, GLGeomObjects, GLGraph, 
   GLGraphics, GLGui, GLHeightData, GLHeightTileFileHDS, GLHUDObjects, 
   GLImposter, GLLensFlare, GLLinePFX, GLMaterialScript, GLMesh, GLMeshCSG, 
-  GLMeshOptimizer, GLMirror, GLMisc, GLMovement, GLMultiPolygon, GLMultiProxy, 
+  GLMeshOptimizer, GLMirror, GLMovement, GLMultiPolygon, GLMultiProxy, 
   GLObjects, GLParametricSurfaces, GLParticleFX, GLParticles, GLPerlin, 
   GLPerlinBase, GLPerlinPFX, GLPolyhedron, GLPortal, GLPostEffects, 
   GLProcTextures, GLProjectedTextures, GLProxyObjects, GLROAMPatch, 
@@ -35,7 +35,8 @@ uses
   GLVerletSkeletonColliders, GLWaterPlane, GLWindows, GLzBuffer, cadencerasap, 
   GLCrossPlatform, GLViewer, GLColor, GLDynamicTexture, GLLCLViewer, GLGizmo, 
   GLFileB3D, GLSLBumpShader, GLSLDiffuseSpecularShader, GLSLPostBlurShader, 
-  GLSLShader, LazarusPackageIntf;
+  GLSLShader, BaseClasses, GLCoordinates, GLManager, GLNodes, 
+  GLRenderContextInfo, LazarusPackageIntf;
 
 implementation
 

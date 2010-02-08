@@ -18,7 +18,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLTexture;
+uses Classes, GLTexture, GLRenderContextInfo;
 
 type
 
@@ -82,7 +82,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, GLTextureCombiners, OpenGL1x, XOpenGL, GLMisc, GLCrossPlatform;
+uses SysUtils, GLTextureCombiners, OpenGL1x, XOpenGL, GLCrossPlatform;
 
 // ------------------
 // ------------------ TGLTexCombineShader ------------------

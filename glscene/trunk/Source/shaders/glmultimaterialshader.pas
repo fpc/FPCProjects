@@ -21,7 +21,7 @@ unit GLMultiMaterialShader;
 interface
 
 uses
-   Classes, GLTexture, OpenGL1x;
+   Classes, GLTexture, OpenGL1x, GLRenderContextInfo;
 
 type
    TGLMultiMaterialShader = class(TGLShader)

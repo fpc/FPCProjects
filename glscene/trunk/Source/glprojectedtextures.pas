@@ -21,7 +21,8 @@ interface
 {$I GLScene.inc}
 
 uses
-   Classes, GLScene, GLTexture, OpenGL1x, VectorGeometry, xopengl;
+   Classes, GLScene, GLTexture, OpenGL1x, VectorGeometry, xopengl,
+   GLRenderContextInfo;
 
 type
    {: Possible styles of texture projection. Possible values:<ul>

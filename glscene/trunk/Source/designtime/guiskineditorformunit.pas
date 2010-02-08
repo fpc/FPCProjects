@@ -6,6 +6,7 @@
    Editor for Gui skin.<p>
 
    <b>Historique : </b><font size=-1><ul>
+      <li>05/10/08 - DanB - removed Kylix support, changed uses clause
       <li>07/06/08 - DaStr - Updated TGUISkinEditor.AddElement() to use SetPoint2D()
                               (thanks Nicoara Adrian)
       <li>29/03/07 - DaStr - Renamed LINUX to KYLIX (BugTrackerID=1681585)
@@ -27,22 +28,14 @@ interface
 
 {$i GLScene.inc}
 
-{$IFNDEF GLS_CLX}
 uses
   sysutils, classes, graphics, controls, forms, dialogs,
   StdCtrls, ComCtrls, ExtCtrls, GLTexture, GLScene, GLObjects, GLWindows, GLHUDObjects,
-  glmisc, glgui, glgraphics, glutils, menus, GLCrossPlatform
-  , glviewer
+  glviewer, glgui, glgraphics, glutils, menus, GLCrossPlatform
+  , GLCoordinates, BaseClasses 
   {$ifdef lcl}
   ,lresources,lclintf,messages,lmessages,buttons;
 {$ENDIF}
-{$else}
-uses
-  SysUtils, Classes, QGraphics, QControls, QForms, QDialogs,
-  QStdCtrls, QComCtrls, QExtCtrls, GLTexture, GLScene, GLObjects, GLWindows, GLHUDObjects,
-  GLMisc, GLLinuxViewer, GLGui, GLGraphics, GLUtils, GLCrossPlatform;
-{$ENDIF}
-
 
 type
   TGUISkinEditor = class(TForm)
@@ -194,10 +187,6 @@ Function GUIComponentDialog(GuiComponent : TGLGuiElementList) : Boolean;
 
 implementation
 
-{$IFNDEF GLS_CLX}
-{$ELSE}
-{$R *.xfm}
-{$ENDIF}
 
 Function GUIComponentDialog(GuiComponent : TGLGuiElementList) : Boolean;
 var

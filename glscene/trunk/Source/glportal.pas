@@ -20,7 +20,8 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLVectorFileObjects, GLScene, GLTexture, GLMisc, VectorGeometry;
+uses Classes, GLVectorFileObjects, GLScene, GLTexture, VectorGeometry,
+     GLRenderContextInfo;
 
 type
 
@@ -214,7 +215,7 @@ begin
       if Assigned(mrci.materialLibrary) then begin
          for i:=0 to FaceGroups.Count-1 do with FaceGroups[i] do begin
             if Length(MaterialName)>0 then begin
-               libMat:=mrci.materialLibrary.Materials.GetLibMaterialByName(MaterialName);
+               libMat:=TGLMaterialLibrary(mrci.materialLibrary).Materials.GetLibMaterialByName(MaterialName);
                if Assigned(libMat) then begin
                   libMat.Apply(mrci);
                   repeat

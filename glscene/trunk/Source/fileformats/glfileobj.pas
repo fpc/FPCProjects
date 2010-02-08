@@ -34,8 +34,8 @@
                            renamed TMBAGLOBJVectorFile to TGLOBJVectorFile
    </ul><p>
 
-   (c) 2000 Marian Aldenhövel<br>
-       Hainstraße 8<br>
+   (c) 2000 Marian Aldenhï¿½vel<br>
+       Hainstraï¿½e 8<br>
        53121 Bonn<br>
        info@MBA-Software.de<p>
 
@@ -68,8 +68,8 @@ unit GLFileObj;
 interface
 
 uses GLCrossPlatform, Classes, SysUtils, GLScene, ApplicationFileIO,
-     VectorGeometry, GLMisc, GLVectorFileObjects, VectorLists, GLTexture,
-     GLColor;
+     VectorGeometry, GLVectorFileObjects, VectorLists, GLTexture,
+     GLColor, GLRenderContextInfo;
 
 const
    BufSize = 10240; { Load input data in chunks of BufSize Bytes. }

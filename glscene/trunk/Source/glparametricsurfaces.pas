@@ -41,7 +41,7 @@ interface
 
 uses
   GLVectorFileObjects, CurvesAndSurfaces, VectorGeometry, VectorLists,
-  PersistentClasses, GLTexture, OpenGL1x, GLState;
+  PersistentClasses, GLTexture, OpenGL1x, GLState, GLRenderContextInfo;
 
 type
 

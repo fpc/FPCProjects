@@ -72,9 +72,10 @@ interface
 
 {$i GLScene.inc}
 
-uses  Classes, GLMisc, OpenGL1x, GLScene, VectorGeometry, GLGraphics,
-     SysUtils, GLObjects, GLBitmapFont, XOpenGL, GLTexture,
-     GLContext, GLBehaviours, XCollection, GLState, GLViewer, GLColor;
+uses  Classes, OpenGL1x, GLScene, VectorGeometry, GLGraphics,
+     SysUtils, GLObjects, GLBitmapFont, XOpenGL,
+     GLContext, GLBehaviours, XCollection, GLState, GLViewer, GLColor,
+     GLRenderContextInfo;
 
 type
   EZBufferException = class(Exception);

@@ -32,7 +32,7 @@ uses
 
   // GLScene
   VectorGeometry, VectorTypes, GLTexture, OpenGL1x, VectorLists, ARBProgram,
-  GLCustomShader;
+  GLCustomShader, GLRenderContextInfo;
 
 type
   TGLCustomAsmShader = class;

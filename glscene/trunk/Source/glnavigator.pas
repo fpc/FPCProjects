@@ -38,7 +38,7 @@ uses
   //VCL
   SysUtils, Classes,
   //GLScene
-  VectorGeometry, GLScene, GLMisc, GLCrossPlatform;
+  VectorGeometry, GLScene, GLCrossPlatform, GLCoordinates;
 
 type
 

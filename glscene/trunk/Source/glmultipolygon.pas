@@ -47,7 +47,8 @@ interface
 
 uses
    Classes, OpenGL1x, Spline, VectorGeometry, VectorLists, PersistentClasses,
-   GLScene, GLObjects, GLMisc, GLTexture, GLGeomObjects;
+   GLScene, GLObjects, GLGeomObjects, GLNodes, BaseClasses,
+   GLCoordinates, GLRenderContextInfo;
 
 type
 

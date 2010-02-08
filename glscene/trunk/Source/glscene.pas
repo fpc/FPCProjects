@@ -317,7 +317,7 @@ uses
    // GLScene
    VectorGeometry, XCollection, GLSilhouette, PersistentClasses, GLState,
    GLGraphics, GeometryBB, GLContext, GLCrossPlatform, VectorLists, GLTexture,
-   GLMisc, GLColor;
+   {GLMisc,} GLColor, BaseClasses, GLCoordinates, GLRenderContextInfo;
 
 type
 
@@ -336,6 +336,7 @@ const
    GLSCENE_VERSION = '1.0.0.0714';
 
 type
+
   TNormalDirection = (ndInside, ndOutside);
 
   // TObjectChanges
@@ -865,7 +866,7 @@ type
          procedure ClearStructureChanged;
 
          //: Recalculate an orthonormal system
-         procedure CoordinateChanged(Sender: TGLCoordinates); override;
+         procedure CoordinateChanged(Sender: TGLCustomCoordinates); override;
          procedure TransformationChanged;
          procedure NotifyChange(Sender : TObject); override;
 
@@ -1400,7 +1401,7 @@ type
          function RayCastIntersect(const rayStart, rayVector : TVector;
                                    intersectPoint : PVector = nil;
                                    intersectNormal : PVector = nil) : Boolean; override;
-         procedure CoordinateChanged(Sender: TGLCoordinates); override;
+         procedure CoordinateChanged(Sender: TGLCustomCoordinates); override;
          function GenerateSilhouette(const silhouetteParameters : TGLSilhouetteParameters) : TGLSilhouette; override;
 
          property LightID : Cardinal read FLightID;
@@ -4258,7 +4259,7 @@ end;
 
 // CoordinateChanged
 //
-procedure TGLBaseSceneObject.CoordinateChanged(Sender: TGLCoordinates);
+procedure TGLBaseSceneObject.CoordinateChanged(Sender: TGLCustomCoordinates);
 var
    rightVector : TVector;
 begin
@@ -6339,7 +6340,7 @@ end;
 
 // CoordinateChanged
 //
-procedure TGLLightSource.CoordinateChanged(Sender: TGLCoordinates);
+procedure TGLLightSource.CoordinateChanged(Sender: TGLCustomCoordinates);
 begin
    inherited;
    if Sender=FSpotDirection then

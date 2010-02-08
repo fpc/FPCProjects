@@ -40,8 +40,8 @@ uses
   Classes,
 
   // GLSCene
-  GLScene, GLMisc, GLTexture, VectorGeometry, GLGraphics, GLCrossPlatform,
-  VectorTypes, GLColor;
+  GLScene, VectorGeometry, GLGraphics, GLCrossPlatform,
+  VectorTypes, GLColor, GLRenderContextInfo;
 
 type
 
@@ -357,7 +357,7 @@ end;
 //
 function TSkyDomeBand.GetDisplayName : String;
 begin
-	Result:=Format('%d: %.1f° - %.1f°', [Index, StartAngle, StopAngle]);
+	Result:=Format('%d: %.1fï¿½ - %.1fï¿½', [Index, StartAngle, StopAngle]);
 end;
 
 // SetStartAngle
@@ -1259,7 +1259,7 @@ var
 begin
    ts:=DegToRad(90-SunElevation);
    SetVector(sunPos, sin(ts), 0, cos(ts));
-   // prepare sin/cos LUT, with a higher sampling around 0°
+   // prepare sin/cos LUT, with a higher sampling around 0ï¿½
    n:=Slices div 2;
    steps:=2*n+1;
    GetMem(sinTable, steps*SizeOf(Single));

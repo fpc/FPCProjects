@@ -34,9 +34,9 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  GLScene, VectorGeometry, GLMisc, GlColor, GLTexture, OpenGL1x,GLStrings,
+  GLScene, VectorGeometry, GlColor, GLTexture, OpenGL1x, GLStrings,
   GLVectorFileObjects, XOpenGL, GLState, PersistentClasses,
-  {Needed for Delphi 5} GlCrossPlatform;
+  {Needed for Delphi 5} GlCrossPlatform, GLCoordinates, GLRenderContextInfo;
 
 type
   TGLTextureSharingShader = class;

@@ -22,11 +22,7 @@ interface
 
 {$I GLScene.inc}
 
-uses classes, glmisc, applicationfileio
-     //{$ifdef mswindows}
-     //,mmsystem
-     //{$endif}
-     ;
+uses Classes, ApplicationFileIO;
 
 type
 

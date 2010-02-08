@@ -54,7 +54,8 @@ uses
     VectorGeometry,
     GLContext,
     sysutils,
-    GLColor;
+    GLColor,
+    GLRenderContextInfo;
 
 type
     TGLSLProjectedTexturesStyle = (ptsLight, ptsShadow);

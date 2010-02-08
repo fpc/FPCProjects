@@ -19,7 +19,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLVectorFileObjects, GLMisc, VectorGeometry, ApplicationFileIO, FileOCT;
+uses Classes, GLVectorFileObjects, VectorGeometry, ApplicationFileIO, FileOCT;
 
 type
 

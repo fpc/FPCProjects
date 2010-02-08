@@ -48,7 +48,7 @@ interface
 {$I GLScene.inc}
 
 uses Classes, GLScene, GLHeightData, GLTexture, VectorGeometry, GLContext,
-   GLROAMPatch, VectorLists;
+   GLROAMPatch, VectorLists, GLRenderContextInfo;
 
 const
    cTilesHashSize = 255;
@@ -241,7 +241,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, OpenGL1x, GLMisc, XOpenGL, GLUtils;
+uses SysUtils, OpenGL1x, XOpenGL, GLUtils;
 
 // HashKey
 //

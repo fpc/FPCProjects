@@ -27,7 +27,8 @@ interface
 
 uses
   Classes, SysUtils, GLScene, VectorGeometry, OpenGL1x, GLTexture, GLUtils,
-  PersistentClasses, XCollection, GLMisc, GLCrossPlatform;
+  PersistentClasses, XCollection, GLCrossPlatform, GLRenderContextInfo,
+  BaseClasses;
 
 type
   TSpriteAnimFrame = class;

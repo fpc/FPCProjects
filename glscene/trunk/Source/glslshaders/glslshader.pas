@@ -59,7 +59,8 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  VectorGeometry, VectorTypes, GLTexture, GLContext, OpenGL1x, GLCustomShader;
+  VectorGeometry, VectorTypes, GLTexture, GLContext, OpenGL1x, GLCustomShader,
+  GLRenderContextInfo;
 
 type
   TGLSLShaderParameter = class;

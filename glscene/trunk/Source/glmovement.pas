@@ -9,6 +9,7 @@
    but the default value is rmTurnPitchRoll for backwards compatibility.
 
    <b>Historique : </b><font size=-1><ul>
+      <li>05/10/08 - DaStr - Added Delphi5 compatibility   
       <li>21/06/08 - DaStr - A lot of cosmetic fixes
                              Bugfixed same position rotation / scale interpolation
                                in TGLMovementPath.CalculateState()
@@ -39,8 +40,8 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  GLScene, VectorGeometry, GLMisc, XCollection, OpenGL1x, Spline, GLObjects,
-  GLCrossPlatform, GLStrings;
+  GLScene, VectorGeometry, XCollection, OpenGL1x, Spline, GLObjects,
+  GLCrossPlatform, GLStrings, BaseClasses;
 
 type
 
@@ -133,11 +134,15 @@ type
     function GetItems(const index: integer): TGLPathNode;
   public
     constructor Create(aOwner: TGLMovementPath);
+    function GetOwnerMovementPath: TGLMovementPath;
     function Add: TGLPathNode;
     function FindItemID(const ID: integer): TGLPathNode;
     property Items[const index: integer]: TGLPathNode Read GetItems Write SetItems; default;
     procedure NotifyChange; virtual;
   end;
+
+  TGLMovement = class;
+  TGLMovementPaths = class;
 
   TGLMovementPath = class(TCollectionItem)
   private
@@ -180,11 +185,13 @@ type
     procedure WriteToFiler(writer : TWriter);
     procedure ReadFromFiler(reader : TReader);
     function CanTravel: boolean;
+    function GetCollection: TGLMovementPaths;
   public
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
 
     procedure Assign(Source: TPersistent); override;
+    function GetMovement: TGLMovement;
 
     function AddNode: TGLPathNode; overload;
     function AddNode(const Node: TGLPathNode): TGLPathNode; overload;
@@ -232,12 +239,11 @@ type
     property ShowPath: Boolean read FShowPath write SetShowPath;
   end;
 
-  TGLMovement = class;
-
   TGLMovementPaths = class(TOwnedCollection)
   protected
     procedure SetItems(const index: integer; const val: TGLMovementPath);
     function GetItems(const index: integer): TGLMovementPath;
+    function GetMovement: TGLMovement;
   public
     constructor Create(aOwner: TGLMovement);
     function Add: TGLMovementPath;
@@ -558,6 +564,11 @@ begin
   Result := (inherited Add) as TGLPathNode;
 end;
 
+function TGLPathNodes.GetOwnerMovementPath: TGLMovementPath;
+begin
+  Result := TGLMovementPath(GetOwner);
+end;
+
 function TGLPathNodes.FindItemID(const ID: integer): TGLPathNode;
 begin
   Result := (inherited FindItemID(ID)) as TGLPathNode;
@@ -565,8 +576,8 @@ end;
 
 procedure TGLPathNodes.NotifyChange;
 begin
-  //Update the path-line if avlible in TGLMovementPath
-  (Owner as TGLMovementPath).UpdatePathLine;
+  // Update the path-line if avalible in TGLMovementPath.
+  GetOwnerMovementPath.UpdatePathLine;
 end;
 
 //--------------------------- TGLMovementPath ----------------------------------
@@ -697,8 +708,7 @@ begin
   if FShowPath<>Value then
   begin
     FShowPath := Value;
-    //what a mass relationship :-(
-    OwnerObj := TGLMovement( TGLMovementPaths(Collection).Owner ).GetSceneObject;
+    OwnerObj := GetMovement.GetSceneObject;
     if FShowPath then
     begin
       FPathLine := TGLLines.Create(OwnerObj);
@@ -1005,6 +1015,16 @@ begin
     end;
 end;
 
+function TGLMovementPath.GetCollection: TGLMovementPaths;
+begin
+  Result := TGLMovementPaths(GetOwner);
+end;
+
+function TGLMovementPath.GetMovement: TGLMovement;
+begin
+  Result := GetCollection.GetMovement;
+end;
+
 procedure TGLMovementPath.TravelPath(const Start: boolean);
 var
   x, y, z:    PFloatArray;
@@ -1196,6 +1216,12 @@ procedure TGLMovementPaths.NotifyChange;
 begin
   // Do nothing here.
 end;
+
+function TGLMovementPaths.GetMovement: TGLMovement;
+begin
+  Result := TGLMovement(GetOwner);
+end;
+
 
 //--------------------------- TGLMovement --------------------------------------
 constructor TGLMovement.Create(aOwner: TXCollection);

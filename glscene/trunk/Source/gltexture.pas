@@ -8,6 +8,7 @@
 	<b>History : </b><font size=-1><ul>
       <li>05/10/08 - DanB - separated texture image editor from texture unit
                             moved color related stuff to GLColor.pas
+                            moved TRenderContextInfo into separate unit
       <li>12/04/08 - DaStr - Bugfixed TGLTextureExItem.Create()
                               (thanks dAlex) (BugTracker ID = 1940451)
       <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
@@ -191,8 +192,9 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  OpenGL1x, VectorGeometry, GLMisc, GLGraphics, GLContext, GLColor,
-  GLCrossPlatform, PersistentClasses, GLUtils, GLState;
+  OpenGL1x, VectorGeometry, GLGraphics, GLContext, GLColor,
+  GLCrossPlatform, PersistentClasses, GLUtils, GLState, BaseClasses,
+  GLCoordinates, GLRenderContextInfo;
 
 const
    cDefaultNormalMapScale = 0.125;
@@ -213,42 +215,6 @@ type
   ['{8E442AF9-D212-4A5E-8A88-92F798BABFD1}']
     function GetMaterialLibrary: TGLMaterialLibrary;
   end;
-
-   TDrawState = (dsRendering, dsPicking, dsPrinting);
-
-   TGLSize = record
-      cx : Longint;
-      cy : Longint;
-   end;
-
-   // TRenderContextInfo
-   //
-   {: Stores contextual info useful during rendering methods. }
-   TRenderContextInfo = record
-      scene : TObject;
-      buffer : TObject;
-      cameraPosition : TVector;
-      cameraDirection, cameraUp : TVector;
-      modelViewMatrix : PMatrix;
-      viewPortSize : TGLSize;
-      renderDPI : Integer;
-      materialLibrary : TGLMaterialLibrary;
-      lightmapLibrary : TGLMaterialLibrary;
-      fogDisabledCounter : Integer;
-      lightingDisabledCounter : Integer;
-      drawState : TDrawState;
-      objectsSorting : TGLObjectsSorting;
-      visibilityCulling : TGLVisibilityCulling;
-      GLStates : TGLStateCache;
-      rcci : TRenderContextClippingInfo;
-      sceneAmbientColor : TColorVector;
-      bufferFaceCull : Boolean;
-      proxySubObject : Boolean;
-      ignoreMaterials : Boolean;
-      ignoreBlendingRequests : Boolean;
-      amalgamating : Boolean;
-   end;
-   PRenderContextInfo = ^TRenderContextInfo;
 
    // TTextureNeededEvent
    //

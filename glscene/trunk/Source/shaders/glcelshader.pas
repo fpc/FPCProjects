@@ -25,7 +25,7 @@ interface
 
 uses
    Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
-   VectorGeometry, OpenGL1x, ARBProgram, GLColor;
+   VectorGeometry, OpenGL1x, ARBProgram, GLColor, GLRenderContextInfo;
 
 type
    // TGLCelShaderOption
