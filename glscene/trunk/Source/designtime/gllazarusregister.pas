@@ -1536,7 +1536,6 @@ begin
                        TGLScriptLibrary,
                        TGLSoundLibrary
                        {$ifdef WINDOWS}
-                       ,TGLSMWaveOut
                        ,TGLFullScreenViewer
                        //,TGLWideBitmapFont
                        {$endif}
