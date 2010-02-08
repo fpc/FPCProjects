@@ -18,7 +18,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLTexture, GLRenderContextInfo;
+uses Classes, GLTexture, GLMaterial, GLRenderContextInfo;
 
 type
 
@@ -227,7 +227,11 @@ begin
             if Assigned(currentLibMaterial3) and (n>=3) then begin
                with currentLibMaterial3.Material.Texture do begin
                   if Enabled then begin
-                     ApplyAsTextureN(3, rci, currentLibMaterial3);
+                     if currentLibMaterial3.TextureMatrixIsIdentity then
+                       ApplyAsTextureN(3, rci)
+                     else
+                       ApplyAsTextureN(3, rci, @currentLibMaterial3.TextureMatrix[0][0]);
+//                     ApplyAsTextureN(3, rci, currentLibMaterial3);
                      Inc(units, 4);
                      FApplied3:=True;
                   end;
@@ -236,7 +240,11 @@ begin
             if Assigned(currentLibMaterial4) and (n>=4) then begin
                with currentLibMaterial4.Material.Texture do begin
                   if Enabled then begin
-                     ApplyAsTextureN(4, rci, currentLibMaterial4);
+                     if currentLibMaterial3.TextureMatrixIsIdentity then
+                       ApplyAsTextureN(4, rci)
+                     else
+                       ApplyAsTextureN(4, rci, @currentLibMaterial4.TextureMatrix[0][0]);
+//                     ApplyAsTextureN(4, rci, currentLibMaterial4);
                      Inc(units, 8);
                      FApplied4:=True;
                   end;
@@ -260,9 +268,9 @@ end;
 function TGLTexCombineShader.DoUnApply(var rci : TRenderContextInfo) : Boolean;
 begin
    if FApplied3 then with currentLibMaterial3.Material.Texture do
-      UnApplyAsTextureN(3, rci, currentLibMaterial3);
+      UnApplyAsTextureN(3, rci, (not currentLibMaterial3.TextureMatrixIsIdentity));
    if FApplied4 then with currentLibMaterial4.Material.Texture do
-      UnApplyAsTextureN(4, rci, currentLibMaterial4);
+      UnApplyAsTextureN(4, rci, (not currentLibMaterial4.TextureMatrixIsIdentity));
    Result:=False;
 end;
 

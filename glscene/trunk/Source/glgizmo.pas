@@ -67,7 +67,7 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  OpenGL1x, GLScene, GLColor, GLObjects, VectorGeometry, GLTexture, GLStrings,
+  OpenGL1x, GLScene, GLColor, GLObjects, VectorGeometry, GLMaterial, GLStrings,
   GLGeomObjects, GLBitmapFont, GLViewer, GLVectorFileObjects, GLCrossPlatform,
   GLCoordinates, GLRenderContextInfo;
 

@@ -22,7 +22,7 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, SysUtils, GLVectorFileObjects,  VectorTypes, GLTexture, VectorGeometry,
+  Classes, SysUtils, GLVectorFileObjects,  VectorTypes, GLMaterial, VectorGeometry,
   VectorLists, ApplicationFileIO;
 
 type

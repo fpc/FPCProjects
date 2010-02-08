@@ -82,7 +82,7 @@ uses
   // GLScene
   GLScene, GLObjects, GLHUDObjects, GLViewer, GLBitmapFont, GLKeyboard,
   VectorTypes, PersistentClasses, GLContext, GLTexture, GLUtils, GLStrings,
-  GLCrossPlatform;
+  GLCrossPlatform, GLMaterial;
 
 const
   CONSOLE_MAX_COMMANDS = 120;

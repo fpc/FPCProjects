@@ -7,7 +7,7 @@
       <Version Value="8"/>
       <SearchPaths>
         <IncludeFiles Value="../Source/"/>
-        <OtherUnitFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/fileformats/;../Source/shaders/;../Source/physicsapis/;../Source/soundapis/;../Source/videoapis/;../Source/cgshaders/;../Source/glslshaders/"/>
+        <OtherUnitFiles Value="../Source/;../Source/base/;../Source/platform/;../Source/designtime/;../Source/propertyeditors/;../Source/fileformats/;../Source/shaders/;../Source/physicsapis/;../Source/soundapis/;../Source/videoapis/;../Source/cgshaders/;../Source/glslshaders/"/>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
@@ -33,7 +33,7 @@
     <Description Value="GLScene - OpenGL 3D library"/>
     <License Value="LGPL"/>
     <Version Major="1" Build="3"/>
-    <Files Count="175">
+    <Files Count="176">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -750,6 +750,10 @@
         <Filename Value="../Source/glrendercontextinfo.pas"/>
         <UnitName Value="GLRenderContextInfo"/>
       </Item175>
+      <Item176>
+        <Filename Value="../Source/glmaterial.pas"/>
+        <UnitName Value="GLMaterial"/>
+      </Item176>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="4">

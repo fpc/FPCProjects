@@ -33,7 +33,7 @@ interface
 uses
   Classes, SysUtils,
   GLVectorFileObjects, ApplicationFileIO, VectorGeometry, VectorLists,
-  GLCrossPlatform, GLTexture;
+  GLCrossPlatform, GLTexture, GLMaterial;
 
 const
   GL_ASE_MAX_TEXURE_CHANNELS = 12; // maximum texture channels

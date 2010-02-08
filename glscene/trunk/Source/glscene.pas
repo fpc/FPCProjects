@@ -317,7 +317,7 @@ uses
    // GLScene
    VectorGeometry, XCollection, GLSilhouette, PersistentClasses, GLState,
    GLGraphics, GeometryBB, GLContext, GLCrossPlatform, VectorLists, GLTexture,
-   {GLMisc,} GLColor, BaseClasses, GLCoordinates, GLRenderContextInfo;
+   GLColor, BaseClasses, GLCoordinates, GLRenderContextInfo, GLMaterial;
 
 type
 

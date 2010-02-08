@@ -34,7 +34,7 @@ uses
   Classes, SysUtils,Graphics,
 
   // GLScene
-  GLScene, VectorGeometry, GLObjects, GLBitmapFont, GLTexture,
+  GLScene, VectorGeometry, GLObjects, GLBitmapFont, GLTexture, GLMaterial,
   GLHudObjects, GLStrings, GLColor, GLGraphics, OpenGL1x, BaseClasses,
   GLRenderContextInfo;
 

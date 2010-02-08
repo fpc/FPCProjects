@@ -29,7 +29,7 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  GLScene, GLBitmapFont, GLTexture, GLCrossPlatform,
+  GLScene, GLBitmapFont, GLMaterial, GLCrossPlatform,
   OpenGL1x, PersistentClasses, VectorGeometry, GLCoordinates, BaseClasses;
 
 Type

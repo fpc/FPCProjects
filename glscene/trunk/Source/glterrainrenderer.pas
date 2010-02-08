@@ -47,7 +47,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLScene, GLHeightData, GLTexture, VectorGeometry, GLContext,
+uses Classes, GLScene, GLHeightData, GLMaterial, VectorGeometry, GLContext,
    GLROAMPatch, VectorLists, GLRenderContextInfo;
 
 const

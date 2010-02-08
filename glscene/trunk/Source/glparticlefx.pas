@@ -58,7 +58,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, PersistentClasses, GLScene, VectorGeometry, XCollection, GLTexture,
+uses Classes, PersistentClasses, GLScene, VectorGeometry, XCollection, GLMaterial,
      GLCadencer, VectorLists, GLGraphics, GLContext, GLColor, BaseClasses,
      GLCoordinates, GLRenderContextInfo, GLManager;
 

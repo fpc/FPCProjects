@@ -77,7 +77,8 @@ uses
   
   // GLScene
   GLTexture, GLScene, VectorGeometry, VectorTypes, GLCadencer, GLStrings,
-  OpenGL1x, GLSLShader, GLCustomShader, GLColor, GLRenderContextInfo;
+  OpenGL1x, GLSLShader, GLCustomShader, GLColor, GLRenderContextInfo,
+  GLMaterial;
 
 type
   EGLSLBumpShaderException = class(EGLSLShaderException);

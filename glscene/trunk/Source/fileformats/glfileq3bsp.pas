@@ -48,7 +48,7 @@ implementation
 // ------------------------------------------------------------------
 
 uses Q3BSP, VectorGeometry, VectorLists, SysUtils, GLBSP, GLTexture, GLGraphics,
-   GLCrossPlatform, GLState, GLUtils;
+   GLCrossPlatform, GLState, GLUtils, GLMaterial;
 
 // ------------------
 // ------------------ TGLSTLVectorFile ------------------

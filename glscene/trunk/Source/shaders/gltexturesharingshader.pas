@@ -34,7 +34,7 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  GLScene, VectorGeometry, GlColor, GLTexture, OpenGL1x, GLStrings,
+  GLScene, VectorGeometry, GlColor, GLMaterial, OpenGL1x, GLStrings,
   GLVectorFileObjects, XOpenGL, GLState, PersistentClasses,
   {Needed for Delphi 5} GlCrossPlatform, GLCoordinates, GLRenderContextInfo;
 

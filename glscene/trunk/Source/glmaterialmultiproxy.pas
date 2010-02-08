@@ -45,7 +45,7 @@ uses
   Classes,
 
   // GLScene
-  GLScene, VectorGeometry, GLTexture, GLSilhouette, GLStrings,
+  GLScene, VectorGeometry, GLTexture, GLMaterial, GLSilhouette, GLStrings,
   GLCrossPlatform, PersistentClasses, GLRenderContextInfo, BaseClasses;
 
 type

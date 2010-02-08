@@ -34,7 +34,7 @@ unit GLShadowHDS;
 interface
 
 uses Classes, GLHeightData, GLGraphics, VectorGeometry, GLTexture, Dialogs, Forms,
-     SyncObjs, VectorTypes, GLCoordinates;
+     SyncObjs, VectorTypes, GLCoordinates, GLMaterial;
 
 type
    TGLShadowHDS = class;

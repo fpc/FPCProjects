@@ -258,6 +258,7 @@ uses
    Graphics,
    GLColor, GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics, GLCoordinates,
    GLRenderContextInfo, GLNodes,
+   GLMaterial,
    GLDynamicTexture,
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText, Joystick, ScreenSaver,

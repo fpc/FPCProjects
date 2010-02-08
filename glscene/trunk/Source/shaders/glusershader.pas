@@ -16,7 +16,7 @@ unit GLUserShader;
 interface
 
 uses
-  Classes, GLTexture, GLRenderContextInfo;
+  Classes, GLMaterial, GLRenderContextInfo;
 
 type
   TOnDoApplyEvent = procedure (Sender : TObject; var rci : TRenderContextInfo) of Object;

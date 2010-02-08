@@ -69,7 +69,7 @@ interface
 
 uses GLCrossPlatform, Classes, SysUtils, GLScene, ApplicationFileIO,
      VectorGeometry, GLVectorFileObjects, VectorLists, GLTexture,
-     GLColor, GLRenderContextInfo;
+     GLColor, GLRenderContextInfo, GLMaterial;
 
 const
    BufSize = 10240; { Load input data in chunks of BufSize Bytes. }

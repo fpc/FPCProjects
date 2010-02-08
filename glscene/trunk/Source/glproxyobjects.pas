@@ -51,7 +51,7 @@ uses
 
   // GLScene
   GLScene, VectorGeometry, GLTexture, GLSilhouette, GLVectorFileObjects,
-  GLStrings, GLRenderContextInfo, BaseClasses;
+  GLStrings, GLRenderContextInfo, BaseClasses, GLMaterial;
 
 type
   EGLProxyException = class(Exception);

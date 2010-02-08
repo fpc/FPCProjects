@@ -25,7 +25,7 @@
 unit GLTexturedHDS;
 interface
 {$i GLScene.inc}
-uses Classes, VectorGeometry, GLCrossPlatform, GLHeightData, GLTexture,
+uses Classes, VectorGeometry, GLCrossPlatform, GLHeightData, GLMaterial,
      GLHeightTileFileHDS, HeightTileFile, SysUtils, Dialogs;
 
 type

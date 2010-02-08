@@ -51,7 +51,7 @@ uses
   SysUtils, Classes,
 
   // GLScene
-  GLTexture, GLScene, VectorGeometry, VectorTypes,
+  GLTexture, GLMaterial, GLScene, VectorGeometry, VectorTypes,
   GLParticleFX, GLCrossPlatform, GLCoordinates;
 
 type

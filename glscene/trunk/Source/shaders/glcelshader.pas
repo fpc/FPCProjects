@@ -25,7 +25,8 @@ interface
 
 uses
    Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
-   VectorGeometry, OpenGL1x, ARBProgram, GLColor, GLRenderContextInfo;
+   VectorGeometry, OpenGL1x, ARBProgram, GLColor, GLRenderContextInfo,
+   GLMaterial;
 
 type
    // TGLCelShaderOption
@@ -273,7 +274,7 @@ begin
 
    if FUnApplyShadeTexture then begin
       if (csoTextured in FCelShaderOptions) then
-         FShadeTexture.UnApplyAsTexture2(rci, nil)
+         FShadeTexture.UnApplyAsTexture2(rci, false)
       else
          FShadeTexture.UnApply(rci);
       FUnApplyShadeTexture:=False;

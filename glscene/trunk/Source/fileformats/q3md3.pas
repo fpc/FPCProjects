@@ -18,7 +18,7 @@ interface
 
 uses
   Classes,SysUtils,ApplicationFileIO,VectorGeometry,GLVectorFileObjects,
-  VectorLists,GLTexture,FileMD3;
+  VectorLists,GLMaterial,FileMD3;
 
 type
   // This class is used to extract the tag transform information

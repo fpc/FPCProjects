@@ -19,7 +19,7 @@ unit glfilex;
 interface
 
 uses classes, sysutils,
-     glvectorfileobjects, applicationfileio, vectorgeometry, gltexture,
+     glvectorfileobjects, applicationfileio, vectorgeometry, glmaterial,
      vectorlists,
      filex;
 
