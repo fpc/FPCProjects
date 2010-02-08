@@ -6,6 +6,7 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/10/08 - DanB - added Assert check for trying to create texture images
       <li>05/10/08 - DanB - separated texture image editor from texture unit
                             moved color related stuff to GLColor.pas
                             moved TRenderContextInfo into separate unit
@@ -2926,10 +2927,14 @@ end;
 // SetImageClassName
 //
 procedure TGLTexture.SetImageClassName(const val : String);
+var
+  newImageClass: TGLTextureImageClass;
 begin
 	if val<>'' then if FImage.ClassName<>val then begin
 		FImage.Free;
-		FImage:=TGLTextureImageClass(FindGLTextureImageClass(val)).Create(Self);
+    newImageClass := FindGLTextureImageClass(val);
+    Assert(newImageClass<>nil, 'Make sure you include the unit for '+ val +' in your uses clause');
+		FImage:=TGLTextureImageClass(newImageClass).Create(Self);
       FImage.OnTextureNeeded:=DoOnTextureNeeded;
       NotifyImageChange;
 	end;

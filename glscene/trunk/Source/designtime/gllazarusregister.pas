@@ -248,7 +248,7 @@ uses
    GLAnimatedSprite, GLFeedback, GLProjectedTextures, GLBlur, GLTrail, GLPerlin,
    GLLinePFX, GLScriptBase, GLGameMenu, GLEParticleMasksManager,
    GLTimeEventsMgr, GLNavigator, GLMaterialScript, GLFPSMovement, GLDCE,
-   ApplicationFileIO,  GLScreen, GLMisc, GLVfsPAK, GLSimpleNavigation,
+   ApplicationFileIO,  GLScreen, GLVfsPAK, GLSimpleNavigation,
    GLAsyncHDS, GLConsole, GLAtmosphere, GLProxyObjects, GLMaterialMultiProxy,
    GLSLShader, GLSLDiffuseSpecularShader, GLSLBumpShader, GLAsmShader,
    GLShaderCombiner, GLSmoothNavigator, GLPostEffects, GLPhongShader,
@@ -256,7 +256,8 @@ uses
    GLBumpShader, GLHiddenLineShader, GLUserShader, GLShadowHDS, GLSLProjectedTextures,
    GLSound, GLSoundFileObjects,
    Graphics,
-   GLColor, GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics,
+   GLColor, GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics, GLCoordinates,
+   GLRenderContextInfo, GLNodes,
    GLDynamicTexture,
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText, Joystick, ScreenSaver,
@@ -1626,7 +1627,8 @@ initialization
   {$i GLLazarusRegister.lrs}
   {$i gllazarusobjects.lrs}
 
-   GLMisc.vUseDefaultSets:=True;
+   GLColor.vUseDefaultColorSets:=True;
+   GLCoordinates.vUseDefaultCoordinateSets:=True;
    //ReadVideoModes;
    with ObjectManager do begin
       RegisterSceneObject(TGLCamera, 'Camera', '');
