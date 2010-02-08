@@ -6,7 +6,7 @@
    ZBuffer retrieval and computations.<p>
 
    See readme.txt in the Demos/SpecialsFX/Shadows directory.<br>
-   By René Lindsay.<p>
+   By Renï¿½ Lindsay.<p>
 
 	<b>History : </b><font size=-1><ul>
       <li>29/05/08 - DaStr - Removed unused variables in TGLZShadows.CalcShadowTexture()
@@ -74,7 +74,7 @@ interface
 
 uses  Classes, GLMisc, OpenGL1x, GLScene, VectorGeometry, GLGraphics,
      SysUtils, GLObjects, GLBitmapFont, XOpenGL, GLTexture,
-     GLContext, GLBehaviours, XCollection, GLState, GLViewer;
+     GLContext, GLBehaviours, XCollection, GLState, GLViewer, GLColor;
 
 type
   EZBufferException = class(Exception);

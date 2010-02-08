@@ -7,6 +7,7 @@
 
 	<b>History : </b><font size=-1><ul>
       <li>05/10/08 - DanB - separated texture image editor from texture unit
+                            moved color related stuff to GLColor.pas
       <li>12/04/08 - DaStr - Bugfixed TGLTextureExItem.Create()
                               (thanks dAlex) (BugTracker ID = 1940451)
       <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
@@ -248,56 +249,6 @@ type
       amalgamating : Boolean;
    end;
    PRenderContextInfo = ^TRenderContextInfo;
-
-   // TGLColor
-	//
-   {: Wraps an OpenGL color. }
-   TGLColor = class(TGLUpdateAbleObject)
-      private
-         { Private Properties }
-			FColor : TColorVector;
-         FPDefaultColor : PColorVector;
-			procedure SetColorVector(const aColor : TColorVector); overload;
-			procedure SetColorComponent(index : Integer; value : TGLFloat);
-			procedure SetAsWinColor(const val : TColor);
-			function GetAsWinColor : TColor;
-
-		protected
-         { Protected Properties }
-			procedure DefineProperties(Filer: TFiler); override;
-			procedure ReadData(Stream: TStream);
-			procedure WriteData(Stream: TStream);
-
-         function GetHSVA : TVector;
-         procedure SetHSVA(const hsva : TVector);
-
-		public
-         { Public Properties }
-			constructor Create(AOwner : TPersistent); override;
-			constructor CreateInitialized(AOwner : TPersistent; const color : TColorVector;
-                                       changeEvent : TNotifyEvent = nil);
-         destructor Destroy; override;
-         procedure NotifyChange(Sender : TObject); override;
-			procedure Assign(Source : TPersistent); override;
-			procedure Initialize(const color : TColorVector);
-			function AsAddress : PGLFloat;
-
-         procedure RandomColor;
-         procedure SetColor(red, green, blue : Single; alpha : Single = 1); overload;
-
-			property Color : TColorVector read FColor write SetColorVector;
-			property AsWinColor : TColor read GetAsWinColor write SetAsWinColor;
-         property HSVA : TVector read GetHSVA write SetHSVA;
-
-         property DefaultColor : TColorVector read FColor;
-
-		published
-         { Published Properties }
-			property Red :   TGLFloat index 0 read FColor[0] write SetColorComponent stored False;
-			property Green : TGLFloat index 1 read FColor[1] write SetColorComponent stored False;
-			property Blue :  TGLFloat index 2 read FColor[2] write SetColorComponent stored False;
-			property Alpha : TGLFloat index 3 read FColor[3] write SetColorComponent stored False;
-	end;
 
    // TTextureNeededEvent
    //
@@ -1524,37 +1475,8 @@ type
 
    end;
 
-   PColorEntry = ^TColorEntry;
-   TColorEntry = record
-                   Name  : String[31];
-                   Color : TColorVector;
-                 end;
-
-   // TGLColorManager
-   //
-   TGLColorManager = class (TList)
-      public
-         destructor Destroy; override;
-         
-         procedure AddColor(const aName: String; const aColor: TColorVector);
-         procedure EnumColors(Proc: TGetStrProc); overload;
-         procedure EnumColors(AValues: TStrings); overload;
-
-         function  FindColor(const aName: String): TColorVector;
-         {: Convert a clrXxxx or a '<red green blue alpha> to a color vector }
-         function  GetColor(const aName: String): TColorVector;
-         function  GetColorName(const aColor: TColorVector): String;
-         procedure RegisterDefaultColors;
-         procedure RemoveColor(const aName: String);
-   end;
-
    ETexture = class (Exception);
    EGLShaderException = class(Exception);
-
-function ColorManager: TGLColorManager;
-
-procedure RegisterColor(const aName : String; const aColor : TColorVector);
-procedure UnRegisterColor(const aName : String);
 
 //: Register a TGLTextureImageClass (used for persistence and IDE purposes)
 procedure RegisterGLTextureImageClass(textureImageClass : TGLTextureImageClass);
@@ -1593,7 +1515,6 @@ uses GLScene, GLStrings, XOpenGL, ApplicationFileIO, PictureRegisteredFormats;
 
 var
 	vGLTextureImageClasses : TList;
-	vColorManager : TGLColorManager;
 
 const
 	cTextureMode : array [tmDecal..tmReplace] of TGLEnum =
@@ -1691,17 +1612,6 @@ begin
    end;
 end;
 
-// ColorManager
-//
-function ColorManager : TGLColorManager;
-begin
-	if not Assigned(vColorManager) then begin
-		vColorManager:=TGLColorManager.Create;
-		vColorManager.RegisterDefaultColors;
-	end;
-	Result:=vColorManager;
-end;
-
 // RegisterGLTextureImageClass
 //
 procedure RegisterGLTextureImageClass(textureImageClass : TGLTextureImageClass);
@@ -1785,248 +1695,6 @@ begin
 end;
 
 // ------------------
-// ------------------ TGLColor ------------------
-// ------------------
-
-// Create
-//
-constructor TGLColor.Create(AOwner: TPersistent);
-begin
-   inherited;
-   Initialize(clrBlack);
-end;
-
-// CreateInitialized
-//
-constructor TGLColor.CreateInitialized(AOwner : TPersistent; const color : TColorVector;
-                                       changeEvent : TNotifyEvent = nil);
-begin
-   Create(AOwner);
-   Initialize(color);
-   OnNotifyChange:=changeEvent;
-end;
-
-// Destroy
-//
-destructor TGLColor.Destroy;
-begin
-   if assigned(FPDefaultColor) then Dispose(FPDefaultColor);
-   inherited;
-end;
-
-// Initialize
-//
-procedure TGLColor.Initialize(const color : TColorVector);
-begin
-   SetVector(FColor, color);
-   if vUseDefaultSets then
-   begin
-      if not assigned(FPDefaultColor) then
-         New(FPDefaultColor);
-      SetVector(FPDefaultColor^, color);
-   end;
-end;
-
-// SetColorVector
-//
-procedure TGLColor.SetColorVector(const aColor : TColorVector);
-begin
-   SetVector(FColor, AColor);
-	NotifyChange(Self);
-end;
-
-// SetColorComponent
-//
-procedure TGLColor.SetColorComponent(index : Integer; value : TGLFloat);
-begin
-	if FColor[index]<>value then begin
-		FColor[index]:=value;
-		NotifyChange(Self);
-	end;
-end;
-
-// SetAsWinColor
-//
-procedure TGLColor.SetAsWinColor(const val : TColor);
-begin
-	FColor:=ConvertWinColor(val);
-	NotifyChange(Self);
-end;
-
-// GetAsWinColor
-//
-function TGLColor.GetAsWinColor : TColor;
-begin
-	Result:=ConvertColorVector(FColor);
-end;
-
-// Assign
-//
-procedure TGLColor.Assign(Source: TPersistent);
-begin
-   if Assigned(Source) and (Source is TGLColor) then begin
-		FColor:=TGLColor(Source).FColor;
-      NotifyChange(Self);
-   end else inherited;
-end;
-
-// DefineProperties
-//
-procedure TGLColor.DefineProperties(Filer: TFiler);
-begin
-  inherited;
-  Filer.DefineBinaryProperty('Color', ReadData, WriteData,
-                             not (Assigned(FPDefaultColor) and VectorEquals(FColor, FPDefaultColor^)));
-end;
-
-// ReadData
-//
-procedure TGLColor.ReadData(Stream: TStream);
-begin
-   Stream.Read(FColor, SizeOf(FColor));
-end;
-
-// WriteData
-//
-procedure TGLColor.WriteData(Stream: TStream);
-begin
-   Stream.Write(FColor, SizeOf(FColor));
-end;
-
-// NotifyChange
-//
-procedure TGLColor.NotifyChange(Sender : TObject);
-begin
-   if Assigned(Owner) then begin
-      if Owner is TGLBaseSceneObject then
-         TGLBaseSceneObject(Owner).StructureChanged;
-      inherited;
-   end;
-end;
-
-// AsAddress
-//
-function TGLColor.AsAddress: PGLFloat;
-begin
-	Result:=@FColor;
-end;
-
-// RandomColor
-//
-procedure TGLColor.RandomColor;
-begin
-   Red:=Random;
-   Green:=Random;
-   Blue:=Random;
-end;
-
-// SetColor
-//
-procedure TGLColor.SetColor(red, green, blue : Single; alpha : Single = 1);
-begin
-   FColor[0]:=red;
-   FColor[1]:=Green;
-   FColor[2]:=blue;
-   FColor[3]:=alpha;
-   NotifyChange(Self);
-end;
-
-// GetHSVA
-//
-function TGLColor.GetHSVA : TVector;
-var
-   delta, min : Single;
-const
-   H = 0;
-   S = 1;
-   V = 2;
-begin
-   min:=MinFloat(PFloatVector(@FColor), 3);
-   Result[V]:=MaxFloat(PFloatVector(@FColor), 3);
-   delta:=Result[V]-min;
-
-  // saturation is zero if R, G & B are zero
-  // hue undefined (zero) if saturation is zero or color is gray (delta=zero)
-   if (Result[V]=0) or (delta=0) then begin
-      Result[S]:=0;
-      Result[H]:=0;
-   end else begin
-      Result[S]:=delta/Result[V];
-      if Red=Result[V] then
-         // between yellow and magenta
-         Result[H]:=60*(Green-Blue)/delta
-      else if Green=Result[V] then
-         // between cyan and yellow
-         Result[H]:=120+60*(Blue-Red)/delta
-      else // between magenta and cyan
-         Result[H]:=240+60*(Red-Green)/delta;
-      if Result[H]<0 then  // normalize H
-         Result[H]:=Result[H]+360;
-   end;
-   Result[3]:=Alpha;
-end;
-
-// SetHSVA
-//
-procedure TGLColor.SetHSVA(const hsva : TVector);
-var
-   f, hTemp, p, q, t : Single;
-const
-   H = 0;
-   S = 1;
-   V = 2;
-begin
-   if hsva[S]=0 then begin
-      // gray (ignore hue)
-      FColor[0]:=hsva[V];
-      FColor[1]:=hsva[V];
-      FColor[2]:=hsva[V];
-   end else begin
-      hTemp:=hsva[H]*(1/60);
-      f:=Frac(hTemp);
-
-      p:=hsva[V]*(1-hsva[S]);
-      q:=hsva[V]*(1-(hsva[S]*f));
-      t:=hsva[V]*(1-(hsva[S]*(1-f)));
-
-      case Trunc(hTemp) mod 6 of
-         0 : begin
-            FColor[0]:=hsva[V];
-            FColor[1]:=t;
-            FColor[2]:=p;
-         end;
-         1 : begin
-            FColor[0]:=q;
-            FColor[1]:=hsva[V];
-            FColor[2]:=p;
-         end;
-         2 : begin
-            FColor[0]:=p;
-            FColor[1]:=hsva[V];
-            FColor[2]:=t;
-         end;
-         3 : begin
-            FColor[0]:=p;
-            FColor[1]:=q;
-            FColor[2]:=hsva[V];
-         end;
-         4 : begin
-            FColor[0]:=t;
-            FColor[1]:=p;
-            FColor[2]:=hsva[V];
-         end;
-         5 : begin
-            FColor[0]:=hsva[V];
-            FColor[1]:=p;
-            FColor[2]:=q;
-         end;
-      end
-   end;
-   FColor[3]:=hsva[3];
-   NotifyChange(Self);
-end;
-
-// ------------------
 // ------------------ TGLFaceProperties ------------------
 // ------------------
 
@@ -2062,7 +1730,7 @@ const
    cPolygonMode : array [pmFill..pmPoints] of TGLEnum = (GL_FILL, GL_LINE, GL_POINT);
 begin
    rci.GLStates.SetGLMaterialColors(aFace,
-      Emission.FColor, Ambient.FColor, Diffuse.FColor, Specular.FColor, FShininess);
+      Emission.Color, Ambient.Color, Diffuse.Color, Specular.Color, FShininess);
    rci.GLStates.SetGLPolygonMode(aFace, cPolygonMode[FPolygonMode]);
 end;
 
@@ -2073,7 +1741,7 @@ procedure TGLFaceProperties.ApplyNoLighting(var rci : TRenderContextInfo;
 const
    cPolygonMode : array [pmFill..pmPoints] of TGLEnum = (GL_FILL, GL_LINE, GL_POINT);
 begin
-   glColor4fv(@Diffuse.FColor);
+   glColor4fv(@Diffuse.Color);
    rci.GLStates.SetGLPolygonMode(aFace, cPolygonMode[FPolygonMode]);
 end;
 
@@ -2082,12 +1750,12 @@ end;
 procedure TGLFaceProperties.Assign(Source: TPersistent);
 begin
    if Assigned(Source) and (Source is TGLFaceProperties) then begin
-      FAmbient.FColor:=TGLFaceProperties(Source).FAmbient.FColor;
-      FDiffuse.FColor:=TGLFaceProperties(Source).FDiffuse.FColor;
-      FSpecular.FColor:=TGLFaceProperties(Source).FSpecular.FColor;
-      FShininess:=TGLFaceProperties(Source).FShininess;
-      FPolygonMode:=TGLFaceProperties(Source).FPolygonMode;
-		FEmission.FColor:=TGLFaceProperties(Source).FEmission.FColor;
+      FAmbient.DirectColor:=TGLFaceProperties(Source).Ambient.Color;
+      FDiffuse.DirectColor:=TGLFaceProperties(Source).Diffuse.Color;
+  		FEmission.DirectColor:=TGLFaceProperties(Source).Emission.Color;
+      FSpecular.DirectColor:=TGLFaceProperties(Source).Specular.Color;
+      FShininess:=TGLFaceProperties(Source).Shininess;
+      FPolygonMode:=TGLFaceProperties(Source).PolygonMode;
 		NotifyChange(Self);
    end;
 end;
@@ -2096,7 +1764,7 @@ end;
 //
 procedure TGLFaceProperties.SetAmbient(AValue: TGLColor);
 begin
-   FAmbient.FColor:=AValue.FColor;
+   FAmbient.DirectColor:=AValue.Color;
    NotifyChange(Self);
 end;
 
@@ -2104,7 +1772,7 @@ end;
 //
 procedure TGLFaceProperties.SetDiffuse(AValue: TGLColor);
 begin
-   FDiffuse.FColor:=AValue.FColor;
+   FDiffuse.DirectColor:=AValue.Color;
    NotifyChange(Self);
 end;
 
@@ -2112,7 +1780,7 @@ end;
 //
 procedure TGLFaceProperties.SetEmission(AValue: TGLColor);
 begin
-   FEmission.FColor:=AValue.FColor;
+   FEmission.DirectColor:=AValue.Color;
    NotifyChange(Self);
 end;
 
@@ -2120,7 +1788,7 @@ end;
 //
 procedure TGLFaceProperties.SetSpecular(AValue: TGLColor);
 begin
-   FSpecular.FColor:=AValue.FColor;
+   FSpecular.DirectColor:=AValue.Color;
    NotifyChange(Self);
 end;
 
@@ -6003,327 +5671,6 @@ begin
 end;
 
 // ------------------
-// ------------------ TGLColorManager ------------------
-// ------------------
-
-// Find Color
-//
-function TGLColorManager.FindColor(const aName: String): TColorVector;
-var
-   i : Integer;
-begin
-   Result:=clrBlack;
-   for i:=0 to Count-1 do
-      if CompareText(TColorEntry(Items[i]^).Name, AName)=0 then begin
-         SetVector(Result, TColorEntry(Items[i]^).Color);
-         Break;
-      end;
-end;
-
-// GetColor
-//
-function TGLColorManager.GetColor(const aName : String): TColorVector;
-var
-   workCopy  : String;
-   delimiter : Integer;
-begin
-   if aName='' then
-      Result:=clrBlack
-   else begin
-      workCopy:=Trim(AName);
-      if AName[1] in ['(','[','<'] then
-         workCopy:=Copy(workCopy, 2, Length(AName)-2);
-      if CompareText(Copy(workCopy,1,3),'clr')=0 then
-         SetVector(Result, FindColor(workCopy))
-      else try
-         // initialize result
-         Result:=clrBlack;
-         workCopy:=Trim(workCopy);
-         delimiter:=Pos(' ', workCopy);
-         if (Length(workCopy)>0) and (delimiter>0) then begin
-            Result[0]:=StrToFloat(Copy(workCopy, 1, delimiter-1));
-            System.Delete(workCopy, 1, delimiter);
-            workCopy:=TrimLeft(workCopy);
-            delimiter:=Pos(' ',workCopy);
-            if (Length(workCopy)>0) and (delimiter>0) then begin
-               Result[1]:=StrToFloat(Copy(workCopy, 1, delimiter-1));
-               System.Delete(workCopy, 1, delimiter);
-               workCopy:=TrimLeft(workCopy);
-               delimiter:=Pos(' ', workCopy);
-               if (Length(workCopy)>0) and (delimiter>0) then begin
-                  Result[2]:=StrToFloat(Copy(workCopy, 1, delimiter-1));
-                  System.Delete(workCopy, 1, delimiter);
-                  workCopy:=TrimLeft(workCopy);
-                  Result[3]:=StrToFloat(workCopy);
-               end else Result[2]:=StrToFloat(workCopy);
-            end else Result[1]:=StrToFloat(workCopy);
-         end else Result[0]:=StrToFloat(workCopy);
-      except
-         InformationDlg('Wrong vector format. Use: ''<red green blue alpha>''!');
-         Abort;
-      end;
-   end;
-end;
-
-//------------------------------------------------------------------------------
-
-function TGLColorManager.GetColorName(const aColor: TColorVector): String;
-
-const MinDiff = 1e-6;
-
-var I : Integer;
-
-begin
-  for I:=0 to Count-1 do
-    with TColorEntry(Items[I]^) do
-      if (Abs(Color[0]-AColor[0]) < MinDiff) and
-         (Abs(Color[1]-AColor[1]) < MinDiff) and
-         (Abs(Color[2]-AColor[2]) < MinDiff) and
-         (Abs(Color[3]-AColor[3]) < MinDiff) then Break;
-  if I < Count then Result:=TColorEntry(Items[I]^).Name
-               else
-      Result:=Format('<%.3f %.3f %.3f %.3f>',[AColor[0],AColor[1],AColor[2],AColor[3]]);
-end;
-
-// Destroy
-//
-destructor TGLColorManager.Destroy;
-var
-   i : Integer;
-begin
-   for i:=0 to Count-1 do
-      FreeMem(Items[i], SizeOf(TColorEntry));
-   inherited Destroy;
-end;
-
-// AddColor
-//
-procedure TGLColorManager.AddColor(const aName: String; const aColor: TColorVector);
-var
-   newEntry : PColorEntry;
-begin
-   New(newEntry);
-   if newEntry = nil then
-      raise Exception.Create('Could not allocate memory for color registration!');
-   with newEntry^ do begin
-     Name:=AName;
-     SetVector(Color, aColor);
-   end;
-   Add(newEntry);
-end;
-
-// EnumColors
-//
-procedure TGLColorManager.EnumColors(Proc: TGetStrProc);
-var
-   i : Integer;
-begin
-   for i:=0 to Count-1 do
-      Proc(TColorEntry(Items[i]^).Name);
-end;
-
-// EnumColors
-//
-procedure TGLColorManager.EnumColors(AValues: TStrings);
-var
-   i : Integer;
-begin
-   for i:=0 to Count-1 do
-      AValues.Add(TColorEntry(Items[i]^).Name);
-end;
-
-
-// RegisterDefaultColors
-//
-procedure TGLColorManager.RegisterDefaultColors;
-begin
-   Capacity:=150;
-   AddColor('clrTransparent',clrTransparent);
-   AddColor('clrBlack',clrBlack);
-   AddColor('clrGray05',clrGray05);
-   AddColor('clrGray10',clrGray10);
-   AddColor('clrGray15',clrGray15);
-   AddColor('clrGray20',clrGray20);
-   AddColor('clrGray25',clrGray25);
-   AddColor('clrGray30',clrGray30);
-   AddColor('clrGray35',clrGray35);
-   AddColor('clrGray40',clrGray40);
-   AddColor('clrGray45',clrGray45);
-   AddColor('clrGray50',clrGray50);
-   AddColor('clrGray55',clrGray55);
-   AddColor('clrGray60',clrGray60);
-   AddColor('clrGray65',clrGray65);
-   AddColor('clrGray70',clrGray70);
-   AddColor('clrGray75',clrGray75);
-   AddColor('clrGray80',clrGray80);
-   AddColor('clrGray85',clrGray85);
-   AddColor('clrGray90',clrGray90);
-   AddColor('clrGray95',clrGray95);
-   AddColor('clrWhite',clrWhite);
-   AddColor('clrDimGray',clrDimGray);
-   AddColor('clrGray',clrGray);
-   AddColor('clrLightGray',clrLightGray);
-   AddColor('clrAquamarine',clrAquamarine);
-   AddColor('clrBakersChoc',clrBakersChoc);
-   AddColor('clrBlueViolet',clrBlueViolet);
-   AddColor('clrBrass',clrBrass);
-   AddColor('clrBrightGold',clrBrightGold);
-   AddColor('clrBronze',clrBronze);
-   AddColor('clrBronze2',clrBronze2);
-   AddColor('clrBrown',clrBrown);
-   AddColor('clrCadetBlue',clrCadetBlue);
-   AddColor('clrCoolCopper',clrCoolCopper);
-   AddColor('clrCopper',clrCopper);
-   AddColor('clrCoral',clrCoral);
-   AddColor('clrCornflowerBlue',clrCornflowerBlue);
-   AddColor('clrDarkBrown',clrDarkBrown);
-   AddColor('clrDarkGreen',clrDarkGreen);
-   AddColor('clrDarkOliveGreen',clrDarkOliveGreen);
-   AddColor('clrDarkOrchid',clrDarkOrchid);
-   AddColor('clrDarkPurple',clrDarkPurple);
-   AddColor('clrDarkSlateBlue',clrDarkSlateBlue);
-   AddColor('clrDarkSlateGray',clrDarkSlateGray);
-   AddColor('clrDarkSlateGrey',clrDarkSlateGrey);
-   AddColor('clrDarkTan',clrDarkTan);
-   AddColor('clrDarkTurquoise',clrDarkTurquoise);
-   AddColor('clrDarkWood',clrDarkWood);
-   AddColor('clrDkGreenCopper',clrDkGreenCopper);
-   AddColor('clrDustyRose',clrDustyRose);
-   AddColor('clrFeldspar',clrFeldspar);
-   AddColor('clrFirebrick',clrFirebrick);
-   AddColor('clrFlesh',clrFlesh);
-   AddColor('clrForestGreen',clrForestGreen);
-   AddColor('clrGold',clrGold);
-   AddColor('clrGoldenrod',clrGoldenrod);
-   AddColor('clrGreenCopper',clrGreenCopper);
-   AddColor('clrGreenYellow',clrGreenYellow);
-   AddColor('clrHuntersGreen',clrHuntersGreen);
-   AddColor('clrIndian',clrIndian);
-   AddColor('clrKhaki',clrKhaki);
-   AddColor('clrLightBlue',clrLightBlue);
-   AddColor('clrLightPurple',clrLightPurple);
-   AddColor('clrLightSteelBlue',clrLightSteelBlue);
-   AddColor('clrLightWood',clrLightWood);
-   AddColor('clrLimeGreen',clrLimeGreen);
-   AddColor('clrMandarinOrange',clrMandarinOrange);
-   AddColor('clrMaroon',clrMaroon);
-   AddColor('clrMediumAquamarine',clrMediumAquamarine);
-   AddColor('clrMediumBlue',clrMediumBlue);
-   AddColor('clrMediumForestGreen',clrMediumForestGreen);
-   AddColor('clrMediumGoldenrod',clrMediumGoldenrod);
-   AddColor('clrMediumOrchid',clrMediumOrchid);
-   AddColor('clrMediumPurple',clrMediumPurple);
-   AddColor('clrMediumSeaGreen',clrMediumSeaGreen);
-   AddColor('clrMediumSlateBlue',clrMediumSlateBlue);
-   AddColor('clrMediumSpringGreen',clrMediumSpringGreen);
-   AddColor('clrMediumTurquoise',clrMediumTurquoise);
-   AddColor('clrMediumViolet',clrMediumViolet);
-   AddColor('clrMediumWood',clrMediumWood);
-   AddColor('clrMidnightBlue',clrMidnightBlue);
-   AddColor('clrNavy',clrNavy);
-   AddColor('clrNavyBlue',clrNavyBlue);
-   AddColor('clrNeonBlue',clrNeonBlue);
-   AddColor('clrNeonPink',clrNeonPink);
-   AddColor('clrNewMidnightBlue',clrNewMidnightBlue);
-   AddColor('clrNewTan',clrNewTan);
-   AddColor('clrOldGold',clrOldGold);
-   AddColor('clrOrange',clrOrange);
-   AddColor('clrOrangeRed',clrOrangeRed);
-   AddColor('clrOrchid',clrOrchid);
-   AddColor('clrPaleGreen',clrPaleGreen);
-   AddColor('clrPink',clrPink);
-   AddColor('clrPlum',clrPlum);
-   AddColor('clrQuartz',clrQuartz);
-   AddColor('clrRichBlue',clrRichBlue);
-   AddColor('clrSalmon',clrSalmon);
-   AddColor('clrScarlet',clrScarlet);
-   AddColor('clrSeaGreen',clrSeaGreen);
-   AddColor('clrSemiSweetChoc',clrSemiSweetChoc);
-   AddColor('clrSienna',clrSienna);
-   AddColor('clrSilver',clrSilver);
-   AddColor('clrSkyBlue',clrSkyBlue);
-   AddColor('clrSlateBlue',clrSlateBlue);
-   AddColor('clrSpicyPink',clrSpicyPink);
-   AddColor('clrSpringGreen',clrSpringGreen);
-   AddColor('clrSteelBlue',clrSteelBlue);
-   AddColor('clrSummerSky',clrSummerSky);
-   AddColor('clrTan',clrTan);
-   AddColor('clrThistle',clrThistle);
-   AddColor('clrTurquoise',clrTurquoise);
-   AddColor('clrViolet',clrViolet);
-   AddColor('clrVioletRed',clrVioletRed);
-   AddColor('clrVeryDarkBrown',clrVeryDarkBrown);
-   AddColor('clrVeryLightPurple',clrVeryLightPurple);
-   AddColor('clrWheat',clrWheat);
-   AddColor('clrYellowGreen',clrYellowGreen);
-   AddColor('clrGreen',clrGreen);
-   AddColor('clrOlive',clrOlive);
-   AddColor('clrPurple',clrPurple);
-   AddColor('clrTeal',clrTeal);
-   AddColor('clrRed',clrRed);
-   AddColor('clrLime',clrLime);
-   AddColor('clrYellow',clrYellow);
-   AddColor('clrBlue',clrBlue);
-   AddColor('clrFuchsia',clrFuchsia);
-   AddColor('clrAqua',clrAqua);
-
-   AddColor('clrScrollBar',clrScrollBar);
-   AddColor('clrBackground',clrBackground);
-   AddColor('clrActiveCaption',clrActiveCaption);
-   AddColor('clrInactiveCaption',clrInactiveCaption);
-   AddColor('clrMenu',clrMenu);
-   AddColor('clrWindow',clrWindow);
-   AddColor('clrWindowFrame',clrWindowFrame);
-   AddColor('clrMenuText',clrMenuText);
-   AddColor('clrWindowText',clrWindowText);
-   AddColor('clrCaptionText',clrCaptionText);
-   AddColor('clrActiveBorder',clrActiveBorder);
-   AddColor('clrInactiveBorder',clrInactiveBorder);
-   AddColor('clrAppWorkSpace',clrAppWorkSpace);
-   AddColor('clrHighlight',clrHighlight);
-   AddColor('clrHighlightText',clrHighlightText);
-   AddColor('clrBtnFace',clrBtnFace);
-   AddColor('clrBtnShadow',clrBtnShadow);
-   AddColor('clrGrayText',clrGrayText);
-   AddColor('clrBtnText',clrBtnText);
-   AddColor('clrInactiveCaptionText',clrInactiveCaptionText);
-   AddColor('clrBtnHighlight',clrBtnHighlight);
-   AddColor('clr3DDkShadow',clr3DDkShadow);
-   AddColor('clr3DLight',clr3DLight);
-   AddColor('clrInfoText',clrInfoText);
-   AddColor('clrInfoBk',clrInfoBk);
-end;
-
-// RemoveColor
-//
-procedure TGLColorManager.RemoveColor(const aName: String);
-var
-   i : Integer;
-begin
-   for i:=0 to Count-1 do begin
-      if CompareText(TColorEntry(Items[i]^).Name, aName)=0 then begin
-         Delete(i);
-         Break;
-	   end;
-   end;
-end;
-
-// RegisterColor
-//
-procedure RegisterColor(const aName : String; const aColor : TColorVector);
-begin
-   ColorManager.AddColor(AName, AColor);
-end;
-
-// UnregisterColor
-//
-procedure UnregisterColor(const aName : String);
-begin
-   ColorManager.RemoveColor(AName);
-end;
-
-
-// ------------------
 // ------------------ TGLFloatDataImage ------------------
 // ------------------
 
@@ -6503,7 +5850,6 @@ initialization
 
 finalization
 
-	vColorManager.Free;
 	vGLTextureImageClasses.Free;
    vGLTextureImageClasses:=nil;
 

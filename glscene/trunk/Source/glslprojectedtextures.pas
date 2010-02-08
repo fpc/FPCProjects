@@ -53,7 +53,8 @@ uses
     OpenGL1x,
     VectorGeometry,
     GLContext,
-    sysutils;
+    sysutils,
+    GLColor;
 
 type
     TGLSLProjectedTexturesStyle = (ptsLight, ptsShadow);

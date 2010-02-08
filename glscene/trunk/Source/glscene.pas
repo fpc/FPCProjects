@@ -5,61 +5,6 @@
 
    Base classes and structures for GLScene.<p>
 
-   $Log: glscene.pas,v $
-   Revision 1.1  2006/01/10 20:50:45  z0m3ie
-   recheckin to make shure that all is lowercase
-
-   Revision 1.4  2006/01/09 20:45:50  z0m3ie
-   *** empty log message ***
-
-   Revision 1.3  2006/01/08 21:04:12  z0m3ie
-   *** empty log message ***
-
-   Revision 1.2  2005/12/04 16:53:05  z0m3ie
-   renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-   Revision 1.1  2005/12/01 21:24:11  z0m3ie
-   *** empty log message ***
-
-   Revision 1.22  2005/12/01 21:02:23  z0m3ie
-   *** empty log message ***
-
-   Revision 1.21  2005/11/14 21:38:06  z0m3ie
-   making this stuff again Linux compatible please dont break multi platform support again
-
-   Revision 1.20  2005/09/17 22:03:23  k00m
-   Remove a fix from me about fullscreen it not working more.
-
-   Revision 1.19  2005/09/17 07:53:42  k00m
-   *** empty log message ***
-
-   Revision 1.18  2005/09/17 05:26:43  k00m
-   *** empty log message ***
-
-   Revision 1.17  2005/09/16 22:49:45  k00m
-   invalidate update again.
-
-   Revision 1.16  2005/09/16 21:01:50  k00m
-   update the invalidate patch hack I have place it on a other place it is better.
-
-   Revision 1.15  2005/09/16 18:32:15  k00m
-   Matrix correction and a invalidate patch hack.
-
-   Revision 1.14  2005/08/30 03:21:33  k00m
-   Removed the hack because more problem coming with other demos I try to find a solution.
-
-   Revision 1.13  2005/08/30 03:02:08  k00m
-   Little fix on my matrix hack now work with both ode and normal object.
-
-   Revision 1.12  2005/08/30 00:47:32  k00m
-   Some leak fix and some hack to get the matrix working.
-
-   Revision 1.11  2005/08/04 17:34:56  z0m3ie
-   - fixed VirtualWriter issues (created by me :()
-
-   Revision 1.10  2005/08/03 00:18:23  z0m3ie
-   - added History
-
    <b>History : </b><font size=-1><ul>
       <li>20/04/08 - DaStr - Added a AABB cauching mechanism to TGLBaseSceneObject
                              TGLDirectOpenGL's dimentions are now all all zeros
@@ -372,7 +317,7 @@ uses
    // GLScene
    VectorGeometry, XCollection, GLSilhouette, PersistentClasses, GLState,
    GLGraphics, GeometryBB, GLContext, GLCrossPlatform, VectorLists, GLTexture,
-   GLMisc;
+   GLMisc, GLColor;
 
 type
 
@@ -2441,7 +2386,7 @@ implementation
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-uses GLStrings, XOpenGL, VectorTypes, OpenGL1x, ApplicationFileIO, GLUtils, GLColor;
+uses GLStrings, XOpenGL, VectorTypes, OpenGL1x, ApplicationFileIO, GLUtils;
 
 var
    vCounterFrequency : Int64;

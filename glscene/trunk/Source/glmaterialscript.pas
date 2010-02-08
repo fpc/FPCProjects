@@ -51,7 +51,7 @@ uses
   SysUtils, Classes, StdCtrls,
 
   // GLScene
-  GLTexture, GLGraphics, GLMisc, GLUtils;
+  GLTexture, GLGraphics, GLMisc, GLUtils, GLColor;
 
 type
   TGLShaderItem = class(TCollectionItem)

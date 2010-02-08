@@ -13,6 +13,8 @@
    objects can be found GLGeomObjects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/10/08 - DaStr - Added lsmLoop support to TGLLines
+                              (thanks Alejandro Leon Escalera) (BugtrackerID = 2084250)
       <li>22/01/08 - DaStr - Fixed rendering of TGLPoints
                              (thanks Kapitan) (BugtrackerID = 1876920)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -467,7 +469,7 @@ type
    //
    {: Available spline modes for a TLine. }
    TLineSplineMode = (lsmLines, lsmCubicSpline, lsmBezierSpline, lsmNURBSCurve,
-                      lsmSegments);
+                      lsmSegments, lsmLoop);
 
    // TGLLinesNode
    //
@@ -2539,8 +2541,10 @@ begin
          // lines, cubic splines or bezier
          if FSplineMode=lsmSegments then
             glBegin(GL_LINES)
+         else if FSplineMode=lsmLoop then
+            glBegin(GL_LINE_LOOP)
          else glBegin(GL_LINE_STRIP);
-         if (FDivision<2) or (FSplineMode in [lsmLines, lsmSegments]) then begin
+         if (FDivision<2) or (FSplineMode in [lsmLines, lsmSegments, lsmLoop]) then begin
             // standard line(s), draw directly
             if loUseNodeColorForLines in Options then begin
                // node color interpolation
