@@ -608,7 +608,7 @@ begin
       n:=0;
       for iX:=0 to nbX do begin
          absTilePos:=VectorTransform(tilePos, DirectAbsoluteMatrix^);
-         if not IsVolumeClipped(absTilePos, tileRadius, rcci) then begin
+         if not IsVolumeClipped(absTilePos, tileRadius, rcci.frustum) then begin
             patch:=GetPreparedPatch(tilePos, observer, texFactor,
                                     postRenderHeightDataList);
 

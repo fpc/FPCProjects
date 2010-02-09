@@ -145,20 +145,22 @@ var
   depth, rnd : Single;
   flag : Boolean;
   i : Integer;
+  CurrentBuffer : TGLSceneBuffer;
 begin
+  CurrentBuffer := TGLSceneBuffer(rci.buffer);
   SetVector(v, AbsolutePosition);
   // are we looking towards the flare?
   rv := VectorSubtract(v, PAffineVector(@rci.cameraPosition)^);
   if VectorDotProduct(rci.cameraDirection, rv) > 0 then
   begin
     // find out where it is on the screen.
-    screenPos := Scene.CurrentBuffer.WorldToScreen(v);
+    screenPos := CurrentBuffer.WorldToScreen(v);
     if (screenPos[0] < rci.viewPortSize.cx) and (screenPos[0] >= 0)
       and (screenPos[1] < rci.viewPortSize.cy) and (screenPos[1] >= 0) then
     begin
       if FAutoZTest then
       begin
-        depth := Scene.CurrentBuffer.GetPixelDepth(Round(ScreenPos[0]),
+        depth := CurrentBuffer.GetPixelDepth(Round(ScreenPos[0]),
           Round(rci.viewPortSize.cy - ScreenPos[1]));
         // but is it behind something?
         if screenPos[2] >= 1 then
@@ -193,7 +195,7 @@ begin
   // Prepare matrices
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix;
-  glLoadMatrixf(@Scene.CurrentBuffer.BaseProjectionMatrix);
+  glLoadMatrixf(@CurrentBuffer.BaseProjectionMatrix);
 
   glMatrixMode(GL_PROJECTION);
   glPushMatrix;

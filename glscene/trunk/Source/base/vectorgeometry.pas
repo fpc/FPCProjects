@@ -32,6 +32,7 @@
    all Intel processors after Pentium should be immune to this.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>12/03/09 - DanB - Added overloaded versions of IsVolumeClipped
       <li>09/10/08 - DanB - moved TRenderContextClippingInfo + IsVolumeClipped functions that
                             use TRenderContextClippingInfo to GLRenderContextInfo.pas
       <li>21/02/07 - DaStr - Bugfixed InterpolatePower() to support negative Base
@@ -1584,6 +1585,10 @@ function ExtractFrustumFromModelViewProjection(const modelViewProj : TMatrix) : 
 
 //: Determines if volume is clipped or not
 function IsVolumeClipped(const objPos : TAffineVector; const objRadius : Single;
+                         const Frustum : TFrustum) : Boolean; overload;
+function IsVolumeClipped(const objPos : TVector; const objRadius : Single;
+                         const Frustum : TFrustum) : Boolean; overload;
+function IsVolumeClipped(const min, max : TAffineVector;
                          const Frustum : TFrustum) : Boolean; overload;
 
 // misc funcs
@@ -9698,6 +9703,25 @@ begin
            or (PlaneEvaluatePoint(frustum.pNear, objPos)<negRadius)
            or (PlaneEvaluatePoint(frustum.pFar, objPos)<negRadius);
 end;
+
+// IsVolumeClipped
+//
+function IsVolumeClipped(const objPos : TVector; const objRadius : Single;
+                         const Frustum : TFrustum) : Boolean;
+begin
+   Result:=IsVolumeClipped(PAffineVector(@objPos)^, objRadius, Frustum);
+end;
+
+// IsVolumeClipped
+//
+function IsVolumeClipped(const min, max : TAffineVector;
+                         const Frustum : TFrustum) : Boolean;
+begin
+   // change box to sphere
+   Result:=IsVolumeClipped(VectorScale(VectorAdd(min, max), 0.5),
+                           VectorDistance(min, max)*0.5, Frustum);
+end;
+
 
 // MakeParallelProjectionMatrix
 //

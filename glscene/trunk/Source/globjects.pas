@@ -13,6 +13,7 @@
    objects can be found GLGeomObjects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>13/03/09 - DanB - ScreenRect now accepts a buffer parameter, rather than using CurrentBuffer
       <li>05/10/08 - DaStr - Added lsmLoop support to TGLLines
                               (thanks Alejandro Leon Escalera) (BugtrackerID = 2084250)
       <li>22/01/08 - DaStr - Fixed rendering of TGLPoints
@@ -266,7 +267,7 @@ type
                                    intersectNormal : PVector = nil) : Boolean; override;
          {: Computes the screen coordinates of the smallest rectangle encompassing the plane.<p>
             Returned extents are NOT limited to any physical screen extents. }
-         function ScreenRect : TGLRect;
+         function ScreenRect(aBuffer: TGLSceneBuffer) : TGLRect;
 
          {: Computes the signed distance to the point.<p>
             Point coordinates are expected in absolute coordinates. }
@@ -1371,13 +1372,13 @@ end;
 
 // ScreenRect
 //
-function TGLPlane.ScreenRect : TGLRect;
+function TGLPlane.ScreenRect(aBuffer: TGLSceneBuffer) : TGLRect;
 var
    v : array [0..3] of TVector;
    buf : TGLSceneBuffer;
    hw, hh : TGLFloat;
 begin
-   buf:=Scene.CurrentBuffer;
+   buf:=aBuffer;
    if Assigned(buf) then begin
       hw:=FWidth*0.5;
       hh:=FHeight*0.5;

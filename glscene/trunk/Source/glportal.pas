@@ -293,7 +293,7 @@ begin
    if FDestinationSectorIndex>=0 then begin
       VectorSubtract(FCenter, PAffineVector(@mrci.rcci.origin)^, dir);
       if (VectorDotProduct(FNormal, dir)<=0) and
-            (not IsVolumeClipped(FCenter, FRadius, mrci.rcci)) then begin
+            (not IsVolumeClipped(FCenter, FRadius, mrci.rcci.frustum)) then begin
          Owner.Owner.Owner.Items[FDestinationSectorIndex].BuildList(mrci);
       end
    end;

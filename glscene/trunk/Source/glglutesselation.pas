@@ -7,6 +7,8 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/03/09 - DanB - DoTesselate now accepts TGLBaseMesh instead of
+                            TGLFreeform, so can now use TGLActor with it too
       <li>29/05/08 - DaStr - Added $I GLScene.inc
       <li>08/09/03 - Jaj - Added single outline polygon support
 
@@ -23,15 +25,16 @@ interface
 {$I GLScene.inc}
 
 Uses
-  GLVectorFileObjects, VectorLists, Opengl1X, VectorGeometry;
+  GLVectorFileObjects, VectorLists, VectorGeometry;
 
 {: Tesselates the polygon outlined by the Vertexes. And addeds them to the first facegroup of the Mesh. }
-Procedure DoTesselate(Vertexes : TAffineVectorList; Mesh : TGLFreeForm; normal : PAffineVector = Nil; invertNormals : Boolean = False);
+Procedure DoTesselate(Vertexes : TAffineVectorList; Mesh : TGLBaseMesh; normal : PAffineVector = Nil; invertNormals : Boolean = False);
 
 implementation
 
 uses
-  SysUtils;
+  SysUtils, OpenGL1x;
+
 Var
   TessMesh : TMeshObject;
   TessFace : TFGIndexTexCoordList;
@@ -78,7 +81,7 @@ begin
 end;
 
 
-Procedure DoTesselate(Vertexes : TAffineVectorList; Mesh : TGLFreeForm; normal : PAffineVector = Nil; invertNormals : Boolean = False);
+Procedure DoTesselate(Vertexes : TAffineVectorList; Mesh : TGLBaseMesh; normal : PAffineVector = Nil; invertNormals : Boolean = False);
 Var
   Tess : PGLUTesselator;
   i : Integer;

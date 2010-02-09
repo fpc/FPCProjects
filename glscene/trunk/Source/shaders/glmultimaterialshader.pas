@@ -4,6 +4,8 @@
    its assigned MaterialLibrary.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>20/01/09 - Mrqzzz - Published property "Shaderstyle"
+                             (allows f.ex to have multiple textures using lightmaps)
       <li>25/10/07 - Mrqzzz - commented "glPushAttrib(GL_ALL_ATTRIB_BITS);" in DoApply
                               and "glPopAttrib;" in DoUnapply, which seems to fix
                               issues with other objects and materials in the scene.
@@ -30,7 +32,9 @@ type
          FMaterialLibrary : TGLMaterialLibrary;
          FVisibleAtDesignTime: boolean;
          FShaderActiveAtDesignTime : boolean;
+    FShaderStyle: TGLShaderStyle;
     procedure SetVisibleAtDesignTime(const Value: boolean);
+    procedure SetShaderStyle(const Value: TGLShaderStyle);
       protected
          procedure SetMaterialLibrary(const val : TGLMaterialLibrary);
          procedure DoApply(var rci : TRenderContextInfo; Sender : TObject); override;
@@ -40,6 +44,7 @@ type
       published
          property MaterialLibrary : TGLMaterialLibrary read FMaterialLibrary write SetMaterialLibrary;
          property VisibleAtDesignTime : boolean read FVisibleAtDesignTime write SetVisibleAtDesignTime;
+         property ShaderStyle:TGLShaderStyle read FShaderStyle write SetShaderStyle;
    end;
 
 // ------------------------------------------------------------------
@@ -59,7 +64,7 @@ implementation
 constructor TGLMultiMaterialShader.Create(aOwner : TComponent);
 begin
    inherited;
-   ShaderStyle:=ssReplace;
+   FShaderStyle:=ssReplace;
    FVisibleAtDesignTime := False;
 end;
 
@@ -111,6 +116,12 @@ begin
       FMaterialLibrary:=val;
       NotifyChange(Self);
    end;
+end;
+
+procedure TGLMultiMaterialShader.SetShaderStyle(const Value: TGLShaderStyle);
+begin
+  FShaderStyle := Value;
+  inherited ShaderStyle :=FShaderStyle;
 end;
 
 procedure TGLMultiMaterialShader.SetVisibleAtDesignTime(

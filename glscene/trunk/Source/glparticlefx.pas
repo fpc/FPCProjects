@@ -1657,7 +1657,7 @@ begin
       FLastSortTime:=StopPrecisionTimer(timer)*1000;
 
       glPushMatrix;
-      glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
+      glLoadMatrixf(@TGLSceneBuffer(rci.buffer).ModelViewMatrix);
 
       glPushAttrib(GL_ALL_ATTRIB_BITS);
       

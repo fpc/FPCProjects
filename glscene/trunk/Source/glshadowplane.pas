@@ -9,6 +9,7 @@
    materials/mirror demo before using this component.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>12/03/09 - DanB - Bug-fix for scissor test on recent NVidia drivers
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -160,19 +161,21 @@ var
    oldProxySubObject, oldIgnoreMaterials : Boolean;
    curMat, shadowMat : TMatrix;
    sr : TGLRect;
+   CurrentBuffer: TGLSceneBuffer;
 begin
    if FRendering then Exit;
    FRendering:=True;
    try
       oldProxySubObject:=ARci.proxySubObject;
       ARci.proxySubObject:=True;
+      CurrentBuffer := TGLSceneBuffer(ARci.buffer);
 
       if ARenderSelf and (VectorDotProduct(VectorSubtract(ARci.cameraPosition, AbsolutePosition), AbsoluteDirection)>0) then begin
-         glPushAttrib(GL_ENABLE_BIT);
+         glPushAttrib(GL_ENABLE_BIT or GL_SCISSOR_BIT);
          
          if     (spoScissor in ShadowOptions)
             and (PointDistance(ARci.cameraPosition)>BoundingSphereRadius) then begin
-            sr:=ScreenRect;
+            sr:=ScreenRect(CurrentBuffer);
             InflateGLRect(sr, 1, 1);
             IntersectGLRect(sr, GLRect(0, 0, ARci.viewPortSize.cx, ARci.viewPortSize.cy));
             glScissor(sr.Left, sr.Top, sr.Right-sr.Left, sr.Bottom-sr.Top);
@@ -210,7 +213,7 @@ begin
 
             glPushMatrix;
             glLoadIdentity;
-            glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
+            glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
 
             case ShadowedLight.LightStyle of
                lsParallel : begin
@@ -225,8 +228,8 @@ begin
             glMultMatrixf(@shadowMat);
 
             glGetFloatv(GL_MODELVIEW_MATRIX, @curMat);
-            glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
-            Scene.CurrentBuffer.PushModelViewMatrix(curMat);
+            glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+            CurrentBuffer.PushModelViewMatrix(curMat);
 
             glDisable(GL_CULL_FACE);
             glEnable(GL_NORMALIZE);
@@ -266,9 +269,8 @@ begin
             ARci.ignoreMaterials:=oldIgnoreMaterials;
 
             // Restore to "normal"
-            Scene.CurrentBuffer.PopModelViewMatrix;
-            glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
-
+            CurrentBuffer.PopModelViewMatrix;
+            glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
             glPopMatrix;
 
          end;

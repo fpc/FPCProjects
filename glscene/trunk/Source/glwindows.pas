@@ -685,7 +685,7 @@ Begin
    // Prepare matrices
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix;
-   glLoadMatrixf(@Scene.CurrentBuffer.BaseProjectionMatrix);
+   glLoadMatrixf(@TGLSceneBuffer(rci.buffer).BaseProjectionMatrix);
    if rci.renderDPI=96 then
       f:=1
    else f:=rci.renderDPI/96;

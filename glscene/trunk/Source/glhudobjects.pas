@@ -230,7 +230,7 @@ begin
       // Prepare matrices
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix;
-      glLoadMatrixf(@Scene.CurrentBuffer.BaseProjectionMatrix);
+      glLoadMatrixf(@TGLSceneBuffer(rci.buffer).BaseProjectionMatrix);
       if rci.renderDPI=96 then
          f:=1
       else f:=rci.renderDPI/96;
@@ -379,7 +379,7 @@ begin
       // Prepare matrices
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix;
-      glLoadMatrixf(@Scene.CurrentBuffer.BaseProjectionMatrix);
+      glLoadMatrixf(@TGLSceneBuffer(rci.buffer).BaseProjectionMatrix);
       f:=rci.renderDPI/96;
       glScalef(2/rci.viewPortSize.cx, 2/rci.viewPortSize.cy, 1);
       glTranslatef(X * f-rci.viewPortSize.cx / 2,

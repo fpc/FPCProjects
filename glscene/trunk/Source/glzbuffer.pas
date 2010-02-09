@@ -72,10 +72,9 @@ interface
 
 {$i GLScene.inc}
 
-uses  Classes, OpenGL1x, GLScene, VectorGeometry, GLGraphics,
-     SysUtils, GLObjects, GLBitmapFont, XOpenGL,
-     GLContext, GLBehaviours, XCollection, GLState, GLViewer, GLColor,
-     GLRenderContextInfo;
+uses  Classes, SysUtils, GLScene, VectorGeometry, GLGraphics,
+      GLObjects, GLContext, GLViewer, GLColor,
+      GLRenderContextInfo;
 
 type
   EZBufferException = class(Exception);
@@ -231,6 +230,8 @@ type
 
 
 implementation
+
+uses OpenGL1x, XOpenGL;
 
 constructor TGLzBuffer.Create;
 begin
@@ -719,7 +720,8 @@ begin
    if not assigned(FViewer) then exit;
    if not assigned(FCaster) then exit;
    if not assigned(CasterZBuf) then exit; //only render if a shadow has been cast
-   if Scene.CurrentGLCamera<>FViewer.Camera then exit;  //only render in view-camera
+   //only render in view-camera
+   if TGLSceneBuffer(ARci.buffer).Camera<>FViewer.Camera then exit;
    if not assigned(ViewerZBuf) then begin  //Create viewer zbuffer
       ViewerZBuf:=TGLZBuffer.Create;
       ViewerZBuf.LinkToViewer(FViewer);
@@ -758,7 +760,7 @@ begin
    // Prepare matrices
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix;
-   glLoadMatrixf(@Scene.CurrentBuffer.BaseProjectionMatrix);
+   glLoadMatrixf(@TGLSceneBuffer(ARci.buffer).BaseProjectionMatrix);
    glScalef(2/ARci.viewPortSize.cx, 2/ARci.viewPortSize.cy, 1);
    glTranslatef(Position.X-ARci.viewPortSize.cx*0.5,
                 ARci.viewPortSize.cy*0.5-Position.Y, Position.Z);

@@ -25,8 +25,8 @@ interface
 {$I GLScene.inc}
 
 uses
-     OpenGL1x, VectorGeometry, GLScene, GLVectorFileObjects,
-     VectorLists, XCollection, Classes, GLGeomObjects, SysUtils,
+     Classes, VectorGeometry, GLScene, GLVectorFileObjects,
+     VectorLists, XCollection, GLGeomObjects,
      GLNavigator, GLRenderContextInfo, BaseClasses, GLManager;
 
 type
@@ -198,7 +198,7 @@ function GetOrCreateFPSMovement(obj: TGLBaseSceneObject): TGLBFPSMovement; overl
 
 implementation
 
-uses GLCrossPlatform;
+uses SysUtils, OpenGL1x, GLCrossPlatform;
 
 function GetFPSMovement(behaviours: TGLBehaviours): TGLBFPSMovement; overload;
 var

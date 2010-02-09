@@ -6,6 +6,7 @@
    Lens flare object.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>13/03/09 - DanB - changed glReadPixels/glTexImage2D calls to glCopyTexImage2D
       <li>10/10/08 - DanB - changed Lensflare buildlists to use rci.cameraPosition instead
                             of Scene.CurrentGLCamera.DistanceTo
       <li>08/08/07 - Lin - Bugfix for AutoZTest:
@@ -507,6 +508,7 @@ var
    flareInViewPort, usedOcclusionQuery, dynamicSize : Boolean;
    oldSeed : LongInt;
    projMatrix : TMatrix;
+   CurrentBuffer: TGLSceneBuffer;
 begin
    if (rci.drawState = dsPicking) then
    begin
@@ -514,13 +516,14 @@ begin
          Self.RenderChildren(0, Count - 1, rci);
       Exit;
    end;
+   CurrentBuffer := TGLSceneBuffer(rci.buffer);
 
    SetVector(v, AbsolutePosition);
    // are we looking towards the flare?
    rv:=VectorSubtract(v, PAffineVector(@rci.cameraPosition)^);
    if VectorDotProduct(rci.cameraDirection, rv)>0 then begin
       // find out where it is on the screen.
-      screenPos:=Scene.CurrentBuffer.WorldToScreen(v);
+      screenPos:=CurrentBuffer.WorldToScreen(v);
       flareInViewPort:=    (screenPos[0]<rci.viewPortSize.cx) and (screenPos[0]>=0)
                        and (screenPos[1]<rci.viewPortSize.cy) and (screenPos[1]>=0);
    end else flareInViewPort:=False;
@@ -545,7 +548,7 @@ begin
 
    // Prepare matrices
    glPushMatrix;
-   glLoadMatrixf(@Scene.CurrentBuffer.BaseProjectionMatrix);
+   glLoadMatrixf(@CurrentBuffer.BaseProjectionMatrix);
 
    glMatrixMode(GL_PROJECTION);
    glPushMatrix;
@@ -612,7 +615,7 @@ begin
 
          //Compares the distance to the lensflare, to the z-buffer depth.
          //This prevents the flare from being occluded by objects BEHIND the light.
-         depth:=Scene.CurrentBuffer.PixelToDistance(Round(ScreenPos[0]),Round(rci.viewPortSize.cy-ScreenPos[1]));
+         depth:=CurrentBuffer.PixelToDistance(Round(ScreenPos[0]),Round(rci.viewPortSize.cy-ScreenPos[1]));
          dist:=VectorDistance(rci.cameraPosition,self.AbsolutePosition);
          FlareIsNotOccluded:=((dist-depth)<1);
       end;
@@ -699,7 +702,6 @@ end;
 procedure TGLLensFlare.PreRender(activeBuffer : TGLSceneBuffer);
 var
    i, texSize, maxSize : Integer;
-   buf : Pointer;
 begin
    if FTexRays.Handle<>0 then Exit;
 
@@ -742,14 +744,7 @@ begin
  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-   GetMem(buf, texSize*texSize*4);
-   try
-      glReadPixels(2, 2, texSize, texSize, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-   	glTexImage2d(GL_TEXTURE_2D, 0, GL_RGBA8, texSize, texSize,
-                   0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-   finally
-      FreeMem(buf);
-   end;
+   glCopyTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,2,2,texSize,texSize,0);
 
    RestoreRenderingOptions;
 
@@ -934,7 +929,7 @@ end;
 //
 procedure TGLLensFlare.PreRenderEvent(Sender : TObject; var rci : TRenderContextInfo);
 begin
-   PreRender((rci.scene as TGLScene).CurrentBuffer);
+   PreRender(rci.buffer as TGLSceneBuffer);
 end;
 
 // PreRenderPointFreed

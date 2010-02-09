@@ -149,6 +149,7 @@ var
    oldStates : TGLStates;
    libMat : TGLLibMaterial;
    transMat : TMatrix;
+   CurrentBuffer : TGLSceneBuffer;
 begin
    if FMaterialLibrary=nil then Exit;
 
@@ -160,7 +161,9 @@ begin
    end;
    glDepthMask(False);
 
-   glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
+   CurrentBuffer := TGLSceneBuffer(Arci.buffer);
+
+   glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
    SetVector(transMat[0], LeftVector);
    SetVector(transMat[1], Up.AsVector);
    SetVector(transMat[2], Direction.AsVector);
@@ -171,7 +174,7 @@ begin
    glScalef(f, f, f);
 
    glGetFloatv(GL_MODELVIEW_MATRIX, @mvMat);
-   Scene.CurrentBuffer.PushModelViewMatrix(mvMat);
+   CurrentBuffer.PushModelViewMatrix(mvMat);
    try
       glPushMatrix;
       case Style of
@@ -329,7 +332,7 @@ begin
          ARci.GLStates.SetGLState(stDepthTest);
 
    finally
-      Scene.CurrentBuffer.PopModelViewMatrix;
+      CurrentBuffer.PopModelViewMatrix;
    end;
 end;
 
