@@ -240,16 +240,8 @@ implementation
 
 uses
   {$IFDEF FPC}
-  gllazarusregister, glstrings, info, opengl1x, clipbrd, GLViewer;
+  glsceneregister, glstrings, info, opengl1x, clipbrd, GLViewer;
   {$ENDIF}
-(*
-{$IFDEF MSWINDOWS}
-  gllazarusregister, glstrings, info, opengl1x, clipbrd, gllclviewer;
-{$ENDIF}
-{$IFDEF UNIX}
-  glsceneregister, glstrings, info, opengl1x, qclipbrd, gllinuxviewer; 
-{$ENDIF}
-*)
 
 resourcestring
    cGLSceneEditor = 'GLScene Editor';

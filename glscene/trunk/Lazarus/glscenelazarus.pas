@@ -12,7 +12,7 @@ uses
   MeshUtils, Octree, OpenGL1x, PerlinNoise, PersistentClasses, 
   PictureRegisteredFormats, Polynomials, SpatialPartitioning, Spline, 
   VectorGeometry, VectorLists, VectorTypes, VerletClasses, VerletHairClasses, 
-  XCollection, XOpenGL, FVectorEditor, FXCollectionEditor, GLLazarusRegister, 
+  XCollection, XOpenGL, FVectorEditor, FXCollectionEditor, GLSceneRegister, 
   GLSceneEdit, GLTextureImageEditors, Info, RegisterXCollection, GLFile3DS, 
   GLFileASE, GLFileGL2, GLFileGTS, GLFileLWO, GLFileMD2, GLFileMD3, GLFileMD5, 
   GLFileMDC, GLFileMS3D, GLFileNMF, GLFileNurbs, GLFileObj, GLFilePLY, 
@@ -42,7 +42,7 @@ implementation
 
 procedure Register; 
 begin
-  RegisterUnit('GLLazarusRegister', @GLLazarusRegister.Register); 
+  RegisterUnit('GLSceneRegister', @GLSceneRegister.Register); 
   RegisterUnit('RegisterXCollection', @RegisterXCollection.Register); 
 end; 
 

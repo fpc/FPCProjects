@@ -27,7 +27,7 @@ uses
   GLSceneRegister,
   {$ELSE FPC}
   propedits,
-  gllazarusregister,
+  GLSceneRegister,
   {$ENDIF FPC}
   // GLScene
   GLTexture, GLMaterial,

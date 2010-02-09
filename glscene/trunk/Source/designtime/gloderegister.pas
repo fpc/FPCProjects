@@ -10,7 +10,7 @@ unit GLODERegister;
 interface
 
 uses
-  Classes, GLLazarusRegister, GLODEManager, gloxode, glstrings;
+  Classes, GLSceneRegister, GLODEManager, gloxode, glstrings;
 
 procedure Register;
 

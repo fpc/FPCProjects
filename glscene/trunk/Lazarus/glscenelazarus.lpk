@@ -167,9 +167,9 @@
         <Type Value="LRS"/>
       </Item33>
       <Item34>
-        <Filename Value="../Source/designtime/gllazarusregister.pas"/>
+        <Filename Value="../Source/designtime/glsceneregister.pas"/>
         <HasRegisterProc Value="True"/>
-        <UnitName Value="GLLazarusRegister"/>
+        <UnitName Value="glsceneregister"/>
       </Item34>
       <Item35>
         <Filename Value="../Source/designtime/glsceneedit.pas"/>

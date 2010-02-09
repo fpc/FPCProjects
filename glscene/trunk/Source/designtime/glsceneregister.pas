@@ -1,7 +1,7 @@
 //
 // This unit is part of the GLScene Project, http://glscene.org
 //
-{: GLLazarusRegister<p>
+{: GLSceneRegister<p>
 
    This is a clone of GLSceneRegister modified for use with Lazarus.<p>
    
@@ -84,7 +84,7 @@
       <li>05/02/00 - EG - Added TGLColorProperty and TGLCoordinatesProperty
 	</ul></font>
 }
-unit GLLazarusRegister;
+unit GLSceneRegister;
 
 // Registration unit for GLScene library
 // 30-DEC-99 ml: scene editor added, structural changes
@@ -1570,7 +1570,7 @@ initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-  {$i GLLazarusRegister.lrs}
+  {$i GLSceneRegister.lrs}
   {$i gllazarusobjects.lrs}
 
    GLColor.vUseDefaultColorSets:=True;

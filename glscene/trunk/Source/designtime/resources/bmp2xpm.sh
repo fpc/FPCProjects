@@ -20,7 +20,7 @@ for nbmp in `find -iname "*.bmp"`; do
   convert $nbmp $nxpm
 done
 rm *.bmp
-lazres ../../gllazarusregister.lrs *.xpm
+lazres ../../glsceneregister.lrs *.xpm
 
 cd ..
 echo "Remember to run the following commands after adding the new *.xpm to svn:"
