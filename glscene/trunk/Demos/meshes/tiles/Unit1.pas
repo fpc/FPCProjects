@@ -23,7 +23,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms, LCLType, LCLIntf,
-  Dialogs, ExtCtrls, GLObjects, GLGraph, GLScene, GLMisc, GLViewer,
+  Dialogs, ExtCtrls, GLObjects, GLGraph, GLScene, GLViewer,
   VectorGeometry, GLTilePlane, GLTexture, GLCadencer, Jpeg, StdCtrls,
   OpenGL1x, LResources;
 

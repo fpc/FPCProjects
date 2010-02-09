@@ -1,24 +1,29 @@
 object Form1: TForm1
+  Left = 0
   Height = 696
   Top = 24
   Width = 1024
   HorzScrollBar.Page = 1023
   VertScrollBar.Page = 672
   Caption = 'Form1'
-  ClientHeight = 673
+  ClientHeight = 676
   ClientWidth = 1024
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Menu = MainMenu1
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   WindowState = wsMaximized
   object Bevel1: TBevel
+    Left = 0
     Height = 3
+    Top = 0
     Width = 1024
     Align = alTop
     Shape = bsTopLine
   end
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 653
     Top = 3
     Width = 1024
@@ -30,7 +35,8 @@ object Form1: TForm1
     OnMouseMove = GLSceneViewer1MouseMove
   end
   object StatusBar1: TStatusBar
-    Height = 17
+    Left = 0
+    Height = 20
     Top = 656
     Width = 1024
     Panels = <>
@@ -41,6 +47,7 @@ object Form1: TForm1
     left = 8
     top = 16
     object HSBitmap: TGLHUDSprite
+      TagFloat = 0
       Material.FrontProperties.Emission.Color = {
         0000803F0000803F0000803F0000803F
       }
@@ -48,29 +55,48 @@ object Form1: TForm1
         000000000000803F0000000000000000
       }
       Material.Texture.Disabled = False
+      PitchAngle = 0
       Position.Coordinates = {
         0000484200004842000000000000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
       Width = 256
       Height = 256
+      Rotation = 0
     end
     object GLParticles1: TGLParticles
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = 1
       OnActivateParticle = GLParticles1ActivateParticle
       object HSParticle: TGLHUDSprite
+        TagFloat = 0
         Material.MaterialLibrary = GLMaterialLibrary1
         Material.LibMaterialName = 'cursor'
+        PitchAngle = 0
+        RollAngle = 0
+        TurnAngle = 0
         OnProgress = HSParticleProgress
+        Rotation = 0
       end
     end
     object HSCursor: TGLHUDSprite
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'cursor'
+      PitchAngle = 0
       Position.Coordinates = {
         0000484200004842000000000000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
+      Rotation = 0
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       left = 232
@@ -103,7 +129,6 @@ object Form1: TForm1
     end
   end
   object OpenPictureDialog1: TOpenPictureDialog
-    Title = 'Open existing file'
     Filter = 'Graphic (*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.tga;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp)|*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.tga;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp|TGA Image File (*.tga)|*.tga|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|PNM Image File (*.pbm)|*.pbm|PNM Image File (*.pgm)|*.pgm|PNM Image File (*.ppm)|*.ppm|Targa (*.tga)|*.tga|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|Icon (*.ico)|*.ico|Portable PixMap (*.ppm)|*.ppm|Portable GrayMap (*.pgm)|*.pgm|Portable BitMap (*.pbm)|*.pbm|Portable Network Graphic (*.png)|*.png|Pixmap (*.xpm)|*.xpm|Bitmaps (*.bmp)|*.bmp|All files (*.*)|*.*|'
     FilterIndex = 0
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
@@ -112,6 +137,9 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     OnProgress = GLCadencer1Progress
     left = 104
     top = 16
@@ -130,6 +158,7 @@ object Form1: TForm1
           000000000000803F0000000000000000
         }
         Material.Texture.Disabled = False
+        Tag = 0
       end>
     left = 136
     top = 16

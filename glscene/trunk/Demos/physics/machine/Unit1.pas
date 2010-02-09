@@ -6,7 +6,7 @@ interface
 
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLWin32Viewer, GLMisc, GLODEManager,
+  Dialogs, GLObjects, GLWin32Viewer, GLODEManager,
   GLCadencer, GLGeomObjects, dynode, GLHUDObjects, GLBitmapFont,
   GLWindowsFont, LResources, GLScene;
 

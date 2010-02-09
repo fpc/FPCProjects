@@ -5,14 +5,15 @@ object Form1: TForm1
   Width = 418
   HorzScrollBar.Page = 417
   VertScrollBar.Page = 393
-  ActiveControl = CBPointParams
   Caption = 'Form1'
   ClientHeight = 394
   ClientWidth = 418
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 369
     Top = 25
     Width = 418
@@ -24,7 +25,9 @@ object Form1: TForm1
     OnMouseMove = GLSceneViewer1MouseMove
   end
   object Panel1: TPanel
+    Left = 0
     Height = 25
+    Top = 0
     Width = 418
     Align = alTop
     ClientHeight = 25
@@ -46,7 +49,7 @@ object Form1: TForm1
       Left = 176
       Height = 17
       Top = 4
-      Width = 97
+      Width = 58
       Caption = 'Animate'
       Checked = True
       OnClick = CBAnimateClick
@@ -58,9 +61,18 @@ object Form1: TForm1
     left = 8
     top = 40
     object DummyCube1: TGLDummyCube
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = 1
       object GLPoints1: TGLPoints
+        TagFloat = 0
+        PitchAngle = 0
+        RollAngle = 0
+        TurnAngle = 0
         NoZWrite = True
+        Static = False
         Size = 10
         Style = psSmoothAdditive
         PointParameters.Enabled = True
@@ -69,7 +81,12 @@ object Form1: TForm1
         }
       end
       object GLPoints2: TGLPoints
+        TagFloat = 0
+        PitchAngle = 0
+        RollAngle = 0
+        TurnAngle = 0
         NoZWrite = True
+        Static = False
         Size = 20
         Style = psSmoothAdditive
         PointParameters.Enabled = True
@@ -79,6 +96,7 @@ object Form1: TForm1
       end
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       TargetObject = DummyCube1
@@ -91,6 +109,9 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     OnProgress = GLCadencer1Progress
     left = 48
     top = 40

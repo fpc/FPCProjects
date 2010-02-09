@@ -23,7 +23,7 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  GLMisc, GLTexture,  GLCadencer, GLContext, OpenGL1x, GLScene, GLCustomShader,
+  GLTexture,  GLCadencer, GLContext, OpenGL1x, GLScene, GLCustomShader,
 
   // CG Shaders
   Cg, CgGL, GLCgShader;

@@ -56,7 +56,7 @@ interface
 
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLMisc, GLCadencer, GLTexture, GLzBuffer,
+  Dialogs, GLObjects, GLCadencer, GLTexture, GLzBuffer,
   GLShadowPlane, LResources, gllclviewer, GLScene, ODEGL, ODEImport;
 
 const

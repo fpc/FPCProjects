@@ -18,7 +18,7 @@ interface
 
 uses
   LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLCadencer, GLMisc, GLLCLViewer, GLShadowVolume,
+  Dialogs, GLObjects, GLCadencer, GLLCLViewer, GLShadowVolume,
   ExtCtrls, StdCtrls, GLVectorFileObjects, GLFileSMD, GLTexture,
   GLGeomObjects, GLSilhouette, VectorGeometry, LResources, GLScene, Buttons;
 

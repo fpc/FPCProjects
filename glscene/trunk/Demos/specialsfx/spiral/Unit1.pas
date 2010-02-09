@@ -27,7 +27,7 @@ interface
 uses
   LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLCadencer, GLScene, GLObjects,
-  GLMisc, GLBehaviours, ExtCtrls, VectorGeometry, GLCrossPlatform, Buttons,
+  GLBehaviours, ExtCtrls, VectorGeometry, GLCrossPlatform, Buttons,
   LResources, GLParticleFX, {GLWin32FullScreenViewer,} GLLCLViewer;
 
 type

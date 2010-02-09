@@ -12,7 +12,7 @@ interface
 uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, GLScene, GLObjects, GLCadencer,
-  GLMisc, GLTexture, LResources, GLViewer;
+  GLTexture, LResources, GLViewer;
 
 type
 

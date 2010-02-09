@@ -21,7 +21,7 @@ interface
 
 uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, GLMisc, GLTexture,
+  Dialogs, ExtCtrls, GLTexture,
   GLCadencer, GLNavigator, GLViewer, GLKeyboard, GLLensFlare, GLObjects,
   JPeg, GLSkyBox, LResources, GLScene;
 

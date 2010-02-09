@@ -5,7 +5,6 @@ object Form1: TForm1
   Width = 581
   HorzScrollBar.Page = 580
   VertScrollBar.Page = 421
-  ActiveControl = BUApply
   BorderStyle = bsDialog
   Caption = 'TGLTexCombineShader demo'
   ClientHeight = 422
@@ -13,6 +12,7 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object Image1: TImage
     Left = 8
     Height = 128
@@ -36,14 +36,15 @@ object Form1: TForm1
   end
   object Label1: TLabel
     Left = 8
-    Height = 24
+    Height = 20
     Top = 6
-    Width = 179
+    Width = 151
     Caption = 'Texture Combiners'
     Font.Height = -17
     Font.Name = 'Arial'
     Font.Style = [fsBold]
     ParentColor = False
+    ParentFont = False
   end
   object Image4: TImage
     Left = 440
@@ -54,25 +55,25 @@ object Form1: TForm1
   end
   object Label3: TLabel
     Left = 8
-    Height = 20
+    Height = 14
     Top = 216
-    Width = 39
+    Width = 31
     Caption = 'Result'
     ParentColor = False
   end
   object Label4: TLabel
     Left = 200
-    Height = 20
+    Height = 14
     Top = 216
-    Width = 154
+    Width = 116
     Caption = 'Texture Combiners code'
     ParentColor = False
   end
   object Label2: TLabel
     Left = 8
-    Height = 20
+    Height = 14
     Top = 40
-    Width = 95
+    Width = 68
     Caption = 'Primary Color :'
     ParentColor = False
   end
@@ -109,6 +110,7 @@ object Form1: TForm1
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
     FullRepaint = False
+    ParentFont = False
     TabOrder = 1
   end
   object PATex2: TPanel
@@ -123,6 +125,7 @@ object Form1: TForm1
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
     FullRepaint = False
+    ParentFont = False
     TabOrder = 2
   end
   object PATex3: TPanel
@@ -137,13 +140,14 @@ object Form1: TForm1
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
     FullRepaint = False
+    ParentFont = False
     TabOrder = 3
   end
   object CBTex0: TCheckBox
     Left = 8
-    Height = 19
+    Height = 17
     Top = 64
-    Width = 48
+    Width = 44
     Caption = 'Tex0'
     Checked = True
     OnClick = CBTex0Click
@@ -152,9 +156,9 @@ object Form1: TForm1
   end
   object CBTex1: TCheckBox
     Left = 152
-    Height = 19
+    Height = 17
     Top = 64
-    Width = 48
+    Width = 44
     Caption = 'Tex1'
     Checked = True
     OnClick = CBTex0Click
@@ -163,18 +167,18 @@ object Form1: TForm1
   end
   object CBTex2: TCheckBox
     Left = 296
-    Height = 19
+    Height = 17
     Top = 64
-    Width = 48
+    Width = 44
     Caption = 'Tex2'
     OnClick = CBTex0Click
     TabOrder = 6
   end
   object CBTex3: TCheckBox
     Left = 440
-    Height = 19
+    Height = 17
     Top = 64
-    Width = 48
+    Width = 44
     Caption = 'Tex3'
     OnClick = CBTex0Click
     TabOrder = 7
@@ -201,6 +205,7 @@ object Form1: TForm1
       Font.CharSet = ANSI_CHARSET
       Font.Height = -11
       Font.Name = 'Courier New'
+      ParentFont = False
       ScrollBars = ssBoth
       TabOrder = 0
     end
@@ -221,18 +226,28 @@ object Form1: TForm1
     left = 64
     top = 272
     object GLDummyCube: TGLDummyCube
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = 1
     end
     object GLHUDSprite: TGLHUDSprite
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary
       Material.LibMaterialName = 'Tex0'
+      PitchAngle = 0
       Position.Coordinates = {
         0000B4420000B442000000000000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
       Width = 128
       Height = 128
+      Rotation = 0
     end
     object GLCamera: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       TargetObject = GLDummyCube
@@ -247,6 +262,7 @@ object Form1: TForm1
         Name = 'Tex0'
         Material.Texture.TextureMode = tmModulate
         Material.Texture.Disabled = False
+        Tag = 0
         Texture2Name = 'Tex1'
         Shader = GLTexCombineShader
       end    
@@ -254,17 +270,21 @@ object Form1: TForm1
         Name = 'Tex1'
         Material.Texture.TextureMode = tmModulate
         Material.Texture.Disabled = False
+        Tag = 0
       end    
       item
         Name = 'Tex2'
+        Tag = 0
       end    
       item
         Name = 'Tex3'
+        Tag = 0
       end>
     left = 32
     top = 272
   end
   object GLTexCombineShader: TGLTexCombineShader
+    DesignTimeEnabled = False
     MaterialLibrary = GLMaterialLibrary
     LibMaterial3Name = 'Tex2'
     LibMaterial4Name = 'Tex3'
@@ -273,6 +293,29 @@ object Form1: TForm1
   end
   object ColorDialog: TColorDialog
     Title = 'Farbe auswählen'
+    Color = clBlack
+    CustomColors.Strings = (
+      'ColorA=000000'
+      'ColorB=000080'
+      'ColorC=008000'
+      'ColorD=008080'
+      'ColorE=800000'
+      'ColorF=800080'
+      'ColorG=808000'
+      'ColorH=808080'
+      'ColorI=C0C0C0'
+      'ColorJ=0000FF'
+      'ColorK=00FF00'
+      'ColorL=00FFFF'
+      'ColorM=FF0000'
+      'ColorN=FF00FF'
+      'ColorO=FFFF00'
+      'ColorP=FFFFFF'
+      'ColorQ=C0DCC0'
+      'ColorR=F0CAA6'
+      'ColorS=F0FBFF'
+      'ColorT=A4A0A0'
+    )
     left = 184
     top = 16
   end

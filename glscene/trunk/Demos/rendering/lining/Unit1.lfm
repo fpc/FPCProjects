@@ -5,14 +5,16 @@ object Form1: TForm1
   Width = 540
   HorzScrollBar.Page = 539
   VertScrollBar.Page = 352
-  ActiveControl = CheckBox1
   Caption = 'Lining Shaders'
   ClientHeight = 353
   ClientWidth = 540
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 353
+    Top = 0
     Width = 385
     Camera = GLCamera1
     Buffer.AntiAliasing = aa4xHQ
@@ -24,6 +26,7 @@ object Form1: TForm1
   object Panel1: TPanel
     Left = 385
     Height = 353
+    Top = 0
     Width = 155
     Align = alRight
     BevelOuter = bvSpace
@@ -33,28 +36,29 @@ object Form1: TForm1
     Font.Height = -11
     Font.Name = 'Tahoma'
     FullRepaint = False
+    ParentFont = False
     TabOrder = 0
     object Label1: TLabel
       Left = 17
-      Height = 13
+      Height = 14
       Top = 226
-      Width = 50
+      Width = 51
       Caption = 'Drag with:'
       ParentColor = False
     end
     object Label2: TLabel
       Left = 17
-      Height = 13
+      Height = 14
       Top = 242
-      Width = 123
+      Width = 124
       Caption = 'LMB - move around scene'
       ParentColor = False
     end
     object Label3: TLabel
       Left = 17
-      Height = 13
+      Height = 14
       Top = 258
-      Width = 89
+      Width = 90
       Caption = 'RMB - rotate torus'
       ParentColor = False
     end
@@ -69,7 +73,7 @@ object Form1: TForm1
       Left = 9
       Height = 17
       Top = 186
-      Width = 131
+      Width = 132
       Caption = 'Outline Shader Enabled'
       Checked = True
       OnClick = CheckBox1Click
@@ -82,11 +86,12 @@ object Form1: TForm1
       Top = 58
       Width = 137
       Caption = 'Shader on Torus'
-      ClientHeight = 109
-      ClientWidth = 137
+      ClientHeight = 108
+      ClientWidth = 133
       Font.CharSet = ANSI_CHARSET
       Font.Height = -11
       Font.Name = 'Tahoma'
+      ParentFont = False
       TabOrder = 1
       object Bevel2: TBevel
         Left = 8
@@ -99,7 +104,7 @@ object Form1: TForm1
         Left = 10
         Height = 17
         Top = 16
-        Width = 97
+        Width = 58
         Caption = 'Enabled'
         Checked = True
         OnClick = CheckBox2Click
@@ -110,7 +115,7 @@ object Form1: TForm1
         Left = 10
         Height = 17
         Top = 56
-        Width = 97
+        Width = 42
         Caption = 'Solid'
         OnClick = CheckBox3Click
         TabOrder = 1
@@ -119,7 +124,7 @@ object Form1: TForm1
         Left = 10
         Height = 17
         Top = 32
-        Width = 113
+        Width = 111
         Caption = 'Dotted Hidden Line'
         Checked = True
         OnClick = CheckBox4Click
@@ -130,7 +135,7 @@ object Form1: TForm1
         Left = 10
         Height = 17
         Top = 72
-        Width = 79
+        Width = 71
         Caption = 'Surface Lit'
         OnClick = CheckBox5Click
         TabOrder = 3
@@ -139,7 +144,7 @@ object Form1: TForm1
         Left = 10
         Height = 17
         Top = 86
-        Width = 63
+        Width = 38
         Caption = 'Flat'
         OnClick = CheckBox6Click
         TabOrder = 4
@@ -160,6 +165,7 @@ object Form1: TForm1
       Font.Style = [fsBold]
       FullRepaint = False
       ParentColor = False
+      ParentFont = False
       TabOrder = 2
     end
   end
@@ -168,10 +174,13 @@ object Form1: TForm1
     left = 8
     top = 8
     object GLLightSource1: TGLLightSource
+      TagFloat = 0
       Ambient.Color = {
         0000803F0000803F0000803F0000803F
       }
       ConstAttenuation = 1
+      LinearAttenuation = 0
+      QuadraticAttenuation = 0
       Position.Coordinates = {
         00002041000000410000E0400000803F
       }
@@ -179,13 +188,18 @@ object Form1: TForm1
         0000803F0000803F0000803F0000803F
       }
       SpotCutOff = 180
+      SpotExponent = 0
     end
     object Torus1: TGLTorus
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial2'
       Direction.Coordinates = {
         000000000000803F0000000000000000
       }
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       Up.Coordinates = {
         0000000000000000000080BF00000000
       }
@@ -193,18 +207,26 @@ object Form1: TForm1
       MinorRadius = 1.5
     end
     object Sphere1: TGLSphere
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
       ShowAxes = True
+      TurnAngle = 0
       Radius = 0.5
     end
     object GLAnnulusOutlined: TGLAnnulus
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial'
+      PitchAngle = 0
       Position.Coordinates = {
         0000E04000000000000000000000803F
       }
+      RollAngle = 0
       Scale.Coordinates = {
         00000040000000400000004000000000
       }
+      TurnAngle = 0
       BottomRadius = 0.5
       Height = 1
       BottomInnerRadius = 0.30000001192092
@@ -212,14 +234,18 @@ object Form1: TForm1
       TopRadius = 0.5
     end
     object GLAnnulusPink: TGLAnnulus
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial4'
+      PitchAngle = 0
       Position.Coordinates = {
         0000E0C000000000000000000000803F
       }
+      RollAngle = 0
       Scale.Coordinates = {
         00000040000000400000004000000000
       }
+      TurnAngle = 0
       BottomRadius = 0.5
       Height = 1
       BottomInnerRadius = 0.30000001192092
@@ -227,14 +253,18 @@ object Form1: TForm1
       TopRadius = 0.5
     end
     object GLAnnulusDotted: TGLAnnulus
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial1'
+      PitchAngle = 0
       Position.Coordinates = {
         00000000000000000000E0C00000803F
       }
+      RollAngle = 0
       Scale.Coordinates = {
         00000040000000400000004000000000
       }
+      TurnAngle = 0
       BottomRadius = 0.5
       Height = 1
       BottomInnerRadius = 0.30000001192092
@@ -242,26 +272,35 @@ object Form1: TForm1
       TopRadius = 0.5
     end
     object GLCubeGreen: TGLCube
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial5'
+      PitchAngle = 0
       Position.Coordinates = {
         00000000000000000000E0400000803F
       }
+      RollAngle = 0
       Scale.Coordinates = {
         00000040000000400000004000000000
       }
+      TurnAngle = 0
     end
     object GLCubeTransparent: TGLCube
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial3'
+      PitchAngle = 0
       Position.Coordinates = {
         0000000000008040000000000000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = {
         000040400000404000004040
       }
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       TargetObject = Torus1
@@ -281,10 +320,12 @@ object Form1: TForm1
           9796163F0000803F0000803F0000803F
         }
         Material.FrontProperties.Shininess = 128
+        Tag = 0
         Shader = GLOutlineShader1
       end    
       item
         Name = 'LibMaterial1'
+        Tag = 0
         Shader = GLHiddenLineShader1
       end    
       item
@@ -300,14 +341,17 @@ object Form1: TForm1
           0000803F0000803F0000803F0000803F
         }
         Material.BlendingMode = bmTransparency
+        Tag = 0
         Shader = GLHiddenLineShader2
       end    
       item
         Name = 'LibMaterial3'
+        Tag = 0
         Shader = GLHiddenLineShader3
       end    
       item
         Name = 'LibMaterial4'
+        Tag = 0
         Shader = GLHiddenLineShader4
       end    
       item
@@ -316,6 +360,7 @@ object Form1: TForm1
           9998183E9796163F9190103E17D92E3F
         }
         Material.BlendingMode = bmTransparency
+        Tag = 0
         Shader = GLHiddenLineShader5
       end>
     left = 8

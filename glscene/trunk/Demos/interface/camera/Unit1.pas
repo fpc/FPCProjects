@@ -20,7 +20,7 @@ unit Unit1;
 interface
 
 uses
-  Forms, GLObjects, GLMisc, Classes, Controls, GLTeapot,
+  Forms, GLObjects, Classes, Controls, GLTeapot,
   GLViewer, LResources, GLScene;
 
 type

@@ -5,28 +5,30 @@ object Form1: TForm1
   Width = 526
   HorzScrollBar.Page = 525
   VertScrollBar.Page = 440
-  ActiveControl = CBAnimations
   Caption = 'Form1'
   ClientHeight = 441
   ClientWidth = 526
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
-    Height = 386
+    Left = 0
+    Height = 383
     Top = 38
     Width = 526
     Camera = GLCamera1
     Buffer.BackgroundColor = clSilver
     Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
-    FieldOfView = 51.5146179199218
+    FieldOfView = 51.1655387878417
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
   end
   object StatusBar1: TStatusBar
-    Height = 17
-    Top = 424
+    Left = 0
+    Height = 20
+    Top = 421
     Width = 526
     Panels = <    
       item
@@ -35,7 +37,9 @@ object Form1: TForm1
     SimplePanel = False
   end
   object Panel1: TPanel
+    Left = 0
     Height = 38
+    Top = 0
     Width = 526
     Align = alTop
     BevelOuter = bvLowered
@@ -287,20 +291,19 @@ object Form1: TForm1
     end
     object Label1: TLabel
       Left = 8
-      Height = 20
+      Height = 14
       Top = 14
-      Width = 74
+      Width = 53
       Caption = 'Animation :'
       ParentColor = False
     end
     object CBAnimations: TComboBox
       Left = 64
-      Height = 26
+      Height = 21
       Hint = 'Change State'
       Top = 8
       Width = 109
-      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
-      MaxLength = 0
+      ItemHeight = 13
       OnChange = CBAnimationsChange
       ParentShowHint = False
       ShowHint = True
@@ -319,9 +322,9 @@ object Form1: TForm1
     end
     object CBSmooth: TCheckBox
       Left = 280
-      Height = 21
+      Height = 17
       Top = 12
-      Width = 74
+      Width = 56
       Caption = 'Smooth'
       Checked = True
       OnClick = CBSmoothClick
@@ -333,19 +336,28 @@ object Form1: TForm1
     left = 40
     top = 48
     object DummyCube1: TGLDummyCube
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = 1
       object GLLightSource1: TGLLightSource
+        TagFloat = 0
         Ambient.Color = {
           0000803F0000803F0000803F0000803F
         }
         ConstAttenuation = 1
+        LinearAttenuation = 0
+        QuadraticAttenuation = 0
         Position.Coordinates = {
           0000204100000000000020410000803F
         }
         LightStyle = lsOmni
         SpotCutOff = 180
+        SpotExponent = 0
       end
       object GLCamera1: TGLCamera
+        TagFloat = 0
         DepthOfView = 1000
         FocalLength = 400
         TargetObject = DummyCube1
@@ -360,32 +372,48 @@ object Form1: TForm1
         }
       end
       object Disk1: TGLDisk
+        TagFloat = 0
         Material.Texture.MinFilter = miLinear
         Material.Texture.Disabled = False
+        PitchAngle = 0
         Position.Coordinates = {
           0000000000000000000080BF0000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
+        InnerRadius = 0
         Loops = 1
         OuterRadius = 3
         Slices = 8
+        StartAngle = 0
         SweepAngle = 360
       end
     end
     object Actor1: TGLActor
+      TagFloat = 0
       Material.FrontProperties.Diffuse.Color = {
         0000803F0000803F0000803F0000803F
       }
       Material.Texture.MinFilter = miLinear
       Material.Texture.TextureMode = tmModulate
       Material.Texture.Disabled = False
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
+      CurrentFrameDelta = 0
       Interval = 100
       OnFrameChanged = Actor1FrameChanged
       object Actor2: TGLActor
+        TagFloat = 0
         Material.FrontProperties.Diffuse.Color = {
           0000803F0000803F0000803F0000803F
         }
         Material.Texture.MinFilter = miLinear
         Material.Texture.Disabled = False
+        PitchAngle = 0
+        RollAngle = 0
+        TurnAngle = 0
+        CurrentFrameDelta = 0
         Interval = 100
       end
     end
@@ -393,6 +421,8 @@ object Form1: TForm1
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
     MaxDeltaTime = 0.02
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     OnProgress = GLCadencer1Progress
     left = 8
     top = 48

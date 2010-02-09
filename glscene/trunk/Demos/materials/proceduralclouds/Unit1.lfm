@@ -5,13 +5,17 @@ object Form1: TForm1
   Width = 565
   HorzScrollBar.Page = 564
   VertScrollBar.Page = 424
-  ActiveControl = CBFormat
   Caption = 'Form1'
+  ClientHeight = 425
+  ClientWidth = 565
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 425
+    Top = 0
     Width = 357
     Camera = GLCamera1
     AfterRender = GLSceneViewer1AfterRender
@@ -22,9 +26,12 @@ object Form1: TForm1
   object Panel1: TPanel
     Left = 357
     Height = 425
+    Top = 0
     Width = 208
     Align = alRight
     BevelOuter = bvLowered
+    ClientHeight = 425
+    ClientWidth = 208
     FullRepaint = False
     TabOrder = 0
     object Label1: TLabel
@@ -36,85 +43,77 @@ object Form1: TForm1
       Alignment = taCenter
       AutoSize = False
       Caption = 'Procedural Clouds'
-      Color = clNone
       Font.CharSet = ANSI_CHARSET
       Font.Height = -27
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       Layout = tlCenter
       ParentColor = False
+      ParentFont = False
       WordWrap = True
     end
     object Label2: TLabel
       Left = 16
       Height = 14
       Top = 148
-      Width = 40
+      Width = 33
       Caption = 'Format'
-      Color = clNone
       ParentColor = False
     end
     object Label3: TLabel
       Left = 16
       Height = 14
       Top = 180
-      Width = 74
+      Width = 61
       Caption = 'Compression'
-      Color = clNone
       ParentColor = False
     end
     object Label5: TLabel
       Left = 16
       Height = 14
       Top = 272
-      Width = 69
+      Width = 59
       Caption = 'Render Size'
-      Color = clNone
       ParentColor = False
     end
     object LAUsedMemory: TLabel
       Left = 16
       Height = 14
       Top = 228
-      Width = 77
+      Width = 66
       Caption = 'Used Memory'
-      Color = clNone
       ParentColor = False
     end
     object LARGB32: TLabel
       Left = 16
       Height = 14
       Top = 212
-      Width = 77
+      Width = 66
       Caption = 'Used Memory'
-      Color = clNone
       ParentColor = False
     end
     object LACompression: TLabel
       Left = 16
       Height = 14
       Top = 244
-      Width = 77
+      Width = 66
       Caption = 'Used Memory'
-      Color = clNone
       ParentColor = False
     end
     object Label4: TLabel
       Left = 16
       Height = 14
       Top = 96
-      Width = 43
+      Width = 37
       Caption = 'MinCut:'
-      Color = clNone
       ParentColor = False
     end
     object Label6: TLabel
       Left = 16
       Height = 14
       Top = 72
-      Width = 63
+      Width = 54
       Caption = 'Sharpness:'
-      Color = clNone
       ParentColor = False
     end
     object CloudFileOpenBtn: TSpeedButton
@@ -193,9 +192,8 @@ object Form1: TForm1
       Left = 178
       Height = 14
       Top = 336
-      Width = 8
+      Width = 7
       Caption = '0'
-      Color = clNone
       ParentColor = False
     end
     object CBFormat: TComboBox
@@ -203,7 +201,6 @@ object Form1: TForm1
       Height = 21
       Top = 144
       Width = 105
-      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
       ItemHeight = 13
       Items.Strings = (
         'RGB    (24 bits)'
@@ -211,7 +208,6 @@ object Form1: TForm1
         'RGB    (16 bits)'
         'RGBA  (16 bits)'
       )
-      MaxLength = 0
       OnChange = CBFormatChange
       Style = csDropDownList
       TabOrder = 0
@@ -221,7 +217,6 @@ object Form1: TForm1
       Height = 21
       Top = 176
       Width = 105
-      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
       ItemHeight = 13
       Items.Strings = (
         'None'
@@ -229,16 +224,15 @@ object Form1: TForm1
         'Nicest'
         'Fastest'
       )
-      MaxLength = 0
       OnChange = CBFormatChange
       Style = csDropDownList
       TabOrder = 1
     end
     object RBDefault: TRadioButton
       Left = 16
-      Height = 24
+      Height = 17
       Top = 286
-      Width = 59
+      Width = 49
       Caption = '100 %'
       Checked = True
       OnClick = CBFormatChange
@@ -247,33 +241,33 @@ object Form1: TForm1
     end
     object RBDouble: TRadioButton
       Left = 79
-      Height = 24
+      Height = 17
       Top = 286
-      Width = 59
+      Width = 49
       Caption = '200 %'
       OnClick = CBFormatChange
       TabOrder = 3
     end
     object RBQuad: TRadioButton
       Left = 143
-      Height = 24
+      Height = 17
       Top = 286
-      Width = 59
+      Width = 49
       Caption = '400 %'
       OnClick = CBFormatChange
       TabOrder = 4
     end
     object CheckBox1: TCheckBox
       Left = 120
-      Height = 24
+      Height = 17
       Top = 120
-      Width = 76
+      Width = 64
       Caption = 'Animated'
       TabOrder = 5
     end
     object SpinEdit1: TSpinEdit
       Left = 88
-      Height = 22
+      Height = 21
       Top = 96
       Width = 107
       MaxValue = 255
@@ -283,7 +277,7 @@ object Form1: TForm1
     end
     object SpinEdit2: TSpinEdit
       Left = 88
-      Height = 22
+      Height = 21
       Top = 72
       Width = 107
       MaxValue = 99
@@ -294,9 +288,9 @@ object Form1: TForm1
     end
     object CheckBox2: TCheckBox
       Left = 16
-      Height = 24
+      Height = 17
       Top = 120
-      Width = 78
+      Width = 65
       Caption = 'Seamless'
       Checked = True
       OnClick = CBFormatChange
@@ -311,7 +305,6 @@ object Form1: TForm1
       Min = 1
       OnChange = TrackBar1Change
       Position = 2
-      ScalePos = trTop
       TabOrder = 9
     end
     object CloudRandomSeedUsedEdit: TEdit
@@ -334,10 +327,10 @@ object Form1: TForm1
     end
     object UseCloudFileCB: TCheckBox
       Left = 15
-      Height = 24
+      Height = 17
       Hint = 'Use File'
       Top = 339
-      Width = 106
+      Width = 88
       Caption = 'Use Cloud File'
       TabOrder = 12
     end
@@ -354,6 +347,7 @@ object Form1: TForm1
     left = 8
     top = 16
     object GLPlane1: TGLPlane
+      TagFloat = 0
       Material.FrontProperties.Ambient.Color = {
         00000000000000000000000000000000
       }
@@ -365,18 +359,26 @@ object Form1: TForm1
       }
       Material.BlendingMode = bmAlphaTest50
       Material.Texture.ImageClassName = 'TGLProcTextureNoise'
+      Material.Texture.Image.MinCut = 0
       Material.Texture.Image.NoiseSharpness = 0.99000000953674
       Material.Texture.Image.Seamless = True
       Material.Texture.Image.NoiseRandSeed = 497075363
       Material.Texture.TextureMode = tmReplace
       Material.Texture.Disabled = False
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       Height = 50
       Width = 50
+      XOffset = 0
       XTiles = 2
+      YOffset = 0
       YTiles = 2
       Style = [psTileTexture]
+      NoZWrite = False
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 1
       CameraStyle = csOrthogonal
@@ -389,6 +391,9 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     OnProgress = GLCadencer1Progress
     left = 40
     top = 16

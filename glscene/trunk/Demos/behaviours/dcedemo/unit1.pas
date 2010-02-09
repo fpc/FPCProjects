@@ -19,7 +19,7 @@ interface
 
 uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLScene, GLObjects, GLMisc, GLCadencer, GLViewer,
+  Dialogs, GLScene, GLObjects, GLCadencer, GLViewer,
   GLTexture, GLHeightData, GLTerrainRenderer, GLVectorFileObjects,
   ExtCtrls, GLBitmapFont, GLWindowsFont, GLHUDObjects, LResources,
   GLDCE, LCLType;

@@ -9,7 +9,7 @@ interface
 
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, GLMisc, GLGraph, GLObjects, GLTexture, StdCtrls,
+  ExtCtrls, GLGraph, GLObjects, GLTexture, StdCtrls,
   ComCtrls, jpeg, glgraphics, VectorTypes, VectorGeometry, GLHUDObjects,
   GLzBuffer, OpenGL1x, GLCadencer, AsyncTimer, GLWin32Viewer, GLTeapot,
   GLGeomObjects, LResources, GLScene, Buttons;

@@ -6,7 +6,7 @@ interface
 
 uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLScene, GLMisc, VectorGeometry, StdCtrls,
+  Dialogs, GLObjects, GLScene, VectorGeometry, StdCtrls,
   GeometryBB, GLTexture, OpenGL1x, GLCadencer, SpatialPartitioning,
   ComCtrls, LResources, Buttons, GLViewer;
 

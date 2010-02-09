@@ -64,7 +64,7 @@ interface
 uses
   Classes, SysUtils, GLODEManager, dynode, odegl,dynodegl, ODEImport, VectorGeometry,
   VectorLists, GLScene, GLTerrainRenderer, GLGraph, XCollection,
-  OpenGL1x, GLTexture, GLColor;
+  OpenGL1x, GLTexture, GLColor, GLRenderContextInfo;
 
 type
   TContactPoint = class

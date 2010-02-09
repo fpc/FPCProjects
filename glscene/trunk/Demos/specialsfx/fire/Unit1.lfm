@@ -6,16 +6,19 @@ object Form1: TForm1
   HorzScrollBar.Page = 343
   VertScrollBar.Page = 302
   Caption = 'Form1'
+  ClientHeight = 303
+  ClientWidth = 344
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 303
+    Top = 0
     Width = 344
     Camera = GLCamera1
     Buffer.BackgroundColor = clBlack
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
     FieldOfView = 143.470809936523
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
@@ -26,12 +29,16 @@ object Form1: TForm1
     left = 8
     top = 8
     object Torus1: TGLTorus
+      TagFloat = 0
       Material.FrontProperties.Ambient.Color = {
         9A99193E9A99193E9A99193E0000803F
       }
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       MajorRadius = 3
       MinorRadius = 0.20000000298023
       Rings = 36
@@ -43,13 +50,18 @@ object Form1: TForm1
       }
     end
     object Sphere1: TGLSphere
+      TagFloat = 0
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       Radius = 0.30000001192092
       Slices = 6
       Stacks = 6
       object GLLightSource2: TGLLightSource
+        TagFloat = 0
         Ambient.Color = {
           0000803F0000803F0000803F0000803F
         }
@@ -57,13 +69,17 @@ object Form1: TForm1
         Diffuse.Color = {
           0000803F8180003F000000000000803F
         }
+        LinearAttenuation = 0
+        QuadraticAttenuation = 0
         Position.Coordinates = {
           000000000000003F000000000000803F
         }
         SpotCutOff = 180
+        SpotExponent = 0
       end
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       TargetObject = Sphere1
@@ -76,6 +92,9 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     left = 40
     top = 8
   end
@@ -91,8 +110,11 @@ object Form1: TForm1
     ParticleSize = 0.69999998807907
     FireDensity = 0.5
     FireEvaporation = 0.86000001430511
+    FireCrown = 0
     FireBurst = 1
     FireRadius = 0.5
+    Disabled = False
+    Paused = False
     ParticleInterval = 0.00999999977648
     UseInterval = True
     Reference = Sphere1

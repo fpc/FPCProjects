@@ -9,7 +9,7 @@ interface
 
 uses
   lcltype, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLScene, GLObjects, GLMisc, GLCadencer, ODEImport,
+  Dialogs, GLScene, GLObjects, GLCadencer, ODEImport,
   StdCtrls, GLTexture, GLExtrusion, VectorGeometry, GLShadowPlane, GLNavigator,
   VerletClasses, VerletHairClasses, jpeg, GLKeyboard, ExtCtrls, ComCtrls,
   LResources, GLLCLViewer;

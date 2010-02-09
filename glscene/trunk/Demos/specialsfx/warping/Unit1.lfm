@@ -6,17 +6,20 @@ object Form1: TForm1
   HorzScrollBar.Page = 432
   VertScrollBar.Page = 309
   Caption = 'Form1'
+  ClientHeight = 318
+  ClientWidth = 433
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Menu = MainMenu1
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object GLSceneViewer: TGLSceneViewer
-    Height = 310
+    Left = 0
+    Height = 318
+    Top = 0
     Width = 433
     Camera = GLCamera
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
-    FieldOfView = 179.63035583496
+    FieldOfView = 179.6396484375
     Align = alClient
     OnMouseDown = GLSceneViewerMouseDown
     OnMouseMove = GLSceneViewerMouseMove
@@ -124,7 +127,6 @@ object Form1: TForm1
     end
   end
   object OpenPictureDialog: TOpenPictureDialog
-    Title = 'Open existing file'
     Filter = 'Graphic (*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp)|*.tga;*.jpeg;*.jpg;*.pbm;*.pgm;*.ppm;*.jpeg;*.jpg;*.ico;*.ppm;*.pgm;*.pbm;*.png;*.xpm;*.bmp|TGA Image File (*.tga)|*.tga|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|PNM Image File (*.pbm)|*.pbm|PNM Image File (*.pgm)|*.pgm|PNM Image File (*.ppm)|*.ppm|JPEG Image File (*.jpeg)|*.jpeg|JPEG Image File (*.jpg)|*.jpg|Icon (*.ico)|*.ico|Portable PixMap (*.ppm)|*.ppm|Portable GrayMap (*.pgm)|*.pgm|Portable BitMap (*.pbm)|*.pbm|Portable Network Graphic (*.png)|*.png|Pixmap (*.xpm)|*.xpm|Bitmaps (*.bmp)|*.bmp|All files (*.*)|*.*|'
     FilterIndex = 0
     left = 64
@@ -134,20 +136,29 @@ object Form1: TForm1
     left = 8
     top = 56
     object HeightField: TGLHeightField
+      TagFloat = 0
       Material.Texture.MinFilter = miLinear
       Material.Texture.TextureMode = tmReplace
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
       Material.Texture.Disabled = False
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
+      XSamplingScale.Min = 0
       XSamplingScale.Max = 16
+      XSamplingScale.Origin = 0
       XSamplingScale.Step = 8
+      YSamplingScale.Min = 0
       YSamplingScale.Max = 16
+      YSamplingScale.Origin = 0
       YSamplingScale.Step = 8
       Options = [hfoTextureCoordinates, hfoTwoSided]
       OnGetHeight = HeightFieldGetHeight
     end
     object GLCamera: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 0.5
       CameraStyle = csOrthogonal
@@ -159,7 +170,6 @@ object Form1: TForm1
     end
   end
   object SaveDialog: TSaveDialog
-    Title = 'Save file as'
     DefaultExt = '.bmp'
     Filter = 'Bitmaps (*.bmp)|*.bmp|All files (*.*)|*.*'
     FilterIndex = 0

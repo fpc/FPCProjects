@@ -1,4 +1,10 @@
 object FrmMain: TFrmMain
+  Left = 238
+  Height = 547
+  Top = 121
+  Width = 696
+  HorzScrollBar.Page = 695
+  VertScrollBar.Page = 546
   Caption = 'FrmMain'
   ClientHeight = 547
   ClientWidth = 696
@@ -6,15 +12,12 @@ object FrmMain: TFrmMain
   Font.Name = 'MS Sans Serif'
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
-  HorzScrollBar.Page = 695
-  VertScrollBar.Page = 546
-  Left = 238
-  Height = 547
-  Top = 121
-  Width = 696
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
+    Height = 522
+    Top = 25
+    Width = 696
     Camera = GLCamera1
     VSync = vsmSync
     Buffer.FogEnvironment.FogColor.Color = {
@@ -27,13 +30,14 @@ object FrmMain: TFrmMain
       0000803F0000803F0000803F0000803F
     }
     Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
-    FieldOfView = 149.9732666015625
+    FieldOfView = 149.973266601562
     Align = alClient
-    Height = 522
-    Top = 25
-    Width = 696
   end
   object Panel1: TPanel
+    Left = 0
+    Height = 25
+    Top = 0
+    Width = 696
     Align = alTop
     Caption = ' '
     ClientHeight = 25
@@ -41,52 +45,56 @@ object FrmMain: TFrmMain
     FullRepaint = False
     TabOrder = 0
     OnClick = Panel1Click
-    Height = 25
-    Width = 696
     object chkMouseLook: TCheckBox
-      Caption = 'MouseLook'
-      OnClick = chkMouseLookClick
-      TabOrder = 0
       Left = 244
       Height = 17
       Top = 4
-      Width = 97
+      Width = 76
+      Caption = 'MouseLook'
+      OnClick = chkMouseLookClick
+      TabOrder = 0
     end
     object chkFloor: TCheckBox
-      Caption = 'Show floor'
-      OnClick = chkFloorClick
-      TabOrder = 1
       Left = 8
       Height = 17
       Top = 4
-      Width = 97
+      Width = 70
+      Caption = 'Show floor'
+      OnClick = chkFloorClick
+      TabOrder = 1
     end
     object chkBlur: TCheckBox
-      Caption = 'Blur effects'
-      OnClick = chkBlurClick
-      TabOrder = 2
       Left = 116
       Height = 17
       Top = 4
-      Width = 97
+      Width = 73
+      Caption = 'Blur effects'
+      OnClick = chkBlurClick
+      TabOrder = 2
     end
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
     MaxDeltaTime = 0.02
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     OnProgress = GLCadencer1Progress
     left = 68
     top = 276
   end
   object PFXElectro: TGLPerlinPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PfxRenderer
+    Friction = 1
+    Rotation = 0
     TexMapSize = 3
-    Smoothness = 0.699999988079071
+    Smoothness = 0.69999998807907
     Brightness = 1
     Gamma = 1
     NoiseSeed = 123415
     NoiseAmplitude = 100
     ColorMode = scmFade
-    ParticleSize = 0.300000011920929
+    ParticleSize = 0.30000001192092
     ColorInner.Color = {
       00000000000000005839343E0000803F
     }
@@ -101,18 +109,21 @@ object FrmMain: TFrmMain
         ColorOuter.Color = {
           0000803F1283003F1283803E0000803F
         }
-        LifeTime = 0.200000002980232
+        LifeTime = 0.20000000298023
         SizeScale = 1
         RotateAngle = 3000
       end>
-    Friction = 1
-    Renderer = PfxRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 332
     top = 276
   end
   object PFXRail: TGLPerlinPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PfxRenderer
+    Acceleration.Coordinates = {
+      00000000000000C00000000000000000
+    }
+    Friction = 1
+    Rotation = 0
     Smoothness = 1
     Brightness = 1
     Gamma = 1
@@ -132,7 +143,7 @@ object FrmMain: TFrmMain
         ColorOuter.Color = {
           000000000000803F000000000000803F
         }
-        LifeTime = 0.200000002980232
+        LifeTime = 0.20000000298023
         SizeScale = 1
         RotateAngle = 20
       end    
@@ -143,7 +154,7 @@ object FrmMain: TFrmMain
         ColorOuter.Color = {
           0000803F0000803F1283003F0000803F
         }
-        LifeTime = 0.400000005960465
+        LifeTime = 0.40000000596046
         SizeScale = 0.5
         RotateAngle = 40
       end    
@@ -154,21 +165,21 @@ object FrmMain: TFrmMain
         ColorOuter.Color = {
           000000000000803F000000000000803F
         }
-        LifeTime = 0.800000011920929
-        SizeScale = 0.200000002980232
+        LifeTime = 0.80000001192092
+        SizeScale = 0.20000000298023
         RotateAngle = 80
       end>
-    Acceleration.Coordinates = {
-      00000000000000C00000000000000000
-    }
-    Friction = 1
-    Renderer = PfxRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 144
     top = 276
   end
   object PFXBurning: TGLPerlinPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PfxRenderer
+    Acceleration.Coordinates = {
+      00000000000080410000000000000000
+    }
+    Friction = 1
+    Rotation = 0
     Smoothness = 1
     Brightness = 1
     Gamma = 1
@@ -182,7 +193,7 @@ object FrmMain: TFrmMain
         ColorInner.Color = {
           0000803F00000000000000000000803F
         }
-        LifeTime = 0.300000011920929
+        LifeTime = 0.30000001192092
         SizeScale = 1
         RotateAngle = 30
       end    
@@ -197,18 +208,20 @@ object FrmMain: TFrmMain
       item
         LifeTime = 1
         SizeScale = 1
+        RotateAngle = 0
       end>
-    Acceleration.Coordinates = {
-      00000000000080410000000000000000
-    }
-    Friction = 1
-    Renderer = PfxRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 184
     top = 276
   end
   object PFXSmoke: TGLPerlinPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PfxRenderer
+    Acceleration.Coordinates = {
+      000000000000803F0000000000000000
+    }
+    Friction = 1
+    BlendingMode = bmTransparency
+    Rotation = 0
     Smoothness = 1
     Brightness = 1
     Gamma = 1
@@ -230,14 +243,6 @@ object FrmMain: TFrmMain
         SizeScale = 1
         RotateAngle = 90
       end>
-    BlendingMode = bmTransparency
-    Acceleration.Coordinates = {
-      000000000000803F0000000000000000
-    }
-    Friction = 1
-    Renderer = PfxRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 220
     top = 276
   end
@@ -8439,9 +8444,13 @@ object FrmMain: TFrmMain
       00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000
       00FF
     }
+    GlyphsIntervalX = 0
+    GlyphsIntervalY = 0
     Ranges = <    
       item
-        StopASCII = 'ÿ'
+        StartASCII = #0
+        StopASCII = #0
+        StartGlyphIdx = 0
       end>
     left = 68
     top = 232
@@ -8450,20 +8459,27 @@ object FrmMain: TFrmMain
     left = 28
     top = 276
     object WorldRoot: TGLDummyCube
-      CubeSize = 1
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
       Scale.Coordinates = {
         0000C0400000C0400000C04000000000
       }
+      TurnAngle = 0
+      CubeSize = 1
       object GLLightSource1: TGLLightSource
+        TagFloat = 0
         ConstAttenuation = 1
+        LinearAttenuation = 0
+        QuadraticAttenuation = 0
         Position.Coordinates = {
           000000000000A0400000A0410000803F
         }
         SpotCutOff = 180
+        SpotExponent = 0
       end
       object GLPlane1: TGLPlane
-        Height = 16
-        Width = 8
+        TagFloat = 0
         Material.FrontProperties.Ambient.Color = {
           CDCCCC3DCDCCCC3DCDCCCC3D0000803F
         }
@@ -8473,19 +8489,37 @@ object FrmMain: TFrmMain
         Direction.Coordinates = {
           000000000000803F0000000000000000
         }
+        PitchAngle = 0
         Position.Coordinates = {
           00000000000080BF0000C0400000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
         Up.Coordinates = {
           0000000000000000000080BF00000000
         }
         Visible = False
+        Height = 16
+        Width = 8
+        XOffset = 0
+        YOffset = 0
+        NoZWrite = False
       end
       object ICE: TGLSpaceText
+        TagFloat = 0
+        PitchAngle = 0
+        RollAngle = 0
+        TurnAngle = 0
+        Extrusion = 0
         Font.Height = -11
         Font.Name = 'Arial'
-        Text = 'ice'
+        Lines.Strings = (
+          'ice'
+        )
+        AllowedDeviation = 0
+        AspectRatio = 0
         TextHeight = 0.5
+        Oblique = 0
         Adjust.Horz = haCenter
         BehavioursData = {
           0201060B54474C42496E657274696102000200050000000000000080FF3F0200
@@ -8500,14 +8534,24 @@ object FrmMain: TFrmMain
         }
       end
       object MAGMA: TGLSpaceText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Text = 'magma'
-        TextHeight = 0.5
-        Adjust.Horz = haCenter
+        TagFloat = 0
+        PitchAngle = 0
         Position.Coordinates = {
           0000000000000000000000400000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
+        Extrusion = 0
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Lines.Strings = (
+          'magma'
+        )
+        AllowedDeviation = 0
+        AspectRatio = 0
+        TextHeight = 0.5
+        Oblique = 0
+        Adjust.Horz = haCenter
         BehavioursData = {
           0201060B54474C42496E657274696102000200050000000000000080FF3F0200
           080500000000000000C00240050000000000000080FF3F050000000000000080
@@ -8521,14 +8565,24 @@ object FrmMain: TFrmMain
         }
       end
       object SMOKE: TGLSpaceText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Text = 'smoke'
-        TextHeight = 0.5
-        Adjust.Horz = haCenter
+        TagFloat = 0
+        PitchAngle = 0
         Position.Coordinates = {
           0000000000000000000080400000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
+        Extrusion = 0
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Lines.Strings = (
+          'smoke'
+        )
+        AllowedDeviation = 0
+        AspectRatio = 0
+        TextHeight = 0.5
+        Oblique = 0
+        Adjust.Horz = haCenter
         BehavioursData = {
           0201060B54474C42496E657274696102000200050000000000000080FF3F0200
           080500000000000000C00240050000000000000080FF3F050000000000000080
@@ -8542,14 +8596,24 @@ object FrmMain: TFrmMain
         }
       end
       object FOG: TGLSpaceText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Text = 'fog'
-        TextHeight = 0.5
-        Adjust.Horz = haCenter
+        TagFloat = 0
+        PitchAngle = 0
         Position.Coordinates = {
           00000000000000000000C0400000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
+        Extrusion = 0
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Lines.Strings = (
+          'fog'
+        )
+        AllowedDeviation = 0
+        AspectRatio = 0
+        TextHeight = 0.5
+        Oblique = 0
+        Adjust.Horz = haCenter
         BehavioursData = {
           0201060B54474C42496E657274696102000200050000000000000080FF3F0200
           080500000000000000C00240050000000000000080FF3F050000000000000080
@@ -8563,20 +8627,30 @@ object FrmMain: TFrmMain
         }
       end
       object FIRE: TGLSpaceText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Text = 'fire'
-        TextHeight = 0.5
-        Adjust.Horz = haCenter
+        TagFloat = 0
         Direction.Coordinates = {
           0000000073F9A7330000803F00000000
         }
+        PitchAngle = 0
         Position.Coordinates = {
           0000000000000000000000410000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
         Up.Coordinates = {
           000000000000803F73F9A7B300000000
         }
+        Extrusion = 0
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Lines.Strings = (
+          'fire'
+        )
+        AllowedDeviation = 0
+        AspectRatio = 0
+        TextHeight = 0.5
+        Oblique = 0
+        Adjust.Horz = haCenter
         BehavioursData = {
           0201060B54474C42496E657274696102000200050000000000000080FF3F0200
           080500000000000000C00240050000000000000080FF3F050000000000000080
@@ -8591,14 +8665,24 @@ object FrmMain: TFrmMain
         }
       end
       object RAIL: TGLSpaceText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Text = 'rail'
-        TextHeight = 0.5
-        Adjust.Horz = haCenter
+        TagFloat = 0
+        PitchAngle = 0
         Position.Coordinates = {
           0000000000000000000020410000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
+        Extrusion = 0
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Lines.Strings = (
+          'rail'
+        )
+        AllowedDeviation = 0
+        AspectRatio = 0
+        TextHeight = 0.5
+        Oblique = 0
+        Adjust.Horz = haCenter
         BehavioursData = {
           0201060B54474C42496E657274696102000200050000000000000080FF3F0200
           080500000000000000C00240050000000000000080FF3F050000000000000080
@@ -8612,14 +8696,24 @@ object FrmMain: TFrmMain
         }
       end
       object ELECTRIC: TGLSpaceText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Text = 'electric'
-        TextHeight = 0.5
-        Adjust.Horz = haCenter
+        TagFloat = 0
+        PitchAngle = 0
         Position.Coordinates = {
           0000000000000000000040410000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
+        Extrusion = 0
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Lines.Strings = (
+          'electric'
+        )
+        AllowedDeviation = 0
+        AspectRatio = 0
+        TextHeight = 0.5
+        Oblique = 0
+        Adjust.Horz = haCenter
         BehavioursData = {
           0201060B54474C42496E657274696102000200050000000000000080FF3F0200
           080500000000000000C00240050000000000000080FF3F050000000000000080
@@ -8633,14 +8727,24 @@ object FrmMain: TFrmMain
         }
       end
       object WATER: TGLSpaceText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Text = 'water'
-        TextHeight = 0.5
-        Adjust.Horz = haCenter
+        TagFloat = 0
+        PitchAngle = 0
         Position.Coordinates = {
           0000000000000000000060410000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
+        Extrusion = 0
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Lines.Strings = (
+          'water'
+        )
+        AllowedDeviation = 0
+        AspectRatio = 0
+        TextHeight = 0.5
+        Oblique = 0
+        Adjust.Horz = haCenter
         BehavioursData = {
           0201060B54474C42496E657274696102000200050000000000000080FF3F0200
           080500000000000000C00240050000000000000080FF3F050000000000000080
@@ -8658,17 +8762,10 @@ object FrmMain: TFrmMain
         }
       end
       object PfxRenderer: TGLParticleFXRenderer
+        TagFloat = 0
         BlendingMode = bmTransparency
         object GLBlur1: TGLBlur
-          BlurDeltaTime = 0.02
-          BlurLeft = 0.019999999552965
-          BlurTop = 0.019999999552965
-          BlurRight = 0.019999999552965
-          BlurBottom = 0.019999999552965
-          RenderWidth = 256
-          RenderHeight = 256
-          Width = 16
-          Height = 16
+          TagFloat = 0
           Material.FrontProperties.Diffuse.Color = {
             0000803F0000803F0000803F3333333F
           }
@@ -8677,14 +8774,30 @@ object FrmMain: TFrmMain
           Material.Texture.ImageClassName = 'TGLBlankImage'
           Material.Texture.TextureMode = tmModulate
           Material.Texture.Disabled = False
+          PitchAngle = 0
+          RollAngle = 0
+          TurnAngle = 0
           Visible = False
+          Rotation = 0
+          Blur = bNone
+          BlurLeft = 0.01999999955296
+          BlurTop = 0.01999999955296
+          BlurRight = 0.01999999955296
+          BlurBottom = 0.01999999955296
+          AdvancedBlurPasses = 1
+          AdvancedBlurAmp = 1.10000002384185
+          AdvancedBlurLowClamp = 0
+          AdvancedBlurHiClamp = 255
+          BlurSelf = True
+          RenderBackgroundColor = clBlack
         end
       end
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 900
       FocalLength = 70
-      NearPlaneBias = 0.100000001490116
+      NearPlaneBias = 0.10000000149011
       Position.Coordinates = {
         73D8C3416ACB1D41343ED1420000803F
       }
@@ -8697,6 +8810,13 @@ object FrmMain: TFrmMain
     end
   end
   object PFXBlueArea: TGLPerlinPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PfxRenderer
+    Acceleration.Coordinates = {
+      00000000000000BF0000000000000000
+    }
+    Friction = 1
+    Rotation = 0
     Smoothness = 1
     Brightness = 1
     Gamma = 1
@@ -8709,7 +8829,7 @@ object FrmMain: TFrmMain
         ColorInner.Color = {
           0681153F39B4483F14AE273F0000803F
         }
-        LifeTime = 0.100000001490116
+        LifeTime = 0.10000000149011
         SizeScale = 1
         RotateAngle = 10
       end    
@@ -8726,16 +8846,9 @@ object FrmMain: TFrmMain
           00000000000000001283803E0000803F
         }
         LifeTime = 2
-        SizeScale = 0.100000001490116
+        SizeScale = 0.10000000149011
         RotateAngle = 100
       end>
-    Acceleration.Coordinates = {
-      00000000000000BF0000000000000000
-    }
-    Friction = 1
-    Renderer = PfxRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 256
     top = 276
   end
@@ -8750,6 +8863,8 @@ object FrmMain: TFrmMain
     }
     MovingObject = GLCamera1
     UseVirtualUp = True
+    MaxAngle = 0
+    MinAngle = 0
     left = 500
     top = 312
   end
@@ -8760,6 +8875,13 @@ object FrmMain: TFrmMain
     top = 312
   end
   object PFXRedArea: TGLPerlinPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PfxRenderer
+    Acceleration.Coordinates = {
+      00000000000000BF0000000000000000
+    }
+    Friction = 1
+    Rotation = 0
     Smoothness = 1
     Brightness = 1
     Gamma = 1
@@ -8772,7 +8894,7 @@ object FrmMain: TFrmMain
         ColorInner.Color = {
           0000803F9A99393F508D173F0000803F
         }
-        LifeTime = 0.100000001490116
+        LifeTime = 0.10000000149011
         SizeScale = 1
         RotateAngle = 10
       end    
@@ -8789,20 +8911,17 @@ object FrmMain: TFrmMain
           0000803F00000000000000000000803F
         }
         LifeTime = 2
-        SizeScale = 0.100000001490116
+        SizeScale = 0.10000000149011
         RotateAngle = 100
       end>
-    Acceleration.Coordinates = {
-      00000000000000BF0000000000000000
-    }
-    Friction = 1
-    Renderer = PfxRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 292
     top = 276
   end
   object PFXFog: TGLPerlinPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PfxRenderer
+    Friction = 1
+    Rotation = 0
     Smoothness = 1
     Brightness = 1
     Gamma = 1
@@ -8818,7 +8937,7 @@ object FrmMain: TFrmMain
           60E5D03D60E5D03D60E5D03D0000803F
         }
         LifeTime = 1
-        SizeScale = 1.100000023841858
+        SizeScale = 1.10000002384185
         RotateAngle = 10
       end    
       item
@@ -8826,7 +8945,7 @@ object FrmMain: TFrmMain
           448B6C3E448B6C3E448B6C3E0000803F
         }
         LifeTime = 2
-        SizeScale = 1.200000047683716
+        SizeScale = 1.20000004768371
         RotateAngle = 20
       end    
       item
@@ -8834,7 +8953,7 @@ object FrmMain: TFrmMain
           448B6C3E448B6C3E448B6C3E0000803F
         }
         LifeTime = 3
-        SizeScale = 1.299999952316284
+        SizeScale = 1.29999995231628
         RotateAngle = 30
       end    
       item
@@ -8842,7 +8961,7 @@ object FrmMain: TFrmMain
           60E5D03D60E5D03D60E5D03D0000803F
         }
         LifeTime = 4
-        SizeScale = 1.399999976158142
+        SizeScale = 1.39999997615814
         RotateAngle = 40
       end    
       item
@@ -8850,16 +8969,19 @@ object FrmMain: TFrmMain
         SizeScale = 1.5
         RotateAngle = 50
       end>
-    Friction = 1
-    Renderer = PfxRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 368
     top = 276
   end
   object PFXWaterfall: TGLPerlinPFXManager
+    Cadencer = GLCadencer1
+    Renderer = PfxRenderer
+    Acceleration.Coordinates = {
+      00000000000070C20000000000000000
+    }
+    Friction = 1
+    Rotation = 0
     TexMapSize = 5
-    Smoothness = 0.699999988079071
+    Smoothness = 0.69999998807907
     Brightness = 1
     Gamma = 1
     NoiseSeed = 67334
@@ -8873,32 +8995,32 @@ object FrmMain: TFrmMain
         ColorInner.Color = {
           9EEFA73DC520B03DFCA9F13D0000803F
         }
-        LifeTime = 0.200000002980232
-        SizeScale = 1.100000023841858
+        LifeTime = 0.20000000298023
+        SizeScale = 1.10000002384185
         RotateAngle = 10
       end    
       item
         ColorInner.Color = {
           D578E93DBA490C3E2FDD243E0000803F
         }
-        LifeTime = 0.400000005960465
-        SizeScale = 1.200000047683716
+        LifeTime = 0.40000000596046
+        SizeScale = 1.20000004768371
         RotateAngle = 20
       end    
       item
         ColorInner.Color = {
           9318043E08AC1C3EEC51383E0000803F
         }
-        LifeTime = 0.600000023841858
-        SizeScale = 1.299999952316284
+        LifeTime = 0.60000002384185
+        SizeScale = 1.29999995231628
         RotateAngle = 30
       end    
       item
         ColorInner.Color = {
           9EEFA73D9EEFA73DEC51B83D0000803F
         }
-        LifeTime = 0.800000011920929
-        SizeScale = 1.399999976158142
+        LifeTime = 0.80000001192092
+        SizeScale = 1.39999997615814
         RotateAngle = 40
       end    
       item
@@ -8909,13 +9031,6 @@ object FrmMain: TFrmMain
         SizeScale = 1.5
         RotateAngle = 50
       end>
-    Acceleration.Coordinates = {
-      00000000000070C20000000000000000
-    }
-    Friction = 1
-    Renderer = PfxRenderer
-    Cadencer = GLCadencer1
-    Cadencer = GLCadencer1
     left = 404
     top = 276
   end

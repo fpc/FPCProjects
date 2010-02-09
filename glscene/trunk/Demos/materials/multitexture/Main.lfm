@@ -5,7 +5,6 @@ object Form1: TForm1
   Width = 559
   HorzScrollBar.Page = 558
   VertScrollBar.Page = 430
-  ActiveControl = TrackBar1
   BorderStyle = bsSingle
   Caption = 'Multitexture'
   ClientHeight = 431
@@ -14,6 +13,7 @@ object Form1: TForm1
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   Position = poScreenCenter
+  LCLVersion = '0.9.29'
   object Image1: TImage
     Left = 416
     Height = 128
@@ -30,39 +30,40 @@ object Form1: TForm1
   end
   object Label1: TLabel
     Left = 416
-    Height = 20
+    Height = 14
     Top = 40
-    Width = 89
+    Width = 70
     Caption = 'Texture Map 1'
     ParentColor = False
   end
   object Label2: TLabel
     Left = 416
-    Height = 20
+    Height = 14
     Top = 192
-    Width = 89
+    Width = 70
     Caption = 'Texture Map 2'
     ParentColor = False
   end
   object Label3: TLabel
     Left = 416
-    Height = 20
+    Height = 14
     Top = 368
-    Width = 79
+    Width = 61
     Caption = 'Map 2 Scale'
     ParentColor = False
   end
   object Label4: TLabel
     Left = 432
-    Height = 22
+    Height = 20
     Top = 8
-    Width = 110
+    Width = 95
     Caption = 'MultiTexture'
     Font.CharSet = ANSI_CHARSET
     Font.Height = -16
     Font.Name = 'Arial'
     Font.Style = [fsBold]
     ParentColor = False
+    ParentFont = False
   end
   object GLSceneViewer1: TGLSceneViewer
     Left = 8
@@ -82,14 +83,13 @@ object Form1: TForm1
     Min = 5
     OnChange = TrackBar1Change
     Position = 10
-    ScalePos = trTop
     TabOrder = 0
   end
   object CBClampTex2: TCheckBox
     Left = 416
-    Height = 19
+    Height = 17
     Top = 344
-    Width = 122
+    Width = 97
     Caption = 'Clamp Texture 2'
     OnClick = CBClampTex2Click
     TabOrder = 1
@@ -98,15 +98,23 @@ object Form1: TForm1
     left = 48
     top = 32
     object Plane1: TGLPlane
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'Base'
+      PitchAngle = 0
       Position.Coordinates = {
         0000000000000000000080BF0000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
       Height = 1
       Width = 1
+      XOffset = 0
+      YOffset = 0
+      NoZWrite = False
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       left = 192
@@ -119,12 +127,14 @@ object Form1: TForm1
         Name = 'Base'
         Material.Texture.TextureMode = tmReplace
         Material.Texture.Disabled = False
+        Tag = 0
         Texture2Name = 'Second'
       end    
       item
         Name = 'Second'
         Material.Texture.TextureMode = tmModulate
         Material.Texture.Disabled = False
+        Tag = 0
       end>
     left = 48
     top = 64

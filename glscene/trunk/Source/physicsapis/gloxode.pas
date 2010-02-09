@@ -52,11 +52,12 @@ uses
   windows, messages,
   {$endif}
   sysutils, variants, classes, graphics, controls, extctrls,
-  dialogs, math, vectorgeometry, globjects, glmisc, glscene, glvectorfileobjects,
+  dialogs, math, vectorgeometry, globjects, glscene, glvectorfileobjects,
   vectorlists, persistentclasses, opengl1x, gltexture, glmesh, meshutils, glstate,
   xcollection, glgeomobjects, glverletclothify, xopengl, glterrainrenderer,
   vectortypes, odegl, odeimport, glcrossplatform, glcontext, glsilhouette, tga,
-  jpeg, GLColor;
+  jpeg, GLColor, GLRenderContextInfo, GLCoordinates, BaseClasses;
+
 {******************************************************************************}
 const
   num = ( 20 );

@@ -40,7 +40,8 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  GLMisc, GLTexture, GLCadencer, GLContext, OpenGL1x, GLStrings,
+  GLTexture, GLCadencer, GLContext, OpenGL1x, GLStrings, GLMaterial,
+  GLRenderContextInfo,
 
   // CG Shaders
   CgGL, GLCgShader;

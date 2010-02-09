@@ -16,7 +16,7 @@ interface
 uses
   {$IFDEF LCL} lcltype, LResources, {$ELSE} Windows,{$ENDIF}
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLScene, GLObjects, GLMisc, GLTexture, GLViewer, GLCadencer,
+  Dialogs, GLScene, GLObjects, GLTexture, GLViewer, GLCadencer,
   ExtCtrls;
 
 type

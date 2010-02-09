@@ -9,7 +9,7 @@ interface
 
 uses
   LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  GLFireFX, GLCadencer, GLScene, GLMisc, GLObjects, GLBehaviours, ExtCtrls,
+  GLFireFX, GLCadencer, GLScene, GLObjects, GLBehaviours, ExtCtrls,
   VectorGeometry, GLThorFX, GLSkydome, StdCtrls, ComCtrls, GLGraph, VectorTypes,
   GLLCLViewer, LResources;
 

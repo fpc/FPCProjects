@@ -16,7 +16,7 @@ interface
 
 uses
   SysUtils, Classes, Controls, Forms,{ GLKeyboard,}
-  VectorGeometry, GLMisc, GLScene, GLVectorFileObjects, GLObjects,
+  VectorGeometry, GLScene, GLVectorFileObjects, GLObjects,
   GLViewer, GLCadencer, ExtCtrls, StdCtrls, GLNavigator, ComCtrls,
   GLGeomObjects, LResources, Buttons;
 

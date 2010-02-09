@@ -53,7 +53,7 @@ interface
 
 uses
   GLColor, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  GLObjects, GLMisc, VectorGeometry, ExtCtrls, GLTexture, GLCadencer,
+  GLObjects, VectorGeometry, ExtCtrls, GLTexture, GLCadencer,
   GLViewer, GLCrossPlatform, LResources, GLScene;
 
 type

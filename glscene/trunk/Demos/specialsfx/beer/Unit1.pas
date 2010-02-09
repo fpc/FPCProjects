@@ -16,7 +16,7 @@ interface
 
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  GLVectorFileObjects, GLObjects, GLMisc,GLFile3ds, GLCadencer, jpeg,
+  GLVectorFileObjects, GLObjects, GLFile3ds, GLCadencer, jpeg,
   GLGeomObjects, VectorGeometry, GLShadowPlane, GLParticleFX, GLPerlinPFX,
   LResources, GLScene, GLLCLViewer;
 

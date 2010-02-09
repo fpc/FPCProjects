@@ -10,8 +10,11 @@ object Form1: TForm1
   ClientWidth = 353
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 372
+    Top = 0
     Width = 353
     Camera = GLCamera1
     Buffer.BackgroundColor = clBlack
@@ -24,6 +27,10 @@ object Form1: TForm1
     left = 16
     top = 16
     object Lines1: TGLLines
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       AntiAliased = True
       LineWidth = 6
       Nodes = <      
@@ -45,6 +52,7 @@ object Form1: TForm1
       Options = [loUseNodeColorForLines]
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 25
       TargetObject = Lines1

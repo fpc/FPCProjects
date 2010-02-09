@@ -15,7 +15,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  GLObjects, GLScene, GLMisc, StdCtrls, VectorGeometry, GLCadencer, GLViewer,
+  GLObjects, GLScene, StdCtrls, VectorGeometry, GLCadencer, GLViewer,
   GLGeomObjects, LResources;
 
 type

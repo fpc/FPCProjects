@@ -54,7 +54,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms,
-  GLScene, GLObjects, GLMisc, GLExtrusion, GLMirror, GLMultiPolygon,
+  GLScene, GLObjects, GLExtrusion, GLMirror, GLMultiPolygon,
   ExtCtrls, GLCadencer, StdCtrls, GLTeapot, GLGeomObjects,
   LResources, GLViewer;
 

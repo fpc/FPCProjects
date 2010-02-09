@@ -7,7 +7,6 @@ object frmFriction: TfrmFriction
   OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
-  TextHeight = 13
   HorzScrollBar.Page = 456
   VertScrollBar.Page = 338
   Left = 253

@@ -14,7 +14,7 @@ interface
 
 uses
   LCLIntf, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLMisc, GLViewer, GLTexture, OpenGL1x,
+  Dialogs, GLObjects, GLViewer, GLTexture, OpenGL1x,
   GLCgShader, Cg, cgGL, StdCtrls, VectorGeometry, GLCadencer, ExtCtrls, ComCtrls,
   GLGraph, jpeg, LResources, GLScene;
 

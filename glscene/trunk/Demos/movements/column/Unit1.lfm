@@ -11,8 +11,11 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 352
+    Top = 0
     Width = 219
     Camera = GLCamera1
     Buffer.BackgroundColor = clBlack
@@ -20,6 +23,7 @@ object Form1: TForm1
     Align = alClient
   end
   object StaticText1: TStaticText
+    Left = 0
     Height = 17
     Top = 352
     Width = 219
@@ -27,14 +31,20 @@ object Form1: TForm1
     Alignment = taCenter
     BorderStyle = sbsSingle
     Caption = '???.? FPS'
+    TabOrder = 1
   end
   object GLScene1: TGLScene
     left = 8
     top = 8
     object DummyCube1: TGLDummyCube
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = 1
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 100
       TargetObject = DummyCube1
@@ -50,6 +60,9 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     Mode = cmApplicationIdle
     OnProgress = GLCadencer1Progress
     left = 8

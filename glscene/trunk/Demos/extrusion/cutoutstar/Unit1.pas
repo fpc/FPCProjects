@@ -20,7 +20,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  GLScene, GLExtrusion, GLMisc, VectorGeometry, ExtCtrls, GLMultiPolygon,
+  GLScene, GLExtrusion, VectorGeometry, ExtCtrls, GLMultiPolygon,
   GLViewer, LResources, GLCadencer;
 
 type

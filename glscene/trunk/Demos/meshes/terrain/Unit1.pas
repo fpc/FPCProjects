@@ -44,7 +44,7 @@ interface
 
 uses
   Windows, LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  GLTerrainRenderer, GLObjects, GLMisc, jpeg, GLHeightData,
+  GLTerrainRenderer, GLObjects, jpeg, GLHeightData,
   ExtCtrls, GLCadencer, StdCtrls, GLTexture, GLHUDObjects, GLBitmapFont,
   GLSkydome, GLWin32Viewer, GLSound, GLSMBASS, VectorGeometry, GLLensFlare,
   LResources, GLScene, GLSMFMOD, GLParticleFX;

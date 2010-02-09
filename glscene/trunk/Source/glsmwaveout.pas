@@ -18,7 +18,7 @@ interface
 {$ENDIF}
 
 uses Classes, GLSound, GLSoundFileObjects, GLScene, XCollection, VectorGeometry, GLCadencer,
-     GLMisc, mmsystem;
+     mmsystem;
 {$i GLScene.inc}
 
 Type

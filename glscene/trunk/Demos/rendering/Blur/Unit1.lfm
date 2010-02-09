@@ -11,7 +11,9 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 442
     Top = 56
     Width = 534
@@ -30,7 +32,9 @@ object Form1: TForm1
     OnMouseMove = GLSceneViewer1MouseMove
   end
   object Panel1: TPanel
+    Left = 0
     Height = 56
+    Top = 0
     Width = 534
     Align = alTop
     Caption = ' '
@@ -40,26 +44,26 @@ object Form1: TForm1
     TabOrder = 0
     object Label1: TLabel
       Left = 8
-      Height = 20
+      Height = 14
       Top = 4
-      Width = 75
+      Width = 55
       Caption = 'Blur Preset:'
       ParentColor = False
     end
     object Label2: TLabel
       Left = 216
-      Height = 20
+      Height = 14
       Top = 4
-      Width = 80
+      Width = 62
       Caption = 'Render Size:'
       ParentColor = False
     end
     object ComboBox1: TComboBox
       Left = 8
-      Height = 28
+      Height = 21
       Top = 20
       Width = 161
-      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      ItemHeight = 13
       ItemIndex = 0
       Items.Strings = (
         'pNone (no change)'
@@ -69,7 +73,6 @@ object Form1: TForm1
         'pDream'
         'pOverBlur'
       )
-      MaxLength = 0
       OnClick = ComboBox1Click
       Style = csDropDownList
       TabOrder = 0
@@ -77,10 +80,10 @@ object Form1: TForm1
     end
     object ComboBox2: TComboBox
       Left = 216
-      Height = 28
+      Height = 21
       Top = 20
       Width = 145
-      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      ItemHeight = 13
       ItemIndex = 5
       Items.Strings = (
         '8'
@@ -91,7 +94,6 @@ object Form1: TForm1
         '256'
         '512'
       )
-      MaxLength = 0
       OnChange = ComboBox2Change
       Style = csDropDownList
       TabOrder = 1
@@ -103,6 +105,7 @@ object Form1: TForm1
     left = 192
     top = 56
     object GLLightSource1: TGLLightSource
+      TagFloat = 0
       Ambient.Color = {
         BEC0403FBEC0403FBEC0403F0000803F
       }
@@ -110,13 +113,17 @@ object Form1: TForm1
       Diffuse.Color = {
         BEC0403FBEC0403FBEC0403F0000803F
       }
+      LinearAttenuation = 0
+      QuadraticAttenuation = 0
       Position.Coordinates = {
         56551B40F9FF2D40F6FF3B400000803F
       }
       LightStyle = lsOmni
       SpotCutOff = 180
+      SpotExponent = 0
     end
     object GLCube1: TGLCube
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial'
       Direction.Coordinates = {
@@ -126,23 +133,33 @@ object Form1: TForm1
       Position.Coordinates = {
         DB9FEC3E806395BE509F213F0000803F
       }
+      RollAngle = 0
       TurnAngle = 6.5
       Up.Coordinates = {
         DD7324BEE3EB17BE6BCE793F00000000
       }
     end
     object GLSphere1: TGLSphere
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'LibMaterial'
+      PitchAngle = 0
       Position.Coordinates = {
         6E3D38BF0A5515BE733C1CBF0000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
       Radius = 0.5
     end
     object GLDummyCube1: TGLDummyCube
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = 1
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       NearPlaneBias = 0.10000000149011
@@ -164,12 +181,16 @@ object Form1: TForm1
         Name = 'LibMaterial'
         Material.Texture.TextureMode = tmModulate
         Material.Texture.Disabled = False
+        Tag = 0
       end>
     left = 228
     top = 56
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     SleepLength = 0
     OnProgress = GLCadencer1Progress
     left = 268

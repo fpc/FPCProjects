@@ -40,7 +40,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  GLMisc, GLHUDObjects, GLObjects, GLCadencer, ExtCtrls,
+  GLHUDObjects, GLObjects, GLCadencer, ExtCtrls,
   GLBitmapFont, GLViewer, GLWindowsFont, Menus, GLWindows, GLGui,
   GLTexture, LResources, GLScene;
 

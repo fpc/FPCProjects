@@ -1,162 +1,145 @@
 object Form1: TForm1
+  Left = 215
+  Height = 457
+  Top = 181
+  Width = 708
+  HorzScrollBar.Page = 707
+  VertScrollBar.Page = 456
   Caption = 'Form1'
   ClientHeight = 457
   ClientWidth = 708
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnActivate = FormActivate
-  PixelsPerInch = 96
   Position = poDesktopCenter
-  TextHeight = 13
-  HorzScrollBar.Page = 707
-  VertScrollBar.Page = 456
-  Left = 216
-  Height = 457
-  Top = 140
-  Width = 708
+  LCLVersion = '0.9.29'
   object Label1: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 8
+    Height = 19
+    Top = 8
+    Width = 76
     Caption = 'Maze Map'
-    Color = clNone
     Font.CharSet = ANSI_CHARSET
     Font.Height = -16
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
-    Left = 8
-    Height = 18
-    Top = 8
-    Width = 75
+    ParentColor = False
+    ParentFont = False
   end
   object Label2: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 304
+    Height = 19
+    Top = 8
+    Width = 63
     Caption = '3D View'
-    Color = clNone
     Font.CharSet = ANSI_CHARSET
     Font.Height = -16
     Font.Name = 'Arial'
     Font.Style = [fsBold, fsItalic]
-    Left = 304
-    Height = 18
-    Top = 8
-    Width = 62
+    ParentColor = False
+    ParentFont = False
   end
   object Label3: TLabel
-    BorderSpacing.OnChange = nil
+    Left = 24
+    Height = 43
+    Top = 312
+    Width = 242
     Caption = 'To modify map, edit cells with keyboard :'#13#10'- any non-empty cell is a wall'#13#10'- click ''process'' to commit changes or check ''auto'''
-    Color = clNone
     Font.CharSet = ANSI_CHARSET
     Font.Height = -11
     Font.Name = 'Arial'
-    Left = 24
-    Height = 42
-    Top = 312
-    Width = 241
+    ParentColor = False
+    ParentFont = False
   end
   object BUForward: TButton
-    BorderSpacing.OnChange = nil
-    Caption = 'Forward (Z/W)'
-    OnClick = BUForwardClick
-    TabOrder = 0
     Left = 96
     Height = 25
     Top = 360
     Width = 89
+    Caption = 'Forward (Z/W)'
+    OnClick = BUForwardClick
+    TabOrder = 0
   end
   object BUTurnLeft: TButton
-    BorderSpacing.OnChange = nil
-    Caption = 'Turn Left (Q/A)'
-    OnClick = BUTurnLeftClick
-    TabOrder = 1
     Left = 8
     Height = 25
     Top = 376
     Width = 81
+    Caption = 'Turn Left (Q/A)'
+    OnClick = BUTurnLeftClick
+    TabOrder = 1
   end
   object BUTurnRight: TButton
-    BorderSpacing.OnChange = nil
-    Caption = 'TurnRight (D)'
-    OnClick = BUTurnRightClick
-    TabOrder = 2
     Left = 192
     Height = 25
     Top = 376
     Width = 89
+    Caption = 'TurnRight (D)'
+    OnClick = BUTurnRightClick
+    TabOrder = 2
   end
   object BUBackward: TButton
-    BorderSpacing.OnChange = nil
-    Caption = 'Backward (S)'
-    OnClick = BUBackwardClick
-    TabOrder = 3
     Left = 96
     Height = 25
     Top = 392
     Width = 89
+    Caption = 'Backward (S)'
+    OnClick = BUBackwardClick
+    TabOrder = 3
   end
   object SGMap: TStringGrid
-    BorderSpacing.OnChange = nil
+    Left = 0
+    Height = 100
+    Top = 8
+    Width = 75
     BorderStyle = bsNone
     ColCount = 16
     DefaultColWidth = 16
     DefaultRowHeight = 16
-    FixedColor = clBtnFace
     FixedCols = 0
     FixedRows = 0
     GridLineWidth = 0
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goAlwaysShowEditor]
     RowCount = 16
     TabOrder = 4
-    VisibleColCount = 16
-    VisibleRowCount = 16
-    OnSetEditText = SGMapSetEditText
-    Left = 16
-    Height = 272
-    Top = 32
-    Width = 272
-  end
-  object BBProcess: TButton
-    BorderSpacing.OnChange = nil
-    Caption = 'Process'
-    OnClick = BBProcessClick
-    TabOrder = 5
-    Left = 200
-    Height = 17
-    Top = 8
-    Width = 75
+    TitleFont.Height = -11
+    TitleFont.Name = 'MS Sans Serif'
   end
   object CBAuto: TCheckBox
-    BorderSpacing.OnChange = nil
+    Left = 152
+    Height = 17
+    Top = 8
+    Width = 42
     Caption = 'Auto'
     Checked = True
     OnChange = CBAutoChange
     State = cbChecked
-    TabOrder = 6
-    Left = 152
-    Height = 17
-    Top = 8
-    Width = 41
+    TabOrder = 5
   end
   object CBFog: TCheckBox
-    BorderSpacing.OnChange = nil
-    Caption = 'Fog'
-    OnClick = CBFogClick
-    TabOrder = 7
     Left = 640
     Height = 17
     Top = 8
-    Width = 49
+    Width = 38
+    Caption = 'Fog'
+    OnClick = CBFogClick
+    TabOrder = 7
   end
   object Panel1: TPanel
-    BorderSpacing.OnChange = nil
-    Caption = 'Panel1'
-    ClientHeight = 400
-    ClientWidth = 410
-    FullRepaint = False
-    TabOrder = 8
     Left = 294
     Height = 400
     Top = 32
     Width = 410
+    Caption = 'Panel1'
+    ClientHeight = 400
+    ClientWidth = 410
+    FullRepaint = False
+    TabOrder = 6
     object GLSceneViewer1: TGLSceneViewer
+      Left = 1
+      Height = 398
+      Top = 1
+      Width = 408
       Camera = GLCamera1
       Buffer.FogEnvironment.FogColor.Color = {
         00000000000000008180003F0000803F
@@ -164,14 +147,8 @@ object Form1: TForm1
       Buffer.FogEnvironment.FogStart = 1
       Buffer.FogEnvironment.FogEnd = 10
       Buffer.BackgroundColor = clNavy
-      Buffer.OnChange = nil
-      Buffer.OnStructuralChange = nil
-      FieldOfView = 151.79206848144531
+      FieldOfView = 151.792068481445
       Align = alClient
-      Left = 1
-      Height = 398
-      Top = 1
-      Width = 408
     end
   end
   object GLMaterialLibrary1: TGLMaterialLibrary
@@ -183,27 +160,39 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     SleepLength = 0
     OnProgress = GLCadencer1Progress
     left = 430
   end
   object GLScene1: TGLScene
     object GLLightSource1: TGLLightSource
+      TagFloat = 0
       Ambient.Color = {
         CDCC4C3ECDCC4C3ECDCC4C3E0000803F
       }
       ConstAttenuation = 1
+      LinearAttenuation = 0
+      QuadraticAttenuation = 0
       Position.Coordinates = {
         000048420000C8420000C8420000803F
       }
       SpotCutOff = 180
+      SpotExponent = 0
     end
     object DummyCube1: TGLDummyCube
-      CubeSize = 1
+      TagFloat = 0
+      PitchAngle = 0
       Position.Coordinates = {
         00000000000000000000C0400000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
+      CubeSize = 1
       object GLCamera1: TGLCamera
+        TagFloat = 0
         DepthOfView = 100
         FocalLength = 50
         Position.Coordinates = {
@@ -214,13 +203,17 @@ object Form1: TForm1
       end
     end
     object Portal1: TGLPortal
-      MaterialLibrary = GLMaterialLibrary1
+      TagFloat = 0
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
+      PitchAngle = 0
       Position.Coordinates = {
         00000000000000BF000000000000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
+      MaterialLibrary = GLMaterialLibrary1
     end
   end
 end

@@ -9,7 +9,6 @@ object oxBoxStackFrm: ToxBoxStackFrm
   OnCreate = FormCreate
   PixelsPerInch = 96
   Position = poScreenCenter
-  TextHeight = 13
   HorzScrollBar.Page = 734
   VertScrollBar.Page = 595
   Left = 252

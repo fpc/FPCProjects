@@ -41,7 +41,7 @@ interface
 
 uses
   LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs,  GLCadencer, GLMisc, GLScene, ExtCtrls, GLObjects,
+  Dialogs,  GLCadencer, GLScene, ExtCtrls, GLObjects,
   VectorGeometry, StdCtrls, GLTexture, GLShadowPlane, GLGeomObjects, Math,
   GLVectorFileObjects, GLTerrainRenderer, Opengl1x, GLHeightData, GLTrail,
   GLHUDObjects, GLBlur, GLMesh, GLkeyboard, GLFile3DS,

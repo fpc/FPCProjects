@@ -26,7 +26,7 @@ interface
 
 uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLScene, GLMisc, StdCtrls, GLSkydome,
+  Dialogs, GLObjects, GLScene, StdCtrls, GLSkydome,
   ExtCtrls, GLCadencer, GLParticleFX, OpenGL1x, GLTeapot, GLGeomObjects,
   LResources, GLViewer;
 

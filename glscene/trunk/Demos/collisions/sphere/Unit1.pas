@@ -13,7 +13,7 @@ interface
 
 uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  GLScene, GLObjects, GLCollision, GLMisc, ComCtrls, StdCtrls,
+  GLScene, GLObjects, GLCollision, ComCtrls, StdCtrls,
   LResources, GLViewer, Buttons, GLCadencer;
 
 type

@@ -15,7 +15,7 @@ unit Unit1;
 interface
 
 uses
-  LCLType, Forms, Dialogs, SysUtils, GLObjects, GLMisc, Classes, Controls, GLGraph,
+  LCLType, Forms, Dialogs, SysUtils, GLObjects, Classes, Controls, GLGraph,
   GLCollision, GLTexture, OpenGL1x, StdCtrls, ExtCtrls, VectorGeometry, Graphics,
   GLVectorFileObjects, GLGeomObjects, LResources,
   GLScene, GLViewer, GLColor;

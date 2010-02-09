@@ -19,7 +19,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  GLMisc, GLObjects, GLExtrusion, GLViewer, VectorGeometry,
+  GLObjects, GLExtrusion, GLViewer, VectorGeometry,
   GLGeomObjects, LResources, GLScene;
 
 type

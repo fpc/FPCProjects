@@ -11,7 +11,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms, LCLType,
-  Dialogs, GLScene, GLViewer, GLSkydome, GLMisc, GLObjects,  jpeg, glkeyboard,
+  Dialogs, GLScene, GLViewer, GLSkydome, GLObjects,  jpeg, glkeyboard,
   GLHeightData, GLTerrainRenderer, GLTexture, GLCadencer, GLNavigator,
   SpatialPartitioning, VectorGeometry, ExtCtrls, GLBitmapFont, GeometryBB,
   GLWindowsFont, GLHUDObjects, StdCtrls, ComCtrls, OpenGL1x, LResources;

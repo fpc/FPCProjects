@@ -26,7 +26,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms, GLColor,
-  Dialogs, GLScene, GLObjects, GLMisc, GLTexture, OpenGL1x,
+  Dialogs, GLScene, GLObjects, GLTexture, OpenGL1x,
   StdCtrls, GLGeomObjects, GLState, LResources,Buttons, GLViewer;
 
 type

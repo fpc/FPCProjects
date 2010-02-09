@@ -19,7 +19,7 @@ interface
 
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  GLObjects, GLScene, GLVectorFileObjects, GLWin32Viewer, GLMisc,
+  GLObjects, GLScene, GLVectorFileObjects, GLWin32Viewer,
   GLFileMS3D, VerletClasses, VectorTypes, VectorLists, VectorGeometry, GLTexture,
   OpenGL1x, StdCtrls, GLFileSMD, GLCadencer, ExtCtrls, GLShadowPlane,
   GLVerletClothify, ComCtrls, jpeg, GLFile3DS, ODEImport, ODEGL,

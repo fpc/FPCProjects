@@ -22,7 +22,7 @@ interface
 
 uses
   SysUtils, Classes, Graphics, Controls, Forms,
-  GLObjects, GLScene, ExtCtrls, GLMisc, GLViewer,
+  GLObjects, GLScene, ExtCtrls, GLViewer,
   GLHUDObjects, StdCtrls, LResources, GLCadencer, Buttons;
 
 type

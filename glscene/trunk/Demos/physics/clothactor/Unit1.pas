@@ -26,7 +26,7 @@ uses
   StdCtrls, ExtCtrls,
   
   GLVectorFileObjects, GLObjects, GLCadencer, GLTexture, GLLCLViewer,
-  GLMisc, GLFileSMD, GLFile3DS, GLVerletClothify, GLVerletSkeletonColliders,
+  GLFileSMD, GLFile3DS, GLVerletClothify, GLVerletSkeletonColliders,
   GLShadowVolume,
   
   Keyboard, OpenGL1x, VectorGeometry, GeometryBB, JPEG, VerletClasses,

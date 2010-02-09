@@ -6,18 +6,21 @@ object Form1: TForm1
   HorzScrollBar.Page = 279
   VertScrollBar.Page = 279
   Caption = 'Form1'
+  ClientHeight = 280
+  ClientWidth = 280
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   OnResize = FormResize
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
     Height = 280
+    Top = 0
     Width = 280
     Camera = GLCamera1
     Buffer.BackgroundColor = clBlack
     Buffer.DepthTest = False
-    Buffer.OnChange = nil
-    Buffer.OnStructuralChange = nil
     FieldOfView = 140.692352294921
     Align = alClient
   end
@@ -25,10 +28,14 @@ object Form1: TForm1
     left = 8
     top = 8
     object GLParticles1: TGLParticles
+      TagFloat = 0
       ObjectsSorting = osNone
+      PitchAngle = 0
+      RollAngle = 0
       Scale.Coordinates = {
         00000040000000400000004000000000
       }
+      TurnAngle = 0
       CubeSize = 1
       OnActivateParticle = GLParticles1ActivateParticle
       BehavioursData = {
@@ -37,6 +44,7 @@ object Form1: TForm1
         000008020008020008
       }
       object Sprite1: TGLSprite
+        TagFloat = 0
         Material.FrontProperties.Ambient.Color = {
           0000000000000000000000000000803F
         }
@@ -47,12 +55,17 @@ object Form1: TForm1
         Material.Texture.TextureMode = tmModulate
         Material.Texture.TextureFormat = tfIntensity
         Material.Texture.Disabled = False
+        PitchAngle = 0
+        RollAngle = 0
+        TurnAngle = 0
         OnProgress = Sprite1Progress
         Width = 1
         Height = 1
+        Rotation = 0
       end
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       TargetObject = GLParticles1
@@ -63,6 +76,9 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     SleepLength = 1
     OnProgress = GLCadencer1Progress
     left = 8

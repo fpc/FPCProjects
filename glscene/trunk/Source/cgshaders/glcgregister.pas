@@ -30,7 +30,7 @@ uses
   gllazarusregister,
   {$ENDIF FPC}
   // GLScene
-  GLTexture,
+  GLTexture, GLMaterial,
 
   // CG
   Cg, CgGL, GLCgShader, GLCgBombShader;

@@ -27,7 +27,7 @@ interface
 
 uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs,  GLMisc, ExtCtrls, StdCtrls, GLBitmapFont, GLWindowsFont,
+  Dialogs,  ExtCtrls, StdCtrls, GLBitmapFont, GLWindowsFont,
   GLTexture, LResources, Buttons, GLViewer,
   GLScene;
 
