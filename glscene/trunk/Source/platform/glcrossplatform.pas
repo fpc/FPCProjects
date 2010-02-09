@@ -194,6 +194,7 @@ type
   TPicture = Graphics.TPicture;
   TGraphic = Graphics.TGraphic;
   TBitmap = Graphics.TBitmap;
+  TPixmap = Graphics.TPixmap;
 
 
   TMouseButton = Controls.TMouseButton;
@@ -502,7 +503,7 @@ function StopPrecisionTimer(const precisionTimer : Int64) : Double;
    Use the similarly named CPU instruction. }
 function RDTSC : Int64;
 
-procedure GLLoadBitmapFromInstance(ABitmap: TBitmap; AName: string);
+procedure GLLoadBitmapFromInstance(ABitmap: TCustomBitmap; AName: string);
 function GLOKMessageBox(const Text, Caption: string): Integer;
 procedure ShowHTMLUrl(Url: String);
 procedure GLShowCursor(AShow: boolean);
@@ -699,7 +700,7 @@ end;
 {$ENDIF}
 
 
-procedure GLLoadBitmapFromInstance(ABitmap: TBitmap; AName: string);
+procedure GLLoadBitmapFromInstance(ABitmap: TCustomBitmap; AName: string);
 begin
 {$IFDEF MSWINDOWS}
   ABitmap.Handle := LoadBitmap(HInstance, PChar(AName));

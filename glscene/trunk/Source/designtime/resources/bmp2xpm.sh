@@ -1,4 +1,13 @@
 #!/bin/bash
+#new thing:
+# ok, that works. But bmp is much bigger than xpm blowing up the
+# resources and therefore executable size.
+# So better stick with the old style
+#cd objects
+#lazres ../../gllazarusobjects.lrs `find -iname "*.bmp"`
+#cd ..
+
+#old thing:
 find objects/ -iname "*.bmp" -exec cp {} objects_lcl/ \;
 cd objects_lcl
 for nbmp in `find -iname "*.bmp"`; do
@@ -9,8 +18,10 @@ done
 rm *.bmp
 lazres ../../gllazarusobjects.lrs *.xpm
 cd ..
+# end good old thing
 
 # now vcl
+# TODO: try to use the bmp files here, too
 
 find vcl/ -iname "*.bmp" -exec cp {} lcl/ \;
 cd lcl

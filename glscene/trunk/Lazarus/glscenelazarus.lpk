@@ -33,7 +33,7 @@
     <Description Value="GLScene - OpenGL 3D library"/>
     <License Value="LGPL"/>
     <Version Major="1" Build="3"/>
-    <Files Count="176">
+    <Files Count="177">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -754,6 +754,10 @@
         <Filename Value="../Source/glmaterial.pas"/>
         <UnitName Value="GLMaterial"/>
       </Item176>
+      <Item177>
+        <Filename Value="../Source/globjectmanager.pas"/>
+        <UnitName Value="globjectmanager"/>
+      </Item177>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="4">
