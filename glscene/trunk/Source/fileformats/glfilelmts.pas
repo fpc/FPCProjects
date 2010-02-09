@@ -33,7 +33,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Windows, Graphics, Classes, SysUtils,
+uses {$IFDEF Windows}Windows,{$ENDIF} Graphics, Classes, SysUtils,
      GLVectorFileObjects, ApplicationFileIO, VectorLists, VectorGeometry,
      GLTexture, PersistentClasses, OpenGL1x, GLGraphics, GLMaterial;
 

@@ -3,16 +3,14 @@
 //
 {: GLSceneRegister<p>
 
-   This is a clone of GLSceneRegister modified for use with Lazarus.<p>
-   
    Registration unit for GLScene library components, property editors and
       IDE experts.<p>
 
-
-
-
-
 	<b>History : </b><font size=-1><ul>
+      <li>08/10/08 - DanB - Added DynamicTexture unit (to allow choosing this at designtime)
+                            + register TGLSLPostBlurShader
+      <li>05/10/08 - DanB - Change required due Texture/TextureImageEditor separation
+                            + GLMisc split, tidied up some old ifdefs
       <li>24/03/08 - DaStr - Moved TGLMinFilter and TGLMagFilter from GLUtils.pas
                               to GLGraphics.pas (BugTracker ID = 1923844)  
       <li>21/03/08 - DaStr - Renamed TMMat to TGLTextureSharingShaderMaterial 
@@ -95,7 +93,8 @@ interface
 
 uses
    {$ifdef windows}windows,{$endif}
-   classes, controls, stdctrls, dialogs, glscene, lresources, propedits, lclintf, ComponentReg;
+   Classes, Controls, StdCtrls, GLScene,
+   lresources, propedits, lclintf, ComponentReg;
 
 
 type
@@ -118,9 +117,7 @@ type
          { Private Declarations }
          FSceneObjectList : TList;
          FObjectIcons : TImageList;       // a list of icons for scene objects
-         {.$ifdef WINDOWS}
          FOverlayIndex,                   // indices into the object icon list
-         {.$endif}
          FSceneRootIndex,
          FCameraRootIndex,
          FLightsourceRootIndex,
@@ -181,7 +178,7 @@ implementation
 // ------------------------------------------------------------------
 
 uses
-   TypInfo, VectorGeometry, GLTexture, SysUtils, GLCrossPlatform, GLStrings,
+   Graphics, Dialogs, TypInfo, VectorGeometry, GLTexture, SysUtils, GLCrossPlatform, GLStrings,
    GLObjects, GLVectorFileObjects, GLExtrusion, GLMultiPolygon, GLMesh, GLPortal,
    GLGraph, GLParticles, GLHUDObjects, GLSkydome, GLBitmapFont, GLLensFlare,
    GLMirror, GLParticleFX, GLShadowPlane, GLTerrainRenderer, GLShadowVolume,
@@ -191,7 +188,7 @@ uses
    GLCadencer, GLCollision, GLHeightData, GLzBuffer, GLGui, GLBumpmapHDS,
    AsyncTimer, GLWindows, GLWindowsFont, GLHeightTileFileHDS, GLTexturedHDS,
    GLAnimatedSprite, GLFeedback, GLProjectedTextures, GLBlur, GLTrail, GLPerlin,
-   GLLinePFX, GLScriptBase, GLGameMenu, GLEParticleMasksManager,
+   GLLinePFX, GLScriptBase, GLGameMenu, GLEParticleMasksManager, {GLAVIRecorder,}
    GLTimeEventsMgr, GLNavigator, GLMaterialScript, GLFPSMovement, GLDCE,
    ApplicationFileIO,  GLScreen, GLVfsPAK, GLSimpleNavigation,
    GLAsyncHDS, GLConsole, GLAtmosphere, GLProxyObjects, GLMaterialMultiProxy,
@@ -200,17 +197,25 @@ uses
    GLTexCombineShader, GLCelShader, GLOutlineShader, GLMultiMaterialShader,
    GLBumpShader, GLHiddenLineShader, GLUserShader, GLShadowHDS, GLSLProjectedTextures,
    GLSound, GLSoundFileObjects,
-   Graphics,
    GLColor, GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics, GLCoordinates,
    GLRenderContextInfo, GLNodes,
-   GLMaterial,
-   GLDynamicTexture, BaseClasses,
+   GLMaterial, GLDynamicTexture, GLSLPostBlurShader, BaseClasses,
+   {}
+   // Image file formats
+   {Uses ScanLine, needs fixing: DDS,} TGA,
+   // Vector file formats
+   GLFile3DS, GLFileASE, GLFileB3D, GLFileGL2, GLFileGTS, GLFileLMTS,
+   GLFileLWO, GLFileMD2, GLFileMD3, GLFileMD5, GLFileMDC, GLFileMS3D, GLFileNMF,
+   GLFileNurbs, GLFileObj, {Uses ScanLine, needs fixing: GLFileOCT,} GLFilePLY, GLFileQ3BSP, GLFileSMD, GLFileSTL,
+   GLFileTIN, GLFileVRML
+
+
    {$ifdef windows}
-     gllclfullscreenviewer, GLSpaceText, Joystick, ScreenSaver,
+     ,gllclfullscreenviewer, GLSpaceText, Joystick, ScreenSaver
      //GLWideBitmapFont,  doesn't even compile in win due to missing TTextRecA
      //GLAVIRecorder, doesn't even compile in win due to missing commDlg
    {$endif}
-   componenteditors
+   ,componenteditors
    {,glsdlcontext,glscriptbase,}
    ;
 
@@ -1480,11 +1485,11 @@ begin
                        TGLCadencer,
                        TGLGuiLayout,
                        TGLBitmapFont, TGLWindowsBitmapFont, TGLStoredBitmapFont,
+                       //Don't know whats missing to include this one: ,TGLWideBitmapFont
                        TGLScriptLibrary,
                        TGLSoundLibrary
                        {$ifdef WINDOWS}
                        ,TGLFullScreenViewer
-                       //,TGLWideBitmapFont
                        {$endif}
                       ]);
 
@@ -1523,13 +1528,14 @@ begin
                         TGLHiddenLineShader, TGLCelShader, TGLOutlineShader,
                         TGLMultiMaterialShader, TGLBumpShader,
                         TGLSLShader, TGLSLDiffuseSpecularShader, TGLSLBumpShader,
-                        TGLAsmShader,TGLShaderCombiner,TGLTextureSharingShader
+                        TGLAsmShader,TGLShaderCombiner,TGLTextureSharingShader,
+                        TGLSLPostBlurShader
                       ]);
 
    RegisterComponentEditor(TGLSceneViewer, TGLSceneViewerEditor);
    RegisterComponentEditor(TGLScene, TGLSceneEditor);
-
 //   RegisterComponentEditor(TGLMaterialLibrary, TGLMaterialLibraryEditor);
+
 
    RegisterPropertyEditor(TypeInfo(TResolution), nil, '', TResolutionProperty);
    RegisterPropertyEditor(TypeInfo(TGLTexture), TGLMaterial, '', TGLTextureProperty);
