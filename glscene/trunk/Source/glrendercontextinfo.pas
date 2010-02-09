@@ -6,6 +6,8 @@
    Stores contextual info useful during rendering methods.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>09/10/08 - DanB - Added TRenderContextClippingInfo + IsVolumeClipped
+                            functions from VectorGeometry.pas, added nearClippingDistance
       <li>05/10/08 - DanB - Created from GLTexture.pas split
    </ul></font>
 }
@@ -60,6 +62,17 @@ type
       board, it may be faster not to cull at all (ie. leave this to the hardware). }
    TGLVisibilityCulling = (vcInherited, vcNone, vcObjectBased, vcHierarchical);
 
+   // TRenderContextClippingInfo
+   //
+   TRenderContextClippingInfo = record
+      origin : TVector;
+      clippingDirection : TVector;
+      viewPortRadius : Single; // viewport bounding radius per distance unit
+      nearClippingDistance : Single;
+      farClippingDistance : Single;
+      frustum : TFrustum;
+   end;
+
    // TRenderContextInfo
    //
    {: Stores contextual info useful during rendering methods. }
@@ -90,6 +103,49 @@ type
    end;
    PRenderContextInfo = ^TRenderContextInfo;
 
+function IsVolumeClipped(const objPos : TVector; const objRadius : Single;
+                         const rcci : TRenderContextClippingInfo) : Boolean; overload;
+function IsVolumeClipped(const objPos : TAffineVector; const objRadius : Single;
+                         const rcci : TRenderContextClippingInfo) : Boolean; overload;
+function IsVolumeClipped(const min, max : TAffineVector;
+                         const rcci : TRenderContextClippingInfo) : Boolean; overload;
+
+
 implementation
+
+// IsVolumeClipped
+//
+function IsVolumeClipped(const objPos : TVector; const objRadius : Single;
+                         const rcci : TRenderContextClippingInfo) : Boolean;
+begin
+   Result:=IsVolumeClipped(PAffineVector(@objPos)^, objRadius, rcci);
+end;
+
+// IsVolumeClipped
+//
+function IsVolumeClipped(const objPos : TAffineVector; const objRadius : Single;
+                         const rcci : TRenderContextClippingInfo) : Boolean;
+var
+   negRadius : Single;
+begin
+   negRadius:=-objRadius;
+   Result:=   (PlaneEvaluatePoint(rcci.frustum.pLeft, objPos)<negRadius)
+           or (PlaneEvaluatePoint(rcci.frustum.pTop, objPos)<negRadius)
+           or (PlaneEvaluatePoint(rcci.frustum.pRight, objPos)<negRadius)
+           or (PlaneEvaluatePoint(rcci.frustum.pBottom, objPos)<negRadius)
+           or (PlaneEvaluatePoint(rcci.frustum.pNear, objPos)<negRadius)
+           or (PlaneEvaluatePoint(rcci.frustum.pFar, objPos)<negRadius);
+end;
+
+// IsVolumeClipped
+//
+function IsVolumeClipped(const min, max : TAffineVector;
+                         const rcci : TRenderContextClippingInfo) : Boolean;
+begin
+   // change box to sphere
+   Result:=IsVolumeClipped(VectorScale(VectorAdd(min, max), 0.5),
+                           VectorDistance(min, max)*0.5, rcci);
+end;
+
 
 end.

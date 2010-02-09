@@ -31,26 +31,9 @@
    routines if you want to support these. All AMD processors after K5, and
    all Intel processors after Pentium should be immune to this.<p>
 
-      $Log: vectorgeometry.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:43  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2006/01/08 21:04:12  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>09/10/08 - DanB - moved TRenderContextClippingInfo + IsVolumeClipped functions that
+                            use TRenderContextClippingInfo to GLRenderContextInfo.pas
       <li>21/02/07 - DaStr - Bugfixed InterpolatePower() to support negative Base
                                and not round Exponent parameters
       <li>12/02/08 - Mrqzzz - Removed cPIdiv360, not needed anymore, by Pete,Dan Bartlett
@@ -415,16 +398,6 @@ type
    // [Sx][Sy][Sz][ShearXY][ShearXZ][ShearZY][Rx][Ry][Rz][Tx][Ty][Tz][P(x,y,z,w)]
    // constants are declared for easier access (see MatrixDecompose below)
    TTransformations  = array [TTransType] of Single;
-
-   // TRenderContextClippingInfo
-   //
-   TRenderContextClippingInfo = record
-      origin : TVector;
-      clippingDirection : TVector;
-      viewPortRadius : Single; // viewport bounding radius per distance unit
-      farClippingDistance : Single;
-      frustum : TFrustum;
-   end;
 
    TPackedRotationMatrix = array [0..2] of SmallInt;
 
@@ -1540,7 +1513,7 @@ function Roll(const Matrix: TMatrix; const MasterDirection: TAffineVector; Angle
    <li>-1 : line is inside plane
    </ul><br>
    Adapted from:<br>
-   E.Hartmann, Computerunterstützte Darstellende Geometrie, B.G. Teubner Stuttgart 1988 }
+   E.Hartmann, Computerunterstï¿½tzte Darstellende Geometrie, B.G. Teubner Stuttgart 1988 }
 function IntersectLinePlane(const point, direction : TVector;
                             const plane : THmgPlane;
                             intersectPoint : PVector = nil) : Integer; overload;
@@ -1610,12 +1583,6 @@ function SphereVisibleRadius(distance, radius : Single) : Single;
 function ExtractFrustumFromModelViewProjection(const modelViewProj : TMatrix) : TFrustum;
 
 //: Determines if volume is clipped or not
-function IsVolumeClipped(const objPos : TVector; const objRadius : Single;
-                         const rcci : TRenderContextClippingInfo) : Boolean; overload;
-function IsVolumeClipped(const objPos : TAffineVector; const objRadius : Single;
-                         const rcci : TRenderContextClippingInfo) : Boolean; overload;
-function IsVolumeClipped(const min, max : TAffineVector;
-                         const rcci : TRenderContextClippingInfo) : Boolean; overload;
 function IsVolumeClipped(const objPos : TAffineVector; const objRadius : Single;
                          const Frustum : TFrustum) : Boolean; overload;
 
@@ -9436,12 +9403,12 @@ function SphereVisibleRadius(distance, radius : Single) : Single;
 var
    d2, r2, ir, tr : Single;
 begin
-   {  ir² + r² = d²
-      r² + tr² = vr²
-      vr² + d² = (ir+tr)² = ir² + 2.ir.tr + tr²
+   {  irï¿½ + rï¿½ = dï¿½
+      rï¿½ + trï¿½ = vrï¿½
+      vrï¿½ + dï¿½ = (ir+tr)ï¿½ = irï¿½ + 2.ir.tr + trï¿½
 
-      ir² + 2.ir.tr + tr² = d² + r² + tr²
-      2.ir.tr = d² + r² - ir²  }
+      irï¿½ + 2.ir.tr + trï¿½ = dï¿½ + rï¿½ + trï¿½
+      2.ir.tr = dï¿½ + rï¿½ - irï¿½  }
    d2:=distance*distance;
    r2:=radius*radius;
    ir:=Sqrt(d2-r2);
@@ -9718,30 +9685,6 @@ end;
 
 // IsVolumeClipped
 //
-function IsVolumeClipped(const objPos : TVector; const objRadius : Single;
-                         const rcci : TRenderContextClippingInfo) : Boolean;
-begin
-   Result:=IsVolumeClipped(PAffineVector(@objPos)^, objRadius, rcci);
-end;
-
-// IsVolumeClipped
-//
-function IsVolumeClipped(const objPos : TAffineVector; const objRadius : Single;
-                         const rcci : TRenderContextClippingInfo) : Boolean;
-var
-   negRadius : Single;
-begin
-   negRadius:=-objRadius;
-   Result:=   (PlaneEvaluatePoint(rcci.frustum.pLeft, objPos)<negRadius)
-           or (PlaneEvaluatePoint(rcci.frustum.pTop, objPos)<negRadius)
-           or (PlaneEvaluatePoint(rcci.frustum.pRight, objPos)<negRadius)
-           or (PlaneEvaluatePoint(rcci.frustum.pBottom, objPos)<negRadius)
-           or (PlaneEvaluatePoint(rcci.frustum.pNear, objPos)<negRadius)
-           or (PlaneEvaluatePoint(rcci.frustum.pFar, objPos)<negRadius);
-end;
-
-// IsVolumeClipped
-//
 function IsVolumeClipped(const objPos : TAffineVector; const objRadius : Single;
                          const Frustum : TFrustum) : Boolean;
 var
@@ -9754,16 +9697,6 @@ begin
            or (PlaneEvaluatePoint(frustum.pBottom, objPos)<negRadius)
            or (PlaneEvaluatePoint(frustum.pNear, objPos)<negRadius)
            or (PlaneEvaluatePoint(frustum.pFar, objPos)<negRadius);
-end;
-
-// IsVolumeClipped
-//
-function IsVolumeClipped(const min, max : TAffineVector;
-                         const rcci : TRenderContextClippingInfo) : Boolean;
-begin
-   // change box to sphere
-   Result:=IsVolumeClipped(VectorScale(VectorAdd(min, max), 0.5),
-                           VectorDistance(min, max)*0.5, rcci);
 end;
 
 // MakeParallelProjectionMatrix

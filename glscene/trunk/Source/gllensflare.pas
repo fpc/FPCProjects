@@ -6,6 +6,8 @@
    Lens flare object.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/10/08 - DanB - changed Lensflare buildlists to use rci.cameraPosition instead
+                            of Scene.CurrentGLCamera.DistanceTo
       <li>08/08/07 - Lin - Bugfix for AutoZTest:
                            Lensflare is no longer occluded by objects BEHIND the flare.
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -611,7 +613,7 @@ begin
          //Compares the distance to the lensflare, to the z-buffer depth.
          //This prevents the flare from being occluded by objects BEHIND the light.
          depth:=Scene.CurrentBuffer.PixelToDistance(Round(ScreenPos[0]),Round(rci.viewPortSize.cy-ScreenPos[1]));
-         dist:=Scene.CurrentGLCamera.DistanceTo(self);
+         dist:=VectorDistance(rci.cameraPosition,self.AbsolutePosition);
          FlareIsNotOccluded:=((dist-depth)<1);
       end;
    end;

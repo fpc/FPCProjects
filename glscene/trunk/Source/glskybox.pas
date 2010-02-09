@@ -7,6 +7,8 @@
    for use as a skybox always centered on the camera.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/10/08 - DanB - changed Skybox DoRender to use rci instead
+                            of Scene.CurrentGLCamera
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
@@ -165,8 +167,7 @@ begin
    SetVector(transMat[3], ARci.cameraPosition);
    glMultMatrixf(@transMat);
    
-   with Scene.CurrentGLCamera do
-      f:=(NearPlane+DepthOfView)*0.5;
+   f := ARci.rcci.farClippingDistance*0.5;
    glScalef(f, f, f);
 
    glGetFloatv(GL_MODELVIEW_MATRIX, @mvMat);

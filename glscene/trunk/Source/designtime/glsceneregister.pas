@@ -199,7 +199,7 @@ uses
    GLSound, GLSoundFileObjects,
    GLColor, GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics, GLCoordinates,
    GLRenderContextInfo, GLNodes,
-   GLMaterial, GLDynamicTexture, GLSLPostBlurShader, BaseClasses,
+   GLMaterial, GLDynamicTexture, GLSLPostBlurShader, BaseClasses, GLExplosionFx,
    {}
    // Image file formats
    {Uses ScanLine, needs fixing: DDS,} TGA,

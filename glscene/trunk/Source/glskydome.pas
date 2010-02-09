@@ -6,6 +6,8 @@
    Skydome object<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/10/08 - DanB - changed Skydome buildlists to use rci instead
+                            of Scene.CurrentGLCamera
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Moved all UNSAFE_TYPE, UNSAFE_CODE checks to GLSCene.inc
       <li>25/03/07 - DaStr - Fixed compiler directives for Delphi5 compatibility
@@ -904,8 +906,7 @@ begin
    glDepthMask(False);
    glPolygonMode(GL_FRONT, GL_FILL);
 
-   with Scene.CurrentGLCamera do
-      f:=(NearPlane+DepthOfView)*0.90;
+   f:=rci.rcci.farClippingDistance*0.90;
    glScalef(f, f, f);
 
    Bands.BuildList(rci);
@@ -1086,8 +1087,7 @@ begin
    glDepthMask(False);
    glPolygonMode(GL_FRONT, GL_FILL);
 
-   with Scene.CurrentGLCamera do
-      f:=(NearPlane+DepthOfView)*0.95;
+   f:=rci.rcci.farClippingDistance*0.95;
    glScalef(f, f, f);
 
    RenderDome;
