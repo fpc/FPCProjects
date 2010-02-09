@@ -9,6 +9,7 @@
    You can change current PAK file by ActivePak variable.<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>16/10/2008 - UweR - Compatibility fix for Delphi 2009
       <li>31/03/2007 - DaStr - Added $I GLScene.inc
       <li>29/01/2007 - DaStr - Moved registration to GLSceneRegister.pas
       <li>26/10/2006 - LC - Fixed memory leak in TGLVfsPAK.LoadFromFile. Bugtracker ID=1585215 (thanks Da Stranger)
@@ -46,7 +47,7 @@ type
    TZCompressedMode = (Good, Fast, Auto, None);
 
    TPakHeader = record
-      Signature: array[0..3] of char;
+      Signature: array[0..3] of AnsiChar;
       DirOffset: integer;
       DirLength: integer;
 {$IFDEF GLS_LZRW_SUPPORT}
@@ -55,7 +56,7 @@ type
    end;
 
    TFileSection = record
-      FileName: array[0..119] of char;
+      FileName: array[0..119] of AnsiChar;
       FilePos: integer;
       FileLength: integer;
    end;

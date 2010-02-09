@@ -16,6 +16,7 @@
    </ul><p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>25/03/08 - DanB - Added design-time support, linked to new OpenAL headers
                             (see OpenAL.pas).
       <li>??/??/03 - Mrqzz - Creation
@@ -360,7 +361,7 @@ end;
 //
 function TGLSMOpenAL.EAXSupported : Boolean;
 begin
-     result:= alIsExtensionPresent(PChar('EAX2.0'));
+     result:= alIsExtensionPresent(PAnsiChar('EAX2.0'));
 end;
 
 // GetDefaultFrequency

@@ -8,6 +8,7 @@
     to enable support for STL files at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>22/11/02 - EG - Write capability now properly declared
       <li>17/10/02 - EG - Created from split of GLVectorFileObjects,
                           ASCII STL support (Adem)
@@ -101,7 +102,7 @@ var
 
 var
    isBinary : Boolean;
-   headerBuf : array [0..cFULL_HEADER_LEN-1] of Char;
+   headerBuf : array [0..cFULL_HEADER_LEN-1] of AnsiChar;
    positionBackup : Integer;
    fileContent : TStringList;
    curLine : String;

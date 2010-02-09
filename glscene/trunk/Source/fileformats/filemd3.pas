@@ -5,6 +5,7 @@
   FileMD3 - File loading methods for the MD3 file format
 
   History :
+    16/10/08 - UweR - Compatibility fix for Delphi 2009
     19/12/04 - PhP - Replaced array definitions with predefined VectorTypes
     09/03/04 - SG - Small structure fixes (Osman Turan)
     28/02/03 - SG - Creation
@@ -19,7 +20,7 @@ type
   // Quake3 MD3 structure types
 
   TMD3Tag = record
-    strName: array[0..63] of char;
+    strName: array[0..63] of AnsiChar;
     vPosition: TVector3f;
     rotation: TMatrix3f;
   end;
@@ -36,7 +37,7 @@ type
     mins,maxs,
     position: TVector3f;
     scale: single;
-    creator: array[0..15] of char;
+    creator: array[0..15] of AnsiChar;
   end;
 
   TMD3Triangle = record
@@ -53,14 +54,14 @@ type
   end;
 
   TMD3Skin = record
-    strName : array[0..63] of char;
+    strName : array[0..63] of AnsiChar;
     shaderIndex: Integer;
   end;
 
   TMD3Header = record
-    fileID     : array[0..3] of char;
+    fileID     : array[0..3] of AnsiChar;
     version    : integer;
-    strFile    : array[0..63] of char;
+    strFile    : array[0..63] of AnsiChar;
     flags,
     numFrames,
     numTags,
@@ -73,8 +74,8 @@ type
   end;
 
   TMD3MeshHeader = record
-    meshID        : array[0..3] of char;
-    strName       : array[0..63] of char;
+    meshID        : array[0..3] of AnsiChar;
+    strName       : array[0..63] of AnsiChar;
     flags,
     numMeshFrames,
     numSkins,

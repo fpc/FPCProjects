@@ -6,6 +6,8 @@
   OpenGL windows management classes and structures<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/10/08 - DanB - reversed order of vertices in TGLCustomControl.InternalRender,
+                            which fixes the GUIPaint demo
       <li>27/04/08 - DaStr - Fixed bug in TGLButton.InternalRender()
                              (thanks Nicoara Adrian) (BugtrackerID = 1952711)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -1722,17 +1724,19 @@ Begin
   GuiLayout.Material.UnApply(rci);
   Material.Apply(rci);
   glBegin(GL_QUADS);
-    glTexCoord2f( 0, 0);
-    glVertex2f(X1,Y2);
-
-    glTexCoord2f( 0, -FYTexCoord);
-    glVertex2f(X1,Y1);
 
     glTexCoord2f( FXTexCoord, -FYTexCoord);
-    glVertex2f(X2,Y1);
+    glVertex2f(X2,Y2);
 
     glTexCoord2f( FXTexCoord, 0);
-    glVertex2f(X2,Y2);
+    glVertex2f(X2,Y1);
+
+    glTexCoord2f( 0, 0);
+    glVertex2f(X1,Y1);
+
+    glTexCoord2f( 0, -FYTexCoord);
+    glVertex2f(X1,Y2);
+
   glEnd();
 
   Material.UnApply(rci);

@@ -8,6 +8,7 @@
     Original code by Osman Turan (osmanturancom@yahoo.com)<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>18/12/04 - PhP - fixed constants, improve performance
       <li>11/05/04 - SG - Added to CVS
       <li>07/02/04 - OT - Creation (Osman Turan)
@@ -32,9 +33,9 @@ type
   TMDCAngle = TMDCPoint;
 
   TMDCFileHeader = packed record
-    Ident              : array[0..3] of Char;
+    Ident              : array[0..3] of AnsiChar;
     Version            : Cardinal;
-    Name               : array[0..63] of Char;
+    Name               : array[0..63] of AnsiChar;
     Flags              : Cardinal;
     NumFrames          : Cardinal;
     NumTags            : Cardinal;
@@ -51,12 +52,12 @@ type
     BBMin, BBMax : TMDCPoint;
     LocalOrigin  : TMDCPoint;
     Radius       : Single;
-    Name         : array[0..15] of Char;
+    Name         : array[0..15] of AnsiChar;
   end;
 
   PMDCTagName = ^TMDCTagName;
   TMDCTagName = packed record
-    Name: array[0..63] of Char;
+    Name: array[0..63] of AnsiChar;
   end;
 
   PMDCTagFrame = ^TMDCTagFrame;
@@ -71,8 +72,8 @@ type
   end;
 
   TMDCSurfaceHeader = packed record
-    Ident                 : array[0..3] of Char;
-    Name                  : array[0..63] of Char;
+    Ident                 : array[0..3] of AnsiChar;
+    Name                  : array[0..63] of AnsiChar;
     Flags                 : Cardinal;
     NumCompFrames         : Cardinal;
     NumBaseFrames         : Cardinal;
@@ -92,7 +93,7 @@ type
   TMDCTriangle = array[0..2] of Cardinal;
 
   TMDCSkin = packed record
-    Shader : array[0..63] of Char;
+    Shader : array[0..63] of AnsiChar;
     Flags  : Cardinal;
   end;
 

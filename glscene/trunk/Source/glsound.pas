@@ -3,6 +3,7 @@
 	Base classes and interface for GLScene Sound System<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>22/07/02 - EG - SetMute/SetPause fix (Sternas Stefanos)
       <li>02/07/02 - EG - Persistence fix (MP3 / Sternas Stefanos)
       <li>05/03/02 - EG - TGLBSoundEmitter.Loaded
@@ -604,7 +605,7 @@ end;
 procedure TGLSoundSample.ReadData(Stream: TStream);
 var
    n : Integer;
-   clName : String;
+   clName : AnsiString;
 begin
    with Stream do begin
       Read(n, SizeOf(Integer));
@@ -621,7 +622,7 @@ end;
 procedure TGLSoundSample.WriteData(Stream: TStream);
 var
    n : Integer;
-   buf : String;
+   buf : AnsiString;
 begin
    with Stream do begin
       n:=Length(FData.ClassName);

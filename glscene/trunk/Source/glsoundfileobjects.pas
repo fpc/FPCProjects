@@ -7,6 +7,7 @@
    These classes work together like vector file formats or Delphi's TGraphic classes.<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>07/06/07 - DaStr - Added $I GLScene.inc
       <li>26/01/05 - JAJ - Removed leak formed by never freeing vSoundFileFormats.
                             Reported by Dikoe Kenguru.
@@ -116,7 +117,7 @@ type
          { Public Declarations }
          waveFormat : TWaveFormatEx;
          pcmOffset : Integer;
-         data : String; // used to store WAVE bitstream
+         data : array of Byte; // used to store WAVE bitstream
 
       protected
          { Protected Declarations }
@@ -145,7 +146,7 @@ type
    TGLGenericSoundFile = class (TGLSoundFile)
       private
          { Public Declarations }
-         data : String; // used to store full bitstream including header
+         data : array of byte; // used to store full bitstream including header
 
       protected
          { Protected Declarations }
@@ -452,7 +453,7 @@ begin
    Result:=inherited CreateCopy(AOwner);
    if Assigned(Result) then begin
       TGLWAVFile(Result).waveFormat:=waveFormat;
-      TGLWAVFile(Result).data:=data;
+      TGLWAVFile(Result).data := Copy(data);
    end;
 end;
 
@@ -516,7 +517,7 @@ begin
    SetLength(data, totalSize);
    stream.Position:=startPosition;
    if totalSize>0 then
-      stream.Read(data[1], totalSize);
+      stream.Read(data[0], totalSize);
    // update Sampling data
    with waveFormat do begin
       Sampling.Frequency:=nSamplesPerSec;
@@ -530,7 +531,7 @@ end;
 procedure TGLWAVFile.SaveToStream(stream: TStream);
 begin
    if Length(data)>0 then
-      stream.Write(data[1], Length(data));
+      stream.Write(data[0], Length(data));
 end;
 
 // PlayOnWaveOut
@@ -546,7 +547,7 @@ end;
 function TGLWAVFile.WAVData : Pointer;
 begin
    if Length(data)>0 then
-      Result:=@data[1]
+      Result:=@data[0]
    else Result:=nil;
 end;
 
@@ -562,7 +563,7 @@ end;
 function TGLWAVFile.PCMData : Pointer;
 begin
    if Length(data)>0 then
-      Result:=@data[1+pcmOffset]
+      Result:=@data[pcmOffset]
    else Result:=nil;
 end;
 
@@ -584,7 +585,7 @@ function TGLGenericSoundFile.CreateCopy(AOwner: TPersistent) : TDataFile;
 begin
    Result:=inherited CreateCopy(AOwner);
    if Assigned(Result) then begin
-      TGLGenericSoundFile(Result).data:=data;
+      TGLGenericSoundFile(Result).data:=copy(data);
    end;
 end;
 
@@ -603,7 +604,7 @@ begin
    Assert(Assigned(stream));
    SetLength(data, stream.Size);
    if Length(data)>0 then
-      stream.Read(data[1], Length(data));
+      stream.Read(data[0], Length(data));
 end;
 
 // SaveToStream
@@ -611,7 +612,7 @@ end;
 procedure TGLGenericSoundFile.SaveToStream(stream: TStream);
 begin
    if Length(data)>0 then
-      stream.Write(data[1], Length(data));
+      stream.Write(data[0], Length(data));
 end;
 
 // PlayOnWaveOut
@@ -626,7 +627,7 @@ end;
 function TGLGenericSoundFile.WAVData : Pointer;
 begin
    if Length(data)>0 then
-      Result:=@data[1]
+      Result:=@data[0]
    else Result:=nil;
 end;
 

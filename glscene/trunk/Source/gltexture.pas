@@ -6,6 +6,7 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>17/10/08 - DanB - changed some NotifyChange(Sender) calls to NotifyChange(Self)
       <li>08/10/08 - DanB - split materials related stuff into GLMaterial.pas
       <li>06/10/08 - DanB - added Assert check for trying to create texture images
       <li>05/10/08 - DanB - separated texture image editor from texture unit
@@ -1292,8 +1293,8 @@ end;
 //
 procedure TGLBlankImage.SaveToFile(const fileName : String);
 begin
-   SaveStringToFile(fileName, '[BlankImage]'#13#10'Width='+IntToStr(Width)
-                              +#13#10'Height='+IntToStr(Height));
+   SaveAnsiStringToFile(fileName, '[BlankImage]'#13#10'Width='+IntToStr(Width)
+                                  +#13#10'Height='+IntToStr(Height));
 end;
 
 // LoadFromFile
@@ -1309,7 +1310,7 @@ begin
    if FileExists(buf) then begin
       sl:=TStringList.Create;
       try
-         sl.LoadFromFile(buf);
+         sl.LoadFromFile(buf{$IFDEF GLS_DELPHI_2009_UP},TEncoding.ASCII{$ENDIF});
          FWidth:=StrToInt(sl.Values['Width']);
          FHeight:=StrToInt(sl.Values['Height']);
       finally
@@ -1632,7 +1633,7 @@ end;
 //
 procedure TGLPicFileImage.SaveToFile(const fileName : String);
 begin
-	SaveStringToFile(fileName, PictureFileName);
+	SaveAnsiStringToFile(fileName, PictureFileName);
 end;
 
 // LoadFromFile
@@ -1645,7 +1646,7 @@ begin
    // attempt to autodetect if we are pointed to a file containing
    // a filename or directly to an image
    if SizeOfFile(fileName)<512 then begin
-   	buf:=LoadStringFromFile(fileName);
+   	buf:=LoadAnsiStringFromFile(fileName);
       if Pos(#0, buf)>0 then
          PictureFileName:=fileName
       else PictureFileName:=buf;
@@ -1964,7 +1965,7 @@ procedure TGLTexture.NotifyChange(Sender : TObject);
 begin
   if Assigned(Owner) then begin
     if Owner is TGLTextureExItem then
-      TGLTextureExItem(Owner).NotifyChange(Sender);
+      TGLTextureExItem(Owner).NotifyChange(Self);
   end;
 
   inherited;
@@ -2875,7 +2876,7 @@ end;
 procedure TGLTextureExItem.NotifyChange(Sender : TObject);
 begin
   if Assigned(Collection) then
-    TGLTextureEx(Collection).NotifyChange(Sender);
+    TGLTextureEx(Collection).NotifyChange(Self);
 end;
 
 // Apply
@@ -3023,7 +3024,7 @@ end;
 procedure TGLTextureEx.NotifyChange(Sender : TObject);
 begin
   if Assigned(FOwner) then
-    FOwner.NotifyChange(Sender);
+    FOwner.NotifyChange(Self);
 end;
 
 // Apply
@@ -3208,8 +3209,8 @@ end;
 //
 procedure TGLFloatDataImage.SaveToFile(const fileName : String);
 begin
-   SaveStringToFile(fileName, '[FloatDataImage]'#13#10'Width='+IntToStr(Width)
-                              +#13#10'Height='+IntToStr(Height));
+   SaveAnsiStringToFile(fileName, '[FloatDataImage]'#13#10'Width='+IntToStr(Width)
+                                  +#13#10'Height='+IntToStr(Height));
 end;
 
 // LoadFromFile
@@ -3225,7 +3226,7 @@ begin
    if FileExists(buf) then begin
       sl:=TStringList.Create;
       try
-         sl.LoadFromFile(buf);
+         sl.LoadFromFile(buf{$IFDEF GLS_DELPHI_2009_UP},TEncoding.ASCII{$ENDIF});
          FWidth:=StrToInt(sl.Values['Width']);
          FHeight:=StrToInt(sl.Values['Height']);
       finally

@@ -5,26 +5,9 @@
 
    Miscellaneous support utilities & classes.<p>
 
-      $Log: glutils.pas,v $
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.4  2006/01/09 20:45:51  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2006/01/08 21:04:12  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - corrected typo in TryStringToColorAdvanced parameter
+      <li>16/10/08 - DanB - renamed Save/LoadStringFromFile to Save/LoadAnsiStringFromFile
       <li>24/03/08 - DaStr - Removed OpenGL1x dependancy
                              Moved TGLMinFilter and TGLMagFilter from GLUtils.pas
                               to GLGraphics.pas (BugTracker ID = 1923844)
@@ -65,9 +48,9 @@ function RoundDownToPowerOf2(value : Integer): Integer;
 function IsPowerOf2(value : Integer) : Boolean;
 {: Read a CRLF terminated string from a stream.<p>
    The CRLF is NOT in the returned string. }
-function ReadCRLFString(aStream : TStream) : String;
+function ReadCRLFString(aStream : TStream) : AnsiString;
 //: Write the string and a CRLF in the stream
-procedure WriteCRLFString(aStream : TStream; const aString : String);
+procedure WriteCRLFString(aStream : TStream; const aString : AnsiString);
 //: TryStrToFloat
 function TryStrToFloat(const strValue : String; var val : Extended) : Boolean;
 //: StrToFloatDef
@@ -76,7 +59,7 @@ function StrToFloatDef(const strValue : String; defValue : Extended = 0) : Exten
 //: Converts a string into color
 function StringToColorAdvancedSafe(const Str: string; const Default: TColor): TColor;
 //: Converts a string into color
-function TryStringToColorAdvanced(const Str: string; var OutColot: TColor): Boolean;
+function TryStringToColorAdvanced(const Str: string; var OutColor: TColor): Boolean;
 //: Converts a string into color
 function StringToColorAdvanced(const Str: string): TColor;
 
@@ -90,9 +73,9 @@ function ParseInteger(var p : PChar) : Integer;
 function ParseFloat(var p : PChar) : Extended;
 
 {: Saves "data" to "filename". }
-procedure SaveStringToFile(const fileName, data : String);
+procedure SaveAnsiStringToFile(const fileName: String; const data : AnsiString);
 {: Returns the content of "filename". }
-function LoadStringFromFile(const fileName : String) : String;
+function LoadAnsiStringFromFile(const fileName : String) : AnsiString;
 
 {: Saves component to a file. }
 procedure SaveComponentToFile(const Component: TComponent; const FileName: string; const AsText: Boolean = True);
@@ -171,10 +154,10 @@ end;
 
 // ReadCRLFString
 //
-function ReadCRLFString(aStream : TStream) : String;
+function ReadCRLFString(aStream : TStream) : AnsiString;
 var
-   c : Char;
-   CR, LF: Char;
+   c : AnsiChar;
+   CR, LF: AnsiChar;
 begin
    Result := '';
    CR := #0;
@@ -190,7 +173,7 @@ end;
 
 // WriteCRLFString
 //
-procedure WriteCRLFString(aStream : TStream; const aString : String);
+procedure WriteCRLFString(aStream : TStream; const aString : AnsiString);
 const
    cCRLF : Integer = $0A0D;
 begin
@@ -303,7 +286,7 @@ end;
 
 // TryStringToColorAdvanced
 //
-function TryStringToColorAdvanced(const Str: string; var OutColot: TColor): Boolean;
+function TryStringToColorAdvanced(const Str: string; var OutColor: TColor): Boolean;
 var
   Code, I: Integer;
   Temp:    string;
@@ -313,18 +296,18 @@ begin
 
   Val(Temp, I, Code); //to see if it is a number
   if Code = 0 then
-    OutColot := TColor(I)                                       //Str = $0000FF
+    OutColor := TColor(I)                                       //Str = $0000FF
   else
   begin
-    if not IdentToColor(Temp, Longint(OutColot)) then           //Str = clRed
+    if not IdentToColor(Temp, Longint(OutColor)) then           //Str = clRed
     begin
       if AnsiStartsText('clr', Temp) then                       //Str = clrRed
       begin
         Delete(Temp, 3, 1);
-        if not IdentToColor(Temp, Longint(OutColot)) then
+        if not IdentToColor(Temp, Longint(OutColor)) then
           Result := False;
       end
-      else if not IdentToColor('cl' + Temp, Longint(OutColot)) then //Str = Red
+      else if not IdentToColor('cl' + Temp, Longint(OutColor)) then //Str = Red
         Result := False;
     end;
   end;
@@ -422,7 +405,7 @@ end;
 
 // SaveStringToFile
 //
-procedure SaveStringToFile(const fileName, data : String);
+procedure SaveAnsiStringToFile(const fileName: String; const data : AnsiString);
 var
    n : Cardinal;
 	fs : TStream;
@@ -439,7 +422,7 @@ end;
 
 // LoadStringFromFile
 //
-function LoadStringFromFile(const fileName : String) : String;
+function LoadAnsiStringFromFile(const fileName : String) : AnsiString;
 var
    n : Cardinal;
 	fs : TStream;

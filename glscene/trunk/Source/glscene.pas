@@ -6,6 +6,10 @@
    Base classes and structures for GLScene.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>24/11/08 - DanB - TGLBaseSceneObject.Assign no longer changes scene of
+                            destination object (thanks Alan G.)
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
+                            changed PChar to Pointer where possible   
       <li>12/10/08 - DanB - added nearClippingDistance to RCI
       <li>09/10/08 - DanB - removed TGLScene.RenderedObject, moved TGLProgressEvent
                             to BaseClasses
@@ -3636,7 +3640,6 @@ begin
       FVisibilityCulling:=TGLBaseSceneObject(Source).FVisibilityCulling;
       FRotation.Assign(TGLBaseSceneObject(Source).FRotation);
       DeleteChildren;
-      SetScene(TGLBaseSceneObject(Source).FScene);
       if Assigned(Scene) then Scene.BeginUpdate;
       if Assigned(TGLBaseSceneObject(Source).FChildren) then begin
          for i:=0 to TGLBaseSceneObject(Source).FChildren.Count-1 do begin
@@ -7623,7 +7626,7 @@ procedure TGLSceneBuffer.CopyToTexture(aTexture : TGLTexture;
                                        forceCreateTexture : Boolean = False);
 var
    handle, bindTarget : Integer;
-   buf : PChar;
+   buf : Pointer;
    createTexture : Boolean;
 begin
    if RenderingContext<>nil then begin
@@ -8729,7 +8732,7 @@ procedure TGLNonVisualViewer.CopyToTextureMRT(aTexture: TGLTexture; xSrc,
   ySrc, width, height, xDest, yDest, BufferIndex: integer);
 var
    target, handle : Integer;
-   buf : PChar;
+   buf : Pointer;
    createTexture : Boolean;
 
    procedure CreateNewTexture;

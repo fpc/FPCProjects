@@ -240,7 +240,7 @@ begin
             if Assigned(currentLibMaterial4) and (n>=4) then begin
                with currentLibMaterial4.Material.Texture do begin
                   if Enabled then begin
-                     if currentLibMaterial3.TextureMatrixIsIdentity then
+                     if currentLibMaterial4.TextureMatrixIsIdentity then
                        ApplyAsTextureN(4, rci)
                      else
                        ApplyAsTextureN(4, rci, @currentLibMaterial4.TextureMatrix[0][0]);

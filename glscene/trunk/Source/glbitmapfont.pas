@@ -6,6 +6,7 @@
   Bitmap Fonts management classes for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - Removed unneeded typecast in TBitmapFontRange.SetStartGlyphIdx
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>22/12/06 - LC - Fixed TGLCustomBitmapFont.RenderString, it now unbinds the texture.
@@ -401,7 +402,7 @@ begin
    if val>=0 then
       FStartGlyphIdx:=val
    else FStartGlyphIdx:=0;
-   TBitmapFontRanges(Collection).NotifyChange;
+   NotifyChange;
 end;
 
 // ------------------

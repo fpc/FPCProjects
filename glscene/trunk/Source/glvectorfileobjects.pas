@@ -6,6 +6,8 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>16/01/09 - DanB - re-disable VBOs in display list to prevent AV on ATI cards
+      <li>27/11/08 - DanB - fix to TFGVertexIndexList.BuildList
       <li>05/10/08 - DaStr - Added GLSM format backward compatibility after
                               MeshObject.LightMapTexCoords update
                               (thanks Uwe Raabe) (Bugtracker ID = 2140994)
@@ -15,7 +17,7 @@
       <li>07/06/08 - DaStr - Implemented TBaseMeshObject.Assign(), TMeshObject.Assign()
       <li>20/05/08 - Mrqzzz - Fixed memory leak in TSkeletonMeshObject.Destroy (thanks Dave Gravel)
       <li>17/05/08 - DaStr - Added TSkeleton.MorphInvisibleParts
-                             (thanks andron13 and ) (BugtrackerID = 1966020)
+                             (thanks andron13 and ����) (BugtrackerID = 1966020)
                              Added vGLVectorFileObjectsEnableVBOByDefault
       <li>01/05/08 - DaStr - Implemented TGLBaseMesh.BarycenterAbsolutePosition()
                              Bugfixed TGLBaseMesh.AxisAlignedDimensionsUnscaled()
@@ -4212,7 +4214,9 @@ begin
       FillChar(lists, sizeof(lists), 0);
       SetLength(tlists, FTexCoordsEx.Count);
 
-      FUseVBO:= FUseVBO and GL_ARB_vertex_buffer_object;
+      // workaround for ATI bug, disable element VBO if
+      // inside a display list
+      FUseVBO:= FUseVBO and GL_ARB_vertex_buffer_object and not InsideList;
 
       if not FUseVBO then
       begin
@@ -5685,15 +5689,13 @@ begin
    Owner.Owner.DeclareArraysToOpenGL(mrci,  False);
    AttachOrDetachLightmap(mrci);
 
-   // workaround for ATI bug, disable element VBO if
-   // inside a display list
-   if Owner.Owner.UseVBO and not InsideList then
+   if Owner.Owner.UseVBO then
    begin
       SetupVBO;
 
       FIndexVBO.Bind;
-      glDrawRangeElements(cFaceGroupMeshModeToOpenGL[Mode], 0, VertexIndices.Count, VertexIndices.Count,
-                          GL_UNSIGNED_INT, nil);
+      glDrawElements(cFaceGroupMeshModeToOpenGL[Mode], VertexIndices.Count,
+                     GL_UNSIGNED_INT, nil);
       FIndexVBO.UnBind;
    end
    else

@@ -9,6 +9,7 @@
    materials/mirror demo before using this component.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>15/12/08- Paul Robello - corrected call to  FOnEndRenderingMirrors
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -258,8 +259,8 @@ begin
          end else begin
             Scene.Objects.DoRender(ARci, ARenderSelf, True);
          end;
-         if Assigned(FOnBeginRenderingMirrors) then
-            FOnBeginRenderingMirrors(Self);
+       if Assigned(FOnEndRenderingMirrors) then
+            FOnEndRenderingMirrors(Self);
 
          ARci.cameraPosition:=cameraPosBackup;
          ARci.cameraDirection:=cameraDirectionBackup;

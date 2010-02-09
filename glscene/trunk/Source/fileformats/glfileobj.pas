@@ -9,6 +9,7 @@
     to enable support for OBJ & OBJF at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>20/05/08 - mrqzzz - Added RegisterClass(TOBJFGVertexNormalTexIndexList)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
@@ -83,7 +84,8 @@ type
    TGLOBJVectorFile = class (TVectorFile)
       private
          FSourceStream : TStream;     { Load from this stream }
-         FBuffer, FLine : String;     { Buffer and current line }
+         FBuffer: AnsiString;         { Buffer }
+         FLine : String;              { current line }
          FLineNo : Integer;           { current Line number - for error messages }
          FEof : Boolean;              { Stream done? }
          FBufPos : Integer;           { Position in the buffer }
@@ -513,7 +515,8 @@ begin
                SetLength(FLine, Length(FLine)+LineLen);
             if FBuffer[FBufPos]=#9 then
                FLine[j]:=#32
-            else FLine[j]:=FBuffer[FBufPos];
+            else
+              FLine[j]:= Char(FBuffer[FBufPos]);
             Inc(FBufPos);
             Inc(j);
          end;
@@ -689,11 +692,10 @@ var
    end;
 
    procedure AddFaceVertex(faceVertices : String);
-   var
-      s : String;
-      vIdx, tIdx, nIdx : Integer;
 
       function GetIndex(Count : Integer) : Integer;
+      var
+        s : String;
       begin
          s:=NextToken(FaceVertices, '/');
          Result:=StrToIntDef(s, 0);
@@ -708,6 +710,8 @@ var
          end;
       end;
 
+   var
+      vIdx, tIdx, nIdx : Integer;
    begin
       vIdx:=GetIndex(mesh.Vertices.Count);
       tIdx:=GetIndex(mesh.TexCoords.Count);
@@ -933,13 +937,13 @@ end;
 
 procedure TGLOBJVectorFile.SaveToStream(aStream:TStream);
 var OldDecimalSeparator:char;
-    
-  procedure Write(s:string);
+
+  procedure Write(const s:AnsiString);
   begin
     if s<>'' then aStream.Write(s[1],Length(s));
   end;
 
-  procedure WriteLn(s:string);
+  procedure WriteLn(const s:String);
   begin
     Write(s);
     Write(#13#10);

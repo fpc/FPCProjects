@@ -5,29 +5,8 @@
 
    Misc. lists of vectors and entities<p>
 
-      $Log: vectorlists.pas,v $
-      Revision 1.2  2006/01/12 19:32:05  z0m3ie
-      *** empty log message ***
-
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:01:43  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2006/01/08 21:04:12  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:52:59  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.3  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
    <b>History : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>01/03/08 - DaStr - Added Borland-style persistency support to TBaseList
       <li>29/03/07 - DaStr - Added more explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
@@ -807,25 +786,25 @@ end;
 // ReadItemsData
 procedure TBaseList.ReadItemsData(AReader: TReader);
 var
-  lData: string;
+  lData: AnsiString;
   lOutputText: string;
 begin
   lOutputText := AReader.ReadString;
   {$WARNING Crossbuilder: what is the "+ 1" good for ? IMHO that is wrong.}
   SetLength(lData, Length(lOutputText) div 2 + 1);
-  HexToBin(PChar(lOutputText), PChar(lData), Length(lData));
+  HexToBin(PChar(lOutputText), PAnsiChar(lData), Length(lData));
   LoadFromString(lData);
 end;
 
 // WriteItemsData
 procedure TBaseList.WriteItemsData(AWriter: TWriter);
 var
-  lData: string;
-  lOutputText: string;
+  lData: AnsiString;
+  lOutputText: String;
 begin
   lData := SaveToString;
   SetLength(lOutputText, Length(lData) * 2);
-  BinToHex(PChar(lData), PChar(lOutputText), Length(lData));
+  BinToHex(PAnsiChar(lData), PChar(lOutputText), Length(lData));
   AWriter.WriteString(lOutputText);
 end;
 

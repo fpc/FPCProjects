@@ -6,6 +6,7 @@
 	PLY (Stanford Triangle Format) vector file format implementation.<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>05/06/03 - SG - Separated from GLVectorFileObjects.pas
 	</ul></font>
@@ -67,7 +68,7 @@ var
 begin
    sl:=TStringList.Create;
    try
-      sl.LoadFromStream(aStream);
+      sl.LoadFromStream(aStream{$IFDEF Unicode}, TEncoding.ASCII{$ENDIF});
       mesh:=TMeshObject.CreateOwned(Owner.MeshObjects);
       mesh.Mode:=momFaceGroups;
       if sl[0]<>'ply' then

@@ -4,6 +4,7 @@
 {: SDL<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>07/06/07 - DaStr - Added $I GLScene.inc
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC
                                                          (BugTracekrID=1681585)
@@ -1378,7 +1379,7 @@ type
   PSDL_Joystick = ^TSDL_Joystick;
   TSDL_Joystick = record
     index: UInt8; // Device index
-    name: PChar; // Joystick name - system dependent
+    name: PAnsiChar; // Joystick name - system dependent
 
     naxes: Integer; // Number of axis controls on the joystick
     axes: PUInt16; // Current axis states
@@ -1935,7 +1936,7 @@ procedure SDL_Quit; cdecl; external LibName;
 
 {$IFDEF WIN32}
 // This should be called from your WinMain() function, if any
-function SDL_RegisterApp(name: PChar; style: UInt32; h_Inst: Pointer):
+function SDL_RegisterApp(name: PAnsiChar; style: UInt32; h_Inst: Pointer):
 Integer; cdecl; external LibName;
 {$EXTERNALSYM SDL_RegisterApp}
 {$ENDIF}
@@ -1951,7 +1952,7 @@ procedure SDL_InitQuickDraw(the_qd: TQDGlobals); cdecl; external LibName;
 { types }
 {------------------------------------------------------------------------------}
 // The number of elements in a table
-function SDL_TABLESIZE(table: PChar): Integer;
+function SDL_TABLESIZE(table: PAnsiChar): Integer;
 {$EXTERNALSYM SDL_TABLESIZE}
 
 
@@ -1959,9 +1960,9 @@ function SDL_TABLESIZE(table: PChar): Integer;
 { error-handling }
 {------------------------------------------------------------------------------}
 // Public functions
-function SDL_GetError: PChar; cdecl; external LibName;
+function SDL_GetError: PAnsiChar; cdecl; external LibName;
 {$EXTERNALSYM SDL_GetError}
-procedure SDL_SetError(fmt: PChar); cdecl; external LibName;
+procedure SDL_SetError(fmt: PAnsiChar); cdecl; external LibName;
 {$EXTERNALSYM SDL_SetError}
 procedure SDL_ClearError; cdecl; external LibName;
 {$EXTERNALSYM SDL_ClearError}
@@ -1979,7 +1980,7 @@ procedure SDL_OutOfMemory;
 {------------------------------------------------------------------------------}
 // Functions to create SDL_RWops structures from various data sources
 
-function SDL_RWFromFile(filename, mode: PChar): PSDL_RWops; cdecl; external
+function SDL_RWFromFile(filename, mode: PAnsiChar): PSDL_RWops; cdecl; external
 LibName;
 {$EXTERNALSYM SDL_RWFromFile}
 procedure SDL_FreeRW(area: PSDL_RWops); cdecl; external LibName;
@@ -2046,7 +2047,7 @@ Integer; cdecl; external LibName;
   have a specific need to specify the audio driver you want to use.
   You should normally use SDL_Init() or SDL_InitSubSystem(). }
 
-function SDL_AudioInit(driver_name: PChar): Integer; cdecl; external
+function SDL_AudioInit(driver_name: PAnsiChar): Integer; cdecl; external
 LibName;
 {$EXTERNALSYM SDL_AudioInit}
 procedure SDL_AudioQuit; cdecl; external LibName;
@@ -2056,7 +2057,7 @@ procedure SDL_AudioQuit; cdecl; external LibName;
   current audio driver, and returns a Pointer to it if the audio driver has
   been initialized.  It returns NULL if no driver has been initialized. }
 
-function SDL_AudioDriverName(namebuf: PChar; maxlen: Integer): PChar;
+function SDL_AudioDriverName(namebuf: PAnsiChar; maxlen: Integer): PAnsiChar;
 cdecl; external LibName;
 {$EXTERNALSYM SDL_AudioDriverName}
 
@@ -2139,7 +2140,7 @@ cdecl; external LibName;
 {$EXTERNALSYM SDL_LoadWAV_RW}
 
 // Compatibility convenience function -- loads a WAV from a file
-function SDL_LoadWAV(filename: PChar; spec: PSDL_AudioSpec; audio_buf:
+function SDL_LoadWAV(filename: PAnsiChar; spec: PSDL_AudioSpec; audio_buf:
   PUInt8; audiolen: PUInt32): PSDL_AudioSpec;
 {$EXTERNALSYM SDL_LoadWAV}
 
@@ -2209,7 +2210,7 @@ function SDL_CDNumDrives: Integer; cdecl; external LibName;
    "E:"
    "/dev/disk/ide/1/master" }
 
-function SDL_CDName(drive: Integer): PChar; cdecl; external LibName;
+function SDL_CDName(drive: Integer): PAnsiChar; cdecl; external LibName;
 {$EXTERNALSYM SDL_CDName}
 
 { Opens a CD-ROM drive for access.  It returns a drive handle on success,
@@ -2306,7 +2307,7 @@ function SDL_NumJoysticks: Integer; cdecl; external LibName;
 { Get the implementation dependent name of a joystick.
   This can be called before any joysticks are opened.
   If no name can be found, this function returns NULL. }
-function SDL_JoystickName(index: Integer): PChar; cdecl; external LibName;
+function SDL_JoystickName(index: Integer): PAnsiChar; cdecl; external LibName;
 {$EXTERNALSYM SDL_JoystickName}
 
 { Open a joystick for use - the index passed as an argument refers to
@@ -2531,7 +2532,7 @@ function SDL_Linked_Version: TSDL_version; cdecl; external LibName;
   SDL_Init() before opening the sound device, otherwise under Win32 DirectX,
   you won't be able to set full-screen display modes. }
 
-function SDL_VideoInit(driver_name: PChar; flags: UInt32): Integer; cdecl;
+function SDL_VideoInit(driver_name: PAnsiChar; flags: UInt32): Integer; cdecl;
 external LibName;
 {$EXTERNALSYM SDL_VideoInit}
 procedure SDL_VideoQuit; cdecl; external LibName;
@@ -2541,7 +2542,7 @@ procedure SDL_VideoQuit; cdecl; external LibName;
   video driver, and returns a pointer to it if the video driver has
   been initialized.  It returns NULL if no driver has been initialized. }
 
-function SDL_VideoDriverName(namebuf: PChar; maxlen: Integer): PChar;
+function SDL_VideoDriverName(namebuf: PAnsiChar; maxlen: Integer): PAnsiChar;
 cdecl; external LibName;
 {$EXTERNALSYM SDL_VideoDriverName}
 
@@ -2836,7 +2837,7 @@ cdecl; external LibName;
 {$EXTERNALSYM SDL_LoadBMP_RW}
 
 // Convenience macro -- load a surface from a file
-function SDL_LoadBMP(filename: PChar): PSDL_Surface;
+function SDL_LoadBMP(filename: PAnsiChar): PSDL_Surface;
 {$EXTERNALSYM SDL_LoadBMP}
 
 { Save a surface to a seekable SDL data source (memory or file.)
@@ -2848,7 +2849,7 @@ function SDL_SaveBMP_RW(surface: PSDL_Surface; dst: PSDL_RWops; freedst:
 {$EXTERNALSYM SDL_SaveBMP_RW}
 
 // Convenience macro -- save a surface to a file
-function SDL_SaveBMP(surface: PSDL_Surface; filename: PChar): Integer;
+function SDL_SaveBMP(surface: PSDL_Surface; filename: PAnsiChar): Integer;
 {$EXTERNALSYM SDL_SaveBMP}
 
 { Sets the color key (transparent pixel) in a blittable surface.
@@ -3143,10 +3144,10 @@ procedure SDL_GL_Unlock; cdecl; external LibName;
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
 
 { Sets/Gets the title and icon text of the display window }
-procedure SDL_WM_GetCaption(var title: PChar; var icon: PChar); cdecl;
+procedure SDL_WM_GetCaption(var title: PAnsiChar; var icon: PAnsiChar); cdecl;
 external LibName;
 {$EXTERNALSYM SDL_WM_GetCaption}
-procedure SDL_WM_SetCaption(title, icon: PChar); cdecl; external LibName;
+procedure SDL_WM_SetCaption(title, icon: PAnsiChar); cdecl; external LibName;
 {$EXTERNALSYM SDL_WM_SetCaption}
 
 { Sets the icon for the display window.
@@ -3293,7 +3294,7 @@ procedure SDL_SetModState(modstate: TSDLMod); cdecl; external LibName;
 {$EXTERNALSYM SDL_SetModState}
 
 { Get the name of an SDL virtual keysym }
-function SDL_GetKeyName(key: TSDLKey): PChar; cdecl; external LibName;
+function SDL_GetKeyName(key: TSDLKey): PAnsiChar; cdecl; external LibName;
 {$EXTERNALSYM SDL_GetKeyName}
 
 {------------------------------------------------------------------------------}
@@ -3456,12 +3457,12 @@ procedure SDL_KillThread(thread: PSDL_Thread); cdecl; external LibName;
 {$EXTERNALSYM SDL_KillThread}
 
 {* Retrieve a variable named "name" from the environment }
-function SDL_getenv(const name: PChar): PChar; cdecl; external LibName;
+function SDL_getenv(const name: PAnsiChar): PAniChar; cdecl; external LibName;
 {$EXTERNALSYM SDL_getenv}
 
 // The following function has been commented out to encourage developers to use
 // SDL_getenv as it it more portable
-//function getenv(const name: PChar): PChar;
+//function getenv(const name: PAnsiChar): PAnsiChar;
 //{$EXTERNALSYM getenv}
 
 {------------------------------------------------------------------------------}
@@ -3475,7 +3476,7 @@ procedure FreeAndNil(var Obj);
 
 implementation
 
-function SDL_TABLESIZE(table: PChar): Integer;
+function SDL_TABLESIZE(table: PAnsiChar): Integer;
 begin
   Result := SizeOf(table) div SizeOf(table[0]);
 end;
@@ -3515,7 +3516,7 @@ begin
   Result := (context).close(context);
 end;
 
-function SDL_LoadWAV(filename: PChar; spec: PSDL_AudioSpec; audio_buf:
+function SDL_LoadWAV(filename: PAnsiChar; spec: PSDL_AudioSpec; audio_buf:
   PUInt8; audiolen: PUInt32): PSDL_AudioSpec;
 begin
   Result := SDL_LoadWAV_RW(SDL_RWFromFile(filename, 'rb'), 1, spec,
@@ -3568,12 +3569,12 @@ begin
   Result := (SDL_COMPILEDVERSION >= SDL_VERSIONNUM(X, Y, Z));
 end;
 
-function SDL_LoadBMP(filename: PChar): PSDL_Surface;
+function SDL_LoadBMP(filename: PAnsiChar): PSDL_Surface;
 begin
   Result := SDL_LoadBMP_RW(SDL_RWFromFile(filename, 'rb'), 1);
 end;
 
-function SDL_SaveBMP(surface: PSDL_Surface; filename: PChar): Integer;
+function SDL_SaveBMP(surface: PSDL_Surface; filename: PAnsiChar): Integer;
 begin
   Result := SDL_SaveBMP_RW(surface, SDL_RWFromFile(filename, 'wb'), 1);
 end;
