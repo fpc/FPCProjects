@@ -7,6 +7,7 @@
   texture data.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>08/10/08 - DanB - added FriendlyName/FriendlyDescription
       <li>16/10/07 - LC - Added DirtyRectangle to allow partial updates.
       <li>12/07/07 - DaStr - Added $I GLScene.inc
       <li>25/06/07 - LC - Added SysUtils (needed for AllocMem on D7 and down).
@@ -56,6 +57,9 @@ type
     property TextureFormat: integer read GetTextureFormat;
   public
     constructor Create(AOwner: TPersistent); override;
+
+    class function FriendlyName : String; override;
+    class function FriendlyDescription : String; override;
 
     procedure NotifyChange(Sender: TObject); override;
 
@@ -224,6 +228,20 @@ begin
     FPBO.Free;
     FPBO:= nil;
   end;
+end;
+
+// FriendlyName
+//
+class function TGLDynamicTextureImage.FriendlyName : String;
+begin
+   Result:='Dynamic Texture';
+end;
+
+// FriendlyDescription
+//
+class function TGLDynamicTextureImage.FriendlyDescription : String;
+begin
+   Result:='Dynamic Texture - optimised for changes at runtime';
 end;
 
 function TGLDynamicTextureImage.GetBitmap32(target: TGLUInt): TGLBitmap32;

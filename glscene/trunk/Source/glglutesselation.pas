@@ -61,7 +61,7 @@ End;
 
 procedure DoTessError(errno : TGLEnum); stdcall;
 begin
-  Assert(False, IntToStr(errno)+': '+gluErrorString(errno));
+  Assert(False, IntToStr(errno)+': '+String(TGLString(gluErrorString(errno))));
 end;
 
 function AllocNewVertex : PAffineVector; stdcall;

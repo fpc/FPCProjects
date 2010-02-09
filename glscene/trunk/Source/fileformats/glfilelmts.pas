@@ -4,6 +4,7 @@
 {: GLFileLMTS<p>
 
  <b>History : </b><font size=-1><ul>
+        <li>08/10/08 - DanB - fix for different Char size in Delphi 2009+
         <li>22/06/08 - DaStr - Fixups after converting TMeshObject.LightMapTexCoords
                                to TAffineVectorList (thanks Ast) (Bugtracker ID = 2000089)
         <li>29/05/08 - DaStr - Replaced GLUtils with GLGraphics (BugTracker ID = 1923844)
@@ -60,7 +61,7 @@ type
 
     PLMTS_TexData = ^TLMTS_TexData;
     TLMTS_TexData = record //packed
-        fName: array[0..C_LMTS_TEXFNLEN] of char;
+        fName: array[0..C_LMTS_TEXFNLEN] of ansichar;
         Flags: word;
     end;
 
@@ -145,7 +146,7 @@ var
     vi: Tintegerlist;
     libmat: TGLLibmaterial;
     lmnames, matnames: TStringlist;
-    MatInfoHeader: array[0..3] of char;
+    MatInfoHeader: array[0..3] of ansichar;
     MatInfoCount: integer;
     Matinfo: array of TMaterialInfo;
     i, j: integer;
@@ -213,9 +214,9 @@ begin
             aStream.Read(T, SizeOf(TLMTS_TexData));
             if T.Flags = 0 then
             begin
-                if Assigned(ML) and (trim(T.fName) <> '') then
+                if Assigned(ML) and (trim(String(T.fName)) <> '') then
                 begin
-                    fName := T.fName;
+                    fName := String(T.fName);
                     try
                         if lastdelimiter('.', fName) <> length(fName) - 3 then
                             fName := fName + '.tga'
@@ -235,7 +236,7 @@ begin
                                         fName := changefileext(fName, '.dds');
                                         if not fileexists(fName) then
                                         begin
-                                            fName := T.fName;
+                                            fName := String(T.fName);
                                         end;
                                         //  fName:=fName+' (missing)';
                                     end;
@@ -260,13 +261,13 @@ begin
                     end;
                 end
                 else
-                    matnames.add(T.fName);
+                    matnames.add(String(T.fName));
             end
             else
             begin
-                if Assigned(LL) and (trim(T.fName) <> '') then
+                if Assigned(LL) and (trim(String(T.fName)) <> '') then
                 begin
-                    fName := T.fName;
+                    fName := String(T.fName);
                     try
                         if lastdelimiter('.', fName) <> length(fName) - 3 then
                             fName := fName + '.tga'
@@ -286,7 +287,7 @@ begin
                                         fName := changefileext(fName, '.dds');
                                         if not fileexists(fName) then
                                         begin
-                                            fName := T.fName;
+                                            fName := String(T.fName);
                                         end;
                                         //fName:=fName+' (missing)';
                                     end;
@@ -316,7 +317,7 @@ begin
                     end;
                 end
                 else
-                    lmnames.add(T.fName);
+                    lmnames.add(String(T.fName));
             end;
         end;
 
@@ -438,7 +439,7 @@ var
     subsets: array of TLMTS_Subset;
     tris: array of TLMTS_Vertex;
     _4cc: cardinal;
-    matname: string;
+    matname: AnsiString;
     ss: integer;
     matinfo: array of TMaterialInfo;
     MatInfoCount: integer;
@@ -453,7 +454,7 @@ begin
         begin
             fg := TfgVertexIndexList(mo.facegroups[j]);
 
-            matname := fg.materialname;
+            matname := AnsiString(fg.materialname);
 
             //no duplicate textures please
             matindex := -1;
@@ -471,7 +472,7 @@ begin
                 begin
                     matindex := high(texdata);
 
-                    strpcopy(pchar(@fName), matname);
+                    strpcopy(pansichar(@fName), matname);
                     Flags := 0;
                 end;
 
@@ -580,7 +581,7 @@ begin
     begin
         for i := 0 to high(texdata) do
         begin
-            libmat := owner.MaterialLibrary.Materials.GetLibMaterialByName(texdata[i].fName);
+            libmat := owner.MaterialLibrary.Materials.GetLibMaterialByName(String(texdata[i].fName));
             if assigned(libmat) then
             begin
                 setlength(matinfo, length(matinfo) + 1);
@@ -622,7 +623,7 @@ begin
                 fg := TfgVertexIndexList(mo.facegroups[j]);
                 if fg.lightmapindex > -1 then
                 begin
-                    matname := owner.LightmapLibrary.materials[fg.lightmapindex].name;
+                    matname := AnsiString(owner.LightmapLibrary.materials[fg.lightmapindex].name);
                     //no duplicate textures please
                     matindex := -1;
                     for k := c to high(texdata) do
@@ -636,7 +637,7 @@ begin
                         setlength(texdata, length(texdata) + 1);
                         with texdata[high(texdata)] do
                         begin
-                            strpcopy(pchar(@fName), matname);
+                            strpcopy(pansichar(@fName), matname);
                             Flags := 1;
                         end;
                     end;

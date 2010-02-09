@@ -480,7 +480,7 @@ procedure ErrorCallBack; cdecl;
 var  Msg : string;
 begin
   with CurCgProgram do
-    Msg:='[' + LongName + '] ' + cgGetErrorString(cgGetError) + #10 + cgGetLastListing(FCgContext);
+    Msg:='[' + LongName + '] ' + String(cgGetErrorString(cgGetError)) + #10 + String(cgGetLastListing(FCgContext));
   raise EGLCGShaderException.Create(Msg);
 end;
 
@@ -546,7 +546,7 @@ begin
   newParamObj := TCgParameter.Create;
   with newParamObj do begin
     FOwner := Self;
-    FName  := StrPas(cgGetParameterName(Param));
+    FName  := {StrPas}String(cgGetParameterName(Param));
     FHandle := Param;
     FValueType := cgGetParameterType(Param);
     FDirection := cgGetParameterDirection(Param);
@@ -611,7 +611,7 @@ end;
 //
 function TCgProgram.DirectParamByName(const name: String): PCGparameter;
 begin
-  result:=cgGetNamedParameter(FHandle, PChar(name));
+  result:=cgGetNamedParameter(FHandle, PCharCG(StringCG(name)));
 end;
 
 // ParamCount
@@ -625,18 +625,18 @@ end;
 //
 procedure TCgProgram.Initialize;
 var
-  buf : String;
-  Arg : array of PChar;
-  PArg : PPChar;
+  buf : StringCG;
+  Arg : array of PCharCG;
+  PArg : PPCharCG;
 begin
   Assert(FCgContext=nil);
 
-  buf := Trim(Code.Text);
+  buf := StringCG(Trim(Code.Text));
   if buf='' then exit;
 
   if Precision=psFast then begin
       setlength(Arg, 2);
-      Arg[0]:=PChar('-fastprecision');
+      Arg[0]:=PCharCG('-fastprecision');
       Arg[1]:=nil;
       PArg:=@Arg[0];
     end
@@ -659,8 +659,8 @@ begin
     if FDetectProfile then FProfile:=GetLatestProfile;
     cgGLSetOptimalOptions(FProfile);
     if FProgramName='' then FProgramName:='main'; // default program name
-    FHandle := cgCreateProgram( FCgContext, CG_SOURCE, PChar(buf), FProfile,
-                                PChar(FProgramName), PArg);
+    FHandle := cgCreateProgram( FCgContext, CG_SOURCE, PCharCG(buf), FProfile,
+                                PCharCG(StringCG(FProgramName)), PArg);
     cgGLLoadProgram(FHandle);
     // build parameter list for the selected program
     BuildParamsList;
@@ -720,7 +720,7 @@ end;
 //
 function TCgProgram.GetProfileString: string;
 begin
-  result:=StrPas(cgGetProfileString(FProfile));
+  result:=String(cgGetProfileString(FProfile));
 end;
 
 // ListParameters
@@ -752,7 +752,7 @@ begin
   Output.BeginUpdate;
   Output.Clear;
   if FCgContext<>nil then
-    OutputAsTStrings(cgGetProgramString(FHandle, CG_COMPILED_PROGRAM))
+    OutputAsTStrings(String(cgGetProgramString(FHandle, CG_COMPILED_PROGRAM)))
   else
     Output.add('Cg program not yet initialized');
   Output.EndUpdate;

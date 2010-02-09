@@ -24,6 +24,7 @@ uses
 
   // GLScene
   GLTexture,  GLCadencer, GLContext, OpenGL1x, GLScene, GLCustomShader,
+  GLRenderContextInfo,
 
   // CG Shaders
   Cg, CgGL, GLCgShader;

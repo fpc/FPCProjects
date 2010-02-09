@@ -10,61 +10,6 @@
 
 
 
-      $Log: gllazarusregister.pas,v $
-      Revision 1.3  2006/03/01 10:08:42  skinhat
-      glplot cf glplott
-
-      Revision 1.2  2006/01/12 19:44:02  z0m3ie
-      *** empty log message ***
-
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:30  z0m3ie
-      *** empty log message ***
-
-      Revision 1.15  2005/11/14 21:38:07  z0m3ie
-      making this stuff again Linux compatible please dont break multi platform support again
-
-      Revision 1.14  2005/10/11 20:31:42  z0m3ie
-      - removed ode and sdl stuff becouse dll�s arend loaded dynamically
-        maybe we should make seperate packages or load dlls dynamic
-
-      Revision 1.13  2005/09/17 22:40:44  k00m
-      *** empty log message ***
-
-      Revision 1.12  2005/09/16 18:38:05  k00m
-      Register my ode component and more about viewer.
-
-      Revision 1.11  2005/09/09 23:16:18  z0m3ie
-      linux corrections
-
-      Revision 1.10  2005/08/23 03:36:36  k00m
-      adding basic color support.
-
-      Revision 1.9  2005/08/23 03:00:48  k00m
-      correction from me with the glsceneedit.
-
-      Revision 1.8  2005/08/23 02:44:28  k00m
-      register HDS and remove some bad thing I have adding before.
-
-      Revision 1.7  2005/08/22 23:22:25  k00m
-      updated register again not ready.
-
-      Revision 1.6  2005/08/22 22:12:06  k00m
-      try to register more to see what working.
-
-      Revision 1.5  2005/08/22 20:43:49  k00m
-      adding and register sound type.
-
-      Revision 1.4  2005/08/22 20:27:38  k00m
-      adding soundfile unit.
-
-      Revision 1.3  2005/08/22 20:07:47  k00m
-      Adding Sounds.
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
 
 
 	<b>History : </b><font size=-1><ul>
@@ -259,7 +204,7 @@ uses
    GLColor, GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics, GLCoordinates,
    GLRenderContextInfo, GLNodes,
    GLMaterial,
-   GLDynamicTexture,
+   GLDynamicTexture, BaseClasses,
    {$ifdef windows}
      gllclfullscreenviewer, GLSpaceText, Joystick, ScreenSaver,
      //GLWideBitmapFont,  doesn't even compile in win due to missing TTextRecA
