@@ -39,7 +39,7 @@ interface
 
 uses
   // VCL
-  Classes,
+  Classes, Graphics,
 
   // GLSCene
   GLScene, VectorGeometry, GLGraphics, GLCrossPlatform,

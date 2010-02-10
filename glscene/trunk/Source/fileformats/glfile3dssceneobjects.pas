@@ -18,7 +18,7 @@ interface
 
 uses
   // VCL
-  Classes, SysUtils,
+  Classes, SysUtils, Math,
 
   // GLScene
   VectorGeometry, OpenGL1x, GLScene, GLVectorFileObjects,
@@ -278,7 +278,7 @@ begin
 
   v1 := AffineVectorMake(v[0], v[1], 0);
   NormalizeVector(v1);
-  ang := arccos(VectorDotProduct(v, v1));
+  ang := VectorGeometry.arccos(VectorDotProduct(v, v1));
 
   rci.GLStates.SetGLPolygonMode(GL_FRONT, GL_LINE);
 

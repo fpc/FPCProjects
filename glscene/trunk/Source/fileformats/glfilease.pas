@@ -614,13 +614,13 @@ end;
 
 function StringToFloatRegular(aValue: string): Double;
 begin
-  Result := GLCrossPlatform.StrToFloatDef(aValue, 0);
+  Result := StrToFloatDef(aValue, 0);
   if Result = 0 then begin
     ChangeDotToComma(aValue);
-    Result := GLCrossPlatform.StrToFloatDef(aValue, 0);
+    Result := StrToFloatDef(aValue, 0);
     if Result = 0 then begin
       ChangeCommaToDot(aValue);
-      Result := GLCrossPlatform.StrToFloatDef(aValue, 0);
+      Result := StrToFloatDef(aValue, 0);
     end;
   end;
 end;

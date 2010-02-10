@@ -177,21 +177,6 @@ type
   TTextLayout = StdCtrls.TTextLayout;
 
   {$ENDIF}
-  TPicture = Graphics.TPicture;
-  TGraphic = Graphics.TGraphic;
-  TBitmap = Graphics.TBitmap;
-  TPixmap = Graphics.TPixmap;
-
-
-  TMouseButton = Controls.TMouseButton;
-  TMouseEvent = Controls.TMouseEvent;
-  TKeyEvent = Controls.TKeyEvent;
-  TKeyPressEvent = Controls.TKeyPressEvent;
-
-  TColor      = Graphics.TColor;
-  TPenStyle   = Graphics.TPenStyle;
-  TPenMode    = Graphics.TPenMode;
-  TBrushStyle = Graphics.TBrushStyle;
 
 const
 {$IFDEF GLS_DELPHI_5_DOWN}
@@ -204,130 +189,6 @@ const
    glpf32Bit = pf32bit;
    glpfDevice = pfDevice;
 
-   // standard colors
-   { Raw rgb values }
-  clBlack = Graphics.clBlack;
-  clMaroon = Graphics.clMaroon;
-  clGreen = Graphics.clGreen;
-  clOlive = Graphics.clOlive;
-  clNavy = Graphics.clNavy;
-  clPurple = Graphics.clPurple;
-  clTeal = Graphics.clTeal;
-  clGray = Graphics.clGray;
-  clSilver = Graphics.clSilver;
-  clRed = Graphics.clRed;
-  clLime = Graphics.clLime;
-  clYellow = Graphics.clYellow;
-  clBlue = Graphics.clBlue;
-  clFuchsia = Graphics.clFuchsia;
-  clAqua = Graphics.clAqua;
-  clLtGray = Graphics.clLtGray;
-  clDkGray = Graphics.clDkGray;
-  clWhite = Graphics.clWhite;
-  clNone = Graphics.clNone;
-  clDefault = Graphics.clDefault;
-
-// Not declared in Graphics.pas
-  clForeground = TColor(-1);
-  clButton = TColor(-2);
-  clLight = TColor(-3);
-  clMidlight = TColor(-4);
-  clDark = TColor(-5);
-  clMid = TColor(-6);
-  clText = TColor(-7);
-  clBrightText = TColor(-8);
-  clButtonText = TColor(-9);
-  clBase = TColor(-10);
-  clBackground = {$IFDEF LCL}graphics.clBackground;{$ELSE}TColor(-11);{$ENDIF}
-  clShadow = TColor(-12);
-  clHighlight = {$IFDEF LCL}graphics.clHighlight;{$ELSE}TColor(-13);{$ENDIF}
-  clHighlightedText = TColor(-14);
-
-  { Mapped role offsets }
-  cloNormal = 32;
-  cloDisabled = 64;
-  cloActive = 96;
-
-  { Normal, mapped, pseudo, rgb values }
-  clNormalForeground = TColor(clForeground - cloNormal);
-  clNormalButton = TColor(clButton - cloNormal);
-  clNormalLight = TColor(clLight - cloNormal);
-  clNormalMidlight = TColor(clMidlight - cloNormal);
-  clNormalDark = TColor(clDark - cloNormal);
-  clNormalMid = TColor(clMid - cloNormal);
-  clNormalText = TColor(clText - cloNormal);
-  clNormalBrightText = TColor(clBrightText - cloNormal);
-  clNormalButtonText = TColor(clButtonText - cloNormal);
-  clNormalBase = TColor(clBase - cloNormal);
-  clNormalBackground = TColor(clBackground - cloNormal);
-  clNormalShadow = TColor(clShadow - cloNormal);
-  clNormalHighlight = TColor(clHighlight - cloNormal);
-  clNormalHighlightedText = TColor(clHighlightedText - cloNormal);
-
-  { Disabled, mapped, pseudo, rgb values }
-  clDisabledForeground = TColor(clForeground - cloDisabled);
-  clDisabledButton = TColor(clButton - cloDisabled);
-  clDisabledLight = TColor(clLight - cloDisabled);
-  clDisabledMidlight = TColor(clMidlight - cloDisabled);
-  clDisabledDark = TColor(clDark - cloDisabled);
-  clDisabledMid = TColor(clMid - cloDisabled);
-  clDisabledText = TColor(clText - cloDisabled);
-  clDisabledBrightText = TColor(clBrightText - cloDisabled);
-  clDisabledButtonText = TColor(clButtonText - cloDisabled);
-  clDisabledBase = TColor(clBase - cloDisabled);
-  clDisabledBackground = TColor(clBackground - cloDisabled);
-  clDisabledShadow = TColor(clShadow - cloDisabled);
-  clDisabledHighlight = TColor(clHighlight - cloDisabled);
-  clDisabledHighlightedText = TColor(clHighlightedText - cloDisabled);
-
-// Not declared in Graphics.pas
-  { Active, mapped, pseudo, rgb values }
-  clActiveForeground = TColor(clForeground - cloActive);
-  clActiveButton = TColor(clButton - cloActive);
-  clActiveLight = TColor(clLight - cloActive);
-  clActiveMidlight = TColor(clMidlight - cloActive);
-  clActiveDark = TColor(clDark - cloActive);
-  clActiveMid = TColor(clMid - cloActive);
-  clActiveText = TColor(clText - cloActive);
-  clActiveBrightText = TColor(clBrightText - cloActive);
-  clActiveButtonText = TColor(clButtonText - cloActive);
-  clActiveBase = TColor(clBase - cloActive);
-  clActiveBackground = TColor(clBackground - cloActive);
-  clActiveShadow = TColor(clShadow - cloActive);
-  clActiveHighlight = TColor(clHighlight - cloActive);
-  clActiveHighlightedText = TColor(clHighlightedText - cloActive);
-
-
-  { Compatiblity colors }
-  clScrollBar = Graphics.clScrollBar;
-  clActiveCaption = Graphics.clActiveCaption;
-  clInactiveCaption = Graphics.clInactiveCaption;
-  clMenu = Graphics.clMenu;
-  clWindow = Graphics.clWindow;
-  clWindowFrame = Graphics.clWindowFrame;
-  clMenuText = Graphics.clMenuText;
-  clWindowText = Graphics.clWindowText;
-  clCaptionText = Graphics.clCaptionText;
-  clActiveBorder = Graphics.clActiveBorder;
-  clInactiveBorder = Graphics.clInactiveBorder;
-  clAppWorkSpace = Graphics.clAppWorkSpace;
-  clBtnFace = Graphics.clBtnFace;
-  clBtnShadow = Graphics.clBtnShadow;
-  clGrayText = Graphics.clGrayText;
-  clBtnText = Graphics.clBtnText;
-  clInactiveCaptionText = Graphics.clInactiveCaptionText;
-  clBtnHighlight = Graphics.clBtnHighlight;
-  cl3DDkShadow = Graphics.cl3DDkShadow;
-  cl3DLight = Graphics.cl3DLight;
-  clInfoText = Graphics.clInfoText;
-  clInfoBk = Graphics.clInfoBk;
-  clHighlightText = Graphics.clHighlightText;
-
-
- // Not declared in Graphics.pas
-  clFirstSpecialColor = clActiveHighlightedText;
-  clMask = clWhite;
-  clDontMask = clBlack;
 
 // standard keyboard
   glKey_ESCAPE = VK_ESCAPE;
@@ -346,46 +207,6 @@ const
   glKey_PRIOR = VK_PRIOR;
   glKey_NEXT = VK_NEXT;
   glKey_CONTROL = VK_CONTROL;
-
-// TPenStyle.
-  psSolid = Graphics.psSolid;
-  psDash = Graphics.psDash;
-  psDot = Graphics.psDot;
-  psDashDot = Graphics.psDashDot;
-  psDashDotDot = Graphics.psDashDotDot;
-  psClear = Graphics.psClear;
-  psInsideFrame = Graphics.psInsideFrame;
-
-// TPenMode.
-  pmBlack = Graphics.pmBlack;
-  pmWhite = Graphics.pmWhite;
-  pmNop = Graphics.pmNop;
-  pmNot = Graphics.pmNot;
-  pmCopy = Graphics.pmCopy;
-  pmNotCopy = Graphics.pmNotCopy;
-
-  pmMergePenNot = Graphics.pmMergePenNot;
-  pmMaskPenNot = Graphics.pmMaskPenNot;
-  pmMergeNotPen = Graphics.pmMergeNotPen;
-  pmMaskNotPen = Graphics.pmMaskNotPen;
-  pmMerge = Graphics.pmMerge;
-
-  pmNotMerge = Graphics.pmNotMerge;
-  pmMask = Graphics.pmMask;
-  pmNotMask = Graphics.pmNotMask;
-  pmXor = Graphics.pmXor;
-  pmNotXor = Graphics.pmNotXor;
-
-// TBrushStyle.
-  bsSolid = Graphics.bsSolid;
-  bsClear = Graphics.bsClear;
-  bsHorizontal = Graphics.bsHorizontal;
-  bsVertical = Graphics.bsVertical;
-
-  bsFDiagonal = Graphics.bsFDiagonal;
-  bsBDiagonal = Graphics.bsBDiagonal;
-  bsCross = Graphics.bsCross;
-  bsDiagCross = Graphics.bsDiagCross;
 
 // Several define from unit Consts
 const

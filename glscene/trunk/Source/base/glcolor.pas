@@ -128,6 +128,79 @@ function ConvertColorVector(const AColor: TColorVector; intensity: Single): TCol
 function ConvertRGBColor(const aColor: array of Byte): TColorVector;
 
 // color definitions
+const
+  // Some extra colors, not declared in Graphics.pas
+  clForeground = TColor(-1);
+  clButton = TColor(-2);
+  clLight = TColor(-3);
+  clMidlight = TColor(-4);
+  clDark = TColor(-5);
+  clMid = TColor(-6);
+  clText = TColor(-7);
+  clBrightText = TColor(-8);
+  clButtonText = TColor(-9);
+  clBase = TColor(-10);
+  clBackground = TColor(-11);
+  clShadow = TColor(-12);
+  clHighlight = TColor(-13);
+  clHighlightedText = TColor(-14);
+
+  { Mapped role offsets }
+  cloNormal = 32;
+  cloDisabled = 64;
+  cloActive = 96;
+
+  { Normal, mapped, pseudo, rgb values }
+  clNormalForeground = TColor(clForeground - cloNormal);
+  clNormalButton = TColor(clButton - cloNormal);
+  clNormalLight = TColor(clLight - cloNormal);
+  clNormalMidlight = TColor(clMidlight - cloNormal);
+  clNormalDark = TColor(clDark - cloNormal);
+  clNormalMid = TColor(clMid - cloNormal);
+  clNormalText = TColor(clText - cloNormal);
+  clNormalBrightText = TColor(clBrightText - cloNormal);
+  clNormalButtonText = TColor(clButtonText - cloNormal);
+  clNormalBase = TColor(clBase - cloNormal);
+  clNormalBackground = TColor(clBackground - cloNormal);
+  clNormalShadow = TColor(clShadow - cloNormal);
+  clNormalHighlight = TColor(clHighlight - cloNormal);
+  clNormalHighlightedText = TColor(clHighlightedText - cloNormal);
+
+  { Disabled, mapped, pseudo, rgb values }
+  clDisabledForeground = TColor(clForeground - cloDisabled);
+  clDisabledButton = TColor(clButton - cloDisabled);
+  clDisabledLight = TColor(clLight - cloDisabled);
+  clDisabledMidlight = TColor(clMidlight - cloDisabled);
+  clDisabledDark = TColor(clDark - cloDisabled);
+  clDisabledMid = TColor(clMid - cloDisabled);
+  clDisabledText = TColor(clText - cloDisabled);
+  clDisabledBrightText = TColor(clBrightText - cloDisabled);
+  clDisabledButtonText = TColor(clButtonText - cloDisabled);
+  clDisabledBase = TColor(clBase - cloDisabled);
+  clDisabledBackground = TColor(clBackground - cloDisabled);
+  clDisabledShadow = TColor(clShadow - cloDisabled);
+  clDisabledHighlight = TColor(clHighlight - cloDisabled);
+  clDisabledHighlightedText = TColor(clHighlightedText - cloDisabled);
+
+  { Active, mapped, pseudo, rgb values }
+  clActiveForeground = TColor(clForeground - cloActive);
+  clActiveButton = TColor(clButton - cloActive);
+  clActiveLight = TColor(clLight - cloActive);
+  clActiveMidlight = TColor(clMidlight - cloActive);
+  clActiveDark = TColor(clDark - cloActive);
+  clActiveMid = TColor(clMid - cloActive);
+  clActiveText = TColor(clText - cloActive);
+  clActiveBrightText = TColor(clBrightText - cloActive);
+  clActiveButtonText = TColor(clButtonText - cloActive);
+  clActiveBase = TColor(clBase - cloActive);
+  clActiveBackground = TColor(clBackground - cloActive);
+  clActiveShadow = TColor(clShadow - cloActive);
+  clActiveHighlight = TColor(clHighlight - cloActive);
+  clActiveHighlightedText = TColor(clHighlightedText - cloActive);
+
+  clFirstSpecialColor = clActiveHighlightedText;
+  clMask = clWhite;
+  clDontMask = clBlack;
 
 // Window's colors (must be filled at program
 // startup, since they depend on the desktop scheme)
@@ -158,7 +231,7 @@ const
    clr3DLight             : TColorVector = (0,0,0,1);
    clrInfoText            : TColorVector = (0,0,0,1);
    clrInfoBk              : TColorVector = (0,0,0,1);
-      
+
    {$J- - disable change of other typed constants}
 
    // 'static' color definitions

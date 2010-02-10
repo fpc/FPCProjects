@@ -41,7 +41,7 @@ unit GLBitmapFont;
 
 interface
 
-uses Classes, GLScene, VectorGeometry, GLContext, GLCrossPlatform,
+uses Classes, Graphics, GLScene, VectorGeometry, GLContext, GLCrossPlatform,
      GLTexture, GLState, GLUtils, GLGraphics, GLColor, BaseClasses,
      GLRenderContextInfo;
 

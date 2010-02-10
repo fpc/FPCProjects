@@ -10,34 +10,6 @@
    (http://www.g32.org), just make sure the GLS_Graphics32_SUPPORT conditionnal
    is active in GLScene.inc and recompile.<p>
 
-      $Log: glgraphics.pas,v $
-      Revision 1.2  2006/01/11 19:54:25  z0m3ie
-      fixed texture flip bug (also the fonts are useable with this)
-
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.6  2006/01/09 20:45:49  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2006/01/08 21:04:12  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/12/04 16:53:05  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.3  2005/12/01 21:24:10  z0m3ie
-      *** empty log message ***
-
-      Revision 1.1  2005/09/09 14:57:06  z0m3ie
-      renamed to lowercase
-
-      Revision 1.5  2005/08/23 06:22:36  k00m
-      No it not working more sorry.
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>Historique : </b><font size=-1><ul>
       <li>24/03/07 - DaStr - Moved TGLMinFilter and TGLMagFilter from GLUtils.pas
                               to GLGraphics.pas (BugTracker ID = 1923844)
@@ -79,7 +51,7 @@ interface
 
 {$i GLScene.inc}
 
-uses Classes,
+uses Classes, Graphics,
 {$ifdef GLS_Graphics32_SUPPORT}
    GR32,
 {$endif}
@@ -400,9 +372,9 @@ end;
 procedure BGR24ToRGB24(src, dest : Pointer; pixelCount : Integer); register;
 begin
    while pixelCount>0 do begin
-      PChar(dest)[0]:=PChar(src)[2];
-      PChar(dest)[1]:=PChar(src)[1];
-      PChar(dest)[2]:=PChar(src)[0];
+      PAnsiChar(dest)[0]:=PAnsiChar(src)[2];
+      PAnsiChar(dest)[1]:=PAnsiChar(src)[1];
+      PAnsiChar(dest)[2]:=PAnsiChar(src)[0];
       dest:=Pointer(PtrUInt(dest)+3);
       src:=Pointer(PtrUInt(src)+3);
       Dec(pixelCount);
@@ -415,10 +387,10 @@ procedure BGR24ToRGBA32(src, dest : Pointer; pixelCount : Integer); register;
 {$IFDEF NO_ASM}
 begin
    while pixelCount>0 do begin
-      PChar(dest)[0]:=PChar(src)[2];
-      PChar(dest)[1]:=PChar(src)[1];
-      PChar(dest)[2]:=PChar(src)[0];
-      PChar(dest)[3]:=#255;
+      PAnsiChar(dest)[0]:=PAnsiChar(src)[2];
+      PAnsiChar(dest)[1]:=PAnsiChar(src)[1];
+      PAnsiChar(dest)[2]:=PAnsiChar(src)[0];
+      PAnsiChar(dest)[3]:=#255;
       dest:=Pointer(PtrUInt(dest)+4);
       src:=Pointer(PtrUInt(src)+3);
       Dec(pixelCount);
@@ -510,10 +482,10 @@ procedure BGRA32ToRGBA32(src, dest : Pointer; pixelCount : Integer); register;
 {$IFDEF NO_ASM}
 begin
    while pixelCount>0 do begin
-      PChar(dest)[0]:=PChar(src)[2];
-      PChar(dest)[1]:=PChar(src)[1];
-      PChar(dest)[2]:=PChar(src)[0];
-      PChar(dest)[3]:=PChar(src)[3];
+      PAnsiChar(dest)[0]:=PAnsiChar(src)[2];
+      PAnsiChar(dest)[1]:=PAnsiChar(src)[1];
+      PAnsiChar(dest)[2]:=PAnsiChar(src)[0];
+      PAnsiChar(dest)[3]:=PAnsiChar(src)[3];
       dest:=Pointer(PtrUInt(dest)+4);
       src:=Pointer(PtrUInt(src)+4);
       Dec(pixelCount);
@@ -569,7 +541,6 @@ procedure TGLBitmap32.Assign(Source: TPersistent);
 var
    bmp : TGLBitmap;
    graphic : TGLGraphic;
-
 begin
    if Source=nil then begin
       FDataSize:=0;
@@ -690,7 +661,7 @@ begin
    ReallocMem(FData, FDataSize);
    FBlank:=false;
    if Height>0 then begin
-      pDest:=@PChar(FData)[Width*4*(Height-1)];
+      pDest:=@PAnsiChar(FData)[Width*4*(Height-1)];
       if Height=1 then begin
          BGR24ToRGBA32(BitmapScanLine(aBitmap, 0), pDest, Width);
       end else begin
@@ -727,7 +698,7 @@ begin
    ReallocMem(FData, FDataSize);
    FBlank:=false;
    if Height>0 then begin
-      pDest:=@PChar(FData)[Width*4*(Height-1)];
+      pDest:=@PAnsiChar(FData)[Width*4*(Height-1)];
       if Height=1 then begin
          RGB24ToRGBA32(BitmapScanLine(aBitmap, 0), pDest, Width);
       end else begin
@@ -763,7 +734,7 @@ begin
    ReallocMem(FData, FDataSize);
    FBlank:=false;
    if Height>0 then begin
-      pDest:=@PChar(FData)[Width*4*(Height-1)];
+      pDest:=@PAnsiChar(FData)[Width*4*(Height-1)];
       if VerticalReverseOnAssignFromBitmap then begin
          pSrc:=BitmapScanLine(aBitmap, Height-1);
          if Height>1 then
@@ -788,8 +759,8 @@ end;
 //
 procedure TGLBitmap32.AssignFromBitmap32(aBitmap32 : TBitmap32);
 var
-   y           : Integer;
-   pSrc, pDest : PChar;
+   y : Integer;
+   pSrc, pDest : PAnsiChar;
 begin
    Assert((aBitmap32.Width and 3)=0);
    FWidth:=aBitmap32.Width;
@@ -798,11 +769,11 @@ begin
    ReallocMem(FData, FDataSize);
    FBlank:=false;
    if Height>0 then begin
-      pDest:=@PChar(FData)[Width*4*(Height-1)];
+      pDest:=@PAnsiChar(FData)[Width*4*(Height-1)];
       for y:=0 to Height-1 do begin
          if VerticalReverseOnAssignFromBitmap then
-            pSrc:=PChar(aBitmap32.ScanLine[Height-1-y])
-         else pSrc:=PChar(aBitmap32.ScanLine[y]);
+            pSrc:=PAnsiChar(aBitmap32.ScanLine[Height-1-y])
+         else pSrc:=PAnsiChar(aBitmap32.ScanLine[y]);
          BGRA32ToRGBA32(pSrc, pDest, Width);
          Dec(pDest, Width*4);
       end;
@@ -1414,7 +1385,7 @@ end;
 //
 procedure TGLBitmap32.AssignToBitmap(aBitmap : TGLBitmap); //TGLBitmap = TBitmap
 var y :integer;
-    pSrc, pDest : PChar;
+    pSrc, pDest : PAnsiChar;
 begin
   aBitmap.Width:=FWidth;
   aBitmap.Height:=FHeight;

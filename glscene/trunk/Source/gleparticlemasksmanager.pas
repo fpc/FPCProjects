@@ -48,7 +48,7 @@ interface
 
 uses
   // VCL
-  SysUtils, Classes,
+  SysUtils, Classes, Graphics,
 
   // GLScene
   GLTexture, GLMaterial, GLScene, VectorGeometry, VectorTypes,

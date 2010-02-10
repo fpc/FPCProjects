@@ -77,7 +77,7 @@ interface
 
 uses
   // VCL
-  Classes, SysUtils, TypInfo,
+  Classes, SysUtils, Graphics, TypInfo,
 
   // GLScene
   GLScene, GLObjects, GLHUDObjects, GLViewer, GLBitmapFont, GLKeyboard,
