@@ -8,23 +8,11 @@
    Ultimately, *no* cross-platform or cross-version defines should be present
    in the core GLScene units, and have all moved here instead.<p>
 
-      $Log: glcrossplatform.pas,v $
-      Revision 1.2  2006/01/11 05:28:33  z0m3ie
-      *** empty log message ***
-
-      Revision 1.1  2006/01/10 20:50:46  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:33  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/12/04 16:53:04  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
+   Tips: Delphi 5 doesn't contain StrUtils.pas, Types.pas, so don't include these
+         files in uses clauses.
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>19/03/09 - DanB - Removed some Kylix IFDEFs, and other changes mostly affecting D5/FPC
       <li>29/05/08 - DaStr - Added StrToFloatDef(), TryStrToFloat()
       <li>10/04/08 - DaStr - Added TGLComponent (BugTracker ID = 1938988)
       <li>07/04/08 - DaStr - Added IsInfinite, IsNan
@@ -92,13 +80,11 @@ uses
 //**  Delphi uses section
 {$IFNDEF FPC} //Not FPC
 
-{$IFDEF MSWINDOWS}
 uses
   Windows, Classes, SysUtils, Graphics, Controls, Forms, VectorTypes,
   Dialogs, StdCtrls, ExtDlgs, Consts
   {$IFDEF GLS_COMPILER_6_UP}, Math, StrUtils{$ENDIF}
   ;
-{$ENDIF}
 {$ENDIF}
 //**  end of Delphi uses section
 //**************************************
@@ -106,7 +92,7 @@ uses
 type
 {$IFNDEF FPC}
   // These new types were added to be able to cast pointers to integers
-  // in 64 bit mode, because in FPC "Integer" type is always 32 bit 
+  // in 64 bit mode, because in FPC "Integer" type is always 32 bit
   // (or 16 bit in Pascal mode), but in Delphi it is platform-specific and
   // can be 16, 32 or 64 bit.
   ptrInt  = Integer;
@@ -368,9 +354,7 @@ const
   psDashDot = Graphics.psDashDot;
   psDashDotDot = Graphics.psDashDotDot;
   psClear = Graphics.psClear;
-  {.$IFNDEF FPC}
   psInsideFrame = Graphics.psInsideFrame;
-  {.$ENDIF}
 
 // TPenMode.
   pmBlack = Graphics.pmBlack;
@@ -451,14 +435,7 @@ function SavePictureDialog(var aFileName : String; const aTitle : String = '') :
 {: Pops up a simple open picture dialog. }
 function OpenPictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
 
-{: Returns True if the application has been terminated. }
-function ApplicationTerminated : Boolean;
-
 procedure RaiseLastOSError;
-
-{$IFDEF GLS_DELPHI_4_DOWN}
-procedure FreeAndNil(var anObject);
-{$ENDIF}
 
 {: Number of pixels per logical inch along the screen width for the device.<p>
    Under Win32 awaits a HDC and returns its LOGPIXELSX. }
@@ -499,11 +476,8 @@ function PrecisionTimerLap(const precisionTimer : Int64) : Double;
 {: Computes time elapsed since timer start and stop timer.<p>
    Return time lap in seconds. }
 function StopPrecisionTimer(const precisionTimer : Int64) : Double;
-{: Returns the number of CPU cycles since startup.<p>
-   Use the similarly named CPU instruction. }
-function RDTSC : Int64;
 
-procedure GLLoadBitmapFromInstance(ABitmap: TCustomBitmap; AName: string);
+procedure GLLoadBitmapFromInstance(aInstance: LongInt; ABitmap: TCustomBitmap; AName: string);
 function GLOKMessageBox(const Text, Caption: string): Integer;
 procedure ShowHTMLUrl(Url: String);
 procedure GLShowCursor(AShow: boolean);
@@ -550,9 +524,6 @@ implementation
 {$IFDEF MSWINDOWS}
 uses
   ShellApi;
-{$ENDIF}
-{$IFDEF UNIX}
-
 {$ENDIF}
 
 var
@@ -664,48 +635,38 @@ end;
 
 function ColorToString(Color: TColor): string;
 begin
-  // Taken from Delphi7 Graphics.pas
   if not ColorToIdent(Color, Result) then
     FmtStr(Result, '%s%.8x', [HexDisplayPrefix, Color]);
 end;
 
 function AnsiStartsText(const ASubText, AText: string): Boolean;
-{$IFNDEF GLS_DELPHI_5_DOWN}
-begin
-  Result := StrUtils.AnsiStartsText(ASubText, AText);
-end;
-{$ELSE}
+{$IFDEF GLS_DELPHI_5_DOWN}
 var
-{$IFDEF MSWINDOWS}
   P: PChar;
-{$ENDIF}
   L, L2: Integer;
 begin
-{$IFDEF MSWINDOWS}
   P := PChar(AText);
-{$ENDIF}
   L := Length(ASubText);
   L2 := Length(AText);
   if L > L2 then
     Result := False
   else
-{$IFDEF MSWINDOWS}
     Result := CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
       P, L, PChar(ASubText), L) = 2;
-{$ENDIF}
-{$IFDEF UNIX}
-    Result := WideSameText(ASubText, Copy(AText, 1, L));
-{$ENDIF}
+end;
+{$ELSE}
+begin
+  Result := StrUtils.AnsiStartsText(ASubText, AText);
 end;
 {$ENDIF}
 
-
-procedure GLLoadBitmapFromInstance(ABitmap: TCustomBitmap; AName: string);
+procedure GLLoadBitmapFromInstance(aInstance: LongInt; ABitmap: TCustomBitmap; AName: string);
 begin
 {$IFDEF MSWINDOWS}
-  ABitmap.Handle := LoadBitmap(HInstance, PChar(AName));
+  ABitmap.Handle := LoadBitmap(aInstance, PChar(AName));
 {$ENDIF}
 {$IFDEF UNIX}
+  //ABitmap.LoadFromResourceName(aInstance, PChar(AName));
   ABitmap.LoadFromLazarusResource(AName);
 {$ENDIF}
 end;
@@ -757,7 +718,7 @@ end;
 
 function GLGetTickCount:int64;
 begin
-  result:=GetTickCount;
+  result := GetTickCount;
 end;
 
 {$IFDEF UNIX}
@@ -1052,13 +1013,6 @@ begin
    end;
 end;
 
-// ApplicationTerminated
-//
-function ApplicationTerminated : Boolean;
-begin
-   Result:=Application.Terminated;
-end;
-
 // RaiseLastOSError
 //
 { TODO : Fix this. Currently it does nothing in lazarus. }
@@ -1073,19 +1027,6 @@ begin
    raise e;
    {$ENDIF}
 end;
-
-{$IFDEF GLS_DELPHI_4_DOWN}
-// FreeAndNil
-//
-procedure FreeAndNil(var anObject);
-var
-  buf : TObject;
-begin
-  buf:=TObject(anObject);
-  TObject(anObject):=nil;  // clear the reference before destroying the object
-  buf.Free;
-end;
-{$ENDIF}
 
 type
   TDeviceCapabilities = record
@@ -1188,7 +1129,6 @@ end;
 // QueryPerformanceCounter
 //
 {$IFDEF UNIX}
-  {$IFDEF FPC}
    var
      vProgStartSecond : int64;
 
@@ -1199,7 +1139,6 @@ end;
      fpgettimeofday(@tz,nil);
      vProgStartSecond:=tz.tv_sec;
    end;
-  {$ENDIF}
 {$ENDIF}
 
 procedure QueryPerformanceCounter(var val : Int64);
@@ -1207,7 +1146,6 @@ procedure QueryPerformanceCounter(var val : Int64);
 begin
    Windows.QueryPerformanceCounter(val);
 {$ELSE}
-   {$IFDEF fpc}
    var
      tz:timeval;
    begin
@@ -1216,10 +1154,6 @@ begin
      val:=tz.tv_sec-vProgStartSecond;
      val:=val*1000000;
      val:=val+tz.tv_usec;
-   {$ELSE}
-   begin
-     val:=RDTSC;
-   {$ENDIF}
 {$ENDIF}
 end;
 
@@ -1230,23 +1164,8 @@ function QueryPerformanceFrequency(var val : Int64) : Boolean;
 begin
    Result:=Boolean(Windows.QueryPerformanceFrequency(val));
 {$ELSE}
-  {$IFDEF FPC}
-  begin
-    val:=1000000;
-  {$ELSE}
-  var
-    startCycles, endCycles : Int64;
-    aTime, refTime : TDateTime;
-  begin
-   aTime:=Now;
-   while aTime=Now do ;
-   startCycles:=RDTSC;
-   refTime:=Now;
-   while refTime=Now do ;
-   endCycles:=RDTSC;
-   aTime:=Now;
-   val:=Round((endCycles-startCycles)/((aTime-refTime)*(3600*24)));
-  {$ENDIF}
+begin
+  val:=1000000;
   Result:=True;
 {$ENDIF}
 end;
@@ -1281,24 +1200,10 @@ begin
    Result:=(cur-precisionTimer)*vInvPerformanceCounterFrequency;
 end;
 
-// RDTSC
-//
-function RDTSC : Int64;
-{$IFDEF FPC}
-begin
-  raise exception.create('Using GLCrossPlatform.RDTSC is a bad idea!');
-end;
-{$ELSE}
-asm
-   db $0f, $31
-end;
-{$ENDIF}
 
 
 initialization
 {$IFDEF UNIX}
-  {$IFDEF FPC}
   Init_vProgStartSecond;
-  {$ENDIF}
 {$ENDIF}
 end.
