@@ -946,7 +946,7 @@ begin
 //    fiaGenerateEvent:; // Do nothing. Event creation is left up to user shaders
 //                       // which may choose to override this procedure.
   else
-    Assert(False, glsUnknownType);
+    Assert(False, glsErrorEx + glsUnknownType);
   end;
 end;
 
@@ -2554,14 +2554,14 @@ var
   LibMat: TGLLibMaterial;
 begin
   if Self = nil then
-    raise ETexture.Create(glsMatLibNotDefined)
+    raise ETexture.Create(glsErrorEx + glsMatLibNotDefined)
   else if LibMatName = '' then
     Result := nil
   else
   begin
     LibMat := LibMaterialByName(LibMatName);
     if LibMat = nil then
-      raise ETexture.CreateFmt(glsMaterialNotFoundInMatlibEx, [LibMatName])
+      raise ETexture.CreateFmt(glsErrorEx + glsMaterialNotFoundInMatlibEx, [LibMatName])
     else
       Result := LibMat.Material.Texture;
   end;

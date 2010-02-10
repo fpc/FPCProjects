@@ -446,7 +446,7 @@ begin
     abmOneMinusDstColor: glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_COLOR);
     abmOneMinusSrcAlpha: glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   else
-    Assert(False, glsUnknownType);
+    Assert(False, glsErrorEx + glsUnknownType);
   end;
 end;
 

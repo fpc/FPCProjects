@@ -349,7 +349,7 @@ begin
     bmxDestColorOne: glBlendFunc(GL_DST_COLOR, GL_ONE);
     bmxDestAlphaOne: glBlendFunc(GL_DST_ALPHA, GL_ONE);
     else
-      Assert(False, glsUnknownType);
+      Assert(False, glsErrorEx + glsUnknownType);
   end;
 end;
 
@@ -659,7 +659,7 @@ begin
     GL_TEXTURE_CUBE_MAP_ARB : SetAsCustomTexture(TextureIndex, GL_TEXTURE_CUBE_MAP_ARB, Texture.Handle);
     GL_TEXTURE_RECTANGLE_ARB : SetAsCustomTexture(TextureIndex, GL_TEXTURE_RECTANGLE_ARB, Texture.Handle);
   else
-    Assert(False, glsUnknownType);
+    Assert(False, glsErrorEx + glsUnknownType);
   end;
 end;
 

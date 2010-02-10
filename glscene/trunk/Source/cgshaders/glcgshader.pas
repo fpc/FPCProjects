@@ -69,8 +69,8 @@ uses
 
   // GLScene
   VectorGeometry, VectorLists, VectorTypes, GLTexture, GLStrings,
-  GLCadencer, OpenGL1x, GLCrossPlatform, GLContext, GLCoordinates,
-  BaseClasses, GLRenderContextInfo, GLMaterial,
+  GLCadencer, OpenGL1x, GLCrossPlatform, GLContext, BaseClasses,
+  GLRenderContextInfo, GLMaterial,
 
   // CG
   Cg, CgGL;
@@ -1386,7 +1386,7 @@ begin
   if FCadencer = nil then
   begin
     Enabled := False;
-    raise EGLCGShaderException.CreateFmt(glsCadencerNotDefinedEx, [ClassName]);
+    raise EGLCGShaderException.CreateFmt(glsErrorEx + glsCadencerNotDefinedEx, [ClassName]);
   end
   else
     inherited;

@@ -202,7 +202,7 @@ begin
       pepBlur:        MakeBlurEffect(rci);
       pepCustom:      DoOnCustomEffect(rci, FRenderBuffer);
     else
-      Assert(False, glsUnknownType);
+      Assert(False, glsErrorEx + glsUnknownType);
     end;
     glDrawPixels(rci.viewPortSize.cx, rci.viewPortSize.cy, GL_RGBA, GL_UNSIGNED_BYTE, FRenderBuffer);
   end;

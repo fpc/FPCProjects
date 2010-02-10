@@ -478,7 +478,7 @@ begin
   begin
     FMainTextureName := Value;
     if not (csLoading in ComponentState) then
-      raise EGLSLDiffuseSpecularShaderException.Create(glsMatLibNotDefined);
+      raise EGLSLDiffuseSpecularShaderException.Create(glsErrorEx + glsMatLibNotDefined);
   end
   else
   begin
@@ -626,7 +626,7 @@ end;
 procedure TGLCustomGLSLMLDiffuseSpecularShader.SetLightCount(
   const Value: Integer);
 begin
-  Assert(FLightCount > 0, glsShaderNeedsAtLeastOneLightSource);
+  Assert(FLightCount > 0, glsErrorEx + glsShaderNeedsAtLeastOneLightSource);
   FLightCount := Value;
   FinalizeShader;
 end;
@@ -670,7 +670,7 @@ end;
 procedure TGLCustomGLSLMLDiffuseSpecularShaderMT.SetLightCount(
   const Value: Integer);
 begin
-  Assert(FLightCount > 0, glsShaderNeedsAtLeastOneLightSource);
+  Assert(FLightCount > 0, glsErrorEx + glsShaderNeedsAtLeastOneLightSource);
   FLightCount := Value;
   FinalizeShader;
 end;

@@ -675,7 +675,7 @@ begin
   else
     begin
       AdjustVector[0] := 0;
-      Assert(False, glsUnknownType); // Not implemented...
+      Assert(False, glsErrorEx + glsUnknownType); // Not implemented...
     end;
   end;
 
@@ -687,7 +687,7 @@ begin
   else
     begin
       AdjustVector[1] := 0;
-      Assert(False, glsUnknownType); // Not implemented...
+      Assert(False, glsErrorEx + glsUnknownType); // Not implemented...
     end;
   end;
 

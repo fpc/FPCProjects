@@ -730,7 +730,7 @@ begin
   begin
     FNormalTextureName := Value;
     if not (csLoading in ComponentState) then
-      raise EGLSLBumpShaderException.Create(glsMatLibNotDefined);
+      raise EGLSLBumpShaderException.Create(glsErrorEx + glsMatLibNotDefined);
   end
   else
   begin
@@ -753,7 +753,7 @@ begin
   begin
     FSpecularTextureName := Value;
     if not (csLoading in ComponentState) then
-      raise EGLSLBumpShaderException.Create(glsMatLibNotDefined);
+      raise EGLSLBumpShaderException.Create(glsErrorEx + glsMatLibNotDefined);
   end
   else
   begin
@@ -797,7 +797,7 @@ begin
   begin
     FMainTextureName := Value;
     if not (csLoading in ComponentState) then
-      raise EGLSLBumpShaderException.Create(glsMatLibNotDefined);
+      raise EGLSLBumpShaderException.Create(glsErrorEx + glsMatLibNotDefined);
   end
   else
   begin
@@ -925,7 +925,7 @@ end;
 procedure TGLCustomGLSLMLBumpShaderMT.SetLightSources(
   const Value: TGLLightSourceSet);
 begin
-  Assert(Value <> [], glsShaderNeedsAtLeastOneLightSource);
+  Assert(Value <> [], glsErrorEx + glsShaderNeedsAtLeastOneLightSource);
   FLightSources := Value;
   FinalizeShader;
 end;
@@ -1075,7 +1075,7 @@ end;
 procedure TGLCustomGLSLMLBumpShader.SetLightSources(
   const Value: TGLLightSourceSet);
 begin
-  Assert(Value <> [], glsShaderNeedsAtLeastOneLightSource);
+  Assert(Value <> [], glsErrorEx + glsShaderNeedsAtLeastOneLightSource);
   FLightSources := Value;
   FinalizeShader;
 end;
