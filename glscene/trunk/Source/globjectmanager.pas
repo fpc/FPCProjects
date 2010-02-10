@@ -25,15 +25,8 @@ interface
 
 {$i GLScene.inc}
 
-uses Classes, Controls, GLCrossPlatform, Graphics, GLScene
-     ,lresources
-     ;
-(*
-uses
-   {$ifdef windows}windows,{$endif}
-   Classes, Controls, StdCtrls, GLScene,
-   lresources, propedits, lclintf, ComponentReg;
-*)
+uses Classes, Controls, GLCrossPlatform, GLScene,
+     Graphics, lresources;
 
 type
 
@@ -282,6 +275,10 @@ var
    bmp : TBitmap;
    resBitmapName : String;
 begin
+  // lazarus doesn't support runtime modules, so we don't need this.
+  // simply call the "normal" version:
+  RegisterSceneObject(ASceneObject,aName,aCategory);
+  exit;
   if ResourceName='' then
     resBitmapName:=ASceneObject.ClassName
   else
@@ -323,26 +320,27 @@ end;
 //
 procedure TObjectManager.CreateDefaultObjectIcons(ResourceModule: Cardinal);
 var
-   bmp : TBitmap;
+   bmp : TCustomBitmap;
+
 begin
-   bmp:=TBitmap.Create;
+   bmp:=TPixmap.create;
    with FObjectIcons, bmp.Canvas do begin
       try
          // There's a more direct way for loading images into the image list, but
          // the image quality suffers too much
          {.$ifdef WIN32}
          GLLoadBitmapFromInstance((*ResourceModule,*) bmp,'gls_cross');
-         FOverlayIndex:=AddMasked(bmp, Pixels[0, 0]);
+         FOverlayIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
          //Overlay(FOverlayIndex, 0); // used as indicator for disabled objects
          {.$endif}
          GLLoadBitmapFromInstance((*ResourceModule,*) bmp,'gls_root');
-         FSceneRootIndex:=AddMasked(bmp, Pixels[0, 0]);
+         FSceneRootIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
          GLLoadBitmapFromInstance((*ResourceModule,*) bmp,'gls_camera');
-         FCameraRootIndex:=AddMasked(bmp, Pixels[0, 0]);
+         FCameraRootIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
          GLLoadBitmapFromInstance((*ResourceModule,*) bmp,'gls_lights');
-         FLightsourceRootIndex:=AddMasked(bmp, Pixels[0, 0]);
+         FLightsourceRootIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
          GLLoadBitmapFromInstance((*ResourceModule,*) bmp,'gls_objects');
-         FObjectRootIndex:=AddMasked(bmp, Pixels[0, 0]);
+         FObjectRootIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
       finally
          bmp.Free;
       end;

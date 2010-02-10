@@ -706,11 +706,7 @@ begin
   ABitmap.Handle := LoadBitmap(HInstance, PChar(AName));
 {$ENDIF}
 {$IFDEF UNIX}
-  {$IFNDEF FPC}
-  ABitmap.LoadFromResourceName(HInstance, PChar(AName));
-  {$ELSE}
   ABitmap.LoadFromLazarusResource(AName);
-  {$ENDIF}
 {$ENDIF}
 end;
 
