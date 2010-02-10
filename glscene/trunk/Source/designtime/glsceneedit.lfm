@@ -1,24 +1,24 @@
 object GLSceneEditorForm: TGLSceneEditorForm
   Left = 239
-  Height = 311
+  Height = 303
   Top = 384
-  Width = 374
+  Width = 447
   HorzScrollBar.Page = 373
   VertScrollBar.Page = 310
   ActiveControl = Tree
   BorderStyle = bsSizeToolWin
   Caption = 'GLScene editor'
-  ClientHeight = 311
-  ClientWidth = 374
+  ClientHeight = 303
+  ClientWidth = 447
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.29'
   object Splitter: TSplitter
-    Left = 212
-    Height = 289
+    Left = 285
+    Height = 281
     Top = 22
     Width = 4
     Align = alRight
@@ -27,16 +27,18 @@ object GLSceneEditorForm: TGLSceneEditorForm
     Visible = False
   end
   object Tree: TTreeView
-    Height = 289
+    Left = 0
+    Height = 281
     Top = 22
-    Width = 212
+    Width = 285
     Align = alClient
-    DefaultItemHeight = 15
+    DefaultItemHeight = 12
     Font.CharSet = ANSI_CHARSET
     Font.Height = -11
     Font.Name = 'Microsoft Sans Serif'
     HideSelection = False
     Indent = 19
+    ParentFont = False
     PopupMenu = PopupMenu
     RightClickSelect = True
     TabOrder = 0
@@ -50,31 +52,33 @@ object GLSceneEditorForm: TGLSceneEditorForm
     Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoRightClickSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips]
   end
   object ToolBar: TToolBar
+    Left = 0
     Height = 22
-    Width = 374
+    Top = 0
+    Width = 447
     AutoSize = True
     BorderWidth = 1
     ButtonWidth = 29
     Caption = 'ToolBar'
     EdgeBorders = []
-    Flat = True
     Images = ImageList
     ParentShowHint = False
     ShowHint = True
     TabOrder = 1
     object ToolButton8: TToolButton
       Left = 9
-      Hint = 'Load whole scene'
+      Top = 0
       Action = ACLoadScene
     end
     object ToolButton9: TToolButton
       Left = 38
-      Hint = 'Save whole scene'
+      Top = 0
       Action = ACSaveScene
     end
     object TBEffectsPanel: TToolButton
       Left = 67
       Hint = 'Show Behaviours/Effects'
+      Top = 0
       Caption = 'Show Behaviours/Effects'
       ImageIndex = 11
       Style = tbsCheck
@@ -82,11 +86,12 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object ToolButton11: TToolButton
       Left = 96
-      Hint = 'OpenGL Info'
+      Top = 0
       Action = ACInfo
     end
     object ToolButton2: TToolButton
       Left = 125
+      Top = 0
       Width = 8
       Caption = 'ToolButton2'
       ImageIndex = 2
@@ -94,18 +99,19 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object ToolButton1: TToolButton
       Left = 133
-      Hint = 'Add camera'
+      Top = 0
       Action = ACAddCamera
     end
     object TBAddObjects: TToolButton
       Left = 162
-      Hint = 'Add object'
+      Top = 0
       Action = ACAddObject
       DropdownMenu = PMToolBar
       Style = tbsDropDown
     end
     object ToolButton3: TToolButton
       Left = 1
+      Top = 0
       Width = 8
       Caption = 'ToolButton3'
       ImageIndex = 2
@@ -113,52 +119,52 @@ object GLSceneEditorForm: TGLSceneEditorForm
       Style = tbsSeparator
     end
     object ToolButton4: TToolButton
-      Left = 194
-      Hint = 'Move object up'
+      Left = 197
+      Top = 0
       Action = ACMoveUp
     end
     object ToolButton7: TToolButton
-      Left = 223
-      Hint = 'Move object down'
+      Left = 226
+      Top = 0
       Action = ACMoveDown
     end
     object ToolButton6: TToolButton
-      Left = 252
+      Left = 255
+      Top = 0
       Width = 8
       Caption = 'ToolButton6'
       ImageIndex = 4
       Style = tbsSeparator
     end
     object ToolButton12: TToolButton
-      Left = 260
-      Hint = 'Cut'
+      Left = 263
+      Top = 0
       Action = ACCut
     end
     object ToolButton13: TToolButton
-      Left = 289
-      Hint = 'Copy'
+      Left = 292
+      Top = 0
       Action = ACCopy
     end
     object ToolButton14: TToolButton
-      Left = 318
-      Hint = 'Paste'
+      Left = 321
+      Top = 0
       Action = ACPaste
     end
     object ToolButton5: TToolButton
-      Left = 1
-      Hint = 'Delete object'
-      Top = 22
+      Left = 350
+      Top = 0
       Action = ACDeleteObject
     end
   end
   object PABehaviours: TPanel
-    Left = 216
-    Height = 289
+    Left = 289
+    Height = 281
     Top = 22
     Width = 158
     Align = alRight
     Caption = 'PABehaviours'
-    ClientHeight = 289
+    ClientHeight = 281
     ClientWidth = 158
     Constraints.MinWidth = 1
     FullRepaint = False
@@ -175,6 +181,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
       Font.Height = -11
       Font.Name = 'Arial'
       ParentColor = False
+      ParentFont = False
     end
     object Label2: TLabel
       Left = 1
@@ -187,6 +194,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
       Font.Height = -11
       Font.Name = 'Arial'
       ParentColor = False
+      ParentFont = False
     end
     object Splitter3: TSplitter
       Cursor = crVSplit
@@ -211,7 +219,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object EffectsListView: TListView
       Left = 1
-      Height = 121
+      Height = 113
       Top = 167
       Width = 156
       Align = alClient
@@ -228,15 +236,14 @@ object GLSceneEditorForm: TGLSceneEditorForm
       Width = 156
       ButtonWidth = 62
       Caption = 'ToolBar1'
-      Flat = True
       Font.Height = -11
       Font.Name = 'Arial'
+      ParentFont = False
       ParentShowHint = False
       ShowCaptions = True
       TabOrder = 2
       object TBAddBehaviours: TToolButton
         Left = 1
-        Hint = 'Add behaviour'
         Top = 2
         Action = ACAddBehaviour
         Caption = 'Behaviours'
@@ -246,7 +253,7 @@ object GLSceneEditorForm: TGLSceneEditorForm
         Style = tbsDropDown
       end
       object TBAddEffects: TToolButton
-        Left = 92
+        Left = 72
         Hint = 'Add effect'
         Top = 2
         Action = ACAddEffect
@@ -684,47 +691,40 @@ object GLSceneEditorForm: TGLSceneEditorForm
     top = 40
     object ACAddCamera: TAction
       Caption = 'Add camera'
-      DisableIfNoHandler = True
       Hint = 'Add camera'
       ImageIndex = 2
       OnExecute = ACAddCameraExecute
     end
     object ACAddObject: TAction
       Caption = 'Add object'
-      DisableIfNoHandler = True
       Hint = 'Add object'
       ImageIndex = 3
       OnExecute = ACAddObjectExecute
     end
     object ACAddBehaviour: TAction
       Caption = 'ACAddBehaviour'
-      DisableIfNoHandler = True
       Hint = 'Add behaviour'
       ImageIndex = 3
       OnExecute = ACAddBehaviourExecute
     end
     object ACAddEffect: TAction
       Caption = 'ACAddEffect'
-      DisableIfNoHandler = True
       ImageIndex = 3
       OnExecute = ACAddEffectExecute
     end
     object ACDeleteObject: TAction
       Caption = 'Delete object'
-      DisableIfNoHandler = True
       Hint = 'Delete object'
       ImageIndex = 4
       OnExecute = ACDeleteObjectExecute
     end
     object ACDeleteBehaviour: TAction
       Caption = 'ACDeleteBehaviour'
-      DisableIfNoHandler = True
       Hint = 'Delete behaviour'
       ImageIndex = 4
     end
     object ACMoveUp: TAction
       Caption = 'Move object up'
-      DisableIfNoHandler = True
       Hint = 'Move object up'
       ImageIndex = 0
       OnExecute = ACMoveUpExecute
@@ -732,7 +732,6 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object ACMoveDown: TAction
       Caption = 'Move object down'
-      DisableIfNoHandler = True
       Hint = 'Move object down'
       ImageIndex = 1
       OnExecute = ACMoveDownExecute
@@ -740,28 +739,24 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object ACSaveScene: TAction
       Caption = 'ACSaveScene'
-      DisableIfNoHandler = True
       Hint = 'Save whole scene'
       ImageIndex = 6
       OnExecute = ACSaveSceneExecute
     end
     object ACLoadScene: TAction
       Caption = 'ACLoadScene'
-      DisableIfNoHandler = True
       Hint = 'Load whole scene'
       ImageIndex = 5
       OnExecute = ACLoadSceneExecute
     end
     object ACInfo: TAction
       Caption = 'ACInfo'
-      DisableIfNoHandler = True
       Hint = 'OpenGL Info'
       ImageIndex = 7
       OnExecute = ACInfoExecute
     end
     object ACCopy: TAction
       Caption = 'Copy'
-      DisableIfNoHandler = True
       Hint = 'Copy'
       ImageIndex = 10
       OnExecute = ACCopyExecute
@@ -769,7 +764,6 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object ACCut: TAction
       Caption = 'Cut'
-      DisableIfNoHandler = True
       Hint = 'Cut'
       ImageIndex = 9
       OnExecute = ACCutExecute
@@ -777,7 +771,6 @@ object GLSceneEditorForm: TGLSceneEditorForm
     end
     object ACPaste: TAction
       Caption = 'Paste'
-      DisableIfNoHandler = True
       Hint = 'Paste'
       ImageIndex = 8
       OnExecute = ACPasteExecute
@@ -1180,7 +1173,6 @@ object GLSceneEditorForm: TGLSceneEditorForm
     }
   end
   object OpenDialog: TOpenDialog
-    Title = 'Open existing file'
     DefaultExt = '.gls'
     Filter = 'GLScene file (*.gls)|*.gls|All files (*.*)|*.*'
     FilterIndex = 0
@@ -1189,7 +1181,6 @@ object GLSceneEditorForm: TGLSceneEditorForm
     top = 72
   end
   object SaveDialog: TSaveDialog
-    Title = 'Save file as'
     DefaultExt = '.gls'
     Filter = 'GLScene file (*.gls)|*.gls|All files (*.*)|*.*'
     FilterIndex = 0

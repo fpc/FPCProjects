@@ -122,7 +122,7 @@ type
     procedure Assign(Source: TPersistent); override;
     class function FriendlyName : String; override;
 		class function FriendlyDescription : String; override;
-    procedure Render(sceneBuffer : TGLSceneBuffer; var rci : TRenderContextInfo); override;
+    procedure Render(var rci : TRenderContextInfo); override;
   published
 	{ Published Declarations }
     {: Refers the collision manager. }
@@ -497,8 +497,7 @@ end;
 
 // Render
 //
-procedure TGLBThorFX.Render(sceneBuffer : TGLSceneBuffer;
-                            var rci : TRenderContextInfo);
+procedure TGLBThorFX.Render(var rci : TRenderContextInfo);
 var
    N: Integer;
    I: Integer;

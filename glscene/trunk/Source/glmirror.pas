@@ -77,7 +77,7 @@ type
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
          procedure SetMirrorObject(const val : TGLBaseSceneObject);
          procedure SetMirrorOptions(const val : TMirrorOptions);
-         procedure ClearZBufferArea;
+         procedure ClearZBufferArea(aBuffer: TGLSceneBuffer);
 
 		   procedure SetHeight(AValue: TGLFloat);
 		   procedure SetWidth(AValue: TGLFloat);
@@ -97,7 +97,6 @@ type
 		   procedure BuildList(var ARci : TRenderContextInfo); override;
 
 		   procedure Assign(Source: TPersistent); override;
-//         function AxisAlignedDimensions : TVector; override;
          function AxisAlignedDimensionsUnscaled : TVector; override;
 
 		published
@@ -175,12 +174,14 @@ var
    clipPlane : TDoubleHmgPlane;
    bgColor : TColorVector;
    cameraPosBackup, cameraDirectionBackup : TVector;
+   CurrentBuffer: TGLSceneBuffer;
 begin
    if FRendering then Exit;
    FRendering:=True;
    try
       oldProxySubObject:=ARci.proxySubObject;
       ARci.proxySubObject:=True;
+      CurrentBuffer := TGLSceneBuffer(ARci.buffer);
 
       if VectorDotProduct(VectorSubtract(ARci.cameraPosition, AbsolutePosition), AbsoluteDirection)>0 then begin
 
@@ -196,7 +197,7 @@ begin
                glStencilOp(GL_REPLACE, GL_ZERO, GL_REPLACE);
             end;
             if (moOpaque in MirrorOptions) then begin
-               bgColor:=ConvertWinColor(Scene.CurrentBuffer.BackgroundColor);
+               bgColor:=ConvertWinColor(CurrentBuffer.BackgroundColor);
                ARci.GLStates.SetGLMaterialColors(GL_FRONT, bgColor, clrBlack, clrBlack, clrBlack, 0);
                ARci.GLStates.UnSetGLState(stTexture2D);
             end else begin
@@ -213,7 +214,7 @@ begin
             end;
 
             if (moClearZBuffer in MirrorOptions) then
-               ClearZBufferArea;
+               ClearZBufferArea(CurrentBuffer);
 
             if not (moOpaque in MirrorOptions) then
                glColorMask(True, True, True, True);
@@ -221,16 +222,16 @@ begin
 
          // Mirror lights
          glPushMatrix;
-         glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
+         glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
          refMat:=MakeReflectionMatrix(AffineVectorMake(AbsolutePosition),
                                       AffineVectorMake(AbsoluteDirection));
          glMultMatrixf(@refMat);
-         Scene.SetupLights(Scene.CurrentBuffer.LimitOf[limLights]);
+         Scene.SetupLights(CurrentBuffer.LimitOf[limLights]);
 
          // mirror geometry and render master
          glGetFloatv(GL_MODELVIEW_MATRIX, @curMat);
-         glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
-         Scene.CurrentBuffer.PushModelViewMatrix(curMat);
+         glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+         CurrentBuffer.PushModelViewMatrix(curMat);
 
          glDisable(GL_CULL_FACE);
          glEnable(GL_NORMALIZE);
@@ -266,9 +267,9 @@ begin
          ARci.cameraDirection:=cameraDirectionBackup;
 
          // Restore to "normal"
-         Scene.CurrentBuffer.PopModelViewMatrix;
-         glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
-         Scene.SetupLights(Scene.CurrentBuffer.LimitOf[limLights]);
+         CurrentBuffer.PopModelViewMatrix;
+         glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+         Scene.SetupLights(CurrentBuffer.LimitOf[limLights]);
 
          glPopMatrix;
          glPopAttrib;
@@ -291,7 +292,7 @@ begin
          Self.RenderChildren(0, Count-1, ARci);
 
       if Assigned(FMirrorObject) then
-         FMirrorObject.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
+         FMirrorObject.Effects.RenderPostEffects(ARci);
    finally
       FRendering:=False;
    end;
@@ -325,12 +326,12 @@ end;
 
 // BuildList
 //
-procedure TGLMirror.ClearZBufferArea;
+procedure TGLMirror.ClearZBufferArea(aBuffer: TGLSceneBuffer);
 var
    worldMat : TMatrix;
    p : TAffineVector;
 begin
-   with Scene.CurrentBuffer do begin
+   with aBuffer do begin
       glPushMatrix;
       worldMat:=Self.AbsoluteMatrix;
       glMatrixMode(GL_PROJECTION);
@@ -419,15 +420,7 @@ begin
    end;
    inherited Assign(Source);
 end;
-{
-// AxisAlignedDimensions
-//
-function TGLMirror.AxisAlignedDimensions: TVector;
-begin
-   Result:=VectorMake(0.5*Abs(FWidth)*Scale.DirectX,
-                      0.5*Abs(FHeight)*Scale.DirectY, 0);
-end;
-}
+
 // AxisAlignedDimensions
 //
 function TGLMirror.AxisAlignedDimensionsUnscaled: TVector;

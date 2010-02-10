@@ -6,10 +6,13 @@
    Base classes and structures for GLScene.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>14/03/09 - DanB - Moved RenderScene from TGLScene to TGLSceneBuffer, removed
+                            TGLScene.Cameras, place cameras inside scene instead.
+                            TGLObjectEffect no longer has "buffer" parameter in render events.
       <li>24/11/08 - DanB - TGLBaseSceneObject.Assign no longer changes scene of
                             destination object (thanks Alan G.)
       <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
-                            changed PChar to Pointer where possible   
+                            changed PChar to Pointer where possible
       <li>12/10/08 - DanB - added nearClippingDistance to RCI
       <li>09/10/08 - DanB - removed TGLScene.RenderedObject, moved TGLProgressEvent
                             to BaseClasses
@@ -20,7 +23,7 @@
       <li>16/02/08 - Mrqzzz - Other fix to ResetAndPitchTurnRoll by Pete,Dan Bartlett
       <li>12/02/08 - Mrqzzz - Dave Gravel fixed ResetAndPitchTurnRoll
       <li>20/01/08 - DaStr - Bugfixed TGLBaseSceneObject.MoveChild[First/Last]()
-                              (thanks "_") (BugTracker ID = 1857974) 
+                              (thanks "_") (BugTracker ID = 1857974)
                              Converted the TGLBaseSceneObject.AbsoluteMatrix()
                               function into a property (and added a Set method)
                              Added TGLBaseSceneObject.AbsoluteLeft()
@@ -82,7 +85,7 @@
       <li>04/02/04 - SG - Added roNoSwapBuffers option to TContextOptions (Juergen Abel)
       <li>09/01/04 - EG - Added TGLCameraInvariantObject
       <li>06/12/03 - EG - TGLColorProxy moved to new GLProxyObjects unit,
-                          GLVectorFileObjects dependency cut. 
+                          GLVectorFileObjects dependency cut.
       <li>06/12/03 - EG - New FramesPerSecond logic
       <li>04/12/03 - Dave - Added ProxyObject.OctreeRayCastIntersect
       <li>26/12/03 - EG - Removed last TList dependencies
@@ -91,7 +94,7 @@
       <li>05/11/03 - EG - Data pointer made optional (GLS_WANT_DATA define),
                           applications should use VCL's standard (ie. "Tag")
       <li>04/11/03 - Dave - Added Data pointer to GLSceneBaseObject
-      <li>24/10/03 - NelC - Fixed texture-flipped bug in cubemap generation 
+      <li>24/10/03 - NelC - Fixed texture-flipped bug in cubemap generation
       <li>21/08/03 - EG - Added osRenderNearestFirst
       <li>28/07/03 - aidave - Added TGLColorProxyObject
       <li>22/07/03 - EG - LocalMatrix now a PMatrix, FListHandle and FChildren
@@ -117,7 +120,7 @@
                            Fixed PixelRayToWorld
       <li>22/08/02 - Egg - Fixed src LocalMatrix computation on Assign
       <li>12/08/02 - Egg - Fixed Effects persistence 'Assert' issue (David Alcelay),
-                           TGLSceneBuffer.PickObjects now preserves ProjMatrix 
+                           TGLSceneBuffer.PickObjects now preserves ProjMatrix
       <li>13/07/02 - Egg - Fixed CurrentStates computation
       <li>01/07/02 - Egg - Fixed XOpenGL picking state
       <li>03/06/02 - Egg - TGLSceneBuffer.DestroyRC now removes buffer from scene's list
@@ -174,7 +177,7 @@
       <li>16/08/01 - Egg - Dropped Prepare/FinishObject (became obsolete),
                            new CameraStyle (Ortho2D)
       <li>12/08/01 - Egg - Completely rewritten handles management,
-                           Faster camera switching 
+                           Faster camera switching
       <li>29/07/01 - Egg - Added pooTransformation
       <li>19/07/01 - Egg - Focal lengths in the ]0; 1[ range are now allowed (beware!)
       <li>18/07/01 - Egg - Added VisibilityCulling
@@ -1013,8 +1016,7 @@ type
 
       public
          { Public Declarations }
-         procedure Render(sceneBuffer : TGLSceneBuffer;
-                          var rci : TRenderContextInfo); virtual;
+         procedure Render(var rci : TRenderContextInfo); virtual;
    end;
 
    // TGLObjectPreEffect
@@ -1060,11 +1062,9 @@ type
          function CanAdd(aClass : TXCollectionItemClass) : Boolean; override;
 
          procedure DoProgress(const progressTime : TProgressTimes);
-         procedure RenderPreEffects(sceneBuffer : TGLSceneBuffer;
-                                    var rci : TRenderContextInfo);
+         procedure RenderPreEffects(var rci : TRenderContextInfo);
          {: Also take care of registering after effects with the GLSceneViewer. }
-         procedure RenderPostEffects(sceneBuffer : TGLSceneBuffer;
-                                     var rci : TRenderContextInfo);
+         procedure RenderPostEffects(var rci : TRenderContextInfo);
    end;
 
    // TGLCustomSceneObject
@@ -1124,7 +1124,7 @@ type
          { Public Declarations }
          procedure DoRender(var ARci : TRenderContextInfo;
                             ARenderSelf, ARenderChildren : Boolean); override;
-                            
+
       published
          { Published Declarations }
          property ObjectsSorting;
@@ -1407,7 +1407,7 @@ type
          property LightID : Cardinal read FLightID;
 
          function Attenuated : Boolean;
-         
+
       published
          { Published Declarations }
          property Ambient: TGLColor read FAmbient write SetAmbient;
@@ -1491,9 +1491,9 @@ type
          procedure ApplyPerspective(const AViewport : TRectangle;
                                     AWidth, AHeight : Integer; ADPI : Integer);
          procedure AutoLeveling(Factor: Single);
-         procedure Reset;
+         procedure Reset(aSceneBuffer: TGLSceneBuffer);
          //: Position the camera so that the whole scene can be seen
-         procedure ZoomAll;
+         procedure ZoomAll(aSceneBuffer: TGLSceneBuffer);
 
          procedure RotateObject(obj : TGLBaseSceneObject; pitchDelta, turnDelta : Single;
                                 rollDelta : Single = 0);
@@ -1522,7 +1522,7 @@ type
             If TargetObject is nil, returns 1. }
          function DistanceToTarget : Single;
          {: Computes the absolute normalized vector to the camera target.<p>
-            If no target is defined, AbsoluteDirection is returned. } 
+            If no target is defined, AbsoluteDirection is returned. }
          function AbsoluteVectorToTarget : TVector;
          {: Computes the absolute normalized right vector to the camera target.<p>
             If no target is defined, AbsoluteRight is returned. }
@@ -1618,7 +1618,6 @@ type
          { Private Declarations }
          FUpdateCount : Integer;
          FObjects : TGLSceneRootObject;
-         FCameras : TGLSceneRootObject;
          FBaseContext : TGLContext; //reference, not owned!
          FLights, FBuffers : TPersistentObjectList;
          FCurrentGLCamera : TGLCamera;
@@ -1637,7 +1636,6 @@ type
          //: Removes all lights in the subtree (anObj included)
          procedure RemoveLights(anObj : TGLBaseSceneObject);
 
-         procedure DoAfterRender;
          procedure GetChildren(AProc: TGetChildProc; Root: TComponent); override;
          procedure SetChildOrder(AChild: TComponent; Order: Integer); override;
          procedure SetObjectsSorting(const val : TGLObjectsSorting);
@@ -1649,10 +1647,6 @@ type
          constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
 
-{$ifdef GLS_DELPHI_4_DOWN}
-         procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-{$endif}
-
          procedure BeginUpdate;
          procedure EndUpdate;
          function  IsUpdating: Boolean;
@@ -1660,10 +1654,6 @@ type
          procedure AddBuffer(aBuffer : TGLSceneBuffer);
          procedure RemoveBuffer(aBuffer : TGLSceneBuffer);
          procedure SetupLights(maxLights : Integer);
-         procedure RenderScene(aBuffer : TGLSceneBuffer;
-                               const viewPortSizeX, viewPortSizeY : Integer;
-                               drawState : TDrawState;
-                               baseObject : TGLBaseSceneObject);
          procedure NotifyChange(Sender : TObject); override;
          procedure Progress(const deltaTime, newTime : Double);
 
@@ -1697,7 +1687,6 @@ type
             See LoadFromFile for details. }
          procedure LoadFromTextFile(const fileName : String);
 
-         property Cameras : TGLSceneRootObject read FCameras;
          property CurrentGLCamera : TGLCamera read FCurrentGLCamera;
          property Lights : TPersistentObjectList read FLights;
          property Objects : TGLSceneRootObject read FObjects;
@@ -1745,7 +1734,7 @@ type
       public
          { Public Declarations }
          constructor Create(aSortType : TPickSortType); overload;
-         
+
          procedure AddHit(obj : TGLBaseSceneObject; const subObj : TPickSubObjects;
                           zMin, zMax : Single);
          procedure Clear; override;
@@ -1954,7 +1943,7 @@ type
 
          //: ViewPort for current/last render
          property ViewPort : TRectangle read FViewPort;
-         
+
          //: Fills the PickList with objects in Rect area
          procedure PickObjects(const rect : TGLRect; pickList : TGLPickList;
                                objectCountGuess : Integer);
@@ -1986,6 +1975,10 @@ type
             refreshed, use Invalidate instead. }
          procedure Render(baseObject : TGLBaseSceneObject); overload;
          procedure Render; overload;
+         procedure RenderScene(aScene: TGLScene;
+                               const viewPortSizeX, viewPortSizeY : Integer;
+                               drawState : TDrawState;
+                               baseObject : TGLBaseSceneObject);
          {: Render the scene to a bitmap at given DPI.<p>
             DPI = "dots per inch".<p>
             The "magic" DPI of the screen is 96 under Windows. }
@@ -2141,7 +2134,6 @@ type
             (see TGLContext) and takes care of context activation and handle
             management. }
          property RenderingContext : TGLContext read FRenderingContext;
-
          {: The camera from which the scene is rendered.<p>
             A camera is an object you can add and define in a TGLScene component. }
          property Camera: TGLCamera read FCamera write SetCamera;
@@ -2897,7 +2889,7 @@ end;
 //
 procedure TGLBaseSceneObject.DrawAxes(var rci : TRenderContextInfo; pattern : Word);
 begin
-   AxesBuildList(rci, Pattern, FScene.CurrentBuffer.FCamera.FDepthOfView);
+   AxesBuildList(rci, Pattern, rci.rcci.farClippingDistance-rci.rcci.nearClippingDistance);
 end;
 
 // GetChildren
@@ -3634,7 +3626,7 @@ begin
       DestroyHandles;
       FVisible:=TGLBaseSceneObject(Source).FVisible;
       TGLBaseSceneObject(Source).RebuildMatrix;
-      SetMatrix(TGLCustomSceneObject(Source).FLocalMatrix^);
+      SetMatrix(TGLBaseSceneObject(Source).FLocalMatrix^);
       FShowAxes:=TGLBaseSceneObject(Source).FShowAxes;
       FObjectsSorting:=TGLBaseSceneObject(Source).FObjectsSorting;
       FVisibilityCulling:=TGLBaseSceneObject(Source).FVisibilityCulling;
@@ -3672,7 +3664,10 @@ end;
 //
 function TGLBaseSceneObject.GetParentComponent: TComponent;
 begin
-   Result:=FParent;
+   if FParent is TGLSceneRootObject then
+      Result := FScene
+   else
+      Result := FParent;
 end;
 
 // HasParent
@@ -4088,34 +4083,16 @@ end;
 // SetParentComponent
 //
 procedure TGLBaseSceneObject.SetParentComponent(Value: TComponent);
-var
-   topGuy : TComponent;
 begin
    inherited;
-   if Assigned(FParent) then begin
-      FParent.Remove(Self, False);
-      FParent:=nil;
-   end;
-   if Assigned(Value) then begin
-      // first level object?
-      if Value is TGLScene then
-         if Self is TGLCamera then
-            TGLScene(Value).Cameras.AddChild(Self)
-         else TGLScene(Value).Objects.AddChild(Self)
-      else begin
-         if Assigned(FParent) and (FParent is TGLBaseSceneObject) then
-            topGuy:=FParent
-         else if Value is TGLBaseSceneObject then
-            topGuy:=Value
-         else topGuy:=nil;
-         if Assigned(topGuy) then
-            TGLBaseSceneObject(Value).AddChild(Self)
-         else begin
-            FParent:=nil;
-            SetScene(nil);
-         end;
-      end;
-   end;
+   if Value=FParent then Exit;
+
+   if Value is TGLScene then
+     SetParent(TGLScene(Value).Objects)
+   else if Value is TGLBaseSceneObject then
+     SetParent(TGLBaseSceneObject(Value))
+   else
+     SetParent(nil);
 end;
 
 // StructureChanged
@@ -4172,6 +4149,7 @@ end;
 //
 procedure TGLBaseSceneObject.MoveTo(newParent : TGLBaseSceneObject);
 begin
+   if newParent=FParent then Exit;
    if Assigned(FParent) then begin
       FParent.Remove(Self, False);
       FParent:=nil;
@@ -4481,12 +4459,12 @@ begin
          shouldRenderSelf:=(osNoVisibilityCulling in ObjectStyle)
                            or (not IsVolumeClipped(AbsolutePosition,
                                                    BoundingSphereRadius,
-                                                   ARci.rcci));
+                                                   ARci.rcci.frustum));
          shouldRenderChildren:=Assigned(FChildren);
       end else begin // vcHierarchical
          aabb:=AxisAlignedBoundingBox;
          shouldRenderSelf:=(osNoVisibilityCulling in ObjectStyle)
-                           or (not IsVolumeClipped(aabb.min, aabb.max, ARci.rcci));
+                           or (not IsVolumeClipped(aabb.min, aabb.max, ARci.rcci.frustum));
          shouldRenderChildren:=shouldRenderSelf and Assigned(FChildren);
       end;
       if not (shouldRenderSelf or shouldRenderChildren) then Exit;
@@ -4525,7 +4503,7 @@ begin
 {$ENDIF}
             glPushMatrix;
 
-         FGLObjectEffects.RenderPreEffects(Scene.CurrentBuffer, ARci);
+         FGLObjectEffects.RenderPreEffects(ARci);
 {$IFNDEF GLS_OPTIMIZATIONS}
          if OptSaveGLStack then
             glLoadMatrixf(@saveMatrixSelf[0])
@@ -4544,7 +4522,7 @@ begin
          end else DoRender(ARci, True, shouldRenderChildren);
          if osDoesTemperWithColorsOrFaceWinding in ObjectStyle then
             ARci.GLStates.ResetAll;
-         FGLObjectEffects.RenderPostEffects(Scene.CurrentBuffer, ARci);
+         FGLObjectEffects.RenderPostEffects(ARci);
 {$IFNDEF GLS_OPTIMIZATIONS}
          if OptSaveGLStack then
             glLoadMatrixf(@saveMatrixSelf[0])
@@ -4561,7 +4539,7 @@ begin
             ARci.GLStates.ResetAll;
       end;
    end else begin
-      if (osIgnoreDepthBuffer in ObjectStyle) and Scene.CurrentBuffer.DepthTest then begin
+      if (osIgnoreDepthBuffer in ObjectStyle) and TGLSceneBuffer(ARCi.buffer).DepthTest then begin
          ARci.GLStates.UnSetGLState(stDepthTest);
          DoRender(ARci, False, shouldRenderChildren);
          ARci.GLStates.SetGLState(stDepthTest);
@@ -5081,8 +5059,7 @@ end;
 
 // Render
 //
-procedure TGLObjectEffect.Render(sceneBuffer : TGLSceneBuffer;
-                                 var rci : TRenderContextInfo);
+procedure TGLObjectEffect.Render(var rci : TRenderContextInfo);
 begin
    // nothing here, this implem is just to avoid "abstract error"
 end;
@@ -5145,8 +5122,7 @@ end;
 
 // RenderPreEffects
 //
-procedure TGLObjectEffects.RenderPreEffects(sceneBuffer : TGLSceneBuffer;
-                                            var rci : TRenderContextInfo);
+procedure TGLObjectEffects.RenderPreEffects(var rci : TRenderContextInfo);
 var
    i : Integer;
    effect : TGLObjectEffect;
@@ -5154,14 +5130,13 @@ begin
    for i:=0 to Count-1 do begin
       effect:=TGLObjectEffect(Items[i]);
       if effect is TGLObjectPreEffect then
-         effect.Render(sceneBuffer, rci);
+         effect.Render(rci);
    end;
 end;
 
 // RenderPostEffects
 //
-procedure TGLObjectEffects.RenderPostEffects(sceneBuffer : TGLSceneBuffer;
-                                             var rci : TRenderContextInfo);
+procedure TGLObjectEffects.RenderPostEffects(var rci : TRenderContextInfo);
 var
    i : Integer;
    effect : TGLObjectEffect;
@@ -5169,9 +5144,9 @@ begin
    for i:=0 to Count-1 do begin
       effect:=TGLObjectEffect(Items[i]);
       if effect is TGLObjectPostEffect then
-         effect.Render(sceneBuffer, rci)
-      else if Assigned(sceneBuffer) and (effect is TGLObjectAfterEffect) then
-         sceneBuffer.FAfterRenderEffects.Add(effect);
+         effect.Render(rci)
+      else if Assigned(rci.afterRenderEffects) and (effect is TGLObjectAfterEffect) then
+        rci.afterRenderEffects.Add(effect);
    end;
 end;
 
@@ -5259,7 +5234,7 @@ begin
    end;
    // start rendering children (if any)
    if ARenderChildren then
-      Self.RenderChildren(0, FChildren.Count-1, ARci);
+      Self.RenderChildren(0, Count-1, ARci);
 end;
 
 // ------------------
@@ -5501,13 +5476,13 @@ end;
 
 // Reset
 //
-procedure TGLCamera.Reset;
+procedure TGLCamera.Reset(aSceneBuffer: TGLSceneBuffer);
 var
    Extent: Single;
 begin
    FRotation.Z:=0;
    FFocalLength:=50;
-   with FScene.CurrentBuffer do begin
+   with aSceneBuffer do begin
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity;
       ApplyPerspective(FViewport, FViewport.Width, FViewport.Height, FRenderDPI);
@@ -5523,11 +5498,11 @@ end;
 
 // ZoomAll
 //
-procedure TGLCamera.ZoomAll;
+procedure TGLCamera.ZoomAll(aSceneBuffer: TGLSceneBuffer);
 var
    extent: Single;
 begin
-   with Scene.CurrentBuffer do begin
+   with aSceneBuffer do begin
       if FViewport.Height<FViewport.Width then
          Extent:=FViewport.Height * 0.25
       else Extent:=FViewport.Width * 0.25;
@@ -5881,8 +5856,12 @@ begin
    end;
    // start rendering children (if any)
    if ARenderChildren then
-      Self.RenderChildren(0, FChildren.Count-1, ARci);
+      Self.RenderChildren(0, Count-1, ARci);
 end;
+
+// ------------------
+// ------------------ TGLCameraInvariantObject ------------------
+// ------------------
 
 // Create
 //
@@ -5908,13 +5887,15 @@ procedure TGLCameraInvariantObject.DoRender(var ARci : TRenderContextInfo;
                                             ARenderSelf, ARenderChildren : Boolean);
 var
    mvMat : TMatrix;
+   CurrentBuffer: TGLSceneBuffer;
 begin
+   CurrentBuffer:=TGLSceneBuffer(ARCi.buffer);
    if CamInvarianceMode<>cimNone then begin
       glPushMatrix;
       // prepare
       case CamInvarianceMode of
          cimPosition : begin
-            glLoadMatrixf(@Scene.CurrentBuffer.ModelViewMatrix);
+            glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
             glTranslatef(ARci.cameraPosition[0], ARci.cameraPosition[1], ARci.cameraPosition[2]);
          end;
          cimOrientation :  begin
@@ -5929,7 +5910,7 @@ begin
       glMultMatrixf(PGLFloat(LocalMatrix));
 
       glGetFloatv(GL_MODELVIEW_MATRIX, @mvMat);
-      Scene.CurrentBuffer.PushModelViewMatrix(mvMat);
+      CurrentBuffer.PushModelViewMatrix(mvMat);
       try
          if ARenderSelf then begin
             if (osDirectDraw in ObjectStyle) or ARci.amalgamating then
@@ -5939,7 +5920,7 @@ begin
          if ARenderChildren then
             Self.RenderChildren(0, Count-1, ARci);
       finally
-         Scene.CurrentBuffer.PopModelViewMatrix;
+         CurrentBuffer.PopModelViewMatrix;
       end;
       glPopMatrix;
    end else inherited;
@@ -5975,7 +5956,6 @@ begin
    if Source is TGLDirectOpenGL then begin
       UseBuildList:=TGLDirectOpenGL(Source).UseBuildList;
       FOnRender:=TGLDirectOpenGL(Source).FOnRender;
-      FOnProgress:=TGLDirectOpenGL(Source).FOnProgress;
       FBlend:=TGLDirectOpenGL(Source).Blend;
    end;
    inherited Assign(Source);
@@ -6166,7 +6146,7 @@ begin
       if ARenderChildren and (Count>0) then
          Self.RenderChildren(0, Count-1, ARci);
       if masterGotEffects then
-         FMasterObject.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
+         FMasterObject.Effects.RenderPostEffects(ARci);
    finally
       FRendering:=False;
    end;
@@ -6479,14 +6459,12 @@ begin
    FCurrentBuffer := nil;
    FObjects:=TGLSceneRootObject.Create(Self);
    FObjects.Name:='ObjectRoot';
-   FCameras:=TGLSceneRootObject.Create(Self);
-   FCameras.Name:='CameraRoot';
    FLights:=TPersistentObjectList.Create;
    FObjectsSorting:=osRenderBlendedLast;
    FVisibilityCulling:=vcNone;
    // actual maximum number of lights is stored in TGLSceneViewer
    FLights.Count:=8;
-   FInitializableObjects := TGLInitializableObjectList.Create
+   FInitializableObjects := TGLInitializableObjectList.Create;
 end;
 
 // Destroy
@@ -6499,25 +6477,14 @@ begin
    {$hint: - crossbuilder is this still needed? for me it works without that hack. }
    { note: The ifdef fpc block is completely missing in cvs }
    //Scene is destroyed earlyer then Viewer in Lazarus so prevent to try free Unassigned buffer
-   Objects.DeleteChildCameras;
-   Objects.DeleteChildren;
+   //Objects.DeleteChildCameras;
+   //Objects.DeleteChildren;
    {$ENDIF}
-   FCameras.Free;
+
    FLights.Free;
    FObjects.Free;
    inherited Destroy;
 end;
-
-{$ifdef GLS_DELPHI_4_DOWN}
-// Notification
-//
-procedure TGLScene.Notification(AComponent: TComponent; Operation: TOperation);
-begin
-   // nothing more, here, this is just a workaround the lack of a decent
-   // 'RemoveFreeNotification' under Delphi 4
-   inherited Notification(AComponent, Operation);
-end;
-{$endif}
 
 // AddLight
 //
@@ -6586,7 +6553,7 @@ begin
    DoShutdownLight(FObjects);
 end;
 
-// AddViewer
+// AddBuffer
 //
 procedure TGLScene.AddBuffer(aBuffer : TGLSceneBuffer);
 begin
@@ -6626,7 +6593,6 @@ end;
 procedure TGLScene.GetChildren(AProc: TGetChildProc; Root: TComponent);
 begin
    FObjects.GetChildren(AProc, Root);
-   FCameras.GetChildren(AProc, Root);
 end;
 
 // SetChildOrder
@@ -6698,98 +6664,6 @@ begin
   end;
 end;
 
-// RenderScene
-//
-procedure TGLScene.RenderScene(aBuffer : TGLSceneBuffer;
-                               const viewPortSizeX, viewPortSizeY : Integer;
-                               drawState : TDrawState;
-                               baseObject : TGLBaseSceneObject);
-
-   function GetMVProj : TMatrix;
-   var
-      projMat, mvMat : TMatrix;
-   begin
-      glGetFloatv(GL_PROJECTION_MATRIX, @projMat);
-      glGetFloatv(GL_MODELVIEW_MATRIX, @mvMat);
-      Result:=MatrixMultiply(mvMat, projMat);
-   end;
-
-var
-   i : Integer;
-   rci : TRenderContextInfo;
-   rightVector : TVector;
-begin
-   aBuffer.FAfterRenderEffects.Clear;
-   FCurrentBuffer:=aBuffer;
-   FillChar(rci, SizeOf(rci), 0);
-   rci.scene:=Self;
-   rci.buffer:=aBuffer;
-   rci.objectsSorting:=FObjectsSorting;
-   rci.visibilityCulling:=FVisibilityCulling;
-   rci.bufferFaceCull:=aBuffer.FaceCulling;
-   rci.drawState:=drawState;
-   rci.sceneAmbientColor:=FCurrentBuffer.AmbientColor.Color;
-   with aBuffer.Camera do begin
-      rci.cameraPosition:=aBuffer.FCameraAbsolutePosition;
-      rci.cameraDirection:=FLastDirection;
-      NormalizeVector(rci.cameraDirection);
-      rci.cameraDirection[3]:=0;
-      rightVector:=VectorCrossProduct(rci.cameraDirection, Up.AsVector);
-      rci.cameraUp:=VectorCrossProduct(rightVector, rci.cameraDirection);
-      NormalizeVector(rci.cameraUp);
-
-      with rci.rcci do begin
-         origin:=rci.cameraPosition;
-         clippingDirection:=rci.cameraDirection;
-         viewPortRadius:=FViewPortRadius;
-         nearClippingDistance:=FNearPlane;
-         farClippingDistance:=FNearPlane+FDepthOfView;
-         frustum:=ExtractFrustumFromModelViewProjection(GetMVProj);
-      end;
-   end;
-   rci.viewPortSize.cx:=viewPortSizeX;
-   rci.viewPortSize.cy:=viewPortSizeY;
-   rci.renderDPI:=aBuffer.RenderDPI;
-   rci.modelViewMatrix:=@aBuffer.FModelViewMatrix;
-   rci.GLStates:=aBuffer.GLStates;
-   rci.GLStates.ResetAll;
-   rci.proxySubObject:=False;
-   rci.ignoreMaterials:=   (roNoColorBuffer in aBuffer.ContextOptions)
-                        or (rci.drawState=dsPicking);
-   if rci.ignoreMaterials then
-      glColorMask(False, False, False, False)
-   else glColorMask(True, True, True, True);
-   if Assigned(aBuffer.FInitiateRendering) then
-      aBuffer.FInitiateRendering(aBuffer, rci);
-
-   if FInitializableObjects.Count <> 0 then
-   begin
-      // First initialize all objects and delete them from the list.
-      for I := FInitializableObjects.Count - 1 downto 0 do
-      begin
-         FInitializableObjects.GetItems(I).InitializeObject(Self, rci);
-         FInitializableObjects.Delete(I);
-      end;
-   end;
-
-   if baseObject=nil then
-      FObjects.Render(rci)
-   else baseObject.Render(rci);
-   glColorMask(True, True, True, True);
-   with aBuffer.FAfterRenderEffects do if Count>0 then
-      for i:=0 to Count-1 do
-         TGLObjectAfterEffect(Items[i]).Render(aBuffer, rci);
-   if Assigned(aBuffer.FWrapUpRendering) then
-      aBuffer.FWrapUpRendering(aBuffer, rci);
-   with rci.GLStates do begin
-      UnSetGLState(stBlend);
-      UnSetGLState(stTexture2D);
-      UnSetGLState(stTextureRect);
-      SetGLState(stAlphaTest);
-   end;
-   glAlphaFunc(GL_GREATER, 0);
-end;
-
 // Progress
 //
 procedure TGLScene.Progress(const deltaTime, newTime : Double);
@@ -6799,7 +6673,6 @@ begin
    pt.deltaTime:=deltaTime;
    pt.newTime:=newTime;
    FObjects.DoProgress(pt);
-   FCameras.DoProgress(pt);
 end;
 
 // SaveToFile
@@ -6896,7 +6769,7 @@ begin
             Fixups.AddObject(TGLSceneBuffer(FBuffers[i]).Camera.Name, FBuffers[i]);
       end;
       ShutdownAllLights;
-      Cameras.DeleteChildren; // will remove Viewer from FBuffers
+      // will remove Viewer from FBuffers
       Objects.DeleteChildren;
       aStream.ReadComponent(Self);
       for i:=0 to Fixups.Count-1 do begin
@@ -6922,8 +6795,6 @@ end;
 function TGLScene.FindSceneObject(const AName : String) : TGLBaseSceneObject;
 begin
    Result:=FObjects.FindChild(AName, False);
-   if not Assigned(Result) then
-       Result:=FCameras.FindChild(AName, False);
 end;
 
 // RayCastIntersect
@@ -7043,23 +6914,6 @@ begin
    // turn off other lights
    for i:=nbLights to maxLights-1 do
       glDisable(GL_LIGHT0+i);
-end;
-
-
-//------------------------------------------------------------------------------
-
-procedure TGLScene.DoAfterRender;
-{var
-   i : Integer;
-   light : TGLLightSource;}
-begin
-{   for I:=0 to FLights.Count-1 do begin
-      light:=TGLLightSource(FLights[I]);
-      if Assigned(light) and light.Shining then
-         light.RenderLensFlares(MakeAffineVector(CurrenTGLCamera.Position.FCoords),
-                                MakeAffineVector(CurrenTGLCamera.FDirection.FCoords),
-                                CurrentViewer.FCamera.FNearPlane);
-   end;}
 end;
 
 // ------------------
@@ -8208,7 +8062,7 @@ begin
             // render the scene (in select mode, nothing is drawn)
             FRenderDPI:=96;
             if Assigned(FCamera) and Assigned(FCamera.FScene) then
-               FCamera.FScene.RenderScene(Self, FViewPort.Width, FViewPort.Height,
+               RenderScene(FCamera.FScene, FViewPort.Width, FViewPort.Height,
                                           dsPicking, nil);
             glFlush;
             Hits:=glRenderMode(GL_RENDER);
@@ -8230,7 +8084,7 @@ begin
                   inc(subObjIndex);
                end;
             end;
-            PickList.AddHit(TGLCustomSceneObject(FNameStackMap.Items[buffer^[current+3]]),
+            PickList.AddHit(TGLBaseSceneObject(FNameStackMap.Items[buffer^[current+3]]),
                             subObj, szmin, szmax);
          end;
       finally
@@ -8396,7 +8250,7 @@ begin
             glEnable(GL_FOG);
             FogEnvironment.ApplyFog;
          end else glDisable(GL_FOG);
-         RenderScene(Self, aViewPort.Width, aViewPort.Height, drawState, baseObject);
+         RenderScene(FCamera.FScene, aViewPort.Width, aViewPort.Height, drawState, baseObject);
       end;
    end;
    if Assigned(FPostRender) then
@@ -8491,6 +8345,100 @@ begin
       FRendering:=False;
    end;
 end;
+
+// RenderScene
+//
+procedure TGLSceneBuffer.RenderScene(aScene:TGLScene;
+                               const viewPortSizeX, viewPortSizeY : Integer;
+                               drawState : TDrawState;
+                               baseObject : TGLBaseSceneObject);
+
+   function GetMVProj : TMatrix;
+   var
+      projMat, mvMat : TMatrix;
+   begin
+      glGetFloatv(GL_PROJECTION_MATRIX, @projMat);
+      glGetFloatv(GL_MODELVIEW_MATRIX, @mvMat);
+      Result:=MatrixMultiply(mvMat, projMat);
+   end;
+
+var
+   i : Integer;
+   rci : TRenderContextInfo;
+   rightVector : TVector;
+begin
+   FAfterRenderEffects.Clear;
+   aScene.FCurrentBuffer:=Self;
+   FillChar(rci, SizeOf(rci), 0);
+   rci.scene:=aScene;
+   rci.buffer:=Self;
+   rci.afterRenderEffects:=FAfterRenderEffects;
+   rci.objectsSorting:=aScene.ObjectsSorting;
+   rci.visibilityCulling:=aScene.VisibilityCulling;
+   rci.bufferFaceCull:=FFaceCulling;
+   rci.drawState:=drawState;
+   rci.sceneAmbientColor:=FAmbientColor.Color;
+   with FCamera do begin
+      rci.cameraPosition:=FCameraAbsolutePosition;
+      rci.cameraDirection:=FLastDirection;
+      NormalizeVector(rci.cameraDirection);
+      rci.cameraDirection[3]:=0;
+      rightVector:=VectorCrossProduct(rci.cameraDirection, Up.AsVector);
+      rci.cameraUp:=VectorCrossProduct(rightVector, rci.cameraDirection);
+      NormalizeVector(rci.cameraUp);
+
+      with rci.rcci do begin
+         origin:=rci.cameraPosition;
+         clippingDirection:=rci.cameraDirection;
+         viewPortRadius:=FViewPortRadius;
+         nearClippingDistance:=FNearPlane;
+         farClippingDistance:= FNearPlane+FDepthOfView;
+         frustum:=ExtractFrustumFromModelViewProjection(GetMVProj);
+      end;
+   end;
+   rci.viewPortSize.cx:=viewPortSizeX;
+   rci.viewPortSize.cy:=viewPortSizeY;
+   rci.renderDPI:=FRenderDPI;
+   rci.modelViewMatrix:=@FModelViewMatrix;
+   rci.GLStates:=FGLStates;
+   rci.GLStates.ResetAll;
+   rci.proxySubObject:=False;
+   rci.ignoreMaterials:=   (roNoColorBuffer in FContextOptions)
+                        or (rci.drawState=dsPicking);
+   if rci.ignoreMaterials then
+      glColorMask(False, False, False, False)
+   else glColorMask(True, True, True, True);
+   if Assigned(FInitiateRendering) then
+      FInitiateRendering(Self, rci);
+
+   if aScene.InitializableObjects.Count <> 0 then
+   begin
+      // First initialize all objects and delete them from the list.
+      for I := aScene.InitializableObjects.Count - 1 downto 0 do
+      begin
+         aScene.InitializableObjects.Items[I].InitializeObject({Self?}aScene, rci);
+         aScene.InitializableObjects.Delete(I);
+      end;
+   end;
+
+   if baseObject=nil then
+      aScene.Objects.Render(rci)
+   else baseObject.Render(rci);
+   glColorMask(True, True, True, True);
+   with FAfterRenderEffects do if Count>0 then
+      for i:=0 to Count-1 do
+         TGLObjectAfterEffect(Items[i]).Render(rci);
+   if Assigned(FWrapUpRendering) then
+      FWrapUpRendering(Self, rci);
+   with rci.GLStates do begin
+      UnSetGLState(stBlend);
+      UnSetGLState(stTexture2D);
+      UnSetGLState(stTextureRect);
+      SetGLState(stAlphaTest);
+   end;
+   glAlphaFunc(GL_GREATER, 0);
+end;
+
 
 // SetBackgroundColor
 //
@@ -9069,6 +9017,6 @@ initialization
                     TGLMemoryViewer]);
 
    // preparation for high resolution timer
-   QueryPerformanceFrequency(vCounterFrequency); 
+   QueryPerformanceFrequency(vCounterFrequency);
 
 end.

@@ -318,7 +318,7 @@ begin
       if ARenderChildren and (Count>0) then
          Self.RenderChildren(0, Count-1, ARci);
       if masterGotEffects then
-         MasterObject.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
+         MasterObject.Effects.RenderPostEffects(ARci);
    finally
       FRendering:=False;
    end;
@@ -552,7 +552,7 @@ begin
     if ARenderChildren and (Count > 0) then
       Self.RenderChildren(0, Count - 1, ARci);
     if masterGotEffects then
-      MasterActor.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
+      MasterActor.Effects.RenderPostEffects(ARci);
   finally
     ClearStructureChanged;
   end;
@@ -854,7 +854,7 @@ begin
       if ARenderChildren and (Count>0) then
          Self.RenderChildren(0, Count-1, ARci);
       if masterGotEffects then
-         MasterObject.Effects.RenderPostEffects(Scene.CurrentBuffer, ARci);
+         MasterObject.Effects.RenderPostEffects(ARci);
    finally
       FRendering:=False;
    end;

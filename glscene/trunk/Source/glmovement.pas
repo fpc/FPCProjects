@@ -9,6 +9,7 @@
    but the default value is rmTurnPitchRoll for backwards compatibility.
 
    <b>Historique : </b><font size=-1><ul>
+      <li>14/03/09 - DanB - Changes to Start/StopAllMovements due to TGLScene.Cameras removal
       <li>05/10/08 - DaStr - Added Delphi5 compatibility   
       <li>21/06/08 - DaStr - A lot of cosmetic fixes
                              Bugfixed same position rotation / scale interpolation
@@ -1609,25 +1610,29 @@ begin
   Result := GetOrCreateMovement(obj.behaviours);
 end;
 
-procedure StartStopTravel(const Obj: TGLBaseSceneObject; Start: Boolean);
+procedure StartStopTravel(const Obj: TGLBaseSceneObject; Start: Boolean; ChangeCameras, ChangeObjects: Boolean);
 var
   NewObj: TGLBaseSceneObject;
   I: Integer;
   Movement: TGLMovement;
 begin
-  Movement := GetMovement(Obj);
-  if Assigned(Movement) then
-    if Start then
-    begin
-      if (Movement.PathCount>0) and (Movement.ActivePathIndex=-1) then
-        Movement.ActivePathIndex := 0;
-      Movement.StartPathTravel;
-    end else
-      Movement.StopPathTravel;
+  if ((Obj is TGLCamera)and(ChangeCameras))or
+     ((not(Obj is TGLCamera))and(ChangeObjects))  then
+  begin
+    Movement := GetMovement(Obj);
+    if Assigned(Movement) then
+      if Start then
+      begin
+        if (Movement.PathCount>0) and (Movement.ActivePathIndex=-1) then
+          Movement.ActivePathIndex := 0;
+        Movement.StartPathTravel;
+      end else
+        Movement.StopPathTravel;
+  end;
   for I:=0 to Obj.Count-1 do
   begin
     NewObj := Obj.Children[I];
-    StartStopTravel(NewObj, Start);
+    StartStopTravel(NewObj, Start, ChangeCameras, ChangeObjects);
   end;
 end;
 
@@ -1635,10 +1640,8 @@ procedure StartAllMovements(const Scene: TGLScene; const StartCamerasMove, Start
 begin
   if Assigned(Scene) then
   begin
-    if StartCamerasMove then
-      StartStopTravel(Scene.Cameras, StartCamerasMove);
-    if StartObjectsMove then
-      StartStopTravel(Scene.Objects, StartObjectsMove);
+    if StartCamerasMove or StartObjectsMove then
+      StartStopTravel(Scene.Objects, True, StartCamerasMove, StartObjectsMove);
   end;
 end;
 
@@ -1646,10 +1649,8 @@ procedure StopAllMovements(const Scene: TGLScene; const StopCamerasMove, StopObj
 begin
   if Assigned(Scene) then
   begin
-    if StopCamerasMove then
-      StartStopTravel(Scene.Cameras, False);
-    if StopObjectsMove then
-      StartStopTravel(Scene.Objects, False);
+    if StopCamerasMove or StopObjectsMove then
+      StartStopTravel(Scene.Objects, False, StopCamerasMove, StopObjectsMove);
   end;
 end;
 
