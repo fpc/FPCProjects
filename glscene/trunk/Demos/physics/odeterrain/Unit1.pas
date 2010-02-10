@@ -10,7 +10,7 @@ uses
   ExtCtrls, {GLCadencer,} StdCtrls, {GLTexture,} GLHUDObjects, GLBitmapFont,
   {GLSkydome,} {GLWin32Viewer,} VectorGeometry, GLLensFlare, GLODEManager,
   GLODECustomColliders, GLNavigator, GLGeomObjects, LResources, gllclviewer,
-  GLScene, GLCadencer, GLTexture;
+  GLScene, GLCadencer, GLTexture, GLMaterial, GLViewer;
 
 type
 

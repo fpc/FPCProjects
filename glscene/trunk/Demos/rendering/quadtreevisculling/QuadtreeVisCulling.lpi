@@ -1,18 +1,17 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="5"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="0"/>
+      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -48,10 +47,10 @@
         <Filename Value="fQuadtreeVisCulling.pas"/>
         <ComponentName Value="frmQuadtreeVisCulling"/>
         <HasResources Value="True"/>
-        <ResourceFilename Value="fQuadtreeVisCulling.lrs"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="fQuadtreeVisCulling"/>
-        <CursorPos X="13" Y="9"/>
-        <TopLine Value="1"/>
+        <CursorPos X="17" Y="18"/>
+        <TopLine Value="15"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
@@ -82,7 +81,7 @@
         <UsageCount Value="10"/>
       </Unit4>
     </Units>
-    <JumpHistory Count="2" HistoryIndex="1">
+    <JumpHistory Count="4" HistoryIndex="3">
       <Position1>
         <Filename Value="fQuadtreeVisCulling.pas"/>
         <Caret Line="14" Column="23" TopLine="1"/>
@@ -91,16 +90,21 @@
         <Filename Value="fQuadtreeVisCulling.pas"/>
         <Caret Line="123" Column="105" TopLine="111"/>
       </Position2>
+      <Position3>
+        <Filename Value="fQuadtreeVisCulling.pas"/>
+        <Caret Line="17" Column="72" TopLine="4"/>
+      </Position3>
+      <Position4>
+        <Filename Value="fQuadtreeVisCulling.pas"/>
+        <Caret Line="18" Column="13" TopLine="14"/>
+      </Position4>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <SearchPaths>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
-    <CodeGeneration>
-      <Generate Value="Faster"/>
-    </CodeGeneration>
     <Linking>
       <Options>
         <Win32>

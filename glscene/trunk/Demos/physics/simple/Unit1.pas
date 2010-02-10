@@ -7,7 +7,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLGeomObjects, GLCadencer,
-  GLWin32Viewer, GLShadowPlane, StdCtrls, ComCtrls,
+  GLViewer, GLShadowPlane, StdCtrls, ComCtrls,
   ExtCtrls, GLGraph, VectorTypes, VectorGeometry, GLODECustomColliders,
   LResources, GLODEManager, Buttons;
 

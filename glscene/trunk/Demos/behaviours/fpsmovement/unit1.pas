@@ -21,7 +21,7 @@ uses
   glFPSMovement, Windows,
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLVectorFileObjects, GLScene, GLTexture, ExtCtrls,
-  GLWin32Viewer, StdCtrls, GLObjects, jpeg, GLCollision,
+  GLViewer, StdCtrls, GLObjects, jpeg, GLCollision, GLMaterial,
   GLNavigator, VectorLists, Octree, GLFile3DS, vectorGeometry, OpenGL1X,
   GLGeomObjects, LResources, GLCadencer;
 

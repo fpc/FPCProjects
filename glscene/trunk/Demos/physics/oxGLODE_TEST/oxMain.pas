@@ -46,7 +46,7 @@ uses
   GLVectorFileObjects, GLTerrainRenderer, Opengl1x, GLHeightData, GLTrail,
   GLHUDObjects, GLBlur, GLMesh, GLkeyboard, GLFile3DS,
   // ODE unit.
-  ODEGL, odeimport, GLOxOde, LResources, GLWin32Viewer, Buttons;
+  ODEGL, odeimport, GLOxOde, LResources, GLViewer, Buttons;
 
 const		       
   cADD = 0;

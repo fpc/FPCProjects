@@ -7,7 +7,7 @@ interface
 uses
   Classes, Graphics, Controls, Forms, GLObjects, GLTexture,
   GLCadencer, StdCtrls, ComCtrls, GLTimeEventsMgr, ExtCtrls,
-  LResources, GLScene, GLWin32Viewer;
+  LResources, GLScene, GLViewer;
 
 type
 

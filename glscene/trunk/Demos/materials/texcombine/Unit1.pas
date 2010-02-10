@@ -22,7 +22,7 @@ uses
   SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLTexture, GLObjects, StdCtrls, jpeg, ExtCtrls,
   OpenGL1x, GLTexCombineShader, GLHUDObjects, LResources,Buttons,
-  GLViewer;
+  GLViewer, GLMaterial;
 
 type
 

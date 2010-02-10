@@ -9,7 +9,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, GLScene, GLObjects, GLTexture, GLHUDObjects,
   GLCadencer, GLProcTextures, Spin, ComCtrls, Buttons,
-  LResources, GLLCLViewer;
+  LResources, GLLCLViewer, GLViewer;
 
 type
 

@@ -11,7 +11,7 @@ uses
   LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLGeomObjects,
   GLLCLViewer,GLTrail,GLTexture,Vectorgeometry, StdCtrls,
-  ComCtrls, ExtCtrls, GLMesh, VectorTypes, LResources,
+  ComCtrls, ExtCtrls, GLMesh, VectorTypes, LResources, GLViewer,
   GLCadencer;
 
 type

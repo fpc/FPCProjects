@@ -19,7 +19,7 @@ interface
 uses
   LCLIntf, Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLObjects, GLExtrusion, GLScene, GLCadencer, GLFireFX, ComCtrls,
-  ExtCtrls, GLWin32Viewer, GLGeomObjects, LResources;
+  ExtCtrls, GLViewer, GLGeomObjects, LResources;
 
 type
 

@@ -1,18 +1,17 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="5"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="0"/>
+      <ActiveEditorIndexAtStart Value="3"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -26,15 +25,18 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="glscenecgshader"/>
       </Item1>
       <Item2>
-        <PackageName Value="GLSceneLazarus"/>
+        <PackageName Value="LCL"/>
       </Item2>
+      <Item3>
+        <PackageName Value="GLSceneLazarus"/>
+      </Item3>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="4">
       <Unit0>
         <Filename Value="cellshading.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -48,16 +50,35 @@
         <Filename Value="Unit1.pas"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
-        <ResourceFilename Value="unit1.lrs"/>
         <UnitName Value="Unit1"/>
-        <CursorPos X="45" Y="30"/>
-        <TopLine Value="18"/>
+        <CursorPos X="23" Y="40"/>
+        <TopLine Value="27"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="../../../Source/cgshaders/glcgshader.pas"/>
+        <UnitName Value="GLCgShader"/>
+        <CursorPos X="55" Y="21"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <SyntaxHighlighter Value="Delphi"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="../../../Source/cgshaders/glcgregister.pas"/>
+        <UnitName Value="GLCgRegister"/>
+        <CursorPos X="43" Y="45"/>
+        <TopLine Value="24"/>
+        <EditorIndex Value="3"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <SyntaxHighlighter Value="Delphi"/>
+      </Unit3>
     </Units>
-    <JumpHistory Count="7" HistoryIndex="6">
+    <JumpHistory Count="9" HistoryIndex="8">
       <Position1>
         <Filename Value="Unit1.pas"/>
         <Caret Line="68" Column="1" TopLine="55"/>
@@ -86,16 +107,21 @@
         <Filename Value="Unit1.pas"/>
         <Caret Line="44" Column="70" TopLine="13"/>
       </Position7>
+      <Position8>
+        <Filename Value="Unit1.pas"/>
+        <Caret Line="40" Column="23" TopLine="27"/>
+      </Position8>
+      <Position9>
+        <Filename Value="../../../Source/cgshaders/glcgshader.pas"/>
+        <Caret Line="4" Column="37" TopLine="1"/>
+      </Position9>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <SearchPaths>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
-    <CodeGeneration>
-      <Generate Value="Faster"/>
-    </CodeGeneration>
     <Linking>
       <Options>
         <Win32>

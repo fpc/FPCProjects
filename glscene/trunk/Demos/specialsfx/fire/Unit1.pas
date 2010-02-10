@@ -22,7 +22,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLCadencer, GLScene, GLObjects, GLBehaviours, ExtCtrls,
   VectorGeometry, GLGeomObjects, LResources,
-  GLFireFX, GLLCLViewer;
+  GLFireFX, GLLCLViewer, GLViewer;
 
 type
 

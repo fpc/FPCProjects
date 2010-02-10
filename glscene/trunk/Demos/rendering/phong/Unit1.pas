@@ -14,7 +14,7 @@ interface
 
 uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, GLObjects, GLTeapot, GLTexture, GLPhongShader,
+  Dialogs, GLObjects, GLTeapot, GLTexture, GLPhongShader, GLMaterial,
   GLViewer, StdCtrls, LResources, GLScene, GLCadencer, ExtCtrls;
 
 type

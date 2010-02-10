@@ -11,8 +11,8 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, GLGraph, GLObjects, GLTexture, StdCtrls,
   ComCtrls, jpeg, glgraphics, VectorTypes, VectorGeometry, GLHUDObjects,
-  GLzBuffer, OpenGL1x, GLCadencer, AsyncTimer, GLWin32Viewer, GLTeapot,
-  GLGeomObjects, LResources, GLScene, Buttons;
+  GLzBuffer, OpenGL1x, GLCadencer, AsyncTimer, GLViewer, GLTeapot,
+  GLGeomObjects, LResources, GLScene, Buttons, GLMaterial;
 
 type
 

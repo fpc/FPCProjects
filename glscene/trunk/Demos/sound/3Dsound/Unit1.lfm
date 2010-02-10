@@ -6,11 +6,15 @@ object Form1: TForm1
   HorzScrollBar.Page = 442
   VertScrollBar.Page = 386
   Caption = 'Form1'
+  ClientHeight = 387
+  ClientWidth = 443
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   OnClose = FormClose
   OnCreate = FormCreate
+  LCLVersion = '0.9.29'
   object GLSceneViewer: TGLSceneViewer
+    Left = 0
     Height = 294
     Top = 66
     Width = 443
@@ -21,6 +25,7 @@ object Form1: TForm1
     Align = alClient
   end
   object TrackBar: TTrackBar
+    Left = 0
     Height = 27
     Top = 360
     Width = 443
@@ -29,12 +34,13 @@ object Form1: TForm1
     Min = -180
     OnChange = TrackBarChange
     PageSize = 45
-    ScalePos = trTop
+    Position = 0
     TickMarks = tmBoth
     Align = alBottom
     TabOrder = 0
   end
   object TrackBar1: TTrackBar
+    Left = 0
     Height = 33
     Top = 33
     Width = 443
@@ -43,31 +49,35 @@ object Form1: TForm1
     Min = -50
     OnChange = TrackBar1Change
     PageSize = 45
-    ScalePos = trTop
+    Position = 0
     TickMarks = tmBoth
     Align = alTop
     TabOrder = 1
   end
   object Panel1: TPanel
+    Left = 0
     Height = 33
+    Top = 0
     Width = 443
     Align = alTop
     BevelOuter = bvNone
+    ClientHeight = 33
+    ClientWidth = 443
     FullRepaint = False
     TabOrder = 2
     object Label1: TLabel
-      Height = 13
+      Left = 0
+      Height = 14
       Top = 8
-      Width = 82
+      Width = 83
       Caption = 'Sound Manager :'
-      Color = clNone
       ParentColor = False
     end
     object RBBass: TRadioButton
       Left = 96
       Height = 17
       Top = 8
-      Width = 57
+      Width = 48
       Caption = 'BASS'
       OnClick = RBFMODClick
       TabOrder = 0
@@ -76,7 +86,7 @@ object Form1: TForm1
       Left = 152
       Height = 17
       Top = 8
-      Width = 57
+      Width = 51
       Caption = 'FMOD'
       Checked = True
       OnClick = RBFMODClick
@@ -133,8 +143,13 @@ object Form1: TForm1
     left = 8
     top = 64
     object DummyCube: TGLDummyCube
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = 1
       object Torus1: TGLTorus
+        TagFloat = 0
         Material.FrontProperties.Diffuse.Color = {
           00000000000000000000803F0000803F
         }
@@ -147,12 +162,15 @@ object Form1: TForm1
         Direction.Coordinates = {
           000000000000803F2EBD3BB300000000
         }
+        PitchAngle = 0
         Position.Coordinates = {
           00000000000000BF000000000000803F
         }
+        RollAngle = 0
         Scale.Coordinates = {
           0000803F0000803F0000003F00000000
         }
+        TurnAngle = 0
         Up.Coordinates = {
           000000002EBD3BB3000080BF00000000
         }
@@ -162,47 +180,63 @@ object Form1: TForm1
         Sides = 3
       end
       object Mickey: TGLSphere
+        TagFloat = 0
         Material.Texture.MappingTCoordinates.Coordinates = {
           000000000000803F0000000000000000
         }
+        PitchAngle = 0
         Position.Coordinates = {
           000000000000003F000000000000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
         Radius = 0.5
         Slices = 9
         Stacks = 9
         object Sphere2: TGLSphere
+          TagFloat = 0
           Material.Texture.MappingTCoordinates.Coordinates = {
             000000000000803F0000000000000000
           }
+          PitchAngle = 0
           Position.Coordinates = {
             CDCCCC3ECDCC4C3E000000000000803F
           }
+          RollAngle = 0
+          TurnAngle = 0
           Radius = 0.30000001192092
           Slices = 6
           Stacks = 6
         end
         object Sphere3: TGLSphere
+          TagFloat = 0
           Material.Texture.MappingTCoordinates.Coordinates = {
             000000000000803F0000000000000000
           }
+          PitchAngle = 0
           Position.Coordinates = {
             CDCCCCBECDCC4C3E000000000000803F
           }
+          RollAngle = 0
+          TurnAngle = 0
           Radius = 0.30000001192092
           Slices = 6
           Stacks = 6
         end
         object Cone1: TGLCone
+          TagFloat = 0
           Material.Texture.MappingTCoordinates.Coordinates = {
             000000000000803F0000000000000000
           }
           Direction.Coordinates = {
             2EF964BF2EF9E43E0000000000000000
           }
+          PitchAngle = 0
           Position.Coordinates = {
             00000000000000000000003F0000803F
           }
+          RollAngle = 0
+          TurnAngle = 0
           Up.Coordinates = {
             00000000000000000000803F00000000
           }
@@ -214,23 +248,31 @@ object Form1: TForm1
         end
       end
       object Plane1: TGLPlane
+        TagFloat = 0
         Material.Texture.MappingTCoordinates.Coordinates = {
           000000000000803F0000000000000000
         }
         Direction.Coordinates = {
           000000000000803F2EBD3BB300000000
         }
+        PitchAngle = 0
         Position.Coordinates = {
           00000000000000BF000000000000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
         Up.Coordinates = {
           000000002EBD3BB3000080BF00000000
         }
         Height = 10
         Width = 0.5
+        XOffset = 0
+        YOffset = 0
+        NoZWrite = False
       end
     end
     object Sphere: TGLSphere
+      TagFloat = 0
       Material.FrontProperties.Diffuse.Color = {
         0000803F00000000000000000000803F
       }
@@ -240,9 +282,12 @@ object Form1: TForm1
       Material.Texture.MappingTCoordinates.Coordinates = {
         000000000000803F0000000000000000
       }
+      PitchAngle = 0
       Position.Coordinates = {
         000000400000003F000000000000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
       OnProgress = SphereProgress
       Radius = 0.5
       Slices = 9
@@ -255,31 +300,42 @@ object Form1: TForm1
         0309
       }
       object Disk1: TGLDisk
+        TagFloat = 0
         Material.Texture.MappingTCoordinates.Coordinates = {
           000000000000803F0000000000000000
         }
         Direction.Coordinates = {
           000000000000803F2EBD3BB300000000
         }
+        PitchAngle = 0
         Position.Coordinates = {
           00000000000080BF000000000000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
         Up.Coordinates = {
           000000002EBD3BB3000080BF00000000
         }
+        InnerRadius = 0
         OuterRadius = 0.5
         Slices = 12
+        StartAngle = 0
         SweepAngle = 360
       end
     end
     object GLLightSource: TGLLightSource
+      TagFloat = 0
       ConstAttenuation = 1
+      LinearAttenuation = 0
+      QuadraticAttenuation = 0
       Position.Coordinates = {
         0000204100002041000020410000803F
       }
       SpotCutOff = 180
+      SpotExponent = 0
     end
     object GLCamera1: TGLCamera
+      TagFloat = 0
       DepthOfView = 100
       FocalLength = 50
       TargetObject = Plane1
@@ -292,6 +348,9 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     SleepLength = 1
     left = 8
     top = 184

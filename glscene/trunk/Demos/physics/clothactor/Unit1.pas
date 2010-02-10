@@ -27,7 +27,7 @@ uses
   
   GLVectorFileObjects, GLObjects, GLCadencer, GLTexture, GLLCLViewer,
   GLFileSMD, GLFile3DS, GLVerletClothify, GLVerletSkeletonColliders,
-  GLShadowVolume,
+  GLShadowVolume, GLMaterial, GLViewer, GLRenderContextInfo,
   
   Keyboard, OpenGL1x, VectorGeometry, GeometryBB, JPEG, VerletClasses,
   SpatialPartitioning, LResources, GLScene;

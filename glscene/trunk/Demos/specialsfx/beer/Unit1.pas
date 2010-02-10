@@ -18,7 +18,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   GLVectorFileObjects, GLObjects, GLFile3ds, GLCadencer, jpeg,
   GLGeomObjects, VectorGeometry, GLShadowPlane, GLParticleFX, GLPerlinPFX,
-  LResources, GLScene, GLLCLViewer;
+  LResources, GLScene, GLLCLViewer, GLViewer;
 
 type
 

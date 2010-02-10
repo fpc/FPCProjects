@@ -57,7 +57,8 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLCadencer, GLTexture, GLzBuffer,
-  GLShadowPlane, LResources, gllclviewer, GLScene, ODEGL, ODEImport;
+  GLShadowPlane, LResources, gllclviewer, GLScene, ODEGL, ODEImport,
+  GLViewer, GLRenderContextInfo;
 
 const
   cLENGTH = 0.2;	// box length & width

@@ -22,7 +22,7 @@ interface
 
 uses LCLtype, Forms, Classes, Controls, GLLCLViewer, GLCadencer, GLScene,
   GLObjects, GLTexture, GLHUDObjects, SysUtils, ExtCtrls, GLPolyhedron,
-  GLGeomObjects, GLUtils, LResources;
+  GLGeomObjects, GLUtils, LResources, GLViewer;
 
 type
 

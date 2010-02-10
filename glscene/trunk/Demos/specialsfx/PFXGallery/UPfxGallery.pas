@@ -12,7 +12,7 @@ uses
   GLVectorFileObjects, VectorTypes,GLObjects, GLBitmapFont,
   GLUtils,GLCadencer,  GLTexture,JPeg, GLNavigator,
   ExtCtrls, GLGeomObjects, GLKeyboard, GLSpaceText,
-  GLBehaviours,GLPerlinPFX, StdCtrls, GLBlur, LResources, GLWin32Viewer;
+  GLBehaviours,GLPerlinPFX, StdCtrls, GLBlur, LResources, GLViewer;
 
 const
      cRunBoost = 10;

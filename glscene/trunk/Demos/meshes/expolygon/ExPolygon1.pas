@@ -12,7 +12,7 @@ interface
 uses
   SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   VectorGeometry, GLTexture, GLScene, GLObjects, GLGeomObjects, GLMultiPolygon,
-  LResources, GLViewer;
+  LResources, GLViewer, GLMaterial;
 
 type
   TVektor = record

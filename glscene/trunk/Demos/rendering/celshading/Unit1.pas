@@ -8,7 +8,7 @@ uses
   SysUtils, Classes, Graphics, Controls, Forms, LCLType,
   Dialogs, GLCadencer, GLViewer, GLVectorFileObjects,
   GLCelShader, GLGeomObjects, GLTexture, GLObjects,
-  LResources, GLScene, ExtCtrls;
+  LResources, GLScene, ExtCtrls, GLMaterial;
 
 type
 

@@ -1,16 +1,15 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="5"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
       <ActiveEditorIndexAtStart Value="1"/>
     </General>
@@ -34,7 +33,7 @@
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="4">
       <Unit0>
         <Filename Value="FurBall.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -48,10 +47,10 @@
         <Filename Value="fFurBall.pas"/>
         <ComponentName Value="frmFurBall"/>
         <HasResources Value="True"/>
-        <ResourceFilename Value="fFurBall.lrs"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="fFurBall"/>
-        <CursorPos X="108" Y="21"/>
-        <TopLine Value="199"/>
+        <CursorPos X="45" Y="15"/>
+        <TopLine Value="8"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
@@ -63,8 +62,16 @@
         <TopLine Value="1"/>
         <UsageCount Value="10"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="../../../Source/base/glcolor.pas"/>
+        <UnitName Value="GLColor"/>
+        <CursorPos X="3" Y="27"/>
+        <TopLine Value="13"/>
+        <UsageCount Value="10"/>
+        <SyntaxHighlighter Value="Delphi"/>
+      </Unit3>
     </Units>
-    <JumpHistory Count="4" HistoryIndex="3">
+    <JumpHistory Count="6" HistoryIndex="5">
       <Position1>
         <Filename Value="fFurBall.pas"/>
         <Caret Line="11" Column="3" TopLine="1"/>
@@ -81,16 +88,21 @@
         <Filename Value="fFurBall.pas"/>
         <Caret Line="208" Column="25" TopLine="190"/>
       </Position4>
+      <Position5>
+        <Filename Value="fFurBall.pas"/>
+        <Caret Line="15" Column="36" TopLine="3"/>
+      </Position5>
+      <Position6>
+        <Filename Value="fFurBall.pas"/>
+        <Caret Line="313" Column="24" TopLine="299"/>
+      </Position6>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <SearchPaths>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
-    <CodeGeneration>
-      <Generate Value="Faster"/>
-    </CodeGeneration>
     <Linking>
       <Options>
         <Win32>

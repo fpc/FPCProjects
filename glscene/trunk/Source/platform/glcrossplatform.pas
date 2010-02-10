@@ -1186,7 +1186,7 @@ end;
 //
 procedure Sleep(length : Cardinal);
 begin
-  Sleep(Length);
+  SysUtils.Sleep(Length);
 end;
 
 // QueryPerformanceCounter

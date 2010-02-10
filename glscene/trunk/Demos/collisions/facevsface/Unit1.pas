@@ -27,7 +27,7 @@ uses
   LCLIntf, Forms, GLObjects, Classes, Controls, SysUtils, Graphics,
   ExtCtrls, VectorGeometry, StdCtrls, GLSpaceText,
   ComCtrls, GLVectorFileObjects, GLCrossPlatform, VectorLists,
-  Grids, GLFile3DS, LResources, GLWin32Viewer, GLScene, GLCollision;
+  Grids, GLFile3DS, LResources, GLViewer, GLScene, GLCollision;
 
 type
 

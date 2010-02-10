@@ -24,7 +24,7 @@ uses
   LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLShadowPlane, GLScene, GLLCLViewer, GLObjects,
   GLCadencer, StdCtrls, VectorGeometry, ExtCtrls, GLGeomObjects,
-  LResources, GLTexture;
+  LResources, GLTexture, GLMaterial, GLViewer;
 
 type
 

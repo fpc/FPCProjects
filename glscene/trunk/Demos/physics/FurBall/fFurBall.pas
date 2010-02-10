@@ -12,7 +12,7 @@ uses
   Dialogs, GLScene, GLObjects, GLCadencer, ODEImport,
   StdCtrls, GLTexture, GLExtrusion, VectorGeometry, GLShadowPlane, GLNavigator,
   VerletClasses, VerletHairClasses, jpeg, GLKeyboard, ExtCtrls, ComCtrls,
-  LResources, GLLCLViewer;
+  LResources, GLLCLViewer, GLViewer, GLColor;
 
 const
   cMaxWindMag = 8;

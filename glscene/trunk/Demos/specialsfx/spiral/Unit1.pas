@@ -28,7 +28,8 @@ uses
   LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLCadencer, GLScene, GLObjects,
   GLBehaviours, ExtCtrls, VectorGeometry, GLCrossPlatform, Buttons,
-  LResources, GLParticleFX, {GLWin32FullScreenViewer,} GLLCLViewer;
+  LResources, GLParticleFX, {GLWin32FullScreenViewer,} GLLCLViewer,
+  GLViewer;
 
 type
 

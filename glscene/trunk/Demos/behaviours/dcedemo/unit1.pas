@@ -22,7 +22,7 @@ uses
   Dialogs, GLScene, GLObjects, GLCadencer, GLViewer,
   GLTexture, GLHeightData, GLTerrainRenderer, GLVectorFileObjects,
   ExtCtrls, GLBitmapFont, GLWindowsFont, GLHUDObjects, LResources,
-  GLDCE, LCLType;
+  GLDCE, LCLType, GLMaterial, GLRenderContextInfo;
 
 type
   TForm1 = class(TForm)

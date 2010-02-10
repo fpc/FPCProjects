@@ -16,7 +16,7 @@ uses
   LCLIntf, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLViewer, GLTexture, OpenGL1x,
   GLCgShader, Cg, cgGL, StdCtrls, VectorGeometry, GLCadencer, ExtCtrls, ComCtrls,
-  GLGraph, jpeg, LResources, GLScene;
+  GLGraph, jpeg, LResources, GLScene, GLMaterial;
 
 type
   TForm1 = class(TForm)

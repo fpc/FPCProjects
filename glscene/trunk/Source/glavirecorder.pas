@@ -32,7 +32,7 @@ interface
 
 uses
   Windows, Classes, Controls, Forms, Extctrls, Graphics,
-  vfw, GLScene, GLViewer, GLWin32FullScreenViewer;
+  vfw, GLScene, GLViewer, GLLCLFullscreenViewer;
 
 type
    TAVICompressor = (acDefault, acShowDialog, acDivX);

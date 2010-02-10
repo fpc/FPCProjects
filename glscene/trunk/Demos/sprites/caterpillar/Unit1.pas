@@ -28,7 +28,7 @@ interface
 uses
   Forms, GLObjects, StdCtrls, Classes, Controls,
   ExtCtrls, GLLCLViewer, LResources, GLScene,
-  GLTexture, GLCadencer;
+  GLTexture, GLCadencer, GLViewer, GLMaterial;
 
 type
 

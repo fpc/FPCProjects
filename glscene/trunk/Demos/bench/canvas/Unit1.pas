@@ -29,7 +29,7 @@ uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs,  ExtCtrls, StdCtrls, GLBitmapFont, GLWindowsFont,
   GLTexture, LResources, Buttons, GLViewer,
-  GLScene;
+  GLScene, GLRenderContextInfo;
 
 type
 

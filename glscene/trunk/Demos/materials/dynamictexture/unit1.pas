@@ -17,7 +17,7 @@ uses
   {$IFDEF LCL} lcltype, LResources, {$ELSE} Windows,{$ENDIF}
   Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLTexture, GLViewer, GLCadencer,
-  ExtCtrls;
+  ExtCtrls, GLMaterial, GLRenderContextInfo;
 
 type
   TForm1 = class(TForm)

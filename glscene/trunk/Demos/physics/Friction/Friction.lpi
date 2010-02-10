@@ -2,61 +2,18 @@
 <CONFIG>
   <ProjectOptions>
     <PathDelim Value="\"/>
-    <Version Value="5"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="0"/>
+      <ActiveEditorIndexAtStart Value="1"/>
     </General>
-    <Units Count="5">
-      <Unit0>
-        <CursorPos X="51" Y="2"/>
-        <EditorIndex Value="0"/>
-        <Filename Value="Friction.lpr"/>
-        <IsPartOfProject Value="True"/>
-        <Loaded Value="True"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="20"/>
-      </Unit0>
-      <Unit1>
-        <CursorPos X="3" Y="145"/>
-        <EditorIndex Value="1"/>
-        <Filename Value="fFriction.pas"/>
-        <ComponentName Value="frmFriction"/>
-        <HasResources Value="True"/>
-        <Loaded Value="True"/>
-        <ResourceFilename Value="fFriction.lrs"/>
-        <TopLine Value="1"/>
-        <UnitName Value="fFriction"/>
-        <UsageCount Value="10"/>
-      </Unit1>
-      <Unit2>
-        <CursorPos X="47" Y="414"/>
-        <Filename Value="C:\lazarus\components\GLScene\Source\FileFormats\GLFile3DS.pas"/>
-        <TopLine Value="398"/>
-        <UnitName Value="GLFile3DS"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-      <Unit3>
-        <CursorPos X="1" Y="275"/>
-        <Filename Value="C:\lazarus\lcl\include\application.inc"/>
-        <TopLine Value="259"/>
-        <UsageCount Value="10"/>
-      </Unit3>
-      <Unit4>
-        <CursorPos X="1" Y="179"/>
-        <Filename Value="C:\lazarus\components\GLScene\Source\PhysicsAPIs\ODEGL.pas"/>
-        <TopLine Value="163"/>
-        <UnitName Value="ODEGL"/>
-        <UsageCount Value="10"/>
-      </Unit4>
-    </Units>
     <PublishOptions>
       <Version Value="2"/>
       <IgnoreBinaries Value="False"/>
@@ -77,17 +34,62 @@
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
+    <Units Count="5">
+      <Unit0>
+        <Filename Value="Friction.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="51" Y="2"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="fFriction.pas"/>
+        <ComponentName Value="frmFriction"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="fFriction"/>
+        <CursorPos X="15" Y="61"/>
+        <TopLine Value="56"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="..\..\..\..\..\..\..\..\..\..\lazarus\components\GLScene\Source\FileFormats\GLFile3DS.pas"/>
+        <UnitName Value="GLFile3DS"/>
+        <CursorPos X="47" Y="414"/>
+        <TopLine Value="398"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="..\..\..\..\..\..\..\..\..\..\lazarus\lcl\include\application.inc"/>
+        <CursorPos X="1" Y="275"/>
+        <TopLine Value="259"/>
+        <UsageCount Value="10"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="..\..\..\..\..\..\..\..\..\..\lazarus\components\GLScene\Source\PhysicsAPIs\ODEGL.pas"/>
+        <UnitName Value="ODEGL"/>
+        <CursorPos X="1" Y="179"/>
+        <TopLine Value="163"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+    </Units>
+    <JumpHistory Count="1" HistoryIndex="0">
+      <Position1>
+        <Filename Value="fFriction.pas"/>
+        <Caret Line="61" Column="11" TopLine="45"/>
+      </Position1>
+    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <PathDelim Value="\"/>
     <SearchPaths>
       <SrcPath Value="$(LazarusDir)\lcl\;$(LazarusDir)\lcl\interfaces\$(LCLWidgetType)\"/>
     </SearchPaths>
-    <CodeGeneration>
-      <Generate Value="Faster"/>
-    </CodeGeneration>
     <Linking>
       <Options>
         <Win32>

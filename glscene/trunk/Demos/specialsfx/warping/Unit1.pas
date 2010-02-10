@@ -23,7 +23,7 @@ interface
 uses
   LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLGraph, ExtDlgs, Menus, GLObjects, VectorGeometry, VectorTypes,
-  GLLCLViewer, LResources, GLScene;
+  GLLCLViewer, LResources, GLScene, GLViewer;
 
 type
 

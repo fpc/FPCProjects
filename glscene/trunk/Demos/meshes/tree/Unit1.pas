@@ -8,7 +8,7 @@ uses
   SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLViewer, GLTree, GLTexture,
   ExtCtrls, ComCtrls, StdCtrls, GLVectorFileObjects, Menus, ExtDlgs, LResources,
-  GLScene, Buttons;
+  GLScene, Buttons, GLMaterial;
 
 type
 

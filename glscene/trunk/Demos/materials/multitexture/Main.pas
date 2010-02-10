@@ -29,7 +29,7 @@ interface
 uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   GLScene, GLObjects, GLTexture, ComCtrls, StdCtrls, ExtCtrls,
-  ExtDlgs, LResources, GLViewer;
+  ExtDlgs, LResources, GLViewer, GLMaterial;
 
 type
 

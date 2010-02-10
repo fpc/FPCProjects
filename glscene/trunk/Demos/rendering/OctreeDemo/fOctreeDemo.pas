@@ -8,7 +8,7 @@ uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLObjects, GLScene, VectorGeometry, StdCtrls,
   GeometryBB, GLTexture, OpenGL1x, GLCadencer, SpatialPartitioning,
-  ComCtrls, LResources, Buttons, GLViewer;
+  ComCtrls, LResources, Buttons, GLViewer, GLRenderContextInfo;
 
 const
   cBOX_SIZE = 14.2;

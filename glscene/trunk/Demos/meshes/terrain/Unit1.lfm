@@ -1,4 +1,10 @@
 object Form1: TForm1
+  Left = 252
+  Height = 405
+  Top = 191
+  Width = 603
+  HorzScrollBar.Page = 602
+  VertScrollBar.Page = 404
   Align = alClient
   BorderStyle = bsNone
   Caption = 'Form1'
@@ -8,14 +14,12 @@ object Form1: TForm1
   Font.Name = 'MS Sans Serif'
   OnCreate = FormCreate
   OnKeyPress = FormKeyPress
-  PixelsPerInch = 96
-  HorzScrollBar.Page = 602
-  VertScrollBar.Page = 404
-  Left = 252
-  Height = 405
-  Top = 191
-  Width = 603
+  LCLVersion = '0.9.29'
   object GLSceneViewer1: TGLSceneViewer
+    Left = 0
+    Height = 405
+    Top = 0
+    Width = 603
     Camera = GLCamera1
     Buffer.FogEnvironment.FogColor.Color = {
       0000803F0000803F0000803F0000803F
@@ -26,14 +30,13 @@ object Form1: TForm1
     Buffer.BackgroundColor = clGray
     Buffer.FogEnable = True
     Buffer.Lighting = False
-    FieldOfView = 152.2606201171875
+    FieldOfView = 152.260620117187
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
-    Height = 405
-    Width = 603
   end
   object GLBitmapHDS1: TGLBitmapHDS
+    MaxPoolSize = 0
     left = 56
     top = 16
   end
@@ -42,8 +45,22 @@ object Form1: TForm1
     left = 56
     top = 56
     object InitialRenderPoint: TGLRenderPoint
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
     end
     object SkyDome1: TGLSkyDome
+      TagFloat = 0
+      Direction.Coordinates = {
+        000000000000803F2EBD3BB300000000
+      }
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
+      Up.Coordinates = {
+        000000002EBD3BB3000080BF00000000
+      }
       Bands = <      
         item
           StartAngle = -5
@@ -64,16 +81,8 @@ object Form1: TForm1
         end>
       Stars = <>
       Options = [sdoTwinkle]
-      Direction.Coordinates = {
-        000000000000803F2EBD3BB300000000
-      }
-      Up.Coordinates = {
-        000000002EBD3BB3000080BF00000000
-      }
       object SPMoon: TGLSprite
-        Width = 30
-        Height = 30
-        NoZWrite = True
+        TagFloat = 0
         Material.FrontProperties.Ambient.Color = {
           0000000000000000000000000000803F
         }
@@ -89,15 +98,20 @@ object Form1: TForm1
         Material.Texture.TextureMode = tmReplace
         Material.Texture.Compression = tcNone
         Material.Texture.Disabled = False
+        PitchAngle = 0
         Position.Coordinates = {
           00000C430000C842000096420000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
         Visible = False
+        Width = 30
+        Height = 30
+        Rotation = 0
+        NoZWrite = True
       end
       object SPSun: TGLSprite
-        Width = 60
-        Height = 60
-        NoZWrite = True
+        TagFloat = 0
         Material.FrontProperties.Ambient.Color = {
           0000000000000000000000000000803F
         }
@@ -110,17 +124,29 @@ object Form1: TForm1
         Material.Texture.TextureFormat = tfLuminance
         Material.Texture.Compression = tcNone
         Material.Texture.Disabled = False
+        PitchAngle = 0
         Position.Coordinates = {
           00000C430000C842000096420000803F
         }
+        RollAngle = 0
+        TurnAngle = 0
+        Width = 60
+        Height = 60
+        Rotation = 0
+        NoZWrite = True
       end
     end
     object DummyCube1: TGLDummyCube
-      CubeSize = 1
+      TagFloat = 0
+      PitchAngle = 0
       Position.Coordinates = {
         0000000000000041000000000000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
+      CubeSize = 1
       object GLCamera1: TGLCamera
+        TagFloat = 0
         DepthOfView = 650
         FocalLength = 50
         TargetObject = DummyCube1
@@ -132,34 +158,49 @@ object Form1: TForm1
       end
     end
     object TerrainRenderer1: TGLTerrainRenderer
-      HeightDataSource = GLBitmapHDS1
-      TileSize = 32
-      TilesPerTexture = 1
-      QualityDistance = 150
+      TagFloat = 0
       Material.MaterialLibrary = GLMaterialLibrary1
       Material.LibMaterialName = 'ground'
       Direction.Coordinates = {
         000000000000803F0000000000000000
       }
+      PitchAngle = 0
+      RollAngle = 0
       Scale.Coordinates = {
         00008040000080400000803E00000000
       }
+      TurnAngle = 0
       Up.Coordinates = {
         00000000000000000000803F00000000
       }
+      HeightDataSource = GLBitmapHDS1
+      TileSize = 32
+      TilesPerTexture = 1
+      QualityDistance = 150
     end
     object HUDText1: TGLHUDText
-      BitmapFont = BitmapFont1
+      TagFloat = 0
+      PitchAngle = 0
       Position.Coordinates = {
         000096420000C841000000000000803F
       }
+      RollAngle = 0
+      TurnAngle = 0
+      BitmapFont = BitmapFont1
+      Rotation = 0
     end
     object DCSound: TGLDummyCube
+      TagFloat = 0
+      PitchAngle = 0
+      RollAngle = 0
+      TurnAngle = 0
       CubeSize = 1
     end
     object GLLensFlare: TGLLensFlare
+      TagFloat = 0
       Size = 100
       Seed = 978
+      StreakAngle = 0
       FlareIsNotOccluded = True
       PreRenderPoint = InitialRenderPoint
       Position.Coordinates = {
@@ -167,6 +208,10 @@ object Form1: TForm1
       }
       Visible = False
       object GLDummyCube1: TGLDummyCube
+        TagFloat = 0
+        PitchAngle = 0
+        RollAngle = 0
+        TurnAngle = 0
         CubeSize = 100
         VisibleAtRunTime = True
       end
@@ -179,6 +224,9 @@ object Form1: TForm1
   end
   object GLCadencer1: TGLCadencer
     Scene = GLScene1
+    MaxDeltaTime = 0
+    MinDeltaTime = 0
+    FixedDeltaTime = 0
     OnProgress = GLCadencer1Progress
     left = 16
     top = 16
@@ -202,6 +250,7 @@ object Form1: TForm1
           000000000000803F0000000000000000
         }
         Material.Texture.Disabled = False
+        Tag = 0
         Texture2Name = 'details'
       end    
       item
@@ -213,6 +262,7 @@ object Form1: TForm1
           000000000000803F0000000000000000
         }
         Material.Texture.Disabled = False
+        Tag = 0
         TextureScale.Coordinates = {
           00000043000000430000004300000000
         }
@@ -227,6 +277,7 @@ object Form1: TForm1
       item
         StartASCII = ' '
         StopASCII = 'Z'
+        StartGlyphIdx = 0
       end>
     CharWidth = 30
     CharHeight = 30
@@ -246,7 +297,6 @@ object Form1: TForm1
   end
   object GLSMFMOD1: TGLSMFMOD
     Active = True
-    MaxChannels = 32
     MasterVolume = 1
     Listener = GLCamera1
     Sources = <>

@@ -18,7 +18,7 @@ uses
   SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLObjects, GLTexture, OpenGL1x,
   StdCtrls, GLGeomObjects, GLHiddenLineShader, GLOutlineShader, ExtCtrls,
-  LResources, GLViewer;
+  LResources, GLViewer, GLMaterial;
 
 type
 

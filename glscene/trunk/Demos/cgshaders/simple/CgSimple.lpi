@@ -1,16 +1,15 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="5"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
       <ActiveEditorIndexAtStart Value="0"/>
     </General>
@@ -49,10 +48,9 @@
         <Filename Value="Unit1.pas"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
-        <ResourceFilename Value="unit1.lrs"/>
         <UnitName Value="Unit1"/>
-        <CursorPos X="24" Y="19"/>
-        <TopLine Value="6"/>
+        <CursorPos X="65" Y="19"/>
+        <TopLine Value="1"/>
         <EditorIndex Value="0"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
@@ -96,10 +94,11 @@
         <Filename Value="../../../Source/cgshaders/glcgshader.pas"/>
         <UnitName Value="GLCgShader"/>
         <CursorPos X="3" Y="325"/>
-        <TopLine Value="331"/>
+        <TopLine Value="325"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
+        <SyntaxHighlighter Value="Delphi"/>
       </Unit7>
       <Unit8>
         <Filename Value="../../../Source/designtime/guiskineditorformunit.pas"/>
@@ -117,7 +116,7 @@
         <UsageCount Value="10"/>
       </Unit9>
     </Units>
-    <JumpHistory Count="3" HistoryIndex="2">
+    <JumpHistory Count="4" HistoryIndex="3">
       <Position1>
         <Filename Value="Unit1.pas"/>
         <Caret Line="126" Column="33" TopLine="123"/>
@@ -130,16 +129,17 @@
         <Filename Value="Unit1.pas"/>
         <Caret Line="18" Column="12" TopLine="1"/>
       </Position3>
+      <Position4>
+        <Filename Value="Unit1.pas"/>
+        <Caret Line="21" Column="13" TopLine="18"/>
+      </Position4>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <SearchPaths>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
-    <CodeGeneration>
-      <Generate Value="Faster"/>
-    </CodeGeneration>
     <Linking>
       <Options>
         <Win32>

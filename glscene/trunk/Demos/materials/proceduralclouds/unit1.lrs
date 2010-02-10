@@ -1,5 +1,3 @@
-{ This is an automatically generated lazarus resource file }
-
 LazarusResources.Add('TForm1','FORMDATA',[
   'TPF0'#6'TForm1'#5'Form1'#4'Left'#3';'#1#6'Height'#3#169#1#3'Top'#2'w'#5'Widt'
   +'h'#3'5'#2#18'HorzScrollBar.Page'#3'4'#2#18'VertScrollBar.Page'#3#168#1#7'Ca'
@@ -8,38 +6,38 @@ LazarusResources.Add('TForm1','FORMDATA',[
   +#10'LCLVersion'#6#6'0.9.29'#0#14'TGLSceneViewer'#14'GLSceneViewer1'#4'Left'#2
   +#0#6'Height'#3#169#1#3'Top'#2#0#5'Width'#3'e'#1#6'Camera'#7#9'GLCamera1'#11
   +'AfterRender'#7#25'GLSceneViewer1AfterRender'#22'Buffer.BackgroundColor'#7#21
-  +'clInactiveCaptionText'#11'FieldOfView'#5#0#0#0#0#0#168'['#179#6'@'#5'Align'
-  +#7#8'alClient'#0#0#6'TPanel'#6'Panel1'#4'Left'#3'e'#1#6'Height'#3#169#1#3'To'
-  +'p'#2#0#5'Width'#3#208#0#5'Align'#7#7'alRight'#10'BevelOuter'#7#9'bvLowered'
-  +#12'ClientHeight'#3#169#1#11'ClientWidth'#3#208#0#11'FullRepaint'#8#8'TabOrd'
-  +'er'#2#0#0#6'TLabel'#6'Label1'#4'Left'#2#1#6'Height'#2'@'#3'Top'#2#1#5'Width'
-  +#3#206#0#5'Align'#7#5'alTop'#9'Alignment'#7#8'taCenter'#8'AutoSize'#8#7'Capt'
-  +'ion'#6#17'Procedural Clouds'#12'Font.CharSet'#7#12'ANSI_CHARSET'#11'Font.He'
-  +'ight'#2#229#9'Font.Name'#6#5'Arial'#10'Font.Style'#11#6'fsBold'#0#6'Layout'
-  +#7#8'tlCenter'#11'ParentColor'#8#10'ParentFont'#8#8'WordWrap'#9#0#0#6'TLabel'
-  +#6'Label2'#4'Left'#2#16#6'Height'#2#14#3'Top'#3#148#0#5'Width'#2'!'#7'Captio'
-  +'n'#6#6'Format'#11'ParentColor'#8#0#0#6'TLabel'#6'Label3'#4'Left'#2#16#6'Hei'
-  +'ght'#2#14#3'Top'#3#180#0#5'Width'#2'='#7'Caption'#6#11'Compression'#11'Pare'
-  +'ntColor'#8#0#0#6'TLabel'#6'Label5'#4'Left'#2#16#6'Height'#2#14#3'Top'#3#16#1
-  +#5'Width'#2';'#7'Caption'#6#11'Render Size'#11'ParentColor'#8#0#0#6'TLabel'
-  +#12'LAUsedMemory'#4'Left'#2#16#6'Height'#2#14#3'Top'#3#228#0#5'Width'#2'B'#7
-  +'Caption'#6#11'Used Memory'#11'ParentColor'#8#0#0#6'TLabel'#7'LARGB32'#4'Lef'
-  +'t'#2#16#6'Height'#2#14#3'Top'#3#212#0#5'Width'#2'B'#7'Caption'#6#11'Used Me'
-  +'mory'#11'ParentColor'#8#0#0#6'TLabel'#13'LACompression'#4'Left'#2#16#6'Heig'
-  +'ht'#2#14#3'Top'#3#244#0#5'Width'#2'B'#7'Caption'#6#11'Used Memory'#11'Paren'
-  +'tColor'#8#0#0#6'TLabel'#6'Label4'#4'Left'#2#16#6'Height'#2#14#3'Top'#2'`'#5
-  +'Width'#2'%'#7'Caption'#6#7'MinCut:'#11'ParentColor'#8#0#0#6'TLabel'#6'Label'
-  +'6'#4'Left'#2#16#6'Height'#2#14#3'Top'#2'H'#5'Width'#2'6'#7'Caption'#6#10'Sh'
-  +'arpness:'#11'ParentColor'#8#0#0#12'TSpeedButton'#16'CloudFileOpenBtn'#4'Lef'
-  +'t'#2#15#6'Height'#2#21#4'Hint'#6#15'Load Cloud File'#3'Top'#3'h'#1#5'Width'
-  +#2#25#5'Color'#7#9'clBtnFace'#10'Glyph.Data'#10':'#6#0#0'6'#6#0#0'BM6'#6#0#0
-  +#0#0#0#0'6'#0#0#0'('#0#0#0' '#0#0#0#16#0#0#0#1#0#24#0#0#0#0#0#0#6#0#0'd'#0#0
-  +#0'd'#0#0#0#0#0#0#0#0#0#0#0'g^Wkw1scs/?'#10'!!!!=NswVogWgg!cow=#1/19311#/?!!'
-  +'!=/Nok17?'#10'!!!Nko177'#10'!!!!!KocwggkogcogVcog=#;^NoosogowgogosgogFgos^c'
-  +'ookkoo^ocsggwok1/os#/'#10'!!!!!KocwggB{Fogoog!cow=#F^NKosogowo^gscgg^Foosco'
-  +'okskos^cwskw^okw/sc#/?!!!!!=cswkogsggVcog=#1/1/315#/'#10'!!!=/kok75?!!!=Nkk'
-  +'17?'#10'!!!!=KoowgFkooco!Vcwg=F;^Koooog^cgoo^ocsk33ss'#13'oksoosogskkwwok1/'
-  +'os#/'#10'!!!!!KocwggB{Fogoog!cow=#F^NKosogowo^gscgg^Fooscookskos^gskss'#13
+  +'clInactiveCaptionText'#11'FieldOfView'#5#0'p'#255#255#255#167'['#179#6'@'#5
+  +'Align'#7#8'alClient'#0#0#6'TPanel'#6'Panel1'#4'Left'#3'e'#1#6'Height'#3#169
+  +#1#3'Top'#2#0#5'Width'#3#208#0#5'Align'#7#7'alRight'#10'BevelOuter'#7#9'bvLo'
+  +'wered'#12'ClientHeight'#3#169#1#11'ClientWidth'#3#208#0#11'FullRepaint'#8#8
+  +'TabOrder'#2#0#0#6'TLabel'#6'Label1'#4'Left'#2#1#6'Height'#2'@'#3'Top'#2#1#5
+  +'Width'#3#206#0#5'Align'#7#5'alTop'#9'Alignment'#7#8'taCenter'#8'AutoSize'#8
+  +#7'Caption'#6#17'Procedural Clouds'#12'Font.CharSet'#7#12'ANSI_CHARSET'#11'F'
+  +'ont.Height'#2#229#9'Font.Name'#6#5'Arial'#10'Font.Style'#11#6'fsBold'#0#6'L'
+  +'ayout'#7#8'tlCenter'#11'ParentColor'#8#10'ParentFont'#8#8'WordWrap'#9#0#0#6
+  +'TLabel'#6'Label2'#4'Left'#2#16#6'Height'#2#14#3'Top'#3#148#0#5'Width'#2'!'#7
+  +'Caption'#6#6'Format'#11'ParentColor'#8#0#0#6'TLabel'#6'Label3'#4'Left'#2#16
+  +#6'Height'#2#14#3'Top'#3#180#0#5'Width'#2'='#7'Caption'#6#11'Compression'#11
+  +'ParentColor'#8#0#0#6'TLabel'#6'Label5'#4'Left'#2#16#6'Height'#2#14#3'Top'#3
+  +#16#1#5'Width'#2';'#7'Caption'#6#11'Render Size'#11'ParentColor'#8#0#0#6'TLa'
+  +'bel'#12'LAUsedMemory'#4'Left'#2#16#6'Height'#2#14#3'Top'#3#228#0#5'Width'#2
+  +'B'#7'Caption'#6#11'Used Memory'#11'ParentColor'#8#0#0#6'TLabel'#7'LARGB32'#4
+  +'Left'#2#16#6'Height'#2#14#3'Top'#3#212#0#5'Width'#2'B'#7'Caption'#6#11'Used'
+  +' Memory'#11'ParentColor'#8#0#0#6'TLabel'#13'LACompression'#4'Left'#2#16#6'H'
+  +'eight'#2#14#3'Top'#3#244#0#5'Width'#2'B'#7'Caption'#6#11'Used Memory'#11'Pa'
+  +'rentColor'#8#0#0#6'TLabel'#6'Label4'#4'Left'#2#16#6'Height'#2#14#3'Top'#2'`'
+  +#5'Width'#2'%'#7'Caption'#6#7'MinCut:'#11'ParentColor'#8#0#0#6'TLabel'#6'Lab'
+  +'el6'#4'Left'#2#16#6'Height'#2#14#3'Top'#2'H'#5'Width'#2'6'#7'Caption'#6#10
+  +'Sharpness:'#11'ParentColor'#8#0#0#12'TSpeedButton'#16'CloudFileOpenBtn'#4'L'
+  +'eft'#2#15#6'Height'#2#21#4'Hint'#6#15'Load Cloud File'#3'Top'#3'h'#1#5'Widt'
+  +'h'#2#25#5'Color'#7#9'clBtnFace'#10'Glyph.Data'#10':'#6#0#0'6'#6#0#0'BM6'#6#0
+  +#0#0#0#0#0'6'#0#0#0'('#0#0#0' '#0#0#0#16#0#0#0#1#0#24#0#0#0#0#0#0#6#0#0'd'#0
+  +#0#0'd'#0#0#0#0#0#0#0#0#0#0#0'g^Wkw1scs/?'#10'!!!!=NswVogWgg!cow=#1/19311#/?'
+  +'!!!=/Nok17?'#10'!!!Nko177'#10'!!!!!KocwggkogcogVcog=#;^NoosogowgogosgogFgos'
+  +'^cookkoo^ocsggwok1/os#/'#10'!!!!!KocwggB{Fogoog!cow=#F^NKosogowo^gscgg^Foos'
+  +'cookskos^cwskw^okw/sc#/?!!!!!=cswkogsggVcog=#1/1/315#/'#10'!!!=/kok75?!!!=N'
+  +'kk17?'#10'!!!!=KoowgFkooco!Vcwg=F;^Koooog^cgoo^ocsk33ss'#13'oksoosogskkwwok'
+  +'1/os#/'#10'!!!!!KocwggB{Fogoog!cow=#F^NKosogowo^gscgg^Fooscookskos^gskss'#13
   +'scsggg!F;gscscccgg^g{sc^gso^sckggs/s'#13#10'wocgF;^sc^cckggsg{wc^csoowkog/s'
   +#13#10'wcss33!;^gc^sckcgs^{ws^sckcgs^gwsccgso^csooss'#13'cgsokowo!;^gc^sckcg'
   +'s^{ws^cgoo^gsokoco/s'#13#10'gsck!F;gscscccgg^g{sc^gso^gkckgwsgoko/ss'#10'{o'
@@ -97,31 +95,27 @@ LazarusResources.Add('TForm1','FORMDATA',[
   +#3'S'#1#5'Width'#2'X'#7'Caption'#6#14'Use Cloud File'#8'TabOrder'#2#12#0#0#5
   +'TEdit'#17'CloudFileUsedEdit'#4'Left'#2'7'#6'Height'#2#21#3'Top'#3'h'#1#5'Wi'
   +'dth'#2'b'#11'HelpContext'#2'2'#8'TabOrder'#2#13#0#0#0#8'TGLScene'#8'GLScene'
-  +'1'#4'left'#2#8#3'top'#2#16#0#8'TGLPlane'#8'GLPlane1'#8'TagFloat'#5#0#0#0#0#0
-  +#0#0#0#0#0'&Material.FrontProperties.Ambient.Color'#10#16#0#0#0#0#0#0#0#0#0#0
-  +#0#0#0#0#0#0#0#0#0'&Material.FrontProperties.Diffuse.Color'#10#16#0#0#0#0#0#0
-  +#0#0#0#0#0#0#0#0#0#0#0#0#0'''Material.FrontProperties.Emission.Color'#10#16#0
-  +#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#21'Material.BlendingMode'#7#13'bmAlphaT'
-  +'est50'#31'Material.Texture.ImageClassName'#6#19'TGLProcTextureNoise'#29'Mat'
-  +'erial.Texture.Image.MinCut'#2#0'%Material.Texture.Image.NoiseSharpness'#5#0
-  +#0#0#0#0#164'p'#253#254'?'#31'Material.Texture.Image.Seamless'#9'$Material.T'
-  +'exture.Image.NoiseRandSeed'#4#163#196#160#29#28'Material.Texture.TextureMod'
-  +'e'#7#9'tmReplace'#25'Material.Texture.Disabled'#8#10'PitchAngle'#5#0#0#0#0#0
-  +#0#0#0#0#0#9'RollAngle'#5#0#0#0#0#0#0#0#0#0#0#9'TurnAngle'#5#0#0#0#0#0#0#0#0
-  +#0#0#6'Height'#5#0#0#0#0#0#0#0#200#4'@'#5'Width'#5#0#0#0#0#0#0#0#200#4'@'#7
-  +'XOffset'#5#0#0#0#0#0#0#0#0#0#0#6'XTiles'#2#2#7'YOffset'#5#0#0#0#0#0#0#0#0#0
-  +#0#6'YTiles'#2#2#5'Style'#11#13'psTileTexture'#0#8'NoZWrite'#8#0#0#9'TGLCame'
-  +'ra'#9'GLCamera1'#8'TagFloat'#5#0#0#0#0#0#0#0#0#0#0#11'DepthOfView'#5#0#0#0#0
-  +#0#0#0#200#5'@'#11'FocalLength'#5#0#0#0#0#0#0#0#128#255'?'#11'CameraStyle'#7
-  +#12'csOrthogonal'#20'Position.Coordinates'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0'p'
-  +'A'#0#0#128'?'#4'left'#3#0#1#3'top'#3#160#0#0#0#0#11'TGLCadencer'#11'GLCaden'
-  +'cer1'#5'Scene'#7#8'GLScene1'#12'MaxDeltaTime'#5#0#0#0#0#0#0#0#0#0#0#12'MinD'
-  +'eltaTime'#5#0#0#0#0#0#0#0#0#0#0#14'FixedDeltaTime'#5#0#0#0#0#0#0#0#0#0#0#10
-  +'OnProgress'#7#19'GLCadencer1Progress'#4'left'#2'('#3'top'#2#16#0#0#6'TTimer'
-  +#6'Timer1'#7'OnTimer'#7#11'Timer1Timer'#4'left'#2'('#3'top'#2'0'#0#0#11'TOpe'
-  +'nDialog'#11'OpenDialog1'#5'Title'#6#24'Vorhandene Datei '#195#182'ffnen'#11
-  +'FilterIndex'#2#0#4'left'#3#164#1#3'top'#3'c'#1#0#0#11'TSaveDialog'#11'SaveD'
-  +'ialog1'#5'Title'#6#17'Datei sichern als'#10'DefaultExt'#6#4'.rnd'#6'Filter'
-  +#6#24'Cloud base (*.clb)|*.clb'#11'FilterIndex'#2#0#4'left'#3#204#1#3'top'#3
-  +'e'#1#0#0#0
+  +'1'#4'left'#2#8#3'top'#2#16#0#8'TGLPlane'#8'GLPlane1'#8'TagFloat'#2#0'&Mater'
+  +'ial.FrontProperties.Ambient.Color'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0#0
+  +#0'&Material.FrontProperties.Diffuse.Color'#10#16#0#0#0#0#0#0#0#0#0#0#0#0#0#0
+  +#0#0#0#0#0'''Material.FrontProperties.Emission.Color'#10#16#0#0#0#0#0#0#0#0#0
+  +#0#0#0#0#0#0#0#0#0#0#21'Material.BlendingMode'#7#13'bmAlphaTest50'#31'Materi'
+  +'al.Texture.ImageClassName'#6#19'TGLProcTextureNoise'#29'Material.Texture.Im'
+  +'age.MinCut'#2#0'%Material.Texture.Image.NoiseSharpness'#5#0' '#255#255#255
+  +#163'p'#253#254'?'#31'Material.Texture.Image.Seamless'#9'$Material.Texture.I'
+  +'mage.NoiseRandSeed'#4#163#196#160#29#28'Material.Texture.TextureMode'#7#9't'
+  +'mReplace'#25'Material.Texture.Disabled'#8#10'PitchAngle'#2#0#9'RollAngle'#2
+  +#0#9'TurnAngle'#2#0#6'Height'#2'2'#5'Width'#2'2'#7'XOffset'#2#0#6'XTiles'#2#2
+  +#7'YOffset'#2#0#6'YTiles'#2#2#5'Style'#11#13'psTileTexture'#0#8'NoZWrite'#8#0
+  +#0#9'TGLCamera'#9'GLCamera1'#8'TagFloat'#2#0#11'DepthOfView'#2'd'#11'FocalLe'
+  +'ngth'#2#1#11'CameraStyle'#7#12'csOrthogonal'#20'Position.Coordinates'#10#16
+  +#0#0#0#0#0#0#0#0#0#0#0#0#0'pA'#0#0#128'?'#4'left'#3#0#1#3'top'#3#160#0#0#0#0
+  +#11'TGLCadencer'#11'GLCadencer1'#5'Scene'#7#8'GLScene1'#12'MaxDeltaTime'#2#0
+  +#12'MinDeltaTime'#2#0#14'FixedDeltaTime'#2#0#10'OnProgress'#7#19'GLCadencer1'
+  +'Progress'#4'left'#2'('#3'top'#2#16#0#0#6'TTimer'#6'Timer1'#7'OnTimer'#7#11
+  +'Timer1Timer'#4'left'#2'('#3'top'#2'0'#0#0#11'TOpenDialog'#11'OpenDialog1'#5
+  +'Title'#6#24'Vorhandene Datei '#195#182'ffnen'#11'FilterIndex'#2#0#4'left'#3
+  +#164#1#3'top'#3'c'#1#0#0#11'TSaveDialog'#11'SaveDialog1'#5'Title'#6#17'Datei'
+  +' sichern als'#10'DefaultExt'#6#4'.rnd'#6'Filter'#6#24'Cloud base (*.clb)|*.'
+  +'clb'#11'FilterIndex'#2#0#4'left'#3#204#1#3'top'#3'e'#1#0#0#0
 ]);

@@ -15,7 +15,7 @@ interface
 uses
   LCLIntf, Forms, GLObjects, GLTexture, VectorGeometry, ExtCtrls,
   Classes, Controls, GLShadowPlane, GLShadowVolume, LResources,
-  GLScene, GLCadencer, GLViewer;
+  GLScene, GLCadencer, GLViewer, GLMaterial;
 
 type
 

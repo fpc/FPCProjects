@@ -23,7 +23,7 @@ uses
   LCLType, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, GLTexture,
   GLCadencer, GLNavigator, GLViewer, GLKeyboard, GLLensFlare, GLObjects,
-  JPeg, GLSkyBox, LResources, GLScene;
+  JPeg, GLSkyBox, LResources, GLScene, GLMaterial;
 
 type
   TForm1 = class(TForm)

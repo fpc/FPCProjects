@@ -1,16 +1,15 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="5"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
       <ActiveEditorIndexAtStart Value="1"/>
     </General>
@@ -48,10 +47,10 @@
         <Filename Value="MainFormUnit.pas"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
-        <ResourceFilename Value="MainFormUnit.lrs"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainFormUnit"/>
-        <CursorPos X="89" Y="134"/>
-        <TopLine Value="122"/>
+        <CursorPos X="44" Y="36"/>
+        <TopLine Value="33"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="11"/>
         <Loaded Value="True"/>
@@ -92,21 +91,22 @@
         <UsageCount Value="11"/>
       </Unit6>
     </Units>
-    <JumpHistory Count="1" HistoryIndex="0">
+    <JumpHistory Count="2" HistoryIndex="1">
       <Position1>
         <Filename Value="MainFormUnit.pas"/>
         <Caret Line="29" Column="32" TopLine="19"/>
       </Position1>
+      <Position2>
+        <Filename Value="MainFormUnit.pas"/>
+        <Caret Line="134" Column="89" TopLine="122"/>
+      </Position2>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <SearchPaths>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
-    <CodeGeneration>
-      <Generate Value="Faster"/>
-    </CodeGeneration>
     <Linking>
       <Options>
         <Win32>

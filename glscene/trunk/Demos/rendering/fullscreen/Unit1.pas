@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Dialogs, GLScene,
-  GLWin32FullScreenViewer,GLTeapot,GLObjects,GLCanvas,graphics, GLCadencer;
+  GLLCLFullscreenViewer,GLTeapot,GLObjects,GLCanvas,graphics, GLCadencer;
 
 type
 

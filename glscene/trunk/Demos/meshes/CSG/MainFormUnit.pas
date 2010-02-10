@@ -33,7 +33,7 @@ uses
   SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, GLScene, GLVectorFileObjects, StdCtrls, GLBSP, GLMeshCSG,
   GLObjects, GLTexture, GLFile3ds, ExtCtrls, ComCtrls,
-  LResources, Buttons, GLViewer;
+  LResources, Buttons, GLViewer, GLMaterial;
 
 type
 

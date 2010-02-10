@@ -19,7 +19,7 @@ uses
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, GLVectorFileObjects, GLCadencer, GLExplosionFx,
   GLFile3DS, ExtCtrls, LResources,
-  GLScene, Buttons, GLLCLViewer;
+  GLScene, Buttons, GLLCLViewer, GLViewer;
 
 type
 

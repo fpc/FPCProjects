@@ -14,7 +14,8 @@ uses
   Dialogs, GLScene, GLViewer, GLSkydome, GLObjects,  jpeg, glkeyboard,
   GLHeightData, GLTerrainRenderer, GLTexture, GLCadencer, GLNavigator,
   SpatialPartitioning, VectorGeometry, ExtCtrls, GLBitmapFont, GeometryBB,
-  GLWindowsFont, GLHUDObjects, StdCtrls, ComCtrls, OpenGL1x, LResources;
+  GLWindowsFont, GLHUDObjects, StdCtrls, ComCtrls, OpenGL1x, LResources,
+  GLMaterial, GLRenderContextInfo;
 
 type
   TfrmQuadtreeVisCulling = class(TForm)
