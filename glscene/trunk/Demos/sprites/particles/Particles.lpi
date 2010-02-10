@@ -4,14 +4,14 @@
     <Version Value="7"/>
     <General>
       <Flags>
+        <SaveClosedFiles Value="False"/>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
-        <LRSInOutputDirectory Value="False"/>
       </Flags>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -33,197 +33,12 @@
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="21">
+    <Units Count="1">
       <Unit0>
         <Filename Value="Particles.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="45" Y="10"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="23"/>
-        <Loaded Value="True"/>
-        <SyntaxHighlighter Value="Delphi"/>
       </Unit0>
-      <Unit1>
-        <Filename Value="Unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="44" Y="33"/>
-        <TopLine Value="26"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="11"/>
-        <Loaded Value="True"/>
-        <SyntaxHighlighter Value="Delphi"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="C:/lazarus/lcl/LResources.pp"/>
-        <UnitName Value="LResources"/>
-        <CursorPos X="1" Y="1961"/>
-        <TopLine Value="1948"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="Unit1.lfm"/>
-        <CursorPos X="1" Y="1"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="10"/>
-        <SyntaxHighlighter Value="LFM"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="C:/lazarus/components/GLScene/Source/Base/XCollection.pas"/>
-        <UnitName Value="XCollection"/>
-        <CursorPos X="1" Y="549"/>
-        <TopLine Value="536"/>
-        <UsageCount Value="10"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="C:/lazarus/components/GLScene/Source/GLCadencer.pas"/>
-        <UnitName Value="GLCadencer"/>
-        <CursorPos X="4" Y="40"/>
-        <TopLine Value="31"/>
-        <UsageCount Value="11"/>
-      </Unit5>
-      <Unit6>
-        <Filename Value="C:/lazarus/components/GLScene/Source/DesignTime/GLLazarusRegister.pas"/>
-        <UnitName Value="GLLazarusRegister"/>
-        <CursorPos X="83" Y="41"/>
-        <TopLine Value="111"/>
-        <UsageCount Value="11"/>
-      </Unit6>
-      <Unit7>
-        <Filename Value="C:/lazarus/components/GLScene/Source/Platform/GLWin32Viewer.pas"/>
-        <UnitName Value="GLWin32Viewer"/>
-        <CursorPos X="3" Y="524"/>
-        <TopLine Value="197"/>
-        <UsageCount Value="11"/>
-      </Unit7>
-      <Unit8>
-        <Filename Value="C:/lazarus/components/GLScene/Source/Platform/GLWin32Context.pas"/>
-        <UnitName Value="GLWin32Context"/>
-        <CursorPos X="1" Y="1"/>
-        <TopLine Value="719"/>
-        <UsageCount Value="11"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="C:/lazarus/components/GLScene/Source/GLContext.pas"/>
-        <UnitName Value="GLContext"/>
-        <CursorPos X="1" Y="1"/>
-        <TopLine Value="181"/>
-        <UsageCount Value="11"/>
-      </Unit9>
-      <Unit10>
-        <Filename Value="C:/lazarus/lcl/Controls.pp"/>
-        <UnitName Value="Controls"/>
-        <CursorPos X="5" Y="1622"/>
-        <TopLine Value="1605"/>
-        <UsageCount Value="11"/>
-      </Unit10>
-      <Unit11>
-        <Filename Value="C:/lazarus/components/GLScene/Source/GLScene.pas"/>
-        <UnitName Value="GLScene"/>
-        <CursorPos X="40" Y="5858"/>
-        <TopLine Value="5852"/>
-        <UsageCount Value="11"/>
-      </Unit11>
-      <Unit12>
-        <Filename Value="C:/lazarus/components/GLScene/Source/Base/PersistentClasses.pas"/>
-        <UnitName Value="PersistentClasses"/>
-        <CursorPos X="1" Y="952"/>
-        <TopLine Value="940"/>
-        <UsageCount Value="10"/>
-      </Unit12>
-      <Unit13>
-        <Filename Value="C:/lazarus/components/GLScene/LazarusWin/glscenelazarus.pas"/>
-        <UnitName Value="GLSceneLazarus"/>
-        <CursorPos X="42" Y="52"/>
-        <TopLine Value="40"/>
-        <UsageCount Value="10"/>
-      </Unit13>
-      <Unit14>
-        <Filename Value="../../../../../../../../lazarus/lcl/interfaces/gtk/interfaces.pp"/>
-        <UnitName Value="Interfaces"/>
-        <CursorPos X="34" Y="33"/>
-        <TopLine Value="9"/>
-        <UsageCount Value="10"/>
-      </Unit14>
-      <Unit15>
-        <Filename Value="../../behaviours/dcedemo/unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="25" Y="30"/>
-        <TopLine Value="16"/>
-        <UsageCount Value="10"/>
-      </Unit15>
-      <Unit16>
-        <Filename Value="../../behaviours/fpsmovement/unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="35" Y="31"/>
-        <TopLine Value="17"/>
-        <UsageCount Value="10"/>
-      </Unit16>
-      <Unit17>
-        <Filename Value="../../../Source/designtime/glsceneedit.pas"/>
-        <ComponentName Value="GLSceneEditorForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="GLSceneEdit"/>
-        <CursorPos X="22" Y="1204"/>
-        <TopLine Value="1190"/>
-        <UsageCount Value="10"/>
-        <SyntaxHighlighter Value="Delphi"/>
-      </Unit17>
-      <Unit18>
-        <Filename Value="../../../Source/platform/glviewer.pas"/>
-        <UnitName Value="GLViewer"/>
-        <CursorPos X="46" Y="38"/>
-        <TopLine Value="22"/>
-        <UsageCount Value="10"/>
-        <SyntaxHighlighter Value="Delphi"/>
-      </Unit18>
-      <Unit19>
-        <Filename Value="../../materials/proceduralclouds/Unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="26" Y="12"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="10"/>
-      </Unit19>
-      <Unit20>
-        <Filename Value="../../../Source/platform/gllclviewer.pas"/>
-        <UnitName Value="GLLCLViewer"/>
-        <CursorPos X="4" Y="4"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="10"/>
-        <SyntaxHighlighter Value="Delphi"/>
-      </Unit20>
     </Units>
-    <JumpHistory Count="4" HistoryIndex="3">
-      <Position1>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="34" Column="35" TopLine="27"/>
-      </Position1>
-      <Position2>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="32" Column="64" TopLine="15"/>
-      </Position2>
-      <Position3>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="33" Column="37" TopLine="19"/>
-      </Position3>
-      <Position4>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="33" Column="34" TopLine="19"/>
-      </Position4>
-    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="8"/>
@@ -252,14 +67,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>

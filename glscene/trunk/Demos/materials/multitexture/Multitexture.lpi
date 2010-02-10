@@ -4,14 +4,14 @@
     <Version Value="7"/>
     <General>
       <Flags>
+        <SaveClosedFiles Value="False"/>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
-        <LRSInOutputDirectory Value="False"/>
       </Flags>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -33,15 +33,10 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="2">
       <Unit0>
         <Filename Value="Multitexture.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="1" Y="10"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="20"/>
-        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="Main.pas"/>
@@ -50,26 +45,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Main"/>
-        <CursorPos X="44" Y="32"/>
-        <TopLine Value="29"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="20"/>
-        <Loaded Value="True"/>
       </Unit1>
-      <Unit2>
-        <Filename Value="D:/LKomponenten/glscene/Source/Platform/CadencerASAP.pas"/>
-        <UnitName Value="CadencerASAP"/>
-        <CursorPos X="1" Y="1"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="10"/>
-      </Unit2>
     </Units>
-    <JumpHistory Count="1" HistoryIndex="0">
-      <Position1>
-        <Filename Value="Main.pas"/>
-        <Caret Line="32" Column="26" TopLine="32"/>
-      </Position1>
-    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="8"/>
@@ -87,14 +64,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>

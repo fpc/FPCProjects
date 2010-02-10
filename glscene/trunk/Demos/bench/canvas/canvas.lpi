@@ -4,14 +4,14 @@
     <Version Value="7"/>
     <General>
       <Flags>
+        <SaveClosedFiles Value="False"/>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
-        <LRSInOutputDirectory Value="False"/>
       </Flags>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="0"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -33,59 +33,17 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="1">
       <Unit0>
         <Filename Value="canvas.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="14" Y="6"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="20"/>
       </Unit0>
-      <Unit1>
-        <Filename Value="Unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="14" Y="32"/>
-        <TopLine Value="28"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="C:/lazarus/lcl/IntfGraphics.pas"/>
-        <UnitName Value="IntfGraphics"/>
-        <CursorPos X="1" Y="575"/>
-        <TopLine Value="563"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="D:/SRC/LKomponenten/glscene/Source/Platform/GLWin32Viewer.pas"/>
-        <UnitName Value="GLWin32Viewer"/>
-        <CursorPos X="33" Y="46"/>
-        <TopLine Value="41"/>
-        <UsageCount Value="10"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="D:/src/lazarus/lcl/Controls.pp"/>
-        <UnitName Value="Controls"/>
-        <CursorPos X="21" Y="1655"/>
-        <TopLine Value="1632"/>
-        <UsageCount Value="10"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="D:/src/lazarus/lcl/include/wincontrol.inc"/>
-        <CursorPos X="3" Y="2904"/>
-        <TopLine Value="2899"/>
-        <UsageCount Value="10"/>
-      </Unit5>
     </Units>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="8"/>
     <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir)/"/>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
     <Linking>
@@ -99,14 +57,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>

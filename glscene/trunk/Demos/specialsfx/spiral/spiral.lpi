@@ -4,14 +4,14 @@
     <Version Value="7"/>
     <General>
       <Flags>
+        <SaveClosedFiles Value="False"/>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
-        <LRSInOutputDirectory Value="False"/>
       </Flags>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -33,64 +33,12 @@
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="5">
+    <Units Count="1">
       <Unit0>
         <Filename Value="spiral.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="1" Y="1"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="21"/>
-        <Loaded Value="True"/>
       </Unit0>
-      <Unit1>
-        <Filename Value="Unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="11" Y="32"/>
-        <TopLine Value="19"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="C:/lazarus/components/GLScene/Source/GLScene.pas"/>
-        <UnitName Value="GLScene"/>
-        <CursorPos X="108" Y="6363"/>
-        <TopLine Value="6352"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="C:/lazarus/components/GLScene/Source/Platform/GLWin32FullScreenViewer.pas"/>
-        <UnitName Value="GLWin32FullScreenViewer"/>
-        <CursorPos X="31" Y="215"/>
-        <TopLine Value="202"/>
-        <UsageCount Value="10"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="C:/lazarus/components/GLScene/Source/Platform/GLWin32Viewer.pas"/>
-        <UnitName Value="GLWin32Viewer"/>
-        <CursorPos X="1" Y="521"/>
-        <TopLine Value="510"/>
-        <UsageCount Value="10"/>
-      </Unit4>
     </Units>
-    <JumpHistory Count="3" HistoryIndex="2">
-      <Position1>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="178" Column="10" TopLine="151"/>
-      </Position1>
-      <Position2>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="48" Column="3" TopLine="33"/>
-      </Position2>
-      <Position3>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="142" Column="3" TopLine="122"/>
-      </Position3>
-    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="8"/>
@@ -108,14 +56,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>

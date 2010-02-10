@@ -5,14 +5,14 @@
     <Version Value="7"/>
     <General>
       <Flags>
+        <SaveClosedFiles Value="False"/>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
-        <LRSInOutputDirectory Value="False"/>
       </Flags>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="2"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -34,48 +34,12 @@
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="1">
       <Unit0>
         <Filename Value="basicsdl.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="14" Y="6"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="20"/>
-        <Loaded Value="True"/>
       </Unit0>
-      <Unit1>
-        <Filename Value="Unit1.pas"/>
-        <ComponentName Value="DataModule1"/>
-        <HasResources Value="True"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="29" Y="74"/>
-        <TopLine Value="51"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="..\..\..\Source\designtime\glsceneregister.pas"/>
-        <UnitName Value="GLSceneRegister"/>
-        <CursorPos X="6" Y="219"/>
-        <TopLine Value="205"/>
-        <EditorIndex Value="2"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-        <SyntaxHighlighter Value="Delphi"/>
-      </Unit2>
     </Units>
-    <JumpHistory Count="2" HistoryIndex="1">
-      <Position1>
-        <Filename Value="..\..\..\Source\designtime\glsceneregister.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
-      </Position1>
-      <Position2>
-        <Filename Value="..\..\..\Source\designtime\glsceneregister.pas"/>
-        <Caret Line="211" Column="16" TopLine="205"/>
-      </Position2>
-    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="8"/>
@@ -94,14 +58,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>

@@ -1,18 +1,17 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="5"/>
+    <Version Value="7"/>
     <General>
       <Flags>
+        <SaveClosedFiles Value="False"/>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
       </Flags>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -34,53 +33,26 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="2">
       <Unit0>
         <Filename Value="dyncubemap.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="1" Y="10"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="20"/>
-        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="Unit1.pas"/>
+        <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
-        <IsPartOfProject Value="True"/>
-        <ResourceFilename Value="unit1.lrs"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="Unit1"/>
-        <CursorPos X="24" Y="19"/>
-        <TopLine Value="9"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="20"/>
-        <Loaded Value="True"/>
       </Unit1>
-      <Unit2>
-        <Filename Value="D:/lazarus/lcl/include/application.inc"/>
-        <CursorPos X="1" Y="264"/>
-        <TopLine Value="248"/>
-        <UsageCount Value="10"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="../../../../lazarus/components/GLScene/Source/GLScene.pas"/>
-        <UnitName Value="GLScene"/>
-        <CursorPos X="12" Y="6354"/>
-        <TopLine Value="1"/>
-        <UsageCount Value="10"/>
-      </Unit3>
     </Units>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <SearchPaths>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
     </SearchPaths>
-    <CodeGeneration>
-      <Generate Value="Faster"/>
-    </CodeGeneration>
     <Linking>
       <Options>
         <Win32>
@@ -92,14 +64,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>

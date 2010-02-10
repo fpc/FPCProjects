@@ -4,14 +4,14 @@
     <Version Value="7"/>
     <General>
       <Flags>
+        <SaveClosedFiles Value="False"/>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
-        <LRSInOutputDirectory Value="False"/>
       </Flags>
+      <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <PublishOptions>
       <Version Value="2"/>
@@ -33,56 +33,12 @@
         <PackageName Value="GLSceneLazarus"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="1">
       <Unit0>
         <Filename Value="CgTexture.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="14" Y="11"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="0"/>
-        <UsageCount Value="20"/>
-        <Loaded Value="True"/>
       </Unit0>
-      <Unit1>
-        <Filename Value="Unit1.pas"/>
-        <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
-        <UnitName Value="Unit1"/>
-        <CursorPos X="49" Y="19"/>
-        <TopLine Value="13"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="../../../Source/cgshaders/glcgshader.pas"/>
-        <UnitName Value="GLCgShader"/>
-        <CursorPos X="14" Y="382"/>
-        <TopLine Value="355"/>
-        <EditorIndex Value="2"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-        <SyntaxHighlighter Value="Delphi"/>
-      </Unit2>
     </Units>
-    <JumpHistory Count="4" HistoryIndex="3">
-      <Position1>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="157" Column="24" TopLine="154"/>
-      </Position1>
-      <Position2>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="159" Column="16" TopLine="154"/>
-      </Position2>
-      <Position3>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="157" Column="27" TopLine="145"/>
-      </Position3>
-      <Position4>
-        <Filename Value="Unit1.pas"/>
-        <Caret Line="138" Column="41" TopLine="129"/>
-      </Position4>
-    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="8"/>
@@ -100,14 +56,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-  <Debugging>
-    <Exceptions Count="2">
-      <Item1>
-        <Name Value="ECodetoolError"/>
-      </Item1>
-      <Item2>
-        <Name Value="EFOpenError"/>
-      </Item2>
-    </Exceptions>
-  </Debugging>
 </CONFIG>
