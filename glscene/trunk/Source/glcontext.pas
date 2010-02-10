@@ -565,11 +565,11 @@ type
                              treatWarningsAsErrors : Boolean = False);
 
          procedure AttachObject(shader : TGLShaderHandle);
-         procedure BindAttribLocation(index : Integer; const name : String);
+         procedure BindAttribLocation(index : Integer; const aName : String);
          function LinkProgram : Boolean;
          function ValidateProgram : Boolean;
-         function GetAttribLocation(const name : String) : Integer;
-         function GetUniformLocation(const name : String) : Integer;
+         function GetAttribLocation(const aName : String) : Integer;
+         function GetUniformLocation(const aName : String) : Integer;
          procedure UseProgramObject;
          procedure EndUseProgramObject;
 
@@ -1044,7 +1044,7 @@ var
 begin
    Result:=nil;
    for i:=0 to FSharedContexts.Count-1 do
-      if FSharedContexts[i]<>Self then begin
+      if TGLContext(FSharedContexts[i])<>Self then begin
          Result:=TGLContext(FSharedContexts[i]);
          Break;
       end;
@@ -1590,9 +1590,9 @@ end;
 
 // BindAttribLocation
 //
-procedure TGLProgramHandle.BindAttribLocation(index : Integer; const name : String);
+procedure TGLProgramHandle.BindAttribLocation(index : Integer; const aName : String);
 begin
-   glBindAttribLocationARB(FHandle, index, PGLChar(TGLString(name)));
+   glBindAttribLocationARB(FHandle, index, PGLChar(TGLString(aName)));
 end;
 
 // LinkProgram
@@ -1621,17 +1621,17 @@ end;
 
 // GetAttribLocation
 //
-function TGLProgramHandle.GetAttribLocation(const name : String) : Integer;
+function TGLProgramHandle.GetAttribLocation(const aName : String) : Integer;
 begin
-   Result:=glGetAttribLocationARB(Handle, PGLChar(TGLString(name)));
+   Result:=glGetAttribLocationARB(Handle, PGLChar(TGLString(aName)));
    Assert(Result>=0, 'Unknown attrib "'+name+'" or program not in use');
 end;
 
 // GetUniformLocation
 //
-function TGLProgramHandle.GetUniformLocation(const name : String) : Integer;
+function TGLProgramHandle.GetUniformLocation(const aName : String) : Integer;
 begin
-   Result:=glGetUniformLocationARB(Handle, PGLChar(TGLString(name)));
+   Result:=glGetUniformLocationARB(Handle, PGLChar(TGLString(aName)));
    Assert(Result>=0, 'Unknown uniform "'+name+'" or program not in use');
 end;
 

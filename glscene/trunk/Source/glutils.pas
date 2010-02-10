@@ -107,6 +107,7 @@ resourcestring
 
 // WordToIntegerArray
 //
+{$IFNDEF GEOMETRY_NO_ASM}
 procedure WordToIntegerArray(Source: PWordArray; Dest: PIntegerArray; Count: Cardinal); assembler;
 // EAX contains Source
 // EDX contains Dest
@@ -126,6 +127,15 @@ asm
               POP ESI
 @@Finish:
 end;
+{$ELSE}
+procedure WordToIntegerArray(Source: PWordArray; Dest: PIntegerArray; Count: Cardinal);
+var
+  i:integer;
+begin
+  for i := 0 to Count-1 do
+    Dest^[i] := Source^[i];
+end;
+{$ENDIF}
 
 // RoundUpToPowerOf2
 //
