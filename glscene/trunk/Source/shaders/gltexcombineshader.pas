@@ -18,7 +18,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLTexture, GLMaterial, GLRenderContextInfo;
+uses Classes, GLTexture, GLMaterial, GLRenderContextInfo, GLUtils;
 
 type
 

@@ -1,8 +1,12 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLSound<p>
 
 	Base classes and interface for GLScene Sound System<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>06/05/09 - DanB - Split TGLSMWaveOut to GLSMWaveOut.pas, to remove windows dependancy
       <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>22/07/02 - EG - SetMute/SetPause fix (Sternas Stefanos)
       <li>02/07/02 - EG - Persistence fix (MP3 / Sternas Stefanos)
@@ -497,7 +501,6 @@ type
 	end;
 
 
-
 function ActiveSoundManager : TGLSoundManager;
 function GetSoundLibraryByName(const aName : String) : TGLSoundLibrary;
 
@@ -516,7 +519,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, GLCrossPlatform;
+uses SysUtils, GLCrossPlatform, GLUtils;
 
 var
    vActiveSoundManager : TGLSoundManager;
@@ -661,6 +664,7 @@ begin
       FData:=sfc.Create(Self);
       FData.LoadFromFile(fileName);
    end else FData:=nil;
+   Assert(Data<>nil,'Could not load '+fileName+', make sure you include the unit required to load this format in your uses clause.');
    Name:=ExtractFileName(fileName);
 end;
 
@@ -1707,7 +1711,6 @@ begin
    Assert(FPlayingSource=aSource);
    FPlayingSource:=nil;
 end;
-
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------

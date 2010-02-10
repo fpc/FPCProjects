@@ -6,6 +6,11 @@
    Miscellaneous support utilities & classes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>27/05/09 - DanB - re-added TryStrToFloat, since it ignores user's locale.
+      <li>24/03/09 - DanB - removed TryStrToFloat (exists in SysUtils or GLCrossPlatform already)
+                            changed StrToFloatDef to accept only 1 param + now overloaded
+      <li>24/03/09 - DanB - Moved Dialog utilities here from GLCrossPlatform, because
+                            they work on all platforms (with FPC)
       <li>16/10/08 - UweR - corrected typo in TryStringToColorAdvanced parameter
       <li>16/10/08 - DanB - renamed Save/LoadStringFromFile to Save/LoadAnsiStringFromFile
       <li>24/03/08 - DaStr - Removed OpenGL1x dependancy
@@ -25,7 +30,7 @@ interface
 
 uses
   // VCL
-  Classes, SysUtils, Graphics,
+  Classes, SysUtils, Graphics, Controls,
 
   // GLScene
   VectorGeometry, GLCrossPlatform;
@@ -51,9 +56,9 @@ function IsPowerOf2(value : Integer) : Boolean;
 function ReadCRLFString(aStream : TStream) : AnsiString;
 //: Write the string and a CRLF in the stream
 procedure WriteCRLFString(aStream : TStream; const aString : AnsiString);
-//: TryStrToFloat
+//: Similar to SysUtils.TryStrToFloat, but ignores user's locale
 function TryStrToFloat(const strValue : String; var val : Extended) : Boolean;
-//: StrToFloatDef
+//: Similar to SysUtils.StrToFloatDef, but ignores user's locale
 function StrToFloatDef(const strValue : String; defValue : Extended = 0) : Extended;
 
 //: Converts a string into color
@@ -89,6 +94,20 @@ function SizeOfFile(const fileName : String) : Int64;
 {: Returns a pointer to an array containing the results of "255*sqrt(i/255)". }
 function GetSqrt255Array : PSqrt255Array;
 
+{: Pops up a simple dialog with msg and an Ok button. }
+procedure InformationDlg(const msg : String);
+{: Pops up a simple question dialog with msg and yes/no buttons.<p>
+   Returns True if answer was "yes". }
+function QuestionDlg(const msg : String) : Boolean;
+{: Posp a simple dialog with a string input. }
+function InputDlg(const aCaption, aPrompt, aDefault : String) : String;
+
+{: Pops up a simple save picture dialog. }
+function SavePictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
+{: Pops up a simple open picture dialog. }
+function OpenPictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
+
+
 //------------------------------------------------------
 //------------------------------------------------------
 //------------------------------------------------------
@@ -97,7 +116,7 @@ implementation
 //------------------------------------------------------
 //------------------------------------------------------
 
-uses ApplicationFileIO;
+uses ApplicationFileIO, Dialogs, ExtDlgs;
 
 var
 	vSqrt255 : TSqrt255Array;
@@ -209,7 +228,7 @@ begin
    while (lLen>0) and (strValue[lLen]=' ') do Dec(lLen);
    divider:=lLen+1;
    exponent:=0;
-	for i:=1 to lLen do begin
+   for i:=1 to lLen do begin
       c:=strValue[i];
       case c of
          ' ' : if v<>0 then begin
@@ -534,5 +553,71 @@ begin
 	end;
 	Result:=@vSqrt255;
 end;
+
+// InformationDlg
+//
+procedure InformationDlg(const msg : String);
+begin
+   ShowMessage(msg);
+end;
+
+// QuestionDlg
+//
+function QuestionDlg(const msg : String) : Boolean;
+begin
+   Result:=(MessageDlg(msg, mtConfirmation, [mbYes, mbNo], 0)=mrYes);
+end;
+
+// InputDlg
+//
+function InputDlg(const aCaption, aPrompt, aDefault : String) : String;
+begin
+   Result:=InputBox(aCaption, aPrompt, aDefault);
+end;
+
+// SavePictureDialog
+//
+function SavePictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
+var
+   saveDialog : TSavePictureDialog;
+begin
+   saveDialog:=TSavePictureDialog.Create(nil);
+   try
+      with saveDialog do begin
+         Options:=[ofHideReadOnly, ofNoReadOnlyReturn];
+         if aTitle<>'' then
+            Title:=aTitle;
+         FileName:=aFileName;
+         Result:=Execute;
+         if Result then
+            aFileName:=FileName;
+      end;
+   finally
+      saveDialog.Free;
+   end;
+end;
+
+// OpenPictureDialog
+//
+function OpenPictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
+var
+   openDialog : TOpenPictureDialog;
+begin
+   openDialog:=TOpenPictureDialog.Create(nil);
+   try
+      with openDialog do begin
+         Options:=[ofHideReadOnly, ofNoReadOnlyReturn];
+         if aTitle<>'' then
+            Title:=aTitle;
+         FileName:=aFileName;
+         Result:=Execute;
+         if Result then
+            aFileName:=FileName;
+      end;
+   finally
+      openDialog.Free;
+   end;
+end;
+
 
 end.

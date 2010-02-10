@@ -377,7 +377,7 @@ var
 
 implementation
 
-uses SysUtils;
+uses SysUtils, Dialogs;
 
 var
 	vColorManager : TGLColorManager;
@@ -812,7 +812,7 @@ begin
             end else Result[1]:=StrToFloat(workCopy);
          end else Result[0]:=StrToFloat(workCopy);
       except
-         InformationDlg('Wrong vector format. Use: ''<red green blue alpha>''!');
+         ShowMessage('Wrong vector format. Use: ''<red green blue alpha>''!');
          Abort;
       end;
    end;

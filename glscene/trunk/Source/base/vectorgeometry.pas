@@ -1389,9 +1389,13 @@ function MaxFloat(const v1, v2, v3 : Extended) : Extended; overload;
 
 function MinInteger(const v1, v2 : Integer) : Integer; overload;
 function MinInteger(const v1, v2 : Cardinal) : Cardinal; overload;
+function MinInteger(const v1, v2, v3 : Integer) : Integer; overload;
+function MinInteger(const v1, v2, v3 : Cardinal) : Cardinal; overload;
 
 function MaxInteger(const v1, v2 : Integer) : Integer; overload;
 function MaxInteger(const v1, v2 : Cardinal) : Cardinal; overload;
+function MaxInteger(const v1, v2, v3 : Integer) : Integer; overload;
+function MaxInteger(const v1, v2, v3 : Cardinal) : Cardinal; overload;
 
 {: Computes the triangle's area. }
 function TriangleArea(const p1, p2, p3 : TAffineVector) : Single; overload;
@@ -8351,6 +8355,40 @@ asm
  {$endif}
 end;
 
+// MinInteger
+//
+function MinInteger(const v1, v2, v3 : Integer) : Integer;
+begin
+   if v1<=v2 then
+      if v1<=v3 then
+         Result:=v1
+      else if v3<=v2 then
+         Result:=v3
+      else Result:=v2
+   else if v2<=v3 then
+      Result:=v2
+   else if v3<=v1 then
+      Result:=v3
+   else result:=v1;
+end;
+
+// MinInteger
+//
+function MinInteger(const v1, v2, v3 : Cardinal) : Cardinal;
+begin
+   if v1<=v2 then
+      if v1<=v3 then
+         Result:=v1
+      else if v3<=v2 then
+         Result:=v3
+      else Result:=v2
+   else if v2<=v3 then
+      Result:=v2
+   else if v3<=v1 then
+      Result:=v3
+   else result:=v1;
+end;
+
 // MaxInteger (2 int)
 //
 function MaxInteger(const v1, v2 : Integer) : Integer;
@@ -8379,6 +8417,40 @@ asm
    cmp   eax, edx
    db $0F,$42,$C2             /// cmovb eax, edx
  {$endif}
+end;
+
+// MaxInteger
+//
+function MaxInteger(const v1, v2, v3 : Integer) : Integer;
+begin
+   if v1>=v2 then
+      if v1>=v3 then
+         Result:=v1
+      else if v3>=v2 then
+         Result:=v3
+      else Result:=v2
+   else if v2>=v3 then
+      Result:=v2
+   else if v3>=v1 then
+      Result:=v3
+   else Result:=v1;
+end;
+
+// MaxInteger
+//
+function MaxInteger(const v1, v2, v3 : Cardinal) : Cardinal;
+begin
+   if v1>=v2 then
+      if v1>=v3 then
+         Result:=v1
+      else if v3>=v2 then
+         Result:=v3
+      else Result:=v2
+   else if v2>=v3 then
+      Result:=v2
+   else if v3>=v1 then
+      Result:=v3
+   else Result:=v1;
 end;
 
 // TriangleArea

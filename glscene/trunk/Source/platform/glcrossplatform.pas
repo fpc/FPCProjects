@@ -8,9 +8,6 @@
    Ultimately, *no* cross-platform or cross-version defines should be present
    in the core GLScene units, and have all moved here instead.<p>
 
-   Tips: Delphi 5 doesn't contain StrUtils.pas, Types.pas, so don't include these
-         files in uses clauses.
-
 	<b>Historique : </b><font size=-1><ul>
       <li>19/03/09 - DanB - Removed some Kylix IFDEFs, and other changes mostly affecting D5/FPC
       <li>29/05/08 - DaStr - Added StrToFloatDef(), TryStrToFloat()
@@ -231,6 +228,12 @@ const
   SMsgDlgYesToAll = 'A&lle Ja';
   {$ENDIF}
 
+{$IFDEF GLS_COMPILER_2009_UP}
+  GLS_FONT_CHARS_COUNT = 2024;
+{$else}
+  GLS_FONT_CHARS_COUNT = 256;
+{$ENDIF}
+
 function GLPoint(const x, y : Integer) : TGLPoint;
 
 {: Builds a TColor from Red Green Blue components. }
@@ -242,19 +245,6 @@ function GLRect(const aLeft, aTop, aRight, aBottom : Integer) : TGLRect;
    the top and bottom. }
 procedure InflateGLRect(var aRect : TGLRect; dx, dy : Integer);
 procedure IntersectGLRect(var aRect : TGLRect; const rect2 : TGLRect);
-
-{: Pops up a simple dialog with msg and an Ok button. }
-procedure InformationDlg(const msg : String);
-{: Pops up a simple question dialog with msg and yes/no buttons.<p>
-   Returns True if answer was "yes". }
-function QuestionDlg(const msg : String) : Boolean;
-{: Posp a simple dialog with a string input. }
-function InputDlg(const aCaption, aPrompt, aDefault : String) : String;
-
-{: Pops up a simple save picture dialog. }
-function SavePictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
-{: Pops up a simple open picture dialog. }
-function OpenPictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
 
 procedure RaiseLastOSError;
 
@@ -494,7 +484,7 @@ end;
 
 function GLOKMessageBox(const Text, Caption: string): Integer;
 begin
-  result := Application.MessageBox(PChar(Text),PChar(Caption),MB_OK);
+  Result := Application.MessageBox(PChar(Text), PChar(Caption), MB_OK);
 end;
 
 procedure GLShowCursor(AShow: boolean);
@@ -766,71 +756,6 @@ begin
          aRect.Top:=rect2.Top;
       if aRect.Bottom>rect2.Bottom then
          aRect.Bottom:=rect2.Bottom;
-   end;
-end;
-
-// InformationDlg
-//
-procedure InformationDlg(const msg : String);
-begin
-   ShowMessage(msg);
-end;
-
-// QuestionDlg
-//
-function QuestionDlg(const msg : String) : Boolean;
-begin
-   Result:=(MessageDlg(msg, mtConfirmation, [mbYes, mbNo], 0)=mrYes);
-end;
-
-// InputDlg
-//
-function InputDlg(const aCaption, aPrompt, aDefault : String) : String;
-begin
-   Result:=InputBox(aCaption, aPrompt, aDefault);
-end;
-
-// SavePictureDialog
-//
-function SavePictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
-var
-   saveDialog : TSavePictureDialog;
-begin
-   saveDialog:=TSavePictureDialog.Create(Application);
-   try
-      with saveDialog do begin
-         Options:=[ofHideReadOnly, ofNoReadOnlyReturn];
-         if aTitle<>'' then
-            Title:=aTitle;
-         FileName:=aFileName;
-         Result:=Execute;
-         if Result then
-            aFileName:=FileName;
-      end;
-   finally
-      saveDialog.Free;
-   end;
-end;
-
-// OpenPictureDialog
-//
-function OpenPictureDialog(var aFileName : String; const aTitle : String = '') : Boolean;
-var
-   openDialog : TOpenPictureDialog;
-begin
-   openDialog:=TOpenPictureDialog.Create(Application);
-   try
-      with openDialog do begin
-         Options:=[ofHideReadOnly, ofNoReadOnlyReturn];
-         if aTitle<>'' then
-            Title:=aTitle;
-         FileName:=aFileName;
-         Result:=Execute;
-         if Result then
-            aFileName:=FileName;
-      end;
-   finally
-      openDialog.Free;
    end;
 end;
 
