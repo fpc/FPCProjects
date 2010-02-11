@@ -6,6 +6,8 @@
    Misc. lists of vectors and entities<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>25/11/09 - DanB - Fixed FastQuickSortLists for 64bit (merged from gls4laz, thanks YarUnderoaker)
+                            ASM code protected with IFDEFs
       <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>01/03/08 - DaStr - Added Borland-style persistency support to TBaseList
       <li>29/03/07 - DaStr - Added more explicit pointer dereferencing
@@ -688,9 +690,8 @@ var
   I, J:    Integer;
   p, Temp: Integer;
   ppl:     PIntegerArray;
-  oTemp    : pointer;
+  oTemp    : Pointer;
   oppl     : PPointerArray;
-
 begin
   // All singles are >=1, so IEEE format allows comparing them as if they were integers
   ppl := PIntegerArray(@refList.List[0]);
@@ -708,9 +709,11 @@ begin
           Dec(J);
         if I <= J then
         begin
+          // swap integers
           Temp := ppl^[I];
           ppl^[I] := ppl^[J];
           ppl^[J] := Temp;
+          // swap pointers
           oTemp := oppl^[I];
           oppl^[I] := oppl^[J];
           oppl^[J] := oTemp;
@@ -730,9 +733,11 @@ begin
     begin
       I := endIndex;
       J := startIndex;
+      // swap integers
       Temp := ppl^[I];
       ppl^[I] := ppl^[J];
       ppl^[J] := Temp;
+      // swap pointers
       oTemp := oppl^[I];
       oppl^[I] := oppl^[J];
       oppl^[J] := oTemp;
@@ -2868,13 +2873,34 @@ end;
 //
 
 function TSingleList.Sum: Single;
+{$IFDEF GLS_NO_ASM__crossbuilder__This_Should_be_ifNdef}
+// This code was removed, because it's WRONG!!
+// now it's back in but noone would ever define the above, so I don't care
+// regards, crossbuilder
+
+  function ComputeSum(list: PSingleArrayList; nb: Integer): Single; register;
+  asm
+    fld   dword ptr [eax]
+    @@Loop:
+    dec   edx
+    fadd  dword ptr [eax+edx*4]
+    jnz   @@Loop
+  end;
+
+begin
+  if FCount > 0 then
+    Result := ComputeSum(FList, FCount)
+  else
+    Result := 0;
+{$ELSE}
 var
   i: Integer;
 
 begin
   Result := 0;
   for i := 0 to FCount-1 do
-     Result := Result + FList^[i];
+    Result := Result + FList^[i];
+{$ENDIF}
 end;
 
 // ------------------
@@ -3165,6 +3191,30 @@ end;
 //
 
 function TDoubleList.Sum: Double;
+{$IFDEF GLS_NO_ASM__crossbuilder__This_Should_be_ifNdef}
+
+// This code was removed, because it's WRONG!! It is even worse than the code 
+// from TSingleList.Sum:
+//   *  It's about double, so SCALE must be 8, not 4 !!
+//   *  Both implementations add list[0] twice.
+// now it's back in but noone would ever define the above, so I don't care
+// regards, crossbuilder
+
+  function ComputeSum(list: PDoubleArrayList; nb: Integer): Double; register;
+  asm
+    fld   dword ptr [eax] //load list[0]
+    @@Loop:
+    dec   edx
+    fadd  dword ptr [eax+edx*4] // in last iteration, again add list[0] 
+    jnz   @@Loop
+  end;
+
+begin
+  if FCount > 0 then
+    Result := ComputeSum(FList, FCount)
+  else
+    Result := 0;
+{$ELSE}
 var
   i: Integer;
 
@@ -3172,6 +3222,7 @@ begin
   Result := 0;
   for i := 0 to FCount-1 do
     Result := Result + FList^[i];
+{$ENDIF}
 end;
 
 // ------------------

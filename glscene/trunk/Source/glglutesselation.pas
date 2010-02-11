@@ -7,6 +7,7 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>26/11/09 - DaStr - Improved Lazarus compatibility (BugtrackerID = 2893580)
       <li>10/03/09 - DanB - DoTesselate now accepts TGLBaseMesh instead of
                             TGLFreeform, so can now use TGLActor with it too
       <li>29/05/08 - DaStr - Added $I GLScene.inc
@@ -42,7 +43,7 @@ Var
   TessExtraVertices : Integer;
   TessVertices : PAffineVectorArray;
 
-procedure DoTessBegin(mode: TGLEnum); stdcall;
+procedure DoTessBegin(mode: TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 Begin
   TessFace := TFGIndexTexCoordList.CreateOwned(TessMesh.FaceGroups);
   Case mode of
@@ -53,28 +54,28 @@ Begin
   End;
 End;
 
-procedure DoTessVertex3fv(v: PAffineVector); stdcall;
+procedure DoTessVertex3fv(v: PAffineVector); {$IFDEF Win32} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 Begin
   TessFace.Add(TessMesh.Vertices.Add(v^),0,0);
 End;
 
-procedure DoTessEnd; stdcall;
+procedure DoTessEnd; {$IFDEF Win32} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 Begin
 End;
 
-procedure DoTessError(errno : TGLEnum); stdcall;
+procedure DoTessError(errno : TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 begin
   Assert(False, IntToStr(errno)+': '+String(TGLString(gluErrorString(errno))));
 end;
 
-function AllocNewVertex : PAffineVector; stdcall;
+function AllocNewVertex : PAffineVector;
 begin
   Inc(TessExtraVertices);
   Result:=@TessVertices[TessExtraVertices-1];
 end;
 
 
-procedure DoTessCombine(coords : PDoubleVector; vertex_data : Pointer; weight : PGLFloat; var outData : Pointer); stdcall;
+procedure DoTessCombine(coords : PDoubleVector; vertex_data : Pointer; weight : PGLFloat; var outData : Pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 begin
   outData:=AllocNewVertex;
   SetVector(PAffineVector(outData)^, coords[0], coords[1], coords[2]);

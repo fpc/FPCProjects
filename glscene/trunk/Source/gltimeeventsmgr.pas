@@ -8,6 +8,7 @@
    can be useful to make animations with GlScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/11/09 - DanB - Changed TTimeEvent.Name from ShortString to String
       <li>11/10/07 - DaStr - TTimeEvent.SetEnabled now updates StartTime to
                              Cadencers's current time.
                              (Thanks Lukasz Sokol) (BugTracker ID = 1811141)
@@ -76,7 +77,7 @@ type
 
          function Add: TTimeEvent;
 	      function FindItemID(ID: Integer): TTimeEvent;
-         function EventByName(name:ShortString): TTimeEvent;
+         function EventByName(name:String): TTimeEvent;
 
 	      property Items[index : Integer] : TTimeEvent read GetItems write SetItems; default;
    end;
@@ -89,7 +90,7 @@ type
    TTimeEvent = class (TCollectionItem)
       private
          { Private Declarations }
-         FName: ShortString;
+         FName: String;
          FStartTime, FEndTime, FElapsedTime : Double;
          FPeriod : Double;
          FEventType: TTimeEventType;
@@ -102,7 +103,7 @@ type
       protected
          { Protected Declarations }
          function GetDisplayName : String; override;
-         procedure SetName(val : ShortString);
+         procedure SetName(val : String);
 
          procedure DoEvent(const curTime : Double);
 
@@ -118,7 +119,7 @@ type
 
       published
          { Published Declarations }
-         property Name : ShortString read FName write SetName;
+         property Name : String read FName write SetName;
          property StartTime : Double read FStartTime write FStartTime;
          property EndTime : Double read FEndTime write FEndTime;
          property Period : Double read  FPeriod write FPeriod;
@@ -271,7 +272,7 @@ end;
 
 // EventByName
 //
-function TTimeEvents.EventByName(name:ShortString): TTimeEvent;
+function TTimeEvents.EventByName(name:String): TTimeEvent;
 var i:integer;
 begin
     i:=0;
@@ -320,7 +321,7 @@ end;
 
 // SetName
 //
-procedure TTimeEvent.SetName(val : ShortString);
+procedure TTimeEvent.SetName(val : String);
 var
    i : Integer;
    ok : Boolean;

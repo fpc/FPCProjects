@@ -2122,8 +2122,6 @@ var
    delta : TAffineVector;
    f, r : Single;
    projB : TAffineVector;
-const
-   cDefaultDelta : TAffineVector = (0.01, 0, 0);
 begin
    Assert((NodeA<>NodeB), 'The nodes are identical - that causes division by zero!');
 
@@ -2301,7 +2299,7 @@ var
   Corners : array[0..7] of TAffineVector;
   EdgeRelative : array[0..1] of TAffineVector;
 
-  shortestMove, contactNormal : TAffineVector;
+  shortestMove{, contactNormal} : TAffineVector;
   shortestDeltaLength : Single;
 
   procedure AddCorner(CornerID : Integer; x,y,z : Single);
@@ -2402,7 +2400,7 @@ begin
 
   if shortestDeltaLength<10e8 then
   begin
-     contactNormal := VectorScale(shortestMove, 1/shortestDeltaLength);
+     //contactNormal := VectorScale(shortestMove, 1/shortestDeltaLength);
 
      {aEdge.NodeA.ApplyFriction(FFrictionRatio, shortestDeltaLength, contactNormal);
      aEdge.NodeB.ApplyFriction(FFrictionRatio, shortestDeltaLength, contactNormal);//}
