@@ -91,6 +91,9 @@ implementation
 
 uses SysUtils;
 
+Type
+  GLResourceIconsClass = TBitmap;
+
 //----------------- TObjectManager ---------------------------------------------
 
 // Create
@@ -245,7 +248,7 @@ var
 begin
   // Since no resource name was provided, assume it's the same as class name
   resBitmapName:=ASceneObject.ClassName;
-  bmp := TPixmap.Create;
+  bmp := GLResourceIconsClass.Create;
   try
     // Try loading bitmap from module that class is in
     GLLoadBitmapFromInstance(HInstance(*FindClassHInstance(ASceneObject)*), bmp, resBitmapName);
@@ -366,7 +369,7 @@ var
    bmp : TCustomBitmap;
 
 begin
-   bmp:=TPixmap.create;
+   bmp:=GLResourceIconsClass.create;
    with FObjectIcons, bmp.Canvas do begin
       try
          // There's a more direct way for loading images into the image list, but

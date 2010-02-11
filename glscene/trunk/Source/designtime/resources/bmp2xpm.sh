@@ -1,4 +1,14 @@
 #!/bin/bash
+# very new thing:
+# resource as bitmap is only slightly bigger
+# just use all bmp, get rid of the lcl/ and the objects_lcl
+lazres ../glsceneregister.lrs `find vcl/ -iname "*.bmp"`
+lazres ../gllazarusobjects.lrs `find objects/ -iname "*.bmp"`
+
+exit
+
+# old stuff:
+
 #new thing:
 # ok, that works. But bmp is much bigger than xpm blowing up the
 # resources and therefore executable size.
@@ -21,7 +31,6 @@ cd ..
 # end good old thing
 
 # now vcl
-# TODO: try to use the bmp files here, too
 
 find vcl/ -iname "*.bmp" -exec cp {} lcl/ \;
 cd lcl
