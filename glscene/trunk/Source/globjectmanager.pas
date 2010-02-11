@@ -45,15 +45,15 @@ type
    // TObjectManager
    //
   TObjectManager = class (TComponent)
-      private
-         { Private Declarations }
-         FSceneObjectList : TList;
-         FObjectIcons : TImageList;       // a list of icons for scene objects
-         FOverlayIndex,                   // indices into the object icon list
-         FSceneRootIndex,
-         FCameraRootIndex,
-         FLightsourceRootIndex,
-         FObjectRootIndex : Integer;
+    private
+      { Private Declarations }
+      FSceneObjectList : TList;
+      FObjectIcons : TImageList;       // a list of icons for scene objects
+      FOverlayIndex,                   // indices into the object icon list
+      FSceneRootIndex,
+      FCameraRootIndex,
+      FLightsourceRootIndex,
+      FObjectRootIndex : Integer;
 
     protected
       { Protected Declarations }
@@ -75,7 +75,7 @@ type
       procedure PopulateMenuWithRegisteredSceneObjects(AMenuItem: TMenuItem; aClickEvent: TNotifyEvent);
       //: Registers a stock object and adds it to the stock object list
       procedure RegisterSceneObject(ASceneObject: TGLSceneObjectClass; const aName, aCategory : String);overload;
-      procedure RegisterSceneObject(ASceneObject: TGLSceneObjectClass; const aName, aCategory : String; aBitmap: TCustomBitmap);overload;
+      procedure RegisterSceneObject(ASceneObject: TGLSceneObjectClass; const aName, aCategory : String; aBitmap: TBitmap);overload;
       procedure RegisterSceneObject(ASceneObject: TGLSceneObjectClass; const aName, aCategory : String; ResourceModule: Cardinal; ResourceName:String='');overload;
       //: Unregisters a stock object and removes it from the stock object list
       procedure UnRegisterSceneObject(ASceneObject: TGLSceneObjectClass);
@@ -90,9 +90,6 @@ type
 implementation
 
 uses SysUtils;
-
-Type
-  GLResourceIconsClass = TBitmap;
 
 //----------------- TObjectManager ---------------------------------------------
 
@@ -244,11 +241,11 @@ procedure TObjectManager.RegisterSceneObject(ASceneObject: TGLSceneObjectClass;
                                              const aName, aCategory : String);
 var
    resBitmapName : String;
-   bmp : TCustomBitmap;
+   bmp : TBitmap;
 begin
   // Since no resource name was provided, assume it's the same as class name
   resBitmapName:=ASceneObject.ClassName;
-  bmp := GLResourceIconsClass.Create;
+  bmp := TBitmap.Create;
   try
     // Try loading bitmap from module that class is in
     GLLoadBitmapFromInstance(HInstance(*FindClassHInstance(ASceneObject)*), bmp, resBitmapName);
@@ -269,7 +266,7 @@ end;
 
 // RegisterSceneObject
 //
-procedure TObjectManager.RegisterSceneObject(ASceneObject: TGLSceneObjectClass; const aName, aCategory : String; aBitmap: TCustomBitmap);
+procedure TObjectManager.RegisterSceneObject(ASceneObject: TGLSceneObjectClass; const aName, aCategory : String; aBitmap: TBitmap);
 var
    newEntry  : PSceneObjectEntry;
    bmp: TBitmap;
@@ -366,27 +363,26 @@ end;
 //
 procedure TObjectManager.CreateDefaultObjectIcons(ResourceModule: Cardinal);
 var
-   bmp : TCustomBitmap;
-
+   bmp : TBitmap;
 begin
-   bmp:=GLResourceIconsClass.create;
+   bmp:=TBitmap.Create;
    with FObjectIcons, bmp.Canvas do begin
       try
          // There's a more direct way for loading images into the image list, but
          // the image quality suffers too much
          {.$ifdef WIN32}
          GLLoadBitmapFromInstance(ResourceModule, bmp,'gls_cross');
-         FOverlayIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
+         FOverlayIndex:=AddMasked(bmp, Pixels[0, 0]);
          //Overlay(FOverlayIndex, 0); // used as indicator for disabled objects
          {.$endif}
          GLLoadBitmapFromInstance(ResourceModule, bmp,'gls_root');
-         FSceneRootIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
+         FSceneRootIndex:=AddMasked(bmp, Pixels[0, 0]);
          GLLoadBitmapFromInstance(ResourceModule, bmp,'gls_camera');
-         FCameraRootIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
+         FCameraRootIndex:=AddMasked(bmp, Pixels[0, 0]);
          GLLoadBitmapFromInstance(ResourceModule, bmp,'gls_lights');
-         FLightsourceRootIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
+         FLightsourceRootIndex:=AddMasked(bmp, Pixels[0, 0]);
          GLLoadBitmapFromInstance(ResourceModule, bmp,'gls_objects');
-         FObjectRootIndex:=count; InsertMasked(count,bmp, Pixels[0, 0]);
+         FObjectRootIndex:=AddMasked(bmp, Pixels[0, 0]);
       finally
          bmp.Free;
       end;
