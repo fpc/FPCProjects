@@ -32,7 +32,6 @@
       </Item2>
       <Item3>
         <Filename Value="../Source/glsmwaveout.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="GLSMWaveOut"/>
       </Item3>
       <Item4>

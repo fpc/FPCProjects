@@ -14,7 +14,6 @@ implementation
 procedure Register; 
 begin
   RegisterUnit('GLSMBASS', @GLSMBASS.Register); 
-  RegisterUnit('GLSMWaveOut', @GLSMWaveOut.Register); 
 end; 
 
 initialization

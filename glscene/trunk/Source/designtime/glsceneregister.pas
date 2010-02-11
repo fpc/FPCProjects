@@ -379,7 +379,7 @@ var
 function ObjectManager : TObjectManager;
 begin
    if not Assigned(vObjectManager) then
-      vObjectManager:=TObjectManager.Create;
+      vObjectManager:=TObjectManager.Create(nil);
    Result:=vObjectManager;
 end;
 

@@ -12,6 +12,7 @@
    unregistered, any editor that is using the object manager can be notified.
 
 	<b>History : </b><font size=-1><ul>
+      <li>26/03/09 - DanB - Added PopulateMenuWithRegisteredSceneObjects procedure.
       <li>14/03/09 - DanB - Created by moving TObjectManager in from GLSceneRegister.pas,
                             made some slight adjustments to allow resources being loaded
                             from separate packages.
@@ -23,10 +24,7 @@ unit GLObjectManager;
 
 interface
 
-{$i GLScene.inc}
-
-uses Classes, Controls, GLCrossPlatform, GLScene,
-     Graphics, lresources;
+uses Classes, Graphics, Controls, Menus, GLCrossPlatform, GLScene;
 
 type
 
@@ -43,7 +41,7 @@ type
 
    // TObjectManager
    //
-   TObjectManager = class (TObject)
+  TObjectManager = class (TComponent)
       private
          { Private Declarations }
          FSceneObjectList : TList;
@@ -62,7 +60,7 @@ type
 
     public
       { Public Declarations }
-      constructor Create;
+      constructor Create(AOwner: TComponent); override;
       destructor Destroy; override;
       procedure RegisterSceneObjectsToIDE;
 
@@ -71,6 +69,7 @@ type
       function GetImageIndex(ASceneObject: TGLSceneObjectClass) : Integer;
       function GetCategory(ASceneObject: TGLSceneObjectClass) : String;
       procedure GetRegisteredSceneObjects(ObjectList: TStringList);
+      procedure PopulateMenuWithRegisteredSceneObjects(AMenuItem: TMenuItem; aClickEvent: TNotifyEvent);
       //: Registers a stock object and adds it to the stock object list
       procedure RegisterSceneObject(ASceneObject: TGLSceneObjectClass; const aName, aCategory : String);overload;
       procedure RegisterSceneObject(ASceneObject: TGLSceneObjectClass; const aName, aCategory : String; aBitmap: TCustomBitmap);overload;
@@ -93,7 +92,7 @@ uses SysUtils;
 
 // Create
 //
-constructor TObjectManager.Create;
+constructor TObjectManager.Create(AOwner: TComponent);
 begin
   inherited;
   FSceneObjectList:=TList.Create;
@@ -178,6 +177,47 @@ begin
       for i:=0 to FSceneObjectList.Count-1 do
          with TGLSceneObjectEntry(FSceneObjectList.Items[I]^) do
             AddObject(Name, Pointer(ObjectClass));
+   end;
+end;
+
+procedure TObjectManager.PopulateMenuWithRegisteredSceneObjects(AMenuItem: TMenuItem;
+  aClickEvent: TNotifyEvent);
+var
+   objectList : TStringList;
+   i, j : Integer;
+   item, currentParent : TMenuItem;
+   currentCategory : String;
+   soc : TGLSceneObjectClass;
+begin
+   objectList:=TStringList.Create;
+   try
+      GetRegisteredSceneObjects(objectList);
+      for i:=0 to objectList.Count-1 do if objectList[i]<>'' then
+      begin
+         currentCategory:=GetCategory(TGLSceneObjectClass(objectList.Objects[i]));
+         if currentCategory='' then
+            currentParent:=AMenuItem
+         else
+         begin
+            currentParent:=NewItem(currentCategory, 0, False, True, nil, 0, '');
+            AMenuItem.Add(currentParent);
+         end;
+         for j:=i to objectList.Count-1 do if objectList[j]<>'' then
+         begin
+           soc:=TGLSceneObjectClass(objectList.Objects[j]);
+           if currentCategory=GetCategory(soc) then
+           begin
+             item:=NewItem(objectList[j], 0, False, True, aClickEvent, 0, '');
+             item.ImageIndex:=GetImageIndex(soc);
+             item.Tag:=Integer(soc);
+             currentParent.Add(item);
+             objectList[j]:='';
+             if currentCategory='' then Break;
+           end;
+         end;
+      end;
+	finally
+      objectList.Free;
    end;
 end;
 
