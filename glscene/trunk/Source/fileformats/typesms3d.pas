@@ -6,7 +6,9 @@
 	Types and structures for the MS3D file format.<p>
 
 	<b>Historique : </b><font size=-1><ul>
-      <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
+      <li>24/07/09 - DaStr - TMS3DGroup.MaterialIndex is now Shortint
+                              (BugtrackerID = 2353633)
+      <li>16/10/08 - UweR  - Compatibility fix for Delphi 2009
       <li>06/06/07 - DaStr - Added $I GLScene.inc
                              Added GLColor to uses (BugtrackerID = 1732211)
       <li>31/08/03 - DanB  - Some code standardisation (by Philipp)
@@ -46,7 +48,7 @@ type
     Name: array[0..31] of AnsiChar;
     NumTriangles: word;
     TriangleIndices: TList;
-    MaterialIndex: Byte;
+    MaterialIndex: Shortint;
     constructor Create;
     destructor Destroy; override;
   end;

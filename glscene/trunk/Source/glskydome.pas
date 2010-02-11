@@ -35,7 +35,7 @@ unit GLSkydome;
 
 interface
 
-{$I GLSCene.inc}
+{$I GLScene.inc}
 
 uses
   // VCL

@@ -6,6 +6,7 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>04/06/09 - DanB - Delphi 5 fix
       <li>17/10/08 - DanB - changed some NotifyChange(Sender) calls to NotifyChange(Self)
       <li>08/10/08 - DanB - split materials related stuff into GLMaterial.pas
       <li>06/10/08 - DanB - added Assert check for trying to create texture images
@@ -2942,7 +2943,7 @@ procedure TGLTextureExItem.NotifyTexMapChange(Sender : TObject);
 var
   intf: IGLTextureNotifyAble;
 begin
-  if Supports(TGLTextureEx(Collection).FOwner, IGLTextureNotifyAble, intf) then
+  if Supports(TObject(TGLTextureEx(Collection).FOwner), IGLTextureNotifyAble, intf) then
     intf.NotifyTexMapChange(Sender);
 end;
 

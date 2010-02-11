@@ -34,7 +34,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLHeightData, GLGraphics, GLCrossPlatform;
+uses Classes, GLHeightData, GLCrossPlatform;
 
 type
   TGLAsyncHDS = class;
@@ -110,7 +110,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, OpenGL1x, GLUtils;
+uses SysUtils, OpenGL1x;
 
 // ------------------
 // ------------------ TGLAsyncHDS ------------------

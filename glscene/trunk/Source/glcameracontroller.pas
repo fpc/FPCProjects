@@ -9,6 +9,7 @@
   Main purpose was the SafeOrbitAndZoomToPos method, the others are usable as well
 
   <b>History : </b><font size=-1><ul>
+      <li>24/07/09 - DaStr - Got rid of compiler hints 
       <li>20/03/09 - DanB - Donated to GLScene by Bogdan Deaky.
     </ul></font>
 }
@@ -121,14 +122,14 @@ begin
   //check camera assignament
   if not assigned(Camera) then
   begin
-    result:=false;
+//    result:=false;
     raise Exception.Create('CameraMover needs to have camera assigned');
     exit;
   end;
   //check cadencer assignament
   if not assigned(Cadencer) then
   begin
-    result:=false;
+//    result:=false;
     raise Exception.Create('CameraMover needs to have Cadencer assigned');
     exit;
   end;
@@ -136,7 +137,7 @@ begin
   //TestExtendedPremises = check camera.TargetObject assignament
   if not assigned(Camera.TargetObject) then
   begin
-    result:=false;
+//    result:=false;
     raise Exception.Create('This movement needs needs to have Camera.TargetObject assigned');
   end;
 end;

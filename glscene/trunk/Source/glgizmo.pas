@@ -7,8 +7,9 @@
    under GLScene (usefull for an Editor).<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>14/07/09 - DaStr - Bugfixed object selection from code (thanks Predator)
       <li>20/01/08 - DaStr - Cleaned up uses section for proper FPC support
-                             (thanks Lukasz Sokol) 
+                             (thanks Lukasz Sokol)
       <li>18/09/07 - DaStr - Initial version (based on GLGizmo.pas by Adirex,
                              J.Delauney, Degiovani, Marcus Oblak and a bit myself)
    </ul></font>
@@ -224,7 +225,7 @@ type
 
     procedure SetRootGizmo(const AValue: TGLBaseSceneObject);
 
-    procedure SetGLGizmoElements(const AValue: TGLGizmoElements);
+    procedure SetGizmoElements(const AValue: TGLGizmoElements);
     procedure SeTGLGizmoVisibleInfoLabels(const AValue: TGLGizmoVisibleInfoLabels);
     procedure SetBoundingBoxColor(const AValue: TGLColor);
     procedure SetSelectedColor(const AValue: TGLColor);
@@ -244,6 +245,7 @@ type
     procedure ClearInternalRaycastHitData;
     procedure SetViewer(const Value: TGLSceneViewer);
     procedure SetLabelFont(const Value: TGLCustomBitmapFont);
+    procedure SetSelectedObj(const Value: TGLBaseSceneObject);
   public
     PickableObjectsWithRayCast: TList;
     constructor Create(AOwner: TComponent); override;
@@ -257,7 +259,7 @@ type
 
     procedure UpdateGizmo; overload;
     procedure UpdateGizmo(const newDimensions: TVector); overload;
-    procedure SetVisible(AValue: Boolean);
+    procedure SetVisible(const AValue: Boolean);
     function GetPickedObjectPoint(const Obj: TGLBaseSceneObject): TVector;
 
     procedure LooseSelection; virtual;
@@ -270,7 +272,7 @@ type
 
     property Viewer: TGLSceneViewer read FViewer write SetViewer;
 
-    property GizmoElements: TGLGizmoElements read FGizmoElements write SeTGLGizmoElements;
+    property GizmoElements: TGLGizmoElements read FGizmoElements write SetGizmoElements;
 
     property BoundingBoxColor: TGLColor read FBoundingBoxColor write SetBoundingBoxColor;
     property SelectedColor: TGLColor read FSelectedColor write SetSelectedColor;
@@ -278,7 +280,7 @@ type
     property SelAxis: TGLGizmoAxis read FSelAxis write FSelAxis;
     property ForceAxis: Boolean read FForceAxis write FForceAxis;
 
-    property SelectedObj: TGLBaseSceneObject read FSelectedObj write FSelectedObj;
+    property SelectedObj: TGLBaseSceneObject read FSelectedObj write SetSelectedObj;
 
     property Operation: TGLGizmoOperation read FOperation write FOperation;
     property ForceOperation: Boolean read FForceOperation write FForceoperation;
@@ -762,12 +764,12 @@ begin
   inherited Destroy;
 end;
 
-procedure TGLGizmo.SetVisible(AValue: Boolean);
+procedure TGLGizmo.SetVisible(const AValue: Boolean);
 begin
   _GZObaseGizmo.Visible := AValue;
 end;
 
-procedure TGLGizmo.SetGLGizmoElements(const AValue: TGLGizmoElements);
+procedure TGLGizmo.SetGizmoElements(const AValue: TGLGizmoElements);
 begin
   if aValue <> FGizmoElements then
   begin
@@ -866,7 +868,7 @@ var
 begin
   if FGizmoThickness <> Value then
   begin
-    thk := MaxFloat(single(1.0), Round(3 * Value));
+    thk := MaxInteger(1, Round(3 * Value));
     _GZOlinex.LineWidth := thk;
     _GZOliney.LineWidth := thk;
     _GZOlinez.LineWidth := thk;
@@ -1507,6 +1509,7 @@ begin
 
   pick := InternalGetPickedObjects(X - 1, Y - 1, X + 1, Y + 1);//Viewer.Buffer.GetPickedObjects(rect(x-1, y-1, x+1, y+1));
   gotPick := False;
+  accept := False;
 
   case FPickMode of
     pmGetPickedObjects:
@@ -1533,6 +1536,7 @@ begin
   end;
 
   if not gotPick then
+  begin
     for I := 0 to pick.Count - 1 do
 
       if (pick.hit[I] <> _GZOBoundingcube) and
@@ -1548,25 +1552,21 @@ begin
         if Assigned(onBeforeSelect) then
           onBeforeSelect(self, pickedObj, accept, Dimensions);
 
-        if accept then
-        begin
-          SelectedObj := pickedObj;
-          _GZObaseGizmo.Visible := True;
-          UpdateVisibleInfoLabels;
-          objDimensions := dimensions;
-          gotPick := True;
-        end;
         Break;
       end;
+
+    if accept then
+      SetSelectedObj(pickedObj)
+    else
+      SetSelectedObj(nil);
+  end
+  else
+    UpdateVisibleInfoLabels();
 
   pick.Free;
 
   moving := True;
   lastMousePos := MouseWorldPos(X, Y);
-  if not gotPick then
-    LooseSelection
-  else
-    UpdateGizmo;
 end;
 
 procedure TGLGizmo.ViewerMouseUp(const X, Y: Integer);
@@ -1803,5 +1803,24 @@ begin
   GetItems(Index).Assign(Value);
 end;
 
+procedure TGLGizmo.SetSelectedObj(const Value: TGLBaseSceneObject);
+begin
+  if FSelectedObj <> Value then
+  begin
+    FSelectedObj := Value;
+
+    if Value <> nil then
+    begin
+      SetVisible(True);
+      UpdateVisibleInfoLabels();
+      UpdateGizmo();
+    end
+    else
+    begin
+      LooseSelection();
+      SetVisible(False);
+    end;
+  end;
+end;
 
 end.

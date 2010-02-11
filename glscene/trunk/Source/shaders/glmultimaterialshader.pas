@@ -4,6 +4,7 @@
    its assigned MaterialLibrary.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>03/07/09 - DanB - bug fix to allow multi-pass materials to be used by TGLMultiMaterialShader 
       <li>20/01/09 - Mrqzzz - Published property "Shaderstyle"
                              (allows f.ex to have multiple textures using lightmaps)
       <li>25/10/07 - Mrqzzz - commented "glPushAttrib(GL_ALL_ATTRIB_BITS);" in DoApply
@@ -95,7 +96,12 @@ begin
    if not Assigned(FMaterialLibrary) then exit;
    if (not (csDesigning in ComponentState)) or FShaderActiveAtDesignTime then begin
       if FMaterialLibrary.Materials.Count>0 then
-         FMaterialLibrary.Materials[FPass-1].UnApply(rci);
+         // handle multi-pass materials
+         if FMaterialLibrary.Materials[FPass-1].UnApply(rci) then
+         begin
+           Result:=true;
+           Exit;
+         end;
       if (FPass >= FMaterialLibrary.Materials.Count) then begin
          glDepthFunc(GL_LESS);
          //glPopAttrib;

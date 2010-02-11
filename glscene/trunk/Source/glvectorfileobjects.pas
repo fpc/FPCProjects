@@ -8065,7 +8065,7 @@ initialization
 
 finalization
 
-   vVectorFileFormats.Free;
+   FreeAndNil(vVectorFileFormats);
 
 end.
 

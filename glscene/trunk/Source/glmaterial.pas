@@ -6,6 +6,7 @@
 	Handles all the material + material library stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>14/07/09 - DaStr - Added $I GLScene.inc
       <li>08/10/08 - DanB - Created from split from GLTexture.pas,
                             Textures + materials are no longer so tightly bound
    </ul></font>
@@ -16,6 +17,8 @@ interface
 
 uses Classes, GLRenderContextInfo, BaseClasses, GLContext, GLTexture, GLColor,
      GLCoordinates, VectorGeometry, PersistentClasses, OpenGL1x, GLCrossPlatform;
+
+{$I GLScene.inc}
 
 type
   TGLFaceProperties  = class;

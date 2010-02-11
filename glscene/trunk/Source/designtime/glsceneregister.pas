@@ -364,10 +364,9 @@ uses
    GLFileNurbs, GLFileObj, {Uses ScanLine, needs fixing: GLFileOCT,} GLFilePLY, GLFileQ3BSP, GLFileSMD, GLFileSTL,
    GLFileTIN, GLFileVRML
 
-
    {$ifdef windows}
      ,gllclfullscreenviewer, GLSpaceText, Joystick, ScreenSaver
-     //GLWideBitmapFont,  doesn't even compile in win due to missing TTextRecA
+     ,GLWideBitmapFont //  does it in win now ?
      //GLAVIRecorder, doesn't even compile in win due to missing commDlg
    {$endif}
    {,glsdlcontext,glscriptbase,}
@@ -1164,10 +1163,10 @@ begin
                        TGLCadencer,
                        TGLGuiLayout,
                        TGLBitmapFont, TGLWindowsBitmapFont, TGLStoredBitmapFont,
-                       //Don't know whats missing to include this one: ,TGLWideBitmapFont
                        TGLScriptLibrary,
                        TGLSoundLibrary
                        {$ifdef WINDOWS}
+                       ,TGLWideBitmapFont
                        ,TGLFullScreenViewer
                        {$endif}
                       ]);

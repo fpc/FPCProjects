@@ -35,10 +35,8 @@ interface
 {$i GLScene.inc}
 
 uses
-  LCLType,
-  {$IFDEF MSWINDOWS} Windows, {$ENDIF}
-  Messages, Graphics, Forms, Classes, Controls, Menus,
-  LMessages,
+  {$IFDEF MSWINDOWS}Windows,{$ENDIF}
+  Messages, Graphics, Forms, Classes, Controls, Menus, LMessages, LCLType,
 
   // GLScene
   GLScene, GLContext;
@@ -79,10 +77,9 @@ type
 
          procedure CMMouseEnter(var msg: TMessage); message CM_MOUSEENTER;
          procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
-
-         function GetFieldOfView: single;
-         procedure SetFieldOfView(const Value: single);
-         function GetIsRenderingContextAvailable: Boolean;
+        function GetFieldOfView: single;
+        procedure SetFieldOfView(const Value: single);
+        function GetIsRenderingContextAvailable: Boolean;
 
       protected
          { Protected Declarations }
@@ -163,7 +160,7 @@ type
 
          property OnMouseLeave : TNotifyEvent read FOnMouseLeave write FOnMouseLeave;
          property OnMouseEnter : TNotifyEvent read FOnMouseEnter write FOnMouseEnter;
-         
+
          property Align;
          property Anchors;
          property DragCursor;
@@ -187,9 +184,9 @@ type
          property OnMouseWheel;
          property OnMouseWheelDown;
          property OnMouseWheelUp;
-{$ifdef GLS_COMPILER_5_UP}
+
          property OnContextPopup;
-{$endif}
+
    end;
 
 // ------------------------------------------------------------------
@@ -200,7 +197,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses sysutils, GLViewer
+uses SysUtils
      {$ifndef fpc} // delphi
      ,GLWin32Context
      {$else}
@@ -211,14 +208,14 @@ uses sysutils, GLViewer
          {$define CONTEXT_INCLUDED}
          {$endif}
        {$endif}
-       
+
        {$ifdef LCLGTK}
          {$ifndef CONTEXT_INCLUDED}
      ,GLLinGTKContext
          {$define CONTEXT_INCLUDED}
          {$endif}
        {$endif}
-       
+
        {$ifdef LCLGTK2}
          {$ifndef CONTEXT_INCLUDED}
      ,GLLinGTKContext
@@ -229,13 +226,13 @@ uses sysutils, GLViewer
        {$ifdef LCLCARBON}
      ,GLCarbonContext
        {$endif}
-       
+
        {$ifdef LCLQT}
          {$error unimplemented QT context}
        {$endif}
-       
+
      {$endif}
-     ;
+   ,GLViewer;
 
 // ------------------
 // ------------------ TGLSceneViewer ------------------
