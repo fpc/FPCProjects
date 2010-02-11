@@ -6,6 +6,8 @@
 	Cadencing composant for GLScene (ease Progress processing)<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>21/11/09 - DaStr - Bugfixed FSubscribedCadenceableComponents
+                             (thanks Roshal Sasha)
       <li>21/09/07 - DaStr - Added TGLCadencer.SetCurrentTime()
       <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
       <li>28/06/04 - LR - Added some ifdef Win32 for Linux
@@ -524,10 +526,13 @@ begin
                   end;
                   pt.deltaTime:=deltaTime;
                   pt.newTime:=lastTime;
-                  if Assigned(FSubscribedCadenceableComponents) then
-                     for i:=0 to FSubscribedCadenceableComponents.Count-1 do
-                        with TGLCadenceAbleComponent(FSubscribedCadenceableComponents[i]) do
-                           DoProgress(pt);
+                  i := 0;
+                  while Assigned(FSubscribedCadenceableComponents) and
+                       (i <= FSubscribedCadenceableComponents.Count - 1) do
+                  begin
+                     TGLCadenceAbleComponent(FSubscribedCadenceableComponents[i]).DoProgress(pt);
+                     i := i + 1;
+                  end;
                   if Assigned(FOnProgress) and (not (csDesigning in ComponentState)) then
                      FOnProgress(Self, deltaTime, newTime);
                   if deltaTime<=0 then Break;

@@ -16,7 +16,7 @@ uses
   GLSceneEdit, GLTextureImageEditors, Info, RegisterXCollection, GLFile3DS, 
   GLFileASE, GLFileGL2, GLFileGTS, GLFileLWO, GLFileMD2, GLFileMD3, GLFileMD5, 
   GLFileMDC, GLFileMS3D, GLFileNMF, GLFileNurbs, GLFileObj, GLFilePLY, 
-  GLFileSMD, GLFileSTL, GLFileTIN, GLFileVRML, glfilex, GLVfsPAK, Q3MD3, TGA, 
+  GLFileSMD, GLFileSTL, GLFileTIN, GLFileVRML, GlFileX, GLVfsPAK, Q3MD3, TGA, 
   Utils3DS, GLAtmosphere, GLBaseMeshSilhouette, GLBehaviours, GLBitmapFont, 
   GLBlur, GLBSP, GLBumpmapHDS, GLCadencer, GLCollision, GLConsole, GLContext, 
   GLDCE, GLDCEMisc, GLEllipseCollision, GLEParticleMasksManager, 

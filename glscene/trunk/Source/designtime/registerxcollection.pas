@@ -6,8 +6,10 @@
 	Register TXCollection property editor<p>
 
 	<b>History : </b><font size=-1><ul>
-           <li>03/07/04 - LR - Removed ..\ from the GLScene.inc
-	   <li>16/04/00 - Egg - Creation
+      <li>11/11/09 - DaStr - Improved FPC compatibility (merged from gls4laz)
+                             (thanks Predator) (BugtrackerID = 2893580)
+      <li>03/07/04 - LR - Removed ..\ from the GLScene.inc
+      <li>16/04/00 - Egg - Creation
 	</ul></font>
 }
 unit RegisterXCollection;
@@ -16,12 +18,14 @@ interface
 
 {$i GLScene.inc}
 
-uses Classes, XCollection,
-   {$ifdef fpc}
-     componenteditors, propedits;
-   {$else}
-      {$ifdef GLS_DELPHI_6_UP} DesignEditors, DesignIntf {$else} DsgnIntf {$endif};
-   {$endif}
+uses
+  Classes, XCollection,
+  {$IFDEF FPC}
+     componenteditors, propedits
+  {$ELSE}
+    {$IFDEF GLS_DELPHI_6_UP} DesignEditors, DesignIntf {$ELSE} DsgnIntf {$ENDIF}
+  {$ENDIF}
+   ;
 
 type
 
@@ -66,7 +70,11 @@ end;
 procedure TXCollectionProperty.Edit;
 begin
    with XCollectionEditor do begin
+   {$IFDEF FPC}
       SetXCollection(TXCollection(GetOrdValue));
+   {$ELSE}
+      SetXCollection(TXCollection(GetOrdValue), Self.Designer);
+   {$ENDIF}
       Show;
    end;
 end;

@@ -6,6 +6,8 @@
    Object with support for complex polygons.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/11/09 - DaStr - Improved Unix compatibility
+                             (thanks Predator) (BugtrackerID = 2893580)  
       <li>31/07/07 - DanB - Implemented AxisAlignedDimensionsUnscaled for
                             TMultiPolygonBase
       <li>30/03/07 - DaStr - Added $I GLScene.inc
@@ -540,30 +542,30 @@ end;
 var
    vVertexPool : TVectorPool;
 
-procedure tessError(errno : TGLEnum); stdcall;
+procedure tessError(errno : TGLEnum); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    Assert(False, IntToStr(errno)+' : '+gluErrorString(errno));
 end;
 
-procedure tessIssueVertex(vertexData : Pointer); stdcall;
+procedure tessIssueVertex(vertexData : Pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    xglTexCoord2fv(vertexData);
    glVertex3fv(vertexData);
 end;
 
 procedure tessCombine(coords : PDoubleVector; vertex_data : Pointer;
-                      weight : PGLFloat; var outData : Pointer); stdcall;
+                      weight : PGLFloat; var outData : Pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    vVertexPool.GetNewVector(outData);
    SetVector(PAffineVector(outData)^, coords^[0], coords^[1], coords^[2]);
 end;
 
-procedure tessBeginList(typ : TGLEnum; polygonData : Pointer); stdcall;
+procedure tessBeginList(typ : TGLEnum; polygonData : Pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    TPolygonList(polygonData).Add;
 end;
 
-procedure tessIssueVertexList(vertexData : Pointer; polygonData : Pointer); stdcall;
+procedure tessIssueVertexList(vertexData : Pointer; polygonData : Pointer); {$IFDEF Win32} stdcall; {$ENDIF} {$ifdef unix} cdecl; {$ENDIF}
 begin
    TPolygonList(polygonData).AktList.Add(PAffineVector(vertexData)^);
 end;

@@ -9,6 +9,7 @@
    but the default value is rmTurnPitchRoll for backwards compatibility.
 
    <b>Historique : </b><font size=-1><ul>
+      <li>12/11/09 - DaStr - Bugfix after previous commit
       <li>25/10/09 - DaStr - Bugfixed TGLMovementPath.StartTime (thanks Zsolt Laky)
       <li>14/03/09 - DanB - Changes to Start/StopAllMovements due to TGLScene.Cameras removal
       <li>05/10/08 - DaStr - Added Delphi5 compatibility
@@ -155,6 +156,7 @@ type
     FNodes: TGLPathNodes;
 
     //All the time saved in ms
+    FStartTimeApplied: Boolean;
     FStartTime: double;
     FInitialTime: Double;
     FEstimateTime: double;
@@ -346,7 +348,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
 
 //----------------------------- TGLPathNode ------------------------------------
 constructor TGLPathNode.Create(Collection: TCollection);
@@ -593,6 +594,7 @@ begin
   FCurrentNodeIndex := -1;
   FRotationMode := rmTurnPitchRoll;
   FPathSplineMode := lsmCubicSpline;
+  FStartTimeApplied := False;  
 end;
 
 destructor TGLMovementPath.Destroy;
@@ -928,8 +930,7 @@ var
   T:       double;
   a:double;
 
-  procedure Interpolation(ReturnNode: TGLPathNode; Time1, Time2: double;
-Index: integer);
+  procedure Interpolation(ReturnNode: TGLPathNode; Time1, Time2: double; Index: integer);
   var
     Ratio: double;
     x, y, z, p, t, r, sx, sy, sz: single;
@@ -956,10 +957,20 @@ Index: integer);
 begin
   I := 1;
 
-  if CurrentTime < FInitialTime then Exit;
-
-  if (FInitialTime=0) or (FInitialTime>CurrentTime) then
+  if (FInitialTime = 0) or (FInitialTime > CurrentTime) then
     FInitialTime := CurrentTime;
+
+
+  if (FStartTime <> 0) and not FStartTimeApplied then
+  begin
+    if FInitialTime + FStartTime < CurrentTime then
+    begin
+      FInitialTime := CurrentTime;
+      FStartTimeApplied := True;
+    end
+    else
+      Exit;
+  end;
 
   SumTime      := FInitialTime;
   Interpolated := False;
@@ -994,7 +1005,7 @@ begin
       SumTime := SumTime + T;
     end;
   end;
-  
+
   if (not Interpolated) then
   begin
     Interpolation(FCurrentNode, 1.0, 0.0, FNodes.Count - 1);
@@ -1120,7 +1131,7 @@ begin
 
     if Assigned(FOnTravelStart) then
       FOnTravelStart(self);
-  end 
+  end
   else
   begin
     FreeAndNil(MotionSplineControl);
@@ -1138,7 +1149,8 @@ procedure TGLMovementPath.TravelPath(const Start: boolean; const aStartTime: dou
 begin
   if FInTravel = Start then
     exit;
-  FInitialTime := aStartTime + FStartTime;
+  FInitialTime := aStartTime;
+  FStartTimeApplied := False;
   TravelPath(Start);
 end;
 
@@ -1520,19 +1532,12 @@ begin
   Result := True;
 end;
 
-var
-  OldTime: double = 0.0;
-
 procedure TGLMovement.StartPathTravel;
-var
-  newTime: double;
 begin
   if FActivePathIndex < 0 then
     exit;
   //convert the time to second
-  newTime := 0;
-  OldTime := newTime;
-  Paths[FActivePathIndex].TravelPath(True, newTime);
+  Paths[FActivePathIndex].TravelPath(True, 0);
 end;
 
 procedure TGLMovement.StopPathTravel;
@@ -1560,7 +1565,7 @@ begin
           begin
             Position.AsVector := Path.CurrentNode.FPosition;
             Scale.AsVector    := Path.CurrentNode.FScale;
-            
+
             case Path.FRotationMode of
               rmTurnPitchRoll:
               begin

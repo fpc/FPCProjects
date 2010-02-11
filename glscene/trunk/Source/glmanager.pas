@@ -8,12 +8,15 @@
    look up the manager + register themselves with it.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>11/11/09 - DaStr - Added $I GLScene.inc  
       <li>05/10/08 - DanB - Created from GLTexture.pas split
    </ul></font>
 }
 unit GLManager;
 
 interface
+
+{$i GLScene.inc}
 
 uses Classes;
 

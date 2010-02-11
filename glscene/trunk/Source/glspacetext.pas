@@ -41,7 +41,7 @@ unit GLSpaceText;
 interface
 
 {$i GLScene.inc}
-{$IFDEF UNIX}{$Message Error 'Unit not supported'}{$ENDIF LINUX}
+{$IFDEF UNIX}{$Message Error 'Unit not supported'}{$ENDIF}
 
 uses
   // VCL

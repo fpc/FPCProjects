@@ -13,6 +13,7 @@
 {*                                                                            *}
 {*  Latest version can be downloaded from:                                    *}
 {*     http://www.clootie.ru/                                                 *}
+{*       http://developer.nvidia.com/object/cg_download.html                  *}
 {*                                                                            *}
 {******************************************************************************}
 {                                                                              }
@@ -57,7 +58,7 @@
  *
  * In consideration of your agreement to abide by the following terms, and
  * subject to these terms, NVIDIA grants you a personal, non-exclusive license,
- * under NVIDIA�s copyrights in this original NVIDIA software (the "NVIDIA
+ * under NVIDIAs copyrights in this original NVIDIA software (the "NVIDIA
  * Software"), to use, reproduce, modify and redistribute the NVIDIA
  * Software, with or without modifications, in source and/or binary forms;
  * provided that if you redistribute the NVIDIA Software, you must retain the
@@ -94,6 +95,9 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // HISTORY:
+// 17-Nov-09 - Da Stranger
+//   - Improved Unix compatibility (merged from gls4laz)
+//       (thanks Predator) (BugtrackerID = 2893580)
 // 07-Sep-04 - Nelson Chu:
 //   - Added profiles vp40 and fp40 from Cg 1.3 beta 2 
 // 23-Apr-04 - Nelson Chu:
@@ -109,9 +113,9 @@ unit cg;
 
 interface
 
-{$ifdef windows}
+{$IFDEF MSWINDOWS}
 uses Windows;
-{$endif}
+{$ENDIF}
 
 {$Include GLScene.inc}
 {$ifdef GLS_DELPHI_6_UP}
@@ -123,11 +127,11 @@ uses Windows;
 (*$HPPEMIT '#include "cg.h"' *)
 
 const
-  {$ifndef windows}
-  CgLibrary = 'libCg.so';
-  {$else}
+  {$IFDEF MSWINDOWS}
   CgLibrary = 'cg.dll';
-  {$endif}
+  {$ELSE}
+  CgLibrary = 'libCg.so';
+  {$ENDIF}
 
 const
   CG_VERSION_1_2                = 1;

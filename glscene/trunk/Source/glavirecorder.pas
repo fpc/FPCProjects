@@ -28,11 +28,11 @@ unit GLAVIRecorder;
 interface
 
 {$i GLScene.inc}
-{$IFDEF UNIX}{$Message Error 'Unit not supported'}{$ENDIF LINUX}
+{$IFNDEF MSWINDOWS}{$Message Error 'Unit not supported'}{$ENDIF}
 
 uses
   Windows, Classes, Controls, Forms, Extctrls, Graphics,
-  vfw, GLScene, GLViewer, GLLCLFullscreenViewer;
+  vfw, GLScene, GLViewer;
 
 type
    TAVICompressor = (acDefault, acShowDialog, acDivX);
@@ -74,7 +74,7 @@ type
 
        AVI_DPI : integer;
 
-       asi   : TAVIStreamInfoA;
+       asi   : TAVIStreamInfo;
 
        pfile : IAVIFile;
        Stream, Stream_c : IAVIStream; // AVI stream and stream to be compressed

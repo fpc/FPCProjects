@@ -4,8 +4,12 @@
 {: GLNodes<p>
 
    Nodes are used to describe lines, polygons + more.<p>
-
+   
+   NOTE: cvs is still wrong in using local procedures for callbak!!
+   
 	<b>History : </b><font size=-1><ul>
+      <li>22/11/09 - DaStr - Improved Unix compatibility (merged from gls4laz)
+                             (thanks Predator) (BugtrackerID = 2893580)
       <li>14/07/09 - DaStr - Added $I GLScene.inc
       <li>05/10/08 - DanB - Created from GLMisc.pas split
    </ul></font>
