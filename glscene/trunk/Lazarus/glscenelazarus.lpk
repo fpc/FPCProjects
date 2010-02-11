@@ -63,7 +63,7 @@
         <UnitName Value="GLCanvas"/>
       </Item7>
       <Item8>
-        <Filename Value="../Source/base/glkeyboard.pas"/>
+        <Filename Value="../Source/platform/glkeyboard.pas"/>
         <UnitName Value="GLKeyboard"/>
       </Item8>
       <Item9>
@@ -529,7 +529,7 @@
         <UnitName Value="GLScene"/>
       </Item122>
       <Item123>
-        <Filename Value="../Source/glscreen.pas"/>
+        <Filename Value="../Source/platform/glscreen.pas"/>
         <UnitName Value="GLScreen"/>
       </Item123>
       <Item124>
