@@ -9,6 +9,8 @@
 
 
 	<b>History : </b><font size=-1><ul>
+      <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
+                              (BugTracker ID = 2826217)  
       <li>20/03/07 - DaStr - TGLCustomAsmShader now generates its own events
                              All outside stuff moved back to TGLPhongShader
       <li>22/02/07 - DaStr - Initial version (contributed to GLScene)
@@ -108,7 +110,7 @@ type
     property OnUnApply: TGLAsmShaderUnUplyEvent read FOnUnApply write FOnUnApply;
     property OnInitialize: TGLAsmShaderEvent read FOnInitialize write FOnInitialize;
 
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci : TRenderContextInfo; Sender : TObject); override;
     procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
     function DoUnApply(var rci: TRenderContextInfo): Boolean; override;
     procedure DoFinalize; override;
@@ -192,7 +194,7 @@ begin
 end;
 
 
-procedure TGLCustomAsmShader.DoInitialize;
+procedure TGLCustomAsmShader.DoInitialize(var rci : TRenderContextInfo; Sender : TObject);
 var
   FailedText: string;
 begin

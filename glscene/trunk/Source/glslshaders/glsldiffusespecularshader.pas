@@ -6,11 +6,13 @@
     This is a collection of GLSL diffuse-specular shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>24/07/09 - DaStr - Added Fog support for single-light shaders and fixed
+                              a bug with material Alpha (thanks Controller)
       <li>02/09/07 - LC - Fixed texture bug in TGLSLMLDiffuseSpecularShader.
                           (Bugtracker ID = 1786286)
       <li>03/04/07 - LC - Shader didn't respect the texture matrix. Changed
                           vertex shader to fix this. (Bugtracker ID = 1693389)
-      <li>20/03/07 - DaStr - Made changes related to the new parameter passing model 
+      <li>20/03/07 - DaStr - Made changes related to the new parameter passing model
       <li>06/03/07 - DaStr - Again replaced DecimalSeparator stuff with
                               a single Str procedure (thanks Uwe Raabe)
       <li>03/03/07 - DaStr - Made compatible with Delphi6
@@ -66,7 +68,9 @@ type
     FSpecularPower: Single;
     FLightPower: Single;
     FRealisticSpecular: Boolean;
+    FFogSupport: TGLShaderFogSupport;
     procedure SetRealisticSpecular(const Value: Boolean);
+    procedure SetFogSupport(const Value: TGLShaderFogSupport);
   protected
     procedure DoApply(var rci : TRenderContextInfo; Sender : TObject); override;
     function DoUnApply(var rci: TRenderContextInfo): Boolean; override;
@@ -75,6 +79,9 @@ type
     property SpecularPower: Single read FSpecularPower write FSpecularPower;
     property LightPower: Single read FLightPower write FLightPower;
     property RealisticSpecular: Boolean read FRealisticSpecular write SetRealisticSpecular;
+
+    //: User can disable fog support and save some FPS if he doesn't need it.
+    property FogSupport: TGLShaderFogSupport read FFogSupport write SetFogSupport default sfsAuto;
   end;
 
   //: Abstract class.
@@ -108,7 +115,7 @@ type
     function GetAlpha: Single;
     procedure SetAlpha(const Value: Single);
   protected
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci: TRenderContextInfo; Sender: TObject); override;
     procedure DoApply(var rci : TRenderContextInfo; Sender : TObject); override;
   public
     constructor Create(AOwner : TComponent); override;
@@ -123,14 +130,14 @@ type
 
   TGLCustomGLSLDiffuseSpecularShader = class(TGLBaseCustomGLSLDiffuseSpecular)
   protected
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci: TRenderContextInfo; Sender: TObject); override;
     procedure DoApply(var rci : TRenderContextInfo; Sender : TObject); override;
   end;
 
 
   TGLCustomGLSLDiffuseSpecularShaderMT = class(TGLBaseGLSLDiffuseSpecularShaderMT)
   protected
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci: TRenderContextInfo; Sender: TObject); override;
   end;
 
                      {********  Multi Light  ************}
@@ -145,7 +152,7 @@ type
     procedure SetLightCount(const Value: Integer);
     procedure SetLightCompensation(const Value: Single);
   protected
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci: TRenderContextInfo; Sender: TObject); override;
     procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
 
   public
@@ -164,7 +171,7 @@ type
     procedure SetLightCount(const Value: Integer);
     procedure SetLightCompensation(const Value: Single);
   protected
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci: TRenderContextInfo; Sender: TObject); override;
   public
     constructor Create(AOwner : TComponent); override;
 
@@ -188,6 +195,7 @@ type
 
     property SpecularPower;
     property LightPower;
+    property FogSupport;
   end;
 
   TGLSLDiffuseSpecularShaderMT = class(TGLCustomGLSLDiffuseSpecularShaderMT)
@@ -196,12 +204,14 @@ type
 
     property SpecularPower;
     property LightPower;
+    property FogSupport;
   end;
 
   TGLSLDiffuseSpecularShader = class(TGLCustomGLSLDiffuseSpecularShader)
   published
     property SpecularPower;
     property LightPower;
+    property FogSupport;
   end;
 
 
@@ -213,6 +223,7 @@ type
     property LightPower;
     property LightCount;
     property LightCompensation;
+    property FogSupport;
   end;
 
   TGLSLMLDiffuseSpecularShader = class(TGLCustomGLSLMLDiffuseSpecularShader)
@@ -221,11 +232,13 @@ type
     property LightPower;
     property LightCount;
     property LightCompensation;
+    property FogSupport;
   end;
 
 implementation
 
-procedure GetVertexProgramCode(const Code: TStrings);
+procedure GetVertexProgramCode(const Code: TStrings;
+  const AFogSupport: Boolean; var rci: TRenderContextInfo);
 begin
   with Code do
   begin
@@ -233,6 +246,12 @@ begin
     Add('varying vec3 Normal; ');
     Add('varying vec3 LightVector; ');
     Add('varying vec3 CameraVector; ');
+
+    if AFogSupport then
+    begin
+      Add('varying float fogFactor; ');
+    end;
+
     Add(' ');
     Add(' ');
     Add('void main(void) ');
@@ -243,11 +262,37 @@ begin
     Add('  vec3 p = (gl_ModelViewMatrix * gl_Vertex).xyz; ');
     Add('  LightVector = normalize(gl_LightSource[0].position.xyz - p); ');
     Add('  CameraVector = normalize(p); ');
+
+    if AFogSupport then
+    begin
+    Add('  const float LOG2 = 1.442695; ');
+    Add('  gl_FogFragCoord = length(p); ');
+
+    case TGLSceneBuffer(rci.buffer).FogEnvironment.FogMode of
+      fmLinear:
+        Add('  fogFactor = (gl_Fog.end - gl_FogFragCoord) * gl_Fog.scale; ');
+      fmExp, // Yep, I don't know about this type, so I use fmExp2.
+      fmExp2:
+      begin
+        Add('  fogFactor = exp2( -gl_Fog.density * ');
+        Add('  				   gl_Fog.density * ');
+        Add('  				   gl_FogFragCoord * ');
+        Add('  				   gl_FogFragCoord * ');
+        Add('  				   LOG2 ); ');
+      end;
+    else
+      Assert(False, glsUnknownType);
+    end;
+
+      Add('  fogFactor = clamp(fogFactor, 0.0, 1.0); ');
+    end;
+
     Add('} ');
   end;
 end;
 
-procedure GetFragmentProgramCode(const Code: TStrings; const FRealisticSpecular: Boolean);
+procedure GetFragmentProgramCode(const Code: TStrings; const ARealisticSpecular: Boolean;
+  const AFogSupport: Boolean);
 begin
   with Code do
   begin
@@ -259,6 +304,12 @@ begin
     Add('varying vec3 Normal; ');
     Add('varying vec3 LightVector; ');
     Add('varying vec3 CameraVector; ');
+
+    if AFogSupport then
+    begin
+      Add('varying float fogFactor; ');
+    end;
+
     Add(' ');
     Add('void main(void) ');
     Add('{ ');
@@ -269,15 +320,28 @@ begin
     Add('  float Temp = dot(reflect_vec, LightVector); ');
     Add('  vec4 SpecContrib = gl_LightSource[0].specular * clamp(pow(Temp, SpecPower), 0.0, 0.95); ');
     Add(' ');
-    if FRealisticSpecular then
-      Add('  gl_FragColor = LightIntensity * (TextureContrib * (gl_LightSource[0].ambient + DiffuseContrib) + SpecContrib); ')
+    if AFogSupport then
+    begin
+      if ARealisticSpecular then
+        Add('  gl_FragColor = mix(gl_Fog.color, LightIntensity * (TextureContrib * (gl_LightSource[0].ambient + DiffuseContrib) + SpecContrib), fogFactor ); ')
+      else
+        Add('  gl_FragColor = mix(gl_Fog.color, TextureContrib * LightIntensity * (gl_LightSource[0].ambient + DiffuseContrib + SpecContrib), fogFactor ); ');
+    end
     else
-      Add('  gl_FragColor = TextureContrib * LightIntensity * (gl_LightSource[0].ambient + DiffuseContrib + SpecContrib); ');
+    begin
+      if ARealisticSpecular then
+        Add('  gl_FragColor = LightIntensity * (TextureContrib * (gl_LightSource[0].ambient + DiffuseContrib) + SpecContrib); ')
+      else
+        Add('  gl_FragColor = TextureContrib * LightIntensity * (gl_LightSource[0].ambient + DiffuseContrib + SpecContrib); ');
+
+    end;
+      Add('  gl_FragColor.a = TextureContrib.a; ');
     Add('} ');
   end;
 end;
 
-procedure GetFragmentProgramCodeAM(const Code: TStrings; const FRealisticSpecular: Boolean);
+procedure GetFragmentProgramCodeAM(const Code: TStrings; const ARealisticSpecular: Boolean;
+  const AFogSupport: Boolean);
 begin
   with Code do
   begin
@@ -303,10 +367,22 @@ begin
     Add('  float Temp = dot(reflect_vec, LightVector); ');
     Add('  vec4 SpecContrib = SpecularColor * clamp(pow(Temp, SpecPower), 0.0, 0.95); ');
     Add(' ');
-    if FRealisticSpecular then
-      Add('  gl_FragColor = LightIntensity * (TextureContrib * (AmbientColor + DiffuseContrib) + SpecContrib); ')
+    if AFogSupport then
+    begin
+      if ARealisticSpecular then
+        Add('  gl_FragColor = mix(gl_Fog.color, LightIntensity * (TextureContrib * (AmbientColor + DiffuseContrib) + SpecContrib); ')
+      else
+        Add('  gl_FragColor = mix(gl_Fog.color, TextureContrib * LightIntensity * (AmbientColor + DiffuseContrib + SpecContrib), fogFactor ); ');
+    end
     else
-      Add('  gl_FragColor = TextureContrib * LightIntensity * (AmbientColor + DiffuseContrib + SpecContrib); ');
+    begin
+      if ARealisticSpecular then
+        Add('  gl_FragColor = LightIntensity * (TextureContrib * (AmbientColor + DiffuseContrib) + SpecContrib); ')
+      else
+        Add('  gl_FragColor = TextureContrib * LightIntensity * (AmbientColor + DiffuseContrib + SpecContrib); ');
+    end;
+
+    Add('  gl_FragColor.a = TextureContrib.a; ');
     Add('} ');
   end;
 end;
@@ -392,6 +468,8 @@ begin
       else
         Add('  gl_FragColor =  LightIntensity * TextureContrib * (AmbientContrib + DiffuseContrib  + SpecContrib) * ' + Temp + '; ');
     end;
+
+    Add('  gl_FragColor.a = TextureContrib.a; ');
     Add('} ');
   end;
 end;
@@ -403,8 +481,10 @@ constructor TGLBaseCustomGLSLDiffuseSpecular.Create(
   AOwner: TComponent);
 begin
   inherited;
-  FSpecularPower  := 8;  //6
+
+  FSpecularPower  := 8;
   FLightPower     := 1;
+  FFogSupport := sfsAuto;
 end;
 
 procedure TGLBaseCustomGLSLDiffuseSpecular.DoApply(
@@ -419,15 +499,27 @@ function TGLBaseCustomGLSLDiffuseSpecular.DoUnApply(
   var rci: TRenderContextInfo): Boolean;
 begin
   Result := False;
-  glActiveTextureARB(GL_TEXTURE0_ARB);
   GetGLSLProg.EndUseProgramObject;
+end;
+
+procedure TGLBaseCustomGLSLDiffuseSpecular.SetFogSupport(
+  const Value: TGLShaderFogSupport);
+begin
+  if FFogSupport <> Value then
+  begin
+    FFogSupport := Value;
+    Self.FinalizeShader;
+  end;
 end;
 
 procedure TGLBaseCustomGLSLDiffuseSpecular.SetRealisticSpecular(
   const Value: Boolean);
 begin
-  FRealisticSpecular := Value;
-  FinalizeShader;
+  if FRealisticSpecular <> Value then
+  begin
+    FRealisticSpecular := Value;
+    Self.FinalizeShader;
+  end;
 end;
 
 
@@ -537,10 +629,10 @@ begin
   Param['SpecularColor'].AsVector4f := FSpecularColor.Color;
 end;
 
-procedure TGLCustomGLSLDiffuseSpecularShaderAM.DoInitialize;
+procedure TGLCustomGLSLDiffuseSpecularShaderAM.DoInitialize(var rci: TRenderContextInfo; Sender: TObject);
 begin
-  GetVertexProgramCode(VertexProgram.Code);
-  GetFragmentProgramCodeAM(FragmentProgram.Code, FRealisticSpecular);
+  GetVertexProgramCode(VertexProgram.Code, IsFogEnabled(FFogSupport, rci), rci);
+  GetFragmentProgramCodeAM(FragmentProgram.Code, FRealisticSpecular, IsFogEnabled(FFogSupport, rci));
   inherited;
 end;
 
@@ -558,10 +650,10 @@ end;
 
 { TGLCustomGLSLDiffuseSpecularShaderMT }
 
-procedure TGLCustomGLSLDiffuseSpecularShaderMT.DoInitialize;
+procedure TGLCustomGLSLDiffuseSpecularShaderMT.DoInitialize(var rci: TRenderContextInfo; Sender: TObject);
 begin
-  GetVertexProgramCode(VertexProgram.Code);
-  GetFragmentProgramCode(FragmentProgram.Code, FRealisticSpecular);
+  GetVertexProgramCode(VertexProgram.Code, IsFogEnabled(FFogSupport, rci), rci);
+  GetFragmentProgramCode(FragmentProgram.Code, FRealisticSpecular, IsFogEnabled(FFogSupport, rci));
   inherited;
 end;
 
@@ -574,10 +666,10 @@ begin
   Param['MainTexture'].AsVector1i := 0;  // Use the current texture.
 end;
 
-procedure TGLCustomGLSLDiffuseSpecularShader.DoInitialize;
+procedure TGLCustomGLSLDiffuseSpecularShader.DoInitialize(var rci: TRenderContextInfo; Sender: TObject);
 begin
-  GetVertexProgramCode(VertexProgram.Code);
-  GetFragmentProgramCode(FragmentProgram.Code, FRealisticSpecular);
+  GetVertexProgramCode(VertexProgram.Code, IsFogEnabled(FFogSupport, rci), rci);
+  GetFragmentProgramCode(FragmentProgram.Code, FRealisticSpecular, IsFogEnabled(FFogSupport, rci));
   inherited;
 end;
 
@@ -597,7 +689,7 @@ begin
   Param['MainTexture'].AsVector1i := 0;  // Use the current texture.
 end;
 
-procedure TGLCustomGLSLMLDiffuseSpecularShader.DoInitialize;
+procedure TGLCustomGLSLMLDiffuseSpecularShader.DoInitialize(var rci: TRenderContextInfo; Sender: TObject);
 var
   I: Integer;
 begin
@@ -606,7 +698,7 @@ begin
   begin
     GetMLFragmentProgramCodeBeg(FragmentProgram.Code);
 
-    //repeat for all lights
+    // Repeat for all lights.
     for I := 0 to FLightCount - 1 do
       GetMLFragmentProgramCodeMid(FragmentProgram.Code, I);
 
@@ -642,7 +734,7 @@ begin
   FLightCompensation := 1;
 end;
 
-procedure TGLCustomGLSLMLDiffuseSpecularShaderMT.DoInitialize;
+procedure TGLCustomGLSLMLDiffuseSpecularShaderMT.DoInitialize(var rci: TRenderContextInfo; Sender: TObject);
 var
   I: Integer;
 begin
@@ -651,7 +743,7 @@ begin
   begin
     GetMLFragmentProgramCodeBeg(FragmentProgram.Code);
 
-    //repeat for all lights
+    // Repeat for all lights.
     for I := 0 to FLightCount - 1 do
       GetMLFragmentProgramCodeMid(FragmentProgram.Code, I);
 

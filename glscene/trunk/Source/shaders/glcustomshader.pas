@@ -9,6 +9,9 @@
     It also contains a procedures and function that can be used in all shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>24/07/09 - DaStr - Added TGLCustomShader.DebugMode
+                             Fixed spelling mistake in TGLShaderUnAplyEvent
+                             Added TGLShaderFogSupport, IsFogEnabled()
       <li>03/04/07 - DaStr - Added TGLCustomShaderParameter.AsFloat and AsInteger
       <li>25/03/07 - DaStr - Added TGLCustomShaderParameter.SetToTextureOf
       <li>20/03/07 - DaStr - Added DrawTexturedScreenQuad[4/5/6]
@@ -104,13 +107,15 @@ const
   glsShaderMaxLightSources = 8;
 
 type
+  TGLShaderFogSupport = (sfsEnabled, sfsDisabled, sfsAuto);
+
   EGLCustomShaderException = class(EGLShaderException);
 
   TGLCustomShader = class;
   TGLShaderProgram = class;
 
   TGLShaderEvent = procedure(Shader: TGLCustomShader) of object;
-  TGLShaderUnUplyEvent = procedure(Shader: TGLCustomShader; var ThereAreMorePasses: Boolean) of object;
+  TGLShaderUnAplyEvent = procedure(Shader: TGLCustomShader; var ThereAreMorePasses: Boolean) of object;
 
   TGLLightSourceEnum = 1..glsShaderMaxLightSources;
   TGLLightSourceSet = set of TGLLightSourceEnum;
@@ -139,9 +144,9 @@ type
   {: Used in the TGLPostShaderHolder component }
   IGLPostShader = interface
   ['{68A62362-AF0A-4CE8-A9E1-714FE02AFA4A}']
-    {: Called on every pass }
+    {: Called on every pass. }
     procedure DoUseTempTexture(const TempTexture: TGLTextureHandle; const TextureTarget: Cardinal);
-    {: Called to determine if it is compatible }
+    {: Called to determine if it is compatible. }
     function GetTextureTarget: TGLTextureTarget;
   end;
 
@@ -152,9 +157,15 @@ type
     FVertexProgram: TGLShaderProgram;
     FTagObject: TObject;
   protected
+    FDebugMode: Boolean;
+    procedure SetDebugMode(const Value: Boolean); virtual;
+
     property FragmentProgram: TGLShaderProgram read FFragmentProgram;
     property VertexProgram: TGLShaderProgram read FVertexProgram;
 
+    {: Treats warnings as errors and displays this error,
+       instead of a general shader-not-supported message. }
+    property DebugMode: Boolean read FDebugMode write SetDebugMode default False;
     property TagObject: TObject read FTagObject write FTagObject default nil;
   public
     constructor Create(AOwner: TComponent); override;
@@ -304,25 +315,21 @@ procedure DrawTexturedScreenQuad6(const ViewPortSize: TGLSize);
 procedure CopyScreentoTexture(const ViewPortSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 procedure CopyScreentoTexture2(const ViewPortSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 
-{ May be should be added to TGLScene class. Or deleted. }
-//function GetActualLightNumber(const Scene: TGLScene): Byte;
+function IsFogEnabled(const AFogSupportMode: TGLShaderFogSupport; var rci: TRenderContextInfo): Boolean;
 
 implementation
 
-//Exported procedures
-{
-function GetActualLightNumber(const Scene: TGLScene): Byte;
-var
-  I: Integer;
+function IsFogEnabled(const AFogSupportMode: TGLShaderFogSupport; var rci: TRenderContextInfo): Boolean;
 begin
-  Result := 0;
-  for I := 0 to Scene.Lights.Count - 1 do
-  begin
-    if (Scene.Lights[I] <> nil) and TGLLightSource(Scene.Lights[I]).Shining then
-      Inc(Result);
+  case AFogSupportMode of
+    sfsEnabled:  Result := True;
+    sfsDisabled: Result := False;
+    sfsAuto:     Result := TGLSceneBuffer(rci.buffer).FogEnable;
+  else
+    Result := False;
+    Assert(False, glsUnknownType);
   end;
 end;
-}
 
 procedure CopyScreentoTexture(const ViewPortSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 begin
@@ -568,6 +575,7 @@ constructor TGLCustomShader.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
+  FDebugMode := False;
   FFragmentProgram := TGLShaderProgram.Create(Self);
   FVertexProgram := TGLShaderProgram.Create(Self);
 end;
@@ -585,6 +593,19 @@ procedure TGLCustomShader.LoadShaderPrograms(const VPFilename, FPFilename: strin
 begin
   VertexProgram.LoadFromFile(VPFilename);
   FragmentProgram.LoadFromFile(FPFilename);
+end;
+
+procedure TGLCustomShader.SetDebugMode(const Value: Boolean);
+begin
+  if FDebugMode <> Value then
+  begin
+    FDebugMode := Value;
+
+    if FDebugMode then
+      FailedInitAction := fiaReRaiseException
+    else
+      FailedInitAction := fiaRaiseStandardException;
+  end;
 end;
 
 { TGLCustomShaderParameter }

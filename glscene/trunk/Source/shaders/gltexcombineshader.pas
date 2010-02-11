@@ -6,6 +6,8 @@
    A shader that allows texture combiner setup.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
+                              (BugTracker ID = 2826217)   
       <li>03/04/07 - DaStr - Added $I GLScene.inc
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
       <li>23/05/03 - EG - Added support for binding two extra texture units
@@ -18,7 +20,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLTexture, GLMaterial, GLRenderContextInfo, GLUtils;
+uses Classes, GLTexture, GLMaterial, GLRenderContextInfo;
 
 type
 
@@ -51,7 +53,7 @@ type
          procedure NotifyLibMaterial3Destruction;
          procedure NotifyLibMaterial4Destruction;
 
-         procedure DoInitialize; override;
+         procedure DoInitialize(var rci : TRenderContextInfo; Sender : TObject); override;
          procedure DoApply(var rci : TRenderContextInfo; Sender : TObject); override;
          function DoUnApply(var rci : TRenderContextInfo) : Boolean; override;
          procedure DoFinalize; override;
@@ -82,7 +84,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, GLTextureCombiners, OpenGL1x, XOpenGL, GLCrossPlatform;
+uses SysUtils, GLTextureCombiners, OpenGL1x, XOpenGL, GLCrossPlatform, GLUtils;
 
 // ------------------
 // ------------------ TGLTexCombineShader ------------------
@@ -206,7 +208,7 @@ end;
 
 // DoInitialize
 //
-procedure TGLTexCombineShader.DoInitialize;
+procedure TGLTexCombineShader.DoInitialize(var rci : TRenderContextInfo; Sender : TObject);
 begin
 end;
 

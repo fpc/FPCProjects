@@ -6,6 +6,8 @@
    An ARBvp1.0 + ARBfp1.0 shader that implements phong shading.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
+                              (BugTracker ID = 2826217)   
       <li>20/03/07 - DaStr - Moved some of the stuff from TGLCustomAsmShader back here
       <li>25/02/07 - DaStr - Completely replaced with a descendant of TGLCustomAsmShader.
       <li>11/10/04 - SG - Creation.
@@ -40,7 +42,7 @@ type
 
     procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
     function DoUnApply(var rci: TRenderContextInfo): Boolean; override;
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci : TRenderContextInfo; Sender : TObject); override;
   public
     { Public Declarations }
     constructor Create(AOwner: TComponent); override;
@@ -113,10 +115,10 @@ end;
 
 // DoInitialize
 //
-procedure TGLPhongShader.DoInitialize;
+procedure TGLPhongShader.DoInitialize(var rci : TRenderContextInfo; Sender : TObject);
 begin
   if (csDesigning in ComponentState) and not DesignTimeEnabled then Exit;
-  inherited DoInitialize;
+  inherited;
 end;
 
 // SetDesignTimeEnabled

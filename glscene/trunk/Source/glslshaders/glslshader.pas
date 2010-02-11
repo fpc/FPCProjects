@@ -6,11 +6,17 @@
     TGLSLShader is a wrapper for GLS shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>24/07/09 - DaStr - Added support for TGLCustomShader.DebugMode
+                             Fixed spelling mistake in TGLShaderUnAplyEvent
+                             TGLShader.DoInitialize() now passes rci
+                              (BugTracker ID = 2826217)
+                             Bugfixed TGLCustomGLSLShader.DoInitialize() - now
+                              shader cleanes up correctly if failed to initialize
       <li>15/03/08 - DaStr - Fixups for vIgnoreContextActivationFailures mode
                                                       (BugTracker ID = 1914782)
       <li>25/12/07 - DaStr - Fix-up for previous update (BugtrackerID = 1772477)
-      <li>12/08/07 - LC - TGLSLShaderParameter.SetAsCustomTexture now restores the
-                          active texture unit (BugtrackerID = 1772477)
+      <li>12/08/07 - LC -    TGLSLShaderParameter.SetAsCustomTexture now restores
+                              the active texture unit (BugtrackerID = 1772477)
       <li>12/07/07 - DaStr - TGLSLInitializedShaderParameters removed because
                               even if implemented, it could not give
                               a significant performance increase
@@ -19,7 +25,7 @@
                               used to set texture units for different sampler
                               types (1D/2D/3D) before validation, which fixes
                               a bug (or complies to strict validation) with ATI
-                              drivers.
+                              drivers
       <li>30/03/07 - DaStr - Bugfixed TGLCustomGLSLShader.DoUnApply
                               (Result was not initialized)
       <li>20/03/07 - DaStr - TGLCustomGLSLShader now generates its own events
@@ -68,7 +74,7 @@ type
   EGLSLShaderException = class(EGLCustomShaderException);
 
   TGLSLShaderEvent = procedure(Shader: TGLCustomGLSLShader) of object;
-  TGLSLShaderUnUplyEvent = procedure(Shader: TGLCustomGLSLShader;
+  TGLSLShaderUnApplyEvent = procedure(Shader: TGLCustomGLSLShader;
                                      var ThereAreMorePasses: Boolean) of object;
 
   TGLCustomGLSLShader = class(TGLCustomShader)
@@ -78,20 +84,20 @@ type
 
     FOnInitialize: TGLSLShaderEvent;
     FOnApply: TGLSLShaderEvent;
-    FOnUnApply: TGLSLShaderUnUplyEvent;
+    FOnUnApply: TGLSLShaderUnApplyEvent;
 
     function GetParam(const Index: string): TGLSLShaderParameter;
     function GetDirectParam(const Index: Cardinal): TGLSLShaderParameter;
   protected
     property OnApply: TGLSLShaderEvent read FOnApply write FOnApply;
-    property OnUnApply: TGLSLShaderUnUplyEvent read FOnUnApply write FOnUnApply;
+    property OnUnApply: TGLSLShaderUnApplyEvent read FOnUnApply write FOnUnApply;
     property OnInitialize: TGLSLShaderEvent read FOnInitialize write FOnInitialize;
 
     procedure DoInitialPass; virtual;
 
     function GetGLSLProg: TGLProgramHandle; virtual;
     function GetCurrentParam: TGLSLShaderParameter; virtual;
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci: TRenderContextInfo; Sender: TObject); override;
     procedure DoFinalize; override;
     procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
     function DoUnApply(var rci: TRenderContextInfo): Boolean; override;
@@ -174,7 +180,7 @@ begin
 end;
 
 
-procedure TGLCustomGLSLShader.DoInitialize;
+procedure TGLCustomGLSLShader.DoInitialize(var rci: TRenderContextInfo; Sender: TObject);
 begin
   try
     if not ShaderSupported then
@@ -192,9 +198,9 @@ begin
       end;
 
       if VertexProgram.Enabled then
-        FGLSLProg.AddShader(TGLVertexShaderHandle, VertexProgram.Code.Text);
+        FGLSLProg.AddShader(TGLVertexShaderHandle, VertexProgram.Code.Text, FDebugMode);
       if FragmentProgram.Enabled then
-        FGLSLProg.AddShader(TGLFragmentShaderHandle, FragmentProgram.Code.Text);
+        FGLSLProg.AddShader(TGLFragmentShaderHandle, FragmentProgram.Code.Text, FDebugMode);
 
       if VertexProgram.Enabled or FragmentProgram.Enabled then
       begin
@@ -207,8 +213,8 @@ begin
     except
       on E: Exception do
       begin
-        HandleFailedInitialization(E.Message);
         FreeAndNil(FGLSLProg);
+        HandleFailedInitialization(E.Message);
       end;
     end;
 
@@ -223,9 +229,9 @@ begin
     except
       on E: Exception do
       begin
-        HandleFailedInitialization(E.Message);
         FreeAndNil(FGLSLProg);
-        Enabled:=false;
+        HandleFailedInitialization(E.Message);
+        Enabled := false;
       end;
     end;
   end;

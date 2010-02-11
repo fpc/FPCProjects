@@ -6,6 +6,8 @@
 	Handles all the material + material library stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
+                              (BugTracker ID = 2826217)
       <li>14/07/09 - DaStr - Added $I GLScene.inc
       <li>08/10/08 - DanB - Created from split from GLTexture.pas,
                             Textures + materials are no longer so tightly bound
@@ -94,7 +96,7 @@ type
 			{ Protected Declarations }
          {: Invoked once, before the first call to DoApply.<p>
             The call happens with the OpenGL context being active. }
-         procedure DoInitialize; dynamic;
+         procedure DoInitialize(var rci : TRenderContextInfo; Sender : TObject); dynamic;
          {: Request to apply the shader.<p>
             Always followed by a DoUnApply when the shader is no longer needed. }
          procedure DoApply(var rci : TRenderContextInfo; Sender : TObject); virtual; abstract;
@@ -107,7 +109,7 @@ type
          procedure DoFinalize; dynamic;
 
          function GetShaderInitialized : Boolean;
-         procedure InitializeShader;
+         procedure InitializeShader(var rci : TRenderContextInfo; Sender : TObject);
          procedure FinalizeShader;
          procedure OnVirtualHandleAllocate(sender : TGLVirtualHandle; var handle : Cardinal);
          procedure OnVirtualHandleDestroy(sender : TGLVirtualHandle; var handle : Cardinal);
@@ -773,7 +775,7 @@ end;
 
 // DoInitialize
 //
-procedure TGLShader.DoInitialize;
+procedure TGLShader.DoInitialize(var rci: TRenderContextInfo; Sender: TObject);
 begin
    // nothing here
 end;
@@ -794,14 +796,14 @@ end;
 
 // InitializeShader
 //
-procedure TGLShader.InitializeShader;
+procedure TGLShader.InitializeShader(var rci: TRenderContextInfo; Sender: TObject);
 begin
    if FVirtualHandle.Handle=0 then begin
       FVirtualHandle.OnAllocate:=OnVirtualHandleAllocate;
       FVirtualHandle.OnDestroy:=OnVirtualHandleDestroy;
       FVirtualHandle.AllocateHandle;
       FShaderInitialized:=True;
-      DoInitialize;
+      DoInitialize(rci, Sender);
    end;
 end;
 
@@ -838,7 +840,7 @@ begin
    // and choose to disable itself during initialization.
    if FEnabled then
       if FVirtualHandle.Handle=0 then
-         InitializeShader;
+         InitializeShader(rci, Sender);
 
    if FEnabled then
       DoApply(rci, Sender);

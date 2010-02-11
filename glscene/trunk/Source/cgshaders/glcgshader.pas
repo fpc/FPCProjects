@@ -6,6 +6,8 @@
    Base Cg shader classes.<p>
 
    <b>History :</b><font size=-1><ul>
+      <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
+                              (BugTracker ID = 2826217)   
       <li>15/03/08 - DaStr - Fixups for vIgnoreContextActivationFailures mode
                                                       (BugTracker ID = 1914782)
       <li>24/03/07 - DaStr - Improved Cross-Platform compatibility
@@ -357,7 +359,7 @@ type
     function GetOnInitialize : TCgShaderEvent;
     procedure SetOnInitialize(const val : TCgShaderEvent);
 
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci : TRenderContextInfo; Sender : TObject); override;
     procedure DoFinalize; override;
     procedure DoApply(var rci : TRenderContextInfo; Sender : TObject); override;
     function  DoUnApply(var rci : TRenderContextInfo) : Boolean; override;
@@ -400,7 +402,7 @@ type
     FCadencer: TGLCadencer;
     procedure SetCadencer(const Value: TGLCadencer);
   protected
-    procedure DoInitialize; override;
+    procedure DoInitialize(var rci : TRenderContextInfo; Sender : TObject); override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
   public
     property Cadencer: TGLCadencer read FCadencer write SetCadencer;
@@ -1296,7 +1298,7 @@ end;
 
 // DoInitialize
 //
-procedure TCustomCgShader.DoInitialize;
+procedure TCustomCgShader.DoInitialize(var rci : TRenderContextInfo; Sender : TObject);
 begin
   if (csDesigning in ComponentState) and (not FDesignEnable) then
     Exit;
@@ -1381,7 +1383,7 @@ end;
 
 // DoInitialize
 //
-procedure TCadencableCustomCgShader.DoInitialize;
+procedure TCadencableCustomCgShader.DoInitialize(var rci : TRenderContextInfo; Sender : TObject);
 begin
   if FCadencer = nil then
   begin
