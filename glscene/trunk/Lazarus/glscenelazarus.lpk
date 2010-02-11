@@ -33,7 +33,7 @@
     <Description Value="GLScene - OpenGL 3D library"/>
     <License Value="LGPL"/>
     <Version Major="1" Build="3"/>
-    <Files Count="178">
+    <Files Count="180">
       <Item1>
         <Filename Value="../Source/base/applicationfileio.pas"/>
         <UnitName Value="ApplicationFileIO"/>
@@ -762,6 +762,14 @@
         <Filename Value="../Source/glcameracontroller.pas"/>
         <UnitName Value="GLCameraController"/>
       </Item178>
+      <Item179>
+        <Filename Value="../Source/glfbo.pas"/>
+        <UnitName Value="GLFBO"/>
+      </Item179>
+      <Item180>
+        <Filename Value="../Source/glfborenderer.pas"/>
+        <UnitName Value="GLFBORenderer"/>
+      </Item180>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="4">

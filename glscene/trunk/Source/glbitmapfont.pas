@@ -6,6 +6,7 @@
   Bitmap Fonts management classes for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>11/11/09 - DaStr - Added Delphi 2009 compatibility (thanks mal)  
       <li>16/10/08 - UweR - Removed unneeded typecast in TBitmapFontRange.SetStartGlyphIdx
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
@@ -475,7 +476,8 @@ var
    i : Integer;
 begin
    Result:=-1;
-   for i:=0 to Count-1 do with Items[i] do begin
+   for i:=0 to Count-1 do
+   with Items[i] do begin
       if (aChar>=StartASCII) and (aChar<=StopASCII) then begin
          Result:=StartGlyphIdx+Integer(aChar)-Integer(StartASCII);
          Break;
@@ -566,10 +568,10 @@ var
    i : Integer;
 begin
    if Length(FCharWidths)=0 then
-      SetLength(FCharWidths, 256);
+      SetLength(FCharWidths, GLS_FONT_CHARS_COUNT);
    if w<0 then
       w:=CharWidth;
-   for i:=0 to 255 do
+   for i:=0 to GLS_FONT_CHARS_COUNT - 1 do
       FCharWidths[i]:=w;
 end;
 
@@ -584,8 +586,8 @@ end;
 //
 procedure TGLCustomBitmapFont.SetCharRects(index : Integer; const p : TVector);
 begin
-   if Length(FCharRects)<256 then
-      Setlength(FCharRects, 256);
+   if Length(FCharRects)<GLS_FONT_CHARS_COUNT then
+      Setlength(FCharRects, GLS_FONT_CHARS_COUNT);
    FCharRects[index]:=p;
 end;
 
@@ -967,7 +969,7 @@ var
    p : PVector;
 begin
    if Length(FCharRects)=0 then begin
-      SetLength(FCharRects, 256);
+      SetLength(FCharRects, GLS_FONT_CHARS_COUNT);
       for i:=0 to FRanges.Count-1 do with FRanges.Items[i] do begin
          sa:=Integer(StartASCII);
          tileIndex:=StartGlyphIdx;

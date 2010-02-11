@@ -6,6 +6,7 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>10/11/09 - DaStr - Added more texture formats (thanks YarUnderoaker)
       <li>04/06/09 - DanB - Delphi 5 fix
       <li>17/10/08 - DanB - changed some NotifyChange(Sender) calls to NotifyChange(Self)
       <li>08/10/08 - DanB - split materials related stuff into GLMaterial.pas
@@ -204,9 +205,51 @@ const
 
 type
 	TGLTextureMode = (tmDecal, tmModulate, tmBlend, tmReplace);
-	TGLTextureWrap = (twBoth, twNone, twVertical, twHorizontal);
+	TGLTextureWrap = (twBoth, twNone, twVertical, twHorizontal, twSeparate);
+
+  // If texture wrap mode is twSeparate then three dimensions need to be
+  // defined separately.
+  TGLSeparateTextureWrap = (
+    twRepeat,
+    twClamp,
+    twClampToEdge,
+    twClampToBorder,
+    twMirrorRepeat,
+    twMirrorClamp,
+    twMirrorClampToEdge,
+    twMirrorClampToBorder
+  );
+
   TGLTextureTarget = (ttTexture1d, ttTexture2d, ttTexture3d,
                       ttTextureRect, ttTextureCube);
+
+  // Specifies the texture comparison mode for currently bound depth textures.
+  // That is, a texture whose internal format is tfDEPTH_COMPONENT*
+  TGLTextureCompareMode = (tcmNone, tcmCompareRtoTexture);
+
+  // Specifies how depth values should be treated
+  // during filtering and texture application
+  TGLDepthTextureMode = (dtmLuminance, dtmIntensity, dtmAlpha);
+
+  // Specifies the depth comparison function.
+  TGLDepthCompareFunc = (
+    dcfLequal,    // Passes if the	incoming depth value is	less
+                  // than or equal	to the stored depth value.
+    dcfGequal,    // Passes if the	incoming depth value is
+                  // greater than or equal	to the stored depth value.
+    dcfLess,      // Passes if the	incoming depth value is	less
+                  // than the stored depth	value.
+
+    dcfGreater,   // Passes if the	incoming depth value is
+                  // greater than the stored depth	value.
+
+    dcfEqual,     // Passes if the	incoming depth value is	equal
+                  // to the stored	depth value.
+    dcfNotequal,  // Passes if the	incoming depth value is	not
+                  // equal	to the stored depth value.
+    dcfAlways,    // Always passes
+    dcfNever      // Never	passes.
+  );
 
   TGLTexture         = class;
 
@@ -578,7 +621,9 @@ type
       a 24 bits format internally and will convert to 32 bits, etc. }
    TGLTextureFormat = (tfDefault, tfRGB, tfRGBA, tfRGB16, tfRGBA16, tfAlpha,
                        tfLuminance, tfLuminanceAlpha, tfIntensity, tfNormalMap,
-                       tfRGBAFloat16, tfRGBAFloat32); // float_type
+                       tfRGBAFloat16, tfRGBAFloat32,
+                       tfDEPTH_COMPONENT16, tfDEPTH_COMPONENT24,
+                       tfDEPTH_COMPONENT32);
 
    // TGLTextureCompression
    //
@@ -633,7 +678,15 @@ type
          FFilteringQuality    : TGLTextureFilteringQuality;
          FTexWidth, FTexHeight : Integer;
          FEnvColor            : TGLColor;
+      FBorderColor         : TGLColor;
          FNormalMapScale      : Single;
+      FTextureWrapS        : TGLSeparateTextureWrap;
+      FTextureWrapT        : TGLSeparateTextureWrap;
+      FTextureWrapR        : TGLSeparateTextureWrap;
+      fTextureCompareMode  : TGLTextureCompareMode;
+      fTextureCompareFunc  : TGLDepthCompareFunc;
+      fDepthTextureMode    : TGLDepthTextureMode;
+      fBorder              : GLuint;
 
 		protected
 			{ Protected Declarations }
@@ -650,6 +703,9 @@ type
 			procedure SetMinFilter(AValue: TGLMinFilter);
 			procedure SetTextureMode(AValue: TGLTextureMode);
 			procedure SetTextureWrap(AValue: TGLTextureWrap);
+      procedure SetTextureWrapS(AValue: TGLSeparateTextureWrap);
+      procedure SetTextureWrapT(AValue: TGLSeparateTextureWrap);
+      procedure SetTextureWrapR(AValue: TGLSeparateTextureWrap);
          procedure SetTextureFormat(const val : TGLTextureFormat);
          procedure SetCompression(const val : TGLTextureCompression);
          procedure SetFilteringQuality(const val : TGLTextureFilteringQuality);
@@ -662,8 +718,13 @@ type
          procedure SetEnabled(const val : Boolean);
          function GetEnabled : Boolean;
          procedure SetEnvColor(const val : TGLColor);
+      procedure SetBorderColor(const val : TGLColor);
          procedure SetNormalMapScale(const val : Single);
          function StoreNormalMapScale : Boolean;
+      procedure SetTextureCompareMode(const val : TGLTextureCompareMode);
+      procedure SetTextureCompareFunc(const val : TGLDepthCompareFunc);
+      procedure SetDepthTextureMode(const val : TGLDepthTextureMode);
+      procedure SetBorder(const val : GLuint);
 
          function StoreImageClassName : Boolean;
 
@@ -776,7 +837,10 @@ type
 			property TextureMode: TGLTextureMode read FTextureMode write SetTextureMode default tmDecal;
          {: Wrapping mode for the texture. }
 			property TextureWrap: TGLTextureWrap read FTextureWrap write SetTextureWrap default twBoth;
-
+        {: Wrapping mode for the texture when TextureWrap=twSeparate. }
+        property TextureWrapS: TGLSeparateTextureWrap read FTextureWrapS write SetTextureWrapS default twRepeat;
+        property TextureWrapT: TGLSeparateTextureWrap read FTextureWrapT write SetTextureWrapT default twRepeat;
+        property TextureWrapR: TGLSeparateTextureWrap read FTextureWrapR write SetTextureWrapR default twRepeat;
          {: Texture format for use by the renderer.<p>
             See TGLTextureFormat for details. }
          property TextureFormat : TGLTextureFormat read FTextureFormat write SetTextureFormat default tfDefault;
@@ -804,7 +868,8 @@ type
 
          {: Texture Environment color. }
          property EnvColor : TGLColor read FEnvColor write SetEnvColor;
-
+         {: Texture Border color. }
+         property BorderColor : TGLColor read FBorderColor write SetBorderColor;
          {: If true, the texture is disabled (not used). }
 			property Disabled: Boolean read FDisabled write SetDisabled default True;
 
@@ -813,6 +878,11 @@ type
             the scaling that is applied during normal map generation (ie. controls
             the intensity of the bumps). }
          property NormalMapScale : Single read FNormalMapScale write SetNormalMapScale stored StoreNormalMapScale;
+
+         property TextureCompareMode : TGLTextureCompareMode read fTextureCompareMode write SetTextureCompareMode default tcmNone;
+         property TextureCompareFunc : TGLDepthCompareFunc   read fTextureCompareFunc write SetTextureCompareFunc default dcfLequal;
+         property DepthTextureMode : TGLDepthTextureMode     read fDepthTextureMode   write SetDepthTextureMode default dtmLuminance;
+         property Border : GLuint read fBorder write SetBorder;
 	end;
 
    // TGLTextureExItem
@@ -918,6 +988,7 @@ var
 procedure RegisterTGraphicClassFileExtension(const extension : String;
                                              const aClass : TGraphicClass);
 function CreateGraphicFromFile(const fileName : String) : TGLGraphic;
+function TextureFormatToInternalFormat( texFormat: TGLTextureFormat ): Integer;
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -1111,6 +1182,21 @@ begin
    if IsDelimiter('\', s, Length(s)-1) then
       Result:=s+'\'
    else Result:=s;
+end;
+
+function TextureFormatToInternalFormat( texFormat: TGLTextureFormat ): Integer;
+const
+   cTextureFormatToOpenGL : array [tfRGB..high(TGLTextureFormat)] of TGLEnum =
+      (GL_RGB8, GL_RGBA8, GL_RGB5, GL_RGBA4, GL_ALPHA8, GL_LUMINANCE8,
+       GL_LUMINANCE8_ALPHA8, GL_INTENSITY8, GL_RGB8,
+       GL_RGBA_FLOAT16_ATI, GL_RGBA_FLOAT32_ATI,
+       GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT32);
+begin
+  if texFormat=tfDefault then
+     if vDefaultTextureFormat=tfDefault
+     then texFormat:=tfRGBA
+     else texFormat:=vDefaultTextureFormat;
+  Result := cTextureFormatToOpenGL[texFormat];
 end;
 
 // ------------------
@@ -1895,7 +1981,11 @@ begin
    FTextureHandle:=TGLTextureHandle.Create;
    FMappingMode:=tmmUser;
    FEnvColor:=TGLColor.CreateInitialized(Self, clrTransparent);
-   FNormalMapScale:=cDefaultNormalMapScale;
+  FBorderColor        := TGLColor.CreateInitialized(Self, clrTransparent);
+  FNormalMapScale     := cDefaultNormalMapScale;
+  FTextureCompareMode := tcmNone;
+  FTextureCompareFunc := dcfLequal;
+  FDepthTextureMode   := dtmLuminance;
 end;
 
 // Destroy
@@ -1903,6 +1993,7 @@ end;
 destructor TGLTexture.Destroy;
 begin
    FEnvColor.Free;
+  FBorderColor.Free;   
    FMapSCoordinates.Free;
    FMapTCoordinates.Free;
 	DestroyHandles;
@@ -1942,6 +2033,10 @@ begin
             // FOnTextureNeeded := TGLTexture(Source).FImageGamma;
             // FRequiredMemorySize  : Integer;
             // FTexWidth, FTexHeight : Integer;
+            FBorderColor.Assign(TGLTexture(Source).BorderColor);
+            FTextureCompareMode := TGLTexture(Source).FTextureCompareMode;
+            FTextureCompareFunc := TGLTexture(Source).FTextureCompareFunc;
+            FDepthTextureMode   := TGLTexture(Source).FDepthTextureMode;
             FChanges := [tcParams, tcImage];
          end;
       end
@@ -2034,7 +2129,7 @@ end;
 function TGLTexture.TextureImageRequiredMemory : Integer;
 const
    cTextureFormatToPixelSize : array [tfRGB..high(TGLTextureFormat)] of Integer = ( // float_type
-                                                     3, 4, 2, 2, 1, 8, 16, 1, 2, 1, 3);
+                                                     3, 4, 2, 2, 1, 8, 16, 1, 2, 1, 3, 2, 3, 4);
 var
    tf : TGLTextureFormat;
 begin
@@ -2161,6 +2256,14 @@ begin
    NotifyParamsChange;
 end;
 
+// SetBorederColor
+//
+procedure TGLTexture.SetBorderColor(const val : TGLColor);
+begin
+   FBorderColor.Assign(val);
+   NotifyParamsChange;
+end;
+
 // SetNormalMapScale
 //
 procedure TGLTexture.SetNormalMapScale(const val : Single);
@@ -2186,6 +2289,51 @@ begin
 	if AValue <> FTextureWrap then begin
 		FTextureWrap:=AValue;
       NotifyParamsChange;
+	end;
+end;
+
+// SetTextureWrapS
+//
+procedure TGLTexture.SetTextureWrapS(AValue: TGLSeparateTextureWrap);
+begin
+  // Check for supporting
+  if ((AValue=twMirrorClamp) or (AVAlue=twMirrorClampToEdge)) and
+      not GL_ATI_texture_mirror_once then Exit;
+  if (AValue=twMirrorClampToBorder) and not GL_EXT_texture_mirror_clamp then Exit;
+
+	if AValue <> FTextureWrapS then begin
+		FTextureWrapS:=AValue;
+    NotifyParamsChange;
+	end;
+end;
+
+// SetTextureWrapT
+//
+procedure TGLTexture.SetTextureWrapT(AValue: TGLSeparateTextureWrap);
+begin
+  // Check for supporting
+  if ((AValue=twMirrorClamp) or (AVAlue=twMirrorClampToEdge)) and
+      not GL_ATI_texture_mirror_once then Exit;
+  if (AValue=twMirrorClampToBorder) and not GL_EXT_texture_mirror_clamp then Exit;
+
+	if AValue <> FTextureWrapT then begin
+		FTextureWrapT:=AValue;
+    NotifyParamsChange;
+	end;
+end;
+
+// SetTextureWrapR
+//
+procedure TGLTexture.SetTextureWrapR(AValue: TGLSeparateTextureWrap);
+begin
+  // Check for supporting
+  if ((AValue=twMirrorClamp) or (AVAlue=twMirrorClampToEdge)) and
+      not GL_ATI_texture_mirror_once then Exit;
+  if (AValue=twMirrorClampToBorder) and not GL_EXT_texture_mirror_clamp then Exit;
+
+	if AValue <> FTextureWrapR then begin
+		FTextureWrapR:=AValue;
+    NotifyParamsChange;
 	end;
 end;
 
@@ -2276,6 +2424,46 @@ end;
 function TGLTexture.StoreImageClassName : Boolean;
 begin
    Result:=(FImage.ClassName<>TGLPersistentImage.ClassName);
+end;
+
+// SetTextureCompareMode
+//
+procedure TGLTexture.SetTextureCompareMode(const val : TGLTextureCompareMode);
+begin
+	if val<>fTextureCompareMode then begin
+		fTextureCompareMode:=val;
+    NotifyParamsChange;
+	end;
+end;
+
+// SetTextureCompareFunc
+//
+procedure TGLTexture.SetTextureCompareFunc(const val : TGLDepthCompareFunc);
+begin
+	if val<>fTextureCompareFunc then begin
+		fTextureCompareFunc:=val;
+    NotifyParamsChange;
+	end;
+end;
+
+// SetDepthTextureMode
+//
+procedure TGLTexture.SetDepthTextureMode(const val : TGLDepthTextureMode);
+begin
+	if val<>fDepthTextureMode then begin
+		fDepthTextureMode:=val;
+    NotifyParamsChange;
+	end;
+end;
+
+// SetBorder
+//
+procedure TGLTexture.SetBorder(const val : GLuint);
+begin
+	if val<>fBorder then begin
+		fBorder:=val;
+    NotifyImageChange;
+	end;
 end;
 
 // PrepareBuildList
@@ -2611,15 +2799,11 @@ end;
 //
 function TGLTexture.OpenGLTextureFormat : Integer;
 const
-   cTextureFormatToOpenGL : array [tfRGB..high(TGLTextureFormat)] of Integer =
-      (GL_RGB8, GL_RGBA8, GL_RGB5, GL_RGBA4, GL_ALPHA8, GL_LUMINANCE8,
-       GL_LUMINANCE8_ALPHA8, GL_INTENSITY8, GL_RGB8,
-       GL_RGBA_FLOAT16_ATI, GL_RGBA_FLOAT32_ATI); // float_type default is ATI types
-   cCompressedTextureFormatToOpenGL : array [tfRGB..high(TGLTextureFormat)] of Integer =
+   cCompressedTextureFormatToOpenGL : array [tfRGB..tfNormalMap] of TGLEnum =
       (GL_COMPRESSED_RGB_ARB, GL_COMPRESSED_RGBA_ARB, GL_COMPRESSED_RGB_ARB,
        GL_COMPRESSED_RGBA_ARB, GL_COMPRESSED_ALPHA_ARB, GL_COMPRESSED_LUMINANCE_ARB,
        GL_COMPRESSED_LUMINANCE_ALPHA_ARB, GL_COMPRESSED_INTENSITY_ARB,
-       GL_COMPRESSED_RGB_ARB, 0, 0); // compression not supported for float_type 
+       GL_COMPRESSED_RGB_ARB);
 var
    texForm : TGLTextureFormat;
    texComp : TGLTextureCompression;
@@ -2649,7 +2833,7 @@ begin
          Assert(False);
       end;
       Result:=cCompressedTextureFormatToOpenGL[texForm];
-   end else Result:=cTextureFormatToOpenGL[texForm];
+   end else Result:=TextureFormatToInternalFormat(texForm);
 
    if IsFloatType and not GL_ATI_texture_float then begin // override if NV
      case texForm of
@@ -2746,7 +2930,18 @@ const
 							( GL_NEAREST, GL_LINEAR, GL_NEAREST_MIPMAP_NEAREST,
 							  GL_LINEAR_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_LINEAR,
 							  GL_LINEAR_MIPMAP_LINEAR );
-   cFilteringQuality : array [tfIsotropic..tfAnisotropic] of Integer = (1, 2);
+  cFilteringQuality : array [tfIsotropic..tfAnisotropic] of Integer = (1, 2);
+  cSeparateTextureWrap : array[twRepeat..twMirrorClampToBorder] of TGLenum =
+              ( GL_REPEAT, GL_CLAMP, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_BORDER,
+                GL_MIRRORED_REPEAT, GL_MIRROR_CLAMP_ATI,
+                GL_MIRROR_CLAMP_TO_EDGE_ATI, GL_MIRROR_CLAMP_TO_BORDER_EXT );
+  cTextureCompareMode : array[tcmNone..tcmCompareRtoTexture] of TGLenum =
+              ( GL_NONE, GL_COMPARE_R_TO_TEXTURE_ARB);
+  cTextureCompareFunc : array[dcfLequal..dcfNever] of TGLenum =
+              ( GL_LEQUAL, GL_GEQUAL, GL_LESS, GL_GREATER, GL_EQUAL, GL_NOTEQUAL,
+                GL_ALWAYS, GL_NEVER);
+  cDepthTextureMode : array[dtmLuminance..dtmAlpha] of TGLenum  =
+              ( GL_LUMINANCE, GL_INTENSITY, GL_ALPHA);
 begin
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -2754,41 +2949,38 @@ begin
 	glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 	glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
 
-{   if GL_ARB_texture_border_clamp then begin
-   	glTexParameteri(target, GL_TEXTURE_WRAP_S, cTextureSWrapARB[FTextureWrap]);
-	   glTexParameteri(target, GL_TEXTURE_WRAP_T, cTextureTWrapARB[FTextureWrap]);
-   end else }
+  glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, FBorderColor.AsAddress);
 
-   if IsFloatType then begin // float_type
-     // Note: HW accerl. only with GL_CLAMP_TO_EDGE for Nvidia GPUs
-     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-     // Linear filtering works with nv40, 16-bit float only  (via GL_ATI_texture_float)
-     if GL_ATI_texture_float and (TextureFormat = tfRGBAFloat16) then begin
-	      glTexParameteri(target, GL_TEXTURE_MIN_FILTER, cTextureMinFilter[FMinFilter]);
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, cTextureMagFilter[FMagFilter]);
-       end
-     else
-       begin
-  	     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-       end;
-   end else begin
-     if GL_VERSION_1_2 or GL_EXT_texture_edge_clamp then begin
-       glTexParameteri(target, GL_TEXTURE_WRAP_S, cTextureSWrap[FTextureWrap]);
-       glTexParameteri(target, GL_TEXTURE_WRAP_T, cTextureTWrap[FTextureWrap]);
-     end else begin
-       glTexParameteri(target, GL_TEXTURE_WRAP_S, cTextureSWrapOld[FTextureWrap]);
-       glTexParameteri(target, GL_TEXTURE_WRAP_T, cTextureTWrapOld[FTextureWrap]);
-     end;
+  if FTextureWrap=twSeparate then begin
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, cSeparateTextureWrap[FTextureWrapS]);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, cSeparateTextureWrap[FTextureWrapT]);
+    glTexParameteri(target, GL_TEXTURE_WRAP_R, cSeparateTextureWrap[FTextureWrapR]);
+  end
 
-	   glTexParameteri(target, GL_TEXTURE_MIN_FILTER, cTextureMinFilter[FMinFilter]);
-	   glTexParameteri(target, GL_TEXTURE_MAG_FILTER, cTextureMagFilter[FMagFilter]);
+  else if (GL_VERSION_1_2 or GL_EXT_texture_edge_clamp) then begin
+   glTexParameteri(target, GL_TEXTURE_WRAP_S, cTextureSWrap[FTextureWrap]);
+   glTexParameteri(target, GL_TEXTURE_WRAP_T, cTextureTWrap[FTextureWrap]);
 
-     if GL_EXT_texture_filter_anisotropic then
-       glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                       cFilteringQuality[FFilteringQuality]);
-   end;
+  end else begin
+   glTexParameteri(target, GL_TEXTURE_WRAP_S, cTextureSWrapOld[FTextureWrap]);
+   glTexParameteri(target, GL_TEXTURE_WRAP_T, cTextureTWrapOld[FTextureWrap]);
+  end;
+
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, cTextureMinFilter[FMinFilter]);
+  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, cTextureMagFilter[FMagFilter]);
+
+  if GL_EXT_texture_filter_anisotropic then
+   glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                   cFilteringQuality[FFilteringQuality]);
+
+  if (TextureFormat = tfDEPTH_COMPONENT16)
+    or (TextureFormat = tfDEPTH_COMPONENT24)
+    or (TextureFormat = tfDEPTH_COMPONENT32) then begin
+      glTexParameteri( target, GL_TEXTURE_COMPARE_MODE_ARB, cTextureCompareMode[fTextureCompareMode]);
+      glTexParameteri( target, GL_TEXTURE_COMPARE_FUNC_ARB, cTextureCompareFunc[fTextureCompareFunc]);
+      glTexParameteri( target, GL_DEPTH_TEXTURE_MODE_ARB,   cDepthTextureMode[fDepthTextureMode]);
+    end;
+
 end;
 
 // DoOnTextureNeeded

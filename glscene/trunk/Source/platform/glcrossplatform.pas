@@ -473,13 +473,15 @@ end;
 
 procedure GLLoadBitmapFromInstance(aInstance: LongInt; ABitmap: TCustomBitmap; AName: string);
 begin
-{$IFDEF MSWINDOWS}
-  ABitmap.Handle := LoadBitmap(aInstance, PChar(AName));
-{$ENDIF}
-{$IFDEF UNIX}
-  //ABitmap.LoadFromResourceName(aInstance, PChar(AName));
-  ABitmap.LoadFromLazarusResource(AName);
-{$ENDIF}
+  try
+  {$IFDEF MSWINDOWS}
+    ABitmap.Handle := LoadBitmap(aInstance, PChar(AName));
+  {$ENDIF}
+  {$IFDEF UNIX}
+    //ABitmap.LoadFromResourceName(aInstance, PChar(AName));
+    ABitmap.LoadFromLazarusResource(AName);
+  {$ENDIF}
+  except end;
 end;
 
 function GLOKMessageBox(const Text, Caption: string): Integer;

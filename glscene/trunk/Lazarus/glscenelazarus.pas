@@ -36,8 +36,8 @@ uses
   GLCrossPlatform, GLViewer, GLColor, GLDynamicTexture, GLLCLViewer, GLGizmo, 
   GLFileB3D, GLSLBumpShader, GLSLDiffuseSpecularShader, GLSLPostBlurShader, 
   GLSLShader, BaseClasses, GLCoordinates, GLManager, GLNodes, 
-  GLRenderContextInfo, GLMaterial, GLObjectManager, GLCameraController, 
-  LazarusPackageIntf;
+  GLRenderContextInfo, GLMaterial, GLObjectManager, GLCameraController, GLFBO, 
+  GLFBORenderer, LazarusPackageIntf;
 
 implementation
 

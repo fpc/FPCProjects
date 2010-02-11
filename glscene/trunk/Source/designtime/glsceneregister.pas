@@ -353,7 +353,7 @@ uses
    GLViewer, GLGizmo, GLTextureSharingShader, GLGraphics, GLCoordinates,
    GLRenderContextInfo, GLNodes,
    GLMaterial, GLDynamicTexture, GLSLPostBlurShader, BaseClasses, GLExplosionFx,
-   GLCameraController,
+   GLCameraController, GLFBORenderer,
    GLSound, GLSoundFileObjects,
    {}
    // Image file formats
@@ -1376,6 +1376,7 @@ initialization
       RegisterSceneObject(TGLRenderPoint, 'Render Point', '', HInstance);
       RegisterSceneObject(TGLImposter, 'Imposter Sprite', '', HInstance);
       RegisterSceneObject(TGLFeedback, 'OpenGL Feedback', '', HInstance);
+      RegisterSceneObject(TGLFBORenderer, 'OpenGL FrameBuffer', '', HInstance);
    end;
 
 finalization

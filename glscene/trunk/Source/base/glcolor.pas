@@ -140,9 +140,9 @@ const
   clBrightText = TColor(-8);
   clButtonText = TColor(-9);
   clBase = TColor(-10);
-  clBackground = TColor(-11);
+  //is in Graphics clBackground = TColor(-11);
   clShadow = TColor(-12);
-  clHighlight = TColor(-13);
+  //is in Graphics clHighlight = TColor(-13);
   clHighlightedText = TColor(-14);
 
   { Mapped role offsets }
