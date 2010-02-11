@@ -1,9 +1,24 @@
+//
+// This unit is part of the GLScene Project, http://glscene.org
+//
 {: GLContext<p>
 
    Prototypes and base implementation of TGLContext.<p>
    Currently NOT thread-safe.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>30/08/09 - DanB - renamed vIgnoreContextActivationFailures to vContextActivationFailureOccurred
+                            + re-enabled it's original behaviour (fixes major memory leak).
+      <li>30/08/09 - DanB - Added TGLTransformFeedbackBufferHandle, TGLTextureBufferHandle,
+                            TGLUniformBufferHandle, TGLVertexArrayHandle,
+                            TGLFramebufferHandle, TGLRenderbufferHandle
+      <li>24/08/09 - DaStr - Added TGLProgramHandle.GetVaryingLocation(),
+                              AddActiveVarying() (thanks YarUnderoaker)
+      <li>21/08/09 - DanB - TGLQueryHandle.GetTarget no longer a class function,
+                            for earlier Delphi compatibility
+      <li>13/08/09 - DanB - Added timer & primitive queries.  Occlusion queries now
+                            use OpenGL 1.5+ queries, instead of GL_NV_occlusion_query extension
+      <li>10/06/09 - DanB - removed OpenGL error handling code, it already exists in OpenGL1x.pas
       <li>16/03/08 - DanB - moved MRT_BUFFERS into unit from opengl1x.pas rewrite,
                             and added some experimental geometry shader code
       <li>15/03/08 - DaStr - Fixups for vIgnoreContextActivationFailures mode
@@ -248,6 +263,9 @@ type
          property Handle : Cardinal read FHandle;
          property RenderingContext : TGLContext read FRenderingContext;
 
+         //: Checks if required extensions / OpenGL version are met
+         class function IsSupported : Boolean; virtual;
+
          procedure AllocateHandle;
          procedure DestroyHandle;
    end;
@@ -312,30 +330,89 @@ type
          { Public Declarations }
    end;
 
-   // TGLOcclusionQueryHandle
+   // TGLQueryHandle
    //
-   {: Manages a handle to an NV_occlusion_query.<br>
-      Does *NOT* check for extension availability, this is assumed to have been
-      checked by the user. }
-   TGLOcclusionQueryHandle = class (TGLContextHandle)
+   {: Manages a handle to a query.<br>
+      Do not use this class directly, use one of its subclasses instead. }
+   TGLQueryHandle = class(TGLContextHandle)
       private
          { Private Declarations }
          FActive : Boolean;
-
       protected
          { Protected Declarations }
          class function Transferable : Boolean; override;
          function DoAllocateHandle : Cardinal; override;
          procedure DoDestroyHandle; override;
-
+         function GetTarget: TGLuint; virtual; abstract;
       public
          { Public Declarations }
-         procedure BeginOcclusionQuery;
-         procedure EndOcclusionQuery;
+         procedure BeginQuery;
+         procedure EndQuery;
 
-         {: True if within a Begin/EndOcclusionQuery. }
+         // Check if result is available from the query.  Result may not be available
+         // immediately after ending the query
+         function IsResultAvailable: boolean;
+         // Number of bits used to store the query result. eg. 32/64 bit
+         function CounterBits: integer;
+         // Retrieve query result, may cause a stall if the result is not available yet
+         function QueryResultInt: TGLInt;
+         function QueryResultUInt: TGLUInt;
+         function QueryResultInt64: TGLint64EXT;
+         function QueryResultUInt64: TGLuint64EXT;
+
+         property Target : TGLuint read GetTarget;
+
+         {: True if within a Begin/EndQuery. }
          property Active : Boolean read FActive;
+   end;
+
+   // TGLOcclusionQueryHandle
+   //
+   {: Manages a handle to an occlusion query.<br>
+      Requires OpenGL 1.5+<br>
+      Does *NOT* check for extension availability, this is assumed to have been
+      checked by the user. }
+   TGLOcclusionQueryHandle = class (TGLQueryHandle)
+      protected
+         function GetTarget: TGLuint; override;
+      public
+         class function IsSupported : Boolean; override;
+         // Number of samples (pixels) drawn during the query, some pixels may
+         // be drawn to several times in the same query
          function PixelCount : Integer;
+   end;
+
+   // TGLTimerQueryHandle
+   //
+   {: Manages a handle to a timer query.<br>
+      Requires GL_EXT_timer_query extension.<br>
+      Does *NOT* check for extension availability, this is assumed to have been
+      checked by the user. }
+   TGLTimerQueryHandle = class(TGLQueryHandle)
+      protected
+         function GetTarget: TGLuint; override;
+      public
+         class function IsSupported : Boolean; override;
+         // Time, in nanoseconds (1 ns = 10^-9 s) between starting + ending the query.
+         // with 32 bit integer can measure up to approximately 4 seconds, use
+         // QueryResultUInt64 if you may need longer
+         function Time: Integer;
+   end;
+
+   // TGLPrimitiveQueryHandle
+   //
+   {: Manages a handle to a primitive query.<br>
+      Requires OpenGL 3.0+<br>
+      Does *NOT* check for extension availability, this is assumed to have been
+      checked by the user. }
+   TGLPrimitiveQueryHandle = class(TGLQueryHandle)
+      protected
+         function GetTarget: TGLuint; override;
+      public
+         class function IsSupported : Boolean; override;
+         // Number of primitives (eg. Points, Triangles etc.) drawn whilst the
+         // query was active
+         function PrimitivesGenerated: Integer;
    end;
 
    // TGLBufferObjectHandle
@@ -361,6 +438,14 @@ type
          procedure Bind;
          {: Note that it is not necessary to UnBind before Binding another buffer. }
          procedure UnBind;
+
+         {: Bind a buffer object to an indexed target, used by transform feedback
+            buffer objects and uniform buffer objects. (OpenGL 3.0+) }
+         procedure BindRange(index: TGLuint; offset: TGLintptr; size: TGLsizeiptr);
+         {: Equivalent to calling BindRange with offset = 0, and size = the size of buffer.}
+         procedure BindBase(index: TGLuint);
+         procedure UnBindBase(index: TGLuint);
+
          {: Specifies buffer content.<p>
             Common bufferUsage values are GL_STATIC_DRAW_ARB for data that will
             change rarely, but be used often, GL_STREAM_DRAW_ARB for data specified
@@ -383,6 +468,8 @@ type
          {: Unmap buffer content from memory.<p>
             Must follow a MapBuffer, and happen before the buffer is unbound. }
          function UnmapBuffer : Boolean;
+
+         class function IsSupported : Boolean; override;
 
          property Target : TGLuint read GetTarget;
    end;
@@ -429,6 +516,8 @@ type
    TGLPackPBOHandle = class(TGLBufferObjectHandle)
       protected
          function GetTarget: TGLuint; override;
+      public
+         class function IsSupported : Boolean; override;
    end;
 
    // TGLUnpackPBOHandle
@@ -439,6 +528,151 @@ type
    TGLUnpackPBOHandle = class(TGLBufferObjectHandle)
      protected
        function GetTarget: TGLuint; override;
+      public
+         class function IsSupported : Boolean; override;
+   end;
+
+   // TGLTransformFeedbackBufferHandle
+   //
+   {: Manages a handle to a Transform Feedback Buffer Object.<p>
+      Transform feedback buffers can be used to capture vertex data from the
+      vertex or geometry shader stage to perform further processing without
+      going on to the fragment shader stage. }
+   TGLTransformFeedbackBufferHandle = class(TGLBufferObjectHandle)
+      protected
+         function GetTarget: TGLuint; override;
+      public
+         procedure BeginTransformFeedback(primitiveMode: TGLenum);
+         procedure EndTransformFeedback();
+
+         class function IsSupported : Boolean; override;
+   end;
+
+   // TGLTextureBufferHandle
+   //
+   {: Manages a handle to a Buffer Texture. (TexBO) }
+   TGLTextureBufferHandle = class(TGLBufferObjectHandle)
+      protected
+         function GetTarget: TGLuint; override;
+      public
+         class function IsSupported : Boolean; override;
+   end;
+
+   // TGLUniformBufferHandle
+   //
+   {: Manages a handle to a Uniform Buffer Object (UBO).
+      Uniform buffer objects store "uniform blocks"; groups of uniforms
+      that can be passed as a group into a GLSL program. }
+   TGLUniformBufferHandle = class(TGLBufferObjectHandle)
+      protected
+         function GetTarget: TGLuint; override;
+      public
+         class function IsSupported : Boolean; override;
+   end;
+
+   // TGLVertexArrayHandle
+   //
+   {: Manages a handle to a Vertex Array Object (VAO).
+      Vertex array objects are used to rapidly switch between large sets
+      of array state. }
+   TGLVertexArrayHandle = class(TGLContextHandle)
+      protected
+         function DoAllocateHandle : Cardinal; override;
+         procedure DoDestroyHandle; override;
+      public
+         procedure Bind;
+         {: Note that it is not necessary to unbind before binding another VAO. }
+         procedure UnBind;
+         class function IsSupported : Boolean; override;
+   end;
+
+   // TGLFramebufferHandle
+   //
+   {: Manages a handle to a Framebuffer Object (FBO).
+      Framebuffer objects provide a way of drawing to rendering
+      destinations other than the buffers provided to the GL by the
+      window-system.  One or more "framebuffer-attachable images" can be attached
+      to a Framebuffer for uses such as: offscreen rendering, "render to texture" +
+      "multiple render targets" (MRT).
+      There are several types of framebuffer-attachable images:
+      - The image of a renderbuffer object, which is always 2D.
+      - A single level of a 1D texture, which is treated as a 2D image with a height of one.
+      - A single level of a 2D or rectangle texture.
+      - A single face of a cube map texture level, which is treated as a 2D image.
+      - A single layer of a 1D or 2D array texture or 3D texture, which is treated as a 2D image.
+      Additionally, an entire level of a 3D texture, cube map texture,
+      or 1D or 2D array texture can be attached to an attachment point.
+      Such attachments are treated as an array of 2D images, arranged in
+      layers, and the corresponding attachment point is considered to be layered. }
+   TGLFramebufferHandle = class(TGLContextHandle)
+      protected
+         function DoAllocateHandle : Cardinal; override;
+         procedure DoDestroyHandle; override;
+      public
+         // Bind framebuffer for both drawing + reading
+         procedure Bind;
+         // Bind framebuffer for drawing
+         procedure BindForDrawing;
+         // Bind framebuffer for reading
+         procedure BindForReading;
+         {: Note that it is not necessary to unbind before binding another framebuffer. }
+         procedure UnBind;
+         procedure UnBindForDrawing;
+         procedure UnBindForReading;
+         // target = GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER, GL_FRAMEBUFFER (attach to both READ + DRAW)
+         // attachment = COLOR_ATTACHMENTi, DEPTH_ATTACHMENT, STENCIL_ATTACHMENT, DEPTH_STENCIL_ATTACHMENT
+         procedure Attach1DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint);
+         procedure Attach2DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint);
+         procedure Attach3DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint);
+         procedure AttachRenderBuffer(target: TGLenum; attachment: TGLenum; renderbuffertarget: TGLenum; renderbuffer: TGLuint);
+         // OpenGL 3.2+ only.
+         // If texture is the name of a three-dimensional texture, cube map texture, one-or
+         // two-dimensional array texture, or two-dimensional multisample array texture, the
+         // texture level attached to the framebuffer attachment point is an array of images,
+         // and the framebuffer attachment is considered layered.
+         procedure AttachTexture(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint);
+         // OpenGL 3.2+ only
+         procedure AttachTextureLayer(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint);
+
+         // copy rect from bound read framebuffer to bound draw framebuffer
+         procedure Blit(srcX0: TGLint; srcY0: TGLint; srcX1: TGLint; srcY1: TGLint;
+			                  dstX0: TGLint; dstY0: TGLint; dstX1: TGLint; dstY1: TGLint;
+			                  mask: TGLbitfield; filter: TGLenum);
+         // target = GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER, GL_FRAMEBUFFER (equivalent to GL_DRAW_FRAMEBUFFER)
+         // If default framebuffer (0) is bound:
+         // attachment = GL_FRONT_LEFT, GL_FRONT_RIGHT, GL_BACK_LEFT, or GL_BACK_RIGHT, GL_DEPTH, GL_STENCIL
+         // if a framebuffer object is bound:
+         // attachment = GL_COLOR_ATTACHMENTi, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT
+         // param = GL_FRAMEBUFFER_ATTACHMENT_(OBJECT_TYPE, OBJECT_NAME,
+         //       RED_SIZE, GREEN_SIZE, BLUE_SIZE, ALPHA_SIZE, DEPTH_SIZE, STENCIL_SIZE,
+         //       COMPONENT_TYPE, COLOR_ENCODING, TEXTURE_LEVEL, LAYERED, TEXTURE_CUBE_MAP_FACE, TEXTURE_LAYER
+         function GetAttachmentParameter(target: TGLenum; attachment: TGLenum; pname: TGLenum): TGLint;
+         // Returns the type of object bound to attachment point:
+         // GL_NONE, GL_FRAMEBUFFER_DEFAULT, GL_TEXTURE, or GL_RENDERBUFFER
+         function GetAttachmentObjectType(target: TGLenum; attachment: TGLenum): TGLint;
+         // Returns the name (ID) of the texture or renderbuffer attached to attachment point
+         function GetAttachmentObjectName(target: TGLenum; attachment: TGLenum): TGLint;
+
+         function CheckStatus(target: TGLenum): TGLenum;
+         class function IsSupported : Boolean; override;
+  end;
+
+   // TGLRenderbufferHandle
+   //
+   {: Manages a handle to a Renderbuffer Object.
+      A Renderbuffer is a "framebuffer-attachable image" for generalized offscreen
+      rendering and it also provides a means to support rendering to GL logical
+      buffer types which have no corresponding texture format (stencil, accum, etc). }
+   TGLRenderbufferHandle = class(TGLContextHandle)
+      protected
+         function DoAllocateHandle : Cardinal; override;
+         procedure DoDestroyHandle; override;
+      public
+         procedure Bind;
+         procedure UnBind;
+         procedure SetStorage(internalformat: TGLenum; width, height: TGLsizei);
+         procedure SetStorageMultisample(internalformat: TGLenum; samples: TGLsizei; width, height: TGLsizei);
+         class function IsSupported : Boolean; override;
    end;
 
    // TGLSLHandle
@@ -456,6 +690,7 @@ type
       public
          { Public Declarations }
          function InfoLog : String;
+         class function IsSupported : Boolean; override;
    end;
 
    // TGLShaderHandle
@@ -491,6 +726,7 @@ type
       public
          { Public Declarations }
          constructor Create; override;
+         class function IsSupported : Boolean; override;
    end;
 
    // TGLGeometryShaderHandle
@@ -500,6 +736,7 @@ type
       public
          { Public Declarations }
          constructor Create; override;
+         class function IsSupported : Boolean; override;
    end;
 
    // TGLFragmentShaderHandle
@@ -509,6 +746,7 @@ type
       public
          { Public Declarations }
          constructor Create; override;
+         class function IsSupported : Boolean; override;
    end;
 
    // TGLProgramHandle
@@ -570,6 +808,10 @@ type
          function ValidateProgram : Boolean;
          function GetAttribLocation(const aName : String) : Integer;
          function GetUniformLocation(const aName : String) : Integer;
+
+         function GetVaryingLocation(const aName : String) : Integer; // Currently, NVidia-specific.
+         procedure AddActiveVarying(const aName : String);            // Currently, NVidia-specific.
+
          procedure UseProgramObject;
          procedure EndUseProgramObject;
 
@@ -677,10 +919,17 @@ procedure ClearGLError;
 {: Raises an EOpenGLError with 'msg' error string. }
 procedure RaiseOpenGLError(const msg : String);
 
+resourcestring
+   cIncompatibleContexts =       'Incompatible contexts';
+   cDeleteContextFailed =        'Delete context failed';
+   cContextActivationFailed =    'Context activation failed: %X, %s';
+   cContextDeactivationFailed =  'Context deactivation failed';
+   cUnableToCreateLegacyContext= 'Unable to create legacy context';
+
 var
    GLContextManager : TGLContextManager;
    vIgnoreOpenGLErrors : Boolean = False;
-   vIgnoreContextActivationFailures : Boolean = true;
+   vContextActivationFailureOccurred : Boolean = false;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -995,8 +1244,6 @@ begin
       if Assigned(oldContext) then
          oldContext.Activate;
    end;
-// DaStr: don't understand why do you need to turn it off?..
-//   vIgnoreContextActivationFailures:=False;
    FAcceleration:=chaUnknown;
 end;
 
@@ -1007,13 +1254,11 @@ begin
    if FActivationCount=0 then begin
       if not IsValid then
          raise EGLContext.Create(cContextNotCreated);
+      vContextActivationFailureOccurred:=False;
       try
          DoActivate;
       except
-//         if True then // ApplicationTerminated?
-//            vIgnoreContextActivationFailures:=True
-//         else
-         raise;
+         vContextActivationFailureOccurred:=True;
       end;
       vCurrentGLContext:=Self;
    end else Assert(vCurrentGLContext=Self);
@@ -1029,7 +1274,7 @@ begin
    if FActivationCount=0 then begin
       if not IsValid then
          raise EGLContext.Create(cContextNotCreated);
-      if not vIgnoreContextActivationFailures then
+      if not vContextActivationFailureOccurred then
          DoDeactivate;
       vCurrentGLContext:=nil;
    end else if FActivationCount<0 then
@@ -1144,6 +1389,13 @@ begin
    Result:=True;
 end;
 
+// IsSupported
+//
+class function TGLContextHandle.IsSupported : Boolean;
+begin
+   Result:=True;
+end;
+
 // ------------------
 // ------------------ TGLVirtualHandle ------------------
 // ------------------
@@ -1161,7 +1413,7 @@ end;
 //
 procedure TGLVirtualHandle.DoDestroyHandle;
 begin
-   if not vIgnoreContextActivationFailures then begin
+   if not vContextActivationFailureOccurred then begin
       // reset error status
       ClearGLError;
       // delete
@@ -1187,7 +1439,7 @@ end;
 //
 procedure TGLListHandle.DoDestroyHandle;
 begin
-   if not vIgnoreContextActivationFailures then begin
+   if not vContextActivationFailureOccurred then begin
       // reset error status
       ClearGLError;
       // delete
@@ -1233,7 +1485,7 @@ end;
 //
 procedure TGLTextureHandle.DoDestroyHandle;
 begin
-   if not vIgnoreContextActivationFailures then begin
+   if not vContextActivationFailureOccurred then begin
       // reset error status
       glGetError;
       // delete
@@ -1245,62 +1497,171 @@ begin
 end;
 
 // ------------------
-// ------------------ TGLOcclusionQueryHandle ------------------
+// ------------------ TGLQueryHandle ------------------
 // ------------------
 
-// Transferable
+// BeginQuery
 //
-class function TGLOcclusionQueryHandle.Transferable : Boolean;
+procedure TGLQueryHandle.BeginQuery;
 begin
-   Result:=False;
+   Assert(Handle<>0);
+   glBeginQuery(Target, FHandle);
+   Factive:=True;
+end;
+
+// CounterBits
+//
+function TGLQueryHandle.CounterBits: integer;
+begin
+   glGetQueryiv(Target, GL_QUERY_COUNTER_BITS, @Result);
 end;
 
 // DoAllocateHandle
 //
-function TGLOcclusionQueryHandle.DoAllocateHandle : Cardinal;
+function TGLQueryHandle.DoAllocateHandle: Cardinal;
 begin
-   glGenOcclusionQueriesNV(1, @Result);
+   glGenQueries(1, @Result);
 end;
 
 // DoDestroyHandle
 //
-procedure TGLOcclusionQueryHandle.DoDestroyHandle;
+procedure TGLQueryHandle.DoDestroyHandle;
 begin
-   if not vIgnoreContextActivationFailures then begin
+   if not vContextActivationFailureOccurred then begin
       // reset error status
       glGetError;
       // delete
- 	   glDeleteOcclusionQueriesNV(1, @FHandle);
+ 	    glDeleteQueries(1, @FHandle);
       // check for error
       CheckOpenGLError;
    end;
 end;
 
-// BeginOcclusionQuery
+// EndQuery
 //
-procedure TGLOcclusionQueryHandle.BeginOcclusionQuery;
+procedure TGLQueryHandle.EndQuery;
 begin
-   Assert(Handle<>0);
-   glBeginOcclusionQueryNV(Handle);
-   Factive:=True;
-end;
-
-// EndOcclusionQuery
-//
-procedure TGLOcclusionQueryHandle.EndOcclusionQuery;
-begin
+   Assert(FActive=true, 'Cannot end a query before it begins');
    Factive:=False;
    Assert(Handle<>0);
-   glEndOcclusionQueryNV;
+   glEndQuery(Target);
+end;
+
+// IsResultAvailable
+//
+function TGLQueryHandle.IsResultAvailable: boolean;
+begin
+   glGetQueryObjectiv(Handle, GL_QUERY_RESULT_AVAILABLE, @Result);
+end;
+
+// QueryResultInt
+//
+function TGLQueryHandle.QueryResultInt: TGLInt;
+begin
+   glGetQueryObjectiv(Handle, GL_QUERY_RESULT, @Result);
+end;
+
+// QueryResultInt64
+//
+function TGLQueryHandle.QueryResultInt64: TGLint64EXT;
+begin
+   glGetQueryObjecti64vEXT(Handle, GL_QUERY_RESULT, @Result);
+end;
+
+// QueryResultUInt
+//
+function TGLQueryHandle.QueryResultUInt: TGLUInt;
+begin
+   glGetQueryObjectuiv(Handle, GL_QUERY_RESULT, @Result);
+end;
+
+// QueryResultUInt64
+//
+function TGLQueryHandle.QueryResultUInt64: TGLuint64EXT;
+begin
+   glGetQueryObjectui64vEXT(Handle, GL_QUERY_RESULT, @Result);
+end;
+
+// Transferable
+//
+class function TGLQueryHandle.Transferable: Boolean;
+begin
+   Result:=False;
+end;
+
+// ------------------
+// ------------------ TGLOcclusionQueryHandle ------------------
+// ------------------
+
+// GetTarget
+//
+function TGLOcclusionQueryHandle.GetTarget: TGLuint;
+begin
+   Result := GL_SAMPLES_PASSED;
+end;
+
+// IsSupported
+//
+class function TGLOcclusionQueryHandle.IsSupported: Boolean;
+begin
+   Result := GL_VERSION_1_5;
 end;
 
 // PixelCount
 //
 function TGLOcclusionQueryHandle.PixelCount : Integer;
 begin
-   Assert(FHandle<>0);
-   Result:=0;
-   glGetOcclusionQueryuivNV(Handle, GL_PIXEL_COUNT_NV, @Result);
+   Result := QueryResultUInt;
+end;
+
+// ------------------
+// ------------------ TGLTimerQueryHandle ------------------
+// ------------------
+
+// GetTarget
+//
+function TGLTimerQueryHandle.GetTarget: TGLuint;
+begin
+   Result := GL_TIME_ELAPSED_EXT;
+end;
+
+// IsSupported
+//
+class function TGLTimerQueryHandle.IsSupported: Boolean;
+begin
+   Result := GL_EXT_timer_query;
+end;
+
+// Time
+//
+function TGLTimerQueryHandle.Time: Integer;
+begin
+   Result := QueryResultUInt;
+end;
+
+// ------------------
+// ------------------ TGLPrimitiveQueryHandle ------------------
+// ------------------
+
+// GetTarget
+//
+function TGLPrimitiveQueryHandle.GetTarget: TGLuint;
+begin
+   Result := GL_PRIMITIVES_GENERATED;
+end;
+
+// IsSupported
+//
+class function TGLPrimitiveQueryHandle.IsSupported: Boolean;
+begin
+   Result := GL_VERSION_3_0;
+end;
+
+// PrimitivesGenerated
+//
+function TGLPrimitiveQueryHandle.PrimitivesGenerated: Integer;
+begin
+   Result := QueryResultUInt;
 end;
 
 // ------------------
@@ -1329,7 +1690,7 @@ end;
 //
 procedure TGLBufferObjectHandle.DoDestroyHandle;
 begin
-   if not vIgnoreContextActivationFailures then begin
+   if not vContextActivationFailureOccurred then begin
       // reset error status
       glGetError;
       // delete
@@ -1339,7 +1700,14 @@ begin
    end;
 end;
 
-// BindAsArrayBuffer
+// IsSupported
+//
+class function TGLBufferObjectHandle.IsSupported: Boolean;
+begin
+  Result := GL_ARB_vertex_buffer_object;
+end;
+
+// Bind
 //
 procedure TGLBufferObjectHandle.Bind;
 begin
@@ -1351,6 +1719,27 @@ end;
 procedure TGLBufferObjectHandle.UnBind;
 begin
    glBindBufferARB(Target, 0);
+end;
+
+// BindRange
+//
+procedure TGLBufferObjectHandle.BindRange(index: TGLuint; offset: TGLintptr; size: TGLsizeiptr);
+begin
+   glBindBufferRange(Target, index, Handle, offset, size);
+end;
+
+// BindBase
+//
+procedure TGLBufferObjectHandle.BindBase(index: TGLuint);
+begin
+   glBindBufferBase(Target, index, Handle);
+end;
+
+// UnBindBase
+//
+procedure TGLBufferObjectHandle.UnBindBase(index: TGLuint);
+begin
+   glBindBufferBase(Target, index, 0);
 end;
 
 // BufferData
@@ -1433,6 +1822,13 @@ begin
    Result:=GL_PIXEL_PACK_BUFFER_ARB;
 end;
 
+// IsSupported
+//
+class function TGLPackPBOHandle.IsSupported: Boolean;
+begin
+   Result := GL_ARB_pixel_buffer_object;
+end;
+
 // ------------------
 // ------------------ TGLUnpackPBOHandle ------------------
 // ------------------
@@ -1444,6 +1840,340 @@ begin
    Result:=GL_PIXEL_UNPACK_BUFFER_ARB;
 end;
 
+// IsSupported
+//
+class function TGLUnpackPBOHandle.IsSupported: Boolean;
+begin
+   Result := GL_ARB_pixel_buffer_object;
+end;
+
+// ------------------
+// ------------------ TGLTransformFeedbackBufferHandle ------------------
+// ------------------
+
+// GetTarget
+//
+function TGLTransformFeedbackBufferHandle.GetTarget: TGLuint;
+begin
+   Result := GL_TRANSFORM_FEEDBACK_BUFFER;
+end;
+
+// BeginTransformFeedback
+//
+procedure TGLTransformFeedbackBufferHandle.BeginTransformFeedback(primitiveMode: TGLenum);
+begin
+   glBeginTransformFeedback(primitiveMode);
+end;
+
+// EndTransformFeedback
+//
+procedure TGLTransformFeedbackBufferHandle.EndTransformFeedback();
+begin
+   glEndTransformFeedback();
+end;
+
+// IsSupported
+//
+class function TGLTransformFeedbackBufferHandle.IsSupported: Boolean;
+begin
+   Result := {GL_EXT_transform_feedback or }GL_VERSION_3_0;
+end;
+
+// ------------------
+// ------------------ TGLTextureBufferHandle ------------------
+// ------------------
+
+// GetTarget
+//
+function TGLTextureBufferHandle.GetTarget: TGLuint;
+begin
+   Result := GL_TEXTURE_BUFFER;
+end;
+
+// IsSupported
+//
+class function TGLTextureBufferHandle.IsSupported: Boolean;
+begin
+   Result := GL_EXT_texture_buffer_object or GL_ARB_texture_buffer_object or GL_VERSION_3_1;
+end;
+
+// ------------------
+// ------------------ TGLUniformBufferHandle ------------------
+// ------------------
+
+// GetTarget
+//
+function TGLUniformBufferHandle.GetTarget: TGLuint;
+begin
+   Result := GL_UNIFORM_BUFFER;
+end;
+
+// IsSupported
+//
+class function TGLUniformBufferHandle.IsSupported: Boolean;
+begin
+   Result := GL_ARB_uniform_buffer_object;
+end;
+
+// ------------------
+// ------------------ TGLVertexArrayHandle ------------------
+// ------------------
+
+// DoAllocateHandle
+//
+function TGLVertexArrayHandle.DoAllocateHandle: Cardinal;
+begin
+   glGenVertexArrays(1, @Result);
+end;
+
+// DoDestroyHandle
+//
+procedure TGLVertexArrayHandle.DoDestroyHandle;
+begin
+   if not vContextActivationFailureOccurred then begin
+      // reset error status
+      glGetError;
+      // delete
+ 	    glDeleteVertexArrays(1, @FHandle);
+      // check for error
+      CheckOpenGLError;
+   end;
+end;
+
+// Bind
+//
+procedure TGLVertexArrayHandle.Bind;
+begin
+   glBindVertexArray(Handle);
+end;
+
+// UnBind
+//
+procedure TGLVertexArrayHandle.UnBind;
+begin
+   glBindVertexArray(0);
+end;
+
+// IsSupported
+//
+class function TGLVertexArrayHandle.IsSupported: Boolean;
+begin
+   Result := GL_ARB_vertex_array_object;
+end;
+
+// ------------------
+// ------------------ TGLFramebufferHandle ------------------
+// ------------------
+
+// DoAllocateHandle
+//
+function TGLFramebufferHandle.DoAllocateHandle: Cardinal;
+begin
+   glGenFramebuffers(1, @Result);
+end;
+
+// DoDestroyHandle
+//
+procedure TGLFramebufferHandle.DoDestroyHandle;
+begin
+   if not vContextActivationFailureOccurred then begin
+      // reset error status
+      glGetError;
+      // delete
+ 	    glDeleteFramebuffers(1, @FHandle);
+      // check for error
+      CheckOpenGLError;
+   end;
+end;
+
+// Bind
+//
+procedure TGLFramebufferHandle.Bind;
+begin
+   glBindFramebuffer(GL_FRAMEBUFFER, Handle);
+end;
+
+// BindForDrawing
+//
+procedure TGLFramebufferHandle.BindForDrawing;
+begin
+   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, Handle);
+end;
+
+// BindForReading
+//
+procedure TGLFramebufferHandle.BindForReading;
+begin
+   glBindFramebuffer(GL_READ_FRAMEBUFFER, Handle);
+end;
+
+// UnBind
+//
+procedure TGLFramebufferHandle.UnBind;
+begin
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+end;
+
+// UnBindForDrawing
+//
+procedure TGLFramebufferHandle.UnBindForDrawing;
+begin
+   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+end;
+
+// UnBindForReading
+//
+procedure TGLFramebufferHandle.UnBindForReading;
+begin
+   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+end;
+
+// Attach1DTexture
+//
+procedure TGLFramebufferHandle.Attach1DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint);
+begin
+   glFramebufferTexture1D(target, attachment, textarget, texture, level);
+end;
+
+// Attach2DTexture
+//
+procedure TGLFramebufferHandle.Attach2DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint);
+begin
+   glFramebufferTexture2D(target, attachment, textarget, texture, level);
+end;
+
+// Attach3DTexture
+//
+procedure TGLFramebufferHandle.Attach3DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint);
+begin
+   glFramebufferTexture3D(target, attachment, textarget, texture, level, layer);
+end;
+
+// AttachRenderBuffer
+//
+procedure TGLFramebufferHandle.AttachRenderBuffer(target: TGLenum; attachment: TGLenum; renderbuffertarget: TGLenum; renderbuffer: TGLuint);
+begin
+   glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+end;
+
+// AttachTexture
+//
+procedure TGLFramebufferHandle.AttachTexture(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint);
+begin
+   glFramebufferTexture(target, attachment, texture, level);
+end;
+
+// AttachTextureLayer
+//
+procedure TGLFramebufferHandle.AttachTextureLayer(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint);
+begin
+   glFramebufferTextureLayer(target, attachment, texture, level, layer);
+end;
+
+// Blit
+//
+procedure TGLFramebufferHandle.Blit(srcX0: TGLint; srcY0: TGLint; srcX1: TGLint; srcY1: TGLint;
+			                              dstX0: TGLint; dstY0: TGLint; dstX1: TGLint; dstY1: TGLint;
+			                              mask: TGLbitfield; filter: TGLenum);
+begin
+   glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+end;
+
+// GetAttachmentParameter
+//
+function TGLFramebufferHandle.GetAttachmentParameter(target: TGLenum; attachment: TGLenum; pname: TGLenum): TGLint;
+begin
+   glGetFramebufferAttachmentParameteriv(target, attachment, pname, @Result)
+end;
+
+// GetAttachmentObjectType
+//
+function TGLFramebufferHandle.GetAttachmentObjectType(target: TGLenum; attachment: TGLenum): TGLint;
+begin
+   glGetFramebufferAttachmentParameteriv(target, attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, @Result);
+end;
+
+// GetAttachmentObjectName
+//
+function TGLFramebufferHandle.GetAttachmentObjectName(target: TGLenum; attachment: TGLenum): TGLint;
+begin
+   glGetFramebufferAttachmentParameteriv(target, attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, @Result);
+end;
+
+// CheckStatus
+//
+function TGLFramebufferHandle.CheckStatus(target: TGLenum): TGLenum;
+begin
+   Result := glCheckFramebufferStatus(target);
+end;
+
+// IsSupported
+//
+class function TGLFramebufferHandle.IsSupported : Boolean;
+begin
+   Result := {GL_EXT_framebuffer_object or} GL_ARB_framebuffer_object;
+end;
+
+// ------------------
+// ------------------ TGLRenderbufferObject ------------------
+// ------------------
+
+// DoAllocateHandle
+//
+function TGLRenderbufferHandle.DoAllocateHandle: Cardinal;
+begin
+   glGenRenderbuffers(1, @Result);
+end;
+
+// DoDestroyHandle
+//
+procedure TGLRenderbufferHandle.DoDestroyHandle;
+begin
+   if not vContextActivationFailureOccurred then begin
+      // reset error status
+      glGetError;
+      // delete
+ 	    glDeleteRenderbuffers(1, @FHandle);
+      // check for error
+      CheckOpenGLError;
+   end;
+end;
+
+// Bind
+//
+procedure TGLRenderbufferHandle.Bind;
+begin
+   glBindRenderbuffer(GL_RENDERBUFFER, FHandle);
+end;
+
+// UnBind
+//
+procedure TGLRenderbufferHandle.UnBind;
+begin
+   glBindRenderbuffer(GL_RENDERBUFFER, 0);
+end;
+
+// SetStorage
+//
+procedure TGLRenderbufferHandle.SetStorage(internalformat: TGLenum; width, height: TGLsizei);
+begin
+   glRenderbufferStorage(GL_RENDERBUFFER, internalformat, width, height);
+end;
+
+// SetStorageMultisample
+//
+procedure TGLRenderbufferHandle.SetStorageMultisample(internalformat: TGLenum; samples: TGLsizei; width, height: TGLsizei);
+begin
+   glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalformat, width, height);
+end;
+
+// IsSupported
+//
+class function TGLRenderbufferHandle.IsSupported : Boolean;
+begin
+   Result := {GL_EXT_framebuffer_object or} GL_ARB_framebuffer_object;
+end;
+
 // ------------------
 // ------------------ TGLSLHandle ------------------
 // ------------------
@@ -1452,7 +2182,7 @@ end;
 //
 procedure TGLSLHandle.DoDestroyHandle;
 begin
-   if not vIgnoreContextActivationFailures then begin
+   if not vContextActivationFailureOccurred then begin
       // reset error status
       ClearGLError;
       // delete
@@ -1477,6 +2207,13 @@ begin
       SetLength(log, maxLength);
    end;
    Result:=String(log);
+end;
+
+// IsSupported
+//
+class function TGLSLHandle.IsSupported: Boolean;
+begin
+  Result := GL_ARB_shader_objects;
 end;
 
 // ------------------
@@ -1524,6 +2261,13 @@ begin
    inherited;
 end;
 
+// IsSupported
+//
+class function TGLVertexShaderHandle.IsSupported: Boolean;
+begin
+   Result := GL_ARB_vertex_shader;
+end;
+
 // ------------------
 // ------------------ TGLGeometryShaderHandle ------------------
 // ------------------
@@ -1536,6 +2280,13 @@ begin
    inherited;
 end;
 
+// IsSupported
+//
+class function TGLGeometryShaderHandle.IsSupported: Boolean;
+begin
+   Result := GL_EXT_geometry_shader4;
+end;
+
 // ------------------
 // ------------------ TGLFragmentShaderHandle ------------------
 // ------------------
@@ -1546,6 +2297,13 @@ constructor TGLFragmentShaderHandle.Create;
 begin
    FShaderType:=GL_FRAGMENT_SHADER_ARB;
    inherited;
+end;
+
+// IsSupported
+//
+class function TGLFragmentShaderHandle.IsSupported: Boolean;
+begin
+   Result := GL_ARB_fragment_shader;
 end;
 
 // ------------------
@@ -1571,7 +2329,7 @@ begin
       if shader.Handle=0 then
          raise EGLShader.Create('Couldn''t allocate '+shaderType.ClassName);
       shader.ShaderSource(shaderSource);
-      if    (not shader.CompileShader)
+      if (not shader.CompileShader)
          or (treatWarningsAsErrors and (Pos('warning', LowerCase(shader.InfoLog))>0)) then
          raise EGLShader.Create(FName + ' (' + shader.ClassName+'): '#13#10 + shader.InfoLog);
       AttachObject(shader);
@@ -1633,6 +2391,21 @@ function TGLProgramHandle.GetUniformLocation(const aName : String) : Integer;
 begin
    Result:=glGetUniformLocationARB(Handle, PGLChar(TGLString(aName)));
    Assert(Result>=0, 'Unknown uniform "'+name+'" or program not in use');
+end;
+
+// GetVaryingLocation
+//
+function TGLProgramHandle.GetVaryingLocation(const aName : String) : Integer;
+begin
+   Result:=glGetVaryingLocationNV( Handle, PGLChar(TGLString(aName)));
+   Assert(Result>=0, 'Unknown varying "'+name+'" or program not in use');
+end;
+
+// AddActiveVarying
+//
+procedure TGLProgramHandle.AddActiveVarying(const aName : String);
+begin
+  glActiveVaryingNV( Handle, PGLChar(TGLString(aName)));
 end;
 
 // GetAttribLocation

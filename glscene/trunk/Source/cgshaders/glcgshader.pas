@@ -507,7 +507,7 @@ end;
 destructor TCgProgram.Destroy;
 begin
   inherited Destroy;
-  Assert((FParams.Count=0) or vIgnoreContextActivationFailures, '[' + LongName + ']: bug! params unbound!');
+  Assert((FParams.Count=0), '[' + LongName + ']: bug! params unbound!');
   ClearParamsList;
   FParams.Free;
   FCode.Free;

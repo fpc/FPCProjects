@@ -12,6 +12,12 @@
   </ul>
 
   <b>History : </b><font size=-1><ul>
+    <li>08/11/09 - DaStr - Improved FPC compatibility
+                            (thanks Predator) (BugtrackerID = 2893580)  
+    <li>12/04/08 - DaStr - Cleaned up uses section
+                            (thanks Sandor Domokos) (BugtrackerID = 1808373) 
+    <li>06/02/08 - Mrqzzz - Upgrade to ODE 0.9 (by Paul Robello)
+                            Fixed reference to odeimport
     <li>25/12/07 - DaStr  - Fixed memory leak in TGLODECustomCollider.Destroy()
                              (thanks Sandor Domokos) (BugtrackerID = 1808373)
     <li>10/10/07 - Mrqzzz - Fixed reference ODEGL.ODERToGLSceneMatrix
@@ -26,7 +32,7 @@
     <li>19/11/04 - SG - Changed TGLODETerrainCollider to TGLODEHeightField
                         which now inherits from TGLODEBehaviour and works for
                         both TGLTerrainRenderer and TGLHeightField objects.
-                        Added CCylinder, Cylinder and Cone collider code for
+                        Added Capsule, Cylinder and Cone collider code for
                         the heightfield collider.
     <li>23/04/04 - SG - Removed freeform static collider
     <li>29/10/03 - SG - Fix for GLODETerrainCollider (Matheus Degiovani)

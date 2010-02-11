@@ -9,8 +9,9 @@
    but the default value is rmTurnPitchRoll for backwards compatibility.
 
    <b>Historique : </b><font size=-1><ul>
+      <li>25/10/09 - DaStr - Bugfixed TGLMovementPath.StartTime (thanks Zsolt Laky)
       <li>14/03/09 - DanB - Changes to Start/StopAllMovements due to TGLScene.Cameras removal
-      <li>05/10/08 - DaStr - Added Delphi5 compatibility   
+      <li>05/10/08 - DaStr - Added Delphi5 compatibility
       <li>21/06/08 - DaStr - A lot of cosmetic fixes
                              Bugfixed same position rotation / scale interpolation
                                in TGLMovementPath.CalculateState()
@@ -155,6 +156,7 @@ type
 
     //All the time saved in ms
     FStartTime: double;
+    FInitialTime: Double;
     FEstimateTime: double;
     FCurrentNode: TGLPathNode;
     FInTravel: boolean;
@@ -954,9 +956,12 @@ Index: integer);
 begin
   I := 1;
 
-  if (FStartTime=0) or (FStartTime>CurrentTime) then
-    FStartTime := CurrentTime;
-  SumTime      := FStartTime;
+  if CurrentTime < FInitialTime then Exit;
+
+  if (FInitialTime=0) or (FInitialTime>CurrentTime) then
+    FInitialTime := CurrentTime;
+
+  SumTime      := FInitialTime;
   Interpolated := False;
   while I < FNodes.Count do
   begin
@@ -1133,7 +1138,7 @@ procedure TGLMovementPath.TravelPath(const Start: boolean; const aStartTime: dou
 begin
   if FInTravel = Start then
     exit;
-  FStartTime := aStartTime;
+  FInitialTime := aStartTime + FStartTime;
   TravelPath(Start);
 end;
 

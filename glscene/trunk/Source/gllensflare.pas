@@ -563,25 +563,25 @@ begin
               0);
 
    if AutoZTest then begin
-      if dynamicSize and (GL_HP_occlusion_test or GL_NV_occlusion_query) then begin
+      if dynamicSize and (GL_HP_occlusion_test or TGLOcclusionQueryHandle.IsSupported) then begin
          // hardware-based occlusion test is possible
          FlareIsNotOccluded:=True;
 
          glColorMask(False, False, False, False);
          glDepthMask(False);
 
-         usedOcclusionQuery:=GL_NV_occlusion_query;
+         usedOcclusionQuery:=TGLOcclusionQueryHandle.IsSupported;
          if usedOcclusionQuery then begin
             // preferred method, doesn't stall rendering too badly
             if not Assigned(FOcclusionQuery) then
                FOcclusionQuery:=TGLOcclusionQueryHandle.Create;
             if FOcclusionQuery.Handle=0 then begin
                FOcclusionQuery.AllocateHandle;
-               FOcclusionQuery.BeginOcclusionQuery;
+               FOcclusionQuery.BeginQuery;
             end else begin
                if FOcclusionQuery.RenderingContext=CurrentGLContext then begin
                   FlareIsNotOccluded:=(FOcclusionQuery.PixelCount<>0);
-                  FOcclusionQuery.BeginOcclusionQuery;
+                  FOcclusionQuery.BeginQuery;
                end else usedOcclusionQuery:=False;
             end;
          end;
@@ -600,7 +600,7 @@ begin
          glDepthFunc(GL_LESS);
 
          if usedOcclusionQuery then
-            FOcclusionQuery.EndOcclusionQuery
+            FOcclusionQuery.EndQuery
          else begin
             glDisable(GL_OCCLUSION_TEST_HP);
             glGetBooleanv(GL_OCCLUSION_TEST_RESULT_HP, @FFlareIsNotOccluded)

@@ -3,6 +3,8 @@
    Win32 specific Context.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>30/08/09 - DanB - vIgnoreContextActivationFailures renamed to
+                            vContextActivationFailureOccurred + check removed.
       <li>06/11/07 - mrqzzz - Ignore ContextActivation failure
                    if GLContext.vIgnoreContextActivationFailures=true
       <li>15/02/07 - DaStr - Integer -> Cardinal because $R- was removed in GLScene.pas
@@ -743,7 +745,6 @@ var
    pixelFormat : Integer;
 begin
    if not wglMakeCurrent(Cardinal(FDC), Cardinal(FRC)) then
-     if not GLContext.vIgnoreContextActivationFailures then
       raise EGLContext.Create(Format(cContextActivationFailed,
                                      [GetLastError, SysErrorMessage(GetLastError)]));
 

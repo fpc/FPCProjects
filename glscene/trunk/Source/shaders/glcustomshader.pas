@@ -1,4 +1,3 @@
-//
 // This unit is part of the GLScene Project, http://glscene.org
 //
 {: GLCustomShader<p>
@@ -9,6 +8,11 @@
     It also contains a procedures and function that can be used in all shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/10/09 - DaStr - Updated TGLGeometryProgram (thanks YarUnderoaker)
+      <li>24/08/09 - DaStr - Separated TGLShaderProgram into TGLVertexProgram,
+                              TGLFragmentProgram and TGLGeometryProgram
+                             Added TGLCustomShaderParameter.AsUniformBuffer
+                              (thanks YarUnderoaker)
       <li>28/07/09 - DaStr - Added GeometryShader support (thanks YarUnderoaker)
                              Fixed TGLCustomShader.[...]Program serialization
       <li>24/07/09 - DaStr - Added TGLCustomShader.DebugMode
@@ -111,11 +115,16 @@ const
 
 type
   TGLShaderFogSupport = (sfsEnabled, sfsDisabled, sfsAuto);
+  TGLTransformFeedBackMode = (tfbmInterleaved, tfbmSeparate);
+  TGLgsInTypes = (gsInPoints, gsInLines, gsInAdjLines, gsInTriangles, gsInAdjTriangles);
+  TGLgsOutTypes = (gsOutPoints, gsOutLineStrip, gsOutTriangleStrip);
 
   EGLCustomShaderException = class(EGLShaderException);
 
   TGLCustomShader = class;
-  TGLShaderProgram = class;
+  TGLVertexProgram = class;
+  TGLFragmentProgram = class;
+  TGLGeometryProgram = class;
 
   TGLShaderEvent = procedure(Shader: TGLCustomShader) of object;
   TGLShaderUnAplyEvent = procedure(Shader: TGLCustomShader; var ThereAreMorePasses: Boolean) of object;
@@ -156,14 +165,14 @@ type
   {: A pure abstract class, must be overriden. }
   TGLCustomShader = class(TGLShader)
   private
-    FFragmentProgram: TGLShaderProgram;
-    FVertexProgram: TGLShaderProgram;
-    FGeometryProgram: TGLShaderProgram;
+    FFragmentProgram: TGLFragmentProgram;
+    FVertexProgram: TGLVertexProgram;
+    FGeometryProgram: TGLGeometryProgram;
 
     FTagObject: TObject;
-    procedure SetFragmentProgram(const Value: TGLShaderProgram);
-    procedure SetGeometryProgram(const Value: TGLShaderProgram);
-    procedure SetVertexProgram(const Value: TGLShaderProgram);
+    procedure SetFragmentProgram(const Value: TGLFragmentProgram);
+    procedure SetGeometryProgram(const Value: TGLGeometryProgram);
+    procedure SetVertexProgram(const Value: TGLVertexProgram);
     function StoreFragmentProgram: Boolean;
     function StoreGeometryProgram: Boolean;
     function StoreVertexProgram: Boolean;
@@ -171,9 +180,9 @@ type
     FDebugMode: Boolean;
     procedure SetDebugMode(const Value: Boolean); virtual;
 
-    property FragmentProgram: TGLShaderProgram read FFragmentProgram write SetFragmentProgram stored StoreFragmentProgram;
-    property VertexProgram: TGLShaderProgram read FVertexProgram write SetVertexProgram stored StoreVertexProgram;
-    property GeometryProgram: TGLShaderProgram read FGeometryProgram write SetGeometryProgram stored StoreGeometryProgram;
+    property FragmentProgram: TGLFragmentProgram read FFragmentProgram write SetFragmentProgram stored StoreFragmentProgram;
+    property VertexProgram: TGLVertexProgram read FVertexProgram write SetVertexProgram stored StoreVertexProgram;
+    property GeometryProgram: TGLGeometryProgram read FGeometryProgram write SetGeometryProgram stored StoreGeometryProgram;
 
     {: Treats warnings as errors and displays this error,
        instead of a general shader-not-supported message. }
@@ -187,6 +196,7 @@ type
     procedure LoadShaderPrograms(const VPFilename, FPFilename: string; GPFilename: string = '');
   end;
 
+  {: A custom shader program. }
   TGLShaderProgram = class(TPersistent)
   private
     FParent: TGLCustomShader;
@@ -200,7 +210,7 @@ type
   public
     procedure LoadFromFile(const AFileName: string);
     procedure Apply; virtual;
-    constructor Create(const AParent: TGLCustomShader);
+    constructor Create(const AParent: TGLCustomShader); virtual;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
   published
@@ -208,7 +218,36 @@ type
     property Enabled: Boolean read FEnabled write SetEnabled default False;
   end;
 
+  TGLVertexProgram = class(TGLShaderProgram)
+  published
+    property Code;
+    property Enabled;
+  end;
 
+  TGLFragmentProgram = class(TGLShaderProgram)
+  published
+    property Code;
+    property Enabled;
+  end;
+
+  TGLGeometryProgram = class(TGLShaderProgram)
+  private
+    FInputPrimitiveType: TGLgsInTypes;
+    FOutputPrimitiveType: TGLgsOutTypes;
+    FVerticesOut: TGLint;
+    procedure SetInputPrimitiveType(const Value: TGLgsInTypes);
+    procedure SetOutputPrimitiveType(const Value: TGLgsOutTypes);
+    procedure SetVerticesOut(const Value: TGLint);
+  public
+    constructor Create(const AParent: TGLCustomShader); override;
+  published
+    property Code;
+    property Enabled;
+
+    property InputPrimitiveType: TGLgsInTypes read FInputPrimitiveType write SetInputPrimitiveType default gsInPoints;
+    property OutputPrimitiveType: TGLgsOutTypes read FOutputPrimitiveType write SetOutputPrimitiveType default gsOutPoints;
+    property VerticesOut: TGLint read FVerticesOut write SetVerticesOut default 0;
+  end;
 
   {: Wrapper around a parameter of the main program. }
   TGLCustomShaderParameter = class(TObject)
@@ -256,6 +295,9 @@ type
       const TextureTarget: Word): Cardinal; virtual; abstract;
     procedure SetAsCustomTexture(const TextureIndex: Integer;
       const TextureTarget: Word; const Value: Cardinal); virtual; abstract;
+
+    function GetAsUniformBuffer: GLenum; virtual; abstract;
+    procedure SetAsUniformBuffer(UBO: GLenum); virtual; abstract;
   public
     { Public Declarations }
 
@@ -301,6 +343,8 @@ type
     property AsTextureCube[const TextureIndex: Integer]: TGLTexture write SetAsTextureCube;
 
     property AsCustomTexture[const TextureIndex: Integer; const TextureTarget: Word]: Cardinal read GetAsCustomTexture write SetAsCustomTexture;
+
+    property AsUniformBuffer: GLenum read GetAsUniformBuffer write SetAsUniformBuffer;
   end;
 
 
@@ -567,12 +611,14 @@ end;
 procedure TGLShaderProgram.OnChangeCode(Sender: TObject);
 begin
   FEnabled := True;
+  FParent.NotifyChange(self);
 end;
 
 
 procedure TGLShaderProgram.SetCode(const Value: TStrings);
 begin
   FCode.Assign(Value);
+  FParent.NotifyChange(self);
 end;
 
 
@@ -606,9 +652,9 @@ begin
   inherited Create(AOwner);
 
   FDebugMode := False;
-  FFragmentProgram := TGLShaderProgram.Create(Self);
-  FVertexProgram := TGLShaderProgram.Create(Self);
-  FGeometryProgram := TGLShaderProgram.Create(Self);
+  FFragmentProgram := TGLFragmentProgram.Create(Self);
+  FVertexProgram := TGLVertexProgram.Create(Self);
+  FGeometryProgram := TGLGeometryProgram.Create(Self);
 end;
 
 
@@ -623,8 +669,8 @@ end;
 
 procedure TGLCustomShader.LoadShaderPrograms(const VPFilename, FPFilename: string; GPFilename: string = '');
 begin
-  VertexProgram.LoadFromFile(VPFilename);
-  FragmentProgram.LoadFromFile(FPFilename);
+  If VPFilename <> '' then VertexProgram.LoadFromFile(VPFilename);
+  If FPFilename <> '' then FragmentProgram.LoadFromFile(FPFilename);
   If GPFilename <> '' then GeometryProgram.LoadFromFile(GPFilename);
 end;
 
@@ -641,19 +687,17 @@ begin
   end;
 end;
 
-procedure TGLCustomShader.SetFragmentProgram(
-  const Value: TGLShaderProgram);
+procedure TGLCustomShader.SetFragmentProgram(const Value: TGLFragmentProgram);
 begin
   FFragmentProgram.Assign(Value);
 end;
 
-procedure TGLCustomShader.SetGeometryProgram(
-  const Value: TGLShaderProgram);
+procedure TGLCustomShader.SetGeometryProgram(const Value: TGLGeometryProgram);
 begin
   FGeometryProgram.Assign(Value);
 end;
 
-procedure TGLCustomShader.SetVertexProgram(const Value: TGLShaderProgram);
+procedure TGLCustomShader.SetVertexProgram(const Value: TGLVertexProgram);
 begin
   FVertexProgram.Assign(Value);
 end;
@@ -749,8 +793,43 @@ begin
   end;
 end;
 
+constructor TGLGeometryProgram.Create(const AParent: TGLCustomShader);
+begin
+  inherited Create(AParent);
+  FInputPrimitiveType := gsInPoints;
+  FOutputPrimitiveType := gsOutPoints;
+  FVerticesOut := 0;
+end;
+
+procedure TGLGeometryProgram.SetInputPrimitiveType(const Value: TGLgsInTypes);
+begin
+  if Value <> FInputPrimitiveType then
+  begin
+    FInputPrimitiveType := Value;
+    FParent.NotifyChange(Self);
+  end;
+end;
+
+procedure TGLGeometryProgram.SetOutputPrimitiveType(const Value: TGLgsOutTypes);
+begin
+  if Value<>FOutputPrimitiveType then
+  begin
+    FOutputPrimitiveType := Value;
+    FParent.NotifyChange(Self);
+  end;
+end;
+
+procedure TGLGeometryProgram.SetVerticesOut(const Value: TGLint);
+begin
+  if Value<>FVerticesOut then
+  begin
+    FVerticesOut := Value;
+    FParent.NotifyChange(Self);
+  end;
+end;
+
 initialization
-  RegisterClasses([TGLCustomShader, TGLShaderProgram]);
+  RegisterClasses([TGLCustomShader, TGLShaderProgram,
+                   TGLVertexProgram, TGLFragmentProgram, TGLGeometryProgram]);
 
 end.
-

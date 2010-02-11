@@ -6,6 +6,9 @@
 	Handles all the material + material library stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>24/08/09 - DaStr - Updated TGLLibMaterial.DoOnTextureNeeded: 
+                              Replaced IncludeTrailingBackslash() with 
+                              IncludeTrailingPathDelimiter()
       <li>28/07/09 - DaStr - Updated TGLShader.GetStardardNotSupportedMessage()
                               to use component name instead class name
       <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
@@ -1908,7 +1911,7 @@ begin
    // ok, not an absolute path, try given paths
    with mLib do begin
       if FTexturePathList<>nil then for i:=0 to FTexturePathList.Count-1 do begin
-         tryName:=IncludeTrailingBackslash(FTexturePathList[i])+textureFileName;
+         tryName:=IncludeTrailingPathDelimiter(FTexturePathList[i])+textureFileName;
          if (Assigned(vAFIOCreateFileStream) and FileStreamExists(tryName)) or FileExists(tryName) then begin
             textureFileName:=tryName;
             Break;

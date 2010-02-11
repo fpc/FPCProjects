@@ -13,6 +13,8 @@
     Original code by Osman Turan (osmanturancom@yahoo.com)<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>08/11/09 - DaStr - Compatibility fix for FPC
+                             (thanks Predator) (BugtrackerID = 2893580)
       <li>16/10/08 - UweR - Compatibility fix for Delphi 2009
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>11/05/04 - SG - Added to CVS
