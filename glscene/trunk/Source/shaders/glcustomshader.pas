@@ -9,6 +9,8 @@
     It also contains a procedures and function that can be used in all shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/07/09 - DaStr - Added GeometryShader support (thanks YarUnderoaker)
+                             Fixed TGLCustomShader.[...]Program serialization
       <li>24/07/09 - DaStr - Added TGLCustomShader.DebugMode
                              Fixed spelling mistake in TGLShaderUnAplyEvent
                              Added TGLShaderFogSupport, IsFogEnabled()
@@ -101,7 +103,8 @@ uses
 
   // GLScene
   VectorGeometry, VectorTypes, GLTexture, GLCadencer, OpenGL1x, GLScene,
-  GLStrings, GLCrossPlatform, GLContext, GLRenderContextInfo, GLMaterial;
+  GLStrings, GLCrossPlatform, GLContext, GLRenderContextInfo, GLMaterial,
+  VectorLists;
 
 const
   glsShaderMaxLightSources = 8;
@@ -141,7 +144,7 @@ type
     function GetShaderDescription: string;
   end;
 
-  {: Used in the TGLPostShaderHolder component }
+  {: Used in the TGLPostShaderHolder component. }
   IGLPostShader = interface
   ['{68A62362-AF0A-4CE8-A9E1-714FE02AFA4A}']
     {: Called on every pass. }
@@ -150,18 +153,27 @@ type
     function GetTextureTarget: TGLTextureTarget;
   end;
 
-  {: A pure abstract class, must be overriden }
+  {: A pure abstract class, must be overriden. }
   TGLCustomShader = class(TGLShader)
   private
     FFragmentProgram: TGLShaderProgram;
     FVertexProgram: TGLShaderProgram;
+    FGeometryProgram: TGLShaderProgram;
+
     FTagObject: TObject;
+    procedure SetFragmentProgram(const Value: TGLShaderProgram);
+    procedure SetGeometryProgram(const Value: TGLShaderProgram);
+    procedure SetVertexProgram(const Value: TGLShaderProgram);
+    function StoreFragmentProgram: Boolean;
+    function StoreGeometryProgram: Boolean;
+    function StoreVertexProgram: Boolean;
   protected
     FDebugMode: Boolean;
     procedure SetDebugMode(const Value: Boolean); virtual;
 
-    property FragmentProgram: TGLShaderProgram read FFragmentProgram;
-    property VertexProgram: TGLShaderProgram read FVertexProgram;
+    property FragmentProgram: TGLShaderProgram read FFragmentProgram write SetFragmentProgram stored StoreFragmentProgram;
+    property VertexProgram: TGLShaderProgram read FVertexProgram write SetVertexProgram stored StoreVertexProgram;
+    property GeometryProgram: TGLShaderProgram read FGeometryProgram write SetGeometryProgram stored StoreGeometryProgram;
 
     {: Treats warnings as errors and displays this error,
        instead of a general shader-not-supported message. }
@@ -172,7 +184,7 @@ type
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
 
-    procedure LoadShaderPrograms(const VPFilename, FPFilename: string);
+    procedure LoadShaderPrograms(const VPFilename, FPFilename: string; GPFilename: string = '');
   end;
 
   TGLShaderProgram = class(TPersistent)
@@ -316,8 +328,25 @@ procedure CopyScreentoTexture(const ViewPortSize: TGLSize; const TextureTarget: 
 procedure CopyScreentoTexture2(const ViewPortSize: TGLSize; const TextureTarget: Word = GL_TEXTURE_2D);
 
 function IsFogEnabled(const AFogSupportMode: TGLShaderFogSupport; var rci: TRenderContextInfo): Boolean;
+procedure GetActiveLightsList(const ALightIDs: TIntegerList);
 
 implementation
+
+procedure GetActiveLightsList(const ALightIDs: TIntegerList);
+var
+  MaxLights: Integer;
+  I: Integer;
+  LightEnabled: GLBoolean;
+begin
+  ALightIDs.Clear;
+  glGetIntegerv(GL_MAX_LIGHTS, @maxLights);
+  for I := 0 to maxLights - 1 do
+  begin
+    glGetBooleanv(GL_LIGHT0 + I, @lightEnabled);
+    if lightEnabled then
+      ALightIDs.Add(GL_LIGHT0 + I);
+  end;
+end;
 
 function IsFogEnabled(const AFogSupportMode: TGLShaderFogSupport; var rci: TRenderContextInfo): Boolean;
 begin
@@ -565,6 +594,7 @@ begin
   begin
     FFragmentProgram.Assign(TGLCustomShader(Source).FFragmentProgram);
     FVertexProgram.Assign(TGLCustomShader(Source).FVertexProgram);
+    FGeometryProgram.Assign(TGLCustomShader(Source).FGeometryProgram);
     FTagObject := TGLCustomShader(Source).FTagObject;
   end;
   inherited;
@@ -578,6 +608,7 @@ begin
   FDebugMode := False;
   FFragmentProgram := TGLShaderProgram.Create(Self);
   FVertexProgram := TGLShaderProgram.Create(Self);
+  FGeometryProgram := TGLShaderProgram.Create(Self);
 end;
 
 
@@ -585,14 +616,16 @@ destructor TGLCustomShader.Destroy;
 begin
   FFragmentProgram.Destroy;
   FVertexProgram.Destroy;
+  FGeometryProgram.Destroy;
 
   inherited;
 end;
 
-procedure TGLCustomShader.LoadShaderPrograms(const VPFilename, FPFilename: string);
+procedure TGLCustomShader.LoadShaderPrograms(const VPFilename, FPFilename: string; GPFilename: string = '');
 begin
   VertexProgram.LoadFromFile(VPFilename);
   FragmentProgram.LoadFromFile(FPFilename);
+  If GPFilename <> '' then GeometryProgram.LoadFromFile(GPFilename);
 end;
 
 procedure TGLCustomShader.SetDebugMode(const Value: Boolean);
@@ -606,6 +639,38 @@ begin
     else
       FailedInitAction := fiaRaiseStandardException;
   end;
+end;
+
+procedure TGLCustomShader.SetFragmentProgram(
+  const Value: TGLShaderProgram);
+begin
+  FFragmentProgram.Assign(Value);
+end;
+
+procedure TGLCustomShader.SetGeometryProgram(
+  const Value: TGLShaderProgram);
+begin
+  FGeometryProgram.Assign(Value);
+end;
+
+procedure TGLCustomShader.SetVertexProgram(const Value: TGLShaderProgram);
+begin
+  FVertexProgram.Assign(Value);
+end;
+
+function TGLCustomShader.StoreFragmentProgram: Boolean;
+begin
+  Result := FFragmentProgram.Enabled or (FFragmentProgram.Code.Text <> '')
+end;
+
+function TGLCustomShader.StoreGeometryProgram: Boolean;
+begin
+  Result := FGeometryProgram.Enabled or (FGeometryProgram.Code.Text <> '')
+end;
+
+function TGLCustomShader.StoreVertexProgram: Boolean;
+begin
+  Result := FVertexProgram.Enabled or (FVertexProgram.Code.Text <> '')
 end;
 
 { TGLCustomShaderParameter }

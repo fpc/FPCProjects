@@ -6,6 +6,8 @@
     This is a collection of GLSL diffuse-specular shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/07/09 - DaStr - Fixed a bug with "dot(reflect_vec, LightVector)" clamping
+                              which occured on all GeForce 8x and later graphic cards
       <li>24/07/09 - DaStr - Added Fog support for single-light shaders and fixed
                               a bug with material Alpha (thanks Controller)
       <li>02/09/07 - LC - Fixed texture bug in TGLSLMLDiffuseSpecularShader.
@@ -317,7 +319,7 @@ begin
     Add('  vec4 DiffuseContrib = clamp(gl_LightSource[0].diffuse * dot(LightVector, Normal), 0.0, 1.0); ');
     Add(' ');
     Add('  vec3 reflect_vec = reflect(CameraVector, -Normal); ');
-    Add('  float Temp = dot(reflect_vec, LightVector); ');
+    Add('  float Temp = max(dot(reflect_vec, LightVector), 0.0); ');
     Add('  vec4 SpecContrib = gl_LightSource[0].specular * clamp(pow(Temp, SpecPower), 0.0, 0.95); ');
     Add(' ');
     if AFogSupport then
@@ -364,7 +366,7 @@ begin
     Add('  vec4 DiffuseContrib = clamp(DiffuseColor * dot(LightVector, Normal), 0.0, 1.0); ');
     Add(' ');
     Add('  vec3 reflect_vec = reflect(CameraVector, -Normal); ');
-    Add('  float Temp = dot(reflect_vec, LightVector); ');
+    Add('  float Temp = max(dot(reflect_vec, LightVector), 0.0); ');
     Add('  vec4 SpecContrib = SpecularColor * clamp(pow(Temp, SpecPower), 0.0, 0.95); ');
     Add(' ');
     if AFogSupport then
@@ -442,7 +444,7 @@ begin
     Add('  AmbientContrib = AmbientContrib + gl_LightSource[' + IntToStr(CurrentLight) + '].ambient; ');
     Add('  DiffuseContrib = min(DiffuseContrib + clamp(gl_LightSource[' + IntToStr(CurrentLight) + '].diffuse * dot(LightVector, Normal), 0.0, 1.0), 1.0); ');
     Add('  reflect_vec = reflect(CameraVector, -Normal); ');
-    Add('  Temp = dot(reflect_vec, LightVector); ');
+    Add('  Temp = max(dot(reflect_vec, LightVector), 0.0); ');
     Add('  SpecContrib = min(SpecContrib + gl_LightSource[' + IntToStr(CurrentLight) + '].specular * clamp(pow(Temp, SpecPower), 0.0, 0.95), 1.0); ');
   end;
 end;

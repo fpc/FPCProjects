@@ -6,6 +6,7 @@
    An ARBvp1.0 + ARBfp1.0 shader that implements phong shading.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>28/07/09 - DaStr - Small changes and simplifications  
       <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
                               (BugTracker ID = 2826217)   
       <li>20/03/07 - DaStr - Moved some of the stuff from TGLCustomAsmShader back here
@@ -25,7 +26,7 @@ uses
 
   // GLScene
   GLTexture, ARBProgram, VectorGeometry, VectorLists, OpenGL1x, GLAsmShader,
-  GLRenderContextInfo;
+  GLRenderContextInfo, GLCustomShader;
 
 type
   TGLPhongShader = class(TGLCustomAsmShader)
@@ -61,7 +62,7 @@ procedure TGLPhongShader.DoApply(var rci: TRenderContextInfo; Sender: TObject);
 begin
   if (csDesigning in ComponentState) and not DesignTimeEnabled then Exit;
 
-  FillLights(FLightIDs);
+  GetActiveLightsList(FLightIDs);
   FAmbientPass := False;
   glPushAttrib(GL_ENABLE_BIT or
                GL_TEXTURE_BIT or
@@ -98,8 +99,7 @@ begin
   else
   if not FAmbientPass then
   begin
-    glDisable(GL_VERTEX_PROGRAM_ARB);
-    glDisable(GL_FRAGMENT_PROGRAM_ARB);
+    Self.UnApplyShaderPrograms();
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -243,9 +243,7 @@ begin
 
   glGetFloatv(GL_LIGHT_MODEL_AMBIENT, @ambient);
   glGetMaterialfv(GL_FRONT, GL_AMBIENT, @materialAmbient);
-  ambient[0] := ambient[0] * materialAmbient[0];
-  ambient[1] := ambient[1] * materialAmbient[1];
-  ambient[2] := ambient[2] * materialAmbient[2];
+  ScaleVector(ambient, materialAmbient);
   glColor3fv(@ambient);
 end;
 
@@ -253,14 +251,10 @@ procedure TGLPhongShader.DoLightPass(lightID: Cardinal);
 var
   LightParam: TVector;
 begin
-  glEnable(GL_VERTEX_PROGRAM_ARB);
-  glBindProgramARB(GL_VERTEX_PROGRAM_ARB, GetVPHandle);
+  Self.ApplyShaderPrograms();
 
   glGetLightfv(lightID, GL_POSITION, @LightParam);
   glProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 0, @LightParam);
-
-  glEnable(GL_FRAGMENT_PROGRAM_ARB);
-  glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, GetFPHandle);
 
   glGetLightfv(lightID, GL_DIFFUSE, @LightParam);
   glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, 0, @LightParam);

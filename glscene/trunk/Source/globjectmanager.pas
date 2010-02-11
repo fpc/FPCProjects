@@ -12,6 +12,7 @@
    unregistered, any editor that is using the object manager can be notified.
 
 	<b>History : </b><font size=-1><ul>
+      <li>25/07/09 - DaStr - Added $I GLScene.inc  
       <li>26/03/09 - DanB - Added PopulateMenuWithRegisteredSceneObjects procedure.
       <li>14/03/09 - DanB - Created by moving TObjectManager in from GLSceneRegister.pas,
                             made some slight adjustments to allow resources being loaded
@@ -23,6 +24,8 @@
 unit GLObjectManager;
 
 interface
+
+{$I GLScene.inc}
 
 uses Classes, Graphics, Controls, Menus, GLCrossPlatform, GLScene;
 

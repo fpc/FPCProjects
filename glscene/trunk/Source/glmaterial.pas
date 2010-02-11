@@ -6,6 +6,8 @@
 	Handles all the material + material library stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/07/09 - DaStr - Updated TGLShader.GetStardardNotSupportedMessage()
+                              to use component name instead class name
       <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
                               (BugTracker ID = 2826217)
       <li>14/07/09 - DaStr - Added $I GLScene.inc
@@ -125,7 +127,7 @@ type
          procedure HandleFailedInitialization(const LastErrorMessage: string = ''); virtual;
 
          {: May be this should be a function inside HandleFailedInitialization... }
-         class function GetStardardNotSupportedMessage: string; virtual;
+         function GetStardardNotSupportedMessage: string; virtual;
 
       public
 	      { Public Declarations }
@@ -957,9 +959,12 @@ end;
 
 // GetStardardNotSupportedMessage
 //
-class function TGLShader.GetStardardNotSupportedMessage: string;
+function TGLShader.GetStardardNotSupportedMessage: string;
 begin
-  Result := 'Your hardware/driver doesn''t support shader ' + ClassName + '!';
+  if Name <> '' then
+    Result := 'Your hardware/driver doesn''t support shader "' + Name + '"!'
+  else
+    Result := 'Your hardware/driver doesn''t support shader "' + ClassName + '"!';
 end;
 
 //----------------- TGLMaterial --------------------------------------------------

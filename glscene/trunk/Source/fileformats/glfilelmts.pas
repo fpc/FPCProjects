@@ -4,6 +4,7 @@
 {: GLFileLMTS<p>
 
  <b>History : </b><font size=-1><ul>
+        <li>25/07/07 - DaStr - Replaced some types to get rid of compiler warnings
         <li>08/10/08 - DanB - fix for different Char size in Delphi 2009+
         <li>22/06/08 - DaStr - Fixups after converting TMeshObject.LightMapTexCoords
                                to TAffineVectorList (thanks Ast) (Bugtracker ID = 2000089)
@@ -35,7 +36,7 @@ interface
 
 uses Graphics, Classes, SysUtils,
      GLVectorFileObjects, ApplicationFileIO, VectorLists, VectorGeometry,
-     GLTexture, PersistentClasses, OpenGL1x, GLGraphics, GLMaterial;
+     GLTexture, PersistentClasses, GLGraphics, GLMaterial;
 
 const
     C_LMTS_ID = $53544D4C;
@@ -147,7 +148,7 @@ var
     libmat: TGLLibmaterial;
     lmnames, matnames: TStringlist;
     MatInfoHeader: array[0..3] of ansichar;
-    MatInfoCount: integer;
+    MatInfoCount: Cardinal;
     Matinfo: array of TMaterialInfo;
     i, j: integer;
 begin
@@ -373,7 +374,7 @@ begin
 
             if Assigned(ML) and (S.TextID1 <> $FFFF) then
             begin
-                if (S.TextID1 < matnames.count) and (S.TextID1 > -1) then
+                if (S.TextID1 < matnames.count) then
                 begin
                     libmat := ml.Materials.GetLibMaterialByName(matnames[S.TextID1]);
                     if assigned(libmat) then
