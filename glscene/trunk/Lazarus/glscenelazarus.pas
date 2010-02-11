@@ -37,7 +37,7 @@ uses
   GLFileB3D, GLSLBumpShader, GLSLDiffuseSpecularShader, GLSLPostBlurShader, 
   GLSLShader, BaseClasses, GLCoordinates, GLManager, GLNodes, 
   GLRenderContextInfo, GLMaterial, GLObjectManager, GLCameraController, GLFBO, 
-  GLFBORenderer, LazarusPackageIntf;
+  GLFBORenderer, GLGizmoEx, LazarusPackageIntf;
 
 implementation
 
