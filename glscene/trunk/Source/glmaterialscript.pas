@@ -6,6 +6,7 @@
    Material Script Batch loader for TGLMaterialLibrary for runtime.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar   - Added GLTextureFormat to uses
       <li>24/03/08 - DaStr - Moved TGLMinFilter and TGLMagFilter from GLUtils.pas
                               to GLGraphics.pas (BugTracker ID = 1923844)
       <li>02/04/07 - DaStr - TGLMaterialScripter is now notified of
@@ -51,7 +52,8 @@ uses
   SysUtils, Classes, StdCtrls,
 
   // GLScene
-  GLTexture, GLGraphics, GLUtils, GLColor, GLCoordinates, GLMaterial;
+  GLTexture, GLTextureFormat, GLGraphics, GLUtils, GLColor, GLCoordinates,
+  GLMaterial;
 
 type
   TGLShaderItem = class(TCollectionItem)
@@ -459,13 +461,13 @@ begin
    val := Extractvalue;
    if pos('(',val) > 0 then
    begin
-      tmpcolor.Alpha := strtofloatDef(copy(val, pos('(',val) + 1, pos(';',val) - 2));
+      tmpcolor.Alpha := GLUtils.StrToFloatDef(copy(val, pos('(',val) + 1, pos(';',val) - 2));
       delete(val,1,pos(';',val));
-      tmpcolor.Red := strtofloatDef(copy(val, 1, pos(';',val) - 1));
+      tmpcolor.Red := GLUtils.StrToFloatDef(copy(val, 1, pos(';',val) - 1));
       delete(val,1,pos(';',val));
-      tmpcolor.Green := strtofloatDef(copy(val, 1, pos(';',val) - 1));
+      tmpcolor.Green := GLUtils.StrToFloatDef(copy(val, 1, pos(';',val) - 1));
       delete(val,1,pos(';',val));
-      tmpcolor.Blue := strtofloatDef(copy(val, 1, pos(')',val) - 1));
+      tmpcolor.Blue := GLUtils.StrToFloatDef(copy(val, 1, pos(')',val) - 1));
    end;
 end;
 
@@ -475,11 +477,11 @@ begin
    val := Extractvalue;
    if pos('(',val) > 0 then
    begin
-      tmpcoords.X := strtofloatDef(copy(val, pos('(',val) + 1, pos(';',val) - 2));
+      tmpcoords.X := GLUtils.StrToFloatDef(copy(val, pos('(',val) + 1, pos(';',val) - 2));
       delete(val,1,pos(';',val));
-      tmpcoords.Y := strtofloatDef(copy(val, 1, pos(';',val) - 1));
+      tmpcoords.Y := GLUtils.StrToFloatDef(copy(val, 1, pos(';',val) - 1));
       delete(val,1,pos(';',val));
-      tmpcoords.Z := strtofloatDef(copy(val, 1, pos(')',val) - 1));
+      tmpcoords.Z := GLUtils.StrToFloatDef(copy(val, 1, pos(')',val) - 1));
    end;
 end;
 
@@ -489,13 +491,13 @@ begin
    val := Extractvalue;
    if pos('(',val) > 0 then
    begin
-      tmpcoords4.W := strtofloatDef(copy(val, pos('(',val) + 1, pos(';',val) - 2));
+      tmpcoords4.W := GLUtils.StrToFloatDef(copy(val, pos('(',val) + 1, pos(';',val) - 2));
       delete(val,1,pos(';',val));
-      tmpcoords4.X := strtofloatDef(copy(val, 1, pos(';',val) - 1));
+      tmpcoords4.X := GLUtils.StrToFloatDef(copy(val, 1, pos(';',val) - 1));
       delete(val,1,pos(';',val));
-      tmpcoords4.Y := strtofloatDef(copy(val, 1, pos(';',val) - 1));
+      tmpcoords4.Y := GLUtils.StrToFloatDef(copy(val, 1, pos(';',val) - 1));
       delete(val,1,pos(';',val));
-      tmpcoords4.Z := strtofloatDef(copy(val, 1, pos(')',val) - 1));
+      tmpcoords4.Z := GLUtils.StrToFloatDef(copy(val, 1, pos(')',val) - 1));
    end;
 end;
 
@@ -880,7 +882,7 @@ procedure TGLMaterialScripter.XImageBrightness;
 begin
    if classexists('imagebrightness') then
    if extractvalue <> '' then
-      NewMat.Material.Texture.ImageBrightness := strtofloatDef(extractvalue);
+      NewMat.Material.Texture.ImageBrightness := GLUtils.StrToFloatDef(extractvalue);
 end;
 
 
@@ -888,7 +890,7 @@ procedure TGLMaterialScripter.XImageGamma;
 begin
    if classexists('imagegamma') then
    if extractvalue <> '' then
-      NewMat.Material.Texture.ImageGamma := strtofloatDef(extractvalue);
+      NewMat.Material.Texture.ImageGamma := GLUtils.StrToFloatDef(extractvalue);
 end;
 
 procedure TGLMaterialScripter.XLibMaterialName;
@@ -990,7 +992,7 @@ procedure TGLMaterialScripter.XNormalMapScale;
 begin
    if classexists('normalmapscale') then
    if extractvalue <> '' then
-      NewMat.Material.Texture.NormalMapScale := strtofloatDef(extractvalue);
+      NewMat.Material.Texture.NormalMapScale := GLUtils.StrToFloatDef(extractvalue);
 end;
 
 

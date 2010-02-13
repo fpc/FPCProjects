@@ -6,6 +6,8 @@
   Procedural textures.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar  - Added bmp32.Blank:=false for memory allocation,
+                            Depth dimension, NativeTextureTarget becomes property
       <li>16/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>01/10/04 - ilh - Added SetPermFromData and SetPermToDefault
@@ -52,6 +54,8 @@ type
    PERM: array [0..GRADIENT_TABLE_SIZE-1] of Byte;
    function GetWidth: Integer; override;
    function GetHeight: Integer; override;
+   function GetDepth: Integer; override;
+   function GetTextureTarget : GLenum; override;
    function  Noise(x, y: Single): Single;
    procedure SetMinCut(const val : Byte);
    procedure SetSeamless(const val : Boolean);
@@ -76,6 +80,7 @@ type
  published
    property Width : Integer read GetWidth write SetWidth default 128;
    property Height : Integer read GetHeight write SetHeight default 128;
+   property Depth : Integer read GetDepth;
    property MinCut : Byte read FMinCut write SetMinCut;
    property NoiseSharpness : Single read FNoiseSharpness write SetNoiseSharpness;
    property Seamless : Boolean read FSeamless write SetSeamless;
@@ -204,6 +209,7 @@ begin
       FNoiseMap:=TGLBitmap32.Create;
       FNoiseMap.Width:=FWidth;
       FNoiseMap.Height:=FHeight;
+      FNoiseMap.Blank:=false;
       UpdateNoise;
   end;
   Result:=FNoiseMap;
@@ -259,6 +265,22 @@ end;
 function TGLProcTextureNoise.GetWidth: Integer;
 begin
   Result := FWidth;
+end;
+
+function TGLProcTextureNoise.GetDepth: Integer;
+begin
+  Result := 1;
+end;
+
+// GetTextureTarget
+//
+function TGLProcTextureNoise.GetTextureTarget: GLenum;
+begin
+  Result := GL_TEXTURE_2D;
+  if fPreviousTarget<>Result then begin
+    if Assigned(FOwnerTexture) then FOwnerTexture.NotifyTargetChange;
+    fPreviousTarget := Result;
+  end;
 end;
 
 procedure TGLProcTextureNoise.SetHeight(const val: Integer);

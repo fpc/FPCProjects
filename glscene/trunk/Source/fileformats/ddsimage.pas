@@ -12,6 +12,7 @@
     so you may include both DDSImage (preview) and GLFileDDS (loading)
 
  <b>History : </b><font size=-1><ul>
+        <li>24/01/10 - Yar - Improved FPC compatibility
         <li>21/01/10 - Yar - Creation
    </ul><p>
 }
@@ -41,6 +42,7 @@ type
 implementation
 
 uses
+  {$IFDEF FPC} graphtype, {$ENDIF}
   DXTC, GLFileDDS, GLTextureFormat;
 
 // ------------------
@@ -52,19 +54,25 @@ uses
 procedure TDDSImage.LoadFromStream(stream: TStream);
 var
   FullDDS: TGLDDSImage;
-  PBuf: TPixelBuffer;
-  y, size: integer;
-  tempBuff, src, dst: PGLubyte;
+  PBuf: TGLPixelBuffer;
+  size: integer;
+  tempBuff: PGLubyte;
   tempTex: GLuint;
   DC: HDC;
   RC: HGLRC;
+  {$IFNDEF FPC}
+  src, dst: PGLubyte;
+  y: integer;
+  {$ELSE}
+  RIMG: TRawImage;
+  {$ENDIF}
 begin
   FullDDS := TGLDDSImage.Create;
   try
     FullDDS.LoadFromStream(stream);
   except
     FullDDS.Free;
-    EXIT;
+    raise;
   end;
 
   // Copy surface as posible to TBitmap
@@ -74,7 +82,13 @@ begin
   // Create minimal pixel buffer
   if (DC = 0) or (RC = 0) then
   begin
-    PBuf := TPixelBuffer.Create(1, 1);
+    PBuf := TGLPixelBuffer.Create;
+    try
+      PBuf.Initialize(1, 1);
+    except
+      FullDDS.Free;
+      raise;
+    end;
     tempTex := PBuf.TextureID;
   end
   else
@@ -115,8 +129,8 @@ begin
     Width := FullDDS.Width;
     Height := FullDDS.Height;
 
-    src := tempBuff;
 {$IFNDEF FPC}
+    src := tempBuff;
     if FullDDS.CubeMap then
       for y := 0 to Height - 1 do
       begin
@@ -132,8 +146,14 @@ begin
         Inc(src, Width * 4);
       end;
 {$ELSE}
-    dst := RawImage.Data;
-    Move(src^, dst^, FullDDS.Width*FullDDS.Height*4);
+    RIMG.Init;
+    rimg.Description.Init_BPP32_B8G8R8A8_BIO_TTB(Width, Height);
+    rimg.Description.RedShift := 16;
+    rimg.Description.BlueShift := 0;
+    rimg.Description.LineOrder := riloBottomToTop;
+    RIMG.DataSize := Width*Height*4;
+    rimg.Data := PByte(tempBuff);
+    LoadFromRawImage(rimg, false);
 {$ENDIF}
     FullDDS.Free;
     FreeMem(tempBuff);
@@ -142,8 +162,7 @@ begin
   end;
   if Assigned(pBuf) then
     pBuf.Destroy
-  else
-  begin
+  else begin
     glDeleteTextures(1, @tempTex);
     glPopAttrib;
   end;

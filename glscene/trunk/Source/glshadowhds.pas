@@ -2,6 +2,7 @@
 {: Implements an HDS that automatically generates a terrain lightmap texture.<p>
 	<b>History : </b><font size=-1><ul>
 
+      <li>22/01/10 - Yar - Added GLTextureFormat to uses
       <li>13/11/07 - LIN - Added SkipGenerate flag. Set to true in "OnSourceDataFetched"
                            to generate a blank shadow map. Then load your cached Shadowmap during OnThreadBmp32 event.
       <li>17/07/07 - LIN - Added OnThreadBmp32 event. This event can be used to
@@ -127,7 +128,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, OpenGL1x, GLUtils, VectorLists;
+uses SysUtils, OpenGL1x, GLUtils, VectorLists, GLTextureFormat;
 
 // Create
 //

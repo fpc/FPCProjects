@@ -9,6 +9,9 @@
    Modified by C4 and YarUnderoaker (hope, I didn't miss anybody).
 
    <b>History : </b><font size=-1><ul>
+      <li>23/01/10 - Yar   - Replaced TextureFormat to TextureFormatEx
+      <li>22/01/10 - Yar   - Adapted to Handles of GLContext,
+                             texture target unification, level and layer control
       <li>11/11/09 - DaStr - Added $I GLScene.inc
       <li>09/11/09 - DaStr - Initial version (contributed to GLScene)
    </ul></font>
@@ -17,83 +20,108 @@ unit GLFBO;
 
 interface
 
-{$i GLScene.inc}
+{$I GLScene.inc}
 
 uses
+  OpenGL1x,
   GLScene, GLContext, GLTexture, GLColor, GLRenderContextInfo;
 
+const
+  MaxColorAttachments = 32;
+
 type
-  TGLRBO = class(TGLContextHandle)
+  TGLRenderbuffer = class
   private
+    FRenderbufferHandle: TGLRenderbufferHandle;
     FWidth: Integer;
     FHeight: Integer;
     FStorageValid: Boolean;
+    function GetHandle: TGLuint;
     procedure SetHeight(const Value: Integer);
     procedure SetWidth(const Value: Integer);
   protected
-    function DoAllocateHandle: cardinal; override;
-    procedure DoDestroyHandle; override;
 
     function GetInternalFormat: cardinal; virtual; abstract;
 
     procedure InvalidateStorage;
   public
-    constructor Create; override;
+    constructor Create;
+    destructor Destroy; override;
 
     procedure Bind;
     procedure Unbind;
-
+    {: Handle to the OpenGL render buffer object.<p>
+      If the handle hasn't already been allocated, it will be allocated
+      by this call (ie. do not use if no OpenGL context is active!) }
+    property Handle: TGLuint read GetHandle;
     property Width: Integer read FWidth write SetWidth;
     property Height: Integer read FHeight write SetHeight;
   end;
 
-  TGLDepthRBO = class(TGLRBO)
+  TGLDepthRBO = class(TGLRenderbuffer)
   private
     FDepthPrecision: TGLDepthPrecision;
     procedure SetDepthPrecision(const Value: TGLDepthPrecision);
   protected
     function GetInternalFormat: cardinal; override;
   public
-    constructor Create; override;
+    constructor Create;
 
-    property DepthPrecision: TGLDepthPrecision read FDepthPrecision write SetDepthPrecision;
+    property DepthPrecision: TGLDepthPrecision read FDepthPrecision write
+      SetDepthPrecision;
   end;
 
   TGLStencilPrecision = (spDefault, sp1bit, sp4bits, sp8bits, sp16bits);
 
-  TGLStencilRBO = class(TGLRBO)
+  TGLStencilRBO = class(TGLRenderbuffer)
   private
     FStencilPrecision: TGLStencilPrecision;
     procedure SetStencilPrecision(const Value: TGLStencilPrecision);
   protected
     function GetInternalFormat: cardinal; override;
   public
-    constructor Create; override;
+    constructor Create;
 
-    property StencilPrecision: TGLStencilPrecision read FStencilPrecision write SetStencilPrecision;
+    property StencilPrecision: TGLStencilPrecision read FStencilPrecision write
+      SetStencilPrecision;
   end;
 
-  TGLFramebufferStatus = (fsComplete, fsIncompleteAttachment, fsIncompleteMissingAttachment,
-    fsIncompleteDuplicateAttachment, fsIncompleteDimensions, fsIncompleteFormats,
-    fsIncompleteDrawBuffer, fsIncompleteReadBuffer, fsUnsupported, fsStatusError);
+  TGLFramebufferStatus = (fsComplete, fsIncompleteAttachment,
+    fsIncompleteMissingAttachment,
+    fsIncompleteDuplicateAttachment, fsIncompleteDimensions,
+    fsIncompleteFormats,
+    fsIncompleteDrawBuffer, fsIncompleteReadBuffer, fsUnsupported,
+    fsStatusError);
 
-  TGLFBO = class(TGLContextHandle)
+  TGLFrameBuffer = class
   private
+    FFrameBufferHandle: TGLFramebufferHandle;
+    FBinded: Boolean;
     FWidth: Integer;
     FHeight: Integer;
+    FLayer: Integer;
+    FLevel: Integer;
     FTextureMipmap: cardinal;
-    FAttachedTexture: array[0..31] of cardinal;
+    FAttachedTexture: array[0..MaxColorAttachments - 1] of TGLTexture;
+    FDepthTexture: TGLTexture;
 
+    function GetHandle: GLuint;
     function GetStatus: TGLFramebufferStatus;
     procedure SetHeight(const Value: Integer);
     procedure SetWidth(const Value: Integer);
+    procedure SetLayer(const Value: Integer);
+    procedure SetLevel(const Value: Integer);
   protected
-    function DoAllocateHandle: cardinal; override;
-    procedure DoDestroyHandle; override;
-
-    procedure AttachTexture(Attachment, TextureTarget, TextureHandle: cardinal); overload;
+    procedure AttachTexture(const target: TGLenum;
+      const attachment: TGLenum;
+      const textarget: TGLenum;
+      const texture: TGLuint;
+      const level: TGLint;
+      const layer: TGLint); overload;
+    procedure ReattachTextures;
   public
-    constructor Create; override;
+    constructor Create;
+    destructor Destroy; override;
 
     // attaches a depth rbo to the fbo
     // the depth buffer must have the same dimentions as the fbo
@@ -119,11 +147,15 @@ type
     procedure Unbind;
 
     procedure PreRender;
-    procedure Render(var rci: TRenderContextInfo; baseObject: TGLBaseSceneObject);
-    procedure PostRender;
+    procedure Render(var rci: TRenderContextInfo; baseObject:
+      TGLBaseSceneObject);
+    procedure PostRender(const PostGenerateMipmap: Boolean);
 
+    property Handle: GLuint read GetHandle;
     property Width: Integer read FWidth write SetWidth;
     property Height: Integer read FHeight write SetHeight;
+    property Layer: Integer read FLayer write SetLayer;
+    property Level: Integer read FLevel write SetLevel;
 
     property Status: TGLFramebufferStatus read GetStatus;
   end;
@@ -131,64 +163,38 @@ type
 implementation
 
 uses
-  OpenGL1x, GLUtils, GLGraphics;
+  GLUtils, GLGraphics, GLTextureFormat;
 
-{ TGLRBO }
+{ TGLRenderbuffer }
 
-procedure TGLRBO.Bind;
-var
-  internalFormat: cardinal;
+constructor TGLRenderbuffer.Create;
 begin
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, Handle);
-
-  CheckOpenGLError;
-
-  if not FStorageValid then
-  begin
-    internalFormat := GetInternalFormat;
-    //    internalFormat:= GL_DEPTH_COMPONENT;
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, internalFormat, FWidth, FHeight);
-
-    CheckOpenGLError;
-  end;
-end;
-
-constructor TGLRBO.Create;
-begin
-  inherited;
-
+  inherited Create;
+  FRenderbufferHandle := TGLRenderbufferHandle.Create;
   FWidth := 256;
   FHeight := 256;
 end;
 
-function TGLRBO.DoAllocateHandle: cardinal;
+destructor TGLRenderbuffer.Destroy;
 begin
-  glGenRenderbuffersEXT(1, @Result);
-  CheckOpenGLError;
+  FRenderbufferHandle.DestroyHandle;
+  FRenderbufferHandle.Free;
+  inherited Destroy;
 end;
 
-procedure TGLRBO.DoDestroyHandle;
-var
-  h: cardinal;
+function TGLRenderbuffer.GetHandle: GLuint;
 begin
-  //  if not vIgnoreContextActivationFailures then
-  begin
-    // reset error status
-    glGetError;
-    // delete
-    h := Handle;
-    glDeleteRenderbuffersEXT(1, @h);
-    // check for error
-    CheckOpenGLError;
-  end;
+  if FRenderbufferHandle.Handle = 0 then
+    FRenderbufferHandle.AllocateHandle;
+  Result := FRenderbufferHandle.Handle;
 end;
 
-procedure TGLRBO.InvalidateStorage;
+procedure TGLRenderbuffer.InvalidateStorage;
 begin
   FStorageValid := False;
 end;
 
-procedure TGLRBO.SetHeight(const Value: Integer);
+procedure TGLRenderbuffer.SetHeight(const Value: Integer);
 begin
   if FHeight <> Value then
   begin
@@ -197,7 +203,7 @@ begin
   end;
 end;
 
-procedure TGLRBO.SetWidth(const Value: Integer);
+procedure TGLRenderbuffer.SetWidth(const Value: Integer);
 begin
   if FWidth <> Value then
   begin
@@ -206,9 +212,21 @@ begin
   end;
 end;
 
-procedure TGLRBO.Unbind;
+procedure TGLRenderbuffer.Bind;
+var
+  internalFormat: cardinal;
 begin
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+  glBindRenderbuffer(GL_RENDERBUFFER, Handle);
+  if not FStorageValid then
+  begin
+    internalFormat := GetInternalFormat;
+    FRenderbufferHandle.SetStorage(internalFormat, FWidth, FHeight);
+  end;
+end;
+
+procedure TGLRenderbuffer.Unbind;
+begin
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
 end;
 
 { TGLDepthRBO }
@@ -216,19 +234,18 @@ end;
 constructor TGLDepthRBO.Create;
 begin
   inherited Create;
-
   FDepthPrecision := dpDefault;
 end;
 
 function TGLDepthRBO.GetInternalFormat: cardinal;
 begin
   case DepthPrecision of
-    dp24bits: Result := GL_DEPTH_COMPONENT24_ARB;
-    dp16bits: Result := GL_DEPTH_COMPONENT16_ARB;
-    dp32bits: Result := GL_DEPTH_COMPONENT32_ARB;
-    else
-      // dpDefault
-      Result := GL_DEPTH_COMPONENT24_ARB;
+    dp24bits: Result := GL_DEPTH_COMPONENT24;
+    dp16bits: Result := GL_DEPTH_COMPONENT16;
+    dp32bits: Result := GL_DEPTH_COMPONENT32;
+  else
+    // dpDefault
+    Result := GL_DEPTH_COMPONENT24_ARB;
   end;
 end;
 
@@ -245,8 +262,7 @@ end;
 
 constructor TGLStencilRBO.Create;
 begin
-  inherited;
-
+  inherited Create;
   FStencilPrecision := spDefault;
 end;
 
@@ -258,9 +274,9 @@ begin
     sp4bits: Result := GL_STENCIL_INDEX4_EXT;
     sp8bits: Result := GL_STENCIL_INDEX8_EXT;
     sp16bits: Result := GL_STENCIL_INDEX16_EXT;
-    else
-      // spDefault
-      Result := GL_STENCIL_INDEX;
+  else
+    // spDefault
+    Result := GL_STENCIL_INDEX;
   end;
 end;
 
@@ -273,44 +289,53 @@ begin
   end;
 end;
 
-{ TGLFBO }
+{ TGLFrameBuffer }
 
-procedure TGLFBO.AttachTexture(n: Integer; Texture: TGLTexture);
-var
-  target: Integer;
+constructor TGLFrameBuffer.Create;
 begin
-  target := Texture.Image.NativeTextureTarget;
-  Assert((target = GL_TEXTURE_2D) or (target = GL_TEXTURE_RECTANGLE_ARB), 'TGLFBO only supports 2D textures');
-  // workaround for TGLBitmap32 SetWidth bug
-  glBindTexture(target, Texture.Handle);
-  if (Texture.TexWidth <> Width) or (Texture.TexHeight <> Height) then
-  begin
-    glTexImage2d(target, 0,
-      TextureFormatToInternalFormat(Texture.TextureFormat),
-      Width, Height, Texture.Border, GL_RGBA, GL_UNSIGNED_BYTE, nil);
-  end;
-
-  if not ((Texture.MinFilter in [miNearest, miLinear]) or (target = GL_TEXTURE_RECTANGLE_ARB)) then
-  begin
-    glGenerateMipmapEXT(target);
-    FTextureMipmap := FTextureMipmap or (1 shl n);
-  end;
-
-  FAttachedTexture[n] := Texture.Handle;
-
-  glBindTexture(target, 0);
-
-  AttachTexture(GL_COLOR_ATTACHMENT0_EXT + n, target, Texture.Handle);
+  inherited;
+  FFrameBufferHandle := TGLFrameBufferHandle.Create;
+  FWidth := 256;
+  FHeight := 256;
+  FLayer := 0;
+  FLevel := 0;
+  FTextureMipmap := 0;
+  FBinded := false;
 end;
 
-procedure TGLFBO.AttachDepthBuffer(DepthBuffer: TGLDepthRBO);
+destructor TGLFrameBuffer.Destroy;
+begin
+  FFrameBufferHandle.DestroyHandle;
+  FFrameBufferHandle.Free;
+  inherited Destroy;
+end;
+
+procedure TGLFrameBuffer.AttachTexture(n: Integer; Texture: TGLTexture);
+var
+  textarget: GLenum;
+begin
+  Assert(n < MaxColorAttachments);
+  Texture.Handle;
+  FAttachedTexture[n] := Texture;
+  textarget := Texture.Image.NativeTextureTarget;
+  // Store mipmaping requires
+  if not ((Texture.MinFilter in [miNearest, miLinear])
+    or (textarget = GL_TEXTURE_RECTANGLE)) then
+    FTextureMipmap := FTextureMipmap or (1 shl n);
+
+  AttachTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0_EXT + n,
+    textarget, Texture.Handle,
+    FLevel, FLayer);
+end;
+
+procedure TGLFrameBuffer.AttachDepthBuffer(DepthBuffer: TGLDepthRBO);
 
   procedure AttachDepthRB;
   begin
     // forces initialization
     DepthBuffer.Bind;
     DepthBuffer.Unbind;
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT_EXT,
       GL_RENDERBUFFER_EXT, DepthBuffer.Handle);
     CheckOpenGLError;
   end;
@@ -319,7 +344,6 @@ var
   dp: TGLDepthPrecision;
 begin
   Bind;
-
   AttachDepthRB;
 
   // if default format didn't work, try something else
@@ -345,121 +369,144 @@ begin
   Unbind;
 end;
 
-procedure TGLFBO.AttachDepthTexture(Texture: TGLTexture);
+procedure TGLFrameBuffer.AttachDepthTexture(Texture: TGLTexture);
 begin
-  Assert(Texture.Image.NativeTextureTarget = GL_TEXTURE_2D, 'TGLFBO only supports 2D depth textures');
-  // workaround for TGLBitmap32 SetWidth bug
-  Texture.Handle;
-  if (Texture.TexWidth <> Width) or (Texture.TexHeight <> Height) then
+  FDepthTexture := Texture;
+  // Force texture properties to depth compatibility
+  if not IsDepthFormat(FDepthTexture.TextureFormatEx) then
   begin
-    glBindTexture(GL_TEXTURE_2D, Texture.Handle);
-    glTexImage2d(GL_TEXTURE_2D, 0,
-      TextureFormatToInternalFormat(Texture.TextureFormat),
-      Width, Height, Texture.Border, GL_DEPTH_COMPONENT, GL_FLOAT, nil);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    CheckOpenGLError;
+    FDepthTexture.ImageClassName := 'TGLBlankImage';
+    FDepthTexture.TextureFormatEx := tfDEPTH_COMPONENT24;
+    TGLBlankImage(FDepthTexture.Image).Width := Width;
+    TGLBlankImage(FDepthTexture.Image).Height := Height;
   end;
+  TGLBlankImage(FDepthTexture.Image).ColorFormat := GL_DEPTH_COMPONENT;
+  // Depth texture mipmaping
+  if not ((FDepthTexture.MinFilter in [miNearest, miLinear])) then
+    FTextureMipmap := FTextureMipmap or (1 shl MaxColorAttachments);
 
-  AttachTexture(GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, Texture.Handle);
+  AttachTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+    FDepthTexture.Image.NativeTextureTarget, FDepthTexture.Handle,
+    FLevel, FLayer);
 end;
 
-procedure TGLFBO.AttachStencilBuffer(StencilBuffer: TGLStencilRBO);
+procedure TGLFrameBuffer.DetachDepthTexture;
+begin
+  if Assigned(FDepthTexture) then
+  begin
+    FTextureMipmap := FTextureMipmap and (not (1 shl MaxColorAttachments));
+    AttachTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+      FDepthTexture.Image.NativeTextureTarget, 0, 0, 0);
+    FDepthTexture := nil;
+  end;
+end;
+
+procedure TGLFrameBuffer.AttachStencilBuffer(StencilBuffer: TGLStencilRBO);
 begin
   Bind;
   // forces initialization
   StencilBuffer.Bind;
   StencilBuffer.Unbind;
-  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-    GL_RENDERBUFFER_EXT, StencilBuffer.Handle);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+    GL_RENDERBUFFER, StencilBuffer.Handle);
   CheckOpenGLError;
   Status;
   Unbind;
 end;
 
-procedure TGLFBO.AttachTexture(Attachment, TextureTarget, TextureHandle: cardinal);
-begin
-  Bind;
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-    Attachment, TextureTarget, TextureHandle, 0);
-  CheckOpenGLError;
-  Status;
-  Unbind;
-end;
-
-procedure TGLFBO.Bind;
-begin
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, Handle);
-  CheckOpenGLError;
-end;
-
-constructor TGLFBO.Create;
-begin
-  inherited;
-
-  FWidth := 256;
-  FHeight := 256;
-end;
-
-procedure TGLFBO.DetachTexture(n: Integer);
-begin
-  Bind;
-  // textarget ignored when binding 0
-  AttachTexture(GL_COLOR_ATTACHMENT0_EXT + n, GL_TEXTURE_2D, 0);
-
-  FTextureMipmap := FTextureMipmap and (not (1 shl n));
-  FAttachedTexture[n] := 0;
-
-  CheckOpenGLError;
-  Unbind;
-end;
-
-procedure TGLFBO.DetachDepthBuffer;
-begin
-  Bind;
-  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-    GL_RENDERBUFFER_EXT, 0);
-  CheckOpenGLError;
-  Unbind;
-end;
-
-procedure TGLFBO.DetachDepthTexture;
-begin
-  AttachTexture(GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, 0);
-end;
-
-procedure TGLFBO.DetachStencilBuffer;
-begin
-  AttachTexture(GL_STENCIL_ATTACHMENT_EXT, GL_TEXTURE_2D, 0);
-end;
-
-function TGLFBO.DoAllocateHandle: cardinal;
-begin
-  Result := 0;
-
-  if not GL_EXT_framebuffer_object then
-    Exit;
-
-  glGenFramebuffersEXT(1, @Result);
-  CheckOpenGLError;
-end;
-
-procedure TGLFBO.DoDestroyHandle;
+procedure TGLFrameBuffer.AttachTexture(const target: TGLenum;
+  const attachment: TGLenum;
+  const textarget: TGLenum;
+  const texture: TGLuint;
+  const level: TGLint;
+  const layer: TGLint);
 var
-  h: cardinal;
+  NeedBind: Boolean;
 begin
-  //  if not vIgnoreContextActivationFailures then
+  NeedBind := not FBinded;
+  if NeedBind then
+    Bind;
+
+  with FFrameBufferHandle do
+    case textarget of
+      GL_TEXTURE_1D: Attach1DTexture(target, attachment, textarget, texture,
+          level);
+      GL_TEXTURE_2D: Attach2DTexture(target, attachment, textarget, texture,
+          level);
+      GL_TEXTURE_RECTANGLE: // Rectangle texture can't be leveled
+        Attach2DTexture(target, attachment, textarget, texture, 0);
+      GL_TEXTURE_3D: Attach3DTexture(target, attachment, textarget, texture,
+          level, layer);
+
+      GL_TEXTURE_CUBE_MAP: Attach2DTexture(target, attachment,
+          GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, texture, level);
+
+      GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+        GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+        GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z: Attach2DTexture(target, attachment,
+          textarget, texture, level);
+
+      GL_TEXTURE_CUBE_MAP_ARRAY,
+        GL_TEXTURE_1D_ARRAY,
+        GL_TEXTURE_2D_ARRAY: AttachLayer(target, attachment, texture, level,
+          layer);
+
+    end;
+
+  CheckOpenGLError;
+  if NeedBind then
+    Unbind;
+end;
+
+procedure TGLFrameBuffer.Bind;
+begin
+  FBinded := true;
+  glBindFramebufferEXT(GL_FRAMEBUFFER, Handle);
+end;
+
+procedure TGLFrameBuffer.Unbind;
+begin
+  FBinded := false;
+  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+end;
+
+procedure TGLFrameBuffer.DetachTexture(n: Integer);
+begin
+  // textarget ignored when binding 0
+  if Assigned(FAttachedTexture[n]) then
   begin
-    // reset error status
-    glGetError;
-    // delete
-    h := Handle;
-    glDeleteFramebuffersEXT(1, @h);
-    // check for error
+    Bind;
+    AttachTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + n,
+      GL_TEXTURE_2D, // target does not matter
+      0, 0, 0);
+
+    FTextureMipmap := FTextureMipmap and (not (1 shl n));
+    FAttachedTexture[n] := nil;
+    Unbind;
     CheckOpenGLError;
   end;
 end;
 
-function TGLFBO.GetStatus: TGLFramebufferStatus;
+procedure TGLFrameBuffer.DetachDepthBuffer;
+begin
+  Bind;
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+    GL_RENDERBUFFER, 0);
+  Unbind;
+end;
+
+procedure TGLFrameBuffer.DetachStencilBuffer;
+begin
+  Bind;
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+    GL_RENDERBUFFER, 0);
+  Unbind;
+end;
+
+function TGLFrameBuffer.GetStatus: TGLFramebufferStatus;
 var
   status: cardinal;
 begin
@@ -468,44 +515,51 @@ begin
   case status of
     GL_FRAMEBUFFER_COMPLETE_EXT: Result := fsComplete;
     GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT: Result := fsIncompleteAttachment;
-    GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT: Result := fsIncompleteMissingAttachment;
-    GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT: Result := fsIncompleteDuplicateAttachment;
+    GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT: Result :=
+      fsIncompleteMissingAttachment;
+    GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT: Result :=
+      fsIncompleteDuplicateAttachment;
     GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: Result := fsIncompleteDimensions;
     GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: Result := fsIncompleteFormats;
     GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT: Result := fsIncompleteDrawBuffer;
     GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT: Result := fsIncompleteReadBuffer;
     GL_FRAMEBUFFER_UNSUPPORTED_EXT: Result := fsUnsupported;
-    else
-      Result := fsStatusError;
+  else
+    Result := fsStatusError;
   end;
 end;
 
-procedure TGLFBO.PostRender;
+procedure TGLFrameBuffer.PostRender(const PostGenerateMipmap: Boolean);
 var
-  I:  Integer;
-  ot: Integer;
+  n: Integer;
+  textarget: TGLEnum;
 begin
-  glGetIntegerv(GL_TEXTURE_BINDING_2D, @ot);
-  for I := 0 to 15 do
+  if (FTextureMipmap > 0) and PostGenerateMipmap then
   begin
-    if FTextureMipmap and (1 shl I) = 0 then
-      Continue;
-
-    glBindTexture(GL_TEXTURE_2D, FAttachedTexture[I]);
-    glGenerateMipmapEXT(GL_TEXTURE_2D);
+    glPushAttrib(GL_TEXTURE_BIT);
+    for n := 0 to MaxColorAttachments - 1 do
+      if Assigned(FAttachedTexture[n]) then
+      begin
+        if FTextureMipmap and (1 shl n) = 0 then
+          Continue;
+        textarget := FAttachedTexture[n].Image.NativeTextureTarget;
+        glBindTexture(textarget, FAttachedTexture[n].Handle);
+        glGenerateMipmapEXT(textarget);
+      end;
+    glPopAttrib;
   end;
-  glBindTexture(GL_TEXTURE_2D, ot);
 end;
 
-procedure TGLFBO.PreRender;
+procedure TGLFrameBuffer.PreRender;
 begin
 
 end;
 
-procedure TGLFBO.Render(var rci: TRenderContextInfo; baseObject: TGLBaseSceneObject);
+procedure TGLFrameBuffer.Render(var rci: TRenderContextInfo; baseObject:
+  TGLBaseSceneObject);
 var
   backColor: TColorVector;
-  buffer:    TGLSceneBuffer;
+  buffer: TGLSceneBuffer;
 begin
   Bind;
   Assert(Status = fsComplete, 'Framebuffer not complete');
@@ -513,7 +567,8 @@ begin
   buffer := TGLSceneBuffer(rci.buffer);
 
   backColor := ConvertWinColor(buffer.BackgroundColor);
-  glClearColor(backColor[0], backColor[1], backColor[2], buffer.BackgroundAlpha);
+  glClearColor(backColor[0], backColor[1], backColor[2],
+    buffer.BackgroundAlpha);
   glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
 
   baseObject.Render(rci);
@@ -523,7 +578,14 @@ begin
   Unbind;
 end;
 
-procedure TGLFBO.SetHeight(const Value: Integer);
+function TGLFrameBuffer.GetHandle: GLuint;
+begin
+  if FFrameBufferHandle.Handle = 0 then
+    FFrameBufferHandle.AllocateHandle;
+  Result := FFrameBufferHandle.Handle;
+end;
+
+procedure TGLFrameBuffer.SetHeight(const Value: Integer);
 begin
   if FHeight <> Value then
   begin
@@ -531,7 +593,7 @@ begin
   end;
 end;
 
-procedure TGLFBO.SetWidth(const Value: Integer);
+procedure TGLFrameBuffer.SetWidth(const Value: Integer);
 begin
   if FWidth <> Value then
   begin
@@ -539,10 +601,46 @@ begin
   end;
 end;
 
-procedure TGLFBO.Unbind;
+procedure TGLFrameBuffer.ReattachTextures;
+var
+  n: Integer;
 begin
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  // Reattach layered textures
+  for n := 0 to MaxColorAttachments-1 do
+    if Assigned(FAttachedTexture[n]) then
+      AttachTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0_EXT + n,
+        FAttachedTexture[n].Image.NativeTextureTarget,
+        FAttachedTexture[n].Handle,
+        FLevel, FLayer);
+  if Assigned(FDepthTexture) then
+    AttachTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+      FDepthTexture.Image.NativeTextureTarget, FDepthTexture.Handle,
+      FLevel, FLayer);
+  Assert(Status = fsComplete, 'Framebuffer not complete');
   CheckOpenGLError;
 end;
 
+procedure TGLFrameBuffer.SetLayer(const Value: Integer);
+begin
+  if FLayer <> Value then
+  begin
+    FLayer := Value;
+    if not FBinded then
+      Exit;
+    ReattachTextures;
+  end;
+end;
+
+procedure TGLFrameBuffer.SetLevel(const Value: Integer);
+begin
+  if FLevel <> Value then
+  begin
+    FLevel := Value;
+    if not FBinded then
+      Exit;
+    ReattachTextures;
+  end;
+end;
+
 end.
+

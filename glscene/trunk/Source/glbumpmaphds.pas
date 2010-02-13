@@ -5,6 +5,7 @@
    A bumpmap texture is generated for each terrain tile, and placed into a TGLMaterialLibrary.
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar - Added GLTextureFormat to uses
       <li>13/02/07 - LIN- Thread-safe, for use with TGLAsyncHDS
                           Also takes advantage of texture-coodrinates, calculated by HeightDataSource
       <li>02/02/07 - LIN- GLBumpmapHDS is now derived from THeightDataSourceFilter.
@@ -34,7 +35,7 @@ unit GLBumpmapHDS;
 interface
 
 uses Classes, GLHeightData, GLGraphics, VectorGeometry, GLTexture, Dialogs, Forms,
-     SyncObjs, GLMaterial;
+     SyncObjs, GLMaterial, GLTextureFormat;
 
 type
    TGLBumpmapHDS = class;

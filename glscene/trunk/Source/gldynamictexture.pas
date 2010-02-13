@@ -7,6 +7,9 @@
   texture data.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>23/01/10 - Yar - Replaced TextureFormat to TextureFormatEx
+                           simplify GetBitsPerPixel and GetDataFormat
+      <li>22/01/10 - Yar - Added GLTextureFormat to uses 
       <li>08/10/08 - DanB - added FriendlyName/FriendlyDescription
       <li>16/10/07 - LC - Added DirtyRectangle to allow partial updates.
       <li>12/07/07 - DaStr - Added $I GLScene.inc
@@ -24,7 +27,8 @@ interface
 {$I GLScene.inc}
 
 uses
-  Classes, SysUtils, OpenGL1x, GLContext, GLTexture, GLGraphics, GLCrossPlatform;
+  Classes, SysUtils, OpenGL1x, GLContext, GLTexture, GLTextureFormat,
+  GLGraphics, GLCrossPlatform;
 
 type
   // TGLDynamicTextureImage
@@ -252,50 +256,16 @@ begin
 end;
 
 function TGLDynamicTextureImage.GetBitsPerPixel: integer;
-var
-  tf: TGLTextureFormat;
 begin
-  tf:= OwnerTexture.TextureFormat;
-  if tf = tfDefault then
-    tf:= vDefaultTextureFormat;
-
-  result:= 0;
-  case tf of
-    tfDefault: Assert(false, 'Invalid texture format');
-    tfRGB: result:= 3;
-    tfRGBA: result:= 4;
-    tfRGB16: result:= 6;
-    tfRGBA16: result:= 8;
-    tfAlpha: result:= 1;
-    tfLuminance: result:= 1;
-    tfLuminanceAlpha: result:= 2;
-    tfIntensity: result:= 1;
-    tfNormalMap: result:= 3;
-    tfRGBAFloat16: result:= 8;
-    tfRGBAFloat32: result:= 16;
-  else
-    Assert(false, 'Invalid texture format');
-  end;
+  Result := 8 * GetTextureElementSize( OwnerTexture.TextureFormatEx );
 end;
 
 function TGLDynamicTextureImage.GetDataFormat: integer;
 var
-  tf: TGLTextureFormat;
+  data, color: TGLEnum;
 begin
-  tf:= OwnerTexture.TextureFormat;
-  if tf = tfDefault then
-    tf:= vDefaultTextureFormat;
-
-  result:= 0;
-  case tf of
-    tfDefault: Assert(false, 'Invalid texture format');
-    tfRGB16, tfRGBA16: result:= GL_UNSIGNED_SHORT;
-    tfRGBAFloat16, tfRGBAFloat32: result:= GL_FLOAT;
-  else
-    // safe since any invalid texture formats will get
-    // caught by GetBitsPerPixel before this
-    result:= GL_UNSIGNED_BYTE;
-  end;
+  FindCompatibleDataFormat(OwnerTexture.TextureFormatEx, color, data);
+  Result := data;
 end;
 
 function TGLDynamicTextureImage.GetTexSize: integer;
@@ -304,28 +274,16 @@ begin
 end;
 
 function TGLDynamicTextureImage.GetTextureFormat: integer;
-const
-  RGBFormat: array[boolean] of integer = (GL_RGB, GL_BGR);
-  RGBAFormat: array[boolean] of integer = (GL_RGBA, GL_BGRA);
 var
-  tf: TGLTextureFormat;
+  data, color: TGLEnum;
 begin
-  tf:= OwnerTexture.TextureFormat;
-  if tf = tfDefault then
-    tf:= vDefaultTextureFormat;
-
-  result:= 0;
-  case tf of
-    tfDefault: Assert(false, 'Invalid texture format');
-    tfRGB, tfRGB16, tfNormalMap: result:= RGBFormat[FUseBGR];
-    tfRGBA, tfRGBA16, tfRGBAFloat16, tfRGBAFloat32: result:= RGBAFormat[FUseBGR];
-    tfAlpha: result:= GL_ALPHA;
-    tfLuminance: result:= GL_LUMINANCE;
-    tfLuminanceAlpha: result:= GL_LUMINANCE_ALPHA;
-    tfIntensity: result:= GL_INTENSITY;
-  else
-    Assert(false, 'Invalid texture format');
-  end;
+  FindCompatibleDataFormat(OwnerTexture.TextureFormatEx, color, data);
+  if FUseBGR then
+    case color of
+      GL_RGB: color := GL_BGR;
+      GL_RGBA: color := GL_BGRA;
+    end;
+  Result := color;
 end;
 
 procedure TGLDynamicTextureImage.NotifyChange(Sender: TObject);

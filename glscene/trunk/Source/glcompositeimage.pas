@@ -7,6 +7,7 @@
     TGLO3TCImage, TGLHDRImage etc.
 
  <b>History : </b><font size=-1><ul>
+        <li>23/01/10 - Yar - Replaced TextureFormat to TextureFormatEx
         <li>21/01/10 - Yar - Creation
    </ul><p>
 }
@@ -109,7 +110,7 @@ begin
     FResourceFile := FBitmap.ResourceName;
     // Composite image always rewrite texture format
     if Assigned(FOwnerTexture) then
-      FOwnerTexture.TextureFormat := FBitmap.InternalFormat;
+      FOwnerTexture.TextureFormatEx := FBitmap.InternalFormat;
     NotifyChange(Self);
   end
   else
@@ -231,7 +232,8 @@ begin
       tempImage.AssignFromTexture(FOwnerTexture.RenderingContext,
         FOwnerTexture.Handle,
         NativeTextureTarget,
-        FOwnerTexture.TextureFormat)
+        false,
+        FOwnerTexture.TextureFormatEx)
     else
       tempImage.Assign(fBitmap);
   end
@@ -269,7 +271,7 @@ begin
     FResourceFile := FBitmap.ResourceName;
     // Internal image always rewrite texture format
     if Assigned(FOwnerTexture) then
-      FOwnerTexture.TextureFormat := FBitmap.InternalFormat;
+      FOwnerTexture.TextureFormatEx := FBitmap.InternalFormat;
     NotifyChange(Self);
   end;
   tempImage.Free;

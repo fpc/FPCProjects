@@ -5,6 +5,7 @@
     Good for preview picture in OpenDialog, 
     so you may include both HDRImage (preview) and GLFileHDR (loading)
 
+      <li>24/01/10 - Yar - Improved FPC compatibility
       <li>21/01/10 - Yar - Creation 
    </ul></font>
 }
@@ -31,6 +32,7 @@ type
 implementation
 
 uses
+  {$IFDEF FPC} graphtype, {$ENDIF}
   GLFileHDR, GLTextureFormat;
 
 // ------------------
@@ -42,28 +44,39 @@ uses
 procedure THDRImage.LoadFromStream(stream : TStream);
 var
   FullHDR : TGLHDRImage;
-  PBuf : TPixelBuffer;
-  y: integer;
-  tempBuff, src, dst: PGLubyte;
+  PBuf : TGLPixelBuffer;
+  tempBuff: PGLubyte;
   tempTex : GLuint;
   DC : HDC;
   RC : HGLRC;
+  {$IFNDEF FPC}
+  src, dst: PGLubyte;
+  y: integer;
+  {$ELSE}
+  RIMG: TRawImage;
+  {$ENDIF}
 begin
   FullHDR := TGLHDRImage.Create;
   try
     FullHDR.LoadFromStream( stream );
   except
     FullHDR.Free;
-    EXIT;
+    raise;
   end;
   // Copy surface as posible to TBitmap
   DC := wglGetCurrentDC;
   RC := wglGetCurrentContext;
 
   // Create minimal pixel buffer
-  if (DC=0) or (RC=0)
-  then begin
-    PBuf := TPixelBuffer.Create( 1, 1 );
+  if (DC=0) or (RC=0) then
+  begin
+    PBuf := TGLPixelBuffer.Create;
+    try
+      PBuf.Initialize(1, 1);
+    except
+      FullHDR.Free;
+      raise;
+    end;
     tempTex := PBuf.TextureID;
   end
   else begin
@@ -74,10 +87,6 @@ begin
   // Setup texture
   glEnable       ( GL_TEXTURE_2D );
   glBindTexture  ( GL_TEXTURE_2D, tempTex);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   // copy texture to video memory
   glTexImage2D( GL_TEXTURE_2D, 0,
     InternalFormatToOpenGLFormat(FullHDR.InternalFormat), FullHDR.Width,
@@ -95,8 +104,8 @@ begin
   Transparent := false;
   PixelFormat := glpf24bit;
 
-  src := tempBuff;
 {$IFNDEF FPC}
+  src := tempBuff;
   for y := 0 to Height - 1 do
   begin
     dst := ScanLine[Height - 1 - y];
@@ -104,17 +113,22 @@ begin
     Inc(src, Width*3);
   end;
 {$ELSE}
-
+  RIMG.Init;
+  rimg.Description.Init_BPP24_B8G8R8_BIO_TTB(Width, Height);
+  rimg.Description.RedShift := 16;
+  rimg.Description.BlueShift := 0;
+  rimg.Description.LineOrder := riloBottomToTop;
+  RIMG.DataSize := Width*Height*3;
+  rimg.Data := PByte(tempBuff);
+  LoadFromRawImage(rimg, false);
 {$ENDIF}
   FullHDR.Free;
   FreeMem( tempBuff );
 
   CheckOpenGLError;
-  if Assigned( pBuf ) then begin
-    pBuf.Disable;
-    pBuf.Destroy;
-  end else
-  begin
+  if Assigned( pBuf ) then
+    pBuf.Destroy
+  else begin
     glDeleteTextures(1, @tempTex);
     glPopAttrib;
   end;

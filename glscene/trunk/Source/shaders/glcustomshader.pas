@@ -8,6 +8,7 @@
     It also contains a procedures and function that can be used in all shaders.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar   - Added to TGLCustomShaderParameter property AsTexture
       <li>25/10/09 - DaStr - Updated TGLGeometryProgram (thanks YarUnderoaker)
       <li>24/08/09 - DaStr - Separated TGLShaderProgram into TGLVertexProgram,
                               TGLFragmentProgram and TGLGeometryProgram
@@ -280,6 +281,8 @@ type
     procedure SetAsMatrix3f(const Value: TMatrix3f); virtual; abstract;
     procedure SetAsMatrix4f(const Value: TMatrix4f); virtual; abstract;
 
+    procedure SetAsTexture(const TextureIndex: Integer;
+      const Value: TGLTexture);
     procedure SetAsTexture1D(const TextureIndex: Integer;
       const Value: TGLTexture);
     procedure SetAsTexture2D(const TextureIndex: Integer;
@@ -336,6 +339,7 @@ type
     property AsMatrix4f: TMatrix4f read GetAsMatrix4f write SetAsMatrix4f;
 
     //: Texture Types.
+    property AsTexture    [const TextureIndex: Integer]: TGLTexture write SetAsTexture;
     property AsTexture1D  [const TextureIndex: Integer]: TGLTexture write SetAsTexture1D;
     property AsTexture2D  [const TextureIndex: Integer]: TGLTexture write SetAsTexture2D;
     property AsTexture3D  [const TextureIndex: Integer]: TGLTexture write SetAsTexture3D;
@@ -718,6 +722,12 @@ begin
 end;
 
 { TGLCustomShaderParameter }
+
+procedure TGLCustomShaderParameter.SetAsTexture(
+  const TextureIndex: Integer; const Value: TGLTexture);
+begin
+  SetAsCustomTexture(TextureIndex, Value.Image.NativeTextureTarget, Value.Handle);
+end;
 
 procedure TGLCustomShaderParameter.SetAsTexture1D(
   const TextureIndex: Integer; const Value: TGLTexture);

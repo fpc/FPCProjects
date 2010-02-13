@@ -7,6 +7,7 @@
    and shade definition texture.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar   - Added bmp32.Blank:=false for memory allocation
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>21/03/07 - DaStr - Added explicit pointer dereferencing
@@ -154,6 +155,7 @@ begin
    end;
 
    bmp32:=FShadeTexture.Image.GetBitmap32(GL_TEXTURE_2D);
+   bmp32.Blank := false;
    for i:=0 to bmp32.Width-1 do begin
       intensity:=i*(256 div bmp32.Width);
 

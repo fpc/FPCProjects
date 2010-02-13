@@ -8,6 +8,7 @@
     to enable support for OBJ & OBJF at run-time.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar - Added GLTextureFormat to uses
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>31/01/03 - EG - Materials support
       <li>30/01/03 - EG - Creation
@@ -48,7 +49,7 @@ implementation
 // ------------------------------------------------------------------
 
 uses Q3BSP, VectorGeometry, VectorLists, SysUtils, GLBSP, GLTexture, GLGraphics,
-   GLCrossPlatform, GLState, GLUtils, GLMaterial;
+   GLCrossPlatform, GLState, GLUtils, GLMaterial, GLTextureFormat;
 
 // ------------------
 // ------------------ TGLSTLVectorFile ------------------

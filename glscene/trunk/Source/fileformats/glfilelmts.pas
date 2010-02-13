@@ -4,6 +4,7 @@
 {: GLFileLMTS<p>
 
  <b>History : </b><font size=-1><ul>
+	<li>22/01/10 - Yar - Added GLTextureFormat to uses
         <li>25/07/07 - DaStr - Replaced some types to get rid of compiler warnings
         <li>08/10/08 - DanB - fix for different Char size in Delphi 2009+
         <li>22/06/08 - DaStr - Fixups after converting TMeshObject.LightMapTexCoords
@@ -115,6 +116,9 @@ type
     end;
 
 implementation
+
+uses
+  GLTextureFormat;
 
 // ------------------
 // ------------------ TGLLMTSVectorFile ------------------

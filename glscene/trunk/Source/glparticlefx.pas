@@ -10,6 +10,8 @@
    fire and smoke particle systems for instance).<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar  - Added bmp32.Blank:=false for memory allocation
+                            and fix RegisterAsOpenGLTexture
       <li>12/10/08 - DanB - fix to TGLLifeColoredPFXManager.ComputeRotateAngle (it used lck.FDoScale
                             instead of lck.FDoRotate), made more use of RCI instead of accessing via global variables.
                             Changed order of transformations when rendering particles, now does rotation+scaling before translation.
@@ -2878,7 +2880,7 @@ end;
 procedure TGLBaseSpritePFXManager.BindTexture(var rci: TRenderContextInfo);
 var
    bmp32 : TGLBitmap32;
-   tw, th, tf : Integer;
+   tw, th, td, tf : Integer;
 begin
    if Assigned(FShareSprites) then
       FShareSprites.BindTexture(rci)
@@ -2900,10 +2902,8 @@ begin
          try
             tf:=GL_RGBA;
             PrepareImage(bmp32, tf);
-            tw:=bmp32.Width;
-            th:=bmp32.Height;
             bmp32.RegisterAsOpenGLTexture(GL_TEXTURE_2D, miLinearMipmapLinear,
-                                          tf, tw, th);
+                                          tf, tw, th, td);
          finally
             bmp32.Free;
          end;
@@ -3161,6 +3161,7 @@ begin
    s:=(1 shl TexMapSize);
    bmp32.Width:=s;
    bmp32.Height:=s;
+   bmp32.Blank:= false;
    texFormat:=GL_LUMINANCE_ALPHA;
 
    h2:=s div 2;

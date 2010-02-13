@@ -4,12 +4,18 @@
 {: GLFileO3TC<p>
 
  <b>History : </b><font size=-1><ul>
+        <li>27/01/10 - Yar   - Bugfix in BlockOffset with negative result
+        <li>23/11/10 - DaStr - Added $I GLScene.inc
+        <li>23/01/10 - Yar - Added to AssignFromTexture CurrentFormat parameter
+                             Fixed cube map loading bug
         <li>20/01/10 - Yar - Creation
    </ul><p>
 }
 unit GLFileO3TC;
 
 interface
+
+{$I GLScene.inc}
 
 uses
   Classes, SysUtils,
@@ -30,6 +36,7 @@ type
     procedure AssignFromTexture(textureContext: TGLContext;
                                 const textureHandle: TGLenum;
                                 textureTarget: TGLenum;
+                                const CurrentFormat: Boolean;
                                 const intFormat: TGLInternalFormat); override;
 
     property Data           : PGLPixel32Array read FData;
@@ -141,7 +148,7 @@ type
 var
   Header : TO3TC_Header;
   ChunkHeader : TO3TC_ChunkHeader;
-  w, h, d, bw, bh, level : Integer;
+  w, h, d, bw, bh, level, face, faces : Integer;
   lData : PByte;
 begin
 	// Get the O3TC_Header.
@@ -195,28 +202,34 @@ begin
   if Integer(ChunkHeader.Size)<>DataSize then
     EInvalidRasterFile.Create('O3TC erroneous image data size.');
 
-
   ReallocMem( fData, ChunkHeader.Size);
   // Read raw data
   lData := PByte( fData );
   stream.Read( lData^, ChunkHeader.Size);
 
-  w := Width;
-  h := Height;
-  d := Depth;
-  if d=0 then d:=1;
   fLevels.Clear;
+  if fCubeMap then
+    faces := 6
+  else
+    faces := 1;
   // Make the levels offset list
-  for level := 0 to MipLevels-1 do begin
-    fLevels.Add( Pointer( Integer(lData)-Integer(fData)) );
-    bw := (w + 3) div 4;
-    bh := (h + 3) div 4;
-    Inc( lData, bw*bh*d*fElementSize);
-    if w>1 then w := w div 2 else w := 1;
-    if h>1 then h := h div 2 else h := 1;
-    if d>1 then d := d div 2 else d := 1;
+  for face := 0 to faces do
+  begin
+    w := Width;
+    h := Height;
+    d := Depth;
+    if d=0 then d:=1;
+    for level := 0 to MipLevels-1 do
+    begin
+      bw := (w + 3) div 4;
+      bh := (h + 3) div 4;
+      fLevels.Add( Pointer( Integer(lData)-Integer(fData)) );
+      Inc( lData, bw*bh*d*fElementSize);
+      if w>1 then w := w div 2 else w := 1;
+      if h>1 then h := h div 2 else h := 1;
+      if d>1 then d := d div 2 else d := 1;
+    end;
   end;
-
 end;
 
 // SaveFromStream
@@ -269,6 +282,7 @@ end;
 procedure TGLO3TCImage.AssignFromTexture(textureContext: TGLContext;
                                         const textureHandle: TGLenum;
                                         textureTarget: TGLenum;
+                                        const CurrentFormat: Boolean;
                                         const intFormat: TGLInternalFormat);
 var
   oldContext : TGLContext;
@@ -289,6 +303,7 @@ var
         Result := fElementSize * (cw * ch * (d and -4) + x +
          cw * (y + ch * (z-4*ch) ))
     else Result := fElementSize * (4 * (x + cw * (y + ch * floor(z/4)))+ (z and 3));
+    if Result<0 then Result := 0;
   end;
 
 begin
@@ -339,7 +354,7 @@ begin
           or (textureTarget = GL_TEXTURE_CUBE_MAP_ARRAY) then
             glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_DEPTH, @fDepth);
           residentFormat := OpenGLFormatToInternalFormat( texFormat );
-          if intFormat=tfDefault then
+          if CurrentFormat then
             fInternalFormat := residentFormat
           else
             fInternalFormat := intFormat;

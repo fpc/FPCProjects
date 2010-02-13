@@ -6,6 +6,9 @@
 	Handles all the material + material library stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar - Remove Texture.Border and 
+                           added MappingRCoordinates, MappingQCoordinates
+                           to WriteToFiler, ReadFromFiler 
       <li>07/01/10 - DaStr - TexturePaths are now cross-platform (thanks Predator)
       <li>22/12/09 - DaStr - Updated TGLMaterialLibrary.WriteToFiler(),
                               ReadFromFiler() (thanks dAlex)
@@ -2402,7 +2405,6 @@ begin
 
             // version 3
             with libMat.Material.Texture do begin
-              WriteInteger(Border);
               Write(BorderColor.AsAddress^, SizeOf(Single)*4);
               WriteInteger(Integer(Compression));
               WriteInteger(Integer(DepthTextureMode));
@@ -2415,6 +2417,8 @@ begin
               WriteInteger(Integer(MappingMode));
               Write(MappingSCoordinates.AsAddress^, SizeOf(Single)*4);
               Write(MappingTCoordinates.AsAddress^, SizeOf(Single)*4);
+              Write(MappingRCoordinates.AsAddress^, SizeOf(Single)*4);
+              Write(MappingQCoordinates.AsAddress^, SizeOf(Single)*4);
               WriteInteger(Integer(MinFilter));
               WriteFloat(NormalMapScale);
               WriteInteger(Integer(TextureCompareFunc));
@@ -2549,7 +2553,6 @@ begin
 
             // version 3
             if archiveVersion >= 3 then with libMat.Material.Texture do begin
-              Border := ReadInteger;
               Read(BorderColor.AsAddress^, SizeOf(Single)*4);
               Compression := TGLTextureCompression(ReadInteger);
               DepthTextureMode := TGLDepthTextureMode(ReadInteger);
@@ -2562,6 +2565,8 @@ begin
               MappingMode := TGLTextureMappingMode(ReadInteger);
               Read(MappingSCoordinates.AsAddress^, SizeOf(Single)*4);
               Read(MappingTCoordinates.AsAddress^, SizeOf(Single)*4);
+              Read(MappingRCoordinates.AsAddress^, SizeOf(Single)*4);
+              Read(MappingQCoordinates.AsAddress^, SizeOf(Single)*4);
               MinFilter := TGLMinFilter(ReadInteger);
               NormalMapScale := ReadFloat;
               TextureCompareFunc := TGLDepthCompareFunc(ReadInteger);

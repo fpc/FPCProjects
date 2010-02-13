@@ -4,6 +4,8 @@
 {: GLTextureFormat<p>
 
  <b>History : </b><font size=-1><ul>
+        <li>23/01/10 - Yar - Separated GLTextureFormat and GLInternalFormat
+                             GLTextureFormat moved to GLTexture
         <li>21/01/10 - Yar - Creation
    </ul><p>
 }
@@ -15,23 +17,10 @@ uses
   OpenGL1x;
 
 type
+
   // TGLInternalFormat
   //
   TGLInternalFormat = (
-    tfDefault,
-    tfRGB,            // = tfRGB8
-    tfRGBA,           // = tfRGBA8
-    tfRGB16,          // = tgRGB5
-    tfRGBA16,         //=  tfRGBA4
-    tfAlpha,          // = tfALPHA8
-    tfLuminance,      // = tfLUMINANCE8
-    tfLuminanceAlpha, // = tfLUMINANCE8_ALPHA8
-    tfIntensity,      // = tfINTENSITY8
-    tfNormalMap,      // = tfRGB8
-    tfRGBAFloat16,    // = tfRGBA_FLOAT16_ATI
-    tfRGBAFloat32,    // = tfRGBA_FLOAT32_ATI
-
-    //: addidition texture's formats
     tfALPHA4,
     tfALPHA8,
     tfALPHA12,
@@ -200,7 +189,7 @@ type
   // Global texturing defaults
   //
 var
-  vDefaultTextureFormat: TGLInternalFormat = tfRGBA;
+  vDefaultTextureFormat: TGLInternalFormat = tfRGBA8;
   vDefaultTextureCompression: TGLInternalCompression = tcNone;
 
 // Give a openGL texture format from GLScene texture format
@@ -244,33 +233,9 @@ uses
   GLStrings;
 
 const
-  cCompressedTextureFormatToOpenGL: array[tfRGB..tfNormalMap] of GLenum = (
-    GL_COMPRESSED_RGB,
-    GL_COMPRESSED_RGBA,
-    GL_COMPRESSED_RGB,
-    GL_COMPRESSED_RGBA,
-    GL_COMPRESSED_ALPHA,
-    GL_COMPRESSED_LUMINANCE,
-    GL_COMPRESSED_LUMINANCE_ALPHA,
-    GL_COMPRESSED_INTENSITY,
-    GL_COMPRESSED_RGB);
-
-const
   //: InternalFormat, ColorFormat, DataType
-  cTextureFormatToOpenGL: array[tfRGB..high(TGLInternalFormat), 0..2] of Integer
+  cTextureFormatToOpenGL: array[low(TGLInternalFormat)..high(TGLInternalFormat), 0..2] of Integer
     = (
-    (GL_RGB, GL_RGB, GL_UNSIGNED_BYTE),
-    (GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE),
-    (GL_RGB5, GL_RGB, GL_UNSIGNED_SHORT_5_6_5),
-    (GL_RGBA4, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4),
-    (GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE),
-    (GL_LUMINANCE, GL_ALPHA, GL_UNSIGNED_BYTE),
-    (GL_LUMINANCE8_ALPHA8, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE),
-    (GL_INTENSITY, GL_LUMINANCE, GL_UNSIGNED_BYTE),
-    (GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE),
-    (GL_RGBA_FLOAT16_ATI, GL_RGBA, GL_HALF_FLOAT),
-    (GL_RGBA_FLOAT32_ATI, GL_RGBA, GL_FLOAT),
-    // addidition texture's formats
     (GL_ALPHA4, GL_ALPHA, GL_UNSIGNED_BYTE),
     (GL_ALPHA8, GL_ALPHA, GL_UNSIGNED_BYTE),
     (GL_ALPHA12, GL_ALPHA, GL_UNSIGNED_SHORT),
@@ -448,11 +413,6 @@ const
 
 function InternalFormatToOpenGLFormat(texFormat: TGLInternalFormat): Integer;
 begin
-  if texFormat = tfDefault then
-    if vDefaultTextureFormat = tfDefault then
-      texFormat := tfRGBA
-    else
-      texFormat := vDefaultTextureFormat;
   Result := cTextureFormatToOpenGL[texFormat, 0];
 end;
 
@@ -460,23 +420,18 @@ function OpenGLFormatToInternalFormat(intFormat: Integer): TGLInternalFormat;
 var
   i: TGLInternalFormat;
 begin
-  Result := tfDefault;
-  for i := tfALPHA4 to High(cTextureFormatToOpenGL) do
+  Result := tfRGBA8;
+  for i := Low(cTextureFormatToOpenGL) to High(cTextureFormatToOpenGL) do
     if intFormat = cTextureFormatToOpenGL[i, 0] then
     begin
       Result := i;
-      Break;
+      Exit;
     end;
+  Assert(false);
 end;
 
 function GetTextureElementSize(texFormat: TGLInternalFormat): Integer;
 begin
-  if texFormat = tfDefault then
-    if vDefaultTextureFormat = tfDefault then
-      texFormat := tfRGBA
-    else
-      texFormat := vDefaultTextureFormat;
-
   Result := GetTextureElementSize(cTextureFormatToOpenGL[texFormat, 1],
     cTextureFormatToOpenGL[texFormat, 2]);
 end;
@@ -559,22 +514,23 @@ end;
 function CompressedInternalFormatToOpenGL(texFormat: TGLInternalFormat):
   Integer;
 begin
-  if texFormat = tfDefault then
-    if vDefaultTextureFormat = tfDefault then
-      texFormat := tfRGBA
-    else
-      texFormat := vDefaultTextureFormat;
-  Result := cCompressedTextureFormatToOpenGL[texFormat];
+  Result := GL_COMPRESSED_RGBA;
+  case texFormat of
+    tfRGB8: Result := GL_COMPRESSED_RGB;
+    tfRGBA8: Result := GL_COMPRESSED_RGBA;
+    tfRGB5: Result := GL_COMPRESSED_RGB;
+    tfRGBA4: Result := GL_COMPRESSED_RGBA;
+    tfALPHA8: Result := GL_COMPRESSED_ALPHA;
+    tfLUMINANCE8: Result := GL_COMPRESSED_LUMINANCE;
+    tfLUMINANCE8_ALPHA8: Result := GL_COMPRESSED_LUMINANCE_ALPHA;
+    tfINTENSITY8: Result := GL_COMPRESSED_INTENSITY;
+    else Assert(false);
+  end;
 end;
 
 procedure FindCompatibleDataFormat(texFormat: TGLInternalFormat; out dFormat:
   TGLEnum; out dType: GLenum);
 begin
-  if texFormat = tfDefault then
-    if vDefaultTextureFormat = tfDefault then
-      texFormat := tfRGBA
-    else
-      texFormat := vDefaultTextureFormat;
   dFormat := cTextureFormatToOpenGL[texFormat, 1];
   dType := cTextureFormatToOpenGL[texFormat, 2];
 end;
@@ -607,18 +563,6 @@ end;
 function IsFormatSupported(texFormat: TGLInternalFormat): Boolean;
 begin
   Result := false;
-
-  if texFormat = tfDefault then
-    if vDefaultTextureFormat = tfDefault then
-      texFormat := tfRGBA
-    else
-      texFormat := vDefaultTextureFormat;
-
-  if ((texFormat >= tfRGB) and (texFormat <= tfNormalMap)) then
-  begin
-    Result := GL_VERSION_1_1;
-    EXIT;
-  end;
 
   if ((texFormat >= tfALPHA4) and (texFormat <= tfALPHA16)) or
     ((texFormat >= tfLUMINANCE4) and (texFormat <= tfR16G16B16A16)) then
@@ -660,9 +604,8 @@ begin
     EXIT;
   end;
 
-  if ((texFormat >= tfRGBA_FLOAT32) and (texFormat <= tfLUMINANCE_ALPHA_FLOAT16))
-    or
-    (texFormat = tfRGBAFloat16) or (texFormat = tfRGBAFloat32) then
+  if ((texFormat >= tfRGBA_FLOAT32)
+    and (texFormat <= tfLUMINANCE_ALPHA_FLOAT16)) then
   begin
     Result := GL_ATI_texture_float;
     EXIT;

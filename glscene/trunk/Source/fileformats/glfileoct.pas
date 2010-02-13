@@ -7,6 +7,7 @@
     (OCT being the format output from FSRad, http://www.fluidstudios.com/fsrad.html).<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar - Added GLTextureFormat to uses
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>19/09/03 - EG - "Lighmap" -&gt; "LightMap"
       <li>06/05/03 - mrqzzz - added Gamma and Brightness correction variables (vGLFileOCTLightmapBrightness, vGLFileOCTLightmapGammaCorrection)
@@ -47,7 +48,9 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils, GLTexture, GLMaterial, GLGraphics, GLCrossPlatform, GLState, GLUtils;
+uses
+  SysUtils, GLTexture, GLMaterial, GLGraphics, GLCrossPlatform, GLState,
+  GLUtils, GLTextureFormat;
 
 // ------------------
 // ------------------ TGLOCTVectorFile ------------------
