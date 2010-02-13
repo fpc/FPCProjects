@@ -6,6 +6,7 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>25/12/09 - DaStr - Separated TGLActor.DoAnimate() from TGLActor.BuildList()
       <li>16/01/09 - DanB - re-disable VBOs in display list to prevent AV on ATI cards
       <li>27/11/08 - DanB - fix to TFGVertexIndexList.BuildList
       <li>05/10/08 - DaStr - Added GLSM format backward compatibility after
@@ -1756,6 +1757,7 @@ type
 
          procedure PrepareMesh; override;
          procedure PrepareBuildList(var mrci : TRenderContextInfo); override;
+         procedure DoAnimate; virtual;
 
          procedure RegisterControler(aControler : TGLBaseAnimationControler);
          procedure UnRegisterControler(aControler : TGLBaseAnimationControler);
@@ -7828,9 +7830,9 @@ begin
    CurrentFrame:=Value;
 end;
 
-// BuildList
+// DoAnimate
 //
-procedure TGLActor.BuildList(var rci : TRenderContextInfo);
+procedure TGLActor.DoAnimate();
 var
    i, k : Integer;
    nextFrameIdx : Integer;
@@ -7893,6 +7895,13 @@ begin
       end;
       aarNone : ; // do nothing
    end;
+end;
+
+// BuildList
+//
+procedure TGLActor.BuildList(var rci : TRenderContextInfo);
+begin
+   DoAnimate;
    inherited;
    if OverlaySkeleton then begin
       glPushAttrib(GL_ENABLE_BIT);

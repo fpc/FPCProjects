@@ -6,6 +6,10 @@
 	Handles all the material + material library stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>07/01/10 - DaStr - TexturePaths are now cross-platform (thanks Predator)
+      <li>22/12/09 - DaStr - Updated TGLMaterialLibrary.WriteToFiler(),
+                              ReadFromFiler() (thanks dAlex)
+                             Small update for blending constants
       <li>13/12/09 - DaStr - Added a temporary work-around for multithread
                               mode (thanks Controller)
                              Added TGLBlendingParameters and bmCustom blending
@@ -677,10 +681,10 @@ implementation
 uses SysUtils, GLStrings, GLState, XOpenGL, ApplicationFileIO, GLGraphics;
 
 const
-    vTGlAlphaFuncValues: array[0..7] of TGLEnum =
+    cTGlAlphaFuncValues: array[TGlAlphaFunc] of TGLEnum =
      (GL_NEVER, GL_LESS, GL_EQUAL, GL_LEQUAL, GL_GREATER, GL_NOTEQUAL, GL_GEQUAL, GL_ALWAYS);
 
-    vTGLBlendFuncFactorValues: array[0..12] of TGLEnum =
+    cTGLBlendFuncFactorValues: array[TGLBlendFuncFactor] of TGLEnum =
      (GL_ZERO, GL_ONE, GL_DST_COLOR, GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA,
       GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA,
       GL_SRC_ALPHA_SATURATE, GL_CONSTANT_COLOR, GL_ONE_MINUS_CONSTANT_COLOR,
@@ -1373,15 +1377,15 @@ begin
 
               if FBlendingParams.FUseAlphaFunc then
               begin
-                glAlphaFunc(vTGlAlphaFuncValues[Integer(FBlendingParams.FAlphaFuncType)],
+                glAlphaFunc(cTGlAlphaFuncValues[FBlendingParams.FAlphaFuncType],
                             FBlendingParams.AlphaFuncRef);
               end;
 
               if FBlendingParams.FUseBlendFunc then
               begin
                 rci.GLStates.SetGLState(stBlend);
-                glBlendFunc(vTGLBlendFuncFactorValues[Integer(FBlendingParams.FBlendFuncSFactor)],
-                            vTGLBlendFuncFactorValues[Integer(FBlendingParams.FBlendFuncDFactor)]);
+                glBlendFunc(cTGLBlendFuncFactorValues[FBlendingParams.FBlendFuncSFactor],
+                            cTGLBlendFuncFactorValues[FBlendingParams.FBlendFuncDFactor]);
               end
               else
                 rci.GLStates.UnSetGLState(stBlend);
@@ -2028,11 +2032,11 @@ var
    tryName : String;
 begin
    mLib:=TGLMaterialLibrary((Collection as TGLLibMaterials).GetOwner);
-   if mLib is TGLMaterialLibrary then with mLib do
+   with mLib do
       if Assigned(FOnTextureNeeded) then
          FOnTextureNeeded(mLib, textureFileName);
    // if a ':' is present, or if it starts with a '\', consider it as an absolute path
-   if (Pos(':', textureFileName)>0) or (Copy(textureFileName, 1, 1)='\') then Exit;
+   if (Pos(':', textureFileName)>0) or (Copy(textureFileName, 1, 1)=PathDelim) then Exit;
    // ok, not an absolute path, try given paths
    with mLib do begin
       if FTexturePathList<>nil then for i:=0 to FTexturePathList.Count-1 do begin
@@ -2331,7 +2335,7 @@ var
       buf:=Trim(Copy(val, lp+1, i-lp-1));
       if Length(buf)>0 then begin
          // make sure '\' is the terminator
-         if buf[Length(buf)]<>'\' then buf:=buf+'\';
+         buf:= IncludeTrailingPathDelimiter(buf);
          FTexturePathList.Add(buf);
       end;
    end;
@@ -2368,9 +2372,10 @@ var
    texExItem : TGLTextureExItem;
 begin
    with writer do begin
-      WriteInteger(2); // archive version 0, texture persistence only
+      WriteInteger(3); // archive version 0, texture persistence only
                        // archive version 1, libmat properties
                        // archive version 2, Material.TextureEx properties
+                       // archive version 3, Material.Texture properties
       WriteInteger(Materials.Count);
       for i:=0 to Materials.Count-1 do begin
          // version 0
@@ -2394,6 +2399,35 @@ begin
             finally
                ss.Free;
             end;
+
+            // version 3
+            with libMat.Material.Texture do begin
+              WriteInteger(Border);
+              Write(BorderColor.AsAddress^, SizeOf(Single)*4);
+              WriteInteger(Integer(Compression));
+              WriteInteger(Integer(DepthTextureMode));
+              Write(EnvColor.AsAddress^, SizeOf(Single)*4);
+              WriteInteger(Integer(FilteringQuality));
+              WriteInteger(Integer(ImageAlpha));
+              WriteFloat(ImageBrightness);
+              WriteFloat(ImageGamma);
+              WriteInteger(Integer(MagFilter));
+              WriteInteger(Integer(MappingMode));
+              Write(MappingSCoordinates.AsAddress^, SizeOf(Single)*4);
+              Write(MappingTCoordinates.AsAddress^, SizeOf(Single)*4);
+              WriteInteger(Integer(MinFilter));
+              WriteFloat(NormalMapScale);
+              WriteInteger(Integer(TextureCompareFunc));
+              WriteInteger(Integer(TextureCompareMode));
+              WriteInteger(Integer(TextureFormat));
+              WriteInteger(Integer(TextureMode));
+              WriteInteger(Integer(TextureWrap));
+              WriteInteger(Integer(TextureWrapR));
+              WriteInteger(Integer(TextureWrapS));
+              WriteInteger(Integer(TextureWrapT));
+            end;
+            // version 3 end            
+
          end else WriteBoolean(False);
          with libMat.Material.FrontProperties do begin
             Write(Ambient.AsAddress^, SizeOf(Single)*3);
@@ -2416,6 +2450,27 @@ begin
             WriteInteger(Integer(PolygonMode));
          end;
          WriteInteger(Integer(libMat.Material.BlendingMode));
+
+         // version 3
+         with libMat.Material do begin
+           if BlendingMode = bmCustom then begin
+             WriteBoolean(TRUE);
+             with BlendingParams do begin
+               WriteFloat(AlphaFuncRef);
+               WriteInteger(Integer(AlphaFunctType));
+               WriteInteger(Integer(BlendFuncDFactor));
+               WriteInteger(Integer(BlendFuncSFactor));
+               WriteBoolean(UseAlphaFunc);
+               WriteBoolean(UseBlendFunc);
+             end;
+           end
+           else
+             WriteBoolean(FALSE);
+
+           WriteInteger(Integer(FaceCulling));
+         end;
+         // version 3 end
+
          WriteInteger(SizeOf(TMaterialOptions));
          Write(libMat.Material.MaterialOptions, SizeOf(TMaterialOptions));
          Write(libMat.TextureOffset.AsAddress^, SizeOf(Single)*3);
@@ -2466,7 +2521,7 @@ var
    texExItem : TGLTextureExItem;
 begin
    archiveVersion:=reader.ReadInteger;
-   if (archiveVersion>=0) and (archiveVersion<=2) then with reader do begin
+   if (archiveVersion>=0) and (archiveVersion<=3) then with reader do begin
       if not FDoNotClearMaterialsOnLoad then
          Materials.Clear;
       n:=ReadInteger;
@@ -2491,6 +2546,35 @@ begin
             finally
                ss.Free;
             end;
+
+            // version 3
+            if archiveVersion >= 3 then with libMat.Material.Texture do begin
+              Border := ReadInteger;
+              Read(BorderColor.AsAddress^, SizeOf(Single)*4);
+              Compression := TGLTextureCompression(ReadInteger);
+              DepthTextureMode := TGLDepthTextureMode(ReadInteger);
+              Read(EnvColor.AsAddress^, SizeOf(Single)*4);
+              FilteringQuality := TGLTextureFilteringQuality(ReadInteger);
+              ImageAlpha := TGLTextureImageAlpha(ReadInteger);
+              ImageBrightness := ReadFloat;
+              ImageGamma := ReadFloat;
+              MagFilter := TGLMagFilter(ReadInteger);
+              MappingMode := TGLTextureMappingMode(ReadInteger);
+              Read(MappingSCoordinates.AsAddress^, SizeOf(Single)*4);
+              Read(MappingTCoordinates.AsAddress^, SizeOf(Single)*4);
+              MinFilter := TGLMinFilter(ReadInteger);
+              NormalMapScale := ReadFloat;
+              TextureCompareFunc := TGLDepthCompareFunc(ReadInteger);
+              TextureCompareMode := TGLTextureCompareMode(ReadInteger);
+              TextureFormat := TGLTextureFormat(ReadInteger);
+              TextureMode := TGLTextureMode(ReadInteger);
+              TextureWrap := TGLTextureWrap(ReadInteger);
+              TextureWrapR := TGLSeparateTextureWrap(ReadInteger);
+              TextureWrapS := TGLSeparateTextureWrap(ReadInteger);
+              TextureWrapT := TGLSeparateTextureWrap(ReadInteger);
+            end;
+            // version 3 end
+
          end else begin
             if libMat=nil then begin
                libMat:=Materials.Add;
@@ -2519,6 +2603,22 @@ begin
                PolygonMode:=TPolygonMode(ReadInteger);
             end;
             libMat.Material.BlendingMode:=TBlendingMode(ReadInteger);
+
+           // version 3
+            if archiveVersion >= 3 then begin
+              if ReadBoolean then with libMat.Material.BlendingParams do begin
+                 AlphaFuncRef := ReadFloat;
+                 AlphaFunctType := TGlAlphaFunc(ReadInteger);
+                 BlendFuncDFactor := TGLBlendFuncFactor(ReadInteger);
+                 BlendFuncSFactor := TGLBlendFuncFactor(ReadInteger);
+                 UseAlphaFunc := ReadBoolean;
+                 UseBlendFunc := ReadBoolean;
+              end;
+
+              libMat.Material.FaceCulling := TFaceCulling(ReadInteger);
+            end;
+            // version 3 end
+
             size:=ReadInteger;
             Read(libMat.Material.FMaterialOptions, size);
             Read(libMat.TextureOffset.AsAddress^, SizeOf(Single)*3);
@@ -2831,7 +2931,7 @@ end;
 
 function TGLBlendingParameters.StoreAlphaFuncRef: Boolean;
 begin
-  Result := (Abs(AlphaFuncRef) < 0.001);
+  Result := (Abs(AlphaFuncRef) > 0.001);
 end;
 
 initialization

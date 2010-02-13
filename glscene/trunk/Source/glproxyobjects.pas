@@ -6,7 +6,12 @@
    Implements specific proxying classes.<p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>18/06/08 - mrqzzz - Don't raise error when setting animation to an ActorProxy and no MasterObject is defined
+      <li>25/12/09 - DaStr - Bugfixed TGLActorProxy.RayCastIntersect()
+                               in aarMorph mode (thanks Vovik)
+      <li>22/12/09 - DaStr - Added TGLActorProxy.AnimationMode (thanks Vovik)
+                             Removed TGLActorProxy.Interval (was not used)
+      <li>18/06/08 - mrqzzz - Don't raise error when setting animation to an
+                               ActorProxy and no MasterObject is defined
       <li>15/03/08 - DaStr - Fixup after previous update: removed all hints and
                               warnings, TGLActorProxy now has two versions of
                               RayCastIntersect()
@@ -162,6 +167,10 @@ type
      BoneIndex:integer;
    end;
 
+  // pamLoop mode was too difficalt to implement, so it was discarded ...for now.
+  // pamPlayOnce only works if Actor.AnimationMode <> aamNone.
+  TGLActorProxyAnimationMode = (pamInherited, pamNone, pamPlayOnce);
+
   // TGLActorProxy
   //
   {: A proxy object specialized for Actors.<p> }
@@ -171,9 +180,9 @@ type
     FCurrentFrame: Integer;
     FStartFrame: Integer;
     FEndFrame: Integer;
+    FLastFrame: Integer;
     FCurrentFrameDelta: Single;
     FCurrentTime: TProgressTimes;
-    FInterval: Integer;
     FAnimation: TActorAnimationName;
 
     FTempLibMaterialName: string;
@@ -184,6 +193,7 @@ type
     FStoreBonesMatrix: boolean;
     FStoredBoneNames: TStrings;
     FOnBeforeRender: TGLProgressEvent;
+    FAnimationMode: TGLActorProxyAnimationMode;
 
     procedure SetAnimation(const Value: TActorAnimationName);
     procedure SetMasterActorObject(const Value: TGLActor);
@@ -237,7 +247,7 @@ type
 
   published
     { Published Declarations }
-    property Interval: Integer read FInterval write FInterval default 0;
+    property AnimationMode: TGLActorProxyAnimationMode read FAnimationMode write FAnimationMode default pamInherited;
     property Animation: TActorAnimationName read FAnimation write SetAnimation;
     // Redeclare as TGLActor.
     property MasterObject: TGLActor read GetMasterActorObject write SetMasterActorObject;
@@ -463,6 +473,7 @@ end;
 constructor TGLActorProxy.Create(AOwner: TComponent);
 begin
   inherited;
+  FAnimationMode := pamInherited;
   ProxyOptions := ProxyOptions - [pooTransformation];
   FBonesMatrices:=TStringList.create;
   FStoredBoneNames:=TStringList.create;
@@ -517,8 +528,26 @@ begin
           cf := CurrentFrame;
           sf := startframe;
           ef := endframe;
-          CurrentFrameDelta := FCurrentFrameDelta;
+
+          case FAnimationMode of
+            pamInherited: CurrentFrameDelta := FCurrentFrameDelta;
+            pamPlayOnce:
+              begin
+                if (FLastFrame <> FEndFrame - 1) then
+                  CurrentFrameDelta := FCurrentFrameDelta
+                else
+                begin
+                  FCurrentFrameDelta := 0;
+                  FAnimationMode := pamNone;
+                end;
+              end;
+            pamNone: CurrentFrameDelta := 0;
+          else
+            Assert(False, glsUnknownType);
+          end;
+
           SetCurrentFrameDirect(FCurrentFrame);
+          FLastFrame:=FCurrentFrame;
           StartFrame := FStartFrame;
           EndFrame := FEndFrame;
 
@@ -655,6 +684,9 @@ begin
                                                                intersectNormal);
 end;
 
+// Gain access to TGLDummyActor.DoAnimate().
+type TGLDummyActor = class(TGLActor);
+
 function TGLActorProxy.RayCastIntersectEx(RefActor: TGLActor; const rayStart,
   rayVector: TVector; intersectPoint, intersectNormal: PVector): Boolean;
 var
@@ -662,7 +694,6 @@ var
    cf, sf, ef: Integer;
    cfd: Single;
    HaspooTransformation:boolean;
-   dummyRCI: TRenderContextInfo;
 begin
    // Set RefObject frame as current ActorProxy frame
    with RefActor do
@@ -679,8 +710,7 @@ begin
      RefActor.CurrentFrame := self.CurrentFrame;
 
      // FORCE ACTOR TO ASSUME ACTORPROXY CURRENT ANIMATION FRAME
-     FillChar(dummyRCI, SizeOf(dummyRCI), 0);
-     BuildList(dummyRCI);
+     TGLDummyActor(RefActor).DoAnimate();
 
      HaspooTransformation:=pooTransformation in self.ProxyOptions;
 
@@ -723,7 +753,7 @@ begin
      endframe:=ef;
 
      // REVERT ACTOR TO ASSUME ORIGINAL ANIMATION FRAME
-     BuildList(dummyRCI);
+     TGLDummyActor(RefActor).DoAnimate();
    end;
 end;
 
@@ -744,6 +774,7 @@ begin
       FStartFrame := anAnimation.StartFrame;
       FEndFrame := anAnimation.EndFrame;
       FCurrentFrame := FStartFrame;
+      FLastFrame := FCurrentFrame;
     end;
   end;
 end;

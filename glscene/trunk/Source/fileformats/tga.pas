@@ -10,17 +10,19 @@
    Based on David McDuffee's document from www.wotsit.org<p>
 
 	<b>History : </b><font size=-1><ul>
-           <li>08/07/04 - LR - Uses of Graphics replaced by GLCrossPlatform for Linux
+	   <li>07/01/10 - DaStr - TTGAImage is now replaced by LazTGA.TTGAImage
+                              in Lazarus (thanks Predator)   
+	   <li>08/07/04 - LR - Uses of Graphics replaced by GLCrossPlatform for Linux
 	   <li>21/11/02 - Egg - Creation
 	</ul></font>
 }
 unit TGA;
-{$WARNING crossbuilder - too much commented code, this unit does not work correctly!}
+
 interface
 
 {$i GLScene.inc}
 
-uses Classes, SysUtils, GLCrossPlatform;
+uses Classes, SysUtils{$IFNDEF FPC}, GLCrossPlatform {$ELSE},LazTGA {$ENDIF}  ;
 
 type
 
@@ -29,7 +31,8 @@ type
    {: TGA image load/save capable class for Delphi.<p>
       TGA formats supported : 24 and 32 bits uncompressed or RLE compressed,
       saves only to uncompressed TGA. }
-	TTGAImage = class (TGLBitmap)
+      {$IFNDEF FPC}
+        TTGAImage = class (TGLBitmap)
 	   private
 	      { Private Declarations }
 
@@ -49,6 +52,10 @@ type
    //
    ETGAException = class (Exception)
    end;
+   {$ELSE}
+   TTGAImage = LazTGA.TTGAImage;
+   {$ENDIF}
+
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -57,7 +64,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
+{$IFNDEF FPC}
 type
 
    // TTGAHeader
@@ -79,7 +86,7 @@ type
 
 // ReadAndUnPackRLETGA24
 //
-procedure ReadAndUnPackRLETGA24(stream : TStream; destBuf : PChar; totalSize : Integer);
+procedure ReadAndUnPackRLETGA24(stream : TStream; destBuf : PAnsiChar; totalSize : Integer);
 type
    TRGB24 = packed record
       r, g, b : Byte;
@@ -88,7 +95,7 @@ type
 var
    n : Integer;
    color : TRGB24;
-   bufEnd : PChar;
+   bufEnd : PAnsiChar;
    b : Byte;
 begin
    bufEnd:=@destBuf[totalSize];
@@ -113,7 +120,7 @@ end;
 
 // ReadAndUnPackRLETGA32
 //
-procedure ReadAndUnPackRLETGA32(stream : TStream; destBuf : PChar; totalSize : Integer);
+procedure ReadAndUnPackRLETGA32(stream : TStream; destBuf : PAnsiChar; totalSize : Integer);
 type
    TRGB32 = packed record
       r, g, b, a : Byte;
@@ -122,7 +129,7 @@ type
 var
    n : Integer;
    color : TRGB32;
-   bufEnd : PChar;
+   bufEnd : PAnsiChar;
    b : Byte;
 begin
    bufEnd:=@destBuf[totalSize];
@@ -170,7 +177,7 @@ var
    header : TTGAHeader;
    y, rowSize, bufSize : Integer;
    verticalFlip : Boolean;
-   unpackBuf : PChar;
+   unpackBuf : PAnsiChar;
 begin
    stream.Read(header, Sizeof(TTGAHeader));
 
@@ -199,13 +206,11 @@ begin
       end;
       2 : begin // uncompressed RGB/RGBA
          if verticalFlip then begin
-         //Bug with Lazarus k00m
-         {   for y:=0 to Height-1 do
-               stream.Read(ScanLine[Height-y-1]^, rowSize); }
+            for y:=0 to Height-1 do
+               stream.Read(ScanLine[Height-y-1]^, rowSize);
          end else begin
-           //Bug with Lazarus k00m
-          {  for y:=0 to Height-1 do
-               stream.Read(ScanLine[y]^, rowSize); }
+            for y:=0 to Height-1 do
+               stream.Read(ScanLine[y]^, rowSize);
          end;
       end;
       10 : begin // RLE encoded RGB/RGBA
@@ -218,14 +223,12 @@ begin
             else ReadAndUnPackRLETGA32(stream, unpackBuf, bufSize);
             // fillup bitmap
             if verticalFlip then begin
-              //Bug with Lazarus k00m
-              { for y:=0 to Height-1 do begin
+               for y:=0 to Height-1 do begin
                   Move(unPackBuf[y*rowSize], ScanLine[Height-y-1]^, rowSize);
-               end;}
+               end;
             end else begin
-               //Bug with Lazarus k00m
-              { for y:=0 to Height-1 do
-                  Move(unPackBuf[y*rowSize], ScanLine[y]^, rowSize); }
+               for y:=0 to Height-1 do
+                  Move(unPackBuf[y*rowSize], ScanLine[y]^, rowSize);
             end;
          finally
             FreeMemory(unpackBuf);
@@ -249,32 +252,37 @@ begin
    header.Width:=Width;
    header.Height:=Height;
    case PixelFormat of
-   {$IFDEF MSWINDOWS}
       glpf24bit : header.PixelSize:=24;
-   {$ENDIF}
       glpf32bit : header.PixelSize:=32;
    else
       raise ETGAException.Create('Unsupported Bitmap format');
    end;
    stream.Write(header, SizeOf(TTGAHeader));
    rowSize:=(Width*header.PixelSize) div 8;
-   //Bug with Lazarus k00m
-   {for y:=0 to Height-1 do
-      stream.Write(ScanLine[Height-y-1]^, rowSize);}
+   for y:=0 to Height-1 do
+      stream.Write(ScanLine[Height-y-1]^, rowSize);
 end;
+{$ENDIF}
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
+
 initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
+   {$IFNDEF FPC}
    TGLPicture.RegisterFileFormat('tga', 'Targa', TTGAImage);
+   {$ELSE}
+   LazTGA.Register;
+   {$ENDIF}
 
 finalization
 
+   {$IFNDEF FPC}
    TGLPicture.UnregisterGraphicClass(TTGAImage);
-
+   {$ELSE}
+   LazTGA.UnRegister;
+   {$ENDIF}
 end.

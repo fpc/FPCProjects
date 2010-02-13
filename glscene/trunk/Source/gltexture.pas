@@ -6,6 +6,9 @@
 	Handles all the color and texture stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>07/01/10 - DaStr - Added tmAdd TextureMode and enhanced documentation
+                             (thanks DungeonLords)
+                             Removed IncludeTrailingBackslash function
       <li>10/11/09 - DaStr - Added more texture formats (thanks YarUnderoaker)
       <li>04/06/09 - DanB - Delphi 5 fix
       <li>17/10/08 - DanB - changed some NotifyChange(Sender) calls to NotifyChange(Self)
@@ -204,7 +207,17 @@ const
    cDefaultNormalMapScale = 0.125;
 
 type
-	TGLTextureMode = (tmDecal, tmModulate, tmBlend, tmReplace);
+  {: Used only if material has a texture! This property defines how to mix
+     textures and materials.<ul>
+     <li>tmDecal : ignore material.
+     <li>tmModulate : material * texture.
+     <li>tmBlend : mix material and texture taking Material.Texture.EnvColor into account.
+     <li>tmReplace : ignore material and lighting.
+     <li>tmAdd  : material + texture.
+   </ul>
+   }
+	TGLTextureMode = (tmDecal, tmModulate, tmBlend, tmReplace, tmAdd);
+
 	TGLTextureWrap = (twBoth, twNone, twVertical, twHorizontal, twSeparate);
 
   // If texture wrap mode is twSeparate then three dimensions need to be
@@ -879,9 +892,13 @@ type
             the intensity of the bumps). }
          property NormalMapScale : Single read FNormalMapScale write SetNormalMapScale stored StoreNormalMapScale;
 
+         //: Used only if TextureFormat is tfDEPTH_COMPONENT*
          property TextureCompareMode : TGLTextureCompareMode read fTextureCompareMode write SetTextureCompareMode default tcmNone;
+         //: Used only if TextureFormat is tfDEPTH_COMPONENT*
          property TextureCompareFunc : TGLDepthCompareFunc   read fTextureCompareFunc write SetTextureCompareFunc default dcfLequal;
+         //: Used only if TextureFormat is tfDEPTH_COMPONENT*
          property DepthTextureMode : TGLDepthTextureMode     read fDepthTextureMode   write SetDepthTextureMode default dtmLuminance;
+         
          property Border : GLuint read fBorder write SetBorder;
 	end;
 
@@ -1007,8 +1024,8 @@ var
 	vGLTextureImageClasses : TList;
 
 const
-	cTextureMode : array [tmDecal..tmReplace] of TGLEnum =
-							( GL_DECAL, GL_MODULATE, GL_BLEND, GL_REPLACE );
+	cTextureMode : array [tmDecal..tmAdd] of TGLEnum =
+							( GL_DECAL, GL_MODULATE, GL_BLEND, GL_REPLACE, GL_ADD );
 
 var
    vTGraphicFileExtension : array of String;
@@ -1175,15 +1192,9 @@ begin
 	SetGLTextureImageClassesToStrings(Result);
 end;
 
-// IncludeTrailingBackslash
-//
-function IncludeTrailingBackslash(const s : string): string;
-begin
-   if IsDelimiter('\', s, Length(s)-1) then
-      Result:=s+'\'
-   else Result:=s;
-end;
 
+// TextureFormatToInternalFormat
+//
 function TextureFormatToInternalFormat( texFormat: TGLTextureFormat ): Integer;
 const
    cTextureFormatToOpenGL : array [tfRGB..high(TGLTextureFormat)] of TGLEnum =

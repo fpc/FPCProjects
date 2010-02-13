@@ -6,6 +6,8 @@
    A GLSL shader that applies bump mapping.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>07/01/10 - DaStr - Bugfixed all DoInitialize() calls
+                              (thanks YarUnderoaker)
       <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
                               (BugTracker ID = 2826217)
                               Fixed a bug with "fRDotV" clamping, which occured
@@ -614,6 +616,8 @@ begin
 
   FBumpHeight := 0.5;
   FBumpSmoothness := 300;
+  TStringList(VertexProgram.Code).OnChange := nil;
+  TStringList(FragmentProgram.Code).OnChange := nil;
 end;
 
 procedure TGLBaseCustomGLSLBumpShader.DoApply(
@@ -861,6 +865,8 @@ procedure TGLCustomGLSLBumpShaderAM.DoInitialize(var rci : TRenderContextInfo; S
 begin
   GetVertexProgramCode(VertexProgram.Code);
   GetFragmentProgramCodeMP(FragmentProgram.Code, FSpecularTexture <> nil, FNormalTexture <> nil);
+  VertexProgram.Enabled := True;
+  FragmentProgram.Enabled := True;
   inherited;
 end;
 
@@ -915,6 +921,8 @@ begin
 
     GetMLFragmentProgramCodeEnd(FragmentProgram.Code, lLightCount, FLightCompensation);
   end;
+  VertexProgram.Enabled := True;
+  FragmentProgram.Enabled := True;
   inherited;
 end;
 
@@ -946,6 +954,8 @@ procedure TGLCustomGLSLBumpShaderMT.DoInitialize(var rci : TRenderContextInfo; S
 begin
   GetVertexProgramCode(VertexProgram.Code);
   GetFragmentProgramCode(FragmentProgram.Code, FSpecularTexture <> nil, FNormalTexture <> nil);
+  VertexProgram.Enabled := True;
+  FragmentProgram.Enabled := True;
   inherited;
 end;
 
@@ -962,6 +972,8 @@ procedure TGLCustomGLSLBumpShader.DoInitialize(var rci : TRenderContextInfo; Sen
 begin
   GetVertexProgramCode(VertexProgram.Code);
   GetFragmentProgramCode(FragmentProgram.Code, FSpecularTexture <> nil, FNormalTexture <> nil);
+  VertexProgram.Enabled := True;
+  FragmentProgram.Enabled := True;
   inherited;
 end;
 
@@ -1067,6 +1079,8 @@ begin
 
     GetMLFragmentProgramCodeEnd(FragmentProgram.Code, lLightCount, FLightCompensation);
   end;
+  VertexProgram.Enabled := True;
+  FragmentProgram.Enabled := True;
   inherited;
 end;
 

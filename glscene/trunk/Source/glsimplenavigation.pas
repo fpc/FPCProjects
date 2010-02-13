@@ -9,6 +9,8 @@
     this component on the form.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>21/01/10 - Yar   - Bugfixed zooming in design time (BugtrackerID = 2936266)
+      <li>25/12/09 - DaStr - Added OnMouseMove event (thanks YarUnderoaker)
       <li>18/10/09 - DaStr - Added snoShowFPS option (thanks YarUnderoaker)
                              Fixed a small bug with FPS string
       <li>29/09/07 - DaStr - Component now automaticly detects Form Caption
@@ -43,7 +45,7 @@ interface
 
 uses
   // VCL
-  Classes, Forms, ExtCtrls, SysUtils, TypInfo,
+  Classes, Forms, Controls, ExtCtrls, SysUtils, TypInfo,
 
   // GLSCene
   VectorGeometry, GLScene, GLViewer, GLStrings, GLCrossPlatform;
@@ -107,6 +109,7 @@ type
     FOptions: TGLSimpleNavigationOptions;
     FKeyCombinations: TGLSimpleNavigationKeyCombinations;
     FRotateTargetSpeed: Single;
+    FOnMouseMove: TMouseMoveEvent;
     procedure ShowFPS(Sender: TObject);
     procedure GLSceneViewerMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
@@ -137,6 +140,8 @@ type
     property FormCaption: string read FFormCaption write FFormCaption stored StoreFormCaption;
     property Options: TGLSimpleNavigationOptions read FOptions write FOptions default [snoMouseWheelHandled, snoShowFPS];
     property KeyCombinations: TGLSimpleNavigationKeyCombinations read FKeyCombinations write SetKeyCombinations;
+
+    property OnMouseMove: TMouseMoveEvent read FOnMouseMove write FOnMouseMove;
   end;
 
 implementation
@@ -186,6 +191,7 @@ begin
   FTimer := TTimer.Create(nil);
   FTimer.OnTimer := ShowFPS;
 
+  FOnMouseMove:=nil;
   //Detect form
   if AOwner is TCustomForm then SetForm(TCustomForm(AOwner));
 
@@ -222,6 +228,9 @@ procedure TGLSimpleNavigation.FormMouseWheel(Sender: TObject;
 var
   Sign: SmallInt;
 begin
+  if csDesigning in ComponentState then
+    Exit;
+
   if snoInvertMouseWheel in FOptions then
     Sign := -1
   else
@@ -317,6 +326,8 @@ begin
 
   FOldX := X;
   FOldY := Y;
+
+  if Assigned(FOnMouseMove) then FOnMouseMove(Self, Shift, X, Y);
 end;
 
 procedure TGLSimpleNavigation.Notification(AComponent: TComponent;

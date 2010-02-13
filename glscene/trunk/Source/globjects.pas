@@ -13,6 +13,7 @@
    objects can be found GLGeomObjects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>28/12/09 - DanB - Modifying TGLLineBase.LineColor now calls StructureChanged
       <li>13/03/09 - DanB - ScreenRect now accepts a buffer parameter, rather than using CurrentBuffer
       <li>05/10/08 - DaStr - Added lsmLoop support to TGLLines
                               (thanks Alejandro Leon Escalera) (BugtrackerID = 2084250)
@@ -547,6 +548,7 @@ type
          constructor Create(AOwner: TComponent); override;
          destructor Destroy; override;
          procedure Assign(Source: TPersistent); override;
+         procedure NotifyChange(Sender: TObject); override;
 
       published
 			{ Published Declarations }
@@ -2047,6 +2049,13 @@ destructor TGLLineBase.Destroy;
 begin
    FLineColor.Free;
    inherited Destroy;
+end;
+
+procedure TGLLineBase.NotifyChange(Sender: TObject);
+begin
+  if Sender = FLineColor then
+    StructureChanged;
+  inherited;
 end;
 
 // SetLineColor

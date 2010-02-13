@@ -6,7 +6,9 @@
    Prototypes and base implementation of TGLContext.<p>
 
    <b>History : </b><font size=-1><ul>
-      <li>13/12/09 - DaStr - Modified for multithread support (thanks Controller)   
+      <li>08/01/10 - DaStr - Added TGLFramebufferHandle.AttachLayer()
+                             Added more AntiAliasing modes (thanks YarUndeoaker)
+      <li>13/12/09 - DaStr - Modified for multithread support (thanks Controller)
       <li>30/08/09 - DanB - renamed vIgnoreContextActivationFailures to vContextActivationFailureOccurred
                             + re-enabled it's original behaviour (fixes major memory leak).
       <li>30/08/09 - DanB - Added TGLTransformFeedbackBufferHandle, TGLTextureBufferHandle,
@@ -82,7 +84,11 @@ type
 
    // TGLAntiAliasing
    //
-   TGLAntiAliasing = (aaDefault, aaNone, aa2x, aa2xHQ, aa4x, aa4xHQ);
+   TGLAntiAliasing = ( // Multisample Antialiasing
+                       aaDefault, aaNone, aa2x, aa2xHQ, aa4x, aa4xHQ,
+                       aa6x, aa8x, aa16x,
+                       // Coverage Sampling Antialiasing
+                       csa8x, csa8xHQ, csa16x, csa16xHQ);
 
    // TGLContext
    //
@@ -634,6 +640,7 @@ type
          procedure Attach1DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint);
          procedure Attach2DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint);
          procedure Attach3DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint);
+         procedure AttachLayer(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint);
          procedure AttachRenderBuffer(target: TGLenum; attachment: TGLenum; renderbuffertarget: TGLenum; renderbuffer: TGLuint);
          // OpenGL 3.2+ only.
          // If texture is the name of a three-dimensional texture, cube map texture, one-or
@@ -2210,6 +2217,13 @@ end;
 procedure TGLFramebufferHandle.Attach3DTexture(target: TGLenum; attachment: TGLenum; textarget: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint);
 begin
    glFramebufferTexture3D(target, attachment, textarget, texture, level, layer);
+end;
+
+// AttachLayer
+//
+procedure TGLFramebufferHandle.AttachLayer(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint);
+begin
+   glFramebufferTextureLayer(target, attachment, texture, level, layer);
 end;
 
 // AttachRenderBuffer

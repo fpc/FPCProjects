@@ -6,7 +6,10 @@
    Win32 specific Context.<p>
 
    <b>History : </b><font size=-1><ul>
-      <li>13/12/09 - DaStr - Modified for multithread support (thanks Controller)  
+      <li>15/01/10 - DaStr - Bugfixed TGLWin32Context.ChooseWGLFormat()
+                             (BugtrackerID = 2933081) (thanks YarUndeoaker)
+      <li>08/01/10 - DaStr - Added more AntiAliasing modes (thanks YarUndeoaker)
+      <li>13/12/09 - DaStr - Modified for multithread support (thanks Controller)
       <li>30/08/09 - DanB - vIgnoreContextActivationFailures renamed to
                             vContextActivationFailureOccurred + check removed.
       <li>06/11/07 - mrqzzz - Ignore ContextActivation failure
@@ -365,7 +368,9 @@ end;
 procedure TGLWin32Context.ChooseWGLFormat(DC: HDC; nMaxFormats: Cardinal; piFormats: PInteger;
                                           var nNumFormats: Integer; BufferCount : integer);
 const
-   cAAToSamples : array [aaNone..aa4xHQ] of Integer = (1, 2, 2, 4, 4);
+   cAAToSamples : array [aaNone..csa16xHQ] of Integer =
+    (1, 2, 2, 4, 4, 6, 8, 16, 8, 8, 16, 16);
+   cCSAAToSamples: array [csa8x..csa16xHQ] of Integer = (4, 8, 4, 8);
 
    procedure ChoosePixelFormat;
    begin
@@ -413,16 +418,40 @@ begin
       else begin
          AddIAttrib(WGL_SAMPLE_BUFFERS_ARB, GL_TRUE);
          AddIAttrib(WGL_SAMPLES_ARB, cAAToSamples[AntiAliasing]);
+         if (AntiAliasing >= csa8x) and (AntiAliasing <= csa16xHQ) then
+            AddIAttrib(WGL_COLOR_SAMPLES_NV, cCSAAToSamples[AntiAliasing]);
       end;
+
    end;
 
    ClearFAttribs;
    ChoosePixelFormat;
+   if (nNumFormats=0) and (DepthBits>=32) then begin
+      // couldn't find 32+ bits depth buffer, 24 bits one available?
+      ChangeIAttrib(WGL_DEPTH_BITS_ARB, 24);
+      ChoosePixelFormat;
+   end;
+   if (nNumFormats=0) and (DepthBits>=24) then begin
+      // couldn't find 24+ bits depth buffer, 16 bits one available?
+      ChangeIAttrib(WGL_DEPTH_BITS_ARB, 16);
+      ChoosePixelFormat;
+   end;
+   if (nNumFormats=0) and (ColorBits>=24) then begin
+      // couldn't find 24+ bits color buffer, 16 bits one available?
+      ChangeIAttrib(WGL_COLOR_BITS_ARB, 16);
+      ChoosePixelFormat;
+   end;
    if (nNumFormats=0) and (AntiAliasing<>aaDefault) then begin
+      // Restore DepthBits
+      ChangeIAttrib(WGL_DEPTH_BITS_ARB, DepthBits);
       // couldn't find AA buffer, try without
       DropIAttrib(WGL_SAMPLE_BUFFERS_ARB);
       DropIAttrib(WGL_SAMPLES_ARB);
+      if (AntiAliasing >= csa8x) and (AntiAliasing <= csa16xHQ) then
+         DropIAttrib(WGL_COLOR_SAMPLES_NV);
+      ChoosePixelFormat;
    end;
+   // Check DepthBits again
    if (nNumFormats=0) and (DepthBits>=32) then begin
       // couldn't find 32+ bits depth buffer, 24 bits one available?
       ChangeIAttrib(WGL_DEPTH_BITS_ARB, 24);

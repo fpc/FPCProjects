@@ -8,6 +8,8 @@
    can be useful to make animations with GlScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>07/01/10 - DaStr - Added TGLTimeEventsMGR.Reset()
+                             Fixed code formating
       <li>25/11/09 - DanB - Changed TTimeEvent.Name from ShortString to String
       <li>11/10/07 - DaStr - TTimeEvent.SetEnabled now updates StartTime to
                              Cadencers's current time.
@@ -52,6 +54,7 @@ type
       destructor Destroy; override;
 
       procedure DoProgress(const progressTime : TProgressTimes); override;
+      procedure Reset();
 
    published
       { D�clarations publi�es }
@@ -64,22 +67,22 @@ type
 	// TTimeEvents
 	//
 	TTimeEvents = class (TCollection)
-	   protected
-	      { Protected Declarations }
-	      Owner : TComponent;
-	      function GetOwner: TPersistent; override;
-         procedure SetItems(index : Integer; const val : TTimeEvent);
-	      function GetItems(index : Integer) : TTimeEvent;
+   protected
+      { Protected Declarations }
+      Owner : TComponent;
+      function GetOwner: TPersistent; override;
+      procedure SetItems(index : Integer; const val : TTimeEvent);
+      function GetItems(index : Integer) : TTimeEvent;
 
-      public
-	      { Public Declarations }
-	      constructor Create(AOwner : TComponent);
+   public
+      { Public Declarations }
+      constructor Create(AOwner : TComponent);
 
-         function Add: TTimeEvent;
-	      function FindItemID(ID: Integer): TTimeEvent;
-         function EventByName(name:String): TTimeEvent;
+      function Add: TTimeEvent;
+      function FindItemID(ID: Integer): TTimeEvent;
+      function EventByName(name:String): TTimeEvent;
 
-	      property Items[index : Integer] : TTimeEvent read GetItems write SetItems; default;
+      property Items[index : Integer] : TTimeEvent read GetItems write SetItems; default;
    end;
 
    TTimeEventType = (etOneShot, etContinuous, etPeriodic);
@@ -221,6 +224,16 @@ begin
    end;
 end;
 
+// Reset
+//
+procedure TGLTimeEventsMGR.Reset;
+var
+  I: Integer;
+begin
+  if FEvents.Count <> 0 then
+    for I := 0 to FEvents.Count - 1 do
+      FEvents[I].FTickCount := 0;
+end;
 
 
 // ------------------
@@ -345,6 +358,8 @@ begin
    Inc(FTickCount);
 end;
 
+// SetEnabled
+//
 procedure TTimeEvent.SetEnabled(const Value: Boolean);
 begin
   FEnabled := Value;
