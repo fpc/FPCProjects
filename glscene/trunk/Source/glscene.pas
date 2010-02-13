@@ -6473,14 +6473,6 @@ destructor TGLScene.Destroy;
 begin
    InitializableObjects.Free;
    FObjects.DestroyHandles;
-   {$IFDEF FPC}
-   {$hint: - crossbuilder is this still needed? for me it works without that hack. }
-   { note: The ifdef fpc block is completely missing in cvs }
-   //Scene is destroyed earlyer then Viewer in Lazarus so prevent to try free Unassigned buffer
-   //Objects.DeleteChildCameras;
-   //Objects.DeleteChildren;
-   {$ENDIF}
-
    FLights.Free;
    FObjects.Free;
    inherited Destroy;

@@ -77,6 +77,10 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
+{$IFNDEF FPC}
+{$R *.dfm}
+{$ENDIF}
+
 uses
   SysUtils, VectorGeometry, GLUtils; 
 
@@ -189,7 +193,7 @@ procedure TVectorEditorForm.SpeedButton9Click(Sender: TObject);
 var
    v : TAffineVector;
 begin
-   SetVector(v, StrToFloatDef(EDx.Text, 0), StrToFloatDef(EDy.Text, 0), StrToFloatDef(EDz.Text, 0));
+   SetVector(v, GLUtils.StrToFloatDef(EDx.Text, 0), GLUtils.StrToFloatDef(EDy.Text, 0), GLUtils.StrToFloatDef(EDz.Text, 0));
    if VectorLength(v)=0 then
       v:=NullVector
    else NormalizeVector(v);
@@ -202,7 +206,7 @@ procedure TVectorEditorForm.SBInvertClick(Sender: TObject);
 var
    v : TAffineVector;
 begin
-   SetVector(v, StrToFloatDef(EDx.Text, 0), StrToFloatDef(EDy.Text, 0), StrToFloatDef(EDz.Text, 0));
+   SetVector(v, GLUtils.StrToFloatDef(EDx.Text, 0), GLUtils.StrToFloatDef(EDy.Text, 0), GLUtils.StrToFloatDef(EDz.Text, 0));
    NegateVector(v);
    EDx.Text:=FloatToStr(v[0]);
    EDy.Text:=FloatToStr(v[1]);

@@ -921,20 +921,11 @@ type
 
    EGLShader = class(EGLContext);
 
-   EOpenGLError = class(Exception);
-
 {: Drivers should register themselves via this function. }
 procedure RegisterGLContextClass(aGLContextClass : TGLContextClass);
 {: The TGLContext that is the currently active context, if any.<p>
    Returns nil if no context is active. }
 function CurrentGLContext : TGLContext;
-
-{: Gets the oldest error from OpenGL engine and tries to clear the error queue.<p> }
-procedure CheckOpenGLError;
-{: Clears all pending OpenGL errors. }
-procedure ClearGLError;
-{: Raises an EOpenGLError with 'msg' error string. }
-procedure RaiseOpenGLError(const msg : String);
 
 resourcestring
    cIncompatibleContexts =       'Incompatible contexts';
@@ -978,45 +969,6 @@ threadvar
 function CurrentGLContext : TGLContext;
 begin
    Result:=vCurrentGLContext;
-end;
-
-// CheckOpenGLError
-//
-procedure CheckOpenGLError;
-var
-   GLError : LongWord;
-	Count : Word;
-begin
-	GLError:=glGetError;
-	if GLError <> GL_NO_ERROR then begin
-		Count:=0;
-      // Because under some circumstances reading the error code creates a new error
-      // and thus hanging up the thread, we limit the loop to 6 reads.
-      try
-         while (glGetError <> GL_NO_ERROR) and (Count < 6) do Inc(Count);
-      except
-         // Egg : ignore exceptions here, will perhaps avoid problem expressed before
-		end;
-      if not vIgnoreOpenGLErrors then
-   		raise EOpenGLError.Create(String(gluErrorString(GLError)));
-	end;
-end;
-
-// ClearGLError
-//
-procedure ClearGLError;
-var
-   n : Integer;
-begin
-   n:=0;
-   while (glGetError<>GL_NO_ERROR) and (n<6) do Inc(n);
-end;
-
-// RaiseOpenGLError
-//
-procedure RaiseOpenGLError(const msg : String);
-begin
-   raise EOpenGLError.Create(msg);
 end;
 
 // RegisterGLContextClass
@@ -1493,7 +1445,7 @@ begin
       FHandle:=0;
       FRenderingContext:=nil;
    end;
-end;
+end;   
 {$ELSE}
    function HasRenderingContext:boolean;
    var lList:TList;

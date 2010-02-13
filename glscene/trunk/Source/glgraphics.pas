@@ -702,9 +702,9 @@ begin
   for i := 0 to 255 do
   begin
     k := Round(factor * i);
-      if k>255 then
-        k:=255;
-      vBrightnessLUT[i]:=Byte(k);
+    if k > 255 then
+      k := 255;
+    vBrightnessLUT[i]:=Byte(k);
   end;
   // perform correction
    for i:=PtrUInt(base) to PtrUInt(base)+longword(pixelCount*3-1) do
@@ -812,8 +812,8 @@ begin
     PAnsiChar(dest)[1] := PAnsiChar(src)[1];
     PAnsiChar(dest)[2] := PAnsiChar(src)[0];
     PAnsiChar(dest)[3] := #255;
-      dest:=Pointer(PtrUInt(dest)+4);
-      src:=Pointer(PtrUInt(src)+3);
+    dest:=Pointer(PtrUInt(dest)+4);
+    src:=Pointer(PtrUInt(src)+3);
     Dec(pixelCount);
   end;
 end;
@@ -860,8 +860,8 @@ begin
     PAnsiChar(dest)[1] := PAnsiChar(src)[1];
     PAnsiChar(dest)[2] := PAnsiChar(src)[2];
     PAnsiChar(dest)[3] := #255;
-      dest:=Pointer(PtrUInt(dest)+4);
-      src:=Pointer(PtrUInt(src)+3);
+    dest:=Pointer(PtrUInt(dest)+4);
+    src:=Pointer(PtrUInt(src)+3);
     Dec(pixelCount);
   end;
 end;
@@ -902,8 +902,8 @@ begin
     PAnsiChar(dest)[1] := PAnsiChar(src)[1];
     PAnsiChar(dest)[2] := PAnsiChar(src)[0];
     PAnsiChar(dest)[3] := PAnsiChar(src)[3];
-      dest:=Pointer(PtrUInt(dest)+4);
-      src:=Pointer(PtrUInt(src)+4);
+    dest:=Pointer(PtrUInt(dest)+4);
+    src:=Pointer(PtrUInt(src)+4);
     Dec(pixelCount);
   end;
 end;
@@ -1611,7 +1611,7 @@ begin
       if Height > 1 then
         rowOffset:=PtrInt(BitmapScanLine(aBitmap, Height-2))-PtrInt(pSrc)
       else
-        rowOffset:=0;
+        rowOffset := 0;
     end
     else
     begin
@@ -1619,7 +1619,7 @@ begin
       if Height > 1 then
         rowOffset:=PtrInt(BitmapScanLine(aBitmap, 1))-PtrInt(pSrc)
       else
-        rowOffset:=0;
+        rowOffset := 0;
     end;
     for y := 0 to Height - 1 do
     begin
@@ -2316,10 +2316,10 @@ begin
   pLineA := @FData[0];
   pLineB := @FData[Width];
 {$ifNdef NO_ASM}
-   if vSIMD=1 then
-   begin
-     for y:=0 to h2-1 do
-     begin
+  if vSIMD = 1 then
+  begin
+    for y := 0 to h2 - 1 do
+    begin
       ProcessRow3DNow(pDest, pLineA, pLineB, w2);
       Inc(pDest, w2);
       Inc(pLineA, Width);

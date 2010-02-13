@@ -1,18 +1,10 @@
 // Info
 {: Informations on OpenGL driver.<p>
 
-      $Log: info.pas,v $
-      Revision 1.1  2006/01/10 20:50:44  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.1  2006/01/09 21:02:30  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/08/03 00:41:38  z0m3ie
-      - added automatical generated History from CVS
-
 	<b>History : </b><font size=-1><ul>
-      <li>17/03/07 - DaStr - Dropped Kylix support in favor of FPC (BugTracekrID=1681585)
+      <li>25/10/08 - DanB - Delphi 2009 compatibility, extensions are now looked
+                            up from www.opengl.org/registry/
+      <li>29/03/07 - DaStr - Renamed LINUX to KYLIX (BugTrackerID=1681585)
       <li>08/07/04 - LR - Suppress CommCtrl in the uses of Linux
       <li>06/07/04 - LR - Display some infos for Linux	
       <li>03/07/04 - LR - Make change for Linux
@@ -44,12 +36,7 @@ uses
 {$IFDEF UNIX}
 uses
   glscene,classes, GLColor,
-{$ifndef fpc}
-  xlib,qforms, qcontrols, qbuttons, qstdctrls, qcomctrls,
-  QExtCtrls, QGraphics, QMenus; 
-{$else}
   forms,controls,buttons,stdctrls,comctrls,extctrls,graphics,menus,lresources;
-{$endif}
 {$ENDIF}
 
 
@@ -145,9 +132,6 @@ uses
 {$IFDEF MSWINDOWS}
 {$R *.dfm}
 {$ENDIF}
-{$IFDEF UNIX}
-{$R *.xfm}
-{$ENDIF}
 
 {$R Info.res}
 
@@ -200,8 +184,8 @@ begin
 	Caption:=Caption+' (current context in '+(aSceneBuffer.Owner as TComponent).Name+')';
 	with aSceneBuffer do begin
       // common properties
-      VendorLabel.Caption:=StrPas(PChar(glGetString(GL_VENDOR)));
-      RendererLabel.Caption:=StrPas(PChar(glGetString(GL_RENDERER)));
+      VendorLabel.Caption:=String(glGetString(GL_VENDOR));
+      RendererLabel.Caption:=String(glGetString(GL_RENDERER));
       {$IFDEF MSWINDOWS}
       PixelFormat:=GetPixelFormat(Canvas.Handle);
       DescribePixelFormat(Canvas.Handle,PixelFormat,SizeOf(pfd), PFD);
@@ -210,8 +194,8 @@ begin
         else if (DRIVER_MASK and pfd.dwFlags ) = DRIVER_MASK then AccLabel.Caption:='Mini-Client Driver'
           else if (DRIVER_MASK and pfd.dwFlags) = PFD_GENERIC_FORMAT then AccLabel.Caption:='Generic Software Driver';
       {$ENDIF}
-      VersionLabel.Caption:=StrPas(PChar(glGetString(GL_VERSION)));
-      ExtStr:=PChar(glGetString(GL_EXTENSIONS));
+      VersionLabel.Caption:=String(glGetString(GL_VERSION));
+      ExtStr:=String(glGetString(GL_EXTENSIONS));
       Extensions.Clear;
       while Length(ExtStr) > 0 do begin
         I:=Pos(' ',ExtStr);
@@ -347,7 +331,7 @@ begin
    if (buf<>'GL') and (buf<>'WGL') and (buf<>'GLX') then Exit;
    p:=Pos('_', url);
    buf:=Copy(url, 1, p-1);
-   url:= 'http://oss.sgi.com/projects/ogl-sample/registry/'
+   url:= 'http://www.opengl.org/registry/specs/'
         +buf+'/'+Copy(url, p+1, 255)+'.txt';
    ShowHTMLUrl(url);
 end;

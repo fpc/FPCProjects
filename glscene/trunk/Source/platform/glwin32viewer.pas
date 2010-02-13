@@ -6,12 +6,16 @@
    Win32 specific Scene viewer.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/12/09 - DaStr - Published TabStop, TabOrder, OnEnter, OnExit
+                              properties (thanks Yury Plashenkov)
+      <li>10/11/09 - DaStr - Added Delphi 2010 OnGesture and Touch support
+      <li>13/03/09 - DanB - Removed OpenGL dependencies
       <li>10/04/08 - DaStr - Bugfixed TGLSceneViewer.Notification()
                               (thanks z80maniac) (Bugtracker ID = 1936108)
       <li>12/09/07 - DaStr - Removed old IFDEFs. Moved SetupVSync()
                               to GLViewer.pas (Bugtracker ID = 1786279)
-      <li>04/12/04 - DaS - OnMouseWheel, OnMouseWheelDown, OnMouseWheelUp
-                           published in TGLSceneViewer
+      <li>04/12/04 - DaStr - OnMouseWheel, OnMouseWheelDown, OnMouseWheelUp
+                              are now published in TGLSceneViewer
       <li>04/12/04 - MF - Added FieldOfView, formula by Ivan Sivak Jr.
       <li>24/07/03 - EG - FullScreen Viewer moved to GLWin32FullScreenViewer
       <li>11/06/03 - EG - Now uses ViewerBeforeChange to adjust VSync
@@ -30,7 +34,7 @@
 unit GLWin32Viewer;
 
 {$IFDEF FPC}
-  {$ERROR Please use GLViewer.pas instead of GLWin32Viewer when compiling with FreePascal/Lazarus ! }
+  {$FATAL Please use GLViewer.pas instead of GLWin32Viewer when compiling with FreePascal/Lazarus ! }
   {
     GLViewer.pas uses the correct platform dependant viewer unit.
     This Unit is Delphi/CPP only.
@@ -73,7 +77,6 @@ type
          FOwnDC : Cardinal;
          FOnMouseEnter, FOnMouseLeave : TNotifyEvent;
          FMouseInControl : Boolean;
-         FIsOpenGLAvailable : Boolean;
          FLastScreenPos : TPoint;
 
          procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); Message WM_ERASEBKGND;
@@ -85,6 +88,7 @@ type
 	      procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
         function GetFieldOfView: single;
         procedure SetFieldOfView(const Value: single);
+        function GetIsRenderingContextAvailable: Boolean;
 
       protected
          { Protected Declarations }
@@ -118,7 +122,7 @@ type
             between RCs that already have display lists. }
          procedure RecreateWnd;
 
-         property IsOpenGLAvailable : Boolean read FIsOpenGLAvailable;
+         property IsRenderingContextAvailable : Boolean read GetIsRenderingContextAvailable;
 
          function LastFrameTime : Single;
          function FramesPerSecond : Single;
@@ -187,9 +191,18 @@ type
          property OnMouseWheel;
          property OnMouseWheelDown;
          property OnMouseWheelUp;
-{$ifdef GLS_COMPILER_5_UP}
+
          property OnContextPopup;
-{$endif}
+         property TabStop;
+         property TabOrder;
+         property OnEnter;
+         property OnExit;
+
+{$IFDEF GLS_DELPHI_2010_UP}
+         property OnGesture;
+         property Touch;
+{$ENDIF}
+
    end;
 
 // ------------------------------------------------------------------
@@ -200,7 +213,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses OpenGL1x, GLWin32Context, SysUtils, GLViewer;
+uses GLWin32Context, SysUtils, GLViewer;
 
 // ------------------
 // ------------------ TGLSceneViewer ------------------
@@ -210,7 +223,6 @@ uses OpenGL1x, GLWin32Context, SysUtils, GLViewer;
 //
 constructor TGLSceneViewer.Create(AOwner: TComponent);
 begin
-   FIsOpenGLAvailable:=InitOpenGL;
    inherited Create(AOwner);
    ControlStyle:=[csClickEvents, csDoubleClicks, csOpaque, csCaptureMouse];
    if csDesigning in ComponentState then
@@ -330,13 +342,11 @@ end;
 procedure TGLSceneViewer.CreateWnd;
 begin
    inherited CreateWnd;
-   if IsOpenGLAvailable then begin
-      // initialize and activate the OpenGL rendering context
-      // need to do this only once per window creation as we have a private DC
-      FBuffer.Resize(Self.Width, Self.Height);
-      FOwnDC:=GetDC(Handle);
-      FBuffer.CreateRC(FOwnDC, False);
-   end;
+   // initialize and activate the OpenGL rendering context
+   // need to do this only once per window creation as we have a private DC
+   FBuffer.Resize(Self.Width, Self.Height);
+   FOwnDC:=GetDC(Handle);
+   FBuffer.CreateRC(FOwnDC, False);
 end;
 
 // DestroyWnd
@@ -355,9 +365,9 @@ end;
 //
 procedure TGLSceneViewer.WMEraseBkgnd(var Message: TWMEraseBkgnd);
 begin
-   if IsOpenGLAvailable then
+   if IsRenderingContextAvailable then
       Message.Result:=1
-   else inherited; 
+   else inherited;
 end;
 
 // WMSize
@@ -385,7 +395,7 @@ begin
    end;
    BeginPaint(Handle, PS);
    try
-      if IsOpenGLAvailable and (Width>0) and (Height>0) then
+       if IsRenderingContextAvailable and (Width>0) and (Height>0) then
          FBuffer.Render;
    finally
       EndPaint(Handle, PS);
@@ -509,6 +519,15 @@ begin
     result := Camera.GetFieldOfView(Height);
 end;
 
+// GetIsRenderingContextAvailable
+//
+function TGLSceneViewer.GetIsRenderingContextAvailable: Boolean;
+begin
+  Result := FBuffer.RCInstantiated and FBuffer.RenderingContext.IsValid;
+end;
+
+// SetFieldOfView
+//
 procedure TGLSceneViewer.SetFieldOfView(const Value: single);
 begin
   if Assigned(Camera) then
@@ -524,8 +543,6 @@ end;
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
-
 initialization
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -534,4 +551,3 @@ initialization
    RegisterClass(TGLSceneViewer);
 
 end.
-

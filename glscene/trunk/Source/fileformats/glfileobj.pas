@@ -791,7 +791,7 @@ var
                      with libMat.Material.FrontProperties do begin
                         Ambient.Color:=objMtl.MaterialVectorProperty(matName, 'Ka', clrGray20);
                         Diffuse.Color:=objMtl.MaterialVectorProperty(matName, 'Kd', clrGray80);
-                        Diffuse.Alpha:=StrToFloatDef(objMtl.MaterialStringProperty(matName, 'd'), 1);
+                        Diffuse.Alpha:=GLUtils.StrToFloatDef(objMtl.MaterialStringProperty(matName, 'd'), 1);
                         if Diffuse.Alpha<1 then
                            libMat.Material.BlendingMode:=bmTransparency;
                         case StrToIntDef(objMtl.MaterialStringProperty(matName, 'illum'), 1) of
@@ -1192,7 +1192,7 @@ begin
          Result:=NullHmgVector;
          for i:=0 to 3 do
             if sl.Count>i then
-               Result[i]:=GLUtils.StrToFloatDef(sl[i])
+               Result[i]:=GLUtils.StrToFloatDef(sl[i], 0)
             else Break;
       end else Result:=defaultValue;
    finally

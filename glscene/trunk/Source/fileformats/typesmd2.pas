@@ -45,7 +45,7 @@ type
   TMD2AliasFrame = record
     Scale: TVector3f;
     Translate: TVector3f;
-    Name: array[0..15] of Char;
+    Name: array[0..15] of AnsiChar;
     Vertices: array[0..0] of TMD2TriangleVertex;
   end;
 

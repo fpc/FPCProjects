@@ -3,6 +3,7 @@
 	Standard texture image editors for standard texture image classes.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>22/01/10 - Yar - Added to TGLBlankImage property editor ability to set the depth
       <li>03/07/04 - LR - Make change for Linux
       <li>24/07/03 - EG - Creation
    </ul></font>
@@ -14,7 +15,7 @@ interface
 {$i GLScene.inc}
 
 uses
-  Classes, GLTexture, GLProcTextures, GLUtils;
+  Classes, GLTexture, GLProcTextures;
 
 
 type
@@ -81,7 +82,7 @@ implementation
 //------------------------------------------------------------------------------
 
 uses
-  SysUtils, GLCrossPlatform;
+  SysUtils, GLCrossPlatform, GLUtils;
 
 var
    vTIEClass, vTIEEditor : TList;
@@ -141,16 +142,31 @@ end;
 //
 class function TGLBlankTIE.Edit(aTexImage : TGLTextureImage) : Boolean;
 var
-   p : Integer;
-   buf : String;
+   p1, p2 : Integer;
+   buf, part : String;
    texImage : TGLBlankImage;
 begin
    texImage:=(aTexImage as TGLBlankImage);
-	buf:=InputDlg('Blank Image', 'Enter size', Format('%d x %d', [texImage.Width, texImage.Height]));
-   p:=Pos('x', buf);
-   if p>0 then begin
-      texImage.Width:=StrToIntDef(Trim(Copy(buf, 1, p-1)), 256);
-      texImage.Height:=StrToIntDef(Trim(Copy(buf, p+1, MaxInt)), 256);
+   if texImage.Depth=0 then
+     buf:=InputDlg('Blank Image', 'Enter size',
+      Format('%d x %d', [texImage.Width, texImage.Height]))
+   else
+     buf:=InputDlg('Blank Image', 'Enter size',
+      Format('%d x %d x %d', [texImage.Width, texImage.Height, texImage.Depth]));
+
+   p1:=Pos('x', buf);
+   if p1>0 then begin
+      texImage.Width:=StrToIntDef(Trim(Copy(buf, 1, p1-1)), 256);
+      part := Copy(buf, p1+1, MaxInt);
+      p2:=Pos('x', part);
+      if p2>0 then begin
+        texImage.Height:=StrToIntDef(Trim(Copy(part, 1, p2-1)), 256);
+        texImage.Depth:=StrToIntDef(Trim(Copy(part, p2+1, MaxInt)), 1)
+      end
+      else begin
+        texImage.Height:=StrToIntDef(Trim(Copy(buf, p1+1, MaxInt)), 256);
+        texImage.Depth:=0;
+      end;
       Result:=True;
    end else begin
       InformationDlg('Invalid size');
@@ -211,7 +227,7 @@ begin
          buf:=InputDlg(TGLProcTextureNoise.FriendlyName, 'Minimum Cut', IntToStr(MinCut));
          MinCut := StrToIntDef(buf, 0);
          buf:=InputDlg(TGLProcTextureNoise.FriendlyName, 'Noise Sharpness', FloatToStr(NoiseSharpness));
-         NoiseSharpness := StrToFloatDef(buf, 0.9);
+         NoiseSharpness := GLUtils.StrToFloatDef(buf, 0.9);
          buf:=InputDlg(TGLProcTextureNoise.FriendlyName, 'Random Seed', IntToStr(NoiseRandSeed));
          NoiseRandSeed := StrToIntDef(buf, 0);
          RandSeed := NoiseRandSeed;

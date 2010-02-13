@@ -22,8 +22,6 @@
 }
 unit GuiSkinEditorFormUnit;
 
-{$MODE Delphi}
-
 interface
 
 {$i GLScene.inc}
@@ -154,11 +152,7 @@ type
 
     MouseDown: Boolean;
 
-    {$IFNDEF FPC}
     procedure ImageWndProc(var Message: TMessage);
-    {$ELSE}
-    procedure ImageWndProc(var Message: TLMessage);
-    {$ENDIF}
 
     procedure DrawImageFocusRect(ARect: TRect);
     procedure AlignZoomPanel;
@@ -187,6 +181,9 @@ Function GUIComponentDialog(GuiComponent : TGLGuiElementList) : Boolean;
 
 implementation
 
+{$ifNdef FPC}
+{$R *.dfm}
+{$endif}
 
 Function GUIComponentDialog(GuiComponent : TGLGuiElementList) : Boolean;
 var
@@ -373,10 +370,7 @@ begin
     End;
 
     //rectangle the part that is visible in the preview
-    {$IFNDEF FPC}
     imgPreview.Canvas.DrawFocusRect(VisibleRect);
-    {$ENDIF}
-
     if (PreviewWidth = 0) or (PreviewHeight = 0) then
     begin
       PreviewWidth := 2;
@@ -391,9 +385,7 @@ begin
         Round((sbarHorizontal.Position + (imgFull.Width - 1)/Zoom) / PreviewWidth * imgPreview.Width),
         Round((sbarVertical.Position + (imgFull.Height - 1)/Zoom)  / PreviewHeight * imgPreview.Height)
       );
-    {$IFNDEF FPC}
     imgPreview.Canvas.DrawFocusRect(VisibleRect);
-    {$endif}
   End;
 
   DrawCrossair(FullMousePoint);
@@ -634,7 +626,7 @@ var
    res : Single;
 begin
    if Assigned(SelectedElement) then begin
-      res:=StrToFloatDef(ScaleXEdit.Text, 0);
+      res:=GLUtils.StrToFloatDef(ScaleXEdit.Text, 0);
       if res>0 then begin
          SelectedElement.Scale.X:=Res;
          GLPanel1.ReBuildGui:=True;
@@ -649,7 +641,7 @@ var
    res : Single;
 begin
    if Assigned(SelectedElement) then begin
-      res:=StrToFloatDef(ScaleYEdit.Text, 0);
+      res:=GLUtils.StrToFloatDef(ScaleYEdit.Text, 0);
       if res>0 then begin
          SelectedElement.Scale.Y:=Res;
          GLPanel1.ReBuildGui:=True;
@@ -666,7 +658,7 @@ begin
    if Assigned(SelectedElement) then begin
       GLPanel1.BlockRender;
       try
-        res:=StrToFloatDef(LeftEdit.Text, -1);
+        res:=GLUtils.StrToFloatDef(LeftEdit.Text, -1);
         if res>=0 then begin
            SelectedElement.TopLeft.X:=Res;
         end;
@@ -686,7 +678,7 @@ begin
    if Assigned(SelectedElement) then begin
       GLPanel1.BlockRender;
       try
-        res:=StrToFloatDef(TopEdit.Text, -1);
+        res:=GLUtils.StrToFloatDef(TopEdit.Text, -1);
         if res>=0 then begin
            SelectedElement.TopLeft.Y:=Res;
         end;
@@ -706,7 +698,7 @@ begin
    if Assigned(SelectedElement) then begin
       GLPanel1.BlockRender;
       try
-        res:=StrToFloatDef(RightEdit.Text, -1);
+        res:=GLUtils.StrToFloatDef(RightEdit.Text, -1);
         if res>=0 then begin
            SelectedElement.BottomRight.X:=Res;
         end;
@@ -726,7 +718,7 @@ begin
    if Assigned(SelectedElement) then begin
       GLPanel1.BlockRender;
       try
-        res:=StrToFloatDef(BottomEdit.Text, -1);
+        res:=GLUtils.StrToFloatDef(BottomEdit.Text, -1);
         if res>=0 then begin
            SelectedElement.BottomRight.Y:=Res;
         end;
@@ -967,11 +959,7 @@ begin
   imgFull.Canvas.LineTo(imgFull.Width, Point.Y);
 end;
 
-{$IFNDEF FPC}
 procedure TGUISkinEditor.ImageWndProc(var Message: TMessage);
-{$ELSE}
-procedure TGUISkinEditor.ImageWndProc(var Message: TLMessage);
-{$ENDIF}
 begin
   if (Message.Msg = CM_MOUSELEAVE) then
   begin

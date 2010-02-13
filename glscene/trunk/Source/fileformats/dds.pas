@@ -121,7 +121,7 @@ type
       SurfaceFormat : TDDSURFACEDESC2;
    end;
 
-   TFOURCC = array[0..3] of char;
+   TFOURCC = array[0..3] of AnsiChar;
 
 const
    FOURCC_DXT1 = $31545844; // 'DXT1'

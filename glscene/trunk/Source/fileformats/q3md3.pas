@@ -292,9 +292,6 @@ begin
   Result:=IdentityHMGMatrix;
   TagIdx:=-1;
   for i:=0 to FNumTags do
-  {$HINT k00m: bug with lazarus if removed the application can run but the arctor is strange. }
-    //if lowercase(trim(TagName))=lowercase((FTags[i].strName)) then begin
-  {$HINT crossbuilder: it compiles with the original line now. no demo, so not tested.}
     if lowercase(trim(TagName))=lowercase(trim(FTags[i].strName)) then begin
       TagIdx:=i;
       Break;
