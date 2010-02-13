@@ -463,7 +463,13 @@ end;
 //
 function TResolutionProperty.GetValue : String;
 begin
+{$IFDEF MSWINDOWS}
    Result:=vVideoModes[GetOrdValue].Description;
+{$ELSE}
+  //Testing!!!
+   with vVideoModes[GetOrdValue]^ do
+     Result:=Inttostr(hdisplay)+' x '+Inttostr(vdisplay)+', '+'0 bpp';
+{$ENDIF}
 end;
 
 // GetValues
@@ -472,8 +478,14 @@ procedure TResolutionProperty.GetValues(Proc: TGetStrProc);
 var
    i : Integer;
 begin
+{$IFDEF MSWINDOWS}
    for i:=0 to vNumberVideoModes-1 do
       Proc(vVideoModes[i].Description);
+{$ELSE}
+   for i:=0 to vNumberVideoModes-1 do
+      with vVideoModes[i]^ do
+      Proc(Inttostr(hdisplay)+'x'+Inttostr(vdisplay)+'x'+'0');
+{$ENDIF}
 end;
 
 // SetValue

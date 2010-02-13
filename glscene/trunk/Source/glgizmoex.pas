@@ -73,7 +73,7 @@ uses
   OpenGL1x, GLScene, GLColor, GLObjects, VectorGeometry, GLMaterial, GLStrings,
   GLGeomObjects, GLBitmapFont, GLViewer, GLVectorFileObjects, GLCrossPlatform,
   GLCoordinates, GLRenderContextInfo, GeometryBB, VectorTypes, GLCanvas,
-  PersistentClasses;
+  PersistentClasses, GLScreen;
 
 type
   TGLGizmoExObjectCollection = class;
@@ -3885,7 +3885,7 @@ var
     //��� ������ �������� ��� ��������
     GetWindowRect(GetDesktopWindow, R);
     GetWindowRect(viewer.Handle, VR);
-    glgetcursorpos(cp);
+    GLGetCursorPos(cp);
 
     if cp.Y = R.Bottom - 1 then
     begin

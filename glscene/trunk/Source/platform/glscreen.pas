@@ -5,29 +5,12 @@
 
    Routines to interact with the screen/desktop.<p>
 
-      $Log: glscreen.pas,v $
-      Revision 1.1  2006/01/10 20:50:45  z0m3ie
-      recheckin to make shure that all is lowercase
-
-      Revision 1.3  2006/01/09 20:45:50  z0m3ie
-      *** empty log message ***
-
-      Revision 1.2  2005/12/04 16:53:06  z0m3ie
-      renamed everything to lowercase to get better codetools support and avoid unit finding bugs
-
-      Revision 1.1  2005/12/01 21:24:11  z0m3ie
-      *** empty log message ***
-
-      Revision 1.5  2005/08/15 19:36:47  z0m3ie
-      *** empty log message ***
-
-      Revision 1.4  2005/08/15 18:39:11  z0m3ie
-      - Linux compatibility issues
-
-      Revision 1.3  2005/08/03 00:41:39  z0m3ie
-      - added automatical generated History from CVS
-
    <b>Historique : </b><font size=-1><ul>
+      <li>07/01/10 - DaStr - Enhanced cross-platform compatibility (thanks Predator)
+      <li>17/12/09 - DaStr - Added screen utility functions from
+                              GLCrossPlatform.pas (thanks Predator)
+      <li>07/11/09 - DaStr - Improved FPC compatibility and moved to the /Source/Platform/
+                             directory (BugtrackerID = 2893580) (thanks Predator)
       <li>23/03/07 - DaStr - Added explicit pointer dereferencing
                              (thanks Burkhard Carstens) (Bugtracker ID = 1678644)
       <li>03/07/04 - LR - Suppress CurrentScreenColorDepth because there are in GLCrossPlatform
@@ -48,10 +31,12 @@ unit GLScreen;
 
 interface
 
-{$include GLScene.inc}
+{$i GLScene.inc}
 
 uses
-   {$IFDEF WINDOWS}Windows,{$ENDIF} Classes, Graphics, VectorGeometry;
+   {$IFDEF MSWINDOWS} Windows,{$ENDIF}
+   {$IFDEF UNIX} x,xlib,xf86vmode,{$ENDIF}
+   Classes, VectorGeometry, GLCrossPlatform;
 
 const
    MaxVideoModes = 200;
@@ -93,22 +78,35 @@ type
    end;
    PVideoMode = ^TVideoMode;
 
-{$IFDEF MSWINDOWS}
-procedure ReadVideoModes;
-{$ENDIF}
 function GetIndexFromResolution(XRes,YRes,BPP: Integer): TResolution;
+
+
+procedure ReadVideoModes;
+
 //: Changes to the video mode given by 'Index'
-{$IFDEF MSWINDOWS}
 function SetFullscreenMode(modeIndex : TResolution; displayFrequency : Integer = 0) : Boolean;
-{$ENDIF}
 
 {$IFDEF MSWINDOWS}
 procedure ReadScreenImage(Dest: HDC; DestLeft, DestTop: Integer; SrcRect: TRectangle);
-procedure RestoreDefaultMode;
 {$ENDIF}
+procedure RestoreDefaultMode;
+
+
+procedure GLShowCursor(AShow: boolean);
+procedure GLSetCursorPos(AScreenX, AScreenY: integer);
+procedure GLGetCursorPos(var point: TGLPoint);
+function GLGetScreenWidth:integer;
+function GLGetScreenHeight:integer;
 
 var
+   {$IFDEF MSWINDOWS}
    vVideoModes        : array of TVideoMode;
+   {$ELSE}   //Unix
+   vVideoModes        : array of PXF86VidModeModeInfo;
+   vDesktop           : TXF86VidModeModeInfo;
+   vDisplay: PDisplay;
+   vScreenModeChanged : boolean;
+   {$ENDIF}
    vNumberVideoModes  : Integer = 0;
    vCurrentVideoMode  : Integer = 0;
 
@@ -120,7 +118,7 @@ implementation
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-uses GLScene, SysUtils, Forms;
+uses Forms, SysUtils;
 
 type TLowResMode = packed record
                      Width : Word;
@@ -150,6 +148,51 @@ begin
       FWindowFitting    :=TDisplayOptions(Source).FWindowFitting;
    end else inherited Assign(Source);
 end;
+
+// GetIndexFromResolution
+//
+function GetIndexFromResolution(XRes,YRes,BPP: Integer): TResolution;
+
+// Determines the index of a screen resolution nearest to the
+// given values. The returned screen resolution is always greater
+// or equal than XRes and YRes or, in case the resolution isn't
+// supported, the value 0, which indicates the default mode.
+
+var
+   I : Integer;
+   XDiff, YDiff, CDiff : Integer;
+begin
+   ReadVideoModes;
+   // prepare result in case we don't find a valid mode
+   Result:=0;
+   // set differences to maximum
+   XDiff:=9999; YDiff:=9999; CDiff:=99;
+   for I:=1 to vNumberVideomodes-1 do
+   {$IFDEF MSWINDOWS}
+   with vVideoModes[I] do begin
+     if     (Width  >= XRes) and ((Width-XRes)  <= XDiff)
+        and (Height >= YRes) and ((Height-YRes) <= YDiff)
+        and (ColorDepth >= BPP) and ((ColorDepth-BPP) <= CDiff) then begin
+         XDiff:=Width-XRes;
+         YDiff:=Height-YRes;
+         CDiff:=ColorDepth-BPP;
+         Result:=I;
+     end;
+    {$ELSE}
+    with vVideoModes[ i ]^ do begin
+     if     (hDisplay  >= XRes) and ((hDisplay-XRes)  <= XDiff)
+        and (vDisplay >= YRes) and ((vDisplay-YRes) <= YDiff)
+       // and (ColorDepth >= BPP) and ((ColorDepth-BPP) <= CDiff)
+        then begin
+         XDiff:=hDisplay-XRes;
+         YDiff:=vDisplay-YRes;
+        // CDiff:=ColorDepth-BPP;
+         Result:=I;
+     end;
+    {$ENDIF}
+   end;
+end;
+
 
 // TryToAddToList
 //
@@ -188,13 +231,18 @@ begin
                              [dmPelsWidth, dmPelsHeight, dmBitsPerPel]);
    end;
    Inc(vNumberVideomodes);
-end;
+{$ELSE}
+procedure TryToAddToList(); // Without input parameters.
+begin
+  XF86VidModeGetAllModeLines( vDisplay, vCurrentVideoMode, @vNumberVideoModes, @vVideoModes );
 {$ENDIF}
+end;
+
 
 // ReadVideoModes
 //
-{$IFDEF MSWINDOWS}
 procedure ReadVideoModes;
+{$IFDEF MSWINDOWS}
 var
    I, ModeNumber : Integer;
    done          : Boolean;
@@ -247,46 +295,38 @@ begin
       end;
     end;
   end;
-end;
-{$ENDIF}
-
-// GetIndexFromResolution
-//
-function GetIndexFromResolution(XRes,YRes,BPP: Integer): TResolution;
-
-// Determines the index of a screen resolution nearest to the
-// given values. The returned screen resolution is always greater
-// or equal than XRes and YRes or, in case the resolution isn't
-// supported, the value 0, which indicates the default mode.
-
+{$ELSE}
 var
-   I : Integer;
-   XDiff, YDiff, CDiff : Integer;
-
+   i,j:Integer;
 begin
-{$IFDEF MSWINDOWS}
-   ReadVideoModes;
+  //if error usr/bin/ld: cannot find -lXxf86vm
+  //then sudo apt-get install libXxf86vm-dev
+
+  // Connect to XServer
+  vDisplay := XOpenDisplay( nil );
+  if not Assigned( vDisplay ) Then
+     Assert(False, 'Not conected with X Server');
+  vCurrentVideoMode := DefaultScreen( vDisplay );
+
+  // Check support XF86VidMode Extension
+  if not boolean(XF86VidModeQueryExtension( vDisplay, @i, @j )) then
+    Assert(False, 'XF86VidMode Extension not support');
+
+  //Get Current Settings
+  if not vScreenModeChanged then
+  XF86VidModeGetModeLine( vDisplay, vCurrentVideoMode, @vDesktop.dotclock,
+                          PXF86VidModeModeLine( @vDesktop + SizeOf( vDesktop.dotclock ) ) );
+
+  //TryToAddToList
+  TryToAddToList;
+  XCloseDisplay(vDisplay);
 {$ENDIF}
-   // prepare result in case we don't find a valid mode
-   Result:=0;
-   // set differences to maximum
-   XDiff:=9999; YDiff:=9999; CDiff:=99;
-   for I:=1 to vNumberVideomodes-1 do with vVideoModes[I] do begin
-     if     (Width  >= XRes) and ((Width-XRes)  <= XDiff)
-        and (Height >= YRes) and ((Height-YRes) <= YDiff)
-        and (ColorDepth >= BPP) and ((ColorDepth-BPP) <= CDiff) then begin
-         XDiff:=Width-XRes;
-         YDiff:=Height-YRes;
-         CDiff:=ColorDepth-BPP;
-         Result:=I;
-     end;
-   end;
 end;
 
 // SetFullscreenMode
 //
-{$IFDEF MSWINDOWS}
 function SetFullscreenMode(modeIndex : TResolution; displayFrequency : Integer = 0) : Boolean;
+{$IFDEF MSWINDOWS}
 var
    deviceMode : TDevMode;
 begin
@@ -308,8 +348,34 @@ begin
    Result:=ChangeDisplaySettings(deviceMode, CDS_FULLSCREEN) = DISP_CHANGE_SUCCESSFUL;
    if Result then
       vCurrentVideoMode:=ModeIndex;
-end;
+{$ELSE}
+var
+  vSettings : TXF86VidModeModeInfo;
+  wnd:TWindow;
+begin
+  ReadVideoModes;
+  vDisplay := XOpenDisplay( nil );
+  vSettings := vVideoModes[modeIndex]^;
+    if ( vSettings.hDisplay <> vDesktop.hDisplay ) and
+       ( vSettings.vDisplay <> vDesktop.vDisplay ) then
+    begin
+
+      //vsettings.vtotal:=vsettings.vdisplay;
+      XF86VidModeSwitchToMode( vDisplay, vCurrentVideoMode, @vSettings );
+      XF86VidModeSetViewPort( vDisplay, vCurrentVideoMode, 0, 0 );
+      wnd:=XDefaultRootWindow( vDisplay);
+      XGrabPointer(vDisplay,wnd,  true,PointerMotionMask+ButtonReleaseMask,GrabModeAsync,GrabModeAsync, wnd,none,0);
+      vScreenModeChanged:=true;
+    end else
+    begin
+    // Restore
+       XF86VidModeSwitchToMode(vDisplay, vCurrentVideoMode, @vDesktop);
+       vScreenModeChanged:=false;
+    end;
+    // Disconnect to XServer else settings not accept
+    XCloseDisplay(vDisplay);
 {$ENDIF}
+end;
 
 // ReadScreenImage
 //
@@ -330,15 +396,87 @@ end;
 
 // RestoreDefaultMode
 //
-{$IFDEF MSWINDOWS}
 procedure RestoreDefaultMode;
+{$IFDEF MSWINDOWS}
 var
    t : PDevMode;
 begin
    t:=nil;
    ChangeDisplaySettings(t^, CDS_FULLSCREEN);
-end;
+{$ELSE}
+begin
+  //if vCurrentVideoMode=0 then
+  ReadVideoModes;
+  vDisplay := XOpenDisplay( nil );
+  XF86VidModeSwitchToMode(vDisplay, vCurrentVideoMode, @vDesktop);
+  vScreenModeChanged:=false;
+  XCloseDisplay(vDisplay);
 {$ENDIF}
+end;
+
+procedure GLShowCursor(AShow: boolean);
+begin
+{$IFDEF MSWINDOWS}
+  ShowCursor(AShow);
+{$ENDIF}
+{$IFDEF UNIX}
+  {$MESSAGE Warn 'ShowCursor: Needs to be implemented'}
+  //Use Form.Cursor:=crNone
+{$ENDIF}
+end;
+
+procedure GLSetCursorPos(AScreenX, AScreenY: integer);
+{$IFDEF MSWINDOWS}
+begin
+  SetCursorPos(AScreenX, AScreenY);
+{$ENDIF}
+{$IFDEF UNIX}
+var
+  dpy: PDisplay;
+  root: TWindow;
+begin
+  dpy := XOpenDisplay(nil);
+  root := RootWindow(dpy, DefaultScreen(dpy));
+  XWarpPointer(dpy, none, root, 0, 0, 0, 0, AScreenX, AScreenY);
+  XCloseDisplay(dpy);
+{$ENDIF}
+end;
+
+procedure GLGetCursorPos(var point: TGLPoint);
+{$IFDEF MSWINDOWS}
+begin
+  GetCursorPos(point);
+{$ENDIF}
+{$IFDEF UNIX}
+var
+  dpy: PDisplay;
+  root, child : TWindow;
+  rootX, rootY, winX, winY : Integer;
+  xstate : Word;
+  Result:Boolean;
+begin
+  point.x := 0;
+  point.y := 0;
+  dpy := XOpenDisplay(nil);
+  Result := LongBool(XQueryPointer(dpy, XDefaultRootWindow( dpy), @root, @child,
+     @rootX, @rootY, @winX, @winY, @xstate));
+  If Result then begin
+    point.x := rootX;
+    point.y := rootY;
+  end;
+    XCloseDisplay(dpy);
+{$ENDIF}
+end;
+
+function GLGetScreenWidth:integer;
+begin
+  result := Screen.Width;
+end;
+
+function GLGetScreenHeight:integer;
+begin
+  result := Screen.Height;
+end;
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -351,7 +489,8 @@ initialization
 finalization
 {$IFDEF MSWINDOWS}
    if vCurrentVideoMode<>0 then
-      RestoreDefaultMode;  // set default video mode
+{$ELSE}
+   if vScreenModeChanged then
 {$ENDIF}
-
+      RestoreDefaultMode;  // set default video mode
 end.

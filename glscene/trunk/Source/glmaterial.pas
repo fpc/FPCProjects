@@ -6,8 +6,13 @@
 	Handles all the material + material library stuff.<p>
 
 	<b>History : </b><font size=-1><ul>
-      <li>24/08/09 - DaStr - Updated TGLLibMaterial.DoOnTextureNeeded: 
-                              Replaced IncludeTrailingBackslash() with 
+      <li>13/12/09 - DaStr - Added a temporary work-around for multithread
+                              mode (thanks Controller)
+                             Added TGLBlendingParameters and bmCustom blending
+                              mode(thanks DungeonLords, Fantom)
+                             Fixed code formating in some places
+      <li>24/08/09 - DaStr - Updated TGLLibMaterial.DoOnTextureNeeded:
+                              Replaced IncludeTrailingBackslash() with
                               IncludeTrailingPathDelimiter()
       <li>28/07/09 - DaStr - Updated TGLShader.GetStardardNotSupportedMessage()
                               to use component name instead class name
@@ -26,7 +31,7 @@ uses Classes, GLRenderContextInfo, BaseClasses, GLContext, GLTexture, GLColor,
      GLCoordinates, VectorGeometry, PersistentClasses, OpenGL1x, GLCrossPlatform;
 
 {$I GLScene.inc}
-
+{$UNDEF GLS_MULTITHREAD}
 type
   TGLFaceProperties  = class;
   TGLMaterial        = class;
@@ -226,6 +231,74 @@ type
 
    TGLLibMaterialName = String;
 
+    //
+    // DaStr: if you write smth like af_GL_NEVER = GL_NEVER in the definition,
+    // it won't show up in the Dephi 7 design-time editor. So I had to add
+    // vTGlAlphaFuncValues and vTGLBlendFuncFactorValues arrays.
+    //
+    TGlAlphaFunc = (
+      af_GL_NEVER,
+      af_GL_LESS,
+      af_GL_EQUAL,
+      af_GL_LEQUAL,
+      af_GL_GREATER,
+      af_GL_NOTEQUAL,
+      af_GL_GEQUAL,
+      af_GL_ALWAYS 
+      );
+
+    TGLBlendFuncFactor = (
+      bff_GL_ZERO,
+      bff_GL_ONE,
+      bff_GL_DST_COLOR,
+      bff_GL_ONE_MINUS_DST_COLOR,
+      bff_GL_SRC_ALPHA,
+      bff_GL_ONE_MINUS_SRC_ALPHA,
+      bff_GL_DST_ALPHA,
+      bff_GL_ONE_MINUS_DST_ALPHA,
+      bff_GL_SRC_ALPHA_SATURATE,
+
+      //if the GL_ARB_imaging extension is supported
+      //Or OpenGL > 1.0 then
+      bff_GL_CONSTANT_COLOR,
+      bff_GL_ONE_MINUS_CONSTANT_COLOR,
+      bff_GL_CONSTANT_ALPHA,
+      bff_GL_ONE_MINUS_CONSTANT_ALPHA
+      );
+
+    // TGLBlendingParameters
+    //
+    TGLBlendingParameters = class(TGLOwnedPersistent)
+    private
+      FUseAlphaFunc: Boolean;
+      FUseBlendFunc: Boolean;
+      FAlphaFuncType: TGlAlphaFunc;
+      FAlphaFuncRef: TGLclampf;
+      FBlendFuncSFactor: TGLBlendFuncFactor;
+      FBlendFuncDFactor: TGLBlendFuncFactor;
+      procedure SetUseAlphaFunc(const Value: Boolean);
+      procedure SetUseBlendFunc(const Value: Boolean);
+      procedure SetAlphaFuncRef(const Value: TGLclampf);
+      procedure SetAlphaFuncType(const Value: TGlAlphaFunc);
+      procedure SetBlendFuncDFactor(const Value: TGLBlendFuncFactor);
+      procedure SetBlendFuncSFactor(const Value: TGLBlendFuncFactor);
+      function StoreAlphaFuncRef: Boolean;
+    protected
+      function GetRealOwner: TGLMaterial;
+      procedure Changed; virtual;
+    public
+       constructor Create(AOwner: TPersistent); override;
+    published
+      property UseAlphaFunc: Boolean read FUseAlphaFunc write SetUseAlphaFunc default False;
+      property AlphaFunctType: TGlAlphaFunc read FAlphaFuncType write SetAlphaFuncType default af_GL_GREATER;
+      property AlphaFuncRef: TGLclampf read FAlphaFuncRef write SetAlphaFuncRef stored StoreAlphaFuncRef;
+
+      property UseBlendFunc: Boolean read FUseBlendFunc write SetUseBlendFunc default True;
+      property BlendFuncSFactor: TGLBlendFuncFactor read FBlendFuncSFactor write SetBlendFuncSFactor default bff_GL_SRC_ALPHA;
+      property BlendFuncDFactor: TGLBlendFuncFactor read FBlendFuncDFactor write SetBlendFuncDFactor default bff_GL_ONE_MINUS_SRC_ALPHA;
+    end;
+
+
    // TBlendingMode
    //
    {: Simplified blending options.<p>
@@ -235,9 +308,11 @@ type
       bmAlphaTest50 : uses opaque blending, with alpha-testing at 50% (full
          transparency if alpha is below 0.5, full opacity otherwise)<br>
       bmAlphaTest100 : uses opaque blending, with alpha-testing at 100%<br>
-      bmModulate : uses modulation blending }
+      bmModulate : uses modulation blending<br>
+      bmCustom : uses TGLBlendingParameters options
+      }
    TBlendingMode = (bmOpaque, bmTransparency, bmAdditive,
-                    bmAlphaTest50, bmAlphaTest100, bmModulate);
+                    bmAlphaTest50, bmAlphaTest100, bmModulate, bmCustom);
 
    // TFaceCulling
    //
@@ -250,7 +325,7 @@ type
    TMaterialOption = (moIgnoreFog, moNoLighting);
    TMaterialOptions = set of TMaterialOption;
 
-	// TGLMaterial
+	 // TGLMaterial
    //
    {: Describes a rendering material.<p>
       A material is basicly a set of face properties (front and back) that take
@@ -261,11 +336,12 @@ type
       TGLLibMaterial (taken for a material library).<p>
       The TGLLibMaterial has more adavanced properties (like texture transforms)
       and provides a standard way of sharing definitions and texture maps. }
-	TGLMaterial = class (TGLUpdateAbleObject, IGLMaterialLibrarySupported, IGLNotifyAble, IGLTextureNotifyAble)
+   TGLMaterial = class (TGLUpdateAbleObject, IGLMaterialLibrarySupported, IGLNotifyAble, IGLTextureNotifyAble)
       private
 	      { Private Declarations }
          FFrontProperties, FGLBackProperties : TGLFaceProperties;
          FBlendingMode : TBlendingMode;
+         FBlendingParams: TGLBlendingParameters;
          FTexture : TGLTexture;
          FTextureEx : TGLTextureEx;
          FMaterialLibrary : TGLMaterialLibrary;
@@ -291,24 +367,25 @@ type
          function  GetTextureEx : TGLTextureEx;
          procedure SetTextureEx(const value : TGLTextureEx);
          function  StoreTextureEx : Boolean;
+         procedure SetBlendingParams(const Value: TGLBlendingParameters);
 
-			procedure NotifyLibMaterialDestruction;
-			//: Back, Front, Texture and blending not stored if linked to a LibMaterial
-			function StoreMaterialProps : Boolean;
+         procedure NotifyLibMaterialDestruction;
+         //: Back, Front, Texture and blending not stored if linked to a LibMaterial
+         function StoreMaterialProps : Boolean;
 
 		public
 			{ Public Declarations }
-			constructor Create(AOwner: TPersistent); override;
-			destructor Destroy; override;
+         constructor Create(AOwner: TPersistent); override;
+         destructor Destroy; override;
 
          procedure PrepareBuildList;
-			procedure Apply(var rci : TRenderContextInfo);
+         procedure Apply(var rci : TRenderContextInfo);
          {: Restore non-standard material states that were altered;<p>
             A return value of True is a multipass request. }
          function  UnApply(var rci : TRenderContextInfo) : Boolean;
-			procedure Assign(Source: TPersistent); override;
-			procedure NotifyChange(Sender : TObject); override;
-			procedure NotifyTexMapChange(Sender : TObject);
+         procedure Assign(Source: TPersistent); override;
+         procedure NotifyChange(Sender : TObject); override;
+         procedure NotifyTexMapChange(Sender : TObject);
          procedure DestroyHandles;
 
          procedure Loaded;
@@ -339,13 +416,15 @@ type
 			property BackProperties: TGLFaceProperties read GetBackProperties write SetBackProperties stored StoreMaterialProps;
 			property FrontProperties: TGLFaceProperties read FFrontProperties write SetFrontProperties stored StoreMaterialProps;
 			property BlendingMode : TBlendingMode read FBlendingMode write SetBlendingMode stored StoreMaterialProps default bmOpaque;
-         property MaterialOptions : TMaterialOptions read FMaterialOptions write SetMaterialOptions default [];
+			property BlendingParams: TGLBlendingParameters read FBlendingParams write SetBlendingParams;
+
+			property MaterialOptions : TMaterialOptions read FMaterialOptions write SetMaterialOptions default [];
 			property Texture : TGLTexture read GetTexture write SetTexture stored StoreMaterialProps;
-         property FaceCulling : TFaceCulling read FFaceCulling write SetFaceCulling default fcBufferDefault;
+			property FaceCulling : TFaceCulling read FFaceCulling write SetFaceCulling default fcBufferDefault;
 
 			property MaterialLibrary : TGLMaterialLibrary read FMaterialLibrary write SetMaterialLibrary;
 			property LibMaterialName : TGLLibMaterialName read FLibMaterialName write SetLibMaterialName;
-         property TextureEx : TGLTextureEx read GetTextureEx write SetTextureEx stored StoreTextureEx;
+			property TextureEx : TGLTextureEx read GetTextureEx write SetTextureEx stored StoreTextureEx;
 	  end;
 
 	// TGLLibMaterial
@@ -597,6 +676,16 @@ implementation
 
 uses SysUtils, GLStrings, GLState, XOpenGL, ApplicationFileIO, GLGraphics;
 
+const
+    vTGlAlphaFuncValues: array[0..7] of TGLEnum =
+     (GL_NEVER, GL_LESS, GL_EQUAL, GL_LEQUAL, GL_GREATER, GL_NOTEQUAL, GL_GEQUAL, GL_ALWAYS);
+
+    vTGLBlendFuncFactorValues: array[0..12] of TGLEnum =
+     (GL_ZERO, GL_ONE, GL_DST_COLOR, GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA,
+      GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA,
+      GL_SRC_ALPHA_SATURATE, GL_CONSTANT_COLOR, GL_ONE_MINUS_CONSTANT_COLOR,
+      GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+
 // ------------------
 // ------------------ TGLFaceProperties ------------------
 // ------------------
@@ -839,8 +928,9 @@ end;
 //
 procedure TGLShader.Apply(var rci : TRenderContextInfo; Sender : TObject);
 begin
+{$IFNDEF GLS_MULTITHREAD}
    Assert(not FShaderActive, 'Unbalanced shader application.');
-
+{$ENDIF}
    // Need to check it twice, because shader may refuse to initialize
    // and choose to disable itself during initialization.
    if FEnabled then
@@ -857,7 +947,9 @@ end;
 //
 function TGLShader.UnApply(var rci : TRenderContextInfo) : Boolean;
 begin
+{$IFNDEF GLS_MULTITHREAD}
    Assert(FShaderActive, 'Unbalanced shader application.');
+{$ENDIF}
    if Enabled then begin
       Result:=DoUnApply(rci);
       if not Result then
@@ -887,7 +979,9 @@ end;
 //
 procedure TGLShader.SetEnabled(val : Boolean);
 begin
+{$IFNDEF GLS_MULTITHREAD}
    Assert(not FShaderActive, 'Shader is active.');
+{$ENDIF}
    if val<>FEnabled then begin
       FEnabled:=val;
       NotifyChange(Self);
@@ -980,6 +1074,7 @@ begin
   FFrontProperties:=TGLFaceProperties.Create(Self);
   FTexture:=nil; // AutoCreate
   FFaceCulling:=fcBufferDefault;
+  FBlendingParams := TGLBlendingParameters.Create(Self);
 end;
 
 // Destroy
@@ -992,6 +1087,7 @@ begin
    FFrontProperties.Free;
    FTexture.Free;
    FTextureEx.Free;
+   FBlendingParams.Free;
    inherited Destroy;
 end;
 
@@ -1151,6 +1247,13 @@ begin
    Result:=(Assigned(FTextureEx) and (TextureEx.Count>0));
 end;
 
+// SetBlendingParams
+//
+procedure TGLMaterial.SetBlendingParams(const Value: TGLBlendingParameters);
+begin
+  FBlendingParams.Assign(Value);
+end;
+
 // NotifyLibMaterialDestruction
 //
 procedure TGLMaterial.NotifyLibMaterialDestruction;
@@ -1231,40 +1334,62 @@ begin
             Assert(False);
          end;
       end;
+
       // Apply Blending mode
-      if not rci.ignoreBlendingRequests then case FBlendingMode of
-			bmOpaque : begin
-            rci.GLStates.UnSetGLState(stBlend);
-            rci.GLStates.UnSetGLState(stAlphaTest);
-         end;
-			bmTransparency : begin
-				rci.GLStates.SetGLState(stBlend);
-            rci.GLStates.SetGLState(stAlphaTest);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			end;
-			bmAdditive : begin
-				rci.GLStates.SetGLState(stBlend);
-            rci.GLStates.SetGLState(stAlphaTest);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-			end;
-         bmAlphaTest50 : begin
-            rci.GLStates.UnSetGLState(stBlend);
-            rci.GLStates.SetGLState(stAlphaTest);
-            glAlphaFunc(GL_GEQUAL, 0.5);
-         end;
-         bmAlphaTest100 : begin
-            rci.GLStates.UnSetGLState(stBlend);
-            rci.GLStates.SetGLState(stAlphaTest);
-            glAlphaFunc(GL_GEQUAL, 1.0);
-         end;
-         bmModulate : begin
-            rci.GLStates.SetGLState(stBlend);
-            rci.GLStates.SetGLState(stAlphaTest);
-            glBlendFunc(GL_DST_COLOR, GL_ZERO);
-         end;
-      else
-         Assert(False);
-		end;
+      if not rci.ignoreBlendingRequests then
+        case FBlendingMode of
+           bmOpaque : begin
+              rci.GLStates.UnSetGLState(stBlend);
+              rci.GLStates.UnSetGLState(stAlphaTest);
+           end;
+           bmTransparency : begin
+              rci.GLStates.SetGLState(stBlend);
+              rci.GLStates.SetGLState(stAlphaTest);
+              glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+           end;
+           bmAdditive : begin
+              rci.GLStates.SetGLState(stBlend);
+              rci.GLStates.SetGLState(stAlphaTest);
+              glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+           end;
+           bmAlphaTest50 : begin
+              rci.GLStates.UnSetGLState(stBlend);
+              rci.GLStates.SetGLState(stAlphaTest);
+              glAlphaFunc(GL_GEQUAL, 0.5);
+           end;
+           bmAlphaTest100 : begin
+              rci.GLStates.UnSetGLState(stBlend);
+              rci.GLStates.SetGLState(stAlphaTest);
+              glAlphaFunc(GL_GEQUAL, 1.0);
+           end;
+           bmModulate : begin
+              rci.GLStates.SetGLState(stBlend);
+              rci.GLStates.SetGLState(stAlphaTest);
+              glBlendFunc(GL_DST_COLOR, GL_ZERO);
+           end;
+           bmCustom:
+           begin
+              rci.GLStates.SetGLState(stAlphaTest);
+
+              if FBlendingParams.FUseAlphaFunc then
+              begin
+                glAlphaFunc(vTGlAlphaFuncValues[Integer(FBlendingParams.FAlphaFuncType)],
+                            FBlendingParams.AlphaFuncRef);
+              end;
+
+              if FBlendingParams.FUseBlendFunc then
+              begin
+                rci.GLStates.SetGLState(stBlend);
+                glBlendFunc(vTGLBlendFuncFactorValues[Integer(FBlendingParams.FBlendFuncSFactor)],
+                            vTGLBlendFuncFactorValues[Integer(FBlendingParams.FBlendFuncDFactor)]);
+              end
+              else
+                rci.GLStates.UnSetGLState(stBlend);
+           end;
+        else
+           Assert(False);
+      end;
+
       // Fog switch
       if moIgnoreFog in MaterialOptions then begin
          if stFog in rci.GLStates.States then begin
@@ -1291,7 +1416,7 @@ begin
 	if Assigned(currentLibMaterial) then
 		Result:=currentLibMaterial.UnApply(rci)
    else begin
-      if BlendingMode in [bmAlphaTest50, bmAlphaTest100] then
+      if BlendingMode in [bmAlphaTest50, bmAlphaTest100, bmCustom] then
          glAlphaFunc(GL_GREATER, 0);
       if moNoLighting in MaterialOptions then begin
          if rci.lightingDisabledCounter>0 then begin
@@ -2619,6 +2744,94 @@ begin
       if not Result then
          FLastAppliedMaterial:=nil;
    end else Result:=False;
+end;
+
+{ TGLBlendingParameters }
+
+procedure TGLBlendingParameters.Changed;
+begin
+// DaStr: turned off because there is no way to know TGLMaterial's real owner.
+//  if not (csLoading in GetRealOwner.GetRealOwner.ComponentState) then
+//  GetRealOwner.SetBlendingMode(bmCustom);
+end;
+
+constructor TGLBlendingParameters.Create(AOwner: TPersistent);
+begin
+  inherited;
+  FUseAlphaFunc := False;
+  FAlphaFuncType := af_GL_GREATER;
+  FAlphaFuncRef := 0;
+
+  FUseBlendFunc := True;
+  FBlendFuncSFactor := bff_GL_SRC_ALPHA;
+  FBlendFuncDFactor := bff_GL_ONE_MINUS_SRC_ALPHA;
+end;
+
+function TGLBlendingParameters.GetRealOwner: TGLMaterial;
+begin
+  Result := TGLMaterial(inherited GetOwner);
+end;
+
+procedure TGLBlendingParameters.SetAlphaFuncRef(const Value: TGLclampf);
+begin
+  if (FAlphaFuncRef <> Value) then
+  begin
+    FAlphaFuncRef := Value;
+    Changed();
+  end;
+end;
+
+procedure TGLBlendingParameters.SetAlphaFuncType(
+  const Value: TGlAlphaFunc);
+begin
+  if (FAlphaFuncType <> Value) then
+  begin
+    FAlphaFuncType := Value;
+    Changed();
+  end;
+end;
+
+procedure TGLBlendingParameters.SetBlendFuncDFactor(
+  const Value: TGLBlendFuncFactor);
+begin
+  if (FBlendFuncDFactor <> Value) then
+  begin
+    FBlendFuncDFactor := Value;
+    Changed();
+  end;
+end;
+
+procedure TGLBlendingParameters.SetBlendFuncSFactor(
+  const Value: TGLBlendFuncFactor);
+begin
+  if (FBlendFuncSFactor <> Value) then
+  begin
+    FBlendFuncSFactor := Value;
+    Changed();
+  end;
+end;
+
+procedure TGLBlendingParameters.SetUseAlphaFunc(const Value: Boolean);
+begin
+  if (FUseAlphaFunc <> Value) then
+  begin
+    FUseAlphaFunc := Value;
+    Changed();
+  end;
+end;
+
+procedure TGLBlendingParameters.SetUseBlendFunc(const Value: Boolean);
+begin
+  if (FUseBlendFunc <> Value) then
+  begin
+    FUseBlendFunc := Value;
+    Changed();
+  end;
+end;
+
+function TGLBlendingParameters.StoreAlphaFuncRef: Boolean;
+begin
+  Result := (Abs(AlphaFuncRef) < 0.001);
 end;
 
 initialization

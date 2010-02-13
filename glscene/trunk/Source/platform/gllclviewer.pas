@@ -6,7 +6,11 @@
   A FPC specific Scene viewer.
 
 	<b>History : </b><font size=-1><ul>
-      <li>13/03/09 - DanB - Removed OpenGL dependencies
+      <li>22/12/09 - DaStr - Published TabStop, TabOrder, OnEnter, OnExit
+                              properties (thanks Yury Plashenkov)  
+      <li>07/11/09 - DaStr - Improved FPC compatibility (BugtrackerID = 2893580)
+                             (thanks Predator)
+      <li>13/07/09 - DanB - added the FieldOfView property + reduced OpenGL dependencies
       <li>10/04/08 - DaStr - Bugfixed TGLSceneViewer.Notification()
                               (thanks z80maniac) (Bugtracker ID = 1936108)
       <li>12/09/07 - DaStr - Removed old IFDEFs. Moved SetupVSync()
@@ -93,7 +97,7 @@ type
          function GetCamera : TGLCamera;
          procedure SetBuffer(const val : TGLSceneBuffer);
 
-         {$IFDEF WINDOWS}
+         {$IFDEF MSWINDOWS}
          procedure CreateParams(var Params: TCreateParams); override;
          {$ENDIF}
          procedure CreateWnd; override;
@@ -186,7 +190,10 @@ type
          property OnMouseWheelUp;
 
          property OnContextPopup;
-
+         property TabStop;
+         property TabOrder;
+         property OnEnter;
+         property OnExit;         
    end;
 
 // ------------------------------------------------------------------
@@ -197,11 +204,7 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
-uses SysUtils
-     {$ifndef fpc} // delphi
-     ,GLWin32Context
-     {$else}
-     ,LCLIntf
+uses SysUtils ,LCLIntf
        {$ifdef LCLWIN32}
          {$ifndef CONTEXT_INCLUDED}
      ,GLWin32Context
@@ -231,7 +234,6 @@ uses SysUtils
          {$error unimplemented QT context}
        {$endif}
 
-     {$endif}
    ,GLViewer;
 
 // ------------------

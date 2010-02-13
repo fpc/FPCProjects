@@ -9,6 +9,7 @@
    Modified by C4 and YarUnderoaker (hope, I didn't miss anybody).
 
    <b>History : </b><font size=-1><ul>
+      <li>14/12/09 - DaStr - Fixed memory leak (thanks YarUnderoaker)
       <li>11/11/09 - DaStr - Added $I GLScene.inc
       <li>09/11/09 - DaStr - Initial version (contributed to GLScene)
    </ul></font>
@@ -228,7 +229,7 @@ begin
   FFbo.Free;
   FDepthRBO.Free;
   FStencilRBO.Free;
-
+  FBackgroundColor.Free;
   inherited;
 end;
 

@@ -81,7 +81,11 @@ resourcestring
 // ------------------ TGLGTKContext ------------------
 // ------------------
 
+{$IFNDEF GLS_MULTITHREAD}
 var
+{$ELSE}
+threadvar
+{$ENDIF}
 //   vLastPixelFormat : Integer;
    vLastVendor : String;
 
