@@ -11,7 +11,10 @@
 
 
    <b>Previous version history : </b><font size=-1><ul>
-      $Log$
+      $Log: GlFileX.pas,v $
+      Revision 1.2  2009/11/17 15:21:40  da_stranger
+      Improved Unix compatibility (BugtrackerID = 2893580)
+
       Revision 1.1  2009/11/07 22:12:25  da_stranger
       Initial version (Added from the GLScene-Lazarus SVN)
 

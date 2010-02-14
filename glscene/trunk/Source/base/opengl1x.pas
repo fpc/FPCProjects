@@ -10,6 +10,8 @@
    please refer to OpenGL12.pas header.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>12/02/10 - Yar -  Added GL_AMD_vertex_shader_tessellator
+      <li>07/02/10 - Yar -  Added GL_NV_primitive_restart
       <li>21/01/10 - DaStr - Bugfixed wglChoosePixelFormatARB() and
                               wglCreatePbufferARB() parameters
       <li>07/01/10 - DaStr - Added WGL_COLOR_SAMPLES_NV (thanks YarUndeoaker)
@@ -120,11 +122,7 @@ uses
   ;
 
 type
-   TRCOptions = set of (
-      opDoubleBuffered,
-      opGDI,
-      opStereo
-   );
+
    PGLChar     = PAnsiChar;
    TGLString   = AnsiString;
 
@@ -463,6 +461,7 @@ var
    GL_NV_multisample_filter_hint,
    GL_NV_occlusion_query,
    GL_NV_point_sprite,
+   GL_NV_primitive_restart,
    GL_NV_register_combiners,
    GL_NV_texgen_reflection,
    GL_NV_texture_compression_vtc,
@@ -490,6 +489,8 @@ var
    GL_SGIX_depth_texture,
    GL_SGIX_shadow,
    GL_SGIX_shadow_ambient,
+
+   GL_AMD_vertex_shader_tessellator,
 
    GL_WIN_swap_hint,
 
@@ -3626,6 +3627,10 @@ const
    GL_COORD_REPLACE_NV                               = $8862;
    GL_POINT_SPRITE_R_MODE_NV                         = $8863;
 
+   // GL_NV_primitive_restart
+   GL_PRIMITIVE_RESTART_NV                           = $8558;
+   GL_PRIMITIVE_RESTART_INDEX_NV                     = $8559;
+
    // GL_EXT_stencil_two_side (#268)
    GL_STENCIL_TEST_TWO_SIDE_EXT                      = $8910;
    GL_ACTIVE_STENCIL_FACE_EXT                        = $8911;
@@ -4057,6 +4062,15 @@ const
    GL_GEOMETRY_PROGRAM_NV                              = $8C26;
    GL_MAX_PROGRAM_OUTPUT_VERTICES_NV                   = $8C27;
    GL_MAX_PROGRAM_TOTAL_OUTPUT_COMPONENTS_NV           = $8C28;
+
+   // GL_AMD_vertex_shader_tessellator (#363)
+   GL_SAMPLER_BUFFER_AMD                               = $9001;
+   GL_INT_SAMPLER_BUFFER_AMD                           = $9002;
+   GL_UNSIGNED_INT_SAMPLER_BUFFER_AMD                  = $9003;
+   GL_DISCRETE_AMD                                     = $9006;
+   GL_CONTINUOUS_AMD                                   = $9007;
+   GL_TESSELLATION_MODE_AMD                            = $9004;
+   GL_TESSELLATION_FACTOR_AMD                          = $9005;
 
    {$endregion}
 
@@ -5054,6 +5068,10 @@ var
    glPointParameteri: procedure(pname: TGLenum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glPointParameteriv: procedure(pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
+    // promoted to core v1.4 from GL_NV_primitive_restart
+   glPrimitiveRestartNV: procedure();{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glPrimitiveRestartIndexNV: procedure(index: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+
    // promoted to core v1.4 from GL_EXT_secondary_color (#145)
    glSecondaryColor3b: procedure(red, green, blue: TGLbyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glSecondaryColor3bv: procedure(v: PGLbyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -5235,6 +5253,8 @@ var
    glVertexAttrib4uiv: procedure(index: TGLuint; v: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glVertexAttrib4usv: procedure(index: TGLuint; v: PGLushort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glVertexAttribPointer: procedure(index: TGLuint; size: TGLint; _type: TGLenum; normalized: TGLboolean; stride: TGLsizei; _pointer: PGLvoid); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTessellationFactorAMD: procedure(factor: GLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glTessellationModeAMD: procedure(mode: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    {$endregion}
 
@@ -6570,6 +6590,10 @@ begin
    glPointParameteri := GLGetProcAddress('glPointParameteri');
    glPointParameteriv := GLGetProcAddress('glPointParameteriv');
 
+   // promoted to core v1.4 from GL_NV_primitive_restart
+   glPrimitiveRestartNV := GLGetProcAddress('glPrimitiveRestartNV');
+   glPrimitiveRestartIndexNV := GLGetProcAddress('glPrimitiveRestartIndexNV');
+
    // promoted to core v1.4 from GL_EXT_secondary_color (#145)
    glSecondaryColor3b := GLGetProcAddress('glSecondaryColor3b');
    glSecondaryColor3bv := GLGetProcAddress('glSecondaryColor3bv');
@@ -6753,7 +6777,11 @@ begin
    glVertexAttrib4usv := GLGetProcAddress('glVertexAttrib4usv');
    glVertexAttribPointer := GLGetProcAddress('glVertexAttribPointer');
 
+   glTessellationFactorAMD := GLGetProcAddress('glTessellationFactorAMD');
+   glTessellationModeAMD := GLGetProcAddress('glTessellationModeAMD');
+
    {$endregion}
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
    {$region 'locate functions/procedures added with OpenGL 2.1' /fold }
 
@@ -7704,19 +7732,19 @@ begin
     // There must be at least one dot to separate major and minor version number.
     Separator := Pos('.', Buffer);
     // At least one number must be before and one after the dot.
-    if (Separator > 1) and (Separator < Length(Buffer)) and (Buffer[Separator - 1] in ['0'..'9']) and
-      (Buffer[Separator + 1] in ['0'..'9']) then
+    if (Separator > 1) and (Separator < Length(Buffer)) and (AnsiChar(Buffer[Separator - 1]) in ['0'..'9']) and
+      (AnsiChar(Buffer[Separator + 1]) in ['0'..'9']) then
     begin
       // OK, it's a valid version string. Now remove unnecessary parts.
       Dec(Separator);
       // Find last non-numeric character before version number.
-      while (Separator > 0) and (Buffer[Separator] in ['0'..'9']) do
+      while (Separator > 0) and (AnsiChar(Buffer[Separator]) in ['0'..'9']) do
         Dec(Separator);
       // Delete leading characters which do not belong to the version string.
       Delete(Buffer, 1, Separator);
       Separator := Pos('.', Buffer) + 1;
       // Find first non-numeric character after version number
-      while (Separator <= Length(Buffer)) and (Buffer[Separator] in ['0'..'9']) do
+      while (Separator <= Length(Buffer)) and (AnsiChar(Buffer[Separator]) in ['0'..'9']) do
         Inc(Separator);
       // delete trailing characters not belonging to the version string
       Delete(Buffer, Separator, 255);
@@ -7944,6 +7972,7 @@ begin
    GL_NV_multisample_filter_hint  := CheckExtension('GL_NV_multisample_filter_hint');
    GL_NV_occlusion_query := CheckExtension('GL_NV_occlusion_query');
    GL_NV_point_sprite := CheckExtension('GL_NV_point_sprite');
+   GL_NV_primitive_restart := CheckExtension('GL_NV_primitive_restart');
    GL_NV_register_combiners := CheckExtension('GL_NV_register_combiners');
    GL_NV_texgen_reflection := CheckExtension('GL_NV_texgen_reflection');
    GL_NV_texture_compression_vtc := CheckExtension('GL_NV_texture_compression_vtc');
@@ -7971,6 +8000,8 @@ begin
    GL_SGIX_depth_texture := CheckExtension('GL_SGIX_depth_texture');
    GL_SGIX_shadow := CheckExtension('GL_SGIX_shadow'); 
    GL_SGIX_shadow_ambient := CheckExtension('GL_SGIX_shadow_ambient');
+
+   GL_AMD_vertex_shader_tessellator := CheckExtension('GL_AMD_vertex_shader_tessellator');
 
    GL_WIN_swap_hint := CheckExtension('GL_WIN_swap_hint');
 

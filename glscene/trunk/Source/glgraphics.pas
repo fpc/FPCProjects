@@ -11,6 +11,7 @@
    is active in GLScene.inc and recompile.<p>
 
  <b>Historique : </b><font size=-1><ul>
+      <li>10/02/10 - Yar   - Bugfix in RegisterAsOpenGLTexture with Cubemap mipmaping
       <li>27/01/10 - Yar   - Bugfix in BlockOffset with negative result
                              Return to GL_SGIS_generate_mipmap
       <li>23/01/10 - Yar   - Added to AssignFromTexture CurrentFormat parameter
@@ -2371,6 +2372,7 @@ var
   p, buffer: Pointer;
   vtcBuffer, top, bottom: PGLubyte;
   i, j, k: Integer;
+  LODtarget: TGLUInt;
 
   function blockOffset(x, y, z: Integer): Integer;
   begin
@@ -2437,6 +2439,10 @@ begin
   if GL_SGIS_generate_mipmap and (target <> GL_TEXTURE_RECTANGLE) then
   begin
     bMipmapGen := (ml = 1) and not (minFilter in [miNearest, miLinear]);
+    if (target>=GL_TEXTURE_CUBE_MAP_POSITIVE_X)
+      and (target<=GL_TEXTURE_CUBE_MAP_NEGATIVE_Z) then
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_GENERATE_MIPMAP_SGIS, Integer(bMipmapGen))
+      else
     glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, Integer(bMipmapGen));
   end;
 
