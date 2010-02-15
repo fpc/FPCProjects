@@ -361,9 +361,9 @@ end;
 
 destructor TGLCustomGLSLShader.Destroy;
 begin
-  FGLSLProg.Free;
-  FParam.Free;
-  FActiveVarying.Free;
+  FreeAndNil(FGLSLProg);
+  FreeAndNil(FParam);
+  FreeAndNil(FActiveVarying);
   inherited;
 end;
 
