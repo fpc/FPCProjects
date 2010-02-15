@@ -67,6 +67,7 @@
 {$IFDEF FPC}
 //  {$IFNDEF cpu386} // bugged asm
   {$DEFINE GEOMETRY_NO_ASM}
+  {$DEFINE NO_ASM}
 //  {$ENDIF}
   {$asmmode intel}
   {$TYPEINFO ON}
@@ -566,5 +567,6 @@
 
 {$IFDEF NO_ASM}
   {$DEFINE GEOMETRY_NO_ASM}
+  {$DEFINE GLS_NO_ASM}
 {$ENDIF}
 

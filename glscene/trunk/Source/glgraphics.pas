@@ -1328,23 +1328,23 @@ begin
     Narrow;
     ReallocMem(FData, 0);
   end
-  else if (Source is TGLBitmap32) {or (Source is TGLBaseImage)} then
+  else if (Source is TGLBitmap32) or (Source is TGLBaseImage) then
   begin
     // duplicate the data
-    FBlank := TGLBitmap32(Source).fBlank;
-    FWidth := TGLBitmap32(Source).fWidth;
-    FHeight := TGLBitmap32(Source).fHeight;
-    FDepth := TGLBitmap32(Source).fDepth;
-    fMipLevels := TGLBitmap32(Source).fMipLevels;
-    fCubeMap := TGLBitmap32(Source).fCubeMap;
-    fColorFormat := TGLBitmap32(Source).fColorFormat;
-    fInternalFormat := TGLBitmap32(Source).fInternalFormat;
-    fDataType := TGLBitmap32(Source).fDataType;
-    fElementSize := TGLBitmap32(Source).fElementSize;
+    if (Source is TGLBitmap32) then FBlank := TGLBitmap32(Source).fBlank;
+    FWidth := (Source as TGLBaseImage).fWidth;
+    FHeight := (Source as TGLBaseImage).fHeight;
+    FDepth := (Source as TGLBaseImage).fDepth;
+    fMipLevels := (Source as TGLBaseImage).fMipLevels;
+    fCubeMap := (Source as TGLBaseImage).fCubeMap;
+    fColorFormat := (Source as TGLBaseImage).fColorFormat;
+    fInternalFormat := (Source as TGLBaseImage).fInternalFormat;
+    fDataType := (Source as TGLBaseImage).fDataType;
+    fElementSize := (Source as TGLBaseImage).fElementSize;
     fLevels.Clear;
-    fLevels.Assign(TGLBitmap32(Source).fLevels);
-    fTextureArray := TGLBitmap32(Source).fTextureArray;
-    ResourceName := TGLBitmap32(Source).ResourceName;
+    fLevels.Assign((Source as TGLBaseImage).fLevels);
+    fTextureArray := (Source as TGLBaseImage).fTextureArray;
+    ResourceName := (Source as TGLBaseImage).ResourceName;
 
     if not FBlank then
     begin
