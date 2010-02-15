@@ -9,7 +9,8 @@
    Modified by C4 and YarUnderoaker (hope, I didn't miss anybody).
 
    <b>History : </b><font size=-1><ul>
-      <li>22/01/10 - Yar   - Added ClearOptions, Level, Layer, PostGenerateMipmap
+      <li>15/02/10 - Yar - Added notification of freeing RootObject
+      <li>22/01/10 - Yar - Added ClearOptions, Level, Layer, PostGenerateMipmap
                              UseBufferBackground moved to coUseBufferBackground
       <li>14/12/09 - DaStr - Fixed memory leak (thanks YarUnderoaker)
       <li>11/11/09 - DaStr - Added $I GLScene.inc
@@ -97,6 +98,7 @@ type
     procedure SetUseLibraryAsMultiTarget(Value: Boolean);
     procedure SetPostGenerateMipmap(const Value: Boolean);
   protected
+    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure InitializeFBO;
 
     procedure ForceDimensions(Texture: TGLTexture);
@@ -275,6 +277,13 @@ begin
   FStencilRBO.Free;
   FBackgroundColor.Free;
   inherited;
+end;
+
+procedure TGLFBORenderer.Notification(AComponent: TComponent; Operation: TOperation);
+begin
+  inherited;
+  if (AComponent = FRootObject) and (Operation = opRemove) then
+    FRootObject := nil;
 end;
 
 procedure TGLFBORenderer.DoAfterRender;
@@ -723,7 +732,11 @@ procedure TGLFBORenderer.SetRootObject(const Value: TGLBaseSceneObject);
 begin
   if FRootObject <> Value then
   begin
+    if Assigned(FRootObject) then
+      FRootObject.RemoveFreeNotification(Self);
     FRootObject := Value;
+    if Assigned(FRootObject) then
+      FRootObject.FreeNotification(Self);
     StructureChanged;
   end;
 end;
