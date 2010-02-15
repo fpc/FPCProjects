@@ -474,6 +474,8 @@ end;
 procedure GLLoadBitmapFromInstance(aInstance: LongInt; ABitmap: TCustomBitmap; AName: string);
 begin
   try
+    ABitmap.LoadFromLazarusResource(AName);
+(*
   {$IFDEF MSWINDOWS}
     ABitmap.Handle := LoadBitmap(aInstance, PChar(AName));
   {$ENDIF}
@@ -481,6 +483,7 @@ begin
     //ABitmap.LoadFromResourceName(aInstance, PChar(AName));
     ABitmap.LoadFromLazarusResource(AName);
   {$ENDIF}
+*)
   except end;
 end;
 
