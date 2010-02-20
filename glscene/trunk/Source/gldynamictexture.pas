@@ -7,6 +7,7 @@
   texture data.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>20/02/10 - DanB - Fix for TGLDynamicTextureImage.GetTexSize
       <li>23/01/10 - Yar - Replaced TextureFormat to TextureFormatEx
                            simplify GetBitsPerPixel and GetDataFormat
       <li>22/01/10 - Yar - Added GLTextureFormat to uses 
@@ -121,7 +122,7 @@ begin
     // cache so we know if it's changed
     FTexSize:= GetTexSize;
     
-    if FUsePBO and (GL_ARB_pixel_buffer_object or GL_EXT_pixel_buffer_object) then
+    if FUsePBO and TGLUnpackPBOHandle.IsSupported then
     begin
       FPBO:= TGLUnpackPBOHandle.CreateAndAllocate;
       // initialize buffer
@@ -270,7 +271,7 @@ end;
 
 function TGLDynamicTextureImage.GetTexSize: integer;
 begin
-  result:= Width * Height * BitsPerPixel;
+  result:= Width * Height * BitsPerPixel div 8;
 end;
 
 function TGLDynamicTextureImage.GetTextureFormat: integer;
