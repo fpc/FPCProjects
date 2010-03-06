@@ -25,6 +25,7 @@ object Form1: TForm1
     Buffer.ShadeModel = smSmooth
     FieldOfView = 156.222686767578
     Align = alClient
+    TabOrder = 0
   end
   object GLScene1: TGLScene
     left = 144
@@ -45,7 +46,7 @@ object Form1: TForm1
         TurnAngle = 0
         CubeSize = 1
         BehavioursData = {
-          0201060F54474C424650534D6F76656D656E740200020002000F33F99C4E0909
+          0201060F54474C424650534D6F76656D656E740200020002000FF2399D4E0909
           060A4D6F764D616E61676572
         }
         object PlayerSphere: TGLSphere
@@ -101,7 +102,7 @@ object Form1: TForm1
         TurnAngle = 0
         CubeSize = 1
         BehavioursData = {
-          0201060F54474C424650534D6F76656D656E740200020002000F66F69C4E0909
+          0201060F54474C424650534D6F76656D656E740200020002000FED399D4E0909
           060A4D6F764D616E61676572
         }
         object BotCenter: TGLSphere

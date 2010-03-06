@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 308
+  Left = 225
   Height = 403
-  Top = 143
+  Top = 214
   Width = 635
   HorzScrollBar.Page = 634
   VertScrollBar.Page = 379
@@ -23,6 +23,7 @@ object Form1: TForm1
     FieldOfView = 150.73388671875
     Align = alClient
     OnClick = GLSceneViewer1Click
+    TabOrder = 0
   end
   object GLScene1: TGLScene
     ObjectsSorting = osNone
@@ -43,9 +44,6 @@ object Form1: TForm1
       TagFloat = 0
       Material.FrontProperties.Diffuse.Color = {
         ADAC2C3FAAA9293FF0EF6F3F0000803F
-      }
-      Material.Texture.MappingTCoordinates.Coordinates = {
-        000000000000803F0000000000000000
       }
       Direction.Coordinates = {
         EE83843E00000000EA46773F00000000

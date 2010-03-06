@@ -21,6 +21,7 @@ object Form1: TForm1
     Align = alClient
     OnMouseDown = GLSceneViewer1MouseDown
     OnMouseMove = GLSceneViewer1MouseMove
+    TabOrder = 2
   end
   object CBSpline: TCheckBox
     Left = 272
@@ -55,16 +56,19 @@ object Form1: TForm1
     end
     object Pipe1: TGLPipe
       TagFloat = 0
-      Material.Texture.MappingTCoordinates.Coordinates = {
-        000000000000803F0000000000000000
-      }
       PitchAngle = 0
       Position.Coordinates = {
         00000000000080BF000000000000803F
       }
       RollAngle = 0
       TurnAngle = 0
-      Nodes = <>
+      Nodes = <      
+        item
+        end      
+        item
+        end      
+        item
+        end>
       Parts = [ppOutside, ppStartDisk, ppStopDisk]
       Radius = 0.20000000298023
     end
