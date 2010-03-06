@@ -42,8 +42,10 @@ uses
 
 type
 
+  { TInfoForm }
+
   TInfoForm = class(TForm)
-    CloseButton: TSpeedButton;
+    CloseButton: TBitBtn;
     PageControl: TPageControl;
     Sheet1: TTabSheet;
     Label1: TLabel;
