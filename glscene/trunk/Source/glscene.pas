@@ -318,7 +318,7 @@ unit GLScene;
 
 interface
 
-{$i GLScene.inc}
+{$I GLScene.inc}
 
 uses
   // VCL
@@ -327,7 +327,11 @@ uses
   // GLScene
   VectorGeometry, XCollection, GLSilhouette, PersistentClasses, GLState,
   GLGraphics, GeometryBB, GLContext, GLCrossPlatform, VectorLists, GLTexture,
-   GLColor, BaseClasses, GLCoordinates, GLRenderContextInfo, GLMaterial;
+  GLColor, BaseClasses, GLCoordinates, GLRenderContextInfo, GLMaterial
+{$IFDEF GLS_EXPERIMENTAL}
+  ,GLVBOManagers
+{$ENDIF}
+  ;
 
 type
 
@@ -361,7 +365,8 @@ type
   TObjectBBChanges = set of TObjectBBChange;
 
   // flags for design notification
-  TSceneOperation = (soAdd, soRemove, soMove, soRename, soSelect, soBeginUpdate, soEndUpdate);
+  TSceneOperation = (soAdd, soRemove, soMove, soRename, soSelect, soBeginUpdate,
+    soEndUpdate);
 
   // TContextOption
   //
@@ -421,7 +426,7 @@ type
         it will be ignored and the object rendered
      </ul> }
   TGLObjectStyle = (osDirectDraw, osDoesTemperWithColorsOrFaceWinding,
-                     osIgnoreDepthBuffer, osNoVisibilityCulling);
+    osIgnoreDepthBuffer, osNoVisibilityCulling);
   TGLObjectStyles = set of TGLObjectStyle;
 
   // IGLInitializable
@@ -429,7 +434,8 @@ type
   {: Interface to objects that need initialization<p> }
   IGLInitializable = interface
     ['{EA40AE8E-79B3-42F5-ADF1-7A901B665E12}']
-     procedure InitializeObject(ASender: TObject; const ARci: TRenderContextInfo);
+    procedure InitializeObject(ASender: TObject; const ARci:
+      TRenderContextInfo);
   end;
 
   // TGLInitializableObjectList
@@ -441,7 +447,8 @@ type
     procedure PutItems(const Index: Integer; const Value: IGLInitializable);
   public
     function Add(const Item: IGLInitializable): Integer;
-     property Items[const Index: Integer]: IGLInitializable read GetItems write PutItems; default;
+    property Items[const Index: Integer]: IGLInitializable read GetItems write
+    PutItems; default;
   end;
 
   // TGLBaseSceneObject
@@ -584,7 +591,8 @@ type
        By default it is calculated from AxisAlignedBoundingBoxUnscaled and
        BarycenterAbsolutePosition, but for most objects there is a more
        efficient method, that's why it is virtual. }
-         procedure CalculateBoundingBoxPersonalUnscaled(var ANewBoundingBox: THmgBoundingBox); virtual;
+    procedure CalculateBoundingBoxPersonalUnscaled(var ANewBoundingBox:
+      THmgBoundingBox); virtual;
   public
     { Public Declarations }
     constructor Create(AOwner: TComponent); override;
@@ -635,20 +643,26 @@ type
 
     {: The object's absolute matrix by composing all local matrices.<p>
        Multiplying a local coordinate with this matrix gives an absolute coordinate. }
-         property AbsoluteMatrix: TMatrix read GetAbsoluteMatrix write SetAbsoluteMatrix;
+    property AbsoluteMatrix: TMatrix read GetAbsoluteMatrix write
+      SetAbsoluteMatrix;
 
     {: Direction vector in absolute coordinates. }
-         property AbsoluteDirection : TVector read GetAbsoluteDirection write SetAbsoluteDirection;
-         property AbsoluteAffineDirection : TAffineVector read GetAbsoluteAffineDirection write SetAbsoluteAffineDirection;
+    property AbsoluteDirection: TVector read GetAbsoluteDirection write
+      SetAbsoluteDirection;
+    property AbsoluteAffineDirection: TAffineVector read
+      GetAbsoluteAffineDirection write SetAbsoluteAffineDirection;
 
     {: Scale vector in absolute coordinates.
        Warning: SetAbsoluteScale() does not work correctly at the moment. }
-         property AbsoluteScale : TVector read GetAbsoluteScale write SetAbsoluteScale;
-         property AbsoluteAffineScale : TAffineVector read GetAbsoluteAffineScale write SetAbsoluteAffineScale;
+    property AbsoluteScale: TVector read GetAbsoluteScale write
+      SetAbsoluteScale;
+    property AbsoluteAffineScale: TAffineVector read GetAbsoluteAffineScale write
+      SetAbsoluteAffineScale;
 
     {: Up vector in absolute coordinates. }
     property AbsoluteUp: TVector read GetAbsoluteUp write SetAbsoluteUp;
-         property AbsoluteAffineUp : TAffineVector read GetAbsoluteAffineUp write SetAbsoluteAffineUp;
+    property AbsoluteAffineUp: TAffineVector read GetAbsoluteAffineUp write
+      SetAbsoluteAffineUp;
 
     {: Calculate the right vector in absolute coordinates. }
     function AbsoluteRight: TVector;
@@ -657,8 +671,10 @@ type
     function AbsoluteLeft: TVector;
 
     {: Computes and allows to set the object's absolute coordinates.<p> }
-         property AbsolutePosition : TVector read GetAbsolutePosition write SetAbsolutePosition;
-         property AbsoluteAffinePosition : TAffineVector read GetAbsoluteAffinePosition write SetAbsoluteAffinePosition;
+    property AbsolutePosition: TVector read GetAbsolutePosition write
+      SetAbsolutePosition;
+    property AbsoluteAffinePosition: TAffineVector read GetAbsoluteAffinePosition
+      write SetAbsoluteAffinePosition;
     function AbsolutePositionAsAddress: PVector;
 
     {: Returns the Absolute X Vector expressed in local coordinates. }
@@ -721,10 +737,12 @@ type
     {: Calculates and return the AABB for the object.<p>
        The AABB is currently calculated from the BB.
        There is <b>no</b> caching scheme for them. }
-         function AxisAlignedBoundingBox(const AIncludeChilden: Boolean = True): TAABB;
-         function AxisAlignedBoundingBoxUnscaled(const AIncludeChilden: Boolean = True): TAABB;
-         function AxisAlignedBoundingBoxAbsolute(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): TAABB;
-
+    function AxisAlignedBoundingBox(const AIncludeChilden: Boolean = True):
+      TAABB;
+    function AxisAlignedBoundingBoxUnscaled(const AIncludeChilden: Boolean =
+      True): TAABB;
+    function AxisAlignedBoundingBoxAbsolute(const AIncludeChilden: Boolean =
+      True; const AUseBaryCenter: Boolean = False): TAABB;
 
     {: Advanced AABB functions that use a caching scheme.
        Also they include children and use BaryCenter. }
@@ -736,9 +754,12 @@ type
        based on the AxisAlignedDimensions of the object and that of its
        children.
        There is <b>no</b> caching scheme for them. }
-         function BoundingBox(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
-         function BoundingBoxUnscaled(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
-         function BoundingBoxAbsolute(const AIncludeChilden: Boolean = True; const AUseBaryCenter: Boolean = False): THmgBoundingBox;
+    function BoundingBox(const AIncludeChilden: Boolean = True; const
+      AUseBaryCenter: Boolean = False): THmgBoundingBox;
+    function BoundingBoxUnscaled(const AIncludeChilden: Boolean = True; const
+      AUseBaryCenter: Boolean = False): THmgBoundingBox;
+    function BoundingBoxAbsolute(const AIncludeChilden: Boolean = True; const
+      AUseBaryCenter: Boolean = False): THmgBoundingBox;
 
     {: Advanced BB functions that use a caching scheme.
        Also they include children and use BaryCenter. }
@@ -773,15 +794,18 @@ type
        Default implementation assumes the objects is a sphere of
        AxisAlignedDimensionUnscaled size. Subclasses may choose to return
        nil instead, which will be understood as an empty silhouette. }
-         function GenerateSilhouette(const silhouetteParameters : TGLSilhouetteParameters) : TGLSilhouette; virtual;
+    function GenerateSilhouette(const silhouetteParameters:
+      TGLSilhouetteParameters): TGLSilhouette; virtual;
 
     property Children[Index: Integer]: TGLBaseSceneObject read Get; default;
     property Count: Integer read GetCount;
     property Index: Integer read GetIndex write SetIndex;
     //: Create a new scene object and add it to this object as new child
-         function AddNewChild(AChild: TGLSceneObjectClass): TGLBaseSceneObject; dynamic;
+    function AddNewChild(AChild: TGLSceneObjectClass): TGLBaseSceneObject;
+      dynamic;
     //: Create a new scene object and add it to this object as first child
-         function AddNewChildFirst(AChild: TGLSceneObjectClass): TGLBaseSceneObject; dynamic;
+    function AddNewChildFirst(AChild: TGLSceneObjectClass): TGLBaseSceneObject;
+      dynamic;
     procedure AddChild(AChild: TGLBaseSceneObject); dynamic;
 
     function GetOrCreateBehaviour(aBehaviour: TGLBehaviourClass): TGLBehaviour;
@@ -796,9 +820,11 @@ type
     {: Takes a scene object out of the child list, but doesn't destroy it.<p>
        If 'KeepChildren' is true its children will be kept as new children
        in this scene object. }
-         procedure Remove(aChild : TGLBaseSceneObject; keepChildren: Boolean); dynamic;
+    procedure Remove(aChild: TGLBaseSceneObject; keepChildren: Boolean);
+      dynamic;
     function IndexOfChild(aChild: TGLBaseSceneObject): Integer;
-         function FindChild(const aName : String; ownChildrenOnly : Boolean) : TGLBaseSceneObject;
+    function FindChild(const aName: string; ownChildrenOnly: Boolean):
+      TGLBaseSceneObject;
     {: The "safe" version of this procedure checks if indexes are inside
        the list. If not, no exception if raised. }
     procedure ExchangeChildrenSafe(anIndex1, anIndex2: Integer);
@@ -851,11 +877,13 @@ type
     {: Applies rotations around absolute X, Y and Z axis.<p> }
     procedure RotateAbsolute(const rx, ry, rz: Single); overload;
     {: Applies rotations around the absolute given vector (angle in degrees).<p> }
-         procedure RotateAbsolute(const axis: TAffineVector; angle: Single); overload;
+    procedure RotateAbsolute(const axis: TAffineVector; angle: Single);
+      overload;
     //: Moves camera along the right vector (move left and right)
     procedure Slide(ADistance: Single);
     //: Orients the object toward a target object
-         procedure PointTo(const ATargetObject : TGLBaseSceneObject; const AUpVector : TVector); overload;
+    procedure PointTo(const ATargetObject: TGLBaseSceneObject; const AUpVector:
+      TVector); overload;
     //: Orients the object toward a target absolute position
     procedure PointTo(const AAbsolutePosition, AUpVector: TVector); overload;
 
@@ -890,13 +918,18 @@ type
     property Scale: TGLCoordinates read FScaling write SetScaling;
     property Scene: TGLScene read FScene;
     property Visible: Boolean read FVisible write SetVisible default True;
-         property ObjectsSorting : TGLObjectsSorting read FObjectsSorting write SetObjectsSorting default osInherited;
-         property VisibilityCulling : TGLVisibilityCulling read FVisibilityCulling write SetVisibilityCulling default vcInherited;
+    property ObjectsSorting: TGLObjectsSorting read FObjectsSorting write
+      SetObjectsSorting default osInherited;
+    property VisibilityCulling: TGLVisibilityCulling read FVisibilityCulling
+      write SetVisibilityCulling default vcInherited;
     property OnProgress: TGLProgressEvent read FOnProgress write FOnProgress;
-         property OnAddedToParent : TNotifyEvent read FOnAddedToParent write FOnAddedToParent;
+    property OnAddedToParent: TNotifyEvent read FOnAddedToParent write
+      FOnAddedToParent;
 
-         property Behaviours : TGLBehaviours read GetBehaviours write SetBehaviours stored False;
-         property Effects : TGLObjectEffects read GetEffects write SetEffects stored False;
+    property Behaviours: TGLBehaviours read GetBehaviours write SetBehaviours
+      stored False;
+    property Effects: TGLObjectEffects read GetEffects write SetEffects stored
+      False;
 
     property TagObject: TObject read FTagObject write FTagObject;
   published
@@ -930,7 +963,7 @@ type
   TGLBaseBehaviour = class(TXCollectionItem)
   protected
     { Protected Declarations }
-         procedure SetName(const val : String); override;
+    procedure SetName(const val: string); override;
 
     {: Override this function to write subclass data. }
     procedure WriteToFiler(writer: TWriter); override;
@@ -976,7 +1009,7 @@ type
     { Public Declarations }
     constructor Create(aOwner: TPersistent); override;
 
-         function GetNamePath : String;override;
+    function GetNamePath: string; override;
 
     class function ItemsClass: TXCollectionItemClass; override;
 
@@ -1052,11 +1085,12 @@ type
     { Public Declarations }
     constructor Create(aOwner: TPersistent); override;
 
-         function GetNamePath : String;override;
+    function GetNamePath: string; override;
 
     class function ItemsClass: TXCollectionItemClass; override;
 
-         property ObjectEffect[index : Integer] : TGLObjectEffect read GetEffect; default;
+    property ObjectEffect[index: Integer]: TGLObjectEffect read GetEffect;
+    default;
 
     function CanAdd(aClass: TXCollectionItemClass): Boolean; override;
 
@@ -1075,7 +1109,7 @@ type
   private
     { Private Declarations }
     FMaterial: TGLMaterial;
-         FHint : String;
+    FHint: string;
 
   protected
     { Protected Declarations }
@@ -1095,7 +1129,7 @@ type
       ARenderSelf, ARenderChildren: Boolean); override;
 
     property Material: TGLMaterial read FMaterial write SeTGLMaterial;
-         property Hint : String read FHint write FHint;
+    property Hint: string read FHint write FHint;
   end;
 
   // TGLSceneRootObject
@@ -1158,7 +1192,8 @@ type
     { Protected Declarations }
     procedure SetCamInvarianceMode(const val: TGLCameraInvarianceMode);
 
-         property CamInvarianceMode : TGLCameraInvarianceMode read FCamInvarianceMode write SetCamInvarianceMode;
+    property CamInvarianceMode: TGLCameraInvarianceMode read FCamInvarianceMode
+      write SetCamInvarianceMode;
 
   public
     { Public Declarations }
@@ -1197,7 +1232,8 @@ type
   // TDirectRenderEvent
   //
   {: Event for user-specific rendering in a TGLDirectOpenGL object. }
-   TDirectRenderEvent = procedure (Sender : TObject; var rci : TRenderContextInfo) of object;
+  TDirectRenderEvent = procedure(Sender: TObject; var rci: TRenderContextInfo)
+    of object;
 
   // TGLDirectOpenGL
   //
@@ -1295,7 +1331,8 @@ type
     { Protected Declarations }
     FRendering: Boolean;
 
-         procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+    procedure Notification(AComponent: TComponent; Operation: TOperation);
+      override;
     procedure SetMasterObject(const val: TGLBaseSceneObject); virtual;
     procedure SetProxyOptions(const val: TGLProxyObjectOptions);
 
@@ -1313,14 +1350,17 @@ type
     function RayCastIntersect(const rayStart, rayVector: TVector;
       intersectPoint: PVector = nil;
       intersectNormal: PVector = nil): Boolean; override;
-         function GenerateSilhouette(const silhouetteParameters : TGLSilhouetteParameters) : TGLSilhouette; override;
+    function GenerateSilhouette(const silhouetteParameters:
+      TGLSilhouetteParameters): TGLSilhouette; override;
 
   published
     { Published Declarations }
     {: Specifies the Master object which will be proxy'ed. }
-         property MasterObject : TGLBaseSceneObject read FMasterObject write SetMasterObject;
+    property MasterObject: TGLBaseSceneObject read FMasterObject write
+      SetMasterObject;
     {: Specifies how and what is proxy'ed. }
-         property ProxyOptions : TGLProxyObjectOptions read FProxyOptions write SetProxyOptions default cDefaultProxyOptions;
+    property ProxyOptions: TGLProxyObjectOptions read FProxyOptions write
+      SetProxyOptions default cDefaultProxyOptions;
 
     property ObjectsSorting;
     property Direction;
@@ -1401,7 +1441,8 @@ type
       intersectPoint: PVector = nil;
       intersectNormal: PVector = nil): Boolean; override;
     procedure CoordinateChanged(Sender: TGLCustomCoordinates); override;
-         function GenerateSilhouette(const silhouetteParameters : TGLSilhouetteParameters) : TGLSilhouette; override;
+    function GenerateSilhouette(const silhouetteParameters:
+      TGLSilhouetteParameters): TGLSilhouette; override;
 
     property LightID: Cardinal read FLightID;
 
@@ -1410,16 +1451,21 @@ type
   published
     { Published Declarations }
     property Ambient: TGLColor read FAmbient write SetAmbient;
-         property ConstAttenuation: Single read FConstAttenuation write SetConstAttenuation;
+    property ConstAttenuation: Single read FConstAttenuation write
+      SetConstAttenuation;
     property Diffuse: TGLColor read FDiffuse write SetDiffuse;
-         property LinearAttenuation: Single read FLinearAttenuation write SetLinearAttenuation;
-         property QuadraticAttenuation: Single read FQuadraticAttenuation write SetQuadraticAttenuation;
+    property LinearAttenuation: Single read FLinearAttenuation write
+      SetLinearAttenuation;
+    property QuadraticAttenuation: Single read FQuadraticAttenuation write
+      SetQuadraticAttenuation;
     property Position;
-         property LightStyle : TLightStyle read FLightStyle write SetLightStyle default lsSpot;
+    property LightStyle: TLightStyle read FLightStyle write SetLightStyle default
+      lsSpot;
     property Shining: Boolean read FShining write SetShining default True;
     property Specular: TGLColor read FSpecular write SetSpecular;
     property SpotCutOff: Single read FSpotCutOff write SetSpotCutOff;
-         property SpotDirection: TGLCoordinates read FSpotDirection write SetSpotDirection;
+    property SpotDirection: TGLCoordinates read FSpotDirection write
+      SetSpotDirection;
     property SpotExponent: Single read FSpotExponent write SetSpotExponent;
     property OnProgress;
   end;
@@ -1458,7 +1504,8 @@ type
 
   protected
     { Protected Declarations }
-         procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+    procedure Notification(AComponent: TComponent; Operation: TOperation);
+      override;
     procedure SetTargetObject(const val: TGLBaseSceneObject);
     procedure SetDepthOfView(AValue: Single);
     procedure SetFocalLength(AValue: Single);
@@ -1494,9 +1541,11 @@ type
     //: Position the camera so that the whole scene can be seen
     procedure ZoomAll(aSceneBuffer: TGLSceneBuffer);
 
-         procedure RotateObject(obj : TGLBaseSceneObject; pitchDelta, turnDelta : Single;
+    procedure RotateObject(obj: TGLBaseSceneObject; pitchDelta, turnDelta:
+      Single;
       rollDelta: Single = 0);
-         procedure RotateTarget(pitchDelta, turnDelta : Single; rollDelta : Single = 0);
+    procedure RotateTarget(pitchDelta, turnDelta: Single; rollDelta: Single =
+      0);
 
     {: Change camera's position to make it move around its target.<p>
        If TargetObject is nil, nothing happens. This method helps in quickly
@@ -1508,11 +1557,14 @@ type
        the dummycube, to change viewing angle, use this method. }
     procedure MoveAroundTarget(pitchDelta, turnDelta: Single);
     {: Moves the camera in eye space coordinates. }
-         procedure MoveInEyeSpace(forwardDistance, rightDistance, upDistance : Single);
+    procedure MoveInEyeSpace(forwardDistance, rightDistance, upDistance:
+      Single);
     {: Moves the target in eye space coordinates. }
-         procedure MoveTargetInEyeSpace(forwardDistance, rightDistance, upDistance : Single);
+    procedure MoveTargetInEyeSpace(forwardDistance, rightDistance, upDistance:
+      Single);
     {: Computes the absolute vector corresponding to the eye-space translations. }
-         function AbsoluteEyeSpaceVector(forwardDistance, rightDistance, upDistance : Single) : TVector;
+    function AbsoluteEyeSpaceVector(forwardDistance, rightDistance, upDistance:
+      Single): TVector;
     {: Adjusts distance from camera to target by applying a ratio.<p>
        If TargetObject is nil, nothing happens. This method helps in quickly
        implementing camera controls. Only the camera's position is changed. }
@@ -1535,11 +1587,14 @@ type
     function ScreenDeltaToVector(deltaX, deltaY: Integer; ratio: Single;
       const planeNormal: TVector): TVector;
     {: Same as ScreenDeltaToVector but optimized for XY plane. }
-         function ScreenDeltaToVectorXY(deltaX, deltaY : Integer; ratio : Single) : TVector;
+    function ScreenDeltaToVectorXY(deltaX, deltaY: Integer; ratio: Single):
+      TVector;
     {: Same as ScreenDeltaToVector but optimized for XZ plane. }
-         function ScreenDeltaToVectorXZ(deltaX, deltaY : Integer; ratio : Single) : TVector;
+    function ScreenDeltaToVectorXZ(deltaX, deltaY: Integer; ratio: Single):
+      TVector;
     {: Same as ScreenDeltaToVector but optimized for YZ plane. }
-         function ScreenDeltaToVectorYZ(deltaX, deltaY : Integer; ratio : Single) : TVector;
+    function ScreenDeltaToVectorYZ(deltaX, deltaY: Integer; ratio: Single):
+      TVector;
     {: Returns true if a point is in front of the camera. }
     function PointInFront(const point: TVector): boolean; overload;
     {: Calculates the field of view in degrees, given a viewport dimension
@@ -1567,17 +1622,20 @@ type
     {: Scene scaling for camera point.<p>
        This is a linear 2D scaling of the camera's output, allows for
        linear zooming (use FocalLength for lens zooming). }
-         property SceneScale : Single read FSceneScale write SetSceneScale stored StoreSceneScale;
+    property SceneScale: Single read FSceneScale write SetSceneScale stored
+      StoreSceneScale;
     {: Scaling bias applied to near-plane calculation.<p>
        Values inferior to one will move the nearplane nearer, and also
        reduce medium/long range Z-Buffer precision, values superior
        to one will move the nearplane farther, and also improve medium/long
        range Z-Buffer precision. }
-         property NearPlaneBias : Single read FNearPlaneBias write SetNearPlaneBias stored StoreNearPlaneBias;
+    property NearPlaneBias: Single read FNearPlaneBias write SetNearPlaneBias
+      stored StoreNearPlaneBias;
     {: If set, camera will point to this object.<p>
        When camera is pointing an object, the Direction vector is ignored
        and the Up vector is used as an absolute vector to the up. }
-         property TargetObject : TGLBaseSceneObject read FTargetObject write SetTargetObject;
+    property TargetObject: TGLBaseSceneObject read FTargetObject write
+      SetTargetObject;
     {: Adjust the camera style.<p>
        Three styles are available :<ul>
        <li>csPerspective, the default value for perspective projection
@@ -1586,14 +1644,16 @@ type
           (in x or y) represents 1 pixel.
        <li>csCustom, setup is deferred to the OnCustomPerspective event.
        </ul> }
-         property CameraStyle : TGLCameraStyle read FCameraStyle write SetCameraStyle default csPerspective;
+    property CameraStyle: TGLCameraStyle read FCameraStyle write SetCameraStyle
+      default csPerspective;
 
     {: Custom perspective event.<p>
        This event allows you to specify your custom perpective, either
        with a glFrustrum, a glOrtho or whatever method suits you.<br>
        You must compute viewPortRadius for culling to work.<br>
        This event is only called if CameraStyle is csCustom. }
-         property OnCustomPerspective : TOnCustomPerspective read FOnCustomPerspective write FOnCustomPerspective;
+    property OnCustomPerspective: TOnCustomPerspective read FOnCustomPerspective
+      write FOnCustomPerspective;
 
     property Position;
     property Direction;
@@ -1656,7 +1716,7 @@ type
     procedure NotifyChange(Sender: TObject); override;
     procedure Progress(const deltaTime, newTime: Double);
 
-         function FindSceneObject(const AName : String) : TGLBaseSceneObject;
+    function FindSceneObject(const AName: string): TGLBaseSceneObject;
     {: Calculates, finds and returns the first object intercepted by the ray.<p>
        Returns nil if no intersection was found. This function will be
        accurate only for objects that overrided their RayCastIntersect
@@ -1669,22 +1729,22 @@ type
     procedure ShutdownAllLights;
 
     {: Saves the scene to a file (recommended extension : .GLS) }
-         procedure SaveToFile(const fileName : String);
+    procedure SaveToFile(const fileName: string);
     {: Load the scene from a file.<p>
        Existing objects/lights/cameras are freed, then the file is loaded.<br>
        Delphi's IDE is not handling this behaviour properly yet, ie. if
        you load a scene in the IDE, objects will be properly loaded, but
        no declare will be placed in the code. }
-         procedure LoadFromFile(const fileName : String);
+    procedure LoadFromFile(const fileName: string);
 
     procedure SaveToStream(aStream: TStream);
     procedure LoadFromStream(aStream: TStream);
 
     {: Saves the scene to a text file }
-         procedure SaveToTextFile(const fileName : String);
+    procedure SaveToTextFile(const fileName: string);
     {: Load the scene from a text files.<p>
        See LoadFromFile for details. }
-         procedure LoadFromTextFile(const fileName : String);
+    procedure LoadFromTextFile(const fileName: string);
 
     property CurrentGLCamera: TGLCamera read FCurrentGLCamera;
     property Lights: TPersistentObjectList read FLights;
@@ -1693,13 +1753,16 @@ type
 
     {: List of objects that request to be initialized when rendering context is active.<p>
       They are removed automaticly from this list once initialized. }
-         property InitializableObjects: TGLInitializableObjectList read FInitializableObjects;
+    property InitializableObjects: TGLInitializableObjectList read
+      FInitializableObjects;
   published
     { Published Declarations }
     {: Defines default ObjectSorting option for scene objects. }
-         property ObjectsSorting : TGLObjectsSorting read FObjectsSorting write SetObjectsSorting default osRenderBlendedLast;
+    property ObjectsSorting: TGLObjectsSorting read FObjectsSorting write
+      SetObjectsSorting default osRenderBlendedLast;
     {: Defines default VisibilityCulling option for scene objects. }
-         property VisibilityCulling : TGLVisibilityCulling read FVisibilityCulling write SetVisibilityCulling default vcNone;
+    property VisibilityCulling: TGLVisibilityCulling read FVisibilityCulling
+      write SetVisibilityCulling default vcNone;
     property OnProgress: TGLProgressEvent read FOnProgress write FOnProgress;
 
   end;
@@ -1811,7 +1874,8 @@ type
           <li>fdEyePlane: uses the distance to the projection plane
              (same as Z-Buffer, faster)
        </ul> }
-         property FogDistance : TFogDistance read FFogDistance write SetFogDistance default fdDefault;
+    property FogDistance: TFogDistance read FFogDistance write SetFogDistance
+      default fdDefault;
   end;
 
   // TGLDepthPrecision
@@ -1820,7 +1884,8 @@ type
 
   // TGLColorDepth
   //
-   TGLColorDepth = (cdDefault, cd8bits, cd16bits, cd24bits, cdFloat64bits, cdFloat128bits); // float_type
+  TGLColorDepth = (cdDefault, cd8bits, cd16bits, cd24bits, cdFloat64bits,
+    cdFloat128bits); // float_type
 
   // TGLShadeModel
   //
@@ -1919,7 +1984,8 @@ type
     //: DPI for current/last render
     property RenderDPI: Integer read FRenderDPI;
 
-         property OnPrepareGLContext : TNotifyEvent read FOnPrepareGLContext write FOnPrepareGLContext;
+    property OnPrepareGLContext: TNotifyEvent read FOnPrepareGLContext write
+      FOnPrepareGLContext;
 
   public
     { Public Declarations }
@@ -1949,7 +2015,8 @@ type
     {: Returns a PickList with objects in Rect area.<p>
        Returned list should be freed by caller.<br>
        Objects are sorted by depth (nearest objects first). }
-         function GetPickedObjects(const rect: TGLRect; objectCountGuess : Integer = 64) : TGLPickList;
+    function GetPickedObjects(const rect: TGLRect; objectCountGuess: Integer =
+      64): TGLPickList;
     //: Returns the nearest object at x, y coordinates or nil if there is none
     function GetPickedObject(x, y: Integer): TGLBaseSceneObject;
 
@@ -1985,10 +2052,11 @@ type
     {: Render the scene to a bitmap at given DPI and saves it to a file.<p>
        DPI = "dots per inch".<p>
        The "magic" DPI of the screen is 96 under Windows. }
-         procedure RenderToFile(const AFile: String; DPI: Integer = 0); overload;
+    procedure RenderToFile(const AFile: string; DPI: Integer = 0); overload;
     {: Renders to bitmap of given size, then saves it to a file.<p>
        DPI is adjusted to make the bitmap similar to the viewer. }
-         procedure RenderToFile(const AFile: String; bmpWidth, bmpHeight : Integer); overload;
+    procedure RenderToFile(const AFile: string; bmpWidth, bmpHeight: Integer);
+      overload;
     {: Creates a TGLBitmap32 that is a snapshot of current OpenGL content.<p>
        When possible, use this function instead of RenderToBitmap, it won't
        request a redraw and will be significantly faster.<p>
@@ -1997,13 +2065,15 @@ type
     {: Creates a VCL bitmap that is a snapshot of current OpenGL content.<p> }
     function CreateSnapShotBitmap: TGLBitmap;
     procedure CopyToTexture(aTexture: TGLTexture); overload;
-         procedure CopyToTexture(aTexture : TGLTexture; xSrc, ySrc, width, height : Integer;
+    procedure CopyToTexture(aTexture: TGLTexture; xSrc, ySrc, width, height:
+      Integer;
       xDest, yDest: Integer; target: Integer = 0;
       forceCreateTexture: Boolean = False); overload;
     {: Save as raw float data to a file }
-         procedure SaveAsFloatToFile(const aFilename: String);
+    procedure SaveAsFloatToFile(const aFilename: string);
     {: Event reserved for viewer-specific uses.<br> }
-         property ViewerBeforeRender : TNotifyEvent read FViewerBeforeRender write FViewerBeforeRender stored False;
+    property ViewerBeforeRender: TNotifyEvent read FViewerBeforeRender write
+      FViewerBeforeRender stored False;
     procedure SetViewPort(X, Y, W, H: Integer);
     function Width: Integer;
     function Height: Integer;
@@ -2024,7 +2094,8 @@ type
     property Rendering: Boolean read FRendering;
 
     {: Adjusts background alpha channel. }
-         property BackgroundAlpha : Single read FBackgroundAlpha write SetBackgroundAlpha;
+    property BackgroundAlpha: Single read FBackgroundAlpha write
+      SetBackgroundAlpha;
     {: Returns the projection matrix in use or used for the last rendering. }
     property ProjectionMatrix: TMatrix read FProjectionMatrix;
     {: Returns the modelview matrix in use or used for the last rendering. }
@@ -2046,11 +2117,13 @@ type
        This function accepts standard canvas coordinates, with (0,0) being
        the top left corner, and returns, when the camera is in orthogonal
        mode, the corresponding 3D world point that is in the camera's plane. }
-         function OrthoScreenToWorld(screenX, screenY : Integer) : TAffineVector; overload;
+    function OrthoScreenToWorld(screenX, screenY: Integer): TAffineVector;
+      overload;
     {: Converts a screen coordinate into world (3D) coordinates.<p>
        This methods wraps a call to gluUnProject.<p>
        Note that screen coord (0,0) is the lower left corner. }
-         function ScreenToWorld(const aPoint : TAffineVector) : TAffineVector; overload;
+    function ScreenToWorld(const aPoint: TAffineVector): TAffineVector;
+      overload;
     function ScreenToWorld(const aPoint: TVector): TVector; overload;
     {: Converts a screen pixel coordinate into 3D world coordinates.<p>
        This function accepts standard canvas coordinates, with (0,0) being
@@ -2059,7 +2132,8 @@ type
     {: Converts an absolute world coordinate into screen coordinate.<p>
        This methods wraps a call to gluProject.<p>
        Note that screen coord (0,0) is the lower left corner. }
-         function WorldToScreen(const aPoint : TAffineVector) : TAffineVector; overload;
+    function WorldToScreen(const aPoint: TAffineVector): TAffineVector;
+      overload;
     function WorldToScreen(const aPoint: TVector): TVector; overload;
     {: Converts a set of point absolute world coordinates into screen coordinates.<p> }
     procedure WorldToScreen(points: PVector; nbPoints: Integer); overload;
@@ -2067,7 +2141,8 @@ type
        The vector originates from the camera's absolute position and is
        expressed in absolute coordinates.<p>
        Note that screen coord (0,0) is the lower left corner. }
-         function ScreenToVector(const aPoint : TAffineVector) : TAffineVector; overload;
+    function ScreenToVector(const aPoint: TAffineVector): TAffineVector;
+      overload;
     function ScreenToVector(const aPoint: TVector): TVector; overload;
     function ScreenToVector(const x, y: Integer): TVector; overload;
     {: Calculates the 2D screen coordinate of a vector from the camera's
@@ -2141,9 +2216,11 @@ type
     { Published Declarations }
     {: Fog environment options.<p>
        See TGLFogEnvironment. }
-         property FogEnvironment: TGLFogEnvironment read FFogEnvironment write SetGLFogEnvironment stored StoreFog;
+    property FogEnvironment: TGLFogEnvironment read FFogEnvironment write
+      SetGLFogEnvironment stored StoreFog;
     {: Color used for filling the background prior to any rendering. }
-         property BackgroundColor: TColor read FBackgroundColor write SetBackgroundColor default clBtnFace;
+    property BackgroundColor: TColor read FBackgroundColor write
+      SetBackgroundColor default clBtnFace;
     {: Scene ambient color vector.<p>
        This ambient color is defined independantly from all lightsources,
        which can have their own ambient components. }
@@ -2151,9 +2228,11 @@ type
 
     {: Context options allows to setup specifics of the rendering context.<p>
        Not all contexts support all options. }
-         property ContextOptions: TContextOptions read FContextOptions write SetContextOptions default [roDoubleBuffer, roRenderToWindow];
+    property ContextOptions: TContextOptions read FContextOptions write
+      SetContextOptions default [roDoubleBuffer, roRenderToWindow];
     {: Number of precision bits for the accumulation buffer. }
-         property AccumBufferBits : Integer read FAccumBufferBits write SetAccumBufferBits default 0;
+    property AccumBufferBits: Integer read FAccumBufferBits write
+      SetAccumBufferBits default 0;
 
     {: DepthTest enabling.<p>
        When DepthTest is enabled, objects closer to the camera will hide
@@ -2167,9 +2246,11 @@ type
        Face culling is used in hidden faces removal algorithms : each face
        is given a normal or 'outside' direction. When face culling is enabled,
        only faces whose normal points towards the observer are rendered. }
-         property FaceCulling: Boolean read FFaceCulling write SetFaceCulling default True;
+    property FaceCulling: Boolean read FFaceCulling write SetFaceCulling default
+      True;
     {: Toggle to enable or disable the fog settings. }
-         property FogEnable: Boolean read FFogEnable write SetFogEnable default False;
+    property FogEnable: Boolean read FFogEnable write SetFogEnable default
+      False;
     {: Toggle to enable or disable lighting calculations.<p>
        When lighting is enabled, objects will be lit according to lightsources,
        when lighting is disabled, objects are rendered in their own colors,
@@ -2178,16 +2259,20 @@ type
     property Lighting: Boolean read FLighting write SetLighting default True;
     {: AntiAliasing option.<p>
        Ignored if not hardware supported, currently based on ARB_multisample. }
-         property AntiAliasing : TGLAntiAliasing read FAntiAliasing write SetAntiAliasing default aaDefault;
+    property AntiAliasing: TGLAntiAliasing read FAntiAliasing write
+      SetAntiAliasing default aaDefault;
     {: Depth buffer precision.<p>
        Default is highest available (below and including 24 bits) }
-         property DepthPrecision : TGLDepthPrecision read FDepthPrecision write SetDepthPrecision default dpDefault;
+    property DepthPrecision: TGLDepthPrecision read FDepthPrecision write
+      SetDepthPrecision default dpDefault;
     {: Color buffer depth.<p>
        Default depth buffer is highest available (below and including 24 bits) }
-         property ColorDepth : TGLColorDepth read FColorDepth write SetColorDepth default cdDefault;
+    property ColorDepth: TGLColorDepth read FColorDepth write SetColorDepth
+      default cdDefault;
     {: Shade model.<p>
        Default is "Smooth".<p> }
-         property ShadeModel : TGLShadeModel read FShadeModel write SetShadeModel default smDefault;
+    property ShadeModel: TGLShadeModel read FShadeModel write SetShadeModel
+      default smDefault;
 
     {: Indicates a change in the scene or buffer options.<p>
        A simple re-render is enough to take into account the changes. }
@@ -2195,30 +2280,36 @@ type
     {: Indicates a structural change in the scene or buffer options.<p>
        A reconstruction of the RC is necessary to take into account the
        changes (this may lead to a driver switch or lengthy operations). }
-         property OnStructuralChange : TNotifyEvent read FOnStructuralChange write FOnStructuralChange stored False;
+    property OnStructuralChange: TNotifyEvent read FOnStructuralChange write
+      FOnStructuralChange stored False;
 
     {: Triggered before the scene's objects get rendered.<p>
        You may use this event to execute your own OpenGL rendering
        (usually background stuff). }
-         property BeforeRender: TNotifyEvent read FBeforeRender write FBeforeRender stored False;
+    property BeforeRender: TNotifyEvent read FBeforeRender write FBeforeRender
+      stored False;
     {: Triggered after BeforeRender, before rendering objects.<p>
        This one is fired after the rci has been initialized and can be used
        to alter it or perform early renderings that require an rci,
        the Sender is the buffer. }
-         property InitiateRendering : TDirectRenderEvent read FInitiateRendering write FInitiateRendering stored False;
+    property InitiateRendering: TDirectRenderEvent read FInitiateRendering write
+      FInitiateRendering stored False;
     {: Triggered after rendering all scene objects, before PostRender.<p>
        This is the last point after which the rci becomes unavailable,
        the Sender is the buffer. }
-         property WrapUpRendering : TDirectRenderEvent read FWrapUpRendering write FWrapUpRendering stored False;
+    property WrapUpRendering: TDirectRenderEvent read FWrapUpRendering write
+      FWrapUpRendering stored False;
     {: Triggered just after all the scene's objects have been rendered.<p>
        The OpenGL context is still active in this event, and you may use it
        to execute your own OpenGL rendering (usually for HUD, 2D overlays
        or after effects).<p> }
-         property PostRender: TNotifyEvent read FPostRender write FPostRender stored False;
+    property PostRender: TNotifyEvent read FPostRender write FPostRender stored
+      False;
     {: Called after rendering.<p>
        You cannot issue OpenGL calls in this event, if you want to do your own
        OpenGL stuff, use the PostRender event. }
-         property AfterRender: TNotifyEvent read FAfterRender write FAfterRender stored False;
+    property AfterRender: TNotifyEvent read FAfterRender write FAfterRender
+      stored False;
   end;
 
   // TGLNonVisualViewer
@@ -2262,15 +2353,19 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-         procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+    procedure Notification(AComponent: TComponent; Operation: TOperation);
+      override;
 
     procedure Render(baseObject: TGLBaseSceneObject = nil); virtual; abstract;
     procedure CopyToTexture(aTexture: TGLTexture); overload; virtual;
-         procedure CopyToTexture(aTexture : TGLTexture; xSrc, ySrc, width, height : Integer;
+    procedure CopyToTexture(aTexture: TGLTexture; xSrc, ySrc, width, height:
+      Integer;
       xDest, yDest: Integer); overload;
     {: CopyToTexture for Multiple-Render-Target }
-         procedure CopyToTextureMRT(aTexture : TGLTexture; BufferIndex : integer); overload; virtual;
-         procedure CopyToTextureMRT(aTexture : TGLTexture; xSrc, ySrc, width, height : Integer;
+    procedure CopyToTextureMRT(aTexture: TGLTexture; BufferIndex: integer);
+      overload; virtual;
+    procedure CopyToTextureMRT(aTexture: TGLTexture; xSrc, ySrc, width, height:
+      Integer;
       xDest, yDest: Integer; BufferIndex: integer); overload;
     {: Renders the 6 texture maps from a scene.<p>
        The viewer is used to render the 6 images, one for each face
@@ -2291,7 +2386,8 @@ type
 
     {: Triggered before the scene's objects get rendered.<p>
        You may use this event to execute your own OpenGL rendering. }
-         property BeforeRender : TNotifyEvent read GetBeforeRender write SetBeforeRender;
+    property BeforeRender: TNotifyEvent read GetBeforeRender write
+      SetBeforeRender;
     {: Triggered just after all the scene's objects have been rendered.<p>
        The OpenGL context is still active in this event, and you may use it
        to execute your own OpenGL rendering.<p> }
@@ -2332,7 +2428,8 @@ type
     {: Set BufferCount > 1 for multiple render targets. <p>
        Users should check if the corresponding extension (GL_ATI_draw_buffers)
        is supported. Current hardware limit is BufferCount = 4. }
-         property BufferCount : integer read FBufferCount write SetBufferCount default 1;
+    property BufferCount: integer read FBufferCount write SetBufferCount default
+      1;
   end;
 
   TInvokeInfoForm = procedure(aSceneBuffer: TGLSceneBuffer; Modal: boolean);
@@ -2353,7 +2450,8 @@ procedure RegisterGLBehaviourNameChangeEvent(notifyEvent: TNotifyEvent);
 procedure DeRegisterGLBehaviourNameChangeEvent(notifyEvent: TNotifyEvent);
 
 {: Issues OpenGL calls for drawing X, Y, Z axes in a standard style. }
-procedure AxesBuildList(var rci : TRenderContextInfo; pattern: Word; AxisLen: Single);
+procedure AxesBuildList(var rci: TRenderContextInfo; pattern: Word; AxisLen:
+  Single);
 
 {: Registers the procedure call used to invoke the info form. }
 procedure RegisterInfoForm(infoForm: TInvokeInfoForm);
@@ -2401,7 +2499,8 @@ procedure AxesBuildList(var rci : TRenderContextInfo; pattern : Word; axisLen : 
   glEnd;
    glPopAttrib;
   // clear fpu exception flag (sometime raised by the call to glEnd)
-   asm fclex end;
+  asm fclex
+  end;
 end;
 
 // RegisterInfoForm
@@ -2421,7 +2520,8 @@ procedure InvokeInfoForm(aSceneBuffer: TGLSceneBuffer; Modal: boolean);
 begin
   if Assigned(vInfoForm) then
     vInfoForm(aSceneBuffer, Modal)
-   else InformationDlg('InfoForm not available.');
+  else
+    InformationDlg('InfoForm not available.');
 end;
 
 //------------------ internal global routines ----------------------------------
@@ -2490,28 +2590,34 @@ begin
     psName:
       Result := CompareText(TPickRecord(Item1).AObject.Name,
         TPickRecord(Item2).AObject.Name);
-      psMinDepth : begin
+    psMinDepth:
+      begin
         Diff := TPickRecord(Item1).ZMin - TPickRecord(Item2).ZMin;
         if Diff < 0 then
           Result := -1
         else if Diff > 0 then
           Result := 1
-         else Result:=0;
+        else
+          Result := 0;
       end;
-      psMaxDepth : begin
+    psMaxDepth:
+      begin
         Diff := TPickRecord(Item1).ZMax - TPickRecord(Item2).ZMax;
         if Diff < 0 then
           Result := -1
         else if Diff > 0 then
           Result := 1
-         else Result:=0;
+        else
+          Result := 0;
       end;
   end;
 end;
 
 // AddHit
 //
-procedure TGLPickList.AddHit(obj : TGLBaseSceneObject; const subObj : TPickSubObjects;
+
+procedure TGLPickList.AddHit(obj: TGLBaseSceneObject; const subObj:
+  TPickSubObjects;
   zMin, zMax: Single);
 var
   newRecord: TPickRecord;
@@ -2543,8 +2649,11 @@ var
   i: Integer;
 begin
   Result := -1;
-   if Assigned(AObject) then for i:=0 to Count-1 do begin
-      if Hit[i]=AObject then begin
+  if Assigned(AObject) then
+    for i := 0 to Count - 1 do
+    begin
+      if Hit[i] = AObject then
+      begin
         Result := i;
         Break;
       end;
@@ -2630,8 +2739,10 @@ begin
   DeleteChildCameras;
   if assigned(FLocalMatrix) then
     FreeMem(FLocalMatrix, SizeOf(TMatrix));
-   if assigned(FAbsoluteMatrix) then               // This bug have coming surely from a bad commit file.
-     FreeMem(FAbsoluteMatrix, SizeOf(TMatrix)*2);  // k00m memory fix and remove some leak of the old version.
+  if assigned(FAbsoluteMatrix) then
+    // This bug have coming surely from a bad commit file.
+    FreeMem(FAbsoluteMatrix, SizeOf(TMatrix) * 2);
+  // k00m memory fix and remove some leak of the old version.
   FGLObjectEffects.Free;
   FGLBehaviours.Free;
   FListHandle.Free;
@@ -2640,8 +2751,10 @@ begin
   FDirection.Free;
   FUp.Free;
   FScaling.Free;
-   if Assigned(FParent) then FParent.Remove(Self, False);
-   if Assigned(FChildren) then begin
+  if Assigned(FParent) then
+    FParent.Remove(Self, False);
+  if Assigned(FChildren) then
+  begin
     DeleteChildren;
     FChildren.Free;
   end;
@@ -2655,7 +2768,8 @@ function TGLBaseSceneObject.GetHandle(var rci: TRenderContextInfo): Cardinal;
 
   procedure DoBuild(var rci: TRenderContextInfo);
   begin
-      if FListHandle.Handle=0 then begin
+    if FListHandle.Handle = 0 then
+    begin
       FListHandle.AllocateHandle;
       Assert(FListHandle.Handle <> 0);
     end;
@@ -2670,8 +2784,10 @@ function TGLBaseSceneObject.GetHandle(var rci: TRenderContextInfo): Cardinal;
 begin
   if Assigned(FListHandle) then
     Result := FListHandle.Handle
-   else Result:=0;
-   if (Result=0) or (ocStructure in FChanges) then begin
+  else
+    Result := 0;
+  if (Result = 0) or (ocStructure in FChanges) then
+  begin
     ClearStructureChanged;
     if not Assigned(FListHandle) then
       FListHandle := TGLListHandle.Create;
@@ -2745,10 +2861,14 @@ end;
 
 procedure TGLBaseSceneObject.EndUpdate;
 begin
-   if FUpdateCount>0 then begin
+  if FUpdateCount > 0 then
+  begin
     Dec(FUpdateCount);
-      if FUpdateCount=0 then NotifyChange(Self);
-   end else Assert(False, glsUnBalancedBeginEndUpdate);
+    if FUpdateCount = 0 then
+      NotifyChange(Self);
+  end
+  else
+    Assert(False, glsUnBalancedBeginEndUpdate);
 end;
 
 // BuildList
@@ -2768,13 +2888,18 @@ var
   child: TGLBaseSceneObject;
 begin
   i := 0;
-   if Assigned(FChildren) then while i<FChildren.Count do begin
+  if Assigned(FChildren) then
+    while i < FChildren.Count do
+    begin
       child := TGLBaseSceneObject(FChildren.List^[i]);
       child.DeleteChildCameras;
-      if child is TGLCamera then begin
+      if child is TGLCamera then
+      begin
         Remove(child, True);
         child.Free;
-      end else Inc(i);
+      end
+      else
+        Inc(i);
     end;
 end;
 
@@ -2788,7 +2913,9 @@ begin
   DeleteChildCameras;
   if Assigned(FScene) then
     FScene.RemoveLights(Self);
-   if Assigned(FChildren) then while FChildren.Count>0 do begin
+  if Assigned(FChildren) then
+    while FChildren.Count > 0 do
+    begin
       child := TGLBaseSceneObject(FChildren.Pop);
       child.FParent := nil;
       child.Free;
@@ -2922,14 +3049,19 @@ end;
 
 // DrawAxes
 //
-procedure TGLBaseSceneObject.DrawAxes(var rci : TRenderContextInfo; pattern : Word);
+
+procedure TGLBaseSceneObject.DrawAxes(var rci: TRenderContextInfo; pattern:
+  Word);
 begin
-   AxesBuildList(rci, Pattern, rci.rcci.farClippingDistance-rci.rcci.nearClippingDistance);
+  AxesBuildList(rci, Pattern, rci.rcci.farClippingDistance -
+    rci.rcci.nearClippingDistance);
 end;
 
 // GetChildren
 //
-procedure TGLBaseSceneObject.GetChildren(AProc: TGetChildProc; Root: TComponent);
+
+procedure TGLBaseSceneObject.GetChildren(AProc: TGetChildProc; Root:
+  TComponent);
 var
   i: Integer;
 begin
@@ -2946,7 +3078,8 @@ function TGLBaseSceneObject.Get(Index: Integer): TGLBaseSceneObject;
 begin
   if Assigned(FChildren) then
     Result := TGLBaseSceneObject(FChildren[Index])
-   else Result:=nil;
+  else
+    Result := nil;
 end;
 
 // GetCount
@@ -2956,7 +3089,8 @@ function TGLBaseSceneObject.GetCount: Integer;
 begin
   if Assigned(FChildren) then
     Result := FChildren.Count
-   else Result:=0;
+  else
+    Result := 0;
 end;
 
 // HasSubChildren
@@ -2996,7 +3130,9 @@ end;
 
 // AddNewChild
 //
-function TGLBaseSceneObject.AddNewChild(aChild : TGLSceneObjectClass) : TGLBaseSceneObject;
+
+function TGLBaseSceneObject.AddNewChild(aChild: TGLSceneObjectClass):
+  TGLBaseSceneObject;
 begin
   Result := aChild.Create(Owner);
   AddChild(Result);
@@ -3004,7 +3140,9 @@ end;
 
 // AddNewChildFirst
 //
-function TGLBaseSceneObject.AddNewChildFirst(aChild : TGLSceneObjectClass) : TGLBaseSceneObject;
+
+function TGLBaseSceneObject.AddNewChildFirst(aChild: TGLSceneObjectClass):
+  TGLBaseSceneObject;
 begin
   Result := aChild.Create(Owner);
   Insert(0, Result);
@@ -3012,14 +3150,18 @@ end;
 
 // GetOrCreateBehaviour
 //
-function TGLBaseSceneObject.GetOrCreateBehaviour(aBehaviour:TGLBehaviourClass) : TGLBehaviour;
+
+function TGLBaseSceneObject.GetOrCreateBehaviour(aBehaviour: TGLBehaviourClass):
+  TGLBehaviour;
 begin
   Result := TGLBehaviour(Behaviours.GetOrCreate(aBehaviour));
 end;
 
 // AddNewBehaviour
 //
-function TGLBaseSceneObject.AddNewBehaviour(aBehaviour:TGLBehaviourClass) : TGLBehaviour;
+
+function TGLBaseSceneObject.AddNewBehaviour(aBehaviour: TGLBehaviourClass):
+  TGLBehaviour;
 begin
   Assert(Behaviours.CanAdd(aBehaviour));
   result := aBehaviour.Create(Behaviours)
@@ -3027,14 +3169,18 @@ end;
 
 // GetOrCreateEffect
 //
-function TGLBaseSceneObject.GetOrCreateEffect(anEffect:TGLObjectEffectClass) : TGLObjectEffect;
+
+function TGLBaseSceneObject.GetOrCreateEffect(anEffect: TGLObjectEffectClass):
+  TGLObjectEffect;
 begin
   Result := TGLObjectEffect(Effects.GetOrCreate(anEffect));
 end;
 
 // AddNewEffect
 //
-function TGLBaseSceneObject.AddNewEffect(anEffect:TGLObjectEffectClass) : TGLObjectEffect;
+
+function TGLBaseSceneObject.AddNewEffect(anEffect: TGLObjectEffectClass):
+  TGLObjectEffect;
 begin
   Assert(Effects.CanAdd(anEffect));
   result := anEffect.Create(Effects)
@@ -3045,7 +3191,8 @@ end;
 
 procedure TGLBaseSceneObject.RebuildMatrix;
 begin
-   if ocTransformation in Changes then begin
+  if ocTransformation in Changes then
+  begin
     VectorScale(LeftVector, Scale.X, FLocalMatrix^[0]);
     VectorScale(FUp.AsVector, Scale.Y, FLocalMatrix^[1]);
     VectorScale(FDirection.AsVector, Scale.Z, FLocalMatrix^[2]);
@@ -3072,16 +3219,22 @@ end;
 
 function TGLBaseSceneObject.AbsoluteMatrixAsAddress: PMatrix;
 begin
-   if ocAbsoluteMatrix in FChanges then begin
+  if ocAbsoluteMatrix in FChanges then
+  begin
     RebuildMatrix;
-      if not Assigned(FAbsoluteMatrix) then begin
+    if not Assigned(FAbsoluteMatrix) then
+    begin
       GetMem(FAbsoluteMatrix, SizeOf(TMatrix) * 2);
          FInvAbsoluteMatrix:=PMatrix(PtrUInt(FAbsoluteMatrix)+SizeOf(TMatrix));
     end;
-      if Assigned(Parent) and (not (Parent is TGLSceneRootObject)) then begin
-         MatrixMultiply(FLocalMatrix^, TGLBaseSceneObject(Parent).AbsoluteMatrixAsAddress^,
+    if Assigned(Parent) and (not (Parent is TGLSceneRootObject)) then
+    begin
+      MatrixMultiply(FLocalMatrix^,
+        TGLBaseSceneObject(Parent).AbsoluteMatrixAsAddress^,
         FAbsoluteMatrix^);
-      end else FAbsoluteMatrix^:=FLocalMatrix^;
+    end
+    else
+      FAbsoluteMatrix^ := FLocalMatrix^;
     Exclude(FChanges, ocAbsoluteMatrix);
     Include(FChanges, ocInvAbsoluteMatrix);
   end;
@@ -3101,18 +3254,25 @@ end;
 
 function TGLBaseSceneObject.InvAbsoluteMatrixAsAddress: PMatrix;
 begin
-   if ocInvAbsoluteMatrix in FChanges then begin
-      if VectorEquals(Scale.DirectVector, XYZHmgVector) then begin
-         if not Assigned(FAbsoluteMatrix) then begin
+  if ocInvAbsoluteMatrix in FChanges then
+  begin
+    if VectorEquals(Scale.DirectVector, XYZHmgVector) then
+    begin
+      if not Assigned(FAbsoluteMatrix) then
+      begin
         GetMem(FAbsoluteMatrix, SizeOf(TMatrix) * 2);
             FInvAbsoluteMatrix:=PMatrix(PtrUInt(FAbsoluteMatrix)+SizeOf(TMatrix));
       end;
       RebuildMatrix;
       if Parent <> nil then
-            FInvAbsoluteMatrix^:=MatrixMultiply(Parent.InvAbsoluteMatrixAsAddress^,
+        FInvAbsoluteMatrix^ :=
+          MatrixMultiply(Parent.InvAbsoluteMatrixAsAddress^,
           AnglePreservingMatrixInvert(FLocalMatrix^))
-         else FInvAbsoluteMatrix^:=AnglePreservingMatrixInvert(FLocalMatrix^);
-      end else begin
+      else
+        FInvAbsoluteMatrix^ := AnglePreservingMatrixInvert(FLocalMatrix^);
+    end
+    else
+    begin
       FInvAbsoluteMatrix^ := AbsoluteMatrixAsAddress^;
       InvertMatrix(FInvAbsoluteMatrix^);
     end;
@@ -3138,7 +3298,8 @@ begin
   begin
     FAbsoluteMatrix^ := Value;
     if Parent <> nil then
-      SetMatrix(MatrixMultiply(FAbsoluteMatrix^, Parent.InvAbsoluteMatrixAsAddress^))
+      SetMatrix(MatrixMultiply(FAbsoluteMatrix^,
+        Parent.InvAbsoluteMatrixAsAddress^))
     else
       SetMatrix(Value);
   end;
@@ -3159,7 +3320,8 @@ procedure TGLBaseSceneObject.SetAbsoluteDirection(const v: TVector);
 begin
   if Parent <> nil then
     Direction.AsVector := Parent.AbsoluteToLocal(v)
-   else Direction.AsVector:=v;
+  else
+    Direction.AsVector := v;
 end;
 
 // GetAbsoluteScale
@@ -3200,7 +3362,8 @@ procedure TGLBaseSceneObject.SetAbsoluteUp(const v: TVector);
 begin
   if Parent <> nil then
     Up.AsVector := Parent.AbsoluteToLocal(v)
-   else Up.AsVector:=v;
+  else
+    Up.AsVector := v;
 end;
 
 // AbsoluteRight
@@ -3234,7 +3397,8 @@ procedure TGLBaseSceneObject.SetAbsolutePosition(const v: TVector);
 begin
   if Assigned(Parent) then
     Position.AsVector := Parent.AbsoluteToLocal(v)
-   else Position.AsVector:=v;
+  else
+    Position.AsVector := v;
 end;
 
 // AbsolutePositionAsAddress
@@ -3282,7 +3446,9 @@ end;
 
 // AbsoluteToLocal (affine)
 //
-function TGLBaseSceneObject.AbsoluteToLocal(const v : TAffineVector) : TAffineVector;
+
+function TGLBaseSceneObject.AbsoluteToLocal(const v: TAffineVector):
+  TAffineVector;
 begin
   Result := VectorTransform(v, InvAbsoluteMatrixAsAddress^);
 end;
@@ -3297,7 +3463,9 @@ end;
 
 // LocalToAbsolute (affine)
 //
-function TGLBaseSceneObject.LocalToAbsolute(const v : TAffineVector) : TAffineVector;
+
+function TGLBaseSceneObject.LocalToAbsolute(const v: TAffineVector):
+  TAffineVector;
 begin
   Result := VectorTransform(v, AbsoluteMatrixAsAddress^);
 end;
@@ -3333,7 +3501,8 @@ function TGLBaseSceneObject.SqrDistanceTo(anObject: TGLBaseSceneObject): Single;
 begin
   if Assigned(anObject) then
     Result := VectorDistance2(AbsolutePosition, anObject.AbsolutePosition)
-   else Result:=0;
+  else
+    Result := 0;
 end;
 
 // SqrDistanceTo (vec4)
@@ -3351,7 +3520,8 @@ function TGLBaseSceneObject.DistanceTo(anObject: TGLBaseSceneObject): Single;
 begin
   if Assigned(anObject) then
     Result := VectorDistance(AbsolutePosition, anObject.AbsolutePosition)
-   else Result:=0;
+  else
+    Result := 0;
 end;
 
 // DistanceTo (vec4)
@@ -3407,7 +3577,8 @@ begin
   // not tested for child objects
   if AIncludeChilden and Assigned(FChildren) then
   begin
-      for i:=0 to FChildren.Count-1 do begin
+    for i := 0 to FChildren.Count - 1 do
+    begin
       child := TGLBaseSceneObject(FChildren.List^[i]);
       aabb := child.AxisAlignedBoundingBoxUnscaled(AIncludeChilden);
       AABBTransform(aabb, child.Matrix);
@@ -3430,8 +3601,10 @@ begin
   //not tested for child objects
   if AIncludeChilden and Assigned(FChildren) then
   begin
-      for i:=0 to FChildren.Count-1 do begin
-         aabb:=TGLBaseSceneObject(FChildren.List^[i]).AxisAlignedBoundingBoxUnscaled(AIncludeChilden);
+    for i := 0 to FChildren.Count - 1 do
+    begin
+      aabb :=
+        TGLBaseSceneObject(FChildren.List^[i]).AxisAlignedBoundingBoxUnscaled(AIncludeChilden);
       AABBTransform(aabb, TGLBaseSceneObject(FChildren.List^[i]).Matrix);
       AddAABB(Result, aabb);
     end;
@@ -3460,7 +3633,8 @@ begin
   // DaStr: code not tested...
   if AUseBaryCenter then
   begin
-    CurrentBaryOffset := VectorSubtract(AbsoluteToLocal(BarycenterAbsolutePosition),
+    CurrentBaryOffset :=
+      VectorSubtract(AbsoluteToLocal(BarycenterAbsolutePosition),
       Position.AsVector);
     OffsetBBPoint(Result, CurrentBaryOffset);
   end;
@@ -3480,7 +3654,8 @@ begin
   // DaStr: code not tested...
   if AUseBaryCenter then
   begin
-    CurrentBaryOffset := VectorSubtract(AbsoluteToLocal(BarycenterAbsolutePosition),
+    CurrentBaryOffset :=
+      VectorSubtract(AbsoluteToLocal(BarycenterAbsolutePosition),
       Position.AsVector);
     OffsetBBPoint(Result, CurrentBaryOffset);
   end;
@@ -3502,7 +3677,8 @@ begin
 
   if AUseBaryCenter then
   begin
-    CurrentBaryOffset := VectorSubtract(BarycenterAbsolutePosition, AbsolutePosition);
+    CurrentBaryOffset := VectorSubtract(BarycenterAbsolutePosition,
+      AbsolutePosition);
     OffsetBBPoint(Result, CurrentBaryOffset);
   end;
 end;
@@ -3532,13 +3708,16 @@ var
 begin
   dim := AxisAlignedDimensions;
   localPt := VectorTransform(point, InvAbsoluteMatrix);
-   Result:=(Abs(localPt[0]*Scale.X)<=dim[0]) and (Abs(localPt[1]*Scale.Y)<=dim[1])
+  Result := (Abs(localPt[0] * Scale.X) <= dim[0]) and (Abs(localPt[1] * Scale.Y)
+    <= dim[1])
     and (Abs(localPt[2] * Scale.Z) <= dim[2]);
 end;
 
 // CalculateBoundingBoxPersonalUnscaled
 //
-procedure TGLBaseSceneObject.CalculateBoundingBoxPersonalUnscaled(var ANewBoundingBox: THmgBoundingBox);
+
+procedure TGLBaseSceneObject.CalculateBoundingBoxPersonalUnscaled(var
+  ANewBoundingBox: THmgBoundingBox);
 begin
   // Using the standard method to get the local BB.
   ANewBoundingBox := AABBToBB(AxisAlignedBoundingBoxUnscaled(False));
@@ -3583,7 +3762,7 @@ end;
 //
 
 function TGLBaseSceneObject.BoundingBoxOfChildrenEx: THmgBoundingBox;
-Var
+var
   i: Integer;
   pBB: THmgBoundingBox;
 begin
@@ -3595,12 +3774,14 @@ begin
     begin
       for i := 0 to FChildren.count - 1 do
       begin
-        pBB := TGLBaseSceneObject(FChildren.List^[i]).BoundingBoxIncludingChildrenEx;
+        pBB :=
+          TGLBaseSceneObject(FChildren.List^[i]).BoundingBoxIncludingChildrenEx;
         if not BoundingBoxesAreEqual(@pBB, @NullBoundingBox) then
         begin
           // transformation with local matrix
           BBTransform(pbb, TGLBaseSceneObject(FChildren.List^[i]).Matrix);
-          if BoundingBoxesAreEqual(@FBoundingBoxOfChildren, @NullBoundingBox) then
+          if BoundingBoxesAreEqual(@FBoundingBoxOfChildren, @NullBoundingBox)
+            then
             FBoundingBoxOfChildren := pBB
           else
             AddBB(FBoundingBoxOfChildren, pBB);
@@ -3646,21 +3827,28 @@ var
   i1, i2, absPos: TVector;
 begin
   SetVector(absPos, AbsolutePosition);
-   if RayCastSphereIntersect(rayStart, rayVector, absPos, BoundingSphereRadius, i1, i2)>0 then begin
+  if RayCastSphereIntersect(rayStart, rayVector, absPos, BoundingSphereRadius,
+    i1, i2) > 0 then
+  begin
     Result := True;
     if Assigned(intersectPoint) then
       SetVector(intersectPoint^, i1);
-      if Assigned(intersectNormal) then begin
+    if Assigned(intersectNormal) then
+    begin
       SubtractVector(i1, absPos);
       NormalizeVector(i1);
       SetVector(intersectNormal^, i1);
     end;
-   end else Result:=False;
+  end
+  else
+    Result := False;
 end;
 
 // GenerateSilhouette
 //
-function TGLBaseSceneObject.GenerateSilhouette(const silhouetteParameters : TGLSilhouetteParameters) : TGLSilhouette;
+
+function TGLBaseSceneObject.GenerateSilhouette(const silhouetteParameters:
+  TGLSilhouetteParameters): TGLSilhouette;
 const
   cNbSegments = 21;
 var
@@ -3689,7 +3877,8 @@ begin
   Result := TGLSilhouette.Create;
   angleFactor := (2 * PI) / cNbSegments;
   vr := vr * 0.98;
-   for i:=0 to cNbSegments-1 do begin
+  for i := 0 to cNbSegments - 1 do
+  begin
     SinCos(i * angleFactor, vr, s, c);
     Result.Vertices.AddPoint(VectorCombine(sVec, tVec, s, c));
     j := (i + 1) mod cNbSegments;
@@ -3709,7 +3898,8 @@ var
   i: Integer;
   child, newChild: TGLBaseSceneObject;
 begin
-   if Source is TGLBaseSceneObject then begin
+  if Source is TGLBaseSceneObject then
+  begin
     DestroyHandles;
     FVisible := TGLBaseSceneObject(Source).FVisible;
     TGLBaseSceneObject(Source).RebuildMatrix;
@@ -3719,25 +3909,33 @@ begin
     FVisibilityCulling := TGLBaseSceneObject(Source).FVisibilityCulling;
     FRotation.Assign(TGLBaseSceneObject(Source).FRotation);
     DeleteChildren;
-      if Assigned(Scene) then Scene.BeginUpdate;
-      if Assigned(TGLBaseSceneObject(Source).FChildren) then begin
-         for i:=0 to TGLBaseSceneObject(Source).FChildren.Count-1 do begin
+    if Assigned(Scene) then
+      Scene.BeginUpdate;
+    if Assigned(TGLBaseSceneObject(Source).FChildren) then
+    begin
+      for i := 0 to TGLBaseSceneObject(Source).FChildren.Count - 1 do
+      begin
         child := TGLBaseSceneObject(TGLBaseSceneObject(Source).FChildren[i]);
         newChild := AddNewChild(TGLSceneObjectClass(child.ClassType));
         newChild.Assign(child);
       end;
     end;
-      if Assigned(Scene) then Scene.EndUpdate;
+    if Assigned(Scene) then
+      Scene.EndUpdate;
     OnProgress := TGLBaseSceneObject(Source).OnProgress;
     if Assigned(TGLBaseSceneObject(Source).FGLBehaviours) then
       Behaviours.Assign(TGLBaseSceneObject(Source).Behaviours)
-      else FreeAndNil(FGLBehaviours);
+    else
+      FreeAndNil(FGLBehaviours);
     if Assigned(TGLBaseSceneObject(Source).FGLObjectEffects) then
       Effects.Assign(TGLBaseSceneObject(Source).Effects)
-      else FreeAndNil(FGLObjectEffects);
+    else
+      FreeAndNil(FGLObjectEffects);
     Tag := TGLBaseSceneObject(Source).Tag;
     FTagFloat := TGLBaseSceneObject(Source).FTagFloat;
-   end else inherited Assign(Source);
+  end
+  else
+    inherited Assign(Source);
 end;
 
 // IsUpdating
@@ -3813,7 +4011,9 @@ end;
 
 // ResetAndPitchTurnRoll
 //
-procedure TGLBaseSceneObject.ResetAndPitchTurnRoll(const degX, degY, degZ : Single);
+
+procedure TGLBaseSceneObject.ResetAndPitchTurnRoll(const degX, degY, degZ:
+  Single);
 var
   rotMatrix: TMatrix;
   V: TVector;
@@ -3860,15 +4060,18 @@ var
 begin
   resMat := Matrix;
   // No we build rotation matrices and use them to rotate the obj
-   if rx<>0 then begin
+  if rx <> 0 then
+  begin
     SetVector(v, AbsoluteToLocal(XVector));
     resMat := MatrixMultiply(CreateRotationMatrix(v, -DegToRad(rx)), resMat);
   end;
-   if ry<>0 then begin
+  if ry <> 0 then
+  begin
     SetVector(v, AbsoluteToLocal(YVector));
     resMat := MatrixMultiply(CreateRotationMatrix(v, -DegToRad(ry)), resMat);
   end;
-   if rz<>0 then begin
+  if rz <> 0 then
+  begin
     SetVector(v, AbsoluteToLocal(ZVector));
     resMat := MatrixMultiply(CreateRotationMatrix(v, -DegToRad(rz)), resMat);
   end;
@@ -3877,11 +4080,14 @@ end;
 
 // RotateAbsolute
 //
-procedure TGLBaseSceneObject.RotateAbsolute(const axis: TAffineVector; angle: Single);
+
+procedure TGLBaseSceneObject.RotateAbsolute(const axis: TAffineVector; angle:
+  Single);
 var
   v: TAffineVector;
 begin
-   if angle<>0 then begin
+  if angle <> 0 then
+  begin
     SetVector(v, AbsoluteToLocal(axis));
     Matrix := MatrixMultiply(CreateRotationMatrix(v, DegToRad(angle)), Matrix);
   end;
@@ -3903,11 +4109,13 @@ begin
     FUp.Normalize;
     FDirection.Rotate(rightVector, angle);
     FDirection.Normalize;
-      r:=-RadToDeg(ArcTan2(FDirection.Y, VectorLength(FDirection.X, FDirection.Z)));
+    r := -RadToDeg(ArcTan2(FDirection.Y, VectorLength(FDirection.X,
+      FDirection.Z)));
     if FDirection.X < 0 then
       if FDirection.Y < 0 then
         r := 180 - r
-         else r:=-180-r;
+      else
+        r := -180 - r;
     FRotation.X := r;
   finally
     FIsCalculating := False;
@@ -3923,15 +4131,18 @@ var
   diff: Single;
   rotMatrix: TMatrix;
 begin
-   if AValue<>FRotation.X then begin
-      if not (csLoading in ComponentState) then begin
+  if AValue <> FRotation.X then
+  begin
+    if not (csLoading in ComponentState) then
+    begin
       FIsCalculating := True;
       try
         diff := DegToRad(FRotation.X - AValue);
         rotMatrix := CreateRotationMatrix(Right, diff);
         FUp.DirectVector := VectorTransform(FUp.AsVector, rotMatrix);
         FUp.Normalize;
-            FDirection.DirectVector:=VectorTransform(FDirection.AsVector, rotMatrix);
+        FDirection.DirectVector := VectorTransform(FDirection.AsVector,
+          rotMatrix);
         FDirection.Normalize;
         TransformationChanged;
       finally
@@ -3961,11 +4172,13 @@ begin
 
     // calculate new rotation angle from vectors
     rightVector := Right;
-      r:=-RadToDeg(ArcTan2(rightVector[1], VectorLength(rightVector[0], rightVector[2])));
+    r := -RadToDeg(ArcTan2(rightVector[1], VectorLength(rightVector[0],
+      rightVector[2])));
     if rightVector[0] < 0 then
       if rightVector[1] < 0 then
         r := 180 - r
-         else r:=-180-r;
+      else
+        r := -180 - r;
     FRotation.Z := r;
   finally
     FIsCalculating := False;
@@ -3981,15 +4194,18 @@ var
   diff: Single;
   rotMatrix: TMatrix;
 begin
-   if AValue<>FRotation.Z then begin
-      if not (csLoading in ComponentState) then begin
+  if AValue <> FRotation.Z then
+  begin
+    if not (csLoading in ComponentState) then
+    begin
       FIsCalculating := True;
       try
         diff := DegToRad(FRotation.Z - AValue);
         rotMatrix := CreateRotationMatrix(Direction.AsVector, diff);
         FUp.DirectVector := VectorTransform(FUp.AsVector, rotMatrix);
         FUp.Normalize;
-            FDirection.DirectVector:=VectorTransform(FDirection.AsVector, rotMatrix);
+        FDirection.DirectVector := VectorTransform(FDirection.AsVector,
+          rotMatrix);
         FDirection.Normalize;
         TransformationChanged;
       finally
@@ -4016,11 +4232,13 @@ begin
     FUp.Normalize;
     FDirection.Rotate(upVector, angle);
     FDirection.Normalize;
-      r:=-RadToDeg(ArcTan2(FDirection.X, VectorLength(FDirection.Y, FDirection.Z)));
+    r := -RadToDeg(ArcTan2(FDirection.X, VectorLength(FDirection.Y,
+      FDirection.Z)));
     if FDirection.X < 0 then
       if FDirection.Y < 0 then
         r := 180 - r
-         else r:=-180-r;
+      else
+        r := -180 - r;
     FRotation.Y := r;
   finally
     FIsCalculating := False;
@@ -4036,15 +4254,18 @@ var
   diff: Single;
   rotMatrix: TMatrix;
 begin
-   if AValue<>FRotation.Y then begin
-      if not (csLoading in ComponentState) then begin
+  if AValue <> FRotation.Y then
+  begin
+    if not (csLoading in ComponentState) then
+    begin
       FIsCalculating := True;
       try
         diff := DegToRad(FRotation.Y - AValue);
         rotMatrix := CreateRotationMatrix(Up.AsVector, diff);
         FUp.DirectVector := VectorTransform(FUp.AsVector, rotMatrix);
         FUp.Normalize;
-            FDirection.DirectVector:=VectorTransform(FDirection.AsVector, rotMatrix);
+        FDirection.DirectVector := VectorTransform(FDirection.AsVector,
+          rotMatrix);
         FDirection.Normalize;
         TransformationChanged;
       finally
@@ -4090,14 +4311,18 @@ end;
 
 // PointTo
 //
-procedure TGLBaseSceneObject.PointTo(const ATargetObject : TGLBaseSceneObject; const AUpVector : TVector);
+
+procedure TGLBaseSceneObject.PointTo(const ATargetObject: TGLBaseSceneObject;
+  const AUpVector: TVector);
 begin
   PointTo(ATargetObject.AbsolutePosition, AUpVector);
 end;
 
 // PointTo
 //
-procedure TGLBaseSceneObject.PointTo(const AAbsolutePosition, AUpVector : TVector);
+
+procedure TGLBaseSceneObject.PointTo(const AAbsolutePosition, AUpVector:
+  TVector);
 var
   absDir, absRight, absUp: TVector;
 begin
@@ -4108,10 +4333,13 @@ begin
   NormalizeVector(absRight);
   absUp := VectorCrossProduct(absRight, absDir);
   // convert absolute to local and adjust object
-   if Parent<>nil then begin
+  if Parent <> nil then
+  begin
     FDirection.AsVector := Parent.AbsoluteToLocal(absDir);
     FUp.AsVector := Parent.AbsoluteToLocal(absUp);
-   end else begin
+  end
+  else
+  begin
     FDirection.AsVector := absDir;
     FUp.AsVector := absUp;
   end;
@@ -4123,7 +4351,8 @@ end;
 
 procedure TGLBaseSceneObject.SetShowAxes(AValue: Boolean);
 begin
-   if FShowAxes <> AValue then begin
+  if FShowAxes <> AValue then
+  begin
     FShowAxes := AValue;
     NotifyChange(Self);
   end;
@@ -4143,7 +4372,8 @@ end;
 
 procedure TGLBaseSceneObject.SetName(const NewName: TComponentName);
 begin
-   if Name <> NewName then begin
+  if Name <> NewName then
+  begin
     inherited SetName(NewName);
     if Assigned(vGLBaseSceneObjectNameChangeEvent) then
       vGLBaseSceneObjectNameChangeEvent(Self);
@@ -4165,7 +4395,8 @@ function TGLBaseSceneObject.GetIndex: Integer;
 begin
   if Assigned(FParent) then
     Result := FParent.FChildren.IndexOf(Self)
-   else Result:=-1;
+  else
+    Result := -1;
 end;
 
 // SetIndex
@@ -4176,16 +4407,22 @@ var
   LCount: Integer;
   parentBackup: TGLBaseSceneObject;
 begin
-   if Assigned(FParent) then begin
-      if aValue<0 then aValue:=0;
+  if Assigned(FParent) then
+  begin
+    if aValue < 0 then
+      aValue := 0;
     LCount := FParent.Count;
-      if aValue>=LCount then aValue:=LCount-1;
-      if aValue<>Index then begin
-         if Assigned(FScene) then FScene.BeginUpdate;
+    if aValue >= LCount then
+      aValue := LCount - 1;
+    if aValue <> Index then
+    begin
+      if Assigned(FScene) then
+        FScene.BeginUpdate;
       parentBackup := FParent;
       parentBackup.Remove(Self, False);
       parentBackup.Insert(AValue, Self);
-         if Assigned(FScene) then FScene.EndUpdate;
+      if Assigned(FScene) then
+        FScene.EndUpdate;
     end;
   end;
 end;
@@ -4196,7 +4433,8 @@ end;
 procedure TGLBaseSceneObject.SetParentComponent(Value: TComponent);
 begin
   inherited;
-   if Value=FParent then Exit;
+  if Value = FParent then
+    Exit;
 
   if Value is TGLScene then
     SetParent(TGLScene(Value).Objects)
@@ -4211,10 +4449,12 @@ end;
 
 procedure TGLBaseSceneObject.StructureChanged;
 begin
-   if not (ocStructure in FChanges) then begin
+  if not (ocStructure in FChanges) then
+  begin
     Include(FChanges, ocStructure);
     NotifyChange(Self);
-   end else if osDirectDraw in ObjectStyle then
+  end
+  else if osDirectDraw in ObjectStyle then
     NotifyChange(Self);
 end;
 
@@ -4237,9 +4477,11 @@ var
   matSet: TObjectChanges;
 begin
   matSet := [ocAbsoluteMatrix, ocInvAbsoluteMatrix];
-   if matSet*FChanges<>matSet then begin
+  if matSet * FChanges <> matSet then
+  begin
     FChanges := FChanges + matSet;
-      if Assigned(FChildren) then begin
+    if Assigned(FChildren) then
+    begin
       list := FChildren.List;
       for i := 0 to FChildren.Count - 1 do
         TGLBaseSceneObject(list^[i]).RecTransformationChanged;
@@ -4252,7 +4494,8 @@ end;
 
 procedure TGLBaseSceneObject.TransformationChanged;
 begin
-   if not (ocTransformation in FChanges) then begin
+  if not (ocTransformation in FChanges) then
+  begin
     Include(FChanges, ocTransformation);
     RecTransformationChanged;
     if not (csLoading in ComponentState) then
@@ -4265,14 +4508,17 @@ end;
 
 procedure TGLBaseSceneObject.MoveTo(newParent: TGLBaseSceneObject);
 begin
-   if newParent=FParent then Exit;
-   if Assigned(FParent) then begin
+  if newParent = FParent then
+    Exit;
+  if Assigned(FParent) then
+  begin
     FParent.Remove(Self, False);
     FParent := nil;
   end;
   if Assigned(newParent) then
     newParent.AddChild(Self)
-   else SetScene(nil);
+  else
+    SetScene(nil);
 end;
 
 // MoveUp
@@ -4320,7 +4566,8 @@ var
   originalT2C, normalT2C, normalCameraRight, newPos: TVector;
   pitchNow, dist: Single;
 begin
-   if Assigned(anObject) then begin
+  if Assigned(anObject) then
+  begin
     // normalT2C points away from the direction the camera is looking
     originalT2C := VectorSubtract(AbsolutePosition,
       anObject.AbsolutePosition);
@@ -4332,18 +4579,21 @@ begin
     normalCameraRight := VectorCrossProduct(AbsoluteUp, normalT2C);
     if VectorLength(normalCameraRight) < 0.001 then
       SetVector(normalCameraRight, XVector) // arbitrary vector
-      else NormalizeVector(normalCameraRight);
+    else
+      NormalizeVector(normalCameraRight);
     // calculate the current pitch.
     // 0 is looking down and PI is looking up
     pitchNow := ArcCos(VectorDotProduct(AbsoluteUp, normalT2C));
-      pitchNow:=ClampValue(pitchNow+DegToRad(pitchDelta), 0+0.025, PI-0.025);
+    pitchNow := ClampValue(pitchNow + DegToRad(pitchDelta), 0 + 0.025, PI -
+      0.025);
     // create a new vector pointing up and then rotate it down
     // into the new position
     SetVector(normalT2C, AbsoluteUp);
     RotateVector(normalT2C, normalCameraRight, -pitchNow);
     RotateVector(normalT2C, AbsoluteUp, -DegToRad(turnDelta));
     ScaleVector(normalT2C, dist);
-      newPos:=VectorAdd(AbsolutePosition, VectorSubtract(normalT2C, originalT2C));
+    newPos := VectorAdd(AbsolutePosition, VectorSubtract(normalT2C,
+      originalT2C));
     if Assigned(Parent) then
       newPos := Parent.AbsoluteToLocal(newPos);
     Position.AsVector := newPos;
@@ -4357,10 +4607,12 @@ procedure TGLBaseSceneObject.CoordinateChanged(Sender: TGLCustomCoordinates);
 var
   rightVector: TVector;
 begin
-   if FIsCalculating then Exit;
+  if FIsCalculating then
+    Exit;
   FIsCalculating := True;
   try
-      if Sender = FDirection then begin
+    if Sender = FDirection then
+    begin
       if FDirection.VectorLength = 0 then
         FDirection.DirectVector := ZHmgVector;
       FDirection.Normalize;
@@ -4368,14 +4620,17 @@ begin
       rightVector := VectorCrossProduct(FDirection.AsVector, FUp.AsVector);
       // Rightvector is zero if direction changed exactly by 90 degrees,
       // in this case assume a default vector
-         if VectorLength(rightVector)<1e-5 then begin
+      if VectorLength(rightVector) < 1e-5 then
+      begin
         rightVector := VectorCrossProduct(ZHmgVector, FUp.AsVector);
         if VectorLength(rightVector) < 1e-5 then
           rightVector := VectorCrossProduct(XHmgVector, FUp.AsVector);
       end;
       FUp.DirectVector := VectorCrossProduct(rightVector, FDirection.AsVector);
       FUp.Normalize;
-      end else if Sender = FUp then begin
+    end
+    else if Sender = FUp then
+    begin
       if FUp.VectorLength = 0 then
         FUp.DirectVector := YHmgVector;
       FUp.Normalize;
@@ -4383,7 +4638,8 @@ begin
       rightVector := VectorCrossProduct(FDirection.AsVector, FUp.AsVector);
       // Rightvector is zero if direction changed exactly by 90 degrees,
       // in this case assume a default vector
-         if VectorLength(rightVector)<1e-5 then begin
+      if VectorLength(rightVector) < 1e-5 then
+      begin
         rightVector := VectorCrossProduct(ZHmgVector, FUp.AsVector);
         if VectorLength(rightVector) < 1e-5 then
           rightVector := VectorCrossProduct(XHmgVector, FUp.AsVector);
@@ -4411,17 +4667,21 @@ begin
     FGLBehaviours.DoProgress(progressTime);
   if Assigned(FGLObjectEffects) then
     FGLObjectEffects.DoProgress(progressTime);
-   if Assigned(FOnProgress) then with progressTime do
+  if Assigned(FOnProgress) then
+    with progressTime do
       FOnProgress(Self, deltaTime, newTime);
 end;
 
 // Insert
 //
-procedure TGLBaseSceneObject.Insert(aIndex : Integer; aChild : TGLBaseSceneObject);
+
+procedure TGLBaseSceneObject.Insert(aIndex: Integer; aChild:
+  TGLBaseSceneObject);
 begin
   if not Assigned(FChildren) then
     FChildren := TPersistentObjectList.Create;
-   with FChildren do begin
+  with FChildren do
+  begin
     if Assigned(aChild.FParent) then
       aChild.FParent.Remove(aChild, False);
     Insert(aIndex, aChild);
@@ -4439,26 +4699,33 @@ end;
 
 // Remove
 //
-procedure TGLBaseSceneObject.Remove(aChild : TGLBaseSceneObject; keepChildren : Boolean);
+
+procedure TGLBaseSceneObject.Remove(aChild: TGLBaseSceneObject; keepChildren:
+  Boolean);
 var
   I: Integer;
 begin
-   if not Assigned(FChildren) then Exit;
-   if aChild.Parent=Self then begin
+  if not Assigned(FChildren) then
+    Exit;
+  if aChild.Parent = Self then
+  begin
     if Assigned(FScene) then
       FScene.RemoveLights(aChild);
     if aChild.Owner = Self then
       RemoveComponent(aChild);
     FChildren.Remove(aChild);
     aChild.FParent := nil;
-      if keepChildren then begin
+    if keepChildren then
+    begin
       BeginUpdate;
       if aChild.Count <> 0 then
         for I := aChild.Count - 1 downto 0 do
           if not IsSubComponent(aChild.Children[I]) then
             aChild.Children[I].MoveTo(Self);
       EndUpdate;
-      end else NotifyChange(Self);
+    end
+    else
+      NotifyChange(Self);
   end;
 end;
 
@@ -4469,12 +4736,14 @@ function TGLBaseSceneObject.IndexOfChild(aChild: TGLBaseSceneObject): Integer;
 begin
   if Assigned(FChildren) then
     Result := FChildren.IndexOf(aChild)
-   else Result:=-1;
+  else
+    Result := -1;
 end;
 
 // FindChild
 //
-function TGLBaseSceneObject.FindChild(const aName : String;
+
+function TGLBaseSceneObject.FindChild(const aName: string;
   ownChildrenOnly: Boolean): TGLBaseSceneObject;
 var
   i: integer;
@@ -4482,17 +4751,24 @@ var
 begin
   res := nil;
   Result := nil;
-   if not Assigned(FChildren) then Exit;
-   for i:=0 to FChildren.Count-1 do begin
-      if CompareText(TGLBaseSceneObject(FChildren[i]).Name, aName)=0 then begin
+  if not Assigned(FChildren) then
+    Exit;
+  for i := 0 to FChildren.Count - 1 do
+  begin
+    if CompareText(TGLBaseSceneObject(FChildren[i]).Name, aName) = 0 then
+    begin
       res := TGLBaseSceneObject(FChildren[i]);
       Break;
     end;
   end;
-   if not ownChildrenOnly then begin
-      for i:=0 to FChildren.Count-1 do with TGLBaseSceneObject(FChildren[i]) do begin
+  if not ownChildrenOnly then
+  begin
+    for i := 0 to FChildren.Count - 1 do
+      with TGLBaseSceneObject(FChildren[i]) do
+      begin
         Result := FindChild(aName, ownChildrenOnly);
-         if Assigned(Result) then Break;
+        if Assigned(Result) then
+          Break;
       end;
   end;
   if not Assigned(Result) then
@@ -4529,7 +4805,8 @@ end;
 procedure TGLBaseSceneObject.MoveChildUp(anIndex: Integer);
 begin
   Assert(Assigned(FChildren), 'No children found!');
-   if anIndex>0 then begin
+  if anIndex > 0 then
+  begin
     FChildren.Exchange(anIndex, anIndex - 1);
     NotifyChange(Self);
   end;
@@ -4541,7 +4818,8 @@ end;
 procedure TGLBaseSceneObject.MoveChildDown(anIndex: Integer);
 begin
   Assert(Assigned(FChildren), 'No children found!');
-   if anIndex<FChildren.Count-1 then begin
+  if anIndex < FChildren.Count - 1 then
+  begin
     FChildren.Exchange(anIndex, anIndex + 1);
     NotifyChange(Self);
   end;
@@ -4584,21 +4862,28 @@ var
     saveMatrixSelf: TMatrix;
 begin
   // visibility culling determination
-   if ARci.visibilityCulling in [vcObjectBased, vcHierarchical] then begin
-      if ARci.visibilityCulling=vcObjectBased then begin
+  if ARci.visibilityCulling in [vcObjectBased, vcHierarchical] then
+  begin
+    if ARci.visibilityCulling = vcObjectBased then
+    begin
       shouldRenderSelf := (osNoVisibilityCulling in ObjectStyle)
         or (not IsVolumeClipped(AbsolutePosition,
         BoundingSphereRadius,
         ARci.rcci.frustum));
       shouldRenderChildren := Assigned(FChildren);
-      end else begin // vcHierarchical
+    end
+    else
+    begin // vcHierarchical
       aabb := AxisAlignedBoundingBox;
       shouldRenderSelf := (osNoVisibilityCulling in ObjectStyle)
         or (not IsVolumeClipped(aabb.min, aabb.max, ARci.rcci.frustum));
       shouldRenderChildren := shouldRenderSelf and Assigned(FChildren);
     end;
-      if not (shouldRenderSelf or shouldRenderChildren) then Exit;
-   end else begin
+    if not (shouldRenderSelf or shouldRenderChildren) then
+      Exit;
+  end
+  else
+  begin
     Assert(ARci.visibilityCulling in [vcNone, vcInherited],
       'Unknown visibility culling option');
     shouldRenderSelf := True;
@@ -4619,12 +4904,14 @@ begin
          TGLSceneBuffer(ARci.buffer).DoGLPushName(self)
       else TGLSceneBuffer(ARci.buffer).DoGLLoadName(self);
   // Start rendering
-   if shouldRenderSelf then begin
+  if shouldRenderSelf then
+  begin
 {$IFNDEF GLS_OPTIMIZATIONS}
     if FShowAxes then
       DrawAxes(ARci, $CCCC);
 {$ENDIF}
-      if Assigned(FGLObjectEffects) and (FGLObjectEffects.Count>0) then begin
+    if Assigned(FGLObjectEffects) and (FGLObjectEffects.Count > 0) then
+    begin
 {$IFNDEF GLS_OPTIMIZATIONS}
       if OptSaveGLStack then
         glGetFloatv(GL_MODELVIEW_MATRIX, @saveMatrixSelf[0])
@@ -4636,7 +4923,8 @@ begin
 {$IFNDEF GLS_OPTIMIZATIONS}
       if OptSaveGLStack then
         glLoadMatrixf(@saveMatrixSelf[0])
-         else begin
+      else
+      begin
         glPopMatrix;
         glPushMatrix;
       end;
@@ -4693,10 +4981,12 @@ procedure TGLBaseSceneObject.DoRender(var ARci: TRenderContextInfo;
   ARenderSelf, ARenderChildren: Boolean);
 begin
   // start rendering self
-   if ARenderSelf then begin
+  if ARenderSelf then
+  begin
     if (osDirectDraw in ObjectStyle) or ARci.amalgamating then
       BuildList(ARci)
-      else glCallList(GetHandle(ARci));
+    else
+      glCallList(GetHandle(ARci));
   end;
   // start rendering children (if any)
   if ARenderChildren then
@@ -4705,7 +4995,9 @@ end;
 
 // RenderChildren
 //
-procedure TGLBaseSceneObject.RenderChildren(firstChildIndex, lastChildIndex : Integer;
+
+procedure TGLBaseSceneObject.RenderChildren(firstChildIndex, lastChildIndex:
+  Integer;
   var rci: TRenderContextInfo);
 var
   i: Integer;
@@ -4716,28 +5008,35 @@ var
   oldSorting: TGLObjectsSorting;
   oldCulling: TGLVisibilityCulling;
 begin
-   if not Assigned(FChildren) then Exit;
+  if not Assigned(FChildren) then
+    Exit;
   oldCulling := rci.visibilityCulling;
   if Self.VisibilityCulling <> vcInherited then
     rci.visibilityCulling := Self.VisibilityCulling;
-   if lastChildIndex=firstChildIndex then begin
+  if lastChildIndex = firstChildIndex then
+  begin
     obj := TGLBaseSceneObject(FChildren.List^[firstChildIndex]);
     if obj.Visible then
       obj.Render(rci)
-   end else if lastChildIndex>firstChildIndex then begin
+  end
+  else if lastChildIndex > firstChildIndex then
+  begin
     oldSorting := rci.objectsSorting;
     if Self.ObjectsSorting <> osInherited then
       rci.objectsSorting := Self.ObjectsSorting;
     case rci.objectsSorting of
-         osNone : begin
+      osNone:
+        begin
           plist := FChildren.List;
-            for i:=firstChildIndex to lastChildIndex do begin
+          for i := firstChildIndex to lastChildIndex do
+          begin
             obj := TGLBaseSceneObject(plist^[i]);
             if obj.Visible then
               obj.Render(rci);
           end;
         end;
-         osRenderFarthestFirst, osRenderBlendedLast, osRenderNearestFirst : begin
+      osRenderFarthestFirst, osRenderBlendedLast, osRenderNearestFirst:
+        begin
           distList := TSingleList.Create;
           objList := TPersistentObjectList.Create;
           distList.GrowthDelta := lastChildIndex + 1; // no reallocations
@@ -4746,37 +5045,48 @@ begin
             case rci.objectsSorting of
               osRenderBlendedLast:
                 // render opaque stuff
-                     for i:=firstChildIndex to lastChildIndex do begin
+                for i := firstChildIndex to lastChildIndex do
+                begin
                   obj := TGLBaseSceneObject(FChildren.List^[i]);
-                        if obj.Visible then begin
+                  if obj.Visible then
+                  begin
                     if not obj.Blended then
                       obj.Render(rci)
-                           else begin
+                    else
+                    begin
                       objList.Add(obj);
-                              distList.Add(1+obj.BarycenterSqrDistanceTo(rci.cameraPosition));
+                      distList.Add(1 +
+                        obj.BarycenterSqrDistanceTo(rci.cameraPosition));
                     end;
                   end;
                 end;
               osRenderFarthestFirst:
-                     for i:=firstChildIndex to lastChildIndex do begin
+                for i := firstChildIndex to lastChildIndex do
+                begin
                   obj := TGLBaseSceneObject(FChildren.List^[i]);
-                        if obj.Visible then begin
+                  if obj.Visible then
+                  begin
                     objList.Add(obj);
-                           distList.Add(1+obj.BarycenterSqrDistanceTo(rci.cameraPosition));
+                    distList.Add(1 +
+                      obj.BarycenterSqrDistanceTo(rci.cameraPosition));
                   end;
                 end;
               osRenderNearestFirst:
-                     for i:=firstChildIndex to lastChildIndex do begin
+                for i := firstChildIndex to lastChildIndex do
+                begin
                   obj := TGLBaseSceneObject(FChildren.List^[i]);
-                        if obj.Visible then begin
+                  if obj.Visible then
+                  begin
                     objList.Add(obj);
-                           distList.Add(-1-obj.BarycenterSqrDistanceTo(rci.cameraPosition));
+                    distList.Add(-1 -
+                      obj.BarycenterSqrDistanceTo(rci.cameraPosition));
                   end;
                 end;
             else
               Assert(False);
             end;
-               if distList.Count>0 then begin
+            if distList.Count > 0 then
+            begin
               if distList.Count > 1 then
                      {$WARNING crossbuilder: FastQuickSortLists comment says all values >= 1 but osRenderNearestFirst would give values <= -1 }
                      {$WARNING crossbuilder: so maybe better use the slower QuickSortLists instead }
@@ -4862,7 +5172,8 @@ end;
 
 procedure TGLBaseSceneObject.SetVisible(aValue: Boolean);
 begin
-   if FVisible<>aValue then begin
+  if FVisible <> aValue then
+  begin
     FVisible := AValue;
     NotifyChange(Self);
   end;
@@ -4873,7 +5184,8 @@ end;
 
 procedure TGLBaseSceneObject.SetObjectsSorting(const val: TGLObjectsSorting);
 begin
-   if FObjectsSorting<>val then begin
+  if FObjectsSorting <> val then
+  begin
     FObjectsSorting := val;
     NotifyChange(Self);
   end;
@@ -4881,9 +5193,12 @@ end;
 
 // SetVisibilityCulling
 //
-procedure TGLBaseSceneObject.SetVisibilityCulling(const val : TGLVisibilityCulling);
+
+procedure TGLBaseSceneObject.SetVisibilityCulling(const val:
+  TGLVisibilityCulling);
+begin
+  if FVisibilityCulling <> val then
   begin
-   if FVisibilityCulling<>val then begin
     FVisibilityCulling := val;
     NotifyChange(Self);
   end;
@@ -4932,7 +5247,8 @@ procedure TGLBaseSceneObject.SetScene(const value: TGLScene);
 var
   i: Integer;
 begin
-   if value<>FScene then begin
+  if value <> FScene then
+  begin
     // must be freed, the new scene may be using a non-compatible RC
     if FScene <> nil then
       DestroyHandles;
@@ -4987,7 +5303,9 @@ end;
 
 // SetAbsoluteAffinePosition
 //
-procedure TGLBaseSceneObject.SetAbsoluteAffinePosition(const Value: TAffineVector);
+
+procedure TGLBaseSceneObject.SetAbsoluteAffinePosition(const Value:
+  TAffineVector);
 begin
   SetAbsolutePosition(VectorMake(Value, 1));
 end;
@@ -5090,7 +5408,8 @@ end;
 
 // SetName
 //
-procedure TGLBaseBehaviour.SetName(const val : String);
+
+procedure TGLBaseBehaviour.SetName(const val: string);
 begin
   inherited SetName(val);
   if Assigned(vGLBehaviourNameChangeEvent) then
@@ -5102,7 +5421,8 @@ end;
 
 procedure TGLBaseBehaviour.WriteToFiler(writer: TWriter);
 begin
-   with writer do begin
+  with writer do
+  begin
     WriteInteger(0); // Archive Version 0
     // nothing more, yet
   end;
@@ -5113,7 +5433,8 @@ end;
 
 procedure TGLBaseBehaviour.ReadFromFiler(reader: TReader);
 begin
-   with reader do begin
+  with reader do
+  begin
     if ReadInteger <> 0 then
       Assert(False);
     // nothing more, yet
@@ -5151,14 +5472,17 @@ end;
 
 // GetNamePath
 //
-function TGLBehaviours.GetNamePath : String;
+
+function TGLBehaviours.GetNamePath: string;
 var
-   s : String;
+  s: string;
 begin
   Result := ClassName;
-   if GetOwner=nil then Exit;
+  if GetOwner = nil then
+    Exit;
   s := GetOwner.GetNamePath;
-   if s='' then Exit;
+  if s = '' then
+    Exit;
   Result := s + '.Behaviours';
 end;
 
@@ -5183,7 +5507,8 @@ end;
 
 function TGLBehaviours.CanAdd(aClass: TXCollectionItemClass): Boolean;
 begin
-   Result:=(not aClass.InheritsFrom(TGLObjectEffect)) and (inherited CanAdd(aClass));
+  Result := (not aClass.InheritsFrom(TGLObjectEffect)) and (inherited
+    CanAdd(aClass));
 end;
 
 // DoProgress
@@ -5206,7 +5531,8 @@ end;
 
 procedure TGLObjectEffect.WriteToFiler(writer: TWriter);
 begin
-   with writer do begin
+  with writer do
+  begin
     WriteInteger(0); // Archive Version 0
     // nothing more, yet
   end;
@@ -5217,7 +5543,8 @@ end;
 
 procedure TGLObjectEffect.ReadFromFiler(reader: TReader);
 begin
-   with reader do begin
+  with reader do
+  begin
     if ReadInteger <> 0 then
       Assert(False);
     // nothing more, yet
@@ -5247,14 +5574,17 @@ end;
 
 // GetNamePath
 //
-function TGLObjectEffects.GetNamePath : String;
+
+function TGLObjectEffects.GetNamePath: string;
 var
-   s : String;
+  s: string;
 begin
   Result := ClassName;
-   if GetOwner=nil then Exit;
+  if GetOwner = nil then
+    Exit;
   s := GetOwner.GetNamePath;
-   if s='' then Exit;
+  if s = '' then
+    Exit;
   Result := s + '.Effects';
 end;
 
@@ -5279,7 +5609,8 @@ end;
 
 function TGLObjectEffects.CanAdd(aClass: TXCollectionItemClass): Boolean;
 begin
-   Result:=(aClass.InheritsFrom(TGLObjectEffect)) and (inherited CanAdd(aClass));
+  Result := (aClass.InheritsFrom(TGLObjectEffect)) and (inherited
+    CanAdd(aClass));
 end;
 
 // DoProgress
@@ -5301,7 +5632,8 @@ var
   i: Integer;
   effect: TGLObjectEffect;
 begin
-   for i:=0 to Count-1 do begin
+  for i := 0 to Count - 1 do
+  begin
     effect := TGLObjectEffect(Items[i]);
     if effect is TGLObjectPreEffect then
       effect.Render(rci);
@@ -5316,11 +5648,13 @@ var
   i: Integer;
   effect: TGLObjectEffect;
 begin
-   for i:=0 to Count-1 do begin
+  for i := 0 to Count - 1 do
+  begin
     effect := TGLObjectEffect(Items[i]);
     if effect is TGLObjectPostEffect then
       effect.Render(rci)
-      else if Assigned(rci.afterRenderEffects) and (effect is TGLObjectAfterEffect) then
+    else if Assigned(rci.afterRenderEffects) and (effect is TGLObjectAfterEffect)
+      then
       rci.afterRenderEffects.Add(effect);
   end;
 end;
@@ -5352,7 +5686,8 @@ end;
 
 procedure TGLCustomSceneObject.Assign(Source: TPersistent);
 begin
-   if Source is TGLCustomSceneObject then begin
+  if Source is TGLCustomSceneObject then
+  begin
     FMaterial.Assign(TGLCustomSceneObject(Source).FMaterial);
     FHint := TGLCustomSceneObject(Source).FHint;
   end;
@@ -5401,18 +5736,24 @@ procedure TGLCustomSceneObject.DoRender(var ARci: TRenderContextInfo;
   ARenderSelf, ARenderChildren: Boolean);
 begin
   // start rendering self
-   if ARenderSelf then begin
-      if not ARci.ignoreMaterials then begin
+  if ARenderSelf then
+  begin
+    if not ARci.ignoreMaterials then
+    begin
       FMaterial.Apply(ARci);
       repeat
         if (osDirectDraw in ObjectStyle) or ARci.amalgamating then
           BuildList(ARci)
-            else glCallList(GetHandle(ARci));
+        else
+          glCallList(GetHandle(ARci));
       until not FMaterial.UnApply(ARci);
-      end else begin
+    end
+    else
+    begin
       if (osDirectDraw in ObjectStyle) or ARci.amalgamating then
         BuildList(ARci)
-         else glCallList(GetHandle(ARci));
+      else
+        glCallList(GetHandle(ARci));
     end;
   end;
   // start rendering children (if any)
@@ -5467,10 +5808,13 @@ end;
 
 function TGLCamera.AbsoluteVectorToTarget: TVector;
 begin
-   if TargetObject<>nil then begin
+  if TargetObject <> nil then
+  begin
     VectorSubtract(TargetObject.AbsolutePosition, AbsolutePosition, Result);
     NormalizeVector(Result);
-   end else Result:=AbsoluteDirection;
+  end
+  else
+    Result := AbsoluteDirection;
 end;
 
 // AbsoluteRightVectorToTarget
@@ -5478,11 +5822,14 @@ end;
 
 function TGLCamera.AbsoluteRightVectorToTarget: TVector;
 begin
-   if TargetObject<>nil then begin
+  if TargetObject <> nil then
+  begin
     VectorSubtract(TargetObject.AbsolutePosition, AbsolutePosition, Result);
     Result := VectorCrossProduct(Result, AbsoluteUp);
     NormalizeVector(Result);
-   end else Result:=AbsoluteRight;
+  end
+  else
+    Result := AbsoluteRight;
 end;
 
 // AbsoluteUpVectorToTarget
@@ -5491,8 +5838,10 @@ end;
 function TGLCamera.AbsoluteUpVectorToTarget: TVector;
 begin
   if TargetObject <> nil then
-      Result:=VectorCrossProduct(AbsoluteRightVectorToTarget, AbsoluteVectorToTarget)
-   else Result:=AbsoluteUp;
+    Result := VectorCrossProduct(AbsoluteRightVectorToTarget,
+      AbsoluteVectorToTarget)
+  else
+    Result := AbsoluteUp;
 end;
 
 // Apply
@@ -5506,8 +5855,10 @@ var
 begin
   if Assigned(FDeferredApply) then
     FDeferredApply(Self)
-   else begin
-      if Assigned(FTargetObject) then begin
+  else
+  begin
+    if Assigned(FTargetObject) then
+    begin
       v := TargetObject.AbsolutePosition;
       absPos := AbsolutePosition;
       VectorSubtract(v, absPos, d);
@@ -5516,7 +5867,9 @@ begin
       gluLookAt(absPos[0], absPos[1], absPos[2],
         v[0], v[1], v[2],
         Up.X, Up.Y, Up.Z);
-      end else begin
+    end
+    else
+    begin
       mat := Parent.AbsoluteMatrix;
       absPos := AbsolutePosition;
       v := VectorTransform(Direction.AsVector, mat);
@@ -5543,16 +5896,22 @@ var
 const
   cEpsilon: Single = 1e-4;
 begin
-   if (AWidth<=0) or (AHeight<=0) then Exit;
-   if CameraStyle=csOrtho2D then begin
+  if (AWidth <= 0) or (AHeight <= 0) then
+    Exit;
+  if CameraStyle = csOrtho2D then
+  begin
     gluOrtho2D(0, AWidth, 0, AHeight);
     FNearPlane := -1;
     FViewPortRadius := VectorLength(AWidth, AHeight) / 2;
-   end else if CameraStyle=csCustom then begin
+  end
+  else if CameraStyle = csCustom then
+  begin
     FViewPortRadius := VectorLength(AWidth, AHeight) / 2;
     if Assigned(FOnCustomPerspective) then
       FOnCustomPerspective(AViewport, AWidth, AHeight, ADPI, FViewPortRadius);
-   end else begin
+  end
+  else
+  begin
     // determine biggest dimension and resolution (height or width)
     MaxDim := AWidth;
     if AHeight > MaxDim then
@@ -5568,7 +5927,8 @@ begin
 
     if CameraStyle in [csPerspective, csInfinitePerspective] then
       f := FNearPlaneBias / (AWidth * FSceneScale)
-      else f:=100*FNearPlaneBias/(focalLength*AWidth*FSceneScale);
+    else
+      f := 100 * FNearPlaneBias / (focalLength * AWidth * FSceneScale);
 
     // calculate window/viewport ratio for right extent
     Ratio := (2 * AViewport.Width + 2 * AViewport.Left - AWidth) * f;
@@ -5583,7 +5943,8 @@ begin
 
     if CameraStyle in [csPerspective, csInfinitePerspective] then
       f := FNearPlaneBias / (AHeight * FSceneScale)
-      else f:=100*FNearPlaneBias/(focalLength*AHeight*FSceneScale);
+    else
+      f := 100 * FNearPlaneBias / (focalLength * AHeight * FSceneScale);
 
     // top extent (keep in mind the origin is left lower corner):
     Ratio := (2 * AViewport.Height + 2 * AViewport.Top - AHeight) * f;
@@ -5600,7 +5961,8 @@ begin
     case CameraStyle of
       csPerspective:
         glFrustum(LLeft, LRight, LBottom, LTop, FNearPlane, zFar);
-         csInfinitePerspective : begin
+      csInfinitePerspective:
+        begin
           mat := IdentityHmgMatrix;
           mat[0][0] := 2 * FNearPlane / (LRight - LLeft);
           mat[1][1] := 2 * FNearPlane / (LTop - LBottom);
@@ -5631,13 +5993,15 @@ var
 begin
   angle := RadToDeg(arccos(VectorDotProduct(FUp.AsVector, YVector)));
   rotAxis := VectorCrossProduct(YHmgVector, FUp.AsVector);
-   if (angle > 1) and (VectorLength(rotAxis) > 0) then begin
+  if (angle > 1) and (VectorLength(rotAxis) > 0) then
+  begin
     rightVector := VectorCrossProduct(FDirection.AsVector, FUp.AsVector);
     FUp.Rotate(AffineVectorMake(rotAxis), Angle / (10 * Factor));
     FUp.Normalize;
     // adjust local coordinates
     FDirection.DirectVector := VectorCrossProduct(FUp.AsVector, rightVector);
-      FRotation.Z:=-RadToDeg(ArcTan2(RightVector[1], VectorLength(RightVector[0], RightVector[2])));
+    FRotation.Z := -RadToDeg(ArcTan2(RightVector[1],
+      VectorLength(RightVector[0], RightVector[2])));
   end;
 end;
 
@@ -5656,7 +6020,8 @@ end;
 
 procedure TGLCamera.SetTargetObject(const val: TGLBaseSceneObject);
 begin
-   if (FTargetObject<>val) then begin
+  if (FTargetObject <> val) then
+  begin
     if Assigned(FTargetObject) then
       FTargetObject.RemoveFreeNotification(Self);
     FTargetObject := val;
@@ -5676,14 +6041,16 @@ var
 begin
   FRotation.Z := 0;
   FFocalLength := 50;
-   with aSceneBuffer do begin
+  with aSceneBuffer do
+  begin
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity;
     ApplyPerspective(FViewport, FViewport.Width, FViewport.Height, FRenderDPI);
     FUp.DirectVector := YHmgVector;
     if FViewport.Height < FViewport.Width then
       Extent := FViewport.Height * 0.25
-      else Extent:=FViewport.Width*0.25;
+    else
+      Extent := FViewport.Width * 0.25;
   end;
   FPosition.SetPoint(0, 0, FNearPlane * Extent);
   FDirection.SetVector(0, 0, -1, 0);
@@ -5697,10 +6064,12 @@ procedure TGLCamera.ZoomAll(aSceneBuffer: TGLSceneBuffer);
 var
   extent: Single;
 begin
-   with aSceneBuffer do begin
+  with aSceneBuffer do
+  begin
     if FViewport.Height < FViewport.Width then
       Extent := FViewport.Height * 0.25
-      else Extent:=FViewport.Width * 0.25;
+    else
+      Extent := FViewport.Width * 0.25;
     FPosition.DirectVector := NullHmgPoint;
     Move(-FNearPlane * Extent);
     // let the camera look at the scene center
@@ -5710,7 +6079,9 @@ end;
 
 // RotateObject
 //
-procedure TGLCamera.RotateObject(obj : TGLBaseSceneObject; pitchDelta, turnDelta : Single;
+
+procedure TGLCamera.RotateObject(obj: TGLBaseSceneObject; pitchDelta, turnDelta:
+  Single;
   rollDelta: Single = 0);
 var
   resMat: TMatrix;
@@ -5722,11 +6093,14 @@ begin
   // First we need to compute the actual camera's vectors, which may not be
   // directly available if we're in "targeting" mode
   vUp := AbsoluteUp;
-   if TargetObject<>nil then begin
+  if TargetObject <> nil then
+  begin
     vDir := AbsoluteVectorToTarget;
     vRight := VectorCrossProduct(vDir, vUp);
     vUp := VectorCrossProduct(vRight, vDir);
-   end else begin
+  end
+  else
+  begin
     vDir := AbsoluteDirection;
     vRight := VectorCrossProduct(vDir, vUp);
   end;
@@ -5738,17 +6112,23 @@ begin
   //get rid of scaling & location info
   NormalizeMatrix(resMat);
   // Now we build rotation matrices and use them to rotate the obj
-   if rollDelta<>0 then begin
+  if rollDelta <> 0 then
+  begin
     SetVector(v, obj.AbsoluteToLocal(vDir));
-      resMat:=MatrixMultiply(CreateRotationMatrix(v, DegToRad(rollDelta)), resMat);
+    resMat := MatrixMultiply(CreateRotationMatrix(v, DegToRad(rollDelta)),
+      resMat);
   end;
-   if turnDelta<>0 then begin
+  if turnDelta <> 0 then
+  begin
     SetVector(v, obj.AbsoluteToLocal(vUp));
-      resMat:=MatrixMultiply(CreateRotationMatrix(v, DegToRad(turnDelta)), resMat);
+    resMat := MatrixMultiply(CreateRotationMatrix(v, DegToRad(turnDelta)),
+      resMat);
   end;
-   if pitchDelta<>0 then begin
+  if pitchDelta <> 0 then
+  begin
     SetVector(v, obj.AbsoluteToLocal(vRight));
-      resMat:=MatrixMultiply(CreateRotationMatrix(v, DegToRad(pitchDelta)), resMat);
+    resMat := MatrixMultiply(CreateRotationMatrix(v, DegToRad(pitchDelta)),
+      resMat);
   end;
   obj.Matrix := resMat;
   //restore scaling & rotation info
@@ -5758,7 +6138,9 @@ end;
 
 // RotateTarget
 //
-procedure TGLCamera.RotateTarget(pitchDelta, turnDelta : Single; rollDelta : Single = 0);
+
+procedure TGLCamera.RotateTarget(pitchDelta, turnDelta: Single; rollDelta: Single
+  = 0);
 begin
   if Assigned(FTargetObject) then
     RotateObject(FTargetObject, pitchDelta, turnDelta, rollDelta)
@@ -5774,29 +6156,38 @@ end;
 
 // MoveInEyeSpace
 //
-procedure TGLCamera.MoveInEyeSpace(forwardDistance, rightDistance, upDistance : Single);
+
+procedure TGLCamera.MoveInEyeSpace(forwardDistance, rightDistance, upDistance:
+  Single);
 var
   trVector: TVector;
 begin
-   trVector:=AbsoluteEyeSpaceVector(forwardDistance, rightDistance, upDistance);
+  trVector := AbsoluteEyeSpaceVector(forwardDistance, rightDistance,
+    upDistance);
   Position.Translate(Parent.AbsoluteToLocal(trVector));
 end;
 
 // MoveTargetInEyeSpace
 //
-procedure TGLCamera.MoveTargetInEyeSpace(forwardDistance, rightDistance, upDistance : Single);
+
+procedure TGLCamera.MoveTargetInEyeSpace(forwardDistance, rightDistance,
+  upDistance: Single);
 var
   trVector: TVector;
 begin
-   if TargetObject<>nil then begin
-      trVector:=AbsoluteEyeSpaceVector(forwardDistance, rightDistance, upDistance);
+  if TargetObject <> nil then
+  begin
+    trVector := AbsoluteEyeSpaceVector(forwardDistance, rightDistance,
+      upDistance);
     TargetObject.Position.Translate(TargetObject.Parent.AbsoluteToLocal(trVector));
   end;
 end;
 
 // AbsoluteEyeSpaceVector
 //
-function TGLCamera.AbsoluteEyeSpaceVector(forwardDistance, rightDistance, upDistance : Single) : TVector;
+
+function TGLCamera.AbsoluteEyeSpaceVector(forwardDistance, rightDistance,
+  upDistance: Single): TVector;
 begin
   Result := NullHmgVector;
   if forwardDistance <> 0 then
@@ -5814,7 +6205,8 @@ procedure TGLCamera.AdjustDistanceToTarget(distanceRatio: Single);
 var
   vect: TVector;
 begin
-   if Assigned(FTargetObject) then begin
+  if Assigned(FTargetObject) then
+  begin
     // calculate vector from target to camera in absolute coordinates
     vect := VectorSubtract(AbsolutePosition, TargetObject.AbsolutePosition);
     // ratio -> translation vector
@@ -5833,10 +6225,13 @@ function TGLCamera.DistanceToTarget: Single;
 var
   vect: TVector;
 begin
-   if Assigned(FTargetObject) then begin
+  if Assigned(FTargetObject) then
+  begin
     vect := VectorSubtract(AbsolutePosition, TargetObject.AbsolutePosition);
     Result := VectorLength(vect);
-   end else Result:=1;
+  end
+  else
+    Result := 1;
 end;
 
 // ScreenDeltaToVector
@@ -5851,9 +6246,11 @@ begin
   // calculate projection of direction vector on the plane
   if Assigned(FTargetObject) then
     screenY := VectorSubtract(TargetObject.AbsolutePosition, AbsolutePosition)
-   else screenY:=Direction.AsVector;
+  else
+    screenY := Direction.AsVector;
   screenYoutOfPlaneComponent := VectorDotProduct(screenY, planeNormal);
-   screenY:=VectorCombine(screenY, planeNormal, 1, -screenYoutOfPlaneComponent);
+  screenY := VectorCombine(screenY, planeNormal, 1,
+    -screenYoutOfPlaneComponent);
   NormalizeVector(screenY);
   // calc the screenX vector
   screenX := VectorCrossProduct(screenY, planeNormal);
@@ -5863,7 +6260,9 @@ end;
 
 // ScreenDeltaToVectorXY
 //
-function TGLCamera.ScreenDeltaToVectorXY(deltaX, deltaY : Integer; ratio : Single) : TVector;
+
+function TGLCamera.ScreenDeltaToVectorXY(deltaX, deltaY: Integer; ratio:
+  Single): TVector;
 var
   screenY: TVector;
   dxr, dyr, d: Single;
@@ -5871,9 +6270,13 @@ begin
   // calculate projection of direction vector on the plane
   if Assigned(FTargetObject) then
     screenY := VectorSubtract(TargetObject.AbsolutePosition, AbsolutePosition)
-   else screenY:=Direction.AsVector;
+  else
+    screenY := Direction.AsVector;
   d := VectorLength(screenY[0], screenY[1]);
-   if d<=1e-10 then d:=ratio else d:=ratio/d;
+  if d <= 1e-10 then
+    d := ratio
+  else
+    d := ratio / d;
   // and here, we're done
   dxr := deltaX * d;
   dyr := deltaY * d;
@@ -5885,7 +6288,9 @@ end;
 
 // ScreenDeltaToVectorXZ
 //
-function TGLCamera.ScreenDeltaToVectorXZ(deltaX, deltaY : Integer; ratio : Single) : TVector;
+
+function TGLCamera.ScreenDeltaToVectorXZ(deltaX, deltaY: Integer; ratio:
+  Single): TVector;
 var
   screenY: TVector;
   d, dxr, dzr: Single;
@@ -5893,9 +6298,13 @@ begin
   // calculate the projection of direction vector on the plane
   if Assigned(fTargetObject) then
     screenY := VectorSubtract(TargetObject.AbsolutePosition, AbsolutePosition)
-   else screenY:=Direction.AsVector;
+  else
+    screenY := Direction.AsVector;
   d := VectorLength(screenY[0], screenY[2]);
-   if d<=1e-10 then d:=ratio else d:=ratio/d;
+  if d <= 1e-10 then
+    d := ratio
+  else
+    d := ratio / d;
   dxr := deltaX * d;
   dzr := deltaY * d;
   Result[0] := -screenY[2] * dxr + screenY[0] * dzr;
@@ -5906,7 +6315,9 @@ end;
 
 // ScreenDeltaToVectorYZ
 //
-function TGLCamera.ScreenDeltaToVectorYZ(deltaX, deltaY : Integer; ratio : Single) : TVector;
+
+function TGLCamera.ScreenDeltaToVectorYZ(deltaX, deltaY: Integer; ratio:
+  Single): TVector;
 var
   screenY: TVector;
   d, dyr, dzr: single;
@@ -5914,9 +6325,13 @@ begin
   // calculate the projection of direction vector on the plane
   if Assigned(fTargetObject) then
     screenY := VectorSubtract(TargetObject.AbsolutePosition, AbsolutePosition)
-   else screenY:=Direction.AsVector;
+  else
+    screenY := Direction.AsVector;
   d := VectorLength(screenY[1], screenY[2]);
-   if d<=1e-10 then d:=ratio else d:=ratio/d;
+  if d <= 1e-10 then
+    d := ratio
+  else
+    d := ratio / d;
   dyr := deltaX * d;
   dzr := deltaY * d;
   Result[0] := 0;
@@ -5951,8 +6366,10 @@ end;
 
 procedure TGLCamera.SetFocalLength(AValue: Single);
 begin
-   if AValue<=0 then AValue:=1;
-   if FFocalLength<>AValue then begin
+  if AValue <= 0 then
+    AValue := 1;
+  if FFocalLength <> AValue then
+  begin
     FFocalLength := AValue;
     if not (csLoading in ComponentState) then
       TransformationChanged;
@@ -5984,7 +6401,8 @@ end;
 
 procedure TGLCamera.SetCameraStyle(const val: TGLCameraStyle);
 begin
-   if FCameraStyle<>val then begin
+  if FCameraStyle <> val then
+  begin
     FCameraStyle := val;
     NotifyChange(Self);
   end;
@@ -5995,8 +6413,10 @@ end;
 
 procedure TGLCamera.SetSceneScale(value: Single);
 begin
-   if value=0 then value:=1;
-   if FSceneScale<>value then begin
+  if value = 0 then
+    value := 1;
+  if FSceneScale <> value then
+  begin
     FSceneScale := value;
     NotifyChange(Self);
   end;
@@ -6015,8 +6435,10 @@ end;
 
 procedure TGLCamera.SetNearPlaneBias(value: Single);
 begin
-   if value<=0 then value:=1;
-   if FNearPlaneBias<>value then begin
+  if value <= 0 then
+    value := 1;
+  if FNearPlaneBias <> value then
+  begin
     FNearPlaneBias := value;
     NotifyChange(Self);
   end;
@@ -6061,10 +6483,12 @@ procedure TGLImmaterialSceneObject.DoRender(var ARci: TRenderContextInfo;
   ARenderSelf, ARenderChildren: Boolean);
 begin
   // start rendering self
-   if ARenderSelf then begin
+  if ARenderSelf then
+  begin
     if (osDirectDraw in ObjectStyle) or ARci.amalgamating then
       BuildList(ARci)
-      else glCallList(GetHandle(ARci));
+    else
+      glCallList(GetHandle(ARci));
   end;
   // start rendering children (if any)
   if ARenderChildren then
@@ -6089,7 +6513,8 @@ end;
 
 procedure TGLCameraInvariantObject.Assign(Source: TPersistent);
 begin
-   if Source is TGLCameraInvariantObject then begin
+  if Source is TGLCameraInvariantObject then
+  begin
     FCamInvarianceMode := TGLCameraInvariantObject(Source).FCamInvarianceMode;
   end;
   inherited Assign(Source);
@@ -6105,15 +6530,19 @@ var
   CurrentBuffer: TGLSceneBuffer;
 begin
   CurrentBuffer := TGLSceneBuffer(ARCi.buffer);
-   if CamInvarianceMode<>cimNone then begin
+  if CamInvarianceMode <> cimNone then
+  begin
     glPushMatrix;
     // prepare
     case CamInvarianceMode of
-         cimPosition : begin
+      cimPosition:
+        begin
           glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
-            glTranslatef(ARci.cameraPosition[0], ARci.cameraPosition[1], ARci.cameraPosition[2]);
+          glTranslatef(ARci.cameraPosition[0], ARci.cameraPosition[1],
+            ARci.cameraPosition[2]);
         end;
-         cimOrientation :  begin
+      cimOrientation:
+        begin
           glLoadIdentity;
           // makes the coordinates system more 'intuitive' (Z+ forward)
           glScalef(1, -1, -1);
@@ -6127,10 +6556,12 @@ begin
     glGetFloatv(GL_MODELVIEW_MATRIX, @mvMat);
     CurrentBuffer.PushModelViewMatrix(mvMat);
     try
-         if ARenderSelf then begin
+      if ARenderSelf then
+      begin
         if (osDirectDraw in ObjectStyle) or ARci.amalgamating then
           BuildList(ARci)
-            else glCallList(GetHandle(ARci));
+        else
+          glCallList(GetHandle(ARci));
       end;
       if ARenderChildren then
         Self.RenderChildren(0, Count - 1, ARci);
@@ -6138,14 +6569,19 @@ begin
       CurrentBuffer.PopModelViewMatrix;
     end;
     glPopMatrix;
-   end else inherited;
+  end
+  else
+    inherited;
 end;
 
 // SetCamInvarianceMode
 //
-procedure TGLCameraInvariantObject.SetCamInvarianceMode(const val : TGLCameraInvarianceMode);
+
+procedure TGLCameraInvariantObject.SetCamInvarianceMode(const val:
+  TGLCameraInvarianceMode);
+begin
+  if FCamInvarianceMode <> val then
   begin
-   if FCamInvarianceMode<>val then begin
     FCamInvarianceMode := val;
     NotifyChange(Self);
   end;
@@ -6161,7 +6597,8 @@ end;
 constructor TGLDirectOpenGL.Create(AOwner: TComponent);
 begin
   inherited;
-   ObjectStyle:=ObjectStyle+[osDirectDraw, osDoesTemperWithColorsOrFaceWinding];
+  ObjectStyle := ObjectStyle + [osDirectDraw,
+    osDoesTemperWithColorsOrFaceWinding];
   FBlend := False;
 end;
 
@@ -6170,7 +6607,8 @@ end;
 
 procedure TGLDirectOpenGL.Assign(Source: TPersistent);
 begin
-   if Source is TGLDirectOpenGL then begin
+  if Source is TGLDirectOpenGL then
+  begin
     UseBuildList := TGLDirectOpenGL(Source).UseBuildList;
     FOnRender := TGLDirectOpenGL(Source).FOnRender;
     FBlend := TGLDirectOpenGL(Source).Blend;
@@ -6183,7 +6621,8 @@ end;
 
 procedure TGLDirectOpenGL.BuildList(var rci: TRenderContextInfo);
 begin
-   if Assigned(FOnRender) then begin
+  if Assigned(FOnRender) then
+  begin
     xglMapTexCoordToMain; // single texturing by default
     OnRender(Self, rci);
   end;
@@ -6202,11 +6641,13 @@ end;
 
 procedure TGLDirectOpenGL.SetUseBuildList(const val: Boolean);
 begin
-   if val<>FUseBuildList then begin
+  if val <> FUseBuildList then
+  begin
     FUseBuildList := val;
     if val then
       ObjectStyle := ObjectStyle - [osDirectDraw]
-      else ObjectStyle:=ObjectStyle+[osDirectDraw];
+    else
+      ObjectStyle := ObjectStyle + [osDirectDraw];
   end;
 end;
 
@@ -6223,7 +6664,8 @@ end;
 
 procedure TGLDirectOpenGL.SetBlend(const val: Boolean);
 begin
-  if val<>FBlend then begin
+  if val <> FBlend then
+  begin
     FBlend := val;
     StructureChanged;
   end;
@@ -6239,7 +6681,8 @@ end;
 constructor TGLRenderPoint.Create(AOwner: TComponent);
 begin
   inherited;
-   ObjectStyle:=ObjectStyle+[osDirectDraw, osDoesTemperWithColorsOrFaceWinding];
+  ObjectStyle := ObjectStyle + [osDirectDraw,
+    osDoesTemperWithColorsOrFaceWinding];
 end;
 
 // Destroy
@@ -6291,10 +6734,13 @@ var
 begin
   refContainer.event := renderEvent;
   n := Length(FCallBacks);
-   for i:=0 to n-1 do begin
+  for i := 0 to n - 1 do
+  begin
     listContainer.event := FCallBacks[i];
-      if CompareMem(@listContainer, @refContainer, SizeOf(TEventContainer)) then begin
-         for j:=i+1 to n-1 do begin
+    if CompareMem(@listContainer, @refContainer, SizeOf(TEventContainer)) then
+    begin
+      for j := i + 1 to n - 1 do
+      begin
         FCallBacks[j - 1] := FCallBacks[j];
         FFreeCallBacks[j - 1] := FFreeCallBacks[j];
       end;
@@ -6310,7 +6756,8 @@ end;
 
 procedure TGLRenderPoint.Clear;
 begin
-   while Length(FCallBacks)>0 do begin
+  while Length(FCallBacks) > 0 do
+  begin
     FFreeCallBacks[High(FCallBacks)](Self);
     SetLength(FCallBacks, Length(FCallBacks) - 1);
   end;
@@ -6344,7 +6791,8 @@ end;
 
 procedure TGLProxyObject.Assign(Source: TPersistent);
 begin
-   if Source is TGLProxyObject then begin
+  if Source is TGLProxyObject then
+  begin
     SetMasterObject(TGLProxyObject(Source).MasterObject);
   end;
   inherited Assign(Source);
@@ -6358,14 +6806,17 @@ procedure TGLProxyObject.DoRender(var ARci: TRenderContextInfo;
 var
   gotMaster, masterGotEffects, oldProxySubObject: Boolean;
 begin
-   if FRendering then Exit;
+  if FRendering then
+    Exit;
   FRendering := True;
   try
     gotMaster := Assigned(FMasterObject);
     masterGotEffects := gotMaster and (pooEffects in FProxyOptions)
       and (FMasterObject.Effects.Count > 0);
-      if gotMaster then begin
-         if pooObjects in FProxyOptions then begin
+    if gotMaster then
+    begin
+      if pooObjects in FProxyOptions then
+      begin
         oldProxySubObject := ARci.proxySubObject;
         ARci.proxySubObject := True;
         if pooTransformation in FProxyOptions then
@@ -6390,9 +6841,12 @@ end;
 
 function TGLProxyObject.AxisAlignedDimensionsUnscaled: TVector;
 begin
-   if Assigned(FMasterObject) then begin
+  if Assigned(FMasterObject) then
+  begin
     Result := FMasterObject.AxisAlignedDimensionsUnscaled;
-   end else Result:=inherited AxisAlignedDimensionsUnscaled;
+  end
+  else
+    Result := inherited AxisAlignedDimensionsUnscaled;
 end;
 
 // BarycenterAbsolutePosition
@@ -6405,7 +6859,8 @@ begin
   if Assigned(FMasterObject) then
   begin
     // Not entirely correct, but better than nothing...
-    lAdjustVector := VectorSubtract(FMasterObject.BarycenterAbsolutePosition, FMasterObject.AbsolutePosition);
+    lAdjustVector := VectorSubtract(FMasterObject.BarycenterAbsolutePosition,
+      FMasterObject.AbsolutePosition);
     Position.AsVector := VectorAdd(Position.AsVector, lAdjustVector);
     Result := AbsolutePosition;
     Position.AsVector := VectorSubtract(Position.AsVector, lAdjustVector);
@@ -6416,15 +6871,17 @@ end;
 
 // Notification
 //
-procedure TGLProxyObject.Notification(AComponent: TComponent; Operation: TOperation);
+
+procedure TGLProxyObject.Notification(AComponent: TComponent; Operation:
+  TOperation);
 begin
   if (Operation = opRemove) and (AComponent = FMasterObject) then
-{$ifdef GLS_COMPILER_4}
+{$IFDEF GLS_COMPILER_4}
     FMasterObject := nil;
   StructureChanged;
-{$else}
+{$ELSE}
     MasterObject := nil;
-{$endif}
+{$ENDIF}
   inherited;
 end;
 
@@ -6433,7 +6890,8 @@ end;
 
 procedure TGLProxyObject.SetMasterObject(const val: TGLBaseSceneObject);
 begin
-   if FMasterObject<>val then begin
+  if FMasterObject <> val then
+  begin
     if Assigned(FMasterObject) then
       FMasterObject.RemoveFreeNotification(Self);
     FMasterObject := val;
@@ -6448,7 +6906,8 @@ end;
 
 procedure TGLProxyObject.SetProxyOptions(const val: TGLProxyObjectOptions);
 begin
-   if FProxyOptions<>val then begin
+  if FProxyOptions <> val then
+  begin
     FProxyOptions := val;
     StructureChanged;
   end;
@@ -6463,7 +6922,8 @@ function TGLProxyObject.RayCastIntersect(const rayStart, rayVector: TVector;
 var
   localRayStart, localRayVector: TVector;
 begin
-   if Assigned(MasterObject) then begin
+  if Assigned(MasterObject) then
+  begin
     SetVector(localRayStart, AbsoluteToLocal(rayStart));
     SetVector(localRayStart, MasterObject.LocalToAbsolute(localRayStart));
     SetVector(localRayVector, AbsoluteToLocal(rayVector));
@@ -6472,26 +6932,36 @@ begin
 
     Result := MasterObject.RayCastIntersect(localRayStart, localRayVector,
       intersectPoint, intersectNormal);
-      if Result then begin
-         if Assigned(intersectPoint) then begin
-            SetVector(intersectPoint^, MasterObject.AbsoluteToLocal(intersectPoint^));
+    if Result then
+    begin
+      if Assigned(intersectPoint) then
+      begin
+        SetVector(intersectPoint^,
+          MasterObject.AbsoluteToLocal(intersectPoint^));
         SetVector(intersectPoint^, LocalToAbsolute(intersectPoint^));
       end;
-         if Assigned(intersectNormal) then begin
-            SetVector(intersectNormal^, MasterObject.AbsoluteToLocal(intersectNormal^));
+      if Assigned(intersectNormal) then
+      begin
+        SetVector(intersectNormal^,
+          MasterObject.AbsoluteToLocal(intersectNormal^));
         SetVector(intersectNormal^, LocalToAbsolute(intersectNormal^));
       end;
     end;
-   end else Result:=False;
+  end
+  else
+    Result := False;
 end;
 
 // GenerateSilhouette
 //
-function TGLProxyObject.GenerateSilhouette(const silhouetteParameters : TGLSilhouetteParameters) : TGLSilhouette;
+
+function TGLProxyObject.GenerateSilhouette(const silhouetteParameters:
+  TGLSilhouetteParameters): TGLSilhouette;
 begin
   if Assigned(MasterObject) then
     Result := MasterObject.GenerateSilhouette(silhouetteParameters)
-   else Result:=nil;
+  else
+    Result := nil;
 end;
 
 // ------------------
@@ -6505,7 +6975,8 @@ constructor TGLLightSource.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FShining := True;
-  FSpotDirection:=TGLCoordinates.CreateInitialized(Self, VectorMake(0, 0, -1, 0),
+  FSpotDirection := TGLCoordinates.CreateInitialized(Self, VectorMake(0, 0, -1,
+    0),
     csVector);
   FConstAttenuation := 1;
   FLinearAttenuation := 0;
@@ -6563,7 +7034,9 @@ end;
 
 // GenerateSilhouette
 //
-function TGLLightSource.GenerateSilhouette(const silhouetteParameters : TGLSilhouetteParameters) : TGLSilhouette;
+
+function TGLLightSource.GenerateSilhouette(const silhouetteParameters:
+  TGLSilhouetteParameters): TGLSilhouette;
 begin
   Result := nil;
 end;
@@ -6581,7 +7054,8 @@ end;
 
 procedure TGLLightSource.SetShining(AValue: Boolean);
 begin
-   if AValue<>FShining then begin
+  if AValue <> FShining then
+  begin
     FShining := AValue;
     NotifyChange(Self);
   end;
@@ -6602,7 +7076,8 @@ end;
 
 procedure TGLLightSource.SetSpotExponent(AValue: Single);
 begin
-   if FSpotExponent <> AValue then begin
+  if FSpotExponent <> AValue then
+  begin
     FSpotExponent := AValue;
     NotifyChange(Self);
   end;
@@ -6613,8 +7088,10 @@ end;
 
 procedure TGLLightSource.SetSpotCutOff(const val: Single);
 begin
-   if FSpotCutOff<>val then begin
-      if ((val>=0) and (val<=90)) or (val=180) then begin
+  if FSpotCutOff <> val then
+  begin
+    if ((val >= 0) and (val <= 90)) or (val = 180) then
+    begin
       FSpotCutOff := val;
       NotifyChange(Self);
     end;
@@ -6626,7 +7103,8 @@ end;
 
 procedure TGLLightSource.SetLightStyle(const val: TLightStyle);
 begin
-   if FLightStyle<>val then begin
+  if FLightStyle <> val then
+  begin
     FLightStyle := val;
     NotifyChange(Self);
   end;
@@ -6664,7 +7142,8 @@ end;
 
 procedure TGLLightSource.SetConstAttenuation(AValue: Single);
 begin
-   if FConstAttenuation<>AValue then begin
+  if FConstAttenuation <> AValue then
+  begin
     FConstAttenuation := AValue;
     NotifyChange(Self);
   end;
@@ -6675,7 +7154,8 @@ end;
 
 procedure TGLLightSource.SetLinearAttenuation(AValue: Single);
 begin
-   if FLinearAttenuation<>AValue then begin
+  if FLinearAttenuation <> AValue then
+  begin
     FLinearAttenuation := AValue;
     NotifyChange(Self);
   end;
@@ -6686,7 +7166,8 @@ end;
 
 procedure TGLLightSource.SetQuadraticAttenuation(AValue: Single);
 begin
-   if FQuadraticAttenuation <> AValue then begin
+  if FQuadraticAttenuation <> AValue then
+  begin
     FQuadraticAttenuation := AValue;
     NotifyChange(Self);
   end;
@@ -6698,7 +7179,8 @@ end;
 function TGLLightSource.Attenuated: Boolean;
 begin
   Result := (LightStyle <> lsParallel)
-           and ((ConstAttenuation<>1) or (LinearAttenuation<>0) or (QuadraticAttenuation<>0));
+    and ((ConstAttenuation <> 1) or (LinearAttenuation <> 0) or
+    (QuadraticAttenuation <> 0));
 end;
 
 // ------------------
@@ -6743,7 +7225,8 @@ var
   i: Integer;
 begin
   for i := 0 to FLights.Count - 1 do
-      if FLights.List^[i]=nil then begin
+    if FLights.List^[i] = nil then
+    begin
       FLights.List^[i] := ALight;
       ALight.FLightID := GL_LIGHT0 + i;
       Break;
@@ -6814,7 +7297,8 @@ procedure TGLScene.AddBuffer(aBuffer: TGLSceneBuffer);
 begin
   if not Assigned(FBuffers) then
     FBuffers := TPersistentObjectList.Create;
-   if FBuffers.IndexOf(aBuffer)<0 then begin
+  if FBuffers.IndexOf(aBuffer) < 0 then
+  begin
     FBuffers.Add(aBuffer);
     if FBaseContext = nil then
       FBaseContext := TGLSceneBuffer(FBuffers[0]).RenderingContext;
@@ -6830,13 +7314,18 @@ procedure TGLScene.RemoveBuffer(aBuffer: TGLSceneBuffer);
 var
   i: Integer;
 begin
-   if Assigned(FBuffers) then begin
+  if Assigned(FBuffers) then
+  begin
     i := FBuffers.IndexOf(aBuffer);
-      if i>=0 then begin
-         if FBuffers.Count=1 then begin
+    if i >= 0 then
+    begin
+      if FBuffers.Count = 1 then
+      begin
         FreeAndNil(FBuffers);
         FBaseContext := nil;
-         end else begin
+      end
+      else
+      begin
         FBuffers.Delete(i);
         FBaseContext := TGLSceneBuffer(FBuffers[0]).RenderingContext;
       end;
@@ -6865,7 +7354,8 @@ end;
 
 function TGLScene.IsUpdating: Boolean;
 begin
-  Result:=(FUpdateCount <> 0) or (csLoading in ComponentState) or (csDestroying in ComponentState);
+  Result := (FUpdateCount <> 0) or (csLoading in ComponentState) or (csDestroying
+    in ComponentState);
 end;
 
 // BeginUpdate
@@ -6883,7 +7373,8 @@ procedure TGLScene.EndUpdate;
 begin
   Assert(FUpdateCount > 0);
   Dec(FUpdateCount);
-   if FUpdateCount = 0 then NotifyChange(Self);
+  if FUpdateCount = 0 then
+    NotifyChange(Self);
 end;
 
 // SetObjectsSorting
@@ -6891,10 +7382,12 @@ end;
 
 procedure TGLScene.SetObjectsSorting(const val: TGLObjectsSorting);
 begin
-   if FObjectsSorting<>val then begin
+  if FObjectsSorting <> val then
+  begin
     if val = osInherited then
       FObjectsSorting := osRenderBlendedLast
-      else FObjectsSorting:=val;
+    else
+      FObjectsSorting := val;
     NotifyChange(Self);
   end;
 end;
@@ -6904,10 +7397,12 @@ end;
 
 procedure TGLScene.SetVisibilityCulling(const val: TGLVisibilityCulling);
 begin
-   if FVisibilityCulling<>val then begin
+  if FVisibilityCulling <> val then
+  begin
     if val = vcInherited then
       FVisibilityCulling := vcNone
-      else FVisibilityCulling:=val;
+    else
+      FVisibilityCulling := val;
     NotifyChange(Self);
   end;
 end;
@@ -6921,7 +7416,8 @@ var
 begin
   SaveRoot := Reader.Root;
   try
-    if Owner<>nil then Reader.Root := Owner;
+    if Owner <> nil then
+      Reader.Root := Owner;
     inherited;
   finally
     Reader.Root := SaveRoot;
@@ -6942,7 +7438,8 @@ end;
 
 // SaveToFile
 //
-procedure TGLScene.SaveToFile(const fileName : String);
+
+procedure TGLScene.SaveToFile(const fileName: string);
 var
   stream: TStream;
 begin
@@ -6956,7 +7453,8 @@ end;
 
 // LoadFromFile
 //
-procedure TGLScene.LoadFromFile(const fileName : String);
+
+procedure TGLScene.LoadFromFile(const fileName: string);
 
   procedure CheckResFileStream(Stream: TStream);
   var
@@ -6966,7 +7464,8 @@ procedure TGLScene.LoadFromFile(const fileName : String);
     N := Stream.Position;
     Stream.Read(B, Sizeof(B));
     Stream.Position := N;
-      if B=$FF then Stream.ReadResHeader;
+    if B = $FF then
+      Stream.ReadResHeader;
   end;
 
 var
@@ -6983,7 +7482,8 @@ end;
 
 // SaveToTextFile
 //
-procedure TGLScene.SaveToTextFile(const fileName : String);
+
+procedure TGLScene.SaveToTextFile(const fileName: string);
 var
   mem: TMemoryStream;
   fil: TStream;
@@ -7031,7 +7531,8 @@ var
 begin
   Fixups := TStringList.Create;
   try
-      if Assigned(FBuffers) then begin
+    if Assigned(FBuffers) then
+    begin
       for i := 0 to FBuffers.Count - 1 do
         Fixups.AddObject(TGLSceneBuffer(FBuffers[i]).Camera.Name, FBuffers[i]);
     end;
@@ -7039,11 +7540,13 @@ begin
     // will remove Viewer from FBuffers
     Objects.DeleteChildren;
     aStream.ReadComponent(Self);
-      for i:=0 to Fixups.Count-1 do begin
+    for i := 0 to Fixups.Count - 1 do
+    begin
       obj := FindSceneObject(fixups[I]);
       if obj is TGLCamera then
         TGLSceneBuffer(Fixups.Objects[i]).Camera := TGLCamera(obj)
-         else { can assign default camera (if existing, of course) instead };
+      else { can assign default camera (if existing, of course) instead }
+        ;
     end;
   finally
     Fixups.Free;
@@ -7060,7 +7563,8 @@ end;
 
 // FindSceneObject
 //
-function TGLScene.FindSceneObject(const AName : String) : TGLBaseSceneObject;
+
+function TGLScene.FindSceneObject(const AName: string): TGLBaseSceneObject;
 begin
   Result := FObjects.FindChild(AName, False);
 end;
@@ -7085,19 +7589,26 @@ var
     fNear, fFar: single;
   begin
     Result := nil;
-      for i:=0 to baseObject.Count-1 do begin
+    for i := 0 to baseObject.Count - 1 do
+    begin
       curObj := baseObject.Children[i];
-         if curObj.Visible then begin
-            if RayCastAABBIntersect(rayStart,rayVector,curObj.AxisAlignedBoundingBoxAbsoluteEx,fNear, fFar) then
+      if curObj.Visible then
+      begin
+        if RayCastAABBIntersect(rayStart, rayVector,
+          curObj.AxisAlignedBoundingBoxAbsoluteEx, fNear, fFar) then
         begin
           if fnear * fnear > bestDist2 then
           begin
-                if not PointInAABB(rayStart,curObj.AxisAlignedBoundingBoxAbsoluteEx) then
+            if not PointInAABB(rayStart, curObj.AxisAlignedBoundingBoxAbsoluteEx)
+              then
               continue;
           end;
-              if curObj.RayCastIntersect(rayStart, rayVector, @iPoint, pINormal) then begin
+          if curObj.RayCastIntersect(rayStart, rayVector, @iPoint, pINormal)
+            then
+          begin
             dist2 := VectorDistance2(rayStart, iPoint);
-                 if dist2<bestDist2 then begin
+            if dist2 < bestDist2 then
+            begin
               bestHit := curObj;
               bestDist2 := dist2;
               if Assigned(intersectPoint) then
@@ -7116,7 +7627,8 @@ begin
   bestDist2 := 1e20;
   bestHit := nil;
   if Assigned(intersectNormal) then
-      pINormal:=@iNormal else
+    pINormal := @iNormal
+  else
     pINormal := nil;
   RecursiveDive(Objects);
   Result := bestHit;
@@ -7148,38 +7660,53 @@ begin
     nbLights := maxLights;
   // setup all light sources
   glPushMatrix;
-   for i:=0 to nbLights-1 do begin
+  for i := 0 to nbLights - 1 do
+  begin
     lightSource := TGLLightSource(FLights[i]);
-      if Assigned(lightSource) then with lightSource do begin
-         if Shining then begin
+    if Assigned(lightSource) then
+      with lightSource do
+      begin
+        if Shining then
+        begin
           glEnable(FLightID);
           glPopMatrix;
           glPushMatrix;
           RebuildMatrix;
-            if LightStyle=lsParallel then begin
+          if LightStyle = lsParallel then
+          begin
             glMultMatrixf(PGLFloat(AbsoluteMatrixAsAddress));
             glLightfv(FLightID, GL_POSITION, SpotDirection.AsAddress)
-            end else begin
+          end
+          else
+          begin
             glMultMatrixf(PGLFloat(Parent.AbsoluteMatrixAsAddress));
             glLightfv(FLightID, GL_POSITION, Position.AsAddress);
           end;
           glLightfv(FLightID, GL_AMBIENT, FAmbient.AsAddress);
           glLightfv(FLightID, GL_DIFFUSE, FDiffuse.AsAddress);
           glLightfv(FLightID, GL_SPECULAR, FSpecular.AsAddress);
-            if LightStyle=lsSpot then begin
-               if FSpotCutOff<>180 then begin
+          if LightStyle = lsSpot then
+          begin
+            if FSpotCutOff <> 180 then
+            begin
               glLightfv(FLightID, GL_SPOT_DIRECTION, FSpotDirection.AsAddress);
               glLightfv(FLightID, GL_SPOT_EXPONENT, @FSpotExponent);
             end;
             glLightfv(FLightID, GL_SPOT_CUTOFF, @FSpotCutOff);
-            end else begin
+          end
+          else
+          begin
             glLightf(FLightID, GL_SPOT_CUTOFF, 180);
           end;
           glLightfv(FLightID, GL_CONSTANT_ATTENUATION, @FConstAttenuation);
           glLightfv(FLightID, GL_LINEAR_ATTENUATION, @FLinearAttenuation);
           glLightfv(FLightID, GL_QUADRATIC_ATTENUATION, @FQuadraticAttenuation);
-         end else glDisable(FLightID);
-      end else glDisable(GL_LIGHT0+i);
+        end
+        else
+          glDisable(FLightID);
+      end
+    else
+      glDisable(GL_LIGHT0 + i);
   end;
   glPopMatrix;
   // turn off other lights
@@ -7222,7 +7749,8 @@ end;
 
 procedure TGLFogEnvironment.SetFogColor(Value: TGLColor);
 begin
-   if Assigned(Value) then begin
+  if Assigned(Value) then
+  begin
     FFogColor.Assign(Value);
     NotifyChange(Self);
   end;
@@ -7233,7 +7761,8 @@ end;
 
 procedure TGLFogEnvironment.SetFogStart(Value: Single);
 begin
-   if Value <> FFogStart then begin
+  if Value <> FFogStart then
+  begin
     FFogStart := Value;
     NotifyChange(Self);
   end;
@@ -7244,7 +7773,8 @@ end;
 
 procedure TGLFogEnvironment.SetFogEnd(Value: Single);
 begin
-   if Value <> FFogEnd then begin
+  if Value <> FFogEnd then
+  begin
     FFogEnd := Value;
     NotifyChange(Self);
   end;
@@ -7255,7 +7785,8 @@ end;
 
 procedure TGLFogEnvironment.Assign(Source: TPersistent);
 begin
-   if Source is TGLFogEnvironment then begin
+  if Source is TGLFogEnvironment then
+  begin
     FFogColor.Assign(TGLFogEnvironment(Source).FFogColor);
     FFogStart := TGLFogEnvironment(Source).FFogStart;
     FFogEnd := TGLFogEnvironment(Source).FFogEnd;
@@ -7283,7 +7814,8 @@ end;
 
 procedure TGLFogEnvironment.SetFogMode(Value: TFogMode);
 begin
-   if Value <> FFogMode then begin
+  if Value <> FFogMode then
+  begin
     FFogMode := Value;
     NotifyChange(Self);
   end;
@@ -7294,7 +7826,8 @@ end;
 
 procedure TGLFogEnvironment.SetFogDistance(const val: TFogDistance);
 begin
-   if val<>FFogDistance then begin
+  if val <> FFogDistance then
+  begin
     FFogDistance := val;
     NotifyChange(Self);
   end;
@@ -7309,8 +7842,10 @@ procedure TGLFogEnvironment.ApplyFog;
 var
   tempActivation: Boolean;
 begin
-   with FSceneBuffer do begin
-      if not Assigned(FRenderingContext) then Exit;
+  with FSceneBuffer do
+  begin
+    if not Assigned(FRenderingContext) then
+      Exit;
     tempActivation := not FRenderingContext.Active;
     if tempActivation then
       FRenderingContext.Activate;
@@ -7318,11 +7853,13 @@ begin
 
   case FFogMode of
     fmLinear: glFogi(GL_FOG_MODE, GL_LINEAR);
-      fmExp : begin
+    fmExp:
+      begin
         glFogi(GL_FOG_MODE, GL_EXP);
         glFogf(GL_FOG_DENSITY, FFogColor.Alpha);
       end;
-      fmExp2 : begin
+    fmExp2:
+      begin
         glFogi(GL_FOG_MODE, GL_EXP2);
         glFogf(GL_FOG_DENSITY, FFogColor.Alpha);
       end;
@@ -7330,12 +7867,16 @@ begin
   glFogfv(GL_FOG_COLOR, FFogColor.AsAddress);
   glFogf(GL_FOG_START, FFogStart);
   glFogf(GL_FOG_END, FFogEnd);
-   if GL_NV_fog_distance then begin
+  if GL_NV_fog_distance then
+  begin
     case FogDistance of
-         fdDefault : begin
+      fdDefault:
+        begin
           if vImplemDependantFogDistanceDefault = -1 then
-               glGetIntegerv(GL_FOG_DISTANCE_MODE_NV, @vImplemDependantFogDistanceDefault)
-            else glFogi(GL_FOG_DISTANCE_MODE_NV, vImplemDependantFogDistanceDefault);
+            glGetIntegerv(GL_FOG_DISTANCE_MODE_NV,
+              @vImplemDependantFogDistanceDefault)
+          else
+            glFogi(GL_FOG_DISTANCE_MODE_NV, vImplemDependantFogDistanceDefault);
         end;
       fdEyePlane:
         glFogi(GL_FOG_DISTANCE_MODE_NV, GL_EYE_PLANE_ABSOLUTE_NV);
@@ -7433,14 +7974,18 @@ begin
     locOptions := locOptions + [rcoStereo];
   if roNoColorBuffer in ContextOptions then
     locColorBits := 0
-   else locColorBits:=cColorDepthToColorBits[ColorDepth];
+  else
+    locColorBits := cColorDepthToColorBits[ColorDepth];
   if roStencilBuffer in ContextOptions then
     locStencilBits := 8
-   else locStencilBits:=0;
+  else
+    locStencilBits := 0;
   if roDestinationAlpha in ContextOptions then
     locAlphaBits := 8
-   else locAlphaBits:=0;
-   with context do begin
+  else
+    locAlphaBits := 0;
+  with context do
+  begin
     Options := locOptions;
     ColorBits := locColorBits;
     DepthBits := cDepthPrecisionToDepthBits[DepthPrecision];
@@ -7455,7 +8000,8 @@ end;
 
 // CreateRC
 //
-procedure TGLSceneBuffer.CreateRC(deviceHandle : HDC; memoryContext : Boolean; BufferCount : integer);
+procedure TGLSceneBuffer.CreateRC(deviceHandle : HDC; memoryContext:
+  Boolean; BufferCount : integer);
 var
   backColor: TColorVector;
 begin
@@ -7467,11 +8013,14 @@ begin
     if not Assigned(FRenderingContext) then
       raise Exception.Create('Failed to create RenderingContext.');
     SetupRCOptions(FRenderingContext);
-      with FRenderingContext do begin
+    with FRenderingContext do
+    begin
       try
         if memoryContext then
-              CreateMemoryContext(deviceHandle, FViewPort.Width, FViewPort.Height, BufferCount)
-            else CreateContext(deviceHandle);
+          CreateMemoryContext(deviceHandle, FViewPort.Width, FViewPort.Height,
+            BufferCount)
+        else
+          CreateContext(deviceHandle);
       except
         FreeAndNil(FRenderingContext);
         raise;
@@ -7502,7 +8051,8 @@ end;
 
 procedure TGLSceneBuffer.DestroyRC;
 begin
-   if Assigned(FRenderingContext) then begin
+  if Assigned(FRenderingContext) then
+  begin
     Melt;
     // for some obscure reason, Mesa3D doesn't like this call... any help welcome
     FreeAndNil(FRenderingContext);
@@ -7524,11 +8074,14 @@ end;
 
 procedure TGLSceneBuffer.Resize(newWidth, newHeight: Integer);
 begin
-   if newWidth<1 then  newWidth:=1;
-   if newHeight<1 then newHeight:=1;
+  if newWidth < 1 then
+    newWidth := 1;
+  if newHeight < 1 then
+    newHeight := 1;
   FViewPort.Width := newWidth;
   FViewPort.Height := newHeight;
-   if Assigned(FRenderingContext) then begin
+  if Assigned(FRenderingContext) then
+  begin
     FRenderingContext.Activate;
     try
       // Part of workaround for MS OpenGL "black borders" bug
@@ -7546,7 +8099,8 @@ function TGLSceneBuffer.Acceleration: TGLContextAcceleration;
 begin
   if Assigned(FRenderingContext) then
     Result := FRenderingContext.Acceleration
-   else Result:=chaUnknown;
+  else
+    Result := chaUnknown;
 end;
 
 // SetupRenderingContext
@@ -7570,7 +8124,8 @@ begin
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, FAmbientColor.AsAddress);
   if roTwoSideLighting in FContextOptions then
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
-   else glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+  else
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 
    PerformEnable(True, stNormalize, GL_NORMALIZE);
 
@@ -7623,7 +8178,10 @@ begin
     limViewportDims:
       begin
         glGetDoublev(GL_MAX_VIEWPORT_DIMS, @VP);
-        if VP[0]>VP[1] then Result:=Round(VP[0]) else Result:=Round(VP[1]);
+        if VP[0] > VP[1] then
+          Result := Round(VP[0])
+        else
+          Result := Round(VP[1]);
       end;
     limAccumAlphaBits:
       glGetIntegerv(GL_ACCUM_ALPHA_BITS, @Result);
@@ -7658,7 +8216,8 @@ begin
     limNbTextureUnits:
       if GL_ARB_multitexture then
         glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, @Result)
-      else Result:=1;
+      else
+        Result := 1;
   else
     Result := 0;
   end;
@@ -7666,11 +8225,12 @@ end;
 
 // RenderToFile
 //
-procedure TGLSceneBuffer.RenderToFile(const aFile : String; DPI : Integer);
+
+procedure TGLSceneBuffer.RenderToFile(const aFile: string; DPI: Integer);
 var
   aBitmap: TGLBitmap;
   saveAllowed: Boolean;
-   fileName: String;
+  fileName: string;
 begin
   Assert((not FRendering), glsAlreadyRendering);
   aBitmap := TGLBitmap.Create;
@@ -7682,8 +8242,10 @@ begin
     fileName := aFile;
     if fileName = '' then
       saveAllowed := SavePictureDialog(fileName)
-      else saveAllowed:=True;
-      if saveAllowed then begin
+    else
+      saveAllowed := True;
+    if saveAllowed then
+    begin
       if FileExists(fileName) then
         saveAllowed := QuestionDlg(Format('Overwrite file %s?', [fileName]));
       if saveAllowed then
@@ -7696,11 +8258,13 @@ end;
 
 // RenderToFile
 //
-procedure TGLSceneBuffer.RenderToFile(const AFile: String; bmpWidth, bmpHeight : Integer);
+
+procedure TGLSceneBuffer.RenderToFile(const AFile: string; bmpWidth, bmpHeight:
+  Integer);
 var
   aBitmap: TGLBitmap;
   saveAllowed: Boolean;
-   fileName : String;
+  fileName: string;
 begin
   Assert((not FRendering), glsAlreadyRendering);
   aBitmap := TGLBitmap.Create;
@@ -7708,15 +8272,20 @@ begin
     aBitmap.Width := bmpWidth;
     aBitmap.Height := bmpHeight;
     aBitmap.PixelFormat := glpf24Bit;
-      RenderToBitmap(aBitmap, (GetDeviceLogicalPixelsX(Cardinal(ABitmap.Canvas.Handle))*bmpWidth) div FViewPort.Width);
+    RenderToBitmap(aBitmap,
+      (GetDeviceLogicalPixelsX(Cardinal(ABitmap.Canvas.Handle)) * bmpWidth) div
+      FViewPort.Width);
     fileName := AFile;
     if fileName = '' then
       saveAllowed := SavePictureDialog(fileName)
-      else saveAllowed:=True;
-      if saveAllowed then begin
+    else
+      saveAllowed := True;
+    if saveAllowed then
+    begin
       if FileExists(fileName) then
         saveAllowed := QuestionDlg(Format('Overwrite file %s?', [fileName]));
-         if SaveAllowed then aBitmap.SaveToFile(fileName);
+      if SaveAllowed then
+        aBitmap.SaveToFile(fileName);
     end;
   finally
     aBitmap.Free;
@@ -7731,7 +8300,8 @@ begin
   Result := TGLBitmap32.Create;
   Result.Width := FViewPort.Width;
   Result.Height := FViewPort.Height;
-   if Assigned(Camera) and Assigned(Camera.Scene) then begin
+  if Assigned(Camera) and Assigned(Camera.Scene) then
+  begin
     FRenderingContext.Activate;
     try
       Result.ReadPixels(Rect(0, 0, FViewPort.Width, FViewPort.Height));
@@ -7777,17 +8347,22 @@ var
   buf: Pointer;
   createTexture: Boolean;
 begin
-   if RenderingContext<>nil then begin
+  if RenderingContext <> nil then
+  begin
     RenderingContext.Activate;
     try
-         if target<=0 then begin
+      if target <= 0 then
+      begin
         target := aTexture.Image.NativeTextureTarget;
         bindTarget := target;
-         end else begin
+      end
+      else
+      begin
         if (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB)
           and (target < GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + 6) then
           bindTarget := GL_TEXTURE_CUBE_MAP_ARB
-            else bindTarget:=target;
+        else
+          bindTarget := target;
       end;
       createTexture := not aTexture.IsHandleAllocated;
 
@@ -7796,7 +8371,8 @@ begin
 
       if createTexture then
         handle := aTexture.AllocateHandle
-         else handle:=aTexture.Handle;
+      else
+        handle := aTexture.Handle;
       createTexture := createTexture or forceCreateTexture;
          GLStates.SetGLCurrentTexture(0, bindTarget, handle);
          if createTexture then begin
@@ -7805,24 +8381,32 @@ begin
           glReadPixels(0, 0, Width, Height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
           case aTexture.MinFilter of
             miNearest, miLinear:
-              	   	glTexImage2d(target, 0, aTexture.OpenGLTextureFormat, Width, Height,
+              glTexImage2d(target, 0, aTexture.OpenGLTextureFormat, Width,
+                Height,
                 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
           else
-                  if GL_SGIS_generate_mipmap and (target=GL_TEXTURE_2D) then begin
+            if GL_SGIS_generate_mipmap and (target = GL_TEXTURE_2D) then
+            begin
               // hardware-accelerated when supported
               glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-              	   	glTexImage2d(target, 0, aTexture.OpenGLTextureFormat, Width, Height,
+              glTexImage2d(target, 0, aTexture.OpenGLTextureFormat, Width,
+                Height,
                 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-                  end else begin
+            end
+            else
+            begin
               // slower (software mode)
-                     gluBuild2DMipmaps(target, aTexture.OpenGLTextureFormat, Width, Height,
+              gluBuild2DMipmaps(target, aTexture.OpenGLTextureFormat, Width,
+                Height,
                 GL_RGBA, GL_UNSIGNED_BYTE, buf);
             end;
           end;
         finally
           FreeMem(buf);
         end;
-         end else begin
+      end
+      else
+      begin
         glCopyTexSubImage2D(target, 0, xDest, yDest, xSrc, ySrc, Width, Height);
       end;
       ClearGLError;
@@ -7832,7 +8416,7 @@ begin
   end;
 end;
 
-procedure TGLSceneBuffer.SaveAsFloatToFile(const aFilename: String);
+procedure TGLSceneBuffer.SaveAsFloatToFile(const aFilename: string);
 var
   Data: pointer;
   DataSize: integer;
@@ -7840,7 +8424,8 @@ var
 const
   FloatSize = 4;
 begin
-   if Assigned(Camera) and Assigned(Camera.Scene) then begin
+  if Assigned(Camera) and Assigned(Camera.Scene) then
+  begin
     DataSize := Width * Height * FloatSize * FloatSize;
     GetMem(Data, DataSize);
     FRenderingContext.Activate;
@@ -7867,7 +8452,8 @@ end;
 
 procedure TGLSceneBuffer.SetViewPort(X, Y, W, H: Integer);
 begin
-   with FViewPort do begin
+  with FViewPort do
+  begin
     Left := X;
     Top := Y;
     Width := W;
@@ -7897,8 +8483,10 @@ end;
 
 procedure TGLSceneBuffer.Freeze;
 begin
-   if Freezed then Exit;
-   if RenderingContext=nil then Exit;
+  if Freezed then
+    Exit;
+  if RenderingContext = nil then
+    Exit;
   Render;
   FFreezed := True;
   RenderingContext.Activate;
@@ -7917,7 +8505,8 @@ end;
 
 procedure TGLSceneBuffer.Melt;
 begin
-   if not Freezed then Exit;
+  if not Freezed then
+    Exit;
   FreeMem(FFreezeBuffer);
   FFreezeBuffer := nil;
   FFreezed := False;
@@ -7942,7 +8531,8 @@ begin
       aColorBits := 8;
     bmpContext := GLContextManager.CreateContext;
     SetupRCOptions(bmpContext);
-      with bmpContext do begin
+    with bmpContext do
+    begin
       Options := []; // no such things for bitmap rendering
       ColorBits := aColorBits; // honour Bitmap's pixel depth
       AntiAliasing := aaNone; // no AA for bitmap rendering
@@ -7960,7 +8550,8 @@ begin
         BackColor := ConvertWinColor(FBackgroundColor);
         glClearColor(BackColor[0], BackColor[1], BackColor[2], BackColor[3]);
         // set the desired viewport and limit output to this rectangle
-            with LViewport do begin
+        with LViewport do
+        begin
           Left := 0;
           Top := 0;
           Width := ABitmap.Width;
@@ -7970,7 +8561,8 @@ begin
         ClearBuffers;
         FRenderDPI := DPI;
         if FRenderDPI = 0 then
-               FRenderDPI:=GetDeviceLogicalPixelsX(Cardinal(ABitmap.Canvas.Handle));
+          FRenderDPI :=
+            GetDeviceLogicalPixelsX(Cardinal(ABitmap.Canvas.Handle));
         // render
         viewportBackup := FViewPort;
         FViewport := LViewport;
@@ -8000,7 +8592,8 @@ end;
 
 procedure TGLSceneBuffer.ShowInfo(Modal: boolean);
 begin
-   if not Assigned(FRenderingContext) then Exit;
+  if not Assigned(FRenderingContext) then
+    Exit;
   // most info is available with active context only
   FRenderingContext.Activate;
   try
@@ -8048,46 +8641,61 @@ end;
 
 // OrthoScreenToWorld
 //
-function TGLSceneBuffer.OrthoScreenToWorld(screenX, screenY : Integer) : TAffineVector;
+
+function TGLSceneBuffer.OrthoScreenToWorld(screenX, screenY: Integer):
+  TAffineVector;
 var
   camPos, camUp, camRight: TAffineVector;
   f: Single;
 begin
-   if Assigned(FCamera) then begin
+  if Assigned(FCamera) then
+  begin
     SetVector(camPos, FCameraAbsolutePosition);
-      if Camera.TargetObject<>nil then begin
+    if Camera.TargetObject <> nil then
+    begin
       SetVector(camUp, FCamera.AbsoluteUpVectorToTarget);
       SetVector(camRight, FCamera.AbsoluteRightVectorToTarget);
-      end else begin
+    end
+    else
+    begin
       SetVector(camUp, Camera.AbsoluteUp);
       SetVector(camRight, Camera.AbsoluteRight);
     end;
-      f:=100 * FCamera.NearPlaneBias / (FCamera.FocalLength*FCamera.SceneScale);
+    f := 100 * FCamera.NearPlaneBias / (FCamera.FocalLength *
+      FCamera.SceneScale);
     if FViewPort.Width > FViewPort.Height then
       f := f / FViewPort.Width
-      else f:=f/FViewPort.Height;
+    else
+      f := f / FViewPort.Height;
     SetVector(Result,
       VectorCombine3(camPos, camUp, camRight, 1,
       (screenY - (FViewPort.Height div 2)) * f,
       (screenX - (FViewPort.Width div 2)) * f));
-   end else Result:=NullVector;
+  end
+  else
+    Result := NullVector;
 end;
 
 // ScreenToWorld (affine)
 //
-function TGLSceneBuffer.ScreenToWorld(const aPoint : TAffineVector) : TAffineVector;
+
+function TGLSceneBuffer.ScreenToWorld(const aPoint: TAffineVector):
+  TAffineVector;
 var
   proj, mv: THomogeneousDblMatrix;
   x, y, z: Double;
 begin
-   if Assigned(FCamera) then begin
+  if Assigned(FCamera) then
+  begin
     SetMatrix(proj, ProjectionMatrix);
     SetMatrix(mv, ModelViewMatrix);
     gluUnProject(aPoint[0], aPoint[1], aPoint[2],
       mv, proj, PHomogeneousIntVector(@FViewPort)^,
       @x, @y, @z);
     SetVector(Result, x, y, z);
-   end else Result:=aPoint;
+  end
+  else
+    Result := aPoint;
 end;
 
 // ScreenToWorld (hmg)
@@ -8103,24 +8711,30 @@ end;
 
 function TGLSceneBuffer.ScreenToWorld(screenX, screenY: Integer): TAffineVector;
 begin
-   Result:=ScreenToWorld(AffineVectorMake(screenX, FViewPort.Height-screenY, 0));
+  Result := ScreenToWorld(AffineVectorMake(screenX, FViewPort.Height - screenY,
+    0));
 end;
 
 // WorldToScreen
 //
-function TGLSceneBuffer.WorldToScreen(const aPoint : TAffineVector) : TAffineVector;
+
+function TGLSceneBuffer.WorldToScreen(const aPoint: TAffineVector):
+  TAffineVector;
 var
   proj, mv: THomogeneousDblMatrix;
   x, y, z: Double;
 begin
-   if Assigned(FCamera) then begin
+  if Assigned(FCamera) then
+  begin
     SetMatrix(proj, ProjectionMatrix);
     SetMatrix(mv, ModelViewMatrix);
     gluProject(aPoint[0], aPoint[1], aPoint[2],
       mv, proj, PHomogeneousIntVector(@FViewPort)^,
       @x, @y, @z);
     SetVector(Result, x, y, z);
-   end else Result:=aPoint;
+  end
+  else
+    Result := aPoint;
 end;
 
 // WorldToScreen
@@ -8140,10 +8754,12 @@ var
   proj, mv: THomogeneousDblMatrix;
   x, y, z: Double;
 begin
-   if Assigned(FCamera) then begin
+  if Assigned(FCamera) then
+  begin
     SetMatrix(proj, ProjectionMatrix);
     SetMatrix(mv, ModelViewMatrix);
-      for i:=0 to nbPoints-1 do begin
+    for i := 0 to nbPoints - 1 do
+    begin
       gluProject(points^[0], points^[1], points^[2],
         mv, proj, PHomogeneousIntVector(@FViewPort)^,
         @x, @y, @z);
@@ -8158,7 +8774,9 @@ end;
 
 // ScreenToVector (affine)
 //
-function TGLSceneBuffer.ScreenToVector(const aPoint : TAffineVector) : TAffineVector;
+
+function TGLSceneBuffer.ScreenToVector(const aPoint: TAffineVector):
+  TAffineVector;
 begin
   Result := VectorSubtract(ScreenToWorld(aPoint),
     PAffineVector(@FCameraAbsolutePosition)^);
@@ -8189,9 +8807,12 @@ end;
 
 // VectorToScreen
 //
-function TGLSceneBuffer.VectorToScreen(const VectToCam : TAffineVector) : TAffineVector;
+
+function TGLSceneBuffer.VectorToScreen(const VectToCam: TAffineVector):
+  TAffineVector;
 begin
- Result:=WorldToScreen(VectorAdd(VectToCam, PAffineVector(@FCameraAbsolutePosition)^));
+  Result := WorldToScreen(VectorAdd(VectToCam,
+    PAffineVector(@FCameraAbsolutePosition)^));
 end;
 
 // ScreenVectorIntersectWithPlane
@@ -8204,12 +8825,15 @@ function TGLSceneBuffer.ScreenVectorIntersectWithPlane(
 var
   v: TVector;
 begin
-   if Assigned(FCamera) then begin
+  if Assigned(FCamera) then
+  begin
     SetVector(v, ScreenToVector(aScreenPoint));
     Result := RayCastPlaneIntersect(FCameraAbsolutePosition,
       v, planePoint, planeNormal, @intersectPoint);
     intersectPoint[3] := 1;
-   end else Result:=False;
+  end
+  else
+    Result := False;
 end;
 
 // ScreenVectorIntersectWithPlaneXY
@@ -8259,7 +8883,8 @@ var
 begin
   if Camera.CameraStyle = csOrtho2D then
     dov := 2
-   else dov:=Camera.DepthOfView;
+  else
+    dov := Camera.DepthOfView;
   np := Camera.NearPlane;
   fp := Camera.NearPlane + dov;
   z := GetPixelDepth(x, y);
@@ -8347,7 +8972,8 @@ var
   subObjIndex: Cardinal;
   backupProjectionMatrix: TMatrix;
 begin
-   if not Assigned(FCamera) then Exit;
+  if not Assigned(FCamera) then
+    Exit;
   Assert((not FRendering), glsAlreadyRendering);
   Assert(Assigned(PickList));
   FRenderingContext.Activate;
@@ -8360,11 +8986,13 @@ begin
       PrepareRenderingMatrices(FViewPort, RenderDPI, @Rect);
       // check countguess, memory waste is not an issue here
 {$IFNDEF GLS_OPTIMIZATIONS}
-         if objectCountGuess<8 then objectCountGuess:=8;
+      if objectCountGuess < 8 then
+        objectCountGuess := 8;
 {$ENDIF GLS_OPTIMIZATIONS}
       hits := -1;
       repeat
-            if hits < 0 then begin
+        if hits < 0 then
+        begin
           // Allocate 4 integers per row
           // Add 32 integers of slop (an extra cache line) to end for buggy
           // hardware that uses DMA to return select results but that sometimes
@@ -8388,16 +9016,19 @@ begin
       next := 0;
       PickList.Clear;
       PickList.Capacity := Hits;
-         for I:=0 to Hits-1 do begin
+      for I := 0 to Hits - 1 do
+      begin
         current := next;
         next := current + buffer^[current] + 3;
         szmin := (buffer^[current + 1] shr 1) * (1 / MaxInt);
         szmax := (buffer^[current + 2] shr 1) * (1 / MaxInt);
         subObj := nil;
         subObjIndex := current + 4;
-            if subObjIndex<next then begin
+        if subObjIndex < next then
+        begin
           SetLength(subObj, buffer^[current] - 1);
-               while subObjIndex<next do begin
+          while subObjIndex < next do
+          begin
             subObj[subObjIndex - current - 4] := buffer^[subObjIndex];
             inc(subObjIndex);
           end;
@@ -8418,7 +9049,9 @@ end;
 
 // GetPickedObjects
 //
-function TGLSceneBuffer.GetPickedObjects(const rect : TGLRect; objectCountGuess : Integer = 64) : TGLPickList;
+
+function TGLSceneBuffer.GetPickedObjects(const rect: TGLRect; objectCountGuess:
+  Integer = 64): TGLPickList;
 begin
   Result := TGLPickList.Create(psMinDepth);
   PickObjects(Rect, Result, objectCountGuess);
@@ -8435,7 +9068,8 @@ begin
   try
     if pkList.Count > 0 then
       Result := pkList.Hit[0]
-      else Result:=nil;
+    else
+      Result := nil;
   finally
     pkList.Free;
   end;
@@ -8448,13 +9082,15 @@ function TGLSceneBuffer.GetPixelColor(x, y: Integer): TColor;
 var
   buf: array[0..2] of Byte;
 begin
-   if not Assigned(FCamera) then begin
+  if not Assigned(FCamera) then
+  begin
     Result := 0;
     Exit;
   end;
   FRenderingContext.Activate;
   try
-      glReadPixels(x, FViewPort.Height-y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, @buf[0]);
+    glReadPixels(x, FViewPort.Height - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
+      @buf[0]);
   finally
     FRenderingContext.Deactivate;
   end;
@@ -8466,13 +9102,15 @@ end;
 
 function TGLSceneBuffer.GetPixelDepth(x, y: Integer): Single;
 begin
-   if not Assigned(FCamera) then begin
+  if not Assigned(FCamera) then
+  begin
     Result := 0;
     Exit;
   end;
   FRenderingContext.Activate;
   try
-      glReadPixels(x, FViewPort.Height-y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, @Result);
+    glReadPixels(x, FViewPort.Height - y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT,
+      @Result);
   finally
     FRenderingContext.Deactivate;
   end;
@@ -8487,26 +9125,31 @@ var
 begin
   if Camera.CameraStyle = csOrtho2D then
     dov := 2
-   else dov:=Camera.DepthOfView;    // Depth of View (from np to fp)
+  else
+    dov := Camera.DepthOfView; // Depth of View (from np to fp)
   np := Camera.NearPlane; // Near plane distance
   fp := np + dov; // Far plane distance
-   Result:=(fp*np)/(fp-aDepth*dov);  // calculate world distance from z-buffer value
+  Result := (fp * np) / (fp - aDepth * dov);
+  // calculate world distance from z-buffer value
 end;
 
 // PixelToDistance
 //
 
 function TGLSceneBuffer.PixelToDistance(x, y: integer): Single;
-var z, dov, np, fp, dst, camAng : Single;
+var
+  z, dov, np, fp, dst, camAng: Single;
   norm, coord, vec: TAffineVector;
 begin
   z := GetPixelDepth(x, y);
   if Camera.CameraStyle = csOrtho2D then
     dov := 2
-   else dov:=Camera.DepthOfView;    // Depth of View (from np to fp)
+  else
+    dov := Camera.DepthOfView; // Depth of View (from np to fp)
   np := Camera.NearPlane; // Near plane distance
   fp := np + dov; // Far plane distance
-   dst:=(np*fp)/(fp-z*dov);     //calculate from z-buffer value to frustrum depth
+  dst := (np * fp) / (fp - z * dov);
+  //calculate from z-buffer value to frustrum depth
   coord[0] := x;
   coord[1] := y;
   vec := self.ScreenToVector(coord); //get the pixel vector
@@ -8533,15 +9176,18 @@ begin
       Abs(pickingRect^.Bottom - pickingRect^.Top),
       TVector4i(FViewport));
   glGetFloatv(GL_PROJECTION_MATRIX, @FBaseProjectionMatrix);
-   if Assigned(FCamera) then begin
+  if Assigned(FCamera) then
+  begin
     // apply camera perpective
-      FCamera.ApplyPerspective(aViewport, FViewPort.Width, FViewPort.Height, resolution);
+    FCamera.ApplyPerspective(aViewport, FViewPort.Width, FViewPort.Height,
+      resolution);
     glGetFloatv(GL_PROJECTION_MATRIX, @FProjectionMatrix);
   end;
   // setup model view matrix
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity;
-   if Assigned(FCamera) then begin
+  if Assigned(FCamera) then
+  begin
     // apply camera transformation (viewpoint)
     FCamera.Scene.FCurrentGLCamera := FCamera;
     FCamera.Apply;
@@ -8552,7 +9198,9 @@ end;
 
 // DoBaseRender
 //
-procedure TGLSceneBuffer.DoBaseRender(const aViewPort : TRectangle; resolution : Integer;
+
+procedure TGLSceneBuffer.DoBaseRender(const aViewPort: TRectangle; resolution:
+  Integer;
   drawState: TDrawState; baseObject: TGLBaseSceneObject);
 var
   maxLights: Integer;
@@ -8566,15 +9214,21 @@ begin
     if Owner is TComponent then
       if not (csDesigning in TComponent(Owner).ComponentState) then
         FBeforeRender(Self);
-   if Assigned(FCamera) and Assigned(FCamera.FScene) then begin
-      with FCamera.FScene do begin
+  if Assigned(FCamera) and Assigned(FCamera.FScene) then
+  begin
+    with FCamera.FScene do
+    begin
       glGetIntegerv(GL_MAX_LIGHTS, @maxLights);
       SetupLights(maxLights);
-         if FogEnable then begin
+      if FogEnable then
+      begin
         glEnable(GL_FOG);
         FogEnvironment.ApplyFog;
-         end else glDisable(GL_FOG);
-         RenderScene(FCamera.FScene, aViewPort.Width, aViewPort.Height, drawState, baseObject);
+      end
+      else
+        glDisable(GL_FOG);
+      RenderScene(FCamera.FScene, aViewPort.Width, aViewPort.Height, drawState,
+        baseObject);
     end;
   end;
   if Assigned(FPostRender) then
@@ -8601,12 +9255,15 @@ var
   perfCounter, framePerf: Int64;
   backColor: TColorVector;
 begin
-   if FRendering then Exit;
-   if not Assigned(FRenderingContext) then Exit;
+  if FRendering then
+    Exit;
+  if not Assigned(FRenderingContext) then
+    Exit;
 
   backColor := ConvertWinColor(FBackgroundColor, FBackgroundAlpha);
 
-   if Freezed and (FFreezeBuffer<>nil) then begin
+  if Freezed and (FFreezeBuffer <> nil) then
+  begin
     RenderingContext.Activate;
     try
       glClearColor(backColor[0], backColor[1], backColor[2], backColor[3]);
@@ -8628,7 +9285,8 @@ begin
 
   QueryPerformanceCounter(framePerf);
 
-   if Assigned(FCamera) and Assigned(FCamera.FScene) then begin
+  if Assigned(FCamera) and Assigned(FCamera.FScene) then
+  begin
     FCamera.AbsoluteMatrixAsAddress;
       {$warning Ales - if we don't add self, leak doesn't happen (cause is elsewhere tho)}
     FCamera.FScene.AddBuffer(Self);
@@ -8705,7 +9363,8 @@ begin
   rci.bufferFaceCull := FFaceCulling;
   rci.drawState := drawState;
   rci.sceneAmbientColor := FAmbientColor.Color;
-   with FCamera do begin
+  with FCamera do
+  begin
     rci.cameraPosition := FCameraAbsolutePosition;
     rci.cameraDirection := FLastDirection;
     NormalizeVector(rci.cameraDirection);
@@ -8714,7 +9373,8 @@ begin
     rci.cameraUp := VectorCrossProduct(rightVector, rci.cameraDirection);
     NormalizeVector(rci.cameraUp);
 
-      with rci.rcci do begin
+    with rci.rcci do
+    begin
       origin := rci.cameraPosition;
       clippingDirection := rci.cameraDirection;
       viewPortRadius := FViewPortRadius;
@@ -8771,7 +9431,8 @@ end;
 
 procedure TGLSceneBuffer.SetBackgroundColor(AColor: TColor);
 begin
-   if FBackgroundColor<>AColor then begin
+  if FBackgroundColor <> AColor then
+  begin
     FBackgroundColor := AColor;
     NotifyChange(Self);
   end;
@@ -8782,7 +9443,8 @@ end;
 
 procedure TGLSceneBuffer.SetBackgroundAlpha(alpha: Single);
 begin
-   if FBackgroundAlpha<>alpha then begin
+  if FBackgroundAlpha <> alpha then
+  begin
     FBackgroundAlpha := alpha;
     NotifyChange(Self);
   end;
@@ -8801,13 +9463,16 @@ end;
 
 procedure TGLSceneBuffer.SetCamera(ACamera: TGLCamera);
 begin
-   if FCamera <> ACamera then begin
-      if Assigned(FCamera) then begin
+  if FCamera <> ACamera then
+  begin
+    if Assigned(FCamera) then
+    begin
       if Assigned(FCamera.FScene) then
         FCamera.FScene.RemoveBuffer(Self);
       FCamera := nil;
     end;
-      if Assigned(ACamera) and Assigned(ACamera.FScene) then begin
+    if Assigned(ACamera) and Assigned(ACamera.FScene) then
+    begin
       FCamera := ACamera;
       FCamera.TransformationChanged;
     end;
@@ -8820,7 +9485,8 @@ end;
 
 procedure TGLSceneBuffer.SetContextOptions(Options: TContextOptions);
 begin
-   if FContextOptions<>Options then begin
+  if FContextOptions <> Options then
+  begin
     FContextOptions := Options;
     DoStructuralChange;
   end;
@@ -8831,7 +9497,8 @@ end;
 
 procedure TGLSceneBuffer.SetDepthTest(AValue: Boolean);
 begin
-   if FDepthTest<>AValue then begin
+  if FDepthTest <> AValue then
+  begin
     FDepthTest := AValue;
     NotifyChange(Self);
   end;
@@ -8842,7 +9509,8 @@ end;
 
 procedure TGLSceneBuffer.SetFaceCulling(AValue: Boolean);
 begin
-   if FFaceCulling <> AValue then begin
+  if FFaceCulling <> AValue then
+  begin
     FFaceCulling := AValue;
     NotifyChange(Self);
   end;
@@ -8853,7 +9521,8 @@ end;
 
 procedure TGLSceneBuffer.SetLighting(aValue: Boolean);
 begin
-   if FLighting<>aValue then begin
+  if FLighting <> aValue then
+  begin
     FLighting := aValue;
     NotifyChange(Self);
   end;
@@ -8864,7 +9533,8 @@ end;
 
 procedure TGLSceneBuffer.SetAntiAliasing(const val: TGLAntiAliasing);
 begin
-   if FAntiAliasing<>val then begin
+  if FAntiAliasing <> val then
+  begin
     FAntiAliasing := val;
     DoStructuralChange;
   end;
@@ -8875,7 +9545,8 @@ end;
 
 procedure TGLSceneBuffer.SetDepthPrecision(const val: TGLDepthPrecision);
 begin
-   if FDepthPrecision<>val then begin
+  if FDepthPrecision <> val then
+  begin
     FDepthPrecision := val;
     DoStructuralChange;
   end;
@@ -8886,7 +9557,8 @@ end;
 
 procedure TGLSceneBuffer.SetColorDepth(const val: TGLColorDepth);
 begin
-   if FColorDepth<>val then begin
+  if FColorDepth <> val then
+  begin
     FColorDepth := val;
     DoStructuralChange;
   end;
@@ -8897,7 +9569,8 @@ end;
 
 procedure TGLSceneBuffer.SetShadeModel(const val: TGLShadeModel);
 begin
-   if FShadeModel<>val then begin
+  if FShadeModel <> val then
+  begin
     FShadeModel := val;
     NotifyChange(Self);
   end;
@@ -8908,7 +9581,8 @@ end;
 
 procedure TGLSceneBuffer.SetFogEnable(AValue: Boolean);
 begin
-   if FFogEnable<>AValue then begin
+  if FFogEnable <> AValue then
+  begin
     FFogEnable := AValue;
     NotifyChange(Self);
   end;
@@ -8936,7 +9610,8 @@ end;
 
 procedure TGLSceneBuffer.SetAccumBufferBits(const val: Integer);
 begin
-   if FAccumBufferBits<>val then begin
+  if FAccumBufferBits <> val then
+  begin
     FAccumBufferBits := val;
     DoStructuralChange;
   end;
@@ -8989,7 +9664,9 @@ end;
 
 // Notification
 //
-procedure TGLNonVisualViewer.Notification(AComponent: TComponent; Operation: TOperation);
+
+procedure TGLNonVisualViewer.Notification(AComponent: TComponent; Operation:
+  TOperation);
 begin
   if (Operation = opRemove) and (AComponent = Camera) then
     Camera := nil;
@@ -9043,12 +9720,15 @@ var
           glTexImage2d(target, 0, aTexture.OpenGLTextureFormat, Width, Height,
             0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
       else
-                  if GL_SGIS_generate_mipmap and (target=GL_TEXTURE_2D) then begin
+        if GL_SGIS_generate_mipmap and (target = GL_TEXTURE_2D) then
+        begin
           // hardware-accelerated when supported
           glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
           glTexImage2d(target, 0, aTexture.OpenGLTextureFormat, Width, Height,
             0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-                  end else begin
+        end
+        else
+        begin
           // slower (software mode)
           gluBuild2DMipmaps(target, aTexture.OpenGLTextureFormat, Width, Height,
             GL_RGBA, GL_UNSIGNED_BYTE, buf);
@@ -9060,25 +9740,29 @@ var
   end;
 
 begin
-   if Buffer.RenderingContext<>nil then begin
+  if Buffer.RenderingContext <> nil then
+  begin
     Buffer.RenderingContext.Activate;
     try
       target := aTexture.Image.NativeTextureTarget;
 
       CreateTexture := true;
 
-         if aTexture.IsFloatType then begin // float_type special treatment
+      if aTexture.IsFloatType then
+      begin // float_type special treatment
         CreateTexture := false;
         handle := aTexture.Handle;
       end
-         else
-           if (target<>GL_TEXTURE_CUBE_MAP_ARB) or (FCubeMapRotIdx=0) then begin
+      else if (target <> GL_TEXTURE_CUBE_MAP_ARB) or (FCubeMapRotIdx = 0) then
+      begin
         CreateTexture := not aTexture.IsHandleAllocated;
         if CreateTexture then
           handle := aTexture.AllocateHandle
-                else handle:=aTexture.Handle;
+        else
+          handle := aTexture.Handle;
       end
-           else handle:=aTexture.Handle;
+      else
+        handle := aTexture.Handle;
 
       // For MRT
       glReadBuffer(MRT_BUFFERS[BufferIndex]);
@@ -9120,7 +9804,8 @@ begin
   gluLookAt(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0); // Dir = X, Up = Y
   glRotatef(cRot[FCubeMapRotIdx][0], 0.0, 0.0, 1.0); // Rotate around Z
   glRotatef(cRot[FCubeMapRotIdx][1], 0.0, 1.0, 0.0); // then rotate around Y
-   glTranslatef(FCubeMapTranslation[0], FCubeMapTranslation[1], FCubeMapTranslation[2]);
+  glTranslatef(FCubeMapTranslation[0], FCubeMapTranslation[1],
+    FCubeMapTranslation[2]);
 end;
 
 // RenderTextures
@@ -9151,7 +9836,8 @@ begin
   VectorScale(FBuffer.FCamera.AbsolutePosition, -1, FCubeMapTranslation);
   try
     FCubeMapRotIdx := 0;
-      while FCubeMapRotIdx<6 do begin
+    while FCubeMapRotIdx < 6 do
+    begin
       Render;
       Buffer.CopyToTexture(cubeMapTexture, 0, 0, Width, Height, 0, 0,
         GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + FCubeMapRotIdx,
@@ -9272,9 +9958,11 @@ end;
 
 procedure TGLNonVisualViewer.SetWidth(const val: Integer);
 begin
-   if val<>FWidth then begin
+  if val <> FWidth then
+  begin
     FWidth := val;
-      if FWidth<1 then FWidth:=1;
+    if FWidth < 1 then
+      FWidth := 1;
     DoBufferStructuralChange(Self);
   end;
 end;
@@ -9284,9 +9972,11 @@ end;
 
 procedure TGLNonVisualViewer.SetHeight(const val: Integer);
 begin
-   if val<>FHeight then begin
+  if val <> FHeight then
+  begin
     FHeight := val;
-      if FHeight<1 then FHeight:=1;
+    if FHeight < 1 then
+      FHeight := 1;
     DoBufferStructuralChange(Self);
   end;
 end;
@@ -9311,7 +10001,8 @@ end;
 
 procedure TGLMemoryViewer.InstantiateRenderingContext;
 begin
-   if FBuffer.RenderingContext=nil then begin
+  if FBuffer.RenderingContext = nil then
+  begin
     FBuffer.SetViewPort(0, 0, Width, Height);
     FBuffer.CreateRC(0, True, FBufferCount);
   end;
@@ -9335,13 +10026,16 @@ procedure TGLMemoryViewer.SetBufferCount(const Value: integer);
 const
   MaxAxuBufCount = 4; // Current hardware limit = 4
 begin
-   if FBufferCount=Value then exit;
+  if FBufferCount = Value then
+    exit;
   FBufferCount := Value;
 
-   if FBufferCount < 1 then FBufferCount:=1;
+  if FBufferCount < 1 then
+    FBufferCount := 1;
   //   glGetIntegerv(GL_AUX_BUFFERS, @MaxAxuBufCount);
   //   MaxAxuBufCount:=MaxAxuBufCount + 1; // + 1 front buffer
-   if FBufferCount > MaxAxuBufCount then FBufferCount:=MaxAxuBufCount;
+  if FBufferCount > MaxAxuBufCount then
+    FBufferCount := MaxAxuBufCount;
 
   // Request a new Instantiation of RC on next render
   FBuffer.DestroyRC;
