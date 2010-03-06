@@ -4,6 +4,7 @@
    its assigned MaterialLibrary.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - Added more state to TGLStateCache
       <li>03/07/09 - DanB - bug fix to allow multi-pass materials to be used by TGLMultiMaterialShader 
       <li>20/01/09 - Mrqzzz - Published property "Shaderstyle"
                              (allows f.ex to have multiple textures using lightmaps)
@@ -24,7 +25,7 @@ unit GLMultiMaterialShader;
 interface
 
 uses
-   Classes, GLMaterial, OpenGL1x, GLRenderContextInfo;
+   Classes, GLMaterial, GLRenderContextInfo, GLState;
 
 type
    TGLMultiMaterialShader = class(TGLShader)
@@ -79,9 +80,9 @@ begin
 
    FPass:=1;
    if (not (csDesigning in ComponentState)) or FShaderActiveAtDesignTime then begin
-      //glPushAttrib(GL_ALL_ATTRIB_BITS);
-      glEnable(GL_DEPTH_TEST);
-      glDepthFunc(GL_LEQUAL);
+      //rci.GLStates.PushAttrib(cAllAttribBits);
+      rci.GLStates.Enable(stDepthTest);
+      rci.GLStates.DepthFunc := cfLEqual;
       if FMaterialLibrary.Materials.Count>0 then
          FMaterialLibrary.Materials[0].Apply(rci);
   end;
@@ -103,8 +104,8 @@ begin
            Exit;
          end;
       if (FPass >= FMaterialLibrary.Materials.Count) then begin
-         glDepthFunc(GL_LESS);
-         //glPopAttrib;
+         rci.GLStates.DepthFunc := cfLess;
+         //rci.GLStates.PopAttrib;
          exit;
       end;
       FMaterialLibrary.Materials[FPass].Apply(rci);

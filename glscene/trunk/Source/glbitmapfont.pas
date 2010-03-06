@@ -6,6 +6,8 @@
   Bitmap Fonts management classes for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
+      <li>24/02/10 - Yar - Bugfix in TGLCustomBitmapFont.PrepareImage when image is not RGBA8
       <li>25/01/10 - Yar - Replace Char to AnsiChar
       <li>11/11/09 - DaStr - Added Delphi 2009 compatibility (thanks mal)
       <li>16/10/08 - UweR - Removed unneeded typecast in TBitmapFontRange.SetStartGlyphIdx
@@ -169,7 +171,7 @@ type
 	      function  CharactersPerRow : Integer;
 	      procedure GetCharTexCoords(ch : AnsiChar; var topLeft, bottomRight : TTexPoint);
          procedure PrepareImage; virtual;
-         procedure PrepareParams;
+         procedure PrepareParams(var rci: TRenderContextInfo);
 
          {: A single bitmap containing all the characters.<p>
             The transparent color is that of the top left pixel. }
@@ -746,6 +748,7 @@ begin
    bitmap32:=TGLBitmap32.Create;
    bitmap32.Assign(bitmap);
    bitmap.Free;
+   bitmap32.Narrow;
    with bitmap32 do begin
       case FGlyphsAlpha of
          tiaAlphaFromIntensity :
@@ -775,7 +778,7 @@ end;
 
 // PrepareParams
 //
-procedure TGLCustomBitmapFont.PrepareParams;
+procedure TGLCustomBitmapFont.PrepareParams(var rci: TRenderContextInfo);
 const
 	cTextureMagFilter : array [maNearest..maLinear] of TGLEnum =
 							( GL_NEAREST, GL_LINEAR );
@@ -785,10 +788,10 @@ const
 							  GL_LINEAR_MIPMAP_LINEAR );
 begin
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-	glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-	glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+	rci.GLStates.UnpackAlignment := 4;
+	rci.GLStates.UnpackRowLength := 0;
+	rci.GLStates.UnpackSkipRows := 0;
+	rci.GLStates.UnpackSkipPixels := 0;
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -851,10 +854,11 @@ begin
          Assert(FTextureHandle.Handle<>0);
       end;
       rci.GLStates.SetGLCurrentTexture(0, GL_TEXTURE_2D, FTextureHandle.Handle);
+      //rci.GLStates.TextureBinding[0, ttTexture2d] := FTextureHandle.Handle;
       // texture registration
       if Glyphs.Width<>0 then begin
          PrepareImage;
-         PrepareParams;
+         PrepareParams(rci);
       end;
       FHandleIsDirty:=False;
    end;
@@ -871,13 +875,14 @@ begin
    spaceDeltaH:=GetCharWidth(#32)+HSpaceFix+HSpace;
    // set states
 	glEnable(GL_TEXTURE_2D);
-   glDisable(GL_LIGHTING);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   rci.GLStates.Disable(stLighting);
+   rci.GLStates.Enable(stBlend);
+   rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
    rci.GLStates.SetGLCurrentTexture(0, GL_TEXTURE_2D, FTextureHandle.Handle);
+   //rci.GLStates.TextureBinding[0, ttTexture2d] := FTextureHandle.Handle;
    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
    // start rendering
-   glPushAttrib(GL_CURRENT_BIT);
+   rci.GLStates.PushAttrib([sttCurrent]);
    glColor4fv(@color);
    glBegin(GL_QUADS);
    for i:=1 to Length(aString) do begin
@@ -917,9 +922,10 @@ begin
       end;
    end;
    glEnd;
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
    // unbind texture
    rci.GLStates.SetGLCurrentTexture(0, GL_TEXTURE_2D, 0);
+//   rci.GLStates.TextureBinding[0, ttTexture2d] := 0;
    rci.GLStates.ResetGLCurrentTexture;
 end;
 
@@ -930,13 +936,13 @@ procedure TGLCustomBitmapFont.TextOut(var rci : TRenderContextInfo;
 var
    v : TVector;
 begin
-   glPushAttrib(GL_ENABLE_BIT);
+   rci.GLStates.PushAttrib([sttEnable]);
    v[0]:=x;
    v[1]:=y;
    v[2]:=0;
    v[3]:=1;
    RenderString(rci, text, taLeftJustify, tlTop, color, @v, True);
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
 end;
 
 // TextOut
@@ -1117,16 +1123,16 @@ procedure TGLFlatText.DoRender(var rci : TRenderContextInfo;
                                renderSelf, renderChildren : Boolean);
 begin
    if Assigned(FBitmapFont) and (Text<>'') then begin
-      rci.GLStates.SetGLPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glPushAttrib(GL_ENABLE_BIT);
+      rci.GLStates.PolygonMode := pmFill;
+      rci.GLStates.PushAttrib([sttEnable]);
       if FModulateColor.Alpha<>1 then begin
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+         rci.GLStates.Enable(stBlend);
+         rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
       end;
       if ftoTwoSided in FOptions then
-         glDisable(GL_CULL_FACE);
+         rci.GLStates.Disable(stCullFace);
       FBitmapFont.RenderString(rci, Text, FAlignment, FLayout, FModulateColor.Color);
-      glPopAttrib;
+      rci.GLStates.PopAttrib;
    end;
    if Count>0 then
       Self.RenderChildren(0, Count-1, rci);

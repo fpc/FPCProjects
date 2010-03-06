@@ -6,6 +6,8 @@
    Stores contextual info useful during rendering methods.<p>
 
 	<b>History : </b><font size=-1><ul>
+
+      <li>22/02/10 - Yar - Added bufferLighting, bufferFog, bufferDepthTest to TRenderContextInfo
       <li>14/03/09 - DanB - Removed IsVolumeClipped functions, instead replaced with
                             IsVolumeClipped functions in VectorGeometry.pas that use TFrustrum
       <li>09/10/08 - DanB - Added TRenderContextClippingInfo + IsVolumeClipped
@@ -97,9 +99,13 @@ type
       rcci : TRenderContextClippingInfo;
       sceneAmbientColor : TColorVector;
       bufferFaceCull : Boolean;
+      bufferLighting : Boolean;
+      bufferFog : Boolean;
+      bufferDepthTest : Boolean;
       proxySubObject : Boolean;
       ignoreMaterials : Boolean;
       ignoreBlendingRequests : Boolean;
+      ignoreDepthRequests : Boolean;
       amalgamating : Boolean;
       lights: TPersistentObjectList;
       afterRenderEffects: TPersistentObjectList;

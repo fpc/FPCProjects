@@ -7,6 +7,7 @@
    and shade definition texture.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>22/01/10 - Yar   - Added bmp32.Blank:=false for memory allocation
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>31/03/07 - DaStr - Added $I GLScene.inc
@@ -27,7 +28,7 @@ interface
 uses
    Classes, SysUtils, GLTexture, GLContext, GLGraphics, GLUtils,
    VectorGeometry, OpenGL1x, ARBProgram, GLColor, GLRenderContextInfo,
-   GLMaterial;
+   GLMaterial, GLState;
 
 type
    // TGLCelShaderOption
@@ -246,10 +247,10 @@ begin
       end;
    end;
 
-   glPushAttrib(GL_ENABLE_BIT or GL_CURRENT_BIT or GL_COLOR_BUFFER_BIT
-      or GL_HINT_BIT or GL_LINE_BIT or GL_POLYGON_BIT or GL_DEPTH_BUFFER_BIT);
+   rci.GLStates.PushAttrib([sttEnable, sttCurrent, sttColorBuffer, sttHint,
+                            sttLine, sttPolygon, sttDepthBuffer]);
 
-   glDisable(GL_LIGHTING);
+   rci.GLStates.Disable(stLighting);
    glEnable(GL_VERTEX_PROGRAM_ARB);
    glGetLightfv(GL_LIGHT0, GL_POSITION, @light[0]);
    glProgramLocalParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 0, @light[0]);
@@ -285,24 +286,24 @@ begin
    if FOutlinePass then begin
       glDisable(GL_TEXTURE_2D);
 
-      glEnable(GL_BLEND);
-      glEnable(GL_LINE_SMOOTH);
-      glEnable(GL_CULL_FACE);
+      rci.GLStates.Enable(stBlend);
+      rci.GLStates.Enable(stLineSmooth);
+      rci.GLStates.Enable(stCullFace);
 
-      glPolygonMode(GL_BACK, GL_LINE);
-      glCullFace(GL_FRONT);
-      glHint(GL_LINE_SMOOTH_HINT,GL_NICEST);
-      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-      glDepthFunc(GL_LEQUAL);
+      rci.GLStates.PolygonMode := pmLines;
+      rci.GLStates.CullFaceMode := cmFront;
+      rci.GLStates.LineSmoothHint := hintNicest;
+      rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
+      rci.GLStates.DepthFunc := cfLEqual;
       glColor4fv(FOutlineColor.AsAddress);
-      glLineWidth(FOutlineWidth);
+      rci.GLStates.LineWidth := FOutlineWidth;
 
       Result:=True;
       FOutlinePass:=False;
       Exit;
    end;
 
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
 end;
 
 // SetCelShaderOptions

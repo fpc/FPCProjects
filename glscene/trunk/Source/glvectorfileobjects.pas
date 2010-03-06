@@ -6,6 +6,7 @@
 	Vector File related objects for GLScene<p>
 
 	<b>History :</b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>25/12/09 - DaStr - Separated TGLActor.DoAnimate() from TGLActor.BuildList()
       <li>16/01/09 - DanB - re-disable VBOs in display list to prevent AV on ATI cards
       <li>27/11/08 - DanB - fix to TFGVertexIndexList.BuildList
@@ -2751,14 +2752,14 @@ var
    i : Integer;
 begin
    // root node setups and restore OpenGL stuff
-   glPushAttrib(GL_ENABLE_BIT);
-   glDisable(GL_COLOR_MATERIAL);
-   glDisable(GL_LIGHTING);
+   mrci.GLStates.PushAttrib([sttEnable]);
+   mrci.GLStates.Disable(stColorMaterial);
+   mrci.GLStates.Disable(stLighting);
    glColor3f(1, 1, 1);
    // render root-bones
    for i:=0 to Count-1 do
       Items[i].BuildList(mrci);
-   glPopAttrib;
+   mrci.GLStates.PopAttrib;
 end;
 
 // ------------------
@@ -4503,8 +4504,8 @@ begin
    FLastXOpenGLTexMapping:=0;
    gotColor:=(Vertices.Count=Colors.Count);
    if gotColor then begin
-      glPushAttrib(GL_ENABLE_BIT);
-      glEnable(GL_COLOR_MATERIAL);
+      mrci.GLStates.PushAttrib([sttEnable]);
+      mrci.GLStates.Enable(stColorMaterial);
       glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
       mrci.GLStates.ResetGLMaterialColors;
    end;
@@ -4588,10 +4589,10 @@ begin
             // restore faceculling
             if (stCullFace in mrci.GLStates.States) then begin
                if not mrci.bufferFaceCull then
-                  mrci.GLStates.UnSetGLState(stCullFace);
+                  mrci.GLStates.Disable(stCullFace);
             end else begin
                if mrci.bufferFaceCull then
-                  mrci.GLStates.SetGLState(stCullFace);
+                  mrci.GLStates.Enable(stCullFace);
             end;
          end else for i:=0 to FaceGroups.Count-1 do
             FaceGroups[i].BuildList(mrci);
@@ -4599,7 +4600,7 @@ begin
    else
       Assert(False);
    end;
-   if gotColor then glPopAttrib;
+   if gotColor then mrci.GLStates.PopAttrib;
    DisableOpenGLArrays(mrci);
 end;
 
@@ -7904,10 +7905,10 @@ begin
    DoAnimate;
    inherited;
    if OverlaySkeleton then begin
-      glPushAttrib(GL_ENABLE_BIT);
-      glDisable(GL_DEPTH_TEST);
+      rci.GLStates.PushAttrib([sttEnable]);
+      rci.GLStates.Disable(stDepthTest);
       Skeleton.RootBones.BuildList(rci);
-      glPopAttrib;
+      rci.GLStates.PopAttrib;
    end;
 end;
 

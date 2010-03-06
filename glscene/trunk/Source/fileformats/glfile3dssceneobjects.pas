@@ -6,6 +6,7 @@
   3ds-specific scene objects.<p>
 
   <b>History :</b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>17/05/08 - DaStr - Added vGLFile3DSSceneObjects_RenderCameraAndLights
       <li>06/04/08 - DaStr - Initial version (by Lexer)
   </ul></font>
@@ -22,7 +23,8 @@ uses
 
   // GLScene
   VectorGeometry, OpenGL1x, GLScene, GLVectorFileObjects,
-  PersistentClasses, GLCrossPlatform, GLCoordinates, GLRenderContextInfo;
+  PersistentClasses, GLCrossPlatform, GLCoordinates, GLRenderContextInfo,
+  GLState;
 
 type
   TGLFile3DSLight = class(TGLLightSource)
@@ -181,7 +183,7 @@ begin
   inherited;
   if not vGLFile3DSSceneObjects_RenderCameraAndLights then Exit;
 
-  rci.GLStates.SetGLPolygonMode(GL_FRONT, GL_LINE);
+  rci.GLStates.PolygonMode := pmLines;
   glPushMatrix;
 
   dv := VectorDistance(Position.AsVector, rci.cameraPosition);
@@ -280,7 +282,7 @@ begin
   NormalizeVector(v1);
   ang := VectorGeometry.arccos(VectorDotProduct(v, v1));
 
-  rci.GLStates.SetGLPolygonMode(GL_FRONT, GL_LINE);
+  rci.GLStates.PolygonMode := pmLines;
 
   glPushMatrix;
   glRotatef(ang * 180 / pi, 0, 0, 1);
@@ -297,7 +299,7 @@ begin
   BuildFace;
   glPopMatrix;
 
-  rci.GLStates.SetGLPolygonMode(GL_FRONT, GL_FILL);
+  rci.GLStates.PolygonMode := pmFill;
 end;
 
 procedure TGLFile3DSCamera.CoordinateChanged(Sender: TGLCustomCoordinates);

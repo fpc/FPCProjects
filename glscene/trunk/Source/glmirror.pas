@@ -9,6 +9,7 @@
    materials/mirror demo before using this component.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>15/12/08- Paul Robello - corrected call to  FOnEndRenderingMirrors
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
@@ -185,32 +186,32 @@ begin
 
       if VectorDotProduct(VectorSubtract(ARci.cameraPosition, AbsolutePosition), AbsoluteDirection)>0 then begin
 
-         glPushAttrib(GL_ENABLE_BIT);
+         ARci.GLStates.PushAttrib([sttEnable]);
 
          // "Render" stencil mask
          if MirrorOptions<>[] then begin
             if (moUseStencil in MirrorOptions) then begin
-               glClearStencil(0);
+               ARci.GLStates.StencilClearValue := 0;
                glClear(GL_STENCIL_BUFFER_BIT);
-               glEnable(GL_STENCIL_TEST);
-               glStencilFunc(GL_ALWAYS, 1, 1);
-               glStencilOp(GL_REPLACE, GL_ZERO, GL_REPLACE);
+               ARci.GLStates.Enable(stStencilTest);
+               ARci.GLStates.SetStencilFunc(cfAlways, 1, 1);
+               ARci.GLStates.SetStencilOp(soReplace, soZero, soReplace);
             end;
             if (moOpaque in MirrorOptions) then begin
                bgColor:=ConvertWinColor(CurrentBuffer.BackgroundColor);
-               ARci.GLStates.SetGLMaterialColors(GL_FRONT, bgColor, clrBlack, clrBlack, clrBlack, 0);
-               ARci.GLStates.UnSetGLState(stTexture2D);
+               ARci.GLStates.SetGLMaterialColors(cmFront, bgColor, clrBlack, clrBlack, clrBlack, 0);
+               ARci.GLStates.Disable(stTexture2D);
             end else begin
                glColorMask(False, False, False, False);
             end;
-            glDepthMask(False);
+            ARci.GLStates.DepthWriteMask := False;
 
             BuildList(ARci);
 
-            glDepthMask(True);
+            ARci.GLStates.DepthWriteMask := True;
             if (moUseStencil in MirrorOptions) then begin
-               glStencilFunc(GL_EQUAL, 1, 1);
-               glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+               Arci.GLStates.SetStencilFunc(cfEqual, 1, 1);
+               Arci.GLStates.SetStencilOp(soKeep, soKeep, soKeep);
             end;
 
             if (moClearZBuffer in MirrorOptions) then
@@ -233,8 +234,8 @@ begin
          glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
          CurrentBuffer.PushModelViewMatrix(curMat);
 
-         glDisable(GL_CULL_FACE);
-         glEnable(GL_NORMALIZE);
+         ARci.GLStates.Disable(stCullFace);
+         ARci.GLStates.Enable(stNormalize);
 
          if moMirrorPlaneClip in MirrorOptions then begin
             glEnable(GL_CLIP_PLANE0);
@@ -249,7 +250,8 @@ begin
          ARci.cameraDirection:=VectorTransform(ARci.cameraDirection, refMat);
 
          glMultMatrixf(@refMat);
-
+         // temporary fix? (some objects don't respect culling options, or ?)
+         ARci.GLStates.CullFaceMode := cmFront;
          if Assigned(FOnBeginRenderingMirrors) then
             FOnBeginRenderingMirrors(Self);
          if Assigned(FMirrorObject) then begin
@@ -265,14 +267,14 @@ begin
 
          ARci.cameraPosition:=cameraPosBackup;
          ARci.cameraDirection:=cameraDirectionBackup;
-
+         ARci.GLStates.CullFaceMode := cmBack;
          // Restore to "normal"
          CurrentBuffer.PopModelViewMatrix;
          glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
          Scene.SetupLights(CurrentBuffer.LimitOf[limLights]);
 
          glPopMatrix;
-         glPopAttrib;
+         ARci.GLStates.PopAttrib;
          ARci.GLStates.ResetGLMaterialColors;
          ARci.GLStates.ResetGLCurrentTexture;
 

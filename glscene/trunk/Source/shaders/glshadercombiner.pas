@@ -29,7 +29,7 @@ uses
   Classes,
 
   //GLScene
-  GLMaterial, GLScene, VectorGeometry, OpenGL1x, GLStrings, GLRenderContextInfo;
+  GLMaterial, GLScene, VectorGeometry, GLStrings, GLRenderContextInfo;
 
 type
   {: MP - multipass, SP-singlepass, AP - anypass (single or multi)

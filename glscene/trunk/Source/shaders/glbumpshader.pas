@@ -25,6 +25,7 @@
    texture lookups.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
@@ -63,7 +64,8 @@ interface
 
 uses
    Classes, SysUtils, GLMaterial, GLContext, GLGraphics, GLUtils,
-   VectorGeometry, OpenGL1x, VectorLists, ARBProgram, GLColor, GLRenderContextInfo;
+   VectorGeometry, OpenGL1x, VectorLists, ARBProgram, GLColor,
+   GLRenderContextInfo, GLState;
 
 type
    TBumpMethod = (bmDot3TexCombiner, bmBasicARBFP);
@@ -620,10 +622,8 @@ begin
       end;
    end;
 
-   glPushAttrib(GL_ENABLE_BIT or
-                GL_TEXTURE_BIT or
-                GL_DEPTH_BUFFER_BIT or
-                GL_COLOR_BUFFER_BIT);
+   rci.GLStates.PushAttrib([sttEnable, sttTexture, sttDepthBuffer,
+                            sttColorBuffer]);
 
    FLightIDs.Clear;
    glActiveTextureARB(GL_TEXTURE0_ARB);
@@ -640,14 +640,14 @@ begin
 
    if FLightIDs.Count>0 then begin
 
-      glDepthFunc(GL_LEQUAL);
-      glDisable(GL_BLEND);
+      rci.GLStates.DepthFunc := cfLEqual;
+      rci.GLStates.Disable(stBlend);
       DoLightPass(FLightIDs[0]);
       FLightIDs.Delete(0);
 
    end else begin
 
-      glDisable(GL_LIGHTING);
+      rci.GLStates.Disable(stLighting);
       glActiveTextureARB(GL_TEXTURE0_ARB);
       glDisable(GL_TEXTURE_2D);
       glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -680,9 +680,9 @@ begin
 
    if FLightIDs.Count>0 then begin
 
-      glDepthFunc(GL_LEQUAL);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ONE);
+      rci.GLStates.DepthFunc := cfLEqual;
+      rci.GLStates.Enable(stBlend);
+      rci.GLStates.SetBlendFunc(bfOne, bfOne);
 
       DoLightPass(FLightIDs[0]);
       FLightIDs.Delete(0);
@@ -693,8 +693,8 @@ begin
    and (boDiffuseTexture2 in BumpOptions)
    and (BumpMethod = bmDot3TexCombiner) then begin
 
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_DST_COLOR, GL_ZERO);
+      rci.GLStates.Enable(stBlend);
+      rci.GLStates.SetBlendFunc(bfDstColor, bfZero);
 
       glActiveTextureARB(GL_TEXTURE0_ARB);
       glDisable(GL_TEXTURE_2D);
@@ -715,7 +715,7 @@ begin
       if BumpMethod = bmBasicARBFP then
          glDisable(GL_FRAGMENT_PROGRAM_ARB);
 
-      glDisable(GL_LIGHTING);
+      rci.GLStates.Disable(stLighting);
       glActiveTextureARB(GL_TEXTURE0_ARB);
       glDisable(GL_TEXTURE_2D);
       glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -724,9 +724,9 @@ begin
       glDisable(GL_TEXTURE_2D);
       glActiveTextureARB(GL_TEXTURE0_ARB);
 
-      glDepthFunc(GL_LEQUAL);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ONE);
+      rci.GLStates.DepthFunc := cfLEqual;
+      rci.GLStates.Enable(stBlend);
+      rci.GLStates.SetBlendFunc(bfOne, bfOne);
 
       glGetFloatv(GL_LIGHT_MODEL_AMBIENT, @ambient);
       glGetMaterialfv(GL_FRONT, GL_AMBIENT, @materialAmbient);
@@ -745,7 +745,7 @@ begin
    if BumpMethod = bmBasicARBFP then
       glDisable(GL_FRAGMENT_PROGRAM_ARB);
 
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
 end;
 
 // DeleteVertexPrograms

@@ -6,6 +6,10 @@
    Base classes and structures for GLScene.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
+      <li>22/02/10 - DanB - Moved TGLSceneBuffer.GLStates to TGLContext.GLStates
+      <li>22/02/10 - Yar - Added Push/PopProjectionMatrix to TGLSceneBuffer
+                           Optimization of switching states
       <li>14/03/09 - DanB - Moved RenderScene from TGLScene to TGLSceneBuffer, removed
                             TGLScene.Cameras, place cameras inside scene instead.
                             TGLObjectEffect no longer has "buffer" parameter in render events.
@@ -426,7 +430,7 @@ type
         it will be ignored and the object rendered
      </ul> }
   TGLObjectStyle = (osDirectDraw, osDoesTemperWithColorsOrFaceWinding,
-    osIgnoreDepthBuffer, osNoVisibilityCulling);
+    osIgnoreDepthBuffer, osNoVisibilityCulling, osBuiltStage);
   TGLObjectStyles = set of TGLObjectStyle;
 
   // IGLInitializable
@@ -1898,12 +1902,12 @@ type
   private
     { Private Declarations }
     // Internal state
-         FGLStates : TGLStateCache;
     FRendering: Boolean;
     FRenderingContext: TGLContext;
     FAfterRenderEffects: TPersistentObjectList;
     FProjectionMatrix, FModelViewMatrix: TMatrix;
     FModelViewMatrixStack: array of TMatrix;
+    FProjectionMatrixStack: array of TMatrix;
     FBaseProjectionMatrix: TMatrix;
     FCameraAbsolutePosition: TVector;
     FViewPort: TRectangle;
@@ -1974,7 +1978,7 @@ type
     procedure DoBaseRender(const aViewPort: TRectangle; resolution: Integer;
       drawState: TDrawState; baseObject: TGLBaseSceneObject);
 
-         procedure SetupRenderingContext;
+    procedure SetupRenderingContext(context: TGLContext);
     procedure SetupRCOptions(context: TGLContext);
     procedure PrepareGLContext;
 
@@ -1994,11 +1998,12 @@ type
 
     procedure NotifyChange(Sender: TObject); override;
 
-         procedure DoGLInitNames;
-         procedure DoGLLoadName(aPointer : pointer);
-         procedure DoGLPushName(aPointer : pointer);
+    procedure DoGLInitNames;
+    procedure DoGLLoadName(aPointer : pointer);
+    procedure DoGLPushName(aPointer : pointer);
 
-         procedure CreateRC(deviceHandle : HDC; memoryContext : Boolean; BufferCount : integer = 1);
+    procedure CreateRC(deviceHandle: HDC; memoryContext: Boolean;
+      BufferCount : integer = 1);
     procedure ClearBuffers;
     procedure DestroyRC;
     function RCInstantiated: Boolean;
@@ -2113,6 +2118,9 @@ type
     {: Restore a ModelView matrix previously pushed. }
     procedure PopModelViewMatrix;
 
+    procedure PushProjectionMatrix(const newMatrix: TMatrix);
+    procedure PopProjectionMatrix;
+
     {: Converts a screen pixel coordinate into 3D coordinates for orthogonal projection.<p>
        This function accepts standard canvas coordinates, with (0,0) being
        the top left corner, and returns, when the camera is in orthogonal
@@ -2181,8 +2189,6 @@ type
        Note that ZBuffer precision is not linear and can be quite low on
        some boards (either from compression or resolution approximations). }
     function PixelRayToWorld(x, y: Integer): TAffineVector;
-
-         property GLStates : TGLStateCache read FGLStates;
 
     {: Time (in second) spent to issue rendering order for the last frame.<p>
        Be aware that since execution by the hardware isn't synchronous,
@@ -2478,26 +2484,45 @@ var
 
   // AxesBuildList
   //
-procedure AxesBuildList(var rci : TRenderContextInfo; pattern : Word; axisLen : Single);
+
+procedure AxesBuildList(var rci: TRenderContextInfo; pattern: Word; axisLen:
+  Single);
+begin
+  rci.GLStates.PushAttrib([sttEnable, sttLighting, sttLine, sttDepthBuffer]);
+  rci.GLStates.Disable(stLighting);
+  rci.GLStates.Enable(stLineStipple);
+  if not rci.ignoreBlendingRequests then
   begin
-   glPushAttrib(GL_ENABLE_BIT or GL_LIGHTING_BIT or GL_LINE_BIT);
-   glDisable(GL_LIGHTING);
-   glEnable(GL_LINE_STIPPLE);
-   if not rci.ignoreBlendingRequests then begin
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    rci.GLStates.Enable(stBlend);
+    rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
   end;
-   glLineWidth(1);
+  rci.GLStates.LineWidth := 1;
   glLineStipple(1, Pattern);
+  rci.GLStates.DepthWriteMask := True;
+  rci.GLStates.DepthFunc := cfLess;
+  if rci.bufferDepthTest then
+    rci.GLStates.Enable(stDepthTest);
   glBegin(GL_LINES);
-      glColor3f(0.5, 0.0, 0.0); glVertex3f(0, 0, 0); glVertex3f(-AxisLen, 0, 0);
-      glColor3f(1.0, 0.0, 0.0); glVertex3f(0, 0, 0); glVertex3f(AxisLen, 0, 0);
-      glColor3f(0.0, 0.5, 0.0); glVertex3f(0, 0, 0); glVertex3f(0, -AxisLen, 0);
-      glColor3f(0.0, 1.0, 0.0); glVertex3f(0, 0, 0); glVertex3f(0, AxisLen, 0);
-      glColor3f(0.0, 0.0, 0.5); glVertex3f(0, 0, 0); glVertex3f(0, 0, -AxisLen);
-      glColor3f(0.0, 0.0, 1.0); glVertex3f(0, 0, 0); glVertex3f(0, 0, AxisLen);
+  glColor3f(0.5, 0.0, 0.0);
+  glVertex3f(0, 0, 0);
+  glVertex3f(-AxisLen, 0, 0);
+  glColor3f(1.0, 0.0, 0.0);
+  glVertex3f(0, 0, 0);
+  glVertex3f(AxisLen, 0, 0);
+  glColor3f(0.0, 0.5, 0.0);
+  glVertex3f(0, 0, 0);
+  glVertex3f(0, -AxisLen, 0);
+  glColor3f(0.0, 1.0, 0.0);
+  glVertex3f(0, 0, 0);
+  glVertex3f(0, AxisLen, 0);
+  glColor3f(0.0, 0.0, 0.5);
+  glVertex3f(0, 0, 0);
+  glVertex3f(0, 0, -AxisLen);
+  glColor3f(0.0, 0.0, 1.0);
+  glVertex3f(0, 0, 0);
+  glVertex3f(0, 0, AxisLen);
   glEnd;
-   glPopAttrib;
+  rci.GLStates.PopAttrib;
   // clear fpu exception flag (sometime raised by the call to glEnd)
   asm fclex
   end;
@@ -3225,7 +3250,7 @@ begin
     if not Assigned(FAbsoluteMatrix) then
     begin
       GetMem(FAbsoluteMatrix, SizeOf(TMatrix) * 2);
-         FInvAbsoluteMatrix:=PMatrix(PtrUInt(FAbsoluteMatrix)+SizeOf(TMatrix));
+         FInvAbsoluteMatrix := PMatrix(PtrUInt(FAbsoluteMatrix) + SizeOf(TMatrix));
     end;
     if Assigned(Parent) and (not (Parent is TGLSceneRootObject)) then
     begin
@@ -3261,7 +3286,8 @@ begin
       if not Assigned(FAbsoluteMatrix) then
       begin
         GetMem(FAbsoluteMatrix, SizeOf(TMatrix) * 2);
-            FInvAbsoluteMatrix:=PMatrix(PtrUInt(FAbsoluteMatrix)+SizeOf(TMatrix));
+            FInvAbsoluteMatrix := PMatrix(PtrUInt(FAbsoluteMatrix) +
+              SizeOf(TMatrix));
       end;
       RebuildMatrix;
       if Parent <> nil then
@@ -4867,6 +4893,7 @@ begin
     if ARci.visibilityCulling = vcObjectBased then
     begin
       shouldRenderSelf := (osNoVisibilityCulling in ObjectStyle)
+        or (osBuiltStage in ObjectStyle)
         or (not IsVolumeClipped(AbsolutePosition,
         BoundingSphereRadius,
         ARci.rcci.frustum));
@@ -4932,13 +4959,21 @@ begin
       glPopMatrix;
       glPushMatrix;
 {$ENDIF}
-         if osIgnoreDepthBuffer in ObjectStyle then begin
-            ARci.GLStates.UnSetGLState(stDepthTest);
+      if osIgnoreDepthBuffer in ObjectStyle then
+      begin
+        ARci.GLStates.Disable(stDepthTest);
         DoRender(ARci, True, shouldRenderChildren);
-            ARci.GLStates.SetGLState(stDepthTest);
-         end else DoRender(ARci, True, shouldRenderChildren);
+        ARci.GLStates.Enable(stDepthTest);
+      end
+      else
+        DoRender(ARci, True, shouldRenderChildren);
       if osDoesTemperWithColorsOrFaceWinding in ObjectStyle then
-            ARci.GLStates.ResetAll;
+      begin
+        ARci.GLStates.ResetGLPolygonMode;
+        ARci.GLStates.ResetGLMaterialColors;
+        ARci.GLStates.ResetGLCurrentTexture;
+        ARci.GLStates.ResetGLFrontFace;
+      end;
       FGLObjectEffects.RenderPostEffects(ARci);
 {$IFNDEF GLS_OPTIMIZATIONS}
       if OptSaveGLStack then
@@ -4946,21 +4981,37 @@ begin
       else
 {$ENDIF}
         glPopMatrix;
-      end else begin
-         if osIgnoreDepthBuffer in ObjectStyle then begin
-            ARci.GLStates.UnSetGLState(stDepthTest);
+    end
+    else
+    begin
+      if osIgnoreDepthBuffer in ObjectStyle then
+      begin
+        ARci.GLStates.Disable(stDepthTest);
         DoRender(ARci, True, shouldRenderChildren);
-            ARci.GLStates.SetGLState(stDepthTest);
-         end else DoRender(ARci, True, shouldRenderChildren);
+        ARci.GLStates.Enable(stDepthTest);
+      end
+      else
+        DoRender(ARci, True, shouldRenderChildren);
       if osDoesTemperWithColorsOrFaceWinding in ObjectStyle then
-            ARci.GLStates.ResetAll;
+      begin
+        ARci.GLStates.ResetGLPolygonMode;
+        ARci.GLStates.ResetGLMaterialColors;
+        ARci.GLStates.ResetGLCurrentTexture;
+        ARci.GLStates.ResetGLFrontFace;
+      end;
     end;
-   end else begin
-      if (osIgnoreDepthBuffer in ObjectStyle) and TGLSceneBuffer(ARCi.buffer).DepthTest then begin
-         ARci.GLStates.UnSetGLState(stDepthTest);
+  end
+  else
+  begin
+    if (osIgnoreDepthBuffer in ObjectStyle) and
+      TGLSceneBuffer(ARCi.buffer).DepthTest then
+    begin
+      ARci.GLStates.Disable(stDepthTest);
       DoRender(ARci, False, shouldRenderChildren);
-         ARci.GLStates.SetGLState(stDepthTest);
-      end else DoRender(ARci, False, shouldRenderChildren);
+      ARci.GLStates.Enable(stDepthTest);
+    end
+    else
+      DoRender(ARci, False, shouldRenderChildren);
   end;
   // Pop Name & Matrix
   if ARci.drawState = dsPicking then
@@ -7916,7 +7967,6 @@ begin
   FShadeModel := smDefault;
   FFogEnable := False;
   FAfterRenderEffects := TPersistentObjectList.Create;
-   FGLStates:=TGLStateCache.Create;
 
   FContextOptions := [roDoubleBuffer, roRenderToWindow];
 
@@ -7929,7 +7979,6 @@ end;
 destructor TGLSceneBuffer.Destroy;
 begin
   Melt;
-   FGLStates.Free;
   // clean up and terminate
    {$HINT crossbuilder: check, if this ifndef is still needed }
    {$ifndef FPC}
@@ -8000,6 +8049,7 @@ end;
 
 // CreateRC
 //
+
 procedure TGLSceneBuffer.CreateRC(deviceHandle : HDC; memoryContext:
   Boolean; BufferCount : integer);
 var
@@ -8035,7 +8085,7 @@ begin
       // is posted before the rendering context has been created
       glViewport(0, 0, FViewPort.Width, FViewPort.Height);
       // set up initial context states
-         SetupRenderingContext;
+      SetupRenderingContext(FRenderingContext);
       BackColor := ConvertWinColor(FBackgroundColor);
       glClearColor(BackColor[0], BackColor[1], BackColor[2], BackColor[3]);
     finally
@@ -8105,39 +8155,39 @@ end;
 
 // SetupRenderingContext
 //
-procedure TGLSceneBuffer.SetupRenderingContext;
 
-   procedure PerformEnable(bool : Boolean; csState : TGLState; glState : TGLEnum);
+procedure TGLSceneBuffer.SetupRenderingContext(context: TGLContext);
+
+  procedure PerformEnable(bool: Boolean; csState: TGLState);
   begin
-      if bool then begin
-         GLStates.SetGLState(csState);
-         glEnable(glState);
-      end else begin
-         GLStates.UnSetGLState(csState);
-         glDisable(glState);
+    case bool of
+      true: context.GLStates.PerformEnable(csState);
+      false: context.GLStates.PerformDisable(csState);
     end;
   end;
 
 var
   LColorDepth: Cardinal;
 begin
+  if not Assigned(context) then
+    Exit;
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, FAmbientColor.AsAddress);
   if roTwoSideLighting in FContextOptions then
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
   else
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 
-   PerformEnable(True, stNormalize, GL_NORMALIZE);
+  PerformEnable(True, stNormalize);
 
-   PerformEnable(DepthTest, stDepthTest, GL_DEPTH_TEST);
-   PerformEnable(FaceCulling, stCullFace, GL_CULL_FACE);
-   PerformEnable(Lighting, stLighting, GL_LIGHTING);
-   PerformEnable(FogEnable, stFog, GL_FOG);
+  PerformEnable(DepthTest, stDepthTest);
+  PerformEnable(FaceCulling, stCullFace);
+  PerformEnable(Lighting, stLighting);
+  PerformEnable(FogEnable, stFog);
 
   glGetIntegerv(GL_BLUE_BITS, @LColorDepth); // could've used red or green too
-   PerformEnable((LColorDepth<8), stDither, GL_DITHER);
+  PerformEnable((LColorDepth < 8), stDither);
 
-   glDepthFunc(GL_LESS);
+  context.GLStates.ResetGLDepthState;
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   case ShadeModel of
     smDefault, smSmooth: glShadeModel(GL_SMOOTH);
@@ -8374,8 +8424,9 @@ begin
       else
         handle := aTexture.Handle;
       createTexture := createTexture or forceCreateTexture;
-         GLStates.SetGLCurrentTexture(0, bindTarget, handle);
-         if createTexture then begin
+      RenderingContext.GLStates.SetGLCurrentTexture(0, bindTarget, handle);
+      if createTexture then
+      begin
         GetMem(buf, Width * Height * 4);
         try
           glReadPixels(0, 0, Width, Height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
@@ -8521,7 +8572,6 @@ var
   backColor: TColorVector;
   aColorBits: Integer;
   LViewport, viewportBackup: TRectangle;
-   lastStates : TGLStateCache;
 begin
   Assert((not FRendering), glsAlreadyRendering);
   FRendering := True;
@@ -8543,10 +8593,8 @@ begin
       // we must free the lists before changeing context, or it will have no effect
       GLContextManager.DestroyAllHandles;
       bmpContext.Activate;
-         lastStates:=FGLStates;
-         FGLStates:=TGLStateCache.Create;
       try
-            SetupRenderingContext;
+        SetupRenderingContext(bmpContext);
         BackColor := ConvertWinColor(FBackgroundColor);
         glClearColor(BackColor[0], BackColor[1], BackColor[2], BackColor[3]);
         // set the desired viewport and limit output to this rectangle
@@ -8570,8 +8618,6 @@ begin
         FViewport := viewportBackup;
         glFinish;
       finally
-            FGLStates.Free;
-            FGLStates:=lastStates;
         bmpContext.Deactivate;
       end;
       GLContextManager.DestroyAllHandles;
@@ -8637,6 +8683,26 @@ begin
   Assert(n >= 0, 'Unbalanced PopModelViewMatrix');
   FModelViewMatrix := FModelViewMatrixStack[n];
   SetLength(FModelViewMatrixStack, n);
+end;
+
+procedure TGLSceneBuffer.PushProjectionMatrix(const newMatrix: TMatrix);
+var
+  n: Integer;
+begin
+  n := Length(FProjectionMatrixStack);
+  SetLength(FProjectionMatrixStack, n + 1);
+  FProjectionMatrixStack[n] := FProjectionMatrix;
+  FProjectionMatrix := newMatrix;
+end;
+
+procedure TGLSceneBuffer.PopProjectionMatrix;
+var
+  n: Integer;
+begin
+  n := High(FProjectionMatrixStack);
+  Assert(n >= 0, 'Unbalanced PopProjectionMatrix');
+  FProjectionMatrix := FProjectionMatrixStack[n];
+  SetLength(FProjectionMatrixStack, n);
 end;
 
 // OrthoScreenToWorld
@@ -9237,6 +9303,8 @@ begin
         FPostRender(Self);
   Assert(Length(FModelViewMatrixStack) = 0,
     'Unbalance Push/PopModelViewMatrix.');
+  Assert(Length(FProjectionMatrixStack) = 0,
+    'Unbalance Push/PopProjectionMatrix.');
 end;
 
 // Render
@@ -9300,7 +9368,7 @@ begin
 
       FRenderDPI := 96; // default value for screen
       ClearGLError;
-         SetupRenderingContext;
+      SetupRenderingContext(FRenderingContext);
       // clear the buffers
       glClearColor(backColor[0], backColor[1], backColor[2], backColor[3]);
       ClearBuffers;
@@ -9361,6 +9429,9 @@ begin
   rci.objectsSorting := aScene.ObjectsSorting;
   rci.visibilityCulling := aScene.VisibilityCulling;
   rci.bufferFaceCull := FFaceCulling;
+  rci.bufferLighting := FLighting;
+  rci.bufferFog := FFogEnable;
+  rci.bufferDepthTest := FDepthTest;
   rci.drawState := drawState;
   rci.sceneAmbientColor := FAmbientColor.Color;
   with FCamera do
@@ -9387,14 +9458,12 @@ begin
   rci.viewPortSize.cy := viewPortSizeY;
   rci.renderDPI := FRenderDPI;
   rci.modelViewMatrix := @FModelViewMatrix;
-   rci.GLStates:=FGLStates;
+  rci.GLStates := RenderingContext.GLStates;
   rci.GLStates.ResetAll;
   rci.proxySubObject := False;
   rci.ignoreMaterials := (roNoColorBuffer in FContextOptions)
     or (rci.drawState = dsPicking);
-   if rci.ignoreMaterials then
-      glColorMask(False, False, False, False)
-   else glColorMask(True, True, True, True);
+  rci.GLStates.SetGLColorWriting(not rci.ignoreMaterials);
   if Assigned(FInitiateRendering) then
     FInitiateRendering(Self, rci);
 
@@ -9409,21 +9478,31 @@ begin
   end;
 
   if baseObject = nil then
-      aScene.Objects.Render(rci)
-   else baseObject.Render(rci);
-   glColorMask(True, True, True, True);
-   with FAfterRenderEffects do if Count>0 then
+  begin
+    aScene.Objects.Render(rci);
+{$IFDEF GLS_EXPERIMENTAL}
+    StaticVBOManager.BuildBuffer;
+{$ENDIF}
+  end
+  else
+    baseObject.Render(rci);
+  rci.GLStates.SetGLColorWriting(True);
+  with FAfterRenderEffects do
+    if Count > 0 then
       for i := 0 to Count - 1 do
         TGLObjectAfterEffect(Items[i]).Render(rci);
   if Assigned(FWrapUpRendering) then
     FWrapUpRendering(Self, rci);
-   with rci.GLStates do begin
-      UnSetGLState(stBlend);
-      UnSetGLState(stTexture2D);
-      UnSetGLState(stTextureRect);
-      SetGLState(stAlphaTest);
+  with rci.GLStates do
+  begin
+    Disable(stBlend);
+    Disable(stTexture2D);
+    if (GL_NV_texture_rectangle or GL_ARB_texture_rectangle or
+        GL_VERSION_3_1) then
+      Disable(stTextureRect);
+    Enable(stAlphaTest);
+    ResetGLAlphaFunction;
   end;
-   glAlphaFunc(GL_GREATER, 0);
 end;
 
 // SetBackgroundColor
@@ -9767,7 +9846,7 @@ begin
       // For MRT
       glReadBuffer(MRT_BUFFERS[BufferIndex]);
 
-         Buffer.GLStates.SetGLCurrentTexture(0, target, handle);
+      Buffer.RenderingContext.GLStates.SetGLCurrentTexture(0, target, handle);
 
       if target = GL_TEXTURE_CUBE_MAP_ARB then
         target := GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + FCubeMapRotIdx;

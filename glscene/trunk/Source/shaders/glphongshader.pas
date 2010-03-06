@@ -6,6 +6,7 @@
    An ARBvp1.0 + ARBfp1.0 shader that implements phong shading.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>28/07/09 - DaStr - Small changes and simplifications  
       <li>24/07/09 - DaStr - TGLShader.DoInitialize() now passes rci
                               (BugTracker ID = 2826217)   
@@ -26,7 +27,7 @@ uses
 
   // GLScene
   GLTexture, ARBProgram, VectorGeometry, VectorLists, OpenGL1x, GLAsmShader,
-  GLRenderContextInfo, GLCustomShader;
+  GLRenderContextInfo, GLCustomShader, GLState;
 
 type
   TGLPhongShader = class(TGLCustomAsmShader)
@@ -38,8 +39,8 @@ type
   protected
     { Protected Declarations }
     procedure DoLightPass(lightID: Cardinal); virtual;
-    procedure DoAmbientPass; virtual;
-    procedure UnApplyLights; virtual;
+    procedure DoAmbientPass(var rci: TRenderContextInfo); virtual;
+    procedure UnApplyLights(var rci: TRenderContextInfo); virtual;
 
     procedure DoApply(var rci: TRenderContextInfo; Sender: TObject); override;
     function DoUnApply(var rci: TRenderContextInfo): Boolean; override;
@@ -64,21 +65,19 @@ begin
 
   GetActiveLightsList(FLightIDs);
   FAmbientPass := False;
-  glPushAttrib(GL_ENABLE_BIT or
-               GL_TEXTURE_BIT or
-               GL_DEPTH_BUFFER_BIT or
-               GL_COLOR_BUFFER_BIT);
+  rci.GLStates.PushAttrib([sttEnable, sttTexture, sttDepthBuffer,
+                           sttColorBuffer]);
 
   if FLightIDs.Count > 0 then
   begin
-    glDepthFunc(GL_LEQUAL);
-    glDisable(GL_BLEND);
+    rci.GLStates.DepthFunc := cfLEqual;
+    rci.GLStates.Disable(stBlend);
     DoLightPass(FLightIDs[0]);
     FLightIDs.Delete(0);
   end
   else
   begin
-    DoAmbientPass;
+    DoAmbientPass(rci);
     FAmbientPass := True;
   end;
 end;
@@ -92,7 +91,7 @@ begin
 
   if FLightIDs.Count > 0 then
   begin
-    UnApplyLights;
+    UnApplyLights(rci);
     Result := True;
     Exit;
   end
@@ -101,16 +100,16 @@ begin
   begin
     Self.UnApplyShaderPrograms();
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
-    DoAmbientPass;
+    rci.GLStates.Enable(stBlend);
+    rci.GLStates.SetBlendFunc(bfOne, bfOne);
+    DoAmbientPass(rci);
     FAmbientPass := True;
 
     Result := True;
     Exit;
   end;
 
-  glPopAttrib;
+  rci.GLStates.PopAttrib;
 end;
 
 // DoInitialize
@@ -220,11 +219,11 @@ end;
 
 // UnApplyLights
 //
-procedure TGLPhongShader.UnApplyLights;
+procedure TGLPhongShader.UnApplyLights(var rci: TRenderContextInfo);
 begin
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE);
+  rci.GLStates.DepthFunc := cfLEqual;
+  rci.GLStates.Enable(stBlend);
+  rci.GLStates.SetBlendFunc(bfOne, bfOne);
   DoLightPass(FLightIDs[0]);
   FLightIDs.Delete(0);
 end;
@@ -235,11 +234,11 @@ begin
   inherited;
 end;
 
-procedure TGLPhongShader.DoAmbientPass;
+procedure TGLPhongShader.DoAmbientPass(var rci: TRenderContextInfo);
 var
   ambient, materialAmbient: TVector;
 begin
-  glDisable(GL_LIGHTING);
+  rci.GLStates.Disable(stLighting);
 
   glGetFloatv(GL_LIGHT_MODEL_AMBIENT, @ambient);
   glGetMaterialfv(GL_FRONT, GL_AMBIENT, @materialAmbient);

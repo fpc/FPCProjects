@@ -7,6 +7,7 @@
    for use as a skybox always centered on the camera.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>26/03/09 - DanB - Skybox is now a TGLCameraInvariantObject
       <li>10/10/08 - DanB - changed Skybox DoRender to use rci instead
                             of Scene.CurrentGLCamera
@@ -149,9 +150,14 @@ procedure TGLSkyBox.DoRender(var ARci: TRenderContextInfo; ARenderSelf,
   ARenderChildren: Boolean);
 begin
   // We want children of the sky box to appear far away too
-  glDepthMask(False);
+  // (note: simply not writing to depth buffer may not make this not work,
+  //  child objects may need the depth buffer to render themselves properly,
+  //  this may require depth buffer cleared after that. - DanB)
+  Arci.GLStates.DepthWriteMask := False;
+  Arci.ignoreDepthRequests := true;
   inherited;
-  glDepthMask(True);
+  Arci.ignoreDepthRequests := False;
+  Arci.GLStates.DepthWriteMask := True;
 end;
 // DoRender
 //
@@ -165,9 +171,9 @@ begin
 
    with ARci.GLStates do begin
       oldStates:=States;
-      UnSetGLState(stDepthTest);
-      UnSetGLState(stLighting);
-      UnSetGLState(stFog);
+      Disable(stDepthTest);
+      Disable(stLighting);
+      Disable(stFog);
    end;
 
    glPushMatrix;   
@@ -314,11 +320,11 @@ begin
       glPopMatrix;
 
       if stLighting in oldStates then
-         ARci.GLStates.SetGLState(stLighting);
+         ARci.GLStates.Enable(stLighting);
       if stFog in oldStates then
-         ARci.GLStates.SetGLState(stFog);
+         ARci.GLStates.Enable(stFog);
       if stDepthTest in oldStates then
-         ARci.GLStates.SetGLState(stDepthTest);
+         ARci.GLStates.Enable(stDepthTest);
 
    finally
    end;

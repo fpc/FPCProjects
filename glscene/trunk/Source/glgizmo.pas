@@ -68,9 +68,9 @@ uses
   Classes, SysUtils,
 
   // GLScene
-  OpenGL1x, GLScene, GLColor, GLObjects, VectorGeometry, GLMaterial, GLStrings,
+  GLScene, GLColor, GLObjects, VectorGeometry, GLMaterial, GLStrings,
   GLGeomObjects, GLBitmapFont, GLViewer, GLVectorFileObjects, GLCrossPlatform,
-  GLCoordinates, GLRenderContextInfo;
+  GLCoordinates, GLRenderContextInfo, GLState;
 
 type
   TGLGizmoUndoCollection = class;
@@ -908,7 +908,7 @@ end;
 procedure TGLGizmo.directGlDisable(Sender: TObject; var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST);
+    rci.GLStates.Disable(stDepthTest);
 end;
 
 
@@ -930,7 +930,7 @@ end;
 procedure TGLGizmo.directGlEnable(Sender: TObject; var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
 end;
 
 function TGLGizmo.GetPickedObjectPoint(const Obj: TGLBaseSceneObject): TVector;

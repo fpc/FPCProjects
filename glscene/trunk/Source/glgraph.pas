@@ -6,6 +6,7 @@
 	Graph plotting objects for GLScene<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
@@ -462,15 +463,15 @@ begin
       yStep:=YSamplingScale.Step; invYStep:=1/yStep;
       // get through the grid
       if (hfoTwoSided in Options) or (ColorMode<>hfcmNone) then begin
-         glPushAttrib(GL_ENABLE_BIT);
+         rci.GLStates.PushAttrib([sttEnable]);
          // if we're not two-sided, we doesn't have to enable face-culling, it's
          // controled at the sceneviewer level
          if hfoTwoSided in Options then begin
-            glDisable(GL_CULL_FACE);
-            glPolygonMode(GL_FRONT_AND_BACK, cPolygonMode[Material.FrontProperties.PolygonMode]);
+            rci.GLStates.Disable(stCullFace);
+            rci.GLStates.PolygonMode := Material.FrontProperties.PolygonMode;
          end;
          if ColorMode<>hfcmNone then begin
-            glEnable(GL_COLOR_MATERIAL);
+            rci.GLStates.Enable(stColorMaterial);
             glColorMaterial(GL_FRONT_AND_BACK, cHFCMtoEnum[ColorMode]);
             rci.GLStates.ResetGLMaterialColors;
          end;
@@ -523,7 +524,7 @@ begin
          RenderRow(rowMid, rowBottom);
       FTriangleCount:=2*(nx-1)*(m-1);
       if (hfoTwoSided in Options) or (ColorMode<>hfcmNone) then
-         glPopAttrib;
+         rci.GLStates.PopAttrib;
    finally
       FreeMem(row[0]);
       FreeMem(row[1]);
@@ -702,7 +703,7 @@ procedure TGLXYZGrid.BuildList(var rci : TRenderContextInfo);
 var
    xBase, x, xStep, xMax, yBase, y, yStep, yMax, zBase, z, zStep, zMax : Single;
 begin
-   SetupLineStyle;
+   SetupLineStyle(rci);
    // precache values
    XSamplingScale.SetBaseStepMaxToVars(xBase, xStep, xMax, (gpX in Parts));
    YSamplingScale.SetBaseStepMaxToVars(yBase, yStep, yMax, (gpY in Parts));
@@ -776,7 +777,7 @@ begin
          x:=x+xStep;
       end;
    end;
-   RestoreLineStyle;
+   RestoreLineStyle(rci);
 end;
 
 //-------------------------------------------------------------

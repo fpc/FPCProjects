@@ -13,6 +13,7 @@
    contributed to GLScene. This is how TGLGizmoEx was born.
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>17/13/2009 - DaStr - Small bugfixes (by Predator)   
       <li>11/13/2009 - DaStr - Initial version (contributed by Predator)
    </ul></font>
@@ -73,7 +74,7 @@ uses
   OpenGL1x, GLScene, GLColor, GLObjects, VectorGeometry, GLMaterial, GLStrings,
   GLGeomObjects, GLBitmapFont, GLViewer, GLVectorFileObjects, GLCrossPlatform,
   GLCoordinates, GLRenderContextInfo, GeometryBB, VectorTypes, GLCanvas,
-  PersistentClasses, GLScreen;
+  PersistentClasses, GLScreen, GLState;
 
 type
   TGLGizmoExObjectCollection = class;
@@ -701,9 +702,9 @@ end;
 procedure TGLGizmoExUIArrowLine.BuildList(var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST)
+    rci.GLStates.Disable(stDepthTest)
   else
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
   inherited;
 end;
 
@@ -717,9 +718,9 @@ end;
 procedure TGLGizmoExUIDisk.BuildList(var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST)
+    rci.GLStates.Disable(stDepthTest)
   else
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
   inherited;
 end;
 
@@ -732,9 +733,9 @@ end;
 procedure TGLGizmoExUISphere.BuildList(var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST)
+    rci.GLStates.Disable(stDepthTest)
   else
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
   inherited;
 end;
 
@@ -747,9 +748,9 @@ end;
 procedure TGLGizmoExUIPolyGon.BuildList(var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST)
+    rci.GLStates.Disable(stDepthTest)
   else
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
   inherited;
 end;
 
@@ -762,9 +763,9 @@ end;
 procedure TGLGizmoExUIFrustrum.BuildList(var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST)
+    rci.GLStates.Disable(stDepthTest)
   else
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
   inherited;
 end;
 
@@ -777,9 +778,9 @@ end;
 procedure TGLGizmoExUITorus.BuildList(var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST)
+    rci.GLStates.Disable(stDepthTest)
   else
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
   inherited;
 end;
 
@@ -792,9 +793,9 @@ end;
 procedure TGLGizmoExUILines.BuildList(var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST)
+    rci.GLStates.Disable(stDepthTest)
   else
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
   inherited;
 end;
 
@@ -807,9 +808,9 @@ end;
 procedure TGLGizmoExUIFlatText.BuildList(var rci: TRenderContextInfo);
 begin
   if FNoZWrite then
-    glDisable(GL_DEPTH_TEST)
+    rci.GLStates.Disable(stDepthTest)
   else
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
   inherited;
 end;
 
@@ -2251,7 +2252,7 @@ procedure TGLGizmoEx.InternalRender(Sender: TObject; var rci: TRenderContextInfo
   begin
     if not Assigned(FLabelFont) and (Text = '') then
       Exit;
-    glEnable(GL_DEPTH_TEST);
+    rci.GLStates.Enable(stDepthTest);
     FLayout := GLCrossPlatform.tlCenter;
     FAlignment := taCenter;
 
@@ -2269,18 +2270,18 @@ procedure TGLGizmoEx.InternalRender(Sender: TObject; var rci: TRenderContextInfo
           wm[I, J] := 0;
     glLoadMatrixf(@wm);
 
-    rci.GLStates.SetGLPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    rci.GLStates.PolygonMode := pmFill;
     glScalef(Scale[0], Scale[1], Scale[2]);
     glTranslatef(Position[0], Position[1], Position[2]);
 
 
     if Color[3] <> 1 then
     begin
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      rci.GLStates.Enable(stBlend);
+      rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
     end;
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
+    rci.GLStates.Disable(stDepthTest);
+    rci.GLStates.Disable(stCullFace);
 
     FLabelFont.RenderString(rci, Text, FAlignment, FLayout, Color);
     glPopMatrix;
@@ -2295,25 +2296,26 @@ begin
 
   if FShowBoundingBox and (FSelectedObjects.Count - 1 >= 0) then
   begin
-    glPushAttrib(GL_ENABLE_BIT or GL_CURRENT_BIT or GL_LIGHTING_BIT or GL_LINE_BIT or GL_COLOR_BUFFER_BIT);
-    glDisable(GL_LIGHTING);
+    rci.GLStates.PushAttrib([sttEnable, sttCurrent, sttLighting, sttLine,
+                             sttColorBuffer]);
+    rci.GLStates.Disable(stLighting);
     if FAntiAliasedLines then
-      glEnable(GL_LINE_SMOOTH);
+      rci.GLStates.Enable(stLineSmooth);
 
     if (FGizmoThickness >= 0.5) and (FGizmoThickness <= 7) then
-      glLineWidth(FGizmoThickness)
+      rci.GLStates.LineWidth := FGizmoThickness
     else
-      glLineWidth(1);
+      rci.GLStates.LineWidth := 1;
 
     glColorMaterial(GL_FRONT, GL_EMISSION);
-    glEnable(GL_COLOR_MATERIAL);
+    rci.GLStates.Enable(stColorMaterial);
 
     glColor4fv(@FBoundingBoxColor.Color);
 
     for I := 0 to FSelectedObjects.Count - 1 do
       ShowBoundingBox(FSelectedObjects.Hit[I]);
 
-    glPopAttrib;
+    rci.GLStates.PopAttrib;
   end;
 
 end;

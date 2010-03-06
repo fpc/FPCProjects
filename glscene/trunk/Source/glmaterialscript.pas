@@ -53,7 +53,7 @@ uses
 
   // GLScene
   GLTexture, GLTextureFormat, GLGraphics, GLUtils, GLColor, GLCoordinates,
-  GLMaterial;
+  GLMaterial, GLState;
 
 type
   TGLShaderItem = class(TCollectionItem)

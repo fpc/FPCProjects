@@ -5,6 +5,7 @@
    so that there is no z-fighting in rendering the same geometry multiple times.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>06/06/07 - DaStr - Added $I GLScene.inc
                              Added GLColor to uses (BugtrackerID = 1732211)
       <li>25/02/07 - DaStr - Moved registration to GLSceneRegister.pas
@@ -24,7 +25,7 @@ interface
 
 uses
   Classes, GLMaterial, OpenGL1x, GLCrossPlatform, GLScene, GLColor,
-  BaseClasses, GLRenderContextInfo;
+  BaseClasses, GLRenderContextInfo, GLState;
 
 type
   TGLLineSettings = class(TGLUpdateAbleObject)
@@ -169,14 +170,14 @@ var IgnoreMatSave : boolean;
 //
 procedure TGLLineSettings.Apply(var rci : TRenderContextInfo);
 begin
-  glLineWidth(Width);
+  rci.GLStates.LineWidth := Width;
   glColor4fv(Color.AsAddress);
   if Pattern<>$FFFF then begin
-      glEnable(GL_LINE_STIPPLE);
+      rci.GLStates.Enable(stLineStipple);
       glLineStipple(1, Pattern);
     end
   else
-    glDisable(GL_LINE_STIPPLE);
+    rci.GLStates.Disable(stLineStipple);
 
   if ForceMaterial then begin
     IgnoreMatSave:=rci.ignoreMaterials;
@@ -238,13 +239,13 @@ procedure TGLHiddenLineShader.DoApply(var rci: TRenderContextInfo; Sender : TObj
 begin
    FPassCount:=1;
 
-   glPushAttrib(GL_ENABLE_BIT or GL_CURRENT_BIT or GL_POLYGON_BIT or
-                GL_HINT_BIT or GL_DEPTH_BUFFER_BIT or GL_LINE_BIT or GL_LIGHTING_BIT);
+   rci.GLStates.PushAttrib([sttEnable, sttCurrent, sttPolygon, sttHint,
+                            sttDepthBuffer, sttLine, sttLighting]);
 
    if solid then begin
        // draw filled front faces in first pass
-       glPolygonMode(GL_FRONT, GL_FILL);
-       glCullFace(GL_BACK);
+       rci.GLStates.PolygonMode := pmFill;
+       rci.GLStates.CullFaceMode := cmBack;
 
        if FLighting then begin
            case ShadeModel of
@@ -254,23 +255,23 @@ begin
          end
        else
          begin
-           glDisable(GL_LIGHTING);
+           rci.GLStates.Disable(stLighting);
            glColor4fv(FBackgroundColor.AsAddress); // use background color
          end;
        // enable and adjust polygon offset
-       glEnable(GL_POLYGON_OFFSET_FILL);
+       rci.GLStates.Enable(stPolygonOffsetFill);
      end
    else begin
-       glDisable(GL_LIGHTING);
+       rci.GLStates.Disable(stLighting);
        // draw back lines in first pass
        FBackLine.Apply(rci);
-       glCullFace(GL_FRONT);
-       GLPolygonMode(GL_BACK, GL_LINE);
+       rci.GLStates.CullFaceMode := cmFront;
+       rci.GLStates.PolygonMode := pmLines;
        // enable and adjust polygon offset
-       glEnable(GL_POLYGON_OFFSET_LINE);
+       rci.GLStates.Enable(stPolygonOffsetLine);
      end;
 
-   glPolygonOffset(1, 2);
+   rci.GLStates.SetPolygonOffset(1, 2);
 end;
 
 // DoUnApply
@@ -280,17 +281,17 @@ function TGLHiddenLineShader.DoUnApply(var rci: TRenderContextInfo): Boolean;
   procedure SetLineSmoothBlend;
   begin
     if LineSmooth then begin
-       glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-       glEnable(GL_LINE_SMOOTH);
+       rci.GLStates.LineSmoothHint := hintNicest;
+       rci.GLStates.Enable(stLineSmooth);
     end else begin
-       glDisable(GL_LINE_SMOOTH);
+       rci.GLStates.Disable(stLineSmooth);
     end;
 
     if LineSmooth or (FBackLine.FColor.Alpha<1) or (FFrontLine.FColor.Alpha<1) then begin
-       glEnable(GL_BLEND);
-       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+       rci.GLStates.Enable(stBlend);
+       rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
     end else begin
-       glDisable(GL_BLEND);
+       rci.GLStates.Disable(stBlend);
     end;
   end;
 
@@ -306,21 +307,21 @@ begin
             SetLineSmoothBlend;
 
             if solid and FLighting then
-              glDisable(GL_LIGHTING);
+              rci.GLStates.Disable(stLighting);
 
-            GLPolygonMode(GL_FRONT, GL_LINE);
-            glCullFace(GL_BACK);
+            rci.GLStates.PolygonMode := pmLines;
+            rci.GLStates.CullFaceMode := cmBack;
 
             if solid then
-              glDisable(GL_POLYGON_OFFSET_FILL)
+              rci.GLStates.Disable(stPolygonOffsetFill)
             else
-              glDisable(GL_POLYGON_OFFSET_LINE);
+              rci.GLStates.Disable(stPolygonOffsetLine);
 
             Result:=True;
           end;
       2 : begin
             FFrontLine.UnApply(rci);
-            glPopAttrib;
+            rci.GLStates.PopAttrib;
             Result:=false;
           end;
    else
