@@ -8137,13 +8137,17 @@ begin
    Result := False;
    CloseOpenGL;
 
-   //{$IFDEF Windows}
    GLHandle:=LoadLibrary(PChar(GLName));
    GLUHandle:=LoadLibrary(PChar(GLUName));
-   //{$ELSE}
-   //GLHandle:=Pointer(LoadLibrary(PChar(GLName)));
-   //GLUHandle:=Pointer(LoadLibrary(PChar(GLUName)));
-   //{$ENDIF};
+
+   {$IFDEF UNIX}   // make it work when only libGL.so.1 is installed
+    {$IFnDEF DARWIN}
+      if (GLHandle=INVALID_MODULEHANDLE) then
+        GLHandle:=LoadLibrary(PChar(GLName+'.1'));
+      if (GLUHandle=INVALID_MODULEHANDLE) then
+        GLUHandle:=LoadLibrary(PChar(GLUName+'.1'));
+    {$ENDIF}
+   {$ENDIF}
 
    if (GLHandle<>INVALID_MODULEHANDLE) and (GLUHandle<>INVALID_MODULEHANDLE) then
      Result:=True
