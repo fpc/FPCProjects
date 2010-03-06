@@ -6,6 +6,9 @@
    Win32 specific Context.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>20/02/10 - DanB - Allow double-buffered memory viewers, if you want single
+                            buffered, or no swapping, then change buffer options instead.
+                            Some changes from Cardinal to the appropriate HDC /HGLRC type.
       <li>15/01/10 - DaStr - Bugfixed TGLWin32Context.ChooseWGLFormat()
                              (BugtrackerID = 2933081) (thanks YarUndeoaker)
       <li>08/01/10 - DaStr - Added more AntiAliasing modes (thanks YarUndeoaker)
@@ -56,7 +59,8 @@ type
    TGLWin32Context = class (TGLContext)
       private
          { Private Declarations }
-         FRC, FDC : Cardinal;
+         FRC : HGLRC;
+         FDC : HDC;
          FHPBUFFER : Integer;
          FiAttribs : packed array of Integer;
          FfAttribs : packed array of Single;
@@ -77,8 +81,8 @@ type
 
          procedure ChooseWGLFormat(DC: HDC; nMaxFormats: Cardinal; piFormats: PInteger;
                                    var nNumFormats: Integer; BufferCount : integer = 1);
-         procedure DoCreateContext(outputDevice : HDC); override;
-         procedure DoCreateMemoryContext(OutputDevice: HDC; width, height : Integer; BufferCount : integer); override;
+         procedure DoCreateContext(outputDevice : Cardinal); override;
+         procedure DoCreateMemoryContext(outputDevice: Cardinal; width, height : Integer; BufferCount : integer); override;
          procedure DoShareLists(aContext : TGLContext); override;
          procedure DoDestroyContext; override;
          procedure DoActivate; override;
@@ -94,8 +98,8 @@ type
 
          function RenderOutputDevice : Integer; override;
 
-         property DC : Cardinal read FDC;
-         property RC : Cardinal read FRC;
+         property DC : HDC read FDC;
+         property RC : HGLRC read FRC;
    end;
 
 
@@ -117,13 +121,6 @@ implementation
 // ------------------------------------------------------------------
 
 uses Forms, OpenGL1x, GLCrossPlatform, Messages;
-
-resourcestring
-   cIncompatibleContexts =       'Incompatible contexts';
-   cDeleteContextFailed =        'Delete context failed';
-   cContextActivationFailed =    'Context activation failed: %X, %s';
-   cContextDeactivationFailed =  'Context deactivation failed';
-   cUnableToCreateLegacyContext= 'Unable to create legacy context';
 
 var
    vTrackingCount : Integer;
@@ -232,7 +229,7 @@ var
 threadvar
 {$ENDIF}
    vLastPixelFormat : Integer;
-   vLastVendor : String;
+   vLastVendor : TGLString;
 
 // Create
 //
@@ -490,7 +487,8 @@ var
    iFormats : array [0..31] of Integer;
    tempWnd : HWND;
    tempDC, outputDC : HDC;
-   localDC, localRC : Integer;
+   localDC : HDC;
+   localRC : HGLRC;
 
    function CurrentPixelFormatIsHardwareAccelerated : Boolean;
    var
@@ -511,7 +509,7 @@ var
 begin
    outputDC:=HDC(outputDevice);
    if vUseWindowTrackingHook then
-      TrackWindow(WindowFromDC(LongWord(outputDC)), DestructionEarlyWarning);
+      TrackWindow(WindowFromDC(outputDC), DestructionEarlyWarning);
 
    // Just in case it didn't happen already.
    if not InitOpenGL then RaiseLastOSError;
@@ -673,7 +671,8 @@ var
    iFormats : array [0..31] of Integer;
    iPBufferAttribs : array [0..0] of Integer;
    localHPBuffer : Integer;
-   localDC, localRC, tempDC : Cardinal;
+   localRC : HGLRC;
+   localDC, tempDC : HDC;
    tempWnd : HWND;
 begin
    localHPBuffer:=0;
@@ -693,7 +692,7 @@ begin
             if WGL_ARB_pixel_format and WGL_ARB_pbuffer then begin
                ClearIAttribs;
                AddIAttrib(WGL_DRAW_TO_PBUFFER_ARB, 1);
-               ChooseWGLFormat(Cardinal(tempDC), 32, @iFormats, nbFormats, BufferCount);
+               ChooseWGLFormat(tempDC, 32, @iFormats, nbFormats, BufferCount);
                if nbFormats=0 then
                   raise Exception.Create('Format not supported for pbuffer operation.');
                iPBufferAttribs[0]:=0;
@@ -747,7 +746,7 @@ end;
 //
 procedure TGLWin32Context.DoShareLists(aContext : TGLContext);
 var
-   otherRC : Cardinal;
+   otherRC : HGLRC;
 begin
    if aContext is TGLWin32Context then begin
       otherRC:=TGLWin32Context(aContext).FRC;
@@ -783,13 +782,13 @@ procedure TGLWin32Context.DoActivate;
 var
    pixelFormat : Integer;
 begin
-   if not wglMakeCurrent(Cardinal(FDC), Cardinal(FRC)) then
+   if not wglMakeCurrent(FDC, FRC) then
       raise EGLContext.Create(Format(cContextActivationFailed,
                                      [GetLastError, SysErrorMessage(GetLastError)]));
 
    // The extension function addresses are unique for each pixel format. All rendering
    // contexts of a given pixel format share the same extension function addresses.
-   pixelFormat:=GetPixelFormat(Cardinal(FDC));
+   pixelFormat:=GetPixelFormat(FDC);
    if PixelFormat<>vLastPixelFormat then begin
       if glGetString(GL_VENDOR)<>vLastVendor then begin
          ReadExtensions;
@@ -829,8 +828,8 @@ end;
 //
 procedure TGLWin32Context.SwapBuffers;
 begin
-   if (FHPBUFFER=0) and (FDC<>0) and (rcoDoubleBuffered in Options) then
-      Windows.SwapBuffers(Cardinal(FDC));
+   if (FDC<>0) and (rcoDoubleBuffered in Options) then
+      Windows.SwapBuffers(FDC);
 end;
 
 // RenderOutputDevice
