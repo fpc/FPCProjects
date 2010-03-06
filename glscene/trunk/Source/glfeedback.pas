@@ -15,6 +15,7 @@
    will indicate if there is valid data in the buffer.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
                             (thanks Burkhard Carstens) (Bugtracker ID = 1678658)
@@ -30,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, VectorGeometry, VectorLists, GLScene, GLVectorFileObjects,
-  GLTexture, GLRenderContextInfo;
+  GLTexture, GLRenderContextInfo, GLState;
 
 type
   TFeedbackMode = (fm2D, fm3D, fm3DColor, fm3DColorTexture, fm4DColorTexture);
@@ -175,8 +176,8 @@ begin
 
     FBuffer.Count:=FMaxBufferSize div SizeOf(Single);
     glFeedBackBuffer(FMaxBufferSize, atype, @FBuffer.List[0]);
-    glPushAttrib(GL_ENABLE_BIT or GL_VIEWPORT_BIT);
-    glDisable(GL_CULL_FACE);
+    ARci.GLStates.PushAttrib([sttEnable, sttViewport]);
+    ARci.GLStates.Disable(stCullFace);
     glMatrixMode(GL_PROJECTION);
     glPushMatrix;
     glLoadIdentity;
@@ -198,7 +199,7 @@ begin
     glMatrixMode(GL_PROJECTION);
     glPopMatrix;
     glMatrixMode(GL_MODELVIEW);
-    glPopAttrib;
+    ARci.GLStates.PopAttrib;
 
   finally
     FBuffered:=(FBuffer.Count>0);

@@ -4,6 +4,7 @@
 {: GLThorFX<p>
 
   <b>History : </b><font size=-1><ul>
+    <li>05/03/10 - DanB - More state added to TGLStateCache
     <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
     <li>30/03/07 - DaStr - Added $I GLScene.inc
     <li>16/03/07 - DaStr - Added explicit pointer dereferencing
@@ -26,7 +27,7 @@ interface
 
 uses Classes, GLScene, XCollection, VectorGeometry,
     GLCadencer, GLColor, BaseClasses, GLCoordinates, GLRenderContextInfo,
-    GLManager;
+    GLManager, GLState;
 
 type
   PThorpoint = ^TThorpoint;
@@ -516,18 +517,18 @@ var
 begin
    if Manager=nil then Exit;
 
-   glPushAttrib(GL_ALL_ATTRIB_BITS);
+   rci.GLStates.PushAttrib(cAllAttribBits);
    glPushMatrix;
    // we get the object position and apply translation...
    //absPos:=OwnerBaseSceneObject.AbsolutePosition;
    // ...should be removed when absolute coords will be handled directly
    // in the point system (and will also make a better flame effect)
 
-   glDisable(GL_CULL_FACE);
+   rci.GLStates.Disable(stCullFace);
    glDisable(GL_TEXTURE_2D);
-   glDisable(GL_LIGHTING);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-   glEnable(GL_BLEND);
+   rci.GLStates.Disable(stLighting);
+   rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
+   rci.GLStates.Enable(stBlend);
 
    n := Manager.NP;
 
@@ -552,20 +553,22 @@ begin
       SetVector(innerColor, Manager.FInnerColor.Color);
 
       //---------------
-      glPushAttrib(GL_ENABLE_BIT or GL_CURRENT_BIT or GL_LIGHTING_BIT or GL_LINE_BIT or GL_COLOR_BUFFER_BIT);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-      glEnable(GL_BLEND);
-      glEnable(GL_LINE_SMOOTH);
-      glDisable(GL_LIGHTING);
-      glDepthFunc(GL_LEQUAL);        //Stops particles at same distanceform overwriting each-other
-      glLineWidth(3);
+      rci.GLStates.PushAttrib([sttEnable, sttCurrent, sttLighting, sttLine,
+                               sttColorBuffer]);
+      rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
+      rci.GLStates.Enable(stBlend);
+      rci.GLStates.Enable(stLineSmooth);
+      rci.GLStates.Disable(stLighting);
+      //Stops particles at same distanceform overwriting each-other
+      rci.GLStates.DepthFunc := cfLEqual;
+      rci.GLStates.LineWidth := 3;
       Icol:=Manager.FInnerColor.Color;
       Ocol:=Manager.FOuterColor.color;
       Ccol:=Manager.FCoreColor.color;
 
       //---Core Line---
       if Manager.FCore then begin
-      glDisable(GL_BLEND);
+      rci.GLStates.Disable(stBlend);
       glColor4fv(@Ccol);
       glBegin(GL_LINE_STRIP);
       for i:=0 to n-1 do begin
@@ -578,7 +581,7 @@ begin
 
       //---Point Glow---
        if Manager.FGlow then begin
-       glEnable(GL_BLEND);
+       rci.GLStates.Enable(stBlend);
         for i:=n-1 downto 0 do begin
           fp:=PThorpoint(objList[i]);
           SetVector(Ppos, fp^.position);
@@ -601,14 +604,15 @@ begin
        end;//Glow
       end;
 
-      glPopAttrib;//(GL_ENABLE_BIT or GL_CURRENT_BIT or GL_LIGHTING_BIT or GL_LINE_BIT or GL_COLOR_BUFFER_BIT);
+      //(GL_ENABLE_BIT or GL_CURRENT_BIT or GL_LIGHTING_BIT or GL_LINE_BIT or GL_COLOR_BUFFER_BIT);
+      rci.GLStates.PopAttrib;
       glPopMatrix;
 
       objList.Free;
       distList.Free;
    end;
    glPopMatrix;
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
 end;
 
 // GetOrCreateThorFX

@@ -316,8 +316,7 @@ begin
   end;
 
   try
-    glPushAttrib(GL_TEXTURE_BIT);
-    glBindTexture(textureTarget, textureHandle);
+    textureContext.GLStates.SetGLCurrentTexture(0, textureTarget, textureHandle);
     //Check for texture is resident in texture memory
     glGetTexParameteriv(textureTarget, GL_TEXTURE_RESIDENT, @texResident);
     fMipLevels := 0;
@@ -427,7 +426,6 @@ begin
     if fMipLevels=0 then fMipLevels:=1;
     CheckOpenGLError;
   finally
-    glPopAttrib;
     if contextActivate then
     begin
       textureContext.Deactivate;

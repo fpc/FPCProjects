@@ -6,6 +6,7 @@
    A PFX whose particles are lines
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>12/10/08 - DanB - updated to use RCI
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
@@ -161,7 +162,7 @@ end;
 //
 procedure TGLLinePFXManager.BeginParticles(var rci: TRenderContextInfo);
 begin
-   ApplyBlendingMode;
+   ApplyBlendingMode(rci);
 end;
 
 // RenderParticle
@@ -211,7 +212,7 @@ end;
 //
 procedure TGLLinePFXManager.EndParticles(var rci: TRenderContextInfo);
 begin
-   UnapplyBlendingMode;
+   UnapplyBlendingMode(rci);
 end;
 
 // FinalizeRendering

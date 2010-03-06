@@ -6,6 +6,7 @@
 	Fire special effect<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>14/03/07 - DaStr - Added explicit pointer dereferencing
@@ -32,7 +33,7 @@ interface
 
 uses Classes, GLScene, XCollection, VectorGeometry,
      GLCadencer, GLColor, BaseClasses, GLCoordinates, GLManager,
-     GLRenderContextInfo;
+     GLRenderContextInfo, GLState;
 
 type
 
@@ -697,21 +698,21 @@ var
 begin
    if Manager=nil then Exit;
 
-   glPushAttrib(GL_ALL_ATTRIB_BITS);
+   rci.GLStates.PushAttrib(cAllAttribBits);
    glPushMatrix;
    // revert to the base model matrix in the case of a referenced fire
    if Assigned(Manager.Reference) then begin
       glLoadMatrixf(@TGLSceneBuffer(rci.buffer).ModelViewMatrix);
    end;
 
-   glDisable(GL_CULL_FACE);
+   rci.GLStates.Disable(stCullFace);
    glDisable(GL_TEXTURE_2D);
-   glDisable(GL_LIGHTING);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-   glEnable(GL_BLEND);
-   glDepthFunc(GL_LEQUAL);
+   rci.GLStates.Disable(stLighting);
+   rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
+   rci.GLStates.Enable(stBlend);
+   rci.GLStates.DepthFunc := cfLEqual;
    if Manager.NoZWrite then
-      glDepthMask(False);
+      rci.GLStates.DepthWriteMask := False;
 
    n := Manager.NP;
 
@@ -753,10 +754,10 @@ begin
    end;
 
    if Manager.NoZWrite then
-      glDepthMask(True);
-   glDepthFunc(GL_LESS);
+      rci.GLStates.DepthWriteMask := True;
+   rci.GLStates.DepthFunc := cfLess;
    glPopMatrix;
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
 end;
 
 // ------------------------------------------------------------------

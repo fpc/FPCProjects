@@ -7,6 +7,7 @@
    surface described by a moving curve.<p>
 
 	<b>Historique : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>31/07/07 - DanB - Implemented AxisAlignedDimensionsUnscaled for
                             TGLRevolutionSolid & TGLExtrusionSolid
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -41,7 +42,8 @@ interface
 {$I GLScene.inc}
 
 uses Classes, OpenGL1x, GLObjects, GLScene, GLMultiPolygon,
-     GLColor, VectorTypes, VectorGeometry, GLRenderContextInfo, GLNodes;
+     GLColor, VectorTypes, VectorGeometry, GLRenderContextInfo, GLNodes,
+     GLState;
 
 type
 
@@ -1060,8 +1062,8 @@ begin
       rSpline:=nil;
    end;
    if NodesColorMode<>pncmNone then begin
-      glPushAttrib(GL_ENABLE_BIT);
-      glEnable(GL_COLOR_MATERIAL);
+      rci.GLStates.PushAttrib([sttEnable]);
+      rci.GLStates.Enable(stColorMaterial);
       glColorMaterial(GL_FRONT_AND_BACK, cPNCMtoEnum[NodesColorMode]);
    end;
    CalculateRow(@rows[0], PAffineVector(@Nodes[0].AsVector)^, normal,
@@ -1133,7 +1135,7 @@ begin
       rSpline.Free;
    end;
    if (NodesColorMode<>pncmNone) then
-      glPopAttrib;
+      rci.GLStates.PopAttrib;
 end;
 
 // ------------------

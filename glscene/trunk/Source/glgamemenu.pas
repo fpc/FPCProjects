@@ -6,6 +6,7 @@
    Manages a basic game menu UI<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>04/09/07 - DaStr - Fixed memory leak in TGLGameMenu
                               (BugtrackerID = 1787617) (thanks Pierre Lemerle)
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -249,13 +250,14 @@ begin
             libMat:=MaterialLibrary.LibMaterialByName(TitleMaterialName);
             if libMat<>nil then begin
                libMat.Apply(rci);
+               repeat
                glBegin(GL_QUADS);
-                  glTexCoord2f(0, 1);  glVertex2f(Position.X-TitleWidth div 2, y);
-                  glTexCoord2f(1, 1);  glVertex2f(Position.X+TitleWidth div 2, y);
-                  glTexCoord2f(1, 0);  glVertex2f(Position.X+TitleWidth div 2, y+TitleHeight);
                   glTexCoord2f(0, 0);  glVertex2f(Position.X-TitleWidth div 2, y+TitleHeight);
+                  glTexCoord2f(1, 0);  glVertex2f(Position.X+TitleWidth div 2, y+TitleHeight);
+                  glTexCoord2f(1, 1);  glVertex2f(Position.X+TitleWidth div 2, y);
+                  glTexCoord2f(0, 1);  glVertex2f(Position.X-TitleWidth div 2, y);
                glEnd;
-               libMat.UnApply(rci);
+               until (not libMat.UnApply(rci));
             end;
          end;
          y:=y+TitleHeight+Spacing;

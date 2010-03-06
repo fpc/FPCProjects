@@ -10,6 +10,7 @@
    fire and smoke particle systems for instance).<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>22/01/10 - Yar  - Added bmp32.Blank:=false for memory allocation
                             and fix RegisterAsOpenGLTexture
       <li>12/10/08 - DanB - fix to TGLLifeColoredPFXManager.ComputeRotateAngle (it used lck.FDoScale
@@ -252,9 +253,9 @@ type
             Protected and unused in the base class. }
 			property BlendingMode : TBlendingMode read FBlendingMode write FBlendingMode;
          {: Apply BlendingMode relatively to the renderer's blending mode. }
-         procedure ApplyBlendingMode;
+         procedure ApplyBlendingMode(var rci: TRenderContextInfo);
          {: Unapply BlendingMode relatively by restoring the renderer's blending mode. }
-         procedure UnapplyBlendingMode;
+         procedure UnapplyBlendingMode(var rci: TRenderContextInfo);
 
          procedure registerUser(obj: TGLParticleFXEffect);
          procedure unregisterUser(obj: TGLParticleFXEffect);
@@ -1267,21 +1268,21 @@ begin
       if Renderer.BlendingMode in [bmAdditive, bmTransparency] then begin
          case BlendingMode of
             bmAdditive :
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+               rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
             bmTransparency :
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
          else // bmOpaque
-            glDisable(GL_BLEND);
+            rci.GLStates.Disable(stBlend);
          end;
       end else begin
          case BlendingMode of
             bmAdditive : begin
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-               glEnable(GL_BLEND);
+               rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
+               rci.GLStates.Enable(stBlend);
             end;
             bmTransparency : begin
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-               glEnable(GL_BLEND);
+               rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
+               rci.GLStates.Enable(stBlend);
             end;
          else
             // bmOpaque, do nothing
@@ -1299,21 +1300,21 @@ begin
       if BlendingMode in [bmAdditive, bmTransparency] then begin
          case Renderer.BlendingMode of
             bmAdditive :
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+               rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
             bmTransparency :
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
          else // bmOpaque
-            glDisable(GL_BLEND);
+            rci.GLStates.Disable(stBlend);
          end;
       end else begin
          case Renderer.BlendingMode of
             bmAdditive : begin
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-               glEnable(GL_BLEND);
+               rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
+               rci.GLStates.Enable(stBlend);
             end;
             bmTransparency : begin
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-               glEnable(GL_BLEND);
+               rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
+               rci.GLStates.Enable(stBlend);
             end;
          else
             // bmOpaque, do nothing
@@ -1661,22 +1662,22 @@ begin
       glPushMatrix;
       glLoadMatrixf(@TGLSceneBuffer(rci.buffer).ModelViewMatrix);
 
-      glPushAttrib(GL_ALL_ATTRIB_BITS);
-      
-      glDisable(GL_CULL_FACE);
+      rci.GLStates.PushAttrib(cAllAttribBits);
+
+      rci.GLStates.Disable(stCullFace);
       glDisable(GL_TEXTURE_2D);
       currentTexturingMode:=0;
-      glDisable(GL_LIGHTING);
-      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      rci.GLStates.Disable(stLighting);
+      rci.GLStates.PolygonMode := pmFill;
 
       case FBlendingMode of
          bmAdditive : begin
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-            glEnable(GL_BLEND);
+            rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
+            rci.GLStates.Enable(stBlend);
          end;
          bmTransparency : begin
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_BLEND);
+            rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
+            rci.GLStates.Enable(stBlend);
          end;
       else
          // bmOpaque, do nothing
@@ -1684,10 +1685,11 @@ begin
       glDepthFunc(GL_LEQUAL);
       if not FZWrite then begin
          glGetBooleanv(GL_DEPTH_WRITEMASK, @oldDepthMask);
-         glDepthMask(False);
+         //oldDepthMask := rci.GLStates.DepthWriteMask;
+         rci.GLStates.DepthWriteMask := False;
       end;
       if not FZTest then
-         glDisable(GL_DEPTH_TEST);
+         rci.GLStates.Disable(stDepthTest);
 
       try
          // Initialize managers
@@ -1728,9 +1730,9 @@ begin
          end;
       finally
          if FZWrite then
-            glDepthMask(oldDepthMask);
+            rci.GLStates.DepthWriteMask := oldDepthMask;
          glPopMatrix;
-         glPopAttrib;
+         rci.GLStates.PopAttrib;
       end;
    finally
       // cleanup
@@ -2722,7 +2724,7 @@ end;
 //
 procedure TGLPolygonPFXManager.BeginParticles(var rci: TRenderContextInfo);
 begin
-   ApplyBlendingMode;
+   ApplyBlendingMode(rci);
 end;
 
 // RenderParticle
@@ -2779,7 +2781,7 @@ end;
 //
 procedure TGLPolygonPFXManager.EndParticles(var rci: TRenderContextInfo);
 begin
-   UnapplyBlendingMode;
+   UnapplyBlendingMode(rci);
 end;
 
 // FinalizeRendering
@@ -2962,7 +2964,7 @@ begin
    if ColorMode=scmNone then
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
    else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-   ApplyBlendingMode;
+   ApplyBlendingMode(rci);
    if ColorMode<>scmFade then
       glBegin(GL_QUADS);
 end;
@@ -3077,7 +3079,7 @@ procedure TGLBaseSpritePFXManager.EndParticles(var rci: TRenderContextInfo);
 begin
    if ColorMode<>scmFade then
       glEnd;
-   UnApplyBlendingMode;
+   UnApplyBlendingMode(rci);
 end;
 
 // FinalizeRendering

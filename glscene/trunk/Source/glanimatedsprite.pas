@@ -6,6 +6,7 @@
   A sprite that uses a scrolling texture for animation.<p>
 
   <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>10/04/08 - DaStr - Added a Delpi 5 interface bug work-around to
                               TSpriteAnimation (BugTracker ID = 1938988)
       <li>25/03/07 - DaStr - Added GLCrossPlatform to uses for Delphi5 compatibility
@@ -28,7 +29,7 @@ interface
 uses
   Classes, SysUtils, GLScene, VectorGeometry, OpenGL1x, GLMaterial, GLUtils,
   PersistentClasses, XCollection, GLCrossPlatform, GLRenderContextInfo,
-  BaseClasses;
+  BaseClasses, GLState;
 
 type
   TSpriteAnimFrame = class;
@@ -851,8 +852,8 @@ begin
         end;
 
         if Assigned(libMat) then libMat.Apply(rci);
-        glPushAttrib(GL_ENABLE_BIT);
-        glDisable(GL_LIGHTING);
+        rci.GLStates.PushAttrib([sttEnable]);
+        rci.GLStates.Disable(stLighting);
         if FRotation<>0 then begin
           glMatrixMode(GL_MODELVIEW);
           glPushMatrix;
@@ -867,7 +868,7 @@ begin
         if FRotation<>0 then begin
           glPopMatrix;
         end;
-        glPopAttrib;
+        rci.GLStates.PopAttrib;
         if Assigned(libMat) then libMat.UnApply(rci);
       end;
     end;

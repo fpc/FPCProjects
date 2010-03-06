@@ -6,6 +6,7 @@
    Particle systems for GLScene, based on replication of full-featured scene objects.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -25,7 +26,7 @@ interface
 {$I GLScene.inc}
 
 uses Classes, GLScene, VectorGeometry, OpenGL1x, GLColor,
-     BaseClasses, GLRenderContextInfo;
+     BaseClasses, GLRenderContextInfo, GLState;
 
 type
    TGLParticleEvent = procedure (Sender : TObject; particle : TGLBaseSceneObject) of object;
@@ -207,13 +208,14 @@ procedure TGLParticles.BuildList(var ARci : TRenderContextInfo);
 var
 	mi, ma : Single;
 begin
-   glPushAttrib(GL_ENABLE_BIT or GL_CURRENT_BIT or GL_LIGHTING_BIT or GL_LINE_BIT or GL_COLOR_BUFFER_BIT);
-   glDisable(GL_LIGHTING);
-   glEnable(GL_LINE_STIPPLE);
-   glEnable(GL_LINE_SMOOTH);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   glLineWidth(1);
+   ARci.GLStates.PushAttrib([sttEnable, sttCurrent, sttLighting, sttLine,
+                             sttColorBuffer]);
+   ARci.GLStates.Disable(stLighting);
+   ARci.GLStates.Enable(stLineStipple);
+   ARci.GLStates.Enable(stLineSmooth);
+   ARci.GLStates.Enable(stBlend);
+   ARci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
+   Arci.GLStates.LineWidth := 1;
    glLineStipple(1, $AAAA);
    ma:=FCubeSize*0.5;
    mi:=-ma;
@@ -237,7 +239,7 @@ begin
       // left high
       glVertex3f(ma, mi, ma); glVertex3f(mi, mi, ma);
    glEnd;
-   glPopAttrib;
+   ARci.GLStates.PopAttrib;
 end;
 
 // DoRender

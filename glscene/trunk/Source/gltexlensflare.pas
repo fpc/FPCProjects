@@ -6,6 +6,7 @@
    Texture-based Lens flare object.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>23/03/07 - DaStr - Added missing parameters in procedure's implementation
                              (thanks Burkhard Carstens) (Bugtracker ID = 1681409)
@@ -20,7 +21,7 @@ interface
 
 uses
    Classes, GLScene, VectorGeometry, GLObjects, GLTexture, OpenGL1x,
-   GLContext, GLRenderContextInfo, BaseClasses;
+   GLContext, GLRenderContextInfo, BaseClasses, GLState;
 
 type
 
@@ -203,11 +204,11 @@ begin
   glScalef(2 / rci.viewPortSize.cx, 2 / rci.viewPortSize.cy, 1);
 
 
-  glPushAttrib(GL_ENABLE_BIT);
-  glDisable(GL_LIGHTING);
-  glDisable(GL_DEPTH_TEST);  
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE,GL_ONE);
+  rci.GLStates.PushAttrib([sttEnable]);
+  rci.GLStates.Disable(stLighting);
+  rci.GLStates.Disable(stDepthTest);
+  rci.GLStates.Enable(stBlend);
+  rci.GLStates.SetBlendFunc(bfOne, bfOne);
 
   //Rays and Glow on Same Position
   glPushMatrix;
@@ -283,7 +284,7 @@ begin
 
    // restore state
 
-  glPopAttrib;
+  rci.GLStates.PopAttrib;
   glPopMatrix;
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix;

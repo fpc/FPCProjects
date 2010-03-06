@@ -12,6 +12,7 @@
    Also extents are valid only when SpaceText has one line. <p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>25/12/07 - DaStr - Added MultiLine support (thanks Lexer)
                              Fixed Memory leak in TFontManager.Destroy
                               (Bugtracker ID = 1857814)
@@ -49,7 +50,7 @@ uses
 
   // GLScene
   GLScene, OpenGL1x, GLTexture, GLContext, VectorGeometry, GLStrings,
-  GLRenderContextInfo;
+  GLRenderContextInfo, GLState;
 
 type
 
@@ -420,7 +421,7 @@ begin
       if FOblique<>0 then
          glRotatef(FOblique, 0, 0, 1);
 
-      glPushAttrib(GL_POLYGON_BIT);
+      rci.GLStates.PushAttrib([sttPolygon]);
       case FCharacterRange of
         stcrAlphaNum : glListBase(FTextFontEntry^.FVirtualHandle.Handle - 32);
         stcrNumbers :  glListBase(FTextFontEntry^.FVirtualHandle.Handle - Cardinal('0'));
@@ -455,7 +456,7 @@ begin
        glPopMatrix;
       end;
       
-      glPopAttrib;
+      rci.GLStates.PopAttrib;
       glPopMatrix;
    end;
 end;

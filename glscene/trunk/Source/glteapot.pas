@@ -6,6 +6,7 @@
    Implements the standard Teapot, build from evaluators.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>21/07/03 - EG - Creation from GLObjects split
    </ul></font>
@@ -16,7 +17,7 @@ interface
 
 {$I GLScene.inc}
 
-uses Classes, GLScene, VectorGeometry, OpenGL1x, GLRenderContextInfo;
+uses Classes, GLScene, VectorGeometry, OpenGL1x, GLRenderContextInfo, GLState;
 
 type
 
@@ -122,7 +123,7 @@ begin
    glTranslatef(0, -0.25, 0);
    glRotatef(-90, 1, 0, 0);
    glScalef(0.15, 0.15, 0.15);
-   glPushAttrib(GL_POLYGON_BIT or GL_ENABLE_BIT or GL_EVAL_BIT);
+   rci.GLStates.PushAttrib([sttPolygon, sttEnable, sttEval]);
    rci.GLStates.InvertGLFrontFace;
    glEnable(GL_AUTO_NORMAL);
    glEnable(GL_MAP2_VERTEX_3);
@@ -157,7 +158,7 @@ begin
       end;
    end;
    rci.GLStates.InvertGLFrontFace;
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
    glPopMatrix;
 end;
 

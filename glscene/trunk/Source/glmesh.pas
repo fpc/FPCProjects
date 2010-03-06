@@ -9,6 +9,7 @@
    implements more efficient (though more complex) mesh tools.<p> 
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>31/07/07 - DanB - Implemented AxisAlignedDimensionsUnscaled for TGLMesh
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
@@ -628,7 +629,7 @@ begin
    inherited;
    if osDirectDraw in ObjectStyle then
       FVertices.EnterLockSection;
-   glPushAttrib(GL_POLYGON_BIT or GL_ENABLE_BIT or GL_CURRENT_BIT);
+   rci.GLStates.PushAttrib([sttPolygon, sttEnable, sttCurrent]);
    case FVertexMode of
       vmV    : glInterleavedArrays(GL_V3F, SizeOf(TVertexData), FVertices.FirstVertex);
       vmVN   : glInterleavedArrays(GL_N3F_V3F, SizeOf(TVertexData), FVertices.FirstNormal);
@@ -639,7 +640,7 @@ begin
       Assert(False, glsInterleaveNotSupported);
    end;
    if FVertexMode in [vmVNC, vmVNCT] then begin
-      glEnable(GL_COLOR_MATERIAL);
+      rci.GLStates.Enable(stColorMaterial);
       glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
       rci.GLStates.ResetGLMaterialColors;
    end;
@@ -654,7 +655,7 @@ begin
    else
       Assert(False);
    end;
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
    if osDirectDraw in ObjectStyle then
       FVertices.LeaveLockSection;
 end;

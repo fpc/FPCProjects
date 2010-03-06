@@ -6,6 +6,7 @@
    Lens flare object.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>13/03/09 - DanB - changed glReadPixels/glTexImage2D calls to glCopyTexImage2D
       <li>10/10/08 - DanB - changed Lensflare buildlists to use rci.cameraPosition instead
                             of Scene.CurrentGLCamera.DistanceTo
@@ -48,7 +49,7 @@ interface
 
 uses
    Classes, GLScene, VectorGeometry, GLObjects, OpenGL1x,
-   GLContext, GLColor, BaseClasses, GLRenderContextInfo;
+   GLContext, GLColor, BaseClasses, GLRenderContextInfo, GLState;
 
 type
 
@@ -143,11 +144,14 @@ type
          procedure PreRenderEvent(Sender : TObject; var rci : TRenderContextInfo);
          procedure PreRenderPointFreed(Sender : TObject);
 
-         procedure SetupRenderingOptions;
-         procedure RestoreRenderingOptions;
+         // These are quite unusual in that they don't use an RCI, since
+         // PreRender is done before proper rendering starts, but we do know
+         // which RC is being used, so we can use this state cache
+         procedure SetupRenderingOptions(StateCache: TGLStateCache);
+         procedure RestoreRenderingOptions(StateCache: TGLStateCache);
 
-         procedure RenderRays(const size : Single);
-         procedure RenderStreaks;
+         procedure RenderRays(StateCache: TGLStateCache; const size : Single);
+         procedure RenderStreaks(var rci: TRenderContextInfo);
          procedure RenderRing;
          procedure RenderSecondaries(const posVector : TAffineVector);
 
@@ -360,35 +364,35 @@ end;
 
 // SetupRenderingOptions
 //
-procedure TGLLensFlare.SetupRenderingOptions;
+procedure TGLLensFlare.SetupRenderingOptions(StateCache: TGLStateCache);
 begin
-   glPushAttrib(GL_ENABLE_BIT);
-   glDisable(GL_LIGHTING);
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_FOG);
-   glDisable(GL_COLOR_MATERIAL);
-   glDisable(GL_CULL_FACE);
-   glDepthMask(False);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+   StateCache.PushAttrib([sttEnable, sttLine]);
+   StateCache.Disable(stLighting);
+   StateCache.Disable(stDepthTest);
+   StateCache.Disable(stFog);
+   StateCache.Disable(stColorMaterial);
+   StateCache.Disable(stCullFace);
+   StateCache.DepthWriteMask := False;
+   StateCache.Enable(stBlend);
+   StateCache.SetBlendFunc(bfSrcAlpha, bfOne);
 end;
 
 // RestoreRenderingOptions
 //
-procedure TGLLensFlare.RestoreRenderingOptions;
+procedure TGLLensFlare.RestoreRenderingOptions(StateCache: TGLStateCache);
 begin
-   glDepthMask(True);
-   glPopAttrib;
+   StateCache.DepthWriteMask := True;
+   StateCache.PopAttrib;
 end;
 
 // RenderRays
 //
-procedure TGLLensFlare.RenderRays(const size : Single);
+procedure TGLLensFlare.RenderRays(StateCache: TGLStateCache; const size : Single);
 var
    i : Integer;
    rnd : Single;
 begin
-   glLineWidth(1);
+   StateCache.LineWidth := 1;
    glBegin(GL_LINES);
    for i:=0 to Resolution*20-1 do begin
       if (i and 1)<>0 then
@@ -404,13 +408,13 @@ end;
 
 // RenderStreak
 //
-procedure TGLLensFlare.RenderStreaks;
+procedure TGLLensFlare.RenderStreaks(var rci: TRenderContextInfo);
 var
    i : Integer;
    a, f, s, c : Single;
 begin
-   glEnable(GL_LINE_SMOOTH);
-   glLineWidth(StreakWidth);
+   rci.GLStates.Enable(stLineSmooth);
+   rci.GLStates.LineWidth := StreakWidth;
    a:=c2PI/NumStreaks;
    f:=1.5*FCurrSize;
    glBegin(GL_LINES);
@@ -422,7 +426,7 @@ begin
       glVertex2f(c, Squeeze*s);
    end;
    glEnd;
-   glDisable(GL_LINE_SMOOTH);
+   rci.GLStates.Disable(stLineSmooth);
 end;
 
 // RenderRing
@@ -568,7 +572,7 @@ begin
          FlareIsNotOccluded:=True;
 
          glColorMask(False, False, False, False);
-         glDepthMask(False);
+         rci.GLStates.DepthWriteMask := False;
 
          usedOcclusionQuery:=TGLOcclusionQueryHandle.IsSupported;
          if usedOcclusionQuery then begin
@@ -590,14 +594,14 @@ begin
             glEnable(GL_OCCLUSION_TEST_HP);
          end;
 
-         glDepthFunc(GL_LEQUAL);
+         rci.GLStates.DepthFunc := cfLEqual;
          glBegin(GL_QUADS);
             glVertex3f(posVector[0]+2, posVector[1], 1);
             glVertex3f(posVector[0], posVector[1]+2, 1);
             glVertex3f(posVector[0]-2, posVector[1], 1);
             glVertex3f(posVector[0], posVector[1]-2, 1);
          glEnd;
-         glDepthFunc(GL_LESS);
+         rci.GLStates.DepthFunc := cfLess;
 
          if usedOcclusionQuery then
             FOcclusionQuery.EndQuery
@@ -606,7 +610,7 @@ begin
             glGetBooleanv(GL_OCCLUSION_TEST_RESULT_HP, @FFlareIsNotOccluded)
          end;
 
-         glDepthMask(True);
+         rci.GLStates.DepthWriteMask := True;
          glColorMask(True, True, True, True);
       end else begin
          // explicit ZTesting, can hurt framerate badly
@@ -628,7 +632,7 @@ begin
       oldSeed:=RandSeed;
       RandSeed:=Seed;
 
-      SetupRenderingOptions;
+      SetupRenderingOptions(rci.GLStates);
 
       if [feGlow, feStreaks, feRays, feRing]*Elements<>[] then begin
          glTranslatef(posVector[0], posVector[1], posVector[2]);
@@ -646,7 +650,7 @@ begin
          end;
 
          if feStreaks in Elements then
-            RenderStreaks;
+            RenderStreaks(rci);
 
          // Rays (random-length lines from the origin):
          if feRays in Elements then begin
@@ -663,7 +667,7 @@ begin
                glEnd;
 
                glDisable(GL_TEXTURE_2D);
-            end else RenderRays(FCurrSize);
+            end else RenderRays(rci.GLStates, FCurrSize);
          end;
 
          if feRing in Elements then
@@ -676,7 +680,7 @@ begin
          RenderSecondaries(posVector);
 
       // restore state
-      RestoreRenderingOptions;
+      RestoreRenderingOptions(rci.GLStates);
 
       RandSeed:=oldSeed;
    end;
@@ -702,6 +706,7 @@ end;
 procedure TGLLensFlare.PreRender(activeBuffer : TGLSceneBuffer);
 var
    i, texSize, maxSize : Integer;
+   stateCache: TGLStateCache;
 begin
    if FTexRays.Handle<>0 then Exit;
 
@@ -713,7 +718,8 @@ begin
    glPushMatrix;
    glLoadIdentity;
 
-   SetupRenderingOptions;
+   stateCache := activeBuffer.RenderingContext.GLStates;
+   SetupRenderingOptions(stateCache);
 
    texSize:=RoundUpToPowerOf2(Size);
    if texSize<Size*1.5 then
@@ -732,7 +738,7 @@ begin
    glEnable(GL_BLEND);
 
    glTranslatef(texSize*0.5+2, texSize*0.5+2, 0);
-   RenderRays(texSize*0.5);
+   RenderRays(stateCache, texSize*0.5);
 
    FTexRays.AllocateHandle;
    glBindTexture(GL_TEXTURE_2D, FTexRays.Handle);
@@ -746,7 +752,7 @@ begin
 
    glCopyTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,2,2,texSize,texSize,0);
 
-   RestoreRenderingOptions;
+   RestoreRenderingOptions(stateCache);
 
    glPopMatrix;
    glMatrixMode(GL_PROJECTION);

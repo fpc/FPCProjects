@@ -263,6 +263,7 @@ begin
   mapSize:=mapSize div SubSampling;
   normalMap.Height:=mapSize;
   normalMap.Width :=mapSize;
+  normalMap.Blank :=false;
   SetVector(ScaleVec,1,1,FBumpScale);
   for y:=0 to mapSize-1 do begin
     nmRow:=normalMap.ScanLine[mapSize-1-y];

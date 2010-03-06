@@ -114,8 +114,10 @@ type
     fLevels: TList;
     fCubeMap: Boolean;
     fTextureArray: Boolean;
+
+    function GetData: PGLPixel32Array; virtual;
   public
-    constructor Create; reintroduce;
+    constructor Create; reintroduce; virtual;
     destructor Destroy; override;
     {: Assigns from any Texture.}
     procedure AssignFromTexture(textureContext: TGLContext;
@@ -146,6 +148,8 @@ type
     procedure Narrow;
     {: Leave top level and remove other }
     procedure UnMipmap; dynamic;
+    {: Direct Access to image data}
+    property Data: PGLPixel32Array read GetData;
   end;
 
   TGLBaseImageClass = class of TGLBaseImage;
@@ -188,7 +192,7 @@ type
 
   public
     { Public Declarations }
-    constructor Create;
+    constructor Create; override;
     destructor Destroy; override;
     {: Accepts TGLBitmap32 and TGraphic subclasses. }
     procedure Assign(Source: TPersistent); override;
@@ -245,7 +249,8 @@ type
     property ScanLine[index: Integer]: PGLPixel32Array read GetScanLine;
 
     property VerticalReverseOnAssignFromBitmap: Boolean read
-      FVerticalReverseOnAssignFromBitmap write FVerticalReverseOnAssignFromBitmap;
+      FVerticalReverseOnAssignFromBitmap write
+        FVerticalReverseOnAssignFromBitmap;
 
     {: Grants direct access to the bitmap's data.<p>
       This property is equivalent to ScanLine[0], and may be nil if the
@@ -348,6 +353,7 @@ type
       TGLBaseImageClass);
     function FindExt(ext: string): TGLBaseImageClass;
     function FindFromFileName(const fileName: string): TGLBaseImageClass;
+    function FindFromStream(const AStream: TStream): TGLBaseImageClass;
     procedure Remove(AClass: TGLBaseImageClass);
     procedure BuildFilterStrings(imageFileClass: TGLBaseImageClass;
       var descriptions, filters: string;
@@ -495,6 +501,31 @@ var
 begin
   ext := ExtractFileExt(Filename);
   System.Delete(ext, 1, 1);
+  Result := FindExt(ext);
+  if not Assigned(Result) then
+    raise EInvalidRasterFile.CreateFmt(glsUnknownExtension,
+      [ext, 'GLFile' + UpperCase(ext)]);
+end;
+
+// FindFromStream
+//
+
+function TRasterFileFormatsList.FindFromStream(const AStream: TStream):
+  TGLBaseImageClass;
+var
+  ext: string;
+  magic: array[0..1] of Longword;
+begin
+  AStream.ReadBuffer(magic, 2*SizeOf(Longword));
+  AStream.Seek(-2*SizeOf(Longword), 1);
+
+  if magic[0] = $20534444 then
+    ext := 'DDS'
+  else if magic[1]=$4354334F then
+    ext := 'O3TC'
+  else if (magic[0] and $0000FFFF)=$00003F23 then
+    ext := 'HDR';
+
   Result := FindExt(ext);
   if not Assigned(Result) then
     raise EInvalidRasterFile.CreateFmt(glsUnknownExtension,
@@ -1270,6 +1301,8 @@ begin
     and (fMipLevels = 1)
     and not (fTextureArray or fCubeMap) then
     Exit;
+
+  UnMipmap;
   fDepth := 0;
   fColorFormat := GL_RGBA;
   fInternalFormat := tfRGBA8;
@@ -1277,7 +1310,7 @@ begin
   fElementSize := 4;
   fCubeMap := false;
   fTextureArray := false;
-  UnMipmap;
+  ReallocMem(fData, DataSize);
 end;
 
 // UnMipmap
@@ -1287,6 +1320,11 @@ procedure TGLBaseImage.UnMipmap;
 begin
   fLevels.Clear;
   fMipLevels := 1;
+end;
+
+function TGLBaseImage.GetData: PGLPixel32Array;
+begin
+  Result := fData;
 end;
 
 {$IFDEF GLS_COMPILER_2005_UP}{$ENDREGION}{$ENDIF}
@@ -1349,7 +1387,7 @@ begin
     if not FBlank then
     begin
       ReallocMem(FData, DataSize);
-      Move(TGLBitmap32(Source).Data^, Data^, DataSize);
+      Move(TGLBaseImage(Source).Data^, Data^, DataSize);
     end;
   end
   else if Source is TGLGraphic then
@@ -1481,15 +1519,22 @@ var
   pSrc, pDest: PAnsiChar;
 begin
   Assert(aBitmap.PixelFormat = glpf24bit);
-  Assert((aBitmap.Width and 3) = 0);
   FWidth := aBitmap.Width;
   FHeight := aBitmap.Height;
   FDepth := 0;
   fMipLevels := 1;
-  fColorFormat := GL_RGBA;
+  if GL_EXT_bgra then
+  begin
+    fColorFormat := GL_BGR;
+    fElementSize := 3;
+  end
+  else begin
+    Assert((aBitmap.Width and 3) = 0);
+    fColorFormat := GL_RGBA;
+    fElementSize := 4;
+  end;
   fInternalFormat := tfRGBA8;
   fDataType := GL_UNSIGNED_BYTE;
-  fElementSize := 4;
   fLevels.Clear;
   fCubeMap := false;
   fTextureArray := false;
@@ -1497,28 +1542,46 @@ begin
   FBlank := false;
   if Height > 0 then
   begin
-    pDest := @PAnsiChar(FData)[Width * 4 * (Height - 1)];
+    pDest := @PAnsiChar(FData)[Width * fElementSize * (Height - 1)];
     if Height = 1 then
     begin
-      BGR24ToRGBA32(BitmapScanLine(aBitmap, 0), pDest, Width);
+      if GL_EXT_bgra then
+      begin
+        pSrc := BitmapScanLine(aBitmap, 0);
+        Move(pSrc^, pDest^, Width*fElementSize);
+      end
+      else
+        BGR24ToRGBA32(BitmapScanLine(aBitmap, 0), pDest, Width);
     end
     else
     begin
       if VerticalReverseOnAssignFromBitmap then
       begin
         pSrc := BitmapScanLine(aBitmap, Height - 1);
-            rowOffset:=PtrInt(BitmapScanLine(aBitmap, Height-2))-PtrInt(pSrc);
+        rowOffset := Integer(BitmapScanLine(aBitmap, Height - 2)) -
+          Integer(pSrc);
       end
       else
       begin
         pSrc := BitmapScanLine(aBitmap, 0);
-            rowOffset:=PtrInt(BitmapScanLine(aBitmap, 1))-PtrInt(pSrc);
+        rowOffset := Integer(BitmapScanLine(aBitmap, 1)) - Integer(pSrc);
       end;
-      for y := 0 to Height - 1 do
+      if GL_EXT_bgra then
       begin
-        BGR24ToRGBA32(pSrc, pDest, Width);
-        Dec(pDest, Width * 4);
-        Inc(pSrc, rowOffset);
+        for y := 0 to Height - 1 do
+        begin
+          Move(pSrc^, pDest^, Width*fElementSize);
+          Dec(pDest, Width * fElementSize);
+          Inc(pSrc, rowOffset);
+        end;
+      end
+      else begin
+        for y := 0 to Height - 1 do
+        begin
+          BGR24ToRGBA32(pSrc, pDest, Width);
+          Dec(pDest, Width * fElementSize);
+          Inc(pSrc, rowOffset);
+        end;
       end;
     end;
   end;
@@ -1587,14 +1650,17 @@ var
    rowOffset   : PtrInt;
   pSrc, pDest: PAnsiChar;
 begin
-
   Assert(aBitmap.PixelFormat = glpf32bit);
-  Assert((aBitmap.Width and 3) = 0);
   FWidth := aBitmap.Width;
   FHeight := aBitmap.Height;
   FDepth := 0;
   fMipLevels := 1;
-  fColorFormat := GL_RGBA;
+  if GL_EXT_bgra then
+    fColorFormat := GL_BGRA
+  else begin
+    Assert((aBitmap.Width and 3) = 0);
+    fColorFormat := GL_RGBA;
+  end;
   fInternalFormat := tfRGBA8;
   fDataType := GL_UNSIGNED_BYTE;
   fElementSize := 4;
@@ -1622,11 +1688,22 @@ begin
       else
         rowOffset := 0;
     end;
-    for y := 0 to Height - 1 do
+    if GL_EXT_bgra then
     begin
-      BGRA32ToRGBA32(pSrc, pDest, Width);
-      Dec(pDest, Width * 4);
-      Inc(pSrc, rowOffset);
+      for y := 0 to Height - 1 do
+      begin
+        Move(pSrc^, pDest^, Width*4);
+        Dec(pDest, Width*4);
+        Inc(pSrc, rowOffset);
+      end;
+    end
+    else begin
+      for y := 0 to Height - 1 do
+      begin
+        BGRA32ToRGBA32(pSrc, pDest, Width);
+        Dec(pDest, Width * 4);
+        Inc(pSrc, rowOffset);
+      end;
     end;
   end;
 end;
@@ -2329,7 +2406,7 @@ begin
   end
   else
 {$ENDIF}
-begin
+  begin
     for y := 0 to h2 - 1 do
     begin
       ProcessRowPascal(pDest, pLineA, pLineB, w2);
@@ -2372,7 +2449,6 @@ var
   p, buffer: Pointer;
   vtcBuffer, top, bottom: PGLubyte;
   i, j, k: Integer;
-  LODtarget: TGLUInt;
 
   function blockOffset(x, y, z: Integer): Integer;
   begin
@@ -2383,7 +2459,7 @@ var
     else
       Result := fElementSize * (4 * (x + cw * (y + ch * floor(z / 4))) + (z and
         3));
-    if Result<0 then
+    if Result < 0 then
       Result := 0;
   end;
 
@@ -2394,7 +2470,7 @@ begin
     w := RoundUpToPowerOf2(Width);
     h := RoundUpToPowerOf2(Height);
     d := RoundUpToPowerOf2(Depth);
-    if Depth=0 then
+    if Depth = 0 then
       d := 0;
   end
   else
@@ -2439,11 +2515,19 @@ begin
   if GL_SGIS_generate_mipmap and (target <> GL_TEXTURE_RECTANGLE) then
   begin
     bMipmapGen := (ml = 1) and not (minFilter in [miNearest, miLinear]);
-    if (target>=GL_TEXTURE_CUBE_MAP_POSITIVE_X)
-      and (target<=GL_TEXTURE_CUBE_MAP_NEGATIVE_Z) then
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_GENERATE_MIPMAP_SGIS, Integer(bMipmapGen))
-      else
-    glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, Integer(bMipmapGen));
+    if (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X)
+      and (target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z) then
+    begin
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_GENERATE_MIPMAP_SGIS,
+        Integer(bMipmapGen));
+      if ml>1 then
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL_SGIS, ml);
+    end
+    else begin
+      glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, Integer(bMipmapGen));
+      if ml>1 then
+        glTexParameteri(target, GL_TEXTURE_MAX_LEVEL_SGIS, ml-1);
+    end;
   end;
 
   // if image is blank then doing only allocatation texture in videomemory

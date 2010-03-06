@@ -9,6 +9,7 @@
    By Ren� Lindsay.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>29/05/08 - DaStr - Removed unused variables in TGLZShadows.CalcShadowTexture()
       <li>20/01/08 - DaStr - Bugfixed TGLZShadows.HardSet(Bugtracker ID = 1875708)
                              Removed some old commented out code
@@ -74,7 +75,7 @@ interface
 
 uses  Classes, SysUtils, GLScene, VectorGeometry, GLGraphics,
       GLObjects, GLContext, GLViewer, GLColor,
-      GLRenderContextInfo;
+      GLRenderContextInfo, GLState;
 
 type
   EZBufferException = class(Exception);
@@ -730,10 +731,11 @@ begin
    end;
    ViewerZBuf.Refresh;
 
-   glPushAttrib(GL_ENABLE_BIT);
+   ARci.GLStates.PushAttrib([sttEnable, sttColorBuffer]);
    glEnable(GL_TEXTURE_2D);
 
-   glEnable( GL_BLEND ); //by Juergen Linker
+   ARci.GLStates.Enable(stBlend);  //by Juergen Linker
+   ARci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
 
    if FWidth >ARci.viewPortSize.cx then Fwidth :=ARci.viewPortSize.cx;
    if FHeight>ARci.viewPortSize.cy then FHeight:=ARci.viewPortSize.cy;
@@ -768,8 +770,8 @@ begin
    glMatrixMode(GL_PROJECTION);
    glPushMatrix;
    glLoadIdentity;
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_LIGHTING);
+   ARci.GLStates.Disable(stDepthTest);
+   ARci.GLStates.Disable(stLighting);
 
    vx:=0;   vx1:=vx+FWidth;
    vy:=0;   vy1:=vy-FHeight;
@@ -790,8 +792,8 @@ begin
    glMatrixMode(GL_MODELVIEW);
    glPopMatrix;
 
-   glDisable( GL_BLEND ); //by Juergen Linker
-   glPopAttrib;
+   ARci.GLStates.Disable(stBlend); //by Juergen Linker
+   ARci.GLStates.PopAttrib;
 
    if Count>0 then Self.RenderChildren(0, Count-1, ARci);
 end;

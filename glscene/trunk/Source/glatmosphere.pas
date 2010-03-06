@@ -6,6 +6,7 @@
    This unit contains classes that imitate an atmosphere around a planet.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>03/04/07 - DaStr - Optimized TGLCustomAtmosphere.DoRender
                              Fixed SetPlanetRadius and SetAtmosphereRadius
@@ -67,7 +68,7 @@ uses
 
   // GLScene
   GLScene, GLObjects, GLCadencer, OpenGL1x, VectorGeometry,
-  GLContext, GLStrings, GLColor, GLRenderContextInfo;
+  GLContext, GLStrings, GLColor, GLRenderContextInfo, GLState;
 
 type
    EGLAtmosphereException = class(Exception);
@@ -99,7 +100,7 @@ type
     procedure SetSun(const Value: TglBaseSceneObject);
     procedure SetAtmosphereRadius(const Value: Single);
     procedure SetPlanetRadius(const Value: Single);
-    procedure EnableGLBlendingMode;
+    procedure EnableGLBlendingMode(var rci: TRenderContextInfo);
     function StoreAtmosphereRadius: Boolean;
     function StoreOpacity: Boolean;
     function StorePlanetRadius: Boolean;
@@ -304,11 +305,11 @@ begin
     invAtmosphereHeight := 1 / (FAtmosphereRadius - FPlanetRadius);
     lightingVector := VectorNormalize(sunPos); // sun at infinity
 
-    glPushAttrib(GL_ENABLE_BIT);
-    glDepthMask(False);
-    glDisable(GL_LIGHTING);
-    glEnable(GL_BLEND);
-    EnableGLBlendingMode;
+    rci.GLStates.PushAttrib([sttEnable]);
+    rci.GLStates.DepthWriteMask := False;
+    rci.GLStates.Disable(stLighting);
+    rci.GLStates.Enable(stBlend);
+    EnableGLBlendingMode(rci);
     for I := 0 to 13 do
     begin
       if I < 5 then
@@ -372,8 +373,8 @@ begin
         glEnd;
       end;
     end;
-    glDepthMask(True);
-    glPopAttrib;
+    rci.GLStates.DepthWriteMask := True;
+    rci.GLStates.PopAttrib;
   end;
   inherited;
 end;
@@ -440,11 +441,13 @@ begin
     FAtmosphereRadius := FPlanetRadius * 1.01;
 end;
 
-procedure TGLCustomAtmosphere.EnableGLBlendingMode;
+procedure TGLCustomAtmosphere.EnableGLBlendingMode(var rci: TRenderContextInfo);
 begin
   case FBlendingMode of
-    abmOneMinusDstColor: glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_COLOR);
-    abmOneMinusSrcAlpha: glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    abmOneMinusDstColor:
+      rci.GLStates.SetBlendFunc(bfDstAlpha, bfOneMinusDstColor);
+    abmOneMinusSrcAlpha:
+      rci.GLStates.SetBlendFunc(bfDstAlpha, bfOneMinusSrcAlpha);
   else
     Assert(False, glsErrorEx + glsUnknownType);
   end;

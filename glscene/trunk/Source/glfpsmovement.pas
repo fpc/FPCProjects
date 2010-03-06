@@ -6,6 +6,7 @@
    FPS-like movement behaviour and manager.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>03/04/07 - DaStr - Added "public" to TCollisionState for FPC compatibility
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>29/01/07 - DaStr - Moved registration to GLSceneRegister.pas
@@ -27,7 +28,7 @@ interface
 uses
      Classes, Graphics, VectorGeometry, GLScene, GLVectorFileObjects,
      VectorLists, XCollection, GLGeomObjects,
-     GLNavigator, GLRenderContextInfo, BaseClasses, GLManager;
+     GLNavigator, GLRenderContextInfo, BaseClasses, GLManager, GLState;
 
 type
      TContactPoint = record
@@ -826,8 +827,8 @@ var
 begin
 //  caption:= IntToStr(CollisionStates.Count);
   glColor3f(1,1,1);
-  glPushAttrib(GL_LIGHTING_BIT);
-  glDisable(GL_LIGHTING);
+  rci.GLStates.PushAttrib([sttLighting]);
+  rci.GLStates.Disable(stLighting);
   //draw position trail
   glBegin(GL_LINE_STRIP);
   for i:=0 to CollisionStates.Count-1 do
@@ -852,7 +853,7 @@ begin
       CollisionState.Contact.intPoint[2]+CollisionState.Contact.intNormal[2]);//GLSphere4.Radius);
   end;
   glEnd();
-  glPopAttrib;
+  rci.GLStates.PopAttrib;
 end;
 
 // ------------------------------------------------------------------

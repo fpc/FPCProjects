@@ -6,6 +6,7 @@
    Skydome object<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>10/10/08 - DanB - changed Skydome buildlists to use rci instead
                             of Scene.CurrentGLCamera
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -679,12 +680,12 @@ begin
    n:=0;
    lastPointSize10:=-1;
 
-   glPushAttrib(GL_ENABLE_BIT);
-   glEnable(GL_POINT_SMOOTH);
-   glEnable(GL_ALPHA_TEST);
-   glAlphaFunc(GL_NOTEQUAL, 0.0);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+   rci.GLStates.PushAttrib([sttEnable]);
+   rci.GLStates.Enable(stPointSmooth);
+   rci.GLStates.Enable(stAlphaTest);
+   rci.GLStates.SetGLAlphaFunction(cfNotEqual, 0.0);
+   rci.GLStates.Enable(stBlend);
+   rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOne);
 
    glBegin(GL_POINTS);
    for i:=0 to Count-1 do begin
@@ -716,10 +717,10 @@ begin
    end;
    glEnd;
 
-   glPointSize(1);
-   glPopAttrib;
+   rci.GLStates.PointSize := 1;
+   rci.GLStates.PopAttrib;
    // restore default GLScene AlphaFunc
-   glAlphaFunc(GL_GREATER, 0);
+   rci.GLStates.SetGLAlphaFunction(cfGreater, 0);
 end;
 
 // AddRandomStars
@@ -898,13 +899,13 @@ var
 begin
    // setup states
    glPushMatrix;
-   glPushAttrib(GL_ENABLE_BIT or GL_POLYGON_BIT);
-   glDisable(GL_LIGHTING);
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_FOG);
-   glDisable(GL_CULL_FACE);
-   glDepthMask(False);
-   glPolygonMode(GL_FRONT, GL_FILL);
+   rci.GLStates.PushAttrib([sttEnable, sttPolygon]);
+   rci.GLStates.Disable(stLighting);
+   rci.GLStates.Disable(stDepthTest);
+   rci.GLStates.Disable(stFog);
+   rci.GLStates.Disable(stCullFace);
+   rci.GLStates.DepthWriteMask := False;
+   rci.GLStates.PolygonMode := pmFill;
 
    f:=rci.rcci.farClippingDistance*0.90;
    glScalef(f, f, f);
@@ -913,8 +914,8 @@ begin
    Stars.BuildList(rci, (sdoTwinkle in FOptions));
 
    // restore
-   glDepthMask(True);
-   glPopAttrib;
+   rci.GLStates.DepthWriteMask := True;
+   rci.GLStates.PopAttrib;
    glPopMatrix;
 end;
 
@@ -1078,14 +1079,14 @@ var
 begin
    // setup states
    glPushMatrix;
-   glPushAttrib(GL_ENABLE_BIT or GL_POLYGON_BIT);
-   glDisable(GL_LIGHTING);
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_FOG);
-   glDisable(GL_CULL_FACE);
-   glDisable(GL_ALPHA_TEST);
-   glDepthMask(False);
-   glPolygonMode(GL_FRONT, GL_FILL);
+   rci.GLStates.PushAttrib([sttEnable, sttPolygon]);
+   rci.GLStates.Disable(stLighting);
+   rci.GLStates.Disable(stDepthTest);
+   rci.GLStates.Disable(stFog);
+   rci.GLStates.Disable(stCullFace);
+   rci.GLStates.Disable(stAlphaTest);
+   rci.GLStates.DepthWriteMask := False;
+   rci.GLStates.PolygonMode := pmFill;
 
    f:=rci.rcci.farClippingDistance*0.95;
    glScalef(f, f, f);
@@ -1095,8 +1096,8 @@ begin
    Stars.BuildList(rci, (sdoTwinkle in FOptions));
 
    // restore
-   glDepthMask(True);
-   glPopAttrib;
+   rci.GLStates.DepthWriteMask := True;
+   rci.GLStates.PopAttrib;
    glPopMatrix;
 end;
 

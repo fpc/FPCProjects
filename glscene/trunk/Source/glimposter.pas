@@ -6,6 +6,7 @@
    Imposter building and rendering implementation for GLScene.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
       <li>30/03/07 - DaStr - Added $I GLScene.inc
       <li>28/03/07 - DaStr - Renamed parameters in some methods
@@ -28,7 +29,7 @@ interface
 uses
   Classes, GLScene, GLContext, VectorTypes, VectorGeometry,
   GeometryBB, PersistentClasses, GLCrossPlatform, GLGraphics, GLColor,
-  GLRenderContextInfo, GLCoordinates, BaseClasses;
+  GLRenderContextInfo, GLCoordinates, BaseClasses, GLState;
 
 type
    // TImposterOptions
@@ -498,22 +499,23 @@ var
    filter : TGLEnum;
    fx, fy, yOffset, cosAlpha, dynScale : Single;
 begin
-   glPushAttrib(GL_ENABLE_BIT);
-   glDisable(GL_LIGHTING);
-   glDisable(GL_CULL_FACE);
+   rci.GLStates.PushAttrib([sttEnable]);
+   rci.GLStates.Disable(stLighting);
+   rci.GLStates.Disable(stCullFace);
    glEnable(GL_TEXTURE_2D);
 
    if impoAlphaTest in Builder.ImposterOptions then begin
-      glEnable(GL_ALPHA_TEST);
-      glAlphaFunc(GL_GEQUAL, Builder.AlphaTreshold);
-   end else glDisable(GL_ALPHA_TEST);
+      rci.GLStates.Enable(stAlphaTest);
+      rci.GLStates.SetGLAlphaFunction(cfGEqual, Builder.AlphaTreshold);
+   end else rci.GLStates.Disable(stAlphaTest);
 
    if impoBlended in Builder.ImposterOptions then begin
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   end else glDisable(GL_BLEND);
+      rci.GLStates.Enable(stBlend);
+      rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
+   end else rci.GLStates.Disable(stBlend);
 
    rci.GLStates.SetGLCurrentTexture(0, GL_TEXTURE_2D, Texture.Handle);
+   //rci.GLStates.TextureBinding[0, ttTexture2D] := Texture.Handle;
 
    if impoNearestFiltering in Builder.ImposterOptions then
       filter:=GL_NEAREST
@@ -588,7 +590,7 @@ end;
 procedure TImposter.EndRender(var rci : TRenderContextInfo);
 begin
    glEnd;
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
 end;
 
 // RenderOnce
@@ -1258,11 +1260,11 @@ begin
           'ViewPort too small to render imposter samples!');
 
    // Setup the buffer in a suitable fashion for our needs
-   glPushAttrib(GL_ENABLE_BIT+GL_COLOR_BUFFER_BIT);
+   rci.GLStates.PushAttrib([sttEnable, sttColorBuffer]);
    with FBackColor do
-      glClearColor(Red, Green, Blue, Alpha);
+      rci.GLStates.ColorClearValue := Color;
    if Lighting=siblNoLighting then
-      glDisable(GL_LIGHTING);
+      rci.GLStates.Disable(stLighting);
 
    glMatrixMode(GL_PROJECTION);
    glPushMatrix;
@@ -1321,7 +1323,7 @@ begin
 
    // Restore buffer stuff
    glPixelTransferf(GL_ALPHA_SCALE, 1);
-   glPopAttrib;
+   rci.GLStates.PopAttrib;
    glPopMatrix;
    glMatrixMode(GL_PROJECTION);
    glPopMatrix;

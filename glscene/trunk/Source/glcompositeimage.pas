@@ -7,6 +7,7 @@
     TGLO3TCImage, TGLHDRImage etc.
 
  <b>History : </b><font size=-1><ul>
+        <li>22/02/10 - Yar - Added LoadFromStream (thanks to mif)
         <li>23/01/10 - Yar - Replaced TextureFormat to TextureFormatEx
         <li>21/01/10 - Yar - Creation
    </ul><p>
@@ -49,6 +50,7 @@ type
 
     procedure SaveToFile(const fileName: string); override;
     procedure LoadFromFile(const fileName: string); override;
+    procedure LoadFromStream(const AStream: TStream);
     class function FriendlyName: string; override;
     class function FriendlyDescription: string; override;
     property NativeTextureTarget;
@@ -241,10 +243,10 @@ begin
     tempImage.Assign(fBitmap);
   try
     tempImage.SaveToFile(fileName);
+    FResourceFile := fileName;
   finally
     tempImage.Free;
   end;
-  FResourceFile := FBitmap.ResourceName;
 end;
 
 // LoadFromFile
@@ -261,7 +263,6 @@ begin
   tempImage := BaseImageClass.Create;
   try
     tempImage.LoadFromFile(fileName);
-  finally
     if not Assigned(FBitmap) then
       FBitmap := TGLBitmap32.Create;
     FBitmap.Assign(tempImage);
@@ -273,8 +274,37 @@ begin
     if Assigned(FOwnerTexture) then
       FOwnerTexture.TextureFormatEx := FBitmap.InternalFormat;
     NotifyChange(Self);
+  finally
+    tempImage.Free;
   end;
-  tempImage.Free;
+end;
+
+// LoadFromStream
+//
+
+procedure TGLCompositeImage.LoadFromStream(const AStream: TStream);
+var
+  tempImage: TGLBaseImage;
+begin
+  if (not Assigned(AStream)) or (AStream.Size - AStream.Position < 200) then
+    exit;
+  with GetRasterFileFormats do
+    tempImage := FindFromStream(AStream).Create;
+  try
+    tempImage.LoadFromStream(AStream);
+    if not Assigned(FBitmap) then
+      FBitmap := TGLBitmap32.Create;
+    FBitmap.Assign(tempImage);
+    FWidth := FBitmap.Width;
+    FHeight := FBitmap.Height;
+    FDepth := FBitmap.Depth;
+    FResourceFile := '';
+    if Assigned(FOwnerTexture) then
+      FOwnerTexture.TextureFormatEx := FBitmap.InternalFormat;
+    NotifyChange(Self);
+  finally
+    tempImage.Free;
+  end;
 end;
 
 // FriendlyName
