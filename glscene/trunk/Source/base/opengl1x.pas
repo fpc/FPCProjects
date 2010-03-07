@@ -373,9 +373,9 @@ var
    GL_3DFX_multisample,
    GL_3DFX_tbuffer,
    GL_3DFX_texture_compression_FXT1,
-   GL_ATI_texture_compression_3dc,
 
    GL_ATI_draw_buffers,
+   GL_ATI_texture_compression_3dc,
    GL_ATI_texture_float,
    GL_ATI_texture_mirror_once,
 
@@ -454,6 +454,8 @@ var
 
    GL_NV_blend_square,
    GL_NV_conditional_render,
+   GL_NV_copy_image,
+   GL_NV_depth_buffer_float,
    GL_NV_fence,
    GL_NV_float_buffer,
    GL_NV_fog_distance,
@@ -474,8 +476,6 @@ var
    GL_NV_vertex_array_range,
    GL_NV_vertex_array_range2,
    GL_NV_vertex_program,
-   GL_NV_depth_buffer_float,
-   GL_NV_copy_image,
 
    GL_SGI_color_matrix,
 
@@ -1128,6 +1128,7 @@ const
    GL_RGB10_A2                                       = $8059;
    GL_RGBA12                                         = $805A;
    GL_RGBA16                                         = $805B;
+
    //crossbuilder: check if these are needed or if there are GL_* versions 
    UNSIGNED_BYTE_3_3_2                               = $8032; // GL 1.2
    UNSIGNED_BYTE_2_3_3_REV                           = $8362; // GL 1.2
@@ -1142,32 +1143,39 @@ const
    UNSIGNED_INT_10_10_10_2                           = $8036; // GL 1.2
    UNSIGNED_INT_2_10_10_10_REV                       = $8368; // GL 1.2
 
+   {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.1 deprecated'} {$ENDIF}
+   // attribute bits
+
+
    // interleaved arrays formats
-   GL_V2F                                            = $2A20;
-   GL_V3F                                            = $2A21;
-   GL_C4UB_V2F                                       = $2A22;
-   GL_C4UB_V3F                                       = $2A23;
-   GL_C3F_V3F                                        = $2A24;
-   GL_N3F_V3F                                        = $2A25;
-   GL_C4F_N3F_V3F                                    = $2A26;
-   GL_T2F_V3F                                        = $2A27;
-   GL_T4F_V4F                                        = $2A28;
-   GL_T2F_C4UB_V3F                                   = $2A29;
-   GL_T2F_C3F_V3F                                    = $2A2A;
-   GL_T2F_N3F_V3F                                    = $2A2B;
-   GL_T2F_C4F_N3F_V3F                                = $2A2C;
-   GL_T4F_C4F_N3F_V4F                                = $2A2D;
+   GL_V2F                                            = $2A20 {deprecated};
+   GL_V3F                                            = $2A21 {deprecated};
+   GL_C4UB_V2F                                       = $2A22 {deprecated};
+   GL_C4UB_V3F                                       = $2A23 {deprecated};
+   GL_C3F_V3F                                        = $2A24 {deprecated};
+   GL_N3F_V3F                                        = $2A25 {deprecated};
+   GL_C4F_N3F_V3F                                    = $2A26 {deprecated};
+   GL_T2F_V3F                                        = $2A27 {deprecated};
+   GL_T4F_V4F                                        = $2A28 {deprecated};
+   GL_T2F_C4UB_V3F                                   = $2A29 {deprecated};
+   GL_T2F_C3F_V3F                                    = $2A2A {deprecated};
+   GL_T2F_N3F_V3F                                    = $2A2B {deprecated};
+   GL_T2F_C4F_N3F_V3F                                = $2A2C {deprecated};
+   GL_T4F_C4F_N3F_V4F                                = $2A2D {deprecated};
 
    // clip planes
-   GL_CLIP_PLANE0                                    = $3000;
-   GL_CLIP_PLANE1                                    = $3001;
-   GL_CLIP_PLANE2                                    = $3002;
-   GL_CLIP_PLANE3                                    = $3003;
-   GL_CLIP_PLANE4                                    = $3004;
-   GL_CLIP_PLANE5                                    = $3005;
+   GL_CLIP_PLANE0                                    = $3000 {deprecated};
+   GL_CLIP_PLANE1                                    = $3001 {deprecated};
+   GL_CLIP_PLANE2                                    = $3002 {deprecated};
+   GL_CLIP_PLANE3                                    = $3003 {deprecated};
+   GL_CLIP_PLANE4                                    = $3004 {deprecated};
+   GL_CLIP_PLANE5                                    = $3005 {deprecated};
+
 
    // miscellaneous
    GL_DITHER                                         = $0BD0;
+
+   {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP}    {$endregion} {$ENDIF}
 
@@ -1252,84 +1260,88 @@ const
    GL_FUNC_SUBTRACT                                  = $800A;
    GL_FUNC_REVERSE_SUBTRACT                          = $800B;
 
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.2 deprecated'} {$ENDIF}
+   // {deprecated}
+
    // Convolutions (GL 1.2 ARB imaging)
    // promoted to core v1.2 from GL_EXT_convolution (EXT #12)
-   GL_CONVOLUTION_1D                                 = $8010;
-   GL_CONVOLUTION_2D                                 = $8011;
-   GL_SEPARABLE_2D                                   = $8012;
-   GL_CONVOLUTION_BORDER_MODE                        = $8013;
-   GL_CONVOLUTION_FILTER_SCALE                       = $8014;
-   GL_CONVOLUTION_FILTER_BIAS                        = $8015;
-   GL_REDUCE                                         = $8016;
-   GL_CONVOLUTION_FORMAT                             = $8017;
-   GL_CONVOLUTION_WIDTH                              = $8018;
-   GL_CONVOLUTION_HEIGHT                             = $8019;
-   GL_MAX_CONVOLUTION_WIDTH                          = $801A;
-   GL_MAX_CONVOLUTION_HEIGHT                         = $801B;
-   GL_POST_CONVOLUTION_RED_SCALE                     = $801C;
-   GL_POST_CONVOLUTION_GREEN_SCALE                   = $801D;
-   GL_POST_CONVOLUTION_BLUE_SCALE                    = $801E;
-   GL_POST_CONVOLUTION_ALPHA_SCALE                   = $801F;
-   GL_POST_CONVOLUTION_RED_BIAS                      = $8020;
-   GL_POST_CONVOLUTION_GREEN_BIAS                    = $8021;
-   GL_POST_CONVOLUTION_BLUE_BIAS                     = $8022;
-   GL_POST_CONVOLUTION_ALPHA_BIAS                    = $8023;
+   GL_CONVOLUTION_1D                                 = $8010 {deprecated};
+   GL_CONVOLUTION_2D                                 = $8011 {deprecated};
+   GL_SEPARABLE_2D                                   = $8012 {deprecated};
+   GL_CONVOLUTION_BORDER_MODE                        = $8013 {deprecated};
+   GL_CONVOLUTION_FILTER_SCALE                       = $8014 {deprecated};
+   GL_CONVOLUTION_FILTER_BIAS                        = $8015 {deprecated};
+   GL_REDUCE                                         = $8016 {deprecated};
+   GL_CONVOLUTION_FORMAT                             = $8017 {deprecated};
+   GL_CONVOLUTION_WIDTH                              = $8018 {deprecated};
+   GL_CONVOLUTION_HEIGHT                             = $8019 {deprecated};
+   GL_MAX_CONVOLUTION_WIDTH                          = $801A {deprecated};
+   GL_MAX_CONVOLUTION_HEIGHT                         = $801B {deprecated};
+   GL_POST_CONVOLUTION_RED_SCALE                     = $801C {deprecated};
+   GL_POST_CONVOLUTION_GREEN_SCALE                   = $801D {deprecated};
+   GL_POST_CONVOLUTION_BLUE_SCALE                    = $801E {deprecated};
+   GL_POST_CONVOLUTION_ALPHA_SCALE                   = $801F {deprecated};
+   GL_POST_CONVOLUTION_RED_BIAS                      = $8020 {deprecated};
+   GL_POST_CONVOLUTION_GREEN_BIAS                    = $8021 {deprecated};
+   GL_POST_CONVOLUTION_BLUE_BIAS                     = $8022 {deprecated};
+   GL_POST_CONVOLUTION_ALPHA_BIAS                    = $8023 {deprecated};
 
    // Histogram (GL 1.2 ARB imaging)
    // promoted to core v1.2 from GL_EXT_histogram (EXT #11)
-   GL_HISTOGRAM                                      = $8024;
-   GL_PROXY_HISTOGRAM                                = $8025;
-   GL_HISTOGRAM_WIDTH                                = $8026;
-   GL_HISTOGRAM_FORMAT                               = $8027;
-   GL_HISTOGRAM_RED_SIZE                             = $8028;
-   GL_HISTOGRAM_GREEN_SIZE                           = $8029;
-   GL_HISTOGRAM_BLUE_SIZE                            = $802A;
-   GL_HISTOGRAM_ALPHA_SIZE                           = $802B;
-   GL_HISTOGRAM_LUMINANCE_SIZE                       = $802C;
-   GL_HISTOGRAM_SINK                                 = $802D;
-   GL_MINMAX                                         = $802E;
-   GL_MINMAX_FORMAT                                  = $802F;
-   GL_MINMAX_SINK                                    = $8030;
-   GL_TABLE_TOO_LARGE                                = $8031;
+   GL_HISTOGRAM                                      = $8024 {deprecated};
+   GL_PROXY_HISTOGRAM                                = $8025 {deprecated};
+   GL_HISTOGRAM_WIDTH                                = $8026 {deprecated};
+   GL_HISTOGRAM_FORMAT                               = $8027 {deprecated};
+   GL_HISTOGRAM_RED_SIZE                             = $8028 {deprecated};
+   GL_HISTOGRAM_GREEN_SIZE                           = $8029 {deprecated};
+   GL_HISTOGRAM_BLUE_SIZE                            = $802A {deprecated};
+   GL_HISTOGRAM_ALPHA_SIZE                           = $802B {deprecated};
+   GL_HISTOGRAM_LUMINANCE_SIZE                       = $802C {deprecated};
+   GL_HISTOGRAM_SINK                                 = $802D {deprecated};
+   GL_MINMAX                                         = $802E {deprecated};
+   GL_MINMAX_FORMAT                                  = $802F {deprecated};
+   GL_MINMAX_SINK                                    = $8030 {deprecated};
+   GL_TABLE_TOO_LARGE                                = $8031 {deprecated};
 
    // Color Matrix (GL 1.2 ARB imaging)
    // promoted to core v1.2 from SGI_color_matrix (EXT #13)
-   GL_COLOR_MATRIX                                   = $80B1;
-   GL_COLOR_MATRIX_STACK_DEPTH                       = $80B2;
-   GL_MAX_COLOR_MATRIX_STACK_DEPTH                   = $80B3;
-   GL_POST_COLOR_MATRIX_RED_SCALE                    = $80B4;
-   GL_POST_COLOR_MATRIX_GREEN_SCALE                  = $80B5;
-   GL_POST_COLOR_MATRIX_BLUE_SCALE                   = $80B6;
-   GL_POST_COLOR_MATRIX_ALPHA_SCALE                  = $80B7;
-   GL_POST_COLOR_MATRIX_RED_BIAS                     = $80B8;
-   GL_POST_COLOR_MATRIX_GREEN_BIAS                   = $80B9;
-   GL_POST_COLOR_MATRIX_BLUE_BIAS                    = $80BA;
-   GL_POST_COLOR_MATRIX_ALPHA_BIAS                   = $80BB;
+   GL_COLOR_MATRIX                                   = $80B1 {deprecated};
+   GL_COLOR_MATRIX_STACK_DEPTH                       = $80B2 {deprecated};
+   GL_MAX_COLOR_MATRIX_STACK_DEPTH                   = $80B3 {deprecated};
+   GL_POST_COLOR_MATRIX_RED_SCALE                    = $80B4 {deprecated};
+   GL_POST_COLOR_MATRIX_GREEN_SCALE                  = $80B5 {deprecated};
+   GL_POST_COLOR_MATRIX_BLUE_SCALE                   = $80B6 {deprecated};
+   GL_POST_COLOR_MATRIX_ALPHA_SCALE                  = $80B7 {deprecated};
+   GL_POST_COLOR_MATRIX_RED_BIAS                     = $80B8 {deprecated};
+   GL_POST_COLOR_MATRIX_GREEN_BIAS                   = $80B9 {deprecated};
+   GL_POST_COLOR_MATRIX_BLUE_BIAS                    = $80BA {deprecated};
+   GL_POST_COLOR_MATRIX_ALPHA_BIAS                   = $80BB {deprecated};
 
    // Color Table (GL 1.2 ARB imaging)
    // promoted to core v1.2 from GL_SGI_color_table (EXT #14)
-   GL_COLOR_TABLE                                    = $80D0;
-   GL_POST_CONVOLUTION_COLOR_TABLE                   = $80D1;
-   GL_POST_COLOR_MATRIX_COLOR_TABLE                  = $80D2;
-   GL_PROXY_COLOR_TABLE                              = $80D3;
-   GL_PROXY_POST_CONVOLUTION_COLOR_TABLE             = $80D4;
-   GL_PROXY_POST_COLOR_MATRIX_COLOR_TABLE            = $80D5;
-   GL_COLOR_TABLE_SCALE                              = $80D6;
-   GL_COLOR_TABLE_BIAS                               = $80D7;
-   GL_COLOR_TABLE_FORMAT                             = $80D8;
-   GL_COLOR_TABLE_WIDTH                              = $80D9;
-   GL_COLOR_TABLE_RED_SIZE                           = $80DA;
-   GL_COLOR_TABLE_GREEN_SIZE                         = $80DB;
-   GL_COLOR_TABLE_BLUE_SIZE                          = $80DC;
-   GL_COLOR_TABLE_ALPHA_SIZE                         = $80DD;
-   GL_COLOR_TABLE_LUMINANCE_SIZE                     = $80DE;
-   GL_COLOR_TABLE_INTENSITY_SIZE                     = $80DF;
+   GL_COLOR_TABLE                                    = $80D0 {deprecated};
+   GL_POST_CONVOLUTION_COLOR_TABLE                   = $80D1 {deprecated};
+   GL_POST_COLOR_MATRIX_COLOR_TABLE                  = $80D2 {deprecated};
+   GL_PROXY_COLOR_TABLE                              = $80D3 {deprecated};
+   GL_PROXY_POST_CONVOLUTION_COLOR_TABLE             = $80D4 {deprecated};
+   GL_PROXY_POST_COLOR_MATRIX_COLOR_TABLE            = $80D5 {deprecated};
+   GL_COLOR_TABLE_SCALE                              = $80D6 {deprecated};
+   GL_COLOR_TABLE_BIAS                               = $80D7 {deprecated};
+   GL_COLOR_TABLE_FORMAT                             = $80D8 {deprecated};
+   GL_COLOR_TABLE_WIDTH                              = $80D9 {deprecated};
+   GL_COLOR_TABLE_RED_SIZE                           = $80DA {deprecated};
+   GL_COLOR_TABLE_GREEN_SIZE                         = $80DB {deprecated};
+   GL_COLOR_TABLE_BLUE_SIZE                          = $80DC {deprecated};
+   GL_COLOR_TABLE_ALPHA_SIZE                         = $80DD {deprecated};
+   GL_COLOR_TABLE_LUMINANCE_SIZE                     = $80DE {deprecated};
+   GL_COLOR_TABLE_INTENSITY_SIZE                     = $80DF {deprecated};
 
    // Convolution Border Modes (GL 1.2 ARB imaging)
    // promoted to core v1.2 from GL_HP_convolution_border_modes (EXT #67)
-   GL_CONSTANT_BORDER                                = $8151;
-	 GL_REPLICATE_BORDER				                       = $8153;
-	 GL_CONVOLUTION_BORDER_COLOR			                 = $8154;
+   GL_CONSTANT_BORDER                                = $8151 {deprecated};
+	 GL_REPLICATE_BORDER				                       = $8153 {deprecated};
+	 GL_CONVOLUTION_BORDER_COLOR			                 = $8154 {deprecated};
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP}    {$endregion} {$ENDIF}
 
@@ -1424,35 +1436,38 @@ const
    // promoted to core OpenGL v1.3 from GL_ARB_texture_border_clamp (ARB #13)
    GL_CLAMP_TO_BORDER                                = $812D;
 
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.3 deprecated'} {$ENDIF}
+
    // Texture Combine Environment Mode
    // promoted to core OpenGL v1.3 from GL_ARB_texture_env_combine (ARB #17)
-   GL_COMBINE                                        = $8570;
-   GL_COMBINE_RGB                                    = $8571;
-   GL_COMBINE_ALPHA                                  = $8572;
-   GL_SOURCE0_RGB                                    = $8580;
-   GL_SOURCE1_RGB                                    = $8581;
-   GL_SOURCE2_RGB                                    = $8582;
-   GL_SOURCE0_ALPHA                                  = $8588;
-   GL_SOURCE1_ALPHA                                  = $8589;
-   GL_SOURCE2_ALPHA                                  = $858A;
-   GL_OPERAND0_RGB                                   = $8590;
-   GL_OPERAND1_RGB                                   = $8591;
-   GL_OPERAND2_RGB                                   = $8592;
-   GL_OPERAND0_ALPHA                                 = $8598;
-   GL_OPERAND1_ALPHA                                 = $8599;
-   GL_OPERAND2_ALPHA                                 = $859A;
-   GL_RGB_SCALE                                      = $8573;
-   GL_ADD_SIGNED                                     = $8574;
-   GL_INTERPOLATE                                    = $8575;
-   GL_SUBTRACT                                       = $84E7;
-   GL_CONSTANT                                       = $8576;
-   GL_PRIMARY_COLOR                                  = $8577;
-   GL_PREVIOUS                                       = $8578;
+   GL_COMBINE                                        = $8570 {deprecated};
+   GL_COMBINE_RGB                                    = $8571 {deprecated};
+   GL_COMBINE_ALPHA                                  = $8572 {deprecated};
+   GL_SOURCE0_RGB                                    = $8580 {deprecated};
+   GL_SOURCE1_RGB                                    = $8581 {deprecated};
+   GL_SOURCE2_RGB                                    = $8582 {deprecated};
+   GL_SOURCE0_ALPHA                                  = $8588 {deprecated};
+   GL_SOURCE1_ALPHA                                  = $8589 {deprecated};
+   GL_SOURCE2_ALPHA                                  = $858A {deprecated};
+   GL_OPERAND0_RGB                                   = $8590 {deprecated};
+   GL_OPERAND1_RGB                                   = $8591 {deprecated};
+   GL_OPERAND2_RGB                                   = $8592 {deprecated};
+   GL_OPERAND0_ALPHA                                 = $8598 {deprecated};
+   GL_OPERAND1_ALPHA                                 = $8599 {deprecated};
+   GL_OPERAND2_ALPHA                                 = $859A {deprecated};
+   GL_RGB_SCALE                                      = $8573 {deprecated};
+   GL_ADD_SIGNED                                     = $8574 {deprecated};
+   GL_INTERPOLATE                                    = $8575 {deprecated};
+   GL_SUBTRACT                                       = $84E7 {deprecated};
+   GL_CONSTANT                                       = $8576 {deprecated};
+   GL_PRIMARY_COLOR                                  = $8577 {deprecated};
+   GL_PREVIOUS                                       = $8578 {deprecated};
 
    // Texture Dot3 Environment Mode
    // promoted to OpenGL v1.3 from GL_ARB_texture_env_dot3 (ARB #19)
-   GL_DOT3_RGB                                       = $86AE;
-   GL_DOT3_RGBA                                      = $86AF;
+   GL_DOT3_RGB                                       = $86AE {deprecated};
+   GL_DOT3_RGBA                                      = $86AF {deprecated};
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
@@ -1529,6 +1544,9 @@ const
    GL_TEXTURE_COMPARE_MODE                           = $884C;
    GL_TEXTURE_COMPARE_FUNC                           = $884D;
    GL_COMPARE_R_TO_TEXTURE                           = $884E;
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.4 deprecated'} {$ENDIF}
+
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}  
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
@@ -1581,6 +1599,7 @@ const
    // promoted to core OpenGL v1.5 from GL_ARB_occulsion_query (ARB #29)
    GL_SAMPLES_PASSED                                 = $8914;
 
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.5 deprecated'} {$ENDIF}
    // Changed Tokens
    // new naming scheme in OpenGL v1.5, old tokens kept for backwards compatibility
 	 GL_FOG_COORD_SRC		                = GL_FOG_COORDINATE_SOURCE;
@@ -1597,6 +1616,7 @@ const
 	 GL_SRC0_ALPHA				              = GL_SOURCE0_ALPHA;
 	 GL_SRC1_ALPHA					            = GL_SOURCE1_ALPHA;
 	 GL_SRC2_ALPHA					            = GL_SOURCE2_ALPHA;
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
@@ -1672,7 +1692,7 @@ const
 
    // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31)
    GL_MAX_VERTEX_UNIFORM_COMPONENTS                  = $8B4A;
-   GL_MAX_VARYING_FLOATS                             = $8B4B;
+   GL_MAX_VARYING_FLOATS                             = $8B4B {deprecated}; // not yet removed
    GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS                 = $8B4C;
    GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS               = $8B4D;
 
@@ -1736,6 +1756,10 @@ const
    GL_STENCIL_BACK_VALUE_MASK                           = $8CA4;
    GL_STENCIL_BACK_WRITEMASK                            = $8CA5;
 
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 2.0 deprecated'} {$ENDIF}
+
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
+
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'New core constants in OpenGL v2.1'} {$ENDIF}
@@ -1746,7 +1770,7 @@ const
    GL_CURRENT_RASTER_SECONDARY_COLOR                    = $845F;
 
    // Pixel Buffer Objects
-   // promoted to core OpenGL v2.1 from GL_ARB_pixel_buffer_object (ARB #42)
+   // from GL_ARB_pixel_buffer_object (ARB #42)
    GL_PIXEL_PACK_BUFFER                                 = $88EB;
    GL_PIXEL_UNPACK_BUFFER                               = $88EC;
    GL_PIXEL_PACK_BUFFER_BINDING                         = $88ED;
@@ -1762,7 +1786,7 @@ const
    GL_FLOAT_MAT4x3                                      = $8B6A;
 
    // sRGB Textures
-   // promoted to core OpenGL v2.1 from GL_EXT_texture_sRGB (EXT #315)
+   // from GL_EXT_texture_sRGB (EXT #315)
    GL_SRGB                                              = $8C40;
    GL_SRGB8                                             = $8C41;
    GL_SRGB_ALPHA                                        = $8C42;
@@ -1773,8 +1797,11 @@ const
    GL_SLUMINANCE8                                       = $8C47;
    GL_COMPRESSED_SRGB                                   = $8C48;
    GL_COMPRESSED_SRGB_ALPHA                             = $8C49;
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 2.1 deprecated'} {$ENDIF}
+   // new
    GL_COMPRESSED_SLUMINANCE                             = $8C4A;
    GL_COMPRESSED_SLUMINANCE_ALPHA                       = $8C4B;
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion'} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
@@ -1814,7 +1841,7 @@ const
 	 GL_CLAMP_FRAGMENT_COLOR				=$891B;
 	 GL_CLAMP_READ_COLOR				=$891C;
 	 GL_FIXED_ONLY					=$891D;
-	 GL_MAX_VARYING_COMPONENTS				= GL_MAX_VARYING_FLOATS;
+	 GL_MAX_VARYING_COMPONENTS				= GL_MAX_VARYING_FLOATS {deprecated}; // not yet removed
 //	 GL_TEXTURE_RED_TYPE				=$8C10;
 //	 GL_TEXTURE_GREEN_TYPE				=$8C11;
 //	 GL_TEXTURE_BLUE_TYPE				=$8C12;
@@ -1869,7 +1896,8 @@ const
 	 GL_RGBA_INTEGER			= $8D99;
 	 GL_BGR_INTEGER				= $8D9A;
 	 GL_BGRA_INTEGER			= $8D9B;
-	 GL_LUMINANCE_INTEGER       = $8D9C;
+   // these 2 never made it to core, only _EXT?
+   	 GL_LUMINANCE_INTEGER       = $8D9C;
 	 GL_LUMINANCE_ALPHA_INTEGER = $8D9D;
 	 GL_SAMPLER_1D_ARRAY				= $8DC0;
 	 GL_SAMPLER_2D_ARRAY				= $8DC1;
@@ -3004,7 +3032,7 @@ const
    GL_TEXTURE_DEPTH_EXT                              = $8071;
    GL_TEXTURE_WRAP_R_EXT                             = $8072;
    GL_MAX_3D_TEXTURE_SIZE_EXT                        = $8073;
-   
+
    // EXT_histogram (#11)
    GL_HISTOGRAM_EXT                                  = $8024;
    GL_PROXY_HISTOGRAM_EXT                            = $8025;
@@ -3427,7 +3455,7 @@ const
    GL_PROXY_TEXTURE_RECTANGLE_NV                     = $84F7;
    GL_MAX_RECTANGLE_TEXTURE_SIZE_NV                  = $84F8;
 
-   // GL_NV_texture_shader
+   // GL_NV_texture_shader (#230)
    GL_OFFSET_TEXTURE_RECTANGLE_NV                   = $864C;
    GL_OFFSET_TEXTURE_RECTANGLE_SCALE_NV             = $864D;
    GL_DOT_PRODUCT_TEXTURE_RECTANGLE_NV              = $864E;
@@ -3502,7 +3530,7 @@ const
    GL_TEXTURE_DT_SIZE_NV                            = $871E;
    GL_TEXTURE_MAG_SIZE_NV                           = $871F;
 
-   // GL_NV_texture_shader2
+   // GL_NV_texture_shader2 (#231)
    GL_DOT_PRODUCT_TEXTURE_3D_NV                     = $86EF;
 
    // GL_NV_texture_shader3
@@ -3927,6 +3955,8 @@ const
    GL_UNSIGNED_INT_5_9_9_9_REV_EXT                  = $8C3E;
    GL_TEXTURE_SHARED_SIZE_EXT                       = $8C3F;
 
+
+
    // GL_EXT_framebuffer_sRGB (#337)
    // GLX_EXT_framebuffer_sRGB
    // WGL_EXT_framebuffer_sRGB
@@ -3971,7 +4001,7 @@ const
    //GL_UNSIGNED_INT_VEC3_EXT                             =$8DC7;
    //GL_UNSIGNED_INT_VEC4_EXT                             =$8DC8;
 
-   
+
    // GL_EXT_bindable_uniform (#342)
    GL_MAX_VERTEX_BINDABLE_UNIFORMS_EXT              = $8DE2;
    GL_MAX_FRAGMENT_BINDABLE_UNIFORMS_EXT            = $8DE3;
@@ -4748,6 +4778,10 @@ type
    procedure glVertexPointer(size: TGLint; atype: TGLEnum; stride: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
    procedure glViewport(x, y: TGLint; width, height: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} external opengl32;
 
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.1 deprecated'} {$ENDIF}
+
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
+
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL utility (GLU) functions and procedures'} {$ENDIF}
@@ -4923,50 +4957,51 @@ var
    glDrawRangeElements: procedure(mode: TGLEnum; Astart, Aend: TGLuint; count: TGLsizei; Atype: TGLEnum;
                                   indices: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.2 deprecated'} {$ENDIF}
    // promoted to core v1.2 from GL_SGI_color_table (#14)
    glColorTable: procedure(target, internalformat: TGLEnum; width: TGLsizei; format, Atype: TGLEnum;
-                           table: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glColorTableParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glColorTableParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glCopyColorTable: procedure(target, internalformat: TGLEnum; x, y: TGLint; width: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetColorTable: procedure(target, format, Atype: TGLEnum; table: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetColorTableParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetColorTableParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+                           table: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glColorTableParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glColorTableParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glCopyColorTable: procedure(target, internalformat: TGLEnum; x, y: TGLint; width: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetColorTable: procedure(target, format, Atype: TGLEnum; table: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetColorTableParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetColorTableParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
 
    // promoted to core v1.2 from GL_EXT_color_subtable (#74)
-   glColorSubTable: procedure(target: TGLEnum; start, count: TGLsizei; format, Atype: TGLEnum; data: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glCopyColorSubTable: procedure(target: TGLEnum; start: TGLsizei; x, y: TGLint; width: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glColorSubTable: procedure(target: TGLEnum; start, count: TGLsizei; format, Atype: TGLEnum; data: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glCopyColorSubTable: procedure(target: TGLEnum; start: TGLsizei; x, y: TGLint; width: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
 
    // promoted to core v1.2 from GL_EXT_convolution (#12)
    glConvolutionFilter1D: procedure(target, internalformat: TGLEnum; width: TGLsizei; format, Atype: TGLEnum;
-     image: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+     image: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
    glConvolutionFilter2D: procedure(target, internalformat: TGLEnum; width, height: TGLsizei; format, Atype: TGLEnum;
-     image: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glConvolutionParameterf: procedure(target, pname: TGLEnum; param: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glConvolutionParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glConvolutionParameteri: procedure(target, pname: TGLEnum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glConvolutionParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glCopyConvolutionFilter1D: procedure(target, internalformat: TGLEnum; x, y: TGLint; width: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glCopyConvolutionFilter2D: procedure(target, internalformat: TGLEnum; x, y: TGLint; width, height: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetConvolutionFilter: procedure(target, internalformat, Atype: TGLEnum; image: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetConvolutionParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetConvolutionParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetSeparableFilter: procedure(target, format, Atype: TGLEnum; row, column, span: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+     image: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glConvolutionParameterf: procedure(target, pname: TGLEnum; param: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glConvolutionParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glConvolutionParameteri: procedure(target, pname: TGLEnum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glConvolutionParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glCopyConvolutionFilter1D: procedure(target, internalformat: TGLEnum; x, y: TGLint; width: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glCopyConvolutionFilter2D: procedure(target, internalformat: TGLEnum; x, y: TGLint; width, height: TGLsizei); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetConvolutionFilter: procedure(target, internalformat, Atype: TGLEnum; image: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetConvolutionParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetConvolutionParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetSeparableFilter: procedure(target, format, Atype: TGLEnum; row, column, span: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
    glSeparableFilter2D: procedure(target, internalformat: TGLEnum; width, height: TGLsizei; format, Atype: TGLEnum; row,
-     column: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+     column: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
 
    // promoted to core v1.2 from GL_EXT_histogram (#11)
-   glGetHistogram: procedure(target: TGLEnum; reset: TGLboolean; format, Atype: TGLEnum; values: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetHistogramParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetHistogramParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetMinmax: procedure(target: TGLEnum; reset: TGLboolean; format, Atype: TGLEnum; values: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetMinmaxParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glGetMinmaxParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glHistogram: procedure(target: TGLEnum; width: TGLsizei; internalformat: TGLEnum; sink: TGLboolean); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glMinmax: procedure(target, internalformat: TGLEnum; sink: TGLboolean); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glResetHistogram: procedure(target: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glResetMinmax: procedure(target: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-
+   glGetHistogram: procedure(target: TGLEnum; reset: TGLboolean; format, Atype: TGLEnum; values: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetHistogramParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetHistogramParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetMinmax: procedure(target: TGLEnum; reset: TGLboolean; format, Atype: TGLEnum; values: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetMinmaxParameterfv: procedure(target, pname: TGLEnum; params: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glGetMinmaxParameteriv: procedure(target, pname: TGLEnum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glHistogram: procedure(target: TGLEnum; width: TGLsizei; internalformat: TGLEnum; sink: TGLboolean); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glMinmax: procedure(target, internalformat: TGLEnum; sink: TGLboolean); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glResetHistogram: procedure(target: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glResetMinmax: procedure(target: TGLEnum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
    // promoted to core v1.2 from GL_EXT_texture3D (#6)
    glTexImage3D: procedure(target: TGLEnum; level: TGLint; internalformat: TGLEnum; width, height, depth: TGLsizei;
                            border: TGLint; format: TGLEnum; Atype: TGLEnum; pixels: Pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
@@ -5039,6 +5074,10 @@ var
    glCompressedTexSubImage1D: procedure(target: TGLenum; level: TGLint; xoffset: TGLint; width: TGLsizei; Format: TGLenum; imageSize: TGLsizei; data: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetCompressedTexImage: procedure(target: TGLenum; level: TGLint; img: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.3 deprecated'} {$ENDIF}
+
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
+
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'New core function/procedure definitions in OpenGL 1.4'} {$ENDIF}
@@ -5068,46 +5107,49 @@ var
    glPointParameteri: procedure(pname: TGLenum; param: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glPointParameteriv: procedure(pname: TGLenum; params: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.4 deprecated'} {$ENDIF}
+
     // promoted to core v1.4 from GL_NV_primitive_restart
    glPrimitiveRestartNV: procedure();{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glPrimitiveRestartIndexNV: procedure(index: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // promoted to core v1.4 from GL_EXT_secondary_color (#145)
-   glSecondaryColor3b: procedure(red, green, blue: TGLbyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3bv: procedure(v: PGLbyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3d: procedure(red, green, blue: TGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3dv: procedure(v: PGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3f: procedure(red, green, blue: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3fv: procedure(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3i: procedure(red, green, blue: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3iv: procedure(v: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3s: procedure(red, green, blue: TGLshort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3sv: procedure(v: PGLshort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3ub: procedure(red, green, blue: TGLubyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3ubv: procedure(v: PGLubyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3ui: procedure(red, green, blue: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3uiv: procedure(v: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3us: procedure(red, green, blue: TGLushort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColor3usv: procedure(v: PGLushort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glSecondaryColorPointer: procedure(Size: TGLint; Atype: TGLenum; stride: TGLsizei; p: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glSecondaryColor3b: procedure(red, green, blue: TGLbyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3bv: procedure(v: PGLbyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3d: procedure(red, green, blue: TGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3dv: procedure(v: PGLdouble); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3f: procedure(red, green, blue: TGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3fv: procedure(v: PGLfloat); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3i: procedure(red, green, blue: TGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3iv: procedure(v: PGLint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3s: procedure(red, green, blue: TGLshort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3sv: procedure(v: PGLshort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3ub: procedure(red, green, blue: TGLubyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3ubv: procedure(v: PGLubyte); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3ui: procedure(red, green, blue: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3uiv: procedure(v: PGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3us: procedure(red, green, blue: TGLushort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColor3usv: procedure(v: PGLushort); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glSecondaryColorPointer: procedure(Size: TGLint; Atype: TGLenum; stride: TGLsizei; p: pointer); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
 
    // promoted to core v1.4 from GL_ARB_window_pos (#25)
-   glWindowPos2d: procedure(x,y : TGLdouble);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos2dv: procedure(v : PGLdouble);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos2f: procedure(x,y : TGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos2fv: procedure(v : PGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos2i: procedure(x,y : TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos2iv: procedure(v : PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos2s: procedure(x,y : TGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos2sv: procedure(v : PGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos3d: procedure(x,y,z : TGLdouble);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos3dv: procedure(v : PGLdouble);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos3f: procedure(x,y,z : TGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos3fv: procedure(v : PGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos3i: procedure(x,y,z : TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos3iv: procedure(v : PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos3s: procedure(x,y,z : TGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glWindowPos3sv: procedure(v : PGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glWindowPos2d: procedure(x,y : TGLdouble);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos2dv: procedure(v : PGLdouble);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos2f: procedure(x,y : TGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos2fv: procedure(v : PGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos2i: procedure(x,y : TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos2iv: procedure(v : PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos2s: procedure(x,y : TGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos2sv: procedure(v : PGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos3d: procedure(x,y,z : TGLdouble);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos3dv: procedure(v : PGLdouble);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos3f: procedure(x,y,z : TGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos3fv: procedure(v : PGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos3i: procedure(x,y,z : TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos3iv: procedure(v : PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos3s: procedure(x,y,z : TGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+   glWindowPos3sv: procedure(v : PGLshort);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF} //deprecated;
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
@@ -5160,8 +5202,8 @@ var
    glDrawBuffers: procedure(n: GLSizei; const bufs: PGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // promoted to core v2.0 from GL_ARB_stencil_two_side (no # found)
-   glStencilOpSeparate: procedure(face,sfail,dpfail,dppass: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glStencilFuncSeparate: procedure(frontfunc,backfunc: TGLenum; ref: TGLint; mask: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glStencilOpSeparate: procedure(face, sfail, dpfail, dppass: TGLenum); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glStencilFuncSeparate: procedure(face, func: TGLenum; ref: TGLint; mask: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glStencilMaskSeparate: procedure(face: TGLenum; mask: TGLuint); {$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // promoted to core v2.0 from GL_ARB_shader_objects (#30) / GL_ARB_vertex_shader (#31) / GL_ARB_fragment_shader (#32)
@@ -5361,10 +5403,10 @@ var
                                         location: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
    // New commands in OpenGL 3.0
-   glClearBufferiv: procedure(buffer: TGLenum; value: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glClearBufferuiv: procedure(buffer: TGLenum; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glClearBufferfv: procedure(buffer: TGLenum; value: PGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-   glClearBufferfi: procedure(buffer: TGLenum; depth: TGLfloat; stencil: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glClearBufferiv: procedure(buffer: TGLenum; drawbuffer: TGLint; value: PGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glClearBufferuiv: procedure(buffer: TGLenum; drawbuffer: TGLint; value: PGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glClearBufferfv: procedure(buffer: TGLenum; drawbuffer: TGLint; value: PGLfloat);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
+   glClearBufferfi: procedure(buffer: TGLenum; drawbuffer: TGLint; depth: TGLfloat; stencil: TGLint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetStringi: function(name: TGLenum; index: TGLuint): PGLChar;{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
@@ -6281,10 +6323,8 @@ var
    glBindBufferOffsetEXT: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint;
                             offset:TGLintptr);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glBindBufferBaseEXT: procedure(target: TGLenum; index: TGLuint; buffer: TGLuint);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-
    glBeginTransformFeedbackEXT: procedure(primitiveMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glEndTransformFeedbackEXT: procedure();{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
-
    glTransformFeedbackVaryingsEXT: procedure(_program: TGLuint; count: TGLsizei;
                                       const varyings: PGLPCharArray; bufferMode: TGLenum);{$IFDEF MSWINDOWS} stdcall; {$ENDIF} {$IFDEF UNIX} cdecl; {$ENDIF}
    glGetTransformFeedbackVaryingEXT: procedure(_program: TGLuint; index: TGLuint;
@@ -7871,8 +7911,8 @@ begin
    GL_3DFX_multisample := CheckExtension('GL_3DFX_multisample');
    GL_3DFX_tbuffer := CheckExtension('GL_3DFX_tbuffer');
    GL_3DFX_texture_compression_FXT1 := CheckExtension('GL_3DFX_texture_compression_FXT1');
-   GL_ATI_texture_compression_3dc := CheckExtension('GL_ATI_texture_compression_3dc');
    GL_ATI_draw_buffers := CheckExtension('GL_ATI_draw_buffers');
+   GL_ATI_texture_compression_3dc := CheckExtension('GL_ATI_texture_compression_3dc');
    GL_ATI_texture_float := CheckExtension('GL_ATI_texture_float');
    GL_ATI_texture_mirror_once := CheckExtension('GL_ATI_texture_mirror_once');
 
