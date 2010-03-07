@@ -10,6 +10,8 @@
    please refer to OpenGL12.pas header.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>04/03/10 - DanB - Organised core into relevant + deprecated sections,
+                            fixed a couple of function params + misc changes.
       <li>12/02/10 - Yar -  Added GL_AMD_vertex_shader_tessellator
       <li>07/02/10 - Yar -  Added GL_NV_primitive_restart
       <li>21/01/10 - DaStr - Bugfixed wglChoosePixelFormatARB() and
@@ -265,7 +267,7 @@ type
    XFont          = TFont;
    XColormap      = TColormap;
    XWindow        = TWindow;
-
+  
    GLXContext    = Pointer;
    GLXPixmap     = TXID;
    GLXDrawable   = TXID;
@@ -459,6 +461,7 @@ var
    GL_NV_fence,
    GL_NV_float_buffer,
    GL_NV_fog_distance,
+   GL_NV_geometry_program4,
    GL_NV_light_max_exponent,
    GL_NV_multisample_filter_hint,
    GL_NV_occlusion_query,
@@ -548,42 +551,10 @@ const
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL v1.1 generic constants'} {$ENDIF}
    // ********** GL generic constants **********
 
-   // errors
-   GL_NO_ERROR                                       = 0;
-   GL_INVALID_ENUM                                   = $0500;
-   GL_INVALID_VALUE                                  = $0501;
-   GL_INVALID_OPERATION                              = $0502;
-   GL_STACK_OVERFLOW                                 = $0503;
-   GL_STACK_UNDERFLOW                                = $0504;
-   GL_OUT_OF_MEMORY                                  = $0505;
-
    // attribute bits
-   GL_CURRENT_BIT                                    = $00000001;
-   GL_POINT_BIT                                      = $00000002;
-   GL_LINE_BIT                                       = $00000004;
-   GL_POLYGON_BIT                                    = $00000008;
-   GL_POLYGON_STIPPLE_BIT                            = $00000010;
-   GL_PIXEL_MODE_BIT                                 = $00000020;
-   GL_LIGHTING_BIT                                   = $00000040;
-   GL_FOG_BIT                                        = $00000080;
    GL_DEPTH_BUFFER_BIT                               = $00000100;
-   GL_ACCUM_BUFFER_BIT                               = $00000200;
    GL_STENCIL_BUFFER_BIT                             = $00000400;
-   GL_VIEWPORT_BIT                                   = $00000800;
-   GL_TRANSFORM_BIT                                  = $00001000;
-   GL_ENABLE_BIT                                     = $00002000;
    GL_COLOR_BUFFER_BIT                               = $00004000;
-   GL_HINT_BIT                                       = $00008000;
-   GL_EVAL_BIT                                       = $00010000;
-   GL_LIST_BIT                                       = $00020000;
-   GL_TEXTURE_BIT                                    = $00040000;
-   GL_SCISSOR_BIT                                    = $00080000;
-   GL_ALL_ATTRIB_BITS                                = $000FFFFF;
-
-   // client attribute bits
-   GL_CLIENT_PIXEL_STORE_BIT                         = $00000001;
-   GL_CLIENT_VERTEX_ARRAY_BIT                        = $00000002;
-   GL_CLIENT_ALL_ATTRIB_BITS                         = $FFFFFFFF;
 
    // boolean values
    GL_FALSE                                          = 0;
@@ -597,9 +568,16 @@ const
    GL_TRIANGLES                                      = $0004;
    GL_TRIANGLE_STRIP                                 = $0005;
    GL_TRIANGLE_FAN                                   = $0006;
-   GL_QUADS                                          = $0007;
-   GL_QUAD_STRIP                                     = $0008;
-   GL_POLYGON                                        = $0009;
+
+   // AlphaFunction
+   GL_NEVER                                          = $0200;
+   GL_LESS                                           = $0201;
+   GL_EQUAL                                          = $0202;
+   GL_LEQUAL                                         = $0203;
+   GL_GREATER                                        = $0204;
+   GL_NOTEQUAL                                       = $0205;
+   GL_GEQUAL                                         = $0206;
+   GL_ALWAYS                                         = $0207;
 
    // blending
    GL_ZERO                                           = 0;
@@ -613,9 +591,6 @@ const
    GL_DST_COLOR                                      = $0306;
    GL_ONE_MINUS_DST_COLOR                            = $0307;
    GL_SRC_ALPHA_SATURATE                             = $0308;
-   GL_BLEND_DST                                      = $0BE0;
-   GL_BLEND_SRC                                      = $0BE1;
-   GL_BLEND                                          = $0BE2;
 
    // buffers
    GL_NONE                                           = 0;
@@ -628,15 +603,34 @@ const
    GL_LEFT                                           = $0406;
    GL_RIGHT                                          = $0407;
    GL_FRONT_AND_BACK                                 = $0408;
-   GL_AUX0                                           = $0409;
-   GL_AUX1                                           = $040A;
-   GL_AUX2                                           = $040B;
-   GL_AUX3                                           = $040C;
-   GL_AUX_BUFFERS                                    = $0C00;
-   GL_DRAW_BUFFER                                    = $0C01;
-   GL_READ_BUFFER                                    = $0C02;
-   GL_DOUBLEBUFFER                                   = $0C32;
-   GL_STEREO                                         = $0C33;
+
+   // errors
+   GL_NO_ERROR                                       = 0;
+   GL_INVALID_ENUM                                   = $0500;
+   GL_INVALID_VALUE                                  = $0501;
+   GL_INVALID_OPERATION                              = $0502;
+   GL_OUT_OF_MEMORY                                  = $0505;
+
+   // FrontFaceDirection
+   GL_CW                                             = $0900;
+   GL_CCW                                            = $0901;
+
+   // points
+   GL_POINT_SIZE                                     = $0B11;
+   GL_POINT_SIZE_RANGE                               = $0B12;
+   GL_POINT_SIZE_GRANULARITY                         = $0B13;
+
+   // lines
+   GL_LINE_SMOOTH                                    = $0B20;
+   GL_LINE_WIDTH                                     = $0B21;
+   GL_LINE_WIDTH_RANGE                               = $0B22;
+   GL_LINE_WIDTH_GRANULARITY                         = $0B23;
+
+   // polygons
+   GL_POLYGON_SMOOTH                                 = $0B41;
+   GL_CULL_FACE                                      = $0B44;
+   GL_CULL_FACE_MODE                                 = $0B45;
+   GL_FRONT_FACE                                     = $0B46;
 
    // depth buffer
    GL_DEPTH_RANGE                                    = $0B70;
@@ -644,75 +638,6 @@ const
    GL_DEPTH_WRITEMASK                                = $0B72;
    GL_DEPTH_CLEAR_VALUE                              = $0B73;
    GL_DEPTH_FUNC                                     = $0B74;
-   GL_NEVER                                          = $0200;
-   GL_LESS                                           = $0201;
-   GL_EQUAL                                          = $0202;
-   GL_LEQUAL                                         = $0203;
-   GL_GREATER                                        = $0204;
-   GL_NOTEQUAL                                       = $0205;
-   GL_GEQUAL                                         = $0206;
-   GL_ALWAYS                                         = $0207;
-
-   // accumulation buffer
-   GL_ACCUM                                          = $0100;
-   GL_LOAD                                           = $0101;
-   GL_RETURN                                         = $0102;
-   GL_MULT                                           = $0103;
-   GL_ADD                                            = $0104;
-   GL_ACCUM_CLEAR_VALUE                              = $0B80;
-
-   // feedback buffer
-   GL_FEEDBACK_BUFFER_POINTER                        = $0DF0;
-   GL_FEEDBACK_BUFFER_SIZE                           = $0DF1;
-   GL_FEEDBACK_BUFFER_TYPE                           = $0DF2;
-
-   // feedback types
-   GL_2D                                             = $0600;
-   GL_3D                                             = $0601;
-   GL_3D_COLOR                                       = $0602;
-   GL_3D_COLOR_TEXTURE                               = $0603;
-   GL_4D_COLOR_TEXTURE                               = $0604;
-
-   // feedback tokens
-   GL_PASS_THROUGH_TOKEN                             = $0700;
-   GL_POINT_TOKEN                                    = $0701;
-   GL_LINE_TOKEN                                     = $0702;
-   GL_POLYGON_TOKEN                                  = $0703;
-   GL_BITMAP_TOKEN                                   = $0704;
-   GL_DRAW_PIXEL_TOKEN                               = $0705;
-   GL_COPY_PIXEL_TOKEN                               = $0706;
-   GL_LINE_RESET_TOKEN                               = $0707;
-
-   // fog
-   GL_EXP                                            = $0800;
-   GL_EXP2                                           = $0801;
-   GL_FOG                                            = $0B60;
-   GL_FOG_INDEX                                      = $0B61;
-   GL_FOG_DENSITY                                    = $0B62;
-   GL_FOG_START                                      = $0B63;
-   GL_FOG_END                                        = $0B64;
-   GL_FOG_MODE                                       = $0B65;
-   GL_FOG_COLOR                                      = $0B66;
-
-   // pixel mode, transfer
-   GL_PIXEL_MAP_I_TO_I                               = $0C70;
-   GL_PIXEL_MAP_S_TO_S                               = $0C71;
-   GL_PIXEL_MAP_I_TO_R                               = $0C72;
-   GL_PIXEL_MAP_I_TO_G                               = $0C73;
-   GL_PIXEL_MAP_I_TO_B                               = $0C74;
-   GL_PIXEL_MAP_I_TO_A                               = $0C75;
-   GL_PIXEL_MAP_R_TO_R                               = $0C76;
-   GL_PIXEL_MAP_G_TO_G                               = $0C77;
-   GL_PIXEL_MAP_B_TO_B                               = $0C78;
-   GL_PIXEL_MAP_A_TO_A                               = $0C79;
-
-   // vertex arrays
-   GL_VERTEX_ARRAY_POINTER                           = $808E;
-   GL_NORMAL_ARRAY_POINTER                           = $808F;
-   GL_COLOR_ARRAY_POINTER                            = $8090;
-   GL_INDEX_ARRAY_POINTER                            = $8091;
-   GL_TEXTURE_COORD_ARRAY_POINTER                    = $8092;
-   GL_EDGE_FLAG_ARRAY_POINTER                        = $8093;
 
    // stenciling
    GL_STENCIL_TEST                                   = $0B90;
@@ -724,149 +649,36 @@ const
    GL_STENCIL_PASS_DEPTH_PASS                        = $0B96;
    GL_STENCIL_REF                                    = $0B97;
    GL_STENCIL_WRITEMASK                              = $0B98;
-   GL_KEEP                                           = $1E00;
-   GL_REPLACE                                        = $1E01;
-   GL_INCR                                           = $1E02;
-   GL_DECR                                           = $1E03;
 
-   // color material
-   GL_COLOR_MATERIAL_FACE                            = $0B55;
-   GL_COLOR_MATERIAL_PARAMETER                       = $0B56;
-   GL_COLOR_MATERIAL                                 = $0B57;
-
-   // points
-   GL_POINT_SMOOTH                                   = $0B10;
-   GL_POINT_SIZE                                     = $0B11;
-   GL_POINT_SIZE_RANGE                               = $0B12;
-   GL_POINT_SIZE_GRANULARITY                         = $0B13;
-
-   // lines
-   GL_LINE_SMOOTH                                    = $0B20;
-   GL_LINE_WIDTH                                     = $0B21;
-   GL_LINE_WIDTH_RANGE                               = $0B22;
-   GL_LINE_WIDTH_GRANULARITY                         = $0B23;
-   GL_LINE_STIPPLE                                   = $0B24;
-   GL_LINE_STIPPLE_PATTERN                           = $0B25;
-   GL_LINE_STIPPLE_REPEAT                            = $0B26;
-
-   // polygons
-   GL_POLYGON_MODE                                   = $0B40;
-   GL_POLYGON_SMOOTH                                 = $0B41;
-   GL_POLYGON_STIPPLE                                = $0B42;
-   GL_EDGE_FLAG                                      = $0B43;
-   GL_CULL_FACE                                      = $0B44;
-   GL_CULL_FACE_MODE                                 = $0B45;
-   GL_FRONT_FACE                                     = $0B46;
-   GL_CW                                             = $0900;
-   GL_CCW                                            = $0901;
-   GL_POINT                                          = $1B00;
-   GL_LINE                                           = $1B01;
-   GL_FILL                                           = $1B02;
-
-   // display lists
-   GL_LIST_MODE                                      = $0B30;
-   GL_LIST_BASE                                      = $0B32;
-   GL_LIST_INDEX                                     = $0B33;
-   GL_COMPILE                                        = $1300;
-   GL_COMPILE_AND_EXECUTE                            = $1301;
-
-   // lighting
-   GL_LIGHTING                                       = $0B50;
-   GL_LIGHT_MODEL_LOCAL_VIEWER                       = $0B51;
-   GL_LIGHT_MODEL_TWO_SIDE                           = $0B52;
-   GL_LIGHT_MODEL_AMBIENT                            = $0B53;
-   GL_SHADE_MODEL                                    = $0B54;
-   GL_NORMALIZE                                      = $0BA1;
-   GL_AMBIENT                                        = $1200;
-   GL_DIFFUSE                                        = $1201;
-   GL_SPECULAR                                       = $1202;
-   GL_POSITION                                       = $1203;
-   GL_SPOT_DIRECTION                                 = $1204;
-   GL_SPOT_EXPONENT                                  = $1205;
-   GL_SPOT_CUTOFF                                    = $1206;
-   GL_CONSTANT_ATTENUATION                           = $1207;
-   GL_LINEAR_ATTENUATION                             = $1208;
-   GL_QUADRATIC_ATTENUATION                          = $1209;
-   GL_EMISSION                                       = $1600;
-   GL_SHININESS                                      = $1601;
-   GL_AMBIENT_AND_DIFFUSE                            = $1602;
-   GL_COLOR_INDEXES                                  = $1603;
-   GL_FLAT                                           = $1D00;
-   GL_SMOOTH                                         = $1D01;
-   GL_LIGHT0                                         = $4000;
-   GL_LIGHT1                                         = $4001;
-   GL_LIGHT2                                         = $4002;
-   GL_LIGHT3                                         = $4003;
-   GL_LIGHT4                                         = $4004;
-   GL_LIGHT5                                         = $4005;
-   GL_LIGHT6                                         = $4006;
-   GL_LIGHT7                                         = $4007;
-
-   // matrix modes
    GL_MATRIX_MODE                                    = $0BA0;
-   GL_MODELVIEW                                      = $1700;
-   GL_PROJECTION                                     = $1701;
-   GL_TEXTURE                                        = $1702;
 
-   // gets
-   GL_CURRENT_COLOR                                  = $0B00;
-   GL_CURRENT_INDEX                                  = $0B01;
-   GL_CURRENT_NORMAL                                 = $0B02;
-   GL_CURRENT_TEXTURE_COORDS                         = $0B03;
-   GL_CURRENT_RASTER_COLOR                           = $0B04;
-   GL_CURRENT_RASTER_INDEX                           = $0B05;
-   GL_CURRENT_RASTER_TEXTURE_COORDS                  = $0B06;
-   GL_CURRENT_RASTER_POSITION                        = $0B07;
-   GL_CURRENT_RASTER_POSITION_VALID                  = $0B08;
-   GL_CURRENT_RASTER_DISTANCE                        = $0B09;
-   GL_MAX_LIST_NESTING                               = $0B31;
    GL_VIEWPORT                                       = $0BA2;
-   GL_MODELVIEW_STACK_DEPTH                          = $0BA3;
-   GL_PROJECTION_STACK_DEPTH                         = $0BA4;
-   GL_TEXTURE_STACK_DEPTH                            = $0BA5;
-   GL_MODELVIEW_MATRIX                               = $0BA6;
-   GL_PROJECTION_MATRIX                              = $0BA7;
-   GL_TEXTURE_MATRIX                                 = $0BA8;
-   GL_ATTRIB_STACK_DEPTH                             = $0BB0;
-   GL_CLIENT_ATTRIB_STACK_DEPTH                      = $0BB1;
 
-   // alpha testing
-   GL_ALPHA_TEST                                     = $0BC0;
-   GL_ALPHA_TEST_FUNC                                = $0BC1;
-   GL_ALPHA_TEST_REF                                 = $0BC2;
+   // miscellaneous
+   GL_DITHER                                         = $0BD0;
+
+   GL_BLEND_DST                                      = $0BE0;
+   GL_BLEND_SRC                                      = $0BE1;
+   GL_BLEND                                          = $0BE2;
 
    GL_LOGIC_OP_MODE                                  = $0BF0;
-   GL_INDEX_LOGIC_OP                                 = $0BF1;
-   GL_LOGIC_OP                                       = $0BF1;
    GL_COLOR_LOGIC_OP                                 = $0BF2;
+
+   GL_DRAW_BUFFER                                    = $0C01;
+   GL_READ_BUFFER                                    = $0C02;
+
    GL_SCISSOR_BOX                                    = $0C10;
    GL_SCISSOR_TEST                                   = $0C11;
-   GL_INDEX_CLEAR_VALUE                              = $0C20;
-   GL_INDEX_WRITEMASK                                = $0C21;
    GL_COLOR_CLEAR_VALUE                              = $0C22;
    GL_COLOR_WRITEMASK                                = $0C23;
-   GL_INDEX_MODE                                     = $0C30;
-   GL_RGBA_MODE                                      = $0C31;
-   GL_RENDER_MODE                                    = $0C40;
-   GL_PERSPECTIVE_CORRECTION_HINT                    = $0C50;
-   GL_POINT_SMOOTH_HINT                              = $0C51;
+
+   GL_DOUBLEBUFFER                                   = $0C32;
+   GL_STEREO                                         = $0C33;
+
    GL_LINE_SMOOTH_HINT                               = $0C52;
    GL_POLYGON_SMOOTH_HINT                            = $0C53;
-   GL_FOG_HINT                                       = $0C54;
-   GL_TEXTURE_GEN_S                                  = $0C60;
-   GL_TEXTURE_GEN_T                                  = $0C61;
-   GL_TEXTURE_GEN_R                                  = $0C62;
-   GL_TEXTURE_GEN_Q                                  = $0C63;
-   GL_PIXEL_MAP_I_TO_I_SIZE                          = $0CB0;
-   GL_PIXEL_MAP_S_TO_S_SIZE                          = $0CB1;
-   GL_PIXEL_MAP_I_TO_R_SIZE                          = $0CB2;
-   GL_PIXEL_MAP_I_TO_G_SIZE                          = $0CB3;
-   GL_PIXEL_MAP_I_TO_B_SIZE                          = $0CB4;
-   GL_PIXEL_MAP_I_TO_A_SIZE                          = $0CB5;
-   GL_PIXEL_MAP_R_TO_R_SIZE                          = $0CB6;
-   GL_PIXEL_MAP_G_TO_G_SIZE                          = $0CB7;
-   GL_PIXEL_MAP_B_TO_B_SIZE                          = $0CB8;
-   GL_PIXEL_MAP_A_TO_A_SIZE                          = $0CB9;
+
+   // pixel mode, transfer
    GL_UNPACK_SWAP_BYTES                              = $0CF0;
    GL_UNPACK_LSB_FIRST                               = $0CF1;
    GL_UNPACK_ROW_LENGTH                              = $0CF2;
@@ -879,74 +691,14 @@ const
    GL_PACK_SKIP_ROWS                                 = $0D03;
    GL_PACK_SKIP_PIXELS                               = $0D04;
    GL_PACK_ALIGNMENT                                 = $0D05;
-   GL_MAP_COLOR                                      = $0D10;
-   GL_MAP_STENCIL                                    = $0D11;
-   GL_INDEX_SHIFT                                    = $0D12;
-   GL_INDEX_OFFSET                                   = $0D13;
-   GL_RED_SCALE                                      = $0D14;
-   GL_RED_BIAS                                       = $0D15;
-   GL_ZOOM_X                                         = $0D16;
-   GL_ZOOM_Y                                         = $0D17;
-   GL_GREEN_SCALE                                    = $0D18;
-   GL_GREEN_BIAS                                     = $0D19;
-   GL_BLUE_SCALE                                     = $0D1A;
-   GL_BLUE_BIAS                                      = $0D1B;
-   GL_ALPHA_SCALE                                    = $0D1C;
-   GL_ALPHA_BIAS                                     = $0D1D;
-   GL_DEPTH_SCALE                                    = $0D1E;
-   GL_DEPTH_BIAS                                     = $0D1F;
-   GL_MAX_EVAL_ORDER                                 = $0D30;
-   GL_MAX_LIGHTS                                     = $0D31;
-   GL_MAX_CLIP_PLANES                                = $0D32;
+
    GL_MAX_TEXTURE_SIZE                               = $0D33;
-   GL_MAX_PIXEL_MAP_TABLE                            = $0D34;
-   GL_MAX_ATTRIB_STACK_DEPTH                         = $0D35;
-   GL_MAX_MODELVIEW_STACK_DEPTH                      = $0D36;
-   GL_MAX_NAME_STACK_DEPTH                           = $0D37;
-   GL_MAX_PROJECTION_STACK_DEPTH                     = $0D38;
-   GL_MAX_TEXTURE_STACK_DEPTH                        = $0D39;
    GL_MAX_VIEWPORT_DIMS                              = $0D3A;
-   GL_MAX_CLIENT_ATTRIB_STACK_DEPTH                  = $0D3B;
    GL_SUBPIXEL_BITS                                  = $0D50;
-   GL_INDEX_BITS                                     = $0D51;
-   GL_RED_BITS                                       = $0D52;
-   GL_GREEN_BITS                                     = $0D53;
-   GL_BLUE_BITS                                      = $0D54;
-   GL_ALPHA_BITS                                     = $0D55;
-   GL_DEPTH_BITS                                     = $0D56;
-   GL_STENCIL_BITS                                   = $0D57;
-   GL_ACCUM_RED_BITS                                 = $0D58;
-   GL_ACCUM_GREEN_BITS                               = $0D59;
-   GL_ACCUM_BLUE_BITS                                = $0D5A;
-   GL_ACCUM_ALPHA_BITS                               = $0D5B;
-   GL_NAME_STACK_DEPTH                               = $0D70;
-   GL_AUTO_NORMAL                                    = $0D80;
-   GL_MAP1_COLOR_4                                   = $0D90;
-   GL_MAP1_INDEX                                     = $0D91;
-   GL_MAP1_NORMAL                                    = $0D92;
-   GL_MAP1_TEXTURE_COORD_1                           = $0D93;
-   GL_MAP1_TEXTURE_COORD_2                           = $0D94;
-   GL_MAP1_TEXTURE_COORD_3                           = $0D95;
-   GL_MAP1_TEXTURE_COORD_4                           = $0D96;
-   GL_MAP1_VERTEX_3                                  = $0D97;
-   GL_MAP1_VERTEX_4                                  = $0D98;
-   GL_MAP2_COLOR_4                                   = $0DB0;
-   GL_MAP2_INDEX                                     = $0DB1;
-   GL_MAP2_NORMAL                                    = $0DB2;
-   GL_MAP2_TEXTURE_COORD_1                           = $0DB3;
-   GL_MAP2_TEXTURE_COORD_2                           = $0DB4;
-   GL_MAP2_TEXTURE_COORD_3                           = $0DB5;
-   GL_MAP2_TEXTURE_COORD_4                           = $0DB6;
-   GL_MAP2_VERTEX_3                                  = $0DB7;
-   GL_MAP2_VERTEX_4                                  = $0DB8;
-   GL_MAP1_GRID_DOMAIN                               = $0DD0;
-   GL_MAP1_GRID_SEGMENTS                             = $0DD1;
-   GL_MAP2_GRID_DOMAIN                               = $0DD2;
-   GL_MAP2_GRID_SEGMENTS                             = $0DD3;
+
    GL_TEXTURE_1D                                     = $0DE0;
    GL_TEXTURE_2D                                     = $0DE1;
-   GL_SELECTION_BUFFER_POINTER                       = $0DF3;
-   GL_SELECTION_BUFFER_SIZE                          = $0DF4;
+
    GL_POLYGON_OFFSET_UNITS                           = $2A00;
    GL_POLYGON_OFFSET_POINT                           = $2A01;
    GL_POLYGON_OFFSET_LINE                            = $2A02;
@@ -954,76 +706,17 @@ const
    GL_POLYGON_OFFSET_FACTOR                          = $8038;
    GL_TEXTURE_BINDING_1D                             = $8068;
    GL_TEXTURE_BINDING_2D                             = $8069;
-   GL_VERTEX_ARRAY                                   = $8074;
-   GL_NORMAL_ARRAY                                   = $8075;
-   GL_COLOR_ARRAY                                    = $8076;
-   GL_INDEX_ARRAY                                    = $8077;
-   GL_TEXTURE_COORD_ARRAY                            = $8078;
-   GL_EDGE_FLAG_ARRAY                                = $8079;
-   GL_VERTEX_ARRAY_SIZE                              = $807A;
-   GL_VERTEX_ARRAY_TYPE                              = $807B;
-   GL_VERTEX_ARRAY_STRIDE                            = $807C;
-   GL_NORMAL_ARRAY_TYPE                              = $807E;
-   GL_NORMAL_ARRAY_STRIDE                            = $807F;
-   GL_COLOR_ARRAY_SIZE                               = $8081;
-   GL_COLOR_ARRAY_TYPE                               = $8082;
-   GL_COLOR_ARRAY_STRIDE                             = $8083;
-   GL_INDEX_ARRAY_TYPE                               = $8085;
-   GL_INDEX_ARRAY_STRIDE                             = $8086;
-   GL_TEXTURE_COORD_ARRAY_SIZE                       = $8088;
-   GL_TEXTURE_COORD_ARRAY_TYPE                       = $8089;
-   GL_TEXTURE_COORD_ARRAY_STRIDE                     = $808A;
-   GL_EDGE_FLAG_ARRAY_STRIDE                         = $808C;
-
-   // evaluators
-   GL_COEFF                                          = $0A00;
-   GL_ORDER                                          = $0A01;
-   GL_DOMAIN                                         = $0A02;
 
    // texture mapping
    GL_TEXTURE_WIDTH                                  = $1000;
    GL_TEXTURE_HEIGHT                                 = $1001;
    GL_TEXTURE_INTERNAL_FORMAT                        = $1003;
-   GL_TEXTURE_COMPONENTS                             = $1003;
    GL_TEXTURE_BORDER_COLOR                           = $1004;
    GL_TEXTURE_BORDER                                 = $1005;
    GL_TEXTURE_RED_SIZE                               = $805C;
    GL_TEXTURE_GREEN_SIZE                             = $805D;
    GL_TEXTURE_BLUE_SIZE                              = $805E;
    GL_TEXTURE_ALPHA_SIZE                             = $805F;
-   GL_TEXTURE_LUMINANCE_SIZE                         = $8060;
-   GL_TEXTURE_INTENSITY_SIZE                         = $8061;
-   GL_TEXTURE_PRIORITY                               = $8066;
-   GL_TEXTURE_RESIDENT                               = $8067;
-   GL_S                                              = $2000;
-   GL_T                                              = $2001;
-   GL_R                                              = $2002;
-   GL_Q                                              = $2003;
-   GL_MODULATE                                       = $2100;
-   GL_DECAL                                          = $2101;
-   GL_TEXTURE_ENV_MODE                               = $2200;
-   GL_TEXTURE_ENV_COLOR                              = $2201;
-   GL_TEXTURE_ENV                                    = $2300;
-   GL_EYE_LINEAR                                     = $2400;
-   GL_OBJECT_LINEAR                                  = $2401;
-   GL_SPHERE_MAP                                     = $2402;
-   GL_TEXTURE_GEN_MODE                               = $2500;
-   GL_OBJECT_PLANE                                   = $2501;
-   GL_EYE_PLANE                                      = $2502;
-   GL_NEAREST                                        = $2600;
-   GL_LINEAR                                         = $2601;
-   GL_NEAREST_MIPMAP_NEAREST                         = $2700;
-   GL_LINEAR_MIPMAP_NEAREST                          = $2701;
-   GL_NEAREST_MIPMAP_LINEAR                          = $2702;
-   GL_LINEAR_MIPMAP_LINEAR                           = $2703;
-   GL_TEXTURE_MAG_FILTER                             = $2800;
-   GL_TEXTURE_MIN_FILTER                             = $2801;
-   GL_TEXTURE_WRAP_S                                 = $2802;
-   GL_TEXTURE_WRAP_T                                 = $2803;
-   GL_PROXY_TEXTURE_1D                               = $8063;
-   GL_PROXY_TEXTURE_2D                               = $8064;
-   GL_CLAMP                                          = $2900;
-   GL_REPEAT                                         = $2901;
 
    // hints
    GL_DONT_CARE                                      = $1100;
@@ -1038,11 +731,7 @@ const
    GL_INT                                            = $1404;
    GL_UNSIGNED_INT                                   = $1405;
    GL_FLOAT                                          = $1406;
-   GL_2_BYTES                                        = $1407;
-   GL_3_BYTES                                        = $1408;
-   GL_4_BYTES                                        = $1409;
    GL_DOUBLE                                         = $140A;
-   GL_DOUBLE_EXT                                     = $140A;
 
    // logic operations
    GL_CLEAR                                          = $1500;
@@ -1062,13 +751,14 @@ const
    GL_NAND                                           = $150E;
    GL_SET                                            = $150F;
 
+   GL_TEXTURE                                        = $1702; // (for gl3.h, FBO attachment type)
+
    // PixelCopyType
    GL_COLOR                                          = $1800;
    GL_DEPTH                                          = $1801;
    GL_STENCIL                                        = $1802;
 
    // pixel formats
-   GL_COLOR_INDEX                                    = $1900;
    GL_STENCIL_INDEX                                  = $1901;
    GL_DEPTH_COMPONENT                                = $1902;
    GL_RED                                            = $1903;
@@ -1077,16 +767,17 @@ const
    GL_ALPHA                                          = $1906;
    GL_RGB                                            = $1907;
    GL_RGBA                                           = $1908;
-   GL_LUMINANCE                                      = $1909;
-   GL_LUMINANCE_ALPHA                                = $190A;
 
-   // pixel type
-   GL_BITMAP                                         = $1A00;
+   // PolygonMode
+   GL_POINT                                          = $1B00;
+   GL_LINE                                           = $1B01;
+   GL_FILL                                           = $1B02;
 
-   // rendering modes
-   GL_RENDER                                         = $1C00;
-   GL_FEEDBACK                                       = $1C01;
-   GL_SELECT                                         = $1C02;
+   // StencilOp
+   GL_KEEP                                           = $1E00;
+   GL_REPLACE                                        = $1E01;
+   GL_INCR                                           = $1E02;
+   GL_DECR                                           = $1E03;
 
    // implementation strings
    GL_VENDOR                                         = $1F00;
@@ -1094,27 +785,22 @@ const
    GL_VERSION                                        = $1F02;
    GL_EXTENSIONS                                     = $1F03;
 
+   GL_NEAREST                                        = $2600;
+   GL_LINEAR                                         = $2601;
+   GL_NEAREST_MIPMAP_NEAREST                         = $2700;
+   GL_LINEAR_MIPMAP_NEAREST                          = $2701;
+   GL_NEAREST_MIPMAP_LINEAR                          = $2702;
+   GL_LINEAR_MIPMAP_LINEAR                           = $2703;
+   GL_TEXTURE_MAG_FILTER                             = $2800;
+   GL_TEXTURE_MIN_FILTER                             = $2801;
+   GL_TEXTURE_WRAP_S                                 = $2802;
+   GL_TEXTURE_WRAP_T                                 = $2803;
+   GL_PROXY_TEXTURE_1D                               = $8063;
+   GL_PROXY_TEXTURE_2D                               = $8064;
+   GL_REPEAT                                         = $2901;
+
    // pixel formats
    GL_R3_G3_B2                                       = $2A10;
-   GL_ALPHA4                                         = $803B;
-   GL_ALPHA8                                         = $803C;
-   GL_ALPHA12                                        = $803D;
-   GL_ALPHA16                                        = $803E;
-   GL_LUMINANCE4                                     = $803F;
-   GL_LUMINANCE8                                     = $8040;
-   GL_LUMINANCE12                                    = $8041;
-   GL_LUMINANCE16                                    = $8042;
-   GL_LUMINANCE4_ALPHA4                              = $8043;
-   GL_LUMINANCE6_ALPHA2                              = $8044;
-   GL_LUMINANCE8_ALPHA8                              = $8045;
-   GL_LUMINANCE12_ALPHA4                             = $8046;
-   GL_LUMINANCE12_ALPHA12                            = $8047;
-   GL_LUMINANCE16_ALPHA16                            = $8048;
-   GL_INTENSITY                                      = $8049;
-   GL_INTENSITY4                                     = $804A;
-   GL_INTENSITY8                                     = $804B;
-   GL_INTENSITY12                                    = $804C;
-   GL_INTENSITY16                                    = $804D;
    GL_RGB4                                           = $804F;
    GL_RGB5                                           = $8050;
    GL_RGB8                                           = $8051;
@@ -1145,7 +831,384 @@ const
 
    {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.1 deprecated'} {$ENDIF}
    // attribute bits
+   GL_CURRENT_BIT                                    = $00000001 {deprecated};
+   GL_POINT_BIT                                      = $00000002 {deprecated};
+   GL_LINE_BIT                                       = $00000004 {deprecated};
+   GL_POLYGON_BIT                                    = $00000008 {deprecated};
+   GL_POLYGON_STIPPLE_BIT                            = $00000010 {deprecated};
+   GL_PIXEL_MODE_BIT                                 = $00000020 {deprecated};
+   GL_LIGHTING_BIT                                   = $00000040 {deprecated};
+   GL_FOG_BIT                                        = $00000080 {deprecated};
+   GL_ACCUM_BUFFER_BIT                               = $00000200 {deprecated};
+   GL_VIEWPORT_BIT                                   = $00000800 {deprecated};
+   GL_TRANSFORM_BIT                                  = $00001000 {deprecated};
+   GL_ENABLE_BIT                                     = $00002000 {deprecated};
+   GL_HINT_BIT                                       = $00008000 {deprecated};
+   GL_EVAL_BIT                                       = $00010000 {deprecated};
+   GL_LIST_BIT                                       = $00020000 {deprecated};
+   GL_TEXTURE_BIT                                    = $00040000 {deprecated};
+   GL_SCISSOR_BIT                                    = $00080000 {deprecated};
+   GL_ALL_ATTRIB_BITS                                = $000FFFFF;
 
+   // client attribute bits
+   GL_CLIENT_PIXEL_STORE_BIT                         = $00000001 {deprecated};
+   GL_CLIENT_VERTEX_ARRAY_BIT                        = $00000002 {deprecated};
+   GL_CLIENT_ALL_ATTRIB_BITS                         = $FFFFFFFF {deprecated};
+
+   // primitives
+   GL_QUADS                                          = $0007 {deprecated};
+   GL_QUAD_STRIP                                     = $0008 {deprecated};
+   GL_POLYGON                                        = $0009 {deprecated};
+
+   // accumulation buffer
+   GL_ACCUM                                          = $0100 {deprecated};
+   GL_LOAD                                           = $0101 {deprecated};
+   GL_RETURN                                         = $0102 {deprecated};
+   GL_MULT                                           = $0103 {deprecated};
+   GL_ADD                                            = $0104 {deprecated};
+
+   // buffers
+   GL_AUX0                                           = $0409 {deprecated};
+   GL_AUX1                                           = $040A {deprecated};
+   GL_AUX2                                           = $040B {deprecated};
+   GL_AUX3                                           = $040C {deprecated};
+
+   // errors
+   GL_STACK_OVERFLOW                                 = $0503 {deprecated};
+   GL_STACK_UNDERFLOW                                = $0504 {deprecated};
+
+   // feedback types
+   GL_2D                                             = $0600 {deprecated};
+   GL_3D                                             = $0601 {deprecated};
+   GL_3D_COLOR                                       = $0602 {deprecated};
+   GL_3D_COLOR_TEXTURE                               = $0603 {deprecated};
+   GL_4D_COLOR_TEXTURE                               = $0604 {deprecated};
+
+   // feedback tokens
+   GL_PASS_THROUGH_TOKEN                             = $0700 {deprecated};
+   GL_POINT_TOKEN                                    = $0701 {deprecated};
+   GL_LINE_TOKEN                                     = $0702 {deprecated};
+   GL_POLYGON_TOKEN                                  = $0703 {deprecated};
+   GL_BITMAP_TOKEN                                   = $0704 {deprecated};
+   GL_DRAW_PIXEL_TOKEN                               = $0705 {deprecated};
+   GL_COPY_PIXEL_TOKEN                               = $0706 {deprecated};
+   GL_LINE_RESET_TOKEN                               = $0707 {deprecated};
+
+   // fog
+   GL_EXP                                            = $0800 {deprecated};
+   GL_EXP2                                           = $0801 {deprecated};
+
+   // evaluators
+   GL_COEFF                                          = $0A00 {deprecated};
+   GL_ORDER                                          = $0A01 {deprecated};
+   GL_DOMAIN                                         = $0A02 {deprecated};
+
+   // gets
+   GL_CURRENT_COLOR                                  = $0B00 {deprecated};
+   GL_CURRENT_INDEX                                  = $0B01 {deprecated};
+   GL_CURRENT_NORMAL                                 = $0B02 {deprecated};
+   GL_CURRENT_TEXTURE_COORDS                         = $0B03 {deprecated};
+   GL_CURRENT_RASTER_COLOR                           = $0B04 {deprecated};
+   GL_CURRENT_RASTER_INDEX                           = $0B05 {deprecated};
+   GL_CURRENT_RASTER_TEXTURE_COORDS                  = $0B06 {deprecated};
+   GL_CURRENT_RASTER_POSITION                        = $0B07 {deprecated};
+   GL_CURRENT_RASTER_POSITION_VALID                  = $0B08 {deprecated};
+   GL_CURRENT_RASTER_DISTANCE                        = $0B09 {deprecated};
+
+   // points
+   GL_POINT_SMOOTH                                   = $0B10 {deprecated};
+
+   // lines
+   GL_LINE_STIPPLE                                   = $0B24 {deprecated};
+   GL_LINE_STIPPLE_PATTERN                           = $0B25 {deprecated};
+   GL_LINE_STIPPLE_REPEAT                            = $0B26 {deprecated};
+
+   // display lists
+   GL_LIST_MODE                                      = $0B30 {deprecated};
+   GL_MAX_LIST_NESTING                               = $0B31 {deprecated};
+   GL_LIST_BASE                                      = $0B32 {deprecated};
+   GL_LIST_INDEX                                     = $0B33 {deprecated};
+
+   // polygons
+   // DanB - not sure "GL_POLYGON_MODE" should be deprecated, but it is marked
+   // deprecated in OpenGL spec, so will put it here for now
+   GL_POLYGON_MODE                                   = $0B40 {deprecated};
+   GL_POLYGON_STIPPLE                                = $0B42 {deprecated};
+   GL_EDGE_FLAG                                      = $0B43 {deprecated};
+
+   // lighting
+   GL_LIGHTING                                       = $0B50 {deprecated};
+   GL_LIGHT_MODEL_LOCAL_VIEWER                       = $0B51 {deprecated};
+   GL_LIGHT_MODEL_TWO_SIDE                           = $0B52 {deprecated};
+   GL_LIGHT_MODEL_AMBIENT                            = $0B53 {deprecated};
+   GL_SHADE_MODEL                                    = $0B54 {deprecated};
+
+   // color material
+   GL_COLOR_MATERIAL_FACE                            = $0B55 {deprecated};
+   GL_COLOR_MATERIAL_PARAMETER                       = $0B56 {deprecated};
+   GL_COLOR_MATERIAL                                 = $0B57 {deprecated};
+
+   // fog
+   GL_FOG                                            = $0B60 {deprecated};
+   GL_FOG_INDEX                                      = $0B61 {deprecated};
+   GL_FOG_DENSITY                                    = $0B62 {deprecated};
+   GL_FOG_START                                      = $0B63 {deprecated};
+   GL_FOG_END                                        = $0B64 {deprecated};
+   GL_FOG_MODE                                       = $0B65 {deprecated};
+   GL_FOG_COLOR                                      = $0B66 {deprecated};
+
+   GL_ACCUM_CLEAR_VALUE                              = $0B80 {deprecated};
+
+   GL_NORMALIZE                                      = $0BA1 {deprecated};
+   GL_MODELVIEW_STACK_DEPTH                          = $0BA3 {deprecated};
+   GL_PROJECTION_STACK_DEPTH                         = $0BA4 {deprecated};
+   GL_TEXTURE_STACK_DEPTH                            = $0BA5 {deprecated};
+   GL_MODELVIEW_MATRIX                               = $0BA6 {deprecated};
+   GL_PROJECTION_MATRIX                              = $0BA7 {deprecated};
+   GL_TEXTURE_MATRIX                                 = $0BA8 {deprecated};
+   GL_ATTRIB_STACK_DEPTH                             = $0BB0 {deprecated};
+   GL_CLIENT_ATTRIB_STACK_DEPTH                      = $0BB1 {deprecated};
+
+   // alpha testing
+   GL_ALPHA_TEST                                     = $0BC0 {deprecated};
+   GL_ALPHA_TEST_FUNC                                = $0BC1 {deprecated};
+   GL_ALPHA_TEST_REF                                 = $0BC2 {deprecated};
+
+   GL_INDEX_LOGIC_OP                                 = $0BF1 {deprecated};
+   GL_LOGIC_OP                                       = $0BF1 {deprecated};
+
+   GL_AUX_BUFFERS                                    = $0C00 {deprecated};
+
+   GL_INDEX_CLEAR_VALUE                              = $0C20 {deprecated};
+   GL_INDEX_WRITEMASK                                = $0C21 {deprecated};
+
+   GL_INDEX_MODE                                     = $0C30 {deprecated};
+   GL_RGBA_MODE                                      = $0C31 {deprecated};
+
+   GL_RENDER_MODE                                    = $0C40 {deprecated};
+   GL_PERSPECTIVE_CORRECTION_HINT                    = $0C50 {deprecated};
+   GL_POINT_SMOOTH_HINT                              = $0C51 {deprecated};
+
+   GL_FOG_HINT                                       = $0C54 {deprecated};
+   GL_TEXTURE_GEN_S                                  = $0C60 {deprecated};
+   GL_TEXTURE_GEN_T                                  = $0C61 {deprecated};
+   GL_TEXTURE_GEN_R                                  = $0C62 {deprecated};
+   GL_TEXTURE_GEN_Q                                  = $0C63 {deprecated};
+
+   // pixel mode, transfer
+   GL_PIXEL_MAP_I_TO_I                               = $0C70 {deprecated};
+   GL_PIXEL_MAP_S_TO_S                               = $0C71 {deprecated};
+   GL_PIXEL_MAP_I_TO_R                               = $0C72 {deprecated};
+   GL_PIXEL_MAP_I_TO_G                               = $0C73 {deprecated};
+   GL_PIXEL_MAP_I_TO_B                               = $0C74 {deprecated};
+   GL_PIXEL_MAP_I_TO_A                               = $0C75 {deprecated};
+   GL_PIXEL_MAP_R_TO_R                               = $0C76 {deprecated};
+   GL_PIXEL_MAP_G_TO_G                               = $0C77 {deprecated};
+   GL_PIXEL_MAP_B_TO_B                               = $0C78 {deprecated};
+   GL_PIXEL_MAP_A_TO_A                               = $0C79 {deprecated};
+   GL_PIXEL_MAP_I_TO_I_SIZE                          = $0CB0 {deprecated};
+   GL_PIXEL_MAP_S_TO_S_SIZE                          = $0CB1 {deprecated};
+   GL_PIXEL_MAP_I_TO_R_SIZE                          = $0CB2 {deprecated};
+   GL_PIXEL_MAP_I_TO_G_SIZE                          = $0CB3 {deprecated};
+   GL_PIXEL_MAP_I_TO_B_SIZE                          = $0CB4 {deprecated};
+   GL_PIXEL_MAP_I_TO_A_SIZE                          = $0CB5 {deprecated};
+   GL_PIXEL_MAP_R_TO_R_SIZE                          = $0CB6 {deprecated};
+   GL_PIXEL_MAP_G_TO_G_SIZE                          = $0CB7 {deprecated};
+   GL_PIXEL_MAP_B_TO_B_SIZE                          = $0CB8 {deprecated};
+   GL_PIXEL_MAP_A_TO_A_SIZE                          = $0CB9 {deprecated};
+
+   GL_MAP_COLOR                                      = $0D10 {deprecated};
+   GL_MAP_STENCIL                                    = $0D11 {deprecated};
+   GL_INDEX_SHIFT                                    = $0D12 {deprecated};
+   GL_INDEX_OFFSET                                   = $0D13 {deprecated};
+   GL_RED_SCALE                                      = $0D14 {deprecated};
+   GL_RED_BIAS                                       = $0D15 {deprecated};
+   GL_ZOOM_X                                         = $0D16 {deprecated};
+   GL_ZOOM_Y                                         = $0D17 {deprecated};
+   GL_GREEN_SCALE                                    = $0D18 {deprecated};
+   GL_GREEN_BIAS                                     = $0D19 {deprecated};
+   GL_BLUE_SCALE                                     = $0D1A {deprecated};
+   GL_BLUE_BIAS                                      = $0D1B {deprecated};
+   GL_ALPHA_SCALE                                    = $0D1C {deprecated};
+   GL_ALPHA_BIAS                                     = $0D1D {deprecated};
+   GL_DEPTH_SCALE                                    = $0D1E {deprecated};
+   GL_DEPTH_BIAS                                     = $0D1F {deprecated};
+   GL_MAX_EVAL_ORDER                                 = $0D30 {deprecated};
+   GL_MAX_LIGHTS                                     = $0D31 {deprecated};
+   GL_MAX_CLIP_PLANES                                = $0D32 {deprecated};
+
+   GL_MAX_PIXEL_MAP_TABLE                            = $0D34 {deprecated};
+   GL_MAX_ATTRIB_STACK_DEPTH                         = $0D35 {deprecated};
+   GL_MAX_MODELVIEW_STACK_DEPTH                      = $0D36 {deprecated};
+   GL_MAX_NAME_STACK_DEPTH                           = $0D37 {deprecated};
+   GL_MAX_PROJECTION_STACK_DEPTH                     = $0D38 {deprecated};
+   GL_MAX_TEXTURE_STACK_DEPTH                        = $0D39 {deprecated};
+
+   GL_MAX_CLIENT_ATTRIB_STACK_DEPTH                  = $0D3B {deprecated};
+   GL_INDEX_BITS                                     = $0D51 {deprecated};
+   GL_RED_BITS                                       = $0D52 {deprecated};
+   GL_GREEN_BITS                                     = $0D53 {deprecated};
+   GL_BLUE_BITS                                      = $0D54 {deprecated};
+   GL_ALPHA_BITS                                     = $0D55 {deprecated};
+   GL_DEPTH_BITS                                     = $0D56 {deprecated};
+   GL_STENCIL_BITS                                   = $0D57 {deprecated};
+   GL_ACCUM_RED_BITS                                 = $0D58 {deprecated};
+   GL_ACCUM_GREEN_BITS                               = $0D59 {deprecated};
+   GL_ACCUM_BLUE_BITS                                = $0D5A {deprecated};
+   GL_ACCUM_ALPHA_BITS                               = $0D5B {deprecated};
+   GL_NAME_STACK_DEPTH                               = $0D70 {deprecated};
+   GL_AUTO_NORMAL                                    = $0D80 {deprecated};
+   GL_MAP1_COLOR_4                                   = $0D90 {deprecated};
+   GL_MAP1_INDEX                                     = $0D91 {deprecated};
+   GL_MAP1_NORMAL                                    = $0D92 {deprecated};
+   GL_MAP1_TEXTURE_COORD_1                           = $0D93 {deprecated};
+   GL_MAP1_TEXTURE_COORD_2                           = $0D94 {deprecated};
+   GL_MAP1_TEXTURE_COORD_3                           = $0D95 {deprecated};
+   GL_MAP1_TEXTURE_COORD_4                           = $0D96 {deprecated};
+   GL_MAP1_VERTEX_3                                  = $0D97 {deprecated};
+   GL_MAP1_VERTEX_4                                  = $0D98 {deprecated};
+   GL_MAP2_COLOR_4                                   = $0DB0 {deprecated};
+   GL_MAP2_INDEX                                     = $0DB1 {deprecated};
+   GL_MAP2_NORMAL                                    = $0DB2 {deprecated};
+   GL_MAP2_TEXTURE_COORD_1                           = $0DB3 {deprecated};
+   GL_MAP2_TEXTURE_COORD_2                           = $0DB4 {deprecated};
+   GL_MAP2_TEXTURE_COORD_3                           = $0DB5 {deprecated};
+   GL_MAP2_TEXTURE_COORD_4                           = $0DB6 {deprecated};
+   GL_MAP2_VERTEX_3                                  = $0DB7 {deprecated};
+   GL_MAP2_VERTEX_4                                  = $0DB8 {deprecated};
+   GL_MAP1_GRID_DOMAIN                               = $0DD0 {deprecated};
+   GL_MAP1_GRID_SEGMENTS                             = $0DD1 {deprecated};
+   GL_MAP2_GRID_DOMAIN                               = $0DD2 {deprecated};
+   GL_MAP2_GRID_SEGMENTS                             = $0DD3 {deprecated};
+
+   // feedback buffer
+   GL_FEEDBACK_BUFFER_POINTER                        = $0DF0 {deprecated};
+   GL_FEEDBACK_BUFFER_SIZE                           = $0DF1 {deprecated};
+   GL_FEEDBACK_BUFFER_TYPE                           = $0DF2 {deprecated};
+
+   GL_SELECTION_BUFFER_POINTER                       = $0DF3 {deprecated};
+   GL_SELECTION_BUFFER_SIZE                          = $0DF4 {deprecated};
+
+   GL_TEXTURE_COMPONENTS                             = $1003 {deprecated};
+   GL_TEXTURE_LUMINANCE_SIZE                         = $8060 {deprecated};
+   GL_TEXTURE_INTENSITY_SIZE                         = $8061 {deprecated};
+   GL_TEXTURE_PRIORITY                               = $8066 {deprecated};
+   GL_TEXTURE_RESIDENT                               = $8067 {deprecated};
+
+   // lighting
+   GL_AMBIENT                                        = $1200 {deprecated};
+   GL_DIFFUSE                                        = $1201 {deprecated};
+   GL_SPECULAR                                       = $1202 {deprecated};
+   GL_POSITION                                       = $1203 {deprecated};
+   GL_SPOT_DIRECTION                                 = $1204 {deprecated};
+   GL_SPOT_EXPONENT                                  = $1205 {deprecated};
+   GL_SPOT_CUTOFF                                    = $1206 {deprecated};
+   GL_CONSTANT_ATTENUATION                           = $1207 {deprecated};
+   GL_LINEAR_ATTENUATION                             = $1208 {deprecated};
+   GL_QUADRATIC_ATTENUATION                          = $1209 {deprecated};
+
+   // display lists
+   GL_COMPILE                                        = $1300 {deprecated};
+   GL_COMPILE_AND_EXECUTE                            = $1301 {deprecated};
+
+   // data types
+   GL_2_BYTES                                        = $1407 {deprecated};
+   GL_3_BYTES                                        = $1408 {deprecated};
+   GL_4_BYTES                                        = $1409 {deprecated};
+   GL_DOUBLE_EXT                                     = $140A {deprecated};
+
+   GL_EMISSION                                       = $1600 {deprecated};
+   GL_SHININESS                                      = $1601 {deprecated};
+   GL_AMBIENT_AND_DIFFUSE                            = $1602 {deprecated};
+   GL_COLOR_INDEXES                                  = $1603 {deprecated};
+
+   // matrix modes
+   GL_MODELVIEW                                      = $1700 {deprecated};
+   GL_PROJECTION                                     = $1701 {deprecated};
+
+   // pixel formats
+   GL_COLOR_INDEX                                    = $1900 {deprecated};
+   GL_LUMINANCE                                      = $1909 {deprecated};
+   GL_LUMINANCE_ALPHA                                = $190A {deprecated};
+
+   // pixel type
+   GL_BITMAP                                         = $1A00 {deprecated};
+
+   // rendering modes
+   GL_RENDER                                         = $1C00 {deprecated};
+   GL_FEEDBACK                                       = $1C01 {deprecated};
+   GL_SELECT                                         = $1C02 {deprecated};
+
+   GL_FLAT                                           = $1D00 {deprecated};
+   GL_SMOOTH                                         = $1D01 {deprecated};
+
+   GL_S                                              = $2000 {deprecated};
+   GL_T                                              = $2001 {deprecated};
+   GL_R                                              = $2002 {deprecated};
+   GL_Q                                              = $2003 {deprecated};
+   GL_MODULATE                                       = $2100 {deprecated};
+   GL_DECAL                                          = $2101 {deprecated};
+   GL_TEXTURE_ENV_MODE                               = $2200 {deprecated};
+   GL_TEXTURE_ENV_COLOR                              = $2201 {deprecated};
+   GL_TEXTURE_ENV                                    = $2300 {deprecated};
+   GL_EYE_LINEAR                                     = $2400 {deprecated};
+   GL_OBJECT_LINEAR                                  = $2401 {deprecated};
+   GL_SPHERE_MAP                                     = $2402 {deprecated};
+   GL_TEXTURE_GEN_MODE                               = $2500 {deprecated};
+   GL_OBJECT_PLANE                                   = $2501 {deprecated};
+   GL_EYE_PLANE                                      = $2502 {deprecated};
+
+   GL_CLAMP                                          = $2900 {deprecated};
+
+   // pixel formats
+   GL_ALPHA4                                         = $803B {deprecated};
+   GL_ALPHA8                                         = $803C {deprecated};
+   GL_ALPHA12                                        = $803D {deprecated};
+   GL_ALPHA16                                        = $803E {deprecated};
+   GL_LUMINANCE4                                     = $803F {deprecated};
+   GL_LUMINANCE8                                     = $8040 {deprecated};
+   GL_LUMINANCE12                                    = $8041 {deprecated};
+   GL_LUMINANCE16                                    = $8042 {deprecated};
+   GL_LUMINANCE4_ALPHA4                              = $8043 {deprecated};
+   GL_LUMINANCE6_ALPHA2                              = $8044 {deprecated};
+   GL_LUMINANCE8_ALPHA8                              = $8045 {deprecated};
+   GL_LUMINANCE12_ALPHA4                             = $8046 {deprecated};
+   GL_LUMINANCE12_ALPHA12                            = $8047 {deprecated};
+   GL_LUMINANCE16_ALPHA16                            = $8048 {deprecated};
+   GL_INTENSITY                                      = $8049 {deprecated};
+   GL_INTENSITY4                                     = $804A {deprecated};
+   GL_INTENSITY8                                     = $804B {deprecated};
+   GL_INTENSITY12                                    = $804C {deprecated};
+   GL_INTENSITY16                                    = $804D {deprecated};
+
+   GL_VERTEX_ARRAY                                   = $8074 {deprecated};
+   GL_NORMAL_ARRAY                                   = $8075 {deprecated};
+   GL_COLOR_ARRAY                                    = $8076 {deprecated};
+   GL_INDEX_ARRAY                                    = $8077 {deprecated};
+   GL_TEXTURE_COORD_ARRAY                            = $8078 {deprecated};
+   GL_EDGE_FLAG_ARRAY                                = $8079 {deprecated};
+   GL_VERTEX_ARRAY_SIZE                              = $807A {deprecated};
+   GL_VERTEX_ARRAY_TYPE                              = $807B {deprecated};
+   GL_VERTEX_ARRAY_STRIDE                            = $807C {deprecated};
+   GL_NORMAL_ARRAY_TYPE                              = $807E {deprecated};
+   GL_NORMAL_ARRAY_STRIDE                            = $807F {deprecated};
+   GL_COLOR_ARRAY_SIZE                               = $8081 {deprecated};
+   GL_COLOR_ARRAY_TYPE                               = $8082 {deprecated};
+   GL_COLOR_ARRAY_STRIDE                             = $8083 {deprecated};
+   GL_INDEX_ARRAY_TYPE                               = $8085 {deprecated};
+   GL_INDEX_ARRAY_STRIDE                             = $8086 {deprecated};
+   GL_TEXTURE_COORD_ARRAY_SIZE                       = $8088 {deprecated};
+   GL_TEXTURE_COORD_ARRAY_TYPE                       = $8089 {deprecated};
+   GL_TEXTURE_COORD_ARRAY_STRIDE                     = $808A {deprecated};
+   GL_EDGE_FLAG_ARRAY_STRIDE                         = $808C {deprecated};
+
+   // vertex arrays
+   GL_VERTEX_ARRAY_POINTER                           = $808E {deprecated};
+   GL_NORMAL_ARRAY_POINTER                           = $808F {deprecated};
+   GL_COLOR_ARRAY_POINTER                            = $8090 {deprecated};
+   GL_INDEX_ARRAY_POINTER                            = $8091 {deprecated};
+   GL_TEXTURE_COORD_ARRAY_POINTER                    = $8092 {deprecated};
+   GL_EDGE_FLAG_ARRAY_POINTER                        = $8093 {deprecated};
 
    // interleaved arrays formats
    GL_V2F                                            = $2A20 {deprecated};
@@ -1171,9 +1234,15 @@ const
    GL_CLIP_PLANE4                                    = $3004 {deprecated};
    GL_CLIP_PLANE5                                    = $3005 {deprecated};
 
-
-   // miscellaneous
-   GL_DITHER                                         = $0BD0;
+   // lights
+   GL_LIGHT0                                         = $4000 {deprecated};
+   GL_LIGHT1                                         = $4001 {deprecated};
+   GL_LIGHT2                                         = $4002 {deprecated};
+   GL_LIGHT3                                         = $4003 {deprecated};
+   GL_LIGHT4                                         = $4004 {deprecated};
+   GL_LIGHT5                                         = $4005 {deprecated};
+   GL_LIGHT6                                         = $4006 {deprecated};
+   GL_LIGHT7                                         = $4007 {deprecated};
 
    {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
