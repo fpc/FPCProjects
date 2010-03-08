@@ -1257,9 +1257,6 @@ const
    GL_UNSIGNED_INT_8_8_8_8                           = $8035;
    GL_UNSIGNED_INT_10_10_10_2                        = $8036;
 
-   // promoted to core v1.2 from GL_EXT_rescale_normal (EXT #27)
-   GL_RESCALE_NORMAL                                 = $803A;
-
    // promoted to core v1.2 from GL_EXT_texture3D (EXT #6)
    GL_PACK_SKIP_IMAGES                               = $806B;
    GL_PACK_IMAGE_HEIGHT                              = $806C;
@@ -1298,17 +1295,11 @@ const
    GL_TEXTURE_BASE_LEVEL                             = $813C;
    GL_TEXTURE_MAX_LEVEL                              = $813D;
 
-   // promoted to core v1.2 from EXT_separate_specular_color (EXT #144)
-   GL_LIGHT_MODEL_COLOR_CONTROL                      = $81F8;
-   GL_SINGLE_COLOR                                   = $81F9;
-   GL_SEPARATE_SPECULAR_COLOR                        = $81FA;
-
    // new 1.2 naming scheme (POINT => SMOOTH_POINT)
    GL_SMOOTH_POINT_SIZE_RANGE                        = $0B12;
    GL_SMOOTH_POINT_SIZE_GRANULARITY			             = $0B13;
    GL_SMOOTH_LINE_WIDTH_RANGE				                 = $0B22;
    GL_SMOOTH_LINE_WIDTH_GRANULARITY		               = $0B23;
-   GL_ALIASED_POINT_SIZE_RANGE                       = $846D;
    GL_ALIASED_LINE_WIDTH_RANGE                       = $846E;
 
    // Blending ( 1.2 ARB imaging)
@@ -1331,6 +1322,16 @@ const
 
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.2 deprecated'} {$ENDIF}
    // {deprecated}
+   // promoted to core v1.2 from GL_EXT_rescale_normal (EXT #27)
+   GL_RESCALE_NORMAL                                 = $803A {deprecated};
+
+   // promoted to core v1.2 from EXT_separate_specular_color (EXT #144)
+   GL_LIGHT_MODEL_COLOR_CONTROL                      = $81F8 {deprecated};
+   GL_SINGLE_COLOR                                   = $81F9 {deprecated};
+   GL_SEPARATE_SPECULAR_COLOR                        = $81FA {deprecated};
+
+   // new 1.2 naming scheme (POINT => SMOOTH_POINT)
+   GL_ALIASED_POINT_SIZE_RANGE                       = $846D {deprecated};
 
    // Convolutions (GL 1.2 ARB imaging)
    // promoted to core v1.2 from GL_EXT_convolution (EXT #12)
@@ -1450,15 +1451,6 @@ const
    GL_TEXTURE30                                      = $84DE;
    GL_TEXTURE31                                      = $84DF;
    GL_ACTIVE_TEXTURE                                 = $84E0;
-   GL_CLIENT_ACTIVE_TEXTURE                          = $84E1;
-   GL_MAX_TEXTURE_UNITS                              = $84E2;
-
-   // Transpose Matrices
-   // promoted to core OpenGL v1.3 from GL_ARB_transpose_matrix (ARB #3)
-   GL_TRANSPOSE_MODELVIEW_MATRIX                     = $84E3;
-   GL_TRANSPOSE_PROJECTION_MATRIX                    = $84E4;
-   GL_TRANSPOSE_TEXTURE_MATRIX                       = $84E5;
-   GL_TRANSPOSE_COLOR_MATRIX                         = $84E6;
 
    // Multisampling
    // promoted to core OpenGL v1.3 from GL_ARB_multisample (ARB #5)
@@ -1470,12 +1462,9 @@ const
    GL_SAMPLES                                        = $80A9;
    GL_SAMPLE_COVERAGE_VALUE                          = $80AA;
    GL_SAMPLE_COVERAGE_INVERT                         = $80AB;
-   GL_MULTISAMPLE_BIT                                = $20000000;
 
    // Cube Mapping
    // promoted to core OpenGL v1.3 from GL_ARB_texture_cube_map (ARB #7)
-   GL_NORMAL_MAP                                     = $8511;
-   GL_REFLECTION_MAP                                 = $8512;
    GL_TEXTURE_CUBE_MAP                               = $8513;
    GL_TEXTURE_BINDING_CUBE_MAP                       = $8514;
    GL_TEXTURE_CUBE_MAP_POSITIVE_X                    = $8515;
@@ -1489,10 +1478,6 @@ const
 
    // Texture Compression
    // promoted to core OpenGL v1.3 from GL_ARB_texture_compression (ARB #12)
-   GL_COMPRESSED_ALPHA                               = $84E9;
-   GL_COMPRESSED_LUMINANCE                           = $84EA;
-   GL_COMPRESSED_LUMINANCE_ALPHA                     = $84EB;
-   GL_COMPRESSED_INTENSITY                           = $84EC;
    GL_COMPRESSED_RGB                                 = $84ED;
    GL_COMPRESSED_RGBA                                = $84EE;
    GL_TEXTURE_COMPRESSION_HINT                       = $84EF;
@@ -1506,6 +1491,29 @@ const
    GL_CLAMP_TO_BORDER                                = $812D;
 
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.3 deprecated'} {$ENDIF}
+   // promoted to core OpenGL v1.3 from GL_ARB_multitexture (ARB #1)
+   GL_CLIENT_ACTIVE_TEXTURE                          = $84E1 {deprecated};
+   GL_MAX_TEXTURE_UNITS                              = $84E2 {deprecated};
+
+   // Transpose Matrices
+   // promoted to core OpenGL v1.3 from GL_ARB_transpose_matrix (ARB #3)
+   GL_TRANSPOSE_MODELVIEW_MATRIX                     = $84E3 {deprecated};
+   GL_TRANSPOSE_PROJECTION_MATRIX                    = $84E4 {deprecated};
+   GL_TRANSPOSE_TEXTURE_MATRIX                       = $84E5 {deprecated};
+   GL_TRANSPOSE_COLOR_MATRIX                         = $84E6 {deprecated};
+
+   // promoted to core OpenGL v1.3 from GL_ARB_multisample (ARB #5)
+   GL_MULTISAMPLE_BIT                                = $20000000 {deprecated};
+
+   // promoted to core OpenGL v1.3 from GL_ARB_texture_cube_map (ARB #7)
+   GL_NORMAL_MAP                                     = $8511 {deprecated};
+   GL_REFLECTION_MAP                                 = $8512 {deprecated};
+
+   // promoted to core OpenGL v1.3 from GL_ARB_texture_compression (ARB #12)
+   GL_COMPRESSED_ALPHA                               = $84E9 {deprecated};
+   GL_COMPRESSED_LUMINANCE                           = $84EA {deprecated};
+   GL_COMPRESSED_LUMINANCE_ALPHA                     = $84EB {deprecated};
+   GL_COMPRESSED_INTENSITY                           = $84EC {deprecated};
 
    // Texture Combine Environment Mode
    // promoted to core OpenGL v1.3 from GL_ARB_texture_env_combine (ARB #17)
@@ -1551,15 +1559,7 @@ const
 
    // Point Parameters
    // promoted to core OpenGL v1.4 from GL_ARB_point_parameters (ARB #14)
-   GL_POINT_SIZE_MIN                                 = $8126;
-   GL_POINT_SIZE_MAX                                 = $8127;
    GL_POINT_FADE_THRESHOLD_SIZE                      = $8128;
-   GL_POINT_DISTANCE_ATTENUATION                     = $8129;
-
-   // Automatic Mipmap Generation
-   // promoted to core OpenGL v1.4 from GL_SGIS_generate_mipmap (EXT #32)
-   GL_GENERATE_MIPMAP                               = $8191;
-   GL_GENERATE_MIPMAP_HINT                          = $8192;
 
    // Depth Texture
    // promoted to core OpenGL v1.4 from GL_ARB_depth_texture (ARB #22)
@@ -1571,31 +1571,9 @@ const
    // promoted to Core OpenGL v1.4 from GL_ARB_texture_mirrored_repeat (ARB #21)
    GL_MIRRORED_REPEAT					                       = $8370;
 
-   // Fog Coordinate
-   // promoted to core OpenGL v1.4 from GL_EXT_fog_coord (EXT #149)
-   GL_FOG_COORDINATE_SOURCE                         = $8450;
-   GL_FOG_COORDINATE                                = $8451;
-   GL_FRAGMENT_DEPTH                                = $8452;
-   GL_CURRENT_FOG_COORDINATE                        = $8453;
-   GL_FOG_COORDINATE_ARRAY_TYPE                     = $8454;
-   GL_FOG_COORDINATE_ARRAY_STRIDE                   = $8455;
-   GL_FOG_COORDINATE_ARRAY_POINTER                  = $8456;
-   GL_FOG_COORDINATE_ARRAY                          = $8457;
-
-   // Secondary Color
-   // promoted to core OpenGL v1.4 from GL_EXT_secondary_color (EXT #145)
-   GL_COLOR_SUM                                     = $8458;
-   GL_CURRENT_SECONDARY_COLOR                       = $8459;
-   GL_SECONDARY_COLOR_ARRAY_SIZE                    = $845A;
-   GL_SECONDARY_COLOR_ARRAY_TYPE                    = $845B;
-   GL_SECONDARY_COLOR_ARRAY_STRIDE                  = $845C;
-   GL_SECONDARY_COLOR_ARRAY_POINTER                 = $845D;
-   GL_SECONDARY_COLOR_ARRAY                         = $845E;
-
    // Texture LOD Bias
    // (promoted to core OpenGL v1.4 from GL_EXT_texture_lod_bias (EXT #186)
    GL_MAX_TEXTURE_LOD_BIAS                          = $84FD;
-   GL_TEXTURE_FILTER_CONTROL                        = $8500;
    GL_TEXTURE_LOD_BIAS                              = $8501;
 
    // Stencil Wrap
@@ -1606,16 +1584,53 @@ const
    // Depth Textures
    // promoted to core OpenGL v1.4 from GL_ARB_depth_texture (ARB #22)
    GL_TEXTURE_DEPTH_SIZE                             = $884A;
-   GL_DEPTH_TEXTURE_MODE                             = $884B;
 
    // Shadows
    // promoted to core OpenGL v1.4 from GL_ARB_shadow (ARB #23)
    GL_TEXTURE_COMPARE_MODE                           = $884C;
    GL_TEXTURE_COMPARE_FUNC                           = $884D;
-   GL_COMPARE_R_TO_TEXTURE                           = $884E;
-{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.4 deprecated'} {$ENDIF}
 
-{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}  
+{$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.4 deprecated'} {$ENDIF}
+   // from GL_ARB_point_parameters (ARB #14)
+   GL_POINT_SIZE_MIN                                 = $8126 {deprecated};
+   GL_POINT_SIZE_MAX                                 = $8127 {deprecated};
+   GL_POINT_DISTANCE_ATTENUATION                     = $8129 {deprecated};
+
+   // Automatic Mipmap Generation
+   // promoted to core OpenGL v1.4 from GL_SGIS_generate_mipmap (EXT #32)
+   GL_GENERATE_MIPMAP                               = $8191 {deprecated};
+   GL_GENERATE_MIPMAP_HINT                          = $8192 {deprecated};
+
+   // Fog Coordinate
+   // promoted to core OpenGL v1.4 from GL_EXT_fog_coord (EXT #149)
+   GL_FOG_COORDINATE_SOURCE                         = $8450 {deprecated};
+   GL_FOG_COORDINATE                                = $8451 {deprecated};
+   GL_FRAGMENT_DEPTH                                = $8452 {deprecated};
+   GL_CURRENT_FOG_COORDINATE                        = $8453 {deprecated};
+   GL_FOG_COORDINATE_ARRAY_TYPE                     = $8454 {deprecated};
+   GL_FOG_COORDINATE_ARRAY_STRIDE                   = $8455 {deprecated};
+   GL_FOG_COORDINATE_ARRAY_POINTER                  = $8456 {deprecated};
+   GL_FOG_COORDINATE_ARRAY                          = $8457 {deprecated};
+
+   // Secondary Color
+   // promoted to core OpenGL v1.4 from GL_EXT_secondary_color (EXT #145)
+   GL_COLOR_SUM                                     = $8458 {deprecated};
+   GL_CURRENT_SECONDARY_COLOR                       = $8459 {deprecated};
+   GL_SECONDARY_COLOR_ARRAY_SIZE                    = $845A {deprecated};
+   GL_SECONDARY_COLOR_ARRAY_TYPE                    = $845B {deprecated};
+   GL_SECONDARY_COLOR_ARRAY_STRIDE                  = $845C {deprecated};
+   GL_SECONDARY_COLOR_ARRAY_POINTER                 = $845D {deprecated};
+   GL_SECONDARY_COLOR_ARRAY                         = $845E {deprecated};
+
+   // (promoted to core OpenGL v1.4 from GL_EXT_texture_lod_bias (EXT #186)
+   GL_TEXTURE_FILTER_CONTROL                        = $8500 {deprecated};
+
+   // promoted to core OpenGL v1.4 from GL_ARB_depth_texture (ARB #22)
+   GL_DEPTH_TEXTURE_MODE                             = $884B {deprecated};
+
+   // promoted to core OpenGL v1.4 from GL_ARB_shadow (ARB #23)
+   GL_COMPARE_R_TO_TEXTURE                           = $884E {deprecated};
+{$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
@@ -1638,15 +1653,6 @@ const
    GL_ELEMENT_ARRAY_BUFFER                           = $8893;
    GL_ARRAY_BUFFER_BINDING                           = $8894;
    GL_ELEMENT_ARRAY_BUFFER_BINDING                   = $8895;
-   GL_VERTEX_ARRAY_BUFFER_BINDING                    = $8896;
-   GL_NORMAL_ARRAY_BUFFER_BINDING                    = $8897;
-   GL_COLOR_ARRAY_BUFFER_BINDING                     = $8898;
-   GL_INDEX_ARRAY_BUFFER_BINDING                     = $8899;
-   GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING             = $889A;
-   GL_EDGE_FLAG_ARRAY_BUFFER_BINDING                 = $889B;
-   GL_SECONDARY_COLOR_ARRAY_BUFFER_BINDING           = $889C;
-   GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING            = $889D;
-   GL_WEIGHT_ARRAY_BUFFER_BINDING                    = $889E;
    GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING             = $889F;
    GL_READ_ONLY                                      = $88B8;
    GL_WRITE_ONLY                                     = $88B9;
@@ -1669,22 +1675,34 @@ const
    GL_SAMPLES_PASSED                                 = $8914;
 
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 1.5 deprecated'} {$ENDIF}
+   // from GL_ARB_vertex_buffer_object (ARB #28)
+   GL_VERTEX_ARRAY_BUFFER_BINDING                    = $8896 {deprecated};
+   GL_NORMAL_ARRAY_BUFFER_BINDING                    = $8897 {deprecated};
+   GL_COLOR_ARRAY_BUFFER_BINDING                     = $8898 {deprecated};
+   GL_INDEX_ARRAY_BUFFER_BINDING                     = $8899 {deprecated};
+   GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING             = $889A {deprecated};
+   GL_EDGE_FLAG_ARRAY_BUFFER_BINDING                 = $889B {deprecated};
+   GL_SECONDARY_COLOR_ARRAY_BUFFER_BINDING           = $889C {deprecated};
+   GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING            = $889D {deprecated};
+   GL_WEIGHT_ARRAY_BUFFER_BINDING                    = $889E {deprecated};
+
+	 GL_FOG_COORD_SRC		                = GL_FOG_COORDINATE_SOURCE {deprecated};
+	 GL_FOG_COORD					              = GL_FOG_COORDINATE {deprecated};
+	 GL_CURRENT_FOG_COORD				        = GL_CURRENT_FOG_COORDINATE {deprecated};
+	 GL_FOG_COORD_ARRAY_TYPE				    = GL_FOG_COORDINATE_ARRAY_TYPE {deprecated};
+	 GL_FOG_COORD_ARRAY_STRIDE				  = GL_FOG_COORDINATE_ARRAY_STRIDE {deprecated};
+	 GL_FOG_COORD_ARRAY_POINTER				  = GL_FOG_COORDINATE_ARRAY_POINTER {deprecated};
+	 GL_FOG_COORD_ARRAY					        = GL_FOG_COORDINATE_ARRAY {deprecated};
+	 GL_FOG_COORD_ARRAY_BUFFER_BINDING	= GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING {deprecated};
+
    // Changed Tokens
    // new naming scheme in OpenGL v1.5, old tokens kept for backwards compatibility
-	 GL_FOG_COORD_SRC		                = GL_FOG_COORDINATE_SOURCE;
-	 GL_FOG_COORD					              = GL_FOG_COORDINATE;
-	 GL_CURRENT_FOG_COORD				        = GL_CURRENT_FOG_COORDINATE;
-	 GL_FOG_COORD_ARRAY_TYPE				    = GL_FOG_COORDINATE_ARRAY_TYPE;
-	 GL_FOG_COORD_ARRAY_STRIDE				  = GL_FOG_COORDINATE_ARRAY_STRIDE;
-	 GL_FOG_COORD_ARRAY_POINTER				  = GL_FOG_COORDINATE_ARRAY_POINTER;
-	 GL_FOG_COORD_ARRAY					        = GL_FOG_COORDINATE_ARRAY;
-	 GL_FOG_COORD_ARRAY_BUFFER_BINDING	= GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING;
-	 GL_SRC0_RGB					              = GL_SOURCE0_RGB;
-	 GL_SRC1_RGB					              = GL_SOURCE1_RGB;
-	 GL_SRC2_RGB					              = GL_SOURCE2_RGB;
-	 GL_SRC0_ALPHA				              = GL_SOURCE0_ALPHA;
-	 GL_SRC1_ALPHA					            = GL_SOURCE1_ALPHA;
-	 GL_SRC2_ALPHA					            = GL_SOURCE2_ALPHA;
+	 GL_SRC0_RGB					              = GL_SOURCE0_RGB {deprecated};
+	 GL_SRC1_RGB					              = GL_SOURCE1_RGB {deprecated};
+	 GL_SRC2_RGB					              = GL_SOURCE2_RGB {deprecated};
+	 GL_SRC0_ALPHA				              = GL_SOURCE0_ALPHA {deprecated};
+	 GL_SRC1_ALPHA					            = GL_SOURCE1_ALPHA {deprecated};
+	 GL_SRC2_ALPHA					            = GL_SOURCE2_ALPHA {deprecated};
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
@@ -1703,7 +1721,6 @@ const
    GL_VERTEX_ATTRIB_ARRAY_TYPE                       = $8625;
    GL_CURRENT_VERTEX_ATTRIB                          = $8626;
    GL_VERTEX_PROGRAM_POINT_SIZE                      = $8642;
-   GL_VERTEX_PROGRAM_TWO_SIDE                        = $8643;
    GL_VERTEX_ATTRIB_ARRAY_POINTER                    = $8645;
 
    // Separate Stencil
@@ -1736,18 +1753,12 @@ const
    // promoted to core OpenGL v2.0 from GL_EXT_blend_equation_separate (EXT #299)
    GL_BLEND_EQUATION_ALPHA                           = $883D;
 
-   // Point Sprites
-   // promoted to core OpenGL v2.0 from GL_ARB_point_sprite (ARB #35)
-   GL_POINT_SPRITE                                   = $8861;
-   GL_COORD_REPLACE                                  = $8862;
-
    // Shader Programs
    // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31)
    GL_MAX_VERTEX_ATTRIBS                             = $8869;
    GL_VERTEX_ATTRIB_ARRAY_NORMALIZED                 = $886A;
 
    // promoted to core OpenGL v2.0 from GL_ARB_vertex_shader (ARB #31) /GL_ARB_fragment_shader (ARB #32)
-   GL_MAX_TEXTURE_COORDS                             = $8871;
    GL_MAX_TEXTURE_IMAGE_UNITS                        = $8872;
 
    // promoted to core OpenGL v2.0 from GL_ARB_fragment_shader (ARB #32)
@@ -1826,7 +1837,15 @@ const
    GL_STENCIL_BACK_WRITEMASK                            = $8CA5;
 
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 2.0 deprecated'} {$ENDIF}
+   // from GL_ARB_vertex_shader (ARB #31)
+   GL_VERTEX_PROGRAM_TWO_SIDE                        = $8643 {deprecated};
 
+   // from GL_ARB_point_sprite (ARB #35)
+   GL_POINT_SPRITE                                   = $8861 {deprecated};
+   GL_COORD_REPLACE                                  = $8862 {deprecated};
+
+   // from GL_ARB_vertex_shader (ARB #31) /GL_ARB_fragment_shader (ARB #32)
+   GL_MAX_TEXTURE_COORDS                             = $8871 {deprecated};
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
@@ -1834,9 +1853,6 @@ const
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'New core constants in OpenGL v2.1'} {$ENDIF}
 
    // OpenGL 2.1
-
-   // new for 2.1
-   GL_CURRENT_RASTER_SECONDARY_COLOR                    = $845F;
 
    // Pixel Buffer Objects
    // from GL_ARB_pixel_buffer_object (ARB #42)
@@ -1860,30 +1876,35 @@ const
    GL_SRGB8                                             = $8C41;
    GL_SRGB_ALPHA                                        = $8C42;
    GL_SRGB8_ALPHA8                                      = $8C43;
-   GL_SLUMINANCE_ALPHA                                  = $8C44;
-   GL_SLUMINANCE8_ALPHA8                                = $8C45;
-   GL_SLUMINANCE                                        = $8C46;
-   GL_SLUMINANCE8                                       = $8C47;
    GL_COMPRESSED_SRGB                                   = $8C48;
    GL_COMPRESSED_SRGB_ALPHA                             = $8C49;
+
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'OpenGL 2.1 deprecated'} {$ENDIF}
    // new
-   GL_COMPRESSED_SLUMINANCE                             = $8C4A;
-   GL_COMPRESSED_SLUMINANCE_ALPHA                       = $8C4B;
+   GL_CURRENT_RASTER_SECONDARY_COLOR                    = $845F {deprecated};
+   // from GL_EXT_texture_sRGB (EXT #315)
+   GL_SLUMINANCE_ALPHA                                  = $8C44 {deprecated};
+   GL_SLUMINANCE8_ALPHA8                                = $8C45 {deprecated};
+   GL_SLUMINANCE                                        = $8C46 {deprecated};
+   GL_SLUMINANCE8                                       = $8C47 {deprecated};
+   GL_COMPRESSED_SLUMINANCE                             = $8C4A {deprecated};
+   GL_COMPRESSED_SLUMINANCE_ALPHA                       = $8C4B {deprecated};
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion'} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
 {$IFDEF GLS_COMPILER_2005_UP} {$region 'New core constants in OpenGL v3.0'} {$ENDIF}
    // TODO: arrange these better, find where they came from
-   GL_COMPARE_REF_TO_TEXTURE				= GL_COMPARE_R_TO_TEXTURE;
-   GL_CLIP_DISTANCE0					= GL_CLIP_PLANE0;
-   GL_CLIP_DISTANCE1					= GL_CLIP_PLANE1;
-   GL_CLIP_DISTANCE2					= GL_CLIP_PLANE2;
-   GL_CLIP_DISTANCE3					= GL_CLIP_PLANE3;
-   GL_CLIP_DISTANCE4					= GL_CLIP_PLANE4;
-   GL_CLIP_DISTANCE5					= GL_CLIP_PLANE5;
-   GL_MAX_CLIP_DISTANCES				= GL_MAX_CLIP_PLANES;
+   GL_COMPARE_REF_TO_TEXTURE				= $884E;//GL_COMPARE_R_TO_TEXTURE;
+   GL_CLIP_DISTANCE0					= $3000;//GL_CLIP_PLANE0;
+   GL_CLIP_DISTANCE1					= $3001;//GL_CLIP_PLANE1;
+   GL_CLIP_DISTANCE2					= $3002;//GL_CLIP_PLANE2;
+   GL_CLIP_DISTANCE3					= $3003;//GL_CLIP_PLANE3;
+   GL_CLIP_DISTANCE4					= $3004;//GL_CLIP_PLANE4;
+   GL_CLIP_DISTANCE5					= $3005;//GL_CLIP_PLANE5;
+   GL_CLIP_DISTANCE6					= $3006;
+   GL_CLIP_DISTANCE7					= $3007;
+   GL_MAX_CLIP_DISTANCES				= $0D32;//GL_MAX_CLIP_PLANES;
 	 GL_MAJOR_VERSION					=$821B;
 	 GL_MINOR_VERSION					=$821C;
 	 GL_NUM_EXTENSIONS					=$821D;
@@ -1992,6 +2013,10 @@ const
 	 GL_QUERY_NO_WAIT					= $8E14;
 	 GL_QUERY_BY_REGION_WAIT				= $8E15;
 	 GL_QUERY_BY_REGION_NO_WAIT				= $8E16;
+   GL_BUFFER_ACCESS_FLAGS            = $911F;
+   GL_BUFFER_MAP_LENGTH              = $9120;
+   GL_BUFFER_MAP_OFFSET              = $9121;
+
 
 {$IFDEF GLS_COMPILER_2005_UP} {$endregion} {$ENDIF}
 
@@ -3724,10 +3749,6 @@ const
    GL_COORD_REPLACE_NV                               = $8862;
    GL_POINT_SPRITE_R_MODE_NV                         = $8863;
 
-   // GL_NV_primitive_restart
-   GL_PRIMITIVE_RESTART_NV                           = $8558;
-   GL_PRIMITIVE_RESTART_INDEX_NV                     = $8559;
-
    // GL_EXT_stencil_two_side (#268)
    GL_STENCIL_TEST_TWO_SIDE_EXT                      = $8910;
    GL_ACTIVE_STENCIL_FACE_EXT                        = $8911;
@@ -3798,6 +3819,10 @@ const
    WGL_TEXTURE_FLOAT_RGB_NV                         = $20B7;
    WGL_TEXTURE_FLOAT_RGBA_NV                        = $20B8;
    GLX_FLOAT_COMPONENTS_NV                          = $20B0;
+
+   // GL_NV_primitive_restart
+   GL_PRIMITIVE_RESTART_NV                           = $8558;
+   GL_PRIMITIVE_RESTART_INDEX_NV                     = $8559;
 
    // GL_EXT_depth_bounds_test (#297)
    GL_DEPTH_BOUNDS_TEST_EXT                         = $8890;
