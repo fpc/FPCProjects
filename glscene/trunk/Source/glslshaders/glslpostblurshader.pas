@@ -27,7 +27,7 @@ uses
   Classes,
 
   // GLScene
-  GLTexture, GLScene, VectorGeometry, OpenGL1x, GLContext,
+  GLTexture, GLScene, VectorGeometry, GLContext,
   GLSLShader, GLCustomShader, GLRenderContextInfo;
 
 type
@@ -135,7 +135,7 @@ end;
 function TGLCustomGLSLPostBlurShader.DoUnApply(
   var rci: TRenderContextInfo): Boolean;
 begin
-  glActiveTextureARB(GL_TEXTURE0_ARB);
+  rci.GLStates.ActiveTexture := 0;
   GetGLSLProg.EndUseProgramObject;
   Result := False;
 end;

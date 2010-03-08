@@ -6,6 +6,7 @@
    Prototypes and base implementation of TGLContext.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>06/03/10 - Yar - Added to TGLProgramHandle BindFragDataLocation, GetUniformOffset, GetUniformBlockIndex
       <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>22/02/10 - DanB - Added TGLContext.GLStates, to be used to cache
                             global per-context state. Removed BindedGLSLProgram
@@ -827,6 +828,8 @@ type
           const TextureIndex: Integer; const TextureTarget: Cardinal): Cardinal;
         procedure SetUniformTextureHandle(const index: string;
           const TextureIndex: Integer; const TextureTarget, Value: Cardinal);
+        procedure SetUniformBuffer(const index: string;
+          Value: TGLUniformBufferHandle);
       protected
          { Protected Declarations }
          function DoAllocateHandle : cardinal; override;
@@ -844,13 +847,18 @@ type
 
          procedure AttachObject(shader : TGLShaderHandle);
          procedure BindAttribLocation(index : Integer; const aName : String);
+         procedure BindFragDataLocation(index: Integer; const aName : String);
          function LinkProgram : Boolean;
          function ValidateProgram : Boolean;
          function GetAttribLocation(const aName : String) : Integer;
          function GetUniformLocation(const aName : String) : Integer;
+         function GetUniformOffset(const aName : String) : PGLInt;
+         function GetUniformBlockIndex(const aName : String) : Integer;
 
          function GetVaryingLocation(const aName : String) : Integer; // Currently, NVidia-specific.
          procedure AddActiveVarying(const aName : String);            // Currently, NVidia-specific.
+
+         function GetUniformBufferSize(const aName : String) : Integer;
 
          procedure UseProgramObject;
          procedure EndUseProgramObject;
@@ -881,6 +889,7 @@ type
          property UniformMatrix4fv[const index : String] : TMatrix read GetUniformMatrix4fv write SetUniformMatrix4fv;
 
          property UniformTextureHandle[const index: string; const TextureIndex: Integer; const TextureTarget: Cardinal]: Cardinal read GetUniformTextureHandle write SetUniformTextureHandle;
+         property UniformBuffer[const index: string]: TGLUniformBufferHandle write SetUniformBuffer;
    end;
 
    // TGLContextNotification
@@ -977,7 +986,7 @@ resourcestring
    cContextAlreadyCreated =      'Context already created';
    cContextNotCreated =          'Context not created';
    cUnbalancedContexActivations= 'Unbalanced context activations';
-
+   
 var
    vContextClasses : TList = nil;
 {$IFNDEF GLS_MULTITHREAD}
@@ -2559,6 +2568,13 @@ begin
    glBindAttribLocationARB(FHandle, index, PGLChar(TGLString(aName)));
 end;
 
+// BindFragDataLocation
+//
+procedure TGLProgramHandle.BindFragDataLocation(index: Integer; const aName : String);
+begin
+  glBindFragDataLocation(FHandle, index, PGLChar(TGLString(name)));
+end;
+
 // LinkProgram
 //
 function TGLProgramHandle.LinkProgram : Boolean;
@@ -2865,8 +2881,38 @@ procedure TGLProgramHandle.SetUniformTextureHandle(const index: string;
   const TextureIndex: Integer; const TextureTarget, Value: Cardinal);
 begin
   glActiveTextureARB(GL_TEXTURE0_ARB + TextureIndex);
-  glBindTexture(TextureTarget, Value);
+  RenderingContext.GLStates.SetGLCurrentTexture(0, TextureTarget, Value);
   SetUniform1i(index, TextureIndex);
+end;
+
+// SetUniformBuffer
+//
+procedure TGLProgramHandle.SetUniformBuffer(const index: string;
+  Value: TGLUniformBufferHandle);
+begin
+  glUniformBufferEXT(Handle, GetUniformLocation(index), Value.Handle);
+end;
+
+// GetUniformBufferSize
+//
+function TGLProgramHandle.GetUniformBufferSize(const aName : String) : Integer;
+begin
+  Result := glGetUniformBufferSizeEXT(Handle, GetUniformLocation(aName));
+end;
+
+// GetUniformOffset
+//
+function TGLProgramHandle.GetUniformOffset(const aName : String) : PGLInt;
+begin
+  Result := glGetUniformOffsetEXT(Handle, GetUniformLocation(aName));
+end;
+
+// GetUniformBlockIndex
+//
+function TGLProgramHandle.GetUniformBlockIndex(const aName : String) : Integer;
+begin
+  Result := glGetUniformBlockIndex(Handle, PGLChar(TGLString(aName)));
+  Assert(Result>=0, 'Unknown uniform block"'+name+'" or program not in use');
 end;
 
 // Create

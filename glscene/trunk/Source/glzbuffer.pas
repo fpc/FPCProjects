@@ -201,7 +201,7 @@ type
          procedure SetYRes(const val :integer);
          procedure SetSoft(const val :boolean);
 
-         procedure BindTexture;
+         procedure BindTexture(var rci: TRenderContextInfo);
 	public
           ViewerZBuf :TGLzBuffer;
           CasterZBuf :TGLzBuffer;
@@ -671,25 +671,25 @@ end;
 
 // BindTexture
 //
-procedure TGLZShadows.BindTexture;
+procedure TGLZShadows.BindTexture(var rci: TRenderContextInfo);
 begin
    if FTexHandle.Handle=0 then begin
       FTexHandle.AllocateHandle;
       glBindTexture(GL_TEXTURE_2D, FTexHandle.Handle);
 
    	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_Fastest);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-        glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-   	glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+        rci.GLStates.UnpackAlignment := 1;  // 4 is default, is this wanted?
+        rci.GLStates.UnpackRowLength := 0;
+        rci.GLStates.UnpackSkipRows := 0;
+        rci.GLStates.UnpackSkipPixels := 0;
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glEnable(GL_TEXTURE_2D);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        rci.GLStates.Enable(stTexture2D);
+        rci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
         glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);       //
-        glEnable(GL_BLEND);
+        rci.GLStates.Enable(stBlend);
 
         PrepareAlphaMemory;
 
@@ -726,13 +726,13 @@ begin
    if not assigned(ViewerZBuf) then begin  //Create viewer zbuffer
       ViewerZBuf:=TGLZBuffer.Create;
       ViewerZBuf.LinkToViewer(FViewer);
-      Bindtexture;
+      Bindtexture(ARci);
       FTexturePrepared:=False; //if FTexHandle.Handle:=0;
    end;
    ViewerZBuf.Refresh;
 
    ARci.GLStates.PushAttrib([sttEnable, sttColorBuffer]);
-   glEnable(GL_TEXTURE_2D);
+   ARci.GLStates.Enable(stTexture2D);
 
    ARci.GLStates.Enable(stBlend);  //by Juergen Linker
    ARci.GLStates.SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);

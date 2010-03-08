@@ -1660,12 +1660,12 @@ begin
       FLastSortTime:=StopPrecisionTimer(timer)*1000;
 
       glPushMatrix;
-      glLoadMatrixf(@TGLSceneBuffer(rci.buffer).ModelViewMatrix);
+      glLoadMatrixf(@TGLSceneBuffer(rci.buffer).ViewMatrix);
 
       rci.GLStates.PushAttrib(cAllAttribBits);
 
       rci.GLStates.Disable(stCullFace);
-      glDisable(GL_TEXTURE_2D);
+      rci.GLStates.Disable(stTexture2D);
       currentTexturingMode:=0;
       rci.GLStates.Disable(stLighting);
       rci.GLStates.PolygonMode := pmFill;
@@ -1682,7 +1682,7 @@ begin
       else
          // bmOpaque, do nothing
       end;
-      glDepthFunc(GL_LEQUAL);
+      rci.GLStates.DepthFunc := cfLEqual;
       if not FZWrite then begin
          glGetBooleanv(GL_DEPTH_WRITEMASK, @oldDepthMask);
          //oldDepthMask := rci.GLStates.DepthWriteMask;
@@ -2892,10 +2892,10 @@ begin
          glBindTexture(GL_TEXTURE_2D, FTexHandle.Handle);
 
          glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-         glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-         glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+         rci.GLStates.UnpackAlignment := 4;
+         rci.GLStates.UnpackRowLength := 0;
+         rci.GLStates.UnpackSkipRows := 0;
+         rci.GLStates.UnpackSkipPixels := 0;
 
          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

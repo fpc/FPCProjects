@@ -571,7 +571,7 @@ begin
          // hardware-based occlusion test is possible
          FlareIsNotOccluded:=True;
 
-         glColorMask(False, False, False, False);
+         rci.GLStates.SetColorMask([]);
          rci.GLStates.DepthWriteMask := False;
 
          usedOcclusionQuery:=TGLOcclusionQueryHandle.IsSupported;
@@ -611,7 +611,7 @@ begin
          end;
 
          rci.GLStates.DepthWriteMask := True;
-         glColorMask(True, True, True, True);
+         rci.GLStates.SetColorMask(cAllColorComponents);
       end else begin
          // explicit ZTesting, can hurt framerate badly
          //depth:=Scene.CurrentBuffer.GetPixelDepth(Round(ScreenPos[0]),Round(rci.viewPortSize.cy-ScreenPos[1]));

@@ -7,7 +7,8 @@
    Adapted from DevIL image library (http://openil.sourceforge.net)<p>
 
    <b>History : </b><font size=-1><ul>
-      <li>01/09/04 - Yar - Added more support DX9 DDS color formats 
+      <li>05/03/10 - Yar - Added float types in GLEnumToDDSHeader
+      <li>23/01/10 - Yar - Added more support DX9 DDS color formats
                            and DX11 DXGI constants to future
       <li>31/03/07 - DaStr - Added $I GLScene.inc
       <li>03/09/04 - SG - Delphi 5 compatibilty fixes (Ivan Lee Herring)
@@ -19,6 +20,7 @@ unit DXTC;
 interface
 
 {$I GLScene.inc}
+{$Z4}  // Minimum enum size = dword
 
 uses
    SysUtils, VectorGeometry, OpenGL1x, GLTextureFormat;
@@ -1196,6 +1198,7 @@ begin
   end;
 
   if IsCompressedFormat(iFormat) then
+  begin
     with DX9header.SurfaceFormat.ddpf do
     begin
       dwFlags := DDPF_FOURCC;
@@ -1208,6 +1211,28 @@ begin
         tfCOMPRESSED_LUMINANCE_ALPHA_LATC2: dwFourCC := FOURCC_ATI2;
         else Result := false;
       end;
+    end;
+  end
+  else if IsFloatFormat(iFormat) then
+  begin
+    with DX9header.SurfaceFormat.ddpf do
+    begin
+      dwFlags := DDPF_FOURCC;
+      case iFormat of
+        tfINTENSITY_FLOAT16,
+        tfLUMINANCE_FLOAT16,
+        tfR16F:                             dwFourCC := FOURCC_R16F;
+        tfRGBA_FLOAT16:                     dwFourCC := FOURCC_A16B16G16R16F;
+        tfINTENSITY_FLOAT32,
+        tfLUMINANCE_FLOAT32,
+        tfR32F:                             dwFourCC := FOURCC_R32F;
+        tfLUMINANCE_ALPHA_FLOAT16,
+        tfRG16F:                            dwFourCC := FOURCC_G16R16F;
+        tfLUMINANCE_ALPHA_FLOAT32,
+        tfRG32F:                            dwFourCC := FOURCC_G32R32F;
+        else Result := false;
+      end;
+    end;
   end
   else with DX9header.SurfaceFormat.ddpf do
   begin

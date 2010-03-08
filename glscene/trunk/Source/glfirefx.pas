@@ -702,7 +702,7 @@ begin
    glPushMatrix;
    // revert to the base model matrix in the case of a referenced fire
    if Assigned(Manager.Reference) then begin
-      glLoadMatrixf(@TGLSceneBuffer(rci.buffer).ModelViewMatrix);
+      glLoadMatrixf(@TGLSceneBuffer(rci.buffer).ViewMatrix);
    end;
 
    rci.GLStates.Disable(stCullFace);

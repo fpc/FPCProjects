@@ -104,7 +104,7 @@ type
 
          function GenerateVertexProgram : String;
          function GenerateFragmentProgram : String;
-         procedure DoLightPass(lightID : Cardinal);
+         procedure DoLightPass(var rci: TRenderContextInfo; lightID : Cardinal);
 
       protected
          procedure SetBumpMethod(const Value : TBumpMethod);
@@ -505,7 +505,8 @@ end;
 
 // DoLightPass
 //
-procedure TGLBumpShader.DoLightPass(lightID : Cardinal);
+procedure TGLBumpShader.DoLightPass(var rci: TRenderContextInfo;
+  lightID : Cardinal);
 var
    dummyHandle, tempHandle : Integer;
    lightPos, lightAtten,
@@ -526,18 +527,18 @@ begin
 
    case FBumpMethod of
       bmDot3TexCombiner : begin
-         glActiveTextureARB(GL_TEXTURE0_ARB);
+         rci.GLStates.ActiveTexture := 0;
          glGetIntegerv(GL_TEXTURE_BINDING_2D, @dummyHandle);
          glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
          glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_DOT3_RGB_ARB);
          glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE0_ARB);
          glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_PRIMARY_COLOR_ARB);
 
-         glActiveTextureARB(GL_TEXTURE1_ARB);
-         glEnable(GL_TEXTURE_2D);
+         rci.GLStates.ActiveTexture := 1;
+         rci.GLStates.Enable(stTexture2D);
          glGetIntegerv(GL_TEXTURE_BINDING_2D, @tempHandle);
          if tempHandle = 0 then
-            glBindTexture(GL_TEXTURE_2D, dummyHandle);
+            rci.GLStates.SetGLCurrentTexture(1, GL_TEXTURE_2D, dummyHandle);
          glGetLightfv(GL_LIGHT0+FLightIDs[0], GL_DIFFUSE, @lightDiffuse);
          glGetMaterialfv(GL_FRONT, GL_DIFFUSE, @materialDiffuse);
          lightDiffuse[0]:=lightDiffuse[0]*materialDiffuse[0];
@@ -550,10 +551,10 @@ begin
          glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB);
          glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_CONSTANT_COLOR_ARB);
 
-         glActiveTextureARB(GL_TEXTURE2_ARB);
-         glDisable(GL_TEXTURE_2D);
+         rci.GLStates.ActiveTexture := 2;
+         rci.GLStates.Disable(stTexture2D);
 
-         glActiveTextureARB(GL_TEXTURE0_ARB);
+         rci.GLStates.ActiveTexture := 0;
       end;
 
       bmBasicARBFP : begin
@@ -626,7 +627,7 @@ begin
                             sttColorBuffer]);
 
    FLightIDs.Clear;
-   glActiveTextureARB(GL_TEXTURE0_ARB);
+   rci.GLStates.ActiveTexture := 0;
    if glIsEnabled(GL_TEXTURE_2D) then
       for i:=0 to maxLights-1 do begin
          glGetBooleanv(GL_LIGHT0+i, @lightEnabled);
@@ -642,19 +643,19 @@ begin
 
       rci.GLStates.DepthFunc := cfLEqual;
       rci.GLStates.Disable(stBlend);
-      DoLightPass(FLightIDs[0]);
+      DoLightPass(rci, FLightIDs[0]);
       FLightIDs.Delete(0);
 
    end else begin
 
       rci.GLStates.Disable(stLighting);
-      glActiveTextureARB(GL_TEXTURE0_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE1_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE2_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE0_ARB);
+      rci.GLStates.ActiveTexture := 0;
+      rci.GLStates.Disable(stTexture2D);
+      rci.GLStates.ActiveTexture := 1;
+      rci.GLStates.Disable(stTexture2D);
+      rci.GLStates.ActiveTexture := 2;
+      rci.GLStates.Disable(stTexture2D);
+      rci.GLStates.ActiveTexture := 0;
 
       glGetFloatv(GL_LIGHT_MODEL_AMBIENT, @ambient);
       glGetMaterialfv(GL_FRONT, GL_AMBIENT, @materialAmbient);
@@ -684,7 +685,7 @@ begin
       rci.GLStates.Enable(stBlend);
       rci.GLStates.SetBlendFunc(bfOne, bfOne);
 
-      DoLightPass(FLightIDs[0]);
+      DoLightPass(rci, FLightIDs[0]);
       FLightIDs.Delete(0);
       Result:=True;
       Exit;
@@ -696,14 +697,14 @@ begin
       rci.GLStates.Enable(stBlend);
       rci.GLStates.SetBlendFunc(bfDstColor, bfZero);
 
-      glActiveTextureARB(GL_TEXTURE0_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE1_ARB);
-      glEnable(GL_TEXTURE_2D);
+      rci.GLStates.ActiveTexture := 0;
+      rci.GLStates.Disable(stTexture2D);
+      rci.GLStates.ActiveTexture := 1;
+      rci.GLStates.Enable(stTexture2D);
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-      glActiveTextureARB(GL_TEXTURE2_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE0_ARB);
+      rci.GLStates.ActiveTexture := 2;
+      rci.GLStates.Disable(stTexture2D);
+      rci.GLStates.ActiveTexture := 0;
 
       FDiffusePass:=True;
       Result:=True;
@@ -716,13 +717,13 @@ begin
          glDisable(GL_FRAGMENT_PROGRAM_ARB);
 
       rci.GLStates.Disable(stLighting);
-      glActiveTextureARB(GL_TEXTURE0_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE1_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE2_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE0_ARB);
+      rci.GLStates.ActiveTexture := 0;
+      rci.GLStates.Disable(stTexture2D);
+      rci.GLStates.ActiveTexture := 1;
+      rci.GLStates.Disable(stTexture2D);
+      rci.GLStates.ActiveTexture := 2;
+      rci.GLStates.Disable(stTexture2D);
+      rci.GLStates.ActiveTexture := 0;
 
       rci.GLStates.DepthFunc := cfLEqual;
       rci.GLStates.Enable(stBlend);

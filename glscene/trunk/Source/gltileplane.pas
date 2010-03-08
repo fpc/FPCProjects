@@ -614,7 +614,7 @@ begin
    // initialize infos
    glNormal3fv(@ZVector);
    if FNoZWrite then
-      glDepthMask(False);
+      rci.GLStates.DepthWriteMask := False;
    if SortByMaterials then begin
       SetLength(quadInfos, MaterialLibrary.Materials.Count);
       for i:=0 to High(quadInfos) do begin //correction in (i:=0) from (i:=1)
@@ -670,7 +670,7 @@ begin
       end;
    end;
    if FNoZWrite then
-      glDepthMask(True);
+      rci.GLStates.DepthWriteMask := True;
 end;
 
 //-------------------------------------------------------------

@@ -212,7 +212,7 @@ begin
 
             glPushMatrix;
             glLoadIdentity;
-            glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+            glLoadMatrixf(@CurrentBuffer.ViewMatrix);
 
             case ShadowedLight.LightStyle of
                lsParallel : begin
@@ -227,7 +227,7 @@ begin
             glMultMatrixf(@shadowMat);
 
             glGetFloatv(GL_MODELVIEW_MATRIX, @curMat);
-            glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+            glLoadMatrixf(@CurrentBuffer.ViewMatrix);
             CurrentBuffer.PushModelViewMatrix(curMat);
 
             ARci.GLStates.Disable(stCullFace);
@@ -270,7 +270,7 @@ begin
 
             // Restore to "normal"
             CurrentBuffer.PopModelViewMatrix;
-            glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+            glLoadMatrixf(@CurrentBuffer.ViewMatrix);
             glPopMatrix;
 
          end;

@@ -9,6 +9,8 @@
    materials/mirror demo before using this component.<p>
 
 	<b>History : </b><font size=-1><ul>
+      <li>08/03/10 - DanB - Removed TGLMirror.ClearZBufferArea + changed depth
+                            clearing to use DepthRange(1,1) instead
       <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>15/12/08- Paul Robello - corrected call to  FOnEndRenderingMirrors
       <li>06/06/07 - DaStr - Added GLColor to uses (BugtrackerID = 1732211)
@@ -78,7 +80,6 @@ type
          procedure Notification(AComponent: TComponent; Operation: TOperation); override;
          procedure SetMirrorObject(const val : TGLBaseSceneObject);
          procedure SetMirrorOptions(const val : TMirrorOptions);
-         procedure ClearZBufferArea(aBuffer: TGLSceneBuffer);
 
 		   procedure SetHeight(AValue: TGLFloat);
 		   procedure SetWidth(AValue: TGLFloat);
@@ -202,7 +203,7 @@ begin
                ARci.GLStates.SetGLMaterialColors(cmFront, bgColor, clrBlack, clrBlack, clrBlack, 0);
                ARci.GLStates.Disable(stTexture2D);
             end else begin
-               glColorMask(False, False, False, False);
+               ARci.GLStates.SetColorMask([]);
             end;
             ARci.GLStates.DepthWriteMask := False;
 
@@ -215,15 +216,24 @@ begin
             end;
 
             if (moClearZBuffer in MirrorOptions) then
-               ClearZBufferArea(CurrentBuffer);
+            begin
+               // Draw the mirror at maximum depth
+               ARci.GLStates.SetColorMask([]);
+               ARci.GLStates.DepthFunc := cfAlways;
+               ARci.GLStates.SetDepthRange(1, 1);
+               BuildList(ARci);
+               ARci.GLStates.SetDepthRange(0, 1);
+               ARci.GLStates.DepthFunc := cfLess;
+               ARci.GLStates.SetColorMask(cAllColorComponents);
+            end;
 
             if not (moOpaque in MirrorOptions) then
-               glColorMask(True, True, True, True);
+               ARci.GLStates.SetColorMask(cAllColorComponents);
          end;
 
          // Mirror lights
          glPushMatrix;
-         glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+         glLoadMatrixf(@CurrentBuffer.ViewMatrix);
          refMat:=MakeReflectionMatrix(AffineVectorMake(AbsolutePosition),
                                       AffineVectorMake(AbsoluteDirection));
          glMultMatrixf(@refMat);
@@ -231,7 +241,7 @@ begin
 
          // mirror geometry and render master
          glGetFloatv(GL_MODELVIEW_MATRIX, @curMat);
-         glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+         glLoadMatrixf(@CurrentBuffer.ViewMatrix);
          CurrentBuffer.PushModelViewMatrix(curMat);
 
          ARci.GLStates.Disable(stCullFace);
@@ -270,7 +280,7 @@ begin
          ARci.GLStates.CullFaceMode := cmBack;
          // Restore to "normal"
          CurrentBuffer.PopModelViewMatrix;
-         glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+         glLoadMatrixf(@CurrentBuffer.ViewMatrix);
          Scene.SetupLights(CurrentBuffer.LimitOf[limLights]);
 
          glPopMatrix;
@@ -324,47 +334,6 @@ begin
 	  quadric:=gluNewQuadric;
   	gluDisk(Quadric, 0, FRadius, FSlices, 1);  //radius. slices, loops
   end;
-end;
-
-// BuildList
-//
-procedure TGLMirror.ClearZBufferArea(aBuffer: TGLSceneBuffer);
-var
-   worldMat : TMatrix;
-   p : TAffineVector;
-begin
-   with aBuffer do begin
-      glPushMatrix;
-      worldMat:=Self.AbsoluteMatrix;
-      glMatrixMode(GL_PROJECTION);
-      glPushMatrix;
-      glLoadIdentity;
-      glOrtho(0, Width, 0, Height, 1, -1);
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity;
-
-      glDepthFunc(GL_ALWAYS);
-      glColorMask(False, False, False, False);
-
-      glBegin(GL_QUADS);
-         p:=WorldToScreen(VectorTransform(AffineVectorMake(Self.Width*0.5, Self.Height*0.5, 0), worldMat));
-         glVertex3f(p[0], p[1], 0.999);
-         p:=WorldToScreen(VectorTransform(AffineVectorMake(-Self.Width*0.5, Self.Height*0.5, 0), worldMat));
-         glVertex3f(p[0], p[1], 0.999);
-         p:=WorldToScreen(VectorTransform(AffineVectorMake(-Self.Width*0.5, -Self.Height*0.5, 0), worldMat));
-         glVertex3f(p[0], p[1], 0.999);
-         p:=WorldToScreen(VectorTransform(AffineVectorMake(Self.Width*0.5, -Self.Height*0.5, 0), worldMat));
-         glVertex3f(p[0], p[1], 0.999);
-      glEnd;
-
-      glColorMask(True, True, True, True);
-      glDepthFunc(GL_LESS);
-      
-      glMatrixMode(GL_PROJECTION);
-      glPopMatrix;
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix;
-   end;
 end;
 
 // Notification

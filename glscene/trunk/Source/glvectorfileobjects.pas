@@ -4374,9 +4374,9 @@ begin
    if GL_ARB_multitexture and (not mrci.ignoreMaterials) then begin
       Assert(FArraysDeclared);
       if not FLightMapArrayEnabled then begin
-         glActiveTextureARB(GL_TEXTURE1_ARB);
-         glEnable(GL_TEXTURE_2D);
-         glActiveTextureARB(GL_TEXTURE0_ARB);
+         mrci.GLStates.ActiveTexture := 1;
+         mrci.GLStates.Enable(stTexture2D);
+         mrci.GLStates.ActiveTexture := 0;
          FLightMapArrayEnabled:=True;
       end;
    end;
@@ -4387,9 +4387,9 @@ end;
 procedure TMeshObject.DisableLightMapArray(var mrci : TRenderContextInfo);
 begin
    if GL_ARB_multitexture and FLightMapArrayEnabled then begin
-      glActiveTextureARB(GL_TEXTURE1_ARB);
-      glDisable(GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE0_ARB);
+      mrci.GLStates.ActiveTexture := 1;
+      mrci.GLStates.Disable(stTexture2D);
+      mrci.GLStates.ActiveTexture := 0;
       FLightMapArrayEnabled:=False;
    end;
 end;
@@ -5534,12 +5534,12 @@ procedure TFaceGroup.AttachLightmap(lightMap : TGLTexture; var mrci : TRenderCon
 begin
    if GL_ARB_multitexture then with lightMap do begin
       Assert(Image.NativeTextureTarget=GL_TEXTURE_2D);
-      glActiveTextureARB(GL_TEXTURE1_ARB);
+      mrci.GLStates.ActiveTexture := 1;
 
       mrci.GLStates.SetGLCurrentTexture(1, GL_TEXTURE_2D, Handle);
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-      glActiveTextureARB(GL_TEXTURE0_ARB);
+      mrci.GLStates.ActiveTexture := 0;
    end;
 end;
 

@@ -695,12 +695,12 @@ begin
          if pointSize10>15 then begin
             glEnd;
             lastPointSize10:=pointSize10;
-            glPointSize(pointSize10*0.1);
+            rci.GLStates.PointSize := pointSize10*0.1;
             glBegin(GL_POINTS);
          end else if lastPointSize10<>15 then begin
             glEnd;
             lastPointSize10:=15;
-            glPointSize(1.5);
+            rci.GLStates.PointSize := 1.5;
             glBegin(GL_POINTS);
          end;
       end;

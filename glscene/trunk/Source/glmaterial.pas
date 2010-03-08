@@ -6,6 +6,7 @@
  Handles all the material + material library stuff.<p>
 
  <b>History : </b><font size=-1><ul>
+      <li>06/03/10 - Yar - Added to TGLDepthProperties DepthClamp property
       <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>21/02/10 - Yar - Added TGLDepthProperties,
                            optimization of switching states
@@ -232,7 +233,8 @@ type
     destructor Destroy; override;
 
     procedure Apply(var rci: TRenderContextInfo; aFace: TCullFaceMode);
-    procedure ApplyNoLighting(var rci: TRenderContextInfo; aFace: TCullFaceMode);
+    procedure ApplyNoLighting(var rci: TRenderContextInfo; aFace:
+      TCullFaceMode);
     procedure Assign(Source: TPersistent); override;
 
   published
@@ -253,6 +255,7 @@ type
     FDepthWrite: boolean;
     FZNear, FZFar: Single;
     FCompareFunc: TDepthfunction;
+    FDepthClamp: Boolean;
   protected
     { Protected Declarations }
     procedure SetZNear(Value: Single);
@@ -260,6 +263,8 @@ type
     procedure SetCompareFunc(Value: TGLDepthCompareFunc);
     procedure SetDepthTest(Value: boolean);
     procedure SetDepthWrite(Value: boolean);
+    procedure SetDepthClamp(Value: boolean);
+
     function StoreZNear: Boolean;
     function StoreZFar: Boolean;
   public
@@ -272,10 +277,10 @@ type
   published
     { Published Declarations }
     {: Specifies the mapping of the near clipping plane to
-    window coordinates.  The initial value is 0.  }
+       window coordinates.  The initial value is 0.  }
     property ZNear: Single read FZNear write SetZNear stored StoreZNear;
     {: Specifies the mapping of the far clipping plane to
-    window coordinates.  The initial value is 1. }
+       window coordinates.  The initial value is 1. }
     property ZFar: Single read FZFar write SetZFar stored StoreZFar;
     {: Specifies the function used to compare each
       incoming pixel depth value with the depth value present in
@@ -291,7 +296,11 @@ type
        testing through the osIgnoreDepthBuffer of their ObjectStyle property. }
     property DepthTest: boolean read FDepthTest write SetDepthTest default True;
     {: If True, object will not write to Z-Buffer. }
-    property DepthWrite: boolean read FDepthWrite write SetDepthWrite default True;
+    property DepthWrite: boolean read FDepthWrite write SetDepthWrite default
+      True;
+    {: Enable clipping depth to the near and far planes }
+    property DepthClamp: Boolean read FDepthClamp write SetDepthClamp default
+      False;
   end;
 
   TGLLibMaterialName = string;
@@ -894,11 +903,12 @@ end;
 constructor TGLDepthProperties.Create(AOwner: TPersistent);
 begin
   inherited Create(AOwner);
-  FDepthTest:=True;
-  FDepthWrite:=True;
-  FZNear:=0;
-  FZFar:=1;
-  FCompareFunc:=cfLequal;
+  FDepthTest := True;
+  FDepthWrite := True;
+  FZNear := 0;
+  FZFar := 1;
+  FCompareFunc := cfLequal;
+  FDepthClamp := False;
 end;
 
 procedure TGLDepthProperties.Apply(var rci: TRenderContextInfo);
@@ -910,17 +920,22 @@ begin
   rci.GLStates.DepthWriteMask := FDepthWrite;
   rci.GLStates.DepthFunc := FCompareFunc;
   rci.GLStates.SetDepthRange(FZNear, FZFar);
+  if GL_ARB_depth_clamp then
+    if FDepthClamp then
+      rci.GLStates.Enable(stDepthClamp)
+    else
+      rci.GLStates.Disable(stDepthClamp);
 end;
 
 procedure TGLDepthProperties.Assign(Source: TPersistent);
 begin
   if Assigned(Source) and (Source is TGLDepthProperties) then
   begin
-    FDepthTest:=TGLDepthProperties(Source).FDepthTest;
-    FDepthWrite:=TGLDepthProperties(Source).FDepthWrite;
-    FZNear:=TGLDepthProperties(Source).FZNear;
-    FZFar:=TGLDepthProperties(Source).FZFar;
-    FCompareFunc:=TGLDepthProperties(Source).FCompareFunc;
+    FDepthTest := TGLDepthProperties(Source).FDepthTest;
+    FDepthWrite := TGLDepthProperties(Source).FDepthWrite;
+    FZNear := TGLDepthProperties(Source).FZNear;
+    FZFar := TGLDepthProperties(Source).FZFar;
+    FCompareFunc := TGLDepthProperties(Source).FCompareFunc;
     NotifyChange(Self);
   end;
 end;
@@ -928,7 +943,7 @@ end;
 procedure TGLDepthProperties.SetZNear(Value: Single);
 begin
   Value := ClampValue(Value, 0, 1);
-  if Value<>FZNear then
+  if Value <> FZNear then
   begin
     FZNear := Value;
     NotifyChange(Self);
@@ -938,7 +953,7 @@ end;
 procedure TGLDepthProperties.SetZFar(Value: Single);
 begin
   Value := ClampValue(Value, 0, 1);
-  if Value<>FZFar then
+  if Value <> FZFar then
   begin
     FZFar := Value;
     NotifyChange(Self);
@@ -947,7 +962,7 @@ end;
 
 procedure TGLDepthProperties.SetCompareFunc(Value: TDepthFunction);
 begin
-  if Value<>FCompareFunc then
+  if Value <> FCompareFunc then
   begin
     FCompareFunc := Value;
     NotifyChange(Self);
@@ -956,7 +971,7 @@ end;
 
 procedure TGLDepthProperties.SetDepthTest(Value: boolean);
 begin
-  if Value<>FDepthTest then
+  if Value <> FDepthTest then
   begin
     FDepthTest := Value;
     NotifyChange(Self);
@@ -965,9 +980,18 @@ end;
 
 procedure TGLDepthProperties.SetDepthWrite(Value: boolean);
 begin
-  if Value<>FDepthWrite then
+  if Value <> FDepthWrite then
   begin
     FDepthWrite := Value;
+    NotifyChange(Self);
+  end;
+end;
+
+procedure TGLDepthProperties.SetDepthClamp(Value: boolean);
+begin
+  if Value <> FDepthClamp then
+  begin
+    FDepthClamp := Value;
     NotifyChange(Self);
   end;
 end;

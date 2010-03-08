@@ -6,6 +6,9 @@
    Base classes and structures for GLScene.<p>
 
    <b>History : </b><font size=-1><ul>
+      <li>06/03/10 - Yar - Renamed ModelViewMatrix to ViewMatrix, added ModelMatrix
+                           All function working with ModelViewMatrix now deprecated
+                           Added roForwardContext to buffer options
       <li>05/03/10 - DanB - More state added to TGLStateCache
       <li>22/02/10 - DanB - Moved TGLSceneBuffer.GLStates to TGLContext.GLStates
       <li>22/02/10 - Yar - Added Push/PopProjectionMatrix to TGLSceneBuffer
@@ -390,7 +393,7 @@ type
   TContextOption = (roDoubleBuffer, roStencilBuffer,
     roRenderToWindow, roTwoSideLighting, roStereo,
     roDestinationAlpha, roNoColorBuffer, roNoColorBufferClear,
-    roNoSwapBuffers, roNoDepthBufferClear);
+    roNoSwapBuffers, roNoDepthBufferClear, roForwardContext);
   TContextOptions = set of TContextOption;
 
   // IDs for limit determination
@@ -1905,8 +1908,8 @@ type
     FRendering: Boolean;
     FRenderingContext: TGLContext;
     FAfterRenderEffects: TPersistentObjectList;
-    FProjectionMatrix, FModelViewMatrix: TMatrix;
-    FModelViewMatrixStack: array of TMatrix;
+    FProjectionMatrix, FViewMatrix, FModelMatrix: TMatrix;
+    FViewMatrixStack: array of TMatrix;
     FProjectionMatrixStack: array of TMatrix;
     FBaseProjectionMatrix: TMatrix;
     FCameraAbsolutePosition: TVector;
@@ -2003,7 +2006,7 @@ type
     procedure DoGLPushName(aPointer : pointer);
 
     procedure CreateRC(deviceHandle: HDC; memoryContext: Boolean;
-      BufferCount : integer = 1);
+      BufferCount: integer = 1);
     procedure ClearBuffers;
     procedure DestroyRC;
     function RCInstantiated: Boolean;
@@ -2103,20 +2106,25 @@ type
       SetBackgroundAlpha;
     {: Returns the projection matrix in use or used for the last rendering. }
     property ProjectionMatrix: TMatrix read FProjectionMatrix;
-    {: Returns the modelview matrix in use or used for the last rendering. }
-    property ModelViewMatrix: TMatrix read FModelViewMatrix;
+    {: Returns the view matrix in use or used for the last rendering. }
+    function ModelViewMatrix: TMatrix; deprecated;
+    property ViewMatrix: TMatrix read FViewMatrix;
+    property ModelMatrix: TMatrix read FModelMatrix;
+
     {: Returns the base projection matrix in use or used for the last rendering.<p>
        The "base" projection is (as of now) either identity or the pick
        matrix, ie. it is the matrix on which the perspective or orthogonal
        matrix gets applied. }
     property BaseProjectionMatrix: TMatrix read FBaseProjectionMatrix;
 
-    {: Back up current ModelView matrix and replace it with newMatrix.<p>
+    {: Back up current View matrix and replace it with newMatrix.<p>
        This method has no effect on the OpenGL matrix, only on the Buffer's
        matrix, and is intended for special effects rendering. }
-    procedure PushModelViewMatrix(const newMatrix: TMatrix);
-    {: Restore a ModelView matrix previously pushed. }
-    procedure PopModelViewMatrix;
+    procedure PushModelViewMatrix(const newMatrix: TMatrix); deprecated;
+    procedure PushViewMatrix(const newMatrix: TMatrix);
+    {: Restore a View matrix previously pushed. }
+    procedure PopModelViewMatrix; deprecated;
+    procedure PopViewMatrix;
 
     procedure PushProjectionMatrix(const newMatrix: TMatrix);
     procedure PopProjectionMatrix;
@@ -3287,7 +3295,7 @@ begin
       begin
         GetMem(FAbsoluteMatrix, SizeOf(TMatrix) * 2);
             FInvAbsoluteMatrix := PMatrix(PtrUInt(FAbsoluteMatrix) +
-              SizeOf(TMatrix));
+          SizeOf(TMatrix));
       end;
       RebuildMatrix;
       if Parent <> nil then
@@ -4926,10 +4934,18 @@ begin
   if ocTransformation in FChanges then
     RebuildMatrix;
   glMultMatrixf(PGLfloat(FLocalMatrix));
+{$IFDEF GLS_EXPERIMENTAL}
+  if Parent is TGLSceneRootObject then
+    FScene.CurrentBuffer.FModelMatrix := FLocalMatrix^
+  else
+    FScene.CurrentBuffer.FModelMatrix :=
+      MatrixMultiply(FLocalMatrix^, AbsoluteMatrix);
+{$ENDIF}
   if ARci.drawState = dsPicking then
     if ARci.proxySubObject then
-         TGLSceneBuffer(ARci.buffer).DoGLPushName(self)
-      else TGLSceneBuffer(ARci.buffer).DoGLLoadName(self);
+      TGLSceneBuffer(ARci.buffer).DoGLPushName(self)
+    else
+      TGLSceneBuffer(ARci.buffer).DoGLLoadName(self);
   // Start rendering
   if shouldRenderSelf then
   begin
@@ -6588,7 +6604,7 @@ begin
     case CamInvarianceMode of
       cimPosition:
         begin
-          glLoadMatrixf(@CurrentBuffer.ModelViewMatrix);
+          glLoadMatrixf(@CurrentBuffer.ViewMatrix);
           glTranslatef(ARci.cameraPosition[0], ARci.cameraPosition[1],
             ARci.cameraPosition[2]);
         end;
@@ -6605,7 +6621,7 @@ begin
     glMultMatrixf(PGLFloat(LocalMatrix));
 
     glGetFloatv(GL_MODELVIEW_MATRIX, @mvMat);
-    CurrentBuffer.PushModelViewMatrix(mvMat);
+    CurrentBuffer.PushViewMatrix(mvMat);
     try
       if ARenderSelf then
       begin
@@ -6617,7 +6633,7 @@ begin
       if ARenderChildren then
         Self.RenderChildren(0, Count - 1, ARci);
     finally
-      CurrentBuffer.PopModelViewMatrix;
+      CurrentBuffer.PopViewMatrix;
     end;
     glPopMatrix;
   end
@@ -7485,6 +7501,9 @@ begin
   pt.deltaTime := deltaTime;
   pt.newTime := newTime;
   FObjects.DoProgress(pt);
+{$IFDEF GLS_EXPERIMENTAL}
+   StaticVBOManager.DoProgress(pt);
+{$ENDIF}
 end;
 
 // SaveToFile
@@ -8043,6 +8062,7 @@ begin
     AccumBits := AccumBufferBits;
     AuxBuffers := 0;
     AntiAliasing := Self.AntiAliasing;
+    GLStates.ForwardContext := roForwardContext in  ContextOptions;
     PrepareGLContext;
   end;
 end;
@@ -8051,7 +8071,7 @@ end;
 //
 
 procedure TGLSceneBuffer.CreateRC(deviceHandle : HDC; memoryContext:
-  Boolean; BufferCount : integer);
+  Boolean; BufferCount: integer);
 var
   backColor: TColorVector;
 begin
@@ -8171,11 +8191,22 @@ var
 begin
   if not Assigned(context) then
     Exit;
-  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, FAmbientColor.AsAddress);
-  if roTwoSideLighting in FContextOptions then
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
-  else
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+
+  if not(roForwardContext in ContextOptions) then
+  begin
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, FAmbientColor.AsAddress);
+    if roTwoSideLighting in FContextOptions then
+      glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE)
+    else
+      glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    case ShadeModel of
+      smDefault, smSmooth: glShadeModel(GL_SMOOTH);
+      smFlat: glShadeModel(GL_FLAT);
+    else
+      Assert(False, glsErrorEx + glsUnknownType);
+    end;
+  end;
 
   PerformEnable(True, stNormalize);
 
@@ -8183,18 +8214,13 @@ begin
   PerformEnable(FaceCulling, stCullFace);
   PerformEnable(Lighting, stLighting);
   PerformEnable(FogEnable, stFog);
-
+  if GL_ARB_depth_clamp then
+    PerformEnable(False, stDepthClamp);
   glGetIntegerv(GL_BLUE_BITS, @LColorDepth); // could've used red or green too
   PerformEnable((LColorDepth < 8), stDither);
 
   context.GLStates.ResetGLDepthState;
-  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-  case ShadeModel of
-    smDefault, smSmooth: glShadeModel(GL_SMOOTH);
-    smFlat: glShadeModel(GL_FLAT);
-  else
-    Assert(False);
-  end;
+
 end;
 
 // GetLimit
@@ -8659,31 +8685,50 @@ begin
   FFirstPerfCounter := 0;
 end;
 
+// PushViewMatrix
+//
+
+procedure TGLSceneBuffer.PushViewMatrix(const newMatrix: TMatrix);
+var
+  n: Integer;
+begin
+  n := Length(FViewMatrixStack);
+  SetLength(FViewMatrixStack, n + 1);
+  FViewMatrixStack[n] := FViewMatrix;
+  FViewMatrix := newMatrix;
+end;
+
+// PopModelViewMatrix
+//
+
+procedure TGLSceneBuffer.PopViewMatrix;
+var
+  n: Integer;
+begin
+  n := High(FViewMatrixStack);
+  Assert(n >= 0, 'Unbalanced PopViewMatrix');
+  FViewMatrix := FViewMatrixStack[n];
+  SetLength(FViewMatrixStack, n);
+end;
+
 // PushModelViewMatrix
 //
 
 procedure TGLSceneBuffer.PushModelViewMatrix(const newMatrix: TMatrix);
-var
-  n: Integer;
 begin
-  n := Length(FModelViewMatrixStack);
-  SetLength(FModelViewMatrixStack, n + 1);
-  FModelViewMatrixStack[n] := FModelViewMatrix;
-  FModelViewMatrix := newMatrix;
+  PushViewMatrix(newMatrix);
 end;
 
 // PopModelViewMatrix
 //
 
 procedure TGLSceneBuffer.PopModelViewMatrix;
-var
-  n: Integer;
 begin
-  n := High(FModelViewMatrixStack);
-  Assert(n >= 0, 'Unbalanced PopModelViewMatrix');
-  FModelViewMatrix := FModelViewMatrixStack[n];
-  SetLength(FModelViewMatrixStack, n);
+  PopViewMatrix;
 end;
+
+// PushProjectionMatrix
+//
 
 procedure TGLSceneBuffer.PushProjectionMatrix(const newMatrix: TMatrix);
 var
@@ -8695,6 +8740,9 @@ begin
   FProjectionMatrix := newMatrix;
 end;
 
+// PopProjectionMatrix
+//
+
 procedure TGLSceneBuffer.PopProjectionMatrix;
 var
   n: Integer;
@@ -8703,6 +8751,14 @@ begin
   Assert(n >= 0, 'Unbalanced PopProjectionMatrix');
   FProjectionMatrix := FProjectionMatrixStack[n];
   SetLength(FProjectionMatrixStack, n);
+end;
+
+// ModelViewMatrix
+//
+
+function TGLSceneBuffer.ModelViewMatrix: TMatrix;
+begin
+  Result := FViewMatrix;
 end;
 
 // OrthoScreenToWorld
@@ -8754,7 +8810,7 @@ begin
   if Assigned(FCamera) then
   begin
     SetMatrix(proj, ProjectionMatrix);
-    SetMatrix(mv, ModelViewMatrix);
+    SetMatrix(mv, ViewMatrix);
     gluUnProject(aPoint[0], aPoint[1], aPoint[2],
       mv, proj, PHomogeneousIntVector(@FViewPort)^,
       @x, @y, @z);
@@ -8793,7 +8849,7 @@ begin
   if Assigned(FCamera) then
   begin
     SetMatrix(proj, ProjectionMatrix);
-    SetMatrix(mv, ModelViewMatrix);
+    SetMatrix(mv, ViewMatrix);
     gluProject(aPoint[0], aPoint[1], aPoint[2],
       mv, proj, PHomogeneousIntVector(@FViewPort)^,
       @x, @y, @z);
@@ -8823,7 +8879,7 @@ begin
   if Assigned(FCamera) then
   begin
     SetMatrix(proj, ProjectionMatrix);
-    SetMatrix(mv, ModelViewMatrix);
+    SetMatrix(mv, ViewMatrix);
     for i := 0 to nbPoints - 1 do
     begin
       gluProject(points^[0], points^[1], points^[2],
@@ -9069,8 +9125,8 @@ begin
         // pass buffer to opengl and prepare render
         glSelectBuffer(objectCountGuess * 4, @Buffer^);
         glRenderMode(GL_SELECT);
-            DoGLInitNames;
-            DoGLPushName(nil);
+        DoGLInitNames;
+        DoGLPushName(nil);
         // render the scene (in select mode, nothing is drawn)
         FRenderDPI := 96;
         if Assigned(FCamera) and Assigned(FCamera.FScene) then
@@ -9099,13 +9155,13 @@ begin
             inc(subObjIndex);
           end;
         end;
-            PickList.AddHit(TGLBaseSceneObject(FNameStackMap.Items[buffer^[current+3]]),
+        PickList.AddHit(TGLBaseSceneObject(FNameStackMap.Items[buffer^[current+3]]),
           subObj, szmin, szmax);
       end;
     finally
       FProjectionMatrix := backupProjectionMatrix;
       FreeMem(buffer);
-         FreeAndNil(FNameStackMap);
+      FreeAndNil(FNameStackMap);
     end;
   finally
     FRendering := False;
@@ -9259,7 +9315,7 @@ begin
     FCamera.Apply;
     FCameraAbsolutePosition := FCamera.AbsolutePosition;
   end;
-  glGetFloatv(GL_MODELVIEW_MATRIX, @FModelViewMatrix);
+  glGetFloatv(GL_MODELVIEW_MATRIX, @FViewMatrix);
 end;
 
 // DoBaseRender
@@ -9301,8 +9357,8 @@ begin
     if Owner is TComponent then
       if not (csDesigning in TComponent(Owner).ComponentState) then
         FPostRender(Self);
-  Assert(Length(FModelViewMatrixStack) = 0,
-    'Unbalance Push/PopModelViewMatrix.');
+  Assert(Length(FViewMatrixStack) = 0,
+    'Unbalance Push/PopViewMatrix.');
   Assert(Length(FProjectionMatrixStack) = 0,
     'Unbalance Push/PopProjectionMatrix.');
 end;
@@ -9457,7 +9513,7 @@ begin
   rci.viewPortSize.cx := viewPortSizeX;
   rci.viewPortSize.cy := viewPortSizeY;
   rci.renderDPI := FRenderDPI;
-  rci.modelViewMatrix := @FModelViewMatrix;
+  rci.modelViewMatrix := @FViewMatrix;
   rci.GLStates := RenderingContext.GLStates;
   rci.GLStates.ResetAll;
   rci.proxySubObject := False;

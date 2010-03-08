@@ -612,9 +612,9 @@ begin
         if emitters.count > 0 then
             Shader.Uniform1i['ProjMap'] := 2;
 
-        glActiveTextureARB(GL_TEXTURE2_ARB);
-        glBindTexture(GL_TEXTURE_2D, Material.Texture.Handle);
-        glActiveTextureARB(GL_TEXTURE0_ARB);
+        rci.GLStates.ActiveTexture := 2;
+        rci.GLStates.SetGLCurrentTexture(2, GL_TEXTURE_2D, Material.Texture.Handle);
+        rci.GLStates.ActiveTexture := 0;
 
         self.RenderChildren(0, Count - 1, rci);
 
