@@ -111,7 +111,7 @@ uses
 
   {$IFDEF FPC}
     ,dynlibs ,ctypes ,LCLType
-  {$ENDIF}
+  {$ENDIF }
 
   {$IFDEF unix}
       {$IFDEF darwin}
@@ -848,7 +848,8 @@ const
    GL_LIST_BIT                                       = $00020000 {deprecated};
    GL_TEXTURE_BIT                                    = $00040000 {deprecated};
    GL_SCISSOR_BIT                                    = $00080000 {deprecated};
-   GL_ALL_ATTRIB_BITS                                = $000FFFFF;
+   // changed from $000FFFFF to $FFFFFFFF in OpenGL 1.3
+   GL_ALL_ATTRIB_BITS                                = $FFFFFFFF {deprecated};
 
    // client attribute bits
    GL_CLIENT_PIXEL_STORE_BIT                         = $00000001 {deprecated};
@@ -1987,8 +1988,8 @@ const
 	 GL_BGR_INTEGER				= $8D9A;
 	 GL_BGRA_INTEGER			= $8D9B;
    // these 2 never made it to core, only _EXT?
-   	 GL_LUMINANCE_INTEGER       = $8D9C;
-	 GL_LUMINANCE_ALPHA_INTEGER = $8D9D;
+//	 GL_LUMINANCE_INTEGER       = $8D9C;
+//	 GL_LUMINANCE_ALPHA_INTEGER = $8D9D;
 	 GL_SAMPLER_1D_ARRAY				= $8DC0;
 	 GL_SAMPLER_2D_ARRAY				= $8DC1;
 	 GL_SAMPLER_1D_ARRAY_SHADOW				= $8DC3;
