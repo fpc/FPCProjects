@@ -1092,7 +1092,7 @@ begin
   Assert((face >= 0) and (face < 6));
   // Add level offset
   if (face * fMipLevels + level) < fLevels.Count then
-    Result := PGLPixel32Array(Integer(Result) + Integer(fLevels.Items[face *
+    Result := PGLPixel32Array(PtrUInt(Result) + PtrUInt(fLevels.Items[face *
       fMipLevels + level]));
 end;
 
@@ -1161,7 +1161,7 @@ begin
   // Extract the faces
   ptr := PGLubyte(fData);
   // positive X
-  fLevels.Add(Pointer(Integer(ptr) - Integer(fData)));
+  fLevels.Add(Pointer(PtrInt(ptr) - PtrInt(fData)));
   for j := 0 to pH - 1 do
   begin
     Move(lData[((fH - (pH + j + 1)) * fW + 2 * pW) * fElementSize],
@@ -1169,7 +1169,7 @@ begin
     Inc(ptr, pW * fElementSize);
   end;
   // negative X
-  fLevels.Add(Pointer(Integer(ptr) - Integer(fData)));
+  fLevels.Add(Pointer(PtrInt(ptr) - PtrInt(fData)));
   for j := 0 to pH - 1 do
   begin
     Move(lData[(fH - (pH + j + 1)) * fW * fElementSize],
@@ -1177,7 +1177,7 @@ begin
     Inc(ptr, pW * fElementSize);
   end;
   // positive Y
-  fLevels.Add(Pointer(Integer(ptr) - Integer(fData)));
+  fLevels.Add(Pointer(PtrInt(ptr) - PtrInt(fData)));
   for j := 0 to pH - 1 do
   begin
     Move(lData[((4 * pH - j - 1) * fW + pW) * fElementSize],
@@ -1185,7 +1185,7 @@ begin
     Inc(ptr, pW * fElementSize);
   end;
   // negative Y
-  fLevels.Add(Pointer(Integer(ptr) - Integer(fData)));
+  fLevels.Add(Pointer(PtrInt(ptr) - PtrInt(fData)));
   for j := 0 to pH - 1 do
   begin
     Move(lData[((2 * pH - j - 1) * fW + pW) * fElementSize],
@@ -1193,7 +1193,7 @@ begin
     Inc(ptr, pW * fElementSize);
   end;
   // positive Z
-  fLevels.Add(Pointer(Integer(ptr) - Integer(fData)));
+  fLevels.Add(Pointer(PtrInt(ptr) - PtrInt(fData)));
   for j := 0 to pH - 1 do
   begin
     Move(lData[((fH - (pH + j + 1)) * fW + pW) * fElementSize],
@@ -1201,7 +1201,7 @@ begin
     Inc(ptr, pW * fElementSize);
   end;
   // negative Z
-  fLevels.Add(Pointer(Integer(ptr) - Integer(fData)));
+  fLevels.Add(Pointer(PtrInt(ptr) - PtrInt(fData)));
   for j := 0 to pH - 1 do
     for i := 0 to pW - 1 do
     begin
@@ -1572,13 +1572,13 @@ begin
       if VerticalReverseOnAssignFromBitmap then
       begin
         pSrc := BitmapScanLine(aBitmap, Height - 1);
-        rowOffset := Integer(BitmapScanLine(aBitmap, Height - 2)) -
-          Integer(pSrc);
+        rowOffset := PtrInt(BitmapScanLine(aBitmap, Height - 2)) -
+          PtrInt(pSrc);
       end
       else
       begin
         pSrc := BitmapScanLine(aBitmap, 0);
-        rowOffset := Integer(BitmapScanLine(aBitmap, 1)) - Integer(pSrc);
+        rowOffset := PtrInt(BitmapScanLine(aBitmap, 1)) - PtrInt(pSrc);
       end;
       if GL_EXT_bgra then
       begin
@@ -1957,7 +1957,7 @@ begin
           textureTarget := face + GL_TEXTURE_CUBE_MAP_POSITIVE_X;
         for level := 0 to fMipLevels - 1 do
         begin
-          fLevels.Add(Pointer(Integer(lData) - Integer(fData)));
+          fLevels.Add(Pointer(PtrInt(lData) - PtrInt(fData)));
           if bCompressed then
           begin
 
@@ -2035,8 +2035,6 @@ var
   y, x, x4: Integer;
   pSrc, pDest: PAnsiChar;
 {$IFDEF FPC}
-{$INFO LIntfImg is not needed anymore after Lazarus 0.9.27-r18329, please remove after Laz-0.9.28 release }
-  LIntfImg: TLazIntfImage;
   RIMG: TRawImage;
 {$ENDIF}
 begin
@@ -2063,22 +2061,7 @@ begin
     rimg.Description.LineOrder := riloBottomToTop;
     RIMG.DataSize := DataSize;
     rimg.Data := PByte(FData);
-    { READ THIS PLEASE: !!!!!!!!!!!!  }
-    { If you get a compile time error on the following line, you could either
-      A) update your lazarus to >= 0.9.27-r18329, or
-      B) comment the next line and un-comment the "Workaround for older Lazarus "
-         part after the next line }
-
     result.LoadFromRawImage(rimg, false);
-
-    { -- "Workaround for older Lazarus "
-        LIntfImg:=TLazIntfImage.Create(rimg,False);
-        try
-          result.LoadFromIntfImage(LIntfImg);
-        finally
-          FreeAndNil(LIntfImg);
-        end;
-      -- End of "Workaround for older Lazarus " }
 {$ELSE}
     pSrc := @PAnsiChar(FData)[Width * 4 * (Height - 1)];
     for y := 0 to Height - 1 do
@@ -2934,7 +2917,6 @@ begin
   begin
     pSrc := @PAnsiChar(FData)[y * (FWidth * 4)];
 {$IFDEF fpc}
-{$WARNING Crossbuilder: cvs version uses the above line instead of the following, but our TBitmap doesn't support Scanline}
 {$NOTE BitmapScanline will generate an Assertion in FPC }
 {$ENDIF}
     pDest := BitmapScanLine(aBitmap, FHeight - 1 - y);
