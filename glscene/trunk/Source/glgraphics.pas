@@ -1408,7 +1408,7 @@ begin
     if (Source is TGLBitmap)
          {$ifNdef FPC}  and  (TGLBitmap(Source).PixelFormat in [glpf24bit, glpf32bit]){$ENDIF}
                         and ((TGLBitmap(Source).Width and 3)=0) then begin
-         {$ifdef FPC}
+{$ifdef FPC}
       // in FPC this is pixel wize and reads all pixelFormats.
       AssignFrom24BitsBitmap(TGLBitmap(Source));
 {$ELSE}
@@ -2031,54 +2031,15 @@ end;
 //
 
 function TGLBitmap32.Create32BitsBitmap: TGLBitmap;
-var
-  y, x, x4: Integer;
-  pSrc, pDest: PAnsiChar;
-{$IFDEF FPC}
-  RIMG: TRawImage;
-{$ENDIF}
 begin
   if FBlank then
   begin
     Result := nil;
     exit;
   end;
-  Narrow;
 
   Result := TGLBitmap.Create;
-  Result.PixelFormat := glpf32bit;
-  Result.SetSize(Width,Height);
-  //Result.Width := Width;
-  //Result.Height := Height;
-
-  if Height > 0 then
-  begin
-{$IFDEF FPC}
-    RIMG.Init;
-    rimg.Description.Init_BPP32_B8G8R8A8_BIO_TTB(Width, Height);
-    rimg.Description.RedShift := 0;
-    rimg.Description.BlueShift := 16;
-    rimg.Description.LineOrder := riloBottomToTop;
-    RIMG.DataSize := DataSize;
-    rimg.Data := PByte(FData);
-    result.LoadFromRawImage(rimg, false);
-{$ELSE}
-    pSrc := @PAnsiChar(FData)[Width * 4 * (Height - 1)];
-    for y := 0 to Height - 1 do
-    begin
-      pDest := BitmapScanLine(Result, y);
-      for x := 0 to Width - 1 do
-      begin
-        x4 := x * 4;
-        pDest[x4 + 0] := pSrc[x4 + 2];
-        pDest[x4 + 1] := pSrc[x4 + 1];
-        pDest[x4 + 2] := pSrc[x4 + 0];
-        pDest[x4 + 3] := pSrc[x4 + 3];
-      end;
-      Dec(pSrc, Width * 4);
-    end;
-{$ENDIF}
-  end;
+  AssignToBitmap(Result);
 end;
 
 // SetWidth
@@ -2908,19 +2869,34 @@ procedure TGLBitmap32.AssignToBitmap(aBitmap: TGLBitmap); //TGLBitmap = TBitmap
 var
   y: integer;
   pSrc, pDest: PAnsiChar;
+{$IFDEF FPC}
+  RIMG: TRawImage;
+{$ENDIF}
+
 begin
   Narrow;
   aBitmap.Width := FWidth;
   aBitmap.Height := FHeight;
   aBitmap.PixelFormat := glpf32bit;
-  for y := 0 to FHeight - 1 do
+  if Height > 0 then
   begin
-    pSrc := @PAnsiChar(FData)[y * (FWidth * 4)];
-{$IFDEF fpc}
-{$NOTE BitmapScanline will generate an Assertion in FPC }
+{$IFDEF FPC}
+    RIMG.Init;
+    rimg.Description.Init_BPP32_B8G8R8A8_BIO_TTB(FWidth, FHeight);
+    rimg.Description.RedShift := 0;
+    rimg.Description.BlueShift := 16;
+    rimg.Description.LineOrder := riloBottomToTop;
+    RIMG.DataSize := DataSize;
+    rimg.Data := PByte(FData);
+    aBitmap.LoadFromRawImage(rimg, false);
+{$ELSE}
+    for y := 0 to FHeight - 1 do
+    begin
+      pSrc := @PAnsiChar(FData)[y * (FWidth * 4)];
+      pDest := BitmapScanLine(aBitmap, FHeight - 1 - y);
+      BGRA32ToRGBA32(pSrc, pDest, FWidth);
+    end;
 {$ENDIF}
-    pDest := BitmapScanLine(aBitmap, FHeight - 1 - y);
-    BGRA32ToRGBA32(pSrc, pDest, FWidth);
   end;
 end;
 
