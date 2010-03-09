@@ -9,6 +9,7 @@
   It does not require a fully-functional rendering context.<p>
 
   <b>Historique : </b><font size=-1><ul>
+      <li>08/03/10 - Yar - Added more conditional brackets for unix systems
       <li>27/01/10 - Yar - Updated header and moved to the /Source/Base/ folder
       <li>26/01/10 - DaStr - Bugfixed range check error, for real ;)
                              Enhanced TGLPixelBuffer.IsLost()
@@ -42,19 +43,27 @@ uses
 {$IFDEF MSWINDOWS}
   Windows,
   Classes,
-  SysUtils,
 {$ENDIF}
+  SysUtils,
   OpenGL1x;
 
 type
 
   TGLPixelBuffer = class
   private
+{$IFDEF MSWINDOWS}
     DC: HDC;
     RC: HGLRC;
     ParentDC: HDC;
     ParentRC: HGLRC;
     fHandle: HPBUFFERARB;
+{$ELSE}
+    DC: LongWord;
+    RC: LongWord;
+    ParentDC: LongWord;
+    ParentRC: LongWord;
+    fHandle: LongInt;
+{$ENDIF}
     fWidth: GLint;
     fHeight: GLint;
     fTextureID: GLuint;
@@ -69,7 +78,7 @@ type
     procedure Bind;
     procedure Release;
 
-    property Handle: HPBUFFERARB read fHandle;
+    property Handle: GLint read fHandle;
     property Width: GLint read fWidth;
     property Height: GLint read fHeight;
     property TextureID: GLuint read fTextureID;

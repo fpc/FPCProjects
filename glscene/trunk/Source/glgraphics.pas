@@ -11,6 +11,14 @@
    is active in GLScene.inc and recompile.<p>
 
  <b>Historique : </b><font size=-1><ul>
+      <li>08/03/10 - Yar - Added in TRasterFileFormatsList.FindFromStream PNG singnature
+                           Added forward context cheking to circumvent deprecations
+      <li>01/03/10 - Yar - Bugfix when texture, which has lower mip-levels than the standard number is not rendered
+                           (thanks to Controller)
+      <li>23/02/10 - Yar - Solved problem of TGLBitmap with width of which is not a multiple of four.
+                           Added in AssignFrom24BitsBitmap, AssignFrom32BitsBitmap using extension GL_EXT_bgra
+      <li>22/02/10 - Yar - Added FindFromStream to TRasterFileFormatsList
+                           (thanks to mif)
       <li>10/02/10 - Yar   - Bugfix in RegisterAsOpenGLTexture with Cubemap mipmaping
       <li>27/01/10 - Yar   - Bugfix in BlockOffset with negative result
                              Return to GL_SGIS_generate_mipmap
@@ -514,7 +522,7 @@ function TRasterFileFormatsList.FindFromStream(const AStream: TStream):
   TGLBaseImageClass;
 var
   ext: string;
-  magic: array[0..1] of Longword;
+  magic: array[0..1] of LongWord;
 begin
   AStream.ReadBuffer(magic, 2*SizeOf(Longword));
   AStream.Seek(-2*SizeOf(Longword), 1);
@@ -524,7 +532,9 @@ begin
   else if magic[1]=$4354334F then
     ext := 'O3TC'
   else if (magic[0] and $0000FFFF)=$00003F23 then
-    ext := 'HDR';
+    ext := 'HDR'
+  else if (magic[0] = $474E5089) and (magic[1] = $0A1A0A0D) then
+    ext := 'PNG';
 
   Result := FindExt(ext);
   if not Assigned(Result) then
@@ -566,7 +576,7 @@ begin
     p := TRasterFileFormat(Items[i]);
     if p.BaseImageClass.InheritsFrom(imageFileClass) and (p.Extension <> '')
       and ((formatsThatCanBeOpened and (dfcRead in
-        p.BaseImageClass.Capabilities))
+      p.BaseImageClass.Capabilities))
       or (formatsThatCanBeSaved and (dfcWrite in p.BaseImageClass.Capabilities)))
         then
     begin
@@ -609,7 +619,7 @@ begin
       p := TRasterFileFormat(Items[i]);
       if (formatsThatCanBeOpened and (dfcRead in p.BaseImageClass.Capabilities))
         or (formatsThatCanBeSaved and (dfcWrite in
-          p.BaseImageClass.Capabilities)) then
+        p.BaseImageClass.Capabilities)) then
       begin
         if index = 1 then
         begin
@@ -673,7 +683,7 @@ begin
   for i := 0 to 255 do
     vGammaLUT[i] := Round(255 * Power(i * (1 / 255), InvGamma));
   // perform correction
-   for i:=PtrUInt(base) to PtrUInt(base)+longword(pixelCount*3-1) do
+  for i := PtrUInt(base) to PtrUInt(base) + longword(pixelCount * 3 - 1) do
     PByte(i)^ := vGammaLUT[PByte(i)^];
 end;
 
@@ -701,8 +711,8 @@ begin
   for i := 0 to 255 do
     vGammaLUT[i] := Round(255 * Power(i * (1 / 255), InvGamma));
   // perform correction
-   n:=PtrUInt(base)+longword(pixelCount*4);
-   i:=PtrUInt(base);
+  n := PtrUInt(base) + longword(pixelCount * 4);
+  i := PtrUInt(base);
   pLUT := @vGammaLUT[0];
   while i < n do
   begin
@@ -736,10 +746,10 @@ begin
     k := Round(factor * i);
     if k > 255 then
       k := 255;
-    vBrightnessLUT[i]:=Byte(k);
+    vBrightnessLUT[i] := Byte(k);
   end;
   // perform correction
-   for i:=PtrUInt(base) to PtrUInt(base)+longword(pixelCount*3-1) do
+  for i := PtrUInt(base) to PtrUInt(base) + longword(pixelCount * 3 - 1) do
     PByte(i)^ := vBrightnessLUT[PByte(i)^];
 end;
 
@@ -753,8 +763,8 @@ type
 var
   vBrightnessLUT: array[0..255] of Byte;
   pLUT: PByteArray;
-   i, n : PtrUInt;
-   k : Integer;
+  i, n : PtrUInt;
+  k : Integer;
 begin
   if pixelCount < 1 then
     Exit;
@@ -768,8 +778,8 @@ begin
     vBrightnessLUT[i] := k;
   end;
   // perform correction
-   n:=PtrUInt(base)+longword(pixelCount*4);
-   i:=PtrUInt(base);
+  n := PtrUInt(base) + longword(pixelCount * 4);
+  i := PtrUInt(base);
   pLUT := @vBrightnessLUT[0];
   while i < n do
   begin
@@ -844,8 +854,8 @@ begin
     PAnsiChar(dest)[1] := PAnsiChar(src)[1];
     PAnsiChar(dest)[2] := PAnsiChar(src)[0];
     PAnsiChar(dest)[3] := #255;
-    dest:=Pointer(PtrUInt(dest)+4);
-    src:=Pointer(PtrUInt(src)+3);
+    dest := Pointer(PtrUInt(dest) + 4);
+    src := Pointer(PtrUInt(src) + 3);
     Dec(pixelCount);
   end;
 end;
@@ -892,8 +902,8 @@ begin
     PAnsiChar(dest)[1] := PAnsiChar(src)[1];
     PAnsiChar(dest)[2] := PAnsiChar(src)[2];
     PAnsiChar(dest)[3] := #255;
-    dest:=Pointer(PtrUInt(dest)+4);
-    src:=Pointer(PtrUInt(src)+3);
+    dest := Pointer(PtrUInt(dest) + 4);
+    src := Pointer(PtrUInt(src) + 3);
     Dec(pixelCount);
   end;
 end;
@@ -934,8 +944,8 @@ begin
     PAnsiChar(dest)[1] := PAnsiChar(src)[1];
     PAnsiChar(dest)[2] := PAnsiChar(src)[0];
     PAnsiChar(dest)[3] := PAnsiChar(src)[3];
-    dest:=Pointer(PtrUInt(dest)+4);
-    src:=Pointer(PtrUInt(src)+4);
+    dest := Pointer(PtrUInt(dest) + 4);
+    src := Pointer(PtrUInt(src) + 4);
     Dec(pixelCount);
   end;
 end;
@@ -1303,14 +1313,14 @@ begin
     Exit;
 
   UnMipmap;
-  fDepth := 0;
-  fColorFormat := GL_RGBA;
-  fInternalFormat := tfRGBA8;
-  fDataType := GL_UNSIGNED_BYTE;
-  fElementSize := 4;
-  fCubeMap := false;
-  fTextureArray := false;
-  ReallocMem(fData, DataSize);
+    fDepth := 0;
+    fColorFormat := GL_RGBA;
+    fInternalFormat := tfRGBA8;
+    fDataType := GL_UNSIGNED_BYTE;
+    fElementSize := 4;
+    fCubeMap := false;
+    fTextureArray := false;
+    ReallocMem(fData, DataSize);
 end;
 
 // UnMipmap
@@ -1369,7 +1379,10 @@ begin
   else if (Source is TGLBitmap32) or (Source is TGLBaseImage) then
   begin
     // duplicate the data
-    if (Source is TGLBitmap32) then FBlank := TGLBitmap32(Source).fBlank;
+    if (Source is TGLBitmap32) then
+      FBlank := TGLBitmap32(Source).fBlank
+    else
+      FBlank := false;
     FWidth := (Source as TGLBaseImage).fWidth;
     FHeight := (Source as TGLBaseImage).fHeight;
     FDepth := (Source as TGLBaseImage).fDepth;
@@ -1418,10 +1431,11 @@ begin
         // bmp.Height:=graphic.Height;
         // crossbuilder: using setsize because setting width or height while
         // the other one is zero results in not setting with/hight
-            bmp.SetSize(graphic.Width,graphic.Height);
+        bmp.SetSize(graphic.Width,graphic.Height);
         bmp.PixelFormat := glpf24bit;
-            if (graphic.Width and 3)=0 then begin
-               //bmp.Width:=graphic.Width;
+        if (graphic.Width and 3) = 0 then
+        begin
+          //bmp.Width:=graphic.Width;
           bmp.Canvas.Draw(0, 0, graphic);
         end
         else
@@ -1624,12 +1638,12 @@ begin
       if VerticalReverseOnAssignFromBitmap then
       begin
         pSrc := BitmapScanLine(aBitmap, Height - 1);
-            rowOffset:=PtrInt(BitmapScanLine(aBitmap, Height-2))-PtrInt(pSrc);
+        rowOffset := PtrInt(BitmapScanLine(aBitmap, Height - 2)) - PtrInt(pSrc);
       end
       else
       begin
         pSrc := BitmapScanLine(aBitmap, 0);
-            rowOffset:=PtrInt(BitmapScanLine(aBitmap, 1))-PtrInt(pSrc);
+        rowOffset := PtrInt(BitmapScanLine(aBitmap, 1)) - PtrInt(pSrc);
       end;
       for y := 0 to Height - 1 do
       begin
@@ -1676,7 +1690,7 @@ begin
     begin
       pSrc := BitmapScanLine(aBitmap, Height - 1);
       if Height > 1 then
-        rowOffset:=PtrInt(BitmapScanLine(aBitmap, Height-2))-PtrInt(pSrc)
+        rowOffset := PtrInt(BitmapScanLine(aBitmap, Height - 2)) - PtrInt(pSrc)
       else
         rowOffset := 0;
     end
@@ -1684,7 +1698,7 @@ begin
     begin
       pSrc := BitmapScanLine(aBitmap, 0);
       if Height > 1 then
-        rowOffset:=PtrInt(BitmapScanLine(aBitmap, 1))-PtrInt(pSrc)
+        rowOffset := PtrInt(BitmapScanLine(aBitmap, 1)) - PtrInt(pSrc)
       else
         rowOffset := 0;
     end;
@@ -1865,140 +1879,136 @@ begin
   end;
 
   try
-    glPushAttrib(GL_TEXTURE_BIT);
-    glBindTexture(textureTarget, textureHandle);
-    //Check for texture is resident in texture memory
-    glGetTexParameteriv(textureTarget, GL_TEXTURE_RESIDENT, @texResident);
+    textureContext.GLStates.SetGLCurrentTexture(0, textureTarget, textureHandle);
+
     fMipLevels := 0;
-    if texResident = GL_TRUE then
+    glGetTexParameteriv(textureTarget, GL_TEXTURE_MAX_LEVEL, @texLod);
+    if textureTarget = GL_TEXTURE_CUBE_MAP then
     begin
-      glGetTexParameteriv(textureTarget, GL_TEXTURE_MAX_LEVEL, @texLod);
-      if textureTarget = GL_TEXTURE_CUBE_MAP then
+      fCubeMap := true;
+      faceCount := 6;
+      textureTarget := GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+    end
+    else
+    begin
+      fCubeMap := false;
+      faceCount := 1;
+    end;
+    fTextureArray := (textureTarget = GL_TEXTURE_1D_ARRAY)
+      or (textureTarget = GL_TEXTURE_2D_ARRAY)
+      or (textureTarget = GL_TEXTURE_CUBE_MAP_ARRAY);
+
+    repeat
+      // Check level existence
+      glGetTexLevelParameteriv(textureTarget, fMipLevels,
+        GL_TEXTURE_INTERNAL_FORMAT,
+        @texFormat);
+      if texFormat = 1 then
+        Break;
+      Inc(fMipLevels);
+      if fMipLevels = 1 then
       begin
-        fCubeMap := true;
-        faceCount := 6;
-        textureTarget := GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-      end
-      else
-      begin
-        fCubeMap := false;
-        faceCount := 1;
+        glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, @fWidth);
+        glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT,
+          @fHeight);
+        fDepth := 0;
+        if (textureTarget = GL_TEXTURE_3D)
+          or (textureTarget = GL_TEXTURE_2D_ARRAY)
+          or (textureTarget = GL_TEXTURE_CUBE_MAP_ARRAY) then
+          glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_DEPTH,
+            @fDepth);
+        residentFormat := OpenGLFormatToInternalFormat(texFormat);
+        if CurrentFormat then
+          fInternalFormat := residentFormat
+        else
+          fInternalFormat := intFormat;
+        FindCompatibleDataFormat(fInternalFormat, fColorFormat, fDataType);
+        // Substitute properties if need
+        if colorFormat > 0 then
+          fColorFormat := colorFormat;
+        if dataType > 0 then
+          fDataType := dataType;
+        // Get optimal number or MipMap levels
+        optLod := GetImageLodNumber(fWidth, fHeight, fDepth);
+        if texLod > optLod then
+          texLod := optLod;
+        // Check for MipMap posibility
+        if ((fInternalFormat >= tfFLOAT_R16)
+          and (fInternalFormat <= tfFLOAT_RGBA32)) then
+          texLod := 1;
       end;
-      fTextureArray := (textureTarget = GL_TEXTURE_1D_ARRAY)
-        or (textureTarget = GL_TEXTURE_2D_ARRAY)
-        or (textureTarget = GL_TEXTURE_CUBE_MAP_ARRAY);
+    until fMipLevels = Integer(texLod);
 
-      repeat
-        // Check level existence
-        glGetTexLevelParameteriv(textureTarget, fMipLevels,
-          GL_TEXTURE_INTERNAL_FORMAT,
-          @texFormat);
-        if texFormat = 1 then
-          Break;
-        Inc(fMipLevels);
-        if fMipLevels = 1 then
-        begin
-          glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, @fWidth);
-          glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT,
-            @fHeight);
-          fDepth := 0;
-          if (textureTarget = GL_TEXTURE_3D)
-            or (textureTarget = GL_TEXTURE_2D_ARRAY)
-            or (textureTarget = GL_TEXTURE_CUBE_MAP_ARRAY) then
-            glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_DEPTH,
-              @fDepth);
-          residentFormat := OpenGLFormatToInternalFormat(texFormat);
-          if CurrentFormat then
-            fInternalFormat := residentFormat
-          else
-            fInternalFormat := intFormat;
-          FindCompatibleDataFormat(fInternalFormat, fColorFormat, fDataType);
-          // Substitute properties if need
-          if colorFormat > 0 then
-            fColorFormat := colorFormat;
-          if dataType > 0 then
-            fDataType := dataType;
-          // Get optimal number or MipMap levels
-          optLod := GetImageLodNumber(fWidth, fHeight, fDepth);
-          if texLod > optLod then
-            texLod := optLod;
-          // Check for MipMap posibility
-          if ((fInternalFormat >= tfFLOAT_R16)
-            and (fInternalFormat <= tfFLOAT_RGBA32)) then
-            texLod := 1;
-        end;
-      until fMipLevels = Integer(texLod);
+    if fMipLevels > 0 then
+    begin
+      fElementSize := GetTextureElementSize(fColorFormat, fDataType);
+      ReallocMem(FData, DataSize);
+      fLevels.Clear;
+      lData := PGLubyte(fData);
+      bCompressed := IsCompressed;
+      vtcBuffer := nil;
+      w := fWidth;
+      h := fHeight;
+      d := fDepth;
 
-      if fMipLevels > 0 then
+      for face := 0 to faceCount - 1 do
       begin
-        fElementSize := GetTextureElementSize(fColorFormat, fDataType);
-        ReallocMem(FData, DataSize);
-        fLevels.Clear;
-        lData := PGLubyte(fData);
-        bCompressed := IsCompressed;
-        vtcBuffer := nil;
-        w := fWidth;
-        h := fHeight;
-        d := fDepth;
-
-        for face := 0 to faceCount - 1 do
+        if fCubeMap then
+          textureTarget := face + GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+        for level := 0 to fMipLevels - 1 do
         begin
-          if fCubeMap then
-            textureTarget := face + GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-          for level := 0 to fMipLevels - 1 do
+          fLevels.Add(Pointer(Integer(lData) - Integer(fData)));
+          if bCompressed then
           begin
-            fLevels.Add(Pointer(Integer(lData) - Integer(fData)));
-            if bCompressed then
-            begin
 
-              if GL_NV_texture_compression_vtc and (d > 1) and not fTextureArray
-                then
-              begin
-                if level = 0 then
-                  GetMem(vtcBuffer, LevelSize(0));
-                glGetCompressedTexImage(textureTarget, level, vtcBuffer);
-                // Shufle blocks from VTC to S3TC
-                cw := (w + 3) div 4;
-                ch := (h + 3) div 4;
-                top := lData;
-                for k := 0 to d - 1 do
-                  for i := 0 to ch - 1 do
-                    for j := 0 to cw - 1 do
-                    begin
-                      bottom := vtcBuffer;
-                      Inc(bottom, blockOffset(j, i, k));
-                      Move(bottom^, top^, fElementSize);
-                      Inc(top, fElementSize);
-                    end;
-                if w > 1 then
-                  w := w div 2
-                else
-                  w := 1;
-                if h > 1 then
-                  h := h div 2
-                else
-                  h := 1;
-                if d > 1 then
-                  d := d div 2
-                else
-                  d := 1;
-              end
+            if GL_NV_texture_compression_vtc and (d > 1) and not fTextureArray
+              then
+            begin
+              if level = 0 then
+                GetMem(vtcBuffer, LevelSize(0));
+              glGetCompressedTexImage(textureTarget, level, vtcBuffer);
+              // Shufle blocks from VTC to S3TC
+              cw := (w + 3) div 4;
+              ch := (h + 3) div 4;
+              top := lData;
+              for k := 0 to d - 1 do
+                for i := 0 to ch - 1 do
+                  for j := 0 to cw - 1 do
+                  begin
+                    bottom := vtcBuffer;
+                    Inc(bottom, blockOffset(j, i, k));
+                    Move(bottom^, top^, fElementSize);
+                    Inc(top, fElementSize);
+                  end;
+              if w > 1 then
+                w := w div 2
               else
-                glGetCompressedTexImage(textureTarget, level, lData);
+                w := 1;
+              if h > 1 then
+                h := h div 2
+              else
+                h := 1;
+              if d > 1 then
+                d := d div 2
+              else
+                d := 1;
             end
             else
-              glGetTexImage(textureTarget, level, fColorFormat, fDataType,
-                lData);
+              glGetCompressedTexImage(textureTarget, level, lData);
+          end
+          else
+            glGetTexImage(textureTarget, level, fColorFormat, fDataType,
+              lData);
 
-            Inc(lData, LevelSize(level));
-          end; // for level
-        end; // for face
-        if Assigned(vtcBuffer) then
-          FreeMem(vtcBuffer);
-        // Check memory corruption
-        ReallocMem(FData, DataSize);
-      end;
+          Inc(lData, LevelSize(level));
+        end; // for level
+      end; // for face
+      if Assigned(vtcBuffer) then
+        FreeMem(vtcBuffer);
+      // Check memory corruption
+      ReallocMem(FData, DataSize);
     end;
+
     FBlank := fMipLevels = 0;
     if FBlank then
     begin
@@ -2008,7 +2018,6 @@ begin
     end;
     CheckOpenGLError;
   finally
-    glPopAttrib;
     if contextActivate then
     begin
       textureContext.Deactivate;
@@ -2040,9 +2049,9 @@ begin
 
   Result := TGLBitmap.Create;
   Result.PixelFormat := glpf32bit;
-   Result.SetSize(Width,Height);
-   //Result.Width:=Width;
-   //Result.Height:=Height;
+  Result.SetSize(Width,Height);
+  //Result.Width := Width;
+  //Result.Height := Height;
 
   if Height > 0 then
   begin
@@ -2327,7 +2336,7 @@ type
   P2Pixel32 = ^T2Pixel32;
 
 {$ifNdef NO_ASM}
-   procedure ProcessRow3DNow(pDest : PGLPixel32; pLineA, pLineB : P2Pixel32; n : Integer);
+  procedure ProcessRow3DNow(pDest: PGLPixel32; pLineA, pLineB: P2Pixel32; n: Integer);
   asm     // 3DNow! version 30% faster
       db $0F,$EF,$C0           /// pxor        mm0, mm0          // set mm0 to [0, 0, 0, 0]
 
@@ -2365,15 +2374,16 @@ type
   end;
 {$ENDIF}
 
-   procedure ProcessRowPascal(pDest : PGLPixel32; pLineA, pLineB : P2Pixel32; n : Integer);
+  procedure ProcessRowPascal(pDest: PGLPixel32; pLineA, pLineB: P2Pixel32; n: Integer);
   var
     i: Integer;
   begin
-      for i:=0 to n-1 do begin
-         pDest^.r:=(pLineA^[0].r+pLineA^[1].r+pLineB^[0].r+pLineB^[1].r) shr 2;
-         pDest^.g:=(pLineA^[0].g+pLineA^[1].g+pLineB^[0].g+pLineB^[1].g) shr 2;
-         pDest^.b:=(pLineA^[0].b+pLineA^[1].b+pLineB^[0].b+pLineB^[1].b) shr 2;
-         pDest^.a:=(pLineA^[0].a+pLineA^[1].a+pLineB^[0].a+pLineB^[1].a) shr 2;
+    for i := 0 to n - 1 do
+    begin
+       pDest^.r:=(pLineA^[0].r+pLineA^[1].r+pLineB^[0].r+pLineB^[1].r) shr 2;
+       pDest^.g:=(pLineA^[0].g+pLineA^[1].g+pLineB^[0].g+pLineB^[1].g) shr 2;
+       pDest^.b:=(pLineA^[0].b+pLineA^[1].b+pLineB^[0].b+pLineB^[1].b) shr 2;
+       pDest^.a:=(pLineA^[0].a+pLineA^[1].a+pLineB^[0].a+pLineB^[1].a) shr 2;
       Inc(pLineA);
       Inc(pLineB);
       Inc(pDest);
@@ -2518,13 +2528,15 @@ begin
     if (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X)
       and (target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z) then
     begin
-      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_GENERATE_MIPMAP_SGIS,
-        Integer(bMipmapGen));
+      if not CurrentGLContext.GLStates.ForwardContext then
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_GENERATE_MIPMAP_SGIS,
+          Integer(bMipmapGen));
       if ml>1 then
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL_SGIS, ml);
     end
     else begin
-      glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, Integer(bMipmapGen));
+      if not CurrentGLContext.GLStates.ForwardContext then
+        glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, Integer(bMipmapGen));
       if ml>1 then
         glTexParameteri(target, GL_TEXTURE_MAX_LEVEL_SGIS, ml-1);
     end;
@@ -2786,6 +2798,7 @@ procedure TGLBitmap32.DrawPixels(const x, y: Single);
 begin
   if fBlank or IsEmpty then
     Exit;
+  Assert(not CurrentGLContext.GLStates.ForwardContext);
   glRasterPos2f(x, y);
   glDrawPixels(Width, Height, fColorFormat, fDataType, FData);
 end;
