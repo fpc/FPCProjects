@@ -269,6 +269,7 @@ begin
         vtChar: Write(ar[i].vchar);
         vtExtended: Write(Extended(ar[i].vpointer^));
       end;
+  Writeln;
 end;
 {$else}
 begin
@@ -772,7 +773,7 @@ begin
                      end;
                    else
                      begin
-                       FData.Disconnect(False);
+                       FData.Disconnect(True);  // break on purpose, otherwise we get invalidated ugly
                        Writedbg(['Disconnecting data connection']);
                        Eventize(FStatus.First.Status, False);
                      end;
