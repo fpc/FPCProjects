@@ -149,7 +149,7 @@ uses
 {$IFNDEF UNIX}
 
 {$IFDEF WINDOWS}
-  , Windows, jwaws2tcpip;
+  , Windows, lws2tcpip;
   
 {$IFDEF WINCE}
 
