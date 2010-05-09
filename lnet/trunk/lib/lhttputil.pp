@@ -234,28 +234,45 @@ end;
 
 function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word): Boolean;
 var
-  hl, index: Integer;
-  DefPort: Word = 80;
+  n: Integer;
+  tmp: string;
 begin
   Result := False;
-  hl := 8;
-  if Pos('https://', URL) = 1 then begin
-    Result := True;
-    hl := 9;
-    DefPort := 443;
+
+  try
+    tmp := Trim(URL);
+    if Length(tmp) < 1 then // don't do empty
+      Exit;
+
+    Port := 80;
+    if tmp[Length(tmp)] = '/' then // remove trailing /
+      Delete(tmp, Length(tmp), 1);
+
+    if Pos('https://', tmp) = 1 then begin // check for HTTPS
+      Result := True;
+      Port := 443;
+      Delete(tmp, 1, 8); // delete the https part for parsing reasons
+    end else if Pos('http://', tmp) = 1 then begin
+      Delete(tmp, 1, 7); // delete the http part for parsing reasons
+    end;
+
+    n := Pos(':', tmp); // find if we have a port at the end
+    if n > 0 then begin
+      Port := StrToInt(Copy(tmp, n + 1, Length(tmp)));
+      Delete(tmp, n, Length(tmp));
+    end;
+
+    n := Pos('/', tmp); // find if we have a uri section
+    if n > 0 then begin
+      URI := Copy(tmp, n, Length(tmp));
+      Delete(tmp, n, Length(tmp));
+    end;
+    Host := tmp;
+  except
+    Host := 'error';
+    URI := '';
+    Port := 0;
   end;
-    
-  index := PosEx('/', URL, hl);
-  Host := Copy(URL, hl, index - hl);
-  URI := StringReplace(Copy(URL, index, Length(URL)+1-index), ' ', '%20', [rfReplaceAll]);
-
-  index := Pos(':', Host);
-  if index > 0 then begin
-    Port := StrToIntDef(Copy(Host, index+1, Length(Host)-index), -1);
-
-    SetLength(Host, index-1);
-  end else
-    Port := DefPort;
 end;
 
 function ComposeURL(Host, URI: string; const Port: Word): string;
