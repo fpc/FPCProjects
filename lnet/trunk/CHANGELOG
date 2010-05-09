@@ -1,3 +1,5 @@
+09.05.2010 - 0.6.4 fixed a small FTP bug in case of retreiving inaccessible file. Added Qt4 lazarus visual interface integration code
+
 12.02.2010 - 0.6.3 lots of small fixes and OpenSSL file rename to avoid conflicts
 
 29.05.2008 - 0.6.2 huge fixes in SSL, Sessions and SMTP
