@@ -635,8 +635,6 @@ procedure TGLSceneEditorForm.AddObjectClick(Sender: TObject);
 var
    AParent, AObject: TGLBaseSceneObject;
    Node: TTreeNode;
-  ParentCI: TIComponentInterface;
-  CompIntf: TIComponentInterface;
   TypeClass: TComponentClass;
   X, Y: integer;
 begin
