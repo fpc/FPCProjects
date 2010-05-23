@@ -135,7 +135,7 @@ type
 
   function StrToHostAddr(const IP: string): Cardinal; inline;
   function HostAddrToStr(const Entry: Cardinal): string; inline;
-  function StrToNetAddr(const IP: string): Cardinal; inline;
+  function StrToNetAddr(const IP: string): Sockets.in_addr; inline;
   function NetAddrToStr(const Entry: Cardinal): string; inline;
   
   procedure FillAddressInfo(var aAddrInfo: TLSocketAddress; const aFamily: sa_family_t;
@@ -489,9 +489,9 @@ begin
   Result := Sockets.HostAddrToStr(in_addr(Entry));
 end;
 
-function StrToNetAddr(const IP: string): Cardinal; inline;
+function StrToNetAddr(const IP: string): Sockets.in_addr; inline;
 begin
-  Result := Cardinal(Sockets.StrToNetAddr(IP));
+  Result := Sockets.StrToNetAddr(IP);
 end;
 
 function NetAddrToStr(const Entry: Cardinal): string; inline;
@@ -512,15 +512,15 @@ end;
 procedure FillAddressInfo(var aAddrInfo: TLSocketAddress; const aFamily: sa_family_t;
   const Address: string; const aPort: Word);
 begin
-  aAddrInfo.IPv4.family := aFamily;
-  aAddrInfo.IPv4.Port := htons(aPort);
+  aAddrInfo.IPv4.sin_family := aFamily;
+  aAddrInfo.IPv4.sin_Port := htons(aPort);
 
   case aFamily of
     LAF_INET  :
       begin
-        aAddrInfo.IPv4.Addr := StrToNetAddr(Address);
-        if (Address <> LADDR_ANY) and (aAddrInfo.IPv4.Addr = 0) then
-          aAddrInfo.IPv4.Addr := StrToNetAddr(GetHostIP(Address));
+        aAddrInfo.IPv4.sin_addr := StrToNetAddr(Address);
+        if (Address <> LADDR_ANY) and (Cardinal(aAddrInfo.IPv4.sin_addr) = 0) then
+          aAddrInfo.IPv4.sin_Addr := StrToNetAddr(GetHostIP(Address));
       end;
     LAF_INET6 :
       begin
