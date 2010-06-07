@@ -3603,7 +3603,7 @@ begin
       begin
          lOldLightMapTexCoords := TTexPointList.CreateFromFiler(reader);
          for i := 0 to lOldLightMapTexCoords.Count - 1 do
-            FLightMapTexCoords.Add(lOldLightMapTexCoords[i].S, lOldLightMapTexCoords[i].T);
+            FLightMapTexCoords.Add(lOldLightMapTexCoords[i]);
          lOldLightMapTexCoords.Free;
       end
       else
