@@ -139,7 +139,7 @@ type
     function Get(out aData; const aSize: Integer): Integer; virtual;
     function GetMessage(out msg: string): Integer;
     
-    procedure Disconnect(const Forced: Boolean = True); virtual;
+    procedure Disconnect(const Forced: Boolean = False); virtual;
    public
     property Connected: Boolean read GetConnected; deprecated;
     property Connecting: Boolean read GetConnecting; deprecated;
@@ -166,7 +166,7 @@ type
   { Base interface common to ALL connections }
   
   ILComponent = interface
-    procedure Disconnect(const Forced: Boolean = True);
+    procedure Disconnect(const Forced: Boolean = False);
     procedure CallAction;
     
     property SocketClass: TLSocketClass;
@@ -208,7 +208,7 @@ type
     procedure SetCreator(AValue: TLComponent); virtual;
    public
     constructor Create(aOwner: TComponent); override;
-    procedure Disconnect(const Forced: Boolean = True); virtual; abstract;
+    procedure Disconnect(const Forced: Boolean = False); virtual; abstract;
     procedure CallAction; virtual; abstract;
    public
     SocketClass: TLSocketClass;
@@ -336,7 +336,7 @@ type
     function IterNext: Boolean; override;
     procedure IterReset; override;
 
-    procedure Disconnect(const Forced: Boolean = True); override;
+    procedure Disconnect(const Forced: Boolean = False); override;
 
     procedure CallAction; override;
   end;
@@ -384,7 +384,7 @@ type
 
     procedure CallAction; override;
 
-    procedure Disconnect(const Forced: Boolean = True); override;
+    procedure Disconnect(const Forced: Boolean = False); override;
    public
     property Connecting: Boolean read GetConnecting;
     property OnAccept: TLSocketEvent read FOnAccept write FOnAccept;
@@ -473,7 +473,7 @@ begin
   Result := True;
 end;
 
-procedure TLSocket.Disconnect(const Forced: Boolean = True);
+procedure TLSocket.Disconnect(const Forced: Boolean = False);
 begin
   if Forced then
     HardDisconnect
@@ -1106,7 +1106,8 @@ begin
     Tmp2 := Tmp;
     Tmp := Tmp.NextSock;
     Tmp2.Disconnect(Forced);
-    if Forced then
+    if Forced // forced or already closed
+    or Tmp2.ConnectionStatus not in [scConnected, scConnecting, scDisconnecting] then
       Tmp2.Free;
   end;
 end;
@@ -1120,10 +1121,10 @@ begin
   FTimeVal.tv_sec := 0;
 end;
 
-procedure TLUdp.Disconnect(const Forced: Boolean = True);
+procedure TLUdp.Disconnect(const Forced: Boolean = False);
 begin
   if Assigned(FRootSock) then begin
-    FRootSock.Disconnect(True);
+    FRootSock.Disconnect(True); // true on UDP it always goes there anyways
     FRootSock := nil; // even if the old one exists, eventer takes care of it
   end;
 end;
@@ -1404,12 +1405,14 @@ begin
   FIterator := FRootSock;
 end;
 
-procedure TLTcp.Disconnect(const Forced: Boolean = True);
+procedure TLTcp.Disconnect(const Forced: Boolean = False);
 begin
   FreeSocks(Forced);
-  FRootSock := nil;
-  FCount := 0;
-  FIterator := nil;
+  if Forced then begin // only unlick for forced, we still need to wait otherwise!
+    FRootSock := nil;
+    FIterator := nil;
+    FCount := 0;
+  end;
 end;
 
 procedure TLTcp.CallAction;
