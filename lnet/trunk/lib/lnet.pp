@@ -1107,7 +1107,7 @@ begin
     Tmp := Tmp.NextSock;
     Tmp2.Disconnect(Forced);
     if Forced // forced or already closed
-    or Tmp2.ConnectionStatus not in [scConnected, scConnecting, scDisconnecting] then
+    or not (Tmp2.ConnectionStatus in [scConnected, scConnecting, scDisconnecting]) then
       Tmp2.Free;
   end;
 end;
