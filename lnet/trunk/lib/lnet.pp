@@ -1394,6 +1394,9 @@ end;
 function TLTcp.IterNext: Boolean;
 begin
   Result := False;
+  if not Assigned(FIterator) then
+    Exit;
+
   if Assigned(FIterator.NextSock) then begin
     FIterator := FIterator.NextSock;
     Result := True;
