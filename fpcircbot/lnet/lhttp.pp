@@ -37,7 +37,7 @@ type
   TLHTTPParameter = (hpConnection, hpContentLength, hpContentType,
     hpAccept, hpAcceptCharset, hpAcceptEncoding, hpAcceptLanguage, hpHost,
     hpFrom, hpReferer, hpUserAgent, hpRange, hpTransferEncoding,
-    hpIfModifiedSince, hpIfUnmodifiedSince, hpCookie);
+    hpIfModifiedSince, hpIfUnmodifiedSince, hpCookie, hpXRequestedWith);
   TLHTTPStatus = (hsUnknown, hsOK, hsNoContent, hsMovedPermanently, hsFound, hsNotModified, 
     hsBadRequest, hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
     hsInternalError, hsNotImplemented, hsNotAllowed);
@@ -54,9 +54,9 @@ const
     ('CONNECTION', 'CONTENT-LENGTH', 'CONTENT-TYPE', 'ACCEPT', 
      'ACCEPT-CHARSET', 'ACCEPT-ENCODING', 'ACCEPT-LANGUAGE', 'HOST',
      'FROM', 'REFERER', 'USER-AGENT', 'RANGE', 'TRANSFER-ENCODING',
-     'IF-MODIFIED-SINCE', 'IF-UNMODIFIED-SINCE', 'COOKIE');
+     'IF-MODIFIED-SINCE', 'IF-UNMODIFIED-SINCE', 'COOKIE', 'X-REQUESTED-WITH');
   HTTPStatusCodes: array[TLHTTPStatus] of dword =
-    (0, 200, 204, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 504);
+    (0, 200, 204, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 405);
   HTTPTexts: array[TLHTTPStatus] of string = 
     ('', 'OK', 'No Content', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Forbidden', 
      'Not Found', 'Precondition Failed', 'Request Too Long', 'Internal Error',
@@ -110,7 +110,7 @@ const
     '<p>The method used in the request is invalid.</p>'+#10+
     '</body></html>'+#10,
       { hsNotAllowed }
-    '<html><head><title>504 Method Not Allowed</title></head><body>'+#10+
+    '<html><head><title>405 Method Not Allowed</title></head><body>'+#10+
     '<h1>Method Not Allowed</h1>'+#10+
     '<p>The method used in the request is not allowed on the resource specified in the URL.</p>'+#10+
     '</body></html>'+#10);
