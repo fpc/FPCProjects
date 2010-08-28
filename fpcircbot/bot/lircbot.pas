@@ -887,7 +887,8 @@ begin
   FCon.SendMessage('NICK ' + FNick + #13#10);
   FCon.SendMessage('USER ' + FLogin + ' 8 * :FPC rag-tag bot' + #13#10);
   FCon.SendMessage('NICKSERV :IDENTIFY ' + FNickPass + #13#10);
-  FCon.SendMessage('CAPAB IDENTIFY-MSG' + #13#10);
+  FCon.SendMessage('CAP REQ IDENTIFY-MSG' + #13#10);
+
 {  i:=0;
   while i < 2 do begin
     FCon.CallAction;
