@@ -260,7 +260,7 @@ var
       PasteQuery.Open;
 
       checkid_found := '';
-      if not Eof then
+      if not PasteQuery.Eof then
         checkid_found := PasteQuery.FieldByName('checkid').AsString;
 
       if checkid = checkid_found then begin
@@ -276,9 +276,6 @@ var
         ms := 'automatic';
         mr := ms;
         Exit;
-      end else begin
-        ms := 'checkID=' + checkid + ' foundID=' + checkid_found;
-        mr := ms;
       end;
     finally
       PasteQuery.Close
