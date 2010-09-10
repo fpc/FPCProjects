@@ -265,9 +265,13 @@ var
 
       if checkid = checkid_found then begin
         PasteQuery.Close;
+
+        PasteTransaction.EndTransaction;
+        PasteTransaction.StartTransaction;
         PasteQuery.SQL.Clear;
         PasteQuery.SQL.Add('delete from tbl_paste_checks where checkid = ' + checkid);
-        PasteQuery.Execute;
+        PasteQuery.ExecSQL;
+        PasteTransaction.Commit;
 
         ms := 'automatic';
         mr := 'automatic';

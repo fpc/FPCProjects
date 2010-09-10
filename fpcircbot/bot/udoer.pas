@@ -261,16 +261,24 @@ begin
     Open;
     if not Eof then begin
       Result := FLogQuery.FieldByName('checkid').AsString;
+
+      FLogTransaction.EndTransaction;
+      FLogTransaction.StartTransaction;
       FChecksQuery.Sql.Clear;
       FChecksQuery.Sql.Add('update tbl_paste_checks set checktime = now() where checkid = ' + Result);
-      FChecksQuery.Execute;
+      FChecksQuery.ExecSQL;
+      FLogTransaction.Commit;
+
       Close;
     end else begin
       Close;
 
+      FLogTransaction.EndTransaction;
+      FLogTransaction.StartTransaction;
       FChecksQuery.Sql.Clear;
       FChecksQuery.Sql.Add('insert into tbl_paste_checks(sender) values(''' + Sender + ''')');
-      FChecksQuery.Execute;
+      FChecksQuery.ExecSQL;
+      FLogTransaction.Commit;
 
       Sql.Clear;
       Sql.Add('select CHECKID from TBL_PASTE_CHECKS where sender=''' +
