@@ -16,6 +16,8 @@ CREATE SEQUENCE GEN_CHANNELID;
 
 CREATE SEQUENCE GEN_PASTEID;
 
+CREATE SEQUENCE GEN_CHECKID;
+
 /******************************************************************************/
 /****                                Tables                                ****/
 /******************************************************************************/
@@ -48,8 +50,15 @@ CREATE TABLE TBL_PASTES (
     HIGHLIGHT	INTEGER
 );
 
+CREATE TABLE TBL_PASTE_CHECKS (
+		CHECKID INTEGER NOT NULL PRIMARY KEY DEFAULT nextval('GEN_CHECKID'),
+    CHECKTIME TIMESTAMP DEFAULT now(),
+		SENDER  VARCHAR(50)
+);
+
 CREATE INDEX tbl_loglines_logtime ON tbl_loglines(logtime);
 CREATE INDEX tbl_pastes_pasteid ON tbl_pastes(pasteid);
+CREATE INDEX tbl_paste_checks_checkid ON tbl_paste_checks(checkid);
 
 /******************************************************************************/
 /****                              Privileges                              ****/
@@ -83,5 +92,13 @@ GRANT UPDATE ON TBL_PASTES TO $cgidbname;
 GRANT DELETE ON TBL_PASTES TO $cgidbname;
 GRANT SELECT ON GEN_PASTEID TO $cgidbname;
 GRANT UPDATE ON GEN_PASTEID TO $cgidbname;
+
+GRANT SELECT ON TBL_PASTE_CHECKS TO $botdbname;
+GRANT INSERT ON TBL_PASTE_CHECKS TO $botdbname;
+GRANT UPDATE ON TBL_PASTE_CHECKS TO $botdbname;
+GRANT SELECT ON TBL_PASTE_CHECKS TO $cgidbname;
+GRANT DELETE ON TBL_PASTE_CHECKS TO $cgidbname;
+GRANT SELECT ON GEN_CHECKID TO $botdbname;
+GRANT UPDATE ON GEN_CHECKID TO $botdbname;
 
 COMMIT TRANSACTION;
