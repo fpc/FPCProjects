@@ -256,7 +256,7 @@ begin
   with FLogQuery do try
     Sql.Clear;
     Sql.Add('select CHECKID from TBL_PASTE_CHECKS where sender=''' +
-            Sender + ''' limit 1');
+            Sender + '''');
 
     Open;
     if not Eof then begin
