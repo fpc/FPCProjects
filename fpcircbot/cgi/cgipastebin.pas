@@ -274,8 +274,11 @@ var
         PasteTransaction.Commit;
 
         ms := 'automatic';
-        mr := 'automatic';
+        mr := ms;
         Exit;
+      end else begin
+        ms := 'checkID=' + checkid + ' foundID=' + checkid_found;
+        mr := ms;
       end;
     finally
       PasteQuery.Close
