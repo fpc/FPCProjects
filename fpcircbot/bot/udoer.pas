@@ -52,6 +52,7 @@ type
     FDefinesQuery: TSQLQuery;
     FDefViewQuery: TSQLQuery;
     FChanQuery: TSQLQuery;
+    FChecksQuery: TSQLQuery;
     FLogTransaction: TSQLTransaction;
     FLogConnection: TSQLConnection;
     FPasteUDP: TLUdp;
@@ -63,6 +64,7 @@ type
     FGreetings: TStringList; // for each channel
     FIgnoreList: TStringList;
     FIrcBot: TLIrcBot;
+    function GetCheckID(Sender: string): string;
     function TrimQuestion(const s: string): string;
     function SepString(s: string): TStringList;
     function SpellCheck(const Word, Lang: string): string;
@@ -194,11 +196,15 @@ begin
   FSeenQuery.transaction := FLogTransaction;
   FSeenQuery.ParseSQL:=False;
 
+  FChecksQuery := tsqlquery.Create(nil);
+  FChecksQuery.DataBase := FLogConnection;
+  FChecksQuery.transaction := FLogTransaction;
+  FChecksQuery.ParseSQL:=False;
+
   FDefinesQuery := tsqlquery.Create(nil);
   with FDefinesQuery do begin
     DataBase := FLogConnection;
     Transaction := FLogTransaction;
-
   end;
 
   FDefViewQuery := tsqlquery.Create(nil);
@@ -237,6 +243,46 @@ begin
     Writeln(e.message);
   end;
   {$endif}
+end;
+
+function TDoer.GetCheckID(Sender: string): string;
+begin
+  Result := '';
+  {$ifndef noDB}
+  Sender := SQLEscape(LowerCase(Sender));
+  if Length(Sender) <= 0 then
+    Exit('');
+
+  with FLogQuery do try
+    Sql.Clear;
+    Sql.Add('select CHECKID from TBL_PASTE_CHECKS where sender=''' +
+            Sender + ''' limit 1');
+
+    Open;
+    if not Eof then begin
+      Result := FLogQuery.FieldByName('checkid').AsString;
+      FChecksQuery.Sql.Clear;
+      FChecksQuery.Sql.Add('update tbl_paste_checks set checktime = now() where checkid = ' + Result);
+      FChecksQuery.Execute;
+      Close;
+    end else begin
+      Close;
+
+      FChecksQuery.Sql.Clear;
+      FChecksQuery.Sql.Add('insert into tbl_paste_checks(sender) values(''' + Sender + ''')');
+      FChecksQuery.Execute;
+
+      Sql.Clear;
+      Sql.Add('select CHECKID from TBL_PASTE_CHECKS where sender=''' +
+              Sender + ''' limit 1');
+      Open;
+      Result := FLogQuery.FieldByName('checkid').AsString;
+      Close;
+    end;
+  except
+    Result := '';
+  end;
+  {$endif noDB}
 end;
 
 function TDoer.TrimQuestion(const s: string): string;
@@ -638,18 +684,20 @@ end;
 procedure TDoer.OnPasteUrl(Caller: TLIrcBot);
 var
   Args: string;
+  CheckID: string;
 begin
   {$ifndef noDB}
   with Caller, Caller.LastLine do begin
     Args:=StringReplace(Arguments, ' ', '+', [rfReplaceAll]);
     if Length(Reciever) > 0 then begin
+      CheckID := GetCheckID(Sender);
       if Reciever[1] = '#' then
         Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' +
                 Copy(Reciever, 2, Length(Reciever)) + '&sender=' + Sender +
-                '&ancheck=on&title=' + Args)
+                '&ancheck=on&checkid=' + CheckID + '&title=' + Args)
       else
         Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' +
-                Reciever + '&sender=' + Sender + '&ancheck=on&title=' + Args);
+                Reciever + '&sender=' + Sender + '&ancheck=on&checkid=' + CheckID + '&title=' + Args);
     end;
   end;
   {$else}

@@ -251,7 +251,32 @@ var
   procedure SetMath(out ms, mr: string);
   var
     o1, o2: Integer;
+    checkid, checkid_found: string;
   begin
+    checkid := SQLEscape(GetCGIVar('checkid'));
+    if Length(checkid) > 0 then try
+      PasteQuery.SQL.Clear;
+      PasteQuery.SQL.Add('select checkid from TBL_PASTE_CHECKS where checkid = ' + checkid + ' and now() < (checktime + (1/24/12))');
+      PasteQuery.Open;
+
+      checkid_found := '';
+      if not Eof then
+        checkid_found := PasteQuery.FieldByName('checkid').AsString;
+
+      if checkid = checkid_found then begin
+        PasteQuery.Close;
+        PasteQuery.SQL.Clear;
+        PasteQuery.SQL.Add('delete from tbl_paste_checks where checkid = ' + checkid);
+        PasteQuery.Execute;
+
+        ms := 'automatic';
+        mr := 'automatic';
+        Exit;
+      end;
+    finally
+      PasteQuery.Close
+    end;
+
     o1 := Random(21);
     o2 := Random(20) + 1;
     case Random(4) of
