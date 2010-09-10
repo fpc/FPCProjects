@@ -256,7 +256,7 @@ var
     checkid := SQLEscape(GetCGIVar('checkid'));
     if Length(checkid) > 0 then try
       PasteQuery.SQL.Clear;
-      PasteQuery.SQL.Add('select checkid from TBL_PASTE_CHECKS where checkid = ' + checkid + ' and now() < (checktime + (1/24/12))');
+      PasteQuery.SQL.Add('select checkid from TBL_PASTE_CHECKS where checkid = ' + checkid + ' and checktime > now() - interval ''5 minutes''');
       PasteQuery.Open;
 
       checkid_found := '';
