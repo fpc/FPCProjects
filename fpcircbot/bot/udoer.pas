@@ -282,7 +282,7 @@ begin
 
       Sql.Clear;
       Sql.Add('select CHECKID from TBL_PASTE_CHECKS where sender=''' +
-              Sender + ''' limit 1');
+              Sender + '''');
       Open;
       Result := FLogQuery.FieldByName('checkid').AsString;
       Close;
