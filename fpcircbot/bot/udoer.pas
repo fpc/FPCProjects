@@ -287,8 +287,8 @@ begin
       Result := FLogQuery.FieldByName('checkid').AsString;
       Close;
     end;
-  except
-    Result := '';
+  except on e: Exception do
+    Result := e.message;
   end;
   {$endif noDB}
 end;
