@@ -43,15 +43,13 @@ type
   private
     Environment: TEnvironment;
     Verbose: boolean;
-
-    procedure ShowHelp;
+    procedure ShowProductInfo;
     procedure Show(msg: string);
     procedure Compile;
     procedure Usage;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
-
     procedure Run;
   end;
 
@@ -178,7 +176,7 @@ var
 
 { TFPPApplication }
 
-  procedure TFPPApplication.ShowHelp;
+  procedure TFPPApplication.ShowProductInfo;
   begin
     writeln('GNU FreePascal profiler 0.1');
     writeln('Copyright 2007 Darius Blaszyk.');
@@ -253,11 +251,14 @@ var
 
   procedure TFPPApplication.Run;
   begin
-    ShowHelp;
+    // TODO: Add a Silent option with no output
+    ShowProductInfo;
 
     if HasOption('h','help') then
+    begin
       Usage;
-
+      exit;
+    end;
     //insert profiling code
     if not HasOption('i','no-insert') then
       InsertProfilingCode(Environment.FileList('.pp;.pas;.inc;.lpr'), @ModifyCode);
