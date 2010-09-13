@@ -39,7 +39,7 @@ type
     FFileName: string;
   private
     FList: TFPList;
-  
+
     function GetList(index: integer): TPasToken;
     procedure SetFileName(const AValue: string);
     procedure SetList(AIndex: integer; const AValue: TPasToken);
@@ -47,7 +47,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    
+
     function Count: integer;
     function ParseSource(AFileName: string): boolean;
     procedure Add(AToken: TToken; AValue: string);
@@ -60,7 +60,7 @@ type
 
   TModTokenProc = procedure(AFileName: string; tokenlist: TPasTokenList);
 
-procedure FileSearch(SearchDir: string; ExtensionMask: string; var FileList: TStrings; Recursive: boolean = false);
+procedure FileSearch(SearchDir: string; ExtensionMask: string; var FileList: TStrings; Recursive: boolean = False);
 procedure InsertProfilingCode(FileList: TStrings; ModTokenProc: TModTokenProc);
 procedure RemoveProfilingCodeFromFile(const FileName: string);
 procedure RemoveProfilingCode(FileList: TStrings);
@@ -68,9 +68,11 @@ procedure RemoveProfilingCode(FileList: TStrings);
 implementation
 
 procedure FileSearch(SearchDir: string; ExtensionMask: string;
-  var FileList: TStrings; Recursive: boolean = false);
+var 
+  FileList: TStrings; 
+  Recursive: boolean = False);
 var
-  Info : TSearchRec;
+  Info: TSearchRec;
   ExtensionList: TStrings;
 begin
   SearchDir := IncludeTrailingPathDelimiter(SearchDir);
@@ -83,7 +85,7 @@ begin
   begin
     repeat
       if Recursive then
-        if ((Info.Attr and faDirectory) = faDirectory) and (Info.Name <> '.') and (Info.Name <> '..')then
+        if ((Info.Attr and faDirectory) = faDirectory) and (Info.Name <> '.') and (Info.Name <> '..') then
           FileSearch(SearchDir + Info.Name, ExtensionMask, FileList, Recursive);
 
       if ExtensionList.IndexOf(ExtractFileExt(Info.Name)) <> -1 then
@@ -91,7 +93,7 @@ begin
         if FileList.IndexOf(SearchDir + Info.Name) = -1 then
           FileList.Add(SearchDir + Info.Name);
       end;
-    until FindNext(Info)<>0;
+    until FindNext(Info) <> 0;
   end;
   FindClose(Info);
 
@@ -106,34 +108,46 @@ var
   writer: TFPPWriter;
 begin
   PasTokenList := TPasTokenList.Create;
-  
+
   writer := TFPPWriter.Create;
   writer.CreateIgnored;
 
   //make a copy of the original files and process them
   for i := 0 to FileList.Count - 1 do
   begin
-    write('insert: ', FileList[i]);
+    //skip if file is already converted or belongs to the profiling units
+    {$note the profiling files should be determined at compile time?}
+    if not FileExists(FileList[i] + FPPROF_EXT)
+      and (ExtractFileName(FileList[i]) <> 'fpprof.pp')
+      and (ExtractFileName(FileList[i]) <> 'fpputils.pas')
+      and (ExtractFileName(FileList[i]) <> 'fppwriter.pas')
+      and (ExtractFileName(FileList[i]) <> 'systemtime.inc')
+      and (ExtractFileName(FileList[i]) <> 'win32systemtime.inc') then
+    begin
+      Write('insert: ', FileList[i]);
 
-    try
-      Success := PasTokenList.ParseSource(FileList[i]);
+      try
+        Success := PasTokenList.ParseSource(FileList[i]);
 
-      Success := Success and RenameFile(FileList[i], FileList[i] + FPPROF_EXT);
+        Success := Success and RenameFile(FileList[i], FileList[i] + FPPROF_EXT);
 
-      //perform the code modification
-      if Assigned(ModTokenProc) then
-        ModTokenProc(FileList[i], PasTokenList);
+        //perform the code modification
+        if Assigned(ModTokenProc) then
+          ModTokenProc(FileList[i], PasTokenList);
 
-      PasTokenList.SaveToFile(FileList[i]);
+        PasTokenList.SaveToFile(FileList[i]);
 
-      if Success then
-        writeln(' .......... OK')
-    except
-      writeln(' .......... FAIL');
-      writer.AddIgnoredFile(FileList[i]);
-    end;
+        if Success then
+          writeln(' .......... OK')
+      except
+        writeln(' .......... FAIL');
+        writer.AddIgnoredFile(FileList[i]);
+      end;
 
-    PasTokenList.Clear;
+      PasTokenList.Clear;
+    end
+    else
+      WriteLn('skipping: ', FileList[i]);;
   end;
 
   writer.Save;
@@ -149,7 +163,7 @@ var
 begin
   NewFileName := Copy(FileName, 1, Length(FileName) - Length(FPPROF_EXT));
 
-  write('revert: ', NewFileName);
+  Write('revert: ', NewFileName);
 
   DeleteFile(NewFileName);
   if RenameFile(FileName, NewFileName) then
@@ -164,7 +178,8 @@ var
 begin
   //restore the original files
   for i := 0 to FileList.Count - 1 do
-    RemoveProfilingCodeFromFile(FileList[i]);
+    if FileExists(FileList[i]) then
+      RemoveProfilingCodeFromFile(FileList[i]);
 end;
 
 { TPasTokenList }
@@ -176,8 +191,9 @@ end;
 
 procedure TPasTokenList.SetFileName(const AValue: string);
 begin
-  if FFileName=AValue then exit;
-  FFileName:=AValue;
+  if FFileName = AValue then
+    exit;
+  FFileName := AValue;
 
 end;
 
@@ -214,58 +230,58 @@ var
 begin
   New(pt);
   pt^.token := AToken;
-  pt^.Value := AValue;
+  pt^.value := AValue;
   FList.Insert(APos, pt);
 end;
 
 procedure TPasTokenList.SaveToFile(const AFileName: string);
 var
-  t: text;
+  t: Text;
   i: integer;
 begin
-  assign(t, AFileName);
+  Assign(t, AFileName);
   rewrite(t);
 
-  for i := FList.Count-1 downto 0 do
+  for i := FList.Count - 1 downto 0 do
   begin
     case TPasToken(FList[i]^).token of
-      tkWhitespace: write(t, ' ');
-      tkString: write(t, TPasToken(FList[i]^).value );
-      tkBraceOpen: write(t, '(');
-      tkBraceClose: write(t, ')');
-      tkMul: write(t, '*');
-      tkPlus: write(t, '+');
-      tkComma: write(t, ',');
-      tkMinus: write(t, '-');
-      tkDot: write(t, '.');
-      tkDivision: write(t, '/');
-      tkColon: write(t, ':');
-      tkSemicolon: write(t, ';');
-      tkLessThan: write(t, '<');
-      tkEqual: write(t, '=');
-      tkGreaterThan: write(t, '>');
-      tkAt: write(t, '@');
-      tkSquaredBraceOpen: write(t, '[');
-      tkSquaredBraceClose: write(t, ']');
-      tkCaret: write(t, '^');
-      tkDotDot: write(t, '..');
-      tkAssign: write(t, ':=');
-      tkNotEqual: write(t, '<>');
-      tkLessEqualThan: write(t, '<=');
-      tkGreaterEqualThan: write(t, '>=');
-      tkPower: write(t, '**');
-      tkSymmetricalDifference: write(t, '><');
+      tkWhitespace: Write(t, ' ');
+      tkString: Write(t, TPasToken(FList[i]^).value);
+      tkBraceOpen: Write(t, '(');
+      tkBraceClose: Write(t, ')');
+      tkMul: Write(t, '*');
+      tkPlus: Write(t, '+');
+      tkComma: Write(t, ',');
+      tkMinus: Write(t, '-');
+      tkDot: Write(t, '.');
+      tkDivision: Write(t, '/');
+      tkColon: Write(t, ':');
+      tkSemicolon: Write(t, ';');
+      tkLessThan: Write(t, '<');
+      tkEqual: Write(t, '=');
+      tkGreaterThan: Write(t, '>');
+      tkAt: Write(t, '@');
+      tkSquaredBraceOpen: Write(t, '[');
+      tkSquaredBraceClose: Write(t, ']');
+      tkCaret: Write(t, '^');
+      tkDotDot: Write(t, '..');
+      tkAssign: Write(t, ':=');
+      tkNotEqual: Write(t, '<>');
+      tkLessEqualThan: Write(t, '<=');
+      tkGreaterEqualThan: Write(t, '>=');
+      tkPower: Write(t, '**');
+      tkSymmetricalDifference: Write(t, '><');
       tkLineEnding: writeln(t, LineEnding);
       tkTab: writeln(t, #9);
       //tkDirective, tkDefine, tkInclude: write(t, '{', TPasToken(FList[i]^).value, '}')
     else
       //remove comments from source
       if TPasToken(FList[i]^).token <> tkComment then
-        write(t, TPasToken(FList[i]^).value);
+        Write(t, TPasToken(FList[i]^).value);
     end;
   end;
 
-  close(t);
+  Close(t);
 end;
 
 function TPasTokenList.ParseSource(AFileName: string): boolean;
@@ -285,7 +301,7 @@ begin
 
     index := 0;
     repeat
-      inc(index);
+      Inc(index);
 
       token := pas.FetchToken;
 
