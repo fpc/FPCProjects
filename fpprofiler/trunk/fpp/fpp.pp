@@ -217,7 +217,6 @@ var
     ShowArgOption('i','no-insert','Do not insert profiling code.');
     ShowArgOption('r','no-remove','Do not remove profiling code.');
     writeln;
-    halt;
   end;
 
   procedure TFPPApplication.Compile;
@@ -225,27 +224,28 @@ var
     FPCProcess: TProcess;
   begin
     FPCProcess := TProcess.Create(nil);
+    try
+      FPCProcess.CommandLine := 'fpc ' + Environment.CommandLine;
 
-    FPCProcess.CommandLine := 'fpc ' + Environment.CommandLine;
+      writeln('executing: ', FPCProcess.CommandLine);
+      writeln;
 
-    writeln('executing: ', FPCProcess.CommandLine);
-    writeln;
-  
-    FPCProcess.Options := FPCProcess.Options + [poWaitOnExit];
-    FPCProcess.Execute;
-
-    FPCProcess.Free;
+      FPCProcess.Options := FPCProcess.Options + [poWaitOnExit];
+      FPCProcess.Execute;
+    finally
+      FPCProcess.Free;
+    end;
   end;
 
   constructor TFPPApplication.Create(TheOwner: TComponent);
   begin
     inherited Create(TheOwner);
-
     Environment := TEnvironment.Create;
   end;
 
   destructor TFPPApplication.Destroy;
   begin
+    Environment.Free;
     inherited Destroy;
   end;
 
