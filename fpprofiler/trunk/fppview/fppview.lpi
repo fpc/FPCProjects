@@ -22,6 +22,7 @@
         <FormatVersion Value="1"/>
         <CommandLineParams Value="--log=fpprof.xml --format=graphviz --stat=callgraph"/>
         <LaunchingApplication PathPlusParams="\usr\X11R6\bin\xterm -T 'Lazarus Run Output' -e $(LazarusDir)\tools\runwait.sh $(TargetCmdLine)"/>
+        <WorkingDirectory Value="\home\graemeg\programming\fpgui\docview\components\richtext\testing"/>
       </local>
     </RunParams>
     <Units Count="1">
@@ -36,7 +37,7 @@
     <Version Value="9"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="bin\$(TargetCPU)-$(TargetOS)\fppview"/>
+      <Filename Value="fppview"/>
     </Target>
     <SearchPaths>
       <UnitOutputDirectory Value="units\$(TargetCPU)-$(TargetOS)"/>
@@ -52,6 +53,10 @@
       </Debugging>
     </Linking>
     <Other>
+      <CompilerMessages>
+        <UseMsgFile Value="True"/>
+      </CompilerMessages>
+      <CustomOptions Value="-FE..\bin\$(TargetCPU)-$(TargetOS)\"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
