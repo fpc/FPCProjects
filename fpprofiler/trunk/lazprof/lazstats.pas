@@ -74,6 +74,7 @@ begin
     FPPReport.Cells[i + 1, 3] := FReader[i].func;
     FPPReport.Cells[i + 1, 4] := FReader[i].Source;
     FPPReport.Cells[i + 1, 5] := IntToStr(FReader[i].line);
+    FPPReport.Cells[i + 1, 6] := IntToStr(FReader[i].heapused);
   end;
 
   FPPReport.WriteTable;

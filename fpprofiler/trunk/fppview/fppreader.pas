@@ -29,6 +29,7 @@ type
     func: string;        //function - procedure name that made the call
     source: string;      //sourcefile where procedure is located
     line: integer;       //line number in sourcefile
+    heapused: integer;   //bytes in use on the heap
   end;
 
   TTraceList = array of TTrace;
@@ -40,27 +41,27 @@ type
     FCount: integer;
     FList: TTraceList;
 
-    function GetList(Index: Integer): TTrace;
-    procedure SetList(Index: Integer; const AValue: TTrace);
+    function GetList(Index: integer): TTrace;
+    procedure SetList(Index: integer; const AValue: TTrace);
   public
     constructor Create(const AFileName: string);
     destructor Destroy; override;
 
-    procedure AddData(position, time, func, source, line: string);
+    procedure AddData(position, time, func, source, line, heapused: string);
     property Count: integer read FCount;
-    property List[Index: Integer]: TTrace read GetList write SetList; default;
+    property List[Index: integer]: TTrace read GetList write SetList; default;
   end;
 
 implementation
 
 { TFPPReader }
 
-function TFPPReader.GetList(Index: Integer): TTrace;
+function TFPPReader.GetList(Index: integer): TTrace;
 begin
   Result := FList[Index];
 end;
 
-procedure TFPPReader.SetList(Index: Integer; const AValue: TTrace);
+procedure TFPPReader.SetList(Index: integer; const AValue: TTrace);
 begin
   FList[Index] := AValue;
 end;
@@ -78,7 +79,7 @@ begin
     writeln('error: cannot find ', AFileName);
     halt;
   end;
-  
+
   FCount := 0;
   SetLength(FList, FCount);
 
@@ -87,16 +88,20 @@ begin
     Node := XMLDoc.FindNode('profilelog');
     Node := Node.FindNode('tracelog');
 
-    NodeList := Node.GetChildNodes;
-
-    for i := 0 to NodeList.Count -1 do
+    if Assigned(Node) then
     begin
-      Attributes := NodeList[i].Attributes;
-      AddData(Attributes.GetNamedItem('pos').NodeValue,
-              Attributes.GetNamedItem('time').NodeValue,
-              Attributes.GetNamedItem('func').NodeValue,
-              Attributes.GetNamedItem('source').NodeValue,
-              Attributes.GetNamedItem('line').NodeValue);
+      NodeList := Node.GetChildNodes;
+
+      for i := 0 to NodeList.Count - 1 do
+      begin
+        Attributes := NodeList[i].Attributes;
+        AddData(Attributes.GetNamedItem('pos').NodeValue,
+                Attributes.GetNamedItem('time').NodeValue,
+                Attributes.GetNamedItem('func').NodeValue,
+                Attributes.GetNamedItem('source').NodeValue,
+                Attributes.GetNamedItem('line').NodeValue,
+                Attributes.GetNamedItem('heapused').NodeValue);
+      end;
     end;
   finally
     XMLDoc.Free;
@@ -109,7 +114,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TFPPReader.AddData(position, time, func, source, line: string);
+procedure TFPPReader.AddData(position, time, func, source, line, heapused: string);
 begin
   Inc(FCount);
   SetLength(FList, FCount);
@@ -119,6 +124,7 @@ begin
   FList[Pred(FCount)].func := func;
   FList[Pred(FCount)].source := source;
   FList[Pred(FCount)].line := StrToInt(line);
+  FList[Pred(FCount)].heapused := StrToInt(heapused);
 end;
 
 end.

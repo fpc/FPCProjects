@@ -1,40 +1,40 @@
 object LazProfileViewer: TLazProfileViewer
   Left = 301
-  Height = 255
+  Height = 319
   Top = 152
-  Width = 490
+  Width = 661
   Caption = 'LazProfileViewer'
-  ClientHeight = 255
-  ClientWidth = 490
+  ClientHeight = 319
+  ClientWidth = 661
   OnCreate = FormCreate
   LCLVersion = '0.9.29'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 232
-    Width = 490
+    Top = 296
+    Width = 661
     Panels = <>
   end
   object PageControl: TPageControl
     Left = 0
-    Height = 200
+    Height = 264
     Top = 32
-    Width = 490
-    ActivePage = MemoryTabSheet
+    Width = 661
+    ActivePage = FlatReportTabSheet
     Align = alClient
     BorderSpacing.Top = 6
-    TabIndex = 2
+    TabIndex = 0
     TabOrder = 1
     object FlatReportTabSheet: TTabSheet
       Caption = 'Flat report'
-      ClientHeight = 153
-      ClientWidth = 482
+      ClientHeight = 238
+      ClientWidth = 653
       object ListView1: TListView
         AnchorSideTop.Side = asrBottom
         Left = 0
-        Height = 153
+        Height = 238
         Top = 0
-        Width = 482
+        Width = 653
         Align = alBottom
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 6
@@ -60,6 +60,10 @@ object LazProfileViewer: TLazProfileViewer
           end        
           item
             Caption = 'Line'
+          end        
+          item
+            Caption = 'Heap used'
+            Width = 100
           end>
         ItemIndex = -1
         RowSelect = True
@@ -78,7 +82,7 @@ object LazProfileViewer: TLazProfileViewer
     Left = 0
     Height = 26
     Top = 0
-    Width = 490
+    Width = 661
     Caption = 'ToolBar'
     Images = ImageList
     TabOrder = 2

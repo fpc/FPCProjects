@@ -20,13 +20,13 @@ unit fpprof;
 interface
 
 uses
-  SysUtils
+  SysUtils,
   {$IFDEF CPU32}
-  ,lineinfo
+  lineinfo,
   {$ELSE}
-  ,lnfodwrf
+  lnfodwrf,
   {$ENDIF}
-  ,FPPWriter;
+  FPPWriter;
 
 procedure fpprof_entry_profile(linenum: integer);
 procedure fpprof_exit_profile(linenum: integer);
@@ -56,6 +56,8 @@ var
   line: longint;
   sline: string;
   systemtime : string;
+  status : TFPCHeapStatus;
+  sCurrHeapUsed: string;
 begin
   str(fpprof_getsystemtime - fpprof_starttime, systemtime);
 
@@ -65,7 +67,11 @@ begin
   //convert the linenumber
   str(linenum, sline);
 
-  fpprof_log.AddTrace(position, systemtime, func, source, sline);
+  //heap information
+  status := SysGetFPCHeapStatus;
+  str(status.CurrHeapUsed, sCurrHeapUsed);
+
+  fpprof_log.AddTrace(position, systemtime, func, source, sline, sCurrHeapUsed);
 end;
 
 procedure fpprof_entry_profile(linenum: integer);

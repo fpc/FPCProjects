@@ -39,7 +39,7 @@ type
 
     destructor Destroy; override;
     
-    procedure AddTrace(position, time, func, source, line: string);
+    procedure AddTrace(position, time, func, source, line, heapused: string);
     procedure AddIgnoredFile(const AFileName: string);
     procedure CreateIgnored;
     procedure CreateTraceLog;
@@ -98,7 +98,7 @@ begin
   Node := Node.FindNode('ignored');
 end;
 
-procedure TFPPWriter.AddTrace(position, time, func, source, line: string);
+procedure TFPPWriter.AddTrace(position, time, func, source, line, heapused: string);
 var
   Element: TDomElement;
 begin
@@ -110,6 +110,7 @@ begin
     AttribStrings['func'] := func;
     AttribStrings['source'] := source;
     AttribStrings['line'] := line;
+    AttribStrings['heapused'] := heapused;
   end;
   Node.AppendChild(Element);
 end;
