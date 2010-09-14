@@ -30,6 +30,7 @@ type
   TPasToken = record
     token: TToken;
     value: string;
+    line: integer;
   end;
   PPasToken = ^TPasToken;
 
@@ -50,9 +51,9 @@ type
 
     function Count: integer;
     function ParseSource(AFileName: string): boolean;
-    procedure Add(AToken: TToken; AValue: string);
+    procedure Add(AToken: TToken; AValue: string; ALineNumber: integer);
     procedure Clear;
-    procedure Insert(APos: integer; AToken: TToken; AValue: string);
+    procedure Insert(APos: integer; AToken: TToken; AValue: string; ALineNumber: integer);
     procedure SaveToFile(const AFileName: string);
     property FileName: string read FFileName write SetFileName;
     property List[index: integer]: TPasToken read GetList write SetList; default;
@@ -224,13 +225,14 @@ begin
   FList.Clear;
 end;
 
-procedure TPasTokenList.Insert(APos: integer; AToken: TToken; AValue: string);
+procedure TPasTokenList.Insert(APos: integer; AToken: TToken; AValue: string; ALineNumber: integer);
 var
   pt: ^TPasToken;
 begin
   New(pt);
   pt^.token := AToken;
   pt^.value := AValue;
+  pt^.line := ALineNumber;
   FList.Insert(APos, pt);
 end;
 
@@ -271,8 +273,8 @@ begin
       tkGreaterEqualThan: Write(t, '>=');
       tkPower: Write(t, '**');
       tkSymmetricalDifference: Write(t, '><');
-      tkLineEnding: writeln(t, LineEnding);
-      tkTab: writeln(t, #9);
+      tkLineEnding: Write(t, LineEnding);
+      tkTab: Write(t, #9);
       //tkDirective, tkDefine, tkInclude: write(t, '{', TPasToken(FList[i]^).value, '}')
     else
       //remove comments from source
@@ -305,7 +307,7 @@ begin
 
       token := pas.FetchToken;
 
-      Add(token, pas.CurTokenString);
+      Add(token, pas.CurTokenString, pas.CurRow);
 
       {$ifdef debug}
       //writeln(token, '>', pas.CurTokenString);
@@ -319,9 +321,9 @@ begin
   end;
 end;
 
-procedure TPasTokenList.Add(AToken: TToken; AValue: string);
+procedure TPasTokenList.Add(AToken: TToken; AValue: string; ALineNumber: integer);
 begin
-  Insert(0, AToken, AValue);
+  Insert(0, AToken, AValue, ALineNumber);
 end;
 
 function TPasTokenList.Count: integer;

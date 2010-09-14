@@ -29,6 +29,7 @@ type
     FCommandLine: string;
     FPathList:    TStrings;
     procedure AddSearchPath(path: string);
+    procedure AddCmdParameter(Parameter: string);
   public
     constructor Create;
     destructor Destroy; override;
@@ -60,6 +61,7 @@ var
   var
     i: integer;
     begin_count: integer;
+    linenum: string;
 
     procedure InsertFPProfUnit;
     var
@@ -71,7 +73,7 @@ var
         if (tokenlist[i].token = tkUses) then
         begin
           //insert fpprof unit (with whitespace and comma)
-          tokenlist.Insert(i - 1, tkIdentifier, ' fpprof, ');
+          tokenlist.Insert(i - 1, tkIdentifier, ' fpprof, ', -1);
           Exit;
         end;
       end;
@@ -82,12 +84,12 @@ var
           (tokenlist[i].token = tkUnit) then
         begin
           //insert fpprof unit (with uses keyword)
-          tokenlist.Insert(i - 6, tkIdentifier, 'uses fpprof;');
+          tokenlist.Insert(i - 6, tkIdentifier, 'uses fpprof;', -1);
           Exit;
         end;
 
       //just try and insert it at the beginning
-      tokenlist.Insert(Tokenlist.Count-2, tkIdentifier, 'uses fpprof;');
+      tokenlist.Insert(Tokenlist.Count-2, tkIdentifier, 'uses fpprof;', -1);
     end;
 
   begin
@@ -99,6 +101,8 @@ var
     begin_count := 0;
     for i := tokenlist.Count-1 downto 0 do
     begin
+      str(tokenlist[i].line, linenum);
+
       case tokenlist[i].token of
         tkCase:     inc(begin_count);
         tkFinally:  inc(begin_count);
@@ -109,14 +113,14 @@ var
 
             if begin_count = 1 then
             begin
-              tokenlist.Insert(i-1, tkIdentifier, ' fpprof_entry_profile; '+LineEnding);
+              tokenlist.Insert(i-1, tkIdentifier, ' fpprof_entry_profile(' + linenum + '); ' + LineEnding, -1);
             end;
           end;
         tkEnd:
           begin
             if begin_count = 1 then
             begin
-              tokenlist.Insert(i+1 , tkIdentifier, ' fpprof_exit_profile; '+LineEnding);
+              tokenlist.Insert(i+1 , tkIdentifier, ' fpprof_exit_profile(' + linenum + '); ' + LineEnding, -1);
             end;
             if begin_count > 0 then
               Dec(begin_count);
@@ -134,6 +138,15 @@ var
       PathList.Add(path);
   end;
 
+  procedure TEnvironment.AddCmdParameter(Parameter: string);
+  begin
+    //check if commandline parameter needs skipping
+    if Parameter = '-r' then exit;
+
+    //add the commandline parameter so it get's passed to FPC
+    CommandLine := CommandLine + ' ' + Parameter;
+  end;
+
   constructor TEnvironment.Create;
   var
     i:     integer;
@@ -143,11 +156,12 @@ var
     PathList := TStringList.Create;
 
     //add debugging info and fpprof unit path
-    CommandLine := '-gl -Fu' + GetEnvironmentVariable('fpprof');
+    AddCmdParameter('-gl');
+    AddCmdParameter('-Fu' + GetEnvironmentVariable('fpprof'));
 
     for i := 1 to ParamCount do
     begin
-      CommandLine := CommandLine + ' ' + ParamStr(i);
+      AddCmdParameter(ParamStr(i));
       param := ParamStr(i);
       case param[1] of
         '-':

@@ -28,8 +28,8 @@ uses
   {$ENDIF}
   ,FPPWriter;
 
-procedure fpprof_entry_profile;
-procedure fpprof_exit_profile;
+procedure fpprof_entry_profile(linenum: integer);
+procedure fpprof_exit_profile(linenum: integer);
 
 implementation
 
@@ -49,7 +49,7 @@ implementations to get accurate system times. The function is defined as:
   {$i systemtime.inc}
 {$ENDIF}
 
-procedure fpprof_info(position: string; frame_pointer: pointer);
+procedure fpprof_info(position: string; frame_pointer: pointer; linenum: integer);
 var
   caller_addr: Pointer;
   func, source: shortstring;
@@ -61,19 +61,21 @@ begin
 
   caller_addr := get_caller_addr(frame_pointer);
   GetLineInfo(ptruint(caller_addr), func, source, line);
-  str(line, sline);
+
+  //convert the linenumber
+  str(linenum, sline);
 
   fpprof_log.AddTrace(position, systemtime, func, source, sline);
 end;
 
-procedure fpprof_entry_profile;
+procedure fpprof_entry_profile(linenum: integer);
 begin
-  fpprof_info('entry', get_frame);
+  fpprof_info('entry', get_frame, linenum);
 end;
 
-procedure fpprof_exit_profile;
+procedure fpprof_exit_profile(linenum: integer);
 begin
-  fpprof_info('exit', get_frame);
+  fpprof_info('exit', get_frame, linenum);
 end;
 
 procedure fpprof_initialize;
