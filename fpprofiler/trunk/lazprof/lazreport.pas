@@ -20,14 +20,16 @@ unit LazReport;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, ComCtrls, FPPReport, FPCallGraph;
+  Classes, SysUtils, StrUtils, ComCtrls, FPPReport, FPCallGraph, TASeries;
 
 type
   { TLazReport }
 
   TLazReport = class(TCustomFPPReport)
   private
+    FMemSerie: TAreaSeries;
     FListView: TListView;
+    procedure SetMemSerie(const AValue: TAreaSeries);
     procedure SetListView(const AValue: TListView);
 
   public
@@ -37,6 +39,7 @@ type
     procedure WriteTable; override;
     procedure CallGraph(ACallGraph: TFPCallGraph); override;
     property ListView: TListView read FListView write SetListView;
+    property MemSerie: TAreaSeries read FMemSerie write SetMemSerie;
   end;
 
 implementation
@@ -48,6 +51,12 @@ begin
   if FListView = AValue then
     exit;
   FListView := AValue;
+end;
+
+procedure TLazReport.SetMemSerie(const AValue: TAreaSeries);
+begin
+  if FMemSerie=AValue then exit;
+  FMemSerie:=AValue;
 end;
 
 constructor TLazReport.Create;
@@ -78,7 +87,12 @@ begin
       if c = 0 then
         ListItem.Caption := Cells[r, c]
       else
+      begin
         ListItem.SubItems.Add(Cells[r, c]);
+
+        if c = 6 then
+          MemSerie.AddXY(r,StrToInt(Cells[r, c]));
+      end;
     end;
   end;
 end;

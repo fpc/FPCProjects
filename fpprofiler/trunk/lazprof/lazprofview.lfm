@@ -20,10 +20,10 @@ object LazProfileViewer: TLazProfileViewer
     Height = 264
     Top = 32
     Width = 661
-    ActivePage = FlatReportTabSheet
+    ActivePage = MemoryTabSheet
     Align = alClient
     BorderSpacing.Top = 6
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 1
     object FlatReportTabSheet: TTabSheet
       Caption = 'Flat report'
@@ -76,6 +76,35 @@ object LazProfileViewer: TLazProfileViewer
     end
     object MemoryTabSheet: TTabSheet
       Caption = 'Memory'
+      ClientHeight = 238
+      ClientWidth = 653
+      object MemoryChart: TChart
+        Left = 0
+        Height = 238
+        Top = 0
+        Width = 653
+        AxisList = <        
+          item
+            Title.LabelFont.Orientation = 900
+            Title.Font.Orientation = 900
+          end        
+          item
+            Alignment = calBottom
+          end>
+        Foot.Brush.Color = clBtnFace
+        Foot.Font.Color = clBlue
+        Title.Brush.Color = clBtnFace
+        Title.Font.Color = clBlue
+        Title.Text.Strings = (
+          'TAChart'
+        )
+        Align = alClient
+        ParentColor = False
+        object MemoryChartSeries: TAreaSeries
+          AreaBrush.Color = clRed
+          SeriesColor = clRed
+        end
+      end
     end
   end
   object ToolBar: TToolBar

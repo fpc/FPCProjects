@@ -34,7 +34,7 @@
       </Item3>
     </Files>
     <Type Value="RunAndDesignTime"/>
-    <RequiredPkgs Count="3">
+    <RequiredPkgs Count="4">
       <Item1>
         <PackageName Value="FCL"/>
         <MinVersion Major="1" Valid="True"/>
@@ -45,6 +45,9 @@
       <Item3>
         <PackageName Value="IDEIntf"/>
       </Item3>
+      <Item4>
+        <PackageName Value="TAChartLazarusPkg"/>
+      </Item4>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)\"/>
