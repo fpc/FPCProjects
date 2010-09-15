@@ -3,7 +3,8 @@ program runtests;
 uses
   Process,
   SysUtils,
-  Crt;
+  Crt,
+  FileUtil;
 
 const
 {$IFDEF MSWINDOWS}
@@ -28,20 +29,34 @@ var
   procedure RunTest(var Test: TTest);
   var
     AProcess: TProcess;
+    ExeFileName: string;
   begin
-    try
-      AProcess := TProcess.Create(nil);
+    ExeFileName := ChangeFileExt(Test.Name, '.exe');
+    if not FileExists(ExeFileName) or DeleteFile(ExeFileName) then
+    begin
+      try
+        AProcess := TProcess.Create(nil);
 
-      //compile the test
-      AProcess.CommandLine := 'fpp ' + Test.Name + ' ' + FPPROFDIR;
-      AProcess.Options := AProcess.Options + [poWaitOnExit];
-      AProcess.Execute;
+        //compile the test
+        AProcess.CommandLine := 'fpp ' + Test.Name + ' ' + FPPROFDIR;
+        AProcess.Options := AProcess.Options + [poWaitOnExit];
+        AProcess.Execute;
 
-      Test.Compile := AProcess.ExitStatus = 0;
+        Test.Compile := (AProcess.ExitStatus = 0) and FileExists(ExeFileName);
 
-      //run the test
-    finally
-      AProcess.Free;
+        //run the test
+        if FileExists(ExeFileName) then
+        begin
+          AProcess.CommandLine := ExeFileName;
+          AProcess.Options := AProcess.Options + [poWaitOnExit];
+          AProcess.Execute;
+
+          Test.Execute := AProcess.ExitStatus = 0;
+        end;
+      finally
+        if Assigned(AProcess) then
+          AProcess.Free;
+      end;
     end;
   end;
 
@@ -62,7 +77,6 @@ begin
 
       //execute test
       RunTest(TestList[Count - 1]);
-
     until FindNext(info) <> 0;
   end;
   FindClose(Info);
@@ -96,5 +110,6 @@ begin
   end;
   Writeln;
   Writeln('done.');
+  Readln;
 end.
 
