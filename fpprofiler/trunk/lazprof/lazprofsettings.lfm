@@ -3,6 +3,7 @@ object SettingsForm: TSettingsForm
   Height = 240
   Top = 158
   Width = 320
+  ActiveControl = GraphVizPathEdit
   Caption = 'Settings'
   ClientHeight = 240
   ClientWidth = 320
@@ -10,8 +11,8 @@ object SettingsForm: TSettingsForm
   LCLVersion = '0.9.29'
   object ButtonPanel1: TButtonPanel
     Left = 6
-    Height = 34
-    Top = 200
+    Height = 37
+    Top = 197
     Width = 308
     OKButton.Name = 'OKButton'
     OKButton.Caption = '&OK'
@@ -28,38 +29,38 @@ object SettingsForm: TSettingsForm
     TabOrder = 0
     ShowButtons = [pbOK, pbCancel]
   end
-  object Label1: TLabel
+  object GraphVizPathLabel: TLabel
     Left = 6
-    Height = 14
+    Height = 18
     Top = 6
     Width = 308
     Align = alTop
     BorderSpacing.Around = 6
-    Caption = 'GraphViz path (dot.exe)'
+    Caption = 'GraphViz path (e.g. dot.exe)'
     ParentColor = False
   end
   object GraphVizPathEdit: TEdit
     AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = Label1
+    AnchorSideTop.Control = GraphVizPathLabel
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = GraphVizPathButton
     Left = 6
-    Height = 21
-    Top = 26
-    Width = 264
+    Height = 27
+    Top = 30
+    Width = 278
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Around = 6
     TabOrder = 1
   end
   object GraphVizPathButton: TButton
-    AnchorSideTop.Control = Label1
+    AnchorSideTop.Control = GraphVizPathLabel
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 276
-    Height = 23
-    Top = 26
-    Width = 38
+    Left = 290
+    Height = 29
+    Top = 30
+    Width = 24
     Anchors = [akTop, akRight]
     AutoSize = True
     BorderSpacing.Around = 6

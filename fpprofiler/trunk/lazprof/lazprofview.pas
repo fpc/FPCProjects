@@ -7,7 +7,7 @@ interface
 uses
   LResources, Forms, Controls, Graphics, Dialogs, EditBtn, ComCtrls, MenuIntf,
   FileUtil, ExtCtrls, TAGraph, TASeries, FPPStats, FPPReader, LazStats,
-  FPPReport, Classes, LazProfSettings, LazReport;
+  FPPReport, Classes, LazProfSettings, LazReport, LazIDEIntf, SysUtils;
 
 type
 
@@ -30,6 +30,7 @@ type
     SettingsButton: TToolButton;
     ToolButton3: TToolButton;
     procedure FormCreate(Sender: TObject);
+    procedure ListView1Click(Sender: TObject);
     procedure OpenLogButtonClick(Sender: TObject);
     procedure SettingsButtonClick(Sender: TObject);
   private
@@ -72,6 +73,20 @@ end;
 procedure TLazProfileViewer.FormCreate(Sender: TObject);
 begin
   PageControl.ActivePage := FlatReportTabSheet;
+end;
+
+procedure TLazProfileViewer.ListView1Click(Sender: TObject);
+var
+  FileName: string;
+  Row: integer;
+begin
+  if Assigned(ListView1.Selected) then
+  begin
+    FileName := ListView1.Selected.SubItems[3];
+    Row := StrToInt(ListView1.Selected.SubItems[4]);
+    LazarusIDE.DoOpenFileAndJumpToPos(FileName, Point(1, Row), -1,
+      -1, -1, [ofOnlyIfExists]);
+  end;
 end;
 
 procedure TLazProfileViewer.OpenLogButtonClick(Sender: TObject);

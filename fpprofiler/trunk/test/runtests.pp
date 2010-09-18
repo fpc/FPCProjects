@@ -31,7 +31,7 @@ var
     AProcess: TProcess;
     ExeFileName: string;
   begin
-    ExeFileName := ChangeFileExt(Test.Name, '.exe');
+    ExeFileName := ChangeFileExt(Test.Name, GetExeExt);
     if not FileExists(ExeFileName) or DeleteFile(ExeFileName) then
     begin
       try

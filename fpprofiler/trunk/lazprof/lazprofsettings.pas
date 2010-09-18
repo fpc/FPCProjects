@@ -15,7 +15,7 @@ type
     GraphVizPathButton: TButton;
     ButtonPanel1: TButtonPanel;
     GraphVizPathEdit: TEdit;
-    Label1: TLabel;
+    GraphVizPathLabel: TLabel;
     OpenDialog: TOpenDialog;
     procedure CloseButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -65,6 +65,8 @@ end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);
 begin
+  GraphVizPathLabel.Caption := 'GraphViz path (e.g. dot' + GetExeExt + ')';
+
   //load all settings
   GraphVizPathEdit.Text := XMLConfig.GetValue(Path + 'GraphViz/Path', '');
 end;

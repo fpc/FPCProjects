@@ -3,6 +3,7 @@ object LazProfileViewer: TLazProfileViewer
   Height = 319
   Top = 152
   Width = 661
+  ActiveControl = PageControl
   Caption = 'LazProfileViewer'
   ClientHeight = 319
   ClientWidth = 661
@@ -10,31 +11,31 @@ object LazProfileViewer: TLazProfileViewer
   LCLVersion = '0.9.29'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 23
-    Top = 296
+    Height = 19
+    Top = 300
     Width = 661
     Panels = <>
   end
   object PageControl: TPageControl
     Left = 0
-    Height = 264
+    Height = 268
     Top = 32
     Width = 661
-    ActivePage = CallGraphTabSheet
+    ActivePage = FlatReportTabSheet
     Align = alClient
     BorderSpacing.Top = 6
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 1
     object FlatReportTabSheet: TTabSheet
       Caption = 'Flat report'
-      ClientHeight = 238
-      ClientWidth = 653
+      ClientHeight = 233
+      ClientWidth = 655
       object ListView1: TListView
         AnchorSideTop.Side = asrBottom
         Left = 0
-        Height = 238
+        Height = 233
         Top = 0
-        Width = 653
+        Width = 655
         Align = alBottom
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 6
@@ -69,17 +70,18 @@ object LazProfileViewer: TLazProfileViewer
         RowSelect = True
         TabOrder = 0
         ViewStyle = vsReport
+        OnClick = ListView1Click
       end
     end
     object CallGraphTabSheet: TTabSheet
       Caption = 'Call graph'
-      ClientHeight = 238
-      ClientWidth = 653
+      ClientHeight = 233
+      ClientWidth = 655
       object Image1: TImage
         Left = 0
-        Height = 238
+        Height = 233
         Top = 0
-        Width = 653
+        Width = 655
         Align = alClient
       end
     end
@@ -89,13 +91,12 @@ object LazProfileViewer: TLazProfileViewer
       ClientWidth = 655
       object MemoryChart: TChart
         Left = 0
-        Height = 238
+        Height = 233
         Top = 0
-        Width = 653
+        Width = 655
         AxisList = <        
           item
             Title.LabelFont.Orientation = 900
-            Title.Font.Orientation = 900
           end        
           item
             Alignment = calBottom
@@ -111,7 +112,6 @@ object LazProfileViewer: TLazProfileViewer
         ParentColor = False
         object MemoryChartSeries: TAreaSeries
           AreaBrush.Color = clRed
-          SeriesColor = clRed
         end
       end
     end
