@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, ComCtrls, FPPStats, FPPReader, FPPReport, LazReport,
-  TASeries;
+  TASeries, FPCallGraph;
 
 type
   { TLazProfStats }
@@ -42,8 +42,9 @@ end;
 
 procedure TLazProfStats.SetMemSerie(const AValue: TAreaSeries);
 begin
-  if FMemSerie=AValue then exit;
-  FMemSerie:=AValue;
+  if FMemSerie = AValue then
+    exit;
+  FMemSerie := AValue;
   TLazReport(FPPReport).MemSerie := MemSerie;
 end;
 
@@ -61,6 +62,10 @@ end;
 procedure TLazProfStats.Run;
 var
   i: integer;
+  CallGraph: TFPCallGraph;
+  CallGraphStats: TCallGraphStats;
+  FPCallGraph: TFPCallGraph;
+  Caller: TStrings;
 begin
   inherited Run;
 
@@ -89,6 +94,40 @@ begin
   end;
 
   FPPReport.WriteTable;
+
+
+  FPCallGraph := TFPCallGraph.Create;
+  try
+    Caller := TStringList.Create;
+    try
+      //writeln('Total Call Count = ', FReader.Count);
+      //first entry is mother of all calls so put it on the stack
+      Caller.Add(FReader[0].func);
+
+      for i := 0 to FReader.Count - 1 do
+      begin
+        if FReader[i].position = 'entry' then
+        begin
+          //writeln('  peeking: ',Caller[0]);
+          FPCallGraph.AddCall(Caller[0], FReader[i].func);
+          //writeln('  pushing: ',FReader[i].func);
+          Caller.Insert(0, FReader[i].func);
+        end
+        else
+        begin
+          //writeln('  popping: ',Caller[0]);
+          Caller.Delete(0);
+        end;
+      end;
+      //writeln('********   FINISHED   *********');
+    finally
+      Caller.Free;
+    end;
+
+    FPPReport.CallGraph(FPCallGraph);
+  finally
+    FPCallGraph.Free;
+  end;
 end;
 
 end.

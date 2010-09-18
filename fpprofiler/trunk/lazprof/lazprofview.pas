@@ -5,15 +5,16 @@ unit LazProfView;
 interface
 
 uses
-  LResources, Forms, Controls, Graphics, Dialogs, EditBtn, ComCtrls,
-  MenuIntf, FileUtil, TAGraph, TASeries, FPPStats, FPPReader, LazStats,
-  FPPReport, Classes, LazProfSettings;
+  LResources, Forms, Controls, Graphics, Dialogs, EditBtn, ComCtrls, MenuIntf,
+  FileUtil, ExtCtrls, TAGraph, TASeries, FPPStats, FPPReader, LazStats,
+  FPPReport, Classes, LazProfSettings, LazReport;
 
 type
 
   { TLazProfileViewer }
 
   TLazProfileViewer = class(TForm)
+    Image1: TImage;
     MemoryChart: TChart;
     MemoryChartSeries: TAreaSeries;
     ImageList: TImageList;
@@ -86,12 +87,14 @@ begin
 
           //flat profile
           TLazProfStats(ProfStats).ListView := ListView1;
-          TLazProfStats(ProfStats).MemSerie := MemoryChartSeries;
-          ProfStats.Run;
 
           //call graph
 
           //mem usage
+          TLazProfStats(ProfStats).MemSerie := MemoryChartSeries;
+
+          ProfStats.Run;
+          Image1.Picture.LoadFromFile(TLazReport(ProfStats.Report).PNGFileName);
         finally
           ProfStats.Free;
         end;

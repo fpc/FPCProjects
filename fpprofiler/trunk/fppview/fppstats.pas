@@ -20,7 +20,7 @@ unit FPPStats;
 interface
 
 uses
-  Classes, SysUtils, FPPReader, FPPReport, FPCallGraph;
+  Classes, SysUtils, FPPReader, FPPReport, FPCallGraph, LazReport;
 
 type
 
@@ -29,7 +29,7 @@ type
   TCustomProfStats = class(TObject)
     FReport: TFPPReportType;
     FReader: TFPPReader;
-    procedure SetReport(const AValue: TFPPReportType);
+    procedure SetReportType(const AValue: TFPPReportType);
   private
 
   protected
@@ -39,7 +39,8 @@ type
     constructor Create(AReader: TFPPReader; const AValue: TFPPReportType); virtual;
     destructor Destroy; override;
     
-    property Report: TFPPReportType read FReport write SetReport;
+    property ReportType: TFPPReportType read FReport write SetReportType;
+    property Report: TCustomFPPReport read FPPReport;
     procedure Run; virtual;
   end;
 
@@ -71,7 +72,7 @@ implementation
 
 { TCustomProfStats }
 
-procedure TCustomProfStats.SetReport(const AValue: TFPPReportType);
+procedure TCustomProfStats.SetReportType(const AValue: TFPPReportType);
 begin
   if (FReport=AValue) and Assigned(FPPReport) then exit;
   FReport:=AValue;
@@ -87,7 +88,7 @@ constructor TCustomProfStats.Create(AReader: TFPPReader;
   const AValue: TFPPReportType);
 begin
   FReader := AReader;
-  SetReport(AValue);
+  ReportType := AValue;
 end;
 
 destructor TCustomProfStats.Destroy;
@@ -167,7 +168,7 @@ begin
   try
     Caller := TStringList.Create;
     try
-      writeln('Total Call Count = ', FReader.Count);
+      //writeln('Total Call Count = ', FReader.Count);
       //first entry is mother of all calls so put it on the stack
       Caller.Add(FReader[0].func);
 
@@ -175,18 +176,18 @@ begin
       begin
         if FReader[i].position = 'entry' then
         begin
-          writeln('  peeking: ',Caller[0]);
+          //writeln('  peeking: ',Caller[0]);
           FPCallGraph.AddCall(Caller[0], FReader[i].func);
-          writeln('  pushing: ',FReader[i].func);
+          //writeln('  pushing: ',FReader[i].func);
           Caller.Insert(0, FReader[i].func);
         end
         else
         begin
-          writeln('  popping: ',Caller[0]);
+          //writeln('  popping: ',Caller[0]);
           Caller.Delete(0);
         end;
       end;
-      writeln('********   FINISHED   *********');
+      //writeln('********   FINISHED   *********');
     finally
       Caller.Free;
     end;

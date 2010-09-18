@@ -20,10 +20,10 @@ object LazProfileViewer: TLazProfileViewer
     Height = 264
     Top = 32
     Width = 661
-    ActivePage = FlatReportTabSheet
+    ActivePage = CallGraphTabSheet
     Align = alClient
     BorderSpacing.Top = 6
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 1
     object FlatReportTabSheet: TTabSheet
       Caption = 'Flat report'
@@ -73,6 +73,15 @@ object LazProfileViewer: TLazProfileViewer
     end
     object CallGraphTabSheet: TTabSheet
       Caption = 'Call graph'
+      ClientHeight = 238
+      ClientWidth = 653
+      object Image1: TImage
+        Left = 0
+        Height = 238
+        Top = 0
+        Width = 653
+        Align = alClient
+      end
     end
     object MemoryTabSheet: TTabSheet
       Caption = 'Memory'

@@ -20,7 +20,8 @@ unit LazReport;
 interface
 
 uses
-  Classes, SysUtils, ComCtrls, FPPReport, FPCallGraph, TASeries;
+  Classes, SysUtils, ComCtrls, FPPReport, FPCallGraph, TASeries, Process,
+  FileUtil;
 
 type
   { TLazReport }
@@ -29,6 +30,7 @@ type
   private
     FMemSerie: TAreaSeries;
     FListView: TListView;
+    FPNGFileName: string;
     procedure SetMemSerie(const AValue: TAreaSeries);
     procedure SetListView(const AValue: TListView);
 
@@ -40,6 +42,7 @@ type
     procedure CallGraph(ACallGraph: TFPCallGraph); override;
     property ListView: TListView read FListView write SetListView;
     property MemSerie: TAreaSeries read FMemSerie write SetMemSerie;
+    property PNGFileName: string read FPNGFileName;
   end;
 
 implementation
@@ -55,8 +58,9 @@ end;
 
 procedure TLazReport.SetMemSerie(const AValue: TAreaSeries);
 begin
-  if FMemSerie=AValue then exit;
-  FMemSerie:=AValue;
+  if FMemSerie = AValue then
+    exit;
+  FMemSerie := AValue;
 end;
 
 constructor TLazReport.Create;
@@ -91,15 +95,58 @@ begin
         ListItem.SubItems.Add(Cells[r, c]);
 
         if c = 6 then
-          MemSerie.AddXY(r,StrToInt(Cells[r, c]));
+          MemSerie.AddXY(r, StrToInt(Cells[r, c]));
       end;
     end;
   end;
 end;
 
 procedure TLazReport.CallGraph(ACallGraph: TFPCallGraph);
+var
+  i: integer;
+  j: integer;
+  t: Text;
+  AProcess: TProcess;
+  DOTFileName: string;
 begin
+  DOTFileName := IncludeTrailingPathDelimiter(GetTempDir) + 'temp.dot';
 
+  Assign(t, DOTFileName);
+  Rewrite(t);
+
+  writeln(t, '# example compilation of dot script');
+  writeln(t, '# dot -Tpng test.dot -o test.png');
+
+  writeln(t, 'digraph G {');
+
+  //definition of nodes
+  for i := 0 to ACallGraph.Caller.Count - 1 do
+    writeln(t, '  ', ACallGraph.Caller[i], ';');
+
+  writeln(t);
+
+  //definition of connections
+  for i := 0 to ACallGraph.Caller.Count - 1 do
+    for j := 0 to ACallGraph.Caller.Count - 1 do
+      if ACallGraph.Called[i, j] <> 0 then
+        writeln(t, '  ', ACallGraph.Caller[i], ' -> ', ACallGraph.Caller[j],
+          ' [label="', ACallGraph.Called[i, j], ' calls"];');
+
+  writeln(t, '}');
+
+  Close(t);
+
+  //generate the png file
+  FPNGFileName := IncludeTrailingPathDelimiter(GetTempDir) + 'temp.png';
+  try
+    AProcess := TProcess.Create(nil);
+    AProcess.CommandLine := 'dot -Tpng ' + DOTFileName + ' -o ' + FPNGFileName;
+    AProcess.Options := AProcess.Options + [poWaitOnExit];
+    AProcess.ShowWindow := swoHide;
+    AProcess.Execute;
+  finally
+    AProcess.Free;
+  end;
 end;
 
 end.
