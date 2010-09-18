@@ -5,7 +5,7 @@ unit LazProfSettings;
 interface
 
 uses
-  Forms, Dialogs, ButtonPanel, StdCtrls, XMLCfg, FileUtil, SysUtils;
+  Forms, Dialogs, ButtonPanel, StdCtrls, XMLCfg, FileUtil, SysUtils, Classes;
 
 type
 
@@ -59,6 +59,8 @@ procedure TSettingsForm.SaveSettings;
 begin
   //save all settings
   XMLConfig.SetDeleteValue(Path + 'GraphViz/Path', GraphVizPathEdit.Text, '');
+
+  XMLConfig.Flush;
 end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);
