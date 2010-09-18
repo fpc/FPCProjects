@@ -84,7 +84,7 @@ var
           (tokenlist[i].token = tkUnit) then
         begin
           //insert fpprof unit (with uses keyword)
-          tokenlist.Insert(i - 6, tkIdentifier, 'uses fpprof;', -1);
+          tokenlist.Insert(i - 5, tkIdentifier, 'uses fpprof;', -1);
           Exit;
         end;
 

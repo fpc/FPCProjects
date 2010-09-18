@@ -1,0 +1,74 @@
+object SettingsForm: TSettingsForm
+  Left = 357
+  Height = 240
+  Top = 158
+  Width = 320
+  Caption = 'Settings'
+  ClientHeight = 240
+  ClientWidth = 320
+  OnShow = FormShow
+  LCLVersion = '0.9.29'
+  object ButtonPanel1: TButtonPanel
+    Left = 6
+    Height = 34
+    Top = 200
+    Width = 308
+    OKButton.Name = 'OKButton'
+    OKButton.Caption = '&OK'
+    OKButton.OnClick = OKButtonClick
+    HelpButton.Name = 'HelpButton'
+    HelpButton.Caption = '&Help'
+    HelpButton.Enabled = False
+    CloseButton.Name = 'CloseButton'
+    CloseButton.Caption = '&Close'
+    CloseButton.Enabled = False
+    CloseButton.OnClick = CloseButtonClick
+    CancelButton.Name = 'CancelButton'
+    CancelButton.Caption = 'Cancel'
+    TabOrder = 0
+    ShowButtons = [pbOK, pbCancel]
+  end
+  object Label1: TLabel
+    Left = 6
+    Height = 14
+    Top = 6
+    Width = 308
+    Align = alTop
+    BorderSpacing.Around = 6
+    Caption = 'GraphViz path (dot.exe)'
+    ParentColor = False
+  end
+  object GraphVizPathEdit: TEdit
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Label1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = GraphVizPathButton
+    Left = 6
+    Height = 21
+    Top = 26
+    Width = 264
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Around = 6
+    TabOrder = 1
+  end
+  object GraphVizPathButton: TButton
+    AnchorSideTop.Control = Label1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 276
+    Height = 23
+    Top = 26
+    Width = 38
+    Anchors = [akTop, akRight]
+    AutoSize = True
+    BorderSpacing.Around = 6
+    Caption = '...'
+    OnClick = GraphVizPathButtonClick
+    TabOrder = 2
+  end
+  object OpenDialog: TOpenDialog
+    left = 264
+    top = 152
+  end
+end

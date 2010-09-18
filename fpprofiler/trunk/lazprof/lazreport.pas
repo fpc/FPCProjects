@@ -20,7 +20,7 @@ unit LazReport;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, ComCtrls, FPPReport, FPCallGraph, TASeries;
+  Classes, SysUtils, ComCtrls, FPPReport, FPCallGraph, TASeries;
 
 type
   { TLazReport }

@@ -7,7 +7,7 @@ interface
 uses
   LResources, Forms, Controls, Graphics, Dialogs, EditBtn, ComCtrls,
   MenuIntf, FileUtil, TAGraph, TASeries, FPPStats, FPPReader, LazStats,
-  FPPReport;
+  FPPReport, Classes, LazProfSettings;
 
 type
 
@@ -25,14 +25,16 @@ type
     CallGraphTabSheet: TTabSheet;
     MemoryTabSheet: TTabSheet;
     ToolBar: TToolBar;
-    ToolButton1: TToolButton;
+    OpenLogButton: TToolButton;
+    SettingsButton: TToolButton;
+    ToolButton3: TToolButton;
     procedure FormCreate(Sender: TObject);
-    procedure ToolButton1Click(Sender: TObject);
+    procedure OpenLogButtonClick(Sender: TObject);
+    procedure SettingsButtonClick(Sender: TObject);
   private
     { private declarations }
     FPPReader: TFPPReader;
     ProfStats: TCustomProfStats;
-    ReportType: TFPPReportType;
   public
     { public declarations }
   end;
@@ -71,7 +73,7 @@ begin
   PageControl.ActivePage := FlatReportTabSheet;
 end;
 
-procedure TLazProfileViewer.ToolButton1Click(Sender: TObject);
+procedure TLazProfileViewer.OpenLogButtonClick(Sender: TObject);
 begin
   if OpenDialog.Execute then
   begin
@@ -97,6 +99,16 @@ begin
         FPPReader.Free;
       end;
     end;
+  end;
+end;
+
+procedure TLazProfileViewer.SettingsButtonClick(Sender: TObject);
+begin
+  try
+    SettingsForm := TSettingsForm.Create(nil);
+    SettingsForm.ShowModal;
+  finally
+    SettingsForm.Free;
   end;
 end;
 
