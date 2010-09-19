@@ -61,6 +61,7 @@ var
   var
     i: integer;
     begin_count: integer;
+    is_record: boolean;
     linenum: string;
 
     procedure InsertFPProfUnit;
@@ -99,14 +100,13 @@ var
 
     //insert function fpprof_info after each tkBegin and before each tkEnd
     begin_count := 0;
+    is_record := false;
     for i := tokenlist.Count-1 downto 0 do
     begin
       str(tokenlist[i].line, linenum);
 
       case tokenlist[i].token of
-        tkCase:     inc(begin_count);
-        tkFinally:  inc(begin_count);
-        tkExcept:   inc(begin_count);
+        tkAsm:      inc(begin_count);
         tkBegin:
           begin
             Inc(begin_count);
@@ -116,15 +116,25 @@ var
               tokenlist.Insert(i-1, tkIdentifier, ' fpprof_entry_profile(' + linenum + '); ' + LineEnding, -1);
             end;
           end;
+        tkCase:     if not is_record then inc(begin_count);
         tkEnd:
           begin
-            if begin_count = 1 then
+            if (begin_count = 1) and not is_record then
             begin
               tokenlist.Insert(i+1 , tkIdentifier, ' fpprof_exit_profile(' + linenum + '); ' + LineEnding, -1);
             end;
+
+            is_record := False;
+
             if begin_count > 0 then
               Dec(begin_count);
           end;
+        tkExcept:   inc(begin_count);
+        tkFinally:  inc(begin_count);
+        tkRecord:   begin
+                      inc(begin_count);
+                      is_record := True;
+                    end;
       end; { case }
     end; { while }
 
