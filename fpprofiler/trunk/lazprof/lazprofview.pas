@@ -1,3 +1,18 @@
+{
+    This file is part of the Free Pascal Profiler.
+    Copyright (c) 2010 by Darius Blaszyk
+
+    Lazarus profile viewer
+
+    See the file COPYING.GPL, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+ **********************************************************************}
+
 unit LazProfView;
 
 {$mode objfpc}{$H+}
@@ -7,7 +22,8 @@ interface
 uses
   LResources, Forms, Controls, Graphics, Dialogs, EditBtn, ComCtrls, MenuIntf,
   FileUtil, ExtCtrls, TAGraph, TASeries, FPPStats, FPPReader, LazStats,
-  FPPReport, Classes, LazProfSettings, LazReport, LazIDEIntf, SysUtils;
+  FPPReport, Classes, LazProfSettings, LazReport, LazIDEIntf, SysUtils,
+  ProjectIntf, Process, IDEExternToolIntf;
 
 type
 
@@ -50,22 +66,39 @@ implementation
 
   {$R *.lfm}
 
-procedure ShowLazProfileViewer;
+procedure IDEMenuClicked(Sender: TObject);
 begin
   if not Assigned(LazProfileViewer) then
     LazProfileViewer := TLazProfileViewer.Create(Application);
   LazProfileViewer.Show;
 end;
 
-procedure IDEMenuClicked(Sender: TObject);
+procedure IDERunWithProfilingClicked(Sender: TObject);
+var
+  AProcess: TProcess;
 begin
-  ShowLazProfileViewer;
+
+  LazarusIDE.DoBuildProject(crCompile, []);
+  if LazarusIDE.ActiveProject.ExecutableType=petProgram then
+  begin
+    //execute application
+    try
+      AProcess := TProcess.Create(nil);
+      AProcess.CommandLine := ExtractFilePath(LazarusIDE.ActiveProject.MainFile.Filename) + LazarusIDE.ActiveProject.LazCompilerOptions.TargetFilename;
+      AProcess.Options := AProcess.Options + [poWaitOnExit];
+      AProcess.ShowWindow := swoShowNormal;
+      AProcess.Execute;
+    finally
+      AProcess.Free;
+    end;
+  end;
 end;
 
 procedure Register;
 begin
-  RegisterIDEMenuCommand(itmViewMainWindows, 'mnuLazProfileViewer',
-    'Profile viewer', nil, @IDEMenuClicked);
+  RegisterIDEMenuCommand(itmViewMainWindows, 'mnuLazProfileViewer', 'Profile viewer', nil, @IDEMenuClicked);
+  //RegisterIDEMenuCommand(itmRunBuilding, 'mnuLazProfileBuild', 'Build with profiling', nil, @IDEBuildWithProfilingClicked);
+  RegisterIDEMenuCommand(itmRunnning, 'mnuLazProfileRun', 'Run with profiling enabled', nil, @IDERunWithProfilingClicked);
 end;
 
 { TLazProfileViewer }
@@ -82,10 +115,10 @@ var
 begin
   if Assigned(ListView1.Selected) then
   begin
+    {$note in order to get this working you need the full path, if we compile from the IDE we will be able to search the -Fu paths}
     FileName := ListView1.Selected.SubItems[3];
     Row := StrToInt(ListView1.Selected.SubItems[4]);
-    LazarusIDE.DoOpenFileAndJumpToPos(FileName, Point(1, Row), -1,
-      -1, -1, [ofOnlyIfExists]);
+    LazarusIDE.DoOpenFileAndJumpToPos(FileName, Point(1, Row), -1, -1, -1, [ofOnlyIfExists]);
   end;
 end;
 
