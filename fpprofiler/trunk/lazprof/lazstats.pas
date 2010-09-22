@@ -77,8 +77,6 @@ end;
 procedure TLazProfStats.Run;
 var
   i: integer;
-  CallGraph: TFPCallGraph;
-  CallGraphStats: TCallGraphStats;
   FPCallGraph: TFPCallGraph;
   Caller: TStrings;
 begin
@@ -146,4 +144,3 @@ begin
 end;
 
 end.
-
