@@ -20,7 +20,7 @@ unit FPPReader;
 interface
 
 uses
-  Classes, SysUtils, DOM, XMLRead;
+  SysUtils, DOM, XMLRead;
 
 type
   TTrace = record

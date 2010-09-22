@@ -20,7 +20,7 @@ unit FPPReport;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, FPCallGraph;
+  SysUtils, StrUtils, FPCallGraph;
 
 type
   TFPPReportType = (rtPlain, rtGraphViz);

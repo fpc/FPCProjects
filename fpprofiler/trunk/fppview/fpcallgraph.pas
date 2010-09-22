@@ -18,7 +18,7 @@ unit FPCallGraph;
 interface
 
 uses
-  Classes, SysUtils; 
+  Classes;
 
 type
   { TFPCallGraph }
