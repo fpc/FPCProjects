@@ -65,13 +65,12 @@ procedure FileSearch(SearchDir: string; ExtensionMask: string; var FileList: TSt
 procedure InsertProfilingCode(FileList: TStrings; ModTokenProc: TModTokenProc);
 procedure RemoveProfilingCodeFromFile(const FileName: string);
 procedure RemoveProfilingCode(FileList: TStrings);
+procedure BackupProfilingCode(FileList: TStrings);
 
 implementation
 
 procedure FileSearch(SearchDir: string; ExtensionMask: string;
-var 
-  FileList: TStrings; 
-  Recursive: boolean = False);
+  var FileList: TStrings; Recursive: boolean = False);
 var
   Info: TSearchRec;
   ExtensionList: TStrings;
@@ -118,12 +117,12 @@ begin
   begin
     //skip if file is already converted or belongs to the profiling units
     {$note the profiling files should be determined at compile time?}
-    if not FileExists(FileList[i] + FPPROF_EXT)
-      and (ExtractFileName(FileList[i]) <> 'fpprof.pp')
-      and (ExtractFileName(FileList[i]) <> 'fpputils.pas')
-      and (ExtractFileName(FileList[i]) <> 'fppwriter.pas')
-      and (ExtractFileName(FileList[i]) <> 'systemtime.inc')
-      and (ExtractFileName(FileList[i]) <> 'win32systemtime.inc') then
+    if not FileExists(FileList[i] + FPPROF_EXT) and
+      (ExtractFileName(FileList[i]) <> 'fpprof.pp') and
+      (ExtractFileName(FileList[i]) <> 'fpputils.pas') and
+      (ExtractFileName(FileList[i]) <> 'fppwriter.pas') and
+      (ExtractFileName(FileList[i]) <> 'systemtime.inc') and
+      (ExtractFileName(FileList[i]) <> 'win32systemtime.inc') then
     begin
       Write('insert: ', FileList[i]);
 
@@ -148,7 +147,7 @@ begin
       PasTokenList.Clear;
     end
     else
-      WriteLn('skipping: ', FileList[i]);;
+      WriteLn('skipping: ', FileList[i]);
   end;
 
   writer.Save;
@@ -181,6 +180,29 @@ begin
   for i := 0 to FileList.Count - 1 do
     if FileExists(FileList[i]) then
       RemoveProfilingCodeFromFile(FileList[i]);
+end;
+
+procedure BackupProfilingCode(FileList: TStrings);
+var
+  i: integer;
+var
+  SourceFileName: string;
+begin
+  //backup files
+  for i := 0 to FileList.Count - 1 do
+  begin
+    SourceFileName := Copy(FileList[i], 1, Length(FileList[i]) - Length(FPPROF_EXT));
+
+    if FileExists(SourceFileName) then
+    begin
+      Write('backup: ', SourceFileName);
+
+      if RenameFile(SourceFileName, SourceFileName + '.bak') then
+        writeln(' .......... OK')
+      else
+        writeln(' .......... FAIL');
+    end;
+  end;
 end;
 
 { TPasTokenList }

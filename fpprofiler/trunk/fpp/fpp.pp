@@ -152,6 +152,7 @@ var
   begin
     //check if commandline parameter needs skipping
     if Parameter = '-r' then exit;
+    if Parameter = '--backup' then exit;
 
     //add the commandline parameter so it get's passed to FPC
     CommandLine := CommandLine + ' ' + Parameter;
@@ -223,9 +224,14 @@ var
       writeln(Format(' -%s --%-20s %s',[C,LC,MSG]));
     end;
 
+    procedure ShowArgOption(const LC,Msg : String); overload;
+    begin
+      writeln(Format('    --%-20s %s',[LC,MSG]));
+    end;
+
     procedure ShowArgOption(const C,LC,Msg : String); overload;
     begin
-      writeln(Format(' -%s --%-20s %s',[C,LC+'='+'Value',MSG]));
+      writeln(Format(' -%s --%-20s %s',[C,LC,MSG]));
     end;
 
     procedure ShowArgOption(const C,LC, Value, Msg : String); overload;
@@ -238,6 +244,7 @@ var
     writeln;
     writeln('Where options is one or more of the following:');
     ShowOption('h','help','This screen.');
+    ShowArgOption('backup','Backup profiled code.');
     ShowArgOption('i','no-insert','Do not insert profiling code.');
     ShowArgOption('r','no-remove','Do not remove profiling code.');
     writeln;
@@ -293,12 +300,17 @@ var
       Usage;
       exit;
     end;
+
     //insert profiling code
     if not HasOption('i','no-insert') then
       InsertProfilingCode(Environment.FileList('.pp;.pas;.inc;.lpr'), @ModifyCode);
 
     //compile the sources
     Compile;
+
+    //backup profiled code
+    if HasOption('backup') then
+      BackupProfilingCode(Environment.FileList('.fpprof'));
 
     //remove the profiling code
     if not HasOption('r','no-remove') then
