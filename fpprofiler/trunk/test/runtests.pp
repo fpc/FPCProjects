@@ -53,7 +53,7 @@ var
         AProcess := TProcess.Create(nil);
 
         //compile the test
-        AProcess.CommandLine := 'fpp ' + Test.Name + ' ' + FPPROFDIR;
+        AProcess.CommandLine := 'fpp --backup ' + Test.Name + ' ' + FPPROFDIR;
         AProcess.Options := AProcess.Options + [poWaitOnExit];
         AProcess.Execute;
 

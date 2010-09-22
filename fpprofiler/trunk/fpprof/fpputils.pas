@@ -297,11 +297,10 @@ begin
       tkSymmetricalDifference: Write(t, '><');
       tkLineEnding: Write(t, LineEnding);
       tkTab: Write(t, #9);
-      //tkDirective, tkDefine, tkInclude: write(t, '{', TPasToken(FList[i]^).value, '}')
+      tkDirective, tkDefine, tkInclude: write(t, '{', TPasToken(FList[i]^).value, '}');
+      tkComment: write(t, '{', TPasToken(FList[i]^).value, '}');
     else
-      //remove comments from source
-      if TPasToken(FList[i]^).token <> tkComment then
-        Write(t, TPasToken(FList[i]^).value);
+      Write(t, TPasToken(FList[i]^).value);
     end;
   end;
 
@@ -319,6 +318,7 @@ begin
 
   fr := TFileResolver.Create;
   pas := TPascalScanner.Create(fr);
+  pas.Options := [po_SkipIncludeFiles, po_DontEatDefines, po_MonoLithicASMBlocks];
 
   try
     pas.OpenFile(AFileName);

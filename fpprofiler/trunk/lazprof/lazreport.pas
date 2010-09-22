@@ -82,6 +82,10 @@ begin
   if not Assigned(ListView) then
     exit;
 
+  //clear any previous data
+  ListView.Clear;
+  MemSerie.Clear;
+
   //print data
   for r := 1 to FRowCount - 1 do
   begin
@@ -150,4 +154,3 @@ begin
 end;
 
 end.
-

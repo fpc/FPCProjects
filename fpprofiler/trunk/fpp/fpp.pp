@@ -18,7 +18,7 @@ program fpp;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, Process, CustApp, SysUtils, PScanner, FPPWriter, fpputils;
+  Classes, Process, CustApp, SysUtils, PScanner, FPPWriter, FPPUtils;
 
 type
 
@@ -62,6 +62,8 @@ var
     i: integer;
     begin_count: integer;
     is_record: boolean;
+    function_start: boolean;
+    procedure_start: boolean;
     linenum: string;
 
     procedure InsertFPProfUnit;
@@ -101,14 +103,19 @@ var
     //insert function fpprof_info after each tkBegin and before each tkEnd
     begin_count := 0;
     is_record := false;
+    procedure_start := False;
+    function_start := False;
     for i := tokenlist.Count-1 downto 0 do
     begin
       str(tokenlist[i].line, linenum);
 
       case tokenlist[i].token of
-        tkAsm:      inc(begin_count);
+        tkAsm:      if not function_start and not procedure_start then inc(begin_count);
         tkBegin:
           begin
+            function_start := False;
+            procedure_start := False;
+
             Inc(begin_count);
 
             if begin_count = 1 then
@@ -131,6 +138,8 @@ var
           end;
         tkExcept:   inc(begin_count);
         tkFinally:  inc(begin_count);
+        tkFunction: function_start := True;
+        tkProcedure: procedure_start := True;
         tkRecord:   begin
                       inc(begin_count);
                       is_record := True;

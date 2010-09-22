@@ -1,0 +1,156 @@
+Index: pscanner.pp
+===================================================================
+--- pscanner.pp	(revision 16018)
++++ pscanner.pp	(working copy)
+@@ -74,6 +74,7 @@
+     tkarray,
+     tkas,
+     tkasm,
++    tkAssembler,
+     tkbegin,
+     tkbitpacked,
+     tkcase,
+@@ -139,6 +140,9 @@
+     tkwhile,
+     tkwith,
+     tkxor,
++    tkDirective,
++    tkDefine,
++    tkInclude,
+     tkLineEnding,
+     tkTab
+     );
+@@ -187,7 +191,7 @@
+   TPascalScannerPPSkipMode = (ppSkipNone, ppSkipIfBranch, ppSkipElseBranch,
+     ppSkipAll);
+ 
+-  TPOptions = (po_delphi);
++  TPOptions = (po_Delphi, po_SkipIncludeFiles, po_DontEatDefines, po_MonoLithicASMBlocks);
+ 
+   { TPascalScanner }
+ 
+@@ -278,6 +282,7 @@
+     'array',
+     'as',
+     'asm',
++    'assembler',
+     'begin',
+     'bitpacked',
+     'case',
+@@ -343,6 +348,9 @@
+     'while',
+     'with',
+     'xor',
++    'directive',
++    'define',
++    'include',
+     'LineEnding',
+     'Tab'
+   );
+@@ -564,7 +572,7 @@
+       end else
+         break
+     else
+-      if not PPIsSkipping then
++      if not PPIsSkipping or (po_DontEatDefines in Options) then
+         break;
+   end;
+ end;
+@@ -665,6 +673,7 @@
+   OldLength, SectionLength, NestingLevel, Index: Integer;
+   Directive, Param: string;
+   IncludeStackItem: TIncludeStackItem;
++  IsString: boolean;
+ begin
+   if TokenStr = nil then
+     if not FetchLine then
+@@ -984,6 +993,7 @@
+         //WriteLn('Kommentar: "', CurTokenString, '"');
+         if (Length(CurTokenString) > 0) and (CurTokenString[1] = '$') then
+         begin
++          Result := tkDirective;
+           TokenStart := @CurTokenString[2];
+           CurPos := TokenStart;
+           while (CurPos[0] <> ' ') and (CurPos[0] <> #0) do
+@@ -1009,7 +1019,8 @@
+             // WriteLn('Direktive: "', Directive, '", Param: "', Param, '"');
+             if (Directive = 'I') or (Directive = 'INCLUDE') then
+             begin
+-              if (not PPIsSkipping) and ((Param='') or (Param[1]<>'%')) then
++              Result := tkInclude;
++              if (not PPIsSkipping) and ((Param='') or (Param[1]<>'%')) and not (po_SkipIncludeFiles in Options) then
+               begin
+                 IncludeStackItem := TIncludeStackItem.Create;
+                 IncludeStackItem.SourceFile := CurSourceFile;
+@@ -1044,6 +1055,7 @@
+                 end;
+             end else if Directive = 'DEFINE' then
+             begin
++              Result := tkDefine;
+               if not PPIsSkipping then
+               begin
+                 Param := UpperCase(Param);
+@@ -1052,6 +1064,7 @@
+               end;
+             end else if Directive = 'UNDEF' then
+             begin
++              Result := tkDefine;
+               if not PPIsSkipping then
+               begin
+                 Param := UpperCase(Param);
+@@ -1061,6 +1074,7 @@
+               end;
+             end else if Directive = 'IFDEF' then
+             begin
++              Result := tkDefine;
+               if PPSkipStackIndex = High(PPSkipModeStack) then
+                 Error(SErrIfXXXNestingLimitReached);
+               PPSkipModeStack[PPSkipStackIndex] := PPSkipMode;
+@@ -1083,6 +1097,7 @@
+               end;
+             end else if Directive = 'IFNDEF' then
+             begin
++              Result := tkDefine;
+               if PPSkipStackIndex = High(PPSkipModeStack) then
+                 Error(SErrIfXXXNestingLimitReached);
+               PPSkipModeStack[PPSkipStackIndex] := PPSkipMode;
+@@ -1105,6 +1120,7 @@
+               end;
+             end else if Directive = 'IFOPT' then
+             begin
++              Result := tkDefine;
+               if PPSkipStackIndex = High(PPSkipModeStack) then
+                 Error(SErrIfXXXNestingLimitReached);
+               PPSkipModeStack[PPSkipStackIndex] := PPSkipMode;
+@@ -1123,6 +1139,7 @@
+               end;
+             end else if Directive = 'IF' then
+             begin
++              Result := tkDefine;
+               if PPSkipStackIndex = High(PPSkipModeStack) then
+                 Error(SErrIfXXXNestingLimitReached);
+               PPSkipModeStack[PPSkipStackIndex] := PPSkipMode;
+@@ -1141,6 +1158,7 @@
+               end;
+             end else if Directive = 'ELSE' then
+             begin
++              Result := tkDefine;
+               if PPSkipStackIndex = 0 then
+                 Error(SErrInvalidPPElse);
+               if PPSkipMode = ppSkipIfBranch then
+@@ -1149,11 +1167,15 @@
+                 PPIsSkipping := true;
+             end else if ((Directive = 'ENDIF') or (Directive='IFEND')) then
+             begin
++              Result := tkDefine;
+               if PPSkipStackIndex = 0 then
+                 Error(SErrInvalidPPEndif);
+               Dec(PPSkipStackIndex);
+               PPSkipMode := PPSkipModeStack[PPSkipStackIndex];
+               PPIsSkipping := PPIsSkippingStack[PPSkipStackIndex];
++            end else if (Directive = 'MODE') or (Directive = 'ASMMODE') then
++            begin
++              Result := tkDirective;
+             end;
+           end else
+             Directive := '';

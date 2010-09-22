@@ -86,21 +86,25 @@ begin
   ReadXMLFile(XMLDoc, AFileName);
   try
     Node := XMLDoc.FindNode('profilelog');
-    Node := Node.FindNode('tracelog');
 
     if Assigned(Node) then
     begin
-      NodeList := Node.GetChildNodes;
+      Node := Node.FindNode('tracelog');
 
-      for i := 0 to NodeList.Count - 1 do
+      if Assigned(Node) then
       begin
-        Attributes := NodeList[i].Attributes;
-        AddData(Attributes.GetNamedItem('pos').NodeValue,
-                Attributes.GetNamedItem('time').NodeValue,
-                Attributes.GetNamedItem('func').NodeValue,
-                Attributes.GetNamedItem('source').NodeValue,
-                Attributes.GetNamedItem('line').NodeValue,
-                Attributes.GetNamedItem('heapused').NodeValue);
+        NodeList := Node.GetChildNodes;
+
+        for i := 0 to NodeList.Count - 1 do
+        begin
+          Attributes := NodeList[i].Attributes;
+          AddData(Attributes.GetNamedItem('pos').NodeValue,
+                  Attributes.GetNamedItem('time').NodeValue,
+                  Attributes.GetNamedItem('func').NodeValue,
+                  Attributes.GetNamedItem('source').NodeValue,
+                  Attributes.GetNamedItem('line').NodeValue,
+                  Attributes.GetNamedItem('heapused').NodeValue);
+        end;
       end;
     end;
   finally
