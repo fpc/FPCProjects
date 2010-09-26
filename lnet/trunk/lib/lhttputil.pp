@@ -57,7 +57,7 @@ type
 implementation
 
 uses
-  lCommon;
+  lCommon, URIParser;
 
 function GMTToLocalTime(ADateTime: TDateTime): TDateTime;
 begin
@@ -234,66 +234,16 @@ end;
 
 function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word): Boolean;
 var
-  n: Integer;
-  tmp: string;
+  uri_rec: TURI;
 begin
-  Result := False;
-
-  try
-    tmp := Trim(URL);
-    if Length(tmp) < 1 then // don't do empty
-      Exit;
-
-    Port := 80;
-    if tmp[Length(tmp)] = '/' then // remove trailing /
-      Delete(tmp, Length(tmp), 1);
-
-    if Pos('https://', tmp) = 1 then begin // check for HTTPS
-      Result := True;
-      Port := 443;
-      Delete(tmp, 1, 8); // delete the https part for parsing reasons
-    end else if Pos('http://', tmp) = 1 then begin
-      Delete(tmp, 1, 7); // delete the http part for parsing reasons
-    end;
-
-    n := Pos(':', tmp); // find if we have a port at the end
-    if n > 0 then begin
-      Port := StrToInt(Copy(tmp, n + 1, Length(tmp)));
-      Delete(tmp, n, Length(tmp));
-    end;
-
-    n := Pos('/', tmp); // find if we have a uri section
-    if n > 0 then begin
-      URI := Copy(tmp, n, Length(tmp));
-      Delete(tmp, n, Length(tmp));
-    end;
-    Host := tmp;
-  except
-    Host := 'error';
-    URI := '';
-    Port := 0;
-  end;
+  uri_rec := ParseURI(URL, 'http', 80);
+  Host := uri_rec.Host;
+  URI := uri_rec.Path + uri_rec.Document;
+  Port := uri_rec.Port;
 end;
 
 function ComposeURL(Host, URI: string; const Port: Word): string;
 begin
-  Host := Trim(Host);
-  URI := StringReplace(Trim(URI), '%20', ' ', [rfReplaceAll]);
-
-  if (Pos('http://', Host) <> 1)
-  and (Pos('https://', Host) <> 1) then
-    Host := 'http://' + Host;
-
-  if URI[Length(URI)] = '/' then
-    Delete(URI, Length(URI), 1);
-
-  if  (Host[Length(Host)] = '/')
-  and (URI[1] = '/') then
-    Delete(Host, Length(Host), 1)
-  else if (URI[1] <> '/')
-  and     (Host[Length(Host)] <> '/') then
-    Host := Host + '/';
-
   Result := Host + URI + ':' + IntToStr(Port);
 end;
 
