@@ -18,25 +18,9 @@ program fpp;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, Process, CustApp, SysUtils, PScanner, FPPWriter, FPPUtils;
+  Classes, Process, CustApp, SysUtils, FPPEnvironment, FPPUtils, FPPModifyCode;
 
 type
-
-  { TEnvironment }
-
-  TEnvironment = class(TObject)
-  private
-    FCommandLine: string;
-    FPathList:    TStrings;
-    procedure AddSearchPath(path: string);
-    procedure AddCmdParameter(Parameter: string);
-  public
-    constructor Create;
-    destructor Destroy; override;
-    property CommandLine: string read FCommandLine write FCommandLine;
-    property PathList: TStrings read FPathList write FPathList;
-    function FileList(ExtensionMask: string): TStrings;
-  end;
 
   { TFPPApplication }
 
@@ -57,158 +41,7 @@ type
 var
   Application: TFPPApplication;
 
-  procedure ModifyCode(AFileName: string; tokenlist: TPasTokenList);
-  var
-    i: integer;
-    begin_count: integer;
-    is_record: boolean;
-    function_start: boolean;
-    procedure_start: boolean;
-    linenum: string;
-
-    procedure InsertFPProfUnit;
-    var
-      i: integer;
-    begin
-      //find uses clause and insert unit
-      for i := tokenlist.Count-1 downto 0 do
-      begin
-        if (tokenlist[i].token = tkUses) then
-        begin
-          //insert fpprof unit (with whitespace and comma)
-          tokenlist.Insert(i - 1, tkIdentifier, ' fpprof, ', -1);
-          Exit;
-        end;
-      end;
-
-      //unit not found, find program / unit keyword
-      for i := tokenlist.Count-1 downto 0 do
-        if (tokenlist[i].token = tkProgram) or
-          (tokenlist[i].token = tkUnit) then
-        begin
-          //insert fpprof unit (with uses keyword)
-          tokenlist.Insert(i - 5, tkIdentifier, 'uses fpprof;', -1);
-          Exit;
-        end;
-
-      //just try and insert it at the beginning
-      tokenlist.Insert(Tokenlist.Count-2, tkIdentifier, 'uses fpprof;', -1);
-    end;
-
-  begin
-    //insert fpprof unit
-    if ExtractFileExt(AFileName) <> '.inc' then
-      InsertFPProfUnit;
-
-    //insert function fpprof_info after each tkBegin and before each tkEnd
-    begin_count := 0;
-    is_record := false;
-    procedure_start := False;
-    function_start := False;
-    for i := tokenlist.Count-1 downto 0 do
-    begin
-      str(tokenlist[i].line, linenum);
-
-      case tokenlist[i].token of
-        tkAsm:      if not function_start and not procedure_start then inc(begin_count);
-        tkBegin:
-          begin
-            function_start := False;
-            procedure_start := False;
-
-            Inc(begin_count);
-
-            if begin_count = 1 then
-            begin
-              tokenlist.Insert(i-1, tkIdentifier, ' fpprof_entry_profile(' + linenum + '); ' + LineEnding, -1);
-            end;
-          end;
-        tkCase:     if not is_record then inc(begin_count);
-        tkEnd:
-          begin
-            if (begin_count = 1) and not is_record then
-            begin
-              tokenlist.Insert(i+1 , tkIdentifier, ' fpprof_exit_profile(' + linenum + '); ' + LineEnding, -1);
-            end;
-
-            is_record := False;
-
-            if begin_count > 0 then
-              Dec(begin_count);
-          end;
-        tkExcept:   inc(begin_count);
-        tkFinally:  inc(begin_count);
-        tkFunction: function_start := True;
-        tkProcedure: procedure_start := True;
-        tkRecord:   begin
-                      inc(begin_count);
-                      is_record := True;
-                    end;
-      end; { case }
-    end; { while }
-
-    //save result for debuging
-    //tokenlist.SaveToFile('test.debug.pp');
-  end;
-
-  procedure TEnvironment.AddSearchPath(path: string);
-  begin
-    if DirectoryExists(path) then
-      PathList.Add(path);
-  end;
-
-  procedure TEnvironment.AddCmdParameter(Parameter: string);
-  begin
-    //check if commandline parameter needs skipping
-    if Parameter = '-r' then exit;
-    if Parameter = '--backup' then exit;
-
-    //add the commandline parameter so it get's passed to FPC
-    CommandLine := CommandLine + ' ' + Parameter;
-  end;
-
-  constructor TEnvironment.Create;
-  var
-    i:     integer;
-    param: string;
-  begin
-    inherited Create;
-    PathList := TStringList.Create;
-
-    //add debugging info and fpprof unit path
-    AddCmdParameter('-gl');
-    AddCmdParameter('-Fu' + GetEnvironmentVariable('fpprof'));
-
-    for i := 1 to ParamCount do
-    begin
-      AddCmdParameter(ParamStr(i));
-      param := ParamStr(i);
-      case param[1] of
-        '-':
-            if pos('-Fu', ParamStr(i)) <> 0 then
-                AddSearchPath(copy(ParamStr(i), 4, Length(ParamStr(i)) - 3));
-            else
-              AddSearchPath(ExtractFilePath(ExpandFileName(param)));
-      end;
-    end;
-  end;
-
-  destructor TEnvironment.Destroy;
-  begin
-    PathList.Free;
-    inherited Destroy;
-  end;
-
-  function TEnvironment.FileList(ExtensionMask: string): TStrings;
-  var
-    i: integer;
-  begin
-    Result := TStringList.Create;
-    for i := 0 to PathList.Count - 1 do
-      FileSearch(PathList[i], ExtensionMask, Result);
-  end;
-
-{ TFPPApplication }
+  { TFPPApplication }
 
   procedure TFPPApplication.ShowProductInfo;
   begin
@@ -228,34 +61,34 @@ var
 
   procedure TFPPApplication.Usage;
 
-    procedure ShowOption(const C,LC,Msg : String);
+    procedure ShowOption(const C, LC, Msg: string);
     begin
-      writeln(Format(' -%s --%-20s %s',[C,LC,MSG]));
+      writeln(Format(' -%s --%-20s %s', [C, LC, MSG]));
     end;
 
-    procedure ShowArgOption(const LC,Msg : String); overload;
+    procedure ShowArgOption(const LC, Msg: string); overload;
     begin
-      writeln(Format('    --%-20s %s',[LC,MSG]));
+      writeln(Format('    --%-20s %s', [LC, MSG]));
     end;
 
-    procedure ShowArgOption(const C,LC,Msg : String); overload;
+    procedure ShowArgOption(const C, LC, Msg: string); overload;
     begin
-      writeln(Format(' -%s --%-20s %s',[C,LC,MSG]));
+      writeln(Format(' -%s --%-20s %s', [C, LC, MSG]));
     end;
 
-    procedure ShowArgOption(const C,LC, Value, Msg : String); overload;
+    procedure ShowArgOption(const C, LC, Value, Msg: string); overload;
     begin
-      writeln(Format(' -%s --%-20s %s',[C, LC+'='+Value, MSG]));
+      writeln(Format(' -%s --%-20s %s', [C, LC + '=' + Value, MSG]));
     end;
 
   begin
-    writeln(Format('Usage: %s filename [options]',[Paramstr(0)]));
+    writeln(Format('Usage: %s filename [options]', [ParamStr(0)]));
     writeln;
     writeln('Where options is one or more of the following:');
-    ShowOption('h','help','This screen.');
-    ShowArgOption('backup','Backup profiled code.');
-    ShowArgOption('i','no-insert','Do not insert profiling code.');
-    ShowArgOption('r','no-remove','Do not remove profiling code.');
+    ShowOption('h', 'help', 'This screen.');
+    ShowArgOption('backup', 'Backup profiled code.');
+    ShowArgOption('i', 'no-insert', 'Do not insert profiling code.');
+    ShowArgOption('r', 'no-remove', 'Do not remove profiling code.');
     writeln;
     writeln('Environment variable used:');
     writeln('  fpprof      points to the directory containing the fpprof.pas unit.');
@@ -304,14 +137,14 @@ var
     // TODO: Add a Silent option with no output
     ShowProductInfo;
 
-    if HasOption('h','help') then
+    if HasOption('h', 'help') then
     begin
       Usage;
       exit;
     end;
 
     //insert profiling code
-    if not HasOption('i','no-insert') then
+    if not HasOption('i', 'no-insert') then
       InsertProfilingCode(Environment.FileList('.pp;.pas;.inc;.lpr'), @ModifyCode);
 
     //compile the sources
@@ -322,7 +155,7 @@ var
       BackupProfilingCode(Environment.FileList('.fpprof'));
 
     //remove the profiling code
-    if not HasOption('r','no-remove') then
+    if not HasOption('r', 'no-remove') then
       RemoveProfilingCode(Environment.FileList('.fpprof'));
   end;
 

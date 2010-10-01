@@ -8,7 +8,6 @@
         <LRSInOutputDirectory Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
     </General>
     <VersionInfo>
       <StringTable ProductVersion=""/>
@@ -21,16 +20,26 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="test_006.pp --backup -r -Fu..\..\fpprof"/>
+        <CommandLineParams Value="test_001.pp -Fu..\..\fpprof"/>
         <LaunchingApplication PathPlusParams="\usr\X11R6\bin\xterm -T 'Lazarus Run Output' -e $(LazarusDir)\tools\runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="1">
+    <Units Count="3">
       <Unit0>
         <Filename Value="fpp.pp"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="fpp"/>
       </Unit0>
+      <Unit1>
+        <Filename Value="fppenvironment.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="FPPEnvironment"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="fppmodifycode.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="FPPModifyCode"/>
+      </Unit2>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -40,7 +49,7 @@
       <Filename Value="..\bin\$(TargetCPU)-$(TargetOS)\fpp"/>
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="..\fpprof;..\fcl-passrc\src"/>
+      <OtherUnitFiles Value="..\fpprof\;..\fcl-passrc\src\"/>
       <UnitOutputDirectory Value="units\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Other>
