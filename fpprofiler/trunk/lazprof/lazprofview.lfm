@@ -4,10 +4,11 @@ object LazProfileViewer: TLazProfileViewer
   Top = 152
   Width = 661
   ActiveControl = PageControl
-  Caption = 'LazProfileViewer'
+  Caption = 'Lazarus profile viewer'
   ClientHeight = 319
   ClientWidth = 661
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   LCLVersion = '0.9.29'
   object StatusBar1: TStatusBar
     Left = 0
@@ -77,12 +78,26 @@ object LazProfileViewer: TLazProfileViewer
       Caption = 'Call graph'
       ClientHeight = 233
       ClientWidth = 655
-      object Image1: TImage
+      object ScrollBox1: TScrollBox
         Left = 0
         Height = 233
         Top = 0
         Width = 655
         Align = alClient
+        ClientHeight = 229
+        ClientWidth = 651
+        Color = clWhite
+        ParentColor = False
+        PopupMenu = PopupMenu1
+        TabOrder = 0
+        object CallGraphImage: TImage
+          Left = 0
+          Height = 10
+          Top = 0
+          Width = 10
+          AutoSize = True
+          PopupMenu = PopupMenu1
+        end
       end
     end
     object MemoryTabSheet: TTabSheet
@@ -112,6 +127,7 @@ object LazProfileViewer: TLazProfileViewer
         ParentColor = False
         object MemoryChartSeries: TAreaSeries
           AreaBrush.Color = clRed
+          ConnectType = ctStepXY
         end
       end
     end
@@ -222,5 +238,19 @@ object LazProfileViewer: TLazProfileViewer
     Filter = 'Profile log file|*.xml'
     left = 88
     top = 80
+  end
+  object PopupMenu1: TPopupMenu
+    left = 24
+    top = 125
+    object mnuZoomToFit: TMenuItem
+      Tag = -1
+      Caption = 'Zoom to fit'
+      OnClick = ZoomMenuClick
+    end
+    object mnuZoom100: TMenuItem
+      Tag = 100
+      Caption = '100%'
+      OnClick = ZoomMenuClick
+    end
   end
 end

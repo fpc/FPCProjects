@@ -8,7 +8,7 @@
       <Version Value="9"/>
       <PathDelim Value="\"/>
       <SearchPaths>
-        <OtherUnitFiles Value="..\fppview\"/>
+        <OtherUnitFiles Value="..\fppview"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Other>
@@ -18,20 +18,12 @@
     <Description Value="A graphical frontend for fpprofiler"/>
     <License Value="GPL"/>
     <Version Minor="1"/>
-    <Files Count="3">
+    <Files Count="1">
       <Item1>
-        <Filename Value="lazreport.pas"/>
-        <UnitName Value="LazReport"/>
-      </Item1>
-      <Item2>
         <Filename Value="lazprofview.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="LazProfView"/>
-      </Item2>
-      <Item3>
-        <Filename Value="lazstats.pas"/>
-        <UnitName Value="LazStats"/>
-      </Item3>
+      </Item1>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="4">
