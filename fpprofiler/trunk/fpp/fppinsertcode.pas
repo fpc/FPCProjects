@@ -1,17 +1,33 @@
-unit FPPModifyCode;
+unit fppInsertCode;
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  SysUtils, PScanner, FPPUtils;
+  Classes, SysUtils, FPPEnvironment, FPPUtils, PScanner, fppWriter;
 
-procedure ModifyCode(AFileName: string; tokenlist: TPasTokenList);
+type
+
+  { TfppInsertCode }
+
+  TfppInsertCode = class(TObject)
+  private
+    Environment: TEnvironment;
+    procedure InsertProfilingCode(FileList: TStrings);
+    procedure ModifyCode(AFileName: string; tokenlist: TPasTokenList);
+  public
+    constructor Create(Env: TEnvironment);
+
+    procedure Run;
+  end;
 
 implementation
 
-procedure ModifyCode(AFileName: string; tokenlist: TPasTokenList);
+{ TfppInsertCode }
+
+procedure TfppInsertCode.ModifyCode(AFileName: string; tokenlist: TPasTokenList
+  );
 var
   i: integer;
   begin_count: integer;
@@ -84,7 +100,7 @@ begin
       begin
         if (begin_count = 1) and not is_record then
         begin
-          tokenlist.Insert(i + 1, tkIdentifier, ' fpprof_exit_profile(' +
+          tokenlist.Insert(i + 1, tkIdentifier, ' ;fpprof_exit_profile(' +
             linenum + '); ' + LineEnding, -1);
         end;
 
@@ -107,6 +123,80 @@ begin
 
   //save result for debuging
   //tokenlist.SaveToFile('test.debug.pp');
+end;
+
+procedure TfppInsertCode.InsertProfilingCode(FileList: TStrings);
+var
+  i: integer;
+  PasTokenList: TPasTokenList;
+  Success: boolean;
+  writer: TFPPWriter;
+begin
+  PasTokenList := TPasTokenList.Create;
+
+  writer := TFPPWriter.Create;
+  writer.CreateIgnored;
+
+  //make a copy of the original files and process them
+  for i := 0 to FileList.Count - 1 do
+  begin
+    //skip if file is already converted or belongs to the profiling units
+    {$note the profiling files should be determined at compile time?}
+    if not FileExists(FileList[i] + FPPROF_EXT) and
+      (ExtractFileName(FileList[i]) <> 'fpprof.pp') and
+      (ExtractFileName(FileList[i]) <> 'fpputils.pas') and
+      (ExtractFileName(FileList[i]) <> 'fppwriter.pas') and
+      (ExtractFileName(FileList[i]) <> 'systemtime.inc') and
+      (ExtractFileName(FileList[i]) <> 'win32systemtime.inc') then
+    begin
+      Environment.Write('insert: ' + FileList[i]);
+
+      try
+        Success := PasTokenList.ParseSource(FileList[i]);
+
+        Success := Success and RenameFile(FileList[i], FileList[i] + FPPROF_EXT);
+
+        //perform the code modification
+        ModifyCode(FileList[i], PasTokenList);
+
+        PasTokenList.SaveToFile(FileList[i]);
+
+        if Success then
+          Environment.WriteLn(' .......... OK')
+      except
+        Environment.WriteLn(' .......... FAIL');
+        writer.AddIgnoredFile(FileList[i]);
+      end;
+
+      PasTokenList.Clear;
+    end
+    else
+      Environment.WriteLn('skipping: ' + FileList[i]);
+  end;
+
+  writer.Save;
+  writer.Free;
+
+  PasTokenList.Free;
+end;
+
+constructor TfppInsertCode.Create(Env: TEnvironment);
+begin
+  inherited Create;
+
+  Environment := Env;
+end;
+
+procedure TfppInsertCode.Run;
+var
+  fileList: TStrings;
+begin
+  try
+    fileList := Environment.FileList('.pp;.pas;.inc;.lpr');
+    InsertProfilingCode(fileList);
+  finally
+    fileList.Free
+  end;
 end;
 
 end.

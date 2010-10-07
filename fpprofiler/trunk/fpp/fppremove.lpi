@@ -5,10 +5,17 @@
     <PathDelim Value="\"/>
     <General>
       <Flags>
-        <LRSInOutputDirectory Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
+      <UseAppBundle Value="False"/>
+      <ResourceType Value="res"/>
+      <Icon Value="0"/>
     </General>
+    <i18n>
+      <EnableI18N LFM="False"/>
+    </i18n>
     <VersionInfo>
       <StringTable ProductVersion=""/>
     </VersionInfo>
@@ -20,15 +27,13 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="test_001.pp -Fu..\..\fpprof"/>
-        <LaunchingApplication PathPlusParams="\usr\X11R6\bin\xterm -T 'Lazarus Run Output' -e $(LazarusDir)\tools\runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
     <Units Count="1">
       <Unit0>
-        <Filename Value="fpp.pp"/>
+        <Filename Value="fppremove.pp"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="fpp"/>
+        <UnitName Value="fppremove"/>
       </Unit0>
     </Units>
   </ProjectOptions>
@@ -36,11 +41,11 @@
     <Version Value="9"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\bin\$(TargetCPU)-$(TargetOS)\fpp"/>
+      <Filename Value="..\bin\$(TargetCPU)-$(TargetOS)\fppremove"/>
     </Target>
     <SearchPaths>
       <OtherUnitFiles Value="..\fpprof\;..\fcl-passrc\src\"/>
-      <UnitOutputDirectory Value="units\$(TargetCPU)-$(TargetOS)"/>
+      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
       <Debugging>

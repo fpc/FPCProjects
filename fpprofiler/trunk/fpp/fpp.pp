@@ -18,46 +18,29 @@ program fpp;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, Process, CustApp, SysUtils, FPPEnvironment, FPPUtils, FPPModifyCode;
+  Classes, Process, CustApp, SysUtils, FPPUtils, fppEnvironment,
+  fppInsertCode, fppRemoveCode, fppApplication;
 
 type
 
   { TFPPApplication }
 
-  TFPPApplication = class(TCustomApplication)
+  TFPPApplication = class(TCustomFPPApplication)
   private
-    Environment: TEnvironment;
     Verbose: boolean;
-    procedure ShowProductInfo;
-    procedure Show(msg: string);
     procedure Compile;
-    procedure Usage;
+  protected
+    procedure Usage; override;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
-    procedure Run;
+    procedure Run; override;
   end;
 
 var
   Application: TFPPApplication;
 
   { TFPPApplication }
-
-  procedure TFPPApplication.ShowProductInfo;
-  begin
-    writeln('GNU FreePascal profiler 0.1');
-    writeln('Copyright 2007 Darius Blaszyk.');
-    writeln('FPP is free software, covered by the GNU General Public License, and you are');
-    writeln('welcome to change it and/or distribute copies of it under certain conditions.');
-    writeln('There is absolutely no warranty for FPP.');
-    writeln;
-  end;
-
-  procedure TFPPApplication.Show(msg: string);
-  begin
-    if Verbose then
-      Writeln(msg);
-  end;
 
   procedure TFPPApplication.Usage;
 
@@ -82,9 +65,8 @@ var
     end;
 
   begin
-    writeln(Format('Usage: %s filename [options]', [ParamStr(0)]));
-    writeln;
-    writeln('Where options is one or more of the following:');
+    inherited Usage;
+
     ShowOption('h', 'help', 'This screen.');
     ShowArgOption('backup', 'Backup profiled code.');
     ShowArgOption('i', 'no-insert', 'Do not insert profiling code.');
@@ -110,8 +92,8 @@ var
         lFPC := 'fpc';
       FPCProcess.CommandLine := lFPC + ' ' + Environment.CommandLine;
 
-      writeln('executing: ', FPCProcess.CommandLine);
-      writeln;
+      Environment.WriteLn('executing: ' + FPCProcess.CommandLine);
+      Environment.WriteLn;
 
       FPCProcess.Options := FPCProcess.Options + [poWaitOnExit];
       FPCProcess.Execute;
@@ -123,19 +105,20 @@ var
   constructor TFPPApplication.Create(TheOwner: TComponent);
   begin
     inherited Create(TheOwner);
-    Environment := TEnvironment.Create;
   end;
 
   destructor TFPPApplication.Destroy;
   begin
-    Environment.Free;
     inherited Destroy;
   end;
 
   procedure TFPPApplication.Run;
+  var
+    ins: TFPPInsertCode;
+    rem: TfppRemoveCode;
+    fileList: TStrings;
   begin
-    // TODO: Add a Silent option with no output
-    ShowProductInfo;
+    Environment.ShowProductInfo;
 
     if HasOption('h', 'help') then
     begin
@@ -145,18 +128,36 @@ var
 
     //insert profiling code
     if not HasOption('i', 'no-insert') then
-      InsertProfilingCode(Environment.FileList('.pp;.pas;.inc;.lpr'), @ModifyCode);
+    begin
+      try
+        ins := TFPPInsertCode.Create(Environment);
+        ins.Run;
+      finally
+        ins.Free;
+      end;
+    end;
 
     //compile the sources
     Compile;
 
     //backup profiled code
     if HasOption('backup') then
-      BackupProfilingCode(Environment.FileList('.fpprof'));
+    begin
+      fileList := Environment.FileList('.fpprof');
+      BackupProfilingCode(fileList);
+      fileList.Free;
+    end;
 
     //remove the profiling code
     if not HasOption('r', 'no-remove') then
-      RemoveProfilingCode(Environment.FileList('.fpprof'));
+    begin
+      try
+        rem := TFPPRemoveCode.Create(Environment);
+        rem.Run;
+      finally
+        rem.Free;
+      end;
+    end;
   end;
 
 begin

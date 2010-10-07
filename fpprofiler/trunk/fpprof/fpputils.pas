@@ -21,7 +21,7 @@ unit fpputils;
 interface
 
 uses
-  pscanner, PasTree, SysUtils, Classes, FPPWriter;
+  pscanner, SysUtils, Classes;
 
 const
   FPPROF_EXT = '.fpprof';
@@ -59,12 +59,7 @@ type
     property List[index: integer]: TPasToken read GetList write SetList; default;
   end;
 
-  TModTokenProc = procedure(AFileName: string; tokenlist: TPasTokenList);
-
 procedure FileSearch(SearchDir: string; ExtensionMask: string; var FileList: TStrings; Recursive: boolean = False);
-procedure InsertProfilingCode(FileList: TStrings; ModTokenProc: TModTokenProc);
-procedure RemoveProfilingCodeFromFile(const FileName: string);
-procedure RemoveProfilingCode(FileList: TStrings);
 procedure BackupProfilingCode(FileList: TStrings);
 
 implementation
@@ -98,88 +93,6 @@ begin
   FindClose(Info);
 
   ExtensionList.Free;
-end;
-
-procedure InsertProfilingCode(FileList: TStrings; ModTokenProc: TModTokenProc);
-var
-  i: integer;
-  PasTokenList: TPasTokenList;
-  Success: boolean;
-  writer: TFPPWriter;
-begin
-  PasTokenList := TPasTokenList.Create;
-
-  writer := TFPPWriter.Create;
-  writer.CreateIgnored;
-
-  //make a copy of the original files and process them
-  for i := 0 to FileList.Count - 1 do
-  begin
-    //skip if file is already converted or belongs to the profiling units
-    {$note the profiling files should be determined at compile time?}
-    if not FileExists(FileList[i] + FPPROF_EXT) and
-      (ExtractFileName(FileList[i]) <> 'fpprof.pp') and
-      (ExtractFileName(FileList[i]) <> 'fpputils.pas') and
-      (ExtractFileName(FileList[i]) <> 'fppwriter.pas') and
-      (ExtractFileName(FileList[i]) <> 'systemtime.inc') and
-      (ExtractFileName(FileList[i]) <> 'win32systemtime.inc') then
-    begin
-      Write('insert: ', FileList[i]);
-
-      try
-        Success := PasTokenList.ParseSource(FileList[i]);
-
-        Success := Success and RenameFile(FileList[i], FileList[i] + FPPROF_EXT);
-
-        //perform the code modification
-        if Assigned(ModTokenProc) then
-          ModTokenProc(FileList[i], PasTokenList);
-
-        PasTokenList.SaveToFile(FileList[i]);
-
-        if Success then
-          writeln(' .......... OK')
-      except
-        writeln(' .......... FAIL');
-        writer.AddIgnoredFile(FileList[i]);
-      end;
-
-      PasTokenList.Clear;
-    end
-    else
-      WriteLn('skipping: ', FileList[i]);
-  end;
-
-  writer.Save;
-  writer.Free;
-
-  PasTokenList.Free;
-  FileList.Free;
-end;
-
-procedure RemoveProfilingCodeFromFile(const FileName: string);
-var
-  NewFileName: string;
-begin
-  NewFileName := Copy(FileName, 1, Length(FileName) - Length(FPPROF_EXT));
-
-  Write('revert: ', NewFileName);
-
-  DeleteFile(NewFileName);
-  if RenameFile(FileName, NewFileName) then
-    writeln(' .......... OK')
-  else
-    writeln(' .......... FAIL');
-end;
-
-procedure RemoveProfilingCode(FileList: TStrings);
-var
-  i: integer;
-begin
-  //restore the original files
-  for i := 0 to FileList.Count - 1 do
-    if FileExists(FileList[i]) then
-      RemoveProfilingCodeFromFile(FileList[i]);
 end;
 
 procedure BackupProfilingCode(FileList: TStrings);
