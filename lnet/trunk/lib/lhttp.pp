@@ -32,14 +32,15 @@ uses
   classes, sysutils, lnet, lnetssl, levents, lhttputil, lstrbuffer;
 
 type
-  TLHTTPMethod = (hmHead, hmGet, hmPost, hmUnknown);
+  TLHTTPMethod = (hmHead, hmGet, hmPost, hmPut, hmDelete, hmUnknown);
   TLHTTPMethods = set of TLHTTPMethod;
   TLHTTPParameter = (hpConnection, hpContentLength, hpContentType,
     hpAccept, hpAcceptCharset, hpAcceptEncoding, hpAcceptLanguage, hpHost,
     hpFrom, hpReferer, hpUserAgent, hpRange, hpTransferEncoding,
-    hpIfModifiedSince, hpIfUnmodifiedSince, hpCookie, hpXRequestedWith);
-  TLHTTPStatus = (hsUnknown, hsOK, hsNoContent, hsMovedPermanently, hsFound, hsNotModified, 
-    hsBadRequest, hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
+    hpIfModifiedSince, hpIfUnmodifiedSince, hpCookie, hpXRequestedWith,
+	hpAuthorization);
+  TLHTTPStatus = (hsUnknown, hsOK, hsCreated, hsNoContent, hsMovedPermanently, hsFound, hsNotModified, 
+    hsBadRequest, hsUnAuth, hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
     hsInternalError, hsNotImplemented, hsNotAllowed);
   TLHTTPTransferEncoding = (teIdentity, teChunked);
   TLHTTPClientError = (ceNone, ceMalformedStatusLine, ceVersionNotSupported,
@@ -49,22 +50,25 @@ const
   HTTPDisconnectStatuses = [hsBadRequest, hsRequestTooLong, hsForbidden, 
     hsInternalError, hsNotAllowed];
   HTTPMethodStrings: array[TLHTTPMethod] of string =
-    ('HEAD', 'GET', 'POST', '');
+    ('HEAD', 'GET', 'POST', 'PUT', 'DELETE', '');
   HTTPParameterStrings: array[TLHTTPParameter] of string =
     ('CONNECTION', 'CONTENT-LENGTH', 'CONTENT-TYPE', 'ACCEPT', 
      'ACCEPT-CHARSET', 'ACCEPT-ENCODING', 'ACCEPT-LANGUAGE', 'HOST',
      'FROM', 'REFERER', 'USER-AGENT', 'RANGE', 'TRANSFER-ENCODING',
-     'IF-MODIFIED-SINCE', 'IF-UNMODIFIED-SINCE', 'COOKIE', 'X-REQUESTED-WITH');
+     'IF-MODIFIED-SINCE', 'IF-UNMODIFIED-SINCE', 'COOKIE', 'X-REQUESTED-WITH',
+	 'AUTHORIZATION');
   HTTPStatusCodes: array[TLHTTPStatus] of dword =
-    (0, 200, 204, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 405);
+    (0, 200, 201, 204, 301, 302, 304, 400, 401, 403, 404, 412, 414, 500, 501, 405);
   HTTPTexts: array[TLHTTPStatus] of string = 
-    ('', 'OK', 'No Content', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Forbidden', 
+    ('', 'OK', 'Created', 'No Content', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Unauthorized', 'Forbidden',
      'Not Found', 'Precondition Failed', 'Request Too Long', 'Internal Error',
      'Method Not Implemented', 'Method Not Allowed');
   HTTPDescriptions: array[TLHTTPStatus] of string = (
       { hsUnknown }
     '',
       { hsOK }
+    '',
+      { hsCreated }
     '',
       { hsNoContent }
     '',
@@ -79,6 +83,8 @@ const
     '<h1>Bad Request</h1>'+#10+
     '<p>Your browser did a request this server did not understand.</p>'+#10+
     '</body></html>'+#10,
+      { hsUnAuth }
+    '',
       { hsForbidden }
     '<html><head><title>403 Forbidden</title></head><body>'+#10+
     '<h1>Forbidden</h1>'+#10+
@@ -478,6 +484,25 @@ type
     property OnInput: TLInputEvent read FOnInput write FOnInput;
     property OnProcessHeaders: TLHTTPClientEvent read FOnProcessHeaders write FOnProcessHeaders;
   end;
+
+  { TClientInput }
+
+  type
+
+    { TClientOutput }
+
+    TClientOutput = class(TOutputItem)
+    protected
+      FPersistent: boolean;
+      procedure DoneInput; override;
+    public
+      constructor Create(ASocket: TLHTTPClientSocket);
+      destructor Destroy; override;
+      procedure FreeInstance; override;
+
+      function  HandleInput(ABuffer: pchar; ASize: integer): integer; override;
+      function  WriteBlock: TWriteBlockStatus; override;
+    end;
 
 implementation
 
@@ -988,8 +1013,10 @@ begin
     FCurrentOutput := FCurrentOutput.FNext;
     lOutput.Free;
   end;
-  if FCurrentInput <> nil then
+  if FCurrentInput <> nil then begin
+    TClientOutput(FCurrentInput).FPersistent := False;
     FreeAndNil(FCurrentInput);
+  end;
 end;
 
 procedure TLHTTPSocket.FreeDelayFreeItems;
@@ -1974,23 +2001,6 @@ begin
     lHandler := lHandler.FNext;
   end;
 end;
-
-{ TClientInput }
-
-type
-  TClientOutput = class(TOutputItem)
-  protected
-    FPersistent: boolean;
-    
-    procedure DoneInput; override;
-  public
-    constructor Create(ASocket: TLHTTPClientSocket);
-    destructor Destroy; override;
-    procedure FreeInstance; override;
-
-    function  HandleInput(ABuffer: pchar; ASize: integer): integer; override;
-    function  WriteBlock: TWriteBlockStatus; override;
-  end;
 
 constructor TClientOutput.Create(ASocket: TLHTTPClientSocket);
 begin
