@@ -70,6 +70,7 @@ end;
 
 destructor TFPPWriter.Destroy;
 begin
+  Save;
   XMLDoc.Free;
 
   inherited Destroy;
