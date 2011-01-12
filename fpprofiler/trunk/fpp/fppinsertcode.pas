@@ -66,6 +66,15 @@ var
       end;
     end;
 
+    //search for a interface section
+    for i := tokenlist.Count - 1 downto 0 do
+      if tokenlist[i].token = tkInterface then
+        begin
+          //insert fpprof unit (with uses keyword)
+          tokenlist.Insert(i - 1, tkIdentifier, 'uses fpprof;', -1);
+          Exit;
+        end;
+
     //unit not found, find program / unit keyword
     for i := tokenlist.Count - 1 downto 0 do
       if (tokenlist[i].token = tkProgram) or (tokenlist[i].token = tkUnit) then
