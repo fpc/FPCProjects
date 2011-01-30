@@ -14,11 +14,11 @@ interface
 
 uses
   xlib, Classes, sysutils, GLCrossPlatform, GLContext, LCLProc, Forms, Controls, OpenGL1x,
-  x, xutil, GTKProc,
+  x, xutil,
 {$ifdef LCLGTK2}
-  gtk2, gdk2, gdk2x, gtkdef;
+  Gtk2Proc, gtk2, gdk2, gdk2x, Gtk2Def;
 {$else}
-  gtk, gtkdef, gdk;
+  GTKProc, gtk, gtkdef, gdk;
 {$endif}
 
 type
