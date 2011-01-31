@@ -23,7 +23,8 @@ uses
   LResources, Forms, Controls, Graphics, Dialogs, EditBtn, ComCtrls, MenuIntf,
   FileUtil, ExtCtrls, Menus, TAGraph, TASeries, FPPStats, FPPReader,
   LazStats, FPPReport, Classes, LazProfSettings, LazReport, LazIDEIntf,
-  SysUtils, ProjectIntf, Process;
+  SysUtils, ProjectIntf, Process, SrcEditorIntf, LCLProc,
+  CodeTree, CodeToolManager, CodeCache, CodeAtom;
 
 type
   TFile = record
@@ -34,8 +35,9 @@ type
   { TLazProfileViewer }
 
   TLazProfileViewer = class(TForm)
-    MemImage: TImage;
     CallGraphImage: TImage;
+    CodeBrowseListView: TListView;
+    MemImage: TImage;
     MemoryChart: TChart;
     MemoryChartSeries: TAreaSeries;
     ImageList: TImageList;
@@ -44,18 +46,22 @@ type
     mnuZoom100: TMenuItem;
     OpenDialog: TOpenDialog;
     PageControl: TPageControl;
+    CallGraphPanel: TPanel;
     PopupMenu1: TPopupMenu;
     ScrollBox1: TScrollBox;
-    StatusBar1: TStatusBar;
+    StatusBar: TStatusBar;
     FlatReportTabSheet: TTabSheet;
     CallGraphTabSheet: TTabSheet;
     MemoryTabSheet: TTabSheet;
+    BrowseCodeTabSheet: TTabSheet;
     ToolBar: TToolBar;
     OpenLogButton: TToolButton;
     SettingsButton: TToolButton;
     ToolButton3: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormHide(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure ListView1Click(Sender: TObject);
     procedure ZoomMenuClick(Sender: TObject);
     procedure OpenLogButtonClick(Sender: TObject);
@@ -66,7 +72,18 @@ type
     ProfStats: TCustomProfStats;
     FileList: array of TFile;
     FileListCount: integer;
+
+    CachedUnit: string;
+    CachedProc: string;
+    CodeBuf: TCodeBuffer;
+    CodeTool: TCodeTool;
+
     procedure ZoomImage(Level: longint);
+    procedure ShowCodeInfo(Sender: TObject);
+
+    //code tool helper functions
+    function ParseCode(ACodeBuf: TCodeBuffer; out ACodeTool: TCodeTool): boolean;
+    function CaretToSourcePosition(ACodeTool: TCodeTool; ACodeBuf: TCodeBuffer; Line, Column: integer; out CleanPos: integer): boolean;
   public
     { public declarations }
   end;
@@ -133,6 +150,16 @@ begin
   MemImage.Free;
 end;
 
+procedure TLazProfileViewer.FormHide(Sender: TObject);
+begin
+  SourceEditorManagerIntf.UnRegisterChangeEvent(semEditorStatus, @ShowCodeInfo);
+end;
+
+procedure TLazProfileViewer.FormShow(Sender: TObject);
+begin
+  SourceEditorManagerIntf.RegisterChangeEvent(semEditorStatus, @ShowCodeInfo);
+end;
+
 procedure TLazProfileViewer.ListView1Click(Sender: TObject);
 
   function FileListIndexOf(AFileName: string): integer;
@@ -149,7 +176,7 @@ procedure TLazProfileViewer.ListView1Click(Sender: TObject);
   begin
     Inc(FileListCount);
     SetLength(FileList, FileListCount);
-    FileList[FileListCount - 1].name := AFileName;
+    FileList[FileListCount - 1].Name := AFileName;
     FileList[FileListCount - 1].path := AFilePath;
   end;
 
@@ -200,8 +227,7 @@ begin
     //get the line number
     Row := StrToInt(ListView1.Selected.SubItems[4]);
 
-    LazarusIDE.DoOpenFileAndJumpToPos(FileName, Point(1, Row), -1,
-      -1, -1, [ofOnlyIfExists]);
+    LazarusIDE.DoOpenFileAndJumpToPos(FileName, Point(1, Row), -1, -1, -1, [ofOnlyIfExists]);
   end;
 end;
 
@@ -231,7 +257,16 @@ begin
           TLazProfStats(ProfStats).MemSerie := MemoryChartSeries;
 
           ProfStats.Run;
-          MemImage.Picture.LoadFromFile(TLazReport(ProfStats.Report).PNGFileName);
+
+          //load the call graph
+          if FileExists(TLazReport(ProfStats.Report).PNGFileName) then
+          begin
+            CallGraphPanel.Caption := '';
+            MemImage.Picture.LoadFromFile(TLazReport(ProfStats.Report).PNGFileName);
+          end
+          else
+            CallGraphPanel.Caption := 'Error: could not create call graph';
+
           ZoomImage(100);
         finally
           ProfStats.Free;
@@ -273,6 +308,125 @@ begin
     else
       CallGraphImage.Picture := MemImage.Picture;
   end;
+end;
+
+procedure TLazProfileViewer.ShowCodeInfo(Sender: TObject);
+var
+  li: TListItem;
+  AUnit: string;
+  AProc: string;
+  Pos: TPoint;
+  CleanPos: integer;
+  ProcNode: TCodeTreeNode;
+begin
+  AUnit := SourceEditorManagerIntf.ActiveSourceWindow.ActiveEditor.FileName;
+  DebugLn('TLazProfileViewer.ShowCodeInfo - 1');
+
+  if AUnit <> CachedUnit then
+  begin
+    if Assigned(CodeBuf) then
+      FreeAndNil(CodeBuf);
+
+    //load the unit file
+    CodeBuf := CodeToolBoss.LoadFile(AUnit, False, False);
+
+    DebugLn('TLazProfileViewer.ShowCodeInfo - 2');
+
+    // parse the code
+    if not ParseCode(CodeBuf, CodeTool) then
+      exit;
+
+    DebugLn('TLazProfileViewer.ShowCodeInfo - 3');
+  end;
+
+  Pos := SourceEditorManagerIntf.ActiveSourceWindow.ActiveEditor.CursorTextXY;
+
+  DebugLn('TLazProfileViewer.ShowCodeInfo - 4');
+
+  //find the source position
+  if not CaretToSourcePosition(CodeTool, CodeBuf, Pos.x, Pos.y, CleanPos) then
+    exit;
+
+  DebugLn('TLazProfileViewer.ShowCodeInfo - 5');
+
+  // find procedure node
+  ProcNode := CodeTool.FindDeepestNodeAtPos(CleanPos, False);
+  if ProcNode <> nil then
+    ProcNode := ProcNode.GetNodeOfType(ctnProcedure);
+
+  DebugLn('TLazProfileViewer.ShowCodeInfo - 6');
+
+  //nothing found so exit
+  if ProcNode = nil then
+     exit;
+
+  DebugLn('TLazProfileViewer.ShowCodeInfo - 7');
+
+  AProc := ProcNode.DescAsString;
+
+  //display the unit and procedure in the statusbar
+  StatusBar.SimpleText := AUnit + ' - ' + AProc;
+
+  CodeBrowseListView.Clear;
+
+  if not Assigned(ProfStats) then
+    exit;
+
+  if not Assigned(ProfStats.Report) then
+    exit;
+
+  TLazReport(ProfStats.Report).CalcStats(AUnit, AProc);
+
+  li := CodeBrowseListView.Items.Add;
+  li.Caption := 'number of passes';
+  li.SubItems.Add(IntToStr(TLazReport(ProfStats.Report).Passes));
+
+  li := CodeBrowseListView.Items.Add;
+  li.Caption := 'total time spent';
+  li.SubItems.Add(FloatToStr(TLazReport(ProfStats.Report).TimeSpent) + 'ms');
+
+  li := CodeBrowseListView.Items.Add;
+  li.Caption := 'average time spent';
+  if TLazReport(ProfStats.Report).AvgTimeSpent <> -1 then
+    li.SubItems.Add(FloatToStr(TLazReport(ProfStats.Report).AvgTimeSpent) + 'ms')
+  else
+    li.SubItems.Add('n/a');
+
+  //cache the unit and procedure names
+  CachedUnit := AUnit;
+  CachedProc := AProc;
+end;
+
+function TLazProfileViewer.ParseCode(ACodeBuf: TCodeBuffer; out ACodeTool: TCodeTool): boolean;
+  // commits any editor changes to the codetools, parses the unit
+  // and if there is a syntax error, tells the IDE jump to it
+begin
+  LazarusIDE.SaveSourceEditorChangesToCodeCache(nil);
+  if not CodeToolBoss.Explore(ACodeBuf, ACodeTool, False) then
+  begin
+    LazarusIDE.DoJumpToCodeToolBossError;
+    Result := False;
+  end
+  else
+  begin
+    Result := True;
+  end;
+end;
+
+function TLazProfileViewer.CaretToSourcePosition(ACodeTool: TCodeTool; ACodeBuf: TCodeBuffer; Line, Column: integer; out CleanPos: integer): boolean;
+  // find the source position in the parsed
+  // The parsed source is the source combined of all include files
+  // stripped of irrelevant IFDEFs and parsed macros.
+var
+  CursorPos: TCodeXYPosition;
+begin
+  CursorPos.X := Column;
+  CursorPos.Y := Line;
+  CursorPos.Code := ACodeBuf;
+  if ACodeTool.CaretToCleanPos(CursorPos, CleanPos) <> 0 then
+    Result := False
+  else
+    Result := True;
 end;
 
 end.

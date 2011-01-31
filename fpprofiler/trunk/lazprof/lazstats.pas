@@ -95,10 +95,7 @@ begin
     FPPReport.Cells[i + 1, 0] := IntToStr(i + 1);
     FPPReport.Cells[i + 1, 1] := FReader[i].position;
 
-    if i <> 0 then
-      FPPReport.Cells[i + 1, 2] := IntToStr(FReader[i].elapsed - FReader[i - 1].elapsed)
-    else
-      FPPReport.Cells[i + 1, 2] := IntToStr(FReader[i].elapsed);
+    FPPReport.Cells[i + 1, 2] := IntToStr(FReader[i].elapsed);
 
     FPPReport.Cells[i + 1, 3] := FReader[i].func;
     FPPReport.Cells[i + 1, 4] := FReader[i].Source;

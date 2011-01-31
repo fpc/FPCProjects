@@ -9,34 +9,36 @@ object LazProfileViewer: TLazProfileViewer
   ClientWidth = 661
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '0.9.29'
-  object StatusBar1: TStatusBar
+  OnHide = FormHide
+  OnShow = FormShow
+  LCLVersion = '0.9.31'
+  object StatusBar: TStatusBar
     Left = 0
-    Height = 19
-    Top = 300
+    Height = 23
+    Top = 296
     Width = 661
     Panels = <>
   end
   object PageControl: TPageControl
     Left = 0
-    Height = 268
+    Height = 264
     Top = 32
     Width = 661
-    ActivePage = FlatReportTabSheet
+    ActivePage = CallGraphTabSheet
     Align = alClient
     BorderSpacing.Top = 6
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 1
     object FlatReportTabSheet: TTabSheet
       Caption = 'Flat report'
-      ClientHeight = 233
-      ClientWidth = 655
+      ClientHeight = 238
+      ClientWidth = 653
       object ListView1: TListView
         AnchorSideTop.Side = asrBottom
         Left = 0
-        Height = 233
+        Height = 238
         Top = 0
-        Width = 655
+        Width = 653
         Align = alBottom
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 6
@@ -67,7 +69,6 @@ object LazProfileViewer: TLazProfileViewer
             Caption = 'Heap used'
             Width = 183
           end>
-        ItemIndex = -1
         RowSelect = True
         TabOrder = 0
         ViewStyle = vsReport
@@ -76,39 +77,50 @@ object LazProfileViewer: TLazProfileViewer
     end
     object CallGraphTabSheet: TTabSheet
       Caption = 'Call graph'
-      ClientHeight = 233
-      ClientWidth = 655
+      ClientHeight = 238
+      ClientWidth = 653
       object ScrollBox1: TScrollBox
         Left = 0
-        Height = 233
+        Height = 238
         Top = 0
-        Width = 655
+        Width = 653
         Align = alClient
-        ClientHeight = 229
-        ClientWidth = 651
+        ClientHeight = 234
+        ClientWidth = 649
         Color = clWhite
         ParentColor = False
         PopupMenu = PopupMenu1
         TabOrder = 0
-        object CallGraphImage: TImage
+        object CallGraphPanel: TPanel
           Left = 0
-          Height = 10
+          Height = 234
           Top = 0
-          Width = 10
-          AutoSize = True
-          PopupMenu = PopupMenu1
+          Width = 649
+          Align = alClient
+          BevelOuter = bvNone
+          ClientHeight = 234
+          ClientWidth = 649
+          TabOrder = 0
+          object CallGraphImage: TImage
+            Left = 0
+            Height = 10
+            Top = 0
+            Width = 10
+            AutoSize = True
+            PopupMenu = PopupMenu1
+          end
         end
       end
     end
     object MemoryTabSheet: TTabSheet
       Caption = 'Memory'
-      ClientHeight = 233
-      ClientWidth = 655
+      ClientHeight = 238
+      ClientWidth = 653
       object MemoryChart: TChart
         Left = 0
-        Height = 233
+        Height = 238
         Top = 0
-        Width = 655
+        Width = 653
         AxisList = <        
           item
             Title.LabelFont.Orientation = 900
@@ -129,6 +141,30 @@ object LazProfileViewer: TLazProfileViewer
           AreaBrush.Color = clRed
           ConnectType = ctStepXY
         end
+      end
+    end
+    object BrowseCodeTabSheet: TTabSheet
+      Caption = 'Browse code'
+      ClientHeight = 238
+      ClientWidth = 653
+      object CodeBrowseListView: TListView
+        Left = 0
+        Height = 238
+        Top = 0
+        Width = 653
+        Align = alClient
+        Columns = <        
+          item
+            Caption = 'Description'
+            Width = 150
+          end        
+          item
+            Caption = 'Value'
+            Width = 100
+          end>
+        ReadOnly = True
+        TabOrder = 0
+        ViewStyle = vsReport
       end
     end
   end

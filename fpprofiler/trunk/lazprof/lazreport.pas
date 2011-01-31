@@ -28,9 +28,12 @@ type
 
   TLazReport = class(TCustomFPPReport)
   private
+    FAvgTimeSpent: double;
     FMemSerie: TAreaSeries;
     FListView: TListView;
+    FPasses: integer;
     FPNGFileName: string;
+    FTimeSpent: integer;
     procedure SetMemSerie(const AValue: TAreaSeries);
     procedure SetListView(const AValue: TListView);
 
@@ -43,9 +46,17 @@ type
     property ListView: TListView read FListView write SetListView;
     property MemSerie: TAreaSeries read FMemSerie write SetMemSerie;
     property PNGFileName: string read FPNGFileName;
+
+    procedure CalcStats(AUnitName, FuncName: string);
+    property Passes: integer read FPasses;
+    property TimeSpent: integer read FTimeSpent;
+    property AvgTimeSpent: double read FAvgTimeSpent;
   end;
 
 implementation
+
+uses
+  LazProfSettings;
 
 { TLazReport }
 
@@ -61,6 +72,40 @@ begin
   if FMemSerie = AValue then
     exit;
   FMemSerie := AValue;
+end;
+
+procedure TLazReport.CalcStats(AUnitName, FuncName: string);
+var
+  r: integer;
+  f: boolean;
+  start: integer;
+begin
+  FPasses := 0;
+  FTimeSpent := 0;
+  FAvgTimeSpent := -1;
+
+  //loop through the data and search for the correct unit/function
+  f := false;
+  for r := 1 to FRowCount - 1 do
+  begin
+    if (Cells[r, 1] = 'entry') and
+       (UpperCase(Cells[r, 3]) = UpperCase(FuncName)) and
+       (UpperCase(Cells[r, 4]) = UpperCase(AUnitName)) then
+    begin
+      Inc(FPasses);
+      start := StrToInt(Cells[r, 2]);
+    end;
+
+    if (Cells[r, 1] = 'exit') and
+       (UpperCase(Cells[r, 3]) = UpperCase(FuncName)) and
+       (UpperCase(Cells[r, 4]) = UpperCase(AUnitName)) then
+    begin
+      FTimeSpent := FTimeSpent + StrToInt(Cells[r, 2]) - start;
+    end;
+  end;
+
+  if FPasses <> 0 then
+    FAvgTimeSpent := FTimeSpent / FPasses;
 end;
 
 constructor TLazReport.Create;
@@ -113,6 +158,10 @@ var
   AProcess: TProcess;
   DOTFileName: string;
 begin
+  //prevent error messages if the dot executable is not found
+  if not FileExists(XMLConfig.GetValue('LazProfOptions/GraphViz/Path', '')) then
+    exit;
+
   DOTFileName := IncludeTrailingPathDelimiter(GetTempDir) + 'temp.dot';
 
   Assign(t, DOTFileName);
@@ -144,7 +193,7 @@ begin
   FPNGFileName := IncludeTrailingPathDelimiter(GetTempDir) + 'temp.png';
   try
     AProcess := TProcess.Create(nil);
-    AProcess.CommandLine := 'dot -Tpng ' + DOTFileName + ' -o ' + FPNGFileName;
+    AProcess.CommandLine := XMLConfig.GetValue('LazProfOptions/GraphViz/Path', '') + ' -Tpng ' + DOTFileName + ' -o ' + FPNGFileName;
     AProcess.Options := AProcess.Options + [poWaitOnExit];
     AProcess.ShowWindow := swoHide;
     AProcess.Execute;
