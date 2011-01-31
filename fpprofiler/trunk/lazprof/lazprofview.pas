@@ -24,7 +24,7 @@ uses
   FileUtil, ExtCtrls, Menus, TAGraph, TASeries, FPPStats, FPPReader,
   LazStats, FPPReport, Classes, LazProfSettings, LazReport, LazIDEIntf,
   SysUtils, ProjectIntf, Process, SrcEditorIntf, LCLProc,
-  CodeTree, CodeToolManager, CodeCache, CodeAtom;
+  CodeTree, CodeToolManager, CodeCache, CodeAtom, PascalParserTool;
 
 type
   TFile = record
@@ -74,7 +74,7 @@ type
     FileListCount: integer;
 
     CachedUnit: string;
-    CachedProc: string;
+    CachedPos: TPoint;
     CodeBuf: TCodeBuffer;
     CodeTool: TCodeTool;
 
@@ -320,49 +320,47 @@ var
   ProcNode: TCodeTreeNode;
 begin
   AUnit := SourceEditorManagerIntf.ActiveSourceWindow.ActiveEditor.FileName;
-  DebugLn('TLazProfileViewer.ShowCodeInfo - 1');
+  Pos := SourceEditorManagerIntf.ActiveSourceWindow.ActiveEditor.CursorTextXY;
+
+  //nothing changed
+  if (AUnit = CachedUnit) and (Pos.x = CachedPos.x) and (Pos.y = CachedPos.y)  then
+    exit;
 
   if AUnit <> CachedUnit then
   begin
-    if Assigned(CodeBuf) then
-      FreeAndNil(CodeBuf);
+    DebugLn('TLazProfileViewer.ShowCodeInfo - selected new unit: ' + AUnit);
 
     //load the unit file
     CodeBuf := CodeToolBoss.LoadFile(AUnit, False, False);
 
-    DebugLn('TLazProfileViewer.ShowCodeInfo - 2');
+    if CodeBuf = nil then
+      exit;
 
     // parse the code
     if not ParseCode(CodeBuf, CodeTool) then
       exit;
-
-    DebugLn('TLazProfileViewer.ShowCodeInfo - 3');
   end;
 
-  Pos := SourceEditorManagerIntf.ActiveSourceWindow.ActiveEditor.CursorTextXY;
-
-  DebugLn('TLazProfileViewer.ShowCodeInfo - 4');
+  DebugLn(Format('TLazProfileViewer.ShowCodeInfo - caret position = (%d:%d)', [pos.x, pos.y]));
 
   //find the source position
-  if not CaretToSourcePosition(CodeTool, CodeBuf, Pos.x, Pos.y, CleanPos) then
+  if not CaretToSourcePosition(CodeTool, CodeBuf, Pos.y, Pos.x, CleanPos) then
     exit;
 
-  DebugLn('TLazProfileViewer.ShowCodeInfo - 5');
+  DebugLn(Format('TLazProfileViewer.ShowCodeInfo - CleanPos %d', [CleanPos]));
 
   // find procedure node
   ProcNode := CodeTool.FindDeepestNodeAtPos(CleanPos, False);
   if ProcNode <> nil then
     ProcNode := ProcNode.GetNodeOfType(ctnProcedure);
 
-  DebugLn('TLazProfileViewer.ShowCodeInfo - 6');
-
   //nothing found so exit
   if ProcNode = nil then
      exit;
 
-  DebugLn('TLazProfileViewer.ShowCodeInfo - 7');
+  AProc := CodeTool.ExtractProcHead(ProcNode,[phpWithoutSemicolon, phpWithoutParamList, phpWithoutBrackets]);
 
-  AProc := ProcNode.DescAsString;
+  DebugLn('TLazProfileViewer.ShowCodeInfo - Method name : ' + AProc);
 
   //display the unit and procedure in the statusbar
   StatusBar.SimpleText := AUnit + ' - ' + AProc;
@@ -394,7 +392,7 @@ begin
 
   //cache the unit and procedure names
   CachedUnit := AUnit;
-  CachedProc := AProc;
+  CachedPos := Pos;
 end;
 
 function TLazProfileViewer.ParseCode(ACodeBuf: TCodeBuffer; out ACodeTool: TCodeTool): boolean;
