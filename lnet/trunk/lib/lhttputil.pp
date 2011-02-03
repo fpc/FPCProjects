@@ -240,6 +240,8 @@ begin
   Host := uri_rec.Host;
   URI := uri_rec.Path + uri_rec.Document;
   Port := uri_rec.Port;
+
+  Result := True;
 end;
 
 function ComposeURL(Host, URI: string; const Port: Word): string;
