@@ -24,7 +24,8 @@ uses
   FileUtil, ExtCtrls, Menus, TAGraph, TASeries, FPPStats, FPPReader,
   LazStats, FPPReport, Classes, LazProfSettings, LazReport, LazIDEIntf,
   SysUtils, ProjectIntf, Process, SrcEditorIntf, LCLProc,
-  CodeTree, CodeToolManager, CodeCache, CodeAtom, PascalParserTool;
+  CodeTree, CodeToolManager, CodeCache, CodeAtom, PascalParserTool,
+  LazProfSelectFiles;
 
 type
   TFile = record
@@ -97,6 +98,9 @@ implementation
 
 {$R *.lfm}
 
+uses
+  LazProfResourceStings;
+
 procedure IDEMenuClicked(Sender: TObject);
 begin
   if not Assigned(LazProfileViewer) then
@@ -104,34 +108,76 @@ begin
   LazProfileViewer.Show;
 end;
 
-procedure IDERunWithProfilingClicked(Sender: TObject);
+procedure ExecuteApplication(CommandLine: string);
 var
   AProcess: TProcess;
 begin
-
-  LazarusIDE.DoBuildProject(crCompile, []);
-  if LazarusIDE.ActiveProject.ExecutableType = petProgram then
-  begin
-    //execute application
-    try
-      AProcess := TProcess.Create(nil);
-      AProcess.CommandLine :=
-        ExtractFilePath(LazarusIDE.ActiveProject.MainFile.Filename) +
-        LazarusIDE.ActiveProject.LazCompilerOptions.TargetFilename;
-      AProcess.Options := AProcess.Options + [poWaitOnExit];
-      AProcess.ShowWindow := swoShowNormal;
-      AProcess.Execute;
-    finally
-      AProcess.Free;
-    end;
+  //execute application
+  try
+    AProcess := TProcess.Create(nil);
+    AProcess.CommandLine := CommandLine;
+    AProcess.Options := AProcess.Options + [poWaitOnExit];
+    AProcess.ShowWindow := swoShowNormal;
+    AProcess.Execute;
+  finally
+    AProcess.Free;
   end;
+end;
+
+procedure IDERunWithProfilingClicked(Sender: TObject);
+var
+  Dir: string;
+  IncludePath: TStrings;
+  UnitPath: TStrings;
+  CommandLine: string;
+  i: integer;
+  BuildResult: TModalResult;
+begin
+  //insert profiling code
+  try
+    IncludePath := TStringList.Create;
+    IncludePath.Delimiter := ';';
+    IncludePath.DelimitedText := CodeToolBoss.GetIncludePathForDirectory('');
+
+    UnitPath := TStringList.Create;
+    UnitPath.Delimiter := ';';
+    UnitPath.DelimitedText := CodeToolBoss.GetUnitPathForDirectory('');
+
+    CommandLine := AppendPathDelim(XMLConfig.GetValue('LazProfOptions/FPP/Path', '')) + 'fppinsert';
+
+    //append include paths
+    for i := 0 to IncludePath.Count - 1 do
+      if IncludePath[i] <> '' then
+        CommandLine := CommandLine + ' -Fi' + IncludePath[i];
+
+    //append unit paths
+    for i := 0 to UnitPath.Count - 1 do
+      if UnitPath[i] <> '' then
+        CommandLine := CommandLine + ' -Fu' + UnitPath[i];
+
+    debugln('IDERunWithProfilingClicked: ' + CommandLine);
+
+    //ExecuteApplication(CommandLine);
+  finally
+    IncludePath.Free;
+    UnitPath.Free;
+  end;
+
+  //build project
+  BuildResult := LazarusIDE.DoBuildProject(crCompile, []);
+
+  //remove profiling code
+
+  if (BuildResult = mrOk) and (LazarusIDE.ActiveProject.ExecutableType = petProgram) then
+    ExecuteApplication(ExtractFilePath(LazarusIDE.ActiveProject.MainFile.Filename) +
+      LazarusIDE.ActiveProject.LazCompilerOptions.TargetFilename);
 end;
 
 procedure Register;
 begin
-  RegisterIDEMenuCommand(itmViewMainWindows, 'mnuLazProfileViewer', 'Profile viewer', nil, @IDEMenuClicked);
-  //RegisterIDEMenuCommand(itmRunBuilding, 'mnuLazProfileBuild', 'Build with profiling', nil, @IDEBuildWithProfilingClicked);
-  RegisterIDEMenuCommand(itmRunnning, 'mnuLazProfileRun', 'Run with profiling enabled', nil, @IDERunWithProfilingClicked);
+  RegisterIDEMenuCommand(itmViewMainWindows, 'mnuLazProfileViewer', rsProfileViewer, nil, @IDEMenuClicked);
+  //RegisterIDEMenuCommand(itmRunBuilding, 'mnuLazProfileBuild', rsBuildWithProfiling, nil, @IDEBuildWithProfilingClicked);
+  RegisterIDEMenuCommand(itmRunnning, 'mnuLazProfileRun', rsRunWithProfilingEnabled, nil, @IDERunWithProfilingClicked);
 end;
 
 { TLazProfileViewer }
@@ -202,15 +248,15 @@ begin
     if not FileExists(FileName) then
     begin
       //ask to locate file manually
-      if MessageDlg('File not found',
-        Format('The file "%s"%swas not found.%sDo you want to locate it yourself ?%s',
+      if MessageDlg(rsFileNotFound,
+        Format(rsTheFileSSwasNotFoundSDoYouWantToLocateItYourselfS,
         [FileName, #13, #13, #13]), mtConfirmation, [mbYes, mbNo], 0) <>
         mrYes then
         Exit;
 
       try
         OpenUnitDialog := TOpenDialog.Create(nil);
-        OpenUnitDialog.Title := 'Open file ' + FileName;
+        OpenUnitDialog.Title := Format(rsOpenFile, [FileName]);
         OpenUnitDialog.Options := OpenUnitDialog.Options + [ofFileMustExist];
         OpenUnitDialog.FileName := FileName;
         if not OpenUnitDialog.Execute then
@@ -265,7 +311,7 @@ begin
             MemImage.Picture.LoadFromFile(TLazReport(ProfStats.Report).PNGFileName);
           end
           else
-            CallGraphPanel.Caption := 'Error: could not create call graph';
+            CallGraphPanel.Caption := rsErrorCouldNotCreateCallGraph;
 
           ZoomImage(100);
         finally
@@ -323,7 +369,7 @@ begin
   Pos := SourceEditorManagerIntf.ActiveSourceWindow.ActiveEditor.CursorTextXY;
 
   //nothing changed
-  if (AUnit = CachedUnit) and (Pos.x = CachedPos.x) and (Pos.y = CachedPos.y)  then
+  if (AUnit = CachedUnit) and (Pos.x = CachedPos.x) and (Pos.y = CachedPos.y) then
     exit;
 
   if AUnit <> CachedUnit then
@@ -356,9 +402,9 @@ begin
 
   //nothing found so exit
   if ProcNode = nil then
-     exit;
+    exit;
 
-  AProc := CodeTool.ExtractProcHead(ProcNode,[phpWithoutSemicolon, phpWithoutParamList, phpWithoutBrackets]);
+  AProc := CodeTool.ExtractProcHead(ProcNode, [phpWithoutSemicolon, phpWithoutParamList, phpWithoutBrackets]);
 
   DebugLn('TLazProfileViewer.ShowCodeInfo - Method name : ' + AProc);
 
@@ -376,19 +422,19 @@ begin
   TLazReport(ProfStats.Report).CalcStats(AUnit, AProc);
 
   li := CodeBrowseListView.Items.Add;
-  li.Caption := 'number of passes';
+  li.Caption := rsNumberOfPasses;
   li.SubItems.Add(IntToStr(TLazReport(ProfStats.Report).Passes));
 
   li := CodeBrowseListView.Items.Add;
-  li.Caption := 'total time spent';
+  li.Caption := rsTotalTimeSpent;
   li.SubItems.Add(FloatToStr(TLazReport(ProfStats.Report).TimeSpent) + 'ms');
 
   li := CodeBrowseListView.Items.Add;
-  li.Caption := 'average time spent';
+  li.Caption := rsAverageTimeSpent;
   if TLazReport(ProfStats.Report).AvgTimeSpent <> -1 then
     li.SubItems.Add(FloatToStr(TLazReport(ProfStats.Report).AvgTimeSpent) + 'ms')
   else
-    li.SubItems.Add('n/a');
+    li.SubItems.Add(rsNA);
 
   //cache the unit and procedure names
   CachedUnit := AUnit;

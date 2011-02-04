@@ -1,0 +1,38 @@
+object SelectFilesForm: TSelectFilesForm
+  Left = 1529
+  Height = 364
+  Top = 161
+  Width = 351
+  Caption = 'SelectFilesForm'
+  ClientHeight = 364
+  ClientWidth = 351
+  LCLVersion = '0.9.31'
+  object ButtonPanel1: TButtonPanel
+    Left = 6
+    Height = 34
+    Top = 324
+    Width = 339
+    OKButton.Name = 'OKButton'
+    OKButton.Caption = '&OK'
+    HelpButton.Name = 'HelpButton'
+    HelpButton.Caption = '&Help'
+    HelpButton.Enabled = False
+    CloseButton.Name = 'CloseButton'
+    CloseButton.Caption = '&Close'
+    CloseButton.Enabled = False
+    CancelButton.Name = 'CancelButton'
+    CancelButton.Caption = 'Cancel'
+    TabOrder = 0
+    ShowButtons = [pbOK, pbCancel]
+  end
+  object CheckListBox1: TCheckListBox
+    Left = 6
+    Height = 312
+    Top = 6
+    Width = 339
+    Align = alClient
+    BorderSpacing.Around = 6
+    ItemHeight = 0
+    TabOrder = 1
+  end
+end

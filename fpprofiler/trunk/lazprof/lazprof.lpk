@@ -18,34 +18,73 @@
     <Description Value="A graphical frontend for fpprofiler"/>
     <License Value="GPL"/>
     <Version Minor="1"/>
-    <Files Count="1">
+    <Files Count="10">
       <Item1>
+        <Filename Value="lazprofselectfiles.pas"/>
+        <UnitName Value="LazProfSelectFiles"/>
+      </Item1>
+      <Item2>
+        <Filename Value="lazprofselectfiles.lfm"/>
+        <Type Value="LFM"/>
+      </Item2>
+      <Item3>
+        <Filename Value="lazprofselectfiles.lrs"/>
+        <Type Value="LRS"/>
+      </Item3>
+      <Item4>
+        <Filename Value="lazprofsettings.pas"/>
+        <UnitName Value="LazProfSettings"/>
+      </Item4>
+      <Item5>
+        <Filename Value="lazprofsettings.lfm"/>
+        <Type Value="LFM"/>
+      </Item5>
+      <Item6>
         <Filename Value="lazprofview.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="LazProfView"/>
-      </Item1>
+      </Item6>
+      <Item7>
+        <Filename Value="lazprofview.lfm"/>
+        <Type Value="LFM"/>
+      </Item7>
+      <Item8>
+        <Filename Value="lazreport.pas"/>
+        <UnitName Value="LazReport"/>
+      </Item8>
+      <Item9>
+        <Filename Value="lazstats.pas"/>
+        <UnitName Value="LazStats"/>
+      </Item9>
+      <Item10>
+        <Filename Value="lazprofresourcestings.pas"/>
+        <UnitName Value="LazProfResourceStings"/>
+      </Item10>
     </Files>
-    <Type Value="RunAndDesignTime"/>
-    <RequiredPkgs Count="5">
+    <Type Value="DesignTime"/>
+    <RequiredPkgs Count="6">
       <Item1>
-        <PackageName Value="CodeTools"/>
+        <PackageName Value="SynEdit"/>
       </Item1>
       <Item2>
-        <PackageName Value="FCL"/>
-        <MinVersion Major="1" Valid="True"/>
+        <PackageName Value="CodeTools"/>
       </Item2>
       <Item3>
-        <PackageName Value="LCL"/>
+        <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
       </Item3>
       <Item4>
-        <PackageName Value="IDEIntf"/>
+        <PackageName Value="LCL"/>
       </Item4>
       <Item5>
-        <PackageName Value="TAChartLazarusPkg"/>
+        <PackageName Value="IDEIntf"/>
       </Item5>
+      <Item6>
+        <PackageName Value="TAChartLazarusPkg"/>
+      </Item6>
     </RequiredPkgs>
     <UsageOptions>
-      <UnitPath Value="$(PkgOutDir)\"/>
+      <UnitPath Value="$(PkgOutDir)"/>
     </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>

@@ -27,13 +27,21 @@ type
   { TSettingsForm }
 
   TSettingsForm = class(TForm)
+    FPPPathButton: TButton;
+    FPProfUnitPathButton: TButton;
+    FPPPathEdit: TEdit;
+    FPProfunitPathEdit: TEdit;
+    FPProfUnitPathLabel: TLabel;
     GraphVizPathButton: TButton;
     ButtonPanel1: TButtonPanel;
     GraphVizPathEdit: TEdit;
     GraphVizPathLabel: TLabel;
+    FPPPathLabel: TLabel;
     OpenDialog: TOpenDialog;
     procedure CloseButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure FPPPathButtonClick(Sender: TObject);
+    procedure FPProfUnitPathButtonClick(Sender: TObject);
     procedure GraphVizPathButtonClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
   private
@@ -51,6 +59,9 @@ implementation
 
 {$R *.lfm}
 
+uses
+  LazProfResourceStings;
+
 const
   Path = 'LazProfOptions/';
 
@@ -58,7 +69,7 @@ const
 
 procedure TSettingsForm.GraphVizPathButtonClick(Sender: TObject);
 begin
-  OpenDialog.Title := 'Find the path to the GraphViz executable';
+  OpenDialog.Title := rsFindThePathToTheGraphVizExecutable;
 
   if OpenDialog.Execute then
     GraphVizPathEdit.Text := OpenDialog.FileName;
@@ -74,16 +85,37 @@ procedure TSettingsForm.SaveSettings;
 begin
   //save all settings
   XMLConfig.SetDeleteValue(Path + 'GraphViz/Path', GraphVizPathEdit.Text, '');
+  XMLConfig.SetDeleteValue(Path + 'FPP/Path', FPPPathEdit.Text, '');
+  XMLConfig.SetDeleteValue(Path + 'FPProfUnit/Path', FPProfUnitPathEdit.Text, '');
 
   XMLConfig.Flush;
 end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);
 begin
-  GraphVizPathLabel.Caption := 'GraphViz path (e.g. dot' + GetExeExt + ')';
+  GraphVizPathLabel.Caption := Format(rsGraphVizPathEGDot, [GetExeExt]);
+  FPPPathLabel.Caption := Format(rsFPPPathEGFpp, [GetExeExt]);
 
   //load all settings
   GraphVizPathEdit.Text := XMLConfig.GetValue(Path + 'GraphViz/Path', '');
+  FPPPathEdit.Text := XMLConfig.GetValue(Path + 'FPP/Path', '');
+  FPProfUnitPathEdit.Text := XMLConfig.GetValue(Path + 'FPProfUnit/Path', '');
+end;
+
+procedure TSettingsForm.FPPPathButtonClick(Sender: TObject);
+begin
+  OpenDialog.Title := rsFindThePathToTheFPPExecutable;
+
+  if OpenDialog.Execute then
+    FPPPathEdit.Text := OpenDialog.FileName;
+end;
+
+procedure TSettingsForm.FPProfUnitPathButtonClick(Sender: TObject);
+begin
+  OpenDialog.Title := rsFindThePathToTheFPProfUnits;
+
+  if OpenDialog.Execute then
+    FPProfUnitPathEdit.Text := OpenDialog.FileName;
 end;
 
 procedure TSettingsForm.CloseButtonClick(Sender: TObject);

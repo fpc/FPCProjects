@@ -1,7 +1,7 @@
 object LazProfileViewer: TLazProfileViewer
-  Left = 301
+  Left = 1553
   Height = 319
-  Top = 152
+  Top = 563
   Width = 661
   ActiveControl = PageControl
   Caption = 'Lazarus profile viewer'

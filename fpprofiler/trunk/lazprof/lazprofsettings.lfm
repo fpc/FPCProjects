@@ -1,18 +1,18 @@
 object SettingsForm: TSettingsForm
-  Left = 357
+  Left = 1693
   Height = 240
-  Top = 158
+  Top = 310
   Width = 320
   ActiveControl = GraphVizPathEdit
   Caption = 'Settings'
   ClientHeight = 240
   ClientWidth = 320
   OnShow = FormShow
-  LCLVersion = '0.9.29'
+  LCLVersion = '0.9.31'
   object ButtonPanel1: TButtonPanel
     Left = 6
-    Height = 37
-    Top = 197
+    Height = 34
+    Top = 200
     Width = 308
     OKButton.Name = 'OKButton'
     OKButton.Caption = '&OK'
@@ -31,7 +31,7 @@ object SettingsForm: TSettingsForm
   end
   object GraphVizPathLabel: TLabel
     Left = 6
-    Height = 18
+    Height = 14
     Top = 6
     Width = 308
     Align = alTop
@@ -45,9 +45,9 @@ object SettingsForm: TSettingsForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = GraphVizPathButton
     Left = 6
-    Height = 27
-    Top = 30
-    Width = 278
+    Height = 21
+    Top = 26
+    Width = 276
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Around = 6
     TabOrder = 1
@@ -57,16 +57,97 @@ object SettingsForm: TSettingsForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 290
-    Height = 29
-    Top = 30
-    Width = 24
+    Left = 288
+    Height = 23
+    Top = 26
+    Width = 26
     Anchors = [akTop, akRight]
-    AutoSize = True
     BorderSpacing.Around = 6
     Caption = '...'
     OnClick = GraphVizPathButtonClick
     TabOrder = 2
+  end
+  object FPPPathLabel: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = GraphVizPathEdit
+    AnchorSideTop.Side = asrBottom
+    Left = 6
+    Height = 14
+    Top = 53
+    Width = 116
+    BorderSpacing.Around = 6
+    Caption = 'FPP path (e.g. fpp.exe)'
+    ParentColor = False
+  end
+  object FPPPathEdit: TEdit
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = FPPPathLabel
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = FPPPathButton
+    Left = 6
+    Height = 21
+    Top = 73
+    Width = 276
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Around = 6
+    TabOrder = 3
+    Text = 'FPPPathEdit'
+  end
+  object FPPPathButton: TButton
+    AnchorSideTop.Control = FPPPathLabel
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 288
+    Height = 23
+    Top = 73
+    Width = 26
+    Anchors = [akTop, akRight]
+    BorderSpacing.Around = 6
+    Caption = '...'
+    OnClick = FPPPathButtonClick
+    TabOrder = 4
+  end
+  object FPProfUnitPathLabel: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = FPPPathEdit
+    AnchorSideTop.Side = asrBottom
+    Left = 6
+    Height = 14
+    Top = 100
+    Width = 79
+    BorderSpacing.Around = 6
+    Caption = 'FPProf unit path'
+    ParentColor = False
+  end
+  object FPProfunitPathEdit: TEdit
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = FPProfUnitPathLabel
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = FPProfUnitPathButton
+    Left = 6
+    Height = 21
+    Top = 120
+    Width = 276
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Around = 6
+    TabOrder = 5
+    Text = 'FPPPathEdit'
+  end
+  object FPProfUnitPathButton: TButton
+    AnchorSideTop.Control = FPProfUnitPathLabel
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 288
+    Height = 23
+    Top = 120
+    Width = 26
+    Anchors = [akTop, akRight]
+    BorderSpacing.Around = 6
+    Caption = '...'
+    OnClick = FPProfUnitPathButtonClick
+    TabOrder = 6
   end
   object OpenDialog: TOpenDialog
     left = 264
