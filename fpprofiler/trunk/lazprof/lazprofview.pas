@@ -22,7 +22,7 @@ interface
 uses
   LResources, Forms, Controls, Graphics, Dialogs, EditBtn, ComCtrls, MenuIntf,
   FileUtil, ExtCtrls, Menus, TAGraph, TASeries, FPPStats, FPPReader,
-  LazStats, FPPReport, Classes, LazProfSettings, LazReport, LazIDEIntf,
+  LazStats, FPPReport, Classes, LazProfSettings, LazProfReport, LazIDEIntf,
   SysUtils, ProjectIntf, Process, SrcEditorIntf, LCLProc,
   CodeTree, CodeToolManager, CodeCache, CodeAtom, PascalParserTool,
   LazProfSelectFiles;
@@ -305,10 +305,10 @@ begin
           ProfStats.Run;
 
           //load the call graph
-          if FileExists(TLazReport(ProfStats.Report).PNGFileName) then
+          if FileExists(TLazProfReport(ProfStats.Report).PNGFileName) then
           begin
             CallGraphPanel.Caption := '';
-            MemImage.Picture.LoadFromFile(TLazReport(ProfStats.Report).PNGFileName);
+            MemImage.Picture.LoadFromFile(TLazProfReport(ProfStats.Report).PNGFileName);
           end
           else
             CallGraphPanel.Caption := rsErrorCouldNotCreateCallGraph;
@@ -419,20 +419,20 @@ begin
   if not Assigned(ProfStats.Report) then
     exit;
 
-  TLazReport(ProfStats.Report).CalcStats(AUnit, AProc);
+  TLazProfReport(ProfStats.Report).CalcStats(AUnit, AProc);
 
   li := CodeBrowseListView.Items.Add;
   li.Caption := rsNumberOfPasses;
-  li.SubItems.Add(IntToStr(TLazReport(ProfStats.Report).Passes));
+  li.SubItems.Add(IntToStr(TLazProfReport(ProfStats.Report).Passes));
 
   li := CodeBrowseListView.Items.Add;
   li.Caption := rsTotalTimeSpent;
-  li.SubItems.Add(FloatToStr(TLazReport(ProfStats.Report).TimeSpent) + 'ms');
+  li.SubItems.Add(FloatToStr(TLazProfReport(ProfStats.Report).TimeSpent) + 'ms');
 
   li := CodeBrowseListView.Items.Add;
   li.Caption := rsAverageTimeSpent;
-  if TLazReport(ProfStats.Report).AvgTimeSpent <> -1 then
-    li.SubItems.Add(FloatToStr(TLazReport(ProfStats.Report).AvgTimeSpent) + 'ms')
+  if TLazProfReport(ProfStats.Report).AvgTimeSpent <> -1 then
+    li.SubItems.Add(FloatToStr(TLazProfReport(ProfStats.Report).AvgTimeSpent) + 'ms')
   else
     li.SubItems.Add(rsNA);
 

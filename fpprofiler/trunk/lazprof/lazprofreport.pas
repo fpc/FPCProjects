@@ -13,7 +13,7 @@
 
  **********************************************************************}
 
-unit LazReport;
+unit LazProfReport;
 
 {$mode objfpc}{$H+}
 
@@ -24,9 +24,9 @@ uses
   FileUtil;
 
 type
-  { TLazReport }
+  { TLazProfReport }
 
-  TLazReport = class(TCustomFPPReport)
+  TLazProfReport = class(TCustomFPPReport)
   private
     FAvgTimeSpent: double;
     FMemSerie: TAreaSeries;
@@ -58,23 +58,23 @@ implementation
 uses
   LazProfSettings;
 
-{ TLazReport }
+{ TLazProfReport }
 
-procedure TLazReport.SetListView(const AValue: TListView);
+procedure TLazProfReport.SetListView(const AValue: TListView);
 begin
   if FListView = AValue then
     exit;
   FListView := AValue;
 end;
 
-procedure TLazReport.SetMemSerie(const AValue: TAreaSeries);
+procedure TLazProfReport.SetMemSerie(const AValue: TAreaSeries);
 begin
   if FMemSerie = AValue then
     exit;
   FMemSerie := AValue;
 end;
 
-procedure TLazReport.CalcStats(AUnitName, FuncName: string);
+procedure TLazProfReport.CalcStats(AUnitName, FuncName: string);
 var
   r: integer;
   f: boolean;
@@ -108,17 +108,17 @@ begin
     FAvgTimeSpent := FTimeSpent / FPasses;
 end;
 
-constructor TLazReport.Create;
+constructor TLazProfReport.Create;
 begin
 
 end;
 
-destructor TLazReport.Destroy;
+destructor TLazProfReport.Destroy;
 begin
   inherited Destroy;
 end;
 
-procedure TLazReport.WriteTable;
+procedure TLazProfReport.WriteTable;
 var
   r: integer;
   c: integer;
@@ -150,7 +150,7 @@ begin
   end;
 end;
 
-procedure TLazReport.CallGraph(ACallGraph: TFPCallGraph);
+procedure TLazProfReport.CallGraph(ACallGraph: TFPCallGraph);
 var
   i: integer;
   j: integer;

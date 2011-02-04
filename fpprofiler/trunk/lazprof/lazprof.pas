@@ -7,7 +7,7 @@ unit LazProf;
 interface
 
 uses
-    LazProfSelectFiles, LazProfSettings, LazProfView, LazReport, LazStats, 
+    LazProfSelectFiles, LazProfSettings, LazProfView, LazProfReport, LazStats, 
   LazProfResourceStings, LazarusPackageIntf;
 
 implementation

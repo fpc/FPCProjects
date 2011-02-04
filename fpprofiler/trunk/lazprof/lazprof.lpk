@@ -49,8 +49,8 @@
         <Type Value="LFM"/>
       </Item7>
       <Item8>
-        <Filename Value="lazreport.pas"/>
-        <UnitName Value="LazReport"/>
+        <Filename Value="lazprofreport.pas"/>
+        <UnitName Value="lazprofreport"/>
       </Item8>
       <Item9>
         <Filename Value="lazstats.pas"/>
