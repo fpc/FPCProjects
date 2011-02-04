@@ -175,7 +175,7 @@ end;
 
 procedure Register;
 begin
-  RegisterIDEMenuCommand(itmViewMainWindows, 'mnuLazProfileViewer', rsProfileViewer, nil, @IDEMenuClicked);
+  RegisterIDEMenuCommand(itmViewMainWindows, 'mnuLazProfileViewer', rsProfileViewer, nil, @IDEMenuClicked, nil, 'menu_hourglass');
   //RegisterIDEMenuCommand(itmRunBuilding, 'mnuLazProfileBuild', rsBuildWithProfiling, nil, @IDEBuildWithProfilingClicked);
   RegisterIDEMenuCommand(itmRunnning, 'mnuLazProfileRun', rsRunWithProfilingEnabled, nil, @IDERunWithProfilingClicked);
 end;
@@ -472,6 +472,9 @@ begin
   else
     Result := True;
 end;
+
+initialization
+  {$I lazprof_images.lrs}
 
 end.
 
