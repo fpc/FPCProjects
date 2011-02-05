@@ -20,7 +20,7 @@ unit LazStats;
 interface
 
 uses
-  Classes, SysUtils, ComCtrls, FPPStats, FPPReader, FPPReport, LazReport,
+  Classes, SysUtils, ComCtrls, FPPStats, FPPReader, FPPReport, LazProfReport,
   TASeries, FPCallGraph;
 
 type
@@ -52,7 +52,7 @@ begin
   if FListView = AValue then
     exit;
   FListView := AValue;
-  TLazReport(FPPReport).ListView := ListView;
+  TLazProfReport(FPPReport).ListView := ListView;
 end;
 
 procedure TLazProfStats.SetMemSerie(const AValue: TAreaSeries);
@@ -60,13 +60,13 @@ begin
   if FMemSerie = AValue then
     exit;
   FMemSerie := AValue;
-  TLazReport(FPPReport).MemSerie := MemSerie;
+  TLazProfReport(FPPReport).MemSerie := MemSerie;
 end;
 
 constructor TLazProfStats.Create(AReader: TFPPReader; const AValue: TFPPReportType);
 begin
   FReader := AReader;
-  FPPReport := TLazReport.Create;
+  FPPReport := TLazProfReport.Create;
 end;
 
 destructor TLazProfStats.Destroy;

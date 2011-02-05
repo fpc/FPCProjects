@@ -1,5 +1,5 @@
 object SettingsForm: TSettingsForm
-  Left = 1693
+  Left = 100
   Height = 240
   Top = 310
   Width = 320
@@ -8,6 +8,7 @@ object SettingsForm: TSettingsForm
   ClientHeight = 240
   ClientWidth = 320
   OnShow = FormShow
+  Position = poScreenCenter
   LCLVersion = '0.9.31'
   object ButtonPanel1: TButtonPanel
     Left = 6
@@ -151,6 +152,10 @@ object SettingsForm: TSettingsForm
   end
   object OpenDialog: TOpenDialog
     left = 264
+    top = 152
+  end
+  object SelectDirectoryDialog: TSelectDirectoryDialog
+    left = 184
     top = 152
   end
 end

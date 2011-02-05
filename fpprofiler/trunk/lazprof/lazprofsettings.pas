@@ -38,6 +38,7 @@ type
     GraphVizPathLabel: TLabel;
     FPPPathLabel: TLabel;
     OpenDialog: TOpenDialog;
+    SelectDirectoryDialog: TSelectDirectoryDialog;
     procedure CloseButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FPPPathButtonClick(Sender: TObject);
@@ -112,10 +113,10 @@ end;
 
 procedure TSettingsForm.FPProfUnitPathButtonClick(Sender: TObject);
 begin
-  OpenDialog.Title := rsFindThePathToTheFPProfUnits;
+  SelectDirectoryDialog.Title := rsFindThePathToTheFPProfUnits;
 
-  if OpenDialog.Execute then
-    FPProfUnitPathEdit.Text := OpenDialog.FileName;
+  if SelectDirectoryDialog.Execute then
+    FPProfUnitPathEdit.Text := SelectDirectoryDialog.FileName;
 end;
 
 procedure TSettingsForm.CloseButtonClick(Sender: TObject);

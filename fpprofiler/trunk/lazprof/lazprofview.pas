@@ -126,7 +126,6 @@ end;
 
 procedure IDERunWithProfilingClicked(Sender: TObject);
 var
-  Dir: string;
   IncludePath: TStrings;
   UnitPath: TStrings;
   CommandLine: string;
