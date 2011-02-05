@@ -126,46 +126,63 @@ end;
 
 procedure IDERunWithProfilingClicked(Sender: TObject);
 var
-  IncludePath: TStrings;
-  UnitPath: TStrings;
+  IncludePath: string;
+  UnitPath: string;
   CommandLine: string;
-  i: integer;
   BuildResult: TModalResult;
-begin
-  //insert profiling code
-  try
-    IncludePath := TStringList.Create;
-    IncludePath.Delimiter := ';';
-    IncludePath.DelimitedText := CodeToolBoss.GetIncludePathForDirectory('');
+  OldUnitFiles: string;
 
-    UnitPath := TStringList.Create;
-    UnitPath.Delimiter := ';';
-    UnitPath.DelimitedText := CodeToolBoss.GetUnitPathForDirectory('');
+  function GetSearchPaths(ADelimitedPaths, APrefix: string): string;
+  var
+    Paths: TStrings;
+    i: integer;
+  begin
+    try
+      Paths := TStringList.Create;
+      Paths.Delimiter := ';';
+      Paths.StrictDelimiter := True;
+      Paths.DelimitedText := ADelimitedPaths;
 
-    CommandLine := AppendPathDelim(XMLConfig.GetValue('LazProfOptions/FPP/Path', '')) + 'fppinsert';
-
-    //append include paths
-    for i := 0 to IncludePath.Count - 1 do
-      if IncludePath[i] <> '' then
-        CommandLine := CommandLine + ' -Fi' + IncludePath[i];
-
-    //append unit paths
-    for i := 0 to UnitPath.Count - 1 do
-      if UnitPath[i] <> '' then
-        CommandLine := CommandLine + ' -Fu' + UnitPath[i];
-
-    debugln('IDERunWithProfilingClicked: ' + CommandLine);
-
-    //ExecuteApplication(CommandLine);
-  finally
-    IncludePath.Free;
-    UnitPath.Free;
+      //create path string
+      Result := '';
+      for i := 0 to Paths.Count - 1 do
+        if Paths[i] <> '' then
+          Result := Result + ' ' + APrefix + '"' + Paths[i] + '"';
+    finally
+      Paths.Free;
+    end;
   end;
 
+begin
+  //save project
+  LazarusIDE.SaveSourceEditorChangesToCodeCache(-1); // -1: commit all source editors
+  LazarusIDE.DoSaveProject([sfProjectSaving]);
+
+  //insert profiling code
+  IncludePath := GetSearchPaths(CodeToolBoss.GetIncludePathForDirectory(''), '-Fi');
+  UnitPath := GetSearchPaths(CodeToolBoss.GetUnitPathForDirectory(''), '-Fu');
+
+  CommandLine := AppendPathDelim(XMLConfig.GetValue('LazProfOptions/FPP/Path', '')) +
+                                 'fppinsert' +
+                                 IncludePath +
+                                 UnitPath;
+
+  DebugLn('IDERunWithProfilingClicked: ' + CommandLine);
+  ExecuteApplication(CommandLine);
+
   //build project
+  OldUnitFiles := LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles;
+  LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles :=
+    LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles + ';' + XMLConfig.GetValue('LazProfOptions/FPProfUnit/Path', '');
   BuildResult := LazarusIDE.DoBuildProject(crCompile, []);
+  LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles := OldUnitFiles;
 
   //remove profiling code
+  CommandLine := AppendPathDelim(XMLConfig.GetValue('LazProfOptions/FPP/Path', '')) +
+                                 'fppremove' +
+                                 IncludePath +
+                                 UnitPath;
+  ExecuteApplication(CommandLine);
 
   if (BuildResult = mrOk) and (LazarusIDE.ActiveProject.ExecutableType = petProgram) then
     ExecuteApplication(ExtractFilePath(LazarusIDE.ActiveProject.MainFile.Filename) +

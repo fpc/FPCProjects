@@ -105,10 +105,10 @@ end;
 
 procedure TSettingsForm.FPPPathButtonClick(Sender: TObject);
 begin
-  OpenDialog.Title := rsFindThePathToTheFPPExecutable;
+  SelectDirectoryDialog.Title := rsFindThePathToTheFPPExecutable;
 
-  if OpenDialog.Execute then
-    FPPPathEdit.Text := OpenDialog.FileName;
+  if SelectDirectoryDialog.Execute then
+    FPPPathEdit.Text := SelectDirectoryDialog.FileName;
 end;
 
 procedure TSettingsForm.FPProfUnitPathButtonClick(Sender: TObject);

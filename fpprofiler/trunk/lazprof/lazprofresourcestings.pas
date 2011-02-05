@@ -12,7 +12,7 @@ resourcestring
   rsFindThePathToTheFPPExecutable = 'Find the path to the FPP executable';
   rsFindThePathToTheFPProfUnits = 'Find the path to the FPProf units';
   rsFindThePathToTheGraphVizExecutable = 'Find the path to the GraphViz executable';
-  rsFPPPathEGFpp = 'FPP path (e.g. fpp%s)';
+  rsFPPPathEGFpp = 'FPP path (e.g. where the fpp%s executable is located)';
   rsGraphVizPathEGDot = 'GraphViz path (e.g. dot%s)';
   rsNA = 'n/a';
   rsNumberOfPasses = 'number of passes';

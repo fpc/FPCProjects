@@ -75,9 +75,9 @@ object SettingsForm: TSettingsForm
     Left = 6
     Height = 14
     Top = 53
-    Width = 116
+    Width = 253
     BorderSpacing.Around = 6
-    Caption = 'FPP path (e.g. fpp.exe)'
+    Caption = 'FPP path (e.g. where fpp.exe executable is located)'
     ParentColor = False
   end
   object FPPPathEdit: TEdit
