@@ -105,6 +105,8 @@ begin
 
   FPPReport.WriteTable;
 
+  if FReader.Count = 0 then
+    exit;
 
   FPCallGraph := TFPCallGraph.Create;
   try

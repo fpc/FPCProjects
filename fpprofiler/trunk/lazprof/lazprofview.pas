@@ -58,12 +58,14 @@ type
     ToolBar: TToolBar;
     OpenLogButton: TToolButton;
     SettingsButton: TToolButton;
+    ToolButton1: TToolButton;
     ToolButton3: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure ListView1Click(Sender: TObject);
+    procedure ToolButton1Click(Sender: TObject);
     procedure ZoomMenuClick(Sender: TObject);
     procedure OpenLogButtonClick(Sender: TObject);
     procedure SettingsButtonClick(Sender: TObject);
@@ -81,6 +83,9 @@ type
 
     procedure ZoomImage(Level: longint);
     procedure ShowCodeInfo(Sender: TObject);
+
+    procedure OpenLog(AFileName: string);
+    procedure RunWithProfiling;
 
     //code tool helper functions
     function ParseCode(ACodeBuf: TCodeBuffer; out ACodeTool: TCodeTool): boolean;
@@ -103,8 +108,6 @@ uses
 
 procedure IDEMenuClicked(Sender: TObject);
 begin
-  if not Assigned(LazProfileViewer) then
-    LazProfileViewer := TLazProfileViewer.Create(Application);
   LazProfileViewer.Show;
 end;
 
@@ -125,68 +128,8 @@ begin
 end;
 
 procedure IDERunWithProfilingClicked(Sender: TObject);
-var
-  IncludePath: string;
-  UnitPath: string;
-  CommandLine: string;
-  BuildResult: TModalResult;
-  OldUnitFiles: string;
-
-  function GetSearchPaths(ADelimitedPaths, APrefix: string): string;
-  var
-    Paths: TStrings;
-    i: integer;
-  begin
-    try
-      Paths := TStringList.Create;
-      Paths.Delimiter := ';';
-      Paths.StrictDelimiter := True;
-      Paths.DelimitedText := ADelimitedPaths;
-
-      //create path string
-      Result := '';
-      for i := 0 to Paths.Count - 1 do
-        if Paths[i] <> '' then
-          Result := Result + ' ' + APrefix + '"' + Paths[i] + '"';
-    finally
-      Paths.Free;
-    end;
-  end;
-
 begin
-  //save project
-  LazarusIDE.SaveSourceEditorChangesToCodeCache(-1); // -1: commit all source editors
-  LazarusIDE.DoSaveProject([sfProjectSaving]);
-
-  //insert profiling code
-  IncludePath := GetSearchPaths(CodeToolBoss.GetIncludePathForDirectory(''), '-Fi');
-  UnitPath := GetSearchPaths(CodeToolBoss.GetUnitPathForDirectory(''), '-Fu');
-
-  CommandLine := AppendPathDelim(XMLConfig.GetValue('LazProfOptions/FPP/Path', '')) +
-                                 'fppinsert' +
-                                 IncludePath +
-                                 UnitPath;
-
-  DebugLn('IDERunWithProfilingClicked: ' + CommandLine);
-  ExecuteApplication(CommandLine);
-
-  //build project
-  OldUnitFiles := LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles;
-  LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles :=
-    LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles + ';' + XMLConfig.GetValue('LazProfOptions/FPProfUnit/Path', '');
-  BuildResult := LazarusIDE.DoBuildProject(crCompile, []);
-  LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles := OldUnitFiles;
-
-  //remove profiling code
-  CommandLine := AppendPathDelim(XMLConfig.GetValue('LazProfOptions/FPP/Path', '')) +
-                                 'fppremove' +
-                                 IncludePath +
-                                 UnitPath;
-  ExecuteApplication(CommandLine);
-
-  if (BuildResult = mrOk) and (LazarusIDE.ActiveProject.ExecutableType = petProgram) then
-    ExecuteApplication(ExtractFilePath(LazarusIDE.ActiveProject.MainFile.Filename) +
-      LazarusIDE.ActiveProject.LazCompilerOptions.TargetFilename);
+  LazProfileViewer.RunWithProfiling;
 end;
 
 procedure Register;
@@ -220,6 +163,7 @@ end;
 procedure TLazProfileViewer.FormShow(Sender: TObject);
 begin
   SourceEditorManagerIntf.RegisterChangeEvent(semEditorStatus, @ShowCodeInfo);
+  OpenLog(ExtractFilePath(ParamStr(0)) + 'fpprof.xml');
 end;
 
 procedure TLazProfileViewer.ListView1Click(Sender: TObject);
@@ -293,6 +237,13 @@ begin
   end;
 end;
 
+procedure TLazProfileViewer.ToolButton1Click(Sender: TObject);
+begin
+  RunWithProfiling;
+
+  OpenLog(ExtractFilePath(ParamStr(0)) + 'fpprof.xml');
+end;
+
 procedure TLazProfileViewer.ZoomMenuClick(Sender: TObject);
 begin
   ZoomImage(TMenuItem(Sender).Tag);
@@ -301,43 +252,109 @@ end;
 procedure TLazProfileViewer.OpenLogButtonClick(Sender: TObject);
 begin
   if OpenDialog.Execute then
-  begin
     if FileExistsUTF8(OpenDialog.FileName) then
-    begin
-      try
-        FPPReader := TFPPReader.Create(OpenDialog.FileName);
-        try
-          ProfStats := TLazProfStats.Create(FPPReader, rtPlain);
-          //report type is not used
+      OpenLog(OpenDialog.FileName);
+end;
 
-          //flat profile
-          TLazProfStats(ProfStats).ListView := ListView1;
+procedure TLazProfileViewer.OpenLog(AFileName: string);
+begin
+  if FileExistsUTF8(AFileName) then
+  begin
+    try
+      FPPReader := TFPPReader.Create(AFileName);
 
-          //call graph
+      ProfStats := TLazProfStats.Create(FPPReader, rtPlain);
+      //report type is not used
 
-          //mem usage
-          TLazProfStats(ProfStats).MemSerie := MemoryChartSeries;
+      //flat profile
+      TLazProfStats(ProfStats).ListView := ListView1;
 
-          ProfStats.Run;
+      //call graph
 
-          //load the call graph
-          if FileExists(TLazProfReport(ProfStats.Report).PNGFileName) then
-          begin
-            CallGraphPanel.Caption := '';
-            MemImage.Picture.LoadFromFile(TLazProfReport(ProfStats.Report).PNGFileName);
-          end
-          else
-            CallGraphPanel.Caption := rsErrorCouldNotCreateCallGraph;
+      //mem usage
+      TLazProfStats(ProfStats).MemSerie := MemoryChartSeries;
 
-          ZoomImage(100);
-        finally
-          ProfStats.Free;
-        end;
-      finally
-        FPPReader.Free;
-      end;
+      ProfStats.Run;
+
+      //load the call graph
+      if FileExists(TLazProfReport(ProfStats.Report).PNGFileName) then
+      begin
+        CallGraphPanel.Caption := '';
+        MemImage.Picture.LoadFromFile(TLazProfReport(ProfStats.Report).PNGFileName);
+      end
+      else
+        CallGraphPanel.Caption := rsErrorCouldNotCreateCallGraph;
+
+      ZoomImage(100);
+    finally
+      FPPReader.Free;
     end;
   end;
+end;
+
+procedure TLazProfileViewer.RunWithProfiling;
+var
+  IncludePath: string;
+  UnitPath: string;
+  CommandLine: string;
+  BuildResult: TModalResult;
+  OldUnitFiles: string;
+
+  function GetSearchPaths(ADelimitedPaths, APrefix: string): string;
+  var
+    Paths: TStrings;
+    i: integer;
+  begin
+    try
+      Paths := TStringList.Create;
+      Paths.Delimiter := ';';
+      Paths.StrictDelimiter := True;
+      Paths.DelimitedText := ADelimitedPaths;
+
+      //create path string
+      Result := '';
+      for i := 0 to Paths.Count - 1 do
+        if Paths[i] <> '' then
+          Result := Result + ' ' + APrefix + '"' + Paths[i] + '"';
+    finally
+      Paths.Free;
+    end;
+  end;
+
+begin
+  //save project
+  LazarusIDE.SaveSourceEditorChangesToCodeCache(-1); // -1: commit all source editors
+  LazarusIDE.DoSaveProject([sfProjectSaving]);
+
+  //insert profiling code
+  IncludePath := GetSearchPaths(CodeToolBoss.GetIncludePathForDirectory(''), '-Fi');
+  UnitPath := GetSearchPaths(CodeToolBoss.GetUnitPathForDirectory(''), '-Fu');
+
+  CommandLine := AppendPathDelim(XMLConfig.GetValue('LazProfOptions/FPP/Path', '')) +
+                                 'fppinsert' +
+                                 IncludePath +
+                                 UnitPath;
+
+  DebugLn('IDERunWithProfilingClicked: ' + CommandLine);
+  ExecuteApplication(CommandLine);
+
+  //build project
+  OldUnitFiles := LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles;
+  LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles :=
+    LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles + ';' + XMLConfig.GetValue('LazProfOptions/FPProfUnit/Path', '');
+  BuildResult := LazarusIDE.DoBuildProject(crCompile, []);
+  LazarusIDE.ActiveProject.LazCompilerOptions.OtherUnitFiles := OldUnitFiles;
+
+  //remove profiling code
+  CommandLine := AppendPathDelim(XMLConfig.GetValue('LazProfOptions/FPP/Path', '')) +
+                                 'fppremove' +
+                                 IncludePath +
+                                 UnitPath;
+  ExecuteApplication(CommandLine);
+
+  if (BuildResult = mrOk) and (LazarusIDE.ActiveProject.ExecutableType = petProgram) then
+    ExecuteApplication(ExtractFilePath(LazarusIDE.ActiveProject.MainFile.Filename) +
+      LazarusIDE.ActiveProject.LazCompilerOptions.TargetFilename);
 end;
 
 procedure TLazProfileViewer.SettingsButtonClick(Sender: TObject);
@@ -491,6 +508,10 @@ end;
 
 initialization
   {$I lazprof_images.lrs}
+  LazProfileViewer := TLazProfileViewer.Create(Application);
+
+finalization
+  FreeAndNil(LazProfileViewer);
 
 end.
 
