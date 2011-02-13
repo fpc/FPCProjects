@@ -29,6 +29,8 @@ function ShowSelectFilesForm: TStrings;
 
 implementation
 
+{$R *.lfm}
+
 uses
   LazProfResourceStings;
 
@@ -145,9 +147,6 @@ begin
     end;
   end;
 end;
-
-initialization
-  {$I lazprofselectfiles.lrs}
 
 end.
 

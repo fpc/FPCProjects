@@ -104,7 +104,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LazProfResourceStings;
+  LazProfResourceStings, CompOptsIntf;
 
 procedure IDEMenuClicked(Sender: TObject);
 begin

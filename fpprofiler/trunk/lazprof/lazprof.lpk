@@ -5,7 +5,7 @@
     <Name Value="LazProf"/>
     <Author Value="Darius Blaszyk"/>
     <CompilerOptions>
-      <Version Value="9"/>
+      <Version Value="10"/>
       <PathDelim Value="\"/>
       <SearchPaths>
         <OtherUnitFiles Value="..\fppview"/>
@@ -18,7 +18,7 @@
     <Description Value="A graphical frontend for fpprofiler"/>
     <License Value="GPL"/>
     <Version Minor="1"/>
-    <Files Count="10">
+    <Files Count="9">
       <Item1>
         <Filename Value="lazprofselectfiles.pas"/>
         <UnitName Value="LazProfSelectFiles"/>
@@ -28,38 +28,34 @@
         <Type Value="LFM"/>
       </Item2>
       <Item3>
-        <Filename Value="lazprofselectfiles.lrs"/>
-        <Type Value="LRS"/>
-      </Item3>
-      <Item4>
         <Filename Value="lazprofsettings.pas"/>
         <UnitName Value="LazProfSettings"/>
-      </Item4>
-      <Item5>
+      </Item3>
+      <Item4>
         <Filename Value="lazprofsettings.lfm"/>
         <Type Value="LFM"/>
-      </Item5>
-      <Item6>
+      </Item4>
+      <Item5>
         <Filename Value="lazprofview.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="LazProfView"/>
-      </Item6>
-      <Item7>
+      </Item5>
+      <Item6>
         <Filename Value="lazprofview.lfm"/>
         <Type Value="LFM"/>
+      </Item6>
+      <Item7>
+        <Filename Value="lazprofreport.pas"/>
+        <UnitName Value="LazProfReport"/>
       </Item7>
       <Item8>
-        <Filename Value="lazprofreport.pas"/>
-        <UnitName Value="lazprofreport"/>
-      </Item8>
-      <Item9>
         <Filename Value="lazstats.pas"/>
         <UnitName Value="LazStats"/>
-      </Item9>
-      <Item10>
+      </Item8>
+      <Item9>
         <Filename Value="lazprofresourcestings.pas"/>
         <UnitName Value="LazProfResourceStings"/>
-      </Item10>
+      </Item9>
     </Files>
     <Type Value="DesignTime"/>
     <RequiredPkgs Count="6">
