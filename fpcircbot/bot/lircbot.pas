@@ -35,7 +35,7 @@ type
   TLIrcRec = class
    public
     FSender: string;
-    FReciever: string;
+    FReceiver: string;
     FArguments: string;
     FMsg: string;
     FCommand: string;
@@ -45,7 +45,7 @@ type
    public
     function CloneSelf: TLIrcRec;
     property Sender: string read FSender;
-    property Reciever: string read FReciever;
+    property Receiver: string read FReceiver;
     property Arguments: string read FArguments;
     property Msg: string read FMsg;
     property Time: TDateTime read FTime;
@@ -86,7 +86,7 @@ type
     FCommands: TLCommandList;
     FPCommands: TLCommandList;
     FRespondTo: string;
-    FOnRecieve: TLIrcCallback;
+    FOnReceive: TLIrcCallback;
     FOnDisconnect: TLIrcCallback;
     FOnConnect: TLIrcCallback;
     FOnUserJoin: TLIrcCallback;
@@ -131,7 +131,7 @@ type
     function UserInChannel(const Channel, User: string): Boolean;
     function IsPuser(LL: TLIrcRec): Boolean;
     procedure Quit;
-    procedure SendMessage(const Msg: string; const Reciever: string = '');
+    procedure SendMessage(const Msg: string; const Receiver: string = '');
     procedure Respond(const aMsg: string);
     procedure RegisterSelf;
     procedure AddCommand(const Command: string; Action: TLIrcCallback; const Help: string = '');
@@ -155,7 +155,7 @@ type
     property ReplyInPrivate: Boolean read FRIP write FRIP;
     property NickServPassword: string read FNickPass write FNickPass;
     // CALLBACKS
-    property OnRecieve: TLIrcCallback read FOnRecieve write FOnRecieve;
+    property OnReceive: TLIrcCallback read FOnReceive write FOnReceive;
     property OnUserJoin: TLIrcCallback read FOnUserJoin write FOnUserJoin;
     property OnChannelJoin: TLIrcCallback read FOnChannelJoin write FOnChannelJoin;
     property OnChannelQuit: TLIrcCallback read FOnChannelQuit write FOnChannelQuit;
@@ -171,7 +171,7 @@ function TLIrcRec.CloneSelf: TLIrcRec;
 begin
   Result := TLIrcRec.Create;
   Result.FSender := FSender;
-  Result.FReciever := FReciever;
+  Result.FReceiver := FReceiver;
   Result.FArguments := FArguments;
   Result.FMsg := FMsg;
   Result.FCommand := FCommand;
@@ -207,11 +207,11 @@ begin
   FCommands:=TLCommandList.Create;
   FPCommands:=TLCommandList.Create;
   FLastLine.FSender:='';
-  FLastLine.FReciever:='';
+  FLastLine.FReceiver:='';
   FLastLine.FMsg:='';
   FRespondTo:='';
   
-  FOnRecieve:=nil;
+  FOnReceive:=nil;
   FOnUserJoin:=nil;
   FOnChannelJoin:=nil;
   FOnChannelQuit:=nil;
@@ -262,13 +262,13 @@ procedure TLIrcBot.DoRe(const msg: string);
             TheWord:=LowerCase(Copy(FWords[0], 2, Length(FWords[0])))
           else
             TheWord:=LowerCase(FWords[0]);
-          if ((LowerCase(FLastLine.Reciever) = LowerCase(FNick)) or (FWords[0][1] = '!'))
+          if ((LowerCase(FLastLine.Receiver) = LowerCase(FNick)) or (FWords[0][1] = '!'))
           and (FCommands[i].Command = TheWord) then begin
             if Assigned(FCommands[i].FAction) then begin
               if FWords[0][1] <> '!' then
                 FRespondTo:=FLastLine.Sender
               else
-                FRespondTo:=FLastLine.Reciever;
+                FRespondTo:=FLastLine.Receiver;
               FLastLine.FArguments:='';
               if FWords.Count > 1 then
                 for j:=1 to FWords.Count-1 do
@@ -290,7 +290,7 @@ procedure TLIrcBot.DoRe(const msg: string);
                   FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
               if FRIP then FRespondTo:=FLastLine.Sender
-              else FRespondTo:=FLastLine.Reciever;
+              else FRespondTo:=FLastLine.Receiver;
             end;
             Result:=i;
             Exit;
@@ -318,14 +318,14 @@ procedure TLIrcBot.DoRe(const msg: string);
           else
             TheWord:=LowerCase(FWords[0]);
 
-          if ((LowerCase(FLastLine.Reciever) = LowerCase(FNick)) or (FWords[0][1] = '!'))
+          if ((LowerCase(FLastLine.Receiver) = LowerCase(FNick)) or (FWords[0][1] = '!'))
           and (FPCommands[i].Command = TheWord) then begin
             if Assigned(FPCommands[i].FAction)
             and IsPuser(FLastLine) then begin
               if FWords[0][1] <> '!' then
                 FRespondTo:=FLastLine.Sender
               else
-                FRespondTo:=FLastLine.Reciever;
+                FRespondTo:=FLastLine.Receiver;
               FLastLine.FArguments:='';
               if FWords.Count > 1 then
                 for j:=1 to FWords.Count-1 do
@@ -352,9 +352,9 @@ procedure TLIrcBot.DoRe(const msg: string);
                   FLastLine.FArguments:=FLastLine.FArguments + FWords[j] + ' ';
               FLastLine.FArguments:=Trim(FLastLine.FArguments);
               if FRIP then FRespondTo:=FLastLine.Sender
-              else FRespondTo:=FLastLine.Reciever;
+              else FRespondTo:=FLastLine.Receiver;
             end else begin
-              SendMessage('Sorry but you are not a power user', FLastLine.Reciever);
+              SendMessage('Sorry but you are not a power user', FLastLine.Receiver);
               Exit;
             end;
             Result:=i + 1000;
@@ -395,18 +395,18 @@ begin
     DoRe(s);
 
   Parsed := ParseLine(nMsg);
-  if Assigned(FOnRecieve) then
-    if Pos(',', FLastLine.FReciever) > 0 then begin
+  if Assigned(FOnReceive) then
+    if Pos(',', FLastLine.FReceiver) > 0 then begin
       SL:=TStringList.Create;
-      nMsg:=FLastLine.Reciever;
+      nMsg:=FLastLine.Receiver;
       SL.CommaText:=nMsg;
       if SL.Count > 0 then
         for i:=0 to SL.Count-1 do if Length(SL[i]) > 0 then begin
-          FLastLine.FReciever:=SL[i];
+          FLastLine.FReceiver:=SL[i];
           x:=-1;
           if Parsed then x:=ParseForCommands
           else ParseForPings(nMsg);
-          FOnRecieve(Self);
+          FOnReceive(Self);
 
           if x >= 0 then
             if x >= 1000 then begin
@@ -422,7 +422,7 @@ begin
       x:=-1;
       if Parsed then x:=ParseForCommands
       else ParseForPings(nMsg);
-      FOnRecieve(Self);
+      FOnReceive(Self);
 
       if x >= 0 then
         if x >= 1000 then begin
@@ -609,7 +609,7 @@ var
             Delete(FSender, m, Length(FSender)); // ignore after "!"
         end; // if
         m := Pos(':', Copy(aMsg, 2, Length(aMsg)-1)) + 1;
-        FReciever := Copy(aMsg, n + x + 1, m - n - x - 2);
+        FReceiver := Copy(aMsg, n + x + 1, m - n - x - 2);
         FMsg := Copy(aMsg, m + 1, Length(aMsg) - m);
         FMsg := CleanEnding(FMsg); // clean #13#10
 
@@ -633,10 +633,10 @@ var
       for m:=0 to FPeople.Count-1 do begin
         n:=FPeople[m].IndexOf(FLastLine.Sender);
         if n > 0 then begin
-          if Length(FLastLine.FReciever) = 0 then
-            FLastLine.FReciever:=FChannels[m]
+          if Length(FLastLine.FReceiver) = 0 then
+            FLastLine.FReceiver:=FChannels[m]
           else
-            FLastLine.FReciever:=FLastLine.FReciever + ',' + FChannels[m];
+            FLastLine.FReceiver:=FLastLine.FReceiver + ',' + FChannels[m];
           if Del then begin
             Writeln('Deleting ', FPeople[m][n], ' from ', FChannels[m]);
             TheMan:=FPeople[m][n];
@@ -658,7 +658,7 @@ begin
   Result := False;
   with FLastLine do begin
     FSender := '';
-    FReciever := '';
+    FReceiver := '';
     FMsg := '';
     FArguments := '';
     FIsIdentified := False;
@@ -682,9 +682,9 @@ begin
     end;
     
     if FCommand = 'JOIN' then begin
-      FLastLine.FReciever := FLastLine.FMsg;
+      FLastLine.FReceiver := FLastLine.FMsg;
       FLastLine.FMsg := FLastLine.Sender + ' joins ' + FLastLine.FMsg;
-      n:=FChannels.IndexOf(FLastLine.Reciever);
+      n:=FChannels.IndexOf(FLastLine.Receiver);
       if n >= 0 then with FPeople[n] do begin
         Writeln('Adding ', FLastLine.Sender, ' to ', FChannels[n]);
         Add(FLastLine.Sender);
@@ -698,8 +698,8 @@ begin
     
     if FCommand = 'PART' then begin
       FLastLine.FMsg := FLastLine.Sender + ' leaves ' +
-                      FLastLine.Reciever + '(' + FLastLine.FMsg + ')';
-      n:=FChannels.IndexOf(FLastLine.Reciever);
+                      FLastLine.Receiver + '(' + FLastLine.FMsg + ')';
+      n:=FChannels.IndexOf(FLastLine.Receiver);
       if n >= 0 then with FPeople[n] do
         if IndexOf(FlastLine.Sender) >= 0 then begin
           Writeln('Deleting ', FLastLine.Sender, ' from ', FChannels[n]);
@@ -715,12 +715,12 @@ begin
     end; // if
     
     if FCommand = 'KICK' then begin
-      n:=Pos(' ', FLastLine.FReciever);
+      n:=Pos(' ', FLastLine.FReceiver);
       if n > 0 then begin
-        s:=Copy(FLastLine.FReciever, n+1, Length(FLastLine.FReciever));
-        Delete(FLastLine.FReciever, n, Length(FLastLine.FReciever));
-      end else s:=FLastLine.FReciever;
-      n:=FChannels.IndexOf(FLastLine.FReciever);
+        s:=Copy(FLastLine.FReceiver, n+1, Length(FLastLine.FReceiver));
+        Delete(FLastLine.FReceiver, n, Length(FLastLine.FReceiver));
+      end else s:=FLastLine.FReceiver;
+      n:=FChannels.IndexOf(FLastLine.FReceiver);
       if LowerCase(s) = LowerCase(Nick) then begin
         if n >= 0 then begin
           Writeln('Deleting channel ', FChannels[n], ' and all users from it');
@@ -756,7 +756,7 @@ begin
 
   if not Result then with FLastLine do begin
     FSender := '';
-    FReciever := '';
+    FReceiver := '';
     FArguments := '';
     FMsg := aMsg;
   end;
@@ -845,18 +845,18 @@ begin
     FOnChannelQuit(Self);
 end;
 
-procedure TLIrcBot.SendMessage(const Msg: string; const Reciever: string = '');
+procedure TLIrcBot.SendMessage(const Msg: string; const Receiver: string = '');
 var
   i: Longint;
   Backup: TLIrcRec;
 begin
   if Connected then begin
-    if Length(Reciever) > 0 then begin
+    if Length(Receiver) > 0 then begin
       Backup:=FLastLine.CloneSelf;
       FLastLine.FSender:=FNick;
-      FLastLine.FReciever:=Reciever;
+      FLastLine.FReceiver:=Receiver;
       FLastLine.FMsg:=Msg;
-      FCon.SendMessage('PRIVMSG ' + Reciever + ' :' + Msg + #13#10);
+      FCon.SendMessage('PRIVMSG ' + Receiver + ' :' + Msg + #13#10);
       if Assigned(FLogLine) then LogLine(Self);
       FLastLine.Free;
       FLastLine:=Backup;
@@ -864,7 +864,7 @@ begin
       Backup:=FLastLine.CloneSelf;
       for i:=0 to FChannels.Count-1 do begin
         FLastLine.FSender:=FNick;
-        FLastLine.FReciever:=Reciever;
+        FLastLine.FReceiver:=Receiver;
         FLastLine.FMsg:=Msg;
         FCon.SendMessage('PRIVMSG ' + FChannels[i] + ' :' + Msg + #13#10);
         if Assigned(FLogLine) then LogLine(Self);

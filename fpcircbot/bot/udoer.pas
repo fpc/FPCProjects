@@ -119,7 +119,7 @@ type
     procedure OnUnIgnore(Caller: TLIrcBot);
     procedure IgnoreMe(Caller: TLIrcBot);
     procedure OnCleanChans(Caller: TLIrcBot);
-    procedure OnRecieve(Caller: TLIrcBot);
+    procedure OnReceive(Caller: TLIrcBot);
     procedure OnDisconnect(Caller: TLIrcBot);
     procedure OnUserJoin(Caller: TLIrcBot);
     procedure OnChannelJoin(Caller: TLIrcBot);
@@ -504,14 +504,14 @@ begin
   Args:=SQLEscape(TrimQuestion(Caller.LastLine.Arguments));
 
   with Caller.LastLine, Caller do
-    if UserInChannel(Reciever, Args) then
+    if UserInChannel(Receiver, Args) then
       Respond(Args + ' is already in here!')
     else if Logging then with FSeenQuery do begin
       Sql.Clear;
-      if (Length(Reciever) > 0) and (Reciever[1] = '#') then
+      if (Length(Receiver) > 0) and (Receiver[1] = '#') then
       
         Sql.Add('select logtime from tbl_loglines ' +
-                'where (reciever=''' + SQLEscape(Reciever) +
+                'where (Receiver=''' + SQLEscape(Receiver) +
                 ''' and upper(sender)=''' + SQLEscape(UpperCase(Args)) +
                 ''') order by logtime desc limit 1')
       else
@@ -678,11 +678,11 @@ procedure TDoer.OnLogUrl(Caller: TLIrcBot);
 begin
   {$ifndef noDB}
   with Caller, Caller.LastLine do
-    if Length(Reciever) > 0 then begin
-      if Reciever[1] = '#' then
-        Respond('see yourself chat ' + CGIURL + 'cgifpcbot?channel=' + Copy(Reciever, 2, Length(Reciever)))
+    if Length(Receiver) > 0 then begin
+      if Receiver[1] = '#' then
+        Respond('see yourself chat ' + CGIURL + 'cgifpcbot?channel=' + Copy(Receiver, 2, Length(Receiver)))
       else
-        Respond('see yourself chat ' + CGIURL + 'cgifpcbot?channel=' + Reciever)
+        Respond('see yourself chat ' + CGIURL + 'cgifpcbot?channel=' + Receiver)
     end;
   {$else}
   Caller.Respond('I have no DB compiled in, I cannot log the chat');
@@ -697,15 +697,15 @@ begin
   {$ifndef noDB}
   with Caller, Caller.LastLine do begin
     Args:=StringReplace(Arguments, ' ', '+', [rfReplaceAll]);
-    if Length(Reciever) > 0 then begin
+    if Length(Receiver) > 0 then begin
       CheckID := GetCheckID(Sender);
-      if Reciever[1] = '#' then
+      if Receiver[1] = '#' then
         Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' +
-                Copy(Reciever, 2, Length(Reciever)) + '&sender=' + Sender +
+                Copy(Receiver, 2, Length(Receiver)) + '&sender=' + Sender +
                 '&ancheck=on&checkid=' + CheckID + '&title=' + Args)
       else
         Respond('paste your stuff here ' + CGIURL + 'cgipastebin?channel=' +
-                Reciever + '&sender=' + Sender + '&ancheck=on&checkid=' + CheckID + '&title=' + Args);
+                Receiver + '&sender=' + Sender + '&ancheck=on&checkid=' + CheckID + '&title=' + Args);
     end;
   end;
   {$else}
@@ -808,7 +808,7 @@ var
   args: string;
 begin
   with Caller, Caller.LastLine do begin
-    if Trim(Arguments) = '' then args:=Reciever
+    if Trim(Arguments) = '' then args:=Receiver
     else args:=Arguments;
     if not Part(args) then begin
       Respond('Unable to comply, I''m not in ' + args);
@@ -881,11 +881,11 @@ var
   s: string;
 begin
   if LowerCase(Trim(Caller.LastLine.Arguments)) = 'on' then begin
-    Greetings.Add(Caller.LastLine.Reciever);
+    Greetings.Add(Caller.LastLine.Receiver);
     Caller.Respond(YESSIR);
   end else if LowerCase(Trim(Caller.LastLine.Arguments)) = 'off' then begin
-    if Greetings.IndexOf(Caller.LastLine.Reciever) >= 0 then
-      Greetings.Delete(Greetings.IndexOf(Caller.LastLine.Reciever));
+    if Greetings.IndexOf(Caller.LastLine.Receiver) >= 0 then
+      Greetings.Delete(Greetings.IndexOf(Caller.LastLine.Receiver));
     Caller.Respond(YESSIR);
   end else begin
     if LowerCase(Caller.LastLine.Arguments) = 'list' then begin
@@ -1091,7 +1091,7 @@ begin
   Caller.Respond(YESSIR);
 end;
 
-procedure TDoer.OnRecieve(Caller: TLIrcBot);
+procedure TDoer.OnReceive(Caller: TLIrcBot);
 var
   TheLastLine: TLIrcRec;
 
@@ -1099,13 +1099,13 @@ var
   begin
   {$ifndef noDB}
     with TheLastline do begin
-      if  (Length(Reciever) > 0)
+      if  (Length(Receiver) > 0)
       and (Length(Sender) < 50)
-      and (Length(Reciever) < 50)
+      and (Length(Receiver) < 50)
       and (Length(Msg) < 4096) then begin
         FLogQuery.SQL.Clear;
-        FLogQuery.SQL.Add('insert into tbl_loglines(sender,reciever,msg) ' +
-                          'values(''' + SQLEscape(Sender) + ''',''' + SQLEscape(Reciever) + ''',''' + SQLEscape(msg) + ''')');
+        FLogQuery.SQL.Add('insert into tbl_loglines(sender,Receiver,msg) ' +
+                          'values(''' + SQLEscape(Sender) + ''',''' + SQLEscape(Receiver) + ''',''' + SQLEscape(msg) + ''')');
         Writeln('Log MESSAGE: ', FLogQuery.SQL.Text);
         try
           FLogTransaction.EndTransaction;
@@ -1118,7 +1118,7 @@ var
             Writeln(e.Message);
             Writeln('Error writing to FB. Following information isn''t stored:');
             Writeln('Sender: ' + Sender);
-            Writeln('Reciever: ' + Reciever);
+            Writeln('Receiver: ' + Receiver);
             Writeln('MSg: ' + Msg);
             Writeln('----------------[ERROR]---------------');
             FLogTransaction.EndTransaction;
@@ -1131,11 +1131,32 @@ var
   {$endif}
   end;
 
+  function IsIgnored(aSender: string): Boolean;
+  var
+    i, n: Integer;
+    s: string;
+  begin
+    Result := False;
+
+    if FIgnoreList.IndexOf(aSender) >= 0 then
+      Exit(True); // direct match
+
+    // let's process wildcards
+    for i := 0 to FIgnoreList.Count - 1 do begin
+      n := Pos('*', FIgnoreList[i]);
+      if n > 0 then begin // TODO: optimize with in-place string pointer reps
+        s := Copy(FIgnoreList[i], 1, n - 1);
+        if Pos(s, aSender) = 1 then
+          Exit(True);
+      end;
+    end;
+  end;
+
 begin
   with Caller.LastLine do
-    Writeln('(', DateTimeToStr(Now), ')$', Sender, '$', Reciever, '$', Msg);
+    Writeln('(', DateTimeToStr(Now), ')$', Sender, '$', Receiver, '$', Msg);
     
-  if FIgnoreList.IndexOf(LowerCase(Caller.LastLine.Sender)) >= 0 then
+  if IsIgnored(LowerCase(Caller.LastLine.Sender)) then
     Exit; // ignore them
     
   if Logging then begin
@@ -1148,15 +1169,15 @@ begin
     with Caller.LastLine, Caller do begin
       TheLastLine:=FLL;
       FLL.FSender:=Caller.Nick;
-      if (Sender <> Nick) and (Length(Reciever) > 0) and WasChat then
-        if LowerCase(Reciever) = LowerCase(Nick) then begin
-          FLL.FReciever:=Sender;
+      if (Sender <> Nick) and (Length(Receiver) > 0) and WasChat then
+        if LowerCase(Receiver) = LowerCase(Nick) then begin
+          FLL.FReceiver:=Sender;
           FLL.FMsg:=FMarkov.Talk(SepString(Msg));
           SendMessage(FLL.FMsg, Sender);
         end else if Pos(LowerCase(Nick), LowerCase(Msg)) = 1 then begin
-          FLL.FReciever:=Reciever;
+          FLL.FReceiver:=Receiver;
           FLL.FMsg:=FMarkov.Talk(SepString((Copy(Msg, Length(Nick) + 1, Length(Msg)))));
-          SendMessage(Sender + ': ' + FLL.Msg, Reciever);
+          SendMessage(Sender + ': ' + FLL.Msg, Receiver);
         end else FMarkov.TalkTo(SepString(Msg));
     end;
 end;
@@ -1196,19 +1217,19 @@ var
   Specific: Boolean;
 begin
   with Caller, Caller.LastLine do begin
-    if Greetings.IndexOf(Reciever) >= 0 then
+    if Greetings.IndexOf(Receiver) >= 0 then
       if FGreetList.Count > 0 then begin
         SetLength(Choice, 0);
-        Specific:=FillChoice(Choice, Reciever);
+        Specific:=FillChoice(Choice, Receiver);
         Writeln('Choice: ', Length(Choice));
         s:=FGreetList[Choice[Random(Length(Choice))]];
-        if Specific then Delete(s, 1, Length(Reciever) + 1); // delete the 1st word (channel specification + space)
+        if Specific then Delete(s, 1, Length(Receiver) + 1); // delete the 1st word (channel specification + space)
         s:=StringReplace(s, '$nick', Sender, [rfReplaceAll]);
-        s:=StringReplace(s, '$channel', Reciever, [rfReplaceAll]);
+        s:=StringReplace(s, '$channel', Receiver, [rfReplaceAll]);
         if ReplyInPrivate then
           SendMessage(s, Sender)
         else
-          SendMessage(s, Reciever);
+          SendMessage(s, Receiver);
       end;
   end;
 end;

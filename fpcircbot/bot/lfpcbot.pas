@@ -180,15 +180,15 @@ begin
   Con.AddPCommand('removepuser', @Doer.OnRemovePuser, 'Syntax: removepuser <nick> Info: makes me remove a power user. <nick> is required.');
   Con.AddPCommand('setmarkov', @Doer.OnSetMarkov, 'Syntax: setmarkov <deviation> <threshold> Info: makes me set the deviation and threshold of the markov generator. <deviation> and <threshold> are required. Both are ints <0..100>');
   Con.AddPCommand('cleanchans', @Doer.OnCleanChans, 'Syntax: cleanchans Info: makes me clean no longer occupied channels from the DB (so the CGI page doesn''t list them. They are still accesible via ?channelname in the URL).');
-  Con.AddPCommand('ignore', @Doer.OnIgnore, 'Syntax: ignore [nick] Info: makes the bot completely ignore given nickname, including log or markov replies. If no nick is specified a list of ignored nicks is given.');
+  Con.AddPCommand('ignore', @Doer.OnIgnore, 'Syntax: ignore [nick] Info: makes the bot completely ignore given nickname (use * as wildcard), including log or markov replies. If no nick is specified a list of ignored nicks is given.');
   Con.AddPCommand('unignore', @Doer.OnUnignore, 'Syntax: unignore <nick> Info: makes the bot remove given nickname from ignore list');
   // CALLBACKS
-  Con.OnRecieve := @Doer.OnRecieve;
+  Con.OnReceive := @Doer.OnReceive;
   Con.OnDisconnect := @Doer.OnDisconnect;
   Con.OnUserJoin := @Doer.OnUserJoin;
   Con.OnChannelJoin := @Doer.OnChannelJoin;
   Con.OnChannelQuit := @Doer.OnChannelQuit;
-  Con.LogLine := @Doer.OnRecieve;
+  Con.LogLine := @Doer.OnReceive;
   
   if not Con.Connect(AD, PORT) then
     Writeln('Unable to connect to: ', AD, ' PORT: ', Port)
