@@ -511,7 +511,7 @@ begin
       if (Length(Receiver) > 0) and (Receiver[1] = '#') then
       
         Sql.Add('select logtime from tbl_loglines ' +
-                'where (Receiver=''' + SQLEscape(Receiver) +
+                'where (reciever=''' + SQLEscape(Receiver) +
                 ''' and upper(sender)=''' + SQLEscape(UpperCase(Args)) +
                 ''') order by logtime desc limit 1')
       else
@@ -1104,7 +1104,7 @@ var
       and (Length(Receiver) < 50)
       and (Length(Msg) < 4096) then begin
         FLogQuery.SQL.Clear;
-        FLogQuery.SQL.Add('insert into tbl_loglines(sender,Receiver,msg) ' +
+        FLogQuery.SQL.Add('insert into tbl_loglines(sender,reciever,msg) ' +
                           'values(''' + SQLEscape(Sender) + ''',''' + SQLEscape(Receiver) + ''',''' + SQLEscape(msg) + ''')');
         Writeln('Log MESSAGE: ', FLogQuery.SQL.Text);
         try
