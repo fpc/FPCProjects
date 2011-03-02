@@ -241,7 +241,7 @@ begin
   URI := uri_rec.Path + uri_rec.Document;
   Port := uri_rec.Port;
 
-  Result := True;
+  Result := LowerCase(uri_rec.Protocol) = 'https';
 end;
 
 function ComposeURL(Host, URI: string; const Port: Word): string;
