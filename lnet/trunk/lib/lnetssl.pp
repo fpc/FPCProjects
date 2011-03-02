@@ -107,6 +107,20 @@ implementation
 uses
   {Math,} lCommon;
 
+function GetSSLErrorStr(e: cInt): string;
+var
+  buf: string;
+begin
+  Result := '';
+  SetLength(buf, 2048);
+
+  repeat
+    ErrErrorString(e, buf, Length(buf));
+    Result := Result + buf + LineEnding;
+    e := ErrGetError;
+  until e = 0;
+end;
+
 function PasswordCB(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
 var
   S: TLSSLSession;
@@ -335,7 +349,7 @@ begin
                              end;
     else
       begin
-        Bail('SSL connect error', e);
+        Bail('SSL connect errors: ' + LineEnding + GetSSLErrorStr(e), -1);
         Exit;
       end;
     end;
@@ -363,7 +377,7 @@ begin
                              end;
     else
       begin
-        Bail('SSL accept error', e);
+        Bail('SSL accept errors: ' + LineEnding + GetSSLErrorStr(e), -1);
         Exit;
       end;
     end;
@@ -387,7 +401,7 @@ begin
         SSL_ERROR_WANT_WRITE,
         SSL_ERROR_SYSCALL     : begin end; // ignore
       else
-        Bail('SSL shutdown error', n);
+        Bail('SSL shutdown errors: ' + LineEnding + GetSSLErrorStr(n), -1);
       end;
     end;
   end;

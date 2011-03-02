@@ -236,12 +236,17 @@ function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word):
 var
   uri_rec: TURI;
 begin
-  uri_rec := ParseURI(URL, 'http', 80);
+  uri_rec := ParseURI(URL, 'http', 0); // default to 0 so we can set SSL port
   Host := uri_rec.Host;
   URI := uri_rec.Path + uri_rec.Document;
   Port := uri_rec.Port;
 
   Result := LowerCase(uri_rec.Protocol) = 'https';
+  if Port = 0 then begin
+    Port := 80; // default http port
+    if Result then
+      Port := 443; // default https/ssl port
+  end;
 end;
 
 function ComposeURL(Host, URI: string; const Port: Word): string;
