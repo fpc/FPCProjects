@@ -238,7 +238,7 @@ var
 begin
   uri_rec := ParseURI(URL, 'http', 0); // default to 0 so we can set SSL port
   Host := uri_rec.Host;
-  URI := uri_rec.Path + uri_rec.Document;
+  URI := uri_rec.Path + uri_rec.Document + '?' + uri_rec.Params;
   Port := uri_rec.Port;
 
   Result := LowerCase(uri_rec.Protocol) = 'https';
