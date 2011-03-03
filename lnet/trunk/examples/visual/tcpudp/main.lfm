@@ -1,31 +1,32 @@
 object FormMain: TFormMain
-  Left = 387
+  Left = 582
   Height = 400
-  Top = 168
+  Top = 332
   Width = 390
   ActiveControl = EditPort
   Caption = 'lNet Component Test'
-  ClientHeight = 373
+  ClientHeight = 377
   ClientWidth = 390
   Constraints.MaxWidth = 390
   Constraints.MinHeight = 400
   Constraints.MinWidth = 390
   Menu = MainMenu1
+  OnClose = FormClose
   OnCreate = FormCreate
-  LCLVersion = '0.9.29'
+  LCLVersion = '0.9.31'
   object LabelPort: TLabel
-    Left = 224
+    Left = 216
     Height = 18
-    Top = 11
-    Width = 34
+    Top = 13
+    Width = 36
     Caption = 'Port:'
     ParentColor = False
   end
   object LabelHostName: TLabel
-    Left = 183
+    Left = 176
     Height = 18
     Top = 36
-    Width = 77
+    Width = 78
     Caption = 'Hostname:'
     ParentColor = False
   end
@@ -49,7 +50,7 @@ object FormMain: TFormMain
   end
   object EditSend: TEdit
     Left = 56
-    Height = 27
+    Height = 23
     Top = 304
     Width = 200
     OnKeyPress = SendEditKeyPress
@@ -79,7 +80,7 @@ object FormMain: TFormMain
     Left = 232
     Height = 25
     Top = 336
-    Width = 75
+    Width = 104
     BorderSpacing.InnerBorder = 4
     Caption = 'Diconnect'
     OnClick = DiconnectButtonClick
@@ -100,35 +101,34 @@ object FormMain: TFormMain
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
-    ClientHeight = 93
-    ClientWidth = 140
+    ClientHeight = 87
+    ClientWidth = 124
     TabOrder = 6
     object RBTCP: TRadioButton
       Left = 6
-      Height = 27
+      Height = 25
       Top = 6
-      Width = 128
+      Width = 112
       Caption = 'TCP/IPv4'
       Checked = True
       OnChange = RBTCPChange
-      State = cbChecked
       TabOrder = 0
+      TabStop = True
     end
     object RBUDP: TRadioButton
       Left = 6
-      Height = 27
-      Top = 33
-      Width = 128
+      Height = 25
+      Top = 31
+      Width = 112
       Caption = 'UDP'
       OnChange = RBUDPChange
       TabOrder = 1
-      TabStop = False
     end
     object RBTCP6: TRadioButton
       Left = 6
-      Height = 27
-      Top = 60
-      Width = 128
+      Height = 25
+      Top = 56
+      Width = 112
       Caption = 'TCP/IPv6'
       OnChange = RBTCP6Change
       TabOrder = 2
@@ -136,7 +136,7 @@ object FormMain: TFormMain
   end
   object EditPort: TEdit
     Left = 261
-    Height = 27
+    Height = 23
     Top = 8
     Width = 59
     TabOrder = 7
@@ -144,11 +144,19 @@ object FormMain: TFormMain
   end
   object EditIP: TEdit
     Left = 261
-    Height = 27
+    Height = 23
     Top = 33
     Width = 123
     TabOrder = 8
     Text = 'localhost'
+  end
+  object CheckBoxSSL: TCheckBox
+    Left = 261
+    Height = 19
+    Top = 64
+    Width = 80
+    Caption = 'Use SSL'
+    TabOrder = 9
   end
   object LTCP: TLTCPComponent
     Port = 0
@@ -159,6 +167,7 @@ object FormMain: TFormMain
     OnAccept = LTCPComponentAccept
     Timeout = 0
     ReuseAddress = True
+    Session = SSL
     left = 344
     top = 232
   end
@@ -187,5 +196,20 @@ object FormMain: TFormMain
         OnClick = MenuItemAboutClick
       end
     end
+  end
+  object SSL: TLSSLSessionComponent
+    CAFile = '/media/datalin/ales/programovanie/fpc/lnet/examples/visual/tcpudp/cert'
+    KeyFile = '/media/datalin/ales/programovanie/fpc/lnet/examples/visual/tcpudp/pkey'
+    Method = msSSLv2or3
+    SSLActive = False
+    left = 344
+    top = 144
+  end
+  object TimerQuit: TTimer
+    Enabled = False
+    Interval = 200
+    OnTimer = TimerQuitTimer
+    left = 344
+    top = 95
   end
 end

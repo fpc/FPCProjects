@@ -16,6 +16,8 @@ type
     ButtonDiconnect: TButton;
     ButtonConnect: TButton;
     ButtonListen: TButton;
+    CheckBoxSSL: TCheckBox;
+    SSL: TLSSLSessionComponent;
     LTCP: TLTCPComponent;
     LUDP: TLUDPComponent;
     EditPort: TEdit;
@@ -34,6 +36,8 @@ type
     ButtonSend: TButton;
     EditSend: TEdit;
     MemoText: TMemo;
+    TimerQuit: TTimer;
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure LTCPComponentConnect(aSocket: TLSocket);
     procedure ListenButtonClick(Sender: TObject);
     procedure ConnectButtonClick(Sender: TObject);
@@ -50,6 +54,7 @@ type
     procedure RBUDPChange(Sender: TObject);
     procedure SendButtonClick(Sender: TObject);
     procedure SendEditKeyPress(Sender: TObject; var Key: char);
+    procedure TimerQuitTimer(Sender: TObject);
   private
     FNet: TLConnection;
     FIsServer: Boolean;
@@ -70,12 +75,15 @@ uses
 
 procedure TFormMain.ConnectButtonClick(Sender: TObject);
 begin
+  SSL.SSLActive := CheckBoxSSL.Checked;
   if FNet.Connect(EditIP.Text, StrToInt(EditPort.Text)) then
     FIsServer := False;
 end;
 
 procedure TFormMain.ListenButtonClick(Sender: TObject);
 begin
+  SSL.SSLActive := CheckBoxSSL.Checked;
+
   if FNet.Listen(StrToInt(EditPort.Text)) then begin
     MemoText.Append('Accepting connections');
     FIsServer := True;
@@ -85,6 +93,17 @@ end;
 procedure TFormMain.LTCPComponentConnect(aSocket: TLSocket);
 begin
   MemoText.Append('Connected to remote host');
+end;
+
+procedure TFormMain.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  CloseAction := caFree;
+
+  if FNet.Connected then begin
+    CloseAction := caNone; // make sure we quit gracefuly
+    FNet.Disconnect; // call disconnect (soft)
+    TimerQuit.Enabled := True; // if time runs out, quit ungracefully
+  end;
 end;
 
 procedure TFormMain.LTCPComponentError(const msg: string; aSocket: TLSocket);
@@ -188,6 +207,11 @@ procedure TFormMain.SendEditKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
     SendButtonClick(Sender);
+end;
+
+procedure TFormMain.TimerQuitTimer(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TFormMain.SendToAll(const aMsg: string);
