@@ -46,7 +46,7 @@ type
     
     function SetState(const aState: TLSocketState; const TurnOn: Boolean = True): Boolean; override;
 
-    procedure Disconnect(const Forced: Boolean = True); override;
+    procedure Disconnect(const Forced: Boolean = False); override;
    public
     property SSLStatus: TLSSLStatus read FSSLStatus;
   end;
@@ -403,18 +403,25 @@ begin
       else
         Bail('SSL shutdown errors: ' + LineEnding + GetSSLErrorStr(n), -1);
       end;
+    end else begin
+      FSSLStatus := slNone; // success from our end
     end;
   end;
 end;
 
-procedure TLSSLSocket.Disconnect(const Forced: Boolean = True);
+procedure TLSSLSocket.Disconnect(const Forced: Boolean = False);
 begin
   if ssSSLActive in FSocketState then begin
+    if ConnectionStatus = scConnected then // don't make SSL inactive just yet, we might get a shutdown response
+      ShutdownSSL;
     FSSLStatus := slShutdown;
-    SetActiveSSL(False);
   end;
-  
-  inherited Disconnect(Forced);
+
+  if Forced // if this is forced
+  or (FSSLStatus = slNone) then begin // or we successfuly sent the shutdown
+    SetActiveSSL(False); // make sure to update status
+    inherited Disconnect(Forced); // then proceed with TCP discon
+  end;
 end;
 
 { TLSSLSession }
@@ -502,20 +509,17 @@ begin
   if SSLCTXSetMode(FSSLContext, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER) and SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER <> SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER then
     raise Exception.Create('Error setting accept moving buffer mode on CTX');
 
-  if Length(FKeyFile) > 0 then begin
-    if SslCtxUseCertificateChainFile(FSSLContext, FKeyFile) = 0 then
-      raise Exception.Create('Error creating SSL CTX: SslCtxUseCertificateChainFile');
+  if Length(FCAFile) > 0 then
+    if SslCtxUseCertificateChainFile(FSSLContext, FCAFile) = 0 then
+      raise Exception.Create('Error creating SSL CTX: SSLCTXLoadVerifyLocations');
 
+  if Length(FKeyFile) > 0 then begin
     SslCtxSetDefaultPasswdCb(FSSLContext, FPasswordCallback);
     SslCtxSetDefaultPasswdCbUserdata(FSSLContext, Self);
   
     if SSLCTXUsePrivateKeyFile(FSSLContext, FKeyfile, SSL_FILETYPE_PEM) = 0 then
       raise Exception.Create('Error creating SSL CTX: SSLCTXUsePrivateKeyFile');
   end;
-
-  if Length(FCAFile) > 0 then
-    if SSLCTXLoadVerifyLocations(FSSLContext, FCAFile, pChar(nil)) = 0 then
-      raise Exception.Create('Error creating SSL CTX: SSLCTXLoadVerifyLocations');
 
   OPENSSLaddallalgorithms;
 end;
