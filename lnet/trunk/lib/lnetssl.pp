@@ -21,7 +21,6 @@ type
     FSSL: PSSL;
     FSSLContext: PSSL_CTX;
     FSSLStatus: TLSSLStatus;
-    FIsAcceptor: Boolean;
     function GetConnected: Boolean; override; deprecated;
     function GetConnectionStatus: TLSocketConnectionStatus; override;
 
@@ -86,7 +85,7 @@ type
     procedure ConnectEvent(aHandle: TLHandle); override;
     procedure ReceiveEvent(aHandle: TLHandle); override;
     procedure AcceptEvent(aHandle: TLHandle); override;
-    function HandleSSLConnection(aSocket: TLSSLSocket; const DoAccept: Boolean = False): Boolean;
+    function HandleSSLConnection(aSocket: TLSSLSocket): Boolean;
    public
     property Password: string read FPassword write SetPassword;
     property CAFile: string read FCAFile write SetCAFile;
@@ -201,7 +200,10 @@ procedure TLSSLSocket.ActivateTLSEvent;
 begin
   SetupSSLSocket;
   FSSLStatus := slActivateTLS;
-  ConnectSSL;
+  if FIsAcceptor then
+    AcceptSSL
+  else
+    ConnectSSL;
 end;
 
 function TLSSLSocket.GetConnected: Boolean;
@@ -578,16 +580,14 @@ procedure TLSSLSession.AcceptEvent(aHandle: TLHandle);
 begin
   if not (ssSSLActive in TLSSLSocket(aHandle).SocketState) then
     inherited AcceptEvent(aHandle)
-  else if HandleSSLConnection(TLSSLSocket(aHandle), True) then
+  else if HandleSSLConnection(TLSSLSocket(aHandle)) then
     CallAcceptEvent(aHandle);
 end;
 
-function TLSSLSession.HandleSSLConnection(aSocket: TLSSLSocket; const DoAccept: Boolean = False): Boolean;
+function TLSSLSession.HandleSSLConnection(aSocket: TLSSLSocket): Boolean;
 
   procedure HandleNone;
   begin
-    aSocket.FIsAcceptor := DoAccept;
-
     if aSocket.FIsAcceptor then
       aSocket.AcceptEvent
     else

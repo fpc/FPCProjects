@@ -60,6 +60,7 @@ type
     FIgnoreWrite: Boolean;   // so we can do edge-triggered
     FIgnoreRead: Boolean;    // so we can do edge-triggered
     FIgnoreError: Boolean;   // so we can do edge-triggered
+    FIsAcceptor: Boolean;    // if socket was server-accepted
     FDispose: Boolean;       // will free in the after-cycle
     FFreeing: Boolean;       // used to see if it's in the "to be freed" list
     FPrev: TLHandle;

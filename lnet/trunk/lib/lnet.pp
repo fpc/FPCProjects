@@ -825,6 +825,7 @@ begin
   FHandle := fpAccept(sersock, GetIPAddressPointer, @AddressLength);
   if FHandle <> INVALID_SOCKET then begin
     SetOptions;
+    FIsAcceptor := True;
     Result := true;
   end else
     Bail('Error on accept', LSocketError);
