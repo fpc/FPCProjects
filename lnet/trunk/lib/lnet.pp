@@ -58,7 +58,7 @@ type
 
   { TLSocketState }
   TLSocketState = (ssServerSocket, ssBlocking, ssReuseAddress, ssCanSend,
-                   ssCanReceive, ssSSLActive{, ssNoDelay});
+                   ssCanReceive, ssSSLActive, ssNoDelay);
 
   { TLSocketStates }
   TLSocketStates = set of TLSocketState;
@@ -113,7 +113,7 @@ type
     procedure SetOptions; virtual;
     procedure SetBlocking(const aValue: Boolean);
     procedure SetReuseAddress(const aValue: Boolean);
-//    procedure SetNoDelay(const aValue: Boolean);
+    procedure SetNoDelay(const aValue: Boolean);
 
     procedure HardDisconnect(const NoShutdown: Boolean = False);
     procedure SoftDisconnect;
@@ -467,7 +467,7 @@ begin
                             FSocketState := FSocketState - [aState];
     
     ssSSLActive         : raise Exception.Create('Can not turn SSL/TLS on in TLSocket instance');
-{    ssNoDelay           : SetNoDelay(TurnOn);}
+    ssNoDelay           : SetNoDelay(TurnOn);
   end;
   
   Result := True;
@@ -613,9 +613,9 @@ begin
   end;
 end;
 
-{procedure TLSocket.SetNoDelay(const aValue: Boolean);
+procedure TLSocket.SetNoDelay(const aValue: Boolean);
 begin
-  if FHandle >= 0 then // we already set our socket
+  if FHandle >= 0 then begin // we already set our socket
     if not lCommon.SetNoDelay(FHandle, aValue) then
       Bail('Error on SetNoDelay', LSocketError)
     else begin
@@ -624,7 +624,8 @@ begin
       else
         FSocketState := FSocketState - [ssNoDelay];
     end;
-end;}
+  end;
+end;
 
 function TLSocket.GetMessage(out msg: string): Integer;
 begin

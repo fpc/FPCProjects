@@ -125,7 +125,7 @@ type
   function LSocketError: Longint;
   
   function SetBlocking(const aHandle: Integer; const aValue: Boolean): Boolean;
-//  function SetNoDelay(const aHandle: Integer; const aValue: Boolean): Boolean;
+  function SetNoDelay(const aHandle: Integer; const aValue: Boolean): Boolean;
 
   function IsBlockError(const anError: Integer): Boolean; inline;
   function IsNonFatalError(const anError: Integer): Boolean; inline;
@@ -466,18 +466,18 @@ end;
 
 {$ENDIF}
 
-{function SetNoDelay(const aHandle: Integer; const aValue: Boolean): Boolean;
+function SetNoDelay(const aHandle: Integer; const aValue: Boolean): Boolean;
 var
   opt: cInt = 0;
 begin
   if aValue then
     opt := 1;
 
-  if fpsetsockopt(aHandle, IPPROTO_TCP, TCP_NODELAY, opt, SizeOf(opt)) < 0 then
+  if fpsetsockopt(aHandle, IPPROTO_TCP, TCP_NODELAY, @opt, SizeOf(opt)) < 0 then
     Exit(False);
 
   Result := True;
-end;}
+end;
 
 function StrToHostAddr(const IP: string): Cardinal; inline;
 begin
