@@ -489,6 +489,9 @@ procedure TLSSLSession.CreateSSLContext;
 var
   aMethod: PSSL_METHOD;
 begin
+  if not IsSSLloaded then
+    raise Exception.Create('Unable to initialize OpenSSL library, please check your OpenSSL installation');
+
   if Assigned(FSSLContext) then
     SSLCTXFree(FSSLContext);
     

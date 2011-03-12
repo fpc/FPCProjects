@@ -573,7 +573,7 @@ begin
   if InitSSLInterface and Assigned(_SslLibraryInit) then
     Result := _SslLibraryInit
   else
-    Result := 1;
+    Result := -1;
 end;
 
 procedure SslLoadErrorStrings;
