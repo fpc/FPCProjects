@@ -413,6 +413,11 @@ end;
 
 procedure TLSSLSocket.Disconnect(const Forced: Boolean = False);
 begin
+  if FDispose
+  and (FConnectionStatus = scNone)
+  and (not (ssSSLActive in FSocketState)) then // don't do anything when already invalid
+    Exit;
+
   if ssSSLActive in FSocketState then begin
     if ConnectionStatus = scConnected then // don't make SSL inactive just yet, we might get a shutdown response
       ShutdownSSL;

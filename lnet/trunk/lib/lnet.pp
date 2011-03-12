@@ -475,6 +475,11 @@ end;
 
 procedure TLSocket.Disconnect(const Forced: Boolean = False);
 begin
+  if FDispose // don't do anything when already invalid
+  and (FHandle = INVALID_SOCKET)
+  and (FConnectionStatus = scNone) then
+    Exit;
+
   if Forced then
     HardDisconnect
   else
@@ -585,7 +590,7 @@ begin
   FDispose := True;
   FSocketState := FSocketState + [ssCanSend, ssCanReceive];
   FIgnoreWrite := True;
-  if FConnectionStatus in [scConnected, scConnecting] then begin
+  if FConnectionStatus in [scConnected, scConnecting, scDisconnecting] then begin
     FConnectionStatus := scNone;
     if NeedsShutdown then
       if fpShutDown(FHandle, SHUT_RDWR) <> 0 then
@@ -1107,10 +1112,12 @@ begin
   while Assigned(Tmp) do begin
     Tmp2 := Tmp;
     Tmp := Tmp.NextSock;
-    Tmp2.Disconnect(Forced);
-    if Forced // forced or already closed
-    or not (Tmp2.ConnectionStatus in [scConnected, scConnecting, scDisconnecting]) then
-      Tmp2.Free;
+    if Forced // forced, already closed or server socket
+    or not (Tmp2.ConnectionStatus in [scConnected, scConnecting, scDisconnecting])
+    or (ssServerSocket in Tmp2.SocketState) then
+      Tmp2.Free
+    else
+      Tmp2.Disconnect(Forced);
   end;
 end;
 
