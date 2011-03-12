@@ -1,4 +1,4 @@
-{ lNet v0.6.2
+{ lNet v0.6.5
 
   CopyRight (C) 2004-2008 Ales Katona
 
@@ -1428,12 +1428,24 @@ end;
 
 procedure TLTcp.ConnectAction(aSocket: TLHandle);
 var
-  a: TInetSockAddr;
-  l: Longint;
+  addr4: TInetSockAddr;
+  addr6: TInetSockAddr6;
+  n, l: Longint;
 begin
   with TLSocket(aSocket) do begin
-    l := SizeOf(a);
-    if Sockets.fpGetPeerName(FHandle, @a, @l) <> 0 then
+    case SocketNet of
+      LAF_INET  : begin
+                    l := SizeOf(addr4);
+                    n := Sockets.fpGetPeerName(FHandle, @addr4, @l);
+                  end;
+      LAF_INET6 : begin
+                    l := SizeOf(addr6);
+                    n := Sockets.fpGetPeerName(FHandle, @addr6, @l);
+                  end;
+    else
+      raise Exception.Create('Unknown SocketNet in ConnectAction');
+    end;
+    if n  <> 0 then
       Self.Bail('Error on connect: connection refused', TLSocket(aSocket))
     else begin
       FConnectionStatus := scConnected;
