@@ -208,8 +208,6 @@ begin
 end;
 
 procedure TfrmSites.btnAddSiteClick(Sender: TObject);
-var
-  i: Integer;
 begin
   if not btnConnect.Enabled then begin
     // Canceling site data
