@@ -187,7 +187,7 @@ type
     procedure Rset;
     procedure Quit;
     
-    procedure Disconnect(const Forced: Boolean = True); override;
+    procedure Disconnect(const Forced: Boolean = False); override;
     
     procedure CallAction; override;
    public
@@ -912,7 +912,7 @@ begin
   end;
 end;
 
-procedure TLSMTPClient.Disconnect(const Forced: Boolean = True);
+procedure TLSMTPClient.Disconnect(const Forced: Boolean = False);
 begin
   FConnection.Disconnect(Forced);
   FStatus.Clear;
