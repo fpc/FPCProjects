@@ -5,7 +5,7 @@ object FormMain: TFormMain
   Width = 390
   ActiveControl = EditPort
   Caption = 'lNet Component Test'
-  ClientHeight = 377
+  ClientHeight = 380
   ClientWidth = 390
   Constraints.MaxWidth = 390
   Constraints.MinHeight = 400
@@ -16,17 +16,17 @@ object FormMain: TFormMain
   LCLVersion = '0.9.31'
   object LabelPort: TLabel
     Left = 216
-    Height = 18
+    Height = 14
     Top = 13
-    Width = 36
+    Width = 25
     Caption = 'Port:'
     ParentColor = False
   end
   object LabelHostName: TLabel
     Left = 176
-    Height = 18
+    Height = 14
     Top = 36
-    Width = 78
+    Width = 53
     Caption = 'Hostname:'
     ParentColor = False
   end
@@ -50,7 +50,7 @@ object FormMain: TFormMain
   end
   object EditSend: TEdit
     Left = 56
-    Height = 23
+    Height = 21
     Top = 304
     Width = 200
     OnKeyPress = SendEditKeyPress
@@ -101,14 +101,14 @@ object FormMain: TFormMain
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
-    ClientHeight = 87
-    ClientWidth = 124
+    ClientHeight = 94
+    ClientWidth = 140
     TabOrder = 6
     object RBTCP: TRadioButton
       Left = 6
-      Height = 25
+      Height = 28
       Top = 6
-      Width = 112
+      Width = 128
       Caption = 'TCP/IPv4'
       Checked = True
       OnChange = RBTCPChange
@@ -117,18 +117,18 @@ object FormMain: TFormMain
     end
     object RBUDP: TRadioButton
       Left = 6
-      Height = 25
-      Top = 31
-      Width = 112
+      Height = 28
+      Top = 34
+      Width = 128
       Caption = 'UDP'
       OnChange = RBUDPChange
       TabOrder = 1
     end
     object RBTCP6: TRadioButton
       Left = 6
-      Height = 25
-      Top = 56
-      Width = 112
+      Height = 26
+      Top = 62
+      Width = 128
       Caption = 'TCP/IPv6'
       OnChange = RBTCP6Change
       TabOrder = 2
@@ -136,7 +136,7 @@ object FormMain: TFormMain
   end
   object EditPort: TEdit
     Left = 261
-    Height = 23
+    Height = 21
     Top = 8
     Width = 59
     TabOrder = 7
@@ -144,7 +144,7 @@ object FormMain: TFormMain
   end
   object EditIP: TEdit
     Left = 261
-    Height = 23
+    Height = 21
     Top = 33
     Width = 123
     TabOrder = 8
@@ -152,9 +152,9 @@ object FormMain: TFormMain
   end
   object CheckBoxSSL: TCheckBox
     Left = 261
-    Height = 19
+    Height = 17
     Top = 64
-    Width = 80
+    Width = 56
     Caption = 'Use SSL'
     TabOrder = 9
   end
@@ -198,8 +198,8 @@ object FormMain: TFormMain
     end
   end
   object SSL: TLSSLSessionComponent
-    CAFile = '/media/datalin/ales/programovanie/fpc/lnet/examples/visual/tcpudp/cert'
-    KeyFile = '/media/datalin/ales/programovanie/fpc/lnet/examples/visual/tcpudp/pkey'
+    CAFile = 'cert'
+    KeyFile = 'pkey'
     Method = msSSLv2or3
     SSLActive = False
     left = 344
