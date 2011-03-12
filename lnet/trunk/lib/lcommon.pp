@@ -468,7 +468,7 @@ end;
 
 function SetNoDelay(const aHandle: Integer; const aValue: Boolean): Boolean;
 var
-  opt: cInt = 0;
+  opt: Integer = 0;
 begin
   if aValue then
     opt := 1;
