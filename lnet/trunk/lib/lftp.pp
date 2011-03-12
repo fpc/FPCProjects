@@ -212,7 +212,7 @@ type
     procedure PresentWorkingDirectory;
     procedure Help(const Arg: string);
     
-    procedure Disconnect(const Forced: Boolean = True); override;
+    procedure Disconnect(const Forced: Boolean = False); override;
     
     procedure CallAction; override;
    public
@@ -1222,7 +1222,7 @@ begin
   end;
 end;
 
-procedure TLFTPClient.Disconnect(const Forced: Boolean = True);
+procedure TLFTPClient.Disconnect(const Forced: Boolean = False);
 begin
   FControl.Disconnect(Forced);
   FStatus.Clear;
