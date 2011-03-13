@@ -4,17 +4,18 @@
     <Name Value="lnetbase"/>
     <Author Value="Aleš Katona, Micha Nelissen"/>
     <CompilerOptions>
-      <Version Value="8"/>
+      <Version Value="10"/>
       <SearchPaths>
-        <IncludeFiles Value="../lib/sys/"/>
-        <OtherUnitFiles Value="../lib/"/>
+        <IncludeFiles Value="../lib/sys"/>
+        <OtherUnitFiles Value="../lib"/>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
-        <SrcPath Value="../lib/;../lib/sys/"/>
+        <SrcPath Value="../lib;../lib/sys"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
           <CStyleOperator Value="False"/>
           <CStyleMacros Value="True"/>
+          <UseAnsiStrings Value="False"/>
         </SyntaxOptions>
       </Parsing>
       <CodeGeneration>
@@ -34,6 +35,9 @@
           <ShowHints Value="False"/>
           <ShowGenInfo Value="False"/>
         </Verbosity>
+        <CompilerMessages>
+          <UseMsgFile Value="True"/>
+        </CompilerMessages>
         <CustomOptions Value="-dLNET_BASE"/>
         <CompilerPath Value="$(CompPath)"/>
       </Other>
@@ -42,7 +46,7 @@
 "/>
     <License Value="LGPL with exception, see LICENSE and LICENSE.addon
 "/>
-    <Version Minor="6" Release="4"/>
+    <Version Minor="6" Release="5"/>
     <Files Count="27">
       <Item1>
         <Filename Value="../lib/lnet.pp"/>
@@ -154,7 +158,7 @@
       </Item27>
     </Files>
     <UsageOptions>
-      <UnitPath Value="$(PkgOutDir)/"/>
+      <UnitPath Value="$(PkgOutDir)"/>
     </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>
