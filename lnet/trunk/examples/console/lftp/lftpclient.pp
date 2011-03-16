@@ -53,7 +53,7 @@ begin
     Write('.'); // inform of progress
     n := FCon.GetData(Buf, BUFFER_SIZE); // get data, n is set to the amount
     if (n = 0)
-    and (FCon.DataConnection.Iterator.ConnectionStatus <> scConnected) then // if we got disconnected then
+    and (not FCon.DataConnection.Connected) then // if we got disconnected then
       FreeAndNil(FFile)  // close the file
     else
       FFile.Write(Buf, n); // otherwise, write the data to file

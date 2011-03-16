@@ -347,7 +347,7 @@ begin
         CreateFilePath := '';
       end;
       FFile.Write(Buf, i);
-    end else if FDLDone >= FDLSize then begin
+    end else if not FTP.DataConnection.Connected then begin
       // file download ended
       LeftView.UpdateFileList;
       FreeAndNil(FFile);
