@@ -7,16 +7,16 @@ object MainForm: TMainForm
   VertScrollBar.Page = 531
   ActiveControl = MemoHTML
   Caption = 'HTTP Client Test'
-  ClientHeight = 532
+  ClientHeight = 536
   ClientWidth = 647
   Constraints.MinHeight = 559
   Constraints.MinWidth = 647
   Menu = MainMenu1
-  LCLVersion = '0.9.29'
+  LCLVersion = '0.9.31'
   object MenuPanel: TPanel
     Left = 0
     Height = 40
-    Top = 492
+    Top = 496
     Width = 647
     Align = alBottom
     ClientHeight = 40
@@ -26,13 +26,13 @@ object MainForm: TMainForm
       Left = 11
       Height = 18
       Top = 8
-      Width = 27
+      Width = 29
       Caption = 'URL'
       ParentColor = False
     end
     object EditURL: TEdit
       Left = 48
-      Height = 27
+      Height = 23
       Top = 5
       Width = 440
       OnKeyPress = EditURLKeyPress
@@ -52,7 +52,7 @@ object MainForm: TMainForm
   object MemoStatus: TMemo
     Left = 0
     Height = 103
-    Top = 389
+    Top = 393
     Width = 647
     Align = alBottom
     ScrollBars = ssAutoVertical
@@ -60,7 +60,7 @@ object MainForm: TMainForm
   end
   object MemoHTML: TMemo
     Left = 0
-    Height = 379
+    Height = 383
     Top = 0
     Width = 647
     Align = alClient
@@ -70,7 +70,7 @@ object MainForm: TMainForm
   object PanelSep: TPanel
     Left = 0
     Height = 10
-    Top = 379
+    Top = 383
     Width = 647
     Align = alBottom
     TabOrder = 3

@@ -65,11 +65,15 @@ end;
 
 procedure TMainForm.ButtonSendRequestClick(Sender: TObject);
 var
-  aHost, aURI: string;
+  URL, aHost, aURI: string;
   aPort: Word;
 begin
+  URL := EditURL.Text;
+  if Pos('http', URL) <= 0 then // HTTP[S] is required
+    URL := 'http://' + URL;
+
   HTTPBuffer := '';
-  SSL.SSLActive := DecomposeURL(EditURL.Text, aHost, aURI, aPort);
+  SSL.SSLActive := DecomposeURL(URL, aHost, aURI, aPort);
   HTTPClient.Host := aHost;
   HTTPClient.URI  := aURI;
   HTTPClient.Port := aPort;
