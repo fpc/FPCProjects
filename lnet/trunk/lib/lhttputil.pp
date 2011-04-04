@@ -32,10 +32,15 @@ uses
   sysutils, 
   strutils;
 
+type
+  TCharSet = set of Char;
+
 const
   HTTPDateFormat: string = 'ddd, dd mmm yyyy hh:nn:ss';
-  HTTPAllowedChars = ['A'..'Z','a'..'z', '*','@','.','_','-', 
+  HTTPAllowedChars: TCharSet = ['A'..'Z','a'..'z', '*','@','.','_','-',
       '0'..'9', '$','!','''','(',')'];
+  URLAllowedChars: TCharSet = ['A'..'Z','a'..'z', '*','@','.','_','-',
+      '0'..'9', '$','!','''','(',')','=','&'];
 
 type
   PSearchRec = ^TSearchRec;
@@ -47,8 +52,10 @@ type
   function SeparatePath(var InPath: string; out ExtraPath: string; const Mode:Longint;
     ASearchRec: PSearchRec = nil): boolean;
   function CheckPermission(const ADocument: pchar): boolean;
-  function HTTPDecode(AStr: pchar): pchar;
+  function HTTPDecode(const AStr: string): string;
   function HTTPEncode(const AStr: string): string;
+  function URLEncode(const aStr: string; const InQueryString: Boolean = False): string;
+  function URLDecode(const aStr: string; const InQueryString: Boolean = False): string;
   function HexToNum(AChar: char): byte;
   
   function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word): Boolean;
@@ -58,6 +65,74 @@ implementation
 
 uses
   lCommon, URIParser;
+
+function EncodeWithCharSet(const AStr: string; const aCharSet: TCharSet; const SpaceString: string = '%20'): string;
+  { code from MvC's web }
+var
+  src, srcend, dest: pchar;
+  hex: string[2];
+  i, n, len: integer;
+begin
+  n := Length(SpaceString);
+  len := Length(AStr);
+  SetLength(Result, len*3); // Worst case scenario
+  if len = 0 then
+    exit;
+  dest := pchar(Result);
+  src := pchar(AStr);
+  srcend := src + len;
+  while src < srcend do
+  begin
+    if src^ in aCharSet then
+      dest^ := src^
+    else if src^ = ' ' then begin
+      for i := 1 to n do begin
+        dest^ := SpaceString[i];
+        if i < n then
+          inc(dest);
+      end;
+    end else begin
+      dest^ := '%';
+      inc(dest);
+      hex := HexStr(Ord(src^),2);
+      dest^ := hex[1];
+      inc(dest);
+      dest^ := hex[2];
+    end;
+    inc(dest);
+    inc(src);
+  end;
+  SetLength(Result, dest - pchar(Result));
+end;
+
+function DecodeWithSpaceChar(const AStr: string; const SpaceChar: Char = #0): string;
+var
+  lStr, lPos, lNext, lDest: pchar;
+begin
+  Result := aStr; // this is just a re-assign of pointer, should be fast
+  lDest := @Result[1]; // let's do it pointer-wise
+  lStr := lDest;
+  repeat
+    lPos := lStr;
+    while not (lPos^ in ['%', SpaceChar, #0]) do
+      Inc(lPos);
+    if (lPos[0]='%') and (lPos[1] <> #0) and (lPos[2] <> #0) then
+    begin
+      lPos^ := char((HexToNum(lPos[1]) shl 4) + HexToNum(lPos[2]));
+      lNext := lPos+3;
+    end else if ((SpaceChar <> #0) and (lPos[0] = SpaceChar)) then
+    begin
+      lPos^ := ' ';
+      lNext := lPos+2;
+    end else
+      lNext := nil;
+    Inc(lPos);
+    if lDest <> lStr then
+      Move(lStr^, lDest^, lPos-lStr);
+    Inc(lDest, lPos-lStr);
+    lStr := lNext;
+  until lNext = nil;
+end;
 
 function GMTToLocalTime(ADateTime: TDateTime): TDateTime;
 begin
@@ -144,6 +219,22 @@ begin
   until false;
 end;
 
+function URLEncode(const aStr: string; const InQueryString: Boolean = False): string;
+begin
+  if InQueryString then
+    Result := EncodeWithCharSet(aStr, URLAllowedChars, '+')
+  else
+    Result := EncodeWithCharSet(aStr, URLAllowedChars, '%20');
+end;
+
+function URLDecode(const aStr: string; const InQueryString: Boolean): string;
+begin
+  if InQueryString then
+    Result := DecodeWithSpaceChar(aStr, '+')
+  else
+    Result := DecodeWithSpaceChar(aStr);
+end;
+
 function HexToNum(AChar: char): byte;
 begin
   if ('0' <= AChar) and (AChar <= '9') then
@@ -156,66 +247,14 @@ begin
     Result := 0;
 end;
 
-function HTTPDecode(AStr: pchar): pchar;
-var
-  lPos, lNext, lDest: pchar;
+function HTTPDecode(const AStr: string): string;
 begin
-  lDest := AStr;
-  repeat
-    lPos := AStr;
-    while not (lPos^ in ['%', '+', #0]) do
-      Inc(lPos);
-    if (lPos[0]='%') and (lPos[1] <> #0) and (lPos[2] <> #0) then
-    begin
-      lPos^ := char((HexToNum(lPos[1]) shl 4) + HexToNum(lPos[2]));
-      lNext := lPos+2;
-    end else if lPos[0] = '+' then
-    begin
-      lPos^ := ' ';
-      lNext := lPos+1;
-    end else
-      lNext := nil;
-    Inc(lPos);
-    if lDest <> AStr then
-      Move(AStr^, lDest^, lPos-AStr);
-    Inc(lDest, lPos-AStr);
-    AStr := lNext;
-  until lNext = nil;
-  Result := lDest;
+  Result := DecodeWithSpaceChar(aStr, '+');
 end;
 
 function HTTPEncode(const AStr: string): string;
-  { code from MvC's web }
-var
-  src, srcend, dest: pchar;
-  hex: string[2];
-  len: integer;
 begin
-  len := Length(AStr);
-  SetLength(Result, len*3); // Worst case scenario
-  if len = 0 then
-    exit;
-  dest := pchar(Result);
-  src := pchar(AStr);
-  srcend := src + len; 
-  while src < srcend do
-  begin 
-    if src^ in HTTPAllowedChars then
-      dest^ := src^
-    else if src^ = ' ' then
-      dest^ := '+'
-    else begin
-      dest^ := '%';
-      inc(dest);
-      hex := HexStr(Ord(src^),2);
-      dest^ := hex[1];
-      inc(dest);
-      dest^ := hex[2];
-    end;
-    inc(dest);
-    inc(src);
-  end;
-  SetLength(Result, dest - pchar(Result));
+  Result := EncodeWithCharSet(aStr, HTTPAllowedChars);
 end;
 
 function CheckPermission(const ADocument: pchar): boolean;

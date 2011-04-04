@@ -46,6 +46,7 @@ type
     procedure SSLSSLConnect(aSocket: TLSocket);
   private
     HTTPBuffer: string;
+    POSTBuffer: string;
     procedure AppendToMemo(aMemo: TMemo; const aText: string);
     { private declarations }
   public
@@ -76,8 +77,9 @@ var
 begin
   HTTPClient.Method := hmGet;
   if CheckBoxPOST.Checked then begin
-    HTTPClient.Method := hmPost;
-    HTTPClient.ContentLength := Length(EditPOST.Text); // specify POST data size
+    POSTBuffer := URLEncode(EditPOST.Text, True); // url-encode the string for in query usage
+    HTTPClient.Method := hmPost; // obviously
+    HTTPClient.ContentLength := Length(POSTBuffer); // specify POST data size
     HTTPClient.AddExtraHeader('Content-Type: application/x-www-form-urlencoded'); // specify POST data content-type, usual urlencoded this time
   end;
 
@@ -109,13 +111,14 @@ procedure TMainForm.HTTPClientCanWrite(ASocket: TLHTTPClientSocket;
 var
   n: Integer;
 begin
-  n := aSocket.SendMessage(EditPOST.Text); // try to send the POST data
+  n := aSocket.SendMessage(POSTBuffer); // try to send the POST data
 
-  if n = Length(EditPOST.Text) then // if we've sent it all, mark finished
-    OutputEof := wsDone
-  else begin
+  if n = Length(POSTBuffer) then begin // if we've sent it all, mark finished
+    OutputEof := wsDone;
+    POSTBuffer := ''; // for clarity
+  end else begin
     OutputEof := wsWaitingData; // we're still not done
-    EditPOST.Text := Copy(EditPOST.Text, n + 1, Length(EditPOST.Text)); // make sure to "remove sent" from the "buffer"
+    Delete(POSTBuffer, 1, n); // make sure to "remove sent" from the "buffer"
   end;
 end;
 
