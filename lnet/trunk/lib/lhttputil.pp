@@ -73,8 +73,11 @@ var
   hex: string[2];
   i, n, len: integer;
 begin
-  n := Length(SpaceString);
   len := Length(AStr);
+  if len = 0 then
+    Exit(aStr);
+
+  n := Length(SpaceString);
   SetLength(Result, len*3); // Worst case scenario
   if len = 0 then
     exit;
@@ -109,6 +112,9 @@ function DecodeWithSpaceChar(const AStr: string; const SpaceChar: Char = #0): st
 var
   lStr, lPos, lNext, lDest: pchar;
 begin
+  if Length(aStr) = 0 then
+    Exit(aStr);
+
   Result := aStr; // this is just a re-assign of pointer, should be fast
   lDest := @Result[1]; // let's do it pointer-wise
   lStr := lDest;
@@ -123,7 +129,7 @@ begin
     end else if ((SpaceChar <> #0) and (lPos[0] = SpaceChar)) then
     begin
       lPos^ := ' ';
-      lNext := lPos+2;
+      lNext := lPos+1;
     end else
       lNext := nil;
     Inc(lPos);
@@ -132,6 +138,7 @@ begin
     Inc(lDest, lPos-lStr);
     lStr := lNext;
   until lNext = nil;
+  SetLength(Result, lDest - pchar(Result) - 1);
 end;
 
 function GMTToLocalTime(ADateTime: TDateTime): TDateTime;
