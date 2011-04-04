@@ -117,7 +117,7 @@ begin
     OutputEof := wsDone;
     POSTBuffer := ''; // for clarity
   end else begin
-    OutputEof := wsWaitingData; // we're still not done
+    OutputEof := wsPendingData; // we've still got pending data
     Delete(POSTBuffer, 1, n); // make sure to "remove sent" from the "buffer"
   end;
 end;
