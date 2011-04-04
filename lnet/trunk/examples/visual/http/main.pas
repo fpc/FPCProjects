@@ -14,8 +14,11 @@ type
 
   TMainForm = class(TForm)
     ButtonSendRequest: TButton;
+    CheckBoxPOST: TCheckBox;
+    EditPOST: TEdit;
     EditURL: TEdit;
     HTTPClient: TLHTTPClientComponent;
+    LabelPOST: TLabel;
     LabelURI: TLabel;
     SSL: TLSSLSessionComponent;
     MainMenu1: TMainMenu;
@@ -28,7 +31,10 @@ type
     MenuPanel: TPanel;
     PanelSep: TPanel;
     procedure ButtonSendRequestClick(Sender: TObject);
+    procedure EditPOSTChange(Sender: TObject);
     procedure EditURLKeyPress(Sender: TObject; var Key: char);
+    procedure HTTPClientCanWrite(ASocket: TLHTTPClientSocket;
+      var OutputEof: TWriteBlockStatus);
     procedure HTTPClientDisconnect(aSocket: TLSocket);
     procedure HTTPClientDoneInput(ASocket: TLHTTPClientSocket);
     procedure HTTPClientError(const msg: string; aSocket: TLSocket);
@@ -68,6 +74,13 @@ var
   URL, aHost, aURI: string;
   aPort: Word;
 begin
+  HTTPClient.Method := hmGet;
+  if CheckBoxPOST.Checked then begin
+    HTTPClient.Method := hmPost;
+    HTTPClient.ContentLength := Length(EditPOST.Text); // specify POST data size
+    HTTPClient.AddExtraHeader('Content-Type: application/x-www-form-urlencoded'); // specify POST data content-type, usual urlencoded this time
+  end;
+
   URL := EditURL.Text;
   if Pos('http', URL) <= 0 then // HTTP[S] is required
     URL := 'http://' + URL;
@@ -80,10 +93,30 @@ begin
   HTTPClient.SendRequest;
 end;
 
+procedure TMainForm.EditPOSTChange(Sender: TObject);
+begin
+  CheckBoxPOST.Checked := True;
+end;
+
 procedure TMainForm.EditURLKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = #13 then
     ButtonSendRequestClick(Sender);
+end;
+
+procedure TMainForm.HTTPClientCanWrite(ASocket: TLHTTPClientSocket;
+  var OutputEof: TWriteBlockStatus);
+var
+  n: Integer;
+begin
+  n := aSocket.SendMessage(EditPOST.Text); // try to send the POST data
+
+  if n = Length(EditPOST.Text) then // if we've sent it all, mark finished
+    OutputEof := wsDone
+  else begin
+    OutputEof := wsWaitingData; // we're still not done
+    EditPOST.Text := Copy(EditPOST.Text, n + 1, Length(EditPOST.Text)); // make sure to "remove sent" from the "buffer"
+  end;
 end;
 
 procedure TMainForm.HTTPClientDoneInput(ASocket: TLHTTPClientSocket);
