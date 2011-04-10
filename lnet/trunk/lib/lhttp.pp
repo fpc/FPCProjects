@@ -434,6 +434,8 @@ type
 
   TLHTTPClientState = (hcsIdle, hcsWaiting, hcsReceiving);
 
+  { TLHTTPClient }
+
   TLHTTPClient = class(TLHTTPConnection)
   protected
     FRequest: TClientRequest;
@@ -461,6 +463,7 @@ type
     procedure AddExtraHeader(const AHeader: string);
     procedure AddCookie(const AName, AValue: string; const APath: string = '';
       const ADomain: string = ''; const AVersion: string = '0');
+    procedure ClearExtraHeaders;
     procedure ResetRange;
     procedure SendRequest;
 
@@ -2235,6 +2238,11 @@ begin
   if Length(ADomain) > 0 then
     lHeader := lHeader+';$Domain='+ADomain;
   AddExtraHeader(lHeader);
+end;
+
+procedure TLHTTPClient.ClearExtraHeaders;
+begin
+  ClearStringBuffer(FHeaderOut.ExtraHeaders);
 end;
 
 procedure TLHTTPClient.ConnectEvent(aSocket: TLHandle);
