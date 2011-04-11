@@ -111,6 +111,10 @@ procedure TMainForm.HTTPClientCanWrite(ASocket: TLHTTPClientSocket;
 var
   n: Integer;
 begin
+  if (HTTPClient.Method <> hmPost)
+  or (Length(POSTBuffer) = 0) then
+    Exit; // nothing to be done
+
   n := aSocket.SendMessage(POSTBuffer); // try to send the POST data
 
   if n = Length(POSTBuffer) then begin // if we've sent it all, mark finished
