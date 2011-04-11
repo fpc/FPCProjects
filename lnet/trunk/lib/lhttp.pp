@@ -2151,7 +2151,7 @@ begin
       Cancel(ceMalformedStatusLine);
       exit;
     end;
-    if lPos^ in [' ', #13, #10] then
+    if lPos^ = ' ' then
       break;
     Inc(lPos);
   until false;
