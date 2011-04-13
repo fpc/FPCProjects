@@ -475,6 +475,8 @@ end;
 
 procedure TLFTPClient.OnControlDs(aSocket: TLSocket);
 begin
+  StopSending;
+
   if Assigned(FOnError) then
     FOnError('Connection lost', aSocket);
 end;
