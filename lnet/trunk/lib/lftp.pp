@@ -144,7 +144,9 @@ type
     procedure OnControlRe(aSocket: TLSocket);
     procedure OnControlCo(aSocket: TLSocket);
     procedure OnControlDs(aSocket: TLSocket);
-    
+
+    procedure StopSending;
+
     procedure ClearStatusFlags;
 
     function GetCurrentStatus: TLFTPStatus;
@@ -425,7 +427,7 @@ end;
 
 procedure TLFTPClient.OnDs(aSocket: TLSocket);
 begin
-  FSending := False;
+  StopSending;
   Writedbg(['Disconnected']);
 end;
 
@@ -437,15 +439,16 @@ end;
 
 procedure TLFTPClient.OnEr(const msg: string; aSocket: TLSocket);
 begin
-  FSending := False;
+  StopSending;
+
   if Assigned(FOnError) then
     FOnError(msg, aSocket);
 end;
 
 procedure TLFTPClient.OnControlEr(const msg: string; aSocket: TLSocket);
 begin
-  FSending := False;
-  
+  StopSending;
+
   if Assigned(FOnFailure) then begin
     while not FStatus.Empty do
       FOnFailure(aSocket, FStatus.Remove.Status);
@@ -474,6 +477,14 @@ procedure TLFTPClient.OnControlDs(aSocket: TLSocket);
 begin
   if Assigned(FOnError) then
     FOnError('Connection lost', aSocket);
+end;
+
+procedure TLFTPClient.StopSending;
+begin
+  FSending := False;
+
+  if Assigned(FStoreFile) then
+    FreeAndNil(FStoreFile);
 end;
 
 procedure TLFTPClient.ClearStatusFlags;
@@ -983,9 +994,7 @@ begin
     end else begin
       if Assigned(FOnSent) then
         FOnSent(FData.Iterator, 0);
-      FreeAndNil(FStoreFile);
-      FSending := False;
-      {$hint this one calls freeinstance which doesn't pass}
+      StopSending;
       FData.Disconnect(False);
     end;
   until (n = 0) or (Sent = 0);
