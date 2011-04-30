@@ -26,7 +26,7 @@ object MainForm: TMainForm
       Left = 11
       Height = 18
       Top = 8
-      Width = 29
+      Width = 28
       Caption = 'URL'
       ParentColor = False
     end

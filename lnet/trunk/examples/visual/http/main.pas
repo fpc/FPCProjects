@@ -136,11 +136,12 @@ function TMainForm.HTTPClientInput(ASocket: TLHTTPClientSocket; ABuffer: pchar;
   ASize: dword): dword;
 var
   oldLength: dword;
+  f: TextFile;
 begin
   oldLength := Length(HTTPBuffer);
   setlength(HTTPBuffer,oldLength + ASize);
   move(ABuffer^,HTTPBuffer[oldLength + 1], ASize);
-  MemoHTML.Text := HTTPBuffer;
+  MemoHTML.Text := UTF8Encode(HTTPBuffer);
   MemoHTML.SelStart := Length(HTTPBuffer);
   AppendToMemo(MemoStatus, IntToStr(ASize) + '...');
   Result := aSize; // tell the http buffer we read it all
