@@ -775,7 +775,7 @@
         <UnitName Value="GLGizmoEx"/>
       </Item181>
     </Files>
-    <Type Value="DesignTime"/>
+    <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="4">
       <Item1>
         <PackageName Value="FCL"/>
