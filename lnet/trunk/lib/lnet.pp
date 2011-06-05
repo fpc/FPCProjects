@@ -1546,9 +1546,10 @@ var
   Tmp: TLSocket;
 begin
   Result := False;
-  Tmp := FRootSock;
+  Tmp := FRootSock.NextSock;
   while Assigned(Tmp) do begin
-    if Tmp.ConnectionStatus = scConnected then begin
+    if  (Tmp.ConnectionStatus = scConnected)
+    and not (ssServerSocket in Tmp.SocketState) then begin
       Result := True;
       Exit;
     end else Tmp := Tmp.NextSock;
