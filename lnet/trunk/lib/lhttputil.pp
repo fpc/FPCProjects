@@ -66,6 +66,9 @@ implementation
 uses
   lCommon, URIParser;
 
+var
+  AllChars: TCharSet = [];
+
 function EncodeWithCharSet(const AStr: string; const aCharSet: TCharSet; const SpaceString: string = '%20'): string;
   { code from MvC's web }
 var
@@ -286,7 +289,7 @@ begin
 
   Host := uri_rec.Host;
 
-  URI := uri_rec.Path + uri_rec.Document;
+  URI := EncodeWithCharSet(uri_rec.Path + uri_rec.Document, AllChars);
   if Length(URI) = 0 then
     URI := '/'; // default
   if uri_rec.Params <> '' then
@@ -307,5 +310,19 @@ begin
   Result := Host + URI + ':' + IntToStr(Port);
 end;
 
+procedure FillAllChars;
+var
+  i: Integer;
+  c: Char;
+begin
+  for i := 0 to 255 do begin
+    c := Chr(i);
+    if c <> ' ' then
+      AllChars := AllChars + [c];
+  end;
+end;
+
+initialization
+  FillAllChars;
 
 end.
