@@ -92,6 +92,7 @@ begin
   HTTPClient.Host := aHost;
   HTTPClient.URI  := aURI;
   HTTPClient.Port := aPort;
+
   HTTPClient.SendRequest;
 end;
 
@@ -136,7 +137,6 @@ function TMainForm.HTTPClientInput(ASocket: TLHTTPClientSocket; ABuffer: pchar;
   ASize: dword): dword;
 var
   oldLength: dword;
-  f: TextFile;
 begin
   oldLength := Length(HTTPBuffer);
   setlength(HTTPBuffer,oldLength + ASize);

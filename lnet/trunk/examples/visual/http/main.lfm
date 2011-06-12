@@ -37,6 +37,7 @@ object MainForm: TMainForm
       Width = 440
       OnKeyPress = EditURLKeyPress
       TabOrder = 0
+      Text = 'http://www.bistrecode.com/test file.txt'
     end
     object ButtonSendRequest: TButton
       Left = 496
