@@ -310,6 +310,7 @@ type
     function  ParseEntityChunked: boolean;
     procedure ParseLine(pLineEnd: pchar); virtual;
     procedure ParseParameterLine(pLineEnd: pchar);
+    procedure PrepareNextRequest;
     function  ProcessEncoding: boolean;
     procedure ProcessHeaders; virtual; abstract;
     procedure RelocateVariable(var AVar: pchar);
@@ -1392,6 +1393,19 @@ begin
   Result := true;
 end;
 
+procedure TLHTTPSocket.PrepareNextRequest;
+begin
+  { next request }
+  FRequestInputDone := false;
+  FRequestHeaderDone := false;
+  FOutputDone := false;
+  FRequestPos := FBufferPos;
+  FlushRequest;
+  { rewind buffer pointers if at end of buffer anyway }
+  if FBufferPos = FBufferEnd then
+    PackRequestBuffer;
+end;
+
 procedure TLHTTPSocket.WriteBlock;
 begin
   while true do
@@ -1407,16 +1421,7 @@ begin
         exit;
       end;
 
-      { next request }
-      FRequestInputDone := false;
-      FRequestHeaderDone := false;
-      FOutputDone := false;
-      FRequestPos := FBufferPos;
-      FlushRequest;
-      { rewind buffer pointers if at end of buffer anyway }
-      if FBufferPos = FBufferEnd then
-        PackRequestBuffer;
-
+      PrepareNextRequest;
       if ParseBuffer and IgnoreRead then 
       begin
         { end of input buffer reached, try reading more }
@@ -2122,7 +2127,8 @@ begin
   AddToOutput(TMemoryOutput.Create(Self, lMessage.Memory, 0,
     lMessage.Pos-lMessage.Memory, true));
   AddToOutput(FCurrentInput);
-  
+
+  PrepareNextRequest;
   WriteBlock;
 end;
 
