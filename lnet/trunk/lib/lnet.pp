@@ -238,6 +238,7 @@ type
     FEventerClass: TLEventerClass;
     FTimeout: Integer;
     FListenBacklog: Integer;
+    FReuseAddress: Boolean;
     FSession: TLSession;
    protected
     function InitSocket(aSocket: TLSocket): TLSocket; virtual;
@@ -249,6 +250,7 @@ type
     function GetTimeout: Integer;
     procedure SetTimeout(const AValue: Integer);
     
+    procedure SetReuseAddress(const aValue: Boolean);
     procedure SetEventer(Value: TLEventer);
     procedure SetSession(aSession: TLSession);
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
@@ -302,6 +304,7 @@ type
     property Eventer: TLEventer read FEventer write SetEventer;
     property EventerClass: TLEventerClass read FEventerClass write FEventerClass;
     property Session: TLSession read FSession write SetSession;
+    property ReuseAddress: Boolean read FReuseAddress write SetReuseAddress;
   end;
   
   { TLUdp }
@@ -347,7 +350,6 @@ type
    protected
     FSocketNet: Integer;
     FCount: Integer;
-    FReuseAddress: Boolean;
     function InitSocket(aSocket: TLSocket): TLSocket; override;
 
     function GetConnected: Boolean; override;
@@ -355,7 +357,6 @@ type
     function GetCount: Integer; override;
     function GetValidSocket: TLSocket;
 
-    procedure SetReuseAddress(const aValue: Boolean);
     procedure SetSocketNet(const aValue: Integer);
 
     procedure ConnectAction(aSocket: TLHandle); override;
@@ -389,7 +390,6 @@ type
     property Connecting: Boolean read GetConnecting;
     property OnAccept: TLSocketEvent read FOnAccept write FOnAccept;
     property OnConnect: TLSocketEvent read FOnConnect write FOnConnect;
-    property ReuseAddress: Boolean read FReuseAddress write SetReuseAddress;
     property SocketNet: Integer read FSocketNet write SetSocketNet;
   end;
 
@@ -714,7 +714,9 @@ begin
     if FSocketType = SOCK_DGRAM then begin
       if fpsetsockopt(FHandle, SOL_SOCKET, SO_BROADCAST, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Exit(Bail('SetSockOpt error', LSocketError));
-    end else if FReuseAddress then begin
+    end;
+
+    if FReuseAddress then begin
       Opt := SO_REUSEADDR;
       {$ifdef WIN32} // I expect 64 has it oddly, so screw them for now
       if (Win32Platform = 2) and (Win32MajorVersion >= 5) then
@@ -743,8 +745,20 @@ var
 begin
   if FSocketType = SOCK_STREAM then
     Result := Sockets.fpSend(FHandle, @aData, aSize, LMSG)
-  else
-    Result := sockets.fpsendto(FHandle, @aData, aSize, LMSG, @FPeerAddress, AddressLength);
+  else begin
+    case FAddress.IPv4.sin_family of
+      LAF_INET  :
+        begin
+          AddressLength := SizeOf(FPeerAddress.IPv4);
+          Result := sockets.fpsendto(FHandle, @aData, aSize, LMSG, @FPeerAddress.IPv4, AddressLength);
+        end;
+      LAF_INET6 :
+        begin
+          AddressLength := SizeOf(FPeerAddress.IPv6);
+          Result := sockets.fpsendto(FHandle, @aData, aSize, LMSG, @FPeerAddress.IPv6, AddressLength);
+        end;
+    end;
+  end;
 end;
 
 function TLSocket.DoGet(out aData; const aSize: Integer): Integer;
@@ -753,8 +767,20 @@ var
 begin
   if FSocketType = SOCK_STREAM then
     Result := sockets.fpRecv(FHandle, @aData, aSize, LMSG)
-  else
-    Result := sockets.fpRecvfrom(FHandle, @aData, aSize, LMSG, @FPeerAddress, @AddressLength);
+  else begin
+    case FAddress.IPv4.sin_family of
+      LAF_INET  :
+        begin
+          AddressLength := SizeOf(FPeerAddress.IPv4);
+          Result := sockets.fpRecvfrom(FHandle, @aData, aSize, LMSG, @FPeerAddress.IPv4, @AddressLength);
+        end;
+      LAF_INET6 :
+        begin
+          AddressLength := SizeOf(FPeerAddress.IPv6);
+          Result := sockets.fpRecvfrom(FHandle, @aData, aSize, LMSG, @FPeerAddress.IPv6, @AddressLength);
+        end;
+    end;
+  end;
 end;
 
 function TLSocket.HandleResult(const aResult: Integer; aOp: TLSocketOperation): Integer;
@@ -1083,6 +1109,13 @@ begin
   FEventer.AddRef;
 end;
 
+procedure TLConnection.SetReuseAddress(const aValue: Boolean);
+begin
+  if not Assigned(FRootSock)
+  or (FRootSock.FConnectionStatus = scNone) then
+    FReuseAddress := aValue;
+end;
+
 procedure TLConnection.EventerError(const msg: string; Sender: TLEventer);
 begin
   ErrorEvent(nil, msg);
@@ -1165,8 +1198,9 @@ begin
     Disconnect(True);
 
   FRootSock := InitSocket(SocketClass.Create);
+  FRootSock.SetReuseAddress(FReuseAddress);
   FIterator := FRootSock;
-  
+
   if FRootSock.Listen(APort, AIntf) then begin
     FillAddressInfo(FRootSock.FPeerAddress, FRootSock.FSocketNet, LADDR_BR, aPort);
   
@@ -1577,13 +1611,6 @@ begin
     Result := FIterator
   else if Assigned(FRootSock) and Assigned(FRootSock.FNextSock) then
     Result := FRootSock.FNextSock;
-end;
-
-procedure TLTcp.SetReuseAddress(const aValue: Boolean);
-begin
-  if not Assigned(FRootSock)
-  or (FRootSock.FConnectionStatus = scNone) then
-    FReuseAddress := aValue;
 end;
 
 procedure TLTcp.SetSocketNet(const aValue: Integer);
