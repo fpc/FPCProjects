@@ -710,13 +710,14 @@ begin
       Exit(Bail('Socket error', LSocketError));
     SetOptions;
 
-    Arg := 1;
     if FSocketType = SOCK_DGRAM then begin
+      Arg := 1;
       if fpsetsockopt(FHandle, SOL_SOCKET, SO_BROADCAST, @Arg, Sizeof(Arg)) = SOCKET_ERROR then
         Exit(Bail('SetSockOpt error', LSocketError));
     end;
 
     if FReuseAddress then begin
+      Arg := 1;
       Opt := SO_REUSEADDR;
       {$ifdef WIN32} // I expect 64 has it oddly, so screw them for now
       if (Win32Platform = 2) and (Win32MajorVersion >= 5) then
