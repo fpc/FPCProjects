@@ -38,7 +38,8 @@ type
     hpAccept, hpAcceptCharset, hpAcceptEncoding, hpAcceptLanguage, hpHost,
     hpFrom, hpReferer, hpUserAgent, hpRange, hpTransferEncoding,
     hpIfModifiedSince, hpIfUnmodifiedSince, hpCookie, hpXRequestedWith);
-  TLHTTPStatus = (hsUnknown, hsOK, hsNoContent, hsMovedPermanently, hsFound, hsNotModified, 
+  TLHTTPStatus = (hsUnknown, hsOK, hsNoContent, hsPartialContent,
+    hsMovedPermanently, hsFound, hsNotModified,
     hsBadRequest, hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
     hsInternalError, hsNotImplemented, hsNotAllowed);
   TLHTTPTransferEncoding = (teIdentity, teChunked);
@@ -56,9 +57,10 @@ const
      'FROM', 'REFERER', 'USER-AGENT', 'RANGE', 'TRANSFER-ENCODING',
      'IF-MODIFIED-SINCE', 'IF-UNMODIFIED-SINCE', 'COOKIE', 'X-REQUESTED-WITH');
   HTTPStatusCodes: array[TLHTTPStatus] of dword =
-    (0, 200, 204, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 405);
-  HTTPTexts: array[TLHTTPStatus] of string = 
-    ('', 'OK', 'No Content', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Forbidden', 
+    (0, 200, 204, 206, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 405);
+  HTTPTexts: array[TLHTTPStatus] of string =
+    ('', 'OK', 'No Content', 'Partial Content', 'Moved Permanently', 'Found',
+     'Not Modified', 'Bad Request', 'Forbidden',
      'Not Found', 'Precondition Failed', 'Request Too Long', 'Internal Error',
      'Method Not Implemented', 'Method Not Allowed');
   HTTPDescriptions: array[TLHTTPStatus] of string = (
@@ -67,6 +69,8 @@ const
       { hsOK }
     '',
       { hsNoContent }
+    '',
+      { hsPartialContent }
     '',
       { hsMovedPermanently }
     '',
