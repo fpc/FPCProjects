@@ -3786,7 +3786,7 @@ end;
 function InterpolatePower(const Start, Stop, Delta: Single; const DistortionDegree: Single): Single;
 begin
   if (Round(DistortionDegree) <> DistortionDegree) and (Delta < 0) then
-    Result := (Stop - Start) * VectorGeometry.Power(Delta, Round(DistortionDegree)) + Start
+    Result := (Stop - Start) * VectorGeometry.Power(Delta, integer(Round(DistortionDegree))) + Start
   else
     Result := (Stop - Start) * VectorGeometry.Power(Delta, DistortionDegree) + Start;
 end;
