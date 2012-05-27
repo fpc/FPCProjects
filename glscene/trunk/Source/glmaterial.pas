@@ -520,9 +520,9 @@ type
     //implementing IGLMaterialLibrarySupported
     function GetMaterialLibrary: TGLMaterialLibrary;
     //implementing IInterface
-    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
-    function _AddRef: Integer; stdcall;
-    function _Release: Integer; stdcall;
+    function QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+    function _AddRef : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+    function _Release : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
   protected
     { Protected Declarations }
     function GetDisplayName: string; override;
@@ -1907,7 +1907,8 @@ end;
 // QueryInterface
 //
 
-function TGLLibMaterial.QueryInterface(const IID: TGUID; out Obj): HResult;
+function TGLLibMaterial.QueryInterface(
+  {$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   if GetInterface(IID, Obj) then
     Result := S_OK
@@ -1918,7 +1919,7 @@ end;
 // _AddRef
 //
 
-function TGLLibMaterial._AddRef: Integer;
+function TGLLibMaterial._AddRef: Integer; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   Result := -1; //ignore
 end;
@@ -1926,7 +1927,7 @@ end;
 // _Release
 //
 
-function TGLLibMaterial._Release: Integer;
+function TGLLibMaterial._Release: Integer;  {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   Result := -1; //ignore
 end;

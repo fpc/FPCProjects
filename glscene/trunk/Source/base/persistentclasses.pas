@@ -137,10 +137,10 @@ type
 	      { Protected Declarations }
    	   procedure RaiseFilerException(const archiveVersion : Integer);
 
-         function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
-         function _AddRef: Integer; stdcall;
-         function _Release: Integer; stdcall;
-         
+         function QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+         function _AddRef : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+         function _Release : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+
 	   public
 	      { Public Declarations }
 	      constructor Create; overload; virtual;
@@ -389,9 +389,9 @@ type
    TGLInterfacedPersistent = class(TPersistent, IInterface)
    protected
      // Implementing IInterface.
-     function QueryInterface(const IID: TGUID; out Obj): HResult; virtual; stdcall;
-     function _AddRef: Integer; virtual; stdcall;
-     function _Release: Integer; virtual; stdcall;
+     function QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint; virtual;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+     function _AddRef : longint; virtual; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+     function _Release : longint; virtual; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
    end;
 
    // TGLInterfacedCollectionItem
@@ -400,9 +400,9 @@ type
    TGLInterfacedCollectionItem = class(TCollectionItem, IInterface)
    protected
      // Implementing IInterface.
-     function QueryInterface(const IID: TGUID; out Obj): HResult; virtual; stdcall;
-     function _AddRef: Integer; virtual; stdcall;
-     function _Release: Integer; virtual; stdcall;
+     function QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint; virtual;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+     function _AddRef : longint; virtual; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
+     function _Release : longint; virtual; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
    end;
 
    // EInvalidFileSignature
@@ -691,14 +691,15 @@ end;
 
 // QueryInterface
 //
-function TPersistentObject.QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+function TPersistentObject.QueryInterface(
+             {$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
    if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
 
 // _AddRef
 //
-function TPersistentObject._AddRef: Integer; stdcall;
+function TPersistentObject._AddRef: Integer; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
    // ignore
    Result:=1;
@@ -706,7 +707,7 @@ end;
 
 // _Release
 //
-function TPersistentObject._Release: Integer; stdcall;
+function TPersistentObject._Release: Integer; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
    // ignore
    Result:=0;
@@ -2007,22 +2008,22 @@ end;
 
 // _AddRef
 //
-function TGLInterfacedPersistent._AddRef: Integer; stdcall;
+function TGLInterfacedPersistent._AddRef: Integer; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   Result := -1; //ignore
 end;
 
 // _Release
 //
-function TGLInterfacedPersistent._Release: Integer; stdcall;
+function TGLInterfacedPersistent._Release: Integer; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   Result := -1; //ignore
 end;
 
 // QueryInterface
 //
-function TGLInterfacedPersistent.QueryInterface(const IID: TGUID;
-  out Obj): HResult; stdcall;
+function TGLInterfacedPersistent.QueryInterface(
+          {$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
@@ -2034,22 +2035,22 @@ end;
 
 // _AddRef
 //
-function TGLInterfacedCollectionItem._AddRef: Integer; stdcall;
+function TGLInterfacedCollectionItem._AddRef: Integer; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   Result := -1; //ignore
 end;
 
 // _Release
 //
-function TGLInterfacedCollectionItem._Release: Integer; stdcall;
+function TGLInterfacedCollectionItem._Release: Integer; {$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   Result := -1; //ignore
 end;
 
 // QueryInterface
 //
-function TGLInterfacedCollectionItem.QueryInterface(const IID: TGUID;
-  out Obj): HResult; stdcall;
+function TGLInterfacedCollectionItem.QueryInterface(
+          {$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 begin
   if GetInterface(IID, Obj) then Result := S_OK else Result := E_NOINTERFACE;
 end;
