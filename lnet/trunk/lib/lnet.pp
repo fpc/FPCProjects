@@ -823,7 +823,10 @@ end;
 
 function TLSocket.GetPeerPort: Word;
 begin
-  Result := ntohs(FPeerAddress.IPv4.sin_port);
+  if FSocketType = SOCK_STREAM then
+    Result := ntohs(FAddress.IPv4.sin_port)
+  else
+    Result := ntohs(FPeerAddress.IPv4.sin_port);
 end;
 
 function TLSocket.Listen(const APort: Word; const AIntf: string = LADDR_ANY): Boolean;
