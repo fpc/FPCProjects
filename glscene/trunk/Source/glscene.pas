@@ -1954,7 +1954,7 @@ type
     FAfterRender: TNotifyEvent;
     FInitiateRendering: TDirectRenderEvent;
     FWrapUpRendering: TDirectRenderEvent;
-         FNameStackMap    : TPersistentObjectList;
+    FNameStackMap    : TPersistentObjectList;
 
   protected
     { Protected Declarations }
@@ -9063,9 +9063,12 @@ end;
 procedure TGLSceneBuffer.DoGLInitNames;
 begin
   if assigned(FNameStackMap) then
-    FNameStackMap.clear
-  else
+    FNameStackMap.Count:=0
+  else begin
     FNameStackMap:=TPersistentObjectList.Create;
+    FNameStackMap.GrowthDelta:=1024;
+    FNameStackMap.Capacity:=1024;
+  end;
   glInitNames;
 end;
 
