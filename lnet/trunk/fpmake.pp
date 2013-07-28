@@ -31,6 +31,7 @@ begin
 {$ELSE VER_2_4_0}
     P.Options.add('-Sm');
 {$ENDIF VER_2_4_0}
+    P.SupportBuildModes:=[bmOneByOne];
 
     P.Dependencies.Add('fcl-net');
     P.Dependencies.Add('fcl-base');
