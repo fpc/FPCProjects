@@ -33,6 +33,7 @@ begin
 {$ENDIF VER_2_4_0}
     P.SupportBuildModes:=[bmOneByOne];
 
+    P.Dependencies.Add('lazmkunit');
     P.Dependencies.Add('fcl-net');
     P.Dependencies.Add('fcl-base');
     P.Dependencies.Add('fcl-process');
