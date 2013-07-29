@@ -19,7 +19,7 @@ begin
     P:=AddPackage('lnet') as TLazPackage;
     p.AfterInstall := @TLazInstaller(Installer).DoRegisterLazarusPackages;
 
-    P.Version:='0.6.4-2527';
+    P.Version:='0.6.6-2596';
     P.OSes:=AllUnixOSes+[Win32,Win64];
     P.Author := 'Aleš Katona';
     P.License := 'LGPL with modification, Examples: GPL2';
