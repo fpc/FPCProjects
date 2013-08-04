@@ -41,9 +41,11 @@ begin
 //    P.NeedLibC:= true;  // true for headers that indirectly link to libc?
 
     T:=P.Targets.AddUnit('lib/lws2tcpip.pp',AllOSes-AllUnixOSes);
+    T:=P.Targets.AddUnit('lib/lws2override.pp',AllOSes-AllUnixOSes);
     T:=P.Targets.AddUnit('lib/lcommon.pp');
     with T.Dependencies do
       begin
+      AddUnit('lws2override',AllOSes-AllUnixOSes);
       AddUnit('lws2tcpip',AllOSes-AllUnixOSes);
       AddInclude('lib/sys/osunits.inc');
       end;
