@@ -48,6 +48,7 @@ CharSet=
 
 Const
   CommitAt = 1000; // Commit after this number of records have been processed.
+  BatchSize = 1000 * 100; // Batch Size. Default 100.000 records. Set this depending on available memory size, both on SQL server and client.
 
 Var
   DBSrc,
@@ -78,29 +79,39 @@ begin
   Result:=CreateQuery(DBTarget,SQL);
 end;
 
-Procedure DoQueryLoop(QSrc,QTarget : TSQLQuery; DoID : Boolean = True);
+Function DoQueryLoop(QSrc,QTarget : TSQLQuery; IDField : String; Out C : Integer) : Integer;
 
 Var
   DS : TDataSource;
   UnBind : Boolean;
-  P,I,C : Integer;
-
-
+  P,I,R : Integer;
+  S : TDateTime;
 begin
+  Result:=0;
   DS:=Nil;
   try
+    QSrc.UniDirectional:=True;
+    QSrc.UsePrimaryKeyAsKey:=False;
+    QSrc.ReadOnly:=True;
     DS:=TDataSource.Create(Qsrc);
     DS.Dataset:=QSrc;
     QTarget.DataSource:=DS;
+    S:=Now;
     QSrc.Open;
+    Writeln('Query time: ',FormatDateTime('hh:nn:ss',Now-S));
     C:=0;
     While Not QSrc.EOF do
       begin
       Inc(C);
       if not (QTarget.TRansaction as TSQLTransaction).Active then
         (QTarget.TRansaction as TSQLTransaction).StartTransaction;
-      if DoID then // Workaround for autoInc params
-        QTarget.ParamByName('id').AsInteger:=QSrc.FieldByName('id').AsInteger;
+      if IDField<>'' then // Workaround for autoInc params
+        begin
+        R:=QSrc.FieldByName(IDField).AsInteger;
+        if R>Result then
+          Result:=R;
+        QTarget.ParamByName(IDField).AsInteger:=R;
+        end;
       // If we concatenated a null character, we need to unbind the parameters.
       if UnBind then
         begin
@@ -142,12 +153,24 @@ begin
         end;
       end;
     Inc(ConvertedRecordCount,C);
-    Writeln('Committing at ',C,' records (total: ',ConvertedRecordCount,')');
+    Writeln('Committing at ',C,' records (running total record count: ',ConvertedRecordCount,')');
     (QTarget.TRansaction as TSQLTransaction).Commit;
   finally
     QSrc.Close;
     DS.Free;
   end;
+end;
+
+Function DoQueryLoop(QSrc,QTarget : TSQLQuery; TreatID : Boolean) : Integer;
+
+Var
+  C : Integer;
+
+begin
+  if TreatID then
+    Result:=DoQueryLoop(QSrc,QTarget,'id',C)
+  else
+    Result:=DoQueryLoop(QSrc,QTarget,'',C);
 end;
 
 Procedure ClearTable(Const ATableName: String);
@@ -164,30 +187,73 @@ begin
     end;
 end;
 
-Procedure DoTable(Const ATableName,SQLSelect,SQLInsert : String; TreatID : Boolean; Clear : Boolean);
+Function DoTableBatch(Const SQLSelect,SQLInsert : String; IDField :String; Out C : Integer) : Integer;
 
 Var
   QSrc,QTarget : TSQLQuery;
-  I : integer;
 
 begin
-  Inc(ConvertedTableCount);
-  Writeln('Converting table ',ConvertedTableCount,' of ',TotalTableCount,' : ', ATableName, '. Clear table: ',Clear);
-  I:=FTables.IndexOf(ATableName);
-  if I<>-1 then
-    FTables.Delete(i);
   QSrc:=Nil;
   QTarget:=Nil;
   try
     QSrc:=SrcQuery(SQLSelect);
     QTarget:=TargetQuery(SQLinsert);
-    if Clear then
-      ClearTable(ATableName);
-    DoQueryLoop(QSrc,QTarget,TreatID);
+    Result:=DoQueryLoop(QSrc,QTarget,IDField,C);
   Finally
     QSrc.Free;
     QTarget.Free;
   end;
+end;
+
+Procedure DoTable(Const ATableName,SQLSelect,SQLInsert : String; IDField :String; Clear : Boolean; BigTable :  Boolean = False);
+
+
+Var
+  I,S,C,O : integer;
+  W : String;
+begin
+  Inc(ConvertedTableCount);
+  Writeln('Converting table ',ConvertedTableCount,' of ',TotalTableCount,' : ', ATableName, '. Clear table: ',Clear,' batch : ',BigTable);
+  I:=FTables.IndexOf(ATableName);
+  if I<>-1 then
+    FTables.Delete(i);
+  if Clear then
+    ClearTable(ATableName);
+  S:=0;
+  if (Not BigTable) or (IDField='') then
+    S:=DoTableBatch(SQLSelect,SQLInsert,IDField,C)
+  else
+    begin
+    O:=0;
+    Repeat
+      Writeln('Batch mode, running batch ',O,'. Primary key ',idField,' starts at: ',S);
+      W:=Format(' WHERE (%s>%d) ORDER BY %s LIMIT %d',[IDField,S,IDField,BatchSize]);
+      Writeln('Using block condition: ',W);
+      S:=DoTableBatch(SQLSelect+W,SQLInsert,IDField,C);
+      Writeln('Batch ',O,' ended: converted ',C,' records. Primary key ',idField,' ended at: ',S);
+      Inc(O);
+    Until (C=0);
+    end;
+  if (IDField<>'') then
+    begin
+    Writeln('Setting sequence to ',S+1);
+    With TargetQuery('ALTER SEQUENCE '+ATableName+'_'+IDField+'_seq RESTART WITH '+IntToStr(S+1)) do
+      try
+        ExecSQL;
+        (Transaction as TSQLTransaction).Commit;
+      finally
+        Free;
+      end;
+    end;
+end;
+
+Procedure DoTable(Const ATableName,SQLSelect,SQLInsert : String; TreatID : Boolean; Clear : Boolean; BigTable :  Boolean = False);
+
+begin
+  If TreatID then
+    DoTable(ATableName,SQLSelect,SQLInsert,'id',Clear,BigTable)
+  else
+    DoTable(ATableName,SQLSelect,SQLInsert,'',Clear,BigTable)
 end;
 
 Procedure ConvertUser(Clear : Boolean);
@@ -333,7 +399,7 @@ Const
               'filesize, file_type, content, date_added, user_id)'+
               'VALUES (:id, :project_id, :title, :description, :diskfile, :filename, :folder,'+
               ':filesize, :file_type, :content, :date_added, :user_id)';
-  SQLSelect = 'SELECT `id`, `project_id`, `title`, `description`, `diskfile`, `filename`, `folder`, `filesize`, `file_type`, `content`, `date_added`, `user_id` FROM `mantis_project_file_table` WHERE 1';
+  SQLSelect = 'SELECT `id`, `project_id`, `title`, `description`, `diskfile`, `filename`, `folder`, `filesize`, `file_type`, `content`, `date_added`, `user_id` FROM `mantis_project_file_table`';
 
 begin
   DoTable(TableName,SQLSelect,SQLInsert,True,Clear);
@@ -416,7 +482,7 @@ Const
               ' ((:require_update)::int)::boolean, ((:display_report)::int)::boolean, ((:display_update)::int)::boolean, ((:require_resolved)::int)::boolean, '+
               ' ((:display_resolved)::int)::boolean, ((:display_closed)::int)::boolean, ((:require_closed)::int)::boolean, ((:filter_by)::int)::boolean)';
 
-  SQLSelect = 'SELECT `id`, `name`, `type`, `possible_values`, `default_value`, `valid_regexp`, `access_level_r`, `access_level_rw`, `length_min`, `length_max`, `require_report`, `require_update`, `display_report`, `display_update`, `require_resolved`, `display_resolved`, `display_closed`, `require_closed`, `filter_by` FROM `mantis_custom_field_table` ';
+  SQLSelect = 'SELECT `id`, `name`, `type`, `possible_values`, `default_value`, `valid_regexp`, `access_level_r`, `access_level_rw`, `length_min`, `length_max`, `require_report`, `require_update`, `display_report`, `display_update`, `require_resolved`, `display_resolved`, `display_closed`, `require_closed`, `filter_by` FROM `mantis_custom_field_table`';
 
 begin
   DoTable(TableName,SQLSelect,SQLInsert,True,Clear);
