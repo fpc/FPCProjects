@@ -19,7 +19,7 @@ begin
     P:=AddPackage('lnet') as TLazPackage;
     p.AfterInstall := @TLazInstaller(Installer).DoRegisterLazarusPackages;
 
-    P.Version:='0.6.6-2596';
+    P.Version:='0.6.6-2600';
     P.OSes:=AllUnixOSes+[Win32,Win64];
     P.Author := 'Aleš Katona';
     P.License := 'LGPL with modification, Examples: GPL2';
@@ -73,7 +73,6 @@ begin
     T:=P.Targets.AddUnit('lib/lthreadevents.pp');
     T:=P.Targets.AddUnit('lib/ltimer.pp');
     T:=P.Targets.AddUnit('lib/lwebserver.pp');
-    T:=P.Targets.AddUnit('lib/openssl.pas');
     T:=P.Targets.AddUnit('lib/lnet.pp');
     T:=P.Targets.AddUnit('lib/lnetssl.pp');
     T:=P.Targets.AddUnit('lib/ltelnet.pp');
