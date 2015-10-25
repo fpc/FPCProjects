@@ -5,7 +5,12 @@ unit lNetSSL;
 interface
 
 uses
-  SysUtils, Classes, cTypes, OpenSSL,
+  SysUtils, Classes, cTypes, 
+  {$ifdef FPC2_6}
+  lOpenSSL,
+  {$else}
+  OpenSSL,
+  {$endif}
   lNet, lEvents;
   
 type

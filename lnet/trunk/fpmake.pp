@@ -19,24 +19,30 @@ begin
     P:=AddPackage('lnet') as TLazPackage;
     p.AfterInstall := @TLazInstaller(Installer).DoRegisterLazarusPackages;
 
-    P.Version:='0.6.6-2600';
+    P.Version:='0.6.6-0';
     P.OSes:=AllUnixOSes+[Win32,Win64];
     P.Author := 'Aleš Katona';
     P.License := 'LGPL with modification, Examples: GPL2';
     P.HomepageURL := 'http://lnet.wordpress.com/';
     P.Email := 'almindor@gmail.com';
     P.Description := 'Collection of classes and components to enable event-driven TCP or UDP networking';
-{$IFDEF VER_2_4_0}
+{$IFDEF VER2_4_0}
     P.Options := '-Sm';
-{$ELSE VER_2_4_0}
+{$ELSE VER2_4_0}
     P.Options.add('-Sm');
-{$ENDIF VER_2_4_0}
+{$ENDIF VER2_4_0}
+{$IFDEF VER2_6}
+    P.Options.Add('-Filib/sys');
+{$ENDIF}
     P.SupportBuildModes:=[bmOneByOne];
 
     P.Dependencies.Add('lazmkunit');
     P.Dependencies.Add('fcl-net');
     P.Dependencies.Add('fcl-base');
     P.Dependencies.Add('fcl-process');
+{$IFNDEF VER2_6}
+    P.Dependencies.Add('openssl');
+{$ENDIF}
     p.Dependencies.Add('winunits-jedi',[win32,win64]);
 //    P.NeedLibC:= true;  // true for headers that indirectly link to libc?
 
@@ -73,6 +79,9 @@ begin
     T:=P.Targets.AddUnit('lib/lthreadevents.pp');
     T:=P.Targets.AddUnit('lib/ltimer.pp');
     T:=P.Targets.AddUnit('lib/lwebserver.pp');
+{$ifdef VER2_6}
+    T:=P.Targets.AddUnit('lib/lopenssl.pas');
+{$endif ver2_6}
     T:=P.Targets.AddUnit('lib/lnet.pp');
     T:=P.Targets.AddUnit('lib/lnetssl.pp');
     T:=P.Targets.AddUnit('lib/ltelnet.pp');
