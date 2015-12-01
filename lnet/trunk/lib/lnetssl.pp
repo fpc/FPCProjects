@@ -6,7 +6,7 @@ interface
 
 uses
   SysUtils, Classes, cTypes, 
-  {$ifdef FPC2_6}
+  {$ifndef FPC3}
   lOpenSSL,
   {$else}
   OpenSSL,

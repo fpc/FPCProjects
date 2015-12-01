@@ -40,7 +40,7 @@ begin
     P.Dependencies.Add('fcl-net');
     P.Dependencies.Add('fcl-base');
     P.Dependencies.Add('fcl-process');
-{$IFNDEF VER2_6}
+{$IFDEF VER3}
     P.Dependencies.Add('openssl');
 {$ENDIF}
     p.Dependencies.Add('winunits-jedi',[win32,win64]);
@@ -79,9 +79,13 @@ begin
     T:=P.Targets.AddUnit('lib/lthreadevents.pp');
     T:=P.Targets.AddUnit('lib/ltimer.pp');
     T:=P.Targets.AddUnit('lib/lwebserver.pp');
-{$ifdef VER2_6}
+{$IFNDEF VER3}
     T:=P.Targets.AddUnit('lib/lopenssl.pas');
-{$endif ver2_6}
+{$ELSE}
+    // Archives created with fpc version 3 should also contain this file
+    // to be able to compile on earlier versions.
+    P.Sources.AddSrc('lib/lopenssl.pas');
+{$ENDIF ver3}
     T:=P.Targets.AddUnit('lib/lnet.pp');
     T:=P.Targets.AddUnit('lib/lnetssl.pp');
     T:=P.Targets.AddUnit('lib/ltelnet.pp');
@@ -104,26 +108,46 @@ begin
     T:=P.Targets.AddExampleProgram('examples/console/ludp/ludp.pp');
     T:=P.Targets.AddExampleProgram('examples/console/lhttp/fphttpd.pp');
     T:=P.Targets.AddExampleProgram('examples/console/lhttp/fpget.pp');
+{$IFDEF VER3}
     P.Sources.AddExampleFiles('examples/console/lhttp/*',P.Directory,false,'examples/console/lhttp');
     P.Sources.AddExampleFiles('examples/console/lftp/*',P.Directory,false,'examples/console/lftp');
     P.Sources.AddExampleFiles('examples/console/lsmtp/*',P.Directory,false,'examples/console/lsmtp');
     P.Sources.AddExampleFiles('examples/console/ltcp/*',P.Directory,false,'examples/console/ltcp');
     P.Sources.AddExampleFiles('examples/console/ltelnet/*',P.Directory,false,'examples/console/ltelnet');
     P.Sources.AddExampleFiles('examples/console/ludp/*',P.Directory,false,'examples/console/ludp');
-    P.Sources.AddExample('examples/console/Makefile','examples/console');
     P.Sources.AddExampleFiles('examples/visual/ftp/*',P.Directory,false,'examples/visual/ftp');
     P.Sources.AddExampleFiles('examples/visual/http/*',P.Directory,false,'examples/visual/http');
     P.Sources.AddExampleFiles('examples/visual/smtp/*',P.Directory,false,'examples/visual/smtp');
     P.Sources.AddExampleFiles('examples/visual/tcpudp/*',P.Directory,false,'examples/visual/tcpudp');
     P.Sources.AddExampleFiles('examples/visual/telnet/*',P.Directory,false,'examples/visual/telnet');
+{$ELSE}
+    P.Sources.AddExampleFiles('examples/console/lhttp/*',false,'examples/console/lhttp');
+    P.Sources.AddExampleFiles('examples/console/lftp/*',false,'examples/console/lftp');
+    P.Sources.AddExampleFiles('examples/console/lsmtp/*',false,'examples/console/lsmtp');
+    P.Sources.AddExampleFiles('examples/console/ltcp/*',false,'examples/console/ltcp');
+    P.Sources.AddExampleFiles('examples/console/ltelnet/*',false,'examples/console/ltelnet');
+    P.Sources.AddExampleFiles('examples/console/ludp/*',false,'examples/console/ludp');
+    P.Sources.AddExampleFiles('examples/visual/ftp/*',false,'examples/visual/ftp');
+    P.Sources.AddExampleFiles('examples/visual/http/*',false,'examples/visual/http');
+    P.Sources.AddExampleFiles('examples/visual/smtp/*',false,'examples/visual/smtp');
+    P.Sources.AddExampleFiles('examples/visual/tcpudp/*',false,'examples/visual/tcpudp');
+    P.Sources.AddExampleFiles('examples/visual/telnet/*',false,'examples/visual/telnet');
+{$ENDIF}
+
+    P.Sources.AddExample('examples/console/Makefile','examples/console');
     P.Sources.AddExample('examples/console/units/empty.txt','examples/console/units');
 
     P.Sources.AddDoc('README');
     P.Sources.AddDoc('LICENSE.examples');
     P.Sources.AddDoc('CHANGELOG');
     P.Sources.AddDoc('INSTALL');
+{$IFDEF VER3}
     P.Sources.AddDocFiles('doc/*',P.Directory);
     P.Sources.AddDocFiles('doc/en/*',P.Directory,false,'en');
+{$ELSE}
+    P.Sources.AddDocFiles('doc/*');
+    P.Sources.AddDocFiles('doc/en/*',false,'en');
+{$ENDIF}
 
     P.LazPackageFiles.AddLazPackageTemplate('lazaruspackage/lnetvisual.template');
     P.LazPackageFiles.AddLazFile('lazaruspackage/lnetcomponents.pas');
