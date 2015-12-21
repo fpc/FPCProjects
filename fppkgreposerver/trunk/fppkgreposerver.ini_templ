@@ -1,0 +1,5 @@
+[Settings]
+repodir=~/repotest
+targetstring=x86_64-linux
+startcompiler=/usr/bin/ppcx64
+testcompiler=ppcx64
