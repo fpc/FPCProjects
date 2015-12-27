@@ -27,7 +27,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="-t -a"/>
+        <CommandLineParams Value="-t -a -d"/>
       </local>
     </RunParams>
     <RequiredPackages Count="1">
@@ -35,7 +35,7 @@
         <PackageName Value="DCServer"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="5">
       <Unit0>
         <Filename Value="fppkgreposerver.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -54,6 +54,11 @@
         <Filename Value="repoinitializecommand.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="dbconnector.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DBConnector"/>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

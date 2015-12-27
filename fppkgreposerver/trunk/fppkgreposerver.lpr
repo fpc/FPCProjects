@@ -18,7 +18,8 @@ uses
   DCSTCPServer,
   RepoTestCommand,
   RepoController,
-  repoinitializecommand;
+  repoinitializecommand,
+  dbconnector;
 
 type
 
@@ -44,9 +45,10 @@ var
   ConsoleServer: TDCSConsoleServer;
   Port, SensePorts: Longint;
   TCPServerThread: TDCSTcpServer;
+  ADbConnector: TDbConnector;
 begin
   // quick check parameters
-  ErrorMsg:=CheckOptions('htp:a::', ['help','tcp','port:','autoport::']);
+  ErrorMsg:=CheckOptions('htp:a::d', ['help','tcp','port:','autoport::','dbstorage']);
   if ErrorMsg<>'' then begin
     ShowException(Exception.Create(ErrorMsg));
     Terminate;
@@ -102,6 +104,11 @@ begin
       raise;
     end;
 
+    if HasOption('d','dbstorage') then
+      ADbConnector := TDbConnector.Create(FDistributor,'localhost:fppkg','sysdba','masterkey')
+    else
+      ADbConnector := nil;
+
     if HasOption('t','tcp') then
       TCPServerThread := TDCSTcpServer.Create(FDistributor, Port, SensePorts)
     else
@@ -124,6 +131,10 @@ begin
         begin
         TCPServerThread.Terminate;
         end;
+      if Assigned(ADbConnector) then
+        begin
+        ADbConnector.Terminate;
+        end;
 
       ConsoleServer.Terminate;
       ConsoleServer.WaitFor;
@@ -133,6 +144,12 @@ begin
         begin
         TCPServerThread.WaitFor;
         TCPServerThread.Free;
+        end;
+
+      if Assigned(ADbConnector) then
+        begin
+        ADbConnector.WaitFor;
+        ADbConnector.Free;
         end;
 
     end;
@@ -160,7 +177,7 @@ end;
 procedure TFppkgRepoServer.WriteHelp;
 begin
   { add your help code here }
-  writeln('Usage: ', ExeName, ' -h');
+  writeln('Usage: ', ExeName, ' --help --tcp --dbstorage --port <port> -autoport <count>');
 end;
 
 var

@@ -2,6 +2,7 @@ unit RepoTestCommand;
 
 {$mode objfpc}{$H+}
 {$modeswitch advancedrecords}
+{$M+}
 
 interface
 
@@ -23,12 +24,18 @@ uses
 
 type
 
-  { TTestCommandNotificationEvent }
+  { TLogLine }
 
   TLogLine = class
-    Msg: string;
-    LogLevel: TLogLevel;
+  private
+    FLogLevel: TLogLevel;
+    FMsg: string;
+  published
+    property Msg: string read FMsg write FMsg;
+    property LogLevel: TLogLevel read FLogLevel write FLogLevel;
   end;
+
+  { TTestCommandNotificationEvent }
 
   TTestCommandNotificationEvent = class(TDCSNotificationEvent)
   private
