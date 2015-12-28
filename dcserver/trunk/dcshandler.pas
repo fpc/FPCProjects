@@ -573,7 +573,7 @@ begin
     on E: Exception do
       begin
       FDistributor.Log('Exception during pre-execution of '+ACommand.TextName+' command :'+e.Message, etError, ACommand.UID);
-      FDistributor.SendNotification(ACommand.SendByLisId, ntFailedCommand, null, 'Exception during pre-execution of %s-command.', ACommand.TextName, [ACommand.TextName]);
+      FDistributor.SendNotification(ACommand.SendByLisId, ntFailedCommand, ACommand.UID, 'Exception during pre-execution of %s-command.', ACommand.TextName, [ACommand.TextName]);
       DoQueueCommand:=false;
       end;
   end;
