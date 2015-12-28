@@ -16,6 +16,24 @@ uses
 
 type
 
+  { TCommandExecutioner }
+
+  TCommandExecutioner = class(TObject, IDCSListener)
+  private
+    FDistributor: TDCSDistributor;
+    FLisId: Integer;
+    FRTLEvent: PRTLEvent;
+    FEvent: TDCSNotificationEvent;
+  protected
+    procedure SendEvent(AnEvent: TDCSEvent);
+    function GetOrigin: string;
+  public
+    constructor Create(ADistributor: TDCSDistributor);
+    destructor Destroy; override;
+    function ExecuteCommand(ACommand: TDCSThreadCommand; ATimeout: LongInt): TDCSNotificationEvent;
+    property LisId: Integer read FLisId;
+  end;
+
   { TRepoController }
 
   TRepoController = class(TDCSCustomController)
@@ -28,6 +46,7 @@ type
     procedure LoadIniFile;
   public
     constructor Create(ADistributor: TDCSDistributor); override;
+    function AcceptCommand(ACommand: TDCSThreadCommand): Boolean; override;
     procedure Init; override;
     property RepoDir: string read FRepoDir;
     property StartCompiler: string read FStartCompiler;
@@ -68,6 +87,52 @@ begin
   if not Assigned(GCommand) then
     Exit;
   GCommand.AddToTestLog(Level, Msg);
+end;
+
+{ TCommandExecutioner }
+
+procedure TCommandExecutioner.SendEvent(AnEvent: TDCSEvent);
+var
+  Event: TDCSNotificationEvent;
+begin
+  if AnEvent is TDCSNotificationEvent then
+    begin
+    Event := TDCSNotificationEvent(AnEvent);
+    if (Event.LisId=FLisId) and (Event.NotificationType in [ntInvalidCommand, ntFailedCommand, ntExecutedCommand]) then
+      begin
+      FEvent := Event;
+      FEvent.AddRef;
+      RTLeventSetEvent(FRTLEvent);
+      end;
+    end;
+end;
+
+function TCommandExecutioner.GetOrigin: string;
+begin
+  Result := 'TCommandExecutioner';
+end;
+
+constructor TCommandExecutioner.Create(ADistributor: TDCSDistributor);
+begin
+  FDistributor := ADistributor;
+  FLisId := FDistributor.AddListener(Self);
+  FRTLEvent := RTLEventCreate;
+end;
+
+destructor TCommandExecutioner.Destroy;
+begin
+  FDistributor.RemoveListener(Self);
+  RTLeventdestroy(FRTLEvent);
+  inherited Destroy;
+end;
+
+function TCommandExecutioner.ExecuteCommand(ACommand: TDCSThreadCommand; ATimeout: LongInt): TDCSNotificationEvent;
+begin
+  FEvent := Nil;
+  RTLeventResetEvent(FRTLEvent);
+  FDistributor.QueueCommand(ACommand);
+  RTLeventWaitFor(FRTLEvent, ATimeout);
+  Result := FEvent;
 end;
 
 procedure TRepoCommand.AddToTestLog(ALevel: TLogLevel; AMsg: String);
@@ -116,6 +181,11 @@ end;
 constructor TRepoController.Create(ADistributor: TDCSDistributor);
 begin
   inherited Create(ADistributor);
+end;
+
+function TRepoController.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
+begin
+  Result := ACommand is TRepoCommand;
 end;
 
 procedure TRepoController.Init;

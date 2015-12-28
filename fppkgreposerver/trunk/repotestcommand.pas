@@ -40,11 +40,13 @@ type
   TTestCommandNotificationEvent = class(TDCSNotificationEvent)
   private
     FLogLineList: TObjectList;
+    FUniqueId: Integer;
   public
     constructor Create; override;
     destructor Destroy; override;
   published
     property LogLineList: TObjectList read FLogLineList;
+    property UniqueId: Integer read FUniqueId write FUniqueId;
   end;
 
   { TRepoTestCommand }
@@ -53,15 +55,18 @@ type
   private
     FPackageName: string;
     FLogLineList: TObjectList;
+    FUniqueId: Integer;
   protected
     function GetNotificationCommandEventClass: TDCSNotificationEventClass; override;
     function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent; override;
+    function CreateReceivedCommandEvent: TDCSNotificationEvent; override;
   public
     constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); override;
     destructor Destroy; override;
     class function TextName: string; override;
     function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
     procedure AddToTestLog(ALevel: TLogLevel; AMsg: String); override;
+    property UniqueId: Integer read FUniqueId;
   published
     property PackageName: string read FPackageName write FPackageName;
   end;
@@ -75,6 +80,9 @@ type
   end;
 
 implementation
+
+uses
+  DBConnector;
 
 { TTestCommandNotificationEvent }
 
@@ -131,14 +139,39 @@ begin
   Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage);
   Event := TTestCommandNotificationEvent(Result);
   Event.LogLineList.Assign(FLogLineList);
+  Event.UniqueId := UniqueId;
   FLogLineList.OwnsObjects := False;
   FLogLineList.Clear;
 end;
 
+function TRepoTestCommand.CreateReceivedCommandEvent: TDCSNotificationEvent;
+begin
+  Result := inherited CreateReceivedCommandEvent;
+  TTestCommandNotificationEvent(Result).UniqueId := UniqueId;
+end;
+
 constructor TRepoTestCommand.Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor);
+var
+  CommandExecutioner: TCommandExecutioner;
+  Command: TDBGetUniqueIdCommand;
+  Event: TDCSNotificationEvent;
 begin
   inherited Create(ASendByLisId, AnUID, ADistributor);
   FLogLineList := TObjectList.Create;
+
+  FUniqueId := -1;
+  CommandExecutioner := TCommandExecutioner.Create(FDistributor);
+  try
+    Command := TDBGetUniqueIdCommand.Create(CommandExecutioner.LisId, null, FDistributor);
+    Event := CommandExecutioner.ExecuteCommand(Command, 5000);
+    if Assigned(Event) then
+      begin
+      FUniqueId := StrToIntDef(Event.Message, -1);
+      Event.Release;
+      end;
+  finally
+    CommandExecutioner.Free;
+  end;
 end;
 
 destructor TRepoTestCommand.Destroy;

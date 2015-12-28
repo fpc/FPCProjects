@@ -45,7 +45,7 @@ var
   ConsoleServer: TDCSConsoleServer;
   Port, SensePorts: Longint;
   TCPServerThread: TDCSTcpServer;
-  ADbConnector: TDbConnector;
+  ADbConnector: TDbConnectorHandlerThread;
 begin
   // quick check parameters
   ErrorMsg:=CheckOptions('htp:a::d', ['help','tcp','port:','autoport::','dbstorage']);
@@ -105,7 +105,10 @@ begin
     end;
 
     if HasOption('d','dbstorage') then
-      ADbConnector := TDbConnector.Create(FDistributor,'localhost:fppkg','sysdba','masterkey')
+      begin
+      ADbConnector := TDbConnectorHandlerThread.Create(FDistributor,'localhost:fppkg','sysdba','masterkey');
+      FDistributor.AddHandlerThread(ADbConnector);
+      end
     else
       ADbConnector := nil;
 
