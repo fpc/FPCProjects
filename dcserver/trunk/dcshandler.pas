@@ -152,6 +152,7 @@ type
     procedure QueueCommand(ACommand: TDCSThreadCommand);
     function AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
     property Controller: TDCSCustomController read FController;
+    property Distributor: TDCSDistributor read FDistributor;
   public
     constructor Create(ADistributor: TDCSDistributor); virtual;
     destructor Destroy; override;
