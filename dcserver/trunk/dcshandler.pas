@@ -35,6 +35,7 @@ type
   );
 
   TDCSDistributor = class;
+  TDCSThreadCommand = class;
 
   { TDCSEvent }
 
@@ -106,6 +107,7 @@ type
   public
     constructor Create(ADistributor: TDCSDistributor); virtual;
     procedure Init; virtual;
+    function AcceptCommand(ACommand: TDCSThreadCommand): Boolean; virtual;
   end;
   TDCSCustomControllerClass = class of TDCSCustomController;
 
@@ -148,6 +150,7 @@ type
     function CreateController: TDCSCustomController; virtual; abstract;
     procedure Execute; override;
     procedure QueueCommand(ACommand: TDCSThreadCommand);
+    function AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
     property Controller: TDCSCustomController read FController;
   public
     constructor Create(ADistributor: TDCSDistributor); virtual;
@@ -222,6 +225,11 @@ end;
 procedure TDCSCustomController.Init;
 begin
   //
+end;
+
+function TDCSCustomController.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
+begin
+  Result := True;
 end;
 
 { TDCSEvent }
@@ -462,13 +470,20 @@ procedure TDCSDistributor.QueueCommand(ACommand: TDCSThreadCommand);
 var
   i: integer;
   AList: TList;
+  Handler: TDCSCustomHandlerThread;
 begin
   AList:=FHandlerThreadList.LockList;
   try
     for i := 0 to AList.Count-1 do
       begin
-      TDCSCustomHandlerThread(AList[i]).QueueCommand(ACommand);
+      Handler := TDCSCustomHandlerThread(AList[i]);
+      if Handler.AcceptCommand(ACommand) then
+        begin
+        Handler.QueueCommand(ACommand);
+        Exit;
+        end;
       end;
+    SendNotification(ACommand.SendByLisId, ntFailedCommand, ACommand.UID, 'No handler available to accept the %s-command.', ACommand.TextName, [ACommand.TextName]);
   finally
     FHandlerThreadList.UnlockList;
   end;
@@ -566,6 +581,11 @@ begin
     FCommandQueue.PushItem(ACommand)
   else
     ACommand.Free;
+end;
+
+function TDCSCustomHandlerThread.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
+begin
+  Result := FController.AcceptCommand(ACommand);
 end;
 
 constructor TDCSCustomHandlerThread.Create(ADistributor: TDCSDistributor);
