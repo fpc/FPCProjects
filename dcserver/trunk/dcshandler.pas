@@ -9,8 +9,8 @@ uses
   Classes,
   SysUtils,
   syncobjs,
-  lazCollections,
-  fgl;
+  variants,
+  lazCollections;
 
 type
   // The debug-thread sends three different kind of messages to it's listeners
@@ -565,7 +565,6 @@ end;
 procedure TDCSCustomHandlerThread.QueueCommand(ACommand: TDCSThreadCommand);
 var
   DoQueueCommand: boolean;
-  AnEvent: TDCSEvent;
 begin
   try
     ACommand.PreExecute(FController, DoQueueCommand);

@@ -11,7 +11,6 @@ uses
   BaseUnix,
   sockets,
   syncobjs,
-  lazfglhash,
   lazCollections,
   fpjson,
   fgl,
