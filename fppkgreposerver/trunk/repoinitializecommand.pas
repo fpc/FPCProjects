@@ -24,13 +24,13 @@ type
 
   { TRepoInitializeCommand }
 
-  TRepoInitializeCommand = class(TDCSThreadCommand)
+  TRepoInitializeCommand = class(TRepoCommand)
   private
     function ExecuteProcess(ACmd: string; AParamList: array of const): boolean;
     function RemoveTree(APath: String): Boolean;
   public
     class function TextName: string; override;
-    function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
+    function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
   end;
 
   { TRepoUpdateCommand }
@@ -38,7 +38,7 @@ type
   TRepoUpdateCommand = class(TRepoCommand)
   public
     class function TextName: string; override;
-    function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
+    function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
   end;
 
 implementation
@@ -50,7 +50,7 @@ begin
   result := 'update';
 end;
 
-function TRepoUpdateCommand.DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
+function TRepoUpdateCommand.DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
   Package: TFPPackage;
   Success: Boolean;
@@ -76,21 +76,31 @@ function TRepoInitializeCommand.ExecuteProcess(ACmd: string; AParamList: array o
 var
   P: TProcess;
   i: Integer;
+  LogCmdLine: string;
+  s: string;
 begin
   result := False;
   P := TProcess.Create(nil);
   try
+    LogCmdLine:=ACmd;
     P.Executable:=ACmd;
     for i := 0 to high(AParamList) do
       begin
       if AParamList[i].VType=vtAnsiString then
-        P.Parameters.Add(ansistring(AParamList[i].VAnsiString))
+        begin
+        s := ansistring(AParamList[i].VAnsiString);
+        P.Parameters.Add(s);
+        LogCmdLine := LogCmdLine + ' ' + s;
+        end
       else
         raise exception.CreateFmt('parameter type %d not supported',[AParamList[i].VType]);
       end;
     P.Options:=[poWaitOnExit];
+
+    FDistributor.Log('Executing command: '+LogCmdLine, etInfo, UID);
+
     P.Execute;
-    result := P.ExitCode=0;
+    result := P.ExitStatus=0;
   finally
     P.Free;
   end;
@@ -158,7 +168,7 @@ begin
   result := 'initialize';
 end;
 
-function TRepoInitializeCommand.DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
+function TRepoInitializeCommand.DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
   FpcmkcfgBin: string;
   FpcPath: string;
@@ -220,6 +230,9 @@ begin
         end;
       until FindNext(sr)<>0;
       end;
+
+    TRepoController(AController).LoadRepository;
+
     Result := true;
     end;
 end;

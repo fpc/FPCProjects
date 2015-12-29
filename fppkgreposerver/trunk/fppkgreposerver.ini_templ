@@ -1,4 +1,5 @@
 [Settings]
+# The repodir should contain a valid fpc-svn checkout in the $(repodir)/fpcsrc directory.
 repodir=~/repotest
 targetstring=x86_64-linux
 startcompiler=/usr/bin/ppcx64

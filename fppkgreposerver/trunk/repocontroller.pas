@@ -48,6 +48,7 @@ type
     constructor Create(ADistributor: TDCSDistributor); override;
     function AcceptCommand(ACommand: TDCSThreadCommand): Boolean; override;
     procedure Init; override;
+    procedure LoadRepository;
     property RepoDir: string read FRepoDir;
     property StartCompiler: string read FStartCompiler;
     property TargetString: string read FTargetString;
@@ -195,19 +196,30 @@ begin
   LoadIniFile;
 
   LogLevels:=DefaultLogLevels;
-  pkgoptions.LoadGlobalDefaults(FRepoDir+'etc/fppkg.cfg');
-  LoadCompilerDefaults;
+  LoadRepository;
+end;
 
-  FPMakeCompilerOptions.CheckCompilerValues;
-  CompilerOptions.CheckCompilerValues;
+procedure TRepoController.LoadRepository;
+var
+  F: string;
+begin
+  F := FRepoDir+'etc/fppkg.cfg';
+  if FileExists(F) then
+    begin
+    pkgoptions.LoadGlobalDefaults(F);
+    LoadCompilerDefaults;
 
-  LoadLocalAvailableRepository;
-  FindInstalledPackages(CompilerOptions);
-  CheckFPMakeDependencies;
+    FPMakeCompilerOptions.CheckCompilerValues;
+    CompilerOptions.CheckCompilerValues;
 
-  LoadLocalAvailableMirrors;
+    LoadLocalAvailableRepository;
+    FindInstalledPackages(CompilerOptions);
+    CheckFPMakeDependencies;
 
-  ClearExecutedAction;
+    LoadLocalAvailableMirrors;
+
+    ClearExecutedAction;
+    end;
 end;
 
 end.
