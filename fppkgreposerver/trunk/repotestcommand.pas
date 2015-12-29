@@ -10,6 +10,7 @@ uses
   Classes,
   SysUtils,
   contnrs,
+  fgl,
   dcsHandler,
   fpjson,
   CustApp,
@@ -30,22 +31,35 @@ type
   private
     FLogLevel: TLogLevel;
     FMsg: string;
+  public
+    function Clone: TLogLine;
   published
     property Msg: string read FMsg write FMsg;
     property LogLevel: TLogLevel read FLogLevel write FLogLevel;
+  end;
+
+  // TFPGObjectList are not supported by the TJSONStreamer
+  // TCustLogLineList = specialize TFPGObjectList<TLogLine>;
+  TCustLogLineList = TObjectList;
+
+  { TLogLineList }
+
+  TLogLineList = class(TCustLogLineList)
+  public
+    function Clone(AFrom: TLogLineList): TLogLineList;
   end;
 
   { TTestCommandNotificationEvent }
 
   TTestCommandNotificationEvent = class(TDCSNotificationEvent)
   private
-    FLogLineList: TObjectList;
+    FLogLineList: TLogLineList;
     FUniqueId: Integer;
   public
     constructor Create; override;
     destructor Destroy; override;
   published
-    property LogLineList: TObjectList read FLogLineList;
+    property LogLineList: TLogLineList read FLogLineList;
     property UniqueId: Integer read FUniqueId write FUniqueId;
   end;
 
@@ -54,7 +68,7 @@ type
   TRepoTestCommand = class(TRepoCommand)
   private
     FPackageName: string;
-    FLogLineList: TObjectList;
+    FLogLineList: TLogLineList;
     FUniqueId: Integer;
   protected
     function GetNotificationCommandEventClass: TDCSNotificationEventClass; override;
@@ -84,12 +98,34 @@ implementation
 uses
   DBConnector;
 
+{ TLogLine }
+
+function TLogLine.Clone: TLogLine;
+begin
+  Result := TLogLine.Create;
+  Result.Msg := Msg;
+  Result.LogLevel := LogLevel;
+end;
+
+{ TLogLineList }
+
+function TLogLineList.Clone(AFrom: TLogLineList): TLogLineList;
+var
+  I: Integer;
+begin
+  Clear;
+  for I := 0 to AFrom.Count -1 do
+    begin
+    Add(TLogLine(AFrom.Items[I]).Clone);
+    end;
+end;
+
 { TTestCommandNotificationEvent }
 
 constructor TTestCommandNotificationEvent.Create;
 begin
   inherited Create;
-  FLogLineList := TObjectList.Create(True);
+  FLogLineList := TLogLineList.Create(True);
 end;
 
 destructor TTestCommandNotificationEvent.Destroy;
@@ -138,10 +174,8 @@ var
 begin
   Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage);
   Event := TTestCommandNotificationEvent(Result);
-  Event.LogLineList.Assign(FLogLineList);
+  Event.LogLineList.Clone(FLogLineList);
   Event.UniqueId := UniqueId;
-  FLogLineList.OwnsObjects := False;
-  FLogLineList.Clear;
 end;
 
 function TRepoTestCommand.CreateReceivedCommandEvent: TDCSNotificationEvent;
@@ -157,7 +191,7 @@ var
   Event: TDCSNotificationEvent;
 begin
   inherited Create(ASendByLisId, AnUID, ADistributor);
-  FLogLineList := TObjectList.Create;
+  FLogLineList := TLogLineList.Create;
 
   FUniqueId := -1;
   CommandExecutioner := TCommandExecutioner.Create(FDistributor);

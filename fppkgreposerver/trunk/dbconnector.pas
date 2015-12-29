@@ -63,22 +63,35 @@ type
 
   TDBStoreCommmandNotification = class(TDBCommand)
   private
+    FLogLineList: TLogLineList;
     FNotificationType: TDCSNotificationType;
     FUniqueId: integer;
   public
+    constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); override;
     function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
     class function TextName: string; override;
     property NotificationType: TDCSNotificationType read FNotificationType write FNotificationType;
     property UniqueId: integer read FUniqueId write FUniqueId;
+    property LogLineList: TLogLineList read FLogLineList;
   end;
 
 implementation
 
+uses
+  RepoController;
+
 { TDBStoreCommmandNotification }
+
+constructor TDBStoreCommmandNotification.Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor);
+begin
+  inherited Create(ASendByLisId, AnUID, ADistributor);
+  FLogLineList := TLogLineList.Create(True);
+end;
 
 function TDBStoreCommmandNotification.DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
   Query: TSQLQuery;
+  I: Integer;
 begin
   Query := TDBController(AController).CreateQuery;
   try
@@ -101,6 +114,15 @@ begin
     Query.ParamByName('now').AsDateTime := now;
     Query.ParamByName('commandid').AsInteger := UniqueId;
     Query.ExecSQL;
+
+    Query.SQL.Text := 'insert into commandlogline(commandid,loglevel,message) values (:commandid,:loglevel,:message)';
+    Query.ParamByName('commandid').AsInteger := UniqueId;
+    for I := 0 to LogLineList.Count -1 do
+      begin
+      Query.ParamByName('message').AsString := TLogLine(LogLineList.Items[i]).Msg;
+      Query.ParamByName('loglevel').AsString := SLogLevel[TLogLine(LogLineList.Items[i]).LogLevel];
+      Query.ExecSQL;
+      end;
     TDBController(AController).FSQLTransaction.CommitRetaining;
   finally
     Query.Free;
@@ -203,6 +225,7 @@ begin
     Command := TDBStoreCommmandNotification.Create(FLisId, null, Distributor);
     Command.UniqueId := Event.UniqueId;
     Command.NotificationType := Event.NotificationType;
+    Command.LogLineList.Clone(Event.LogLineList);
     Distributor.QueueCommand(Command);
     end;
 end;

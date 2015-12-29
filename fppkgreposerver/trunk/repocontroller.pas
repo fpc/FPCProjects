@@ -64,14 +64,6 @@ type
     function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
   end;
 
-
-implementation
-
-{ TRepoCommand }
-
-var
-  GCommand: TRepoCommand;
-
 const
   SLogLevel: array[TLogLevel] of string = (
     'Error',
@@ -81,6 +73,16 @@ const
     'llDebug',
     'llProgres'
   );
+
+implementation
+
+uses
+  RepoTestCommand;
+
+{ TRepoCommand }
+
+var
+  GCommand: TRepoCommand;
 
 procedure LogCmd(Level: TLogLevel; const Msg: String);
 begin
@@ -185,7 +187,7 @@ end;
 
 function TRepoController.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
 begin
-  Result := ACommand is TRepoCommand;
+  Result := (ACommand is TRepoCommand) or (ACommand is TRepoQuitCommand);
 end;
 
 procedure TRepoController.Init;
