@@ -199,7 +199,7 @@ begin
     SetCurrentDir(RepoDir+'fpcsrc');
     if not ExecuteProcess('svn'+ExeExt,['update']) then
       raise exception.create('Failed to run svn update');
-    if not ExecuteProcess('make'+ExeExt, ['clean', 'all', 'PP="'+StartCompiler+'"', 'FPMAKEOPT="-T 4"']) then
+    if not ExecuteProcess('make'+ExeExt, ['clean', 'all', 'PP='+StartCompiler, 'FPMAKEOPT=-T 4']) then
       raise exception.create('Failed to compile fpc');
     RemoveTree(RepoDir+'fpc');
     RemoveTree(RepoDir+'fppkg');
