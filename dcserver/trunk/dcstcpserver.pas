@@ -71,7 +71,7 @@ implementation
 
 { TDCSTcpConnectionThread }
 
-function STrToStr(AStr: string): string;
+function StrToStr(AStr: string): string;
 var i : integer;
 begin
   result := '';
@@ -93,7 +93,7 @@ procedure TDCSTcpConnectionThread.Execute;
 
     if i < 0 then
       begin
-      if FData.LastError=32 then
+      if FData.LastError=ESysEPIPE then
         begin
         // Lost connection
         end
@@ -279,6 +279,10 @@ procedure TDCSTcpServer.FTCPConnectionConnect(Sender: TObject; Data: TSocketStre
 var
   AConnectionThread: TDCSTcpConnectionThread;
 begin
+  // Without this, on Linux at least, Data.Write can generate a SIGPIPE exception
+  // when the other side disconnects unexpectedly. We do not want this and use the
+  // return value to detect the lost connection.
+  Data.WriteFlags := $4000; // MSG_NOSIGNAL: do not generate SIGPIPE on connection end
   AConnectionThread:=TDCSTcpConnectionThread.create(FDistributor, Self, data);
   AConnectionThread.FreeOnTerminate:=true;
   FConnectionList.Add(AConnectionThread);
