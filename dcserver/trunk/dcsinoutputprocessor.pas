@@ -156,6 +156,7 @@ begin
           end;
         dcsetNotification:
           begin
+          JSonEvent.Add('notificationType', DCSNotificationTypeNames[TDCSNotificationEvent(AnEvent).NotificationType]);
           JSonEvent.Add('message', TDCSNotificationEvent(AnEvent).Message);
           s := TDCSNotificationEvent(AnEvent).Command;
           if s <> '' then

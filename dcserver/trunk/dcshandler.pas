@@ -220,6 +220,17 @@ const
     'Debug'
     );
 
+  DCSNotificationTypeNames: array[TDCSNotificationType] of string = (
+    'NewConnection',
+    'LostConnection',
+    'InvalidCommand',
+    'ConnectionProblem',
+    'ListenerMessage',
+    'ReceivedCommand',
+    'ExecutedCommand',
+    'FailedCommand'
+  );
+
 implementation
 
 { TDCSCustomController }
@@ -324,13 +335,17 @@ begin
   Result := GetNotificationCommandEventClass.Create;
   Result.UID := FUID;
   if Success then
-    Result.NotificationType:=ntExecutedCommand
-  else
-    Result.NotificationType:=ntFailedCommand;
-  Result.LisId:=SendByLisId;
-  if ReturnMessage='' then
+    begin
+    Result.NotificationType:=ntExecutedCommand;
     Result.Message:=Format('%s-command executed succesfully.',[TextName])
+    end
   else
+    begin
+    Result.NotificationType:=ntFailedCommand;
+    Result.Message:=Format('%s-command failed.',[TextName])
+    end;
+  Result.LisId:=SendByLisId;
+  if ReturnMessage<>'' then
     Result.Message:=ReturnMessage;
 end;
 
