@@ -73,8 +73,8 @@ const
     'Warning',
     'Info',
     'Commands',
-    'llDebug',
-    'llProgres'
+    'Debug',
+    'Progres'
   );
 
 implementation
