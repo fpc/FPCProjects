@@ -10,6 +10,7 @@ uses
   SysUtils,
   CustApp,
   DCSClientThread,
+  dcsHandler,
   fpjson,
   jsonparser;
 
@@ -20,6 +21,9 @@ type
   TDCServerClientExample = class(TCustomApplication)
   protected
     FClientThread: TDCSClientThread;
+    FMessage: string;
+    FCommandReceived: Boolean;
+    FDontWaitForCommandCompletion: Boolean;
     procedure DoRun; override;
     procedure HandleLostConnection(ErrMessage: string);
     procedure HandleReceiveData(Data: TJSONData);
@@ -38,10 +42,9 @@ var
   Port: Integer;
   Command: string;
   JSONData: TJSONData;
-  s:string;
 begin
   // quick check parameters
-  ErrorMsg := CheckOptions('hs:p:c:', ['help','server:','port:','command:']);
+  ErrorMsg := CheckOptions('hs:p:c:d', ['help','server:','port:','command:','dontwait']);
   if ErrorMsg <> '' then
     begin
     ShowException(Exception.Create(ErrorMsg));
@@ -76,17 +79,30 @@ begin
     Exit;
     end;
 
-  FClientThread := TDCSClientThread.Create(Server, Port, @HandleReceiveData, @HandleLostConnection);
-  try
-    JSONData := GetJSON(Command);
-    s := JSONData.AsJSON;
-    FClientThread.SendData(JSONData);
-    while not terminated do
-      CheckSynchronize(100);
-  finally
-    FClientThread.Free;
-  end;
+  if HasOption('d','dontwait') then
+    FDontWaitForCommandCompletion := True;
 
+  JSONData := GetJSON(Command);
+  if Assigned(JSONData) then
+    begin
+    FClientThread := TDCSClientThread.Create(Server, Port, @HandleReceiveData, @HandleLostConnection);
+    try
+      FClientThread.SendData(JSONData);
+      while not terminated do
+        CheckSynchronize(100);
+    finally
+      FClientThread.Terminate;
+      FClientThread.WaitFor;
+      FClientThread.Free;
+    end;
+    end
+  else
+    begin
+      FMessage := 'Invalid command: '+Command;
+    end;
+
+  if FMessage<>'' then
+    writeln(FMessage);
 
   // stop program loop
   Terminate;
@@ -96,14 +112,51 @@ procedure TDCServerClientExample.HandleLostConnection(ErrMessage: string);
 begin
   if (ErrMessage<>'') then
     begin
-    WriteLn(ErrMessage);
-    Terminate;
+    FMessage := ErrMessage;
     end;
+  Terminate;
 end;
 
 procedure TDCServerClientExample.HandleReceiveData(Data: TJSONData);
+var
+  JSObj: TJSONObject;
+  NotificationType: string;
 begin
-  writeln('Data: '+data.AsJSON);
+  if Data.JSONType=jtObject then
+    begin
+    JSObj := Data as TJSONObject;
+    if (JSObj.Get('type','')='Notification') and (JSObj.Get('lisId',-1)=FClientThread.ConnectionIdentifier) then
+      begin
+      NotificationType := JSObj.Get('notificationType','');
+      if not FCommandReceived then
+        begin
+        if NotificationType='InvalidCommand' then
+          begin
+          FMessage := 'Invalid command: '+Data.AsJSON;
+          FClientThread.Terminate;
+          end
+        else if NotificationType='ReceivedCommand' then
+          begin
+          FCommandReceived := True;
+          if FDontWaitForCommandCompletion then
+            begin
+            FMessage := 'Command queued: '+Data.AsJSON;
+            FClientThread.Terminate;
+            end;
+          end;
+        end
+      else if (NotificationType='ExecutedCommand') then
+        begin
+        FMessage := 'Command executed: '+Data.AsJSON;
+        FClientThread.Terminate;
+        end
+      else if (NotificationType='FailedCommand') then
+        begin
+        FMessage := 'Command failed: '+Data.AsJSON;
+        FClientThread.Terminate;
+        end;
+      end;
+    end;
 end;
 
 constructor TDCServerClientExample.Create(TheOwner: TComponent);
@@ -119,7 +172,7 @@ end;
 
 procedure TDCServerClientExample.WriteHelp;
 begin
-  writeln('Usage: ', ExeName, ' -h -s <server> -p <port> -c <commandstring>');
+  writeln('Usage: ', ExeName, ' -h -s <server> -p <port> -c <commandstring> -d');
   writeln('Sends the json-command to the server and waits for the result.');
   writeln('The command-string is obligatory. ');
 end;
