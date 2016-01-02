@@ -243,6 +243,7 @@ end;
 
 destructor TDCSClientThread.Destroy;
 begin
+  FSendQueue.Free;
   inherited Destroy;
 end;
 
