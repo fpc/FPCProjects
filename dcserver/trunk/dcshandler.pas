@@ -475,6 +475,7 @@ begin
     AnEvent.LisId := ALisId;
     AnEvent.Command := ACommand;
     AnEvent.UID := AnUID;
+    AnEvent.NotificationType := ANotificationType;
     SendEvent(AnEvent);
   finally
     AnEvent.Release;
@@ -522,7 +523,7 @@ end;
 
 procedure TDCSDistributor.RemoveListener(AListener: IDCSListener);
 begin
-  SendNotification(AListener.ListenerId, ntNewConnection, null, 'Remove listener: %s', '',[AListener.GetOrigin]);
+  SendNotification(AListener.ListenerId, ntLostConnection, null, 'Remove listener: %s', '',[AListener.GetOrigin]);
   FListenerList.Remove(AListener);
 end;
 
