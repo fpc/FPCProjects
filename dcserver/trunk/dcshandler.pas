@@ -89,14 +89,20 @@ type
   end;
   TDCSNotificationEventClass = class of TDCSNotificationEvent;
 
+
+  { IDCSListener }
+
   // Each listener should implement this interface.
   IDCSListener = interface ['{2230763A-672E-4EC1-941D-6B8814D789C8}']
+     function GetListenerId: Integer;
+     procedure InitListener(AListenerId: Integer);
      // This procedure is called by the debugthread when there is a message for the listener.
      // Not that this procedure will be called from within the debug-thread, and should not take too much
      // resources, or ot will slow down the debugging.
      procedure SendEvent(AnEvent: TDCSEvent);
      // Gives more information about the origin of the listener.
      function GetOrigin: string;
+     property ListenerId: Integer read GetListenerId;
   end;
 
   { TDCSCustomController }
@@ -495,12 +501,13 @@ begin
   inc(GIdentifierCount);
   result := GIdentifierCount;
   FListenerList.Add(AListener);
+  AListener.InitListener(Result);
   SendNotification(result, ntNewConnection, null, 'New listener: %s', '',[AListener.GetOrigin]);
 end;
 
 procedure TDCSDistributor.RemoveListener(AListener: IDCSListener);
 begin
-  SendNotification(-1, ntNewConnection, null, 'Remove listener: %s', '',[AListener.GetOrigin]);
+  SendNotification(AListener.ListenerId, ntNewConnection, null, 'Remove listener: %s', '',[AListener.GetOrigin]);
   FListenerList.Remove(AListener);
 end;
 

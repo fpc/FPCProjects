@@ -22,12 +22,14 @@ type
 
   TDCSConsoleServer = class(TThread, IDCSListener)
   private
-    FLisId: integer;
+    FListenerId: integer;
     FInOutputProcessor: TDCSCustomInOutputProcessor;
     FDistributor: TDCSDistributor;
     FEventStrQueue: TDCSEventQueue;
   protected
     procedure Execute; override;
+    procedure InitListener(AListenerId: Integer);
+    function GetListenerId: Integer;
   public
     constructor create(ADistributor: TDCSDistributor);
     function GetOrigin: string;
@@ -49,8 +51,8 @@ var
 begin
   CommandStr := '';
   InputStream:=TInputPipeStream.Create(StdInputHandle);
-  FLisId := FDistributor.AddListener(self);
-  FInOutputProcessor := TDCSJSonInOutputProcessor.create(FLisId, FDistributor);
+  FDistributor.AddListener(self);
+  FInOutputProcessor := TDCSJSonInOutputProcessor.create(FListenerId, FDistributor);
   try
     while not terminated do
       begin
@@ -95,6 +97,16 @@ procedure TDCSConsoleServer.SendEvent(AnEvent: TDCSEvent);
 begin
   if assigned(FInOutputProcessor) then
     FEventStrQueue.PushItem(FInOutputProcessor.EventToText(AnEvent));
+end;
+
+procedure TDCSConsoleServer.InitListener(AListenerId: Integer);
+begin
+  FListenerId := FListenerId;
+end;
+
+function TDCSConsoleServer.GetListenerId: Integer;
+begin
+  Result := FListenerId;
 end;
 
 destructor TDCSConsoleServer.Destroy;

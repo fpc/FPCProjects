@@ -55,11 +55,13 @@ type
     FDistributor: TDCSDistributor;
     FResponseQueue: TThreadedQueueString;
     FDebugTcpServer: TDCSTcpServer;
-    FLisId: integer;
+    FListenerId: integer;
     FInOutputProcessor: TDCSCustomInOutputProcessor;
   protected
     procedure Execute; override;
     procedure SendCommand(ACommandStr: string);
+    function GetListenerId: Integer;
+    procedure InitListener(AListenerId: Integer);
   public
     procedure SendEvent(AnEvent: TDCSEvent);
     function GetOrigin: string;
@@ -98,7 +100,7 @@ procedure TDCSTcpConnectionThread.Execute;
         // Lost connection
         end
       else
-        FDistributor.SendNotification(FLisId, ntConnectionProblem, null, 'Error during write. Socket-error: %d', '', [FData.LastError]);
+        FDistributor.SendNotification(FListenerId, ntConnectionProblem, null, 'Error during write. Socket-error: %d', '', [FData.LastError]);
       Terminate;
       end
     else if i < length(AStr) then
@@ -115,7 +117,7 @@ var
 begin
   WriteString('Welcome to FPDebug-server.');
   if not Terminated then
-    WriteString('Your connection-idenfifier is '+IntToStr(FLisId)+'.');
+    WriteString('Your connection-idenfifier is '+IntToStr(FListenerId)+'.');
   if not Terminated then
     WriteString('Send "help<enter>" for more information.');
   while not terminated do
@@ -167,6 +169,16 @@ begin
     FDistributor.QueueCommand(ACommand);
 end;
 
+function TDCSTcpConnectionThread.GetListenerId: Integer;
+begin
+  result := FListenerId;
+end;
+
+procedure TDCSTcpConnectionThread.InitListener(AListenerId: Integer);
+begin
+  FListenerId := AListenerId;
+end;
+
 procedure TDCSTcpConnectionThread.SendEvent(AnEvent: TDCSEvent);
 var
   s: string;
@@ -197,8 +209,8 @@ begin
   FDistributor := ADistributor;
   FDebugTcpServer := ADebugTcpServer;
   FResponseQueue:=TThreadedQueueString.create(100, INFINITE, 100);
-  FLisId := FDistributor.AddListener(self);
-  FInOutputProcessor := TDCSJSonInOutputProcessor.create(FLisId, FDistributor);
+  FListenerId := FDistributor.AddListener(self);
+  FInOutputProcessor := TDCSJSonInOutputProcessor.create(FListenerId, FDistributor);
   inherited create(false);
 end;
 
