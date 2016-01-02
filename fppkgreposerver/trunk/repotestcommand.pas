@@ -196,7 +196,7 @@ begin
   FUniqueId := -1;
   CommandExecutioner := TCommandExecutioner.Create(FDistributor);
   try
-    Command := TDBGetUniqueIdCommand.Create(CommandExecutioner.LisId, null, FDistributor);
+    Command := TDBGetUniqueIdCommand.Create(CommandExecutioner.ListenerId, null, FDistributor);
     Event := CommandExecutioner.ExecuteCommand(Command, 5000);
     if Assigned(Event) then
       begin

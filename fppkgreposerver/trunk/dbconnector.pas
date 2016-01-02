@@ -23,9 +23,12 @@ type
     FDBName: string;
     FDBUser: string;
     FDBPassword: string;
-    FLisId: Integer;
+    FListenerId: Integer;
   protected
     function CreateController: TDCSCustomController; override;
+    // IDCSListener
+    procedure InitListener(AListenerId: Integer);
+    function GetListenerId: Integer;
   public
     constructor create(ADistributor: TDCSDistributor; DBName, DBUser,DBPassword: string);
     destructor Destroy; override;
@@ -201,7 +204,7 @@ end;
 constructor TDbConnectorHandlerThread.create(ADistributor: TDCSDistributor; DBName, DBUser, DBPassword: string);
 begin
   inherited Create(ADistributor, TDBController);
-  FLisId := Distributor.AddListener(self);
+  Distributor.AddListener(self);
 
   FDBName := DBName;
   FDBPassword :=  DBPassword;
@@ -222,7 +225,7 @@ begin
   if AnEvent is TTestCommandNotificationEvent then
     begin
     Event := TTestCommandNotificationEvent(AnEvent);
-    Command := TDBStoreCommmandNotification.Create(FLisId, null, Distributor);
+    Command := TDBStoreCommmandNotification.Create(FListenerId, null, Distributor);
     Command.UniqueId := Event.UniqueId;
     Command.NotificationType := Event.NotificationType;
     Command.LogLineList.Clone(Event.LogLineList);
@@ -233,6 +236,16 @@ end;
 function TDbConnectorHandlerThread.GetOrigin: string;
 begin
   result := 'DBConnector';
+end;
+
+procedure TDbConnectorHandlerThread.InitListener(AListenerId: Integer);
+begin
+  FListenerId := AListenerId;
+end;
+
+function TDbConnectorHandlerThread.GetListenerId: Integer;
+begin
+  Result := FListenerId;
 end;
 
 end.

@@ -21,17 +21,19 @@ type
   TCommandExecutioner = class(TObject, IDCSListener)
   private
     FDistributor: TDCSDistributor;
-    FLisId: Integer;
+    FListenerId: Integer;
     FRTLEvent: PRTLEvent;
     FEvent: TDCSNotificationEvent;
   protected
     procedure SendEvent(AnEvent: TDCSEvent);
     function GetOrigin: string;
+    function GetListenerId: Integer;
+    procedure InitListener(AListenerId: Integer);
   public
     constructor Create(ADistributor: TDCSDistributor);
     destructor Destroy; override;
     function ExecuteCommand(ACommand: TDCSThreadCommand; ATimeout: LongInt): TDCSNotificationEvent;
-    property LisId: Integer read FLisId;
+    property ListenerId: Integer read FListenerId;
   end;
 
   { TRepoController }
@@ -101,7 +103,7 @@ begin
   if AnEvent is TDCSNotificationEvent then
     begin
     Event := TDCSNotificationEvent(AnEvent);
-    if (Event.LisId=FLisId) and (Event.NotificationType in [ntInvalidCommand, ntFailedCommand, ntExecutedCommand]) then
+    if (Event.LisId=FListenerId) and (Event.NotificationType in [ntInvalidCommand, ntFailedCommand, ntExecutedCommand]) then
       begin
       FEvent := Event;
       FEvent.AddRef;
@@ -115,10 +117,20 @@ begin
   Result := 'TCommandExecutioner';
 end;
 
+function TCommandExecutioner.GetListenerId: Integer;
+begin
+  result := FListenerId;
+end;
+
+procedure TCommandExecutioner.InitListener(AListenerId: Integer);
+begin
+  FListenerId := AListenerId;
+end;
+
 constructor TCommandExecutioner.Create(ADistributor: TDCSDistributor);
 begin
   FDistributor := ADistributor;
-  FLisId := FDistributor.AddListener(Self);
+  FDistributor.AddListener(Self);
   FRTLEvent := RTLEventCreate;
 end;
 
