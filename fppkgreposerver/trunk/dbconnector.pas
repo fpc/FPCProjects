@@ -12,7 +12,9 @@ uses
   IBConnection,
   lazCollections,
   dcsHandler,
-  RepoTestCommand;
+  dcsThreadCommandFactory,
+  RepoTestCommand,
+  pkgglobals;
 
 type
 
@@ -78,10 +80,129 @@ type
     property LogLineList: TLogLineList read FLogLineList;
   end;
 
+  { TDBStoreCommmandNotificationEvent }
+
+  TDBStoreCommmandNotificationEvent = class(TTestCommandNotificationEvent)
+  private
+    FState: string;
+    FTestUID: String;
+  published
+    property TestUID: string read FTestUID write FTestUID;
+    property State: string read FState write FState;
+  end;
+
+  { TDBQueryTestResultCommand }
+
+  TDBQueryTestResultCommand = class(TDBCommand)
+  private
+    FUniqueId: integer;
+    FState: String;
+    FReceivedTime, FFinishedTime: TDateTime;
+    FTestUID: string;
+    FLogLineList: TLogLineList;
+  protected
+    function GetNotificationCommandEventClass: TDCSNotificationEventClass; override;
+    function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent; override;
+    function StringToLogLevel(AStr: string): TLogLevel;
+  public
+    function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
+    class function TextName: string; override;
+    destructor Destroy; override;
+  published
+    property UniqueId: integer read FUniqueId write FUniqueId;
+  end;
+
 implementation
 
 uses
   RepoController;
+
+{ TDBQueryTestResultCommand }
+
+function TDBQueryTestResultCommand.GetNotificationCommandEventClass: TDCSNotificationEventClass;
+begin
+  Result := TDBStoreCommmandNotificationEvent;
+end;
+
+function TDBQueryTestResultCommand.CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent;
+var
+  Event: TDBStoreCommmandNotificationEvent;
+begin
+  Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage);
+  Event := TDBStoreCommmandNotificationEvent(Result);
+  Event.LogLineList.Clone(FLogLineList);
+  Event.UniqueId := FUniqueId;
+  Event.TestUID := FTestUID;
+  case FState of
+    'R' : Event.State := 'Pending';
+    'C' : Event.State := 'Complete';
+    'F' : Event.State := 'Failed';
+  else
+    Event.State := 'Unknown';
+  end;
+end;
+
+function TDBQueryTestResultCommand.StringToLogLevel(AStr: string): TLogLevel;
+var
+  L: TLogLevel;
+begin
+  for L := low(TLogLevel) to high(TLogLevel) do
+    begin
+    if AStr=SLogLevel[L] then
+      begin
+      Result := L;
+      Exit;
+      end;
+    end;
+  raise exception.CreateFmt('Invalid loglevel %s',[AStr]);
+end;
+
+function TDBQueryTestResultCommand.DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
+var
+  Query: TSQLQuery;
+  LogLine: TLogLine;
+begin
+  Query := TDBController(AController).CreateQuery;
+  try
+    Query.SQL.Text := 'select uid, state, receivedtime, finishedtime from command where commandid=:commandid;';
+    Query.ParamByName('commandid').AsInteger := UniqueId;
+    Query.Open;
+    Result := not Query.EOF;
+    if Result then
+      begin
+      FState := Query.FieldByName('state').AsString;
+      FTestUID := Query.FieldByName('uid').AsString;
+      FReceivedTime := Query.FieldByName('receivedtime').AsDateTime;
+      FFinishedTime := Query.FieldByName('finishedtime').AsDateTime;
+      Query.Close;
+      Query.SQL.Text := 'select * from commandlogline where commandid=:commandid';
+      Query.ParamByName('commandid').AsInteger := UniqueId;
+      Query.Open;
+      FLogLineList := TLogLineList.Create;
+      while not Query.EOF do
+        begin
+        LogLine := TLogLine.Create;
+        LogLine.Msg := Query.FieldByName('message').AsString;
+        LogLine.LogLevel := StringToLogLevel(Query.FieldByName('loglevel').AsString);
+        FLogLineList.Add(LogLine);
+        Query.Next;
+        end;
+      end;
+  finally
+    Query.Free;
+  end;
+end;
+
+class function TDBQueryTestResultCommand.TextName: string;
+begin
+  result := 'querytestresult';
+end;
+
+destructor TDBQueryTestResultCommand.Destroy;
+begin
+  FLogLineList.Free;
+  inherited Destroy;
+end;
 
 { TDBStoreCommmandNotification }
 
@@ -248,5 +369,7 @@ begin
   Result := FListenerId;
 end;
 
+initialization
+  TDCSThreadCommandFactory.RegisterCommandClass(TDBQueryTestResultCommand);
 end.
 
