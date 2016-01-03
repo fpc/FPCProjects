@@ -69,6 +69,7 @@ type
   private
     FPackageName: string;
     FLogLineList: TLogLineList;
+    FPackageURL: string;
     FUniqueId: Integer;
   protected
     function GetNotificationCommandEventClass: TDCSNotificationEventClass; override;
@@ -83,6 +84,7 @@ type
     property UniqueId: Integer read FUniqueId;
   published
     property PackageName: string read FPackageName write FPackageName;
+    property PackageURL: string read FPackageURL write FPackageURL;
   end;
 
   { TRepoQuitCommand }
@@ -226,11 +228,26 @@ var
 begin
   Message := '';
   Result := False;
-  Package := AvailableRepository.FindPackage(PackageName);
+
+  TRepoController(AController).Init;
+
+  if (PackageURL<>'') then
+  begin
+    if (PackageName<>'') then
+    begin
+      AddToTestLog(llWarning, 'Packagename and PackageURL can not be used combined.');
+      Message := 'Test failed. Invalid parameters (Packagename and Packageurl).';
+      Exit;
+    end;
+
+    Package := AvailableRepository.AddPackage(URLPackageName);
+    Package.DownloadURL := PackageURL;
+  end
+  else
+    Package := AvailableRepository.FindPackage(PackageName);
   if Assigned(Package) then
   begin
     try
-      TRepoController(AController).Init;
       pkghandler.ExecuteAction(Package.Name, 'install');
       Result := true;
     except
