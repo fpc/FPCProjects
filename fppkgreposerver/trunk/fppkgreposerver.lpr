@@ -46,9 +46,12 @@ var
   Port, SensePorts: Longint;
   TCPServerThread: TDCSTcpServer;
   ADbConnector: TDbConnectorHandlerThread;
+  DBName: string;
+  DBUser: string;
+  DBPassword: string;
 begin
   // quick check parameters
-  ErrorMsg:=CheckOptions('htp:a::d', ['help','tcp','port:','autoport::','dbstorage']);
+  ErrorMsg:=CheckOptions('htp:a::d', ['help','tcp','port:','autoport::','dbstorage','dbname:','dbuser:','dbpassword:']);
   if ErrorMsg<>'' then begin
     ShowException(Exception.Create(ErrorMsg));
     Terminate;
@@ -74,6 +77,18 @@ begin
     end
   else
     Port := 9250;
+
+  DBName := GetOptionValue('dbname');
+  if DBName='' then
+    DBName := 'localhost:fppkg';
+
+  DBUser := GetOptionValue('dbuser');
+  if DBUser='' then
+    DBUser := 'sysdba';
+
+  DBPassword := GetOptionValue('dbpassword');
+  if DBPassword='' then
+    DBPassword := 'masterkey';
 
   if HasOption('a','autoport') then
     begin
@@ -106,7 +121,7 @@ begin
 
     if HasOption('d','dbstorage') then
       begin
-      ADbConnector := TDbConnectorHandlerThread.Create(FDistributor,'localhost:fppkg','sysdba','masterkey');
+      ADbConnector := TDbConnectorHandlerThread.Create(FDistributor,DBName,DBUser,DBPassword);
       FDistributor.AddHandlerThread(ADbConnector);
       end
     else
@@ -180,7 +195,7 @@ end;
 procedure TFppkgRepoServer.WriteHelp;
 begin
   { add your help code here }
-  writeln('Usage: ', ExeName, ' --help --tcp --dbstorage --port <port> -autoport <count>');
+  writeln('Usage: ', ExeName, ' --help --tcp --dbstorage --port <port> --autoport <count> --dbuser <dbuser> --dbpassword <dbpassword> --dbname <dbname>');
 end;
 
 var
