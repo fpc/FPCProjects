@@ -243,7 +243,7 @@ begin
   end
   else
   begin
-    FDistributor.Log('Package "'+PackageName+'" not found.', etWarning, UID);
+    AddToTestLog(llWarning, 'Package "'+PackageName+'" not found.');
     Message := Format('Test failed. Package "%s" not found.',[PackageName]);
   end;
 end;
@@ -252,6 +252,7 @@ procedure TRepoTestCommand.AddToTestLog(ALevel: TLogLevel; AMsg: String);
 var
   LogLine: TLogLine;
 begin
+  inherited;
   LogLine := TLogLine.Create;
   LogLine.LogLevel := ALevel;
   LogLine.Msg := AMsg;
