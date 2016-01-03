@@ -14,6 +14,7 @@ uses
   pkgrepos,
   fprepos,
   pkgglobals,
+  pkgoptions,
   pkghandler,
   pkgfpmake,
   pkgcommands,
@@ -27,6 +28,7 @@ type
   TRepoInitializeCommand = class(TRepoCommand)
   private
     function ExecuteProcess(ACmd: string; AParamList: array of const): boolean;
+    procedure MaybeCreateLocalDirs;
     function RemoveTree(APath: String): Boolean;
   public
     class function TextName: string; override;
@@ -52,15 +54,14 @@ end;
 
 function TRepoUpdateCommand.DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
-  Package: TFPPackage;
-  Success: Boolean;
   Message: String;
 begin
   Result := False;
 
   try
     pkghandler.ExecuteAction('', 'update');
-    Success := true;
+    ClearExecutedAction;
+    Result := true;
   except
     on E: Exception do
       begin
@@ -168,6 +169,13 @@ begin
   result := 'initialize';
 end;
 
+procedure TRepoInitializeCommand.MaybeCreateLocalDirs;
+begin
+  ForceDirectories(GlobalOptions.BuildDir);
+  ForceDirectories(GlobalOptions.ArchivesDir);
+  ForceDirectories(GlobalOptions.CompilerConfigDir);
+end;
+
 function TRepoInitializeCommand.DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
   FpcmkcfgBin: string;
@@ -220,6 +228,8 @@ begin
       raise exception.create('Failed to create default');
 
     RemoveTree(RepoDir+'fpc'+{$ifdef unix}DirectorySeparator+'lib'+DirectorySeparator+'fpc'+DirectorySeparator+CompilerVersion+{$endif}DirectorySeparator+'fpmkinst');
+
+    MaybeCreateLocalDirs;
 
     if FindFirst(UnitDir+AllFiles, faDirectory, sr) = 0 then
       begin
