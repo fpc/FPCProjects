@@ -51,7 +51,7 @@ type
 
   { TTestCommandNotificationEvent }
 
-  TTestCommandNotificationEvent = class(TDCSNotificationEvent)
+  TCustomTestCommandNotificationEvent = class(TDCSNotificationEvent)
   private
     FLogLineList: TLogLineList;
     FUniqueId: Integer;
@@ -62,6 +62,8 @@ type
     property LogLineList: TLogLineList read FLogLineList;
     property UniqueId: Integer read FUniqueId write FUniqueId;
   end;
+
+  TTestCommandNotificationEvent = class(TCustomTestCommandNotificationEvent);
 
   { TRepoTestCommand }
 
@@ -124,13 +126,13 @@ end;
 
 { TTestCommandNotificationEvent }
 
-constructor TTestCommandNotificationEvent.Create;
+constructor TCustomTestCommandNotificationEvent.Create;
 begin
   inherited Create;
   FLogLineList := TLogLineList.Create(True);
 end;
 
-destructor TTestCommandNotificationEvent.Destroy;
+destructor TCustomTestCommandNotificationEvent.Destroy;
 begin
   FLogLineList.Free;
   inherited Destroy;

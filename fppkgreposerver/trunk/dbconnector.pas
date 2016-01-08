@@ -82,7 +82,7 @@ type
 
   { TDBStoreCommmandNotificationEvent }
 
-  TDBStoreCommmandNotificationEvent = class(TTestCommandNotificationEvent)
+  TDBStoreCommmandNotificationEvent = class(TCustomTestCommandNotificationEvent)
   private
     FState: string;
     FTestUID: String;
