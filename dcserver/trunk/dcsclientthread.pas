@@ -72,6 +72,7 @@ var
   InputStr: string;
   JSonData: TJSONData;
   ASocket: TInetSocket;
+  CanHaveMoreData: Boolean;
 
   function ReadString: string;
   var
@@ -79,13 +80,16 @@ var
     s: string;
   begin
     // First see if there is a string left in the input-buffer.
-    i := pos(#10, InputStr);
-    if i > 0 then
+    if CanHaveMoreData then
       begin
-      s := copy(InputStr, 1, i-1);
-      delete(InputStr,1,i);
-      result := s;
-      exit;
+      i := pos(#10, InputStr);
+      if i > 0 then
+        begin
+        s := copy(InputStr, 1, i-1);
+        delete(InputStr,1,i);
+        result := s;
+        exit;
+        end
       end;
 
     result := '';
@@ -115,7 +119,10 @@ var
         s := copy(InputStr, 1, i-1);
         delete(InputStr,1,i);
         result := s;
-        end;
+        CanHaveMoreData := True;
+        end
+      else
+        CanHaveMoreData := False;
       end;
   end;
 
@@ -127,7 +134,7 @@ var
     result := ReadString;
     while not terminated and (result='') and ((GetTickCount64-tc)<ATimeout) do
       begin
-      sleep(1);
+      ThreadSwitch();
       result := ReadString;
       end;
   end;
@@ -136,6 +143,7 @@ var
   IsConnected: boolean;
 begin
   IsConnected:=false;
+  CanHaveMoreData:=false;
   FErrMessage:='';
   try
     ASocket := TInetSocket.Create(FHostName, FPort);
