@@ -115,48 +115,55 @@ var
   InputBuffer: array[0..InputBufferSize-1] of char;
   InputStr: string;
 begin
-  WriteString('Welcome to FPDebug-server.');
-  if not Terminated then
-    WriteString('Your connection-idenfifier is '+IntToStr(FListenerId)+'.');
-  if not Terminated then
-    WriteString('Send "help<enter>" for more information.');
-  while not terminated do
-    begin
-    i := FData.Read(InputBuffer[0], InputBufferSize);
-    if i > 0 then
+  try
+    WriteString('Welcome to FPDebug-server.');
+    if not Terminated then
+      WriteString('Your connection-idenfifier is '+IntToStr(FListenerId)+'.');
+    if not Terminated then
+      WriteString('Send "help<enter>" for more information.');
+    while not terminated do
       begin
-      setlength(s,i);
-      move(InputBuffer[0],s[1],i);
-      s := StringReplace(s,#13#10,#10,[rfReplaceAll]);
-      InputStr:=InputStr+s;
-      i := pos(#10, InputStr);
-      while i > 0 do
+      i := FData.Read(InputBuffer[0], InputBufferSize);
+      if i > 0 then
         begin
-        s := copy(InputStr, 1, i-1);
-        delete(InputStr,1,i);
-        SendCommand(S);
+        setlength(s,i);
+        move(InputBuffer[0],s[1],i);
+        s := StringReplace(s,#13#10,#10,[rfReplaceAll]);
+        InputStr:=InputStr+s;
         i := pos(#10, InputStr);
-        end;
-      end
-    else if i < 0 then
-      begin
-      if FData.LastError<> ESysEAGAIN then
+        while i > 0 do
+          begin
+          s := copy(InputStr, 1, i-1);
+          delete(InputStr,1,i);
+          SendCommand(S);
+          i := pos(#10, InputStr);
+          end;
+        end
+      else if i < 0 then
         begin
-        writeln('Error during write. Socket-error: '+inttostr(FData.LastError));
+        if FData.LastError<> ESysEAGAIN then
+          begin
+          writeln('Error during write. Socket-error: '+inttostr(FData.LastError));
+          Terminate;
+          end;
+        end
+      else if i = 0 then
+        begin
+        // Zero-count -> Connection closed
         Terminate;
         end;
-      end
-    else if i = 0 then
-      begin
-      // Zero-count -> Connection closed
-      Terminate;
-      end;
 
-    if not terminated and (FResponseQueue.PopItem(s) = wrSignaled) then
-      begin
-      WriteString(s);
+      if not terminated and (FResponseQueue.PopItem(s) = wrSignaled) then
+        begin
+        WriteString(s);
+        end;
       end;
-    end;
+  except
+    on E: Exception do
+      begin
+      FDistributor.Log(Format('Exception raised by tcp-connection (%s): %s', [GetOrigin, E.Message]), etWarning, Null);
+      end;
+  end;
   FDebugTcpServer.RemoveConnection(self);
 end;
 
