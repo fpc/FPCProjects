@@ -9,6 +9,7 @@ uses
   SysUtils,
   ssockets,
   BaseUnix,
+  math,
   sockets,
   syncobjs,
   lazCollections,
@@ -88,23 +89,48 @@ procedure TDCSTcpConnectionThread.Execute;
 
   procedure WriteString(AStr: string);
   var
+    timeout: integer;
     i: integer;
+    written: integer;
+    total: integer;
   begin
     AStr := AStr + #10;
-    i := FData.Write(AStr[1], length(AStr));
+    total := length(AStr);
+    written := 0;
+    timeout := 0;
 
-    if i < 0 then
-      begin
-      if FData.LastError=ESysEPIPE then
+    repeat
+      i := FData.Write(AStr[written+1], min(total-written, 65536));
+
+      if i < 0 then
         begin
-        // Lost connection
+        if FData.LastError=ESysEAGAIN then
+          begin
+          if timeout>100 then
+            begin
+            FDistributor.SendNotification(FListenerId, ntConnectionProblem, null, 'Error during write. Timeout.', '');
+            Terminate;
+            end;
+          sleep(10);
+          inc(timeout);
+          end
+        else
+          begin
+          if FData.LastError=ESysEPIPE then
+            begin
+            // Lost connection
+            end
+          else
+            FDistributor.SendNotification(FListenerId, ntConnectionProblem, null, 'Error during write. Socket-error: %d', '', [FData.LastError]);
+          Terminate;
+          end;
         end
       else
-        FDistributor.SendNotification(FListenerId, ntConnectionProblem, null, 'Error during write. Socket-error: %d', '', [FData.LastError]);
-      Terminate;
-      end
-    else if i < length(AStr) then
-      raise exception.create('Message has not been send to client entirely');
+        begin
+        inc(written, i);
+        timeout := 0;
+        end;
+    until terminated or (written >= total);
   end;
 
 const
