@@ -64,19 +64,32 @@ end;
 
 procedure TDCSClientThread.Execute;
 const
-  InputBufferSize = 1024;
+  InputBufferSize = 4096;
 var
   SendStr: string;
   s: string;
-  i: integer;
+  i,j: integer;
   InputStr: string;
   JSonData: TJSONData;
   ASocket: TInetSocket;
   CanHaveMoreData: Boolean;
+  Startpos: Integer;
 
-  function ReadString: string;
+  function ScanForEndStr(StartPos, MaxLen: Integer) : Integer;
   var
-    InputBuffer: array[0..InputBufferSize-1] of char;
+    k: integer;
+  begin
+    Result := 0;
+    for k := StartPos+1 to StartPos+MaxLen do
+      if InputStr[k]=#10 then
+        begin
+        Result := k;
+        break;
+        end;
+  end;
+
+  function ReadString(out DataWaiting: Boolean): string;
+  var
     s: string;
   begin
     // First see if there is a string left in the input-buffer.
@@ -87,13 +100,19 @@ var
         begin
         s := copy(InputStr, 1, i-1);
         delete(InputStr,1,i);
+        Startpos := Length(InputStr);
+        DataWaiting := Startpos>0;
+        CanHaveMoreData := DataWaiting;
         result := s;
         exit;
-        end
+        end;
       end;
 
+    DataWaiting := False;
+    CanHaveMoreData := False;
     result := '';
-    i := ASocket.Read(InputBuffer[0], InputBufferSize-1);
+    SetLength(InputStr, Startpos + InputBufferSize);
+    i := ASocket.Read(InputStr[1+Startpos], InputBufferSize);
     if i=0 then
       begin
       // Connection closed
@@ -106,44 +125,53 @@ var
         begin
         FErrMessage := 'Error during write to server. Socket-error: '+inttostr(ASocket.LastError);
         Terminate;
-        end;
+        end
       end
     else if i > 0 then
       begin
-      setlength(s,i);
-      move(InputBuffer[0],s[1],i);
-      InputStr:=InputStr+s;
-      i := pos(#10, InputStr);
-      if i > 0 then
+      SetLength(InputStr,Startpos+i);
+      j := ScanForEndStr(Startpos, i);
+      if j > 0 then
         begin
-        s := copy(InputStr, 1, i-1);
-        delete(InputStr,1,i);
+        s := copy(InputStr, 1, j-1);
+        delete(InputStr,1,j);
+        Startpos := Length(InputStr);
+        DataWaiting := Startpos>0;
+        CanHaveMoreData := DataWaiting;
         result := s;
-        CanHaveMoreData := True;
         end
       else
-        CanHaveMoreData := False;
+        begin
+        Startpos := Startpos+i;
+        DataWaiting := True;
+        end;
       end;
   end;
 
   function ReadStringTimeout(ATimeout: integer): string;
   var
     tc: int64;
+    DataWaiting: Boolean;
   begin
     tc := GetTickCount64;
-    result := ReadString;
+    result := ReadString(DataWaiting);
     while not terminated and (result='') and ((GetTickCount64-tc)<ATimeout) do
       begin
-      ThreadSwitch();
-      result := ReadString;
+      if not DataWaiting then
+        ThreadSwitch();
+      result := ReadString(DataWaiting);
       end;
   end;
 
 var
   IsConnected: boolean;
+  PopResult: TWaitResult;
+  DataWaiting: boolean;
 begin
   IsConnected:=false;
   CanHaveMoreData:=false;
+  InputStr:='';
+  Startpos := 0;
   FErrMessage:='';
   try
     ASocket := TInetSocket.Create(FHostName, FPort);
@@ -175,7 +203,6 @@ begin
             end;
           end;
 
-
         if not IsConnected then
           begin
           FErrMessage:='Connected to '+FHostName+':'+inttostr(FPort)+', but failed to negotiate handshake.';
@@ -185,8 +212,7 @@ begin
 
       while not terminated do
         begin
-        repeat
-        s:=ReadString;
+        s:=ReadString(DataWaiting);
         if s<>'' then
           begin
           JSonData := GetJSON(s);
@@ -195,28 +221,35 @@ begin
           else
             raise exception.CreateFmt('JSon-command %s is not a JSON-Object.',[s]);
           end;
-        // When one string has been received, there is a large chance that there is more
-        // input waiting. Keep checking for input until the input-buffer is empty, before
-        // the thread starts waiting for new commands using FSendQueue.PopItem.
-        until s='';
 
-        if not terminated and (FSendQueue.PopItem(JSonData) = wrSignaled) then
+        if not terminated then
           begin
-          SendStr := JSonData.AsJSON + #10;
-          i := ASocket.Write(SendStr[1], length(SendStr));
+          // If there is more data wating in the tcpip-inputbuffer, do not wait
+          // for the timeout. This way the input-buffer will be processed as
+          // soon as possible.
+          if DataWaiting then
+            PopResult := FSendQueue.PopItemTimeout(JSonData, 0)
+          else
+            PopResult := FSendQueue.PopItem(JSonData);
 
-          if i < 0 then
+          if PopResult = wrSignaled then
             begin
-            if ASocket.LastError=32 then
+            SendStr := JSonData.AsJSON + #10;
+            i := ASocket.Write(SendStr[1], length(SendStr));
+
+            if i < 0 then
               begin
-              // Lost connection
+              if ASocket.LastError=32 then
+                begin
+                // Lost connection
+                end
+              else
+                FErrMessage := Format('Error during write. Socket-error: %d',[ASocket.LastError]);
+              Terminate;
               end
-            else
-              FErrMessage := Format('Error during write. Socket-error: %d',[ASocket.LastError]);
-            Terminate;
-            end
-          else if i < length(SendStr) then
-            raise exception.create('Message has not been send to client entirely');
+            else if i < length(SendStr) then
+              raise exception.create('Message has not been send to client entirely');
+            end;
           end;
         end;
     finally
