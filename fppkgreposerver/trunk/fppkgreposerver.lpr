@@ -19,7 +19,8 @@ uses
   RepoTestCommand,
   RepoController,
   repoinitializecommand,
-  dbconnector;
+  dbconnector,
+  RepoSvnCommands;
 
 type
 
