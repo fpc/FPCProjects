@@ -10,7 +10,6 @@ uses
   Classes,
   SysUtils,
   contnrs,
-  fgl,
   dcsHandler,
   fpjson,
   CustApp,
@@ -46,7 +45,7 @@ type
 
   TLogLineList = class(TCustLogLineList)
   public
-    function Clone(AFrom: TLogLineList): TLogLineList;
+    procedure Clone(AFrom: TLogLineList);
   end;
 
   { TTestCommandNotificationEvent }
@@ -113,7 +112,7 @@ end;
 
 { TLogLineList }
 
-function TLogLineList.Clone(AFrom: TLogLineList): TLogLineList;
+procedure TLogLineList.Clone(AFrom: TLogLineList);
 var
   I: Integer;
 begin
