@@ -178,13 +178,15 @@ var
   OldRepoDir: string;
   s, e: String;
   SVNRepository: TSVNRepository;
+  RepoVersion: string;
 begin
   RepoDir := TRepoController(AController).PublishedRepoDir;
+  RepoVersion := TRepoController(AController).SvnBranchToFPCVersion(FRepositoryFPCVersion);
 
-  TmpRepoDir := RepoDir+Repository+PathDelim+FRepositoryFPCVersion+'_tmp';
+  TmpRepoDir := RepoDir+Repository+PathDelim+RepoVersion+'_tmp';
   if DirectoryExists(TmpRepoDir) then
     RemoveTree(TmpRepoDir);
-  OldRepoDir := RepoDir+Repository+PathDelim+FRepositoryFPCVersion+'_old';
+  OldRepoDir := RepoDir+Repository+PathDelim+RepoVersion+'_old';
   if DirectoryExists(OldRepoDir) then
     RemoveTree(OldRepoDir);
 
@@ -197,9 +199,9 @@ begin
       ReturnMessage := e
     else
       begin
-      if DirectoryExists(RepoDir+Repository+PathDelim+FRepositoryFPCVersion) then
-        RenameFile(RepoDir+Repository+PathDelim+FRepositoryFPCVersion, OldRepoDir);
-      Result := RenameFile(TmpRepoDir, RepoDir+Repository+PathDelim+FRepositoryFPCVersion);
+      if DirectoryExists(RepoDir+Repository+PathDelim+RepoVersion) then
+        RenameFile(RepoDir+Repository+PathDelim+RepoVersion, OldRepoDir);
+      Result := RenameFile(TmpRepoDir, RepoDir+Repository+PathDelim+RepoVersion);
       RemoveTree(OldRepoDir);
       end;
   finally
@@ -462,15 +464,15 @@ procedure TRepoSvnUpdatePackageCommand.UpdatePackageFileSearcherFileFound(FileIt
 var
   NewLoc: string;
   NewFile: Boolean;
-  s: string;
+  s,e: string;
 begin
   NewLoc:=StringReplace(FileIterator.FileName, FTempDir+'src', FTempDir+'checkout', []);
   NewFile:=not FileExists(NewLoc);
   CopyFile(FileIterator.FileName, NewLoc, [cffCreateDestDirectory,cffOverwriteFile,cffPreserveTime],true);
   if NewFile then
     begin
-    if FSVNRepository.RunSvn(['add',''], s) <> 0 then
-      raise Exception.CreateFmt('Failed to svn-add file %s',[NewLoc]);
+    if FSVNRepository.RunSvn(['add',''], s, e) <> 0 then
+      raise Exception.CreateFmt('Failed to svn-add file %s. Msg: %s',[NewLoc, e]);
     end;
 end;
 

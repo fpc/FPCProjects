@@ -47,10 +47,13 @@ type
     FTestCompiler: String;
     FTargetString: String;
     FCompilerVersion: String;
+    FIniFile: TIniFile;
     procedure LoadIniFile;
   public
     constructor Create(ADistributor: TDCSDistributor); override;
+    destructor Destroy; override;
     function AcceptCommand(ACommand: TDCSThreadCommand): Boolean; override;
+    function SvnBranchToFPCVersion(ABranchName: string): string;
     procedure Init; override;
     procedure LoadRepository;
     property RepoDir: string read FRepoDir;
@@ -240,22 +243,20 @@ end;
 
 procedure TRepoController.LoadIniFile;
 var
-  IniFile: TIniFile;
   CfgFile: String;
 begin
   CfgFile:=ChangeFileExt(ParamStr(0), '.ini');
-  IniFile := TIniFile.Create(CfgFile);
-  try
-    FRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(IniFile.ReadString('Settings','repodir','repotest')));
-    FStartCompiler := ExpandFileName(IniFile.ReadString('Settings','startcompiler','ppc386'+ExeExt));
-    FTestCompiler := IniFile.ReadString('Settings','testcompiler','ppc386'+ExeExt);
-    FTargetString := IniFile.ReadString('Settings','targetstring','i386-win32');
-    FCompilerVersion := IniFile.ReadString('Settings','compilerversion','3.0.0');
-    FPublishedRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(IniFile.ReadString('Settings','publishedrepodir','repo')));
-    FSvnUrl := IniFile.ReadString('Settings','svnurl','https://localhost/svn/fppkg_repo');
-  finally
-    IniFile.Free;
-  end;
+  if Assigned(FIniFile) then
+    FIniFile.Free;
+  FIniFile := TIniFile.Create(CfgFile);
+
+  FRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(FIniFile.ReadString('Settings','repodir','repotest')));
+  FStartCompiler := ExpandFileName(FIniFile.ReadString('Settings','startcompiler','ppc386'+ExeExt));
+  FTestCompiler := FIniFile.ReadString('Settings','testcompiler','ppc386'+ExeExt);
+  FTargetString := FIniFile.ReadString('Settings','targetstring','i386-win32');
+  FCompilerVersion := FIniFile.ReadString('Settings','compilerversion','3.0.0');
+  FPublishedRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(FIniFile.ReadString('Settings','publishedrepodir','repo')));
+  FSvnUrl := FIniFile.ReadString('Settings','svnurl','https://localhost/svn/fppkg_repo');
 end;
 
 constructor TRepoController.Create(ADistributor: TDCSDistributor);
@@ -263,9 +264,20 @@ begin
   inherited Create(ADistributor);
 end;
 
+destructor TRepoController.Destroy;
+begin
+  FIniFile.Free;
+  inherited Destroy;
+end;
+
 function TRepoController.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
 begin
   Result := (ACommand is TRepoCommand) or (ACommand is TRepoQuitCommand);
+end;
+
+function TRepoController.SvnBranchToFPCVersion(ABranchName: string): string;
+begin
+  result := FIniFile.ReadString('RepoVersions',ABranchName, ABranchName);
 end;
 
 procedure TRepoController.Init;
