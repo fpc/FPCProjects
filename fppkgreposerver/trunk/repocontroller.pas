@@ -40,6 +40,7 @@ type
 
   TRepoController = class(TDCSCustomController)
   private
+    FPublishedRepoDir: string;
     FRepoDir: String;
     FStartCompiler: String;
     FTestCompiler: String;
@@ -56,11 +57,14 @@ type
     property TargetString: string read FTargetString;
     property CompilerVersion: string read FCompilerVersion;
     property TestCompiler: string read FTestCompiler;
+    property PublishedRepoDir: string read FPublishedRepoDir;
   end;
 
   { TRepoCommand }
 
   TRepoCommand = class(TDCSThreadCommand)
+  protected
+    function RemoveTree(APath: String): Boolean;
   public
     procedure AddToTestLog(ALevel: TLogLevel; AMsg: String); virtual;
     function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; virtual;
@@ -150,6 +154,63 @@ begin
   Result := FEvent;
 end;
 
+function TRepoCommand.RemoveTree(APath: String): Boolean;
+var
+{$ifdef MSWINDOWS}
+  SHFileOpStruct: TSHFileOpStruct;
+  DirBuf: array[0..MAX_PATH+1] of TCHAR;
+{$else MSWINDOWS}
+  searchRec: TSearchRec;
+  SearchResult: longint;
+  s: string;
+{$endif MSWINDOWS}
+
+begin
+  result := true;
+{$ifdef MSWINDOWS}
+  try
+    FillChar(SHFileOpStruct, Sizeof(SHFileOpStruct), 0);
+    FillChar(DirBuf, Sizeof(DirBuf), 0);
+    StrPCopy(DirBuf, APath);
+    with SHFileOpStruct do
+    begin
+      pFrom := @DirBuf;
+      wFunc := FO_DELETE;
+      fFlags := FOF_NOCONFIRMATION or FOF_SILENT;
+    end;
+    Result := SHFileOperation(SHFileOpStruct) = 0;
+  except
+    Result := False;
+  end;
+{$else MSWINDOWS}
+  SearchResult := FindFirst(IncludeTrailingPathDelimiter(APath)+AllFilesMask, faAnyFile+faSymLink, searchRec);
+  try
+    while SearchResult=0 do
+      begin
+        if (searchRec.Name<>'.') and (searchRec.Name<>'..') then
+           begin
+             s := IncludeTrailingPathDelimiter(APath)+searchRec.Name;
+             if (searchRec.Attr and faDirectory)=faDirectory then
+               begin
+                 if not RemoveTree(s) then
+                   result := false;
+               end
+             else if not DeleteFile(s) then
+               result := False;
+           end;
+        SearchResult := FindNext(searchRec);
+      end;
+  finally
+    FindClose(searchRec);
+  end;
+
+  // There were reports of RemoveDir failing due to locking-problems. To solve
+  // these the RemoveDir is tried three times, with a delay of 5 seconds. See
+  // bug 21868
+  result := RemoveDir(APath);
+{$endif WINDOWS}
+end;
+
 procedure TRepoCommand.AddToTestLog(ALevel: TLogLevel; AMsg: String);
 begin
   FDistributor.Log(AMsg, etInfo, FUID);
@@ -188,6 +249,7 @@ begin
     FTestCompiler := IniFile.ReadString('Settings','testcompiler','ppc386'+ExeExt);
     FTargetString := IniFile.ReadString('Settings','targetstring','i386-win32');
     FCompilerVersion := IniFile.ReadString('Settings','compilerversion','3.0.0');
+    FPublishedRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(IniFile.ReadString('Settings','publishedrepodir','repo')));
   finally
     IniFile.Free;
   end;
