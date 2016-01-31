@@ -43,6 +43,7 @@ type
     FPublishedRepoDir: string;
     FRepoDir: String;
     FStartCompiler: String;
+    FSvnUrl: string;
     FTestCompiler: String;
     FTargetString: String;
     FCompilerVersion: String;
@@ -58,6 +59,7 @@ type
     property CompilerVersion: string read FCompilerVersion;
     property TestCompiler: string read FTestCompiler;
     property PublishedRepoDir: string read FPublishedRepoDir;
+    property SvnUrl: string read FSvnUrl;
   end;
 
   { TRepoCommand }
@@ -250,6 +252,7 @@ begin
     FTargetString := IniFile.ReadString('Settings','targetstring','i386-win32');
     FCompilerVersion := IniFile.ReadString('Settings','compilerversion','3.0.0');
     FPublishedRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(IniFile.ReadString('Settings','publishedrepodir','repo')));
+    FSvnUrl := IniFile.ReadString('Settings','svnurl','https://localhost/svn/fppkg_repo');
   finally
     IniFile.Free;
   end;
