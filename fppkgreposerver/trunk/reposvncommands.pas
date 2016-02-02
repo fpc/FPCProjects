@@ -93,6 +93,7 @@ type
   TRepoSvnUpdatePackageCommand = class(TRepoCustomPackageSvnCommand)
   private
     procedure UpdatePackageFileSearcherFileFound(FileIterator: TFileIterator);
+    procedure UpdatePackageFileSearcherDirectoryFound(FileIterator: TFileIterator);
   protected
     FSVNRepository: TSVNRepository;
     procedure UpdatePackageFiles;
@@ -425,6 +426,7 @@ begin
   try
     FileSearcher.FollowSymLink := false;
     FileSearcher.OnFileFound := @UpdatePackageFileSearcherFileFound;
+    FileSearcher.OnDirectoryFound := @UpdatePackageFileSearcherDirectoryFound;
     FileSearcher.Search(FTempDir+'src');
   finally
     FileSearcher.Free;
@@ -460,6 +462,22 @@ begin
     end;
 end;
 
+procedure TRepoSvnUpdatePackageCommand.UpdatePackageFileSearcherDirectoryFound(FileIterator: TFileIterator);
+var
+  NewLoc: string;
+  NewFile: Boolean;
+  s,e: string;
+begin
+  NewLoc:=StringReplace(FileIterator.FileName, FTempDir+'src', FTempDir+'checkout', []);
+  NewFile:=not DirectoryExists(NewLoc);
+  if NewFile then
+    begin
+    CreateDir(NewLoc);
+    if FSVNRepository.RunSvn(['add','--depth=empty',NewLoc], s, e) <> 0 then
+      raise Exception.CreateFmt('Failed to svn-add directory %s. Msg: %s',[NewLoc, e]);
+    end;
+end;
+
 procedure TRepoSvnUpdatePackageCommand.UpdatePackageFileSearcherFileFound(FileIterator: TFileIterator);
 var
   NewLoc: string;
@@ -471,7 +489,7 @@ begin
   CopyFile(FileIterator.FileName, NewLoc, [cffCreateDestDirectory,cffOverwriteFile,cffPreserveTime],true);
   if NewFile then
     begin
-    if FSVNRepository.RunSvn(['add',''], s, e) <> 0 then
+    if FSVNRepository.RunSvn(['add',NewLoc], s, e) <> 0 then
       raise Exception.CreateFmt('Failed to svn-add file %s. Msg: %s',[NewLoc, e]);
     end;
 end;
