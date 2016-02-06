@@ -166,18 +166,20 @@ begin
     if not ExecuteProcess(FpcmkcfgBin, ['-p', '-4', '-d', 'GlobalPrefix='+FpcPath, '-d', 'FpcBin='+FpcBin, '-o', RepoDir+'fppkg'+DirectorySeparator+'config'+DirectorySeparator+'default']) then
       raise exception.create('Failed to create default');
 
-    RemoveTree(RepoDir+'fpc'+{$ifdef unix}DirectorySeparator+'lib'+DirectorySeparator+'fpc'+DirectorySeparator+CompilerVersion+{$endif}DirectorySeparator+'fpmkinst');
-
     MaybeCreateLocalDirs;
 
-    if FindFirst(UnitDir+AllFiles, faDirectory, sr) = 0 then
+    if TRepoController(AController).UninstallPackagesDuringInitialize then
       begin
-      repeat
-      if (sr.Name <> 'rtl') and (sr.Name <> '.') and (sr.Name <> '..') then
+      RemoveTree(RepoDir+'fpc'+{$ifdef unix}DirectorySeparator+'lib'+DirectorySeparator+'fpc'+DirectorySeparator+CompilerVersion+{$endif}DirectorySeparator+'fpmkinst');
+      if FindFirst(UnitDir+AllFiles, faDirectory, sr) = 0 then
         begin
-        RemoveTree(UnitDir+sr.Name);
+        repeat
+        if (sr.Name <> 'rtl') and (sr.Name <> '.') and (sr.Name <> '..') then
+          begin
+          RemoveTree(UnitDir+sr.Name);
+          end;
+        until FindNext(sr)<>0;
         end;
-      until FindNext(sr)<>0;
       end;
 
     TRepoController(AController).LoadRepository;

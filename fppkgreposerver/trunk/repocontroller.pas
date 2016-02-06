@@ -48,6 +48,7 @@ type
     FTargetString: String;
     FCompilerVersion: String;
     FIniFile: TIniFile;
+    FUninstallPackagesDuringInitialize: Boolean;
     procedure LoadIniFile;
   public
     constructor Create(ADistributor: TDCSDistributor); override;
@@ -63,6 +64,7 @@ type
     property TestCompiler: string read FTestCompiler;
     property PublishedRepoDir: string read FPublishedRepoDir;
     property SvnUrl: string read FSvnUrl;
+    property UninstallPackagesDuringInitialize: Boolean read FUninstallPackagesDuringInitialize;
   end;
 
   { TRepoCommand }
@@ -257,6 +259,7 @@ begin
   FCompilerVersion := FIniFile.ReadString('Settings','compilerversion','3.0.0');
   FPublishedRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(FIniFile.ReadString('Settings','publishedrepodir','repo')));
   FSvnUrl := FIniFile.ReadString('Settings','svnurl','https://localhost/svn/fppkg_repo');
+  FUninstallPackagesDuringInitialize := FIniFile.ReadBool('Settings','UninstallPackagesDuringInitialize',True);
 end;
 
 constructor TRepoController.Create(ADistributor: TDCSDistributor);
