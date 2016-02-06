@@ -285,7 +285,15 @@ begin
   LoadIniFile;
 
   LogLevels:=DefaultLogLevels;
-  LoadRepository;
+  try
+    LoadRepository;
+  except
+    on E: Exception do
+      begin
+      FDistributor.Log('Failed to load repository. Exception: ' + E.Message, etError, null);
+      raise;
+      end;
+  end;
 end;
 
 procedure TRepoController.LoadRepository;
