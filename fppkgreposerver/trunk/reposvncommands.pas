@@ -276,6 +276,7 @@ var
   StoredPath: string;
   ZipFile: string;
   ZipPath: string;
+  Package: TFPPackage;
 begin
   Result := False;
   if PackageName='' then
@@ -312,7 +313,12 @@ begin
     try
       if FSVNRepository.RunSvn(['co',TRepoController(AController).SvnUrl+'packages/'+PackageName+'/'+FRepositoryFPCVersion+'/tags/'+Version,FTempDir+'checkout'],s,e)=0 then
       begin
-        pkghandler.ExecuteAction('fpmkunit', 'install');
+        Package := InstalledRepository.FindPackage(PackageName);
+        if not assigned(Package) then
+          begin
+          FDistributor.Log('Package fpmkunit will be installed', etDebug, FUID);
+          pkghandler.ExecuteAction('fpmkunit', 'install');
+          end;
         StoredPath := GetCurrentDir;
         try
           chdir(FTempDir+'checkout');
@@ -322,10 +328,22 @@ begin
         finally
           chdir(StoredPath);
         end;
+    FDistributor.Log('Tadaaa!!!!Package fpmkunit will be installed '+ZipPath, etDebug, FUID);
+        if not FileExists(ZipPath) then
+          begin
+          if FileExists(FTempDir+'checkout'+PathDelim+PackageName + '-' + Version + '.zip') then
+            begin
+            FDistributor.Log('Zip-file does not have the .source-suffix. It will be added.', etInfo, FUID);
+            CopyFile(FTempDir+'checkout'+PathDelim+PackageName + '-' + Version + '.zip', ZipPath);
+            end;
+          end;
         if FileExists(ZipPath) then
           begin
-            if FSVNRepository.RunSvn(['co','--depth=empty',TRepoController(AController).SvnUrl+'repositories/'+FRepositoryFPCVersion+'/'+Repository,FTempDir+'repo_checkout'],s,e)=0 then
+          FDistributor.Log('Toevoegen maar!Tadaaa!!!!Package fpmkunit will be installed '+ZipPath, etDebug, FUID);
+
+          if FSVNRepository.RunSvn(['co','--depth=empty',TRepoController(AController).SvnUrl+'repositories/'+FRepositoryFPCVersion+'/'+Repository,FTempDir+'repo_checkout'],s,e)=0 then
             begin
+
             if CopyFile(ZipPath, FTempDir+PathDelim+'repo_checkout'+PathDelim+ZipFile) then
               begin
               if FSVNRepository.RunSvn(['add',FTempDir+PathDelim+'repo_checkout'+PathDelim+ZipFile],s,e)=0 then
@@ -336,9 +354,20 @@ begin
                   (FSVNRepository.RunSvn(['commit',FTempDir+PathDelim+'repo_checkout','-m '+QuotedStr(CommitMessage)],s,e)=0);
                 end;
               end;
-            end;
+            end
+          else
+            FDistributor.Log('Failed to checkout repository. Msg: '+e, etError, FUID);
+          end
+        else
+          begin
+          FDistributor.Log('Kan tnoch niet?!?!?Zip-file does not have the .source-suffix. It will be added.', etInfo, FUID);
+
+          ReturnMessage := Format('''fpmake archive'' did not create a source-zipfile. (%s)', [ZipPath]);
+
           end;
+        FDistributor.Log('Vreemddd....Tadaaa!!!!Package fpmkunit will be installed '+ZipPath, etDebug, FUID);
       end;
+
     finally
       DeleteDirectory(FTempDir, false);
     end;

@@ -113,17 +113,10 @@ begin
   FDistributor := TDCSDistributor.Create;
   try
     FRepositoryTestThread := TDCSHandlerThread.Create(FDistributor, TRepoController);
-    try
-      FDistributor.AddHandlerThread(FRepositoryTestThread);
-    except
-      FRepositoryTestThread.Free;
-      raise;
-    end;
 
     if HasOption('d','dbstorage') then
       begin
       ADbConnector := TDbConnectorHandlerThread.Create(FDistributor,DBName,DBUser,DBPassword);
-      FDistributor.AddHandlerThread(ADbConnector);
       end
     else
       ADbConnector := nil;
