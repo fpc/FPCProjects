@@ -1,0 +1,33 @@
+object FPPKg: TFPPKg
+  OldCreateOrder = False
+  Actions = <  
+    item
+      Name = 'Upload'
+      Default = False
+      OnRequest = UploadRequest
+      Template.AllowTagParams = False
+    end  
+    item
+      Name = 'Login'
+      Default = False
+      OnRequest = LoginRequest
+      Template.AllowTagParams = False
+    end  
+    item
+      Name = 'Default'
+      Default = True
+      OnRequest = DefaultRequest
+      Template.AllowTagParams = False
+    end  
+    item
+      Name = 'LogOut'
+      Default = False
+      OnRequest = LogOutRequest
+      Template.AllowTagParams = False
+    end>
+  CreateSession = True
+  Height = 625
+  HorizontalOffset = 492
+  VerticalOffset = 643
+  Width = 966
+end
