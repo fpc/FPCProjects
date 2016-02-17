@@ -8,3 +8,6 @@ svnurl=https://anna.cnoc.nl/svn/fppkg_repo/
 publishedrepodir=/var/www/html/fpc
 compilerversion=3.1.1
 UninstallPackagesDuringInitialize=1
+
+[RepoVersions]
+trunk=3.1.1
