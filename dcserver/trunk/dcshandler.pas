@@ -138,7 +138,7 @@ type
     // send if the result is true, a failure if the result is false.
     procedure PreExecute(AController: TDCSCustomController; out DoQueueCommand: boolean); virtual;
     // The name that is used to identify the command
-    class function TextName: string; virtual; abstract;
+    class function TextName: string; virtual;
     // The identifier of the Listener that has send this command
     property SendByLisId: integer read FSendByLisId;
     property UID: variant read FUID;
@@ -394,6 +394,11 @@ end;
 procedure TDCSThreadCommand.PreExecute(AController: TDCSCustomController; out DoQueueCommand: boolean);
 begin
   DoQueueCommand := True;
+end;
+
+class function TDCSThreadCommand.TextName: string;
+begin
+  Result := ClassName;
 end;
 
 { TDCSDistributor }

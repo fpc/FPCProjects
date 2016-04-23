@@ -27,7 +27,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="-c {command:&quot;testje&quot;}"/>
+        <CommandLineParams Value="-s anna.cnoc.nl -p 9250 -c {command:\&quot;querytestresult\&quot;\,uniqueid:\&quot;4\&quot;}"/>
       </local>
     </RunParams>
     <RequiredPackages Count="1">
