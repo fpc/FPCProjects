@@ -113,6 +113,7 @@ type
   public
     constructor Create(ADistributor: TDCSDistributor); virtual;
     procedure Init; virtual;
+    procedure OnIdle; virtual;
     function AcceptCommand(ACommand: TDCSThreadCommand): Boolean; virtual;
   end;
   TDCSCustomControllerClass = class of TDCSCustomController;
@@ -160,7 +161,7 @@ type
     property Controller: TDCSCustomController read FController;
     property Distributor: TDCSDistributor read FDistributor;
   public
-    constructor Create(ADistributor: TDCSDistributor); virtual;
+    constructor Create(ADistributor: TDCSDistributor; IdleTime: Cardinal = 100); virtual;
     destructor Destroy; override;
   end;
 
@@ -172,7 +173,7 @@ type
   protected
     function CreateController: TDCSCustomController; override;
   public
-    constructor Create(ADistributor: TDCSDistributor; AControllerClass: TDCSCustomControllerClass);
+    constructor Create(ADistributor: TDCSDistributor; AControllerClass: TDCSCustomControllerClass; IdleTime: Cardinal = 100);
   end;
 
   TDCSController = class(TDCSCustomController)
@@ -243,6 +244,11 @@ end;
 procedure TDCSCustomController.Init;
 begin
   //
+end;
+
+procedure TDCSCustomController.OnIdle;
+begin
+  // Do nothing
 end;
 
 function TDCSCustomController.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
@@ -535,9 +541,10 @@ begin
 end;
 
 constructor TDCSHandlerThread.Create(ADistributor: TDCSDistributor;
-  AControllerClass: TDCSCustomControllerClass);
+  AControllerClass: TDCSCustomControllerClass;
+  IdleTime: Cardinal = 100);
 begin
-  inherited Create(ADistributor);
+  inherited Create(ADistributor, IdleTime);
   if Assigned(AControllerClass) then
     FControllerClass := AControllerClass
   else
@@ -571,6 +578,10 @@ begin
                 end;
             end;
             ACommand.Free;
+            end
+          else
+            begin
+            FController.OnIdle;
             end;
         except
           on E: Exception do
@@ -611,10 +622,10 @@ begin
   Result := FController.AcceptCommand(ACommand);
 end;
 
-constructor TDCSCustomHandlerThread.Create(ADistributor: TDCSDistributor);
+constructor TDCSCustomHandlerThread.Create(ADistributor: TDCSDistributor; IdleTime: Cardinal = 100);
 begin
   inherited create(false);
-  FCommandQueue := TDCSThreadCommandQueue.create(100, INFINITE, 100);
+  FCommandQueue := TDCSThreadCommandQueue.create(100, INFINITE, IdleTime);
   FDistributor := ADistributor;
 end;
 
