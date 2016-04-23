@@ -193,6 +193,7 @@ type
     destructor Destroy(); override;
     procedure Log(const AString: string; const ALogLevel: TEventType; AnUID: variant);
     procedure AddHandlerThread(AHandlerThread: TDCSCustomHandlerThread);
+    procedure RemoveHandlerThread(AHandlerThread: TDCSCustomHandlerThread);
 
     procedure SendEvent(AnEvent: TDCSEvent);
 
@@ -475,6 +476,11 @@ begin
   FHandlerThreadList.Add(AHandlerThread);
 end;
 
+procedure TDCSDistributor.RemoveHandlerThread(AHandlerThread: TDCSCustomHandlerThread);
+begin
+  FHandlerThreadList.Remove(AHandlerThread);
+end;
+
 procedure TDCSDistributor.SendNotification(ALisId: integer;
   ANotificationType: TDCSNotificationType; AnUID: variant; AMessage, ACommand: string);
 var
@@ -563,6 +569,17 @@ var
   ACommand: TDCSThreadCommand;
 begin
   try
+    if assigned(FDistributor) then
+      FDistributor.AddHandlerThread(Self);
+  except
+    on E: Exception do
+      begin
+      FDistributor.Log('Exception while adding handler-thread, thread terminated: '+e.Message, etError, Null);
+      Exit;
+      end;
+  end;
+
+  try
     FController := CreateController;
     try
       FController.init;
@@ -600,6 +617,7 @@ begin
     on E: Exception do
       FDistributor.Log('Exception in handler-thread, thread terminated: '+e.Message, etError, Null);
   end;
+  FDistributor.RemoveHandlerThread(Self);
 end;
 
 procedure TDCSCustomHandlerThread.QueueCommand(ACommand: TDCSThreadCommand);
