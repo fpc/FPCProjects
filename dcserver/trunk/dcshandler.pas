@@ -10,6 +10,7 @@ uses
   SysUtils,
   syncobjs,
   variants,
+  fgl,
   lazCollections;
 
 type
@@ -186,6 +187,7 @@ type
   private
     FListenerList: TThreadList;
     FHandlerThreadList: TThreadList;
+    FTimedCommandListThread: TThread;
     class var GIdentifierCount: integer;
   protected
   public
@@ -202,6 +204,7 @@ type
     procedure SendNotification(ALisId: integer; ANotificationType: TDCSNotificationType; AnUID: variant; AMessage, ACommand: string; Arg: array of const); overload;
 
     procedure QueueCommand(ACommand: TDCSThreadCommand);
+    procedure TimeQueueCommand(ACommand: TDCSThreadCommand; Time: TDateTime);
 
     // Methods to add and remove listeners
     function AddListener(AListener: IDCSListener): integer;
@@ -234,6 +237,165 @@ const
   );
 
 implementation
+
+uses
+  math,
+  dateutils;
+
+type
+
+  { TTimedCommand }
+
+  TTimedCommand = class
+  private
+    FCommand: TDCSThreadCommand;
+    FTriggerTime: TDateTime;
+  public
+    property TriggerTime: TDateTime read FTriggerTime write FTriggerTime;
+    property Command: TDCSThreadCommand read FCommand write FCommand;
+  end;
+
+  TFPTimedCommandList = specialize TFPGObjectList<TTimedCommand>;
+
+  { TTimedCommandListThread }
+
+  TTimedCommandListThread = class(TThread)
+  private
+    FDistributor: TDCSDistributor;
+    FCommandList: TFPTimedCommandList;
+    FInterruptEvent: PRTLEvent;
+    FMonitor: TLazMonitor;
+  public
+    constructor Create(ADistributor: TDCSDistributor);
+    destructor Destroy; override;
+    procedure Execute; override;
+    procedure AddCommand(ACommand: TDCSThreadCommand; Time: TDateTime);
+    procedure ForceTerminate;
+  end;
+
+{ TQueueTimeThread }
+
+constructor TTimedCommandListThread.Create(ADistributor: TDCSDistributor);
+begin
+  FDistributor := ADistributor;
+  FInterruptEvent := RTLEventCreate;
+  FMonitor := TLazMonitor.create;
+  FCommandList := TFPTimedCommandList.Create(True);
+  inherited Create(False);
+end;
+
+destructor TTimedCommandListThread.Destroy;
+begin
+  RTLeventdestroy(FInterruptEvent);
+  FMonitor.Free;
+  inherited Destroy;
+end;
+
+procedure TTimedCommandListThread.Execute;
+var
+  TimeToNextCheck: QWord;
+  CurrentTime: TDateTime;
+  FirstCommand: TTimedCommand;
+begin
+  while not Terminated do
+    begin
+    FMonitor.Enter;
+    try
+      if FCommandList.Count > 0 then
+        begin
+        CurrentTime := Now;
+        FirstCommand := FCommandList[0];
+        if FirstCommand.TriggerTime<CurrentTime then
+          begin
+          FDistributor.QueueCommand(FirstCommand.Command);
+          FCommandList.Delete(0);
+          TimeToNextCheck := 0;
+          end
+        else
+          begin
+          TimeToNextCheck := MilliSecondsBetween(FirstCommand.TriggerTime, CurrentTime);
+          end;
+        end
+      else
+        TimeToNextCheck := 500;
+    finally
+      FMonitor.Leave;
+    end;
+
+    if TimeToNextCheck > 0 then
+      RTLeventWaitFor(FInterruptEvent, TimeToNextCheck);
+    end;
+end;
+
+procedure TTimedCommandListThread.AddCommand(ACommand: TDCSThreadCommand; Time: TDateTime);
+var
+  TimedCommand: TTimedCommand;
+  IntervalLow,
+  IntervalHigh,
+  IntervalMid: integer;
+  Span: integer;
+  Found: Boolean;
+  Res: TValueRelationship;
+begin
+  FMonitor.Enter;
+  try
+    TimedCommand := TTimedCommand.Create;
+    TimedCommand.TriggerTime := Time;
+    TimedCommand.Command := ACommand;
+
+    IntervalLow := 0;
+    IntervalHigh := FCommandList.Count;
+    Span := IntervalHigh-IntervalLow;
+
+    if Span=0 then
+      begin
+      FCommandList.Add(TimedCommand);
+      found := True;
+      end
+    else
+      Found := false;
+
+    while not Found do
+      begin
+      IntervalMid := IntervalLow + ((IntervalHigh-IntervalLow) div 2);
+
+      Res := CompareDateTime(FCommandList[IntervalMid].TriggerTime,Time);
+
+      if Res=EqualsValue then
+        begin
+        FCommandList.Insert(IntervalMid, TimedCommand);
+        Found := True;
+        end
+      else if Res=GreaterThanValue then
+        begin
+        IntervalHigh := IntervalMid;
+        end
+      else
+        begin
+        IntervalLow := IntervalMid;
+        end;
+
+      if Span=1 then
+        begin
+        if Res = LessThanValue then
+          FCommandList.Insert(IntervalHigh, TimedCommand)
+        else
+          FCommandList.Insert(IntervalLow, TimedCommand);
+        Found:= True;
+        end;
+
+      Span := IntervalHigh-IntervalLow;
+      end;
+  finally
+    FMonitor.Leave;
+  end;
+end;
+
+procedure TTimedCommandListThread.ForceTerminate;
+begin
+  Terminate;
+  RTLeventSetEvent(FInterruptEvent);
+end;
 
 { TDCSCustomController }
 
@@ -431,6 +593,13 @@ var
   i: integer;
   AList: TList;
 begin
+  if assigned(FTimedCommandListThread) then
+    begin
+    TTimedCommandListThread(FTimedCommandListThread).ForceTerminate;
+    FTimedCommandListThread.WaitFor;
+    FTimedCommandListThread.Free;
+    end;
+
   AList:=FHandlerThreadList.LockList;
   try
     for i := 0 to AList.Count-1 do
@@ -527,6 +696,15 @@ begin
   finally
     FHandlerThreadList.UnlockList;
   end;
+end;
+
+procedure TDCSDistributor.TimeQueueCommand(ACommand: TDCSThreadCommand; Time: TDateTime);
+begin
+  if not assigned(FTimedCommandListThread) then
+    begin
+    FTimedCommandListThread := TTimedCommandListThread.Create(Self);
+    end;
+  TTimedCommandListThread(FTimedCommandListThread).AddCommand(ACommand, Time);
 end;
 
 function TDCSDistributor.AddListener(AListener: IDCSListener): integer;
