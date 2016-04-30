@@ -20,10 +20,9 @@ type
   { TDCSCustomInOutputProcessor }
 
   TDCSCustomInOutputProcessor = class
-  private
-    FLisId: integer;
   protected
     FDistributor: TDCSDistributor;
+    FLisId: integer;
   public
     constructor create(ALisId: integer; ADistributor: TDCSDistributor); virtual;
     function TextToCommand(const ACommandText: string): TDCSThreadCommand; virtual; abstract;
