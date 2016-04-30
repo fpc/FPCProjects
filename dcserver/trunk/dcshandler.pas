@@ -127,7 +127,7 @@ type
     FUID: variant;
     function GetNotificationCommandEventClass: TDCSNotificationEventClass; virtual;
     function CreateReceivedCommandEvent: TDCSNotificationEvent; virtual;
-    function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent; virtual;
+    function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string; NotificationClass: TDCSNotificationEventClass): TDCSNotificationEvent; virtual;
   public
     constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); virtual;
     //procedure InitiateComand(var AnEvent: TFpDebugEvent); virtual;
@@ -337,9 +337,9 @@ begin
   Result.Message:=Format('Received %s-command.',[TextName]);
 end;
 
-function TDCSThreadCommand.CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent;
+function TDCSThreadCommand.CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string; NotificationClass: TDCSNotificationEventClass): TDCSNotificationEvent;
 begin
-  Result := GetNotificationCommandEventClass.Create;
+  Result := NotificationClass.Create;
   Result.UID := FUID;
   if Success then
     begin
@@ -378,7 +378,7 @@ begin
 
   Success := DoExecute(AController, ReturnMessage);
 
-  Event := CreateExecutedCommandEvent(Success, ReturnMessage);
+  Event := CreateExecutedCommandEvent(Success, ReturnMessage, GetNotificationCommandEventClass);
   try
     FDistributor.SendEvent(Event);
   finally
