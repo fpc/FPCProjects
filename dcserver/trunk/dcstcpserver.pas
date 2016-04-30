@@ -169,7 +169,7 @@ begin
         begin
         if FData.LastError<> ESysEAGAIN then
           begin
-          writeln('Error during write. Socket-error: '+inttostr(FData.LastError));
+          FDistributor.Log(Format('Error during read. Socket-error: %d', [FData.LastError]), etWarning, Null);
           Terminate;
           end;
         end
