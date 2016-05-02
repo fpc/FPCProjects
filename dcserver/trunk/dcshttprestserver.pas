@@ -181,7 +181,7 @@ begin
   Params := TStringList.Create;
   try
     Params.Delimiter := '&';
-    Params.DelimitedText := copy(ACommandText, j, length(ACommandText));
+    Params.DelimitedText := copy(ACommandText, j+1, length(ACommandText));
 
     APropCount := GetPropList(result, APropList);
     try
