@@ -197,6 +197,8 @@ begin
               SetStrProp(result, APropList^[i], Params.ValueFromIndex[j]);
             tkInteger:
               SetOrdProp(result, APropList^[i], StrToIntDef(Params.ValueFromIndex[j], 0));
+            tkBool:
+              SetOrdProp(result, APropList^[i], Ord(StrToBool(Params.ValueFromIndex[j])));
           end;
           end;
         end;
