@@ -323,7 +323,10 @@ begin
     end;
 
     if TimeToNextCheck > 0 then
+      begin
       RTLeventWaitFor(FInterruptEvent, TimeToNextCheck);
+      RTLeventResetEvent(FInterruptEvent);
+      end;
     end;
 end;
 
@@ -378,9 +381,17 @@ begin
       if Span=1 then
         begin
         if Res = LessThanValue then
-          FCommandList.Insert(IntervalHigh, TimedCommand)
+          begin
+          FCommandList.Insert(IntervalHigh, TimedCommand);
+          if IntervalHigh=0 then
+            RTLeventSetEvent(FInterruptEvent);
+          end
         else
+          begin
           FCommandList.Insert(IntervalLow, TimedCommand);
+          if IntervalLow=0 then
+            RTLeventSetEvent(FInterruptEvent);
+          end;
         Found:= True;
         end;
 
