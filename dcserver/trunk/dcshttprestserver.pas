@@ -43,6 +43,7 @@ uses
   Classes,
   SysUtils,
   strutils,
+  dateutils,
   typinfo,
   variants,
   varutils,
@@ -149,6 +150,9 @@ var
   APropName: string;
   Params: TStrings;
   CommandName: string;
+  D: Double;
+  DT: TDateTime;
+  b: Boolean;
 begin
   result := nil;
 
@@ -199,6 +203,34 @@ begin
               SetOrdProp(result, APropList^[i], StrToIntDef(Params.ValueFromIndex[j], 0));
             tkBool:
               SetOrdProp(result, APropList^[i], Ord(StrToBool(Params.ValueFromIndex[j])));
+            tkFloat:
+              begin
+              b := false;
+              try
+                DT := ScanDateTime('yyyymmdd', Params.ValueFromIndex[j]);
+                b := true;
+              except
+                // ignore
+              end;
+              if b then
+                begin
+                SetFloatProp(result, APropList^[i], DT);
+                end
+              else if TryStrToDate(Params.ValueFromIndex[J], DT) then
+                begin
+                SetFloatProp(result, APropList^[i], DT);
+                end
+              else if TryStrToDateTime(Params.ValueFromIndex[J], DT) then
+                begin
+                SetFloatProp(result, APropList^[i], DT);
+                end
+              else if TryStrToFloat(Params.ValueFromIndex[J], D) then
+                begin
+                SetFloatProp(result, APropList^[i], D);
+                end
+              else
+                raise Exception.CreateFmt('Invalid float/datetime value for parameter %s', [APropName]);
+              end;
           end;
           end;
         end;
