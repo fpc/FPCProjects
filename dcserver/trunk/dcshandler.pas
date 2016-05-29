@@ -792,7 +792,12 @@ begin
             end
           else
             begin
-            FController.OnIdle;
+            try
+              FController.OnIdle;
+            except
+              on E: Exception do
+                FDistributor.Log('Exception in OnIdle: '+e.Message, etError, Null); // just continue
+            end;
             end;
         except
           on E: Exception do
