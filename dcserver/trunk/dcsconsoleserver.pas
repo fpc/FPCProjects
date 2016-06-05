@@ -51,8 +51,6 @@ var
 begin
   CommandStr := '';
   InputStream:=TInputPipeStream.Create(StdInputHandle);
-  FDistributor.AddListener(self);
-  FInOutputProcessor := TDCSJSonInOutputProcessor.create(FListenerId, FDistributor);
   try
     while not terminated do
       begin
@@ -76,16 +74,23 @@ begin
       end;
   finally
     FDistributor.RemoveListener(self);
-    FInOutputProcessor.Free;
     InputStream.Free;
   end;
+  // Make sure that all incoming messages are shown on the console:
+  while FEventStrQueue.PopItem(EventStr) = wrSignaled do
+    writeln(EventStr);
 end;
 
 constructor TDCSConsoleServer.create(ADistributor: TDCSDistributor);
 begin
-  FEventStrQueue:=TDCSEventQueue.Create(100, INFINITE, 100);
   FDistributor:=ADistributor;
+  FInOutputProcessor := TDCSJSonInOutputProcessor.create(FListenerId, FDistributor);
+  FEventStrQueue:=TDCSEventQueue.Create(100, INFINITE, 100);
   inherited Create(false);
+  // We add ourself to the listener here already, so that all messages that are
+  // send from the moment of creation are shown on the console. (Like exceptions
+  // while creating a controller.)
+  FDistributor.AddListener(self);
 end;
 
 function TDCSConsoleServer.GetOrigin: string;
@@ -112,6 +117,7 @@ end;
 destructor TDCSConsoleServer.Destroy;
 begin
   FEventStrQueue.DoShutDown;
+  FInOutputProcessor.Free;
 
   FEventStrQueue.Free;
   inherited Destroy;
