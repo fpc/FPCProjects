@@ -13,6 +13,7 @@ uses
   pkgrepos,
   pkgglobals,
   pkgoptions,
+  fpmkunit,
   pkghandler,
   pkgfpmake,
   pkgcommands,
@@ -30,6 +31,9 @@ type
   public
     class function TextName: string; override;
     function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
+  published
+    property FpcVersionName;
+    property TestEnvironmentName;
   end;
 
   { TRepoUpdateCommand }
@@ -124,53 +128,88 @@ var
   FpcBin: string;
   sr: TSearchRec;
   UnitDir: string;
-  RepoDir: string;
-  StartCompiler: string;
   TargetString: string;
-  CompilerVersion: string;
-  TestCompiler: string;
+  FPCVersion: TrepoFPCVersion;
+  TestEnv: TrepoTestEnvironment;
 begin
   Result := False;
-  RepoDir := TRepoController(AController).RepoDir;
-  StartCompiler := TRepoController(AController).StartCompiler;
-  TargetString := TRepoController(AController).TargetString;
-  CompilerVersion := TRepoController(AController).CompilerVersion;
-  TestCompiler := TRepoController(AController).TestCompiler;
 
-  if not DirectoryExistsLog(RepoDir+'fpcsrc') then
+  if not GetTestEnvironment(AController, FPCVersion, TestEnv, ReturnMessage) then
     begin
-    FDistributor.Log('Not a valid repository-test directory: '+RepoDir, etWarning, UID);
+    Exit;
+    end;
+
+  if not DirectoryExists(TestEnv.LocalDir) then
+    begin
+    FDistributor.Log(Format('Localdir (%s) does not exist. Create a new test-environment.', [TestEnv.LocalDir]), etInfo, UID);
+    if not CreateDir(TestEnv.LocalDir) then
+      begin
+      ReturnMessage := Format('Failed to create localdir ().',[TestEnv.LocalDir]);
+      Exit;
+      end;
+    SetCurrentDir(TestEnv.LocalDir);
+    if not ExecuteProcess('svn'+pkgglobals.ExeExt,['checkout',TestEnv.SVNUrl,'fpcsrc']) then
+      begin
+      ReturnMessage := Format('Failed to checkout fpc (svn: %s, dir: %s)',[TestEnv.SVNUrl, TestEnv.LocalDir+'fpcsrc']);
+      Exit;
+      end;
+    end;
+
+  TargetString := MakeTargetString(TestEnv.CPUTarget,TestEnv.OSTarget);
+
+  if not DirectoryExistsLog(TestEnv.LocalDir+'fpcsrc') then
+    begin
+    ReturnMessage := 'Not a valid repository-test directory: '+TestEnv.LocalDir;
     end
   else
     begin
-    SetCurrentDir(RepoDir+'fpcsrc');
-    if not ExecuteProcess('svn'+ExeExt,['update']) then
-      raise exception.create('Failed to run svn update');
-    if not ExecuteProcess('make'+ExeExt, ['clean', 'all', 'PP='+StartCompiler, 'FPMAKEOPT=-T 4']) then
-      raise exception.create('Failed to compile fpc');
-    RemoveTree(RepoDir+'fpc');
-    RemoveTree(RepoDir+'fppkg');
-    if not ExecuteProcess('make'+ExeExt, ['install', 'PREFIX="'+RepoDir+'fpc"']) then
-      raise exception.create('Failed to install fpc');
+    SetCurrentDir(TestEnv.LocalDir+'fpcsrc');
+    if not ExecuteProcess('svn'+pkgglobals.ExeExt,['update']) then
+      begin
+      ReturnMessage := 'Faied to run svn update';
+      Exit;
+      end;
+    if not ExecuteProcess('make'+pkgglobals.ExeExt, ['clean', 'all', 'PP='+TestEnv.Startcompiler, 'FPMAKEOPT=-T 4']) then
+      begin
+      ReturnMessage := 'Failed to compile fpc';
+      Exit;
+      end;
+    RemoveTree(TestEnv.LocalDir+'fpc');
+    RemoveTree(TestEnv.LocalDir+'fppkg');
+    if not ExecuteProcess('make'+pkgglobals.ExeExt, ['install', 'PREFIX="'+TestEnv.LocalDir+'fpc"']) then
+      begin
+      ReturnMessage := 'Failed to install fpc';
+      Exit;
+      end;
 
-    FpcmkcfgBin:=RepoDir+'fpc'+DirectorySeparator+'bin'+{$ifdef windows}DirectorySeparator+FTargetString+{$endif}DirectorySeparator+'fpcmkcfg'+ExeExt;
-    FpcPath:=RepoDir+'fpc';
-    FpccfgName:=RepoDir+'fpc'+DirectorySeparator+'bin'+DirectorySeparator+TargetString+DirectorySeparator+'fpc.cfg';
-    FpcBin:=RepoDir+'fpc'+DirectorySeparator+{$ifdef unix}'lib'+DirectorySeparator+'fpc'+DirectorySeparator+CompilerVersion+DirectorySeparator+{$else}'bin'+DirectorySeparator+FTargetString+{$endif}DirectorySeparator+TestCompiler+ExeExt;
-    UnitDir:=RepoDir+'fpc'+DirectorySeparator+{$ifdef unix}'lib'+DirectorySeparator+'fpc'+DirectorySeparator+CompilerVersion+DirectorySeparator+{$endif}'units'+DirectorySeparator+TargetString+DirectorySeparator;
+    FpcmkcfgBin:=TestEnv.LocalDir+'fpc'+DirectorySeparator+'bin'+{$ifdef windows}DirectorySeparator+FTargetString+{$endif}DirectorySeparator+'fpcmkcfg'+pkgglobals.ExeExt;
+    FpcPath:=TestEnv.LocalDir+'fpc';
+    FpccfgName:=TestEnv.LocalDir+'fpc'+DirectorySeparator+'bin'+DirectorySeparator+MakeTargetString(TestEnv.CPUTarget, TestEnv.OSTarget)+DirectorySeparator+'fpc.cfg';
+    FpcBin:=TestEnv.LocalDir+'fpc'+DirectorySeparator+{$ifdef unix}'lib'+DirectorySeparator+'fpc'+DirectorySeparator+FPCVersion.Version+DirectorySeparator+{$else}'bin'+DirectorySeparator+FTargetString+{$endif}DirectorySeparator+TestEnv.TestCompiler+pkgglobals.ExeExt;
+    UnitDir:=TestEnv.LocalDir+'fpc'+DirectorySeparator+{$ifdef unix}'lib'+DirectorySeparator+'fpc'+DirectorySeparator+FPCVersion.Version+DirectorySeparator+{$endif}'units'+DirectorySeparator+TargetString+DirectorySeparator;
 
     if not ExecuteProcess(FpcmkcfgBin, ['-p', '-d "basepath='+FpcPath+'"', '-d "basepath='+FpcPath+'"', '-o', FpccfgName]) then
       raise exception.create('Failed to create fpc.cfg');
-    if not ExecuteProcess(FpcmkcfgBin, ['-p', '-3', '-d', 'LocalRepository='+RepoDir+'fppkg'+DirectorySeparator, '-o',RepoDir+'etc'+DirectorySeparator+'fppkg.cfg']) then
+    if TestEnv.FppkgCfgTemplate <> '' then
+      begin
+      if not ExecuteProcess(FpcmkcfgBin, ['-p', '-t', TestEnv.FppkgCfgTemplate, '-d', 'LocalRepository='+TestEnv.LocalDir+'fppkg'+DirectorySeparator, '-o',TestEnv.LocalDir+'etc'+DirectorySeparator+'fppkg.cfg']) then
+        raise exception.create('Failed to create fppkg.cfg');
+      end
+    else
+      begin
+      if not ExecuteProcess(FpcmkcfgBin, ['-p', '-3', '-d', 'LocalRepository='+TestEnv.LocalDir+'fppkg'+DirectorySeparator, '-o',TestEnv.LocalDir+'etc'+DirectorySeparator+'fppkg.cfg']) then
+        raise exception.create('Failed to create fppkg.cfg');
+      end;
+    if not ExecuteProcess(FpcmkcfgBin, ['-p', '-3', '-d', 'LocalRepository='+TestEnv.LocalDir+'fppkg'+DirectorySeparator, '-o',TestEnv.LocalDir+'etc'+DirectorySeparator+'fppkg.cfg']) then
       raise exception.create('Failed to create fppkg.cfg');
-    if not ExecuteProcess(FpcmkcfgBin, ['-p', '-4', '-d', 'GlobalPrefix='+FpcPath, '-d', 'FpcBin='+FpcBin, '-o', RepoDir+'fppkg'+DirectorySeparator+'config'+DirectorySeparator+'default']) then
+    if not ExecuteProcess(FpcmkcfgBin, ['-p', '-4', '-d', 'GlobalPrefix='+FpcPath, '-d', 'FpcBin='+FpcBin, '-o', TestEnv.LocalDir+'fppkg'+DirectorySeparator+'config'+DirectorySeparator+'default']) then
       raise exception.create('Failed to create default');
 
     MaybeCreateLocalDirs;
 
-    if TRepoController(AController).UninstallPackagesDuringInitialize then
+    if TestEnv.UninstallPackagesDuringInitialize then
       begin
-      RemoveTree(RepoDir+'fpc'+{$ifdef unix}DirectorySeparator+'lib'+DirectorySeparator+'fpc'+DirectorySeparator+CompilerVersion+{$endif}DirectorySeparator+'fpmkinst');
+      RemoveTree(TestEnv.LocalDir+'fpc'+{$ifdef unix}DirectorySeparator+'lib'+DirectorySeparator+'fpc'+DirectorySeparator+FPCVersion.Version+{$endif}DirectorySeparator+'fpmkinst');
       if FindFirst(UnitDir+AllFiles, faDirectory, sr) = 0 then
         begin
         repeat
@@ -181,8 +220,6 @@ begin
         until FindNext(sr)<>0;
         end;
       end;
-
-    TRepoController(AController).LoadRepository;
 
     Result := true;
     end;

@@ -1,0 +1,30 @@
+<settings>
+  <version>
+    <name>trunk</name>
+    <number>3.1.1</number>
+    <testenvironment>
+      <localdir>~/repotest/trunk</localdir>
+      <startcompiler>/usr/lib/fpc/3.0.0/ppcx64</startcompiler>
+      <cpu-target>x86_64</cpu-target>
+      <os-target>linux</os-target>
+      <testcompiler>ppcx64</testcompiler>
+      <fppkgcfgtemplate>fppkg_cfg.templ</fppkgcfgtemplate>
+      <svnurl>http://svn.freepascal.org/svn/fpc/trunk</svnurl>
+      <uninstallpackagesduringinitialize>False</uninstallpackagesduringinitialize>
+    </testenvironment>
+  </version>
+  <version>
+    <name>3.0.0</name>
+    <number>3.0.0</number>
+    <testenvironment>
+      <localdir>~/repotest/3.0.0</localdir>
+      <startcompiler>/usr/lib/fpc/2.6.4/ppcx64</startcompiler>
+      <cpu-target>x86_64</cpu-target>
+      <os-target>linux</os-target>
+      <testcompiler>ppcx64</testcompiler>
+      <fppkgcfgtemplate>fppkg_cfg.templ</fppkgcfgtemplate>
+      <svnurl>http://svn.freepascal.org/svn/fpc/tags/release_3_0_0</svnurl>
+      <uninstallpackagesduringinitialize>True</uninstallpackagesduringinitialize>
+    </testenvironment>
+  </version>
+</settings>

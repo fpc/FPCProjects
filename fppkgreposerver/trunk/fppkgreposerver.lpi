@@ -35,7 +35,7 @@
         <PackageName Value="DCServer"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="7">
       <Unit0>
         <Filename Value="fppkgreposerver.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -64,6 +64,10 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="RepoSvnCommands"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="fppkgreposerver.xml"/>
+        <IsPartOfProject Value="True"/>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
