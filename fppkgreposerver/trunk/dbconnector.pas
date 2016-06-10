@@ -102,7 +102,7 @@ type
     FLogLineList: TLogLineList;
   protected
     function GetNotificationCommandEventClass: TDCSNotificationEventClass; override;
-    function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent; override;
+    function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string; NotificationClass: TDCSNotificationEventClass): TDCSNotificationEvent; override;
     function StringToLogLevel(AStr: string): TLogLevel;
   public
     function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
@@ -124,11 +124,12 @@ begin
   Result := TDBStoreCommmandNotificationEvent;
 end;
 
-function TDBQueryTestResultCommand.CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent;
+function TDBQueryTestResultCommand.CreateExecutedCommandEvent(Success: Boolean;
+  ReturnMessage: string; NotificationClass: TDCSNotificationEventClass): TDCSNotificationEvent;
 var
   Event: TDBStoreCommmandNotificationEvent;
 begin
-  Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage);
+  Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage, NotificationClass);
   Event := TDBStoreCommmandNotificationEvent(Result);
   Event.LogLineList.Clone(FLogLineList);
   Event.UniqueId := FUniqueId;
