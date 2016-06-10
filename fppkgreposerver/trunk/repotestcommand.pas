@@ -74,7 +74,7 @@ type
     FUniqueId: Integer;
   protected
     function GetNotificationCommandEventClass: TDCSNotificationEventClass; override;
-    function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent; override;
+    function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string; NotificationClass: TDCSNotificationEventClass): TDCSNotificationEvent; override;
     function CreateReceivedCommandEvent: TDCSNotificationEvent; override;
   public
     constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); override;
@@ -84,6 +84,8 @@ type
     procedure AddToTestLog(ALevel: TLogLevel; AMsg: String); override;
     property UniqueId: Integer read FUniqueId;
   published
+    property FpcVersionName;
+    property TestEnvironmentName;
     property PackageName: string read FPackageName write FPackageName;
     property PackageURL: string read FPackageURL write FPackageURL;
   end;
@@ -156,7 +158,7 @@ begin
   end;
   DoQueueCommand := False;
   CustomApplication.Terminate;
-  Event := CreateExecutedCommandEvent(True, '');
+  Event := CreateExecutedCommandEvent(True, '', GetNotificationCommandEventClass);
   try
     FDistributor.SendEvent(Event);
   finally
@@ -171,11 +173,11 @@ begin
   Result := TTestCommandNotificationEvent;
 end;
 
-function TRepoTestCommand.CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string): TDCSNotificationEvent;
+function TRepoTestCommand.CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string; NotificationClass: TDCSNotificationEventClass): TDCSNotificationEvent;
 var
   Event: TTestCommandNotificationEvent;
 begin
-  Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage);
+  Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage, NotificationClass);
   Event := TTestCommandNotificationEvent(Result);
   Event.LogLineList.Clone(FLogLineList);
   Event.UniqueId := UniqueId;
@@ -225,19 +227,28 @@ end;
 function TRepoTestCommand.DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
   Package: TFPPackage;
-  Message: String;
+  FPCVersion: TrepoFPCVersion;
+  TestEnv: TrepoTestEnvironment;
 begin
-  Message := '';
   Result := False;
 
-  TRepoController(AController).Init;
+  if not GetTestEnvironment(AController, FPCVersion, TestEnv, ReturnMessage) then
+    begin
+    Exit;
+    end;
+
+  if not TRepoController(AController).LoadRepository(TestEnv.LocalDir+'etc/fppkg.cfg') then
+    begin
+    ReturnMessage := 'Failed to load repository';
+    Exit;
+    end;
 
   if (PackageURL<>'') then
   begin
     if (PackageName<>'') then
     begin
       AddToTestLog(llWarning, 'Packagename and PackageURL can not be used combined.');
-      Message := 'Test failed. Invalid parameters (Packagename and Packageurl).';
+      ReturnMessage := 'Test failed. Invalid parameters (Packagename and Packageurl).';
       Exit;
     end;
 
@@ -255,14 +266,14 @@ begin
       on E: Exception do
         begin
         ReturnMessage := Format('Failed to install package %s: %s', [PackageName, E.Message]);
-        FDistributor.Log(Message, etWarning, UID);
+        FDistributor.Log(ReturnMessage, etWarning, UID);
         end;
     end;
   end
   else
   begin
     AddToTestLog(llWarning, 'Package "'+PackageName+'" not found.');
-    Message := Format('Test failed. Package "%s" not found.',[PackageName]);
+    ReturnMessage := Format('Test failed. Package "%s" not found.',[PackageName]);
   end;
 end;
 
