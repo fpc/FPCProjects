@@ -34,6 +34,14 @@ type
     ntExecutedCommand,
     ntFailedCommand
   );
+  TDCSNotificationTypes = set of TDCSNotificationType;
+
+  TDCSReceiveEvents = (
+    reAll,
+    reOwnOnly,
+    reOwnAndGeneral,
+    reNone
+  );
 
   TDCSDistributor = class;
   TDCSThreadCommand = class;
@@ -190,6 +198,7 @@ type
     FTimedCommandListThread: TThread;
     class var GIdentifierCount: integer;
   protected
+    procedure SetEventsForListener(Alistener: IDCSListener; AnEventType: TDCSEventType; AReceiveEvents: TDCSReceiveEvents; AReceiveLogLevels: TEventTypes; AReceiveNotificationTypes: TDCSNotificationTypes);
   public
     constructor Create();
     destructor Destroy(); override;
@@ -209,6 +218,10 @@ type
     // Methods to add and remove listeners
     function AddListener(AListener: IDCSListener): integer;
     procedure RemoveListener(AListener: IDCSListener);
+    // Methods to set Listener-options
+    procedure SetEventsForListener(Alistener: IDCSListener; AReceiveEvents: TDCSReceiveEvents);
+    procedure SetLogEventsForListener(Alistener: IDCSListener; AReceiveEvents: TDCSReceiveEvents; AReceiveLogLevels: TEventTypes);
+    procedure SetNotificationEventsForListener(Alistener: IDCSListener; AReceiveEvents: TDCSReceiveEvents; AReceiveNotificationTypes: TDCSNotificationTypes);
   end;
 
 const
@@ -272,6 +285,38 @@ type
     procedure AddCommand(ACommand: TDCSThreadCommand; Time: TDateTime);
     procedure ForceTerminate;
   end;
+
+  TDCSListenerSubscription = record
+    ReceiveEvents: TDCSReceiveEvents;
+    EventTypes: TEventTypes;
+    NotificationTypes: TDCSNotificationTypes;
+  end;
+  TDCSListenerSubscriptionArray = array[TDCSEventType] of TDCSListenerSubscription;
+
+  { TDCSListenerContainer }
+
+  TDCSListenerContainer = class
+  private
+    FListener: IDCSListener;
+    FTDCSListenerSubscriptionArray: TDCSListenerSubscriptionArray;
+  public
+    constructor Create(AListener: IDCSListener);
+    property SubscriptionArray: TDCSListenerSubscriptionArray read FTDCSListenerSubscriptionArray write FTDCSListenerSubscriptionArray;
+    property Listener: IDCSListener read FListener write FListener;
+  end;
+
+constructor TDCSListenerContainer.Create(AListener: IDCSListener);
+begin
+  inherited Create();
+  FListener := AListener;
+  FTDCSListenerSubscriptionArray[dcsetEvent].ReceiveEvents := reOwnAndGeneral;
+  FTDCSListenerSubscriptionArray[dcsetLog].ReceiveEvents := reOwnAndGeneral;
+  FTDCSListenerSubscriptionArray[dcsetLog].EventTypes := [etWarning, etError];
+  FTDCSListenerSubscriptionArray[dcsetNotification].NotificationTypes := [
+    ntNewConnection,ntLostConnection,ntInvalidCommand,ntConnectionProblem,
+    ntListenerMessage,ntReceivedCommand,ntExecutedCommand,ntFailedCommand];
+  FTDCSListenerSubscriptionArray[dcsetNotification].ReceiveEvents := reOwnAndGeneral;
+end;
 
 { TQueueTimeThread }
 
@@ -532,6 +577,8 @@ end;
 constructor TDCSThreadCommand.Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor);
 begin
   FUID := AnUID;
+  if not Assigned(ADistributor) then
+    raise Exception.Create('Distributor is nil. A TDCSThreadCommand can not without a Distributor.');
   FDistributor := ADistributor;
   FSendByLisId := ASendByLisId;
 end;
@@ -581,16 +628,84 @@ procedure TDCSDistributor.SendEvent(AnEvent: TDCSEvent);
 var
   i: integer;
   AList: TList;
+  ListenerContainer: TDCSListenerContainer;
+  ASendEvent: Boolean;
 begin
   AList:=FListenerList.LockList;
   try
     for i := 0 to AList.Count-1 do
       begin
-      IDCSListener(AList[i]).SendEvent(AnEvent);
+      ListenerContainer := TDCSListenerContainer(AList[i]);
+      ASendEvent := False;
+      case ListenerContainer.SubscriptionArray[AnEvent.EventType].ReceiveEvents of
+        reAll:
+          ASendEvent := True;
+        reOwnAndGeneral:
+          begin
+          if (AnEvent is TDCSNotificationEvent) then
+            begin
+            if (TDCSNotificationEvent(AnEvent).LisId=-1) or (TDCSNotificationEvent(AnEvent).LisId=ListenerContainer.Listener.ListenerId) then
+              ASendEvent := True;
+            end
+          else
+            ASendEvent := True;
+          end;
+        reOwnOnly:
+          begin
+          if (AnEvent is TDCSNotificationEvent) then
+            begin
+            if (TDCSNotificationEvent(AnEvent).LisId=ListenerContainer.Listener.ListenerId) then
+              ASendEvent := True;
+            end;
+          end;
+      end;
+
+      if ASendEvent then
+        begin
+        if (AnEvent is TDCSNotificationEvent) then
+          begin
+          if not (TDCSNotificationEvent(AnEvent).NotificationType in ListenerContainer.FTDCSListenerSubscriptionArray[dcsetNotification].NotificationTypes) then
+            ASendEvent := False;
+          end
+        else if (AnEvent is TDCSLogEvent) then
+          begin
+          if not (TDCSLogEvent(AnEvent).LogLevel in ListenerContainer.FTDCSListenerSubscriptionArray[dcsetNotification].EventTypes) then
+            ASendEvent := False;
+          end;
+
+        if ASendEvent then
+          ListenerContainer.Listener.SendEvent(AnEvent);
+        end;
       end;
   finally
     FListenerList.UnlockList;
   end;
+end;
+
+procedure TDCSDistributor.SetEventsForListener(Alistener: IDCSListener; AnEventType: TDCSEventType;
+  AReceiveEvents: TDCSReceiveEvents; AReceiveLogLevels: TEventTypes; AReceiveNotificationTypes: TDCSNotificationTypes);
+var
+  List: TList;
+  ListenerContainer: TDCSListenerContainer;
+  i: Integer;
+begin
+  List:=FListenerList.LockList;
+  try
+    for i := 0 to List.Count-1 do
+      begin
+      ListenerContainer := TDCSListenerContainer(List[i]);
+      if ListenerContainer.Listener=Alistener then
+        begin
+        ListenerContainer.FTDCSListenerSubscriptionArray[AnEventType].ReceiveEvents := AReceiveEvents;
+        ListenerContainer.FTDCSListenerSubscriptionArray[AnEventType].EventTypes := AReceiveLogLevels;
+        ListenerContainer.FTDCSListenerSubscriptionArray[AnEventType].NotificationTypes := AReceiveNotificationTypes;
+        break;
+        end;
+      end;
+  finally
+    FListenerList.UnlockList;
+  end;
+
 end;
 
 constructor TDCSDistributor.Create;
@@ -722,15 +837,47 @@ function TDCSDistributor.AddListener(AListener: IDCSListener): integer;
 begin
   inc(GIdentifierCount);
   result := GIdentifierCount;
-  FListenerList.Add(AListener);
+  FListenerList.Add(TDCSListenerContainer.Create(AListener));
   AListener.InitListener(Result);
   SendNotification(result, ntNewConnection, null, 'New listener: %s', '',[AListener.GetOrigin]);
 end;
 
 procedure TDCSDistributor.RemoveListener(AListener: IDCSListener);
+var
+  List: TList;
+  I: Integer;
 begin
   SendNotification(AListener.ListenerId, ntLostConnection, null, 'Remove listener: %s', '',[AListener.GetOrigin]);
-  FListenerList.Remove(AListener);
+  List := FListenerList.LockList;
+  try
+    for I := 0 to List.Count -1 do
+      if TDCSListenerContainer(List.Items[I]).Listener=AListener then
+        begin
+        TDCSListenerContainer(List.Items[I]).Free;
+        List.Delete(I);
+        Break;
+        end;
+  finally
+    FListenerList.UnlockList;
+  end;
+end;
+
+procedure TDCSDistributor.SetEventsForListener(Alistener: IDCSListener;
+  AReceiveEvents: TDCSReceiveEvents);
+begin
+  SetEventsForListener(Alistener, dcsetEvent, AReceiveEvents, [], []);
+end;
+
+procedure TDCSDistributor.SetLogEventsForListener(Alistener: IDCSListener;
+  AReceiveEvents: TDCSReceiveEvents; AReceiveLogLevels: TEventTypes);
+begin
+  SetEventsForListener(Alistener, dcsetLog, AReceiveEvents, AReceiveLogLevels, []);
+end;
+
+procedure TDCSDistributor.SetNotificationEventsForListener(Alistener: IDCSListener;
+  AReceiveEvents: TDCSReceiveEvents; AReceiveNotificationTypes: TDCSNotificationTypes);
+begin
+  SetEventsForListener(Alistener, dcsetNotification, AReceiveEvents, [], AReceiveNotificationTypes);
 end;
 
 { TDCSHandlerThread }

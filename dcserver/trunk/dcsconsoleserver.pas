@@ -91,6 +91,9 @@ begin
   // send from the moment of creation are shown on the console. (Like exceptions
   // while creating a controller.)
   FDistributor.AddListener(self);
+  FDistributor.SetEventsForListener(self, reAll);
+  FDistributor.SetLogEventsForListener(self, reAll, [etError, etWarning, etInfo, etCustom]);
+  FDistributor.SetNotificationEventsForListener(self, reAll, [ntConnectionProblem, ntExecutedCommand, ntFailedCommand, ntReceivedCommand, ntInvalidCommand, ntLostConnection, ntNewConnection, ntListenerMessage]);
 end;
 
 function TDCSConsoleServer.GetOrigin: string;
