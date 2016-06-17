@@ -18,39 +18,30 @@ uses
 
 type
 
-  { TDbConnectorHandlerThread }
+  { TDBController }
 
-  TDbConnectorHandlerThread = class(TDCSHandlerThread, IDCSListener)
+  TDBController = class(TDCSCustomController, IDCSListener)
   private
-    FDBName: string;
-    FDBUser: string;
-    FDBPassword: string;
+    FSQLConnection: TIBConnection;
+    FSQLTransaction: TSQLTransaction;
     FListenerId: Integer;
+    FLogLineList: TThreadList;
+    procedure ProcessQueuedLogItems;
   protected
-    function CreateController: TDCSCustomController; override;
+    procedure OnIdle; override;
     // IDCSListener
     procedure InitListener(AListenerId: Integer);
     function GetListenerId: Integer;
   public
-    constructor create(ADistributor: TDCSDistributor; DBName, DBUser,DBPassword: string);
+    constructor Create(ADistributor: TDCSDistributor); override;
+    function AcceptCommand(ACommand: TDCSThreadCommand): Boolean; override;
+    procedure InitDb(DBName, DBUser,DBPassword: string);
+    function CreateQuery: TSQLQuery;
     destructor Destroy; override;
 
     // IDCSListener
     procedure SendEvent(AnEvent: TDCSEvent);
     function GetOrigin: string;
-  end;
-
-  { TDBController }
-
-  TDBController = class(TDCSCustomController)
-  private
-    FSQLConnection: TIBConnection;
-    FSQLTransaction: TSQLTransaction;
-  public
-    function AcceptCommand(ACommand: TDCSThreadCommand): Boolean; override;
-    procedure InitDb(DBName, DBUser,DBPassword: string);
-    function CreateQuery: TSQLQuery;
-    destructor Destroy; override;
   end;
 
   TDBCommand = class(TDCSThreadCommand)
@@ -261,6 +252,110 @@ begin
 end;
 
 { TDBController }
+procedure TDBController.OnIdle;
+begin
+  inherited OnIdle;
+  ProcessQueuedLogItems;
+end;
+
+procedure TDBController.ProcessQueuedLogItems;
+var
+  LockedList: TList;
+  TempList: TList;
+  LogEvent: TRepoLogEvent;
+  NotificationEvent: TTestCommandNotificationEvent;
+  Query: TSQLQuery;
+  CommandQuery: TSQLQuery;
+  I: Integer;
+begin
+  TempList := TList.Create;
+  try
+    LockedList := FLogLineList.LockList;
+    try
+      for i := 0 to LockedList.Count -1 do
+        begin
+        TempList.Assign(LockedList, laCopy);
+        end;
+      LockedList.Clear;
+    finally
+      FLogLineList.UnlockList;
+    end;
+
+    Query := CreateQuery;
+    try
+      Query.SQL.Text := 'insert into commandlogline(commandid,loglevel,message) values (:commandid,:loglevel,:message)';
+      for I := 0 to TempList.Count-1 do
+        begin
+        if TRepoLogEvent(TempList.Items[i]).EventType = TDCSEventType.dcsetLog then
+          begin
+          LogEvent := TRepoLogEvent(TempList.Items[i]);
+          if LogEvent.UniqueId > 0 then
+            begin
+            Query.ParamByName('commandid').AsInteger := LogEvent.UniqueId;
+            Query.ParamByName('message').AsString := LogEvent.Message;
+            Query.ParamByName('loglevel').AsString := SLogLevel[LogEvent.Level];
+            Query.ExecSQL;
+            end;
+          end
+        else
+          begin
+          NotificationEvent := TTestCommandNotificationEvent(TempList.Items[i]);
+
+          CommandQuery := CreateQuery;
+          try
+            case NotificationEvent.NotificationType of
+              ntReceivedCommand:
+                begin
+                CommandQuery.SQL.Text := 'insert into command(commandid, uid, state, receivedtime) values(:commandid, :uid, :state, :now)';
+                CommandQuery.ParamByName('uid').AsString := VarToStr(NotificationEvent.UID);
+                CommandQuery.ParamByName('state').AsString := 'R';
+                end;
+              ntFailedCommand, ntExecutedCommand:
+                begin
+                CommandQuery.SQL.Text := 'update command set state=:state, finishedtime=:now where (commandid=:commandid)';
+                if NotificationEvent.NotificationType=ntFailedCommand then
+                  CommandQuery.ParamByName('state').AsString := 'F'
+                else
+                  CommandQuery.ParamByName('state').AsString := 'C';
+                end;
+            end;
+            CommandQuery.ParamByName('now').AsDateTime := now;
+            CommandQuery.ParamByName('commandid').AsInteger := NotificationEvent.UniqueId;
+            CommandQuery.ExecSQL;
+          finally
+            CommandQuery.Free;
+          end;
+          end;
+        TDCSEvent(TempList.Items[i]).Release;
+        end;
+      FSQLTransaction.CommitRetaining;
+    finally
+      Query.Free;
+    end;
+  finally
+    TempList.Free;
+  end;
+end;
+
+procedure TDBController.InitListener(AListenerId: Integer);
+begin
+  FListenerId := AListenerId;
+end;
+
+function TDBController.GetListenerId: Integer;
+begin
+  Result := FListenerId;
+end;
+
+constructor TDBController.Create(ADistributor: TDCSDistributor);
+begin
+  inherited Create(ADistributor);
+  ADistributor.AddListener(Self);
+  ADistributor.SetLogEventsForListener(Self, reAll, [etCustom,etInfo,etWarning,etError,etDebug]);
+  ADistributor.SetNotificationEventsForListener(Self, reAll, [ntReceivedCommand, ntExecutedCommand, ntFailedCommand]);
+  FLogLineList := TThreadList.Create;
+  InitDb('localhost:fppkg','sysdba','masterkey');
+end;
 
 function TDBController.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
 begin
@@ -287,9 +382,27 @@ end;
 
 destructor TDBController.Destroy;
 begin
+  FDistributor.RemoveListener(Self);
+  // Process all events which are still in the queue.
+  ProcessQueuedLogItems;
+  FLogLineList.Free;
   FSQLTransaction.Free;
   FSQLConnection.Free;
   inherited Destroy;
+end;
+
+procedure TDBController.SendEvent(AnEvent: TDCSEvent);
+begin
+  if (AnEvent is TRepoLogEvent) or (AnEvent is TTestCommandNotificationEvent) then
+    begin
+    AnEvent.AddRef;
+    FLogLineList.Add(AnEvent);
+    end;
+end;
+
+function TDBController.GetOrigin: string;
+begin
+  Result := 'DBConnector';
 end;
 
 { TDBGetUniqueIdCommand }
@@ -313,61 +426,6 @@ end;
 class function TDBGetUniqueIdCommand.TextName: string;
 begin
   Result := 'uniqueid';
-end;
-
-function TDbConnectorHandlerThread.CreateController: TDCSCustomController;
-begin
-  Result := inherited CreateController;
-  TDBController(Result).InitDB(FDBName, FDBUser, FDBPassword);
-end;
-
-{ TDbConnectorHandlerThread }
-
-constructor TDbConnectorHandlerThread.create(ADistributor: TDCSDistributor; DBName, DBUser, DBPassword: string);
-begin
-  inherited Create(ADistributor, TDBController);
-  Distributor.AddListener(self);
-
-  FDBName := DBName;
-  FDBPassword :=  DBPassword;
-  FDBUser := DBUser;
-end;
-
-destructor TDbConnectorHandlerThread.Destroy;
-begin
-  Distributor.RemoveListener(self);
-  inherited Destroy;
-end;
-
-procedure TDbConnectorHandlerThread.SendEvent(AnEvent: TDCSEvent);
-var
-  Command: TDBStoreCommmandNotification;
-  Event: TTestCommandNotificationEvent;
-begin
-  if AnEvent is TTestCommandNotificationEvent then
-    begin
-    Event := TTestCommandNotificationEvent(AnEvent);
-    Command := TDBStoreCommmandNotification.Create(FListenerId, null, Distributor);
-    Command.UniqueId := Event.UniqueId;
-    Command.NotificationType := Event.NotificationType;
-    Command.LogLineList.Clone(Event.LogLineList);
-    Distributor.QueueCommand(Command);
-    end;
-end;
-
-function TDbConnectorHandlerThread.GetOrigin: string;
-begin
-  result := 'DBConnector';
-end;
-
-procedure TDbConnectorHandlerThread.InitListener(AListenerId: Integer);
-begin
-  FListenerId := AListenerId;
-end;
-
-function TDbConnectorHandlerThread.GetListenerId: Integer;
-begin
-  Result := FListenerId;
 end;
 
 initialization

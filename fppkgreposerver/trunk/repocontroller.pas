@@ -20,6 +20,17 @@ uses
 
 type
 
+  { TRepoLogEvent }
+
+  TRepoLogEvent = class( TDCSLogEvent )
+  private
+    FLevel: TLogLevel;
+    FUniqueId: Integer;
+  public
+    property UniqueId: Integer read FUniqueId write FUniqueId;
+    property Level: TLogLevel read FLevel write FLevel;
+  end;
+
   { TCommandExecutioner }
 
   TCommandExecutioner = class(TObject, IDCSListener)
@@ -149,7 +160,7 @@ const
 implementation
 
 uses
-  RepoTestCommand;
+  RepoTestCommand,variants;
 
 { TRepoCommand }
 
@@ -328,8 +339,20 @@ begin
 end;
 
 procedure TRepoCommand.AddToTestLog(ALevel: TLogLevel; AMsg: String);
+var
+  AnEvent: TRepoLogEvent;
 begin
-  FDistributor.Log(AMsg, etInfo, FUID);
+  AnEvent := TRepoLogEvent.Create;
+  try
+    AnEvent.LogLevel := etCustom;
+    AnEvent.Level := ALevel;
+    AnEvent.Message := AMsg;
+    AnEvent.UID := UID;
+    AnEvent.LisId := SendByLisId;
+    FDistributor.SendEvent(AnEvent);
+  finally
+    AnEvent.Release;
+  end;
 end;
 
 function TRepoCommand.DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean;

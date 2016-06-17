@@ -46,7 +46,7 @@ var
   ConsoleServer: TDCSConsoleServer;
   Port, SensePorts: Longint;
   TCPServerThread: TDCSTcpServer;
-  ADbConnector: TDbConnectorHandlerThread;
+  ADbConnector: TDCSHandlerThread;
   DBName: string;
   DBUser: string;
   DBPassword: string;
@@ -122,8 +122,7 @@ begin
 
     if HasOption('d','dbstorage') then
       begin
-      ADbConnector := TDbConnectorHandlerThread.Create(FDistributor,DBName,DBUser,DBPassword);
-      FDistributor.AddHandlerThread(ADbConnector);
+      ADbConnector := TDCSHandlerThread.Create(FDistributor, TDBController);
       end
     else
       ADbConnector := nil;

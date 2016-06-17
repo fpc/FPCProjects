@@ -69,7 +69,6 @@ type
   TRepoTestCommand = class(TRepoCommand)
   private
     FPackageName: string;
-    FLogLineList: TLogLineList;
     FPackageURL: string;
     FUniqueId: Integer;
   protected
@@ -78,7 +77,6 @@ type
     function CreateReceivedCommandEvent: TDCSNotificationEvent; override;
   public
     constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); override;
-    destructor Destroy; override;
     class function TextName: string; override;
     function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
     procedure AddToTestLog(ALevel: TLogLevel; AMsg: String); override;
@@ -179,7 +177,6 @@ var
 begin
   Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage, NotificationClass);
   Event := TTestCommandNotificationEvent(Result);
-  Event.LogLineList.Clone(FLogLineList);
   Event.UniqueId := UniqueId;
 end;
 
@@ -196,7 +193,6 @@ var
   Event: TDCSNotificationEvent;
 begin
   inherited Create(ASendByLisId, AnUID, ADistributor);
-  FLogLineList := TLogLineList.Create;
 
   FUniqueId := -1;
   CommandExecutioner := TCommandExecutioner.Create(FDistributor);
@@ -211,12 +207,6 @@ begin
   finally
     CommandExecutioner.Free;
   end;
-end;
-
-destructor TRepoTestCommand.Destroy;
-begin
-  FLogLineList.Free;
-  inherited Destroy;
 end;
 
 class function TRepoTestCommand.TextName: string;
@@ -266,7 +256,7 @@ begin
       on E: Exception do
         begin
         ReturnMessage := Format('Failed to install package %s: %s', [PackageName, E.Message]);
-        FDistributor.Log(ReturnMessage, etWarning, UID);
+        FDistributor.Log(ReturnMessage, etWarning, UID, SendByLisId);
         end;
     end;
   end
@@ -279,13 +269,20 @@ end;
 
 procedure TRepoTestCommand.AddToTestLog(ALevel: TLogLevel; AMsg: String);
 var
+  AnEvent: TRepoLogEvent;
   LogLine: TLogLine;
 begin
-  inherited;
-  LogLine := TLogLine.Create;
-  LogLine.LogLevel := ALevel;
-  LogLine.Msg := AMsg;
-  FLogLineList.Add(LogLine);
+  AnEvent := TRepoLogEvent.Create;
+  try
+    AnEvent.LogLevel := etCustom;
+    AnEvent.Message := AMsg;
+    AnEvent.UID := UID;
+    AnEvent.LisId := SendByLisId;
+    AnEvent.UniqueId := UniqueId;
+    FDistributor.SendEvent(AnEvent);
+  finally
+    AnEvent.Release;
+  end;
 end;
 
 initialization
