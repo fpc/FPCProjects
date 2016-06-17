@@ -52,6 +52,7 @@ type
   private
     FRefCount: integer;
     FUID: variant;
+    FLisId: Integer;
   protected
     function GetEventType: TDCSEventType; virtual; abstract;
     function GetIsThreadSafe: Boolean; virtual;
@@ -60,6 +61,7 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
     function AddRef: Integer;
+    property LisId: Integer read FLisId write FLisId;
     function Release: Integer;
     property EventType: TDCSEventType read GetEventType;
     property UID: variant read FUID write FUID;
@@ -84,14 +86,12 @@ type
   TDCSNotificationEvent = Class(TDCSEvent)
   private
     FCommand: shortstring;
-    FLisId: Integer;
     FMessage: shortstring;
     FNotificationType: TDCSNotificationType;
   protected
     function GetEventType: TDCSEventType; override;
     function Clone: TDCSEvent; override;
   public
-    property LisId: Integer read FLisId write FLisId;
     property Command: shortstring read FCommand write FCommand;
     property Message: shortstring read FMessage write FMessage;
     property NotificationType: TDCSNotificationType read FNotificationType write FNotificationType;
@@ -170,6 +170,8 @@ type
     property Controller: TDCSCustomController read FController;
     property Distributor: TDCSDistributor read FDistributor;
   public
+    // IdleTime is the timeout for waiting for new commands. When there are no
+    // commands it is the interval at which OnIdle is being called.
     constructor Create(ADistributor: TDCSDistributor; IdleTime: Cardinal = 100); virtual;
     destructor Destroy; override;
   end;
@@ -202,7 +204,7 @@ type
   public
     constructor Create();
     destructor Destroy(); override;
-    procedure Log(const AString: string; const ALogLevel: TEventType; AnUID: variant);
+    procedure Log(const AString: string; const ALogLevel: TEventType; AnUID: variant; ALisId: Integer = -1);
     procedure AddHandlerThread(AHandlerThread: TDCSCustomHandlerThread);
     procedure RemoveHandlerThread(AHandlerThread: TDCSCustomHandlerThread);
 
@@ -485,6 +487,7 @@ end;
 function TDCSEvent.Clone: TDCSEvent;
 begin
   Result := TDCSEventClass(ClassType).Create;
+  Result.LisId := LisId;
   Result.UID := UID;
 end;
 
@@ -642,21 +645,13 @@ begin
           ASendEvent := True;
         reOwnAndGeneral:
           begin
-          if (AnEvent is TDCSNotificationEvent) then
-            begin
-            if (TDCSNotificationEvent(AnEvent).LisId=-1) or (TDCSNotificationEvent(AnEvent).LisId=ListenerContainer.Listener.ListenerId) then
-              ASendEvent := True;
-            end
-          else
+          if (AnEvent.LisId=-1) or (AnEvent.LisId=ListenerContainer.Listener.ListenerId) then
             ASendEvent := True;
           end;
         reOwnOnly:
           begin
-          if (AnEvent is TDCSNotificationEvent) then
-            begin
-            if (TDCSNotificationEvent(AnEvent).LisId=ListenerContainer.Listener.ListenerId) then
-              ASendEvent := True;
-            end;
+          if AnEvent.LisId=ListenerContainer.Listener.ListenerId then
+            ASendEvent := True;
           end;
       end;
 
@@ -669,7 +664,7 @@ begin
           end
         else if (AnEvent is TDCSLogEvent) then
           begin
-          if not (TDCSLogEvent(AnEvent).LogLevel in ListenerContainer.FTDCSListenerSubscriptionArray[dcsetNotification].EventTypes) then
+          if not (TDCSLogEvent(AnEvent).LogLevel in ListenerContainer.FTDCSListenerSubscriptionArray[dcsetLog].EventTypes) then
             ASendEvent := False;
           end;
 
@@ -751,7 +746,8 @@ begin
   inherited Destroy;
 end;
 
-procedure TDCSDistributor.Log(const AString: string; const ALogLevel: TEventType; AnUID: variant);
+procedure TDCSDistributor.Log(const AString: string; const ALogLevel: TEventType; AnUID: variant;
+  ALisId: Integer);
 var
   AnEvent: TDCSLogEvent;
 begin
@@ -760,6 +756,7 @@ begin
     AnEvent.LogLevel := ALogLevel;
     AnEvent.Message :=  AString;
     AnEvent.UID := AnUID;
+    AnEvent.LisId := ALisId;
     SendEvent(AnEvent);
   finally
     AnEvent.Release;
