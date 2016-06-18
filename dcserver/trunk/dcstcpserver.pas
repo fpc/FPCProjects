@@ -195,7 +195,14 @@ begin
           begin
           s := copy(InputStr, 1, i-1);
           delete(InputStr,1,i);
-          SendCommand(S);
+          try
+            SendCommand(S);
+          except
+            on E: Exception do
+              begin
+              FDistributor.SendNotification(FListenerId, ntInvalidCommand, Null, 'Exception raised while processing command: %s', s, [E.Message]);
+              end;
+          end;
           i := pos(#10, InputStr);
           end;
         end
@@ -221,7 +228,7 @@ begin
   except
     on E: Exception do
       begin
-      FDistributor.Log(Format('Exception raised by tcp-connection (%s): %s', [GetOrigin, E.Message]), etWarning, Null);
+      FDistributor.Log(Format('Exception raised by tcp-connection (%s): %s', [GetOrigin, E.Message]), etWarning, Null, FListenerId);
       end;
   end;
   FDebugTcpServer.RemoveConnection(self);
