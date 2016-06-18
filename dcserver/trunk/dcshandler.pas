@@ -928,7 +928,7 @@ begin
             except
               on E: Exception do
                 begin
-                FDistributor.Log('Exception during execution of '+ACommand.TextName+' command :'+e.Message, etError, ACommand.UID);
+                FDistributor.Log('Exception during execution of '+ACommand.TextName+' command: '+e.Message, etError, ACommand.UID, ACommand.SendByLisId);
                 FDistributor.SendNotification(ACommand.SendByLisId, ntFailedCommand, null, 'Exception during execution of %s-command.', ACommand.TextName, [ACommand.TextName]);
                 end;
             end;
