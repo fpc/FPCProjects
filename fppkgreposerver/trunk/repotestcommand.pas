@@ -279,6 +279,7 @@ begin
     AnEvent.UID := UID;
     AnEvent.LisId := SendByLisId;
     AnEvent.UniqueId := UniqueId;
+    AnEvent.Level := ALevel;
     FDistributor.SendEvent(AnEvent);
   finally
     AnEvent.Release;
