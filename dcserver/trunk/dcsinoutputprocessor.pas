@@ -32,6 +32,8 @@ type
   { TDCSJSonInOutputProcessor }
 
   TDCSJSonInOutputProcessor = class(TDCSCustomInOutputProcessor)
+  protected
+    function JSONArrayToSetOrdinal(AnArray: TJSONArray; PropInfo: PPropInfo): Int64;
   public
     function TextToCommand(const ACommandText: string): TDCSThreadCommand; override;
     function EventToText(AnEvent: TDCSEvent): string; override;
@@ -48,6 +50,24 @@ begin
 end;
 
 { TDCSJSonInOutputProcessor }
+
+function TDCSJSonInOutputProcessor.JSONArrayToSetOrdinal(AnArray: TJSONArray; PropInfo: PPropInfo): Int64;
+var
+  i: Integer;
+  PTI: PTypeInfo;
+  EnumInd: Integer;
+begin
+  Result := 0;
+  PTI:=GetTypeData(PropInfo^.PropType)^.Comptype;
+  for i := 0 to AnArray.Count -1 do
+    begin
+    EnumInd := GetEnumValue(PTI, AnArray.Items[i].AsString);
+    if EnumInd > -1 then
+      Result := Result or (1 shl EnumInd)
+    else
+      raise Exception.CreateFmt('Invalid set value ''%s''',[AnArray.Items[i].AsString]);
+    end;
+end;
 
 function TDCSJSonInOutputProcessor.TextToCommand(const ACommandText: string): TDCSThreadCommand;
 var
@@ -118,6 +138,11 @@ begin
               SetStrProp(result, APropList^[i], AJSonProp.AsString);
             tkInteger:
               SetOrdProp(result, APropList^[i], AJSonProp.AsInteger);
+            tkSet:
+              if AJSonProp.JSONType=jtString then
+                SetSetProp(result, APropList^[i], AJSonProp.AsString)
+              else
+                SetOrdProp(result, APropList^[i], JSONArrayToSetOrdinal(AJSonProp as TJSONArray, APropList^[i]));
           end;
           end;
         end;
