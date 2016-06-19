@@ -86,6 +86,8 @@ type
 
   TDBQueryTestResultCommand = class(TDBCommand)
   private
+    FIncludeLogLevels: TLogLevels;
+    FMaxLogLineCount: integer;
     FUniqueId: integer;
     FState: String;
     FReceivedTime, FFinishedTime: TDateTime;
@@ -96,11 +98,14 @@ type
     function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string; NotificationClass: TDCSNotificationEventClass): TDCSNotificationEvent; override;
     function StringToLogLevel(AStr: string): TLogLevel;
   public
+    constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); override;
     function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
     class function TextName: string; override;
     destructor Destroy; override;
   published
     property UniqueId: integer read FUniqueId write FUniqueId;
+    property MaxLogLineCount: integer read FMaxLogLineCount write FMaxLogLineCount;
+    property IncludeLogLevels: TLogLevels read FIncludeLogLevels write FIncludeLogLevels;
   end;
 
 implementation
@@ -122,7 +127,8 @@ var
 begin
   Result := inherited CreateExecutedCommandEvent(Success, ReturnMessage, NotificationClass);
   Event := TDBStoreCommmandNotificationEvent(Result);
-  Event.LogLineList.Clone(FLogLineList);
+  if Assigned(FLogLineList) then
+    Event.LogLineList.Clone(FLogLineList);
   Event.UniqueId := FUniqueId;
   Event.TestUID := FTestUID;
   case FState of
@@ -149,11 +155,26 @@ begin
   raise exception.CreateFmt('Invalid loglevel %s',[AStr]);
 end;
 
+constructor TDBQueryTestResultCommand.Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor);
+begin
+  inherited Create(ASendByLisId, AnUID, ADistributor);
+  FMaxLogLineCount := -1;
+end;
+
 function TDBQueryTestResultCommand.DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
   Query: TSQLQuery;
   LogLine: TLogLine;
+  AWhereStr: String;
+  LogLevel: TLogLevel;
 begin
+  if UniqueId=0 then
+    begin
+    ReturnMessage := 'No UniqueId given';
+    Result := False;
+    Exit;
+    end;
+
   Query := TDBController(AController).CreateQuery;
   try
     Query.SQL.Text := 'select uid, state, receivedtime, finishedtime from command where commandid=:commandid;';
@@ -167,7 +188,23 @@ begin
       FReceivedTime := Query.FieldByName('receivedtime').AsDateTime;
       FFinishedTime := Query.FieldByName('finishedtime').AsDateTime;
       Query.Close;
-      Query.SQL.Text := 'select * from commandlogline where commandid=:commandid';
+
+      AWhereStr := '';
+      if FIncludeLogLevels<>[] then
+        begin
+        for LogLevel := low(LogLevel) to High(LogLevel) do
+          if LogLevel in FIncludeLogLevels then
+            AWhereStr := AWhereStr + ' or (loglevel = ''' + SLogLevel[LogLevel] + ''') ';
+          if AWhereStr<>'' then
+            AWhereStr := ' and ('+Copy(AWhereStr,4,length(AWhereStr))+')';
+        end;
+      AWhereStr := '(commandid=:commandid) ' + AWhereStr;
+
+      if FMaxLogLineCount>-1 then
+        Query.SQL.Text := 'select skip ((select maxvalue(count(*) - '+IntToStr(FMaxLogLineCount)+', 0) from commandlogline where '+AWhereStr+')) * from commandlogline where '+AWhereStr
+      else
+        Query.SQL.Text := 'select * from commandlogline where ' + AWhereStr;
+
       Query.ParamByName('commandid').AsInteger := UniqueId;
       Query.Open;
       FLogLineList := TLogLineList.Create;
@@ -179,7 +216,9 @@ begin
         FLogLineList.Add(LogLine);
         Query.Next;
         end;
-      end;
+      end
+    else
+      ReturnMessage := 'No information found for command with given UniqueId';
   finally
     Query.Free;
   end;
