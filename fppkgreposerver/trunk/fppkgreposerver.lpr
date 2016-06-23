@@ -16,11 +16,13 @@ uses
   DCSHandler,
   dcsConsoleServer,
   DCSTCPServer,
+  dcsInOutputProcessor,
   RepoTestCommand,
   RepoController,
   repoinitializecommand,
   dbconnector,
-  RepoSvnCommands;
+  RepoSvnCommands,
+  InOutputProcessor;
 
 type
 
@@ -109,6 +111,8 @@ begin
   else
     SensePorts:=1;
 
+
+  TDCSInOutputProcessorFactory.RegisterCommandClass('json', TJSONInOutputProcessor);
 
   FDistributor := TDCSDistributor.Create;
   try
