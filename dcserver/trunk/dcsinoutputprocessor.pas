@@ -23,11 +23,13 @@ type
   protected
     FDistributor: TDCSDistributor;
     FLisId: integer;
+    function StringToEnum(TypeInfo : PTypeInfo;Value : String): integer; virtual;
   public
     constructor create(ALisId: integer; ADistributor: TDCSDistributor); virtual;
     function TextToCommand(const ACommandText: string): TDCSThreadCommand; virtual; abstract;
     function EventToText(AnEvent: TDCSEvent): string; virtual; abstract;
   end;
+  TDCSInOutputProcessorClass = class of TDCSCustomInOutputProcessor;
 
   { TDCSJSonInOutputProcessor }
 
@@ -39,9 +41,57 @@ type
     function EventToText(AnEvent: TDCSEvent): string; override;
   end;
 
+  { TDCSInOutputProcessorFactory }
+
+  TDCSInOutputProcessorFactory = class
+  private
+    class var FStringList: TStringList;
+  public
+    class constructor Create();
+    class destructor Destroy;
+    class function GetInOutputProcessorByName(ATextName: string): TDCSInOutputProcessorClass;
+    class procedure RegisterCommandClass(ATextName: string; AnInOutputProcessor: TDCSInOutputProcessorClass);
+  end;
+
+
 implementation
 
+{ TDCSInOutputProcessorFactory }
+
+class constructor TDCSInOutputProcessorFactory.Create;
+begin
+  FStringList := TStringList.Create;
+end;
+
+class destructor TDCSInOutputProcessorFactory.Destroy;
+begin
+  FStringList.Destroy;
+end;
+
+class function TDCSInOutputProcessorFactory.GetInOutputProcessorByName(ATextName: string): TDCSInOutputProcessorClass;
+var
+  i: Integer;
+begin
+  result := nil;
+  for i := 0 to FStringList.Count -1 do
+    begin
+    if FStringList.Strings[i]=ATextName then
+      result := TDCSInOutputProcessorClass(FStringList.Objects[i]);
+    end;
+end;
+
+class procedure TDCSInOutputProcessorFactory.RegisterCommandClass(ATextName: string;
+  AnInOutputProcessor: TDCSInOutputProcessorClass);
+begin
+  FStringList.AddObject(ATextName, TObject(AnInOutputProcessor));
+end;
+
 { TDCSCustomInOutputProcessor }
+
+function TDCSCustomInOutputProcessor.StringToEnum(TypeInfo: PTypeInfo; Value: String): integer;
+begin
+  Result := GetEnumValue(TypeInfo,Value);
+end;
 
 constructor TDCSCustomInOutputProcessor.create(ALisId: integer; ADistributor: TDCSDistributor);
 begin
@@ -61,7 +111,7 @@ begin
   PTI:=GetTypeData(PropInfo^.PropType)^.Comptype;
   for i := 0 to AnArray.Count -1 do
     begin
-    EnumInd := GetEnumValue(PTI, AnArray.Items[i].AsString);
+    EnumInd := StringToEnum(PTI, AnArray.Items[i].AsString);
     if EnumInd > -1 then
       Result := Result or (1 shl EnumInd)
     else

@@ -274,6 +274,8 @@ end;
 
 constructor TDCSTcpConnectionThread.create(ADistributor: TDCSDistributor;
   ADebugTcpServer: TDCSTcpServer; Data: TSocketStream);
+var
+  InOutputProcessorClass: TDCSInOutputProcessorClass;
 begin
   FData := data;
 
@@ -284,7 +286,10 @@ begin
   FDebugTcpServer := ADebugTcpServer;
   FResponseQueue:=TThreadedQueueString.create(100, INFINITE, 100);
   FListenerId := FDistributor.AddListener(self);
-  FInOutputProcessor := TDCSJSonInOutputProcessor.create(FListenerId, FDistributor);
+  InOutputProcessorClass :=  TDCSInOutputProcessorFactory.GetInOutputProcessorByName('json');
+  if not assigned(InOutputProcessorClass) then
+    InOutputProcessorClass := TDCSJSonInOutputProcessor;
+  FInOutputProcessor := InOutputProcessorClass.create(FListenerId, FDistributor);
   inherited create(false);
 end;
 
