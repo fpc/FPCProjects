@@ -16,6 +16,7 @@ uses
   DCSHandler,
   dcsConsoleServer,
   DCSTCPServer,
+  dcsGlobalSettings,
   dcsInOutputProcessor,
   RepoTestCommand,
   RepoController,
@@ -49,26 +50,41 @@ var
   Port, SensePorts: Longint;
   TCPServerThread: TDCSTcpServer;
   ADbConnector: TDCSHandlerThread;
-  DBName: string;
-  DBUser: string;
-  DBPassword: string;
+  GlobalSettings: TDCSGlobalSettings;
 begin
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+
+  GlobalSettings.AddSetting('help','','','help','h', dcsPNoParameter);
+  GlobalSettings.AddSetting('port','','','port','p', dcsPHasParameter);
+  GlobalSettings.AddSetting('dbname','','','dbname',#0, dcsPHasParameter);
+  GlobalSettings.AddSetting('dbuser','','','dbuser',#0, dcsPHasParameter);
+  GlobalSettings.AddSetting('dbpassword','','','dbpassword',#0, dcsPHasParameter);
+  GlobalSettings.AddSetting('dbstorage','','','dbstorage','d', dcsPNoParameter);
+  GlobalSettings.AddSetting('tcp','','','tcp','t', dcsPNoParameter);
+  GlobalSettings.SetSettingAsString('dbname', 'localhost:fppkg');
+  GlobalSettings.SetSettingAsString('dbuser', 'sysdba');
+  GlobalSettings.SetSettingAsString('dbpassword', 'masterkey');
+
+  GlobalSettings.AddSetting('autoport','','','autoport','a', dcsPOptionalParameter, '5');
+  GlobalSettings.SetSettingAsString('autoport', '1');
+
   // quick check parameters
-  ErrorMsg:=CheckOptions('htp:a::d', ['help','tcp','port:','autoport::','dbstorage','dbname:','dbuser:','dbpassword:']);
+  ErrorMsg := GlobalSettings.CheckProgramParameters(Self);
   if ErrorMsg<>'' then begin
     ShowException(Exception.Create(ErrorMsg));
     Terminate;
     Exit;
   end;
 
-  // parse parameters
-  if HasOption('h', 'help') then begin
+  GlobalSettings.EvaluateProgramParameters(Self);
+  if GlobalSettings.GetSettingAsBoolean('help') then
+    begin
     WriteHelp;
     Terminate;
     Exit;
-  end;
+    end;
 
-  CommandStr := GetOptionValue('p','port');
+  CommandStr := GlobalSettings.GetSettingAsString('port');
   if CommandStr<>'' then
     begin
     if not TryStrToInt(CommandStr, Port) then
@@ -81,36 +97,13 @@ begin
   else
     Port := 9250;
 
-  DBName := GetOptionValue('dbname');
-  if DBName='' then
-    DBName := 'localhost:fppkg';
-
-  DBUser := GetOptionValue('dbuser');
-  if DBUser='' then
-    DBUser := 'sysdba';
-
-  DBPassword := GetOptionValue('dbpassword');
-  if DBPassword='' then
-    DBPassword := 'masterkey';
-
-  if HasOption('a','autoport') then
+  CommandStr := GlobalSettings.GetSettingAsString('autoport');
+  if not TryStrToInt(CommandStr, SensePorts) then
     begin
-    CommandStr := GetOptionValue('a','autoport');
-    if CommandStr<>'' then
-      begin
-      if not TryStrToInt(CommandStr, SensePorts) then
-        begin
-        writeln('Autoport should be an integer number. Invalid autoport value '''+CommandStr+'''');
-        Terminate;
-        Exit;
-        end;
-      end
-    else
-      SensePorts:=5
-    end
-  else
-    SensePorts:=1;
-
+    writeln('Autoport should be an integer number. Invalid autoport value '''+CommandStr+'''');
+    Terminate;
+    Exit;
+    end;
 
   TDCSInOutputProcessorFactory.RegisterCommandClass('json', TJSONInOutputProcessor);
 
@@ -124,14 +117,14 @@ begin
       raise;
     end;
 
-    if HasOption('d','dbstorage') then
+    if GlobalSettings.GetSettingAsBoolean('dbstorage') then
       begin
       ADbConnector := TDCSHandlerThread.Create(FDistributor, TDBController);
       end
     else
       ADbConnector := nil;
 
-    if HasOption('t','tcp') then
+    if GlobalSettings.GetSettingAsBoolean('tcp') then
       TCPServerThread := TDCSTcpServer.Create(FDistributor, Port, SensePorts)
     else
       TCPServerThread := nil;

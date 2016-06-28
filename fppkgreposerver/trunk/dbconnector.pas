@@ -14,6 +14,7 @@ uses
   dcsHandler,
   dcsThreadCommandFactory,
   RepoTestCommand,
+  dcsGlobalSettings,
   pkgglobals;
 
 type
@@ -387,13 +388,16 @@ begin
 end;
 
 constructor TDBController.Create(ADistributor: TDCSDistributor);
+var
+  GlobalSettings: TDCSGlobalSettings;
 begin
   inherited Create(ADistributor);
   ADistributor.AddListener(Self);
   ADistributor.SetLogEventsForListener(Self, reAll, [etCustom,etInfo,etWarning,etError,etDebug]);
   ADistributor.SetNotificationEventsForListener(Self, reAll, [ntReceivedCommand, ntExecutedCommand, ntFailedCommand]);
   FLogLineList := TThreadList.Create;
-  InitDb('localhost:fppkg','sysdba','masterkey');
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  InitDb(GlobalSettings.GetSettingAsString('dbname'),GlobalSettings.GetSettingAsString('dbuser'),GlobalSettings.GetSettingAsString('dbpassword'));
 end;
 
 function TDBController.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
