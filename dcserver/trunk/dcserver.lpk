@@ -9,7 +9,7 @@
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Files Count="8">
+    <Files Count="9">
       <Item1>
         <Filename Value="dcshandler.pas"/>
         <UnitName Value="dcsHandler"/>
@@ -36,12 +36,16 @@
       </Item6>
       <Item7>
         <Filename Value="dcslistenerthread.pas"/>
-        <UnitName Value="dcslistenerthread"/>
+        <UnitName Value="dcsListenerThread"/>
       </Item7>
       <Item8>
         <Filename Value="dcshttprestserver.pas"/>
         <UnitName Value="DCSHTTPRestServer"/>
       </Item8>
+      <Item9>
+        <Filename Value="dcsglobalsettings.pas"/>
+        <UnitName Value="dcsglobalsettings"/>
+      </Item9>
     </Files>
     <RequiredPkgs Count="2">
       <Item1>
