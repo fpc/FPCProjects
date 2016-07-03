@@ -88,6 +88,7 @@ begin
   FKey := AKey;
   FParameterName := AParameterName;
   FParameterLetter := AParameterLetter;
+  FDefaultValue := ADefaultValue;
   FParameter := AParameter;
 end;
 
@@ -222,6 +223,7 @@ procedure TDCSGlobalSettings.EvaluateProgramParameters(AnApplication: TCustomApp
 var
   i: integer;
   Setting: TDCSSetting;
+  s: string;
 begin
   FMonitor.Acquire;
   try
@@ -236,8 +238,9 @@ begin
           dcsPHasParameter: Setting.SetAsString(AnApplication.GetOptionValue(Setting.ParameterLetter, Setting.ParameterName));
           dcsPOptionalParameter:
             begin
-            if AnApplication.HasOption(Setting.ParameterLetter, Setting.ParameterName) then
-              Setting.SetAsString(AnApplication.GetOptionValue(Setting.ParameterLetter, Setting.ParameterName))
+            s := AnApplication.GetOptionValue(Setting.ParameterLetter, Setting.ParameterName);
+            if s <> '' then
+              Setting.SetAsString(s)
             else if Setting.DefaultValue <> '' then
               Setting.SetAsString(Setting.DefaultValue)
             else
