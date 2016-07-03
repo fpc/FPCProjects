@@ -78,21 +78,41 @@ type
 
   TrepoTestEnvironmentList = specialize TFPGObjectList<TrepoTestEnvironment>;
 
+  { TRepoRepository }
+
+  TRepoRepository = class
+  private
+    FName: string;
+    FPublishDir: string;
+    FSVNUrl: string;
+    FTestEnvironmentName: string;
+  published
+    property Name: string read FName write FName;
+    property SVNUrl: string read FSVNUrl write FSVNUrl;
+    property PublishDir: string read FPublishDir write FPublishDir;
+    property TestEnvironmentName: string read FTestEnvironmentName write FTestEnvironmentName;
+  end;
+
+  TrepoRepositoryList = specialize TFPGObjectList<TRepoRepository>;
+
   { TrepoFPCVersion }
 
   TrepoFPCVersion = class
   private
     FName: string;
+    FRepositoryList: TrepoRepositoryList;
     FVersion: string;
     FTestEnvironmentList: TrepoTestEnvironmentList;
   public
     constructor Create;
     destructor Destroy; override;
     function GetTestEnvironment(AName: string): TrepoTestEnvironment;
+    function GetRepository(AName: string): TRepoRepository;
   published
     property Name: string read FName write FName;
     property Version: string read FVersion write FVersion;
     property TestEnvironmentList: TrepoTestEnvironmentList read FTestEnvironmentList;
+    property RepositoryList: TrepoRepositoryList read FRepositoryList write FRepositoryList;
   end;
 
   TrepoFPCVersionList = specialize TFPGObjectList<TrepoFPCVersion>;
@@ -102,29 +122,19 @@ type
   TRepoController = class(TDCSCustomController)
   private
     FFPCVersionList: TrepoFPCVersionList;
-    FFppkgCfgTemplate: string;
-    FPublishedRepoDir: string;
-    FRepoDir: String;
-    FSvnUrl: string;
-    FIniFile: TIniFile;
-    FUninstallPackagesDuringInitialize: Boolean;
-    procedure LoadIniFile;
+    FPackagesSvnUrl: string;
+    procedure LoadXmlConfigurationFile;
   public
     constructor Create(ADistributor: TDCSDistributor); override;
     destructor Destroy; override;
     function AcceptCommand(ACommand: TDCSThreadCommand): Boolean; override;
-    function SvnBranchToFPCVersion(ABranchName: string): string;
 
     // If no version-name is given, the default version is returned
     function GetFPCVersion(AFpcVersionName: string): TrepoFPCVersion;
 
     procedure Init; override;
     function LoadRepository(fppkgconfigname: string): Boolean;
-    property RepoDir: string read FRepoDir;
-    property PublishedRepoDir: string read FPublishedRepoDir;
-    property SvnUrl: string read FSvnUrl;
-    property UninstallPackagesDuringInitialize: Boolean read FUninstallPackagesDuringInitialize;
-    property FppkgCfgTemplate: string read FFppkgCfgTemplate;
+    property PackagesSvnUrl: string read FPackagesSvnUrl;
 
     property FPCVersionList: TrepoFPCVersionList read FFPCVersionList;
   end;
@@ -134,13 +144,17 @@ type
   TRepoCommand = class(TDCSThreadCommand)
   private
     FFpcVersionName: string;
+    FRepositoryName: string;
     FTestEnvironmentName: string;
   protected
     function RemoveTree(APath: String): Boolean;
+    function GetVersion(AController: TDCSCustomController; out FPCVersion: TrepoFPCVersion; out ReturnMessage: String): Boolean;
     function GetTestEnvironment(AController: TDCSCustomController; out FPCVersion: TrepoFPCVersion; out TestEnv: TrepoTestEnvironment; out ReturnMessage: String): Boolean;
+    function GetRepository(AController: TDCSCustomController; out FPCVersion: TrepoFPCVersion; out Repository: TRepoRepository; out ReturnMessage: String): Boolean;
 
     property FpcVersionName: string read FFpcVersionName write FFpcVersionName;
     property TestEnvironmentName: string read FTestEnvironmentName write FTestEnvironmentName;
+    property RepositoryName: string read FRepositoryName write FRepositoryName;
   public
     procedure AddToTestLog(ALevel: TLogLevel; AMsg: String); virtual;
     function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; virtual;
@@ -179,11 +193,13 @@ end;
 constructor TrepoFPCVersion.Create;
 begin
   FTestEnvironmentList := TrepoTestEnvironmentList.Create;
+  FRepositoryList := TrepoRepositoryList.Create;
 end;
 
 destructor TrepoFPCVersion.Destroy;
 begin
-  FTestEnvironmentList.Free;;
+  FTestEnvironmentList.Free;
+  FRepositoryList.Free;
   inherited Destroy;
 end;
 
@@ -199,6 +215,23 @@ begin
     if (TestEnv.Name = AName) or (AName='') then
       begin
       Result := TestEnv;
+      Break;
+      end;
+    end;
+end;
+
+function TrepoFPCVersion.GetRepository(AName: string): TRepoRepository;
+var
+  I: Integer;
+  Repository: TRepoRepository;
+begin
+  Result := nil;
+  for I := 0 to RepositoryList.Count -1 do
+    begin
+    Repository := RepositoryList.Items[I];
+    if (Repository.Name = AName) or (AName='') then
+      begin
+      Result := Repository;
       Break;
       end;
     end;
@@ -317,25 +350,53 @@ begin
 {$endif WINDOWS}
 end;
 
-function TRepoCommand.GetTestEnvironment(AController: TDCSCustomController; out
-  FPCVersion: TrepoFPCVersion; out TestEnv: TrepoTestEnvironment; out ReturnMessage: String
-  ): Boolean;
+function TRepoCommand.GetVersion(AController: TDCSCustomController; out
+  FPCVersion: TrepoFPCVersion; out ReturnMessage: String): Boolean;
 begin
-  Result := False;
   FPCVersion := TRepoController(AController).GetFPCVersion(FpcVersionName);
   if not assigned(FPCVersion) then
     begin
+    Result := False;
     ReturnMessage := Format('FPC-Version ''%s'' is not configured', [FpcVersionName]);
-    Exit;
-    end;
+    end
+  else
+    Result := True;
+end;
 
-  TestEnv := FPCVersion.GetTestEnvironment(TestEnvironmentName);
-  if not assigned(TestEnv) then
+function TRepoCommand.GetTestEnvironment(AController: TDCSCustomController; out
+  FPCVersion: TrepoFPCVersion; out TestEnv: TrepoTestEnvironment; out ReturnMessage: String): Boolean;
+begin
+  Result := GetVersion(AController, FPCVersion, ReturnMessage);
+  if Result then
     begin
-    ReturnMessage := Format('The test-environment ''%s'' is not configured', [TestEnvironmentName]);
-    Exit;
-    end;
-  Result := True;
+    TestEnv := FPCVersion.GetTestEnvironment(TestEnvironmentName);
+    if not assigned(TestEnv) then
+      begin
+      ReturnMessage := Format('The test-environment ''%s'' is not configured', [TestEnvironmentName]);
+      Result := False;
+      Exit;
+      end;
+    end
+  else
+    TestEnv := nil;
+end;
+
+function TRepoCommand.GetRepository(AController: TDCSCustomController; out
+  FPCVersion: TrepoFPCVersion; out Repository: TRepoRepository; out ReturnMessage: String): Boolean;
+begin
+  Result := GetVersion(AController, FPCVersion, ReturnMessage);
+  if Result then
+    begin
+    Repository := FPCVersion.GetRepository(RepositoryName);
+    if not assigned(Repository) then
+      begin
+      ReturnMessage := Format('The repository ''%s'' is not configured', [RepositoryName]);
+      Result := False;
+      Exit;
+      end;
+    end
+  else
+    Repository := nil;
 end;
 
 procedure TRepoCommand.AddToTestLog(ALevel: TLogLevel; AMsg: String);
@@ -375,7 +436,7 @@ end;
 
 { TRepoController }
 
-procedure TRepoController.LoadIniFile;
+procedure TRepoController.LoadXmlConfigurationFile;
 
   function GetNodeValue(AParentNode: TDOMNode; NodeName: string): string;
   var
@@ -392,23 +453,13 @@ var
   CfgFile: String;
   XMLDocument: TXMLDocument;
   Node: TDOMNode;
-  VersionElement, TestEnvElement: TDOMElement;
+  VersionElement, TestEnvElement, RepositoryElement: TDOMElement;
   FPCVersion: TrepoFPCVersion;
-  VersionList, TestEnvList: TDOMNodeList;
+  VersionList, TestEnvList, RepositoryList: TDOMNodeList;
   i, j: Integer;
   TestEnv: TrepoTestEnvironment;
+  Repository: TRepoRepository;
 begin
-  CfgFile:=ChangeFileExt(ParamStr(0), '.ini');
-  if Assigned(FIniFile) then
-    FIniFile.Free;
-  FIniFile := TIniFile.Create(CfgFile);
-
-  FRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(FIniFile.ReadString('Settings','repodir','repotest')));
-  FPublishedRepoDir := IncludeTrailingPathDelimiter(ExpandFileName(FIniFile.ReadString('Settings','publishedrepodir','repo')));
-  FSvnUrl := FIniFile.ReadString('Settings','svnurl','https://localhost/svn/fppkg_repo');
-  FUninstallPackagesDuringInitialize := FIniFile.ReadBool('Settings','UninstallPackagesDuringInitialize',True);
-  FFppkgCfgTemplate := FIniFile.ReadString('Settings', 'FppkgCfgTemplate', '');
-
   FFPCVersionList.Clear;
   CfgFile:=ChangeFileExt(ParamStr(0), '.xml');
   ReadXMLFile(XMLDocument, CfgFile);
@@ -416,6 +467,11 @@ begin
     Node := XMLDocument.FindNode('settings');
     if Assigned(Node) then
       begin
+      FPackagesSvnUrl := GetNodeValue(Node, 'packagessvnurl');
+      if FPackagesSvnUrl = '' then
+        raise Exception.CreateFmt('The configuration file (%s) does not contain a package-svn url', [CfgFile]);
+      if FPackagesSvnUrl[length(FPackagesSvnUrl)]<>'/' then
+        FPackagesSvnUrl := FPackagesSvnUrl + '/';
       VersionList := (Node as TDOMElement).GetElementsByTagName('version');
       for i := 0 to VersionList.Count-1 do
         begin
@@ -430,6 +486,7 @@ begin
           TestEnvElement := TestEnvList.Item[j] as TDOMElement;
           TestEnv := TrepoTestEnvironment.Create;
           FPCVersion.TestEnvironmentList.Add(TestEnv);
+          TestEnv.Name := GetNodeValue(TestEnvElement,'name');
           TestEnv.LocalDir := GetNodeValue(TestEnvElement,'localdir');
           TestEnv.LocalDir := ExpandFileName(TestEnv.LocalDir);
           if TestEnv.LocalDir <> '' then
@@ -441,6 +498,20 @@ begin
           TestEnv.TestCompiler := GetNodeValue(TestEnvElement,'testcompiler');
           TestEnv.FppkgCfgTemplate := GetNodeValue(TestEnvElement,'fppkgcfgtemplate');
           TestEnv.UninstallPackagesDuringInitialize := StrToBoolDef(GetNodeValue(TestEnvElement,'uninstallpackagesduringinitialize'), False);
+          end;
+        RepositoryList := VersionElement.GetElementsByTagName('repository');
+        for j := 0 to RepositoryList.Count-1 do
+          begin
+          RepositoryElement := RepositoryList.Item[j] as TDOMElement;
+          Repository := TRepoRepository.Create;
+          FPCVersion.RepositoryList.Add(Repository);
+          Repository.Name := GetNodeValue(RepositoryElement,'name');
+          Repository.PublishDir := GetNodeValue(RepositoryElement,'publishdir');
+          Repository.PublishDir := ExpandFileName(Repository.PublishDir);
+          if Repository.PublishDir <> '' then
+            Repository.PublishDir := IncludeTrailingPathDelimiter(Repository.PublishDir);
+          Repository.TestEnvironmentName := GetNodeValue(RepositoryElement,'testenvironmentname');
+          Repository.SVNUrl := GetNodeValue(RepositoryElement,'svnurl');
           end;
         end;
       end;
@@ -458,18 +529,12 @@ end;
 destructor TRepoController.Destroy;
 begin
   FFPCVersionList.Free;
-  FIniFile.Free;
   inherited Destroy;
 end;
 
 function TRepoController.AcceptCommand(ACommand: TDCSThreadCommand): Boolean;
 begin
   Result := (ACommand is TRepoCommand) or (ACommand is TRepoQuitCommand);
-end;
-
-function TRepoController.SvnBranchToFPCVersion(ABranchName: string): string;
-begin
-  result := FIniFile.ReadString('RepoVersions',ABranchName, ABranchName);
 end;
 
 function TRepoController.GetFPCVersion(AFpcVersionName: string): TrepoFPCVersion;
@@ -491,7 +556,7 @@ end;
 
 procedure TRepoController.Init;
 begin
-  LoadIniFile;
+  LoadXmlConfigurationFile;
 
   LogLevels:=DefaultLogLevels;
 end;

@@ -42,7 +42,7 @@ type
     function RunSvn(Params: array of string; out Output: string): Integer;
     function RunSvnXML(Params: array of string; out ErrOutput: string): TXMLDocument;
     function DoesSVNPathExist(SvnUrl: string): Boolean;
-    function DoesPackageExist(PackageName: string; FPCVersion, Version: string): Boolean;
+    function DoesPackageExist(PackageName: string; Version: string): Boolean;
     function GetPackageFromManifestFile(AFileName: string): TFPPackage;
 
     property Distributor: TDCSDistributor read FDistributor;
@@ -54,11 +54,9 @@ type
   TRepoCustomSvnCommand = class(TRepoCommand)
   private
     FCommitMessage: string;
-    FRepositoryFPCVersion: string;
   public
     constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); override;
   published
-    property RepositoryFPCVersion: string read FRepositoryFPCVersion write FRepositoryFPCVersion;
     property CommitMessage: string read FCommitMessage write FCommitMessage;
   end;
 
@@ -123,49 +121,37 @@ type
   TRepoReleasePackageSvnCommand = class(TRepoCustomSvnCommand)
   private
     FPackageName: string;
-    FRepository: string;
     FVersion: string;
   protected
     FTempDir: string;
     FSVNRepository: TSVNRepository;
-    function AddManifestToRepository(AController: TRepoController; PackageName, ManifestFileName: String
-      ): Boolean;
+    FRepository: TRepoRepository;
+    function AddManifestToRepository(AController: TRepoController; PackageName, ManifestFileName: String): Boolean;
   public
-    constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); override;
     class function TextName: string; override;
     function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
   published
+    property FpcVersionName;
+    property RepositoryName;
     property PackageName: string read FPackageName write FPackageName;
     property Version: string read FVersion write FVersion;
-    property Repository: string read FRepository write FRepository;
   end;
 
   { TPublishRepository }
 
   TPublishRepository = class(TRepoCommand)
-  private
-    FRepository: string;
-    FRepositoryFPCVersion: string;
   public
-    constructor Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor); override;
     class function TextName: string; override;
     function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
   published
-    property Repository: string read FRepository write FRepository;
-    property RepositoryFPCVersion: string read FRepositoryFPCVersion write FRepositoryFPCVersion;
+    property FpcVersionName;
+    property RepositoryName;
   end;
 
 
 implementation
 
 { TPublishRepository }
-
-constructor TPublishRepository.Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor);
-begin
-  inherited Create(ASendByLisId, AnUID, ADistributor);
-  Repository := 'testing';
-  RepositoryFPCVersion := 'trunk';
-end;
 
 class function TPublishRepository.TextName: string;
 begin
@@ -174,35 +160,41 @@ end;
 
 function TPublishRepository.DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
-  RepoDir: string;
   TmpRepoDir: string;
   OldRepoDir: string;
   s, e: String;
   SVNRepository: TSVNRepository;
-  RepoVersion: string;
+  FpcVersion: TrepoFPCVersion;
+  Repository: TRepoRepository;
+  PublishDirTrimmed: string;
 begin
-  RepoDir := TRepoController(AController).PublishedRepoDir;
-  RepoVersion := TRepoController(AController).SvnBranchToFPCVersion(FRepositoryFPCVersion);
+  Result := False;
 
-  TmpRepoDir := RepoDir+Repository+PathDelim+RepoVersion+'_tmp';
+  if not GetRepository(AController, FpcVersion, Repository, ReturnMessage) then
+    begin
+    Exit;
+    end;
+
+  PublishDirTrimmed := copy(Repository.PublishDir, 1, length(Repository.PublishDir)-1);
+  TmpRepoDir := PublishDirTrimmed+'_tmp';
   if DirectoryExists(TmpRepoDir) then
     RemoveTree(TmpRepoDir);
-  OldRepoDir := RepoDir+Repository+PathDelim+RepoVersion+'_old';
+  OldRepoDir := PublishDirTrimmed+'_old';
   if DirectoryExists(OldRepoDir) then
     RemoveTree(OldRepoDir);
 
-  ForceDirectory(RepoDir+Repository);
-
   SVNRepository := TSVNRepository.Create(FDistributor, AController as TRepoController, FUID);
   try
-    result := SVNRepository.RunSvn(['export',TRepoController(AController).SvnUrl+'repositories/'+FRepositoryFPCVersion+'/'+FRepository,TmpRepoDir],s,e)=0;
+    result := SVNRepository.RunSvn(['export',Repository.SvnUrl,TmpRepoDir],s,e)=0;
     if not Result then
       ReturnMessage := e
     else
       begin
-      if DirectoryExists(RepoDir+Repository+PathDelim+RepoVersion) then
-        RenameFile(RepoDir+Repository+PathDelim+RepoVersion, OldRepoDir);
-      Result := RenameFile(TmpRepoDir, RepoDir+Repository+PathDelim+RepoVersion);
+      if DirectoryExists(Repository.PublishDir) then
+        RenameFile(Repository.PublishDir, OldRepoDir)
+      else
+        ForceDirectory(Repository.PublishDir);
+      Result := RenameFile(TmpRepoDir, Repository.PublishDir);
       RemoveTree(OldRepoDir);
       end;
   finally
@@ -225,7 +217,7 @@ begin
   try
     RepositoryHandler := TFPXMLRepositoryHandler.Create;
     try
-      UpdatePackagesXml :=  FSVNRepository.DoesSVNPathExist(AController.SvnUrl+'repositories/'+FRepositoryFPCVersion+'/'+FRepository+'/packages.xml');
+      UpdatePackagesXml :=  FSVNRepository.DoesSVNPathExist(FRepository.SVNUrl+'packages.xml');
       if UpdatePackagesXml then
         begin
         if FSVNRepository.RunSvn(['up', FTempDir+'repo_checkout/packages.xml'],s,e) <> 0 then
@@ -259,12 +251,6 @@ begin
   Result := True;
 end;
 
-constructor TRepoReleasePackageSvnCommand.Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor);
-begin
-  inherited Create(ASendByLisId, AnUID, ADistributor);
-  FRepository := 'testing';
-end;
-
 class function TRepoReleasePackageSvnCommand.TextName: string;
 begin
   Result := 'releasepackage'
@@ -276,6 +262,8 @@ var
   StoredPath: string;
   ZipFile: string;
   ZipPath: string;
+  FpcVersion: TrepoFPCVersion;
+  TestEnv: TRepoTestEnvironment;
 begin
   Result := False;
   if PackageName='' then
@@ -291,9 +279,27 @@ begin
 
   TRepoController(AController).Init;
 
+  if not GetRepository(AController, FpcVersion, FRepository, ReturnMessage) then
+    begin
+    Exit;
+    end;
+
+  TestEnv := FpcVersion.GetTestEnvironment(FRepository.TestEnvironmentName);
+  if not assigned(TestEnv) then
+    begin
+    ReturnMessage := 'Failed to configure testenvironment';
+    Exit;
+    end;
+
+  if not TRepoController(AController).LoadRepository(TestEnv.LocalDir+'etc/fppkg.cfg') then
+    begin
+    ReturnMessage := 'Failed to load repository';
+    Exit;
+    end;
+
   FSVNRepository:= TSVNRepository.Create(FDistributor, AController as TRepoController, FUID);
   try
-    if not FSVNRepository.DoesPackageExist(PackageName,FRepositoryFPCVersion,Version) then
+    if not FSVNRepository.DoesPackageExist(PackageName,Version) then
       begin
       ReturnMessage := Format('Package "%s" version "%s" does not exist.',[PackageName, Version]);
       Exit;
@@ -301,7 +307,7 @@ begin
 
     ZipFile := PackageName + '-' + Version + '.source.zip';
 
-    if FSVNRepository.DoesSVNPathExist(TRepoController(AController).SvnUrl+'repositories/'+FRepositoryFPCVersion+'/'+Repository+'/'+ZipFile) then
+    if FSVNRepository.DoesSVNPathExist(FRepository.SVNUrl+'/'+ZipFile) then
       begin
       ReturnMessage := Format('Package "%s" version "%s" is already released.',[PackageName, Version]);
       Exit;
@@ -310,9 +316,10 @@ begin
     FTempDir := IncludeTrailingPathDelimiter(GetTempFilename(FTempDir, 'fppkg_'));
     CreateDir(FTempDir);
     try
-      if FSVNRepository.RunSvn(['co',TRepoController(AController).SvnUrl+'packages/'+PackageName+'/'+FRepositoryFPCVersion+'/tags/'+Version,FTempDir+'checkout'],s,e)=0 then
+      if FSVNRepository.RunSvn(['co',TRepoController(AController).PackagesSvnUrl+PackageName+'/tags/'+Version,FTempDir+'checkout'],s,e)=0 then
       begin
-        pkghandler.ExecuteAction('fpmkunit', 'install');
+        if Assigned(AvailableRepository.FindPackage('fpmkunit')) then
+          pkghandler.ExecuteAction('fpmkunit', 'install');
         StoredPath := GetCurrentDir;
         try
           chdir(FTempDir+'checkout');
@@ -324,7 +331,7 @@ begin
         end;
         if FileExists(ZipPath) then
           begin
-            if FSVNRepository.RunSvn(['co','--depth=empty',TRepoController(AController).SvnUrl+'repositories/'+FRepositoryFPCVersion+'/'+Repository,FTempDir+'repo_checkout'],s,e)=0 then
+            if FSVNRepository.RunSvn(['co','--depth=empty',FRepository.SVNUrl,FTempDir+'repo_checkout'],s,e)=0 then
             begin
             if CopyFile(ZipPath, FTempDir+PathDelim+'repo_checkout'+PathDelim+ZipFile) then
               begin
@@ -352,7 +359,6 @@ end;
 constructor TRepoCustomSvnCommand.Create(ASendByLisId: integer; AnUID: variant; ADistributor: TDCSDistributor);
 begin
   inherited Create(ASendByLisId, AnUID, ADistributor);
-  FRepositoryFPCVersion := 'trunk';
 end;
 
 { TRepoTagPackageSvnCommand }
@@ -376,7 +382,7 @@ begin
     end;
   FSVNRepository:= TSVNRepository.Create(FDistributor, AController as TRepoController, FUID);
   try
-    if not FSVNRepository.DoesPackageExist(PackageName,'','') then
+    if not FSVNRepository.DoesPackageExist(PackageName,'') then
       begin
       ReturnMessage := Format('Package "%s" does not exist.',[PackageName]);
       Exit;
@@ -385,7 +391,7 @@ begin
     FTempDir := IncludeTrailingPathDelimiter(GetTempFilename(FTempDir, 'fppkg_'));
     CreateDir(FTempDir);
     try
-      if FSVNRepository.RunSvn(['co',TRepoController(AController).SvnUrl+'packages/'+PackageName+'/'+FRepositoryFPCVersion+'/branche',FTempDir+'checkout'],s,e)=0 then
+      if FSVNRepository.RunSvn(['co',TRepoController(AController).PackagesSvnUrl+PackageName+'/branche',FTempDir+'checkout'],s,e)=0 then
       begin
         Package := FSVNRepository.GetPackageFromManifestFile(FTempDir+'checkout'+PathDelim+PathDelim+'manifest.xml');
         try
@@ -393,12 +399,12 @@ begin
         finally
           Package.Free;
         end;
-        if FSVNRepository.DoesPackageExist(PackageName,FRepositoryFPCVersion, VersionStr) then
+        if FSVNRepository.DoesPackageExist(PackageName, VersionStr) then
         begin
           ReturnMessage := Format('Package "%s" already has a tag for version %s',[PackageName,VersionStr]);
           Exit;
         end;
-        if FSVNRepository.RunSvn(['copy',TRepoController(AController).SvnUrl+'packages/'+PackageName+'/'+FRepositoryFPCVersion+'/branche',TRepoController(AController).SvnUrl+'packages/'+PackageName+'/'+FRepositoryFPCVersion+'/tags/'+VersionStr+'/','-m ''Tagged version '+VersionStr+''''],s,e)=0 then
+        if FSVNRepository.RunSvn(['copy',TRepoController(AController).PackagesSvnUrl+PackageName+'/branche',TRepoController(AController).PackagesSvnUrl+PackageName+'/tags/'+VersionStr+'/','-m ''Tagged version '+VersionStr+''''],s,e)=0 then
           begin
           Result := True;
           end
@@ -520,12 +526,12 @@ begin
           begin
           Package := FSVNRepository.GetPackageFromManifestFile(FTempDir+'src'+PathDelim+'manifest.xml');
           try
-            if not FSVNRepository.DoesPackageExist(Package.Name, '', '') then
+            if not FSVNRepository.DoesPackageExist(Package.Name, '') then
               begin
               ReturnMessage := Format('Package "%s" does not exist.',[Package.Name]);
               Exit;
               end;
-            if FSVNRepository.RunSvn(['co',TRepoController(AController).SvnUrl+'packages/'+Package.Name+'/'+FRepositoryFPCVersion+'/branche',FTempDir+'checkout'],s)=0 then
+            if FSVNRepository.RunSvn(['co',TRepoController(AController).PackagesSvnUrl+Package.Name+'/branche',FTempDir+'checkout'],s)=0 then
               begin
               UpdatePackageFiles;
               if HasUpdates then
@@ -706,14 +712,14 @@ begin
     Result := True;
 end;
 
-function TSVNRepository.DoesPackageExist(PackageName: string; FPCVersion, Version: string): Boolean;
+function TSVNRepository.DoesPackageExist(PackageName: string; Version: string): Boolean;
 var
   url: string;
 begin
   if Version='' then
-    url := FController.SvnUrl + 'packages/'+PackageName
+    url := FController.PackagesSvnUrl + PackageName
   else
-    url := FController.SvnUrl + 'packages/'+PackageName+'/'+FPCVersion+'/tags/'+Version;
+    url := FController.PackagesSvnUrl +PackageName+'/tags/'+Version;
   Result := DoesSVNPathExist(url);
 end;
 
@@ -746,14 +752,14 @@ begin
           begin
           Package := FSVNRepository.GetPackageFromManifestFile(FTempDir+'src'+PathDelim+'manifest.xml');
           try
-            if FSVNRepository.DoesPackageExist(Package.Name, '', '') then
+            if FSVNRepository.DoesPackageExist(Package.Name, '') then
               begin
               ReturnMessage := Format('Package "%s" does already exist.',[Package.Name]);
               Exit;
               end;
-            if FSVNRepository.RunSvn(['co','--depth=empty',TRepoController(AController).SvnUrl+'packages',FTempDir+'checkout'],s)=0 then
+            if FSVNRepository.RunSvn(['co','--depth=empty',TRepoController(AController).PackagesSvnUrl,FTempDir+'checkout'],s)=0 then
               begin
-              PackageDir := FTempDir+'checkout'+PathDelim+Package.Name+PathDelim+RepositoryFPCVersion+PathDelim;
+              PackageDir := FTempDir+'checkout'+PathDelim+Package.Name+PathDelim;
               ForceDirectories(PackageDir+'branche');
               ForceDirectories(PackageDir+'tags');
               CopyDirTree(FTempDir+'src',PackageDir+'branche');

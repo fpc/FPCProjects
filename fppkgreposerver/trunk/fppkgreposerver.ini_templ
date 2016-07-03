@@ -1,6 +1,0 @@
-[Settings]
-svnurl=https://anna.cnoc.nl/svn/fppkg_repo/
-publishedrepodir=/var/www/html/fpc
-
-[RepoVersions]
-trunk=3.1.1
