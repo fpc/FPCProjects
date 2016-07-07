@@ -584,6 +584,7 @@ begin
     With TUnZipper.Create do
       try
         OutputPath:=FTempDir+'src';
+        CreateDir(OutputPath);
         UnZipAllFiles(FPackageZipFile);
         Result := true;
       Finally
@@ -750,6 +751,11 @@ begin
       try
         if DownloadPackage and UnzipPackage then
           begin
+          if not FileExistsLog(FTempDir+'src'+PathDelim+'manifest.xml') then
+            begin
+            ReturnMessage := Format('Zip-file (%s) is not a valid fppkg-package. (manifest.xml does not exist)',[PackageURL]);
+            Exit;
+            end;
           Package := FSVNRepository.GetPackageFromManifestFile(FTempDir+'src'+PathDelim+'manifest.xml');
           try
             if FSVNRepository.DoesPackageExist(Package.Name, '') then
