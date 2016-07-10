@@ -9,6 +9,7 @@ uses
   SysUtils,
   typinfo,
   dcsInOutputProcessor,
+  RepoTestCommand,
   pkgglobals,
   RepoController;
 
@@ -29,6 +30,7 @@ implementation
 function TJSONInOutputProcessor.StringToEnum(TypeInfo: PTypeInfo; Value: string): integer;
 var
   LogLevel: TLogLevel;
+  PackageSource: TrepoPackageSource;
 begin
   Result := -1;
   if TypeInfo^.Name='TLogLevel' then
@@ -38,6 +40,17 @@ begin
       if SameText(Value, SLogLevel[LogLevel]) then
         begin
         Result := integer(LogLevel);
+        Exit;
+        end;
+      end;
+    end
+  else if TypeInfo^.Name='TrepoPackageSource' then
+    begin
+    for PackageSource := Low(TrepoPackageSource) to High(TrepoPackageSource) do
+      begin
+      if SameText(Value, SrepoPackageSource[PackageSource]) then
+        begin
+        Result := integer(PackageSource);
         Exit;
         end;
       end;

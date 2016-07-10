@@ -20,6 +20,7 @@ uses
   pkgfpmake,
   pkgcommands,
   RepoController,
+  FileUtil,
   dcsThreadCommandFactory;
 
 type
@@ -63,12 +64,14 @@ type
   end;
 
   TTestCommandNotificationEvent = class(TCustomTestCommandNotificationEvent);
+  TrepoPackageSource = (rpsPublished, rpsUrl, rpsAdded);
 
   { TRepoTestCommand }
 
   TRepoTestCommand = class(TRepoCommand)
   private
     FPackageName: string;
+    FPackageSource: TrepoPackageSource;
     FPackageURL: string;
     FUniqueId: Integer;
   protected
@@ -86,6 +89,7 @@ type
     property TestEnvironmentName;
     property PackageName: string read FPackageName write FPackageName;
     property PackageURL: string read FPackageURL write FPackageURL;
+    property PackageSource: TrepoPackageSource read FPackageSource write FPackageSource;
   end;
 
   { TRepoQuitCommand }
@@ -96,10 +100,18 @@ type
     procedure PreExecute(AController: TDCSCustomController; out DoQueueCommand: boolean); override;
   end;
 
+const
+  SrepoPackageSource: array[TrepoPackageSource] of string = (
+    'Published',
+    'Url',
+    'Added'
+  );
+
 implementation
 
 uses
-  DBConnector;
+  DBConnector,
+  RepoSvnCommands;
 
 { TLogLine }
 
@@ -219,8 +231,27 @@ var
   Package: TFPPackage;
   FPCVersion: TrepoFPCVersion;
   TestEnv: TrepoTestEnvironment;
+  SVNRepository: TSVNRepository;
+  FTempDir, s, e, StoredPath: string;
+
+  function InstallPackage: Boolean;
+  begin
+    Result := False;
+    try
+      pkghandler.ExecuteAction(Package.Name, 'install');
+      Result := true;
+    except
+      on E: Exception do
+        begin
+        ReturnMessage := Format('Failed to install package %s: %s', [PackageName, E.Message]);
+        FDistributor.Log(ReturnMessage, etWarning, UID, SendByLisId);
+        end;
+    end;
+  end;
+
 begin
   Result := False;
+  Package := nil;
 
   if not GetTestEnvironment(AController, FPCVersion, TestEnv, ReturnMessage) then
     begin
@@ -246,19 +277,47 @@ begin
     Package.DownloadURL := PackageURL;
   end
   else
-    Package := AvailableRepository.FindPackage(PackageName);
+  begin
+    if PackageSource=rpsAdded then
+    begin
+      SVNRepository := TSVNRepository.Create(FDistributor, AController as TRepoController, FUID);
+      try
+        if not SVNRepository.DoesPackageExist(PackageName,'') then
+        begin
+          ReturnMessage := Format('Package ''%s'' not found, it has not been added to the repository.', [PackageName]);
+          AddToTestLog(llWarning, ReturnMessage);
+          Exit;
+        end;
+
+        FTempDir := IncludeTrailingPathDelimiter(GetTempFilename(FTempDir, 'fppkg_'));
+        CreateDir(FTempDir);
+        try
+          if SVNRepository.RunSvn(['co',TRepoController(AController).PackagesSvnUrl+PackageName+'/branche',FTempDir+'checkout'],s,e)=0 then
+          begin
+            Package := AvailableRepository.AddPackage(CurrentDirPackageName);
+            StoredPath := GetCurrentDir;
+            chdir(FTempDir+'checkout');
+            try
+              Result := InstallPackage;
+            finally
+              chdir(StoredPath);
+            end;
+          end
+          else
+            ReturnMessage := 'Failed to checkout package: '+e;
+        finally
+          DeleteDirectory(FTempDir, false);
+        end;
+      finally
+        SVNRepository.Free;
+      end;
+    end
+    else
+      Package := AvailableRepository.FindPackage(PackageName);
+  end;
   if Assigned(Package) then
   begin
-    try
-      pkghandler.ExecuteAction(Package.Name, 'install');
-      Result := true;
-    except
-      on E: Exception do
-        begin
-        ReturnMessage := Format('Failed to install package %s: %s', [PackageName, E.Message]);
-        FDistributor.Log(ReturnMessage, etWarning, UID, SendByLisId);
-        end;
-    end;
+    Result := InstallPackage;
   end
   else
   begin
