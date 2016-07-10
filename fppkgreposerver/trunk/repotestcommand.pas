@@ -239,6 +239,7 @@ var
     Result := False;
     try
       pkghandler.ExecuteAction(Package.Name, 'install');
+      pkghandler.ExecuteAction(Package.Name, 'fpmakeuninstall');
       Result := true;
     except
       on E: Exception do
