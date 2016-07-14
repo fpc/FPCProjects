@@ -341,10 +341,18 @@ begin
                   CommitMessage := 'Release of package '+PackageName+ ' version ' +Version;
                 Result := AddManifestToRepository(TRepoController(AController), PackageName, FTempDir+'checkout'+PathDelim+'manifest.xml') and
                   (FSVNRepository.RunSvn(['commit',FTempDir+PathDelim+'repo_checkout','-m '+QuotedStr(CommitMessage)],s,e)=0);
-                end;
+                end
+              else
+                ReturnMessage := Format('Failed to add package to svn of repository. %s', [e]);
               end;
-            end;
-          end;
+            end
+            else
+              ReturnMessage := Format('Failed to checkout repository (%s). %s', [FRepository.SVNUrl,e]);
+          end
+        else
+        begin
+          ReturnMessage := 'Failed to create archive ' + ZipPath;
+        end;
       end;
     finally
       DeleteDirectory(FTempDir, false);
