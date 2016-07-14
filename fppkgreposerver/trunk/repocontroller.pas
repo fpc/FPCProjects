@@ -565,6 +565,7 @@ function TRepoController.LoadRepository(fppkgconfigname: string): Boolean;
 begin
   if FileExists(fppkgconfigname) then
     begin
+    pkgrepos.ClearRemoteRepository;
     pkgoptions.ClearCompilerDefaults;
     pkgoptions.LoadGlobalDefaults(fppkgconfigname);
     LoadCompilerDefaults;
