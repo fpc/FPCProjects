@@ -42,6 +42,9 @@ type
   public
     class function TextName: string; override;
     function DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
+  published
+    property FpcVersionName;
+    property TestEnvironmentName;
   end;
 
 implementation
@@ -56,8 +59,22 @@ end;
 function TRepoUpdateCommand.DoExecuteRepoCommand(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
   Message: String;
+  FPCVersion: TrepoFPCVersion;
+  TestEnv: TrepoTestEnvironment;
+
 begin
   Result := False;
+
+  if not GetTestEnvironment(AController, FPCVersion, TestEnv, ReturnMessage) then
+    begin
+    Exit;
+    end;
+
+  if not TRepoController(AController).LoadRepository(TestEnv.LocalDir+'etc/fppkg.cfg') then
+    begin
+    ReturnMessage := 'Failed to load repository';
+    Exit;
+    end;
 
   try
     pkghandler.ExecuteAction('', 'update');
@@ -200,8 +217,6 @@ begin
       if not ExecuteProcess(FpcmkcfgBin, ['-p', '-3', '-d', 'LocalRepository='+TestEnv.LocalDir+'fppkg'+DirectorySeparator, '-o',TestEnv.LocalDir+'etc'+DirectorySeparator+'fppkg.cfg']) then
         raise exception.create('Failed to create fppkg.cfg');
       end;
-    if not ExecuteProcess(FpcmkcfgBin, ['-p', '-3', '-d', 'LocalRepository='+TestEnv.LocalDir+'fppkg'+DirectorySeparator, '-o',TestEnv.LocalDir+'etc'+DirectorySeparator+'fppkg.cfg']) then
-      raise exception.create('Failed to create fppkg.cfg');
     if not ExecuteProcess(FpcmkcfgBin, ['-p', '-4', '-d', 'GlobalPrefix='+FpcPath, '-d', 'FpcBin='+FpcBin, '-o', TestEnv.LocalDir+'fppkg'+DirectorySeparator+'config'+DirectorySeparator+'default']) then
       raise exception.create('Failed to create default');
 
