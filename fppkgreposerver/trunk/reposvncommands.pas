@@ -210,6 +210,7 @@ var
   AddRepository: TFPRepository;
   RepositoryHandler: TFPXMLRepositoryHandler;
   UpdatePackagesXml: Boolean;
+  P: TFPPackage;
   s,e: string;
   i: Integer;
 begin
@@ -230,7 +231,14 @@ begin
         RepositoryHandler.LoadFromXml(AddRepository.PackageCollection, ManifestFileName);
         for i := AddRepository.PackageCollection.Count -1 downto 0 do
           begin
-          AddRepository.Packages[i].Collection := Rep.PackageCollection;
+          P := AddRepository.Packages[i];
+          // Some versions of fpmkunit (3.0.0) do not contain the right filename
+          if not FileExists(FTempDir+'checkout'+PathDelim+P.FileName) then
+            begin
+            P.FileName := P.Name+'-'+P.Version.AsString+'.source.zip';
+            end;
+
+          P.Collection := Rep.PackageCollection;
           end;
       finally
         AddRepository.Free;
