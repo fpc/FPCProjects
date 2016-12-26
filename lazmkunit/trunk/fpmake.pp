@@ -12,7 +12,7 @@ begin
     begin
     P:=AddPackage('lazmkunit');
 
-    P.Version:='0.9.4-1';
+    P.Version:='0.9.5-1';
     P.OSes:=AllUnixOSes+[Win32,Win64];
     P.Author := 'Joost van der Sluis';
     P.License := 'LGPL with modification';
@@ -31,6 +31,8 @@ begin
     P.Dependencies.Add('hash');
 
     T:=P.Targets.AddUnit('lazmkunit.pp');
+    T:=P.Targets.AddUnit('lazfpmakeplugin.pp');
+    T.IsFPMakePlugin := True;
 
     Run;
     end;
