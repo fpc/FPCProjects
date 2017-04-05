@@ -36,6 +36,7 @@ const
 type
   TMimeEncoding = (me8bit, meBase64);
   TMimeDisposition = (mdInline, mdAttachment);
+  TMimeType = (mtMixed, mtAlternative);
 
   { TMimeSection }
 
@@ -128,6 +129,7 @@ type
 
   TMimeStream = class(TStream)
    protected
+    FMimeType: TMimeType;
     FSections: TFPObjectList;
     FOutputStream: TMimeOutputStream;
     FBoundary: string;
@@ -161,6 +163,7 @@ type
     property Sections[i: Integer]: TMimeSection read GetSection write SetSection; default;
     property Count: Integer read GetCount;
     property Boundary: string read FBoundary;
+    property MimeType: TMimeType read FMimeType write FMimeType;
   end;
   
   { EAlreadyActivatedException }
@@ -188,6 +191,9 @@ implementation
 
 uses
   Math, Base64;
+
+const
+  SMimeType: array[TMimeType] of string = ('mixed', 'alternative');
   
 function EncodingToStr(const Encoding: TMimeEncoding): string;
 begin
@@ -563,12 +569,12 @@ end;
 
 function TMimeStream.GetMimeHeader: string;
 const
-  MIME_HEADER = 'Content-type: multipart/mixed; boundary="';
+  MIME_HEADER = 'Content-type: multipart/%s; boundary="';
 begin
   Result := MIME_VERSION;
   
   if FSections.Count > 1 then
-    Result := Result + MIME_HEADER + FBoundary + '"' + CRLF + CRLF +
+    Result := Result + Format(MIME_HEADER, [SMimeType[FMimeType]])  + FBoundary + '"' + CRLF + CRLF +
          'This is a multi-part message in MIME format.' + CRLF +
          '--' + FBoundary + CRLF;
 end;
