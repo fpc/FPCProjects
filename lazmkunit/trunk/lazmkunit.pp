@@ -55,6 +55,7 @@ type
     destructor Destroy; override;
     procedure GetInstallSourceFiles(List: TStrings; SourceTypes : TSourceTypes; TargetTypes : TTargetTypes); override;
     Procedure GetArchiveSourceFiles(List : TStrings); override;
+    procedure RestorePackageVariantsAsMacro();
     Property LazPackageFiles : TLazPackageFiles Read FLazPackageFiles;
   end;
 
@@ -80,6 +81,7 @@ type
     Procedure CreatePackages; override;
     procedure FreePackages; override;
     function GetPackages: TPackages; override;
+    procedure AdaptPackageTemplate(APackage: TLazPackage; AFileName: string);
   public
     procedure DoRegisterLazarusPackages(Sender: TObject);
     constructor Create(AOwner: TComponent); override;
@@ -91,6 +93,9 @@ resourcestring
   SWarnLazarusDirInvalid  = 'Lazarus directory ''%s'' does not contain a valid Lazarus installation. Lazarus-package registration skipped.';
 
 implementation
+
+uses
+  Laz2_XMLCfg;
 
 procedure TLazPackage.SaveUnitConfigToStringList(const AStringList: TStrings; ACPU: TCPU; AOS: TOS);
 var
@@ -143,6 +148,18 @@ begin
   inherited GetArchiveSourceFiles(List);
   for i := 0 to LazPackageFiles.Count-1 do
     List.Add(LazPackageFiles[i].Name);
+end;
+
+procedure TLazPackage.RestorePackageVariantsAsMacro;
+var
+  PackageVariants: TPackageVariants;
+  i: Integer;
+begin
+  for i := 0 to PackageVariantsList.Count -1 do
+    begin
+      PackageVariants := TPackageVariants(PackageVariantsList.Items[i]);
+      Dictionary.AddVariable(PackageVariants.Name,'%('+PackageVariants.Name+')');
+    end;
 end;
 
 { TLazPackageFiles }
@@ -263,6 +280,26 @@ begin
   Result:=FPackages;
 end;
 
+procedure TLazInstaller.AdaptPackageTemplate(APackage: TLazPackage; AFileName: string);
+var
+  LazPackageConfig: TXMLConfig;
+  UnitDir: string;
+begin
+  LazPackageConfig := TXMLConfig.Create(AFileName);
+   try
+    // We want to keep the package-variants (like the widgetset) as a Lazarus-macro
+    APackage.RestorePackageVariantsAsMacro();
+    UnitDir := GlobalDictionary.ReplaceStrings('$(unitinstalldir)'+PathDelim+APackage.GetPackageUnitInstallDir(Defaults.CPU, Defaults.OS));
+    UnitDir := StringReplace(UnitDir, '%(', '$(', [rfReplaceAll]);
+    LazPackageConfig.SetValue('Package/CompilerOptions/SearchPaths/UnitOutputDirectory/Value', UnitDir);
+    LazPackageConfig.SetValue('Package/UsageOptions/UnitPath/Value', UnitDir);
+    LazPackageConfig.Flush;
+  finally
+    LazPackageConfig.Free;
+  end;
+
+end;
+
 procedure TLazInstaller.DoRegisterLazarusPackages(Sender: TObject);
 Var
   LazarusDir : string;
@@ -290,7 +327,10 @@ begin
           begin
           PackageFileName := IncludeTrailingPathDelimiter(InstallSourcePath)+ExtractFileName(Name);
           if LazType = ltPackageTemplate then
+            begin
             BuildEngine.CmdRenameFile(PackageFileName,ChangeFileExt(PackageFileName,'.lpk'));
+            AdaptPackageTemplate(APackage, ChangeFileExt(PackageFileName,'.lpk'));
+            end;
           System.assign(LazPackagerFile,LazGlobalLinksDir+ChangeFileExt(ExtractFileName(Name),'')+'-0.lpl');
           System.Rewrite(LazPackagerFile);
           System.WriteLn(LazPackagerFile,ChangeFileExt(PackageFileName,'.lpk'));

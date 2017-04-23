@@ -29,6 +29,7 @@ begin
     P.Dependencies.Add('fcl-process');
     P.Dependencies.Add('paszlib');
     P.Dependencies.Add('hash');
+    P.Dependencies.Add('lazutils');
 
     T:=P.Targets.AddUnit('lazmkunit.pp');
     T:=P.Targets.AddUnit('lazfpmakeplugin.pp');
