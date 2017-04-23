@@ -19,7 +19,7 @@ type
     FLazType: TLazType;
     function GetInstallSourcePath: string;
   public
-    Procedure GetInstallFiles(List : TStrings); virtual;
+    procedure GetInstallFiles(List : TStrings); virtual;
     property InstallSourcePath : string read GetInstallSourcePath;
     property LazType: TLazType read FLazType write FLazType;
   end;
@@ -32,14 +32,14 @@ type
     function GetPackageFileItem(Index : Integer): TLazPackageFile;
     procedure SetPackageFileItem(Index : Integer; const AValue: TLazPackageFile);
   public
-    Function AddLazFile(const AFiles : String) : TLazPackageFile;
-    Function AddLazFile(const AFiles : String; AInstallSourcePath : String) : TLazPackageFile;
-    Function AddLazPackageFile(const AFiles : String) : TLazPackageFile;
-    Function AddLazPackageFile(const AFiles : String; AInstallSourcePath : String) : TLazPackageFile;
+    function AddLazFile(const AFiles : String) : TLazPackageFile;
+    function AddLazFile(const AFiles : String; AInstallSourcePath : String) : TLazPackageFile;
+    function AddLazPackageFile(const AFiles : String) : TLazPackageFile;
+    function AddLazPackageFile(const AFiles : String; AInstallSourcePath : String) : TLazPackageFile;
     procedure AddLazFiles(const AFileMask: string; Recursive: boolean = False; AInstallSourcePath : String = '');
-    Function AddLazPackageTemplate(const AFiles : String) : TLazPackageFile;
-    Function AddLazPackageTemplate(const AFiles : String; AInstallSourcePath : String) : TLazPackageFile;
-    Property LazPackageFileItem[Index : Integer] : TLazPackageFile Read GetPackageFileItem Write SetPackageFileItem;default;
+    function AddLazPackageTemplate(const AFiles : String) : TLazPackageFile;
+    function AddLazPackageTemplate(const AFiles : String; AInstallSourcePath : String) : TLazPackageFile;
+    property LazPackageFileItem[Index : Integer] : TLazPackageFile Read GetPackageFileItem Write SetPackageFileItem;default;
     property Package: TPackage read FPackage;
   end;
 
@@ -54,9 +54,9 @@ type
     constructor Create(ACollection: TCollection); override;
     destructor Destroy; override;
     procedure GetInstallSourceFiles(List: TStrings; SourceTypes : TSourceTypes; TargetTypes : TTargetTypes); override;
-    Procedure GetArchiveSourceFiles(List : TStrings); override;
+    procedure GetArchiveSourceFiles(List : TStrings); override;
     procedure RestorePackageVariantsAsMacro();
-    Property LazPackageFiles : TLazPackageFiles Read FLazPackageFiles;
+    property LazPackageFiles : TLazPackageFiles Read FLazPackageFiles;
   end;
 
   { TLazPackages }
@@ -67,9 +67,9 @@ type
     function GetPackageItem(AIndex : Integer): TLazPackage;
     procedure SetPackageItem(AIndex : Integer; const AValue: TLazPackage);
   Public
-    Function AddPackage(Const AName : String) : TLazPackage;
-    Property Packages[AName : String] : TLazPackage Read GetPackage ; Default;
-    Property PackageItems[AIndex : Integer] : TLazPackage Read GetPackageItem Write SetPackageItem;
+    function AddPackage(Const AName : String) : TLazPackage;
+    property Packages[AName : String] : TLazPackage Read GetPackage ; Default;
+    property PackageItems[AIndex : Integer] : TLazPackage Read GetPackageItem Write SetPackageItem;
   end;
 
   { TLazInstaller }
@@ -78,7 +78,7 @@ type
   private
     FPackages: TLazPackages;
   protected
-    Procedure CreatePackages; override;
+    procedure CreatePackages; override;
     procedure FreePackages; override;
     function GetPackages: TPackages; override;
     procedure AdaptPackageTemplate(APackage: TLazPackage; AFileName: string);
