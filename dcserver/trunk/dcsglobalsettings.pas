@@ -7,6 +7,7 @@ interface
 uses
   Classes,
   SysUtils,
+  IniFiles,
   lazCollections,
   fgl,
   CustApp;
@@ -55,7 +56,12 @@ type
   private
     FMonitor: TLazMonitor;
     FSettingList: TDCSSettingList;
+    FSettingTemplateList: TDCSSettingList;
+    function GetSettingFromList(AList: TDCSSettingList; ASettingName: string): TDCSSetting;
     function GetSetting(ASettingName: string): TDCSSetting;
+    function GetSettingTemplate(ASettingNamePrefix: string): TDCSSetting;
+    function GetSettingByKey(ASection, AKey: string): TDCSSetting;
+    procedure AddSettingsForTemplate(ASectionPrefix, ASectionSuffix: string);
   public
     constructor Create();
     destructor Destroy; override;
@@ -66,10 +72,18 @@ type
     function CheckProgramParameters(AnApplication: TCustomApplication; AllErrors: Boolean = False): string;
     procedure EvaluateProgramParameters(AnApplication: TCustomApplication);
 
+    procedure AddSettingTemplate(ASectionPrefix, AKey, ASettingNamePrefix, ADefaultValue: string);
+
     function GetSettingAsBoolean(ASettingName: string): Boolean;
     function GetSettingAsString(ASettingName: string): String;
     procedure SetSettingAsBoolean(ASettingName: string; AValue: Boolean);
     procedure SetSettingAsString(ASettingName: string; AValue: String);
+
+    function GetSettingAsBooleanByKey(ASection, AKey: string): Boolean;
+    function GetSettingAsStringByKey(ASection, AKey: string): String;
+    procedure SetSettingAsBooleanByKey(ASection, AKey: string; AValue: Boolean);
+    procedure SetSettingAsStringByKey(ASection, AKey: string; AValue: String);
+
 
     class function GetInstance: TDCSGlobalSettings;
   end;
@@ -122,14 +136,14 @@ end;
 
 { TDCSGlobalSettings }
 
-function TDCSGlobalSettings.GetSetting(ASettingName: string): TDCSSetting;
+function TDCSGlobalSettings.GetSettingFromList(AList: TDCSSettingList; ASettingName: string): TDCSSetting;
 var
   Setting: TDCSSetting;
   i: Integer;
 begin
-  for i := 0 to FSettingList.Count-1 do
+  for i := 0 to AList.Count-1 do
     begin
-    Setting := FSettingList.Items[i];
+    Setting := AList.Items[i];
     if Setting.SettingName=ASettingName then
       begin
       Result := Setting;
@@ -139,16 +153,63 @@ begin
   Result := nil;
 end;
 
+function TDCSGlobalSettings.GetSetting(ASettingName: string): TDCSSetting;
+begin
+  Result := GetSettingFromList(FSettingList, ASettingName);
+end;
+
+function TDCSGlobalSettings.GetSettingTemplate(ASettingNamePrefix: string): TDCSSetting;
+begin
+  Result := GetSettingFromList(FSettingTemplateList, ASettingNamePrefix);
+end;
+
+function TDCSGlobalSettings.GetSettingByKey(ASection, AKey: string): TDCSSetting;
+var
+  Setting: TDCSSetting;
+  i: Integer;
+begin
+  for i := 0 to FSettingList.Count-1 do
+    begin
+    Setting := FSettingList.Items[i];
+    if SameText(Setting.Key, AKey) and SameText(Setting.Section, ASection) then
+      begin
+      Result := Setting;
+      Exit;
+      end;
+    end;
+  Result := nil;
+end;
+
+procedure TDCSGlobalSettings.AddSettingsForTemplate(ASectionPrefix, ASectionSuffix: string);
+var
+  i: Integer;
+  Setting: TDCSSetting;
+  SettingName: String;
+begin
+  for i := 0 to FSettingTemplateList.Count -1 do
+    begin
+    Setting := FSettingTemplateList.Items[i];
+    if Setting.Section = ASectionPrefix then
+      begin
+      SettingName := Setting.SettingName+ASectionSuffix;
+      Setting := TDCSSetting.Create(SettingName, ASectionPrefix+ASectionSuffix, Setting.Key, '', #0, dcsPHasParameter, Setting.DefaultValue);
+      FSettingList.Add(Setting);
+      end;
+    end;
+end;
+
 constructor TDCSGlobalSettings.Create;
 begin
   FMonitor := TLazMonitor.create;
   FSettingList := TDCSSettingList.Create(True);
+  FSettingTemplateList := TDCSSettingList.Create(True);
 end;
 
 destructor TDCSGlobalSettings.Destroy;
 begin
   FMonitor.Free;
   FSettingList.Free;
+  FSettingTemplateList.Free;
   inherited Destroy;
 end;
 
@@ -175,8 +236,56 @@ begin
 end;
 
 procedure TDCSGlobalSettings.LoadSettingsFromIniStream(AStream: TStream);
+var
+  IniFile: TIniFile;
+  SectionList: TStringList;
+  ValueList: TStringList;
+  Section, Key, Value: string;
+  i, j, k: Integer;
+  Setting: TDCSSetting;
+  SettingName: string;
 begin
-
+  IniFile := TIniFile.Create(AStream);
+  try
+    SectionList := TStringList.Create;
+    try
+      IniFile.ReadSections(SectionList);
+      for i := 0 to SectionList.Count -1 do
+        begin
+        Section := SectionList.Strings[i];
+        ValueList := TStringList.Create;
+        try
+          IniFile.ReadSectionValues(Section, ValueList, []);
+          for j := 0 to ValueList.Count -1 do
+            begin
+            Key := ValueList.Names[j];
+            Value := ValueList.ValueFromIndex[j];
+            if Assigned(GetSettingByKey(Section, Key)) then
+              SetSettingAsStringByKey(Section, Key, Value)
+            else
+              begin
+              for k := 0 to FSettingTemplateList.Count-1 do
+                begin
+                Setting := FSettingTemplateList.Items[k];
+                if SameText(Setting.Section, copy(Section, 1, Length(Setting.Section))) then
+                  begin
+                  AddSettingsForTemplate(Setting.Section, copy(Section, Length(Setting.Section) +1, MaxSIntValue));
+                  Break;
+                  end
+                end;
+              SetSettingAsStringByKey(Section, Key, Value)
+              end;
+            end;
+        finally
+          ValueList.Free;
+        end;
+        end;
+    finally
+      SectionList.Free;
+    end;
+  finally
+    IniFile.Free;
+  end;
 end;
 
 function TDCSGlobalSettings.CheckProgramParameters(AnApplication: TCustomApplication; AllErrors: Boolean = False): string;
@@ -254,6 +363,23 @@ begin
   end;
 end;
 
+procedure TDCSGlobalSettings.AddSettingTemplate(ASectionPrefix, AKey, ASettingNamePrefix,
+  ADefaultValue: string);
+var
+  Setting: TDCSSetting;
+begin
+  FMonitor.Acquire;
+  try
+    Setting := GetSettingTemplate(ASettingNamePrefix);
+    if Assigned(Setting) then
+      raise Exception.CreateFmt('Setting-template with settingnameprefix %s is already defined.',[ASettingNamePrefix]);
+    Setting := TDCSSetting.Create(ASettingNamePrefix, ASectionPrefix, AKey, '', #0, dcsPHasParameter, ADefaultValue);
+    FSettingTemplateList.Add(Setting);
+  finally
+    FMonitor.Release;
+  end;
+end;
+
 function TDCSGlobalSettings.GetSettingAsBoolean(ASettingName: string): Boolean;
 var
   Setting: TDCSSetting;
@@ -308,6 +434,66 @@ begin
     Setting := GetSetting(ASettingName);
     if not assigned(Setting) then
       raise Exception.CreateFmt('Parameter %s has not been defined.', [ASettingName]);
+    Setting.SetAsString(AValue);
+  finally
+    FMonitor.Release;
+  end;
+end;
+
+function TDCSGlobalSettings.GetSettingAsBooleanByKey(ASection, AKey: string): Boolean;
+var
+  Setting: TDCSSetting;
+begin
+  FMonitor.Acquire;
+  try
+    Setting := GetSettingByKey(ASection, AKey);
+    if not assigned(Setting) then
+      raise Exception.CreateFmt('Parameter [%s]:[%s] has not been defined.', [ASection, AKey]);
+    Result := Setting.GetAsBoolean
+  finally
+    FMonitor.Release;
+  end;
+end;
+
+function TDCSGlobalSettings.GetSettingAsStringByKey(ASection, AKey: string): String;
+var
+  Setting: TDCSSetting;
+begin
+  FMonitor.Acquire;
+  try
+    Setting := GetSettingByKey(ASection, AKey);
+    if not assigned(Setting) then
+      raise Exception.CreateFmt('Parameter [%s]:[%s] has not been defined.', [ASection, AKey]);
+    Result := Setting.GetAsString
+  finally
+    FMonitor.Release;
+  end;
+end;
+
+procedure TDCSGlobalSettings.SetSettingAsBooleanByKey(ASection, AKey: string; AValue: Boolean);
+var
+  Setting: TDCSSetting;
+begin
+  FMonitor.Acquire;
+  try
+    Setting := GetSettingByKey(ASection, AKey);
+    if not assigned(Setting) then
+      raise Exception.CreateFmt('Parameter [%s]:[%s] has not been defined.', [ASection, AKey]);
+    Setting.SetAsBoolean(AValue);
+  finally
+    FMonitor.Release;
+  end;
+end;
+
+procedure TDCSGlobalSettings.SetSettingAsStringByKey(ASection, AKey: string; AValue: String);
+var
+  Setting: TDCSSetting;
+begin
+  FMonitor.Acquire;
+  try
+    Setting := GetSettingByKey(ASection, AKey);
+    if not assigned(Setting) then
+      raise Exception.CreateFmt('Parameter [%s]:[%s] has not been defined.', [ASection, AKey]);
     Setting.SetAsString(AValue);
   finally
     FMonitor.Release;
